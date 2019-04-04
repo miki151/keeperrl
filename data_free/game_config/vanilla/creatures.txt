@@ -6,9 +6,9 @@
   "KEEPER_MAGE"
     {
       # Definitions in view_id.h
-      viewId = KEEPER1
+      viewId = "keeper1"
       # ViewId upgrades of Keepers are applied every 5 tech level increases
-      viewIdUpgrades = { KEEPER2 KEEPER3 KEEPER4 }
+      viewIdUpgrades = { "keeper2" "keeper3" "keeper4" }
       name = {
         # The name gets changed appropriately to Keeper and Adventurer
         name = "wizard"
@@ -43,7 +43,7 @@
 
   "KEEPER_MAGE_F"
     {
-      viewId = KEEPER_F1
+      viewId = "keeper_f1"
       attr = {
         DAMAGE 12
         DEFENSE 12
@@ -58,7 +58,7 @@
         firstNameGen = FIRST_FEMALE
         fullTitle = true
       }
-      viewIdUpgrades = {KEEPER_F2 KEEPER_F3 KEEPER_F4}
+      viewIdUpgrades = {"keeper_f2" "keeper_f3" "keeper_f4"}
       skills = {
         LABORATORY 0.2
       }
@@ -71,7 +71,7 @@
     }
   "KEEPER_KNIGHT"
     {
-      viewId = KEEPER_KNIGHT1
+      viewId = "keeper_knight1"
       attr = {
         DAMAGE 20
         DEFENSE 16
@@ -84,7 +84,7 @@
         firstNameGen = FIRST_MALE
         fullTitle = true
       }
-      viewIdUpgrades = {KEEPER_KNIGHT2 KEEPER_KNIGHT3 KEEPER_KNIGHT4}
+      viewIdUpgrades = {"keeper_knight2" "keeper_knight3" "keeper_knight4"}
       skills = {
         FORGE 0.2
       }
@@ -96,7 +96,7 @@
     }
   "KEEPER_KNIGHT_F"
     {
-      viewId = KEEPER_KNIGHT_F1
+      viewId = "keeper_knight_f1"
       attr = {
         DAMAGE 20
         DEFENSE 16
@@ -110,7 +110,7 @@
         firstNameGen = FIRST_FEMALE
         fullTitle = true
       }
-      viewIdUpgrades = {KEEPER_KNIGHT_F2 KEEPER_KNIGHT_F3 KEEPER_KNIGHT_F4}
+      viewIdUpgrades = {"keeper_knight_f2" "keeper_knight_f3" "keeper_knight_f4"}
       skills = {
         FORGE 0.2
       }
@@ -122,7 +122,7 @@
     }
   "KEEPER_KNIGHT_WHITE"
     {
-      viewId = DUKE1
+      viewId = "duke1"
       attr = {
         DAMAGE 20
         DEFENSE 16
@@ -135,7 +135,7 @@
         firstNameGen = FIRST_MALE
         fullTitle = true
       }
-      viewIdUpgrades = {DUKE2 DUKE3 DUKE4}
+      viewIdUpgrades = {"duke2" "duke3" "duke4"}
       skills = {
         FORGE 0.2
       }
@@ -148,7 +148,7 @@
     }
   "KEEPER_KNIGHT_WHITE_F"
     {
-      viewId = DUKE_F1
+      viewId = "duke_f1"
       attr = {
         DAMAGE 20
         DEFENSE 16
@@ -162,7 +162,7 @@
         firstNameGen = FIRST_FEMALE
         fullTitle = true
        }
-      viewIdUpgrades = {DUKE_F2 DUKE_F3 DUKE_F4}
+      viewIdUpgrades = {"duke_f2" "duke_f3" "duke_f4"}
       skills = {
         FORGE 0.2
       }
@@ -175,7 +175,7 @@
     }
   "ADVENTURER"
     {
-      viewId = PLAYER
+      viewId = "player"
       attr = {
         DAMAGE 15
         DEFENSE 20 
@@ -201,7 +201,7 @@
     }
   "ADVENTURER_F"
     {
-      viewId = PLAYER_F
+      viewId = "player_f"
       gender = FEMALE
       attr = {
         DAMAGE 15
@@ -228,7 +228,7 @@
     }
   "UNICORN"
     {
-      viewId = UNICORN
+      viewId = "unicorn"
       attr = {
         DAMAGE 16
         DEFENSE 20
@@ -257,7 +257,7 @@
     }
   "BANDIT"
     {
-      viewId = BANDIT
+      viewId = "bandit"
       attr = {
         DAMAGE 15
         DEFENSE 13
@@ -277,7 +277,7 @@
     }
   "RAT_SOLDIER"
     {
-      viewId = RAT_SOLDIER
+      viewId = "rat_soldier"
       attr = {
         DAMAGE 12
         DEFENSE 10
@@ -296,7 +296,7 @@
     }
   "RAT_LADY"
     {
-      viewId = RAT_LADY
+      viewId = "rat_lady"
       gender = FEMALE
       attr = {
         DAMAGE 7
@@ -316,7 +316,7 @@
     }
   "RAT_KING"
     {
-      viewId = RAT_KING
+      viewId = "rat_king"
       attr = {
         DAMAGE 15
         DEFENSE 13
@@ -335,7 +335,7 @@
     }
   "GHOST"
     {
-      viewId = GHOST
+      viewId = "ghost"
       attr = {
         DEFENSE 35
         SPELL_DAMAGE 30 
@@ -356,7 +356,7 @@
     }
   "SPIRIT"
     {
-      viewId = SPIRIT
+      viewId = "spirit"
       attr = {
         DEFENSE 35
         SPELL_DAMAGE 30 
@@ -365,7 +365,7 @@
         type = NonHumanoid LARGE
         material = SPIRIT
         intrinsicAttacks = {
-          TORSO { Intrinsic FIST_ATTACK "spell" 10 {
+          TORSO { Intrinsic "fist_attack" "spell" 10 {
               attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }
         }
       }
@@ -386,14 +386,14 @@
         material = SPIRIT
         deathSound = none
         intrinsicAttacks = {
-          TORSO { Intrinsic TOUCH_ATTACK "touch" 0 {
+          TORSO { Intrinsic "touch_attack" "touch" 0 {
               attackType = HIT
               attackMsg = TOUCH
               victimEffect = {Lasting INSANITY}
               attackerEffect = {Suicide} } }
         }
       }
-      viewId = GHOST
+      viewId = "ghost"
       attr = {
         DEFENSE 25
         SPELL_DAMAGE 5 
@@ -414,12 +414,12 @@
         DEFENSE 25
         SPELL_DAMAGE 5 
       }
-      viewId = SUCCUBUS
+      viewId = "succubus"
       body = {
         type = Humanoid LARGE
         material = SPIRIT
         intrinsicAttacks = {
-          TORSO { Intrinsic TOUCH_ATTACK "touch" 0 {
+          TORSO { Intrinsic "touch_attack" "touch" 0 {
               attackType = HIT
               attackMsg = TOUCH
               victimEffect = {Lasting PEACEFULNESS} } }
@@ -440,7 +440,7 @@
     }
   "DOPPLEGANGER"
     {
-      viewId = DOPPLEGANGER
+      viewId = "doppleganger"
       attr = {
         DEFENSE 25
         SPELL_DAMAGE 5 
@@ -458,7 +458,7 @@
     }
   "WITCH"
     {
-      viewId = WITCH
+      viewId = "witch"
       attr = {
         DAMAGE 14
         DEFENSE 14
@@ -485,7 +485,7 @@
     }
   "WITCHMAN"
     {
-      viewId = WITCHMAN
+      viewId = "witchman"
       attr = {
         DAMAGE 30
         DEFENSE 30
@@ -508,7 +508,7 @@
     }
   "CYCLOPS"
     {
-      viewId = CYCLOPS
+      viewId = "cyclops"
       attr = {
         DAMAGE 34
         DEFENSE 40 
@@ -531,7 +531,7 @@
     }
   "DEMON_DWELLER"
     {
-      viewId = DEMON_DWELLER
+      viewId = "demon_dweller"
       attr = {
         DAMAGE 25
         DEFENSE 30
@@ -564,7 +564,7 @@
     }
   "DEMON_LORD"
     {
-      viewId = DEMON_LORD
+      viewId = "demon_lord"
       attr = {
         DAMAGE 40
         DEFENSE 45
@@ -596,7 +596,7 @@
     }
   "MINOTAUR"
     {
-      viewId = MINOTAUR
+      viewId = "minotaur"
       attr = {
         DAMAGE 35
         DEFENSE 45 
@@ -617,7 +617,7 @@
     }
   "SOFT_MONSTER"
     {
-      viewId = SOFT_MONSTER
+      viewId = "soft_monster"
       attr = {
         DAMAGE 45
         DEFENSE 25 
@@ -633,7 +633,7 @@
     }
   "HYDRA"
     {
-      viewId = HYDRA
+      viewId = "hydra"
       attr = {
         DAMAGE 27
         DEFENSE 45 
@@ -642,7 +642,7 @@
         type = NonHumanoid LARGE
         weight = 400
         intrinsicAttacks = {
-          HEAD { Intrinsic BITE_ATTACK "fangs" 8 {
+          HEAD { Intrinsic "bite_attack" "fangs" 8 {
               attackType = BITE
               attackMsg = BITE
               victimEffect = {Lasting POISON} } }
@@ -666,7 +666,7 @@
     }
   "SHELOB"
     {
-      viewId = SHELOB
+      viewId = "shelob"
       attr = {
         DAMAGE 40
         DEFENSE 38 
@@ -680,7 +680,7 @@
         weight = 400
         deathSound = none
         intrinsicAttacks = {
-          TORSO { Intrinsic BITE_ATTACK "fangs" 8 {
+          TORSO { Intrinsic "bite_attack" "fangs" 8 {
               attackType = BITE
               attackMsg = BITE
               victimEffect = {Lasting POISON} } }
@@ -697,7 +697,7 @@
     }
   "GREEN_DRAGON"
     {
-      viewId = GREEN_DRAGON
+      viewId = "green_dragon"
       attr = {
         DAMAGE 45
         DEFENSE 47
@@ -708,7 +708,7 @@
           WING 2
         }
         intrinsicAttacks = {
-          HEAD { Intrinsic BITE_ATTACK "fangs" 12 {
+          HEAD { Intrinsic "bite_attack" "fangs" 12 {
               attackType = BITE
               attackMsg = BITE
               victimEffect = {Lasting POISON} } }
@@ -727,7 +727,7 @@
     }
   "RED_DRAGON"
     {
-      viewId = RED_DRAGON
+      viewId = "red_dragon"
       attr = {
         DAMAGE 45
         DEFENSE 47
@@ -738,7 +738,7 @@
           WING 2
         }
         intrinsicAttacks = {
-          HEAD { Intrinsic BITE_ATTACK "fangs" 15 {
+          HEAD { Intrinsic "bite_attack" "fangs" 15 {
               attackType = BITE
               attackMsg = BITE
               victimEffect = {Fire} } }
@@ -757,7 +757,7 @@
     }
   "KNIGHT_PLAYER"
     {
-      viewId = KNIGHT
+      viewId = "knight"
       attr = {
         DAMAGE 16
         DEFENSE 14 
@@ -782,7 +782,7 @@
     }
   "JESTER_PLAYER"
     {
-      viewId = JESTER
+      viewId = "jester"
       attr = {
         DAMAGE 8
         DEFENSE 8 
@@ -803,7 +803,7 @@
     }
   "ARCHER_PLAYER"
     {
-      viewId = ARCHER
+      viewId = "archer"
       attr = {
         DAMAGE 10
         DEFENSE 10
@@ -826,7 +826,7 @@
     }
   "PRIEST_PLAYER"
     {
-      viewId = PRIEST
+      viewId = "priest"
       attr = {
         DAMAGE 12
         DEFENSE 8
@@ -849,7 +849,7 @@
     }
   "GNOME_PLAYER"
     {
-      viewId = GNOME
+      viewId = "gnome"
       attr = {
         DAMAGE 10
         DEFENSE 10 
@@ -872,9 +872,9 @@
     }
   "PESEANT_PLAYER"
     {
-      viewId = PESEANT
+      viewId = "peseant"
       genderAlternatives = {
-        FEMALE PESEANT_WOMAN
+        FEMALE "peseant_woman"
       }
       attr = {
         DAMAGE 14
@@ -895,7 +895,7 @@
     }
   "KNIGHT"
     {
-      viewId = KNIGHT
+      viewId = "knight"
       attr = {
         DAMAGE 41
         DEFENSE 33
@@ -918,7 +918,7 @@
     }
   "JESTER"
     {
-      viewId = JESTER
+      viewId = "jester"
       attr = {
         DAMAGE 8
         DEFENSE 8 
@@ -938,7 +938,7 @@
     }
   "DUKE"
     {
-      viewId = DUKE4
+      viewId = "duke4"
       attr = {
         DAMAGE 53
         DEFENSE 42
@@ -964,7 +964,7 @@
     }
   "ARCHER"
     {
-      viewId = ARCHER
+      viewId = "archer"
       attr = {
         DAMAGE 22
         DEFENSE 27
@@ -985,7 +985,7 @@
     }
   "PRIEST"
     {
-      viewId = PRIEST
+      viewId = "priest"
       attr = {
         DAMAGE 15
         DEFENSE 25
@@ -1010,7 +1010,7 @@
     }
   "WARRIOR"
     {
-      viewId = WARRIOR
+      viewId = "warrior"
       attr = {
         DAMAGE 27
         DEFENSE 19 
@@ -1033,7 +1033,7 @@
     }
   "SHAMAN"
     {
-      viewId = SHAMAN
+      viewId = "shaman"
       attr = {
         DAMAGE 27
         DEFENSE 19
@@ -1059,9 +1059,9 @@
     }
   "PESEANT"
     {
-      viewId = PESEANT
+      viewId = "peseant"
       genderAlternatives = {
-        FEMALE PESEANT_WOMAN
+        FEMALE "peseant_woman"
       }
       attr = {
         DAMAGE 14
@@ -1085,7 +1085,7 @@
     }
   "CHILD"
     {
-      viewId = CHILD
+      viewId = "child"
       attr = {
         DAMAGE 8
         DEFENSE 8 
@@ -1106,7 +1106,7 @@
     }
   "SPIDER_FOOD"
     {
-      viewId = CHILD
+      viewId = "child"
       attr = {
         DAMAGE 2
         DEFENSE 2 
@@ -1129,9 +1129,9 @@
     }
   "PESEANT_PRISONER"
     {
-      viewId = PESEANT
+      viewId = "peseant"
       genderAlternatives = {
-        FEMALE PESEANT_WOMAN
+        FEMALE "peseant_woman"
       }
       attr = {
         DAMAGE 14
@@ -1152,7 +1152,7 @@
     }
   "HALLOWEEN_KID"
     {
-      viewId = HALLOWEEN_KID1
+      viewId = "halloween_kid1"
       attr = {
         DAMAGE 8
         DEFENSE 8 
@@ -1170,7 +1170,7 @@
     }
   "CLAY_GOLEM"
     {
-      viewId = CLAY_GOLEM
+      viewId = "clay_golem"
       attr = {
         DAMAGE 17
         DEFENSE 19 
@@ -1189,7 +1189,7 @@
     }
   "STONE_GOLEM"
     {
-      viewId = STONE_GOLEM
+      viewId = "stone_golem"
       attr = {
         DAMAGE 19
         DEFENSE 23 
@@ -1208,7 +1208,7 @@
     }
   "IRON_GOLEM"
     {
-      viewId = IRON_GOLEM
+      viewId = "iron_golem"
       attr = {
         DAMAGE 23
         DEFENSE 30 
@@ -1227,7 +1227,7 @@
     }
   "LAVA_GOLEM"
     {
-      viewId = LAVA_GOLEM
+      viewId = "lava_golem"
       attr = {
         DAMAGE 26
         DEFENSE 36 
@@ -1236,7 +1236,7 @@
         type = HumanoidLike LARGE
         material = IRON
         intrinsicAttacks = {
-          ARM { Intrinsic FIST_ATTACK "fists" 10 {
+          ARM { Intrinsic "fist_attack" "fists" 10 {
               attackType = HIT
               attackMsg = SWING
               victimEffect = {Fire} } }
@@ -1253,7 +1253,7 @@
     }
   "ADA_GOLEM"
     {
-      viewId = ADA_GOLEM
+      viewId = "ada_golem"
       attr = {
         DAMAGE 36
         DEFENSE 36 
@@ -1275,7 +1275,7 @@
     }
   "AUTOMATON"
     {
-      viewId = AUTOMATON
+      viewId = "automaton"
       attr = {
         DAMAGE 40
         DEFENSE 40 
@@ -1293,7 +1293,7 @@
     }
   "ZOMBIE"
     {
-      viewId = ZOMBIE
+      viewId = "zombie"
       attr = {
         DAMAGE 14
         DEFENSE 17 
@@ -1316,7 +1316,7 @@
     }
   "SKELETON"
     {
-      viewId = SKELETON
+      viewId = "skeleton"
       attr = {
         DAMAGE 17
         DEFENSE 13
@@ -1340,7 +1340,7 @@
     }
   "VAMPIRE"
     {
-      viewId = VAMPIRE
+      viewId = "vampire"
       attr = {
         DAMAGE 17
         DEFENSE 17
@@ -1368,7 +1368,7 @@
     }
   "VAMPIRE_LORD"
     {
-      viewId = VAMPIRE_LORD
+      viewId = "vampire_lord"
       attr = {
         DAMAGE 17
         DEFENSE 23
@@ -1401,7 +1401,7 @@
     }
   "MUMMY"
     {
-      viewId = MUMMY
+      viewId = "mummy"
       attr = {
         DAMAGE 15
         DEFENSE 14
@@ -1427,7 +1427,7 @@
     }
   "ORC"
     {
-      viewId = ORC
+      viewId = "orc"
       attr = {
         DAMAGE 16
         DEFENSE 14 
@@ -1452,7 +1452,7 @@
     }
   "ORC_SHAMAN"
     {
-      viewId = ORC_SHAMAN
+      viewId = "orc_shaman"
       attr = {
         DAMAGE 12
         DEFENSE 8
@@ -1478,7 +1478,7 @@
     }
   "HARPY"
     {
-      viewId = HARPY
+      viewId = "harpy"
       attr = {
         DAMAGE 13
         DEFENSE 16
@@ -1507,7 +1507,7 @@
     }
   "KOBOLD"
     {
-      viewId = KOBOLD
+      viewId = "kobold"
       attr = {
         DAMAGE 14
         DEFENSE 16 
@@ -1526,7 +1526,7 @@
     }
   "GNOME"
     {
-      viewId = GNOME
+      viewId = "gnome"
       attr = {
         DAMAGE 12
         DEFENSE 13 
@@ -1545,7 +1545,7 @@
     }
   "GNOME_CHIEF"
     {
-      viewId = GNOME_BOSS
+      viewId = "gnome_boss"
       attr = {
         DAMAGE 15
         DEFENSE 16 
@@ -1564,7 +1564,7 @@
     }
   "GOBLIN"
     {
-      viewId = GOBLIN
+      viewId = "goblin"
       attr = {
         DAMAGE 12
         DEFENSE 13 
@@ -1592,7 +1592,7 @@
     }
   "IMP"
     {
-      viewId = IMP
+      viewId = "imp"
       attr = {
         DAMAGE 5
         DEFENSE 15 
@@ -1619,7 +1619,7 @@
     }
   "OGRE"
     {
-      viewId = OGRE
+      viewId = "ogre"
       attr = {
         DAMAGE 18
         DEFENSE 18 
@@ -1647,7 +1647,7 @@
     }
   "CHICKEN"
     {
-      viewId = CHICKEN
+      viewId = "chicken"
       attr = {
         DAMAGE 2
         DEFENSE 2 
@@ -1666,7 +1666,7 @@
     }
   "DWARF"
     {
-      viewId = DWARF
+      viewId = "dwarf"
       attr = {
         DAMAGE 21
         DEFENSE 25 
@@ -1697,7 +1697,7 @@
     }
   "DWARF_FEMALE"
     {
-      viewId = DWARF_FEMALE
+      viewId = "dwarf_female"
       attr = {
         DAMAGE 21
         DEFENSE 25 
@@ -1725,7 +1725,7 @@
     }
   "DWARF_BARON"
     {
-      viewId = DWARF_BARON
+      viewId = "dwarf_baron"
       attr = {
         DAMAGE 28
         DEFENSE 32 
@@ -1752,7 +1752,7 @@
     }
   "LIZARDMAN"
     {
-      viewId = LIZARDMAN
+      viewId = "lizardman"
       attr = {
         DAMAGE 20
         DEFENSE 14 
@@ -1760,7 +1760,7 @@
       body = {
         type = Humanoid MEDIUM
         intrinsicAttacks = {
-          HEAD { Intrinsic BITE_ATTACK "fangs" 5 {
+          HEAD { Intrinsic "bite_attack" "fangs" 5 {
               attackType = BITE
               attackMsg = BITE
               victimEffect = {Lasting POISON} } }
@@ -1782,7 +1782,7 @@
     }
   "LIZARDLORD"
     {
-      viewId = LIZARDLORD
+      viewId = "lizardlord"
       attr = {
         DAMAGE 30
         DEFENSE 16 
@@ -1790,7 +1790,7 @@
       body = {
         type = Humanoid MEDIUM
         intrinsicAttacks = {
-          HEAD { Intrinsic BITE_ATTACK "fangs" 8 {
+          HEAD { Intrinsic "bite_attack" "fangs" 8 {
               attackType = BITE
               attackMsg = BITE
               victimEffect = {Lasting POISON} } }
@@ -1812,9 +1812,9 @@
     }
   "ELF"
     {
-      viewId = ELF
+      viewId = "elf"
       genderAlternatives = {
-        FEMALE ELF_WOMAN
+        FEMALE "elf_woman"
       }
       attr = {
         DAMAGE 14
@@ -1843,7 +1843,7 @@
     }
   "ELF_ARCHER"
     {
-      viewId = ELF_ARCHER
+      viewId = "elf_archer"
       attr = {
         DAMAGE 18
         DEFENSE 12
@@ -1869,7 +1869,7 @@
     }
   "ELF_CHILD"
     {
-      viewId = ELF_CHILD
+      viewId = "elf_child"
       attr = {
         DAMAGE 6
         DEFENSE 6 
@@ -1891,7 +1891,7 @@
     }
   "ELF_LORD"
     {
-      viewId = ELF_LORD
+      viewId = "elf_lord"
       attr = {
         DAMAGE 22
         DEFENSE 14
@@ -1919,9 +1919,9 @@
     }
   "DARK_ELF"
     {
-      viewId = DARK_ELF
+      viewId = "dark_elf"
       genderAlternatives = {
-        FEMALE DARK_ELF_WOMAN
+        FEMALE "dark_elf_woman"
       }
       attr = {
         DAMAGE 14
@@ -1946,7 +1946,7 @@
     }
   "DARK_ELF_WARRIOR"
     {
-      viewId = DARK_ELF_WARRIOR
+      viewId = "dark_elf_warrior"
       attr = {
         DAMAGE 18
         DEFENSE 12
@@ -1974,7 +1974,7 @@
     }
   "DARK_ELF_CHILD"
     {
-      viewId = DARK_ELF_CHILD
+      viewId = "dark_elf_child"
       attr = {
         DAMAGE 6
         DEFENSE 6 
@@ -1996,7 +1996,7 @@
     }
   "DARK_ELF_LORD"
     {
-      viewId = DARK_ELF_LORD
+      viewId = "dark_elf_lord"
       attr = {
         DAMAGE 22
         DEFENSE 14
@@ -2019,7 +2019,7 @@
     }
   "DRIAD"
     {
-      viewId = DRIAD
+      viewId = "driad"
       attr = {
         DAMAGE 6
         DEFENSE 14
@@ -2044,7 +2044,7 @@
     }
   "HORSE"
     {
-      viewId = HORSE
+      viewId = "horse"
       attr = {
         DAMAGE 16
         DEFENSE 7 
@@ -2061,7 +2061,7 @@
     }
   "COW"
     {
-      viewId = COW
+      viewId = "cow"
       attr = {
         DAMAGE 10
         DEFENSE 7 
@@ -2079,7 +2079,7 @@
     }
   "DONKEY"
     {
-      viewId = DONKEY
+      viewId = "donkey"
       attr = {
         DAMAGE 10
         DEFENSE 7 
@@ -2096,7 +2096,7 @@
     }
   "PIG"
     {
-      viewId = PIG
+      viewId = "pig"
       attr = {
         DAMAGE 5
         DEFENSE 2 
@@ -2117,7 +2117,7 @@
     }
   "GOAT"
     {
-      viewId = GOAT
+      viewId = "goat"
       attr = {
         DAMAGE 10
         DEFENSE 7 
@@ -2134,7 +2134,7 @@
     }
   "JACKAL"
     {
-      viewId = JACKAL
+      viewId = "jackal"
       attr = {
         DAMAGE 15
         DEFENSE 10 
@@ -2149,7 +2149,7 @@
     }
   "DEER"
     {
-      viewId = DEER
+      viewId = "deer"
       attr = {
         DAMAGE 10
         DEFENSE 10 
@@ -2169,7 +2169,7 @@
     }
   "BOAR"
     {
-      viewId = BOAR
+      viewId = "boar"
       attr = {
         DAMAGE 10
         DEFENSE 10 
@@ -2185,7 +2185,7 @@
     }
   "FOX"
     {
-      viewId = FOX
+      viewId = "fox"
       attr = {
         DAMAGE 10
         DEFENSE 5 
@@ -2202,7 +2202,7 @@
     }
   "CAVE_BEAR"
     {
-      viewId = BEAR
+      viewId = "bear"
       attr = {
         DAMAGE 20
         DEFENSE 18 
@@ -2211,7 +2211,7 @@
         type = FourLegged MEDIUM
         weight = 250
         intrinsicAttacks = {
-          LEG { Intrinsic CLAWS_ATTACK "claws" 10 { attackType = HIT attackMsg = CLAW } }
+          LEG { Intrinsic "claws_attack" "claws" 10 { attackType = HIT attackMsg = CLAW } }
         }
       }
       permanentEffects = {
@@ -2223,7 +2223,7 @@
     }
   "RAT"
     {
-      viewId = RAT
+      viewId = "rat"
       attr = {
         DAMAGE 2
         DEFENSE 2 
@@ -2243,7 +2243,7 @@
     }
   "SPIDER"
     {
-      viewId = SPIDER
+      viewId = "spider"
       attr = {
         DAMAGE 9
         DEFENSE 13 
@@ -2257,7 +2257,7 @@
         weight = 0.3
         deathSound = none
         intrinsicAttacks = {
-          TORSO { Intrinsic BITE_ATTACK "fangs" 1 {
+          TORSO { Intrinsic "bite_attack" "fangs" 1 {
               attackType = BITE
               attackMsg = BITE
               victimEffect = {Lasting POISON} } }
@@ -2269,7 +2269,7 @@
     }
   "FLY"
     {
-      viewId = FLY
+      viewId = "fly"
       attr = {
         DAMAGE 2
         DEFENSE 12 
@@ -2293,7 +2293,7 @@
     }
   "ANT_WORKER"
     {
-      viewId = ANT_WORKER
+      viewId = "ant_worker"
       attr = {
         DAMAGE 16
         DEFENSE 16 
@@ -2314,7 +2314,7 @@
     }
   "ANT_SOLDIER"
     {
-      viewId = ANT_SOLDIER
+      viewId = "ant_soldier"
       attr = {
         DAMAGE 30
         DEFENSE 20 
@@ -2332,7 +2332,7 @@
         }
         deathSound = none
         intrinsicAttacks = {
-          HEAD { Intrinsic BITE_ATTACK "fangs" 6 {
+          HEAD { Intrinsic "bite_attack" "fangs" 6 {
               attackType = BITE
               attackMsg = BITE
               victimEffect = {Lasting POISON} } }
@@ -2344,7 +2344,7 @@
     }
   "ANT_QUEEN"
     {
-      viewId = ANT_QUEEN
+      viewId = "ant_queen"
       attr = {
         DAMAGE 30
         DEFENSE 26 
@@ -2359,7 +2359,7 @@
         }
         deathSound = none
         intrinsicAttacks = {
-          HEAD { Intrinsic BITE_ATTACK "fangs" 12 {
+          HEAD { Intrinsic "bite_attack" "fangs" 12 {
               attackType = BITE
               attackMsg = BITE
               victimEffect = {Lasting POISON} } }
@@ -2371,7 +2371,7 @@
     }
   "SNAKE"
     {
-      viewId = SNAKE
+      viewId = "snake"
       attr = {
         DAMAGE 14
         DEFENSE 14 
@@ -2385,7 +2385,7 @@
         }
         deathSound = none
         intrinsicAttacks = {
-          HEAD { Intrinsic BITE_ATTACK "fangs" 1 {
+          HEAD { Intrinsic "bite_attack" "fangs" 1 {
               attackType = BITE
               attackMsg = BITE
               victimEffect = {Lasting POISON} } }
@@ -2400,7 +2400,7 @@
     }
   "RAVEN"
     {
-      viewId = RAVEN
+      viewId = "raven"
       attr = {
         DAMAGE 2
         DEFENSE 12 
@@ -2423,7 +2423,7 @@
     }
   "VULTURE"
     {
-      viewId = VULTURE
+      viewId = "vulture"
       attr = {
         DAMAGE 2
         DEFENSE 12 
@@ -2441,7 +2441,7 @@
     }
   "WOLF"
     {
-      viewId = WOLF
+      viewId = "wolf"
       attr = {
         DAMAGE 18
         DEFENSE 11 
@@ -2450,8 +2450,8 @@
         type = FourLegged MEDIUM
         weight = 35
         intrinsicAttacks = {
-          LEG  { Intrinsic CLAWS_ATTACK "claws" 8 { attackType = HIT attackMsg = CLAW } }
-          HEAD { Intrinsic BITE_ATTACK  "fangs" 7 { attackType = BITE attackMsg = BITE } }
+          LEG  { Intrinsic "claws_attack" "claws" 8 { attackType = HIT attackMsg = CLAW } }
+          HEAD { Intrinsic "bite_attack"  "fangs" 7 { attackType = BITE attackMsg = BITE } }
         }
       }
       permanentEffects = {
@@ -2467,7 +2467,7 @@
     }
   "WEREWOLF"
     {
-      viewId = WEREWOLF
+      viewId = "werewolf"
       attr = {
         DAMAGE 20
         DEFENSE 7 
@@ -2475,8 +2475,8 @@
       body = {
         type = Humanoid LARGE
         intrinsicAttacks = {
-          LEG  { Intrinsic CLAWS_ATTACK "claws" 8 { attackType = HIT attackMsg = CLAW } }
-          HEAD { Intrinsic BITE_ATTACK  "fangs" 7 { attackType = BITE attackMsg = BITE } }
+          LEG  { Intrinsic "claws_attack" "claws" 8 { attackType = HIT attackMsg = CLAW } }
+          HEAD { Intrinsic "bite_attack"  "fangs" 7 { attackType = BITE attackMsg = BITE } }
         }
       }
       permanentEffects = {
@@ -2496,7 +2496,7 @@
     }
   "DOG"
     {
-      viewId = DOG
+      viewId = "dog"
       attr = {
         DAMAGE 18
         DEFENSE 7 
@@ -2504,7 +2504,7 @@
       body = {
         type = FourLegged MEDIUM
         intrinsicAttacks = {
-          HEAD { Intrinsic BITE_ATTACK  "fangs" 4 { attackType = BITE attackMsg = BITE } }
+          HEAD { Intrinsic "bite_attack"  "fangs" 4 { attackType = BITE attackMsg = BITE } }
         }
         weight = 25
       }
@@ -2517,7 +2517,7 @@
     }
   "FIRE_SPHERE"
     {
-      viewId = FIRE_SPHERE
+      viewId = "fire_sphere"
       attr = {
         DAMAGE 5
         DEFENSE 15 
@@ -2538,7 +2538,7 @@
     }
   "ELEMENTALIST"
     {
-      viewId = ELEMENTALIST
+      viewId = "elementalist"
       attr = {
         DAMAGE 15
         DEFENSE 20
@@ -2568,13 +2568,13 @@
     }
   "FIRE_ELEMENTAL"
     {
-      viewId = FIRE_ELEMENTAL
+      viewId = "fire_elemental"
       body = {
         type = NonHumanoid LARGE
         material = FIRE
         deathSound = none
         intrinsicAttacks = {
-          TORSO { Intrinsic FIST_ATTACK  "fists" 5 {
+          TORSO { Intrinsic "fist_attack"  "fists" 5 {
               attackType = HIT attackMsg = SWING victimEffect = {Fire}} }
         }
       }
@@ -2592,13 +2592,13 @@
     }
   "AIR_ELEMENTAL"
     {
-      viewId = AIR_ELEMENTAL
+      viewId = "air_elemental"
       body = {
         type = NonHumanoid LARGE
         material = SPIRIT
         deathSound = none
         intrinsicAttacks = {
-          TORSO { Intrinsic FIST_ATTACK  "fists" 5 { attackType = HIT attackMsg = SWING} }
+          TORSO { Intrinsic "fist_attack"  "fists" 5 { attackType = HIT attackMsg = SWING} }
         }
       }
       attr = {
@@ -2616,7 +2616,7 @@
     }
   "EARTH_ELEMENTAL"
     {
-      viewId = EARTH_ELEMENTAL
+      viewId = "earth_elemental"
       body = {
         type = HumanoidLike LARGE
         material = ROCK
@@ -2636,7 +2636,7 @@
     }
   "WATER_ELEMENTAL"
     {
-      viewId = WATER_ELEMENTAL
+      viewId = "water_elemental"
       body = {
         type = HumanoidLike LARGE
         material = WATER
@@ -2657,7 +2657,7 @@
     }
   "ENT"
     {
-      viewId = ENT
+      viewId = "ent"
       body = {
         type = HumanoidLike HUGE
         material = WOOD
@@ -2679,7 +2679,7 @@
     }
   "ANGEL"
     {
-      viewId = ANGEL
+      viewId = "angel"
       attr = {
         DAMAGE 30
         DEFENSE 22
@@ -2697,12 +2697,12 @@
     }
   "BAT"
     {
-      viewId = BAT
+      viewId = "bat"
       body = {
         type = Bird SMALL
         weight = 1
         intrinsicAttacks = {
-          HEAD { Intrinsic BITE_ATTACK "fangs" 3 { attackType = BITE attackMsg = BITE } }
+          HEAD { Intrinsic "bite_attack" "fangs" 3 { attackType = BITE attackMsg = BITE } }
         }
       }
       attr = {
@@ -2722,7 +2722,7 @@
     }
   "DEATH"
     {
-      viewId = DEATH
+      viewId = "death"
       attr = {
         SPELL_DAMAGE 100
         DEFENSE 35
@@ -2739,7 +2739,7 @@
     }
   "SHOPKEEPER"
     {
-      viewId = SHOPKEEPER
+      viewId = "shopkeeper"
       body = {
         type = Humanoid LARGE
       }

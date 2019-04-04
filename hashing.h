@@ -22,6 +22,9 @@ int getHashImpl(const T& obj, general_) {
   return hash<T>()(obj);
 }
 
+template <typename T, typename U>
+size_t combineHash(const pair<T, U>& arg);
+
 template <typename T>
 size_t combineHash(const T& arg) {
   return getHashImpl(arg, special_());

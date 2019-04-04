@@ -785,7 +785,7 @@ string Effect::getDescription() const {
 static optional<ViewId> getProjectile(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::STUNNED:
-      return ViewId::STUN_RAY;
+      return ViewId("stun_ray");
     default:
       return none;
   }
@@ -795,14 +795,14 @@ static optional<ViewId> getProjectile(const Effect& effect) {
   return effect.visit(
       [&](const auto&) -> optional<ViewId> { return none; },
       [&](const Effect::Lasting& e) -> optional<ViewId> { return getProjectile(e.lastingEffect); },
-      [&](const Effect::Damage&) -> optional<ViewId> { return ViewId::FORCE_BOLT; },
-      [&](const Effect::Fire&) -> optional<ViewId> { return ViewId::FIREBALL; }
+      [&](const Effect::Damage&) -> optional<ViewId> { return ViewId("force_bolt"); },
+      [&](const Effect::Fire&) -> optional<ViewId> { return ViewId("fireball"); }
   );
 }
 
 static optional<ViewId> getProjectile(const DirEffectType& effect) {
   return effect.effect.visit(
-      [&] (BlastDirEffect) -> optional<ViewId> { return ViewId::AIR_BLAST; },
+      [&] (BlastDirEffect) -> optional<ViewId> { return ViewId("air_blast"); },
       [&] (const Effect& e) -> optional<ViewId> { return getProjectile(e); }
   );
 }

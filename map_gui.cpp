@@ -140,9 +140,9 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer&) {
 }
 
 Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
-  bool quartersSelected = buttonViewId == ViewId::QUARTERS1 || buttonViewId == ViewId::QUARTERS2 ||
-      buttonViewId == ViewId::QUARTERS3 || buttonViewId == ViewId::LEISURE;
-  bool buildingSelected = buttonViewId == ViewId::WOOD_WALL || buttonViewId == ViewId::CASTLE_WALL;
+  bool quartersSelected = buttonViewId == ViewId("quarters1") || buttonViewId == ViewId("quarters2") ||
+      buttonViewId == ViewId("quarters3") || buttonViewId == ViewId("leisure");
+  bool buildingSelected = buttonViewId == ViewId("wood_wall") || buttonViewId == ViewId("castle_wall");
   switch (type) {
     case HighlightType::RECT_DESELECTION: return Color::RED.transparency(100);
     case HighlightType::DIG: return Color::YELLOW.transparency(100);
@@ -182,24 +182,8 @@ Color MapGui::getGradientColor(const ViewIndex& index, GradientType type) {
 }
 
 static ViewId getConnectionId(ViewId id) {
-  switch (id) {
-    case ViewId::BLACK_WALL:
-    case ViewId::WOOD_WALL:
-    case ViewId::CASTLE_WALL:
-    case ViewId::MUD_WALL:
-    case ViewId::WALL:
-      return ViewId::WALL;
-    case ViewId::MOUNTAIN:
-    case ViewId::MOUNTAIN2:
-    case ViewId::DUNGEON_WALL:
-    case ViewId::DUNGEON_WALL2:
-    case ViewId::ADAMANTIUM_ORE:
-    case ViewId::GOLD_ORE:
-    case ViewId::IRON_ORE:
-    case ViewId::STONE:
-      return ViewId::MOUNTAIN;
-    default: return id;
-  }
+  auto& tile = Tile::getTile(id);
+  return tile.getConnectionId().value_or(id);
 }
 
 DirSet MapGui::getConnectionSet(Vec2 tilePos, ViewId id) {
@@ -207,7 +191,7 @@ DirSet MapGui::getConnectionSet(Vec2 tilePos, ViewId id) {
   int cnt = 0;
   for (Vec2 dir : Vec2::directions8()) {
     Vec2 pos = tilePos + dir;
-    if (pos.inRectangle(levelBounds) && connectionMap[pos].contains(getConnectionId(id)))
+    if (pos.inRectangle(levelBounds) && connectionMap[pos].count(getConnectionId(id)))
       ret.insert((Dir) cnt);
     ++cnt;
   }
@@ -554,13 +538,7 @@ bool MapGui::fxesAvailable() const {
 }
 
 static bool mirrorSprite(ViewId id) {
-  switch (id) {
-    case ViewId::GRASS:
-    case ViewId::HILL:
-      return true;
-    default:
-      return false;
-  }
+  return id == ViewId("grass") || id == ViewId("hill");
 }
 
 Color MapGui::getHealthBarColor(double health) {
@@ -704,7 +682,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawText(blendNightColor(Color::WHITE, index), pos + move + size / 2, "S",
           Renderer::CenterType::HOR_VER, size.x * 2 / 3);
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
-      renderer.drawTile(pos + move, Tile::getTile(ViewId::KEY, spriteMode).getSpriteCoord(), size);
+      renderer.drawTile(pos + move, Tile::getTile(ViewId("key"), spriteMode).getSpriteCoord(), size);
     if (fxViewManager)
       if (auto genericId = object.getGenericId()) {
         float fxPosX = tilePos.x + move.x / (float)size.x;
@@ -786,8 +764,8 @@ const static EnumMap<Dir, DirSet> adjacentDirs(
     });
 
 void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, Vec2 size, DirSet dirs, DirSet diagonalDirs) {
-  const Tile& tile = Tile::getTile(ViewId::FOG_OF_WAR, true);
-  const Tile& tile2 = Tile::getTile(ViewId::FOG_OF_WAR_CORNER, true);
+  const Tile& tile = Tile::getTile(ViewId("fog_of_war"), true);
+  const Tile& tile2 = Tile::getTile(ViewId("fog_of_war_corner"), true);
   auto coord = tile.getSpriteCoord(dirs);
   renderer.drawTile(pos, coord, size);
   for (Dir dir : diagonalDirs)
@@ -815,19 +793,21 @@ void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal
           }
     }
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
-    for (ViewId id : extraBorderPos.getValue(wpos)) {
+    for (auto& id : extraBorderPos.getValue(wpos)) {
       auto color = Color::WHITE;
       if (objects[wpos])
         color = blendNightColor(color, *objects[wpos]);
       const Tile& tile = Tile::getTile(id, true);
-      if (!connectionMap[wpos].intersection(tile.getExtraBorderIds()).isEmpty()) {
-        DirSet dirs = 0;
-        for (Vec2 v : Vec2::directions4())
-          if ((wpos + v).inRectangle(levelBounds) && connectionMap[wpos + v].contains(id))
-            dirs.insert(v.getCardinalDir());
-        Vec2 pos = projectOnScreen(wpos);
-        renderer.drawTile(pos, tile.getExtraBorderCoord(dirs), layout->getSquareSize(), color);
-      }
+      for (auto& borderId : tile.getExtraBorderIds())
+        if (connectionMap[wpos].count(borderId)) {
+          DirSet dirs = 0;
+          for (Vec2 v : Vec2::directions4())
+            if ((wpos + v).inRectangle(levelBounds) && connectionMap[wpos + v].count(id))
+              dirs.insert(v.getCardinalDir());
+          Vec2 pos = projectOnScreen(wpos);
+          renderer.drawTile(pos, tile.getExtraBorderCoord(dirs), layout->getSquareSize(), color);
+          break;
+        }
     }
 }
 
@@ -917,10 +897,10 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
     case HighlightType::QUARTERS3:
     case HighlightType::LEISURE:
     case HighlightType::UNAVAILABLE:
-      renderTexturedHighlight(renderer, pos, size, color, ViewId::DIG_MARK2);
+      renderTexturedHighlight(renderer, pos, size, color, ViewId("dig_mark2"));
       break;
     default:
-      renderTexturedHighlight(renderer, pos, size, color, ViewId::DIG_MARK);
+      renderTexturedHighlight(renderer, pos, size, color, ViewId("dig_mark"));
       break;
   }
 }
@@ -954,7 +934,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
   for (Vec2 wpos : lowHighlights ? tutorialHighlightLow : tutorialHighlightHigh) {
     Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
     if ((currentTimeReal.count() / 1000) % 2 == 0)
-      renderTexturedHighlight(renderer, pos, size, Color(255, 255, 0, lowHighlights ? 120 : 80), ViewId::DIG_MARK);
+      renderTexturedHighlight(renderer, pos, size, Color(255, 255, 0, lowHighlights ? 120 : 80), ViewId("dig_mark"));
   }
 }
 
@@ -1115,7 +1095,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
 void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color, const ViewIndex& index) {
   color = blendNightColor(color, index);
   if (spriteMode)
-    renderer.drawViewObject(pos + Vec2(0, size.y / 5), ViewId::CREATURE_HIGHLIGHT, true, size, color);
+    renderer.drawViewObject(pos + Vec2(0, size.y / 5), ViewId("creature_highlight"), true, size, color);
   else
     renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::TRANSPARENT, color);
 }
@@ -1126,7 +1106,7 @@ void MapGui::drawSquareHighlight(Renderer& renderer, Vec2 pos, Vec2 size) {
     if (auto index = objects[*wpos])
       color = blendNightColor(color, *index);
   if (spriteMode)
-    renderer.drawViewObject(pos, ViewId::SQUARE_HIGHLIGHT, true, size, color);
+    renderer.drawViewObject(pos, ViewId("square_highlight"), true, size, color);
   else
     renderer.drawFilledRectangle(Rectangle(pos, pos + size), Color::TRANSPARENT, color);
 }

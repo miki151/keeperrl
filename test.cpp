@@ -49,9 +49,9 @@ class Test {
 
   void testTimeQueue() {
    /* CreatureAttributes attr = CATTR(c.name = ""; c.speed = 5; c.size = CreatureSize::SMALL; c.strength = 1; c.dexterity = 3; c.humanoid = false; c.weight = 0.1;);
-    PCreature b(new Creature(ViewObject(ViewId::JACKAL, ViewLayer::CREATURE, ""), nullptr, attr));
-    PCreature a(new Creature(ViewObject(ViewId::PLAYER, ViewLayer::CREATURE, ""), nullptr, attr));
-    PCreature c(new Creature(ViewObject(ViewId::JACKAL, ViewLayer::CREATURE, ""), nullptr, attr));
+    PCreature b(new Creature(ViewObject(ViewId("jackal"), ViewLayer::CREATURE, ""), nullptr, attr));
+    PCreature a(new Creature(ViewObject(ViewId("player"), ViewLayer::CREATURE, ""), nullptr, attr));
+    PCreature c(new Creature(ViewObject(ViewId("jackal"), ViewLayer::CREATURE, ""), nullptr, attr));
     Creature* rb = b.get(), *ra = a.get(), *rc = c.get();
     a->setTime(1);
     b->setTime(1.33);

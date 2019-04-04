@@ -5,6 +5,7 @@
 #include "task_callback.h"
 #include "inhabitants_info.h"
 #include "game_time.h"
+#include "view_id.h"
 
 struct ExternalEnemy {
   CreatureList SERIAL(creatures);

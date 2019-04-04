@@ -269,20 +269,20 @@ const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
   static EnumMap<CollectiveResourceId, ResourceInfo> resourceInfo([](CollectiveResourceId id)->ResourceInfo {
     switch (id) {
       case CollectiveResourceId::PRISONER_HEAD:
-        return { none, none, ItemType::GoldPiece{}, "", ViewId::IMPALED_HEAD, true};
+        return { none, none, ItemType::GoldPiece{}, "", ViewId("impaled_head"), true};
       case CollectiveResourceId::GOLD:
-        return {StorageId::GOLD, ItemIndex::GOLD, ItemType::GoldPiece{}, "gold", ViewId::GOLD};
+        return {StorageId::GOLD, ItemIndex::GOLD, ItemType::GoldPiece{}, "gold", ViewId("gold")};
       case CollectiveResourceId::WOOD:
-        return { StorageId::RESOURCE, ItemIndex::WOOD, ItemType::WoodPlank{}, "wood", ViewId::WOOD_PLANK,
+        return { StorageId::RESOURCE, ItemIndex::WOOD, ItemType::WoodPlank{}, "wood", ViewId("wood_plank"),
             false, TutorialHighlight::WOOD_RESOURCE};
       case CollectiveResourceId::IRON:
-        return { StorageId::RESOURCE, ItemIndex::IRON, ItemType::IronOre{}, "iron", ViewId::IRON_ROCK};
+        return { StorageId::RESOURCE, ItemIndex::IRON, ItemType::IronOre{}, "iron", ViewId("iron_rock")};
       case CollectiveResourceId::ADA:
-        return { StorageId::RESOURCE, ItemIndex::ADA, ItemType::AdaOre{}, "adamantium", ViewId::ADA_ORE};
+        return { StorageId::RESOURCE, ItemIndex::ADA, ItemType::AdaOre{}, "adamantium", ViewId("ada_ore")};
       case CollectiveResourceId::STONE:
-        return { StorageId::RESOURCE, ItemIndex::STONE, ItemType::Rock{}, "granite", ViewId::ROCK};
+        return { StorageId::RESOURCE, ItemIndex::STONE, ItemType::Rock{}, "granite", ViewId("rock")};
       case CollectiveResourceId::CORPSE:
-        return { StorageId::CORPSES, ItemIndex::REVIVABLE_CORPSE, ItemType::GoldPiece{}, "corpses", ViewId::BODY_PART, true};
+        return { StorageId::CORPSES, ItemIndex::REVIVABLE_CORPSE, ItemType::GoldPiece{}, "corpses", ViewId("body_part"), true};
     }
   });
   return resourceInfo[id];

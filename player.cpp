@@ -958,10 +958,10 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
         object.setExtendedActions(extended);
       }
     } else if (creature->isUnknownAttacker(c))
-      index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::CREATURE));
+      index.insert(ViewObject(ViewId("unknown_monster"), ViewLayer::CREATURE));
   }
   if (unknownLocations->contains(position))
-    index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::TORCH2, "Surprise"));
+    index.insert(ViewObject(ViewId("unknown_monster"), ViewLayer::TORCH2, "Surprise"));
   if (position != creature->getPosition() && creature->isAffected(LastingEffect::HALLU))
     for (auto& object : index.getAllObjects())
       object.setId(ViewObject::shuffle(object.id(), Random));
@@ -1046,7 +1046,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   if (auto usageType = getUsableUsageType()) {
     auto furniture = creature->getPosition().getFurniture(FurnitureLayer::MIDDLE);
     string question = FurnitureUsage::getUsageQuestion(*usageType, furniture->getName());
-    ViewId questionViewId = ViewId::EMPTY;
+    ViewId questionViewId = ViewId("empty");
     if (auto& obj = furniture->getViewObject())
       questionViewId = obj->id();
     info.lyingItems.push_back(getFurnitureUsageInfo(question, questionViewId));

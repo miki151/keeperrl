@@ -301,7 +301,7 @@ SGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
     lines.addSpace(legendLineHeight / 2);
     lines.addElem(gui.stack(
         gui.getListBuilder()
-            .addElem(gui.viewObject(ViewId::BOOK), 35)
+            .addElem(gui.viewObject(ViewId("book")), 35)
             .addElemAuto(gui.label("Keeperopedia", Color::WHITE))
             .buildHorizontalList(),
         gui.button(getButtonCallback(UserInputId::KEEPEROPEDIA))
@@ -803,7 +803,7 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
         gui.getListBuilder()
             .addElemAuto(gui.stack(
                  gui.setWidth(34, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
-                     gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
+                     gui.viewObject(ViewId("round_shadow"), 1, Color(255, 255, 255, 160)))))),
                  gui.setWidth(34, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5,
                      gui.viewObject(elem.viewId)))))))
             .addElemAuto(gui.rightMargin(5, gui.translate(std::move(label), Vec2(-2, 0))))
@@ -855,7 +855,7 @@ SGuiElem GuiBuilder::drawAllVillainsOverlay(const VillageInfo& info) {
     lines.addElem(gui.stack(
         gui.getListBuilder()
             .addElemAuto(gui.setWidth(34, gui.centerVert(gui.centerHoriz(gui.stack(
-                 gui.bottomMargin(-3, gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160))),
+                 gui.bottomMargin(-3, gui.viewObject(ViewId("round_shadow"), 1, Color(255, 255, 255, 160))),
                  gui.bottomMargin(5, gui.viewObject(elem.viewId))
             )))))
             .addElemAuto(gui.rightMargin(5, gui.translate(gui.renderInBounds(std::move(label)), Vec2(0, 0))))
@@ -908,7 +908,7 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const CollectiveInfo& info, const op
             std::move(button),
             gui.tooltip2(drawImmigrantInfo(elem), [](const Rectangle& r) { return r.topRight();}),
             gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
-                gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
+                gui.viewObject(ViewId("round_shadow"), 1, Color(255, 255, 255, 160)))))),
             gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5,
                 elem.count ? drawMinionAndLevel(elem.viewId, *elem.count, 1) : gui.viewObject(elem.viewId)))))
     )));
@@ -945,10 +945,10 @@ SGuiElem GuiBuilder::drawImmigrationHelp(const CollectiveInfo& info) {
     if (elem.autoState)
       switch (*elem.autoState) {
         case ImmigrantAutoState::AUTO_ACCEPT:
-          icon = gui.stack(std::move(icon), gui.viewObject(ViewId::ACCEPT_IMMIGRANT, iconScale));
+          icon = gui.stack(std::move(icon), gui.viewObject(ViewId("accept_immigrant"), iconScale));
           break;
         case ImmigrantAutoState::AUTO_REJECT:
-          icon = gui.stack(std::move(icon), gui.viewObject(ViewId::REJECT_IMMIGRANT, iconScale));
+          icon = gui.stack(std::move(icon), gui.viewObject(ViewId("reject_immigrant"), iconScale));
           break;
       }
     line.addElem(gui.stack(makeVec(
@@ -956,7 +956,7 @@ SGuiElem GuiBuilder::drawImmigrationHelp(const CollectiveInfo& info) {
         gui.buttonRightClick(getButtonCallback({UserInputId::IMMIGRANT_AUTO_REJECT, elem.id})),
         gui.tooltip2(drawImmigrantInfo(elem), [](const Rectangle& r) { return r.bottomLeft();}),
         gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(-3,
-            gui.viewObject(ViewId::ROUND_SHADOW, 1, Color(255, 255, 255, 160)))))),
+            gui.viewObject(ViewId("round_shadow"), 1, Color(255, 255, 255, 160)))))),
         gui.setWidth(elemWidth, gui.centerVert(gui.centerHoriz(gui.bottomMargin(5, std::move(icon))))))));
     if (line.getLength() >= numPerLine) {
       lines.addElem(line.buildHorizontalList());
@@ -1097,12 +1097,12 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   GuiFactory::ListBuilder line(gui);
   int leftMargin = -4;
   if (item.locked) {
-    line.addElem(gui.viewObject(ViewId::KEY), viewObjectWidth);
+    line.addElem(gui.viewObject(ViewId("key")), viewObjectWidth);
     leftMargin -= viewObjectWidth - 3;
   }
   auto viewId = gui.viewObject(item.viewId);
   if (item.viewIdModifiers.contains(ViewObjectModifier::AURA))
-    viewId = gui.stack(std::move(viewId), gui.viewObject(ViewId::ITEM_AURA));
+    viewId = gui.stack(std::move(viewId), gui.viewObject(ViewId("item_aura")));
   line.addElem(std::move(viewId), viewObjectWidth);
   Color color = item.equiped ? Color::GREEN : (item.pending || item.unavailable) ?
       Color::GRAY : Color::WHITE;
@@ -1551,7 +1551,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
     list.addElem(gui.label("Click on debt or on individual items to pay.", Renderer::smallTextSize,
         Color::LIGHT_GRAY), legendLineHeight * 2 / 3);
     list.addElem(gui.stack(
-        drawCost({ViewId::GOLD, info.debt}),
+        drawCost({ViewId("gold"), info.debt}),
         gui.button(getButtonCallback(UserInputId::PAY_DEBT))));
     list.addSpace();
   }
@@ -2656,7 +2656,7 @@ static map<ViewId, vector<PlayerInfo>> groupByViewId(const vector<PlayerInfo>& m
 SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, UniqueEntity<Creature>::Id current,
     optional<TeamId> teamId) {
   CHECK(!minions.empty());
-  map<ViewId, vector<PlayerInfo>> minionMap = groupByViewId(minions);
+  auto minionMap = groupByViewId(minions);
   auto selectButton = [this](UniqueEntity<Creature>::Id creatureId) {
     return gui.releaseLeftButton(getButtonCallback({UserInputId::CREATURE_BUTTON, creatureId}));
   };
@@ -3049,9 +3049,9 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
         if (i == 0)
           v.push_back(gui.viewObject(sites[x][y].viewId[i], iconScale));
         else {
-          if (sites[x][y].viewId[i] == ViewId::CANIF_TREE || sites[x][y].viewId[i] == ViewId::DECID_TREE)
+          if (sites[x][y].viewId[i] == ViewId("canif_tree") || sites[x][y].viewId[i] == ViewId("decid_tree"))
             v.push_back(gui.topMargin(1 * iconScale,
-                  gui.viewObject(ViewId::ROUND_SHADOW, iconScale, Color(255, 255, 255, 160))));
+                  gui.viewObject(ViewId("round_shadow"), iconScale, Color(255, 255, 255, 160))));
           v.push_back(gui.topMargin(-2 * iconScale, gui.viewObject(sites[x][y].viewId[i], iconScale)));
         }
       }
@@ -3064,29 +3064,29 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
       if (auto id = sites[x][y].getDwellerViewId()) {
         elem.push_back(gui.asciiBackground(*id));
         if (c.getPlayerPos() && c.isInInfluence(pos))
-          elem.push_back(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale,
+          elem.push_back(gui.viewObject(ViewId("square_highlight"), iconScale,
               getHighlightColor(*sites[pos].getVillainType())));
         if (c.getPlayerPos() == pos && (!marked || !*marked)) // hacky way of checking this is adventurer embark position
-          elem.push_back(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale));
+          elem.push_back(gui.viewObject(ViewId("square_highlight"), iconScale));
         if (activeFun(pos))
           elem.push_back(gui.stack(
                 gui.button([pos, clickFun] { clickFun(pos); }),
-                gui.mouseHighlight2(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale))));
+                gui.mouseHighlight2(gui.viewObject(ViewId("square_highlight"), iconScale))));
         elem.push_back(gui.topMargin(1 * iconScale,
-              gui.viewObject(ViewId::ROUND_SHADOW, iconScale, Color(255, 255, 255, 160))));
+              gui.viewObject(ViewId("round_shadow"), iconScale, Color(255, 255, 255, 160))));
         if (marked)
-          elem.push_back(gui.conditional(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale),
+          elem.push_back(gui.conditional(gui.viewObject(ViewId("square_highlight"), iconScale),
                 [marked, pos] { return *marked == pos;}));
         elem.push_back(gui.topMargin(-2 * iconScale, gui.viewObject(*id, iconScale)));
         if (c.isDefeated(pos))
-          elem.push_back(gui.viewObject(ViewId::CAMPAIGN_DEFEATED, iconScale));
+          elem.push_back(gui.viewObject(ViewId("campaign_defeated"), iconScale));
       } else {
         if (activeFun(pos))
           elem.push_back(gui.stack(
                 gui.button([pos, clickFun] { clickFun(pos); }),
-                gui.mouseHighlight2(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale))));
+                gui.mouseHighlight2(gui.viewObject(ViewId("square_highlight"), iconScale))));
         if (marked)
-          elem.push_back(gui.conditional(gui.viewObject(ViewId::SQUARE_HIGHLIGHT, iconScale),
+          elem.push_back(gui.conditional(gui.viewObject(ViewId("square_highlight"), iconScale),
                 [marked, pos] { return *marked == pos;}));
       }
       if (auto desc = sites[x][y].getDwellerDescription())

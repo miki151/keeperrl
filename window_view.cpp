@@ -779,7 +779,7 @@ optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, Table<PassableInfo> pass
             color = Color::ORANGE;
           Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(), pw.x, pw.y);
           if (currentTileLayout.sprites) {
-            renderer.drawViewObject(wpos, ViewId::DIG_MARK, true, mapLayout->getSquareSize(), color);
+            renderer.drawViewObject(wpos, ViewId("dig_mark"), true, mapLayout->getSquareSize(), color);
           } else {
             renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, color,
                 wpos + Vec2(mapLayout->getSquareSize().x / 2, 0), "0", Renderer::HOR);

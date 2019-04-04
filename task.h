@@ -21,6 +21,7 @@
 #include "position.h"
 #include "destroy_action.h"
 #include "game_time.h"
+#include "view_id.h"
 
 class TaskCallback;
 class CreatureGroup;

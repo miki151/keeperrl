@@ -73,8 +73,7 @@ enum class SettlementType;
 enum class VillainType;
 enum class BiomeId;
 enum class ZoneId;
-enum class ViewId : std::uint16_t;
-
+class ViewId;
 enum class AnimationId;
 
 enum class SkillId;

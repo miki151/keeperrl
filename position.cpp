@@ -395,7 +395,7 @@ void Position::getViewIndex(ViewIndex& index, const Creature* viewer) const {
         index.insert(std::move(obj));
       }
     if (index.noObjects())
-      index.insert(ViewObject(ViewId::EMPTY, ViewLayer::FLOOR_BACKGROUND));
+      index.insert(ViewObject(ViewId("empty"), ViewLayer::FLOOR_BACKGROUND));
   }
 }
 
@@ -723,7 +723,7 @@ ViewId Position::getTopViewId() const {
     if (auto furniture = getFurniture(layer))
       if (auto& obj = furniture->getViewObject())
         return obj->id();
-  return ViewId::EMPTY;
+  return ViewId("empty");
 }
 
 void Position::forbidMovementForTribe(TribeId t) {

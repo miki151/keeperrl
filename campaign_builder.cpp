@@ -199,7 +199,7 @@ void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewId playerVi
 static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, Vec2 size, int numBlocked) {
   Table<Campaign::SiteInfo> ret(size, {});
   for (Vec2 v : ret.getBounds())
-    ret[v].viewId.push_back(ViewId::GRASS);
+    ret[v].viewId.push_back(ViewId("grass"));
   vector<Vec2> freePos = ret.getBounds().getAllSquares();
   for (int i : Range(numBlocked)) {
     Vec2 pos = random.choose(freePos);

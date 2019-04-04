@@ -15,9 +15,9 @@ optional<int> Quarters::getAssigned(UniqueEntity<Creature>::Id id) const {
 }
 
 const static vector<Quarters::QuartersInfo> allQuarters {
-  { ZoneId::QUARTERS1, ViewId::QUARTERS1 },
-  { ZoneId::QUARTERS2, ViewId::QUARTERS2 },
-  { ZoneId::QUARTERS3, ViewId::QUARTERS3 },
+  { ZoneId::QUARTERS1, ViewId("quarters1") },
+  { ZoneId::QUARTERS2, ViewId("quarters2") },
+  { ZoneId::QUARTERS3, ViewId("quarters3") },
 };
 
 const vector<Quarters::QuartersInfo>& Quarters::getAllQuarters() {

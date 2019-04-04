@@ -508,15 +508,15 @@ static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pendi
 
 static ViewId getSlotViewId(EquipmentSlot slot) {
   switch (slot) {
-    case EquipmentSlot::BOOTS: return ViewId::LEATHER_BOOTS;
-    case EquipmentSlot::WEAPON: return ViewId::SWORD;
-    case EquipmentSlot::RINGS: return ViewId::FIRE_RESIST_RING;
-    case EquipmentSlot::HELMET: return ViewId::LEATHER_HELM;
-    case EquipmentSlot::RANGED_WEAPON: return ViewId::BOW;
-    case EquipmentSlot::GLOVES: return ViewId::LEATHER_GLOVES;
-    case EquipmentSlot::BODY_ARMOR: return ViewId::LEATHER_ARMOR;
-    case EquipmentSlot::AMULET: return ViewId::AMULET1;
-    case EquipmentSlot::SHIELD: return ViewId::WOODEN_SHIELD;
+    case EquipmentSlot::BOOTS: return ViewId("leather_boots");
+    case EquipmentSlot::WEAPON: return ViewId("sword");
+    case EquipmentSlot::RINGS: return ViewId("fire_resist_ring");
+    case EquipmentSlot::HELMET: return ViewId("leather_helm");
+    case EquipmentSlot::RANGED_WEAPON: return ViewId("bow");
+    case EquipmentSlot::GLOVES: return ViewId("leather_gloves");
+    case EquipmentSlot::BODY_ARMOR: return ViewId("leather_armor");
+    case EquipmentSlot::AMULET: return ViewId("amulet1");
+    case EquipmentSlot::SHIELD: return ViewId("wooden_shield");
   }
 }
 
@@ -535,7 +535,7 @@ static ItemInfo getEmptySlotItem(EquipmentSlot slot) {
 static ItemInfo getTradeItemInfo(const vector<Item*>& stack, int budget) {
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(nullptr, stack.size() > 1);
-    c.price = make_pair(ViewId::GOLD, stack[0]->getPrice());
+    c.price = make_pair(ViewId("gold"), stack[0]->getPrice());
     c.fullName = stack[0]->getNameAndModifiers(false);
     c.description = stack[0]->getDescription();
     c.number = stack.size();
@@ -690,26 +690,26 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
                  CollectiveInfo::Button::GRAY_CLICKABLE : CollectiveInfo::Button::ACTIVE });
           },
         [&](const BuildInfo::Dig&) {
-          buttons.push_back({ViewId::DIG_ICON, button.name, none, "", CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({ViewId("dig_icon"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](ZoneId zone) {
           buttons.push_back({getViewId(zone), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](BuildInfo::ClaimTile) {
-          buttons.push_back({ViewId::KEEPER_FLOOR, button.name, none, "", CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({ViewId("keeper_floor"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](BuildInfo::Dispatch) {
-          buttons.push_back({ViewId::IMP, button.name, none, "", CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({ViewId("imp"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](const BuildInfo::Trap& elem) {
           buttons.push_back({elem.viewId, button.name, none});
         },
         [&](const BuildInfo::DestroyLayers&) {
-           buttons.push_back({ViewId::DESTROY_BUTTON, button.name, none, "",
+           buttons.push_back({ViewId("destroy_button"), button.name, none, "",
                CollectiveInfo::Button::ACTIVE});
         },
         [&](BuildInfo::ForbidZone) {
-          buttons.push_back({ViewId::FORBID_ZONE, button.name, none, "", CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({ViewId("forbid_zone"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         }
     );
     vector<string> unmetReqText;
@@ -813,7 +813,7 @@ void PlayerControl::handleTrading(WCollective ally) {
     vector<ItemInfo> itemInfo = items.transform(
         [budget] (const vector<Item*>& it) { return getTradeItemInfo(it, budget); });
     auto index = getView()->chooseTradeItem("Trade with " + ally->getName()->full,
-        {ViewId::GOLD, collective->numResource(ResourceId::GOLD)}, itemInfo, &scrollPos);
+        {ViewId("gold"), collective->numResource(ResourceId::GOLD)}, itemInfo, &scrollPos);
     if (!index)
       break;
     for (Item* it : available)
@@ -920,7 +920,7 @@ string PlayerControl::getMinionGroupName(Creature* c) const {
 
 ViewId PlayerControl::getMinionGroupViewId(Creature* c) const {
   if (collective->hasTrait(c, MinionTrait::PRISONER)) {
-    return ViewId::PRISONER;
+    return ViewId("prisoner");
   } else
     return c->getViewObject().id();
 }
@@ -1385,7 +1385,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
       {},
       none,
       "prisoner",
-      ViewId::PRISONER,
+      ViewId("prisoner"),
       {},
       0,
       none,
@@ -1496,7 +1496,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     info.taskMap.push_back(CollectiveInfo::Task{task->getDescription(), creature, collective->getTaskMap().isPriorityTask(task)});
   }
   for (auto& elem : ransomAttacks) {
-    info.ransom = CollectiveInfo::Ransom {make_pair(ViewId::GOLD, *elem.getRansom()), elem.getAttackerName(),
+    info.ransom = CollectiveInfo::Ransom {make_pair(ViewId("gold"), *elem.getRansom()), elem.getAttackerName(),
         collective->hasResource({ResourceId::GOLD, *elem.getRansom()})};
     break;
   }
@@ -1510,7 +1510,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
         auto viewId = nextWave->viewId;
         if (index % 6 == 5) {
           name = "Unknown";
-          viewId = ViewId::UNKNOWN_MONSTER;
+          viewId = ViewId("unknown_monster");
         }
         if (!dismissedNextWaves.count(index) && countDown < maxEnemyCountdown)
           info.nextWave = CollectiveInfo::NextWave {
@@ -1688,7 +1688,7 @@ ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) const {
           return ViewObject(trap->viewId, ViewLayer::FLOOR, getTrapName(type) + " trap");
       }
   FATAL << "trap not found" << int(type);
-  return ViewObject(ViewId::EMPTY, ViewLayer::FLOOR);
+  return ViewObject(ViewId("empty"), ViewLayer::FLOOR);
 }
 
 void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& index) const {
@@ -1781,7 +1781,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       if (!f->isBuilt(position))
         index.insert(getConstructionObject(f->getFurnitureType()));
   if (unknownLocations->contains(position))
-    index.insert(ViewObject(ViewId::UNKNOWN_MONSTER, ViewLayer::TORCH2, "Surprise"));
+    index.insert(ViewObject(ViewId("unknown_monster"), ViewLayer::TORCH2, "Surprise"));
 }
 
 Vec2 PlayerControl::getScrollCoord() const {
@@ -1952,7 +1952,7 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
         }
       }
     PTask task = Task::goToAndWait(pos, 15_visible);
-    task->setViewId(ViewId::GUARD_POST);
+    task->setViewId(ViewId("guard_post"));
     collective->setTask(c, std::move(task));
     pos.setNeedsRenderUpdate(true);
   }
@@ -2011,7 +2011,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           c->removeEffect(LastingEffect::TIED_UP);
           c->removeEffect(LastingEffect::SLEEP);
           PTask task = Task::goToAndWait(pos, 15_visible);
-          task->setViewId(ViewId::GUARD_POST);
+          task->setViewId(ViewId("guard_post"));
           collective->setTask(c, std::move(task));
           pos.setNeedsRenderUpdate(true);
         }
@@ -2829,8 +2829,8 @@ PController PlayerControl::createMinionController(Creature* c) {
 }
 
 static void considerAddingKeeperFloor(Position pos) {
-  if (NOTNULL(pos.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId::FLOOR)
-    pos.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId::KEEPER_FLOOR);
+  if (NOTNULL(pos.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId("floor"))
+    pos.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId("keeper_floor"));
 }
 
 void PlayerControl::onClaimedSquare(Position position) {

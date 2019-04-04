@@ -117,10 +117,10 @@ class BoulderController : public Monster {
 };
 
 PCreature CreatureFactory::getRollingBoulder(TribeId tribe, Vec2 direction) {
-  ViewObject viewObject(ViewId::BOULDER, ViewLayer::CREATURE);
+  ViewObject viewObject(ViewId("boulder"), ViewLayer::CREATURE);
   viewObject.setModifier(ViewObjectModifier::NO_UP_MOVEMENT);
   auto ret = makeOwner<Creature>(viewObject, tribe, CATTR(
-            c.viewId = ViewId::BOULDER;
+            c.viewId = ViewId("boulder");
             c.attr[AttrType::DAMAGE] = 250;
             c.attr[AttrType::DEFENSE] = 250;
             c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE);
@@ -149,10 +149,10 @@ class SokobanController : public Monster {
 };
 
 PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
-  ViewObject viewObject(ViewId::BOULDER, ViewLayer::CREATURE);
+  ViewObject viewObject(ViewId("boulder"), ViewLayer::CREATURE);
   viewObject.setModifier(ViewObjectModifier::NO_UP_MOVEMENT).setModifier(ViewObjectModifier::REMEMBER);
   auto ret = makeOwner<Creature>(viewObject, tribe, CATTR(
-            c.viewId = ViewId::BOULDER;
+            c.viewId = ViewId("boulder");
             c.attr[AttrType::DAMAGE] = 250;
             c.attr[AttrType::DEFENSE] = 250;
             c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE);
@@ -362,7 +362,7 @@ class KrakenController : public Monster {
       if (!moves.empty()) {
         Vec2 move = Random.choose(moves);
         ViewId viewId = creature->getPosition().plus(move).canEnter({MovementTrait::SWIM})
-          ? ViewId::KRAKEN_WATER : ViewId::KRAKEN_LAND;
+          ? ViewId("kraken_water") : ViewId("kraken_land");
         auto spawn = makeOwner<Creature>(creature->getTribeId(),
             CreatureFactory::getKrakenAttributes(viewId, "kraken tentacle"), SpellMap{});
         spawn->setController(makeOwner<KrakenController>(spawn.get(), getThis().dynamicCast<KrakenController>(),
@@ -564,7 +564,7 @@ PCreature CreatureFactory::getIllusion(Creature* creature) {
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Illusion");
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
   auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), CATTR(
-          c.viewId = ViewId::ROCK; //overriden anyway
+          c.viewId = ViewId("rock"); //overriden anyway
           c.illusionViewObject = creature->getViewObject();
           c.illusionViewObject->setModifier(ViewObject::Modifier::INVISIBLE, false);
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
@@ -595,22 +595,22 @@ PCreature CreatureFactory::get(CreatureAttributes attr, TribeId tribe, const Con
 
 static ViewId getSpecialViewId(bool humanoid, bool large, bool body, bool wings) {
   static vector<ViewId> specialViewIds {
-    ViewId::SPECIAL_BLBN,
-    ViewId::SPECIAL_BLBW,
-    ViewId::SPECIAL_BLGN,
-    ViewId::SPECIAL_BLGW,
-    ViewId::SPECIAL_BMBN,
-    ViewId::SPECIAL_BMBW,
-    ViewId::SPECIAL_BMGN,
-    ViewId::SPECIAL_BMGW,
-    ViewId::SPECIAL_HLBN,
-    ViewId::SPECIAL_HLBW,
-    ViewId::SPECIAL_HLGN,
-    ViewId::SPECIAL_HLGW,
-    ViewId::SPECIAL_HMBN,
-    ViewId::SPECIAL_HMBW,
-    ViewId::SPECIAL_HMGN,
-    ViewId::SPECIAL_HMGW,
+    ViewId("special_blbn"),
+    ViewId("special_blbw"),
+    ViewId("special_blgn"),
+    ViewId("special_blgw"),
+    ViewId("special_bmbn"),
+    ViewId("special_bmbw"),
+    ViewId("special_bmgn"),
+    ViewId("special_bmgw"),
+    ViewId("special_hlbn"),
+    ViewId("special_hlbw"),
+    ViewId("special_hlgn"),
+    ViewId("special_hlgw"),
+    ViewId("special_hmbn"),
+    ViewId("special_hmbw"),
+    ViewId("special_hmgn"),
+    ViewId("special_hmgw"),
   };
   return specialViewIds[humanoid * 8 + (!large) * 4 + (!body) * 2 + wings];
 }
@@ -774,7 +774,7 @@ CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
     ret->name.generateFirst(&*nameGenerator);
     return std::move(*ret);
   } else if (id == "KRAKEN")
-      return getKrakenAttributes(ViewId::KRAKEN_HEAD, "kraken");
+      return getKrakenAttributes(ViewId("kraken_head"), "kraken");
   FATAL << "Unrecognized creature type: \"" << id << "\"";
   fail();
 }
@@ -876,12 +876,12 @@ PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFacto
 
 PCreature CreatureFactory::getHumanForTests() {
   auto attributes = CATTR(
-      c.viewId = ViewId::KEEPER1;
+      c.viewId = ViewId("keeper1");
       c.attr[AttrType::DAMAGE] = 12;
       c.attr[AttrType::DEFENSE] = 12;
       c.body = Body::humanoid(Body::Size::LARGE);
       c.name = "wizard";
-      c.viewIdUpgrades = LIST(ViewId::KEEPER2, ViewId::KEEPER3, ViewId::KEEPER4);
+      c.viewIdUpgrades = LIST(ViewId("keeper2"), ViewId("keeper3"), ViewId("keeper4"));
       c.name.setFirst("keeper");
       c.name.useFullTitle();
       c.skills.setValue(SkillId::LABORATORY, 0.2);

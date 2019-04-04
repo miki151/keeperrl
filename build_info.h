@@ -6,6 +6,7 @@
 #include "enum_variant.h"
 #include "zones.h"
 #include "avatar_info.h"
+#include "view_id.h"
 
 struct BuildInfo {
   struct Furniture {

@@ -29,27 +29,27 @@ ItemType::ItemType(ItemType&) = default;
 ItemType::ItemType(ItemType&&) = default;
 
 ItemType ItemType::touch(Effect victimEffect, vector<Effect> attackerEffect) {
-  return ItemType::Intrinsic{ViewId::TOUCH_ATTACK, "touch", 0,
+  return ItemType::Intrinsic{ViewId("touch_attack"), "touch", 0,
       WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {victimEffect}, attackerEffect, AttackMsg::TOUCH}};
 }
 
 ItemType ItemType::legs(int damage) {
-  return ItemType::Intrinsic{ViewId::LEG_ATTACK, "legs", damage,
+  return ItemType::Intrinsic{ViewId("leg_attack"), "legs", damage,
         WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::KICK}};
 }
 
 ItemType ItemType::claws(int damage) {
-  return ItemType::Intrinsic{ViewId::CLAWS_ATTACK, "claws", damage,
+  return ItemType::Intrinsic{ViewId("claws_attack"), "claws", damage,
         WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::CLAW}};
 }
 
 ItemType ItemType::beak(int damage) {
-  return ItemType::Intrinsic{ViewId::BEAK_ATTACK, "beak", damage,
+  return ItemType::Intrinsic{ViewId("beak_attack"), "beak", damage,
         WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::BITE}};
 }
 
 static ItemType fistsBase(int damage, vector<Effect> effect) {
-  return ItemType::Intrinsic{ViewId::FIST_ATTACK, "fists", damage,
+  return ItemType::Intrinsic{ViewId("fist_attack"), "fists", damage,
         WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, effect, {}, AttackMsg::SWING}};
 }
 
@@ -62,7 +62,7 @@ ItemType ItemType::fists(int damage, Effect effect) {
 }
 
 static ItemType fangsBase(int damage, vector<Effect> effect) {
-  return ItemType::Intrinsic{ViewId::BITE_ATTACK, "fangs", damage,
+  return ItemType::Intrinsic{ViewId("bite_attack"), "fangs", damage,
       WeaponInfo{false, AttackType::BITE, AttrType::DAMAGE, effect, {}, AttackMsg::BITE}};
 }
 
@@ -75,7 +75,7 @@ ItemType ItemType::fangs(int damage, Effect effect) {
 }
 
 ItemType ItemType::spellHit(int damage) {
-  return ItemType::Intrinsic{ViewId::FIST_ATTACK, "spell", damage,
+  return ItemType::Intrinsic{ViewId("fist_attack"), "spell", damage,
       WeaponInfo{false, AttackType::HIT, AttrType::SPELL_DAMAGE, {}, {}, AttackMsg::SPELL}};
 }
 
@@ -174,9 +174,9 @@ PItem ItemFactory::corpse(const string& name, const string& rottenName, double w
     ItemClass itemClass, CorpseInfo corpseInfo) {
   const auto rotTime = 300_visible;
   return makeOwner<Corpse>(
-        ViewObject(ViewId::BONE, ViewLayer::ITEM, rottenName),
+        ViewObject(ViewId("bone"), ViewLayer::ITEM, rottenName),
         ITATTR(
-          i.viewId = ViewId::BODY_PART;
+          i.viewId = ViewId("body_part");
           i.name = name;
           i.shortName = name;
           i.itemClass = itemClass;
@@ -323,17 +323,17 @@ static int getEffectPrice(Effect type) {
 
 ViewId getRingViewId(LastingEffect e) {
   switch (e) {
-    case LastingEffect::FIRE_RESISTANT: return ViewId::FIRE_RESIST_RING;
-    case LastingEffect::POISON_RESISTANT: return ViewId::POISON_RESIST_RING;
-    default: return ViewId::FIRE_RESIST_RING;
+    case LastingEffect::FIRE_RESISTANT: return ViewId("fire_resist_ring");
+    case LastingEffect::POISON_RESISTANT: return ViewId("poison_resist_ring");
+    default: return ViewId("fire_resist_ring");
   }
 }
 
 ViewId getAmuletViewId(LastingEffect e) {
   switch (e) {
-    case LastingEffect::REGENERATION: return ViewId::AMULET1;
-    case LastingEffect::WARNING: return ViewId::AMULET2;
-    default: return ViewId::AMULET3;
+    case LastingEffect::REGENERATION: return ViewId("amulet1");
+    case LastingEffect::WARNING: return ViewId("amulet2");
+    default: return ViewId("amulet3");
   }
 }
 
@@ -374,7 +374,7 @@ vector<PItem> ItemType::get(int num) const {
 
 ItemAttributes ItemType::AutomatonItem::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::TRAP_ITEM;
+      i.viewId = ViewId("trap_item");
       i.name = "automaton";
       i.applyMsgFirstPerson = "assemble the automaton"_s;
       i.applyMsgThirdPerson = "assembles an automaton"_s;
@@ -390,7 +390,7 @@ ItemAttributes ItemType::AutomatonItem::getAttributes() const {
 
 ItemAttributes ItemType::Knife::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::KNIFE;
+      i.viewId = ViewId("knife");
       i.name = "knife";
       i.plural = "knives"_s;
       i.itemClass = ItemClass::WEAPON;
@@ -423,7 +423,7 @@ ItemAttributes ItemType::Intrinsic::getAttributes() const {
 
 ItemAttributes ItemType::UnicornHorn::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::KNIFE;
+      i.viewId = ViewId("knife");
       i.name = "horn";
       i.plural = "horn"_s;
       i.itemClass = ItemClass::WEAPON;
@@ -439,7 +439,7 @@ ItemAttributes ItemType::UnicornHorn::getAttributes() const {
 
 ItemAttributes ItemType::Spear::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::SPEAR;
+      i.viewId = ViewId("spear");
       i.name = "spear";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
@@ -453,7 +453,7 @@ ItemAttributes ItemType::Spear::getAttributes() const {
 
 ItemAttributes ItemType::Sword::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::SWORD;
+      i.viewId = ViewId("sword");
       i.name = "sword";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
@@ -474,7 +474,7 @@ ItemAttributes ItemType::Sword::getAttributes() const {
 
 ItemAttributes ItemType::AdaSword::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::ADA_SWORD;
+      i.viewId = ViewId("ada_sword");
       i.name = "adamantine sword";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
@@ -491,7 +491,7 @@ ItemAttributes ItemType::AdaSword::getAttributes() const {
 
 ItemAttributes ItemType::ElvenSword::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::ELVEN_SWORD;
+      i.viewId = ViewId("elven_sword");
       i.name = "elven sword";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
@@ -505,7 +505,7 @@ ItemAttributes ItemType::ElvenSword::getAttributes() const {
 
 ItemAttributes ItemType::BattleAxe::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::BATTLE_AXE;
+      i.viewId = ViewId("battle_axe");
       i.name = "battle axe";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
@@ -522,7 +522,7 @@ ItemAttributes ItemType::BattleAxe::getAttributes() const {
 
 ItemAttributes ItemType::AdaBattleAxe::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::ADA_BATTLE_AXE;
+      i.viewId = ViewId("ada_battle_axe");
       i.shortName = "adamantine"_s;
       i.name = "adamantine battle axe";
       i.itemClass = ItemClass::WEAPON;
@@ -539,7 +539,7 @@ ItemAttributes ItemType::AdaBattleAxe::getAttributes() const {
 
 ItemAttributes ItemType::WarHammer::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::WAR_HAMMER;
+      i.viewId = ViewId("war_hammer");
       i.name = "war hammer";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
@@ -555,7 +555,7 @@ ItemAttributes ItemType::WarHammer::getAttributes() const {
 
 ItemAttributes ItemType::AdaWarHammer::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::ADA_WAR_HAMMER;
+      i.viewId = ViewId("ada_war_hammer");
       i.name = "adamantine war hammer";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
@@ -571,7 +571,7 @@ ItemAttributes ItemType::AdaWarHammer::getAttributes() const {
 
 ItemAttributes ItemType::Club::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::CLUB;
+      i.viewId = ViewId("club");
       i.name = "club";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
@@ -585,7 +585,7 @@ ItemAttributes ItemType::Club::getAttributes() const {
 
 ItemAttributes ItemType::HeavyClub::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::HEAVY_CLUB;
+      i.viewId = ViewId("heavy_club");
       i.name = "heavy club";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
@@ -600,7 +600,7 @@ ItemAttributes ItemType::HeavyClub::getAttributes() const {
 
 ItemAttributes ItemType::WoodenStaff::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::WOODEN_STAFF;
+      i.viewId = ViewId("wooden_staff");
       i.name = "wooden staff";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
@@ -617,7 +617,7 @@ ItemAttributes ItemType::WoodenStaff::getAttributes() const {
 
 ItemAttributes ItemType::IronStaff::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::IRON_STAFF;
+      i.viewId = ViewId("iron_staff");
       i.name = "iron staff";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
@@ -639,7 +639,7 @@ ItemAttributes ItemType::IronStaff::getAttributes() const {
 
 ItemAttributes ItemType::GoldenStaff::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::GOLDEN_STAFF;
+      i.viewId = ViewId("golden_staff");
       i.name = "golden staff";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
@@ -658,7 +658,7 @@ ItemAttributes ItemType::GoldenStaff::getAttributes() const {
 
 ItemAttributes ItemType::Scythe::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::SWORD;
+      i.viewId = ViewId("sword");
       i.name = "scythe";
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
@@ -672,10 +672,10 @@ ItemAttributes ItemType::Scythe::getAttributes() const {
 
 ItemAttributes ItemType::ElvenBow::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::ELVEN_BOW;
+      i.viewId = ViewId("elven_bow");
       i.itemClass = ItemClass::RANGED_WEAPON;
       i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
-      i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW, 12);
+      i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId("arrow"), 12);
       i.weaponInfo.twoHanded = true;
       i.weight = 1;
       i.modifiers[AttrType::RANGED_DAMAGE] = 16;
@@ -686,11 +686,11 @@ ItemAttributes ItemType::ElvenBow::getAttributes() const {
 
 ItemAttributes ItemType::Bow::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::BOW;
+      i.viewId = ViewId("bow");
       i.name = "short bow";
       i.itemClass = ItemClass::RANGED_WEAPON;
       i.equipmentSlot = EquipmentSlot::RANGED_WEAPON;
-      i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId::ARROW, 10);
+      i.rangedWeapon = RangedWeapon(AttrType::RANGED_DAMAGE, "arrow", ViewId("arrow"), 10);
       i.weaponInfo.twoHanded = true;
       i.weight = 1;
       i.modifiers[AttrType::RANGED_DAMAGE] = 10 + maybePlusMinusOne(4);
@@ -700,7 +700,7 @@ ItemAttributes ItemType::Bow::getAttributes() const {
 
 ItemAttributes ItemType::Torch::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::HAND_TORCH;
+      i.viewId = ViewId("hand_torch");
       i.itemClass = ItemClass::TOOL;
       i.weight = 1;
       i.ownedEffect = LastingEffect::LIGHT_SOURCE;
@@ -712,7 +712,7 @@ ItemAttributes ItemType::Torch::getAttributes() const {
 
 ItemAttributes ItemType::Robe::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::ROBE;
+      i.viewId = ViewId("robe");
       i.name = "robe";
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::BODY_ARMOR;
@@ -725,7 +725,7 @@ ItemAttributes ItemType::Robe::getAttributes() const {
 
 ItemAttributes ItemType::HalloweenCostume::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::HALLOWEEN_COSTUME;
+      i.viewId = ViewId("halloween_costume");
       i.name = "halloween costume";
       i.shortName = "halloween costume"_s;
       i.itemClass = ItemClass::ARMOR;
@@ -738,7 +738,7 @@ ItemAttributes ItemType::HalloweenCostume::getAttributes() const {
 
 ItemAttributes ItemType::BagOfCandies::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::BAG_OF_CANDY;
+      i.viewId = ViewId("bag_of_candy");
       i.shortName = "candies"_s;
       i.name = "bag of candies";
       i.blindName = "bag"_s;
@@ -753,7 +753,7 @@ ItemAttributes ItemType::BagOfCandies::getAttributes() const {
 
 ItemAttributes ItemType::LeatherGloves::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::LEATHER_GLOVES;
+      i.viewId = ViewId("leather_gloves");
       i.shortName = "gloves"_s;
       i.name = "pair of leather gloves";
       i.itemClass = ItemClass::ARMOR;
@@ -767,7 +767,7 @@ ItemAttributes ItemType::LeatherGloves::getAttributes() const {
 
 ItemAttributes ItemType::IronGloves::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::IRON_GLOVES;
+      i.viewId = ViewId("iron_gloves");
       i.shortName = "gloves"_s;
       i.name = "pair of iron gloves";
       i.itemClass = ItemClass::ARMOR;
@@ -783,7 +783,7 @@ ItemAttributes ItemType::IronGloves::getAttributes() const {
 
 ItemAttributes ItemType::AdaGloves::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::ADA_GLOVES;
+      i.viewId = ViewId("ada_gloves");
       i.shortName = "gloves"_s;
       i.name = "pair of adamantine gloves";
       i.itemClass = ItemClass::ARMOR;
@@ -799,7 +799,7 @@ ItemAttributes ItemType::AdaGloves::getAttributes() const {
 
 ItemAttributes ItemType::LeatherArmor::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::LEATHER_ARMOR;
+      i.viewId = ViewId("leather_armor");
       i.shortName = "armor"_s;
       i.name = "leather armor";
       i.itemClass = ItemClass::ARMOR;
@@ -814,7 +814,7 @@ ItemAttributes ItemType::LeatherArmor::getAttributes() const {
 
 ItemAttributes ItemType::LeatherHelm::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::LEATHER_HELM;
+      i.viewId = ViewId("leather_helm");
       i.shortName = "helm"_s;
       i.name = "leather helm";
       i.itemClass = ItemClass::ARMOR;
@@ -831,7 +831,7 @@ ItemAttributes ItemType::LeatherHelm::getAttributes() const {
 
 ItemAttributes ItemType::WoodenShield::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::WOODEN_SHIELD;
+      i.viewId = ViewId("wooden_shield");
       i.shortName = "wooden"_s;
       i.name = "wooden shield";
       i.itemClass = ItemClass::ARMOR;
@@ -845,7 +845,7 @@ ItemAttributes ItemType::WoodenShield::getAttributes() const {
 
 ItemAttributes ItemType::ChainArmor::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::CHAIN_ARMOR;
+      i.viewId = ViewId("chain_armor");
       i.shortName = "armor"_s;
       i.name = "chain armor";
       i.itemClass = ItemClass::ARMOR;
@@ -860,7 +860,7 @@ ItemAttributes ItemType::ChainArmor::getAttributes() const {
 
 ItemAttributes ItemType::AdaArmor::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::ADA_ARMOR;
+      i.viewId = ViewId("ada_armor");
       i.shortName = "armor"_s;
       i.name = "adamantine armor";
       i.itemClass = ItemClass::ARMOR;
@@ -875,7 +875,7 @@ ItemAttributes ItemType::AdaArmor::getAttributes() const {
 
 ItemAttributes ItemType::IronHelm::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::IRON_HELM;
+      i.viewId = ViewId("iron_helm");
       i.shortName = "helm"_s;
       i.name = "iron helm";
       i.itemClass = ItemClass::ARMOR;
@@ -892,7 +892,7 @@ ItemAttributes ItemType::IronHelm::getAttributes() const {
 
 ItemAttributes ItemType::AdaHelm::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::ADA_HELM;
+      i.viewId = ViewId("ada_helm");
       i.shortName = "helm"_s;
       i.name = "adamantine helm";
       i.itemClass = ItemClass::ARMOR;
@@ -908,7 +908,7 @@ ItemAttributes ItemType::AdaHelm::getAttributes() const {
 
 ItemAttributes ItemType::LeatherBoots::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::LEATHER_BOOTS;
+      i.viewId = ViewId("leather_boots");
       i.shortName = "boots"_s;
       i.name = "pair of leather boots";
       i.plural = "pairs of leather boots"_s;
@@ -926,7 +926,7 @@ ItemAttributes ItemType::LeatherBoots::getAttributes() const {
 
 ItemAttributes ItemType::IronBoots::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::IRON_BOOTS;
+      i.viewId = ViewId("iron_boots");
       i.shortName = "boots"_s;
       i.name = "pair of iron boots";
       i.plural = "pairs of iron boots"_s;
@@ -944,7 +944,7 @@ ItemAttributes ItemType::IronBoots::getAttributes() const {
 
 ItemAttributes ItemType::AdaBoots::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::ADA_BOOTS;
+      i.viewId = ViewId("ada_boots");
       i.shortName = "boots"_s;
       i.name = "pair of adamantine boots";
       i.plural = "pairs of admantine boots"_s;
@@ -988,7 +988,7 @@ ItemAttributes ItemType::Amulet::getAttributes() const {
 
 ItemAttributes ItemType::DefenseAmulet::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::AMULET3;
+      i.viewId = ViewId("amulet3");
       i.shortName = "defense"_s;
       i.name = "amulet of " + *i.shortName;
       i.plural = "amulets of " + *i.shortName;
@@ -1003,7 +1003,7 @@ ItemAttributes ItemType::DefenseAmulet::getAttributes() const {
 
 ItemAttributes ItemType::FirstAidKit::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::FIRST_AID;
+      i.viewId = ViewId("first_aid");
       i.name = "first aid kit";
       i.weight = 0.5;
       i.itemClass = ItemClass::TOOL;
@@ -1038,7 +1038,7 @@ static FurnitureType getTrapFurniture(TrapType type) {
 
 ItemAttributes ItemType::TrapItem::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::TRAP_ITEM;
+      i.viewId = ViewId("trap_item");
       auto trapName = getTrapName(trapType);
       i.name = "unarmed " + trapName + " trap";
       i.shortName = trapName;
@@ -1056,7 +1056,7 @@ ItemAttributes ItemType::TrapItem::getAttributes() const {
 
 ItemAttributes ItemType::Potion::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::POTION1;
+      i.viewId = ViewId("potion1");
       i.shortName = effect.getName();
       i.name = "potion of " + *i.shortName;
       i.plural = "potions of " + *i.shortName;
@@ -1075,18 +1075,18 @@ static ViewId getMushroomViewId(Effect e) {
   return e.visit(
       [&](const Effect::Lasting& e) {
         switch (e.lastingEffect) {
-          case LastingEffect::DAM_BONUS: return ViewId::MUSHROOM1;
-          case LastingEffect::DEF_BONUS: return ViewId::MUSHROOM2;
-          case LastingEffect::PANIC: return ViewId::MUSHROOM3;
-          case LastingEffect::HALLU: return ViewId::MUSHROOM4;
-          case LastingEffect::RAGE: return ViewId::MUSHROOM5;
-          case LastingEffect::REGENERATION: return ViewId::MUSHROOM6;
-          case LastingEffect::NIGHT_VISION: return ViewId::MUSHROOM7;
-          default: return ViewId::MUSHROOM6;
+          case LastingEffect::DAM_BONUS: return ViewId("mushroom1");
+          case LastingEffect::DEF_BONUS: return ViewId("mushroom2");
+          case LastingEffect::PANIC: return ViewId("mushroom3");
+          case LastingEffect::HALLU: return ViewId("mushroom4");
+          case LastingEffect::RAGE: return ViewId("mushroom5");
+          case LastingEffect::REGENERATION: return ViewId("mushroom6");
+          case LastingEffect::NIGHT_VISION: return ViewId("mushroom7");
+          default: return ViewId("mushroom6");
         }
       },
       [&](const auto&) {
-        return ViewId::MUSHROOM6;
+        return ViewId("mushroom6");
       }
   );
 }
@@ -1108,7 +1108,7 @@ ItemAttributes ItemType::Mushroom::getAttributes() const {
 
 static ViewId getRuneViewId(const string& name) {
   int h = int(combineHash(name));
-  const static vector<ViewId> ids = {ViewId::RUNE1, ViewId::RUNE2, ViewId::RUNE3, ViewId::RUNE4};
+  const static vector<ViewId> ids = {ViewId("rune1"), ViewId("rune2"), ViewId("rune3"), ViewId("rune4")};
   return ids[(h % ids.size() + ids.size()) % ids.size()];
 }
 
@@ -1130,7 +1130,7 @@ ItemAttributes ItemType::Glyph::getAttributes() const {
 
 ItemAttributes ItemType::Scroll::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::SCROLL;
+      i.viewId = ViewId("scroll");
       i.shortName = effect.getName();
       i.name = "scroll of " + *i.shortName;
       i.plural= "scrolls of "  + *i.shortName;
@@ -1147,7 +1147,7 @@ ItemAttributes ItemType::Scroll::getAttributes() const {
 
 ItemAttributes ItemType::FireScroll::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::SCROLL;
+      i.viewId = ViewId("scroll");
       i.name = "scroll of fire";
       i.plural= "scrolls of fire"_s;
       i.shortName = "fire"_s;
@@ -1164,7 +1164,7 @@ ItemAttributes ItemType::FireScroll::getAttributes() const {
 
 ItemAttributes ItemType::TechBook::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::BOOK;
+      i.viewId = ViewId("book");
       i.shortName = techId;
       i.name = "book of " + *i.shortName;
       i.plural = "books of " + *i.shortName;
@@ -1177,7 +1177,7 @@ ItemAttributes ItemType::TechBook::getAttributes() const {
 
 ItemAttributes ItemType::Rock::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::ROCK;
+      i.viewId = ViewId("rock");
       i.name = "rock";
       i.itemClass = ItemClass::OTHER;
       i.price = 0;
@@ -1188,7 +1188,7 @@ ItemAttributes ItemType::Rock::getAttributes() const {
 
 ItemAttributes ItemType::IronOre::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::IRON_ROCK;
+      i.viewId = ViewId("iron_rock");
       i.name = "iron ore";
       i.itemClass = ItemClass::OTHER;
       i.price = 0;
@@ -1199,7 +1199,7 @@ ItemAttributes ItemType::IronOre::getAttributes() const {
 
 ItemAttributes ItemType::AdaOre::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::ADA_ORE;
+      i.viewId = ViewId("ada_ore");
       i.name = "adamantine ore";
       i.itemClass = ItemClass::OTHER;
       i.price = 0;
@@ -1210,7 +1210,7 @@ ItemAttributes ItemType::AdaOre::getAttributes() const {
 
 ItemAttributes ItemType::WoodPlank::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::WOOD_PLANK;
+      i.viewId = ViewId("wood_plank");
       i.name = "wood plank";
       i.itemClass = ItemClass::OTHER;
       i.price = 0;
@@ -1221,7 +1221,7 @@ ItemAttributes ItemType::WoodPlank::getAttributes() const {
 
 ItemAttributes ItemType::Bone::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::BONE;
+      i.viewId = ViewId("bone");
       i.name = "bone";
       i.itemClass = ItemClass::CORPSE;
       i.price = 0;
@@ -1231,7 +1231,7 @@ ItemAttributes ItemType::Bone::getAttributes() const {
 
 ItemAttributes ItemType::GoldPiece::getAttributes() const {
   return ITATTR(
-      i.viewId = ViewId::GOLD;
+      i.viewId = ViewId("gold");
       i.name = "gold piece";
       i.itemClass = ItemClass::GOLD;
       i.price = 1;

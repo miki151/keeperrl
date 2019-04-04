@@ -5,6 +5,7 @@
 #include "entity_map.h"
 #include "zones.h"
 #include "unique_entity.h"
+#include "view_id.h"
 
 class Quarters {
   public:

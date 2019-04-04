@@ -24,8 +24,7 @@ class ViewObject;
 class Tile {
   public:
   typedef Renderer::TileCoord TileCoord;
-  static const Tile& getTile(ViewId, bool sprite);
-  static const Tile& getTile(ViewId);
+  static const Tile& getTile(ViewId, bool sprite = true);
   static Color getColor(const ViewObject& object);
 
   static Tile empty();
@@ -59,12 +58,14 @@ class Tile {
   Tile setMoveUp();
   Tile setWallShadow();
   Tile setFX(FXVariantName);
+  Tile setConnectionId(ViewId);
   optional<TileCoord> getHighlightCoord() const;
 
-  const EnumSet<ViewId>& getExtraBorderIds() const;
+  const unordered_set<ViewId, CustomHash<ViewId>>& getExtraBorderIds() const;
   bool hasExtraBorders() const;
   bool hasAnyConnections() const;
   const vector<TileCoord>& getExtraBorderCoord(DirSet) const;
+  const optional<ViewId>& getConnectionId() const;
 
   bool hasSpriteCoord() const;
 
@@ -94,9 +95,8 @@ class Tile {
   bool anyCorners = false;
   optional<FXVariantName> fx;
   DirSet connectionsMask = DirSet{Dir::N, Dir::E, Dir::S, Dir::W};
-  EnumSet<ViewId> extraBorderIds;
+  unordered_set<ViewId, CustomHash<ViewId>> extraBorderIds;
   static void addTile(ViewId, Tile);
   static void addSymbol(ViewId, Tile);
+  optional<ViewId> connectionId;
 };
-
-

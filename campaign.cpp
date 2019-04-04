@@ -46,7 +46,7 @@ const string& Campaign::getWorldName() const {
 
 void Campaign::clearSite(Vec2 v) {
   sites[v] = SiteInfo{};
-  sites[v].viewId = {ViewId::GRASS};
+  sites[v].viewId = {ViewId("grass")};
 }
 
 bool Campaign::isDefeated(Vec2 pos) const {
@@ -132,8 +132,8 @@ bool Campaign::SiteInfo::isEnemy() const {
 
 void Campaign::SiteInfo::setBlocked() {
   blocked = true;
-  viewId.push_back(Random.choose(ViewId::MAP_MOUNTAIN1, ViewId::MAP_MOUNTAIN2, ViewId::MAP_MOUNTAIN3,
-        ViewId::CANIF_TREE, ViewId::DECID_TREE));
+  viewId.push_back(Random.choose(ViewId("map_mountain1"), ViewId("map_mountain2"), ViewId("map_mountain3"),
+        ViewId("canif_tree"), ViewId("decid_tree")));
 }
 
 bool Campaign::isInInfluence(Vec2 pos) const {

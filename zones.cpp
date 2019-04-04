@@ -107,19 +107,19 @@ void Zones::tick() {
 ViewId getViewId(ZoneId id) {
   switch (id) {
     case ZoneId::QUARTERS1:
-      return ViewId::QUARTERS1;
+      return ViewId("quarters1");
     case ZoneId::QUARTERS2:
-      return ViewId::QUARTERS2;
+      return ViewId("quarters2");
     case ZoneId::QUARTERS3:
-      return ViewId::QUARTERS3;
+      return ViewId("quarters3");
     case ZoneId::LEISURE:
-      return ViewId::LEISURE;
+      return ViewId("leisure");
     case ZoneId::FETCH_ITEMS:
     case ZoneId::PERMANENT_FETCH_ITEMS:
-      return ViewId::FETCH_ICON;
+      return ViewId("fetch_icon");
     case ZoneId::STORAGE_EQUIPMENT:
-      return ViewId::STORAGE_EQUIPMENT;
+      return ViewId("storage_equipment");
     case ZoneId::STORAGE_RESOURCES:
-      return ViewId::STORAGE_RESOURCES;
+      return ViewId("storage_resources");
   }
 }

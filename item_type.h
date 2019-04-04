@@ -6,6 +6,7 @@
 #include "weapon_info.h"
 #include "item_prefix.h"
 #include "item_upgrade_info.h"
+#include "view_id.h"
 
 class ItemAttributes;
 

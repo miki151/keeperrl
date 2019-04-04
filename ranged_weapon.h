@@ -17,6 +17,7 @@
 
 #include "util.h"
 #include "item.h"
+#include "view_id.h"
 
 class RangedWeapon {
   public:

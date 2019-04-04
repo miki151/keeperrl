@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util.h"
+#include "view_id.h"
 
 struct CollectiveName {
   optional<string> SERIAL(shortened);

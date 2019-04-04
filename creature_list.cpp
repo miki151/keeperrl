@@ -33,7 +33,7 @@ CreatureList::CreatureList(int c, vector<CreatureId> ids) : count(c),
 CreatureList::CreatureList(int c, vector<pair<int, CreatureId>> ids) : count(c), all(ids) {}
 
 string CreatureList::getSummary(CreatureFactory* factory) const {
-  auto ret = toLower(EnumInfo<ViewId>::getString(getViewId(factory)));
+  auto ret = toLower(getViewId(factory).data());
   int inc = 0;
   for (auto exp : ENUM_ALL(ExperienceType))
     inc = max(inc, baseLevelIncrease[exp]);

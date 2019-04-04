@@ -90,7 +90,7 @@ ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack) {
     c.equiped = creature->getEquipment().isEquipped(stack[0]);
     c.weight = stack[0]->getWeight();
     if (stack[0]->getShopkeeper(creature))
-      c.price = make_pair(ViewId::GOLD, stack[0]->getPrice());
+      c.price = make_pair(ViewId("gold"), stack[0]->getPrice());
   );
 }
 

@@ -163,7 +163,7 @@ class MapGui : public GuiElem {
     int moveCounter;
   };
   optional<ScreenMovement> screenMovement;
-  Table<EnumSet<ViewId>> connectionMap;
+  Table<unordered_set<ViewId, CustomHash<ViewId>>> connectionMap;
   bool keyScrolling = false;
   bool mouseUI = false;
   bool lockedView = true;

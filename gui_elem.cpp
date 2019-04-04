@@ -1862,7 +1862,7 @@ class ViewObjectGui : public GuiElem {
   public:
   ViewObjectGui(const ViewObject& obj, Vec2 sz, double sc, Color c) : object(obj), size(sz), scale(sc), color(c) {}
   ViewObjectGui(ViewId id, Vec2 sz, double sc, Color c) : object(id), size(sz), scale(sc), color(c) {
-    CHECK(int(id) >= 0 && int(id) < EnumInfo<ViewId>::size);
+    //CHECK(int(id) >= 0 && int(id) < EnumInfo<ViewId>::size);
   }
   ViewObjectGui(function<ViewId()> id, Vec2 sz, double sc, Color c)
       : object(std::move(id)), size(sz), scale(sc), color(c) {}

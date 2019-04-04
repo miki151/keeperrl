@@ -27,6 +27,7 @@
 #include "lasting_effect.h"
 #include "experience_type.h"
 #include "game_time.h"
+#include "view_id.h"
 
 inline bool isLarger(CreatureSize s1, CreatureSize s2) {
   return int(s1) > int(s2);

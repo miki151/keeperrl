@@ -54,11 +54,11 @@ FXInfo getFXInfo(FXVariantName var) {
 }
 
 optional<FXInfo> getOverlayFXInfo(ViewId id) {
-  if (isOneOf(id, ViewId::GOLD_ORE, ViewId::GOLD, ViewId::THRONE, ViewId::MINION_STATUE, ViewId::DEMON_SHRINE))
+  if (isOneOf(id, ViewId("gold_ore"), ViewId("gold"), ViewId("throne"), ViewId("minion_statue"), ViewId("demon_shrine")))
     return FXInfo{FXName::GLITTERING, Color(253, 247, 172)};
-  if (id == ViewId::ADAMANTIUM_ORE)
+  if (id == ViewId("adamantium_ore"))
     return FXInfo{FXName::GLITTERING, Color::LIGHT_BLUE};
-  if (id == ViewId::MAGMA)
+  if (id == ViewId("magma"))
     return FXInfo{FXName::MAGMA_FIRE};
   return none;
 }

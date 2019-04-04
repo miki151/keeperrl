@@ -25,6 +25,173 @@ SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
 constexpr float noAttributeValue = -1234;
 
+static const char* getDefaultDescription(const ViewId& id) {
+  if (id == ViewId("unknown_monster"))
+    return "Unknown creature";
+  if (id == ViewId("altar"))
+    return "Altar";
+  if (id == ViewId("altar_des"))
+    return "Desecrated altar";
+  if (id == ViewId("up_staircase") || id == ViewId("down_staircase"))
+    return "Stairs";
+  if (id == ViewId("bridge"))
+    return "Bridge";
+  if (id == ViewId("grass"))
+    return "Grass";
+  if (id == ViewId("crops2") || id == ViewId("crops"))
+    return "Wheat";
+  if (id == ViewId("mud"))
+    return "Mud";
+  if (id == ViewId("road"))
+    return "Road";
+  if (id == ViewId("castle_wall") || id == ViewId("mud_wall") || id == ViewId("wall"))
+    return "Wall";
+  if (id == ViewId("gold_ore"))
+    return "Gold ore";
+  if (id == ViewId("iron_ore"))
+    return "Iron ore";
+  if (id == ViewId("adamantium_ore"))
+    return "Adamantium ore";
+  if (id == ViewId("stone"))
+    return "Granite";
+  if (id == ViewId("wood_wall"))
+    return "Wooden wall";
+  if (id == ViewId("mountain"))
+    return "Soft rock";
+  if (id == ViewId("mountain2"))
+    return "Hard rock";
+  if (id == ViewId("dungeon_wall") || id == ViewId("dungeon_wall2"))
+    return "Reinforced wall";
+  if (id == ViewId("hill"))
+    return "Hill";
+  if (id == ViewId("water"))
+    return "Water";
+  if (id == ViewId("magma"))
+    return "Magma";
+  if (id == ViewId("sand"))
+    return "Sand";
+  if (id == ViewId("decid_tree") || id == ViewId("canif_tree"))
+    return "Tree";
+  if (id == ViewId("bush"))
+    return "Bush";
+  if (id == ViewId("tree_trunk"))
+    return "Tree trunk";
+  if (id == ViewId("burnt_tree"))
+    return "Burnt tree";
+  if (id == ViewId("bed1"))
+    return "Basic bed";
+  if (id == ViewId("bed2"))
+    return "Fine bed";
+  if (id == ViewId("bed3"))
+    return "Luxurious bed";
+  if (id == ViewId("dorm"))
+    return "Dormitory";
+  if (id == ViewId("torch"))
+    return "Torch";
+  if (id == ViewId("candelabrum_ns"))
+    return "Candelabrum";
+  if (id == ViewId("candelabrum_e"))
+    return "Candelabrum";
+  if (id == ViewId("candelabrum_w"))
+    return "Candelabrum";
+  if (id == ViewId("standing_torch"))
+    return "Standing torch";
+  if (id == ViewId("prison"))
+    return "Prison";
+  if (id == ViewId("well"))
+    return "Well";
+  if (id == ViewId("torture_table"))
+    return "Torture room";
+  if (id == ViewId("beast_cage"))
+    return "Beast cage";
+  if (id == ViewId("training_wood"))
+    return "Wooden training dummy";
+  if (id == ViewId("training_iron"))
+    return "Iron training dummy";
+  if (id == ViewId("training_ada"))
+    return "Adamantine training dummy";
+  if (id == ViewId("throne"))
+    return "Throne";
+  if (id == ViewId("whipping_post"))
+    return "Whipping post";
+  if (id == ViewId("notice_board"))
+    return "Message board";
+  if (id == ViewId("sokoban_hole"))
+    return "Hole";
+  if (id == ViewId("demon_shrine"))
+    return "Demon shrine";
+  if (id == ViewId("impaled_head"))
+    return "Impaled head";
+  if (id == ViewId("eyeball"))
+    return "Eyeball";
+  if (id == ViewId("bookcase_wood"))
+    return "Wooden bookcase";
+  if (id == ViewId("bookcase_iron"))
+    return "Iron bookcase";
+  if (id == ViewId("bookcase_gold"))
+    return "Golden bookcase";
+  if (id == ViewId("cauldron"))
+    return "Cauldron";
+  if (id == ViewId("laboratory"))
+    return "Laboratory";
+  if (id == ViewId("forge"))
+    return "Forge";
+  if (id == ViewId("workshop"))
+    return "Workshop";
+  if (id == ViewId("jeweller"))
+    return "Jeweller";
+  if (id == ViewId("furnace"))
+    return "Furnace";
+  if (id == ViewId("minion_statue"))
+    return "Statue";
+  if (id == ViewId("stone_minion_statue"))
+    return "Stone Statue";
+  if (id == ViewId("creature_altar"))
+    return "Shrine";
+  if (id == ViewId("fountain"))
+    return "Fountain";
+  if (id == ViewId("treasure_chest") || id == ViewId("chest"))
+    return "Chest";
+  if (id == ViewId("opened_chest"))
+    return "Opened chest";
+  if (id == ViewId("opened_coffin"))
+    return "Opened coffin";
+  if (id == ViewId("loot_coffin"))
+    return "Coffin";
+  if (id == ViewId("coffin1"))
+    return "Basic coffin";
+  if (id == ViewId("coffin2"))
+    return "Fine coffin";
+  if (id == ViewId("coffin3"))
+    return "Luxurious coffin";
+  if (id == ViewId("grave"))
+    return "Grave";
+  if (id == ViewId("portal"))
+    return "Portal";
+  if (id == ViewId("wood_door"))
+    return "Wooden door";
+  if (id == ViewId("iron_door"))
+    return "Iron door";
+  if (id == ViewId("ada_door"))
+    return "Adamantine door";
+  if (id == ViewId("barricade"))
+    return "Barricade";
+  if (id == ViewId("archery_range"))
+    return "Archery target";
+  if (id == ViewId("ruin_wall"))
+    return "Ruined wall";
+  if (id == ViewId("wood_floor1") || id == ViewId("wood_floor2") || id == ViewId("wood_floor3") ||
+      id == ViewId("wood_floor4") || id == ViewId("wood_floor5") || id == ViewId("stone_floor1") ||
+      id == ViewId("stone_floor2") || id == ViewId("stone_floor3") || id == ViewId("stone_floor4") ||
+      id == ViewId("stone_floor5") || id == ViewId("carpet_floor1") || id == ViewId("carpet_floor2") ||
+      id == ViewId("carpet_floor3") || id == ViewId("carpet_floor4") || id == ViewId("carpet_floor5") ||
+      id == ViewId("keeper_floor") || id == ViewId("floor"))
+    return "Floor";
+  if (id == ViewId("border_guard"))
+    return "Wall";
+  return "";
+}
+
 ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d)
     : resource_id(id), viewLayer(l), description(d) {
   for (auto a : ENUM_ALL(Attribute))
@@ -32,7 +199,7 @@ ViewObject::ViewObject(ViewId id, ViewLayer l, const string& d)
 }
 
 ViewObject::ViewObject(ViewId id, ViewLayer l)
-    : resource_id(id), viewLayer(l) {
+    : resource_id(id), viewLayer(l), description(getDefaultDescription(id)) {
   for (auto a : ENUM_ALL(Attribute))
     attributes[a] = noAttributeValue;
 }
@@ -84,7 +251,7 @@ const MovementInfo& ViewObject::getLastMovementInfo() const {
 Vec2 ViewObject::getMovementInfo(int moveCounter) const {
   if (!movementQueue)
     return Vec2(0, 0);
-  CHECK(genericId) << EnumInfo<ViewId>::getString(resource_id);
+  CHECK(genericId) << resource_id;
   return movementQueue->getTotalMovement(moveCounter);
 }
 
@@ -183,119 +350,8 @@ void ViewObject::setDescription(const string& s) {
   description = s;
 }
 
-const char* ViewObject::getDefaultDescription() const {
-  switch (resource_id) {
-    case ViewId::UNKNOWN_MONSTER: return "Unknown creature";
-    case ViewId::ALTAR: return "Altar";
-    case ViewId::ALTAR_DES: return "Desecrated altar";
-    case ViewId::UP_STAIRCASE:
-    case ViewId::DOWN_STAIRCASE: return "Stairs";
-    case ViewId::BRIDGE: return "Bridge";
-    case ViewId::GRASS: return "Grass";
-    case ViewId::CROPS2:
-    case ViewId::CROPS: return "Wheat";
-    case ViewId::MUD: return "Mud";
-    case ViewId::ROAD: return "Road";
-    case ViewId::CASTLE_WALL:
-    case ViewId::MUD_WALL:
-    case ViewId::WALL: return "Wall";
-    case ViewId::GOLD_ORE: return "Gold ore";
-    case ViewId::IRON_ORE: return "Iron ore";
-    case ViewId::ADAMANTIUM_ORE: return "Adamantium ore";
-    case ViewId::STONE: return "Granite";
-    case ViewId::WOOD_WALL: return "Wooden wall";
-    case ViewId::MOUNTAIN: return "Soft rock";
-    case ViewId::MOUNTAIN2: return "Hard rock";
-    case ViewId::DUNGEON_WALL:
-    case ViewId::DUNGEON_WALL2: return "Reinforced wall";
-    case ViewId::HILL: return "Hill";
-    case ViewId::WATER: return "Water";
-    case ViewId::MAGMA: return "Magma";
-    case ViewId::SAND: return "Sand";
-    case ViewId::DECID_TREE:
-    case ViewId::CANIF_TREE: return "Tree";
-    case ViewId::BUSH: return "Bush";
-    case ViewId::TREE_TRUNK: return "Tree trunk";
-    case ViewId::BURNT_TREE: return "Burnt tree";
-    case ViewId::BED1: return "Basic bed";
-    case ViewId::BED2: return "Fine bed";
-    case ViewId::BED3: return "Luxurious bed";
-    case ViewId::DORM: return "Dormitory";
-    case ViewId::TORCH: return "Torch";
-    case ViewId::CANDELABRUM_NS: return "Candelabrum";
-    case ViewId::CANDELABRUM_E: return "Candelabrum";
-    case ViewId::CANDELABRUM_W: return "Candelabrum";
-    case ViewId::STANDING_TORCH: return "Standing torch";
-    case ViewId::PRISON: return "Prison";
-    case ViewId::WELL: return "Well";
-    case ViewId::TORTURE_TABLE: return "Torture room";
-    case ViewId::BEAST_CAGE: return "Beast cage";
-    case ViewId::TRAINING_WOOD: return "Wooden training dummy";
-    case ViewId::TRAINING_IRON: return "Iron training dummy";
-    case ViewId::TRAINING_ADA: return "Adamantine training dummy";
-    case ViewId::THRONE: return "Throne";
-    case ViewId::WHIPPING_POST: return "Whipping post";
-    case ViewId::NOTICE_BOARD: return "Message board";
-    case ViewId::SOKOBAN_HOLE: return "Hole";
-    case ViewId::DEMON_SHRINE: return "Demon shrine";
-    case ViewId::IMPALED_HEAD: return "Impaled head";
-    case ViewId::EYEBALL: return "Eyeball";
-    case ViewId::BOOKCASE_WOOD: return "Wooden bookcase";
-    case ViewId::BOOKCASE_IRON: return "Iron bookcase";
-    case ViewId::BOOKCASE_GOLD: return "Golden bookcase";
-    case ViewId::CAULDRON: return "Cauldron";
-    case ViewId::LABORATORY: return "Laboratory";
-    case ViewId::FORGE: return "Forge";
-    case ViewId::WORKSHOP: return "Workshop";
-    case ViewId::JEWELLER: return "Jeweller";
-    case ViewId::FURNACE: return "Furnace";
-    case ViewId::MINION_STATUE: return "Statue";
-    case ViewId::STONE_MINION_STATUE: return "Stone Statue";
-    case ViewId::CREATURE_ALTAR: return "Shrine";
-    case ViewId::FOUNTAIN: return "Fountain";
-    case ViewId::TREASURE_CHEST:
-    case ViewId::CHEST: return "Chest";
-    case ViewId::OPENED_CHEST: return "Opened chest";
-    case ViewId::OPENED_COFFIN: return "Opened coffin";
-    case ViewId::LOOT_COFFIN: return "Coffin";
-    case ViewId::COFFIN1: return "Basic coffin";
-    case ViewId::COFFIN2: return "Fine coffin";
-    case ViewId::COFFIN3: return "Luxurious coffin";
-    case ViewId::GRAVE: return "Grave";
-    case ViewId::PORTAL: return "Portal";
-    case ViewId::WOOD_DOOR: return "Wooden door";
-    case ViewId::IRON_DOOR: return "Iron door";
-    case ViewId::ADA_DOOR: return "Adamantine door";
-    case ViewId::BARRICADE: return "Barricade";
-    case ViewId::ARCHERY_RANGE: return "Archery target";
-    case ViewId::RUIN_WALL: return "Ruined wall";
-    case ViewId::WOOD_FLOOR1:
-    case ViewId::WOOD_FLOOR2:
-    case ViewId::WOOD_FLOOR3:
-    case ViewId::WOOD_FLOOR4:
-    case ViewId::WOOD_FLOOR5:
-    case ViewId::STONE_FLOOR1:
-    case ViewId::STONE_FLOOR2:
-    case ViewId::STONE_FLOOR3:
-    case ViewId::STONE_FLOOR4:
-    case ViewId::STONE_FLOOR5:
-    case ViewId::CARPET_FLOOR1:
-    case ViewId::CARPET_FLOOR2:
-    case ViewId::CARPET_FLOOR3:
-    case ViewId::CARPET_FLOOR4:
-    case ViewId::CARPET_FLOOR5:
-    case ViewId::KEEPER_FLOOR:
-    case ViewId::FLOOR: return "Floor";
-    case ViewId::BORDER_GUARD: return "Wall";
-    default: return "";
-  }
-}
-
 const char* ViewObject::getDescription() const {
-  if (!description.empty())
-    return description.c_str();
-  else
-    return getDefaultDescription();
+  return description.c_str();
 }
 
 ViewObject&  ViewObject::setAttachmentDir(Dir dir) {
@@ -311,177 +367,177 @@ ViewLayer ViewObject::layer() const {
   return viewLayer;
 }
 
-static EnumSet<ViewId> creatureIds {
-  ViewId::PLAYER,
-  ViewId::KEEPER1,
-  ViewId::KEEPER2,
-  ViewId::KEEPER3,
-  ViewId::KEEPER4,
-  ViewId::KEEPER_F1,
-  ViewId::KEEPER_F2,
-  ViewId::KEEPER_F3,
-  ViewId::KEEPER_F4,
-  ViewId::KEEPER_KNIGHT1,
-  ViewId::KEEPER_KNIGHT2,
-  ViewId::KEEPER_KNIGHT3,
-  ViewId::KEEPER_KNIGHT4,
-  ViewId::KEEPER_KNIGHT_F1,
-  ViewId::KEEPER_KNIGHT_F2,
-  ViewId::KEEPER_KNIGHT_F3,
-  ViewId::KEEPER_KNIGHT_F4,
-  ViewId::ELF,
-  ViewId::ELF_ARCHER,
-  ViewId::ELF_CHILD,
-  ViewId::ELF_LORD,
-  ViewId::SHOPKEEPER,
-  ViewId::LIZARDMAN,
-  ViewId::LIZARDLORD,
-  ViewId::DWARF,
-  ViewId::DWARF_FEMALE,
-  ViewId::DWARF_BARON,
-  ViewId::IMP,
-  ViewId::PRISONER,
-  ViewId::OGRE,
-  ViewId::CHICKEN,
-  ViewId::GREEN_DRAGON,
-  ViewId::RED_DRAGON,
-  ViewId::CYCLOPS,
-  ViewId::WITCH,
-  ViewId::GHOST,
-  ViewId::SPIRIT,
-  ViewId::KNIGHT,
-  ViewId::DUKE1,
-  ViewId::DUKE2,
-  ViewId::DUKE3,
-  ViewId::DUKE4,
-  ViewId::DUKE_F1,
-  ViewId::DUKE_F2,
-  ViewId::DUKE_F3,
-  ViewId::DUKE_F4,
-  ViewId::ARCHER,
-  ViewId::UNICORN,
-  ViewId::PESEANT,
-  ViewId::PESEANT_WOMAN,
-  ViewId::CHILD,
-  ViewId::SHAMAN,
-  ViewId::WARRIOR,
-  ViewId::ORC,
-  ViewId::DEMON_DWELLER,
-  ViewId::DEMON_LORD,
-  ViewId::BANDIT,
-  ViewId::CLAY_GOLEM,
-  ViewId::STONE_GOLEM,
-  ViewId::IRON_GOLEM,
-  ViewId::LAVA_GOLEM,
-  ViewId::ZOMBIE,
-  ViewId::SKELETON,
-  ViewId::VAMPIRE,
-  ViewId::VAMPIRE_LORD,
-  ViewId::MUMMY,
-  ViewId::HORSE,
-  ViewId::COW,
-  ViewId::PIG,
-  ViewId::GOAT,
-  ViewId::JACKAL,
-  ViewId::DEER,
-  ViewId::BOAR,
-  ViewId::FOX,
-  ViewId::BEAR,
-  ViewId::WOLF,
-  ViewId::BAT,
-  ViewId::RAT,
-  ViewId::SPIDER,
-  ViewId::FLY,
-  ViewId::SNAKE,
-  ViewId::VULTURE,
-  ViewId::RAVEN,
-  ViewId::GOBLIN,
-  ViewId::KRAKEN_HEAD,
-  ViewId::KRAKEN_LAND,
-  ViewId::KRAKEN_WATER,
-  ViewId::FIRE_SPHERE,
-  ViewId::DEATH,
-  ViewId::SPECIAL_BLBN,
-  ViewId::SPECIAL_BLBW,
-  ViewId::SPECIAL_BLGN,
-  ViewId::SPECIAL_BLGW,
-  ViewId::SPECIAL_BMBN,
-  ViewId::SPECIAL_BMBW,
-  ViewId::SPECIAL_BMGN,
-  ViewId::SPECIAL_BMGW,
-  ViewId::SPECIAL_HLBN,
-  ViewId::SPECIAL_HLBW,
-  ViewId::SPECIAL_HLGN,
-  ViewId::SPECIAL_HLGW,
-  ViewId::SPECIAL_HMBN,
-  ViewId::SPECIAL_HMBW,
-  ViewId::SPECIAL_HMGN,
-  ViewId::SPECIAL_HMGW,
-  ViewId::CANIF_TREE,
-  ViewId::DECID_TREE,
-  ViewId::BUSH,
+static unordered_set<ViewId, CustomHash<ViewId>> creatureIds {
+  ViewId("player"),
+  ViewId("keeper1"),
+  ViewId("keeper2"),
+  ViewId("keeper3"),
+  ViewId("keeper4"),
+  ViewId("keeper_f1"),
+  ViewId("keeper_f2"),
+  ViewId("keeper_f3"),
+  ViewId("keeper_f4"),
+  ViewId("keeper_knight1"),
+  ViewId("keeper_knight2"),
+  ViewId("keeper_knight3"),
+  ViewId("keeper_knight4"),
+  ViewId("keeper_knight_f1"),
+  ViewId("keeper_knight_f2"),
+  ViewId("keeper_knight_f3"),
+  ViewId("keeper_knight_f4"),
+  ViewId("elf"),
+  ViewId("elf_archer"),
+  ViewId("elf_child"),
+  ViewId("elf_lord"),
+  ViewId("shopkeeper"),
+  ViewId("lizardman"),
+  ViewId("lizardlord"),
+  ViewId("dwarf"),
+  ViewId("dwarf_female"),
+  ViewId("dwarf_baron"),
+  ViewId("imp"),
+  ViewId("prisoner"),
+  ViewId("ogre"),
+  ViewId("chicken"),
+  ViewId("green_dragon"),
+  ViewId("red_dragon"),
+  ViewId("cyclops"),
+  ViewId("witch"),
+  ViewId("ghost"),
+  ViewId("spirit"),
+  ViewId("knight"),
+  ViewId("duke1"),
+  ViewId("duke2"),
+  ViewId("duke3"),
+  ViewId("duke4"),
+  ViewId("duke_f1"),
+  ViewId("duke_f2"),
+  ViewId("duke_f3"),
+  ViewId("duke_f4"),
+  ViewId("archer"),
+  ViewId("unicorn"),
+  ViewId("peseant"),
+  ViewId("peseant_woman"),
+  ViewId("child"),
+  ViewId("shaman"),
+  ViewId("warrior"),
+  ViewId("orc"),
+  ViewId("demon_dweller"),
+  ViewId("demon_lord"),
+  ViewId("bandit"),
+  ViewId("clay_golem"),
+  ViewId("stone_golem"),
+  ViewId("iron_golem"),
+  ViewId("lava_golem"),
+  ViewId("zombie"),
+  ViewId("skeleton"),
+  ViewId("vampire"),
+  ViewId("vampire_lord"),
+  ViewId("mummy"),
+  ViewId("horse"),
+  ViewId("cow"),
+  ViewId("pig"),
+  ViewId("goat"),
+  ViewId("jackal"),
+  ViewId("deer"),
+  ViewId("boar"),
+  ViewId("fox"),
+  ViewId("bear"),
+  ViewId("wolf"),
+  ViewId("bat"),
+  ViewId("rat"),
+  ViewId("spider"),
+  ViewId("fly"),
+  ViewId("snake"),
+  ViewId("vulture"),
+  ViewId("raven"),
+  ViewId("goblin"),
+  ViewId("kraken_head"),
+  ViewId("kraken_land"),
+  ViewId("kraken_water"),
+  ViewId("fire_sphere"),
+  ViewId("death"),
+  ViewId("special_blbn"),
+  ViewId("special_blbw"),
+  ViewId("special_blgn"),
+  ViewId("special_blgw"),
+  ViewId("special_bmbn"),
+  ViewId("special_bmbw"),
+  ViewId("special_bmgn"),
+  ViewId("special_bmgw"),
+  ViewId("special_hlbn"),
+  ViewId("special_hlbw"),
+  ViewId("special_hlgn"),
+  ViewId("special_hlgw"),
+  ViewId("special_hmbn"),
+  ViewId("special_hmbw"),
+  ViewId("special_hmgn"),
+  ViewId("special_hmgw"),
+  ViewId("canif_tree"),
+  ViewId("decid_tree"),
+  ViewId("bush"),
 };
 
-static EnumSet<ViewId> itemIds {
-  ViewId::BODY_PART,
-  ViewId::BONE,
-  ViewId::SPEAR,
-  ViewId::SWORD,
-  ViewId::SPECIAL_SWORD,
-  ViewId::ELVEN_SWORD,
-  ViewId::KNIFE,
-  ViewId::WAR_HAMMER,
-  ViewId::SPECIAL_WAR_HAMMER,
-  ViewId::BATTLE_AXE,
-  ViewId::SPECIAL_BATTLE_AXE,
-  ViewId::BOW,
-  ViewId::ELVEN_BOW,
-  ViewId::SCROLL,
-  ViewId::AMULET1,
-  ViewId::AMULET2,
-  ViewId::AMULET3,
-  ViewId::AMULET4,
-  ViewId::AMULET5,
-  ViewId::BOOK,
-  ViewId::FIRST_AID,
-  ViewId::POTION1,
-  ViewId::POTION2,
-  ViewId::POTION3,
-  ViewId::POTION4,
-  ViewId::POTION5,
-  ViewId::POTION6,
-  ViewId::GOLD,
-  ViewId::LEATHER_ARMOR,
-  ViewId::LEATHER_HELM,
-  ViewId::TELEPATHY_HELM,
-  ViewId::CHAIN_ARMOR,
-  ViewId::IRON_HELM,
-  ViewId::LEATHER_BOOTS,
-  ViewId::IRON_BOOTS,
-  ViewId::SPEED_BOOTS,
-  ViewId::BOULDER,
-  ViewId::PORTAL,
-  ViewId::GAS_TRAP,
-  ViewId::ALARM_TRAP,
-  ViewId::WEB_TRAP,
-  ViewId::SURPRISE_TRAP,
-  ViewId::TERROR_TRAP,
-  ViewId::ROCK,
-  ViewId::IRON_ROCK,
-  ViewId::WOOD_PLANK,
-  ViewId::MUSHROOM1,
-  ViewId::MUSHROOM2,
-  ViewId::MUSHROOM3,
-  ViewId::MUSHROOM4,
-  ViewId::MUSHROOM5,
-  ViewId::MUSHROOM6,
-  ViewId::MUSHROOM7
+static unordered_set<ViewId, CustomHash<ViewId>> itemIds {
+  ViewId("body_part"),
+  ViewId("bone"),
+  ViewId("spear"),
+  ViewId("sword"),
+  ViewId("special_sword"),
+  ViewId("elven_sword"),
+  ViewId("knife"),
+  ViewId("war_hammer"),
+  ViewId("special_war_hammer"),
+  ViewId("battle_axe"),
+  ViewId("special_battle_axe"),
+  ViewId("bow"),
+  ViewId("elven_bow"),
+  ViewId("scroll"),
+  ViewId("amulet1"),
+  ViewId("amulet2"),
+  ViewId("amulet3"),
+  ViewId("amulet4"),
+  ViewId("amulet5"),
+  ViewId("book"),
+  ViewId("first_aid"),
+  ViewId("potion1"),
+  ViewId("potion2"),
+  ViewId("potion3"),
+  ViewId("potion4"),
+  ViewId("potion5"),
+  ViewId("potion6"),
+  ViewId("gold"),
+  ViewId("leather_armor"),
+  ViewId("leather_helm"),
+  ViewId("telepathy_helm"),
+  ViewId("chain_armor"),
+  ViewId("iron_helm"),
+  ViewId("leather_boots"),
+  ViewId("iron_boots"),
+  ViewId("speed_boots"),
+  ViewId("boulder"),
+  ViewId("portal"),
+  ViewId("gas_trap"),
+  ViewId("alarm_trap"),
+  ViewId("web_trap"),
+  ViewId("surprise_trap"),
+  ViewId("terror_trap"),
+  ViewId("rock"),
+  ViewId("iron_rock"),
+  ViewId("wood_plank"),
+  ViewId("mushroom1"),
+  ViewId("mushroom2"),
+  ViewId("mushroom3"),
+  ViewId("mushroom4"),
+  ViewId("mushroom5"),
+  ViewId("mushroom6"),
+  ViewId("mushroom7")
 };
 
 ViewId ViewObject::shuffle(ViewId id, RandomGen& random) {
-  if (itemIds.contains(id))
+  if (itemIds.count(id))
     return random.choose(itemIds);
-  if (creatureIds.contains(id))
+  if (creatureIds.count(id))
     return random.choose(creatureIds);
   return id;
 }
