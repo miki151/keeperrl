@@ -20,18 +20,14 @@
 #include "view_id.h"
 
 class ViewObject;
+class GameConfig;
 
 class Tile {
   public:
   typedef Renderer::TileCoord TileCoord;
-  static const Tile& getTile(ViewId, bool sprite = true);
-  static Color getColor(const ViewObject& object);
-
   static Tile empty();
   static Tile fromString(const string&, Color, bool symbol = false);
   static Tile byCoord(const vector<TileCoord>&);
-
-  static void initialize(Renderer&, bool useTiles);
 
   Color color;
   string text;
@@ -78,9 +74,6 @@ class Tile {
   const optional<FXVariantName> getFX() const;
 
   private:
-  static void loadTiles();
-  static void loadUnicode();
-  friend class TileCoordLookup;
   Tile();
   Tile(const vector<TileCoord>&);
  // Tile(const Tile&) = default;
@@ -96,7 +89,5 @@ class Tile {
   optional<FXVariantName> fx;
   DirSet connectionsMask = DirSet{Dir::N, Dir::E, Dir::S, Dir::W};
   unordered_set<ViewId, CustomHash<ViewId>> extraBorderIds;
-  static void addTile(ViewId, Tile);
-  static void addSymbol(ViewId, Tile);
   optional<ViewId> connectionId;
 };

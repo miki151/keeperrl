@@ -36,6 +36,7 @@
 #include "game_config.h"
 #include "avatar_menu_option.h"
 #include "creature_name.h"
+#include "tileset.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread, int sv)

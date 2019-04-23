@@ -28,7 +28,7 @@ class MinimapGui : public GuiElem {
 
   MinimapGui(function<void()> clickFun);
 
-  void update(Rectangle bounds, const CreatureView*);
+  void update(Rectangle bounds, const CreatureView*, Renderer&);
   void clear();
   void renderMap(Renderer&, Rectangle target);
 

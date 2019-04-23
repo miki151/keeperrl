@@ -51,6 +51,7 @@
 #include "game_config.h"
 #include "name_generator.h"
 #include "enemy_factory.h"
+#include "tileset.h"
 
 #include "fx_manager.h"
 #include "fx_renderer.h"
@@ -447,7 +448,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
-  Tile::initialize(renderer, tilesPresent);
+  TileSet tileSet(renderer, nullptr, true);
+  renderer.setTileSet(&tileSet);
   FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", options, installId);
   unique_ptr<View> view;
   view.reset(WindowView::createDefaultView(

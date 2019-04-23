@@ -23,6 +23,7 @@
 #include "view_index.h"
 #include "sdl.h"
 #include "view_object.h"
+#include "tileset.h"
 
 void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
   if (!mapBufferTex)
@@ -94,7 +95,7 @@ bool MinimapGui::onLeftClick(Vec2 v) {
 
 constexpr auto visibleLayers = { ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR };
 
-void MinimapGui::update(Rectangle bounds, const CreatureView* creature) {
+void MinimapGui::update(Rectangle bounds, const CreatureView* creature, Renderer& renderer) {
   auto level = creature->getCreatureViewLevel();
   info.bounds = bounds;
   info.enemies.clear();
@@ -105,7 +106,7 @@ void MinimapGui::update(Rectangle bounds, const CreatureView* creature) {
       for (auto layer : visibleLayers)
         if (index->hasObject(layer)) {
           auto& object = index->getObject(layer);
-          Renderer::putPixel(mapBuffer, pos.getCoord(), Tile::getColor(object));
+          Renderer::putPixel(mapBuffer, pos.getCoord(), renderer.getTileSet().getColor(object));
           if (object.hasModifier(ViewObject::Modifier::ROAD))
             info.roads.insert(pos.getCoord());
         }

@@ -20,7 +20,8 @@ enum class GameConfigId {
   SPELLS,
   Z_LEVELS,
   RESOURCE_COUNTS,
-  GAME_INTRO_TEXT
+  GAME_INTRO_TEXT,
+  TILES
 };
 
 class GameConfig {

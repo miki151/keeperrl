@@ -32,6 +32,7 @@
 #include "model.h"
 #include "creature_status.h"
 #include "game.h"
+#include "tileset.h"
 
 #include "fx_manager.h"
 #include "fx_view_manager.h"
@@ -181,17 +182,16 @@ Color MapGui::getGradientColor(const ViewIndex& index, GradientType type) {
   }
 }
 
-static ViewId getConnectionId(ViewId id) {
-  auto& tile = Tile::getTile(id);
+static ViewId getConnectionId(const ViewId& id, const Tile& tile) {
   return tile.getConnectionId().value_or(id);
 }
 
-DirSet MapGui::getConnectionSet(Vec2 tilePos, ViewId id) {
+DirSet MapGui::getConnectionSet(Vec2 tilePos, const ViewId& id, const Tile& tile) {
   DirSet ret;
   int cnt = 0;
   for (Vec2 dir : Vec2::directions8()) {
     Vec2 pos = tilePos + dir;
-    if (pos.inRectangle(levelBounds) && connectionMap[pos].count(getConnectionId(id)))
+    if (pos.inRectangle(levelBounds) && connectionMap[pos].count(getConnectionId(id, tile)))
       ret.insert((Dir) cnt);
     ++cnt;
   }
@@ -616,7 +616,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     Vec2 tilePos, milliseconds curTimeReal, const ViewIndex& index) {
   PROFILE;
   auto id = object.id();
-  const Tile& tile = Tile::getTile(id, spriteMode);
+  const Tile& tile = renderer.getTileSet().getTile(id, spriteMode);
   Color color = tile.color;
   considerWoundedAnimation(object, color, curTimeReal);
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
@@ -637,7 +637,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   if (spriteMode && tile.hasSpriteCoord()) {
     DirSet dirs;
     if (tile.hasAnyConnections() || tile.hasAnyCorners())
-      dirs = getConnectionSet(tilePos, id);
+      dirs = getConnectionSet(tilePos, id, tile);
     Vec2 move;
     drawCreatureHighlights(renderer, object, index, pos + movement, size, curTimeReal);
     if (object.layer() == ViewLayer::CREATURE || tile.roundShadow) {
@@ -682,7 +682,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawText(blendNightColor(Color::WHITE, index), pos + move + size / 2, "S",
           Renderer::CenterType::HOR_VER, size.x * 2 / 3);
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
-      renderer.drawTile(pos + move, Tile::getTile(ViewId("key"), spriteMode).getSpriteCoord(), size);
+      renderer.drawTile(pos + move, renderer.getTileSet().getTile(ViewId("key"), spriteMode).getSpriteCoord(), size);
     if (fxViewManager)
       if (auto genericId = object.getGenericId()) {
         float fxPosX = tilePos.x + move.x / (float)size.x;
@@ -711,7 +711,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
           blendNightColor(getPortalColor(*version), index), tilePos, tile.text, Renderer::HOR);
     else
       renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y,
-          blendNightColor(Tile::getColor(object), index), tilePos, tile.text, Renderer::HOR);
+          blendNightColor(renderer.getTileSet().getColor(object), index), tilePos, tile.text, Renderer::HOR);
     if (object.hasModifier(ViewObject::Modifier::BURNING))
       renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(),
           pos + Vec2(size.x / 2, -3), u8"Ѡ", Renderer::HOR);
@@ -764,8 +764,8 @@ const static EnumMap<Dir, DirSet> adjacentDirs(
     });
 
 void MapGui::drawFoWSprite(Renderer& renderer, Vec2 pos, Vec2 size, DirSet dirs, DirSet diagonalDirs) {
-  const Tile& tile = Tile::getTile(ViewId("fog_of_war"), true);
-  const Tile& tile2 = Tile::getTile(ViewId("fog_of_war_corner"), true);
+  const Tile& tile = renderer.getTileSet().getTile(ViewId("fog_of_war"), true);
+  const Tile& tile2 = renderer.getTileSet().getTile(ViewId("fog_of_war_corner"), true);
   auto coord = tile.getSpriteCoord(dirs);
   renderer.drawTile(pos, coord, size);
   for (Dir dir : diagonalDirs)
@@ -783,7 +783,7 @@ void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal
   for (Vec2 wpos : layout->getAllTiles(getBounds(), levelBounds, getScreenPos()))
     if (objects[wpos] && objects[wpos]->hasObject(ViewLayer::FLOOR_BACKGROUND)) {
       ViewId viewId = objects[wpos]->getObject(ViewLayer::FLOOR_BACKGROUND).id();
-      if (Tile::getTile(viewId, true).hasExtraBorders())
+      if (renderer.getTileSet().getTile(viewId, true).hasExtraBorders())
         for (Vec2 v : wpos.neighbors4())
           if (v.inRectangle(extraBorderPos.getBounds())) {
             if (extraBorderPos.isDirty(v))
@@ -797,7 +797,7 @@ void MapGui::renderExtraBorders(Renderer& renderer, milliseconds currentTimeReal
       auto color = Color::WHITE;
       if (objects[wpos])
         color = blendNightColor(color, *objects[wpos]);
-      const Tile& tile = Tile::getTile(id, true);
+      const Tile& tile = renderer.getTileSet().getTile(id, true);
       for (auto& borderId : tile.getExtraBorderIds())
         if (connectionMap[wpos].count(borderId)) {
           DirSet dirs = 0;
@@ -879,7 +879,7 @@ bool MapGui::isRenderedHighlightLow(const ViewIndex& index, HighlightType type) 
 
 void MapGui::renderTexturedHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color, ViewId viewId) {
   if (spriteMode)
-    renderer.drawTile(pos, Tile::getTile(viewId, true).getSpriteCoord(), size, color);
+    renderer.drawTile(pos, renderer.getTileSet().getTile(viewId, true).getSpriteCoord(), size, color);
   else
     renderer.addQuad(Rectangle(pos, pos + size), color);
 }
@@ -1220,7 +1220,7 @@ void MapGui::render(Renderer& renderer) {
   processScrolling(currentTimeReal);
 }
 
-void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime) {
+void MapGui::updateObject(Vec2 pos, CreatureView* view, Renderer& renderer, milliseconds currentTime) {
   auto level = view->getCreatureViewLevel();
   objects[pos].emplace();
   auto& index = *objects[pos];
@@ -1233,18 +1233,21 @@ void MapGui::updateObject(Vec2 pos, CreatureView* view, milliseconds currentTime
   shadowed.erase(pos + Vec2(0, 1));
   if (index.hasObject(ViewLayer::FLOOR)) {
     auto& object = index.getObject(ViewLayer::FLOOR);
-    auto& tile = Tile::getTile(object.id());
+    auto& tile = renderer.getTileSet().getTile(object.id());
     if (tile.wallShadow && !object.hasModifier(ViewObjectModifier::PLANNED)) {
       shadowed.insert(pos + Vec2(0, 1));
     }
-    connectionMap[pos].insert(getConnectionId(object.id()));
+    connectionMap[pos].insert(getConnectionId(object.id(), tile));
   }
   if (index.hasObject(ViewLayer::FLOOR_BACKGROUND)) {
     auto& object = index.getObject(ViewLayer::FLOOR_BACKGROUND);
-    connectionMap[pos].insert(getConnectionId(object.id()));
+    auto& tile = renderer.getTileSet().getTile(object.id());
+    connectionMap[pos].insert(getConnectionId(object.id(), tile));
   }
-  if (auto viewId = index.getHiddenId())
-    connectionMap[pos].insert(getConnectionId(*viewId));
+  if (auto viewId = index.getHiddenId()) {
+    auto& tile = renderer.getTileSet().getTile(*viewId);
+    connectionMap[pos].insert(getConnectionId(*viewId, tile));
+  }
 }
 
 double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
@@ -1260,7 +1263,7 @@ double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
   return ret;
 }
 
-void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smoothMovement, bool ui,
+void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* mapLayout, bool smoothMovement, bool ui,
     const optional<TutorialInfo>& tutorial) {
   if (tutorial) {
     tutorialHighlightLow = tutorial->highlightedSquaresLow;
@@ -1284,7 +1287,7 @@ void MapGui::updateObjects(CreatureView* view, MapLayout* mapLayout, bool smooth
     for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
       if (level->needsRenderUpdate(pos) ||
           !lastSquareUpdate[pos] || *lastSquareUpdate[pos] < currentTimeReal - milliseconds{1000})
-        updateObject(pos, view, currentTimeReal);
+        updateObject(pos, view, renderer, currentTimeReal);
   previousView = view->getCenterType();
   if (previousLevel != level) {
     screenMovement = none;

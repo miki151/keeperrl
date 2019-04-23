@@ -35,6 +35,7 @@ class TutorialInfo;
 class UserInput;
 class FXViewManager;
 class Position;
+class Tile;
 
 namespace fx {
   class FXRenderer;
@@ -61,7 +62,7 @@ class MapGui : public GuiElem {
   virtual void onMouseRelease(Vec2) override;
   virtual bool onKeyPressed2(SDL::SDL_Keysym) override;
 
-  void updateObjects(CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI, const optional<TutorialInfo>&);
+  void updateObjects(CreatureView*, Renderer&, MapLayout*, bool smoothMovement, bool mouseUI, const optional<TutorialInfo>&);
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
   void addAnimation(PAnimation animation, Vec2 position);
@@ -93,7 +94,7 @@ class MapGui : public GuiElem {
   bool fxesAvailable() const;
 
   private:
-  void updateObject(Vec2, CreatureView*, milliseconds currentTime);
+  void updateObject(Vec2, CreatureView*, Renderer&, milliseconds currentTime);
   void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 movement, Vec2 tilePos,
       milliseconds currentTimeReal, const ViewIndex&);
   void drawCreatureHighlights(Renderer&, const ViewObject&, const ViewIndex&, Vec2 pos, Vec2 sz,
@@ -195,7 +196,7 @@ class MapGui : public GuiElem {
     bool softScroll;
   };
   optional<CenteredCreatureInfo> centeredCreaturePosition;
-  DirSet getConnectionSet(Vec2 tilePos, ViewId);
+  DirSet getConnectionSet(Vec2 tilePos, const ViewId&, const Tile&);
   EntityMap<Creature, milliseconds> woundedInfo;
   EntityMap<Creature, int> furnitureUsageFX;
   void considerWoundedAnimation(const ViewObject&, Color&, milliseconds curTimeReal);

@@ -34,12 +34,13 @@ enum class SpriteId {
 
 class ViewObject;
 class Clock;
+class TileSet;
 
 struct sth_stash;
 
 class Renderer {
   public:
-    static constexpr int nominalSize = 24;
+  static constexpr int nominalSize = 24;
 
   class TileCoord {
     public:
@@ -64,6 +65,8 @@ class Renderer {
   void initialize();
   bool isFullscreen();
   void showError(const string&);
+  const TileSet& getTileSet() const;
+  void setTileSet(const TileSet*);
   static vector<string> getFullscreenResolutions();
   const static int textSize = 19;
   const static int smallTextSize = 14;
@@ -196,5 +199,6 @@ class Renderer {
   vector<TileDirectory> tileDirectories;
   optional<DirectoryPath> animationDirectory;
   Clock* clock;
+  const TileSet* tileSet = nullptr;
 };
 

@@ -25,6 +25,7 @@
 #include "clock.h"
 #include "gzstream.h"
 #include "opengl.h"
+#include "tileset.h"
 
 Renderer::TileCoord::TileCoord(Vec2 p, int t) : pos(p), texNum(t) {
 }
@@ -414,6 +415,14 @@ void Renderer::showError(const string& s) {
   SDL_ShowSimpleMessageBox(SDL::SDL_MESSAGEBOX_ERROR, "Error", s.c_str(), window);
 }
 
+const TileSet& Renderer::getTileSet() const {
+  return *tileSet;
+}
+
+void Renderer::setTileSet(const TileSet* s) {
+  tileSet = s;
+}
+
 void Renderer::setVsync(bool on) {
   SDL::SDL_GL_SetSwapInterval(on ? 1 : 0);
 }
@@ -469,7 +478,7 @@ void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, double scale,
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, Color color) {
-  const Tile& tile = Tile::getTile(id);
+  const Tile& tile = tileSet->getTile(id);
   if (tile.hasSpriteCoord())
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), 1, color * tile.color);
   else
@@ -478,7 +487,7 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, Color color) {
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale, Color color) {
-  const Tile& tile = Tile::getTile(id, useSprite);
+  const Tile& tile = tileSet->getTile(id, useSprite);
   if (tile.hasSpriteCoord())
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), scale, color * tile.color);
   else
@@ -487,7 +496,7 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale,
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Color color, SpriteOrientation orient) {
-  const Tile& tile = Tile::getTile(id, useSprite);
+  const Tile& tile = tileSet->getTile(id, useSprite);
   if (tile.hasSpriteCoord())
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color, orient);
   else
@@ -507,7 +516,7 @@ void Renderer::drawViewObject(Vec2 pos, const ViewObject& object) {
 }
 
 void Renderer::drawAsciiBackground(ViewId id, Rectangle bounds) {
-  if (!Tile::getTile(id, true).hasSpriteCoord())
+  if (!tileSet->getTile(id, true).hasSpriteCoord())
     drawFilledRectangle(bounds, Color::BLACK);
 }
 
