@@ -35,24 +35,13 @@ enum class SpriteId {
 class ViewObject;
 class Clock;
 class TileSet;
+struct TileCoord;
 
 struct sth_stash;
 
 class Renderer {
   public:
   static constexpr int nominalSize = 24;
-
-  class TileCoord {
-    public:
-    TileCoord();
-    TileCoord(const TileCoord& o) : pos(o.pos), texNum(o.texNum) {}
-
-    private:
-    friend class Renderer;
-    TileCoord(Vec2, int);
-    Vec2 pos;
-    int texNum;
-  };
 
   Renderer(Clock*, const string& windowTile, const DirectoryPath& fontPath, const FilePath& cursorPath,
       const FilePath& clickedCursorPath);
@@ -126,23 +115,17 @@ class Renderer {
 
   void printSystemInfo(ostream&);
 
-  const vector<TileCoord>& getTileCoord(const string&);
-  vector<Texture> tiles;
-
   static void putPixel(SDL::SDL_Surface*, Vec2, Color);
   void addTilesDirectory(const DirectoryPath&, Vec2 size);
   void setAnimationsDirectory(const DirectoryPath&);
-  void loadTiles();
+  void loadAnimations();
   void makeScreenshot(const FilePath&);
   void renderDeferredSprites();
-
-  Vec2 getTileSize(TileCoord coord) const { return tileDirectories[coord.texNum].size; }
 
   private:
   friend class Texture;
   optional<Texture> textTexture;
   Renderer(const Renderer&);
-  map<string, vector<TileCoord>> tileCoords;
   struct AnimationInfo {
     Texture tex;
     int numFrames;
@@ -196,7 +179,6 @@ class Renderer {
     DirectoryPath path;
     Vec2 size;
   };
-  vector<TileDirectory> tileDirectories;
   optional<DirectoryPath> animationDirectory;
   Clock* clock;
   const TileSet* tileSet = nullptr;

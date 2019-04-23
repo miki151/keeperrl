@@ -21,10 +21,10 @@
 
 class ViewObject;
 class GameConfig;
+struct TileCoord;
 
 class Tile {
   public:
-  typedef Renderer::TileCoord TileCoord;
   static Tile empty();
   static Tile fromString(const string&, Color, bool symbol = false);
   static Tile byCoord(const vector<TileCoord>&);

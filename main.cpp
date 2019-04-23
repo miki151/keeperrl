@@ -74,11 +74,8 @@
 #endif
 
 static void initializeRendererTiles(Renderer& r, const DirectoryPath& path) {
-  r.addTilesDirectory(path.subdirectory("orig16"), Vec2(16, 16));
-  r.addTilesDirectory(path.subdirectory("orig24"), Vec2(24, 24));
-  r.addTilesDirectory(path.subdirectory("orig30"), Vec2(30, 30));
   r.setAnimationsDirectory(path.subdirectory("animations"));
-  r.loadTiles();
+  r.loadAnimations();
 }
 
 static double getMaxVolume() {
@@ -448,7 +445,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
-  TileSet tileSet(renderer, nullptr, true);
+  TileSet tileSet(nullptr, paidDataPath.subdirectory("images"), true);
   renderer.setTileSet(&tileSet);
   FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", options, installId);
   unique_ptr<View> view;

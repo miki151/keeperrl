@@ -305,9 +305,9 @@ class GuiFactory {
   Vec2 getScrollButtonSize();
   SDL::SDL_Keysym getHotkeyEvent(char) ;
 
-  EnumMap<TexId, Texture> textures;
+  EnumMap<TexId, optional<Texture>> textures;
   vector<Texture> iconTextures;
-  EnumMap<AttrType, Texture> attrTextures;
+  EnumMap<AttrType, optional<Texture>> attrTextures;
   Clock* clock;
   Renderer& renderer;
   Options* options;

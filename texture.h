@@ -23,7 +23,6 @@
 
 class Texture {
   public:
-  Texture();
   Texture(const Texture&) = delete;
   Texture(Texture&&);
   Texture& operator=(Texture&&);
@@ -57,6 +56,7 @@ class Texture {
   void setParams(Filter, Wrapping);
 
   private:
+  Texture();
   void addTexCoord(int x, int y) const;
 
   // When texId != none, it's always > 0

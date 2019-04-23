@@ -39,6 +39,7 @@
 #include "fx_info.h"
 #include "fx_view_manager.h"
 #include "draw_line.h"
+#include "tileset.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -721,10 +722,10 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
       Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
           playerPos.x + dir.x, playerPos.y + dir.y);
       if (currentTileLayout.sprites) {
-        static vector<Renderer::TileCoord> coords;
+        static vector<TileCoord> coords;
         if (coords.empty())
           for (int i = 0; i < 8; ++i)
-            coords.push_back(renderer.getTileCoord("arrow" + toString(i)).getOnlyElement());
+            coords.push_back(renderer.getTileSet().getTileCoord("arrow" + toString(i)).getOnlyElement());
         renderer.drawTile(wpos, {coords[int(dir.getCardinalDir())]}, mapLayout->getSquareSize());
       } else {
         int numArrow = int(dir.getCardinalDir());
@@ -1326,7 +1327,7 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       break;
     case SDL::SDLK_F8:
       //renderer.startMonkey();
-      renderer.loadTiles();
+      renderer.loadAnimations();
       fxRenderer->loadTextures();
       gui.loadImages();
       inputQueue.push(UserInputId::RELOAD_DATA);

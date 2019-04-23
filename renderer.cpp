@@ -27,12 +27,6 @@
 #include "opengl.h"
 #include "tileset.h"
 
-Renderer::TileCoord::TileCoord(Vec2 p, int t) : pos(p), texNum(t) {
-}
-
-Renderer::TileCoord::TileCoord() : TileCoord(Vec2(0, 0), -1) {
-}
-
 void Renderer::renderDeferredSprites() {
   static vector<SDL::GLfloat> vertices;
   static vector<SDL::GLfloat> texCoords;
@@ -453,15 +447,12 @@ void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Co
     return;
   auto frame = clock->getRealMillis().count() / 200;
   auto& coord = coords[frame % coords.size()];
-  CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
-  Texture* tex = &tiles[coord.texNum];
-  Vec2 sz = tileDirectories[coord.texNum].size;
-  Vec2 off = (Vec2(nominalSize, nominalSize) - sz).mult(size) / (nominalSize * 2);
-  Vec2 tileSize = sz.mult(size) / nominalSize;
-  if (sz.y > nominalSize)
+  Vec2 off = (Vec2(nominalSize, nominalSize) - coord.size).mult(size) / (nominalSize * 2);
+  Vec2 tileSize = coord.size.mult(size) / nominalSize;
+  if (coord.size.y > nominalSize)
     off.y *= 2;
-  Vec2 coordPos = coord.pos.mult(sz);
-  drawSprite(pos + off, coordPos, sz, *tex, tileSize, color, orientation);
+  Vec2 coordPos = coord.pos.mult(coord.size);
+  drawSprite(pos + off, coordPos, coord.size, *coord.texture, tileSize, color, orientation);
 }
 
 void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, double scale, Color color) {
@@ -469,12 +460,10 @@ void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, double scale,
     return;
   auto frame = clock->getRealMillis().count() / 200;
   auto& coord = coords[frame % coords.size()];
-  CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
-  Vec2 sz = tileDirectories[coord.texNum].size;
-  Vec2 off = getOffset(Vec2(nominalSize, nominalSize) - sz, scale);
-  if (sz.y > nominalSize)
+  Vec2 off = getOffset(Vec2(nominalSize, nominalSize) - coord.size, scale);
+  if (coord.size.y > nominalSize)
     off.y *= 2;
-  drawSprite(pos + off, coord.pos.mult(sz), sz, tiles[coord.texNum], sz * scale, color);
+  drawSprite(pos + off, coord.pos.mult(coord.size), coord.size, *coord.texture, coord.size * scale, color);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, Color color) {
@@ -520,67 +509,15 @@ void Renderer::drawAsciiBackground(ViewId id, Rectangle bounds) {
     drawFilledRectangle(bounds, Color::BLACK);
 }
 
-void Renderer::loadTiles() {
-  tiles.clear();
-  tileCoords.clear();
-  for (auto& dir : tileDirectories)
-    loadTilesFromDir(dir.path, dir.size, 720);
+void Renderer::loadAnimations() {
   if (animationDirectory) {
     for (auto id : ENUM_ALL(AnimationId))
       animations[id] = AnimationInfo { Texture(animationDirectory->file(getFileName(id))), getNumFrames(id)};
   }
 }
 
-void Renderer::addTilesDirectory(const DirectoryPath& path, Vec2 size) {
-  tileDirectories.push_back({path, size});
-}
-
 void Renderer::setAnimationsDirectory(const DirectoryPath& path) {
   animationDirectory = path;
-}
-
-void Renderer::loadTilesFromDir(const DirectoryPath& path, Vec2 size, int setWidth) {
-  const static string imageSuf = ".png";
-  auto files = path.getFiles().filter([](const FilePath& f) { return f.hasSuffix(imageSuf);});
-  int rowLength = setWidth / size.x;
-  SDL::SDL_Surface* image = Texture::createSurface(setWidth, setWidth);
-  SDL::SDL_SetSurfaceBlendMode(image, SDL::SDL_BLENDMODE_NONE);
-  CHECK(image) << SDL::SDL_GetError();
-  int frameCount = 0;
-  for (int i : All(files)) {
-    SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath());
-    SDL::SDL_SetSurfaceBlendMode(im, SDL::SDL_BLENDMODE_NONE);
-    CHECK(im) << files[i] << ": "<< SDL::IMG_GetError();
-    USER_CHECK((im->w % size.x == 0) && im->h == size.y) << files[i] << " has wrong size " << im->w << " " << im->h;
-    string fileName = files[i].getFileName();
-    string spriteName = fileName.substr(0, fileName.size() - imageSuf.size());
-    CHECK(!tileCoords.count(spriteName)) << "Duplicate name " << spriteName;
-    for (int frame : Range(im->w / size.x)) {
-      SDL::SDL_Rect dest;
-      int posX = frameCount % rowLength;
-      int posY = frameCount / rowLength;
-      dest.x = size.x * posX;
-      dest.y = size.y * posY;
-      CHECK(dest.x < setWidth && dest.y < setWidth);
-      SDL::SDL_Rect src;
-      src.x = frame * size.x;
-      src.y = 0;
-      src.w = size.x;
-      src.h = size.y;
-      SDL_BlitSurface(im, &src, image, &dest);
-      tileCoords[spriteName].push_back({{posX, posY}, int(tiles.size())});
-      INFO << "Loading tile sprite " << fileName << " at " << posX << "," << posY;
-      ++frameCount;
-    }
-    SDL::SDL_FreeSurface(im);
-  }
-  tiles.push_back(Texture(image));
-  SDL::SDL_FreeSurface(image);
-}
-
-const vector<Renderer::TileCoord>& Renderer::getTileCoord(const string& name) {
-  USER_CHECK(tileCoords.count(name)) << "Tile not found: '" << name << "'. Please make sure all game data is in place.";
-  return tileCoords.at(name);
 }
 
 void Renderer::drawAndClearBuffer() {

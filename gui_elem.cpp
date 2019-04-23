@@ -2542,7 +2542,7 @@ SGuiElem GuiFactory::slider(SGuiElem button, shared_ptr<int> position, int max) 
 }
 
 Texture& GuiFactory::get(TexId id) {
-  return textures[id];
+  return *textures[id];
 }
 
 void GuiFactory::loadImages() {
@@ -2946,10 +2946,10 @@ SGuiElem GuiFactory::textInput(int width, int maxLines, shared_ptr<string> text)
 
 SGuiElem GuiFactory::minimapBar(SGuiElem icon1, SGuiElem icon2) {
   auto& tex = textures[TexId::MINIMAP_BAR];
-  return preferredSize(tex.getSize(),
+  return preferredSize(tex->getSize(),
       stack(
           stopMouseMovement(),
-          sprite(tex, Alignment::CENTER, Color::WHITE),
+          sprite(*tex, Alignment::CENTER, Color::WHITE),
           translate(std::move(icon1), Vec2(21, 0)),
           translate(std::move(icon2), Vec2(83, 0))
       ));
@@ -2964,7 +2964,7 @@ SGuiElem GuiFactory::icon(IconId id, Alignment alignment, Color color) {
 }
 
 SGuiElem GuiFactory::icon(AttrType attr) {
-  return sprite(attrTextures[attr], Alignment::CENTER, Color::WHITE);
+  return sprite(*attrTextures[attr], Alignment::CENTER, Color::WHITE);
 }
 
 static int trans1 = 1094;

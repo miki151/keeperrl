@@ -20,6 +20,7 @@
 #include "view_object.h"
 #include "tile_info.h"
 #include "game_config.h"
+#include "tileset.h"
 
 Tile::Tile() {
 }
@@ -113,7 +114,7 @@ bool Tile::hasExtraBorders() const {
   return anyExtraBorders;
 }
 
-const vector<Tile::TileCoord>& Tile::getExtraBorderCoord(DirSet c) const {
+const vector<TileCoord>& Tile::getExtraBorderCoord(DirSet c) const {
   return extraBorders[c];
 }
 
@@ -130,12 +131,12 @@ bool Tile::hasSpriteCoord() const {
   return !tileCoord.empty();
 }
 
-const vector<Tile::TileCoord>& Tile::getSpriteCoord() const {
+const vector<TileCoord>& Tile::getSpriteCoord() const {
   CHECK(!tileCoord.empty());
   return tileCoord;
 }
 
-const vector<Tile::TileCoord>& Tile::getBackgroundCoord() const {
+const vector<TileCoord>& Tile::getBackgroundCoord() const {
   return backgroundCoord;
 }
 
@@ -143,7 +144,7 @@ bool Tile::hasAnyConnections() const {
   return anyConnections;
 }
 
-const vector<Tile::TileCoord>& Tile::getSpriteCoord(DirSet c) const {
+const vector<TileCoord>& Tile::getSpriteCoord(DirSet c) const {
   if (connectionOption) {
     if (c.has(connectionOption->first))
       return connectionOption->second;
@@ -173,7 +174,7 @@ bool Tile::hasAnyCorners() const {
   return anyCorners;
 }
 
-const vector<Tile::TileCoord>& Tile::getCornerCoords(DirSet c) const {
+const vector<TileCoord>& Tile::getCornerCoords(DirSet c) const {
   return corners[c];
 }
 

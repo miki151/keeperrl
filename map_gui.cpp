@@ -555,7 +555,7 @@ void MapGui::drawFurnitureCracks(Renderer& renderer, Vec2 tilePos, float state, 
   }();
   if (tileName) {
     auto hash = tilePos.getHash();
-    renderer.drawTile(pos, renderer.getTileCoord(tileName), size, blendNightColor(Color::WHITE, index),
+    renderer.drawTile(pos, renderer.getTileSet().getTileCoord(tileName), size, blendNightColor(Color::WHITE, index),
         Renderer::SpriteOrientation(hash % 2, (hash / 2) % 2));
   }
 }
@@ -641,7 +641,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     Vec2 move;
     drawCreatureHighlights(renderer, object, index, pos + movement, size, curTimeReal);
     if (object.layer() == ViewLayer::CREATURE || tile.roundShadow) {
-      static auto coord = renderer.getTileCoord("round_shadow");
+      static auto coord = renderer.getTileSet().getTileCoord("round_shadow");
       renderer.drawTile(pos + movement, coord, size, blendNightColor(Color(255, 255, 255, 160), index));
     }
     if (object.layer() == ViewLayer::CREATURE || tile.moveUp)
@@ -660,20 +660,20 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     }
 
     if (auto version = object.getPortalVersion())
-      renderer.drawTile(pos + move, renderer.getTileCoord("portal_inside"), size, getPortalColor(*version));
+      renderer.drawTile(pos + move, renderer.getTileSet().getTileCoord("portal_inside"), size, getPortalColor(*version));
     if (tile.hasAnyCorners()) {
       for (auto coord : tile.getCornerCoords(dirs))
         renderer.drawTile(pos + move, {coord}, size, color);
     }
     if (object.hasModifier(ViewObject::Modifier::AURA))
-      renderer.drawTile(pos + move, renderer.getTileCoord("aura"), size);
-    static auto shortShadow = renderer.getTileCoord("short_shadow");
+      renderer.drawTile(pos + move, renderer.getTileSet().getTileCoord("aura"), size);
+    static auto shortShadow = renderer.getTileSet().getTileCoord("short_shadow");
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
       renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
     bool burning = object.hasModifier(ViewObject::Modifier::BURNING);
     if (burning && !fxViewManager) {
-      static auto fire1 = renderer.getTileCoord("fire1");
-      static auto fire2 = renderer.getTileCoord("fire2");
+      static auto fire1 = renderer.getTileSet().getTileCoord("fire1");
+      static auto fire2 = renderer.getTileSet().getTileCoord("fire2");
       renderer.drawTile(pos - Vec2(0, 4 * size.y / Renderer::nominalSize),
           (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
     }
@@ -698,7 +698,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         if (auto fx = tile.getFX())
           effects.insert(*fx);
 
-        bool bigTile = renderer.getTileSize(coord.front()).x > Renderer::nominalSize;
+        bool bigTile = coord.front().size.x > Renderer::nominalSize;
         for (auto fx : effects)
           fxViewManager->addFX(*genericId, fx, bigTile);
         fxViewManager->drawFX(renderer, *genericId, blendNightColor(Color::WHITE, index));
