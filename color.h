@@ -65,3 +65,9 @@ struct Color {
 
   unsigned char r, g, b, a;
 };
+
+struct ColorInfo {
+  Color value;
+  template <typename Archive>
+  void serialize(Archive&, unsigned long);
+};

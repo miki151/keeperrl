@@ -37,3 +37,7 @@ const char* GameConfig::getConfigName(GameConfigId id) {
 
 GameConfig::GameConfig(DirectoryPath path) : path(std::move(path)) {
 }
+
+const DirectoryPath& GameConfig::getPath() const {
+  return path;
+}

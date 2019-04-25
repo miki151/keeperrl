@@ -17,12 +17,14 @@ struct TileCoord {
 
 class TileSet {
   public:
-  TileSet(GameConfig* config, const DirectoryPath&, bool useTiles);
+  TileSet(const DirectoryPath& defaultDir);
+  void reload(const GameConfig*, bool useTiles);
   const Tile& getTile(ViewId id, bool sprite = true) const;
   Color getColor(const ViewObject&) const;
   const vector<TileCoord>& getTileCoord(const string&) const;
 
   private:
+  DirectoryPath defaultDir;
   friend class TileCoordLookup;
   void addTile(ViewId, Tile);
   void addSymbol(ViewId, Tile);
@@ -38,18 +40,9 @@ class TileSet {
   Tile empty();
   Tile getRoadTile(const string& prefix);
   Tile getWallTile(const string& prefix);
-  Tile getMountainTile(Tile background, const string& prefix);
+  Tile getMountainTile(const string& spriteName, const string& prefix);
   Tile getWaterTile(const string& background, const string& prefix);
   Tile getExtraBorderTile(const string& prefix);
-  void genTiles1();
-  void genSymbols5();
-  void genSymbols4();
-  void genSymbols3();
-  void genSymbols2();
-  void genSymbols1();
-  void genTiles5();
-  void genTiles4();
-  void genTiles3();
-  void genTiles2();
   Tile symbol(const string& s, Color id, bool symbol = false);
+  void loadModdedTiles(const GameConfig*, bool useTiles);
 };

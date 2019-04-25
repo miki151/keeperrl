@@ -28,9 +28,11 @@ class GameConfig {
   public:
   GameConfig(DirectoryPath);
   template<typename T>
-  optional<string> readObject(T& object, GameConfigId id) const {
+  [[nodiscard]] optional<string> readObject(T& object, GameConfigId id) const {
     return PrettyPrinting::parseObject<T>(object, path.file(getConfigName(id) + ".txt"_s));
   }
+
+  const DirectoryPath& getPath() const;
 
   private:
   static const char* getConfigName(GameConfigId);

@@ -399,7 +399,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
   if (commandLineFlags["worldgen_test"].was_set()) {
-    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
+    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, nullptr,
         useSingleThread, 0);
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
@@ -407,8 +407,8 @@ static int keeperMain(po::parser& commandLineFlags) {
     loop.modelGenTest(commandLineFlags["worldgen_test"].get().i32, types, Random, &options);
     return 0;
   }
-  auto battleTest = [&] (View* view) {
-    MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
+  auto battleTest = [&] (View* view, TileSet* tileSet) {
+    MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, tileSet,
         useSingleThread, 0);
     auto level = commandLineFlags["battle_level"].get().string;
     auto info = commandLineFlags["battle_info"].get().string;
@@ -427,7 +427,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     } catch (GameExitException) {}
   };
   if (commandLineFlags["battle_level"].was_set() && !commandLineFlags["battle_view"].was_set()) {
-    battleTest(new DummyView(&clock));
+    battleTest(new DummyView(&clock), nullptr);
     return 0;
   }
   GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap, freeDataPath.subdirectory("images"),
@@ -445,7 +445,9 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
-  TileSet tileSet(nullptr, paidDataPath.subdirectory("images"), true);
+  TileSet tileSet(paidDataPath.subdirectory("images"));
+  GameConfig config(freeDataPath.subdirectory("game_config").subdirectory("vanilla"));
+  tileSet.reload(&config, true);
   renderer.setTileSet(&tileSet);
   FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", options, installId);
   unique_ptr<View> view;
@@ -456,10 +458,10 @@ static int keeperMain(po::parser& commandLineFlags) {
 #endif
   view->initialize(std::move(fxRenderer), std::move(fxViewManager));
   if (commandLineFlags["battle_level"].was_set() && commandLineFlags["battle_view"].was_set()) {
-    battleTest(view.get());
+    battleTest(view.get(), &tileSet);
     return 0;
   }
-  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput,
+  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, &tileSet,
       useSingleThread, appConfig.get<int>("save_version"));
   try {
     if (audioError)

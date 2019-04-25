@@ -39,9 +39,9 @@
 #include "tileset.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
-    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, bool singleThread, int sv)
+    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, TileSet* tileSet, bool singleThread, int sv)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j), highscores(h), fileSharing(fSharing),
-        useSingleThread(singleThread), sokobanInput(soko), saveVersion(sv) {
+        useSingleThread(singleThread), sokobanInput(soko), tileSet(tileSet), saveVersion(sv) {
 }
 
 vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const string& suffix) {
@@ -237,6 +237,8 @@ void MainLoop::bugReportSave(PGame& game, FilePath path) {
 MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave,
     const GameConfig* gameConfig, function<optional<ExitCondition>(WGame)> exitCondition,
     milliseconds stepTimeMilli) {
+  if (tileSet)
+    tileSet->reload(gameConfig, true);
   view->reset();
   if (!noAutoSave)
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });

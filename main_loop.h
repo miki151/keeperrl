@@ -26,11 +26,12 @@ class GameConfig;
 class AvatarInfo;
 class NameGenerator;
 struct ModelTable;
+class TileSet;
 
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      Options*, Jukebox*, SokobanInput*, bool useSingleThread, int saveVersion);
+      Options*, Jukebox*, SokobanInput*, TileSet*, bool useSingleThread, int saveVersion);
 
   void start(bool tilesPresent, bool quickGame);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
@@ -89,6 +90,7 @@ class MainLoop {
   FileSharing* fileSharing = nullptr;
   bool useSingleThread;
   SokobanInput* sokobanInput;
+  TileSet* tileSet;
   PModel getBaseModel(ModelBuilder&, CampaignSetup&, const AvatarInfo&);
   void considerGameEventsPrompt();
   void considerFreeVersionText(bool tilesPresent);

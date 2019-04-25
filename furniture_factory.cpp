@@ -61,7 +61,7 @@ static Furniture get(FurnitureType type, TribeId tribe) {
           .setCanHide()
           .setDestroyable(80);
     case FurnitureType::LABORATORY:
-      return Furniture("laboratory", ViewObject(ViewId("laboratory"), ViewLayer::FLOOR), type, tribe)
+      return Furniture("laboratory", ViewObject(ViewId("cauldron"), ViewLayer::FLOOR), type, tribe)
           .setBlocking()
           .setUsageTime(5_visible)
           .setCanHide()

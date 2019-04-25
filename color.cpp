@@ -80,3 +80,105 @@ Color Color::blend(Color c) const {
 bool Color::operator==(const Color& rhs) const {
   return r == rhs.r && g == rhs.g && b == rhs.b && a == rhs.a;
 }
+
+template<typename Archive>
+void ColorInfo::serialize(Archive& ar1, unsigned long) {
+  ar1(value.r, value.g, value.b, value.a);
+}
+
+#include "pretty_archive.h"
+
+RICH_ENUM(
+    ColorId,
+    WHITE,
+    MAIN_MENU_ON,
+    MAIN_MENU_OFF,
+    YELLOW,
+    LIGHT_BROWN,
+    ORANGE_BROWN,
+    BROWN,
+    DARK_BROWN,
+    LIGHT_GRAY,
+    GRAY,
+    ALMOST_GRAY,
+    DARK_GRAY,
+    ALMOST_BLACK,
+    ALMOST_DARK_GRAY,
+    BLACK,
+    ALMOST_WHITE,
+    GREEN,
+    LIGHT_GREEN,
+    DARK_GREEN,
+    RED,
+    LIGHT_RED,
+    PINK,
+    ORANGE,
+    BLUE,
+    DARK_BLUE,
+    LIGHT_BLUE,
+    SKY_BLUE,
+    PURPLE,
+    VIOLET,
+    TRANSLUCENT_BLACK,
+    TRANSPARENT
+);
+
+struct Rgb {
+  int SERIAL(r);
+  int SERIAL(g);
+  int SERIAL(b);
+  int SERIAL(a);
+  SERIALIZE_ALL(r, g, b, a)
+};
+
+MAKE_VARIANT2(ColorDef, ColorId, Rgb);
+
+#define MAP_COLOR(Name) case ColorId::Name: return Color::Name
+
+template<>
+void ColorInfo::serialize(PrettyInputArchive& ar, unsigned long) {
+  ColorDef SERIAL(def);
+  ar(def);
+  value = def.visit(
+      [&](Rgb c) -> Color {
+        return Color(c.r, c.g, c.b, c.a);
+      },
+      [&](ColorId id) -> Color {
+        switch (id) {
+          MAP_COLOR(WHITE);
+          MAP_COLOR(MAIN_MENU_ON);
+          MAP_COLOR(MAIN_MENU_OFF);
+          MAP_COLOR(YELLOW);
+          MAP_COLOR(LIGHT_BROWN);
+          MAP_COLOR(ORANGE_BROWN);
+          MAP_COLOR(BROWN);
+          MAP_COLOR(DARK_BROWN);
+          MAP_COLOR(LIGHT_GRAY);
+          MAP_COLOR(GRAY);
+          MAP_COLOR(ALMOST_GRAY);
+          MAP_COLOR(DARK_GRAY);
+          MAP_COLOR(ALMOST_BLACK);
+          MAP_COLOR(ALMOST_DARK_GRAY);
+          MAP_COLOR(BLACK);
+          MAP_COLOR(ALMOST_WHITE);
+          MAP_COLOR(GREEN);
+          MAP_COLOR(LIGHT_GREEN);
+          MAP_COLOR(DARK_GREEN);
+          MAP_COLOR(RED);
+          MAP_COLOR(LIGHT_RED);
+          MAP_COLOR(PINK);
+          MAP_COLOR(ORANGE);
+          MAP_COLOR(BLUE);
+          MAP_COLOR(DARK_BLUE);
+          MAP_COLOR(LIGHT_BLUE);
+          MAP_COLOR(SKY_BLUE);
+          MAP_COLOR(PURPLE);
+          MAP_COLOR(VIOLET);
+          MAP_COLOR(TRANSLUCENT_BLACK);
+          MAP_COLOR(TRANSPARENT);
+        }
+      }
+  );
+}
+
+#undef MAP_COLOR

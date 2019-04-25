@@ -510,7 +510,7 @@ static ViewId getSlotViewId(EquipmentSlot slot) {
   switch (slot) {
     case EquipmentSlot::BOOTS: return ViewId("leather_boots");
     case EquipmentSlot::WEAPON: return ViewId("sword");
-    case EquipmentSlot::RINGS: return ViewId("fire_resist_ring");
+    case EquipmentSlot::RINGS: return ViewId("ring_red");
     case EquipmentSlot::HELMET: return ViewId("leather_helm");
     case EquipmentSlot::RANGED_WEAPON: return ViewId("bow");
     case EquipmentSlot::GLOVES: return ViewId("leather_gloves");

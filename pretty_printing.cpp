@@ -31,6 +31,7 @@
 #include "resource_counts.h"
 #include "creature_inventory.h"
 #include "campaign_type.h"
+#include "tile_info.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename) {
@@ -65,3 +66,4 @@ ADD_IMP(pair<vector<string>, map<CampaignType, vector<string>>>)
 ADD_IMP(Spell)
 ADD_IMP(map<string, Spell>)
 ADD_IMP(map<string, SpellSchool>)
+ADD_IMP(vector<TileInfo>)

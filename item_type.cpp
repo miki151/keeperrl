@@ -323,9 +323,9 @@ static int getEffectPrice(Effect type) {
 
 ViewId getRingViewId(LastingEffect e) {
   switch (e) {
-    case LastingEffect::FIRE_RESISTANT: return ViewId("fire_resist_ring");
-    case LastingEffect::POISON_RESISTANT: return ViewId("poison_resist_ring");
-    default: return ViewId("fire_resist_ring");
+    case LastingEffect::FIRE_RESISTANT: return ViewId("ring_red");
+    case LastingEffect::POISON_RESISTANT: return ViewId("ring_green");
+    default: return ViewId("ring_red");
   }
 }
 

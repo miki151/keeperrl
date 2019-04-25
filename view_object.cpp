@@ -146,8 +146,6 @@ static const char* getDefaultDescription(const ViewId& id) {
     return "Statue";
   if (id == ViewId("stone_minion_statue"))
     return "Stone Statue";
-  if (id == ViewId("creature_altar"))
-    return "Shrine";
   if (id == ViewId("fountain"))
     return "Fountain";
   if (id == ViewId("treasure_chest") || id == ViewId("chest"))
@@ -187,8 +185,6 @@ static const char* getDefaultDescription(const ViewId& id) {
       id == ViewId("carpet_floor3") || id == ViewId("carpet_floor4") || id == ViewId("carpet_floor5") ||
       id == ViewId("keeper_floor") || id == ViewId("floor"))
     return "Floor";
-  if (id == ViewId("border_guard"))
-    return "Wall";
   return "";
 }
 

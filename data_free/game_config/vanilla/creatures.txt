@@ -2517,7 +2517,7 @@
     }
   "FIRE_SPHERE"
     {
-      viewId = "fire_sphere"
+      viewId = "fire_elemental"
       attr = {
         DAMAGE 5
         DEFENSE 15 

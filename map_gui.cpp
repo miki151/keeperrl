@@ -52,7 +52,7 @@ MapGui::MapGui(Callbacks call, SyncQueue<UserInput>& inputQueue, Clock* c, Optio
 
 MapGui::~MapGui() = default;
 
-static int fireVar = 50;
+constexpr int fireVar = 50;
 
 static Color getFireColor() {
   return Color(200 + Random.get(-fireVar, fireVar), Random.get(fireVar), Random.get(fireVar), 150);
@@ -641,7 +641,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     Vec2 move;
     drawCreatureHighlights(renderer, object, index, pos + movement, size, curTimeReal);
     if (object.layer() == ViewLayer::CREATURE || tile.roundShadow) {
-      static auto coord = renderer.getTileSet().getTileCoord("round_shadow");
+      auto& coord = renderer.getTileSet().getTileCoord("round_shadow");
       renderer.drawTile(pos + movement, coord, size, blendNightColor(Color(255, 255, 255, 160), index));
     }
     if (object.layer() == ViewLayer::CREATURE || tile.moveUp)
@@ -667,13 +667,13 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     }
     if (object.hasModifier(ViewObject::Modifier::AURA))
       renderer.drawTile(pos + move, renderer.getTileSet().getTileCoord("aura"), size);
-    static auto shortShadow = renderer.getTileSet().getTileCoord("short_shadow");
+    auto& shortShadow = renderer.getTileSet().getTileCoord("short_shadow");
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
       renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
     bool burning = object.hasModifier(ViewObject::Modifier::BURNING);
     if (burning && !fxViewManager) {
-      static auto fire1 = renderer.getTileSet().getTileCoord("fire1");
-      static auto fire2 = renderer.getTileSet().getTileCoord("fire2");
+      auto& fire1 = renderer.getTileSet().getTileCoord("fire1");
+      auto& fire2 = renderer.getTileSet().getTileCoord("fire2");
       renderer.drawTile(pos - Vec2(0, 4 * size.y / Renderer::nominalSize),
           (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
     }
