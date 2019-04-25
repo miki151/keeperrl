@@ -237,8 +237,6 @@ void MainLoop::bugReportSave(PGame& game, FilePath path) {
 MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave,
     const GameConfig* gameConfig, function<optional<ExitCondition>(WGame)> exitCondition,
     milliseconds stepTimeMilli) {
-  if (tileSet)
-    tileSet->reload(gameConfig, true);
   view->reset();
   if (!noAutoSave)
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
@@ -401,6 +399,8 @@ void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
   auto gameConfig = getGameConfig();
+  if (tileSet)
+    tileSet->reload(&gameConfig, true);
   auto creatureFactory = createCreatureFactory(&gameConfig);
   EnemyFactory enemyFactory(Random, creatureFactory.getNameGenerator());
   auto model = ModelBuilder(&meter, Random, options, sokobanInput, &gameConfig, &creatureFactory, std::move(enemyFactory))
@@ -496,6 +496,8 @@ void MainLoop::start(bool tilesPresent, bool quickGame) {
     switch (*choice) {
       case 0: {
         auto gameConfig = getGameConfig();
+        if (tileSet)
+          tileSet->reload(&gameConfig, true);
         auto creatureFactory = createCreatureFactory(&gameConfig);
         if (PGame game = prepareCampaign(Random, &gameConfig, std::move(creatureFactory)))
           playGame(std::move(game), true, false, &gameConfig);

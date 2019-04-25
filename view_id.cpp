@@ -14,7 +14,11 @@ static int getId(const char* text) {
     ++generatedId;
   }
   auto ret = getReferenceMaybe(ids, text);
+#ifdef RELEASE
+  USER_CHECK(!!ret) << "ViewId not found: " << text;
+#else
   CHECK(!!ret) << "ViewId not found: " << text;
+#endif
   return *ret;
 }
 
