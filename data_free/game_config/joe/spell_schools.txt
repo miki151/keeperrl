@@ -1,0 +1,21 @@
+{
+  "mage"
+  {
+    "heal self" 1
+    "summon flies" 2
+    "heal other" 3
+    "magic missile" 4
+    "deception" 4
+    "escape" 5
+    "haste self" 5
+    "cure poison" 6
+    "directed blast" 6
+    "circular blast" 7
+    "fireball" 7
+    "defense bonus" 8
+    "summon element" 9
+    "damage bonus" 10
+    "meteor shower" 11
+    "invisibility" 12
+  }
+}
