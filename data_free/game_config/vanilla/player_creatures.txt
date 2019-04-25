@@ -20,6 +20,16 @@
 #   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
   }
   {
+    creatureId = { "JOE" }
+    tribeAlignment = EVIL
+    immigrantGroups = { }
+    technology = { }
+    initialTech = { }
+    buildingGroups = { }
+    workshopGroups = { }
+    description = "Joe the Keeper!"
+  }
+  {
     creatureId = { "KEEPER_KNIGHT" "KEEPER_KNIGHT_F" }
     tribeAlignment = EVIL
     immigrantGroups = {"peseant_prisoners" "dark_keeper"}
@@ -59,4 +69,5 @@
 {
     # CreatureId                     TribeAlignment 
     { "ADVENTURER" "ADVENTURER_F" }      LAWFUL             "Roam the land in search of adventures and loot!"
+    { "JOE" }      LAWFUL             "Joe the adventurer!"
 }

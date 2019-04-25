@@ -1,4 +1,5 @@
 {
+  { "joe" "J" ColorId PURPLE }
   { "keeper1" "@" ColorId PURPLE }
   { "keeper2" "@" ColorId PURPLE }
   { "keeper3" "@" ColorId PURPLE }

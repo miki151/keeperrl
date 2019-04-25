@@ -3,6 +3,25 @@
 # "CreatureId" { CreatureAttributes }, see creature_attributes.h
 
 {
+  "JOE"
+    {
+      viewId = "joe"
+      attr = {
+        DAMAGE 17
+        DEFENSE 19 
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      permanentEffects = {
+        SLOWED 1
+      }
+      name = {
+        name = "joe"
+        firstName = "Joe"
+        fullTitle = true
+      }
+    }
   "KEEPER_MAGE"
     {
       # Definitions in view_id.h
