@@ -4,7 +4,7 @@
 
 class ViewId {
   public:
-  explicit ViewId(string);
+  explicit ViewId(const char*);
   bool operator == (const ViewId&) const;
   bool operator != (const ViewId&) const;
   bool operator < (const ViewId&) const;
@@ -12,8 +12,10 @@ class ViewId {
   const char* data() const;
   SERIALIZATION_DECL(ViewId)
 
+  static void setViewIdGeneration(bool);
+
   private:
-  string SERIAL(id);
+  int id;
 };
 
 std::ostream& operator <<(std::ostream&, ViewId);

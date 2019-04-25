@@ -186,6 +186,10 @@ ViewId CreatureFactory::getViewId(CreatureId id) {
   return idMap.at(id);
 }
 
+vector<CreatureId> CreatureFactory::getAllCreatures() const {
+  return getKeys(attributes);
+}
+
 NameGenerator* CreatureFactory::getNameGenerator() {
   return &*nameGenerator;
 }

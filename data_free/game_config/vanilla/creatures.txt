@@ -872,9 +872,9 @@
     }
   "PESEANT_PLAYER"
     {
-      viewId = "peseant"
+      viewId = "peasant"
       genderAlternatives = {
-        FEMALE "peseant_woman"
+        FEMALE "peasant_woman"
       }
       attr = {
         DAMAGE 14
@@ -1059,9 +1059,9 @@
     }
   "PESEANT"
     {
-      viewId = "peseant"
+      viewId = "peasant"
       genderAlternatives = {
-        FEMALE "peseant_woman"
+        FEMALE "peasant_woman"
       }
       attr = {
         DAMAGE 14
@@ -1129,9 +1129,9 @@
     }
   "PESEANT_PRISONER"
     {
-      viewId = "peseant"
+      viewId = "peasant"
       genderAlternatives = {
-        FEMALE "peseant_woman"
+        FEMALE "peasant_woman"
       }
       attr = {
         DAMAGE 14

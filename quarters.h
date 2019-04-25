@@ -15,7 +15,7 @@ class Quarters {
     ZoneId zone;
     ViewId viewId;
   };
-  static const vector<QuartersInfo>& getAllQuarters();
+  static vector<QuartersInfo> getAllQuarters();
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 

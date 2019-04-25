@@ -45,6 +45,7 @@ class CreatureFactory {
   static CreatureAttributes getKrakenAttributes(ViewId, const char* name);
   ViewId getViewId(CreatureId);
   const Gender& getGender(CreatureId);
+  vector<CreatureId> getAllCreatures() const;
 
   NameGenerator* getNameGenerator();
 

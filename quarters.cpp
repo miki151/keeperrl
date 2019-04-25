@@ -14,14 +14,12 @@ optional<int> Quarters::getAssigned(UniqueEntity<Creature>::Id id) const {
   return assignment.getMaybe(id);
 }
 
-const static vector<Quarters::QuartersInfo> allQuarters {
-  { ZoneId::QUARTERS1, ViewId("quarters1") },
-  { ZoneId::QUARTERS2, ViewId("quarters2") },
-  { ZoneId::QUARTERS3, ViewId("quarters3") },
-};
-
-const vector<Quarters::QuartersInfo>& Quarters::getAllQuarters() {
-  return allQuarters;
+vector<Quarters::QuartersInfo> Quarters::getAllQuarters() {
+  return {
+    { ZoneId::QUARTERS1, ViewId("quarters1") },
+    { ZoneId::QUARTERS2, ViewId("quarters2") },
+    { ZoneId::QUARTERS3, ViewId("quarters3") },
+  };
 }
 
 SERIALIZE_DEF(Quarters, assignment)

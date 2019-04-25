@@ -84,8 +84,6 @@ static const char* getDefaultDescription(const ViewId& id) {
     return "Fine bed";
   if (id == ViewId("bed3"))
     return "Luxurious bed";
-  if (id == ViewId("dorm"))
-    return "Dormitory";
   if (id == ViewId("torch"))
     return "Torch";
   if (id == ViewId("candelabrum_ns"))
@@ -132,8 +130,6 @@ static const char* getDefaultDescription(const ViewId& id) {
     return "Golden bookcase";
   if (id == ViewId("cauldron"))
     return "Cauldron";
-  if (id == ViewId("laboratory"))
-    return "Laboratory";
   if (id == ViewId("forge"))
     return "Forge";
   if (id == ViewId("workshop"))
@@ -361,181 +357,6 @@ optional<Dir> ViewObject::getAttachmentDir() const {
 
 ViewLayer ViewObject::layer() const {
   return viewLayer;
-}
-
-static unordered_set<ViewId, CustomHash<ViewId>> creatureIds {
-  ViewId("player"),
-  ViewId("keeper1"),
-  ViewId("keeper2"),
-  ViewId("keeper3"),
-  ViewId("keeper4"),
-  ViewId("keeper_f1"),
-  ViewId("keeper_f2"),
-  ViewId("keeper_f3"),
-  ViewId("keeper_f4"),
-  ViewId("keeper_knight1"),
-  ViewId("keeper_knight2"),
-  ViewId("keeper_knight3"),
-  ViewId("keeper_knight4"),
-  ViewId("keeper_knight_f1"),
-  ViewId("keeper_knight_f2"),
-  ViewId("keeper_knight_f3"),
-  ViewId("keeper_knight_f4"),
-  ViewId("elf"),
-  ViewId("elf_archer"),
-  ViewId("elf_child"),
-  ViewId("elf_lord"),
-  ViewId("shopkeeper"),
-  ViewId("lizardman"),
-  ViewId("lizardlord"),
-  ViewId("dwarf"),
-  ViewId("dwarf_female"),
-  ViewId("dwarf_baron"),
-  ViewId("imp"),
-  ViewId("prisoner"),
-  ViewId("ogre"),
-  ViewId("chicken"),
-  ViewId("green_dragon"),
-  ViewId("red_dragon"),
-  ViewId("cyclops"),
-  ViewId("witch"),
-  ViewId("ghost"),
-  ViewId("spirit"),
-  ViewId("knight"),
-  ViewId("duke1"),
-  ViewId("duke2"),
-  ViewId("duke3"),
-  ViewId("duke4"),
-  ViewId("duke_f1"),
-  ViewId("duke_f2"),
-  ViewId("duke_f3"),
-  ViewId("duke_f4"),
-  ViewId("archer"),
-  ViewId("unicorn"),
-  ViewId("peseant"),
-  ViewId("peseant_woman"),
-  ViewId("child"),
-  ViewId("shaman"),
-  ViewId("warrior"),
-  ViewId("orc"),
-  ViewId("demon_dweller"),
-  ViewId("demon_lord"),
-  ViewId("bandit"),
-  ViewId("clay_golem"),
-  ViewId("stone_golem"),
-  ViewId("iron_golem"),
-  ViewId("lava_golem"),
-  ViewId("zombie"),
-  ViewId("skeleton"),
-  ViewId("vampire"),
-  ViewId("vampire_lord"),
-  ViewId("mummy"),
-  ViewId("horse"),
-  ViewId("cow"),
-  ViewId("pig"),
-  ViewId("goat"),
-  ViewId("jackal"),
-  ViewId("deer"),
-  ViewId("boar"),
-  ViewId("fox"),
-  ViewId("bear"),
-  ViewId("wolf"),
-  ViewId("bat"),
-  ViewId("rat"),
-  ViewId("spider"),
-  ViewId("fly"),
-  ViewId("snake"),
-  ViewId("vulture"),
-  ViewId("raven"),
-  ViewId("goblin"),
-  ViewId("kraken_head"),
-  ViewId("kraken_land"),
-  ViewId("kraken_water"),
-  ViewId("fire_sphere"),
-  ViewId("death"),
-  ViewId("special_blbn"),
-  ViewId("special_blbw"),
-  ViewId("special_blgn"),
-  ViewId("special_blgw"),
-  ViewId("special_bmbn"),
-  ViewId("special_bmbw"),
-  ViewId("special_bmgn"),
-  ViewId("special_bmgw"),
-  ViewId("special_hlbn"),
-  ViewId("special_hlbw"),
-  ViewId("special_hlgn"),
-  ViewId("special_hlgw"),
-  ViewId("special_hmbn"),
-  ViewId("special_hmbw"),
-  ViewId("special_hmgn"),
-  ViewId("special_hmgw"),
-  ViewId("canif_tree"),
-  ViewId("decid_tree"),
-  ViewId("bush"),
-};
-
-static unordered_set<ViewId, CustomHash<ViewId>> itemIds {
-  ViewId("body_part"),
-  ViewId("bone"),
-  ViewId("spear"),
-  ViewId("sword"),
-  ViewId("special_sword"),
-  ViewId("elven_sword"),
-  ViewId("knife"),
-  ViewId("war_hammer"),
-  ViewId("special_war_hammer"),
-  ViewId("battle_axe"),
-  ViewId("special_battle_axe"),
-  ViewId("bow"),
-  ViewId("elven_bow"),
-  ViewId("scroll"),
-  ViewId("amulet1"),
-  ViewId("amulet2"),
-  ViewId("amulet3"),
-  ViewId("amulet4"),
-  ViewId("amulet5"),
-  ViewId("book"),
-  ViewId("first_aid"),
-  ViewId("potion1"),
-  ViewId("potion2"),
-  ViewId("potion3"),
-  ViewId("potion4"),
-  ViewId("potion5"),
-  ViewId("potion6"),
-  ViewId("gold"),
-  ViewId("leather_armor"),
-  ViewId("leather_helm"),
-  ViewId("telepathy_helm"),
-  ViewId("chain_armor"),
-  ViewId("iron_helm"),
-  ViewId("leather_boots"),
-  ViewId("iron_boots"),
-  ViewId("speed_boots"),
-  ViewId("boulder"),
-  ViewId("portal"),
-  ViewId("gas_trap"),
-  ViewId("alarm_trap"),
-  ViewId("web_trap"),
-  ViewId("surprise_trap"),
-  ViewId("terror_trap"),
-  ViewId("rock"),
-  ViewId("iron_rock"),
-  ViewId("wood_plank"),
-  ViewId("mushroom1"),
-  ViewId("mushroom2"),
-  ViewId("mushroom3"),
-  ViewId("mushroom4"),
-  ViewId("mushroom5"),
-  ViewId("mushroom6"),
-  ViewId("mushroom7")
-};
-
-ViewId ViewObject::shuffle(ViewId id, RandomGen& random) {
-  if (itemIds.count(id))
-    return random.choose(itemIds);
-  if (creatureIds.count(id))
-    return random.choose(creatureIds);
-  return id;
 }
 
 void ViewObject::setId(ViewId id) {

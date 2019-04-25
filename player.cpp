@@ -63,6 +63,7 @@
 #include "view_object_action.h"
 #include "dungeon_level.h"
 #include "fx_name.h"
+#include "furniture_factory.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -606,6 +607,7 @@ void Player::makeMove() {
   PROFILE;
   creature->getPosition().setNeedsRenderUpdate(true);
   updateUnknownLocations();
+  generateHalluIds();
   if (!isSubscribed())
     subscribeTo(getModel());
   if (adventurer)
@@ -964,7 +966,29 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.insert(ViewObject(ViewId("unknown_monster"), ViewLayer::TORCH2, "Surprise"));
   if (position != creature->getPosition() && creature->isAffected(LastingEffect::HALLU))
     for (auto& object : index.getAllObjects())
-      object.setId(ViewObject::shuffle(object.id(), Random));
+      object.setId(shuffleViewId(object.id()));
+}
+
+ViewId Player::shuffleViewId(const ViewId& id) const {
+  for (auto& ids : halluIds)
+    if (ids.count(id))
+      return Random.choose(ids);
+  return id;
+}
+
+void Player::generateHalluIds() {
+  if (halluIds.empty()) {
+    halluIds.emplace_back();
+    for (auto& id : getGame()->getCreatureFactory()->getAllCreatures())
+      halluIds.back().insert(getGame()->getCreatureFactory()->getViewId(id));
+    /*for (auto type : ENUM_ALL(FurnitureType)) {
+      auto f = FurnitureFactory::get(type, creature->getTribeId());
+      if (f->getLayer() == FurnitureLayer::MIDDLE && !f->isWall())
+        if (auto& obj = f->getViewObject())
+          halluIds.back().insert(obj->id());
+    }*/
+
+  }
 }
 
 void Player::onKilled(const Creature* attacker) {
