@@ -317,6 +317,10 @@ vector<Creature*> Model::getAllCreatures() const {
   return timeQueue->getAllCreatures();
 }
 
+const vector<PCreature>& Model::getDeadCreatures() const {
+  return deadCreatures;
+}
+
 void Model::landHeroPlayer(PCreature player) {
   Creature* ref = player.get();
   WLevel target = getTopLevel();

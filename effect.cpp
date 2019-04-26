@@ -560,6 +560,17 @@ string Effect::Fire::getDescription() const {
   return "Burns!";
 }
 
+void Effect::ReviveCorpse::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effect::ReviveCorpse::getName() const {
+  return "revive corpse";
+}
+
+string Effect::ReviveCorpse::getDescription() const {
+  return "Brings a dead creature back alive as a servant";
+}
+
 void Effect::EmitPoisonGas::applyToCreature(Creature* c, Creature* attacker) const {
   Effect::emitPoisonGas(c->getPosition(), amount, true);
 }
@@ -753,7 +764,31 @@ void Effect::apply(Position pos, Creature* attacker) const {
       c->onAttackedBy(attacker);
   }
   effect.visit(
-      [&](const auto& e) { },
+      [&](const auto&) { },
+      [&](const ReviveCorpse& effect) {
+        for (auto& item : pos.getItems())
+          if (auto info = item->getCorpseInfo())
+            if (info->canBeRevived)
+              for (auto& dead : pos.getModel()->getDeadCreatures())
+                if (dead->getUniqueId() == info->victim) {
+                  bool success = false;
+                  for (auto id : effect.summoned) {
+                    auto summoned = summon(attacker, id, 1, TimeInterval(effect.ttl));
+                    if (!summoned.empty()) {
+                      for (auto& c : summoned) {
+                        c->getName().addBarePrefix(dead->getName().bare());
+                        attacker->message("You have revived " + c->getName().a());
+                      }
+                      pos.removeItems({item});
+                      success = true;
+                      break;
+                    }
+                  }
+                  if (!success)
+                    attacker->message("The spell failed");
+                  return;
+                }
+      },
       [&](Fire) {
         pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});
         pos.fireDamage(1);

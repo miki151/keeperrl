@@ -530,7 +530,7 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
       return makeVec(
           ItemFactory::corpse(name + " corpse", name + " skeleton", weight, instantlyRotten,
             minionFood ? ItemClass::FOOD : ItemClass::CORPSE,
-            {id, true, numBodyParts(BodyPart::HEAD) > 0, false}));
+            {id, material != Material::UNDEAD_FLESH, numBodyParts(BodyPart::HEAD) > 0, false}));
     case Material::CLAY:
     case Material::ROCK:
       return ItemType(ItemType::Rock{}).get(numCorpseItems(size));

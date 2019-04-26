@@ -71,6 +71,7 @@ class Model : public OwnedObject<Model> {
   void tick(LocalTime);
   vector<WCollective> getCollectives() const;
   vector<Creature*> getAllCreatures() const;
+  const vector<PCreature>& getDeadCreatures() const;
   vector<WLevel> getLevels() const;
   const vector<WLevel>& getMainLevels() const;
   void addCollective(PCollective);

@@ -689,7 +689,7 @@ void Player::makeMove() {
         if (auto error = PrettyPrinting::parseObject(effect, action.get<string>()))
           getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
         else
-          effect.apply(creature->getPosition(), nullptr);
+          effect.apply(creature->getPosition(), creature);
         break;
       }
       case UserInputId::CREATE_ITEM: {
