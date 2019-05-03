@@ -50,7 +50,7 @@ vector<const Spell*> SpellMap::getAvailable(const Creature* c) const {
     if (elem.level <= c->getAttributes().getExpLevel(getExperienceType())) {
       bool duplicate = false;
       for (int i : All(ret))
-        if (ret[i]->getVariant() == elem.spell.getVariant()) {
+        if (ret[i]->getEffect() == elem.spell.getEffect()) {
           duplicate = true;
           if (ret[i]->getCooldown() > elem.spell.getCooldown())
             ret[i] = &elem.spell;

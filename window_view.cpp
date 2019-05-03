@@ -750,6 +750,7 @@ optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, Table<PassableInfo> pass
   addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
   rebuildGui();
   refreshScreen();
+  guiBuilder.disableClickActions = true;
   do {
     auto pos = mapGui->projectOnMap(renderer.getMousePos());
     Event event;
@@ -771,8 +772,9 @@ optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, Table<PassableInfo> pass
     refreshScreen(false);
     if (pos) {
       bool wasObstructed = false;
-      for (auto& pw : drawLine(playerPos, *pos))
-        if (pw != playerPos) {
+      auto line = drawLine(playerPos, *pos);
+      for (auto& pw : line)
+        if (pw != playerPos || line.size() == 1) {
           bool obstructed = wasObstructed || !pw.inRectangle(passable.getBounds()) ||
               passable[pw] == PassableInfo::NON_PASSABLE;
           auto color = obstructed ? Color::RED : Color::GREEN;
@@ -792,8 +794,8 @@ optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, Table<PassableInfo> pass
     renderer.flushEvents(SDL::SDL_MOUSEMOTION);
   } while (1);
   });
+  guiBuilder.disableClickActions = false;
   return returnQueue.pop();
-
 }
 
 bool WindowView::yesOrNoPrompt(const string& message, bool defaultNo) {

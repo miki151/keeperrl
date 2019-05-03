@@ -79,5 +79,4 @@ namespace cereal {
   INST2(Effect::EffectType_impl)
   INST2(Campaign::SiteInfo::Dweller)
   INST2(ZLevelType_impl)
-  INST(Effect, DirEffectType)
 } // namespace cereal

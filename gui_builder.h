@@ -134,7 +134,6 @@ class GuiBuilder {
   optional<int> getActiveButton(CollectiveTab) const;
   GameSpeed getGameSpeed() const;
   void setGameSpeed(GameSpeed);
-  bool showMorale() const;
   Rectangle getMenuPosition(MenuType, int numElems);
   Rectangle getTextInputPosition();
   SGuiElem drawListGui(const string& title, const vector<ListElem>& options,
@@ -144,6 +143,8 @@ class GuiBuilder {
   void clearHint();
   ~GuiBuilder();
   optional<int> chooseAtMouse(const vector<string>& elems);
+
+  bool disableClickActions = false;
 
   private:
   SGuiElem getImmigrationHelpText();

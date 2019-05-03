@@ -3,6 +3,7 @@
 #include "util.h"
 #include "position.h"
 #include "fx_info.h"
+#include "view_id.h"
 
 class Model;
 class Technology;

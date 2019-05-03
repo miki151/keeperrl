@@ -152,37 +152,21 @@ CreatureAttributes& Creature::getAttributes() {
 }
 
 CreatureAction Creature::castSpell(const Spell* spell) const {
-  if (!spellMap->contains(spell))
-    return CreatureAction("You don't know this spell.");
-  CHECK(!spell->isDirected());
-  if (!isReady(spell))
-    return CreatureAction("You can't cast this spell yet.");
-  return CreatureAction(this, [=] (Creature* self) {
-    if (auto sound = spell->getSound())
-      self->addSound(*sound);
-    spell->addMessage(self);
-    spell->getEffect().apply(position, self);
-    getGame()->getStatistics().add(StatId::SPELL_CAST);
-    self->spellMap->setReadyTime(spell, *getGlobalTime() + TimeInterval(
-        int(spell->getCooldown() * getSpellTimeoutMult((int) attributes->getExpLevel(ExperienceType::SPELL)))));
-    self->spendTime();
-  });
+  return castSpell(spell, position);
 }
 
 CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
-  CHECK(spell->isDirected());
   if (!spellMap->contains(spell))
     return CreatureAction("You don't know this spell.");
   if (!isReady(spell))
     return CreatureAction("You can't cast this spell yet.");
-  if (target == position)
-    return CreatureAction();
+  if (target == position && !spell->canTargetSelf())
+    return CreatureAction("You can't cast this spell at yourself.");
   return CreatureAction(this, [=] (Creature* c) {
     if (auto sound = spell->getSound())
       c->addSound(*sound);
-    auto dirEffectType = spell->getDirEffectType();
     spell->addMessage(c);
-    applyDirected(c, target, dirEffectType);
+    spell->apply(c, target);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->spellMap->setReadyTime(spell, *getGlobalTime() + TimeInterval(
         int(spell->getCooldown() * getSpellTimeoutMult((int) attributes->getExpLevel(ExperienceType::SPELL)))));

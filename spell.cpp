@@ -11,35 +11,19 @@
 #include "furniture_type.h"
 #include "attr_type.h"
 #include "attack_type.h"
+#include "draw_line.h"
+#include "game.h"
+#include "game_event.h"
+#include "view_id.h"
 
-SERIALIZE_DEF(Spell, NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound))
+SERIALIZE_DEF(Spell, NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf))
 SERIALIZATION_CONSTRUCTOR_IMPL(Spell)
 
 const string& Spell::getSymbol() const {
   return symbol;
 }
 
-bool Spell::isDirected() const {
-  return effect->contains<DirEffectType>();
-}
-
-bool Spell::hasEffect(const Effect& t) const {
-  return effect->getReferenceMaybe<Effect>() == t;
-}
-
-bool Spell::hasEffect(const DirEffectType& t) const {
-  return effect->getReferenceMaybe<DirEffectType>() == t;
-}
-
 const Effect& Spell::getEffect() const {
-  return *effect->getReferenceMaybe<Effect>();
-}
-
-const DirEffectType& Spell::getDirEffectType() const{
-  return *effect->getReferenceMaybe<DirEffectType>();
-}
-
-const Spell::SpellVariant& Spell::getVariant() const {
   return *effect;
 }
 
@@ -51,11 +35,12 @@ optional<SoundId> Spell::getSound() const {
   return sound;
 }
 
+bool Spell::canTargetSelf() const {
+  return targetSelf || range == 0;
+}
+
 string Spell::getDescription() const {
-  return effect->visit(
-      [](const Effect& e) { return e.getDescription(); },
-      [](const DirEffectType& e) { return ::getDescription(e); }
-  );
+  return effect->getDescription();
 }
 
 void Spell::addMessage(Creature* c) const {
@@ -71,6 +56,71 @@ void Spell::addMessage(Creature* c) const {
       break;
   }
 }
+
+static optional<FXInfo> getProjectileFX(LastingEffect effect) {
+  switch (effect) {
+    default:
+      return none;
+  }
+}
+
+static optional<FXInfo> getProjectileFX(const Effect& effect) {
+  return effect.visit(
+      [&](const auto&) -> optional<FXInfo> { return none; },
+      [&](const Effect::Lasting& e) -> optional<FXInfo> { return getProjectileFX(e.lastingEffect); },
+      [&](const Effect::Damage&) -> optional<FXInfo> { return {FXName::MAGIC_MISSILE}; },
+      [&](const Effect::Blast&) -> optional<FXInfo> { return {FXName::AIR_BLAST}; }
+  );
+}
+
+static optional<ViewId> getProjectile(LastingEffect effect) {
+  switch (effect) {
+    default:
+      return none;
+  }
+}
+
+static optional<ViewId> getProjectile(const Effect& effect) {
+  return effect.visit(
+      [&](const auto&) -> optional<ViewId> { return none; },
+      [&](const Effect::Lasting& e) -> optional<ViewId> { return getProjectile(e.lastingEffect); },
+      [&](const Effect::Damage&) -> optional<ViewId> { return ViewId("force_bolt"); },
+      [&](const Effect::Fire&) -> optional<ViewId> { return ViewId("fireball"); },
+      [&](const Effect::Blast&) -> optional<ViewId> { return ViewId("air_blast"); }
+  );
+}
+
+void Spell::apply(Creature* c, Position target) const {
+  if (target == c->getPosition()) {
+    if (canTargetSelf())
+      effect->apply(target, c);
+    return;
+  }
+  auto thisFx = getProjectileFX(*effect);
+  if (fx)
+    thisFx = FXInfo{*fx};
+  c->getGame()->addEvent(
+      EventInfo::Projectile{std::move(thisFx), getProjectile(*effect), c->getPosition(), target, none});
+  if (endOnly) {
+    effect->apply(target, c);
+    return;
+  }
+  vector<Position> trajectory;
+  auto origin = c->getPosition().getCoord();
+  for (auto& v : drawLine(origin, target.getCoord()))
+    if (v != origin && v.dist8(origin) <= range) {
+      trajectory.push_back(Position(v, target.getLevel()));
+      if (trajectory.back().isDirEffectBlocked())
+        break;
+    }
+  for (auto& pos : trajectory)
+    effect->apply(pos, c);
+}
+
+int Spell::getRange() const {
+  return range;
+}
+
 
 #include "pretty_archive.h"
 template void Spell::serialize(PrettyInputArchive&, unsigned);

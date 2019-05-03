@@ -2,70 +2,74 @@
   "heal self"
   {
     symbol = "❤️"
-    effect = Effect Heal
+    effect = Heal
     cooldown = 30
     sound = SPELL_HEALING
   }
   "summon flies"
   {
     symbol = "🐝"
-    effect = Effect Summon "FLY" {3 7}
+    effect = Summon "FLY" {3 7}
     cooldown = 40
     sound = SPELL_SUMMON_INSECTS
   }
   "heal other"
   {
     symbol = "✚"
-    effect = DirEffectType { range = 1 effect = Effect Heal}
+    effect = Heal
+    range = 1
     cooldown = 15
     sound = SPELL_HEALING
   }
   "magic missile"
   {
     symbol = "⥇"
-    effect = DirEffectType { range = 4 effect = Effect Damage SPELL_DAMAGE SPELL}
+    effect = Damage SPELL_DAMAGE SPELL
+    range = 4
     cooldown = 20
     sound = SPELL_BLAST
   }
   "deception"
   {
     symbol = "🎭"
-    effect = Effect Deception
+    effect = Deception
     cooldown = 60
     sound = SPELL_DECEPTION
   }
   "escape"
   {
     symbol = "🧚"
-    effect = Effect Teleport
+    effect = Teleport
     cooldown = 80
     sound = SPELL_TELEPORT
   }
   "haste self"
   {
     symbol = "🏃"
-    effect = Effect Lasting SPEED
+    effect = Lasting SPEED
     cooldown = 60
     sound = SPELL_SPEED_SELF
   }
   "cure poison"
   {
     symbol = "⚕"
-    effect = Effect CurePoison
+    effect = RemoveLasting POISON
     cooldown = 50
     sound = SPELL_CURE_POISON
   }
   "directed blast"
   {
     symbol = "💨"
-    effect = DirEffectType { range = 4 effect = BlastDirEffect}
+    effect = Blast
+    range = 4
+    endOnly = true
     cooldown = 30
     sound = SPELL_BLAST
   }
   "circular blast"
   {
     symbol = "💥"
-    effect = Effect CircularBlast
+    effect = CircularBlast
     cooldown = 50
     sound = SPELL_AIR_BLAST
     castMessageType = AIR_BLAST
@@ -73,49 +77,53 @@
   "fireball"
   {
     symbol = "🔥"
-    effect = DirEffectType { range = 4 effect = Effect Fire fx = FIREBALL}
+    effect = Fire
+    fx = FIREBALL
+    range = 4
     cooldown = 30
     sound = SPELL_BLAST
   }
   "defense bonus"
   {
     symbol = "🛡"
-    effect = Effect Lasting DEF_BONUS
+    effect = Lasting DEF_BONUS
     cooldown = 50
     sound = SPELL_DEX_BONUS
   }
   "summon element"
   {
     symbol = "👾"
-    effect = Effect SummonElement
+    effect = SummonElement
     cooldown = 100
     sound = SPELL_SUMMON_SPIRIT
   }
   "damage bonus"
   {
     symbol = "⚔"
-    effect = Effect Lasting DAM_BONUS
+    effect = Lasting DAM_BONUS
     cooldown = 50
     sound = SPELL_STR_BONUS
   }
   "meteor shower"
   {
     symbol = "☄"
-    effect = Effect PlaceFurniture METEOR_SHOWER
+    effect = PlaceFurniture METEOR_SHOWER
     cooldown = 150
     sound = SPELL_METEOR_SHOWER
   }
   "invisibility"
   {
     symbol = "🕵️"
-    effect = Effect Lasting INVISIBLE
+    effect = Lasting INVISIBLE
     cooldown = 150
     sound = SPELL_INVISIBILITY
   }
   "fire breath"
   {
     symbol = "🔥"
-    effect = DirEffectType { range = 4 effect = Effect Fire fx = FLAMETHROWER}
+    effect = Fire
+    fx = FLAMETHROWER
+    range = 4
     cooldown = 30
     sound = SPELL_BLAST
     castMessageType = BREATHE_FIRE
@@ -123,16 +131,17 @@
   "summon spirit"
   {
     symbol = "👾"
-    effect = Effect Summon "SPIRIT" { 3 5}
+    effect = Summon "SPIRIT" { 3 5}
     cooldown = 100
     sound = SPELL_SUMMON_SPIRIT
   }
   "fire wall"
   {
     symbol = "🔥"
-    effect = DirEffectType { range = 2 effect = Effect CustomArea PlaceFurniture FIRE_WALL { 0 -2 0 -1 0 0 0 1 0 2 } endOnly = true }
+    effect =  CustomArea PlaceFurniture FIRE_WALL { 0 -2 0 -1 0 0 0 1 0 2 }
+    endOnly = true
+    range = 2
     cooldown = 30
     sound = SPELL_BLAST
-    castMessageType = BREATHE_FIRE
   }
 }

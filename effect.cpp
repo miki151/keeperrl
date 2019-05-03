@@ -315,6 +315,19 @@ string Effect::Lasting::getDescription() const {
   return desc.substr(0, desc.size() - 1) + " for some turns.";
 }
 
+void Effect::RemoveLasting::applyToCreature(Creature* c, Creature* attacker) const {
+  if (c->removeEffect(lastingEffect))
+    c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE));
+}
+
+string Effect::RemoveLasting::getName() const {
+  return "remove " + LastingEffects::getName(lastingEffect);
+}
+
+string Effect::RemoveLasting::getDescription() const {
+  return "Removes/cures from effect: " + LastingEffects::getName(lastingEffect);
+}
+
 void Effect::IncreaseAttr::applyToCreature(Creature* c, Creature*) const {
   c->you(MsgType::YOUR, ::getName(attr) + get(" improves", " wanes"));
   c->getAttributes().increaseBaseAttr(attr, amount);
@@ -461,9 +474,48 @@ string Effect::Deception::getDescription() const {
   return "Creates multiple illusions of the spellcaster to confuse the enemy.";
 }
 
+static void airBlast(Creature* who, Position position, Position target) {
+  CHECK(target != who->getPosition());
+  Vec2 direction = who->getPosition().getDir(target);
+  constexpr int maxDistance = 4;
+  while (direction.length8() < maxDistance * 3)
+    direction += who->getPosition().getDir(target);
+  auto trajectory = drawLine(Vec2(0, 0), direction);
+  for (int i : All(trajectory))
+    if (trajectory[i] == who->getPosition().getDir(position)) {
+      trajectory = getSubsequence(trajectory, i + 1, maxDistance);
+      for (auto& v : trajectory)
+        v = v - who->getPosition().getDir(position);
+      break;
+    }
+  CHECK(trajectory.size() == maxDistance);
+  if (Creature* c = position.getCreature()) {
+    optional<Position> target;
+    for (auto& v : trajectory)
+      if (position.canMoveCreature(v))
+        target = position.plus(v);
+      else
+        break;
+    if (target) {
+      c->displace(c->getPosition().getDir(*target));
+      c->you(MsgType::ARE, "thrown back");
+    }
+  }
+  for (auto& stack : Item::stackItems(position.getItems())) {
+    position.throwItem(
+        position.removeItems(stack),
+        Attack(who, Random.choose<AttackLevel>(),
+          stack[0]->getWeaponInfo().attackType, 15, AttrType::DAMAGE), maxDistance,
+          position.plus(trajectory.back()), VisionId::NORMAL);
+  }
+  for (auto furniture : position.modFurniture())
+    if (furniture->canDestroy(DestroyAction::Type::BASH))
+      furniture->destroy(position, DestroyAction::Type::BASH);
+}
+
 void Effect::CircularBlast::applyToCreature(Creature* c, Creature* attacker) const {
   for (Vec2 v : Vec2::directions8(Random))
-    applyDirected(c, c->getPosition().plus(v * 10), DirEffectType(1, BlastDirEffect{}), false);
+    airBlast(attacker, c->getPosition().plus(v), c->getPosition().plus(v * 10));
   c->addFX({FXName::CIRCULAR_BLAST});
 }
 
@@ -595,19 +647,6 @@ string Effect::SilverDamage::getDescription() const {
   return "Hurts the undead.";
 }
 
-void Effect::CurePoison::applyToCreature(Creature* c, Creature* attacker) const {
-  if (c->removeEffect(LastingEffect::POISON))
-    c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN));
-}
-
-string Effect::CurePoison::getName() const {
-  return "cure poisioning";
-}
-
-string Effect::CurePoison::getDescription() const {
-  return "Cures poisoning.";
-}
-
 void Effect::PlaceFurniture::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
@@ -734,6 +773,18 @@ string Effect::DoubleTrouble::getDescription() const {
   return "Creates a twin copy ally.";
 }
 
+
+void Effect::Blast::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effect::Blast::getName() const {
+  return "air blast";
+}
+
+string Effect::Blast::getDescription() const {
+  return "Creates a directed blast of air that throws back creatures and items.";
+}
+
 #define FORWARD_CALL(Var, Name, ...)\
 Var.visit([&](const auto& e) { return e.Name(__VA_ARGS__); })
 
@@ -809,146 +860,26 @@ void Effect::apply(Position pos, Creature* attacker) const {
         auto ref = f.get();
         pos.addFurniture(std::move(f));
         ref->onConstructedBy(pos, attacker);
+      },
+      [&](Blast) {
+        constexpr int range = 4;
+        CHECK(attacker);
+        vector<Position> trajectory;
+        auto origin = attacker->getPosition().getCoord();
+        for (auto& v : drawLine(origin, pos.getCoord()))
+          if (v != origin && v.dist8(origin) <= range) {
+            trajectory.push_back(Position(v, pos.getLevel()));
+            if (trajectory.back().isDirEffectBlocked())
+              break;
+          }
+        for (int i : All(trajectory).reverse())
+          airBlast(attacker, trajectory[i], pos);
       }
   );
 }
 
 string Effect::getDescription() const {
   return FORWARD_CALL(effect, getDescription);
-}
-
-static optional<ViewId> getProjectile(LastingEffect effect) {
-  switch (effect) {
-    case LastingEffect::STUNNED:
-      return ViewId("stun_ray");
-    default:
-      return none;
-  }
-}
-
-static optional<ViewId> getProjectile(const Effect& effect) {
-  return effect.visit(
-      [&](const auto&) -> optional<ViewId> { return none; },
-      [&](const Effect::Lasting& e) -> optional<ViewId> { return getProjectile(e.lastingEffect); },
-      [&](const Effect::Damage&) -> optional<ViewId> { return ViewId("force_bolt"); },
-      [&](const Effect::Fire&) -> optional<ViewId> { return ViewId("fireball"); }
-  );
-}
-
-static optional<ViewId> getProjectile(const DirEffectType& effect) {
-  return effect.effect.visit(
-      [&] (BlastDirEffect) -> optional<ViewId> { return ViewId("air_blast"); },
-      [&] (const Effect& e) -> optional<ViewId> { return getProjectile(e); }
-  );
-}
-
-static optional<FXInfo> getProjectileFX(LastingEffect effect) {
-  switch (effect) {
-    default:
-      return none;
-  }
-}
-
-static optional<FXInfo> getProjectileFX(const Effect& effect) {
-  return effect.visit(
-      [&](const auto&) -> optional<FXInfo> { return none; },
-      [&](const Effect::Lasting& e) -> optional<FXInfo> { return getProjectileFX(e.lastingEffect); },
-      [&](const Effect::Damage&) -> optional<FXInfo> { return {FXName::MAGIC_MISSILE}; }
-  );
-}
-
-static optional<FXInfo> getProjectileFX(const DirEffectType& effect) {
-  if (effect.fx)
-    return {*effect.fx};
-  else
-    return effect.effect.visit(
-        [&](BlastDirEffect) -> optional<FXInfo> { return {FXName::AIR_BLAST}; },
-        [&](const Effect& e) -> optional<FXInfo> { return getProjectileFX(e); }
-    );
-}
-
-static void airBlast(Creature* who, Position position, Position target) {
-  CHECK(target != who->getPosition());
-  Vec2 direction = who->getPosition().getDir(target);
-  constexpr int maxDistance = 4;
-  while (direction.length8() < maxDistance * 3)
-    direction += who->getPosition().getDir(target);
-  auto trajectory = drawLine(Vec2(0, 0), direction);
-  for (int i : All(trajectory))
-    if (trajectory[i] == who->getPosition().getDir(position)) {
-      trajectory = getSubsequence(trajectory, i + 1, maxDistance);
-      for (auto& v : trajectory)
-        v = v - who->getPosition().getDir(position);
-      break;
-    }
-  CHECK(trajectory.size() == maxDistance);
-  if (Creature* c = position.getCreature()) {
-    optional<Position> target;
-    for (auto& v : trajectory)
-      if (position.canMoveCreature(v))
-        target = position.plus(v);
-      else
-        break;
-    if (target) {
-      c->displace(c->getPosition().getDir(*target));
-      c->you(MsgType::ARE, "thrown back");
-    }
-  }
-  for (auto& stack : Item::stackItems(position.getItems())) {
-    position.throwItem(
-        position.removeItems(stack),
-        Attack(who, Random.choose<AttackLevel>(),
-          stack[0]->getWeaponInfo().attackType, 15, AttrType::DAMAGE), maxDistance,
-          position.plus(trajectory.back()), VisionId::NORMAL);
-  }
-  for (auto furniture : position.modFurniture())
-    if (furniture->canDestroy(DestroyAction::Type::BASH))
-      furniture->destroy(position, DestroyAction::Type::BASH);
-}
-
-bool DirEffectType::operator == (const DirEffectType& e) const {
-  return range == e.range && effect == e.effect && fx == e.fx;
-}
-
-void applyDirected(Creature* c, Position target, const DirEffectType& type, bool withProjectileFX) {
-  if (target == c->getPosition())
-    return;
-  vector<Position> trajectory;
-  auto origin = c->getPosition().getCoord();
-  for (auto& v : drawLine(origin, target.getCoord()))
-    if (v != origin && v.dist8(origin) <= type.range) {
-      trajectory.push_back(Position(v, target.getLevel()));
-      if (Position(v, target.getLevel()).isDirEffectBlocked())
-        break;
-    }
-  if (withProjectileFX)
-    c->getGame()->addEvent(
-        EventInfo::Projectile{getProjectileFX(type), getProjectile(type), c->getPosition(), trajectory.back()});
-  type.effect.visit(
-      [&](BlastDirEffect) {
-        for (int i : All(trajectory).reverse())
-          airBlast(c, trajectory[i], target);
-      },
-      [&](const Effect& effect) {
-        if (type.endOnly)
-          effect.apply(trajectory.back(), c);
-        else
-          for (auto& pos : trajectory)
-            effect.apply(pos, c);
-      }
-  );
-}
-
-string getDescription(const DirEffectType& type) {
-  return type.effect.visit(
-      [&](BlastDirEffect) {
-        return "Creates a directed blast of air that throws back creatures and items."_s;
-      },
-      [&](const Effect& effect) {
-        return "Creates a directed ray of range " + toString(type.range) + " that " +
-            noCapitalFirst(effect.getDescription());
-      }
-  );
 }
 
 SERIALIZE_DEF(Effect, effect)

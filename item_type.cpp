@@ -306,9 +306,6 @@ static int getEffectPrice(Effect type) {
       [&](const Effect::TeleEnemies&) {
         return 12;
       },
-      [&](const Effect::CurePoison&) {
-        return 12;
-      },
       [&](const Effect::Summon&) {
         return 12;
       },

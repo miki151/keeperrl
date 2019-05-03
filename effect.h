@@ -27,7 +27,6 @@ class Creature;
 class Item;
 class Tribe;
 class CreatureGroup;
-class DirEffectType;
 
 
 #define EFFECT_TYPE_INTERFACE \
@@ -75,16 +74,19 @@ class Effect {
   };
   SIMPLE_EFFECT(TeleEnemies);
   SIMPLE_EFFECT(SilverDamage);
-  SIMPLE_EFFECT(CurePoison);
 
-  //Lasting effect with a timer.
   struct Lasting {
     EFFECT_TYPE_INTERFACE;
     LastingEffect lastingEffect;
     COMPARE_ALL(lastingEffect)
   };
 
-  //Lasting effect forever.
+  struct RemoveLasting {
+    EFFECT_TYPE_INTERFACE;
+    LastingEffect lastingEffect;
+    COMPARE_ALL(lastingEffect)
+  };
+
   struct Permanent {
     EFFECT_TYPE_INTERFACE;
     LastingEffect lastingEffect;
@@ -133,6 +135,7 @@ class Effect {
   SIMPLE_EFFECT(RegrowBodyPart);
   SIMPLE_EFFECT(Suicide);
   SIMPLE_EFFECT(DoubleTrouble);
+  SIMPLE_EFFECT(Blast);
   struct ReviveCorpse {
     EFFECT_TYPE_INTERFACE;
     vector<CreatureId> summoned;
@@ -146,8 +149,8 @@ class Effect {
   };*/
   MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
-      CurePoison, Lasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-      Area, CustomArea, ReviveCorpse);
+      Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
+      Area, CustomArea, ReviveCorpse, Blast);
 
   template <typename T>
   Effect(T&& t) : effect(std::forward<T>(t)) {}
@@ -196,27 +199,3 @@ class Effect {
   private:
   EffectType SERIAL(effect);
 };
-
-EMPTY_STRUCT(BlastDirEffect);
-
-MAKE_VARIANT2(DirEffectVariant, BlastDirEffect, Effect);
-
-class DirEffectType {
-  public:
-  DirEffectType(int r, DirEffectVariant e) : range(r), effect(e) {}
-
-  bool operator == (const DirEffectType&) const;
-  //bool operator != (const DirEffectType&) const;
-
-  SERIALIZATION_CONSTRUCTOR(DirEffectType)
-
-  SERIALIZE_ALL(NAMED(range), NAMED(fx), NAMED(effect), OPTION(endOnly))
-
-  int SERIAL(range);
-  DirEffectVariant SERIAL(effect);
-  optional<FXName> SERIAL(fx);
-  bool SERIAL(endOnly) = false;
-};
-
-extern string getDescription(const DirEffectType&);
-extern void applyDirected(Creature*, Position target, const DirEffectType&, bool withProjectileFX = true);

@@ -26,30 +26,31 @@ RICH_ENUM(
 );
 
 class Effect;
-class DirEffectType;
+class Position;
 
 class Spell {
   public:
   const string& getSymbol() const;
-  bool isDirected() const;
-  bool hasEffect(const Effect&) const;
-  bool hasEffect(const DirEffectType&) const;
   const Effect& getEffect() const;
-  const DirEffectType& getDirEffectType() const;
-  MAKE_VARIANT(SpellVariant, Effect, DirEffectType);
-  const SpellVariant& getVariant() const;
   int getCooldown() const;
   string getDescription() const;
   void addMessage(Creature*) const;
   optional<SoundId> getSound() const;
+  bool canTargetSelf() const;
+  void apply(Creature*, Position target) const;
+  int getRange() const;
 
   SERIALIZATION_DECL(Spell)
 
   private:
   string SERIAL(symbol);
-  HeapAllocated<SpellVariant> SERIAL(effect);
+  HeapAllocated<Effect> SERIAL(effect);
   int SERIAL(cooldown);
   CastMessageType SERIAL(castMessageType) = CastMessageType::STANDARD;
   optional<SoundId> SERIAL(sound);
+  int SERIAL(range) = 0;
+  optional<FXName> SERIAL(fx);
+  bool SERIAL(endOnly) = false;
+  bool SERIAL(targetSelf) = false;
 };
 

@@ -2308,11 +2308,12 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
             lines.addElem(gui.label(*desc, getColor(status)));
           break;
         }
-        if (auto actions = getClickActions(viewObject))
-          if (highlighted.tileScreenPos)
-            allElems.push_back(gui.absolutePosition(gui.translucentBackgroundWithBorderPassMouse(gui.margins(
-                gui.setHeight(*actions->getPreferredHeight(), actions), 5, 1, 5, -2)),
-                highlighted.creaturePos.value_or(*highlighted.tileScreenPos) + Vec2(60, 60)));
+        if (!disableClickActions)
+          if (auto actions = getClickActions(viewObject))
+            if (highlighted.tileScreenPos)
+              allElems.push_back(gui.absolutePosition(gui.translucentBackgroundWithBorderPassMouse(gui.margins(
+                  gui.setHeight(*actions->getPreferredHeight(), actions), 5, 1, 5, -2)),
+                  highlighted.creaturePos.value_or(*highlighted.tileScreenPos) + Vec2(60, 60)));
         if (!viewObject.getBadAdjectives().empty()) {
           lines.addElemAuto(gui.labelMultiLineWidth(viewObject.getBadAdjectives(), legendLineHeight * 2 / 3, 300,
               Renderer::textSize, Color::RED, ','));

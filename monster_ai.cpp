@@ -60,8 +60,8 @@ class Behaviour {
   virtual double itemValue(const Item*) { return 0; }
   Item* getBestWeapon();
   Creature* getClosestCreature();
-  MoveInfo tryEffect(Effect, TimeInterval maxTurns = 1_visible);
-  MoveInfo tryEffect(DirEffectType, Position target);
+  MoveInfo tryEffect(const Effect&, TimeInterval maxTurns = 1_visible);
+  MoveInfo tryEffect(const Effect&, Position target);
 
   virtual ~Behaviour() {}
 
@@ -106,12 +106,12 @@ Item* Behaviour::getBestWeapon() {
   return best;
 }
 
-MoveInfo Behaviour::tryEffect(Effect type, TimeInterval maxTurns) {
+MoveInfo Behaviour::tryEffect(const Effect& type, TimeInterval maxTurns) {
   if (auto effect = type.getValueMaybe<Effect::Lasting>())
     if (creature->isAffected(effect->lastingEffect))
       return NoMove;
   for (auto spell : creature->getSpellMap().getAvailable(creature)) {
-   if (spell->hasEffect(type))
+    if (spell->getEffect() == type)
       if (auto action = creature->castSpell(spell))
         return { 1, action };
   }
@@ -123,9 +123,9 @@ MoveInfo Behaviour::tryEffect(Effect type, TimeInterval maxTurns) {
   return NoMove;
 }
 
-MoveInfo Behaviour::tryEffect(DirEffectType type, Position target) {
+MoveInfo Behaviour::tryEffect(const Effect& type, Position target) {
   for (auto spell : creature->getSpellMap().getAvailable(creature)) {
-    if (spell->hasEffect(type))
+    if (spell->getEffect() == type)
       if (auto action = creature->castSpell(spell, target))
         return { 1, action };
   }
@@ -171,7 +171,7 @@ class Heal : public Behaviour {
     if (creature->isAffected(LastingEffect::POISON)) {
       if (MoveInfo move = tryEffect(Effect::Lasting{LastingEffect::POISON_RESISTANT}))
         return move;
-      if (MoveInfo move = tryEffect(Effect::CurePoison{}))
+      if (MoveInfo move = tryEffect(Effect::RemoveLasting{LastingEffect::POISON}))
         return move;
     }
     if (creature->getBody().canHeal()) {
@@ -404,7 +404,7 @@ class Fighter : public Behaviour {
             Effect::Lasting{LastingEffect::SLEEP},
             Effect::Lasting{LastingEffect::POISON},
             Effect::Lasting{LastingEffect::POISON_RESISTANT},
-            Effect::CurePoison{},
+            Effect::RemoveLasting{LastingEffect::POISON},
             Effect::Teleport{},
             Effect::Lasting{LastingEffect::DAM_BONUS},
             Effect::Lasting{LastingEffect::DEF_BONUS}},
@@ -426,17 +426,24 @@ class Fighter : public Behaviour {
     return false;
   }
 
+  const vector<Effect>& getOffensiveEffects() const {
+    static vector<Effect> effects = makeVec<Effect>(
+        Effect::Lasting{LastingEffect::POISON},
+        Effect::Lasting{LastingEffect::SLOWED},
+        Effect::Lasting{LastingEffect::BLIND},
+        Effect::Lasting{LastingEffect::MELEE_VULNERABILITY},
+        Effect::Lasting{LastingEffect::RANGED_VULNERABILITY},
+        Effect::Lasting{LastingEffect::MAGIC_VULNERABILITY},
+        Effect::Lasting{LastingEffect::SLEEP},
+        Effect::Damage{AttrType::SPELL_DAMAGE, AttackType::SPELL},
+        Effect::Fire{}
+    );
+    return effects;
+  }
+
   int getThrowValue(Item* it) {
     if (auto& effect = it->getEffect())
-      if (contains<Effect>({
-            Effect::Lasting{LastingEffect::POISON},
-            Effect::Lasting{LastingEffect::SLOWED},
-            Effect::Lasting{LastingEffect::BLIND},
-            Effect::Lasting{LastingEffect::MELEE_VULNERABILITY},
-            Effect::Lasting{LastingEffect::RANGED_VULNERABILITY},
-            Effect::Lasting{LastingEffect::MAGIC_VULNERABILITY},
-            Effect::Lasting{LastingEffect::SLEEP}},
-            *effect))
+      if (getOffensiveEffects().contains(*effect))
         return 100;
     return 0;
   }
@@ -464,16 +471,6 @@ class Fighter : public Behaviour {
     return NoMove;
   }
 
-  vector<DirEffectType> getOffensiveEffects() {
-    static vector<DirEffectType> effects = [] {
-      vector<DirEffectType> ret;
-      /*for (auto id : {SpellId::BLAST, SpellId::MAGIC_MISSILE, SpellId::FIREBALL, SpellId::FIREBALL_DRAGON})
-        ret.push_back(Spell::get(id)->getDirEffectType());*/
-      return ret;
-    }();
-    return effects;
-  }
-
   MoveInfo getFireMove(Creature* enemy) {
     auto target = enemy->getPosition();
     auto trajectory = drawLine(creature->getPosition().getCoord(), target.getCoord())
@@ -482,9 +479,8 @@ class Fighter : public Behaviour {
       return NoMove;
     int dist = *trajectory.back().dist8(creature->getPosition());
     for (auto effect : getOffensiveEffects())
-      if (effect.range >= dist)
-        if (auto action = tryEffect(effect, target))
-          return action;
+      if (auto action = tryEffect(effect, target))
+        return action;
     if (dist <= getFiringRange(creature))
       if (auto action = creature->fire(target))
         return {1.0, action.append([=](Creature*) {

@@ -441,10 +441,10 @@ void Player::fireAction() {
 
 void Player::spellAction(int id) {
   auto spell = creature->getSpellMap().getAvailable(creature)[id];
-  if (!spell->isDirected())
+  int range = spell->getRange();
+  if (range == 0)
     tryToPerform(creature->castSpell(spell));
   else {
-    int range = spell->getDirEffectType().range;
     Vec2 origin = creature->getPosition().getCoord();
     Table<PassableInfo> passable(Rectangle::centered(origin, range), PassableInfo::PASSABLE);
     for (auto v : passable.getBounds()) {
