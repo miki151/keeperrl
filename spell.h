@@ -39,10 +39,14 @@ class Spell {
   bool canTargetSelf() const;
   void apply(Creature*, Position target) const;
   int getRange() const;
+  const string& getId() const;
+  const optional<string>& getUpgrade() const;
 
   SERIALIZATION_DECL(Spell)
 
   private:
+  string SERIAL(id);
+  optional<string> SERIAL(upgrade);
   string SERIAL(symbol);
   HeapAllocated<Effect> SERIAL(effect);
   int SERIAL(cooldown);

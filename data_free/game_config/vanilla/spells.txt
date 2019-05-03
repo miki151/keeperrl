@@ -1,64 +1,99 @@
 {
-  "heal self"
   {
+    id =  "healing"
     symbol = "❤️"
     effect = Heal
     cooldown = 30
     sound = SPELL_HEALING
   }
-  "summon flies"
   {
-    symbol = "🐝"
-    effect = Summon "FLY" {3 7}
-    cooldown = 40
-    sound = SPELL_SUMMON_INSECTS
-  }
-  "heal other"
-  {
-    symbol = "✚"
+    id =  "healing2"
+    upgrade = "healing"
+    symbol = "❤️"
     effect = Heal
     range = 1
     cooldown = 15
     sound = SPELL_HEALING
   }
-  "magic missile"
   {
+    id =  "healing3"
+    upgrade = "healing2"
+    symbol = "❤️"
+    effect = Heal
+    range = 4
+    cooldown = 15
+    sound = SPELL_HEALING
+  }
+  {
+    id =  "summon flies"
+    symbol = "🐝"
+    effect = Summon "FLY" {3 7}
+    cooldown = 40
+    sound = SPELL_SUMMON_INSECTS
+  }
+  {
+    id =  "magic missile"
     symbol = "⥇"
     effect = Damage SPELL_DAMAGE SPELL
     range = 4
     cooldown = 20
     sound = SPELL_BLAST
   }
-  "deception"
   {
+    id =  "deception"
     symbol = "🎭"
     effect = Deception
     cooldown = 60
     sound = SPELL_DECEPTION
   }
-  "escape"
   {
+    id =  "escape"
     symbol = "🧚"
     effect = Teleport
     cooldown = 80
     sound = SPELL_TELEPORT
   }
-  "haste self"
   {
+    id =  "haste self"
     symbol = "🏃"
     effect = Lasting SPEED
     cooldown = 60
     sound = SPELL_SPEED_SELF
   }
-  "cure poison"
   {
+    id =  "cure poison"
     symbol = "⚕"
     effect = RemoveLasting POISON
     cooldown = 50
     sound = SPELL_CURE_POISON
   }
-  "directed blast"
   {
+    id =  "cure poison2"
+    upgrade = "cure poison"
+    symbol = "⚕"
+    effect = RemoveLasting POISON
+    cooldown = 50
+    range = 1
+    sound = SPELL_CURE_POISON
+  }
+  {
+    id =  "cure blindness"
+    symbol = "⚕"
+    effect = RemoveLasting BLIND
+    cooldown = 50
+    range = 1
+    sound = SPELL_CURE_POISON
+  }
+  {
+    id =  "poison resistance"
+    symbol = "⚕"
+    effect = Lasting POISON_RESISTANT
+    cooldown = 100
+    range = 1
+    sound = SPELL_CURE_POISON
+  }
+  {
+    id =  "directed blast"
     symbol = "💨"
     effect = Blast
     range = 4
@@ -66,16 +101,16 @@
     cooldown = 30
     sound = SPELL_BLAST
   }
-  "circular blast"
   {
+    id =  "circular blast"
     symbol = "💥"
     effect = CircularBlast
     cooldown = 50
     sound = SPELL_AIR_BLAST
     castMessageType = AIR_BLAST
   }
-  "fireball"
   {
+    id =  "fireball"
     symbol = "🔥"
     effect = Fire
     fx = FIREBALL
@@ -83,43 +118,43 @@
     cooldown = 30
     sound = SPELL_BLAST
   }
-  "defense bonus"
   {
+    id =  "defense bonus"
     symbol = "🛡"
     effect = Lasting DEF_BONUS
     cooldown = 50
     sound = SPELL_DEX_BONUS
   }
-  "summon element"
   {
+    id =  "summon element"
     symbol = "👾"
     effect = SummonElement
     cooldown = 100
     sound = SPELL_SUMMON_SPIRIT
   }
-  "damage bonus"
   {
+    id =  "damage bonus"
     symbol = "⚔"
     effect = Lasting DAM_BONUS
     cooldown = 50
     sound = SPELL_STR_BONUS
   }
-  "meteor shower"
   {
+    id =  "meteor shower"
     symbol = "☄"
     effect = PlaceFurniture METEOR_SHOWER
     cooldown = 150
     sound = SPELL_METEOR_SHOWER
   }
-  "invisibility"
   {
+    id =  "invisibility"
     symbol = "🕵️"
     effect = Lasting INVISIBLE
     cooldown = 150
     sound = SPELL_INVISIBILITY
   }
-  "fire breath"
   {
+    id =  "fire breath"
     symbol = "🔥"
     effect = Fire
     fx = FLAMETHROWER
@@ -128,15 +163,15 @@
     sound = SPELL_BLAST
     castMessageType = BREATHE_FIRE
   }
-  "summon spirit"
   {
+    id =  "summon spirit"
     symbol = "👾"
     effect = Summon "SPIRIT" { 3 5}
     cooldown = 100
     sound = SPELL_SUMMON_SPIRIT
   }
-  "fire wall"
   {
+    id =  "fire wall"
     symbol = "🔥"
     effect =  CustomArea PlaceFurniture FIRE_WALL { 0 -2 0 -1 0 0 0 1 0 2 }
     endOnly = true

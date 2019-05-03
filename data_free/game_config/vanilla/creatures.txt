@@ -38,7 +38,7 @@
         SPELL 12
       }
       spellSchools = { "mage" }
-      spells = { "heal self" }
+      spells = { "healing" }
     }
 
   "KEEPER_MAGE_F"
@@ -67,7 +67,7 @@
         SPELL 12
       }
       spellSchools = { "mage" }
-      spells = { "heal self" }
+      spells = { "healing" }
     }
   "KEEPER_KNIGHT"
     {
@@ -92,7 +92,7 @@
         MELEE 12
         SPELL 3
       }
-      spells = { "heal self" }
+      spells = { "healing" }
     }
   "KEEPER_KNIGHT_F"
     {
@@ -118,7 +118,7 @@
         MELEE 12
         SPELL 3
       }
-      spells = { "heal self" }
+      spells = { "healing" }
     }
   "KEEPER_KNIGHT_WHITE"
     {
@@ -144,7 +144,7 @@
         SPELL 1
       }
       hatedByEffect = HATE_HUMANS
-      spells = { "heal self" }
+      spells = { "healing" }
     }
   "KEEPER_KNIGHT_WHITE_F"
     {
@@ -170,7 +170,7 @@
         MELEE 12
         SPELL 1
       }
-      spells = { "heal self" }
+      spells = { "healing" }
       hatedByEffect = HATE_HUMANS
     }
   "ADVENTURER"
@@ -245,7 +245,7 @@
         RANGED_RESISTANCE 1
         MAGIC_RESISTANCE 1
       }
-      spells = { "heal self" "heal other" "summon spirit" }
+      spells = { "healing2" "summon spirit" }
       chatReactionFriendly = "\"mhhhhhrrrr!\""
       chatReactionHostile = "\"mhhhhhrrrr!\""
       petReaction = "neighs"
@@ -723,7 +723,7 @@
         stackName = "dragon"
         firstNameGen = DRAGON
       }
-      spells = { "heal self" "deception" "haste self" "cure poison" }
+      spells = { "healing" "deception" "haste self" "cure poison" }
     }
   "RED_DRAGON"
     {
@@ -753,7 +753,7 @@
         firstNameGen = DRAGON
         stackName = "dragon"
       }
-      spells = { "heal self" "deception" "haste self" "cure poison" "fire breath"}
+      spells = { "healing" "deception" "haste self" "cure poison" "fire breath"}
     }
   "KNIGHT_PLAYER"
     {
@@ -1005,7 +1005,7 @@
       name = {
         name = "priest"
       }
-      spells = { "heal self" "haste self" "defense bonus" "directed blast" "magic missile" "heal other" }
+      spells = { "healing2" "haste self" "defense bonus" "directed blast" "magic missile" }
       hatedByEffect = HATE_HUMANS
     }
   "WARRIOR"
@@ -1048,7 +1048,7 @@
       chatReactionFriendly = "curses all dungeons"
       chatReactionHostile = "\"Die!\""
       courage = 1
-      spells = { "heal self" "defense bonus" "directed blast" "summon spirit" "heal other" }
+      spells = { "healing2" "defense bonus" "directed blast" "summon spirit" }
       maxLevelIncrease = {
         SPELL 5
       }
@@ -1825,7 +1825,7 @@
       }
       chatReactionFriendly = "curses all dwarves"
       chatReactionHostile = "\"Die!\""
-      spells = { "heal self" }
+      spells = { "healing" }
       skills = {
         JEWELER 0.9
       }
@@ -1858,7 +1858,7 @@
         MAGIC_RESISTANCE 1
         ELF_VISION 1
       }
-      spells = { "heal self" }
+      spells = { "healing" }
       maxLevelIncrease = {
         ARCHERY 3
       }
@@ -1907,7 +1907,7 @@
         MAGIC_RESISTANCE 1
         ELF_VISION 1
       }
-      spells = { "heal self" "haste self" "defense bonus" "damage bonus" "directed blast" "heal other" }
+      spells = { "healing2" "haste self" "defense bonus" "damage bonus" "directed blast" }
       maxLevelIncrease = {
         SPELL 4
         MELEE 4
@@ -1937,7 +1937,7 @@
         SWIMMING_SKILL 1
         NIGHT_VISION 1
       }
-      spells = { "heal self" }
+      spells = { "healing" }
       name = {
         name = "dark elf"
         pluralName = "dark elves"
@@ -1961,7 +1961,7 @@
         MAGIC_RESISTANCE 1
         NIGHT_VISION 1
       }
-      spells = { "heal self" }
+      spells = { "healing" }
       maxLevelIncrease = {
         MELEE 5
         SPELL 5
@@ -2011,7 +2011,7 @@
         MAGIC_RESISTANCE 1
         NIGHT_VISION 1
       }
-      spells = { "heal self" "haste self" "defense bonus" "damage bonus" "directed blast" "heal other" }
+      spells = { "healing2" "haste self" "defense bonus" "damage bonus" "directed blast" }
       name = {
         name = "dark elf lord"
       }
@@ -2034,7 +2034,7 @@
       }
       chatReactionFriendly = "curses all humans"
       chatReactionHostile = "\"Die!\""
-      spells = { "heal self" }
+      spells = { "healing" }
       maxLevelIncrease = {
         ARCHERY 4
       }

@@ -1,9 +1,9 @@
 {
   "mage"
   {
-    "heal self" 1
+    "healing" 1
     "summon flies" 2
-    "heal other" 3
+    "healing2" 3
     "magic missile" 4
     "deception" 4
     "escape" 5
@@ -17,5 +17,14 @@
     "damage bonus" 10
     "meteor shower" 11
     "invisibility" 12
+  }
+  "healer"
+  {
+    "healing2" 1
+    "healing3" 2
+    "cure poison" 2
+    "cure poison2" 3
+    "cure blindness" 4
+    "poison resistance" 5
   }
 }

@@ -124,7 +124,7 @@ void villainPoints(View* view) {
 }
 
 Encyclopedia::Encyclopedia(vector<BuildInfo> buildInfo, map<string, SpellSchool> spellSchools,
-    map<string, Spell> spells, const Technology& technology)
+    vector<Spell> spells, const Technology& technology)
     : buildInfo(std::move(buildInfo)), schools(spellSchools), spells(spells), technology(technology) {
 }
 

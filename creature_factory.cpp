@@ -198,7 +198,7 @@ const map<string, SpellSchool> CreatureFactory::getSpellSchools() const {
   return spellSchools;
 }
 
-const map<string, Spell> CreatureFactory::getSpells() const {
+const vector<Spell>& CreatureFactory::getSpells() const {
   return spells;
 }
 
@@ -235,7 +235,7 @@ CreatureFactory::CreatureFactory(NameGenerator n, const GameConfig* config) : na
     }
     for (auto& elem : spellSchools)
       for (auto& s : elem.second.spells)
-        if (!spells.count(s.first)) {
+        if (!getSpell(s.first)) {
           USER_INFO << ": unknown spell: " << s.first << " in school " << elem.first;
           goto cont;
         }
@@ -246,7 +246,7 @@ CreatureFactory::CreatureFactory(NameGenerator n, const GameConfig* config) : na
           goto cont;
         }
       for (auto& spell : elem.second.spells)
-        if (!spells.count(spell)) {
+        if (!getSpell(spell)) {
           USER_INFO << elem.first << ": unknown spell: " << spell;
           goto cont;
         }
@@ -833,12 +833,19 @@ PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory ai
     SpellMap spellMap;
     for (auto& school : attr.spellSchools) {
       for (auto& spell : spellSchools.at(school).spells)
-        spellMap.add(spells.at(spell.first), spell.first, spell.second);
+        spellMap.add(*getSpell(spell.first), spell.second);
     }
     for (auto& spell : attr.spells)
-      spellMap.add(spells.at(spell), spell, 0);
+      spellMap.add(*getSpell(spell), 0);
     return get(std::move(attr), tribe, getController(id, aiFactory), std::move(spellMap));
   }
+}
+
+const Spell* CreatureFactory::getSpell(const string& id) const {
+  for (auto& spell : spells)
+    if (spell.getId() == id)
+      return &spell;
+  return nullptr;
 }
 
 PCreature CreatureFactory::getGhost(Creature* creature) {

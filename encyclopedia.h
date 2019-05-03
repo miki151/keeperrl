@@ -26,13 +26,13 @@ class Spell;
 
 class Encyclopedia {
   public:
-  Encyclopedia(vector<BuildInfo>, map<string, SpellSchool>, map<string, Spell>, const Technology&);
+  Encyclopedia(vector<BuildInfo>, map<string, SpellSchool>, vector<Spell>, const Technology&);
   void present(View*, int lastInd = 0);
 
   private:
   vector<BuildInfo> buildInfo;
   map<string, SpellSchool> schools;
-  map<string, Spell> spells;
+  vector<Spell> spells;
   const Technology& technology;
   void advance(View*, TechId) const;
   void advances(View*, int lastInd = 0) const;

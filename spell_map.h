@@ -22,15 +22,15 @@ class Spell;
 
 class SpellMap {
   public:
-  void add(Spell, string name, int level);
+  void add(Spell, int level);
   GlobalTime getReadyTime(const Spell*) const;
   void setReadyTime(const Spell*, GlobalTime);
   vector<const Spell*> getAvailable(const Creature*) const;
-  const string& getName(const Spell*) const;
   int getLevel(const Spell*) const;
   bool contains(const Spell*) const;
   void onExpLevelReached(Creature*, ExperienceType, int level);
   void setAllReady();
+  const string& getName(const Spell*) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
@@ -41,11 +41,10 @@ class SpellMap {
     Spell SERIAL(spell);
     optional<GlobalTime> SERIAL(timeout);
     int SERIAL(level);
-    string SERIAL(name);
-    SERIALIZE_ALL(spell, timeout, level, name)
+    SERIALIZE_ALL(spell, timeout, level)
   };
   vector<SpellInfo> SERIAL(elems);
-  const SpellInfo* getInfo(const Spell*) const;
-  SpellInfo* getInfo(const Spell*);
+  const SpellInfo* getInfo(const string& id) const;
+  SpellInfo* getInfo(const string& id);
 };
 

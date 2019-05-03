@@ -16,7 +16,7 @@
 #include "game_event.h"
 #include "view_id.h"
 
-SERIALIZE_DEF(Spell, NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf))
+SERIALIZE_DEF(Spell, NAMED(id), NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf))
 SERIALIZATION_CONSTRUCTOR_IMPL(Spell)
 
 const string& Spell::getSymbol() const {
@@ -119,6 +119,14 @@ void Spell::apply(Creature* c, Position target) const {
 
 int Spell::getRange() const {
   return range;
+}
+
+const string& Spell::getId() const {
+  return id;
+}
+
+const optional<string>& Spell::getUpgrade() const {
+  return upgrade;
 }
 
 
