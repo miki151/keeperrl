@@ -723,7 +723,7 @@
         stackName = "dragon"
         firstNameGen = DRAGON
       }
-      spells = { "healing" "deception" "haste self" "cure poison" }
+      spells = { "healing" "deception" "haste" "cure poison" }
     }
   "RED_DRAGON"
     {
@@ -753,7 +753,7 @@
         firstNameGen = DRAGON
         stackName = "dragon"
       }
-      spells = { "healing" "deception" "haste self" "cure poison" "fire breath"}
+      spells = { "healing" "deception" "haste" "cure poison" "fire breath"}
     }
   "KNIGHT_PLAYER"
     {
@@ -1005,7 +1005,7 @@
       name = {
         name = "priest"
       }
-      spells = { "healing2" "haste self" "defense bonus" "directed blast" "magic missile" }
+      spells = { "healing2" "haste" "defense bonus" "directed blast" "magic missile" }
       hatedByEffect = HATE_HUMANS
     }
   "WARRIOR"
@@ -1360,6 +1360,7 @@
         MELEE 7
         SPELL 7
       }
+      spellSchools = { "illusion" }
       name = {
         name = "vampire"
         firstNameGen = VAMPIRE
@@ -1470,7 +1471,7 @@
         MELEE 4
         SPELL 7
       }
-      spellSchools = { "mage" }
+      spellSchools = { "shaman" }
       name = {
         name = "orc shaman"
         firstNameGen = ORC
@@ -1935,7 +1936,7 @@
         MAGIC_RESISTANCE 1
         ELF_VISION 1
       }
-      spells = { "healing2" "haste self" "defense bonus" "damage bonus" "directed blast" }
+      spells = { "healing2" "haste" "defense bonus" "damage bonus" "directed blast" }
       maxLevelIncrease = {
         SPELL 4
         MELEE 4
@@ -2039,7 +2040,7 @@
         MAGIC_RESISTANCE 1
         NIGHT_VISION 1
       }
-      spells = { "healing2" "haste self" "defense bonus" "damage bonus" "directed blast" }
+      spells = { "healing2" "haste" "defense bonus" "damage bonus" "directed blast" }
       name = {
         name = "dark elf lord"
       }
@@ -2542,27 +2543,6 @@
         firstNameGen = DOG
       }
       petReaction = "\"WOOF!\""
-    }
-  "FIRE_SPHERE"
-    {
-      viewId = { "fire_elemental" }
-      attr = {
-        DAMAGE 5
-        DEFENSE 15 
-      }
-      body = {
-        type = NonHumanoid SMALL
-        material = FIRE
-        deathSound = none
-      }
-      permanentEffects = {
-        FIRE_RESISTANT 1
-        FLYING 1
-        LIGHT_SOURCE 1
-      }
-      name = {
-        name = "fire sphere"
-      }
     }
   "ELEMENTALIST"
     {

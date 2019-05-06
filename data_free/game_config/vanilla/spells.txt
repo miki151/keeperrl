@@ -25,6 +25,38 @@
     sound = SPELL_HEALING
   }
   {
+    id =  "cure poison"
+    symbol = "⚕"
+    effect = RemoveLasting POISON
+    cooldown = 50
+    sound = SPELL_CURE_POISON
+  }
+  {
+    id =  "cure poison2"
+    upgrade = "cure poison"
+    symbol = "⚕"
+    effect = RemoveLasting POISON
+    cooldown = 50
+    range = 1
+    sound = SPELL_CURE_POISON
+  }
+  {
+    id =  "cure blindness"
+    symbol = "👁"
+    effect = RemoveLasting BLIND
+    cooldown = 50
+    range = 1
+    sound = SPELL_CURE_POISON
+  }
+  {
+    id =  "poison resistance"
+    symbol = "🐍"
+    effect = Lasting POISON_RESISTANT
+    cooldown = 100
+    range = 1
+    sound = SPELL_CURE_POISON
+  }
+  {
     id =  "summon flies"
     symbol = "🐝"
     effect = Summon "FLY" {3 7}
@@ -47,50 +79,66 @@
     sound = SPELL_DECEPTION
   }
   {
+    id =  "invisibility"
+    symbol = "🕵️"
+    effect = Lasting INVISIBLE
+    cooldown = 300
+    sound = SPELL_INVISIBILITY
+  }
+  {
+    id =  "invisibility2"
+    upgrade = "invisibility"
+    symbol = "🕵️"
+    effect = Lasting INVISIBLE
+    cooldown = 150
+    sound = SPELL_INVISIBILITY
+  }
+  {
     id =  "escape"
-    symbol = "🧚"
+    symbol = "✈️"
     effect = Teleport
     cooldown = 80
     sound = SPELL_TELEPORT
   }
   {
-    id =  "haste self"
+    id =  "panic"
+    symbol = "😱"
+    effect = Lasting PANIC
+    range = 5
+    cooldown = 50
+    sound = SPELL_STR_BONUS
+  }
+  {
+    id =  "pacify"
+    symbol = "☮"
+    effect = Lasting PEACEFULNESS
+    range = 2
+    cooldown = 150
+    sound = SPELL_STR_BONUS
+  }
+  {
+    id =  "haste"
     symbol = "🏃"
     effect = Lasting SPEED
-    cooldown = 60
+    cooldown = 120
     sound = SPELL_SPEED_SELF
   }
   {
-    id =  "cure poison"
-    symbol = "⚕"
-    effect = RemoveLasting POISON
-    cooldown = 50
-    sound = SPELL_CURE_POISON
+    id =  "haste2"
+    upgrade = "haste"
+    symbol = "🏃"
+    effect = Lasting SPEED
+    range = 1
+    cooldown = 120
+    sound = SPELL_SPEED_SELF
   }
   {
-    id =  "cure poison2"
-    upgrade = "cure poison"
-    symbol = "⚕"
-    effect = RemoveLasting POISON
-    cooldown = 50
-    range = 1
-    sound = SPELL_CURE_POISON
-  }
-  {
-    id =  "cure blindness"
-    symbol = "⚕"
-    effect = RemoveLasting BLIND
-    cooldown = 50
-    range = 1
-    sound = SPELL_CURE_POISON
-  }
-  {
-    id =  "poison resistance"
-    symbol = "⚕"
-    effect = Lasting POISON_RESISTANT
-    cooldown = 100
-    range = 1
-    sound = SPELL_CURE_POISON
+    id =  "slow"
+    symbol = "🐢"
+    effect = Lasting SLOWED
+    range = 3
+    cooldown = 120
+    sound = SPELL_SPEED_SELF
   }
   {
     id =  "directed blast"
@@ -110,20 +158,36 @@
     castMessageType = AIR_BLAST
   }
   {
-    id =  "fireball"
-    symbol = "🔥"
-    effect = Fire
-    fx = FIREBALL
-    range = 4
-    cooldown = 30
-    sound = SPELL_BLAST
-  }
-  {
     id =  "defense bonus"
     symbol = "🛡"
     effect = Lasting DEF_BONUS
-    cooldown = 50
+    cooldown = 80
     sound = SPELL_DEX_BONUS
+  }
+  {
+    id =  "defense bonus2"
+    upgrade = "defense bonus"
+    symbol = "🛡"
+    effect = Lasting DEF_BONUS
+    range = 1
+    cooldown = 80
+    sound = SPELL_DEX_BONUS
+  }
+  {
+    id =  "damage bonus"
+    symbol = "⚔"
+    effect = Lasting DAM_BONUS
+    cooldown = 80
+    sound = SPELL_STR_BONUS
+  }
+  {
+    id =  "damage bonus2"
+    upgrade = "damage bonus"
+    symbol = "⚔"
+    effect = Lasting DAM_BONUS
+    range = 1
+    cooldown = 80
+    sound = SPELL_STR_BONUS
   }
   {
     id =  "summon element"
@@ -133,13 +197,6 @@
     sound = SPELL_SUMMON_SPIRIT
   }
   {
-    id =  "damage bonus"
-    symbol = "⚔"
-    effect = Lasting DAM_BONUS
-    cooldown = 50
-    sound = SPELL_STR_BONUS
-  }
-  {
     id =  "meteor shower"
     symbol = "☄"
     effect = PlaceFurniture METEOR_SHOWER
@@ -147,15 +204,30 @@
     sound = SPELL_METEOR_SHOWER
   }
   {
-    id =  "invisibility"
-    symbol = "🕵️"
-    effect = Lasting INVISIBLE
-    cooldown = 150
-    sound = SPELL_INVISIBILITY
+    id =  "summon spirit"
+    symbol = "👾"
+    effect = Summon "SPIRIT" { 3 5}
+    cooldown = 100
+    sound = SPELL_FIRE_SPHERE_PET
+  }
+  {
+    id =  "fire elemental"
+    symbol = "👾"
+    effect = Summon "FIRE_ELEMENTAL" { 1 2 }
+    cooldown = 100
+    sound = SPELL_FIRE_SPHERE_PET
+  }
+  {
+    id =  "fire elemental2"
+    upgrade = "fire elemental"
+    symbol = "👾"
+    effect = Summon "FIRE_ELEMENTAL" { 2 4 }
+    cooldown = 100
+    sound = SPELL_FIRE_SPHERE_PET
   }
   {
     id =  "fire breath"
-    symbol = "🔥"
+    symbol = "🐲"
     effect = Fire
     fx = FLAMETHROWER
     range = 4
@@ -164,19 +236,21 @@
     castMessageType = BREATHE_FIRE
   }
   {
-    id =  "summon spirit"
-    symbol = "👾"
-    effect = Summon "SPIRIT" { 3 5}
-    cooldown = 100
-    sound = SPELL_SUMMON_SPIRIT
-  }
-  {
-    id =  "fire wall"
-    symbol = "🔥"
+    id =  "firewall"
+    symbol = "𝍔"
     effect =  CustomArea PlaceFurniture FIRE_WALL { 0 -2 0 -1 0 0 0 1 0 2 }
     endOnly = true
     range = 2
     cooldown = 30
     sound = SPELL_BLAST
+  }
+  {
+    id =  "fireball"
+    symbol = "🔥"
+    effect = Fire
+    fx = FIREBALL
+    range = 4
+    cooldown = 30
+    sound = SPELL_FIRE_SPHERE_PET
   }
 }
