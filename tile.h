@@ -73,6 +73,8 @@ class Tile {
   const vector<TileCoord>& getCornerCoords(DirSet) const;
   const optional<FXVariantName> getFX() const;
 
+  bool animated = false;
+
   private:
   Tile();
   Tile(const vector<TileCoord>&);

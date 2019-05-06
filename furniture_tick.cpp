@@ -20,6 +20,7 @@
 #include "view_object.h"
 #include "furniture_usage.h"
 #include "game_event.h"
+#include "color.h"
 
 static void handleBed(Position pos) {
   PROFILE;
@@ -114,6 +115,12 @@ static void pit(Position position, WFurniture self) {
         }
 }
 
+static Color getPortalColor(int index) {
+  CHECK(index >= 0);
+  index += 1 + 2 * (index / 6);
+  return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
+}
+
 void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furniture) {
   switch (type) {
     case FurnitureTickType::BED:
@@ -127,13 +134,13 @@ void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furn
       break;
     case FurnitureTickType::PORTAL:
       pos.registerPortal();
-      furniture->getViewObject()->setPortalVersion(none);
+      furniture->getViewObject()->setColorVariant(Color::WHITE);
       if (auto otherPos = pos.getOtherPortal())
         for (auto f : otherPos->modFurniture())
           if (f->getUsageType() == FurnitureUsageType::PORTAL) {
-            auto color = *pos.getPortalIndex();
-            furniture->getViewObject()->setPortalVersion(uint8_t(color));
-            f->getViewObject()->setPortalVersion(uint8_t(color));
+            auto color = getPortalColor(*pos.getPortalIndex());
+            furniture->getViewObject()->setColorVariant(color);
+            f->getViewObject()->setColorVariant(color);
             pos.setNeedsRenderUpdate(true);
             otherPos->setNeedsRenderUpdate(true);
           }

@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "util.h"
+
 namespace SDL {
 struct SDL_Color;
 };
@@ -28,7 +30,8 @@ struct Color {
   Color blend(Color) const;
   Color();
 
-  bool operator==(const Color&) const;
+  bool operator == (const Color&) const;
+  bool operator != (const Color&) const;
   operator SDL::SDL_Color() const;
 
   static Color WHITE;
@@ -63,11 +66,11 @@ struct Color {
   static Color TRANSLUCENT_BLACK;
   static Color TRANSPARENT;
 
-  unsigned char r, g, b, a;
-};
-
-struct ColorInfo {
-  Color value;
+  unsigned char SERIAL(r); // HASH(r)
+  unsigned char SERIAL(g); // HASH(g)
+  unsigned char SERIAL(b); // HASH(b)
+  unsigned char SERIAL(a); // HASH(a)
+  HASH_ALL(r, g, b, a)
   template <typename Archive>
-  void serialize(Archive&, unsigned long);
+  void serialize(Archive&, unsigned int);
 };

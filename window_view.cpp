@@ -1330,6 +1330,7 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
     case SDL::SDLK_F8:
       //renderer.startMonkey();
       renderer.loadAnimations();
+      renderer.getTileSet().reload(true);
       fxRenderer->loadTextures();
       gui.loadImages();
       inputQueue.push(UserInputId::RELOAD_DATA);

@@ -253,24 +253,24 @@
 
   "traps"
   {
-    { Trap TERROR "terror_trap"                                  "Terror trap"       "Traps"
+    { Trap TERROR { "terror_trap" }                                 "Terror trap"       "Traps"
         "Causes the trespasser to panic." 0                   { TechId "traps" }}
 
-    { Trap POISON_GAS "gas_trap"                                 "Gas trap"          "Traps"
+    { Trap POISON_GAS { "gas_trap" }                                "Gas trap"          "Traps"
         "Releases a cloud of poisonous gas." 0                { TechId "traps" }}
 
-    { Trap ALARM "alarm_trap"                                    "Alarm trap"        "Traps"
+    { Trap ALARM { "alarm_trap" }                                   "Alarm trap"        "Traps"
         "Summons all minions" 0                               { TechId "traps" }}
 
-    { Trap WEB "web_trap"                                        "Web trap"          "Traps"
+    { Trap WEB { "web_trap" }                                       "Web trap"          "Traps"
         "Immobilises the trespasser for some time." 0         { TechId "traps" }}
 
-    { Trap BOULDER "boulder"                                     "Boulder trap"      "Traps"
+    { Trap BOULDER { "boulder" }                                    "Boulder trap"      "Traps"
         "Causes a huge boulder to roll towards the enemy." 0  { TechId "traps" }}
 
-    { Trap SURPRISE "surprise_trap"                              "Surprise trap"     "Traps"
+    { Trap SURPRISE { "surprise_trap" }                             "Surprise trap"     "Traps"
         "Teleports nearby minions to deal with the trespasser." 0 { TechId "traps" }}
-    { Trap FIRE "fire_trap"                                       "Fire trap"        "Traps"
+    { Trap FIRE { "fire_trap" }                                     "Fire trap"        "Traps"
         "Causes a tower of flame to errupt under the trespasser." 0 { TechId "traps" }}
   }
 }

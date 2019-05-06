@@ -409,11 +409,11 @@ void Renderer::showError(const string& s) {
   SDL_ShowSimpleMessageBox(SDL::SDL_MESSAGEBOX_ERROR, "Error", s.c_str(), window);
 }
 
-const TileSet& Renderer::getTileSet() const {
+TileSet& Renderer::getTileSet() {
   return *tileSet;
 }
 
-void Renderer::setTileSet(const TileSet* s) {
+void Renderer::setTileSet(TileSet* s) {
   tileSet = s;
 }
 
@@ -442,53 +442,52 @@ Vec2 getOffset(Vec2 sizeDiff, double scale) {
   return Vec2(round(sizeDiff.x * scale * 0.5), round(sizeDiff.y * scale * 0.5));
 }
 
-void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Color color, SpriteOrientation orientation) {
+void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Color color, SpriteOrientation orientation,
+    optional<Color> secondColor, optional<double> scale) {
   if (coords.empty())
     return;
-  auto frame = clock->getRealMillis().count() / 200;
-  auto& coord = coords[frame % coords.size()];
-  Vec2 off = (Vec2(nominalSize, nominalSize) - coord.size).mult(size) / (nominalSize * 2);
-  Vec2 tileSize = coord.size.mult(size) / nominalSize;
-  if (coord.size.y > nominalSize)
-    off.y *= 2;
-  Vec2 coordPos = coord.pos.mult(coord.size);
-  drawSprite(pos + off, coordPos, coord.size, *coord.texture, tileSize, color, orientation);
-}
-
-void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, double scale, Color color) {
-  if (coords.empty())
-    return;
-  auto frame = clock->getRealMillis().count() / 200;
-  auto& coord = coords[frame % coords.size()];
-  Vec2 off = getOffset(Vec2(nominalSize, nominalSize) - coord.size, scale);
-  if (coord.size.y > nominalSize)
-    off.y *= 2;
-  drawSprite(pos + off, coord.pos.mult(coord.size), coord.size, *coord.texture, coord.size * scale, color);
+  auto drawCoord = [&size, scale, this, pos, orientation] (const TileCoord& coord, Color color) {
+    Vec2 off = scale ? getOffset(Vec2(nominalSize, nominalSize) - coord.size, *scale)
+          : (Vec2(nominalSize, nominalSize) - coord.size).mult(size) / (nominalSize * 2);
+    Vec2 tileSize = scale ? coord.size * *scale : coord.size.mult(size) / nominalSize;
+    if (coord.size.y > nominalSize)
+      off.y *= 2;
+    drawSprite(pos + off, coord.pos.mult(coord.size), coord.size, *coord.texture, tileSize, color, orientation);
+  };
+  if (secondColor && coords.size() > 1) {
+    drawCoord(coords[0], color);
+    if (secondColor != Color::WHITE)
+      drawCoord(coords[1], color * *secondColor);
+  } else {
+    auto frame = clock->getRealMillis().count() / 200;
+    drawCoord(coords[frame % coords.size()], color);
+  }
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, Color color) {
-  const Tile& tile = tileSet->getTile(id);
-  if (tile.hasSpriteCoord())
-    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), 1, color * tile.color);
-  else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color,
-        pos + Vec2(nominalSize / 2, 0), tile.text, HOR);
+  drawViewObject(pos, id, true, 1, color);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale, Color color) {
   const Tile& tile = tileSet->getTile(id, useSprite);
-  if (tile.hasSpriteCoord())
-    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), scale, color * tile.color);
-  else
+  if (tile.hasSpriteCoord()) {
+    optional<Color> colorVariant;
+    if (!tile.animated)
+      colorVariant = id.getColor();
+    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), Vec2(), color * tile.color, {}, colorVariant, scale);
+  } else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale, color * tile.color,
         pos + Vec2(scale * nominalSize / 2, 0), tile.text, HOR);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Color color, SpriteOrientation orient) {
   const Tile& tile = tileSet->getTile(id, useSprite);
-  if (tile.hasSpriteCoord())
-    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color, orient);
-  else
+  if (tile.hasSpriteCoord()) {
+    optional<Color> colorVariant;
+    if (!tile.animated)
+      colorVariant = id.getColor();
+    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color, orient, colorVariant);
+  } else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, size.y, color * tile.color, pos, tile.text);
 }
 

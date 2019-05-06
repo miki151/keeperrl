@@ -231,10 +231,10 @@
   { "ada_ore" "✱" ColorId LIGHT_BLUE true "steelpile" }
   { "wood_plank" "\\" ColorId BROWN }
   { "prison" "." ColorId BLUE }
-  { "torch" "*" ColorId YELLOW }
-  { "candelabrum_ns" "*" ColorId ORANGE }
-  { "candelabrum_w" "*" ColorId ORANGE }
-  { "candelabrum_e" "*" ColorId ORANGE }
+  { viewId = "torch" symbol = "*" color = ColorId YELLOW animated = true }
+  { viewId = "candelabrum_ns" symbol = "*" color = ColorId ORANGE animated = true }
+  { viewId = "candelabrum_w" symbol = "*" color = ColorId ORANGE animated = true }
+  { viewId = "candelabrum_e" symbol = "*" color = ColorId ORANGE animated = true }
   { "sokoban_hole" "0" ColorId DARK_BLUE }
   { viewId = "cauldron" symbol = "ω" color = ColorId PURPLE
     isSymbolFont = true roundShadow = true }
@@ -306,7 +306,7 @@
   { viewId = "leisure" symbol = "." color = ColorId DARK_BLUE
     sprite = "dig_mark2" spriteColor = Rgb 50 50 200 120 }
   { viewId = "standing_torch" symbol = "*" color = ColorId YELLOW
-    moveUp = true }
+    moveUp = true animated = true }
   { viewId = "decid_tree" symbol = "🜍" color = ColorId DARK_GREEN
     isSymbolFont = true roundShadow = true }
   { viewId = "canif_tree" symbol = "♣" color = ColorId DARK_GREEN
@@ -331,7 +331,7 @@
     isSymbolFont = true roundShadow = true sprite = "mushroom2"
     spriteColor = ColorId LIGHT_BLUE }
   { viewId = "fountain" symbol = "0" color = ColorId LIGHT_BLUE
-    roundShadow = true }
+    roundShadow = true animated = true }
   { viewId = "chest" symbol = "=" color = ColorId BROWN
     roundShadow = true }
   { viewId = "opened_chest" symbol = "=" color = ColorId BROWN
@@ -429,9 +429,9 @@
     isSymbolFont = true
     extraBorders = { "water" "sand" "floor" "keeper_floor" } }
   { viewId = "water" symbol = "~" color = ColorId LIGHT_BLUE
-    waterSides = "water" }
+    waterSides = "water" animated = true }
   { viewId = "magma" symbol = "~" color = ColorId RED
-    waterSides = "magma" }
+    waterSides = "magma" animated = true }
   { viewId = "fog_of_war" symbol = " " color = ColorId WHITE sprite = "empty"
     waterSides = "fogofwar" }
   { viewId = "mountain" symbol = "#" color = ColorId GRAY

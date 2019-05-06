@@ -54,8 +54,8 @@ class Renderer {
   void initialize();
   bool isFullscreen();
   void showError(const string&);
-  const TileSet& getTileSet() const;
-  void setTileSet(const TileSet*);
+  TileSet& getTileSet();
+  void setTileSet(TileSet*);
   static vector<string> getFullscreenResolutions();
   const static int textSize = 19;
   const static int smallTextSize = 14;
@@ -92,8 +92,8 @@ class Renderer {
   void drawViewObject(Vec2 pos, ViewId, bool useSprite, Vec2 size, Color = Color::WHITE, SpriteOrientation = {});
   void drawViewObject(Vec2 pos, ViewId, Color = Color::WHITE);
   void drawAsciiBackground(ViewId, Rectangle bounds);
-  void drawTile(Vec2 pos, const vector<TileCoord>&, double scale = 1, Color = Color::WHITE);
-  void drawTile(Vec2 pos, const vector<TileCoord>&, Vec2 size, Color = Color::WHITE, SpriteOrientation orientation = {});
+  void drawTile(Vec2 pos, const vector<TileCoord>&, Vec2 size, Color = Color::WHITE, SpriteOrientation orientation = {},
+      optional<Color> secondColor = none, optional<double> scale = none);
   void setScissor(optional<Rectangle>);
   void addQuad(const Rectangle&, Color);
   void drawAnimation(AnimationId, Vec2, double state, Vec2 squareSize, Dir orientation, Color);
@@ -181,6 +181,6 @@ class Renderer {
   };
   optional<DirectoryPath> animationDirectory;
   Clock* clock;
-  const TileSet* tileSet = nullptr;
+  TileSet* tileSet = nullptr;
 };
 

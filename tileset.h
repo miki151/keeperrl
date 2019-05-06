@@ -18,18 +18,20 @@ struct TileCoord {
 class TileSet {
   public:
   TileSet(const DirectoryPath& defaultDir);
-  void reload(const GameConfig*, bool useTiles);
+  void setGameConfig(const GameConfig*);
+  void reload(bool useTiles);
   const Tile& getTile(ViewId id, bool sprite = true) const;
   Color getColor(const ViewObject&) const;
   const vector<TileCoord>& getTileCoord(const string&) const;
 
   private:
+  const GameConfig* gameConfig;
   DirectoryPath defaultDir;
   friend class TileCoordLookup;
-  void addTile(ViewId, Tile);
-  void addSymbol(ViewId, Tile);
-  unordered_map<ViewId, Tile, CustomHash<ViewId>> tiles;
-  unordered_map<ViewId, Tile, CustomHash<ViewId>> symbols;
+  void addTile(string, Tile);
+  void addSymbol(string, Tile);
+  unordered_map<ViewId::InternalId, Tile> tiles;
+  unordered_map<ViewId::InternalId, Tile> symbols;
   vector<unique_ptr<Texture>> textures;
   map<string, vector<TileCoord>> tileCoords;
   void loadTilesFromDir(const DirectoryPath&, Vec2 size);

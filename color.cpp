@@ -17,6 +17,8 @@
 #include "sdl.h"
 #include "color.h"
 
+SERIALIZE_DEF(Color, r, g, b, a)
+
 Color Color::WHITE(255, 255, 255);
 Color Color::YELLOW(250, 255, 0);
 Color Color::LIGHT_BROWN(210, 150, 0);
@@ -77,13 +79,12 @@ Color Color::blend(Color c) const {
       a);
 }
 
-bool Color::operator==(const Color& rhs) const {
+bool Color::operator == (const Color& rhs) const {
   return r == rhs.r && g == rhs.g && b == rhs.b && a == rhs.a;
 }
 
-template<typename Archive>
-void ColorInfo::serialize(Archive& ar1, unsigned long) {
-  ar1(value.r, value.g, value.b, value.a);
+bool Color::operator != (const Color& rhs) const {
+  return !(*this == rhs);
 }
 
 #include "pretty_archive.h"
@@ -136,10 +137,10 @@ MAKE_VARIANT2(ColorDef, ColorId, Rgb);
 #define MAP_COLOR(Name) case ColorId::Name: return Color::Name
 
 template<>
-void ColorInfo::serialize(PrettyInputArchive& ar, unsigned long) {
+void Color::serialize(PrettyInputArchive& ar, unsigned int) {
   ColorDef SERIAL(def);
   ar(def);
-  value = def.visit(
+  *this = def.visit(
       [&](Rgb c) -> Color {
         return Color(c.r, c.g, c.b, c.a);
       },
@@ -182,3 +183,8 @@ void ColorInfo::serialize(PrettyInputArchive& ar, unsigned long) {
 }
 
 #undef MAP_COLOR
+
+
+#include "text_serialization.h"
+template void Color::serialize(TextInputArchive&, unsigned);
+template void Color::serialize(TextOutputArchive&, unsigned);

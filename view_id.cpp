@@ -26,7 +26,7 @@ void ViewId::setViewIdGeneration(bool b) {
   viewIdGeneration = b;
 }
 
-ViewId::ViewId(const char* s) : id(getId(s)) {}
+ViewId::ViewId(const char* s, Color color) : id(getId(s)), color(color) {}
 
 bool ViewId::operator == (const ViewId& o) const {
   return id == o.id;
@@ -41,11 +41,19 @@ bool ViewId::operator <(const ViewId& o) const {
 }
 
 int ViewId::getHash() const {
-  return id;
+  return combineHash(id, color);
 }
 
 const char* ViewId::data() const {
   return allIds[id].data();
+}
+
+const Color& ViewId::getColor() const {
+  return color;
+}
+
+ViewId::InternalId ViewId::getInternalId() const {
+  return id;
 }
 
 std::ostream& operator <<(std::ostream& d, ViewId id) {
@@ -56,11 +64,11 @@ template <class Archive>
 void ViewId::serialize(Archive& ar1, const unsigned int) {
   if (Archive::is_loading::value) {
     string s;
-    ar1(s);
+    ar1(s, color);
     id = getId(s.data());
   } else {
     string s = data();
-    ar1(s);
+    ar1(s, color);
   }
 }
 
@@ -72,8 +80,13 @@ SERIALIZATION_CONSTRUCTOR_IMPL(ViewId)
 template<>
 void ViewId::serialize(PrettyInputArchive& ar, unsigned) {
   string text;
-  ar >> text;
+  ar >> NAMED(text);
+  Color colorInfo = Color::WHITE;
+  ar >> OPTION(colorInfo);
+  ar >> endInput();
   id = getId(text.data());
+  if (colorInfo != Color::WHITE)
+    color = colorInfo;
 }
 
 #include "text_serialization.h"

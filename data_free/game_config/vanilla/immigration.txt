@@ -83,7 +83,23 @@
         {
           ids = { "ORC_SHAMAN" }
           traits = { FIGHTER }
-          frequency = 0.6
+          frequency = 0.3
+          requirements = {
+            { 0.1 AttractionInfo 1 {FurnitureType BOOKCASE_WOOD FurnitureType LABORATORY}}
+            { 0.0 MinTurnRequirement 500 }
+          }
+          specialTraits = {
+             { 0.10 { ExtraTraining SPELL 4}}
+             { 0.05 { SkillId LABORATORY }}
+             { 0.02 { LastingEffect HATE_ELVES }}
+             { 0.02 { LastingEffect HATE_HUMANS }}
+             { 0.01 { LastingEffect ENTERTAINER }}
+          }
+        }
+        {
+          ids = { "ORC_HEALER" }
+          traits = { FIGHTER }
+          frequency = 0.3
           requirements = {
             { 0.1 AttractionInfo 1 {FurnitureType BOOKCASE_WOOD FurnitureType LABORATORY}}
             { 0.0 MinTurnRequirement 500 }

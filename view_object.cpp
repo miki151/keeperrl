@@ -19,7 +19,7 @@
 #include "view_id.h"
 #include "experience_type.h"
 
-SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, genericId, goodAdjectives, badAdjectives, creatureAttributes, status, clickAction, extendedActions, portalVersion)
+SERIALIZE_DEF(ViewObject, resource_id, viewLayer, description, modifiers, attributes, attachmentDir, genericId, goodAdjectives, badAdjectives, creatureAttributes, status, clickAction, extendedActions)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(ViewObject);
 
@@ -363,12 +363,8 @@ void ViewObject::setId(ViewId id) {
   resource_id = id;
 }
 
-void ViewObject::setPortalVersion(optional<uint8_t> v) {
-  portalVersion = v;
-}
-
-optional<uint8_t> ViewObject::getPortalVersion() const {
-  return portalVersion;
+void ViewObject::setColorVariant(Color color) {
+  resource_id = ViewId(resource_id.data(), color);
 }
 
 void ViewObject::setGoodAdjectives(const string& v) {

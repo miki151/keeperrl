@@ -5,12 +5,12 @@
 #include "game_config.h"
 #include "tile_info.h"
 
-void TileSet::addTile(ViewId id, Tile tile) {
-  tiles.insert(make_pair(id, std::move(tile)));
+void TileSet::addTile(string id, Tile tile) {
+  tiles.insert(make_pair(ViewId(id.data()).getInternalId(), std::move(tile)));
 }
 
-void TileSet::addSymbol(ViewId id, Tile tile) {
-  symbols.insert(make_pair(std::move(id), std::move(tile)));
+void TileSet::addSymbol(string id, Tile tile) {
+  symbols.insert(make_pair(ViewId(id.data()).getInternalId(), std::move(tile)));
 }
 
 Color TileSet::getColor(const ViewObject& object) const {
@@ -18,7 +18,7 @@ Color TileSet::getColor(const ViewObject& object) const {
     return Color::DARK_GRAY;
   if (object.hasModifier(ViewObject::Modifier::HIDDEN))
     return Color::LIGHT_GRAY;
-  Color color = symbols.at(object.id()).color;
+  Color color = symbols.at(object.id().getInternalId()).color;
   if (object.hasModifier(ViewObject::Modifier::PLANNED))
     return Color(color.r / 2, color.g / 2, color.b / 2);
   return color;
@@ -162,13 +162,13 @@ void TileSet::loadModdedTiles(const GameConfig* gameConfig, bool useTiles) {
         if (!tile.extraBorders.empty()) {
           auto ret = getExtraBorderTile(spriteName);
           for (auto& elem : tile.extraBorders)
-            ret.addExtraBorderId(elem);
+            ret.addExtraBorderId(ViewId(elem.data()));
           return ret;
         }
         return sprite(spriteName);
       }();
       if (tile.spriteColor)
-        t.setColor(tile.spriteColor->value);
+        t.setColor(*tile.spriteColor);
       if (tile.roundShadow)
         t.setRoundShadow();
       if (tile.wallShadow)
@@ -177,31 +177,32 @@ void TileSet::loadModdedTiles(const GameConfig* gameConfig, bool useTiles) {
         t.addBackground(byName(*tile.background));
       if (tile.moveUp)
         t.setMoveUp();
+      t.animated = tile.animated;
       addTile(tile.viewId, std::move(t));
     }
-    addSymbol(tile.viewId, symbol(tile.symbol, tile.color.value, tile.isSymbolFont));
+    addSymbol(tile.viewId, symbol(tile.symbol, tile.color, tile.isSymbolFont));
   }
 }
 
 void TileSet::loadUnicode() {
-  addSymbol(ViewId("bridge"), symbol(u8"_", Color::BROWN));
-  addSymbol(ViewId("accept_immigrant"), symbol(u8"✓", Color::GREEN, true));
-  addSymbol(ViewId("reject_immigrant"), symbol(u8"✘", Color::RED, true));
-  addSymbol(ViewId("fog_of_war_corner"), symbol(u8" ", Color::WHITE));
-  addSymbol(ViewId("tutorial_entrance"), symbol(u8" ", Color::LIGHT_GREEN));
+  addSymbol("bridge", symbol(u8"_", Color::BROWN));
+  addSymbol("accept_immigrant", symbol(u8"✓", Color::GREEN, true));
+  addSymbol("reject_immigrant", symbol(u8"✘", Color::RED, true));
+  addSymbol("fog_of_war_corner", symbol(u8" ", Color::WHITE));
+  addSymbol("tutorial_entrance", symbol(u8" ", Color::LIGHT_GREEN));
 }
 
 void TileSet::loadTiles() {
-  addTile(ViewId("bridge"), sprite("bridge").addOption(Dir::S, byName("bridge2")));
-  addTile(ViewId("accept_immigrant"), symbol(u8"✓", Color::GREEN, true));
-  addTile(ViewId("reject_immigrant"), symbol(u8"✘", Color::RED, true));
-  addTile(ViewId("fog_of_war_corner"), sprite("fogofwarall")
+  addTile("bridge", sprite("bridge").addOption(Dir::S, byName("bridge2")));
+  addTile("accept_immigrant", symbol(u8"✓", Color::GREEN, true));
+  addTile("reject_immigrant", symbol(u8"✘", Color::RED, true));
+  addTile("fog_of_war_corner", sprite("fogofwarall")
       .addConnection({Dir::NE}, byName("fogofwarcornne"))
       .addConnection({Dir::NW}, byName("fogofwarcornnw"))
       .addConnection({Dir::SE}, byName("fogofwarcornse"))
       .addConnection({Dir::SW}, byName("fogofwarcornsw")));
 #ifndef RELEASE
-  addTile(ViewId("tutorial_entrance"), symbol(u8"?", Color::YELLOW));
+  addTile("tutorial_entrance", symbol(u8"?", Color::YELLOW));
 #else
   addTile(ViewId("tutorial_entrance"), sprite("empty"));
 #endif
@@ -214,7 +215,11 @@ Tile TileSet::symbol(const string& s, Color id, bool symbol) {
 TileSet::TileSet(const DirectoryPath& defaultDir) : defaultDir(defaultDir) {
 }
 
-void TileSet::reload(const GameConfig* config, bool useTiles) {
+void TileSet::setGameConfig(const GameConfig* c) {
+  gameConfig = c;
+}
+
+void TileSet::reload(bool useTiles) {
   tiles.clear();
   textures.clear();
   symbols.clear();
@@ -225,20 +230,20 @@ void TileSet::reload(const GameConfig* config, bool useTiles) {
     loadTilesFromDir(path.subdirectory("orig30"), Vec2(30, 30));
   };
   reloadDir(defaultDir);
-  reloadDir(config->getPath());
+  reloadDir(gameConfig->getPath());
   ViewId::setViewIdGeneration(true);
   loadUnicode();
   if (useTiles)
     loadTiles();
-  loadModdedTiles(config, useTiles);
+  loadModdedTiles(gameConfig, useTiles);
   ViewId::setViewIdGeneration(false);
 }
 
 const Tile& TileSet::getTile(ViewId id, bool sprite) const {
-  if (sprite && tiles.count(id))
-    return tiles.at(id);
+  if (sprite && tiles.count(id.getInternalId()))
+    return tiles.at(id.getInternalId());
   else
-    return symbols.at(id);
+    return symbols.at(id.getInternalId());
 }
 
 constexpr int textureWidth = 720;

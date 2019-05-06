@@ -23,6 +23,7 @@
 #include "resource_info.h"
 #include "equipment.h"
 #include "player_control.h"
+#include "view_object.h"
 
 template <class Archive>
 void Immigration::serialize(Archive& ar, const unsigned int) {
@@ -482,7 +483,10 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
     if (immigration->collective->getConfig().getStripSpawns() && info.stripEquipment)
       immigrants.back()->getEquipment().removeAllItems(immigrants.back().get());
     for (auto& specialTrait : info.getSpecialTraits())
-      if (Random.chance(specialTrait.prob))
+      if (Random.chance(specialTrait.prob)) {
+        if (specialTrait.colorVariant)
+          for (auto& c : immigrants)
+            c->modViewObject().setColorVariant(*specialTrait.colorVariant);
         for (auto& trait1 : specialTrait.traits) {
           auto trait = transformBeforeApplying(trait1);
           if (!specialTraits.contains(trait)) {
@@ -490,6 +494,7 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
             specialTraits.push_back(trait);
           }
         }
+      }
   }
   return Available(
     immigration,

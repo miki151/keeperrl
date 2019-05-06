@@ -3,6 +3,7 @@
 #include "util.h"
 #include "experience_type.h"
 #include "body_part.h"
+#include "color.h"
 
 struct ExtraTraining {
   ExperienceType HASH(type);
@@ -41,5 +42,6 @@ extern SpecialTrait transformBeforeApplying(SpecialTrait);
 struct SpecialTraitInfo {
   double SERIAL(prob);
   vector<SpecialTrait> SERIAL(traits);
-  SERIALIZE_ALL(NAMED(prob), NAMED(traits))
+  optional<Color> SERIAL(colorVariant);
+  SERIALIZE_ALL(NAMED(prob), NAMED(traits), NAMED(colorVariant))
 };

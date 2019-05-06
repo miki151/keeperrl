@@ -28,6 +28,7 @@
 #include "fx_variant_name.h"
 #include "view_object_action.h"
 #include "view_id.h"
+#include "color.h"
 
 RICH_ENUM(ViewObjectAttribute, HEALTH, WATER_DEPTH, LUXURY, MORALE);
 
@@ -60,8 +61,7 @@ class ViewObject {
   ViewLayer layer() const;
   ViewId id() const;
   void setId(ViewId);
-  void setPortalVersion(optional<uint8_t>);
-  optional<uint8_t> getPortalVersion() const;
+  void setColorVariant(Color);
 
   void setGoodAdjectives(const string&);
   void setBadAdjectives(const string&);
@@ -84,7 +84,7 @@ class ViewObject {
   void setExtendedActions(EnumSet<ViewObjectAction>);
   const EnumSet<ViewObjectAction>& getExtendedActions() const;
 
-  SERIALIZATION_DECL(ViewObject);
+  SERIALIZATION_DECL(ViewObject)
 
   EnumSet<FXVariantName> particleEffects;
 
@@ -102,7 +102,6 @@ class ViewObject {
   optional<CreatureAttributes> SERIAL(creatureAttributes);
   optional<ViewObjectAction> SERIAL(clickAction);
   EnumSet<ViewObjectAction> SERIAL(extendedActions);
-  optional<uint8_t> SERIAL(portalVersion);
 
   class MovementQueue {
     public:

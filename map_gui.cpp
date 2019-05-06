@@ -600,12 +600,6 @@ void MapGui::considerWoundedAnimation(const ViewObject& object, Color& color, mi
         color = Color::RED;
 }
 
-static Color getPortalColor(int index) {
-  CHECK(index >= 0);
-  index += 1 + 2 * (index / 6);
-  return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
-}
-
 static double getFlyingMovement(Vec2 size, milliseconds curTimeReal) {
   double range = 0.08;
   double freq = 700;
@@ -655,12 +649,13 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       if (mirrorSprite(id))
         renderer.drawTile(pos + move, coord, size, color,
             Renderer::SpriteOrientation((bool)(tilePos.getHash() % 2), (bool)(tilePos.getHash() % 4 > 1)));
-      else
-        renderer.drawTile(pos + move, coord, size, color);
+      else {
+        optional<Color> colorVariant;
+        if (!tile.animated)
+          colorVariant = object.id().getColor();
+        renderer.drawTile(pos + move, coord, size, color, {}, colorVariant);
+      }
     }
-
-    if (auto version = object.getPortalVersion())
-      renderer.drawTile(pos + move, renderer.getTileSet().getTileCoord("portal_inside"), size, getPortalColor(*version));
     if (tile.hasAnyCorners()) {
       for (auto coord : tile.getCornerCoords(dirs))
         renderer.drawTile(pos + move, {coord}, size, color);
@@ -706,12 +701,11 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   } else {
     Vec2 tilePos = pos + movement + Vec2(size.x / 2, -3);
     drawCreatureHighlights(renderer, object, index, pos + movement, size, curTimeReal);
-    if (auto version = object.getPortalVersion())
-      renderer.drawText(Renderer::SYMBOL_FONT, size.y,
-          blendNightColor(getPortalColor(*version), index), tilePos, tile.text, Renderer::HOR);
-    else
-      renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y,
-          blendNightColor(renderer.getTileSet().getColor(object), index), tilePos, tile.text, Renderer::HOR);
+    auto color = renderer.getTileSet().getColor(object);
+    if (object.id().getColor() != Color::WHITE)
+      color = object.id().getColor();
+    renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y,
+        blendNightColor(color, index), tilePos, tile.text, Renderer::HOR);
     if (object.hasModifier(ViewObject::Modifier::BURNING))
       renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(),
           pos + Vec2(size.x / 2, -3), u8"Ѡ", Renderer::HOR);
