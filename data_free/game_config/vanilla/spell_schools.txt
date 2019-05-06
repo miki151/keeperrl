@@ -45,7 +45,7 @@
     "fire elemental" 1
     "fire elemental2" 2
     "fireball" 3
-    "fire wall" 5
+    "firewall" 5
   }
   "illusion"
   {
