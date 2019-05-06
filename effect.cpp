@@ -773,7 +773,6 @@ string Effect::DoubleTrouble::getDescription() const {
   return "Creates a twin copy ally.";
 }
 
-
 void Effect::Blast::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
@@ -783,6 +782,26 @@ string Effect::Blast::getName() const {
 
 string Effect::Blast::getDescription() const {
   return "Creates a directed blast of air that throws back creatures and items.";
+}
+
+void Effect::Shove::applyToCreature(Creature* c, Creature* attacker) const {
+  CHECK(attacker);
+  auto origin = attacker->getPosition();
+  auto dir = origin.getDir(c->getPosition());
+  CHECK(dir.length8() == 1);
+  if (c->getPosition().canMoveCreature(dir)) {
+    c->displace(dir);
+    c->you(MsgType::ARE, "thrown back");
+    c->addEffect(LastingEffect::COLLAPSED, 2_visible);
+  }
+}
+
+string Effect::Shove::getName() const {
+  return "shove";
+}
+
+string Effect::Shove::getDescription() const {
+  return "Push back a creature.";
 }
 
 #define FORWARD_CALL(Var, Name, ...)\

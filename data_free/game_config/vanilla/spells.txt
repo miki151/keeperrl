@@ -12,6 +12,7 @@
     symbol = "❤️"
     effect = Heal
     range = 1
+    targetSelf = true
     cooldown = 15
     sound = SPELL_HEALING
   }
@@ -20,6 +21,7 @@
     upgrade = "healing2"
     symbol = "❤️"
     effect = Heal
+    targetSelf = true
     range = 4
     cooldown = 15
     sound = SPELL_HEALING
@@ -37,6 +39,7 @@
     symbol = "⚕"
     effect = RemoveLasting POISON
     cooldown = 50
+    targetSelf = true
     range = 1
     sound = SPELL_CURE_POISON
   }
@@ -45,6 +48,7 @@
     symbol = "👁"
     effect = RemoveLasting BLIND
     cooldown = 50
+    targetSelf = true
     range = 1
     sound = SPELL_CURE_POISON
   }
@@ -53,6 +57,7 @@
     symbol = "🐍"
     effect = Lasting POISON_RESISTANT
     cooldown = 100
+    targetSelf = true
     range = 1
     sound = SPELL_CURE_POISON
   }
@@ -128,6 +133,7 @@
     upgrade = "haste"
     symbol = "🏃"
     effect = Lasting SPEED
+    targetSelf = true
     range = 1
     cooldown = 120
     sound = SPELL_SPEED_SELF
@@ -169,13 +175,14 @@
     upgrade = "defense bonus"
     symbol = "🛡"
     effect = Lasting DEF_BONUS
+    targetSelf = true
     range = 1
     cooldown = 80
     sound = SPELL_DEX_BONUS
   }
   {
     id =  "damage bonus"
-    symbol = "⚔"
+    symbol = "💪"
     effect = Lasting DAM_BONUS
     cooldown = 80
     sound = SPELL_STR_BONUS
@@ -183,8 +190,9 @@
   {
     id =  "damage bonus2"
     upgrade = "damage bonus"
-    symbol = "⚔"
+    symbol = "💪"
     effect = Lasting DAM_BONUS
+    targetSelf = true
     range = 1
     cooldown = 80
     sound = SPELL_STR_BONUS
@@ -252,5 +260,12 @@
     range = 4
     cooldown = 30
     sound = SPELL_FIRE_SPHERE_PET
+  }
+  {
+    id =  "shove"
+    symbol = "👉"
+    effect = Shove
+    range = 1
+    cooldown = 30
   }
 }
