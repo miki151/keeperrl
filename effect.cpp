@@ -804,6 +804,26 @@ string Effect::Shove::getDescription() const {
   return "Push back a creature.";
 }
 
+void Effect::SwapPosition::applyToCreature(Creature* c, Creature* attacker) const {
+  CHECK(attacker);
+  auto origin = attacker->getPosition();
+  auto dir = origin.getDir(c->getPosition());
+  CHECK(dir.length8() == 1);
+  if (attacker->canSwapPositionWithEnemy(c)) {
+    attacker->swapPosition(dir, false);
+    attacker->verb("swap", "swaps", "positions with " + c->getName().the());
+  } else
+    attacker->privateMessage(c->getName().the() + " resists");
+}
+
+string Effect::SwapPosition::getName() const {
+  return "swap position";
+}
+
+string Effect::SwapPosition::getDescription() const {
+  return "Swap positions with an enemy.";
+}
+
 #define FORWARD_CALL(Var, Name, ...)\
 Var.visit([&](const auto& e) { return e.Name(__VA_ARGS__); })
 

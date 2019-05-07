@@ -272,7 +272,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void addSound(const Sound&) const;
   void updateViewObject();
-  void swapPosition(Vec2 direction);
+  void swapPosition(Vec2 direction, bool withExcuseMe = true);
+  bool canSwapPositionWithEnemy(Creature* other) const;
   vector<PItem> generateCorpse(bool instantlyRotten = false) const;
   int getLastMoveCounter() const;
 

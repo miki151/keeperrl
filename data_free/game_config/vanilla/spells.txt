@@ -267,5 +267,14 @@
     effect = Shove
     range = 1
     cooldown = 30
+    castMessageType = ABILITY
+  }
+  {
+    id =  "swap positions"
+    symbol = "⇅"
+    effect = SwapPosition
+    range = 1
+    cooldown = 30
+    castMessageType = ABILITY
   }
 }

@@ -137,6 +137,7 @@ class Effect {
   SIMPLE_EFFECT(DoubleTrouble);
   SIMPLE_EFFECT(Blast);
   SIMPLE_EFFECT(Shove);
+  SIMPLE_EFFECT(SwapPosition);
   struct ReviveCorpse {
     EFFECT_TYPE_INTERFACE;
     vector<CreatureId> summoned;
@@ -151,7 +152,7 @@ class Effect {
   MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
       Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-      Area, CustomArea, ReviveCorpse, Blast, Shove);
+      Area, CustomArea, ReviveCorpse, Blast, Shove, SwapPosition);
 
   template <typename T>
   Effect(T&& t) : effect(std::forward<T>(t)) {}

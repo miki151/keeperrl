@@ -54,6 +54,9 @@ void Spell::addMessage(Creature* c) const {
     case CastMessageType::BREATHE_FIRE:
       c->verb("breathe", "breathes", "fire!");
       break;
+    case CastMessageType::ABILITY:
+      c->verb("use", "uses", "an ability");
+      break;
   }
 }
 

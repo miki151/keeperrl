@@ -22,7 +22,8 @@ RICH_ENUM(
   CastMessageType,
   STANDARD,
   AIR_BLAST,
-  BREATHE_FIRE
+  BREATHE_FIRE,
+  ABILITY
 );
 
 class Effect;

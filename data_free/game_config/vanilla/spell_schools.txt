@@ -55,4 +55,9 @@
     "panic" 5
     "pacify" 7
   }
+  "fighter"
+  {
+    "shove" 4
+    "swap positions" 7
+  }
 }

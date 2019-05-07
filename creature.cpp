@@ -363,13 +363,18 @@ static bool posIntentsConflict(Position myPos, Position hisPos, optional<Positio
 
 bool Creature::canSwapPositionInMovement(Creature* other, optional<Position> nextPos) const {
   PROFILE;
-  return !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT)
+  return canSwapPositionWithEnemy(other)
       && (!posIntentsConflict(position, other->position, other->nextPosIntent) ||
           isPlayer() || other->isAffected(LastingEffect::STUNNED) ||
           getGlobalTime()->getInternal() % 10 == (getUniqueId().getHash() % 10 + 10) % 10)
-      && !other->getAttributes().isBoulder()
       && (!other->isPlayer() || isPlayer())
-      && (!other->isEnemy(this) || other->isAffected(LastingEffect::STUNNED))
+      && (!other->isEnemy(this) || other->isAffected(LastingEffect::STUNNED));
+}
+
+bool Creature::canSwapPositionWithEnemy(Creature* other) const {
+  PROFILE;
+  return !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT)
+      && !other->getAttributes().isBoulder()
       && other->getPosition().canEnterEmpty(this)
       && getPosition().canEnterEmpty(other);
 }
@@ -422,11 +427,13 @@ bool Creature::hasCondition(CreatureCondition condition) const {
   return false;
 }
 
-void Creature::swapPosition(Vec2 direction) {
+void Creature::swapPosition(Vec2 direction, bool withExcuseMe) {
   CHECK(direction.length8() == 1);
   Creature* other = NOTNULL(getPosition().plus(direction).getCreature());
-  privateMessage("Excuse me!");
-  other->privateMessage("Excuse me!");
+  if (withExcuseMe) {
+    privateMessage("Excuse me!");
+    other->privateMessage("Excuse me!");
+  }
   position.swapCreatures(other);
   auto movementInfo = *spendTime();
   addMovementInfo(movementInfo.setDirection(direction));
