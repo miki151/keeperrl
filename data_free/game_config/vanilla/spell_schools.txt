@@ -1,5 +1,5 @@
 {
-  "mage"
+  "mage" SPELL
   {
     "healing" 1
     "summon flies" 2
@@ -14,14 +14,14 @@
     "damage bonus" 10
     "invisibility" 12
   }
-  "evocation"
+  "evocation" SPELL
   {
     "magic missile" 4
     "directed blast" 6
     "circular blast" 7
     "meteor shower" 11
   }
-  "shaman"
+  "shaman" SPELL
   {
     "summon flies" 1
     "haste" 2
@@ -31,7 +31,7 @@
     "defense bonus2" 6
     "damage bonus2" 7
   }
-  "healer"
+  "healer" SPELL
   {
     "healing2" 1
     "healing3" 2
@@ -40,14 +40,14 @@
     "cure blindness" 4
     "poison resistance" 5
   }
-  "fire"
+  "fire" SPELL
   {
     "fire elemental" 1
     "fire elemental2" 2
     "fireball" 3
     "firewall" 5
   }
-  "illusion"
+  "illusion" SPELL
   {
     "deception" 1
     "invisibility" 2
@@ -55,7 +55,7 @@
     "panic" 5
     "pacify" 7
   }
-  "fighter"
+  "fighter" MELEE
   {
     "shove" 4
     "swap positions" 7

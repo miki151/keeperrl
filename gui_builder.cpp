@@ -1392,7 +1392,7 @@ SGuiElem GuiBuilder::drawSpellsList(const PlayerInfo& info, bool active) {
   constexpr int spellsPerRow = 5;
   if (!info.spells.empty()) {
     auto list = gui.getListBuilder(spellIconSize.y);
-    list.addElem(gui.label("Spells", Color::YELLOW), legendLineHeight);
+    list.addElem(gui.label("Abilities", Color::YELLOW), legendLineHeight);
     auto line = gui.getListBuilder(spellIconSize.x);
     for (int index : All(info.spells)) {
       auto& elem = info.spells[index];

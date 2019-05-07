@@ -22,7 +22,7 @@ class Spell;
 
 class SpellMap {
   public:
-  void add(Spell, int level);
+  void add(Spell, ExperienceType, int level);
   GlobalTime getReadyTime(const Spell*) const;
   void setReadyTime(const Spell*, GlobalTime);
   vector<const Spell*> getAvailable(const Creature*) const;
@@ -36,12 +36,12 @@ class SpellMap {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  ExperienceType getExperienceType() const;
   struct SpellInfo {
     Spell SERIAL(spell);
     optional<GlobalTime> SERIAL(timeout);
     int SERIAL(level);
-    SERIALIZE_ALL(spell, timeout, level)
+    ExperienceType SERIAL(expType);
+    SERIALIZE_ALL(spell, timeout, level, expType)
   };
   vector<SpellInfo> SERIAL(elems);
   const SpellInfo* getInfo(const string& id) const;

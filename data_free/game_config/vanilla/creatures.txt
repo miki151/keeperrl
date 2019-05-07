@@ -92,6 +92,7 @@
         MELEE 12
         SPELL 3
       }
+      spellSchools = { "fighter" }
       spells = { "healing" }
     }
   "KEEPER_KNIGHT_F"
@@ -118,6 +119,7 @@
         MELEE 12
         SPELL 3
       }
+      spellSchools = { "fighter" }
       spells = { "healing" }
     }
   "KEEPER_KNIGHT_WHITE"
@@ -144,6 +146,7 @@
         SPELL 1
       }
       hatedByEffect = HATE_HUMANS
+      spellSchools = { "fighter" }
       spells = { "healing" }
     }
   "KEEPER_KNIGHT_WHITE_F"
@@ -171,6 +174,7 @@
         SPELL 1
       }
       spells = { "healing" }
+      spellSchools = { "fighter" }
       hatedByEffect = HATE_HUMANS
     }
   "ADVENTURER"
@@ -197,6 +201,7 @@
         ARCHERY 16
       }
       hatedByEffect = HATE_HUMANS
+      spellSchools = { "fighter" }
       spellSchools = { "mage" }
     }
   "ADVENTURER_F"
@@ -224,6 +229,7 @@
         ARCHERY 16
       }
       spellSchools = { "mage" }
+      spellSchools = { "fighter" }
       hatedByEffect = HATE_HUMANS
     }
   "UNICORN"

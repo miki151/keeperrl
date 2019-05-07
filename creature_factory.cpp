@@ -831,12 +831,13 @@ PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory ai
   else {
     auto attr = getAttributes(id);
     SpellMap spellMap;
-    for (auto& school : attr.spellSchools) {
-      for (auto& spell : spellSchools.at(school).spells)
-        spellMap.add(*getSpell(spell.first), spell.second);
+    for (auto& schoolName : attr.spellSchools) {
+      auto& school = spellSchools.at(schoolName);
+      for (auto& spell : school.spells)
+        spellMap.add(*getSpell(spell.first), school.expType, spell.second);
     }
     for (auto& spell : attr.spells)
-      spellMap.add(*getSpell(spell), 0);
+      spellMap.add(*getSpell(spell), ExperienceType::SPELL, 0);
     return get(std::move(attr), tribe, getController(id, aiFactory), std::move(spellMap));
   }
 }
