@@ -2,20 +2,17 @@
 
 #include "read_write_array.h"
 #include "furniture_factory.h"
+#include "creature_factory.h"
+#include "game.h"
 #include "furniture.h"
 #include "furniture_layer.h"
 
-struct GenerateFurniture {
-  PFurniture operator()(FurnitureParams p) {
-    return FurnitureFactory::get(p.type, p.tribe);
-  }
-};
 
 class FurnitureArray {
   public:
   FurnitureArray(Rectangle bounds);
 
-  typedef ReadWriteArray<Furniture, FurnitureParams, GenerateFurniture> Array;
+  typedef ReadWriteArray<Furniture, FurnitureParams> Array;
 
   const Array& getBuilt(FurnitureLayer) const;
   Array& getBuilt(FurnitureLayer);

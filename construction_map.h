@@ -24,9 +24,8 @@ class ConstructionMap {
     UniqueEntity<Task>::Id getTask() const;
     bool hasTask() const;
     FurnitureType getFurnitureType() const;
-    FurnitureLayer getLayer() const;
 
-    SERIALIZATION_DECL(FurnitureInfo);
+    SERIALIZATION_DECL(FurnitureInfo)
 
     private:
     GenericId SERIAL(task);

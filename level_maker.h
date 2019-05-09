@@ -16,7 +16,7 @@
 #pragma once
 
 #include "util.h"
-
+#include "furniture_list.h"
 
 class ItemFactory;
 class CollectiveBuilder;
@@ -48,9 +48,9 @@ class LevelMaker {
   static PLevelMaker towerLevel(RandomGen&, SettlementInfo);
   static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
   static PLevelMaker roomLevel(RandomGen&, CreatureGroup roomFactory, CreatureGroup waterFactory,
-    CreatureGroup lavaFactory, vector<StairKey> up, vector<StairKey> down, FurnitureFactory furniture);
+    CreatureGroup lavaFactory, vector<StairKey> up, vector<StairKey> down, FurnitureListId furniture);
   static PLevelMaker mazeLevel(RandomGen&, SettlementInfo);
-  static PLevelMaker emptyLevel(FurnitureType);
+  static PLevelMaker emptyLevel(FurnitureType, bool withFloor);
   static PLevelMaker sokobanFromFile(RandomGen&, SettlementInfo, Table<char>);
   static PLevelMaker battleLevel(Table<char>, CreatureList allies, CreatureList enemies);
   static PLevelMaker getFullZLevel(RandomGen&, optional<SettlementInfo>, ResourceCounts, int mapWidth, TribeId keeperTribe, StairKey);

@@ -24,6 +24,7 @@
 #include "equipment.h"
 #include "player_control.h"
 #include "view_object.h"
+#include "content_factory.h"
 
 template <class Archive>
 void Immigration::serialize(Archive& ar, const unsigned int) {
@@ -52,7 +53,7 @@ int Immigration::getAttractionValue(const AttractionType& attraction) const {
         [&](FurnitureType type) {
           auto& constructions = collective->getConstructions();
           int ret = constructions.getBuiltCount(type);
-          for (auto upgrade : FurnitureFactory::getUpgrades(type))
+          for (auto upgrade : collective->getGame()->getContentFactory()->furniture.getUpgrades(type))
             ret += constructions.getBuiltCount(upgrade);
           return ret;
         },
@@ -140,7 +141,7 @@ optional<string> Immigration::getMissingRequirement(const ImmigrantRequirement& 
       },
       [&](const FurnitureType& type) -> optional<string> {
         if (collective->getConstructions().getBuiltCount(type) == 0)
-          return "Requires " + Furniture::getName(type);
+          return "Requires " + collective->getGame()->getContentFactory()->furniture.getName(type);
         else
           return none;
       },
@@ -477,7 +478,7 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
   int numGenerated = immigration->generated[group.immigrantIndex].getSize();
   vector<SpecialTrait> specialTraits;
   for (int i : Range(group.count)) {
-    immigrants.push_back(immigration->collective->getGame()->getCreatureFactory()->
+    immigrants.push_back(immigration->collective->getGame()->getContentFactory()->creatures.
         fromId(info.getId(numGenerated), immigration->collective->getTribeId(),
             MonsterAIFactory::collective(immigration->collective)));
     if (immigration->collective->getConfig().getStripSpawns() && info.stripEquipment)

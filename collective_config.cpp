@@ -37,6 +37,7 @@
 #include "storage_id.h"
 #include "immigrant_info.h"
 #include "conquer_condition.h"
+#include "content_factory.h"
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
@@ -452,7 +453,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
             if (!c)
               return isSleepingFurniture(t);
             auto bedType = getBedType(c);
-            return t == bedType || (bedType && FurnitureFactory::isUpgrade(*bedType, t));
+            return t == bedType || (bedType && c->getGame()->getContentFactory()->furniture.isUpgrade(*bedType, t));
           }, "sleeping", false};
       case MinionActivity::EAT: return {MinionActivityInfo::EAT, "eating"};
       case MinionActivity::THRONE: return {FurnitureType::THRONE, "throne", true};

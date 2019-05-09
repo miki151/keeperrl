@@ -15,6 +15,7 @@
 #include "monster.h"
 #include "view_object.h"
 #include "territory.h"
+#include "content_factory.h"
 
 SERIALIZE_DEF(ExternalEnemies, currentWaves, waves, nextWave)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
@@ -94,7 +95,7 @@ void ExternalEnemies::update(WLevel level, LocalTime localTime) {
     Vec2 landingDir(Random.choose<Dir>());
     auto attackTask = getAttackTask(target, nextWave->enemy.behaviour);
     auto attackTaskRef = attackTask.get();
-    auto creatures = nextWave->enemy.creatures.generate(Random, level->getGame()->getCreatureFactory(),
+    auto creatures = nextWave->enemy.creatures.generate(Random, &level->getGame()->getContentFactory()->creatures,
         TribeId::getMonster(), MonsterAIFactory::singleTask(std::move(attackTask),
             nextWave->enemy.behaviour.getId() != AttackBehaviourId::HALLOWEEN_KIDS));
     for (auto& c : creatures) {

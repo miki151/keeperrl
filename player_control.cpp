@@ -90,6 +90,7 @@
 #include "view_object_action.h"
 #include "storage_id.h"
 #include "fx_name.h"
+#include "content_factory.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -189,13 +190,13 @@ void PlayerControl::reloadBuildingMenu() {
   for (auto& info : buildInfo)
     if (auto furniture = info.type.getReferenceMaybe<BuildInfo::Furniture>()) {
       for (auto type : furniture->types) {
-        double luxury = Furniture::getLuxuryInfo(type).luxury;
+        double luxury = getGame()->getContentFactory()->furniture.getLuxuryInfo(type).luxury;
         if (luxury > 0) {
           info.help += " Increases luxury by " + toString(luxury) + ".";
           break;
         }
       }
-      if (auto increase = Furniture::getPopulationIncreaseDescription(furniture->types[0]))
+      if (auto increase = getGame()->getContentFactory()->furniture.getPopulationIncreaseDescription(furniture->types[0]))
         info.help += " " + *increase;
       for (auto expType : ENUM_ALL(ExperienceType))
         if (auto increase = CollectiveConfig::getTrainingMaxLevel(expType, furniture->types[0]))
@@ -266,7 +267,7 @@ void PlayerControl::reloadData() {
   auto gameConfig = getGame()->getGameConfig();
   reloadBuildingMenu();
   while (1) {
-    if (auto error = reloadImmigrationAndWorkshops(gameConfig, getGame()->getCreatureFactory()))
+    if (auto error = reloadImmigrationAndWorkshops(gameConfig, &getGame()->getContentFactory()->creatures))
       getView()->presentText("Error", *error);
     else
       break;
@@ -654,15 +655,8 @@ static optional<pair<ViewId, int>> getCostObj(const optional<CostInfo>& cost) {
 string PlayerControl::getMinionName(CreatureId id) const {
   static map<CreatureId, string> names;
   if (!names.count(id))
-    names[id] = getGame()->getCreatureFactory()->fromId(id, TribeId::getMonster())->getName().bare();
+    names[id] = getGame()->getContentFactory()->creatures.fromId(id, TribeId::getMonster())->getName().bare();
   return names.at(id);
-}
-
-static ViewId getFurnitureViewId(FurnitureType type) {
-  static EnumMap<FurnitureType, optional<ViewId>> ids;
-  if (!ids[type])
-    ids[type] = FurnitureFactory::get(type, TribeId::getMonster())->getViewObject()->id();
-  return *ids[type];
 }
 
 vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) const {
@@ -671,7 +665,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
   for (auto& button : buildInfo) {
     button.type.visit(
         [&](const BuildInfo::Furniture& elem) {
-          ViewId viewId = getFurnitureViewId(elem.types[0]);
+          ViewId viewId = getGame()->getContentFactory()->furniture.getViewId(elem.types[0]);
           string description;
           if (elem.cost.value > 0) {
             int num = 0;
@@ -738,7 +732,7 @@ string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
     case AttackTriggerId::ROOM_BUILT: {
       auto type = trigger.get<RoomTriggerInfo>().type;
       auto myCount = collective->getConstructions().getBuiltCount(type);
-      return Furniture::getName(type, myCount);
+      return getGame()->getContentFactory()->furniture.getName(type, myCount);
     }
     case AttackTriggerId::POWER: return "your power";
     case AttackTriggerId::FINISH_OFF: return "finishing you off";
@@ -953,7 +947,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, Un
       for (auto expType : ENUM_ALL(ExperienceType))
         if (auto requiredDummy = collective->getMissingTrainingFurniture(c, expType))
           minionInfo.experienceInfo.warning[expType] =
-              "Requires " + Furniture::getName(*requiredDummy) + " to train further.";
+              "Requires " + getGame()->getContentFactory()->furniture.getName(*requiredDummy) + " to train further.";
       for (MinionActivity t : ENUM_ALL(MinionActivity))
         if (c->getAttributes().getMinionActivities().isAvailable(collective, c, t, true)) {
           minionInfo.minionTasks.push_back({t,
@@ -1040,16 +1034,6 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option, int queuedCo
     );
 }
 
-static const ViewObject& getConstructionObject(FurnitureType type) {
-  static EnumMap<FurnitureType, optional<ViewObject>> objects;
-  if (!objects[type]) {
-    if (auto obj = FurnitureFactory::get(type, TribeId::getMonster())->getViewObject())
-      objects[type] = *obj;
-    objects[type]->setModifier(ViewObject::Modifier::PLANNED);
-  }
-  return *objects[type];
-}
-
 void PlayerControl::acquireTech(TechId tech) {
   auto techs = collective->getTechnology().getNextTechs();
   if (techs.contains(tech)) {
@@ -1127,7 +1111,7 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
     auto& workshopInfo = CollectiveConfig::getWorkshopInfo(workshopType);
     bool unavailable = collective->getConstructions().getBuiltPositions(workshopInfo.furniture).empty();
     info.workshopButtons.push_back({capitalFirst(workshopInfo.taskName),
-        getConstructionObject(workshopInfo.furniture).id(), false, unavailable});
+        getGame()->getContentFactory()->furniture.getConstructionObject(workshopInfo.furniture).id(), false, unavailable});
     if (chosenWorkshop == workshopType) {
       index = i;
       info.workshopButtons.back().active = true;
@@ -1305,7 +1289,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   static map<CreatureId, PCreature> creatureStats;
   auto getStats = [&](CreatureId id) -> Creature* {
     if (!creatureStats[id]) {
-      creatureStats[id] = getGame()->getCreatureFactory()->fromId(id, TribeId::getDarkKeeper());
+      creatureStats[id] = getGame()->getContentFactory()->creatures.fromId(id, TribeId::getDarkKeeper());
     }
     return creatureStats[id].get();
   };
@@ -1331,7 +1315,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
           requirements.push_back("Will only join during the "_s + SunlightInfo::getText(state));
         },
         [&](const FurnitureType& type) {
-          requirements.push_back("Requires at least one " + Furniture::getName(type));
+          requirements.push_back("Requires at least one " + getGame()->getContentFactory()->furniture.getName(type));
         },
         [&](const CostInfo& cost) {
           costObj = getCostObj(cost);
@@ -1779,7 +1763,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = constructions.getFurniture(position, layer))
       if (!f->isBuilt(position))
-        index.insert(getConstructionObject(f->getFurnitureType()));
+        index.insert(getGame()->getContentFactory()->furniture.getConstructionObject(f->getFurnitureType()));
   if (unknownLocations->contains(position))
     index.insert(ViewObject(ViewId("unknown_monster"), ViewLayer::TORCH2, "Surprise"));
 }
@@ -2048,8 +2032,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DRAW_WORLD_MAP: getGame()->presentWorldmap(); break;
     case UserInputId::TECHNOLOGY: setChosenLibrary(!chosenLibrary); break;
-    case UserInputId::KEEPEROPEDIA: Encyclopedia(buildInfo, getGame()->getCreatureFactory()->getSpellSchools(),
-          getGame()->getCreatureFactory()->getSpells(), collective->getTechnology()).present(view);
+    case UserInputId::KEEPEROPEDIA: Encyclopedia(buildInfo, getGame()->getContentFactory()->creatures.getSpellSchools(),
+          getGame()->getContentFactory()->creatures.getSpells(), collective->getTechnology()).present(view);
       break;
     case UserInputId::WORKSHOP: {
       int index = input.get<int>();
@@ -2514,7 +2498,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       collective->setPriorityTasks(position);
     },
     [&](const BuildInfo::Furniture& info) {
-      auto layer = Furniture::getLayer(info.types[0]);
+      auto layer = getGame()->getContentFactory()->furniture.getLayer(info.types[0]);
       auto currentPlanned = collective->getConstructions().getFurniture(position, layer);
       if (currentPlanned && currentPlanned->isBuilt(position))
         currentPlanned = none;

@@ -1,10 +1,12 @@
 #pragma once
 
 #include "furniture_type.h"
+#include "furniture_list.h"
 #include "tribe.h"
 
-class RandomGen;
 class Position;
+class TribeId;
+class LuxuryInfo;
 
 struct FurnitureParams {
   FurnitureType SERIAL(type); // HASH(type)
@@ -14,32 +16,25 @@ struct FurnitureParams {
   HASH_ALL(type, tribe)
 };
 
+
 class FurnitureFactory {
   public:
-  static bool canBuild(FurnitureType, Position);
-  static bool hasSupport(FurnitureType, Position);
-  static bool isUpgrade(FurnitureType base, FurnitureType upgraded);
-  static const vector<FurnitureType>& getUpgrades(FurnitureType base);
+  bool canBuild(FurnitureType, Position) const;
+  bool hasSupport(FurnitureType, Position) const;
+  bool isUpgrade(FurnitureType base, FurnitureType upgraded) const;
+  const vector<FurnitureType>& getUpgrades(FurnitureType base) const;
+  PFurniture getFurniture(FurnitureType, TribeId) const;
+  const ViewObject& getConstructionObject(FurnitureType) const;
+  ViewId getViewId(FurnitureType) const;
+  const string& getName(FurnitureType, int count = 1) const;
+  FurnitureLayer getLayer(FurnitureType) const;
+  bool isWall(FurnitureType) const;
+  LuxuryInfo getLuxuryInfo(FurnitureType) const;
+  int getPopulationIncrease(FurnitureType, int numBuilt) const;
+  optional<string> getPopulationIncreaseDescription(FurnitureType) const;
+  FurnitureList getFurnitureList(FurnitureListId) const;
+  FurnitureType getWaterType(double depth) const;
 
-  FurnitureFactory(TribeId, const EnumMap<FurnitureType, double>& distribution,
-      const vector<FurnitureType>& unique = {});
-  FurnitureFactory(TribeId, FurnitureType);
-  static PFurniture get(FurnitureType, TribeId);
-
-  FurnitureParams getRandom(RandomGen&);
-  int numUnique() const;
-
-  static FurnitureFactory roomFurniture(TribeId);
-  static FurnitureFactory castleFurniture(TribeId);
-  static FurnitureFactory dungeonOutside(TribeId);
-  static FurnitureFactory castleOutside(TribeId);
-  static FurnitureFactory villageOutside(TribeId);
-  static FurnitureFactory cryptCoffins(TribeId);
-
-  static FurnitureType getWaterType(double depth);
-
-  private:
-  HeapAllocated<TribeId> tribe;
-  EnumMap<FurnitureType, double> distribution;
-  vector<FurnitureType> unique;
+  template <typename Archive>
+  void serialize(Archive&, unsigned int) {}
 };

@@ -2,7 +2,7 @@
 
 #include "util.h"
 
-template <typename Type, typename Param, typename Generator>
+template <typename Type, typename Param>
 class ReadWriteArray {
   public:
   typedef OwnerPointer<Type> PType;
@@ -17,7 +17,7 @@ class ReadWriteArray {
   WType getWritable(Vec2 pos) {
     if (modified[pos] == -1)
       if (auto type = types[pos])
-        putElem(pos, Generator()(*type));
+        putElem(pos, makeOwner<Type>(*getReadonly(pos)));
     if (modified[pos] > -1)
       return allModified[modified[pos]].get();
     else
@@ -33,9 +33,10 @@ class ReadWriteArray {
       return nullptr;
   }
 
-  void putElem(Vec2 pos, Param param) {
+  template <typename Generator>
+  void putElem(Vec2 pos, Param param, const Generator& generator) {
     if (!readonlyMap.count(param)) {
-      allReadonly.push_back(Generator()(param));
+      allReadonly.push_back(generator(param));
       CHECK(allReadonly.size() < 30000);
       readonlyMap.insert(make_pair(param, allReadonly.size() - 1));
     }

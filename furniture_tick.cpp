@@ -21,6 +21,7 @@
 #include "furniture_usage.h"
 #include "game_event.h"
 #include "color.h"
+#include "content_factory.h"
 
 static void handleBed(Position pos) {
   PROFILE;
@@ -37,7 +38,7 @@ static void handlePigsty(Position pos, WFurniture furniture) {
     if (v.getCreature() && v.getCreature()->getBody().isMinionFood())
       return;
   if (Random.roll(5)) {
-    PCreature pig = pos.getGame()->getCreatureFactory()->fromId("PIG", furniture->getTribe(),
+    PCreature pig = pos.getGame()->getContentFactory()->creatures.fromId("PIG", furniture->getTribe(),
         MonsterAIFactory::stayOnFurniture(furniture->getType()));
     if (pos.canEnter(pig.get()))
       pos.addCreature(std::move(pig));
@@ -109,7 +110,7 @@ static void pit(Position position, WFurniture self) {
           auto waterType = water->getType() == FurnitureType::MAGMA ?
                 FurnitureType::MAGMA : FurnitureType::WATER;
           position.removeFurniture(position.getFurniture(FurnitureLayer::GROUND),
-              FurnitureFactory::get(waterType, water->getTribe()));
+              position.getGame()->getContentFactory()->furniture.getFurniture(waterType, water->getTribe()));
           self->destroy(position, DestroyAction::Type::BOULDER);
           return;
         }

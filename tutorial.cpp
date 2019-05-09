@@ -29,6 +29,7 @@
 #include "workshop_item.h"
 #include "game_config.h"
 #include "tutorial_state.h"
+#include "content_factory.h"
 
 SERIALIZE_DEF(Tutorial, state, entrance)
 
@@ -479,6 +480,6 @@ void Tutorial::createTutorial(Game& game, const GameConfig* gameConfig) {
       append(immigrants, *group);
     else
       USER_FATAL << "Immigrant group not found: " << elem;
-  CollectiveConfig::addBedRequirementToImmigrants(immigrants, game.getCreatureFactory());
+  CollectiveConfig::addBedRequirementToImmigrants(immigrants, &game.getContentFactory()->creatures);
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
 }

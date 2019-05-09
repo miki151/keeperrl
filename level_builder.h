@@ -12,6 +12,7 @@ class LevelMaker;
 class Square;
 class FurnitureFactory;
 class CollectiveBuilder;
+class ContentFactory;
 
 RICH_ENUM(SquareAttrib,
   NO_DIG,
@@ -42,9 +43,9 @@ RICH_ENUM(SquareAttrib,
 class LevelBuilder {
   public:
   /** Constructs a builder with given size and name. */
-  LevelBuilder(ProgressMeter*, RandomGen&, CreatureFactory*, int width, int height, const string& name,
+  LevelBuilder(ProgressMeter*, RandomGen&, ContentFactory*, int width, int height, const string& name,
       bool covered = true, optional<double> defaultLight = none);
-  LevelBuilder(RandomGen&, CreatureFactory*, int width, int height, const string& name, bool covered = true);
+  LevelBuilder(RandomGen&, ContentFactory*, int width, int height, const string& name, bool covered = true);
   
   LevelBuilder(LevelBuilder&&);
   ~LevelBuilder();
@@ -75,8 +76,9 @@ class LevelBuilder {
   /** Adds attribute to given square. The attribute will remain if the square is changed.*/
   void addAttrib(Vec2 pos, SquareAttrib attr);
 
-  void putFurniture(Vec2 pos, FurnitureFactory&, optional<SquareAttrib> = none);
+  void putFurniture(Vec2 pos, FurnitureList&, TribeId, optional<SquareAttrib> = none);
   void putFurniture(Vec2 pos, FurnitureParams, optional<SquareAttrib> = none);
+  void putFurniture(Vec2 pos, FurnitureType, TribeId tribe, optional<SquareAttrib> attrib = none);
   void putFurniture(Vec2 pos, FurnitureType, optional<SquareAttrib> = none);
   void resetFurniture(Vec2 pos, FurnitureType, optional<SquareAttrib> = none);
   void resetFurniture(Vec2 pos, FurnitureParams, optional<SquareAttrib> = none);
@@ -125,7 +127,7 @@ class LevelBuilder {
   void popMap();
 
   RandomGen& getRandom();
-  CreatureFactory* getCreatureFactory() const;
+  ContentFactory* getContentFactory() const;
   
   private:
   Vec2 transform(Vec2);
@@ -146,5 +148,5 @@ class LevelBuilder {
   ProgressMeter* progressMeter = nullptr;
   RandomGen& random;
   bool noDiagonalPassing = false;
-  CreatureFactory* creatureFactory;
+  ContentFactory* contentFactory;
 };

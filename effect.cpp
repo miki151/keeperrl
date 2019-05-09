@@ -46,6 +46,7 @@
 #include "draw_line.h"
 #include "monster.h"
 #include "spell_map.h"
+#include "content_factory.h"
 
 vector<Creature*> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, TimeInterval delay) {
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
@@ -85,7 +86,7 @@ static void summonFX(Creature* c) {
 vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<TimeInterval> ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(c->getGame()->getCreatureFactory()->fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c)));
+    creatures.push_back(c->getGame()->getContentFactory()->creatures.fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c)));
   auto ret = summonCreatures(c, 2, std::move(creatures), delay);
   for (auto c : ret) {
     if (ttl)
@@ -98,7 +99,7 @@ vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<T
 vector<Creature*> Effect::summon(Position pos, CreatureGroup& factory, int num, optional<TimeInterval> ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(factory.random(pos.getGame()->getCreatureFactory(), MonsterAIFactory::monster()));
+    creatures.push_back(factory.random(&pos.getGame()->getContentFactory()->creatures, MonsterAIFactory::monster()));
   auto ret = summonCreatures(pos, 2, std::move(creatures), delay);
   for (auto c : ret) {
     if (ttl)
@@ -651,11 +652,11 @@ void Effect::PlaceFurniture::applyToCreature(Creature* c, Creature* attacker) co
 }
 
 string Effect::PlaceFurniture::getName() const {
-  return Furniture::getName(furniture);
+  return EnumInfo<FurnitureType>::getString(furniture);
 }
 
 string Effect::PlaceFurniture::getDescription() const {
-  return "Creates a " + Furniture::getName(furniture) + ".";
+  return "Creates a " + getName() + ".";
 }
 
 void Effect::Damage::applyToCreature(Creature* c, Creature* attacker) const {
@@ -895,7 +896,8 @@ void Effect::apply(Position pos, Creature* attacker) const {
           area.effect->apply(pos.plus(rotate(v, orientation)), attacker);
       },
       [&](const PlaceFurniture& effect) {
-        auto f = FurnitureFactory::get(effect.furniture, attacker ? attacker->getTribeId() : TribeId::getMonster());
+        auto f = pos.getGame()->getContentFactory()->furniture.getFurniture(effect.furniture,
+            attacker ? attacker->getTribeId() : TribeId::getMonster());
         auto ref = f.get();
         pos.addFurniture(std::move(f));
         ref->onConstructedBy(pos, attacker);

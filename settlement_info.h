@@ -3,7 +3,7 @@
 #include "item_type.h"
 #include "creature_factory.h"
 #include "item_factory.h"
-#include "furniture_factory.h"
+#include "furniture_list.h"
 #include "inhabitants_info.h"
 
 enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON, DUNGEON_SURFACE, RUINS};
@@ -60,8 +60,8 @@ struct SettlementInfo {
   optional<ItemFactory> shopFactory;
   bool shopkeeperDead;
   CollectiveBuilder* collective;
-  optional<FurnitureFactory> furniture;
-  optional<FurnitureFactory> outsideFeatures;
+  optional<FurnitureListId> furniture;
+  optional<FurnitureListId> outsideFeatures;
   bool closeToPlayer;
   bool dontConnectCave;
   bool dontBuildRoad;

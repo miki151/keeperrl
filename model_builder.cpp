@@ -39,13 +39,14 @@
 #include "build_info.h"
 #include "tribe_alignment.h"
 #include "resource_counts.h"
+#include "content_factory.h"
 
 using namespace std::chrono;
 
 ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o,
-    SokobanInput* sok, const GameConfig* gameConfig, CreatureFactory* creatureFactory, EnemyFactory enemyFactory)
+    SokobanInput* sok, const GameConfig* gameConfig, ContentFactory* contentFactory, EnemyFactory enemyFactory)
     : random(r), meter(m), options(o), enemyFactory(std::move(enemyFactory)), sokobanInput(sok), gameConfig(gameConfig),
-      creatureFactory(creatureFactory) {
+      contentFactory(contentFactory) {
 }
 
 ModelBuilder::~ModelBuilder() {
@@ -63,7 +64,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
       for (int i : Range(towerHeight - 1)) {
         StairKey upLink = StairKey::getNew();
         model->buildLevel(
-            LevelBuilder(meter, random, creatureFactory, 4, 4, "Tower floor" + toString(i + 2)),
+            LevelBuilder(meter, random, contentFactory, 4, 4, "Tower floor" + toString(i + 2)),
             LevelMaker::towerLevel(random,
                 CONSTRUCT(SettlementInfo,
                   c.type = SettlementType::TOWER;
@@ -75,7 +76,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
                   c.collective = new CollectiveBuilder(CollectiveConfig::noImmigrants(), c.tribe);
                   c.upStairs = {upLink};
                   c.downStairs = {downLink};
-                  c.furniture = FurnitureFactory(TribeId::getHuman(), FurnitureType::GROUND_TORCH);
+                  c.furniture = FurnitureListId("towerInside");
                   if (enemy.levelConnection->deadInhabitants) {
                     c.corpses = c.inhabitants;
                     c.inhabitants = InhabitantsInfo{};
@@ -85,7 +86,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
       }
       mainSettlement.downStairs = {downLink};
       model->buildLevel(
-         LevelBuilder(meter, random, creatureFactory, 5, 5, "Tower top"),
+         LevelBuilder(meter, random, contentFactory, 5, 5, "Tower top"),
          LevelMaker::towerLevel(random, mainSettlement));
       return extraSettlement;
     }
@@ -94,7 +95,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
       extraSettlement.downStairs = {key};
       mainSettlement.upStairs = {key};
       model->buildLevel(
-         LevelBuilder(meter, random, creatureFactory, 40, 40, "Crypt"),
+         LevelBuilder(meter, random, contentFactory, 40, 40, "Crypt"),
          LevelMaker::cryptLevel(random, mainSettlement));
       return extraSettlement;
     }
@@ -103,7 +104,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
       extraSettlement.upStairs = {key};
       mainSettlement.downStairs = {key};
       model->buildLevel(
-         LevelBuilder(meter, random, creatureFactory, 40, 40, "Maze"),
+         LevelBuilder(meter, random, contentFactory, 40, 40, "Maze"),
          LevelMaker::mazeLevel(random, extraSettlement));
       return mainSettlement;
     }
@@ -113,17 +114,17 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
       for (int i : Range(gnomeHeight - 1)) {
         StairKey downLink = StairKey::getNew();
         model->buildLevel(
-            LevelBuilder(meter, random, creatureFactory, 60, 40, "Mines lvl " + toString(i + 1)),
+            LevelBuilder(meter, random, contentFactory, 60, 40, "Mines lvl " + toString(i + 1)),
             LevelMaker::roomLevel(random, CreatureGroup::gnomishMines(
                 mainSettlement.tribe, TribeId::getMonster(), 0),
                 CreatureGroup::waterCreatures(TribeId::getMonster()),
                 CreatureGroup::lavaCreatures(TribeId::getMonster()), {upLink}, {downLink},
-                FurnitureFactory::roomFurniture(TribeId::getPest())));
+                FurnitureListId("roomFurniture")));
         upLink = downLink;
       }
       mainSettlement.upStairs = {upLink};
       model->buildLevel(
-         LevelBuilder(meter, random, creatureFactory, 60, 40, "Mine Town"),
+         LevelBuilder(meter, random, contentFactory, 60, 40, "Mine Town"),
          LevelMaker::mineTownLevel(random, mainSettlement));
       return extraSettlement;
     }
@@ -133,7 +134,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
       mainSettlement.downStairs = {key};
       Table<char> sokoLevel = sokobanInput->getNext();
       model->buildLevel(
-          LevelBuilder(meter, random, creatureFactory, sokoLevel.getBounds().width(), sokoLevel.getBounds().height(), "Sokoban"),
+          LevelBuilder(meter, random, contentFactory, sokoLevel.getBounds().width(), sokoLevel.getBounds().height(), "Sokoban"),
           LevelMaker::sokobanFromFile(random, mainSettlement, sokoLevel));
       return extraSettlement;
   }
@@ -305,7 +306,7 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, TribeId keeper
     enemyInfo.push_back(enemyFactory->get(EnemyId::KRAKEN));
   optional<ExternalEnemies> externalEnemies;
   if (addExternalEnemies)
-    externalEnemies = ExternalEnemies(random, creatureFactory, enemyFactory->getExternalEnemies());
+    externalEnemies = ExternalEnemies(random, &contentFactory->creatures, enemyFactory->getExternalEnemies());
   for (int i : Range(random.get(3)))
     enemyInfo.push_back(enemyFactory->get(EnemyId::RUINS));
   return tryModel(174, siteName, enemyInfo, keeperTribe, biome, std::move(externalEnemies), true);
@@ -490,7 +491,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
   if (hasWildlife)
     wildlife = CreatureGroup::forrest(TribeId::getWildlife());
   WLevel top =  model->buildMainLevel(
-      LevelBuilder(meter, random, creatureFactory, width, width, levelName, false),
+      LevelBuilder(meter, random, contentFactory, width, width, levelName, false),
       LevelMaker::topLevel(random, wildlife, topLevelSettlements, width,
         keeperTribe, biomeId, getTopLevelResources(random, gameConfig)));
   model->calculateStairNavigation();
@@ -519,7 +520,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
 PModel ModelBuilder::splashModel(const FilePath& splashPath) {
   auto m = Model::create();
   WLevel l = m->buildMainLevel(
-      LevelBuilder(meter, Random, creatureFactory, Level::getSplashBounds().width(),
+      LevelBuilder(meter, Random, contentFactory, Level::getSplashBounds().width(),
           Level::getSplashBounds().height(), "Splash", true, 1.0),
       LevelMaker::splashLevel(
           CreatureGroup::splashLeader(TribeId::getHuman()),
@@ -534,7 +535,7 @@ PModel ModelBuilder::battleModel(const FilePath& levelPath, CreatureList allies,
   ifstream stream(levelPath.getPath());
   Table<char> level = *SokobanInput::readTable(stream);
   WLevel l = m->buildMainLevel(
-      LevelBuilder(meter, Random, creatureFactory, level.getBounds().width(), level.getBounds().height(), "Battle", true, 1.0),
+      LevelBuilder(meter, Random, contentFactory, level.getBounds().width(), level.getBounds().height(), "Battle", true, 1.0),
       LevelMaker::battleLevel(level, allies, enemies));
   return m;
 }

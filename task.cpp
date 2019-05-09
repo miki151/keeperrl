@@ -45,6 +45,7 @@
 #include "position_matching.h"
 #include "navigation_flags.h"
 #include "storage_info.h"
+#include "content_factory.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -108,7 +109,7 @@ class Construction : public Task {
   }
 
   virtual string getDescription() const override {
-    return "Build " + Furniture::getName(furnitureType) + " at " + toString(position);
+    return "Build " + position.getGame()->getContentFactory()->furniture.getName(furnitureType) + " at " + toString(position);
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -119,7 +120,7 @@ class Construction : public Task {
     Vec2 dir = c->getPosition().getDir(position);
     if (auto action = c->construct(dir, furnitureType))
       return {1.0, action.append([=](Creature* c) {
-          if (!position.isActiveConstruction(Furniture::getLayer(furnitureType))) {
+          if (!position.isActiveConstruction(position.getGame()->getContentFactory()->furniture.getLayer(furnitureType))) {
             setDone();
             callback->onConstructed(position, furnitureType);
           }
@@ -157,7 +158,7 @@ class Destruction : public Task {
   }
 
   WConstFurniture getFurniture() const {
-    return position.getFurniture(Furniture::getLayer(furnitureType));
+    return position.getFurniture(position.getGame()->getContentFactory()->furniture.getLayer(furnitureType));
   }
 
   virtual bool isBogus() const override {
@@ -823,7 +824,7 @@ class CampAndSpawn : public Task {
     updateTeams();
     if (defenseTeam.size() < defenseSize && Random.roll(5)) {
       for (Creature* summon : Effect::summonCreatures(c, 4,
-          makeVec(spawns.random(c->getGame()->getCreatureFactory(), MonsterAIFactory::summoned(c)))))
+          makeVec(spawns.random(&c->getGame()->getContentFactory()->creatures, MonsterAIFactory::summoned(c)))))
         defenseTeam.push_back(summon);
     }
     if (!campPos.contains(c->getPosition()))
@@ -841,7 +842,7 @@ class CampAndSpawn : public Task {
       else {
         vector<PCreature> team;
         for (int i : Range(Random.get(attackSize)))
-          team.push_back(spawns.random(c->getGame()->getCreatureFactory(),
+          team.push_back(spawns.random(&c->getGame()->getContentFactory()->creatures,
               MonsterAIFactory::singleTask(Task::attackCreatures({target->getLeader()}))));
         for (Creature* summon : Effect::summonCreatures(c, 4, std::move(team)))
           attackTeam.push_back(summon);
@@ -1654,10 +1655,10 @@ class Spider : public Task {
       : origin(orig), webPositions(pos) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    auto layer = Furniture::getLayer(FurnitureType::SPIDER_WEB);
+    auto layer = origin.getGame()->getContentFactory()->furniture.getLayer(FurnitureType::SPIDER_WEB);
     for (auto pos : webPositions)
       if (!pos.getFurniture(layer))
-        pos.addFurniture(FurnitureFactory::get(FurnitureType::SPIDER_WEB, c->getTribeId()));
+        pos.addFurniture(origin.getGame()->getContentFactory()->furniture.getFurniture(FurnitureType::SPIDER_WEB, c->getTribeId()));
     for (auto& pos : Random.permutation(webPositions))
       if (auto victim = pos.getCreature())
         if (victim->isAffected(LastingEffect::ENTANGLED) && victim->isEnemy(c)) {

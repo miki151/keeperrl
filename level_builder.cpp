@@ -11,18 +11,19 @@
 #include "furniture_factory.h"
 #include "position.h"
 #include "movement_set.h"
+#include "content_factory.h"
 
-LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, CreatureFactory* creatureFactory, int width, int height,
+LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, ContentFactory* contentFactory, int width, int height,
     const string& n, bool allCovered, optional<double> defaultLight)
   : squares(Rectangle(width, height)), unavailable(width, height, false),
     heightMap(width, height, 0), covered(width, height, allCovered), building(width, height, false),
     sunlight(width, height, defaultLight ? *defaultLight : (allCovered ? 0.0 : 1.0)),
     attrib(width, height), items(width, height), furniture(Rectangle(width, height)),
-    name(n), progressMeter(meter), random(r), creatureFactory(creatureFactory) {
+    name(n), progressMeter(meter), random(r), contentFactory(contentFactory) {
 }
 
-LevelBuilder::LevelBuilder(RandomGen& r, CreatureFactory* creatureFactory, int width, int height, const string& n, bool covered)
-  : LevelBuilder(nullptr, r, creatureFactory, width, height, n, covered) {
+LevelBuilder::LevelBuilder(RandomGen& r, ContentFactory* contentFactory, int width, int height, const string& n, bool covered)
+  : LevelBuilder(nullptr, r, contentFactory, width, height, n, covered) {
 }
 
 LevelBuilder::~LevelBuilder() {}
@@ -33,8 +34,8 @@ RandomGen& LevelBuilder::getRandom() {
   return random;
 }
 
-CreatureFactory* LevelBuilder::getCreatureFactory() const {
-  return creatureFactory;
+ContentFactory* LevelBuilder::getContentFactory() const {
+  return contentFactory;
 }
 
 bool LevelBuilder::hasAttrib(Vec2 posT, SquareAttrib attr) {
@@ -89,15 +90,16 @@ bool LevelBuilder::canPutItems(Vec2 posT) {
   return canNavigate(posT, {MovementTrait::WALK});
 }
 
-void LevelBuilder::putFurniture(Vec2 posT, FurnitureFactory& f, optional<SquareAttrib> attrib) {
-  putFurniture(posT, f.getRandom(getRandom()), attrib);
+void LevelBuilder::putFurniture(Vec2 posT, FurnitureList& f, TribeId tribe, optional<SquareAttrib> attrib) {
+  putFurniture(posT, f.getRandom(getRandom(), tribe), attrib);
 }
 
 void LevelBuilder::putFurniture(Vec2 posT, FurnitureParams f, optional<SquareAttrib> attrib) {
-  auto layer = Furniture::getLayer(f.type);
+  auto layer = contentFactory->furniture.getLayer(f.type);
   if (getFurniture(posT, layer))
     removeFurniture(posT, layer);
-  furniture.getBuilt(layer).putElem(transform(posT), f);
+  furniture.getBuilt(layer).putElem(transform(posT), f, [&](const FurnitureParams& t) {
+    return contentFactory->furniture.getFurniture(t.type, t.tribe); });
   if (attrib)
     addAttrib(posT, *attrib);
 }
@@ -106,14 +108,18 @@ void LevelBuilder::putFurniture(Vec2 pos, FurnitureType type, optional<SquareAtt
   putFurniture(pos, {type, TribeId::getHostile()}, attrib);
 }
 
+void LevelBuilder::putFurniture(Vec2 pos, FurnitureType type, TribeId tribe, optional<SquareAttrib> attrib) {
+  putFurniture(pos, {type, tribe}, attrib);
+}
+
 void LevelBuilder::resetFurniture(Vec2 posT, FurnitureType type, optional<SquareAttrib> attrib) {
-  CHECK(Furniture::getLayer(type) == FurnitureLayer::GROUND);
+  CHECK(contentFactory->furniture.getLayer(type) == FurnitureLayer::GROUND);
   removeAllFurniture(posT);
   putFurniture(posT, type, attrib);
 }
 
 void LevelBuilder::resetFurniture(Vec2 posT, FurnitureParams params, optional<SquareAttrib> attrib) {
-  CHECK(Furniture::getLayer(params.type) == FurnitureLayer::GROUND);
+  CHECK(contentFactory->furniture.getLayer(params.type) == FurnitureLayer::GROUND);
   removeAllFurniture(posT);
   putFurniture(posT, params, attrib);
 }
@@ -140,7 +146,7 @@ optional<FurnitureType> LevelBuilder::getFurnitureType(Vec2 posT, FurnitureLayer
 }
 
 bool LevelBuilder::isFurnitureType(Vec2 pos, FurnitureType type) {
-  return getFurnitureType(pos, Furniture::getLayer(type)) == type;
+  return getFurnitureType(pos, contentFactory->furniture.getLayer(type)) == type;
 }
 
 WConstFurniture LevelBuilder::getFurniture(Vec2 posT, FurnitureLayer layer) {

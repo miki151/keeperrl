@@ -30,13 +30,14 @@
 #include "model.h"
 #include "item_type.h"
 #include "pretty_printing.h"
-#include "creature_factory.h"
+#include "content_factory.h"
 #include "enemy_factory.h"
 #include "external_enemies.h"
 #include "game_config.h"
 #include "avatar_menu_option.h"
 #include "creature_name.h"
 #include "tileset.h"
+#include "content_factory.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, TileSet* tileSet, bool singleThread, int sv)
@@ -119,7 +120,7 @@ void MainLoop::saveGame(PGame& game, const FilePath& path) {
 
 struct RetiredModelInfo {
   PModel SERIAL(model);
-  CreatureFactory SERIAL(factory);
+  ContentFactory SERIAL(factory);
   SERIALIZE_ALL(model, factory)
 };
 
@@ -130,7 +131,7 @@ void MainLoop::saveMainModel(PGame& game, const FilePath& path) {
   out.getArchive() << saveVersion << name << savedInfo;
   RetiredModelInfo info {
     std::move(game->getMainModel()),
-    game->removeCreatureFactory()
+    game->removeContentFactory()
   };
   out.getArchive() << info;
 }
@@ -354,25 +355,25 @@ PGame MainLoop::prepareTutorial(const GameConfig* gameConfig) {
 
 struct ModelTable {
   Table<PModel> models;
-  vector<CreatureFactory> factories;
+  vector<ContentFactory> factories;
 };
 
 PGame MainLoop::prepareCampaign(RandomGen& random, const GameConfig* gameConfig,
-    CreatureFactory creatureFactory) {
+    ContentFactory contentFactory) {
   while (1) {
-    auto avatarChoice = getAvatarInfo(view, gameConfig, options, &creatureFactory);
+    auto avatarChoice = getAvatarInfo(view, gameConfig, options, &contentFactory.creatures);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, gameConfig, *avatar);
       if (auto setup = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN,
-          creatureFactory.getNameGenerator()->getNext(NameGeneratorId::WORLD))) {
+          contentFactory.creatures.getNameGenerator()->getNext(NameGeneratorId::WORLD))) {
         auto name = options->getStringValue(OptionId::PLAYER_NAME);
         if (!name.empty())
           avatar->playerCreature->getName().setFirst(name);
         avatar->playerCreature->getName().useFullTitle();
-        auto models = prepareCampaignModels(*setup, *avatar, random, gameConfig, &creatureFactory);
+        auto models = prepareCampaignModels(*setup, *avatar, random, gameConfig, &contentFactory);
         for (auto& f : models.factories)
-          creatureFactory.merge(std::move(f));
-        return Game::campaignGame(std::move(models.models), *setup, std::move(*avatar), gameConfig, std::move(creatureFactory));
+          contentFactory.merge(std::move(f));
+        return Game::campaignGame(std::move(models.models), *setup, std::move(*avatar), gameConfig, std::move(contentFactory));
       } else
         continue;
     } else {
@@ -403,11 +404,11 @@ void MainLoop::splashScreen() {
     tileSet->setGameConfig(&gameConfig);
     tileSet->reload(true);
   }
-  auto creatureFactory = createCreatureFactory(&gameConfig);
-  EnemyFactory enemyFactory(Random, creatureFactory.getNameGenerator());
-  auto model = ModelBuilder(&meter, Random, options, sokobanInput, &gameConfig, &creatureFactory, std::move(enemyFactory))
+  auto contentFactory = createContentFactory(&gameConfig);
+  EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator());
+  auto model = ModelBuilder(&meter, Random, options, sokobanInput, &gameConfig, &contentFactory, std::move(enemyFactory))
       .splashModel(dataFreePath.file("splash.txt"));
-  playGame(Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(creatureFactory)),
+  playGame(Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory)),
       false, true, &gameConfig);
 }
 
@@ -451,8 +452,8 @@ void MainLoop::considerFreeVersionText(bool tilesPresent) {
         "More information on the website.");
 }
 
-CreatureFactory MainLoop::createCreatureFactory(const GameConfig* gameConfig) const {
-  return CreatureFactory(NameGenerator(dataFreePath.subdirectory("names")), gameConfig);
+ContentFactory MainLoop::createContentFactory(const GameConfig* gameConfig) const {
+  return ContentFactory{CreatureFactory(NameGenerator(dataFreePath.subdirectory("names")), gameConfig), FurnitureFactory{}};
 }
 
 void MainLoop::launchQuickGame() {
@@ -467,13 +468,13 @@ void MainLoop::launchQuickGame() {
   if (toLoad != files.end())
     game = loadGame(userPath.file((*toLoad).filename));
   auto gameConfig = getGameConfig();
-  auto creatureFactory = createCreatureFactory(&gameConfig);
+  auto contentFactory = createContentFactory(&gameConfig);
   if (!game) {
-    AvatarInfo avatar = getQuickGameAvatar(view, &gameConfig, &creatureFactory);
+    AvatarInfo avatar = getQuickGameAvatar(view, &gameConfig, &contentFactory.creatures);
     CampaignBuilder builder(view, Random, options, &gameConfig, avatar);
     auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP, "[world]");
-    auto models = prepareCampaignModels(*result, std::move(avatar), Random, &gameConfig, &creatureFactory);
-    game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), &gameConfig, std::move(creatureFactory));
+    auto models = prepareCampaignModels(*result, std::move(avatar), Random, &gameConfig, &contentFactory);
+    game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), &gameConfig, std::move(contentFactory));
   }
   playGame(std::move(game), true, false, &gameConfig);
 }
@@ -502,8 +503,8 @@ void MainLoop::start(bool tilesPresent, bool quickGame) {
           tileSet->setGameConfig(&gameConfig);
           tileSet->reload(true);
         }
-        auto creatureFactory = createCreatureFactory(&gameConfig);
-        if (PGame game = prepareCampaign(Random, &gameConfig, std::move(creatureFactory)))
+        auto contentFactory = createContentFactory(&gameConfig);
+        if (PGame game = prepareCampaign(Random, &gameConfig, std::move(contentFactory)))
           playGame(std::move(game), true, false, &gameConfig);
         view->reset();
         break;
@@ -573,9 +574,9 @@ void MainLoop::doWithSplash(SplashType type, const string& text, function<void()
 void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen& random, Options* options) {
   ProgressMeter meter(1);
   auto gameConfig = getGameConfig();
-  auto creatureFactory = createCreatureFactory(&gameConfig);
-  EnemyFactory enemyFactory(Random, creatureFactory.getNameGenerator());
-  ModelBuilder(&meter, random, options, sokobanInput, &gameConfig, &creatureFactory, std::move(enemyFactory))
+  auto contentFactory = createContentFactory(&gameConfig);
+  EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator());
+  ModelBuilder(&meter, random, options, sokobanInput, &gameConfig, &contentFactory, std::move(enemyFactory))
       .measureSiteGen(numTries, types);
 }
 
@@ -631,10 +632,10 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePat
   int cnt = 0;
   input >> cnt;
   auto gameConfig = getGameConfig();
-  auto creatureFactory = createCreatureFactory(&gameConfig);
+  auto creatureFactory = createContentFactory(&gameConfig);
   for (int i : Range(cnt)) {
     auto allies = readAlly(input);
-    std::cout << allies.getSummary(&creatureFactory) << ": ";
+    std::cout << allies.getSummary(&creatureFactory.creatures) << ": ";
     battleTest(numTries, levelPath, allies, enemies, random);
   }
 }
@@ -648,15 +649,15 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
   for (int i : Range(cnt))
     allies.push_back(readAlly(input));
   auto gameConfig = getGameConfig();
-  auto creatureFactory = createCreatureFactory(&gameConfig);
-  ExternalEnemies enemies(random, &creatureFactory, EnemyFactory(random, creatureFactory.getNameGenerator())
+  auto creatureFactory = createContentFactory(&gameConfig);
+  ExternalEnemies enemies(random, &creatureFactory.creatures, EnemyFactory(random, creatureFactory.creatures.getNameGenerator())
       .getExternalEnemies());
   for (int turn : Range(100000))
     if (auto wave = enemies.popNextWave(LocalTime(turn))) {
       std::cerr << "Turn " << turn << ": " << wave->enemy.name << "\n";
       int totalWins = 0;
       for (auto& allyInfo : allies) {
-        std::cerr << allyInfo.getSummary(&creatureFactory) << ": ";
+        std::cerr << allyInfo.getSummary(&creatureFactory.creatures) << ": ";
         int numWins = battleTest(numTries, levelPath, allyInfo, wave->enemy.creatures, random);
         totalWins += numWins;
       }
@@ -676,8 +677,8 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
   auto gameConfig = getGameConfig();
   for (int i : Range(numTries)) {
     std::cout << "Creating level" << std::endl;
-    auto creatureFactory = createCreatureFactory(&gameConfig);
-    EnemyFactory enemyFactory(Random, creatureFactory.getNameGenerator());
+    auto creatureFactory = createContentFactory(&gameConfig);
+    EnemyFactory enemyFactory(Random, creatureFactory.creatures.getNameGenerator());
     auto model = ModelBuilder(&meter, Random, options, sokobanInput, &gameConfig,
         &creatureFactory, std::move(enemyFactory)).battleModel(levelPath, ally, enemies);
     auto game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(creatureFactory));
@@ -745,7 +746,7 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, 
 }
 
 ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInfo& avatarInfo, RandomGen& random,
-    const GameConfig* gameConfig, CreatureFactory* creatureFactory) {
+    const GameConfig* gameConfig, ContentFactory* creatureFactory) {
   Table<PModel> models(setup.campaign.getSites().getBounds());
   auto& sites = setup.campaign.getSites();
   for (Vec2 v : sites.getBounds())
@@ -755,10 +756,10 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
     }
   optional<string> failedToLoad;
   int numSites = setup.campaign.getNumNonEmpty();
-  vector<CreatureFactory> factories;
+  vector<ContentFactory> factories;
   doWithSplash(SplashType::BIG, "Generating map...", numSites,
       [&] (ProgressMeter& meter) {
-        EnemyFactory enemyFactory(Random, creatureFactory->getNameGenerator());
+        EnemyFactory enemyFactory(Random, creatureFactory->creatures.getNameGenerator());
         ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, gameConfig, creatureFactory, std::move(enemyFactory));
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())

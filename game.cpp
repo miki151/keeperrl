@@ -39,12 +39,13 @@
 #include "collective_builder.h"
 #include "game_event.h"
 #include "version.h"
+#include "content_factory.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Game>);
   ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
-  ar(musicType, statistics, spectator, tribes, gameIdentifier, players, creatureFactory, sunlightTimeOffset);
+  ar(musicType, statistics, spectator, tribes, gameIdentifier, players, contentFactory, sunlightTimeOffset);
   ar(gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
   if (Archive::is_loading::value)
     sunlightInfo.update(getGlobalTime() + sunlightTimeOffset);
@@ -57,10 +58,10 @@ static string getGameId(SaveFileInfo info) {
   return info.filename.substr(0, info.filename.size() - 4);
 }
 
-Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, CreatureFactory f)
+Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, ContentFactory f)
     : models(std::move(m)), visited(models.getBounds(), false), baseModel(basePos),
       tribes(Tribe::generateTribes()), musicType(MusicType::PEACEFUL), campaign(c.campaign),
-      creatureFactory(std::move(f)) {
+      contentFactory(std::move(f)) {
   gameIdentifier = c.gameIdentifier;
   gameDisplayName = c.gameDisplayName;
   for (Vec2 v : models.getBounds())
@@ -107,7 +108,7 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string
   playerCollective->setControl(std::move(playerControlOwned));
   playerCollective->setVillainType(VillainType::PLAYER);
   addCollective(playerCollective);
-  if (auto error = playerControl->reloadImmigrationAndWorkshops(gameConfig, &*creatureFactory))
+  if (auto error = playerControl->reloadImmigrationAndWorkshops(gameConfig, &contentFactory->creatures))
     USER_FATAL << *error;
   for (auto tech : keeperInfo->initialTech)
     playerCollective->acquireTech(tech, false);
@@ -116,8 +117,8 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string
 Game::~Game() {}
 
 PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInfo avatar, const GameConfig* gameConfig,
-    CreatureFactory creatureFactory) {
-  auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup, std::move(creatureFactory));
+    ContentFactory contentFactory) {
+  auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup, std::move(contentFactory));
   for (auto model : ret->getAllModels())
     model->setGame(ret.get());
   auto avatarCreature = avatar.playerCreature.get();
@@ -135,7 +136,7 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInf
   return ret;
 }
 
-PGame Game::splashScreen(PModel&& model, const CampaignSetup& s, CreatureFactory f) {
+PGame Game::splashScreen(PModel&& model, const CampaignSetup& s, ContentFactory f) {
   Table<PModel> t(1, 1);
   t[0][0] = std::move(model);
   auto game = makeOwner<Game>(std::move(t), Vec2(0, 0), s, std::move(f));
@@ -539,12 +540,12 @@ const GameConfig* Game::getGameConfig() const {
   return gameConfig;
 }
 
-CreatureFactory* Game::getCreatureFactory() {
-  return &*creatureFactory;
+ContentFactory* Game::getContentFactory() {
+  return &*contentFactory;
 }
 
-CreatureFactory Game::removeCreatureFactory() {
-  return std::move(*creatureFactory);
+ContentFactory Game::removeContentFactory() {
+  return std::move(*contentFactory);
 }
 
 void Game::conquered(const string& title, int numKills, int points) {

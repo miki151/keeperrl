@@ -18,10 +18,11 @@ class Tutorial;
 class FilePath;
 class CreatureList;
 class GameConfig;
+class ContentFactory;
 
 class ModelBuilder {
   public:
-  ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*, const GameConfig*, CreatureFactory*, EnemyFactory);
+  ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*, const GameConfig*, ContentFactory*, EnemyFactory);
   PModel singleMapModel(const string& worldName, TribeId keeperTribe, TribeAlignment);
   PModel campaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment, bool externalEnemies);
   PModel campaignSiteModel(const string& siteName, EnemyId, VillainType, TribeAlignment);
@@ -56,5 +57,5 @@ class ModelBuilder {
   const GameConfig* gameConfig = nullptr;
   vector<EnemyInfo> getSingleMapEnemiesForEvilKeeper(TribeId keeperTribe);
   vector<EnemyInfo> getSingleMapEnemiesForLawfulKeeper(TribeId keeperTribe);
-  CreatureFactory* creatureFactory = nullptr;
+  ContentFactory* contentFactory = nullptr;
 };

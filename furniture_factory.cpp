@@ -7,19 +7,146 @@
 #include "view_object.h"
 #include "tribe.h"
 #include "item_type.h"
-#include "furniture_usage.h"
-#include "furniture_click.h"
-#include "furniture_tick.h"
-#include "furniture_entry.h"
-#include "furniture_dropped_items.h"
 #include "level.h"
 #include "creature.h"
 #include "creature_factory.h"
 #include "movement_set.h"
 #include "lasting_effect.h"
+#include "furniture_usage.h"
+#include "furniture_click.h"
+#include "furniture_tick.h"
+#include "furniture_entry.h"
+#include "furniture_dropped_items.h"
 #include "furniture_on_built.h"
 
-static Furniture get(FurnitureType type, TribeId tribe) {
+bool FurnitureParams::operator == (const FurnitureParams& p) const {
+  return type == p.type && tribe == p.tribe;
+}
+
+const string& FurnitureFactory::getName(FurnitureType type, int count) const {
+  static EnumMap<FurnitureType, string> names(
+      [this] (FurnitureType type) { return getFurniture(type, TribeId::getHostile())->getName(1); });
+  static EnumMap<FurnitureType, string> pluralNames(
+      [this] (FurnitureType type) { return getFurniture(type, TribeId::getHostile())->getName(2); });
+  if (count == 1)
+    return names[type];
+  else
+    return pluralNames[type];
+}
+
+FurnitureLayer FurnitureFactory::getLayer(FurnitureType type) const {
+  static EnumMap<FurnitureType, FurnitureLayer> layers(
+      [this] (FurnitureType type) { return getFurniture(type, TribeId::getHostile())->getLayer(); });
+  return layers[type];
+}
+
+
+bool FurnitureFactory::isWall(FurnitureType type) const {
+  static EnumMap<FurnitureType, bool> layers(
+      [this] (FurnitureType type) { return getFurniture(type, TribeId::getHostile())->isWall(); });
+  return layers[type];
+}
+
+LuxuryInfo FurnitureFactory::getLuxuryInfo(FurnitureType type) const {
+  static EnumMap<FurnitureType, LuxuryInfo> luxury(
+      [this] (FurnitureType type) { return getFurniture(type, TribeId::getHostile())->getLuxuryInfo(); });
+  return luxury[type];
+}
+
+pair<double, optional<int>> getPopulationIncreaseInfo(FurnitureType type) {
+  switch (type) {
+    case FurnitureType::PIGSTY:
+      return {0.25, 4};
+    case FurnitureType::MINION_STATUE:
+      return {1, none};
+    case FurnitureType::STONE_MINION_STATUE:
+      return {1, 4};
+    case FurnitureType::THRONE:
+      return {10, none};
+    default:
+      return {0, none};
+  }
+}
+
+optional<string> FurnitureFactory::getPopulationIncreaseDescription(FurnitureType type) const {
+  auto info = getPopulationIncreaseInfo(type);
+  if (info.first > 0) {
+    auto ret = "Increases population limit by " + toString(info.first);
+    if (auto limit = info.second)
+      ret += ", up to " + toString(*limit);
+    ret += ".";
+    return ret;
+  }
+  return none;
+}
+
+FurnitureList FurnitureFactory::getFurnitureList(FurnitureListId id) const {
+  if (id == "roomFurniture")
+    return FurnitureList({
+        {FurnitureType::BED1, 2},
+        {FurnitureType::GROUND_TORCH, 1},
+        {FurnitureType::CHEST, 2}
+    });
+  if (id == "castleFurniture")
+    return FurnitureList({
+        {FurnitureType::BED1, 2},
+        {FurnitureType::GROUND_TORCH, 1},
+        {FurnitureType::FOUNTAIN, 1},
+        {FurnitureType::CHEST, 2}
+    });
+  if (id == "dungeonOutside")
+    return FurnitureList({
+        {FurnitureType::GROUND_TORCH, 1},
+    });
+  if (id == "castleOutside")
+    return FurnitureList({
+        {FurnitureType::INVISIBLE_ALARM, 10},
+        {FurnitureType::GROUND_TORCH, 1},
+        {FurnitureType::WELL, 1},
+    });
+  if (id == "villageOutside")
+    return FurnitureList({
+        {FurnitureType::GROUND_TORCH, 1},
+        {FurnitureType::WELL, 1},
+    });
+  if (id == "vegetationLow")
+    return FurnitureList({
+        {FurnitureType::CANIF_TREE, 2},
+        {FurnitureType::BUSH, 1 }
+    });
+  if (id == "vegetationHigh")
+    return FurnitureList({
+        {FurnitureType::DECID_TREE, 2},
+        {FurnitureType::BUSH, 1 }
+    });
+  if (id == "cryptCoffins")
+    return FurnitureList({
+        {FurnitureType::LOOT_COFFIN, 1},
+    }, {
+        FurnitureType::VAMPIRE_COFFIN
+    });  
+  if (id == "towerInside")
+    return FurnitureList({
+        {FurnitureType::GROUND_TORCH, 1},
+    });
+  if (id == "graves")
+    return FurnitureList({
+        {FurnitureType::GRAVE, 1},
+    });
+  if (id == "templeInside")
+    return FurnitureList({
+        {FurnitureType::CHEST, 1}
+    }, {FurnitureType::ALTAR});
+  USER_FATAL << "FurnitueListId not found: " << id;
+  fail();
+}
+
+int FurnitureFactory::getPopulationIncrease(FurnitureType type, int numBuilt) const {
+  auto info = getPopulationIncreaseInfo(type);
+  return min(int(numBuilt * info.first), info.second.value_or(1000000));
+}
+
+static Furniture getFurnitureValue(FurnitureType type, TribeId tribe) {
   switch (type) {
     case FurnitureType::TRAINING_WOOD:
       return Furniture("wooden training dummy", ViewObject(ViewId("training_wood"), ViewLayer::FLOOR), type, tribe)
@@ -710,12 +837,25 @@ static Furniture get(FurnitureType type, TribeId tribe) {
   }
 }
 
-bool FurnitureParams::operator == (const FurnitureParams& p) const {
-
-  return type == p.type && tribe == p.tribe;
+PFurniture FurnitureFactory::getFurniture(FurnitureType type, TribeId tribe) const {
+  return makeOwner<Furniture>(::getFurnitureValue(type, tribe));
 }
 
-bool FurnitureFactory::hasSupport(FurnitureType type, Position pos) {
+const ViewObject& FurnitureFactory::getConstructionObject(FurnitureType type) const {
+  static EnumMap<FurnitureType, optional<ViewObject>> objects;
+  if (!objects[type]) {
+    if (auto obj = getFurniture(type, TribeId::getMonster())->getViewObject())
+      objects[type] = *obj;
+    objects[type]->setModifier(ViewObject::Modifier::PLANNED);
+  }
+  return *objects[type];
+}
+
+ViewId FurnitureFactory::getViewId(FurnitureType type) const {
+  return getFurniture(type, TribeId::getMonster())->getViewObject()->id();
+}
+
+bool FurnitureFactory::hasSupport(FurnitureType type, Position pos) const {
   switch (type) {
     case FurnitureType::CANDELABRUM_N:
     case FurnitureType::TORCH_N:
@@ -748,7 +888,7 @@ static bool canSilentlyReplace(FurnitureType type) {
   }
 }
 
-bool FurnitureFactory::canBuild(FurnitureType type, Position pos) {
+bool FurnitureFactory::canBuild(FurnitureType type, Position pos) const {
   switch (type) {
     case FurnitureType::BRIDGE:
       return pos.getFurniture(FurnitureLayer::GROUND)->canBuildBridgeOver();
@@ -763,14 +903,14 @@ bool FurnitureFactory::canBuild(FurnitureType type, Position pos) {
       else
         return false;
     default: {
-      auto original = pos.getFurniture(Furniture::getLayer(type));
+      auto original = pos.getFurniture(getLayer(type));
       return pos.getFurniture(FurnitureLayer::GROUND)->getMovementSet().canEnter({MovementTrait::WALK}) &&
           (!original || canSilentlyReplace(original->getType())) && !pos.isWall();
     }
   }
 }
 
-bool FurnitureFactory::isUpgrade(FurnitureType base, FurnitureType upgraded) {
+bool FurnitureFactory::isUpgrade(FurnitureType base, FurnitureType upgraded) const {
   switch (base) {
     case FurnitureType::TRAINING_WOOD:
       return upgraded == FurnitureType::TRAINING_IRON || upgraded == FurnitureType::TRAINING_ADA;
@@ -793,76 +933,19 @@ bool FurnitureFactory::isUpgrade(FurnitureType base, FurnitureType upgraded) {
   }
 }
 
-const vector<FurnitureType>& FurnitureFactory::getUpgrades(FurnitureType base) {
+const vector<FurnitureType>& FurnitureFactory::getUpgrades(FurnitureType base) const {
   static EnumMap<FurnitureType, vector<FurnitureType>> upgradeMap(
-      [](const FurnitureType& base) {
+      [this](const FurnitureType& base) {
     vector<FurnitureType> ret;
     for (auto type2 : ENUM_ALL(FurnitureType))
-      if (FurnitureFactory::isUpgrade(base, type2))
+      if (isUpgrade(base, type2))
         ret.push_back(type2);
     return ret;
   });
   return upgradeMap[base];
 }
 
-FurnitureFactory::FurnitureFactory(TribeId t, const EnumMap<FurnitureType, double>& d,
-    const vector<FurnitureType>& u) : tribe(t), distribution(d), unique(u) {
-}
-
-FurnitureFactory::FurnitureFactory(TribeId t, FurnitureType f) : tribe(t), distribution({{f, 1}}) {
-}
-
-PFurniture FurnitureFactory::get(FurnitureType type, TribeId tribe) {
-  return makeOwner<Furniture>(::get(type, tribe));
-}
-
-FurnitureFactory FurnitureFactory::roomFurniture(TribeId tribe) {
-  return FurnitureFactory(tribe, {
-      {FurnitureType::BED1, 2},
-      {FurnitureType::GROUND_TORCH, 1},
-      {FurnitureType::CHEST, 2}
-  });
-}
-
-FurnitureFactory FurnitureFactory::castleFurniture(TribeId tribe) {
-  return FurnitureFactory(tribe, {
-      {FurnitureType::BED1, 2},
-      {FurnitureType::GROUND_TORCH, 1},
-      {FurnitureType::FOUNTAIN, 1},
-      {FurnitureType::CHEST, 2}
-  });
-}
-
-FurnitureFactory FurnitureFactory::dungeonOutside(TribeId tribe) {
-  return FurnitureFactory(tribe, {
-      {FurnitureType::GROUND_TORCH, 1},
-  });
-}
-
-FurnitureFactory FurnitureFactory::castleOutside(TribeId tribe) {
-  return FurnitureFactory(tribe, {
-      {FurnitureType::INVISIBLE_ALARM, 10},
-      {FurnitureType::GROUND_TORCH, 1},
-      {FurnitureType::WELL, 1},
-  });
-}
-
-FurnitureFactory FurnitureFactory::villageOutside(TribeId tribe) {
-  return FurnitureFactory(tribe, {
-      {FurnitureType::GROUND_TORCH, 1},
-      {FurnitureType::WELL, 1},
-  });
-}
-
-FurnitureFactory FurnitureFactory::cryptCoffins(TribeId tribe) {
-  return FurnitureFactory(tribe, {
-      {FurnitureType::LOOT_COFFIN, 1},
-  }, {
-      FurnitureType::VAMPIRE_COFFIN
-  });
-}
-
-FurnitureType FurnitureFactory::getWaterType(double depth) {
+FurnitureType FurnitureFactory::getWaterType(double depth) const {
   if (depth >= 2.0)
     return FurnitureType::WATER;
   else if (depth >= 1.0)
@@ -870,17 +953,3 @@ FurnitureType FurnitureFactory::getWaterType(double depth) {
   else
     return FurnitureType::SHALLOW_WATER2;
 }
-
-FurnitureParams FurnitureFactory::getRandom(RandomGen& random) {
-  if (!unique.empty()) {
-    FurnitureType f = unique.back();
-    unique.pop_back();
-    return {f, *tribe};
-  } else
-    return {random.choose(distribution), *tribe};
-}
-
-int FurnitureFactory::numUnique() const {
-  return unique.size();
-}
-

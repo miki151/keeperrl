@@ -24,6 +24,7 @@
 #include "game_event.h"
 #include "effect.h"
 #include "name_generator.h"
+#include "content_factory.h"
 
 struct ChestInfo {
   FurnitureType openedType;
@@ -44,13 +45,14 @@ struct ChestInfo {
 static void useChest(Position pos, WConstFurniture furniture, Creature* c, const ChestInfo& chestInfo) {
   c->secondPerson("You open the " + furniture->getName());
   c->thirdPerson(c->getName().the() + " opens the " + furniture->getName());
-  pos.removeFurniture(furniture, FurnitureFactory::get(chestInfo.openedType, furniture->getTribe()));
+  pos.removeFurniture(furniture, pos.getGame()->getContentFactory()->furniture.getFurniture(
+      chestInfo.openedType, furniture->getTribe()));
   if (auto creatureInfo = chestInfo.creatureInfo)
     if (creatureInfo->creatureChance > 0 && Random.roll(creatureInfo->creatureChance)) {
       int numSpawned = 0;
       for (int i : Range(creatureInfo->numCreatures))
         if (pos.getLevel()->landCreature({pos}, CreatureGroup(*creatureInfo->creature).random(
-            pos.getGame()->getCreatureFactory())))
+            &pos.getGame()->getContentFactory()->creatures)))
           ++numSpawned;
       if (numSpawned > 0)
         c->message(creatureInfo->msgCreature);
@@ -67,7 +69,7 @@ static void useChest(Position pos, WConstFurniture furniture, Creature* c, const
 
 static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
   c->verb("desecrate", "desecrates", "the "+ furniture->getName());
-  pos.removeFurniture(furniture, FurnitureFactory::get(FurnitureType::ALTAR_DES, furniture->getTribe()));
+  pos.removeFurniture(furniture, pos.getGame()->getContentFactory()->furniture.getFurniture(FurnitureType::ALTAR_DES, furniture->getTribe()));
   switch (Random.get(5)) {
     case 0:
       pos.globalMessage("A streak of magical energy is released");
@@ -110,7 +112,7 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
       break;
     }
     case 2: {
-      pos.globalMessage(pos.getGame()->getCreatureFactory()->getNameGenerator()->getNext(NameGeneratorId::DEITY)
+      pos.globalMessage(pos.getGame()->getContentFactory()->creatures.getNameGenerator()->getNext(NameGeneratorId::DEITY)
           + " seems to be very angry");
       auto group = CreatureGroup::singleType(TribeId::getMonster(), "ANGEL");
       Effect::summon(pos, group, Random.get(3, 6), none);

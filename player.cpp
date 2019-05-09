@@ -64,6 +64,7 @@
 #include "dungeon_level.h"
 #include "fx_name.h"
 #include "furniture_factory.h"
+#include "content_factory.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -979,8 +980,8 @@ ViewId Player::shuffleViewId(const ViewId& id) const {
 void Player::generateHalluIds() {
   if (halluIds.empty()) {
     halluIds.emplace_back();
-    for (auto& id : getGame()->getCreatureFactory()->getAllCreatures())
-      halluIds.back().insert(getGame()->getCreatureFactory()->getViewId(id));
+    for (auto& id : getGame()->getContentFactory()->creatures.getAllCreatures())
+      halluIds.back().insert(getGame()->getContentFactory()->creatures.getViewId(id));
     /*for (auto type : ENUM_ALL(FurnitureType)) {
       auto f = FurnitureFactory::get(type, creature->getTribeId());
       if (f->getLayer() == FurnitureLayer::MIDDLE && !f->isWall())

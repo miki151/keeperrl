@@ -23,6 +23,7 @@
 #include "furniture_type.h"
 #include "resource_id.h"
 #include "game_event.h"
+#include "content_factory.h"
 
 ItemType::ItemType(const ItemType&) = default;
 ItemType::ItemType(ItemType&) = default;
@@ -142,7 +143,7 @@ class Corpse : public Item {
       makeRotten();
     else if (getWeight() > 10 && !corpseInfo.isSkeleton && !position.isCovered() && Random.roll(350)) {
       for (Position v : position.neighbors8(Random)) {
-        PCreature vulture = position.getGame()->getCreatureFactory()->fromId("VULTURE", TribeId::getPest(),
+        PCreature vulture = position.getGame()->getContentFactory()->creatures.fromId("VULTURE", TribeId::getPest(),
             MonsterAIFactory::scavengerBird());
         if (v.canEnter(vulture.get())) {
           v.addCreature(std::move(vulture));

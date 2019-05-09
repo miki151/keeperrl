@@ -27,6 +27,7 @@ class AvatarInfo;
 class NameGenerator;
 struct ModelTable;
 class TileSet;
+class ContentFactory;
 
 class MainLoop {
   public:
@@ -58,7 +59,7 @@ class MainLoop {
 
   void doWithSplash(SplashType, const string& text, function<void()> fun, function<void()> cancelFun = nullptr);
 
-  PGame prepareCampaign(RandomGen&, const GameConfig*, CreatureFactory);
+  PGame prepareCampaign(RandomGen&, const GameConfig*, ContentFactory);
   enum class ExitCondition;
   ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, const GameConfig*,
       function<optional<ExitCondition> (WGame)> = nullptr, milliseconds stepTimeMilli = milliseconds{3});
@@ -68,7 +69,7 @@ class MainLoop {
   void playMenuMusic();
 
   ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen& random,
-      const GameConfig*, CreatureFactory*);
+      const GameConfig*, ContentFactory*);
   PGame loadGame(const FilePath&);
   PGame loadPrevious();
   FilePath getSavePath(const PGame&, GameSaveType);
@@ -101,5 +102,5 @@ class MainLoop {
   int saveVersion;
   void saveGame(PGame&, const FilePath&);
   void saveMainModel(PGame&, const FilePath&);
-  CreatureFactory createCreatureFactory(const GameConfig* gameConfig) const;
+  ContentFactory createContentFactory(const GameConfig* gameConfig) const;
 };

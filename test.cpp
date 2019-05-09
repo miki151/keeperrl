@@ -925,7 +925,7 @@ class Test {
     PositionMatching matching;
     PModel model = Model::create();
     LevelBuilder builder = LevelBuilder(nullptr, Random, nullptr, 10, 10, "", false, none);
-    PLevelMaker levelMaker = LevelMaker::emptyLevel(FurnitureType::MOUNTAIN);
+    PLevelMaker levelMaker = LevelMaker::emptyLevel(FurnitureType::MOUNTAIN, true);
     PLevel level = builder.build(model.get(), levelMaker.get(), 1234);
   };
 

@@ -18,6 +18,7 @@
 #include "z_level_info.h"
 #include "game_config.h"
 #include "resource_counts.h"
+#include "content_factory.h"
 
 static SettlementInfo getEnemy(EnemyId id) {
   auto enemy = EnemyFactory(Random, nullptr).get(id);
@@ -103,12 +104,13 @@ void handleOnBuilt(Position pos, Furniture* f, Creature* c, FurnitureOnBuilt typ
         int width = 140;
         auto stairKey = StairKey::getNew();
         auto newLevel = tryBuilding(20, [&]{ return pos.getModel()->buildMainLevel(
-            LevelBuilder(Random, pos.getGame()->getCreatureFactory(), width, width, "", true),
+            LevelBuilder(Random, pos.getGame()->getContentFactory(), width, width, "", true),
             getLevelMaker(Random, pos.getGame()->getGameConfig(),
                 pos.getGame()->getPlayerControl()->getKeeperCreatureInfo().tribeAlignment,
                 levelIndex + 1, width, c->getTribeId(), stairKey)); }, "z-level " + toString(levelIndex));
         Position landing = newLevel->getLandingSquares(stairKey).getOnlyElement();
-        landing.addFurniture(FurnitureFactory::get(FurnitureType::UP_STAIRS, TribeId::getMonster()));
+        landing.addFurniture(pos.getGame()->getContentFactory()->furniture.getFurniture(
+            FurnitureType::UP_STAIRS, TribeId::getMonster()));
         pos.setLandingLink(stairKey);
         pos.getModel()->calculateStairNavigation();
         pos.getGame()->getPlayerCollective()->addKnownTile(landing);

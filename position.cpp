@@ -26,6 +26,7 @@
 #include "roof_support.h"
 #include "draw_line.h"
 #include "game_event.h"
+#include "content_factory.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -144,7 +145,7 @@ WFurniture Position::modFurniture(FurnitureLayer layer) const {
 
 WFurniture Position::modFurniture(FurnitureType type) const {
   PROFILE;
-  if (auto furniture = modFurniture(Furniture::getLayer(type)))
+  if (auto furniture = modFurniture(getGame()->getContentFactory()->furniture.getLayer(type)))
     if (furniture->getType() == type)
       return furniture;
   return nullptr;
@@ -160,7 +161,7 @@ WConstFurniture Position::getFurniture(FurnitureLayer layer) const {
 
 WConstFurniture Position::getFurniture(FurnitureType type) const {
   PROFILE;
-  if (auto furniture = getFurniture(Furniture::getLayer(type)))
+  if (auto furniture = getFurniture(getGame()->getContentFactory()->furniture.getLayer(type)))
     if (furniture->getType() == type)
       return furniture;
   return nullptr;
@@ -602,7 +603,8 @@ void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
 
 bool Position::canConstruct(FurnitureType type) const {
   PROFILE;
-  return !isUnavailable() && FurnitureFactory::canBuild(type, *this) && FurnitureFactory::hasSupport(type, *this);
+  auto factory = &getGame()->getContentFactory()->furniture;
+  return !isUnavailable() && factory->canBuild(type, *this) && factory->hasSupport(type, *this);
 }
 
 bool Position::isWall() const {
@@ -624,18 +626,18 @@ bool Position::isBuildingSupport() const {
 void Position::construct(FurnitureType type, Creature* c) {
   PROFILE;
   if (construct(type, c->getTribeId()))
-    modFurniture(Furniture::getLayer(type))->onConstructedBy(*this, c);
+    modFurniture(getGame()->getContentFactory()->furniture.getLayer(type))->onConstructedBy(*this, c);
 }
 
 bool Position::construct(FurnitureType type, TribeId tribe) {
   PROFILE;
   CHECK(!isUnavailable());
   CHECK(canConstruct(type));
-  auto& construction = level->furniture->getConstruction(coord, Furniture::getLayer(type));
+  auto& construction = level->furniture->getConstruction(coord, getGame()->getContentFactory()->furniture.getLayer(type));
   if (!construction || construction->type != type)
     construction = FurnitureArray::Construction{type, 10};
   if (--construction->time == 0) {
-    addFurniture(FurnitureFactory::get(type, tribe));
+    addFurniture(getGame()->getContentFactory()->furniture.getFurniture(type, tribe));
     return true;
   } else
     return false;
@@ -859,7 +861,7 @@ void Position::updateSupport() const {
   PROFILE;
   for (auto pos : neighbors8())
     for (auto f : pos.modFurniture())
-      if (!FurnitureFactory::hasSupport(f->getType(), pos))
+      if (!getGame()->getContentFactory()->furniture.hasSupport(f->getType(), pos))
         f->destroy(pos, DestroyAction::Type::BASH);
 }
 

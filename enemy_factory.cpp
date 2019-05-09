@@ -218,8 +218,9 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.locationName = getVillageName();
             c.race = "greenskins"_s;
             c.buildingId = BuildingId::BRICK;
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
-            c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
+            c.furniture = FurnitureListId("roomFurniture");
+            c.outsideFeatures = FurnitureListId("villageOutside");
+          ),
           CollectiveConfig::withImmigrants(300_visible, 16))
         .setCreateOnBones(*this, 0.1, {EnemyId::DWARVES, EnemyId::VILLAGE})
         .setImmigrants({
@@ -234,7 +235,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.buildingId = BuildingId::DUNGEON_SURFACE;
             c.locationName = "Darkshrine Town"_s;
             c.race = "ghosts"_s;
-            c.furniture = FurnitureFactory::dungeonOutside(c.tribe);
+            c.furniture = FurnitureListId("dungeonOutside");
             ),
             CollectiveConfig::noImmigrants()).setNonDiscoverable();
     case EnemyId::DEMON_DEN:
@@ -244,8 +245,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.inhabitants.fighters = CreatureList(random.get(5, 10), "DEMON_DWELLER");
             c.locationName = "Darkshrine"_s;
             c.race = "demons"_s;
-            c.furniture = FurnitureFactory::dungeonOutside(c.tribe);
-            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);),
+            c.furniture = FurnitureListId("dungeonOutside");
+            c.outsideFeatures = FurnitureListId("dungeonOutside");),
           CollectiveConfig::withImmigrants(300_visible, 16),
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 0;
@@ -275,7 +276,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD;
             c.shopFactory = ItemFactory::armory();
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
+            c.furniture = FurnitureListId("roomFurniture");
             ), CollectiveConfig::noImmigrants().setGhostSpawns(0.1, 4));
     case EnemyId::WARRIORS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -288,8 +289,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.buildingId = BuildingId::WOOD_CASTLE;
             c.stockpiles = LIST({StockpileInfo::GOLD, 160});
             c.elderLoot = ItemType(ItemType::TechBook{"beast mutation"});
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
-            c.outsideFeatures = FurnitureFactory::castleOutside(c.tribe);),
+            c.furniture = FurnitureListId("roomFurniture");
+            c.outsideFeatures = FurnitureListId("castleOutside");),
           CollectiveConfig::withImmigrants(300_visible, 10).setGhostSpawns(0.1, 6),
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 3;
@@ -326,8 +327,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.stockpiles = LIST({StockpileInfo::GOLD, 140});
             c.buildingId = BuildingId::BRICK;
             c.shopFactory = ItemFactory::villageShop();
-            c.furniture = FurnitureFactory::castleFurniture(c.tribe);
-            c.outsideFeatures = FurnitureFactory::castleOutside(c.tribe);),
+            c.furniture = FurnitureListId("castleFurniture");
+            c.outsideFeatures = FurnitureListId("castleOutside");),
           CollectiveConfig::withImmigrants(300_visible, 26).setGhostSpawns(0.1, 6),
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 12;
@@ -355,7 +356,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.inhabitants.leader = CreatureList("MINOTAUR");
             c.locationName = "maze"_s;
             c.race = "monsters"_s;
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
+            c.furniture = FurnitureListId("roomFurniture");
             c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants());
     case EnemyId::RED_DRAGON:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -414,9 +415,9 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.buildingId = BuildingId::DUNGEON;
             c.stockpiles = LIST({StockpileInfo::GOLD, 200}, {StockpileInfo::MINERALS, 120});
             c.shopFactory = ItemFactory::dwarfShop();
-            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
+            c.outsideFeatures = FurnitureListId("dungeonOutside");
             c.surroundWithResources = 5;
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
+            c.furniture = FurnitureListId("roomFurniture");),
           CollectiveConfig::withImmigrants(500_visible, 15).setGhostSpawns(0.1, 4),
           CONSTRUCT(VillageBehaviour,
             c.minPopulation = 3;
@@ -448,7 +449,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.stockpiles = LIST({StockpileInfo::GOLD, 100});
             c.buildingId = BuildingId::WOOD;
             c.elderLoot = ItemType(ItemType::TechBook{"master sorcery"});
-            c.furniture = FurnitureFactory::roomFurniture(TribeId::getPest());),
+            c.furniture = FurnitureListId("roomFurniture");
+          ),
           CollectiveConfig::withImmigrants(500_visible, 18).setGhostSpawns(0.1, 4),
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 4;
@@ -471,7 +473,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.inhabitants.leader = CreatureList("ELEMENTALIST");
             c.tribe = TribeId::getHuman();
             c.buildingId = BuildingId::BRICK;
-            c.furniture = FurnitureFactory::roomFurniture(TribeId::getPest());),
+            c.furniture = FurnitureListId("roomFurniture");),
           CollectiveConfig::noImmigrants().setLeaderAsFighter(),
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 0;
@@ -543,8 +545,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.buildingId = BuildingId::MUD;
             c.elderLoot = ItemType(ItemType::TechBook{"humanoid mutation"});
             c.shopFactory = ItemFactory::mushrooms();
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
-            c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
+            c.furniture = FurnitureListId("roomFurniture");
+            c.outsideFeatures = FurnitureListId("villageOutside");),
           CollectiveConfig::withImmigrants(140_visible, 11).setGhostSpawns(0.1, 4),
           CONSTRUCT(VillageBehaviour,
               c.minPopulation = 4;
@@ -572,8 +574,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.locationName = getVillageName();
             c.race = "dark elves"_s;
             c.buildingId = BuildingId::DUNGEON;
-            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
+            c.outsideFeatures = FurnitureListId("dungeonOutside");
+            c.furniture = FurnitureListId("roomFurniture");),
           CollectiveConfig::withImmigrants(500_visible, 15), none,
           LevelConnection{LevelConnection::GNOMISH_MINES, get(EnemyId::DARK_ELVES_ENTRY)})
           .setImmigrants({ ImmigrantInfo("DARK_ELF_WARRIOR", {MinionTrait::FIGHTER}).setFrequency(1) });
@@ -591,8 +593,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.locationName = getVillageName();
             c.race = "dark elves"_s;
             c.buildingId = BuildingId::DUNGEON;
-            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
+            c.outsideFeatures = FurnitureListId("dungeonOutside");
+            c.furniture = FurnitureListId("roomFurniture");),
           CollectiveConfig::withImmigrants(500_visible, 15), none,
           LevelConnection{LevelConnection::GNOMISH_MINES, get(EnemyId::DARK_ELVES_ENTRY)})
           .setImmigrants({ ImmigrantInfo("DARK_ELF_WARRIOR", {MinionTrait::FIGHTER}).setFrequency(1) });
@@ -603,8 +605,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.inhabitants.fighters = CreatureList(random.get(3, 7), "DARK_ELF_WARRIOR");
             c.race = "dark elves"_s;
             c.buildingId = BuildingId::DUNGEON;
-            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
+            c.outsideFeatures = FurnitureListId("dungeonOutside");
+            c.furniture = FurnitureListId("roomFurniture");),
           CollectiveConfig::noImmigrants(), {})
           .setNonDiscoverable();
     case EnemyId::GNOMES:
@@ -617,8 +619,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.race = "gnomes"_s;
             c.buildingId = BuildingId::DUNGEON;
             c.shopFactory = ItemFactory::gnomeShop();
-            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
+            c.outsideFeatures = FurnitureListId("dungeonOutside");
+            c.furniture = FurnitureListId("roomFurniture");),
           CollectiveConfig::noImmigrants(), none,
           LevelConnection{LevelConnection::GNOMISH_MINES, get(EnemyId::GNOMES_ENTRY)});
     case EnemyId::GNOMES_ENTRY:
@@ -628,8 +630,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.inhabitants.fighters = CreatureList(random.get(3, 7), "GNOME");
             c.race = "gnomes"_s;
             c.buildingId = BuildingId::DUNGEON;
-            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
+            c.outsideFeatures = FurnitureListId("dungeonOutside");
+            c.furniture = FurnitureListId("roomFurniture");),
           CollectiveConfig::noImmigrants())
           .setNonDiscoverable();
     case EnemyId::ENTS:
@@ -697,7 +699,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.locationName = "cemetery"_s;
             c.tribe = TribeId::getMonster();
             c.race = "undead"_s;
-            c.furniture = FurnitureFactory::cryptCoffins(TribeId::getMonster());
+            c.furniture = FurnitureListId("cryptCoffins");
             c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants(), {},
           LevelConnection{LevelConnection::CRYPT, get(EnemyId::CEMETERY_ENTRY)});
     case EnemyId::CEMETERY_ENTRY:
@@ -707,6 +709,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.locationName = "cemetery"_s;
             c.race = "undead"_s;
             c.tribe = TribeId::getMonster();
+            c.furniture = FurnitureListId("graves");
             c.buildingId = BuildingId::BRICK;), CollectiveConfig::noImmigrants())
           .setNonDiscoverable();
     case EnemyId::OGRE_CAVE:
@@ -716,8 +719,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.inhabitants.fighters = CreatureList(random.get(4, 8), "OGRE");
             c.buildingId = BuildingId::DUNGEON;
             c.closeToPlayer = true;
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
-            c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
+            c.furniture = FurnitureListId("roomFurniture");
+            c.outsideFeatures = FurnitureListId("villageOutside");),
           CollectiveConfig::withImmigrants(300_visible, 10))
           .setImmigrants({ ImmigrantInfo("OGRE", {MinionTrait::FIGHTER}).setFrequency(1) });
     case EnemyId::HARPY_CAVE: {
@@ -727,8 +730,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.inhabitants.fighters = CreatureList(random.get(4, 8), "HARPY");
             c.buildingId = BuildingId::DUNGEON;
             c.closeToPlayer = true;
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
-            c.outsideFeatures = FurnitureFactory::villageOutside(c.tribe);),
+            c.furniture = FurnitureListId("roomFurniture");
+            c.outsideFeatures = FurnitureListId("villageOutside");),
           CollectiveConfig::withImmigrants(300_visible, 10))
           .setImmigrants({ ImmigrantInfo("HARPY", {MinionTrait::FIGHTER}).setFrequency(1) });
       }
@@ -755,7 +758,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.race = "witch"_s;
             c.buildingId = BuildingId::WOOD;
             c.elderLoot = ItemType(ItemType::TechBook{"advanced alchemy"});
-            c.furniture = FurnitureFactory(c.tribe, FurnitureType::LABORATORY);), CollectiveConfig::noImmigrants());
+            c.furniture = FurnitureListId("witchInside");
+          ), CollectiveConfig::noImmigrants());
     case EnemyId::TEMPLE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::TEMPLE;
@@ -764,9 +768,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             if (random.roll(3))
               c.inhabitants.leader = CreatureList("PRIEST");
             c.buildingId = BuildingId::BRICK;
-            c.furniture = FurnitureFactory(c.tribe, {{FurnitureType::CHEST, 1}},
-                {FurnitureType::ALTAR});),
-            CollectiveConfig::noImmigrants()).setNonDiscoverable();
+            c.furniture = FurnitureListId("templeInside");
+      ), CollectiveConfig::noImmigrants()).setNonDiscoverable();
     case EnemyId::EVIL_TEMPLE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::TEMPLE;
@@ -775,9 +778,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             if (random.roll(3))
               c.inhabitants.leader = CreatureList("ORC_SHAMAN").increaseExpLevel({{ExperienceType::SPELL, 7}});
             c.buildingId = BuildingId::WOOD;
-            c.furniture = FurnitureFactory(c.tribe, {{FurnitureType::CHEST, 1}},
-                {FurnitureType::ALTAR});),
-            CollectiveConfig::noImmigrants()).setNonDiscoverable();
+            c.furniture = FurnitureListId("templeInside");
+      ), CollectiveConfig::noImmigrants()).setNonDiscoverable();
     case EnemyId::RUINS:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
             c.type = SettlementType::COTTAGE;
@@ -804,7 +806,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
                     "PIG", "DOG"));
             c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD;
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
+            c.furniture = FurnitureListId("roomFurniture");),
           CollectiveConfig::noImmigrants().setGuardian({"WITCHMAN", 0.001, 1, 2}));
     case EnemyId::TUTORIAL_VILLAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -819,7 +821,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.buildingId = BuildingId::WOOD;
             c.stockpiles = LIST({StockpileInfo::GOLD, 50});
             c.cropsDistance = 16;
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
+            c.furniture = FurnitureListId("roomFurniture");),
           CollectiveConfig::noImmigrants());
     case EnemyId::ELVEN_COTTAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -832,7 +834,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
                 makeVec<CreatureId>("ELF_CHILD", "HORSE", "COW", "DOG"));
             c.race = "elves"_s;
             c.buildingId = BuildingId::WOOD;
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
+            c.furniture = FurnitureListId("roomFurniture");),
           CollectiveConfig::noImmigrants());
     case EnemyId::LIZARDMEN_COTTAGE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -841,7 +843,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.inhabitants.fighters = CreatureList(random.get(2, 3), "LIZARDMAN");
             c.race = "lizardmen"_s;
             c.buildingId = BuildingId::WOOD;
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);),
+            c.furniture = FurnitureListId("roomFurniture");),
           CollectiveConfig::noImmigrants())
           .setCreateOnBones(*this, 1.0, {EnemyId::ELVEN_COTTAGE});
     case EnemyId::KOBOLD_CAVE:
@@ -863,8 +865,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.buildingId = BuildingId::DUNGEON;
             c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::MINERALS, 60},
                 StockpileInfo{StockpileInfo::GOLD, 60}));
-            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
+            c.outsideFeatures = FurnitureListId("dungeonOutside");
+            c.furniture = FurnitureListId("roomFurniture");
             c.surroundWithResources = 6;
           ),
           CollectiveConfig::noImmigrants(),
@@ -899,8 +901,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.buildingId = BuildingId::DUNGEON;
             c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::MINERALS, 60},
                 StockpileInfo{StockpileInfo::GOLD, 60}));
-            c.outsideFeatures = FurnitureFactory::dungeonOutside(c.tribe);
-            c.furniture = FurnitureFactory::roomFurniture(c.tribe);
+            c.outsideFeatures = FurnitureListId("dungeonOutside");
+            c.furniture = FurnitureListId("roomFurniture");
             c.surroundWithResources = 6;
           ),
           CollectiveConfig::noImmigrants(),

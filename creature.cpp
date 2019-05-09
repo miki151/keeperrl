@@ -57,6 +57,7 @@
 #include "navigation_flags.h"
 #include "game_event.h"
 #include "spell_school.h"
+#include "content_factory.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -131,7 +132,7 @@ const SpellMap& Creature::getSpellMap() const {
 }
 
 void Creature::cheatAllSpells() {
-  auto& spells = getGame()->getCreatureFactory()->getSpells();
+  auto& spells = getGame()->getContentFactory()->creatures.getSpells();
   for (auto& spell : spells)
     spellMap->add(spell, ExperienceType::SPELL, 0);
   spellMap->setAllReady();

@@ -27,7 +27,7 @@ AttractionInfo::AttractionInfo(int cl,  AttractionType a)
 string AttractionInfo::getAttractionName(const AttractionType& attraction, int count) {
   return attraction.match(
       [&](FurnitureType type)->string {
-        return Furniture::getName(type, count);
+        return EnumInfo<FurnitureType>::getString(type);
       },
       [&](ItemIndex index)->string {
         return getName(index, count);

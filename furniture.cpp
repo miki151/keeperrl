@@ -21,6 +21,7 @@
 #include "movement_set.h"
 #include "fx_info.h"
 #include "furniture_on_built.h"
+#include "content_factory.h"
 
 static string makePlural(const string& s) {
   if (s.empty())
@@ -81,72 +82,11 @@ void Furniture::updateViewObject() {
   }
 }
 
-const string& Furniture::getName(FurnitureType type, int count) {
-  static EnumMap<FurnitureType, string> names(
-      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getName(1); });
-  static EnumMap<FurnitureType, string> pluralNames(
-      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getName(2); });
-  if (count == 1)
-    return names[type];
-  else
-    return pluralNames[type];
-}
-
-FurnitureLayer Furniture::getLayer(FurnitureType type) {
-  static EnumMap<FurnitureType, FurnitureLayer> layers(
-      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getLayer(); });
-  return layers[type];
-}
-
 const string& Furniture::getName(int count) const {
   if (count > 1)
     return pluralName;
   else
     return name;
-}
-
-bool Furniture::isWall(FurnitureType type) {
-  static EnumMap<FurnitureType, bool> layers(
-      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->isWall(); });
-  return layers[type];
-}
-
-LuxuryInfo Furniture::getLuxuryInfo(FurnitureType type) {
-  static EnumMap<FurnitureType, LuxuryInfo> luxury(
-      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getLuxuryInfo(); });
-  return luxury[type];
-}
-
-pair<double, optional<int>> getPopulationIncreaseInfo(FurnitureType type) {
-  switch (type) {
-    case FurnitureType::PIGSTY:
-      return {0.25, 4};
-    case FurnitureType::MINION_STATUE:
-      return {1, none};
-    case FurnitureType::STONE_MINION_STATUE:
-      return {1, 4};
-    case FurnitureType::THRONE:
-      return {10, none};
-    default:
-      return {0, none};
-  }
-}
-
-optional<string> Furniture::getPopulationIncreaseDescription(FurnitureType type) {
-  auto info = getPopulationIncreaseInfo(type);
-  if (info.first > 0) {
-    auto ret = "Increases population limit by " + toString(info.first);
-    if (auto limit = info.second)
-      ret += ", up to " + toString(*limit);
-    ret += ".";
-    return ret;
-  }
-  return none;
-}
-
-int Furniture::getPopulationIncrease(FurnitureType type, int numBuilt) {
-  auto info = getPopulationIncreaseInfo(type);
-  return min(int(numBuilt * info.first), info.second.value_or(1000000));
 }
 
 FurnitureType Furniture::getType() const {
@@ -182,7 +122,8 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
     FurnitureUsage::beforeRemoved(*usageType, pos);
   if (auto fxInfo = destroyFXInfo(type))
     pos.getGame()->addEvent(EventInfo::FX{pos, *fxInfo});
-  pos.removeFurniture(this, destroyedRemains ? FurnitureFactory::get(*destroyedRemains, getTribe()) : nullptr);
+  pos.removeFurniture(this, destroyedRemains
+      ? pos.getGame()->getContentFactory()->furniture.getFurniture(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
 
@@ -233,7 +174,8 @@ void Furniture::tick(Position pos) {
       pos.removeCreatureLight(false);
       auto myLayer = layer;
       auto myType = type;
-      pos.removeFurniture(this, burntRemains ? FurnitureFactory::get(*burntRemains, getTribe()) : nullptr);
+      pos.removeFurniture(this, burntRemains ?
+          pos.getGame()->getContentFactory()->furniture.getFurniture(*burntRemains, getTribe()) : nullptr);
       pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
       return;
     }

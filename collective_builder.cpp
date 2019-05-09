@@ -109,7 +109,7 @@ PCollective CollectiveBuilder::build() {
     Position pos(v, level);
     c->addKnownTile(pos);
     //if (c->canClaimSquare(pos))
-      c->claimSquare(pos);
+      c->getTerritory().insert(pos);
   }
   if (centralPoint)
     c->getTerritory().setCentralPoint(Position(*centralPoint, level));

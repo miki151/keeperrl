@@ -56,6 +56,7 @@
 #include "conquer_condition.h"
 #include "game_event.h"
 #include "view_object.h"
+#include "content_factory.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -597,9 +598,11 @@ void Collective::onEvent(const GameEvent& event) {
       },
       [&](const FurnitureDestroyed& info) {
         if (info.position.getModel() == model) {
-          populationIncrease -= Furniture::getPopulationIncrease(info.type, constructions->getBuiltCount(info.type));
+          populationIncrease -= getGame()->getContentFactory()->furniture.getPopulationIncrease(
+              info.type, constructions->getBuiltCount(info.type));
           constructions->onFurnitureDestroyed(info.position, info.layer);
-          populationIncrease += Furniture::getPopulationIncrease(info.type, constructions->getBuiltCount(info.type));
+          populationIncrease += getGame()->getContentFactory()->furniture.getPopulationIncrease(
+              info.type, constructions->getBuiltCount(info.type));
         }
       },
       [&](const ConqueredEnemy& info) {
@@ -845,7 +848,7 @@ void Collective::removeTrap(Position pos) {
 }
 
 bool Collective::canAddFurniture(Position position, FurnitureType type) const {
-  auto layer = Furniture::getLayer(type);
+  auto layer = getGame()->getContentFactory()->furniture.getLayer(type);
   return knownTiles->isKnown(position)
       && (territory->contains(position) ||
           canClaimSquare(position) ||
@@ -950,15 +953,15 @@ bool Collective::isConstructionReachable(Position pos) {
 
 void Collective::onConstructed(Position pos, FurnitureType type) {
   if (pos.getFurniture(type)->forgetAfterBuilding()) {
-    constructions->removeFurniturePlan(pos, Furniture::getLayer(type));
+    constructions->removeFurniturePlan(pos, getGame()->getContentFactory()->furniture.getLayer(type));
     if (territory->contains(pos))
       territory->remove(pos);
     control->onConstructed(pos, type);
     return;
   }
-  populationIncrease -= Furniture::getPopulationIncrease(type, constructions->getBuiltCount(type));
+  populationIncrease -= getGame()->getContentFactory()->furniture.getPopulationIncrease(type, constructions->getBuiltCount(type));
   constructions->onConstructed(pos, type);
-  populationIncrease += Furniture::getPopulationIncrease(type, constructions->getBuiltCount(type));
+  populationIncrease += getGame()->getContentFactory()->furniture.getPopulationIncrease(type, constructions->getBuiltCount(type));
   control->onConstructed(pos, type);
   if (WTask task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
@@ -967,7 +970,7 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
 }
 
 void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAction& action) {
-  removeUnbuiltFurniture(pos, Furniture::getLayer(type));
+  removeUnbuiltFurniture(pos, getGame()->getContentFactory()->furniture.getLayer(type));
   switch (action.getType()) {
     case DestroyAction::Type::CUT:
       zones->setZone(pos, ZoneId::FETCH_ITEMS);

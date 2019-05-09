@@ -5,6 +5,8 @@
 #include "furniture.h"
 #include "furniture_factory.h"
 #include "task.h"
+#include "game.h"
+#include "content_factory.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::FurnitureInfo, FurnitureInfo);
 
@@ -45,10 +47,6 @@ FurnitureType ConstructionMap::FurnitureInfo::getFurnitureType() const {
   return type;
 }
 
-FurnitureLayer ConstructionMap::FurnitureInfo::getLayer() const {
-  return Furniture::getLayer(type);
-}
-
 optional<const ConstructionMap::FurnitureInfo&> ConstructionMap::getFurniture(Position pos, FurnitureLayer layer) const {
   return furniture[layer].getReferenceMaybe(pos);
 }
@@ -82,7 +80,7 @@ void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
 }
 
 void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
-  auto layer = info.getLayer();
+  auto layer = pos.getGame()->getContentFactory()->furniture.getLayer(info.getFurnitureType());
   CHECK(!furniture[layer].contains(pos));
   allFurniture.push_back({pos, layer});
   furniture[layer].set(pos, info);
@@ -116,7 +114,7 @@ const vector<pair<Position, FurnitureLayer>>& ConstructionMap::getAllFurniture()
 }
 
 void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
-  auto layer = Furniture::getLayer(type);
+  auto layer = pos.getGame()->getContentFactory()->furniture.getLayer(type);
   if (!containsFurniture(pos, layer))
     addFurniture(pos, FurnitureInfo::getBuilt(type));
   furniturePositions[type].insert(pos);
@@ -131,7 +129,7 @@ void ConstructionMap::clearUnsupportedFurniturePlans() {
   vector<pair<Position, FurnitureLayer>> toRemove;
   for (auto& elem : getAllFurniture())
     if (auto info = getFurniture(elem.first, elem.second))
-      if (!FurnitureFactory::hasSupport(info->getFurnitureType(), elem.first))
+      if (!elem.first.getGame()->getContentFactory()->furniture.hasSupport(info->getFurnitureType(), elem.first))
         toRemove.push_back(elem);
   for (auto& elem : toRemove)
     removeFurniturePlan(elem.first, elem.second);
