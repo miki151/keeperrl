@@ -27,9 +27,10 @@
     "haste" 2
     "slow" 3
     "defense bonus" 4
-    "haste2" 5
-    "defense bonus2" 6
-    "damage bonus2" 7
+    "damage bonus" 5
+    "haste2" 6
+    "defense bonus2" 7
+    "damage bonus2" 8
   }
   "healer" SPELL
   {
