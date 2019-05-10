@@ -87,3 +87,6 @@ bool FurnitureEntry::isVisibleTo(WConstFurniture f, const Creature* c) const {
 
 SERIALIZE_DEF(FurnitureEntry, entryData)
 SERIALIZATION_CONSTRUCTOR_IMPL(FurnitureEntry)
+
+#include "pretty_archive.h"
+template void FurnitureEntry::serialize(PrettyInputArchive&, unsigned);

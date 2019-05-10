@@ -4,5 +4,5 @@
 
 struct LuxuryInfo {
   double SERIAL(luxury) = 0;
-  SERIALIZE_ALL(luxury);
+  SERIALIZE_ALL(luxury)
 };

@@ -46,6 +46,7 @@ typedef cereal::BinaryOutputArchive OutputArchive;
 #define SUBCLASS(X) cereal::base_class<X>(this)
 #define NAMED CEREAL_NVP
 #define OPTION(T) make_optional_nvp(#T, T)
+#define SKIP(T) make_skip_value(T)
 
 #define SERIALIZABLE(T) \
   template void T::serialize(InputArchive&, unsigned); \

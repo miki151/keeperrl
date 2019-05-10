@@ -10,20 +10,20 @@ class Furniture;
 
 class FurnitureEntry {
   public:
-  struct Sokoban {};
+  using Sokoban = EmptyStruct<struct SokobanTag>;
 
   struct Trap {
     Trap(Effect e, bool s = false) : effect(e), invisible(s) {}
     SERIALIZATION_CONSTRUCTOR(Trap)
     Effect SERIAL(effect);
-    bool SERIAL(invisible);
-    SERIALIZE_ALL(effect, invisible)
+    bool SERIAL(invisible) = false;
+    SERIALIZE_ALL(NAMED(effect), OPTION(invisible))
   };
 
-  struct Water {};
-  struct Magma {};
+  using Water = EmptyStruct<struct WaterTag>;
+  using Magma = EmptyStruct<struct MagmaTag>;
 
-  using EntryData = variant<Sokoban, Trap, Water, Magma>;
+  MAKE_VARIANT(EntryData, Sokoban, Trap, Water, Magma);
   template <typename T>
   FurnitureEntry(const T& t) : FurnitureEntry(EntryData(t)) {}
   FurnitureEntry(EntryData);

@@ -200,3 +200,4 @@ LocalTime operator "" _local(unsigned long long value) {
 #include "pretty_archive.h"
 template void LocalTime::serialize(PrettyInputArchive&, unsigned);
 template void GlobalTime::serialize(PrettyInputArchive&, unsigned);
+template void TimeInterval::serialize(PrettyInputArchive&, unsigned);

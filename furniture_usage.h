@@ -6,7 +6,8 @@ class Position;
 class Furniture;
 class Creature;
 
-enum class FurnitureUsageType {
+RICH_ENUM(
+  FurnitureUsageType,
   CHEST,
   COFFIN,
   VAMPIRE_COFFIN,
@@ -22,7 +23,7 @@ enum class FurnitureUsageType {
   PORTAL,
   SIT_ON_THRONE,
   DESECRATE
-};
+);
 
 class FurnitureUsage {
   public:

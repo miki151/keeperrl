@@ -386,6 +386,10 @@ inline void serialize(PrettyInputArchive& ar1, OptionalNameValuePair<T>& t) {
 }
 
 template <class T>
+inline void serialize(PrettyInputArchive& ar1, SkipPrettyValue<T>& t) {
+}
+
+template <class T>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<T>& t) {
   if (strcmp(t.name, "cereal_class_version")) {
     auto& value = t.value;
@@ -513,6 +517,12 @@ void prologue(PrettyInputArchive&, OptionalNameValuePair<T> const & ) { }
 
 template <class T> inline
 void epilogue(PrettyInputArchive&, OptionalNameValuePair<T> const & ) { }
+
+template <class T> inline
+void prologue(PrettyInputArchive&, SkipPrettyValue<T> const & ) { }
+
+template <class T> inline
+void epilogue(PrettyInputArchive&, SkipPrettyValue<T> const & ) { }
 
 template <class T> inline
 void prologue(PrettyInputArchive&, cereal::SizeTag<T> const & ) { }

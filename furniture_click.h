@@ -5,7 +5,11 @@ class Position;
 
 #include "util.h"
 
-enum class FurnitureClickType { LOCK, KEEPER_BOARD };
+RICH_ENUM(
+  FurnitureClickType,
+  LOCK,
+  KEEPER_BOARD
+);
 
 class FurnitureClick {
   public:

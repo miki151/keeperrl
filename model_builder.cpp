@@ -472,7 +472,7 @@ static ResourceCounts getTopLevelResources(RandomGen& random, const GameConfig* 
 
 PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo,
     optional<TribeId> keeperTribe, BiomeId biomeId, optional<ExternalEnemies> externalEnemies, bool hasWildlife) {
-  auto model = Model::create();
+  auto model = Model::create(contentFactory);
   vector<SettlementInfo> topLevelSettlements;
   vector<EnemyInfo> extraEnemies;
   for (auto& elem : enemyInfo) {
@@ -518,7 +518,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
 }
 
 PModel ModelBuilder::splashModel(const FilePath& splashPath) {
-  auto m = Model::create();
+  auto m = Model::create(contentFactory);
   WLevel l = m->buildMainLevel(
       LevelBuilder(meter, Random, contentFactory, Level::getSplashBounds().width(),
           Level::getSplashBounds().height(), "Splash", true, 1.0),
@@ -531,7 +531,7 @@ PModel ModelBuilder::splashModel(const FilePath& splashPath) {
 }
 
 PModel ModelBuilder::battleModel(const FilePath& levelPath, CreatureList allies, CreatureList enemies) {
-  auto m = Model::create();
+  auto m = Model::create(contentFactory);
   ifstream stream(levelPath.getPath());
   Table<char> level = *SokobanInput::readTable(stream);
   WLevel l = m->buildMainLevel(

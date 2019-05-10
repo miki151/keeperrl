@@ -21,7 +21,7 @@
 #include "effect.h"
 #include "item_type.h"
 
-SERIALIZE_DEF(ItemFactory, items, weights, count, uniqueCounts)
+SERIALIZE_DEF(ItemFactory, NAMED(items), NAMED(weights), NAMED(count), OPTION(uniqueCounts))
 SERIALIZATION_CONSTRUCTOR_IMPL(ItemFactory)
 
 struct ItemFactory::ItemInfo {
@@ -245,3 +245,6 @@ ItemFactory& ItemFactory::operator = (const ItemFactory&) = default;
 ItemFactory::ItemFactory(const ItemFactory&) = default;
 
 ItemFactory::~ItemFactory() {}
+
+#include "pretty_archive.h"
+template void ItemFactory::serialize(PrettyInputArchive&, unsigned);

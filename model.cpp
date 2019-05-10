@@ -182,9 +182,9 @@ WLevel Model::buildMainLevel(LevelBuilder b, PLevelMaker maker) {
 Model::Model(Private) {
 }
 
-PModel Model::create() {
+PModel Model::create(ContentFactory* contentFactory) {
   auto ret = makeOwner<Model>(Private{});
-  ret->cemetery = LevelBuilder(Random, nullptr, 100, 100, "Dead creatures", false)
+  ret->cemetery = LevelBuilder(Random, contentFactory, 100, 100, "Dead creatures", false)
       .build(ret.get(), LevelMaker::emptyLevel(FurnitureType::GRASS, false).get(), Random.getLL());
   ret->eventGenerator = makeOwner<EventGenerator>();
   return ret;

@@ -32,6 +32,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "spells";
     case GameConfigId::TILES:
       return "tiles";
+    case GameConfigId::FURNITURE:
+      return "furniture";
   }
 }
 

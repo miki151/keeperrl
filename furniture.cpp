@@ -49,13 +49,20 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Furniture)
 Furniture::~Furniture() {}
 
 template<typename Archive>
-void Furniture::serialize(Archive& ar, const unsigned) {
-  ar(SUBCLASS(OwnedObject<Furniture>), viewObject, removeNonFriendly);
-  ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyedInfo, itemDrop);
-  ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
-  ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
-  ar(canBuildBridge, noProjectiles, clearFogOfWar, removeWithCreaturePresent, xForgetAfterBuilding);
-  ar(luxuryInfo, buildingSupport, onBuilt, burnsDownMessage);
+void Furniture::serializeImpl(Archive& ar, const unsigned) {
+  ar(SKIP(SUBCLASS(OwnedObject<Furniture>)), OPTION(viewObject), OPTION(removeNonFriendly));
+  ar(NAMED(name), OPTION(pluralName), OPTION(type), OPTION(movementSet), OPTION(fire), OPTION(burntRemains), OPTION(destroyedRemains));
+  ar(OPTION(destroyedInfo), OPTION(itemDrop), OPTION(wall), SKIP(creator), NAMED(createdTime));
+  ar(OPTION(blockVision), NAMED(usageType), NAMED(clickType), NAMED(tickType), OPTION(usageTime), OPTION(overrideMovement));
+  ar(NAMED(constructMessage), OPTION(layer), OPTION(entryType), OPTION(lightEmission), OPTION(canHideHere), OPTION(warning));
+  ar(NAMED(summonedElement), OPTION(droppedItems), OPTION(xForgetAfterBuilding));
+  ar(OPTION(canBuildBridge), OPTION(noProjectiles), OPTION(clearFogOfWar), OPTION(removeWithCreaturePresent));
+  ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage));
+}
+
+template <class Archive>
+void Furniture::serialize(Archive& ar1, const unsigned int v) {
+  serializeImpl(ar1, v);
 }
 
 SERIALIZABLE(Furniture)
@@ -256,19 +263,19 @@ void Furniture::onConstructedBy(Position pos, Creature* c) {
   createdTime = c->getLocalTime();
   if (constructMessage)
     switch (*constructMessage) {
-      case BUILD:
+      case ConstructMessage::BUILD:
         c->thirdPerson(c->getName().the() + " builds " + addAParticle(getName()));
         c->secondPerson("You build " + addAParticle(getName()));
         break;
-      case FILL_UP:
+      case ConstructMessage::FILL_UP:
         c->thirdPerson(c->getName().the() + " fills up the tunnel");
         c->secondPerson("You fill up the tunnel");
         break;
-      case REINFORCE:
+      case ConstructMessage::REINFORCE:
         c->thirdPerson(c->getName().the() + " reinforces the wall");
         c->secondPerson("You reinforce the wall");
         break;
-      case SET_UP:
+      case ConstructMessage::SET_UP:
         c->thirdPerson(c->getName().the() + " sets up " + addAParticle(getName()));
         c->secondPerson("You set up " + addAParticle(getName()));
         break;
@@ -346,7 +353,11 @@ bool Furniture::canBuildBridgeOver() const {
 }
 
 const LuxuryInfo&Furniture::getLuxuryInfo() const {
-  return luxuryInfo;
+  return luxury;
+}
+
+void Furniture::setType(FurnitureType t) {
+  type = t;
 }
 
 Furniture& Furniture::setBlocking() {
@@ -497,8 +508,8 @@ Furniture& Furniture::setForgetAfterBuilding() {
   return *this;
 }
 
-Furniture& Furniture::setLuxury(double luxury) {
-  luxuryInfo.luxury = luxury;
+Furniture& Furniture::setLuxury(double l) {
+  luxury.luxury = l;
   return *this;
 }
 
@@ -563,4 +574,57 @@ optional<double> Furniture::getStrength(const DestroyAction& action) const {
     return info->strength * info->health;
   }
   return none;
+}
+
+static ViewLayer getViewLayer(FurnitureLayer layer) {
+  switch (layer) {
+    case FurnitureLayer::FLOOR:
+    case FurnitureLayer::GROUND:
+      return ViewLayer::FLOOR_BACKGROUND;
+    case FurnitureLayer::MIDDLE:
+      return ViewLayer::FLOOR;
+    case FurnitureLayer::CEILING:
+      return ViewLayer::TORCH1;
+  }
+}
+
+#include "pretty_archive.h"
+template <>
+void Furniture::serialize(PrettyInputArchive& ar, unsigned int v) {
+  movementSet->addTrait(MovementTrait::WALK);
+  optional<ViewId> viewId;
+  ar >> NAMED(viewId);
+  optional<ViewLayer> viewLayer;
+  ar >> NAMED(viewLayer);
+  bool blockMovement = false;
+  ar >> OPTION(blockMovement);
+  optional<int> strength;
+  ar >> NAMED(strength);
+  optional<vector<pair<int, DestroyAction::Type>>> strength2;
+  ar >> NAMED(strength2);
+  optional<Dir> attachmentDir;
+  ar >> NAMED(attachmentDir);
+  bool blockingEnemies = false;
+  ar >> OPTION(blockingEnemies);
+  optional<double> waterDepth;
+  ar >> NAMED(waterDepth);
+  serializeImpl(ar, v);
+  ar >> endInput();
+  if (blockMovement)
+    setBlocking();
+  if (strength)
+    setDestroyable(*strength);
+  if (strength2)
+    for (auto& elem : *strength2)
+      setDestroyable(elem.first, elem.second);
+  if (viewId)
+    viewObject = ViewObject(*viewId, viewLayer.value_or(getViewLayer(layer)));
+  if (attachmentDir)
+    viewObject->setAttachmentDir(*attachmentDir);
+  if (waterDepth)
+    viewObject->setAttribute(ViewObjectAttribute::WATER_DEPTH, *waterDepth);
+  if (blockingEnemies)
+    setBlockingEnemies();
+  if (pluralName.empty())
+    pluralName = makePlural(name);
 }

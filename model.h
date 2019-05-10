@@ -35,13 +35,14 @@ class ExternalEnemies;
 class Options;
 class AvatarInfo;
 class GameConfig;
+class ContentFactory;
 
 /**
   * Main class that holds all game logic.
   */
 class Model : public OwnedObject<Model> {
   public:
-  static PModel create();
+  static PModel create(ContentFactory*);
   
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/

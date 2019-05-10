@@ -26,6 +26,14 @@ RICH_ENUM(
     STOPS_BURNING
 );
 
+RICH_ENUM(
+    ConstructMessage,
+    BUILD, /*default*/
+    FILL_UP,
+    REINFORCE,
+    SET_UP
+);
+
 class Furniture : public OwnedObject<Furniture> {
   public:
 
@@ -85,8 +93,7 @@ class Furniture : public OwnedObject<Furniture> {
   bool canBuildBridgeOver() const;
   const LuxuryInfo& getLuxuryInfo() const;
 
-  enum ConstructMessage { /*default*/BUILD, FILL_UP, REINFORCE, SET_UP };
-
+  void setType(FurnitureType);
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();
   Furniture& setConstructMessage(optional<ConstructMessage>);
@@ -158,7 +165,7 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(removeNonFriendly) = false;
   bool SERIAL(wall) = false;
   bool SERIAL(buildingSupport) = false;
-  optional<ConstructMessage> SERIAL(constructMessage) = BUILD;
+  optional<ConstructMessage> SERIAL(constructMessage) = ConstructMessage::BUILD;
   double SERIAL(lightEmission) = 0;
   bool SERIAL(canHideHere) = false;
   bool SERIAL(warning) = false;
@@ -169,7 +176,9 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(noProjectiles) = false;
   bool SERIAL(clearFogOfWar) = false;
   bool SERIAL(xForgetAfterBuilding) = false;
-  LuxuryInfo SERIAL(luxuryInfo);
+  LuxuryInfo SERIAL(luxury);
   void updateViewObject();
   BurnsDownMessage SERIAL(burnsDownMessage) = BurnsDownMessage::BURNS_DOWN;
+  template<typename Archive>
+  void serializeImpl(Archive&, const unsigned);
 };

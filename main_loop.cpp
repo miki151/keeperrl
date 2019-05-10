@@ -453,7 +453,7 @@ void MainLoop::considerFreeVersionText(bool tilesPresent) {
 }
 
 ContentFactory MainLoop::createContentFactory(const GameConfig* gameConfig) const {
-  return ContentFactory{CreatureFactory(NameGenerator(dataFreePath.subdirectory("names")), gameConfig), FurnitureFactory{}};
+  return ContentFactory(NameGenerator(dataFreePath.subdirectory("names")), gameConfig);
 }
 
 void MainLoop::launchQuickGame() {

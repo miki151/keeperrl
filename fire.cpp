@@ -17,7 +17,7 @@
 
 #include "fire.h"
 
-SERIALIZE_DEF(Fire, burnTime, burning)
+SERIALIZE_DEF(Fire, burnTime, SKIP(burning))
 SERIALIZATION_CONSTRUCTOR_IMPL(Fire);
 
 Fire::Fire(int burnTime) : burnTime(burnTime) {}
@@ -42,3 +42,6 @@ bool Fire::isBurning() const {
 bool Fire::isBurntOut() const {
   return burnTime == 0 && burning;
 }
+
+#include "pretty_archive.h"
+template void Fire::serialize(PrettyInputArchive&, unsigned);

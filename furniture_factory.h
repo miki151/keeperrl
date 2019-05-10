@@ -7,6 +7,7 @@
 class Position;
 class TribeId;
 class LuxuryInfo;
+class GameConfig;
 
 struct FurnitureParams {
   FurnitureType SERIAL(type); // HASH(type)
@@ -19,6 +20,7 @@ struct FurnitureParams {
 
 class FurnitureFactory {
   public:
+  FurnitureFactory(const GameConfig*);
   bool canBuild(FurnitureType, Position) const;
   bool hasSupport(FurnitureType, Position) const;
   bool isUpgrade(FurnitureType base, FurnitureType upgraded) const;
@@ -35,6 +37,12 @@ class FurnitureFactory {
   FurnitureList getFurnitureList(FurnitureListId) const;
   FurnitureType getWaterType(double depth) const;
 
-  template <typename Archive>
-  void serialize(Archive&, unsigned int) {}
+  ~FurnitureFactory();
+  FurnitureFactory(const FurnitureFactory&) = delete;
+  FurnitureFactory(FurnitureFactory&&);
+
+  SERIALIZATION_DECL(FurnitureFactory)
+
+  private:
+  map<FurnitureType, Furniture> SERIAL(furniture);
 };

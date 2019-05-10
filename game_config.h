@@ -21,7 +21,8 @@ enum class GameConfigId {
   Z_LEVELS,
   RESOURCE_COUNTS,
   GAME_INTRO_TEXT,
-  TILES
+  TILES,
+  FURNITURE
 };
 
 class GameConfig {
