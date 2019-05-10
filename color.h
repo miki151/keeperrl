@@ -32,6 +32,7 @@ struct Color {
 
   bool operator == (const Color&) const;
   bool operator != (const Color&) const;
+  bool operator < (const Color&) const;
   operator SDL::SDL_Color() const;
 
   static Color WHITE;

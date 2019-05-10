@@ -87,6 +87,10 @@ bool Color::operator != (const Color& rhs) const {
   return !(*this == rhs);
 }
 
+bool Color::operator <(const Color& rhs) const {
+  return std::forward_as_tuple(r, g, b, a) < std::forward_as_tuple(rhs.r, rhs.g, rhs.b, rhs.a);
+}
+
 #include "pretty_archive.h"
 
 RICH_ENUM(

@@ -2,34 +2,10 @@
 #include "util.h"
 #include "view_id.h"
 
-static bool viewIdGeneration = false;
-static vector<string> allIds;
-
-static int getId(const char* text) {
-  static unordered_map<string, int> ids;
-  static int generatedId = 0;
-  if (viewIdGeneration && !ids.count(text)) {
-    ids[text] = generatedId;
-    allIds.push_back(text);
-    ++generatedId;
-  }
-  auto ret = getReferenceMaybe(ids, text);
-#ifdef RELEASE
-  USER_CHECK(!!ret) << "ViewId not found: " << text;
-#else
-  CHECK(!!ret) << "ViewId not found: " << text;
-#endif
-  return *ret;
-}
-
-void ViewId::setViewIdGeneration(bool b) {
-  viewIdGeneration = b;
-}
-
-ViewId::ViewId(const char* s, Color color) : id(getId(s)), color(color) {}
+ViewId::ViewId(const char* s, Color color) : ContentId(s), color(color) {}
 
 bool ViewId::operator == (const ViewId& o) const {
-  return id == o.id;
+  return ContentId<ViewId>::operator==(o) && color == o.color;
 }
 
 bool ViewId::operator !=(const ViewId& o) const {
@@ -37,23 +13,15 @@ bool ViewId::operator !=(const ViewId& o) const {
 }
 
 bool ViewId::operator <(const ViewId& o) const {
-  return id < o.id;
+  return ContentId<ViewId>::operator==(o) && color < o.color;
 }
 
 int ViewId::getHash() const {
-  return combineHash(id, color);
-}
-
-const char* ViewId::data() const {
-  return allIds[id].data();
+  return combineHash(ContentId<ViewId>::getHash(), color);
 }
 
 const Color& ViewId::getColor() const {
   return color;
-}
-
-ViewId::InternalId ViewId::getInternalId() const {
-  return id;
 }
 
 std::ostream& operator <<(std::ostream& d, ViewId id) {
@@ -62,14 +30,7 @@ std::ostream& operator <<(std::ostream& d, ViewId id) {
 
 template <class Archive>
 void ViewId::serialize(Archive& ar1, const unsigned int) {
-  if (Archive::is_loading::value) {
-    string s;
-    ar1(s, color);
-    id = getId(s.data());
-  } else {
-    string s = data();
-    ar1(s, color);
-  }
+  ar1(SUBCLASS(ContentId), color);
 }
 
 SERIALIZABLE(ViewId)
@@ -79,12 +40,10 @@ SERIALIZATION_CONSTRUCTOR_IMPL(ViewId)
 #include "pretty_archive.h"
 template<>
 void ViewId::serialize(PrettyInputArchive& ar, unsigned) {
-  string text;
-  ar >> NAMED(text);
+  ar(NAMED(SUBCLASS(ContentId)));
   Color colorInfo = Color::WHITE;
   ar >> OPTION(colorInfo);
   ar >> endInput();
-  id = getId(text.data());
   if (colorInfo != Color::WHITE)
     color = colorInfo;
 }
