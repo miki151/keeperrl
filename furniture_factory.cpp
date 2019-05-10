@@ -152,7 +152,7 @@ int FurnitureFactory::getPopulationIncrease(FurnitureType type, int numBuilt) co
 
 PFurniture FurnitureFactory::getFurniture(FurnitureType type, TribeId tribe) const {
   USER_CHECK(furniture.count(type)) << "Furniture type not found " << int(type);
-  auto ret = makeOwner<Furniture>(furniture.at(type));
+  auto ret = makeOwner<Furniture>(*furniture.at(type));
   ret->setTribe(tribe);
   return ret;
 }
@@ -206,14 +206,17 @@ static bool canSilentlyReplace(FurnitureType type) {
 
 FurnitureFactory::FurnitureFactory(const GameConfig* config) {
   while (1) {
-    if (auto res = config->readObject(furniture, GameConfigId::FURNITURE)) {
+    vector<pair<FurnitureType, Furniture>> elems;
+    if (auto res = config->readObject(elems, GameConfigId::FURNITURE)) {
       USER_INFO << *res;
       continue;
     }
+    for (auto& elem : elems) {
+      elem.second.setType(elem.first);
+      furniture.insert(make_pair(elem.first, makeOwner<Furniture>(elem.second)));
+    }
     break;
   }
-  for (auto& elem : furniture)
-    elem.second.setType(elem.first);
 }
 
 bool FurnitureFactory::canBuild(FurnitureType type, Position pos) const {

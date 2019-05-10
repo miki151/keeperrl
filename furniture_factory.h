@@ -44,5 +44,5 @@ class FurnitureFactory {
   SERIALIZATION_DECL(FurnitureFactory)
 
   private:
-  map<FurnitureType, Furniture> SERIAL(furniture);
+  map<FurnitureType, OwnerPointer<Furniture>> SERIAL(furniture);
 };
