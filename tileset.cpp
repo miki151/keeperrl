@@ -231,12 +231,12 @@ void TileSet::reload(bool useTiles) {
   };
   reloadDir(defaultDir);
   reloadDir(gameConfig->getPath());
-  ViewId::setContentIdGeneration(true);
+  ViewId::startContentIdGeneration();
   loadUnicode();
   if (useTiles)
     loadTiles();
   loadModdedTiles(gameConfig, useTiles);
-  ViewId::setContentIdGeneration(false);
+  ViewId::validateContentIds();
 }
 
 const Tile& TileSet::getTile(ViewId id, bool sprite) const {

@@ -3,6 +3,9 @@
 #include "furniture_type.h"
 #include "furniture_list.h"
 #include "tribe.h"
+#include "experience_type.h"
+#include "bed_type.h"
+#include "view_object.h"
 
 class Position;
 class TribeId;
@@ -26,16 +29,16 @@ class FurnitureFactory {
   bool isUpgrade(FurnitureType base, FurnitureType upgraded) const;
   const vector<FurnitureType>& getUpgrades(FurnitureType base) const;
   PFurniture getFurniture(FurnitureType, TribeId) const;
+  const Furniture& getData(FurnitureType) const;
   const ViewObject& getConstructionObject(FurnitureType) const;
-  ViewId getViewId(FurnitureType) const;
-  const string& getName(FurnitureType, int count = 1) const;
-  FurnitureLayer getLayer(FurnitureType) const;
-  bool isWall(FurnitureType) const;
-  LuxuryInfo getLuxuryInfo(FurnitureType) const;
   int getPopulationIncrease(FurnitureType, int numBuilt) const;
   optional<string> getPopulationIncreaseDescription(FurnitureType) const;
   FurnitureList getFurnitureList(FurnitureListId) const;
   FurnitureType getWaterType(double depth) const;
+  const vector<FurnitureType>& getTrainingFurniture(ExperienceType) const;
+  const vector<FurnitureType>& getFurnitureNeedingLight() const;
+  const vector<FurnitureType>& getBedFurniture(BedType) const;
+  vector<FurnitureType> getAllFurnitureType() const;
 
   ~FurnitureFactory();
   FurnitureFactory(const FurnitureFactory&) = delete;
@@ -45,4 +48,10 @@ class FurnitureFactory {
 
   private:
   map<FurnitureType, OwnerPointer<Furniture>> SERIAL(furniture);
+  EnumMap<ExperienceType, vector<FurnitureType>> SERIAL(trainingFurniture);
+  unordered_map<FurnitureType, vector<FurnitureType>, CustomHash<FurnitureType>> SERIAL(upgrades);
+  vector<FurnitureType> SERIAL(needingLight);
+  EnumMap<BedType, vector<FurnitureType>> SERIAL(bedFurniture);
+  unordered_map<FurnitureType, ViewObject, CustomHash<FurnitureType>> SERIAL(constructionObjects);
+  void initializeInfos();
 };

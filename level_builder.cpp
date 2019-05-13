@@ -95,7 +95,7 @@ void LevelBuilder::putFurniture(Vec2 posT, FurnitureList& f, TribeId tribe, opti
 }
 
 void LevelBuilder::putFurniture(Vec2 posT, FurnitureParams f, optional<SquareAttrib> attrib) {
-  auto layer = contentFactory->furniture.getLayer(f.type);
+  auto layer = contentFactory->furniture.getData(f.type).getLayer();
   if (getFurniture(posT, layer))
     removeFurniture(posT, layer);
   furniture.getBuilt(layer).putElem(transform(posT), f, [&](const FurnitureParams& t) {
@@ -113,13 +113,13 @@ void LevelBuilder::putFurniture(Vec2 pos, FurnitureType type, TribeId tribe, opt
 }
 
 void LevelBuilder::resetFurniture(Vec2 posT, FurnitureType type, optional<SquareAttrib> attrib) {
-  CHECK(contentFactory->furniture.getLayer(type) == FurnitureLayer::GROUND);
+  CHECK(contentFactory->furniture.getData(type).getLayer() == FurnitureLayer::GROUND);
   removeAllFurniture(posT);
   putFurniture(posT, type, attrib);
 }
 
 void LevelBuilder::resetFurniture(Vec2 posT, FurnitureParams params, optional<SquareAttrib> attrib) {
-  CHECK(contentFactory->furniture.getLayer(params.type) == FurnitureLayer::GROUND);
+  CHECK(contentFactory->furniture.getData(params.type).getLayer() == FurnitureLayer::GROUND);
   removeAllFurniture(posT);
   putFurniture(posT, params, attrib);
 }
@@ -129,7 +129,7 @@ bool LevelBuilder::canPutFurniture(Vec2 posT, FurnitureLayer layer) {
 }
 
 void LevelBuilder::removeFurniture(Vec2 pos, FurnitureLayer layer) {
-  CHECK(getFurnitureType(pos, layer) != FurnitureType::DOWN_STAIRS);
+  CHECK(getFurnitureType(pos, layer) != FurnitureType("DOWN_STAIRS"));
   furniture.getBuilt(layer).clearElem(transform(pos));
 }
 
@@ -146,7 +146,7 @@ optional<FurnitureType> LevelBuilder::getFurnitureType(Vec2 posT, FurnitureLayer
 }
 
 bool LevelBuilder::isFurnitureType(Vec2 pos, FurnitureType type) {
-  return getFurnitureType(pos, contentFactory->furniture.getLayer(type)) == type;
+  return getFurnitureType(pos, contentFactory->furniture.getData(type).getLayer()) == type;
 }
 
 WConstFurniture LevelBuilder::getFurniture(Vec2 posT, FurnitureLayer layer) {

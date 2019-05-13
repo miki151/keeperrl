@@ -3,6 +3,7 @@
 #include "util.h"
 #include "entity_set.h"
 #include "position.h"
+#include "furniture_type.h"
 
 class TaskCallback : public OwnedObject<TaskCallback> {
   public:

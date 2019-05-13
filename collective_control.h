@@ -1,6 +1,7 @@
 #pragma once
 
 #include "player_message.h"
+#include "furniture_type.h"
 
 class Creature;
 class Collective;

@@ -1018,19 +1018,19 @@ ItemAttributes ItemType::FirstAidKit::getAttributes() const {
 static FurnitureType getTrapFurniture(TrapType type) {
   switch (type) {
     case TrapType::ALARM:
-      return FurnitureType::ALARM_TRAP;
+      return FurnitureType("ALARM_TRAP");
     case TrapType::BOULDER:
-      return FurnitureType::BOULDER_TRAP;
+      return FurnitureType("BOULDER_TRAP");
     case TrapType::POISON_GAS:
-      return FurnitureType::POISON_GAS_TRAP;
+      return FurnitureType("POISON_GAS_TRAP");
     case TrapType::SURPRISE:
-      return FurnitureType::SURPRISE_TRAP;
+      return FurnitureType("SURPRISE_TRAP");
     case TrapType::TERROR:
-      return FurnitureType::TERROR_TRAP;
+      return FurnitureType("TERROR_TRAP");
     case TrapType::WEB:
-      return FurnitureType::WEB_TRAP;
+      return FurnitureType("WEB_TRAP");
     case TrapType::FIRE:
-      return FurnitureType::FIRE_TRAP;
+      return FurnitureType("FIRE_TRAP");
   }
 }
 

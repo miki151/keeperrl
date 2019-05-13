@@ -1808,7 +1808,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
               INFO << "Destroying";
               return action.append([path = *currentPath](Creature* c) { c->shortestPath = path; });
             }
-          if (auto bridgeAction = construct(getPosition().getDir(pos2), FurnitureType::BRIDGE))
+          if (auto bridgeAction = construct(getPosition().getDir(pos2), FurnitureType("BRIDGE")))
             return bridgeAction.append([path = *currentPath](Creature* c) { c->shortestPath = path; });
         }
       }

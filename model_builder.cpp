@@ -502,7 +502,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
       enemy.settlement.collective->setRaceName(*race);
     if (enemy.discoverable)
       enemy.settlement.collective->setDiscoverable();
-    PCollective collective = enemy.settlement.collective->build();
+    PCollective collective = enemy.settlement.collective->build(contentFactory);
     collective->setImmigration(makeOwner<Immigration>(collective.get(), std::move(enemy.immigrants)));
     auto control = VillageControl::create(collective.get(), enemy.villain);
     if (enemy.villainType)

@@ -260,7 +260,7 @@ class RoomMaker : public LevelMaker {
             int _minSize, int _maxSize, 
             SquareChange wall = SquareChange::none(),
             optional<FurnitureType> _onType = none,
-            PLevelMaker _roomContents = unique<Empty>(FurnitureType::FLOOR),
+            PLevelMaker _roomContents = unique<Empty>(FurnitureType("FLOOR")),
             vector<PLevelMaker> _insideMakers = {},
             bool _diggableCorners = false) : 
       numRooms(_numRooms),
@@ -299,7 +299,7 @@ class RoomMaker : public LevelMaker {
       for (Vec2 v : Rectangle(k))
         taken[v + p] = 1;
       for (Vec2 v : Rectangle(k - Vec2(2, 2)))
-        builder->resetFurniture(p + v + Vec2(1, 1), FurnitureType::FLOOR, SquareAttrib::ROOM);
+        builder->resetFurniture(p + v + Vec2(1, 1), FurnitureType("FLOOR"), SquareAttrib::ROOM);
       for (int i : Range(p.x, p.x + k.x)) {
         wallChange.apply(builder, Vec2(i, p.y));
         wallChange.apply(builder, Vec2(i, p.y + k.y - 1));
@@ -387,7 +387,7 @@ class Connector : public LevelMaker {
         if (builder->canNavigate(v, {MovementTrait::WALK}))
           continue;
         if (builder->getFurniture(v, FurnitureLayer::GROUND)->canBuildBridgeOver())
-          builder->putFurniture(v, FurnitureType::BRIDGE);
+          builder->putFurniture(v, FurnitureType("BRIDGE"));
       }
       if (!path.isReachable(v))
         failGen();
@@ -744,7 +744,7 @@ class MountainRiver : public LevelMaker {
     if (builder->hasAttrib(pos, SquareAttrib::MOUNTAIN))
       return builder->getContentFactory()->furniture.getWaterType(100);
     else if (numLayer == 0)
-      return FurnitureType::SAND;
+      return FurnitureType("SAND");
     else
       return builder->getContentFactory()->furniture.getWaterType(1.1 * (numLayer - 1));
   }
@@ -844,8 +844,8 @@ class Lake : public Blob {
   Lake(bool s = true) : sand(s) {}
   virtual void addSquare(LevelBuilder* builder, Vec2 pos, int edgeDist) override {
     builder->addAttrib(pos, SquareAttrib::LAKE);
-    if (sand && edgeDist == 1 && !builder->isFurnitureType(pos, FurnitureType::WATER))
-      builder->resetFurniture(pos, FurnitureType::SAND);
+    if (sand && edgeDist == 1 && !builder->isFurnitureType(pos, FurnitureType("WATER")))
+      builder->resetFurniture(pos, FurnitureType("SAND"));
     else
       builder->resetFurniture(pos, builder->getContentFactory()->furniture.getWaterType(double(edgeDist) / 2));
   }
@@ -881,48 +881,48 @@ static BuildingType getBuildingInfo(const SettlementInfo& info) {
   switch (info.buildingId) {
     case BuildingId::WOOD:
       return CONSTRUCT(BuildingType,
-          c.wall = FurnitureType::WOOD_WALL;
-          c.floorInside = FurnitureType::FLOOR;
-          c.door = Connector::DoorInfo LIST(FurnitureType::WOOD_DOOR, info.tribe, 1.0);
+          c.wall = FurnitureType("WOOD_WALL");
+          c.floorInside = FurnitureType("FLOOR");
+          c.door = Connector::DoorInfo LIST(FurnitureType("WOOD_DOOR"), info.tribe, 1.0);
       );
     case BuildingId::WOOD_CASTLE:
       return CONSTRUCT(BuildingType,
-          c.wall = FurnitureType::WOOD_WALL;
-          c.floorInside = FurnitureType::FLOOR;
-          c.floorOutside = FurnitureType::MUD;
-          c.door = Connector::DoorInfo LIST(FurnitureType::WOOD_DOOR, info.tribe, 1.0);
+          c.wall = FurnitureType("WOOD_WALL");
+          c.floorInside = FurnitureType("FLOOR");
+          c.floorOutside = FurnitureType("MUD");
+          c.door = Connector::DoorInfo LIST(FurnitureType("WOOD_DOOR"), info.tribe, 1.0);
       );
     case BuildingId::MUD: 
       return CONSTRUCT(BuildingType,
-          c.wall = FurnitureType::MUD_WALL;
-          c.floorInside = FurnitureType::MUD;
-          c.floorOutside = FurnitureType::MUD;
+          c.wall = FurnitureType("MUD_WALL");
+          c.floorInside = FurnitureType("MUD");
+          c.floorOutside = FurnitureType("MUD");
       );
     case BuildingId::BRICK:
       return CONSTRUCT(BuildingType,
-          c.wall = FurnitureType::CASTLE_WALL;
-          c.floorInside = FurnitureType::FLOOR;
-          c.floorOutside = FurnitureType::MUD;
-          c.prettyFloor = FurnitureType::FLOOR_CARPET1;
-          c.door = Connector::DoorInfo LIST(FurnitureType::IRON_DOOR, info.tribe, 1.0);
+          c.wall = FurnitureType("CASTLE_WALL");
+          c.floorInside = FurnitureType("FLOOR");
+          c.floorOutside = FurnitureType("MUD");
+          c.prettyFloor = FurnitureType("FLOOR_CARPET1");
+          c.door = Connector::DoorInfo LIST(FurnitureType("IRON_DOOR"), info.tribe, 1.0);
       );
     case BuildingId::DUNGEON:
       return CONSTRUCT(BuildingType,
-          c.wall = FurnitureType::MOUNTAIN;
-          c.floorInside = FurnitureType::FLOOR;
-          c.floorOutside = FurnitureType::FLOOR;
-          c.door = Connector::DoorInfo LIST(FurnitureType::WOOD_DOOR, info.tribe, 1.0);
+          c.wall = FurnitureType("MOUNTAIN");
+          c.floorInside = FurnitureType("FLOOR");
+          c.floorOutside = FurnitureType("FLOOR");
+          c.door = Connector::DoorInfo LIST(FurnitureType("WOOD_DOOR"), info.tribe, 1.0);
       );
     case BuildingId::DUNGEON_SURFACE:
       return CONSTRUCT(BuildingType,
-          c.wall = FurnitureType::MOUNTAIN;
-          c.floorInside = FurnitureType::FLOOR;
-          c.floorOutside = FurnitureType::HILL;
-          c.door = Connector::DoorInfo LIST(FurnitureType::WOOD_DOOR, info.tribe, 1.0);
+          c.wall = FurnitureType("MOUNTAIN");
+          c.floorInside = FurnitureType("FLOOR");
+          c.floorOutside = FurnitureType("HILL");
+          c.door = Connector::DoorInfo LIST(FurnitureType("WOOD_DOOR"), info.tribe, 1.0);
       );
     case BuildingId::RUINS:
       return CONSTRUCT(BuildingType,
-          c.wall = FurnitureType::RUIN_WALL;
+          c.wall = FurnitureType("RUIN_WALL");
       );
   }
 }
@@ -1040,7 +1040,7 @@ class Buildings : public LevelMaker {
     if (roadConnection) {
       Vec2 pos = Vec2((area.left() + area.right()) / 2, area.top() + alignHeight);
       builder->removeFurniture(pos, FurnitureLayer::MIDDLE);
-      builder->putFurniture(pos, FurnitureParams{FurnitureType::ROAD, TribeId::getMonster()});
+      builder->putFurniture(pos, FurnitureParams{FurnitureType("ROAD"), TribeId::getMonster()});
       builder->addAttrib(pos, SquareAttrib::CONNECT_ROAD);
     }
   }
@@ -1502,19 +1502,19 @@ class Mountains : public LevelMaker {
       builder->setHeightMap(v, wys[v]);
       if (wys[v] >= cutOffHill) {
         isMountain[v] = true;
-        builder->putFurniture(v, FurnitureType::FLOOR);
-        auto type = FurnitureType::MOUNTAIN;
+        builder->putFurniture(v, FurnitureType("FLOOR"));
+        auto type = FurnitureType("MOUNTAIN");
         builder->putFurniture(v, {type, tribe}, SquareAttrib::MOUNTAIN);
         builder->setSunlight(v, max(0.0, 1. - (wys[v] - cutOffHill) / (cutOffDarkness - cutOffHill)));
         builder->setCovered(v, true);
         ++mCnt;
       }
       else if (wys[v] >= cutOffLowland) {
-        builder->putFurniture(v, FurnitureType::HILL, SquareAttrib::HILL);
+        builder->putFurniture(v, FurnitureType("HILL"), SquareAttrib::HILL);
         ++hCnt;
       }
       else {
-        builder->putFurniture(v, FurnitureType::GRASS, SquareAttrib::LOWLAND);
+        builder->putFurniture(v, FurnitureType("GRASS"), SquareAttrib::LOWLAND);
         ++lCnt;
       }
     }
@@ -1522,7 +1522,7 @@ class Mountains : public LevelMaker {
     removeEdge(isMountain, 20);
     for (auto v : area)
       if (isMountain[v])
-        builder->putFurniture(v, {FurnitureType::MOUNTAIN2, tribe}, SquareAttrib::MOUNTAIN);
+        builder->putFurniture(v, {FurnitureType("MOUNTAIN2"), tribe}, SquareAttrib::MOUNTAIN);
     INFO << "Terrain distribution " << dCnt << " darkness, " << mCnt << " mountain, " << hCnt << " hill, " << lCnt << " lowland";
   }
 
@@ -1549,16 +1549,16 @@ class Roads : public LevelMaker {
       return ShortestPath::infinity;
     if (makeBridge(builder, pos))
       return 10;
-    if (builder->isFurnitureType(pos, FurnitureType::ROAD) || builder->isFurnitureType(pos, FurnitureType::BRIDGE))
+    if (builder->isFurnitureType(pos, FurnitureType("ROAD")) || builder->isFurnitureType(pos, FurnitureType("BRIDGE")))
       return 1;
     return 1 + pow(1 + builder->getHeightMap(pos), 2);
   }
 
   FurnitureType getRoadType(LevelBuilder* builder, Vec2 pos) {
     if (makeBridge(builder, pos))
-      return FurnitureType::BRIDGE;
+      return FurnitureType("BRIDGE");
     else
-      return FurnitureType::ROAD;
+      return FurnitureType("ROAD");
   }
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -1707,10 +1707,10 @@ class Stairs : public LevelMaker {
     : direction(dir), key(k), onPredicate(onPred), setAttr(_setAttr) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    auto type = direction == StairDirection::DOWN ? FurnitureType::DOWN_STAIRS : FurnitureType::UP_STAIRS;
+    auto type = direction == StairDirection::DOWN ? FurnitureType("DOWN_STAIRS") : FurnitureType("UP_STAIRS");
     vector<Vec2> allPos;
     for (Vec2 v : area)
-      if (onPredicate.apply(builder, v) && builder->canPutFurniture(v, builder->getContentFactory()->furniture.getLayer(type)))
+      if (onPredicate.apply(builder, v) && builder->canPutFurniture(v, builder->getContentFactory()->furniture.getData(type).getLayer()))
         allPos.push_back(v);
     checkGen(allPos.size() > 0);
     Vec2 pos = allPos[builder->getRandom().get(allPos.size())];
@@ -1745,7 +1745,7 @@ class ShopMaker : public LevelMaker {
       builder->putItems(shopkeeperPos, shopkeeper->getEquipment().removeAllItems(shopkeeper.get()));
       builder->putItems(shopkeeperPos, shopkeeper->generateCorpse(true));
     }
-    builder->putFurniture(pos[builder->getRandom().get(pos.size())], FurnitureParams{FurnitureType::GROUND_TORCH, tribe});
+    builder->putFurniture(pos[builder->getRandom().get(pos.size())], FurnitureParams{FurnitureType("GROUND_TORCH"), tribe});
     for (int i : Range(numItems)) {
       Vec2 v = pos[builder->getRandom().get(pos.size())];
       builder->putItems(v, factory.random());
@@ -1961,7 +1961,7 @@ class DestroyRandomly : public LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     for (auto v : area)
       if (builder->getRandom().chance(prob) && builder->isFurnitureType(v, type))
-        builder->removeFurniture(v, builder->getContentFactory()->furniture.getLayer(type));
+        builder->removeFurniture(v, builder->getContentFactory()->furniture.getData(type).getLayer());
   }
 
   private:
@@ -1972,12 +1972,12 @@ class DestroyRandomly : public LevelMaker {
 }
 
 static PMakerQueue stockpileMaker(StockpileInfo info) {
-  auto floor = FurnitureType::FLOOR_STONE1;
+  auto floor = FurnitureType("FLOOR_STONE1");
   ItemFactory items;
   optional<FurnitureType> furniture;
   switch (info.type) {
     case StockpileInfo::GOLD:
-      furniture = FurnitureType::TREASURE_CHEST;
+      furniture = FurnitureType("TREASURE_CHEST");
       items = ItemFactory::singleType(ItemType::GoldPiece{});
       break;
     case StockpileInfo::MINERALS:
@@ -1995,36 +1995,36 @@ static PMakerQueue stockpileMaker(StockpileInfo info) {
 PLevelMaker LevelMaker::cryptLevel(RandomGen& random, SettlementInfo info) {
   auto queue = unique<MakerQueue>();
   BuildingType building = getBuildingInfo(info);
-  queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN)));
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"), FurnitureType("MOUNTAIN"))));
   queue->addMaker(unique<PlaceCollective>(info.collective));
   queue->addMaker(unique<RoomMaker>(random.get(8, 15), 3, 5));
   queue->addMaker(unique<Connector>(building.door));
   if (info.furniture)
     queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, *info.furniture, info.tribe));
   for (StairKey key : info.downStairs)
-    queue->addMaker(unique<Stairs>(StairDirection::DOWN, key, Predicate::type(FurnitureType::FLOOR)));
+    queue->addMaker(unique<Stairs>(StairDirection::DOWN, key, Predicate::type(FurnitureType("FLOOR"))));
   for (StairKey key : info.upStairs)
-    queue->addMaker(unique<Stairs>(StairDirection::UP, key, Predicate::type(FurnitureType::FLOOR)));
+    queue->addMaker(unique<Stairs>(StairDirection::UP, key, Predicate::type(FurnitureType("FLOOR"))));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
   queue->addMaker(unique<Items>(ItemFactory::dungeon(), 5, 10));
-  return unique<BorderGuard>(std::move(queue), SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN));
+  return unique<BorderGuard>(std::move(queue), SquareChange(FurnitureType("FLOOR"), FurnitureType("MOUNTAIN")));
 }
 
 PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info) {
   auto queue = unique<MakerQueue>();
   BuildingType building = getBuildingInfo(info);
-  queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN)));
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"), FurnitureType("MOUNTAIN"))));
   queue->addMaker(unique<RoomMaker>(random.get(8, 15), 3, 5));
   queue->addMaker(unique<Connector>(building.door));
   if (info.furniture)
     queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, *info.furniture, info.tribe));
   for (StairKey key : info.downStairs)
-    queue->addMaker(unique<Stairs>(StairDirection::DOWN, key, Predicate::type(FurnitureType::FLOOR)));
+    queue->addMaker(unique<Stairs>(StairDirection::DOWN, key, Predicate::type(FurnitureType("FLOOR"))));
   for (StairKey key : info.upStairs)
-    queue->addMaker(unique<Stairs>(StairDirection::UP, key, Predicate::type(FurnitureType::FLOOR)));
+    queue->addMaker(unique<Stairs>(StairDirection::UP, key, Predicate::type(FurnitureType("FLOOR"))));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
   queue->addMaker(unique<Items>(ItemFactory::dungeon(), 5, 10));
-  return unique<BorderGuard>(std::move(queue), SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN));
+  return unique<BorderGuard>(std::move(queue), SquareChange(FurnitureType("FLOOR"), FurnitureType("MOUNTAIN")));
 }
 
 static PMakerQueue getElderRoom(SettlementInfo info) {
@@ -2117,7 +2117,7 @@ static PMakerQueue temple(RandomGen& random, SettlementInfo info) {
       Predicate::near4AtLeast(building.wall, 1),
       Predicate::near4Equals(building.wall, 1)
   );
-  //room->addMaker(unique<Furnitures>(torchPred, 1.0, FurnitureFactory(info.tribe, {{FurnitureType::GROUND_TORCH, 1}})));
+  //room->addMaker(unique<Furnitures>(torchPred, 1.0, FurnitureFactory(info.tribe, {{FurnitureType("GROUND_TORCH"), 1}})));
   if (info.outsideFeatures)
     room->addMaker(unique<Furnitures>(!Predicate::attrib(SquareAttrib::ROOM), 0.1, *info.outsideFeatures, info.tribe));
   if (building.prettyFloor)
@@ -2217,7 +2217,7 @@ static PMakerQueue castle2(RandomGen& random, SettlementInfo info) {
 static PMakerQueue tower(RandomGen& random, SettlementInfo info, bool withExit) {
   BuildingType building = getBuildingInfo(info);
   auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR, building.wall)));
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"), building.wall)));
   if (withExit) {
     if (building.door)
       queue->addMaker(unique<LevelExit>(SquareChange(FurnitureParams{building.door->type, building.door->tribe}), 2));
@@ -2412,17 +2412,17 @@ static PMakerQueue islandVaultMaker(RandomGen& random, SettlementInfo info, bool
       unique<Margin>(1, std::move(inside))
       );
   if (door)
-    buildingMaker->addMaker(unique<LevelExit>(FurnitureType::WOOD_DOOR));
+    buildingMaker->addMaker(unique<LevelExit>(FurnitureType("WOOD_DOOR")));
   return unique<MakerQueue>(
-        unique<Empty>(SquareChange::reset(FurnitureType::WATER)),
+        unique<Empty>(SquareChange::reset(FurnitureType("WATER"))),
         unique<Margin>(1, std::move(buildingMaker)));
 }
 
 PLevelMaker LevelMaker::mineTownLevel(RandomGen& random, SettlementInfo info) {
   auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN)));
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"), FurnitureType("MOUNTAIN"))));
   queue->addMaker(mineTownMaker(random, info));
-  return unique<BorderGuard>(std::move(queue), SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN));
+  return unique<BorderGuard>(std::move(queue), SquareChange(FurnitureType("FLOOR"), FurnitureType("MOUNTAIN")));
 }
 
 static PMakerQueue cemetery(SettlementInfo info) {
@@ -2432,7 +2432,7 @@ static PMakerQueue cemetery(SettlementInfo info) {
           unique<Margin>(1, unique<Buildings>(1, 2, 2, 3, building, false, nullptr, false))
   );
   if (info.furniture)
-    queue->addMaker(unique<Furnitures>(Predicate::type(FurnitureType::GRASS), 0.15, *info.furniture, info.tribe));
+    queue->addMaker(unique<Furnitures>(Predicate::type(FurnitureType("GRASS")), 0.15, *info.furniture, info.tribe));
   for (StairKey key : info.downStairs)
     queue->addMaker(unique<Stairs>(StairDirection::DOWN, key, Predicate::attrib(SquareAttrib::ROOM)));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
@@ -2456,7 +2456,7 @@ static PMakerQueue swamp(SettlementInfo info) {
 
 static PMakerQueue mountainLake(SettlementInfo info) {
   auto queue = unique<MakerQueue>(
-      unique<UniformBlob>(SquareChange::reset(FurnitureType::WATER, SquareAttrib::LAKE), none),
+      unique<UniformBlob>(SquareChange::reset(FurnitureType("WATER"), SquareAttrib::LAKE), none),
       unique<PlaceCollective>(info.collective)
   );
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
@@ -2477,16 +2477,16 @@ static PLevelMaker getForrest(BiomeId id) {
   switch (id) {
     case BiomeId::MOUNTAIN:
       return unique<MakerQueue>(
-          unique<Forrest>(0.2, 0.5, Predicate::type(FurnitureType::GRASS), FurnitureListId("vegetationLow"), TribeId::getHostile()),
-          unique<Forrest>(0.8, 0.5, Predicate::type(FurnitureType::HILL), FurnitureListId("vegetationHigh"), TribeId::getHostile()));
+          unique<Forrest>(0.2, 0.5, Predicate::type(FurnitureType("GRASS")), FurnitureListId("vegetationLow"), TribeId::getHostile()),
+          unique<Forrest>(0.8, 0.5, Predicate::type(FurnitureType("HILL")), FurnitureListId("vegetationHigh"), TribeId::getHostile()));
     case BiomeId::GRASSLAND:
       return unique<MakerQueue>(
-          unique<Forrest>(0.3, 0.25, Predicate::type(FurnitureType::GRASS), FurnitureListId("vegetationLow"), TribeId::getHostile()),
-          unique<Forrest>(0.8, 0.25, Predicate::type(FurnitureType::HILL), FurnitureListId("vegetationHigh"), TribeId::getHostile()));
+          unique<Forrest>(0.3, 0.25, Predicate::type(FurnitureType("GRASS")), FurnitureListId("vegetationLow"), TribeId::getHostile()),
+          unique<Forrest>(0.8, 0.25, Predicate::type(FurnitureType("HILL")), FurnitureListId("vegetationHigh"), TribeId::getHostile()));
     case BiomeId::FORREST:
       return unique<MakerQueue>(
-          unique<Forrest>(0.8, 0.5, Predicate::type(FurnitureType::GRASS), FurnitureListId("vegetationLow"), TribeId::getHostile()),
-          unique<Forrest>(0.8, 0.5, Predicate::type(FurnitureType::HILL), FurnitureListId("vegetationHigh"), TribeId::getHostile()));
+          unique<Forrest>(0.8, 0.5, Predicate::type(FurnitureType("GRASS")), FurnitureListId("vegetationLow"), TribeId::getHostile()),
+          unique<Forrest>(0.8, 0.5, Predicate::type(FurnitureType("HILL")), FurnitureListId("vegetationHigh"), TribeId::getHostile()));
   }
 }
 
@@ -2515,7 +2515,7 @@ static void generateResources(RandomGen& random, ResourceCounts resourceCounts, 
         change.add(SquareChange::addTerritory(collective));
       auto queue = unique<MakerQueue>(unique<FurnitureBlob>(std::move(change)));
       locations->add(std::move(queue), {random.get(size), random.get(size)},
-          Predicate::type(FurnitureType::MOUNTAIN2));
+          Predicate::type(FurnitureType("MOUNTAIN2")));
       locations->setMaxDistanceLast(center, maxDist);
     }
   };
@@ -2635,7 +2635,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
     for (int i : Range(random.get(1, 3))) {
       locations->add(unique<MakerQueue>(
             unique<RemoveFurniture>(FurnitureLayer::MIDDLE),
-            unique<FurnitureBlob>(SquareChange(FurnitureParams{FurnitureType::CROPS, cottage.tribe})),
+            unique<FurnitureBlob>(SquareChange(FurnitureParams{FurnitureType("CROPS"), cottage.tribe})),
             unique<PlaceCollective>(cottage.collective)),
           {random.get(7, 12), random.get(7, 12)},
           lowlandPred);
@@ -2646,12 +2646,12 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
       locations->add(unique<Lake>(), {random.get(20, 30), random.get(20, 30)}, Predicate::attrib(SquareAttrib::LOWLAND));
   if (biomeId == BiomeId::MOUNTAIN)
     for (int i : Range(random.get(3, 6))) {
-      locations->add(unique<UniformBlob>(SquareChange::reset(FurnitureType::WATER, SquareAttrib::LAKE), none),
+      locations->add(unique<UniformBlob>(SquareChange::reset(FurnitureType("WATER"), SquareAttrib::LAKE), none),
           {random.get(10, 30), random.get(10, 30)}, Predicate::attrib(SquareAttrib::MOUNTAIN));
     //  locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 60);
   }
 /*  for (int i : Range(random.get(3, 5))) {
-    locations->add(unique<UniformBlob>(FurnitureType::FLOOR, none),
+    locations->add(unique<UniformBlob>(FurnitureType("FLOOR"), none),
         {random.get(5, 12), random.get(5, 12)}, Predicate::type(SquareId::MOUNTAIN));
  //   locations->setMaxDistanceLast(startingPos, i == 0 ? 25 : 40);
   }*/
@@ -2659,7 +2659,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
     generateResources(random, resourceCounts, startingPos, locations.get(), surroundWithResources, mapWidth, *keeperTribe);
   }
   int mapBorder = 2;
-  queue->addMaker(unique<Empty>(FurnitureType::WATER));
+  queue->addMaker(unique<Empty>(FurnitureType("WATER")));
   queue->addMaker(getMountains(biomeId, keeperTribe.value_or(TribeId::getHostile())));
   queue->addMaker(unique<MountainRiver>(1, Predicate::attrib(SquareAttrib::MOUNTAIN)));
   queue->addMaker(unique<AddAttrib>(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::LOWLAND)));
@@ -2669,7 +2669,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
   queue->addMaker(unique<Margin>(mapBorder, unique<Roads>()));
   queue->addMaker(unique<Margin>(mapBorder,
         unique<TransferPos>(Predicate::canEnter(MovementTrait::WALK), StairKey::transferLanding(), 2)));
-  queue->addMaker(unique<Margin>(mapBorder, unique<DestroyRandomly>(FurnitureType::RUIN_WALL, 0.3)));
+  queue->addMaker(unique<Margin>(mapBorder, unique<DestroyRandomly>(FurnitureType("RUIN_WALL"), 0.3)));
   queue->addMaker(unique<Margin>(mapBorder, unique<Connector>(none, 5,
           Predicate::canEnter({MovementTrait::WALK}) &&
           Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR),
@@ -2690,18 +2690,18 @@ static PLevelMaker underground(RandomGen& random, optional<CreatureGroup> waterF
     int maxSize = minSize + random.get(3, 10);
     for (int i : Range(sqrt(random.get(4, 100)))) {
       int size = random.get(minSize, maxSize);
-      caverns->add(unique<UniformBlob>(SquareChange::reset(FurnitureType::FLOOR)), Vec2(size, size), Predicate::alwaysTrue());
+      caverns->add(unique<UniformBlob>(SquareChange::reset(FurnitureType("FLOOR"))), Vec2(size, size), Predicate::alwaysTrue());
       caverns->setCanOverlap(caverns->getLast());
     }
     queue->addMaker(std::move(caverns));
   }
   switch (random.get(1, 3)) {
     case 1:
-      queue->addMaker(unique<River>(3, random.choose(FurnitureType::WATER, FurnitureType::MAGMA)));
+      queue->addMaker(unique<River>(3, random.choose(FurnitureType("WATER"), FurnitureType("MAGMA"))));
       break;
     case 2: {
       int numLakes = sqrt(random.get(1, 100));
-      auto lakeType = random.choose(FurnitureType::WATER, FurnitureType::MAGMA);
+      auto lakeType = random.choose(FurnitureType("WATER"), FurnitureType("MAGMA"));
       auto caverns = unique<RandomLocations>();
       for (int i : Range(numLakes)) {
         int size = random.get(6, 20);
@@ -2709,13 +2709,13 @@ static PLevelMaker underground(RandomGen& random, optional<CreatureGroup> waterF
         caverns->setCanOverlap(caverns->getLast());
       }
       queue->addMaker(std::move(caverns));
-      if (lakeType == FurnitureType::WATER && waterFactory) {
+      if (lakeType == FurnitureType("WATER") && waterFactory) {
         queue->addMaker(unique<Creatures>(*waterFactory, 1, MonsterAIFactory::monster(),
-              Predicate::type(FurnitureType::WATER)));
+              Predicate::type(FurnitureType("WATER"))));
       }
-      if (lakeType == FurnitureType::MAGMA && lavaFactory) {
+      if (lakeType == FurnitureType("MAGMA") && lavaFactory) {
         queue->addMaker(unique<Creatures>(*lavaFactory, random.get(1, 4),
-              MonsterAIFactory::monster(), Predicate::type(FurnitureType::MAGMA)));
+              MonsterAIFactory::monster(), Predicate::type(FurnitureType("MAGMA"))));
       }
       break;
     }
@@ -2727,12 +2727,12 @@ static PLevelMaker underground(RandomGen& random, optional<CreatureGroup> waterF
 PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo> settlement, ResourceCounts resourceCounts,
     int mapWidth, TribeId keeperTribe, StairKey landingLink) {
   auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR)
-      .add(FurnitureParams{FurnitureType::MOUNTAIN2, keeperTribe})));
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"))
+      .add(FurnitureParams{FurnitureType("MOUNTAIN2"), keeperTribe})));
   queue->addMaker(underground(random, none, none));
   auto locations = unique<RandomLocations>();
   auto startingPosMaker = unique<MakerQueue>(
-      unique<Empty>(SquareChange(FurnitureType::FLOOR)),
+      unique<Empty>(SquareChange(FurnitureType("FLOOR"))),
       unique<StartingPos>(Predicate::alwaysTrue(), landingLink));
   LevelMaker* startingPos = startingPosMaker.get();
   vector<SurroundWithResourcesInfo> surroundWithResources;
@@ -2766,13 +2766,13 @@ PLevelMaker LevelMaker::getWaterZLevel(RandomGen& random, FurnitureType waterTyp
   auto locations = unique<RandomLocations>();
   LevelMaker* startingPos = nullptr;
   auto startingPosMaker = unique<MakerQueue>(
-      unique<Empty>(SquareChange(FurnitureType::FLOOR)),
+      unique<Empty>(SquareChange(FurnitureType("FLOOR"))),
       unique<StartingPos>(Predicate::alwaysTrue(), landingLink));
   startingPos = startingPosMaker.get();
   locations->add(std::move(startingPosMaker), Vec2(1, 1),
       RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
   for (int i : Range(5))
-    locations->add(unique<UniformBlob>(SquareChange(FurnitureType::FLOOR)), Vec2(Random.get(5, 10), Random.get(5, 10)),
+    locations->add(unique<UniformBlob>(SquareChange(FurnitureType("FLOOR"))), Vec2(Random.get(5, 10), Random.get(5, 10)),
         RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
   locations->setMinMargin(startingPos, mapWidth / 3);
   queue->addMaker(std::move(locations));
@@ -2807,7 +2807,7 @@ class SpecificArea : public LevelMaker {
 PLevelMaker LevelMaker::splashLevel(CreatureGroup heroLeader, CreatureGroup heroes, CreatureGroup monsters,
     CreatureGroup imps, const FilePath& splashPath) {
   auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<Empty>(FurnitureType::BLACK_FLOOR));
+  queue->addMaker(unique<Empty>(FurnitureType("BLACK_FLOOR")));
   Rectangle leaderSpawn(
           Level::getSplashVisibleBounds().right() + 1, Level::getSplashVisibleBounds().middle().y,
           Level::getSplashVisibleBounds().right() + 2, Level::getSplashVisibleBounds().middle().y + 1);
@@ -2835,19 +2835,19 @@ PLevelMaker LevelMaker::splashLevel(CreatureGroup heroLeader, CreatureGroup hero
 PLevelMaker LevelMaker::roomLevel(RandomGen& random, CreatureGroup roomFactory, CreatureGroup waterFactory,
     CreatureGroup lavaFactory, vector<StairKey> up, vector<StairKey> down, FurnitureListId furniture) {
   auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<Empty>(SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN)));
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"), FurnitureType("MOUNTAIN"))));
   queue->addMaker(underground(random, waterFactory, lavaFactory));
   queue->addMaker(unique<RoomMaker>(random.get(8, 15), 4, 7, SquareChange::none(),
-        FurnitureType::MOUNTAIN, unique<Empty>(FurnitureType::FLOOR)));
-  queue->addMaker(unique<Connector>(Connector::DoorInfo{FurnitureType::WOOD_DOOR, TribeId::getHostile(), 0.5}));
+        FurnitureType("MOUNTAIN"), unique<Empty>(FurnitureType("FLOOR"))));
+  queue->addMaker(unique<Connector>(Connector::DoorInfo{FurnitureType("WOOD_DOOR"), TribeId::getHostile(), 0.5}));
   queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.05, furniture, TribeId::getMonster()));
   for (StairKey key : down)
-    queue->addMaker(unique<Stairs>(StairDirection::DOWN, key, Predicate::type(FurnitureType::FLOOR)));
+    queue->addMaker(unique<Stairs>(StairDirection::DOWN, key, Predicate::type(FurnitureType("FLOOR"))));
   for (StairKey key : up)
-    queue->addMaker(unique<Stairs>(StairDirection::UP, key, Predicate::type(FurnitureType::FLOOR)));
+    queue->addMaker(unique<Stairs>(StairDirection::UP, key, Predicate::type(FurnitureType("FLOOR"))));
   queue->addMaker(unique<Creatures>(roomFactory, random.get(10, 15), MonsterAIFactory::monster()));
   queue->addMaker(unique<Items>(ItemFactory::dungeon(), 5, 10));
-  return unique<BorderGuard>(std::move(queue), SquareChange(FurnitureType::FLOOR, FurnitureType::MOUNTAIN));
+  return unique<BorderGuard>(std::move(queue), SquareChange(FurnitureType("FLOOR"), FurnitureType("MOUNTAIN")));
 }
 
 namespace {
@@ -2860,15 +2860,15 @@ class SokobanFromFile : public LevelMaker {
     CHECK(area == file.getBounds()) << "Bad size of sokoban input.";
     builder->setNoDiagonalPassing();
     for (Vec2 v : area) {
-      builder->resetFurniture(v, FurnitureType::FLOOR);
+      builder->resetFurniture(v, FurnitureType("FLOOR"));
       switch (file[v]) {
         case '.':
           break;
         case '#':
-          builder->putFurniture(v, FurnitureType::DUNGEON_WALL);
+          builder->putFurniture(v, FurnitureType("DUNGEON_WALL"));
           break;
         case '^':
-          builder->putFurniture(v, FurnitureType::SOKOBAN_HOLE);
+          builder->putFurniture(v, FurnitureType("SOKOBAN_HOLE"));
           break;
         case '$':
           builder->addAttrib(v, SquareAttrib::SOKOBAN_PRIZE);
@@ -2877,7 +2877,7 @@ class SokobanFromFile : public LevelMaker {
           builder->addAttrib(v, SquareAttrib::SOKOBAN_ENTRY);
           break;
         case '+':
-          builder->putFurniture(v, FurnitureParams{FurnitureType::IRON_DOOR, TribeId::getHostile()});
+          builder->putFurniture(v, FurnitureParams{FurnitureType("IRON_DOOR"), TribeId::getHostile()});
           break;
         case '0':
           builder->putCreature(v, builder->getContentFactory()->creatures.fromId("SOKOBAN_BOULDER", TribeId::getPeaceful()));
@@ -2919,15 +2919,15 @@ class BattleFromFile : public LevelMaker {
         MonsterAIFactory::monster());
     int enemyIndex = 0;
     for (Vec2 v : area) {
-      builder->resetFurniture(v, FurnitureType::FLOOR);
+      builder->resetFurniture(v, FurnitureType("FLOOR"));
       switch (level[v]) {
         case '.':
           break;
         case '#':
-          builder->putFurniture(v, FurnitureType::MOUNTAIN);
+          builder->putFurniture(v, FurnitureType("MOUNTAIN"));
           break;
         case 'w':
-          builder->putFurniture(v, FurnitureType::WATER);
+          builder->putFurniture(v, FurnitureType("WATER"));
           break;
         case 'a':
           if (allyIndex < alliesList.size()) {
@@ -2961,7 +2961,7 @@ PLevelMaker LevelMaker::emptyLevel(FurnitureType t, bool withFloor) {
   auto queue = unique<MakerQueue>();
   SquareChange change(t);
   if (withFloor)
-    change = SquareChange(FurnitureType::FLOOR, t);
+    change = SquareChange(FurnitureType("FLOOR"), t);
   queue->addMaker(unique<Empty>(change));
   return std::move(queue);
 }

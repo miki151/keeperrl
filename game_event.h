@@ -4,6 +4,7 @@
 #include "position.h"
 #include "fx_info.h"
 #include "view_id.h"
+#include "furniture_type.h"
 
 class Model;
 class Technology;

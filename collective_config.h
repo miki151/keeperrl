@@ -21,6 +21,7 @@
 #include "cost_info.h"
 #include "position.h"
 #include "game_time.h"
+#include "furniture_type.h"
 
 enum class ItemClass;
 
@@ -31,6 +32,7 @@ class ImmigrantInfo;
 
 struct ResourceInfo;
 struct ItemFetchInfo;
+class ContentFactory;
 
 struct GuardianInfo {
   CreatureId SERIAL(creature);
@@ -45,13 +47,12 @@ struct GuardianInfo {
 struct MinionActivityInfo {
   enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE } type;
   MinionActivityInfo();
-  MinionActivityInfo(FurnitureType, const string& description, bool requiresLighting);
-  typedef function<bool(WConstCollective, const Creature*, FurnitureType)> UsagePredicate;
-  MinionActivityInfo(UsagePredicate, const string& description, bool requiresLighting);
+  MinionActivityInfo(FurnitureType, const string& description);
+  typedef function<bool(const ContentFactory*, WConstCollective, const Creature*, FurnitureType)> UsagePredicate;
+  MinionActivityInfo(UsagePredicate, const string& description);
   MinionActivityInfo(Type, const string& description);
-  UsagePredicate furniturePredicate = [](WConstCollective, const Creature*, FurnitureType) { return true; };
+  UsagePredicate furniturePredicate = [](const ContentFactory*, WConstCollective, const Creature*, FurnitureType) { return true; };
   string description;
-  bool requiresLighting = false;
 };
 
 struct WorkshopInfo {
@@ -69,7 +70,7 @@ struct FloorInfo {
 
 class CollectiveConfig {
   public:
-  static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, bool regenerateMana);
+  static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation);
   static CollectiveConfig withImmigrants(TimeInterval immigrantInterval, int maxPopulation);
   static CollectiveConfig noImmigrants();
 
@@ -91,28 +92,22 @@ class CollectiveConfig {
   TimeInterval getImmigrantTimeout() const;
   double getGhostProb() const;
   bool hasVillainSleepingTask() const;
-  bool getRegenerateMana() const;
   bool allowHealingTaskOutsideTerritory() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
   bool isConquered(const Collective*) const;
   CollectiveConfig& setConquerCondition(ConquerCondition);
-  static bool requiresLighting(FurnitureType);
 
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(FurnitureType);
 
-  static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, CreatureFactory*);
+  static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, ContentFactory*);
 
   map<CollectiveResourceId, int> getStartingResource() const;
 
   bool hasImmigrantion(bool currentlyActiveModel) const;
-  const vector<FurnitureType>& getRoomsNeedingLight() const;
   static const ResourceInfo& getResourceInfo(CollectiveResourceId);
   const vector<ItemFetchInfo>& getFetchInfo() const;
-  static optional<int> getTrainingMaxLevel(ExperienceType, FurnitureType);
-  static const vector<FurnitureType>& getTrainingFurniture(ExperienceType);
   static const MinionActivityInfo& getActivityInfo(MinionActivity);
-  static bool canBuildOutsideTerritory(FurnitureType);
 
   SERIALIZATION_DECL(CollectiveConfig)
   CollectiveConfig(const CollectiveConfig&);
@@ -129,6 +124,5 @@ class CollectiveConfig {
   int SERIAL(spawnGhosts) = 0;
   double SERIAL(ghostProb) = 0;
   optional<GuardianInfo> SERIAL(guardianInfo);
-  bool SERIAL(regenerateMana) = false;
   ConquerCondition SERIAL(conquerCondition);
 };

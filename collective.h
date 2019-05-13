@@ -49,10 +49,12 @@ class CollectiveWarnings;
 class Immigration;
 class Quarters;
 class PositionMatching;
+class MinionActivities;
 
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
-  static PCollective create(WModel model, TribeId, const optional<CollectiveName>&, bool discoverable);
+  static PCollective create(WModel model, TribeId, const optional<CollectiveName>&, bool discoverable,
+      const ContentFactory*);
   void init(CollectiveConfig);
   void setWorkshops(unique_ptr<Workshops>);
   void setImmigration(PImmigration);
@@ -171,7 +173,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   Immigration& getImmigration();
   const Immigration& getImmigration() const;
-
+  const MinionActivities& getMinionActivities() const;
   int getPopulationSize() const;
   int getMaxPopulation() const;
   const DungeonLevel& getDungeonLevel() const;
@@ -223,7 +225,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   struct Private {};
 
   public:
-  Collective(Private, WModel, TribeId, const optional<CollectiveName>&);
+  Collective(Private, WModel, TribeId, const optional<CollectiveName>&, const ContentFactory*);
 
   protected:
   // From Task::Callback
@@ -307,4 +309,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   // Remove after alpha 27
   void updateBorderTiles();
   bool updatedBorderTiles = false;
+  HeapAllocated<MinionActivities> SERIAL(minionActivities);
 };

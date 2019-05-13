@@ -143,7 +143,7 @@ class Game : public OwnedObject<Game> {
   void increaseTime(double diff);
   const GameConfig* gameConfig = nullptr;
   void addCollective(WCollective);
-  void spawnKeeper(AvatarInfo, bool regenerateMana, vector<string> introText, const GameConfig*);
+  void spawnKeeper(AvatarInfo, vector<string> introText, const GameConfig*);
   HeapAllocated<ContentFactory> SERIAL(contentFactory);
 };
 

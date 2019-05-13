@@ -69,7 +69,7 @@ static void useChest(Position pos, WConstFurniture furniture, Creature* c, const
 
 static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
   c->verb("desecrate", "desecrates", "the "+ furniture->getName());
-  pos.removeFurniture(furniture, pos.getGame()->getContentFactory()->furniture.getFurniture(FurnitureType::ALTAR_DES, furniture->getTribe()));
+  pos.removeFurniture(furniture, pos.getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("ALTAR_DES"), furniture->getTribe()));
   switch (Random.get(5)) {
     case 0:
       pos.globalMessage("A streak of magical energy is released");
@@ -195,7 +195,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
     case FurnitureUsageType::CHEST:
       useChest(pos, furniture, c,
           ChestInfo {
-              FurnitureType::OPENED_CHEST,
+              FurnitureType("OPENED_CHEST"),
               ChestInfo::CreatureInfo {
                   CreatureGroup::singleCreature(TribeId::getPest(), "RAT"),
                   10,
@@ -211,7 +211,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
     case FurnitureUsageType::COFFIN:
       useChest(pos, furniture, c,
           ChestInfo {
-              FurnitureType::OPENED_COFFIN,
+              FurnitureType("OPENED_COFFIN"),
               none,
               ChestInfo::ItemInfo {
                   ItemFactory::chest(),
@@ -222,7 +222,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
     case FurnitureUsageType::VAMPIRE_COFFIN:
       useChest(pos, furniture, c,
           ChestInfo {
-              FurnitureType::OPENED_COFFIN,
+              FurnitureType("OPENED_COFFIN"),
               ChestInfo::CreatureInfo {
                   CreatureGroup::singleCreature(TribeId::getMonster(), "VAMPIRE_LORD"), 1, 1,
                   "There is a rotting corpse inside. The corpse is alive!"

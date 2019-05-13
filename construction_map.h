@@ -78,8 +78,8 @@ class ConstructionMap {
 
   private:
   EnumMap<FurnitureLayer, PositionMap<FurnitureInfo>> SERIAL(furniture);
-  EnumMap<FurnitureType, PositionSet> SERIAL(furniturePositions);
-  EnumMap<FurnitureType, int> SERIAL(unbuiltCounts);
+  unordered_map<FurnitureType, PositionSet, CustomHash<FurnitureType>> SERIAL(furniturePositions);
+  unordered_map<FurnitureType, int, CustomHash<FurnitureType>> SERIAL(unbuiltCounts);
   vector<pair<Position, FurnitureLayer>> SERIAL(allFurniture);
   PositionMap<TrapInfo> SERIAL(traps);
   vector<Position> SERIAL(allTraps);

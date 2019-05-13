@@ -17,6 +17,10 @@
 #include "equipment.h"
 #include "minion_equipment.h"
 #include "game.h"
+#include "content_factory.h"
+
+SERIALIZE_DEF(MinionActivities, allFurniture, activities)
+SERIALIZATION_CONSTRUCTOR_IMPL(MinionActivities)
 
 static bool betterPos(Position from, Position current, Position candidate) {
   PROFILE;
@@ -73,45 +77,15 @@ static Creature* getCopulationTarget(WConstCollective collective, const Creature
   return nullptr;
 }
 
-const vector<FurnitureType>& MinionActivities::getAllFurniture(MinionActivity task) {
-  static EnumMap<MinionActivity, vector<FurnitureType>> cache;
-  static bool initialized = false;
-  if (!initialized) {
-    for (auto minionTask : ENUM_ALL(MinionActivity)) {
-      auto& taskInfo = CollectiveConfig::getActivityInfo(minionTask);
-      switch (taskInfo.type) {
-        case MinionActivityInfo::ARCHERY:
-          cache[minionTask].push_back(FurnitureType::ARCHERY_RANGE);
-          break;
-        case MinionActivityInfo::FURNITURE:
-          for (auto furnitureType : ENUM_ALL(FurnitureType))
-            if (taskInfo.furniturePredicate(nullptr, nullptr, furnitureType))
-              cache[minionTask].push_back(furnitureType);
-          break;
-        default: break;
-      }
-    }
-    initialized = true;
-  }
-  return cache[task];
+const vector<FurnitureType>& MinionActivities::getAllFurniture(MinionActivity task) const {
+  return allFurniture[task];
 }
 
-optional<MinionActivity> MinionActivities::getActivityFor(WConstCollective col, const Creature* c, FurnitureType type) {
-  static EnumMap<FurnitureType, optional<MinionActivity>> cache;
-  static bool initialized = false;
-  if (!initialized) {
-    for (auto task : ENUM_ALL(MinionActivity))
-      for (auto furnitureType : getAllFurniture(task)) {
-        CHECK(!cache[furnitureType]) << "Minion tasks " << EnumInfo<MinionActivity>::getString(task) << " and "
-            << EnumInfo<MinionActivity>::getString(*cache[furnitureType]) << " both assigned to "
-            << EnumInfo<FurnitureType>::getString(furnitureType);
-        cache[furnitureType] = task;
-      }
-    initialized = true;
-  }
-  if (auto task = cache[type]) {
+optional<MinionActivity> MinionActivities::getActivityFor(WConstCollective col, const Creature* c,
+    FurnitureType type) const {
+  if (auto task = getReferenceMaybe(activities, type)) {
     auto& info = CollectiveConfig::getActivityInfo(*task);
-    if (info.furniturePredicate(col, c, type))
+    if (info.furniturePredicate(col->getGame()->getContentFactory(), col, c, type))
       return *task;
   }
   return none;
@@ -148,12 +122,12 @@ static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective col
 }
 
 vector<Position> MinionActivities::getAllPositions(WConstCollective collective, const Creature* c,
-    MinionActivity activity) {
+    MinionActivity activity) const {
   PROFILE;
   vector<Position> ret;
   auto& info = CollectiveConfig::getActivityInfo(activity);
   for (auto furnitureType : getAllFurniture(activity))
-    if (info.furniturePredicate(collective, c, furnitureType))
+    if (info.furniturePredicate(collective->getGame()->getContentFactory(), collective, c, furnitureType))
       append(ret, collective->getConstructions().getBuiltPositions(furnitureType));
   if (c) {
     auto movement = c->getMovementType();
@@ -174,6 +148,31 @@ static PTask getDropItemsTask(WCollective collective, const Creature* creature) 
   return nullptr;
 };
 
+
+MinionActivities::MinionActivities(const ContentFactory* contentFactory) {
+  for (auto minionTask : ENUM_ALL(MinionActivity)) {
+    auto& taskInfo = CollectiveConfig::getActivityInfo(minionTask);
+    switch (taskInfo.type) {
+      case MinionActivityInfo::ARCHERY:
+        allFurniture[minionTask].push_back(FurnitureType("ARCHERY_RANGE"));
+        break;
+      case MinionActivityInfo::FURNITURE:
+        for (auto furnitureType : contentFactory->furniture.getAllFurnitureType())
+          if (taskInfo.furniturePredicate(contentFactory, nullptr, nullptr, furnitureType))
+            allFurniture[minionTask].push_back(furnitureType);
+        break;
+      default: break;
+    }
+  }
+  for (auto task : ENUM_ALL(MinionActivity))
+    for (auto furnitureType : getAllFurniture(task)) {
+      CHECK(!activities.count(furnitureType)) << "Minion tasks " << EnumInfo<MinionActivity>::getString(task)
+          << " and "
+          << EnumInfo<MinionActivity>::getString(activities[furnitureType]) << " both assigned to "
+          << furnitureType.data();
+      activities[furnitureType] = task;
+    }
+}
 
 WTask MinionActivities::getExisting(WCollective collective, Creature* c, MinionActivity activity) {
   PROFILE;
@@ -212,7 +211,7 @@ const PositionSet& getIdlePositions(const Collective* collective, const Creature
     return collective->getTerritory().getAllAsSet();
 }
 
-PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActivity task) {
+PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActivity task) const {
   PROFILE;
   auto& info = CollectiveConfig::getActivityInfo(task);
   switch (info.type) {
@@ -230,7 +229,7 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
         else
           return Task::idle();
       }
-      auto& pigstyPos = collective->getConstructions().getBuiltPositions(FurnitureType::PIGSTY);
+      auto& pigstyPos = collective->getConstructions().getBuiltPositions(FurnitureType("PIGSTY"));
       if (pigstyPos.count(c->getPosition()) && !myTerritory.empty()) {
         PROFILE_BLOCK("Leave pigsty");
         return Task::doneWhen(Task::goTo(Random.choose(myTerritory)),
@@ -258,7 +257,7 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
     }
     case MinionActivityInfo::ARCHERY: {
       PROFILE_BLOCK("Archery");
-      auto pos = collective->getConstructions().getBuiltPositions(FurnitureType::ARCHERY_RANGE);
+      auto pos = collective->getConstructions().getBuiltPositions(FurnitureType("ARCHERY_RANGE"));
       if (!pos.empty())
         return Task::archeryRange(collective, tryInQuarters(vector<Position>(pos.begin(), pos.end()), collective, c));
       else
@@ -278,7 +277,7 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
     }
     case MinionActivityInfo::EAT: {
       PROFILE_BLOCK("Eat");
-      const auto& hatchery = collective->getConstructions().getBuiltPositions(FurnitureType::PIGSTY);
+      const auto& hatchery = collective->getConstructions().getBuiltPositions(FurnitureType("PIGSTY"));
       if (!hatchery.empty())
         return Task::eat(tryInQuarters(vector<Position>(hatchery.begin(), hatchery.end()), collective, c));
       break;

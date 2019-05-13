@@ -145,7 +145,7 @@ WFurniture Position::modFurniture(FurnitureLayer layer) const {
 
 WFurniture Position::modFurniture(FurnitureType type) const {
   PROFILE;
-  if (auto furniture = modFurniture(getGame()->getContentFactory()->furniture.getLayer(type)))
+  if (auto furniture = modFurniture(getGame()->getContentFactory()->furniture.getData(type).getLayer()))
     if (furniture->getType() == type)
       return furniture;
   return nullptr;
@@ -161,7 +161,7 @@ WConstFurniture Position::getFurniture(FurnitureLayer layer) const {
 
 WConstFurniture Position::getFurniture(FurnitureType type) const {
   PROFILE;
-  if (auto furniture = getFurniture(getGame()->getContentFactory()->furniture.getLayer(type)))
+  if (auto furniture = getFurniture(getGame()->getContentFactory()->furniture.getData(type).getLayer()))
     if (furniture->getType() == type)
       return furniture;
   return nullptr;
@@ -626,14 +626,14 @@ bool Position::isBuildingSupport() const {
 void Position::construct(FurnitureType type, Creature* c) {
   PROFILE;
   if (construct(type, c->getTribeId()))
-    modFurniture(getGame()->getContentFactory()->furniture.getLayer(type))->onConstructedBy(*this, c);
+    modFurniture(getGame()->getContentFactory()->furniture.getData(type).getLayer())->onConstructedBy(*this, c);
 }
 
 bool Position::construct(FurnitureType type, TribeId tribe) {
   PROFILE;
   CHECK(!isUnavailable());
   CHECK(canConstruct(type));
-  auto& construction = level->furniture->getConstruction(coord, getGame()->getContentFactory()->furniture.getLayer(type));
+  auto& construction = level->furniture->getConstruction(coord, getGame()->getContentFactory()->furniture.getData(type).getLayer());
   if (!construction || construction->type != type)
     construction = FurnitureArray::Construction{type, 10};
   if (--construction->time == 0) {
@@ -872,7 +872,7 @@ bool Position::canNavigate(const MovementType& type) const {
     for (DestroyAction action : type.getDestroyActions())
       if (furniture->canDestroy(type, action))
         ignore = FurnitureLayer::MIDDLE;
-  if (type.canBuildBridge() && canConstruct(FurnitureType::BRIDGE) &&
+  if (type.canBuildBridge() && canConstruct(FurnitureType("BRIDGE")) &&
       !type.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
     return true;
   return canEnterEmpty(type, ignore);
@@ -949,7 +949,7 @@ optional<double> Position::getNavigationCost(const MovementType& movement) const
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
     if (auto destroyAction = getBestDestroyAction(movement))
       return 1.0 + *furniture->getStrength(*destroyAction) / 10;
-  if (movement.canBuildBridge() && canConstruct(FurnitureType::BRIDGE) &&
+  if (movement.canBuildBridge() && canConstruct(FurnitureType("BRIDGE")) &&
       !movement.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
     return 10;
   return none;

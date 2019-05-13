@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util.h"
+#include "furniture_type.h"
 
 struct ResourceCounts {
   struct Elem {

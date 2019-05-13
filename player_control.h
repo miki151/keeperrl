@@ -62,7 +62,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   Creature* getKeeper();
 
   void render(View*);
-  optional<string> reloadImmigrationAndWorkshops(const GameConfig*, CreatureFactory*);
+  optional<string> reloadImmigrationAndWorkshops(const GameConfig*, ContentFactory*);
 
   void leaveControl();
   void teamMemberAction(TeamMemberAction, UniqueEntity<Creature>::Id);

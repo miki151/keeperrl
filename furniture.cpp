@@ -50,14 +50,15 @@ Furniture::~Furniture() {}
 
 template<typename Archive>
 void Furniture::serializeImpl(Archive& ar, const unsigned) {
-  ar(SKIP(SUBCLASS(OwnedObject<Furniture>)), OPTION(viewObject), OPTION(removeNonFriendly));
+  ar(SKIP(SUBCLASS(OwnedObject<Furniture>)), OPTION(viewObject), OPTION(removeNonFriendly), OPTION(canBuildOutsideOfTerritory));
   ar(NAMED(name), OPTION(pluralName), OPTION(type), OPTION(movementSet), OPTION(fire), OPTION(burntRemains), OPTION(destroyedRemains));
-  ar(OPTION(destroyedInfo), OPTION(itemDrop), OPTION(wall), SKIP(creator), NAMED(createdTime));
+  ar(OPTION(destroyedInfo), OPTION(itemDrop), OPTION(wall), SKIP(creator), NAMED(createdTime), OPTION(canSilentlyReplace));
   ar(OPTION(blockVision), NAMED(usageType), NAMED(clickType), NAMED(tickType), OPTION(usageTime), OPTION(overrideMovement));
   ar(NAMED(constructMessage), OPTION(layer), OPTION(entryType), OPTION(lightEmission), OPTION(canHideHere), OPTION(warning));
-  ar(NAMED(summonedElement), OPTION(droppedItems), OPTION(xForgetAfterBuilding));
-  ar(OPTION(canBuildBridge), OPTION(noProjectiles), OPTION(clearFogOfWar), OPTION(removeWithCreaturePresent));
-  ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage));
+  ar(NAMED(summonedElement), OPTION(droppedItems), OPTION(xForgetAfterBuilding), OPTION(requiredSupport), OPTION(builtOver));
+  ar(OPTION(canBuildBridge), OPTION(noProjectiles), OPTION(clearFogOfWar), OPTION(removeWithCreaturePresent), OPTION(upgrade));
+  ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
+  ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease));
 }
 
 template <class Archive>
@@ -341,6 +342,18 @@ void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
     pos.getGame()->addEvent((EventInfo::FX{pos, *fxInfo, direction}));
 }
 
+int Furniture::getMaxTraining(ExperienceType t) const {
+  return maxTraining[t];
+}
+
+const vector<Vec2>& Furniture::getRequiredSupport() const {
+  return requiredSupport;
+}
+
+optional<FurnitureType> Furniture::getUpgrade() const {
+  return upgrade;
+}
+
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
   if (droppedItems) {
     return droppedItems->handle(pos, this, std::move(v));
@@ -356,8 +369,36 @@ const LuxuryInfo&Furniture::getLuxuryInfo() const {
   return luxury;
 }
 
+const Furniture::PopulationInfo& Furniture::getPopulationIncrease() const {
+  return populationIncrease;
+}
+
+optional<FurnitureType> Furniture::getBuiltOver() const {
+  return builtOver;
+}
+
+bool Furniture::isBridge() const {
+  return bridge;
+}
+
+bool Furniture::silentlyReplace() const {
+  return canSilentlyReplace;
+}
+
 void Furniture::setType(FurnitureType t) {
   type = t;
+}
+
+bool Furniture::buildOutsideOfTerritory() const {
+  return canBuildOutsideOfTerritory;
+}
+
+bool Furniture::isRequiresLight() const {
+  return requiresLight;
+}
+
+optional<BedType> Furniture::getBedType() const {
+  return bedType;
 }
 
 Furniture& Furniture::setBlocking() {
@@ -368,15 +409,6 @@ Furniture& Furniture::setBlocking() {
 Furniture& Furniture::setBlockingEnemies() {
   movementSet->addTrait(MovementTrait::WALK);
   movementSet->setBlockingEnemies();
-  return *this;
-}
-
-MovementSet& Furniture::modMovementSet() {
-  return *movementSet;
-}
-
-Furniture& Furniture::setConstructMessage(optional<ConstructMessage> msg) {
-  constructMessage = msg;
   return *this;
 }
 
@@ -414,152 +446,6 @@ Furniture& Furniture::setDestroyable(double s) {
 
 Furniture& Furniture::setDestroyable(double s, DestroyAction::Type type) {
   destroyedInfo[type] = DestroyedInfo{ 1.0, s };
-  return *this;
-}
-
-Furniture& Furniture::setItemDrop(ItemFactory f) {
-  itemDrop = f;
-  return *this;
-}
-
-Furniture& Furniture::setBurntRemains(FurnitureType t) {
-  burntRemains = t;
-  return *this;
-}
-
-Furniture& Furniture::setDestroyedRemains(FurnitureType t) {
-  destroyedRemains = t;
-  return *this;
-}
-
-Furniture& Furniture::setBlockVision() {
-  for (auto vision : ENUM_ALL(VisionId))
-    blockVision.insert(vision);
-  return *this;
-}
-
-Furniture& Furniture::setBlockVision(VisionId id, bool blocks) {
-  blockVision.set(id, blocks);
-  return *this;
-}
-
-Furniture& Furniture::setUsageType(FurnitureUsageType type) {
-  usageType = type;
-  return *this;
-}
-
-Furniture& Furniture::setUsageTime(TimeInterval t) {
-  usageTime = t;
-  return *this;
-}
-
-Furniture& Furniture::setClickType(FurnitureClickType type) {
-  clickType = type;
-  return *this;
-}
-
-Furniture& Furniture::setTickType(FurnitureTickType type) {
-  tickType = type;
-  return *this;
-}
-
-Furniture& Furniture::setEntryType(FurnitureEntry type) {
-  entryType = type;
-  return *this;
-}
-
-Furniture& Furniture::setDroppedItems(FurnitureDroppedItems t) {
-  droppedItems = t;
-  return *this;
-}
-
-Furniture& Furniture::setFireInfo(const Fire& f) {
-  fire = f;
-  return *this;
-}
-
-Furniture& Furniture::setIsWall() {
-  wall = true;
-  return *this;
-}
-
-Furniture&Furniture::setIsBuildingSupport() {
-  buildingSupport = true;
-  return *this;
-}
-
-Furniture& Furniture::setOverrideMovement() {
-  overrideMovement = true;
-  return *this;
-}
-
-Furniture& Furniture::setCanRemoveWithCreaturePresent(bool s) {
-  removeWithCreaturePresent = s;
-  return *this;
-}
-
-Furniture& Furniture::setCanRemoveNonFriendly(bool s) {
-  removeNonFriendly = s;
-  return *this;
-}
-
-Furniture& Furniture::setForgetAfterBuilding() {
-  xForgetAfterBuilding = true;
-  return *this;
-}
-
-Furniture& Furniture::setLuxury(double l) {
-  luxury.luxury = l;
-  return *this;
-}
-
-Furniture&Furniture::setOnBuilt(FurnitureOnBuilt b) {
-  onBuilt = b;
-  return *this;
-}
-
-Furniture& Furniture::setBurnsDownMessage(BurnsDownMessage msg) {
-  burnsDownMessage = msg;
-  return *this;
-}
-
-Furniture& Furniture::setLayer(FurnitureLayer l) {
-  layer = l;
-  return *this;
-}
-
-Furniture& Furniture::setLightEmission(double v) {
-  lightEmission = v;
-  return *this;
-}
-
-Furniture& Furniture::setCanHide() {
-  canHideHere = true;
-  return *this;
-}
-
-Furniture& Furniture::setEmitsWarning() {
-  warning = true;
-  return *this;
-}
-
-Furniture& Furniture::setSummonedElement(CreatureId id) {
-  summonedElement = id;
-  return *this;
-}
-
-Furniture& Furniture::setCanBuildBridgeOver() {
-  canBuildBridge = true;
-  return *this;
-}
-
-Furniture&Furniture::setStopProjectiles() {
-  noProjectiles = true;
-  return *this;
-}
-
-Furniture&Furniture::setClearFogOfWar() {
-  clearFogOfWar = true;
   return *this;
 }
 

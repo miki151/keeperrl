@@ -8,6 +8,9 @@
 #include "sound.h"
 #include "special_trait.h"
 #include "tutorial_state.h"
+#include "furniture_type.h"
+
+class ContentFactory;
 
 MAKE_VARIANT2(AttractionType, FurnitureType, ItemIndex);
 
@@ -17,7 +20,7 @@ struct AttractionInfo {
 
   SERIALIZATION_DECL(AttractionInfo)
 
-  static string getAttractionName(const AttractionType&, int count);
+  static string getAttractionName(const ContentFactory*, const AttractionType&, int count);
 
   int SERIAL(amountClaimed);
   vector<AttractionType> SERIAL(types);

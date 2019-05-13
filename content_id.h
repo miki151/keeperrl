@@ -2,6 +2,8 @@
 
 #include "util.h"
 
+enum class ContentIdGenerationStage;
+
 template <typename T>
 class ContentId {
   public:
@@ -15,12 +17,15 @@ class ContentId {
   InternalId getInternalId() const;
   SERIALIZATION_DECL(ContentId)
 
-  static void setContentIdGeneration(bool);
+  static void startContentIdGeneration();
+  static void validateContentIds();
 
   private:
   InternalId id;
-  static bool contentIdGeneration;
+  static void checkId(InternalId);
+  static ContentIdGenerationStage contentIdGeneration;
   static vector<string> allIds;
+  static unordered_set<int> validIds;
   static int getId(const char* text);
 };
 

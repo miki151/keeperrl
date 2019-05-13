@@ -58,8 +58,7 @@ bool MinionActivityMap::isAvailable(WConstCollective col, const Creature* c, Min
           !col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::STUDY:
       return !col->hasTrait(c, MinionTrait::PRISONER) &&
-          (!c->getAttributes().isTrainingMaxedOut(ExperienceType::SPELL) ||
-          (col->getConfig().getRegenerateMana() && c->getAttributes().getMaxExpLevel()[ExperienceType::SPELL] > 0));
+          !c->getAttributes().isTrainingMaxedOut(ExperienceType::SPELL);
     case MinionActivity::ARCHERY:
       return !col->hasTrait(c, MinionTrait::PRISONER) &&
           !c->getAttributes().isTrainingMaxedOut(ExperienceType::ARCHERY) &&

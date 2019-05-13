@@ -14,6 +14,7 @@
 #include "minion_activity.h"
 #include "experience_type.h"
 #include "game.h"
+#include "content_factory.h"
 
 SERIALIZE_DEF(CollectiveWarnings, warnings, warningTimes, lastWarningTime)
 
@@ -57,7 +58,7 @@ void CollectiveWarnings::considerMoraleWarning(WCollective col) {
 void CollectiveWarnings::considerTorchesWarning(WCollective col) {
   double numLit = 0;
   const double unlitPen = 4;
-  for (auto type : col->getConfig().getRoomsNeedingLight())
+  for (auto type : col->getGame()->getContentFactory()->furniture.getFurnitureNeedingLight())
     for (auto pos : col->getConstructions().getBuiltPositions(type))
       if (pos.getLight() < 0.8)
         numLit -= unlitPen;

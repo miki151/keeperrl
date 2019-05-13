@@ -109,8 +109,8 @@ optional<string> Immigration::getMissingRequirement(const ImmigrantRequirement& 
               if (required > 0) {
                 const char* extra = total > 0 ? "more " : "";
                 return "Requires " + toString(required) + " " + extra +
-                    combineWithOr(attraction.types.transform(
-                        [&](const AttractionType& type) { return AttractionInfo::getAttractionName(type, required); }));
+                    combineWithOr(attraction.types.transform([&](const AttractionType& type) {
+                      return AttractionInfo::getAttractionName(collective->getGame()->getContentFactory(), type, required); }));
               } else
                 return none;
             });
@@ -141,7 +141,7 @@ optional<string> Immigration::getMissingRequirement(const ImmigrantRequirement& 
       },
       [&](const FurnitureType& type) -> optional<string> {
         if (collective->getConstructions().getBuiltCount(type) == 0)
-          return "Requires " + collective->getGame()->getContentFactory()->furniture.getName(type);
+          return "Requires " + collective->getGame()->getContentFactory()->furniture.getData(type).getName();
         else
           return none;
       },

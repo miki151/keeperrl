@@ -80,7 +80,7 @@ void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
 }
 
 void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
-  auto layer = pos.getGame()->getContentFactory()->furniture.getLayer(info.getFurnitureType());
+  auto layer = pos.getGame()->getContentFactory()->furniture.getData(info.getFurnitureType()).getLayer();
   CHECK(!furniture[layer].contains(pos));
   allFurniture.push_back({pos, layer});
   furniture[layer].set(pos, info);
@@ -98,15 +98,19 @@ bool ConstructionMap::containsFurniture(Position pos, FurnitureLayer layer) cons
 }
 
 int ConstructionMap::getBuiltCount(FurnitureType type) const {
-  return (int) furniturePositions[type].size();
+  return (int) getReferenceMaybe(furniturePositions, type).map([](const auto& v) { return v.size(); }).value_or(0);
 }
 
 int ConstructionMap::getTotalCount(FurnitureType type) const {
-  return unbuiltCounts[type] + getBuiltCount(type);
+  return getValueMaybe(unbuiltCounts, type).value_or(0) + getBuiltCount(type);
 }
 
 const PositionSet& ConstructionMap::getBuiltPositions(FurnitureType type) const {
-  return furniturePositions[type];
+  static PositionSet empty;
+  if (auto ret = getReferenceMaybe(furniturePositions, type))
+    return *ret;
+  else
+    return empty;
 }
 
 const vector<pair<Position, FurnitureLayer>>& ConstructionMap::getAllFurniture() const {
@@ -114,7 +118,7 @@ const vector<pair<Position, FurnitureLayer>>& ConstructionMap::getAllFurniture()
 }
 
 void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
-  auto layer = pos.getGame()->getContentFactory()->furniture.getLayer(type);
+  auto layer = pos.getGame()->getContentFactory()->furniture.getData(type).getLayer();
   if (!containsFurniture(pos, layer))
     addFurniture(pos, FurnitureInfo::getBuilt(type));
   furniturePositions[type].insert(pos);

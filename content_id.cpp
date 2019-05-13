@@ -1,33 +1,64 @@
 #include "stdafx.h"
 #include "content_id.h"
 
+enum class ContentIdGenerationStage {
+  BEFORE,
+  DURING,
+  AFTER
+};
+
 template <typename T>
-bool ContentId<T>::contentIdGeneration = false;
+ContentIdGenerationStage ContentId<T>::contentIdGeneration = ContentIdGenerationStage::BEFORE;
 
 template <typename T>
 vector<string> ContentId<T>::allIds;
 
 template <typename T>
+unordered_set<int> ContentId<T>::validIds;
+
+
+template <typename T>
+void ContentId<T>::checkId(InternalId id) {
+#ifdef RELEASE
+  USER_CHECK(validIds.count(id)) << "Content id not declared: " << allIds[id];
+#else
+  CHECK(validIds.count(id)) << "Content id not declared: " << allIds[id];
+#endif
+}
+
+template <typename T>
 int ContentId<T>::getId(const char* text) {
   static unordered_map<string, int> ids;
   static int generatedId = 0;
-  if (contentIdGeneration && !ids.count(text)) {
+  if (!ids.count(text)) {
     ids[text] = generatedId;
     allIds.push_back(text);
     ++generatedId;
   }
   auto ret = getReferenceMaybe(ids, text);
-#ifdef RELEASE
-  USER_CHECK(!!ret) << "ViewId not found: " << text;
-#else
-  CHECK(!!ret) << "ViewId not found: " << text;
-#endif
+  switch (contentIdGeneration) {
+    case ContentIdGenerationStage::BEFORE:
+      break;
+    case ContentIdGenerationStage::DURING:
+      validIds.insert(*ret);
+      break;
+    case ContentIdGenerationStage::AFTER:
+      checkId(*ret);
+      break;
+  }
   return *ret;
 }
 
 template <typename T>
-void ContentId<T>::setContentIdGeneration(bool b) {
-  contentIdGeneration = b;
+void ContentId<T>::startContentIdGeneration() {
+  contentIdGeneration = ContentIdGenerationStage::DURING;
+}
+
+template<typename T>
+void ContentId<T>::validateContentIds() {
+  contentIdGeneration = ContentIdGenerationStage::AFTER;
+  for (int i : All(allIds))
+    checkId(i);
 }
 
 template <typename T>
@@ -81,16 +112,17 @@ void ContentId<T>::serialize(Archive& ar1, const unsigned int) {
   }
 }
 
-SERIALIZABLE_TMPL(ContentId, ViewId)
-
 template <typename T>
 SERIALIZATION_CONSTRUCTOR_IMPL2(ContentId<T>, ContentId)
 
 #include "pretty_archive.h"
-
-template ContentId<ViewId>::ContentId();
-template void ContentId<ViewId>::serialize(PrettyInputArchive&, unsigned);
-
 #include "text_serialization.h"
-template void ContentId<ViewId>::serialize(TextInputArchive&, unsigned);
-template void ContentId<ViewId>::serialize(TextOutputArchive&, unsigned);
+
+#define INST(T) \
+SERIALIZABLE_TMPL(ContentId, T) \
+template void ContentId<T>::serialize(PrettyInputArchive&, unsigned); \
+template void ContentId<T>::serialize(TextInputArchive&, unsigned); \
+template void ContentId<T>::serialize(TextOutputArchive&, unsigned);
+
+INST(ViewId)
+INST(FurnitureType)

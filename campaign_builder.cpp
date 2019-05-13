@@ -433,8 +433,6 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
             string gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
             string gameDisplayName = name + " of " + campaign.worldName;
             return CampaignSetup{campaign, gameIdentifier, gameDisplayName,
-                options->getBoolValue(OptionId::GENERATE_MANA) &&
-                getSecondaryOptions(type).contains(OptionId::GENERATE_MANA),
                 getIntroMessages(type)};
           }
       }
@@ -446,5 +444,5 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
 
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
   Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "");
-  return CampaignSetup{ret, "", "", false, {}};
+  return CampaignSetup{ret, "", "", {}};
 }

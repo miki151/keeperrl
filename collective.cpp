@@ -64,7 +64,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
   ar(delayedPos, knownTiles, technology, kills, points, currentActivity);
-  ar(credit, model, immigration, teams, name, conqueredVillains);
+  ar(credit, model, immigration, teams, name, conqueredVillains, minionActivities);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
   ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease, dungeonLevel);
 }
@@ -73,13 +73,15 @@ SERIALIZABLE(Collective)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Collective)
 
-Collective::Collective(Private, WModel model, TribeId t, const optional<CollectiveName>& n)
+Collective::Collective(Private, WModel model, TribeId t, const optional<CollectiveName>& n,
+    const ContentFactory* contentFactory)
     : positionMatching(makeOwner<PositionMatching>()), tribe(t), model(NOTNULL(model)), name(n),
-      villainType(VillainType::NONE) {
+      villainType(VillainType::NONE), minionActivities(contentFactory) {
 }
 
-PCollective Collective::create(WModel model, TribeId tribe, const optional<CollectiveName>& name, bool discoverable) {
-  auto ret = makeOwner<Collective>(Private {}, model, tribe, name);
+PCollective Collective::create(WModel model, TribeId tribe, const optional<CollectiveName>& name, bool discoverable,
+    const ContentFactory* contentFactory) {
+  auto ret = makeOwner<Collective>(Private {}, model, tribe, name, contentFactory);
   ret->subscribeTo(model);
   ret->discoverable = discoverable;
   ret->workshops = unique<Workshops>(std::array<vector<WorkshopItemCfg>, 4>());
@@ -340,7 +342,7 @@ bool Collective::isActivityGoodAssumingHaveTasks(Creature* c, MinionActivity act
 bool Collective::isActivityGood(Creature* c, MinionActivity activity, bool ignoreTaskLock) {
   PROFILE;
   return isActivityGoodAssumingHaveTasks(c, activity, ignoreTaskLock) &&
-      (MinionActivities::generate(this, c, activity) || MinionActivities::getExisting(this, c, activity));
+      (minionActivities->generate(this, c, activity) || MinionActivities::getExisting(this, c, activity));
 }
 
 bool Collective::isConquered() const {
@@ -848,11 +850,11 @@ void Collective::removeTrap(Position pos) {
 }
 
 bool Collective::canAddFurniture(Position position, FurnitureType type) const {
-  auto layer = getGame()->getContentFactory()->furniture.getLayer(type);
+  auto layer = getGame()->getContentFactory()->furniture.getData(type).getLayer();
   return knownTiles->isKnown(position)
       && (territory->contains(position) ||
           canClaimSquare(position) ||
-          CollectiveConfig::canBuildOutsideTerritory(type))
+          getGame()->getContentFactory()->furniture.getData(type).buildOutsideOfTerritory())
       && (!getConstructions().getTrap(position) || layer != FurnitureLayer::MIDDLE)
       && !getConstructions().containsFurniture(position, layer)
       && position.canConstruct(type);
@@ -953,7 +955,7 @@ bool Collective::isConstructionReachable(Position pos) {
 
 void Collective::onConstructed(Position pos, FurnitureType type) {
   if (pos.getFurniture(type)->forgetAfterBuilding()) {
-    constructions->removeFurniturePlan(pos, getGame()->getContentFactory()->furniture.getLayer(type));
+    constructions->removeFurniturePlan(pos, getGame()->getContentFactory()->furniture.getData(type).getLayer());
     if (territory->contains(pos))
       territory->remove(pos);
     control->onConstructed(pos, type);
@@ -970,7 +972,7 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
 }
 
 void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAction& action) {
-  removeUnbuiltFurniture(pos, getGame()->getContentFactory()->furniture.getLayer(type));
+  removeUnbuiltFurniture(pos, getGame()->getContentFactory()->furniture.getData(type).getLayer());
   switch (action.getType()) {
     case DestroyAction::Type::CUT:
       zones->setZone(pos, ZoneId::FETCH_ITEMS);
@@ -1102,9 +1104,9 @@ const PositionSet& Collective::getStoragePositions(StorageId storage) const {
     case StorageId::EQUIPMENT:
       return zones->getPositions(ZoneId::STORAGE_EQUIPMENT);
     case StorageId::GOLD:
-      return constructions->getBuiltPositions(FurnitureType::TREASURE_CHEST);
+      return constructions->getBuiltPositions(FurnitureType("TREASURE_CHEST"));
     case StorageId::CORPSES:
-      return constructions->getBuiltPositions(FurnitureType::GRAVE);
+      return constructions->getBuiltPositions(FurnitureType("GRAVE"));
   }
 }
 
@@ -1180,29 +1182,21 @@ void Collective::addProducesMessage(const Creature* c, const vector<PItem>& item
 void Collective::onAppliedSquare(Creature* c, Position pos) {
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
-    double efficiency = furniture->getUsageTime().getVisibleDouble() * getEfficiency(c) * pos.getLightingEfficiency();
-    switch (furniture->getType()) {
-      case FurnitureType::THRONE:
-        if (config->getRegenerateMana())
-          dungeonLevel.onLibraryWork(efficiency);
-        break;
-      case FurnitureType::WHIPPING_POST:
-        taskMap->addTask(Task::whipping(pos, c), pos, MinionActivity::WORKING);
-        break;
-      case FurnitureType::GALLOWS:
-        taskMap->addTask(Task::kill(this, c), pos, MinionActivity::WORKING);
-        break;
-      case FurnitureType::TORTURE_TABLE:
-        taskMap->addTask(Task::torture(this, c), pos, MinionActivity::WORKING);
-        break;
-      default:
-        break;
-    }
+    double efficiency = furniture->getUsageTime().getVisibleDouble() * getEfficiency(c);
+    if (furniture->isRequiresLight())
+      efficiency *= pos.getLightingEfficiency();
+    if (furniture->getType() == FurnitureType("WHIPPING_POST"))
+      taskMap->addTask(Task::whipping(pos, c), pos, MinionActivity::WORKING);
+    if (furniture->getType() == FurnitureType("GALLOWS"))
+      taskMap->addTask(Task::kill(this, c), pos, MinionActivity::WORKING);
+    if (furniture->getType() == FurnitureType("TORTURE_TABLE"))
+      taskMap->addTask(Task::torture(this, c), pos, MinionActivity::WORKING);
     if (auto usage = furniture->getUsageType()) {
       auto increaseLevel = [&] (ExperienceType exp) {
         double increase = 0.007 * efficiency * LastingEffects::getTrainingSpeed(c);
-        if (auto maxLevel = config->getTrainingMaxLevel(exp, furniture->getType()))
-          increase = min(increase, *maxLevel - c->getAttributes().getExpLevel(exp));
+        if (auto maxLevel = getGame()->getContentFactory()->furniture.getData(
+            furniture->getType()).getMaxTraining(exp))
+          increase = min(increase, maxLevel - c->getAttributes().getExpLevel(exp));
         if (increase > 0)
           c->increaseExpLevel(exp, increase);
       };
@@ -1212,8 +1206,6 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
           break;
         case FurnitureUsageType::STUDY:
           increaseLevel(ExperienceType::SPELL);
-          if (config->getRegenerateMana())
-            dungeonLevel.onLibraryWork(efficiency);
           break;
         case FurnitureUsageType::ARCHERY_RANGE:
           increaseLevel(ExperienceType::ARCHERY);
@@ -1250,8 +1242,8 @@ optional<FurnitureType> Collective::getMissingTrainingFurniture(const Creature* 
   if (c->getAttributes().isTrainingMaxedOut(expType))
     return none;
   optional<FurnitureType> requiredDummy;
-  for (auto dummyType : CollectiveConfig::getTrainingFurniture(expType)) {
-    bool canTrain = *config->getTrainingMaxLevel(expType, dummyType) >
+  for (auto dummyType : getGame()->getContentFactory()->furniture.getTrainingFurniture(expType)) {
+    bool canTrain = getGame()->getContentFactory()->furniture.getData(dummyType).getMaxTraining(expType) >
         c->getAttributes().getExpLevel(expType);
     bool hasDummy = getConstructions().getBuiltCount(dummyType) > 0;
     if (canTrain && hasDummy)
@@ -1267,7 +1259,7 @@ double Collective::getDangerLevel() const {
     double ret = 0;
     for (const Creature* c : getCreatures(MinionTrait::FIGHTER))
       ret += c->getDifficultyPoints();
-    ret += constructions->getBuiltCount(FurnitureType::IMPALED_HEAD) * 150;
+    ret += constructions->getBuiltCount(FurnitureType("IMPALED_HEAD")) * 150;
     dangerLevelCache = ret;
   }
   return *dangerLevelCache;
@@ -1342,6 +1334,10 @@ Immigration& Collective::getImmigration() {
 
 const Immigration& Collective::getImmigration() const {
   return *immigration;
+}
+
+const MinionActivities& Collective::getMinionActivities() const {
+  return *minionActivities;
 }
 
 void Collective::addAttack(const CollectiveAttack& attack) {

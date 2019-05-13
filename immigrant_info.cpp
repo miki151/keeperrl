@@ -13,6 +13,7 @@
 #include "sunlight_info.h"
 #include "keybinding.h"
 #include "tutorial_highlight.h"
+#include "content_factory.h"
 
 SERIALIZE_DEF(ImmigrantInfo, NAMED(ids), NAMED(frequency), OPTION(requirements), OPTION(traits), OPTION(spawnLocation), OPTION(groupSize), OPTION(autoTeam), OPTION(initialRecruitment), OPTION(consumeIds), NAMED(keybinding), NAMED(sound), OPTION(noAuto), NAMED(tutorialHighlight), OPTION(hiddenInHelp), OPTION(invisible), OPTION(specialTraits), OPTION(stripEquipment))
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
@@ -24,10 +25,11 @@ SERIALIZATION_CONSTRUCTOR_IMPL(AttractionInfo);
 AttractionInfo::AttractionInfo(int cl,  AttractionType a)
   : amountClaimed(cl), types({a}) {}
 
-string AttractionInfo::getAttractionName(const AttractionType& attraction, int count) {
+string AttractionInfo::getAttractionName(const ContentFactory* contentFactory, const AttractionType& attraction,
+    int count) {
   return attraction.match(
       [&](FurnitureType type)->string {
-        return EnumInfo<FurnitureType>::getString(type);
+        return contentFactory->furniture.getData(type).getName();
       },
       [&](ItemIndex index)->string {
         return getName(index, count);

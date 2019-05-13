@@ -110,7 +110,7 @@ void handleOnBuilt(Position pos, Furniture* f, Creature* c, FurnitureOnBuilt typ
                 levelIndex + 1, width, c->getTribeId(), stairKey)); }, "z-level " + toString(levelIndex));
         Position landing = newLevel->getLandingSquares(stairKey).getOnlyElement();
         landing.addFurniture(pos.getGame()->getContentFactory()->furniture.getFurniture(
-            FurnitureType::UP_STAIRS, TribeId::getMonster()));
+            FurnitureType("UP_STAIRS"), TribeId::getMonster()));
         pos.setLandingLink(stairKey);
         pos.getModel()->calculateStairNavigation();
         pos.getGame()->getPlayerCollective()->addKnownTile(landing);

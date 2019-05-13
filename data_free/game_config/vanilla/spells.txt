@@ -207,7 +207,7 @@
   {
     id =  "meteor shower"
     symbol = "☄"
-    effect = PlaceFurniture METEOR_SHOWER
+    effect = PlaceFurniture "METEOR_SHOWER"
     cooldown = 150
     sound = SPELL_METEOR_SHOWER
   }
@@ -246,7 +246,7 @@
   {
     id =  "firewall"
     symbol = "𝍔"
-    effect =  CustomArea PlaceFurniture FIRE_WALL { 0 -2 0 -1 0 0 0 1 0 2 }
+    effect =  CustomArea PlaceFurniture "FIRE_WALL" { 0 -2 0 -1 0 0 0 1 0 2 }
     endOnly = true
     range = 2
     cooldown = 30

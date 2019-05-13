@@ -12,6 +12,7 @@ class ImmigrantInfo;
 class Position;
 class CollectiveConfig;
 struct CollectiveName;
+class ContentFactory;
 
 class CollectiveBuilder {
   public:
@@ -27,7 +28,7 @@ class CollectiveBuilder {
   void setCentralPoint(Vec2);
   bool hasCentralPoint();
 
-  PCollective build();
+  PCollective build(const ContentFactory*);
   bool hasCreatures() const;
 
   private:

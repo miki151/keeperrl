@@ -63,48 +63,46 @@ optional<FXInfo> getOverlayFXInfo(ViewId id) {
   return none;
 }
 
-using FType = FurnitureType;
-
 // TODO: make FurnitureClass ?
-static bool isMountain2(FType type) {
-  return isOneOf(type, FType::MOUNTAIN2, FType::IRON_ORE, FType::GOLD_ORE, FType::ADAMANTIUM_ORE, FType::STONE,
-                 FType::DUNGEON_WALL2);
+static bool isMountain2(FurnitureType type) {
+  return isOneOf(type, FurnitureType("MOUNTAIN2"), FurnitureType("IRON_ORE"), FurnitureType("GOLD_ORE"), FurnitureType("ADAMANTIUM_ORE"), FurnitureType("STONE"),
+                 FurnitureType("DUNGEON_WALL2"));
 }
 
-static bool isMountain(FType type) {
-  return isOneOf(type, FType::MOUNTAIN, FType::DUNGEON_WALL);
+static bool isMountain(FurnitureType type) {
+  return isOneOf(type, FurnitureType("MOUNTAIN"), FurnitureType("DUNGEON_WALL"));
 }
 
-static bool isTree(FType type) {
-  return isOneOf(type, FType::CANIF_TREE, FType::DECID_TREE, FType::BUSH);
+static bool isTree(FurnitureType type) {
+  return isOneOf(type, FurnitureType("CANIF_TREE"), FurnitureType("DECID_TREE"), FurnitureType("BUSH"));
 }
 
 // TODO: EnumMap mapping item to destruction effect ?
-static bool isWoodenFurniture(FType type) {
-  return isOneOf(type, FType::WOOD_DOOR, FType::WOOD_WALL, FType::BOOKCASE_WOOD, FType::TRAINING_WOOD, FType::WORKSHOP,
-                 FType::JEWELLER, FType::ARCHERY_RANGE, FType::BARRICADE, FType::KEEPER_BOARD, FType::EYEBALL,
-                 FType::WHIPPING_POST, FType::GALLOWS, FType::BED1, FType::BED2, FType::BED3, FType::COFFIN1,
-                 FType::BEAST_CAGE, FType::TREASURE_CHEST);
+static bool isWoodenFurniture(FurnitureType type) {
+  return isOneOf(type, FurnitureType("WOOD_DOOR"), FurnitureType("WOOD_WALL"), FurnitureType("BOOKCASE_WOOD"), FurnitureType("TRAINING_WOOD"), FurnitureType("WORKSHOP"),
+                 FurnitureType("JEWELLER"), FurnitureType("ARCHERY_RANGE"), FurnitureType("BARRICADE"), FurnitureType("KEEPER_BOARD"), FurnitureType("EYEBALL"),
+                 FurnitureType("WHIPPING_POST"), FurnitureType("GALLOWS"), FurnitureType("BED1"), FurnitureType("BED2"), FurnitureType("BED3"), FurnitureType("COFFIN1"),
+                 FurnitureType("BEAST_CAGE"), FurnitureType("TREASURE_CHEST"));
 }
 
-static bool isSmallWoodenFurniture(FType type) {
-  return isOneOf(type, FType::IMPALED_HEAD);
+static bool isSmallWoodenFurniture(FurnitureType type) {
+  return isOneOf(type, FurnitureType("IMPALED_HEAD"));
 }
 
-static bool isGrayFurniture(FType type) {
-  return isOneOf(type, FType::BOOKCASE_IRON, FType::TRAINING_IRON, FType::IRON_DOOR, FType::TRAINING_ADA,
-                 FType::ADA_DOOR, FType::LABORATORY, FType::FORGE, FType::STONE_MINION_STATUE, FType::FOUNTAIN,
-                 FType::PORTAL, FType::COFFIN2, FType::TORTURE_TABLE, FType::BOOKCASE_IRON, FType::GRAVE);
+static bool isGrayFurniture(FurnitureType type) {
+  return isOneOf(type, FurnitureType("BOOKCASE_IRON"), FurnitureType("TRAINING_IRON"), FurnitureType("IRON_DOOR"), FurnitureType("TRAINING_ADA"),
+                 FurnitureType("ADA_DOOR"), FurnitureType("LABORATORY"), FurnitureType("FORGE"), FurnitureType("STONE_MINION_STATUE"), FurnitureType("FOUNTAIN"),
+                 FurnitureType("PORTAL"), FurnitureType("COFFIN2"), FurnitureType("TORTURE_TABLE"), FurnitureType("BOOKCASE_IRON"), FurnitureType("GRAVE"));
 }
 
-static bool isGoldFurniture(FType type) {
-  return isOneOf(type, FType::MINION_STATUE, FType::THRONE, FType::DEMON_SHRINE, FType::COFFIN3, FType::BOOKCASE_GOLD);
+static bool isGoldFurniture(FurnitureType type) {
+  return isOneOf(type, FurnitureType("MINION_STATUE"), FurnitureType("THRONE"), FurnitureType("DEMON_SHRINE"), FurnitureType("COFFIN3"), FurnitureType("BOOKCASE_GOLD"));
 }
 
-optional<FXInfo> destroyFXInfo(FType type) {
+optional<FXInfo> destroyFXInfo(FurnitureType type) {
   if (isMountain(type))
     return FXInfo{FXName::ROCK_CLOUD, Color(220, 210, 180)};
-  else if (isMountain2(type) || type == FType::BOULDER_TRAP)
+  else if (isMountain2(type) || type == FurnitureType("BOULDER_TRAP"))
     return FXInfo{FXName::ROCK_CLOUD, Color(200, 200, 200)};
   else if (isWoodenFurniture(type))
     return FXInfo{FXName::DESTROY_FURNITURE, Color(120, 87, 46)};
@@ -117,7 +115,7 @@ optional<FXInfo> destroyFXInfo(FType type) {
   return none;
 }
 
-optional<FXInfo> tryDestroyFXInfo(FType type) {
+optional<FXInfo> tryDestroyFXInfo(FurnitureType type) {
   if (isMountain(type))
     return FXInfo{FXName::ROCK_SPLINTERS, Color(220, 210, 180)};
   else if (isMountain2(type))
@@ -127,30 +125,27 @@ optional<FXInfo> tryDestroyFXInfo(FType type) {
   return none;
 }
 
-optional<FXInfo> walkIntoFXInfo(FType type) {
-  if (isOneOf(type, FType::WATER, FType::SHALLOW_WATER1, FType::SHALLOW_WATER2))
+optional<FXInfo> walkIntoFXInfo(FurnitureType type) {
+  if (isOneOf(type, FurnitureType("WATER"), FurnitureType("SHALLOW_WATER1"), FurnitureType("SHALLOW_WATER2")))
     // TODO: color should depend on depth ?
     return FXInfo{FXName::WATER_SPLASH, Color(82, 148, 225)};
   return none;
 }
 
-optional<FXInfo> walkOverFXInfo(FType type) {
-  if (type == FType::SAND)
+optional<FXInfo> walkOverFXInfo(FurnitureType type) {
+  if (type == FurnitureType("SAND"))
     return FXInfo{FXName::SAND_DUST, Color(255, 229, 178)};
   return none;
 }
 
 optional<FXVariantName> getFurnitureUsageFX(FurnitureType type) {
-  switch (type) {
-    case FurnitureType::JEWELLER:
-      return FXVariantName::JEWELLER;
-    case FurnitureType::LABORATORY:
-      return FXVariantName::LABORATORY;
-    case FurnitureType::WORKSHOP:
-      return FXVariantName::WORKSHOP;
-    case FurnitureType::FORGE:
-      return FXVariantName::FORGE;
-    default:
-      return none;
-  }
+  if (type == FurnitureType("JEWELLER"))
+    return FXVariantName::JEWELLER;
+  if (type == FurnitureType("LABORATORY"))
+    return FXVariantName::LABORATORY;
+  if (type == FurnitureType("WORKSHOP"))
+    return FXVariantName::WORKSHOP;
+  if (type == FurnitureType("FORGE"))
+    return FXVariantName::FORGE;
+  return none;
 }

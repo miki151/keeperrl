@@ -21,6 +21,7 @@
 #include "enum_variant.h"
 #include "game_time.h"
 #include "fx_name.h"
+#include "furniture_type.h"
 
 class Level;
 class Creature;

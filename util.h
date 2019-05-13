@@ -995,7 +995,7 @@ class DirtyTable {
 template <typename T, typename V>
 vector<T> getKeys(const map<T, V>& m) {
   vector<T> ret;
-  for (auto elem : m)
+  for (auto& elem : m)
     ret.push_back(elem.first);
   return ret;
 }

@@ -83,14 +83,13 @@ void Game::addCollective(WCollective col) {
   villainsByType[type].push_back(col);
 }
 
-static CollectiveConfig getKeeperConfig(bool fastImmigration, bool regenerateMana) {
+static CollectiveConfig getKeeperConfig(bool fastImmigration) {
   return CollectiveConfig::keeper(
       TimeInterval(fastImmigration ? 10 : 140),
-      10,
-      regenerateMana);
+      10);
 }
 
-void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string> introText,
+void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText,
     const GameConfig* gameConfig) {
   auto model = getMainModel().get();
   WLevel level = model->getTopLevel();
@@ -98,17 +97,17 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, bool regenerateMana, vector<string
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   model->addCreature(std::move(avatarInfo.playerCreature));
   auto keeperInfo = avatarInfo.creatureInfo.getReferenceMaybe<KeeperCreatureInfo>();
-  model->addCollective(CollectiveBuilder(getKeeperConfig(false, regenerateMana), keeperRef->getTribeId())
+  model->addCollective(CollectiveBuilder(getKeeperConfig(false), keeperRef->getTribeId())
       .setModel(model)
       .addCreature(keeperRef, {MinionTrait::LEADER})
-      .build());
+      .build(contentFactory.get()));
   playerCollective = model->getCollectives().back();
   auto playerControlOwned = PlayerControl::create(playerCollective, introText, *keeperInfo);
   playerControl = playerControlOwned.get();
   playerCollective->setControl(std::move(playerControlOwned));
   playerCollective->setVillainType(VillainType::PLAYER);
   addCollective(playerCollective);
-  if (auto error = playerControl->reloadImmigrationAndWorkshops(gameConfig, &contentFactory->creatures))
+  if (auto error = playerControl->reloadImmigrationAndWorkshops(gameConfig, contentFactory.get()))
     USER_FATAL << *error;
   for (auto tech : keeperInfo->initialTech)
     playerCollective->acquireTech(tech, false);
@@ -130,7 +129,7 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInf
   if (setup.campaign.getPlayerRole() == PlayerRole::ADVENTURER)
     ret->getMainModel()->landHeroPlayer(std::move(avatar.playerCreature));
   else
-    ret->spawnKeeper(std::move(avatar), setup.regenerateMana, setup.introMessages, gameConfig);
+    ret->spawnKeeper(std::move(avatar), setup.introMessages, gameConfig);
   // Restore vulnerability. If the effect wasn't present in the first place then it will zero-out.
   avatarCreature->getAttributes().addPermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
   return ret;
@@ -203,7 +202,7 @@ void Game::prepareSiteRetirement() {
   playerCollective->setVillainType(VillainType::MAIN);
   playerCollective->retire();
   vector<Position> locationPos;
-  for (auto f : CollectiveConfig::getTrainingFurniture(ExperienceType::SPELL))
+  for (auto f : contentFactory->furniture.getTrainingFurniture(ExperienceType::SPELL))
     for (auto pos : playerCollective->getConstructions().getBuiltPositions(f))
       locationPos.push_back(pos);
   if (locationPos.empty())
@@ -220,7 +219,7 @@ void Game::prepareSiteRetirement() {
           c.minPopulation = 24;
           c.minTeamSize = 5;
           c.triggers = LIST(
-              {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType::THRONE, 0.0003}},
+              {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType("THRONE"), 0.0003}},
               {AttackTriggerId::SELF_VICTIMS},
               AttackTriggerId::STOLEN_ITEMS,
           );

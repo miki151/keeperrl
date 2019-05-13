@@ -1029,7 +1029,7 @@ class ByCollective : public Behaviour {
         if (collective->isActivityGoodAssumingHaveTasks(creature, t)) {
           if (MinionActivities::getExisting(collective, creature, t) || t == MinionActivity::IDLE)
             goodTasks.push_back({t, nullptr});
-          if (auto generated = MinionActivities::generate(collective, creature, t))
+          if (auto generated = collective->getMinionActivities().generate(collective, creature, t))
             goodTasks.push_back({t, std::move(generated)});
         }
       }
@@ -1058,7 +1058,7 @@ class ByCollective : public Behaviour {
           && *lastTimeGeneratedActivity[activity] >= collective->getLocalTime() - 10_visible)
         return nullptr;*/
       lastTimeGeneratedActivity[activity] = collective->getLocalTime();
-      return MinionActivities::generate(collective, creature, activity);
+      return collective->getMinionActivities().generate(collective, creature, activity);
     };
     if (current.activity == MinionActivity::IDLE || !collective->isActivityGood(creature, current.activity)) {
       collective->setMinionActivity(creature, MinionActivity::IDLE);

@@ -66,15 +66,15 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::DIG_ROOM:
       return getHighlightedSquaresHigh(game).empty();
     case State::BUILD_DOOR:
-      return collective->getConstructions().getBuiltCount(FurnitureType::WOOD_DOOR);
+      return collective->getConstructions().getBuiltCount(FurnitureType("WOOD_DOOR"));
     case State::BUILD_LIBRARY:
-      return collective->getConstructions().getBuiltCount(FurnitureType::BOOKCASE_WOOD) >= 5;
+      return collective->getConstructions().getBuiltCount(FurnitureType("BOOKCASE_WOOD")) >= 5;
     case State::DIG_2_ROOMS:
       return getHighlightedSquaresHigh(game).empty();
     case State::ACCEPT_IMMIGRANT:
       return collective->getCreatures(MinionTrait::FIGHTER).size() >= 1;
     case State::TORCHES:
-      for (auto furniture : {FurnitureType::BOOKCASE_WOOD, FurnitureType::TRAINING_WOOD})
+      for (auto furniture : {FurnitureType("BOOKCASE_WOOD"), FurnitureType("TRAINING_WOOD")})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
           if (pos.getLightingEfficiency() < 0.99)
             return false;
@@ -82,7 +82,7 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::FLOORS:
       return getHighlightedSquaresLow(game).empty();
     case State::BUILD_WORKSHOP:
-      return collective->getConstructions().getBuiltCount(FurnitureType::WORKSHOP) >= 2 &&
+      return collective->getConstructions().getBuiltCount(FurnitureType("WORKSHOP")) >= 2 &&
           collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT).size() >= 1;
     case State::SCHEDULE_WORKSHOP_ITEMS: {
       int numWeapons = collective->getNumItems(ItemIndex::WEAPON);
@@ -380,15 +380,15 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
     }
     case State::FLOORS: {
       vector<Vec2> ret;
-      for (auto furniture : {FurnitureType::BOOKCASE_WOOD, FurnitureType::TRAINING_WOOD})
+      for (auto furniture : {FurnitureType("BOOKCASE_WOOD"), FurnitureType("TRAINING_WOOD")})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
           for (auto floorPos : concat({pos}, pos.neighbors8()))
-            if (floorPos.canConstruct(FurnitureType::FLOOR_WOOD1) && !ret.contains(floorPos.getCoord()))
+            if (floorPos.canConstruct(FurnitureType("FLOOR_WOOD1")) && !ret.contains(floorPos.getCoord()))
               ret.push_back(floorPos.getCoord());
       return ret;
     }
     case State::SCHEDULE_WORKSHOP_ITEMS:
-      return collective->getConstructions().getBuiltPositions(FurnitureType::WORKSHOP).transform(
+      return collective->getConstructions().getBuiltPositions(FurnitureType("WORKSHOP")).transform(
           [](const Position& pos) { return pos.getCoord(); });
     default:
       return {};
@@ -462,7 +462,7 @@ void Tutorial::createTutorial(Game& game, const GameConfig* gameConfig) {
   bool foundEntrance = false;
   for (auto pos : collective->getModel()->getTopLevel()->getAllPositions())
     if (auto f = pos.getFurniture(FurnitureLayer::CEILING))
-      if (f->getType() == FurnitureType::TUTORIAL_ENTRANCE) {
+      if (f->getType() == FurnitureType("TUTORIAL_ENTRANCE")) {
         tutorial->entrance = pos.getCoord() - Vec2(0, 1);
         CHECK(!foundEntrance);
         foundEntrance = true;
@@ -470,7 +470,7 @@ void Tutorial::createTutorial(Game& game, const GameConfig* gameConfig) {
   CHECK(foundEntrance);
   collective->setTrait(collective->getLeader(), MinionTrait::NO_AUTO_EQUIPMENT);
   collective->getWarnings().disable();
-  collective->init(CollectiveConfig::keeper(50_visible, 10, false));
+  collective->init(CollectiveConfig::keeper(50_visible, 10));
   map<string, vector<ImmigrantInfo>> immigrantData;
   if (auto error = gameConfig->readObject(immigrantData, GameConfigId::IMMIGRATION))
     USER_FATAL << *error;
@@ -480,6 +480,6 @@ void Tutorial::createTutorial(Game& game, const GameConfig* gameConfig) {
       append(immigrants, *group);
     else
       USER_FATAL << "Immigrant group not found: " << elem;
-  CollectiveConfig::addBedRequirementToImmigrants(immigrants, &game.getContentFactory()->creatures);
+  CollectiveConfig::addBedRequirementToImmigrants(immigrants, game.getContentFactory());
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
 }

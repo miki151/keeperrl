@@ -652,7 +652,7 @@ void Effect::PlaceFurniture::applyToCreature(Creature* c, Creature* attacker) co
 }
 
 string Effect::PlaceFurniture::getName() const {
-  return EnumInfo<FurnitureType>::getString(furniture);
+  return furniture.data();
 }
 
 string Effect::PlaceFurniture::getDescription() const {

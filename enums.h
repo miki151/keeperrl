@@ -46,7 +46,6 @@ enum class CreatureSize;
 
 enum class SquareApplyType;
 enum class SquareId;
-enum class FurnitureType : std::uint8_t;
 enum class FurnitureLayer;
 enum class ItemAction;
 enum class WorshipType;
@@ -109,7 +108,9 @@ enum class ItemUpgradeType;
 enum class ViewObjectAction : std::uint8_t;
 enum class Gender : std::uint8_t;
 enum class CreatureViewCenterType;
+enum class BedType;
 
 struct FXInfo;
 struct FXSpawnInfo;
 using TechId = string;
+class FurnitureType;

@@ -48,7 +48,7 @@
           traits = { FIGHTER NO_AUTO_EQUIPMENT }
           frequency = 0.7
           requirements = {
-            { 0.1 AttractionInfo 1 {FurnitureType FORGE FurnitureType WORKSHOP FurnitureType JEWELLER}}
+            { 0.1 AttractionInfo 1 {FurnitureType "FORGE" FurnitureType "WORKSHOP" FurnitureType "JEWELLER"}}
           }
           specialTraits = {
              { 0.03 { SkillId WORKSHOP LastingEffect INSANITY }}
@@ -62,7 +62,7 @@
           traits = { FIGHTER }
           frequency = 0.7
           requirements = {
-            { 0.1 AttractionInfo 1 {FurnitureType TRAINING_WOOD}}
+            { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_WOOD"}}
           }
           specialTraits = {
              { 0.01 { ExtraBodyPart HEAD 1}}
@@ -85,7 +85,7 @@
           traits = { FIGHTER }
           frequency = 0.3
           requirements = {
-            { 0.1 AttractionInfo 1 {FurnitureType BOOKCASE_WOOD FurnitureType LABORATORY}}
+            { 0.1 AttractionInfo 1 {FurnitureType "BOOKCASE_WOOD" FurnitureType "LABORATORY"}}
             { 0.0 MinTurnRequirement 500 }
           }
           specialTraits = {
@@ -101,7 +101,7 @@
           traits = { FIGHTER }
           frequency = 0.3
           requirements = {
-            { 0.1 AttractionInfo 1 {FurnitureType BOOKCASE_WOOD FurnitureType LABORATORY}}
+            { 0.1 AttractionInfo 1 {FurnitureType "BOOKCASE_WOOD" FurnitureType "LABORATORY"}}
             { 0.0 MinTurnRequirement 500 }
           }
           specialTraits = {
@@ -120,7 +120,7 @@
           frequency = 0.3
           requirements = {
             { 0.0 MinTurnRequirement 2000 }
-            { 0.1 AttractionInfo 1 {FurnitureType TRAINING_IRON}}
+            { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_IRON"}}
           }
           specialTraits = {
              { 0.02 { ExtraBodyPart HEAD 1}}
@@ -141,7 +141,7 @@
           frequency = 0.3
           requirements = {
             { 0.0 MinTurnRequirement 2000 }
-            { 0.1 AttractionInfo 1 {FurnitureType TRAINING_IRON}}
+            { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_IRON"}}
             { 0.3 AttractionInfo 1 {ItemIndex RANGED_WEAPON}}
           }
           specialTraits = {
@@ -160,7 +160,7 @@
           ids = { "ZOMBIE" }
           traits = { FIGHTER }
           frequency = 0.5
-          spawnLocation = FurnitureType GRAVE
+          spawnLocation = FurnitureType "GRAVE"
           requirements = {
             { 0.0 MinTurnRequirement 1000 }
             { 0.0 CostInfo CORPSE 1}
@@ -175,10 +175,10 @@
           ids = { "SKELETON" }
           traits = { FIGHTER }
           frequency = 0.5
-          spawnLocation = FurnitureType GRAVE
+          spawnLocation = FurnitureType "GRAVE"
           requirements = {
             { 0.0 MinTurnRequirement 1000 }
-            { 0.1 AttractionInfo 1 {FurnitureType ARCHERY_RANGE}}
+            { 0.1 AttractionInfo 1 {FurnitureType "ARCHERY_RANGE"}}
             { 0.0 CostInfo CORPSE 1}
           }
           specialTraits = {
@@ -189,10 +189,10 @@
           ids = { "VAMPIRE" }
           traits = { FIGHTER }
           frequency = 0.2
-          spawnLocation = FurnitureType GRAVE
+          spawnLocation = FurnitureType "GRAVE"
           requirements = {
             { 0.0 MinTurnRequirement 1000 }
-            { 0.1 AttractionInfo 1 {FurnitureType TRAINING_IRON}}
+            { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_IRON"}}
             { 0.0 CostInfo CORPSE 1}
           }
           specialTraits = {
@@ -207,10 +207,10 @@
           ids = { "MUMMY" }
           traits = { FIGHTER }
           frequency = 0.1
-          spawnLocation = FurnitureType GRAVE
+          spawnLocation = FurnitureType "GRAVE"
           requirements = {
             { 0.0 MinTurnRequirement 1000 }
-            { 0.1 AttractionInfo 1 {FurnitureType TRAINING_IRON}}
+            { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_IRON"}}
             { 0.0 CostInfo CORPSE 1}
           }
           specialTraits = {
@@ -221,30 +221,30 @@
           ids = { "LOST_SOUL" }
           traits = { FIGHTER }
           frequency = 0.3
-          spawnLocation = FurnitureType DEMON_SHRINE
+          spawnLocation = FurnitureType "DEMON_SHRINE"
           requirements = {
-            { 0.3 AttractionInfo 1 {FurnitureType DEMON_SHRINE}}
-            { 0.0 FurnitureType DEMON_SHRINE }
+            { 0.3 AttractionInfo 1 {FurnitureType "DEMON_SHRINE"}}
+            { 0.0 FurnitureType "DEMON_SHRINE" }
           }
         }
         {
           ids = { "SUCCUBUS" }
           traits = { FIGHTER NO_EQUIPMENT }
           frequency = 0.3
-          spawnLocation = FurnitureType DEMON_SHRINE
+          spawnLocation = FurnitureType "DEMON_SHRINE"
           requirements = {
-            { 0.3 AttractionInfo 2 {FurnitureType DEMON_SHRINE}}
-            { 0.0 FurnitureType DEMON_SHRINE }
+            { 0.3 AttractionInfo 2 {FurnitureType "DEMON_SHRINE"}}
+            { 0.0 FurnitureType "DEMON_SHRINE" }
           }
         }
         {
           ids = { "DOPPLEGANGER" }
           traits = { FIGHTER }
           frequency = 0.3
-          spawnLocation = FurnitureType DEMON_SHRINE
+          spawnLocation = FurnitureType "DEMON_SHRINE"
           requirements = {
-            { 0.3 AttractionInfo 3 {FurnitureType DEMON_SHRINE}}
-            { 0.0 FurnitureType DEMON_SHRINE }
+            { 0.3 AttractionInfo 3 {FurnitureType "DEMON_SHRINE"}}
+            { 0.0 FurnitureType "DEMON_SHRINE" }
           }
         }
         {
@@ -253,7 +253,7 @@
           frequency = 0.5
           requirements = {
             { 0.0 SunlightState DAY }
-            { 0.0 FurnitureType BEAST_CAGE }
+            { 0.0 FurnitureType "BEAST_CAGE" }
           }
         }
         {
@@ -262,7 +262,7 @@
           frequency = 0.5
           requirements = {
             { 0.0 SunlightState NIGHT }
-            { 0.0 FurnitureType BEAST_CAGE }
+            { 0.0 FurnitureType "BEAST_CAGE" }
           }
         }
         {
@@ -273,7 +273,7 @@
           autoTeam = true
           requirements = {
             { 0.0 SunlightState NIGHT }
-            { 0.0 FurnitureType BEAST_CAGE }
+            { 0.0 FurnitureType "BEAST_CAGE" }
           }
         }
         {
@@ -281,7 +281,7 @@
           traits = { FIGHTER DOESNT_TRIGGER }
           frequency = 0.1
           requirements = {
-            { 0.0 FurnitureType BEAST_CAGE }
+            { 0.0 FurnitureType "BEAST_CAGE" }
           }
         }
         {
@@ -290,8 +290,8 @@
           frequency = 0.1
           requirements = {
             { 0.0 MinTurnRequirement 2000 }
-            { 0.0 FurnitureType BEAST_CAGE }
-            { 0.3 AttractionInfo 2 {FurnitureType TRAINING_IRON}}
+            { 0.0 FurnitureType "BEAST_CAGE" }
+            { 0.3 AttractionInfo 2 {FurnitureType "TRAINING_IRON"}}
           }
           specialTraits = {
              { 0.1 { AttrBonus DAMAGE 13 LastingEffect INSANITY}}
@@ -367,7 +367,7 @@
           traits = { FIGHTER NO_AUTO_EQUIPMENT }
           frequency = 0.7
           requirements = {
-            { 0.1 AttractionInfo 1 {FurnitureType FORGE FurnitureType WORKSHOP FurnitureType JEWELLER}}
+            { 0.1 AttractionInfo 1 {FurnitureType "FORGE" FurnitureType "WORKSHOP" FurnitureType "JEWELLER"}}
           }
           specialTraits = {
              { 0.05 { OneOfTraits { LastingEffect FAST_CRAFTING LastingEffect SLOW_CRAFTING } }}
@@ -381,7 +381,7 @@
           traits = { FIGHTER }
           frequency = 0.7
           requirements = {
-            { 0.1 AttractionInfo 1 {FurnitureType TRAINING_IRON}}
+            { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_IRON"}}
           }
           specialTraits = {
              { 0.05 { ExtraTraining ARCHERY 2}}
@@ -398,7 +398,7 @@
           traits = { FIGHTER }
           frequency = 0.3
           requirements = {
-            { 0.1 AttractionInfo 1 {FurnitureType BOOKCASE_WOOD}}
+            { 0.1 AttractionInfo 1 {FurnitureType "BOOKCASE_WOOD"}}
             { 0.0 MinTurnRequirement 500 }
           }
           specialTraits = {
@@ -413,8 +413,8 @@
           frequency = 0.3
           requirements = {
             { 0.0 MinTurnRequirement 2000 }
-            { 0.1 AttractionInfo 1 {FurnitureType TRAINING_WOOD}}
-            { 0.1 AttractionInfo 1 {FurnitureType ARCHERY_RANGE}}
+            { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_WOOD"}}
+            { 0.1 AttractionInfo 1 {FurnitureType "ARCHERY_RANGE"}}
           }
           specialTraits = {
              { 0.03 { AttrBonus RANGED_DAMAGE 13 LastingEffect INSANITY}}
@@ -433,7 +433,7 @@
           traits = { FIGHTER }
           frequency = 0.1
           requirements = {
-            { 0.0 AttractionInfo 1 {FurnitureType THRONE}}
+            { 0.0 AttractionInfo 1 {FurnitureType "THRONE"}}
           }
           specialTraits = {
             { 1.0 { LastingEffect ENTERTAINER }}
@@ -476,7 +476,7 @@
           consumeIds = true
           requirements = {
             { 0.0 TutorialRequirement ACCEPT_IMMIGRANT }
-            { 1.0 AttractionInfo 1 { FurnitureType TRAINING_WOOD } } 
+            { 1.0 AttractionInfo 1 { FurnitureType "TRAINING_WOOD" } } 
           }
         }
         {
@@ -487,7 +487,7 @@
 #          hiddenInHelp = true
           requirements = {
             { 0.0 TutorialRequirement ACCEPT_MORE_IMMIGRANTS }
-            { 1.0 AttractionInfo 1 { FurnitureType TRAINING_WOOD } } 
+            { 1.0 AttractionInfo 1 { FurnitureType "TRAINING_WOOD" } } 
           }
         }
         {
@@ -498,7 +498,7 @@
 #          hiddenInHelp = true
           requirements = {
             { 0.0 TutorialRequirement ACCEPT_MORE_IMMIGRANTS}
-            { 1.0 AttractionInfo 1 { FurnitureType WORKSHOP } } 
+            { 1.0 AttractionInfo 1 { FurnitureType "WORKSHOP" } } 
           }
         }
     }

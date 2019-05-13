@@ -190,7 +190,7 @@ void PlayerControl::reloadBuildingMenu() {
   for (auto& info : buildInfo)
     if (auto furniture = info.type.getReferenceMaybe<BuildInfo::Furniture>()) {
       for (auto type : furniture->types) {
-        double luxury = getGame()->getContentFactory()->furniture.getLuxuryInfo(type).luxury;
+        double luxury = getGame()->getContentFactory()->furniture.getData(type).getLuxuryInfo().luxury;
         if (luxury > 0) {
           info.help += " Increases luxury by " + toString(luxury) + ".";
           break;
@@ -199,8 +199,8 @@ void PlayerControl::reloadBuildingMenu() {
       if (auto increase = getGame()->getContentFactory()->furniture.getPopulationIncreaseDescription(furniture->types[0]))
         info.help += " " + *increase;
       for (auto expType : ENUM_ALL(ExperienceType))
-        if (auto increase = CollectiveConfig::getTrainingMaxLevel(expType, furniture->types[0]))
-          info.help += " Adds up to " + toString(*increase) + " " + toLower(getName(expType)) + " levels.";
+        if (auto increase = getGame()->getContentFactory()->furniture.getData(furniture->types[0]).getMaxTraining(expType))
+          info.help += " Adds up to " + toString(increase) + " " + toLower(getName(expType)) + " levels.";
     }
 }
 
@@ -214,7 +214,7 @@ static optional<string> checkGroupCounts(const map<string, vector<ImmigrantInfo>
 }
 
 optional<string> PlayerControl::reloadImmigrationAndWorkshops(const GameConfig* gameConfig,
-    CreatureFactory* creatureFactory) {
+    ContentFactory* contentFactory) {
   Technology technology;
   if (auto error = gameConfig->readObject(technology, GameConfigId::TECHNOLOGY))
     return error;
@@ -257,7 +257,7 @@ optional<string> PlayerControl::reloadImmigrationAndWorkshops(const GameConfig* 
       append(immigrants, *group);
     else
       return "Undefined immigrant group: \"" + elem + "\"";
-  CollectiveConfig::addBedRequirementToImmigrants(immigrants, creatureFactory);
+  CollectiveConfig::addBedRequirementToImmigrants(immigrants, contentFactory);
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
   collective->setTechnology(std::move(technology));
   return none;
@@ -267,7 +267,7 @@ void PlayerControl::reloadData() {
   auto gameConfig = getGame()->getGameConfig();
   reloadBuildingMenu();
   while (1) {
-    if (auto error = reloadImmigrationAndWorkshops(gameConfig, &getGame()->getContentFactory()->creatures))
+    if (auto error = reloadImmigrationAndWorkshops(gameConfig, getGame()->getContentFactory()))
       getView()->presentText("Error", *error);
     else
       break;
@@ -316,7 +316,7 @@ void PlayerControl::onControlledKilled(const Creature* victim) {
 }
 
 void PlayerControl::onSunlightVisibilityChanged() {
-  for (auto pos : collective->getConstructions().getBuiltPositions(FurnitureType::EYEBALL))
+  for (auto pos : collective->getConstructions().getBuiltPositions(FurnitureType("EYEBALL")))
     visibilityMap->updateEyeball(pos);
 }
 
@@ -665,7 +665,7 @@ vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) co
   for (auto& button : buildInfo) {
     button.type.visit(
         [&](const BuildInfo::Furniture& elem) {
-          ViewId viewId = getGame()->getContentFactory()->furniture.getViewId(elem.types[0]);
+          ViewId viewId = getGame()->getContentFactory()->furniture.getData(elem.types[0]).getViewObject()->id();
           string description;
           if (elem.cost.value > 0) {
             int num = 0;
@@ -732,7 +732,7 @@ string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
     case AttackTriggerId::ROOM_BUILT: {
       auto type = trigger.get<RoomTriggerInfo>().type;
       auto myCount = collective->getConstructions().getBuiltCount(type);
-      return getGame()->getContentFactory()->furniture.getName(type, myCount);
+      return getGame()->getContentFactory()->furniture.getData(type).getName(myCount);
     }
     case AttackTriggerId::POWER: return "your power";
     case AttackTriggerId::FINISH_OFF: return "finishing you off";
@@ -947,7 +947,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, Un
       for (auto expType : ENUM_ALL(ExperienceType))
         if (auto requiredDummy = collective->getMissingTrainingFurniture(c, expType))
           minionInfo.experienceInfo.warning[expType] =
-              "Requires " + getGame()->getContentFactory()->furniture.getName(*requiredDummy) + " to train further.";
+              "Requires " + getGame()->getContentFactory()->furniture.getData(*requiredDummy).getName() + " to train further.";
       for (MinionActivity t : ENUM_ALL(MinionActivity))
         if (c->getAttributes().getMinionActivities().isAvailable(collective, c, t, true)) {
           minionInfo.minionTasks.push_back({t,
@@ -1187,7 +1187,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
     const int numFreePrisoners = 4;
     const int requiredPrisonSize = 2;
     const int numPrisoners = collective->getCreatures(MinionTrait::PRISONER).size() - numFreePrisoners;
-    const int prisonSize = collective->getConstructions().getBuiltCount(FurnitureType::PRISON);
+    const int prisonSize = collective->getConstructions().getBuiltCount(FurnitureType("PRISON"));
     vector<string> requirements;
     const int missingSize = (numPrisoners + 1) * requiredPrisonSize - prisonSize;
     if (missingSize > 0) {
@@ -1305,8 +1305,8 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         [&](const AttractionInfo& attraction) {
           int required = attraction.amountClaimed;
           requirements.push_back("Requires " + toString(required) + " " +
-              combineWithOr(attraction.types.transform(
-                  [&](const AttractionType& type) { return AttractionInfo::getAttractionName(type, required); })));
+              combineWithOr(attraction.types.transform([&](const AttractionType& type) {
+                return AttractionInfo::getAttractionName(collective->getGame()->getContentFactory(), type, required); })));
         },
         [&](const TechId& techId) {
           requirements.push_back("Requires technology: " + techId);
@@ -1315,7 +1315,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
           requirements.push_back("Will only join during the "_s + SunlightInfo::getText(state));
         },
         [&](const FurnitureType& type) {
-          requirements.push_back("Requires at least one " + getGame()->getContentFactory()->furniture.getName(type));
+          requirements.push_back("Requires at least one " + getGame()->getContentFactory()->furniture.getData(type).getName());
         },
         [&](const CostInfo& cost) {
           costObj = getCostObj(cost);
@@ -1618,9 +1618,9 @@ void PlayerControl::onEvent(const GameEvent& event) {
         }
       },
       [&](const FurnitureDestroyed& info) {
-        if (info.type == FurnitureType::EYEBALL)
+        if (info.type == FurnitureType("EYEBALL"))
           visibilityMap->removeEyeball(info.position);
-        if (info.type == FurnitureType::PIT && collective->getKnownTiles().isKnown(info.position))
+        if (info.type == FurnitureType("PIT") && collective->getKnownTiles().isKnown(info.position))
           addToMemory(info.position);
       },
       [&](const FX& info) {
@@ -1727,10 +1727,10 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (Creature* c = getCreature(*draggedCreature))
-          if (auto task = MinionActivities::getActivityFor(collective, c, furniture->getType()))
+          if (auto task = collective->getMinionActivities().getActivityFor(collective, c, furniture->getType()))
             if (collective->isActivityGood(c, *task, true))
               index.setHighlight(HighlightType::CREATURE_DROP);
-      if (CollectiveConfig::requiresLighting(furniture->getType()) && position.getLightingEfficiency() < 0.99)
+      if (getGame()->getContentFactory()->furniture.getData(furniture->getType()).isRequiresLight() && position.getLightingEfficiency() < 0.99)
         index.setHighlight(HighlightType::INSUFFICIENT_LIGHT);
     }
     for (auto furniture : position.getFurniture())
@@ -1928,7 +1928,7 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
     c->removeEffect(LastingEffect::TIED_UP);
     c->removeEffect(LastingEffect::SLEEP);
     if (auto furniture = collective->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
-      if (auto task = MinionActivities::getActivityFor(collective, c, furniture->getFurnitureType())) {
+      if (auto task = collective->getMinionActivities().getActivityFor(collective, c, furniture->getFurnitureType())) {
         if (collective->isActivityGood(c, *task, true)) {
           collective->setMinionActivity(c, *task);
           collective->setTask(c, Task::goTo(pos));
@@ -1980,7 +1980,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CREATURE_DRAG:
       draggedCreature = input.get<Creature::Id>();
       for (auto task : ENUM_ALL(MinionActivity))
-        for (auto& pos : MinionActivities::getAllPositions(collective, nullptr, task))
+        for (auto& pos : collective->getMinionActivities().getAllPositions(collective, nullptr, task))
           pos.setNeedsRenderUpdate(true);
       break;
     case UserInputId::CREATURE_DRAG_DROP:
@@ -2441,7 +2441,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           selection = SELECT;
           collective->destroyOrder(position, layer);
           if (auto f = position.getFurniture(layer))
-            if (f->getType() == FurnitureType::TREE_TRUNK)
+            if (f->getType() == FurnitureType("TREE_TRUNK"))
               position.removeFurniture(f);
           getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
           updateSquareMemory(position);
@@ -2498,7 +2498,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       collective->setPriorityTasks(position);
     },
     [&](const BuildInfo::Furniture& info) {
-      auto layer = getGame()->getContentFactory()->furniture.getLayer(info.types[0]);
+      auto layer = getGame()->getContentFactory()->furniture.getData(info.types[0]).getLayer();
       auto currentPlanned = collective->getConstructions().getFurniture(position, layer);
       if (currentPlanned && currentPlanned->isBuilt(position))
         currentPlanned = none;
@@ -2804,7 +2804,7 @@ void PlayerControl::updateSquareMemory(Position pos) {
 
 void PlayerControl::onConstructed(Position pos, FurnitureType type) {
   addToMemory(pos);
-  if (type == FurnitureType::EYEBALL)
+  if (type == FurnitureType("EYEBALL"))
     visibilityMap->updateEyeball(pos);
 }
 

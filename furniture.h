@@ -7,6 +7,9 @@
 #include "event_listener.h"
 #include "furniture_layer.h"
 #include "luxury_info.h"
+#include "furniture_type.h"
+#include "experience_type.h"
+#include "bed_type.h"
 
 class TribeId;
 class Creature;
@@ -85,6 +88,9 @@ class Furniture : public OwnedObject<Furniture> {
   bool forgetAfterBuilding() const;
   void onCreatureWalkedOver(Position, Vec2 direction) const;
   void onCreatureWalkedInto(Position, Vec2 direction) const;
+  int getMaxTraining(ExperienceType) const;
+  const vector<Vec2>& getRequiredSupport() const;
+  optional<FurnitureType> getUpgrade() const;
   /**
    * @brief Calls special functionality to handle dropped items, if any.
    * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
@@ -92,43 +98,23 @@ class Furniture : public OwnedObject<Furniture> {
   vector<PItem> dropItems(Position, vector<PItem>) const;
   bool canBuildBridgeOver() const;
   const LuxuryInfo& getLuxuryInfo() const;
-
+  struct PopulationInfo {
+    double SERIAL(increase);
+    optional<int> SERIAL(limit);
+    SERIALIZE_ALL(increase, limit)
+  };
+  const PopulationInfo& getPopulationIncrease() const;
+  optional<FurnitureType> getBuiltOver() const;
+  bool isBridge() const;
+  bool silentlyReplace() const;
   void setType(FurnitureType);
+  bool buildOutsideOfTerritory() const;
+  bool isRequiresLight() const;
+  optional<BedType> getBedType() const;
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();
-  Furniture& setConstructMessage(optional<ConstructMessage>);
   Furniture& setDestroyable(double);
   Furniture& setDestroyable(double, DestroyAction::Type);
-  Furniture& setItemDrop(ItemFactory);
-  Furniture& setBurntRemains(FurnitureType);
-  Furniture& setDestroyedRemains(FurnitureType);
-  Furniture& setBlockVision();
-  Furniture& setBlockVision(VisionId, bool);
-  Furniture& setUsageType(FurnitureUsageType);
-  Furniture& setUsageTime(TimeInterval);
-  Furniture& setClickType(FurnitureClickType);
-  Furniture& setTickType(FurnitureTickType);
-  Furniture& setEntryType(FurnitureEntry);
-  Furniture& setDroppedItems(FurnitureDroppedItems);
-  Furniture& setFireInfo(const Fire&);
-  Furniture& setIsWall();
-  Furniture& setIsBuildingSupport();
-  Furniture& setOverrideMovement();
-  Furniture& setLayer(FurnitureLayer);
-  Furniture& setLightEmission(double);
-  Furniture& setCanHide();
-  Furniture& setEmitsWarning();
-  Furniture& setPlacementMessage(MsgType);
-  Furniture& setSummonedElement(CreatureId);
-  Furniture& setCanBuildBridgeOver();
-  Furniture& setStopProjectiles();
-  Furniture& setClearFogOfWar();
-  Furniture& setCanRemoveWithCreaturePresent(bool state);
-  Furniture& setCanRemoveNonFriendly(bool state);
-  Furniture& setForgetAfterBuilding();
-  Furniture& setLuxury(double luxury);
-  Furniture& setOnBuilt(FurnitureOnBuilt);
-  Furniture& setBurnsDownMessage(BurnsDownMessage);
   MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
@@ -181,4 +167,14 @@ class Furniture : public OwnedObject<Furniture> {
   BurnsDownMessage SERIAL(burnsDownMessage) = BurnsDownMessage::BURNS_DOWN;
   template<typename Archive>
   void serializeImpl(Archive&, const unsigned);
+  EnumMap<ExperienceType, int> SERIAL(maxTraining);
+  vector<Vec2> SERIAL(requiredSupport);
+  optional<FurnitureType> SERIAL(upgrade);
+  optional<FurnitureType> SERIAL(builtOver);
+  bool SERIAL(bridge) = false;
+  bool SERIAL(canSilentlyReplace) = false;
+  bool SERIAL(canBuildOutsideOfTerritory) = false;
+  bool SERIAL(requiresLight) = false;
+  optional<BedType> SERIAL(bedType);
+  PopulationInfo SERIAL(populationIncrease) = {0, none};
 };

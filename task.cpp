@@ -109,7 +109,7 @@ class Construction : public Task {
   }
 
   virtual string getDescription() const override {
-    return "Build " + position.getGame()->getContentFactory()->furniture.getName(furnitureType) + " at " + toString(position);
+    return "Build " + position.getGame()->getContentFactory()->furniture.getData(furnitureType).getName() + " at " + toString(position);
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -120,7 +120,7 @@ class Construction : public Task {
     Vec2 dir = c->getPosition().getDir(position);
     if (auto action = c->construct(dir, furnitureType))
       return {1.0, action.append([=](Creature* c) {
-          if (!position.isActiveConstruction(position.getGame()->getContentFactory()->furniture.getLayer(furnitureType))) {
+          if (!position.isActiveConstruction(position.getGame()->getContentFactory()->furniture.getData(furnitureType).getLayer())) {
             setDone();
             callback->onConstructed(position, furnitureType);
           }
@@ -158,7 +158,7 @@ class Destruction : public Task {
   }
 
   WConstFurniture getFurniture() const {
-    return position.getFurniture(position.getGame()->getContentFactory()->furniture.getLayer(furnitureType));
+    return position.getFurniture(position.getGame()->getContentFactory()->furniture.getData(furnitureType).getLayer());
   }
 
   virtual bool isBogus() const override {
@@ -780,7 +780,7 @@ PTask Task::attackCreatures(vector<Creature*> c) {
 
 PTask Task::stealFrom(WCollective collective) {
   vector<PTask> tasks;
-  for (Position pos : collective->getConstructions().getBuiltPositions(FurnitureType::TREASURE_CHEST)) {
+  for (Position pos : collective->getConstructions().getBuiltPositions(FurnitureType("TREASURE_CHEST"))) {
     vector<Item*> gold = pos.getItems().filter(Item::classPredicate(ItemClass::GOLD));
     if (!gold.empty())
       tasks.push_back(pickUpItem(pos, gold));
@@ -1655,10 +1655,10 @@ class Spider : public Task {
       : origin(orig), webPositions(pos) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    auto layer = origin.getGame()->getContentFactory()->furniture.getLayer(FurnitureType::SPIDER_WEB);
+    auto layer = origin.getGame()->getContentFactory()->furniture.getData(FurnitureType("SPIDER_WEB")).getLayer();
     for (auto pos : webPositions)
       if (!pos.getFurniture(layer))
-        pos.addFurniture(origin.getGame()->getContentFactory()->furniture.getFurniture(FurnitureType::SPIDER_WEB, c->getTribeId()));
+        pos.addFurniture(origin.getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("SPIDER_WEB"), c->getTribeId()));
     for (auto& pos : Random.permutation(webPositions))
       if (auto victim = pos.getCreature())
         if (victim->isAffected(LastingEffect::ENTANGLED) && victim->isEnemy(c)) {

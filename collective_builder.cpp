@@ -90,11 +90,11 @@ optional<CollectiveName> CollectiveBuilder::generateName() {
     return none;
 }
 
-PCollective CollectiveBuilder::build() {
+PCollective CollectiveBuilder::build(const ContentFactory* contentFactory) {
   CHECK(model || level);
   if (!model)
     model = level->getModel();
-  auto c = Collective::create(model, *tribe, generateName(), discoverable);
+  auto c = Collective::create(model, *tribe, generateName(), discoverable, contentFactory);
   c->init(std::move(*config));
   c->setControl(CollectiveControl::idle(c.get()));
   bool wasLeader = false;

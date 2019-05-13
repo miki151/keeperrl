@@ -1,5 +1,5 @@
 {
-  TRAINING_WOOD
+  "TRAINING_WOOD"
   {
     name = "wooden training dummy"
     viewId = { "training_wood" }
@@ -8,8 +8,12 @@
     fire = 50
     canHideHere = true
     strength = 80
+    maxTraining = {
+      MELEE 3
+    }
+    requiresLight = true
   }
-  TRAINING_IRON
+  "TRAINING_IRON"
   {
     name = "iron training dummy"
     viewId = { "training_iron" }
@@ -17,8 +21,13 @@
     usageType = TRAIN
     canHideHere = true
     strength = 80
+    upgrade = "TRAINING_WOOD"
+    maxTraining = {
+      MELEE 7
+    }
+    requiresLight = true
   }
-  TRAINING_ADA
+  "TRAINING_ADA"
   {
     name = "adamantine training dummy"
     viewId = { "training_ada" }
@@ -26,8 +35,13 @@
     usageType = TRAIN
     canHideHere = true
     strength = 80
+    upgrade = "TRAINING_IRON"
+    maxTraining = {
+      MELEE 30
+    }
+    requiresLight = true
   }
-  ARCHERY_RANGE
+  "ARCHERY_RANGE"
   {
     name = "archery target"
     viewId = { "archery_range" }
@@ -36,8 +50,9 @@
     usageType = ARCHERY_RANGE
     canHideHere = true
     strength = 80
+    requiresLight = true
   }
-  WORKSHOP
+  "WORKSHOP"
   {
     name = "workshop"
     viewId = { "workshop" }
@@ -46,8 +61,9 @@
     canHideHere = true
     fire = 50
     strength = 80
+    requiresLight = true
   }
-  FORGE
+  "FORGE"
   {
     name = "forge"
     viewId = { "forge" }
@@ -55,8 +71,9 @@
     usageTime = 5
     canHideHere = true
     strength = 80
+    requiresLight = true
   }
-  LABORATORY
+  "LABORATORY"
   {
     name = "laboratory"
     viewId = { "cauldron" }
@@ -64,8 +81,9 @@
     usageTime = 5
     canHideHere = true
     strength = 80
+    requiresLight = true
   }
-  JEWELLER
+  "JEWELLER"
   {
     name = "jeweller"
     viewId = { "jeweller" }
@@ -74,8 +92,9 @@
     canHideHere = true
     fire = 50
     strength = 40
+    requiresLight = true
   }
-  FURNACE
+  "FURNACE"
   {
     name = "furnace"
     viewId = { "furnace" }
@@ -84,7 +103,7 @@
     canHideHere = true
     strength = 100
   }
-  BOOKCASE_WOOD
+  "BOOKCASE_WOOD"
   {
     name = "wooden bookcase"
     viewId = { "bookcase_wood" }
@@ -94,8 +113,12 @@
     canHideHere = true
     fire = 70
     strength = 50
+    maxTraining = {
+      SPELL 3
+    }
+    requiresLight = true
   }
-  BOOKCASE_IRON
+  "BOOKCASE_IRON"
   {
     name = "iron bookcase"
     viewId = { "bookcase_iron" }
@@ -105,8 +128,13 @@
     canHideHere = true
     fire = 70
     strength = 50
+    upgrade = "BOOKCASE_WOOD"
+    maxTraining = {
+      SPELL 7
+    }
+    requiresLight = true
   }
-  BOOKCASE_GOLD
+  "BOOKCASE_GOLD"
   {
     name = "golden bookcase"
     viewId = { "bookcase_gold" }
@@ -116,8 +144,13 @@
     canHideHere = true
     fire = 70
     strength = 50
+    upgrade = "BOOKCASE_IRON"
+    maxTraining = {
+      SPELL 12
+    }
+    requiresLight = true
   }
-  THRONE
+  "THRONE"
   {
     name = "throne"
     viewId = { "throne" }
@@ -125,14 +158,15 @@
     usageType = SIT_ON_THRONE
     luxury = 1.0
     strength = 80
+    populationIncrease = 10 none
   }
-  IMPALED_HEAD
+  "IMPALED_HEAD"
   {
     name = "impaled head"
     viewId = { "impaled_head" }
     strength = 10
   }
-  BEAST_CAGE
+  "BEAST_CAGE"
   {
     name = "beast cage"
     viewId = { "beast_cage" }
@@ -141,8 +175,9 @@
     canHideHere = true
     fire = 50
     strength = 40
+    bedType = CAGE
   }
-  BED1
+  "BED1"
   {
     name = "basic bed"
     viewId = { "bed1" }
@@ -151,8 +186,9 @@
     canHideHere = true
     fire = 50
     strength = 40
+    bedType = BED
   }
-  BED2
+  "BED2"
   {
     name = "fine bed"
     viewId = { "bed2" }
@@ -162,8 +198,10 @@
     fire = 50
     luxury = 0.3
     strength = 40
+    upgrade = "BED1"
+    bedType = BED
   }
-  BED3
+  "BED3"
   {
     name = "luxurious bed"
     viewId = { "bed3" }
@@ -173,8 +211,10 @@
     luxury = 0.7
     fire = 50
     strength = 40
+    upgrade = "BED2"
+    bedType = BED
   }
-  GRAVE
+  "GRAVE"
   {
     name = "grave"
     viewId = { "grave" }
@@ -182,7 +222,7 @@
     tickType = BED
     strength = 40
   }
-  DEMON_SHRINE
+  "DEMON_SHRINE"
   {
     name = "demon shrine"
     viewId = { "demon_shrine" }
@@ -192,7 +232,7 @@
     luxury = 0.4
     strength = 80
   }
-  PRISON
+  "PRISON"
   {
     name = "prison"
     viewId = { "prison" }
@@ -200,7 +240,7 @@
     usageType = SLEEP
     viewLayer = FLOOR_BACKGROUND
   }
-  TREASURE_CHEST
+  "TREASURE_CHEST"
   {
     name = "treasure chest"
     viewId = { "treasure_chest" }
@@ -209,7 +249,7 @@
     luxury = 0.4
     strength = 40
   }
-  EYEBALL
+  "EYEBALL"
   {
     name = "eyeball"
     viewId = { "eyeball" }
@@ -217,8 +257,9 @@
     canHideHere = true
     lightEmission = 8.2
     strength = 30
+    canBuildOutsideOfTerritory = true
   }
-  WHIPPING_POST
+  "WHIPPING_POST"
   {
     name = "whipping post"
     viewId = { "whipping_post" }
@@ -226,7 +267,7 @@
     fire = 30
     strength = 30
   }
-  GALLOWS
+  "GALLOWS"
   {
     name = "gallows"
     viewId = { "gallows" }
@@ -234,7 +275,7 @@
     fire = 30
     strength = 30
   }
-  MINION_STATUE
+  "MINION_STATUE"
   {
     name = "gold statue"
     viewId = { "minion_statue" }
@@ -242,8 +283,9 @@
     canHideHere = true
     luxury = 0.7
     strength = 50
+    populationIncrease = 1 none
   }
-  STONE_MINION_STATUE
+  "STONE_MINION_STATUE"
   {
     name = "stone statue"
     viewId = { "stone_minion_statue" }
@@ -251,8 +293,9 @@
     canHideHere = true
     luxury = 0.3
     strength = 50
+    populationIncrease = 1 4
   }
-  BARRICADE
+  "BARRICADE"
   {
     name = "barricade"
     viewId = { "barricade" }
@@ -260,14 +303,15 @@
     fire = 50
     strength = 80
   }
-  CANIF_TREE
+  "CANIF_TREE"
   {
     name = "tree"
     viewId = { "canif_tree" }
     canHideHere = true
     blockVision = { NORMAL }
-    destroyedRemains = TREE_TRUNK
-    burntRemains = BURNT_TREE
+    destroyedRemains = "TREE_TRUNK"
+    burntRemains = "BURNT_TREE"
+    canSilentlyReplace = true
     strength2 = {
       100 BOULDER
       70 CUT
@@ -276,14 +320,14 @@
     itemDrop = {{{WoodPlank}} { 1 } {{ 8 14 }}}
     summonedElement = "ENT"
   }
-  DECID_TREE
+  "DECID_TREE"
   {
     name = "tree"
     viewId = { "decid_tree" }
     canHideHere = true
     blockVision = { NORMAL }
-    destroyedRemains = TREE_TRUNK
-    burntRemains = BURNT_TREE
+    destroyedRemains = "TREE_TRUNK"
+    burntRemains = "BURNT_TREE"
     fire = 100
     strength2 = {
       100 BOULDER
@@ -292,19 +336,19 @@
     itemDrop = {{{WoodPlank}} { 1 } {{ 8 14 }}}
     summonedElement = "ENT"
   }
-  TREE_TRUNK
+  "TREE_TRUNK"
   {
     name = "tree trunk"
     viewId = { "tree_trunk" }
   }
-  BURNT_TREE
+  "BURNT_TREE"
   {
     name = "burnt tree"
     viewId = { "burnt_tree" }
     canHideHere = true
     strength = 30
   }
-  BUSH
+  "BUSH"
   {
     name = "bush"
     viewId = { "bush" }
@@ -316,27 +360,28 @@
     fire = 30
     itemDrop = {{{WoodPlank}} { 1 } {{ 2 4 }}}
   }
-  CROPS
+  "CROPS"
   {
     name = "wheat"
     viewId = { "crops" }
     usageType = CROPS
     usageTime = 3
   }
-  PIGSTY
+  "PIGSTY"
   {
     name = "pigsty"
     viewId = { "mud" }
     tickType = PIGSTY
+    populationIncrease = 0.25 4
   }
-  GROUND_TORCH
+  "GROUND_TORCH"
   {
     name = "standing torch"
     viewId = { "standing_torch" }
     luxury = 0.1
     lightEmission = 8.2
   }
-  TORCH_N
+  "TORCH_N"
   {
     name = "torch"
     viewId = { "torch" }
@@ -344,8 +389,21 @@
     layer = CEILING
     viewLayer = TORCH1
     attachmentDir = N
+    requiredSupport = { 0 -1 }
+    canBuildOutsideOfTerritory = true
   }
-  TORCH_E
+  "TORCH_S"
+  {
+    name = "torch"
+    viewId = { "torch" }
+    lightEmission = 8.2
+    layer = CEILING
+    viewLayer = TORCH2
+    attachmentDir = S
+    requiredSupport = { 0 1 }
+    canBuildOutsideOfTerritory = true
+  }
+  "TORCH_E"
   {
     name = "torch"
     viewId = { "torch" }
@@ -353,17 +411,10 @@
     layer = CEILING
     viewLayer = TORCH2
     attachmentDir = E
+    requiredSupport = { 1 0 }
+    canBuildOutsideOfTerritory = true
   }
-  TORCH_S
-  {
-    name = "torch"
-    viewId = { "torch" }
-    lightEmission = 8.2
-    layer = CEILING
-    viewLayer = TORCH2
-    attachmentDir = S
-  }
-  TORCH_W
+  "TORCH_W"
   {
     name = "torch"
     viewId = { "torch" }
@@ -371,8 +422,10 @@
     layer = CEILING
     viewLayer = TORCH2
     attachmentDir = W
+    requiredSupport = { -1 0 }
+    canBuildOutsideOfTerritory = true
   }
-  CANDELABRUM_N
+  "CANDELABRUM_N"
   {
     name = "candelabrum"
     viewId = { "candelabrum_ns" }
@@ -381,8 +434,10 @@
     layer = CEILING
     viewLayer = TORCH1
     attachmentDir = N
+    requiredSupport = { 0 -1 }
+    canBuildOutsideOfTerritory = true
   }
-  CANDELABRUM_S
+  "CANDELABRUM_S"
   {
     name = "candelabrum"
     viewId = { "candelabrum_ns" }
@@ -391,8 +446,10 @@
     layer = CEILING
     viewLayer = TORCH2
     attachmentDir = S
+    requiredSupport = { 0 1 }
+    canBuildOutsideOfTerritory = true
   }
-  CANDELABRUM_E
+  "CANDELABRUM_E"
   {
     name = "candelabrum"
     viewId = { "candelabrum_e" }
@@ -401,8 +458,10 @@
     layer = CEILING
     viewLayer = TORCH2
     attachmentDir = E
+    requiredSupport = { 1 0 }
+    canBuildOutsideOfTerritory = true
   }
-  CANDELABRUM_W
+  "CANDELABRUM_W"
   {
     name = "candelabrum"
     viewId = { "candelabrum_w" }
@@ -411,8 +470,10 @@
     layer = CEILING
     viewLayer = TORCH2
     attachmentDir = W
+    requiredSupport = { -1 0 }
+    canBuildOutsideOfTerritory = true
   }
-  TORTURE_TABLE
+  "TORTURE_TABLE"
   {
     name = "torture table"
     viewId = { "torture_table" }
@@ -420,7 +481,7 @@
     usageType = TIE_UP
     strength = 80
   }
-  FOUNTAIN
+  "FOUNTAIN"
   {
     name = "fountain"
     viewId = { "fountain" }
@@ -430,20 +491,20 @@
     summonedElement = "WATER_ELEMENTAL"
     strength = 80
   }
-  ALTAR
+  "ALTAR"
   {
     name = "altar"
     viewId = { "altar" }
     canHideHere = true
     usageType = DESECRATE
   }
-  ALTAR_DES
+  "ALTAR_DES"
   {
     name = "desecrated altar"
     viewId = { "altar_des" }
     canHideHere = true
   }
-  CHEST
+  "CHEST"
   {
     name = "chest"
     viewId = { "chest" }
@@ -452,7 +513,7 @@
     fire = 50
     strength = 30
   }
-  OPENED_CHEST
+  "OPENED_CHEST"
   {
     name = "opened chest"
     viewId = { "opened_chest" }
@@ -460,7 +521,7 @@
     fire = 50
     strength = 30
   }
-  COFFIN1
+  "COFFIN1"
   {
     name = "basic coffin"
     viewId = { "coffin1" }
@@ -468,8 +529,9 @@
     usageType = SLEEP
     fire = 50
     strength = 40
+    bedType = COFFIN
   }
-  COFFIN2
+  "COFFIN2"
   {
     name = "fine coffin"
     viewId = { "coffin2" }
@@ -478,8 +540,10 @@
     luxury = 0.3
     fire = 50
     strength = 40
+    upgrade = "COFFIN1"
+    bedType = COFFIN
   }
-  COFFIN3
+  "COFFIN3"
   {
     name = "luxurious coffin"
     viewId = { "coffin3" }
@@ -488,8 +552,10 @@
     luxury = 0.7
     fire = 50
     strength = 40
+    upgrade = "COFFIN2"
+    bedType = COFFIN
   }
-  LOOT_COFFIN
+  "LOOT_COFFIN"
   {
     name = "coffin"
     viewId = { "coffin1" }
@@ -498,7 +564,7 @@
     fire = 50
     strength = 40
   }
-  VAMPIRE_COFFIN
+  "VAMPIRE_COFFIN"
   {
     name = "coffin"
     viewId = { "coffin1" }
@@ -507,7 +573,7 @@
     fire = 50
     strength = 40
   }
-  OPENED_COFFIN
+  "OPENED_COFFIN"
   {
     name = "opened coffin"
     viewId = { "opened_coffin" }
@@ -516,7 +582,7 @@
     fire = 50
     strength = 40
   }
-  WOOD_DOOR
+  "WOOD_DOOR"
   {
     name = "wooden door"
     viewId = { "wood_door" }
@@ -526,8 +592,9 @@
     fire = 50
     strength = 80
     clickType = LOCK
+    requiredSupport = { 0 -1 0 1 -1 0 1 0 }
   }
-  IRON_DOOR
+  "IRON_DOOR"
   {
     name = "iron door"
     viewId = { "iron_door" }
@@ -536,8 +603,9 @@
     blockVision = { NORMAL ELF }
     strength = 160
     clickType = LOCK
+    requiredSupport = { 0 -1 0 1 -1 0 1 0 }
   }
-  ADA_DOOR
+  "ADA_DOOR"
   {
     name = "adamantine door"
     viewId = { "ada_door" }
@@ -546,8 +614,9 @@
     blockVision = { NORMAL ELF }
     strength = 320
     clickType = LOCK
+    requiredSupport = { 0 -1 0 1 -1 0 1 0 }
   }
-  WELL
+  "WELL"
   {
     name = "well"
     viewId = { "well" }
@@ -556,7 +625,7 @@
     summonedElement = "WATER_ELEMENTAL"
     strength = 80
   }
-  KEEPER_BOARD
+  "KEEPER_BOARD"
   {
     name = "message board"
     viewId = { "notice_board" }
@@ -565,8 +634,9 @@
     clickType = KEEPER_BOARD
     fire = 50
     strength = 50
+    canBuildOutsideOfTerritory = true
   }
-  UP_STAIRS
+  "UP_STAIRS"
   {
     name = "stairs"
     viewId = { "up_staircase" }
@@ -574,7 +644,7 @@
     xForgetAfterBuilding = true
     usageType = STAIRS
   }
-  DOWN_STAIRS
+  "DOWN_STAIRS"
   {
     name = "stairs"
     viewId = { "down_staircase" }
@@ -583,26 +653,28 @@
     xForgetAfterBuilding = true
     usageType = STAIRS
   }
-  SOKOBAN_HOLE
+  "SOKOBAN_HOLE"
   {
     name = "hole"
     viewId = { "sokoban_hole" }
     entryType = Sokoban
   }
-  BRIDGE
+  "BRIDGE"
   {
     name = "bridge"
     viewId = { "bridge" }
     overrideMovement = true
     removeNonFriendly = true
     removeWithCreaturePresent = false
+    bridge = true
+    canBuildOutsideOfTerritory = true
   }
-  ROAD
+  "ROAD"
   {
     name = "road"
     viewId = { "road" }
   }
-  MOUNTAIN
+  "MOUNTAIN"
   {
     name = "soft rock"
     viewId = { "mountain" }
@@ -619,7 +691,7 @@
     }
     summonedElement = "EARTH_ELEMENTAL"
   }
-  MOUNTAIN2
+  "MOUNTAIN2"
   {
     name = "hard rock"
     viewId = { "mountain2" }
@@ -636,7 +708,7 @@
     }
     summonedElement = "EARTH_ELEMENTAL"
   }
-  ADAMANTIUM_ORE
+  "ADAMANTIUM_ORE"
   {
     name = "adamantium ore"
     viewId = { "adamantium_ore" }
@@ -652,7 +724,7 @@
       2000 HOSTILE_DIG_NO_SKILL
     }
   }
-  IRON_ORE
+  "IRON_ORE"
   {
     name = "iron ore"
     viewId = { "iron_ore" }
@@ -668,7 +740,7 @@
       2000 HOSTILE_DIG_NO_SKILL
     }
   }
-  STONE
+  "STONE"
   {
     name = "granite"
     viewId = { "stone" }
@@ -684,7 +756,7 @@
       2000 HOSTILE_DIG_NO_SKILL
     }
   }
-  GOLD_ORE
+  "GOLD_ORE"
   {
     name = "gold ore"
     viewId = { "gold_ore" }
@@ -700,7 +772,7 @@
       2000 HOSTILE_DIG_NO_SKILL
     }
   }
-  DUNGEON_WALL
+  "DUNGEON_WALL"
   {
     name = "wall"
     viewId = { "dungeon_wall" }
@@ -710,6 +782,8 @@
     xForgetAfterBuilding = true
     luxury = 0.2
     constructMessage = REINFORCE
+    builtOver = "MOUNTAIN"
+    canBuildOutsideOfTerritory = true
     strength2 = {
       300 BOULDER
       100 DIG
@@ -717,7 +791,7 @@
       2000 HOSTILE_DIG_NO_SKILL
     }
   }
-  DUNGEON_WALL2
+  "DUNGEON_WALL2"
   {
     name = "wall"
     viewId = { "dungeon_wall2" }
@@ -727,6 +801,8 @@
     xForgetAfterBuilding = true
     luxury = 0.2
     constructMessage = REINFORCE
+    builtOver = "MOUNTAIN2"
+    canBuildOutsideOfTerritory = true
     strength2 = {
       300 BOULDER
       100 DIG
@@ -734,15 +810,16 @@
       2000 HOSTILE_DIG_NO_SKILL
     }
   }
-  PIT
+  "PIT"
   {
     name = "pit"
     viewId = { "pit" }
     blockMovement = true
     xForgetAfterBuilding = true
     tickType = PIT
+    canBuildOutsideOfTerritory = true
   }
-  CASTLE_WALL
+  "CASTLE_WALL"
   {
     name = "wall"
     viewId = { "castle_wall" }
@@ -756,8 +833,9 @@
       1900 HOSTILE_DIG
       2000 HOSTILE_DIG_NO_SKILL
     }
+    canBuildOutsideOfTerritory = true
   }
-  WOOD_WALL
+  "WOOD_WALL"
   {
     name = "wall"
     viewId = { "wood_wall" }
@@ -773,8 +851,9 @@
     }
     summonedElement = "ENT"
     fire = 100
+    canBuildOutsideOfTerritory = true
   }
-  MUD_WALL
+  "MUD_WALL"
   {
     name = "wall"
     viewId = { "mud_wall" }
@@ -786,18 +865,19 @@
       100 BOULDER
     }
   }
-  RUIN_WALL
+  "RUIN_WALL"
   {
     name = "wall"
     viewId = { "ruin_wall" }
     blockMovement = true
     blockVision = { NORMAL ELF }
     wall = true
+    canBuildOutsideOfTerritory = true
     strength2 = {
       100 BOULDER
     }
   }
-  FLOOR_WOOD1
+  "FLOOR_WOOD1"
   {
     name = "floor"
     viewId = { "wood_floor2" }
@@ -805,7 +885,7 @@
     luxury = 0.1
     layer = FLOOR
   }
-  FLOOR_WOOD2
+  "FLOOR_WOOD2"
   {
     name = "floor"
     viewId = { "wood_floor4" }
@@ -813,35 +893,35 @@
     luxury = 0.1
     layer = FLOOR
   }
-  FLOOR_STONE1
+  "FLOOR_STONE1"
   {
     name = "floor"
     viewId = { "stone_floor1" }
     luxury = 0.3
     layer = FLOOR
   }
-  FLOOR_STONE2
+  "FLOOR_STONE2"
   {
     name = "floor"
     viewId = { "stone_floor5" }
     luxury = 0.3
     layer = FLOOR
   }
-  FLOOR_CARPET1
+  "FLOOR_CARPET1"
   {
     name = "floor"
     viewId = { "carpet_floor1" }
     luxury = 0.7
     layer = FLOOR
   }
-  FLOOR_CARPET2
+  "FLOOR_CARPET2"
   {
     name = "floor"
     viewId = { "carpet_floor4" }
     luxury = 0.7
     layer = FLOOR
   }
-  ALARM_TRAP
+  "ALARM_TRAP"
   {
     name = "alarm trap"
     viewId = { "alarm_trap" }
@@ -849,13 +929,13 @@
     warning = true
     constructMessage = SET_UP
   }
-  INVISIBLE_ALARM
+  "INVISIBLE_ALARM"
   {
     name = ""
     viewId = { "empty" }
     entryType = Trap { Alarm true true }
   }
-  POISON_GAS_TRAP
+  "POISON_GAS_TRAP"
   {
     name = "poison gas trap"
     viewId = { "gas_trap" }
@@ -863,7 +943,7 @@
     warning = true
     constructMessage = SET_UP
   }
-  WEB_TRAP
+  "WEB_TRAP"
   {
     name = "web trap"
     viewId = { "web_trap" }
@@ -871,13 +951,13 @@
     warning = true
     constructMessage = SET_UP
   }
-  SPIDER_WEB
+  "SPIDER_WEB"
   {
     name = "spider web"
     viewId = { "web_trap" }
     entryType = Trap { Lasting ENTANGLED true }
   }
-  SURPRISE_TRAP
+  "SURPRISE_TRAP"
   {
     name = "surprise trap"
     viewId = { "surprise_trap" }
@@ -885,7 +965,7 @@
     warning = true
     constructMessage = SET_UP
   }
-  TERROR_TRAP
+  "TERROR_TRAP"
   {
     name = "panic trap"
     viewId = { "terror_trap" }
@@ -893,15 +973,15 @@
     warning = true
     constructMessage = SET_UP
   }
-  FIRE_TRAP
+  "FIRE_TRAP"
   {
     name = "fire trap"
     viewId = { "fire_trap" }
-    entryType = Trap { PlaceFurniture FIRE_WALL }
+    entryType = Trap { PlaceFurniture "FIRE_WALL" }
     warning = true
     constructMessage = SET_UP
   }
-  BOULDER_TRAP
+  "BOULDER_TRAP"
   {
     name = "boulder trap"
     viewId = { "boulder" }
@@ -913,7 +993,7 @@
     constructMessage = SET_UP
     viewLayer = CREATURE
   }
-  PORTAL
+  "PORTAL"
   {
     name = "portal"
     viewId = { "portal" }
@@ -921,14 +1001,14 @@
     usageType = PORTAL
     tickType = PORTAL
   }
-  METEOR_SHOWER
+  "METEOR_SHOWER"
   {
     name = "meteor shower"
     layer = CEILING
     constructMessage = none
     tickType = METEOR_SHOWER
   }
-  FIRE_WALL
+  "FIRE_WALL"
   {
     name = "fire"
     viewId = { "empty" }
@@ -938,7 +1018,7 @@
     burnsDownMessage = STOPS_BURNING
     fire = 10
   }
-  WATER {
+  "WATER" {
     name = "water"
     viewId = { "water" }
     layer = GROUND
@@ -952,7 +1032,7 @@
       forcibleTraits = { WALK }
     }
   }
-  SHALLOW_WATER1 {
+  "SHALLOW_WATER1" {
     name = "shallow water"
     viewId = { "water" }
     layer = GROUND
@@ -966,7 +1046,7 @@
       forcibleTraits = { WALK }
     }
   }
-  SHALLOW_WATER2 {
+  "SHALLOW_WATER2" {
     name = "shallow water"
     viewId = { "water" }
     layer = GROUND
@@ -980,7 +1060,7 @@
       forcibleTraits = { WALK }
     }
   }
-  MAGMA {
+  "MAGMA" {
     name = "magma"
     viewId = { "magma" }
     layer = GROUND
@@ -994,47 +1074,48 @@
       forcibleTraits = { WALK }
     }
   }
-  SAND
+  "SAND"
   {
     name = "sand"
     viewId = { "sand" }
     layer = GROUND
   }
-  GRASS
+  "GRASS"
   {
     name = "grass"
     viewId = { "grass" }
     layer = GROUND
   }
-  MUD
+  "MUD"
   {
     name = "mud"
     viewId = { "mud" }
     layer = GROUND
   }
-  HILL
+  "HILL"
   {
     name = "hill"
     viewId = { "hill" }
     layer = GROUND
   }
-  FLOOR
+  "FLOOR"
   {
     name = "floor"
     viewId = { "floor" }
     layer = GROUND
   }
-  BLACK_FLOOR
+  "BLACK_FLOOR"
   {
     name = "floor"
     viewId = { "empty" }
     layer = GROUND
   }
-  TUTORIAL_ENTRANCE
+  "TUTORIAL_ENTRANCE"
   {
     name = "tutorial entrance"
     viewId = { "tutorial_entrance" }
     layer = CEILING
     viewLayer = TORCH2
+    canBuildOutsideOfTerritory = true
   }
 }
