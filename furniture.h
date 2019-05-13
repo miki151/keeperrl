@@ -10,6 +10,7 @@
 #include "furniture_type.h"
 #include "experience_type.h"
 #include "bed_type.h"
+#include "fx_info.h"
 
 class TribeId;
 class Creature;
@@ -91,6 +92,7 @@ class Furniture : public OwnedObject<Furniture> {
   int getMaxTraining(ExperienceType) const;
   const vector<Vec2>& getRequiredSupport() const;
   optional<FurnitureType> getUpgrade() const;
+  optional<FXVariantName> getUsageFX() const;
   /**
    * @brief Calls special functionality to handle dropped items, if any.
    * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
@@ -177,4 +179,9 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(requiresLight) = false;
   optional<BedType> SERIAL(bedType);
   PopulationInfo SERIAL(populationIncrease) = {0, none};
+  optional<FXInfo> SERIAL(destroyFX);
+  optional<FXInfo> SERIAL(tryDestroyFX);
+  optional<FXInfo> SERIAL(walkOverFX);
+  optional<FXInfo> SERIAL(walkIntoFX);
+  optional<FXVariantName> SERIAL(usageFX);
 };

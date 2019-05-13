@@ -721,7 +721,7 @@ CreatureAction Creature::applySquare(Position pos) const {
               .setDirection(getPosition().getDir(pos))
               .setMaxLength(1_visible)
               .setType(MovementInfo::WORK)
-              .setFX(getFurnitureUsageFX(furniture->getType())));
+              .setFX(furniture->getUsageFX()));
       });
   return CreatureAction();
 }

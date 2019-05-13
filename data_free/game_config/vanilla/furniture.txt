@@ -12,6 +12,7 @@
       MELEE 3
     }
     requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "TRAINING_IRON"
   {
@@ -26,6 +27,7 @@
       MELEE 7
     }
     requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   }
   "TRAINING_ADA"
   {
@@ -40,6 +42,7 @@
       MELEE 30
     }
     requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   }
   "ARCHERY_RANGE"
   {
@@ -51,6 +54,7 @@
     canHideHere = true
     strength = 80
     requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "WORKSHOP"
   {
@@ -62,6 +66,7 @@
     fire = 50
     strength = 80
     requiresLight = true
+    usageFX = WORKSHOP
   }
   "FORGE"
   {
@@ -72,6 +77,8 @@
     canHideHere = true
     strength = 80
     requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+    usageFX = FORGE
   }
   "LABORATORY"
   {
@@ -82,6 +89,8 @@
     canHideHere = true
     strength = 80
     requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+    usageFX = LABORATORY
   }
   "JEWELLER"
   {
@@ -93,6 +102,8 @@
     fire = 50
     strength = 40
     requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+    usageFX = JEWELLER
   }
   "FURNACE"
   {
@@ -117,6 +128,7 @@
       SPELL 3
     }
     requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "BOOKCASE_IRON"
   {
@@ -133,6 +145,7 @@
       SPELL 7
     }
     requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   }
   "BOOKCASE_GOLD"
   {
@@ -149,6 +162,7 @@
       SPELL 12
     }
     requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
   }
   "THRONE"
   {
@@ -159,12 +173,14 @@
     luxury = 1.0
     strength = 80
     populationIncrease = 10 none
+    destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
   }
   "IMPALED_HEAD"
   {
     name = "impaled head"
     viewId = { "impaled_head" }
     strength = 10
+    destroyFX = { DESTROY_FURNITURE ColorId WHITE }
   }
   "BEAST_CAGE"
   {
@@ -176,6 +192,7 @@
     fire = 50
     strength = 40
     bedType = CAGE
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "BED1"
   {
@@ -187,6 +204,7 @@
     fire = 50
     strength = 40
     bedType = BED
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "BED2"
   {
@@ -221,6 +239,7 @@
     canHideHere = true
     tickType = BED
     strength = 40
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   }
   "DEMON_SHRINE"
   {
@@ -231,6 +250,7 @@
     usageTime = 5
     luxury = 0.4
     strength = 80
+    destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
   }
   "PRISON"
   {
@@ -248,6 +268,7 @@
     fire = 50
     luxury = 0.4
     strength = 40
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "EYEBALL"
   {
@@ -266,6 +287,7 @@
     usageType = TIE_UP
     fire = 30
     strength = 30
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "GALLOWS"
   {
@@ -274,6 +296,7 @@
     usageType = TIE_UP
     fire = 30
     strength = 30
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "MINION_STATUE"
   {
@@ -284,6 +307,7 @@
     luxury = 0.7
     strength = 50
     populationIncrease = 1 none
+    destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
   }
   "STONE_MINION_STATUE"
   {
@@ -294,6 +318,7 @@
     luxury = 0.3
     strength = 50
     populationIncrease = 1 4
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   }
   "BARRICADE"
   {
@@ -302,6 +327,7 @@
     blockMovement = true
     fire = 50
     strength = 80
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "CANIF_TREE"
   {
@@ -319,6 +345,7 @@
     fire = 100
     itemDrop = {{{WoodPlank}} { 1 } {{ 8 14 }}}
     summonedElement = "ENT"
+    tryDestroyFX = { WOOD_SPLINTERS }
   }
   "DECID_TREE"
   {
@@ -335,6 +362,7 @@
     }
     itemDrop = {{{WoodPlank}} { 1 } {{ 8 14 }}}
     summonedElement = "ENT"
+    tryDestroyFX = { WOOD_SPLINTERS }
   }
   "TREE_TRUNK"
   {
@@ -359,6 +387,7 @@
     canHideHere = true
     fire = 30
     itemDrop = {{{WoodPlank}} { 1 } {{ 2 4 }}}
+    tryDestroyFX = { WOOD_SPLINTERS }
   }
   "CROPS"
   {
@@ -480,6 +509,7 @@
     canHideHere = true
     usageType = TIE_UP
     strength = 80
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   }
   "FOUNTAIN"
   {
@@ -490,6 +520,7 @@
     usageType = FOUNTAIN
     summonedElement = "WATER_ELEMENTAL"
     strength = 80
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   }
   "ALTAR"
   {
@@ -542,6 +573,7 @@
     strength = 40
     upgrade = "COFFIN1"
     bedType = COFFIN
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   }
   "COFFIN3"
   {
@@ -554,6 +586,7 @@
     strength = 40
     upgrade = "COFFIN2"
     bedType = COFFIN
+    destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
   }
   "LOOT_COFFIN"
   {
@@ -593,6 +626,7 @@
     strength = 80
     clickType = LOCK
     requiredSupport = { 0 -1 0 1 -1 0 1 0 }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "WOOD_GATE_W"
   {
@@ -605,6 +639,7 @@
     strength = 80
     clickType = LOCK
     requiredSupport = { -1 0 }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "WOOD_GATE_E"
   {
@@ -617,6 +652,7 @@
     strength = 80
     clickType = LOCK
     requiredSupport = { 1 0 }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "WOOD_GATE_S"
   {
@@ -629,6 +665,7 @@
     strength = 80
     clickType = LOCK
     requiredSupport = { 0 1 }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "WOOD_GATE_N"
   {
@@ -641,6 +678,7 @@
     strength = 80
     clickType = LOCK
     requiredSupport = { 0 -1 }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "IRON_DOOR"
   {
@@ -652,6 +690,7 @@
     strength = 160
     clickType = LOCK
     requiredSupport = { 0 -1 0 1 -1 0 1 0 }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   }
   "ADA_DOOR"
   {
@@ -663,6 +702,7 @@
     strength = 320
     clickType = LOCK
     requiredSupport = { 0 -1 0 1 -1 0 1 0 }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   }
   "WELL"
   {
@@ -683,6 +723,7 @@
     fire = 50
     strength = 50
     canBuildOutsideOfTerritory = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "UP_STAIRS"
   {
@@ -738,6 +779,8 @@
       2000 HOSTILE_DIG_NO_SKILL
     }
     summonedElement = "EARTH_ELEMENTAL"
+    destroyFX = { ROCK_CLOUD Rgb 220 210 180 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 220 210 180 255 }
   }
   "MOUNTAIN2"
   {
@@ -755,6 +798,8 @@
       2000 HOSTILE_DIG_NO_SKILL
     }
     summonedElement = "EARTH_ELEMENTAL"
+    destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
   }
   "ADAMANTIUM_ORE"
   {
@@ -771,6 +816,8 @@
       500 HOSTILE_DIG
       2000 HOSTILE_DIG_NO_SKILL
     }
+    destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
   }
   "IRON_ORE"
   {
@@ -787,6 +834,8 @@
       200 HOSTILE_DIG
       2000 HOSTILE_DIG_NO_SKILL
     }
+    destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
   }
   "STONE"
   {
@@ -803,6 +852,8 @@
       200 HOSTILE_DIG
       2000 HOSTILE_DIG_NO_SKILL
     }
+    destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
   }
   "GOLD_ORE"
   {
@@ -819,6 +870,8 @@
       200 HOSTILE_DIG
       2000 HOSTILE_DIG_NO_SKILL
     }
+    destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
   }
   "DUNGEON_WALL"
   {
@@ -838,6 +891,8 @@
       1900 HOSTILE_DIG
       2000 HOSTILE_DIG_NO_SKILL
     }
+    destroyFX = { ROCK_CLOUD Rgb 220 210 180 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 220 210 180 255 }
   }
   "DUNGEON_WALL2"
   {
@@ -857,6 +912,8 @@
       1900 HOSTILE_DIG
       2000 HOSTILE_DIG_NO_SKILL
     }
+    destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
   }
   "PIT"
   {
@@ -900,6 +957,7 @@
     summonedElement = "ENT"
     fire = 100
     canBuildOutsideOfTerritory = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "MUD_WALL"
   {
@@ -1048,6 +1106,7 @@
     strength = 40
     usageType = PORTAL
     tickType = PORTAL
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   }
   "METEOR_SHOWER"
   {
@@ -1079,6 +1138,7 @@
       traits = { FLY SWIM }
       forcibleTraits = { WALK }
     }
+    walkIntoFX = { WATER_SPLASH Rgb 82 148 255 255 }
   }
   "SHALLOW_WATER1" {
     name = "shallow water"
@@ -1093,6 +1153,7 @@
       traits = { FLY SWIM WADE }
       forcibleTraits = { WALK }
     }
+    walkIntoFX = { WATER_SPLASH Rgb 82 148 255 255 }
   }
   "SHALLOW_WATER2" {
     name = "shallow water"
@@ -1107,6 +1168,7 @@
       traits = { FLY SWIM WADE }
       forcibleTraits = { WALK }
     }
+    walkIntoFX = { WATER_SPLASH Rgb 82 148 255 255 }
   }
   "MAGMA" {
     name = "magma"
@@ -1127,6 +1189,7 @@
     name = "sand"
     viewId = { "sand" }
     layer = GROUND
+    walkOverFX = { SAND_DUST Rgb 255 229 178 255 }
   }
   "GRASS"
   {

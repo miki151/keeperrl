@@ -58,7 +58,8 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(NAMED(summonedElement), OPTION(droppedItems), OPTION(xForgetAfterBuilding), OPTION(requiredSupport), OPTION(builtOver));
   ar(OPTION(canBuildBridge), OPTION(noProjectiles), OPTION(clearFogOfWar), OPTION(removeWithCreaturePresent), OPTION(upgrade));
   ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
-  ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease));
+  ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
+  ar(OPTION(walkIntoFX), OPTION(usageFX));
 }
 
 template <class Archive>
@@ -128,8 +129,8 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
     pos.dropItems(itemDrop->random());
   if (usageType)
     FurnitureUsage::beforeRemoved(*usageType, pos);
-  if (auto fxInfo = destroyFXInfo(type))
-    pos.getGame()->addEvent(EventInfo::FX{pos, *fxInfo});
+  if (destroyFX)
+    pos.getGame()->addEvent(EventInfo::FX{pos, *destroyFX});
   pos.removeFurniture(this, destroyedRemains
       ? pos.getGame()->getContentFactory()->furniture.getFurniture(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
@@ -144,8 +145,8 @@ void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& a
     info->health -= damage / info->strength;
     updateViewObject();
     pos.setNeedsRenderUpdate(true);
-    if (auto fxInfo = tryDestroyFXInfo(type))
-      pos.getGame()->addEvent(EventInfo::FX{pos, *fxInfo});
+    if (tryDestroyFX)
+      pos.getGame()->addEvent(EventInfo::FX{pos, *tryDestroyFX});
     if (info->health <= 0)
       destroy(pos, action);
   }
@@ -333,13 +334,13 @@ bool Furniture::forgetAfterBuilding() const {
 }
 
 void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
-  if (auto fxInfo = walkOverFXInfo(type))
-    pos.getGame()->addEvent((EventInfo::FX{pos, *fxInfo, direction}));
+  if (walkOverFX)
+    pos.getGame()->addEvent((EventInfo::FX{pos, *walkOverFX, direction}));
 }
 
 void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
-  if (auto fxInfo = walkIntoFXInfo(type))
-    pos.getGame()->addEvent((EventInfo::FX{pos, *fxInfo, direction}));
+  if (walkIntoFX)
+    pos.getGame()->addEvent((EventInfo::FX{pos, *walkIntoFX, direction}));
 }
 
 int Furniture::getMaxTraining(ExperienceType t) const {
@@ -352,6 +353,10 @@ const vector<Vec2>& Furniture::getRequiredSupport() const {
 
 optional<FurnitureType> Furniture::getUpgrade() const {
   return upgrade;
+}
+
+optional<FXVariantName> Furniture::getUsageFX() const {
+  return usageFX;
 }
 
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
