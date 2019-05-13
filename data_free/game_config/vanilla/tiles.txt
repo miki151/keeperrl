@@ -404,6 +404,14 @@
     roundShadow = true }
   { viewId = "wood_door" symbol = "|" color = ColorId BROWN
     wallShadow = true }
+  { viewId = "wood_gate_w" symbol = "-" color = ColorId BROWN
+    wallShadow = true }
+  { viewId = "wood_gate_e" symbol = "-" color = ColorId BROWN
+    wallShadow = true }
+  { viewId = "wood_gate_n" symbol = "|" color = ColorId BROWN
+    wallShadow = true }
+  { viewId = "wood_gate_s" symbol = "|" color = ColorId BROWN
+    wallShadow = true }
   { viewId = "iron_door" symbol = "|" color = ColorId LIGHT_GRAY
     wallShadow = true }
   { viewId = "ada_door" symbol = "|" color = ColorId LIGHT_BLUE

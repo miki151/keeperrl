@@ -39,6 +39,8 @@
 
     { Furniture {{ "ADA_DOOR" }                   ADA 5 }        "Adamantine door"   "Doors"
       "Stops enemies. Your minions can pass freely unless you lock it."}
+    { Furniture {{ "WOOD_GATE_W" "WOOD_GATE_E" "WOOD_GATE_N" "WOOD_GATE_S" }  WOOD 5 }       "Wooden gate"       "Doors"
+      "Stops enemies. Your minions can pass freely unless you lock it."}
   }
 
   "floors"

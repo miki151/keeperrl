@@ -594,6 +594,54 @@
     clickType = LOCK
     requiredSupport = { 0 -1 0 1 -1 0 1 0 }
   }
+  "WOOD_GATE_W"
+  {
+    name = "wooden gate"
+    viewId = { "wood_gate_w" }
+    blockingEnemies = true
+    canHideHere = true
+    blockVision = { NORMAL ELF }
+    fire = 50
+    strength = 80
+    clickType = LOCK
+    requiredSupport = { -1 0 }
+  }
+  "WOOD_GATE_E"
+  {
+    name = "wooden gate"
+    viewId = { "wood_gate_e" }
+    blockingEnemies = true
+    canHideHere = true
+    blockVision = { NORMAL ELF }
+    fire = 50
+    strength = 80
+    clickType = LOCK
+    requiredSupport = { 1 0 }
+  }
+  "WOOD_GATE_S"
+  {
+    name = "wooden gate"
+    viewId = { "wood_gate_s" }
+    blockingEnemies = true
+    canHideHere = true
+    blockVision = { NORMAL ELF }
+    fire = 50
+    strength = 80
+    clickType = LOCK
+    requiredSupport = { 0 1 }
+  }
+  "WOOD_GATE_N"
+  {
+    name = "wooden gate"
+    viewId = { "wood_gate_n" }
+    blockingEnemies = true
+    canHideHere = true
+    blockVision = { NORMAL ELF }
+    fire = 50
+    strength = 80
+    clickType = LOCK
+    requiredSupport = { 0 -1 }
+  }
   "IRON_DOOR"
   {
     name = "iron door"
