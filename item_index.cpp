@@ -35,7 +35,9 @@ bool hasIndex(ItemIndex index, const Item* item) {
     case ItemIndex::WEAPON:
       return item->getClass() == ItemClass::WEAPON;
     case ItemIndex::TRAP:
-      return !!item->getTrapType();
+      if (auto& effect = item->getEffect())
+        return !!effect->getValueMaybe<Effect::PlaceFurniture>();
+      return false;
     case ItemIndex::CORPSE:
       return item->getClass() == ItemClass::CORPSE;
     case ItemIndex::MINION_EQUIPMENT:

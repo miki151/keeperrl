@@ -121,8 +121,9 @@ class ItemType {
     ITEM_TYPE_INTERFACE;
   };
   struct TrapItem {
-    TrapType SERIAL(trapType);
-    SERIALIZE_ALL(trapType)
+    FurnitureType SERIAL(trapType);
+    string SERIAL(trapName);
+    SERIALIZE_ALL(trapType, trapName)
     ITEM_TYPE_INTERFACE;
   };
   SIMPLE_ITEM(AutomatonItem);

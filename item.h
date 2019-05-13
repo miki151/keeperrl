@@ -65,7 +65,6 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   // This function returns true after shopkeeper was killed. TODO: refactor shops.
   bool isOrWasForSale() const;
 
-  optional<TrapType> getTrapType() const;
   optional<CollectiveResourceId> getResourceId() const;
   const optional<ItemUpgradeInfo>& getUpgradeInfo() const;
   optional<ItemUpgradeType> getAppliedUpgradeType() const;

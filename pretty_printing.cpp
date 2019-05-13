@@ -10,7 +10,6 @@
 #include "body.h"
 #include "item_type.h"
 #include "technology.h"
-#include "trap_type.h"
 #include "campaign.h"
 #include "enemy_factory.h"
 #include "keeper_creature_info.h"

@@ -24,7 +24,6 @@
 #include "villain_type.h"
 #include "furniture.h"
 #include "tutorial_highlight.h"
-#include "trap_type.h"
 #include "spell.h"
 #include "creature_factory.h"
 #include "resource_info.h"

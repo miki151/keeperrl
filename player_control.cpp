@@ -69,7 +69,6 @@
 #include "tutorial.h"
 #include "tutorial_highlight.h"
 #include "container_range.h"
-#include "trap_type.h"
 #include "collective_warning.h"
 #include "furniture_usage.h"
 #include "message_generator.h"
@@ -1661,20 +1660,6 @@ const MapMemory& PlayerControl::getMemory() const {
   return *memory;
 }
 
-ViewObject PlayerControl::getTrapObject(TrapType type, bool armed) const {
-  for (auto& info : buildInfo)
-    if (auto trap = info.type.getReferenceMaybe<BuildInfo::Trap>())
-      if (trap->type == type) {
-        if (!armed)
-          return ViewObject(trap->viewId, ViewLayer::FLOOR, "Unarmed " + getTrapName(type) + " trap")
-            .setModifier(ViewObject::Modifier::PLANNED);
-        else
-          return ViewObject(trap->viewId, ViewLayer::FLOOR, getTrapName(type) + " trap");
-      }
-  FATAL << "trap not found" << int(type);
-  return ViewObject(ViewId("empty"), ViewLayer::FLOOR);
-}
-
 void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& index) const {
   // use the leader as a generic viewer
   auto leader = collective->getLeader();
@@ -1759,7 +1744,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.setHighlight(HighlightType::RECT_SELECTION);
   const ConstructionMap& constructions = collective->getConstructions();
   if (auto trap = constructions.getTrap(position))
-    index.insert(getTrapObject(trap->getType(), trap->isArmed()));
+    if (!trap->isArmed())
+      index.insert(getGame()->getContentFactory()->furniture.getConstructionObject(trap->getType()));
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = constructions.getFurniture(position, layer))
       if (!f->isBuilt(position))

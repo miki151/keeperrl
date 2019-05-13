@@ -45,7 +45,6 @@
 #include "furniture_usage.h"
 #include "collective_warning.h"
 #include "immigration.h"
-#include "trap_type.h"
 #include "creature_factory.h"
 #include "resource_info.h"
 #include "workshop_item.h"
@@ -583,14 +582,14 @@ void Collective::onEvent(const GameEvent& event) {
       [&](const TrapTriggered& info) {
         if (auto trap = constructions->getTrap(info.pos)) {
           trap->reset();
-          if (trap->getType() == TrapType::SURPRISE)
+          if (trap->getType() == FurnitureType("SURPRISE_TRAP"))
             handleSurprise(info.pos);
         }
       },
       [&](const TrapDisarmed& info) {
         if (auto trap = constructions->getTrap(info.pos)) {
           control->addMessage(PlayerMessage(info.creature->getName().a() +
-              " disarms a " + getTrapName(trap->getType()) + " trap.",
+              " disarms a " + getGame()->getContentFactory()->furniture.getData(trap->getType()).getName() + " trap.",
               MessagePriority::HIGH).setPosition(info.pos));
           trap->reset();
         }
@@ -767,13 +766,19 @@ void Collective::returnResource(const CostInfo& amount) {
   credit[amount.id] += amount.value;
 }
 
-vector<pair<Item*, Position>> Collective::getTrapItems(const vector<Position>& squares) const {
+struct Collective::TrapItemInfo {
+  Item* item;
+  Position pos;
+  FurnitureType type;
+};
+
+vector<Collective::TrapItemInfo> Collective::getTrapItems(const vector<Position>& squares) const {
   PROFILE;
-  vector<pair<Item*, Position>> ret;
+  vector<TrapItemInfo> ret;
   for (Position pos : squares)
     for (auto it : pos.getItems(ItemIndex::TRAP))
       if (!isItemMarked(it))
-        ret.emplace_back(it, pos);
+        ret.push_back(TrapItemInfo{it, pos, it->getEffect()->getValueMaybe<Effect::PlaceFurniture>()->furniture});
   return ret;
 }
 
@@ -934,13 +939,13 @@ void Collective::orderDestruction(Position pos, const DestroyAction& action) {
       action.getMinionActivity());
 }
 
-void Collective::addTrap(Position pos, TrapType type) {
+void Collective::addTrap(Position pos, FurnitureType type) {
   constructions->addTrap(pos, ConstructionMap::TrapInfo(type));
   updateConstructions();
 }
 
 void Collective::onAppliedItem(Position pos, Item* item) {
-  CHECK(item->getTrapType());
+  CHECK(!!item->getEffect()->getValueMaybe<Effect::PlaceFurniture>());
   if (auto trap = constructions->getTrap(pos))
     trap->setArmed();
 }
@@ -988,28 +993,32 @@ void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAct
 
 void Collective::handleTrapPlacementAndProduction() {
   PROFILE;
-  EnumMap<TrapType, vector<pair<Item*, Position>>> trapItems;
+  unordered_map<FurnitureType, vector<TrapItemInfo>, CustomHash<FurnitureType>> trapItems;
   for (auto& elem : getTrapItems(territory->getAll()))
-    trapItems[*elem.first->getTrapType()].push_back(elem);
-  EnumMap<TrapType, int> missingTraps;
+    trapItems[elem.type].push_back(elem);
+  unordered_map<FurnitureType, int, CustomHash<FurnitureType>> missingTraps;
   for (auto trapPos : constructions->getAllTraps()) {
     auto& trap = *constructions->getTrap(trapPos);
     if (!trap.isArmed() && !trap.isMarked() && !isDelayed(trapPos)) {
-      vector<pair<Item*, Position>>& items = trapItems[trap.getType()];
+      vector<TrapItemInfo>& items = trapItems[trap.getType()];
       if (!items.empty()) {
-        Position pos = items.back().second;
-        auto item = items.back().first;
+        Position pos = items.back().pos;
+        auto item = items.back().item;
         auto task = taskMap->addTask(Task::chain(Task::pickUpItem(pos, {item}), Task::applyItem(this, trapPos, item)), pos,
             MinionActivity::CONSTRUCTION);
-        markItem(items.back().first, task);
+        markItem(items.back().item, task);
         items.pop_back();
         trap.setMarked();
       } else
         ++missingTraps[trap.getType()];
     }
   }
-  for (TrapType type : ENUM_ALL(TrapType))
-    scheduleAutoProduction([type](const Item* it) { return it->getTrapType() == type;}, missingTraps[type]);
+  for (auto& elem : missingTraps)
+    scheduleAutoProduction([&elem](const Item* it) {
+          if (auto& effect = it->getEffect())
+            return effect->getValueMaybe<Effect::PlaceFurniture>()->furniture == elem.first;
+          return false;
+        }, elem.second);
 }
 
 void Collective::scheduleAutoProduction(function<bool(const Item*)> itemPredicate, int count) {

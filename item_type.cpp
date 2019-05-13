@@ -19,7 +19,6 @@
 #include "technology.h"
 #include "lasting_effect.h"
 #include "name_generator.h"
-#include "trap_type.h"
 #include "furniture_type.h"
 #include "resource_id.h"
 #include "game_event.h"
@@ -1015,29 +1014,9 @@ ItemAttributes ItemType::FirstAidKit::getAttributes() const {
   );
 }
 
-static FurnitureType getTrapFurniture(TrapType type) {
-  switch (type) {
-    case TrapType::ALARM:
-      return FurnitureType("ALARM_TRAP");
-    case TrapType::BOULDER:
-      return FurnitureType("BOULDER_TRAP");
-    case TrapType::POISON_GAS:
-      return FurnitureType("POISON_GAS_TRAP");
-    case TrapType::SURPRISE:
-      return FurnitureType("SURPRISE_TRAP");
-    case TrapType::TERROR:
-      return FurnitureType("TERROR_TRAP");
-    case TrapType::WEB:
-      return FurnitureType("WEB_TRAP");
-    case TrapType::FIRE:
-      return FurnitureType("FIRE_TRAP");
-  }
-}
-
 ItemAttributes ItemType::TrapItem::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId("trap_item");
-      auto trapName = getTrapName(trapType);
       i.name = "unarmed " + trapName + " trap";
       i.shortName = trapName;
       i.weight = 0.5;
@@ -1046,8 +1025,7 @@ ItemAttributes ItemType::TrapItem::getAttributes() const {
       i.applySound = SoundId::TRAP_ARMING;
       i.uses = 1;
       i.usedUpMsg = true;
-      i.trapType = trapType;
-      i.effect = Effect(Effect::PlaceFurniture{getTrapFurniture(trapType)});
+      i.effect = Effect(Effect::PlaceFurniture{trapType});
       i.price = 2;
   );
 }

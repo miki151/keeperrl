@@ -35,18 +35,18 @@ class ConstructionMap {
 
   class TrapInfo {
     public:
-    TrapInfo(TrapType);
+    TrapInfo(FurnitureType);
     bool isMarked() const;
     bool isArmed() const;
-    TrapType getType() const;
+    FurnitureType getType() const;
     void setArmed();
     void setMarked();
     void reset();
 
-    SERIALIZATION_DECL(TrapInfo);
+    SERIALIZATION_DECL(TrapInfo)
 
     private:
-    TrapType SERIAL(type);
+    FurnitureType SERIAL(type);
     bool SERIAL(armed) = false;
     bool SERIAL(marked) = false;
   };

@@ -131,10 +131,10 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
+  struct TrapItemInfo;
+  vector<TrapItemInfo> getTrapItems(const vector<Position>&) const;
 
-  vector<pair<Item*, Position>> getTrapItems(const vector<Position>&) const;
-
-  void addTrap(Position, TrapType);
+  void addTrap(Position, FurnitureType);
   void removeTrap(Position);
   bool canAddFurniture(Position, FurnitureType) const;
   void addFurniture(Position, FurnitureType, const CostInfo&, bool noCredit);

@@ -174,7 +174,7 @@ void ConstructionMap::TrapInfo::reset() {
   marked = false;
 }
 
-ConstructionMap::TrapInfo::TrapInfo(TrapType t) : type(t) {
+ConstructionMap::TrapInfo::TrapInfo(FurnitureType t) : type(t) {
 }
 
 bool ConstructionMap::TrapInfo::isMarked() const {
@@ -185,7 +185,7 @@ bool ConstructionMap::TrapInfo::isArmed() const {
   return armed;
 }
 
-TrapType ConstructionMap::TrapInfo::getType() const {
+FurnitureType ConstructionMap::TrapInfo::getType() const {
   return type;
 }
 

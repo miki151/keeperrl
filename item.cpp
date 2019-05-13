@@ -243,10 +243,6 @@ bool Item::isOrWasForSale() const {
   return !!shopkeeper;
 }
 
-optional<TrapType> Item::getTrapType() const {
-  return attributes->trapType;
-}
-
 optional<CollectiveResourceId> Item::getResourceId() const {
   return attributes->resourceId;
 }

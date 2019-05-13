@@ -56,7 +56,6 @@ enum class FurnitureTickType;
 
 enum class MinionActivity;
 enum class MinionTrait;
-enum class TrapType : std::uint8_t;
 
 enum class SquareAttrib;
 

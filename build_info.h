@@ -7,6 +7,7 @@
 #include "zones.h"
 #include "avatar_info.h"
 #include "view_id.h"
+#include "furniture_type.h"
 
 struct BuildInfo {
   struct Furniture {
@@ -18,7 +19,7 @@ struct BuildInfo {
   };
 
   struct Trap {
-    TrapType SERIAL(type);
+    FurnitureType SERIAL(type);
     ViewId SERIAL(viewId);
     SERIALIZE_ALL(type, viewId)
   };

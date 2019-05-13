@@ -181,7 +181,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool canPillage(WConstCollective) const;
   void handlePillage(WCollective enemy);
   void handleRansom(bool pay);
-  ViewObject getTrapObject(TrapType, bool built) const;
+  ViewObject getTrapObject(FurnitureType, bool built) const;
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void onSquareClick(Position);
   WGame getGame() const;

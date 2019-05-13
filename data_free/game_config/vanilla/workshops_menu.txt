@@ -81,13 +81,13 @@
 "traps"
 # Workshop
 {
-    {{TrapItem BOULDER}      20       STONE 120    "traps"}
-    {{TrapItem POISON_GAS}   10       WOOD 20      "traps"}
-    {{TrapItem ALARM}        8        WOOD 20      "traps"}
-    {{TrapItem WEB}          8        WOOD 20      "traps"}
-    {{TrapItem SURPRISE}     8        WOOD 20      "traps"}
-    {{TrapItem TERROR}       8        WOOD 20      "traps"}
-    {{TrapItem FIRE}         8        WOOD 20      "traps"}
+    {{TrapItem "BOULDER_TRAP" "boulder"}      20       STONE 120    "traps"}
+    {{TrapItem "POISON_GAS_TRAP" "poison"}    10       WOOD 20      "traps"}
+    {{TrapItem "ALARM_TRAP" "alarm"}          8        WOOD 20      "traps"}
+    {{TrapItem "WEB_TRAP" "web"}              8        WOOD 20      "traps"}
+    {{TrapItem "SURPRISE_TRAP" "surprise"}    8        WOOD 20      "traps"}
+    {{TrapItem "TERROR_TRAP" "terror"}        8        WOOD 20      "traps"}
+    {{TrapItem "FIRE_TRAP" "fire"}            8        WOOD 20      "traps"}
 }
 
 # Forge

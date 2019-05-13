@@ -51,7 +51,6 @@ class ItemAttributes {
   optional<string> SERIAL(plural);
   optional<string> SERIAL(blindName);
   optional<string> SERIAL(artifactName);
-  optional<TrapType> SERIAL(trapType);
   optional<CollectiveResourceId> SERIAL(resourceId);
   int SERIAL(burnTime) = 0;
   int SERIAL(price) = 0;
