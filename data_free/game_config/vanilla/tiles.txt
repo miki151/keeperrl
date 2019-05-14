@@ -402,20 +402,33 @@
     isSymbolFont = true roundShadow = true }
   { viewId = "eyeball" symbol = "e" color = ColorId BLUE
     roundShadow = true }
-  { viewId = "wood_door" symbol = "|" color = ColorId BROWN
+  { viewId = "wood_door_ew" symbol = "-" color = ColorId BROWN
     wallShadow = true }
+  { viewId = "wood_door_ns" symbol = "|" color = ColorId BROWN }
   { viewId = "wood_gate_w" symbol = "-" color = ColorId BROWN
     wallShadow = true }
   { viewId = "wood_gate_e" symbol = "-" color = ColorId BROWN
     wallShadow = true }
-  { viewId = "wood_gate_n" symbol = "|" color = ColorId BROWN
+  { viewId = "wood_gate_n" symbol = "|" color = ColorId BROWN }
+  { viewId = "wood_gate_s" symbol = "|" color = ColorId BROWN }
+  { viewId = "iron_gate_w" symbol = "-" color = ColorId LIGHT_GRAY
     wallShadow = true }
-  { viewId = "wood_gate_s" symbol = "|" color = ColorId BROWN
+  { viewId = "iron_gate_e" symbol = "-" color = ColorId LIGHT_GRAY
     wallShadow = true }
-  { viewId = "iron_door" symbol = "|" color = ColorId LIGHT_GRAY
+  { viewId = "iron_gate_n" symbol = "|" color = ColorId LIGHT_GRAY }
+  { viewId = "iron_gate_s" symbol = "|" color = ColorId LIGHT_GRAY }
+  { viewId = "ada_gate_w" symbol = "-" color = ColorId LIGHT_BLUE
     wallShadow = true }
-  { viewId = "ada_door" symbol = "|" color = ColorId LIGHT_BLUE
+  { viewId = "ada_gate_e" symbol = "-" color = ColorId LIGHT_BLUE
     wallShadow = true }
+  { viewId = "ada_gate_n" symbol = "|" color = ColorId LIGHT_BLUE }
+  { viewId = "ada_gate_s" symbol = "|" color = ColorId LIGHT_BLUE }
+  { viewId = "iron_door_ew" symbol = "-" color = ColorId LIGHT_GRAY
+    wallShadow = true }
+  { viewId = "iron_door_ns" symbol = "|" color = ColorId LIGHT_GRAY }
+  { viewId = "ada_door_ew" symbol = "-" color = ColorId LIGHT_BLUE
+    wallShadow = true }
+  { viewId = "ada_door_ns" symbol = "|" color = ColorId LIGHT_BLUE }
   { viewId = "wood_wall" symbol = "#" color = ColorId DARK_BROWN
     wallShadow = true wallConnections = true }
   { viewId = "castle_wall" symbol = "#" color = ColorId LIGHT_GRAY

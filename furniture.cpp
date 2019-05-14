@@ -160,6 +160,30 @@ void Furniture::setTribe(TribeId id) {
   movementSet->setTribe(id);
 }
 
+bool Furniture::hasRequiredSupport(Position pos) const {
+  return requiredSupport.empty() || !!getSupportInfo(pos);
+}
+
+optional<ViewId> Furniture::getSupportViewId(Position pos) const {
+  if (auto ret = getSupportInfo(pos))
+    return ret->viewId;
+  return none;
+}
+
+const Furniture::SupportInfo* Furniture::getSupportInfo(Position pos) const {
+  auto hasSupport = [&](const vector<Dir>& dirs) {
+    for (auto dir : dirs)
+      if (!pos.plus(Vec2(dir)).isWall())
+        return false;
+    return true;
+  };
+  for (int i : All(requiredSupport)) {
+    if (hasSupport(requiredSupport[i].dirs))
+      return &requiredSupport[i];
+  }
+  return nullptr;
+}
+
 void Furniture::tick(Position pos) {
   PROFILE_BLOCK("Furniture::tick");
   if (fire && fire->isBurning()) {
@@ -345,10 +369,6 @@ void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
 
 int Furniture::getMaxTraining(ExperienceType t) const {
   return maxTraining[t];
-}
-
-const vector<Vec2>& Furniture::getRequiredSupport() const {
-  return requiredSupport;
 }
 
 optional<FurnitureType> Furniture::getUpgrade() const {

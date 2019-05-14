@@ -25,7 +25,6 @@ class FurnitureFactory {
   public:
   FurnitureFactory(const GameConfig*);
   bool canBuild(FurnitureType, Position) const;
-  bool hasSupport(FurnitureType, Position) const;
   bool isUpgrade(FurnitureType base, FurnitureType upgraded) const;
   const vector<FurnitureType>& getUpgrades(FurnitureType base) const;
   PFurniture getFurniture(FurnitureType, TribeId) const;

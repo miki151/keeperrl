@@ -548,6 +548,7 @@ void Position::addFurnitureImpl(PFurniture f) const {
     updateVisibility();
   updateBuildingSupport();
   level->addLightSource(coord, furniture->getLightEmission());
+  updateSupportViewId(furniture);
   setNeedsRenderUpdate(true);
 }
 
@@ -584,9 +585,10 @@ void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
   auto layer = f->getLayer();
   CHECK(layer != FurnitureLayer::GROUND || !!replace);
   CHECK(getFurniture(layer) == f);
-  if (replace)
+  if (replace) {
     level->setFurniture(coord, std::move(replace));
-  else {
+    updateSupportViewId(replacePtr);
+  } else {
     level->furniture->getBuilt(layer).clearElem(coord);
     level->furniture->getConstruction(coord, layer).reset();
   }
@@ -604,7 +606,7 @@ void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
 bool Position::canConstruct(FurnitureType type) const {
   PROFILE;
   auto factory = &getGame()->getContentFactory()->furniture;
-  return !isUnavailable() && factory->canBuild(type, *this) && factory->hasSupport(type, *this);
+  return !isUnavailable() && factory->canBuild(type, *this) && factory->getData(type).hasRequiredSupport(*this);
 }
 
 bool Position::isWall() const {
@@ -861,8 +863,14 @@ void Position::updateSupport() const {
   PROFILE;
   for (auto pos : neighbors8())
     for (auto f : pos.modFurniture())
-      if (!getGame()->getContentFactory()->furniture.hasSupport(f->getType(), pos))
+      if (!getGame()->getContentFactory()->furniture.getData(f->getType()).hasRequiredSupport(pos))
         f->destroy(pos, DestroyAction::Type::BASH);
+}
+
+void Position::updateSupportViewId(Furniture* furniture) const {
+  if (auto id = furniture->getSupportViewId(*this))
+    if (*id != furniture->getViewObject()->id())
+      furniture->getViewObject()->setId(*id);
 }
 
 bool Position::canNavigate(const MovementType& type) const {

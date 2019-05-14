@@ -87,6 +87,10 @@ PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
     ret->addLightSource(pos.getCoord(), pos.getLightEmission(), 1);
     if (pos.isBuildingSupport())
       ret->roofSupport->add(pos.getCoord());
+    for (auto layer : ENUM_ALL(FurnitureLayer))
+      if (auto f = pos.getFurniture(layer))
+        if (auto viewId = f->getSupportViewId(pos))
+          pos.modFurniture(layer)->getViewObject()->setId(*viewId);
   }
   ret->unavailable = std::move(unavailable);
   ret->covered = std::move(covered);

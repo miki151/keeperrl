@@ -11,6 +11,7 @@
 #include "experience_type.h"
 #include "bed_type.h"
 #include "fx_info.h"
+#include "view_id.h"
 
 class TribeId;
 class Creature;
@@ -90,7 +91,8 @@ class Furniture : public OwnedObject<Furniture> {
   void onCreatureWalkedOver(Position, Vec2 direction) const;
   void onCreatureWalkedInto(Position, Vec2 direction) const;
   int getMaxTraining(ExperienceType) const;
-  const vector<Vec2>& getRequiredSupport() const;
+  bool hasRequiredSupport(Position) const;
+  optional<ViewId> getSupportViewId(Position) const;
   optional<FurnitureType> getUpgrade() const;
   optional<FXVariantName> getUsageFX() const;
   /**
@@ -170,7 +172,13 @@ class Furniture : public OwnedObject<Furniture> {
   template<typename Archive>
   void serializeImpl(Archive&, const unsigned);
   EnumMap<ExperienceType, int> SERIAL(maxTraining);
-  vector<Vec2> SERIAL(requiredSupport);
+  struct SupportInfo {
+    vector<Dir> SERIAL(dirs);
+    optional<ViewId> SERIAL(viewId);
+    SERIALIZE_ALL(NAMED(dirs), NAMED(viewId))
+  };
+  vector<SupportInfo> SERIAL(requiredSupport);
+  const Furniture::SupportInfo* getSupportInfo(Position) const;
   optional<FurnitureType> SERIAL(upgrade);
   optional<FurnitureType> SERIAL(builtOver);
   bool SERIAL(bridge) = false;

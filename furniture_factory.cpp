@@ -120,13 +120,6 @@ const ViewObject& FurnitureFactory::getConstructionObject(FurnitureType type) co
   return constructionObjects.at(type);
 }
 
-bool FurnitureFactory::hasSupport(FurnitureType type, Position pos) const {
-  for (auto& v : getData(type).getRequiredSupport())
-    if (!pos.plus(v).isWall())
-      return false;
-  return true;
-}
-
 FurnitureFactory::FurnitureFactory(const GameConfig* config) {
   while (1) {
     FurnitureType::startContentIdGeneration();

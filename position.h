@@ -151,6 +151,7 @@ class Position {
   void updateSupport() const;
   void updateBuildingSupport() const;
   void addFurnitureImpl(PFurniture) const;
+  void updateSupportViewId(Furniture*) const;
 };
 
 template <>

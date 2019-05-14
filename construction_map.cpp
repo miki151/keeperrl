@@ -133,7 +133,7 @@ void ConstructionMap::clearUnsupportedFurniturePlans() {
   vector<pair<Position, FurnitureLayer>> toRemove;
   for (auto& elem : getAllFurniture())
     if (auto info = getFurniture(elem.first, elem.second))
-      if (!elem.first.getGame()->getContentFactory()->furniture.hasSupport(info->getFurnitureType(), elem.first))
+      if (!elem.first.getGame()->getContentFactory()->furniture.getData(info->getFurnitureType()).hasRequiredSupport(elem.first))
         toRemove.push_back(elem);
   for (auto& elem : toRemove)
     removeFurniturePlan(elem.first, elem.second);

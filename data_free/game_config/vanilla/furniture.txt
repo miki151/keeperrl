@@ -418,7 +418,7 @@
     layer = CEILING
     viewLayer = TORCH1
     attachmentDir = N
-    requiredSupport = { 0 -1 }
+    requiredSupport = { { { N } } }
     canBuildOutsideOfTerritory = true
   }
   "TORCH_S"
@@ -429,7 +429,7 @@
     layer = CEILING
     viewLayer = TORCH2
     attachmentDir = S
-    requiredSupport = { 0 1 }
+    requiredSupport = { { { S } } }
     canBuildOutsideOfTerritory = true
   }
   "TORCH_E"
@@ -440,7 +440,7 @@
     layer = CEILING
     viewLayer = TORCH2
     attachmentDir = E
-    requiredSupport = { 1 0 }
+    requiredSupport = { { { E } } }
     canBuildOutsideOfTerritory = true
   }
   "TORCH_W"
@@ -451,7 +451,7 @@
     layer = CEILING
     viewLayer = TORCH2
     attachmentDir = W
-    requiredSupport = { -1 0 }
+    requiredSupport = { { { W } } }
     canBuildOutsideOfTerritory = true
   }
   "CANDELABRUM_N"
@@ -463,7 +463,7 @@
     layer = CEILING
     viewLayer = TORCH1
     attachmentDir = N
-    requiredSupport = { 0 -1 }
+    requiredSupport = { { { N } } }
     canBuildOutsideOfTerritory = true
   }
   "CANDELABRUM_S"
@@ -475,7 +475,7 @@
     layer = CEILING
     viewLayer = TORCH2
     attachmentDir = S
-    requiredSupport = { 0 1 }
+    requiredSupport = { { { S } } }
     canBuildOutsideOfTerritory = true
   }
   "CANDELABRUM_E"
@@ -487,7 +487,7 @@
     layer = CEILING
     viewLayer = TORCH2
     attachmentDir = E
-    requiredSupport = { 1 0 }
+    requiredSupport = { { { E } } }
     canBuildOutsideOfTerritory = true
   }
   "CANDELABRUM_W"
@@ -499,7 +499,7 @@
     layer = CEILING
     viewLayer = TORCH2
     attachmentDir = W
-    requiredSupport = { -1 0 }
+    requiredSupport = { { { W } } }
     canBuildOutsideOfTerritory = true
   }
   "TORTURE_TABLE"
@@ -618,17 +618,17 @@
   "WOOD_DOOR"
   {
     name = "wooden door"
-    viewId = { "wood_door" }
+    viewId = { "wood_door_ew" }
     blockingEnemies = true
     canHideHere = true
     blockVision = { NORMAL ELF }
     fire = 50
     strength = 80
     clickType = LOCK
-    requiredSupport = { 0 -1 0 1 -1 0 1 0 }
+    requiredSupport = { { { E W } } { { N S } {"wood_door_ns"} } }
     destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
-  "WOOD_GATE_W"
+  "WOOD_GATE"
   {
     name = "wooden gate"
     viewId = { "wood_gate_w" }
@@ -636,72 +636,57 @@
     canHideHere = true
     blockVision = { NORMAL ELF }
     fire = 50
-    strength = 80
+    strength = 120
     clickType = LOCK
-    requiredSupport = { -1 0 }
-    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
-  }
-  "WOOD_GATE_E"
-  {
-    name = "wooden gate"
-    viewId = { "wood_gate_e" }
-    blockingEnemies = true
-    canHideHere = true
-    blockVision = { NORMAL ELF }
-    fire = 50
-    strength = 80
-    clickType = LOCK
-    requiredSupport = { 1 0 }
-    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
-  }
-  "WOOD_GATE_S"
-  {
-    name = "wooden gate"
-    viewId = { "wood_gate_s" }
-    blockingEnemies = true
-    canHideHere = true
-    blockVision = { NORMAL ELF }
-    fire = 50
-    strength = 80
-    clickType = LOCK
-    requiredSupport = { 0 1 }
-    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
-  }
-  "WOOD_GATE_N"
-  {
-    name = "wooden gate"
-    viewId = { "wood_gate_n" }
-    blockingEnemies = true
-    canHideHere = true
-    blockVision = { NORMAL ELF }
-    fire = 50
-    strength = 80
-    clickType = LOCK
-    requiredSupport = { 0 -1 }
+    requiredSupport = { { { W } } { { N } {"wood_gate_n"} } { { E } {"wood_gate_e"} } { { S } {"wood_gate_s"} } }
     destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "IRON_DOOR"
   {
     name = "iron door"
-    viewId = { "iron_door" }
+    viewId = { "iron_door_ew" }
     blockingEnemies = true
     canHideHere = true
     blockVision = { NORMAL ELF }
     strength = 160
     clickType = LOCK
-    requiredSupport = { 0 -1 0 1 -1 0 1 0 }
+    requiredSupport = { { { E W } } { { N S } {"iron_door_ns"} } }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "IRON_GATE"
+  {
+    name = "iron gate"
+    viewId = { "iron_gate_w" }
+    blockingEnemies = true
+    canHideHere = true
+    blockVision = { NORMAL ELF }
+    strength = 240
+    clickType = LOCK
+    requiredSupport = { { { W } } { { N } {"iron_gate_n"} } { { E } {"iron_gate_e"} } { { S } {"iron_gate_s"} } }
     destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   }
   "ADA_DOOR"
   {
     name = "adamantine door"
-    viewId = { "ada_door" }
+    viewId = { "ada_door_ew" }
     blockingEnemies = true
     canHideHere = true
     blockVision = { NORMAL ELF }
     strength = 320
     clickType = LOCK
-    requiredSupport = { 0 -1 0 1 -1 0 1 0 }
+    requiredSupport = { { { E W } } { { N S } {"ada_door_ns"} } }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "ADA_GATE"
+  {
+    name = "adamantine gate"
+    viewId = { "ada_gate_w" }
+    blockingEnemies = true
+    canHideHere = true
+    blockVision = { NORMAL ELF }
+    strength = 480
+    clickType = LOCK
+    requiredSupport = { { { W } } { { N } {"ada_gate_n"} } { { E } {"ada_gate_e"} } { { S } {"ada_gate_s"} } }
     destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   }
   "WELL"

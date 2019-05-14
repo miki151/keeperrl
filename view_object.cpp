@@ -162,11 +162,11 @@ static const char* getDefaultDescription(const ViewId& id) {
     return "Grave";
   if (id == ViewId("portal"))
     return "Portal";
-  if (id == ViewId("wood_door"))
+  if (id == ViewId("wood_door_ew"))
     return "Wooden door";
-  if (id == ViewId("iron_door"))
+  if (id == ViewId("iron_door_ew"))
     return "Iron door";
-  if (id == ViewId("ada_door"))
+  if (id == ViewId("ada_door_ew"))
     return "Adamantine door";
   if (id == ViewId("barricade"))
     return "Barricade";

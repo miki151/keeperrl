@@ -1691,6 +1691,7 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
 
 void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   PROFILE;
+  auto furnitureFactory = &getGame()->getContentFactory()->furniture;
   Position position(pos, getCurrentLevel());
   if (!position.isValid())
     return;
@@ -1715,7 +1716,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
           if (auto task = collective->getMinionActivities().getActivityFor(collective, c, furniture->getType()))
             if (collective->isActivityGood(c, *task, true))
               index.setHighlight(HighlightType::CREATURE_DROP);
-      if (getGame()->getContentFactory()->furniture.getData(furniture->getType()).isRequiresLight() && position.getLightingEfficiency() < 0.99)
+      if (furnitureFactory->getData(furniture->getType()).isRequiresLight() && position.getLightingEfficiency() < 0.99)
         index.setHighlight(HighlightType::INSUFFICIENT_LIGHT);
     }
     for (auto furniture : position.getFurniture())
@@ -1745,11 +1746,15 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   const ConstructionMap& constructions = collective->getConstructions();
   if (auto trap = constructions.getTrap(position))
     if (!trap->isArmed())
-      index.insert(getGame()->getContentFactory()->furniture.getConstructionObject(trap->getType()));
+      index.insert(furnitureFactory->getConstructionObject(trap->getType()));
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = constructions.getFurniture(position, layer))
-      if (!f->isBuilt(position))
-        index.insert(getGame()->getContentFactory()->furniture.getConstructionObject(f->getFurnitureType()));
+      if (!f->isBuilt(position)) {
+        auto obj = furnitureFactory->getConstructionObject(f->getFurnitureType());
+        if (auto viewId = furnitureFactory->getData(f->getFurnitureType()).getSupportViewId(position))
+          obj.setId(*viewId);
+        index.insert(std::move(obj));
+      }
   if (unknownLocations->contains(position))
     index.insert(ViewObject(ViewId("unknown_monster"), ViewLayer::TORCH2, "Surprise"));
 }
