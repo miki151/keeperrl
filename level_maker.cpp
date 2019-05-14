@@ -875,6 +875,7 @@ struct BuildingType {
   optional<FurnitureType> floorOutside;
   optional<Connector::DoorInfo> door;
   optional<FurnitureType> prettyFloor;
+  optional<Connector::DoorInfo> gate;
 };
 
 static BuildingType getBuildingInfo(const SettlementInfo& info) {
@@ -884,6 +885,7 @@ static BuildingType getBuildingInfo(const SettlementInfo& info) {
           c.wall = FurnitureType("WOOD_WALL");
           c.floorInside = FurnitureType("FLOOR");
           c.door = Connector::DoorInfo LIST(FurnitureType("WOOD_DOOR"), info.tribe, 1.0);
+          c.gate = Connector::DoorInfo LIST(FurnitureType("WOOD_GATE"), info.tribe, 1.0);
       );
     case BuildingId::WOOD_CASTLE:
       return CONSTRUCT(BuildingType,
@@ -891,6 +893,7 @@ static BuildingType getBuildingInfo(const SettlementInfo& info) {
           c.floorInside = FurnitureType("FLOOR");
           c.floorOutside = FurnitureType("MUD");
           c.door = Connector::DoorInfo LIST(FurnitureType("WOOD_DOOR"), info.tribe, 1.0);
+          c.gate = Connector::DoorInfo LIST(FurnitureType("WOOD_GATE"), info.tribe, 1.0);
       );
     case BuildingId::MUD: 
       return CONSTRUCT(BuildingType,
@@ -905,6 +908,7 @@ static BuildingType getBuildingInfo(const SettlementInfo& info) {
           c.floorOutside = FurnitureType("MUD");
           c.prettyFloor = FurnitureType("FLOOR_CARPET1");
           c.door = Connector::DoorInfo LIST(FurnitureType("IRON_DOOR"), info.tribe, 1.0);
+          c.gate = Connector::DoorInfo LIST(FurnitureType("IRON_GATE"), info.tribe, 1.0);
       );
     case BuildingId::DUNGEON:
       return CONSTRUCT(BuildingType,
@@ -912,6 +916,7 @@ static BuildingType getBuildingInfo(const SettlementInfo& info) {
           c.floorInside = FurnitureType("FLOOR");
           c.floorOutside = FurnitureType("FLOOR");
           c.door = Connector::DoorInfo LIST(FurnitureType("WOOD_DOOR"), info.tribe, 1.0);
+          c.gate = Connector::DoorInfo LIST(FurnitureType("WOOD_GATE"), info.tribe, 1.0);
       );
     case BuildingId::DUNGEON_SURFACE:
       return CONSTRUCT(BuildingType,
@@ -919,6 +924,7 @@ static BuildingType getBuildingInfo(const SettlementInfo& info) {
           c.floorInside = FurnitureType("FLOOR");
           c.floorOutside = FurnitureType("HILL");
           c.door = Connector::DoorInfo LIST(FurnitureType("WOOD_DOOR"), info.tribe, 1.0);
+          c.gate = Connector::DoorInfo LIST(FurnitureType("WOOD_GATE"), info.tribe, 1.0);
       );
     case BuildingId::RUINS:
       return CONSTRUCT(BuildingType,
@@ -1884,25 +1890,27 @@ class CastleExit : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     auto building = getBuildingInfo(settlement);
-    Vec2 loc(area.right() - 1, area.middle().y);
-    if (building.floorInside)
-      builder->resetFurniture(loc + Vec2(2, 0), *building.floorInside);
-    if (building.door)
-      builder->putFurniture(loc + Vec2(2, 0), building.door->type, building.door->tribe);
-    else
-      builder->removeFurniture(loc + Vec2(2, 0), FurnitureLayer::MIDDLE);
+    Vec2 loc(area.right() - 1, area.middle().y - 1);
+    for (int i = 0; i < 2; ++i) {
+      if (building.floorInside)
+        builder->resetFurniture(loc + Vec2(2, i), *building.floorInside);
+      if (building.gate)
+        builder->putFurniture(loc + Vec2(2, i), building.gate->type, building.gate->tribe);
+      else
+        builder->removeFurniture(loc + Vec2(2, i), FurnitureLayer::MIDDLE);
+    }
     if (!settlement.dontBuildRoad)
       builder->addAttrib(loc + Vec2(2, 0), SquareAttrib::CONNECT_ROAD);
-    vector<Vec2> walls { Vec2(1, -2), Vec2(2, -2), Vec2(2, -1), Vec2(2, 1), Vec2(2, 2), Vec2(1, 2)};
+    vector<Vec2> walls { Vec2(1, -2), Vec2(2, -2), Vec2(2, -1), Vec2(2, 2), Vec2(2, 3), Vec2(1, 3)};
     for (Vec2 v : walls)
       builder->putFurniture(loc + v, building.wall);
-    vector<Vec2> floor { Vec2(1, -1), Vec2(1, 0), Vec2(1, 1), Vec2(0, -1), Vec2(0, 0), Vec2(0, 1) };
+    vector<Vec2> floor { Vec2(1, -1), Vec2(1, 0), Vec2(1, 1), Vec2(1, 2), Vec2(0, -1), Vec2(0, 0), Vec2(0, 1), Vec2(0, 2) };
     for (Vec2 v : floor)
       if (building.floorInside)
         builder->resetFurniture(loc + v, *building.floorInside);
       else
         builder->removeFurniture(loc + v, FurnitureLayer::MIDDLE);
-    vector<Vec2> guardPos { Vec2(1, 1), Vec2(1, -1) };
+    vector<Vec2> guardPos { Vec2(1, 2), Vec2(1, -1) };
     for (Vec2 pos : guardPos) {
       auto fighters = settlement.inhabitants.fighters.generate(builder->getRandom(), &builder->getContentFactory()->creatures,
           settlement.tribe, MonsterAIFactory::stayInLocation(
@@ -2262,7 +2270,7 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::VILLAGE:
     case SettlementType::ANT_NEST:  return {20, 20};
     case SettlementType::CASTLE: return {30, 20};
-    case SettlementType::CASTLE2: return {13, 13};
+    case SettlementType::CASTLE2: return {13, 14};
     case SettlementType::MINETOWN: return {30, 20};
     case SettlementType::SMALL_MINETOWN: return {15, 15};
     case SettlementType::CAVE: return {12, 12};
