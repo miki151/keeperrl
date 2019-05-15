@@ -42,7 +42,6 @@ RICH_ENUM(
 class Furniture : public OwnedObject<Furniture> {
   public:
 
-  Furniture(const string& name, const optional<ViewObject>&, FurnitureType, TribeId);
   Furniture(const Furniture&);
   const heap_optional<ViewObject>& getViewObject() const;
   heap_optional<ViewObject>& getViewObject();

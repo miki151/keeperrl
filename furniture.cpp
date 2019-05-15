@@ -37,10 +37,10 @@ static string makePlural(const string& s) {
   return s + "s";
 }
 
-Furniture::Furniture(const string& n, const optional<ViewObject>& o, FurnitureType t, TribeId id)
+/*Furniture::Furniture(const string& n, const optional<ViewObject>& o, FurnitureType t, TribeId id)
     : viewObject(o), name(n), pluralName(makePlural(name)), type(t), movementSet(id) {
   movementSet->addTrait(MovementTrait::WALK);
-}
+}*/
 
 Furniture::Furniture(const Furniture&) = default;
 
@@ -529,7 +529,7 @@ void Furniture::serialize(PrettyInputArchive& ar, unsigned int v) {
     for (auto& elem : *strength2)
       setDestroyable(elem.first, elem.second);
   if (viewId)
-    viewObject = ViewObject(*viewId, viewLayer.value_or(getViewLayer(layer)));
+    viewObject = ViewObject(*viewId, viewLayer.value_or(getViewLayer(layer)), capitalFirst(getName()));
   if (attachmentDir)
     viewObject->setAttachmentDir(*attachmentDir);
   if (waterDepth)
