@@ -59,7 +59,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(canBuildBridge), OPTION(noProjectiles), OPTION(clearFogOfWar), OPTION(removeWithCreaturePresent), OPTION(upgrade));
   ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
-  ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell));
+  ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect));
 }
 
 template <class Archive>
@@ -428,6 +428,10 @@ bool Furniture::isHostileSpell() const {
 
 optional<BedType> Furniture::getBedType() const {
   return bedType;
+}
+
+optional<LastingEffect> Furniture::getLastingEffect() const {
+  return lastingEffect;
 }
 
 Furniture& Furniture::setBlocking() {

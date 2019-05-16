@@ -69,21 +69,10 @@ static optional<LastingEffect> getCancelling(LastingEffect effect) {
   return ret[effect];
 }
 
-static optional<ViewObject::Modifier> getViewObjectModifier(LastingEffect effect) {
-  switch (effect) {
-    case LastingEffect::INVISIBLE:
-      return ViewObjectModifier::INVISIBLE;
-    default:
-      return none;
-  }
-}
-
 void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
   PROFILE;
   if (auto e = getCancelled(effect))
     c->removeEffect(*e, true);
-  if (auto mod = getViewObjectModifier(effect))
-    c->modViewObject().setModifier(*mod);
   if (msg)
     switch (effect) {
       case LastingEffect::FLYING:
@@ -267,6 +256,8 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
 }
 
 bool LastingEffects::affects(const Creature* c, LastingEffect effect) {
+  if (c->getBody().isImmuneTo(effect))
+    return false;
   if (auto cancelling = getCancelling(effect))
     if (c->isAffected(*cancelling))
       return false;
@@ -308,8 +299,6 @@ void LastingEffects::onRemoved(Creature* c, LastingEffect effect, bool msg) {
 }
 
 void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
-  if (auto mod = getViewObjectModifier(effect))
-    c->modViewObject().setModifier(*mod, false);
   if (msg)
     switch (effect) {
       case LastingEffect::SLOWED:

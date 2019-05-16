@@ -456,9 +456,8 @@ void Creature::makeMove() {
     shared_ptr<Controller> controllerTmp = controllerStack.back().giveMeSharedPointer();
     MEASURE(controllerTmp->makeMove(), "creature move time");
   }
-
+  updateViewObject();
   INFO << getName().bare() << " morale " << getMorale();
-  modViewObject().setModifier(ViewObject::Modifier::HIDDEN, hidden);
   unknownAttackers.clear();
   getBody().affectPosition(position);
   highestAttackValueEver = max(highestAttackValueEver, getBestAttack().value);
@@ -795,7 +794,7 @@ bool Creature::knowsHiding(const Creature* c) const {
 
 bool Creature::addEffect(LastingEffect effect, TimeInterval time, bool msg) {
   PROFILE;
-  if (LastingEffects::affects(this, effect) && !getBody().isImmuneTo(effect)) {
+  if (LastingEffects::affects(this, effect)) {
     bool was = isAffected(effect);
     if (!was || LastingEffects::canProlong(effect))
       attributes->addLastingEffect(effect, *getGlobalTime() + time);
@@ -814,6 +813,7 @@ bool Creature::removeEffect(LastingEffect effect, bool msg) {
   attributes->clearLastingEffect(effect);
   if (was && !isAffected(effect)) {
     LastingEffects::onRemoved(this, effect, msg);
+    updateViewObject();
     return true;
   }
   return false;
@@ -821,11 +821,14 @@ bool Creature::removeEffect(LastingEffect effect, bool msg) {
 
 void Creature::addPermanentEffect(LastingEffect effect, int count) {
   PROFILE;
-  bool was = attributes->isAffectedPermanently(effect);
-  attributes->addPermanentEffect(effect, count);
-  if (!was && attributes->isAffectedPermanently(effect)) {
-    LastingEffects::onAffected(this, effect, true);
-    message(PlayerMessage("The effect is permanent", MessagePriority::HIGH));
+  if (LastingEffects::affects(this, effect)) {
+    bool was = attributes->isAffectedPermanently(effect);
+    attributes->addPermanentEffect(effect, count);
+    if (!was && attributes->isAffectedPermanently(effect)) {
+      LastingEffects::onAffected(this, effect, true);
+      message(PlayerMessage("The effect is permanent", MessagePriority::HIGH));
+      updateViewObject();
+    }
   }
 }
 
@@ -833,12 +836,17 @@ void Creature::removePermanentEffect(LastingEffect effect, int count) {
   PROFILE;
   bool was = isAffected(effect);
   attributes->removePermanentEffect(effect, count);
-  if (was && !isAffected(effect))
+  if (was && !isAffected(effect)) {
     LastingEffects::onRemoved(this, effect, true);
+    updateViewObject();
+  }
 }
 
 bool Creature::isAffected(LastingEffect effect) const {
   PROFILE;
+  if (auto f = position.getFurniture(FurnitureLayer::FLOOR))
+    if (f->getLastingEffect() == effect && LastingEffects::affects(this, effect))
+      return true;
   if (auto time = getGlobalTime())
     return attributes->isAffected(effect, *time);
   else
@@ -1197,6 +1205,8 @@ void Creature::updateViewObject() {
   object.setModifier(ViewObject::Modifier::DRAW_MORALE);
   object.setModifier(ViewObject::Modifier::STUNNED, isAffected(LastingEffect::STUNNED));
   object.setModifier(ViewObject::Modifier::FLYING, isAffected(LastingEffect::FLYING));
+  object.setModifier(ViewObject::Modifier::INVISIBLE, isAffected(LastingEffect::INVISIBLE));
+  object.setModifier(ViewObject::Modifier::HIDDEN, hidden);
   object.getCreatureStatus() = getStatus();
   object.setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
   object.setBadAdjectives(combine(extractNames(getBadAdjectives()), true));

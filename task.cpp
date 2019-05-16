@@ -823,7 +823,7 @@ class CampAndSpawn : public Task {
     }
     updateTeams();
     if (defenseTeam.size() < defenseSize && Random.roll(5)) {
-      for (Creature* summon : Effect::summonCreatures(c, 4,
+      for (Creature* summon : Effect::summonCreatures(c->getPosition(), 4,
           makeVec(spawns.random(&c->getGame()->getContentFactory()->creatures, MonsterAIFactory::summoned(c)))))
         defenseTeam.push_back(summon);
     }
@@ -844,7 +844,7 @@ class CampAndSpawn : public Task {
         for (int i : Range(Random.get(attackSize)))
           team.push_back(spawns.random(&c->getGame()->getContentFactory()->creatures,
               MonsterAIFactory::singleTask(Task::attackCreatures({target->getLeader()}))));
-        for (Creature* summon : Effect::summonCreatures(c, 4, std::move(team)))
+        for (Creature* summon : Effect::summonCreatures(c->getPosition(), 4, std::move(team)))
           attackTeam.push_back(summon);
         attackCountdown = none;
       }
@@ -856,8 +856,8 @@ class CampAndSpawn : public Task {
     return "Camp and spawn " + target->getLeader()->getName().bare();
   }
  
-  SERIALIZE_ALL(SUBCLASS(Task), target, spawns, campPos, defenseSize, attackSize, attackCountdown, defenseTeam, attackTeam, numAttacks);
-  SERIALIZATION_CONSTRUCTOR(CampAndSpawn);
+  SERIALIZE_ALL(SUBCLASS(Task), target, spawns, campPos, defenseSize, attackSize, attackCountdown, defenseTeam, attackTeam, numAttacks)
+  SERIALIZATION_CONSTRUCTOR(CampAndSpawn)
 
   private:
   WCollective SERIAL(target) = nullptr;

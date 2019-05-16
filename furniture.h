@@ -115,11 +115,12 @@ class Furniture : public OwnedObject<Furniture> {
   bool isRequiresLight() const;
   bool isHostileSpell() const;
   optional<BedType> getBedType() const;
+  optional<LastingEffect> getLastingEffect() const;
+
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();
   Furniture& setDestroyable(double);
   Furniture& setDestroyable(double, DestroyAction::Type);
-  MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
 
@@ -193,4 +194,5 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FXInfo> SERIAL(walkIntoFX);
   optional<FXVariantName> SERIAL(usageFX);
   bool SERIAL(hostileSpell) = false;
+  optional<LastingEffect> SERIAL(lastingEffect);
 };

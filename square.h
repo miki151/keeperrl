@@ -56,9 +56,6 @@ class Square : public OwnedObject<Square> {
   /** Puts a creature on the square.*/
   void putCreature(Creature*);
 
-  /** Puts a creature on the square without triggering any mechanisms that happen when a creature enters.*/ 
-  void setCreature(Creature*);
-
   /** Removes the creature from the square.*/
   void removeCreature(Position);
 
@@ -101,8 +98,6 @@ class Square : public OwnedObject<Square> {
 
   Inventory& getInventory();
   const Inventory& getInventory() const;
-
-  void onEnter(Creature*);
 
   template <class Archive>
   void serialize(Archive&, const unsigned int);

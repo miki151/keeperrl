@@ -54,10 +54,16 @@ Square::~Square() {
 
 void Square::putCreature(Creature* c) {
   CHECK(!creature);
-  setCreature(c);
-  onEnter(c);
+  creature = c;
+  setDirty(c->getPosition());
   if (auto game = c->getGame())
     game->addEvent(EventInfo::CreatureMoved{c});
+}
+
+void Square::removeCreature(Position pos) {
+  setDirty(pos);
+  CHECK(creature);
+  creature = nullptr;
 }
 
 void Square::setLandingLink(optional<StairKey> key) {
@@ -67,10 +73,6 @@ void Square::setLandingLink(optional<StairKey> key) {
 
 optional<StairKey> Square::getLandingLink() const {
   return landingLink;
-}
-
-void Square::setCreature(Creature* c) {
-  creature = c;
 }
 
 void Square::onAddedToLevel(Position pos) const {
@@ -153,10 +155,6 @@ void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
   *viewIndex = ret;
 }
 
-void Square::onEnter(Creature* c) {
-  setDirty(c->getPosition());
-}
-
 void Square::dropItem(Position pos, PItem item) {
   dropItems(pos, makeVec(std::move(item)));
 }
@@ -181,12 +179,6 @@ bool Square::isOnFire() const {
 
 void Square::setOnFire(bool state) {
   onFire = state;
-}
-
-void Square::removeCreature(Position pos) {
-  setDirty(pos);
-  CHECK(creature);
-  creature = nullptr;
 }
 
 Item* Square::getTopItem() const {

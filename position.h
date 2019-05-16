@@ -61,7 +61,7 @@ class Position {
   bool canEnter(const MovementType&) const;
   bool canEnterEmpty(const Creature*) const;
   bool canEnterEmpty(const MovementType&, optional<FurnitureLayer> ignore = none) const;
-  void onEnter(Creature*);
+  void onEnter(Creature*) const;
   optional<FurnitureClickType> getClickType() const;
   void addSound(const Sound&) const;
   void getViewIndex(ViewIndex&, const Creature* viewer) const;

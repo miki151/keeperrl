@@ -61,10 +61,6 @@ vector<Creature*> Effect::summonCreatures(Position pos, int radius, vector<PCrea
   return ret;
 }
 
-vector<Creature*> Effect::summonCreatures(Creature* c, int radius, vector<PCreature> creatures, TimeInterval delay) {
-  return summonCreatures(c->getPosition(), radius, std::move(creatures), delay);
-}
-
 void Effect::emitPoisonGas(Position pos, double amount, bool msg) {
   PROFILE;
   for (Position v : pos.neighbors8())
@@ -87,7 +83,7 @@ vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<T
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(c->getGame()->getContentFactory()->creatures.fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c)));
-  auto ret = summonCreatures(c, 2, std::move(creatures), delay);
+  auto ret = summonCreatures(c->getPosition(), 2, std::move(creatures), delay);
   for (auto c : ret) {
     if (ttl)
       c->addEffect(LastingEffect::SUMMONED, *ttl, false);
@@ -464,7 +460,7 @@ void Effect::Deception::applyToCreature(Creature* c, Creature* attacker) const {
   vector<PCreature> creatures;
   for (int i : Range(Random.get(3, 7)))
     creatures.push_back(CreatureFactory::getIllusion(c));
-  Effect::summonCreatures(c, 2, std::move(creatures));
+  Effect::summonCreatures(c->getPosition(), 2, std::move(creatures));
 }
 
 string Effect::Deception::getName() const {
@@ -776,7 +772,7 @@ void Effect::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) con
       itemCopy->setTimeout(c->getGame()->getGlobalTime() + ttl + 10_visible);
       copy->take(std::move(itemCopy));
     }
-  auto cRef = summonCreatures(c, 2, makeVec(std::move(copy))).getOnlyElement();
+  auto cRef = summonCreatures(c->getPosition(), 2, makeVec(std::move(copy))).getOnlyElement();
   cRef->addEffect(LastingEffect::SUMMONED, ttl, false);
 }
 

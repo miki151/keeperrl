@@ -1012,6 +1012,46 @@
     luxury = 0.7
     layer = FLOOR
   }
+  "FLOOR_SPEED"
+  {
+    name = "floor of speed"
+    viewId = { "carpet_floor4" ColorId PINK }
+    luxury = 0.7
+    layer = FLOOR
+    lastingEffect = SPEED
+  }
+  "FLOOR_BLIND"
+  {
+    name = "floor of blindness"
+    viewId = { "carpet_floor4" ColorId YELLOW }
+    luxury = 0.7
+    layer = FLOOR
+    lastingEffect = BLIND
+  }
+  "FLOOR_INVI"
+  {
+    name = "floor of invisibility"
+    viewId = { "carpet_floor4" ColorId LIGHT_BLUE }
+    luxury = 0.7
+    layer = FLOOR
+    lastingEffect = INVISIBLE
+  }
+  "FLOOR_REGENER"
+  {
+    name = "floor of regeneration"
+    viewId = { "carpet_floor4" ColorId GREEN }
+    luxury = 0.7
+    layer = FLOOR
+    lastingEffect = REGENERATION
+  }
+  "FLOOR_PEACE"
+  {
+    name = "floor of peace"
+    viewId = { "carpet_floor4" Rgb 254 254 254 255 }
+    luxury = 0.7
+    layer = FLOOR
+    lastingEffect = PEACEFULNESS
+  }
   "ALARM_TRAP"
   {
     name = "alarm trap"

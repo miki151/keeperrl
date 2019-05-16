@@ -488,7 +488,7 @@ bool Position::canEnterEmpty(const MovementType& t, optional<FurnitureLayer> ign
   return result;
 }
 
-void Position::onEnter(Creature* c) {
+void Position::onEnter(Creature* c) const {
   PROFILE;
   for (auto layer : ENUM_ALL_REVERSE(FurnitureLayer))
     if (auto f = getFurniture(layer)) {
