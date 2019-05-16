@@ -29,7 +29,7 @@ class DummyView : public View {
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override {
     return none;
   }
-  virtual optional<Vec2> chooseTarget(Vec2 playerPos, Table<PassableInfo>, const string& message) override {
+  virtual optional<Vec2> chooseTarget(Vec2 playerPos, TargetType, Table<PassableInfo>, const string& message) override {
     return none;
   }
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) override {

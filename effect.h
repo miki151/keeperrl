@@ -45,6 +45,7 @@ class CreatureGroup;
 
 class Effect {
   public:
+  SIMPLE_EFFECT(Escape);
   SIMPLE_EFFECT(Teleport);
   SIMPLE_EFFECT(Heal);
   SIMPLE_EFFECT(Fire);
@@ -153,7 +154,7 @@ class Effect {
     vector<Effect> effects;
     COMPARE_ALL(effects)
   };*/
-  MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
+  MAKE_VARIANT(EffectType, Escape, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
       Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
       Area, CustomArea, ReviveCorpse, Blast, Shove, SwapPosition);

@@ -101,8 +101,26 @@
   {
     id =  "escape"
     symbol = "✈️"
-    effect = Teleport
+    effect = Escape
     cooldown = 80
+    sound = SPELL_TELEPORT
+  }
+  {
+    id =  "teleport"
+    symbol = "🌀"
+    effect = Teleport
+    range = 3
+    cooldown = 200
+    sound = SPELL_TELEPORT
+  }
+  {
+    id =  "teleport2"
+    upgrade = "teleport"
+    symbol = "🌀"
+    effect = Teleport
+    range = 8
+    cooldown = 160
+    endOnly = true
     sound = SPELL_TELEPORT
   }
   {

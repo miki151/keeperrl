@@ -65,6 +65,7 @@
 #include "fx_name.h"
 #include "furniture_factory.h"
 #include "content_factory.h"
+#include "target_type.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -207,8 +208,8 @@ optional<Vec2> Player::chooseDirection(const string& s) {
   return getView()->chooseDirection(creature->getPosition().getCoord(), s);
 }
 
-optional<Position> Player::chooseTarget(Table<PassableInfo> passable, const string& s) {
-  if (auto v = getView()->chooseTarget(creature->getPosition().getCoord(), std::move(passable), s))
+optional<Position> Player::chooseTarget(Table<PassableInfo> passable, TargetType type, const string& s) {
+  if (auto v = getView()->chooseTarget(creature->getPosition().getCoord(), type, std::move(passable), s))
     return Position(*v, getLevel());
   else
     return none;
@@ -229,7 +230,7 @@ void Player::throwItem(Item* item, optional<Position> target) {
         else if (pos.getCreature())
           passable[v] = PassableInfo::STOPS_HERE;
       }
-      target = chooseTarget(std::move(passable), "Which direction do you want to throw?");
+      target = chooseTarget(std::move(passable), TargetType::TRAJECTORY, "Which direction do you want to throw?");
     } else
       privateMessage(testAction.getFailedReason());
     if (!target)
@@ -434,7 +435,7 @@ void Player::fireAction() {
       else if (pos.getCreature())
         passable[v] = PassableInfo::STOPS_HERE;
     }
-    if (auto target = chooseTarget(std::move(passable), "Fire which direction?"))
+    if (auto target = chooseTarget(std::move(passable), TargetType::TRAJECTORY, "Fire which direction?"))
       tryToPerform(creature->fire(*target));
   } else
     privateMessage(testAction.getFailedReason());
@@ -455,7 +456,8 @@ void Player::spellAction(int id) {
       if (pos.isDirEffectBlocked())
         passable[v] = PassableInfo::STOPS_HERE;
     }
-    if (auto target = chooseTarget(std::move(passable), "Which direction?"))
+    if (auto target = chooseTarget(std::move(passable), spell->isEndOnly() ? TargetType::POSITION : TargetType::TRAJECTORY,
+        "Which direction?"))
       tryToPerform(creature->castSpell(spell, *target));
   }
 }

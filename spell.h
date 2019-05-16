@@ -41,6 +41,7 @@ class Spell {
   bool canTargetSelf() const;
   void apply(Creature*, Position target) const;
   int getRange() const;
+  bool isEndOnly() const;
   const string& getId() const;
   const optional<string>& getUpgrade() const;
   MoveInfo getAIMove(const Creature*) const;

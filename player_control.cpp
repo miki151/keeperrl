@@ -658,7 +658,7 @@ string PlayerControl::getMinionName(CreatureId id) const {
   return names.at(id);
 }
 
-vector<Button> PlayerControl::fillButtons(const vector<BuildInfo>& buildInfo) const {
+vector<Button> PlayerControl::fillButtons() const {
   vector<Button> buttons;
   EnumMap<ResourceId, int> numResource([this](ResourceId id) { return collective->numResource(id);});
   for (auto& button : buildInfo) {
@@ -1428,7 +1428,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.infoType = GameInfo::InfoType::BAND;
   gameInfo.playerInfo = CollectiveInfo();
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<CollectiveInfo>();
-  info.buildings = fillButtons(buildInfo);
+  info.buildings = fillButtons();
   fillMinions(info);
   fillImmigration(info);
   fillImmigrationHelp(info);

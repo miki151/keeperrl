@@ -16,10 +16,12 @@
   }
   "evocation" SPELL
   {
-    "magic missile" 4
-    "directed blast" 6
-    "circular blast" 7
+    "magic missile" 1
+    "directed blast" 2
+    "circular blast" 3
+    "teleport" 5
     "meteor shower" 11
+    "teleport2" 12
   }
   "shaman" SPELL
   {

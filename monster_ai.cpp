@@ -388,7 +388,7 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo getPanicMove(Creature* other) {
-    if (auto teleMove = tryEffect(Effect::Teleport{}))
+    if (auto teleMove = tryEffect(Effect::Escape{}))
       return teleMove;
     if (auto action = creature->moveAway(other->getPosition(), true))
       return {1.0, action.prepend([=](Creature* creature) {
@@ -408,7 +408,7 @@ class Fighter : public Behaviour {
             Effect::Lasting{LastingEffect::POISON},
             Effect::Lasting{LastingEffect::POISON_RESISTANT},
             Effect::RemoveLasting{LastingEffect::POISON},
-            Effect::Teleport{},
+            Effect::Escape{},
             Effect::Lasting{LastingEffect::DAM_BONUS},
             Effect::Lasting{LastingEffect::DEF_BONUS}},
             *effect))
@@ -828,7 +828,7 @@ class Thief : public Behaviour {
       return NoMove;
     for (const Creature* other : creature->getVisibleEnemies()) {
       if (robbed.contains(other)) {
-        if (MoveInfo teleMove = tryEffect(Effect::Teleport{}))
+        if (MoveInfo teleMove = tryEffect(Effect::Escape{}))
           return teleMove;
         if (auto action = creature->moveAway(other->getPosition()))
         return {1.0, action};

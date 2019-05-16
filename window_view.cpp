@@ -40,6 +40,7 @@
 #include "fx_view_manager.h"
 #include "draw_line.h"
 #include "tileset.h"
+#include "target_type.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -743,7 +744,7 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
   return returnQueue.pop();
 }
 
-optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, Table<PassableInfo> passable, const string& message) {
+optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, TargetType targetType, Table<PassableInfo> passable, const string& message) {
   TempClockPause pause(clock);
   gameInfo.messageBuffer = makeVec(PlayerMessage(message));
   SyncQueue<optional<Vec2>> returnQueue;
@@ -771,24 +772,37 @@ optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, Table<PassableInfo> pass
     rebuildGui();
     refreshScreen(false);
     if (pos) {
-      bool wasObstructed = false;
-      auto line = drawLine(playerPos, *pos);
-      for (auto& pw : line)
-        if (pw != playerPos || line.size() == 1) {
-          bool obstructed = wasObstructed || !pw.inRectangle(passable.getBounds()) ||
-              passable[pw] == PassableInfo::NON_PASSABLE;
-          auto color = obstructed ? Color::RED : Color::GREEN;
-          if (!wasObstructed && pw.inRectangle(passable.getBounds()) && passable[pw] == PassableInfo::UNKNOWN)
-            color = Color::ORANGE;
-          Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(), pw.x, pw.y);
-          if (currentTileLayout.sprites) {
-            renderer.drawViewObject(wpos, ViewId("dig_mark"), true, mapLayout->getSquareSize(), color);
-          } else {
-            renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, color,
-                wpos + Vec2(mapLayout->getSquareSize().x / 2, 0), "0", Renderer::HOR);
-          }
-          wasObstructed = obstructed || passable[pw] == PassableInfo::STOPS_HERE;
+      auto drawPoint = [&] (Vec2 wpos, Color color) {
+        if (currentTileLayout.sprites) {
+          renderer.drawViewObject(wpos, ViewId("dig_mark"), true, mapLayout->getSquareSize(), color);
+        } else {
+          renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, color,
+              wpos + Vec2(mapLayout->getSquareSize().x / 2, 0), "0", Renderer::HOR);
         }
+      };
+      switch (targetType) {
+        case TargetType::POSITION: {
+          auto color = pos->inRectangle(passable.getBounds()) && passable[*pos] == PassableInfo::PASSABLE ? Color::GREEN : Color::RED;
+          drawPoint(mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(), pos->x, pos->y), color);
+          break;
+        }
+        case TargetType::TRAJECTORY: {
+          bool wasObstructed = false;
+          auto line = drawLine(playerPos, *pos);
+          for (auto& pw : line)
+            if (pw != playerPos || line.size() == 1) {
+              bool obstructed = wasObstructed || !pw.inRectangle(passable.getBounds()) ||
+                  passable[pw] == PassableInfo::NON_PASSABLE;
+              auto color = obstructed ? Color::RED : Color::GREEN;
+              if (!wasObstructed && pw.inRectangle(passable.getBounds()) && passable[pw] == PassableInfo::UNKNOWN)
+                color = Color::ORANGE;
+              Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(), pw.x, pw.y);
+              wasObstructed = obstructed || passable[pw] == PassableInfo::STOPS_HERE;
+              drawPoint(wpos, color);
+            }
+          break;
+        }
+      }
     }
     renderer.drawAndClearBuffer();
     renderer.flushEvents(SDL::SDL_MOUSEMOTION);

@@ -108,6 +108,7 @@ enum class ViewObjectAction : std::uint8_t;
 enum class Gender : std::uint8_t;
 enum class CreatureViewCenterType;
 enum class BedType;
+enum class TargetType;
 
 struct FXInfo;
 struct FXSpawnInfo;

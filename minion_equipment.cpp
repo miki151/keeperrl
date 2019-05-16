@@ -29,7 +29,7 @@
 
 static bool isCombatConsumable(Effect type) {
   return type.visit(
-      [&](const Effect::Teleport&) { return true; },
+      [&](const Effect::Escape&) { return true; },
       [&](const Effect::Lasting& e) {
         switch (e.lastingEffect) {
           case LastingEffect::SPEED:

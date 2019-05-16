@@ -71,7 +71,7 @@ vector<PItem> ItemFactory::random() {
 
 ItemFactory ItemFactory::villageShop() {
   return ItemFactory({
-      {ItemType::Scroll{Effect::Teleport{}}, 5 },
+      {ItemType::Scroll{Effect::Escape{}}, 5 },
       {ItemType::Scroll{Effect::EnhanceArmor{}}, 5 },
       {ItemType::Scroll{Effect::EnhanceWeapon{}}, 5 },
       {ItemType::FireScroll{}, 5 },
@@ -164,7 +164,7 @@ ItemFactory ItemFactory::potions() {
 
 ItemFactory ItemFactory::scrolls() {
   return ItemFactory({
-      {ItemType::Scroll{Effect::Teleport{}}, 1 },
+      {ItemType::Scroll{Effect::Escape{}}, 1 },
       {ItemType::Scroll{Effect::EnhanceArmor{}}, 1 },
       {ItemType::Scroll{Effect::EnhanceWeapon{}}, 1 },
       {ItemType::FireScroll{}, 1 },
@@ -207,7 +207,7 @@ ItemFactory ItemFactory::dungeon() {
       {ItemType::IronBoots{}, 7 },
       {ItemType::Torch{}, 7 },
       {ItemType::LeatherGloves{}, 30 },
-      {ItemType::Scroll{Effect::Teleport{}}, 30 },
+      {ItemType::Scroll{Effect::Escape{}}, 30 },
       {ItemType::Scroll{Effect::EnhanceArmor{}}, 30 },
       {ItemType::Scroll{Effect::EnhanceWeapon{}}, 30 },
       {ItemType::FireScroll{}, 30 },

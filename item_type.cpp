@@ -279,7 +279,7 @@ static int getEffectPrice(Effect type) {
       [&](const Effect::Heal&) {
         return 8;
       },
-      [&](const Effect::Teleport&) {
+      [&](const Effect::Escape&) {
         return 12;
       },
       [&](const Effect::Fire&) {
@@ -607,7 +607,7 @@ ItemAttributes ItemType::WoodenStaff::getAttributes() const {
       i.price = 30;
       i.weaponInfo.attackType = AttackType::SPELL;
       i.weaponInfo.attackMsg = AttackMsg::WAVE;
-      i.genPrefixes.push_back({1, VictimEffect{Effect::Teleport{}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Escape{}}});
       i.maxUpgrades = 1;
   );
 }
@@ -624,7 +624,7 @@ ItemAttributes ItemType::IronStaff::getAttributes() const {
       i.price = 60;
       i.weaponInfo.attackType = AttackType::SPELL;
       i.weaponInfo.attackMsg = AttackMsg::WAVE;
-      i.genPrefixes.push_back({1, VictimEffect{Effect::Teleport{}}});
+      i.genPrefixes.push_back({1, VictimEffect{Effect::Escape{}}});
       i.genPrefixes.push_back({1, VictimEffect{Effect::DestroyEquipment{}}});
       i.genPrefixes.push_back({1, JoinPrefixes{{
           ItemPrefix{ItemAttrBonus{AttrType::SPELL_DAMAGE, 20}},

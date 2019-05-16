@@ -148,7 +148,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void setScrollPos(Position);
 
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
-  vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
+  vector<CollectiveInfo::Button> fillButtons() const;
   VillageInfo::Village getVillageInfo(WConstCollective enemy) const;
   string getTriggerLabel(const AttackTrigger&) const;
   void fillWorkshopInfo(CollectiveInfo&) const;

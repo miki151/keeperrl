@@ -236,8 +236,8 @@ static bool isConsideredHostile(const Effect& effect) {
   );
 }
 
-void Effect::Teleport::applyToCreature(Creature* c, Creature* attacker) const {
-  PROFILE_BLOCK("Teleport::applyToCreature");
+void Effect::Escape::applyToCreature(Creature* c, Creature* attacker) const {
+  PROFILE_BLOCK("Escape::applyToCreature");
   Rectangle area = Rectangle::centered(Vec2(0, 0), 12);
   int infinity = 10000;
   PositionMap<int> weight;
@@ -288,12 +288,23 @@ void Effect::Teleport::applyToCreature(Creature* c, Creature* attacker) const {
   c->you(MsgType::TELE_APPEAR, "");
 }
 
+string Effect::Escape::getName() const {
+  return "escape";
+}
+
+string Effect::Escape::getDescription() const {
+  return "Teleports to a safer location close by.";
+}
+
+void Effect::Teleport::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
 string Effect::Teleport::getName() const {
-  return "teleport";
+  return "escape";
 }
 
 string Effect::Teleport::getDescription() const {
-  return "Teleports to a safer location close by.";
+  return "Teleport to any location that's close by.";
 }
 
 void Effect::Lasting::applyToCreature(Creature* c, Creature* attacker) const {
@@ -884,6 +895,13 @@ void Effect::apply(Position pos, Creature* attacker) const {
                     attacker->message("The spell failed");
                   return;
                 }
+      },
+      [&](Teleport) {
+        if (attacker->getPosition().canMoveCreature(pos)) {
+          attacker->you(MsgType::TELE_DISAPPEAR, "");
+          attacker->getPosition().moveCreature(pos, true);
+          attacker->you(MsgType::TELE_APPEAR, "");
+        }
       },
       [&](Fire) {
         pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});

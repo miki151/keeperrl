@@ -93,7 +93,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual vector<OtherCreatureCommand> getOtherCreatureCommands(Creature*) const;
 
   optional<Vec2> chooseDirection(const string& question);
-  optional<Position> chooseTarget(Table<PassableInfo>, const string& question);
+  optional<Position> chooseTarget(Table<PassableInfo>, TargetType, const string& question);
 
   SMapMemory SERIAL(levelMemory);
   void showHistory();

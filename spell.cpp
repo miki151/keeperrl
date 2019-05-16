@@ -125,6 +125,10 @@ int Spell::getRange() const {
   return range;
 }
 
+bool Spell::isEndOnly() const {
+  return endOnly;
+}
+
 const string& Spell::getId() const {
   return id;
 }
