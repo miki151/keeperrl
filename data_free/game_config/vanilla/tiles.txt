@@ -63,9 +63,11 @@
   { "carpet_floor3" "." ColorId PINK }
   { "carpet_floor4" "." ColorId PURPLE }
   { "carpet_floor5" "." ColorId PINK }
-  { "buff_floor1" "." ColorId LIGHT_BLUE }
-  { "buff_floor2" "." ColorId LIGHT_GREEN }
-  { "buff_floor3" "." ColorId YELLOW }
+  { "floor_speed" "." ColorId LIGHT_RED }
+  { "floor_blind" "." ColorId YELLOW }
+  { "floor_invi" "." ColorId LIGHT_BLUE }
+  { "floor_regen" "." ColorId GREEN }
+  { "floor_peace" "." ColorId WHITE }
   { "fallen_tree" "*" ColorId GREEN false "treecut" }
   { "tree_trunk" "." ColorId BROWN false "treecut" }
   { "crops" "𝃰" ColorId YELLOW }

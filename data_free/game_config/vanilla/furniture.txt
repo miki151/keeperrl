@@ -1015,7 +1015,7 @@
   "FLOOR_SPEED"
   {
     name = "floor of speed"
-    viewId = { "carpet_floor4" ColorId PINK }
+    viewId = { "floor_speed" }
     luxury = 0.7
     layer = FLOOR
     lastingEffect = SPEED
@@ -1023,7 +1023,7 @@
   "FLOOR_BLIND"
   {
     name = "floor of blindness"
-    viewId = { "carpet_floor4" ColorId YELLOW }
+    viewId = { "floor_blind" }
     luxury = 0.7
     layer = FLOOR
     lastingEffect = BLIND
@@ -1031,7 +1031,7 @@
   "FLOOR_INVI"
   {
     name = "floor of invisibility"
-    viewId = { "carpet_floor4" ColorId LIGHT_BLUE }
+    viewId = { "floor_invi" }
     luxury = 0.7
     layer = FLOOR
     lastingEffect = INVISIBLE
@@ -1039,7 +1039,7 @@
   "FLOOR_REGENER"
   {
     name = "floor of regeneration"
-    viewId = { "carpet_floor4" ColorId GREEN }
+    viewId = { "floor_regen" }
     luxury = 0.7
     layer = FLOOR
     lastingEffect = REGENERATION
@@ -1047,7 +1047,7 @@
   "FLOOR_PEACE"
   {
     name = "floor of peace"
-    viewId = { "carpet_floor4" Rgb 254 254 254 255 }
+    viewId = { "floor_peace" }
     luxury = 0.7
     layer = FLOOR
     lastingEffect = PEACEFULNESS
