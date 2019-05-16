@@ -12,7 +12,7 @@ VisionId Vision::getId() const {
 constexpr int darkViewRadius = 5;
 
 bool Vision::canSeeAt(double light, double distance) const {
-  return nightVision || light > 0.8 || distance <= darkViewRadius;
+  return nightVision || light >= getDarknessVisionThreshold() || distance <= darkViewRadius;
 }
 
 void Vision::update(const Creature* c) {
@@ -22,4 +22,8 @@ void Vision::update(const Creature* c) {
     id = VisionId::ELF;
   else
     id = VisionId::NORMAL;
+}
+
+double Vision::getDarknessVisionThreshold() {
+  return 0.8;
 }

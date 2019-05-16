@@ -22,6 +22,7 @@
 #include "game_time.h"
 #include "fx_name.h"
 #include "furniture_type.h"
+#include "effect_ai_intent.h"
 
 class Level;
 class Creature;
@@ -131,6 +132,7 @@ class Effect {
     EFFECT_TYPE_INTERFACE;
     HeapAllocated<Effect> effect;
     vector<Vec2> positions;
+    vector<Position> getTargetPos(const Creature* attacker, Position targetPos) const;
     COMPARE_ALL(effect, positions)
   };
   SIMPLE_EFFECT(RegrowBodyPart);
@@ -142,6 +144,7 @@ class Effect {
   struct ReviveCorpse {
     EFFECT_TYPE_INTERFACE;
     vector<CreatureId> summoned;
+    function<void()> getRevivalFun(Creature* caster, Position pos) const;
     int ttl;
     COMPARE_ALL(summoned, ttl)
   };
@@ -173,6 +176,8 @@ class Effect {
   string getName() const;
   string getDescription() const;
 
+  EffectAIIntent shouldAIApply(const Creature* caster, Position) const;
+
   template <typename... Args>
   auto visit(Args&&...args) {
     return effect.visit(std::forward<Args>(args)...);
@@ -196,9 +201,9 @@ class Effect {
   static vector<Creature*> summon(Creature*, CreatureId, int num, optional<TimeInterval> ttl, TimeInterval delay = 0_visible);
   static vector<Creature*> summon(Position, CreatureGroup&, int num, optional<TimeInterval> ttl, TimeInterval delay = 0_visible);
   static vector<Creature*> summonCreatures(Position, int radius, vector<PCreature>, TimeInterval delay = 0_visible);
-  static vector<Creature*> summonCreatures(Creature*, int radius, vector<PCreature>, TimeInterval delay = 0_visible);
   static void emitPoisonGas(Position, double amount, bool msg);
 
   private:
+  EffectAIIntent shouldAIApply(const Creature* victim, bool isEnemy) const;
   EffectType SERIAL(effect);
 };

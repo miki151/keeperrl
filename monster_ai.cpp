@@ -51,6 +51,7 @@
 #include "draw_line.h"
 #include "furniture_entry.h"
 #include "spell_map.h"
+#include "vision.h"
 
 class Behaviour {
   public:
@@ -132,9 +133,19 @@ MoveInfo Behaviour::tryEffect(const Effect& type, Position target) {
   return NoMove;
 }
 
-class Heal : public Behaviour {
+static bool isObstructed(const Creature* creature, const vector<Position>& trajectory) {
+  vector<Creature*> ret;
+  for (int i : Range(1, trajectory.size() - 1)) {
+    auto& pos = trajectory[i];
+    if (pos.stopsProjectiles(creature->getVision().getId()) || pos.getCreature())
+      return true;
+  }
+  return false;
+}
+
+class EffectsAI : public Behaviour {
   public:
-  Heal(Creature* c) : Behaviour(c) {}
+  EffectsAI(Creature* c) : Behaviour(c) {}
 
   virtual double itemValue(const Item* item) {
     if (auto& effect = item->getEffect())
@@ -143,58 +154,50 @@ class Heal : public Behaviour {
     return 0;
   }
 
-  MoveInfo tryHealingOther() {
-    /*if (creature->getSpellMap().contains(SpellId::HEAL_OTHER)) {
-      MoveInfo healAction = NoMove;
-      for (Vec2 v : Vec2::directions8(Random))
-        if (const Creature* other = creature->getPosition().plus(v).getCreature())
-          if (creature->isFriend(other) && other->getBody().canHeal())
-            if (auto action = creature->castSpell(Spell::get(SpellId::HEAL_OTHER), other->getPosition())) {
-              healAction = MoveInfo(0.5, action);
-              // Prioritize the action if there is an enemy next to the healed creature.
-              for (auto pos : other->getPosition().neighbors8())
-                if (auto enemy = pos.getCreature())
-                  if (other->isEnemy(enemy))
-                    return healAction;
-            }
-      if (healAction)
-        return healAction;
-    }*/
+  MoveInfo getThrowMove(Creature* enemy) {
+    auto target = enemy->getPosition();
+    auto trajectory = drawLine(creature->getPosition().getCoord(), target.getCoord())
+        .transform([&](Vec2 v) { return Position(v, target.getLevel()); });
+    if (isObstructed(creature, trajectory))
+      return NoMove;
+    for (auto item : creature->getEquipment().getItems())
+      if (auto effect = item->getEffect())
+        if (effect->shouldAIApply(creature, target) == EffectAIIntent::WANTED)
+          if (!creature->getEquipment().isEquipped(item) &&
+             creature->getThrowDistance(item).value_or(-1) >=
+                 trajectory.back().dist8(creature->getPosition()).value_or(10000))
+            if (auto action = creature->throwItem(item, target))
+              return action;
     return NoMove;
   }
 
   virtual MoveInfo getMove() {
-    if (auto move = tryHealingOther())
-      return move;
     if (!creature->getBody().isHumanoid())
       return NoMove;
-    if (creature->isAffected(LastingEffect::POISON)) {
-      if (MoveInfo move = tryEffect(Effect::Lasting{LastingEffect::POISON_RESISTANT}))
+    for (auto spell : creature->getSpellMap().getAvailable(creature))
+      if (auto move = spell->getAIMove(creature))
         return move;
-      if (MoveInfo move = tryEffect(Effect::RemoveLasting{LastingEffect::POISON}))
-        return move;
-    }
-    if (creature->getBody().canHeal()) {
-      if (MoveInfo move = tryEffect(Effect::Heal{}))
-        return move.withValue(min(1.0, 1.5 - creature->getBody().getHealth()));
-      if (MoveInfo move = tryEffect(Effect::Lasting{LastingEffect::REGENERATION}))
-        return move;
-      if (MoveInfo move = tryEffect(Effect::Heal{}, 3_visible))
-        return move.withValue(0.5 * min(1.0, 1.5 - creature->getBody().getHealth()));
-    }
-    for (Position pos : creature->getPosition().neighbors8())
-      if (Creature* c = pos.getCreature())
-        if (creature->isFriend(c) && c->getBody().canHeal())
-          if (c->getEquipment().getItems(ItemIndex::HEALING_ITEM).empty())
-            for (Item* item : creature->getEquipment().getItems(ItemIndex::HEALING_ITEM))
+    for (auto item : creature->getEquipment().getItems())
+      if (auto effect = item->getEffect()) {
+        if (effect->shouldAIApply(creature, creature->getPosition()) == EffectAIIntent::WANTED)
+          if (auto move = creature->applyItem(item))
+            return move;
+        for (Position pos : creature->getPosition().neighbors8())
+          if (Creature* c = pos.getCreature())
+            if (creature->isFriend(c) && effect->shouldAIApply(c, c->getPosition()) == EffectAIIntent::WANTED &&
+                c->getEquipment().getItems().filter(Item::effectPredicate(*effect)).empty())
               if (auto action = creature->give(c, {item}))
                 return MoveInfo(0.5, action);
+      }
+    for (auto c : creature->getVisibleCreatures())
+      if (auto move = getThrowMove(c))
+        return move;
     return NoMove;
   }
 
 
-  SERIALIZE_ALL(SUBCLASS(Behaviour));
-  SERIALIZATION_CONSTRUCTOR(Heal);
+  SERIALIZE_ALL(SUBCLASS(Behaviour))
+  SERIALIZATION_CONSTRUCTOR(EffectsAI)
 };
 
 class Rest : public Behaviour {
@@ -417,70 +420,13 @@ class Fighter : public Behaviour {
     return (double)damage / 50;
   }
 
-  bool checkFriendlyFire(const vector<Position>& trajectory) {
-    for (auto& pos : trajectory) {
-      const Creature* c = pos.getCreature();
-      if (c && c != creature && !creature->isEnemy(c))
-        return true;
-    }
-    return false;
-  }
-
-  const vector<Effect>& getOffensiveEffects() const {
-    static vector<Effect> effects = makeVec<Effect>(
-        Effect::Lasting{LastingEffect::POISON},
-        Effect::Lasting{LastingEffect::SLOWED},
-        Effect::Lasting{LastingEffect::BLIND},
-        Effect::Lasting{LastingEffect::MELEE_VULNERABILITY},
-        Effect::Lasting{LastingEffect::RANGED_VULNERABILITY},
-        Effect::Lasting{LastingEffect::MAGIC_VULNERABILITY},
-        Effect::Lasting{LastingEffect::SLEEP},
-        Effect::Damage{AttrType::SPELL_DAMAGE, AttackType::SPELL},
-        Effect::Fire{}
-    );
-    return effects;
-  }
-
-  int getThrowValue(Item* it) {
-    if (auto& effect = it->getEffect())
-      if (getOffensiveEffects().contains(*effect))
-        return 100;
-    return 0;
-  }
-
-  MoveInfo getThrowMove(Position target) {
-    auto trajectory = drawLine(creature->getPosition().getCoord(), target.getCoord())
-        .transform([&](Vec2 v) { return Position(v, target.getLevel()); });
-    if (checkFriendlyFire(trajectory))
-      return NoMove;
-    Item* best = nullptr;
-    int damage = 0;
-    for (Item* item : creature->getEquipment().getItems())
-      if (!creature->getEquipment().isEquipped(item) && getThrowValue(item) > damage &&
-          creature->getThrowDistance(item).value_or(-1) >=
-              trajectory.back().dist8(creature->getPosition()).value_or(10000)) {
-        damage = getThrowValue(item);
-        best = item;
-      }
-    if (best)
-      if (auto action = creature->throwItem(best, target))
-        return action.append([=](Creature*) {
-          if (auto attacked = target.getCreature())
-            addCombatIntent(attacked, true);
-        });
-    return NoMove;
-  }
-
   MoveInfo getFireMove(Creature* enemy) {
     auto target = enemy->getPosition();
     auto trajectory = drawLine(creature->getPosition().getCoord(), target.getCoord())
         .transform([&](Vec2 v) { return Position(v, target.getLevel()); });
-    if (checkFriendlyFire(trajectory))
+    if (isObstructed(creature, trajectory))
       return NoMove;
     int dist = *trajectory.back().dist8(creature->getPosition());
-    for (auto effect : getOffensiveEffects())
-      if (auto action = tryEffect(effect, target))
-        return action;
     if (dist <= getFiringRange(creature))
       if (auto action = creature->fire(target))
         return {1.0, action.append([=](Creature*) {
@@ -530,22 +476,6 @@ class Fighter : public Behaviour {
             addCombatIntent(other, false);
         })};
     }
-    return NoMove;
-  }
-
-  MoveInfo considerBuffs() {
-    for (Effect effect : {
-        Effect(Effect::Lasting{LastingEffect::INVISIBLE}),
-        Effect(Effect::Lasting{LastingEffect::DAM_BONUS}),
-        Effect(Effect::Lasting{LastingEffect::DEF_BONUS}),
-        Effect(Effect::Lasting{LastingEffect::SPEED}),
-        Effect(Effect::Lasting{LastingEffect::MELEE_RESISTANCE}),
-        Effect(Effect::Lasting{LastingEffect::RANGED_RESISTANCE}),
-        Effect(Effect::Lasting{LastingEffect::MAGIC_RESISTANCE}),
-        Effect(Effect::Deception{}),
-        Effect(Effect::Summon{"SPIRIT", Range(3, 6)})})
-      if (MoveInfo move = tryEffect(effect))
-        return move;
     return NoMove;
   }
 
@@ -703,13 +633,8 @@ class Fighter : public Behaviour {
     if (distance == 1)
       if (auto move = considerCircularBlast())
         return move;
-    if (distance <= 5)
-      if (auto move = considerBuffs())
-        return move;
     if (distance > 1) {
       if (MoveInfo move = getFireMove(other))
-        return move;
-      if (MoveInfo move = getThrowMove(other->getPosition()))
         return move;
     }
     if (distance > 1) {
@@ -1442,7 +1367,7 @@ class AvoidFire : public Behaviour {
   SERIALIZE_ALL(SUBCLASS(Behaviour))
 };
 
-REGISTER_TYPE(Heal);
+REGISTER_TYPE(EffectsAI);
 REGISTER_TYPE(Rest);
 REGISTER_TYPE(MoveRandomly);
 REGISTER_TYPE(BirdFlyAway);
@@ -1520,7 +1445,7 @@ MonsterAIFactory MonsterAIFactory::guard() {
   return MonsterAIFactory([=](Creature* c) {
       vector<Behaviour*> actors {
           new AvoidFire(c),
-          new Heal(c),
+          new EffectsAI(c),
           new FighterStandGround(c),
           new Wait(c)
       };
@@ -1537,7 +1462,7 @@ MonsterAIFactory MonsterAIFactory::collective(WCollective col) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
         new AvoidFire(c),
-        new Heal(c),
+        new EffectsAI(c),
         new ByCollective(c, col, unique<Fighter>(c)),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 10, 6, 2, 1}, false);
@@ -1548,7 +1473,7 @@ MonsterAIFactory MonsterAIFactory::stayInLocation(Rectangle rect, bool moveRando
   return MonsterAIFactory([=](Creature* c) {
       vector<Behaviour*> actors {
           new AvoidFire(c),
-          new Heal(c),
+          new EffectsAI(c),
           new Thief(c),
           new Fighter(c),
           new GoldLust(c),
@@ -1574,7 +1499,7 @@ MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t, bool chaseEnemies) {
       auto task = PTask(released);
       released = nullptr;
       return new MonsterAI(c, {
-        new Heal(c),
+        new EffectsAI(c),
         chaseEnemies ? (Behaviour*)(new Fighter(c)) : (Behaviour*)(new FighterStandGround(c)),
         new SingleTask(c, std::move(task)),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
@@ -1633,7 +1558,7 @@ MonsterAIFactory MonsterAIFactory::summoned(Creature* leader) {
       return new MonsterAI(c, {
           new Summoned(c, leader, 1, 3),
           new AvoidFire(c),
-          new Heal(c),
+          new EffectsAI(c),
           new Fighter(c),
           new MoveRandomly(c),
           new GoldLust(c)},
@@ -1645,7 +1570,7 @@ MonsterAIFactory MonsterAIFactory::splashHeroes(bool leader) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
         leader ? (Behaviour*)new SplashHeroLeader(c) : (Behaviour*)new SplashHeroes(c),
-        new Heal(c),
+        new EffectsAI(c),
         new Fighter(c),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, false);
@@ -1656,7 +1581,7 @@ MonsterAIFactory MonsterAIFactory::splashMonsters() {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
         new SplashMonsters(c),
-        new Heal(c),
+        new EffectsAI(c),
         new Fighter(c),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, false);
@@ -1667,7 +1592,7 @@ MonsterAIFactory MonsterAIFactory::splashImps(const FilePath& splashPath) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
         new SplashImps(c, splashPath),
-        new Heal(c),
+        new EffectsAI(c),
         new Fighter(c),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, false);

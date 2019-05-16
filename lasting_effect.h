@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util.h"
+#include "effect_ai_intent.h"
 
 RICH_ENUM(LastingEffect,
     SLEEP,
@@ -104,4 +105,5 @@ class LastingEffects {
   static optional<FXInfo> getApplicationFX(LastingEffect);
   static bool canProlong(LastingEffect);
   static bool obeysFormation(const Creature*, const Creature* against);
+  static EffectAIIntent shouldAIApply(const Creature* victim, LastingEffect, bool isEnemy);
 };

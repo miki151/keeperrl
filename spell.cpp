@@ -15,6 +15,7 @@
 #include "game.h"
 #include "game_event.h"
 #include "view_id.h"
+#include "move_info.h"
 
 SERIALIZE_DEF(Spell, NAMED(id), NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf))
 SERIALIZATION_CONSTRUCTOR_IMPL(Spell)
@@ -130,6 +131,14 @@ const string& Spell::getId() const {
 
 const optional<string>& Spell::getUpgrade() const {
   return upgrade;
+}
+
+MoveInfo Spell::getAIMove(const Creature* c) const {
+  for (auto pos : c->getPosition().getRectangle(Rectangle::centered(range)))
+    if (pos != c->getPosition() || targetSelf)
+      if (effect->shouldAIApply(c, pos) == EffectAIIntent::WANTED)
+        return c->castSpell(this, pos);
+  return NoMove;
 }
 
 

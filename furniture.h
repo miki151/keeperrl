@@ -113,6 +113,7 @@ class Furniture : public OwnedObject<Furniture> {
   void setType(FurnitureType);
   bool buildOutsideOfTerritory() const;
   bool isRequiresLight() const;
+  bool isHostileSpell() const;
   optional<BedType> getBedType() const;
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();
@@ -191,4 +192,5 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FXInfo> SERIAL(walkOverFX);
   optional<FXInfo> SERIAL(walkIntoFX);
   optional<FXVariantName> SERIAL(usageFX);
+  bool SERIAL(hostileSpell) = false;
 };

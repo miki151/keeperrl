@@ -59,7 +59,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(canBuildBridge), OPTION(noProjectiles), OPTION(clearFogOfWar), OPTION(removeWithCreaturePresent), OPTION(upgrade));
   ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
-  ar(OPTION(walkIntoFX), OPTION(usageFX));
+  ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell));
 }
 
 template <class Archive>
@@ -420,6 +420,10 @@ bool Furniture::buildOutsideOfTerritory() const {
 
 bool Furniture::isRequiresLight() const {
   return requiresLight;
+}
+
+bool Furniture::isHostileSpell() const {
+  return hostileSpell;
 }
 
 optional<BedType> Furniture::getBedType() const {

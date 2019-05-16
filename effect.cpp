@@ -739,6 +739,20 @@ string Effect::CustomArea::getDescription() const {
   return "Custom area effect: " + noCapitalFirst(effect->getDescription());
 }
 
+static Vec2 rotate(Vec2 v, Vec2 r) {
+  return Vec2(v.x * r.x - v.y * r.y, v.x * r.y + v.y * r.x);
+}
+
+vector<Position> Effect::CustomArea::getTargetPos(const Creature* attacker, Position targetPos) const {
+  Vec2 orientation = Vec2(1, 0);
+  if (attacker)
+    orientation = attacker->getPosition().getDir(targetPos).getBearing();
+  vector<Position> ret;
+  for (auto v : positions)
+    ret.push_back(targetPos.plus(rotate(v, orientation)));
+  return ret;
+}
+
 void Effect::Suicide::applyToCreature(Creature* c, Creature* attacker) const {
   c->you(MsgType::DIE, "");
   c->dieNoReason();
@@ -843,11 +857,6 @@ bool Effect::operator !=(const Effect& o) const {
   return !(*this == o);
 }
 
-
-static Vec2 rotate(Vec2 v, Vec2 r) {
-  return Vec2(v.x * r.x - v.y * r.y, v.x * r.y + v.y * r.x);
-}
-
 void Effect::apply(Position pos, Creature* attacker) const {
   if (auto c = pos.getCreature()) {
     FORWARD_CALL(effect, applyToCreature, c, attacker);
@@ -889,11 +898,8 @@ void Effect::apply(Position pos, Creature* attacker) const {
           area.effect->apply(v, attacker);
       },
       [&](const CustomArea& area) {
-        Vec2 orientation = Vec2(1, 0);
-        if (attacker)
-          orientation = attacker->getPosition().getDir(pos).getBearing();
-        for (auto v : area.positions)
-          area.effect->apply(pos.plus(rotate(v, orientation)), attacker);
+        for (auto& v : area.getTargetPos(attacker, pos))
+          area.effect->apply(v, attacker);
       },
       [&](const PlaceFurniture& effect) {
         auto f = pos.getGame()->getContentFactory()->furniture.getFurniture(effect.furniture,
@@ -921,6 +927,101 @@ void Effect::apply(Position pos, Creature* attacker) const {
 
 string Effect::getDescription() const {
   return FORWARD_CALL(effect, getDescription);
+}
+
+static bool isConsideredInDanger(const Creature* c) {
+  if (auto intent = c->getLastCombatIntent())
+    return (intent->time > *c->getGlobalTime() - 5_visible);
+  return false;
+}
+
+EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const {
+  bool isFighting = isConsideredInDanger(victim);
+  return effect.visit(
+      [&] (const Permanent& e) {
+        if (victim->getAttributes().isAffectedPermanently(e.lastingEffect))
+          return EffectAIIntent::NONE;
+        return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
+      },
+      [&] (const Lasting& e) {
+        if (victim->isAffected(e.lastingEffect))
+          return EffectAIIntent::NONE;
+        return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
+      },
+      [&] (const RemoveLasting& e) {
+        if (!victim->isAffected(e.lastingEffect))
+          return EffectAIIntent::NONE;
+        return reverse(LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy));
+      },
+      [&] (const Heal&) {
+        if (victim->getBody().canHeal())
+          return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
+        return EffectAIIntent::NONE;
+      },
+      [&] (const Fire&) {
+        if (!victim->isAffected(LastingEffect::FIRE_RESISTANT))
+          return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+        return EffectAIIntent::NONE;
+      },
+      [&] (const Damage&) {
+        return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+      },
+      [&] (const DestroyEquipment&) {
+        return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+      },
+      [&] (const Acid&) {
+        return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+      },
+      [&] (const Deception&) {
+        return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      },
+      [&] (const Summon&) {
+        return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      },
+      [&] (const SummonElement&) {
+        return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      },
+      [&] (const PlaceFurniture& f) {
+        return victim->getGame()->getContentFactory()->furniture.getData(f.furniture).isHostileSpell() && isFighting
+            ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      },
+      [&] (const auto& e) {
+        return EffectAIIntent::NONE;
+      }
+  );
+}
+
+/* Unimplemented: Teleport, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
+      EmitPoisonGas, CircularBlast, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
+      PlaceFurniture, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
+      ReviveCorpse, Blast, Shove, SwapPosition*/
+
+EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const {
+  if (auto victim = pos.getCreature()) {
+    auto res = shouldAIApply(victim, caster->isEnemy(victim));
+    if (res != EffectAIIntent::NONE)
+      return res;
+  }
+  auto considerArea = [&](const auto& range, const Effect& effect) {
+    auto allRes = EffectAIIntent::UNWANTED;
+    for (auto v : range) {
+      auto res = effect.shouldAIApply(caster, v);
+      if (res == EffectAIIntent::UNWANTED)
+        return EffectAIIntent::UNWANTED;
+      if (res == EffectAIIntent::WANTED)
+        allRes = res;
+    }
+    return allRes;
+  };
+  return effect.visit(
+      [&] (const Area& a) {
+        return considerArea(pos.getRectangle(Rectangle::centered(a.radius)), *a.effect);
+      },
+      [&] (const CustomArea& a) {
+        return considerArea(a.getTargetPos(caster, pos), *a.effect);
+      },
+      [&] (const auto& e) { return EffectAIIntent::NONE; }
+  );
 }
 
 SERIALIZE_DEF(Effect, effect)

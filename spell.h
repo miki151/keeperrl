@@ -28,6 +28,7 @@ RICH_ENUM(
 
 class Effect;
 class Position;
+class MoveInfo;
 
 class Spell {
   public:
@@ -42,6 +43,7 @@ class Spell {
   int getRange() const;
   const string& getId() const;
   const optional<string>& getUpgrade() const;
+  MoveInfo getAIMove(const Creature*) const;
 
   SERIALIZATION_DECL(Spell)
 

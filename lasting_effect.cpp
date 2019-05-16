@@ -11,6 +11,7 @@
 #include "fx_name.h"
 #include "fx_info.h"
 #include "game.h"
+#include "vision.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
@@ -537,7 +538,7 @@ static const vector<LastingEffect>& getHateEffects() {
   return ret;
 }
 
-static optional<Adjective> getAdjective(LastingEffect effect) {
+static Adjective getAdjective(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::INVISIBLE: return "Invisible"_good;
     case LastingEffect::PANIC: return "Panic"_good;
@@ -611,16 +612,16 @@ static optional<Adjective> getAdjective(LastingEffect effect) {
 }
 
 optional<string> LastingEffects::getGoodAdjective(LastingEffect effect) {
-  if (auto adjective = getAdjective(effect))
-    if (!adjective->bad)
-      return adjective->name;
+  auto adjective = getAdjective(effect);
+  if (!adjective.bad)
+    return adjective.name;
   return none;
 }
 
 optional<std::string> LastingEffects::getBadAdjective(LastingEffect effect) {
-  if (auto adjective = getAdjective(effect))
-    if (adjective->bad)
-      return adjective->name;
+  auto adjective = getAdjective(effect);
+  if (adjective.bad)
+    return adjective.name;
   return none;
 }
 
@@ -1167,5 +1168,81 @@ bool LastingEffects::obeysFormation(const Creature* c, const Creature* against) 
   else if (auto e = against->getAttributes().getHatedByEffect())
     if (c->isAffected(*e))
       return false;
-   return true;
+  return true;
+}
+
+static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::INVISIBLE:
+    case LastingEffect::DAM_BONUS:
+    case LastingEffect::DEF_BONUS:
+    case LastingEffect::SLEEP_RESISTANT:
+    case LastingEffect::SPEED:
+    case LastingEffect::FLYING:
+    case LastingEffect::LIGHT_SOURCE:
+    case LastingEffect::DARKNESS_SOURCE:
+    case LastingEffect::MAGIC_RESISTANCE:
+    case LastingEffect::MELEE_RESISTANCE:
+    case LastingEffect::RANGED_RESISTANCE:
+    case LastingEffect::ELF_VISION:
+    case LastingEffect::REGENERATION:
+    case LastingEffect::WARNING:
+    case LastingEffect::TELEPATHY:
+      return true;
+    case LastingEffect::NIGHT_VISION:
+      return victim->getPosition().getLight() < Vision::getDarknessVisionThreshold();
+    default:
+      return false;
+  }
+}
+
+static bool shouldAllyApply(const Creature* victim, LastingEffect effect) {
+  if (auto cancelled = getCancelled(effect))
+    if (victim->isAffected(*cancelled) && getAdjective(*cancelled).bad)
+      return true;
+  switch (effect) {
+    case LastingEffect::REGENERATION:
+      return victim->getBody().canHeal();
+    case LastingEffect::SATIATED:
+    case LastingEffect::RESTED:
+    case LastingEffect::FAST_CRAFTING:
+    case LastingEffect::FAST_TRAINING:
+    case LastingEffect::ENTERTAINER:
+    case LastingEffect::AMBUSH_SKILL:
+    case LastingEffect::STEALING_SKILL:
+    case LastingEffect::SWIMMING_SKILL:
+    case LastingEffect::DISARM_TRAPS_SKILL:
+    case LastingEffect::CONSUMPTION_SKILL:
+    case LastingEffect::COPULATION_SKILL:
+    case LastingEffect::CROPS_SKILL:
+    case LastingEffect::SPIDER_SKILL:
+    case LastingEffect::EXPLORE_SKILL:
+    case LastingEffect::EXPLORE_NOCTURNAL_SKILL:
+    case LastingEffect::EXPLORE_CAVES_SKILL:
+    case LastingEffect::BRIDGE_BUILDING_SKILL:
+    case LastingEffect::NAVIGATION_DIGGING_SKILL:
+    case LastingEffect::NO_CARRY_LIMIT:
+      return true;
+    default:
+      return false;
+  }
+}
+
+static bool shouldEnemyApply(const Creature* victim, LastingEffect effect) {
+  if (auto resistance = getCancelling(effect))
+    if (victim->isAffected(*resistance))
+      return false;
+  return getAdjective(effect).bad;
+}
+
+EffectAIIntent LastingEffects::shouldAIApply(const Creature* victim, LastingEffect effect, bool isEnemy) {
+  if (shouldEnemyApply(victim, effect))
+    return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+  if (isEnemy)
+    return EffectAIIntent::UNWANTED;
+  if (auto intent = victim->getLastCombatIntent())
+    if (intent->time > *victim->getGlobalTime() - 5_visible)
+      if (shouldAllyApplyInDanger(victim, effect))
+        return EffectAIIntent::WANTED;
+  return shouldAllyApply(victim, effect) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
 }
