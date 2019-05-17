@@ -36,7 +36,7 @@
   {
     # A level full of water with some islands
     type = WaterZLevel {
-      waterType = WATER
+      waterType = "WATER"
       creatures = {
         # Total no of creatures on this level. All are hostile
         count = 10
@@ -52,7 +52,7 @@
   }
   {
     type = WaterZLevel {
-      waterType = MAGMA
+      waterType = "MAGMA"
       creatures = {
         count = 10
         all = {
