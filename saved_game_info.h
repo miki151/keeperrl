@@ -9,7 +9,7 @@ class SavedGameInfo {
   struct MinionInfo {
     ViewId SERIAL(viewId);
     int SERIAL(level);
-    SERIALIZE_ALL(viewId, level);
+    SERIALIZE_ALL(viewId, level)
   };
 
   SavedGameInfo(const vector<MinionInfo>& minions, double dangerLevel, const string& name, int progressCount);
