@@ -83,7 +83,7 @@
 #include "quarters.h"
 #include "unknown_locations.h"
 #include "furniture_click.h"
-#include "game_config.h"
+#include "initial_content_factory.h"
 #include "campaign.h"
 #include "game_event.h"
 #include "view_object_action.h"
@@ -139,24 +139,10 @@ PPlayerControl PlayerControl::create(WCollective col, vector<string> introText,
 PlayerControl::~PlayerControl() {
 }
 
-template <typename T>
-static T readData(View* view, const GameConfig* gameConfig, GameConfigId id) {
-  T data;
-  while (1) {
-    if (auto error = gameConfig->readObject(data, id))
-      view->presentText("Error", *error);
-    else
-      break;
-  }
-  return data;
-}
-
-void PlayerControl::reloadBuildingMenu() {
-  auto gameConfig = getGame()->getGameConfig();
+void PlayerControl::loadBuildingMenu(const InitialContentFactory* initialFactory) {
   vector<BuildInfo> buildInfoTmp;
-  auto allData = readData<vector<pair<string, vector<BuildInfo>>>>(getView(), gameConfig, GameConfigId::BUILD_MENU);
   set<string> allDataGroups;
-  for (auto& group : allData) {
+  for (auto& group : initialFactory->buildInfo) {
     allDataGroups.insert(group.first);
     if (keeperCreatureInfo.buildingGroups.contains(group.first))
       buildInfoTmp.append(group.second);
@@ -203,34 +189,14 @@ void PlayerControl::reloadBuildingMenu() {
     }
 }
 
-static optional<string> checkGroupCounts(const map<string, vector<ImmigrantInfo>>& immigrants) {
-  for (auto& group : immigrants)
-    for (auto& elem : group.second)
-      if (elem.getGroupSize().isEmpty())
-        return "Bad immigrant group size: " + toString(elem.getGroupSize()) +
-            ". Lower bound is inclusive, upper bound exclusive.";
-  return none;
-}
-
-optional<string> PlayerControl::reloadImmigrationAndWorkshops(const GameConfig* gameConfig,
-    ContentFactory* contentFactory) {
-  Technology technology;
-  if (auto error = gameConfig->readObject(technology, GameConfigId::TECHNOLOGY))
-    return error;
+optional<string> PlayerControl::loadImmigrationAndWorkshops(const InitialContentFactory* initialFactory, ContentFactory* contentFactory) {
+  Technology technology = initialFactory->technology;
   for (auto& tech : copyOf(technology.techs))
     if (!keeperCreatureInfo.technology.contains(tech.first))
       technology.techs.erase(tech.first);
-  for (auto& tech : technology.techs)
-    for (auto& preq : tech.second.prerequisites)
-      if (!technology.techs.count(preq))
-        return "Technology prerequisite \"" + preq + "\" of \"" + tech.first + "\" is not available";
-  using WorkshopArray = std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>;
-  vector<pair<string, WorkshopArray>> workshopGroups;
-  if (auto error = gameConfig->readObject(workshopGroups, GameConfigId::WORKSHOPS_MENU))
-    return error;
   WorkshopArray merged;
   set<string> allWorkshopGroups;
-  for (auto& group : workshopGroups) {
+  for (auto& group : initialFactory->workshopGroups) {
     allWorkshopGroups.insert(group.first);
     if (keeperCreatureInfo.workshopGroups.contains(group.first))
       for (int i : Range(EnumInfo<WorkshopType>::size))
@@ -245,32 +211,17 @@ optional<string> PlayerControl::reloadImmigrationAndWorkshops(const GameConfig* 
         return "Technology prerequisite \"" + *item.tech + "\" of workshop item \"" + item.item.get()->getName()
             + "\" is not available";
   collective->setWorkshops(unique<Workshops>(std::move(merged)));
-  map<string, vector<ImmigrantInfo>> immigrantsData;
-  if (auto error = gameConfig->readObject(immigrantsData, GameConfigId::IMMIGRATION))
-    return error;
-  if (auto error = checkGroupCounts(immigrantsData))
-    return error;
   vector<ImmigrantInfo> immigrants;
   for (auto elem : keeperCreatureInfo.immigrantGroups)
-    if (auto group = getReferenceMaybe(immigrantsData, elem))
+    if (auto group = getReferenceMaybe(initialFactory->immigrantsData, elem))
       append(immigrants, *group);
     else
       return "Undefined immigrant group: \"" + elem + "\"";
   CollectiveConfig::addBedRequirementToImmigrants(immigrants, contentFactory);
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
   collective->setTechnology(std::move(technology));
+  loadBuildingMenu(initialFactory);
   return none;
-}
-
-void PlayerControl::reloadData() {
-  auto gameConfig = getGame()->getGameConfig();
-  reloadBuildingMenu();
-  while (1) {
-    if (auto error = reloadImmigrationAndWorkshops(gameConfig, getGame()->getContentFactory()))
-      getView()->presentText("Error", *error);
-    else
-      break;
-  }
 }
 
 const vector<Creature*>& PlayerControl::getControlled() const {
@@ -407,7 +358,6 @@ void PlayerControl::leaveControl() {
 void PlayerControl::render(View* view) {
   if (firstRender) {
     firstRender = false;
-    reloadBuildingMenu();
     for (Creature* c : getCreatures())
       updateMinionVisibility(c);
   }
@@ -2317,9 +2267,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
       for (auto resource : ENUM_ALL(CollectiveResourceId))
         collective->returnResource(CostInfo(resource, 1000));
       collective->getDungeonLevel().increaseLevel();
-      break;
-    case UserInputId::RELOAD_DATA:
-      reloadData();
       break;
     case UserInputId::TUTORIAL_CONTINUE:
       if (tutorial)

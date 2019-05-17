@@ -38,6 +38,7 @@
 #include "creature_name.h"
 #include "tileset.h"
 #include "content_factory.h"
+#include "initial_content_factory.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, TileSet* tileSet, bool singleThread, int sv)
@@ -236,13 +237,13 @@ void MainLoop::bugReportSave(PGame& game, FilePath path) {
 }
 
 MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave,
-    const GameConfig* gameConfig, function<optional<ExitCondition>(WGame)> exitCondition,
+    function<optional<ExitCondition>(WGame)> exitCondition,
     milliseconds stepTimeMilli) {
   view->reset();
   if (!noAutoSave)
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
-  game->initialize(options, highscores, view, fileSharing, gameConfig);
+  game->initialize(options, highscores, view, fileSharing);
   Intervalometer meter(stepTimeMilli);
   Intervalometer pausingMeter(stepTimeMilli);
   auto lastMusicUpdate = GlobalTime(-1000);
@@ -373,7 +374,8 @@ PGame MainLoop::prepareCampaign(RandomGen& random, const GameConfig* gameConfig,
         auto models = prepareCampaignModels(*setup, *avatar, random, gameConfig, &contentFactory);
         for (auto& f : models.factories)
           contentFactory.merge(std::move(f));
-        return Game::campaignGame(std::move(models.models), *setup, std::move(*avatar), gameConfig, std::move(contentFactory));
+        InitialContentFactory initialFactory(gameConfig);
+        return Game::campaignGame(std::move(models.models), *setup, std::move(*avatar), &initialFactory, std::move(contentFactory));
       } else
         continue;
     } else {
@@ -409,7 +411,7 @@ void MainLoop::splashScreen() {
   auto model = ModelBuilder(&meter, Random, options, sokobanInput, &gameConfig, &contentFactory, std::move(enemyFactory))
       .splashModel(dataFreePath.file("splash.txt"));
   playGame(Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory)),
-      false, true, &gameConfig);
+      false, true);
 }
 
 void MainLoop::showCredits(const FilePath& path, View* view) {
@@ -474,9 +476,10 @@ void MainLoop::launchQuickGame() {
     CampaignBuilder builder(view, Random, options, &gameConfig, avatar);
     auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP, "[world]");
     auto models = prepareCampaignModels(*result, std::move(avatar), Random, &gameConfig, &contentFactory);
-    game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), &gameConfig, std::move(contentFactory));
+    InitialContentFactory initialFactory(&gameConfig);
+    game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), &initialFactory, std::move(contentFactory));
   }
-  playGame(std::move(game), true, false, &gameConfig);
+  playGame(std::move(game), true, false);
 }
 
 void MainLoop::start(bool tilesPresent, bool quickGame) {
@@ -505,7 +508,7 @@ void MainLoop::start(bool tilesPresent, bool quickGame) {
         }
         auto contentFactory = createContentFactory(&gameConfig);
         if (PGame game = prepareCampaign(Random, &gameConfig, std::move(contentFactory)))
-          playGame(std::move(game), true, false, &gameConfig);
+          playGame(std::move(game), true, false);
         view->reset();
         break;
       }
@@ -701,7 +704,7 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
       else
         return none;
     };
-    auto result = playGame(std::move(game), false, true, &gameConfig, exitCondition, milliseconds{3});
+    auto result = playGame(std::move(game), false, true, exitCondition, milliseconds{3});
     switch (result) {
       case ExitCondition::ALLIES_WON:
         ++numAllies;

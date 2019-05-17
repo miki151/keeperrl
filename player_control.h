@@ -48,7 +48,7 @@ class MoveInfo;
 class UnknownLocations;
 class AttackTrigger;
 class ImmigrantInfo;
-class GameConfig;
+class InitialContentFactory;
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
@@ -62,7 +62,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   Creature* getKeeper();
 
   void render(View*);
-  optional<string> reloadImmigrationAndWorkshops(const GameConfig*, ContentFactory*);
+  optional<string> loadImmigrationAndWorkshops(const InitialContentFactory*, ContentFactory*);
 
   void leaveControl();
   void teamMemberAction(TeamMemberAction, UniqueEntity<Creature>::Id);
@@ -245,8 +245,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<PItem> retrievePillageItems(WCollective, vector<Item*> items);
   KeeperCreatureInfo SERIAL(keeperCreatureInfo);
   vector<BuildInfo> SERIAL(buildInfo);
-  void reloadData();
-  void reloadBuildingMenu();
+  void loadBuildingMenu(const InitialContentFactory*);
   WLevel currentLevel = nullptr;
   void scrollStairs(bool up);
   CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&) const;

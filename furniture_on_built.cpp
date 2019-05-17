@@ -48,29 +48,14 @@ static optional<ZLevelType> chooseZLevel(RandomGen& random, const vector<ZLevelI
   return random.choose(available);
 }
 
-static PLevelMaker getLevelMaker(RandomGen& random, const GameConfig* config, TribeAlignment alignment,
+static PLevelMaker getLevelMaker(RandomGen& random, const ContentFactory* contentFactory, TribeAlignment alignment,
     int depth, int width, TribeId tribe, StairKey stairKey) {
-  array<vector<ZLevelInfo>, 3> allLevels;
-  vector<ResourceDistribution> resources;
-  while (1) {
-    if (auto res = config->readObject(allLevels, GameConfigId::Z_LEVELS)) {
-      USER_INFO << *res;
-      continue;
-    }
-    if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS)) {
-      USER_INFO << *res;
-      continue;
-    }
-    vector<ZLevelInfo> levels = concat<ZLevelInfo>({allLevels[0], allLevels[1 + int(alignment)]});
-    if (auto zLevel = chooseZLevel(random, levels, depth)) {
-      if (auto res = chooseResourceCounts(random, resources, depth))
-        return getLevelMaker(*zLevel, *res, width, tribe, stairKey);
-      else
-        USER_INFO << "No resource distribution found for depth " << depth << ". Please fix resources config.";
-    } else
-      USER_INFO << "No z-level found for depth " << depth << ". Please fix z-level config.";
-  }
-  fail();
+  auto& allLevels = contentFactory->zLevels;
+  auto& resources = contentFactory->resources;
+  vector<ZLevelInfo> levels = concat<ZLevelInfo>({allLevels[0], allLevels[1 + int(alignment)]});
+  auto zLevel = *chooseZLevel(random, levels, depth);
+  auto res = *chooseResourceCounts(random, resources, depth);
+  return getLevelMaker(zLevel, res, width, tribe, stairKey);
 }
 
 static void removeOldStairs(Level* level, StairKey stairKey) {
@@ -105,7 +90,7 @@ void handleOnBuilt(Position pos, Furniture* f, Creature* c, FurnitureOnBuilt typ
         auto stairKey = StairKey::getNew();
         auto newLevel = tryBuilding(20, [&]{ return pos.getModel()->buildMainLevel(
             LevelBuilder(Random, pos.getGame()->getContentFactory(), width, width, "", true),
-            getLevelMaker(Random, pos.getGame()->getGameConfig(),
+            getLevelMaker(Random, pos.getGame()->getContentFactory(),
                 pos.getGame()->getPlayerControl()->getKeeperCreatureInfo().tribeAlignment,
                 levelIndex + 1, width, c->getTribeId(), stairKey)); }, "z-level " + toString(levelIndex));
         Position landing = newLevel->getLandingSquares(stairKey).getOnlyElement();

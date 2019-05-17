@@ -20,21 +20,20 @@ class GameEvent;
 class Campaign;
 class SavedGameInfo;
 struct CampaignSetup;
-class GameConfig;
 class AvatarInfo;
 class ContentFactory;
+class InitialContentFactory;
 class NameGenerator;
 
 class Game : public OwnedObject<Game> {
   public:
-  static PGame campaignGame(Table<PModel>&&, CampaignSetup&, AvatarInfo, const GameConfig*, ContentFactory);
+  static PGame campaignGame(Table<PModel>&&, CampaignSetup&, AvatarInfo, const InitialContentFactory*, ContentFactory);
   static PGame splashScreen(PModel&&, const CampaignSetup&, ContentFactory);
 
   optional<ExitInfo> update(double timeDiff);
   Options* getOptions();
-  void initialize(Options*, Highscores*, View*, FileSharing*, const GameConfig*);
+  void initialize(Options*, Highscores*, View*, FileSharing*);
   View* getView() const;
-  const GameConfig* getGameConfig() const;
   ContentFactory* getContentFactory();
   ContentFactory removeContentFactory();
   void exitAction();
@@ -141,9 +140,8 @@ class Game : public OwnedObject<Game> {
   optional<ExitInfo> updateInput();
   void initializeModels();
   void increaseTime(double diff);
-  const GameConfig* gameConfig = nullptr;
   void addCollective(WCollective);
-  void spawnKeeper(AvatarInfo, vector<string> introText, const GameConfig*);
+  void spawnKeeper(AvatarInfo, vector<string> introText, const InitialContentFactory*);
   HeapAllocated<ContentFactory> SERIAL(contentFactory);
 };
 

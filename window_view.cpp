@@ -1347,7 +1347,6 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       renderer.getTileSet().reload(true);
       fxRenderer->loadTextures();
       gui.loadImages();
-      inputQueue.push(UserInputId::RELOAD_DATA);
       break;
     case SDL::SDLK_TAB:
       // TODO: put it under different shortcut?

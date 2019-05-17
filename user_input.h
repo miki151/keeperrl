@@ -39,7 +39,6 @@ enum class UserInputId {
     CHEAT_ATTRIBUTES,
     CHEAT_SPELLS,
     CHEAT_POTIONS,
-    RELOAD_DATA,
     TUTORIAL_CONTINUE,
     TUTORIAL_GO_BACK,
 // real-time actions

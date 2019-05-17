@@ -30,10 +30,10 @@ class Technology {
   struct TechDefinition {
     string SERIAL(description);
     vector<TechId> SERIAL(prerequisites);
-    SERIALIZE_ALL(NAMED(description), OPTION(prerequisites));
+    SERIALIZE_ALL(NAMED(description), OPTION(prerequisites))
   };
   map<TechId, TechDefinition> SERIAL(techs);
   set<TechId> SERIAL(researched);
-  SERIALIZE_ALL(NAMED(techs), OPTION(researched));
+  SERIALIZE_ALL(NAMED(techs), OPTION(researched))
 };
 
