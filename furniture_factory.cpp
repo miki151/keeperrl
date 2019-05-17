@@ -120,6 +120,10 @@ const ViewObject& FurnitureFactory::getConstructionObject(FurnitureType type) co
   return constructionObjects.at(type);
 }
 
+void FurnitureFactory::merge(FurnitureFactory f) {
+  mergeMap(std::move(f.furniture), furniture);
+}
+
 FurnitureFactory::FurnitureFactory(const GameConfig* config) {
   while (1) {
     FurnitureType::startContentIdGeneration();

@@ -24,6 +24,7 @@ struct FurnitureParams {
 class FurnitureFactory {
   public:
   FurnitureFactory(const GameConfig*);
+  void merge(FurnitureFactory);
   bool canBuild(FurnitureType, Position) const;
   bool isUpgrade(FurnitureType base, FurnitureType upgraded) const;
   const vector<FurnitureType>& getUpgrades(FurnitureType base) const;

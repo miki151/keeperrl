@@ -28,3 +28,10 @@ vector<T> makeVec(T&& f, Args&&... args) {
   return ret;
 }
 
+template <typename Map>
+void mergeMap(Map from, Map& to) {
+  for (auto&& elem : from)
+    if (!to.count(elem.first))
+      to.insert(std::move(elem));
+};
+

@@ -12,4 +12,5 @@ ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* co
 
 void ContentFactory::merge(ContentFactory f) {
   creatures.merge(std::move(f.creatures));
+  furniture.merge(std::move(f.furniture));
 }

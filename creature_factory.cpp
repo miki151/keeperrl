@@ -259,12 +259,10 @@ CreatureFactory::~CreatureFactory() {
 }
 
 void CreatureFactory::merge(CreatureFactory f) {
-  for (auto& elem : f.attributes)
-    if (!attributes.count(elem.first))
-      attributes.insert(std::move(elem));
-  for (auto& elem : f.inventory)
-    if (!inventory.count(elem.first))
-      inventory.insert(std::move(elem));
+  mergeMap(std::move(f.attributes), attributes);
+  mergeMap(std::move(f.inventory), inventory);
+  mergeMap(std::move(f.spellSchools), spellSchools);
+  append(spells, std::move(f.spells));
 }
 
 CreatureFactory::CreatureFactory(CreatureFactory&&) = default;
