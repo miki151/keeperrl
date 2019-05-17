@@ -14,8 +14,8 @@ struct KeeperCreatureInfo {
   string SERIAL(description);
   vector<SpecialTrait> SERIAL(specialTraits);
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    ar(NAMED(creatureId), NAMED(tribeAlignment), NAMED(immigrantGroups), NAMED(technology), NAMED(initialTech), NAMED(buildingGroups), NAMED(workshopGroups), NAMED(description));
-    ar(OPTION(specialTraits));
+  void serialize(Archive& ar, const unsigned int) {
+    ar(NAMED(creatureId), NAMED(tribeAlignment), NAMED(immigrantGroups), NAMED(technology), NAMED(initialTech), NAMED(buildingGroups));
+    ar(NAMED(workshopGroups), NAMED(description), OPTION(specialTraits));
   }
 };

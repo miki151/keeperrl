@@ -94,7 +94,7 @@
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
-  ar(memory, introText, lastControlKeeperQuestion, keeperCreatureInfo);
+  ar(memory, introText, lastControlKeeperQuestion, tribeAlignment);
   ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints, visibleEnemies);
   ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures);
@@ -116,8 +116,8 @@ static vector<string> getHints() {
   };
 }
 
-PlayerControl::PlayerControl(Private, WCollective col, KeeperCreatureInfo keeperCreatureInfo)
-      : CollectiveControl(col), hints(getHints()), keeperCreatureInfo(keeperCreatureInfo) {
+PlayerControl::PlayerControl(Private, WCollective col, TribeAlignment alignment)
+    : CollectiveControl(col), hints(getHints()), tribeAlignment(alignment) {
   controlModeMessages = make_shared<MessageBuffer>();
   visibilityMap = make_shared<VisibilityMap>();
   unknownLocations = make_shared<UnknownLocations>();
@@ -128,9 +128,8 @@ PlayerControl::PlayerControl(Private, WCollective col, KeeperCreatureInfo keeper
         addToMemory(pos);
 }
 
-PPlayerControl PlayerControl::create(WCollective col, vector<string> introText,
-    KeeperCreatureInfo keeperInfo) {
-  auto ret = makeOwner<PlayerControl>(Private{}, col, keeperInfo);
+PPlayerControl PlayerControl::create(WCollective col, vector<string> introText, TribeAlignment alignment) {
+  auto ret = makeOwner<PlayerControl>(Private{}, col, alignment);
   ret->subscribeTo(col->getModel());
   ret->introText = introText;
   return ret;
@@ -139,7 +138,7 @@ PPlayerControl PlayerControl::create(WCollective col, vector<string> introText,
 PlayerControl::~PlayerControl() {
 }
 
-void PlayerControl::loadBuildingMenu(const InitialContentFactory* initialFactory) {
+void PlayerControl::loadBuildingMenu(const InitialContentFactory* initialFactory, const KeeperCreatureInfo& keeperCreatureInfo) {
   vector<BuildInfo> buildInfoTmp;
   set<string> allDataGroups;
   for (auto& group : initialFactory->buildInfo) {
@@ -189,7 +188,8 @@ void PlayerControl::loadBuildingMenu(const InitialContentFactory* initialFactory
     }
 }
 
-optional<string> PlayerControl::loadImmigrationAndWorkshops(const InitialContentFactory* initialFactory, ContentFactory* contentFactory) {
+optional<string> PlayerControl::loadImmigrationAndWorkshops(const InitialContentFactory* initialFactory, ContentFactory* contentFactory,
+    const KeeperCreatureInfo& keeperCreatureInfo) {
   Technology technology = initialFactory->technology;
   for (auto& tech : copyOf(technology.techs))
     if (!keeperCreatureInfo.technology.contains(tech.first))
@@ -220,7 +220,7 @@ optional<string> PlayerControl::loadImmigrationAndWorkshops(const InitialContent
   CollectiveConfig::addBedRequirementToImmigrants(immigrants, contentFactory);
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
   collective->setTechnology(std::move(technology));
-  loadBuildingMenu(initialFactory);
+  loadBuildingMenu(initialFactory, keeperCreatureInfo);
   return none;
 }
 
@@ -2784,8 +2784,8 @@ vector<Vec2> PlayerControl::getVisibleEnemies() const {
   return visibleEnemies;
 }
 
-const KeeperCreatureInfo& PlayerControl::getKeeperCreatureInfo() const {
-  return keeperCreatureInfo;
+TribeAlignment PlayerControl::getTribeAlignment() const {
+  return tribeAlignment;
 }
 
 REGISTER_TYPE(ListenerTemplate<PlayerControl>)

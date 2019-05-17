@@ -101,12 +101,12 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText, const In
       .addCreature(keeperRef, {MinionTrait::LEADER})
       .build(contentFactory.get()));
   playerCollective = model->getCollectives().back();
-  auto playerControlOwned = PlayerControl::create(playerCollective, introText, *keeperInfo);
+  auto playerControlOwned = PlayerControl::create(playerCollective, introText, keeperInfo->tribeAlignment);
   playerControl = playerControlOwned.get();
   playerCollective->setControl(std::move(playerControlOwned));
   playerCollective->setVillainType(VillainType::PLAYER);
   addCollective(playerCollective);
-  if (auto error = playerControl->loadImmigrationAndWorkshops(initialFactory, contentFactory.get()))
+  if (auto error = playerControl->loadImmigrationAndWorkshops(initialFactory, contentFactory.get(), *keeperInfo))
     USER_FATAL << *error;
   for (auto tech : keeperInfo->initialTech)
     playerCollective->acquireTech(tech, false);

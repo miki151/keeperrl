@@ -91,7 +91,7 @@ void handleOnBuilt(Position pos, Furniture* f, Creature* c, FurnitureOnBuilt typ
         auto newLevel = tryBuilding(20, [&]{ return pos.getModel()->buildMainLevel(
             LevelBuilder(Random, pos.getGame()->getContentFactory(), width, width, "", true),
             getLevelMaker(Random, pos.getGame()->getContentFactory(),
-                pos.getGame()->getPlayerControl()->getKeeperCreatureInfo().tribeAlignment,
+                pos.getGame()->getPlayerControl()->getTribeAlignment(),
                 levelIndex + 1, width, c->getTribeId(), stairKey)); }, "z-level " + toString(levelIndex));
         Position landing = newLevel->getLandingSquares(stairKey).getOnlyElement();
         landing.addFurniture(pos.getGame()->getContentFactory()->furniture.getFurniture(

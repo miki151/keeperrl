@@ -52,7 +52,7 @@ class InitialContentFactory;
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
-  static PPlayerControl create(WCollective col, vector<string> introText, KeeperCreatureInfo);
+  static PPlayerControl create(WCollective col, vector<string> introText, TribeAlignment);
   ~PlayerControl() override;
 
   void processInput(View* view, UserInput);
@@ -62,7 +62,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   Creature* getKeeper();
 
   void render(View*);
-  optional<string> loadImmigrationAndWorkshops(const InitialContentFactory*, ContentFactory*);
+  optional<string> loadImmigrationAndWorkshops(const InitialContentFactory*, ContentFactory*, const KeeperCreatureInfo&);
 
   void leaveControl();
   void teamMemberAction(TeamMemberAction, UniqueEntity<Creature>::Id);
@@ -83,7 +83,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void addToCurrentTeam(Creature* c);
   void updateUnknownLocations();
   vector<Creature*> getConsumptionTargets(Creature* consumer) const;
-  const KeeperCreatureInfo& getKeeperCreatureInfo() const;
+  TribeAlignment getTribeAlignment() const;
 
   void onEvent(const GameEvent&);
   const vector<Creature*>& getControlled() const;
@@ -97,7 +97,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   struct Private {};
 
   public:
-  PlayerControl(Private, WCollective, KeeperCreatureInfo);
+  PlayerControl(Private, WCollective, TribeAlignment);
 
   protected:
   // from CreatureView
@@ -243,9 +243,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   set<pair<UniqueEntity<Collective>::Id, string>> SERIAL(dismissedVillageInfos);
   void considerTransferingLostMinions();
   vector<PItem> retrievePillageItems(WCollective, vector<Item*> items);
-  KeeperCreatureInfo SERIAL(keeperCreatureInfo);
+  TribeAlignment SERIAL(tribeAlignment);
   vector<BuildInfo> SERIAL(buildInfo);
-  void loadBuildingMenu(const InitialContentFactory*);
+  void loadBuildingMenu(const InitialContentFactory*, const KeeperCreatureInfo&);
   WLevel currentLevel = nullptr;
   void scrollStairs(bool up);
   CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&) const;
