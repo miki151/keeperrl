@@ -28,6 +28,7 @@ class NameGenerator;
 struct ModelTable;
 class TileSet;
 class ContentFactory;
+class TilePaths;
 
 class MainLoop {
   public:
@@ -103,4 +104,5 @@ class MainLoop {
   void saveGame(PGame&, const FilePath&);
   void saveMainModel(PGame&, const FilePath&);
   ContentFactory createContentFactory(const GameConfig* gameConfig) const;
+  TilePaths getTilePathsForAllMods() const;
 };

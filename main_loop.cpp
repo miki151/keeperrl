@@ -70,7 +70,7 @@ bool MainLoop::isCompatible(int loadedVersion) {
 
 GameConfig MainLoop::getGameConfig() const {
   string currentMod = options->getStringValue(OptionId::CURRENT_MOD);
-  return GameConfig(dataFreePath.subdirectory(gameConfigSubdir).subdirectory(currentMod));
+  return GameConfig(dataFreePath.subdirectory(gameConfigSubdir), std::move(currentMod));
 }
 
 static string getSaveSuffix(GameSaveType t) {
@@ -239,6 +239,7 @@ void MainLoop::bugReportSave(PGame& game, FilePath path) {
 MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave,
     function<optional<ExitCondition>(WGame)> exitCondition,
     milliseconds stepTimeMilli) {
+  tileSet->setTilePaths(game->getContentFactory()->tilePaths);
   view->reset();
   if (!noAutoSave)
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
@@ -314,10 +315,13 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
   switch (type) {
     case CampaignType::FREE_PLAY: {
       RetiredGames ret;
+      // we have to allow loading unknown view ids here
+      ViewId::startContentIdGeneration();
       for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
         if (isCompatible(getSaveVersion(info)))
           if (auto saved = getSavedGameInfo(userPath.file(info.filename)))
             ret.addLocal(*saved, info);
+      ViewId::validateContentIds();
       optional<vector<FileSharing::SiteInfo>> onlineSites;
       doWithSplash(SplashType::SMALL, "Fetching list of retired dungeons from the server...",
           [&] { onlineSites = fileSharing->listSites(); }, [&] { fileSharing->cancel(); });
@@ -359,12 +363,22 @@ struct ModelTable {
   vector<ContentFactory> factories;
 };
 
+TilePaths MainLoop::getTilePathsForAllMods() const {
+  TilePaths ret;
+  for (auto modDir : dataFreePath.subdirectory(gameConfigSubdir).getSubDirs()) {
+    GameConfig config(dataFreePath.subdirectory(gameConfigSubdir), modDir);
+    ret.merge(TilePaths(&config));
+  }
+  return ret;
+}
+
 PGame MainLoop::prepareCampaign(RandomGen& random, const GameConfig* gameConfig,
     ContentFactory contentFactory) {
   while (1) {
     auto avatarChoice = getAvatarInfo(view, gameConfig, options, &contentFactory.creatures);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, gameConfig, *avatar);
+      tileSet->setTilePaths(getTilePathsForAllMods());
       if (auto setup = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN,
           contentFactory.creatures.getNameGenerator()->getNext(NameGeneratorId::WORLD))) {
         auto name = options->getStringValue(OptionId::PLAYER_NAME);
@@ -402,10 +416,8 @@ void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
   auto gameConfig = getGameConfig();
-  if (tileSet) {
-    tileSet->setGameConfig(&gameConfig);
-    tileSet->reload(true);
-  }
+  if (tileSet)
+    tileSet->setTilePaths(TilePaths(&gameConfig));
   auto contentFactory = createContentFactory(&gameConfig);
   EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator());
   auto model = ModelBuilder(&meter, Random, options, sokobanInput, &gameConfig, &contentFactory, std::move(enemyFactory))
@@ -455,7 +467,7 @@ void MainLoop::considerFreeVersionText(bool tilesPresent) {
 }
 
 ContentFactory MainLoop::createContentFactory(const GameConfig* gameConfig) const {
-  return ContentFactory(NameGenerator(dataFreePath.subdirectory("names")), gameConfig);
+  return ContentFactory(NameGenerator(dataFreePath.subdirectory("names")), gameConfig, TilePaths(gameConfig));
 }
 
 void MainLoop::launchQuickGame() {
@@ -502,10 +514,8 @@ void MainLoop::start(bool tilesPresent, bool quickGame) {
     switch (*choice) {
       case 0: {
         auto gameConfig = getGameConfig();
-        if (tileSet) {
-          tileSet->setGameConfig(&gameConfig);
-          tileSet->reload(true);
-        }
+        if (tileSet)
+          tileSet->setTilePaths(TilePaths(&gameConfig));
         auto contentFactory = createContentFactory(&gameConfig);
         if (PGame game = prepareCampaign(Random, &gameConfig, std::move(contentFactory)))
           playGame(std::move(game), true, false);
@@ -791,7 +801,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
 PGame MainLoop::loadGame(const FilePath& file) {
   optional<PGame> game;
   if (auto info = getSavedGameInfo(file))
-    doWithSplash(SplashType::BIG, "Loading "_s + file.getPath() + "...", info->getProgressCount(),
+    doWithSplash(SplashType::BIG, "Loading "_s + file.getPath() + "...", info->progressCount,
         [&] (ProgressMeter& meter) {
           Square::progressMeter = &meter;
           INFO << "Loading from " << file;

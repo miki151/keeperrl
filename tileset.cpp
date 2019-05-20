@@ -137,15 +137,7 @@ Tile TileSet::getExtraBorderTile(const string& prefix) {
     .addExtraBorder({Dir::W}, byName(prefix + "w"));
 }
 
-void TileSet::loadModdedTiles(const GameConfig* gameConfig, bool useTiles) {
-  vector<TileInfo> tiles;
-  while (1) {
-    auto error = gameConfig->readObject(tiles, GameConfigId::TILES);
-    if (error)
-      USER_INFO << *error;
-    else
-      break;
-  }
+void TileSet::loadModdedTiles(const vector<TileInfo>& tiles, bool useTiles) {
   for (auto& tile : tiles) {
     if (useTiles) {
       auto spriteName = tile.sprite.value_or(tile.viewId.data());
@@ -212,11 +204,12 @@ Tile TileSet::symbol(const string& s, Color id, bool symbol) {
   return Tile::fromString(s, id, symbol);
 }
 
-TileSet::TileSet(const DirectoryPath& defaultDir) : defaultDir(defaultDir) {
+TileSet::TileSet(const DirectoryPath& defaultDir, const DirectoryPath& modsDir) : defaultDir(defaultDir), modsDir(modsDir) {
 }
 
-void TileSet::setGameConfig(const GameConfig* c) {
-  gameConfig = c;
+void TileSet::setTilePaths(const TilePaths& p) {
+  tilePaths = p;
+  reload(true);
 }
 
 void TileSet::reload(bool useTiles) {
@@ -230,20 +223,26 @@ void TileSet::reload(bool useTiles) {
     loadTilesFromDir(path.subdirectory("orig30"), Vec2(30, 30));
   };
   reloadDir(defaultDir);
-  reloadDir(gameConfig->getPath());
+  for (auto& subdir : tilePaths->modDirs)
+    reloadDir(modsDir.subdirectory(subdir));
   ViewId::startContentIdGeneration();
   loadUnicode();
   if (useTiles)
     loadTiles();
-  loadModdedTiles(gameConfig, useTiles);
+  loadModdedTiles(tilePaths->definitions, useTiles);
   ViewId::validateContentIds();
 }
 
-const Tile& TileSet::getTile(ViewId id, bool sprite) const {
-  if (sprite && tiles.count(id.getInternalId()))
-    return tiles.at(id.getInternalId());
-  else
-    return symbols.at(id.getInternalId());
+const Tile& TileSet::getTile(ViewId viewId, bool sprite) const {
+  auto id = viewId.getInternalId();
+  if (sprite && tiles.count(id))
+    return tiles.at(id);
+  else if (auto symbol = getReferenceMaybe(symbols, id))
+    return *symbol;
+  else {
+    static Tile unknown = Tile::fromString("?", Color::GREEN);
+    return unknown;
+  }
 }
 
 constexpr int textureWidth = 720;

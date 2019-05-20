@@ -3,6 +3,7 @@
 #include "util.h"
 #include "view_id.h"
 #include "tile.h"
+#include "tile_paths.h"
 
 class Renderer;
 class GameConfig;
@@ -17,16 +18,18 @@ struct TileCoord {
 
 class TileSet {
   public:
-  TileSet(const DirectoryPath& defaultDir);
-  void setGameConfig(const GameConfig*);
+  TileSet(const DirectoryPath& defaultDir, const DirectoryPath& modsDir);
+  void setTilePaths(const TilePaths&);
+  const TilePaths& getTilePaths() const;
   void reload(bool useTiles);
   const Tile& getTile(ViewId id, bool sprite = true) const;
   Color getColor(const ViewObject&) const;
   const vector<TileCoord>& getTileCoord(const string&) const;
 
   private:
-  const GameConfig* gameConfig;
+  optional<TilePaths> tilePaths;
   DirectoryPath defaultDir;
+  DirectoryPath modsDir;
   friend class TileCoordLookup;
   void addTile(string, Tile);
   void addSymbol(string, Tile);
@@ -46,5 +49,5 @@ class TileSet {
   Tile getWaterTile(const string& background, const string& prefix);
   Tile getExtraBorderTile(const string& prefix);
   Tile symbol(const string& s, Color id, bool symbol = false);
-  void loadModdedTiles(const GameConfig*, bool useTiles);
+  void loadModdedTiles(const vector<TileInfo>& tiles, bool useTiles);
 };

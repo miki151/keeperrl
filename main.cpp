@@ -445,10 +445,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   if (tilesPresent)
     initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
-  TileSet tileSet(paidDataPath.subdirectory("images"));
-  GameConfig gameConfig(freeDataPath.subdirectory("game_config").subdirectory("vanilla"));
-  tileSet.setGameConfig(&gameConfig);
-  tileSet.reload(true);
+  TileSet tileSet(paidDataPath.subdirectory("images"), freeDataPath.subdirectory(gameConfigSubdir));
   renderer.setTileSet(&tileSet);
   FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", options, installId);
   unique_ptr<View> view;

@@ -100,7 +100,7 @@ optional<string> Campaign::SiteInfo::getDwellerDescription() const {
   if (dweller)
     return dweller->match(
         [](const VillainInfo& info) { return info.name + " (" + info.getDescription() + ")"; },
-        [](const RetiredInfo& info) { return info.gameInfo.getName() + " (main villain)" ;},
+        [](const RetiredInfo& info) { return info.gameInfo.name + " (main villain)" ;},
         [](const KeeperInfo&)->string { return "This is your home site"; });
   else
     return none;

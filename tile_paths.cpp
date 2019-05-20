@@ -1,0 +1,29 @@
+#include "stdafx.h"
+#include "tile_paths.h"
+#include "game_config.h"
+
+TilePaths::TilePaths(const GameConfig* config) {
+  while (1) {
+    auto error = config->readObject(definitions, GameConfigId::TILES);
+    if (error)
+      USER_INFO << *error;
+    else
+      break;
+  }
+  modDirs.push_back(config->getModName());
+}
+
+void TilePaths::merge(TilePaths other) {
+  auto contains = [&] (const string& viewId) {
+    for (auto& tile : definitions)
+      if (tile.viewId == viewId)
+        return true;
+    return false;
+  };
+  for (auto& tile : other.definitions)
+    if (!contains(tile.viewId))
+      definitions.push_back(tile);
+  for (auto& mod : other.modDirs)
+    if (!modDirs.contains(mod))
+      modDirs.push_back(mod);
+}

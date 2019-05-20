@@ -3360,9 +3360,9 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
         header.addElem(gui.stack(
               gui.labelUnicodeHighlight(u8"✘", Color::RED),
               gui.button([i, reloadCampaign, &retired] { retired.setActive(i, false); reloadCampaign();})), 15);
-      header.addElem(gui.label(allGames[i].gameInfo.getName(),
+      header.addElem(gui.label(allGames[i].gameInfo.name,
           maxedOut ? Color::LIGHT_GRAY : Color::WHITE), 170);
-      for (auto& minion : allGames[i].gameInfo.getMinions())
+      for (auto& minion : allGames[i].gameInfo.minions)
         header.addElem(drawMinionAndLevel(minion.viewId, minion.level, 1), 25);
       header.addSpace(20);
       if (allGames[i].numTotal > 0)

@@ -692,10 +692,10 @@ SavedGameInfo Game::getSavedGameInfo() const {
     vector<SavedGameInfo::MinionInfo> minions;
     for (Creature* c : creatures)
       minions.push_back(getMinionInfo(c));
-    return SavedGameInfo(minions, col->getDangerLevel(), getPlayerName(), getSaveProgressCount());
+    return SavedGameInfo{minions, col->getDangerLevel(), getPlayerName(), getSaveProgressCount()};
   } else {
     auto player = players.getOnlyElement(); // adventurer mode
-    return SavedGameInfo({getMinionInfo(player)}, 0, player->getName().bare(), getSaveProgressCount());
+    return SavedGameInfo{{getMinionInfo(player)}, 0, player->getName().bare(), getSaveProgressCount()};
   }
 }
 

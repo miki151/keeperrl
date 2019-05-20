@@ -27,15 +27,17 @@ enum class GameConfigId {
 
 class GameConfig {
   public:
-  GameConfig(DirectoryPath);
+  GameConfig(DirectoryPath modsPath, string modName);
   template<typename T>
   [[nodiscard]] optional<string> readObject(T& object, GameConfigId id) const {
     return PrettyPrinting::parseObject<T>(object, path.file(getConfigName(id) + ".txt"_s));
   }
 
   const DirectoryPath& getPath() const;
+  const string& getModName() const;
 
   private:
   static const char* getConfigName(GameConfigId);
   DirectoryPath path;
+  string modName;
 };
