@@ -603,11 +603,17 @@ void Effect::Heal::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
 string Effect::Heal::getName() const {
-  return "healing";
+  switch (healthType) {
+    case HealthType::FLESH: return "healing";
+    case HealthType::SPIRIT: return "materialization";
+  }
 }
 
 string Effect::Heal::getDescription() const {
-  return "Fully restores health.";
+  switch (healthType) {
+    case HealthType::FLESH: return "Fully restores health.";
+    case HealthType::SPIRIT: return "Fully re-materializes a spirit.";
+  }
 }
 
 void Effect::Fire::applyToCreature(Creature* c, Creature* attacker) const {
