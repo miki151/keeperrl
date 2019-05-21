@@ -41,6 +41,7 @@ FXInfo getFXInfo(FXVariantName var) {
     case Name::BUFF_GREEN2:  return {FXName::BUFF,   Color(80, 255, 120), 0.0f, FXStackId::buff};
     case Name::BUFF_SKY_BLUE:return {FXName::BUFF,   Color::SKY_BLUE, 0.0f, FXStackId::buff};
     case Name::BUFF_BROWN:   return {FXName::BUFF,   Color::BROWN, 0.0f, FXStackId::buff};
+    case Name::BUFF_PURPLE:  return {FXName::BUFF,   Color::PURPLE, 0.0f, FXStackId::buff};
 
     case Name::DEBUFF_RED:   return {FXName::DEBUFF, Color(190, 30, 30), 0.0f, FXStackId::debuff};
     case Name::DEBUFF_BLUE:  return {FXName::DEBUFF, Color(30, 60, 230), 0.0f, FXStackId::debuff};

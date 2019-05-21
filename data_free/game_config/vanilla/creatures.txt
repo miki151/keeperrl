@@ -551,6 +551,7 @@
       permanentEffects = {
         FLYING 1
         MAGIC_RESISTANCE 1
+        SPELL_DAMAGE 1
       }
       courage = 100
       spells = { "directed blast" }
@@ -584,6 +585,7 @@
       permanentEffects = {
         FLYING 1
         MAGIC_RESISTANCE 1
+        SPELL_DAMAGE 1
       }
       courage = 100
       spells = { "directed blast" }

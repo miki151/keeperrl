@@ -230,6 +230,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::MAGIC_CANCELLATION:
         c->you(MsgType::ARE, "unable to cast any spells!");
         break;
+      case LastingEffect::SPELL_DAMAGE:
+        c->verb("deal", "deals", "magical damage");
+        break;
       case LastingEffect::ON_FIRE:
         c->you(MsgType::ARE, "on fire!");
         c->getPosition().addCreatureLight(false);
@@ -434,6 +437,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::MAGIC_CANCELLATION:
         c->verb("can", "can", "cast spells again");
         break;
+      case LastingEffect::SPELL_DAMAGE:
+        c->verb("no longer deal", "no longer deals", "magical damage");
+        break;
       case LastingEffect::ON_FIRE:
         c->getPosition().removeCreatureLight(false);
         c->verb("burn", "burns", "to death");
@@ -552,6 +558,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::MAGIC_RESISTANCE: return "Resistant to magical attacks"_good;
     case LastingEffect::MELEE_RESISTANCE: return "Resistant to melee attacks"_good;
     case LastingEffect::RANGED_RESISTANCE: return "Resistant to ranged attacks"_good;
+    case LastingEffect::SPELL_DAMAGE: return "Deals magical damage"_good;
     case LastingEffect::ELF_VISION: return "Can see through trees"_good;
     case LastingEffect::NIGHT_VISION: return "Can see in the dark"_good;
     case LastingEffect::REGENERATION: return "Regenerating"_good;
@@ -850,6 +857,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "digging";
     case LastingEffect::ON_FIRE: return "combustion";
     case LastingEffect::MAGIC_CANCELLATION: return "magic cancellation";
+    case LastingEffect::SPELL_DAMAGE: return "magical damage";
     case LastingEffect::DISAPPEAR_DURING_DAY: return "night life";
     case LastingEffect::NO_CARRY_LIMIT: return "infinite carrying capacity";
   }
@@ -924,6 +932,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Creature will try to dig when travelling somewhere";
     case LastingEffect::ON_FIRE: return "The creature is burning alive";
     case LastingEffect::MAGIC_CANCELLATION: return "Prevents from casting any spells";
+    case LastingEffect::SPELL_DAMAGE: return "All dealt melee damage is transformed into magical damage";
     case LastingEffect::DISAPPEAR_DURING_DAY: return "This creature is only active at night and disappears at dawn";
     case LastingEffect::NO_CARRY_LIMIT: return "The creature can carry items without any weight limit";
   }
@@ -1082,15 +1091,17 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::DAM_BONUS:
     case LastingEffect::DEF_BONUS:
       return FXVariantName::BUFF_YELLOW;
-
+    case LastingEffect::SPELL_DAMAGE:
+      return FXVariantName::BUFF_PURPLE;
     case LastingEffect::FIRE_RESISTANT:
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
       return FXVariantName::BUFF_SKY_BLUE;
     case LastingEffect::FAST_CRAFTING:
-    case LastingEffect::SLOW_CRAFTING:
       return FXVariantName::BUFF_BROWN;
+    case LastingEffect::SLOW_CRAFTING:
+      return FXVariantName::DEBUFF_BROWN;
     case LastingEffect::FAST_TRAINING:
       return FXVariantName::BUFF_BROWN;
     case LastingEffect::SLOW_TRAINING:
@@ -1149,6 +1160,8 @@ optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
       return FXInfo(FXName::CIRCULAR_SPELL, Color::RED);
     case LastingEffect::MAGIC_CANCELLATION:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::BROWN);
+    case LastingEffect::SPELL_DAMAGE:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::PURPLE);
     default:
       return none;
   }
@@ -1246,4 +1259,10 @@ EffectAIIntent LastingEffects::shouldAIApply(const Creature* victim, LastingEffe
       if (shouldAllyApplyInDanger(victim, effect))
         return EffectAIIntent::WANTED;
   return shouldAllyApply(victim, effect) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+}
+
+AttrType LastingEffects::modifyMeleeDamageAttr(const Creature* attacker, AttrType type) {
+  if (attacker->isAffected(LastingEffect::SPELL_DAMAGE) && type == AttrType::DAMAGE)
+    return AttrType::SPELL_DAMAGE;
+  return type;
 }

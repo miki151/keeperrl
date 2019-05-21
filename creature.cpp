@@ -1095,6 +1095,7 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
     AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
     if (attackParams && attackParams->level)
       attackLevel = *attackParams->level;
+    damageAttr = LastingEffects::modifyMeleeDamageAttr(this, damageAttr);
     Attack attack(self, attackLevel, weaponInfo.attackType, damage, damageAttr, weaponInfo.victimEffect);
     string enemyName = other->getController()->getMessageGenerator().getEnemyName(other);
     if (!canSee(other))

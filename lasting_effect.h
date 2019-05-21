@@ -36,6 +36,7 @@ RICH_ENUM(LastingEffect,
     MELEE_VULNERABILITY,
     RANGED_VULNERABILITY,
     MAGIC_CANCELLATION,
+    SPELL_DAMAGE,
     ELF_VISION,
     NIGHT_VISION,
     REGENERATION,
@@ -107,4 +108,5 @@ class LastingEffects {
   static bool canProlong(LastingEffect);
   static bool obeysFormation(const Creature*, const Creature* against);
   static EffectAIIntent shouldAIApply(const Creature* victim, LastingEffect, bool isEnemy);
+  static AttrType modifyMeleeDamageAttr(const Creature* attacker, AttrType);
 };
