@@ -3369,6 +3369,12 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
         header.addElemAuto(gui.stack(
           gui.tooltip({"Number of times this dungeon has been conquered over how many times it has been loaded."}),
           gui.label("Conquer rate: " + toString(allGames[i].numWon) + "/" + toString(allGames[i].numTotal))));
+      if (!allGames[i].gameInfo.spriteMods.empty()) {
+        header.addElemAuto(gui.stack(
+            gui.tooltip({"These mods may be required to successfully load this dungeon."}),
+            gui.label("Requires mods:" + combine(allGames[i].gameInfo.spriteMods, true)))
+        );
+      }
       SGuiElem line = header.buildHorizontalList();
       if (allGames[i].numTotal > 0 && displayActive)
         line = gui.stack(std::move(line), gui.tooltip({
@@ -3461,7 +3467,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
     else
       secondaryOptionLines.addElem(gui.label("Available villains:", Color::YELLOW));
     int listHeight = min(360 - addedHeight, retiredList.getSize() + 30);
-    secondaryOptionLines.addElem(gui.scrollable(retiredList.buildVerticalList()), listHeight);
+    secondaryOptionLines.addElem(gui.scrollable(gui.topMargin(3, retiredList.buildVerticalList())), listHeight);
     lines.addElem(gui.leftMargin(optionMargin,
         gui.buttonLabel("Add retired dungeons", [&menuState] { menuState.settings = !menuState.settings;})));
   }

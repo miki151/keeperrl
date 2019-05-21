@@ -14,7 +14,8 @@ struct SavedGameInfo {
   double SERIAL(dangerLevel);
   string SERIAL(name);
   int SERIAL(progressCount);
-  SERIALIZE_ALL(minions, dangerLevel, name, progressCount)
+  vector<string> SERIAL(spriteMods);
+  SERIALIZE_ALL(minions, dangerLevel, name, progressCount, spriteMods)
 };
 
 

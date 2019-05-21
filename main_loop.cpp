@@ -115,6 +115,7 @@ void MainLoop::saveGame(PGame& game, const FilePath& path) {
   CompressedOutput out(path.getPath());
   string name = game->getGameDisplayName();
   SavedGameInfo savedInfo = game->getSavedGameInfo();
+  savedInfo.spriteMods = tileSet->getSpriteMods();
   out.getArchive() << saveVersion << name << savedInfo;
   out.getArchive() << game;
 }
@@ -129,6 +130,7 @@ void MainLoop::saveMainModel(PGame& game, const FilePath& path) {
   CompressedOutput out(path.getPath());
   string name = game->getGameDisplayName();
   SavedGameInfo savedInfo = game->getSavedGameInfo();
+  savedInfo.spriteMods = tileSet->getSpriteMods();
   out.getArchive() << saveVersion << name << savedInfo;
   RetiredModelInfo info {
     std::move(game->getMainModel()),
@@ -319,7 +321,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
       ViewId::startContentIdGeneration();
       for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
         if (isCompatible(getSaveVersion(info)))
-          if (auto saved = getSavedGameInfo(userPath.file(info.filename)))
+          if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
             ret.addLocal(*saved, info);
       ViewId::validateContentIds();
       optional<vector<FileSharing::SiteInfo>> onlineSites;
@@ -338,7 +340,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
       RetiredGames ret;
       for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_CAMPAIGN)))
         if (isCompatible(getSaveVersion(info)))
-          if (auto saved = getSavedGameInfo(userPath.file(info.filename)))
+          if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
             ret.addLocal(*saved, info);
       for (int i : All(ret.getAllGames()))
         ret.setActive(i, true);
@@ -364,7 +366,8 @@ struct ModelTable {
 };
 
 TilePaths MainLoop::getTilePathsForAllMods() const {
-  TilePaths ret;
+  GameConfig currentConfig = getGameConfig();
+  TilePaths ret(&currentConfig);
   for (auto modDir : dataFreePath.subdirectory(gameConfigSubdir).getSubDirs()) {
     GameConfig config(dataFreePath.subdirectory(gameConfigSubdir), modDir);
     ret.merge(TilePaths(&config));
@@ -800,7 +803,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
 
 PGame MainLoop::loadGame(const FilePath& file) {
   optional<PGame> game;
-  if (auto info = getSavedGameInfo(file))
+  if (auto info = loadSavedGameInfo(file))
     doWithSplash(SplashType::BIG, "Loading "_s + file.getPath() + "...", info->progressCount,
         [&] (ProgressMeter& meter) {
           Square::progressMeter = &meter;

@@ -10,7 +10,7 @@ TilePaths::TilePaths(const GameConfig* config) {
     else
       break;
   }
-  modDirs.push_back(config->getModName());
+  mainMod = config->getModName();
 }
 
 void TilePaths::merge(TilePaths other) {
@@ -23,7 +23,7 @@ void TilePaths::merge(TilePaths other) {
   for (auto& tile : other.definitions)
     if (!contains(tile.viewId))
       definitions.push_back(tile);
-  for (auto& mod : other.modDirs)
-    if (!modDirs.contains(mod))
-      modDirs.push_back(mod);
+  for (auto& mod : concat({other.mainMod}, other.mergedMods))
+    if (mod != mainMod && !mergedMods.contains(mod))
+      mergedMods.push_back(mod);
 }

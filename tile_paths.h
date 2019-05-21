@@ -10,6 +10,7 @@ struct TilePaths {
   void merge(TilePaths);
   SERIALIZATION_CONSTRUCTOR(TilePaths)
   vector<TileInfo> SERIAL(definitions);
-  vector<string> SERIAL(modDirs);
-  SERIALIZE_ALL(definitions, modDirs)
+  string SERIAL(mainMod);
+  vector<string> SERIAL(mergedMods);
+  SERIALIZE_ALL(definitions, mainMod, mergedMods)
 };

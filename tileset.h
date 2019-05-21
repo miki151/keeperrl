@@ -25,6 +25,7 @@ class TileSet {
   const Tile& getTile(ViewId id, bool sprite = true) const;
   Color getColor(const ViewObject&) const;
   const vector<TileCoord>& getTileCoord(const string&) const;
+  const vector<string> getSpriteMods() const;
 
   private:
   optional<TilePaths> tilePaths;
@@ -37,7 +38,8 @@ class TileSet {
   unordered_map<ViewId::InternalId, Tile> symbols;
   vector<unique_ptr<Texture>> textures;
   map<string, vector<TileCoord>> tileCoords;
-  void loadTilesFromDir(const DirectoryPath&, Vec2 size);
+  vector<string> spriteMods;
+  bool loadTilesFromDir(const DirectoryPath&, Vec2 size, bool overwrite);
   void loadTiles();
   void loadUnicode();
   const vector<TileCoord>& byName(const string&);
