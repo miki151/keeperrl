@@ -157,6 +157,9 @@ CreatureAction Creature::castSpell(const Spell* spell) const {
 }
 
 CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
+  if (isAffected(LastingEffect::MAGIC_CANCELLATION))
+    return CreatureAction("You can't cast spells while under the effect of "
+        + LastingEffects::getName(LastingEffect::MAGIC_CANCELLATION) + ".");
   if (!spellMap->contains(spell))
     return CreatureAction("You don't know this spell.");
   if (!isReady(spell))

@@ -227,6 +227,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::BAD_BREATH:
         c->you(MsgType::YOUR, "breath stinks!");
         break;
+      case LastingEffect::MAGIC_CANCELLATION:
+        c->you(MsgType::ARE, "unable to cast any spells!");
+        break;
       case LastingEffect::ON_FIRE:
         c->you(MsgType::ARE, "on fire!");
         c->getPosition().addCreatureLight(false);
@@ -428,6 +431,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::BAD_BREATH:
         c->verb("smell", "smells", "like flowers again");
         break;
+      case LastingEffect::MAGIC_CANCELLATION:
+        c->verb("can", "can", "cast spells again");
+        break;
       case LastingEffect::ON_FIRE:
         c->getPosition().removeCreatureLight(false);
         c->verb("burn", "burns", "to death");
@@ -596,6 +602,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::SLOW_TRAINING: return "Slow trainee"_bad;
     case LastingEffect::BAD_BREATH: return "Smelly breath"_bad;
     case LastingEffect::ON_FIRE: return "On fire"_bad;
+    case LastingEffect::MAGIC_CANCELLATION: return "Cancelled"_bad;
     case LastingEffect::DISAPPEAR_DURING_DAY: return "Disappears at dawn"_bad;
   }
 }
@@ -842,6 +849,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "bridge building";
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "digging";
     case LastingEffect::ON_FIRE: return "combustion";
+    case LastingEffect::MAGIC_CANCELLATION: return "magic cancellation";
     case LastingEffect::DISAPPEAR_DURING_DAY: return "night life";
     case LastingEffect::NO_CARRY_LIMIT: return "infinite carrying capacity";
   }
@@ -915,6 +923,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "Creature will try to build bridges when travelling somewhere";
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Creature will try to dig when travelling somewhere";
     case LastingEffect::ON_FIRE: return "The creature is burning alive";
+    case LastingEffect::MAGIC_CANCELLATION: return "Prevents from casting any spells";
     case LastingEffect::DISAPPEAR_DURING_DAY: return "This creature is only active at night and disappears at dawn";
     case LastingEffect::NO_CARRY_LIMIT: return "The creature can carry items without any weight limit";
   }
@@ -1085,6 +1094,7 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::FAST_TRAINING:
       return FXVariantName::BUFF_BROWN;
     case LastingEffect::SLOW_TRAINING:
+    case LastingEffect::MAGIC_CANCELLATION:
       return FXVariantName::DEBUFF_BROWN;
     case LastingEffect::POISON_RESISTANT:
       return FXVariantName::BUFF_GREEN2;
@@ -1137,6 +1147,8 @@ optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
       return FXInfo(FXName::CIRCULAR_SPELL, Color::SKY_BLUE);
     case LastingEffect::REGENERATION:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::RED);
+    case LastingEffect::MAGIC_CANCELLATION:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::BROWN);
     default:
       return none;
   }
