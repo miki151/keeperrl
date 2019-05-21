@@ -267,6 +267,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
     case FurnitureUsageType::DESECRATE:
       desecrate(pos, furniture, c);
       break;
+    case FurnitureUsageType::DEMON_RITUAL:
     case FurnitureUsageType::STUDY:
     case FurnitureUsageType::ARCHERY_RANGE:
       break;

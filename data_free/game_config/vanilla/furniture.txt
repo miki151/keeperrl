@@ -246,8 +246,8 @@
     name = "demon shrine"
     viewId = { "demon_shrine" }
     blockMovement = true
-    canHideHere = true
     usageTime = 5
+    usageType = DEMON_RITUAL
     luxury = 0.4
     strength = 80
     destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }

@@ -1210,6 +1210,9 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
           c->increaseExpLevel(exp, increase);
       };
       switch (*usage) {
+        case FurnitureUsageType::DEMON_RITUAL:
+          returnResource(CostInfo(ResourceId::DEMON_PIETY, int(efficiency)));
+          break;
         case FurnitureUsageType::TRAIN:
           increaseLevel(ExperienceType::MELEE);
           break;

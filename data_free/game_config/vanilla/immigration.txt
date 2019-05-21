@@ -225,6 +225,7 @@
           requirements = {
             { 0.3 AttractionInfo 1 {FurnitureType "DEMON_SHRINE"}}
             { 0.0 FurnitureType "DEMON_SHRINE" }
+            { 0.0 CostInfo DEMON_PIETY 3000 }
           }
         }
         {
@@ -235,6 +236,7 @@
           requirements = {
             { 0.3 AttractionInfo 2 {FurnitureType "DEMON_SHRINE"}}
             { 0.0 FurnitureType "DEMON_SHRINE" }
+            { 0.0 CostInfo DEMON_PIETY 6000 }
           }
         }
         {
@@ -245,6 +247,7 @@
           requirements = {
             { 0.3 AttractionInfo 3 {FurnitureType "DEMON_SHRINE"}}
             { 0.0 FurnitureType "DEMON_SHRINE" }
+            { 0.0 CostInfo DEMON_PIETY 12000 }
           }
         }
         {

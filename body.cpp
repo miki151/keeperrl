@@ -934,13 +934,7 @@ bool Body::canPush(const Body& other) {
 }
 
 bool Body::canPerformRituals() const {
-  switch (material) {
-    case Material::FIRE:
-    case Material::SPIRIT:
-      return true;
-    default:
-      return false;
-  }
+  return xhumanoid && !isImmuneTo(LastingEffect::TIED_UP);
 }
 
 bool Body::canBeCaptured() const {

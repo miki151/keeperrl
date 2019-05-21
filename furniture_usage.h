@@ -22,7 +22,8 @@ RICH_ENUM(
   STUDY,
   PORTAL,
   SIT_ON_THRONE,
-  DESECRATE
+  DESECRATE,
+  DEMON_RITUAL
 );
 
 class FurnitureUsage {

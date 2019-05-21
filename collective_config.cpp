@@ -214,20 +214,22 @@ const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
   static EnumMap<CollectiveResourceId, ResourceInfo> resourceInfo([](CollectiveResourceId id)->ResourceInfo {
     switch (id) {
       case CollectiveResourceId::PRISONER_HEAD:
-        return { none, none, ItemType::GoldPiece{}, "", ViewId("impaled_head"), true};
+        return { none, none, ItemType::GoldPiece{}, "", ViewId("impaled_head"), true, none};
+      case CollectiveResourceId::DEMON_PIETY:
+        return { none, none, ItemType::GoldPiece{}, "", ViewId("impaled_head"), false, none};
       case CollectiveResourceId::GOLD:
-        return {StorageId::GOLD, ItemIndex::GOLD, ItemType::GoldPiece{}, "gold", ViewId("gold")};
+        return {StorageId::GOLD, ItemIndex::GOLD, ItemType::GoldPiece{}, "gold", ViewId("gold"), false, none};
       case CollectiveResourceId::WOOD:
         return { StorageId::RESOURCE, ItemIndex::WOOD, ItemType::WoodPlank{}, "wood", ViewId("wood_plank"),
             false, TutorialHighlight::WOOD_RESOURCE};
       case CollectiveResourceId::IRON:
-        return { StorageId::RESOURCE, ItemIndex::IRON, ItemType::IronOre{}, "iron", ViewId("iron_rock")};
+        return { StorageId::RESOURCE, ItemIndex::IRON, ItemType::IronOre{}, "iron", ViewId("iron_rock"), false, none};
       case CollectiveResourceId::ADA:
-        return { StorageId::RESOURCE, ItemIndex::ADA, ItemType::AdaOre{}, "adamantium", ViewId("ada_ore")};
+        return { StorageId::RESOURCE, ItemIndex::ADA, ItemType::AdaOre{}, "adamantium", ViewId("ada_ore"), false, none};
       case CollectiveResourceId::STONE:
-        return { StorageId::RESOURCE, ItemIndex::STONE, ItemType::Rock{}, "granite", ViewId("rock")};
+        return { StorageId::RESOURCE, ItemIndex::STONE, ItemType::Rock{}, "granite", ViewId("rock"), false, none};
       case CollectiveResourceId::CORPSE:
-        return { StorageId::CORPSES, ItemIndex::REVIVABLE_CORPSE, ItemType::GoldPiece{}, "corpses", ViewId("body_part"), true};
+        return { StorageId::CORPSES, ItemIndex::REVIVABLE_CORPSE, ItemType::GoldPiece{}, "corpses", ViewId("body_part"), true, none};
     }
   });
   return resourceInfo[id];

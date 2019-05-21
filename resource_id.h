@@ -2,7 +2,8 @@
 
 #include "util.h"
 
-RICH_ENUM2(unsigned char,
+RICH_ENUM2(
+  unsigned char,
   CollectiveResourceId,
   GOLD,
   WOOD,
@@ -10,5 +11,6 @@ RICH_ENUM2(unsigned char,
   ADA,
   STONE,
   PRISONER_HEAD,
-  CORPSE
+  CORPSE,
+  DEMON_PIETY
 );
