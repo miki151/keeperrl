@@ -23,6 +23,7 @@
 #include "fx_name.h"
 #include "furniture_type.h"
 #include "effect_ai_intent.h"
+#include "health_type.h"
 
 class Level;
 class Creature;
@@ -47,7 +48,11 @@ class Effect {
   public:
   SIMPLE_EFFECT(Escape);
   SIMPLE_EFFECT(Teleport);
-  SIMPLE_EFFECT(Heal);
+  struct Heal {
+    EFFECT_TYPE_INTERFACE;
+    HealthType healthType;
+    COMPARE_ALL(healthType)
+  };
   SIMPLE_EFFECT(Fire);
   SIMPLE_EFFECT(DestroyEquipment);
   SIMPLE_EFFECT(DestroyWalls);

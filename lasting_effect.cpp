@@ -1203,7 +1203,7 @@ static bool shouldAllyApply(const Creature* victim, LastingEffect effect) {
       return true;
   switch (effect) {
     case LastingEffect::REGENERATION:
-      return victim->getBody().canHeal();
+      return victim->getBody().canHeal(HealthType::FLESH);
     case LastingEffect::SATIATED:
     case LastingEffect::RESTED:
     case LastingEffect::FAST_CRAFTING:

@@ -2,7 +2,7 @@
   {
     id =  "healing"
     symbol = "❤️"
-    effect = Heal
+    effect = Heal FLESH
     cooldown = 30
     sound = SPELL_HEALING
   }
@@ -10,7 +10,7 @@
     id =  "healing2"
     upgrade = "healing"
     symbol = "❤️"
-    effect = Heal
+    effect = Heal FLESH
     range = 1
     targetSelf = true
     cooldown = 15
@@ -20,7 +20,7 @@
     id =  "healing3"
     upgrade = "healing2"
     symbol = "❤️"
-    effect = Heal
+    effect = Heal FLESH
     targetSelf = true
     range = 4
     cooldown = 15

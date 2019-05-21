@@ -109,6 +109,7 @@ enum class Gender : std::uint8_t;
 enum class CreatureViewCenterType;
 enum class BedType;
 enum class TargetType;
+enum class HealthType;
 
 struct FXInfo;
 struct FXSpawnInfo;

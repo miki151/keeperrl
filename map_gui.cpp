@@ -563,7 +563,7 @@ void MapGui::drawFurnitureCracks(Renderer& renderer, Vec2 tilePos, float state, 
 void MapGui::drawHealthBar(Renderer& renderer, Vec2 tilePos, Vec2 pos, Vec2 size, const ViewObject& object,
     const ViewIndex& index) {
   auto health = object.getAttribute(ViewObject::Attribute::HEALTH);
-  if (!health)
+  if (!health || object.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE))
     return;
   if (object.hasModifier(ViewObject::Modifier::FURNITURE_CRACKS)) {
     drawFurnitureCracks(renderer, tilePos, *health, pos, size, index);
@@ -613,12 +613,13 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   const Tile& tile = renderer.getTileSet().getTile(id, spriteMode);
   Color color = tile.color;
   considerWoundedAnimation(object, color, curTimeReal);
-  if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
+  if (object.hasModifier(ViewObject::Modifier::SPIRIT_DAMAGE))
+    color = color.transparency(int(250 * object.getAttribute(ViewObject::Attribute::HEALTH).value_or(1)));
+  else if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
     color = color.transparency(70);
-  else
-    if (tile.translucent > 0)
-      color = color.transparency(255 * (1 - tile.translucent));
-    else if (object.hasModifier(ViewObject::Modifier::ILLUSION))
+  else if (tile.translucent > 0)
+    color = color.transparency(255 * (1 - tile.translucent));
+  else if (object.hasModifier(ViewObject::Modifier::ILLUSION))
       color = color.transparency(150);
   if (object.hasModifier(ViewObject::Modifier::PLANNED))
     color = color.transparency(100);

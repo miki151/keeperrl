@@ -593,7 +593,7 @@ string Effect::DestroyWalls::getDescription() const {
 }
 
 void Effect::Heal::applyToCreature(Creature* c, Creature* attacker) const {
-  if (c->getBody().canHeal()) {
+  if (c->getBody().canHeal(healthType)) {
     c->heal(1);
     c->removeEffect(LastingEffect::BLEEDING);
     c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN));
@@ -967,8 +967,8 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
           return EffectAIIntent::NONE;
         return reverse(LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy));
       },
-      [&] (const Heal&) {
-        if (victim->getBody().canHeal())
+      [&] (const Heal& e) {
+        if (victim->getBody().canHeal(e.healthType))
           return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
         return EffectAIIntent::NONE;
       },

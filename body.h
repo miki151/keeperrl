@@ -109,9 +109,10 @@ class Body {
 
   void healBodyParts(Creature*, bool regrow);
   bool fallsApartDueToLostBodyParts() const;
-  bool canHeal() const;
+  bool canHeal(HealthType) const;
   bool isImmuneTo(LastingEffect effect) const;
-  bool hasHealth() const;
+  bool hasHealth(HealthType) const;
+  bool hasAnyHealth() const;
 
   void consumeBodyParts(Creature*, Body& other, vector<string>& adjectives);
 

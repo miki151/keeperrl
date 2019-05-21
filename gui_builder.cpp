@@ -2281,6 +2281,10 @@ static string getMoraleNumber(double morale) {
 #endif
 }
 
+static const char* getHealthName(bool spirit) {
+  return spirit ? "Materialization:" : "Health:";
+}
+
 SGuiElem GuiBuilder::drawMapHintOverlay() {
   auto lines = gui.getListBuilder(legendLineHeight);
   vector<SGuiElem> allElems;
@@ -2329,7 +2333,8 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
         if (auto health = viewObject.getAttribute(ViewObjectAttribute::HEALTH))
           lines.addElem(gui.stack(
                 gui.margins(gui.progressBar(MapGui::getHealthBarColor(*health).transparency(70), *health), -2, 0, 0, 3),
-                gui.label("Health: " + toString((int) (100.0f * *health)) + "%")));
+                gui.label(getHealthName(viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE))
+                    + toString((int) (100.0f * *health)) + "%")));
         if (auto morale = viewObject.getAttribute(ViewObjectAttribute::MORALE))
           lines.addElem(gui.stack(
                 gui.margins(gui.progressBar((*morale >= 0 ? Color::GREEN : Color::RED).transparency(70), fabs(*morale)), -2, 0, 0, 3),

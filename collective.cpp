@@ -1210,9 +1210,18 @@ void Collective::onAppliedSquare(Creature* c, Position pos) {
           c->increaseExpLevel(exp, increase);
       };
       switch (*usage) {
-        case FurnitureUsageType::DEMON_RITUAL:
-          returnResource(CostInfo(ResourceId::DEMON_PIETY, int(efficiency)));
+        case FurnitureUsageType::DEMON_RITUAL: {
+          vector<Creature*> toHeal;
+          for (auto c : getCreatures())
+            if (c->getBody().canHeal(HealthType::SPIRIT))
+              toHeal.push_back(c);
+          if (!toHeal.empty()) {
+            for (auto c : toHeal)
+              c->heal(double(efficiency) * 0.05 / toHeal.size());
+          } else
+            returnResource(CostInfo(ResourceId::DEMON_PIETY, int(efficiency)));
           break;
+        }
         case FurnitureUsageType::TRAIN:
           increaseLevel(ExperienceType::MELEE);
           break;

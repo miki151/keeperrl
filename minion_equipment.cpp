@@ -101,7 +101,7 @@ bool MinionEquipment::canUseItemType(const Creature* c, EquipmentType type, cons
     case EquipmentType::TORCH:
       return !c->isAffected(LastingEffect::NIGHT_VISION);
     case EquipmentType::HEALING:
-      return c->getBody().hasHealth();
+      return c->getBody().hasHealth(HealthType::FLESH);
     case EquipmentType::COMBAT_ITEM:
       return true;
     case EquipmentType::ARMOR:

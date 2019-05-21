@@ -1046,7 +1046,7 @@ class ByCollective : public Behaviour {
         collective->getTerritory().contains(creature->getPosition()))) {
       const static EnumSet<MinionActivity> healingActivities {MinionActivity::SLEEP};
       auto currentActivity = collective->getCurrentActivity(creature).activity;
-      if (creature->getBody().canHeal() && !creature->isAffected(LastingEffect::POISON) &&
+      if (creature->getBody().canHeal(HealthType::FLESH) && !creature->isAffected(LastingEffect::POISON) &&
           !healingActivities.contains(currentActivity))
         for (MinionActivity activity : healingActivities) {
           if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, activity) &&

@@ -179,17 +179,26 @@ void Body::setDeathSound(optional<SoundId> s) {
   deathSound = s;
 }
 
-bool Body::canHeal() const {
-  return health < 1;
+bool Body::canHeal(HealthType type) const {
+  return health < 1 && hasHealth(type);
 }
 
-bool Body::hasHealth() const {
+bool Body::hasAnyHealth() const {
+  for (auto type : ENUM_ALL(HealthType))
+    if (hasHealth(type))
+      return true;
+  return false;
+}
+
+bool Body::hasHealth(HealthType type) const {
   switch (material) {
     case Material::FLESH:
-    case Material::SPIRIT:
+      return !noHealth && type == HealthType::FLESH;
     case Material::FIRE:
-      return !noHealth;
-    default: return false;
+    case Material::SPIRIT:
+      return !noHealth && type == HealthType::SPIRIT;
+    default:
+      return false;
   }
 }
 
@@ -204,7 +213,7 @@ bool Body::isPartDamaged(BodyPart part, double damage) const {
       case BodyPart::TORSO: return 1.5;
     }
   }();
-  if (!hasHealth())
+  if (!hasAnyHealth())
     return Random.chance(damage / strength);
   if (material == Material::FLESH)
     return damage >= strength;
@@ -235,7 +244,7 @@ int Body::numLost(BodyPart part) const {
 }
 
 bool Body::fallsApartDueToLostBodyParts() const {
-  if (fallsApart && !hasHealth()) {
+  if (fallsApart && !hasAnyHealth()) {
     int ret = 0;
     for (BodyPart part : ENUM_ALL(BodyPart))
       ret += injuredBodyParts[part];
@@ -653,7 +662,7 @@ Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, do
     creature->you(MsgType::ARE, "critically wounded");
     return Body::HURT;
   } else {
-    if (hasHealth())
+    if (hasAnyHealth())
       creature->you(MsgType::ARE, "wounded");
     else if (attack.effect.empty()) {
       creature->you(MsgType::ARE, "not hurt");
@@ -721,19 +730,13 @@ double Body::getBodyPartHealth() const {
 }
 
 void Body::updateViewObject(ViewObject& obj) const {
-  if (hasHealth())
+  if (hasAnyHealth())
     obj.setAttribute(ViewObject::Attribute::HEALTH, health);
   else
     obj.setAttribute(ViewObject::Attribute::HEALTH, getBodyPartHealth());
   obj.setModifier(ViewObjectModifier::HEALTH_BAR);
-  switch (material) {
-    case Material::SPIRIT:
-    case Material::FIRE:
-      obj.setModifier(ViewObject::Modifier::SPIRIT_DAMAGE);
-      break;
-    default:
-      break;
-  }
+  if (hasHealth(HealthType::SPIRIT))
+    obj.setModifier(ViewObject::Modifier::SPIRIT_DAMAGE);
 }
 
 bool Body::heal(Creature* c, double amount) {
@@ -741,7 +744,7 @@ bool Body::heal(Creature* c, double amount) {
   if (health < 1) {
     health = min(1., health + amount);
     if (health >= 1) {
-      c->you(MsgType::ARE, "fully healed");
+      c->you(MsgType::ARE, hasHealth(HealthType::FLESH) ? "fully healed" : "fully materialized");
       health = 1;
       c->updateViewObject();
       return true;
@@ -847,7 +850,7 @@ bool Body::affectByFire(Creature* c, double amount) {
 }
 
 void Body::bleed(Creature* c, double amount) {
-  if (hasHealth()) {
+  if (hasAnyHealth()) {
     health -= amount;
     c->updateViewObject();
   }
@@ -973,7 +976,7 @@ optional<Sound> Body::getDeathSound() const {
 }
 
 optional<AnimationId> Body::getDeathAnimation() const {
-  if (isHumanoid() && hasHealth())
+  if (isHumanoid() && hasAnyHealth())
     return AnimationId::DEATH;
   else
     return none;
