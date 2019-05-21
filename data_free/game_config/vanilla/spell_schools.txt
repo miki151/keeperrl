@@ -33,6 +33,7 @@
     "haste2" 6
     "defense bonus2" 7
     "damage bonus2" 8
+    "magic cancellation" 9
   }
   "healer" SPELL
   {

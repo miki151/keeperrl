@@ -165,6 +165,14 @@
     sound = SPELL_SPEED_SELF
   }
   {
+    id =  "magic cancellation"
+    symbol = "🔮"
+    effect = Lasting MAGIC_CANCELLATION
+    range = 2
+    cooldown = 150
+    sound = SPELL_STR_BONUS
+  }
+  {
     id =  "directed blast"
     symbol = "💨"
     effect = Blast

@@ -167,6 +167,7 @@ static TimeInterval getDuration(const Creature* c, LastingEffect e) {
     case LastingEffect::MAGIC_VULNERABILITY:
     case LastingEffect::MELEE_VULNERABILITY:
     case LastingEffect::RANGED_VULNERABILITY:
+    case LastingEffect::MAGIC_CANCELLATION:
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
