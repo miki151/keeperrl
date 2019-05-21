@@ -319,6 +319,12 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
       RetiredGames ret;
       // we have to allow loading unknown view ids here
       ViewId::startContentIdGeneration();
+      for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_CAMPAIGN)))
+        if (isCompatible(getSaveVersion(info)))
+          if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
+            ret.addLocal(*saved, info);
+      for (int i : All(ret.getAllGames()))
+        ret.setActive(i, true);
       for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
         if (isCompatible(getSaveVersion(info)))
           if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
@@ -334,16 +340,6 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
       } else
         view->presentText("", "Failed to fetch list of retired dungeons from the server.");
       ret.sort();
-      return ret;
-    }
-    case CampaignType::CAMPAIGN: {
-      RetiredGames ret;
-      for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_CAMPAIGN)))
-        if (isCompatible(getSaveVersion(info)))
-          if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
-            ret.addLocal(*saved, info);
-      for (int i : All(ret.getAllGames()))
-        ret.setActive(i, true);
       return ret;
     }
     default:
@@ -382,7 +378,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random, const GameConfig* gameConfig,
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, gameConfig, *avatar);
       tileSet->setTilePaths(getTilePathsForAllMods());
-      if (auto setup = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::CAMPAIGN,
+      if (auto setup = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::FREE_PLAY,
           contentFactory.creatures.getNameGenerator()->getNext(NameGeneratorId::WORLD))) {
         auto name = options->getStringValue(OptionId::PLAYER_NAME);
         if (!name.empty())

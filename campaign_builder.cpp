@@ -17,7 +17,7 @@
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
   switch (campaign.type) {
-    case CampaignType::CAMPAIGN:
+    case CampaignType::FREE_PLAY:
     case CampaignType::QUICK_MAP:
     case CampaignType::SINGLE_KEEPER:
       return campaign.sites.getBounds().middle();
@@ -40,8 +40,6 @@ static void setCountLimits(Options* options) {
 vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
   switch (type) {
     case CampaignType::QUICK_MAP:
-    case CampaignType::CAMPAIGN:
-      return {};
     case CampaignType::ENDLESS:
       return {OptionId::LESSER_VILLAINS, OptionId::ALLIES};
     case CampaignType::FREE_PLAY:
@@ -57,15 +55,9 @@ vector<OptionId> CampaignBuilder::getPrimaryOptions() const {
 
 static vector<string> getCampaignTypeDescription(CampaignType type) {
   switch (type) {
-    case CampaignType::CAMPAIGN:
-      return {
-        "the main competitive mode"
-      };
     case CampaignType::FREE_PLAY:
       return {
-        "retired dungeons of other players",
-        "custom starting point and villains",
-        "highscores not recorded",
+        "the main game mode"
       };
     case CampaignType::SINGLE_KEEPER:
       return {
@@ -87,7 +79,6 @@ vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
   switch (getPlayerRole()) {
     case PlayerRole::KEEPER:
       return {
-        CampaignType::CAMPAIGN,
         CampaignType::FREE_PLAY,
         CampaignType::SINGLE_KEEPER,
         CampaignType::ENDLESS,
@@ -97,7 +88,6 @@ vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
       };
     case PlayerRole::ADVENTURER:
       return {
-        CampaignType::CAMPAIGN,
         CampaignType::FREE_PLAY,
       };
   }
@@ -226,8 +216,6 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
         10000
       };
     }
-    case CampaignType::CAMPAIGN:
-      return {4, 6, 2, 1};
     case CampaignType::ENDLESS:
       return {
         0,
@@ -282,7 +270,7 @@ void CampaignBuilder::placeVillains(Campaign& campaign, vector<Campaign::SiteInf
 VillainPlacement CampaignBuilder::getVillainPlacement(const Campaign& campaign, VillainType type) {
   VillainPlacement ret { [&campaign](int x) { return campaign.sites.getBounds().getXRange().contains(x);}, none };
   switch (campaign.getType()) {
-    case CampaignType::CAMPAIGN:
+    case CampaignType::FREE_PLAY:
       switch (type) {
         case VillainType::LESSER:
           ret.xPredicate = [](int x) { return x >= 5 && x < 12; };

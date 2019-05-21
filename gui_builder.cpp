@@ -3393,9 +3393,8 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
 
 static const char* getGameTypeName(CampaignType type) {
   switch (type) {
-    case CampaignType::CAMPAIGN: return "Campaign";
     case CampaignType::ENDLESS: return "Endless";
-    case CampaignType::FREE_PLAY: return "Free play";
+    case CampaignType::FREE_PLAY: return "Campaign";
     case CampaignType::SINGLE_KEEPER: return "Single map";
     case CampaignType::QUICK_MAP: return "Quick map";
   }

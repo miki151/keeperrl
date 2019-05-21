@@ -16,8 +16,6 @@ const Table<Campaign::SiteInfo>& Campaign::getSites() const {
 }
 
 bool Campaign::canEmbark(Vec2 pos) const {
-  if (type == CampaignType::CAMPAIGN)
-    return false;
   switch (playerRole) {
     case PlayerRole::ADVENTURER: return !!sites[pos].dweller;
     case PlayerRole::KEEPER: return !sites[pos].dweller && !sites[pos].blocked;
