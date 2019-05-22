@@ -24,7 +24,7 @@ static bool isDirectory(const string& path) {
 }
 
 bool DirectoryPath::exists() const {
-  return isDirectory(get());
+  return isDirectory(getPath());
 }
 
 void DirectoryPath::createIfDoesntExist() const {
@@ -67,10 +67,10 @@ vector<string> DirectoryPath::getSubDirs() const {
   return ret;
 }
 
-const char* DirectoryPath::get() const {
+const char* DirectoryPath::getPath() const {
   return path.data();
 }
 
 std::ostream& operator <<(std::ostream& d, const DirectoryPath& path) {
-  return d << path.get();
+  return d << path.getPath();
 }

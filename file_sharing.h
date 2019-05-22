@@ -20,7 +20,7 @@ class FileSharing {
     int version;
   };
   optional<vector<SiteInfo>> listSites();
-  optional<string> download(const string& filename, const DirectoryPath& dir, ProgressMeter&);
+  optional<string> download(const string& filename, const string& remoteDir, const DirectoryPath& dir, ProgressMeter&);
 
   typedef map<string, string> GameEvent;
   bool uploadGameEvent(const GameEvent&, bool requireGameEventsPermission = true);
@@ -42,7 +42,7 @@ class FileSharing {
   };
 
   optional<vector<OnlineModInfo>> getOnlineMods(int modVersion);
-  void downloadMod(const string& name, const DirectoryPath& modsDir);
+  optional<string> downloadMod(const string& name, const DirectoryPath& modsDir, ProgressMeter&);
 
   string downloadHighscores(int version);
 

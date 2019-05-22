@@ -44,7 +44,7 @@ optional<string> FilePath::readContents() const {
   return ss.str();
 }
 
-FilePath::FilePath(const DirectoryPath& dir, const string& f) : filename(f), fullPath(dir.get() + "/"_s + f) {
+FilePath::FilePath(const DirectoryPath& dir, const string& f) : filename(f), fullPath(dir.getPath() + "/"_s + f) {
 }
 
 FilePath::FilePath(const std::string& name, const std::string& path) : filename(name), fullPath(path) {

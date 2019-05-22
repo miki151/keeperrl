@@ -330,7 +330,6 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
         if (isCompatible(getSaveVersion(info)))
           if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
             ret.addLocal(*saved, info);
-      ViewId::validateContentIds();
       optional<vector<FileSharing::SiteInfo>> onlineSites;
       doWithSplash(SplashType::SMALL, "Fetching list of retired dungeons from the server...",
           [&] { onlineSites = fileSharing->listSites(); }, [&] { fileSharing->cancel(); });
@@ -340,6 +339,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
             ret.addOnline(elem.gameInfo, elem.fileInfo, elem.totalGames, elem.wonGames);
       } else
         view->presentText("", "Failed to fetch list of retired dungeons from the server.");
+      ViewId::validateContentIds();
       ret.sort();
       return ret;
     }
@@ -415,7 +415,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random, const GameConfig* gameConfig,
 void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
-  auto gameConfig = getGameConfig();
+  GameConfig gameConfig(dataFreePath.subdirectory(gameConfigSubdir), "vanilla");
   if (tileSet)
     tileSet->setTilePaths(TilePaths(&gameConfig));
   auto contentFactory = createContentFactory(&gameConfig);
@@ -447,9 +447,14 @@ void MainLoop::showCredits(const FilePath& path) {
 void MainLoop::showMods() {
   int currentIndex = 0;
   ScrollPosition scrollPos;
-  auto online = fileSharing->getOnlineMods(1);
+  optional<vector<FileSharing::OnlineModInfo>> onlineMods;
+  doWithSplash(SplashType::SMALL, "Downloading list of online mods...", 1,
+      [&] (ProgressMeter& meter) {
+        onlineMods = fileSharing->getOnlineMods(1);
+      });
+  auto modDir = dataFreePath.subdirectory(gameConfigSubdir);
   while (1) {
-    auto modList = dataFreePath.subdirectory(gameConfigSubdir).getSubDirs();
+    auto modList = modDir.getSubDirs();
     USER_CHECK(!modList.empty()) << "No game config data found, please make sure all game data is in place";
     options->setChoices(OptionId::CURRENT_MOD, modList);
     string currentMod = options->getStringValue(OptionId::CURRENT_MOD);
@@ -458,8 +463,8 @@ void MainLoop::showMods() {
     for (auto& mod : modList) {
       lines.emplace_back(mod + (mod == currentMod ? " [active]"_s : ""_s), ListElem::NORMAL);
     }
-    lines.emplace_back(online ? "Online mods:" : "Unable to fetch online mods", ListElem::TITLE);
-    for (auto& elem : *online) {
+    lines.emplace_back(onlineMods ? "Online mods:" : "Unable to fetch online mods", ListElem::TITLE);
+    for (auto& elem : *onlineMods) {
       lines.emplace_back("Download \"" + elem.name + "\"", ListElem::NORMAL);
       lines.emplace_back("Author: " + elem.author, ListElem::INACTIVE);
       lines.emplace_back(elem.description, ListElem::INACTIVE);
@@ -467,8 +472,24 @@ void MainLoop::showMods() {
     auto choice = view->chooseFromList("Mods", lines, currentIndex, MenuType::NORMAL, &scrollPos);
     if (!choice)
       break;
-    options->setValue(OptionId::CURRENT_MOD, *choice);
     currentIndex = *choice;
+    if (currentIndex < modList.size())
+      options->setValue(OptionId::CURRENT_MOD, currentIndex);
+    else {
+      auto downloadMod = (*onlineMods)[currentIndex - modList.size()].name;
+      atomic<bool> cancelled(false);
+      optional<string> error;
+      doWithSplash(SplashType::SMALL, "Downloading mod \"" + downloadMod + "\"...", 1,
+          [&] (ProgressMeter& meter) {
+            error = fileSharing->downloadMod(downloadMod, modDir, meter);
+          },
+          [&] {
+            cancelled = true;
+            fileSharing->cancel();
+          });
+      if (error && !cancelled)
+        view->presentText("Error downloading file", *error);
+    }
   }
 }
 
@@ -845,7 +866,7 @@ bool MainLoop::downloadGame(const string& filename) {
   optional<string> error;
   doWithSplash(SplashType::BIG, "Downloading " + filename + "...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->download(filename, userPath, meter);
+        error = fileSharing->download(filename, "uploads", userPath, meter);
       },
       [&] {
         cancelled = true;

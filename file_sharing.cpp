@@ -5,6 +5,7 @@
 #include "parse_game.h"
 #include "options.h"
 #include "text_serialization.h"
+#include "miniunz.h"
 
 #include <curl/curl.h>
 
@@ -48,7 +49,7 @@ static string escapeSpaces(string s) {
       ret += "%20";
     else
       ret += c;
-  return s;
+  return ret;
 }
 
 static string escapeEverything(const string& s) {
@@ -334,8 +335,11 @@ optional<vector<FileSharing::OnlineModInfo>> FileSharing::getOnlineMods(int modV
   return none;
 }
 
-void FileSharing::downloadMod(const string& name, const DirectoryPath& modsDir) {
-
+optional<string> FileSharing::downloadMod(const string& modName, const DirectoryPath& modsDir, ProgressMeter& meter) {
+  auto fileName = modName + ".zip";
+  if (auto err = download(fileName, "mods", modsDir, meter))
+    return err;
+  return unzip(modsDir.file(fileName).getPath(), modsDir.getPath());
 }
 
 void FileSharing::cancel() {
@@ -350,7 +354,7 @@ static size_t writeToFile(void *ptr, size_t size, size_t nmemb, FILE *stream) {
   return fwrite(ptr, size, nmemb, stream);
 }
 
-optional<string> FileSharing::download(const string& filename, const DirectoryPath& dir, ProgressMeter& meter) {
+optional<string> FileSharing::download(const string& filename, const string& remoteDir, const DirectoryPath& dir, ProgressMeter& meter) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return string("Downloading not enabled!");
   //progressFun = [&] (double p) { meter.setProgress(p);};
@@ -358,7 +362,7 @@ optional<string> FileSharing::download(const string& filename, const DirectoryPa
     auto path = dir.file(filename);
     INFO << "Downloading to " << path;
     if (FILE* fp = fopen(path.getPath(), "wb")) {
-      curl_easy_setopt(curl, CURLOPT_URL, escapeSpaces(uploadUrl + "/uploads/" + filename).c_str());
+      curl_easy_setopt(curl, CURLOPT_URL, escapeSpaces(uploadUrl + "/" + remoteDir + "/" + filename).c_str());
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeToFile);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
       // Internal CURL progressmeter must be disabled if we provide our own callback

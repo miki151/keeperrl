@@ -15,11 +15,11 @@ class DirectoryPath {
   void createIfDoesntExist() const;
   vector<FilePath> getFiles() const;
   vector<string> getSubDirs() const;
+  const char* getPath() const;
 
   private:
   friend class FilePath;
   friend ostream& operator << (ostream& d, const DirectoryPath& path);
-  const char* get() const;
   string path;
 };
 
