@@ -3147,6 +3147,8 @@ static const char* getText(AvatarMenuOption option) {
       return "Tutorial";
     case AvatarMenuOption::LOAD_GAME:
       return "Load game";
+    case AvatarMenuOption::CHANGE_MOD:
+      return "Mods";
     case AvatarMenuOption::GO_BACK:
       return "Go back";
   }

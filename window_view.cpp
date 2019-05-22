@@ -1014,7 +1014,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
       optionIndexes.push_back(i);
       ++count;
     }
-    if (options[i].getMod() != ListElem::TITLE)
+    if (options[i].getMod() != ListElem::TITLE && options[i].getMod() != ListElem::TEXT)
       ++elemCount;
   }
   if (optionIndexes.empty())

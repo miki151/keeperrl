@@ -184,8 +184,10 @@ optional<string> do_extract_currentfile(
     if ((*filename_withoutpath)=='\0')
     {
         auto dir = targetDir + "/" + filename_inzip;
-        if (auto err = mymkdir(dir.data()))
-          return "Failed to create directory \""_s + dir + "\"";
+//        if (auto err =
+            mymkdir(dir.data());
+//                )
+  //        return "Failed to create directory \""_s + dir + "\"";
     }
     else
     {
@@ -206,18 +208,18 @@ optional<string> do_extract_currentfile(
             fout=fopen(filename.data(),"wb");
 
             /* some zipfile don't contain directory alone before file */
-            if ((fout==NULL) && (filename_withoutpath!=(char*)filename_inzip))
+            /*if ((fout==NULL) && (filename_withoutpath!=(char*)filename_inzip))
             {
                 char c=*(filename_withoutpath-1);
                 *(filename_withoutpath-1)='\0';
                 makedir(write_filename);
                 *(filename_withoutpath-1)=c;
                 fout=fopen(write_filename,"wb");
-            }
+            }*/
 
             if (fout==NULL)
             {
-                return "error opening "_s + filename;
+                return "error creating file "_s + filename;
             }
         }
 

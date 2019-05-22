@@ -60,7 +60,7 @@ class MainLoop {
 
   void doWithSplash(SplashType, const string& text, function<void()> fun, function<void()> cancelFun = nullptr);
 
-  PGame prepareCampaign(RandomGen&, const GameConfig*, ContentFactory);
+  PGame prepareCampaign(RandomGen&);
   enum class ExitCondition;
   ExitCondition playGame(PGame, bool withMusic, bool noAutoSave,
       function<optional<ExitCondition> (WGame)> = nullptr, milliseconds stepTimeMilli = milliseconds{3});

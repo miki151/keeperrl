@@ -372,12 +372,15 @@ TilePaths MainLoop::getTilePathsForAllMods() const {
   return ret;
 }
 
-PGame MainLoop::prepareCampaign(RandomGen& random, const GameConfig* gameConfig,
-    ContentFactory contentFactory) {
+PGame MainLoop::prepareCampaign(RandomGen& random) {
   while (1) {
-    auto avatarChoice = getAvatarInfo(view, gameConfig, options, &contentFactory.creatures);
+    auto gameConfig = getGameConfig();
+    if (tileSet)
+      tileSet->setTilePaths(TilePaths(&gameConfig));
+    auto contentFactory = createContentFactory(&gameConfig);
+    auto avatarChoice = getAvatarInfo(view, &gameConfig, options, &contentFactory.creatures);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
-      CampaignBuilder builder(view, random, options, gameConfig, *avatar);
+      CampaignBuilder builder(view, random, options, &gameConfig, *avatar);
       tileSet->setTilePaths(getTilePathsForAllMods());
       if (auto setup = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::FREE_PLAY,
           contentFactory.creatures.getNameGenerator()->getNext(NameGeneratorId::WORLD))) {
@@ -385,10 +388,10 @@ PGame MainLoop::prepareCampaign(RandomGen& random, const GameConfig* gameConfig,
         if (!name.empty())
           avatar->playerCreature->getName().setFirst(name);
         avatar->playerCreature->getName().useFullTitle();
-        auto models = prepareCampaignModels(*setup, *avatar, random, gameConfig, &contentFactory);
+        auto models = prepareCampaignModels(*setup, *avatar, random, &gameConfig, &contentFactory);
         for (auto& f : models.factories)
           contentFactory.merge(std::move(f));
-        InitialContentFactory initialFactory(gameConfig);
+        InitialContentFactory initialFactory(&gameConfig);
         return Game::campaignGame(std::move(models.models), *setup, std::move(*avatar), &initialFactory, std::move(contentFactory));
       } else
         continue;
@@ -397,8 +400,11 @@ PGame MainLoop::prepareCampaign(RandomGen& random, const GameConfig* gameConfig,
       switch (option) {
         case AvatarMenuOption::GO_BACK:
           return nullptr;
+        case AvatarMenuOption::CHANGE_MOD:
+          showMods();
+          continue;
         case AvatarMenuOption::TUTORIAL:
-          if (auto ret = prepareTutorial(gameConfig))
+          if (auto ret = prepareTutorial(&gameConfig))
             return ret;
           else
             continue;
@@ -459,6 +465,7 @@ void MainLoop::showMods() {
     options->setChoices(OptionId::CURRENT_MOD, modList);
     string currentMod = options->getStringValue(OptionId::CURRENT_MOD);
     vector<ListElem> lines;
+    lines.emplace_back("Note: changing the active mod affects only newly started games.", ListElem::TEXT);
     lines.emplace_back("Installed mods", ListElem::TITLE);
     for (auto& mod : modList) {
       lines.emplace_back(mod + (mod == currentMod ? " [active]"_s : ""_s), ListElem::NORMAL);
@@ -466,10 +473,10 @@ void MainLoop::showMods() {
     lines.emplace_back(onlineMods ? "Online mods:" : "Unable to fetch online mods", ListElem::TITLE);
     for (auto& elem : *onlineMods) {
       lines.emplace_back("Download \"" + elem.name + "\"", ListElem::NORMAL);
-      lines.emplace_back("Author: " + elem.author, ListElem::INACTIVE);
-      lines.emplace_back(elem.description, ListElem::INACTIVE);
+      lines.emplace_back("Author: " + elem.author, ListElem::TEXT);
+      lines.emplace_back(elem.description, ListElem::TEXT);
     }
-    auto choice = view->chooseFromList("Mods", lines, currentIndex, MenuType::NORMAL, &scrollPos);
+    auto choice = view->chooseFromList("", lines, currentIndex, MenuType::NORMAL, &scrollPos);
     if (!choice)
       break;
     currentIndex = *choice;
@@ -556,17 +563,13 @@ void MainLoop::start(bool tilesPresent, bool quickGame) {
     playMenuMusic();
     optional<int> choice;
     choice = view->chooseFromList("", {
-        "Play", "Settings", "High scores", "Credits", "Mods", "Quit"}, lastIndex, MenuType::MAIN);
+        "Play", "Settings", "High scores", "Credits", "Quit"}, lastIndex, MenuType::MAIN);
     if (!choice)
       continue;
     lastIndex = *choice;
     switch (*choice) {
       case 0: {
-        auto gameConfig = getGameConfig();
-        if (tileSet)
-          tileSet->setTilePaths(TilePaths(&gameConfig));
-        auto contentFactory = createContentFactory(&gameConfig);
-        if (PGame game = prepareCampaign(Random, &gameConfig, std::move(contentFactory)))
+        if (PGame game = prepareCampaign(Random))
           playGame(std::move(game), true, false);
         view->reset();
         break;
@@ -574,8 +577,7 @@ void MainLoop::start(bool tilesPresent, bool quickGame) {
       case 1: options->handle(view, OptionSet::GENERAL); break;
       case 2: highscores->present(view); break;
       case 3: showCredits(dataFreePath.file("credits.txt")); break;
-      case 4: showMods(); break;
-      case 5: return;
+      case 4: return;
     }
   }
 }
