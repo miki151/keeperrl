@@ -580,47 +580,13 @@ void MainLoop::start(bool tilesPresent, bool quickGame) {
   }
 }
 
-#ifdef OSX // see thread comment in stdafx.h
-static thread::attributes getAttributes() {
-  thread::attributes attr;
-  attr.set_stack_size(4096 * 4000);
-  return attr;
-}
-
-static thread makeThread(function<void()> fun) {
-  return thread(getAttributes(), fun);
-}
-
-#else
-
-static thread makeThread(function<void()> fun) {
-  return thread(fun);
-}
-
-#endif
-
 void MainLoop::doWithSplash(SplashType type, const string& text, int totalProgress,
     function<void(ProgressMeter&)> fun, function<void()> cancelFun) {
   ProgressMeter meter(1.0 / totalProgress);
   if (useSingleThread)
     fun(meter);
-  else {
-    view->displaySplash(&meter, text, type, cancelFun);
-    thread t = makeThread([fun, &meter, this] {
-        try {
-          fun(meter);
-          view->clearSplash();
-        } catch (Progress::InterruptedException) {}
-      });
-    try {
-      view->refreshView();
-      t.join();
-    } catch (GameExitException e) {
-      Progress::interrupt();
-      t.join();
-      throw e;
-    }
-  }
+  else
+    view->doWithSplash(type, text, totalProgress, std::move(fun), std::move(cancelFun));
 }
 
 void MainLoop::doWithSplash(SplashType type, const string& text, function<void()> fun, function<void()> cancelFun) {

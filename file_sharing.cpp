@@ -224,6 +224,10 @@ string FileSharing::downloadHighscores(int version) {
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, dataFun);
       curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ret);
+      curl_easy_setopt(curl, CURLOPT_NOPROGRESS, false);
+      auto callback = getCallbackData(this);
+      curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &callback);
+      curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progressFunction);
       curl_easy_perform(curl);
       curl_easy_cleanup(curl);
     }

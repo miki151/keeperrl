@@ -16,6 +16,7 @@
 #include "stdafx.h"
 
 #include "view.h"
+#include "progress_meter.h"
 
 ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
@@ -73,4 +74,24 @@ View::View() {
 }
 
 View::~View() {
+}
+
+void View::doWithSplash(SplashType type, const string& text, int totalProgress,
+    function<void(ProgressMeter&)> fun, function<void()> cancelFun) {
+  ProgressMeter meter(1.0 / totalProgress);
+  displaySplash(&meter, text, type, cancelFun);
+  thread t = makeThread([fun, &meter, this] {
+      try {
+        fun(meter);
+        clearSplash();
+      } catch (Progress::InterruptedException) {}
+    });
+  try {
+    refreshView();
+    t.join();
+  } catch (GameExitException e) {
+    Progress::interrupt();
+    t.join();
+    throw e;
+  }
 }

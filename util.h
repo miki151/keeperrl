@@ -1595,6 +1595,9 @@ class AsyncLoop {
   thread t;
 };
 
+
+thread makeThread(function<void()> fun);
+
 template <typename T, typename... Args>
 auto bindMethod(void (T::*ptr) (Args...), T* t) {
   return [=](Args... a) { (t->*ptr)(a...);};

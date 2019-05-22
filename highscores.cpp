@@ -12,15 +12,26 @@ const static int highscoreVersion = 2;
 Highscores::Highscores(const FilePath& local, FileSharing& sharing, Options* o)
     : localPath(local), fileSharing(sharing), options(o) {
   localScores = fromFile(localPath);
-  remoteScores = fromString(fileSharing.downloadHighscores(highscoreVersion));
-  fileSharing.uploadHighscores(localPath);
+}
+
+vector<Highscores::Score> Highscores::downloadHighscores(View* view) const {
+  vector<Score> ret;
+  view->doWithSplash(SplashType::SMALL, "Downloading online highscores...", 1,
+      [&] (ProgressMeter&) {
+        ret = fromString(fileSharing.downloadHighscores(highscoreVersion));
+        fileSharing.uploadHighscores(localPath);
+      },
+      [&] {
+        fileSharing.cancel();
+      }
+  );
+  return ret;
 }
 
 void Highscores::add(Score s) {
   s.version = highscoreVersion;
   localScores.push_back(s);
   saveToFile(localScores, localPath);
-  remoteScores.push_back(s);
   fileSharing.uploadHighscores(localPath);
 }
 
@@ -104,7 +115,7 @@ bool sortByMostPoints(const Highscores::Score& a, const Highscores::Score& b) {
     if (!b.gameWon)
       return true;
     else
-      return a.points < b.points;
+      return a.points > b.points;
   } else
   if (b.gameWon)
     return false;
@@ -190,6 +201,7 @@ void Highscores::present(View* view, optional<Score> lastAdded) const {
   if (lastAdded && !lastAdded->isPublic())
     return;
   vector<HighscoreList> lists;
+  auto remoteScores = concat(downloadHighscores(view), localScores);
   for (auto& elem : getPublicScores())
     lists.push_back(fillScores(elem.name, lastAdded, localScores.filter(
         [&] (const Score& s) { return s.campaignType == elem.type && s.playerRole == elem.role;}), elem.sorting));

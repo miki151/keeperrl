@@ -142,6 +142,9 @@ class View {
 
   virtual void clearSplash() = 0;
 
+  void doWithSplash(SplashType, const string& text, int totalProgress,
+      function<void(ProgressMeter&)> fun, function<void()> cancelFun = nullptr);
+
   /** Shutdown routine.*/
   virtual void close() = 0;
 
