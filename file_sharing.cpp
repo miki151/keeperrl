@@ -317,7 +317,25 @@ bool FileSharing::uploadBoardMessage(const string& gameId, int hash, const strin
       { "boardId", toString(hash) },
       { "author", author },
       { "text", text }
-  }, false);
+                         }, false);
+}
+
+static optional<FileSharing::OnlineModInfo> parseModInfo(const vector<string>& fields) {
+  if (fields.size() >= 3)
+    return FileSharing::OnlineModInfo{unescapeEverything(fields[0]), unescapeEverything(fields[1]), unescapeEverything(fields[2])};
+  else
+    return none;
+}
+
+optional<vector<FileSharing::OnlineModInfo>> FileSharing::getOnlineMods(int modVersion) {
+  if (options.getBoolValue(OptionId::ONLINE))
+    if (auto content = downloadContent(uploadUrl + "/get_mods.php?version=" + toString(modVersion)))
+      return parseLines<FileSharing::OnlineModInfo>(*content, parseModInfo);
+  return none;
+}
+
+void FileSharing::downloadMod(const string& name, const DirectoryPath& modsDir) {
+
 }
 
 void FileSharing::cancel() {

@@ -116,7 +116,6 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::GAME_EVENTS,
       OptionId::AUTOSAVE,
       OptionId::WASD_SCROLLING,
-      OptionId::CURRENT_MOD,
 #ifndef RELEASE
       OptionId::KEEP_SAVEFILES,
       OptionId::SHOW_MAP,

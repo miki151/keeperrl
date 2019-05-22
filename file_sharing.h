@@ -35,6 +35,15 @@ class FileSharing {
   optional<vector<BoardMessage>> getBoardMessages(int boardId);
   bool uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text);
 
+  struct OnlineModInfo {
+    string name;
+    string author;
+    string description;
+  };
+
+  optional<vector<OnlineModInfo>> getOnlineMods(int modVersion);
+  void downloadMod(const string& name, const DirectoryPath& modsDir);
+
   string downloadHighscores(int version);
 
   void cancel();

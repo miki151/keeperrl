@@ -39,6 +39,7 @@
 #include "tileset.h"
 #include "content_factory.h"
 #include "initial_content_factory.h"
+#include "scroll_position.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, TileSet* tileSet, bool singleThread, int sv)
@@ -425,7 +426,7 @@ void MainLoop::splashScreen() {
       false, true);
 }
 
-void MainLoop::showCredits(const FilePath& path, View* view) {
+void MainLoop::showCredits(const FilePath& path) {
   ifstream in(path.getPath());
   CHECK(!!in);
   vector<ListElem> lines;
@@ -441,6 +442,34 @@ void MainLoop::showCredits(const FilePath& path, View* view) {
       lines.emplace_back(s, ListElem::NORMAL);
   }
   view->presentList("Credits", lines, false);
+}
+
+void MainLoop::showMods() {
+  int currentIndex = 0;
+  ScrollPosition scrollPos;
+  auto online = fileSharing->getOnlineMods(1);
+  while (1) {
+    auto modList = dataFreePath.subdirectory(gameConfigSubdir).getSubDirs();
+    USER_CHECK(!modList.empty()) << "No game config data found, please make sure all game data is in place";
+    options->setChoices(OptionId::CURRENT_MOD, modList);
+    string currentMod = options->getStringValue(OptionId::CURRENT_MOD);
+    vector<ListElem> lines;
+    lines.emplace_back("Installed mods", ListElem::TITLE);
+    for (auto& mod : modList) {
+      lines.emplace_back(mod + (mod == currentMod ? " [active]"_s : ""_s), ListElem::NORMAL);
+    }
+    lines.emplace_back(online ? "Online mods:" : "Unable to fetch online mods", ListElem::TITLE);
+    for (auto& elem : *online) {
+      lines.emplace_back("Download \"" + elem.name + "\"", ListElem::NORMAL);
+      lines.emplace_back("Author: " + elem.author, ListElem::INACTIVE);
+      lines.emplace_back(elem.description, ListElem::INACTIVE);
+    }
+    auto choice = view->chooseFromList("Mods", lines, currentIndex, MenuType::NORMAL, &scrollPos);
+    if (!choice)
+      break;
+    options->setValue(OptionId::CURRENT_MOD, *choice);
+    currentIndex = *choice;
+  }
 }
 
 void MainLoop::playMenuMusic() {
@@ -506,7 +535,7 @@ void MainLoop::start(bool tilesPresent, bool quickGame) {
     playMenuMusic();
     optional<int> choice;
     choice = view->chooseFromList("", {
-        "Play", "Settings", "High scores", "Credits", "Quit"}, lastIndex, MenuType::MAIN);
+        "Play", "Settings", "High scores", "Credits", "Mods", "Quit"}, lastIndex, MenuType::MAIN);
     if (!choice)
       continue;
     lastIndex = *choice;
@@ -523,8 +552,9 @@ void MainLoop::start(bool tilesPresent, bool quickGame) {
       }
       case 1: options->handle(view, OptionSet::GENERAL); break;
       case 2: highscores->present(view); break;
-      case 3: showCredits(dataFreePath.file("credits.txt"), view); break;
-      case 4: return;
+      case 3: showCredits(dataFreePath.file("credits.txt")); break;
+      case 4: showMods(); break;
+      case 5: return;
     }
   }
 }

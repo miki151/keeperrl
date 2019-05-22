@@ -65,8 +65,8 @@ class MainLoop {
   ExitCondition playGame(PGame, bool withMusic, bool noAutoSave,
       function<optional<ExitCondition> (WGame)> = nullptr, milliseconds stepTimeMilli = milliseconds{3});
   void splashScreen();
-  void showCredits(const FilePath& path, View*);
-
+  void showCredits(const FilePath& path);
+  void showMods();
   void playMenuMusic();
 
   ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen& random,
