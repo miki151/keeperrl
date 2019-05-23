@@ -24,9 +24,13 @@ RICH_ENUM(BiomeId,
 );
 
 struct StockpileInfo {
-  enum Type { GOLD, MINERALS } type;
-  int number;
+  enum class Type;
+  Type SERIAL(type);
+  int SERIAL(number);
+  SERIALIZE_ALL(type, number)
 };
+
+RICH_ENUM(StockpileInfo::Type, GOLD, MINERALS);
 
 RICH_ENUM(
   SettlementType,
@@ -56,27 +60,28 @@ RICH_ENUM(
 class CollectiveBuilder;
 
 struct SettlementInfo {
-  SettlementType type;
-  InhabitantsInfo inhabitants;
-  optional<InhabitantsInfo> corpses;
-  optional<string> locationName;
-  TribeId tribe;
-  optional<string> race;
-  BuildingId buildingId;
+  SettlementType SERIAL(type);
+  InhabitantsInfo SERIAL(inhabitants);
+  optional<InhabitantsInfo> SERIAL(corpses);
+  optional<string> SERIAL(locationName);
+  TribeId SERIAL(tribe);
+  optional<string> SERIAL(race);
+  BuildingId SERIAL(buildingId);
   vector<StairKey> downStairs;
   vector<StairKey> upStairs;
-  vector<StockpileInfo> stockpiles;
-  optional<ItemType> elderLoot;
-  optional<ItemFactory> shopFactory;
-  bool shopkeeperDead;
+  vector<StockpileInfo> SERIAL(stockpiles);
+  optional<ItemType> SERIAL(elderLoot);
+  optional<ItemFactory> SERIAL(shopFactory);
+  bool SERIAL(shopkeeperDead) = false;
   CollectiveBuilder* collective;
-  optional<FurnitureListId> furniture;
-  optional<FurnitureListId> outsideFeatures;
-  bool closeToPlayer;
-  bool dontConnectCave;
-  bool dontBuildRoad;
-  bool anyPlayerDistance;
-  int surroundWithResources;
-  optional<FurnitureType> extraResources;
-  optional<int> cropsDistance;
+  optional<FurnitureListId> SERIAL(furniture);
+  optional<FurnitureListId> SERIAL(outsideFeatures);
+  bool SERIAL(closeToPlayer) = false;
+  bool SERIAL(dontConnectCave) = false;
+  bool SERIAL(dontBuildRoad) = false;
+  bool SERIAL(anyPlayerDistance) = false;
+  int SERIAL(surroundWithResources) = 0;
+  optional<FurnitureType> SERIAL(extraResources);
+  optional<int> SERIAL(cropsDistance);
+  SERIALIZE_ALL(NAMED(type), OPTION(inhabitants), NAMED(corpses), NAMED(locationName), NAMED(tribe), NAMED(race), NAMED(buildingId), OPTION(stockpiles), NAMED(elderLoot), NAMED(shopFactory), OPTION(shopkeeperDead), NAMED(furniture), NAMED(outsideFeatures), OPTION(closeToPlayer), OPTION(dontConnectCave), OPTION(dontBuildRoad), OPTION(anyPlayerDistance), OPTION(surroundWithResources), NAMED(extraResources), NAMED(cropsDistance))
 };

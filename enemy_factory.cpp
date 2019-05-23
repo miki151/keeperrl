@@ -287,7 +287,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.locationName = getVillageName();
             c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD_CASTLE;
-            c.stockpiles = LIST({StockpileInfo::GOLD, 160});
+            c.stockpiles = LIST({StockpileInfo::Type::GOLD, 160});
             c.elderLoot = ItemType(ItemType::TechBook{"beast mutation"});
             c.furniture = FurnitureListId("roomFurniture");
             c.outsideFeatures = FurnitureListId("castleOutside");),
@@ -324,7 +324,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
                     "COW", "PIG", "DOG"));
             c.locationName = getVillageName();
             c.race = "humans"_s;
-            c.stockpiles = LIST({StockpileInfo::GOLD, 140});
+            c.stockpiles = LIST({StockpileInfo::Type::GOLD, 140});
             c.buildingId = BuildingId::BRICK;
             c.shopFactory = ItemFactory::villageShop();
             c.furniture = FurnitureListId("castleFurniture");
@@ -413,7 +413,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.locationName = getVillageName();
             c.race = "dwarves"_s;
             c.buildingId = BuildingId::DUNGEON;
-            c.stockpiles = LIST({StockpileInfo::GOLD, 200}, {StockpileInfo::MINERALS, 120});
+            c.stockpiles = LIST({StockpileInfo::Type::GOLD, 200}, {StockpileInfo::Type::MINERALS, 120});
             c.shopFactory = ItemFactory::dwarfShop();
             c.outsideFeatures = FurnitureListId("dungeonOutside");
             c.surroundWithResources = 5;
@@ -446,7 +446,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.locationName = getVillageName();
             c.tribe = TribeId::getElf();
             c.race = "elves"_s;
-            c.stockpiles = LIST({StockpileInfo::GOLD, 100});
+            c.stockpiles = LIST({StockpileInfo::Type::GOLD, 100});
             c.buildingId = BuildingId::WOOD;
             c.elderLoot = ItemType(ItemType::TechBook{"master sorcery"});
             c.furniture = FurnitureListId("roomFurniture");
@@ -819,7 +819,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
                     "PIG", "DOG"));
             c.race = "humans"_s;
             c.buildingId = BuildingId::WOOD;
-            c.stockpiles = LIST({StockpileInfo::GOLD, 50});
+            c.stockpiles = LIST({StockpileInfo::Type::GOLD, 50});
             c.cropsDistance = 16;
             c.furniture = FurnitureListId("roomFurniture");),
           CollectiveConfig::noImmigrants());
@@ -853,7 +853,7 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.inhabitants.fighters = CreatureList(random.get(3, 7), "KOBOLD");
             c.race = "kobolds"_s;
             c.buildingId = BuildingId::DUNGEON;
-            c.stockpiles = LIST({StockpileInfo::MINERALS, 60});),
+            c.stockpiles = LIST({StockpileInfo::Type::MINERALS, 60});),
           CollectiveConfig::noImmigrants());
     case EnemyId::DWARF_CAVE:
       return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -863,8 +863,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.inhabitants.civilians = CreatureList(random.get(2, 5), "DWARF_FEMALE");
             c.race = "dwarves"_s;
             c.buildingId = BuildingId::DUNGEON;
-            c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::MINERALS, 60},
-                StockpileInfo{StockpileInfo::GOLD, 60}));
+            c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::Type::MINERALS, 60},
+                StockpileInfo{StockpileInfo::Type::GOLD, 60}));
             c.outsideFeatures = FurnitureListId("dungeonOutside");
             c.furniture = FurnitureListId("roomFurniture");
             c.surroundWithResources = 6;
@@ -899,8 +899,8 @@ EnemyInfo EnemyFactory::getById(EnemyId enemyId) const {
             c.inhabitants.civilians = CreatureList(random.get(2, 5), "DARK_ELF");
             c.race = "dark elves"_s;
             c.buildingId = BuildingId::DUNGEON;
-            c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::MINERALS, 60},
-                StockpileInfo{StockpileInfo::GOLD, 60}));
+            c.stockpiles = LIST(random.choose(StockpileInfo{StockpileInfo::Type::MINERALS, 60},
+                StockpileInfo{StockpileInfo::Type::GOLD, 60}));
             c.outsideFeatures = FurnitureListId("dungeonOutside");
             c.furniture = FurnitureListId("roomFurniture");
             c.surroundWithResources = 6;

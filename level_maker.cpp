@@ -1984,11 +1984,11 @@ static PMakerQueue stockpileMaker(StockpileInfo info) {
   ItemFactory items;
   optional<FurnitureType> furniture;
   switch (info.type) {
-    case StockpileInfo::GOLD:
+    case StockpileInfo::Type::GOLD:
       furniture = FurnitureType("TREASURE_CHEST");
       items = ItemFactory::singleType(ItemType::GoldPiece{});
       break;
-    case StockpileInfo::MINERALS:
+    case StockpileInfo::Type::MINERALS:
       items = ItemFactory::minerals();
       break;
   }
