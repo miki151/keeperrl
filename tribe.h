@@ -57,9 +57,9 @@ class TribeId {
 
   SERIALIZATION_DECL(TribeId);
 
+  enum class KeyType;
   private:
   friend class TribeSet;
-  typedef char KeyType;
   TribeId(KeyType key);
   KeyType SERIAL(key);
   static optional<pair<TribeId, TribeId>> serialSwitch;

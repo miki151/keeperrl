@@ -3,6 +3,8 @@
 #include "monster_ai.h"
 #include "minion_trait.h"
 
+SERIALIZE_DEF(InhabitantsInfo, NAMED(leader), NAMED(fighters), NAMED(civilians))
+
 auto InhabitantsInfo::generateCreatures(RandomGen& random, CreatureFactory* factory, TribeId tribe,
     MonsterAIFactory aiFactory) -> Generated {
   Generated ret;
@@ -22,3 +24,7 @@ auto InhabitantsInfo::generateCreatures(RandomGen& random, CreatureFactory* fact
   addCreatures(civilians, EnumSet<MinionTrait>{});
   return ret;
 }
+
+#include "pretty_archive.h"
+template
+void InhabitantsInfo::serialize(PrettyInputArchive& ar1, unsigned);

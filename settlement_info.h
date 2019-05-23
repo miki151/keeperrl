@@ -1,12 +1,21 @@
 #pragma once
 
+#include "util.h"
 #include "item_type.h"
 #include "creature_factory.h"
 #include "item_factory.h"
 #include "furniture_list.h"
 #include "inhabitants_info.h"
 
-enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON, DUNGEON_SURFACE, RUINS};
+RICH_ENUM(BuildingId,
+  WOOD,
+  MUD,
+  BRICK,
+  WOOD_CASTLE,
+  DUNGEON,
+  DUNGEON_SURFACE,
+  RUINS
+);
 
 RICH_ENUM(BiomeId,
   GRASSLAND,
@@ -19,7 +28,8 @@ struct StockpileInfo {
   int number;
 };
 
-enum class SettlementType {
+RICH_ENUM(
+  SettlementType,
   VILLAGE,
   SMALL_VILLAGE,
   FORREST_VILLAGE,
@@ -40,8 +50,8 @@ enum class SettlementType {
   ISLAND_VAULT_DOOR,
   CEMETERY,
   SWAMP,
-  MOUNTAIN_LAKE,
-};
+  MOUNTAIN_LAKE
+);
 
 class CollectiveBuilder;
 
