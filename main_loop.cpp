@@ -465,7 +465,7 @@ void MainLoop::showMods() {
     options->setChoices(OptionId::CURRENT_MOD, modList);
     string currentMod = options->getStringValue(OptionId::CURRENT_MOD);
     vector<ListElem> lines;
-    lines.emplace_back("Note: changing the active mod affects only newly started games.", ListElem::TEXT);
+    lines.emplace_back("Note: changing the active mod affects only newly started games.", ListElem::HELP_TEXT);
     lines.emplace_back("Installed mods", ListElem::TITLE);
     for (auto& mod : modList) {
       lines.emplace_back(mod + (mod == currentMod ? " [active]"_s : ""_s), ListElem::NORMAL);
@@ -473,8 +473,8 @@ void MainLoop::showMods() {
     lines.emplace_back(onlineMods ? "Online mods:" : "Unable to fetch online mods", ListElem::TITLE);
     for (auto& elem : *onlineMods) {
       lines.emplace_back("Download \"" + elem.name + "\"", ListElem::NORMAL);
-      lines.emplace_back("Author: " + elem.author, ListElem::TEXT);
-      lines.emplace_back(elem.description, ListElem::TEXT);
+      lines.emplace_back("Author: " + elem.author, ListElem::HELP_TEXT);
+      lines.emplace_back(elem.description, ListElem::HELP_TEXT);
     }
     auto choice = view->chooseFromList("", lines, currentIndex, MenuType::NORMAL, &scrollPos);
     if (!choice)

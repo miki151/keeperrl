@@ -49,6 +49,7 @@ class ListElem {
   enum ElemMod {
     NORMAL,
     TEXT,
+    HELP_TEXT,
     TITLE,
     INACTIVE,
   };

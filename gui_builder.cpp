@@ -2554,16 +2554,38 @@ Rectangle GuiBuilder::getMenuPosition(MenuType type, int numElems) {
   return Rectangle(xSpacing, ySpacing + yOffset, xSpacing + windowWidth, renderer.getSize().y - ySpacing + yOffset);
 }
 
-vector<SGuiElem> GuiBuilder::getMultiLine(const string& text, Color color, MenuType menuType, int maxWidth) {
+vector<SGuiElem> GuiBuilder::getMultiLine(const string& text, Color color, MenuType menuType, int maxWidth, int fontSize) {
   vector<SGuiElem> ret;
-  for (const string& s : gui.breakText(text, maxWidth)) {
+  for (const string& s : gui.breakText(text, maxWidth, fontSize)) {
     if (menuType != MenuType::MAIN)
-      ret.push_back(gui.label(s, color));
+      ret.push_back(gui.label(s, fontSize, color));
     else
       ret.push_back(gui.mainMenuLabelBg(s, menuLabelVPadding));
 
   }
   return ret;
+}
+
+static int getFontSize(ListElem::ElemMod mod) {
+  switch (mod) {
+    case ListElem::HELP_TEXT:
+      return Renderer::smallTextSize;
+    default:
+      return Renderer::textSize;
+  }
+}
+
+Color GuiBuilder::getElemColor(ListElem::ElemMod mod) {
+  switch (mod) {
+    case ListElem::TITLE:
+      return gui.titleText;
+    case ListElem::HELP_TEXT:
+    case ListElem::INACTIVE:
+      return gui.inactiveText;
+    case ListElem::TEXT:
+    case ListElem::NORMAL:
+      return gui.text;
+  }
 }
 
 SGuiElem GuiBuilder::getHighlight(SGuiElem line, MenuType type, const string& label, int numActive, optional<int>* highlight) {
@@ -2575,6 +2597,15 @@ SGuiElem GuiBuilder::getHighlight(SGuiElem line, MenuType type, const string& la
       return gui.stack(gui.mouseHighlight(
           gui.leftMargin(0, gui.translate(gui.uiHighlightLine(), Vec2(0, 0))),
           numActive, highlight), std::move(line));
+  }
+}
+
+static int getLineHeight(ListElem::ElemMod mod) {
+  switch (mod) {
+    case ListElem::HELP_TEXT:
+      return legendLineHeight * 2 / 3;
+    default:
+      return legendLineHeight;
   }
 }
 
@@ -2597,16 +2628,10 @@ SGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
   if (menuType == MenuType::MAIN)
     columnWidth = 1000000;
   for (int i : All(options)) {
-    Color color;
-    switch (options[i].getMod()) {
-      case ListElem::TITLE: color = gui.titleText; break;
-      case ListElem::INACTIVE: color = gui.inactiveText; break;
-      case ListElem::TEXT:
-      case ListElem::NORMAL: color = gui.text; break;
-    }
+    Color color = getElemColor(options[i].getMod());
     if (auto p = options[i].getMessagePriority())
       color = getMessageColor(*p);
-    vector<SGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType, columnWidth);
+    vector<SGuiElem> label1 = getMultiLine(options[i].getText(), color, menuType, columnWidth, getFontSize(options[i].getMod()));
     if (options.size() == 1 && label1.size() > 1) { // hacky way of checking that we display a wall of text
       for (auto& line : label1)
         lines.addElem(std::move(line));
@@ -2614,7 +2639,7 @@ SGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& op
     }
     SGuiElem line;
     if (menuType != MenuType::MAIN)
-      line = gui.verticalList(std::move(label1), legendLineHeight);
+      line = gui.verticalList(std::move(label1), getLineHeight(options[i].getMod()));
     else
       line = std::move(label1.getOnlyElement());
     if (!options[i].getTip().empty())

@@ -61,7 +61,7 @@ class GuiFactory {
       const optional<DirectoryPath>& nonFreeImages);
   void loadImages();
 
-  vector<string> breakText(const string& text, int maxWidth);
+  vector<string> breakText(const string& text, int maxWidth, int fontSize);
 
   DragContainer& getDragContainer();
   void propagateEvent(const Event&, vector<SGuiElem>);

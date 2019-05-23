@@ -490,8 +490,8 @@ static vector<string> breakText(Renderer& renderer, const string& text, int maxW
   return rows;
 }
 
-vector<string> GuiFactory::breakText(const string& text, int maxWidth) {
-  return ::breakText(renderer, text, maxWidth);
+vector<string> GuiFactory::breakText(const string& text, int maxWidth, int fontSize) {
+  return ::breakText(renderer, text, maxWidth, fontSize);
 }
 
 class VariableLabel : public GuiElem {

@@ -260,7 +260,7 @@ class GuiBuilder {
   SGuiElem drawMinionAndLevel(ViewId viewId, int level, int iconMult);
   vector<SDL::SDL_Keysym> getConfirmationKeys();
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
-  vector<SGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth);
+  vector<SGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth, int fontSize);
   SGuiElem getHighlight(SGuiElem line, MenuType, const string& label, int numActive, optional<int>* highlight);
   string getPlayerTitle(PlayerInfo&);
   SDL::SDL_KeyboardEvent getHotkeyEvent(char);
@@ -299,6 +299,7 @@ class GuiBuilder {
   SGuiElem drawChosenCreatureButtons(PlayerRole, shared_ptr<int> chosenAvatar, shared_ptr<int> gender,
       const vector<View::AvatarData>&);
   SGuiElem drawCreatureList(const vector<CreatureInfo>&, function<void(UniqueEntity<Creature>::Id)> button);
+  Color getElemColor(ListElem::ElemMod);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,
