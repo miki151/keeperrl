@@ -34,6 +34,7 @@
 #include "furniture.h"
 #include "enemy_info.h"
 #include "name_generator.h"
+#include "furniture_list.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename) {
@@ -72,3 +73,4 @@ ADD_IMP(vector<TileInfo>)
 ADD_IMP(vector<pair<FurnitureType, Furniture>>)
 ADD_IMP(map<EnemyId, EnemyInfo>)
 ADD_IMP(map<ItemListId, ItemList>)
+ADD_IMP(map<FurnitureListId, FurnitureList>)

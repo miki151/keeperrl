@@ -48,6 +48,7 @@ class FurnitureFactory {
 
   private:
   map<FurnitureType, OwnerPointer<Furniture>> SERIAL(furniture);
+  map<FurnitureListId, FurnitureList> SERIAL(furnitureLists);
   EnumMap<ExperienceType, vector<FurnitureType>> SERIAL(trainingFurniture);
   unordered_map<FurnitureType, vector<FurnitureType>, CustomHash<FurnitureType>> SERIAL(upgrades);
   vector<FurnitureType> SERIAL(needingLight);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "furniture_type.h"
+#include "furniture_list_id.h"
 
 struct FurnitureParams;
 class TribeId;
@@ -12,9 +13,9 @@ class FurnitureList {
   FurnitureParams getRandom(RandomGen&, TribeId);
   int numUnique() const;
 
-  private:
-  vector<pair<FurnitureType, double>> elems;
-  vector<FurnitureType> unique;
-};
+  SERIALIZATION_DECL(FurnitureList)
 
-using FurnitureListId = string;
+  private:
+  vector<pair<FurnitureType, double>> SERIAL(elems);
+  vector<FurnitureType> SERIAL(unique);
+};

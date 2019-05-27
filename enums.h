@@ -116,3 +116,4 @@ using TechId = string;
 class FurnitureType;
 class ItemListId;
 class EnemyId;
+class FurnitureListId;

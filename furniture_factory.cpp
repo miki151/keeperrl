@@ -20,7 +20,7 @@
 #include "furniture_on_built.h"
 #include "game_config.h"
 
-SERIALIZE_DEF(FurnitureFactory, furniture, trainingFurniture, upgrades, bedFurniture, needingLight, constructionObjects)
+SERIALIZE_DEF(FurnitureFactory, furniture, furnitureLists, trainingFurniture, upgrades, bedFurniture, needingLight, constructionObjects)
 SERIALIZATION_CONSTRUCTOR_IMPL(FurnitureFactory)
 
 bool FurnitureParams::operator == (const FurnitureParams& p) const {
@@ -40,68 +40,8 @@ optional<string> FurnitureFactory::getPopulationIncreaseDescription(FurnitureTyp
 }
 
 FurnitureList FurnitureFactory::getFurnitureList(FurnitureListId id) const {
-  if (id == "roomFurniture")
-    return FurnitureList({
-        {FurnitureType("BED1"), 2},
-        {FurnitureType("GROUND_TORCH"), 1},
-        {FurnitureType("CHEST"), 2}
-    });
-  if (id == "castleFurniture")
-    return FurnitureList({
-        {FurnitureType("BED1"), 2},
-        {FurnitureType("GROUND_TORCH"), 1},
-        {FurnitureType("FOUNTAIN"), 1},
-        {FurnitureType("CHEST"), 2}
-    });
-  if (id == "dungeonOutside")
-    return FurnitureList({
-        {FurnitureType("GROUND_TORCH"), 1},
-    });
-  if (id == "castleOutside")
-    return FurnitureList({
-        {FurnitureType("INVISIBLE_ALARM"), 10},
-        {FurnitureType("GROUND_TORCH"), 1},
-        {FurnitureType("WELL"), 1},
-    });
-  if (id == "villageOutside")
-    return FurnitureList({
-        {FurnitureType("GROUND_TORCH"), 1},
-        {FurnitureType("WELL"), 1},
-    });
-  if (id == "vegetationLow")
-    return FurnitureList({
-        {FurnitureType("CANIF_TREE"), 2},
-        {FurnitureType("BUSH"), 1 }
-    });
-  if (id == "vegetationHigh")
-    return FurnitureList({
-        {FurnitureType("DECID_TREE"), 2},
-        {FurnitureType("BUSH"), 1 }
-    });
-  if (id == "cryptCoffins")
-    return FurnitureList({
-        {FurnitureType("LOOT_COFFIN"), 1},
-    }, {
-        FurnitureType("VAMPIRE_COFFIN")
-    });  
-  if (id == "towerInside")
-    return FurnitureList({
-        {FurnitureType("GROUND_TORCH"), 1},
-    });
-  if (id == "graves")
-    return FurnitureList({
-        {FurnitureType("GRAVE"), 1},
-    });
-  if (id == "templeInside")
-    return FurnitureList({
-        {FurnitureType("CHEST"), 1}
-    }, {FurnitureType("ALTAR")});
-  if (id == "witchInside")
-    return FurnitureList({
-        {FurnitureType("LABORATORY"), 1}
-    });
-  USER_FATAL << "FurnitueListId not found: " << id;
-  fail();
+  CHECK(furnitureLists.count(id)) << "Furniture list not found \"" << id.data() << "\"";
+  return furnitureLists.at(id);
 }
 
 int FurnitureFactory::getPopulationIncrease(FurnitureType type, int numBuilt) const {
@@ -141,6 +81,12 @@ FurnitureFactory::FurnitureFactory(const GameConfig* config) {
       furniture.insert(make_pair(elem.first, makeOwner<Furniture>(elem.second)));
     }
     FurnitureType::validateContentIds();
+    FurnitureListId::startContentIdGeneration();
+    if (auto res = config->readObject(furnitureLists, GameConfigId::FURNITURE_LISTS)) {
+      USER_INFO << *res;
+      continue;
+    }
+    FurnitureListId::validateContentIds();
     break;
   }
   initializeInfos();

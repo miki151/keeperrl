@@ -1,6 +1,9 @@
 #include "furniture_list.h"
 #include "furniture_factory.h"
 
+SERIALIZE_DEF(FurnitureList, NAMED(elems), OPTION(unique))
+SERIALIZATION_CONSTRUCTOR_IMPL(FurnitureList)
+
 FurnitureList::FurnitureList(FurnitureType t) : FurnitureList({{t, 1}}) {
 }
 
@@ -20,3 +23,7 @@ FurnitureParams FurnitureList::getRandom(RandomGen& random, TribeId tribe) {
 int FurnitureList::numUnique() const {
   return unique.size();
 }
+
+#include "pretty_archive.h"
+template
+void FurnitureList::serialize(PrettyInputArchive& ar1, unsigned);

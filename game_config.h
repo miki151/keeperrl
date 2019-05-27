@@ -23,6 +23,7 @@ enum class GameConfigId {
   GAME_INTRO_TEXT,
   TILES,
   FURNITURE,
+  FURNITURE_LISTS,
   ENEMIES,
   ITEM_LISTS
 };
