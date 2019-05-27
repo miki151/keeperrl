@@ -662,7 +662,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         renderer.drawTile(pos + move, {coord}, size, color);
     }
     if (object.hasModifier(ViewObject::Modifier::AURA))
-      renderer.drawTile(pos + move, renderer.getTileSet().getTileCoord("aura"), size);
+      renderer.drawTile(pos + move, renderer.getTileSet().getTileCoord("item_aura"), size);
     auto& shortShadow = renderer.getTileSet().getTileCoord("short_shadow");
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
       renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
