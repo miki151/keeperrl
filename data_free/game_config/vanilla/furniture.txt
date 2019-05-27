@@ -218,6 +218,7 @@
     strength = 40
     upgrade = "BED1"
     bedType = BED
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "BED3"
   {
@@ -231,6 +232,7 @@
     strength = 40
     upgrade = "BED2"
     bedType = BED
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "GRAVE"
   {
@@ -337,7 +339,6 @@
     blockVision = { NORMAL }
     destroyedRemains = "TREE_TRUNK"
     burntRemains = "BURNT_TREE"
-    canSilentlyReplace = true
     strength2 = {
       100 BOULDER
       70 CUT
@@ -347,27 +348,15 @@
     summonedElement = "ENT"
     tryDestroyFX = { WOOD_SPLINTERS }
   }
-  "DECID_TREE"
+  "DECID_TREE" inherit "CANIF_TREE"
   {
-    name = "tree"
     viewId = { "decid_tree" }
-    canHideHere = true
-    blockVision = { NORMAL }
-    destroyedRemains = "TREE_TRUNK"
-    burntRemains = "BURNT_TREE"
-    fire = 100
-    strength2 = {
-      100 BOULDER
-      70 CUT
-    }
-    itemDrop = {{{{WoodPlank} 1 { 8 14 }}}}
-    summonedElement = "ENT"
-    tryDestroyFX = { WOOD_SPLINTERS }
   }
   "TREE_TRUNK"
   {
     name = "tree trunk"
     viewId = { "tree_trunk" }
+    canSilentlyReplace = true
   }
   "BURNT_TREE"
   {
@@ -421,86 +410,45 @@
     requiredSupport = { { { N } } }
     canBuildOutsideOfTerritory = true
   }
-  "TORCH_S"
+  "TORCH_S" inherit "TORCH_N"
   {
-    name = "torch"
-    viewId = { "torch" }
-    lightEmission = 8.2
-    layer = CEILING
     viewLayer = TORCH2
     attachmentDir = S
     requiredSupport = { { { S } } }
-    canBuildOutsideOfTerritory = true
   }
-  "TORCH_E"
+  "TORCH_E" inherit "TORCH_S"
   {
-    name = "torch"
-    viewId = { "torch" }
-    lightEmission = 8.2
-    layer = CEILING
-    viewLayer = TORCH2
     attachmentDir = E
     requiredSupport = { { { E } } }
-    canBuildOutsideOfTerritory = true
   }
-  "TORCH_W"
+  "TORCH_W" inherit "TORCH_S"
   {
-    name = "torch"
-    viewId = { "torch" }
-    lightEmission = 8.2
-    layer = CEILING
-    viewLayer = TORCH2
     attachmentDir = W
     requiredSupport = { { { W } } }
-    canBuildOutsideOfTerritory = true
   }
-  "CANDELABRUM_N"
+  "CANDELABRUM_N" inherit "TORCH_N"
   {
     name = "candelabrum"
     viewId = { "candelabrum_ns" }
-    lightEmission = 8.2
     luxury = 0.3
-    layer = CEILING
-    viewLayer = TORCH1
-    attachmentDir = N
-    requiredSupport = { { { N } } }
-    canBuildOutsideOfTerritory = true
   }
-  "CANDELABRUM_S"
+  "CANDELABRUM_S" inherit "TORCH_S"
   {
     name = "candelabrum"
     viewId = { "candelabrum_ns" }
-    lightEmission = 8.2
     luxury = 0.3
-    layer = CEILING
-    viewLayer = TORCH2
-    attachmentDir = S
-    requiredSupport = { { { S } } }
-    canBuildOutsideOfTerritory = true
   }
-  "CANDELABRUM_E"
+  "CANDELABRUM_E" inherit "TORCH_E"
   {
     name = "candelabrum"
     viewId = { "candelabrum_e" }
-    lightEmission = 8.2
     luxury = 0.3
-    layer = CEILING
-    viewLayer = TORCH2
-    attachmentDir = E
-    requiredSupport = { { { E } } }
-    canBuildOutsideOfTerritory = true
   }
-  "CANDELABRUM_W"
+  "CANDELABRUM_W" inherit "TORCH_W"
   {
     name = "candelabrum"
     viewId = { "candelabrum_w" }
-    lightEmission = 8.2
     luxury = 0.3
-    layer = CEILING
-    viewLayer = TORCH2
-    attachmentDir = W
-    requiredSupport = { { { W } } }
-    canBuildOutsideOfTerritory = true
   }
   "TORTURE_TABLE"
   {
@@ -561,6 +509,7 @@
     fire = 50
     strength = 40
     bedType = COFFIN
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "COFFIN2"
   {
@@ -596,6 +545,7 @@
     usageType = COFFIN
     fire = 50
     strength = 40
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "VAMPIRE_COFFIN"
   {
@@ -605,6 +555,7 @@
     usageType = VAMPIRE_COFFIN
     fire = 50
     strength = 40
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "OPENED_COFFIN"
   {
@@ -614,6 +565,7 @@
     usageType = SLEEP
     fire = 50
     strength = 40
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   }
   "WOOD_DOOR"
   {
@@ -879,24 +831,10 @@
     destroyFX = { ROCK_CLOUD Rgb 220 210 180 255 }
     tryDestroyFX = { ROCK_SPLINTERS Rgb 220 210 180 255 }
   }
-  "DUNGEON_WALL2"
+  "DUNGEON_WALL2" inherit "DUNGEON_WALL"
   {
-    name = "wall"
     viewId = { "dungeon_wall2" }
-    blockMovement = true
-    blockVision = { NORMAL ELF }
-    wall = true
-    xForgetAfterBuilding = true
-    luxury = 0.2
-    constructMessage = REINFORCE
     builtOver = "MOUNTAIN2"
-    canBuildOutsideOfTerritory = true
-    strength2 = {
-      300 BOULDER
-      100 DIG
-      1900 HOSTILE_DIG
-      2000 HOSTILE_DIG_NO_SKILL
-    }
     destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
     tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
   }
@@ -976,13 +914,9 @@
     luxury = 0.1
     layer = FLOOR
   }
-  "FLOOR_WOOD2"
+  "FLOOR_WOOD2" inherit "FLOOR_WOOD1"
   {
-    name = "floor"
     viewId = { "wood_floor4" }
-    fire = 50
-    luxury = 0.1
-    layer = FLOOR
   }
   "FLOOR_STONE1"
   {
@@ -991,12 +925,9 @@
     luxury = 0.3
     layer = FLOOR
   }
-  "FLOOR_STONE2"
+  "FLOOR_STONE2" inherit "FLOOR_STONE1"
   {
-    name = "floor"
     viewId = { "stone_floor5" }
-    luxury = 0.3
-    layer = FLOOR
   }
   "FLOOR_CARPET1"
   {
@@ -1005,12 +936,9 @@
     luxury = 0.7
     layer = FLOOR
   }
-  "FLOOR_CARPET2"
+  "FLOOR_CARPET2" inherit "FLOOR_CARPET1"
   {
-    name = "floor"
     viewId = { "carpet_floor4" }
-    luxury = 0.7
-    layer = FLOOR
   }
   "FLOOR_SPEED"
   {
@@ -1151,7 +1079,8 @@
     hostileSpell = true
     fire = 10
   }
-  "WATER" {
+  "WATER"
+  {
     name = "water"
     viewId = { "water" }
     layer = GROUND
@@ -1166,34 +1095,20 @@
     }
     walkIntoFX = { WATER_SPLASH Rgb 82 148 255 255 }
   }
-  "SHALLOW_WATER1" {
+  "SHALLOW_WATER1" inherit "WATER"
+  {
     name = "shallow water"
-    viewId = { "water" }
     layer = GROUND
     waterDepth = 1.5
-    entryType = Water
-#    droppedItems = { "sinks" "sink" "You hear a splash." }
-    canBuildBridge = true
-    summonedElement = "WATER_ELEMENTAL"
+    droppedItems = none
     movementSet = {
       traits = { FLY SWIM WADE }
       forcibleTraits = { WALK }
     }
-    walkIntoFX = { WATER_SPLASH Rgb 82 148 255 255 }
   }
-  "SHALLOW_WATER2" {
-    name = "shallow water"
-    viewId = { "water" }
-    layer = GROUND
+  "SHALLOW_WATER2" inherit "SHALLOW_WATER1"
+  {
     waterDepth = 0.5
-    entryType = Water
-#    droppedItems = { "sinks" "sink" "You hear a splash." }
-    canBuildBridge = true
-    summonedElement = "WATER_ELEMENTAL"
-    movementSet = {
-      traits = { FLY SWIM WADE }
-      forcibleTraits = { WALK }
-    }
     walkIntoFX = { WATER_SPLASH Rgb 82 148 255 255 }
   }
   "MAGMA" {

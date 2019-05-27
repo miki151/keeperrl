@@ -47,48 +47,15 @@
     prefixChance = 0.03
   }
 
-  "gnomeShop"
+  "gnomeShop" inherit "armory"
   {
-    items = {
-      {{Knife} 5}
-      {{Sword} 2}
-      {{BattleAxe} 2}
-      {{WarHammer} 2}
-      {{Bow} 4}
-      {{LeatherArmor} 2}
-      {{ChainArmor} 1}
-      {{LeatherHelm} 2}
-      {{IronHelm} 1}
-      {{LeatherBoots} 2}
-      {{LeatherGloves} 2}
-      {{IronBoots} 1}
-    }
     unique = {
       {AutomatonItem} { 1 2 }
     }
-    prefixChance = 0.03
   }
 
-  "dwarfShop"
+  "dwarfShop" inherit "armory"
   {
-    items = {
-      {{Knife} 5}
-      {{Sword} 2}
-      {{BattleAxe} 2}
-      {{WarHammer} 2}
-      {{Bow} 4}
-      {{LeatherArmor} 2}
-      {{ChainArmor} 1}
-      {{LeatherHelm} 2}
-      {{IronHelm} 1}
-      {{LeatherBoots} 2}
-      {{LeatherGloves} 2}
-      {{IronBoots} 1}
-    }
-    unique = {
-      {Bow} {1 2}
-    }
-    prefixChance = 0.03
   }
 
   "dragonCave"
@@ -151,15 +118,9 @@
     }
   }
 
-  "wildMushrooms"
+  "wildMushrooms" inherit "goodMushrooms"
   {
-    items = {
-      {{Mushroom Lasting DAM_BONUS} 1}
-      {{Mushroom Lasting DEF_BONUS} 1}
-      {{Mushroom Lasting NIGHT_VISION} 1}
-      {{Mushroom Lasting PANIC} 1}
-      {{Mushroom Lasting REGENERATION} 1}
-      {{Mushroom Lasting RAGE} 1}
+    items = append {
       {{Mushroom Lasting HALLU} 10}
     }
   }
@@ -214,46 +175,12 @@
     prefixChance = 0.03
   }
 
-  "chest"
+  "chest" inherit "dungeon"
   {
-    items = {
-      {{Knife} 50 }
-      {{Sword} 50 }
-      {{BattleAxe} 10 }
-      {{WarHammer} 20 }
-      {{LeatherArmor} 20 }
-      {{ChainArmor} 1 }
-      {{LeatherHelm} 20 }
-      {{IronHelm} 5 }
-      {{LeatherBoots} 20 }
-      {{IronBoots} 7 }
-      {{Torch} 7 }
-      {{LeatherGloves} 30 }
-      {{Scroll Escape} 30 }
-      {{Scroll EnhanceArmor} 30 }
-      {{Scroll EnhanceWeapon} 30 }
-      {{FireScroll} 30 }
-      {{Scroll Summon "FIRE_ELEMENTAL" {1 2}} 30 }
-      {{Scroll CircularBlast} 5 }
-      {{Scroll Deception} 10 }
-      {{Scroll Summon "FLY" {3 6}} 30 }
-      {{Potion Heal FLESH} 50 }
-      {{Potion Lasting SLEEP} 50 }
-      {{Potion Lasting SLOWED} 50 }
-      {{Potion Lasting BLIND} 30 }
-      {{Potion Lasting INVISIBLE} 10 }
-      {{Potion Lasting POISON} 20 }
-      {{Potion Lasting POISON_RESISTANT} 20 }
-      {{Potion Lasting FLYING} 20 }
-      {{Potion Lasting SPEED} 50 }
-      {{Amulet WARNING} 3 }
-      {{Amulet REGENERATION} 3 }
-      {{DefenseAmulet} 3 }
-      {{Ring POISON_RESISTANT} 3}
-      {{Ring FIRE_RESISTANT} 3}
+    items = append {
       {{GoldPiece} 300 {4 9}}
     }
-    prefixChance = 0.03
+    prefixChance = 0
   }
 
   "gold"

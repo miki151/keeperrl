@@ -85,6 +85,7 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
 
     struct NodeData {
       deque<LoaderInfo> loaders;
+      bool inherited = false;
     };
 
     NodeData& getNode() {
@@ -133,13 +134,30 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
       return is.tellg();
     }
 
+    template <typename T>
+    void loadInherited(T& elem) {
+      nextElemInherited = true;
+      this->operator()(elem);
+    }
+
     void seek(long p) {
       is.seekg(p);
     }
 
-    vector<NodeData> nodeData;
+    void startNode() {
+      nodeData.emplace_back();
+      if (nextElemInherited)
+        nodeData.back().inherited = true;
+      nextElemInherited = false;
+    }
+
+    void endNode() {
+      nodeData.pop_back();
+    }
 
     private:
+    vector<NodeData> nodeData;
+    bool nextElemInherited = false;
     std::istringstream is;
     vector<StreamPos> streamPos;
     optional<string> filename;
@@ -279,7 +297,8 @@ using PrettyInput = PrettyInputArchive;
 
 template <typename T>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, vector<T>& v) {
-  v.clear();
+  if (!ar1.eatMaybe("append"))
+    v.clear();
   string s;
   ar1.readText(s);
   if (s != "{")
@@ -296,18 +315,53 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, vector<T>& v) {
 
 template <typename T, typename U>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, map<T, U>& m) {
-  vector<pair<T, U>> v;
-  ar1(v);
-  m.clear();
-  for (auto& elem : v)
-    m.insert(std::move(elem));
+  map<T, long> bookmarks;
+  if (!ar1.eatMaybe("append"))
+    m.clear();
+  string s;
+  ar1.readText(s);
+  if (s != "{")
+    ar1.error("Expected list of items surrounded by { and }");
+  while (1) {
+    if (ar1.peek() == "}")
+      break;
+    T key;
+    ar1(key);
+    bookmarks[key] = ar1.bookmark();
+    U value;
+    vector<long> toRead;
+    while (true) {
+      if (ar1.eatMaybe("inherit")) {
+        T inheritKey;
+        ar1(inheritKey);
+        toRead.push_back(ar1.bookmark());
+        if (auto bookmark = getValueMaybe(bookmarks, inheritKey))
+          ar1.seek(*bookmark);
+        else
+          ar1.error("Key to inherit not found");
+      } else {
+        toRead.push_back(ar1.bookmark());
+        break;
+      }
+    }
+    for (int i : All(toRead).reverse()) {
+      ar1.seek(toRead[i]);
+      if (i == toRead.size() - 1)
+        ar1(value);
+      else
+        ar1.loadInherited(value);
+    }
+    m.insert(make_pair(std::move(key), std::move(value)));
+  }
+  ar1.eat("}");
 }
 
 template <typename T, typename U>
 inline void serialize(PrettyInputArchive& ar1, EnumMap<T, U>& m) {
+  if (!ar1.eatMaybe("append"))
+    m.clear();
   vector<pair<T, U>> v;
   ar1(v);
-  m.clear();
   EnumSet<T> used;
   for (auto& elem : v) {
     if (used.contains(elem.first))
@@ -445,7 +499,7 @@ void serialize(PrettyInputArchive& ar, std::tuple<Types...>& tuple) {
 
 template <class T, cereal::traits::EnableIf<!std::is_arithmetic<T>::value> = cereal::traits::sfinae>
 inline void prologue(PrettyInputArchive& ar1, T const & ) {
-  ar1.nodeData.emplace_back();
+  ar1.startNode();
 }
 
 inline void prettyEpilogue(PrettyInputArchive& ar1) {
@@ -487,7 +541,7 @@ inline void prettyEpilogue(PrettyInputArchive& ar1) {
         ar1.error("No member named \"" + name + "\" in structure");
     }
     for (auto& loader : loaders)
-      if (!processed.count(loader.name) && !loader.optional)
+      if (!processed.count(loader.name) && !loader.optional && !ar1.getNode().inherited)
         ar1.error("Field \"" + loader.name + "\" not present");
     ar1.eat("}");
     ar1.getNode().loaders.clear();
@@ -501,7 +555,7 @@ inline void serialize(PrettyInputArchive& ar1, EndPrettyInput&) {
 template <class T, cereal::traits::EnableIf<!std::is_arithmetic<T>::value> = cereal::traits::sfinae>
 inline void epilogue(PrettyInputArchive& ar1, T const &) {
   prettyEpilogue(ar1);
-  ar1.nodeData.pop_back();
+  ar1.endNode();
 }
 
 
