@@ -127,3 +127,4 @@ template void ContentId<T>::serialize(TextOutputArchive&, unsigned);
 INST(ViewId)
 INST(FurnitureType)
 INST(ItemListId)
+INST(EnemyId)

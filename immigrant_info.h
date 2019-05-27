@@ -39,7 +39,7 @@ class Collective;
 class Game;
 
 struct RecruitmentInfo {
-  EnumSet<EnemyId> SERIAL(enemyId);
+  vector<EnemyId> SERIAL(enemyId);
   int SERIAL(minPopulation);
   MinionTrait SERIAL(trait);
   WCollective findEnemy(WGame) const;
@@ -50,7 +50,7 @@ struct RecruitmentInfo {
 
 struct TutorialRequirement {
   TutorialState SERIAL(state);
-  SERIALIZE_ALL(state);
+  SERIALIZE_ALL(state)
 };
 
 struct MinTurnRequirement {

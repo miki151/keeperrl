@@ -3,6 +3,7 @@
 #include "util.h"
 #include "saved_game_info.h"
 #include "save_file_info.h"
+#include "enemy_id.h"
 
 class View;
 class ProgressMeter;

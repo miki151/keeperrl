@@ -1,5 +1,5 @@
 {
-  TUTORIAL_VILLAGE
+  "TUTORIAL_VILLAGE"
   {
     settlement = {
       type = SMALL_VILLAGE
@@ -32,7 +32,7 @@
         furniture = "roomFurniture"
     }
   }
-  UNICORN_HERD
+  "UNICORN_HERD"
   {
     settlement = {
       type = FOREST
@@ -60,7 +60,7 @@
       }
     }
   }
-  ANTS_CLOSED
+  "ANTS_CLOSED"
   {
     settlement = {
       type = ANT_NEST
@@ -103,7 +103,7 @@
       }
     }
   }
-  ANTS_CLOSED_SMALL
+  "ANTS_CLOSED_SMALL"
   {
     settlement = {
       type = SMALL_MINETOWN
@@ -131,7 +131,7 @@
       attackBehaviour = KillLeader
     }
   }
-  ANTS_OPEN
+  "ANTS_OPEN"
   {
     settlement = {
       type = ANT_NEST
@@ -172,9 +172,9 @@
         frequency = 1
       }
     }
-    createOnBones = 0.1 { DWARVES}
+    createOnBones = 0.1 { "DWARVES" }
   }
-  ADA_GOLEMS
+  "ADA_GOLEMS"
   {
     settlement = {
       type = VAULT
@@ -198,7 +198,7 @@
       attackBehaviour = KillLeader
     }
   }
-  ORC_VILLAGE
+  "ORC_VILLAGE"
   {
     settlement = {
       type = VILLAGE
@@ -222,7 +222,7 @@
       immigrantInterval = 300
       maxPopulation = 16
     }
-    createOnBones = 0.1 {DWARVES VILLAGE}
+    createOnBones = 0.1 { "DWARVES" "VILLAGE" }
     immigrants = {
       {
         ids = {"ORC"}
@@ -236,7 +236,7 @@
       }
     }
   }
-  DEMON_DEN_ABOVE
+  "DEMON_DEN_ABOVE"
   {
     settlement = {
       type = VILLAGE
@@ -253,9 +253,9 @@
       furniture = "dungeonOutside"
     }
     discoverable = false
-    createOnBones = 1.0 {KNIGHTS}
+    createOnBones = 1.0 { "KNIGHTS" }
   }
-  DEMON_DEN
+  "DEMON_DEN"
   {
     settlement = {
       type = VILLAGE
@@ -286,7 +286,7 @@
     }
     levelConnection = {
       type = CRYPT
-      enemyId = DEMON_DEN_ABOVE
+      enemyId = "DEMON_DEN_ABOVE"
     }
     immigrants = {
       {
@@ -296,7 +296,7 @@
       }
     }
   }
-  VILLAGE
+  "VILLAGE"
   {
     settlement = {
       type = VILLAGE
@@ -334,7 +334,7 @@
       ghostProb = 0.1
     }
   }
-  WARRIORS
+  "WARRIORS"
   {
     settlement = {
       type = CASTLE2
@@ -383,7 +383,7 @@
       }
     }
   }
-  KNIGHTS
+  "KNIGHTS"
   {
     settlement = {
       type = CASTLE
@@ -442,7 +442,7 @@
     }
     levelConnection = {
       type = MAZE
-      enemyId = MINOTAUR
+      enemyId = "MINOTAUR"
     }
     immigrants = {
       {
@@ -457,7 +457,7 @@
       }
     }
   }
-  MINOTAUR
+  "MINOTAUR"
   {
     settlement = {
       type = CAVE
@@ -471,7 +471,7 @@
       buildingId = BRICK
     }
   }
-  RED_DRAGON
+  "RED_DRAGON"
   {
     settlement = {
       type = CAVE
@@ -501,9 +501,9 @@
       attackBehaviour = KillMembers 12
       welcomeMessage = DRAGON_WELCOME
     }
-    createOnBones = 0.1 {KNIGHTS DWARVES GREEN_DRAGON ELEMENTALIST}
+    createOnBones = 0.1 { "KNIGHTS" "DWARVES" "GREEN_DRAGON" "ELEMENTALIST" }
   }
-  GREEN_DRAGON
+  "GREEN_DRAGON"
   {
     settlement = {
       type = CAVE
@@ -533,9 +533,9 @@
       attackBehaviour = KillMembers 7
       welcomeMessage = DRAGON_WELCOME
     }
-    createOnBones = 0.1 {KNIGHTS DWARVES ELEMENTALIST}
+    createOnBones = 0.1 { "KNIGHTS" "DWARVES" "ELEMENTALIST" }
   }
-  DWARVES
+  "DWARVES"
   {
     settlement = {
       type = MINETOWN
@@ -597,7 +597,7 @@
       }
     }
   }
-  ELVES
+  "ELVES"
   {
     settlement = {
       type = FORREST_VILLAGE
@@ -644,7 +644,7 @@
       }
     }
   }
-  ELEMENTALIST_ENTRY
+  "ELEMENTALIST_ENTRY"
   {
     settlement = {
       type = TOWER
@@ -653,7 +653,7 @@
     }
     discoverable = false
   }
-  ELEMENTALIST
+  "ELEMENTALIST"
   {
     settlement = {
       type = TOWER
@@ -690,10 +690,10 @@
     }
     levelConnection = {
       type = TOWER
-      enemyId = ELEMENTALIST_ENTRY
+      enemyId = "ELEMENTALIST_ENTRY"
     }
   }
-  NO_AGGRO_BANDITS
+  "NO_AGGRO_BANDITS"
   {
     settlement = {
       type = CAVE
@@ -711,7 +711,7 @@
       immigrantInterval = 1000
       maxPopulation = 10
     }
-    createOnBones = 0.1 {KOBOLD_CAVE}
+    createOnBones = 0.1 { "KOBOLD_CAVE" }
     immigrants = { 
       {
         ids = { "BANDIT" }
@@ -720,7 +720,7 @@
       }
     }
   }
-  BANDITS
+  "BANDITS"
   {
     settlement = {
       type = CAVE
@@ -746,7 +746,7 @@
       attackBehaviour = StealGold
       ransom = 0.5 80
     }
-    createOnBones = 0.1 {KOBOLD_CAVE}
+    createOnBones = 0.1 { "KOBOLD_CAVE" }
     immigrants = { 
       {
         ids = { "BANDIT" }
@@ -755,7 +755,7 @@
       }
     }
   }
-  COTTAGE_BANDITS
+  "COTTAGE_BANDITS"
   {
     settlement = {
       type = CAVE
@@ -773,7 +773,7 @@
       immigrantInterval = 1000
       maxPopulation = 10
     }
-    createOnBones = 1.0 {HUMAN_COTTAGE}
+    createOnBones = 1.0 { "HUMAN_COTTAGE" }
     immigrants = { 
       {
         ids = { "BANDIT" }
@@ -782,7 +782,7 @@
       }
     }
   }
-  ORC_CAVE
+  "ORC_CAVE"
   {
     settlement = {
       type = CAVE
@@ -807,7 +807,7 @@
       attackBehaviour = StealGold
       ransom = 0.5 80
     }
-    createOnBones = 0.1 {KOBOLD_CAVE}
+    createOnBones = 0.1 { "KOBOLD_CAVE" }
     immigrants = { 
       {
         ids = { "ORC" }
@@ -816,7 +816,7 @@
       }
     }
   }
-  LIZARDMEN
+  "LIZARDMEN"
   {
     settlement = {
       type = VILLAGE
@@ -856,7 +856,7 @@
       }
       attackBehaviour = KillLeader
     }
-    createOnBones = 1.0 {VILLAGE ELVES}
+    createOnBones = 1.0 { "VILLAGE" "ELVES" }
     immigrants = { 
       {
         ids = { "LIZARDMAN" }
@@ -865,7 +865,7 @@
       }
     }
   }
-  DARK_ELVES_ALLY
+  "DARK_ELVES_ALLY"
   {
     settlement = {
       type = MINETOWN
@@ -897,7 +897,7 @@
     }
     levelConnection = {
       type = GNOMISH_MINES
-      enemyId = DARK_ELVES_ENTRY
+      enemyId = "DARK_ELVES_ENTRY"
     }
     immigrants = { 
       {
@@ -907,7 +907,7 @@
       }
     }
   }
-  DARK_ELVES_ENEMY
+  "DARK_ELVES_ENEMY"
   {
     settlement = {
       type = MINETOWN
@@ -948,7 +948,7 @@
     }
     levelConnection = {
       type = GNOMISH_MINES
-      enemyId = DARK_ELVES_ENTRY
+      enemyId = "DARK_ELVES_ENTRY"
     }
     immigrants = { 
       {
@@ -958,7 +958,7 @@
       }
     }
   }
-  DARK_ELVES_ENTRY
+  "DARK_ELVES_ENTRY"
   {
     settlement = {
       type = SMALL_MINETOWN
@@ -976,7 +976,7 @@
     }
     discoverable = false
   }
-  GNOMES
+  "GNOMES"
   {
     settlement = {
       type = MINETOWN
@@ -997,10 +997,10 @@
     }
     levelConnection = {
       type = GNOMISH_MINES
-      enemyId = GNOMES_ENTRY
+      enemyId = "GNOMES_ENTRY"
     }
   }
-  GNOMES_ENTRY
+  "GNOMES_ENTRY"
   {
     settlement = {
       type = SMALL_MINETOWN
@@ -1018,7 +1018,7 @@
     }
     discoverable = false
   }
-  ENTS
+  "ENTS"
   {
     settlement = {
       type = FOREST
@@ -1044,7 +1044,7 @@
       }
     }
   }
-  DRIADS
+  "DRIADS"
   {
     settlement = {
       type = FOREST
@@ -1070,7 +1070,7 @@
       }
     }
   }
-  SHELOB
+  "SHELOB"
   {
     settlement = {
       type = CAVE
@@ -1091,9 +1091,9 @@
     config = {
      leaderAsFighter = true
     }
-    createOnBones = 0.1 {DWARF_CAVE KOBOLD_CAVE}
+    createOnBones = 0.1 { "DWARF_CAVE" "KOBOLD_CAVE" }
   }
-  CYCLOPS
+  "CYCLOPS"
   {
     settlement = {
       type = CAVE
@@ -1117,7 +1117,7 @@
       attackBehaviour = KillMembers 4
     }
   }
-  HYDRA
+  "HYDRA"
   {
     settlement = {
       type = SWAMP
@@ -1134,7 +1134,7 @@
       ghostProb = 0.03
     }
   }
-  KRAKEN
+  "KRAKEN"
   {
     settlement = {
       type = MOUNTAIN_LAKE
@@ -1150,7 +1150,7 @@
     }
     discoverable = false
   }
-  CEMETERY
+  "CEMETERY"
   {
     settlement = {
       type = CEMETERY
@@ -1168,10 +1168,10 @@
     }
     levelConnection = {
       type = CRYPT
-      enemyId = CEMETERY_ENTRY
+      enemyId = "CEMETERY_ENTRY"
     }
   }
-  CEMETERY_ENTRY
+  "CEMETERY_ENTRY"
   {
     settlement = {
       type = CEMETERY
@@ -1191,7 +1191,7 @@
     }
     discoverable = false
   }
-  OGRE_CAVE
+  "OGRE_CAVE"
   {
     settlement = {
       type = CAVE
@@ -1219,7 +1219,7 @@
       }
     }
   }
-  HARPY_CAVE
+  "HARPY_CAVE"
   {
     settlement = {
       type = CAVE
@@ -1247,7 +1247,7 @@
       }
     }
   }
-  SOKOBAN_ENTRY
+  "SOKOBAN_ENTRY"
   {
     settlement = {
       type = ISLAND_VAULT_DOOR
@@ -1255,7 +1255,7 @@
       tribe = MONSTER
     }
   }
-  SOKOBAN
+  "SOKOBAN"
   {
     settlement = {
       type = CAVE
@@ -1267,11 +1267,11 @@
     }
     levelConnection = {
       type = SOKOBAN
-      enemyId = SOKOBAN_ENTRY
+      enemyId = "SOKOBAN_ENTRY"
     }
     discoverable = false
   }
-  WITCH
+  "WITCH"
   {
     settlement = {
       type = COTTAGE
@@ -1285,7 +1285,7 @@
       furniture = "witchInside"
     }
   }
-  TEMPLE
+  "TEMPLE"
   {
     settlement = {
       type = TEMPLE
@@ -1299,7 +1299,7 @@
     }
     discoverable = false
   }
-  EVIL_TEMPLE
+  "EVIL_TEMPLE"
   {
     settlement = {
       type = TEMPLE
@@ -1316,7 +1316,7 @@
     }
     discoverable = false
   }
-  RUINS
+  "RUINS"
   {
     settlement = {
       type = COTTAGE
@@ -1346,7 +1346,7 @@
       }
     }
   }
-  HUMAN_COTTAGE
+  "HUMAN_COTTAGE"
   {
     settlement = {
       type = COTTAGE
@@ -1377,7 +1377,7 @@
       guardianInfo = "WITCHMAN" 0.001 1 2
     }
   }
-  TUTORIAL_VILLAGE
+  "TUTORIAL_VILLAGE"
   {
     settlement = {
       type = SMALL_VILLAGE
@@ -1406,7 +1406,7 @@
       furniture = "roomFurniture"
     }
   }
-  ELVEN_COTTAGE
+  "ELVEN_COTTAGE"
   {
     settlement = {
       type = FORREST_COTTAGE
@@ -1432,7 +1432,7 @@
       furniture = "roomFurniture"
     }
   }
-  LIZARDMEN_COTTAGE
+  "LIZARDMEN_COTTAGE"
   {
     settlement = {
       type = FORREST_COTTAGE
@@ -1447,9 +1447,9 @@
       buildingId = WOOD
       furniture = "roomFurniture"
     }
-    createOnBones = 1.0 {ELVEN_COTTAGE}
+    createOnBones = 1.0 { "ELVEN_COTTAGE" }
   }
-  KOBOLD_CAVE
+  "KOBOLD_CAVE"
   {
     settlement = {
       type = SMALL_MINETOWN
@@ -1465,7 +1465,7 @@
       stockpiles = {{ "minerals" 60 }}
     }
   }
-  DWARF_CAVE
+  "DWARF_CAVE"
   {
     settlement = {
       type = SMALL_MINETOWN
@@ -1495,7 +1495,8 @@
       ransom = 0.5 80
     }
   }
-  RAT_CAVE {
+  "RAT_CAVE"
+  {
     settlement = {
       type = VAULT
       inhabitants = {
@@ -1513,7 +1514,7 @@
     }
     discoverable = false
   }
-  RAT_PEOPLE_CAVE
+  "RAT_PEOPLE_CAVE"
   {
     settlement = {
       type = VAULT
@@ -1538,7 +1539,7 @@
     }
     discoverable = false
   }
-  DARK_ELF_CAVE
+  "DARK_ELF_CAVE"
   {
     settlement = {
       type = SMALL_MINETOWN

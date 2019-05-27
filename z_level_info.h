@@ -4,6 +4,7 @@
 #include "settlement_info.h"
 #include "furniture_type.h"
 #include "creature_group.h"
+#include "enemy_id.h"
 
 struct FullZLevel {
   optional<EnemyId> SERIAL(enemy);

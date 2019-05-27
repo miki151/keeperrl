@@ -11,7 +11,7 @@
     type = FullZLevel {
       # You can optionally add an EnemyId. The player will dig down right into their base.
       # Warning: some enemies might not work
-      enemy = RAT_CAVE
+      enemy = "RAT_CAVE"
     }
     # Possible depths for this level, inclusive. The first level when you dig down is 1.
     minDepth = 2
@@ -21,7 +21,7 @@
     type = FullZLevel {
       # You can optionally add an EnemyId. The player will dig down right into their base.
       # Warning: some enemies might not work
-      enemy = RAT_PEOPLE_CAVE
+      enemy = "RAT_PEOPLE_CAVE"
     }
     # Possible depths for this level, inclusive. The first level when you dig down is 1.
     minDepth = 3
@@ -29,7 +29,7 @@
   }
   { # adamantium, the ores are added automatically around the golems
     type = FullZLevel {
-      enemy = ADA_GOLEMS
+      enemy = "ADA_GOLEMS"
     }
     minDepth = 10
   }
@@ -69,7 +69,7 @@
 {
   {
     type = FullZLevel {
-      enemy = DARK_ELF_CAVE
+      enemy = "DARK_ELF_CAVE"
     }
     minDepth = 5
   }
@@ -79,7 +79,7 @@
 {
   {
     type = FullZLevel {
-      enemy = DWARF_CAVE
+      enemy = "DWARF_CAVE"
     }
     minDepth = 5
   }

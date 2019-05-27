@@ -22,6 +22,7 @@
 #include "entity_map.h"
 #include "minion_trait.h"
 #include "dungeon_level.h"
+#include "enemy_id.h"
 
 class CollectiveAttack;
 class Creature;

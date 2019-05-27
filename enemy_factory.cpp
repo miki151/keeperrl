@@ -13,6 +13,7 @@
 #include "lasting_effect.h"
 #include "creature_group.h"
 #include "name_generator.h"
+#include "enemy_id.h"
 
 EnemyFactory::EnemyFactory(RandomGen& r, NameGenerator* n, map<EnemyId, EnemyInfo> enemies)
     : random(r), nameGenerator(n), enemies(std::move(enemies)) {
@@ -42,33 +43,6 @@ EnemyInfo& EnemyInfo::setNonDiscoverable() {
   discoverable = false;
   return *this;
 }
-
-
-void EnemyInfo::updateCreateOnBones(const EnemyFactory& factory) {
-  if (createOnBones && factory.random.chance(createOnBones->probability)) {
-    EnemyInfo enemy = factory.get(factory.random.choose(createOnBones->enemies));
-    levelConnection = enemy.levelConnection;
-    if (levelConnection) {
-      levelConnection->otherEnemy->settlement.buildingId = BuildingId::RUINS;
-      levelConnection->deadInhabitants = true;
-    }
-    if (Random.roll(2)) {
-      settlement.buildingId = BuildingId::RUINS;
-      if (levelConnection)
-        levelConnection->otherEnemy->settlement.buildingId = BuildingId::RUINS;
-    } else {
-      // 50% chance that the original settlement is intact
-      settlement.buildingId = enemy.settlement.buildingId;
-      settlement.furniture = enemy.settlement.furniture;
-      settlement.outsideFeatures = enemy.settlement.outsideFeatures;
-      settlement.shopItems = enemy.settlement.shopItems;
-    }
-    settlement.type = enemy.settlement.type;
-    settlement.corpses = enemy.settlement.inhabitants;
-    settlement.shopkeeperDead = true;
-  }
-}
-
 
 static EnemyInfo getVault(SettlementType type, CreatureId creature, TribeId tribe, int num,
     optional<ItemListId> itemFactory = none) {
@@ -128,15 +102,45 @@ vector<EnemyInfo> EnemyFactory::getVaults(TribeAlignment alignment, TribeId alli
   return ret;
 }
 
+vector<EnemyId> EnemyFactory::getAllIds() const {
+  return getKeys(enemies);
+}
+
 EnemyInfo EnemyFactory::get(EnemyId id) const {
+  CHECK(enemies.count(id)) << "Enemy not found: \"" << id.data() << "\"";
   auto ret = enemies.at(id);
   ret.setId(id);
-  ret.updateCreateOnBones(*this);
+  updateCreateOnBones(ret);
   if (ret.levelConnection)
     ret.levelConnection->otherEnemy = get(ret.levelConnection->enemyId);
   if (ret.settlement.locationNameGen)
     ret.settlement.locationName = nameGenerator->getNext(*ret.settlement.locationNameGen);
   return ret;
+}
+
+void EnemyFactory::updateCreateOnBones(EnemyInfo& info) const {
+  if (info.createOnBones && random.chance(info.createOnBones->probability)) {
+    EnemyInfo enemy = get(random.choose(info.createOnBones->enemies));
+    info.levelConnection = enemy.levelConnection;
+    if (info.levelConnection) {
+      info.levelConnection->otherEnemy->settlement.buildingId = BuildingId::RUINS;
+      info.levelConnection->deadInhabitants = true;
+    }
+    if (Random.roll(2)) {
+      info.settlement.buildingId = BuildingId::RUINS;
+      if (info.levelConnection)
+        info.levelConnection->otherEnemy->settlement.buildingId = BuildingId::RUINS;
+    } else {
+      // 50% chance that the original settlement is intact
+      info.settlement.buildingId = enemy.settlement.buildingId;
+      info.settlement.furniture = enemy.settlement.furniture;
+      info.settlement.outsideFeatures = enemy.settlement.outsideFeatures;
+      info.settlement.shopItems = enemy.settlement.shopItems;
+    }
+    info.settlement.type = enemy.settlement.type;
+    info.settlement.corpses = enemy.settlement.inhabitants;
+    info.settlement.shopkeeperDead = true;
+  }
 }
 
 vector<ExternalEnemy> EnemyFactory::getExternalEnemies() const {

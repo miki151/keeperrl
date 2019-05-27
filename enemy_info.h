@@ -6,6 +6,7 @@
 #include "village_behaviour.h"
 #include "attack_trigger.h"
 #include "immigrant_info.h"
+#include "enemy_id.h"
 
 struct EnemyInfo;
 class EnemyFactory;

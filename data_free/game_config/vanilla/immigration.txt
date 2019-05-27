@@ -308,7 +308,7 @@
           ids = { "DARK_ELF_WARRIOR" }
           traits = { FIGHTER }
           requirements = {
-            { 0.0 RecruitmentInfo {ORC_VILLAGE} 3 FIGHTER }
+            { 0.0 RecruitmentInfo { "ORC_VILLAGE" } 3 FIGHTER }
             { 1.0 CostInfo GOLD 20 }
           }
         }
@@ -316,7 +316,7 @@
           ids = { "ORC" }
           traits = { FIGHTER }
           requirements = {
-            { 0.0 RecruitmentInfo {ORC_VILLAGE} 3 FIGHTER }
+            { 0.0 RecruitmentInfo { "ORC_VILLAGE" } 3 FIGHTER }
             { 1.0 CostInfo GOLD 5 }
           }
         }
@@ -324,7 +324,7 @@
           ids = { "HARPY" }
           traits = { FIGHTER }
           requirements = {
-            { 0.0 RecruitmentInfo {HARPY_CAVE} 3 FIGHTER }
+            { 0.0 RecruitmentInfo { "HARPY_CAVE" } 3 FIGHTER }
             { 1.0 CostInfo GOLD 12 }
           }
         }
@@ -332,7 +332,7 @@
           ids = { "OGRE" }
           traits = { FIGHTER }
           requirements = {
-            { 0.0 RecruitmentInfo {OGRE_CAVE ORC_VILLAGE} 3 FIGHTER }
+            { 0.0 RecruitmentInfo { "OGRE_CAVE" "ORC_VILLAGE" } 3 FIGHTER }
             { 1.0 CostInfo GOLD 12 }
           }
         }

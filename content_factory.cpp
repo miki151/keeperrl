@@ -23,6 +23,7 @@ bool areResourceCounts(const vector<ResourceDistribution>& resources, int depth)
 
 ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* config, TilePaths tilePaths)
     : creatures(std::move(nameGenerator), config), furniture(config), tilePaths(std::move(tilePaths)), itemFactory(config) {
+  EnemyId::startContentIdGeneration();
   while (1) {
     if (auto res = config->readObject(zLevels, GameConfigId::Z_LEVELS)) {
       USER_INFO << *res;
@@ -51,6 +52,7 @@ ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* co
     }
     break;
   }
+  EnemyId::validateContentIds();
 }
 
 void ContentFactory::merge(ContentFactory f) {
