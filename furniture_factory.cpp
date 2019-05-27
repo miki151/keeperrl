@@ -71,7 +71,7 @@ void FurnitureFactory::merge(FurnitureFactory f) {
 FurnitureFactory::FurnitureFactory(const GameConfig* config) {
   while (1) {
     FurnitureType::startContentIdGeneration();
-    vector<pair<FurnitureType, Furniture>> elems;
+    map<FurnitureType, Furniture> elems;
     if (auto res = config->readObject(elems, GameConfigId::FURNITURE)) {
       USER_INFO << *res;
       continue;
