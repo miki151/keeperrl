@@ -20,17 +20,17 @@ CreatureList& CreatureList::operator =(const CreatureList&) = default;
 CreatureList::CreatureList(CreatureList&&) = default;
 CreatureList::CreatureList(const CreatureList&) = default;
 
-CreatureList::CreatureList(int c, CreatureId id) : count(c), all(1, make_pair(1, id)) {
+CreatureList::CreatureList(int c, CreatureId id) : count(c, c + 1), all(1, make_pair(1, id)) {
 }
 
 CreatureList::CreatureList(CreatureId id) : CreatureList(1, id) {
 }
 
-CreatureList::CreatureList(int c, vector<CreatureId> ids) : count(c),
+CreatureList::CreatureList(int c, vector<CreatureId> ids) : count(c, c + 1),
     all(ids.transform([](const CreatureId id) { return make_pair(1, id); })) {
 }
 
-CreatureList::CreatureList(int c, vector<pair<int, CreatureId>> ids) : count(c), all(ids) {}
+CreatureList::CreatureList(int c, vector<pair<int, CreatureId>> ids) : count(c, c + 1), all(ids) {}
 
 string CreatureList::getSummary(CreatureFactory* factory) const {
   auto ret = toLower(getViewId(factory).data());
@@ -60,8 +60,8 @@ CreatureList& CreatureList::increaseExpLevel(EnumMap<ExperienceType, int> l) {
 
 CreatureList& CreatureList::addUnique(CreatureId id) {
   uniques.push_back(id);
-  if (count < uniques.size())
-    count = uniques.size();
+  if (count.getStart() < uniques.size())
+    count = Range(uniques.size(), max(count.getEnd(), uniques.size() + 1));
   return *this;
 }
 
@@ -76,7 +76,7 @@ vector<PCreature> CreatureList::generate(RandomGen& random, CreatureFactory* fac
     MonsterAIFactory aiFactory) const {
   vector<PCreature> ret;
   vector<CreatureId> uniquesCopy = uniques;
-  for (int i : Range(count)) {
+  for (int i : Range(random.get(count))) {
     optional<CreatureId> id;
     if (!uniquesCopy.empty()) {
       id = uniquesCopy.back();

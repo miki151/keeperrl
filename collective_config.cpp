@@ -42,8 +42,8 @@
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
-  ar(immigrantInterval, maxPopulation, conquerCondition);
-  ar(type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo);
+  ar(OPTION(immigrantInterval), OPTION(maxPopulation), OPTION(conquerCondition));
+  ar(SKIP(type), OPTION(leaderAsFighter), OPTION(spawnGhosts), OPTION(ghostProb), OPTION(guardianInfo));
 }
 
 SERIALIZABLE(CollectiveConfig);
@@ -368,3 +368,10 @@ const WorkshopInfo& CollectiveConfig::getWorkshopInfo(WorkshopType type) {
     }});
   return workshops[type];
 }
+
+#include "pretty_archive.h"
+template
+void CollectiveConfig::serialize(PrettyInputArchive& ar1, unsigned);
+
+template
+void GuardianInfo::serialize(PrettyInputArchive& ar1, unsigned);

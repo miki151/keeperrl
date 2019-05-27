@@ -24,13 +24,11 @@ RICH_ENUM(BiomeId,
 );
 
 struct StockpileInfo {
-  enum class Type;
-  Type SERIAL(type);
-  int SERIAL(number);
-  SERIALIZE_ALL(type, number)
+  ItemListId SERIAL(items);
+  int SERIAL(count);
+  optional<FurnitureType> SERIAL(furniture);
+  SERIALIZE_ALL(NAMED(items), NAMED(count), NAMED(furniture))
 };
-
-RICH_ENUM(StockpileInfo::Type, GOLD, MINERALS);
 
 RICH_ENUM(
   SettlementType,
@@ -64,14 +62,15 @@ struct SettlementInfo {
   InhabitantsInfo SERIAL(inhabitants);
   optional<InhabitantsInfo> SERIAL(corpses);
   optional<string> SERIAL(locationName);
+  optional<NameGeneratorId> SERIAL(locationNameGen);
   TribeId SERIAL(tribe);
   optional<string> SERIAL(race);
   BuildingId SERIAL(buildingId);
   vector<StairKey> downStairs;
   vector<StairKey> upStairs;
   vector<StockpileInfo> SERIAL(stockpiles);
-  optional<ItemType> SERIAL(elderLoot);
-  optional<ItemFactory> SERIAL(shopFactory);
+  optional<ItemType> SERIAL(lootItem);
+  optional<ItemListId> SERIAL(shopItems);
   bool SERIAL(shopkeeperDead) = false;
   CollectiveBuilder* collective;
   optional<FurnitureListId> SERIAL(furniture);
@@ -83,5 +82,5 @@ struct SettlementInfo {
   int SERIAL(surroundWithResources) = 0;
   optional<FurnitureType> SERIAL(extraResources);
   optional<int> SERIAL(cropsDistance);
-  SERIALIZE_ALL(NAMED(type), OPTION(inhabitants), NAMED(corpses), NAMED(locationName), NAMED(tribe), NAMED(race), NAMED(buildingId), OPTION(stockpiles), NAMED(elderLoot), NAMED(shopFactory), OPTION(shopkeeperDead), NAMED(furniture), NAMED(outsideFeatures), OPTION(closeToPlayer), OPTION(dontConnectCave), OPTION(dontBuildRoad), OPTION(anyPlayerDistance), OPTION(surroundWithResources), NAMED(extraResources), NAMED(cropsDistance))
+  SERIALIZE_ALL(NAMED(type), OPTION(inhabitants), NAMED(corpses), NAMED(locationName), NAMED(locationNameGen), NAMED(tribe), NAMED(race), NAMED(buildingId), OPTION(stockpiles), NAMED(lootItem), NAMED(shopItems), OPTION(shopkeeperDead), NAMED(furniture), NAMED(outsideFeatures), OPTION(closeToPlayer), OPTION(dontConnectCave), OPTION(dontBuildRoad), OPTION(anyPlayerDistance), OPTION(surroundWithResources), NAMED(extraResources), NAMED(cropsDistance))
 };

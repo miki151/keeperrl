@@ -96,6 +96,10 @@ FurnitureList FurnitureFactory::getFurnitureList(FurnitureListId id) const {
     return FurnitureList({
         {FurnitureType("CHEST"), 1}
     }, {FurnitureType("ALTAR")});
+  if (id == "witchInside")
+    return FurnitureList({
+        {FurnitureType("LABORATORY"), 1}
+    });
   USER_FATAL << "FurnitueListId not found: " << id;
   fail();
 }

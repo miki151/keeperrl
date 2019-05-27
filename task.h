@@ -24,7 +24,7 @@
 #include "view_id.h"
 
 class TaskCallback;
-class CreatureGroup;
+class CreatureList;
 
 using WTaskCallback = WeakPointer<TaskCallback>;
 
@@ -78,8 +78,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask chain(vector<PTask>);
   static PTask explore(Position);
   static PTask attackCreatures(vector<Creature*>);
-  static PTask campAndSpawn(WCollective target, const CreatureGroup&, int defenseSize,
-      Range attackSize, int numAttacks);
+  static PTask campAndSpawn(WCollective target, const CreatureList&, int numAttacks);
   static PTask killFighters(WCollective, int numFighters);
   static PTask stealFrom(WCollective);
   static PTask consumeItem(WTaskCallback, vector<Item*> items);

@@ -25,6 +25,7 @@
 #include "effect.h"
 #include "name_generator.h"
 #include "content_factory.h"
+#include "item_list.h"
 
 struct ChestInfo {
   FurnitureType openedType;
@@ -36,7 +37,7 @@ struct ChestInfo {
   };
   optional<CreatureInfo> creatureInfo;
   struct ItemInfo {
-    ItemFactory items;
+    ItemListId items;
     string msgItem;
   };
   optional<ItemInfo> itemInfo;
@@ -60,8 +61,8 @@ static void useChest(Position pos, WConstFurniture furniture, Creature* c, const
     }
   if (auto itemInfo = chestInfo.itemInfo) {
     c->message(itemInfo->msgItem);
-    ItemFactory itemFactory(itemInfo->items);
-    vector<PItem> items = itemFactory.random();
+    auto itemList = pos.getGame()->getContentFactory()->itemFactory.get(itemInfo->items);
+    vector<PItem> items = itemList.random();
     c->getGame()->addEvent(EventInfo::ItemsAppeared{c->getPosition(), getWeakPointers(items)});
     c->getPosition().dropItems(std::move(items));
   }
@@ -203,7 +204,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
                   "It's full of rats!",
               },
               ChestInfo::ItemInfo {
-                  ItemFactory::chest(),
+                  ItemListId("chest"),
                   "There is an item inside"
               }
           });
@@ -214,7 +215,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
               FurnitureType("OPENED_COFFIN"),
               none,
               ChestInfo::ItemInfo {
-                  ItemFactory::chest(),
+                  ItemListId("chest"),
                   "There is a rotting corpse inside. You find an item."
               }
           });
@@ -233,7 +234,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
     case FurnitureUsageType::FOUNTAIN: {
       c->secondPerson("You drink from the fountain.");
       c->thirdPerson(c->getName().the() + " drinks from the fountain.");
-      PItem potion = ItemFactory::potions().random().getOnlyElement();
+      PItem potion = pos.getGame()->getContentFactory()->itemFactory.get(ItemListId("potions")).random().getOnlyElement();
       potion->apply(c);
       break;
     }

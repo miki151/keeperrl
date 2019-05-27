@@ -115,3 +115,4 @@ struct FXInfo;
 struct FXSpawnInfo;
 using TechId = string;
 class FurnitureType;
+class ItemListId;

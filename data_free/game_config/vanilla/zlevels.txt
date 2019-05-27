@@ -39,7 +39,7 @@
       waterType = "WATER"
       creatures = {
         # Total no of creatures on this level. All are hostile
-        count = 10
+        count = {10 11}
         all = {
           # The number is the weight, i.e. rats are twice as many as elementals
           2 "RAT"
@@ -54,7 +54,7 @@
     type = WaterZLevel {
       waterType = "MAGMA"
       creatures = {
-        count = 10
+        count = {10 11}
         all = {
           10 "FIRE_ELEMENTAL"
           1 "RED_DRAGON"

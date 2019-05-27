@@ -1,0 +1,265 @@
+{
+  "villageShop"
+  {
+    items = {
+      {{Scroll Escape} 5 }
+      {{Scroll EnhanceArmor} 5 }
+      {{Scroll EnhanceWeapon} 5 }
+      {{FireScroll 5 }}
+      {{Torch 10 }}
+      {{Scroll Summon "FIRE_ELEMENTAL" {1 2}} 5 }
+      {{Scroll CircularBlast} 1 }
+      {{Scroll Deception} 2 }
+      {{Scroll Summon "FLY" {3 6}} 5 }
+      {{Potion Heal FLESH} 7 }
+      {{Potion Lasting SLEEP} 5 }
+      {{Potion Lasting SLOWED} 5 }
+      {{Potion Lasting SPEED}5 }
+      {{Potion Lasting BLIND} 5 }
+      {{Potion Lasting INVISIBLE} 2 }
+      {{Amulet WARNING} 0.5 }
+      {{Amulet REGENERATION} 0.5 }
+      {{DefenseAmulet} 0.5 }
+      {{Ring POISON_RESISTANT} 0.5}
+      {{Ring FIRE_RESISTANT} 0.5}
+    }
+    prefixChance = 0.03
+  }
+  "armory"
+  {
+    items = {
+      {{Knife} 5}
+      {{Sword} 2}
+      {{BattleAxe} 2}
+      {{WarHammer} 2}
+      {{Bow} 4}
+      {{LeatherArmor} 2}
+      {{ChainArmor} 1}
+      {{LeatherHelm} 2}
+      {{IronHelm} 1}
+      {{LeatherBoots} 2}
+      {{LeatherGloves} 2}
+      {{IronBoots} 1}
+    }
+    unique = {
+      {Bow} {1 2}
+    }
+    prefixChance = 0.03
+  }
+
+  "gnomeShop"
+  {
+    items = {
+      {{Knife} 5}
+      {{Sword} 2}
+      {{BattleAxe} 2}
+      {{WarHammer} 2}
+      {{Bow} 4}
+      {{LeatherArmor} 2}
+      {{ChainArmor} 1}
+      {{LeatherHelm} 2}
+      {{IronHelm} 1}
+      {{LeatherBoots} 2}
+      {{LeatherGloves} 2}
+      {{IronBoots} 1}
+    }
+    unique = {
+      {AutomatonItem} { 1 2 }
+    }
+    prefixChance = 0.03
+  }
+
+  "dwarfShop"
+  {
+    items = {
+      {{Knife} 5}
+      {{Sword} 2}
+      {{BattleAxe} 2}
+      {{WarHammer} 2}
+      {{Bow} 4}
+      {{LeatherArmor} 2}
+      {{ChainArmor} 1}
+      {{LeatherHelm} 2}
+      {{IronHelm} 1}
+      {{LeatherBoots} 2}
+      {{LeatherGloves} 2}
+      {{IronBoots} 1}
+    }
+    unique = {
+      {Bow} {1 2}
+    }
+    prefixChance = 0.03
+  }
+
+  "dragonCave"
+  {
+    items = {
+      {{GoldPiece} 10 {30 100} }
+      {{Sword} 1 }
+      {{BattleAxe} 1 }
+      {{WarHammer} 1 }
+    }
+    prefixChance = 1
+  }
+
+  "minerals"
+  {
+    items = {
+      {{IronOre} 1 }
+      {{Rock} 1 }
+    }
+  }
+
+  "potions"
+  {
+    items = {
+      {{Potion Heal FLESH} 1 }
+      {{Potion Lasting SLEEP} 1 }
+      {{Potion Lasting SLOWED} 1 }
+      {{Potion Lasting BLIND} 1 }
+      {{Potion Lasting INVISIBLE} 1 }
+      {{Potion Lasting POISON} 1 }
+      {{Potion Lasting POISON_RESISTANT} 1 }
+      {{Potion Lasting FLYING} 1 }
+      {{Potion Lasting SPEED} 1 }
+    }
+  }
+
+  "scrolls"
+  {
+    items = {
+      {{Scroll Escape} 1 }
+      {{Scroll EnhanceArmor} 1 }
+      {{Scroll EnhanceWeapon} 1 }
+      {{FireScroll} 1 }
+      {{Scroll Summon "FIRE_ELEMENTAL" {1 2}} 1 }
+      {{Scroll CircularBlast} 1 }
+      {{Scroll Deception} 1 }
+      {{Scroll Summon "FLY" {3 6}} 1 }
+    }
+  }
+
+  "goodMushrooms"
+  {
+    items = {
+      {{Mushroom Lasting DAM_BONUS} 1}
+      {{Mushroom Lasting DEF_BONUS} 1}
+      {{Mushroom Lasting NIGHT_VISION} 1}
+      {{Mushroom Lasting PANIC} 1}
+      {{Mushroom Lasting REGENERATION} 1}
+      {{Mushroom Lasting RAGE} 1}
+    }
+  }
+
+  "wildMushrooms"
+  {
+    items = {
+      {{Mushroom Lasting DAM_BONUS} 1}
+      {{Mushroom Lasting DEF_BONUS} 1}
+      {{Mushroom Lasting NIGHT_VISION} 1}
+      {{Mushroom Lasting PANIC} 1}
+      {{Mushroom Lasting REGENERATION} 1}
+      {{Mushroom Lasting RAGE} 1}
+      {{Mushroom Lasting HALLU} 10}
+    }
+  }
+
+  "amulets"
+  {
+    items = { 
+      {{Amulet REGENERATION} 1}
+      {{Amulet WARNING} 1}
+      {{DefenseAmulet} 1}
+    }
+  }
+
+  "dungeon"
+  {
+    items = {
+      {{Knife} 50 }
+      {{Sword} 50 }
+      {{BattleAxe} 10 }
+      {{WarHammer} 20 }
+      {{LeatherArmor} 20 }
+      {{ChainArmor} 1 }
+      {{LeatherHelm} 20 }
+      {{IronHelm} 5 }
+      {{LeatherBoots} 20 }
+      {{IronBoots} 7 }
+      {{Torch} 7 }
+      {{LeatherGloves} 30 }
+      {{Scroll Escape} 30 }
+      {{Scroll EnhanceArmor} 30 }
+      {{Scroll EnhanceWeapon} 30 }
+      {{FireScroll} 30 }
+      {{Scroll Summon "FIRE_ELEMENTAL" {1 2}} 30 }
+      {{Scroll CircularBlast} 5 }
+      {{Scroll Deception} 10 }
+      {{Scroll Summon "FLY" {3 6}} 30 }
+      {{Potion Heal FLESH} 50 }
+      {{Potion Lasting SLEEP} 50 }
+      {{Potion Lasting SLOWED} 50 }
+      {{Potion Lasting BLIND} 30 }
+      {{Potion Lasting INVISIBLE} 10 }
+      {{Potion Lasting POISON} 20 }
+      {{Potion Lasting POISON_RESISTANT} 20 }
+      {{Potion Lasting FLYING} 20 }
+      {{Potion Lasting SPEED} 50 }
+      {{Amulet WARNING} 3 }
+      {{Amulet REGENERATION} 3 }
+      {{DefenseAmulet} 3 }
+      {{Ring POISON_RESISTANT} 3}
+      {{Ring FIRE_RESISTANT} 3}
+    }
+    prefixChance = 0.03
+  }
+
+  "chest"
+  {
+    items = {
+      {{Knife} 50 }
+      {{Sword} 50 }
+      {{BattleAxe} 10 }
+      {{WarHammer} 20 }
+      {{LeatherArmor} 20 }
+      {{ChainArmor} 1 }
+      {{LeatherHelm} 20 }
+      {{IronHelm} 5 }
+      {{LeatherBoots} 20 }
+      {{IronBoots} 7 }
+      {{Torch} 7 }
+      {{LeatherGloves} 30 }
+      {{Scroll Escape} 30 }
+      {{Scroll EnhanceArmor} 30 }
+      {{Scroll EnhanceWeapon} 30 }
+      {{FireScroll} 30 }
+      {{Scroll Summon "FIRE_ELEMENTAL" {1 2}} 30 }
+      {{Scroll CircularBlast} 5 }
+      {{Scroll Deception} 10 }
+      {{Scroll Summon "FLY" {3 6}} 30 }
+      {{Potion Heal FLESH} 50 }
+      {{Potion Lasting SLEEP} 50 }
+      {{Potion Lasting SLOWED} 50 }
+      {{Potion Lasting BLIND} 30 }
+      {{Potion Lasting INVISIBLE} 10 }
+      {{Potion Lasting POISON} 20 }
+      {{Potion Lasting POISON_RESISTANT} 20 }
+      {{Potion Lasting FLYING} 20 }
+      {{Potion Lasting SPEED} 50 }
+      {{Amulet WARNING} 3 }
+      {{Amulet REGENERATION} 3 }
+      {{DefenseAmulet} 3 }
+      {{Ring POISON_RESISTANT} 3}
+      {{Ring FIRE_RESISTANT} 3}
+      {{GoldPiece} 300 {4 9}}
+    }
+    prefixChance = 0.03
+  }
+
+  "gold"
+  {
+    items = {
+      {{GoldPiece} 300 {4 9}}
+    }
+  }
+}

@@ -20,20 +20,20 @@
 #include "resource_counts.h"
 #include "content_factory.h"
 
-static SettlementInfo getEnemy(EnemyId id) {
-  auto enemy = EnemyFactory(Random, nullptr).get(id);
+static SettlementInfo getEnemy(EnemyId id, const ContentFactory* contentFactory) {
+  auto enemy = EnemyFactory(Random, nullptr, contentFactory->enemies).get(id);
   enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
   return enemy.settlement;
 }
 
 static PLevelMaker getLevelMaker(const ZLevelType& level, ResourceCounts resources, int width, TribeId tribe,
-    StairKey stairKey) {
+    StairKey stairKey, const ContentFactory* contentFactory) {
   return level.visit(
       [&](const WaterZLevel& level) {
         return LevelMaker::getWaterZLevel(Random, level.waterType, width, level.creatures, stairKey);
       },
       [&](const FullZLevel& level) {
-        return LevelMaker::getFullZLevel(Random, level.enemy.map([](auto id) { return getEnemy(id); }), resources,
+        return LevelMaker::getFullZLevel(Random, level.enemy.map([&](auto id) { return getEnemy(id, contentFactory); }), resources,
             width, tribe, stairKey);
       });
 }
@@ -55,7 +55,7 @@ static PLevelMaker getLevelMaker(RandomGen& random, const ContentFactory* conten
   vector<ZLevelInfo> levels = concat<ZLevelInfo>({allLevels[0], allLevels[1 + int(alignment)]});
   auto zLevel = *chooseZLevel(random, levels, depth);
   auto res = *chooseResourceCounts(random, resources, depth);
-  return getLevelMaker(zLevel, res, width, tribe, stairKey);
+  return getLevelMaker(zLevel, res, width, tribe, stairKey, contentFactory);
 }
 
 static void removeOldStairs(Level* level, StairKey stairKey) {

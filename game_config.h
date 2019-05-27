@@ -22,7 +22,9 @@ enum class GameConfigId {
   RESOURCE_COUNTS,
   GAME_INTRO_TEXT,
   TILES,
-  FURNITURE
+  FURNITURE,
+  ENEMIES,
+  ITEM_LISTS
 };
 
 class GameConfig {

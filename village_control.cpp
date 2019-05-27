@@ -37,9 +37,6 @@
 #include "game_event.h"
 #include "content_factory.h"
 
-typedef EnumVariant<AttackTriggerId, TYPES(int),
-        ASSIGN(int, AttackTriggerId::ENEMY_POPULATION, AttackTriggerId::GOLD)> OldTrigger;
-
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl)
 
 SERIALIZE_DEF(VillageControl, SUBCLASS(CollectiveControl), SUBCLASS(EventListener), villain, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower)
@@ -86,7 +83,7 @@ void VillageControl::onEvent(const GameEvent& event) {
       [&](const ItemsPickedUp& info) {
         if (!collective->isConquered() && collective->getTerritory().contains(info.creature->getPosition()))
           if (isEnemy(info.creature) && villain)
-            if (villain->triggers.contains(AttackTriggerId::STOLEN_ITEMS)) {
+            if (villain->triggers.contains(AttackTrigger(StolenItems{}))) {
               bool wasTheft = false;
               for (const Item* it : info.items)
                 if (myItems.contains(it)) {
@@ -177,7 +174,7 @@ void VillageControl::considerWelcomeMessage() {
   if (villain)
     if (villain->welcomeMessage)
       switch (*villain->welcomeMessage) {
-        case VillageBehaviour::DRAGON_WELCOME:
+        case VillageBehaviour::WelcomeMessage::DRAGON_WELCOME:
           for (Position pos : collective->getTerritory().getAll())
             if (Creature* c = pos.getCreature())
               if (c->isAffected(LastingEffect::INVISIBLE) && isEnemy(c) && c->isPlayer()

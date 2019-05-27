@@ -34,6 +34,10 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "tiles";
     case GameConfigId::FURNITURE:
       return "furniture";
+    case GameConfigId::ENEMIES:
+      return "enemies";
+    case GameConfigId::ITEM_LISTS:
+      return "item_lists";
   }
 }
 

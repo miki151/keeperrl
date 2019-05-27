@@ -22,6 +22,7 @@
 #include "position.h"
 #include "game_time.h"
 #include "furniture_type.h"
+#include "conquer_condition.h"
 
 enum class ItemClass;
 
@@ -118,11 +119,11 @@ class CollectiveConfig {
   CollectiveConfig(TimeInterval immigrantInterval, CollectiveType, int maxPopulation);
 
   TimeInterval SERIAL(immigrantInterval);
-  int SERIAL(maxPopulation);
-  CollectiveType SERIAL(type);
+  int SERIAL(maxPopulation) = 10000;
+  CollectiveType SERIAL(type) = CollectiveType::VILLAGE;
   bool SERIAL(leaderAsFighter) = false;
   int SERIAL(spawnGhosts) = 0;
   double SERIAL(ghostProb) = 0;
   optional<GuardianInfo> SERIAL(guardianInfo);
-  ConquerCondition SERIAL(conquerCondition);
+  ConquerCondition SERIAL(conquerCondition) = ConquerCondition::KILL_FIGHTERS_AND_LEADER;
 };

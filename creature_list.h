@@ -32,7 +32,7 @@ struct CreatureList {
   void serialize(Archive&, const unsigned int);
 
   private:
-  int SERIAL(count) = 0;
+  Range SERIAL(count) = Range(0, 1);
   vector<CreatureId> SERIAL(uniques);
   using Freq = pair<int, CreatureId>;
   vector<Freq> SERIAL(all);

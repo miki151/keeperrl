@@ -674,23 +674,42 @@ vector<Button> PlayerControl::fillButtons() const {
 }
 
 string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
-  switch (trigger.getId()) {
-    case AttackTriggerId::SELF_VICTIMS: return "killed tribe members";
-    case AttackTriggerId::GOLD: return "gold";
-    case AttackTriggerId::STOLEN_ITEMS: return "item theft";
-    case AttackTriggerId::ROOM_BUILT: {
-      auto type = trigger.get<RoomTriggerInfo>().type;
-      auto myCount = collective->getConstructions().getBuiltCount(type);
-      return getGame()->getContentFactory()->furniture.getData(type).getName(myCount);
-    }
-    case AttackTriggerId::POWER: return "your power";
-    case AttackTriggerId::FINISH_OFF: return "finishing you off";
-    case AttackTriggerId::ENEMY_POPULATION: return "population";
-    case AttackTriggerId::TIMER: return "evil";
-    case AttackTriggerId::NUM_CONQUERED: return "aggression";
-    case AttackTriggerId::MINING_IN_PROXIMITY: return "breach of territory";
-    case AttackTriggerId::PROXIMITY: return "proximity";
-  }
+  return trigger.visit(
+      [&](const Timer&) {
+        return "evil";
+      },
+      [&](const RoomTrigger& t) {
+        auto myCount = collective->getConstructions().getBuiltCount(t.type);
+        return getGame()->getContentFactory()->furniture.getData(t.type).getName(myCount);
+      },
+      [&](const Power&) {
+        return "your power";
+      },
+      [&](const FinishOff&) {
+        return "finishing you off";
+      },
+      [&](const SelfVictims&) {
+        return "killed tribe members";
+      },
+      [&](const EnemyPopulation&) {
+        return "population";
+      },
+      [&](const Gold&) {
+        return "gold";
+      },
+      [&](const StolenItems&) {
+        return "item theft";
+      },
+      [&](const MiningInProximity&) {
+        return "breach of territory";
+      },
+      [&](const Proximity&) {
+        return "proximity";
+      },
+      [&](const NumConquered&) {
+        return "aggression";
+      }
+  );
 }
 
 VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
@@ -1436,7 +1455,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   const auto maxEnemyCountdown = 500_visible;
   if (auto& enemies = getModel()->getExternalEnemies())
     if (auto nextWave = enemies->getNextWave()) {
-      if (nextWave->enemy.behaviour.getId() != AttackBehaviourId::HALLOWEEN_KIDS) {
+      if (!nextWave->enemy.behaviour.contains<HalloweenKids>()) {
         auto countDown = nextWave->attackTime - getModel()->getLocalTime();
         auto index = enemies->getNextWaveIndex();
         auto name = nextWave->enemy.name;

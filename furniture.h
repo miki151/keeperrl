@@ -142,7 +142,7 @@ class Furniture : public OwnedObject<Furniture> {
     SERIALIZE_ALL(health, strength)
   };
   EnumMap<DestroyAction::Type, optional<DestroyedInfo>> SERIAL(destroyedInfo);
-  heap_optional<ItemFactory> SERIAL(itemDrop);
+  heap_optional<ItemList> SERIAL(itemDrop);
   EnumSet<VisionId> SERIAL(blockVision);
   optional<FurnitureUsageType> SERIAL(usageType);
   optional<FurnitureClickType> SERIAL(clickType);

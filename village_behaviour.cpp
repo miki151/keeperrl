@@ -12,7 +12,7 @@
 #include "villain_type.h"
 #include "attack_behaviour.h"
 
-SERIALIZE_DEF(VillageBehaviour, minPopulation, minTeamSize, triggers, attackBehaviour, welcomeMessage, ransom)
+SERIALIZE_DEF(VillageBehaviour, NAMED(minPopulation), NAMED(minTeamSize), OPTION(triggers), NAMED(attackBehaviour), OPTION(welcomeMessage), OPTION(ransom))
 
 VillageBehaviour::VillageBehaviour() {}
 
@@ -23,28 +23,32 @@ VillageBehaviour::~VillageBehaviour() {}
 
 PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
   WCollective enemy = self->getEnemyCollective();
-  switch (attackBehaviour->getId()) {
-    case AttackBehaviourId::KILL_LEADER:
-      if (auto leader = enemy->getLeader())
-        return Task::attackCreatures({leader});
-      else
-        return Task::killFighters(enemy, 1000);
-    case AttackBehaviourId::KILL_MEMBERS:
-      return Task::killFighters(enemy, attackBehaviour->get<int>());
-    case AttackBehaviourId::STEAL_GOLD:
-      if (auto ret = Task::stealFrom(enemy))
-        return ret;
-      else if (auto leader = enemy->getLeader())
-        return Task::attackCreatures({leader});
-      else
-        return Task::killFighters(enemy, 1000);
-    case AttackBehaviourId::CAMP_AND_SPAWN:
-      return Task::campAndSpawn(enemy,
-            attackBehaviour->get<CreatureGroup>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
-    case AttackBehaviourId::HALLOWEEN_KIDS:
-      FATAL << "Not handled";
-      return {};
-  }
+  return attackBehaviour->visit(
+      [&](KillLeader) {
+        if (auto leader = enemy->getLeader())
+          return Task::attackCreatures({leader});
+        else
+          return Task::killFighters(enemy, 1000);
+      },
+      [&](KillMembers t) {
+        return Task::killFighters(enemy, t.count);
+      },
+      [&](StealGold) {
+        if (auto ret = Task::stealFrom(enemy))
+          return ret;
+        else if (auto leader = enemy->getLeader())
+          return Task::attackCreatures({leader});
+        else
+          return Task::killFighters(enemy, 1000);
+      },
+      [&](CampAndSpawn t) {
+        return Task::campAndSpawn(enemy, t, Random.get(3, 7));
+      },
+      [&](HalloweenKids) {
+        FATAL << "Not handled";
+        return PTask();
+      }
+  );
 }
 
 static double powerClosenessFun(double myPower, double hisPower) {
@@ -141,41 +145,49 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
   double timerProb = 1.0 / 3000;
   double numConqueredMaxProb = 1.0 / 3000;
   if (auto enemy = self->getEnemyCollective())
-    switch (trigger.getId()) {
-      case AttackTriggerId::TIMER: 
-        return enemy->getGlobalTime().getVisibleInt() >= trigger.get<int>() ? timerProb : 0;
-      case AttackTriggerId::ROOM_BUILT: {
-        auto& info = trigger.get<RoomTriggerInfo>();
-        return info.probPerSquare * enemy->getConstructions().getBuiltCount(info.type);
-      }
-      case AttackTriggerId::POWER: {
-        auto value = powerClosenessFun(self->collective->getDangerLevel(), enemy->getDangerLevel());
-        if (value < 0.5)
-          value = 0;
-        return powerMaxProb * value;
-      }
-      case AttackTriggerId::FINISH_OFF:
-        return finishOffMaxProb * getFinishOffProb(self->maxEnemyPower, enemy->getDangerLevel(),
-            self->collective->getDangerLevel());
-      case AttackTriggerId::SELF_VICTIMS:
-        return victimsMaxProb * victimsFun(self->victims, 0);
-      case AttackTriggerId::ENEMY_POPULATION:
-        return populationMaxProb * populationFun(
-            enemy->getPopulationSize(), trigger.get<int>());
-      case AttackTriggerId::GOLD:
-        return goldMaxProb * goldFun(enemy->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
-      case AttackTriggerId::STOLEN_ITEMS:
-        return stolenMaxProb * stolenItemsFun(self->stolenItemCount);
-      case AttackTriggerId::MINING_IN_PROXIMITY:
-        return entryMaxProb * self->entries;
-      case AttackTriggerId::PROXIMITY:
-        if (enemy->getGame()->getModelDistance(enemy, self->collective) == 1)
-          return proximityMaxProb;
-        else
-          return 0;
-      case AttackTriggerId::NUM_CONQUERED:
-        return numConqueredMaxProb * getNumConqueredProb(self->collective->getGame(), trigger.get<int>());
-    }
+    return trigger.visit(
+        [&](const Timer& t) {
+          return enemy->getGlobalTime().getVisibleInt() >= t.value ? timerProb : 0;
+        },
+        [&](const RoomTrigger& t) {
+          return t.probPerSquare * enemy->getConstructions().getBuiltCount(t.type);
+        },
+        [&](const Power&) {
+          auto value = powerClosenessFun(self->collective->getDangerLevel(), enemy->getDangerLevel());
+          if (value < 0.5)
+            value = 0;
+          return powerMaxProb * value;
+        },
+        [&](const FinishOff&) {
+          return finishOffMaxProb * getFinishOffProb(self->maxEnemyPower, enemy->getDangerLevel(),
+              self->collective->getDangerLevel());
+        },
+        [&](const SelfVictims&) {
+          return victimsMaxProb * victimsFun(self->victims, 0);
+        },
+        [&](const EnemyPopulation& t) {
+          return populationMaxProb * populationFun(
+              enemy->getPopulationSize(), t.value);
+        },
+        [&](const Gold& t) {
+          return goldMaxProb * goldFun(enemy->numResource(Collective::ResourceId::GOLD), t.value);
+        },
+        [&](const StolenItems&) {
+          return stolenMaxProb * stolenItemsFun(self->stolenItemCount);
+        },
+        [&](const MiningInProximity&) {
+          return entryMaxProb * self->entries;
+        },
+        [&](const Proximity&) {
+          if (enemy->getGame()->getModelDistance(enemy, self->collective) == 1)
+            return proximityMaxProb;
+          else
+            return 0.0;
+        },
+        [&](const NumConquered& t) {
+          return numConqueredMaxProb * getNumConqueredProb(self->collective->getGame(), t.value);
+        }
+    );
   return 0;
 }
 
@@ -186,9 +198,12 @@ double VillageBehaviour::getAttackProbability(const VillageControl* self) const 
     CHECK(val >= 0 && val <= 1);
     ret = max(ret, val);
     if (auto& name = self->collective->getName())
-      INFO << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village "
+      INFO << "trigger " << elem.getName() << " village "
           << name->full << " under attack probability " << val;
   }
   return ret;
 }
 
+#include "pretty_archive.h"
+template
+void VillageBehaviour::serialize(PrettyInputArchive& ar1, unsigned);

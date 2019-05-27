@@ -217,12 +217,12 @@ void Game::prepareSiteRetirement() {
       playerCollective, CONSTRUCT(VillageBehaviour,
           c.minPopulation = 24;
           c.minTeamSize = 5;
-          c.triggers = LIST(
-              {AttackTriggerId::ROOM_BUILT, RoomTriggerInfo{FurnitureType("THRONE"), 0.0003}},
-              {AttackTriggerId::SELF_VICTIMS},
-              AttackTriggerId::STOLEN_ITEMS,
+          c.triggers = makeVec<AttackTrigger>(
+              RoomTrigger{FurnitureType("THRONE"), 0.0003},
+              SelfVictims{},
+              StolenItems{}
           );
-          c.attackBehaviour = AttackBehaviour(AttackBehaviourId::KILL_LEADER);
+          c.attackBehaviour = KillLeader{};
           c.ransom = make_pair(0.8, Random.get(500, 700));)));
   WModel mainModel = models[baseModel].get();
   mainModel->setGame(nullptr);

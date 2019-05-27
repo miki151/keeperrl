@@ -58,7 +58,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
   SettlementInfo& mainSettlement = enemy.settlement;
   SettlementInfo& extraSettlement = enemy.levelConnection->otherEnemy->settlement;
   switch (enemy.levelConnection->type) {
-    case LevelConnection::TOWER: {
+    case LevelConnection::Type::TOWER: {
       StairKey downLink = StairKey::getNew();
       extraSettlement.upStairs = {downLink};
       for (int i : Range(towerHeight - 1)) {
@@ -90,7 +90,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
          LevelMaker::towerLevel(random, mainSettlement));
       return extraSettlement;
     }
-    case LevelConnection::CRYPT: {
+    case LevelConnection::Type::CRYPT: {
       StairKey key = StairKey::getNew();
       extraSettlement.downStairs = {key};
       mainSettlement.upStairs = {key};
@@ -99,7 +99,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
          LevelMaker::cryptLevel(random, mainSettlement));
       return extraSettlement;
     }
-    case LevelConnection::MAZE: {
+    case LevelConnection::Type::MAZE: {
       StairKey key = StairKey::getNew();
       extraSettlement.upStairs = {key};
       mainSettlement.downStairs = {key};
@@ -108,7 +108,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
          LevelMaker::mazeLevel(random, extraSettlement));
       return mainSettlement;
     }
-    case LevelConnection::GNOMISH_MINES: {
+    case LevelConnection::Type::GNOMISH_MINES: {
       StairKey upLink = StairKey::getNew();
       extraSettlement.downStairs = {upLink};
       for (int i : Range(gnomeHeight - 1)) {
@@ -128,7 +128,7 @@ SettlementInfo& ModelBuilder::makeExtraLevel(WModel model, EnemyInfo& enemy) {
          LevelMaker::mineTownLevel(random, mainSettlement));
       return extraSettlement;
     }
-    case LevelConnection::SOKOBAN:
+    case LevelConnection::Type::SOKOBAN:
       StairKey key = StairKey::getNew();
       extraSettlement.upStairs = {key};
       mainSettlement.downStairs = {key};
@@ -504,7 +504,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
       enemy.settlement.collective->setDiscoverable();
     PCollective collective = enemy.settlement.collective->build(contentFactory);
     collective->setImmigration(makeOwner<Immigration>(collective.get(), std::move(enemy.immigrants)));
-    auto control = VillageControl::create(collective.get(), enemy.villain);
+    auto control = VillageControl::create(collective.get(), enemy.behaviour);
     if (enemy.villainType)
       collective->setVillainType(*enemy.villainType);
     if (enemy.id)

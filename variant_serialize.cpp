@@ -15,6 +15,7 @@
 #include "effect.h"
 #include "campaign.h"
 #include "z_level_info.h"
+#include "attack_behaviour.h"
 
 namespace cereal {
   namespace variant_detail {
@@ -64,7 +65,6 @@ namespace cereal {
   template void load(BinaryInputArchive&, V&);
 
   INST(StorageInfo, vector<Position>)
-  INST(EmptyThing, int, RoomTriggerInfo)
   INST(EmptyThing, int, CreatureGroup)
   INST2(SpecialTrait_impl)
   INST2(BuildInfo::BuildType_impl)
@@ -78,4 +78,6 @@ namespace cereal {
   INST2(Effect::EffectType_impl)
   INST2(Campaign::SiteInfo::Dweller)
   INST2(ZLevelType_impl)
+  INST2(AttackTrigger_impl)
+  INST2(AttackBehaviour_impl)
 } // namespace cereal

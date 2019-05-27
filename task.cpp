@@ -795,10 +795,9 @@ namespace {
 
 class CampAndSpawn : public Task {
   public:
-  CampAndSpawn(WCollective _target, CreatureGroup s, int defense, Range attack, int numAtt)
+  CampAndSpawn(WCollective _target, CreatureList s, int numAtt)
     : target(_target), spawns(s),
-      campPos(Random.permutation(target->getTerritory().getStandardExtended())), defenseSize(defense),
-      attackSize(attack), numAttacks(numAtt) {}
+      campPos(Random.permutation(target->getTerritory().getStandardExtended())), numAttacks(numAtt) {}
 
   void updateTeams() {
     for (auto member : copyOf(defenseTeam))
@@ -822,9 +821,10 @@ class CampAndSpawn : public Task {
       return NoMove;
     }
     updateTeams();
-    if (defenseTeam.size() < defenseSize && Random.roll(5)) {
-      for (Creature* summon : Effect::summonCreatures(c->getPosition(), 4,
-          makeVec(spawns.random(&c->getGame()->getContentFactory()->creatures, MonsterAIFactory::summoned(c)))))
+    if (defenseTeam.empty()) {
+      auto team = spawns.generate(Random, &c->getGame()->getContentFactory()->creatures, c->getTribeId(),
+          MonsterAIFactory::summoned(c));
+      for (Creature* summon : Effect::summonCreatures(c->getPosition(), 4, std::move(team)))
         defenseTeam.push_back(summon);
     }
     if (!campPos.contains(c->getPosition()))
@@ -840,10 +840,8 @@ class CampAndSpawn : public Task {
       if (*attackCountdown > 0)
         --*attackCountdown;
       else {
-        vector<PCreature> team;
-        for (int i : Range(Random.get(attackSize)))
-          team.push_back(spawns.random(&c->getGame()->getContentFactory()->creatures,
-              MonsterAIFactory::singleTask(Task::attackCreatures({target->getLeader()}))));
+        auto team = spawns.generate(Random, &c->getGame()->getContentFactory()->creatures, c->getTribeId(),
+            MonsterAIFactory::singleTask(Task::attackCreatures({target->getLeader()})));
         for (Creature* summon : Effect::summonCreatures(c->getPosition(), 4, std::move(team)))
           attackTeam.push_back(summon);
         attackCountdown = none;
@@ -856,15 +854,13 @@ class CampAndSpawn : public Task {
     return "Camp and spawn " + target->getLeader()->getName().bare();
   }
  
-  SERIALIZE_ALL(SUBCLASS(Task), target, spawns, campPos, defenseSize, attackSize, attackCountdown, defenseTeam, attackTeam, numAttacks)
+  SERIALIZE_ALL(SUBCLASS(Task), target, spawns, campPos, attackCountdown, defenseTeam, attackTeam, numAttacks)
   SERIALIZATION_CONSTRUCTOR(CampAndSpawn)
 
   private:
   WCollective SERIAL(target) = nullptr;
-  CreatureGroup SERIAL(spawns);
+  CreatureList SERIAL(spawns);
   vector<Position> SERIAL(campPos);
-  int SERIAL(defenseSize);
-  Range SERIAL(attackSize);
   optional<int> SERIAL(attackCountdown);
   vector<Creature*> SERIAL(defenseTeam);
   vector<Creature*> SERIAL(attackTeam);
@@ -874,9 +870,8 @@ class CampAndSpawn : public Task {
 
 }
 
-PTask Task::campAndSpawn(WCollective target, const CreatureGroup& spawns, int defenseSize,
-    Range attackSize, int numAttacks) {
-  return makeOwner<CampAndSpawn>(target, spawns, defenseSize, attackSize, numAttacks);
+PTask Task::campAndSpawn(WCollective target, const CreatureList& spawns, int numAttacks) {
+  return makeOwner<CampAndSpawn>(target, spawns, numAttacks);
 }
 
 namespace {

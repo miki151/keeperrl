@@ -22,6 +22,7 @@
 #include "fx_info.h"
 #include "furniture_on_built.h"
 #include "content_factory.h"
+#include "item_list.h"
 
 static string makePlural(const string& s) {
   if (s.empty())

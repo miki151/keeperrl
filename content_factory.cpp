@@ -3,7 +3,7 @@
 #include "name_generator.h"
 #include "game_config.h"
 
-SERIALIZE_DEF(ContentFactory, creatures, furniture, resources, zLevels, tilePaths)
+SERIALIZE_DEF(ContentFactory, creatures, furniture, resources, zLevels, tilePaths, enemies, itemFactory)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(ContentFactory)
 
@@ -22,13 +22,17 @@ bool areResourceCounts(const vector<ResourceDistribution>& resources, int depth)
 }
 
 ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* config, TilePaths tilePaths)
-    : creatures(std::move(nameGenerator), config), furniture(config), tilePaths(std::move(tilePaths)) {
+    : creatures(std::move(nameGenerator), config), furniture(config), tilePaths(std::move(tilePaths)), itemFactory(config) {
   while (1) {
     if (auto res = config->readObject(zLevels, GameConfigId::Z_LEVELS)) {
       USER_INFO << *res;
       continue;
     }
     if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS)) {
+      USER_INFO << *res;
+      continue;
+    }
+    if (auto res = config->readObject(enemies, GameConfigId::ENEMIES)) {
       USER_INFO << *res;
       continue;
     }

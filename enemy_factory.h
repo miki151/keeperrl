@@ -72,7 +72,7 @@ class NameGenerator;
 
 class EnemyFactory {
   public:
-  EnemyFactory(RandomGen&, NameGenerator*);
+  EnemyFactory(RandomGen&, NameGenerator*, map<EnemyId, EnemyInfo> enemies);
   EnemyFactory(const EnemyFactory&) = delete;
   EnemyFactory(EnemyFactory&&) = default;
   EnemyInfo get(EnemyId) const;
@@ -83,7 +83,6 @@ class EnemyFactory {
   RandomGen& random;
 
   private:
-  EnemyInfo getById(EnemyId) const;
-  string getVillageName() const;
   NameGenerator* nameGenerator;
+  map<EnemyId, EnemyInfo> enemies;
 };

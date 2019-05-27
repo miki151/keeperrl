@@ -155,3 +155,7 @@ CreatureGroup CreatureGroup::gnomishMines(TribeId peaceful, TribeId enemy, int l
       make_pair("RAT", 100.)},
       {}, {{"GNOME", peaceful}, {"GNOME_CHIEF", peaceful} });
 }
+
+#include "pretty_archive.h"
+template
+void CreatureGroup::serialize(PrettyInputArchive& ar1, unsigned);

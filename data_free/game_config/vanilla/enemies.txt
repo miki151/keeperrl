@@ -1,0 +1,1572 @@
+{
+  TUTORIAL_VILLAGE
+  {
+    settlement = {
+      type = SMALL_VILLAGE
+      tribe = HUMAN
+      inhabitants = {
+        fighters = {
+          count = {2 4}
+          all = {
+            1 "PESEANT"
+          }
+        }
+        civilians = {
+          count = {3 7}
+          all = {
+            1 "CHILD"
+            1 "HORSE"
+            1 "DONKEY"
+            1 "COW"
+            1 "PIG"
+            1 "DOG"
+          }
+        }
+      }
+      race = "humans"
+        buildingId = WOOD
+        stockpiles = {
+          { "gold" 50 "TREASURE_CHEST" }
+        }
+      cropsDistance = 16
+        furniture = "roomFurniture"
+    }
+  }
+  UNICORN_HERD
+  {
+    settlement = {
+      type = FOREST
+      inhabitants = {
+        fighters = {
+          count = {5 8}
+          all = {
+            1 "UNICORN"
+          }
+        }
+      }
+      tribe = MONSTER
+      race = "unicorns"
+      buildingId = WOOD
+    }
+    config = {
+      immigrantInterval = 200
+      maxPopulation = 9
+    }
+    immigrants = {
+      {
+        ids = {"UNICORN"}
+        traits = {FIGHTER}
+        frequency = 1
+      }
+    }
+  }
+  ANTS_CLOSED
+  {
+    settlement = {
+      type = ANT_NEST
+      inhabitants = {
+        leader = { { "ANT_QUEEN" } }
+        civilians = {
+          count = {5 7}
+          all = { 1 "ANT_WORKER" }
+        }
+        fighters = {
+          count = {5 7}
+          all = { 1 "ANT_SOLDIER" }
+        }
+      }
+      dontConnectCave = true
+      surroundWithResources = 5
+      tribe = ANT
+      race = "ants"
+      buildingId = DUNGEON
+    }
+    config = {
+      immigrantInterval = 500
+      maxPopulation = 15
+    }
+    behaviour = {
+      minPopulation = 1
+      minTeamSize = 4
+      triggers = { MiningInProximity }
+      attackBehaviour = KillLeader
+    }
+    immigrants = {
+      {
+        ids = {"ANT_WORKER"}
+        frequency = 1
+      }
+      {
+        ids = {"ANT_SOLDIER"}
+        traits = {FIGHTER}
+        frequency = 1
+      }
+    }
+  }
+  ANTS_CLOSED_SMALL
+  {
+    settlement = {
+      type = SMALL_MINETOWN
+      inhabitants = {
+        civilians = {
+          count = {2 5}
+          all = { 1 "ANT_WORKER" }
+        }
+        fighters = {
+          count = {3 5}
+          all = { 1 "ANT_SOLDIER" }
+        }
+      }
+      tribe = ANT
+      race = "ants"
+      dontConnectCave = true
+      closeToPlayer = true
+      surroundWithResources = 6
+      buildingId = DUNGEON
+    }
+    behaviour = {
+      minPopulation = 0
+      minTeamSize = 2
+      triggers = { MiningInProximity }
+      attackBehaviour = KillLeader
+    }
+  }
+  ANTS_OPEN
+  {
+    settlement = {
+      type = ANT_NEST
+      inhabitants = {
+        leader = { { "ANT_QUEEN" } }
+        civilians = {
+          count = {5 7}
+          all = { 1 "ANT_WORKER" }
+        }
+        fighters = {
+          count = {5 7}
+          all = { 1 "ANT_SOLDIER" }
+        }
+      }
+      surroundWithResources = 5
+      tribe = ANT
+      race = "ants"
+      buildingId = DUNGEON
+    }
+    config = {
+      immigrantInterval = 500
+      maxPopulation = 15
+    }
+    behaviour = {
+      minPopulation = 1
+      minTeamSize = 4
+      triggers = { MiningInProximity }
+      attackBehaviour = KillLeader
+    }
+    immigrants = {
+      {
+        ids = {"ANT_WORKER"}
+        frequency = 1
+      }
+      {
+        ids = {"ANT_SOLDIER"}
+        traits = {FIGHTER}
+        frequency = 1
+      }
+    }
+    createOnBones = 0.1 { DWARVES}
+  }
+  ADA_GOLEMS
+  {
+    settlement = {
+      type = VAULT
+      inhabitants = {
+        fighters = {
+          count = {8 9}
+          all = { 1 "ADA_GOLEM" }
+        }
+      }
+      tribe = ANT
+      race = "adamantine golems"
+      dontConnectCave = true
+      surroundWithResources = 3
+      extraResources = "ADAMANTIUM_ORE"
+      buildingId = DUNGEON
+    }
+    behaviour = {
+      minPopulation = 0
+      minTeamSize = 8
+      triggers = {MiningInProximity}
+      attackBehaviour = KillLeader
+    }
+  }
+  ORC_VILLAGE
+  {
+    settlement = {
+      type = VILLAGE
+      tribe = GREENSKIN
+      inhabitants = {
+        fighters = {
+          count = {12 16}
+          all = {
+            1 "ORC"
+            1 "OGRE"
+          }
+        }
+      }
+      locationNameGen = TOWN
+      race = "greenskins"
+      buildingId = BRICK
+      furniture = "roomFurniture"
+      outsideFeatures = "villageOutside"
+    }
+    config = {
+      immigrantInterval = 300
+      maxPopulation = 16
+    }
+    createOnBones = 0.1 {DWARVES VILLAGE}
+    immigrants = {
+      {
+        ids = {"ORC"}
+        traits = {FIGHTER}
+        frequency = 3
+      }
+      {
+        ids = {"OGRE"}
+        traits = {FIGHTER}
+        frequency = 1
+      }
+    }
+  }
+  DEMON_DEN_ABOVE
+  {
+    settlement = {
+      type = VILLAGE
+      tribe = MONSTER
+      inhabitants = {
+        fighters = {
+          count = {2 3}
+          all = { 1 "LOST_SOUL" }
+        }
+      }
+      buildingId = DUNGEON_SURFACE
+      locationName = "Darkshrine Town"
+      race = "ghosts"
+      furniture = "dungeonOutside"
+    }
+    discoverable = false
+    createOnBones = 1.0 {KNIGHTS}
+  }
+  DEMON_DEN
+  {
+    settlement = {
+      type = VILLAGE
+      buildingId = DUNGEON
+      tribe = MONSTER
+      inhabitants = {
+        leader = { { "DEMON_LORD" } }
+        fighters = {
+          count = {5 10}
+          all = { 1 "DEMON_DWELLER" }
+        }
+      }
+      locationName = "Darkshrine"
+      race = "demons"
+      furniture = "dungeonOutside"
+      outsideFeatures = "dungeonOutside"
+    }
+    config = {
+      immigrantInterval = 300
+      maxPopulation = 16
+    }
+    behaviour = {
+      minPopulation = 0
+      minTeamSize = 3
+      triggers = {RoomTrigger "DEMON_SHRINE" 0.0001}
+      attackBehaviour = KillLeader
+      ransom = 0.5 100
+    }
+    levelConnection = {
+      type = CRYPT
+      enemyId = DEMON_DEN_ABOVE
+    }
+    immigrants = {
+      {
+        ids = {"DEMON_DWELLER"}
+        traits = {FIGHTER}
+        frequency = 1
+      }
+    }
+  }
+  VILLAGE
+  {
+    settlement = {
+      type = VILLAGE
+      tribe = HUMAN
+      inhabitants = {
+        leader = { { "KNIGHT" } }
+        fighters = {
+          count = {4 8}
+          all = {
+            1 "KNIGHT"
+            1 "ARCHER"
+          }
+        }
+        civilians = {
+          count = {4 8}
+          all = {
+            1 "PESEANT"
+            1 "CHILD"
+            1 "DONKEY"
+            1 "HORSE"
+            1 "COW"
+            1 "PIG"
+            1 "DOG"
+          }
+        }
+      }
+      locationNameGen = TOWN
+      race = "humans"
+      buildingId = WOOD
+      shopItems = "armory"
+      furniture = "roomFurniture"
+    }
+    config = {
+      spawnGhosts = 4
+      ghostProb = 0.1
+    }
+  }
+  WARRIORS
+  {
+    settlement = {
+      type = CASTLE2
+      tribe = HUMAN
+      inhabitants = {
+        leader = { { "SHAMAN" } }
+        fighters = {
+          count = {7 10}
+          all = { 1 "WARRIOR" }
+        }
+      }
+      locationNameGen = TOWN
+      race = "humans"
+      buildingId = WOOD_CASTLE
+      stockpiles = {{ "gold" 160 }}
+      lootItem = {TechBook "beast mutation"}
+      furniture = "roomFurniture"
+      outsideFeatures = "castleOutside"
+    }
+    config = {
+      immigrantInterval = 300
+      maxPopulation = 10
+      ghostProb = 0.1
+      spawnGhosts = 6
+    }
+    behaviour = {
+      minPopulation = 3
+      minTeamSize = 5
+      triggers = {
+        RoomTrigger "THRONE" 0.0003
+        RoomTrigger "IMPALED_HEAD" 0.0001
+        SelfVictims
+        NumConquered 2
+        StolenItems
+        FinishOff
+        Proximity
+      }
+      attackBehaviour = KillLeader
+      ransom = 0.8 140
+    }
+    immigrants = {
+      {
+        ids = {"WARRIOR"}
+        traits = {FIGHTER}
+        frequency = 1
+      }
+    }
+  }
+  KNIGHTS
+  {
+    settlement = {
+      type = CASTLE
+      tribe = HUMAN
+      inhabitants = {
+        leader = { { "DUKE" } }
+        fighters = {
+          count = {12 17}
+          all = {
+            1 "PRIEST"
+            3 "KNIGHT"
+            1 "ARCHER"
+          }
+        }
+        civilians = {
+          count = {6 9}
+          all = {
+            1 "PESEANT"
+            1 "CHILD"
+            1 "DONKEY"
+            1 "HORSE"
+            1 "COW"
+            1 "PIG"
+            1 "DOG"
+          }
+        }
+      }
+      locationNameGen = TOWN
+      race = "humans"
+      stockpiles = {{ "gold" 140 }}
+      buildingId = BRICK
+      shopItems = "villageShop"
+      furniture = "castleFurniture"
+      outsideFeatures = "castleOutside"
+    }
+    config = {
+      immigrantInterval = 300
+      maxPopulation = 26
+      ghostProb = 0.1
+      spawnGhosts = 6
+    }
+    behaviour = {
+      minPopulation = 12
+      minTeamSize = 10
+      triggers = {
+        RoomTrigger "THRONE" 0.0003
+        RoomTrigger "IMPALED_HEAD" 0.0001
+        SelfVictims
+        NumConquered 3
+        StolenItems
+        FinishOff
+        Proximity
+      }
+      attackBehaviour = KillLeader
+      ransom = 0.9 400
+    }
+    levelConnection = {
+      type = MAZE
+      enemyId = MINOTAUR
+    }
+    immigrants = {
+      {
+        ids = {"ARCHER"}
+        traits = {FIGHTER}
+        frequency = 1
+      }
+      {
+        ids = {"KNIGHT"}
+        traits = {FIGHTER}
+        frequency = 1
+      }
+    }
+  }
+  MINOTAUR
+  {
+    settlement = {
+      type = CAVE
+      tribe = MONSTER
+      inhabitants = {
+        leader = { { "MINOTAUR" } }
+      }
+      locationName = "maze"
+      race = "monsters"
+      furniture = "roomFurniture"
+      buildingId = BRICK
+    }
+  }
+  RED_DRAGON
+  {
+    settlement = {
+      type = CAVE
+      inhabitants = {
+        leader = { { "RED_DRAGON" } }
+      }
+      race = "dragon"
+      tribe = MONSTER
+      buildingId = DUNGEON
+      shopItems = "dragonCave"
+    }
+    config = {
+      leaderAsFighter = true
+      ghostProb = 0.03
+      spawnGhosts = 1
+    }
+    behaviour = {
+      minPopulation = 0
+      minTeamSize = 1
+      triggers = {
+        EnemyPopulation 22
+        NumConquered 3
+        StolenItems
+        FinishOff
+        Proximity
+      }
+      attackBehaviour = KillMembers 12
+      welcomeMessage = DRAGON_WELCOME
+    }
+    createOnBones = 0.1 {KNIGHTS DWARVES GREEN_DRAGON ELEMENTALIST}
+  }
+  GREEN_DRAGON
+  {
+    settlement = {
+      type = CAVE
+      inhabitants = {
+        leader = { { "GREEN_DRAGON" } }
+      }
+      tribe = MONSTER
+      race = "dragon"
+      buildingId = DUNGEON
+      shopItems = "dragonCave"
+    }
+    config = {
+      leaderAsFighter = true
+      ghostProb = 0.03
+      spawnGhosts = 1
+    }
+    behaviour = {
+      minPopulation = 0
+      minTeamSize = 1
+      triggers = {
+        EnemyPopulation 18
+        NumConquered 2
+        StolenItems
+        FinishOff
+        Proximity
+      }
+      attackBehaviour = KillMembers 7
+      welcomeMessage = DRAGON_WELCOME
+    }
+    createOnBones = 0.1 {KNIGHTS DWARVES ELEMENTALIST}
+  }
+  DWARVES
+  {
+    settlement = {
+      type = MINETOWN
+      tribe = DWARF
+      inhabitants = {
+        leader = { { "DWARF_BARON" } }
+        fighters = {
+          count = {6 9}
+          all = {
+            1 "DWARF"
+          }
+          baseLevelIncrease = {
+            MELEE 10
+          }
+        }
+        civilians = {
+          count = {3 5}
+          all = {
+            2 "DWARF_FEMALE"
+            1 "RAT"
+          }
+        }
+      }
+      locationNameGen = TOWN
+      race = "dwarves"
+      buildingId = DUNGEON
+      stockpiles = {{ "gold" 200} {"minerals" 120 }}
+      shopItems = "dwarfShop"
+      outsideFeatures = "dungeonOutside"
+      surroundWithResources = 5
+      furniture = "roomFurniture"
+    }
+    config = {
+      immigrantInterval = 500
+      maxPopulation = 15
+      ghostProb = 0.1
+      spawnGhosts = 4
+    }
+    behaviour = {
+      minPopulation = 3
+      minTeamSize = 4
+      triggers = {
+        RoomTrigger "THRONE" 0.0003
+        RoomTrigger "IMPALED_HEAD" 0.0001
+        SelfVictims
+        NumConquered 3
+        StolenItems
+        FinishOff
+        Proximity
+      }
+      attackBehaviour = KillMembers 3
+      ransom = 0.8 320
+    }
+    immigrants = {
+      {
+        ids = {"DWARF"}
+        traits = {FIGHTER}
+        frequency = 1
+      }
+    }
+  }
+  ELVES
+  {
+    settlement = {
+      type = FORREST_VILLAGE
+      inhabitants = {
+        leader = { { "ELF_LORD" } }
+        fighters = {
+          count = {6 9}
+          all = { 1 "ELF_ARCHER" }
+        }
+        civilians = {
+          count = {6 9},
+          all = {
+            1 "ELF"
+            1 "ELF_CHILD"
+            1 "HORSE"
+          }
+        }
+      }
+      locationNameGen = TOWN
+      tribe = ELF
+      race = "elves"
+      stockpiles = {{ "gold" 100 }}
+      buildingId = WOOD
+      lootItem = {TechBook "master sorcery"}
+      furniture = "roomFurniture"
+    }
+    config = {
+      immigrantInterval = 500
+      maxPopulation = 18
+      ghostProb = 0.1
+      spawnGhosts = 4
+    }
+    behaviour = {
+      minPopulation = 4
+      minTeamSize = 4
+      triggers = {StolenItems}
+      attackBehaviour = KillLeader
+    }
+    immigrants = {
+      {
+        ids = {"ELF_ARCHER"}
+        traits = {FIGHTER}
+        frequency = 1
+      }
+    }
+  }
+  ELEMENTALIST_ENTRY
+  {
+    settlement = {
+      type = TOWER
+      tribe = HUMAN
+      buildingId = BRICK
+    }
+    discoverable = false
+  }
+  ELEMENTALIST
+  {
+    settlement = {
+      type = TOWER
+      inhabitants = {
+        leader = { { "ELEMENTALIST" } }
+      }
+      tribe = HUMAN
+      buildingId = BRICK
+      furniture = "roomFurniture"
+    }
+    config = {
+      leaderAsFighter = true
+    }
+    behaviour = {
+      minPopulation = 0
+      minTeamSize = 1
+      triggers = {
+        RoomTrigger "THRONE" 0.0003
+        RoomTrigger "IMPALED_HEAD" 0.0001
+        NumConquered 3
+        FinishOff
+        Proximity
+      }
+      attackBehaviour = CampAndSpawn {
+        count = {3 7}
+        all = {
+          1 "WATER_ELEMENTAL"
+          1 "AIR_ELEMENTAL"
+          1 "FIRE_ELEMENTAL"
+          1 "EARTH_ELEMENTAL"
+        }
+      }
+      ransom = 0.5 80
+    }
+    levelConnection = {
+      type = TOWER
+      enemyId = ELEMENTALIST_ENTRY
+    }
+  }
+  NO_AGGRO_BANDITS
+  {
+    settlement = {
+      type = CAVE
+      inhabitants = {
+        fighters = {
+          count = {4 9}
+          all = { 1 "BANDIT" }
+        }
+      }
+      tribe = BANDIT
+      race = "bandits"
+      buildingId = DUNGEON
+    }
+    config = {
+      immigrantInterval = 1000
+      maxPopulation = 10
+    }
+    createOnBones = 0.1 {KOBOLD_CAVE}
+    immigrants = { 
+      {
+        ids = { "BANDIT" }
+        traits = { FIGHTER }
+        frequency = 1
+      }
+    }
+  }
+  BANDITS
+  {
+    settlement = {
+      type = CAVE
+      inhabitants = {
+        fighters = {
+          count = {4 9}
+          all = { 1 "BANDIT" }
+        }
+      }
+      tribe = BANDIT
+      race = "bandits"
+      buildingId = DUNGEON
+          
+    }
+    config = {
+      immigrantInterval = 1000
+      maxPopulation = 10
+    }
+    behaviour = {
+      minPopulation = 0
+      minTeamSize = 3
+      triggers = {Gold 100}
+      attackBehaviour = StealGold
+      ransom = 0.5 80
+    }
+    createOnBones = 0.1 {KOBOLD_CAVE}
+    immigrants = { 
+      {
+        ids = { "BANDIT" }
+        traits = { FIGHTER }
+        frequency = 1
+      }
+    }
+  }
+  COTTAGE_BANDITS
+  {
+    settlement = {
+      type = CAVE
+      inhabitants = {
+        fighters = {
+          count = {4 9}
+          all = { 1 "BANDIT" }
+        }
+      }
+      tribe = BANDIT
+      race = "bandits"
+      buildingId = DUNGEON
+    }
+    config = {
+      immigrantInterval = 1000
+      maxPopulation = 10
+    }
+    createOnBones = 1.0 {HUMAN_COTTAGE}
+    immigrants = { 
+      {
+        ids = { "BANDIT" }
+        traits = { FIGHTER }
+        frequency = 1
+      }
+    }
+  }
+  ORC_CAVE
+  {
+    settlement = {
+      type = CAVE
+      inhabitants = {
+        fighters = {
+          count = {4 9}
+          all = { 1 "ORC" }
+        }
+      }
+      tribe = BANDIT
+      race = "orcs"
+      buildingId = DUNGEON   
+    }
+    config = {
+      immigrantInterval = 1000
+      maxPopulation = 10
+    }
+    behaviour = {
+      minPopulation = 0
+      minTeamSize = 3
+      triggers = {Gold 100}
+      attackBehaviour = StealGold
+      ransom = 0.5 80
+    }
+    createOnBones = 0.1 {KOBOLD_CAVE}
+    immigrants = { 
+      {
+        ids = { "ORC" }
+        traits = { FIGHTER }
+        frequency = 1
+      }
+    }
+  }
+  LIZARDMEN
+  {
+    settlement = {
+      type = VILLAGE
+      tribe = LIZARD
+      inhabitants = {
+        leader = { { "LIZARDLORD" } }
+        fighters = {
+          count = {7 10}
+          all = { 1 "LIZARDMAN" }
+        }
+      }
+      locationNameGen = TOWN
+      race = "lizardmen"
+      buildingId = MUD
+      lootItem = {TechBook "humanoid mutation"}
+      shopItems = "goodMushrooms"
+      furniture = "roomFurniture"
+      outsideFeatures = "villageOutside"
+    }
+    config = {
+      immigrantInterval = 140
+      maxPopulation = 11
+      ghostProb = 0.1
+      spawnGhosts = 4
+    }
+    behaviour = {
+      minPopulation = 4
+      minTeamSize = 4
+      triggers = {
+        RoomTrigger "IMPALED_HEAD" 0.0001
+        NumConquered 2
+        Power
+        SelfVictims
+        FinishOff
+        Proximity
+        StolenItems
+      }
+      attackBehaviour = KillLeader
+    }
+    createOnBones = 1.0 {VILLAGE ELVES}
+    immigrants = { 
+      {
+        ids = { "LIZARDMAN" }
+        traits = { FIGHTER }
+        frequency = 1
+      }
+    }
+  }
+  DARK_ELVES_ALLY
+  {
+    settlement = {
+      type = MINETOWN
+      tribe = DARK_ELF
+      inhabitants = {
+        leader = { { "DARK_ELF_LORD" } }
+        fighters = {
+          count = {6 9}
+          all = { 1 "DARK_ELF_WARRIOR" }
+        }
+        civilians = {
+          count = {6 9},
+          all = {
+            1 "DARK_ELF"
+            1 "DARK_ELF_CHILD"
+            1 "RAT"
+          }
+        }
+      }
+      locationNameGen = TOWN
+      race = "dark elves"
+      buildingId = DUNGEON
+      outsideFeatures = "dungeonOutside"
+      furniture = "roomFurniture"
+    }
+    config = {
+      immigrantInterval = 500
+      maxPopulation = 15
+    }
+    levelConnection = {
+      type = GNOMISH_MINES
+      enemyId = DARK_ELVES_ENTRY
+    }
+    immigrants = { 
+      {
+        ids = { "DARK_ELF_WARRIOR" }
+        traits = { FIGHTER }
+        frequency = 1
+      }
+    }
+  }
+  DARK_ELVES_ENEMY
+  {
+    settlement = {
+      type = MINETOWN
+      tribe = DARK_ELF
+      inhabitants = {
+        leader = {
+          id = { "DARK_ELF_LORD" }
+          baseLevelIncrease = {
+            MELEE 10
+            SPELL 10
+          }
+        }
+        fighters = {
+          count = {6 9}
+          all = { 1 "DARK_ELF_WARRIOR" }
+          baseLevelIncrease = {
+            MELEE 10
+          }
+        }
+        civilians = {
+          count = {6 9},
+          all = {
+            1 "DARK_ELF"
+            1 "DARK_ELF_CHILD"
+            1 "RAT"
+          }
+        }
+      }
+      locationNameGen = TOWN
+      race = "dark elves"
+      buildingId = DUNGEON
+      outsideFeatures = "dungeonOutside"
+      furniture = "roomFurniture"
+    }
+    config = {
+      immigrantInterval = 500
+      maxPopulation = 15
+    }
+    levelConnection = {
+      type = GNOMISH_MINES
+      enemyId = DARK_ELVES_ENTRY
+    }
+    immigrants = { 
+      {
+        ids = { "DARK_ELF_WARRIOR" }
+        traits = { FIGHTER }
+        frequency = 1
+      }
+    }
+  }
+  DARK_ELVES_ENTRY
+  {
+    settlement = {
+      type = SMALL_MINETOWN
+      tribe = DARK_ELF
+      inhabitants = {
+        fighters = {
+          count = {3 7}
+          all = { 1 "DARK_ELF_WARRIOR" }
+        }
+      }
+      race = "dark elves"
+      buildingId = DUNGEON
+      outsideFeatures = "dungeonOutside"
+      furniture = "roomFurniture"
+    }
+    discoverable = false
+  }
+  GNOMES
+  {
+    settlement = {
+      type = MINETOWN
+      tribe = GNOME
+      inhabitants = {
+        leader = { { "GNOME_CHIEF" } }
+        fighters = {
+          count = {8 14}
+          all = { 1 "GNOME" }
+        }
+      }
+      locationNameGen = TOWN
+      race = "gnomes"
+      buildingId = DUNGEON
+      shopItems = "gnomeShop"
+      outsideFeatures = "dungeonOutside"
+      furniture = "roomFurniture"
+    }
+    levelConnection = {
+      type = GNOMISH_MINES
+      enemyId = GNOMES_ENTRY
+    }
+  }
+  GNOMES_ENTRY
+  {
+    settlement = {
+      type = SMALL_MINETOWN
+      tribe = GNOME
+      inhabitants = {
+        fighters = {
+          count = {3 7}
+          all = { 1 "GNOME" }
+        }
+      }
+      race = "gnomes"
+      buildingId = DUNGEON
+      outsideFeatures = "dungeonOutside"
+      furniture = "roomFurniture"
+    }
+    discoverable = false
+  }
+  ENTS
+  {
+    settlement = {
+      type = FOREST
+      inhabitants = {
+        fighters = {
+          count = {7 10}
+          all = { 1 "ENT" }
+        }
+      }
+      tribe = MONSTER
+      race = "tree spirits"
+      buildingId = WOOD
+    }
+    config = {
+      immigrantInterval = 300
+      maxPopulation = 10
+    }
+    immigrants = { 
+      {
+        ids = { "ENT" }
+        traits = { FIGHTER }
+        frequency = 1
+      }
+    }
+  }
+  DRIADS
+  {
+    settlement = {
+      type = FOREST
+      inhabitants = {
+        fighters = {
+          count = {7 10}
+          all = { 1 "DRIAD" }
+        }
+      }
+      tribe = MONSTER
+      race = "dryads"
+      buildingId = WOOD
+    }
+    config = {
+      immigrantInterval = 300
+      maxPopulation = 10
+    }
+    immigrants = { 
+      {
+        ids = { "DRIAD" }
+        traits = { FIGHTER }
+        frequency = 1
+      }
+    }
+  }
+  SHELOB
+  {
+    settlement = {
+      type = CAVE
+      tribe = SHELOB
+      inhabitants = {
+        leader = { { "SHELOB" } }
+        civilians = {
+          count = {4 6},
+          all = {
+            1 "SPIDER_FOOD"
+            1 "SPIDER"
+          }
+        }
+      }
+      race = "giant spider"
+      buildingId = DUNGEON
+    }
+    config = {
+     leaderAsFighter = true
+    }
+    createOnBones = 0.1 {DWARF_CAVE KOBOLD_CAVE}
+  }
+  CYCLOPS
+  {
+    settlement = {
+      type = CAVE
+      inhabitants = {
+        leader = { { "CYCLOPS" } }
+      }
+      race = "cyclops"
+      tribe = HOSTILE
+      buildingId = DUNGEON
+      shopItems = "goodMushrooms"
+    }
+    config = {
+      leaderAsFighter = true
+      spawnGhosts = 1
+      ghostProb = 0.03
+    }
+    behaviour = {
+      minPopulation = 0
+      minTeamSize = 1
+      triggers = {EnemyPopulation 13}
+      attackBehaviour = KillMembers 4
+    }
+  }
+  HYDRA
+  {
+    settlement = {
+      type = SWAMP
+      inhabitants = {
+        leader = { { "HYDRA" } }
+      }
+      race = "hydra"
+      tribe = HOSTILE
+      buildingId = DUNGEON
+    }
+    config = {
+      leaderAsFighter = true
+      spawnGhosts = 1
+      ghostProb = 0.03
+    }
+  }
+  KRAKEN
+  {
+    settlement = {
+      type = MOUNTAIN_LAKE
+      inhabitants = {
+        leader = { { "KRAKEN" } }
+      }
+      race = "kraken"
+      tribe = MONSTER
+      buildingId = DUNGEON
+    }
+    config = {
+      leaderAsFighter = true
+    }
+    discoverable = false
+  }
+  CEMETERY
+  {
+    settlement = {
+      type = CEMETERY
+      inhabitants = {
+        fighters = {
+          count = {8 12}
+          all = { 1 "ZOMBIE" }
+        }
+      }
+      locationName = "cemetery"
+      tribe = MONSTER
+      race = "undead"
+      furniture = "cryptCoffins"
+      buildingId = BRICK
+    }
+    levelConnection = {
+      type = CRYPT
+      enemyId = CEMETERY_ENTRY
+    }
+  }
+  CEMETERY_ENTRY
+  {
+    settlement = {
+      type = CEMETERY
+      inhabitants = {
+        fighters = {
+          count = {1 2}
+          all = {
+            1 "ZOMBIE"
+          }
+        }
+      }
+      locationName = "cemetery"
+      race = "undead"
+      tribe = MONSTER
+      furniture = "graves"
+      buildingId = BRICK
+    }
+    discoverable = false
+  }
+  OGRE_CAVE
+  {
+    settlement = {
+      type = CAVE
+      tribe = GREENSKIN
+      inhabitants = {
+        fighters = {
+          count = {4 8}
+          all = { 1 "OGRE" }
+        }
+      }
+      buildingId = DUNGEON
+      closeToPlayer = true
+      furniture = "roomFurniture"
+      outsideFeatures = "villageOutside"
+    }
+    config = {
+      immigrantInterval = 300
+      maxPopulation = 10
+    }
+    immigrants = { 
+      {
+        ids = { "OGRE" }
+        traits = { FIGHTER }
+        frequency = 1
+      }
+    }
+  }
+  HARPY_CAVE
+  {
+    settlement = {
+      type = CAVE
+      tribe = GREENSKIN
+      inhabitants = {
+        fighters = {
+          count = {4 8}
+          all = { 1 "HARPY" }
+        }
+      }
+      buildingId = DUNGEON
+      closeToPlayer = true
+      furniture = "roomFurniture"
+      outsideFeatures = "villageOutside"
+    }
+    config = {
+      immigrantInterval = 300
+      maxPopulation = 10
+    }
+    immigrants = { 
+      {
+        ids = { "HARPY" }
+        traits = { FIGHTER }
+        frequency = 1
+      }
+    }
+  }
+  SOKOBAN_ENTRY
+  {
+    settlement = {
+      type = ISLAND_VAULT_DOOR
+      buildingId = DUNGEON
+      tribe = MONSTER
+    }
+  }
+  SOKOBAN
+  {
+    settlement = {
+      type = CAVE
+      inhabitants = {
+        leader = {{ "SPECIAL_HLBN" "SPECIAL_HLBW" "SPECIAL_HLGN" "SPECIAL_HLGW" }}
+      }
+      tribe = DARK_KEEPER
+      buildingId = DUNGEON  
+    }
+    levelConnection = {
+      type = SOKOBAN
+      enemyId = SOKOBAN_ENTRY
+    }
+    discoverable = false
+  }
+  WITCH
+  {
+    settlement = {
+      type = COTTAGE
+      tribe = MONSTER
+      inhabitants = {
+        leader = { { "WITCH" } }
+      }
+      race = "witch"
+      buildingId = WOOD
+      lootItem = {TechBook "advanced alchemy"}
+      furniture = "witchInside"
+    }
+  }
+  TEMPLE
+  {
+    settlement = {
+      type = TEMPLE
+      tribe = HUMAN
+      race = "altar"
+      inhabitants = {
+        leader = { { "PRIEST" } }
+      }
+      buildingId = BRICK
+      furniture = "templeInside"   
+    }
+    discoverable = false
+  }
+  EVIL_TEMPLE
+  {
+    settlement = {
+      type = TEMPLE
+      tribe = DARK_KEEPER
+      race = "altar"
+      inhabitants = {
+        leader = {
+          id = {"ORC_SHAMAN"} 
+          expLevelIncrease = { SPELL 7 }
+        }
+      }
+      buildingId = WOOD
+      furniture = "templeInside"
+    }
+    discoverable = false
+  }
+  RUINS
+  {
+    settlement = {
+      type = COTTAGE
+      tribe = MONSTER
+      race = "ruins"
+      dontBuildRoad = true
+      closeToPlayer = true
+      buildingId = RUINS
+    }
+    config = {
+      immigrantInterval = 700
+      maxPopulation = 3
+      conquerCondition = DESTROY_BUILDINGS
+    }
+    immigrants = {
+      {
+        ids = {"LOST_SOUL"}
+        traits = {FIGHTER}
+        specialTraits = {
+          {1.0 {LastingEffect DISAPPEAR_DURING_DAY}}
+        }
+        frequency = 1
+        requirements = {
+          {1.0 SunlightState NIGHT}
+        }
+        spawnLocation = InsideTerritory
+      }
+    }
+  }
+  HUMAN_COTTAGE
+  {
+    settlement = {
+      type = COTTAGE
+      tribe = HUMAN
+      cropsDistance = 13
+      inhabitants = {
+        fighters = {
+          count = {2 4}
+          all = { 1 "PESEANT" }
+        }
+        civilians = {
+          count = {3 7},
+          all = {
+            1 "CHILD"
+            1 "HORSE"
+            1 "DONKEY"
+            1 "COW"
+            1 "PIG"
+            1 "DOG"
+          }
+        }
+      }
+      race = "humans"
+      buildingId = WOOD
+      furniture = "roomFurniture"
+    }
+    config = {
+      guardianInfo = "WITCHMAN" 0.001 1 2
+    }
+  }
+  TUTORIAL_VILLAGE
+  {
+    settlement = {
+      type = SMALL_VILLAGE
+      tribe = HUMAN
+      inhabitants = {
+        fighters = {
+          count = {2 4}
+          all = { 1 "PESEANT" }
+        }
+        civilians = {
+          count = {3 7},
+          all = {
+            1 "CHILD"
+            1 "HORSE"
+            1 "DONKEY"
+            1 "COW"
+            1 "PIG"
+            1 "DOG"
+          }
+        }
+      }
+      race = "humans"
+      buildingId = WOOD
+      stockpiles = {{ "gold" 50 }}
+      cropsDistance = 16
+      furniture = "roomFurniture"
+    }
+  }
+  ELVEN_COTTAGE
+  {
+    settlement = {
+      type = FORREST_COTTAGE
+      tribe = ELF
+      inhabitants = {
+        leader = { { "ELF_ARCHER" } }
+        fighters = {
+          count = {2 3}
+          all = { 1 "ELF" }
+        }
+        civilians = {
+          count = {2 5}
+          all = {
+            1 "ELF_CHILD"
+            1 "HORSE"
+            1 "COW"
+            1 "DOG"
+          }
+        }
+      }
+      race = "elves"
+      buildingId = WOOD
+      furniture = "roomFurniture"
+    }
+  }
+  LIZARDMEN_COTTAGE
+  {
+    settlement = {
+      type = FORREST_COTTAGE
+      tribe = LIZARD
+      inhabitants = {
+        fighters = {
+          count = {2 3}
+          all = { 1 "LIZARDMAN" }
+        }
+      }
+      race = "lizardmen"
+      buildingId = WOOD
+      furniture = "roomFurniture"
+    }
+    createOnBones = 1.0 {ELVEN_COTTAGE}
+  }
+  KOBOLD_CAVE
+  {
+    settlement = {
+      type = SMALL_MINETOWN
+      tribe = DWARF
+      inhabitants = {
+        fighters = {
+          count = {3 7}
+          all = { 1 "KOBOLD" }
+        }
+      }
+      race = "kobolds"
+      buildingId = DUNGEON
+      stockpiles = {{ "minerals" 60 }}
+    }
+  }
+  DWARF_CAVE
+  {
+    settlement = {
+      type = SMALL_MINETOWN
+      tribe = DWARF
+      inhabitants = {
+        fighters = {
+          count = {2 5}
+          all = { 1 "DWARF" }
+        }
+        civilians = {
+          count = {2 5}
+          all = { 1 "DWARF_FEMALE" }
+        }
+      }
+      race = "dwarves"
+      buildingId = DUNGEON
+      stockpiles = {{ "minerals" 60}}
+      outsideFeatures = "dungeonOutside"
+      furniture = "roomFurniture"
+      surroundWithResources = 6     
+    }
+    behaviour = {
+      minPopulation = 0
+      minTeamSize = 1
+      triggers = { SelfVictims StolenItems MiningInProximity }
+      attackBehaviour = KillLeader
+      ransom = 0.5 80
+    }
+  }
+  RAT_CAVE {
+    settlement = {
+      type = VAULT
+      inhabitants = {
+        fighters = {
+          count = {10 11} 
+          all = {
+            1 "RAT"
+          }
+        }
+      }
+      closeToPlayer = true
+      dontConnectCave = true
+      tribe = MONSTER
+      buildingId = DUNGEON
+    }
+    discoverable = false
+  }
+  RAT_PEOPLE_CAVE
+  {
+    settlement = {
+      type = VAULT
+      buildingId = DUNGEON
+      tribe = MONSTER
+      inhabitants = {
+        leader = { { "RAT_KING" } }
+        fighters = {
+          count = {2 5}
+          all = { 1 "RAT_SOLDIER" }
+        }
+        civilians = {
+          count = {2 5}
+          all = {
+            1 "RAT_LADY"
+            1 "RAT"
+          }
+        }
+      }
+      closeToPlayer = true
+        dontConnectCave = true
+    }
+    discoverable = false
+  }
+  DARK_ELF_CAVE
+  {
+    settlement = {
+      type = SMALL_MINETOWN
+      tribe = DARK_ELF
+      inhabitants = {
+        fighters = {
+          count = {2 5}
+          all = { 1 "DARK_ELF_WARRIOR" }
+          baseLevelIncrease = { MELEE 7 }
+        }
+        civilians = {
+          count = {2 5}
+          all = { 1 "DARK_ELF" }
+        }
+      }
+      race = "dark elves"
+      buildingId = DUNGEON
+      stockpiles = {{ "minerals" 60 }}
+      outsideFeatures = "dungeonOutside"
+      furniture = "roomFurniture"
+      surroundWithResources = 6    
+    }
+    behaviour = {
+      minPopulation = 0
+      minTeamSize = 1
+      triggers = {SelfVictims StolenItems MiningInProximity}
+      attackBehaviour = KillLeader
+      ransom = 0.5 80
+    }
+  }
+}
