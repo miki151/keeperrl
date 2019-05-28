@@ -364,10 +364,10 @@ struct ModelTable {
 
 TilePaths MainLoop::getTilePathsForAllMods() const {
   GameConfig currentConfig = getGameConfig();
-  TilePaths ret(&currentConfig);
+  auto ret = createContentFactory(&currentConfig).tilePaths;
   for (auto modDir : dataFreePath.subdirectory(gameConfigSubdir).getSubDirs()) {
     GameConfig config(dataFreePath.subdirectory(gameConfigSubdir), modDir);
-    ret.merge(TilePaths(&config));
+    ret.merge(createContentFactory(&config).tilePaths);
   }
   return ret;
 }
@@ -375,9 +375,9 @@ TilePaths MainLoop::getTilePathsForAllMods() const {
 PGame MainLoop::prepareCampaign(RandomGen& random) {
   while (1) {
     auto gameConfig = getGameConfig();
-    if (tileSet)
-      tileSet->setTilePaths(TilePaths(&gameConfig));
     auto contentFactory = createContentFactory(&gameConfig);
+    if (tileSet)
+      tileSet->setTilePaths(contentFactory.tilePaths);
     InitialContentFactory initialFactory(&gameConfig);
     auto avatarChoice = getAvatarInfo(view, &initialFactory.playerCreatures, options, &contentFactory.creatures);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
@@ -422,9 +422,9 @@ void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
   GameConfig gameConfig(dataFreePath.subdirectory(gameConfigSubdir), "vanilla");
-  if (tileSet)
-    tileSet->setTilePaths(TilePaths(&gameConfig));
   auto contentFactory = createContentFactory(&gameConfig);
+  if (tileSet)
+    tileSet->setTilePaths(contentFactory.tilePaths);
   EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies);
   auto model = ModelBuilder(&meter, Random, options, sokobanInput, &contentFactory, std::move(enemyFactory))
       .splashModel(dataFreePath.file("splash.txt"));
@@ -523,7 +523,7 @@ void MainLoop::considerFreeVersionText(bool tilesPresent) {
 }
 
 ContentFactory MainLoop::createContentFactory(const GameConfig* gameConfig) const {
-  return ContentFactory(NameGenerator(dataFreePath.subdirectory("names")), gameConfig, TilePaths(gameConfig));
+  return ContentFactory(NameGenerator(dataFreePath.subdirectory("names")), gameConfig);
 }
 
 void MainLoop::launchQuickGame() {

@@ -2,16 +2,7 @@
 #include "tile_paths.h"
 #include "game_config.h"
 
-TilePaths::TilePaths(const GameConfig* config) {
-  while (1) {
-    auto error = config->readObject(definitions, GameConfigId::TILES);
-    if (error)
-      USER_INFO << *error;
-    else
-      break;
-  }
-  mainMod = config->getModName();
-}
+TilePaths::TilePaths(vector<TileInfo> d, string mod) : definitions(std::move(d)), mainMod(std::move(mod)) {}
 
 void TilePaths::merge(TilePaths other) {
   auto contains = [&] (const string& viewId) {

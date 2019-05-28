@@ -21,8 +21,8 @@ bool areResourceCounts(const vector<ResourceDistribution>& resources, int depth)
   return false;
 }
 
-ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* config, TilePaths tilePaths)
-    : creatures(std::move(nameGenerator), config), furniture(config), tilePaths(std::move(tilePaths)), itemFactory(config) {
+ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* config)
+    : creatures(std::move(nameGenerator), config), furniture(config), itemFactory(config) {
   EnemyId::startContentIdGeneration();
   while (1) {
     if (auto res = config->readObject(zLevels, GameConfigId::Z_LEVELS)) {
@@ -37,6 +37,12 @@ ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* co
       USER_INFO << *res;
       continue;
     }
+    vector<TileInfo> tileDefs;
+    if (auto error = config->readObject(tileDefs, GameConfigId::TILES)) {
+      USER_INFO << *error;
+      continue;
+    }
+    tilePaths = TilePaths(std::move(tileDefs), config->getModName());
     for (int alignment = 0; alignment < 2; ++alignment) {
       vector<ZLevelInfo> levels = concat<ZLevelInfo>({zLevels[0], zLevels[1 + alignment]});
       for (int depth = 0; depth < 1000; ++depth) {

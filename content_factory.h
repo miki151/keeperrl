@@ -7,8 +7,9 @@
 #include "tile_paths.h"
 #include "enemy_info.h"
 
-struct ContentFactory {
-  ContentFactory(NameGenerator, const GameConfig*, TilePaths);
+class ContentFactory {
+  public:
+  ContentFactory(NameGenerator, const GameConfig*);
   CreatureFactory SERIAL(creatures);
   FurnitureFactory SERIAL(furniture);
   array<vector<ZLevelInfo>, 3> SERIAL(zLevels);
