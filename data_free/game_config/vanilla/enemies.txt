@@ -131,7 +131,7 @@
       attackBehaviour = KillLeader
     }
   }
-  "ANTS_OPEN"
+  "ANTS_OPEN" inherit "ANTS_CLOSED"
   {
     settlement = {
       type = ANT_NEST
@@ -150,27 +150,6 @@
       tribe = ANT
       race = "ants"
       buildingId = DUNGEON
-    }
-    config = {
-      immigrantInterval = 500
-      maxPopulation = 15
-    }
-    behaviour = {
-      minPopulation = 1
-      minTeamSize = 4
-      triggers = { MiningInProximity }
-      attackBehaviour = KillLeader
-    }
-    immigrants = {
-      {
-        ids = {"ANT_WORKER"}
-        frequency = 1
-      }
-      {
-        ids = {"ANT_SOLDIER"}
-        traits = {FIGHTER}
-        frequency = 1
-      }
     }
     createOnBones = 0.1 { "DWARVES" }
   }
@@ -720,25 +699,8 @@
       }
     }
   }
-  "BANDITS"
+  "BANDITS" inherit "NO_AGGRO_BANDITS"
   {
-    settlement = {
-      type = CAVE
-      inhabitants = {
-        fighters = {
-          count = {4 9}
-          all = { 1 "BANDIT" }
-        }
-      }
-      tribe = BANDIT
-      race = "bandits"
-      buildingId = DUNGEON
-          
-    }
-    config = {
-      immigrantInterval = 1000
-      maxPopulation = 10
-    }
     behaviour = {
       minPopulation = 0
       minTeamSize = 3
@@ -746,41 +708,10 @@
       attackBehaviour = StealGold
       ransom = 0.5 80
     }
-    createOnBones = 0.1 { "KOBOLD_CAVE" }
-    immigrants = { 
-      {
-        ids = { "BANDIT" }
-        traits = { FIGHTER }
-        frequency = 1
-      }
-    }
   }
-  "COTTAGE_BANDITS"
+  "COTTAGE_BANDITS" inherit "NO_AGGRO_BANDITS"
   {
-    settlement = {
-      type = CAVE
-      inhabitants = {
-        fighters = {
-          count = {4 9}
-          all = { 1 "BANDIT" }
-        }
-      }
-      tribe = BANDIT
-      race = "bandits"
-      buildingId = DUNGEON
-    }
-    config = {
-      immigrantInterval = 1000
-      maxPopulation = 10
-    }
     createOnBones = 1.0 { "HUMAN_COTTAGE" }
-    immigrants = { 
-      {
-        ids = { "BANDIT" }
-        traits = { FIGHTER }
-        frequency = 1
-      }
-    }
   }
   "ORC_CAVE"
   {
@@ -907,7 +838,7 @@
       }
     }
   }
-  "DARK_ELVES_ENEMY"
+  "DARK_ELVES_ENEMY" inherit "DARK_ELVES_ALLY"
   {
     settlement = {
       type = MINETOWN
@@ -941,21 +872,6 @@
       buildingId = DUNGEON
       outsideFeatures = "dungeonOutside"
       furniture = "roomFurniture"
-    }
-    config = {
-      immigrantInterval = 500
-      maxPopulation = 15
-    }
-    levelConnection = {
-      type = GNOMISH_MINES
-      enemyId = "DARK_ELVES_ENTRY"
-    }
-    immigrants = { 
-      {
-        ids = { "DARK_ELF_WARRIOR" }
-        traits = { FIGHTER }
-        frequency = 1
-      }
     }
   }
   "DARK_ELVES_ENTRY"

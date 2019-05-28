@@ -45,7 +45,9 @@ static string makePlural(const string& s) {
 
 Furniture::Furniture(const Furniture&) = default;
 
-SERIALIZATION_CONSTRUCTOR_IMPL(Furniture)
+Furniture::Furniture() {
+  movementSet->addTrait(MovementTrait::WALK);
+}
 
 Furniture::~Furniture() {}
 
@@ -511,26 +513,29 @@ static ViewLayer getViewLayer(FurnitureLayer layer) {
 #include "pretty_archive.h"
 template <>
 void Furniture::serialize(PrettyInputArchive& ar, unsigned int v) {
-  movementSet->addTrait(MovementTrait::WALK);
   optional<ViewId> viewId;
+  if (viewObject)
+    viewId = viewObject->id();
   ar >> NAMED(viewId);
   optional<ViewLayer> viewLayer;
+  if (viewObject)
+    viewLayer = viewObject->layer();
   ar >> NAMED(viewLayer);
-  bool blockMovement = false;
+  PrettyFlag blockMovement;
   ar >> OPTION(blockMovement);
-  optional<int> strength;
+  optional_no_none<int> strength;
   ar >> NAMED(strength);
-  optional<vector<pair<int, DestroyAction::Type>>> strength2;
+  optional_no_none<vector<pair<int, DestroyAction::Type>>> strength2;
   ar >> NAMED(strength2);
-  optional<Dir> attachmentDir;
+  optional_no_none<Dir> attachmentDir;
   ar >> NAMED(attachmentDir);
-  bool blockingEnemies = false;
+  PrettyFlag blockingEnemies;
   ar >> OPTION(blockingEnemies);
-  optional<double> waterDepth;
+  optional_no_none<double> waterDepth;
   ar >> NAMED(waterDepth);
   serializeImpl(ar, v);
   ar >> endInput();
-  if (blockMovement)
+  if (blockMovement.value)
     setBlocking();
   if (strength)
     setDestroyable(*strength);
@@ -543,7 +548,7 @@ void Furniture::serialize(PrettyInputArchive& ar, unsigned int v) {
     viewObject->setAttachmentDir(*attachmentDir);
   if (waterDepth)
     viewObject->setAttribute(ViewObjectAttribute::WATER_DEPTH, *waterDepth);
-  if (blockingEnemies)
+  if (blockingEnemies.value)
     setBlockingEnemies();
   if (pluralName.empty())
     pluralName = makePlural(name);

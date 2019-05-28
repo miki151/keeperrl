@@ -385,10 +385,10 @@ class Connector : public LevelMaker {
             builder->putFurniture(v, door->type, door->tribe);
           }
         }
-        if (builder->canNavigate(v, {MovementTrait::WALK}))
-          continue;
-        if (builder->getFurniture(v, FurnitureLayer::GROUND)->canBuildBridgeOver())
-          builder->putFurniture(v, FurnitureType("BRIDGE"));
+        if (!builder->canNavigate(v, {MovementTrait::WALK}))
+          if (builder->getFurniture(v, FurnitureLayer::GROUND)->canBuildBridgeOver())
+            builder->putFurniture(v, FurnitureType("BRIDGE"));
+        CHECK(builder->canNavigate(v, {MovementTrait::WALK}));
       }
       if (!path.isReachable(v))
         failGen();

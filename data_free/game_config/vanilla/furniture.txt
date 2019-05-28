@@ -1098,7 +1098,6 @@
   "SHALLOW_WATER1" inherit "WATER"
   {
     name = "shallow water"
-    layer = GROUND
     waterDepth = 1.5
     droppedItems = none
     movementSet = {
@@ -1109,7 +1108,6 @@
   "SHALLOW_WATER2" inherit "SHALLOW_WATER1"
   {
     waterDepth = 0.5
-    walkIntoFX = { WATER_SPLASH Rgb 82 148 255 255 }
   }
   "MAGMA" {
     name = "magma"

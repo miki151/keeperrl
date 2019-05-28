@@ -290,6 +290,20 @@ inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, bool c) {
   ar.os << (c ? "true" : "fasle");
 }
 
+struct PrettyFlag {
+  bool value = false;
+};
+
+
+inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, PrettyFlag& c) {
+  string s;
+  ar.readText(s);
+  if (s == "true")
+    c.value = true;
+  else
+    ar.error("This value can only be set to \"true\" or not set at all");
+}
+
 typedef StreamCombiner<ostringstream, PrettyOutputArchive> PrettyOutput;
 //typedef StreamCombiner<istringstream, PrettyInputArchive> PrettyInput;
 
@@ -382,6 +396,23 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, optional<T>& v) {
 }
 
 template <typename T>
+class optional_no_none : public optional<T> {
+  public:
+  using optional<T>::optional;
+};
+
+
+template <typename T>
+inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, optional_no_none<T>& v) {
+  v.reset();
+  if (ar1.eatMaybe("none"))
+    ar1.error("This value can't be reset");
+  T t;
+  ar1(t);
+  v = std::move(t);
+}
+
+template <typename T>
 inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, optional<T> const& v) {
   if (!v)
     ar1.os << "none";
@@ -463,6 +494,15 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValue
 
 template <class T>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<heap_optional<T>&>& t) {
+  if (strcmp(t.name, "cereal_class_version")) {
+    auto& value = t.value;
+    ar1.getNode().loaders.push_back(PrettyInputArchive::LoaderInfo{t.name, [&ar1, &value]{ ar1(value); }, true});
+  } else
+    setVersion1000(t.value);
+}
+
+template <class T>
+inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<optional_no_none<T>&>& t) {
   if (strcmp(t.name, "cereal_class_version")) {
     auto& value = t.value;
     ar1.getNode().loaders.push_back(PrettyInputArchive::LoaderInfo{t.name, [&ar1, &value]{ ar1(value); }, true});
