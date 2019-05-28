@@ -3,6 +3,7 @@
 #include "village_control.h"
 #include "stair_key.h"
 #include "avatar_info.h"
+#include "resource_counts.h"
 
 class Level;
 class Model;
@@ -22,7 +23,7 @@ class ContentFactory;
 
 class ModelBuilder {
   public:
-  ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*, const GameConfig*, ContentFactory*, EnemyFactory);
+  ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*, ContentFactory*, EnemyFactory);
   PModel singleMapModel(const string& worldName, TribeId keeperTribe, TribeAlignment);
   PModel campaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment, bool externalEnemies);
   PModel campaignSiteModel(const string& siteName, EnemyId, VillainType, TribeAlignment);
@@ -54,7 +55,6 @@ class ModelBuilder {
   Options* options = nullptr;
   HeapAllocated<EnemyFactory> enemyFactory;
   SokobanInput* sokobanInput = nullptr;
-  const GameConfig* gameConfig = nullptr;
   vector<EnemyInfo> getSingleMapEnemiesForEvilKeeper(TribeId keeperTribe);
   vector<EnemyInfo> getSingleMapEnemiesForLawfulKeeper(TribeId keeperTribe);
   ContentFactory* contentFactory = nullptr;

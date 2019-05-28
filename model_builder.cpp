@@ -45,9 +45,8 @@
 using namespace std::chrono;
 
 ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o,
-    SokobanInput* sok, const GameConfig* gameConfig, ContentFactory* contentFactory, EnemyFactory enemyFactory)
-    : random(r), meter(m), options(o), enemyFactory(std::move(enemyFactory)), sokobanInput(sok), gameConfig(gameConfig),
-      contentFactory(contentFactory) {
+    SokobanInput* sok, ContentFactory* contentFactory, EnemyFactory enemyFactory)
+    : random(r), meter(m), options(o), enemyFactory(std::move(enemyFactory)), sokobanInput(sok), contentFactory(contentFactory) {
 }
 
 ModelBuilder::~ModelBuilder() {
@@ -454,20 +453,6 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
     minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numTries << std::endl;
 }
 
-static ResourceCounts getTopLevelResources(RandomGen& random, const GameConfig* config) {
-  vector<ResourceDistribution> resources;
-  while (1) {
-    if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS)) {
-      USER_INFO << *res;
-      continue;
-    }
-    if (auto res = chooseResourceCounts(random, resources, 0))
-      return *res;
-    USER_INFO << "No resource counts found for level 0, please fix resources config";
-  }
-  fail();
-}
-
 PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyInfo> enemyInfo,
     optional<TribeId> keeperTribe, BiomeId biomeId, optional<ExternalEnemies> externalEnemies, bool hasWildlife) {
   auto model = Model::create(contentFactory);
@@ -491,7 +476,7 @@ PModel ModelBuilder::tryModel(int width, const string& levelName, vector<EnemyIn
   WLevel top =  model->buildMainLevel(
       LevelBuilder(meter, random, contentFactory, width, width, levelName, false),
       LevelMaker::topLevel(random, wildlife, topLevelSettlements, width,
-        keeperTribe, biomeId, getTopLevelResources(random, gameConfig)));
+        keeperTribe, biomeId, *chooseResourceCounts(random, contentFactory->resources, 0)));
   model->calculateStairNavigation();
   for (auto& enemy : enemyInfo) {
     if (enemy.settlement.locationName)
