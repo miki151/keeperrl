@@ -84,8 +84,7 @@ optional<string> ContentFactory::readFurnitureFactory(const GameConfig* config) 
   return none;
 }
 
-ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* config)
-    : itemFactory(config) {
+ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* config) {
   EnemyId::startContentIdGeneration();
   while (1) {
     if (auto res = config->readObject(zLevels, GameConfigId::Z_LEVELS)) {
@@ -108,6 +107,14 @@ ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* co
       USER_INFO << *res;
       continue;
     }
+    map<ItemListId, ItemList> itemLists;
+    ItemListId::startContentIdGeneration();
+    if (auto res = config->readObject(itemLists, GameConfigId::ITEM_LISTS)) {
+      USER_INFO << *res;
+      continue;
+    }
+    itemFactory = ItemFactory(std::move(itemLists));
+    ItemListId::validateContentIds();
     vector<TileInfo> tileDefs;
     if (auto error = config->readObject(tileDefs, GameConfigId::TILES)) {
       USER_INFO << *error;

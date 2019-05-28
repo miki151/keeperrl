@@ -34,7 +34,7 @@ class GameConfig;
 
 class ItemFactory {
   public:
-  ItemFactory(const GameConfig*);
+  ItemFactory(map<ItemListId, ItemList>);
   ItemList get(ItemListId);
 
   static PItem corpse(const string& name, const string& rottenName, double weight, bool instantlyRotten = false,

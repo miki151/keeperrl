@@ -26,16 +26,7 @@
 SERIALIZE_DEF(ItemFactory, lists)
 SERIALIZATION_CONSTRUCTOR_IMPL(ItemFactory)
 
-ItemFactory::ItemFactory(const GameConfig* config) {
-  while (1) {
-    ItemListId::startContentIdGeneration();
-    if (auto res = config->readObject(lists, GameConfigId::ITEM_LISTS)) {
-      USER_INFO << *res;
-      continue;
-    }
-    ItemListId::validateContentIds();
-    break;
-  }
+ItemFactory::ItemFactory(map<ItemListId, ItemList> lists) : lists(std::move(lists)) {
 }
 
 ItemList ItemFactory::get(ItemListId id) {
