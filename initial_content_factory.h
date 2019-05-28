@@ -16,7 +16,9 @@ struct InitialContentFactory {
   vector<pair<string, vector<BuildInfo>>> buildInfo;
   VillainsTuple villains;
   GameIntros gameIntros;
+  PlayerCreaturesInfo playerCreatures;
 
   private:
   optional<string> readVillainsTuple(const GameConfig*);
+  optional<string> readPlayerCreatures(const GameConfig*);
 };

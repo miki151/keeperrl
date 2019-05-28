@@ -12,24 +12,6 @@
 #include "gender.h"
 #include "creature_name.h"
 
-using PlayerCreaturesInfo = pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>;
-
-static PlayerCreaturesInfo readKeeperCreaturesConfig(View* view, const GameConfig* config) {
-  while (1) {
-    PlayerCreaturesInfo elem;
-    if (auto error = config->readObject(elem, GameConfigId::PLAYER_CREATURES)) {
-      view->presentText("Error reading player creature definitions", *error);
-      continue;
-    }
-    if (elem.first.empty() || elem.second.empty() || elem.first.size() > 10 || elem.second.size() > 10) {
-      view->presentText("Error reading player creature definitions",
-          "Keeper and adventurer lists must each contain between 1 and 10 entries.");
-      continue;
-    }
-    return elem;
-  }
-}
-
 static TribeId getPlayerTribeId(TribeAlignment variant) {
   switch (variant) {
     case TribeAlignment::EVIL:
@@ -46,9 +28,9 @@ static vector<ViewId> getUpgradedViewId(const Creature* c) {
   return ret;
 }
 
-variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const GameConfig* gameConfig, Options* options,
+variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const PlayerCreaturesInfo* creatures, Options* options,
     CreatureFactory* creatureFactory) {
-  auto keeperCreatureInfos = readKeeperCreaturesConfig(view, gameConfig).first;
+  auto keeperCreatureInfos = creatures->first;
   auto keeperCreatures = keeperCreatureInfos.transform([&](auto& elem) {
     return elem.creatureId.transform([&](auto& id) {
       auto ret = creatureFactory->fromId(id, getPlayerTribeId(elem.tribeAlignment));
@@ -57,7 +39,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const GameConfig
       return ret;
     });
   });
-  auto adventurerCreatureInfos = readKeeperCreaturesConfig(view, gameConfig).second;
+  auto adventurerCreatureInfos = creatures->second;
   auto adventurerCreatures = adventurerCreatureInfos.transform([&](auto& elem) {
     return elem.creatureId.transform([&](auto& id) {
       return creatureFactory->fromId(id, getPlayerTribeId(elem.tribeAlignment));
@@ -90,11 +72,11 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const GameConfig
   variant<KeeperCreatureInfo, AdventurerCreatureInfo> creatureInfo;
   PCreature ret;
   if (result->creatureIndex < keeperCreatures.size()) {
-    creatureInfo = readKeeperCreaturesConfig(view, gameConfig).first[result->creatureIndex];
+    creatureInfo = creatures->first[result->creatureIndex];
     ret = std::move(keeperCreatures[result->creatureIndex][result->genderIndex]);
     ret->getName().setBare("Keeper");
   } else {
-    creatureInfo = readKeeperCreaturesConfig(view, gameConfig).second[result->creatureIndex - keeperCreatures.size()];
+    creatureInfo = creatures->second[result->creatureIndex - keeperCreatures.size()];
     ret = std::move(adventurerCreatures[result->creatureIndex - keeperCreatures.size()][result->genderIndex]);
     ret->getName().setBare("Adventurer");
   }
@@ -102,8 +84,8 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const GameConfig
   return AvatarInfo{std::move(ret), creatureInfo, villains };
 }
 
-AvatarInfo getQuickGameAvatar(View* view, GameConfig* gameConfig, CreatureFactory* creatureFactory) {
-  auto keeperCreatures = readKeeperCreaturesConfig(view, gameConfig).first;
+AvatarInfo getQuickGameAvatar(View* view, const PlayerCreaturesInfo* creatures, CreatureFactory* creatureFactory) {
+  auto keeperCreatures = creatures->first;
   AvatarInfo ret;
   ret.playerCreature = creatureFactory->fromId(keeperCreatures[0].creatureId[0], TribeId::getDarkKeeper());
   ret.playerCreature->getName().setBare("Keeper");

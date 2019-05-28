@@ -47,6 +47,15 @@ optional<string> InitialContentFactory::readVillainsTuple(const GameConfig* game
   return none;
 }
 
+optional<string> InitialContentFactory::readPlayerCreatures(const GameConfig* config) {
+  if (auto error = config->readObject(playerCreatures, GameConfigId::PLAYER_CREATURES))
+    return "Error reading player creature definitions"_s + *error;
+  if (playerCreatures.first.empty() || playerCreatures.second.empty() || playerCreatures.first.size() > 10 ||
+      playerCreatures.second.size() > 10)
+    return "Keeper and adventurer lists must each contain between 1 and 10 entries."_s;
+  return none;
+}
+
 InitialContentFactory::InitialContentFactory(const GameConfig* gameConfig) {
   while (1) {
     if (auto error = gameConfig->readObject(technology, GameConfigId::TECHNOLOGY)) {
@@ -80,6 +89,10 @@ InitialContentFactory::InitialContentFactory(const GameConfig* gameConfig) {
       continue;
     }
     if (auto error = gameConfig->readObject(gameIntros, GameConfigId::GAME_INTRO_TEXT)) {
+      USER_INFO << *error;
+      continue;
+    }
+    if (auto error = readPlayerCreatures(gameConfig)) {
       USER_INFO << *error;
       continue;
     }

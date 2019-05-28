@@ -378,9 +378,9 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     if (tileSet)
       tileSet->setTilePaths(TilePaths(&gameConfig));
     auto contentFactory = createContentFactory(&gameConfig);
-    auto avatarChoice = getAvatarInfo(view, &gameConfig, options, &contentFactory.creatures);
+    InitialContentFactory initialFactory(&gameConfig);
+    auto avatarChoice = getAvatarInfo(view, &initialFactory.playerCreatures, options, &contentFactory.creatures);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
-      InitialContentFactory initialFactory(&gameConfig);
       CampaignBuilder builder(view, random, options, initialFactory.villains, initialFactory.gameIntros, *avatar);
       tileSet->setTilePaths(getTilePathsForAllMods());
       if (auto setup = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::FREE_PLAY,
@@ -540,8 +540,8 @@ void MainLoop::launchQuickGame() {
   auto gameConfig = getGameConfig();
   auto contentFactory = createContentFactory(&gameConfig);
   if (!game) {
-    AvatarInfo avatar = getQuickGameAvatar(view, &gameConfig, &contentFactory.creatures);
     InitialContentFactory initialFactory(&gameConfig);
+    AvatarInfo avatar = getQuickGameAvatar(view, &initialFactory.playerCreatures, &contentFactory.creatures);
     CampaignBuilder builder(view, Random, options, initialFactory.villains, initialFactory.gameIntros, avatar);
     auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP, "[world]");
     auto models = prepareCampaignModels(*result, std::move(avatar), Random, &gameConfig, &contentFactory);
