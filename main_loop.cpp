@@ -380,7 +380,8 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     auto contentFactory = createContentFactory(&gameConfig);
     auto avatarChoice = getAvatarInfo(view, &gameConfig, options, &contentFactory.creatures);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
-      CampaignBuilder builder(view, random, options, &gameConfig, *avatar);
+      InitialContentFactory initialFactory(&gameConfig);
+      CampaignBuilder builder(view, random, options, initialFactory.villains, initialFactory.gameIntros, *avatar);
       tileSet->setTilePaths(getTilePathsForAllMods());
       if (auto setup = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::FREE_PLAY,
           contentFactory.creatures.getNameGenerator()->getNext(NameGeneratorId::WORLD))) {
@@ -391,7 +392,6 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
         auto models = prepareCampaignModels(*setup, *avatar, random, &gameConfig, &contentFactory);
         for (auto& f : models.factories)
           contentFactory.merge(std::move(f));
-        InitialContentFactory initialFactory(&gameConfig);
         return Game::campaignGame(std::move(models.models), *setup, std::move(*avatar), &initialFactory, std::move(contentFactory));
       } else
         continue;
@@ -541,10 +541,10 @@ void MainLoop::launchQuickGame() {
   auto contentFactory = createContentFactory(&gameConfig);
   if (!game) {
     AvatarInfo avatar = getQuickGameAvatar(view, &gameConfig, &contentFactory.creatures);
-    CampaignBuilder builder(view, Random, options, &gameConfig, avatar);
+    InitialContentFactory initialFactory(&gameConfig);
+    CampaignBuilder builder(view, Random, options, initialFactory.villains, initialFactory.gameIntros, avatar);
     auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP, "[world]");
     auto models = prepareCampaignModels(*result, std::move(avatar), Random, &gameConfig, &contentFactory);
-    InitialContentFactory initialFactory(&gameConfig);
     game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), &initialFactory, std::move(contentFactory));
   }
   playGame(std::move(game), true, false);

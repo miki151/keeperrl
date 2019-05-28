@@ -53,6 +53,7 @@
 # Villains for evil adventurers
 {
     { "duke4" } "KNIGHTS" "Knights" MAIN
+    { "zombie" } "CEMETERY" "Zombies" LESSER
     { "orc_captain" } "ORC_VILLAGE" "Greenskins village" ALLY
 }
 

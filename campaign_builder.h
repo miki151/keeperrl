@@ -8,9 +8,12 @@ struct VillainPlacement;
 struct VillainCounts;
 class GameConfig;
 
+using VillainsTuple = std::array<vector<Campaign::VillainInfo>, 4>;
+using GameIntros = pair<vector<string>, map<CampaignType, vector<string>>>;
+
 class CampaignBuilder {
   public:
-  CampaignBuilder(View*, RandomGen&, Options*, const GameConfig*, const AvatarInfo&);
+  CampaignBuilder(View*, RandomGen&, Options*, VillainsTuple, GameIntros, const AvatarInfo&);
   optional<CampaignSetup> prepareCampaign(function<optional<RetiredGames>(CampaignType)>, CampaignType defaultType,
       string worldName);
   static CampaignSetup getEmptyCampaign();
@@ -20,7 +23,8 @@ class CampaignBuilder {
   View* view;
   RandomGen& random;
   Options* options;
-  const GameConfig* gameConfig;
+  VillainsTuple villains;
+  GameIntros gameIntros;
   const AvatarInfo& avatarInfo;
   vector<OptionId> getSecondaryOptions(CampaignType) const;
   vector<OptionId> getPrimaryOptions() const;

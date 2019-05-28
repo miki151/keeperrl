@@ -12,7 +12,6 @@
 #include "view_object.h"
 #include "name_generator.h"
 #include "creature_factory.h"
-#include "game_config.h"
 #include "tribe_alignment.h"
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
@@ -107,43 +106,26 @@ optional<string> CampaignBuilder::getSiteChoiceTitle(CampaignType type) const {
   }
 }
 
-using VillainsTuple = std::array<vector<Campaign::VillainInfo>, 4>;
-
 static vector<Campaign::VillainInfo> filter(vector<Campaign::VillainInfo> v, VillainType type) {
   return v.filter([type](const auto& elem){ return elem.type == type; });
 }
 
 vector<Campaign::VillainInfo> CampaignBuilder::getVillains(TribeAlignment tribeAlignment, VillainType type) {
-  VillainsTuple config;
-  while (1) {
-    if (auto error = gameConfig->readObject(config, GameConfigId::CAMPAIGN_VILLAINS)) {
-      view->presentText("Error reading campaign villains definition", *error);
-      continue;
-    }
-    auto ret = [&] {
-      switch (getPlayerRole()) {
-        case PlayerRole::KEEPER:
-          switch (tribeAlignment) {
-            case TribeAlignment::EVIL:
-              return filter(config[0], type);
-            case TribeAlignment::LAWFUL:
-              return filter(config[1], type);
-          }
-        case PlayerRole::ADVENTURER:
-          switch (tribeAlignment) {
-            case TribeAlignment::EVIL:
-              return filter(config[2], type);
-            case TribeAlignment::LAWFUL:
-              return filter(config[3], type);
-          }
+  switch (getPlayerRole()) {
+    case PlayerRole::KEEPER:
+      switch (tribeAlignment) {
+        case TribeAlignment::EVIL:
+          return filter(villains[0], type);
+        case TribeAlignment::LAWFUL:
+          return filter(villains[1], type);
       }
-    }();
-    if (ret.empty()) {
-      view->presentText("Error", "Empty " + EnumInfo<VillainType>::getString(type) + " villain list for alignment: "
-          + EnumInfo<TribeAlignment>::getString(tribeAlignment));
-      continue;
-    }
-    return ret;
+    case PlayerRole::ADVENTURER:
+      switch (tribeAlignment) {
+        case TribeAlignment::EVIL:
+          return filter(villains[2], type);
+        case TribeAlignment::LAWFUL:
+          return filter(villains[3], type);
+      }
   }
 }
 
@@ -229,8 +211,8 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
   }
 }
 
-CampaignBuilder::CampaignBuilder(View* v, RandomGen& rand, Options* o, const GameConfig* gameConfig, const AvatarInfo& a)
-    : view(v), random(rand), options(o), gameConfig(gameConfig), avatarInfo(a) {
+CampaignBuilder::CampaignBuilder(View* v, RandomGen& rand, Options* o, VillainsTuple villains, GameIntros intros, const AvatarInfo& a)
+    : view(v), random(rand), options(o), villains(std::move(villains)), gameIntros(intros), avatarInfo(a) {
 }
 
 static string getNewIdSuffix() {
@@ -340,14 +322,7 @@ static bool autoConfirm(CampaignType type) {
 }
 
 vector<string> CampaignBuilder::getIntroMessages(CampaignType type) const {
-  pair<vector<string>, map<CampaignType, vector<string>>> messages;
-  while (1) {
-    if (auto error = gameConfig->readObject(messages, GameConfigId::GAME_INTRO_TEXT)) {
-      view->presentText("Error reading game intro text", *error);
-      continue;
-    }
-    return concat(messages.first, messages.second[type]);
-  }
+  return concat(gameIntros.first, getReferenceMaybe(gameIntros.second, type).value_or(vector<string>()));
 }
 
 optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<RetiredGames>(CampaignType)> genRetired,
