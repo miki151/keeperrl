@@ -21,4 +21,5 @@ class ContentFactory {
   SERIALIZATION_DECL(ContentFactory)
   private:
   optional<string> readCreatureFactory(NameGenerator, const GameConfig*);
+  optional<string> readFurnitureFactory(const GameConfig*);
 };

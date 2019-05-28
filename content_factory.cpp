@@ -4,6 +4,7 @@
 #include "game_config.h"
 #include "creature_inventory.h"
 #include "creature_attributes.h"
+#include "furniture.h"
 
 SERIALIZE_DEF(ContentFactory, creatures, furniture, resources, zLevels, tilePaths, enemies, itemFactory)
 
@@ -63,8 +64,28 @@ optional<string> ContentFactory::readCreatureFactory(NameGenerator nameGenerator
   return none;
 }
 
+optional<string> ContentFactory::readFurnitureFactory(const GameConfig* config) {
+  FurnitureType::startContentIdGeneration();
+  map<FurnitureType, Furniture> elems;
+  if (auto res = config->readObject(elems, GameConfigId::FURNITURE))
+    return *res;
+  map<FurnitureType, OwnerPointer<Furniture>> furnitureDefs;
+  map<FurnitureListId, FurnitureList> furnitureLists;
+  for (auto& elem : elems) {
+    elem.second.setType(elem.first);
+    furnitureDefs.insert(make_pair(elem.first, makeOwner<Furniture>(elem.second)));
+  }
+  FurnitureType::validateContentIds();
+  FurnitureListId::startContentIdGeneration();
+  if (auto res = config->readObject(furnitureLists, GameConfigId::FURNITURE_LISTS))
+    return *res;
+  FurnitureListId::validateContentIds();
+  furniture = FurnitureFactory(std::move(furnitureDefs), std::move(furnitureLists));
+  return none;
+}
+
 ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* config)
-    : furniture(config), itemFactory(config) {
+    : itemFactory(config) {
   EnemyId::startContentIdGeneration();
   while (1) {
     if (auto res = config->readObject(zLevels, GameConfigId::Z_LEVELS)) {
@@ -80,6 +101,10 @@ ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* co
       continue;
     }
     if (auto res = readCreatureFactory(std::move(nameGenerator), config)) {
+      USER_INFO << *res;
+      continue;
+    }
+    if (auto res = readFurnitureFactory(config)) {
       USER_INFO << *res;
       continue;
     }

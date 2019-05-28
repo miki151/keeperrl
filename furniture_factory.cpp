@@ -68,27 +68,8 @@ void FurnitureFactory::merge(FurnitureFactory f) {
   mergeMap(std::move(f.furniture), furniture);
 }
 
-FurnitureFactory::FurnitureFactory(const GameConfig* config) {
-  while (1) {
-    FurnitureType::startContentIdGeneration();
-    map<FurnitureType, Furniture> elems;
-    if (auto res = config->readObject(elems, GameConfigId::FURNITURE)) {
-      USER_INFO << *res;
-      continue;
-    }
-    for (auto& elem : elems) {
-      elem.second.setType(elem.first);
-      furniture.insert(make_pair(elem.first, makeOwner<Furniture>(elem.second)));
-    }
-    FurnitureType::validateContentIds();
-    FurnitureListId::startContentIdGeneration();
-    if (auto res = config->readObject(furnitureLists, GameConfigId::FURNITURE_LISTS)) {
-      USER_INFO << *res;
-      continue;
-    }
-    FurnitureListId::validateContentIds();
-    break;
-  }
+FurnitureFactory::FurnitureFactory(map<FurnitureType, OwnerPointer<Furniture>> f, map<FurnitureListId, FurnitureList> l)
+    : furniture(std::move(f)), furnitureLists(std::move(l)) {
   initializeInfos();
 }
 
@@ -158,6 +139,7 @@ FurnitureFactory::~FurnitureFactory() {
 }
 
 FurnitureFactory::FurnitureFactory(FurnitureFactory&&) = default;
+FurnitureFactory& FurnitureFactory::operator =(FurnitureFactory&&) = default;
 
 const vector<FurnitureType>& FurnitureFactory::getTrainingFurniture(ExperienceType type) const {
   return trainingFurniture[type];

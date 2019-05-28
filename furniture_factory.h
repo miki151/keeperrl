@@ -23,7 +23,7 @@ struct FurnitureParams {
 
 class FurnitureFactory {
   public:
-  FurnitureFactory(const GameConfig*);
+  FurnitureFactory(map<FurnitureType, OwnerPointer<Furniture>>, map<FurnitureListId, FurnitureList>);
   void merge(FurnitureFactory);
   bool canBuild(FurnitureType, Position) const;
   bool isUpgrade(FurnitureType base, FurnitureType upgraded) const;
@@ -43,6 +43,7 @@ class FurnitureFactory {
   ~FurnitureFactory();
   FurnitureFactory(const FurnitureFactory&) = delete;
   FurnitureFactory(FurnitureFactory&&);
+  FurnitureFactory& operator = (FurnitureFactory&&);
 
   SERIALIZATION_DECL(FurnitureFactory)
 
