@@ -52,10 +52,12 @@ class CreatureFactory {
   const map<string, SpellSchool> getSpellSchools() const;
   const vector<Spell>& getSpells() const;
 
-  CreatureFactory(NameGenerator, const GameConfig*);
+  CreatureFactory(NameGenerator, map<CreatureId, CreatureAttributes>, map<CreatureId, CreatureInventory>, map<string, SpellSchool>,
+      vector<Spell>);
   ~CreatureFactory();
   CreatureFactory(const CreatureFactory&) = delete;
   CreatureFactory(CreatureFactory&&);
+  CreatureFactory& operator = (CreatureFactory&&);
 
   void merge(CreatureFactory);
 

@@ -2,6 +2,8 @@
 #include "content_factory.h"
 #include "name_generator.h"
 #include "game_config.h"
+#include "creature_inventory.h"
+#include "creature_attributes.h"
 
 SERIALIZE_DEF(ContentFactory, creatures, furniture, resources, zLevels, tilePaths, enemies, itemFactory)
 
@@ -21,8 +23,48 @@ bool areResourceCounts(const vector<ResourceDistribution>& resources, int depth)
   return false;
 }
 
+optional<string> ContentFactory::readCreatureFactory(NameGenerator nameGenerator, const GameConfig* config) {
+  map<CreatureId, CreatureAttributes> attributes;
+  map<CreatureId, CreatureInventory> inventory;
+  map<string, SpellSchool> spellSchools;
+  vector<Spell> spells;
+  if (auto res = config->readObject(attributes, GameConfigId::CREATURE_ATTRIBUTES))
+    return *res;
+  vector<pair<vector<CreatureId>, CreatureInventory>> input;
+  if (auto res = config->readObject(input, GameConfigId::CREATURE_INVENTORY))
+    return *res;
+  for (auto& elem : input)
+    for (auto& id : elem.first) {
+      if (inventory.count(id))
+        return "CreatureId appears more than once: "_s + id;
+      inventory.insert(make_pair(id, elem.second));
+    }
+  if (auto res = config->readObject(spells, GameConfigId::SPELLS))
+    return *res;
+  if (auto res = config->readObject(spellSchools, GameConfigId::SPELL_SCHOOLS))
+    return *res;
+  auto hasSpell = [&](const string& name) {
+    return std::any_of(spells.begin(), spells.end(), [&name](const Spell& sp) { return  sp.getId() == name; });
+  };
+  for (auto& elem : spellSchools)
+    for (auto& s : elem.second.spells)
+      if (!hasSpell(s.first))
+        return ": unknown spell: " + s.first + " in school " + elem.first;
+  for (auto& elem : attributes) {
+    for (auto& school : elem.second.spellSchools)
+      if (!spellSchools.count(school))
+        return elem.first + ": unknown spell school: " + school;
+    for (auto& spell : elem.second.spells)
+      if (!hasSpell(spell))
+        return elem.first + ": unknown spell: " + spell;
+  }
+  creatures = CreatureFactory(std::move(nameGenerator), std::move(attributes), std::move(inventory),
+      std::move(spellSchools), std::move(spells));
+  return none;
+}
+
 ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* config)
-    : creatures(std::move(nameGenerator), config), furniture(config), itemFactory(config) {
+    : furniture(config), itemFactory(config) {
   EnemyId::startContentIdGeneration();
   while (1) {
     if (auto res = config->readObject(zLevels, GameConfigId::Z_LEVELS)) {
@@ -34,6 +76,10 @@ ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* co
       continue;
     }
     if (auto res = config->readObject(enemies, GameConfigId::ENEMIES)) {
+      USER_INFO << *res;
+      continue;
+    }
+    if (auto res = readCreatureFactory(std::move(nameGenerator), config)) {
       USER_INFO << *res;
       continue;
     }

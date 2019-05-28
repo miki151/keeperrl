@@ -110,6 +110,7 @@ class CreatureAttributes {
   optional<LastingEffect> getHatedByEffect() const;
   void randomize();
 
+  friend class ContentFactory;
   friend class CreatureFactory;
 
   vector<ViewId> SERIAL(viewIdUpgrades);

@@ -19,4 +19,6 @@ class ContentFactory {
   ItemFactory SERIAL(itemFactory);
   void merge(ContentFactory);
   SERIALIZATION_DECL(ContentFactory)
+  private:
+  optional<string> readCreatureFactory(NameGenerator, const GameConfig*);
 };

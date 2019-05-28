@@ -202,58 +202,9 @@ const vector<Spell>& CreatureFactory::getSpells() const {
   return spells;
 }
 
-CreatureFactory::CreatureFactory(NameGenerator n, const GameConfig* config) : nameGenerator(std::move(n)) {
-  while (1) {
-    cont:
-    if (auto res = config->readObject(attributes, GameConfigId::CREATURE_ATTRIBUTES)) {
-      USER_INFO << *res;
-      continue;
-    }
-    vector<pair<vector<CreatureId>, CreatureInventory>> input;
-    inventory.clear();
-    spells.clear();
-    spellSchools.clear();
-    if (auto res = config->readObject(input, GameConfigId::CREATURE_INVENTORY)) {
-      USER_INFO << *res;
-      continue;
-    }
-    for (auto& elem : input)
-      for (auto& id : elem.first) {
-        if (inventory.count(id)) {
-          USER_INFO << "CreatureId appears more than once: " << id;
-          goto cont;
-        }
-        inventory.insert(make_pair(id, elem.second));
-      }
-    if (auto res = config->readObject(spells, GameConfigId::SPELLS)) {
-      USER_INFO << *res;
-      continue;
-    }
-    if (auto res = config->readObject(spellSchools, GameConfigId::SPELL_SCHOOLS)) {
-      USER_INFO << *res;
-      continue;
-    }
-    for (auto& elem : spellSchools)
-      for (auto& s : elem.second.spells)
-        if (!getSpell(s.first)) {
-          USER_INFO << ": unknown spell: " << s.first << " in school " << elem.first;
-          goto cont;
-        }
-    for (auto& elem : attributes) {
-      for (auto& school : elem.second.spellSchools)
-        if (!spellSchools.count(school)) {
-          USER_INFO << elem.first << ": unknown spell school: " << school;
-          goto cont;
-        }
-      for (auto& spell : elem.second.spells)
-        if (!getSpell(spell)) {
-          USER_INFO << elem.first << ": unknown spell: " << spell;
-          goto cont;
-        }
-    }
-    break;
-  }
-}
+CreatureFactory::CreatureFactory(NameGenerator n, map<CreatureId, CreatureAttributes> a, map<CreatureId, CreatureInventory> i,
+    map<string, SpellSchool> s, vector<Spell> sp)
+  : nameGenerator(std::move(n)), attributes(a), inventory(i), spellSchools(s), spells(sp) {}
 
 CreatureFactory::~CreatureFactory() {
 }
@@ -266,6 +217,7 @@ void CreatureFactory::merge(CreatureFactory f) {
 }
 
 CreatureFactory::CreatureFactory(CreatureFactory&&) = default;
+CreatureFactory& CreatureFactory::operator =(CreatureFactory&&) = default;
 
 constexpr int maxKrakenLength = 15;
 
