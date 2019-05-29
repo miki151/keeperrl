@@ -61,7 +61,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   Creature* getKeeper();
 
   void render(View*);
-  optional<string> loadImmigrationAndWorkshops(ContentFactory*, const KeeperCreatureInfo&);
+  void loadImmigrationAndWorkshops(ContentFactory*, const KeeperCreatureInfo&);
 
   void leaveControl();
   void teamMemberAction(TeamMemberAction, UniqueEntity<Creature>::Id);

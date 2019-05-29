@@ -138,38 +138,9 @@ PlayerControl::~PlayerControl() {
 }
 
 void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const KeeperCreatureInfo& keeperCreatureInfo) {
-  vector<BuildInfo> buildInfoTmp;
-  set<string> allDataGroups;
-  for (auto& group : contentFactory->buildInfo) {
-    allDataGroups.insert(group.first);
+  for (auto& group : contentFactory->buildInfo)
     if (keeperCreatureInfo.buildingGroups.contains(group.first))
-      buildInfoTmp.append(group.second);
-  }
-  for (auto& group : keeperCreatureInfo.buildingGroups)
-    if (!allDataGroups.count(group)) {
-      getView()->presentText("Error", "Building menu group \"" + group + "\" not found");
-      return;
-    }
-  bool hotkeys[128] = {0};
-  for (auto& info : buildInfoTmp) {
-    if (info.hotkey != '\0') {
-      if (hotkeys[int(info.hotkey)]) {
-        getView()->presentText("Error",
-            "Hotkey \'" + string(1, info.hotkey) + "\' is used more than once in building menu");
-        return;
-      }
-      hotkeys[int(info.hotkey)] = true;
-    }
-  }
-  for (auto& info : buildInfoTmp)
-    for (auto& requirement : info.requirements)
-      if (auto tech = requirement.getReferenceMaybe<TechId>())
-        if (!collective->getTechnology().techs.count(*tech)) {
-          getView()->presentText("Error",
-              "Technology prerequisite \"" + *tech + "\" of build item \"" + info.name + "\" is not available");
-          return;
-        }
-  buildInfo = buildInfoTmp;
+      buildInfo.append(group.second);
   for (auto& info : buildInfo)
     if (auto furniture = info.type.getReferenceMaybe<BuildInfo::Furniture>()) {
       for (auto type : furniture->types) {
@@ -187,40 +158,25 @@ void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const
     }
 }
 
-optional<string> PlayerControl::loadImmigrationAndWorkshops(ContentFactory* contentFactory,
+void PlayerControl::loadImmigrationAndWorkshops(ContentFactory* contentFactory,
     const KeeperCreatureInfo& keeperCreatureInfo) {
   Technology technology = contentFactory->technology;
   for (auto& tech : copyOf(technology.techs))
     if (!keeperCreatureInfo.technology.contains(tech.first))
       technology.techs.erase(tech.first);
   WorkshopArray merged;
-  set<string> allWorkshopGroups;
-  for (auto& group : contentFactory->workshopGroups) {
-    allWorkshopGroups.insert(group.first);
+  for (auto& group : contentFactory->workshopGroups)
     if (keeperCreatureInfo.workshopGroups.contains(group.first))
       for (int i : Range(EnumInfo<WorkshopType>::size))
         merged[i].append(group.second[i]);
-  }
-  for (auto& group : keeperCreatureInfo.workshopGroups)
-    if (!allWorkshopGroups.count(group))
-      return "Workshop menu group \"" + group + "\" not found";
-  for (auto& elem : merged)
-    for (auto& item : elem)
-      if (item.tech && !technology.techs.count(*item.tech))
-        return "Technology prerequisite \"" + *item.tech + "\" of workshop item \"" + item.item.get()->getName()
-            + "\" is not available";
   collective->setWorkshops(unique<Workshops>(std::move(merged)));
   vector<ImmigrantInfo> immigrants;
   for (auto elem : keeperCreatureInfo.immigrantGroups)
-    if (auto group = getReferenceMaybe(contentFactory->immigrantsData, elem))
-      append(immigrants, *group);
-    else
-      return "Undefined immigrant group: \"" + elem + "\"";
+    append(immigrants, contentFactory->immigrantsData.at(elem));
   CollectiveConfig::addBedRequirementToImmigrants(immigrants, contentFactory);
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
   collective->setTechnology(std::move(technology));
   loadBuildingMenu(contentFactory, keeperCreatureInfo);
-  return none;
 }
 
 const vector<Creature*>& PlayerControl::getControlled() const {

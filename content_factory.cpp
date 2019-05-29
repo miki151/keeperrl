@@ -7,7 +7,7 @@
 #include "furniture.h"
 #include "player_role.h"
 #include "tribe_alignment.h"
-
+#include "item.h"
 
 SERIALIZE_DEF(ContentFactory, creatures, furniture, resources, zLevels, tilePaths, enemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology)
 
@@ -133,6 +133,53 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config) {
   if (playerCreatures.first.empty() || playerCreatures.second.empty() || playerCreatures.first.size() > 10 ||
       playerCreatures.second.size() > 10)
     return "Keeper and adventurer lists must each contain between 1 and 10 entries."_s;
+  for (auto& keeperInfo : playerCreatures.first) {
+    bool hotkeys[128] = {0};
+    vector<BuildInfo> buildInfoTmp;
+    set<string> allDataGroups;
+    for (auto& group : buildInfo) {
+      allDataGroups.insert(group.first);
+      if (keeperInfo.buildingGroups.contains(group.first))
+        buildInfoTmp.append(group.second);
+    }
+    for (auto& tech : keeperInfo.technology)
+      if (!technology.techs.count(tech))
+        return "Technology not found: " + tech;
+    for (auto& tech : keeperInfo.initialTech)
+      if (!technology.techs.count(tech) || !keeperInfo.technology.contains(tech))
+        return "Technology not found: " + tech;
+    for (auto& info : buildInfoTmp)
+      for (auto& requirement : info.requirements)
+        if (auto tech = requirement.getReferenceMaybe<TechId>())
+          if (!keeperInfo.technology.contains(*tech))
+            return "Technology prerequisite \"" + *tech + "\" of build item \"" + info.name + "\" is not available";
+    WorkshopArray merged;
+    set<string> allWorkshopGroups;
+    for (auto& group : workshopGroups) {
+      allWorkshopGroups.insert(group.first);
+      if (keeperInfo.workshopGroups.contains(group.first))
+        for (int i : Range(EnumInfo<WorkshopType>::size))
+          merged[i].append(group.second[i]);
+    }
+    for (auto& elem : merged)
+      for (auto& item : elem)
+        if (item.tech && !technology.techs.count(*item.tech))
+          return "Technology prerequisite \"" + *item.tech + "\" of workshop item \"" + item.item.get()->getName()
+              + "\" is not available";
+    for (auto elem : keeperInfo.immigrantGroups)
+      if (!immigrantsData.count(elem))
+        return "Undefined immigrant group: \"" + elem + "\"";
+    for (auto& group : keeperInfo.buildingGroups)
+      if (!allDataGroups.count(group))
+        return "Building menu group \"" + group + "\" not found";
+    for (auto& info : buildInfoTmp) {
+      if (info.hotkey != '\0') {
+        if (hotkeys[int(info.hotkey)])
+          return "Hotkey \'" + string(1, info.hotkey) + "\' is used more than once in building menu";
+        hotkeys[int(info.hotkey)] = true;
+      }
+    }
+  }
   return none;
 }
 
