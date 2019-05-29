@@ -213,10 +213,10 @@ TileSet::TileSet(const DirectoryPath& defaultDir, const DirectoryPath& modsDir) 
 
 void TileSet::setTilePaths(const TilePaths& p) {
   tilePaths = p;
-  reload(true);
+  reload();
 }
 
-void TileSet::reload(bool useTiles) {
+void TileSet::reload() {
   tiles.clear();
   textures.clear();
   symbols.clear();
@@ -230,6 +230,7 @@ void TileSet::reload(bool useTiles) {
     return hadTiles;
   };
   reloadDir(defaultDir, true);
+  bool useTiles = !tileCoords.empty();
   if (reloadDir(modsDir.subdirectory(tilePaths->mainMod), true))
     spriteMods.push_back(tilePaths->mainMod);
   for (auto& subdir : tilePaths->mergedMods)

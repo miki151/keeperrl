@@ -21,7 +21,7 @@ class TileSet {
   TileSet(const DirectoryPath& defaultDir, const DirectoryPath& modsDir);
   void setTilePaths(const TilePaths&);
   const TilePaths& getTilePaths() const;
-  void reload(bool useTiles);
+  void reload();
   const Tile& getTile(ViewId id, bool sprite = true) const;
   Color getColor(const ViewObject&) const;
   const vector<TileCoord>& getTileCoord(const string&) const;

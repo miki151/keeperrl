@@ -1344,7 +1344,7 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
     case SDL::SDLK_F8:
       //renderer.startMonkey();
       renderer.loadAnimations();
-      renderer.getTileSet().reload(true);
+      renderer.getTileSet().reload();
       fxRenderer->loadTextures();
       gui.loadImages();
       break;
