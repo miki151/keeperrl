@@ -464,7 +464,7 @@
   { viewId = "dungeon_wall" symbol = "#" color = ColorId LIGHT_GRAY
     sprite = "mountain" wallShadow = true mountainSides = "dungeonwall" }
   { viewId = "dungeon_wall2" symbol = "#" color = ColorId DARK_BLUE
-    sprite = "mountain" wallShadow = true mountainSides = "dungeonwall" }
+    sprite = "mountain2" wallShadow = true mountainSides = "dungeonwall" }
   { viewId = "gold_ore" symbol = "⁂" color = ColorId YELLOW
     isSymbolFont = true wallShadow = true mountainSides = "mountain"
     background = "mountain2" }
