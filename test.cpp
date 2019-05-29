@@ -39,6 +39,9 @@
 #include "dungeon_level.h"
 #include "villain_type.h"
 #include "roof_support.h"
+#include "content_factory.h"
+#include "game_config.h"
+#include "name_generator.h"
 
 class Test {
   public:
@@ -915,18 +918,26 @@ class Test {
   }
 
   struct MatchingTest {
+    MatchingTest() {
+      GameConfig config(DirectoryPath("data_free/game_config/"), "vanilla");
+      ContentFactory contentFactory;
+      CHECK(!contentFactory.readData(NameGenerator(DirectoryPath("data_free/names")), &config));
+      auto model = Model::create(&contentFactory);
+      LevelBuilder builder(nullptr, Random, &contentFactory, 10, 10, "", false, none);
+      PLevelMaker levelMaker = LevelMaker::emptyLevel(FurnitureType("MOUNTAIN"), true);
+      level = model->buildMainLevel(std::move(builder), std::move(levelMaker));
+      game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory));
+    }
     auto get(int x, int y) {
-      return Position(Vec2(x, y), level.get());
-    };
+      return Position(Vec2(x, y), level);
+    }
     void free(Position pos) {
       pos.removeFurniture(pos.getFurniture(FurnitureLayer::MIDDLE));
       matching.updateMovement(pos);
     }
     PositionMatching matching;
-    PModel model = Model::create(nullptr);
-    LevelBuilder builder = LevelBuilder(nullptr, Random, nullptr, 10, 10, "", false, none);
-    PLevelMaker levelMaker = LevelMaker::emptyLevel(FurnitureType("MOUNTAIN"), true);
-    PLevel level = builder.build(model.get(), levelMaker.get(), 1234);
+    Level* level;
+    PGame game;
   };
 
   void testPositionMatching1() {
