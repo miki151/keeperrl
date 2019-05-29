@@ -51,7 +51,8 @@ class CreatureFactory {
 
   const map<string, SpellSchool> getSpellSchools() const;
   const vector<Spell>& getSpells() const;
-
+  const Spell* getSpell(const string&) const;
+  const string& getSpellName(const Spell*) const;
   CreatureFactory(NameGenerator, map<CreatureId, CreatureAttributes>, map<CreatureId, CreatureInventory>, map<string, SpellSchool>,
       vector<Spell>);
   ~CreatureFactory();
@@ -79,5 +80,4 @@ class CreatureFactory {
   map<string, SpellSchool> SERIAL(spellSchools);
   vector<Spell> SERIAL(spells);
   static void addInventory(Creature*, const vector<ItemType>& items);
-  const Spell* getSpell(const string&) const;
 };

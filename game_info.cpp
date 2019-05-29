@@ -17,6 +17,8 @@
 #include "item_class.h"
 #include "model.h"
 #include "time_queue.h"
+#include "game.h"
+#include "content_factory.h"
 
 CreatureInfo::CreatureInfo(const Creature* c)
     : viewId(c->getViewObject().id()),
@@ -146,7 +148,7 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   spells.clear();
   for (auto spell : c->getSpellMap().getAvailable(c)) {
     spells.push_back({
-        c->getSpellMap().getName(spell),
+        c->getGame()->getContentFactory()->creatures.getSpellName(spell),
         spell->getSymbol(),
         spell->getDescription(),
         c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell))

@@ -30,7 +30,6 @@ class SpellMap {
   bool contains(const Spell*) const;
   void onExpLevelReached(Creature*, ExperienceType, int level);
   void setAllReady();
-  const string& getName(const Spell*) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

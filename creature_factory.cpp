@@ -799,6 +799,12 @@ const Spell* CreatureFactory::getSpell(const string& id) const {
   return nullptr;
 }
 
+const string& CreatureFactory::getSpellName(const Spell* s) const {
+  while (auto& upgrade = s->getUpgrade())
+    s = getSpell(*upgrade);
+  return s->getId();
+}
+
 PCreature CreatureFactory::getGhost(Creature* creature) {
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Ghost");
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);

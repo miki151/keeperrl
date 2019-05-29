@@ -7,7 +7,9 @@
 #include "experience_type.h"
 #include "creature_attributes.h"
 #include "gender.h"
-
+#include "creature_factory.h"
+#include "game.h"
+#include "content_factory.h"
 
 void SpellMap::add(Spell spell, ExperienceType expType, int level) {
   for (auto& elem : elems)
@@ -32,12 +34,6 @@ void SpellMap::add(Spell spell, ExperienceType expType, int level) {
 void SpellMap::setAllReady() {
   for (auto& elem : elems)
     elem.timeout = none;
-}
-
-const string& SpellMap::getName(const Spell* s) const {
-  while (auto& upgrade = s->getUpgrade())
-    s = &getInfo(*upgrade)->spell;
-  return s->getId();
 }
 
 const SpellMap::SpellInfo* SpellMap::getInfo(const string& id) const {
@@ -92,13 +88,15 @@ void SpellMap::onExpLevelReached(Creature* c, ExperienceType type, int level) {
   string spellType = type == ExperienceType::SPELL ? "spell"_s : "ability"_s;
   for (auto& elem : elems) {
     if (level == elem.level && elem.expType == type) {
-      if (auto& upgrade = elem.spell.getUpgrade()) {
+      string spellName = c->getGame()->getContentFactory()->creatures.getSpellName(&elem.spell);
+      auto& upgrade = elem.spell.getUpgrade();
+      if (upgrade && !!getInfo(*upgrade)) {
         string his = ::his(c->getAttributes().getGender());
-        c->addPersonalEvent(c->getName().a() + " improves " + his + " " + spellType + " of " + getName(&elem.spell));
-        c->verb("improve", "improves", his + " " + spellType + " of " + getName(&elem.spell));
+        c->addPersonalEvent(c->getName().a() + " improves " + his + " " + spellType + " of " + spellName);
+        c->verb("improve", "improves", his + " " + spellType + " of " + spellName);
       } else {
-        c->addPersonalEvent(c->getName().a() + " learns the " + spellType + " of " + getName(&elem.spell));
-        c->verb("learn", "learns", "the " + spellType + " of " + getName(&elem.spell));
+        c->addPersonalEvent(c->getName().a() + " learns the " + spellType + " of " + spellName);
+        c->verb("learn", "learns", "the " + spellType + " of " + spellName);
       }
     }
   }
