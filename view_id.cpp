@@ -13,7 +13,7 @@ bool ViewId::operator !=(const ViewId& o) const {
 }
 
 bool ViewId::operator < (const ViewId& o) const {
-  return ContentId<ViewId>::operator < (o) && color < o.color;
+  return std::forward_as_tuple(getInternalId(), color) < std::forward_as_tuple(o.getInternalId(), o.color);
 }
 
 int ViewId::getHash() const {
