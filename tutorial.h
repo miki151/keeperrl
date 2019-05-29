@@ -5,6 +5,7 @@
 class TutorialInfo;
 class Game;
 class GameConfig;
+class ImmigrantInfo;
 
 class Tutorial {
   public:
@@ -15,7 +16,7 @@ class Tutorial {
   EnumSet<TutorialHighlight> getHighlights(WConstGame) const;
   bool blockAutoEquipment() const;
 
-  static void createTutorial(Game&, const GameConfig*);
+  static void createTutorial(Game&, vector<ImmigrantInfo>);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);

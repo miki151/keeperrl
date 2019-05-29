@@ -152,9 +152,9 @@ typedef struct
 } unz_s;
 
 
-#ifndef NOUNCRYPT
+/*#ifndef NOUNCRYPT
 #include "crypt.h"
-#endif
+#endif*/
 
 /* ===========================================================================
      Read a byte from a gz_stream; update next_in and avail_in. Return EOF

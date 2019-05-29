@@ -5,10 +5,11 @@
 #include "creature_inventory.h"
 #include "creature_attributes.h"
 #include "furniture.h"
+#include "player_role.h"
+#include "tribe_alignment.h"
 
-SERIALIZE_DEF(ContentFactory, creatures, furniture, resources, zLevels, tilePaths, enemies, itemFactory)
 
-SERIALIZATION_CONSTRUCTOR_IMPL(ContentFactory)
+SERIALIZE_DEF(ContentFactory, creatures, furniture, resources, zLevels, tilePaths, enemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology)
 
 static bool isZLevel(const vector<ZLevelInfo>& levels, int depth) {
   for (auto& l : levels)
@@ -83,60 +84,111 @@ optional<string> ContentFactory::readFurnitureFactory(const GameConfig* config) 
   furniture = FurnitureFactory(std::move(furnitureDefs), std::move(furnitureLists));
   return none;
 }
+static optional<string> checkGroupCounts(const map<string, vector<ImmigrantInfo>>& immigrants) {
+  for (auto& group : immigrants)
+    for (auto& elem : group.second)
+      if (elem.getGroupSize().isEmpty())
+        return "Bad immigrant group size: " + toString(elem.getGroupSize()) +
+            ". Lower bound is inclusive, upper bound exclusive.";
+  return none;
+}
 
-ContentFactory::ContentFactory(NameGenerator nameGenerator, const GameConfig* config) {
-  EnemyId::startContentIdGeneration();
-  while (1) {
-    if (auto res = config->readObject(zLevels, GameConfigId::Z_LEVELS)) {
-      USER_INFO << *res;
-      continue;
-    }
-    if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS)) {
-      USER_INFO << *res;
-      continue;
-    }
-    if (auto res = config->readObject(enemies, GameConfigId::ENEMIES)) {
-      USER_INFO << *res;
-      continue;
-    }
-    if (auto res = readCreatureFactory(std::move(nameGenerator), config)) {
-      USER_INFO << *res;
-      continue;
-    }
-    if (auto res = readFurnitureFactory(config)) {
-      USER_INFO << *res;
-      continue;
-    }
-    map<ItemListId, ItemList> itemLists;
-    ItemListId::startContentIdGeneration();
-    if (auto res = config->readObject(itemLists, GameConfigId::ITEM_LISTS)) {
-      USER_INFO << *res;
-      continue;
-    }
-    itemFactory = ItemFactory(std::move(itemLists));
-    ItemListId::validateContentIds();
-    vector<TileInfo> tileDefs;
-    if (auto error = config->readObject(tileDefs, GameConfigId::TILES)) {
-      USER_INFO << *error;
-      continue;
-    }
-    tilePaths = TilePaths(std::move(tileDefs), config->getModName());
-    for (int alignment = 0; alignment < 2; ++alignment) {
-      vector<ZLevelInfo> levels = concat<ZLevelInfo>({zLevels[0], zLevels[1 + alignment]});
-      for (int depth = 0; depth < 1000; ++depth) {
-        if (!isZLevel(levels, depth)) {
-          USER_INFO << "No z-level found for depth " << depth << ". Please fix z-level config.";
-          continue;
-        }
-        if (!areResourceCounts(resources, depth)) {
-          USER_INFO << "No resource distribution found for depth " << depth << ". Please fix resources config.";
-          continue;
-        }
+optional<string> ContentFactory::readVillainsTuple(const GameConfig* gameConfig) {
+  if (auto error = gameConfig->readObject(villains, GameConfigId::CAMPAIGN_VILLAINS))
+    return "Error reading campaign villains definition"_s + *error;
+  auto has = [](vector<Campaign::VillainInfo> v, VillainType type) {
+    return std::any_of(v.begin(), v.end(), [type](const auto& elem){ return elem.type == type; });
+  };
+  for (auto villainType : {VillainType::ALLY, VillainType::MAIN, VillainType::LESSER})
+    for (auto role : ENUM_ALL(PlayerRole))
+      for (auto alignment : ENUM_ALL(TribeAlignment)) {
+        int index = [&] {
+          switch (role) {
+            case PlayerRole::KEEPER:
+              switch (alignment) {
+                case TribeAlignment::EVIL:
+                  return 0;
+                case TribeAlignment::LAWFUL:
+                  return 1;
+              }
+            case PlayerRole::ADVENTURER:
+              switch (alignment) {
+                case TribeAlignment::EVIL:
+                  return 2;
+                case TribeAlignment::LAWFUL:
+                  return 3;
+              }
+          }
+        }();
+        if (!has(villains[index], villainType))
+          return "Empty " + EnumInfo<VillainType>::getString(villainType) + " villain list for alignment: "
+                    + EnumInfo<TribeAlignment>::getString(alignment);
       }
+  return none;
+}
+
+optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config) {
+  if (auto error = config->readObject(playerCreatures, GameConfigId::PLAYER_CREATURES))
+    return "Error reading player creature definitions"_s + *error;
+  if (playerCreatures.first.empty() || playerCreatures.second.empty() || playerCreatures.first.size() > 10 ||
+      playerCreatures.second.size() > 10)
+    return "Keeper and adventurer lists must each contain between 1 and 10 entries."_s;
+  return none;
+}
+
+optional<string> ContentFactory::readData(NameGenerator nameGenerator, const GameConfig* config) {
+  if (auto error = config->readObject(technology, GameConfigId::TECHNOLOGY))
+    return *error;
+  for (auto& tech : technology.techs)
+    for (auto& preq : tech.second.prerequisites)
+      if (!technology.techs.count(preq))
+        return "Technology prerequisite \"" + preq + "\" of \"" + tech.first + "\" is not available";
+  if (auto error = config->readObject(workshopGroups, GameConfigId::WORKSHOPS_MENU))
+    return *error;
+  if (auto error = config->readObject(immigrantsData, GameConfigId::IMMIGRATION))
+    return *error;
+  if (auto error = checkGroupCounts(immigrantsData))
+    return *error;
+  if (auto error = config->readObject(buildInfo, GameConfigId::BUILD_MENU))
+    return *error;
+  if (auto error = readVillainsTuple(config))
+    return *error;
+  if (auto error = config->readObject(gameIntros, GameConfigId::GAME_INTRO_TEXT))
+    return *error;
+  if (auto error = readPlayerCreatures(config))
+    return *error;
+  EnemyId::startContentIdGeneration();
+  if (auto res = config->readObject(zLevels, GameConfigId::Z_LEVELS))
+    return *res;
+  if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS))
+    return *res;
+  if (auto res = config->readObject(enemies, GameConfigId::ENEMIES))
+    return *res;
+  if (auto res = readCreatureFactory(std::move(nameGenerator), config))
+    return *res;
+  if (auto res = readFurnitureFactory(config))
+    return *res;
+  map<ItemListId, ItemList> itemLists;
+  ItemListId::startContentIdGeneration();
+  if (auto res = config->readObject(itemLists, GameConfigId::ITEM_LISTS))
+    return *res;
+  itemFactory = ItemFactory(std::move(itemLists));
+  ItemListId::validateContentIds();
+  vector<TileInfo> tileDefs;
+  if (auto res = config->readObject(tileDefs, GameConfigId::TILES))
+    return *res;
+  tilePaths = TilePaths(std::move(tileDefs), config->getModName());
+  for (int alignment = 0; alignment < 2; ++alignment) {
+    vector<ZLevelInfo> levels = concat<ZLevelInfo>({zLevels[0], zLevels[1 + alignment]});
+    for (int depth = 0; depth < 1000; ++depth) {
+      if (!isZLevel(levels, depth))
+        return "No z-level found for depth " + toString(depth) + ". Please fix z-level config.";
+      if (!areResourceCounts(resources, depth))
+        return "No resource distribution found for depth " + toString(depth) + ". Please fix resources config.";
     }
-    break;
   }
   EnemyId::validateContentIds();
+  return none;
 }
 
 void ContentFactory::merge(ContentFactory f) {

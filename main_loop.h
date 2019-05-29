@@ -69,8 +69,7 @@ class MainLoop {
   void showMods();
   void playMenuMusic();
 
-  ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen& random,
-      const GameConfig*, ContentFactory*);
+  ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen& random, ContentFactory*);
   PGame loadGame(const FilePath&);
   PGame loadPrevious();
   FilePath getSavePath(const PGame&, GameSaveType);
@@ -97,12 +96,12 @@ class MainLoop {
   void considerGameEventsPrompt();
   void considerFreeVersionText(bool tilesPresent);
   void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);
-  PGame prepareTutorial(const GameConfig*);
+  PGame prepareTutorial(const ContentFactory*);
   void launchQuickGame();
   void bugReportSave(PGame&, FilePath);
   int saveVersion;
   void saveGame(PGame&, const FilePath&);
   void saveMainModel(PGame&, const FilePath&);
-  ContentFactory createContentFactory(const GameConfig* gameConfig) const;
+  ContentFactory createContentFactory(bool vanillaOnly) const;
   TilePaths getTilePathsForAllMods() const;
 };

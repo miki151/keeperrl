@@ -22,12 +22,11 @@ class SavedGameInfo;
 struct CampaignSetup;
 class AvatarInfo;
 class ContentFactory;
-class InitialContentFactory;
 class NameGenerator;
 
 class Game : public OwnedObject<Game> {
   public:
-  static PGame campaignGame(Table<PModel>&&, CampaignSetup&, AvatarInfo, const InitialContentFactory*, ContentFactory);
+  static PGame campaignGame(Table<PModel>&&, CampaignSetup&, AvatarInfo, ContentFactory);
   static PGame splashScreen(PModel&&, const CampaignSetup&, ContentFactory);
 
   optional<ExitInfo> update(double timeDiff);
@@ -141,7 +140,7 @@ class Game : public OwnedObject<Game> {
   void initializeModels();
   void increaseTime(double diff);
   void addCollective(WCollective);
-  void spawnKeeper(AvatarInfo, vector<string> introText, const InitialContentFactory*);
+  void spawnKeeper(AvatarInfo, vector<string> introText);
   HeapAllocated<ContentFactory> SERIAL(contentFactory);
 };
 

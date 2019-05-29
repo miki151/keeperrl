@@ -83,7 +83,6 @@
 #include "quarters.h"
 #include "unknown_locations.h"
 #include "furniture_click.h"
-#include "initial_content_factory.h"
 #include "campaign.h"
 #include "game_event.h"
 #include "view_object_action.h"
@@ -138,10 +137,10 @@ PPlayerControl PlayerControl::create(WCollective col, vector<string> introText, 
 PlayerControl::~PlayerControl() {
 }
 
-void PlayerControl::loadBuildingMenu(const InitialContentFactory* initialFactory, const KeeperCreatureInfo& keeperCreatureInfo) {
+void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const KeeperCreatureInfo& keeperCreatureInfo) {
   vector<BuildInfo> buildInfoTmp;
   set<string> allDataGroups;
-  for (auto& group : initialFactory->buildInfo) {
+  for (auto& group : contentFactory->buildInfo) {
     allDataGroups.insert(group.first);
     if (keeperCreatureInfo.buildingGroups.contains(group.first))
       buildInfoTmp.append(group.second);
@@ -188,15 +187,15 @@ void PlayerControl::loadBuildingMenu(const InitialContentFactory* initialFactory
     }
 }
 
-optional<string> PlayerControl::loadImmigrationAndWorkshops(const InitialContentFactory* initialFactory, ContentFactory* contentFactory,
+optional<string> PlayerControl::loadImmigrationAndWorkshops(ContentFactory* contentFactory,
     const KeeperCreatureInfo& keeperCreatureInfo) {
-  Technology technology = initialFactory->technology;
+  Technology technology = contentFactory->technology;
   for (auto& tech : copyOf(technology.techs))
     if (!keeperCreatureInfo.technology.contains(tech.first))
       technology.techs.erase(tech.first);
   WorkshopArray merged;
   set<string> allWorkshopGroups;
-  for (auto& group : initialFactory->workshopGroups) {
+  for (auto& group : contentFactory->workshopGroups) {
     allWorkshopGroups.insert(group.first);
     if (keeperCreatureInfo.workshopGroups.contains(group.first))
       for (int i : Range(EnumInfo<WorkshopType>::size))
@@ -213,14 +212,14 @@ optional<string> PlayerControl::loadImmigrationAndWorkshops(const InitialContent
   collective->setWorkshops(unique<Workshops>(std::move(merged)));
   vector<ImmigrantInfo> immigrants;
   for (auto elem : keeperCreatureInfo.immigrantGroups)
-    if (auto group = getReferenceMaybe(initialFactory->immigrantsData, elem))
+    if (auto group = getReferenceMaybe(contentFactory->immigrantsData, elem))
       append(immigrants, *group);
     else
       return "Undefined immigrant group: \"" + elem + "\"";
   CollectiveConfig::addBedRequirementToImmigrants(immigrants, contentFactory);
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
   collective->setTechnology(std::move(technology));
-  loadBuildingMenu(initialFactory, keeperCreatureInfo);
+  loadBuildingMenu(contentFactory, keeperCreatureInfo);
   return none;
 }
 

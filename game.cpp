@@ -89,7 +89,7 @@ static CollectiveConfig getKeeperConfig(bool fastImmigration) {
       10);
 }
 
-void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText, const InitialContentFactory* initialFactory) {
+void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
   auto model = getMainModel().get();
   WLevel level = model->getTopLevel();
   Creature* keeperRef = avatarInfo.playerCreature.get();
@@ -106,7 +106,7 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText, const In
   playerCollective->setControl(std::move(playerControlOwned));
   playerCollective->setVillainType(VillainType::PLAYER);
   addCollective(playerCollective);
-  if (auto error = playerControl->loadImmigrationAndWorkshops(initialFactory, contentFactory.get(), *keeperInfo))
+  if (auto error = playerControl->loadImmigrationAndWorkshops(contentFactory.get(), *keeperInfo))
     USER_FATAL << *error;
   for (auto tech : keeperInfo->initialTech)
     playerCollective->acquireTech(tech, false);
@@ -114,7 +114,7 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText, const In
 
 Game::~Game() {}
 
-PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInfo avatar, const InitialContentFactory* initialFactory,
+PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInfo avatar,
     ContentFactory contentFactory) {
   auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup, std::move(contentFactory));
   for (auto model : ret->getAllModels())
@@ -128,7 +128,7 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInf
   if (setup.campaign.getPlayerRole() == PlayerRole::ADVENTURER)
     ret->getMainModel()->landHeroPlayer(std::move(avatar.playerCreature));
   else
-    ret->spawnKeeper(std::move(avatar), setup.introMessages, initialFactory);
+    ret->spawnKeeper(std::move(avatar), setup.introMessages);
   // Restore vulnerability. If the effect wasn't present in the first place then it will zero-out.
   avatarCreature->getAttributes().addPermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
   return ret;

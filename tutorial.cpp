@@ -27,7 +27,6 @@
 #include "collective_warning.h"
 #include "creature_factory.h"
 #include "workshop_item.h"
-#include "game_config.h"
 #include "tutorial_state.h"
 #include "content_factory.h"
 
@@ -455,7 +454,7 @@ Tutorial::State Tutorial::getState() const {
   return state;
 }
 
-void Tutorial::createTutorial(Game& game, const GameConfig* gameConfig) {
+void Tutorial::createTutorial(Game& game, vector<ImmigrantInfo> immigrants) {
   auto tutorial = make_shared<Tutorial>();
   game.getPlayerControl()->setTutorial(tutorial);
   auto collective = game.getPlayerCollective();
@@ -471,15 +470,6 @@ void Tutorial::createTutorial(Game& game, const GameConfig* gameConfig) {
   collective->setTrait(collective->getLeader(), MinionTrait::NO_AUTO_EQUIPMENT);
   collective->getWarnings().disable();
   collective->init(CollectiveConfig::keeper(50_visible, 10));
-  map<string, vector<ImmigrantInfo>> immigrantData;
-  if (auto error = gameConfig->readObject(immigrantData, GameConfigId::IMMIGRATION))
-    USER_FATAL << *error;
-  vector<ImmigrantInfo> immigrants;
-  for (auto elem : {"tutorial"})
-    if (auto group = getReferenceMaybe(immigrantData, elem))
-      append(immigrants, *group);
-    else
-      USER_FATAL << "Immigrant group not found: " << elem;
   CollectiveConfig::addBedRequirementToImmigrants(immigrants, game.getContentFactory());
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
 }

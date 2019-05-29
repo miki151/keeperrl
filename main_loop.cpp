@@ -38,7 +38,6 @@
 #include "creature_name.h"
 #include "tileset.h"
 #include "content_factory.h"
-#include "initial_content_factory.h"
 #include "scroll_position.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
@@ -348,11 +347,12 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
   }
 }
 
-PGame MainLoop::prepareTutorial(const GameConfig* gameConfig) {
+PGame MainLoop::prepareTutorial(const ContentFactory* contentFactory) {
   PGame game = loadGame(dataFreePath.file("tutorial.kep"));
-  if (game)
-    Tutorial::createTutorial(*game, gameConfig);
-  else
+  if (game) {
+    USER_CHECK(contentFactory->immigrantsData.count("tutorial"));
+    Tutorial::createTutorial(*game, contentFactory->immigrantsData.count("tutorial"));
+  } else
     view->presentText("Sorry", "Failed to load the tutorial :(");
   return game;
 }
@@ -363,25 +363,35 @@ struct ModelTable {
 };
 
 TilePaths MainLoop::getTilePathsForAllMods() const {
+  auto readTiles = [&] (const GameConfig* config) {
+    vector<TileInfo> tileDefs;
+    if (auto res = config->readObject(tileDefs, GameConfigId::TILES))
+      return optional<TilePaths>();
+    return optional<TilePaths>(TilePaths(std::move(tileDefs), config->getModName()));
+  };
   GameConfig currentConfig = getGameConfig();
-  auto ret = createContentFactory(&currentConfig).tilePaths;
+  auto ret = readTiles(&currentConfig);
   for (auto modDir : dataFreePath.subdirectory(gameConfigSubdir).getSubDirs()) {
     GameConfig config(dataFreePath.subdirectory(gameConfigSubdir), modDir);
-    ret.merge(createContentFactory(&config).tilePaths);
+    if (auto paths = readTiles(&config)) {
+      if (ret)
+        ret->merge(*paths);
+      else
+        ret = paths;
+    }
   }
-  return ret;
+  USER_CHECK(ret) << "No available tile paths found";
+  return *ret;
 }
 
 PGame MainLoop::prepareCampaign(RandomGen& random) {
   while (1) {
-    auto gameConfig = getGameConfig();
-    auto contentFactory = createContentFactory(&gameConfig);
+    auto contentFactory = createContentFactory(false);
     if (tileSet)
       tileSet->setTilePaths(contentFactory.tilePaths);
-    InitialContentFactory initialFactory(&gameConfig);
-    auto avatarChoice = getAvatarInfo(view, &initialFactory.playerCreatures, options, &contentFactory.creatures);
+    auto avatarChoice = getAvatarInfo(view, &contentFactory.playerCreatures, options, &contentFactory.creatures);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
-      CampaignBuilder builder(view, random, options, initialFactory.villains, initialFactory.gameIntros, *avatar);
+      CampaignBuilder builder(view, random, options, contentFactory.villains, contentFactory.gameIntros, *avatar);
       tileSet->setTilePaths(getTilePathsForAllMods());
       if (auto setup = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::FREE_PLAY,
           contentFactory.creatures.getNameGenerator()->getNext(NameGeneratorId::WORLD))) {
@@ -389,10 +399,10 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
         if (!name.empty())
           avatar->playerCreature->getName().setFirst(name);
         avatar->playerCreature->getName().useFullTitle();
-        auto models = prepareCampaignModels(*setup, *avatar, random, &gameConfig, &contentFactory);
+        auto models = prepareCampaignModels(*setup, *avatar, random, &contentFactory);
         for (auto& f : models.factories)
           contentFactory.merge(std::move(f));
-        return Game::campaignGame(std::move(models.models), *setup, std::move(*avatar), &initialFactory, std::move(contentFactory));
+        return Game::campaignGame(std::move(models.models), *setup, std::move(*avatar), std::move(contentFactory));
       } else
         continue;
     } else {
@@ -403,11 +413,13 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
         case AvatarMenuOption::CHANGE_MOD:
           showMods();
           continue;
-        case AvatarMenuOption::TUTORIAL:
-          if (auto ret = prepareTutorial(&gameConfig))
+        case AvatarMenuOption::TUTORIAL: {
+          auto contentFactory = createContentFactory(true);
+          if (auto ret = prepareTutorial(&contentFactory))
             return ret;
           else
             continue;
+        }
         case AvatarMenuOption::LOAD_GAME:
           if (auto ret = loadPrevious())
             return ret;
@@ -422,7 +434,7 @@ void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
   GameConfig gameConfig(dataFreePath.subdirectory(gameConfigSubdir), "vanilla");
-  auto contentFactory = createContentFactory(&gameConfig);
+  auto contentFactory = createContentFactory(true);
   if (tileSet)
     tileSet->setTilePaths(contentFactory.tilePaths);
   EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies);
@@ -471,11 +483,12 @@ void MainLoop::showMods() {
       lines.emplace_back(mod + (mod == currentMod ? " [active]"_s : ""_s), ListElem::NORMAL);
     }
     lines.emplace_back(onlineMods ? "Online mods:" : "Unable to fetch online mods", ListElem::TITLE);
-    for (auto& elem : *onlineMods) {
-      lines.emplace_back("Download \"" + elem.name + "\"", ListElem::NORMAL);
-      lines.emplace_back("Author: " + elem.author, ListElem::HELP_TEXT);
-      lines.emplace_back(elem.description, ListElem::HELP_TEXT);
-    }
+    if (onlineMods)
+      for (auto& elem : *onlineMods) {
+        lines.emplace_back("Download \"" + elem.name + "\"", ListElem::NORMAL);
+        lines.emplace_back("Author: " + elem.author, ListElem::HELP_TEXT);
+        lines.emplace_back(elem.description, ListElem::HELP_TEXT);
+      }
     auto choice = view->chooseFromList("", lines, currentIndex, MenuType::NORMAL, &scrollPos);
     if (!choice)
       break;
@@ -522,8 +535,24 @@ void MainLoop::considerFreeVersionText(bool tilesPresent) {
         "More information on the website.");
 }
 
-ContentFactory MainLoop::createContentFactory(const GameConfig* gameConfig) const {
-  return ContentFactory(NameGenerator(dataFreePath.subdirectory("names")), gameConfig);
+ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
+  ContentFactory ret;
+  auto tryConfig = [this, &ret](const string& modName) {
+    GameConfig config(dataFreePath.subdirectory(gameConfigSubdir), modName);
+    return ret.readData(NameGenerator(dataFreePath.subdirectory("names")), &config);
+  };
+  if (vanillaOnly) {
+    if (auto err = tryConfig("vanilla"))
+      USER_FATAL << "Error loading vanilla game data: " << *err;
+  } else {
+    auto chosenMod = options->getStringValue(OptionId::CURRENT_MOD);
+    if (auto err = tryConfig(chosenMod)) {
+      USER_INFO << "Error loading mod \"" << chosenMod << "\": " << *err << "\n\nUsing vanilla game data";
+      if (auto err = tryConfig("vanilla"))
+        USER_FATAL << "Error loading vanilla game data: " << *err;
+    }
+  }
+  return ret;
 }
 
 void MainLoop::launchQuickGame() {
@@ -537,15 +566,13 @@ void MainLoop::launchQuickGame() {
   PGame game;
   if (toLoad != files.end())
     game = loadGame(userPath.file((*toLoad).filename));
-  auto gameConfig = getGameConfig();
-  auto contentFactory = createContentFactory(&gameConfig);
+  auto contentFactory = createContentFactory(false);
   if (!game) {
-    InitialContentFactory initialFactory(&gameConfig);
-    AvatarInfo avatar = getQuickGameAvatar(view, &initialFactory.playerCreatures, &contentFactory.creatures);
-    CampaignBuilder builder(view, Random, options, initialFactory.villains, initialFactory.gameIntros, avatar);
+    AvatarInfo avatar = getQuickGameAvatar(view, &contentFactory.playerCreatures, &contentFactory.creatures);
+    CampaignBuilder builder(view, Random, options, contentFactory.villains, contentFactory.gameIntros, avatar);
     auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP, "[world]");
-    auto models = prepareCampaignModels(*result, std::move(avatar), Random, &gameConfig, &contentFactory);
-    game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), &initialFactory, std::move(contentFactory));
+    auto models = prepareCampaignModels(*result, std::move(avatar), Random, &contentFactory);
+    game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), std::move(contentFactory));
   }
   playGame(std::move(game), true, false);
 }
@@ -604,8 +631,7 @@ void MainLoop::doWithSplash(SplashType type, const string& text, function<void()
 
 void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen& random, Options* options) {
   ProgressMeter meter(1);
-  auto gameConfig = getGameConfig();
-  auto contentFactory = createContentFactory(&gameConfig);
+  auto contentFactory = createContentFactory(false);
   EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies);
   ModelBuilder(&meter, random, options, sokobanInput, &contentFactory, std::move(enemyFactory))
       .measureSiteGen(numTries, types);
@@ -662,8 +688,7 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePat
   }
   int cnt = 0;
   input >> cnt;
-  auto gameConfig = getGameConfig();
-  auto creatureFactory = createContentFactory(&gameConfig);
+  auto creatureFactory = createContentFactory(false);
   for (int i : Range(cnt)) {
     auto allies = readAlly(input);
     std::cout << allies.getSummary(&creatureFactory.creatures) << ": ";
@@ -679,8 +704,7 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
   vector<CreatureList> allies;
   for (int i : Range(cnt))
     allies.push_back(readAlly(input));
-  auto gameConfig = getGameConfig();
-  auto contentFactory = createContentFactory(&gameConfig);
+  auto contentFactory = createContentFactory(false);
   ExternalEnemies enemies(random, &contentFactory.creatures, EnemyFactory(random, contentFactory.creatures.getNameGenerator(),
       contentFactory.enemies)
       .getExternalEnemies());
@@ -706,10 +730,9 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
   int numUnknown = 0;
   auto allyTribe = TribeId::getDarkKeeper();
   std::cout.flush();
-  auto gameConfig = getGameConfig();
   for (int i : Range(numTries)) {
     std::cout << "Creating level" << std::endl;
-    auto contentFactory = createContentFactory(&gameConfig);
+    auto contentFactory = createContentFactory(false);
     EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies);
     auto model = ModelBuilder(&meter, Random, options, sokobanInput,
         &contentFactory, std::move(enemyFactory)).battleModel(levelPath, ally, enemies);
@@ -778,7 +801,7 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, 
 }
 
 ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInfo& avatarInfo, RandomGen& random,
-    const GameConfig* gameConfig, ContentFactory* contentFactory) {
+    ContentFactory* contentFactory) {
   Table<PModel> models(setup.campaign.getSites().getBounds());
   auto& sites = setup.campaign.getSites();
   for (Vec2 v : sites.getBounds())
