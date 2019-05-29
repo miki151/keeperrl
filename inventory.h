@@ -51,7 +51,7 @@ class Inventory {
 
   bool isEmpty() const;
 
-  SERIALIZATION_DECL(Inventory);
+  SERIALIZATION_DECL(Inventory)
 
   private:
 

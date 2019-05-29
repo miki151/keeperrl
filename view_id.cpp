@@ -5,15 +5,15 @@
 ViewId::ViewId(const char* s, Color color) : ContentId(s), color(color) {}
 
 bool ViewId::operator == (const ViewId& o) const {
-  return ContentId<ViewId>::operator==(o) && color == o.color;
+  return ContentId<ViewId>::operator == (o) && color == o.color;
 }
 
 bool ViewId::operator !=(const ViewId& o) const {
   return !(*this == o);
 }
 
-bool ViewId::operator <(const ViewId& o) const {
-  return ContentId<ViewId>::operator==(o) && color < o.color;
+bool ViewId::operator < (const ViewId& o) const {
+  return ContentId<ViewId>::operator < (o) && color < o.color;
 }
 
 int ViewId::getHash() const {
