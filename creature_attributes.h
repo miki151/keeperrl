@@ -28,6 +28,7 @@
 #include "experience_type.h"
 #include "game_time.h"
 #include "view_id.h"
+#include "spell_id.h"
 
 inline bool isLarger(CreatureSize s1, CreatureSize s2) {
   return int(s1) > int(s2);
@@ -134,7 +135,7 @@ class CreatureAttributes {
   bool SERIAL(isSpecial) = false;
   Skillset SERIAL(skills);
   vector<string> SERIAL(spellSchools);
-  vector<string> SERIAL(spells);
+  vector<SpellId> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, GlobalTime> SERIAL(lastingEffects);
   MinionActivityMap SERIAL(minionActivities);

@@ -43,7 +43,7 @@ class SpellMap {
     SERIALIZE_ALL(spell, timeout, level, expType)
   };
   vector<SpellInfo> SERIAL(elems);
-  const SpellInfo* getInfo(const string& id) const;
-  SpellInfo* getInfo(const string& id);
+  const SpellInfo* getInfo(SpellId) const;
+  SpellInfo* getInfo(SpellId);
 };
 

@@ -3,7 +3,7 @@
   {
     "healing" 1
     "summon flies" 2
-    "healing2" 3
+    "advanced healing" 3
     "deception" 4
     "escape" 5
     "haste" 5
@@ -21,7 +21,7 @@
     "circular blast" 3
     "teleport" 5
     "meteor shower" 11
-    "teleport2" 12
+    "advanced teleport" 12
   }
   "shaman" SPELL
   {
@@ -30,24 +30,24 @@
     "slow" 3
     "defense bonus" 4
     "damage bonus" 5
-    "haste2" 6
-    "defense bonus2" 7
-    "damage bonus2" 8
+    "advanced haste" 6
+    "advanced defense bonus" 7
+    "advanced damage bonus" 8
     "magic cancellation" 9
   }
   "healer" SPELL
   {
-    "healing2" 1
-    "healing3" 2
+    "advanced healing" 1
+    "expert healing" 2
     "cure poison" 2
-    "cure poison2" 3
+    "advanced cure poison" 3
     "cure blindness" 4
     "poison resistance" 5
   }
   "fire" SPELL
   {
     "fire elemental" 1
-    "fire elemental2" 2
+    "advanced fire elemental" 2
     "fireball" 3
     "firewall" 5
   }

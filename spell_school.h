@@ -5,6 +5,6 @@
 
 struct SpellSchool {
   ExperienceType SERIAL(expType);
-  vector<pair<string, int>> SERIAL(spells);
+  vector<pair<SpellId, int>> SERIAL(spells);
   SERIALIZE_ALL(expType, spells)
 };

@@ -129,11 +129,15 @@ bool Spell::isEndOnly() const {
   return endOnly;
 }
 
-const string& Spell::getId() const {
+SpellId Spell::getId() const {
   return id;
 }
 
-const optional<string>& Spell::getUpgrade() const {
+const char* Spell::getName() const {
+  return id.data();
+}
+
+optional<SpellId> Spell::getUpgrade() const {
   return upgrade;
 }
 

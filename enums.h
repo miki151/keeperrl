@@ -117,3 +117,4 @@ class FurnitureType;
 class ItemListId;
 class EnemyId;
 class FurnitureListId;
+class SpellId;

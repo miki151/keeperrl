@@ -17,6 +17,7 @@
 
 #include "enums.h"
 #include "util.h"
+#include "spell_id.h"
 
 RICH_ENUM(
   CastMessageType,
@@ -42,15 +43,16 @@ class Spell {
   void apply(Creature*, Position target) const;
   int getRange() const;
   bool isEndOnly() const;
-  const string& getId() const;
-  const optional<string>& getUpgrade() const;
+  SpellId getId() const;
+  const char* getName() const;
+  optional<SpellId> getUpgrade() const;
   MoveInfo getAIMove(const Creature*) const;
 
   SERIALIZATION_DECL(Spell)
 
   private:
-  string SERIAL(id);
-  optional<string> SERIAL(upgrade);
+  SpellId SERIAL(id);
+  optional<SpellId> SERIAL(upgrade);
   string SERIAL(symbol);
   HeapAllocated<Effect> SERIAL(effect);
   int SERIAL(cooldown);

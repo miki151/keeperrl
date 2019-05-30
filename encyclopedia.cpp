@@ -93,7 +93,7 @@ void showSpells(View* view, const pair<string, SpellSchool>& school) {
     return std::forward_as_tuple(s1.getExpLevel(), s1.getName()) <
            std::forward_as_tuple(s2.getExpLevel(), s2.getName());});*/
   for (auto& spell : spells) {
-    options.emplace_back(spell.first, spell.second > 0 ? toString(spell.second) : "none"_s, ListElem::ElemMod::TEXT);
+    options.emplace_back(spell.first.data(), spell.second > 0 ? toString(spell.second) : "none"_s, ListElem::ElemMod::TEXT);
   }
   view->presentList("List of spells and the spellcaster levels at which they are acquired.", options);
 }

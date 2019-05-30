@@ -36,14 +36,14 @@ void SpellMap::setAllReady() {
     elem.timeout = none;
 }
 
-const SpellMap::SpellInfo* SpellMap::getInfo(const string& id) const {
+const SpellMap::SpellInfo* SpellMap::getInfo(SpellId id) const {
   for (auto& elem : elems)
     if (elem.spell.getId() == id)
       return &elem;
   return nullptr;
 }
 
-SpellMap::SpellInfo* SpellMap::getInfo(const string& id) {
+SpellMap::SpellInfo* SpellMap::getInfo(SpellId id) {
   for (auto& elem : elems)
     if (elem.spell.getId() == id)
       return &elem;
@@ -59,10 +59,10 @@ void SpellMap::setReadyTime(const Spell* spell, GlobalTime time) {
 }
 
 vector<const Spell*> SpellMap::getAvailable(const Creature* c) const {
-  unordered_set<string> upgraded;
+  unordered_set<SpellId, CustomHash<SpellId>> upgraded;
   for (auto& elem : elems)
     if (elem.level <= c->getAttributes().getExpLevel(elem.expType))
-      if (auto& upgrade = elem.spell.getUpgrade())
+      if (auto upgrade = elem.spell.getUpgrade())
         upgraded.insert(*upgrade);
   vector<const SpellInfo*> ret;
   for (auto& elem : elems)
@@ -88,8 +88,8 @@ void SpellMap::onExpLevelReached(Creature* c, ExperienceType type, int level) {
   string spellType = type == ExperienceType::SPELL ? "spell"_s : "ability"_s;
   for (auto& elem : elems) {
     if (level == elem.level && elem.expType == type) {
-      string spellName = c->getGame()->getContentFactory()->creatures.getSpellName(&elem.spell);
-      auto& upgrade = elem.spell.getUpgrade();
+      string spellName = elem.spell.getName();
+      auto upgrade = elem.spell.getUpgrade();
       if (upgrade && !!getInfo(*upgrade)) {
         string his = ::his(c->getAttributes().getGender());
         c->addPersonalEvent(c->getName().a() + " improves " + his + " " + spellType + " of " + spellName);

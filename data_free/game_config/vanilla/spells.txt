@@ -7,7 +7,7 @@
     sound = SPELL_HEALING
   }
   {
-    id =  "healing2"
+    id = "advanced healing"
     upgrade = "healing"
     symbol = "❤️"
     effect = Heal FLESH
@@ -17,8 +17,8 @@
     sound = SPELL_HEALING
   }
   {
-    id =  "healing3"
-    upgrade = "healing2"
+    id =  "expert healing"
+    upgrade = "advanced healing"
     symbol = "❤️"
     effect = Heal FLESH
     targetSelf = true
@@ -34,7 +34,7 @@
     sound = SPELL_CURE_POISON
   }
   {
-    id =  "cure poison2"
+    id =  "advanced cure poison"
     upgrade = "cure poison"
     symbol = "⚕"
     effect = RemoveLasting POISON
@@ -91,7 +91,7 @@
     sound = SPELL_INVISIBILITY
   }
   {
-    id =  "invisibility2"
+    id =  "advanced invisibility"
     upgrade = "invisibility"
     symbol = "🕵️"
     effect = Lasting INVISIBLE
@@ -114,7 +114,7 @@
     sound = SPELL_TELEPORT
   }
   {
-    id =  "teleport2"
+    id =  "advanced teleport"
     upgrade = "teleport"
     symbol = "🌀"
     effect = Teleport
@@ -147,7 +147,7 @@
     sound = SPELL_SPEED_SELF
   }
   {
-    id =  "haste2"
+    id =  "advanced haste"
     upgrade = "haste"
     symbol = "🏃"
     effect = Lasting SPEED
@@ -197,7 +197,7 @@
     sound = SPELL_DEX_BONUS
   }
   {
-    id =  "defense bonus2"
+    id =  "advanced defense bonus"
     upgrade = "defense bonus"
     symbol = "🛡"
     effect = Lasting DEF_BONUS
@@ -214,7 +214,7 @@
     sound = SPELL_STR_BONUS
   }
   {
-    id =  "damage bonus2"
+    id =  "advanced damage bonus"
     upgrade = "damage bonus"
     symbol = "💪"
     effect = Lasting DAM_BONUS
@@ -252,7 +252,7 @@
     sound = SPELL_FIRE_SPHERE_PET
   }
   {
-    id =  "fire elemental2"
+    id =  "advanced fire elemental"
     upgrade = "fire elemental"
     symbol = "👾"
     effect = Summon "FIRE_ELEMENTAL" { 2 4 }

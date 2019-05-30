@@ -148,7 +148,7 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   spells.clear();
   for (auto spell : c->getSpellMap().getAvailable(c)) {
     spells.push_back({
-        c->getGame()->getContentFactory()->creatures.getSpellName(spell),
+        spell->getName(),
         spell->getSymbol(),
         spell->getDescription(),
         c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell))

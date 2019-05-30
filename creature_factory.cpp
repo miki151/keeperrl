@@ -792,17 +792,11 @@ PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory ai
   }
 }
 
-const Spell* CreatureFactory::getSpell(const string& id) const {
+const Spell* CreatureFactory::getSpell(SpellId id) const {
   for (auto& spell : spells)
     if (spell.getId() == id)
       return &spell;
   return nullptr;
-}
-
-const string& CreatureFactory::getSpellName(const Spell* s) const {
-  while (auto& upgrade = s->getUpgrade())
-    s = getSpell(*upgrade);
-  return s->getId();
 }
 
 PCreature CreatureFactory::getGhost(Creature* creature) {
