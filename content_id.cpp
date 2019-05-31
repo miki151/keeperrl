@@ -7,6 +7,7 @@
 #include "spell_id.h"
 #include "tech_id.h"
 #include "creature_id.h"
+#include "spell_school_id.h"
 
 template <typename T>
 vector<string> ContentId<T>::allIds;
@@ -173,3 +174,4 @@ INST(FurnitureListId)
 INST(SpellId)
 INST(TechId)
 INST(CreatureId)
+INST(SpellSchoolId)

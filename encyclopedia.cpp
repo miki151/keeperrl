@@ -89,7 +89,7 @@ void skills(View* view, int lastInd = 0) {
   skills(view, *index);
 }
 
-void showSpells(View* view, const pair<string, SpellSchool>& school) {
+void showSpells(View* view, const pair<SpellSchoolId, SpellSchool>& school) {
   vector<ListElem> options;
   options.emplace_back("Spell:", "Level:", ListElem::ElemMod::TITLE);
   auto& spells = school.second.spells;
@@ -104,9 +104,9 @@ void showSpells(View* view, const pair<string, SpellSchool>& school) {
 
 void Encyclopedia::spellSchools(View* view, int lastInd) const {
   vector<ListElem> options;
-  vector<pair<string, SpellSchool>> pairs;
+  vector<pair<SpellSchoolId, SpellSchool>> pairs;
   for (auto& school : schools) {
-    options.push_back(school.first);
+    options.push_back(school.first.data());
     pairs.push_back(school);
   }
   auto index = view->chooseFromList("Spell schools", options, lastInd);
@@ -127,7 +127,7 @@ void villainPoints(View* view) {
   view->presentList("Experience points awarded for conquering each villain type.", options);
 }
 
-Encyclopedia::Encyclopedia(vector<BuildInfo> buildInfo, map<string, SpellSchool> spellSchools,
+Encyclopedia::Encyclopedia(vector<BuildInfo> buildInfo, map<SpellSchoolId, SpellSchool> spellSchools,
     vector<Spell> spells, const Technology& technology)
     : buildInfo(std::move(buildInfo)), schools(spellSchools), spells(spells), technology(technology) {
 }

@@ -9,6 +9,7 @@
 #include "tribe_alignment.h"
 #include "item.h"
 #include "key_verifier.h"
+#include "spell_school_id.h"
 
 SERIALIZE_DEF(ContentFactory, creatures, furniture, resources, zLevels, tilePaths, enemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology)
 
@@ -40,7 +41,7 @@ optional<string> ContentFactory::readCreatureFactory(NameGenerator nameGenerator
         return "CreatureId appears more than once: "_s + id.data();
       inventory.insert(make_pair(id, elem.second));
     }
-  map<string, SpellSchool> spellSchools;
+  map<PrimaryId<SpellSchoolId>, SpellSchool> spellSchools;
   vector<Spell> spells;
   if (auto res = config->readObject(spells, GameConfigId::SPELLS, keyVerifier))
     return *res;
@@ -49,13 +50,8 @@ optional<string> ContentFactory::readCreatureFactory(NameGenerator nameGenerator
   keyVerifier->addKey<CreatureId>("KRAKEN");
   for (auto& elem : CreatureFactory::getSpecialParams())
     keyVerifier->addKey<CreatureId>(elem.first.data());
-  for (auto& elem : attributes) {
-    for (auto& school : elem.second.spellSchools)
-      if (!spellSchools.count(school))
-        return elem.first.data() + ": unknown spell school: "_s + school;
-  }
   creatures = CreatureFactory(std::move(nameGenerator), convertKeys(std::move(attributes)), std::move(inventory),
-      std::move(spellSchools), std::move(spells));
+      convertKeys(std::move(spellSchools)), std::move(spells));
   return none;
 }
 

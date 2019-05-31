@@ -194,7 +194,7 @@ NameGenerator* CreatureFactory::getNameGenerator() {
   return &*nameGenerator;
 }
 
-const map<string, SpellSchool> CreatureFactory::getSpellSchools() const {
+const map<SpellSchoolId, SpellSchool> CreatureFactory::getSpellSchools() const {
   return spellSchools;
 }
 
@@ -203,7 +203,7 @@ const vector<Spell>& CreatureFactory::getSpells() const {
 }
 
 CreatureFactory::CreatureFactory(NameGenerator n, map<CreatureId, CreatureAttributes> a, map<CreatureId, CreatureInventory> i,
-    map<string, SpellSchool> s, vector<Spell> sp)
+    map<SpellSchoolId, SpellSchool> s, vector<Spell> sp)
   : nameGenerator(std::move(n)), attributes(a), inventory(i), spellSchools(s), spells(sp) {}
 
 CreatureFactory::~CreatureFactory() {

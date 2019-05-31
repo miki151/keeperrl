@@ -20,6 +20,7 @@
 #include "experience_type.h"
 #include "spell_school.h"
 #include "creature_id.h"
+#include "spell_school_id.h"
 
 class Creature;
 class MonsterAIFactory;
@@ -50,11 +51,11 @@ class CreatureFactory {
 
   NameGenerator* getNameGenerator();
 
-  const map<string, SpellSchool> getSpellSchools() const;
+  const map<SpellSchoolId, SpellSchool> getSpellSchools() const;
   const vector<Spell>& getSpells() const;
   const Spell* getSpell(SpellId) const;
-  CreatureFactory(NameGenerator, map<CreatureId, CreatureAttributes>, map<CreatureId, CreatureInventory>, map<string, SpellSchool>,
-      vector<Spell>);
+  CreatureFactory(NameGenerator, map<CreatureId, CreatureAttributes>, map<CreatureId, CreatureInventory>,
+      map<SpellSchoolId, SpellSchool>, vector<Spell>);
   ~CreatureFactory();
   CreatureFactory(const CreatureFactory&) = delete;
   CreatureFactory(CreatureFactory&&);
@@ -85,7 +86,7 @@ class CreatureFactory {
   map<CreatureId, CreatureAttributes> SERIAL(attributes);
   map<CreatureId, CreatureInventory> SERIAL(inventory);
   vector<ItemType> getDefaultInventory(CreatureId) const;
-  map<string, SpellSchool> SERIAL(spellSchools);
+  map<SpellSchoolId, SpellSchool> SERIAL(spellSchools);
   vector<Spell> SERIAL(spells);
   static void addInventory(Creature*, const vector<ItemType>& items);
 };
