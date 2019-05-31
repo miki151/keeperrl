@@ -9,6 +9,7 @@
 #include "special_trait.h"
 #include "tutorial_state.h"
 #include "furniture_type.h"
+#include "tech_id.h"
 
 class ContentFactory;
 

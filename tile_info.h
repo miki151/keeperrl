@@ -5,7 +5,7 @@
 #include "color.h"
 
 struct TileInfo {
-  string SERIAL(viewId);
+  PrimaryId<ViewId> SERIAL(viewId);
   string SERIAL(symbol);
   Color SERIAL(color);
   bool SERIAL(isSymbolFont) = false;

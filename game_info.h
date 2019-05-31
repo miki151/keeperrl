@@ -258,11 +258,11 @@ class CollectiveInfo {
   optional<ChosenWorkshopInfo> HASH(chosenWorkshop);
   struct LibraryInfo {
     struct TechInfo {
-      string HASH(name);
+      TechId HASH(id);
       string HASH(description);
       bool HASH(active);
       optional<TutorialHighlight> HASH(tutorialHighlight);
-      HASH_ALL(name, active, description, tutorialHighlight)
+      HASH_ALL(id, active, description, tutorialHighlight)
     };
     int HASH(currentProgress);
     int HASH(totalProgress);

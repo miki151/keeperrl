@@ -7,6 +7,7 @@
 #include "item_prefix.h"
 #include "item_upgrade_info.h"
 #include "view_id.h"
+#include "tech_id.h"
 
 class ItemAttributes;
 

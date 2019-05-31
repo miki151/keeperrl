@@ -16,6 +16,7 @@
 #include "campaign.h"
 #include "z_level_info.h"
 #include "attack_behaviour.h"
+#include "tech_id.h"
 
 namespace cereal {
   namespace variant_detail {
@@ -68,7 +69,7 @@ namespace cereal {
   INST(EmptyThing, int, CreatureGroup)
   INST2(SpecialTrait_impl)
   INST2(BuildInfo::BuildType_impl)
-  INST(string, int)
+  INST(TechId, int)
   INST2(ItemType::Type_impl)
   INST2(ImmigrantRequirement_impl)
   INST2(SpawnLocation_impl)

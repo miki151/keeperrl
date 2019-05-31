@@ -154,5 +154,5 @@ const vector<FurnitureType>& FurnitureFactory::getBedFurniture(BedType type) con
 }
 
 vector<FurnitureType> FurnitureFactory::getAllFurnitureType() const {
-  return getKeys(furniture);
+  return getKeys(furniture).transform([](auto key) { return (FurnitureType) key; });
 }

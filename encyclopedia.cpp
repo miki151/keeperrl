@@ -40,6 +40,10 @@ string combine(const vector<T>& v) {
       v.transform([](const T& e) -> string { return e.name; }));
 }
 
+string combine(const vector<TechId>& v) {
+  return combine(v.transform([](TechId id) -> string { return id.data(); }));
+}
+
 void Encyclopedia::advance(View* view, TechId tech) const {
   string text;
   const vector<TechId>& prerequisites = technology.techs.at(tech).prerequisites;
@@ -57,12 +61,12 @@ void Encyclopedia::advance(View* view, TechId tech) const {
           return false;});
   if (!rooms.empty())
     text += "Unlocks rooms: " + combine(rooms) + "\n";
-  view->presentText(capitalFirst(tech), text);
+  view->presentText(capitalFirst(tech.data()), text);
 }
 
 void Encyclopedia::advances(View* view, int lastInd) const {
   auto techs = technology.getSorted();
-  auto index = view->chooseFromList("Advances", ListElem::convert(techs), lastInd);
+  auto index = view->chooseFromList("Advances", ListElem::convert(techs.transform([](TechId id) { return string(id.data()); })), lastInd);
   if (!index)
     return;
   advance(view, techs[*index]);

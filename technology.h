@@ -17,8 +17,7 @@
 
 #include "util.h"
 #include "enums.h"
-
-using TechId = string;
+#include "tech_id.h"
 
 class Technology {
   public:
@@ -32,7 +31,7 @@ class Technology {
     vector<TechId> SERIAL(prerequisites);
     SERIALIZE_ALL(NAMED(description), OPTION(prerequisites))
   };
-  map<TechId, TechDefinition> SERIAL(techs);
+  map<PrimaryId<TechId>, TechDefinition> SERIAL(techs);
   set<TechId> SERIAL(researched);
   SERIALIZE_ALL(NAMED(techs), OPTION(researched))
 };

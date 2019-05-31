@@ -2,6 +2,7 @@
 
 #include "extern/iomanip.h"
 #include "util.h"
+#include "key_verifier.h"
 
 struct PrettyException {
   string text;
@@ -60,8 +61,8 @@ static pair<string, vector<StreamPos>> removeFormatting(string contents) {
 
 class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
   public:
-    PrettyInputArchive(const string& input, optional<string> filename)
-          : InputArchive<PrettyInputArchive>(this), filename(filename) {
+    PrettyInputArchive(const string& input, optional<string> filename, KeyVerifier* v)
+          : InputArchive<PrettyInputArchive>(this), keyVerifier(v ? *v : dummyKeyVerifier), filename(filename) {
       auto p = removeFormatting(input);
       is.str(p.first);
       streamPos = p.second;
@@ -155,12 +156,16 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
       nodeData.pop_back();
     }
 
+    KeyVerifier& keyVerifier;
+    bool inheritingKey = false;
+
     private:
     vector<NodeData> nodeData;
     bool nextElemInherited = false;
     std::istringstream is;
     vector<StreamPos> streamPos;
     optional<string> filename;
+    KeyVerifier dummyKeyVerifier;
 };
 
 namespace cereal {
@@ -330,6 +335,7 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, vector<T>& v) {
 template <typename T, typename U>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, map<T, U>& m) {
   map<T, long> bookmarks;
+  set<T> keys;
   if (!ar1.eatMaybe("append"))
     m.clear();
   string s;
@@ -342,12 +348,17 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, map<T, U>& m) {
     T key;
     ar1(key);
     bookmarks[key] = ar1.bookmark();
+    if (keys.count(key))
+      ar1.error("Duplicate key");
+    keys.insert(key);
     U value;
     vector<long> toRead;
     while (true) {
       if (ar1.eatMaybe("inherit")) {
         T inheritKey;
+        ar1.inheritingKey = true;
         ar1(inheritKey);
+        ar1.inheritingKey = false;
         toRead.push_back(ar1.bookmark());
         if (auto bookmark = getValueMaybe(bookmarks, inheritKey))
           ar1.seek(*bookmark);

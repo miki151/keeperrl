@@ -23,6 +23,7 @@
 #include "resource_id.h"
 #include "game_event.h"
 #include "content_factory.h"
+#include "tech_id.h"
 
 ItemType::ItemType(const ItemType&) = default;
 ItemType::ItemType(ItemType&) = default;
@@ -1141,7 +1142,7 @@ ItemAttributes ItemType::FireScroll::getAttributes() const {
 ItemAttributes ItemType::TechBook::getAttributes() const {
   return ITATTR(
       i.viewId = ViewId("book");
-      i.shortName = techId;
+      i.shortName = string(techId.data());
       i.name = "book of " + *i.shortName;
       i.plural = "books of " + *i.shortName;
       i.weight = 1;

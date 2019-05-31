@@ -6,6 +6,7 @@
 
 class ViewId : public ContentId<ViewId> {
   public:
+  using ContentId::ContentId;
   explicit ViewId(const char*, Color color = Color::WHITE);
   bool operator == (const ViewId&) const;
   bool operator != (const ViewId&) const;

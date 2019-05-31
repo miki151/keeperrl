@@ -8,6 +8,7 @@
 #include "avatar_info.h"
 #include "view_id.h"
 #include "furniture_type.h"
+#include "tech_id.h"
 
 struct BuildInfo {
   struct Furniture {

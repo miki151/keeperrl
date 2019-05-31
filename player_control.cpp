@@ -89,6 +89,7 @@
 #include "storage_id.h"
 #include "fx_name.h"
 #include "content_factory.h"
+#include "tech_id.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -949,7 +950,7 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option, int queuedCo
       c.price = getCostObj(option.cost * queuedCount);
       if (option.techId && !collective->getTechnology().researched.count(*option.techId)) {
         c.unavailable = true;
-        c.unavailableReason = "Requires technology: " + *option.techId;
+        c.unavailableReason = "Requires technology: "_s + option.techId->data();
       }
       c.description = option.description;
       c.tutorialHighlight = tutorial && option.tutorialHighlight &&
@@ -980,7 +981,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
     for (auto& tech : techs) {
       info.available.emplace_back();
       auto& techInfo = info.available.back();
-      techInfo.name = tech;
+      techInfo.id = tech;
       //techInfo.tutorialHighlight = tech->getTutorialHighlight();
       techInfo.active = !info.warning && dungeonLevel.numResearchAvailable() > 0;
       techInfo.description = technology.techs.at(tech).description;
@@ -988,7 +989,7 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
     for (auto& tech : collective->getTechnology().researched) {
       info.researched.emplace_back();
       auto& techInfo = info.researched.back();
-      techInfo.name = tech;
+      techInfo.id = tech;
       techInfo.description = technology.techs.at(tech).description;
     }
   }
@@ -1232,7 +1233,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
                 return AttractionInfo::getAttractionName(collective->getGame()->getContentFactory(), type, required); })));
         },
         [&](const TechId& techId) {
-          requirements.push_back("Requires technology: " + techId);
+          requirements.push_back("Requires technology: "_s + techId.data());
         },
         [&](const SunlightState& state) {
           requirements.push_back("Will only join during the "_s + SunlightInfo::getText(state));
@@ -1502,14 +1503,14 @@ void PlayerControl::onEvent(const GameEvent& event) {
         vector<TechId> nextTechs = collective->getTechnology().getNextTechs();
         if (!collective->getTechnology().researched.count(tech)) {
           if (!nextTechs.contains(tech))
-            getView()->presentText("Information", "The tome describes the knowledge of " + tech
+            getView()->presentText("Information", "The tome describes the knowledge of "_s + tech.data()
                 + ", but you do not comprehend it.");
           else {
-            getView()->presentText("Information", "You have acquired the knowledge of " + tech);
+            getView()->presentText("Information", "You have acquired the knowledge of "_s + tech.data());
             collective->acquireTech(tech, false);
           }
         } else {
-          getView()->presentText("Information", "The tome describes the knowledge of " + tech
+          getView()->presentText("Information", "The tome describes the knowledge of "_s + tech.data()
               + ", which you already possess.");
         }
       },

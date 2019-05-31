@@ -12,7 +12,7 @@ bool BuildInfo::meetsRequirement(WConstCollective col, Requirement req) {
 
 string BuildInfo::getRequirementText(Requirement req) {
   return req.visit(
-      [&](TechId techId) { return "technology: " + techId;},
+      [&](TechId techId) { return "technology: "_s + techId.data();},
       [&](BuildInfo::DungeonLevel level) { return "at least level " + toString(level); }
   );
 }

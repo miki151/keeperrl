@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "special_trait.h"
+#include "tech_id.h"
 
 struct KeeperCreatureInfo {
   vector<CreatureId> SERIAL(creatureId);

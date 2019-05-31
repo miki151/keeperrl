@@ -8,6 +8,7 @@
 #include "player_role.h"
 #include "tribe_alignment.h"
 #include "item.h"
+#include "key_verifier.h"
 
 SERIALIZE_DEF(ContentFactory, creatures, furniture, resources, zLevels, tilePaths, enemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology)
 
@@ -25,13 +26,13 @@ bool areResourceCounts(const vector<ResourceDistribution>& resources, int depth)
   return false;
 }
 
-optional<string> ContentFactory::readCreatureFactory(NameGenerator nameGenerator, const GameConfig* config) {
+optional<string> ContentFactory::readCreatureFactory(NameGenerator nameGenerator, const GameConfig* config, KeyVerifier* keyVerifier) {
   map<CreatureId, CreatureAttributes> attributes;
   map<CreatureId, CreatureInventory> inventory;
-  if (auto res = config->readObject(attributes, GameConfigId::CREATURE_ATTRIBUTES))
+  if (auto res = config->readObject(attributes, GameConfigId::CREATURE_ATTRIBUTES, keyVerifier))
     return *res;
   vector<pair<vector<CreatureId>, CreatureInventory>> input;
-  if (auto res = config->readObject(input, GameConfigId::CREATURE_INVENTORY))
+  if (auto res = config->readObject(input, GameConfigId::CREATURE_INVENTORY, keyVerifier))
     return *res;
   for (auto& elem : input)
     for (auto& id : elem.first) {
@@ -41,11 +42,9 @@ optional<string> ContentFactory::readCreatureFactory(NameGenerator nameGenerator
     }
   map<string, SpellSchool> spellSchools;
   vector<Spell> spells;
-  SpellId::startContentIdGeneration();
-  if (auto res = config->readObject(spells, GameConfigId::SPELLS))
+  if (auto res = config->readObject(spells, GameConfigId::SPELLS, keyVerifier))
     return *res;
-  SpellId::validateContentIds();
-  if (auto res = config->readObject(spellSchools, GameConfigId::SPELL_SCHOOLS))
+  if (auto res = config->readObject(spellSchools, GameConfigId::SPELL_SCHOOLS, keyVerifier))
     return *res;
   for (auto& elem : attributes) {
     for (auto& school : elem.second.spellSchools)
@@ -57,25 +56,22 @@ optional<string> ContentFactory::readCreatureFactory(NameGenerator nameGenerator
   return none;
 }
 
-optional<string> ContentFactory::readFurnitureFactory(const GameConfig* config) {
-  FurnitureType::startContentIdGeneration();
-  map<FurnitureType, Furniture> elems;
-  if (auto res = config->readObject(elems, GameConfigId::FURNITURE))
+optional<string> ContentFactory::readFurnitureFactory(const GameConfig* config, KeyVerifier* keyVerifier) {
+  map<PrimaryId<FurnitureType>, Furniture> elems;
+  if (auto res = config->readObject(elems, GameConfigId::FURNITURE, keyVerifier))
     return *res;
   map<FurnitureType, OwnerPointer<Furniture>> furnitureDefs;
-  map<FurnitureListId, FurnitureList> furnitureLists;
+  map<PrimaryId<FurnitureListId>, FurnitureList> furnitureLists;
   for (auto& elem : elems) {
     elem.second.setType(elem.first);
     furnitureDefs.insert(make_pair(elem.first, makeOwner<Furniture>(elem.second)));
   }
-  FurnitureType::validateContentIds();
-  FurnitureListId::startContentIdGeneration();
-  if (auto res = config->readObject(furnitureLists, GameConfigId::FURNITURE_LISTS))
+  if (auto res = config->readObject(furnitureLists, GameConfigId::FURNITURE_LISTS, keyVerifier))
     return *res;
-  FurnitureListId::validateContentIds();
-  furniture = FurnitureFactory(std::move(furnitureDefs), std::move(furnitureLists));
+  furniture = FurnitureFactory(std::move(furnitureDefs), convertKeys(std::move(furnitureLists)));
   return none;
 }
+
 static optional<string> checkGroupCounts(const map<string, vector<ImmigrantInfo>>& immigrants) {
   for (auto& group : immigrants)
     for (auto& elem : group.second)
@@ -85,8 +81,8 @@ static optional<string> checkGroupCounts(const map<string, vector<ImmigrantInfo>
   return none;
 }
 
-optional<string> ContentFactory::readVillainsTuple(const GameConfig* gameConfig) {
-  if (auto error = gameConfig->readObject(villains, GameConfigId::CAMPAIGN_VILLAINS))
+optional<string> ContentFactory::readVillainsTuple(const GameConfig* gameConfig, KeyVerifier* keyVerifier) {
+  if (auto error = gameConfig->readObject(villains, GameConfigId::CAMPAIGN_VILLAINS, keyVerifier))
     return "Error reading campaign villains definition"_s + *error;
   auto has = [](vector<Campaign::VillainInfo> v, VillainType type) {
     return std::any_of(v.begin(), v.end(), [type](const auto& elem){ return elem.type == type; });
@@ -119,8 +115,8 @@ optional<string> ContentFactory::readVillainsTuple(const GameConfig* gameConfig)
   return none;
 }
 
-optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config) {
-  if (auto error = config->readObject(playerCreatures, GameConfigId::PLAYER_CREATURES))
+optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, KeyVerifier* keyVerifier) {
+  if (auto error = config->readObject(playerCreatures, GameConfigId::PLAYER_CREATURES, keyVerifier))
     return "Error reading player creature definitions"_s + *error;
   if (playerCreatures.first.empty() || playerCreatures.second.empty() || playerCreatures.first.size() > 10 ||
       playerCreatures.second.size() > 10)
@@ -134,17 +130,14 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config) {
       if (keeperInfo.buildingGroups.contains(group.first))
         buildInfoTmp.append(group.second);
     }
-    for (auto& tech : keeperInfo.technology)
-      if (!technology.techs.count(tech))
-        return "Technology not found: " + tech;
     for (auto& tech : keeperInfo.initialTech)
-      if (!technology.techs.count(tech) || !keeperInfo.technology.contains(tech))
-        return "Technology not found: " + tech;
+      if (!keeperInfo.technology.contains(tech))
+        return "Technology not found: "_s + tech.data();
     for (auto& info : buildInfoTmp)
       for (auto& requirement : info.requirements)
         if (auto tech = requirement.getReferenceMaybe<TechId>())
           if (!keeperInfo.technology.contains(*tech))
-            return "Technology prerequisite \"" + *tech + "\" of build item \"" + info.name + "\" is not available";
+            return "Technology prerequisite \""_s + tech->data() + "\" of build item \"" + info.name + "\" is not available";
     WorkshopArray merged;
     set<string> allWorkshopGroups;
     for (auto& group : workshopGroups) {
@@ -156,7 +149,7 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config) {
     for (auto& elem : merged)
       for (auto& item : elem)
         if (item.tech && !technology.techs.count(*item.tech))
-          return "Technology prerequisite \"" + *item.tech + "\" of workshop item \"" + item.item.get()->getName()
+          return "Technology prerequisite \""_s + item.tech->data() + "\" of workshop item \"" + item.item.get()->getName()
               + "\" is not available";
     for (auto elem : keeperInfo.immigrantGroups)
       if (!immigrantsData.count(elem))
@@ -176,45 +169,43 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config) {
 }
 
 optional<string> ContentFactory::readData(NameGenerator nameGenerator, const GameConfig* config) {
-  if (auto error = config->readObject(technology, GameConfigId::TECHNOLOGY))
+  KeyVerifier keyVerifier;
+  if (auto error = config->readObject(technology, GameConfigId::TECHNOLOGY, &keyVerifier))
     return *error;
-  for (auto& tech : technology.techs)
-    for (auto& preq : tech.second.prerequisites)
-      if (!technology.techs.count(preq))
-        return "Technology prerequisite \"" + preq + "\" of \"" + tech.first + "\" is not available";
-  if (auto error = config->readObject(workshopGroups, GameConfigId::WORKSHOPS_MENU))
+  if (auto error = config->readObject(workshopGroups, GameConfigId::WORKSHOPS_MENU, &keyVerifier))
     return *error;
-  if (auto error = config->readObject(immigrantsData, GameConfigId::IMMIGRATION))
+  if (auto error = config->readObject(immigrantsData, GameConfigId::IMMIGRATION, &keyVerifier))
     return *error;
   if (auto error = checkGroupCounts(immigrantsData))
     return *error;
-  if (auto error = config->readObject(buildInfo, GameConfigId::BUILD_MENU))
+  if (auto error = config->readObject(buildInfo, GameConfigId::BUILD_MENU, &keyVerifier))
     return *error;
-  if (auto error = readVillainsTuple(config))
+  if (auto error = readVillainsTuple(config, &keyVerifier))
     return *error;
-  if (auto error = config->readObject(gameIntros, GameConfigId::GAME_INTRO_TEXT))
+  if (auto error = config->readObject(gameIntros, GameConfigId::GAME_INTRO_TEXT, &keyVerifier))
     return *error;
-  if (auto error = readPlayerCreatures(config))
+  if (auto error = readPlayerCreatures(config, &keyVerifier))
     return *error;
-  EnemyId::startContentIdGeneration();
-  if (auto res = config->readObject(zLevels, GameConfigId::Z_LEVELS))
+  if (auto res = config->readObject(zLevels, GameConfigId::Z_LEVELS, &keyVerifier))
     return *res;
-  if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS))
+  if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS, &keyVerifier))
     return *res;
-  if (auto res = config->readObject(enemies, GameConfigId::ENEMIES))
+  map<PrimaryId<EnemyId>, EnemyInfo> enemiesTmp;
+  if (auto res = config->readObject(enemiesTmp, GameConfigId::ENEMIES, &keyVerifier))
     return *res;
-  if (auto res = readCreatureFactory(std::move(nameGenerator), config))
+  enemies = convertKeys(enemiesTmp);
+  if (auto res = readCreatureFactory(std::move(nameGenerator), config, &keyVerifier))
     return *res;
-  if (auto res = readFurnitureFactory(config))
+  if (auto res = readFurnitureFactory(config, &keyVerifier))
     return *res;
-  map<ItemListId, ItemList> itemLists;
-  ItemListId::startContentIdGeneration();
-  if (auto res = config->readObject(itemLists, GameConfigId::ITEM_LISTS))
+  map<PrimaryId<ItemListId>, ItemList> itemLists;
+  if (auto res = config->readObject(itemLists, GameConfigId::ITEM_LISTS, &keyVerifier))
     return *res;
-  itemFactory = ItemFactory(std::move(itemLists));
-  ItemListId::validateContentIds();
+  itemFactory = ItemFactory(convertKeys(std::move(itemLists)));
   vector<TileInfo> tileDefs;
-  if (auto res = config->readObject(tileDefs, GameConfigId::TILES))
+  for (auto id : {"bridge", "tutorial_entrance", "accept_immigrant", "reject_immigrant", "fog_of_war_corner"})
+    keyVerifier.addKey<ViewId>(id);
+  if (auto res = config->readObject(tileDefs, GameConfigId::TILES, &keyVerifier))
     return *res;
   tilePaths = TilePaths(std::move(tileDefs), config->getModName());
   for (int alignment = 0; alignment < 2; ++alignment) {
@@ -226,7 +217,9 @@ optional<string> ContentFactory::readData(NameGenerator nameGenerator, const Gam
         return "No resource distribution found for depth " + toString(depth) + ". Please fix resources config.";
     }
   }
-  EnemyId::validateContentIds();
+  auto errors = keyVerifier.verify();
+  if (!errors.empty())
+    return errors.front();
   return none;
 }
 

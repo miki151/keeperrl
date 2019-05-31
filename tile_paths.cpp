@@ -5,7 +5,7 @@
 TilePaths::TilePaths(vector<TileInfo> d, string mod) : definitions(std::move(d)), mainMod(std::move(mod)) {}
 
 void TilePaths::merge(TilePaths other) {
-  auto contains = [&] (const string& viewId) {
+  auto contains = [&] (auto viewId) {
     for (auto& tile : definitions)
       if (tile.viewId == viewId)
         return true;

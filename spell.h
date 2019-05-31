@@ -51,7 +51,7 @@ class Spell {
   SERIALIZATION_DECL(Spell)
 
   private:
-  SpellId SERIAL(id);
+  PrimaryId<SpellId> SERIAL(id);
   optional<SpellId> SERIAL(upgrade);
   string SERIAL(symbol);
   HeapAllocated<Effect> SERIAL(effect);

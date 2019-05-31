@@ -12,6 +12,8 @@
 #include "build_info.h"
 #include "campaign_builder.h"
 
+class KeyVerifier;
+
 class ContentFactory {
   public:
   optional<string> readData(NameGenerator, const GameConfig*);
@@ -35,8 +37,8 @@ class ContentFactory {
   void serialize(Archive& ar, const unsigned int);
 
   private:
-  optional<string> readCreatureFactory(NameGenerator, const GameConfig*);
-  optional<string> readFurnitureFactory(const GameConfig*);
-  optional<string> readVillainsTuple(const GameConfig*);
-  optional<string> readPlayerCreatures(const GameConfig*);
+  optional<string> readCreatureFactory(NameGenerator, const GameConfig*, KeyVerifier*);
+  optional<string> readFurnitureFactory(const GameConfig*, KeyVerifier*);
+  optional<string> readVillainsTuple(const GameConfig*, KeyVerifier*);
+  optional<string> readPlayerCreatures(const GameConfig*, KeyVerifier*);
 };

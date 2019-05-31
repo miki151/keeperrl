@@ -37,9 +37,9 @@
 #include "furniture_list.h"
 
 template <typename T>
-optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename) {
+optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename, KeyVerifier* keyVerifier) {
   try {
-    PrettyInput input(s, filename);
+    PrettyInput input(s, filename, keyVerifier);
     input(object);
     return none;
   } catch (PrettyException ex) {
@@ -49,7 +49,7 @@ optional<string> PrettyPrinting::parseObject(T& object, const string& s, optiona
 
 #define ADD_IMP(...) \
 template \
-optional<string> PrettyPrinting::parseObject<__VA_ARGS__>(__VA_ARGS__&, const string&, optional<string>);
+optional<string> PrettyPrinting::parseObject<__VA_ARGS__>(__VA_ARGS__&, const string&, optional<string>, KeyVerifier*);
 
 ADD_IMP(Effect)
 ADD_IMP(ItemType)
@@ -70,7 +70,7 @@ ADD_IMP(Spell)
 ADD_IMP(vector<Spell>)
 ADD_IMP(map<string, SpellSchool>)
 ADD_IMP(vector<TileInfo>)
-ADD_IMP(map<FurnitureType, Furniture>)
-ADD_IMP(map<EnemyId, EnemyInfo>)
-ADD_IMP(map<ItemListId, ItemList>)
-ADD_IMP(map<FurnitureListId, FurnitureList>)
+ADD_IMP(map<PrimaryId<FurnitureType>, Furniture>)
+ADD_IMP(map<PrimaryId<EnemyId>, EnemyInfo>)
+ADD_IMP(map<PrimaryId<ItemListId>, ItemList>)
+ADD_IMP(map<PrimaryId<FurnitureListId>, FurnitureList>)

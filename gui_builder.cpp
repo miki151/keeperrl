@@ -2104,6 +2104,10 @@ SGuiElem GuiBuilder::drawCreatureUpgradeMenu(SyncQueue<optional<ExperienceType>>
       gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
 }
 
+static string getName(TechId id) {
+  return id.data();
+}
+
 SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, const optional<TutorialInfo>& tutorial) {
   if (!collectiveInfo.libraryInfo)
     return gui.empty();
@@ -2129,7 +2133,7 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
     for (int i : All(info.available)) {
       auto& elem = info.available[i];
       auto line = gui.getListBuilder()
-          .addElem(gui.label(elem.name, elem.active ? Color::WHITE : Color::GRAY), 10)
+          .addElem(gui.label(getName(elem.id), elem.active ? Color::WHITE : Color::GRAY), 10)
           .buildHorizontalList();
       line = gui.stack(std::move(line), getTooltip({elem.description}, THIS_LINE));
       if (elem.tutorialHighlight && tutorial && tutorial->highlights.contains(*elem.tutorialHighlight))
@@ -2138,7 +2142,7 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
         line = gui.stack(
             gui.uiHighlightMouseOver(Color::GREEN),
             std::move(line),
-            gui.button(getButtonCallback({UserInputId::LIBRARY_ADD, elem.name})));
+            gui.button(getButtonCallback({UserInputId::LIBRARY_ADD, elem.id})));
       lines.addElem(gui.rightMargin(rightElemMargin, std::move(line)));
     }
     lines.addSpace(legendLineHeight * 2 / 3);
@@ -2148,7 +2152,7 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
   for (int i : All(info.researched)) {
     auto& elem = info.researched[i];
     auto line = gui.getListBuilder()
-        .addElem(gui.label(elem.name, Color::GRAY), 10)
+        .addElem(gui.label(getName(elem.id), Color::GRAY), 10)
         .buildHorizontalList();
     line = gui.stack(std::move(line), getTooltip({elem.description}, THIS_LINE));
     lines.addElem(gui.rightMargin(rightElemMargin, std::move(line)));

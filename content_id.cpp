@@ -1,30 +1,14 @@
 #include "stdafx.h"
 #include "content_id.h"
-
-enum class ContentIdGenerationStage {
-  BEFORE,
-  DURING,
-  AFTER
-};
-
-template <typename T>
-ContentIdGenerationStage ContentId<T>::contentIdGeneration = ContentIdGenerationStage::BEFORE;
+#include "furniture_type.h"
+#include "furniture_list_id.h"
+#include "item_list_id.h"
+#include "enemy_id.h"
+#include "spell_id.h"
+#include "tech_id.h"
 
 template <typename T>
 vector<string> ContentId<T>::allIds;
-
-template <typename T>
-unordered_set<int> ContentId<T>::validIds;
-
-
-template <typename T>
-void ContentId<T>::checkId(InternalId id) {
-#ifdef RELEASE
-  USER_CHECK(validIds.count(id)) << "Content id not declared: " << allIds[id];
-#else
-  CHECK(validIds.count(id)) << "Content id not declared: " << allIds[id];
-#endif
-}
 
 template <typename T>
 int ContentId<T>::getId(const char* text) {
@@ -36,33 +20,14 @@ int ContentId<T>::getId(const char* text) {
     ++generatedId;
   }
   auto ret = getReferenceMaybe(ids, text);
-  switch (contentIdGeneration) {
-    case ContentIdGenerationStage::BEFORE:
-      break;
-    case ContentIdGenerationStage::DURING:
-      validIds.insert(*ret);
-      break;
-    case ContentIdGenerationStage::AFTER:
-      checkId(*ret);
-      break;
-  }
   return *ret;
 }
 
 template <typename T>
-void ContentId<T>::startContentIdGeneration() {
-  contentIdGeneration = ContentIdGenerationStage::DURING;
-}
-
-template<typename T>
-void ContentId<T>::validateContentIds() {
-  contentIdGeneration = ContentIdGenerationStage::AFTER;
-  for (int i : All(allIds))
-    checkId(i);
-}
+ContentId<T>::ContentId(const char* s) : id(getId(s)) {}
 
 template <typename T>
-ContentId<T>::ContentId(const char* s) : id(getId(s)) {}
+ContentId<T>::ContentId(InternalId id) : id(id) {}
 
 template <typename T>
 bool ContentId<T>::operator == (const ContentId& o) const {
@@ -77,6 +42,11 @@ bool ContentId<T>::operator !=(const ContentId& o) const {
 template <typename T>
 bool ContentId<T>::operator <(const ContentId& o) const {
   return id < o.id;
+}
+
+template<typename T>
+ContentId<T>::operator PrimaryId<T>() const {
+  return PrimaryId<T>(id);
 }
 
 template <typename T>
@@ -113,16 +83,80 @@ void ContentId<T>::serialize(Archive& ar1, const unsigned int) {
 }
 
 template <typename T>
+template <class Archive>
+void PrimaryId<T>::serialize(Archive& ar1, const unsigned int) {
+  ar1(id);
+}
+
+template<typename T>
+PrimaryId<T>::PrimaryId(typename ContentId<T>::InternalId id) : id(id) {
+}
+
+template<typename T>
+bool PrimaryId<T>::operator ==(const PrimaryId<T>& o) const {
+  return id == o.id;
+}
+
+template<typename T>
+bool PrimaryId<T>::operator !=(const PrimaryId<T>& o) const {
+  return id != o.id;
+}
+
+template<typename T>
+bool PrimaryId<T>::operator <(const PrimaryId<T>& o) const {
+  return id < o.id;
+}
+
+template<typename T>
+int PrimaryId<T>::getHash() const {
+  return id;
+}
+
+template<typename T>
+const char* PrimaryId<T>::data() const {
+  return ContentId<T>::allIds[id].data();
+}
+
+template<typename T>
+PrimaryId<T>::operator T() const {
+  return T(id);
+}
+
+template <typename T>
 SERIALIZATION_CONSTRUCTOR_IMPL2(ContentId<T>, ContentId)
 
+template <typename T>
+SERIALIZATION_CONSTRUCTOR_IMPL2(PrimaryId<T>, PrimaryId)
+
 #include "pretty_archive.h"
+
+#define PRETTY_SPEC(T)\
+template<> template<>\
+void ContentId<T>::serialize(PrettyInputArchive& ar1, const unsigned int) {\
+  string s;\
+  ar1(s);\
+  id = getId(s.data());\
+  ar1.keyVerifier.verifyContentId<T>(s);\
+} \
+template<> template<>\
+void PrimaryId<T>::serialize(PrettyInputArchive& ar1, const unsigned int) {\
+  ContentId<T> cid;\
+  ar1(cid);\
+  if (!ar1.inheritingKey) \
+    ar1.keyVerifier.addKey<T>(cid.data());\
+  *this = cid;\
+}
+
 #include "text_serialization.h"
 
 #define INST(T) \
 SERIALIZABLE_TMPL(ContentId, T) \
-template void ContentId<T>::serialize(PrettyInputArchive&, unsigned); \
+SERIALIZABLE_TMPL(PrimaryId, T) \
 template void ContentId<T>::serialize(TextInputArchive&, unsigned); \
-template void ContentId<T>::serialize(TextOutputArchive&, unsigned);
+template void ContentId<T>::serialize(TextOutputArchive&, unsigned); \
+template void PrimaryId<T>::serialize(TextInputArchive&, unsigned); \
+template void PrimaryId<T>::serialize(TextOutputArchive&, unsigned); \
+PRETTY_SPEC(T)
 
 INST(ViewId)
 INST(FurnitureType)
@@ -130,3 +164,4 @@ INST(ItemListId)
 INST(EnemyId)
 INST(FurnitureListId)
 INST(SpellId)
+INST(TechId)

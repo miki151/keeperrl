@@ -117,7 +117,7 @@ optional<string> Immigration::getMissingRequirement(const ImmigrantRequirement& 
       },
       [&](const TechId& techId) -> optional<string> {
         if (!collective->getTechnology().researched.count(techId))
-          return "Missing technology: " + techId;
+          return "Missing technology: "_s + techId.data();
         else
           return none;
       },

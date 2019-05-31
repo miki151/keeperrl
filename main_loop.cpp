@@ -317,8 +317,6 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
   switch (type) {
     case CampaignType::FREE_PLAY: {
       RetiredGames ret;
-      // we have to allow loading unknown view ids here
-      ViewId::startContentIdGeneration();
       for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_CAMPAIGN)))
         if (isCompatible(getSaveVersion(info)))
           if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
@@ -338,7 +336,6 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
             ret.addOnline(elem.gameInfo, elem.fileInfo, elem.totalGames, elem.wonGames);
       } else
         view->presentText("", "Failed to fetch list of retired dungeons from the server.");
-      ViewId::validateContentIds();
       ret.sort();
       return ret;
     }
@@ -365,7 +362,7 @@ struct ModelTable {
 TilePaths MainLoop::getTilePathsForAllMods() const {
   auto readTiles = [&] (const GameConfig* config) {
     vector<TileInfo> tileDefs;
-    if (auto res = config->readObject(tileDefs, GameConfigId::TILES))
+    if (auto res = config->readObject(tileDefs, GameConfigId::TILES, nullptr))
       return optional<TilePaths>();
     return optional<TilePaths>(TilePaths(std::move(tileDefs), config->getModName()));
   };

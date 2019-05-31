@@ -174,9 +174,9 @@ void TileSet::loadModdedTiles(const vector<TileInfo>& tiles, bool useTiles) {
       if (tile.moveUp)
         t.setMoveUp();
       t.animated = tile.animated;
-      addTile(tile.viewId, std::move(t));
+      addTile(tile.viewId.data(), std::move(t));
     }
-    addSymbol(tile.viewId, symbol(tile.symbol, tile.color, tile.isSymbolFont));
+    addSymbol(tile.viewId.data(), symbol(tile.symbol, tile.color, tile.isSymbolFont));
   }
 }
 
@@ -236,12 +236,10 @@ void TileSet::reload() {
   for (auto& subdir : tilePaths->mergedMods)
     if (reloadDir(modsDir.subdirectory(subdir), false) && !spriteMods.contains(subdir))
       spriteMods.push_back(subdir);
-  ViewId::startContentIdGeneration();
   loadUnicode();
   if (useTiles)
     loadTiles();
   loadModdedTiles(tilePaths->definitions, useTiles);
-  ViewId::validateContentIds();
 }
 
 const Tile& TileSet::getTile(ViewId viewId, bool sprite) const {

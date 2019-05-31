@@ -112,7 +112,7 @@ enum class HealthType;
 
 struct FXInfo;
 struct FXSpawnInfo;
-using TechId = string;
+class TechId;
 class FurnitureType;
 class ItemListId;
 class EnemyId;

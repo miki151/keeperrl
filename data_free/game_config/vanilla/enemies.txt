@@ -1293,35 +1293,6 @@
       guardianInfo = "WITCHMAN" 0.001 1 2
     }
   }
-  "TUTORIAL_VILLAGE"
-  {
-    settlement = {
-      type = SMALL_VILLAGE
-      tribe = HUMAN
-      inhabitants = {
-        fighters = {
-          count = {2 4}
-          all = { 1 "PESEANT" }
-        }
-        civilians = {
-          count = {3 7},
-          all = {
-            1 "CHILD"
-            1 "HORSE"
-            1 "DONKEY"
-            1 "COW"
-            1 "PIG"
-            1 "DOG"
-          }
-        }
-      }
-      race = "humans"
-      buildingId = WOOD
-      stockpiles = {{ "gold" 50 }}
-      cropsDistance = 16
-      furniture = "roomFurniture"
-    }
-  }
   "ELVEN_COTTAGE"
   {
     settlement = {

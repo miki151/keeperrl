@@ -32,8 +32,8 @@ class GameConfig {
   public:
   GameConfig(DirectoryPath modsPath, string modName);
   template<typename T>
-  [[nodiscard]] optional<string> readObject(T& object, GameConfigId id) const {
-    return PrettyPrinting::parseObject<T>(object, path.file(getConfigName(id) + ".txt"_s));
+  [[nodiscard]] optional<string> readObject(T& object, GameConfigId id, KeyVerifier* keyVerifier) const {
+    return PrettyPrinting::parseObject<T>(object, path.file(getConfigName(id) + ".txt"_s), keyVerifier);
   }
 
   const DirectoryPath& getPath() const;

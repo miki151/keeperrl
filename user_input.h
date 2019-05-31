@@ -22,6 +22,7 @@
 #include "minion_activity.h"
 #include "entity_set.h"
 #include "team_member_action.h"
+#include "tech_id.h"
 
 class PlayerMessage;
 
@@ -202,7 +203,7 @@ struct WorkshopUpgradeInfo {
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo,
-    string, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo),
+    string, TechId, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -273,9 +274,11 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::DISMISS_VILLAGE_INFO),
         ASSIGN(string,
             UserInputId::CREATE_ITEM,
-            UserInputId::LIBRARY_ADD,
             UserInputId::APPLY_EFFECT,
             UserInputId::SUMMON_ENEMY
+        ),
+        ASSIGN(TechId,
+            UserInputId::LIBRARY_ADD
         ),
         ASSIGN(TeamOrder,
             UserInputId::TOGGLE_TEAM_ORDER
