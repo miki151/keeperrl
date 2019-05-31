@@ -60,8 +60,6 @@ enum class SquareAttrib;
 
 enum class Dir;
 
-using CreatureId = string;
-
 enum class ViewLayer;
 enum class HighlightType;
 enum class StairLook;
@@ -118,3 +116,4 @@ class ItemListId;
 class EnemyId;
 class FurnitureListId;
 class SpellId;
+class CreatureId;

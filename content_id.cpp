@@ -6,6 +6,7 @@
 #include "enemy_id.h"
 #include "spell_id.h"
 #include "tech_id.h"
+#include "creature_id.h"
 
 template <typename T>
 vector<string> ContentId<T>::allIds;
@@ -32,6 +33,11 @@ ContentId<T>::ContentId(InternalId id) : id(id) {}
 template <typename T>
 bool ContentId<T>::operator == (const ContentId& o) const {
   return id == o.id;
+}
+
+template<typename T>
+bool ContentId<T>::operator ==(const char* s) const {
+  return !strcmp(data(), s);
 }
 
 template <typename T>
@@ -156,6 +162,7 @@ template void ContentId<T>::serialize(TextInputArchive&, unsigned); \
 template void ContentId<T>::serialize(TextOutputArchive&, unsigned); \
 template void PrimaryId<T>::serialize(TextInputArchive&, unsigned); \
 template void PrimaryId<T>::serialize(TextOutputArchive&, unsigned); \
+template std::ostream& operator <<(std::ostream& d, ContentId<T> id); \
 PRETTY_SPEC(T)
 
 INST(ViewId)
@@ -165,3 +172,4 @@ INST(EnemyId)
 INST(FurnitureListId)
 INST(SpellId)
 INST(TechId)
+INST(CreatureId)

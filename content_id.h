@@ -16,6 +16,7 @@ class ContentId {
   using InternalId = int;
   explicit ContentId(InternalId);
   bool operator == (const ContentId&) const;
+  bool operator == (const char*) const;
   bool operator != (const ContentId&) const;
   bool operator < (const ContentId&) const;
   operator PrimaryId<T>() const;

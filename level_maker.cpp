@@ -1750,7 +1750,7 @@ class ShopMaker : public LevelMaker {
         building(getBuildingInfo(info)), shopkeeperDead(info.shopkeeperDead)  {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    PCreature shopkeeper = builder->getContentFactory()->creatures.fromId("SHOPKEEPER", tribe, MonsterAIFactory::idle());
+    PCreature shopkeeper = builder->getContentFactory()->creatures.fromId(CreatureId("SHOPKEEPER"), tribe, MonsterAIFactory::idle());
     shopkeeper->setController(CreatureFactory::getShopkeeper(builder->toGlobalCoordinates(area), shopkeeper.get()));
     vector<Vec2> pos;
     for (Vec2 v : area)
@@ -2888,7 +2888,8 @@ class SokobanFromFile : public LevelMaker {
           builder->putFurniture(v, FurnitureParams{FurnitureType("IRON_DOOR"), TribeId::getHostile()});
           break;
         case '0':
-          builder->putCreature(v, builder->getContentFactory()->creatures.fromId("SOKOBAN_BOULDER", TribeId::getPeaceful()));
+          builder->putCreature(v, builder->getContentFactory()->creatures.fromId(CreatureId("SOKOBAN_BOULDER"),
+              TribeId::getPeaceful()));
           break;
         default: FATAL << "Unknown symbol in sokoban data: " << file[v];
       }

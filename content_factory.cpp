@@ -27,7 +27,7 @@ bool areResourceCounts(const vector<ResourceDistribution>& resources, int depth)
 }
 
 optional<string> ContentFactory::readCreatureFactory(NameGenerator nameGenerator, const GameConfig* config, KeyVerifier* keyVerifier) {
-  map<CreatureId, CreatureAttributes> attributes;
+  map<PrimaryId<CreatureId>, CreatureAttributes> attributes;
   map<CreatureId, CreatureInventory> inventory;
   if (auto res = config->readObject(attributes, GameConfigId::CREATURE_ATTRIBUTES, keyVerifier))
     return *res;
@@ -37,7 +37,7 @@ optional<string> ContentFactory::readCreatureFactory(NameGenerator nameGenerator
   for (auto& elem : input)
     for (auto& id : elem.first) {
       if (inventory.count(id))
-        return "CreatureId appears more than once: "_s + id;
+        return "CreatureId appears more than once: "_s + id.data();
       inventory.insert(make_pair(id, elem.second));
     }
   map<string, SpellSchool> spellSchools;
@@ -46,12 +46,15 @@ optional<string> ContentFactory::readCreatureFactory(NameGenerator nameGenerator
     return *res;
   if (auto res = config->readObject(spellSchools, GameConfigId::SPELL_SCHOOLS, keyVerifier))
     return *res;
+  keyVerifier->addKey<CreatureId>("KRAKEN");
+  for (auto& elem : CreatureFactory::getSpecialParams())
+    keyVerifier->addKey<CreatureId>(elem.first.data());
   for (auto& elem : attributes) {
     for (auto& school : elem.second.spellSchools)
       if (!spellSchools.count(school))
-        return elem.first + ": unknown spell school: " + school;
+        return elem.first.data() + ": unknown spell school: "_s + school;
   }
-  creatures = CreatureFactory(std::move(nameGenerator), std::move(attributes), std::move(inventory),
+  creatures = CreatureFactory(std::move(nameGenerator), convertKeys(std::move(attributes)), std::move(inventory),
       std::move(spellSchools), std::move(spells));
   return none;
 }

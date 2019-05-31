@@ -24,6 +24,7 @@
 #include "furniture_type.h"
 #include "effect_ai_intent.h"
 #include "health_type.h"
+#include "creature_id.h"
 
 class Level;
 class Creature;

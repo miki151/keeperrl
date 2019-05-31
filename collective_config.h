@@ -23,6 +23,7 @@
 #include "game_time.h"
 #include "furniture_type.h"
 #include "conquer_condition.h"
+#include "creature_id.h"
 
 enum class ItemClass;
 

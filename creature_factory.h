@@ -19,6 +19,7 @@
 #include "tribe.h"
 #include "experience_type.h"
 #include "spell_school.h"
+#include "creature_id.h"
 
 class Creature;
 class MonsterAIFactory;
@@ -63,10 +64,18 @@ class CreatureFactory {
 
   SERIALIZATION_DECL(CreatureFactory)
 
+  struct SpecialParams {
+    bool humanoid;
+    bool large;
+    bool living;
+    bool wings;
+  };
+  static const map<CreatureId, SpecialParams>& getSpecialParams();
+
   private:
   void initSplash(TribeId);
   static PCreature getSokobanBoulder(TribeId);
-  PCreature getSpecial(TribeId, bool humanoid, bool large, bool living, bool wings, const ControllerFactory&);
+  PCreature getSpecial(TribeId, SpecialParams, const ControllerFactory&);
   PCreature get(CreatureId, TribeId, MonsterAIFactory);
   static PCreature get(CreatureAttributes, TribeId, const ControllerFactory&, SpellMap);
   CreatureAttributes getAttributesFromId(CreatureId);

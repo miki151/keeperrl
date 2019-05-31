@@ -421,9 +421,9 @@ void Effect::Summon::applyToCreature(Creature* c, Creature* attacker) const {
 }*/
 
 static string getCreatureName(CreatureId id) {
-  id = toLower(id);
-  std::replace(id.begin(), id.end(), '_', ' ');
-  return id;
+  string ret = toLower(id.data());
+  std::replace(ret.begin(), ret.end(), '_', ' ');
+  return ret;
   /*if (getSummonNumber(id).getEnd() > 2)
     return getCreaturePluralName(id);
   static EnumMap<CreatureId, optional<string>> names;
@@ -452,7 +452,7 @@ string Effect::Summon::getDescription() const {
 }
 
 void Effect::SummonElement::applyToCreature(Creature* c, Creature* attacker) const {
-  auto id = "AIR_ELEMENTAL"_s;
+  auto id = CreatureId("AIR_ELEMENTAL");
   for (Position p : c->getPosition().getRectangle(Rectangle::centered(3)))
     for (auto f : p.getFurniture())
       if (auto elem = f->getSummonedElement())

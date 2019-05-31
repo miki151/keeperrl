@@ -654,16 +654,15 @@ static vector<LastingEffect> getResistanceAndVulnerability(RandomGen& random) {
   return ret;
 }
 
-PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, bool living, bool wings,
-    const ControllerFactory& factory) {
-  Body body = Body(humanoid, living ? Body::Material::FLESH : Body::Material::SPIRIT,
-      large ? Body::Size::LARGE : Body::Size::MEDIUM);
-  if (wings)
+PCreature CreatureFactory::getSpecial(TribeId tribe, SpecialParams p, const ControllerFactory& factory) {
+  Body body = Body(p.humanoid, p.living ? Body::Material::FLESH : Body::Material::SPIRIT,
+      p.large ? Body::Size::LARGE : Body::Size::MEDIUM);
+  if (p.wings)
     body.addWithoutUpdatingPermanentEffects(BodyPart::WING, 2);
-  string name = getSpeciesName(humanoid, large, living, wings);
+  string name = getSpeciesName(p.humanoid, p.large, p.living, p.wings);
   SpellMap spells;
   PCreature c = get(CATTR(
-        c.viewId = getSpecialViewId(humanoid, large, living, wings);
+        c.viewId = getSpecialViewId(p.humanoid, p.large, p.living, p.wings);
         c.isSpecial = true;
         c.body = std::move(body);
         c.attr[AttrType::DAMAGE] = Random.get(28, 34);
@@ -671,12 +670,12 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
         c.attr[AttrType::SPELL_DAMAGE] = Random.get(28, 34);
         for (auto effect : getResistanceAndVulnerability(Random))
           c.permanentEffects[effect] = 1;
-        if (large) {
+        if (p.large) {
           c.attr[AttrType::DAMAGE] += 6;
           c.attr[AttrType::DEFENSE] += 2;
           c.attr[AttrType::SPELL_DAMAGE] -= 6;
         }
-        if (humanoid) {
+        if (p.humanoid) {
           c.skills.setValue(SkillId::WORKSHOP, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::FORGE, Random.getDouble(0, 1));
           c.skills.setValue(SkillId::LABORATORY, Random.getDouble(0, 1));
@@ -685,20 +684,20 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, bool humanoid, bool large, 
           c.maxLevelIncrease[ExperienceType::MELEE] = 10;
           c.maxLevelIncrease[ExperienceType::SPELL] = 10;
         }
-        if (humanoid) {
+        if (p.humanoid) {
           c.chatReactionFriendly = "\"I am the mighty " + name + "\"";
           c.chatReactionHostile = "\"I am the mighty " + name + ". Die!\"";
         } else {
           c.chatReactionFriendly = c.chatReactionHostile = c.petReaction = "snarls."_s;
         }
         c.name = name;
-        c.name.setStack(humanoid ? "legendary humanoid" : "legendary beast");
+        c.name.setStack(p.humanoid ? "legendary p.humanoid" : "legendary beast");
         c.name.setFirst(nameGenerator->getNext(NameGeneratorId::DEMON));
-        if (!humanoid) {
-          c.body->setBodyParts(getSpecialBeastBody(large, living, wings));
+        if (!p.humanoid) {
+          c.body->setBodyParts(getSpecialBeastBody(p.large, p.living, p.wings));
           c.attr[AttrType::DAMAGE] += 5;
           c.attr[AttrType::DEFENSE] += 5;
-          if (auto attack = getSpecialBeastAttack(large, living, wings))
+          if (auto attack = getSpecialBeastAttack(p.large, p.living, p.wings))
             c.body->setIntrinsicAttack(BodyPart::HEAD, *attack);
         }
         if (Random.roll(3))
@@ -742,40 +741,33 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
     return Monster::getFactory(normalFactory);
 }
 
+const map<CreatureId, CreatureFactory::SpecialParams>& CreatureFactory::getSpecialParams() {
+  static map<CreatureId, CreatureFactory::SpecialParams> ret = {
+    { CreatureId("SPECIAL_BLBN"), {false, true, true, false}},
+    { CreatureId("SPECIAL_BLBW"), {false, true, true, true}},
+    { CreatureId("SPECIAL_BLGN"), {false, true, false, false}},
+    { CreatureId("SPECIAL_BLGW"), {false, true, false, true}},
+    { CreatureId("SPECIAL_BMBN"), {false, false, true, false}},
+    { CreatureId("SPECIAL_BMBW"), {false, false, true, true}},
+    { CreatureId("SPECIAL_BMGN"), {false, false, false, false}},
+    { CreatureId("SPECIAL_BMGW"), {false, false, false, true}},
+    { CreatureId("SPECIAL_HLBN"), {true, true, true, false}},
+    { CreatureId("SPECIAL_HLBW"), {true, true, true, true}},
+    { CreatureId("SPECIAL_HLGN"), {true, true, false, false}},
+    { CreatureId("SPECIAL_HLGW"), {true, true, false, true}},
+    { CreatureId("SPECIAL_HMBN"), {true, false, true, false}},
+    { CreatureId("SPECIAL_HMBW"), {true, false, true, true}},
+    { CreatureId("SPECIAL_HMGN"), {true, false, false, false}},
+    { CreatureId("SPECIAL_HMGW"), {true, false, false, true}},
+  };
+  return ret;
+}
+
 PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory aiFactory) {
   ControllerFactory factory = Monster::getFactory(aiFactory);
-  if (id == "SPECIAL_BLBN")
-    return getSpecial(tribe, false, true, true, false, factory);
-  else if (id == "SPECIAL_BLBW")
-    return getSpecial(tribe, false, true, true, true, factory);
-  else if (id == "SPECIAL_BLGN")
-    return getSpecial(tribe, false, true, false, false, factory);
-  else if (id == "SPECIAL_BLGW")
-    return getSpecial(tribe, false, true, false, true, factory);
-  else if (id == "SPECIAL_BMBN")
-    return getSpecial(tribe, false, false, true, false, factory);
-  else if (id == "SPECIAL_BMBW")
-    return getSpecial(tribe, false, false, true, true, factory);
-  else if (id == "SPECIAL_BMGN")
-    return getSpecial(tribe, false, false, false, false, factory);
-  else if (id == "SPECIAL_BMGW")
-    return getSpecial(tribe, false, false, false, true, factory);
-  else if (id == "SPECIAL_HLBN")
-    return getSpecial(tribe, true, true, true, false, factory);
-  else if (id == "SPECIAL_HLBW")
-    return getSpecial(tribe, true, true, true, true, factory);
-  else if (id == "SPECIAL_HLGN")
-    return getSpecial(tribe, true, true, false, false, factory);
-  else if (id == "SPECIAL_HLGW")
-    return getSpecial(tribe, true, true, false, true, factory);
-  else if (id == "SPECIAL_HMBN")
-    return getSpecial(tribe, true, false, true, false, factory);
-  else if (id == "SPECIAL_HMBW")
-    return getSpecial(tribe, true, false, true, true, factory);
-  else if (id == "SPECIAL_HMGN")
-    return getSpecial(tribe, true, false, false, false, factory);
-  else if (id == "SPECIAL_HMGW")
-    return getSpecial(tribe, true, false, false, true, factory);
+  auto& special = getSpecialParams();
+  if (special.count(id))
+    return getSpecial(tribe, special.at(id), factory);
   else if (id == "SOKOBAN_BOULDER")
     return getSokobanBoulder(tribe);
   else {
@@ -802,7 +794,7 @@ const Spell* CreatureFactory::getSpell(SpellId id) const {
 PCreature CreatureFactory::getGhost(Creature* creature) {
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Ghost");
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
-  auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), getAttributes("LOST_SOUL"), SpellMap{});
+  auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), getAttributes(CreatureId("LOST_SOUL")), SpellMap{});
   ret->setController(Monster::getFactory(MonsterAIFactory::monster()).get(ret.get()));
   return ret;
 }
