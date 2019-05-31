@@ -930,7 +930,7 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getEnemyGroups() const {
 
 void PlayerControl::fillMinions(CollectiveInfo& info) const {
   vector<Creature*> minions;
-  for (auto trait : {MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER})
+  for (auto trait : {MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER, MinionTrait::INCREASE_POPULATION})
     for (Creature* c : collective->getCreatures(trait))
       if (!minions.contains(c))
         minions.push_back(c);

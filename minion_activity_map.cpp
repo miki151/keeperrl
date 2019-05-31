@@ -98,9 +98,8 @@ bool MinionActivityMap::isAvailable(WConstCollective col, const Creature* c, Min
       return c->isAffected(LastingEffect::EXPLORE_NOCTURNAL_SKILL);
     case MinionActivity::CONSTRUCTION:
     case MinionActivity::WORKING:
-      return c->getBody().isHumanoid() && col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::HAULING:
-      return col->hasTrait(c, MinionTrait::WORKER);
+      return c->getBody().isHumanoid() && col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::DIGGING:
       return c->getAttributes().getSkills().getValue(SkillId::DIGGING) > 0 && col->hasTrait(c, MinionTrait::WORKER);
   }
