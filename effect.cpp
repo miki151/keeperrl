@@ -509,6 +509,7 @@ static void airBlast(Creature* who, Position position, Position target) {
       c->displace(c->getPosition().getDir(*target));
       c->you(MsgType::ARE, "thrown back");
     }
+    c->addEffect(LastingEffect::COLLAPSED, 2_visible);
   }
   for (auto& stack : Item::stackItems(position.getItems())) {
     position.throwItem(
