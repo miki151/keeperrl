@@ -92,7 +92,14 @@ void ContentId<T>::serialize(Archive& ar1, const unsigned int) {
 template <typename T>
 template <class Archive>
 void PrimaryId<T>::serialize(Archive& ar1, const unsigned int) {
-  ar1(id);
+  if (Archive::is_loading::value) {
+    string s;
+    ar1(s);
+    id = ContentId<T>::getId(s.data());
+  } else {
+    string s = data();
+    ar1(s);
+  }
 }
 
 template<typename T>
