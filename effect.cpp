@@ -814,6 +814,35 @@ string Effect::Blast::getDescription() const {
   return "Creates a directed blast of air that throws back creatures and items.";
 }
 
+static void pullCreature(Creature* victim, const vector<Position>& trajectory) {
+  auto victimPos = victim->getPosition();
+  optional<Position> target;
+  for (auto& v : trajectory) {
+    if (v == victimPos)
+      break;
+    if (v.canEnter(victim)) {
+      if (!target)
+        target = v;
+    } else
+      target = none;
+  }
+  if (target) {
+    victim->addEffect(LastingEffect::COLLAPSED, 2_visible);
+    victim->displace(victim->getPosition().getDir(*target));
+  }
+}
+
+void Effect::Pull::applyToCreature(Creature* victim, Creature* attacker) const {
+}
+
+string Effect::Pull::getName() const {
+  return "pull";
+}
+
+string Effect::Pull::getDescription() const {
+  return "Pulls a creature towards the spellcaster.";
+}
+
 void Effect::Shove::applyToCreature(Creature* c, Creature* attacker) const {
   CHECK(attacker);
   auto origin = attacker->getPosition();
@@ -943,6 +972,13 @@ void Effect::apply(Position pos, Creature* attacker) const {
           }
         for (int i : All(trajectory).reverse())
           airBlast(attacker, trajectory[i], pos);
+      },
+      [&](Pull) {
+        CHECK(attacker);
+        vector<Position> trajectory = drawLine(attacker->getPosition(), pos);
+        for (auto& pos : trajectory)
+          if (auto c = pos.getCreature())
+            pullCreature(c, trajectory);
       }
   );
 }

@@ -229,7 +229,12 @@ void FXViewManager::drawUnorderedFrontFX(Renderer& renderer) {
 
 void FXViewManager::addUnmanagedFX(const FXSpawnInfo& spawnInfo, Color color) {
   auto coord = spawnInfo.position;
+  auto offset = spawnInfo.targetOffset;
+  if (spawnInfo.info.reversed) {
+    coord += offset;
+    offset = -offset;
+  }
   float x = coord.x, y = coord.y;
-  auto id = spawnUnorderedEffect(spawnInfo.info.name, x, y, spawnInfo.targetOffset, color);
+  auto id = spawnUnorderedEffect(spawnInfo.info.name, x, y, offset, color);
   updateParams(spawnInfo.info, id);
 }

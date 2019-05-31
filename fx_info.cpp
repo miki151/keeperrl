@@ -62,3 +62,18 @@ optional<FXInfo> getOverlayFXInfo(ViewId id) {
     return FXInfo{FXName::MAGMA_FIRE};
   return none;
 }
+
+FXInfo::FXInfo(FXName name, Color color, float strength, FXStackId sid)
+  : name(name), color(color), strength(strength), stackId(sid) { }
+
+bool FXInfo::empty() const {
+  return name == FXName(0);
+}
+
+FXInfo& FXInfo::setReversed() {
+  reversed = true;
+  return *this;
+}
+
+FXSpawnInfo::FXSpawnInfo(FXInfo info, Vec2 pos, Vec2 offset)
+  : position(pos), targetOffset(offset), info(info) { }

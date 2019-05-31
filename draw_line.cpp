@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "draw_line.h"
+#include "position.h"
 
 static vector<int> drawNormalized(int dx, int dy) {
   CHECK(dx >= 0);
@@ -35,4 +36,9 @@ vector<Vec2> drawLine(Vec2 from, Vec2 to) {
     ret.push_back(from + diff);
   }
   return ret;
+}
+
+vector<Position> drawLine(Position from, Position to) {
+  CHECK(from.isSameLevel(to));
+  return drawLine(from.getCoord(), to.getCoord()).transform([l = to.getLevel()](Vec2 v) { return Position(v, l); });
 }

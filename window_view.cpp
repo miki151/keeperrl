@@ -589,9 +589,8 @@ void WindowView::playSounds(const CreatureView* view) {
 
 void WindowView::animateObject(Vec2 begin, Vec2 end, optional<ViewId> object, optional<FXInfo> fx) {
   if (fx && mapGui->fxesAvailable())
-    mapGui->addAnimation(FXSpawnInfo(*fx, begin, end-begin));
-  else
-  if (object && begin != end)
+    mapGui->addAnimation(FXSpawnInfo(*fx, begin, end - begin));
+  else if (object && begin != end)
     mapGui->addAnimation(
         Animation::thrownObject(
           (end - begin).mult(mapLayout->getSquareSize()),

@@ -73,7 +73,8 @@ static optional<FXInfo> getProjectileFX(const Effect& effect) {
       [&](const auto&) -> optional<FXInfo> { return none; },
       [&](const Effect::Lasting& e) -> optional<FXInfo> { return getProjectileFX(e.lastingEffect); },
       [&](const Effect::Damage&) -> optional<FXInfo> { return {FXName::MAGIC_MISSILE}; },
-      [&](const Effect::Blast&) -> optional<FXInfo> { return {FXName::AIR_BLAST}; }
+      [&](const Effect::Blast&) -> optional<FXInfo> { return {FXName::AIR_BLAST}; },
+      [&](const Effect::Pull&) -> optional<FXInfo> { return FXInfo{FXName::AIR_BLAST}.setReversed(); }
   );
 }
 

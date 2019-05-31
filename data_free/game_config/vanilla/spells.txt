@@ -137,6 +137,7 @@
     effect = Lasting PEACEFULNESS
     range = 2
     cooldown = 150
+    endOnly = true
     sound = SPELL_STR_BONUS
   }
   {
@@ -178,6 +179,15 @@
     effect = Blast
     range = 4
     endOnly = true
+    cooldown = 30
+    sound = SPELL_BLAST
+  }
+  {
+    id =  "pull"
+    symbol = "⮄"
+    effect = Pull
+    range = 6
+#    endOnly = true
     cooldown = 30
     sound = SPELL_BLAST
   }

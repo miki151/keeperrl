@@ -7,27 +7,26 @@
 RICH_ENUM(FXStackId, debuff, buff, generic);
 
 struct FXInfo {
-  FXInfo(FXName name, Color color = Color::WHITE, float strength = 0.0, FXStackId sid = FXStackId::generic)
-      : name(name), color(color), strength(strength), stackId(sid) { }
+  FXInfo(FXName, Color = Color::WHITE, float strength = 0.0, FXStackId = FXStackId::generic);
 
-  bool empty() const {
-    return name == FXName(0);
-  }
+  bool empty() const;
+
+  FXInfo& setReversed();
 
   SERIALIZATION_CONSTRUCTOR(FXInfo)
   FXName SERIAL(name) = FXName(0);
   Color SERIAL(color) = Color::WHITE;
   float SERIAL(strength) = 0.0f;
   FXStackId SERIAL(stackId) = FXStackId::generic;
-  SERIALIZE_ALL(NAMED(name), OPTION(color), OPTION(strength), OPTION(stackId))
+  bool SERIAL(reversed) = false;
+  SERIALIZE_ALL(NAMED(name), OPTION(color), OPTION(strength), OPTION(stackId), OPTION(reversed))
 };
 
 FXInfo getFXInfo(FXVariantName);
 optional<FXInfo> getOverlayFXInfo(ViewId);
 
 struct FXSpawnInfo {
-  FXSpawnInfo(FXInfo info, Vec2 pos, Vec2 offset = {})
-      : position(pos), targetOffset(offset), info(info) { }
+  FXSpawnInfo(FXInfo, Vec2 pos, Vec2 offset = {});
 
   Vec2 position;
   Vec2 targetOffset;
