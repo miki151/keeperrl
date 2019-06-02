@@ -593,17 +593,18 @@ class Items : public LevelMaker {
           (placeOnFurniture || !builder->getFurniture(v, FurnitureLayer::MIDDLE)))
         available.push_back(v);
     checkGen(!available.empty());
+    auto itemList = getItems(builder);
     for (int i : Range(numItem))
-      builder->putItems(builder->getRandom().choose(available), getItems(builder));
+      builder->putItems(builder->getRandom().choose(available), itemList.random());
   }
 
-  vector<PItem> getItems(const LevelBuilder* builder) {
+  ItemList getItems(const LevelBuilder* builder) {
     return items.visit(
         [&](const ItemListId list) {
-          return builder->getContentFactory()->itemFactory.get(list).random();
+          return builder->getContentFactory()->itemFactory.get(list);
         },
         [&](const ItemType& item) {
-          return makeVec(item.get());
+          return ItemList({item});
         }
     );
   }
@@ -1764,9 +1765,10 @@ class ShopMaker : public LevelMaker {
       builder->putItems(shopkeeperPos, shopkeeper->generateCorpse(true));
     }
     builder->putFurniture(pos[builder->getRandom().get(pos.size())], FurnitureParams{FurnitureType("GROUND_TORCH"), tribe});
+    auto itemList = builder->getContentFactory()->itemFactory.get(shopItems);
     for (int i : Range(numItems)) {
       Vec2 v = pos[builder->getRandom().get(pos.size())];
-      builder->putItems(v, builder->getContentFactory()->itemFactory.get(shopItems).random());
+      builder->putItems(v, itemList.random());
     }
   }
 

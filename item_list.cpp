@@ -27,7 +27,10 @@ ItemList& ItemList::setRandomPrefixes(double chance) {
   return *this;
 }
 
-vector<PItem> ItemList::random() {
+ItemList::ItemList(vector<ItemInfo> t) : items(std::move(t)) {}
+ItemList::ItemList(vector<ItemType> t) : ItemList(t.transform([](const auto& t) { return ItemInfo(t, 1); })) {}
+
+vector<PItem> ItemList::random() & {
   if (unique.size() > 0) {
     ItemType id = unique.back().first;
     int cnt = Random.get(unique.back().second);

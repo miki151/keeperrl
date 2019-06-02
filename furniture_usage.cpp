@@ -63,8 +63,8 @@ static void useChest(Position pos, WConstFurniture furniture, Creature* c, const
     c->message(itemInfo->msgItem);
     auto itemList = pos.getGame()->getContentFactory()->itemFactory.get(itemInfo->items);
     vector<PItem> items = itemList.random();
-    c->getGame()->addEvent(EventInfo::ItemsAppeared{c->getPosition(), getWeakPointers(items)});
-    c->getPosition().dropItems(std::move(items));
+    c->getGame()->addEvent(EventInfo::ItemsAppeared{pos, getWeakPointers(items)});
+    pos.dropItems(std::move(items));
   }
 }
 
@@ -234,7 +234,8 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
     case FurnitureUsageType::FOUNTAIN: {
       c->secondPerson("You drink from the fountain.");
       c->thirdPerson(c->getName().the() + " drinks from the fountain.");
-      PItem potion = pos.getGame()->getContentFactory()->itemFactory.get(ItemListId("potions")).random().getOnlyElement();
+      auto itemList = pos.getGame()->getContentFactory()->itemFactory.get(ItemListId("potions"));
+      PItem potion = itemList.random().getOnlyElement();
       potion->apply(c);
       break;
     }

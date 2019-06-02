@@ -328,7 +328,7 @@
       locationNameGen = TOWN
       race = "humans"
       buildingId = WOOD_CASTLE
-      stockpiles = {{ "gold" 160 }}
+      stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
       lootItem = {TechBook "beast mutation"}
       furniture = "roomFurniture"
       outsideFeatures = "castleOutside"
@@ -392,7 +392,7 @@
       }
       locationNameGen = TOWN
       race = "humans"
-      stockpiles = {{ "gold" 140 }}
+      stockpiles = {{ "gold" 140 "TREASURE_CHEST" }}
       buildingId = BRICK
       shopItems = "villageShop"
       furniture = "castleFurniture"
@@ -541,7 +541,7 @@
       locationNameGen = TOWN
       race = "dwarves"
       buildingId = DUNGEON
-      stockpiles = {{ "gold" 200} {"minerals" 120 }}
+      stockpiles = {{ "gold" 200 "TREASURE_CHEST"} {"minerals" 120 }}
       shopItems = "dwarfShop"
       outsideFeatures = "dungeonOutside"
       surroundWithResources = 5
@@ -598,7 +598,7 @@
       locationNameGen = TOWN
       tribe = ELF
       race = "elves"
-      stockpiles = {{ "gold" 100 }}
+      stockpiles = {{ "gold" 100 "TREASURE_CHEST"}}
       buildingId = WOOD
       lootItem = {TechBook "master sorcery"}
       furniture = "roomFurniture"
