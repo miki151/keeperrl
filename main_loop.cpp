@@ -39,6 +39,8 @@
 #include "tileset.h"
 #include "content_factory.h"
 #include "scroll_position.h"
+#include "miniunz.h"
+#include <sys/stat.h>
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, TileSet* tileSet, bool singleThread, int sv)
@@ -717,6 +719,20 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
       std::cerr << totalWins << " wins\n";
       std::cout << "Turn " << turn << ": " << wave->enemy.name << ": " << totalWins << "\n";
     }
+}
+
+optional<string> MainLoop::verifyMod(const string& path) {
+  auto modsPath = userPath.subdirectory("mods_tmp");
+  OnExit ex123([modsPath] { modsPath.removeRecursively(); });
+  modsPath.createIfDoesntExist();
+  if (auto err = unzip(path, modsPath.getPath()))
+    return err;
+  for (auto mod : modsPath.getSubDirs()) {
+    GameConfig config(modsPath, mod);
+    ContentFactory f;
+    return f.readData(NameGenerator(dataFreePath.subdirectory("names")), &config);
+  }
+  return "Failed to load any mod"_s;
 }
 
 int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList ally, CreatureList enemies,

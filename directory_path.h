@@ -13,6 +13,7 @@ class DirectoryPath {
   DirectoryPath subdirectory(const string& s) const;
   bool exists() const;
   void createIfDoesntExist() const;
+  void removeRecursively() const;
   vector<FilePath> getFiles() const;
   vector<string> getSubDirs() const;
   const char* getPath() const;

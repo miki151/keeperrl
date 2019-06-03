@@ -203,6 +203,7 @@ static po::parser getCommandLineFlags() {
   flags["battle_info"].type(po::string).description("Path to battle info file");
   flags["battle_enemy"].type(po::string).description("Battle enemy id");
   flags["endless_enemy"].type(po::string).description("Endless mode enemy index");
+  flags["verify_mod"].type(po::string).description("Verify mod. Requires path to zip file.");
   flags["battle_view"].description("Open game window and display battle");
   flags["battle_rounds"].type(po::i32).description("Number of battle rounds");
   flags["stderr"].description("Log to stderr");
@@ -339,41 +340,12 @@ static int keeperMain(po::parser& commandLineFlags) {
   INFO << "Data path: " << dataPath;
   INFO << "User path: " << userPath;
   Clock clock;
-  Renderer renderer(
-      &clock,
-      "KeeperRL",
-      contribDataPath,
-      freeDataPath.file("images/mouse_cursor.png"),
-      freeDataPath.file("images/mouse_cursor2.png"));
-  FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
-  UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
-  UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
-  initializeGLExtensions();
-#ifndef RELEASE
-  installOpenglDebugHandler();
-#endif
 #ifdef RELEASE
   AppConfig appConfig(dataPath.file("appconfig.txt"));
 #else
   AppConfig appConfig(dataPath.file("appconfig-dev.txt"));
 #endif
   string uploadUrl = appConfig.get<string>("upload_url");
-
-  unique_ptr<fx::FXManager> fxManager;
-  unique_ptr<fx::FXRenderer> fxRenderer;
-  unique_ptr<FXViewManager> fxViewManager;
-
-  if (paidDataPath.exists()) {
-    auto particlesPath = paidDataPath.subdirectory("images").subdirectory("particles");
-    if (particlesPath.exists()) {
-      INFO << "FX: initialization";
-      fxManager = unique<fx::FXManager>();
-      fxRenderer = unique<fx::FXRenderer>(particlesPath, *fxManager);
-      fxRenderer->loadTextures();
-      fxViewManager = unique<FXViewManager>(fxManager.get(), fxRenderer.get());
-    }
-  }
-
   userPath.createIfDoesntExist();
   auto settingsPath = userPath.file("options.txt");
   if (commandLineFlags["restore_settings"].was_set())
@@ -398,6 +370,17 @@ static int keeperMain(po::parser& commandLineFlags) {
   FileSharing fileSharing(uploadUrl, options, installId);
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
+  if (commandLineFlags["verify_mod"].was_set()) {
+    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, nullptr,
+        useSingleThread, 0);
+    if (auto err = loop.verifyMod(commandLineFlags["verify_mod"].get().string)) {
+      std::cout << *err << std::endl;
+      return -1;
+    } else {
+      std::cout << "OK" << std::endl;
+      return 0;
+    }
+  }
   if (commandLineFlags["worldgen_test"].was_set()) {
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, nullptr,
         useSingleThread, 0);
@@ -430,6 +413,19 @@ static int keeperMain(po::parser& commandLineFlags) {
     battleTest(new DummyView(&clock), nullptr);
     return 0;
   }
+  Renderer renderer(
+      &clock,
+      "KeeperRL",
+      contribDataPath,
+      freeDataPath.file("images/mouse_cursor.png"),
+      freeDataPath.file("images/mouse_cursor2.png"));
+  initializeGLExtensions();
+#ifndef RELEASE
+  installOpenglDebugHandler();
+#endif
+  FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+  UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+  UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap, freeDataPath.subdirectory("images"),
       tilesPresent ? optional<DirectoryPath>(paidDataPath.subdirectory("images")) : none);
   guiFactory.loadImages();
@@ -454,6 +450,19 @@ static int keeperMain(po::parser& commandLineFlags) {
 #ifndef RELEASE
   InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
 #endif
+  unique_ptr<fx::FXManager> fxManager;
+  unique_ptr<fx::FXRenderer> fxRenderer;
+  unique_ptr<FXViewManager> fxViewManager;
+  if (paidDataPath.exists()) {
+    auto particlesPath = paidDataPath.subdirectory("images").subdirectory("particles");
+    if (particlesPath.exists()) {
+      INFO << "FX: initialization";
+      fxManager = unique<fx::FXManager>();
+      fxRenderer = unique<fx::FXRenderer>(particlesPath, *fxManager);
+      fxRenderer->loadTextures();
+      fxViewManager = unique<FXViewManager>(fxManager.get(), fxRenderer.get());
+    }
+  }
   view->initialize(std::move(fxRenderer), std::move(fxViewManager));
   if (commandLineFlags["battle_level"].was_set() && commandLineFlags["battle_view"].was_set()) {
     battleTest(view.get(), &tileSet);
