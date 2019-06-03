@@ -146,7 +146,7 @@
         AMBUSH_SKILL 1
       }
       maxLevelIncrease = {
-        MELEE 1
+        MELEE 16
         SPELL 16
         ARCHERY 16
       }

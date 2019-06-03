@@ -138,12 +138,6 @@ void Creature::cheatAllSpells() {
   spellMap->setAllReady();
 }
 
-static double getSpellTimeoutMult(int expLevel) {
-  double minMult = 0.3;
-  double maxLevel = 12;
-  return max(minMult, 1 - expLevel * (1 - minMult) / maxLevel);
-}
-
 const CreatureAttributes& Creature::getAttributes() const {
   return *attributes;
 }
@@ -172,8 +166,7 @@ CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
     spell->addMessage(c);
     spell->apply(c, target);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
-    c->spellMap->setReadyTime(spell, *getGlobalTime() + TimeInterval(
-        int(spell->getCooldown() * getSpellTimeoutMult((int) attributes->getExpLevel(ExperienceType::SPELL)))));
+    c->spellMap->setReadyTime(spell, *getGlobalTime() + TimeInterval(spell->getCooldown()));
     c->spendTime();
   });
 }
