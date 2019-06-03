@@ -1447,7 +1447,9 @@ SGuiElem GuiBuilder::getExpIncreaseLine(const CreatureExperienceInfo& info, Expe
   line.addElem(gui.label("+" + toStringRounded(info.level[type], 0.01),
       info.warning[type] ? Color::RED : Color::WHITE), 50);
   if (increaseCallback && info.numAvailableUpgrades > 0) {
-    line.addElemAuto(gui.buttonLabel("+", increaseCallback));
+    line.addElemAuto(info.level[type] < info.limit[type]
+        ? gui.buttonLabel("+", increaseCallback)
+        : gui.buttonLabelInactive("+"));
     line.addSpace(15);
   }
   string limit = toString(info.limit[type]);

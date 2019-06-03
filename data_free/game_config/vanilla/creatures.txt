@@ -5,7 +5,7 @@
 {
   "KEEPER_MAGE"
     {
-      # Definitions in view_id.h
+      # Definitions in tiles.txt
       viewId = { "keeper1" }
       # ViewId upgrades of Keepers are applied every 5 tech level increases
       viewIdUpgrades = { { "keeper2" } { "keeper3" } { "keeper4" } }
@@ -146,7 +146,7 @@
         AMBUSH_SKILL 1
       }
       maxLevelIncrease = {
-        MELEE 16
+        MELEE 1
         SPELL 16
         ARCHERY 16
       }
