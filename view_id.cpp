@@ -40,12 +40,14 @@ SERIALIZATION_CONSTRUCTOR_IMPL(ViewId)
 #include "pretty_archive.h"
 template<>
 void ViewId::serialize(PrettyInputArchive& ar, unsigned) {
-  ar(NAMED(SUBCLASS(ContentId)));
+  string SERIAL(id);
+  ar(NAMED(id));
   Color colorInfo = Color::WHITE;
   ar >> OPTION(colorInfo);
   ar >> endInput();
   if (colorInfo != Color::WHITE)
     color = colorInfo;
+  *this = ViewId(id.data(), colorInfo);
 }
 
 #include "text_serialization.h"

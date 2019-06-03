@@ -80,7 +80,7 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
 
     struct LoaderInfo {
       string name;
-      function<void()> load;
+      function<void(bool)> load;
       bool optional;
     };
 
@@ -473,12 +473,17 @@ inline EndPrettyInput& endInput() {
 }
 
 template <class T>
+inline void handleNamePair(PrettyInputArchive& ar1, const string& name, T& value, bool optional) {
+  if (name != "cereal_class_version")
+    ar1.getNode().loaders.push_back(PrettyInputArchive::LoaderInfo{name,
+        [&ar1, &value](bool init){ if (init) value = T{}; ar1(value); }, optional});
+  else
+    setVersion1000(value);
+}
+
+template <class T>
 inline void serialize(PrettyInputArchive& ar1, OptionalNameValuePair<T>& t) {
-  if (strcmp(t.name, "cereal_class_version")) {
-    auto& value = t.value;
-    ar1.getNode().loaders.push_back(PrettyInputArchive::LoaderInfo{t.name, [&ar1, &value]{ ar1(value); }, true});
-  } else
-    setVersion1000(t.value);
+  handleNamePair(ar1, t.name, t.value, true);
 }
 
 template <class T>
@@ -487,38 +492,22 @@ inline void serialize(PrettyInputArchive& ar1, SkipPrettyValue<T>& t) {
 
 template <class T>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<T>& t) {
-  if (strcmp(t.name, "cereal_class_version")) {
-    auto& value = t.value;
-    ar1.getNode().loaders.push_back(PrettyInputArchive::LoaderInfo{t.name, [&ar1, &value]{ ar1(value); }, false});
-  } else
-    setVersion1000(t.value);
+  handleNamePair(ar1, t.name, t.value, false);
 }
 
 template <class T>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<optional<T>&>& t) {
-  if (strcmp(t.name, "cereal_class_version")) {
-    auto& value = t.value;
-    ar1.getNode().loaders.push_back(PrettyInputArchive::LoaderInfo{t.name, [&ar1, &value]{ ar1(value); }, true});
-  } else
-    setVersion1000(t.value);
+  handleNamePair(ar1, t.name, t.value, true);
 }
 
 template <class T>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<heap_optional<T>&>& t) {
-  if (strcmp(t.name, "cereal_class_version")) {
-    auto& value = t.value;
-    ar1.getNode().loaders.push_back(PrettyInputArchive::LoaderInfo{t.name, [&ar1, &value]{ ar1(value); }, true});
-  } else
-    setVersion1000(t.value);
+  handleNamePair(ar1, t.name, t.value, true);
 }
 
 template <class T>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<optional_no_none<T>&>& t) {
-  if (strcmp(t.name, "cereal_class_version")) {
-    auto& value = t.value;
-    ar1.getNode().loaders.push_back(PrettyInputArchive::LoaderInfo{t.name, [&ar1, &value]{ ar1(value); }, true});
-  } else
-    setVersion1000(t.value);
+  handleNamePair(ar1, t.name, t.value, true);
 }
 
 template <class T, class U> inline
@@ -573,7 +562,7 @@ inline void prettyEpilogue(PrettyInputArchive& ar1) {
           if (ar1.peek() == "}")
             break;
           processed.insert(loader.name);
-          loader.load();
+          loader.load(true);
         }
         break;
       } else
@@ -584,7 +573,10 @@ inline void prettyEpilogue(PrettyInputArchive& ar1) {
           if (processed.count(name))
             ar1.error("Value defined twice: \"" + name + "\"");
           processed.insert(name);
-          loader.load();
+          bool initialize = true;
+          if (ar1.peek() == "append")
+            initialize = false;
+          loader.load(initialize);
           found = true;
           break;
         }
