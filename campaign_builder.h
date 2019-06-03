@@ -28,7 +28,6 @@ class CampaignBuilder {
   const AvatarInfo& avatarInfo;
   vector<OptionId> getSecondaryOptions(CampaignType) const;
   vector<OptionId> getPrimaryOptions() const;
-  optional<string> getSiteChoiceTitle(CampaignType) const;
   vector<Campaign::VillainInfo> getVillains(TribeAlignment, VillainType);
   const char* getIntroText() const;
   void setPlayerPos(Campaign&, Vec2, ViewId playerViewId);
@@ -38,6 +37,7 @@ class CampaignBuilder {
   void placeVillains(Campaign&, const VillainCounts&, const optional<RetiredGames>&, TribeAlignment);
   PlayerRole getPlayerRole() const;
   vector<string> getIntroMessages(CampaignType) const;
+  void setCountLimits();
 };
 
 struct CampaignSetup {

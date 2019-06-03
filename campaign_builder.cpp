@@ -15,24 +15,19 @@
 #include "tribe_alignment.h"
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
-  switch (campaign.type) {
-    case CampaignType::FREE_PLAY:
-    case CampaignType::QUICK_MAP:
-    case CampaignType::SINGLE_KEEPER:
-      return campaign.sites.getBounds().middle();
-    default:
-      return none;
-  }
+  if (campaign.getPlayerRole() == PlayerRole::ADVENTURER && options->getIntValue(OptionId::ALLIES) == 0)
+    return none;
+  return campaign.sites.getBounds().middle();
 }
 
-static void setCountLimits(Options* options) {
+void CampaignBuilder::setCountLimits() {
 #ifdef RELEASE
   options->setLimits(OptionId::MAIN_VILLAINS, 1, 4);
 #else
   options->setLimits(OptionId::MAIN_VILLAINS, 0, 4);
 #endif
   options->setLimits(OptionId::LESSER_VILLAINS, 0, 6);
-  options->setLimits(OptionId::ALLIES, 0, 4);
+  options->setLimits(OptionId::ALLIES, getPlayerRole() == PlayerRole::ADVENTURER ? 1 : 0, 4);
   options->setLimits(OptionId::INFLUENCE_SIZE, 3, 6);
 }
 
@@ -89,20 +84,6 @@ vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
       return {
         CampaignType::FREE_PLAY,
       };
-  }
-}
-
-optional<string> CampaignBuilder::getSiteChoiceTitle(CampaignType type) const {
-  switch (type) {
-    case CampaignType::FREE_PLAY:
-    case CampaignType::ENDLESS:
-      switch (getPlayerRole()) {
-        case PlayerRole::KEEPER: return "Choose the location of your base:"_s;
-        case PlayerRole::ADVENTURER: return "Choose a location to start your adventure:"_s;
-      }
-      break;
-    default:
-      return none;
   }
 }
 
@@ -262,7 +243,7 @@ VillainPlacement CampaignBuilder::getVillainPlacement(const Campaign& campaign, 
           break;
         case VillainType::ALLY:
           if (campaign.getPlayerRole() == PlayerRole::ADVENTURER)
-            ret.firstLocation = *considerStaticPlayerPos(campaign);
+            ret.firstLocation = considerStaticPlayerPos(campaign);
           break;
         default:
           break;
@@ -332,9 +313,9 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
   auto retired = genRetired(type);
   View::CampaignMenuState menuState { true, false};
-  setCountLimits(options);
   const auto playerRole = getPlayerRole();
   while (1) {
+    setCountLimits();
     Campaign campaign(terrain, type, playerRole, worldName);
     if (auto pos = considerStaticPlayerPos(campaign)) {
       campaign.clearSite(*pos);
@@ -352,7 +333,6 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
               avatarInfo.playerCreature.get(),
               getPrimaryOptions(),
               getSecondaryOptions(type),
-              getSiteChoiceTitle(type),
               getIntroText(),
               getAvailableTypes().transform([](CampaignType t) -> View::CampaignOptions::CampaignTypeInfo {
                   return {t, getCampaignTypeDescription(t)};}),
@@ -384,10 +364,6 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
           break;
         case CampaignActionId::CANCEL:
           return none;
-        case CampaignActionId::CHOOSE_SITE:
-          if (!considerStaticPlayerPos(campaign))
-            setPlayerPos(campaign, action.get<Vec2>(), avatarInfo.playerCreature->getMaxViewIdUpgrade());
-          break;
         case CampaignActionId::CONFIRM:
           if (!retired || retired->getNumActive() > 0 || playerRole != PlayerRole::KEEPER ||
               retired->getAllGames().empty() ||

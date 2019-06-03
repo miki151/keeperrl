@@ -104,7 +104,6 @@ struct HighscoreList {
 
 enum class CampaignActionId {
   CANCEL,
-  CHOOSE_SITE,
   REROLL_MAP,
   UPDATE_MAP,
   CONFIRM,
@@ -119,9 +118,8 @@ enum class PassableInfo {
   UNKNOWN
 };
 
-class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2, OptionId, CampaignType),
+class CampaignAction : public EnumVariant<CampaignActionId, TYPES(OptionId, CampaignType),
   ASSIGN(CampaignType, CampaignActionId::CHANGE_TYPE),
-  ASSIGN(Vec2, CampaignActionId::CHOOSE_SITE),
   ASSIGN(OptionId, CampaignActionId::UPDATE_OPTION)> {
     using EnumVariant::EnumVariant;
 };
@@ -242,7 +240,6 @@ class View {
     const Creature* player = nullptr;
     vector<OptionId> primaryOptions;
     vector<OptionId> secondaryOptions;
-    optional<string> mapTitle;
     string introText;
     struct CampaignTypeInfo {
       CampaignType type;

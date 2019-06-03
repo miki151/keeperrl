@@ -3508,11 +3508,8 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
     lines.addElem(gui.leftMargin(optionMargin,
         gui.buttonLabel("Add retired dungeons", [&menuState] { menuState.settings = !menuState.settings;})));
   }
-  if (auto& title = campaignOptions.mapTitle)
-    lines.addBackElem(gui.centerHoriz(gui.label(*title)));
   lines.addBackElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, nullptr,
-        [&campaign](Vec2 pos) { return campaign.canEmbark(pos); },
-        [&queue](Vec2 pos) { queue.push({CampaignActionId::CHOOSE_SITE, pos}); })));
+        [&campaign](Vec2 pos) { return campaign.canEmbark(pos); }, [](Vec2) {})));
   lines.addSpace(10);
   lines.addBackElem(gui.centerHoriz(gui.getListBuilder()
         .addElemAuto(gui.conditional(
