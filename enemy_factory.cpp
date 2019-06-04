@@ -66,23 +66,27 @@ struct VaultInfo {
 };
 }
 
-static EnumMap<TribeAlignment, vector<VaultInfo>> friendlyVaults {
-  {TribeAlignment::EVIL, {
-      {CreatureId("ORC"), 3, 5},
-      {CreatureId("OGRE"), 2, 4},
-      {CreatureId("VAMPIRE"), 2, 4},
-  }},
-  {TribeAlignment::LAWFUL, {
-      {CreatureId("IRON_GOLEM"), 3, 5},
-      {CreatureId("EARTH_ELEMENTAL"), 2, 4},
-  }},
-};
+static EnumMap<TribeAlignment, vector<VaultInfo>> getFriendlyVaults() {
+  return {
+    {TribeAlignment::EVIL, {
+        {CreatureId("ORC"), 3, 5},
+        {CreatureId("OGRE"), 2, 4},
+        {CreatureId("VAMPIRE"), 2, 4},
+    }},
+    {TribeAlignment::LAWFUL, {
+        {CreatureId("IRON_GOLEM"), 3, 5},
+        {CreatureId("EARTH_ELEMENTAL"), 2, 4},
+    }},
+  };
+}
 
-static vector<VaultInfo> hostileVaults {
-  {CreatureId("SPIDER"), 3, 8},
-  {CreatureId("SNAKE"), 3, 8},
-  {CreatureId("BAT"), 3, 8},
-};
+static vector<VaultInfo> getHostileVaults() {
+  return {
+    {CreatureId("SPIDER"), 3, 8},
+    {CreatureId("SNAKE"), 3, 8},
+    {CreatureId("BAT"), 3, 8},
+  };
+}
 
 vector<EnemyInfo> EnemyFactory::getVaults(TribeAlignment alignment, TribeId allied) const {
   vector<EnemyInfo> ret {
@@ -92,11 +96,11 @@ vector<EnemyInfo> EnemyFactory::getVaults(TribeAlignment alignment, TribeId alli
         ItemListId("armory")),
   };
   for (int i : Range(1)) {
-    VaultInfo v = random.choose(friendlyVaults[alignment]);
+    VaultInfo v = random.choose(getFriendlyVaults()[alignment]);
     ret.push_back(getVault(SettlementType::VAULT, v.id, allied, random.get(v.min, v.max)));
   }
   for (int i : Range(1)) {
-    VaultInfo v = random.choose(hostileVaults);
+    VaultInfo v = random.choose(getHostileVaults());
     ret.push_back(getVault(SettlementType::VAULT, v.id, TribeId::getMonster(), random.get(v.min, v.max)));
   }
   return ret;

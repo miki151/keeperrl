@@ -228,6 +228,7 @@ int main(int argc, char* argv[]) {
   StackPrinter::initialize(argv[0], time(0));
 #endif
   std::set_terminate(fail);
+  setInitializedStatics();
   po::parser flags = getCommandLineFlags();
   if (!flags.parseArgs(argc, argv))
     return -1;
