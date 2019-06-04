@@ -741,7 +741,12 @@ optional<string> MainLoop::verifyMod(const string& path) {
   for (auto mod : modsPath.getSubDirs()) {
     GameConfig config(modsPath, mod);
     ContentFactory f;
-    return f.readData(NameGenerator(dataFreePath.subdirectory("names")), &config);
+    if (auto err = f.readData(NameGenerator(dataFreePath.subdirectory("names")), &config))
+      return err;
+    else {
+      std::cout << mod << std::endl;
+      return none;
+    }
   }
   return "Failed to load any mod"_s;
 }

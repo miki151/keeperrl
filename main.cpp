@@ -376,10 +376,8 @@ static int keeperMain(po::parser& commandLineFlags) {
     if (auto err = loop.verifyMod(commandLineFlags["verify_mod"].get().string)) {
       std::cout << *err << std::endl;
       return -1;
-    } else {
-      std::cout << "OK" << std::endl;
+    } else
       return 0;
-    }
   }
   if (commandLineFlags["worldgen_test"].was_set()) {
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, nullptr,
