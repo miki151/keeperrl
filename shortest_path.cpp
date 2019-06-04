@@ -326,7 +326,7 @@ bool LevelShortestPath::isReversed() const {
 Dijkstra::Dijkstra(Rectangle bounds, vector<Vec2> from, int maxDist, function<double(Vec2)> entryFun,
       vector<Vec2> directions) {
   distanceTable.clear();
-  function<bool(Vec2, Vec2)> comparator = [](Vec2 pos1, Vec2 pos2) {
+  auto comparator = [](Vec2 pos1, Vec2 pos2) {
       double diff = distanceTable.getDistance(pos1) - distanceTable.getDistance(pos2);
       if (diff > 0 || (diff == 0 && pos1 < pos2))
         return 1;
