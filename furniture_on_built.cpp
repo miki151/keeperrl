@@ -21,7 +21,7 @@
 #include "content_factory.h"
 
 static SettlementInfo getEnemy(EnemyId id, const ContentFactory* contentFactory) {
-  auto enemy = EnemyFactory(Random, nullptr, contentFactory->enemies).get(id);
+  auto enemy = EnemyFactory(Random, nullptr, contentFactory->enemies, contentFactory->externalEnemies).get(id);
   enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
   return enemy.settlement;
 }

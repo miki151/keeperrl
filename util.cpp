@@ -1101,7 +1101,13 @@ Dir rotate(Dir dir) {
 
 #include "pretty_archive.h"
 template void Vec2::serialize(PrettyInputArchive&, unsigned);
-template void Range::serialize(PrettyInputArchive&, unsigned);
+template<>
+void Range::serialize(PrettyInputArchive& ar1, unsigned) {
+  optional_no_none<int> finish;
+  ar1(NAMED(start), OPTION(finish), OPTION(increment));
+  ar1(endInput());
+  this->finish = finish.value_or(start + 1);
+}
 
 string toString(const Range& r) {
   return "[" + toString(r.getStart()) + ", " + toString(r.getEnd()) + "]";

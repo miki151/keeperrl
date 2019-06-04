@@ -436,7 +436,8 @@ void MainLoop::splashScreen() {
   auto contentFactory = createContentFactory(true);
   if (tileSet)
     tileSet->setTilePaths(contentFactory.tilePaths);
-  EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies);
+  EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies,
+      contentFactory.externalEnemies);
   auto model = ModelBuilder(&meter, Random, options, sokobanInput, &contentFactory, std::move(enemyFactory))
       .splashModel(dataFreePath.file("splash.txt"));
   playGame(Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory)),
@@ -541,8 +542,17 @@ ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
     return ret.readData(NameGenerator(dataFreePath.subdirectory("names")), &config);
   };
   if (vanillaOnly) {
+#ifdef RELEASE
     if (auto err = tryConfig("vanilla"))
       USER_FATAL << "Error loading vanilla game data: " << *err;
+#else
+    while (true) {
+      if (auto err = tryConfig("vanilla"))
+        USER_INFO << "Error loading vanilla game data: " << *err;
+      else
+        break;
+    }
+#endif
   } else {
     auto chosenMod = options->getStringValue(OptionId::CURRENT_MOD);
     if (auto err = tryConfig(chosenMod)) {
@@ -631,7 +641,8 @@ void MainLoop::doWithSplash(SplashType type, const string& text, function<void()
 void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen& random, Options* options) {
   ProgressMeter meter(1);
   auto contentFactory = createContentFactory(false);
-  EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies);
+  EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies,
+      contentFactory.externalEnemies);
   ModelBuilder(&meter, random, options, sokobanInput, &contentFactory, std::move(enemyFactory))
       .measureSiteGen(numTries, types);
 }
@@ -705,7 +716,7 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
     allies.push_back(readAlly(input));
   auto contentFactory = createContentFactory(false);
   ExternalEnemies enemies(random, &contentFactory.creatures, EnemyFactory(random, contentFactory.creatures.getNameGenerator(),
-      contentFactory.enemies)
+      contentFactory.enemies, contentFactory.externalEnemies)
       .getExternalEnemies());
   for (int turn : Range(100000))
     if (auto wave = enemies.popNextWave(LocalTime(turn))) {
@@ -746,7 +757,8 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
   for (int i : Range(numTries)) {
     std::cout << "Creating level" << std::endl;
     auto contentFactory = createContentFactory(false);
-    EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies);
+    EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies,
+        contentFactory.externalEnemies);
     auto model = ModelBuilder(&meter, Random, options, sokobanInput,
         &contentFactory, std::move(enemyFactory)).battleModel(levelPath, ally, enemies);
     auto game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory));
@@ -827,7 +839,8 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
   vector<ContentFactory> factories;
   doWithSplash(SplashType::BIG, "Generating map...", numSites,
       [&] (ProgressMeter& meter) {
-        EnemyFactory enemyFactory(Random, contentFactory->creatures.getNameGenerator(), contentFactory->enemies);
+        EnemyFactory enemyFactory(Random, contentFactory->creatures.getNameGenerator(), contentFactory->enemies,
+            contentFactory->externalEnemies);
         ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, contentFactory, std::move(enemyFactory));
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())

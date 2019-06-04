@@ -25,7 +25,8 @@ enum class GameConfigId {
   FURNITURE,
   FURNITURE_LISTS,
   ENEMIES,
-  ITEM_LISTS
+  ITEM_LISTS,
+  EXTERNAL_ENEMIES
 };
 
 class GameConfig {

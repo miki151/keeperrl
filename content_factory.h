@@ -11,6 +11,7 @@
 #include "immigrant_info.h"
 #include "build_info.h"
 #include "campaign_builder.h"
+#include "external_enemies.h"
 
 class KeyVerifier;
 
@@ -23,6 +24,7 @@ class ContentFactory {
   vector<ResourceDistribution> SERIAL(resources);
   TilePaths SERIAL(tilePaths);
   map<EnemyId, EnemyInfo> SERIAL(enemies);
+  vector<ExternalEnemy> SERIAL(externalEnemies);
   ItemFactory SERIAL(itemFactory);
   Technology SERIAL(technology);
   vector<pair<string, WorkshopArray>> SERIAL(workshopGroups);

@@ -12,8 +12,8 @@ struct ExternalEnemy {
   AttackBehaviour SERIAL(behaviour);
   string SERIAL(name);
   Range SERIAL(attackTime);
-  int SERIAL(maxOccurences);
-  SERIALIZE_ALL(creatures, behaviour, name, attackTime, maxOccurences)
+  int SERIAL(maxOccurences) = 1;
+  SERIALIZE_ALL(NAMED(creatures), NAMED(behaviour), NAMED(name), NAMED(attackTime), OPTION(maxOccurences))
 };
 
 struct EnemyEvent {

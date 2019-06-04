@@ -13,7 +13,7 @@ class NameGenerator;
 
 class EnemyFactory {
   public:
-  EnemyFactory(RandomGen&, NameGenerator*, map<EnemyId, EnemyInfo> enemies);
+  EnemyFactory(RandomGen&, NameGenerator*, map<EnemyId, EnemyInfo> enemies, vector<ExternalEnemy>);
   EnemyFactory(const EnemyFactory&) = delete;
   EnemyFactory(EnemyFactory&&) = default;
   EnemyInfo get(EnemyId) const;
@@ -26,5 +26,6 @@ class EnemyFactory {
   RandomGen& random;
   NameGenerator* nameGenerator;
   map<EnemyId, EnemyInfo> enemies;
+  vector<ExternalEnemy> externalEnemies;
   void updateCreateOnBones(EnemyInfo&) const;
 };

@@ -793,9 +793,9 @@ PTask Task::stealFrom(WCollective collective) {
 
 namespace {
 
-class CampAndSpawn : public Task {
+class CampAndSpawnTask : public Task {
   public:
-  CampAndSpawn(WCollective _target, CreatureList s, int numAtt)
+  CampAndSpawnTask(WCollective _target, CreatureList s, int numAtt)
     : target(_target), spawns(s),
       campPos(Random.permutation(target->getTerritory().getStandardExtended())), numAttacks(numAtt) {}
 
@@ -855,7 +855,7 @@ class CampAndSpawn : public Task {
   }
  
   SERIALIZE_ALL(SUBCLASS(Task), target, spawns, campPos, attackCountdown, defenseTeam, attackTeam, numAttacks)
-  SERIALIZATION_CONSTRUCTOR(CampAndSpawn)
+  SERIALIZATION_CONSTRUCTOR(CampAndSpawnTask)
 
   private:
   WCollective SERIAL(target) = nullptr;
@@ -871,7 +871,7 @@ class CampAndSpawn : public Task {
 }
 
 PTask Task::campAndSpawn(WCollective target, const CreatureList& spawns, int numAttacks) {
-  return makeOwner<CampAndSpawn>(target, spawns, numAttacks);
+  return makeOwner<CampAndSpawnTask>(target, spawns, numAttacks);
 }
 
 namespace {
@@ -1806,7 +1806,7 @@ REGISTER_TYPE(Whipping)
 REGISTER_TYPE(GoToAndWait)
 REGISTER_TYPE(DropItems)
 REGISTER_TYPE(DropItemsAnywhere)
-REGISTER_TYPE(CampAndSpawn)
+REGISTER_TYPE(CampAndSpawnTask)
 REGISTER_TYPE(Spider)
 REGISTER_TYPE(WithTeam)
 REGISTER_TYPE(ArcheryRange)
