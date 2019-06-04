@@ -200,7 +200,7 @@ void TileSet::loadTiles() {
 #ifndef RELEASE
   addTile("tutorial_entrance", symbol(u8"?", Color::YELLOW));
 #else
-  addTile(ViewId("tutorial_entrance"), sprite("empty"));
+  addTile("tutorial_entrance", sprite("empty"));
 #endif
 }
 
