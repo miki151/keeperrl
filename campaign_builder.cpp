@@ -31,7 +31,7 @@ void CampaignBuilder::setCountLimits() {
   options->setLimits(OptionId::INFLUENCE_SIZE, 3, 6);
 }
 
-vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
+vector<OptionId> CampaignBuilder::getCampaignOptions(CampaignType type) const {
   switch (type) {
     case CampaignType::QUICK_MAP:
     case CampaignType::ENDLESS:
@@ -41,10 +41,6 @@ vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
     case CampaignType::SINGLE_KEEPER:
       return {};
   }
-}
-
-vector<OptionId> CampaignBuilder::getPrimaryOptions() const {
-  return {};
 }
 
 static vector<string> getCampaignTypeDescription(CampaignType type) {
@@ -331,8 +327,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
               campaign,
               (retired && type == CampaignType::FREE_PLAY) ? optional<RetiredGames&>(*retired) : none,
               avatarInfo.playerCreature.get(),
-              getPrimaryOptions(),
-              getSecondaryOptions(type),
+              getCampaignOptions(type),
               getIntroText(),
               getAvailableTypes().transform([](CampaignType t) -> View::CampaignOptions::CampaignTypeInfo {
                   return {t, getCampaignTypeDescription(t)};}),

@@ -232,14 +232,14 @@ class View {
 
   struct CampaignMenuState {
     bool helpText;
-    bool settings;
+    bool retiredWindow;
+    bool options;
   };
   struct CampaignOptions {
     const Campaign& campaign;
     optional<RetiredGames&> retired;
     const Creature* player = nullptr;
-    vector<OptionId> primaryOptions;
-    vector<OptionId> secondaryOptions;
+    vector<OptionId> options;
     string introText;
     struct CampaignTypeInfo {
       CampaignType type;

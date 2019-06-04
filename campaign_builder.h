@@ -26,7 +26,7 @@ class CampaignBuilder {
   VillainsTuple villains;
   GameIntros gameIntros;
   const AvatarInfo& avatarInfo;
-  vector<OptionId> getSecondaryOptions(CampaignType) const;
+  vector<OptionId> getCampaignOptions(CampaignType) const;
   vector<OptionId> getPrimaryOptions() const;
   vector<Campaign::VillainInfo> getVillains(TribeAlignment, VillainType);
   const char* getIntroText() const;
