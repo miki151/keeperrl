@@ -232,7 +232,7 @@ int main(int argc, char* argv[]) {
   po::parser flags = getCommandLineFlags();
   if (!flags.parseArgs(argc, argv))
     return -1;
-  keeperMain(flags);
+  return keeperMain(flags);
 }
 #endif
 
