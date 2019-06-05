@@ -3,6 +3,7 @@
 #include "file_path.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include "dirent.h"
 
 DirectoryPath::DirectoryPath(const std::string& p) : path(p) {}
@@ -34,6 +35,16 @@ void DirectoryPath::createIfDoesntExist() const {
 #else
     USER_CHECK(!mkdir(path.data())) << "Unable to create directory \"" + path + "\": " + strerror(errno);
 #endif
+  }
+}
+
+void DirectoryPath::removeRecursively() const {
+  if (exists()) {
+    for (auto file : getFiles())
+      remove(file.getPath());
+    for (auto subdir : getSubDirs())
+      subdirectory(subdir).removeRecursively();
+    rmdir(getPath());
   }
 }
 

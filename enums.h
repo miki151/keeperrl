@@ -107,6 +107,7 @@ enum class CreatureViewCenterType;
 enum class BedType;
 enum class TargetType;
 enum class HealthType;
+enum class ExternalEnemiesType;
 
 struct FXInfo;
 struct FXSpawnInfo;

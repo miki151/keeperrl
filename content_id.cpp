@@ -8,9 +8,21 @@
 #include "tech_id.h"
 #include "creature_id.h"
 #include "spell_school_id.h"
+#include <cassert>
 
-template <typename T>
-vector<string> ContentId<T>::allIds;
+static const char* staticsInitialized = nullptr;
+
+void setInitializedStatics() {
+  staticsInitialized = "initialized";
+}
+
+
+template<typename T>
+vector<string>& ContentId<T>::getAllIds() {
+  static vector<string> ret;
+  assert(staticsInitialized && !strcmp(staticsInitialized, "initialized"));
+  return ret;
+}
 
 template <typename T>
 int ContentId<T>::getId(const char* text) {
@@ -18,7 +30,7 @@ int ContentId<T>::getId(const char* text) {
   static int generatedId = 0;
   if (!ids.count(text)) {
     ids[text] = generatedId;
-    allIds.push_back(text);
+    getAllIds().push_back(text);
     ++generatedId;
   }
   auto ret = getReferenceMaybe(ids, text);
@@ -63,7 +75,7 @@ int ContentId<T>::getHash() const {
 
 template <typename T>
 const char* ContentId<T>::data() const {
-  return allIds[id].data();
+  return getAllIds()[id].data();
 }
 
 template <typename T>
@@ -128,7 +140,7 @@ int PrimaryId<T>::getHash() const {
 
 template<typename T>
 const char* PrimaryId<T>::data() const {
-  return ContentId<T>::allIds[id].data();
+  return ContentId<T>::getAllIds()[id].data();
 }
 
 template<typename T>

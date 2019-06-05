@@ -39,6 +39,8 @@
 #include "tileset.h"
 #include "content_factory.h"
 #include "scroll_position.h"
+#include "miniunz.h"
+#include "external_enemies_type.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, TileSet* tileSet, bool singleThread, int sv)
@@ -434,7 +436,8 @@ void MainLoop::splashScreen() {
   auto contentFactory = createContentFactory(true);
   if (tileSet)
     tileSet->setTilePaths(contentFactory.tilePaths);
-  EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies);
+  EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies,
+      contentFactory.externalEnemies);
   auto model = ModelBuilder(&meter, Random, options, sokobanInput, &contentFactory, std::move(enemyFactory))
       .splashModel(dataFreePath.file("splash.txt"));
   playGame(Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory)),
@@ -539,8 +542,17 @@ ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
     return ret.readData(NameGenerator(dataFreePath.subdirectory("names")), &config);
   };
   if (vanillaOnly) {
+#ifdef RELEASE
     if (auto err = tryConfig("vanilla"))
       USER_FATAL << "Error loading vanilla game data: " << *err;
+#else
+    while (true) {
+      if (auto err = tryConfig("vanilla"))
+        USER_INFO << "Error loading vanilla game data: " << *err;
+      else
+        break;
+    }
+#endif
   } else {
     auto chosenMod = options->getStringValue(OptionId::CURRENT_MOD);
     if (auto err = tryConfig(chosenMod)) {
@@ -629,7 +641,8 @@ void MainLoop::doWithSplash(SplashType type, const string& text, function<void()
 void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen& random, Options* options) {
   ProgressMeter meter(1);
   auto contentFactory = createContentFactory(false);
-  EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies);
+  EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies,
+      contentFactory.externalEnemies);
   ModelBuilder(&meter, random, options, sokobanInput, &contentFactory, std::move(enemyFactory))
       .measureSiteGen(numTries, types);
 }
@@ -703,8 +716,8 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
     allies.push_back(readAlly(input));
   auto contentFactory = createContentFactory(false);
   ExternalEnemies enemies(random, &contentFactory.creatures, EnemyFactory(random, contentFactory.creatures.getNameGenerator(),
-      contentFactory.enemies)
-      .getExternalEnemies());
+      contentFactory.enemies, contentFactory.externalEnemies)
+      .getExternalEnemies(), ExternalEnemiesType::FROM_START);
   for (int turn : Range(100000))
     if (auto wave = enemies.popNextWave(LocalTime(turn))) {
       std::cerr << "Turn " << turn << ": " << wave->enemy.name << "\n";
@@ -719,6 +732,25 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
     }
 }
 
+optional<string> MainLoop::verifyMod(const string& path) {
+  auto modsPath = userPath.subdirectory("mods_tmp");
+  OnExit ex123([modsPath] { modsPath.removeRecursively(); });
+  modsPath.createIfDoesntExist();
+  if (auto err = unzip(path, modsPath.getPath()))
+    return err;
+  for (auto mod : modsPath.getSubDirs()) {
+    GameConfig config(modsPath, mod);
+    ContentFactory f;
+    if (auto err = f.readData(NameGenerator(dataFreePath.subdirectory("names")), &config))
+      return err;
+    else {
+      std::cout << mod << std::endl;
+      return none;
+    }
+  }
+  return "Failed to load any mod"_s;
+}
+
 int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList ally, CreatureList enemies,
     RandomGen& random) {
   ProgressMeter meter(1);
@@ -730,7 +762,8 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
   for (int i : Range(numTries)) {
     std::cout << "Creating level" << std::endl;
     auto contentFactory = createContentFactory(false);
-    EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies);
+    EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies,
+        contentFactory.externalEnemies);
     auto model = ModelBuilder(&meter, Random, options, sokobanInput,
         &contentFactory, std::move(enemyFactory)).battleModel(levelPath, ally, enemies);
     auto game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory));
@@ -791,7 +824,7 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, 
         return modelBuilder.tutorialModel("Campaign base site");
       default:
         return modelBuilder.campaignBaseModel("Campaign base site", avatarInfo.playerCreature->getTribeId(),
-            avatarInfo.tribeAlignment, setup.campaign.getType() == CampaignType::ENDLESS);
+            avatarInfo.tribeAlignment, setup.externalEnemies);
     }
   }();
   return ret;
@@ -811,7 +844,8 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
   vector<ContentFactory> factories;
   doWithSplash(SplashType::BIG, "Generating map...", numSites,
       [&] (ProgressMeter& meter) {
-        EnemyFactory enemyFactory(Random, contentFactory->creatures.getNameGenerator(), contentFactory->enemies);
+        EnemyFactory enemyFactory(Random, contentFactory->creatures.getNameGenerator(), contentFactory->enemies,
+            contentFactory->externalEnemies);
         ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, contentFactory, std::move(enemyFactory));
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())

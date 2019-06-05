@@ -567,7 +567,6 @@ void Game::retired(const string& title, int numKills, int points) {
   int turns = getGlobalTime().getVisibleInt();
   int dungeonTurns = campaign->getPlayerRole() == PlayerRole::ADVENTURER ? 0 :
       (getPlayerCollective()->getLocalTime() - initialModelUpdate).getVisibleInt();
-  int scoredTurns = campaign->getType() == CampaignType::ENDLESS ? dungeonTurns : turns;
   string text = "You have survived in this land for " + toString(turns) + " turns. You killed " +
       toString(numKills) + " enemies.\n";
   if (dungeonTurns > 0) {
@@ -585,7 +584,7 @@ void Game::retired(const string& title, int numKills, int points) {
         c.playerName = title;
         c.gameResult = "retired";
         c.gameWon = false;
-        c.turns = scoredTurns;
+        c.turns = turns;
         c.campaignType = campaign->getType();
         c.playerRole = campaign->getPlayerRole();
   );
@@ -601,7 +600,6 @@ void Game::gameOver(const Creature* creature, int numKills, const string& enemie
   int turns = getGlobalTime().getVisibleInt();
   int dungeonTurns = campaign->getPlayerRole() == PlayerRole::ADVENTURER ? 0 :
       (getPlayerCollective()->getLocalTime() - initialModelUpdate).getVisibleInt();
-  int scoredTurns = campaign->getType() == CampaignType::ENDLESS ? dungeonTurns : turns;
   string text = "And so dies " + creature->getName().title();
   if (auto reason = creature->getDeathReason()) {
     text += ", " + *reason;
@@ -621,7 +619,7 @@ void Game::gameOver(const Creature* creature, int numKills, const string& enemie
         c.playerName = creature->getName().firstOrBare();
         c.gameResult = creature->getDeathReason().value_or("");
         c.gameWon = false;
-        c.turns = scoredTurns;
+        c.turns = turns;
         c.campaignType = campaign->getType();
         c.playerRole = campaign->getPlayerRole();
   );

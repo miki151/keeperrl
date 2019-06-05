@@ -47,6 +47,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::INFLUENCE_SIZE, 3},
   {OptionId::GENERATE_MANA, 0},
   {OptionId::CURRENT_MOD, 0},
+  {OptionId::ENDLESS_ENEMIES, 0},
 };
 
 const map<OptionId, string> names {
@@ -78,6 +79,7 @@ const map<OptionId, string> names {
   {OptionId::INFLUENCE_SIZE, "Min. tribes in influence zone"},
   {OptionId::GENERATE_MANA, "Generate mana in library"},
   {OptionId::CURRENT_MOD, "Current mod"},
+  {OptionId::ENDLESS_ENEMIES, "Start endless enemy waves"},
 };
 
 const map<OptionId, string> hints {
@@ -95,7 +97,8 @@ const map<OptionId, string> hints {
     "The save file will be used to recover in case of a crash."},
   {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
     "using alt + letter."},
-  {OptionId::GENERATE_MANA, "Your minions will generate mana while working in the library."}
+  {OptionId::GENERATE_MANA, "Your minions will generate mana while working in the library."},
+  {OptionId::ENDLESS_ENEMIES, "Turn on recurrent enemy waves that attack your dungeon."}
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -195,6 +198,8 @@ void Options::setLimits(OptionId id, int minV, int maxV) {
 }
 
 optional<pair<int, int>> Options::getLimits(OptionId id) {
+  if (!choices[id].empty())
+    return make_pair(0, choices[id].size() - 1);
   return limits[id];
 }
 
@@ -248,8 +253,9 @@ string Options::getValueString(OptionId id) {
       else
         return val;
     }
+    case OptionId::ENDLESS_ENEMIES:
     case OptionId::CURRENT_MOD:
-      return choices[id][*value.getValueMaybe<int>() % choices[id].size()];
+      return choices[id][(*value.getValueMaybe<int>() + choices[id].size()) % choices[id].size()];
     case OptionId::FULLSCREEN_RESOLUTION: {
       int val = *value.getValueMaybe<int>();
       if (val >= 0 && val < choices[id].size())
@@ -320,6 +326,10 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
 
 void Options::setChoices(OptionId id, const vector<string>& v) {
   choices[id] = v;
+}
+
+bool Options::hasChoices(OptionId id) const {
+  return !choices[id].empty();
 }
 
 optional<string> Options::getHint(OptionId id) {

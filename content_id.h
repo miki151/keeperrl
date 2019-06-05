@@ -28,9 +28,11 @@ class ContentId {
   private:
   friend PrimaryId<T>;
   InternalId id;
-  static vector<string> allIds;
+  static vector<string>& getAllIds();
   static int getId(const char* text);
 };
+
+void setInitializedStatics();
 
 template <typename T>
 class PrimaryId {

@@ -40,6 +40,7 @@ class MainLoop {
   void battleTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, string enemyId, RandomGen&);
   int battleTest(int numTries, const FilePath& levelPath, CreatureList ally, CreatureList enemyId, RandomGen&);
   void endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, RandomGen&, optional<int> numEnemy);
+  optional<string> verifyMod(const string& path);
 
   static TimeInterval getAutosaveFreq();
 

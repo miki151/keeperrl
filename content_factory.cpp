@@ -11,7 +11,7 @@
 #include "key_verifier.h"
 #include "spell_school_id.h"
 
-SERIALIZE_DEF(ContentFactory, creatures, furniture, resources, zLevels, tilePaths, enemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology)
+SERIALIZE_DEF(ContentFactory, creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology)
 
 static bool isZLevel(const vector<ZLevelInfo>& levels, int depth) {
   for (auto& l : levels)
@@ -193,6 +193,8 @@ optional<string> ContentFactory::readData(NameGenerator nameGenerator, const Gam
   if (auto res = config->readObject(enemiesTmp, GameConfigId::ENEMIES, &keyVerifier))
     return *res;
   enemies = convertKeys(enemiesTmp);
+  if (auto res = config->readObject(externalEnemies, GameConfigId::EXTERNAL_ENEMIES, &keyVerifier))
+    return *res;
   if (auto res = readCreatureFactory(std::move(nameGenerator), config, &keyVerifier))
     return *res;
   if (auto res = readFurnitureFactory(config, &keyVerifier))

@@ -280,7 +280,7 @@ void ModelBuilder::addMapVillainsForEvilKeeper(vector<EnemyInfo>& enemyInfo, Bio
 }
 
 PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment alignment,
-    bool addExternalEnemies) {
+    optional<ExternalEnemiesType> externalEnemiesType) {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
   switch (alignment) {
@@ -305,8 +305,8 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, TribeId keeper
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId("KRAKEN")));
   optional<ExternalEnemies> externalEnemies;
-  if (addExternalEnemies)
-    externalEnemies = ExternalEnemies(random, &contentFactory->creatures, enemyFactory->getExternalEnemies());
+  if (externalEnemiesType)
+    externalEnemies = ExternalEnemies(random, &contentFactory->creatures, enemyFactory->getExternalEnemies(), *externalEnemiesType);
   for (int i : Range(random.get(3)))
     enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
   return tryModel(174, siteName, enemyInfo, keeperTribe, biome, std::move(externalEnemies), true);
@@ -379,7 +379,8 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, cons
   return nullptr;
 }
 
-PModel ModelBuilder::campaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment alignment, bool externalEnemies) {
+PModel ModelBuilder::campaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment alignment,
+    optional<ExternalEnemiesType> externalEnemies) {
   return tryBuilding(20, [=] { return tryCampaignBaseModel(siteName, keeperTribe, alignment, externalEnemies); }, "campaign base");
 }
 
@@ -409,7 +410,7 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types) {
     else if (type == "campaign_base")
       for (auto alignment : ENUM_ALL(TribeAlignment))
         tasks.push_back([=] { measureModelGen(type, numTries,
-            [&] { tryCampaignBaseModel("pok", tribe, alignment, false); }); });
+            [&] { tryCampaignBaseModel("pok", tribe, alignment, none); }); });
     else if (type == "tutorial")
       tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryTutorialModel("pok"); }); });
     else {

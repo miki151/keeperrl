@@ -1412,7 +1412,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   if (auto& enemies = getModel()->getExternalEnemies())
     if (auto nextWave = enemies->getNextWave()) {
       if (!nextWave->enemy.behaviour.contains<HalloweenKids>()) {
-        auto countDown = nextWave->attackTime - getModel()->getLocalTime();
+        auto countDown = nextWave->attackTime - getModel()->getLocalTime() + (*enemies->getStartTime() - 0_local);
         auto index = enemies->getNextWaveIndex();
         auto name = nextWave->enemy.name;
         auto viewId = nextWave->viewId;

@@ -13,43 +13,37 @@
 #include "name_generator.h"
 #include "creature_factory.h"
 #include "tribe_alignment.h"
+#include "external_enemies_type.h"
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
-  switch (campaign.type) {
-    case CampaignType::FREE_PLAY:
-    case CampaignType::QUICK_MAP:
-    case CampaignType::SINGLE_KEEPER:
-      return campaign.sites.getBounds().middle();
-    default:
-      return none;
-  }
+  if (campaign.getPlayerRole() == PlayerRole::ADVENTURER && options->getIntValue(OptionId::ALLIES) == 0)
+    return none;
+  return campaign.sites.getBounds().middle();
 }
 
-static void setCountLimits(Options* options) {
+void CampaignBuilder::setCountLimits() {
 #ifdef RELEASE
   options->setLimits(OptionId::MAIN_VILLAINS, 1, 4);
 #else
   options->setLimits(OptionId::MAIN_VILLAINS, 0, 4);
 #endif
   options->setLimits(OptionId::LESSER_VILLAINS, 0, 6);
-  options->setLimits(OptionId::ALLIES, 0, 4);
+  options->setLimits(OptionId::ALLIES, getPlayerRole() == PlayerRole::ADVENTURER ? 1 : 0, 4);
   options->setLimits(OptionId::INFLUENCE_SIZE, 3, 6);
 }
 
-vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
+vector<OptionId> CampaignBuilder::getCampaignOptions(CampaignType type) const {
   switch (type) {
     case CampaignType::QUICK_MAP:
-    case CampaignType::ENDLESS:
       return {OptionId::LESSER_VILLAINS, OptionId::ALLIES};
     case CampaignType::FREE_PLAY:
-      return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES};
+      if (getPlayerRole() == PlayerRole::ADVENTURER)
+        return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES};
+      else
+        return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES, OptionId::ENDLESS_ENEMIES};
     case CampaignType::SINGLE_KEEPER:
       return {};
   }
-}
-
-vector<OptionId> CampaignBuilder::getPrimaryOptions() const {
-  return {};
 }
 
 static vector<string> getCampaignTypeDescription(CampaignType type) {
@@ -63,12 +57,6 @@ static vector<string> getCampaignTypeDescription(CampaignType type) {
         "everyone on one big map",
         "retiring not possible"
       };
-    case CampaignType::ENDLESS:
-      return {
-        "conquest not mandatory",
-        "recurring enemy waves",
-        "survive as long as possible"
-      };
     default:
       return {};
   }
@@ -80,7 +68,6 @@ vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
       return {
         CampaignType::FREE_PLAY,
         CampaignType::SINGLE_KEEPER,
-        CampaignType::ENDLESS,
 #ifndef RELEASE
         CampaignType::QUICK_MAP,
 #endif
@@ -89,20 +76,6 @@ vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
       return {
         CampaignType::FREE_PLAY,
       };
-  }
-}
-
-optional<string> CampaignBuilder::getSiteChoiceTitle(CampaignType type) const {
-  switch (type) {
-    case CampaignType::FREE_PLAY:
-    case CampaignType::ENDLESS:
-      switch (getPlayerRole()) {
-        case PlayerRole::KEEPER: return "Choose the location of your base:"_s;
-        case PlayerRole::ADVENTURER: return "Choose a location to start your adventure:"_s;
-      }
-      break;
-    default:
-      return none;
   }
 }
 
@@ -198,13 +171,6 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
         10000
       };
     }
-    case CampaignType::ENDLESS:
-      return {
-        0,
-        options->getIntValue(OptionId::LESSER_VILLAINS),
-        options->getIntValue(OptionId::ALLIES),
-        0
-      };
     case CampaignType::QUICK_MAP:
     case CampaignType::SINGLE_KEEPER:
       return {0, 0, 0, 0};
@@ -262,7 +228,7 @@ VillainPlacement CampaignBuilder::getVillainPlacement(const Campaign& campaign, 
           break;
         case VillainType::ALLY:
           if (campaign.getPlayerRole() == PlayerRole::ADVENTURER)
-            ret.firstLocation = *considerStaticPlayerPos(campaign);
+            ret.firstLocation = considerStaticPlayerPos(campaign);
           break;
         default:
           break;
@@ -325,6 +291,18 @@ vector<string> CampaignBuilder::getIntroMessages(CampaignType type) const {
   return concat(gameIntros.first, getReferenceMaybe(gameIntros.second, type).value_or(vector<string>()));
 }
 
+static optional<ExternalEnemiesType> getExternalEnemies(Options* options) {
+  auto v = options->getIntValue(OptionId::ENDLESS_ENEMIES);
+  if (v == 0)
+    return none;
+  if (v == 1)
+    return ExternalEnemiesType::FROM_START;
+  if (v == 2)
+    return ExternalEnemiesType::AFTER_WINNING;
+  FATAL << "Bad endless enemies value " << v;
+  fail();
+}
+
 optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<RetiredGames>(CampaignType)> genRetired,
     CampaignType type, string worldName) {
   Vec2 size(17, 9);
@@ -332,9 +310,10 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
   auto retired = genRetired(type);
   View::CampaignMenuState menuState { true, false};
-  setCountLimits(options);
   const auto playerRole = getPlayerRole();
+  options->setChoices(OptionId::ENDLESS_ENEMIES, {"none", "from the start", "after winning"});
   while (1) {
+    setCountLimits();
     Campaign campaign(terrain, type, playerRole, worldName);
     if (auto pos = considerStaticPlayerPos(campaign)) {
       campaign.clearSite(*pos);
@@ -350,9 +329,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
               campaign,
               (retired && type == CampaignType::FREE_PLAY) ? optional<RetiredGames&>(*retired) : none,
               avatarInfo.playerCreature.get(),
-              getPrimaryOptions(),
-              getSecondaryOptions(type),
-              getSiteChoiceTitle(type),
+              getCampaignOptions(type),
               getIntroText(),
               getAvailableTypes().transform([](CampaignType t) -> View::CampaignOptions::CampaignTypeInfo {
                   return {t, getCampaignTypeDescription(t)};}),
@@ -376,6 +353,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
             case OptionId::PLAYER_NAME:
             case OptionId::GENERATE_MANA:
             case OptionId::INFLUENCE_SIZE:
+            case OptionId::ENDLESS_ENEMIES:
               break;
             default:
               updateMap = true;
@@ -384,10 +362,6 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
           break;
         case CampaignActionId::CANCEL:
           return none;
-        case CampaignActionId::CHOOSE_SITE:
-          if (!considerStaticPlayerPos(campaign))
-            setPlayerPos(campaign, action.get<Vec2>(), avatarInfo.playerCreature->getMaxViewIdUpgrade());
-          break;
         case CampaignActionId::CONFIRM:
           if (!retired || retired->getNumActive() > 0 || playerRole != PlayerRole::KEEPER ||
               retired->getAllGames().empty() ||
@@ -396,7 +370,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
             string gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
             string gameDisplayName = name + " of " + campaign.worldName;
             return CampaignSetup{campaign, gameIdentifier, gameDisplayName,
-                getIntroMessages(type)};
+                getIntroMessages(type), getExternalEnemies(options)};
           }
       }
       if (updateMap)
@@ -407,5 +381,5 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
 
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
   Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "");
-  return CampaignSetup{ret, "", "", {}};
+  return CampaignSetup{ret, "", "", {}, none};
 }

@@ -2,6 +2,8 @@
 #include "util.h"
 #include "view_id.h"
 
+ViewId::ViewId(ContentId::InternalId id) : ContentId(id) {}
+
 ViewId::ViewId(const char* s, Color color) : ContentId(s), color(color) {}
 
 bool ViewId::operator == (const ViewId& o) const {
