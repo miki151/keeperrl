@@ -6,8 +6,4 @@ KeeperRL now allows you to dig down and build your dungeon vertically across mul
 
 If this is your first time playing KeeperRL, remember to start with the tutorial!"}
 {
-  ENDLESS
-  {"Welcome to the endless mode! Your task here is to survive as long as possible, while defending your dungeon from incoming enemy waves. The enemies don't come from any specific place and will just appear at the edge of the map. You will get experience points for defeating each wave. Note that there are also traditional enemy villages scattered around and they may also attack you.
-
-The endless mode is a completely new feature and we are very interested in your feedback on how it can be developed further. Please drop by on the forums at keeperrl.com or on Steam and let us know!"}
 }
