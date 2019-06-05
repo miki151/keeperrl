@@ -25,6 +25,8 @@
 
 #include "unzip.h"
 
+#undef WIN32
+
 #define CASESENSITIVITY (0)
 #define WRITEBUFFERSIZE (8192)
 #define MAXFILENAME (256)
@@ -94,7 +96,11 @@ void change_file_date(
 optional<string> mymkdir(
     const char* dirname)
 {
+#ifndef WINDOWS
     if (mkdir (dirname,0775) != 0)
+#else
+    if (mkdir (dirname) != 0)
+#endif
       return string(strerror(errno));
     else
       return none;
