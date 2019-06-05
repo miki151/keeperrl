@@ -295,6 +295,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   FatalLog.addOutput(DebugOutput::crash());
   FatalLog.addOutput(DebugOutput::toStream(std::cerr));
   UserErrorLog.addOutput(DebugOutput::exitProgram());
+  UserErrorLog.addOutput(DebugOutput::toStream(std::cerr));
   UserInfoLog.addOutput(DebugOutput::toStream(std::cerr));
 #ifndef RELEASE
   ogzstream compressedLog("log.gz");
@@ -341,20 +342,11 @@ static int keeperMain(po::parser& commandLineFlags) {
   INFO << "Data path: " << dataPath;
   INFO << "User path: " << userPath;
   Clock clock;
-#ifdef RELEASE
-  AppConfig appConfig(dataPath.file("appconfig.txt"));
-#else
-  AppConfig appConfig(dataPath.file("appconfig-dev.txt"));
-#endif
-  string uploadUrl = appConfig.get<string>("upload_url");
   userPath.createIfDoesntExist();
   auto settingsPath = userPath.file("options.txt");
   if (commandLineFlags["restore_settings"].was_set())
     remove(settingsPath.getPath());
   Options options(settingsPath);
-  auto modList = freeDataPath.subdirectory(gameConfigSubdir).getSubDirs();
-  USER_CHECK(!modList.empty()) << "No game config data found, please make sure all game data is in place";
-  options.setChoices(OptionId::CURRENT_MOD, modList);
   int seed = commandLineFlags["seed"].was_set() ? commandLineFlags["seed"].get().i32 : int(time(0));
   Random.init(seed);
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
@@ -368,11 +360,8 @@ static int keeperMain(po::parser& commandLineFlags) {
       getMaxVolume());
   options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
   jukebox.setCurrentVolume(options.getIntValue(OptionId::MUSIC));
-  FileSharing fileSharing(uploadUrl, options, installId);
-  Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
-  SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
   if (commandLineFlags["verify_mod"].was_set()) {
-    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, nullptr,
+    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, &options, &jukebox, nullptr, nullptr,
         useSingleThread, 0);
     if (auto err = loop.verifyMod(commandLineFlags["verify_mod"].get().string)) {
       std::cout << *err << std::endl;
@@ -380,6 +369,18 @@ static int keeperMain(po::parser& commandLineFlags) {
     } else
       return 0;
   }
+  SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
+  auto modList = freeDataPath.subdirectory(gameConfigSubdir).getSubDirs();
+  USER_CHECK(!modList.empty()) << "No game config data found, please make sure all game data is in place";
+  options.setChoices(OptionId::CURRENT_MOD, modList);
+#ifdef RELEASE
+  AppConfig appConfig(dataPath.file("appconfig.txt"));
+#else
+  AppConfig appConfig(dataPath.file("appconfig-dev.txt"));
+#endif
+  string uploadUrl = appConfig.get<string>("upload_url");
+  FileSharing fileSharing(uploadUrl, options, installId);
+  Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   if (commandLineFlags["worldgen_test"].was_set()) {
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, nullptr,
         useSingleThread, 0);
