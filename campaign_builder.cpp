@@ -35,7 +35,6 @@ void CampaignBuilder::setCountLimits() {
 vector<OptionId> CampaignBuilder::getCampaignOptions(CampaignType type) const {
   switch (type) {
     case CampaignType::QUICK_MAP:
-    case CampaignType::ENDLESS:
       return {OptionId::LESSER_VILLAINS, OptionId::ALLIES};
     case CampaignType::FREE_PLAY:
       if (getPlayerRole() == PlayerRole::ADVENTURER)
@@ -58,12 +57,6 @@ static vector<string> getCampaignTypeDescription(CampaignType type) {
         "everyone on one big map",
         "retiring not possible"
       };
-    case CampaignType::ENDLESS:
-      return {
-        "conquest not mandatory",
-        "recurring enemy waves",
-        "survive as long as possible"
-      };
     default:
       return {};
   }
@@ -75,7 +68,6 @@ vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
       return {
         CampaignType::FREE_PLAY,
         CampaignType::SINGLE_KEEPER,
-        CampaignType::ENDLESS,
 #ifndef RELEASE
         CampaignType::QUICK_MAP,
 #endif
@@ -179,13 +171,6 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
         10000
       };
     }
-    case CampaignType::ENDLESS:
-      return {
-        0,
-        options->getIntValue(OptionId::LESSER_VILLAINS),
-        options->getIntValue(OptionId::ALLIES),
-        0
-      };
     case CampaignType::QUICK_MAP:
     case CampaignType::SINGLE_KEEPER:
       return {0, 0, 0, 0};
