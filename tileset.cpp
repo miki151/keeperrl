@@ -33,6 +33,7 @@ const vector<string> TileSet::getSpriteMods() const {
 }
 
 const vector<TileCoord>& TileSet::byName(const string& s) {
+  USER_CHECK(tileCoords.count(s)) << "Couldn't load sprite: " << s;
   return tileCoords.at(s);
 }
 
