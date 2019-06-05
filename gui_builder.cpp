@@ -3324,15 +3324,17 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
 
 }
 
-SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease) {
+SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight) {
+  string plus = leftRight ? "<"  : "+";
+  string minus = leftRight ? ">"  : "-";
   return gui.margins(gui.getListBuilder()
       .addElem(canIncrease
-          ? gui.buttonLabel("+", [callback] { callback(1); }, false)
-          : gui.buttonLabelInactive("+", false), 10)
+          ? gui.buttonLabel(plus, [callback] { callback(1); }, false)
+          : gui.buttonLabelInactive(plus, false), 10)
       .addSpace(12)
       .addElem(canDecrease
-          ? gui.buttonLabel("-", [callback] { callback(-1); }, false)
-          : gui.buttonLabelInactive("-", false), 10)
+          ? gui.buttonLabel(minus, [callback] { callback(-1); }, false)
+          : gui.buttonLabelInactive(minus, false), 10)
       .buildHorizontalList(), 0, 2, 0, 2);
 }
 
@@ -3361,8 +3363,8 @@ SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
       int value = options->getIntValue(id);
       ret = gui.getListBuilder()
           .addElem(gui.labelFun([=]{ return name + ": " + getValue(); }), renderer.getTextLength(name) + 20)
-          .addBackElemAuto(drawPlusMinus([=] (int v) {
-            options->setValue(id, value + v); onChanged();}, value < limits->second, value > limits->first))
+          .addBackElemAuto(drawPlusMinus([=] (int v) { options->setValue(id, value + v); onChanged();},
+              value < limits->second, value > limits->first, options->hasChoices(id)))
           .buildHorizontalList();
       break;
     }

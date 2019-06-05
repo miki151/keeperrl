@@ -198,6 +198,8 @@ class Range {
   Range intersection(Range) const;
 
   bool operator == (const Range&) const;
+  Range operator + (int) const;
+  Range operator - (int) const;
 
   class Iter {
     public:
@@ -222,6 +224,7 @@ class Range {
   HASH_ALL(start, finish, increment)
 
   private:
+  Range(int start, int end, int increment);
   int SERIAL(start) = 0; // HASH(start)
   int SERIAL(finish) = 0; // HASH(finish)
   int SERIAL(increment) = 1; // HASH(increment)

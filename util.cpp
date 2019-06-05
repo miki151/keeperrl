@@ -724,6 +724,14 @@ bool Range::operator == (const Range& r) const {
   return start == r.start && finish == r.finish && increment == r.increment;
 }
 
+Range Range::operator + (int x) const {
+  return Range(start + x, finish + x, increment);
+}
+
+Range Range::operator - (int x) const {
+  return Range(start - x, finish - x, increment);
+}
+
 Range::Iter Range::begin() {
   if ((increment > 0 && start < finish) || (increment < 0 && start > finish))
     return Iter(start, start, finish, increment);
@@ -734,6 +742,8 @@ Range::Iter Range::begin() {
 Range::Iter Range::end() {
   return Iter(finish, start, finish, increment);
 }
+
+Range::Range(int start, int end, int increment) : start(start), finish(end), increment(increment) {}
 
 Range::Iter::Iter(int i, int a, int b, int inc) : ind(i), /*min(a), max(b), */increment(inc) {}
 

@@ -184,7 +184,7 @@ class GuiBuilder {
   SGuiElem getVillageActionButton(UniqueEntity<Collective>::Id, VillageInfo::Village::ActionInfo);
   SGuiElem drawHighscorePage(const HighscoreList&, ScrollPosition* scrollPos);
   SGuiElem drawTeams(const CollectiveInfo&, const optional<TutorialInfo>&);
-  SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease);
+  SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight);
   SGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged, optional<string> defaultString);
   GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, optional<int> maxActive);
   SGuiElem drawImmigrantInfo(const ImmigrantDataInfo&);

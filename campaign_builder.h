@@ -45,4 +45,5 @@ struct CampaignSetup {
   string gameIdentifier;
   string gameDisplayName;
   vector<string> introMessages;
+  optional<ExternalEnemiesType> externalEnemies;
 };

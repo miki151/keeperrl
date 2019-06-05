@@ -40,7 +40,7 @@
 #include "content_factory.h"
 #include "scroll_position.h"
 #include "miniunz.h"
-#include <sys/stat.h>
+#include "external_enemies_type.h"
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, TileSet* tileSet, bool singleThread, int sv)
@@ -717,7 +717,7 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
   auto contentFactory = createContentFactory(false);
   ExternalEnemies enemies(random, &contentFactory.creatures, EnemyFactory(random, contentFactory.creatures.getNameGenerator(),
       contentFactory.enemies, contentFactory.externalEnemies)
-      .getExternalEnemies());
+      .getExternalEnemies(), ExternalEnemiesType::FROM_START);
   for (int turn : Range(100000))
     if (auto wave = enemies.popNextWave(LocalTime(turn))) {
       std::cerr << "Turn " << turn << ": " << wave->enemy.name << "\n";
@@ -824,7 +824,7 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, 
         return modelBuilder.tutorialModel("Campaign base site");
       default:
         return modelBuilder.campaignBaseModel("Campaign base site", avatarInfo.playerCreature->getTribeId(),
-            avatarInfo.tribeAlignment, setup.campaign.getType() == CampaignType::ENDLESS);
+            avatarInfo.tribeAlignment, setup.externalEnemies);
     }
   }();
   return ret;

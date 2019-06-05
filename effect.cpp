@@ -724,7 +724,7 @@ void Effect::RegrowBodyPart::applyToCreature(Creature* c, Creature* attacker) co
 }
 
 string Effect::RegrowBodyPart::getName() const {
-  return "regrow body lost parts";
+  return "regrow lost body parts";
 }
 
 string Effect::RegrowBodyPart::getDescription() const {

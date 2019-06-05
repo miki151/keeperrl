@@ -49,7 +49,8 @@ RICH_ENUM(OptionId,
   ALLIES,
   INFLUENCE_SIZE,
   GENERATE_MANA,
-  CURRENT_MOD
+  CURRENT_MOD,
+  ENDLESS_ENEMIES
 );
 
 enum class OptionSet {
@@ -81,6 +82,7 @@ class Options {
   void addTrigger(OptionId, Trigger trigger);
   void setDefaultString(OptionId, const string&);
   void setChoices(OptionId, const vector<string>&);
+  bool hasChoices(OptionId) const;
   optional<string> getHint(OptionId);
 
   private:

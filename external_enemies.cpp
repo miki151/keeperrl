@@ -16,14 +16,18 @@
 #include "view_object.h"
 #include "territory.h"
 #include "content_factory.h"
+#include "external_enemies_type.h"
 
 SERIALIZE_DEF(ExternalEnemies, currentWaves, waves, nextWave)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
 
-ExternalEnemies::ExternalEnemies(RandomGen& random, CreatureFactory* factory, vector<ExternalEnemy> enemies) {
+ExternalEnemies::ExternalEnemies(RandomGen& random, CreatureFactory* factory, vector<ExternalEnemy> enemies, ExternalEnemiesType type) {
   constexpr int firstAttackDelay = 1800;
   constexpr int attackInterval = 1200;
   constexpr int attackVariation = 450;
+  constexpr int afterWinTurn = 15000;
+  if (type == ExternalEnemiesType::FROM_START)
+    startTime = 0_local;
   for (int i : Range(500)) {
     int attackTime = firstAttackDelay + max(0, i * attackInterval + random.get(-attackVariation, attackVariation + 1));
     vector<int> indexes(enemies.size());
@@ -31,7 +35,10 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, CreatureFactory* factory, ve
       indexes[i] = i;
     for (int index : random.permutation(indexes)) {
       auto& enemy = enemies[index];
-      if (enemy.attackTime.contains(attackTime) && enemy.maxOccurences > 0) {
+      auto attackRange = enemy.attackTime;
+      if (type == ExternalEnemiesType::AFTER_WINNING)
+        attackRange = attackRange - afterWinTurn;
+      if (attackRange.contains(attackTime) && enemy.maxOccurences > 0) {
         --enemy.maxOccurences;
         waves.push_back(EnemyEvent{
             enemy,
@@ -90,6 +97,11 @@ void ExternalEnemies::updateCurrentWaves(WCollective target) {
 }
 
 void ExternalEnemies::update(WLevel level, LocalTime localTime) {
+  if (!startTime && level->getGame()->gameWon())
+    startTime = localTime;
+  if (!startTime)
+    return;
+  localTime = 0_local + (localTime - *startTime);
   WCollective target = level->getModel()->getGame()->getPlayerCollective();
   CHECK(!!target);
   updateCurrentWaves(target);
@@ -114,8 +126,12 @@ void ExternalEnemies::update(WLevel level, LocalTime localTime) {
   }
 }
 
+optional<LocalTime> ExternalEnemies::getStartTime() const {
+  return startTime;
+}
+
 optional<const EnemyEvent&> ExternalEnemies::getNextWave() const {
-  if (nextWave < waves.size())
+  if (!!startTime && nextWave < waves.size())
     return waves[nextWave];
   else
     return none;
