@@ -488,6 +488,7 @@ void MainLoop::showMods() {
         lines.emplace_back("Download \"" + elem.name + "\"", ListElem::NORMAL);
         lines.emplace_back("Author: " + elem.author, ListElem::HELP_TEXT);
         lines.emplace_back(elem.description, ListElem::HELP_TEXT);
+        lines.emplace_back("Number of games played: " + toString(elem.numGames), ListElem::HELP_TEXT);
       }
     auto choice = view->chooseFromList("", lines, currentIndex, MenuType::NORMAL, &scrollPos);
     if (!choice)

@@ -322,14 +322,14 @@ bool FileSharing::uploadBoardMessage(const string& gameId, int hash, const strin
       { "boardId", toString(hash) },
       { "author", author },
       { "text", text }
-                         }, false);
+  }, false);
 }
 
 static optional<FileSharing::OnlineModInfo> parseModInfo(const vector<string>& fields) {
-  if (fields.size() >= 3)
-    return FileSharing::OnlineModInfo{unescapeEverything(fields[0]), unescapeEverything(fields[1]), unescapeEverything(fields[2])};
-  else
-    return none;
+  if (fields.size() >= 4)
+    if (auto numGames = fromStringSafe<int>(unescapeEverything(fields[3])))
+      return FileSharing::OnlineModInfo{unescapeEverything(fields[0]), unescapeEverything(fields[1]), unescapeEverything(fields[2]), *numGames};
+  return none;
 }
 
 optional<vector<FileSharing::OnlineModInfo>> FileSharing::getOnlineMods(int modVersion) {
