@@ -1243,6 +1243,8 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         },
         [&](const CostInfo& cost) {
           costObj = getCostObj(cost);
+          if (!costObj && cost.id == CollectiveResourceId::DEMON_PIETY)
+            requirements.push_back("Requires " + collective->getConfig().getResourceInfo(cost.id).name);
         },
         [&](const ExponentialCost& cost) {
           auto& resourceInfo = CollectiveConfig::getResourceInfo(cost.base.id);

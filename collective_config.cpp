@@ -214,9 +214,9 @@ const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
   static EnumMap<CollectiveResourceId, ResourceInfo> resourceInfo([](CollectiveResourceId id)->ResourceInfo {
     switch (id) {
       case CollectiveResourceId::PRISONER_HEAD:
-        return { none, none, ItemType::GoldPiece{}, "", ViewId("impaled_head"), true, none};
+        return { none, none, ItemType::GoldPiece{}, "prisoner heads", ViewId("impaled_head"), true, none};
       case CollectiveResourceId::DEMON_PIETY:
-        return { none, none, ItemType::GoldPiece{}, "", ViewId("impaled_head"), false, none};
+        return { none, none, ItemType::GoldPiece{}, "demon rituals", ViewId("impaled_head"), true, none};
       case CollectiveResourceId::GOLD:
         return {StorageId::GOLD, ItemIndex::GOLD, ItemType::GoldPiece{}, "gold", ViewId("gold"), false, none};
       case CollectiveResourceId::WOOD:
