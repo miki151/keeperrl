@@ -25,6 +25,7 @@
 bool MinionActivityMap::canChooseRandomly(const Creature* c, MinionActivity t) const {
   PROFILE;
   switch (t) {
+    case MinionActivity::RITUAL:
     case MinionActivity::BE_EXECUTED:
     case MinionActivity::BE_WHIPPED:
     case MinionActivity::BE_TORTURED:
