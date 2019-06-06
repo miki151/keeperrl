@@ -3303,7 +3303,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
         gui.labelMultiLineWidth(avatar.description, legendLineHeight, 530, Renderer::textSize, Color::LIGHT_GRAY),
         [avatarIndex, chosenAvatar] { return avatarIndex == *chosenAvatar; }));
   }
-  lines.addBackElemAuto(gui.stack(descriptions));
+  lines.addBackElem(gui.stack(descriptions), 2 * legendLineHeight);
   lines.addBackElem(gui.centerHoriz(gui.buttonLabel("Start new game",
       [&queue, chosenAvatar, gender, &avatars] {
         queue.push(View::AvatarChoice{*chosenAvatar, getChosenGender(gender, chosenAvatar, avatars)});
