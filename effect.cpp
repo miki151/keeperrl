@@ -64,7 +64,7 @@ vector<Creature*> Effect::summonCreatures(Position pos, int radius, vector<PCrea
 void Effect::emitPoisonGas(Position pos, double amount, bool msg) {
   PROFILE;
   for (Position v : pos.neighbors8())
-    pos.addPoisonGas(amount / 2);
+    v.addPoisonGas(amount / 2);
   pos.addPoisonGas(amount);
   if (msg) {
     pos.globalMessage("A cloud of gas is released");
