@@ -214,18 +214,18 @@ optional<string> do_extract_currentfile(
             fout=fopen(filename.data(),"wb");
 
             /* some zipfile don't contain directory alone before file */
-            /*if ((fout==NULL) && (filename_withoutpath!=(char*)filename_inzip))
+            if ((fout==NULL) && (filename_withoutpath!=(char*)filename_inzip))
             {
                 char c=*(filename_withoutpath-1);
                 *(filename_withoutpath-1)='\0';
-                makedir(write_filename);
+                makedir((targetDir + "/" + write_filename).data());
                 *(filename_withoutpath-1)=c;
-                fout=fopen(write_filename,"wb");
-            }*/
+                fout=fopen(filename.data(),"wb");
+            }
 
             if (fout==NULL)
             {
-                return "error creating file "_s + filename;
+                return "error creating file "_s + filename + ": " + string(strerror(errno));
             }
         }
 
