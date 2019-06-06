@@ -47,7 +47,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::INFLUENCE_SIZE, 3},
   {OptionId::GENERATE_MANA, 0},
   {OptionId::CURRENT_MOD, 0},
-  {OptionId::ENDLESS_ENEMIES, 0},
+  {OptionId::ENDLESS_ENEMIES, 2},
 };
 
 const map<OptionId, string> names {
