@@ -528,10 +528,16 @@ void Furniture::serialize(PrettyInputArchive& ar, unsigned int v) {
   optional_no_none<vector<pair<int, DestroyAction::Type>>> strength2;
   ar >> NAMED(strength2);
   optional_no_none<Dir> attachmentDir;
+  if (viewObject)
+    if (auto dir = viewObject->getAttachmentDir())
+      attachmentDir = *dir;
   ar >> NAMED(attachmentDir);
   PrettyFlag blockingEnemies;
   ar >> OPTION(blockingEnemies);
   optional_no_none<double> waterDepth;
+  if (viewObject)
+    if (auto depth = viewObject->getAttribute(ViewObjectAttribute::WATER_DEPTH))
+      waterDepth = *depth;
   ar >> NAMED(waterDepth);
   serializeImpl(ar, v);
   ar >> endInput();
