@@ -30,6 +30,7 @@ static string getString(Highscores::Score score) {
 
 int main(int argc, char* argv[]) {
   po::parser flags;
+  setInitializedStatics();
   flags["help"].description("Print help");
   flags["input"].type(po::string).description("Path a KeeperRL save file");
   flags["display_name"].description("Print display name of the save file");
