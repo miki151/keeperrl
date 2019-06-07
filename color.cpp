@@ -190,5 +190,22 @@ void Color::serialize(PrettyInputArchive& ar, unsigned int) {
 
 
 #include "text_serialization.h"
-template void Color::serialize(TextInputArchive&, unsigned);
-template void Color::serialize(TextOutputArchive&, unsigned);
+template<> void Color::serialize(TextInputArchive& ar1, unsigned) {
+  int r;
+  int g;
+  int b;
+  int a;
+  ar1 >> r >> g >> b >> a;
+  this->r = r;
+  this->g = g;
+  this->b = b;
+  this->a = a;
+}
+
+template<> void Color::serialize(TextOutputArchive& ar1, unsigned) {
+  int r = this->r;
+  int g = this->g;
+  int b = this->b;
+  int a = this->a;
+  ar1 << r << g << b << a;
+}
