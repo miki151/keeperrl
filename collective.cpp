@@ -1016,7 +1016,8 @@ void Collective::handleTrapPlacementAndProduction() {
   for (auto& elem : missingTraps)
     scheduleAutoProduction([&elem](const Item* it) {
           if (auto& effect = it->getEffect())
-            return effect->getValueMaybe<Effect::PlaceFurniture>()->furniture == elem.first;
+            if (auto furnitureEffect = effect->getValueMaybe<Effect::PlaceFurniture>())
+              return furnitureEffect->furniture == elem.first;
           return false;
         }, elem.second);
 }
@@ -1029,9 +1030,6 @@ void Collective::scheduleAutoProduction(function<bool(const Item*)> itemPredicat
           count -= item.number * item.item.batchSize;
   if (count > 0)
     for (auto workshopType : ENUM_ALL(WorkshopType)) {
-      //Don't use alchemy to get resources automatically as it is expensive
-      if (workshopType == WorkshopType::LABORATORY)
-        continue;
       auto& options = workshops->get(workshopType).getOptions();
       for (int index : All(options))
         if (itemPredicate(options[index].type.get().get())) {
