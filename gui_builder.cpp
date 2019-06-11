@@ -3396,36 +3396,28 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
     if (retired.isActive(i) == displayActive) {
       auto header = gui.getListBuilder();
       bool maxedOut = !displayActive && retired.getNumActive() >= *maxActive;
-      if (retired.isActive(i))
-        header.addElem(gui.stack(
-              gui.labelUnicodeHighlight(u8"✘", Color::RED),
-              gui.button([i, reloadCampaign, &retired] { retired.setActive(i, false); reloadCampaign();})), 15);
       header.addElem(gui.label(allGames[i].gameInfo.name,
           maxedOut ? Color::LIGHT_GRAY : Color::WHITE), 170);
       for (auto& minion : allGames[i].gameInfo.minions)
         header.addElem(drawMinionAndLevel(minion.viewId, minion.level, 1), 25);
       header.addSpace(20);
+      if (retired.isActive(i))
+        header.addElemAuto(gui.buttonLabel("Remove", [i, reloadCampaign, &retired] { retired.setActive(i, false); reloadCampaign();}));
+      else if (!maxedOut)
+        header.addElemAuto(gui.buttonLabel("Add", [i, reloadCampaign, &retired] { retired.setActive(i, true); reloadCampaign();}));
+      lines.addElem(header.buildHorizontalList());
       if (allGames[i].numTotal > 0)
-        header.addElemAuto(gui.stack(
+        lines.addElem(gui.stack(
           gui.tooltip({"Number of times this dungeon has been conquered over how many times it has been loaded."}),
-          gui.label("Conquer rate: " + toString(allGames[i].numWon) + "/" + toString(allGames[i].numTotal))));
+          gui.label("Conquer rate: " + toString(allGames[i].numWon) + "/" + toString(allGames[i].numTotal),
+              Renderer::smallTextSize, gui.inactiveText)), legendLineHeight * 2 / 3);
       if (!allGames[i].gameInfo.spriteMods.empty()) {
-        header.addElemAuto(gui.stack(
+        lines.addElem(gui.stack(
             gui.tooltip({"These mods may be required to successfully load this dungeon."}),
-            gui.label("Requires mods:" + combine(allGames[i].gameInfo.spriteMods, true)))
-        );
+            gui.label("Requires mods:" + combine(allGames[i].gameInfo.spriteMods, true), Renderer::smallTextSize, gui.inactiveText)),
+            legendLineHeight * 2 / 3);
       }
-      SGuiElem line = header.buildHorizontalList();
-      if (allGames[i].numTotal > 0 && displayActive)
-        line = gui.stack(std::move(line), gui.tooltip({
-              "Conquer rate: " + toString(allGames[i].numWon) + "/" + toString(allGames[i].numTotal)}));
-      if (!retired.isActive(i) && !maxedOut) {
-        line = gui.stack(
-            gui.uiHighlightMouseOver(Color::GREEN),
-            std::move(line),
-            gui.button([i, reloadCampaign, &retired] { retired.setActive(i, true); reloadCampaign();}));
-      }
-      lines.addElem(std::move(line));
+      lines.addSpace(legendLineHeight / 3);
     }
   }
   return lines;
@@ -3491,17 +3483,16 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
         *retiredGames, [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, none);
     int addedHeight = addedDungeons.getSize();
     if (!addedDungeons.isEmpty()) {
-      addedHeight += legendLineHeight;
-      retiredMenuLines.addElem(gui.label("Retired villains added:", Color::YELLOW));
+      retiredMenuLines.addElem(gui.label("Added dungeons:", Color::YELLOW));
       retiredMenuLines.addElem(addedDungeons.buildVerticalList(), addedHeight);
     }
     GuiFactory::ListBuilder retiredList = drawRetiredGames(*retiredGames,
         [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, options->getIntValue(OptionId::MAIN_VILLAINS));
     if (retiredList.isEmpty())
-      retiredList.addElem(gui.label("No more retired dungeons found :("));
+      retiredList.addElem(gui.label("No retired dungeons found :("));
     else
-      retiredMenuLines.addElem(gui.label("Available villains:", Color::YELLOW));
-    int listHeight = min(360 - addedHeight, retiredList.getSize() + 30);
+      retiredMenuLines.addElem(gui.label("Local dungeons:", Color::YELLOW));
+    int listHeight = min(600, retiredList.getSize() + 5);
     retiredMenuLines.addElem(gui.scrollable(gui.topMargin(3, retiredList.buildVerticalList())), listHeight);
     lines.addElem(gui.leftMargin(optionMargin,
         gui.buttonLabel("Add retired dungeons", [&menuState] { menuState.retiredWindow = !menuState.retiredWindow;})));
@@ -3550,7 +3541,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
       interior.push_back(
             gui.conditionalStopKeys(gui.translate(gui.miniWindow2(gui.margins(builder.buildVerticalList(), 10),
                 [&] { visible = false;}), Vec2(30, 70),
-                    Vec2(650, 50 + size)),
+                    Vec2(444, 50 + size)),
             [&visible] { return visible;}));
   };
   addOverlay(std::move(retiredMenuLines), menuState.retiredWindow);
