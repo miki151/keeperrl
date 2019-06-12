@@ -199,8 +199,7 @@ vector<PItem> Square::removeItems(Position pos, vector<Item*> it) {
 }
 
 void Square::setDirty(Position pos) {
-  pos.getLevel()->setNeedsMemoryUpdate(pos.getCoord(), true);
-  pos.getLevel()->setNeedsRenderUpdate(pos.getCoord(), true);
+  pos.setNeedsRenderAndMemoryUpdate(true);
   lastViewer.reset();
 }
 

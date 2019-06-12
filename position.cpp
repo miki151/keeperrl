@@ -549,7 +549,7 @@ void Position::addFurnitureImpl(PFurniture f) const {
   updateBuildingSupport();
   level->addLightSource(coord, furniture->getLightEmission());
   updateSupportViewId(furniture);
-  setNeedsRenderUpdate(true);
+  setNeedsRenderAndMemoryUpdate(true);
 }
 
 void Position::addCreatureLight(bool darkness) {
@@ -600,7 +600,7 @@ void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
   updateBuildingSupport();
   if (replacePtr)
     level->addLightSource(coord, replacePtr->getLightEmission());
-  setNeedsRenderUpdate(true);
+  setNeedsRenderAndMemoryUpdate(true);
 }
 
 bool Position::canConstruct(FurnitureType type) const {
@@ -719,6 +719,14 @@ void Position::setNeedsRenderUpdate(bool s) const {
   PROFILE;
   if (isValid())
     level->setNeedsRenderUpdate(getCoord(), s);
+}
+
+void Position::setNeedsRenderAndMemoryUpdate(bool s) const {
+  PROFILE;
+  if (isValid()) {
+    level->setNeedsRenderUpdate(getCoord(), s);
+    level->setNeedsMemoryUpdate(getCoord(), s);
+  }
 }
 
 ViewId Position::getTopViewId() const {

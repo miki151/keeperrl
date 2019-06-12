@@ -1168,7 +1168,7 @@ const CollectiveConfig& Collective::getConfig() const {
 
 bool Collective::addKnownTile(Position pos) {
   if (!knownTiles->isKnown(pos)) {
-    pos.setNeedsRenderUpdate(true);
+    pos.setNeedsRenderAndMemoryUpdate(true);
     knownTiles->addTile(pos, getModel());
     if (WTask task = taskMap->getMarked(pos))
       if (task->isBogus())

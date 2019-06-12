@@ -28,14 +28,14 @@ void Zones::setZone(Position pos, ZoneId id) {
   PROFILE;
   zones.getOrInit(pos).insert(id);
   positions[id].insert(pos);
-  pos.setNeedsRenderUpdate(true);
+  pos.setNeedsRenderAndMemoryUpdate(true);
 }
 
 void Zones::eraseZone(Position pos, ZoneId id) {
   PROFILE;
   zones.getOrInit(pos).erase(id);
   positions[id].erase(pos);
-  pos.setNeedsRenderUpdate(true);
+  pos.setNeedsRenderAndMemoryUpdate(true);
 }
 
 static ZoneId destroyedOnOrder[] = {

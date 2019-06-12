@@ -142,8 +142,8 @@ void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furn
             auto color = getPortalColor(*pos.getPortalIndex());
             furniture->getViewObject()->setColorVariant(color);
             f->getViewObject()->setColorVariant(color);
-            pos.setNeedsRenderUpdate(true);
-            otherPos->setNeedsRenderUpdate(true);
+            pos.setNeedsRenderAndMemoryUpdate(true);
+            otherPos->setNeedsRenderAndMemoryUpdate(true);
           }
       break;
     case FurnitureTickType::METEOR_SHOWER:

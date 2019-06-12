@@ -62,7 +62,7 @@ void ConstructionMap::removeFurniturePlan(Position pos, FurnitureLayer layer) {
   addDebt(-info.getCost());
   furniture[layer].erase(pos);
   allFurniture.removeElement({pos, layer});
-  pos.setNeedsRenderUpdate(true);
+  pos.setNeedsRenderAndMemoryUpdate(true);
 }
 
 void ConstructionMap::addDebt(const CostInfo& cost) {
@@ -84,7 +84,7 @@ void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
   CHECK(!furniture[layer].contains(pos));
   allFurniture.push_back({pos, layer});
   furniture[layer].set(pos, info);
-  pos.setNeedsRenderUpdate(true);
+  pos.setNeedsRenderAndMemoryUpdate(true);
   if (info.isBuilt(pos))
     furniturePositions[info.getFurnitureType()].insert(pos);
   else {
@@ -150,14 +150,14 @@ optional<ConstructionMap::TrapInfo&> ConstructionMap::getTrap(Position pos) {
 void ConstructionMap::removeTrap(Position pos) {
   traps.erase(pos);
   allTraps.removeElement(pos);
-  pos.setNeedsRenderUpdate(true);
+  pos.setNeedsRenderAndMemoryUpdate(true);
 }
 
 void ConstructionMap::addTrap(Position pos, const TrapInfo& info) {
   CHECK(!traps.contains(pos));
   traps.set(pos, info);
   allTraps.push_back(pos);
-  pos.setNeedsRenderUpdate(true);
+  pos.setNeedsRenderAndMemoryUpdate(true);
 }
 
 const vector<Position>& ConstructionMap::getAllTraps() const {

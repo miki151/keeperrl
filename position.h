@@ -89,6 +89,7 @@ class Position {
   void setNeedsRenderUpdate(bool) const;
   bool needsMemoryUpdate() const;
   void setNeedsMemoryUpdate(bool) const;
+  void setNeedsRenderAndMemoryUpdate(bool) const;
   ViewId getTopViewId() const;
   void forbidMovementForTribe(TribeId);
   void allowMovementForTribe(TribeId);

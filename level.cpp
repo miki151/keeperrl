@@ -554,7 +554,6 @@ bool Level::needsRenderUpdate(Vec2 pos) const {
 
 void Level::setNeedsRenderUpdate(Vec2 pos, bool s) {
   renderUpdates[pos] = s;
-  setNeedsMemoryUpdate(pos, s);
 }
 
 bool Level::needsMemoryUpdate(Vec2 pos) const {

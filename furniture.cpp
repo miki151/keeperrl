@@ -147,7 +147,7 @@ void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& a
       damage = damage * c->getAttributes().getSkills().getValue(*skill);
     info->health -= damage / info->strength;
     updateViewObject();
-    pos.setNeedsRenderUpdate(true);
+    pos.setNeedsRenderAndMemoryUpdate(true);
     if (tryDestroyFX)
       pos.getGame()->addEvent(EventInfo::FX{pos, *tryDestroyFX});
     if (info->health <= 0)
@@ -239,7 +239,7 @@ bool Furniture::overridesMovement() const {
 void Furniture::click(Position pos) const {
   if (clickType) {
     FurnitureClick::handle(*clickType, pos, this);
-    pos.setNeedsRenderUpdate(true);
+    pos.setNeedsRenderAndMemoryUpdate(true);
   }
 }
 

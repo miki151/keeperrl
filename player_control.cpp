@@ -2734,7 +2734,7 @@ static void considerAddingKeeperFloor(Position pos) {
 
 void PlayerControl::onClaimedSquare(Position position) {
   considerAddingKeeperFloor(position);
-  position.setNeedsRenderUpdate(true);
+  position.setNeedsRenderAndMemoryUpdate(true);
   updateSquareMemory(position);
 }
 
@@ -2746,7 +2746,7 @@ void PlayerControl::onDestructed(Position pos, FurnitureType type, const Destroy
       updateSquareMemory(v);
     }
     considerAddingKeeperFloor(pos);
-    pos.setNeedsRenderUpdate(true);
+    pos.setNeedsRenderAndMemoryUpdate(true);
   }
 }
 
