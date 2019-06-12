@@ -5,10 +5,15 @@
 
 SERIALIZE_DEF(VisibilityMap, lastUpdates, visibilityCount, eyeballs)
 
-void VisibilityMap::addPositions(const vector<Position>& positions) {
+vector<Position> VisibilityMap::addPositions(const vector<Position>& positions) {
+  PROFILE;
+  vector<Position> ret;
   for (Position v : positions)
-    if (++visibilityCount.getOrInit(v) == 1)
+    if (++visibilityCount.getOrInit(v) == 1) {
       v.setNeedsRenderUpdate(true);
+      ret.push_back(v);
+    }
+  return ret;
 }
 
 void VisibilityMap::removePositions(const vector<Position>& positions) {
@@ -17,13 +22,14 @@ void VisibilityMap::removePositions(const vector<Position>& positions) {
       v.setNeedsRenderUpdate(true);
 }
 
-void VisibilityMap::update(const Creature* c, const vector<Position>& visibleTiles) {
+vector<Position> VisibilityMap::update(const Creature* c, const vector<Position>& visibleTiles) {
   remove(c);
   lastUpdates.set(c, visibleTiles);
-  addPositions(visibleTiles);
+  return addPositions(visibleTiles);
 }
 
 void VisibilityMap::remove(const Creature* c) {
+  PROFILE;
   if (auto positions = lastUpdates.getMaybe(c))
     removePositions(*positions);
   lastUpdates.erase(c);
