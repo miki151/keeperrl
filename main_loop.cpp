@@ -258,6 +258,8 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
       double count = meter.getCount(timeMilli);
       //INFO << "Intervalometer " << timeMilli << " " << count;
       step = min(1.0, double(count) * gameTimeStep);
+      if (maxTurns)
+        step = 1;
       if (view->isClockStopped()) {
         // Advance the clock a little more until the local time reaches 0.99,
         // so creature animations are paused at their actual positions.
