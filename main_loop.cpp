@@ -235,7 +235,7 @@ void MainLoop::bugReportSave(PGame& game, FilePath path) {
 
 MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave,
     const GameConfig* gameConfig, function<optional<ExitCondition>(WGame)> exitCondition,
-    milliseconds stepTimeMilli) {
+    milliseconds stepTimeMilli, optional<int> maxTurns) {
   view->reset();
   if (!noAutoSave)
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
@@ -245,7 +245,12 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
   Intervalometer pausingMeter(stepTimeMilli);
   auto lastMusicUpdate = GlobalTime(-1000);
   auto lastAutoSave = game->getGlobalTime();
+  optional<GlobalTime> exitTime;
+  if (maxTurns)
+    exitTime = game->getGlobalTime() + TimeInterval(*maxTurns);
   while (1) {
+    if (exitTime && game->getGlobalTime() >= *exitTime)
+      throw GameExitException();
     double step = 1;
     if (!game->isTurnBased()) {
       double gameTimeStep = view->getGameSpeed() / stepTimeMilli.count();
@@ -450,7 +455,7 @@ CreatureFactory MainLoop::createCreatureFactory(const GameConfig* gameConfig) co
   return CreatureFactory(NameGenerator(dataFreePath.subdirectory("names")), gameConfig);
 }
 
-void MainLoop::launchQuickGame() {
+void MainLoop::launchQuickGame(optional<int> maxTurns) {
   vector<ListElem> optionsUnused;
   vector<SaveFileInfo> files;
   getSaveOptions({
@@ -470,14 +475,11 @@ void MainLoop::launchQuickGame() {
     auto models = prepareCampaignModels(*result, std::move(avatar), Random, &gameConfig, &creatureFactory);
     game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), &gameConfig, std::move(creatureFactory));
   }
-  playGame(std::move(game), true, false, &gameConfig);
+  playGame(std::move(game), true, false, &gameConfig, nullptr, milliseconds{3}, maxTurns);
 }
 
-void MainLoop::start(bool tilesPresent, bool quickGame) {
-  if (quickGame)
-    launchQuickGame();
-  else
-    splashScreen();
+void MainLoop::start(bool tilesPresent) {
+  splashScreen();
   view->reset();
   considerFreeVersionText(tilesPresent);
   considerGameEventsPrompt();

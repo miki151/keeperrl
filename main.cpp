@@ -212,6 +212,7 @@ static po::parser getCommandLineFlags() {
   flags["free_mode"].description("Run in free ascii mode");
 #ifndef RELEASE
   flags["quick_game"].description("Skip main menu and load the last save file or start a single map game");
+  flags["max_turns"].type(po::i32).description("Quit the game after a given max number of turns");
 #endif
   flags["seed"].type(po::i32).description("Use given seed");
   flags["record"].type(po::string).description("Record game to file");
@@ -341,7 +342,10 @@ static int keeperMain(po::parser& commandLineFlags) {
   }());
   INFO << "Data path: " << dataPath;
   INFO << "User path: " << userPath;
-  Clock clock;
+  optional<int> maxTurns;
+  if (commandLineFlags["max_turns"].was_set())
+    maxTurns = commandLineFlags["max_turns"].get().i32;
+  Clock clock(!!maxTurns);
   Renderer renderer(
       &clock,
       "KeeperRL",
@@ -469,7 +473,9 @@ static int keeperMain(po::parser& commandLineFlags) {
     ofstream systemInfo(userPath.file("system_info.txt").getPath());
     systemInfo << "KeeperRL version " << BUILD_VERSION << " " << BUILD_DATE << std::endl;
     renderer.printSystemInfo(systemInfo);
-    loop.start(tilesPresent, commandLineFlags["quick_game"].was_set());
+    if (commandLineFlags["quick_game"].was_set())
+      loop.launchQuickGame(maxTurns);
+    loop.start(tilesPresent);
   } catch (GameExitException ex) {
   }
   jukebox.toggle(false);
