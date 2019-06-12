@@ -450,9 +450,12 @@ void Immigration::accept(int id, bool withMessage) {
 }
 
 void Immigration::rejectIfNonPersistent(int id) {
-  if (auto immigrant = getReferenceMaybe(available, id))
+  if (auto immigrant = getReferenceMaybe(available, id)) {
     if (!immigrant->getInfo().isPersistent())
       immigrant->endTime = GlobalTime(-1);
+    else if (!immigrant->getInfo().getLimit()) // if there is no limit then we allow cycling through the ids by rejecting
+     available[id] = Available::generate(this, immigrant->immigrantIndex);
+  }
 }
 
 SERIALIZE_DEF(Immigration::Available, creatures, immigrantIndex, endTime, immigration, specialTraits)
