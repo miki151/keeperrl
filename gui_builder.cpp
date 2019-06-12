@@ -3386,13 +3386,15 @@ SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
 }
 
 GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, function<void()> reloadCampaign,
-    optional<int> maxActive) {
+    optional<int> maxActive, string searchString) {
   auto lines = gui.getListBuilder(legendLineHeight);
   const vector<RetiredGames::RetiredGame>& allGames = retired.getAllGames();
   bool displayActive = !maxActive;
   for (int i : All(allGames)) {
     if (i == retired.getNumLocal() && !displayActive)
       lines.addElem(gui.label("Online dungeons:", Color::YELLOW));
+    if (searchString != "" && !contains(toLower(allGames[i].gameInfo.name), toLower(searchString)))
+      continue;
     if (retired.isActive(i) == displayActive) {
       auto header = gui.getListBuilder();
       bool maxedOut = !displayActive && retired.getNumActive() >= *maxActive;
@@ -3479,15 +3481,24 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   lines.addSpace(10);
   GuiFactory::ListBuilder retiredMenuLines(gui, getStandardLineHeight());
   if (retiredGames) {
+    retiredMenuLines.addElem(gui.getListBuilder()
+        .addElemAuto(gui.label("Search: "))
+        .addElem(gui.textField(campaignOptions.searchString,
+            [&queue](string s){ queue.push(CampaignAction(CampaignActionId::SEARCH_RETIRED, std::move(s)));}), 200)
+        .addSpace(10)
+        .addElemAuto(gui.topMargin(3, gui.buttonLabel("X",
+            [&queue]{ queue.push(CampaignAction(CampaignActionId::SEARCH_RETIRED, string()));})))
+        .buildHorizontalList()
+    );
     auto addedDungeons = drawRetiredGames(
-        *retiredGames, [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, none);
+        *retiredGames, [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, none, "");
     int addedHeight = addedDungeons.getSize();
     if (!addedDungeons.isEmpty()) {
       retiredMenuLines.addElem(gui.label("Added dungeons:", Color::YELLOW));
       retiredMenuLines.addElem(addedDungeons.buildVerticalList(), addedHeight);
     }
     GuiFactory::ListBuilder retiredList = drawRetiredGames(*retiredGames,
-        [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, options->getIntValue(OptionId::MAIN_VILLAINS));
+        [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, options->getIntValue(OptionId::MAIN_VILLAINS), campaignOptions.searchString);
     if (retiredList.isEmpty())
       retiredList.addElem(gui.label("No retired dungeons found :("));
     else

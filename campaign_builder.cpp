@@ -309,7 +309,8 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
   int numBlocked = 0.6 * size.x * size.y;
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
   auto retired = genRetired(type);
-  View::CampaignMenuState menuState { true, false};
+  View::CampaignMenuState menuState { true, false, false};
+  string searchString;
   const auto playerRole = getPlayerRole();
   options->setChoices(OptionId::ENDLESS_ENEMIES, {"none", "from the start", "after winning"});
   while (1) {
@@ -333,9 +334,12 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
               getIntroText(),
               getAvailableTypes().transform([](CampaignType t) -> View::CampaignOptions::CampaignTypeInfo {
                   return {t, getCampaignTypeDescription(t)};}),
-              getMenuWarning(type)
-              }, options, menuState);
+              getMenuWarning(type),
+              searchString}, options, menuState);
       switch (action.getId()) {
+        case CampaignActionId::SEARCH_RETIRED:
+          searchString = action.get<string>();
+          break;
         case CampaignActionId::REROLL_MAP:
           terrain = getTerrain(random, size, numBlocked);
           updateMap = true;
