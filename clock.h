@@ -5,7 +5,7 @@
 
 class Clock {
   public:
-  Clock();
+  Clock(bool neverPause = false);
   milliseconds getMillis();
   void pause();
   void cont();
@@ -18,6 +18,7 @@ class Clock {
   steady_clock::time_point pausedTime;
   optional<steady_clock::time_point> lastPause;
   steady_clock::time_point initTime;
+  bool neverPause = false;
 };
 
 class ScopeTimer {

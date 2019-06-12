@@ -10,7 +10,7 @@ class Level;
 
 class VisibilityMap {
   public:
-  void update(const Creature*, const vector<Position>& visibleTiles);
+  vector<Position> update(const Creature*, const vector<Position>& visibleTiles);
   void remove(const Creature*);
   void updateEyeball(Position);
   void removeEyeball(Position);
@@ -24,7 +24,7 @@ class VisibilityMap {
   EntityMap<Creature, vector<Position>> SERIAL(lastUpdates);
   PositionMap<vector<Position>> SERIAL(eyeballs);
   PositionMap<int> SERIAL(visibilityCount);
-  void addPositions(const vector<Position>&);
+  vector<Position> addPositions(const vector<Position>&);
   void removePositions(const vector<Position>&);
 };
 

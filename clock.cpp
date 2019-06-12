@@ -2,7 +2,7 @@
 #include "clock.h"
 #include "debug.h"
 
-Clock::Clock() {
+Clock::Clock(bool neverPause) : neverPause(neverPause) {
   initTime = steady_clock::now();
 }
 
@@ -14,7 +14,7 @@ milliseconds Clock::getMillis() {
 }
 
 void Clock::pause() {
-  if (!lastPause)
+  if (!lastPause && !neverPause)
     lastPause = getCurrent();
 }
 

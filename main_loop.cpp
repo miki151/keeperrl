@@ -241,8 +241,7 @@ void MainLoop::bugReportSave(PGame& game, FilePath path) {
 }
 
 MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave,
-    function<optional<ExitCondition>(WGame)> exitCondition,
-    milliseconds stepTimeMilli) {
+    function<optional<ExitCondition>(WGame)> exitCondition, milliseconds stepTimeMilli, optional<int> maxTurns) {
   tileSet->setTilePaths(game->getContentFactory()->tilePaths);
   view->reset();
   if (!noAutoSave)
@@ -253,7 +252,12 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
   Intervalometer pausingMeter(stepTimeMilli);
   auto lastMusicUpdate = GlobalTime(-1000);
   auto lastAutoSave = game->getGlobalTime();
+  optional<GlobalTime> exitTime;
+  if (maxTurns)
+    exitTime = game->getGlobalTime() + TimeInterval(*maxTurns);
   while (1) {
+    if (exitTime && game->getGlobalTime() >= *exitTime)
+      throw GameExitException();
     double step = 1;
     if (!game->isTurnBased()) {
       double gameTimeStep = view->getGameSpeed() / stepTimeMilli.count();
@@ -261,6 +265,8 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
       double count = meter.getCount(timeMilli);
       //INFO << "Intervalometer " << timeMilli << " " << count;
       step = min(1.0, double(count) * gameTimeStep);
+      if (maxTurns)
+        step = 1;
       if (view->isClockStopped()) {
         // Advance the clock a little more until the local time reaches 0.99,
         // so creature animations are paused at their actual positions.
@@ -565,7 +571,7 @@ ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
   return ret;
 }
 
-void MainLoop::launchQuickGame() {
+void MainLoop::launchQuickGame(optional<int> maxTurns) {
   vector<ListElem> optionsUnused;
   vector<SaveFileInfo> files;
   getSaveOptions({
@@ -584,14 +590,11 @@ void MainLoop::launchQuickGame() {
     auto models = prepareCampaignModels(*result, std::move(avatar), Random, &contentFactory);
     game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), std::move(contentFactory));
   }
-  playGame(std::move(game), true, false);
+  playGame(std::move(game), true, false, nullptr, milliseconds{3}, maxTurns);
 }
 
-void MainLoop::start(bool tilesPresent, bool quickGame) {
-  if (quickGame)
-    launchQuickGame();
-  else
-    splashScreen();
+void MainLoop::start(bool tilesPresent) {
+  splashScreen();
   view->reset();
   considerFreeVersionText(tilesPresent);
   considerGameEventsPrompt();
