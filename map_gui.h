@@ -54,9 +54,7 @@ class MapGui : public GuiElem {
   ~MapGui() override;
 
   virtual void render(Renderer&) override;
-  virtual bool onLeftClick(Vec2) override;
-  virtual bool onRightClick(Vec2) override;
-  virtual bool onMiddleClick(Vec2) override;
+  virtual bool onClick(ClickButton, Vec2) override;
   virtual bool onMouseMove(Vec2) override;
   virtual void onMouseGone() override;
   virtual void onMouseRelease(Vec2) override;
@@ -94,6 +92,9 @@ class MapGui : public GuiElem {
   bool fxesAvailable() const;
 
   private:
+  bool onLeftClick(Vec2);
+  bool onRightClick(Vec2);
+  bool onMiddleClick(Vec2);
   void updateObject(Vec2, CreatureView*, Renderer&, milliseconds currentTime);
   void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 movement, Vec2 tilePos,
       milliseconds currentTimeReal, const ViewIndex&);

@@ -1215,6 +1215,17 @@ void MapGui::render(Renderer& renderer) {
   processScrolling(currentTimeReal);
 }
 
+bool MapGui::onClick(GuiElem::ClickButton b, Vec2 v) {
+  switch (b) {
+    case LEFT:
+      return onLeftClick(v);
+    case RIGHT:
+      return onRightClick(v);
+    case MIDDLE:
+      return onMiddleClick(v);
+  }
+}
+
 void MapGui::updateObject(Vec2 pos, CreatureView* view, Renderer& renderer, milliseconds currentTime) {
   auto level = view->getCreatureViewLevel();
   objects[pos].emplace();

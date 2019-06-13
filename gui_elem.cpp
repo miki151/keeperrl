@@ -54,13 +54,15 @@ class ButtonElem : public GuiElem {
   public:
   ButtonElem(function<void(Rectangle, Vec2)> f) : fun(f) {}
 
-  virtual bool onLeftClick(Vec2 pos) override {
-    auto bounds = getBounds();
-    if (pos.inRectangle(bounds)) {
-      fun(bounds, pos - bounds.topLeft());
-      return true;
+  virtual bool onClick(ClickButton b, Vec2 pos) override {
+    if (b == LEFT) {
+      auto bounds = getBounds();
+      if (pos.inRectangle(bounds)) {
+        fun(bounds, pos - bounds.topLeft());
+        return true;
+      }
     }
-     return false;
+    return false;
   }
 
   protected:
@@ -78,20 +80,23 @@ class ReleaseButton : public GuiElem {
     clicked = false;
   }
 
-  virtual bool onLeftClick(Vec2 pos) override {
-    if (button == 0 && pos.inRectangle(getBounds())) {
-      clicked = true;
-      return true;
-    } else
-      return false;
-  }
-
-  virtual bool onRightClick(Vec2 pos) override {
-    if (button == 1 && pos.inRectangle(getBounds())) {
-      clicked = true;
-      return true;
-    } else
-      return false;
+  virtual bool onClick(ClickButton b, Vec2 pos) override {
+    switch (b) {
+      case LEFT:
+        if (button == 0 && pos.inRectangle(getBounds())) {
+          clicked = true;
+          return true;
+        } else
+          return false;
+      case RIGHT:
+        if (button == 1 && pos.inRectangle(getBounds())) {
+          clicked = true;
+          return true;
+        } else
+          return false;
+      default:
+        return false;
+    }
   }
 
   virtual bool onMouseMove(Vec2 pos) override {
@@ -215,13 +220,16 @@ class TextFieldElem : public GuiElem {
   TextFieldElem(function<string()> text, function<void(string)> callback, Clock* clock)
       : callback(std::move(callback)), getText(std::move(text)), clock(clock) {}
 
-  virtual bool onLeftClick(Vec2 pos) override {
-    if (pos.inRectangle(getBounds())) {
-      current = getText();
-    } else {
-      current = none;
-    }
-    return !!current;
+  virtual bool onClick(ClickButton b, Vec2 pos) override {
+    if (b == LEFT) {
+      if (pos.inRectangle(getBounds())) {
+        current = getText();
+      } else {
+        current = none;
+      }
+      return !!current;
+    } else
+      return false;
   }
 
   virtual void render(Renderer& r) override {
@@ -290,8 +298,8 @@ class ButtonRightClick : public GuiElem {
   public:
   ButtonRightClick(function<void(Rectangle)> f) : fun(f) {}
 
-  virtual bool onRightClick(Vec2 pos) override {
-    if (pos.inRectangle(getBounds())) {
+  virtual bool onClick(ClickButton b, Vec2 pos) override {
+    if (b == RIGHT && pos.inRectangle(getBounds())) {
       fun(getBounds());
       return true;
     }
@@ -322,8 +330,8 @@ class ReverseButton : public GuiElem {
   public:
   ReverseButton(function<void()> f, bool cap) : fun(f), capture(cap) {}
 
-  virtual bool onLeftClick(Vec2 pos) override {
-    if (!pos.inRectangle(getBounds())) {
+  virtual bool onClick(ClickButton b, Vec2 pos) override {
+    if (b == LEFT && !pos.inRectangle(getBounds())) {
       fun();
       return capture;
     }
@@ -368,15 +376,7 @@ class StopMouseMovement : public GuiElem {
     return pos.inRectangle(getBounds());
   }
 
-  virtual bool onRightClick(Vec2 pos) override {
-    return pos.inRectangle(getBounds());
-  }
-
-  virtual bool onLeftClick(Vec2 pos) override {
-    return pos.inRectangle(getBounds());
-  }
-
-  virtual bool onMiddleClick(Vec2 pos) override {
+  virtual bool onClick(ClickButton, Vec2 pos) override {
     return pos.inRectangle(getBounds());
   }
 
@@ -869,23 +869,9 @@ class GuiLayout : public GuiElem {
     return false;
   }
 
-  virtual bool onLeftClick(Vec2 pos) override {
+  virtual bool onClick(ClickButton b, Vec2 pos) override {
     for (int i : AllReverse(elems))
-      if (isVisible(i) && elems[i]->onLeftClick(pos))
-        return true;
-    return false;
-  }
-
-  virtual bool onRightClick(Vec2 pos) override {
-    for (int i : AllReverse(elems))
-      if (isVisible(i) && elems[i]->onRightClick(pos))
-        return true;
-    return false;
-  }
-
-  virtual bool onMiddleClick(Vec2 pos) override {
-    for (int i : AllReverse(elems))
-      if (isVisible(i) && elems[i]->onMiddleClick(pos))
+      if (isVisible(i) && elems[i]->onClick(b, pos))
         return true;
     return false;
   }
@@ -1006,16 +992,8 @@ class External : public GuiElem {
     elem->render(r);
   }
 
-  virtual bool onLeftClick(Vec2 v) override {
-    return elem->onLeftClick(v);
-  }
-
-  virtual bool onRightClick(Vec2 v) override {
-    return elem->onRightClick(v); 
-  }
-
-  virtual bool onMiddleClick(Vec2 v) override {
-    return elem->onMiddleClick(v);
+  virtual bool onClick(ClickButton b, Vec2 v) override {
+    return elem->onClick(b, v);
   }
 
   virtual bool onMouseMove(Vec2 v) override {
@@ -1063,12 +1041,15 @@ class Focusable : public GuiStack {
   Focusable(SGuiElem content, vector<SDL_Keysym> focus, vector<SDL_Keysym> defocus, bool& foc) :
       GuiStack(makeVec(std::move(content))), focusEvent(focus), defocusEvent(defocus), focused(foc) {}
 
-  virtual bool onLeftClick(Vec2 pos) override {
-    if (focused && !pos.inRectangle(getBounds())) {
-      focused = false;
-      return true;
+  virtual bool onClick(ClickButton b, Vec2 pos) override {
+    if (b == LEFT) {
+      if (focused && !pos.inRectangle(getBounds())) {
+        focused = false;
+        return true;
+      }
+      return GuiLayout::onClick(b, pos);
     }
-    return GuiLayout::onLeftClick(pos);
+    return false;
   }
 
   virtual bool onKeyPressed2(SDL_Keysym key) override {
@@ -1989,8 +1970,8 @@ class DragSource : public GuiElem {
   public:
   DragSource(DragContainer& c, DragContent d, function<SGuiElem()> g) : container(c), content(d), gui(g) {}
 
-  virtual bool onLeftClick(Vec2 v) override {
-    if (v.inRectangle(getBounds()))
+  virtual bool onClick(ClickButton b, Vec2 v) override {
+    if (b == LEFT && v.inRectangle(getBounds()))
       container.put(content, gui(), v);
     return false;
   }
@@ -2127,16 +2108,10 @@ SGuiElem GuiFactory::mouseOverAction(function<void()> callback, function<void()>
 
 class MouseButtonHeld : public GuiStack {
   public:
-  MouseButtonHeld(SGuiElem elem, int but) : GuiStack(std::move(elem)), button(but) {}
+  MouseButtonHeld(SGuiElem elem, ClickButton but) : GuiStack(std::move(elem)), button(but) {}
 
-  virtual bool onLeftClick(Vec2 v) override {
-    if (button == 0 && v.inRectangle(getBounds()))
-      on = true;
-    return false;
-  }
-
-  virtual bool onRightClick(Vec2 v) override {
-    if (button == 1 && v.inRectangle(getBounds()))
+  virtual bool onClick(ClickButton b, Vec2 v) override {
+    if (button == b && v.inRectangle(getBounds()))
       on = true;
     return false;
   }
@@ -2160,16 +2135,16 @@ class MouseButtonHeld : public GuiStack {
   }
 
   private:
-  const int button;
+  const ClickButton button;
   bool on = false;
 };
 
 SGuiElem GuiFactory::onMouseLeftButtonHeld(SGuiElem elem) {
-  return SGuiElem(new MouseButtonHeld(std::move(elem), 0));
+  return SGuiElem(new MouseButtonHeld(std::move(elem), GuiElem::LEFT));
 }
 
 SGuiElem GuiFactory::onMouseRightButtonHeld(SGuiElem elem) {
-  return SGuiElem(new MouseButtonHeld(std::move(elem), 1));
+  return SGuiElem(new MouseButtonHeld(std::move(elem), GuiElem::RIGHT));
 }
 
 class MouseHighlightBase : public GuiStack {
@@ -2422,19 +2397,21 @@ class ScrollBar : public GuiLayout {
     return false;
   }
 
-  virtual bool onLeftClick(Vec2 v) override {
-    if (v.inRectangle(getElemBounds(0))) {
-      *held = v.y - calcButHeight();
-      return true;
-    } else
-    if (v.inRectangle(getBounds())) {
-      if (v.y <= getBounds().top() + vMargin)
-        addScrollPos(- wheelScrollUnit);
-      else if (v.y >= getBounds().bottom() - vMargin)
-        addScrollPos(wheelScrollUnit);
-      else
-        scrollPos->set(getBounds().height() / 2 + scrollLength() * calcPos(v.y), clock->getRealMillis());
-      return true;
+  virtual bool onClick(ClickButton b, Vec2 v) override {
+    if (b == LEFT) {
+      if (v.inRectangle(getElemBounds(0))) {
+        *held = v.y - calcButHeight();
+        return true;
+      } else
+      if (v.inRectangle(getBounds())) {
+        if (v.y <= getBounds().top() + vMargin)
+          addScrollPos(- wheelScrollUnit);
+        else if (v.y >= getBounds().bottom() - vMargin)
+          addScrollPos(wheelScrollUnit);
+        else
+          scrollPos->set(getBounds().height() / 2 + scrollLength() * calcPos(v.y), clock->getRealMillis());
+        return true;
+      }
     }
     return false;
   }
@@ -2485,15 +2462,9 @@ class Scrollable : public GuiElem {
     r.setScissor(none);
   }
 
-  virtual bool onLeftClick(Vec2 v) override {
+  virtual bool onClick(ClickButton b, Vec2 v) override {
     if (v.y >= getBounds().top() && v.y < getBounds().bottom())
-      return content->onLeftClick(v);
-    return false;
-  }
-
-  virtual bool onRightClick(Vec2 v) override {
-    if (v.y >= getBounds().top() && v.y < getBounds().bottom())
-      return content->onRightClick(v);
+      return content->onClick(b, v);
     return false;
   }
 
@@ -2578,7 +2549,7 @@ class Slider : public GuiLayout {
     setPosition((int) round((double)(v.x - getBounds().left()) * maxValue / scrollLength()));
   }
 
-  virtual bool onLeftClick(Vec2 v) override {
+  virtual bool onClick(ClickButton, Vec2 v) override {
     if (v.inRectangle(getBounds())) {
       held = true;
       setPositionFromClick(v);
@@ -3116,11 +3087,11 @@ void GuiFactory::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
     case SDL::SDL_MOUSEBUTTONDOWN: {
       Vec2 clickPos(event.button.x, event.button.y);
       for (auto elem : guiElems) {
-        if (event.button.button == SDL_BUTTON_RIGHT && elem->onRightClick(clickPos))
+        if (event.button.button == SDL_BUTTON_RIGHT && elem->onClick(GuiElem::RIGHT, clickPos))
           break;
-        if (event.button.button == SDL_BUTTON_LEFT && elem->onLeftClick(clickPos))
+        if (event.button.button == SDL_BUTTON_LEFT && elem->onClick(GuiElem::LEFT, clickPos))
           break;
-        if (event.button.button == SDL_BUTTON_MIDDLE && elem->onMiddleClick(clickPos))
+        if (event.button.button == SDL_BUTTON_MIDDLE && elem->onClick(GuiElem::MIDDLE, clickPos))
           break;
       }
       break;

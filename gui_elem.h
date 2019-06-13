@@ -31,9 +31,9 @@ class KeybindingMap;
 class GuiElem {
   public:
   virtual void render(Renderer&) {}
-  virtual bool onLeftClick(Vec2) { return false; }
-  virtual bool onRightClick(Vec2) { return false; }
-  virtual bool onMiddleClick(Vec2) { return false; }
+  enum ClickButton { LEFT, MIDDLE, RIGHT };
+  virtual bool onClick(ClickButton, Vec2) { return false; }
+  virtual void onClickElsewhere() {}
   virtual bool onMouseMove(Vec2) { return false;}
   virtual void onMouseGone() {}
   virtual void onMouseRelease(Vec2) {}
