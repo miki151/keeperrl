@@ -2827,8 +2827,8 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
                   exit = true;
                 };
             auto lockButton = task.locked
-                  ? gui.rightMargin(20, gui.conditional(gui.labelUnicodeHighlight(u8"✓", Color::GREEN),
-                       gui.labelUnicodeHighlight(u8"✓", Color::LIGHT_GRAY), [&retAction, task] {
+                  ? gui.rightMargin(20, gui.conditional(gui.labelUnicodeHighlight(u8"✓", Color::LIGHT_GRAY),
+                       gui.labelUnicodeHighlight(u8"✓", Color::GREEN), [&retAction, task] {
                             return retAction.lock.contains(task.task) ^ *task.locked;}))
                   : gui.empty();
             tasks.addElem(GuiFactory::ListBuilder(gui)
