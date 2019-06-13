@@ -70,7 +70,7 @@ const map<OptionId, string> names {
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
-  {OptionId::PLAYER_NAME, "First name"},
+  {OptionId::PLAYER_NAME, "Name"},
   {OptionId::KEEPER_SEED, "Level generation seed"},
   {OptionId::MAIN_VILLAINS, "Main villains"},
   {OptionId::RETIRED_VILLAINS, "Retired villains"},
@@ -211,10 +211,6 @@ void Options::setValue(OptionId id, Value value) {
   writeValues();
 }
 
-void Options::setDefaultString(OptionId id, const string& s) {
-  defaultStrings[id] = s;
-}
-
 static string getOnOff(const Options::Value& value) {
   return *value.getValueMaybe<int>() ? "on" : "off";
 }
@@ -246,13 +242,8 @@ string Options::getValueString(OptionId id) {
     case OptionId::START_WITH_NIGHT:
       return getYesNo(value);
     case OptionId::PLAYER_NAME:
-    case OptionId::KEEPER_SEED: {
-      string val = *value.getValueMaybe<string>();
-      if (val.empty())
-        return defaultStrings[id];
-      else
-        return val;
-    }
+    case OptionId::KEEPER_SEED:
+      return *value.getValueMaybe<string>();
     case OptionId::ENDLESS_ENEMIES:
     case OptionId::CURRENT_MOD:
       return choices[id][(*value.getValueMaybe<int>() + choices[id].size()) % choices[id].size()];

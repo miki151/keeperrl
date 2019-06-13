@@ -221,16 +221,17 @@ class View {
   struct AvatarChoice {
     int creatureIndex;
     int genderIndex;
+    string name;
   };
   struct AvatarData {
     vector<vector<ViewId>> viewId;
-    vector<string> firstNames;
+    vector<vector<string>> firstNames;
     TribeAlignment alignment;
     string name;
     PlayerRole role;
     string description;
   };
-  virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&, Options*) = 0;
+  virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&) = 0;
 
   struct CampaignMenuState {
     bool helpText;
@@ -253,7 +254,7 @@ class View {
     string searchString;
   };
 
-  virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) = 0;
+  virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) = 0;
 
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) = 0;

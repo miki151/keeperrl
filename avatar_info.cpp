@@ -11,6 +11,7 @@
 #include "creature_attributes.h"
 #include "gender.h"
 #include "creature_name.h"
+#include "name_generator.h"
 
 static TribeId getPlayerTribeId(TribeAlignment variant) {
   switch (variant) {
@@ -46,10 +47,16 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const PlayerCrea
     });
   });
   vector<View::AvatarData> keeperAvatarData;
+  auto getAllNames = [&] (const PCreature& c) {
+    if (auto id = c->getName().getNameGenerator())
+      return creatureFactory->getNameGenerator()->getAll(*id);
+    else
+      return makeVec(c->getName().firstOrBare());
+  };
   for (int i : All(keeperCreatures))
     keeperAvatarData.push_back(View::AvatarData {
       keeperCreatures[i].transform([](const auto& c) { return getUpgradedViewId(c.get()); }),
-      keeperCreatures[i].transform([](const auto& c) { return c->getName().firstOrBare(); }),
+      keeperCreatures[i].transform(getAllNames),
       keeperCreatureInfos[i].tribeAlignment,
       keeperCreatures[i][0]->getName().identify(),
       PlayerRole::KEEPER,
@@ -59,13 +66,13 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const PlayerCrea
   for (int i : All(adventurerCreatures))
     adventurerAvatarData.push_back(View::AvatarData {
       adventurerCreatures[i].transform([](const auto& c) { return getUpgradedViewId(c.get()); }),
-      adventurerCreatures[i].transform([](const auto& c) { return c->getName().firstOrBare(); }),
+      adventurerCreatures[i].transform(getAllNames),
       adventurerCreatureInfos[i].tribeAlignment,
       adventurerCreatures[i][0]->getName().identify(),
       PlayerRole::ADVENTURER,
       adventurerCreatureInfos[i].description
     });
-  auto result1 = view->chooseAvatar(concat(keeperAvatarData, adventurerAvatarData), options);
+  auto result1 = view->chooseAvatar(concat(keeperAvatarData, adventurerAvatarData));
   if (auto option = result1.getValueMaybe<AvatarMenuOption>())
     return *option;
   auto result = result1.getReferenceMaybe<View::AvatarChoice>();
@@ -80,6 +87,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const PlayerCrea
     ret = std::move(adventurerCreatures[result->creatureIndex - keeperCreatures.size()][result->genderIndex]);
     ret->getName().setBare("Adventurer");
   }
+  ret->getName().setFirst(result->name);
   auto villains = creatureInfo.visit([](const auto& elem) { return elem.tribeAlignment;});
   return AvatarInfo{std::move(ret), creatureInfo, villains };
 }

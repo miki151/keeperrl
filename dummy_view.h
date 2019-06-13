@@ -60,7 +60,7 @@ class DummyView : public View {
     return none;
   }
   virtual void presentHighscores(const vector<HighscoreList>&) override {}
-  virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) override {
+  virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) override {
     return CampaignActionId::CANCEL;
   }
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string&, const vector<CreatureInfo>&,
@@ -91,7 +91,7 @@ class DummyView : public View {
   virtual void addSound(const Sound&) override {}
   virtual void logMessage(const string&) override {}
   virtual void setBugReportSaveCallback(BugReportSaveCallback) override {};
-  virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&, Options*) override {
+  virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&) override {
     return AvatarMenuOption::GO_BACK;
   }
 };

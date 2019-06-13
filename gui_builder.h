@@ -91,12 +91,10 @@ class GuiBuilder {
       pair<ViewId, int> budget, const vector<ItemInfo>&, ScrollPosition* scrollPos);
   SGuiElem drawPillageItemMenu(SyncQueue<optional<int>>&, const string& title, const vector<ItemInfo>&,
       ScrollPosition* scrollPos);
-  SGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, View::CampaignOptions, Options*,
-      View::CampaignMenuState&);
+  SGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState&);
   SGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
-  SGuiElem drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>&, Options*,
-      const vector<View::AvatarData>&);
+  SGuiElem drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>&, const vector<View::AvatarData>&);
   SGuiElem drawWorldmap(Semaphore&, const Campaign&);
   SGuiElem drawLevelMap(Semaphore&, const CreatureView*);
   SGuiElem drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
@@ -185,7 +183,7 @@ class GuiBuilder {
   SGuiElem drawHighscorePage(const HighscoreList&, ScrollPosition* scrollPos);
   SGuiElem drawTeams(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight);
-  SGuiElem drawOptionElem(Options*, OptionId, function<void()> onChanged, optional<string> defaultString);
+  SGuiElem drawOptionElem(OptionId, function<void()> onChanged, optional<string> defaultString);
   GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, optional<int> maxActive, string searchString);
   SGuiElem drawImmigrantInfo(const ImmigrantDataInfo&);
   SGuiElem drawSpecialTrait(const SpecialTrait&);
@@ -293,7 +291,8 @@ class GuiBuilder {
   SGuiElem drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&, int itemIndex);
   SGuiElem drawWorkshopItemActionButton(const CollectiveInfo::QueuedItemInfo&, int itemIndex);
   SGuiElem drawGenderButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar);
-  SGuiElem drawFirstNameButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar);
+  SGuiElem drawFirstNameButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar,
+      shared_ptr<int> chosenName);
   SGuiElem drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_ptr<int> chosenAvatar,
       const vector<View::AvatarData>&);
   SGuiElem drawChosenCreatureButtons(PlayerRole, shared_ptr<int> chosenAvatar, shared_ptr<int> gender,

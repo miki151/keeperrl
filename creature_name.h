@@ -26,6 +26,7 @@ class CreatureName {
   CreatureName(const char* name);
   void setFirst(const string&);
   void generateFirst(NameGenerator*);
+  optional<NameGeneratorId> getNameGenerator() const;
   void setStack(const string&);
   void setGroup(const string&);
   void setBare(const string&);

@@ -80,7 +80,6 @@ class Options {
   bool handleOrExit(View*, OptionSet, int lastIndex = -1);
   typedef function<void(int)> Trigger;
   void addTrigger(OptionId, Trigger trigger);
-  void setDefaultString(OptionId, const string&);
   void setChoices(OptionId, const vector<string>&);
   bool hasChoices(OptionId) const;
   optional<string> getHint(OptionId);
@@ -93,7 +92,6 @@ class Options {
   optional<EnumMap<OptionId, Value>> values;
   void writeValues();
   FilePath filename;
-  EnumMap<OptionId, string> defaultStrings;
   EnumMap<OptionId, optional<Value>> overrides;
   EnumMap<OptionId, vector<string>> choices;
   EnumMap<OptionId, optional<pair<int, int>>> limits;

@@ -3210,14 +3210,29 @@ static int getChosenGender(shared_ptr<int> gender, shared_ptr<int> chosenAvatar,
 }
 
 SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatars,
-    shared_ptr<int> gender, shared_ptr<int> chosenAvatar) {
+    shared_ptr<int> gender, shared_ptr<int> chosenAvatar, shared_ptr<int> chosenName) {
   vector<SGuiElem> firstNameOptions = {};
   for (int avatarIndex : All(avatars)) {
     auto& avatar = avatars[avatarIndex];
-    for (int genderIndex : All(avatar.viewId))
-      firstNameOptions.push_back(gui.conditional(
-          drawOptionElem(options, OptionId::PLAYER_NAME, []{}, avatar.firstNames[genderIndex]),
+    for (int genderIndex : All(avatar.viewId)) {
+      auto elem = gui.getListBuilder()
+          .addElemAuto(gui.label("Name: "))
+          .addMiddleElem(gui.textField(
+              [=] {
+                auto entered = options->getValueString(OptionId::PLAYER_NAME);
+                return entered.empty() ?
+                    avatar.firstNames[genderIndex][*chosenName] :
+                    entered;
+              },
+              [=] (string s) {
+                options->setValue(OptionId::PLAYER_NAME, s);
+              }))
+          .addSpace(10)
+          .addBackElemAuto(gui.buttonLabel("random", [=] { options->setValue(OptionId::PLAYER_NAME, ""_s); ++*chosenName; }))
+          .buildHorizontalList();
+      firstNameOptions.push_back(gui.conditional(std::move(elem),
           [=]{ return getChosenGender(gender, chosenAvatar, avatars) == genderIndex && avatarIndex == *chosenAvatar; }));
+    }
   }
   return gui.stack(std::move(firstNameOptions));
 }
@@ -3270,10 +3285,12 @@ SGuiElem GuiBuilder::drawChosenCreatureButtons(PlayerRole role, shared_ptr<int> 
   return allLines.buildVerticalList();
 };
 
-SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>& queue, Options* options,
+SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>& queue,
     const vector<View::AvatarData>& avatars) {
   auto gender = make_shared<int>(0);
   auto chosenAvatar = make_shared<int>(0);
+  auto entered = options->getValueString(OptionId::PLAYER_NAME);
+  auto chosenName = make_shared<int>(0);
   auto chosenRole = make_shared<PlayerRole>(PlayerRole::KEEPER);
   auto leftLines = gui.getListBuilder(legendLineHeight);
   auto rightLines = gui.getListBuilder(legendLineHeight);
@@ -3281,7 +3298,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   leftLines.addSpace(15);
   leftLines.addElem(drawGenderButtons(avatars, gender, chosenAvatar));
   leftLines.addSpace(15);
-  leftLines.addElem(drawFirstNameButtons(avatars, gender, chosenAvatar));
+  leftLines.addElem(drawFirstNameButtons(avatars, gender, chosenAvatar, chosenName));
   leftLines.addSpace(15);
   rightLines.addElemAuto(gui.conditional2(
       drawChosenCreatureButtons(PlayerRole::KEEPER, chosenAvatar, gender, avatars),
@@ -3305,8 +3322,12 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   }
   lines.addBackElem(gui.stack(descriptions), 2 * legendLineHeight);
   lines.addBackElem(gui.centerHoriz(gui.buttonLabel("Start new game",
-      [&queue, chosenAvatar, gender, &avatars] {
-        queue.push(View::AvatarChoice{*chosenAvatar, getChosenGender(gender, chosenAvatar, avatars)});
+      [&queue, chosenAvatar, chosenName, gender, &avatars, this] {
+        auto chosenGender = getChosenGender(gender, chosenAvatar, avatars);
+        auto enteredName = options->getValueString(OptionId::PLAYER_NAME);
+        queue.push(View::AvatarChoice{*chosenAvatar, chosenGender, enteredName.empty() ?
+            avatars[*chosenAvatar].firstNames[chosenGender][*chosenName] :
+            enteredName});
       })));
   auto menuLines = gui.getListBuilder(legendLineHeight)
       .addElemAuto(
@@ -3338,8 +3359,8 @@ SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncreas
       .buildHorizontalList(), 0, 2, 0, 2);
 }
 
-SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void()> onChanged, optional<string> defaultString) {
-  auto getValue = [id, options, defaultString] {
+SGuiElem GuiBuilder::drawOptionElem(OptionId id, function<void()> onChanged, optional<string> defaultString) {
+  auto getValue = [id, options = this->options, defaultString] {
     string valueString = options->getValueString(id);
     if (!valueString.empty() || !defaultString)
       return valueString;
@@ -3350,13 +3371,13 @@ SGuiElem GuiBuilder::drawOptionElem(Options* options, OptionId id, function<void
   SGuiElem ret;
   switch (options->getType(id)) {
     case Options::STRING:
-      ret = gui.standardButton(gui.labelFun([getValue, name]{ return name + ": " + getValue(); }),
-          gui.button([=] {
-            if (auto val = getTextInput("Enter " + name, getValue(), 10, "Leave blank to use a random name. Hit enter to confirm.")) {
-              options->setValue(id, *val);
-              onChanged();
-            }
-          }), false);
+      ret = gui.getListBuilder()
+          .addElemAuto(gui.label(name + ":"))
+          .addMiddleElem(gui.textField(getValue, [=] (string s) {
+            options->setValue(id, s);
+            onChanged();
+          }))
+          .buildHorizontalList();
       break;
     case Options::INT: {
       auto limits = options->getLimits(id);
@@ -3442,7 +3463,7 @@ SGuiElem GuiBuilder::drawMenuWarning(View::CampaignOptions::WarningType type) {
 }
 
 SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
-    Options* options, View::CampaignMenuState& menuState) {
+    View::CampaignMenuState& menuState) {
   const auto& campaign = campaignOptions.campaign;
   auto& retiredGames = campaignOptions.retired;
   GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
@@ -3483,11 +3504,11 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   if (retiredGames) {
     retiredMenuLines.addElem(gui.getListBuilder()
         .addElemAuto(gui.label("Search: "))
-        .addElem(gui.textField(campaignOptions.searchString,
+        .addElem(gui.textField([ret = campaignOptions.searchString] { return ret; },
             [&queue](string s){ queue.push(CampaignAction(CampaignActionId::SEARCH_RETIRED, std::move(s)));}), 200)
         .addSpace(10)
-        .addElemAuto(gui.topMargin(3, gui.buttonLabel("X",
-            [&queue]{ queue.push(CampaignAction(CampaignActionId::SEARCH_RETIRED, string()));})))
+        .addElemAuto(gui.buttonLabel("X",
+            [&queue]{ queue.push(CampaignAction(CampaignActionId::SEARCH_RETIRED, string()));}))
         .buildHorizontalList()
     );
     auto addedDungeons = drawRetiredGames(
@@ -3515,7 +3536,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
         gui.buttonLabel("Customize", [&menuState] { menuState.options = !menuState.options;})));
     for (OptionId id : campaignOptions.options)
       optionsLines.addElem(
-          drawOptionElem(options, id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});},
+          drawOptionElem(id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});},
               getDefaultString(id)));
   }
   lines.addBackElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, nullptr,

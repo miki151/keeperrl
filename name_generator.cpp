@@ -64,7 +64,7 @@ NameGenerator::NameGenerator(const DirectoryPath& namesPath) {
   }
   auto set = [&] (NameGeneratorId id, vector<string> input) {
     for (string name : Random.permutation(input))
-      names[id].push(name);
+      names[id].push_back(name);
   };
   set(NameGeneratorId::SCROLL, input);
   set(NameGeneratorId::FIRST_MALE, readLines(namesPath.file("first_male.txt")));
@@ -88,7 +88,11 @@ NameGenerator::NameGenerator(const DirectoryPath& namesPath) {
 string NameGenerator::getNext(NameGeneratorId id) {
   CHECK(!names[id].empty());
   string ret = names[id].front();
-  names[id].pop();
-  names[id].push(ret);
+  names[id].pop_front();
+  names[id].push_back(ret);
   return ret;
+}
+
+vector<string> NameGenerator::getAll(NameGeneratorId id) {
+  return vector<string>(names[id].begin(), names[id].end());
 }

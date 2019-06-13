@@ -212,43 +212,46 @@ SGuiElem GuiFactory::button(function<void()> fun) {
 namespace  {
 class TextFieldElem : public GuiElem {
   public:
-  TextFieldElem(string text, function<void(string)> callback, Clock* clock)
-      : callback(std::move(callback)), text(std::move(text)), clock(clock) {}
+  TextFieldElem(function<string()> text, function<void(string)> callback, Clock* clock)
+      : callback(std::move(callback)), getText(std::move(text)), clock(clock) {}
 
   virtual bool onLeftClick(Vec2 pos) override {
-    focused = pos.inRectangle(getBounds());
-    return focused;
+    if (pos.inRectangle(getBounds())) {
+      current = getText();
+    } else {
+      current = none;
+    }
+    return !!current;
   }
 
   virtual void render(Renderer& r) override {
     auto bounds = getBounds();
-    r.drawFilledRectangle(bounds, Color::TRANSPARENT, focused ? Color::WHITE : Color::GRAY);
-    auto toDraw = text;
-    if (focused && (clock->getRealMillis().count() / 400) % 2 == 0)
+    r.drawFilledRectangle(bounds, Color::TRANSPARENT, !!current ? Color::WHITE : Color::GRAY);
+    auto toDraw = current.value_or(getText());
+    if (!!current && (clock->getRealMillis().count() / 400) % 2 == 0)
       toDraw += "|";
     r.setScissor(bounds);
-    r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(6, 2), toDraw);
-    r.drawText(Color::WHITE, bounds.topLeft() + Vec2(5, 0), toDraw);
+    r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(6, 6), toDraw);
+    r.drawText(Color::WHITE, bounds.topLeft() + Vec2(5, 4), toDraw);
     r.setScissor(none);
   }
 
   virtual bool onKeyPressed2(SDL::SDL_Keysym sym) override {
-    if (focused) {
+    if (!!current) {
       switch (sym.sym) {
-        case SDL::SDLK_BACKSPACE:
-          if (!text.empty())
-            text.pop_back();
+        case SDL::SDLK_BACKSPACE: {
+          if (!current->empty())
+            current->pop_back();
           break;
+        }
         case SDL::SDLK_ESCAPE:
-          focused = false;
-          text = "";
-          callback(text);
+          current = none;
+          callback("");
           break;
         case SDL::SDLK_KP_ENTER:
         case SDL::SDLK_RETURN:
-          focused = false;
-          callback(text);
-          text = "";
+          callback(*current);
+          current = none;
           break;
         default:
           break;
@@ -259,8 +262,8 @@ class TextFieldElem : public GuiElem {
   }
 
   virtual bool onTextInput(const char* s) override {
-    if (focused) {
-      text += s;
+    if (current) {
+      *current += s;
       return true;
     }
     return false;
@@ -268,14 +271,14 @@ class TextFieldElem : public GuiElem {
 
   private:
   function<void(string)> callback;
-  string text = "";
+  function<string()> getText;
   Clock* clock;
-  bool focused = false;
+  optional<string> current;
 };
 }
 
-SGuiElem GuiFactory::textField(string text, function<void(string)> callback) {
-  return bottomMargin(4, make_shared<TextFieldElem>(std::move(text), std::move(callback), clock));
+SGuiElem GuiFactory::textField(function<string()> text, function<void(string)> callback) {
+  return topMargin(-4, bottomMargin(4, make_shared<TextFieldElem>(std::move(text), std::move(callback), clock)));
 }
 
 SGuiElem GuiFactory::buttonPos(function<void (Rectangle, Vec2)> fun) {
@@ -862,7 +865,7 @@ class GuiLayout : public GuiElem {
   virtual bool onTextInput(const char* c) override {
     for (int i : AllReverse(elems))
       if (isVisible(i) && elems[i]->onTextInput(c))
-          return true;
+        return true;
     return false;
   }
 
@@ -876,14 +879,14 @@ class GuiLayout : public GuiElem {
   virtual bool onRightClick(Vec2 pos) override {
     for (int i : AllReverse(elems))
       if (isVisible(i) && elems[i]->onRightClick(pos))
-          return true;
+        return true;
     return false;
   }
 
   virtual bool onMiddleClick(Vec2 pos) override {
     for (int i : AllReverse(elems))
       if (isVisible(i) && elems[i]->onMiddleClick(pos))
-          return true;
+        return true;
     return false;
   }
 
@@ -1409,7 +1412,7 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addMiddleElem(SGuiElem elem) {
   CHECK(!backElems);
   CHECK(!middleElem);
   elems.push_back(std::move(elem));
-  sizes.push_back(-1);
+  sizes.push_back(1);
   middleElem = true;
   return *this;
 }

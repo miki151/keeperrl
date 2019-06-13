@@ -74,6 +74,10 @@ void CreatureName::generateFirst(NameGenerator* generator) {
     firstName = generator->getNext(*firstNameGen);
 }
 
+optional<NameGeneratorId> CreatureName::getNameGenerator() const {
+  return firstNameGen;
+}
+
 void CreatureName::setStack(const string& s) {
   stackName = s;
 }

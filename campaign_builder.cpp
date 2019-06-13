@@ -335,7 +335,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
               getAvailableTypes().transform([](CampaignType t) -> View::CampaignOptions::CampaignTypeInfo {
                   return {t, getCampaignTypeDescription(t)};}),
               getMenuWarning(type),
-              searchString}, options, menuState);
+              searchString}, menuState);
       switch (action.getId()) {
         case CampaignActionId::SEARCH_RETIRED:
           searchString = action.get<string>();
