@@ -232,6 +232,10 @@ class TextFieldElem : public GuiElem {
       return false;
   }
 
+  virtual void onClickElsewhere() override {
+    current = none;
+  }
+
   virtual void render(Renderer& r) override {
     auto bounds = getBounds();
     r.drawFilledRectangle(bounds, Color::TRANSPARENT, !!current ? Color::WHITE : Color::GRAY);
@@ -870,22 +874,31 @@ class GuiLayout : public GuiElem {
   }
 
   virtual bool onClick(ClickButton b, Vec2 pos) override {
+    bool gone = false;
+    for (int i : AllReverse(elems)) {
+      if (!gone && isVisible(i) && elems[i]->onClick(b, pos)) {
+        gone = true;
+        continue;
+      }
+      elems[i]->onClickElsewhere();
+    }
+    return gone;
+  }
+
+  virtual void onClickElsewhere() override {
     for (int i : AllReverse(elems))
-      if (isVisible(i) && elems[i]->onClick(b, pos))
-        return true;
-    return false;
+      elems[i]->onClickElsewhere();
   }
 
   virtual bool onMouseMove(Vec2 pos) override {
     bool gone = false;
-    for (int i : AllReverse(elems))
-      if (isVisible(i)) {
-        if (!gone) {
-          if (elems[i]->onMouseMove(pos))
-            gone = true;
-        } else
-          elems[i]->onMouseGone();
+    for (int i : AllReverse(elems)) {
+      if (!gone && isVisible(i) && elems[i]->onMouseMove(pos)) {
+        gone = true;
+        continue;
       }
+      elems[i]->onMouseGone();
+    }
     return gone;
   }
 
@@ -2178,6 +2191,7 @@ class MouseHighlight : public MouseHighlightBase {
     if (pos.inRectangle(getBounds())) {
       *highlighted = myIndex;
       canTurnOff = true;
+      return true;
     } else if (*highlighted == myIndex && canTurnOff) {
       *highlighted = none;
       canTurnOff = false;
