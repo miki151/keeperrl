@@ -104,6 +104,7 @@ class ReleaseButton : public GuiElem {
       clicked = false;
     return false;
   }
+
   virtual void onMouseGone() override {
     clicked = false;
   }
@@ -893,11 +894,10 @@ class GuiLayout : public GuiElem {
   virtual bool onMouseMove(Vec2 pos) override {
     bool gone = false;
     for (int i : AllReverse(elems)) {
-      if (!gone && isVisible(i) && elems[i]->onMouseMove(pos)) {
-        gone = true;
-        continue;
-      }
-      elems[i]->onMouseGone();
+      if (!gone && isVisible(i)) {
+        gone = elems[i]->onMouseMove(pos);
+      } else
+        elems[i]->onMouseGone();
     }
     return gone;
   }
