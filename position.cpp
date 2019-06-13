@@ -339,6 +339,11 @@ void Position::addCreature(PCreature c) {
   }
 }
 
+void Position::landCreature(PCreature c) {
+  if (isValid())
+    level->landCreature({*this}, std::move(c));
+}
+
 void Position::addCreature(PCreature c, TimeInterval delay) {
   PROFILE;
   if (isValid()) {

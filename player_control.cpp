@@ -609,6 +609,9 @@ vector<Button> PlayerControl::fillButtons() const {
         },
         [&](BuildInfo::ForbidZone) {
           buttons.push_back({ViewId("forbid_zone"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+        },
+        [&](BuildInfo::PlaceMinion) {
+          buttons.push_back({ViewId("special_blbn"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         }
     );
     vector<string> unmetReqText;
@@ -2411,6 +2414,18 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
     },
     [&](BuildInfo::Dispatch) {
       collective->setPriorityTasks(position);
+    },
+    [&](BuildInfo::PlaceMinion) {
+      auto& factory = getGame()->getContentFactory()->creatures;
+      vector<PCreature> allCreatures = factory.getAllCreatures().transform(
+          [this, &factory](CreatureId id){ return factory.fromId(id, getTribeId()); });
+      if (auto id = getView()->chooseCreature("Choose creature to place",
+          allCreatures.transform([](auto& c) { return CreatureInfo(c.get()); }), "cancel")) {
+        for (auto& c : allCreatures)
+          if (c->getUniqueId() == *id) {
+            collective->addCreature(std::move(c), position, {MinionTrait::FIGHTER});
+          }
+      }
     },
     [&](const BuildInfo::Furniture& info) {
       auto layer = getGame()->getContentFactory()->furniture.getData(info.types[0]).getLayer();

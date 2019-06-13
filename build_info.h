@@ -38,7 +38,8 @@ struct BuildInfo {
   using Dispatch = EmptyStruct<struct DispatchTag>;
   using ForbidZone = EmptyStruct<struct ForbidZoneTag>;
   using Zone = ZoneId;
-  MAKE_VARIANT(BuildType, Furniture, Trap, Zone, DestroyLayers, Dig, ClaimTile, Dispatch, ForbidZone);
+  using PlaceMinion = EmptyStruct<struct PlaceMinionTag>;
+  MAKE_VARIANT(BuildType, Furniture, Trap, Zone, DestroyLayers, Dig, ClaimTile, Dispatch, ForbidZone, PlaceMinion);
   BuildType SERIAL(type);
   string SERIAL(name);
   string SERIAL(groupName);

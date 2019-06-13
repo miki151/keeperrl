@@ -1406,7 +1406,7 @@ GuiFactory::ListBuilder& GuiFactory::ListBuilder::addMiddleElem(SGuiElem elem) {
   CHECK(!backElems);
   CHECK(!middleElem);
   elems.push_back(std::move(elem));
-  sizes.push_back(1);
+  sizes.push_back(-1);
   middleElem = true;
   return *this;
 }
@@ -1453,16 +1453,25 @@ void GuiFactory::ListBuilder::clear() {
 }
 
 SGuiElem GuiFactory::ListBuilder::buildVerticalList() {
-  for (int i : All(sizes))
-    if (sizes[i] == -1)
-      sizes[i] = *elems[i]->getPreferredHeight();
+  for (int i : All(sizes)) {
+    if (sizes[i] == -1) {
+      if (middleElem && i == sizes.size() - backElems - 1)
+        sizes[i] = elems[i]->getPreferredHeight().value_or(1);
+      else
+        sizes[i] = *elems[i]->getPreferredHeight();
+    }
+  }
   return SGuiElem(new VerticalList(std::move(elems), sizes, backElems, middleElem));
 }
 
 SGuiElem GuiFactory::ListBuilder::buildHorizontalList() {
   for (int i : All(sizes))
-    if (sizes[i] == -1)
-      sizes[i] = *elems[i]->getPreferredWidth();
+    if (sizes[i] == -1) {
+      if (middleElem && i == sizes.size() - backElems - 1)
+        sizes[i] = elems[i]->getPreferredWidth().value_or(1);
+      else
+        sizes[i] = *elems[i]->getPreferredWidth();
+    }
   return SGuiElem(new HorizontalList(std::move(elems), sizes, backElems, middleElem));
 }
 
