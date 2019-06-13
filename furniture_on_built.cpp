@@ -20,14 +20,15 @@
 #include "resource_counts.h"
 #include "content_factory.h"
 
-static SettlementInfo getEnemy(EnemyId id, const ContentFactory* contentFactory) {
-  auto enemy = EnemyFactory(Random, nullptr, contentFactory->enemies, contentFactory->externalEnemies).get(id);
+static SettlementInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
+  auto enemy = EnemyFactory(Random, contentFactory->creatures.getNameGenerator(), contentFactory->enemies,
+      contentFactory->externalEnemies).get(id);
   enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
   return enemy.settlement;
 }
 
 static PLevelMaker getLevelMaker(const ZLevelType& level, ResourceCounts resources, int width, TribeId tribe,
-    StairKey stairKey, const ContentFactory* contentFactory) {
+    StairKey stairKey, ContentFactory* contentFactory) {
   return level.visit(
       [&](const WaterZLevel& level) {
         return LevelMaker::getWaterZLevel(Random, level.waterType, width, level.creatures, stairKey);
@@ -48,7 +49,7 @@ static optional<ZLevelType> chooseZLevel(RandomGen& random, const vector<ZLevelI
   return random.choose(available);
 }
 
-static PLevelMaker getLevelMaker(RandomGen& random, const ContentFactory* contentFactory, TribeAlignment alignment,
+static PLevelMaker getLevelMaker(RandomGen& random, ContentFactory* contentFactory, TribeAlignment alignment,
     int depth, int width, TribeId tribe, StairKey stairKey) {
   auto& allLevels = contentFactory->zLevels;
   auto& resources = contentFactory->resources;
