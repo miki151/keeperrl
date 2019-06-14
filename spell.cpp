@@ -144,7 +144,7 @@ optional<SpellId> Spell::getUpgrade() const {
 
 MoveInfo Spell::getAIMove(const Creature* c) const {
   for (auto pos : c->getPosition().getRectangle(Rectangle::centered(range)))
-    if (pos != c->getPosition() || targetSelf)
+    if (pos != c->getPosition() || canTargetSelf())
       if (effect->shouldAIApply(c, pos) == EffectAIIntent::WANTED)
         return c->castSpell(this, pos);
   return NoMove;

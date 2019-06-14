@@ -172,8 +172,6 @@ class EffectsAI : public Behaviour {
   }
 
   virtual MoveInfo getMove() {
-    if (!creature->getBody().isHumanoid())
-      return NoMove;
     for (auto spell : creature->getSpellMap().getAvailable(creature))
       if (auto move = spell->getAIMove(creature))
         return move;
