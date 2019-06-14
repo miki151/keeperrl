@@ -1643,7 +1643,7 @@ optional<int> Creature::getThrowDistance(const Item* item) const {
     return none;
 }
 
-CreatureAction Creature::throwItem(Item* item, Position target) const {
+CreatureAction Creature::throwItem(Item* item, Position target, bool isFriendlyAI) const {
   if (target == position)
     return CreatureAction();
   if (!getBody().numGood(BodyPart::ARM) || !getBody().isHumanoid())
@@ -1653,7 +1653,8 @@ CreatureAction Creature::throwItem(Item* item, Position target) const {
     return CreatureAction(item->getTheName() + " is too heavy!");
   int damage = getAttr(AttrType::RANGED_DAMAGE) + item->getModifier(AttrType::RANGED_DAMAGE);
   return CreatureAction(this, [=](Creature* self) {
-    Attack attack(self, Random.choose(getBody().getAttackLevels()), item->getWeaponInfo().attackType, damage, AttrType::DAMAGE);
+    Attack attack(isFriendlyAI ? nullptr : self, Random.choose(getBody().getAttackLevels()),
+        item->getWeaponInfo().attackType, damage, AttrType::DAMAGE);
     secondPerson("You throw " + item->getAName(false, this));
     thirdPerson(getName().the() + " throws " + item->getAName());
     self->getPosition().throwItem(makeVec(self->equipment->removeItem(item, self)), attack, *dist, target, getVision().getId());

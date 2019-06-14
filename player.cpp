@@ -217,7 +217,7 @@ optional<Position> Player::chooseTarget(Table<PassableInfo> passable, TargetType
 
 void Player::throwItem(Item* item, optional<Position> target) {
   if (!target) {
-    if (auto testAction = creature->throwItem(item, creature->getPosition().plus(Vec2(1, 0)))) {
+    if (auto testAction = creature->throwItem(item, creature->getPosition().plus(Vec2(1, 0)), false)) {
       Vec2 origin = creature->getPosition().getCoord();
       Table<PassableInfo> passable(Rectangle::centered(origin, *creature->getThrowDistance(item)),
           PassableInfo::PASSABLE);
@@ -236,7 +236,7 @@ void Player::throwItem(Item* item, optional<Position> target) {
     if (!target)
       return;
   }
-  tryToPerform(creature->throwItem(item, *target));
+  tryToPerform(creature->throwItem(item, *target, false));
 }
 
 void Player::handleIntrinsicAttacks(const EntitySet<Item>& itemIds, ItemAction action) {

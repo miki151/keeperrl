@@ -154,8 +154,8 @@ class EffectsAI : public Behaviour {
     return 0;
   }
 
-  MoveInfo getThrowMove(Creature* enemy) {
-    auto target = enemy->getPosition();
+  MoveInfo getThrowMove(Creature* other) {
+    auto target = other->getPosition();
     auto trajectory = drawLine(creature->getPosition().getCoord(), target.getCoord())
         .transform([&](Vec2 v) { return Position(v, target.getLevel()); });
     if (isObstructed(creature, trajectory))
@@ -166,7 +166,7 @@ class EffectsAI : public Behaviour {
           if (!creature->getEquipment().isEquipped(item) &&
              creature->getThrowDistance(item).value_or(-1) >=
                  trajectory.back().dist8(creature->getPosition()).value_or(10000))
-            if (auto action = creature->throwItem(item, target))
+            if (auto action = creature->throwItem(item, target, creature->isFriend(other)))
               return action;
     return NoMove;
   }

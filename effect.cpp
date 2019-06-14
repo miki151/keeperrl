@@ -240,7 +240,6 @@ static bool isConsideredHostile(const Effect& effect) {
 void Effect::Escape::applyToCreature(Creature* c, Creature* attacker) const {
   PROFILE_BLOCK("Escape::applyToCreature");
   Rectangle area = Rectangle::centered(Vec2(0, 0), 12);
-  int infinity = 10000;
   PositionMap<int> weight;
   queue<Position> q;
   auto addDanger = [&] (Position pos) {

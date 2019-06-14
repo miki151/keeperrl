@@ -161,7 +161,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction unequip(Item* item) const;
   bool canEquipIfEmptySlot(const Item* item, string* reason = nullptr) const;
   bool canEquip(const Item* item) const;
-  CreatureAction throwItem(Item*, Position target) const;
+  CreatureAction throwItem(Item*, Position target, bool isFriendlyAI) const;
   optional<int> getThrowDistance(const Item*) const;
   CreatureAction applySquare(Position) const;
   CreatureAction hide() const;
