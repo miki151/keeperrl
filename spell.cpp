@@ -104,9 +104,9 @@ void Spell::apply(Creature* c, Position target) const {
   auto thisFx = getProjectileFX(*effect);
   if (fx)
     thisFx = FXInfo{*fx};
-  c->getGame()->addEvent(
-      EventInfo::Projectile{std::move(thisFx), getProjectile(*effect), c->getPosition(), target, none});
   if (endOnly) {
+    c->getGame()->addEvent(
+        EventInfo::Projectile{std::move(thisFx), getProjectile(*effect), c->getPosition(), target, none});
     effect->apply(target, c);
     return;
   }
@@ -118,6 +118,8 @@ void Spell::apply(Creature* c, Position target) const {
       if (trajectory.back().isDirEffectBlocked())
         break;
     }
+  c->getGame()->addEvent(
+      EventInfo::Projectile{std::move(thisFx), getProjectile(*effect), c->getPosition(), trajectory.back(), none});
   for (auto& pos : trajectory)
     effect->apply(pos, c);
 }
@@ -142,11 +144,19 @@ optional<SpellId> Spell::getUpgrade() const {
   return upgrade;
 }
 
+static bool checkTrajectory(Position from, Position to) {
+  for (auto& v : drawLine(from, to))
+    if (v != from && v.isDirEffectBlocked())
+      return false;
+  return true;
+}
+
 MoveInfo Spell::getAIMove(const Creature* c) const {
-  for (auto pos : c->getPosition().getRectangle(Rectangle::centered(range)))
-    if (pos != c->getPosition() || canTargetSelf())
-      if (effect->shouldAIApply(c, pos) == EffectAIIntent::WANTED)
-        return c->castSpell(this, pos);
+  if (c->isReady(this))
+    for (auto pos : c->getPosition().getRectangle(Rectangle::centered(range)))
+      if (canTargetSelf() || (c->canSee(pos) && pos != c->getPosition() && checkTrajectory(c->getPosition(), pos)))
+        if (effect->shouldAIApply(c, pos) == EffectAIIntent::WANTED)
+          return c->castSpell(this, pos);
   return NoMove;
 }
 
