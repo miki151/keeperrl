@@ -3613,7 +3613,7 @@ SGuiElem GuiBuilder::drawCreatureInfo(SyncQueue<bool>& queue, const string& titl
     const vector<CreatureInfo>& creatures) {
   auto lines = gui.getListBuilder(getStandardLineHeight());
   lines.addElem(gui.centerHoriz(gui.label(title)));
-  const int windowWidth = 480;
+  const int windowWidth = 540;
   lines.addMiddleElem(gui.scrollable(gui.margins(drawCreatureList(creatures, nullptr), 10)));
   lines.addSpace(15);
   auto bottomLine = gui.getListBuilder()

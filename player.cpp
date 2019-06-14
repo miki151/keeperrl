@@ -1054,14 +1054,17 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   fillDungeonLevel(info);
   info.controlMode = getGame()->getPlayerCreatures().size() == 1 ? PlayerInfo::LEADER : PlayerInfo::FULL;
   auto team = getTeam();
-  auto leader = team[0];
   if (team.size() > 1) {
     auto& timeQueue = getModel()->getTimeQueue();
-    auto timeCmp = [&timeQueue](const Creature* c1, const Creature* c2) {
-      if (c1->isPlayer() && !c2->isPlayer())
-        return true;
-      if (!c1->isPlayer() && c2->isPlayer())
-        return false;
+    auto timeCmp = [&timeQueue, this](const Creature* c1, const Creature* c2) {
+      auto sameModel1 = c1->getPosition().isSameModel(creature->getPosition());
+      bool sameModel2 = c2->getPosition().isSameModel(creature->getPosition());
+      auto values1 = make_tuple(sameModel1, c1->isPlayer());
+      auto values2 = make_tuple(sameModel2, c2->isPlayer());
+      if (values1 != values2)
+        return values1 > values2;
+      if (!sameModel1 && !sameModel2)
+        return c1->getUniqueId() < c2->getUniqueId();
       return timeQueue.compareOrder(c1, c2);
     };
     sort(team.begin(), team.end(), timeCmp);
