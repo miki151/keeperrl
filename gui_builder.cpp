@@ -3194,8 +3194,8 @@ SGuiElem GuiBuilder::drawGenderButtons(const vector<View::AvatarData>& avatars,
     for (int i : All(avatar.viewId)) {
       auto selectFun = [i, gender] { *gender = i; };
       genderList.addElemAuto(gui.conditional(
-          gui.conditional(gui.buttonLabelSelected(capitalFirst(i == 0 ? "male"_s : "female"_s), selectFun, false, true),
-              gui.buttonLabel(capitalFirst(capitalFirst(i == 0 ? "male"_s : "female"_s)), selectFun, false, true),
+          gui.conditional(gui.buttonLabelSelected(capitalFirst(avatar.genderNames[i]), selectFun, false, true),
+              gui.buttonLabel(capitalFirst(capitalFirst(avatar.genderNames[i])), selectFun, false, true),
              [gender, i] { return *gender == i; }),
           [=] { return avatarIndex == *chosenAvatar; }));
     }

@@ -38,3 +38,7 @@ const char *get(Gender g, const char* male, const char* female, const char* it) 
       return it;
   }
 }
+
+const char* getName(Gender g) {
+  return get(g, "male", "female", "genderless");
+}

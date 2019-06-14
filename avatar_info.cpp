@@ -55,6 +55,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const PlayerCrea
   };
   for (int i : All(keeperCreatures))
     keeperAvatarData.push_back(View::AvatarData {
+      keeperCreatures[i].transform([](const auto& c) { return string(getName(c->getAttributes().getGender())); }),
       keeperCreatures[i].transform([](const auto& c) { return getUpgradedViewId(c.get()); }),
       keeperCreatures[i].transform(getAllNames),
       keeperCreatureInfos[i].tribeAlignment,
@@ -65,6 +66,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const PlayerCrea
   vector<View::AvatarData> adventurerAvatarData;
   for (int i : All(adventurerCreatures))
     adventurerAvatarData.push_back(View::AvatarData {
+      adventurerCreatures[i].transform([](const auto& c) { return string(getName(c->getAttributes().getGender())); }),
       adventurerCreatures[i].transform([](const auto& c) { return getUpgradedViewId(c.get()); }),
       adventurerCreatures[i].transform(getAllNames),
       adventurerCreatureInfos[i].tribeAlignment,

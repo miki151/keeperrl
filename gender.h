@@ -31,3 +31,4 @@ const char* he(Gender);
 const char* his(Gender);
 const char* him(Gender);
 const char* get(Gender, const char* male, const char* female, const char* it);
+const char* getName(Gender);

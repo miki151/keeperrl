@@ -224,6 +224,7 @@ class View {
     string name;
   };
   struct AvatarData {
+    vector<string> genderNames;
     vector<vector<ViewId>> viewId;
     vector<vector<string>> firstNames;
     TribeAlignment alignment;
