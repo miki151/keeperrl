@@ -1504,7 +1504,7 @@ class DropItems : public Task {
           });
     if (c->getPosition() == target) {
       vector<Item*> myItems = c->getEquipment().getItems().filter(items.containsPredicate());
-      if (auto action = c->drop(myItems).append([=] (Creature*) { setDone(); }))
+      if (auto action = c->drop(myItems))
         return {1.0, action.append([=](Creature*) {setDone();})};
       else {
         setDone();
