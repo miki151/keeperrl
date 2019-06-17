@@ -442,23 +442,26 @@ void Player::fireAction() {
 }
 
 void Player::spellAction(int id) {
-  auto spell = creature->getSpellMap().getAvailable(creature)[id];
-  int range = spell->getRange();
-  if (range == 0)
-    tryToPerform(creature->castSpell(spell));
-  else {
-    Vec2 origin = creature->getPosition().getCoord();
-    Table<PassableInfo> passable(Rectangle::centered(origin, range), PassableInfo::PASSABLE);
-    for (auto v : passable.getBounds()) {
-      Position pos(v, getLevel());
-      if (!creature->canSee(pos) && !getMemory().getViewIndex(pos))
-        passable[v] = PassableInfo::UNKNOWN;
-      if (pos.isDirEffectBlocked())
-        passable[v] = PassableInfo::STOPS_HERE;
+  auto available = creature->getSpellMap().getAvailable(creature);
+  if (id >= 0 && id < available.size()) {
+    auto spell = available[id];
+    int range = spell->getRange();
+    if (range == 0)
+      tryToPerform(creature->castSpell(spell));
+    else {
+      Vec2 origin = creature->getPosition().getCoord();
+      Table<PassableInfo> passable(Rectangle::centered(origin, range), PassableInfo::PASSABLE);
+      for (auto v : passable.getBounds()) {
+        Position pos(v, getLevel());
+        if (!creature->canSee(pos) && !getMemory().getViewIndex(pos))
+          passable[v] = PassableInfo::UNKNOWN;
+        if (pos.isDirEffectBlocked())
+          passable[v] = PassableInfo::STOPS_HERE;
+      }
+      if (auto target = chooseTarget(std::move(passable), spell->isEndOnly() ? TargetType::POSITION : TargetType::TRAJECTORY,
+          "Which direction?"))
+        tryToPerform(creature->castSpell(spell, *target));
     }
-    if (auto target = chooseTarget(std::move(passable), spell->isEndOnly() ? TargetType::POSITION : TargetType::TRAJECTORY,
-        "Which direction?"))
-      tryToPerform(creature->castSpell(spell, *target));
   }
 }
 
