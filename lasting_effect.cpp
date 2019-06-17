@@ -28,7 +28,7 @@ static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   }
 }
 
-static optional<LastingEffect> getCancelledBothWays(LastingEffect effect) {
+static optional<LastingEffect> getMutuallyExclusiveImpl(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::PANIC:
       return LastingEffect::RAGE;
@@ -41,15 +41,15 @@ static optional<LastingEffect> getCancelledBothWays(LastingEffect effect) {
   }
 }
 
-static optional<LastingEffect> getCancelled(LastingEffect effect) {
+static optional<LastingEffect> getPreventedBy(LastingEffect effect) {
   static EnumMap<LastingEffect, optional<LastingEffect>> ret(
     [&](LastingEffect e) -> optional<LastingEffect> {
       if (auto other = getCancelledOneWay(e))
         return *other;
-      if (auto other = getCancelledBothWays(e))
+      if (auto other = getMutuallyExclusiveImpl(e))
         return *other;
       for (auto other : ENUM_ALL(LastingEffect))
-        if (getCancelledBothWays(other) == e)
+        if (getMutuallyExclusiveImpl(other) == e)
           return other;
       return none;
     }
@@ -57,21 +57,30 @@ static optional<LastingEffect> getCancelled(LastingEffect effect) {
   return ret[effect];
 }
 
-static optional<LastingEffect> getCancelling(LastingEffect effect) {
+static optional<LastingEffect> getPreventing(LastingEffect effect) {
   static EnumMap<LastingEffect, optional<LastingEffect>> ret(
     [&](LastingEffect e) -> optional<LastingEffect> {
       for (auto other : ENUM_ALL(LastingEffect))
-        if (getCancelled(other) == e)
+        if (getPreventedBy(other) == e)
           return other;
       return none;
     }
   );
   return ret[effect];
+}
+
+void LastingEffects::runTests() {
+  CHECK(getPreventing(LastingEffect::POISON) == LastingEffect::POISON_RESISTANT);
+  CHECK(!getPreventing(LastingEffect::POISON_RESISTANT));
+  CHECK(!getPreventedBy(LastingEffect::POISON));
+  CHECK(getPreventedBy(LastingEffect::POISON_RESISTANT) == LastingEffect::POISON);
+  CHECK(getPreventing(LastingEffect::SLOWED) == LastingEffect::SPEED);
+  CHECK(getPreventing(LastingEffect::SPEED) == LastingEffect::SLOWED);
 }
 
 void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
   PROFILE;
-  if (auto e = getCancelled(effect))
+  if (auto e = getCancelledOneWay(effect))
     c->removeEffect(*e, true);
   if (msg)
     switch (effect) {
@@ -264,8 +273,8 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
 bool LastingEffects::affects(const Creature* c, LastingEffect effect) {
   if (c->getBody().isImmuneTo(effect))
     return false;
-  if (auto cancelling = getCancelling(effect))
-    if (c->isAffected(*cancelling))
+  if (auto preventing = getPreventing(effect))
+    if (c->isAffected(*preventing))
       return false;
   return true;
 }
@@ -1211,7 +1220,7 @@ static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect effect
 }
 
 static bool shouldAllyApply(const Creature* victim, LastingEffect effect) {
-  if (auto cancelled = getCancelled(effect))
+  if (auto cancelled = getCancelledOneWay(effect))
     if (victim->isAffected(*cancelled) && getAdjective(*cancelled).bad)
       return true;
   switch (effect) {
@@ -1243,13 +1252,15 @@ static bool shouldAllyApply(const Creature* victim, LastingEffect effect) {
 }
 
 static bool shouldEnemyApply(const Creature* victim, LastingEffect effect) {
-  if (auto resistance = getCancelling(effect))
-    if (victim->isAffected(*resistance))
-      return false;
+  if (auto cancelled = getCancelledOneWay(effect))
+    if (victim->isAffected(*cancelled) && !getAdjective(*cancelled).bad)
+      return true;
   return getAdjective(effect).bad;
 }
 
 EffectAIIntent LastingEffects::shouldAIApply(const Creature* victim, LastingEffect effect, bool isEnemy) {
+  if (!affects(victim, effect))
+    return EffectAIIntent::NONE;
   if (shouldEnemyApply(victim, effect))
     return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
   if (isEnemy)

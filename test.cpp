@@ -42,6 +42,7 @@
 #include "content_factory.h"
 #include "game_config.h"
 #include "name_generator.h"
+#include "lasting_effect.h"
 
 class Test {
   public:
@@ -1150,5 +1151,6 @@ void testAll() {
   Test().testRoofSupport3();
   Test().testRoofSupport4();
   Test().testRoofSupport5();
+  LastingEffects::runTests();
   INFO << "-----===== OK =====-----";
 }
