@@ -2338,7 +2338,8 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
           lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(*attributes)));
         if (auto health = viewObject.getAttribute(ViewObjectAttribute::HEALTH))
           lines.addElem(gui.stack(
-                gui.margins(gui.progressBar(MapGui::getHealthBarColor(*health).transparency(70), *health), -2, 0, 0, 3),
+                gui.margins(gui.progressBar(MapGui::getHealthBarColor(*health,
+                    viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE)).transparency(70), *health), -2, 0, 0, 3),
                 gui.label(getHealthName(viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE))
                     + toString((int) (100.0f * *health)) + "%")));
         if (auto morale = viewObject.getAttribute(ViewObjectAttribute::MORALE))

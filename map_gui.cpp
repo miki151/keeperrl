@@ -541,8 +541,13 @@ static bool mirrorSprite(ViewId id) {
   return id == ViewId("grass") || id == ViewId("hill");
 }
 
-Color MapGui::getHealthBarColor(double health) {
-  return Color::f(min<double>(1.0, 2 - health * 2), min<double>(1.0, 2 * health), 0);
+Color MapGui::getHealthBarColor(double health, bool spirit) {
+  auto ret = Color::f(min<double>(1.0, 2 - health * 2), min<double>(1.0, 2 * health), 0);
+  if (spirit) {
+    swap(ret.g, ret.b);
+    ret.g = min(255, ret.g + 100);
+  }
+  return ret;
 }
 
 void MapGui::drawFurnitureCracks(Renderer& renderer, Vec2 tilePos, float state, Vec2 pos, Vec2 size, const ViewIndex& index) {
@@ -563,7 +568,7 @@ void MapGui::drawFurnitureCracks(Renderer& renderer, Vec2 tilePos, float state, 
 void MapGui::drawHealthBar(Renderer& renderer, Vec2 tilePos, Vec2 pos, Vec2 size, const ViewObject& object,
     const ViewIndex& index) {
   auto health = object.getAttribute(ViewObject::Attribute::HEALTH);
-  if (!health || object.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE))
+  if (!health)
     return;
   if (object.hasModifier(ViewObject::Modifier::FURNITURE_CRACKS)) {
     drawFurnitureCracks(renderer, tilePos, *health, pos, size, index);
@@ -581,7 +586,7 @@ void MapGui::drawHealthBar(Renderer& renderer, Vec2 tilePos, Vec2 pos, Vec2 size
     return Rectangle((int) (pos.x + size.x * (1 - barLength) / 2), pos.y,
         (int) (pos.x + size.x * state * (1 + barLength) / 2), (int) (pos.y + size.y * barWidth));
   };
-  auto color = capture ? Color::WHITE : getHealthBarColor(*health);
+  auto color = capture ? Color::WHITE : getHealthBarColor(*health, object.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE));
   color = blendNightColor(color, index);
   auto fullRect = getBar(1);
   renderer.drawFilledRectangle(fullRect.minusMargin(-1), Color::TRANSPARENT, Color::BLACK.transparency(100));
@@ -613,9 +618,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   const Tile& tile = renderer.getTileSet().getTile(id, spriteMode);
   Color color = tile.color;
   considerWoundedAnimation(object, color, curTimeReal);
-  if (object.hasModifier(ViewObject::Modifier::SPIRIT_DAMAGE))
-    color = color.transparency(int(250 * object.getAttribute(ViewObject::Attribute::HEALTH).value_or(1)));
-  else if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
+  if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
     color = color.transparency(70);
   else if (tile.translucent > 0)
     color = color.transparency(255 * (1 - tile.translucent));

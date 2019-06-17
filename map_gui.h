@@ -75,7 +75,7 @@ class MapGui : public GuiElem {
   void highlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void setButtonViewId(ViewId);
-  static Color getHealthBarColor(double health);
+  static Color getHealthBarColor(double health, bool sprit);
   void clearButtonViewId();
   bool highlightMorale = true;
   bool highlightEnemies = true;
