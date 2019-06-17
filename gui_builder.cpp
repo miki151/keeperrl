@@ -2334,6 +2334,8 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
               Renderer::textSize, Color::GREEN, ','));
           lines.addSpace(legendLineHeight / 3);
         }
+        if (viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE))
+          lines.addElem(gui.label("Can only be healed using rituals."));
         if (auto& attributes = viewObject.getCreatureAttributes())
           lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(*attributes)));
         if (auto health = viewObject.getAttribute(ViewObjectAttribute::HEALTH))
