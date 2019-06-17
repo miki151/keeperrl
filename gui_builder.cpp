@@ -3221,7 +3221,7 @@ SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatar
               [=] {
                 auto entered = options->getValueString(OptionId::PLAYER_NAME);
                 return entered.empty() ?
-                    avatar.firstNames[genderIndex][*chosenName] :
+                    avatar.firstNames[genderIndex][*chosenName % avatar.firstNames[genderIndex].size()] :
                     entered;
               },
               [=] (string s) {
@@ -3325,8 +3325,9 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
       [&queue, chosenAvatar, chosenName, gender, &avatars, this] {
         auto chosenGender = getChosenGender(gender, chosenAvatar, avatars);
         auto enteredName = options->getValueString(OptionId::PLAYER_NAME);
+        auto& firstNames = avatars[*chosenAvatar].firstNames[chosenGender];
         queue.push(View::AvatarChoice{*chosenAvatar, chosenGender, enteredName.empty() ?
-            avatars[*chosenAvatar].firstNames[chosenGender][*chosenName] :
+            firstNames[*chosenName % firstNames.size()] :
             enteredName});
       })));
   auto menuLines = gui.getListBuilder(legendLineHeight)
