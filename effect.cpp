@@ -635,7 +635,46 @@ string Effect::ReviveCorpse::getName() const {
 }
 
 string Effect::ReviveCorpse::getDescription() const {
-  return "Brings a dead creature back alive as a servant";
+  return "Brings a dead corpse back alive as a servant";
+}
+
+PCreature Effect::SummonGhost::getBestSpirit(const Model* model, TribeId tribe) const {
+  auto& factory = model->getGame()->getContentFactory()->creatures;
+  for (auto id : Random.permutation(factory.getAllCreatures())) {
+    auto orig = factory.fromId(id, tribe);
+    if (orig->getBody().hasBrain())
+      return orig;
+  }
+  return nullptr;
+}
+
+void Effect::SummonGhost::applyToCreature(Creature* c, Creature* attacker) const {
+  auto spirits = Effect::summon(c, CreatureId("SPIRIT"), Random.get(count), ttl);
+  if (spirits.empty())
+    attacker->message("The spell failed");
+  for (auto spirit : spirits) {
+    spirit->getAttributes().setBaseAttr(AttrType::DAMAGE, 0);
+    spirit->getAttributes().setBaseAttr(AttrType::RANGED_DAMAGE, 0);
+    spirit->getAttributes().setBaseAttr(AttrType::DEFENSE, ghostPower);
+    spirit->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, ghostPower);
+    spirit->modViewObject().setModifier(ViewObject::Modifier::ILLUSION);
+    auto orig = getBestSpirit(c->getPosition().getModel(), c->getTribeId());
+    spirit->getAttributes().getName() = orig->getAttributes().getName();
+    spirit->getAttributes().getName().setFirst(none);
+    spirit->getAttributes().getName().useFullTitle(false);
+    spirit->modViewObject().setId(orig->getViewObject().id());
+    spirit->getName().addBareSuffix("spirit");
+    spirit->updateViewObject();
+    c->verb("have", "has", "summoned " + spirit->getName().a());
+  }
+}
+
+string Effect::SummonGhost::getName() const {
+  return "summon spirit";
+}
+
+string Effect::SummonGhost::getDescription() const {
+  return "Summons a dead creature's spirit as a servant";
 }
 
 void Effect::EmitPoisonGas::applyToCreature(Creature* c, Creature* attacker) const {
@@ -1034,6 +1073,10 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
       },
       [&] (const Summon&) {
         return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      },
+      [&] (const SummonGhost& g) {
+        return (isFighting && !!g.getBestSpirit(victim->getPosition().getModel(), victim->getTribeId()))
+            ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
       },
       [&] (const SummonElement&) {
         return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;

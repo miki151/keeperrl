@@ -24,14 +24,15 @@ class CreatureName {
   CreatureName(const string& name);
   CreatureName(const string& name, const string& plural);
   CreatureName(const char* name);
-  void setFirst(const string&);
+  void setFirst(optional<string>);
   void generateFirst(NameGenerator*);
   optional<NameGeneratorId> getNameGenerator() const;
   void setStack(const string&);
   void setGroup(const string&);
   void setBare(const string&);
   void addBarePrefix(const string&);
-  void useFullTitle();
+  void addBareSuffix(const string&);
+  void useFullTitle(bool = true);
   const string& stack() const;
   const char* identify() const;
   const optional<string>& stackOnly() const;

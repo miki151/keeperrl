@@ -836,7 +836,7 @@ PCreature CreatureFactory::getHumanForTests() {
       c.body = Body::humanoid(Body::Size::LARGE);
       c.name = "wizard";
       c.viewIdUpgrades = LIST(ViewId("keeper2"), ViewId("keeper3"), ViewId("keeper4"));
-      c.name.setFirst("keeper");
+      c.name.setFirst("keeper"_s);
       c.name.useFullTitle();
       c.skills.setValue(SkillId::LABORATORY, 0.2);
       c.maxLevelIncrease[ExperienceType::MELEE] = 7;

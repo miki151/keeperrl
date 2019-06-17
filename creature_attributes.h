@@ -64,6 +64,7 @@ class CreatureAttributes {
   CreatureName& getName();
   int getRawAttr(AttrType) const;
   void increaseBaseAttr(AttrType, int);
+  void setBaseAttr(AttrType, int);
   double getCourage() const;
   void setCourage(double);
   string getDeathDescription() const;

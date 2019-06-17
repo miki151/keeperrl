@@ -268,7 +268,7 @@
   {
     id =  "summon spirit"
     symbol = "👾"
-    effect = Summon "SPIRIT" { 3 5}
+    effect = SummonGhost 100 { 3 5} 50
     cooldown = 100
     sound = SPELL_FIRE_SPHERE_PET
   }

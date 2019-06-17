@@ -14,18 +14,6 @@
     "advanced teleport" 11
     "invisibility" 12
   }
-  "shaman" SPELL
-  {
-    "summon flies" 1
-    "haste" 2
-    "slow" 3
-    "defense bonus" 4
-    "damage bonus" 5
-    "advanced haste" 6
-    "advanced defense bonus" 7
-    "advanced damage bonus" 8
-    "magic cancellation" 9
-  }
   "healer" SPELL
   {
     "advanced healing" 1

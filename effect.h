@@ -152,9 +152,16 @@ class Effect {
   struct ReviveCorpse {
     EFFECT_TYPE_INTERFACE;
     vector<CreatureId> summoned;
-    function<void()> getRevivalFun(Creature* caster, Position pos) const;
     int ttl;
     COMPARE_ALL(summoned, ttl)
+  };
+  struct SummonGhost {
+    EFFECT_TYPE_INTERFACE;
+    optional<TimeInterval> ttl;
+    Range count;
+    int ghostPower;
+    PCreature getBestSpirit(const Model*, TribeId tribe) const;
+    COMPARE_ALL(ttl, count, ghostPower)
   };
 /*  struct Chain {
     EFFECT_TYPE_INTERFACE;
@@ -164,7 +171,7 @@ class Effect {
   MAKE_VARIANT(EffectType, Escape, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
       Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition);
+      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost);
 
   template <typename T>
   Effect(T&& t) : effect(std::forward<T>(t)) {}

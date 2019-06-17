@@ -302,7 +302,7 @@
         type = NonHumanoid LARGE
         material = SPIRIT
         intrinsicAttacks = {
-          TORSO { Intrinsic { "fist_attack" } "spell" 10 {
+          TORSO { Intrinsic { "fist_attack" } "spell" 1 {
               attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }
         }
       }

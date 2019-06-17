@@ -65,8 +65,8 @@ string CreatureName::title() const {
     return capitalFirst(bare());
 }
 
-void CreatureName::setFirst(const string& s) {
-  firstName = s;
+void CreatureName::setFirst(optional<string> s) {
+  firstName = std::move(s);
 }
 
 void CreatureName::generateFirst(NameGenerator* generator) {
@@ -96,6 +96,12 @@ void CreatureName::addBarePrefix(const string& p) {
   name = p + " " + name;
 }
 
+void CreatureName::addBareSuffix(const string& p) {
+  if (!stackName)
+    stackName = name;
+  name = name + " " + p;
+}
+
 const optional<string>& CreatureName::stackOnly() const {
   return stackName;
 }
@@ -115,8 +121,8 @@ string CreatureName::firstOrBare() const {
   return firstName.value_or(capitalFirst(bare()));
 }
 
-void CreatureName::useFullTitle() {
-  fullTitle = true;
+void CreatureName::useFullTitle(bool b) {
+  fullTitle = b;
 }
 
 template <class Archive>
