@@ -3526,7 +3526,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
       retiredList.addElem(gui.label("No retired dungeons found :("));
     else
       retiredMenuLines.addElem(gui.label("Local dungeons:", Color::YELLOW));
-    int listHeight = min(600, retiredList.getSize() + 5);
+    int listHeight = min(400, retiredList.getSize() + 5);
     retiredMenuLines.addElem(gui.scrollable(gui.topMargin(3, retiredList.buildVerticalList())), listHeight);
     lines.addElem(gui.leftMargin(optionMargin,
         gui.buttonLabel("Add retired dungeons", [&menuState] { menuState.retiredWindow = !menuState.retiredWindow;})));
