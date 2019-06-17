@@ -639,6 +639,13 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
   removeCreature(victim);
   if (isConquered() && fighterKilled)
     getGame()->addEvent(EventInfo::ConqueredEnemy{this});
+  if (auto& guardianInfo = getConfig().getGuardianInfo())
+    if (Random.chance(guardianInfo->probability)) {
+      auto& extended = territory->getStandardExtended();
+      if (!extended.empty())
+        Random.choose(extended).landCreature(getGame()->getContentFactory()->creatures.fromId(
+            guardianInfo->creature, getTribeId()));
+    }
 }
 
 void Collective::onKilledSomeone(Creature* killer, Creature* victim) {

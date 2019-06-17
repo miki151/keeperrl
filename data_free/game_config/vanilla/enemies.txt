@@ -1290,7 +1290,7 @@
       furniture = "roomFurniture"
     }
     config = {
-      guardianInfo = "WITCHMAN" 0.001 1 2
+      guardianInfo = "WITCHMAN" 0.003 1 2
     }
   }
   "ELVEN_COTTAGE"
