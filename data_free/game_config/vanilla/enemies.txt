@@ -1223,7 +1223,7 @@
       race = "altar"
       inhabitants = {
         leader = {
-          id = {"ORC_SHAMAN"} 
+          id = {"ORC_MAGE"} 
           expLevelIncrease = { SPELL 7 }
         }
       }

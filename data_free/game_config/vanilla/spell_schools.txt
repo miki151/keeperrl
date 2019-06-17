@@ -1,28 +1,18 @@
 {
   "mage" SPELL
   {
-    "healing" 1
-    "summon flies" 2
-    "advanced healing" 3
-    "deception" 4
-    "escape" 5
-    "haste" 5
+    "directed blast" 1
+    "escape" 2
+    "magic missile" 3
+    "healing" 4
+    "teleport" 5
     "cure poison" 6
-    "fireball" 7
+    "advanced magic missile" 7
     "defense bonus" 8
-    "summon element" 9
-    "damage bonus" 10
+    "damage bonus" 9
+    "magic cancellation" 10
+    "advanced teleport" 11
     "invisibility" 12
-  }
-  "evocation" SPELL
-  {
-    "magic missile" 1
-    "pull" 3
-    "directed blast" 5
-    "circular blast" 7
-    "teleport" 9
-    "meteor shower" 10
-    "advanced teleport" 12
   }
   "shaman" SPELL
   {

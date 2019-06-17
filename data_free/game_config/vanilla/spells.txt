@@ -77,6 +77,24 @@
     sound = SPELL_BLAST
   }
   {
+    id =  "advanced magic missile"
+    upgrade = "magic missile"
+    symbol = "⥇"
+    effect = Damage SPELL_DAMAGE SPELL
+    range = 8
+    cooldown = 15
+    sound = SPELL_BLAST
+  }
+  {
+    id =  "expert magic missile"
+    upgrade = "advanced magic missile"
+    symbol = "⥇"
+    effect = Damage SPELL_DAMAGE SPELL
+    range = 12
+    cooldown = 10
+    sound = SPELL_BLAST
+  }
+  {
     id =  "deception"
     symbol = "🎭"
     effect = Deception

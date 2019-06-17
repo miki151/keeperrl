@@ -108,17 +108,6 @@ CollectiveConfig CollectiveConfig::noImmigrants() {
   return CollectiveConfig(TimeInterval {}, VILLAGE, 10000);
 }
 
-CollectiveConfig& CollectiveConfig::setLeaderAsFighter() {
-  leaderAsFighter = true;
-  return *this;
-}
-
-CollectiveConfig& CollectiveConfig::setGhostSpawns(double prob, int num) {
-  ghostProb = prob;
-  spawnGhosts = num;
-  return *this;
-}
-
 int CollectiveConfig::getNumGhostSpawns() const {
   return spawnGhosts;
 }
@@ -181,11 +170,6 @@ bool CollectiveConfig::getConstructions() const {
 
 int CollectiveConfig::getMaxPopulation() const {
   return maxPopulation;
-}
-
-CollectiveConfig& CollectiveConfig::setGuardian(GuardianInfo info) {
-  guardianInfo = info;
-  return *this;
 }
 
 const optional<GuardianInfo>& CollectiveConfig::getGuardianInfo() const {

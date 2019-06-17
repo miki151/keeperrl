@@ -76,10 +76,6 @@ class CollectiveConfig {
   static CollectiveConfig withImmigrants(TimeInterval immigrantInterval, int maxPopulation);
   static CollectiveConfig noImmigrants();
 
-  CollectiveConfig& setLeaderAsFighter();
-  CollectiveConfig& setGhostSpawns(double prob, int number);
-  CollectiveConfig& setGuardian(GuardianInfo);
-
   bool isLeaderFighter() const;
   bool getManageEquipment() const;
   bool getFollowLeaderIfNoTerritory() const;

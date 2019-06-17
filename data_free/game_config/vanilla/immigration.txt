@@ -81,7 +81,7 @@
           }
         }
         {
-          ids = { "ORC_SHAMAN" }
+          ids = { "ORC_MAGE" }
           traits = { FIGHTER }
           frequency = 0.3
           requirements = {
@@ -405,6 +405,19 @@
              { 0.03 { AttrBonus SPELL_DAMAGE 4 AttrBonus DEFENSE -4}}
              { 0.05 { ExtraTraining SPELL 2}}
              { 0.02 { LastingEffect HATE_UNDEAD }}
+          }
+        }
+        {
+          ids = { "FIRE_MAGE_PLAYER" }
+          traits = { FIGHTER }
+          frequency = 0.3
+          requirements = {
+            { 0.1 AttractionInfo 1 {FurnitureType "BOOKCASE_IRON"}}
+            { 0.0 MinTurnRequirement 500 }
+          }
+          specialTraits = {
+             { 0.03 { AttrBonus SPELL_DAMAGE 4 AttrBonus DEFENSE -4}}
+             { 0.05 { ExtraTraining SPELL 2}}
           }
         }
         {

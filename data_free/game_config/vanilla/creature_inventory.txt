@@ -178,7 +178,7 @@
         { Club }
         { LeatherArmor }
       }
-  {"ORC_SHAMAN"}
+  {"ORC_MAGE"}
       {
         { WoodenStaff }
         { LeatherArmor }
