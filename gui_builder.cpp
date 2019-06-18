@@ -3528,8 +3528,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
       retiredList.addElem(gui.label("No retired dungeons found :("));
     else
       retiredMenuLines.addElem(gui.label("Local dungeons:", Color::YELLOW));
-    int listHeight = min(400, retiredList.getSize() + 5);
-    retiredMenuLines.addElem(gui.scrollable(gui.topMargin(3, retiredList.buildVerticalList())), listHeight);
+    retiredMenuLines.addElemAuto(retiredList.buildVerticalList());
     lines.addElem(gui.leftMargin(optionMargin,
         gui.buttonLabel("Add retired dungeons", [&menuState] { menuState.retiredWindow = !menuState.retiredWindow;})));
   }
@@ -3572,10 +3571,11 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
             closeHelp), 100, 50, 100, 280),
             [&menuState] { return menuState.helpText;}));
   auto addOverlay = [&] (GuiFactory::ListBuilder builder, bool& visible) {
-    int size = builder.getSize();
+    int size = 500;
     if (!builder.isEmpty())
       interior.push_back(
-            gui.conditionalStopKeys(gui.translate(gui.miniWindow2(gui.margins(builder.buildVerticalList(), 10),
+            gui.conditionalStopKeys(gui.translate(gui.miniWindow2(
+                gui.margins(gui.scrollable(gui.topMargin(3, builder.buildVerticalList())), 10),
                 [&] { visible = false;}), Vec2(30, 70),
                     Vec2(444, 50 + size)),
             [&visible] { return visible;}));

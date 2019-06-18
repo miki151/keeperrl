@@ -2511,6 +2511,14 @@ class Scrollable : public GuiElem {
     return content->onKeyPressed2(key);
   }
 
+  virtual void onClickElsewhere() override {
+    content->onClickElsewhere();
+  }
+
+  virtual bool onTextInput(const char* c) override {
+    return content->onTextInput(c);
+  }
+
   private:
   SGuiElem content;
   ScrollPosition* scrollPos;
