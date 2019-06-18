@@ -29,7 +29,7 @@ void SpellMap::add(Spell spell, ExperienceType expType, int level) {
         break;
     return info->level;
   };
-  sort(elems.begin(), elems.end(), [origLevel](const auto& e1, const auto& e2) {
+  sort(elems.begin(), elems.end(), [&origLevel](const auto& e1, const auto& e2) {
       return origLevel(&e1) < origLevel(&e2) || (origLevel(&e1) == origLevel(&e2) && e1.spell.getId() < e2.spell.getId()); });
 }
 
