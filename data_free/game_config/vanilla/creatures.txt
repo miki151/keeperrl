@@ -802,9 +802,10 @@
       maxLevelIncrease = {
         SPELL 9
       }
+      gender = FEMALE
       name = {
         name = "fire mage"
-        firstNameGen = FIRST_MALE
+        firstNameGen = FIRST_FEMALE
       }
       spellSchools = { "fire" }
       hatedByEffect = HATE_HUMANS
