@@ -18,16 +18,18 @@ void SpellMap::add(Spell spell, ExperienceType expType, int level) {
       return;
     }
   elems.push_back(SpellInfo{std::move(spell), none, level, expType});
-  auto origLevel = [&](const SpellInfo* info1) {
+  // it's key to not reference elems in the comparison fun while they are being sorted, so making a copy here
+  // otherwise nasty memory corruption
+  auto origLevel = [self = *this](const SpellInfo* info1) {
     auto info = info1;
     while (auto upgrade = info->spell.getUpgrade())
-      if (auto res = getInfo(*upgrade))
+      if (auto res = self.getInfo(*upgrade))
         info = res;
       else
         break;
     return info->level;
   };
-  sort(elems.begin(), elems.end(), [&](const auto& e1, const auto& e2) {
+  sort(elems.begin(), elems.end(), [origLevel](const auto& e1, const auto& e2) {
       return origLevel(&e1) < origLevel(&e2) || (origLevel(&e1) == origLevel(&e2) && e1.spell.getId() < e2.spell.getId()); });
 }
 
