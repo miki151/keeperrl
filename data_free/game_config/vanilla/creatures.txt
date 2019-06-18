@@ -783,7 +783,7 @@
         name = "priest"
         firstNameGen = FIRST_MALE
       }
-      spellSchools = { "mage" }
+      spellSchools = { "healer" }
       hatedByEffect = HATE_HUMANS
     }
   "FIRE_MAGE_PLAYER"
@@ -809,6 +809,15 @@
       }
       spellSchools = { "fire" }
       hatedByEffect = HATE_HUMANS
+    }
+  "BATTLE_MAGE_PLAYER" inherit "FIRE_MAGE_PLAYER"
+    {
+      viewId = { "elementalist" Rgb 58 68 156 255 }
+      name = {
+        name = "battle mage"
+        firstNameGen = FIRST_FEMALE
+      }
+      spellSchools = { "mage" }
     }
   "GNOME_PLAYER"
     {
