@@ -8,20 +8,21 @@
     "teleport" 5
     "cure poison" 6
     "advanced magic missile" 7
-    "defense bonus" 8
-    "damage bonus" 9
-    "magic cancellation" 10
-    "advanced teleport" 11
+    "haste" 8
+    "defense bonus" 9
+    "advanced teleport" 10
+    "expert magic missile" 11
     "invisibility" 12
   }
   "healer" SPELL
   {
     "advanced healing" 1
     "expert healing" 2
-    "cure poison" 2
-    "advanced cure poison" 3
-    "cure blindness" 4
-    "poison resistance" 5
+    "cure poison" 3
+    "advanced cure poison" 4
+    "cure blindness" 5
+    "poison resistance" 6
+    "group healing" 7
   }
   "fire" SPELL
   {

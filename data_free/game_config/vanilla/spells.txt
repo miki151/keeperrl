@@ -23,7 +23,14 @@
     effect = Heal FLESH
     targetSelf = true
     range = 4
-    cooldown = 15
+    cooldown = 10
+    sound = SPELL_HEALING
+  }
+  {
+    id =  "group healing"
+    symbol = "💕"
+    effect = Area Heal FLESH 2
+    cooldown = 50
     sound = SPELL_HEALING
   }
   {
@@ -82,7 +89,7 @@
     symbol = "⥇"
     effect = Damage SPELL_DAMAGE SPELL
     range = 8
-    cooldown = 15
+    cooldown = 10
     sound = SPELL_BLAST
   }
   {
@@ -91,7 +98,7 @@
     symbol = "⥇"
     effect = Damage SPELL_DAMAGE SPELL
     range = 12
-    cooldown = 10
+    cooldown = 5
     sound = SPELL_BLAST
   }
   {
@@ -129,6 +136,7 @@
     effect = Teleport
     range = 3
     cooldown = 200
+    endOnly = true
     sound = SPELL_TELEPORT
   }
   {
