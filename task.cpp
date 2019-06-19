@@ -1537,7 +1537,7 @@ class DropItems : public Task {
   variant<StorageInfo, vector<Position>> SERIAL(positions);
   optional<Position> SERIAL(target);
   optional<Position> SERIAL(origin);
-  Creature* SERIAL(pickedUpCreature) = nullptr;
+  WeakPointer<Creature> SERIAL(pickedUpCreature);
 };
 }
 
