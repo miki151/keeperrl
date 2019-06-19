@@ -566,8 +566,8 @@ class Kill : public Task {
 
   CreatureAction getAction(Creature* c) {
     switch (type) {
-      case ATTACK: return c->execute(creature);
-      case TORTURE: return c->torture(creature);
+      case ATTACK: return c->execute(creature.get());
+      case TORTURE: return c->torture(creature.get());
     }
   }
 
@@ -579,12 +579,12 @@ class Kill : public Task {
   }
 
   virtual bool canPerform(const Creature* c) const override {
-    return c != creature;
+    return creature != c;
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    CHECK(c != creature);
-    if (creature->isDead() || (type == TORTURE && !creature->isAffected(LastingEffect::TIED_UP))) {
+    CHECK(creature != c);
+    if (!creature || creature->isDead() || (type == TORTURE && !creature->isAffected(LastingEffect::TIED_UP))) {
       setDone();
       return NoMove;
     }
@@ -594,11 +594,11 @@ class Kill : public Task {
       return c->moveTowards(creature->getPosition());
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), creature, type, callback); 
-  SERIALIZATION_CONSTRUCTOR(Kill);
+  SERIALIZE_ALL(SUBCLASS(Task), creature, type, callback)
+  SERIALIZATION_CONSTRUCTOR(Kill)
 
   private:
-  Creature* SERIAL(creature) = nullptr;
+  WeakPointer<Creature> SERIAL(creature);
   Type SERIAL(type);
   WTaskCallback SERIAL(callback) = nullptr;
 };
@@ -946,7 +946,7 @@ class Copulate : public Task {
   Copulate(WTaskCallback c, Creature* t, int turns) : target(t), callback(c), numTurns(turns) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (target->isDead() || !target->isAffected(LastingEffect::SLEEP)) {
+    if (!target || target->isDead() || !target->isAffected(LastingEffect::SLEEP)) {
       setDone();
       return NoMove;
     }
@@ -960,7 +960,7 @@ class Copulate : public Task {
         return action.append([=](Creature* c) {
           if (--numTurns == 0) {
             setDone();
-            callback->onCopulated(c, target);
+            callback->onCopulated(c, target.get());
           }});
       else
         return NoMove;
@@ -972,11 +972,11 @@ class Copulate : public Task {
     return "Copulate with " + target->getName().bare();
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), target, numTurns, callback); 
-  SERIALIZATION_CONSTRUCTOR(Copulate);
+  SERIALIZE_ALL(SUBCLASS(Task), target, numTurns, callback)
+  SERIALIZATION_CONSTRUCTOR(Copulate)
 
   protected:
-  Creature* SERIAL(target) = nullptr;
+  WeakPointer<Creature> SERIAL(target);
   WTaskCallback SERIAL(callback) = nullptr;
   int SERIAL(numTurns);
 };
@@ -992,13 +992,13 @@ class Consume : public Task {
   Consume(Creature* t) : target(t) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (target->isDead()) {
+    if (!target || target->isDead()) {
       setDone();
       return NoMove;
     }
     if (c->getPosition().dist8(target->getPosition()) == 1) {
-      if (auto action = c->consume(target))
-        return action.append([=](Creature* c) {
+      if (auto action = c->consume(target.get()))
+        return action.append([=](Creature*) {
           setDone();
         });
       else
@@ -1015,7 +1015,7 @@ class Consume : public Task {
   SERIALIZATION_CONSTRUCTOR(Consume);
 
   protected:
-  Creature* SERIAL(target) = nullptr;
+  WeakPointer<Creature> SERIAL(target);
 };
 }
 
@@ -1271,7 +1271,7 @@ class Follow : public Task {
   Follow(Creature* t) : target(t) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (target != c && !target->isDead()) {
+    if (target && target != c && !target->isDead()) {
       Position targetPos = target->getPosition();
       if (targetPos.dist8(c->getPosition()).value_or(3) < 3) {
         if (Random.roll(15))
@@ -1290,10 +1290,10 @@ class Follow : public Task {
     return "Follow " + target->getName().bare();
   }
 
-  Creature* SERIAL(target) = nullptr;
+  WeakPointer<Creature> SERIAL(target);
 
   SERIALIZE_ALL(SUBCLASS(Task), target)
-  SERIALIZATION_CONSTRUCTOR(Follow);
+  SERIALIZATION_CONSTRUCTOR(Follow)
 };
 }
 
@@ -1405,11 +1405,11 @@ class Whipping : public Task {
   Whipping(Position pos, Creature* w) : position(pos), whipped(w) {}
 
   virtual bool canPerform(const Creature* c) const override {
-    return c != whipped;
+    return whipped != c;
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (position.getCreature() != whipped || !whipped->isAffected(LastingEffect::TIED_UP)) {
+    if (!whipped || whipped != position.getCreature() || !whipped->isAffected(LastingEffect::TIED_UP)) {
       setDone();
       return NoMove;
     }
@@ -1428,7 +1428,7 @@ class Whipping : public Task {
 
   protected:
   Position SERIAL(position);
-  Creature* SERIAL(whipped) = nullptr;
+  WeakPointer<Creature> SERIAL(whipped);
 };
 }
 
