@@ -1529,8 +1529,8 @@ class DropItems : public Task {
     return (!origin || c == pickedUpCreature ) && c->getEquipment().containsAnyOf(items);
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), items, positions, target, origin, pickedUpCreature);
-  SERIALIZATION_CONSTRUCTOR(DropItems);
+  SERIALIZE_ALL(SUBCLASS(Task), items, positions, target, origin, pickedUpCreature)
+  SERIALIZATION_CONSTRUCTOR(DropItems)
 
   protected:
   EntitySet<Item> SERIAL(items);

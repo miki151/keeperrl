@@ -110,7 +110,7 @@ class PlayerInfo {
   struct Spell {
     string HASH(name);
     string HASH(symbol);
-    string HASH(help);
+    vector<string> HASH(help);
     optional<TimeInterval> HASH(timeout);
     HASH_ALL(name, symbol, help, timeout)
   };

@@ -94,8 +94,8 @@ void SpellMap::onExpLevelReached(Creature* c, ExperienceType type, int level) {
       auto upgrade = elem.spell.getUpgrade();
       if (upgrade && !!getInfo(*upgrade)) {
         string his = ::his(c->getAttributes().getGender());
-        c->addPersonalEvent(c->getName().a() + " improves " + his + " " + spellType + " of " + spellName);
-        c->verb("improve", "improves", his + " " + spellType + " of " + spellName);
+        c->addPersonalEvent(c->getName().a() + " improves " + his + " " + spellType + " of " + upgrade->data());
+        c->verb("improve", "improves", his + " " + spellType + " of " + upgrade->data());
       } else {
         c->addPersonalEvent(c->getName().a() + " learns the " + spellType + " of " + spellName);
         c->verb("learn", "learns", "the " + spellType + " of " + spellName);

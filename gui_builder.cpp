@@ -1382,7 +1382,7 @@ SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, int index, boo
     ret.push_back(gui.darken());
     ret.push_back(gui.centeredLabel(Renderer::HOR_VER, toString(*spell.timeout)));
   }
-  ret.push_back(getTooltip({capitalFirst(spell.name), spell.help}, THIS_LINE + index + id.getGenericId()));
+  ret.push_back(getTooltip(concat({capitalFirst(spell.name)}, spell.help), THIS_LINE + index + id.getGenericId()));
   return gui.stack(std::move(ret));
 }
 

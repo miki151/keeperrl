@@ -147,10 +147,13 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
     effects.push_back({adj.name, adj.help, false});
   spells.clear();
   for (auto spell : c->getSpellMap().getAvailable(c)) {
+    vector<string> description = {spell->getDescription(), "Cooldown: " + toString(spell->getCooldown())};
+    if (spell->getRange() > 0)
+      description.push_back("Range: " + toString(spell->getRange()));
     spells.push_back({
         spell->getName(),
         spell->getSymbol(),
-        spell->getDescription(),
+        std::move(description),
         c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell))
     });
   }
