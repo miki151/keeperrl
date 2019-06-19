@@ -482,6 +482,20 @@
     }
     createOnBones = 0.1 { "KNIGHTS" "DWARVES" "GREEN_DRAGON" "ELEMENTALIST" }
   }
+  "BLACK_DRAGON" inherit "RED_DRAGON"
+  {
+    settlement = {
+      type = CAVE
+      inhabitants = {
+        leader = { { "BLACK_DRAGON" } }
+      }
+      race = "dragon"
+      tribe = MONSTER
+      buildingId = DUNGEON
+      shopItems = "dragonCave"
+    }
+    createOnBones = 1.0 { "KNIGHTS" "DWARVES" "GREEN_DRAGON" "WARRIORS" }
+  }
   "GREEN_DRAGON"
   {
     settlement = {

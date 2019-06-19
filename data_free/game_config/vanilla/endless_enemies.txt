@@ -289,6 +289,17 @@
   }
   {
     {
+      all = { 1 "BLACK_DRAGON" }
+      count = { 1 }
+      baseLevelIncrease = { MELEE 28 }
+    }
+    KillLeader
+    "a black dragon"
+    { 30000 100000 }
+    100
+  }
+  {
+    {
       all = {
         1 "ADVENTURER"
         1 "ADVENTURER_F"

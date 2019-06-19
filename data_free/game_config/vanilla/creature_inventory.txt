@@ -46,6 +46,15 @@
         { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
         { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       }
+  {"BLACK_DRAGON"}
+      {
+        { GoldPiece 120 200 }
+        { type = Glyph WEAPON VictimEffect Lasting BLIND chance = 1.0 }
+        { type = Glyph WEAPON VictimEffect Lasting BLEEDING chance = 0.3 }
+        { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      }
   {"ANGEL"}
       {
         { type = Sword prefixChance = 0.1 }

@@ -1675,7 +1675,7 @@ bool Creature::canSeeInPosition(const Creature* c) const {
 }
 
 bool Creature::canSee(const Creature* c) const {
-  return canSeeInPosition(c) && c->getPosition().isVisibleBy(this);
+  return (canSeeInPosition(c) && c->getPosition().isVisibleBy(this)) || canSeeOutsidePosition(c);
 }
 
 bool Creature::canSee(Position pos) const {

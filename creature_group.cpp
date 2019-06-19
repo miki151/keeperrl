@@ -132,6 +132,7 @@ CreatureGroup CreatureGroup::gnomishMines(TribeId peaceful, TribeId enemy, int l
       make_pair(CreatureId("BANDIT"), 100.),
       make_pair(CreatureId("GREEN_DRAGON"), 5.),
       make_pair(CreatureId("RED_DRAGON"), 5.),
+      make_pair(CreatureId("BLACK_DRAGON"), 5.),
       make_pair(CreatureId("SOFT_MONSTER"), 5.),
       make_pair(CreatureId("CYCLOPS"), 15.),
       make_pair(CreatureId("WITCH"), 15.),

@@ -339,4 +339,10 @@
     cooldown = 30
     castMessageType = ABILITY
   }
+  {
+    id =  "black dragon blindness"
+    symbol = "🙈"
+    effect = Area Lasting BLIND 30
+    cooldown = 3
+  }
 }

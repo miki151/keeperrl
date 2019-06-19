@@ -171,6 +171,7 @@ vector<EnemyInfo> ModelBuilder::getSingleMapEnemiesForEvilKeeper(TribeId keeperT
         EnemyId("SHELOB"),
         EnemyId("HYDRA"),
         EnemyId("RED_DRAGON"),
+        EnemyId("BLACK_DRAGON"),
         EnemyId("CYCLOPS"),
         EnemyId("DRIADS"),
         EnemyId("ENTS")}))
@@ -208,6 +209,7 @@ vector<EnemyInfo> ModelBuilder::getSingleMapEnemiesForLawfulKeeper(TribeId keepe
         EnemyId("SHELOB"),
         EnemyId("HYDRA"),
         EnemyId("RED_DRAGON"),
+        EnemyId("BLACK_DRAGON"),
         EnemyId("CYCLOPS"),
         EnemyId("DRIADS"),
         EnemyId("ENTS")}))

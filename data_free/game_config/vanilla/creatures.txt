@@ -694,6 +694,36 @@
       }
       spells = { "healing" "deception" "haste" "cure poison" "fire breath"}
     }
+  "BLACK_DRAGON"
+    {
+      viewId = { "red_dragon" Rgb 80 80 80 255 }
+      attr = {
+        DAMAGE 45
+        DEFENSE 47
+      }
+      body = {
+        type = FourLegged HUGE
+        addBodyPart = {
+          WING 2
+        }
+        intrinsicAttacks = {
+          HEAD { Intrinsic { "bite_attack" } "fangs" 15 {
+              attackType = BITE
+              attackMsg = BITE } }
+        }
+      }
+      permanentEffects = {
+        RANGED_VULNERABILITY 1
+        BLIND 1
+        TELEPATHY 1
+      }
+      name = {
+        name = "black dragon"
+        firstNameGen = DRAGON
+        stackName = "dragon"
+      }
+      spells = { "healing" "haste" "cure poison" "black dragon blindness"}
+    }
   "KNIGHT_PLAYER"
     {
       viewId = { "knight" }
