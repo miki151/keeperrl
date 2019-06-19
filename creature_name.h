@@ -19,6 +19,8 @@
 
 class NameGenerator;
 
+constexpr int maxFirstNameLength = 15;
+
 class CreatureName {
   public:
   CreatureName(const string& name);

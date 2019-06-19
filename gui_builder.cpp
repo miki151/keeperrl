@@ -2910,7 +2910,7 @@ vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const o
       }
       case PlayerInfo::RENAME:
         line.push_back(gui.buttonLabel("Rename", [=] {
-            if (auto name = getTextInput("Rename minion", minion.firstName, 10, "Press escape to cancel."))
+            if (auto name = getTextInput("Rename minion", minion.firstName, maxFirstNameLength, "Press escape to cancel."))
               callbacks.input({UserInputId::CREATURE_RENAME, RenameActionInfo{minion.creatureId, *name}}); }));
         break;
       case PlayerInfo::BANISH:
@@ -3220,7 +3220,7 @@ SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatar
     for (int genderIndex : All(avatar.viewId)) {
       auto elem = gui.getListBuilder()
           .addElemAuto(gui.label("Name: "))
-          .addMiddleElem(gui.textField(
+          .addMiddleElem(gui.textField(maxFirstNameLength,
               [=] {
                 auto entered = options->getValueString(OptionId::PLAYER_NAME);
                 return entered.empty() ?
@@ -3377,7 +3377,7 @@ SGuiElem GuiBuilder::drawOptionElem(OptionId id, function<void()> onChanged, opt
     case Options::STRING:
       ret = gui.getListBuilder()
           .addElemAuto(gui.label(name + ":"))
-          .addMiddleElem(gui.textField(getValue, [=] (string s) {
+          .addMiddleElem(gui.textField(maxFirstNameLength, getValue, [=] (string s) {
             options->setValue(id, s);
             onChanged();
           }))
@@ -3508,7 +3508,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   if (retiredGames) {
     retiredMenuLines.addElem(gui.getListBuilder()
         .addElemAuto(gui.label("Search: "))
-        .addElem(gui.textField([ret = campaignOptions.searchString] { return ret; },
+        .addElem(gui.textField(10, [ret = campaignOptions.searchString] { return ret; },
             [&queue](string s){ queue.push(CampaignAction(CampaignActionId::SEARCH_RETIRED, std::move(s)));}), 200)
         .addSpace(10)
         .addElemAuto(gui.buttonLabel("X",

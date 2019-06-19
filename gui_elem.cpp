@@ -218,8 +218,8 @@ SGuiElem GuiFactory::button(function<void()> fun) {
 namespace  {
 class TextFieldElem : public GuiElem {
   public:
-  TextFieldElem(function<string()> text, function<void(string)> callback, Clock* clock)
-      : callback(std::move(callback)), getText(std::move(text)), clock(clock) {}
+  TextFieldElem(function<string()> text, function<void(string)> callback, int maxLength, Clock* clock)
+      : callback(std::move(callback)), getText(std::move(text)), clock(clock), maxLength(maxLength) {}
 
   virtual bool onClick(ClickButton b, Vec2 pos) override {
     if (b == LEFT) {
@@ -239,14 +239,24 @@ class TextFieldElem : public GuiElem {
 
   virtual void render(Renderer& r) override {
     auto bounds = getBounds();
-    r.drawFilledRectangle(bounds, Color::TRANSPARENT, !!current ? Color::WHITE : Color::GRAY);
+    auto rectBounds = bounds;
     auto toDraw = current.value_or(getText());
+    if (!!current)
+      rectBounds = Rectangle(rectBounds.topLeft(),
+          Vec2(max(rectBounds.right(), rectBounds.left() + r.getTextLength(toDraw) + 10), rectBounds.bottom()));
     if (!!current && (clock->getRealMillis().count() / 400) % 2 == 0)
       toDraw += "|";
-    r.setScissor(bounds);
+    if (!!current)
+      r.setTopLayer();
+    r.drawFilledRectangle(rectBounds, Color::BLACK, !!current ? Color::WHITE : Color::GRAY);
+    if (!current)
+      r.setScissor(bounds.minusMargin(1));
     r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(6, 6), toDraw);
     r.drawText(Color::WHITE, bounds.topLeft() + Vec2(5, 4), toDraw);
-    r.setScissor(none);
+    if (!current)
+      r.setScissor(none);
+    else
+      r.popLayer();
   }
 
   virtual bool onKeyPressed2(SDL::SDL_Keysym sym) override {
@@ -277,6 +287,7 @@ class TextFieldElem : public GuiElem {
   virtual bool onTextInput(const char* s) override {
     if (current) {
       *current += s;
+      *current = current->substr(0, maxLength);
       return true;
     }
     return false;
@@ -286,12 +297,13 @@ class TextFieldElem : public GuiElem {
   function<void(string)> callback;
   function<string()> getText;
   Clock* clock;
+  int maxLength;
   optional<string> current;
 };
 }
 
-SGuiElem GuiFactory::textField(function<string()> text, function<void(string)> callback) {
-  return topMargin(-4, bottomMargin(4, make_shared<TextFieldElem>(std::move(text), std::move(callback), clock)));
+SGuiElem GuiFactory::textField(int maxLength, function<string()> text, function<void(string)> callback) {
+  return topMargin(-4, bottomMargin(4, make_shared<TextFieldElem>(std::move(text), std::move(callback), maxLength, clock)));
 }
 
 SGuiElem GuiFactory::buttonPos(function<void (Rectangle, Vec2)> fun) {
