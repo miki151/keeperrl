@@ -80,8 +80,12 @@ optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const
   if (it->canEquip())
     return MinionEquipment::ARMOR;
   if (auto& effect = it->getEffect()) {
-    if (effect->isType<Effect::Heal>())
-      return MinionEquipment::HEALING;
+    if (auto e = effect->getValueMaybe<Effect::Heal>()) {
+      if (e->healthType == HealthType::FLESH)
+        return MinionEquipment::HEALING;
+      else
+        return MinionEquipment::MATERIALIZATION;
+    }
     if (isCombatConsumable(*effect))
       return MinionEquipment::COMBAT_ITEM;
   }
@@ -102,6 +106,8 @@ bool MinionEquipment::canUseItemType(const Creature* c, EquipmentType type, cons
       return !c->isAffected(LastingEffect::NIGHT_VISION);
     case EquipmentType::HEALING:
       return c->getBody().hasHealth(HealthType::FLESH);
+    case EquipmentType::MATERIALIZATION:
+      return c->getBody().hasHealth(HealthType::SPIRIT);
     case EquipmentType::COMBAT_ITEM:
       return true;
     case EquipmentType::ARMOR:

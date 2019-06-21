@@ -45,7 +45,7 @@ class MinionEquipment {
   void updateItems(const vector<Item*>& items);
 
   private:
-  enum EquipmentType { ARMOR, HEALING, COMBAT_ITEM, TORCH };
+  enum EquipmentType { ARMOR, HEALING, MATERIALIZATION, COMBAT_ITEM, TORCH };
 
   static optional<EquipmentType> getEquipmentType(const Item* it);
   optional<int> getEquipmentLimit(EquipmentType type) const;
