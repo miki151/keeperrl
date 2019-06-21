@@ -588,7 +588,7 @@ static void youHit(const Creature* c, BodyPart part, AttackType type) {
         break;
     case BodyPart::TORSO:
         switch (type) {
-          case AttackType::SHOOT: c->you(MsgType::YOUR, "shot in the heart!"); break;
+          case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the heart!"); break;
           case AttackType::BITE: c->you(MsgType::YOUR, "internal organs are ripped out!"); break;
           case AttackType::CUT: c->you(MsgType::ARE, "cut in half!"); break;
           case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the " +
