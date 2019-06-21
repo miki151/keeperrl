@@ -1329,7 +1329,7 @@ class TransferTo : public Task {
     ar(SUBCLASS(Task), target, model);
   }
 
-  SERIALIZATION_CONSTRUCTOR(TransferTo);
+  SERIALIZATION_CONSTRUCTOR(TransferTo)
 
   protected:
   optional<Position> SERIAL(target);

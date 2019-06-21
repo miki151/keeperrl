@@ -902,7 +902,7 @@ class ByCollective : public Behaviour {
         const Creature* leader = teams.getLeader(*team);
         if (creature != leader) {
           if (leader->getPosition().dist8(creature->getPosition()).value_or(2) > 1)
-            return creature->moveTowards(leader->getPosition());
+            return MoveInfo{creature->moveTowards(leader->getPosition())}.orWait();
           else
             return creature->wait();
         } else
