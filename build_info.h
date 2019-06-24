@@ -33,13 +33,14 @@ struct BuildInfo {
   bool canSelectRectangle() const;
 
   using DestroyLayers = vector<FurnitureLayer>;
+  using ImmediateDig = EmptyStruct<struct ImmediateDigTag>;
   using Dig = EmptyStruct<struct DigTag>;
   using ClaimTile = EmptyStruct<struct ClaimTileTag>;
   using Dispatch = EmptyStruct<struct DispatchTag>;
   using ForbidZone = EmptyStruct<struct ForbidZoneTag>;
   using Zone = ZoneId;
   using PlaceMinion = EmptyStruct<struct PlaceMinionTag>;
-  MAKE_VARIANT(BuildType, Furniture, Trap, Zone, DestroyLayers, Dig, ClaimTile, Dispatch, ForbidZone, PlaceMinion);
+  MAKE_VARIANT(BuildType, Furniture, Trap, Zone, DestroyLayers, Dig, ClaimTile, Dispatch, ForbidZone, PlaceMinion, ImmediateDig);
   BuildType SERIAL(type);
   string SERIAL(name);
   string SERIAL(groupName);

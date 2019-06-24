@@ -591,6 +591,9 @@ vector<Button> PlayerControl::fillButtons() const {
         [&](const BuildInfo::Dig&) {
           buttons.push_back({ViewId("dig_icon"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
+        [&](const BuildInfo::ImmediateDig&) {
+          buttons.push_back({ViewId("dig_icon"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+        },
         [&](ZoneId zone) {
           buttons.push_back({getViewId(zone), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
@@ -2344,6 +2347,15 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         collective->addTrap(position, trap.type);
         getView()->addSound(SoundId::ADD_CONSTRUCTION);
         selection = SELECT;
+      }
+    },
+    [&](const BuildInfo::ImmediateDig&) {
+      auto furniture = position.modFurniture(FurnitureLayer::MIDDLE);
+      if (furniture && furniture->isWall())
+        furniture->destroy(position, DestroyAction::Type::BASH);
+      for (Position v : position.getRectangle(Rectangle::centered(3))) {
+        addToMemory(v);
+        collective->addKnownTile(v);
       }
     },
     [&](const BuildInfo::DestroyLayers& layers) {
