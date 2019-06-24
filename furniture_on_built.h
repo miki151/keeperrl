@@ -10,4 +10,4 @@ RICH_ENUM(
   SET_ON_FIRE
 );
 
-void handleOnBuilt(Position, Furniture*, Creature*, FurnitureOnBuilt);
+void handleOnBuilt(Position, Furniture*, FurnitureOnBuilt);

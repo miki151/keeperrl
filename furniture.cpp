@@ -293,29 +293,31 @@ bool Furniture::isBuildingSupport() const {
 }
 
 void Furniture::onConstructedBy(Position pos, Creature* c) {
-  creator = c;
-  createdTime = c->getLocalTime();
-  if (constructMessage)
-    switch (*constructMessage) {
-      case ConstructMessage::BUILD:
-        c->thirdPerson(c->getName().the() + " builds " + addAParticle(getName()));
-        c->secondPerson("You build " + addAParticle(getName()));
-        break;
-      case ConstructMessage::FILL_UP:
-        c->thirdPerson(c->getName().the() + " fills up the tunnel");
-        c->secondPerson("You fill up the tunnel");
-        break;
-      case ConstructMessage::REINFORCE:
-        c->thirdPerson(c->getName().the() + " reinforces the wall");
-        c->secondPerson("You reinforce the wall");
-        break;
-      case ConstructMessage::SET_UP:
-        c->thirdPerson(c->getName().the() + " sets up " + addAParticle(getName()));
-        c->secondPerson("You set up " + addAParticle(getName()));
-        break;
-    }
+  if (c) {
+    creator = c;
+    createdTime = c->getLocalTime();
+    if (constructMessage)
+      switch (*constructMessage) {
+        case ConstructMessage::BUILD:
+          c->thirdPerson(c->getName().the() + " builds " + addAParticle(getName()));
+          c->secondPerson("You build " + addAParticle(getName()));
+          break;
+        case ConstructMessage::FILL_UP:
+          c->thirdPerson(c->getName().the() + " fills up the tunnel");
+          c->secondPerson("You fill up the tunnel");
+          break;
+        case ConstructMessage::REINFORCE:
+          c->thirdPerson(c->getName().the() + " reinforces the wall");
+          c->secondPerson("You reinforce the wall");
+          break;
+        case ConstructMessage::SET_UP:
+          c->thirdPerson(c->getName().the() + " sets up " + addAParticle(getName()));
+          c->secondPerson("You set up " + addAParticle(getName()));
+          break;
+      }
+  }
   if (onBuilt)
-    handleOnBuilt(pos, this, c, *onBuilt);
+    handleOnBuilt(pos, this, *onBuilt);
 }
 
 FurnitureLayer Furniture::getLayer() const {

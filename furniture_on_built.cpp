@@ -81,7 +81,7 @@ static WLevel tryBuilding(int numTries, BuildFun buildFun, const string& name) {
   return nullptr;
 }
 
-void handleOnBuilt(Position pos, Furniture* f, Creature* c, FurnitureOnBuilt type) {
+void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
   switch (type) {
     case FurnitureOnBuilt::DOWN_STAIRS: {
       auto levels = pos.getModel()->getMainLevels();
@@ -89,11 +89,15 @@ void handleOnBuilt(Position pos, Furniture* f, Creature* c, FurnitureOnBuilt typ
       if (levelIndex == levels.size() - 1) {
         int width = 140;
         auto stairKey = StairKey::getNew();
-        auto newLevel = tryBuilding(20, [&]{ return pos.getModel()->buildMainLevel(
-            LevelBuilder(Random, pos.getGame()->getContentFactory(), width, width, "", true),
-            getLevelMaker(Random, pos.getGame()->getContentFactory(),
-                pos.getGame()->getPlayerControl()->getTribeAlignment(),
-                levelIndex + 1, width, c->getTribeId(), stairKey)); }, "z-level " + toString(levelIndex));
+        auto newLevel = tryBuilding(20,
+            [&]{
+              return pos.getModel()->buildMainLevel(
+                LevelBuilder(Random, pos.getGame()->getContentFactory(), width, width, "", true),
+                getLevelMaker(Random, pos.getGame()->getContentFactory(),
+                    pos.getGame()->getPlayerControl()->getTribeAlignment(),
+                    levelIndex + 1, width, pos.getGame()->getPlayerCollective()->getTribeId(), stairKey));
+            },
+            "z-level " + toString(levelIndex));
         Position landing = newLevel->getLandingSquares(stairKey).getOnlyElement();
         landing.addFurniture(pos.getGame()->getContentFactory()->furniture.getFurniture(
             FurnitureType("UP_STAIRS"), TribeId::getMonster()));
