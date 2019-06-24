@@ -190,7 +190,11 @@ const Furniture::SupportInfo* Furniture::getSupportInfo(Position pos) const {
 void Furniture::tick(Position pos) {
   PROFILE_BLOCK("Furniture::tick");
   if (fire && fire->isBurning()) {
-    CHECK(pos.getFurniture(layer) == this);
+    {
+      auto otherF = pos.getFurniture(layer);
+      CHECK(otherF == this) << EnumInfo<FurnitureLayer>::getString(layer) << " " << getName()
+          << " " << (otherF ? (otherF->getName() + " " + EnumInfo<FurnitureLayer>::getString(otherF->getLayer())): "null"_s);
+    }
     if (viewObject)
       viewObject->setModifier(ViewObject::Modifier::BURNING);
     INFO << getName() << " burning ";

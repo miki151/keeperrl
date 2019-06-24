@@ -993,8 +993,9 @@ void Effect::apply(Position pos, Creature* attacker) const {
       [&](const PlaceFurniture& effect) {
         auto f = pos.getGame()->getContentFactory()->furniture.getFurniture(effect.furniture,
             attacker ? attacker->getTribeId() : TribeId::getMonster());
-        auto ref = f.get();
+        auto ref = f.get()->getThis();
         pos.addFurniture(std::move(f));
+        CHECK(!!ref);
         ref->onConstructedBy(pos, attacker);
       },
       [&](Blast) {
