@@ -27,8 +27,9 @@
 
     { Furniture {{ "DOWN_STAIRS" }                }              "Down stairs"       "Structure"
       "Build to pass over water of lava." }
-#    { PlaceMinion "Place minion" "Structure" "" }  use for cheating or creative mode
-#    { ImmediateDig "Dig immediately" "Structure" }
+#    { PlaceMinion "Place minion" "Structure" "" }  #use for cheating or creative mode
+#    { PlaceItem "Place item" "Structure" "" }  #use for cheating or creative mode
+#    { ImmediateDig "Dig immediately" "Structure" } #use for cheating or creative mode
   }
 
   "doors"

@@ -3010,9 +3010,11 @@ SGuiElem GuiBuilder::drawChooseNumberMenu(SyncQueue<optional<int>>& queue, const
       gui.translate(gui.centeredLabel(Renderer::HOR, toString(range.getEnd())), Vec2(-sideMargin, 0), Vec2(1, 0),
           GuiFactory::TranslateCorner::TOP_RIGHT)
   ));
+  auto confirmFun = [&queue, getCurrent] { queue.push(getCurrent());};
   lines.addElem(gui.centerHoriz(gui.getListBuilder()
-      .addElemAuto(gui.buttonLabel("Confirm",
-          [&queue, getCurrent] { queue.push(getCurrent());}))
+      .addElemAuto(gui.stack(
+          gui.keyHandler(confirmFun, {gui.getKey(SDL::SDLK_RETURN)}, true),
+          gui.buttonLabel("Confirm", confirmFun)))
       .addSpace(15)
       .addElemAuto(gui.buttonLabel("Cancel", [&queue] { queue.push(none);}))
       .buildHorizontalList()

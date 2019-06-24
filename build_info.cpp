@@ -20,6 +20,7 @@ string BuildInfo::getRequirementText(Requirement req) {
 bool BuildInfo::canSelectRectangle() const {
   return type.visit(
         [](const auto&) { return true; },
-        [](const Trap&) { return false; }
+        [](const Trap&) { return false; },
+        [](const PlaceItem&) { return false; }
   );
 }

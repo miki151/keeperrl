@@ -90,6 +90,7 @@
 #include "fx_name.h"
 #include "content_factory.h"
 #include "tech_id.h"
+#include "pretty_printing.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -615,6 +616,9 @@ vector<Button> PlayerControl::fillButtons() const {
         },
         [&](BuildInfo::PlaceMinion) {
           buttons.push_back({ViewId("special_blbn"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+        },
+        [&](BuildInfo::PlaceItem) {
+          buttons.push_back({ViewId("potion1"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         }
     );
     vector<string> unmetReqText;
@@ -2357,6 +2361,17 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         addToMemory(v);
         collective->addKnownTile(v);
       }
+    },
+    [&](const BuildInfo::PlaceItem&) {
+      ItemType item;
+      if (auto num = getView()->getNumber("Enter amount", Range(1, 10000), 1))
+        if (auto input = getView()->getText("Enter item type", "", 100, "")) {
+          if (auto error = PrettyPrinting::parseObject(item, *input))
+            getView()->presentText("Sorry", "Couldn't parse \"" + *input + "\": " + *error);
+          else {
+              position.dropItems(item.get(*num));
+          }
+        }
     },
     [&](const BuildInfo::DestroyLayers& layers) {
       for (auto layer : layers) {
