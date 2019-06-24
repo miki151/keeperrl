@@ -11,6 +11,11 @@ SERIALIZABLE(KnownTiles);
 
 void KnownTiles::addTile(Position pos, Model* borderTilesModel) {
   known.insert(pos);
+  if (knownWithMargin) {
+    knownWithMargin->insert(pos);
+    for (auto& v : pos.neighbors8())
+      knownWithMargin->insert(v);
+  }
   border.erase(pos);
   if (pos.getModel() == borderTilesModel)
     for (Position v : pos.neighbors4())
@@ -49,4 +54,14 @@ void KnownTiles::limitBorderTiles(Model* m) {
     if (p.getModel() == m && p.canEnter(MovementType(MovementTrait::FLY)))
       copy.insert(p);
   border = copy;
+}
+
+const PositionSet& KnownTiles::getKnownTilesWithMargin() {
+  if (!knownWithMargin) {
+    knownWithMargin = known;
+    for (auto& v : known)
+      for (auto neighbour : v.neighbors8())
+        knownWithMargin->insert(neighbour);
+  }
+  return *knownWithMargin;
 }

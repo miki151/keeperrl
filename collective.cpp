@@ -959,10 +959,7 @@ void Collective::onAppliedItem(Position pos, Item* item) {
 
 bool Collective::isConstructionReachable(Position pos) {
   PROFILE;
-  for (Position v : pos.neighbors8())
-    if (knownTiles->isKnown(v))
-      return true;
-  return false;
+  return knownTiles->getKnownTilesWithMargin().count(pos);
 }
 
 void Collective::onConstructed(Position pos, FurnitureType type) {

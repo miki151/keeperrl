@@ -25,6 +25,7 @@ class KnownTiles {
   const PositionSet& getAll() const;
   void limitToModel(WConstModel);
   void limitBorderTiles(Model*);
+  const PositionSet& getKnownTilesWithMargin();
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
@@ -32,5 +33,6 @@ class KnownTiles {
   private:
   PositionSet SERIAL(known);
   PositionSet SERIAL(border);
+  optional<PositionSet> knownWithMargin;
 };
 
