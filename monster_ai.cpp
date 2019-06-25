@@ -604,9 +604,10 @@ class Fighter : public Behaviour {
 
   FighterPosition getFighterPosition() {
     auto ret = FighterPosition::MELEE;
-    /*if (creature->getSpellMap().contains(SpellId::HEAL_OTHER))
-      ret = FighterPosition::HEALER;
-    else */if (!creature->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).empty()
+    for (auto spell : creature->getSpellMap().getAvailable(creature))
+      if (spell->getRange() > 0 && spell->getEffect().isType<Effect::Heal>())
+        ret = FighterPosition::HEALER;
+    else if (!creature->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).empty()
         && creature->getAttr(AttrType::RANGED_DAMAGE) >= creature->getAttr(AttrType::DAMAGE))
       ret = FighterPosition::RANGED;
     if (ret != FighterPosition::MELEE)
@@ -618,7 +619,10 @@ class Fighter : public Behaviour {
 
   MoveInfo getAttackMove(Creature* other, bool chase) {
     CHECK(other);
-    if (auto move = considerFormationMove(other, getFighterPosition()))
+    auto fighterPosition = getFighterPosition();
+    if (fighterPosition == FighterPosition::HEALER)
+      chase = false;
+    if (auto move = considerFormationMove(other, fighterPosition))
       return move;
     if (other->getAttributes().isBoulder())
       return NoMove;
