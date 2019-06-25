@@ -328,13 +328,11 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
       for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_CAMPAIGN)))
         if (isCompatible(getSaveVersion(info)))
           if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
-            ret.addLocal(*saved, info);
-      for (int i : All(ret.getAllGames()))
-        ret.setActive(i, true);
+            ret.addLocal(*saved, info, true);
       for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
         if (isCompatible(getSaveVersion(info)))
           if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
-            ret.addLocal(*saved, info);
+            ret.addLocal(*saved, info, false);
       optional<vector<FileSharing::SiteInfo>> onlineSites;
       doWithSplash(SplashType::SMALL, "Fetching list of retired dungeons from the server...",
           [&] { onlineSites = fileSharing->listSites(); }, [&] { fileSharing->cancel(); });

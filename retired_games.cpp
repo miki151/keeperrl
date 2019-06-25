@@ -7,29 +7,31 @@ const vector<RetiredGames::RetiredGame>& RetiredGames::getAllGames() const {
 }
 
 void RetiredGames::setActive(int num, bool b) {
-  if (b)
-    active.insert(num);
-  else
-    active.erase(num);
+  games[num].active = b;
 }
 
 bool RetiredGames::isActive(int num) const {
-  return active.count(num);
+  return games[num].active;
 }
 
 int RetiredGames::getNumActive() const {
-  return active.size();
+  int cnt = 0;
+  for (auto& game : games)
+    if (game.active)
+      ++cnt;
+  return cnt;
 }
 
 vector<RetiredGames::RetiredGame> RetiredGames::getActiveGames() const {
   vector<RetiredGame> ret;
-  for (int i : active)
-    ret.push_back(games[i]);
+  for (auto& game : games)
+    if (game.active)
+      ret.push_back(game);
   return ret;
 }
 
-void RetiredGames::addLocal(const SavedGameInfo& game, const SaveFileInfo& file) {
-  games.push_back({game, file, 0, 0});
+void RetiredGames::addLocal(const SavedGameInfo& game, const SaveFileInfo& file, bool active) {
+  games.push_back({game, file, 0, 0, active});
   ++numLocal;
 }
 
@@ -40,7 +42,7 @@ void RetiredGames::addOnline(const SavedGameInfo& game, const SaveFileInfo& file
       games[i].numWon = won;
       return;
     }
-  games.push_back({game, file, total, won});
+  games.push_back({game, file, total, won, false});
 }
 
 void RetiredGames::sort() {
