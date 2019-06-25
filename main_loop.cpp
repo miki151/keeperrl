@@ -468,6 +468,22 @@ void MainLoop::showCredits(const FilePath& path) {
   view->presentList("Credits", lines, false);
 }
 
+int MainLoop::getLocalVersion(const string& mod) {
+  ifstream in(dataFreePath.subdirectory(gameConfigSubdir).subdirectory(mod).file("version").getPath());
+  int v = 0;
+  if (!!in) {
+    in >> v;
+  }
+  return v;
+}
+
+void MainLoop::updateLocalVersion(const string& mod, int version) {
+  ofstream out(dataFreePath.subdirectory(gameConfigSubdir).subdirectory(mod).file("version").getPath());
+  if (!!out) {
+    out << version;
+  }
+}
+
 void MainLoop::showMods() {
   int currentIndex = 0;
   ScrollPosition scrollPos;
@@ -486,7 +502,15 @@ void MainLoop::showMods() {
     lines.emplace_back("Note: changing the active mod affects only newly started games.", ListElem::HELP_TEXT);
     lines.emplace_back("Installed mods", ListElem::TITLE);
     for (auto& mod : modList) {
-      lines.emplace_back(mod + (mod == currentMod ? " [active]"_s : ""_s), ListElem::NORMAL);
+      auto title = mod;
+      if (mod == currentMod)
+        title += " [active]";
+      auto upToDate = "up-to-date"_s;
+      if (onlineMods)
+        for (auto& onlineMod : *onlineMods)
+          if (onlineMod.name == mod && onlineMod.version > getLocalVersion(mod))
+            upToDate = "new version available";
+      lines.emplace_back(ListElem(title, upToDate, ListElem::NORMAL));
     }
     lines.emplace_back(onlineMods ? "Online mods:" : "Unable to fetch online mods", ListElem::TITLE);
     if (onlineMods)
@@ -503,12 +527,14 @@ void MainLoop::showMods() {
     if (currentIndex < modList.size())
       options->setValue(OptionId::CURRENT_MOD, currentIndex);
     else {
-      auto downloadMod = (*onlineMods)[currentIndex - modList.size()].name;
+      auto& downloadMod = (*onlineMods)[currentIndex - modList.size()];
       atomic<bool> cancelled(false);
       optional<string> error;
-      doWithSplash(SplashType::SMALL, "Downloading mod \"" + downloadMod + "\"...", 1,
+      doWithSplash(SplashType::SMALL, "Downloading mod \"" + downloadMod.name + "\"...", 1,
           [&] (ProgressMeter& meter) {
-            error = fileSharing->downloadMod(downloadMod, modDir, meter);
+            error = fileSharing->downloadMod(downloadMod.name, modDir, meter);
+            if (!error)
+              updateLocalVersion(downloadMod.name, downloadMod.version);
           },
           [&] {
             cancelled = true;

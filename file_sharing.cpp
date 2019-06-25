@@ -326,9 +326,11 @@ bool FileSharing::uploadBoardMessage(const string& gameId, int hash, const strin
 }
 
 static optional<FileSharing::OnlineModInfo> parseModInfo(const vector<string>& fields) {
-  if (fields.size() >= 4)
+  if (fields.size() >= 5)
     if (auto numGames = fromStringSafe<int>(unescapeEverything(fields[3])))
-      return FileSharing::OnlineModInfo{unescapeEverything(fields[0]), unescapeEverything(fields[1]), unescapeEverything(fields[2]), *numGames};
+      if (auto version = fromStringSafe<int>(unescapeEverything(fields[4])))
+      return FileSharing::OnlineModInfo{unescapeEverything(fields[0]), unescapeEverything(fields[1]), unescapeEverything(fields[2]),
+          *numGames, *version};
   return none;
 }
 

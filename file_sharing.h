@@ -40,6 +40,7 @@ class FileSharing {
     string author;
     string description;
     int numGames;
+    int version;
   };
 
   optional<vector<OnlineModInfo>> getOnlineMods(int modVersion);

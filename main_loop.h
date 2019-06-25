@@ -105,4 +105,6 @@ class MainLoop {
   void saveMainModel(PGame&, const FilePath&);
   ContentFactory createContentFactory(bool vanillaOnly) const;
   TilePaths getTilePathsForAllMods() const;
+  int getLocalVersion(const string& mod);
+  void updateLocalVersion(const string& mod, int version);
 };
