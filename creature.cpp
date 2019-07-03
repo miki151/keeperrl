@@ -588,8 +588,6 @@ vector<vector<Item*>> Creature::stackItems(vector<Item*> items) const {
 }
 
 CreatureAction Creature::drop(const vector<Item*>& items) const {
-  if (!getBody().isHumanoid())
-    return CreatureAction("You can't drop this item!");
   return CreatureAction(this, [=](Creature* self) {
     INFO << getName().the() << " drop";
     for (auto stack : stackItems(items)) {
