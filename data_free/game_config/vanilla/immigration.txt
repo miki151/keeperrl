@@ -305,7 +305,7 @@
           ids = { "DARK_ELF_WARRIOR" }
           traits = { FIGHTER }
           requirements = {
-            { 0.0 RecruitmentInfo { "ORC_VILLAGE" } 3 FIGHTER }
+            { 0.0 RecruitmentInfo { "DARK_ELVES_ALLY" } 3 FIGHTER }
             { 1.0 CostInfo GOLD 20 }
           }
         }
