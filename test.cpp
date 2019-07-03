@@ -43,6 +43,7 @@
 #include "game_config.h"
 #include "name_generator.h"
 #include "lasting_effect.h"
+#include "test_struct.h"
 
 class Test {
   public:
@@ -918,6 +919,68 @@ class Test {
     CHECK(a == b);
   }
 
+  void testPrettyInput() {
+    map<string, TestStruct2> m;
+    string text = "{"
+        "\"r1\" { s = { 1 2 } v = 2 }"
+        "\"r2\" inherit \"r1\" { }"
+        "\"r3\" inherit \"r1\" { s = append { x = 2 } }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!err) << *err;
+    auto expect = TestStruct2{TestStruct1{1, 2}, 2};
+    auto r1 = m.at("r1");
+    auto r2 = m.at("r2");
+    auto r3 = m.at("r3");
+    CHECK(r1 == expect);
+    CHECK(r2 == expect);
+    expect.s->x = 2;
+    CHECK(r3 == expect);
+  }
+
+  void testPrettyInput2() {
+    map<string, TestStruct2> m;
+    string text = "{"
+        "\"r1\" { s = { 1 2 } v = 2 }"
+        "\"r3\" { s = append { x = 2 } v = 2 }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!!err);
+  }
+
+  void testPrettyInput3() {
+    map<string, TestStruct2> m;
+    string text = "{"
+        "\"r1\" { v = 2 }"
+        "\"r3\" inherit \"r1\" { s = append { x = 2 } v = 2 }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!!err) << *err;
+  }
+
+  void testPrettyInput4() {
+    map<string, TestStruct3> m;
+    string text = "{"
+        "\"r1\" { a = { s = { 1 2 } v = 2 }}"
+        "\"r3\" inherit \"r1\" { a = append { s = append { x = 2 } v = 2 } }"
+        "}";
+    auto expected = TestStruct3 { TestStruct2 { TestStruct1 { 2, 2 }, 2 } };
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!err) << *err;
+    auto r3 = m.at("r3");
+    CHECK(r3 == expected);
+  }
+
+  void testPrettyInput5() {
+    map<string, TestStruct3> m;
+    string text = "{"
+        "\"r1\" { a = { s = { 1 2 } v = 2 }}"
+        "\"r3\" inherit \"r1\" { a = { s = append { x = 2 } v = 2 } }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!!err) << *err;
+  }
+
   struct MatchingTest {
     MatchingTest() {
       GameConfig config(DirectoryPath("data_free/game_config/"), "vanilla");
@@ -1151,6 +1214,11 @@ void testAll() {
   Test().testRoofSupport3();
   Test().testRoofSupport4();
   Test().testRoofSupport5();
+  Test().testPrettyInput();
+  Test().testPrettyInput2();
+  Test().testPrettyInput3();
+  Test().testPrettyInput4();
+  Test().testPrettyInput5();
   LastingEffects::runTests();
   INFO << "-----===== OK =====-----";
 }

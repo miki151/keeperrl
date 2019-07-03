@@ -398,12 +398,19 @@ inline void serialize(PrettyInputArchive& ar1, EnumMap<T, U>& m) {
 
 template <typename T>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, optional<T>& v) {
-  v.reset();
-  if (ar1.eatMaybe("none"))
-    return;
-  T t;
-  ar1(t);
-  v = std::move(t);
+  if (ar1.eatMaybe("append")) {
+    if (!v)
+      ar1.error("Appending to an optional value that was not initialized");
+    auto& t = *v;
+    ar1.loadInherited(t);
+  } else {
+    v.reset();
+    if (ar1.eatMaybe("none"))
+      return;
+    T t;
+    ar1(t);
+    v = std::move(t);
+  }
 }
 
 template <typename T>
@@ -545,6 +552,7 @@ inline void prologue(PrettyInputArchive& ar1, T const & ) {
 inline void prettyEpilogue(PrettyInputArchive& ar1) {
   auto loaders = ar1.getNode().loaders;
   if (!loaders.empty()) {
+    bool appending = ar1.eatMaybe("append") || ar1.getNode().inherited;
     ar1.eat("{");
     bool keysAndValues = false;
     set<string> processed;
@@ -574,8 +582,11 @@ inline void prettyEpilogue(PrettyInputArchive& ar1) {
             ar1.error("Value defined twice: \"" + name + "\"");
           processed.insert(name);
           bool initialize = true;
-          if (ar1.peek() == "append")
+          if (ar1.peek() == "append") {
+            if (!appending)
+              ar1.error("Can't append to value that wasn't inherited");
             initialize = false;
+          }
           loader.load(initialize);
           found = true;
           break;
@@ -583,9 +594,10 @@ inline void prettyEpilogue(PrettyInputArchive& ar1) {
       if (!found)
         ar1.error("No member named \"" + name + "\" in structure");
     }
-    for (auto& loader : loaders)
-      if (!processed.count(loader.name) && !loader.optional && !ar1.getNode().inherited)
-        ar1.error("Field \"" + loader.name + "\" not present");
+    if (!appending)
+      for (auto& loader : loaders)
+        if (!processed.count(loader.name) && !loader.optional)
+          ar1.error("Field \"" + loader.name + "\" not present");
     ar1.eat("}");
     ar1.getNode().loaders.clear();
   }

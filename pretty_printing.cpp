@@ -36,6 +36,7 @@
 #include "name_generator.h"
 #include "furniture_list.h"
 #include "external_enemies.h"
+#include "test_struct.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename, KeyVerifier* keyVerifier) {
@@ -76,3 +77,5 @@ ADD_IMP(map<PrimaryId<EnemyId>, EnemyInfo>)
 ADD_IMP(vector<ExternalEnemy>)
 ADD_IMP(map<PrimaryId<ItemListId>, ItemList>)
 ADD_IMP(map<PrimaryId<FurnitureListId>, FurnitureList>)
+ADD_IMP(map<string, TestStruct2>)
+ADD_IMP(map<string, TestStruct3>)
