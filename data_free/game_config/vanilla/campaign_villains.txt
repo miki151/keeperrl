@@ -12,6 +12,7 @@
     { "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN
     { "shaman" } "WARRIORS" "Warriors" MAIN
     { "demon_lord" } "DEMON_DEN" "Demon den" MAIN
+    { "dungeon_entrance" } "MAIN_DUNGEON" "Unremarkable dungeon" MAIN
 
     { "ent" } "ENTS" "Tree spirits" LESSER
     { "driad" } "DRIADS" "Driads" LESSER

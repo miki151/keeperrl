@@ -77,6 +77,7 @@
   { "map_mountain1" "^" ColorId DARK_GRAY }
   { "map_mountain2" "^" ColorId GRAY }
   { "map_mountain3" "^" ColorId LIGHT_GRAY }
+  { "dungeon_entrance" "➘" ColorId GRAY }
   { "unknown_monster" "?" ColorId LIGHT_GREEN false "unknown" }
   { "destroy_button" "X" ColorId RED false "remove" }
   { "empty" " " ColorId BLACK }

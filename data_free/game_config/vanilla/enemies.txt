@@ -714,6 +714,39 @@
       ransom = 0.5 80
     }
   }
+  "MAIN_DUNGEON"
+  {
+    settlement = {
+      type = MINETOWN
+      tribe = DARK_ELF
+      locationNameGen = TOWN
+      race = "dark elves"
+      buildingId = DUNGEON
+      outsideFeatures = "dungeonOutside"
+      furniture = "roomFurniture"
+    }
+    config = {
+      immigrantInterval = 500
+      maxPopulation = 15
+    }
+    levelConnection = {
+      topLevel = ExtraEnemy {"MAIN_DUNGEON_ENTRY"}
+      levels = {
+        { ExtraEnemy { "DUNGEON1" { 1 } } 60 40 DUNGEON }
+        { ExtraEnemy { "DUNGEON2" { 1 } } 60 40 DUNGEON }
+        { ExtraEnemy { "DUNGEON3" { 1 } } 60 40 DUNGEON }
+        { MainEnemy 60 40 MINETOWN }
+      }
+    }
+  }
+  "MAIN_DUNGEON_ENTRY"
+  {
+    settlement = {
+      type = CAVE
+      tribe = BANDIT
+      buildingId = DUNGEON
+    }
+  }
   "NO_AGGRO_BANDITS"
   {
     settlement = {
@@ -975,23 +1008,15 @@
       }
     }
   }
-  "DUNGEON2"
+  "DUNGEON2" inherit "DUNGEON1"
   {
-    settlement = {
-      type = MINETOWN
-      tribe = MONSTER
-      buildingId = DUNGEON
-      furniture = "roomFurniture"
-      inhabitants = {
-        fighters = {
-          count = {10 15}
-          all = {
+    settlement = append {
+      inhabitants = append {
+        fighters = append {
+          all = append {
             15 "GREEN_DRAGON"
-            15 "RED_DRAGON"
-            15 "BLACK_DRAGON"
             15 "SOFT_MONSTER"
-            35 "CYCLOPS"
-            35 "WITCH"
+            50 "CYCLOPS"
             50 "CLAY_GOLEM"
             50 "STONE_GOLEM"
             50 "IRON_GOLEM"
@@ -1000,13 +1025,19 @@
             80 "WATER_ELEMENTAL"
             80 "EARTH_ELEMENTAL"
             80 "AIR_ELEMENTAL"
-            100 "GNOME"
-            20 "GNOME_CHIEF"
-            100 "DWARF"
-            40 "DWARF_FEMALE"
-            150 "SNAKE"
-            100 "FLY"
-            100 "RAT"
+          }
+        }
+      }
+    }
+  }
+  "DUNGEON3" inherit "DUNGEON2"
+  {
+    settlement = append {
+      inhabitants = append {
+        fighters = append {
+          all = append {
+            150 "RED_DRAGON"
+            150 "BLACK_DRAGON"
           }
         }
       }

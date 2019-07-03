@@ -1449,8 +1449,8 @@ class DropItemsAnywhere : public Task {
     return "Drop items anywhere";
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), items); 
-  SERIALIZATION_CONSTRUCTOR(DropItemsAnywhere);
+  SERIALIZE_ALL(SUBCLASS(Task), items)
+  SERIALIZATION_CONSTRUCTOR(DropItemsAnywhere)
 
   protected:
   EntitySet<Item> SERIAL(items);

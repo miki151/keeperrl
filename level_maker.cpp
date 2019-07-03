@@ -2362,6 +2362,10 @@ static PMakerQueue vaultMaker(SettlementInfo info) {
   queue->addMaker(unique<UniformBlob>(std::move(change)));
   auto insidePredicate = Predicate::attrib(SquareAttrib::FLOOR_OUTSIDE) && Predicate::canEnter(MovementTrait::WALK);
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, insidePredicate));
+  for (StairKey key : info.downStairs)
+    queue->addMaker(unique<Stairs>(StairDirection::DOWN, key, insidePredicate));
+  for (StairKey key : info.upStairs)
+    queue->addMaker(unique<Stairs>(StairDirection::UP, key, insidePredicate));
   if (info.shopItems)
     queue->addMaker(unique<Items>(*info.shopItems, 16, 20, insidePredicate));
   queue->addMaker(unique<PlaceCollective>(info.collective, insidePredicate));
