@@ -14,9 +14,10 @@ struct TestStruct1 {
 struct TestStruct2 {
   optional<TestStruct1> SERIAL(s);
   int SERIAL(v);
-  SERIALIZE_ALL(NAMED(s), NAMED(v))
+  vector<int> SERIAL(w);
+  SERIALIZE_ALL(NAMED(s), NAMED(v), OPTION(w))
   bool operator == (const TestStruct2& o) const {
-    return s == o.s && v == o.v;
+    return s == o.s && v == o.v && w == o.w;
   }
 };
 

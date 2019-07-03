@@ -922,19 +922,20 @@ class Test {
   void testPrettyInput() {
     map<string, TestStruct2> m;
     string text = "{"
-        "\"r1\" { s = { 1 2 } v = 2 }"
+        "\"r1\" { s = { 1 2 } v = 2 w = { 3 4 } }"
         "\"r2\" inherit \"r1\" { }"
-        "\"r3\" inherit \"r1\" { s = append { x = 2 } }"
+        "\"r3\" inherit \"r1\" { s = append { x = 2 } w = { 5 6 } }"
         "}";
     auto err = PrettyPrinting::parseObject(m, text);
     CHECK(!err) << *err;
-    auto expect = TestStruct2{TestStruct1{1, 2}, 2};
+    auto expect = TestStruct2{TestStruct1{1, 2}, 2, {3, 4}};
     auto r1 = m.at("r1");
     auto r2 = m.at("r2");
     auto r3 = m.at("r3");
     CHECK(r1 == expect);
     CHECK(r2 == expect);
     expect.s->x = 2;
+    expect.w = {5, 6};
     CHECK(r3 == expect);
   }
 
@@ -964,7 +965,7 @@ class Test {
         "\"r1\" { a = { s = { 1 2 } v = 2 }}"
         "\"r3\" inherit \"r1\" { a = append { s = append { x = 2 } v = 2 } }"
         "}";
-    auto expected = TestStruct3 { TestStruct2 { TestStruct1 { 2, 2 }, 2 } };
+    auto expected = TestStruct3 { TestStruct2 { TestStruct1 { 2, 2 }, 2, {} } };
     auto err = PrettyPrinting::parseObject(m, text);
     CHECK(!err) << *err;
     auto r3 = m.at("r3");
@@ -978,7 +979,25 @@ class Test {
         "\"r3\" inherit \"r1\" { a = { s = append { x = 2 } v = 2 } }"
         "}";
     auto err = PrettyPrinting::parseObject(m, text);
-    CHECK(!!err) << *err;
+    CHECK(!!err);
+  }
+
+  void testPrettyVector() {
+    map<string, TestStruct2> m;
+    string text = "{"
+        "\"v1\" { v = 1 w = {1 2 3} }"
+        "\"v2\" inherit \"v1\" { w = append {4 5 6} }"
+        "}";
+    auto expected = TestStruct2 { none, 1, {1, 2, 3} };
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!err) << *err;
+    auto v1 = m.at("v1");
+    auto v2 = m.at("v2");
+    CHECK(expected == v1);
+    expected.w.push_back(4);
+    expected.w.push_back(5);
+    expected.w.push_back(6);
+    CHECK(expected == v2);
   }
 
   struct MatchingTest {
@@ -1219,6 +1238,7 @@ void testAll() {
   Test().testPrettyInput3();
   Test().testPrettyInput4();
   Test().testPrettyInput5();
+  Test().testPrettyVector();
   LastingEffects::runTests();
   INFO << "-----===== OK =====-----";
 }
