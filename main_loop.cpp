@@ -846,12 +846,11 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, 
   auto ret = [&] {
     switch (setup.campaign.getType()) {
       case CampaignType::SINGLE_KEEPER:
-        return modelBuilder.singleMapModel(setup.campaign.getWorldName(),
-            avatarInfo.playerCreature->getTribeId(), avatarInfo.tribeAlignment);
+        return modelBuilder.singleMapModel(avatarInfo.playerCreature->getTribeId(), avatarInfo.tribeAlignment);
       case CampaignType::QUICK_MAP:
-        return modelBuilder.tutorialModel("Campaign base site");
+        return modelBuilder.tutorialModel();
       default:
-        return modelBuilder.campaignBaseModel("Campaign base site", avatarInfo.playerCreature->getTribeId(),
+        return modelBuilder.campaignBaseModel(avatarInfo.playerCreature->getTribeId(),
             avatarInfo.tribeAlignment, setup.externalEnemies);
     }
   }();
@@ -881,8 +880,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
           if (sites[v].getKeeper()) {
             models[v] = getBaseModel(modelBuilder, setup, avatarInfo);
           } else if (auto villain = sites[v].getVillain())
-            models[v] = modelBuilder.campaignSiteModel("Campaign enemy site", villain->enemyId, villain->type,
-                avatarInfo.tribeAlignment);
+            models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, avatarInfo.tribeAlignment);
           else if (auto retired = sites[v].getRetired()) {
             if (auto info = loadFromFile<RetiredModelInfo>(userPath.file(retired->fileInfo.filename), !useSingleThread)) {
               models[v] = std::move(info->model);

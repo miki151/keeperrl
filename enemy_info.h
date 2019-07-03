@@ -11,23 +11,37 @@
 struct EnemyInfo;
 class EnemyFactory;
 
-struct LevelConnection {
-  enum class Type;
-  Type SERIAL(type);
-  HeapAllocated<EnemyInfo> otherEnemy;
-  EnemyId SERIAL(enemyId);
-  bool SERIAL(deadInhabitants) = false;
-  SERIALIZE_ALL(NAMED(type), NAMED(enemyId), OPTION(deadInhabitants))
-};
+RICH_ENUM(LevelConnectionDir, UP, DOWN);
 
 RICH_ENUM(
-    LevelConnection::Type,
-    CRYPT,
-    GNOMISH_MINES,
+    LevelType,
     TOWER,
+    DUNGEON,
+    MINETOWN,
     MAZE,
     SOKOBAN
 );
+
+struct LevelConnection {
+  LevelConnectionDir SERIAL(direction) = LevelConnectionDir::DOWN;
+  struct ExtraEnemy {
+    EnemyId SERIAL(enemy);
+    vector<EnemyInfo> enemyInfo;
+    Range SERIAL(numLevels) = Range(1, 2);
+    SERIALIZE_ALL(NAMED(enemy), OPTION(numLevels))
+  };
+  using MainEnemy = EmptyStruct<struct MainEnemyTag>;
+  MAKE_VARIANT(EnemyLevelInfo, ExtraEnemy, MainEnemy);
+  struct LevelInfo {
+    Vec2 SERIAL(levelSize);
+    LevelType SERIAL(levelType);
+    EnemyLevelInfo SERIAL(enemy);
+    SERIALIZE_ALL(NAMED(enemy), NAMED(levelSize), NAMED(levelType))
+  };
+  EnemyLevelInfo SERIAL(topLevel);
+  vector<LevelInfo> SERIAL(levels);
+  SERIALIZE_ALL(NAMED(topLevel), NAMED(levels), OPTION(direction))
+};
 
 struct BonesInfo {
   double SERIAL(probability);

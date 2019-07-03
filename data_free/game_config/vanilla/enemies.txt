@@ -264,8 +264,10 @@
       ransom = 0.5 100
     }
     levelConnection = {
-      type = CRYPT
-      enemyId = "DEMON_DEN_ABOVE"
+      topLevel = ExtraEnemy { "DEMON_DEN_ABOVE" }
+      levels = {
+        {MainEnemy 30 30 MAZE }
+      }
     }
     immigrants = {
       {
@@ -419,10 +421,6 @@
       attackBehaviour = KillLeader
       ransom = 0.9 400
     }
-    levelConnection = {
-      type = MAZE
-      enemyId = "MINOTAUR"
-    }
     immigrants = {
       {
         ids = {"ARCHER"}
@@ -433,6 +431,12 @@
         ids = {"KNIGHT"}
         traits = {FIGHTER}
         frequency = 1
+      }
+    }
+    levelConnection = {
+      topLevel = MainEnemy
+      levels = {
+        { ExtraEnemy { "MINOTAUR" { 1 2 } } 40 40 MAZE }
       }
     }
   }
@@ -646,6 +650,26 @@
     }
     discoverable = false
   }
+  "ELEMENTALIST_FLOOR"
+  {
+    settlement = {
+      inhabitants = {
+        fighters = {
+          count = {1 3}
+          all = {
+            1 "AIR_ELEMENTAL"
+            1 "WATER_ELEMENTAL"
+            1 "FIRE_ELEMENTAL"
+            1 "EARTH_ELEMENTAL"
+          }
+        }
+      }
+      type = TOWER
+      tribe = HUMAN
+      buildingId = BRICK
+    }
+    discoverable = false
+  }
   "ELEMENTALIST"
   {
     settlement = {
@@ -659,6 +683,14 @@
     }
     config = {
       leaderAsFighter = true
+    }
+    levelConnection = {
+      direction = UP
+      topLevel = ExtraEnemy { "ELEMENTALIST_ENTRY" }
+      levels = {
+        { ExtraEnemy { "ELEMENTALIST_FLOOR" { 3 6 }} 4 4 TOWER }
+        { MainEnemy 5 5 TOWER }
+      }
     }
     behaviour = {
       minPopulation = 0
@@ -680,10 +712,6 @@
         }
       }
       ransom = 0.5 80
-    }
-    levelConnection = {
-      type = TOWER
-      enemyId = "ELEMENTALIST_ENTRY"
     }
   }
   "NO_AGGRO_BANDITS"
@@ -841,8 +869,12 @@
       maxPopulation = 15
     }
     levelConnection = {
-      type = GNOMISH_MINES
-      enemyId = "DARK_ELVES_ENTRY"
+      topLevel = ExtraEnemy {"DARK_ELVES_ENTRY"}
+      levels = {
+        { ExtraEnemy { "DUNGEON1" { 2 4 } } 60 40 DUNGEON }
+        { ExtraEnemy { "DUNGEON2" { 1 2 } } 60 40 DUNGEON }
+        { MainEnemy 60 40 MINETOWN }
+      }
     }
     immigrants = { 
       {
@@ -906,6 +938,80 @@
     }
     discoverable = false
   }
+  "DUNGEON1"
+  {
+    settlement = {
+      type = MINETOWN
+      tribe = MONSTER
+      buildingId = DUNGEON
+      furniture = "roomFurniture"
+      inhabitants = {
+        fighters = {
+          count = {10 15}
+          all = {
+            100 "BANDIT"
+            15 "CYCLOPS"
+            15 "WITCH"
+            20 "CLAY_GOLEM"
+            20 "STONE_GOLEM"
+            20 "IRON_GOLEM"
+            20 "LAVA_GOLEM"
+            10 "FIRE_ELEMENTAL"
+            10 "WATER_ELEMENTAL"
+            10 "EARTH_ELEMENTAL"
+            10 "AIR_ELEMENTAL"
+            100 "GNOME"
+            20 "GNOME_CHIEF"
+            100 "DWARF"
+            40 "DWARF_FEMALE"
+            200 "JACKAL"
+            200 "BAT"
+            150 "SNAKE"
+            200 "SPIDER"
+            100 "FLY"
+            100 "RAT"
+          }
+        }
+      }
+    }
+  }
+  "DUNGEON2"
+  {
+    settlement = {
+      type = MINETOWN
+      tribe = MONSTER
+      buildingId = DUNGEON
+      furniture = "roomFurniture"
+      inhabitants = {
+        fighters = {
+          count = {10 15}
+          all = {
+            15 "GREEN_DRAGON"
+            15 "RED_DRAGON"
+            15 "BLACK_DRAGON"
+            15 "SOFT_MONSTER"
+            35 "CYCLOPS"
+            35 "WITCH"
+            50 "CLAY_GOLEM"
+            50 "STONE_GOLEM"
+            50 "IRON_GOLEM"
+            50 "LAVA_GOLEM"
+            80 "FIRE_ELEMENTAL"
+            80 "WATER_ELEMENTAL"
+            80 "EARTH_ELEMENTAL"
+            80 "AIR_ELEMENTAL"
+            100 "GNOME"
+            20 "GNOME_CHIEF"
+            100 "DWARF"
+            40 "DWARF_FEMALE"
+            150 "SNAKE"
+            100 "FLY"
+            100 "RAT"
+          }
+        }
+      }
+    }
+  }
   "GNOMES"
   {
     settlement = {
@@ -926,8 +1032,12 @@
       furniture = "roomFurniture"
     }
     levelConnection = {
-      type = GNOMISH_MINES
-      enemyId = "GNOMES_ENTRY"
+      topLevel = ExtraEnemy {"GNOMES_ENTRY"}
+      levels = {
+        { ExtraEnemy { "DUNGEON1" { 2 4 } } 60 40 DUNGEON }
+        { ExtraEnemy { "DUNGEON2" { 1 2 } } 60 40 DUNGEON }
+        { MainEnemy 60 40 MINETOWN }
+      }
     }
   }
   "GNOMES_ENTRY"
@@ -1097,8 +1207,10 @@
       buildingId = BRICK
     }
     levelConnection = {
-      type = CRYPT
-      enemyId = "CEMETERY_ENTRY"
+      topLevel = ExtraEnemy { "CEMETERY_ENTRY" }
+      levels = {
+        {MainEnemy 40 40 MAZE }
+      }
     }
   }
   "CEMETERY_ENTRY"
@@ -1196,8 +1308,11 @@
       buildingId = DUNGEON  
     }
     levelConnection = {
-      type = SOKOBAN
-      enemyId = "SOKOBAN_ENTRY"
+      direction = UP
+      topLevel = ExtraEnemy { "SOKOBAN_ENTRY" }
+      levels = {
+        {MainEnemy 28 16 SOKOBAN }
+      }
     }
     discoverable = false
   }

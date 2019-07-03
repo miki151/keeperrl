@@ -17,6 +17,7 @@
 #include "z_level_info.h"
 #include "attack_behaviour.h"
 #include "tech_id.h"
+#include "enemy_info.h"
 
 namespace cereal {
   namespace variant_detail {
@@ -81,4 +82,5 @@ namespace cereal {
   INST2(ZLevelType_impl)
   INST2(AttackTrigger_impl)
   INST2(AttackBehaviour_impl)
+  INST2(LevelConnection::EnemyLevelInfo_impl)
 } // namespace cereal

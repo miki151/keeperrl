@@ -114,9 +114,14 @@ EnemyInfo EnemyFactory::get(EnemyId id) const {
   CHECK(enemies.count(id)) << "Enemy not found: \"" << id.data() << "\"";
   auto ret = enemies.at(id);
   ret.setId(id);
+  if (ret.levelConnection) {
+    for (auto& level : ret.levelConnection->levels)
+      if (auto extra = level.enemy.getReferenceMaybe<LevelConnection::ExtraEnemy>())
+        extra->enemyInfo = vector<EnemyInfo>(random.get(extra->numLevels), get(extra->enemy));
+    if (auto extra = ret.levelConnection->topLevel.getReferenceMaybe<LevelConnection::ExtraEnemy>())
+      extra->enemyInfo = vector<EnemyInfo>(random.get(extra->numLevels), get(extra->enemy));
+  }
   updateCreateOnBones(ret);
-  if (ret.levelConnection)
-    ret.levelConnection->otherEnemy = get(ret.levelConnection->enemyId);
   if (ret.settlement.locationNameGen)
     ret.settlement.locationName = nameGenerator->getNext(*ret.settlement.locationNameGen);
   return ret;
@@ -126,20 +131,31 @@ void EnemyFactory::updateCreateOnBones(EnemyInfo& info) const {
   if (info.createOnBones && random.chance(info.createOnBones->probability)) {
     EnemyInfo enemy = get(random.choose(info.createOnBones->enemies));
     info.levelConnection = enemy.levelConnection;
-    if (info.levelConnection) {
-      info.levelConnection->otherEnemy->settlement.buildingId = BuildingId::RUINS;
-      info.levelConnection->deadInhabitants = true;
-    }
-    if (Random.roll(2)) {
+    bool makeRuins = Random.roll(2);
+    if (makeRuins)
       info.settlement.buildingId = BuildingId::RUINS;
-      if (info.levelConnection)
-        info.levelConnection->otherEnemy->settlement.buildingId = BuildingId::RUINS;
-    } else {
-      // 50% chance that the original settlement is intact
+    else {
       info.settlement.buildingId = enemy.settlement.buildingId;
       info.settlement.furniture = enemy.settlement.furniture;
       info.settlement.outsideFeatures = enemy.settlement.outsideFeatures;
       info.settlement.shopItems = enemy.settlement.shopItems;
+    }
+    if (info.levelConnection) {
+      auto processLevel = [&](LevelConnection::EnemyLevelInfo& enemy) {
+        if (auto extra = enemy.getReferenceMaybe<LevelConnection::ExtraEnemy>())
+          for (auto& enemy : extra->enemyInfo) {
+            if (makeRuins) {
+              enemy.settlement.buildingId = BuildingId::RUINS;
+              enemy.settlement.furniture.reset();
+              enemy.settlement.outsideFeatures.reset();
+            }
+            enemy.settlement.corpses = enemy.settlement.inhabitants;
+            enemy.settlement.inhabitants = InhabitantsInfo();
+          }
+      };
+      for (auto& level : info.levelConnection->levels)
+        processLevel(level.enemy);
+      processLevel(info.levelConnection->topLevel);
     }
     info.settlement.type = enemy.settlement.type;
     info.settlement.corpses = enemy.settlement.inhabitants;

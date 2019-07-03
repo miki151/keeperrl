@@ -39,7 +39,6 @@ class LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) = 0;
   virtual ~LevelMaker() {}
 
-  static PLevelMaker cryptLevel(RandomGen&, SettlementInfo);
   static PLevelMaker topLevel(RandomGen&, optional<CreatureGroup> wildlife, vector<SettlementInfo> village, int width,
       optional<TribeId> keeperTribe, BiomeId, ResourceCounts);
   static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo);
@@ -47,8 +46,7 @@ class LevelMaker {
       CreatureGroup monsters, CreatureGroup imps, const FilePath& splashPath);
   static PLevelMaker towerLevel(RandomGen&, SettlementInfo);
   static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
-  static PLevelMaker roomLevel(RandomGen&, CreatureGroup roomFactory, CreatureGroup waterFactory,
-    CreatureGroup lavaFactory, vector<StairKey> up, vector<StairKey> down, FurnitureListId furniture);
+  static PLevelMaker roomLevel(RandomGen&, SettlementInfo);
   static PLevelMaker mazeLevel(RandomGen&, SettlementInfo);
   static PLevelMaker emptyLevel(FurnitureType, bool withFloor);
   static PLevelMaker sokobanFromFile(RandomGen&, SettlementInfo, Table<char>);

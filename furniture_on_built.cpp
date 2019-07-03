@@ -92,7 +92,7 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
         auto newLevel = tryBuilding(20,
             [&]{
               return pos.getModel()->buildMainLevel(
-                LevelBuilder(Random, pos.getGame()->getContentFactory(), width, width, "", true),
+                LevelBuilder(Random, pos.getGame()->getContentFactory(), width, width, true),
                 getLevelMaker(Random, pos.getGame()->getContentFactory(),
                     pos.getGame()->getPlayerControl()->getTribeAlignment(),
                     levelIndex + 1, width, pos.getGame()->getPlayerCollective()->getTribeId(), stairKey));

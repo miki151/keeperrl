@@ -108,6 +108,7 @@ enum class BedType;
 enum class TargetType;
 enum class HealthType;
 enum class ExternalEnemiesType;
+enum class LevelType;
 
 struct FXInfo;
 struct FXSpawnInfo;

@@ -184,7 +184,7 @@ Model::Model(Private) {
 
 PModel Model::create(ContentFactory* contentFactory) {
   auto ret = makeOwner<Model>(Private{});
-  ret->cemetery = LevelBuilder(Random, contentFactory, 100, 100, "Dead creatures", false)
+  ret->cemetery = LevelBuilder(Random, contentFactory, 100, 100, false)
       .build(ret.get(), LevelMaker::emptyLevel(FurnitureType("GRASS"), false).get(), Random.getLL());
   ret->eventGenerator = makeOwner<EventGenerator>();
   return ret;
@@ -252,7 +252,7 @@ void Model::calculateStairNavigation() {
     for (auto l2 : getLevels())
       if (l1 != l2)
         CHECK(stairNavigation.count(getIds(l1, l2))) <<
-            "No stair path between levels " << l1->getName() << " " << l2->getName();
+            "No stair path between levels ";// << l1->getName() << " " << l2->getName();
 }
 
 optional<StairKey> Model::getStairsBetween(WConstLevel from, WConstLevel to) const {

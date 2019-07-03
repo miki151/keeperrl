@@ -105,9 +105,6 @@ class Level : public OwnedObject<Level> {
   /** Returns the level's boundaries.*/
   const Rectangle& getBounds() const;
 
-  /** Returns the name of the level. */
-  const string& getName() const;
-
   //@{
   /** Returns the given square. \paramname{pos} must lie within the boundaries. */
   vector<Position> getAllPositions() const;
@@ -193,7 +190,6 @@ class Level : public OwnedObject<Level> {
   EntitySet<Creature> SERIAL(creatureIds);
   WModel SERIAL(model) = nullptr;
   mutable HeapAllocated<EnumMap<VisionId, FieldOfView>> SERIAL(fieldOfView);
-  string SERIAL(name);
   Table<double> SERIAL(sunlight);
   Table<bool> SERIAL(covered);
   HeapAllocated<RoofSupport> SERIAL(roofSupport);
@@ -207,11 +203,11 @@ class Level : public OwnedObject<Level> {
   friend class LevelBuilder;
   struct Private {};
 
-  static PLevel create(SquareArray s, FurnitureArray f, WModel m, const string& n, Table<double> sun, LevelId id,
+  static PLevel create(SquareArray s, FurnitureArray f, WModel m, Table<double> sun, LevelId id,
       Table<bool> cover, Table<bool> unavailable);
 
   public:
-  Level(Private, SquareArray, FurnitureArray, WModel, const string& name, Table<double> sunlight, LevelId);
+  Level(Private, SquareArray, FurnitureArray, WModel, Table<double> sunlight, LevelId);
 
   private:
   void addLightSource(Vec2 pos, double radius, int numLight);

@@ -45,7 +45,7 @@ template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Level>);
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
-  ar(name, sunlight, bucketMap, lightAmount, unavailable);
+  ar(sunlight, bucketMap, lightAmount, unavailable);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
   ar(furniture, tickingFurniture, covered, roofSupport, portals);
   if (Archive::is_loading::value) // some code requires these Sectors to be always initialized
@@ -58,19 +58,18 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Level);
 
 Level::~Level() {}
 
-Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, const string& n,
-    Table<double> sun, LevelId id)
+Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, Table<double> sun, LevelId id)
     : squares(std::move(s)), furniture(std::move(f)),
       memoryUpdates(squares->getBounds(), true), model(m),
-      name(n), sunlight(sun), roofSupport(squares->getBounds()),
+      sunlight(sun), roofSupport(squares->getBounds()),
       bucketMap(squares->getBounds().width(), squares->getBounds().height(),
       FieldOfView::sightRange), lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
       levelId(id), portals(squares->getBounds()) {
 }
 
-PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
+PLevel Level::create(SquareArray s, FurnitureArray f, WModel m,
     Table<double> sun, LevelId id, Table<bool> covered, Table<bool> unavailable) {
-  auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, n, sun, id);
+  auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, sun, id);
   for (Vec2 pos : ret->squares->getBounds()) {
     auto square = ret->squares->getReadonly(pos);
     square->onAddedToLevel(Position(pos, ret.get()));
@@ -493,10 +492,6 @@ bool Level::inBounds(Vec2 pos) const {
 
 const Rectangle& Level::getBounds() const {
   return squares->getBounds();
-}
-
-const string& Level::getName() const {
-  return name;
 }
 
 Sectors& Level::getSectorsDontCreate(const MovementType& movement) const {

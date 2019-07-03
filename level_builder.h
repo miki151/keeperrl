@@ -43,9 +43,9 @@ RICH_ENUM(SquareAttrib,
 class LevelBuilder {
   public:
   /** Constructs a builder with given size and name. */
-  LevelBuilder(ProgressMeter*, RandomGen&, ContentFactory*, int width, int height, const string& name,
+  LevelBuilder(ProgressMeter*, RandomGen&, ContentFactory*, int width, int height,
       bool covered = true, optional<double> defaultLight = none);
-  LevelBuilder(RandomGen&, ContentFactory*, int width, int height, const string& name, bool covered = true);
+  LevelBuilder(RandomGen&, ContentFactory*, int width, int height, bool covered = true);
   
   LevelBuilder(LevelBuilder&&);
   ~LevelBuilder();
@@ -143,7 +143,6 @@ class LevelBuilder {
   vector<pair<PCreature, Vec2>> creatures;
   Table<vector<PItem>> items;
   FurnitureArray furniture;
-  string name;
   vector<Vec2::LinearMap> mapStack;
   ProgressMeter* progressMeter = nullptr;
   RandomGen& random;

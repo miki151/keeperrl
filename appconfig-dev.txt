@@ -1,4 +1,4 @@
 {
-"upload_url"     "http://keeperrl.com/~retired/28"
-"save_version"   "3400"
+"upload_url"     "http://localhost/~retired"
+"save_version"   "4000"
 }
