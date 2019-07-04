@@ -291,16 +291,16 @@ PModel ModelBuilder::tryCampaignBaseModel(const string& siteName, TribeId keeper
       enemyInfo.push_back(enemyFactory->get(EnemyId("BANDITS")));
       enemyInfo.push_back(enemyFactory->get(EnemyId("ANTS_CLOSED_SMALL")));
       enemyInfo.push_back(enemyFactory->get(EnemyId("TUTORIAL_VILLAGE")));
-      if (random.chance(0.3))
-        enemyInfo.push_back(enemyFactory->get(EnemyId("TEMPLE")));
+      /*if (random.chance(0.3))
+        enemyInfo.push_back(enemyFactory->get(EnemyId("TEMPLE")));*/
       break;
     case TribeAlignment::LAWFUL:
       enemyInfo.push_back(enemyFactory->get(EnemyId("DARK_ELF_CAVE")));
       enemyInfo.push_back(enemyFactory->get(EnemyId("ORC_CAVE")));
       enemyInfo.push_back(enemyFactory->get(EnemyId("ANTS_CLOSED_SMALL")));
       enemyInfo.push_back(enemyFactory->get(EnemyId("COTTAGE_BANDITS")));
-      if (random.chance(0.3))
-        enemyInfo.push_back(enemyFactory->get(EnemyId("EVIL_TEMPLE")));
+      /*if (random.chance(0.3))
+        enemyInfo.push_back(enemyFactory->get(EnemyId("EVIL_TEMPLE")));*/
       break;
   }
   append(enemyInfo, enemyFactory->getVaults(alignment, keeperTribe));
