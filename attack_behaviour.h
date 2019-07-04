@@ -1,19 +1,17 @@
 #pragma once
 
 #include "enum_variant.h"
-#include "creature_factory.h"
+#include "creature_list.h"
 
-enum class AttackBehaviourId {
-  KILL_LEADER,
-  KILL_MEMBERS,
-  STEAL_GOLD,
-  CAMP_AND_SPAWN,
-  HALLOWEEN_KIDS
+EMPTY_STRUCT(KillLeader);
+EMPTY_STRUCT(StealGold);
+EMPTY_STRUCT(HalloweenKids);
+
+struct KillMembers {
+  int count;
+  COMPARE_ALL(count)
 };
 
-class AttackBehaviour : public EnumVariant<AttackBehaviourId, TYPES(int, CreatureFactory),
-        ASSIGN(int, AttackBehaviourId::KILL_MEMBERS),
-        ASSIGN(CreatureFactory, AttackBehaviourId::CAMP_AND_SPAWN)> {
-  public:
-  using EnumVariant::EnumVariant;
-};
+using CampAndSpawn = CreatureList;
+
+MAKE_VARIANT2(AttackBehaviour, KillLeader, StealGold, HalloweenKids, KillMembers, CampAndSpawn);

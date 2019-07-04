@@ -12,7 +12,7 @@
 #include "villain_type.h"
 #include "attack_behaviour.h"
 
-SERIALIZE_DEF(VillageBehaviour, minPopulation, minTeamSize, triggers, attackBehaviour, welcomeMessage, ransom)
+SERIALIZE_DEF(VillageBehaviour, NAMED(minPopulation), NAMED(minTeamSize), OPTION(triggers), NAMED(attackBehaviour), OPTION(welcomeMessage), OPTION(ransom))
 
 VillageBehaviour::VillageBehaviour() {}
 
@@ -21,25 +21,34 @@ VillageBehaviour&VillageBehaviour::operator =(const VillageBehaviour&) = default
 
 VillageBehaviour::~VillageBehaviour() {}
 
-PTask VillageBehaviour::getAttackTask(VillageControl* self) {
+PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
   WCollective enemy = self->getEnemyCollective();
-  switch (attackBehaviour->getId()) {
-    case AttackBehaviourId::KILL_LEADER:
-      return Task::attackCreatures({enemy->getLeader()});
-    case AttackBehaviourId::KILL_MEMBERS:
-      return Task::killFighters(enemy, attackBehaviour->get<int>());
-    case AttackBehaviourId::STEAL_GOLD:
-      if (auto ret = Task::stealFrom(enemy, self->getCollective()))
-        return ret;
-      else
-        return Task::attackCreatures({enemy->getLeader()});
-    case AttackBehaviourId::CAMP_AND_SPAWN:
-      return Task::campAndSpawn(enemy,
-            attackBehaviour->get<CreatureFactory>(), Random.get(3, 7), Range(3, 7), Random.get(3, 7));
-    case AttackBehaviourId::HALLOWEEN_KIDS:
-      FATAL << "Not handled";
-      return {};
-  }
+  return attackBehaviour->visit(
+      [&](KillLeader) {
+        if (auto leader = enemy->getLeader())
+          return Task::attackCreatures({leader});
+        else
+          return Task::killFighters(enemy, 1000);
+      },
+      [&](KillMembers t) {
+        return Task::killFighters(enemy, t.count);
+      },
+      [&](StealGold) {
+        if (auto ret = Task::stealFrom(enemy))
+          return ret;
+        else if (auto leader = enemy->getLeader())
+          return Task::attackCreatures({leader});
+        else
+          return Task::killFighters(enemy, 1000);
+      },
+      [&](CampAndSpawn t) {
+        return Task::campAndSpawn(enemy, t, Random.get(3, 7));
+      },
+      [&](HalloweenKids) {
+        FATAL << "Not handled";
+        return PTask();
+      }
+  );
 }
 
 static double powerClosenessFun(double myPower, double hisPower) {
@@ -105,15 +114,6 @@ static double stolenItemsFun(int numStolen) {
     return 1.0;
 }
 
-static double getRoomProb(FurnitureType id) {
-  switch (id) {
-    case FurnitureType::THRONE: return 0.001;
-    case FurnitureType::DEMON_SHRINE: return 0.001;
-    case FurnitureType::IMPALED_HEAD: return 0.000125;
-    default: FATAL << "Unsupported ROOM_BUILT type"; return 0;
-  }
-}
-
 static double getFinishOffProb(double maxPower, double currentPower, double selfPower) {
   if (maxPower < selfPower || currentPower * 2 >= maxPower)
     return 0;
@@ -144,44 +144,50 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
   double proximityMaxProb = 1.0 / 5000;
   double timerProb = 1.0 / 3000;
   double numConqueredMaxProb = 1.0 / 3000;
-  if (WCollective collective = self->getEnemyCollective())
-    switch (trigger.getId()) {
-      case AttackTriggerId::TIMER: 
-        return collective->getGlobalTime() >= trigger.get<int>() ? timerProb : 0;
-      case AttackTriggerId::ROOM_BUILT:
-        if (trigger.get<FurnitureType>() ==FurnitureType::DEMON_SHRINE)
-          {//Demon shrines actually decrease probability of demon attacks, not increase it
-            double numShrines = collective->getConstructions().getBuiltCount(trigger.get<FurnitureType>());
-            if (numShrines>4) return 0;
-            return getRoomProb(trigger.get<FurnitureType>()) / (numShrines+1);}   
-        //Not a demon shrine. These items increase attack chance.
-        return collective->getConstructions().getBuiltCount(trigger.get<FurnitureType>()) *
-          getRoomProb(trigger.get<FurnitureType>());
-      case AttackTriggerId::POWER: 
-        return powerMaxProb *
-            powerClosenessFun(self->getCollective()->getDangerLevel(), collective->getDangerLevel());
-      case AttackTriggerId::FINISH_OFF:
-        return finishOffMaxProb * getFinishOffProb(self->maxEnemyPower, collective->getDangerLevel(),
-            self->getCollective()->getDangerLevel());
-      case AttackTriggerId::SELF_VICTIMS:
-        return victimsMaxProb * victimsFun(self->victims, 0);
-      case AttackTriggerId::ENEMY_POPULATION:
-        return populationMaxProb * populationFun(
-            collective->getCreatures(MinionTrait::FIGHTER).size(), trigger.get<int>());
-      case AttackTriggerId::GOLD:
-        return goldMaxProb * goldFun(collective->numResource(Collective::ResourceId::GOLD), trigger.get<int>());
-      case AttackTriggerId::STOLEN_ITEMS:
-        return stolenMaxProb * stolenItemsFun(self->stolenItemCount);
-      case AttackTriggerId::ENTRY:
-        return entryMaxProb * self->entries;
-      case AttackTriggerId::PROXIMITY:
-        if (collective->getGame()->getModelDistance(collective, self->getCollective()) == 1)
-          return proximityMaxProb;
-        else
-          return 0;
-      case AttackTriggerId::NUM_CONQUERED:
-        return numConqueredMaxProb * getNumConqueredProb(self->getCollective()->getGame(), trigger.get<int>());
-    }
+  if (auto enemy = self->getEnemyCollective())
+    return trigger.visit(
+        [&](const Timer& t) {
+          return enemy->getGlobalTime().getVisibleInt() >= t.value ? timerProb : 0;
+        },
+        [&](const RoomTrigger& t) {
+          return t.probPerSquare * enemy->getConstructions().getBuiltCount(t.type);
+        },
+        [&](const Power&) {
+          auto value = powerClosenessFun(self->collective->getDangerLevel(), enemy->getDangerLevel());
+          if (value < 0.5)
+            value = 0;
+          return powerMaxProb * value;
+        },
+        [&](const FinishOff&) {
+          return finishOffMaxProb * getFinishOffProb(self->maxEnemyPower, enemy->getDangerLevel(),
+              self->collective->getDangerLevel());
+        },
+        [&](const SelfVictims&) {
+          return victimsMaxProb * victimsFun(self->victims, 0);
+        },
+        [&](const EnemyPopulation& t) {
+          return populationMaxProb * populationFun(
+              enemy->getPopulationSize(), t.value);
+        },
+        [&](const Gold& t) {
+          return goldMaxProb * goldFun(enemy->numResource(Collective::ResourceId::GOLD), t.value);
+        },
+        [&](const StolenItems&) {
+          return stolenMaxProb * stolenItemsFun(self->stolenItemCount);
+        },
+        [&](const MiningInProximity&) {
+          return entryMaxProb * self->entries;
+        },
+        [&](const Proximity&) {
+          if (enemy->getGame()->getModelDistance(enemy, self->collective) == 1)
+            return proximityMaxProb;
+          else
+            return 0.0;
+        },
+        [&](const NumConquered& t) {
+          return numConqueredMaxProb * getNumConqueredProb(self->collective->getGame(), t.value);
+        }
+    );
   return 0;
 }
 
@@ -191,10 +197,13 @@ double VillageBehaviour::getAttackProbability(const VillageControl* self) const 
     double val = getTriggerValue(elem, self);
     CHECK(val >= 0 && val <= 1);
     ret = max(ret, val);
-    if (auto& name = self->getCollective()->getName())
-      INFO << "trigger " << EnumInfo<AttackTriggerId>::getString(elem.getId()) << " village "
+    if (auto& name = self->collective->getName())
+      INFO << "trigger " << elem.getName() << " village "
           << name->full << " under attack probability " << val;
   }
   return ret;
 }
 
+#include "pretty_archive.h"
+template
+void VillageBehaviour::serialize(PrettyInputArchive& ar1, unsigned);

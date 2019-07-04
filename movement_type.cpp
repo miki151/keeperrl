@@ -2,7 +2,7 @@
 #include "movement_type.h"
 #include "tribe.h"
 
-SERIALIZE_DEF(MovementType, traits, tribeSet, sunlightVulnerable, fireResistant, forced, destroyActions)
+SERIALIZE_DEF(MovementType, traits, tribeSet, sunlightVulnerable, fireResistant, forced, destroyActions, buildBridge)
 
 MovementType::MovementType(EnumSet<MovementTrait> t) : traits(t) {
 }
@@ -19,7 +19,8 @@ bool MovementType::hasTrait(MovementTrait t) const {
 
 bool MovementType::operator == (const MovementType& o) const {
   return traits == o.traits && tribeSet == o.tribeSet && sunlightVulnerable == o.sunlightVulnerable &&
-      fireResistant == o.fireResistant && forced == o.forced && destroyActions == o.destroyActions;
+      fireResistant == o.fireResistant && forced == o.forced && destroyActions == o.destroyActions &&
+      buildBridge == o.buildBridge;
 }
 
 const EnumSet<MovementTrait>& MovementType::getTraits() const {
@@ -66,7 +67,12 @@ MovementType& MovementType::setDestroyActions(EnumSet<DestroyAction::Type> d) {
   return *this;
 }
 
-const EnumSet<DestroyAction::Type>&MovementType::getDestroyActions() const {
+MovementType& MovementType::setCanBuildBridge(bool can) {
+  buildBridge = can;
+  return *this;
+}
+
+const EnumSet<DestroyAction::Type>& MovementType::getDestroyActions() const {
   return destroyActions;
 }
 
@@ -80,6 +86,10 @@ bool MovementType::isFireResistant() const {
 
 bool MovementType::isForced() const {
   return forced;
+}
+
+bool MovementType::canBuildBridge() const {
+  return buildBridge;
 }
 
 

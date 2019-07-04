@@ -15,26 +15,26 @@ BucketMap<T>::BucketMap(int w, int h, int size)
 }
 
 template<class T>
-void BucketMap<T>::addElement(Vec2 v, WeakPointer<T> elem) {
+void BucketMap<T>::addElement(Vec2 v, T* elem) {
   CHECK(!buckets[v.x / bucketSize][v.y / bucketSize].contains(elem));
   buckets[v.x / bucketSize][v.y / bucketSize].insert(std::move(elem));
 }
 
 template<class T>
-void BucketMap<T>::removeElement(Vec2 v, WeakPointer<T> elem) {
+void BucketMap<T>::removeElement(Vec2 v, T* elem) {
   CHECK(buckets[v.x / bucketSize][v.y / bucketSize].contains(elem));
   buckets[v.x / bucketSize][v.y / bucketSize].remove(elem);
 }
 
 template<class T>
-void BucketMap<T>::moveElement(Vec2 from, Vec2 to, WeakPointer<T> elem) {
+void BucketMap<T>::moveElement(Vec2 from, Vec2 to, T* elem) {
   removeElement(from, elem);
   addElement(to, elem);
 }
 
 template<class T>
-vector<WeakPointer<T>> BucketMap<T>::getElements(Rectangle area) const {
-  vector<WeakPointer<T>> ret;
+vector<T*> BucketMap<T>::getElements(Rectangle area) const {
+  vector<T*> ret;
   Rectangle bArea(
       area.left() / bucketSize, area.top() / bucketSize,
       (area.right() - 1) / bucketSize + 1, (area.bottom() - 1) / bucketSize + 1);

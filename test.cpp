@@ -33,6 +33,16 @@
 #include "serialization.h"
 #include "text_serialization.h"
 #include "creature_factory.h"
+#include "level_builder.h"
+#include "model.h"
+#include "position_matching.h"
+#include "dungeon_level.h"
+#include "villain_type.h"
+#include "roof_support.h"
+#include "content_factory.h"
+#include "game_config.h"
+#include "name_generator.h"
+#include "lasting_effect.h"
 
 class Test {
   public:
@@ -43,10 +53,10 @@ class Test {
 
   void testTimeQueue() {
    /* CreatureAttributes attr = CATTR(c.name = ""; c.speed = 5; c.size = CreatureSize::SMALL; c.strength = 1; c.dexterity = 3; c.humanoid = false; c.weight = 0.1;);
-    PCreature b(new Creature(ViewObject(ViewId::JACKAL, ViewLayer::CREATURE, ""), nullptr, attr));
-    PCreature a(new Creature(ViewObject(ViewId::PLAYER, ViewLayer::CREATURE, ""), nullptr, attr));
-    PCreature c(new Creature(ViewObject(ViewId::JACKAL, ViewLayer::CREATURE, ""), nullptr, attr));
-    WCreature rb = b.get(), *ra = a.get(), *rc = c.get();
+    PCreature b(new Creature(ViewObject(ViewId("jackal"), ViewLayer::CREATURE, ""), nullptr, attr));
+    PCreature a(new Creature(ViewObject(ViewId("player"), ViewLayer::CREATURE, ""), nullptr, attr));
+    PCreature c(new Creature(ViewObject(ViewId("jackal"), ViewLayer::CREATURE, ""), nullptr, attr));
+    Creature* rb = b.get(), *ra = a.get(), *rc = c.get();
     a->setTime(1);
     b->setTime(1.33);
     c->setTime(1.66);
@@ -92,6 +102,39 @@ class Test {
     CHECK(Rectangle(0, 0, 4, 4).intersects(Rectangle(1, 1, 3, 3)));
     CHECK(Rectangle(0, 0, 4, 4).intersects(Rectangle(0, 0, 3, 4)));
   }
+  void testRectangleDistance() {
+    Rectangle r(-3, -6, 4, 3);
+    CHECKEQ(r.getDistance(Rectangle(5, 5, 7, 7)), 2);
+    CHECKEQ(r.getDistance(Rectangle(4, 4, 7, 7)), 1);
+    CHECKEQ(r.getDistance(Rectangle(4, 3, 7, 7)), 0);
+    CHECKEQ(r.getDistance(Rectangle(3, 2, 7, 7)), -1);
+    CHECKEQ(r.getDistance(Rectangle(2, 3, 7, 7)), 0);
+    CHECKEQ(r.getDistance(Rectangle(2, 4, 7, 7)), 1);
+    CHECKEQ(r.getDistance(Rectangle(2, 2, 7, 7)), -1);
+    CHECKEQ(r.getDistance(Rectangle(0, 5, 2, 7)), 2);
+    CHECKEQ(r.getDistance(Rectangle(6, -2, 8, 0)), 2);
+    CHECKEQ(r.getDistance(Rectangle(4, -2, 6, 0)), 0);
+    CHECKEQ(r.getDistance(Rectangle(3, -2, 5, 0)), -1);
+    CHECKEQ(r.getDistance(Rectangle(2, -2, 4, 0)), -2);
+    CHECKEQ(r.getDistance(Rectangle(1, -2, 3, 0)), -3);
+    CHECKEQ(r.getDistance(Rectangle(0, -2, 2, 0)), -4);
+    CHECKEQ(r.getDistance(Rectangle(-1, -2, 1, 0)), -4);
+    CHECKEQ(r.getDistance(Rectangle(-2, -2, 0, 0)), -3);
+    CHECKEQ(r.getDistance(Rectangle(-2, -3, 0, -1)), -3);
+    CHECKEQ(r.getDistance(Rectangle(-2, -4, 0, -2)), -3);
+    CHECKEQ(r.getDistance(Rectangle(-2, -5, 0, -3)), -3);
+    CHECKEQ(r.getDistance(Rectangle(-2, -6, 0, -4)), -2);
+    CHECKEQ(r.getDistance(Rectangle(-2, -7, 0, -5)), -1);
+    CHECKEQ(r.getDistance(Rectangle(-3, -7, -1, -5)), -1);
+    CHECKEQ(r.getDistance(Rectangle(-4, -7, -2, -5)), -1);
+    CHECKEQ(r.getDistance(Rectangle(-5, -7, -3, -5)), 0);
+    CHECKEQ(r.getDistance(Rectangle(-5, -8, -3, -6)), 0);
+    CHECKEQ(r.getDistance(Rectangle(-5, -9, -3, -7)), 1);
+    CHECKEQ(r.getDistance(Rectangle(-6, -8, -4, -6)), 1);
+    CHECKEQ(r.getDistance(Rectangle(-6, -2, -4, 0)), 1);
+    CHECKEQ(r.getDistance(Rectangle(-6, 3, -4, 5)), 1);
+    CHECKEQ(r.getDistance(Rectangle(-5, 3, -3, 5)), 0);
+  }
 
   void testValueCheck() {
     CHECK(3 == CHECKEQ(1 + 2, 3));
@@ -106,11 +149,18 @@ class Test {
     CHECK(split("pok;pokpok;;pok;", {'k'}) == w) << split("pok;pokpok;;pok;", {'k'});
   }
 
+  void testSplitIncludeDelim() {
+    vector<string> v = { "pok", ";", "pokpok", ";", ";", "pok", ";" };
+    vector<string> w = { "po", "k", ";po", "k", "po", "k", ";;po","k", ";" };
+    CHECK(splitIncludeDelim("pok;pokpok;;pok;", {';'}) == v) << splitIncludeDelim("pok;pokpok;;pok;", {';'});
+    CHECK(splitIncludeDelim("pok;pokpok;;pok;", {'k'}) == w) << splitIncludeDelim("pok;pokpok;;pok;", {'k'});
+  }
+
   void testShortestPath() {
     vector<vector<double> > table { { 2, 1, 2, 18, 1}, { 1, 1, 18, 1, 2}, {2, 6, 10, 1,1}, {1, 2, 1, 8, 1}, {5, 3, 1, 1, 2}};
     ShortestPath path(Rectangle(5, 5),
         [table](Vec2 pos) { return table[pos.y][pos.x];},
-        [] (Vec2 v) { return v.length4(); },
+        [] (Vec2 from, Vec2 to) { return from.dist4(to); },
         Vec2::directions4(), Vec2(4, 0), Vec2(1, 0));
     vector<Vec2> res {Vec2(1, 0)};
     while (res.back() != Vec2(4, 0)) {
@@ -124,7 +174,7 @@ class Test {
     vector<vector<double> > table { { 1, 1, 6, 1, 1}, { 1, 1, 6, 1, 1}, {1, 1, 1, 1,1}, {1, 1, 6, 1, 1}, {1, 1, 6, 1, 1}};
     ShortestPath path(Rectangle(5, 5),
         [table](Vec2 pos) { return table[pos.y][pos.x];},
-        [] (Vec2 v) { return v.length4(); },
+        [] (Vec2 from, Vec2 to) { return from.dist4(to); },
         Vec2::directions4(), Vec2(4, 0), Vec2(0, 0));
   }
 
@@ -132,7 +182,7 @@ class Test {
     vector<vector<double> > table { { 2, 1, 2, ShortestPath::infinity, 1}, { 1, 1, 18, 1, ShortestPath::infinity}, {2, 6, 10, 1,1}, {1, 2, 1, 8, 1}, {5, 3, 1, 1, 2}};
     ShortestPath path(Rectangle(5, 5),
         [table](Vec2 pos) { return table[pos.y][pos.x];},
-        [] (Vec2 v) { return v.length4(); },
+        [] (Vec2 from, Vec2 to) { return from.dist4(to); },
         Vec2::directions4(), Vec2(4, 0), Vec2(1, 0));
     CHECK(!path.isReachable(Vec2(1, 0)));
   }
@@ -141,7 +191,7 @@ class Test {
     vector<vector<double> > table { { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, { 1, 1, 1, ShortestPath::infinity, ShortestPath::infinity, 1, 1, 1, 1, 1, 1}, { 1, 1, 1, ShortestPath::infinity, ShortestPath::infinity, 1, 1, 1, 1, 1, 1}};
     ShortestPath path(Rectangle(11, 3),
         [table](Vec2 pos) { return table[pos.y][pos.x];},
-        [] (Vec2 v) { return v.length4(); },
+        [] (Vec2 from, Vec2 to) { return from.dist4(to); },
         Vec2::directions4(), Vec2(1, 1), Vec2(1, 0), -1.3);
   /*  vector<Vec2> res {Vec2(1, 0)};
     while (res.back() != Vec2(4, 0)) {
@@ -189,6 +239,19 @@ class Test {
     for (int x : Range(4, 5).reverse())
       a.push_back(x);
     CHECK(a.getOnlyElement() == 4);
+  }
+
+  void testRange3() {
+    CHECK(!Range(1, 5).intersects(Range(5, 10)));
+    CHECK(!Range(1, 5).intersects(Range(0, 1)));
+    CHECK(!Range(1, 5).intersects(Range(-1, 0)));
+    CHECK(!Range(1, 5).intersects(Range(5, 10).reverse()));
+    CHECK(!Range(1, 5).intersects(Range(0, 1).reverse()));
+    CHECK(!Range(1, 5).intersects(Range(-1, 0).reverse()));
+    CHECK(Range(1, 5).intersects(Range(4, 10)));
+    CHECK(Range(1, 5).intersects(Range(-1, 2)));
+    CHECK(Range(1, 5).intersects(Range(-1, 2).reverse()));
+    CHECK(Range(1, 5).intersects(Range(4, 10).reverse()));
   }
 
   void testContains() {
@@ -360,7 +423,7 @@ class Test {
   }
 
   void testSectors1() {
-    Sectors sectors(Rectangle(7, 7));
+    Sectors sectors(Rectangle(7, 7), Table<optional<Vec2>>(7, 7));
     sectors.add(Vec2(0, 0));
     CHECK(!sectors.same(Vec2(0, 0), Vec2(0, 2)));
     sectors.add(Vec2(0, 2));
@@ -377,7 +440,7 @@ class Test {
   }
 
   void testSectors2() {
-    Sectors s(Rectangle(5, 4));
+    Sectors s(Rectangle(5, 4), Table<optional<Vec2>>(5, 4));
     s.add(Vec2(2, 0));
     s.add(Vec2(3, 0));
     s.add(Vec2(4, 0));
@@ -400,7 +463,7 @@ class Test {
 
   void testSectors3() {
     Rectangle bounds(250, 250);
-    Sectors s(bounds);
+    Sectors s(bounds, Table<optional<Vec2>>(bounds));
     Table<bool> t(bounds, true);
     Rectangle bounds2(15, 15);
     Rectangle bounds3(3, 3);
@@ -435,6 +498,41 @@ class Test {
             CHECK(t[v] == s.same(pos, v));
     }
     INFO << s.getNumSectors() << " sectors";
+  }
+
+  void testSectorsWithPortals() {
+    Sectors s(Rectangle(7, 7), Table<optional<Vec2>>(7, 7));
+    s.add(Vec2(2, 1));
+    s.add(Vec2(3, 1));
+    s.add(Vec2(2, 4));
+    s.add(Vec2(3, 4));
+    s.add(Vec2(3, 3));
+    CHECK(!s.same(Vec2(3, 1), Vec2(3, 4)));
+    s.add(Vec2(3, 2));
+    CHECK(s.same(Vec2(3, 1), Vec2(3, 4)));
+    s.remove(Vec2(3, 2));
+    CHECK(!s.same(Vec2(3, 1), Vec2(3, 4)));
+    s.addExtraConnection(Vec2(2, 1), Vec2(2, 4));
+    CHECK(s.same(Vec2(3, 1), Vec2(3, 4)));
+    s.removeExtraConnection(Vec2(2, 1), Vec2(2, 4));
+    CHECK(!s.same(Vec2(3, 1), Vec2(3, 4)));
+    s.add(Vec2(3, 2));
+    CHECK(s.same(Vec2(3, 1), Vec2(3, 4)));
+    s.addExtraConnection(Vec2(2, 1), Vec2(2, 4));
+    CHECK(s.same(Vec2(3, 1), Vec2(3, 4)));
+    s.removeExtraConnection(Vec2(2, 1), Vec2(2, 4));
+    s.remove(Vec2(3, 2));
+    CHECK(!s.same(Vec2(3, 1), Vec2(3, 4)));
+    s.add(Vec2(5, 1));
+    s.addExtraConnection(Vec2(2, 1), Vec2(5, 1));
+    CHECK(s.same(Vec2(3, 1), Vec2(5, 1)));
+    CHECK(!s.same(Vec2(3, 4), Vec2(5, 1)));
+    s.add(Vec2(3, 2));
+    CHECK(s.same(Vec2(3, 4), Vec2(5, 1)));
+    s.remove(Vec2(2, 1));
+    CHECK(!s.same(Vec2(3, 4), Vec2(5, 1)));
+    s.addExtraConnection(Vec2(0, 0), Vec2(5, 5));
+    CHECK(!s.same(Vec2(0, 0), Vec2(5, 5)));
   }
 
   void testReverse() {
@@ -492,7 +590,7 @@ class Test {
     PItem bow1 = ItemType(ItemType::Bow{}).get();
     PItem bow2 = ItemType(ItemType::Bow{}).get();
     PItem bow3 = ItemType(ItemType::Bow{}).get();
-    PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.needsItem(human.get(), bow1.get(), false));
     CHECK(equipment.tryToOwn(human.get(), bow1.get()));
@@ -523,7 +621,7 @@ class Test {
     PItem sword = ItemType(ItemType::Sword{}).get();
     PItem sword2 = ItemType(ItemType::Sword{}).get();
     sword2->addModifier(AttrType::DAMAGE, -5);
-    PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.tryToOwn(human.get(), sword.get()));
     CHECK(equipment.getItemsOwnedBy(human.get()).size() == 1);
@@ -537,8 +635,8 @@ class Test {
     PItem sword = ItemType(ItemType::Sword{}).get();
     PItem sword2 = ItemType(ItemType::Sword{}).get();
     sword2->addModifier(AttrType::DAMAGE, -5);
-    PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
-    PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human = CreatureFactory::getHumanForTests();
+    PCreature human2 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.tryToOwn(human.get(), sword.get()));
     CHECK(equipment.tryToOwn(human2.get(), sword2.get()));
@@ -553,8 +651,8 @@ class Test {
   void testMinionEquipmentUpdateOwners() {
     PItem sword1 = ItemType(ItemType::Sword{}).get();
     PItem sword2 = ItemType(ItemType::Sword{}).get();
-    PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
-    PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human1 = CreatureFactory::getHumanForTests();
+    PCreature human2 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.tryToOwn(human1.get(), sword1.get()));
     CHECK(equipment.isOwner(sword1.get(), human1.get()));
@@ -577,9 +675,9 @@ class Test {
     PItem sword2 = ItemType(ItemType::Sword{}).get();
     PItem sword3 = ItemType(ItemType::Sword{}).get();
     sword1->addModifier(AttrType::DAMAGE, 12);
-    PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
-    PCreature human2 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
-    PCreature human3 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human1 = CreatureFactory::getHumanForTests();
+    PCreature human2 = CreatureFactory::getHumanForTests();
+    PCreature human3 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     equipment.autoAssign(human1.get(), {sword2.get(), sword1.get(), sword3.get()});
     CHECK(equipment.isOwner(sword1.get(), human1.get()));
@@ -618,7 +716,7 @@ class Test {
     PItem sword1 = ItemType(ItemType::Sword{}).get();
     PItem sword2 = ItemType(ItemType::Sword{}).get();
     sword1->addModifier(AttrType::DAMAGE, 12);
-    PCreature human1 = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    PCreature human1 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     equipment.autoAssign(human1.get(), {sword2.get(), sword1.get()});
     CHECK(equipment.isOwner(sword1.get(), human1.get()));
@@ -644,8 +742,8 @@ class Test {
     PItem boots = ItemType(ItemType::LeatherBoots{}).get();
     PItem gloves = ItemType(ItemType::LeatherGloves{}).get();
     PItem helmet = ItemType(ItemType::LeatherHelm{}).get();
-    vector<WItem> items = {sword.get(), boots.get(), gloves.get(), helmet.get()};
-    PCreature human = CreatureFactory::fromId(CreatureId::BANDIT, TribeId::getBandit());
+    vector<Item*> items = {sword.get(), boots.get(), gloves.get(), helmet.get()};
+    PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     for (int i : Range(30))
       equipment.autoAssign(human.get(), items);
@@ -820,6 +918,175 @@ class Test {
     CHECK(a == b);
   }
 
+  struct MatchingTest {
+    MatchingTest() {
+      GameConfig config(DirectoryPath("data_free/game_config/"), "vanilla");
+      ContentFactory contentFactory;
+      CHECK(!contentFactory.readData(NameGenerator(DirectoryPath("data_free/names")), &config));
+      auto model = Model::create(&contentFactory);
+      LevelBuilder builder(nullptr, Random, &contentFactory, 10, 10, "", false, none);
+      PLevelMaker levelMaker = LevelMaker::emptyLevel(FurnitureType("MOUNTAIN"), true);
+      level = model->buildMainLevel(std::move(builder), std::move(levelMaker));
+      game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory));
+    }
+    auto get(int x, int y) {
+      return Position(Vec2(x, y), level);
+    }
+    void free(Position pos) {
+      pos.removeFurniture(pos.getFurniture(FurnitureLayer::MIDDLE));
+      matching.updateMovement(pos);
+    }
+    PositionMatching matching;
+    Level* level;
+    PGame game;
+  };
+
+  void testPositionMatching1() {
+    MatchingTest t;
+    auto pos1 = t.get(5, 5);
+    t.matching.addTarget(pos1);
+    CHECK(!t.matching.getMatch(pos1));
+    auto pos2 = t.get(4, 5);
+    t.free(pos2);
+    CHECK(t.matching.getMatch(pos1) == pos2);
+    auto pos3 = t.get(3, 5);
+    t.matching.addTarget(pos3);
+    CHECK(!t.matching.getMatch(pos3));
+    t.matching.releaseTarget(pos1);
+    CHECK(t.matching.getMatch(pos3) == pos2);
+  }
+
+  void testPositionMatching2() {
+    MatchingTest t;
+    auto pos1 = t.get(5, 5);
+    t.matching.addTarget(pos1);
+    CHECK(!t.matching.getMatch(pos1));
+    auto pos2 = t.get(4, 5);
+    t.free(pos2);
+    CHECK(t.matching.getMatch(pos1) == pos2);
+    auto pos3 = t.get(3, 5);
+    t.matching.addTarget(pos3);
+    CHECK(!t.matching.getMatch(pos3));
+    auto pos4 = t.get(3, 6);
+    t.free(pos4);
+    CHECK(t.matching.getMatch(pos3) == pos4);
+    auto pos5 = t.get(3, 7);
+    t.matching.addTarget(pos5);
+    CHECK(!t.matching.getMatch(pos5));
+    auto pos6 = t.get(6, 5);
+    t.free(pos6);
+    CHECK(t.matching.getMatch(pos5) == pos4);
+    CHECK(t.matching.getMatch(pos3) == pos2);
+    CHECK(t.matching.getMatch(pos1) == pos6);
+  }
+
+  void testPositionMatching3() {
+    MatchingTest t;
+    for (auto v : Rectangle(10, 10))
+      t.free(t.get(v.x, v.y));
+  }
+
+  void testPositionMatching4() {
+    MatchingTest t;
+    for (auto v : Rectangle(10, 10))
+      t.matching.addTarget(t.get(v.x, v.y));
+  }
+
+  void testDungeonLevel() {
+    DungeonLevel level;
+    CHECKEQ(level.level, 0);
+    CHECKEQ(level.progress, 0);
+    level.onKilledVillain(VillainType::NONE);
+    CHECKEQ(level.level, 1);
+    CHECKEQ(level.progress, 0.5 / 3);
+    for (int i = 0; i < 2; ++i)
+      level.onKilledVillain(VillainType::NONE);
+    CHECKEQ(level.level, 2);
+    CHECKEQ(level.progress, 0.5 / 5);
+    level.onKilledVillain(VillainType::LESSER);
+    CHECKEQ(level.level, 3);
+    CHECKEQ(level.progress, 6.5 / 7);
+    level.onKilledVillain(VillainType::MAIN);
+    CHECKEQ(level.level, 6);
+    CHECKEQ(level.progress, 4.5 / 13);
+  }
+
+  void testRoofSupport1() {
+    RoofSupport s(Rectangle(10, 10));
+    std::cout << "Testing roof support " << std::endl;
+    s.add(Vec2(2, 2));
+    s.add(Vec2(8, 8));
+    s.add(Vec2(2, 8));
+    s.add(Vec2(8, 2));
+    for (Vec2 v : Rectangle(10, 10))
+      CHECK(s.isRoof(v) == (v.inRectangle(Rectangle(2, 2, 9, 9)))) << v << " " << s.isRoof(v);
+  }
+
+  void testRoofSupport2() {
+    RoofSupport s(Rectangle(10, 10));
+    std::cout << "Testing roof support " << std::endl;
+    s.add(Vec2(2, 2));
+    s.add(Vec2(8, 8));
+    s.add(Vec2(2, 8));
+    //s.add(Vec2(8, 2));
+    for (Vec2 v : Rectangle(10, 10))
+      CHECK(!s.isRoof(v)) << v;
+  }
+
+  void testRoofSupport3() {
+    RoofSupport s(Rectangle(10, 10));
+    std::cout << "Testing roof support " << std::endl;
+    s.add(Vec2(2, 2));
+    s.add(Vec2(8, 8));
+    s.add(Vec2(2, 8));
+    s.add(Vec2(8, 2));
+    s.remove(Vec2(8, 2));
+    for (Vec2 v : Rectangle(10, 10))
+      CHECK(!s.isRoof(v)) << v;
+  }
+
+  void testRoofSupport4() {
+    RoofSupport s(Rectangle(10, 10));
+    std::cout << "Testing roof support " << std::endl;
+    for (int i = 3; i <= 6; ++i) {
+      s.add(Vec2(3, i));
+      s.add(Vec2(i, 3));
+      s.add(Vec2(6, i));
+      s.add(Vec2(i, 6));
+    }
+    for (Vec2 v : Rectangle(10, 10))
+      CHECK(s.isRoof(v) == (v.inRectangle(Rectangle(3, 3, 7, 7)))) << v << " " << s.isRoof(v);
+    s.remove(Vec2(3, 4));
+    s.remove(Vec2(3, 5));
+    for (Vec2 v : Rectangle(10, 10))
+      CHECK(s.isRoof(v) == (v.inRectangle(Rectangle(3, 3, 7, 7)))) << v << " " << s.isRoof(v);
+  }
+
+  void testRoofSupport5() {
+    Rectangle sz(40, 40);
+    RoofSupport s(sz);
+    vector<Vec2> all;
+    for (auto v : sz)
+      if (Random.roll(5))
+        all.push_back(v);
+    all = Random.permutation(all);
+    for (int i = 0; i < all.size() / 2; ++i)
+      s.add(all[i]);
+    bool was[100][100] = {{0}};
+    int cnt = 0;
+    for (auto v : sz) {
+      was[v.x][v.y] = s.isRoof(v);
+      if (s.isRoof(v))
+        ++cnt;
+    }
+    std::cout << cnt << " under roof\n";
+    for (int i = all.size() / 2; i < all.size(); ++i)
+      s.add(all[i]);
+    for (int i = all.size() / 2; i < all.size(); ++i)
+      s.remove(all[i]);
+    for (auto v : sz)
+      CHECKEQ(was[v.x][v.y], s.isRoof(v));
+  }
 };
 
 void testAll() {
@@ -828,12 +1095,14 @@ void testAll() {
   Test().testRectangleIterator();
   Test().testValueCheck();
   Test().testSplit();
+  Test().testSplitIncludeDelim();
   Test().testShortestPath();
   Test().testAStar();
   Test().testShortestPath2();
   Test().testShortestPathReverse();
   Test().testRange();
   Test().testRange2();
+  Test().testRange3();
   Test().testContains();
   Test().testPredicates();
   Test().testOptional();
@@ -843,12 +1112,14 @@ void testAll() {
   Test().testTable();
   Test().testVec2();
   Test().testRectangle();
+  Test().testRectangleDistance();
   Test().testProjection();
   Test().testRandomExit();
   Test().testCombine();
   Test().testSectors1();
   Test().testSectors2();
   Test().testSectors3();
+  Test().testSectorsWithPortals();
   Test().testReverse();
   Test().testReverse2();
   Test().testReverse3();
@@ -870,5 +1141,16 @@ void testAll() {
   Test().testCacheTemplate();
   Test().testCacheTemplate2();
   Test().testTextSerialization();
+  Test().testPositionMatching1();
+  Test().testPositionMatching2();
+  Test().testPositionMatching3();
+  Test().testPositionMatching4();
+  Test().testDungeonLevel();
+  Test().testRoofSupport1();
+  Test().testRoofSupport2();
+  Test().testRoofSupport3();
+  Test().testRoofSupport4();
+  Test().testRoofSupport5();
+  LastingEffects::runTests();
   INFO << "-----===== OK =====-----";
 }

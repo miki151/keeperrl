@@ -13,16 +13,15 @@ FurnitureDroppedItems::FurnitureDroppedItems(FurnitureDroppedItems::DropData d) 
 }
 
 vector<PItem> FurnitureDroppedItems::handle(Position pos, WConstFurniture f, vector<PItem> items) const {
-  return dropData.visit(
-      [&](const Water& info) {
-        for (auto& stack : Item::stackItems(getWeakPointers(items))) {
-          PlayerMessage message(stack[0]->getPluralTheNameAndVerb(stack.size(),
-              info.verbSingle, info.verbPlural) + " in the " + f->getName());
-          pos.globalMessage(message);
-          if (info.unseenMessage)
-            pos.unseenMessage(*info.unseenMessage);
-        }
-        return vector<PItem>();
-      }
-  );
+  for (auto& stack : Item::stackItems(getWeakPointers(items))) {
+    PlayerMessage message(stack[0]->getPluralTheNameAndVerb(stack.size(),
+        dropData.verbSingle, dropData.verbPlural) + " in the " + f->getName());
+    pos.globalMessage(message);
+    if (dropData.unseenMessage)
+      pos.unseenMessage(*dropData.unseenMessage);
+  }
+  return vector<PItem>();
 }
+
+#include "pretty_archive.h"
+template void FurnitureDroppedItems::serialize(PrettyInputArchive&, unsigned);

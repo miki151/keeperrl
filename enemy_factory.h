@@ -2,68 +2,30 @@
 
 #include "util.h"
 #include "villain_type.h"
+#include "enemy_id.h"
 
 struct EnemyInfo;
 
-RICH_ENUM(EnemyId,
-  KNIGHTS,
-  WARRIORS,
-  DWARVES,
-  ELVES,
-  ELEMENTALIST,
-  ELEMENTALIST_ENTRY,
-  LIZARDMEN,
-  RED_DRAGON,
-  GREEN_DRAGON,
-  MINOTAUR,
-
-  VILLAGE,
-  BANDITS,
-  NO_AGGRO_BANDITS,
-  ENTS,
-  DRIADS,
-  CYCLOPS,
-  SHELOB,
-  HYDRA,
-  KRAKEN,
-  ANTS_OPEN,
-  ANTS_CLOSED,
-  CEMETERY,
-  CEMETERY_ENTRY,
-
-  DARK_ELVES,
-  DARK_ELVES_ENTRY,
-  GNOMES,
-  GNOMES_ENTRY,
-  OGRE_CAVE,
-  HARPY_CAVE,
-  DEMON_DEN_ABOVE,
-  DEMON_DEN,
-  ORC_VILLAGE,
-  SOKOBAN,
-  SOKOBAN_ENTRY,
-  WITCH,
-  DWARF_CAVE,
-  KOBOLD_CAVE,
-  HUMAN_COTTAGE,
-  UNICORN_HERD,
-  ELVEN_COTTAGE,
-
-  TUTORIAL_VILLAGE
-);
-
-
 struct ExternalEnemy;
+struct SettlementInfo;
+class TribeId;
+class NameGenerator;
 
 class EnemyFactory {
   public:
-  EnemyFactory(RandomGen&);
-  EnemyInfo get(EnemyId);
-  vector<ExternalEnemy> getExternalEnemies();
+  EnemyFactory(RandomGen&, NameGenerator*, map<EnemyId, EnemyInfo> enemies, vector<ExternalEnemy>);
+  EnemyFactory(const EnemyFactory&) = delete;
+  EnemyFactory(EnemyFactory&&) = default;
+  EnemyInfo get(EnemyId) const;
+  vector<ExternalEnemy> getExternalEnemies() const;
   vector<ExternalEnemy> getHalloweenKids();
-  vector<EnemyInfo> getVaults();
+  vector<EnemyInfo> getVaults(TribeAlignment, TribeId allied) const;
+  vector<EnemyId> getAllIds() const;
 
   private:
-  EnemyInfo getById(EnemyId);
   RandomGen& random;
+  NameGenerator* nameGenerator;
+  map<EnemyId, EnemyInfo> enemies;
+  vector<ExternalEnemy> externalEnemies;
+  void updateCreateOnBones(EnemyInfo&) const;
 };

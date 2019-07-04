@@ -16,16 +16,9 @@
 #include "stdafx.h"
 #include "sectors.h"
 #include "level.h"
+#include <limits>
 
-template <class Archive> 
-void Sectors::serialize(Archive& ar, const unsigned int) {
-  ar(sectors, bounds, sizes);
-}
-
-SERIALIZABLE(Sectors)
-SERIALIZATION_CONSTRUCTOR_IMPL(Sectors)
-
-Sectors::Sectors(Rectangle b) : bounds(b), sectors(bounds, -1) {
+Sectors::Sectors(Rectangle b, ExtraConnections con) : bounds(b), sectors(bounds, -1), extraConnections(std::move(con)) {
 }
 
 bool Sectors::same(Vec2 v, Vec2 w) const {
@@ -36,11 +29,11 @@ bool Sectors::contains(Vec2 v) const {
   return sectors[v] > -1;
 }
 
-void Sectors::add(Vec2 pos) {
+bool Sectors::add(Vec2 pos) {
   if (contains(pos))
-    return;
+    return false;
   set<int> neighbors;
-  for (Vec2 v : pos.neighbors8())
+  for (Vec2 v : getNeighbors(pos))
     if (v.inRectangle(bounds) && contains(v))
       neighbors.insert(sectors[v]);
   if (neighbors.size() == 0)
@@ -55,9 +48,10 @@ void Sectors::add(Vec2 pos) {
         largest = elem;
     join(pos, largest);
   }
+  return true;
 }
 
-void Sectors::setSector(Vec2 pos, int sector) {
+void Sectors::setSector(Vec2 pos, SectorId sector) {
   CHECK(sectors[pos] != sector);
   if (contains(pos))
     --sizes[sectors[pos]];
@@ -65,8 +59,9 @@ void Sectors::setSector(Vec2 pos, int sector) {
   ++sizes[sector];
 }
 
-int Sectors::getNewSector() {
+Sectors::SectorId Sectors::getNewSector() {
   sizes.push_back(0);
+  CHECK(sizes.size() < std::numeric_limits<SectorId>::max());
   return sizes.size() - 1;
 }
 
@@ -78,14 +73,14 @@ int Sectors::getNumSectors() const {
   return ret;
 }
 
-void Sectors::join(Vec2 pos1, int sector) {
+void Sectors::join(Vec2 pos1, SectorId sector) {
   queue<Vec2> q;
   q.push(pos1);
   setSector(pos1, sector);
   while (!q.empty()) {
     Vec2 pos = q.front();
     q.pop();
-    for (Vec2 v : pos.neighbors8())
+    for (Vec2 v : getNeighbors(pos))
       if (v.inRectangle(bounds) && sectors[v] > -1 && sectors[v] != sector) {
         setSector(v, sector);
         q.push(v);
@@ -99,7 +94,7 @@ vector<Vec2> Sectors::getDisjoint(Vec2 pos) const {
   vector<queue<Vec2>> queues;
   bfsTable.clear();
   int numNeighbor = 0;
-  for (Vec2 v : pos.neighbors8())
+  for (Vec2 v : getNeighbors(pos))
     if (v.inRectangle(bounds) && contains(v) && !bfsTable.isDirty(v)) {
         bfsTable.setValue(v, numNeighbor++);
         queues.emplace_back();
@@ -118,7 +113,7 @@ vector<Vec2> Sectors::getDisjoint(Vec2 pos) const {
         activeQueues.push_back(myNum);
         lastNeighbor = myNum;
         q.pop();
-        for (Vec2 w : v.neighbors8())
+        for (Vec2 w : getNeighbors(v))
           if (w.inRectangle(bounds) && contains(w) && w != pos) {
             if (!bfsTable.isDirty(w)) {
               bfsTable.setValue(w, myNum);
@@ -133,7 +128,7 @@ vector<Vec2> Sectors::getDisjoint(Vec2 pos) const {
   }
   int maxSector = sizes.size() - 1;
   vector<Vec2> ret;
-  for (Vec2 v : pos.neighbors8())
+  for (Vec2 v : getNeighbors(pos))
     if (v.inRectangle(bounds) && sectors[v] <= maxSector && contains(v) &&
           !sets.same(bfsTable.getDirtyValue(v), lastNeighbor))
       ret.push_back(v);
@@ -144,13 +139,48 @@ bool Sectors::isChokePoint(Vec2 pos) const {
   return !getDisjoint(pos).empty();
 }
 
-void Sectors::remove(Vec2 pos) {
+vector<Vec2> Sectors::getNeighbors(Vec2 pos) const {
+  auto ret = pos.neighbors8();
+  if (auto con = extraConnections[pos])
+    ret.push_back(*con);
+  return ret;
+}
+
+void Sectors::addExtraConnection(Vec2 pos1, Vec2 pos2) {
+  if (contains(pos1) && contains(pos2)) {
+    auto sector1 = sectors[pos1];
+    auto sector2 = sectors[pos2];
+    if (sector1 != sector2) {
+      if (sizes[sector1] > sizes[sector2])
+        join(pos2, sector1);
+      else
+        join(pos1, sector2);
+    }
+  }
+  CHECK(!extraConnections[pos1] || extraConnections[pos1] == pos2);
+  CHECK(!extraConnections[pos2] || extraConnections[pos2] == pos1);
+  extraConnections[pos1] = pos2;
+  extraConnections[pos2] = pos1;
+}
+
+void Sectors::removeExtraConnection(Vec2 pos1, Vec2 pos2) {
+  extraConnections[pos1] = none;
+  extraConnections[pos2] = none;
+  join(pos1, getNewSector());
+}
+
+const Sectors::ExtraConnections Sectors::getExtraConnections() const {
+  return extraConnections;
+}
+
+bool Sectors::remove(Vec2 pos) {
   if (!contains(pos))
-    return;
+    return false;
   --sizes[sectors[pos]];
   sectors[pos] = -1;
   for (Vec2 v : getDisjoint(pos))
     join(v, getNewSector());
+  return true;
 }
 
 void Sectors::dump() {

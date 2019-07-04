@@ -15,6 +15,9 @@ enum class ItemAction {
   REMOVE,
   CHANGE_NUMBER,
   PAY,
-  NAME
+  NAME,
+  INTRINSIC_ALWAYS,
+  INTRINSIC_NO_WEAPON,
+  INTRINSIC_NEVER
 };
 

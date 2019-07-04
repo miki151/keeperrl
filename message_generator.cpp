@@ -17,7 +17,7 @@ static string addName(const string& s, const string& n) {
     return s;
 }
 
-static void addThird(WConstCreature c, MsgType type, const string& param) {
+static void addThird(const Creature* c, MsgType type, const string& param) {
   string msg, unseenMsg;
   switch (type) {
     case MsgType::ARE: msg = c->getName().the() + " is " + param; break;
@@ -27,7 +27,8 @@ static void addThird(WConstCreature c, MsgType type, const string& param) {
                                (param.size() > 0 ? " on the " + param : ".");
                                unseenMsg = "You hear snoring."; break;
     case MsgType::WAKE_UP: msg = c->getName().the() + " wakes up."; break;
-    case MsgType::DIE: msg = c->getName().the() + " is killed!"; break;
+    case MsgType::DIE: msg = c->getName().the() + " is " + 
+        c->getAttributes().getDeathDescription() + "!"; break;
     case MsgType::TELE_APPEAR: msg = c->getName().the() + " appears out of nowhere!"; break;
     case MsgType::TELE_DISAPPEAR: msg = c->getName().the() + " suddenly disappears!"; break;
     case MsgType::BLEEDING_STOPS: msg = c->getName().the() + "'s bleeding stops."; break;
@@ -40,34 +41,30 @@ static void addThird(WConstCreature c, MsgType type, const string& param) {
     case MsgType::HIT_THROWN_ITEM_PLURAL: msg = param + " hit " + c->getName().the(); break;
     case MsgType::ITEM_CRASHES: msg = param + " crashes on " + c->getName().the(); break;
     case MsgType::ITEM_CRASHES_PLURAL: msg = param + " crash on " + c->getName().the(); break;
-    case MsgType::GET_HIT_NODAMAGE: msg = "The " + param + " is harmless."; break;
+    case MsgType::GET_HIT_NODAMAGE: msg = "The attack is harmless."; break;
     case MsgType::COLLAPSE: msg = c->getName().the() + " collapses."; break;
     case MsgType::FALL: msg = c->getName().the() + " falls " + param; break;
     case MsgType::TRIGGER_TRAP: msg = c->getName().the() + " triggers something."; break;
     case MsgType::DISARM_TRAP: msg = c->getName().the() + " disarms a " + param; break;
     case MsgType::PANIC: msg = c->getName().the() + " panics."; break;
     case MsgType::RAGE: msg = c->getName().the() + " is enraged."; break;
-    case MsgType::BITE: msg = c->getName().the() + addName(" bites", param); break;
     case MsgType::CRAWL: msg = c->getName().the() + " is crawling"; break;
     case MsgType::STAND_UP: msg = c->getName().the() + " is back on " +
-                            c->getAttributes().getGender().his() + " feet";
+                            his(c->getAttributes().getGender()) + " feet";
                             break;
     case MsgType::TURN_INVISIBLE: msg = c->getName().the() + " disappears!"; break;
     case MsgType::TURN_VISIBLE: msg = c->getName().the() + " appears out of nowhere!"; break;
-    case MsgType::DROP_WEAPON: msg = c->getName().the() + " drops " +
-                               c->getAttributes().getGender().his() + " " + param;
-                               break;
     case MsgType::ENTER_PORTAL: msg = c->getName().the() + " disappears in the portal."; break;
     case MsgType::HAPPENS_TO: msg = param + " " + c->getName().the(); break;
     case MsgType::BURN: msg = c->getName().the() + " burns in the " + param; unseenMsg = "You hear a horrible shriek"; break;
     case MsgType::DROWN: msg = c->getName().the() + " drowns in the " + param; unseenMsg = "You hear a loud splash" ;break;
     case MsgType::SET_UP_TRAP: msg = c->getName().the() + " sets up the trap"; break;
-    case MsgType::KILLED_BY: msg = c->getName().the() + " is killed by " + param; break;
+    case MsgType::KILLED_BY: msg = c->getName().the() + " is "+
+        c->getAttributes().getDeathDescription() + " by " + param; break;
     case MsgType::TURN: msg = c->getName().the() + " turns " + param; break;
     case MsgType::BECOME: msg = c->getName().the() + " becomes " + param; break;
     case MsgType::COPULATE: msg = c->getName().the() + " copulates " + param; break;
     case MsgType::CONSUME: msg = c->getName().the() + " absorbs " + param; break;
-    case MsgType::GROW: msg = c->getName().the() + " grows " + param; break;
     case MsgType::BREAK_FREE:
         if (param.empty())
           msg = c->getName().the() + " breaks free";
@@ -76,7 +73,6 @@ static void addThird(WConstCreature c, MsgType type, const string& param) {
         break;
     case MsgType::PRAY: msg = c->getName().the() + " prays to " + param; break;
     case MsgType::SACRIFICE: msg = c->getName().the() + " makes a sacrifice to " + param; break;
-    case MsgType::HIT: msg = c->getName().the() + addName(" hits", param); break;
     default: break;
   }
   if (!msg.empty()) {
@@ -85,32 +81,16 @@ static void addThird(WConstCreature c, MsgType type, const string& param) {
   }
 }
 
-static void addThird(WConstCreature c, MsgType type, const vector<string>& param) {
-  string msg;
-  switch (type) {
-    case MsgType::SWING_WEAPON:
-      msg = c->getName().the() + " swings " + c->getAttributes().getGender().his() + " " + param[0]; break;
-    case MsgType::THRUST_WEAPON:
-      msg = c->getName().the() + " thrusts " + c->getAttributes().getGender().his() + " " + param[0]; break;
-    case MsgType::KICK: msg = c->getName().the() + addName(" kicks", param[0]); break;
-    case MsgType::PUNCH: msg = c->getName().the() + addName(" punches", param[0]); break;
-    default: addThird(c, type, param[0]); return;
-  }
-  for (int i : Range(1, param.size()))
-    msg += " " + param[i];
-  if (!msg.empty())
-    c->message(msg);
-}
-
-static void addThird(WConstCreature c, const string& param) {
+static void addThird(const Creature* c, const string& param) {
   c->message(c->getName().the() + " " + param);
 }
 
-static void addSecond(WConstCreature c, const string& param) {
+static void addSecond(const Creature* c, const string& param) {
   c->secondPerson("You " + param);
 }
 
-static void addSecond(WConstCreature c, MsgType type, const string& param) {
+static void addSecond(const Creature* c, MsgType type, const string& param) {
+  PROFILE;
   string msg;
   switch (type) {
     case MsgType::ARE: msg = "You are " + param; break;
@@ -130,12 +110,11 @@ static void addSecond(WConstCreature c, MsgType type, const string& param) {
     case MsgType::HIT_THROWN_ITEM_PLURAL: msg = param + " hit you"; break;
     case MsgType::ITEM_CRASHES: msg = param + " crashes on you."; break;
     case MsgType::ITEM_CRASHES_PLURAL: msg = param + " crash on you."; break;
-    case MsgType::GET_HIT_NODAMAGE: msg = "The " + param + " is harmless."; break;
+    case MsgType::GET_HIT_NODAMAGE: msg = "The attack is harmless."; break;
     case MsgType::COLLAPSE: msg = "You collapse."; break;
     case MsgType::TRIGGER_TRAP: msg = "You trigger something."; break;
     case MsgType::DISARM_TRAP: msg = "You disarm the " + param; break;
     case MsgType::ATTACK_SURPRISE: msg = "You sneak attack " + param; break;
-    case MsgType::BITE: msg = "You bite " + param; break;
     case MsgType::PANIC:
           msg = !c->isAffected(LastingEffect::HALLU) ? "You are suddenly very afraid" : "You freak out completely"; break;
     case MsgType::RAGE:
@@ -145,7 +124,6 @@ static void addSecond(WConstCreature c, MsgType type, const string& param) {
     case MsgType::CAN_SEE_HIDING: msg = param + " can see you hiding"; break;
     case MsgType::TURN_INVISIBLE: msg = "You can see through yourself!"; break;
     case MsgType::TURN_VISIBLE: msg = "You are no longer invisible"; break;
-    case MsgType::DROP_WEAPON: msg = "You drop your " + param; break;
     case MsgType::ENTER_PORTAL: msg = "You enter the portal"; break;
     case MsgType::HAPPENS_TO: msg = param + " you."; break;
     case MsgType::BURN: msg = "You burn in the " + param; break;
@@ -163,29 +141,13 @@ static void addSecond(WConstCreature c, MsgType type, const string& param) {
     case MsgType::PRAY: msg = "You pray to " + param; break;
     case MsgType::COPULATE: msg = "You copulate " + param; break;
     case MsgType::CONSUME: msg = "You absorb " + param; break;
-    case MsgType::GROW: msg = "You grow " + param; break;
     case MsgType::SACRIFICE: msg = "You make a sacrifice to " + param; break;
-    case MsgType::HIT: msg = "You hit " + param; break;
     default: break;
   }
   c->message(PlayerMessage(msg, MessagePriority::HIGH));
 }
 
-static void addSecond(WConstCreature c, MsgType type, const vector<string>& param) {
-  string msg;
-  switch (type) {
-    case MsgType::SWING_WEAPON: msg = "You swing your " + param[0]; break;
-    case MsgType::THRUST_WEAPON: msg = "You thrust your " + param[0]; break;
-    case MsgType::KICK: msg = "You kick " + param[0]; break;
-    case MsgType::PUNCH: msg = "You punch " + param[0]; break;
-    default: addSecond(c, type, param[0]); break;
-  }
-  for (int i : Range(1, param.size()))
-    msg += " " + param[i];
-  c->message(msg);
-}
-
-static void addBoulder(WConstCreature c, MsgType type, const string& param) {
+static void addBoulder(const Creature* c, MsgType type, const string& param) {
   string msg, unseenMsg;
   switch (type) {
     case MsgType::BURN: msg = c->getName().the() + " burns in the " + param; break;
@@ -201,7 +163,7 @@ static void addBoulder(WConstCreature c, MsgType type, const string& param) {
   }
 }
 
-static void addKraken(WConstCreature c, MsgType type, const string& param) {
+static void addKraken(const Creature* c, MsgType type, const string& param) {
   string msg;
   switch (type) {
     case MsgType::KILLED_BY:
@@ -218,21 +180,7 @@ static void addKraken(WConstCreature c, MsgType type, const string& param) {
     c->message(msg);
 }
 
-
-void MessageGenerator::add(WConstCreature c, MsgType msg, const vector<string>& param) {
-  switch (type) {
-    case SECOND_PERSON:
-      addSecond(c, msg, param);
-      break;
-    case THIRD_PERSON:
-      addThird(c, msg, param);
-      break;
-    default:
-      break;
-  }
-}
-
-void MessageGenerator::add(WConstCreature c, MsgType msg, const string& param) {
+void MessageGenerator::add(const Creature* c, MsgType msg, const string& param) {
   switch (type) {
     case SECOND_PERSON:
       addSecond(c, msg, param);
@@ -251,7 +199,7 @@ void MessageGenerator::add(WConstCreature c, MsgType msg, const string& param) {
   }
 }
 
-void MessageGenerator::add(WConstCreature c, const string& param) {
+void MessageGenerator::add(const Creature* c, const string& param) {
   switch (type) {
     case SECOND_PERSON:
       addSecond(c, param);
@@ -264,17 +212,17 @@ void MessageGenerator::add(WConstCreature c, const string& param) {
   }
 }
 
-void MessageGenerator::addThirdPerson(WConstCreature c, const PlayerMessage& msg) {
+void MessageGenerator::addThirdPerson(const Creature* c, const PlayerMessage& msg) {
   if (type == THIRD_PERSON)
     c->message(msg);
 }
 
-void MessageGenerator::addSecondPerson(WConstCreature c, const PlayerMessage& msg) {
+void MessageGenerator::addSecondPerson(const Creature* c, const PlayerMessage& msg) {
   if (type == SECOND_PERSON)
     c->message(msg);
 }
 
-string MessageGenerator::getEnemyName(WConstCreature c) {
+string MessageGenerator::getEnemyName(const Creature* c) {
   if (type == SECOND_PERSON)
     return "you";
   else

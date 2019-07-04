@@ -29,7 +29,7 @@ class vector {
   vector(InputIter begin, InputIter end) : impl(begin, end) {}
 
   vector(const std::vector<T>& v) : impl(v) {}
-  vector(std::vector<T>&& v) : impl(std::move(v)) {}
+  vector(std::vector<T>&& v) noexcept : impl(std::move(v)) {}
 
   vector(int size, const T& elem) : impl(size, elem) {}
   vector(int size) : impl(size) {}
@@ -42,23 +42,18 @@ class vector {
     return impl.empty();
   }
 
-  void push_back(const T& t) {
-    impl.push_back(t);
-    ++modCounter;
-  }
-
-  void push_back(T&& t) {
+  void push_back(T t) {
     impl.push_back(std::move(t));
     ++modCounter;
   }
 
-  void push_front(const T& t) {
-    impl.insert(impl.begin(), t);
+  void push_front(T t) {
+    impl.insert(impl.begin(), std::move(t));
     ++modCounter;
   }
 
-  void push_front(T&& t) {
-    impl.insert(impl.begin(), std::move(t));
+  void insert(int index, T t) {
+    impl.insert(impl.begin() + index, std::move(t));
     ++modCounter;
   }
 
@@ -129,11 +124,6 @@ class vector {
     return impl != o.impl;
   }
 
-  template <class Archive>
-  void serialize(Archive& ar1, const unsigned int) {
-    ar1(impl);
-  }
-
   template <typename V>
   bool contains(const V& elem) const {
     return std::find(impl.begin(), impl.end(), elem) != impl.end();
@@ -150,9 +140,11 @@ class vector {
     ++modCounter;
   }
 
-  void removeIndexPreserveOrder(int index) {
+  T removeIndexPreserveOrder(int index) {
+    auto ret = std::move(impl.at(index));
     impl.erase(impl.begin() + index);
     ++modCounter;
+    return ret;
   }
 
   template <typename Iter>
@@ -169,6 +161,13 @@ class vector {
     impl.reserve(size() + elems.size());
     for (auto&& elem : elems)
       impl.push_back(std::move(elem));
+    ++modCounter;
+  }
+
+  void append(const vector<T>& elems) {
+    impl.reserve(size() + elems.size());
+    for (auto& elem : elems)
+      impl.push_back(elem);
     ++modCounter;
   }
 
@@ -253,6 +252,7 @@ class vector {
   class Iterator : public std::iterator<std::random_access_iterator_tag, T> {
     public:
     Iterator(const BaseIterator& i, const vector<T>* p) : it(i), parent(p), currentMod(p->modCounter) {}
+    Iterator() {}
 
     using value_type = T;
     using difference_type = long;
@@ -367,10 +367,21 @@ class vector {
     return iterator(&*impl.end(), this);
   }
 
-  private:
   std::vector<T> impl;
+  private:
   int modCounter = 0;
 };
+
+template <typename Archive, typename T>
+inline void save(Archive& ar1, const vector<T>& v) {
+  ar1(v.impl);
+}
+
+template <class Archive, typename T>
+inline void load(Archive& ar1, vector<T>& v) {
+  ar1(v.impl);
+}
+
 
 template <typename T, typename Compare = std::less<T>>
 class set : public std::set<T, Compare> {
@@ -389,6 +400,43 @@ class set : public std::set<T, Compare> {
     ret.reserve(size());
     for (const auto& elem : *this)
       ret.push_back(fun(elem));
+    return ret;
+  }
+};
+
+template <typename T, typename Hash = std::hash<T>>
+class unordered_set : public std::unordered_set<T, Hash> {
+  public:
+  using std::unordered_set<T, Hash>::unordered_set;
+
+  using base = std::unordered_set<T, Hash>;
+
+  int size() const {
+    return (int) base::size();
+  }
+
+  template <typename Fun>
+  auto transform(Fun fun) const {
+    vector<decltype(fun(std::declval<T>()))> ret;
+    ret.reserve(size());
+    for (const auto& elem : *this)
+      ret.push_back(fun(elem));
+    return ret;
+  }
+
+  template <typename Fun>
+  auto filter(Fun fun) const {
+    unordered_set ret;
+    for (const auto& elem : *this)
+      if (fun(elem))
+        ret.insert(elem);
+    return ret;
+  }
+
+  vector<T> asVector() const {
+    vector<T> ret;
+    for (auto&& elem : *this)
+      ret.push_back(std::move(elem));
     return ret;
   }
 };

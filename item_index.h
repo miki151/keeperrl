@@ -6,7 +6,7 @@ RICH_ENUM(ItemIndex,
   GOLD,
   WOOD,
   IRON,
-  STEEL,
+  ADA,
   STONE,
   REVIVABLE_CORPSE,
   CORPSE,
@@ -16,8 +16,9 @@ RICH_ENUM(ItemIndex,
   RANGED_WEAPON,
   CAN_EQUIP,
   FOR_SALE,
-  HEALING_ITEM
+  HEALING_ITEM,
+  RUNE
 );
 
 extern const char* getName(ItemIndex, int count = 1);
-extern function<bool(WConstItem)> getIndexPredicate(ItemIndex);
+extern bool hasIndex(ItemIndex, const Item*);

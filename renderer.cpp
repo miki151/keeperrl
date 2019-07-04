@@ -23,208 +23,9 @@
 #include "fontstash.h"
 #include "sdl_event_generator.h"
 #include "clock.h"
-
-Color Color::WHITE(255, 255, 255);
-Color Color::YELLOW(250, 255, 0);
-Color Color::LIGHT_BROWN(210, 150, 0);
-Color Color::ORANGE_BROWN(250, 150, 0);
-Color Color::BROWN(240, 130, 0);
-Color Color::DARK_BROWN(100, 60, 0);
-Color Color::MAIN_MENU_ON(255, 255, 255, 190);
-Color Color::MAIN_MENU_OFF(255, 255, 255, 70);
-Color Color::LIGHT_GRAY(150, 150, 150);
-Color Color::GRAY(100, 100, 100);
-Color Color::ALMOST_GRAY(102, 102, 102);
-Color Color::DARK_GRAY(50, 50, 50);
-Color Color::ALMOST_BLACK(20, 20, 20);
-Color Color::ALMOST_DARK_GRAY(60, 60, 60);
-Color Color::BLACK(0, 0, 0);
-Color Color::ALMOST_WHITE(200, 200, 200);
-Color Color::GREEN(0, 255, 0);
-Color Color::LIGHT_GREEN(100, 255, 100);
-Color Color::DARK_GREEN(0, 150, 0);
-Color Color::RED(255, 0, 0);
-Color Color::LIGHT_RED(255, 100, 100);
-Color Color::PINK(255, 20, 147);
-Color Color::ORANGE(255, 165, 0);
-Color Color::BLUE(0, 0, 255);
-Color Color::NIGHT_BLUE(0, 0, 20);
-Color Color::DARK_BLUE(50, 50, 200);
-Color Color::LIGHT_BLUE(100, 100, 255);
-Color Color::PURPLE(160, 32, 240);
-Color Color::VIOLET(120, 0, 255);
-Color Color::TRANSLUCENT_BLACK(0, 0, 0);
-Color Color::TRANSPARENT(0, 0, 0, 0);
-
-Color::Color(Uint8 r, Uint8 g, Uint8 b, Uint8 a) : SDL_Color{r, g, b, a} {
-}
-
-Color Color::transparency(int trans) {
-  return Color(r, g, b, (Uint8)trans);
-}
-
-Color::Color() : Color(0, 0, 0) {
-}
-
-Color Color::f(double r, double g, double b, double a) {
-  return Color(r * 255, g * 255, b * 255, a * 255);
-}
-
-void Color::applyGl() const {
-  SDL::glColor4f((float)r / 255, (float)g / 255, (float)b / 255, (float)a / 255);
-}
-
-Color Color::operator* (Color c2) {
-  return Color(r * c2.r / 255, g * c2.g / 255, b * c2.b / 255, a * c2.a / 255);
-}
-
-Renderer::TileCoord::TileCoord(Vec2 p, int t) : pos(p), texNum(t) {
-}
-
-Renderer::TileCoord::TileCoord() : TileCoord(Vec2(0, 0), -1) {
-}
-
-static void checkOpenglError() {
-  auto error = SDL::glGetError();
-  CHECK(error == GL_NO_ERROR) << (int)error;
-}
-
-Texture::Texture(const FilePath& fileName) : path(fileName) {
-  SDL::SDL_Surface* image= SDL::IMG_Load(fileName.getPath());
-  CHECK(image) << SDL::IMG_GetError();
-  if (auto error = loadFromMaybe(image))
-    FATAL << "Couldn't load image: " << fileName << ". Error code " << toString(*error);
-  SDL::SDL_FreeSurface(image);
-}
-
-Texture::~Texture() {
-  if (texId)
-    SDL::glDeleteTextures(1, &(*texId));
-}
-
-static int totalTex = 0;
-
-// Some graphic cards need power of two sized textures, so we create a larger texture to contain the original one.
-SDL::SDL_Surface* Renderer::createPowerOfTwoSurface(SDL::SDL_Surface* image) {
-  int w = 1;
-  int h = 1;
-  while (w < image->w)
-    w *= 2;
-  while (h < image->h)
-    h *= 2;
-  if (w == image->w && h == image->h)
-    return image;
-  auto ret = createSurface(w, h);
-  SDL::SDL_Rect dst {0, 0, image->w, image->h };
-  SDL_BlitSurface(image, nullptr, ret, &dst);
-  // fill the rest of the texture as well, which 'kind-of' solves the problem with repeating textures.
-  dst = {image->w, 0, 0, 0};
-  SDL_BlitSurface(image, nullptr, ret, &dst);
-  dst = {image->w, image->h, 0, 0};
-  SDL_BlitSurface(image, nullptr, ret, &dst);
-  dst = {0, image->h, 0, 0};
-  SDL_BlitSurface(image, nullptr, ret, &dst);
-  return ret;
-}
-
-optional<SDL::GLenum> Texture::loadFromMaybe(SDL::SDL_Surface* imageOrig) {
-  if (!texId) {
-    texId = 0;
-    SDL::glGenTextures(1, &(*texId));
-  }
-  checkOpenglError();
-  SDL::glBindTexture(GL_TEXTURE_2D, (*texId));
-  checkOpenglError();
-  SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  checkOpenglError();
-  int mode = GL_RGB;
-  auto image = Renderer::createPowerOfTwoSurface(imageOrig);
-  if (image->format->BytesPerPixel == 4) {
-    if (image->format->Rmask == 0x000000ff)
-      mode = GL_RGBA;
-    else
-      mode = GL_BGRA;
-  } else {
-    if (image->format->Rmask == 0x000000ff)
-      mode = GL_RGB;
-    else
-      mode = GL_BGR;
-  }
-  SDL::glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  SDL::glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-  SDL::glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
-  SDL::glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
-  checkOpenglError();
-  SDL::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->w, image ->h, 0, mode, GL_UNSIGNED_BYTE, image->pixels);
-  size = Vec2(imageOrig->w, imageOrig->h);
-  realSize = Vec2(image->w, image->h);
-  if (image != imageOrig)
-    SDL::SDL_FreeSurface(image);
-  auto error = SDL::glGetError();
-  if (error != GL_NO_ERROR)
-    return error;
-  return none;
-}
-
-Texture::Texture(const FilePath& filename, int px, int py, int w, int h) : path(filename) {
-  SDL::SDL_Surface* image = SDL::IMG_Load(path->getPath());
-  CHECK(image) << SDL::IMG_GetError();
-  SDL::SDL_Rect offset;
-  offset.x = 0;
-  offset.y = 0;
-  SDL::SDL_Rect src { px, py, w, h };
-  SDL::SDL_Surface* sub = Renderer::createSurface(src.w, src.h);
-  CHECK(sub) << SDL::SDL_GetError();
-  CHECK(!SDL_BlitSurface(image, &src, sub, &offset)) << SDL::SDL_GetError();
-  SDL::SDL_FreeSurface(image);
-  if (auto error = loadFromMaybe(sub))
-    FATAL << "Couldn't load image: " << *path << ". Error code " << toString(*error);
-  SDL::SDL_FreeSurface(sub);
-}
-
-Texture::Texture(SDL::SDL_Surface* surface) {
-  CHECK(!loadFromMaybe(surface));
-}
-
-Texture::Texture(Texture&& tex) {
-  *this = std::move(tex);
-}
-
-Texture& Texture::operator = (Texture&& tex) {
-  size = tex.size;
-  realSize = tex.realSize;
-  texId = tex.texId;
-  path = tex.path;
-  tex.texId = none;
-  return *this;
-}
-
-optional<Texture> Texture::loadMaybe(const FilePath& path) {
-  if (SDL::SDL_Surface* image = SDL::IMG_Load(path.getPath())) {
-    Texture ret;
-    bool ok = !ret.loadFromMaybe(image);
-    SDL::SDL_FreeSurface(image);
-    if (ok) {
-      ret.path = path;
-      return std::move(ret);
-    }
-  }
-  return none;
-}
-
-const Vec2& Texture::getSize() const {
-  return size;
-}
-
-void Texture::addTexCoord(int x, int y) const {
-  SDL::glTexCoord2f((float)x / realSize.x, (float)y / realSize.y);
-}
-
-Texture::Texture() {
-}
+#include "gzstream.h"
+#include "opengl.h"
+#include "tileset.h"
 
 void Renderer::renderDeferredSprites() {
   static vector<SDL::GLfloat> vertices;
@@ -243,7 +44,6 @@ void Renderer::renderDeferredSprites() {
     colors.push_back(((float) color.b) / 255);
     colors.push_back(((float) color.a) / 255);
   };
-  optional<SDL::GLuint> currentTex;
   for (auto& elem : deferredSprites) {
     auto add = [&](Vec2 v, int texX, int texY, const DeferredSprite& draw) {
       addVertex(v, texX, texY, draw.realSize, draw.color.value_or(Color::WHITE));
@@ -256,29 +56,25 @@ void Renderer::renderDeferredSprites() {
     add(elem.d, elem.p.x, elem.k.y, elem);
   }
   if (!vertices.empty()) {
-    SDL::glEnable(GL_TEXTURE_2D);
+    CHECK_OPENGL_ERROR();
     SDL::glBindTexture(GL_TEXTURE_2D, *currentTexture);
-    checkOpenglError();
+    SDL::glEnable(GL_TEXTURE_2D);
     SDL::glEnableClientState(GL_VERTEX_ARRAY);
     SDL::glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     SDL::glEnableClientState(GL_COLOR_ARRAY);
-    checkOpenglError();
     SDL::glColorPointer(4, GL_FLOAT, 0, colors.data());
-    checkOpenglError();
     SDL::glVertexPointer(2, GL_FLOAT, 0, vertices.data());
-    checkOpenglError();
     SDL::glTexCoordPointer(2, GL_FLOAT, 0, texCoords.data());
-    checkOpenglError();
     SDL::glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 2);
-    checkOpenglError();
-    checkOpenglError();
     vertices.clear();
     texCoords.clear();
     colors.clear();
+
     SDL::glDisableClientState(GL_VERTEX_ARRAY);
     SDL::glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     SDL::glDisableClientState(GL_COLOR_ARRAY);
     SDL::glDisable(GL_TEXTURE_2D);
+    CHECK_OPENGL_ERROR();
   }
   deferredSprites.clear();
 }
@@ -288,10 +84,11 @@ void Renderer::drawSprite(const Texture& t, Vec2 topLeft, Vec2 bottomRight, Vec2
 }
 
 void Renderer::drawSprite(const Texture& t, Vec2 a, Vec2 b, Vec2 c, Vec2 d, Vec2 p, Vec2 k, optional<Color> color) {
-  if (currentTexture && currentTexture != *t.texId)
+  if (currentTexture && currentTexture != t.getTexId())
     renderDeferredSprites();
-  currentTexture = *t.texId;
-  deferredSprites.push_back({a, b, c, d, p, k, t.realSize, color});
+  currentTexture = t.getTexId();
+  CHECK(currentTexture);
+  deferredSprites.push_back({a, b, c, d, p, k, t.getRealSize(), color});
 }
 
 static float sizeConv(int size) {
@@ -323,7 +120,7 @@ int Renderer::getFont(Renderer::FontId id) {
   }
 }
 
-void Renderer::drawText(FontId id, int size, Color color, int x, int y, const string& s, CenterType center) {
+void Renderer::drawText(FontId id, int size, Color color, Vec2 pos, const string& s, CenterType center) {
   renderDeferredSprites();
   if (!s.empty()) {
     int ox = 0;
@@ -344,29 +141,29 @@ void Renderer::drawText(FontId id, int size, Color color, int x, int y, const st
         break;
     }
     sth_begin_draw(fontStash);
-    color.applyGl();
-    sth_draw_text(fontStash, getFont(id), sizeConv(size), ox + x, oy + y + (dim.y * 0.9), s.c_str(), nullptr);
+    glColor(color);
+    sth_draw_text(fontStash, getFont(id), sizeConv(size), ox + pos.x, oy + pos.y + (dim.y * 0.9), s.c_str(), nullptr);
     sth_end_draw(fontStash);
   }
 }
 
-void Renderer::drawText(Color color, int x, int y, const char* c, CenterType center, int size) {
-  drawText(TEXT_FONT, size, color, x, y, c, center);
+void Renderer::drawText(Color color, Vec2 pos, const char* c, CenterType center, int size) {
+  drawText(TEXT_FONT, size, color, pos, c, center);
 }
 
-void Renderer::drawText(Color color, int x, int y, const string& c, CenterType center, int size) {
-  drawText(TEXT_FONT, size, color, x, y, c, center);
+void Renderer::drawText(Color color, Vec2 pos, const string& c, CenterType center, int size) {
+  drawText(TEXT_FONT, size, color, pos, c, center);
 }
 
-void Renderer::drawTextWithHotkey(Color color, int x, int y, const string& text, char key) {
+void Renderer::drawTextWithHotkey(Color color, Vec2 pos, const string& text, char key) {
   if (key) {
     int ind = lowercase(text).find(key);
     if (ind != string::npos) {
-      int pos = x + getTextLength(text.substr(0, ind));
-      drawFilledRectangle(pos, y + 23, pos + getTextLength(text.substr(ind, 1)), y + 25, Color::GREEN);
+      int posHotkey = pos.x + getTextLength(text.substr(0, ind));
+      drawFilledRectangle(posHotkey, pos.y + 23, posHotkey + getTextLength(text.substr(ind, 1)), pos.y + 25, Color::GREEN);
     }
   }
-  drawText(color, x, y, text);
+  drawText(color, pos, text);
 }
 
 void Renderer::drawImage(int px, int py, const Texture& image, double scale, optional<Color> color) {
@@ -385,6 +182,17 @@ void Renderer::drawSprite(Vec2 pos, Vec2 stretchSize, const Texture& t) {
 static Vec2 rotate(Vec2 pos, Vec2 origin, double x, double y) {
   Vec2 v = pos - origin;
   return origin + Vec2(v.x * x - v.y * y, v.x * y + v.y * x);
+}
+
+void Renderer::drawAnimation(AnimationId id, Vec2 pos, double state, Vec2 squareSize, Dir orientation, Color color) {
+  if (auto& animInfo = animations[id]) {
+    int zoomLevel = squareSize.y / nominalSize;
+    int frame = int(animInfo->numFrames * state);
+    int width = animInfo->tex.getSize().x / animInfo->numFrames;
+    Vec2 size(width, animInfo->tex.getSize().y);
+    drawSprite(pos - size * zoomLevel / 2, Vec2(frame * width, 0), size, animInfo->tex, size * zoomLevel, color,
+        SpriteOrientation(Vec2(rotate(rotate(orientation))), false));
+  }
 }
 
 void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t,
@@ -414,17 +222,17 @@ void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Col
   if (outline) {
     SDL::glLineWidth(2);
     SDL::glBegin(GL_LINE_LOOP);
-    outline->applyGl();
+    glColor(*outline);
     SDL::glVertex2f(a.x + 1.5f, a.y + 1.5f);
     SDL::glVertex2f(b.x - 0.5f, a.y + 1.5f);
     SDL::glVertex2f(b.x - 0.5f, b.y - 0.5f);
     SDL::glVertex2f(a.x + 1.5f, b.y - 0.5f);
     SDL::glEnd();
     a += Vec2(2, 2);
-    b -= Vec2(2, 2);
+    b -= Vec2(1, 1);
   }
   SDL::glBegin(GL_QUADS);
-  color.applyGl();
+  glColor(color);
   SDL::glVertex2f(a.x, a.y);
   SDL::glVertex2f(b.x, a.y);
   SDL::glVertex2f(b.x, b.y);
@@ -436,39 +244,57 @@ void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, 
   drawFilledRectangle(Rectangle(px, py, kx, ky), color, outline);
 }
 
+void Renderer::drawPoint(Vec2 pos, Color color, int size) {
+  SDL::glPointSize(size);
+  SDL::glBegin(GL_POINTS);
+  glColor(color);
+  SDL::glVertex2f(pos.x, pos.y);
+  SDL::glEnd();
+}
+
 void Renderer::addQuad(const Rectangle& r, Color color) {
   drawFilledRectangle(r.left(), r.top(), r.right(), r.bottom(), color);
 }
 
 void Renderer::setScissor(optional<Rectangle> s) {
   renderDeferredSprites();
-  if (s) {
+  auto applyScissor = [&] (Rectangle rect) {
     int zoom = getZoom();
-    SDL::glScissor(s->left() * zoom, (getSize().y - s->bottom()) * zoom, s->width() * zoom, s->height() * zoom);
+    SDL::glScissor(rect.left() * zoom, (getSize().y - rect.bottom()) * zoom,
+        rect.width() * zoom, rect.height() * zoom);
     SDL::glEnable(GL_SCISSOR_TEST);
-    isScissor = true;
+  };
+  if (s) {
+    Rectangle rect = *s;
+    if (!scissorStack.empty())
+      rect = rect.intersection(scissorStack.back());
+    applyScissor(rect);
+    scissorStack.push_back(rect);
   }
   else {
-    SDL::glDisable(GL_SCISSOR_TEST);
-    isScissor = false;
+    if (!scissorStack.empty())
+      scissorStack.pop_back();
+    if (!scissorStack.empty())
+      applyScissor(scissorStack.back());
+    else
+      SDL::glDisable(GL_SCISSOR_TEST);
   }
 }
 
 void Renderer::setTopLayer() {
   renderDeferredSprites();
   SDL::glPushMatrix();
-  checkOpenglError();
   SDL::glTranslated(0, 0, 1);
-  checkOpenglError();
   SDL::glDisable(GL_SCISSOR_TEST);
+  CHECK_OPENGL_ERROR();
 }
 
 void Renderer::popLayer() {
   renderDeferredSprites();
   SDL::glPopMatrix();
-  checkOpenglError();
-  if (isScissor)
+  if (!scissorStack.empty())
     SDL::glEnable(GL_SCISSOR_TEST);
+  CHECK_OPENGL_ERROR();
 }
 
 Vec2 Renderer::getSize() {
@@ -514,15 +340,7 @@ void Renderer::enableCustomCursor(bool state) {
 }
 
 void Renderer::initOpenGL() {
-  //Initialize Projection Matrix
-  SDL::glMatrixMode( GL_PROJECTION );
-  SDL::glLoadIdentity();
-  SDL::glViewport(0, 0, width, height);
-  SDL::glOrtho(0.0, width / getZoom(), height / getZoom(), 0.0, -1.0, 1.0);
-  CHECK(SDL::glGetError() == GL_NO_ERROR);
-  //Initialize Modelview Matrix
-  SDL::glMatrixMode( GL_MODELVIEW );
-  SDL::glLoadIdentity();
+  setupOpenglView(width, height, getZoom());
   SDL::glEnable(GL_BLEND);
   SDL::glEnable(GL_TEXTURE_2D);
   SDL::glEnable(GL_DEPTH_TEST);
@@ -536,7 +354,7 @@ SDL::SDL_Surface* Renderer::loadScaledSurface(const FilePath& path, double scale
   if (auto surface = SDL::IMG_Load(path.getPath())) {
     if (scale == 1)
       return surface;
-    if (auto scaled = createSurface(surface->w * scale, surface->h * scale)) {
+    if (auto scaled = Texture::createSurface(surface->w * scale, surface->h * scale)) {
       SDL::SDL_SetSurfaceBlendMode(surface, SDL::SDL_BLENDMODE_NONE);
       CHECK(!SDL_BlitScaled(surface, nullptr, scaled, nullptr)) << SDL::IMG_GetError();
       SDL_FreeSurface(surface);
@@ -591,12 +409,21 @@ void Renderer::showError(const string& s) {
   SDL_ShowSimpleMessageBox(SDL::SDL_MESSAGEBOX_ERROR, "Error", s.c_str(), window);
 }
 
+TileSet& Renderer::getTileSet() {
+  return *tileSet;
+}
+
+void Renderer::setTileSet(TileSet* s) {
+  tileSet = s;
+}
+
 void Renderer::setVsync(bool on) {
   SDL::SDL_GL_SetSwapInterval(on ? 1 : 0);
 }
 
-Renderer::Renderer(const string& title, Vec2 nominal, const DirectoryPath& fontPath, const FilePath& cursorP,
-    const FilePath& clickedCursorP) : nominalSize(nominal), cursorPath(cursorP), clickedCursorPath(clickedCursorP) {
+Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontPath,
+    const FilePath& cursorP, const FilePath& clickedCursorP)
+    : cursorPath(cursorP), clickedCursorPath(clickedCursorP), clock(clock) {
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MINOR_VERSION, 1 );
@@ -615,126 +442,81 @@ Vec2 getOffset(Vec2 sizeDiff, double scale) {
   return Vec2(round(sizeDiff.x * scale * 0.5), round(sizeDiff.y * scale * 0.5));
 }
 
-Color Renderer::getBleedingColor(const ViewObject& object) {
-  double bleeding = object.getAttribute(ViewObject::Attribute::WOUNDED).value_or(0);
-  if (bleeding > 0)
-    bleeding = 0.3 + bleeding * 0.7;
-  if (object.hasModifier(ViewObject::Modifier::SPIRIT_DAMAGE))
-    return Color(255, 255, 255, (Uint8)(80 + max(0., (1 - bleeding) * (255 - 80))));
-  else
-    return Color::f(1, max(0., 1 - bleeding), max(0., 1 - bleeding));
-}
-
-void Renderer::drawTile(Vec2 pos, TileCoord coord, Vec2 size, Color color, SpriteOrientation orientation) {
-  CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
-  Texture* tex = &tiles[coord.texNum];
-  Vec2 sz = tileSize[coord.texNum];
-  Vec2 off = (nominalSize -  sz).mult(size).div(Renderer::nominalSize * 2);
-  Vec2 tileSize = sz.mult(size).div(nominalSize);
-  if (sz.y > nominalSize.y)
-    off.y *= 2;
-  Vec2 coordPos = coord.pos.mult(sz);
-  drawSprite(pos + off, coordPos, sz, *tex, tileSize, color, orientation);
-}
-
-void Renderer::drawTile(Vec2 pos, TileCoord coord, double scale, Color color) {
-  CHECK(coord.texNum >= 0 && coord.texNum < Renderer::tiles.size());
-  Vec2 sz = Renderer::tileSize[coord.texNum];
-  Vec2 off = getOffset(Renderer::nominalSize - sz, scale);
-  if (sz.y > nominalSize.y)
-    off.y *= 2;
-  drawSprite(pos + off, coord.pos.mult(sz), sz, tiles[coord.texNum], sz * scale, color);
+void Renderer::drawTile(Vec2 pos, const vector<TileCoord>& coords, Vec2 size, Color color, SpriteOrientation orientation,
+    optional<Color> secondColor, optional<double> scale) {
+  if (coords.empty())
+    return;
+  auto drawCoord = [&size, scale, this, pos, orientation] (const TileCoord& coord, Color color) {
+    Vec2 off = scale ? getOffset(Vec2(nominalSize, nominalSize) - coord.size, *scale)
+          : (Vec2(nominalSize, nominalSize) - coord.size).mult(size) / (nominalSize * 2);
+    Vec2 tileSize = scale ? coord.size * *scale : coord.size.mult(size) / nominalSize;
+    if (coord.size.y > nominalSize)
+      off.y *= 2;
+    drawSprite(pos + off, coord.pos.mult(coord.size), coord.size, *coord.texture, tileSize, color, orientation);
+  };
+  if (secondColor && coords.size() > 1) {
+    drawCoord(coords[0], color);
+    if (secondColor != Color::WHITE)
+      drawCoord(coords[1], color * *secondColor);
+  } else {
+    auto frame = clock->getRealMillis().count() / 200;
+    drawCoord(coords[frame % coords.size()], color);
+  }
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, Color color) {
-  const Tile& tile = Tile::getTile(id);
-  if (tile.hasSpriteCoord())
-    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), 1, color * tile.color);
-  else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20, tile.color, pos.x + nominalSize.x / 2,
-        pos.y, tile.text, HOR);
+  drawViewObject(pos, id, true, 1, color);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale, Color color) {
-  const Tile& tile = Tile::getTile(id, useSprite);
-  if (tile.hasSpriteCoord())
-    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), scale, color * tile.color);
-  else
+  const Tile& tile = tileSet->getTile(id, useSprite);
+  if (tile.hasSpriteCoord()) {
+    optional<Color> colorVariant;
+    if (!tile.animated)
+      colorVariant = id.getColor();
+    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), Vec2(), color * tile.color, {}, colorVariant, scale);
+  } else
     drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale, color * tile.color,
-        pos.x + scale * nominalSize.x / 2, pos.y, tile.text, HOR);
+        pos + Vec2(scale * nominalSize / 2, 0), tile.text, HOR);
 }
 
 void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Color color, SpriteOrientation orient) {
-  const Tile& tile = Tile::getTile(id, useSprite);
-  if (tile.hasSpriteCoord())
-    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color, orient);
-  else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, size.y, color * tile.color, pos.x, pos.y,
-        tile.text);
+  const Tile& tile = tileSet->getTile(id, useSprite);
+  if (tile.hasSpriteCoord()) {
+    optional<Color> colorVariant;
+    if (!tile.animated)
+      colorVariant = id.getColor();
+    drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color, orient, colorVariant);
+  } else
+    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, size.y, color * tile.color, pos, tile.text);
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, Vec2 size) {
-  drawViewObject(pos, object.id(), useSprite, size, getBleedingColor(object));
+  drawViewObject(pos, object.id(), useSprite, size, Color::WHITE);
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, double scale, Color color) {
-  drawViewObject(pos, object.id(), useSprite, scale, getBleedingColor(object) * color);
+  drawViewObject(pos, object.id(), useSprite, scale, color);
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object) {
-  drawViewObject(pos, object.id(), getBleedingColor(object));
+  drawViewObject(pos, object.id(), Color::WHITE);
 }
 
 void Renderer::drawAsciiBackground(ViewId id, Rectangle bounds) {
-  if (!Tile::getTile(id, true).hasSpriteCoord())
+  if (!tileSet->getTile(id, true).hasSpriteCoord())
     drawFilledRectangle(bounds, Color::BLACK);
 }
 
-bool Renderer::loadTilesFromDir(const DirectoryPath& path, Vec2 size) {
-  tileSize.push_back(size);
-  return loadTilesFromDir(path, tiles, size, 720);
-}
-
-SDL::SDL_Surface* Renderer::createSurface(int w, int h) {
-  SDL::SDL_Surface* ret = SDL::SDL_CreateRGBSurface(0, w, h, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
-  CHECK(ret) << "Failed to creature surface " << w << ":" << h << ": " << SDL::SDL_GetError();
-  return ret;
-}
-
-bool Renderer::loadTilesFromDir(const DirectoryPath& path, vector<Texture>& tiles, Vec2 size, int setWidth) {
-  const static string imageSuf = ".png";
-  auto files = path.getFiles().filter([](const FilePath& f) { return f.hasSuffix(imageSuf);});
-  int rowLength = setWidth / size.x;
-  SDL::SDL_Surface* image = createSurface(setWidth, ((files.size() + rowLength - 1) / rowLength) * size.y);
-  SDL::SDL_SetSurfaceBlendMode(image, SDL::SDL_BLENDMODE_NONE);
-  CHECK(image) << SDL::SDL_GetError();
-  for (int i : All(files)) {
-    SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath());
-    SDL::SDL_SetSurfaceBlendMode(im, SDL::SDL_BLENDMODE_NONE);
-    CHECK(im) << files[i] << ": "<< SDL::IMG_GetError();
-    CHECK(im->w == size.x && im->h == size.y) << files[i] << " has wrong size " << im->w << " " << im->h;
-    SDL::SDL_Rect offset;
-    offset.x = size.x * (i % rowLength);
-    offset.y = size.y * (i / rowLength);
-    SDL_BlitSurface(im, nullptr, image, &offset);
-    string fileName = files[i].getFileName();
-    string spriteName = fileName.substr(0, fileName.size() - imageSuf.size());
-    CHECK(!tileCoords.count(spriteName)) << "Duplicate name " << spriteName;
-    tileCoords[spriteName] = {{i % rowLength, i / rowLength}, int(tiles.size())};
-    SDL::SDL_FreeSurface(im);
+void Renderer::loadAnimations() {
+  if (animationDirectory) {
+    for (auto id : ENUM_ALL(AnimationId))
+      animations[id] = AnimationInfo { Texture(animationDirectory->file(getFileName(id))), getNumFrames(id)};
   }
-  tiles.push_back(Texture(image));
-  SDL::SDL_FreeSurface(image);
-  return true;
 }
 
-Renderer::TileCoord Renderer::getTileCoord(const string& name) {
-  USER_CHECK(tileCoords.count(name)) << "Tile not found: '" << name << "'. Please make sure all game data is in place.";
-  return tileCoords.at(name);
-}
-
-Vec2 Renderer::getNominalSize() const {
-  return nominalSize;
+void Renderer::setAnimationsDirectory(const DirectoryPath& path) {
+  animationDirectory = path;
 }
 
 void Renderer::drawAndClearBuffer() {
@@ -852,4 +634,37 @@ void Renderer::startMonkey() {
 
 bool Renderer::isMonkey() {
   return monkey;
+}
+
+SDL::SDL_Surface* flipVert(SDL::SDL_Surface* sfc) {
+   auto result = SDL::SDL_CreateRGBSurface(sfc->flags, sfc->w, sfc->h,
+     sfc->format->BytesPerPixel * 8, sfc->format->Rmask, sfc->format->Gmask,
+     sfc->format->Bmask, sfc->format->Amask);
+   CHECK(result);
+   std::uint8_t* pixels = (std::uint8_t*) sfc->pixels;
+   std::uint8_t* rpixels = (std::uint8_t*) result->pixels;
+   std::uint32_t pitch = sfc->pitch;
+   std::uint32_t pxlength = pitch*sfc->h;
+   for(auto line = 0; line < sfc->h; ++line) {
+     std::uint32_t pos = line * pitch;
+     memcpy(rpixels + pos, pixels + pxlength - pos - pitch, pitch);
+   }
+   return result;
+}
+
+void Renderer::makeScreenshot(const FilePath& path) {
+  auto image = SDL::SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 24, 0x000000FF, 0x0000FF00, 0x00FF0000, 0);
+  SDL::glReadBuffer(GL_FRONT);
+  SDL::glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
+  auto inverted = flipVert(image);
+  int bmpSize = width * height * 3 + 1000;
+  unique_ptr<char[]> bitmap(new char[bmpSize]);
+  auto *rw = SDL::SDL_RWFromMem(bitmap.get(), bmpSize);
+  CHECK(rw) << SDL::SDL_GetError();
+  CHECK(SDL::SDL_SaveBMP_RW(inverted, rw, 1) == 0) << SDL::SDL_GetError();
+  SDL_FreeSurface(image);
+  SDL_FreeSurface(inverted);
+  ogzstream output(path.getPath());
+  for (int i : Range(bmpSize))
+    output << bitmap[i];
 }

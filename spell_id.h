@@ -1,27 +1,8 @@
 #pragma once
 
-#include "util.h"
+#include "content_id.h"
 
-RICH_ENUM(SpellId,
-  HEAL_SELF,
-  SUMMON_INSECTS,
-  DECEPTION,
-  SPEED_SELF,
-  DAM_BONUS,
-  DEF_BONUS,
-  FIRE_SPHERE_PET,
-  TELEPORT,
-  INVISIBILITY,
-  CIRCULAR_BLAST,
-  BLAST,
-  PORTAL,
-  SUMMON_SPIRIT,
-  CURE_POISON,
-  METEOR_SHOWER,
-  MAGIC_MISSILE,
-  STUN_RAY,
-  SUMMON_ELEMENT,
-  HEAL_OTHER
-);
-
-
+class SpellId : public ContentId<SpellId> {
+  public:
+  using ContentId::ContentId;
+};

@@ -28,12 +28,12 @@ class MinimapGui : public GuiElem {
 
   MinimapGui(function<void()> clickFun);
 
-  void update(Rectangle bounds, const CreatureView*);
+  void update(Rectangle bounds, const CreatureView*, Renderer&);
   void clear();
   void renderMap(Renderer&, Rectangle target);
 
   virtual void render(Renderer&) override;
-  virtual bool onLeftClick(Vec2) override;
+  virtual bool onClick(ClickButton, Vec2) override;
 
   private:
 

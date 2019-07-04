@@ -28,13 +28,22 @@ class ShortestPath {
   ShortestPath(
       Rectangle area,
       function<double(Vec2)> entryFun,
-      function<int(Vec2)> lengthFun,
+      function<double(Vec2, Vec2)> lengthFun,
+      function<vector<Vec2>(Vec2)> directions,
+      Vec2 target,
+      Vec2 from,
+      double mult = 0);
+  ShortestPath(
+      Rectangle area,
+      function<double(Vec2)> entryFun,
+      function<double(Vec2, Vec2)> lengthFun,
       vector<Vec2> directions,
       Vec2 target,
       Vec2 from,
       double mult = 0);
   bool isReachable(Vec2 pos) const;
   Vec2 getNextMove(Vec2 pos);
+  optional<Vec2> getNextNextMove(Vec2 pos);
   Vec2 getTarget() const;
   bool isReversed() const;
 
@@ -43,22 +52,22 @@ class ShortestPath {
   SERIALIZATION_DECL(ShortestPath);
 
   private:
-  void init(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, Vec2 target, optional<Vec2> from,
-      optional<int> limit = none);
-  void reverse(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, double mult, Vec2 from, int limit);
-  void constructPath(Vec2 start, bool reversed = false);
+  void init(function<double(Vec2)> entryFun, function<double(Vec2, Vec2)> lengthFun, function<vector<Vec2>(Vec2)> directions,
+      Vec2 target, optional<Vec2> from, optional<int> limit = none);
+  void reverse(function<double(Vec2)> entryFun, function<double(Vec2, Vec2)> lengthFun, function<vector<Vec2>(Vec2)> directions, double mult, Vec2 from, int limit);
+  void constructPath(Vec2 start, function<vector<Vec2>(Vec2)> directions, bool reversed = false);
   vector<Vec2> SERIAL(path);
   Vec2 SERIAL(target);
-  vector<Vec2> SERIAL(directions);
   Rectangle SERIAL(bounds);
   bool SERIAL(reversed);
 };
 
 class LevelShortestPath {
   public:
-  LevelShortestPath(WConstCreature creature, Position target, Position from, double mult = 0);
+  LevelShortestPath(const Creature* creature, Position target, Position from, double mult = 0);
   bool isReachable(Position) const;
   Position getNextMove(Position);
+  optional<Position> getNextNextMove(Position);
   Position getTarget() const;
   bool isReversed() const;
   WLevel getLevel() const;
@@ -68,19 +77,19 @@ class LevelShortestPath {
   SERIALIZATION_DECL(LevelShortestPath);
 
   private:
-  static ShortestPath makeShortestPath(WConstCreature creature, Position to, Position from, double mult);
+  static ShortestPath makeShortestPath(const Creature* creature, Position to, Position from, double mult);
   ShortestPath SERIAL(path);
-  WLevel SERIAL(level);
+  WLevel SERIAL(level) = nullptr;
 };
 
 class Dijkstra {
   public:
-  Dijkstra(Rectangle bounds, Vec2 from, int maxDist, function<double(Vec2)> entryFun,
+  Dijkstra(Rectangle bounds, vector<Vec2> from, int maxDist, function<double(Vec2)> entryFun,
       vector<Vec2> directions = Vec2::directions8());
   bool isReachable(Vec2) const;
   double getDist(Vec2) const;
   const map<Vec2, double>& getAllReachable() const;
-  
+
   private:
   map<Vec2, double> reachable;
 };

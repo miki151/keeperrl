@@ -23,6 +23,7 @@
 #include "view_index.h"
 #include "sdl.h"
 #include "view_object.h"
+#include "tileset.h"
 
 void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
   if (!mapBufferTex)
@@ -50,7 +51,7 @@ void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
   for (auto loc : info.locations) {
     Vec2 v = (loc - info.bounds.topLeft()) * scale;
 //    if (loc.text.empty())
-      renderer.drawText(Color::LIGHT_GREEN, topLeft.x + v.x + 5, topLeft.y + v.y, "?");
+      renderer.drawText(Color::LIGHT_GREEN, topLeft + v + Vec2(5, 0), "?", Renderer::CenterType::HOR_VER);
 /*    else {
       renderer.drawFilledRectangle(topLeft.x + v.x, topLeft.y + v.y,
           topLeft.x + v.x + renderer.getTextLength(loc.text) + 10, topLeft.y + v.y + 25,
@@ -76,7 +77,7 @@ static Vec2 getMapBufferSize() {
 
 MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
   auto size = getMapBufferSize();
-  mapBuffer = Renderer::createSurface(size.x, size.y);
+  mapBuffer = Texture::createSurface(size.x, size.y);
 }
 
 void MinimapGui::clear() {
@@ -84,7 +85,7 @@ void MinimapGui::clear() {
   info = MinimapInfo {};
 }
 
-bool MinimapGui::onLeftClick(Vec2 v) {
+bool MinimapGui::onClick(ClickButton, Vec2 v) {
   if (v.inRectangle(getBounds())) {
     clickFun();
     return true;
@@ -94,8 +95,8 @@ bool MinimapGui::onLeftClick(Vec2 v) {
 
 constexpr auto visibleLayers = { ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR };
 
-void MinimapGui::update(Rectangle bounds, const CreatureView* creature) {
-  auto level = creature->getLevel();
+void MinimapGui::update(Rectangle bounds, const CreatureView* creature, Renderer& renderer) {
+  auto level = creature->getCreatureViewLevel();
   info.bounds = bounds;
   info.enemies.clear();
   info.locations.clear();
@@ -105,7 +106,7 @@ void MinimapGui::update(Rectangle bounds, const CreatureView* creature) {
       for (auto layer : visibleLayers)
         if (index->hasObject(layer)) {
           auto& object = index->getObject(layer);
-          Renderer::putPixel(mapBuffer, pos.getCoord(), Tile::getColor(object));
+          Renderer::putPixel(mapBuffer, pos.getCoord(), renderer.getTileSet().getColor(object));
           if (object.hasModifier(ViewObject::Modifier::ROAD))
             info.roads.insert(pos.getCoord());
         }
@@ -123,7 +124,7 @@ void MinimapGui::update(Rectangle bounds, const CreatureView* creature) {
     updatePos(v);
   }
   memory.clearUpdated(level);
-  info.player = creature->getPosition();
+  info.player = creature->getScrollCoord();
   for (Vec2 pos : creature->getVisibleEnemies())
     if (pos.inRectangle(bounds))
       info.enemies.push_back(pos);

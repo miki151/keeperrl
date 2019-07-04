@@ -14,21 +14,31 @@
 #include "attack_type.h"
 #include "item_type.h"
 #include "attack.h"
+#include "tribe.h"
+#include "furniture_type.h"
+#include "furniture_factory.h"
+#include "view_object.h"
+#include "furniture_usage.h"
+#include "game_event.h"
+#include "color.h"
+#include "content_factory.h"
 
 static void handleBed(Position pos) {
-  if (WCreature c = pos.getCreature())
+  PROFILE;
+  if (Creature* c = pos.getCreature())
     if (c->isAffected(LastingEffect::SLEEP))
       c->heal(0.005);
 }
 
 static void handlePigsty(Position pos, WFurniture furniture) {
+  PROFILE;
   if (pos.getCreature() || !Random.roll(10) || pos.getPoisonGasAmount() > 0)
     return;
   for (Position v : pos.neighbors8())
     if (v.getCreature() && v.getCreature()->getBody().isMinionFood())
       return;
   if (Random.roll(5)) {
-    PCreature pig = CreatureFactory::fromId(CreatureId::PIG, furniture->getTribe(),
+    PCreature pig = pos.getGame()->getContentFactory()->creatures.fromId(CreatureId("PIG"), furniture->getTribe(),
         MonsterAIFactory::stayOnFurniture(furniture->getType()));
     if (pos.canEnter(pig.get()))
       pos.addCreature(std::move(pig));
@@ -40,14 +50,14 @@ static void handleBoulder(Position pos, WFurniture furniture) {
     int radius = 4;
     for (int i = 1; i <= radius; ++i) {
       Position curPos = pos.plus(direction * i);
-      if (WCreature other = curPos.getCreature()) {
+      if (Creature* other = curPos.getCreature()) {
         if (!other->getTribe()->getFriendlyTribes().contains(furniture->getTribe())) {
-          if (!other->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
+          if (!other->isAffected(LastingEffect::DISARM_TRAPS_SKILL)) {
             pos.getGame()->addEvent(EventInfo::TrapTriggered{pos});
             pos.globalMessage(PlayerMessage("The boulder starts rolling.", MessagePriority::CRITICAL));
             pos.unseenMessage(PlayerMessage("You hear a heavy boulder rolling.", MessagePriority::CRITICAL));
             CHECK(!pos.getCreature());
-            pos.addCreature(CreatureFactory::getRollingBoulder(furniture->getTribe(), direction), 0);
+            pos.addCreature(CreatureFactory::getRollingBoulder(TribeId::getHostile(), direction), 0_visible);
           } else {
             other->you(MsgType::DISARM_TRAP, "boulder trap");
             pos.getGame()->addEvent(EventInfo::TrapDisarmed{pos, other});
@@ -64,7 +74,7 @@ static void handleBoulder(Position pos, WFurniture furniture) {
 
 static void meteorShower(Position position, WFurniture furniture) {
   auto creator = furniture->getCreator();
-  const double duration = 15;
+  const auto duration = 15_visible;
   if (!creator ||
       creator->isDead() ||
       *furniture->getCreatedTime() + duration < position.getModel()->getLocalTime()) {
@@ -83,13 +93,33 @@ static void meteorShower(Position position, WFurniture furniture) {
       if (!targetPoint.plus(direction * i).canEnter(MovementType({MovementTrait::WALK, MovementTrait::FLY})))
         continue;
     targetPoint.plus(direction * range).throwItem(
-        ItemType(ItemType::Rock{}).get(),
+        makeVec(ItemType(ItemType::Rock{}).get()),
         Attack(furniture->getCreator(), AttackLevel::MIDDLE, AttackType::HIT, 25, AttrType::DAMAGE),
         10,
-        -direction,
+        position.minus(direction),
         VisionId::NORMAL);
     break;
   }
+}
+
+static void pit(Position position, WFurniture self) {
+  if (!position.getCreature() && Random.roll(10))
+    for (auto neighborPos : position.neighbors8(Random))
+      if (auto water = neighborPos.getFurniture(FurnitureLayer::GROUND))
+        if (water->canBuildBridgeOver()) {
+          auto waterType = water->getType() == FurnitureType("MAGMA") ?
+                FurnitureType("MAGMA") : FurnitureType("WATER");
+          position.removeFurniture(position.getFurniture(FurnitureLayer::GROUND),
+              position.getGame()->getContentFactory()->furniture.getFurniture(waterType, water->getTribe()));
+          self->destroy(position, DestroyAction::Type::BOULDER);
+          return;
+        }
+}
+
+static Color getPortalColor(int index) {
+  CHECK(index >= 0);
+  index += 1 + 2 * (index / 6);
+  return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
 }
 
 void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furniture) {
@@ -104,10 +134,27 @@ void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furn
       handleBoulder(pos, furniture);
       break;
     case FurnitureTickType::PORTAL:
-      pos.getModel()->registerPortal(pos);
+      pos.registerPortal();
+      furniture->getViewObject()->setColorVariant(Color::WHITE);
+      if (auto otherPos = pos.getOtherPortal())
+        for (auto f : otherPos->modFurniture())
+          if (f->getUsageType() == FurnitureUsageType::PORTAL) {
+            auto color = getPortalColor(*pos.getPortalIndex());
+            furniture->getViewObject()->setColorVariant(color);
+            f->getViewObject()->setColorVariant(color);
+            pos.setNeedsRenderAndMemoryUpdate(true);
+            otherPos->setNeedsRenderAndMemoryUpdate(true);
+          }
       break;
     case FurnitureTickType::METEOR_SHOWER:
       meteorShower(pos, furniture);
+      break;
+    case FurnitureTickType::PIT:
+      pit(pos, furniture);
+      break;
+    case FurnitureTickType::EXTINGUISH_FIRE:
+      if (auto c = pos.getCreature())
+        c->removeEffect(LastingEffect::ON_FIRE);
       break;
   }
 }

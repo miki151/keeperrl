@@ -10,6 +10,8 @@
 #include "collective_control.h"
 #include "immigration.h"
 #include "territory.h"
+#include "view_object.h"
+#include "level.h"
 
 CollectiveBuilder::CollectiveBuilder(const CollectiveConfig& cfg, TribeId t)
     : config(cfg), tribe(t) {
@@ -17,6 +19,11 @@ CollectiveBuilder::CollectiveBuilder(const CollectiveConfig& cfg, TribeId t)
 
 CollectiveBuilder& CollectiveBuilder::setLevel(WLevel l) {
   level = l;
+  return *this;
+}
+
+CollectiveBuilder& CollectiveBuilder::setModel(WModel m) {
+  model = m;
   return *this;
 }
 
@@ -39,7 +46,7 @@ TribeId CollectiveBuilder::getTribe() {
   return *tribe;
 }
 
-CollectiveBuilder& CollectiveBuilder::addCreature(WCreature c, EnumSet<MinionTrait> traits) {
+CollectiveBuilder& CollectiveBuilder::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   creatures.push_back({c, traits});
   return *this;
 }
@@ -61,9 +68,10 @@ optional<CollectiveName> CollectiveBuilder::generateName() {
   if (!creatures.empty()) {
     CollectiveName ret;
     auto leader = creatures[0].creature;
+    ret.viewId = leader->getViewObject().id();
     if (locationName && raceName)
       ret.full = capitalFirst(*raceName) + " of " + *locationName;
-    else if (auto first = leader->getName().first())
+    else if (!!leader->getName().first())
       ret.full = leader->getName().title();
     else if (raceName)
       ret.full = capitalFirst(*raceName);
@@ -71,8 +79,8 @@ optional<CollectiveName> CollectiveBuilder::generateName() {
       ret.full = leader->getName().title();
     if (locationName)
       ret.shortened = *locationName;
-    else
-      ret.shortened = leader->getName().first().value_or(leader->getName().bare());
+    else if (auto leaderName = leader->getName().first())
+      ret.shortened = *leaderName;
     if (raceName)
       ret.race = *raceName;
     else
@@ -82,11 +90,12 @@ optional<CollectiveName> CollectiveBuilder::generateName() {
     return none;
 }
 
-PCollective CollectiveBuilder::build() {
-  CHECK(level);
-  auto c = Collective::create(level, *tribe, generateName(), discoverable);
-  Immigration im(c.get());
-  c->init(std::move(*config), std::move(im));
+PCollective CollectiveBuilder::build(const ContentFactory* contentFactory) {
+  CHECK(model || level);
+  if (!model)
+    model = level->getModel();
+  auto c = Collective::create(model, *tribe, generateName(), discoverable, contentFactory);
+  c->init(std::move(*config));
   c->setControl(CollectiveControl::idle(c.get()));
   bool wasLeader = false;
   for (auto& elem : creatures) {
@@ -96,6 +105,7 @@ PCollective CollectiveBuilder::build() {
   }
   CHECK(wasLeader || creatures.empty()) << "No leader added to collective " << c->getName()->full;
   for (Vec2 v : squares) {
+    CHECK(level);
     Position pos(v, level);
     c->addKnownTile(pos);
     //if (c->canClaimSquare(pos))

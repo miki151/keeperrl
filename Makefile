@@ -4,18 +4,19 @@ ifndef RPATH
 RPATH = .
 endif
 
-CFLAGS = -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512
+CFLAGS = -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512 -Wno-implicit-conversion-floating-point-to-bool -Wno-string-conversion -Wno-bool-conversion
 
 ifndef GCC
 GCC = g++
 endif
 LD = $(GCC)
 
-ifndef RELEASE
-CFLAGS += -Werror -Wimplicit-fallthrough
-LDFLAGS += -fuse-ld=lld
-endif
+DEBUG_LD=gold
 
+ifndef RELEASE
+CFLAGS += -Werror -Wimplicit-fallthrough -Wno-unused-function
+LDFLAGS += -fuse-ld=$(DEBUG_LD)
+endif
 
 ifdef OSX
 LDFLAGS += -Wl -L/usr/local/opt/openal-soft/lib
@@ -23,6 +24,10 @@ CFLAGS += -stdlib=libc++ -DOSX -mmacosx-version-min=10.7
 CFLAGS += -I/usr/local/opt/openal-soft/include
 else
 LDFLAGS += -Wl,-rpath=$(RPATH)
+endif
+
+ifndef RELEASE
+LDFLAGS += -Wl,--gdb-index
 endif
 
 ifdef DATA_DIR
@@ -95,6 +100,10 @@ SRCS = $(shell ls -t *.cpp)
 
 LIBS = -L/usr/lib/x86_64-linux-gnu $(OPENGL_LIBS) -lSDL2 -lopenal -lvorbis -lvorbisfile -lSDL2_image $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS}
 
+ifdef EASY_PROFILER
+LIBS += libeasy_profiler.so
+CFLAGS += -DEASY_PROFILER
+endif
 
 OBJS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.o))
 DEPS = $(addprefix $(OBJDIR)/,$(SRCS:.cpp=.d))
@@ -111,7 +120,7 @@ compile: gen_version $(NAME)
 $(OBJDIR)/stdafx.h.gch: stdafx.h
 	$(GCC) -x c++-header $< -MMD $(CFLAGS) -o $@
 
-ifndef OPT
+ifndef RELEASE
 PCH = $(OBJDIR)/stdafx.h.gch
 PCHINC = -include-pch $(OBJDIR)/stdafx.h.gch
 endif
@@ -142,15 +151,17 @@ gen_version:
 endif
 
 parse_game:
-	clang++ -DPARSE_GAME $(IPATH) -std=c++1y -g gzstream.cpp parse_game.cpp util.cpp debug.cpp saved_game_info.cpp file_path.cpp directory_path.cpp progress.cpp -o parse_game -lpthread -lz
+	clang++ -DPARSE_GAME $(IPATH) -std=c++1y -g gzstream.cpp parse_game.cpp util.cpp debug.cpp saved_game_info.cpp file_path.cpp directory_path.cpp progress.cpp content_id.cpp view_id.cpp color.cpp -o parse_game -lpthread -lz
 
 clean:
 	$(RM) $(OBJDIR)/*.o
 	$(RM) $(OBJDIR)/*.d
+	$(RM) $(OBJDIR)/*.gch
 	$(RM) log.out
 	$(RM) $(OBJDIR)/test
 	$(RM) $(OBJDIR)-opt/*.o
 	$(RM) $(OBJDIR)-opt/*.d
+	$(RM) $(OBJDIR)-opt/*.gch
 	$(RM) $(NAME)
 	$(RM) $(OBJDIR)/stdafx.h.*
 

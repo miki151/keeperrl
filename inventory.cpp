@@ -17,23 +17,29 @@
 
 #include "inventory.h"
 #include "item.h"
+#include "view_object.h"
 
-template <class Archive> 
-void Inventory::serialize(Archive& ar, const unsigned int version) {
-  ar(items, itemsCache, weight);
-}
 
-Inventory::~Inventory() {}
-
-SERIALIZABLE(Inventory);
-
+SERIALIZE_DEF(Inventory, items, itemsCache, weight, counts)
 SERIALIZATION_CONSTRUCTOR_IMPL(Inventory);
+
+void Inventory::addViewId(ViewId id, int count) {
+  auto& cur = counts[id];
+  if (count > 0 && cur < UINT16_MAX)
+    ++cur;
+  else if (count < 0) {
+    CHECK(cur > 0);
+    if (--cur == 0)
+      counts.erase(id);
+  }
+}
 
 void Inventory::addItem(PItem item) {
   CHECK(!!item) << "Null item dropped";
   itemsCache.insert(item.get());
+  addViewId(item->getViewObject().id(), 1);
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
-    if (indexes[ind] && getIndexPredicate(ind)(item.get()))
+    if (indexes[ind] && hasIndex(ind, item.get()))
       indexes[ind]->insert(item.get());
   weight += item->getWeight();
   items.insert(std::move(item));
@@ -44,19 +50,20 @@ void Inventory::addItems(vector<PItem> v) {
     addItem(std::move(it));
 }
 
-PItem Inventory::removeItem(WItem itemRef) {
+PItem Inventory::removeItem(Item* itemRef) {
   PItem item = items.remove(itemRef->getUniqueId());
   weight -= item->getWeight();
   itemsCache.remove(itemRef->getUniqueId());
+  addViewId(item->getViewObject().id(), -1);
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
-    if (indexes[ind] && getIndexPredicate(ind)(item.get()))
+    if (indexes[ind] && hasIndex(ind, item.get()))
       indexes[ind]->remove(itemRef->getUniqueId());
   return item;
 }
 
-vector<PItem> Inventory::removeItems(vector<WItem> items) {
+vector<PItem> Inventory::removeItems(vector<Item*> items) {
   vector<PItem> ret;
-  for (WItem item : items)
+  for (Item* item : items)
     ret.push_back(removeItem(item));
   return ret;
 }
@@ -67,21 +74,14 @@ void Inventory::clearIndex(ItemIndex ind) {
 
 vector<PItem> Inventory::removeAllItems() {
   itemsCache.removeAll();
+  counts.clear();
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     indexes[ind] = none;
   weight = 0;
   return items.removeAll();
 }
 
-vector<WItem> Inventory::getItems(function<bool(WConstItem)> predicate) const {
-  vector<WItem> ret;
-  for (const PItem& item : items.getElems())
-    if (predicate(item.get()))
-      ret.push_back(item.get());
-  return ret;
-}
-
-WItem Inventory::getItemById(UniqueEntity<Item>::Id id) const {
+Item* Inventory::getItemById(UniqueEntity<Item>::Id id) const {
   if (auto item = itemsCache.fetch(id))
     return *item;
   else
@@ -89,22 +89,30 @@ WItem Inventory::getItemById(UniqueEntity<Item>::Id id) const {
 }
 
 
-const vector<WItem>& Inventory::getItems(ItemIndex index) const {
-  static vector<WItem> empty;
+const vector<Item*>& Inventory::getItems(ItemIndex index) const {
+  static vector<Item*> empty;
   if (isEmpty()) {
     return empty;
   }
   auto& elems = indexes[index];
-  if (!elems)
-    elems = ItemVector(getItems(getIndexPredicate(index)));
+  if (!elems) {
+    elems.emplace();
+    for (auto& item : getItems())
+      if (hasIndex(index, item))
+        elems->insert(item);
+  }
   return elems->getElems();
 }
 
-const vector<WItem>& Inventory::getItems() const {
+const ItemCounts&Inventory::getCounts() const {
+  return counts;
+}
+
+const vector<Item*>& Inventory::getItems() const {
   return itemsCache.getElems();
 }
 
-bool Inventory::hasItem(WConstItem itemRef) const {
+bool Inventory::hasItem(const Item* itemRef) const {
   return !!itemsCache.fetch(itemRef->getUniqueId());
 }
 
@@ -114,6 +122,37 @@ int Inventory::size() const {
 
 double Inventory::getTotalWeight() const {
   return weight;
+}
+
+void Inventory::tick(Position pos) {
+  PROFILE_BLOCK("Inventory::tick");
+  vector<WeakPointer<Item>> itemsCopy = getItems().transform([](const auto& it){ return it->getThis(); });
+  for (auto item : itemsCopy)
+    if (item && hasItem(item.get())) {
+      // items might be destroyed or removed from inventory in tick()
+      auto oldViewId = item->getViewObject().id();
+      item->tick(pos);
+      auto newViewId = item->getViewObject().id();
+      if (newViewId != oldViewId) {
+        addViewId(oldViewId, -1);
+        addViewId(newViewId, 1);
+      }
+      if (item->isDiscarded() && hasItem(item.get()))
+        removeItem(item.get());
+    }
+}
+
+bool Inventory::containsAnyOf(const EntitySet<Item>& items) const {
+  if (size() > items.getSize()) {
+    for (auto& item : items)
+      if (!!getItemById(item))
+        return true;
+  } else {
+    for (auto& it : getItems())
+      if (items.contains(it))
+        return true;
+  }
+  return false;
 }
 
 bool Inventory::isEmpty() const {

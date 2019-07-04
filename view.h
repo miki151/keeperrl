@@ -18,7 +18,10 @@
 #include "util.h"
 #include "debug.h"
 #include "user_input.h"
-#include "player_role_choice.h"
+#include "animation_id.h"
+#include "gender.h"
+#include "fx_info.h"
+#include "creature_experience_info.h"
 
 class CreatureView;
 class Level;
@@ -32,6 +35,12 @@ class Campaign;
 class Options;
 class RetiredGames;
 class ScrollPosition;
+class FilePath;
+struct Color;
+namespace fx {
+  class FXRenderer;
+}
+class FXViewManager;
 
 enum class SplashType { BIG, AUTOSAVING, SMALL };
 
@@ -40,6 +49,7 @@ class ListElem {
   enum ElemMod {
     NORMAL,
     TEXT,
+    HELP_TEXT,
     TITLE,
     INACTIVE,
   };
@@ -74,10 +84,12 @@ class ListElem {
 
 enum class MenuType {
   NORMAL,
+  NORMAL_BELOW,
   MAIN,
   MAIN_NO_TILES,
   GAME_CHOICE,
-  YES_NO
+  YES_NO,
+  YES_NO_BELOW
 };
 
 struct HighscoreList {
@@ -92,17 +104,24 @@ struct HighscoreList {
 
 enum class CampaignActionId {
   CANCEL,
-  CHOOSE_SITE,
   REROLL_MAP,
   UPDATE_MAP,
   CONFIRM,
   UPDATE_OPTION,
   CHANGE_TYPE,
+  SEARCH_RETIRED
 };
 
-class CampaignAction : public EnumVariant<CampaignActionId, TYPES(Vec2, OptionId, CampaignType),
+enum class PassableInfo {
+  PASSABLE,
+  NON_PASSABLE,
+  STOPS_HERE,
+  UNKNOWN
+};
+
+class CampaignAction : public EnumVariant<CampaignActionId, TYPES(OptionId, CampaignType, string),
   ASSIGN(CampaignType, CampaignActionId::CHANGE_TYPE),
-  ASSIGN(Vec2, CampaignActionId::CHOOSE_SITE),
+  ASSIGN(string, CampaignActionId::SEARCH_RETIRED),
   ASSIGN(OptionId, CampaignActionId::UPDATE_OPTION)> {
     using EnumVariant::EnumVariant;
 };
@@ -113,7 +132,7 @@ class View {
   virtual ~View();
 
   /** Does all the library specific init.*/
-  virtual void initialize() = 0;
+  virtual void initialize(unique_ptr<fx::FXRenderer>, unique_ptr<FXViewManager>) = 0;
 
   /** Resets the view before a new game.*/
   virtual void reset() = 0;
@@ -123,6 +142,9 @@ class View {
       function<void()> cancelFun = nullptr) = 0;
 
   virtual void clearSplash() = 0;
+
+  void doWithSplash(SplashType, const string& text, int totalProgress,
+      function<void(ProgressMeter&)> fun, function<void()> cancelFun = nullptr);
 
   /** Shutdown routine.*/
   virtual void close() = 0;
@@ -140,7 +162,7 @@ class View {
   /** Draw a blocking view of the whole level.*/
   virtual void drawLevelMap(const CreatureView*) = 0;
 
-  virtual void setScrollPos(Vec2) = 0;
+  virtual void setScrollPos(Position) = 0;
 
   /** Scrolls back to the center of the view on next refresh.*/
   virtual void resetCenter() = 0;
@@ -156,23 +178,26 @@ class View {
   virtual optional<int> chooseFromList(const string& title, const vector<ListElem>& options, int index = 0,
       MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr, optional<UserInputId> exitAction = none) = 0;
 
-  virtual PlayerRoleChoice getPlayerRoleChoice(optional<PlayerRoleChoice> initial) = 0;
-
   /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) = 0;
 
+  /** Lets the player choose a target position. Returns none if the player cancelled the choice.*/
+  virtual optional<Vec2> chooseTarget(Vec2 playerPos, TargetType, Table<PassableInfo> passable, const string& message) = 0;
+
   /** Asks the player a yer-or-no question.*/
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) = 0;
+  virtual bool yesOrNoPromptBelow(const string& message, bool defaultNo = false) = 0;
 
   /** Draws a window with some text. The text is formatted to fit the window.*/
   virtual void presentText(const string& title, const string& text) = 0;
+  virtual void presentTextBelow(const string& title, const string& text) = 0;
 
   /** Draws a window with a list of items.*/
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
       MenuType = MenuType::NORMAL, optional<UserInputId> exitAction = none) = 0;
 
   /** Lets the player choose a number. Returns none if the player cancelled the choice.*/
-  virtual optional<int> getNumber(const string& title, int min, int max, int increments = 1) = 0;
+  virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) = 0;
 
   /** Lets the player input a string. Returns none if the player cancelled the choice.*/
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
@@ -185,30 +210,52 @@ class View {
 
   virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) = 0;
 
+  virtual optional<ExperienceType> getCreatureUpgrade(const CreatureExperienceInfo&) = 0;
+
+  virtual optional<int> chooseAtMouse(const vector<string>& elems) = 0;
+
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
+  using BugReportSaveCallback = function<void(FilePath)>;
+  virtual void setBugReportSaveCallback(BugReportSaveCallback) = 0;
+
+  struct AvatarChoice {
+    int creatureIndex;
+    int genderIndex;
+    string name;
+  };
+  struct AvatarData {
+    vector<string> genderNames;
+    vector<vector<ViewId>> viewId;
+    vector<vector<string>> firstNames;
+    TribeAlignment alignment;
+    string name;
+    PlayerRole role;
+    string description;
+  };
+  virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&) = 0;
 
   struct CampaignMenuState {
     bool helpText;
-    bool settings;
+    bool retiredWindow;
+    bool options;
   };
   struct CampaignOptions {
     const Campaign& campaign;
     optional<RetiredGames&> retired;
-    WConstCreature player;
-    vector<OptionId> primaryOptions;
-    vector<OptionId> secondaryOptions;
-    optional<string> mapTitle;
+    const Creature* player = nullptr;
+    vector<OptionId> options;
     string introText;
     struct CampaignTypeInfo {
       CampaignType type;
       vector<string> description;
     };
     vector<CampaignTypeInfo> availableTypes;
-    enum WarningType { NO_RETIRE, OTHER_MODES };
+    enum WarningType { NO_RETIRE };
     optional<WarningType> warning;
+    string searchString;
   };
 
-  virtual CampaignAction prepareCampaign(CampaignOptions, Options*, CampaignMenuState&) = 0;
+  virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) = 0;
 
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) = 0;
@@ -222,10 +269,11 @@ class View {
   virtual void presentWorldmap(const Campaign&) = 0;
 
   /** Draws an animation of an object between two locations on a map.*/
-  virtual void animateObject(Vec2 begin, Vec2 end, ViewId object) = 0;
+  virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId> object, optional<FXInfo> fx) = 0;
 
   /** Draws an special animation on the map.*/
-  virtual void animation(Vec2 pos, AnimationId) = 0;
+  virtual void animation(Vec2 pos, AnimationId, Dir orientation = Dir::N) = 0;
+  virtual void animation(const FXSpawnInfo&) = 0;
 
   /** Returns the current real time in milliseconds. The clock is stopped on blocking keyboard input,
       so it can be used to sync game time in real-time mode.*/
@@ -247,8 +295,3 @@ class View {
 
   virtual void logMessage(const string&) = 0;
 };
-
-enum class AnimationId {
-  EXPLOSION,
-};
-

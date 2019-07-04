@@ -1,0 +1,1171 @@
+{
+  "TRAINING_WOOD"
+  {
+    name = "wooden training dummy"
+    viewId = { "training_wood" }
+    blockMovement = true
+    usageType = TRAIN
+    fire = 50
+    canHideHere = true
+    strength = 80
+    maxTraining = {
+      MELEE 3
+    }
+    requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "TRAINING_IRON"
+  {
+    name = "iron training dummy"
+    viewId = { "training_iron" }
+    blockMovement = true
+    usageType = TRAIN
+    canHideHere = true
+    strength = 80
+    upgrade = "TRAINING_WOOD"
+    maxTraining = {
+      MELEE 7
+    }
+    requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "TRAINING_ADA"
+  {
+    name = "adamantine training dummy"
+    viewId = { "training_ada" }
+    blockMovement = true
+    usageType = TRAIN
+    canHideHere = true
+    strength = 80
+    upgrade = "TRAINING_IRON"
+    maxTraining = {
+      MELEE 30
+    }
+    requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "ARCHERY_RANGE"
+  {
+    name = "archery target"
+    viewId = { "archery_range" }
+    blockMovement = true
+    noProjectiles = true
+    usageType = ARCHERY_RANGE
+    canHideHere = true
+    strength = 80
+    requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "WORKSHOP"
+  {
+    name = "workshop"
+    viewId = { "workshop" }
+    blockMovement = true
+    usageTime = 5
+    canHideHere = true
+    fire = 50
+    strength = 80
+    requiresLight = true
+    usageFX = WORKSHOP
+  }
+  "FORGE"
+  {
+    name = "forge"
+    viewId = { "forge" }
+    blockMovement = true
+    usageTime = 5
+    canHideHere = true
+    strength = 80
+    requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+    usageFX = FORGE
+  }
+  "LABORATORY"
+  {
+    name = "laboratory"
+    viewId = { "cauldron" }
+    blockMovement = true
+    usageTime = 5
+    canHideHere = true
+    strength = 80
+    requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+    usageFX = LABORATORY
+  }
+  "JEWELLER"
+  {
+    name = "jeweller"
+    viewId = { "jeweller" }
+    blockMovement = true
+    usageTime = 5
+    canHideHere = true
+    fire = 50
+    strength = 40
+    requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+    usageFX = JEWELLER
+  }
+  "FURNACE"
+  {
+    name = "furnace"
+    viewId = { "furnace" }
+    blockMovement = true
+    usageTime = 5
+    canHideHere = true
+    strength = 100
+  }
+  "BOOKCASE_WOOD"
+  {
+    name = "wooden bookcase"
+    viewId = { "bookcase_wood" }
+    blockMovement = true
+    usageType = STUDY
+    usageTime = 5
+    canHideHere = true
+    fire = 70
+    strength = 50
+    maxTraining = {
+      SPELL 3
+    }
+    requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "BOOKCASE_IRON"
+  {
+    name = "iron bookcase"
+    viewId = { "bookcase_iron" }
+    blockMovement = true
+    usageType = STUDY
+    usageTime = 5
+    canHideHere = true
+    fire = 70
+    strength = 50
+    upgrade = "BOOKCASE_WOOD"
+    maxTraining = {
+      SPELL 7
+    }
+    requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "BOOKCASE_GOLD"
+  {
+    name = "golden bookcase"
+    viewId = { "bookcase_gold" }
+    blockMovement = true
+    usageType = STUDY
+    usageTime = 5
+    canHideHere = true
+    fire = 70
+    strength = 50
+    upgrade = "BOOKCASE_IRON"
+    maxTraining = {
+      SPELL 12
+    }
+    requiresLight = true
+    destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+  }
+  "THRONE"
+  {
+    name = "throne"
+    viewId = { "throne" }
+    canHideHere = true
+    usageType = SIT_ON_THRONE
+    luxury = 1.0
+    strength = 80
+    populationIncrease = 10 none
+    destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+  }
+  "IMPALED_HEAD"
+  {
+    name = "impaled head"
+    viewId = { "impaled_head" }
+    strength = 10
+    destroyFX = { DESTROY_FURNITURE ColorId WHITE }
+  }
+  "BEAST_CAGE"
+  {
+    name = "beast cage"
+    viewId = { "beast_cage" }
+    usageType = SLEEP
+    tickType = BED
+    canHideHere = true
+    fire = 50
+    strength = 40
+    bedType = CAGE
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "BED1"
+  {
+    name = "basic bed"
+    viewId = { "bed1" }
+    usageType = SLEEP
+    tickType = BED
+    canHideHere = true
+    fire = 50
+    strength = 40
+    bedType = BED
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "BED2"
+  {
+    name = "fine bed"
+    viewId = { "bed2" }
+    usageType = SLEEP
+    tickType = BED
+    canHideHere = true
+    fire = 50
+    luxury = 0.3
+    strength = 40
+    upgrade = "BED1"
+    bedType = BED
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "BED3"
+  {
+    name = "luxurious bed"
+    viewId = { "bed3" }
+    usageType = SLEEP
+    tickType = BED
+    canHideHere = true
+    luxury = 0.7
+    fire = 50
+    strength = 40
+    upgrade = "BED2"
+    bedType = BED
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "GRAVE"
+  {
+    name = "grave"
+    viewId = { "grave" }
+    canHideHere = true
+    tickType = BED
+    strength = 40
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "DEMON_SHRINE"
+  {
+    name = "demon shrine"
+    viewId = { "demon_shrine" }
+    blockMovement = true
+    usageTime = 5
+    usageType = DEMON_RITUAL
+    luxury = 0.4
+    strength = 80
+    destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+  }
+  "PRISON"
+  {
+    name = "prison"
+    viewId = { "prison" }
+    tickType = BED
+    usageType = SLEEP
+    viewLayer = FLOOR_BACKGROUND
+  }
+  "TREASURE_CHEST"
+  {
+    name = "treasure chest"
+    viewId = { "treasure_chest" }
+    canHideHere = true
+    fire = 50
+    luxury = 0.4
+    strength = 40
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "EYEBALL"
+  {
+    name = "eyeball"
+    viewId = { "eyeball" }
+    blockMovement = true
+    canHideHere = true
+    lightEmission = 8.2
+    strength = 30
+    canBuildOutsideOfTerritory = true
+  }
+  "WHIPPING_POST"
+  {
+    name = "whipping post"
+    viewId = { "whipping_post" }
+    usageType = TIE_UP
+    fire = 30
+    strength = 30
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "GALLOWS"
+  {
+    name = "gallows"
+    viewId = { "gallows" }
+    usageType = TIE_UP
+    fire = 30
+    strength = 30
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "MINION_STATUE"
+  {
+    name = "gold statue"
+    viewId = { "minion_statue" }
+    blockMovement = true
+    canHideHere = true
+    luxury = 0.7
+    strength = 50
+    populationIncrease = 1 none
+    destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+  }
+  "STONE_MINION_STATUE"
+  {
+    name = "stone statue"
+    viewId = { "stone_minion_statue" }
+    blockMovement = true
+    canHideHere = true
+    luxury = 0.3
+    strength = 50
+    populationIncrease = 1 4
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "BARRICADE"
+  {
+    name = "barricade"
+    viewId = { "barricade" }
+    blockMovement = true
+    fire = 50
+    strength = 80
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "CANIF_TREE"
+  {
+    name = "tree"
+    viewId = { "canif_tree" }
+    canHideHere = true
+    blockVision = { NORMAL }
+    destroyedRemains = "TREE_TRUNK"
+    burntRemains = "BURNT_TREE"
+    strength2 = {
+      100 BOULDER
+      70 CUT
+    }
+    fire = 100
+    itemDrop = {{{{WoodPlank} 1 { 8 14 }}}}
+    summonedElement = "ENT"
+    tryDestroyFX = { WOOD_SPLINTERS }
+  }
+  "DECID_TREE" inherit "CANIF_TREE"
+  {
+    viewId = { "decid_tree" }
+  }
+  "TREE_TRUNK"
+  {
+    name = "tree trunk"
+    viewId = { "tree_trunk" }
+    canSilentlyReplace = true
+  }
+  "BURNT_TREE"
+  {
+    name = "burnt tree"
+    viewId = { "burnt_tree" }
+    canHideHere = true
+    strength = 30
+  }
+  "BUSH"
+  {
+    name = "bush"
+    viewId = { "bush" }
+    strength2 = {
+      20 BOULDER
+      10 CUT
+    }
+    canHideHere = true
+    fire = 30
+    itemDrop = {{{{WoodPlank} 1 { 2 4 }}}}
+    tryDestroyFX = { WOOD_SPLINTERS }
+  }
+  "CROPS"
+  {
+    name = "wheat"
+    viewId = { "crops" }
+    usageType = CROPS
+    usageTime = 3
+  }
+  "PIGSTY"
+  {
+    name = "pigsty"
+    viewId = { "mud" }
+    tickType = PIGSTY
+    populationIncrease = 0.25 4
+  }
+  "GROUND_TORCH"
+  {
+    name = "standing torch"
+    viewId = { "standing_torch" }
+    luxury = 0.1
+    lightEmission = 8.2
+  }
+  "TORCH_N"
+  {
+    name = "torch"
+    viewId = { "torch" }
+    lightEmission = 8.2
+    layer = CEILING
+    viewLayer = TORCH1
+    attachmentDir = N
+    requiredSupport = { { { N } } }
+    canBuildOutsideOfTerritory = true
+  }
+  "TORCH_S" inherit "TORCH_N"
+  {
+    viewLayer = TORCH2
+    attachmentDir = S
+    requiredSupport = { { { S } } }
+  }
+  "TORCH_E" inherit "TORCH_S"
+  {
+    attachmentDir = E
+    requiredSupport = { { { E } } }
+  }
+  "TORCH_W" inherit "TORCH_S"
+  {
+    attachmentDir = W
+    requiredSupport = { { { W } } }
+  }
+  "CANDELABRUM_N" inherit "TORCH_N"
+  {
+    name = "candelabrum"
+    viewId = { "candelabrum_ns" }
+    luxury = 0.3
+  }
+  "CANDELABRUM_S" inherit "TORCH_S"
+  {
+    name = "candelabrum"
+    viewId = { "candelabrum_ns" }
+    luxury = 0.3
+  }
+  "CANDELABRUM_E" inherit "TORCH_E"
+  {
+    name = "candelabrum"
+    viewId = { "candelabrum_e" }
+    luxury = 0.3
+  }
+  "CANDELABRUM_W" inherit "TORCH_W"
+  {
+    name = "candelabrum"
+    viewId = { "candelabrum_w" }
+    luxury = 0.3
+  }
+  "TORTURE_TABLE"
+  {
+    name = "torture table"
+    viewId = { "torture_table" }
+    canHideHere = true
+    usageType = TIE_UP
+    strength = 80
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "FOUNTAIN"
+  {
+    name = "fountain"
+    viewId = { "fountain" }
+    canHideHere = true
+    luxury = 0.7
+    usageType = FOUNTAIN
+    summonedElement = "WATER_ELEMENTAL"
+    strength = 80
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "ALTAR"
+  {
+    name = "altar"
+    viewId = { "altar" }
+    canHideHere = true
+    usageType = DESECRATE
+  }
+  "ALTAR_DES"
+  {
+    name = "desecrated altar"
+    viewId = { "altar_des" }
+    canHideHere = true
+  }
+  "CHEST"
+  {
+    name = "chest"
+    viewId = { "chest" }
+    canHideHere = true
+    usageType = CHEST
+    fire = 50
+    strength = 30
+  }
+  "OPENED_CHEST"
+  {
+    name = "opened chest"
+    viewId = { "opened_chest" }
+    canHideHere = true
+    fire = 50
+    strength = 30
+  }
+  "COFFIN1"
+  {
+    name = "basic coffin"
+    viewId = { "coffin1" }
+    canHideHere = true
+    usageType = SLEEP
+    fire = 50
+    strength = 40
+    bedType = COFFIN
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "COFFIN2"
+  {
+    name = "fine coffin"
+    viewId = { "coffin2" }
+    canHideHere = true
+    usageType = SLEEP
+    luxury = 0.3
+    fire = 50
+    strength = 40
+    upgrade = "COFFIN1"
+    bedType = COFFIN
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "COFFIN3"
+  {
+    name = "luxurious coffin"
+    viewId = { "coffin3" }
+    canHideHere = true
+    usageType = SLEEP
+    luxury = 0.7
+    fire = 50
+    strength = 40
+    upgrade = "COFFIN2"
+    bedType = COFFIN
+    destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+  }
+  "LOOT_COFFIN"
+  {
+    name = "coffin"
+    viewId = { "coffin1" }
+    canHideHere = true
+    usageType = COFFIN
+    fire = 50
+    strength = 40
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "VAMPIRE_COFFIN"
+  {
+    name = "coffin"
+    viewId = { "coffin1" }
+    canHideHere = true
+    usageType = VAMPIRE_COFFIN
+    fire = 50
+    strength = 40
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "OPENED_COFFIN"
+  {
+    name = "opened coffin"
+    viewId = { "opened_coffin" }
+    canHideHere = true
+    usageType = SLEEP
+    fire = 50
+    strength = 40
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "WOOD_DOOR"
+  {
+    name = "wooden door"
+    viewId = { "wood_door_ew" }
+    blockingEnemies = true
+    canHideHere = true
+    blockVision = { NORMAL ELF }
+    fire = 50
+    strength = 80
+    clickType = LOCK
+    requiredSupport = { { { E W } } { { N S } {"wood_door_ns"} } }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "WOOD_GATE"
+  {
+    name = "wooden gate"
+    viewId = { "wood_gate_w" }
+    blockingEnemies = true
+    canHideHere = true
+    blockVision = { NORMAL ELF }
+    fire = 50
+    strength = 120
+    clickType = LOCK
+    requiredSupport = { { { W } } { { N } {"wood_gate_n"} } { { E } {"wood_gate_e"} } { { S } {"wood_gate_s"} } }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "IRON_DOOR"
+  {
+    name = "iron door"
+    viewId = { "iron_door_ew" }
+    blockingEnemies = true
+    canHideHere = true
+    blockVision = { NORMAL ELF }
+    strength = 160
+    clickType = LOCK
+    requiredSupport = { { { E W } } { { N S } {"iron_door_ns"} } }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "IRON_GATE"
+  {
+    name = "iron gate"
+    viewId = { "iron_gate_w" }
+    blockingEnemies = true
+    canHideHere = true
+    blockVision = { NORMAL ELF }
+    strength = 240
+    clickType = LOCK
+    requiredSupport = { { { W } } { { N } {"iron_gate_n"} } { { E } {"iron_gate_e"} } { { S } {"iron_gate_s"} } }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "ADA_DOOR"
+  {
+    name = "adamantine door"
+    viewId = { "ada_door_ew" }
+    blockingEnemies = true
+    canHideHere = true
+    blockVision = { NORMAL ELF }
+    strength = 320
+    clickType = LOCK
+    requiredSupport = { { { E W } } { { N S } {"ada_door_ns"} } }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "ADA_GATE"
+  {
+    name = "adamantine gate"
+    viewId = { "ada_gate_w" }
+    blockingEnemies = true
+    canHideHere = true
+    blockVision = { NORMAL ELF }
+    strength = 480
+    clickType = LOCK
+    requiredSupport = { { { W } } { { N } {"ada_gate_n"} } { { E } {"ada_gate_e"} } { { S } {"ada_gate_s"} } }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "WELL"
+  {
+    name = "well"
+    viewId = { "well" }
+    canHideHere = true
+    fire = 50
+    summonedElement = "WATER_ELEMENTAL"
+    strength = 80
+  }
+  "KEEPER_BOARD"
+  {
+    name = "message board"
+    viewId = { "notice_board" }
+    canHideHere = true
+    usageType = KEEPER_BOARD
+    clickType = KEEPER_BOARD
+    fire = 50
+    strength = 50
+    canBuildOutsideOfTerritory = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "UP_STAIRS"
+  {
+    name = "stairs"
+    viewId = { "up_staircase" }
+    canHideHere = true
+    xForgetAfterBuilding = true
+    usageType = STAIRS
+  }
+  "DOWN_STAIRS"
+  {
+    name = "stairs"
+    viewId = { "down_staircase" }
+    canHideHere = true
+    onBuilt = DOWN_STAIRS
+    xForgetAfterBuilding = true
+    usageType = STAIRS
+  }
+  "SOKOBAN_HOLE"
+  {
+    name = "hole"
+    viewId = { "sokoban_hole" }
+    entryType = Sokoban
+  }
+  "BRIDGE"
+  {
+    name = "bridge"
+    viewId = { "bridge" }
+    overrideMovement = true
+    removeNonFriendly = true
+    removeWithCreaturePresent = false
+    bridge = true
+    canBuildOutsideOfTerritory = true
+  }
+  "ROAD"
+  {
+    name = "road"
+    viewId = { "road" }
+  }
+  "MOUNTAIN"
+  {
+    name = "soft rock"
+    viewId = { "mountain" }
+    blockMovement = true
+    blockVision = { NORMAL ELF }
+    constructMessage = FILL_UP
+    wall = true
+    xForgetAfterBuilding = true
+    strength2 = {
+      200 BOULDER
+      30 DIG
+      200 HOSTILE_DIG
+      2000 HOSTILE_DIG_NO_SKILL
+    }
+    summonedElement = "EARTH_ELEMENTAL"
+    destroyFX = { ROCK_CLOUD Rgb 220 210 180 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 220 210 180 255 }
+  }
+  "MOUNTAIN2"
+  {
+    name = "hard rock"
+    viewId = { "mountain2" }
+    blockMovement = true
+    blockVision = { NORMAL ELF }
+    constructMessage = FILL_UP
+    wall = true
+    xForgetAfterBuilding = true
+    strength2 = {
+      500 BOULDER
+      70 DIG
+      500 HOSTILE_DIG
+      2000 HOSTILE_DIG_NO_SKILL
+    }
+    summonedElement = "EARTH_ELEMENTAL"
+    destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
+  }
+  "ADAMANTIUM_ORE"
+  {
+    name = "adamantium ore"
+    viewId = { "adamantium_ore" }
+    blockMovement = true
+    blockVision = { NORMAL ELF }
+    wall = true
+    clearFogOfWar = true
+    itemDrop = {{{{AdaOre} 1 { 16 28 }}}}
+    strength2 = {
+      500 BOULDER
+      500 DIG
+      500 HOSTILE_DIG
+      2000 HOSTILE_DIG_NO_SKILL
+    }
+    destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
+  }
+  "IRON_ORE"
+  {
+    name = "iron ore"
+    viewId = { "iron_ore" }
+    blockMovement = true
+    blockVision = { NORMAL ELF }
+    wall = true
+    clearFogOfWar = true
+    itemDrop = {{{{IronOre} 1 { 16 28 }}}}
+    strength2 = {
+      200 BOULDER
+      220 DIG
+      200 HOSTILE_DIG
+      2000 HOSTILE_DIG_NO_SKILL
+    }
+    destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
+  }
+  "STONE"
+  {
+    name = "granite"
+    viewId = { "stone" }
+    blockMovement = true
+    blockVision = { NORMAL ELF }
+    wall = true
+    clearFogOfWar = true
+    itemDrop = {{{{Rock} 1 { 16 28 }}}}
+    strength2 = {
+      200 BOULDER
+      250 DIG
+      200 HOSTILE_DIG
+      2000 HOSTILE_DIG_NO_SKILL
+    }
+    destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
+  }
+  "GOLD_ORE"
+  {
+    name = "gold ore"
+    viewId = { "gold_ore" }
+    blockMovement = true
+    blockVision = { NORMAL ELF }
+    wall = true
+    clearFogOfWar = true
+    itemDrop = {{{{GoldPiece} 1 { 16 28 }}}}
+    strength2 = {
+      200 BOULDER
+      220 DIG
+      200 HOSTILE_DIG
+      2000 HOSTILE_DIG_NO_SKILL
+    }
+    destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
+  }
+  "DUNGEON_WALL"
+  {
+    name = "wall"
+    viewId = { "dungeon_wall" }
+    blockMovement = true
+    blockVision = { NORMAL ELF }
+    wall = true
+    xForgetAfterBuilding = true
+    luxury = 0.2
+    constructMessage = REINFORCE
+    builtOver = "MOUNTAIN"
+    canBuildOutsideOfTerritory = true
+    strength2 = {
+      300 BOULDER
+      100 DIG
+      1900 HOSTILE_DIG
+      2000 HOSTILE_DIG_NO_SKILL
+    }
+    destroyFX = { ROCK_CLOUD Rgb 220 210 180 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 220 210 180 255 }
+  }
+  "DUNGEON_WALL2" inherit "DUNGEON_WALL"
+  {
+    viewId = { "dungeon_wall2" }
+    builtOver = "MOUNTAIN2"
+    destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
+    tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
+  }
+  "PIT"
+  {
+    name = "pit"
+    viewId = { "pit" }
+    blockMovement = true
+    xForgetAfterBuilding = true
+    tickType = PIT
+    canBuildOutsideOfTerritory = true
+  }
+  "CASTLE_WALL"
+  {
+    name = "wall"
+    viewId = { "castle_wall" }
+    blockMovement = true
+    blockVision = { NORMAL ELF }
+    buildingSupport = true
+    wall = true
+    strength2 = {
+      300 BOULDER
+      100 DIG
+      1900 HOSTILE_DIG
+      2000 HOSTILE_DIG_NO_SKILL
+    }
+    canBuildOutsideOfTerritory = true
+  }
+  "WOOD_WALL"
+  {
+    name = "wall"
+    viewId = { "wood_wall" }
+    blockMovement = true
+    blockVision = { NORMAL ELF }
+    wall = true
+    buildingSupport = true
+    strength2 = {
+      100 BOULDER
+      100 DIG
+      300 HOSTILE_DIG
+      300 HOSTILE_DIG_NO_SKILL
+    }
+    summonedElement = "ENT"
+    fire = 100
+    canBuildOutsideOfTerritory = true
+    destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  }
+  "MUD_WALL"
+  {
+    name = "wall"
+    viewId = { "mud_wall" }
+    blockMovement = true
+    blockVision = { NORMAL ELF }
+    wall = true
+    buildingSupport = true
+    strength2 = {
+      100 BOULDER
+    }
+  }
+  "RUIN_WALL"
+  {
+    name = "wall"
+    viewId = { "ruin_wall" }
+    blockMovement = true
+    blockVision = { NORMAL ELF }
+    wall = true
+    canBuildOutsideOfTerritory = true
+    strength2 = {
+      100 BOULDER
+    }
+  }
+  "FLOOR_WOOD1"
+  {
+    name = "floor"
+    viewId = { "wood_floor2" }
+    fire = 50
+    luxury = 0.1
+    layer = FLOOR
+  }
+  "FLOOR_WOOD2" inherit "FLOOR_WOOD1"
+  {
+    viewId = { "wood_floor4" }
+  }
+  "FLOOR_STONE1"
+  {
+    name = "floor"
+    viewId = { "stone_floor1" }
+    luxury = 0.3
+    layer = FLOOR
+  }
+  "FLOOR_STONE2" inherit "FLOOR_STONE1"
+  {
+    viewId = { "stone_floor5" }
+  }
+  "FLOOR_CARPET1"
+  {
+    name = "floor"
+    viewId = { "carpet_floor1" }
+    luxury = 0.7
+    layer = FLOOR
+  }
+  "FLOOR_CARPET2" inherit "FLOOR_CARPET1"
+  {
+    viewId = { "carpet_floor4" }
+  }
+  "FLOOR_SPEED"
+  {
+    name = "floor of speed"
+    viewId = { "floor_speed" }
+    luxury = 0.7
+    layer = FLOOR
+    lastingEffect = SPEED
+  }
+  "FLOOR_BLIND"
+  {
+    name = "floor of blindness"
+    viewId = { "floor_blind" }
+    luxury = 0.7
+    layer = FLOOR
+    lastingEffect = BLIND
+  }
+  "FLOOR_INVI"
+  {
+    name = "floor of invisibility"
+    viewId = { "floor_invi" }
+    luxury = 0.7
+    layer = FLOOR
+    lastingEffect = INVISIBLE
+  }
+  "FLOOR_REGENER"
+  {
+    name = "floor of regeneration"
+    viewId = { "floor_regen" }
+    luxury = 0.7
+    layer = FLOOR
+    lastingEffect = REGENERATION
+  }
+  "FLOOR_PEACE"
+  {
+    name = "floor of peace"
+    viewId = { "floor_peace" }
+    luxury = 0.7
+    layer = FLOOR
+    lastingEffect = PEACEFULNESS
+  }
+  "ALARM_TRAP"
+  {
+    name = "alarm trap"
+    viewId = { "alarm_trap" }
+    entryType = Trap { Alarm false }
+    warning = true
+    constructMessage = SET_UP
+  }
+  "INVISIBLE_ALARM"
+  {
+    name = ""
+    viewId = { "empty" }
+    entryType = Trap { Alarm true true }
+  }
+  "POISON_GAS_TRAP"
+  {
+    name = "poison gas trap"
+    viewId = { "gas_trap" }
+    entryType = Trap { EmitPoisonGas 0.8 }
+    warning = true
+    constructMessage = SET_UP
+  }
+  "WEB_TRAP"
+  {
+    name = "web trap"
+    viewId = { "web_trap" }
+    entryType = Trap { Lasting ENTANGLED }
+    warning = true
+    constructMessage = SET_UP
+  }
+  "SPIDER_WEB"
+  {
+    name = "spider web"
+    viewId = { "web_trap" }
+    entryType = Trap { Lasting ENTANGLED true }
+  }
+  "SURPRISE_TRAP"
+  {
+    name = "surprise trap"
+    viewId = { "surprise_trap" }
+    entryType = Trap { TeleEnemies }
+    warning = true
+    constructMessage = SET_UP
+  }
+  "TERROR_TRAP"
+  {
+    name = "panic trap"
+    viewId = { "terror_trap" }
+    entryType = Trap { Lasting PANIC }
+    warning = true
+    constructMessage = SET_UP
+  }
+  "FIRE_TRAP"
+  {
+    name = "fire trap"
+    viewId = { "fire_trap" }
+    entryType = Trap { PlaceFurniture "FIRE_WALL" }
+    warning = true
+    constructMessage = SET_UP
+  }
+  "BOULDER_TRAP"
+  {
+    name = "boulder trap"
+    viewId = { "boulder" }
+    blockMovement = true
+    canHideHere = true
+    tickType = BOULDER_TRAP
+    strength = 40
+    warning = true
+    constructMessage = SET_UP
+    viewLayer = CREATURE
+  }
+  "PORTAL"
+  {
+    name = "portal"
+    viewId = { "portal" }
+    strength = 40
+    usageType = PORTAL
+    tickType = PORTAL
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
+  "METEOR_SHOWER"
+  {
+    name = "meteor shower"
+    layer = CEILING
+    constructMessage = none
+    tickType = METEOR_SHOWER
+  }
+  "FIRE_WALL"
+  {
+    name = "fire"
+    viewId = { "empty" }
+    layer = CEILING
+    constructMessage = none
+    onBuilt = SET_ON_FIRE
+    burnsDownMessage = STOPS_BURNING
+    hostileSpell = true
+    fire = 10
+  }
+  "WATER"
+  {
+    name = "water"
+    viewId = { "water" }
+    layer = GROUND
+    waterDepth = 100
+    entryType = Water
+    droppedItems = { "sinks" "sink" "You hear a splash." }
+    canBuildBridge = true
+    summonedElement = "WATER_ELEMENTAL"
+    movementSet = {
+      traits = { FLY SWIM }
+      forcibleTraits = { WALK }
+    }
+    walkIntoFX = { WATER_SPLASH Rgb 82 148 255 255 }
+  }
+  "SHALLOW_WATER1" inherit "WATER"
+  {
+    name = "shallow water"
+    waterDepth = 1.5
+    droppedItems = none
+    movementSet = {
+      traits = { FLY SWIM WADE }
+      forcibleTraits = { WALK }
+    }
+  }
+  "SHALLOW_WATER2" inherit "SHALLOW_WATER1"
+  {
+    waterDepth = 0.5
+  }
+  "MAGMA" {
+    name = "magma"
+    viewId = { "magma" }
+    layer = GROUND
+    entryType = Magma
+    droppedItems = { "burns" "burn" }
+    lightEmission = 8.2
+    canBuildBridge = true
+    summonedElement = "FIRE_ELEMENTAL"
+    movementSet = {
+      traits = { FLY }
+      forcibleTraits = { WALK }
+    }
+  }
+  "SAND"
+  {
+    name = "sand"
+    viewId = { "sand" }
+    layer = GROUND
+    walkOverFX = { SAND_DUST Rgb 255 229 178 255 }
+  }
+  "GRASS"
+  {
+    name = "grass"
+    viewId = { "grass" }
+    layer = GROUND
+  }
+  "MUD"
+  {
+    name = "mud"
+    viewId = { "mud" }
+    layer = GROUND
+  }
+  "HILL"
+  {
+    name = "hill"
+    viewId = { "hill" }
+    layer = GROUND
+  }
+  "FLOOR"
+  {
+    name = "floor"
+    viewId = { "floor" }
+    layer = GROUND
+  }
+  "BLACK_FLOOR"
+  {
+    name = "floor"
+    viewId = { "empty" }
+    layer = GROUND
+  }
+  "TUTORIAL_ENTRANCE"
+  {
+    name = "tutorial entrance"
+    viewId = { "tutorial_entrance" }
+    layer = CEILING
+    viewLayer = TORCH2
+    canBuildOutsideOfTerritory = true
+  }
+}

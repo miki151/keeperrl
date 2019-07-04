@@ -24,8 +24,9 @@
 #include "spell.h"
 #include "skill.h"
 #include "build_info.h"
+#include "dungeon_level.h"
+#include "spell_school.h"
 
-namespace {
 
 template<class T>
 string combine(const vector<T*>& v) {
@@ -39,33 +40,33 @@ string combine(const vector<T>& v) {
       v.transform([](const T& e) -> string { return e.name; }));
 }
 
-void advance(View* view, const Technology* tech) {
+string combine(const vector<TechId>& v) {
+  return combine(v.transform([](TechId id) -> string { return id.data(); }));
+}
+
+void Encyclopedia::advance(View* view, TechId tech) const {
   string text;
-  const vector<Technology*>& prerequisites = tech->getPrerequisites();
-  const vector<Technology*>& allowed = tech->getAllowed();
+  const vector<TechId>& prerequisites = technology.techs.at(tech).prerequisites;
+  vector<TechId> allowed = technology.getAllowed(tech);
   if (!prerequisites.empty())
     text += "Requires: " + combine(prerequisites) + "\n";
   if (!allowed.empty())
     text += "Allows research: " + combine(allowed) + "\n";
-  const vector<BuildInfo::RoomInfo>& rooms = BuildInfo::getRoomInfo().filter(
-      [tech] (const BuildInfo::RoomInfo& info) {
+  const vector<BuildInfo>& rooms = buildInfo.filter(
+      [tech] (const BuildInfo& info) {
           for (auto& req : info.requirements)
-            if (req.getId() == BuildInfo::RequirementId::TECHNOLOGY && req.get<TechId>() == tech->getId())
-              return true;
+            if (auto techReq = req.getReferenceMaybe<TechId>())
+              if (*techReq == tech)
+                return true;
           return false;});
   if (!rooms.empty())
     text += "Unlocks rooms: " + combine(rooms) + "\n";
-  if (!tech->canResearch())
-    text += " \nCan only be acquired by special means.";
-  view->presentText(capitalFirst(tech->getName()), text);
+  view->presentText(capitalFirst(tech.data()), text);
 }
 
-void advances(View* view, int lastInd = 0) {
-  vector<ListElem> options;
-  vector<Technology*> techs = Technology::getSorted();
-  for (Technology* tech : techs)
-    options.push_back(tech->getName());
-  auto index = view->chooseFromList("Advances", options, lastInd);
+void Encyclopedia::advances(View* view, int lastInd) const {
+  auto techs = technology.getSorted();
+  auto index = view->chooseFromList("Advances", ListElem::convert(techs.transform([](TechId id) { return string(id.data()); })), lastInd);
   if (!index)
     return;
   advance(view, techs[*index]);
@@ -88,32 +89,58 @@ void skills(View* view, int lastInd = 0) {
   skills(view, *index);
 }
 
-void spells(View* view) {
+void showSpells(View* view, const pair<SpellSchoolId, SpellSchool>& school) {
   vector<ListElem> options;
   options.emplace_back("Spell:", "Level:", ListElem::ElemMod::TITLE);
-  vector<Spell*> spells = Spell::getAll();
-  sort(spells.begin(), spells.end(), [](const Spell* s1, const Spell* s2) {
-      auto l1 = s1->getLearningExpLevel();
-      auto l2 = s2->getLearningExpLevel();
-      return (l1 && !l2) || (l2 && l1 && *l1 < *l2); });
-  for (auto spell : spells) {
-    auto level = spell->getLearningExpLevel();
-    options.emplace_back(spell->getName(), level ? toString(*level) : "none"_s, ListElem::ElemMod::TEXT);
+  auto& spells = school.second.spells;
+  /*sort(spells.begin(), spells.end(), [](const Spell& s1, const Spell& s2) {
+    return std::forward_as_tuple(s1.getExpLevel(), s1.getName()) <
+           std::forward_as_tuple(s2.getExpLevel(), s2.getName());});*/
+  for (auto& spell : spells) {
+    options.emplace_back(spell.first.data(), spell.second > 0 ? toString(spell.second) : "none"_s, ListElem::ElemMod::TEXT);
   }
   view->presentList("List of spells and the spellcaster levels at which they are acquired.", options);
 }
 
+void Encyclopedia::spellSchools(View* view, int lastInd) const {
+  vector<ListElem> options;
+  vector<pair<SpellSchoolId, SpellSchool>> pairs;
+  for (auto& school : schools) {
+    options.push_back(school.first.data());
+    pairs.push_back(school);
+  }
+  auto index = view->chooseFromList("Spell schools", options, lastInd);
+  if (!index)
+    return;
+  showSpells(view, pairs[*index]);
+  spellSchools(view, *index);
+}
+
+void villainPoints(View* view) {
+  vector<ListElem> options;
+  options.emplace_back("Villain type:", "Points:", ListElem::ElemMod::TITLE);
+  for (auto type : ENUM_ALL(VillainType))
+    if (type != VillainType::PLAYER) {
+    auto points = int(100 * DungeonLevel::getProgress(type));
+    options.emplace_back(getName(type), toString(points), ListElem::ElemMod::TEXT);
+  }
+  view->presentList("Experience points awarded for conquering each villain type.", options);
+}
+
+Encyclopedia::Encyclopedia(vector<BuildInfo> buildInfo, map<SpellSchoolId, SpellSchool> spellSchools,
+    vector<Spell> spells, const Technology& technology)
+    : buildInfo(std::move(buildInfo)), schools(spellSchools), spells(spells), technology(technology) {
 }
 
 void Encyclopedia::present(View* view, int lastInd) {
-  auto index = view->chooseFromList("Choose topic:", {"Technology", "Skills", "Spells"}, lastInd);
+  auto index = view->chooseFromList("Choose topic:", {"Technology", "Skills", "Spells", "Level increases"}, lastInd);
   if (!index)
     return;
   switch (*index) {
     case 0: advances(view); break;
-//    case 1: workshop(view); break;
     case 1: skills(view); break;
-    case 2: spells(view); break;
+    case 2: spellSchools(view); break;
+    case 3: villainPoints(view); break;
     default: FATAL << "wfepok";
   }
   present(view, *index);

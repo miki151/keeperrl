@@ -9,11 +9,13 @@
 #include "game.h"
 #include "effect.h"
 #include "movement_set.h"
+#include "game_event.h"
 
 FurnitureEntry::FurnitureEntry(FurnitureEntry::EntryData d) : entryData(d) {
 }
 
-void FurnitureEntry::handle(WFurniture f, WCreature c) {
+void FurnitureEntry::handle(WFurniture f, Creature* c) {
+  PROFILE;
   entryData.match(
       [&](Sokoban) {
         if (c->getAttributes().isBoulder()) {
@@ -34,10 +36,10 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
         auto position = c->getPosition();
         if (auto game = c->getGame()) // check in case the creature is placed here during level generation
           if (game->getTribe(f->getTribe())->isEnemy(c)) {
-            if (type.spiderWeb || !c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS)) {
-              if (!type.spiderWeb)
+            if (type.invisible || !c->isAffected(LastingEffect::DISARM_TRAPS_SKILL)) {
+              if (!type.invisible)
                 c->you(MsgType::TRIGGER_TRAP, "");
-              type.effect.applyToCreature(c);
+              type.effect.apply(position, f->getCreator());
               position.getGame()->addEvent(EventInfo::TrapTriggered{c->getPosition()});
             } else {
               c->you(MsgType::DISARM_TRAP, type.effect.getName() + " trap");
@@ -47,6 +49,7 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
           }
       },
       [&](Water) {
+        c->removeEffect(LastingEffect::ON_FIRE);
         MovementType realMovement = c->getMovementType();
         realMovement.setForced(false);
         if (!f->getMovementSet().canEnter(realMovement)) {
@@ -70,11 +73,11 @@ void FurnitureEntry::handle(WFurniture f, WCreature c) {
   );
 }
 
-bool FurnitureEntry::isVisibleTo(WConstFurniture f, WConstCreature c) const {
+bool FurnitureEntry::isVisibleTo(WConstFurniture f, const Creature* c) const {
   return entryData.visit(
       [&](const Trap& type) {
         return !c->getGame()->getTribe(f->getTribe())->isEnemy(c)
-            || (!type.spiderWeb && c->getAttributes().getSkills().hasDiscrete(SkillId::DISARM_TRAPS));
+            || (!type.invisible && c->isAffected(LastingEffect::DISARM_TRAPS_SKILL));
       },
       [&](const auto&) {
         return true;
@@ -84,3 +87,6 @@ bool FurnitureEntry::isVisibleTo(WConstFurniture f, WConstCreature c) const {
 
 SERIALIZE_DEF(FurnitureEntry, entryData)
 SERIALIZATION_CONSTRUCTOR_IMPL(FurnitureEntry)
+
+#include "pretty_archive.h"
+template void FurnitureEntry::serialize(PrettyInputArchive&, unsigned);

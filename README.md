@@ -13,6 +13,10 @@ https://miki151.itch.io/keeperrl
 Compiling
 =========
 
+On Windows: go to here -> http://keeperrl.com/compiling-keeperrl-on-windows/
+
+On Linux and Mac:
+
 *Prerequisites*
 
   * make essentials

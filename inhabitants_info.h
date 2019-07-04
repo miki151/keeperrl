@@ -6,9 +6,11 @@
 
 struct InhabitantsInfo {
   struct Unique {};
-  optional<CreatureId> leader;
-  CreatureList fighters;
-  CreatureList civilians;
+  CreatureList SERIAL(leader);
+  CreatureList SERIAL(fighters);
+  CreatureList SERIAL(civilians);
+  template <typename Archive>
+  void serialize(Archive&, unsigned int);
   using Generated = vector<pair<PCreature, EnumSet<MinionTrait>>>;
-  Generated generateCreatures(RandomGen&, TribeId, MonsterAIFactory);
+  Generated generateCreatures(RandomGen&, CreatureFactory*, TribeId, MonsterAIFactory);
 };

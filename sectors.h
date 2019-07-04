@@ -19,25 +19,30 @@
 
 class Sectors {
   public:
-  Sectors(Rectangle bounds);
+  using ExtraConnections = Table<optional<Vec2>>;
+  Sectors(Rectangle bounds, ExtraConnections);
 
   bool same(Vec2, Vec2) const;
-  void add(Vec2);
-  void remove(Vec2);
+  bool add(Vec2);
+  bool remove(Vec2);
   void dump();
   bool contains(Vec2) const;
   int getNumSectors() const;
   bool isChokePoint(Vec2) const;
-
-  SERIALIZATION_DECL(Sectors);
+  void addExtraConnection(Vec2, Vec2);
+  void removeExtraConnection(Vec2, Vec2);
+  const ExtraConnections getExtraConnections() const;
 
   private:
-  void setSector(Vec2, int);
-  int getNewSector();
-  void join(Vec2, int);
+  using SectorId = short;
+  vector<Vec2> getNeighbors(Vec2) const;
+  void setSector(Vec2, SectorId);
+  SectorId getNewSector();
+  void join(Vec2, SectorId);
   vector<Vec2> getDisjoint(Vec2) const;
-  Rectangle SERIAL(bounds);
-  Table<int> SERIAL(sectors);
-  vector<int> SERIAL(sizes);
+  Rectangle bounds;
+  Table<SectorId> sectors;
+  vector<int> sizes;
+  ExtraConnections extraConnections;
 };
 

@@ -11,8 +11,16 @@
 #include "view_object.h"
 #include "spell_map.h"
 #include "item.h"
+#include "body.h"
+#include "equipment.h"
+#include "creature_debt.h"
+#include "item_class.h"
+#include "model.h"
+#include "time_queue.h"
+#include "game.h"
+#include "content_factory.h"
 
-CreatureInfo::CreatureInfo(WConstCreature c)
+CreatureInfo::CreatureInfo(const Creature* c)
     : viewId(c->getViewObject().id()),
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
@@ -32,31 +40,105 @@ string PlayerInfo::getTitle() const {
   return title;
 }
 
-vector<PlayerInfo::SkillInfo> getSkillNames(WConstCreature c) {
+vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
   vector<PlayerInfo::SkillInfo> ret;
-  for (auto skill : c->getAttributes().getSkills().getAllDiscrete())
-    ret.push_back(PlayerInfo::SkillInfo{Skill::get(skill)->getName(), Skill::get(skill)->getHelpText()});
   for (SkillId id : ENUM_ALL(SkillId))
-    if (!Skill::get(id)->isDiscrete() && c->getAttributes().getSkills().getValue(id) > 0)
+    if (c->getAttributes().getSkills().getValue(id) > 0)
       ret.push_back(PlayerInfo::SkillInfo{Skill::get(id)->getNameForCreature(c), Skill::get(id)->getHelpText()});
   return ret;
 }
 
-PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
-  firstName = c->getName().first().value_or("");
+vector<ItemAction> getItemActions(const Creature* c, const vector<Item*>& item) {
+  PROFILE;
+  vector<ItemAction> actions;
+  if (c->equip(item[0]))
+    actions.push_back(ItemAction::EQUIP);
+  if (c->applyItem(item[0]))
+    actions.push_back(ItemAction::APPLY);
+  if (c->unequip(item[0]))
+    actions.push_back(ItemAction::UNEQUIP);
+  else {
+    actions.push_back(ItemAction::THROW);
+    actions.push_back(ItemAction::DROP);
+    if (item.size() > 1)
+      actions.push_back(ItemAction::DROP_MULTI);
+    if (item[0]->getShopkeeper(c))
+      actions.push_back(ItemAction::PAY);
+    if (c->getPosition().isValid())
+      for (Position v : c->getPosition().neighbors8())
+        if (Creature* other = v.getCreature())
+          if (c->isFriend(other)/* && c->canTakeItems(item)*/) {
+            actions.push_back(ItemAction::GIVE);
+            break;
+          }
+  }
+  actions.push_back(ItemAction::NAME);
+  return actions;
+}
+
+ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack) {
+  PROFILE;
+  return CONSTRUCT(ItemInfo,
+    c.name = stack[0]->getShortName(creature, stack.size() > 1);
+    c.fullName = stack[0]->getNameAndModifiers(false, creature);
+    c.description = creature->isAffected(LastingEffect::BLIND)
+        ? vector<string>() : stack[0]->getDescription();
+    c.number = stack.size();
+    c.viewId = stack[0]->getViewObject().id();
+    c.viewIdModifiers = stack[0]->getViewObject().getAllModifiers();
+    for (auto it : stack)
+      c.ids.insert(it->getUniqueId());
+    c.actions = getItemActions(creature, stack);
+    c.equiped = creature->getEquipment().isEquipped(stack[0]);
+    c.weight = stack[0]->getWeight();
+    if (stack[0]->getShopkeeper(creature))
+      c.price = make_pair(ViewId("gold"), stack[0]->getPrice());
+  );
+}
+
+static vector<ItemInfo> fillIntrinsicAttacks(const Creature* c) {
+  vector<ItemInfo> ret;
+  auto& intrinsicAttacks = c->getBody().getIntrinsicAttacks();
+  for (auto part : ENUM_ALL(BodyPart))
+    if (auto& attack = intrinsicAttacks[part]) {
+      ret.push_back(ItemInfo::get(c, {attack->item.get()}));
+      auto& item = ret.back();
+      item.weight.reset();
+      if (!c->getBody().numGood(part)) {
+        item.unavailable = true;
+        item.unavailableReason = "No functional body part: "_s + getName(part);
+        item.actions.clear();
+      } else {
+        item.intrinsicState = attack->active;
+        item.actions = {
+            ItemAction::INTRINSIC_ALWAYS, ItemAction::INTRINSIC_NO_WEAPON, ItemAction::INTRINSIC_NEVER};
+      }
+    }
+  return ret;
+}
+
+static vector<ItemInfo> getItemInfos(const Creature* c, const vector<Item*>& items) {
+  map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
+      [&] (Item* const& item) {
+          return item->getNameAndModifiers(false, c) + (c->getEquipment().isEquipped(item) ? "(e)" : ""); });
+  vector<ItemInfo> ret;
+  for (auto elem : stacks)
+    ret.push_back(ItemInfo::get(c, elem.second));
+  return ret;
+}
+
+PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
+  firstName = c->getName().firstOrBare();
   name = c->getName().bare();
   title = c->getName().title();
   description = capitalFirst(c->getAttributes().getDescription());
-  WItem weapon = c->getWeapon();
-  weaponName = weapon ? weapon->getName() : "";
   viewId = c->getViewObject().id();
   morale = c->getMorale();
-  levelName = c->getLevel()->getName();
   positionHash = c->getPosition().getHash();
   creatureId = c->getUniqueId();
   attributes = AttributeInfo::fromCreature(c);
-  levelInfo.level = c->getAttributes().getExpLevel();
-  levelInfo.limit = c->getAttributes().getMaxExpLevel();
+  experienceInfo = getCreatureExperienceInfo(c);
+  intrinsicAttacks = fillIntrinsicAttacks(c);
   skills = getSkillNames(c);
   effects.clear();
   for (auto& adj : c->getBadAdjectives())
@@ -64,14 +146,27 @@ PlayerInfo::PlayerInfo(WConstCreature c) : bestAttack(c) {
   for (auto& adj : c->getGoodAdjectives())
     effects.push_back({adj.name, adj.help, false});
   spells.clear();
-  for (::Spell* spell : c->getAttributes().getSpellMap().getAll()) {
-    bool ready = c->isReady(spell);
+  for (auto spell : c->getSpellMap().getAvailable(c)) {
+    vector<string> description = {spell->getDescription(), "Cooldown: " + toString(spell->getCooldown())};
+    if (spell->getRange() > 0)
+      description.push_back("Range: " + toString(spell->getRange()));
     spells.push_back({
-        spell->getId(),
-        spell->getName() + (ready ? "" : " [" + toString<int>(c->getSpellDelay(spell)) + "]"),
-        spell->getDescription(),
-        c->isReady(spell) ? none : optional<int>(c->getSpellDelay(spell))});
+        spell->getName(),
+        spell->getSymbol(),
+        std::move(description),
+        c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell))
+    });
   }
+  carryLimit = c->getBody().getCarryLimit();
+  map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
+      c->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
+  debt = c->getDebt().getTotal();
+  for (auto elem : ENUM_ALL(ItemClass))
+    if (typeGroups[elem].size() > 0)
+      append(inventory, getItemInfos(c, typeGroups[elem]));
+  if (c->getPosition().isValid())
+    moveCounter = c->getPosition().getModel()->getMoveCounter();
+  isPlayerControlled = c->isPlayer();
 }
 
 const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) const {
@@ -82,41 +177,33 @@ const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) con
 }
 
 
-vector<AttributeInfo> AttributeInfo::fromCreature(WConstCreature c) {
-  auto genInfo = [c](AttrType type, int bonus, const char* help) {
+vector<AttributeInfo> AttributeInfo::fromCreature(const Creature* c) {
+  PROFILE;
+  auto genInfo = [c](AttrType type, const char* help) {
     return AttributeInfo {
         getName(type),
         type,
-        c->getAttr(type),
-        bonus,
+        c->getAttributes().getRawAttr(type),
+        c->getAttrBonus(type, true),
         help
     };
   };
   return {
       genInfo(
           AttrType::DAMAGE,
-          c->isAffected(LastingEffect::RAGE) ? 1 : c->isAffected(LastingEffect::PANIC) ? -1 : 0,
           "Affects if and how much damage is dealt in combat."
       ),
       genInfo(
           AttrType::DEFENSE,
-          c->isAffected(LastingEffect::RAGE) ? -1 : (c->isAffected(LastingEffect::PANIC)) ? 1 : 0,
           "Affects if and how much damage is taken in combat."
       ),
       genInfo(
           AttrType::SPELL_DAMAGE,
-          0,
           "Base value of magic attacks."
       ),
       genInfo(
           AttrType::RANGED_DAMAGE,
-          0,
           "Affects if and how much damage is dealt when shooting a ranged weapon."
-      ),
-      genInfo(
-          AttrType::SPEED,
-          c->isAffected(LastingEffect::SPEED) ? 1 : c->isAffected(LastingEffect::SLOWED) ? -1 : 0,
-          "Affects how much game time every action uses."
       ),
     };
 }

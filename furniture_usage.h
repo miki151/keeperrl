@@ -6,7 +6,8 @@ class Position;
 class Furniture;
 class Creature;
 
-enum class FurnitureUsageType {
+RICH_ENUM(
+  FurnitureUsageType,
   CHEST,
   COFFIN,
   VAMPIRE_COFFIN,
@@ -19,12 +20,16 @@ enum class FurnitureUsageType {
   TRAIN,
   ARCHERY_RANGE,
   STUDY,
-  PORTAL
-};
+  PORTAL,
+  SIT_ON_THRONE,
+  DESECRATE,
+  DEMON_RITUAL
+);
 
 class FurnitureUsage {
   public:
-  static void handle(FurnitureUsageType, Position, WConstFurniture, WCreature);
-  static bool canHandle(FurnitureUsageType, WConstCreature);
+  static void handle(FurnitureUsageType, Position, WConstFurniture, Creature*);
+  static bool canHandle(FurnitureUsageType, const Creature*);
   static string getUsageQuestion(FurnitureUsageType, string furnitureName);
+  static void beforeRemoved(FurnitureUsageType, Position);
 };

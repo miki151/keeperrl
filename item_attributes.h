@@ -25,6 +25,10 @@
 #include "attr_type.h"
 #include "ranged_weapon.h"
 #include "item_type.h"
+#include "game_time.h"
+#include "weapon_info.h"
+#include "item_prefix.h"
+#include "item_upgrade_info.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
@@ -46,30 +50,30 @@ class ItemAttributes {
   MustInitialize<ItemClass> SERIAL(itemClass);
   optional<string> SERIAL(plural);
   optional<string> SERIAL(blindName);
-  optional<ItemType> SERIAL(firingWeapon);
   optional<string> SERIAL(artifactName);
-  optional<TrapType> SERIAL(trapType);
   optional<CollectiveResourceId> SERIAL(resourceId);
-  double SERIAL(flamability) = 0;
+  int SERIAL(burnTime) = 0;
   int SERIAL(price) = 0;
   bool SERIAL(noArticle) = false;
   EnumMap<AttrType, int> SERIAL(modifiers);
-  bool SERIAL(twoHanded) = false;
-  AttackType SERIAL(attackType) = AttackType::HIT;
-  AttrType SERIAL(meleeAttackAttr) = AttrType::DAMAGE;
-  double SERIAL(attackTime) = 1;
   optional<EquipmentSlot> SERIAL(equipmentSlot);
-  double SERIAL(applyTime) = 1;
+  TimeInterval SERIAL(applyTime) = 1_visible;
   bool SERIAL(fragile) = false;
   optional<Effect> SERIAL(effect);
-  optional<Effect> SERIAL(attackEffect);
   int SERIAL(uses) = -1;
   bool SERIAL(usedUpMsg) = false;
   bool SERIAL(displayUses) = false;
-  optional<LastingEffect> SERIAL(equipedEffect);
+  vector<LastingEffect> SERIAL(equipedEffect);
+  optional<LastingEffect> SERIAL(ownedEffect);
   optional<string> SERIAL(applyMsgFirstPerson);
   optional<string> SERIAL(applyMsgThirdPerson);
   optional<SoundId> SERIAL(applySound);
   optional<RangedWeapon> SERIAL(rangedWeapon);
+  WeaponInfo SERIAL(weaponInfo);
+  vector<pair<int, ItemPrefix>> SERIAL(genPrefixes);
+  vector<string> SERIAL(prefixes);
+  optional<ItemUpgradeInfo> SERIAL(upgradeInfo);
+  int SERIAL(maxUpgrades) = 3;
+  double SERIAL(damageReduction) = 0;
 };
 

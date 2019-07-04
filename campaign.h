@@ -3,6 +3,7 @@
 #include "util.h"
 #include "saved_game_info.h"
 #include "save_file_info.h"
+#include "enemy_id.h"
 
 class View;
 class ProgressMeter;
@@ -20,7 +21,7 @@ class Campaign {
     string getDescription() const;
     bool isEnemy() const;
     VillainType SERIAL(type);
-    SERIALIZE_ALL(viewId, name, enemyId, type)
+    SERIALIZE_ALL(viewId, enemyId, name, type)
   };
   struct KeeperInfo {
     ViewId SERIAL(viewId);

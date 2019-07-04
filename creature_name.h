@@ -17,34 +17,45 @@
 
 #include "util.h"
 
+class NameGenerator;
+
+constexpr int maxFirstNameLength = 15;
+
 class CreatureName {
   public:
   CreatureName(const string& name);
   CreatureName(const string& name, const string& plural);
   CreatureName(const char* name);
-  void setFirst(const string&);
+  void setFirst(optional<string>);
+  void generateFirst(NameGenerator*);
+  optional<NameGeneratorId> getNameGenerator() const;
   void setStack(const string&);
   void setGroup(const string&);
-  void useFullTitle();
+  void setBare(const string&);
+  void addBarePrefix(const string&);
+  void addBareSuffix(const string&);
+  void useFullTitle(bool = true);
   const string& stack() const;
+  const char* identify() const;
   const optional<string>& stackOnly() const;
-  optional<string> first() const;
+  const optional<string>& first() const;
+  string firstOrBare() const;
   string bare() const;
   string the() const;
   string a() const;
   string plural() const;
   string multiple(int) const;
+  string groupOf(int) const;
   string title() const;
 
-  SERIALIZATION_DECL(CreatureName);
+  SERIALIZATION_DECL(CreatureName)
 
   private:
   string SERIAL(name);
   string SERIAL(pluralName);
   optional<string> SERIAL(stackName);
   optional<string> SERIAL(firstName);
+  optional<NameGeneratorId> SERIAL(firstNameGen);
   string SERIAL(groupName) = "group";
   bool SERIAL(fullTitle) = false;
 };
-
-

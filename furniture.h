@@ -6,6 +6,12 @@
 #include "vision_id.h"
 #include "event_listener.h"
 #include "furniture_layer.h"
+#include "luxury_info.h"
+#include "furniture_type.h"
+#include "experience_type.h"
+#include "bed_type.h"
+#include "fx_info.h"
+#include "view_id.h"
 
 class TribeId;
 class Creature;
@@ -19,121 +25,174 @@ class FurnitureDroppedItems;
 class ViewObject;
 class MovementSet;
 
+RICH_ENUM(
+    BurnsDownMessage,
+    BURNS_DOWN,
+    STOPS_BURNING
+);
+
+RICH_ENUM(
+    ConstructMessage,
+    BUILD, /*default*/
+    FILL_UP,
+    REINFORCE,
+    SET_UP
+);
+
 class Furniture : public OwnedObject<Furniture> {
   public:
-  static const string& getName(FurnitureType, int count = 1);
-  static FurnitureLayer getLayer(FurnitureType);
 
-  Furniture(const string& name, const optional<ViewObject>&, FurnitureType, TribeId);
   Furniture(const Furniture&);
-  const optional<ViewObject>& getViewObject() const;
-  optional<ViewObject>& getViewObject();
+  const heap_optional<ViewObject>& getViewObject() const;
+  heap_optional<ViewObject>& getViewObject();
   const string& getName(int count = 1) const;
   FurnitureType getType() const;
-  bool isVisibleTo(WConstCreature) const;
+  bool isVisibleTo(const Creature*) const;
   const MovementSet& getMovementSet() const;
-  void onEnter(WCreature) const;
+  void onEnter(Creature*) const;
   bool canDestroy(const MovementType&, const DestroyAction&) const;
   bool canDestroy(const DestroyAction&) const;
   optional<double> getStrength(const DestroyAction&) const;
   void destroy(Position, const DestroyAction&);
-  void tryToDestroyBy(Position, WCreature, const DestroyAction&);
+  void tryToDestroyBy(Position, Creature*, const DestroyAction&);
   TribeId getTribe() const;
   void setTribe(TribeId);
-  const optional<Fire>& getFire() const;
-  optional<Fire>& getFire();
-  void fireDamage(Position, double amount);
+  const heap_optional<Fire>& getFire() const;
+  void fireDamage(Position, bool withMessage = true);
   void tick(Position);
   bool canSeeThru(VisionId) const;
+  bool blocksAnyVision() const;
   bool stopsProjectiles(VisionId) const;
   void click(Position) const;
-  bool isClickable() const;
   bool overridesMovement() const;
-  void use(Position, WCreature) const;
-  bool canUse(WConstCreature) const;
+  void use(Position, Creature*) const;
+  bool canUse(const Creature*) const;
   optional<FurnitureUsageType> getUsageType() const;
-  int getUsageTime() const;
+  TimeInterval getUsageTime() const;
   optional<FurnitureClickType> getClickType() const;
+  optional<FurnitureTickType> getTickType() const;
+  const heap_optional<FurnitureEntry>& getEntryType() const;
   bool isTicking() const;
   bool isWall() const;
-  void onConstructedBy(WCreature);
+  bool isBuildingSupport() const;
+  void onConstructedBy(Position, Creature*);
   FurnitureLayer getLayer() const;
   double getLightEmission() const;
   bool canHide() const;
-  bool emitsWarning(WConstCreature) const;
-  WCreature getCreator() const;
-  optional<double> getCreatedTime() const;
+  bool emitsWarning(const Creature*) const;
+  bool canRemoveWithCreaturePresent() const;
+  bool canRemoveNonFriendly() const;
+  Creature* getCreator() const;
+  optional<LocalTime> getCreatedTime() const;
   optional<CreatureId> getSummonedElement() const;
+  bool isClearFogOfWar() const;
+  bool forgetAfterBuilding() const;
+  void onCreatureWalkedOver(Position, Vec2 direction) const;
+  void onCreatureWalkedInto(Position, Vec2 direction) const;
+  int getMaxTraining(ExperienceType) const;
+  bool hasRequiredSupport(Position) const;
+  optional<ViewId> getSupportViewId(Position) const;
+  optional<FurnitureType> getUpgrade() const;
+  optional<FXVariantName> getUsageFX() const;
   /**
    * @brief Calls special functionality to handle dropped items, if any.
    * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
    */
   vector<PItem> dropItems(Position, vector<PItem>) const;
   bool canBuildBridgeOver() const;
-
-  enum ConstructMessage { /*default*/BUILD, FILL_UP, REINFORCE, SET_UP };
+  const LuxuryInfo& getLuxuryInfo() const;
+  struct PopulationInfo {
+    double SERIAL(increase);
+    optional<int> SERIAL(limit);
+    SERIALIZE_ALL(increase, limit)
+  };
+  const PopulationInfo& getPopulationIncrease() const;
+  optional<FurnitureType> getBuiltOver() const;
+  bool isBridge() const;
+  bool silentlyReplace() const;
+  void setType(FurnitureType);
+  bool buildOutsideOfTerritory() const;
+  bool isRequiresLight() const;
+  bool isHostileSpell() const;
+  optional<BedType> getBedType() const;
+  optional<LastingEffect> getLastingEffect() const;
 
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();
-  Furniture& setConstructMessage(optional<ConstructMessage>);
   Furniture& setDestroyable(double);
   Furniture& setDestroyable(double, DestroyAction::Type);
-  Furniture& setItemDrop(ItemFactory);
-  Furniture& setBurntRemains(FurnitureType);
-  Furniture& setDestroyedRemains(FurnitureType);
-  Furniture& setBlockVision();
-  Furniture& setBlockVision(VisionId, bool);
-  Furniture& setUsageType(FurnitureUsageType);
-  Furniture& setUsageTime(int);
-  Furniture& setClickType(FurnitureClickType);
-  Furniture& setTickType(FurnitureTickType);
-  Furniture& setEntryType(FurnitureEntry);
-  Furniture& setDroppedItems(FurnitureDroppedItems);
-  Furniture& setFireInfo(const Fire&);
-  Furniture& setIsWall();
-  Furniture& setOverrideMovement();
-  Furniture& setLayer(FurnitureLayer);
-  Furniture& setLightEmission(double);
-  Furniture& setCanHide();
-  Furniture& setEmitsWarning();
-  Furniture& setPlacementMessage(MsgType);
-  Furniture& setSummonedElement(CreatureId);
-  Furniture& setCanBuildBridgeOver();
-  Furniture& setStopProjectiles();
-  MovementSet& modMovementSet();
 
   SERIALIZATION_DECL(Furniture)
 
   ~Furniture();
 
   private:
-  HeapAllocated<optional<ViewObject>> SERIAL(viewObject);
+  heap_optional<ViewObject> SERIAL(viewObject);
   string SERIAL(name);
   string SERIAL(pluralName);
   FurnitureType SERIAL(type);
   FurnitureLayer SERIAL(layer) = FurnitureLayer::MIDDLE;
   HeapAllocated<MovementSet> SERIAL(movementSet);
-  HeapAllocated<optional<Fire>> SERIAL(fire);
+  heap_optional<Fire> SERIAL(fire);
   optional<FurnitureType> SERIAL(burntRemains);
   optional<FurnitureType> SERIAL(destroyedRemains);
-  EnumMap<DestroyAction::Type, optional<double>> SERIAL(destroyActions);
-  HeapAllocated<optional<ItemFactory>> SERIAL(itemDrop);
+  struct DestroyedInfo {
+    double SERIAL(health);
+    double SERIAL(strength);
+    SERIALIZE_ALL(health, strength)
+  };
+  EnumMap<DestroyAction::Type, optional<DestroyedInfo>> SERIAL(destroyedInfo);
+  heap_optional<ItemList> SERIAL(itemDrop);
   EnumSet<VisionId> SERIAL(blockVision);
   optional<FurnitureUsageType> SERIAL(usageType);
   optional<FurnitureClickType> SERIAL(clickType);
   optional<FurnitureTickType> SERIAL(tickType);
-  HeapAllocated<optional<FurnitureEntry>> SERIAL(entryType);
-  HeapAllocated<optional<FurnitureDroppedItems>> SERIAL(droppedItems);
-  int SERIAL(usageTime) = 1;
+  optional<FurnitureOnBuilt> SERIAL(onBuilt);
+  heap_optional<FurnitureEntry> SERIAL(entryType);
+  heap_optional<FurnitureDroppedItems> SERIAL(droppedItems);
+  TimeInterval SERIAL(usageTime) = 1_visible;
   bool SERIAL(overrideMovement) = false;
+  bool SERIAL(removeWithCreaturePresent) = true;
+  bool SERIAL(removeNonFriendly) = false;
   bool SERIAL(wall) = false;
-  optional<ConstructMessage> SERIAL(constructMessage) = BUILD;
+  bool SERIAL(buildingSupport) = false;
+  optional<ConstructMessage> SERIAL(constructMessage) = ConstructMessage::BUILD;
   double SERIAL(lightEmission) = 0;
   bool SERIAL(canHideHere) = false;
   bool SERIAL(warning) = false;
-  WCreature SERIAL(creator);
-  optional<double> SERIAL(createdTime);
+  WeakPointer<Creature> SERIAL(creator);
+  optional<LocalTime> SERIAL(createdTime);
   optional<CreatureId> SERIAL(summonedElement);
   bool SERIAL(canBuildBridge) = false;
   bool SERIAL(noProjectiles) = false;
+  bool SERIAL(clearFogOfWar) = false;
+  bool SERIAL(xForgetAfterBuilding) = false;
+  LuxuryInfo SERIAL(luxury);
+  void updateViewObject();
+  BurnsDownMessage SERIAL(burnsDownMessage) = BurnsDownMessage::BURNS_DOWN;
+  template<typename Archive>
+  void serializeImpl(Archive&, const unsigned);
+  EnumMap<ExperienceType, int> SERIAL(maxTraining);
+  struct SupportInfo {
+    vector<Dir> SERIAL(dirs);
+    optional<ViewId> SERIAL(viewId);
+    SERIALIZE_ALL(NAMED(dirs), NAMED(viewId))
+  };
+  vector<SupportInfo> SERIAL(requiredSupport);
+  const Furniture::SupportInfo* getSupportInfo(Position) const;
+  optional<FurnitureType> SERIAL(upgrade);
+  optional<FurnitureType> SERIAL(builtOver);
+  bool SERIAL(bridge) = false;
+  bool SERIAL(canSilentlyReplace) = false;
+  bool SERIAL(canBuildOutsideOfTerritory) = false;
+  bool SERIAL(requiresLight) = false;
+  optional<BedType> SERIAL(bedType);
+  PopulationInfo SERIAL(populationIncrease) = {0, none};
+  optional<FXInfo> SERIAL(destroyFX);
+  optional<FXInfo> SERIAL(tryDestroyFX);
+  optional<FXInfo> SERIAL(walkOverFX);
+  optional<FXInfo> SERIAL(walkIntoFX);
+  optional<FXVariantName> SERIAL(usageFX);
+  bool SERIAL(hostileSpell) = false;
+  optional<LastingEffect> SERIAL(lastingEffect);
 };

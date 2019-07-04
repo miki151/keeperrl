@@ -15,26 +15,35 @@
 
 #pragma once
 
-#include "spell_id.h"
+#include "game_time.h"
+#include "spell.h"
 
 class Spell;
 
 class SpellMap {
   public:
-  void add(Spell*);
-  void add(SpellId);
-  double getReadyTime(Spell*) const;
-  void setReadyTime(Spell*, double);
-  vector<Spell*> getAll() const;
-  bool contains(Spell*) const;
-  bool contains(SpellId) const;
-  void clear();
-  void onExpLevelReached(WCreature, double level);
+  void add(Spell, ExperienceType, int level);
+  GlobalTime getReadyTime(const Spell*) const;
+  void setReadyTime(const Spell*, GlobalTime);
+  vector<const Spell*> getAvailable(const Creature*) const;
+  int getLevel(const Spell*) const;
+  bool contains(const Spell*) const;
+  void onExpLevelReached(Creature*, ExperienceType, int level);
+  void setAllReady();
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  EnumMap<SpellId, optional<double>> SERIAL(elems);
+  struct SpellInfo {
+    Spell SERIAL(spell);
+    optional<GlobalTime> SERIAL(timeout);
+    int SERIAL(level);
+    ExperienceType SERIAL(expType);
+    SERIALIZE_ALL(spell, timeout, level, expType)
+  };
+  vector<SpellInfo> SERIAL(elems);
+  const SpellInfo* getInfo(SpellId) const;
+  SpellInfo* getInfo(SpellId);
 };
 

@@ -4,6 +4,7 @@
 #include "file_sharing.h"
 #include "exit_info.h"
 #include "experience_type.h"
+#include "game_time.h"
 
 class View;
 class Highscores;
@@ -21,19 +22,28 @@ struct CampaignSetup;
 class ModelBuilder;
 class ItemType;
 class CreatureList;
+class GameConfig;
+class AvatarInfo;
+class NameGenerator;
+struct ModelTable;
+class TileSet;
+class ContentFactory;
+class TilePaths;
 
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      Options*, Jukebox*, SokobanInput*, bool useSingleThread);
+      Options*, Jukebox*, SokobanInput*, TileSet*, bool useSingleThread, int saveVersion);
 
-  void start(bool tilesPresent, bool quickGame);
+  void start(bool tilesPresent);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
   void battleTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, string enemyId, RandomGen&);
   int battleTest(int numTries, const FilePath& levelPath, CreatureList ally, CreatureList enemyId, RandomGen&);
   void endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, RandomGen&, optional<int> numEnemy);
+  optional<string> verifyMod(const string& path);
+  void launchQuickGame(optional<int> maxTurns);
 
-  static int getAutosaveFreq();
+  static TimeInterval getAutosaveFreq();
 
   private:
 
@@ -54,13 +64,14 @@ class MainLoop {
 
   PGame prepareCampaign(RandomGen&);
   enum class ExitCondition;
-  ExitCondition playGame(PGame&&, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr);
+  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave,
+      function<optional<ExitCondition> (WGame)> = nullptr, milliseconds stepTimeMilli = milliseconds{3}, optional<int> maxTurns = none);
   void splashScreen();
-  void showCredits(const FilePath& path, View*);
-
+  void showCredits(const FilePath& path);
+  void showMods();
   void playMenuMusic();
 
-  Table<PModel> prepareCampaignModels(CampaignSetup& campaign, RandomGen& random);
+  ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen& random, ContentFactory*);
   PGame loadGame(const FilePath&);
   PGame loadPrevious();
   FilePath getSavePath(const PGame&, GameSaveType);
@@ -69,24 +80,31 @@ class MainLoop {
   bool downloadGame(const string& filename);
   bool eraseSave();
   static vector<SaveFileInfo> getSaveFiles(const DirectoryPath& path, const string& suffix);
+  bool isCompatible(int loadedVersion);
 
-  View* view;
+  GameConfig getGameConfig() const;
+
+  View* view = nullptr;
   DirectoryPath dataFreePath;
   DirectoryPath userPath;
-  Options* options;
-  Jukebox* jukebox;
-  Highscores* highscores;
-  FileSharing* fileSharing;
+  Options* options = nullptr;
+  Jukebox* jukebox = nullptr;
+  Highscores* highscores = nullptr;
+  FileSharing* fileSharing = nullptr;
   bool useSingleThread;
   SokobanInput* sokobanInput;
-  PModel getBaseModel(ModelBuilder&, CampaignSetup&);
+  TileSet* tileSet;
+  PModel getBaseModel(ModelBuilder&, CampaignSetup&, const AvatarInfo&);
   void considerGameEventsPrompt();
   void considerFreeVersionText(bool tilesPresent);
   void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);
-  PGame prepareTutorial();
-  void launchQuickGame();
+  PGame prepareTutorial(const ContentFactory*);
+  void bugReportSave(PGame&, FilePath);
+  int saveVersion;
+  void saveGame(PGame&, const FilePath&);
+  void saveMainModel(PGame&, const FilePath&);
+  ContentFactory createContentFactory(bool vanillaOnly) const;
+  TilePaths getTilePathsForAllMods() const;
+  int getLocalVersion(const string& mod);
+  void updateLocalVersion(const string& mod, int version);
 };
-
-
-
-

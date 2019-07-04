@@ -22,6 +22,7 @@
 #include "view_index.h"
 #include "entity_map.h"
 #include "view_object.h"
+#include "item_counts.h"
 
 class MapMemory;
 class MapLayout;
@@ -31,6 +32,14 @@ class Clock;
 class Creature;
 class Options;
 class TutorialInfo;
+class UserInput;
+class FXViewManager;
+class Position;
+class Tile;
+
+namespace fx {
+  class FXRenderer;
+}
 
 class MapGui : public GuiElem {
   public:
@@ -38,28 +47,26 @@ class MapGui : public GuiElem {
     function<void(Vec2)> continuousLeftClickFun;
     function<void(Vec2)> leftClickFun;
     function<void(Vec2)> rightClickFun;
-    function<void(UniqueEntity<Creature>::Id)> creatureClickFun;
     function<void()> refreshFun;
-    function<void(UniqueEntity<Creature>::Id, ViewId, Vec2)> creatureDragFun;
-    function<void(UniqueEntity<Creature>::Id, Vec2)> creatureDroppedFun;
-    function<void(TeamId, Vec2)> teamDroppedFun;
   };
-  MapGui(Callbacks, Clock*, Options*, GuiFactory*);
+  MapGui(Callbacks, SyncQueue<UserInput>&, Clock*, Options*, GuiFactory*, unique_ptr<fx::FXRenderer>,
+      unique_ptr<FXViewManager>);
+  ~MapGui() override;
 
   virtual void render(Renderer&) override;
-  virtual bool onLeftClick(Vec2) override;
-  virtual bool onRightClick(Vec2) override;
+  virtual bool onClick(ClickButton, Vec2) override;
   virtual bool onMouseMove(Vec2) override;
   virtual void onMouseGone() override;
   virtual void onMouseRelease(Vec2) override;
   virtual bool onKeyPressed2(SDL::SDL_Keysym) override;
 
-  void updateObjects(CreatureView*, MapLayout*, bool smoothMovement, bool mouseUI, const optional<TutorialInfo>&);
+  void updateObjects(CreatureView*, Renderer&, MapLayout*, bool smoothMovement, bool mouseUI, const optional<TutorialInfo>&);
   void setSpriteMode(bool);
   optional<Vec2> getHighlightedTile(Renderer& renderer);
   void addAnimation(PAnimation animation, Vec2 position);
+  void addAnimation(const FXSpawnInfo&);
   void setCenter(double x, double y);
-  void setCenter(Vec2 pos);
+  void setCenter(Vec2, WLevel level);
   void clearCenter();
   void resetScrolling();
   bool isCentered() const;
@@ -68,29 +75,36 @@ class MapGui : public GuiElem {
   void highlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void setButtonViewId(ViewId);
+  static Color getHealthBarColor(double health, bool sprit);
   void clearButtonViewId();
   bool highlightMorale = true;
   bool highlightEnemies = true;
-  bool displayAllHealthBars = true;
   bool hideFullHealthBars = true;
-  bool colorWoundedRed = false;
   struct HighlightedInfo {
     optional<Vec2> creaturePos;
     optional<Vec2> tilePos;
+    optional<Vec2> tileScreenPos;
     optional<ViewObject> object;
+    ViewIndex viewIndex;
   };
   const HighlightedInfo& getLastHighlighted();
   bool isCreatureHighlighted(UniqueEntity<Creature>::Id);
+  bool fxesAvailable() const;
 
   private:
-  void updateObject(Vec2, CreatureView*, milliseconds currentTime);
-  void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 movement, Vec2 tilePos, milliseconds currentTimeReal);
-  void drawCreatureHighlights(Renderer&, const ViewObject&, Vec2 pos, Vec2 sz, milliseconds currentTimeReal);
-  void drawCreatureHighlight(Renderer&, Vec2 pos, Vec2 size, Color);
+  bool onLeftClick(Vec2);
+  bool onRightClick(Vec2);
+  bool onMiddleClick(Vec2);
+  void updateObject(Vec2, CreatureView*, Renderer&, milliseconds currentTime);
+  void drawObjectAbs(Renderer&, Vec2 pos, const ViewObject&, Vec2 size, Vec2 movement, Vec2 tilePos,
+      milliseconds currentTimeReal, const ViewIndex&);
+  void drawCreatureHighlights(Renderer&, const ViewObject&, const ViewIndex&, Vec2 pos, Vec2 sz,
+      milliseconds currentTimeReal);
+  void drawCreatureHighlight(Renderer&, Vec2 pos, Vec2 size, Color, const ViewIndex&);
   void drawSquareHighlight(Renderer&, Vec2 pos, Vec2 size);
   void considerRedrawingSquareHighlight(Renderer&, milliseconds currentTimeReal, Vec2 pos, Vec2 size);
  // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
-  void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs);
+  void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs, DirSet diagonalDirs);
   void renderExtraBorders(Renderer&, milliseconds currentTimeReal);
   void renderHighlights(Renderer&, Vec2 size, milliseconds currentTimeReal, bool lowHighlights);
   optional<Vec2> getMousePos();
@@ -102,12 +116,13 @@ class MapGui : public GuiElem {
   HighlightedInfo getHighlightedInfo(Vec2 size, milliseconds currentTimeReal);
   void renderAnimations(Renderer&, milliseconds currentTimeReal);
 
-  Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, milliseconds curTimeReal, bool verticalMovement);
+  Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, milliseconds curTimeReal, bool verticalMovement, Vec2 pos);
   Vec2 projectOnScreen(Vec2 wpos);
   bool considerCreatureClick(Vec2 mousePos);
   struct CreatureInfo {
     UniqueEntity<Creature>::Id id;
     ViewId viewId;
+    Vec2 position;
   };
   optional<CreatureInfo> getCreature(Vec2 mousePos);
   void considerContinuousLeftClick(Vec2 mousePos);
@@ -116,6 +131,7 @@ class MapGui : public GuiElem {
   bool spriteMode;
   Rectangle levelBounds = Rectangle(1, 1);
   Callbacks callbacks;
+  SyncQueue<UserInput>& inputQueue;
   optional<milliseconds> lastScrollUpdate;
   Clock* clock;
   optional<Vec2> mouseHeldPos;
@@ -136,7 +152,7 @@ class MapGui : public GuiElem {
     COMPARE_ALL(x, y)
   } mouseOffset, center;
   WConstLevel previousLevel = nullptr;
-  const CreatureView* previousView = nullptr;
+  optional<CreatureViewCenterType> previousView;
   Table<optional<milliseconds>> lastSquareUpdate;
   optional<Coords> softCenter;
   Vec2 lastMousePos;
@@ -146,10 +162,10 @@ class MapGui : public GuiElem {
   struct ScreenMovement {
     milliseconds startTimeReal;
     milliseconds endTimeReal;
-    double startTimeGame;
+    int moveCounter;
   };
   optional<ScreenMovement> screenMovement;
-  Table<EnumSet<ViewId>> connectionMap;
+  Table<unordered_set<ViewId, CustomHash<ViewId>>> connectionMap;
   bool keyScrolling = false;
   bool mouseUI = false;
   bool lockedView = true;
@@ -161,8 +177,10 @@ class MapGui : public GuiElem {
   bool isRenderedHighlightLow(const ViewIndex&, HighlightType);
   optional<ViewId> getHighlightedFurniture();
   Color getHighlightColor(const ViewIndex&, HighlightType);
+  Color getGradientColor(const ViewIndex&, GradientType);
   void renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight);
-  void renderTexturedHighlight(Renderer&, Vec2 pos, Vec2 size, Color);
+  void renderGradient(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, GradientType highlight);
+  void renderTexturedHighlight(Renderer&, Vec2 pos, Vec2 size, Color, ViewId viewId);
   void processScrolling(milliseconds);
   void considerScrollingToCreature();
   GuiFactory* guiFactory;
@@ -170,13 +188,25 @@ class MapGui : public GuiElem {
   void setDraggedCreature(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   vector<Vec2> tutorialHighlightLow;
   vector<Vec2> tutorialHighlightHigh;
-  void drawHealthBar(Renderer&, Vec2 pos, Vec2 size, double health);
-  double lastEndTimeGame = -1000;
+  void drawHealthBar(Renderer&, Vec2 tilePos, Vec2 pos, Vec2 size, const ViewObject&, const ViewIndex& index);
+  int lastMoveCounter = -1000;
+  int currentMoveCounter = -1000;
   double getDistanceToEdgeRatio(Vec2);
   struct CenteredCreatureInfo {
     Vec2 pos;
     bool softScroll;
   };
   optional<CenteredCreatureInfo> centeredCreaturePosition;
-  DirSet getConnectionSet(Vec2 tilePos, ViewId);
+  DirSet getConnectionSet(Vec2 tilePos, const ViewId&, const Tile&);
+  EntityMap<Creature, milliseconds> woundedInfo;
+  EntityMap<Creature, int> furnitureUsageFX;
+  void considerWoundedAnimation(const ViewObject&, Color&, milliseconds curTimeReal);
+
+  // For advanced FX time control:
+  //bool lastFxTurnBased = false;
+  //double lastFxTimeReal = -1.0, lastFxTimeTurn = -1.0;
+  unique_ptr<fx::FXRenderer> fxRenderer;
+  unique_ptr<FXViewManager> fxViewManager;
+  void updateFX(milliseconds currentTimeReal);
+  void drawFurnitureCracks(Renderer&, Vec2 tilePos, float state, Vec2 pos, Vec2 size, const ViewIndex& index);
 };

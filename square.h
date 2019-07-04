@@ -39,7 +39,7 @@ class Square : public OwnedObject<Square> {
   /** Links this square as point of entry from another level.
     * \param direction direction where the creature is coming from
     * \param key id specific to a dungeon branch*/
-  void setLandingLink(StairKey);
+  void setLandingLink(optional<StairKey>);
 
   /** Returns the entry point details. Returns none if square is not entry point. See setLandingLink().*/
   optional<StairKey> getLandingLink() const;
@@ -54,16 +54,13 @@ class Square : public OwnedObject<Square> {
   void onAddedToLevel(Position) const;
 
   /** Puts a creature on the square.*/
-  void putCreature(WCreature);
-
-  /** Puts a creature on the square without triggering any mechanisms that happen when a creature enters.*/ 
-  void setCreature(WCreature);
+  void putCreature(Creature*);
 
   /** Removes the creature from the square.*/
   void removeCreature(Position);
 
   /** Returns the creature from the square.*/
-  WCreature getCreature() const;
+  Creature* getCreature() const;
 
   bool isOnFire() const;
   void setOnFire(bool);
@@ -79,12 +76,12 @@ class Square : public OwnedObject<Square> {
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
   void tick(Position);
 
-  void getViewIndex(ViewIndex&, WConstCreature viewer) const;
+  void getViewIndex(ViewIndex&, const Creature* viewer) const;
 
-  bool itemLands(vector<WItem> item, const Attack& attack) const;
-  void onItemLands(Position, vector<PItem>, const Attack&, int remainingDist, Vec2 dir, VisionId);
-  PItem removeItem(Position, WItem);
-  vector<PItem> removeItems(Position, vector<WItem>);
+  bool itemLands(vector<Item*> item, const Attack& attack) const;
+  void onItemLands(Position, vector<PItem>, const Attack&);
+  PItem removeItem(Position, Item*);
+  vector<PItem> removeItems(Position, vector<Item*>);
 
   void forbidMovementForTribe(Position, TribeId);
   void allowMovementForTribe(Position, TribeId);
@@ -102,15 +99,13 @@ class Square : public OwnedObject<Square> {
   Inventory& getInventory();
   const Inventory& getInventory() const;
 
-  void onEnter(WCreature);
-
   template <class Archive>
   void serialize(Archive&, const unsigned int);
 
   private:
-  WItem getTopItem() const;
+  Item* getTopItem() const;
   HeapAllocated<Inventory> SERIAL(inventory);
-  WCreature SERIAL(creature) = nullptr;
+  Creature* SERIAL(creature) = nullptr;
   optional<StairKey> SERIAL(landingLink);
   HeapAllocated<PoisonGas> SERIAL(poisonGas);
   mutable optional<UniqueEntity<Creature>::Id> SERIAL(lastViewer);

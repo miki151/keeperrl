@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util.h"
+#include "game_time.h"
 
 RICH_ENUM(CollectiveWarning,
     DIGGING,
@@ -20,7 +21,7 @@ RICH_ENUM(CollectiveWarning,
     LARGER_PRISON,
     TORTURE_ROOM,
     MORE_CHESTS,
-    MANA,
+    DUNGEON_LEVEL,
     MORE_LIGHTS
 );
 
@@ -35,7 +36,7 @@ class CollectiveWarnings {
   void considerWarnings(WCollective);
   bool isWarning(Warning) const;
   void setWarning(Warning, bool state = true);
-  optional<const char*> getNextWarning(double localTime);
+  optional<const char*> getNextWarning(LocalTime localTime);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
@@ -44,10 +45,9 @@ class CollectiveWarnings {
   void considerWeaponWarning(WCollective);
   void considerMoraleWarning(WCollective);
   void considerTorchesWarning(WCollective);
-  void considerTrainingRoomWarning(WCollective);
   const char*getText(Warning w);
   EnumSet<Warning> SERIAL(warnings);
-  EnumMap<CollectiveWarning, optional<double>> SERIAL(warningTimes);
-  double SERIAL(lastWarningTime) = 100;
+  EnumMap<CollectiveWarning, optional<LocalTime>> SERIAL(warningTimes);
+  LocalTime SERIAL(lastWarningTime) = LocalTime(100);
 };
 

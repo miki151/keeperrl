@@ -23,7 +23,8 @@ class Vision {
   Vision() {}
   VisionId getId() const;
   bool canSeeAt(double light, double distance) const;
-  void update(WConstCreature);
+  void update(const Creature*);
+  static double getDarknessVisionThreshold();
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

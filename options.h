@@ -36,11 +36,8 @@ RICH_ENUM(OptionId,
   DISABLE_CURSOR,
 
   FAST_IMMIGRATION,
-  ADVENTURER_NAME,
-  ADVENTURER_TYPE,
 
-  KEEPER_NAME,
-  KEEPER_TYPE,
+  PLAYER_NAME,
   KEEPER_SEED,
   SHOW_MAP,
   START_WITH_NIGHT,
@@ -51,7 +48,9 @@ RICH_ENUM(OptionId,
   LESSER_VILLAINS,
   ALLIES,
   INFLUENCE_SIZE,
-  GENERATE_MANA
+  GENERATE_MANA,
+  CURRENT_MOD,
+  ENDLESS_ENEMIES
 );
 
 enum class OptionSet {
@@ -68,10 +67,8 @@ class Options {
   Options(const FilePath& path);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
-  CreatureId getCreatureId(OptionId);
-  void setNextCreatureId(OptionId);
   const string& getName(OptionId);
-  enum Type { INT, BOOL, STRING, PLAYER_TYPE };
+  enum Type { INT, BOOL, STRING };
   Type getType(OptionId);
   string getValueString(OptionId);
   void setValue(OptionId, Value);
@@ -83,9 +80,8 @@ class Options {
   bool handleOrExit(View*, OptionSet, int lastIndex = -1);
   typedef function<void(int)> Trigger;
   void addTrigger(OptionId, Trigger trigger);
-  void setDefaultString(OptionId, const string&);
   void setChoices(OptionId, const vector<string>&);
-  void setChoices(OptionId, const vector<CreatureId>&);
+  bool hasChoices(OptionId) const;
   optional<string> getHint(OptionId);
 
   private:
@@ -96,10 +92,8 @@ class Options {
   optional<EnumMap<OptionId, Value>> values;
   void writeValues();
   FilePath filename;
-  EnumMap<OptionId, string> defaultStrings;
   EnumMap<OptionId, optional<Value>> overrides;
   EnumMap<OptionId, vector<string>> choices;
-  EnumMap<OptionId, vector<CreatureId>> choicesCreatureId;
   EnumMap<OptionId, optional<pair<int, int>>> limits;
 };
 

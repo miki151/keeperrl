@@ -22,10 +22,15 @@
 #include "skill.h"
 #include "gender.h"
 #include "creature_name.h"
-#include "minion_task_map.h"
+#include "minion_activity_map.h"
 #include "attr_type.h"
 #include "lasting_effect.h"
 #include "experience_type.h"
+#include "game_time.h"
+#include "view_id.h"
+#include "spell_id.h"
+#include "creature_id.h"
+#include "spell_school_id.h"
 
 inline bool isLarger(CreatureSize s1, CreatureSize s2) {
   return int(s1) > int(s2);
@@ -36,19 +41,20 @@ enum class SpawnType;
 #define CATTR(X) CreatureAttributes([&](CreatureAttributes& c) { X })
 
 struct SpellInfo;
-class MinionTaskMap;
-class SpellMap;
+class MinionActivityMap;
 class Body;
-class SpellMap;
 class Effect;
 struct AdjectiveInfo;
 
 class CreatureAttributes {
   public:
   CreatureAttributes(function<void(CreatureAttributes&)>);
-  CreatureAttributes(const CreatureAttributes& other) = default;
   ~CreatureAttributes();
+  CreatureAttributes(const CreatureAttributes&);
+  CreatureAttributes(CreatureAttributes&&);
   SERIALIZATION_DECL(CreatureAttributes)
+  template <class Archive>
+  void serializeImpl(Archive& ar, const unsigned int);
 
   CreatureAttributes& setCreatureId(CreatureId);
   const optional<CreatureId>& getCreatureId() const;
@@ -56,86 +62,94 @@ class CreatureAttributes {
   const Body& getBody() const;
   const CreatureName& getName() const;
   CreatureName& getName();
-  double getRawAttr(AttrType) const;
+  int getRawAttr(AttrType) const;
+  void increaseBaseAttr(AttrType, int);
   void setBaseAttr(AttrType, int);
   double getCourage() const;
   void setCourage(double);
+  string getDeathDescription() const;
+  void setDeathDescription(string);
   const Gender& getGender() const;
   double getExpLevel(ExperienceType type) const;
   const EnumMap<ExperienceType, double>& getExpLevel() const;
   const EnumMap<ExperienceType, int>& getMaxExpLevel() const;
+  void increaseMaxExpLevel(ExperienceType, int increase);
   void increaseExpLevel(ExperienceType, double increase);
+  void addCombatExperience(double);
+  double getCombatExperience() const;
   bool isTrainingMaxedOut(ExperienceType) const;
   void increaseBaseExpLevel(ExperienceType type, double increase);
   string bodyDescription() const;
-  SpellMap& getSpellMap();
-  const SpellMap& getSpellMap() const;
+  const optional<string>& getSpellSchool() const;
   optional<SoundId> getAttackSound(AttackType, bool damage) const;
   bool isBoulder() const;
   Skillset& getSkills();
   const Skillset& getSkills() const;
   ViewObject createViewObject() const;
-  const optional<ViewObject>& getIllusionViewObject() const;
+  const heap_optional<ViewObject>& getIllusionViewObject() const;
+  heap_optional<ViewObject>& getIllusionViewObject();
   bool canEquip() const;
-  void chatReaction(WCreature me, WCreature other);
+  void chatReaction(Creature* me, Creature* other);
+  optional<string> getPetReaction(const Creature* me) const;
   string getDescription() const;
-  bool isAffected(LastingEffect, double globalTime) const;
+  void add(BodyPart, int count);
+  bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffectedPermanently(LastingEffect) const;
-  double getTimeOut(LastingEffect) const;
-  string getRemainingString(LastingEffect, double time) const;
-  void shortenEffect(LastingEffect, double time);
-  void clearLastingEffect(LastingEffect, double globalTime);
+  GlobalTime getTimeOut(LastingEffect) const;
+  string getRemainingString(LastingEffect, GlobalTime) const;
+  void clearLastingEffect(LastingEffect);
   void addPermanentEffect(LastingEffect, int count);
   void removePermanentEffect(LastingEffect, int count);
-  bool considerTimeout(LastingEffect, double globalTime);
-  void addLastingEffect(LastingEffect, double endtime);
-  optional<double> getLastAffected(LastingEffect, double currentGlobalTime) const;
-  AttackType getAttackType(WConstItem weapon) const;
-  optional<Effect> getAttackEffect() const;
+  bool considerTimeout(LastingEffect, GlobalTime current);
+  void addLastingEffect(LastingEffect, GlobalTime endtime);
+  optional<GlobalTime> getLastAffected(LastingEffect, GlobalTime currentGlobalTime) const;
   bool canSleep() const;
   bool isInnocent() const;
-  void consume(WCreature self, const CreatureAttributes& other);
-  optional<SpawnType> getSpawnType() const; 
-  const MinionTaskMap& getMinionTasks() const;
-  MinionTaskMap& getMinionTasks();
+  void consume(Creature* self, CreatureAttributes& other);
+  const MinionActivityMap& getMinionActivities() const;
+  MinionActivityMap& getMinionActivities();
   bool dontChase() const;
-  optional<ViewId> getRetiredViewId();
+  bool getCanJoinCollective() const;
   void increaseExpFromCombat(double attackDiff);
-  optional<double> getMoraleSpeedIncrease() const;
+  optional<LastingEffect> getHatedByEffect() const;
+  void randomize();
 
+  friend class ContentFactory;
   friend class CreatureFactory;
+
+  vector<ViewId> SERIAL(viewIdUpgrades);
 
   private:
   void consumeEffects(const EnumMap<LastingEffect, int>&);
-  MustInitialize<ViewId> SERIAL(viewId);
-  optional<ViewId> SERIAL(retiredViewId);
-  HeapAllocated<optional<ViewObject>> SERIAL(illusionViewObject);
-  MustInitialize<CreatureName> SERIAL(name);
+  ViewId SERIAL(viewId);
+  heap_optional<ViewObject> SERIAL(illusionViewObject);
+  CreatureName SERIAL(name);
   EnumMap<AttrType, int> SERIAL(attr);
   HeapAllocated<Body> SERIAL(body);
   optional<string> SERIAL(chatReactionFriendly);
   optional<string> SERIAL(chatReactionHostile);
-  optional<AttackType> SERIAL(barehandedAttack);
-  HeapAllocated<optional<Effect>> SERIAL(attackEffect);
-  HeapAllocated<optional<Effect>> SERIAL(passiveAttack);
-  Gender SERIAL(gender) = Gender::male;
-  optional<SpawnType> SERIAL(spawnType);
-  bool SERIAL(innocent) = false;
-  bool SERIAL(animal) = false;
+  heap_optional<Effect> SERIAL(passiveAttack);
+  Gender SERIAL(gender) = Gender::MALE;
+  vector<pair<Gender, ViewId>> SERIAL(genderAlternatives);
   bool SERIAL(cantEquip) = false;
   double SERIAL(courage) = 1;
   bool SERIAL(boulder) = false;
   bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;
   Skillset SERIAL(skills);
-  HeapAllocated<SpellMap> SERIAL(spells);
+  vector<SpellSchoolId> SERIAL(spellSchools);
+  vector<SpellId> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
-  EnumMap<LastingEffect, double> SERIAL(lastingEffects);
-  EnumMap<LastingEffect, optional<double>> SERIAL(lastAffected);
-  MinionTaskMap SERIAL(minionTasks);
+  EnumMap<LastingEffect, GlobalTime> SERIAL(lastingEffects);
+  MinionActivityMap SERIAL(minionActivities);
   EnumMap<ExperienceType, double> SERIAL(expLevel);
   EnumMap<ExperienceType, int> SERIAL(maxLevelIncrease);
+  double SERIAL(combatExperience) = 0;
   bool SERIAL(noAttackSound) = false;
   optional<CreatureId> SERIAL(creatureId);
-  optional<double> SERIAL(moraleSpeedIncrease);
+  string SERIAL(deathDescription) = "killed"_s;
+  bool SERIAL(canJoinCollective) = true;
+  optional<string> SERIAL(petReaction);
+  optional<LastingEffect> SERIAL(hatedByEffect);
+  void initializeLastingEffects();
 };

@@ -18,26 +18,59 @@
 #include "util.h"
 #include "entity_set.h"
 #include "entity_map.h"
+#include "indexed_vector.h"
+#include "game_time.h"
 
 class Creature;
 
 class TimeQueue {
   public:
   TimeQueue();
-  WCreature getNextCreature();
-  vector<WCreature> getAllCreatures() const;
-  void addCreature(PCreature, double time);
-  PCreature removeCreature(WCreature);
-  double getTime(WConstCreature);
-  void increaseTime(WCreature, double diff);
+  Creature* getNextCreature(double maxTime);
+  vector<Creature*> getAllCreatures() const;
+  void addCreature(PCreature, LocalTime time);
+  PCreature removeCreature(Creature*);
+  LocalTime getTime(const Creature*);
+  void increaseTime(Creature*, TimeInterval);
+  void makeExtraMove(Creature*);
+  bool hasExtraMove(Creature*);
+  void postponeMove(Creature*);
+  void moveNow(Creature*);
+  bool willMoveThisTurn(const Creature*);
+  bool compareOrder(const Creature*, const Creature*);
 
-  template <class Archive> 
+  template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  typedef set<WCreature, function<bool(WConstCreature, WConstCreature)>> Queue;
+  bool contains(Creature*) const;
+
   vector<PCreature> SERIAL(creatures);
-  Queue SERIAL(queue);
-  EntityMap<Creature, double> SERIAL(timeMap);
+  struct Queue {
+    void push(Creature*);
+    void pushFront(Creature*);
+    bool empty();
+    Creature* front();
+    void popFront();
+    void erase(Creature*);
+    deque<Creature*> SERIAL(players);
+    deque<Creature*> SERIAL(nonPlayers);
+    EntityMap<Creature, int> SERIAL(orderMap);
+    SERIALIZE_ALL(players, nonPlayers, orderMap)
+
+    private:
+    void clearNull();
+  };
+  struct ExtendedTime {
+    ExtendedTime();
+    ExtendedTime(LocalTime);
+    double getDouble() const;
+    bool operator < (ExtendedTime) const;
+    LocalTime SERIAL(time);
+    bool SERIAL(extraTurn) = false;
+    SERIALIZE_ALL(time, extraTurn)
+  };
+  map<ExtendedTime, Queue> SERIAL(queue);
+  EntityMap<Creature, ExtendedTime> SERIAL(timeMap);
 };
 

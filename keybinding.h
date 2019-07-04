@@ -1,3 +1,7 @@
 #pragma once
 
-enum class Keybinding { CREATE_IMP };
+#include "util.h"
+
+RICH_ENUM(Keybinding,
+  CREATE_IMP
+);

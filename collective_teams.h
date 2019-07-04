@@ -16,43 +16,46 @@
 
 #include "util.h"
 #include "enums.h"
+#include "unique_entity.h"
 
 class Creature;
 
 class CollectiveTeams {
   public:
-  bool contains(TeamId, WConstCreature) const;
+  bool contains(TeamId, const Creature*) const;
   bool isActive(TeamId) const;
-  void add(TeamId, WCreature);
-  void remove(TeamId, WCreature);
-  void setLeader(TeamId, WCreature);
+  void add(TeamId, Creature*);
+  void remove(TeamId, Creature*);
+  void setLeader(TeamId, Creature*);
   void rotateLeader(TeamId);
   void activate(TeamId);
   void deactivate(TeamId);
-  TeamId create(vector<WCreature>);
-  TeamId createPersistent(vector<WCreature>);
-  WCreature getLeader(TeamId) const;
-  const vector<WCreature>& getMembers(TeamId) const;
-  vector<TeamId> getContaining(WConstCreature) const;
+  TeamId create(vector<Creature*>);
+  TeamId createPersistent(vector<Creature*>);
+  Creature* getLeader(TeamId) const;
+  const vector<Creature*>& getMembers(TeamId) const;
+  vector<TeamId> getContaining(const Creature*) const;
   vector<TeamId> getAll() const;
-  vector<TeamId> getActive(WConstCreature) const;
-  vector<TeamId> getActiveNonPersistent(WConstCreature) const;
+  vector<TeamId> getActive(const Creature*) const;
+  vector<TeamId> getActiveNonPersistent(const Creature*) const;
   vector<TeamId> getAllActive() const;
   void cancel(TeamId);
   bool exists(TeamId) const;
   bool isPersistent(TeamId) const;
+  bool hasTeamOrder(TeamId, const Creature*, TeamOrder) const;
+  void setTeamOrder(TeamId, const Creature*, TeamOrder, bool);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:
   struct TeamInfo {
-    vector<WCreature> SERIAL(creatures);
+    vector<Creature*> SERIAL(creatures);
+    set<TeamOrder> SERIAL(teamOrders);
     bool SERIAL(active);
     bool SERIAL(persistent);
-    SERIALIZE_ALL(creatures, active, persistent);
+    SERIALIZE_ALL(creatures, teamOrders, active, persistent);
   };
   map<TeamId, TeamInfo> SERIAL(teamInfo);
   TeamId SERIAL(nextId) = 1;
 };
-

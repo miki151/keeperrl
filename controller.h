@@ -27,7 +27,7 @@ class MessageGenerator;
 
 class Controller : public OwnedObject<Controller> {
   public:
-  Controller(WCreature);
+  Controller(Creature*);
   Controller(const Controller&) = delete;
   Controller(Controller&&) = delete;
 
@@ -37,36 +37,27 @@ class Controller : public OwnedObject<Controller> {
 
   virtual void privateMessage(const PlayerMessage& message) {}
 
-  virtual void onKilled(WConstCreature attacker) {}
-  virtual void onItemsGiven(vector<WItem> items, WCreature from) { }
+  virtual void onKilled(const Creature* attacker) {}
+  virtual void onItemsGiven(vector<Item*> items, Creature* from) { }
+
+  virtual bool dontReplaceInCollective() { return false; }
 
   virtual void makeMove() = 0;
   virtual void sleeping() {}
-  virtual bool isCustomController() { return false; }
-
-  virtual void onStartedControl() {}
-  virtual void onEndedControl() {}
-
-  virtual void onBump(WCreature) {}
 
   virtual ~Controller() {}
 
   SERIALIZATION_DECL(Controller);
 
-  protected:
-  WCreature getCreature() const;
-
-  private:
-  WCreature SERIAL(creature);
+  Creature* SERIAL(creature) = nullptr;
 };
 
 class DoNothingController : public Controller {
   public:
-  DoNothingController(WCreature);
+  DoNothingController(Creature*);
 
   virtual bool isPlayer() const override;
   virtual void makeMove() override;
-  virtual void onBump(WCreature) override;
   virtual MessageGenerator& getMessageGenerator() const override;
 
   protected:
@@ -75,10 +66,10 @@ class DoNothingController : public Controller {
 
 class ControllerFactory {
   public:
-  ControllerFactory(function<PController(WCreature)>);
-  PController get(WCreature) const;
+  ControllerFactory(function<PController(Creature*)>);
+  PController get(Creature*) const;
 
   private:
-  function<PController(WCreature)> fun;
+  function<PController(Creature*)> fun;
 };
 

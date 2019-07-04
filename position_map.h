@@ -8,21 +8,22 @@ class Level;
 template <class T>
 class PositionMap {
   public:
-  PositionMap(const T& defaultVal = T());
-
-  const T& get(Position) const;
+  optional<const T&> getReferenceMaybe(Position) const;
+  optional<T&> getReferenceMaybe(Position);
+  optional<T> getValueMaybe(Position) const;
+  bool contains(Position) const;
   T& getOrInit(Position);
   T& getOrFail(Position);
+  const T& getOrFail(Position) const;
   void set(Position, const T&);
+  void erase(Position);
   void limitToModel(const WModel);
 
-  template <class Archive> 
-  void serialize(Archive& ar, const unsigned int version);
+  SERIALIZATION_DECL(PositionMap);
 
   private:
-  Table<T>& getTable(Position);
-  map<LevelId, Table<T>> SERIAL(tables);
+  Table<optional<T>>& getTable(Position);
+  map<LevelId, Table<optional<T>>> SERIAL(tables);
   map<LevelId, map<Vec2, T>> SERIAL(outliers);
-  T SERIAL(defaultVal);
 };
 

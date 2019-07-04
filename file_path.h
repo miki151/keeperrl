@@ -10,6 +10,9 @@ class FilePath {
   time_t getModificationTime() const;
   bool hasSuffix(const string&) const;
   FilePath changeSuffix(const string& current, const string& newSuf) const;
+  optional<string> readContents() const;
+
+  bool operator==(const FilePath &) const;
 
   private:
   friend class DirectoryPath;

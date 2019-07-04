@@ -4,23 +4,34 @@
 #include "workshop_type.h"
 
 class WorkshopItem;
+class WorkshopQueuedItem;
+struct WorkshopItemCfg;
 class Collective;
 class CostInfo;
 
 class Workshops {
   public:
   typedef WorkshopItem Item;
+  typedef WorkshopQueuedItem QueuedItem;
+
+  static double getLegendarySkillThreshold();
+
   class Type {
     public:
     Type(const vector<Item>& options);
     const vector<Item>& getOptions() const;
-    const vector<Item>& getQueued() const;
-    vector<PItem> addWork(double);
+    const vector<QueuedItem>& getQueued() const;
+    struct WorkshopResult {
+      vector<PItem> items;
+      bool wasUpgraded;
+    };
+    WorkshopResult addWork(WCollective, double workAmount, double skillAmount, double morale);
     void queue(int index, int count = 1);
-    void unqueue(int index);
+    vector<PItem> unqueue(int index);
     void changeNumber(int index, int number);
-    void scheduleItems(WCollective);
-    bool isIdle() const;
+    bool isIdle(WConstCollective, double skillAmount, double morale) const;
+    void addUpgrade(int index, PItem);
+    PItem removeUpgrade(int itemIndex, int runeIndex);
 
     SERIALIZATION_DECL(Type);
 
@@ -28,18 +39,18 @@ class Workshops {
     friend class Workshops;
     void stackQueue();
     void addDebt(CostInfo);
+    void checkDebtConsistency() const;
     vector<Item> SERIAL(options);
-    vector<Item> SERIAL(queued);
+    vector<QueuedItem> SERIAL(queued);
     EnumMap<CollectiveResourceId, int> SERIAL(debt);
   };
 
   SERIALIZATION_DECL(Workshops)
-  Workshops(const EnumMap<WorkshopType, vector<Item>>&);
+  Workshops(std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>);
   Workshops(const Workshops&) = delete;
   Type& get(WorkshopType);
   const Type& get(WorkshopType) const;
   int getDebt(CollectiveResourceId) const;
-  void scheduleItems(WCollective);
 
   private:
   EnumMap<WorkshopType, Type> SERIAL(types);

@@ -15,14 +15,16 @@
 
 #pragma once
 
-typedef int TeamId;
-typedef long long LevelId;
+#include "stdafx.h"
+
+using TeamId = int;
+using LevelId = long long;
+using GenericId = long long;
 
 enum class MusicType;
 enum class SunlightState;
 enum class GameSaveType;
-enum class EnemyId;
-enum class CollectiveResourceId;
+enum class CollectiveResourceId : std::uint8_t;
 enum class CollectiveConfigId;
 enum class MsgType;
 enum class BodyPart;
@@ -39,12 +41,10 @@ enum class CampaignType;
 enum class PlayerRole;
 
 enum class MovementTrait;
-enum class SpawnType;
 enum class CreatureSize;
 
 enum class SquareApplyType;
 enum class SquareId;
-enum class FurnitureType;
 enum class FurnitureLayer;
 enum class ItemAction;
 enum class WorshipType;
@@ -53,15 +53,12 @@ enum class FurnitureUsageType;
 enum class FurnitureClickType;
 enum class FurnitureTickType;
 
-enum class MinionTask;
+enum class MinionActivity;
 enum class MinionTrait;
-enum class TrapType;
 
 enum class SquareAttrib;
 
 enum class Dir;
-
-enum class CreatureId;
 
 enum class ViewLayer;
 enum class HighlightType;
@@ -70,13 +67,10 @@ enum class StairLook;
 enum class SettlementType;
 enum class VillainType;
 enum class BiomeId;
-
-enum class ViewId;
-
+enum class ZoneId;
+class ViewId;
 enum class AnimationId;
 
-enum class SpellId;
-enum class TechId;
 enum class SkillId;
 enum class VisionId;
 
@@ -94,3 +88,33 @@ enum class TutorialHighlight;
 enum class MessagePriority;
 enum class WorkshopType;
 enum class PlayerType;
+enum class CreatureStatus;
+enum class TeamOrder;
+
+enum class FXName;
+enum class FXVariantName;
+enum class StorageId;
+enum class TribeAlignment;
+enum class TutorialState;
+enum class AvatarMenuOption;
+enum class PassableInfo;
+enum class ConquerCondition;
+enum class FurnitureOnBuilt;
+enum class ItemUpgradeType;
+enum class ViewObjectAction : std::uint8_t;
+enum class Gender : std::uint8_t;
+enum class CreatureViewCenterType;
+enum class BedType;
+enum class TargetType;
+enum class HealthType;
+enum class ExternalEnemiesType;
+
+struct FXInfo;
+struct FXSpawnInfo;
+class TechId;
+class FurnitureType;
+class ItemListId;
+class EnemyId;
+class FurnitureListId;
+class SpellId;
+class CreatureId;

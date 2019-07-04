@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "stair_key.h"
+#include "game_time.h"
 
 class Square;
 class Level;
@@ -25,27 +26,28 @@ class Position {
   static vector<Position> getAll(WLevel, Rectangle);
   WModel getModel() const;
   WGame getGame() const;
-  int dist8(const Position&) const;
+  optional<int> dist8(const Position&) const;
   bool isSameLevel(const Position&) const;
   bool isSameLevel(WConstLevel) const;
   bool isSameModel(const Position&) const;
   Vec2 getDir(const Position&) const;
-  WCreature getCreature() const;
+  Creature* getCreature() const;
   void removeCreature();
-  void putCreature(WCreature);
+  void putCreature(Creature*);
   string getName() const;
   Position withCoord(Vec2 newCoord) const;
   Vec2 getCoord() const;
-  WLevel getLevel() const;
+  Level* getLevel() const;
   optional<StairKey> getLandingLink() const;
- 
+  void setLandingLink(StairKey) const;
+  void removeLandingLink() const;
+  const vector<Position>& getLandingAtNextLevel(StairKey);
+
   bool isValid() const;
   bool operator == (const Position&) const;
   bool operator != (const Position&) const;
-  Position& operator = (const Position&);
   Position plus(Vec2) const;
   Position minus(Vec2) const;
-  bool operator < (const Position&) const;
   void unseenMessage(const PlayerMessage&) const;
   void globalMessage(const PlayerMessage&) const;
   vector<Position> neighbors8() const;
@@ -53,32 +55,35 @@ class Position {
   vector<Position> neighbors8(RandomGen&) const;
   vector<Position> neighbors4(RandomGen&) const;
   vector<Position> getRectangle(Rectangle) const;
-  void addCreature(PCreature, double delay);
+  void addCreature(PCreature, TimeInterval delay);
+  // will crash if it's not possible to place creature here
   void addCreature(PCreature);
-  bool canEnter(WConstCreature) const;
+  // will try to place creature somewhere else close on the level if it's not possible
+  void landCreature(PCreature);
+  bool canEnter(const Creature*) const;
   bool canEnter(const MovementType&) const;
-  bool canEnterEmpty(WConstCreature) const;
+  bool canEnterEmpty(const Creature*) const;
   bool canEnterEmpty(const MovementType&, optional<FurnitureLayer> ignore = none) const;
-  void onEnter(WCreature);
+  void onEnter(Creature*) const;
   optional<FurnitureClickType> getClickType() const;
   void addSound(const Sound&) const;
-  void getViewIndex(ViewIndex&, WConstCreature viewer) const;
-  const vector<WItem>& getItems() const;
-  vector<WItem> getItems(function<bool(WConstItem)> predicate) const;
-  const vector<WItem>& getItems(ItemIndex) const;
-  PItem removeItem(WItem);
+  void getViewIndex(ViewIndex&, const Creature* viewer) const;
+  const vector<Item*>& getItems() const;
+  const vector<Item*>& getItems(ItemIndex) const;
+  PItem removeItem(Item*) const;
   Inventory& modInventory() const;
   const Inventory& getInventory() const;
-  vector<PItem> removeItems(vector<WItem>);
+  vector<PItem> removeItems(vector<Item*>);
   bool canConstruct(FurnitureType) const;
   bool isWall() const;
-  void removeFurniture(WConstFurniture) const;
+  bool isBuildingSupport() const;
+  void removeFurniture(WConstFurniture, PFurniture replace = nullptr) const;
+  void removeFurniture(FurnitureLayer) const;
   void addFurniture(PFurniture) const;
-  void replaceFurniture(WConstFurniture, PFurniture) const;
   bool isUnavailable() const;
   void dropItem(PItem);
   void dropItems(vector<PItem>);
-  void construct(FurnitureType, WCreature);
+  void construct(FurnitureType, Creature*);
   bool construct(FurnitureType, TribeId);
   bool isActiveConstruction(FurnitureLayer) const;
   bool isBurning() const;
@@ -87,7 +92,8 @@ class Position {
   void setNeedsRenderUpdate(bool) const;
   bool needsMemoryUpdate() const;
   void setNeedsMemoryUpdate(bool) const;
-  const ViewObject& getViewObject() const;
+  void setNeedsRenderAndMemoryUpdate(bool) const;
+  ViewId getTopViewId() const;
   void forbidMovementForTribe(TribeId);
   void allowMovementForTribe(TribeId);
   bool isTribeForbidden(TribeId) const;
@@ -97,9 +103,12 @@ class Position {
   bool isCovered() const;
   bool sunlightBurns() const;
   double getLightEmission() const;
-  void throwItem(PItem item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
-  void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 direction, VisionId);
+  void addCreatureLight(bool darkness);
+  void removeCreatureLight(bool darkness);
+  void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Position target, VisionId);
   bool canNavigate(const MovementType&) const;
+  bool canNavigateToOrNeighbor(Position, const MovementType&) const;
+  bool canNavigateTo(Position, const MovementType&) const;
   optional<double> getNavigationCost(const MovementType&) const;
   optional<DestroyAction> getBestDestroyAction(const MovementType&) const;
   vector<Position> getVisibleTiles(const Vision&);
@@ -107,17 +116,17 @@ class Position {
   void updateVisibility() const;
   bool canSeeThru(VisionId) const;
   bool stopsProjectiles(VisionId) const;
-  bool isVisibleBy(WConstCreature) const;
+  bool isVisibleBy(const Creature*) const;
   void clearItemIndex(ItemIndex) const;
   bool isChokePoint(const MovementType&) const;
   bool isConnectedTo(Position, const MovementType&) const;
-  void updateMovement();
-  vector<WCreature> getAllCreatures(int range) const;
+  void updateMovementDueToFire() const;
+  vector<Creature*> getAllCreatures(int range) const;
   void moveCreature(Vec2 direction);
-  void moveCreature(Position);
+  void moveCreature(Position, bool teleportEffect = false);
   bool canMoveCreature(Vec2 direction) const;
   bool canMoveCreature(Position) const;
-  void swapCreatures(WCreature);
+  void swapCreatures(Creature*);
   double getLight() const;
   optional<Position> getStairsTo(Position) const;
   WConstFurniture getFurniture(FurnitureLayer) const;
@@ -126,6 +135,13 @@ class Position {
   WFurniture modFurniture(FurnitureLayer) const;
   WFurniture modFurniture(FurnitureType) const;
   vector<WFurniture> modFurniture() const;
+  optional<short> getDistanceToNearestPortal() const;
+  optional<Position> getOtherPortal() const;
+  void registerPortal();
+  void removePortal();
+  optional<int> getPortalIndex() const;
+  double getLightingEfficiency() const;
+  bool isDirEffectBlocked() const;
 
   SERIALIZATION_DECL(Position)
   int getHash() const;
@@ -134,8 +150,12 @@ class Position {
   WSquare modSquare() const;
   WConstSquare getSquare() const;
   Vec2 SERIAL(coord);
-  WLevel SERIAL(level) = nullptr;
+  Level* SERIAL(level) = nullptr;
+  bool SERIAL(valid) = false;
   void updateSupport() const;
+  void updateBuildingSupport() const;
+  void addFurnitureImpl(PFurniture) const;
+  void updateSupportViewId(Furniture*) const;
 };
 
 template <>
@@ -145,3 +165,4 @@ inline string toString(const Position& t) {
 	return ss.str();
 }
 
+using PositionSet = unordered_set<Position, CustomHash<Position>>;

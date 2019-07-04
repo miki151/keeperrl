@@ -21,6 +21,7 @@
 RICH_ENUM(EquipmentSlot,
   WEAPON,
   RANGED_WEAPON,
+  SHIELD,
   HELMET,
   GLOVES,
   BODY_ARMOR,
@@ -29,25 +30,39 @@ RICH_ENUM(EquipmentSlot,
   RINGS
 );
 
-class Equipment : public Inventory {
+class Body;
+
+class Equipment {
   public:
-  vector<WItem> getSlotItems(EquipmentSlot slot) const;
-  bool isEquipped(WConstItem) const;
-  bool canEquip(WConstItem) const;
-  void equip(WItem, EquipmentSlot, WCreature);
-  void unequip(WItem, WCreature);
-  PItem removeItem(WItem, WCreature);
-  int getMaxItems(EquipmentSlot) const;
-  const vector<WItem>& getAllEquipped() const;
-  vector<PItem> removeItems(const vector<WItem>&, WCreature);
-  vector<PItem> removeAllItems(WCreature);
+  void addItem(PItem, Creature*);
+  void addItems(vector<PItem>, Creature*);
+  const vector<Item*>& getSlotItems(EquipmentSlot slot) const;
+  bool hasItem(const Item*) const;
+  bool isEquipped(const Item*) const;
+  bool canEquip(const Item*, const Body&) const;
+  void equip(Item*, EquipmentSlot, Creature*);
+  void unequip(Item*, Creature*);
+  PItem removeItem(Item*, Creature*);
+  int getMaxItems(EquipmentSlot, const Body&) const;
+  const vector<Item*>& getAllEquipped() const;
+  const vector<Item*>& getItems() const;
+  const vector<Item*>& getItems(ItemIndex) const;
+  Item* getItemById(UniqueEntity<Item>::Id) const;
+  vector<PItem> removeItems(const vector<Item*>&, Creature*);
+  vector<PItem> removeAllItems(Creature*);
+  double getTotalWeight() const;
+  bool isEmpty() const;
+  const ItemCounts& getCounts() const;
+  void tick(Position);
+  bool containsAnyOf(const EntitySet<Item>&) const;
 
   SERIALIZATION_DECL(Equipment);
 
   static map<EquipmentSlot, string> slotTitles;
 
   private:
-  EnumMap<EquipmentSlot, vector<WItem>> SERIAL(items);
-  vector<WItem> SERIAL(equipped);
+  Inventory SERIAL(inventory);
+  EnumMap<EquipmentSlot, vector<Item*>> SERIAL(items);
+  vector<Item*> SERIAL(equipped);
 };
 

@@ -30,7 +30,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Tribe);
 Tribe::Tribe(TribeId d, bool p) : diplomatic(p), friendlyTribes(TribeSet::getFull()), id(d) {
 }
 
-double Tribe::getStanding(WConstCreature c) const {
+double Tribe::getStanding(const Creature* c) const {
   auto tribeId = c->getTribeId();
   if (!friendlyTribes.contains(tribeId))
     return -1;
@@ -41,7 +41,7 @@ double Tribe::getStanding(WConstCreature c) const {
   return 0;
 }
 
-void Tribe::initStanding(WConstCreature c) {
+void Tribe::initStanding(const Creature* c) {
   standing.set(c, getStanding(c));
 }
 
@@ -55,11 +55,11 @@ static const double killPenalty = 0.5;
 static const double attackPenalty = 0.2;
 static const double thiefPenalty = 0.5;
 
-double Tribe::getMultiplier(WConstCreature member) {
+double Tribe::getMultiplier(const Creature* member) {
   return 1;
 }
 
-void Tribe::onMemberKilled(WCreature member, WCreature attacker) {
+void Tribe::onMemberKilled(Creature* member, Creature* attacker) {
   CHECK(member->getTribe() == this);
   if (attacker == nullptr)
     return;
@@ -67,7 +67,7 @@ void Tribe::onMemberKilled(WCreature member, WCreature attacker) {
   standing.getOrFail(attacker) -= killPenalty * getMultiplier(member);
 }
 
-bool Tribe::isEnemy(WConstCreature c) const {
+bool Tribe::isEnemy(const Creature* c) const {
   return getStanding(c) < 0;
 }
 
@@ -79,7 +79,7 @@ const TribeSet& Tribe::getFriendlyTribes() const {
   return friendlyTribes;
 }
 
-void Tribe::onItemsStolen(WConstCreature attacker) {
+void Tribe::onItemsStolen(const Creature* attacker) {
   if (diplomatic) {
     initStanding(attacker);
     standing.getOrFail(attacker) -= thiefPenalty;
@@ -107,7 +107,7 @@ Tribe::Map Tribe::generateTribes() {
   init(ret, TribeId::getDwarf(), true);
   init(ret, TribeId::getGnome(), true);
   init(ret, TribeId::getAdventurer(), false);
-  init(ret, TribeId::getKeeper(), false);
+  init(ret, TribeId::getDarkKeeper(), false);
   init(ret, TribeId::getRetiredKeeper(), false);
   init(ret, TribeId::getGreenskin(), true);
   init(ret, TribeId::getAnt(), true);
@@ -119,7 +119,7 @@ Tribe::Map Tribe::generateTribes() {
       {TribeId::getBandit()});
   addEnemies(ret, TribeId::getGnome(),
       {TribeId::getBandit()});
-  addEnemies(ret, TribeId::getKeeper(), {
+  addEnemies(ret, TribeId::getDarkKeeper(), {
       TribeId::getAdventurer(), TribeId::getElf(), TribeId::getDwarf(), TribeId::getHuman(), TribeId::getLizard(),
       TribeId::getPest(), TribeId::getMonster(), TribeId::getBandit(), TribeId::getAnt(),
       TribeId::getRetiredKeeper()});
@@ -131,18 +131,18 @@ Tribe::Map Tribe::generateTribes() {
       TribeId::getLizard(), TribeId::getBandit(), TribeId::getAnt(), TribeId::getDarkElf() });
   addEnemies(ret, TribeId::getAdventurer(), {
       TribeId::getMonster(), TribeId::getPest(), TribeId::getBandit(), TribeId::getDarkElf(),
-      TribeId::getGreenskin(), TribeId::getAnt(), TribeId::getRetiredKeeper() });
+      TribeId::getGreenskin(), TribeId::getAnt(), TribeId::getRetiredKeeper(), TribeId::getLizard() });
   addEnemies(ret, TribeId::getMonster(), {
-      TribeId::getWildlife()});
+      TribeId::getWildlife(), TribeId::getHuman(), TribeId::getBandit(),  TribeId::getLizard()});
   addEnemies(ret, TribeId::getShelob(), {
       TribeId::getGreenskin(), TribeId::getMonster(), TribeId::getLizard(), TribeId::getPest(),
       TribeId::getWildlife(), TribeId::getElf(), TribeId::getHuman(), TribeId::getDwarf(), TribeId::getGnome(),
-      TribeId::getAdventurer(), TribeId::getKeeper(), TribeId::getBandit(),
+      TribeId::getAdventurer(), TribeId::getDarkKeeper(), TribeId::getBandit(),
       TribeId::getPeaceful(), TribeId::getAnt(), TribeId::getDarkElf(), TribeId::getRetiredKeeper()});
   addEnemies(ret, TribeId::getHostile(), {
       TribeId::getGreenskin(), TribeId::getMonster(), TribeId::getLizard(), TribeId::getPest(),
       TribeId::getWildlife(), TribeId::getElf(), TribeId::getHuman(), TribeId::getDwarf(), TribeId::getGnome(),
-      TribeId::getAdventurer(), TribeId::getKeeper(), TribeId::getBandit(), TribeId::getHostile(),
+      TribeId::getAdventurer(), TribeId::getDarkKeeper(), TribeId::getBandit(), TribeId::getHostile(),
       TribeId::getPeaceful(), TribeId::getAnt(), TribeId::getDarkElf(), TribeId::getShelob(),
       TribeId::getRetiredKeeper()});
   return ret;
@@ -150,76 +150,98 @@ Tribe::Map Tribe::generateTribes() {
 
 TribeId::TribeId(KeyType k) : key(k) {}
 
+RICH_ENUM(
+    TribeId::KeyType,
+    MONSTER,
+    PEST,
+    WILDLIFE,
+    HUMAN,
+    ELF,
+    DARK_ELF,
+    DWARF,
+    GNOME,
+    ADVENTURER,
+    BANDIT,
+    HOSTILE,
+    PEACEFUL,
+    DARK_KEEPER,
+    RETIRED_KEEPER,
+    LIZARD,
+    GREENSKIN,
+    ANT,
+    SHELOB
+);
+
 TribeId TribeId::getMonster() {
-  return TribeId(0);
+  return TribeId(KeyType::MONSTER);
 }
 
 TribeId TribeId::getPest() {
-  return TribeId(1);
+  return TribeId(KeyType::PEST);
 }
 
 TribeId TribeId::getWildlife() {
-  return TribeId(2);
+  return TribeId(KeyType::WILDLIFE);
 }
 
 TribeId TribeId::getHuman() {
-  return TribeId(3);
+  return TribeId(KeyType::HUMAN);
 }
 
 TribeId TribeId::getElf() {
-  return TribeId(4);
+  return TribeId(KeyType::ELF);
 }
 
 TribeId TribeId::getDarkElf() {
-  return TribeId(5);
+  return TribeId(KeyType::DARK_ELF);
 }
 
 TribeId TribeId::getDwarf() {
-  return TribeId(6);
+  return TribeId(KeyType::DWARF);
 }
 
 TribeId TribeId::getGnome() {
-  return TribeId(7);
+  return TribeId(KeyType::GNOME);
 }
 
 TribeId TribeId::getAdventurer() {
-  return TribeId(8);
+  return TribeId(KeyType::ADVENTURER);
 }
 
 TribeId TribeId::getBandit() {
-  return TribeId(9);
+  return TribeId(KeyType::BANDIT);
 }
 
 TribeId TribeId::getHostile() {
-  return TribeId(10);
+  return TribeId(KeyType::HOSTILE);
 }
 
 TribeId TribeId::getPeaceful() {
-  return TribeId(11);
+  return TribeId(KeyType::PEACEFUL);
 }
 
-TribeId TribeId::getKeeper() {
-  return TribeId(12);
+TribeId TribeId::getDarkKeeper() {
+  return TribeId(KeyType::DARK_KEEPER);
 }
 
 TribeId TribeId::getRetiredKeeper() {
-  return TribeId(13);
+  return TribeId(KeyType::RETIRED_KEEPER);
 }
 
 TribeId TribeId::getLizard() {
-  return TribeId(14);
+  return TribeId(KeyType::LIZARD);
 }
 
 TribeId TribeId::getGreenskin() {
-  return TribeId(15);
+  return TribeId(KeyType::GREENSKIN);
 }
 
 TribeId TribeId::getAnt() {
-  return TribeId(16);
+  return TribeId(KeyType::ANT);
 }
 
 TribeId TribeId::getShelob() {
-  return TribeId(17);
+  return TribeId(KeyType::SHELOB);
 }
 
 optional<pair<TribeId, TribeId>> TribeId::serialSwitch;
@@ -254,7 +276,7 @@ bool TribeId::operator != (const TribeId& o) const {
 }
 
 int TribeId::getHash() const {
-  return key;
+  return int(key);
 }
 
 TribeSet TribeSet::getFull() {
@@ -268,20 +290,23 @@ void TribeSet::clear() {
 }
 
 TribeSet& TribeSet::insert(TribeId id) {
-  CHECK(id.key >= 0 && id.key < elems.size());
-  elems.set(id.key);
+  auto key = int(id.key);
+  CHECK(key >= 0 && key < elems.size());
+  elems.set(key);
   return *this;
 }
 
 TribeSet& TribeSet::erase(TribeId id) {
-  CHECK(id.key >= 0 && id.key < elems.size());
-  elems.reset(id.key);
+  auto key = int(id.key);
+  CHECK(key >= 0 && key < elems.size());
+  elems.reset(key);
   return *this;
 }
 
 bool TribeSet::contains(TribeId id) const {
-  CHECK(id.key >= 0 && id.key < elems.size());
-  return elems.test(id.key);
+  auto key = int(id.key);
+  CHECK(key >= 0 && key < elems.size());
+  return elems.test(key);
 }
 
 
@@ -290,3 +315,8 @@ bool TribeSet::operator==(const TribeSet& o) const {
 }
 
 SERIALIZE_DEF(TribeSet, elems);
+
+
+#include "pretty_archive.h"
+template
+void TribeId::serialize(PrettyInputArchive& ar1, unsigned);

@@ -12,100 +12,50 @@
 #include "view_object.h"
 #include "name_generator.h"
 #include "creature_factory.h"
-
+#include "tribe_alignment.h"
+#include "external_enemies_type.h"
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
-  switch (campaign.type) {
-    case CampaignType::CAMPAIGN:
-    case CampaignType::QUICK_MAP:
-    case CampaignType::SINGLE_KEEPER:
-      return campaign.sites.getBounds().middle();
-    default:
-      return none;
-  }
+  if (campaign.getPlayerRole() == PlayerRole::ADVENTURER && options->getIntValue(OptionId::ALLIES) == 0)
+    return none;
+  return campaign.sites.getBounds().middle();
 }
 
-static void setCountLimits(Options* options) {
+void CampaignBuilder::setCountLimits() {
 #ifdef RELEASE
   options->setLimits(OptionId::MAIN_VILLAINS, 1, 4);
 #else
   options->setLimits(OptionId::MAIN_VILLAINS, 0, 4);
 #endif
   options->setLimits(OptionId::LESSER_VILLAINS, 0, 6);
-  options->setLimits(OptionId::ALLIES, 0, 4);
+  options->setLimits(OptionId::ALLIES, getPlayerRole() == PlayerRole::ADVENTURER ? 1 : 0, 4);
   options->setLimits(OptionId::INFLUENCE_SIZE, 3, 6);
 }
 
-vector<OptionId> CampaignBuilder::getSecondaryOptions(CampaignType type) const {
+vector<OptionId> CampaignBuilder::getCampaignOptions(CampaignType type) const {
   switch (type) {
     case CampaignType::QUICK_MAP:
-    case CampaignType::CAMPAIGN:
-      return {};
-    case CampaignType::ENDLESS:
       return {OptionId::LESSER_VILLAINS, OptionId::ALLIES};
     case CampaignType::FREE_PLAY:
-      if (playerRole == PlayerRole::KEEPER)
-        return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES, OptionId::GENERATE_MANA};
-      else
+      if (getPlayerRole() == PlayerRole::ADVENTURER)
         return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES};
+      else
+        return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES, OptionId::ENDLESS_ENEMIES};
     case CampaignType::SINGLE_KEEPER:
       return {};
   }
 }
 
-OptionId CampaignBuilder::getPlayerNameOptionId() const {
-  switch (playerRole) {
-    case PlayerRole::KEEPER:
-      return OptionId::KEEPER_NAME;
-    case PlayerRole::ADVENTURER:
-      return OptionId::ADVENTURER_NAME;
-  }
-}
-
-OptionId CampaignBuilder::getPlayerTypeOptionId() const {
-  switch (playerRole) {
-    case PlayerRole::KEEPER:
-      return OptionId::KEEPER_TYPE;
-    case PlayerRole::ADVENTURER:
-      return OptionId::ADVENTURER_TYPE;
-  }
-}
-
-TribeId CampaignBuilder::getPlayerTribeId() const {
-  switch (playerRole) {
-    case PlayerRole::KEEPER:
-      return TribeId::getKeeper();
-    case PlayerRole::ADVENTURER:
-      return TribeId::getAdventurer();
-  }
-}
-
-vector<OptionId> CampaignBuilder::getPrimaryOptions() const {
-  return {getPlayerTypeOptionId(), getPlayerNameOptionId()};
-}
-
 static vector<string> getCampaignTypeDescription(CampaignType type) {
   switch (type) {
-    case CampaignType::CAMPAIGN:
-      return {
-        "the main competitive mode"
-      };
     case CampaignType::FREE_PLAY:
       return {
-        "retired dungeons of other players",
-        "custom starting point and villains",
-        "highscores not recorded",
+        "the main game mode"
       };
     case CampaignType::SINGLE_KEEPER:
       return {
         "everyone on one big map",
         "retiring not possible"
-      };
-    case CampaignType::ENDLESS:
-      return {
-        "conquest not mandatory",
-        "recurring enemy waves",
-        "survive as long as possible"
       };
     default:
       return {};
@@ -113,114 +63,47 @@ static vector<string> getCampaignTypeDescription(CampaignType type) {
 }
 
 vector<CampaignType> CampaignBuilder::getAvailableTypes() const {
-  switch (playerRole) {
+  switch (getPlayerRole()) {
     case PlayerRole::KEEPER:
       return {
-        CampaignType::CAMPAIGN,
         CampaignType::FREE_PLAY,
         CampaignType::SINGLE_KEEPER,
-        CampaignType::ENDLESS,
 #ifndef RELEASE
         CampaignType::QUICK_MAP,
 #endif
       };
     case PlayerRole::ADVENTURER:
       return {
-        CampaignType::CAMPAIGN,
         CampaignType::FREE_PLAY,
       };
   }
 }
 
-optional<string> CampaignBuilder::getSiteChoiceTitle(CampaignType type) const {
-  switch (type) {
-    case CampaignType::FREE_PLAY:
-    case CampaignType::ENDLESS:
-      switch (playerRole) {
-        case PlayerRole::KEEPER: return "Choose the location of your base:"_s;
-        case PlayerRole::ADVENTURER: return "Choose a location to start your adventure:"_s;
+static vector<Campaign::VillainInfo> filter(vector<Campaign::VillainInfo> v, VillainType type) {
+  return v.filter([type](const auto& elem){ return elem.type == type; });
+}
+
+vector<Campaign::VillainInfo> CampaignBuilder::getVillains(TribeAlignment tribeAlignment, VillainType type) {
+  switch (getPlayerRole()) {
+    case PlayerRole::KEEPER:
+      switch (tribeAlignment) {
+        case TribeAlignment::EVIL:
+          return filter(villains[0], type);
+        case TribeAlignment::LAWFUL:
+          return filter(villains[1], type);
       }
-      break;
-    default:
-      return none;
-  }
-}
-
-vector<Campaign::VillainInfo> CampaignBuilder::getMainVillains() {
-  switch (playerRole) {
-    case PlayerRole::KEEPER:
-      return {
-        {ViewId::DUKE, EnemyId::KNIGHTS, "Knights", VillainType::MAIN},
-        {ViewId::ELF_LORD, EnemyId::ELVES, "Elves", VillainType::MAIN},
-        {ViewId::DWARF_BARON, EnemyId::DWARVES, "Dwarves", VillainType::MAIN},
-        {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "Red dragon", VillainType::MAIN},
-        {ViewId::ELEMENTALIST, EnemyId::ELEMENTALIST, "Elementalist", VillainType::MAIN},
-        {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", VillainType::MAIN},
-        {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", VillainType::MAIN},
-        {ViewId::SHAMAN, EnemyId::WARRIORS, "Warriors", VillainType::MAIN},
-        {ViewId::DEMON_LORD, EnemyId::DEMON_DEN, "Demon den", VillainType::MAIN},
-      };
     case PlayerRole::ADVENTURER:
-      return {
-        {ViewId::RED_DRAGON, EnemyId::RED_DRAGON, "Red dragon", VillainType::MAIN},
-        {ViewId::GREEN_DRAGON, EnemyId::GREEN_DRAGON, "Green dragon", VillainType::MAIN},
-        {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", VillainType::MAIN},
-        {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::MAIN},
-        {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", VillainType::MAIN},
-        {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", VillainType::MAIN},
-        {ViewId::DEMON_LORD, EnemyId::DEMON_DEN, "Demon den", VillainType::MAIN},
-      };
-  }
-}
-
-vector<Campaign::VillainInfo> CampaignBuilder::getLesserVillains() {
-  switch (playerRole) {
-    case PlayerRole::KEEPER:
-      return {
-        {ViewId::ENT, EnemyId::ENTS, "Tree spirits", VillainType::LESSER},
-        {ViewId::DRIAD, EnemyId::DRIADS, "Driads", VillainType::LESSER},
-        {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", VillainType::LESSER},
-        {ViewId::SHELOB, EnemyId::SHELOB, "Giant spider", VillainType::LESSER},
-        {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", VillainType::LESSER},
-        {ViewId::UNICORN, EnemyId::UNICORN_HERD, "Unicorn herd", VillainType::LESSER},
-        {ViewId::ANT_QUEEN, EnemyId::ANTS_OPEN, "Ants", VillainType::LESSER},
-        {ViewId::ZOMBIE, EnemyId::CEMETERY, "Zombies", VillainType::LESSER},
-      };
-    case PlayerRole::ADVENTURER:
-      return {
-        {ViewId::BANDIT, EnemyId::BANDITS, "Bandits", VillainType::LESSER},
-        {ViewId::CYCLOPS, EnemyId::CYCLOPS, "Cyclops", VillainType::LESSER},
-        {ViewId::HYDRA, EnemyId::HYDRA, "Hydra", VillainType::LESSER},
-        {ViewId::ZOMBIE, EnemyId::CEMETERY, "Zombies", VillainType::LESSER},
-        {ViewId::OGRE, EnemyId::OGRE_CAVE, "Ogres", VillainType::LESSER},
-        {ViewId::HARPY, EnemyId::HARPY_CAVE, "Harpies", VillainType::LESSER},
-      };
-  }
-}
-
-vector<Campaign::VillainInfo> CampaignBuilder::getAllies() {
-  switch (playerRole) {
-    case PlayerRole::KEEPER:
-      return {
-//        {ViewId::UNKNOWN_MONSTER, EnemyId::OGRE_CAVE, "Unknown", VillainType::ALLY},
-//        {ViewId::UNKNOWN_MONSTER, EnemyId::HARPY_CAVE, "Unknown", VillainType::ALLY},
-        {ViewId::UNKNOWN_MONSTER, EnemyId::SOKOBAN, "Unknown", VillainType::ALLY},
-        {ViewId::DARK_ELF_LORD, EnemyId::DARK_ELVES, "Dark elves", VillainType::ALLY},
-        {ViewId::GNOME_BOSS, EnemyId::GNOMES, "Gnomes", VillainType::ALLY},
-        {ViewId::ORC_CAPTAIN, EnemyId::ORC_VILLAGE, "Greenskin village", VillainType::ALLY},
-      };
-    case PlayerRole::ADVENTURER:
-      return {
-        {ViewId::DUKE, EnemyId::KNIGHTS, "Knights", VillainType::ALLY},
-        {ViewId::ELF_LORD, EnemyId::ELVES, "Elves", VillainType::ALLY},
-        {ViewId::DWARF_BARON, EnemyId::DWARVES, "Dwarves", VillainType::ALLY},
-        {ViewId::LIZARDLORD, EnemyId::LIZARDMEN, "Lizardmen", VillainType::ALLY},
-      };
+      switch (tribeAlignment) {
+        case TribeAlignment::EVIL:
+          return filter(villains[2], type);
+        case TribeAlignment::LAWFUL:
+          return filter(villains[3], type);
+      }
   }
 }
 
 const char* CampaignBuilder::getIntroText() const {
-   switch (playerRole) {
+   switch (getPlayerRole()) {
     case PlayerRole::KEEPER:
       return
         "Welcome to the campaign mode! "
@@ -230,7 +113,7 @@ const char* CampaignBuilder::getIntroText() const {
         "You can travel to other sites by creating a team and using the travel command.\n\n"
         "The highlighted tribes are in your influence zone, which means that you can currently interact with them "
         "(trade, recruit, attack or be attacked). "
-        "As you conquer more enemies, your influence zone grows.\n\n";
+        "As you conquer more enemies, your influence zone will increase.\n\n";
     case PlayerRole::ADVENTURER:
       return
         "Welcome to the campaign mode! "
@@ -239,40 +122,29 @@ const char* CampaignBuilder::getIntroText() const {
         "to win the game."
         "You can travel to other sites by using the travel command.\n\n"
         "The highlighted tribes are in your influence zone, which means that you can currently travel there. "
-        "As you conquer more enemies, your influence zone grows.\n\n";
+        "As you conquer more enemies, your influence zone will increase.\n\n";
    }
 }
 
-void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, WConstCreature player) {
-  switch (playerRole) {
+void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewId playerViewId) {
+  switch (getPlayerRole()) {
     case PlayerRole::KEEPER:
       if (campaign.playerPos)
         campaign.clearSite(*campaign.playerPos);
       campaign.playerPos = pos;
       campaign.sites[*campaign.playerPos].dweller =
-          Campaign::SiteInfo::Dweller(Campaign::KeeperInfo{player->getViewObject().id()});
+          Campaign::SiteInfo::Dweller(Campaign::KeeperInfo{playerViewId});
       break;
     case PlayerRole:: ADVENTURER:
       campaign.playerPos = pos;
       break;
   }
-
 }
-
-PCreature CampaignBuilder::getPlayerCreature() {
-  PCreature ret = CreatureFactory::fromId(options->getCreatureId(getPlayerTypeOptionId()), getPlayerTribeId());
-  auto name = options->getStringValue(getPlayerNameOptionId());
-  if (!name.empty())
-    ret->getName().setFirst(name);
-  ret->getName().useFullTitle();
-  return ret;
-}
-
 
 static Table<Campaign::SiteInfo> getTerrain(RandomGen& random, Vec2 size, int numBlocked) {
   Table<Campaign::SiteInfo> ret(size, {});
   for (Vec2 v : ret.getBounds())
-    ret[v].viewId.push_back(ViewId::GRASS);
+    ret[v].viewId.push_back(ViewId("grass"));
   vector<Vec2> freePos = ret.getBounds().getAllSquares();
   for (int i : Range(numBlocked)) {
     Vec2 pos = random.choose(freePos);
@@ -299,23 +171,14 @@ static VillainCounts getVillainCounts(CampaignType type, Options* options) {
         10000
       };
     }
-    case CampaignType::CAMPAIGN:
-      return {4, 6, 2, 1};
-    case CampaignType::ENDLESS:
-      return {
-        0,
-        options->getIntValue(OptionId::LESSER_VILLAINS),
-        options->getIntValue(OptionId::ALLIES),
-        0
-      };
     case CampaignType::QUICK_MAP:
     case CampaignType::SINGLE_KEEPER:
       return {0, 0, 0, 0};
   }
 }
 
-CampaignBuilder::CampaignBuilder(View* v, RandomGen& rand, Options* o, PlayerRole r)
-    : view(v), random(rand), playerRole(r), options(o) {
+CampaignBuilder::CampaignBuilder(View* v, RandomGen& rand, Options* o, VillainsTuple villains, GameIntros intros, const AvatarInfo& a)
+    : view(v), random(rand), options(o), villains(std::move(villains)), gameIntros(intros), avatarInfo(a) {
 }
 
 static string getNewIdSuffix() {
@@ -337,6 +200,8 @@ struct VillainPlacement {
 void CampaignBuilder::placeVillains(Campaign& campaign, vector<Campaign::SiteInfo::Dweller> villains,
     const VillainPlacement& placement, int count) {
   random.shuffle(villains.begin(), villains.end());
+  for (int i = 0; villains.size() < count; ++i)
+    villains.push_back(villains[i]);
   if (villains.size() > count)
     villains.resize(count);
   vector<Vec2> freePos;
@@ -353,7 +218,7 @@ void CampaignBuilder::placeVillains(Campaign& campaign, vector<Campaign::SiteInf
 VillainPlacement CampaignBuilder::getVillainPlacement(const Campaign& campaign, VillainType type) {
   VillainPlacement ret { [&campaign](int x) { return campaign.sites.getBounds().getXRange().contains(x);}, none };
   switch (campaign.getType()) {
-    case CampaignType::CAMPAIGN:
+    case CampaignType::FREE_PLAY:
       switch (type) {
         case VillainType::LESSER:
           ret.xPredicate = [](int x) { return x >= 5 && x < 12; };
@@ -363,7 +228,7 @@ VillainPlacement CampaignBuilder::getVillainPlacement(const Campaign& campaign, 
           break;
         case VillainType::ALLY:
           if (campaign.getPlayerRole() == PlayerRole::ADVENTURER)
-            ret.firstLocation = *considerStaticPlayerPos(campaign);
+            ret.firstLocation = considerStaticPlayerPos(campaign);
           break;
         default:
           break;
@@ -384,14 +249,14 @@ vector<Dweller> shuffle(RandomGen& random, vector<T> v) {
 }
 
 void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& counts,
-    const optional<RetiredGames>& retired) {
+    const optional<RetiredGames>& retired, TribeAlignment tribeAlignment) {
   int numRetired = retired ? min(retired->getNumActive(), min(counts.numMain, counts.maxRetired)) : 0;
-  placeVillains(campaign, shuffle(random, getMainVillains()), getVillainPlacement(campaign, VillainType::MAIN),
-      counts.numMain - numRetired);
-  placeVillains(campaign, shuffle(random, getLesserVillains()), getVillainPlacement(campaign, VillainType::LESSER),
-      counts.numLesser);
-  placeVillains(campaign, shuffle(random, getAllies()), getVillainPlacement(campaign, VillainType::ALLY),
-      counts.numAllies);
+  placeVillains(campaign, shuffle(random, getVillains(tribeAlignment, VillainType::MAIN)),
+      getVillainPlacement(campaign, VillainType::MAIN), counts.numMain - numRetired);
+  placeVillains(campaign, shuffle(random, getVillains(tribeAlignment, VillainType::LESSER)),
+      getVillainPlacement(campaign, VillainType::LESSER), counts.numLesser);
+  placeVillains(campaign, shuffle(random, getVillains(tribeAlignment, VillainType::ALLY)),
+      getVillainPlacement(campaign, VillainType::ALLY), counts.numAllies);
   if (retired) {
     placeVillains(campaign, retired->getActiveGames().transform(
         [](const RetiredGames::RetiredGame& game) -> Dweller {
@@ -400,10 +265,12 @@ void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& cou
   }
 }
 
+PlayerRole CampaignBuilder::getPlayerRole() const {
+  return avatarInfo.creatureInfo.contains<KeeperCreatureInfo>() ? PlayerRole::KEEPER : PlayerRole::ADVENTURER;
+}
+
 static optional<View::CampaignOptions::WarningType> getMenuWarning(CampaignType type) {
   switch (type) {
-    case CampaignType::CAMPAIGN:
-      return View::CampaignOptions::OTHER_MODES;
     case CampaignType::SINGLE_KEEPER:
       return View::CampaignOptions::NO_RETIRE;
     default:
@@ -420,50 +287,40 @@ static bool autoConfirm(CampaignType type) {
   }
 }
 
-static vector<string> getIntroMessages(CampaignType type, string worldName) {
-  vector<string> ret = {
-    "Welcome to KeeperRL Alpha23! A lot of gameplay changes have arrived with this update. Below is a very short "
-    "summary, and we encourage you to check out the full change log at www.keeperrl.com.\n \n"
-    "Mana is no longer generated at the library, and instead you only receive it for defeating enemies. "
-    "Many features, including construction and crafting costs, have been rebalanced to accommodate this change. "
-    "You will only need mana to research new technology, and increase the population limit.\n \n"
-    "If you miss the old ways, you can enable mana regeneration when playing the 'free play' game mode.\n \n"
-    "When commanding a team, you can choose to control every team member directly. "
-    "We encourage you to use this feature during combat, as it's extremely useful. You can toggle it using the "
-    "shortcut [G] or by going into the [Commands] menu.\n \n"
-    "From now on the vampire lord will be hostile when you wake him up, so be careful!"
-  };
-  if (type == CampaignType::ENDLESS)
-    ret.push_back(
-        "Welcome to the new endless mode! Your task here is to survive as long as possible, while "
-        "defending your dungeon from incoming enemy waves. The enemies don't come from any specific place and "
-        "will just appear at the edge of the map. You will get mana for defeating each wave. "
-        "Note that there are also traditional enemy villages scattered around and they may also attack you.\n \n"
-        "The endless mode is a completely new feature and we are very interested in your feedback on how "
-        "it can be developed further. Please drop by on the forums at keeperrl.com or on Steam and let us know!"
-    );
+vector<string> CampaignBuilder::getIntroMessages(CampaignType type) const {
+  return concat(gameIntros.first, getReferenceMaybe(gameIntros.second, type).value_or(vector<string>()));
+}
 
-  return ret;
+static optional<ExternalEnemiesType> getExternalEnemies(Options* options) {
+  auto v = options->getIntValue(OptionId::ENDLESS_ENEMIES);
+  if (v == 0)
+    return none;
+  if (v == 1)
+    return ExternalEnemiesType::FROM_START;
+  if (v == 2)
+    return ExternalEnemiesType::AFTER_WINNING;
+  FATAL << "Bad endless enemies value " << v;
+  fail();
 }
 
 optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<RetiredGames>(CampaignType)> genRetired,
-    CampaignType type) {
+    CampaignType type, string worldName) {
   Vec2 size(17, 9);
   int numBlocked = 0.6 * size.x * size.y;
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
   auto retired = genRetired(type);
-  View::CampaignMenuState menuState { true, false};
-  setCountLimits(options);
-  options->setChoices(OptionId::KEEPER_TYPE, {CreatureId::KEEPER, CreatureId::KEEPER_F});
-  options->setChoices(OptionId::ADVENTURER_TYPE, {CreatureId::ADVENTURER, CreatureId::ADVENTURER_F});
+  View::CampaignMenuState menuState { true, false, false};
+  string searchString;
+  const auto playerRole = getPlayerRole();
+  options->setChoices(OptionId::ENDLESS_ENEMIES, {"none", "from the start", "after winning"});
   while (1) {
-    PCreature player = getPlayerCreature();
-    Campaign campaign(terrain, type, playerRole, NameGenerator::get(NameGeneratorId::WORLD)->getNext());
+    setCountLimits();
+    Campaign campaign(terrain, type, playerRole, worldName);
     if (auto pos = considerStaticPlayerPos(campaign)) {
       campaign.clearSite(*pos);
-      setPlayerPos(campaign, *pos, player.get());
+      setPlayerPos(campaign, *pos, avatarInfo.playerCreature->getMaxViewIdUpgrade());
     }
-    placeVillains(campaign, getVillainCounts(type, options), retired);
+    placeVillains(campaign, getVillainCounts(type, options), retired, avatarInfo.tribeAlignment);
     while (1) {
       bool updateMap = false;
       campaign.influenceSize = options->getIntValue(OptionId::INFLUENCE_SIZE);
@@ -472,62 +329,53 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
           : view->prepareCampaign({
               campaign,
               (retired && type == CampaignType::FREE_PLAY) ? optional<RetiredGames&>(*retired) : none,
-              player.get(),
-              getPrimaryOptions(),
-              getSecondaryOptions(type),
-              getSiteChoiceTitle(type),
+              avatarInfo.playerCreature.get(),
+              getCampaignOptions(type),
               getIntroText(),
               getAvailableTypes().transform([](CampaignType t) -> View::CampaignOptions::CampaignTypeInfo {
                   return {t, getCampaignTypeDescription(t)};}),
-              getMenuWarning(type)
-              }, options, menuState);
+              getMenuWarning(type),
+              searchString}, menuState);
       switch (action.getId()) {
+        case CampaignActionId::SEARCH_RETIRED:
+          searchString = action.get<string>();
+          break;
         case CampaignActionId::REROLL_MAP:
-            terrain = getTerrain(random, size, numBlocked);
-            updateMap = true;
-            break;
+          terrain = getTerrain(random, size, numBlocked);
+          updateMap = true;
+          break;
         case CampaignActionId::UPDATE_MAP:
-            updateMap = true;
-            break;
+          updateMap = true;
+          break;
         case CampaignActionId::CHANGE_TYPE:
-            type = action.get<CampaignType>();
-            retired = genRetired(type);
-            updateMap = true;
-            break;
+          type = action.get<CampaignType>();
+          retired = genRetired(type);
+          updateMap = true;
+          break;
         case CampaignActionId::UPDATE_OPTION:
-            switch (action.get<OptionId>()) {
-              case OptionId::KEEPER_NAME:
-              case OptionId::ADVENTURER_NAME:
-              case OptionId::KEEPER_TYPE:
-              case OptionId::ADVENTURER_TYPE:
-                player = getPlayerCreature();
-                if (campaign.playerPos) {
-                  setPlayerPos(campaign, *campaign.playerPos, player.get());
-                }
-                break;
-              case OptionId::GENERATE_MANA:
-              case OptionId::INFLUENCE_SIZE: break;
-              default: updateMap = true; break;
-            }
-            break;
+          switch (action.get<OptionId>()) {
+            case OptionId::PLAYER_NAME:
+            case OptionId::GENERATE_MANA:
+            case OptionId::INFLUENCE_SIZE:
+            case OptionId::ENDLESS_ENEMIES:
+              break;
+            default:
+              updateMap = true;
+              break;
+          }
+          break;
         case CampaignActionId::CANCEL:
-            return none;
-        case CampaignActionId::CHOOSE_SITE:
-            if (!considerStaticPlayerPos(campaign))
-              setPlayerPos(campaign, action.get<Vec2>(), player.get());
-            break;
+          return none;
         case CampaignActionId::CONFIRM:
-            if (!retired || retired->getNumActive() > 0 || playerRole != PlayerRole::KEEPER ||
-                retired->getAllGames().empty() ||
-                view->yesOrNoPrompt("The imps are going to be sad if you don't add any retired dungeons. Continue?")) {
-              string name = *player->getName().first();
-              string gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
-              string gameDisplayName = name + " of " + campaign.worldName;
-              return CampaignSetup{campaign, std::move(player), gameIdentifier, gameDisplayName,
-                  options->getBoolValue(OptionId::GENERATE_MANA) &&
-                  getSecondaryOptions(type).contains(OptionId::GENERATE_MANA),
-                  getIntroMessages(type, campaign.getWorldName())};
-            }
+          if (!retired || retired->getNumActive() > 0 || playerRole != PlayerRole::KEEPER ||
+              retired->getAllGames().empty() ||
+              view->yesOrNoPrompt("The imps are going to be sad if you don't add any retired dungeons. Continue?")) {
+            string name = avatarInfo.playerCreature->getName().firstOrBare();
+            string gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
+            string gameDisplayName = name + " of " + campaign.worldName;
+            return CampaignSetup{campaign, gameIdentifier, gameDisplayName,
+                getIntroMessages(type), getExternalEnemies(options)};
+          }
       }
       if (updateMap)
         break;
@@ -537,5 +385,5 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
 
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
   Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "");
-  return CampaignSetup{ret, PCreature(nullptr), "", ""};
+  return CampaignSetup{ret, "", "", {}, none};
 }

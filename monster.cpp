@@ -28,11 +28,11 @@
 SERIALIZE_DEF(Monster, SUBCLASS(Controller), monsterAI)
 SERIALIZATION_CONSTRUCTOR_IMPL(Monster);
 
-Monster::Monster(WCreature c, const MonsterAIFactory& f)
+Monster::Monster(Creature* c, const MonsterAIFactory& f)
     : Controller(c), monsterAI(f.getMonsterAI(c)) {}
 
 ControllerFactory Monster::getFactory(MonsterAIFactory f) {
-  return ControllerFactory([=](WCreature c) { return makeOwner<Monster>(c, f);});
+  return ControllerFactory([=](Creature* c) { return makeOwner<Monster>(c, f);});
 }
 
 void Monster::makeMove() {
@@ -46,14 +46,6 @@ bool Monster::isPlayer() const {
 const MapMemory& Monster::getMemory() const {
   return MapMemory::empty();
 }
-
-void Monster::onBump(WCreature c) {
-  if (c->isEnemy(getCreature()))
-    c->attack(getCreature(), none).perform(c);
-  else if (auto action = c->move(getCreature()->getPosition()))
-    action.perform(c);
-}
-
 
 MessageGenerator& Monster::getMessageGenerator() const {
   static MessageGenerator messageGenerator(MessageGenerator::THIRD_PERSON);

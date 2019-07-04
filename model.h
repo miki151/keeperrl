@@ -22,6 +22,7 @@
 #include "tribe.h"
 #include "enum_variant.h"
 #include "event_generator.h"
+#include "game_time.h"
 
 class Level;
 class ProgressMeter;
@@ -32,17 +33,20 @@ class StairKey;
 class Game;
 class ExternalEnemies;
 class Options;
+class AvatarInfo;
+class GameConfig;
+class ContentFactory;
 
 /**
   * Main class that holds all game logic.
   */
 class Model : public OwnedObject<Model> {
   public:
-  static PModel create();
+  static PModel create(ContentFactory*);
   
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
-  void update(double totalTime);
+  bool update(double totalTime);
 
   /** Returns the level that the stairs lead to. */
   WLevel getLinkedLevel(WLevel from, StairKey) const;
@@ -50,48 +54,54 @@ class Model : public OwnedObject<Model> {
   optional<Position> getStairs(WConstLevel from, WConstLevel to);
 
   void addCreature(PCreature);
-  void addCreature(PCreature, double delay);
+  void addCreature(PCreature, TimeInterval delay);
   void landHeroPlayer(PCreature);
   void addExternalEnemies(ExternalEnemies);
-  void clearExternalEnemies();
-
-  const optional<ExternalEnemies>& getExternalEnemies() const;
+  const heap_optional<ExternalEnemies>& getExternalEnemies() const;
 
   bool isTurnBased();
 
-  double getLocalTime() const;
-  void increaseLocalTime(WCreature, double diff);
-  double getLocalTime(WConstCreature);
+  LocalTime getLocalTime() const;
+  double getLocalTimeDouble() const;
+  TimeQueue& getTimeQueue();
+  int getMoveCounter() const;
+  void increaseMoveCounter();
 
   void setGame(WGame);
   WGame getGame() const;
-  void tick(double time);
+  void tick(LocalTime);
   vector<WCollective> getCollectives() const;
-  vector<WCreature> getAllCreatures() const;
+  vector<Creature*> getAllCreatures() const;
+  const vector<PCreature>& getDeadCreatures() const;
   vector<WLevel> getLevels() const;
+  const vector<WLevel>& getMainLevels() const;
+  void addCollective(PCollective);
 
   WLevel getTopLevel() const;
+  LevelId getUniqueId() const;
 
   void addWoodCount(int);
   int getWoodCount() const;
 
   int getSaveProgressCount() const;
 
-  void killCreature(WCreature victim);
+  void killCreature(Creature* victim);
   void updateSunlightMovement();
 
-  optional<Position> getOtherPortal(Position) const;
-  void registerPortal(Position);
-
-  PCreature extractCreature(WCreature);
+  PCreature extractCreature(Creature*);
   void transferCreature(PCreature, Vec2 travelDir);
-  bool canTransferCreature(WCreature, Vec2 travelDir);
+  bool canTransferCreature(Creature*, Vec2 travelDir);
 
   SERIALIZATION_DECL(Model)
 
   void discardForRetirement();
+  void prepareForRetirement();
 
   void addEvent(const GameEvent&);
+
+  WLevel buildLevel(LevelBuilder, PLevelMaker);
+  WLevel buildMainLevel(LevelBuilder, PLevelMaker);
+  void calculateStairNavigation();
 
   private:
   struct Private {};
@@ -105,28 +115,25 @@ class Model : public OwnedObject<Model> {
   friend class ModelBuilder;
 
   PCreature makePlayer(int handicap);
-  WLevel buildLevel(LevelBuilder&&, PLevelMaker);
-  WLevel buildTopLevel(LevelBuilder&&, PLevelMaker);
 
   vector<PLevel> SERIAL(levels);
+  vector<WLevel> SERIAL(mainLevels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
   WGame SERIAL(game) = nullptr;
-  double SERIAL(lastTick) = 0;
+  LocalTime SERIAL(lastTick);
   HeapAllocated<TimeQueue> SERIAL(timeQueue);
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(currentTime) = 0;
   int SERIAL(woodCount) = 0;
-  void calculateStairNavigation();
-  optional<StairKey> getStairsBetween(WConstLevel from, WConstLevel to);
+  optional<StairKey> getStairsBetween(WConstLevel from, WConstLevel to) const;
   map<pair<LevelId, LevelId>, StairKey> SERIAL(stairNavigation);
   bool serializationLocked = false;
-  WLevel SERIAL(topLevel) = nullptr;
   template <typename>
   friend class EventListener;
   OwnerPointer<EventGenerator> SERIAL(eventGenerator);
   void checkCreatureConsistency();
-  HeapAllocated<optional<ExternalEnemies>> SERIAL(externalEnemies);
-  vector<Position> SERIAL(portals);
+  heap_optional<ExternalEnemies> SERIAL(externalEnemies);
+  int moveCounter = 0;
 };
 

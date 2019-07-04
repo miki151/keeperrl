@@ -24,14 +24,12 @@ class MonsterAIFactory;
 
 class Monster : public Controller {
   public:
-  Monster(WCreature, const MonsterAIFactory&);
+  Monster(Creature*, const MonsterAIFactory&);
   
   virtual void makeMove() override;
   virtual bool isPlayer() const override;
   virtual const MapMemory& getMemory() const;
   virtual MessageGenerator& getMessageGenerator() const override;
-
-  virtual void onBump(WCreature) override;
 
   static ControllerFactory getFactory(MonsterAIFactory);
 

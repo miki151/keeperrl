@@ -23,14 +23,14 @@ class Creature;
 
 class Attack {
   public:
-  Attack(WCreature a, AttackLevel l, AttackType t, int s, AttrType d, optional<Effect> e = none)
+  Attack(Creature* a, AttackLevel l, AttackType t, int s, AttrType d, vector<Effect> e = {})
       : attacker(a), level(l), type(t), strength(s), damageType(d), effect(e) {}
 
-  WCreature attacker;
+  Creature* attacker = nullptr;
   AttackLevel level;
   AttackType type;
   int strength;
   AttrType damageType;
-  optional<Effect> effect;
+  vector<Effect> effect;
 };
 

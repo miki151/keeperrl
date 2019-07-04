@@ -11,7 +11,7 @@
 #include "item_factory.h"
 #include "item.h"
 #include "game.h"
-#include "event_listener.h"
+#include "game_event.h"
 #include "level.h"
 #include "furniture_usage.h"
 #include "furniture_entry.h"
@@ -19,6 +19,10 @@
 #include "furniture_click.h"
 #include "furniture_tick.h"
 #include "movement_set.h"
+#include "fx_info.h"
+#include "furniture_on_built.h"
+#include "content_factory.h"
+#include "item_list.h"
 
 static string makePlural(const string& s) {
   if (s.empty())
@@ -34,51 +38,60 @@ static string makePlural(const string& s) {
   return s + "s";
 }
 
-Furniture::Furniture(const string& n, const optional<ViewObject>& o, FurnitureType t, TribeId id)
+/*Furniture::Furniture(const string& n, const optional<ViewObject>& o, FurnitureType t, TribeId id)
     : viewObject(o), name(n), pluralName(makePlural(name)), type(t), movementSet(id) {
   movementSet->addTrait(MovementTrait::WALK);
-}
+}*/
 
 Furniture::Furniture(const Furniture&) = default;
 
-SERIALIZATION_CONSTRUCTOR_IMPL(Furniture)
+Furniture::Furniture() {
+  movementSet->addTrait(MovementTrait::WALK);
+}
 
 Furniture::~Furniture() {}
 
 template<typename Archive>
-void Furniture::serialize(Archive& ar, const unsigned) {
-  ar(SUBCLASS(OwnedObject<Furniture>), viewObject);
-  ar(name, pluralName, type, movementSet, fire, burntRemains, destroyedRemains, destroyActions, itemDrop);
-  ar(blockVision, usageType, clickType, tickType, usageTime, overrideMovement, wall, creator, createdTime);
-  ar(constructMessage, layer, entryType, lightEmission, canHideHere, warning, summonedElement, droppedItems);
-  ar(canBuildBridge, noProjectiles);
+void Furniture::serializeImpl(Archive& ar, const unsigned) {
+  ar(SKIP(SUBCLASS(OwnedObject<Furniture>)), OPTION(viewObject), OPTION(removeNonFriendly), OPTION(canBuildOutsideOfTerritory));
+  ar(NAMED(name), OPTION(pluralName), OPTION(type), OPTION(movementSet), OPTION(fire), OPTION(burntRemains), OPTION(destroyedRemains));
+  ar(OPTION(destroyedInfo), OPTION(itemDrop), OPTION(wall), SKIP(creator), NAMED(createdTime), OPTION(canSilentlyReplace));
+  ar(OPTION(blockVision), NAMED(usageType), NAMED(clickType), NAMED(tickType), OPTION(usageTime), OPTION(overrideMovement));
+  ar(NAMED(constructMessage), OPTION(layer), OPTION(entryType), OPTION(lightEmission), OPTION(canHideHere), OPTION(warning));
+  ar(NAMED(summonedElement), OPTION(droppedItems), OPTION(xForgetAfterBuilding), OPTION(requiredSupport), OPTION(builtOver));
+  ar(OPTION(canBuildBridge), OPTION(noProjectiles), OPTION(clearFogOfWar), OPTION(removeWithCreaturePresent), OPTION(upgrade));
+  ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
+  ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
+  ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect));
+}
+
+template <class Archive>
+void Furniture::serialize(Archive& ar1, const unsigned int v) {
+  serializeImpl(ar1, v);
 }
 
 SERIALIZABLE(Furniture)
 
-const optional<ViewObject>& Furniture::getViewObject() const {
-  return *viewObject;
+const heap_optional<ViewObject>& Furniture::getViewObject() const {
+  return viewObject;
 }
 
-optional<ViewObject>& Furniture::getViewObject() {
-  return *viewObject;
+heap_optional<ViewObject>& Furniture::getViewObject() {
+  return viewObject;
 }
 
-const string& Furniture::getName(FurnitureType type, int count) {
-  static EnumMap<FurnitureType, string> names(
-      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getName(1); });
-  static EnumMap<FurnitureType, string> pluralNames(
-      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getName(2); });
-  if (count == 1)
-    return names[type];
-  else
-    return pluralNames[type];
-}
-
-FurnitureLayer Furniture::getLayer(FurnitureType type) {
-  static EnumMap<FurnitureType, FurnitureLayer> layers(
-      [] (FurnitureType type) { return FurnitureFactory::get(type, TribeId::getHostile())->getLayer(); });
-  return layers[type];
+void Furniture::updateViewObject() {
+  if (viewObject) {
+    double minHealth = 1;
+    for (auto action : ENUM_ALL(DestroyAction::Type))
+      if (auto& info = destroyedInfo[action])
+        minHealth = min(minHealth, info->health);
+    if (minHealth < 1) {
+      viewObject->setAttribute(ViewObjectAttribute::HEALTH, minHealth);
+      if (isWall())
+        viewObject->setModifier(ViewObjectModifier::FURNITURE_CRACKS);
+    }
+  }
 }
 
 const string& Furniture::getName(int count) const {
@@ -92,7 +105,8 @@ FurnitureType Furniture::getType() const {
   return type;
 }
 
-bool Furniture::isVisibleTo(WConstCreature c) const {
+bool Furniture::isVisibleTo(const Creature* c) const {
+  PROFILE;
   if (entryType)
     return entryType->isVisibleTo(this, c);
   else
@@ -103,7 +117,7 @@ const MovementSet& Furniture::getMovementSet() const {
   return *movementSet;
 }
 
-void Furniture::onEnter(WCreature c) const {
+void Furniture::onEnter(Creature* c) const {
   if (entryType) {
     auto f = c->getPosition().modFurniture(layer);
     f->entryType->handle(f, c);
@@ -116,18 +130,27 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
   auto myType = type;
   if (itemDrop)
     pos.dropItems(itemDrop->random());
-  if (destroyedRemains)
-    pos.replaceFurniture(this, FurnitureFactory::get(*destroyedRemains, getTribe()));
-  else
-    pos.removeFurniture(this);
+  if (usageType)
+    FurnitureUsage::beforeRemoved(*usageType, pos);
+  if (destroyFX)
+    pos.getGame()->addEvent(EventInfo::FX{pos, *destroyFX});
+  pos.removeFurniture(this, destroyedRemains
+      ? pos.getGame()->getContentFactory()->furniture.getFurniture(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
 }
 
-void Furniture::tryToDestroyBy(Position pos, WCreature c, const DestroyAction& action) {
-  if (auto& strength = destroyActions[action.getType()]) {
+void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& action) {
+  if (auto& info = destroyedInfo[action.getType()]) {
     c->addSound(action.getSound());
-    *strength -= c->getAttr(AttrType::DAMAGE);
-    if (*strength <= 0)
+    double damage = c->getAttr(AttrType::DAMAGE);
+    if (auto skill = action.getDestroyingSkillMultiplier())
+      damage = damage * c->getAttributes().getSkills().getValue(*skill);
+    info->health -= damage / info->strength;
+    updateViewObject();
+    pos.setNeedsRenderAndMemoryUpdate(true);
+    if (tryDestroyFX)
+      pos.getGame()->addEvent(EventInfo::FX{pos, *tryDestroyFX});
+    if (info->health <= 0)
       destroy(pos, action);
   }
 }
@@ -140,31 +163,70 @@ void Furniture::setTribe(TribeId id) {
   movementSet->setTribe(id);
 }
 
+bool Furniture::hasRequiredSupport(Position pos) const {
+  return requiredSupport.empty() || !!getSupportInfo(pos);
+}
+
+optional<ViewId> Furniture::getSupportViewId(Position pos) const {
+  if (auto ret = getSupportInfo(pos))
+    return ret->viewId;
+  return none;
+}
+
+const Furniture::SupportInfo* Furniture::getSupportInfo(Position pos) const {
+  auto hasSupport = [&](const vector<Dir>& dirs) {
+    for (auto dir : dirs)
+      if (!pos.plus(Vec2(dir)).isWall())
+        return false;
+    return true;
+  };
+  for (int i : All(requiredSupport)) {
+    if (hasSupport(requiredSupport[i].dirs))
+      return &requiredSupport[i];
+  }
+  return nullptr;
+}
+
 void Furniture::tick(Position pos) {
+  PROFILE_BLOCK("Furniture::tick");
   if (fire && fire->isBurning()) {
+    {
+      auto otherF = pos.getFurniture(layer);
+      CHECK(otherF == this) << EnumInfo<FurnitureLayer>::getString(layer) << " " << getName()
+          << " " << (otherF ? (otherF->getName() + " " + EnumInfo<FurnitureLayer>::getString(otherF->getLayer())): "null"_s);
+    }
     if (viewObject)
-      viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
-    INFO << getName() << " burning " << fire->getSize();
-    for (Position v : pos.neighbors8(Random))
-      if (fire->getSize() > Random.getDouble() * 40)
-        v.fireDamage(fire->getSize() / 20);
+      viewObject->setModifier(ViewObject::Modifier::BURNING);
+    INFO << getName() << " burning ";
+    for (Position v : pos.neighbors8())
+      v.fireDamage(0.02);
+    pos.fireDamage(0.5);
     fire->tick();
     if (fire->isBurntOut()) {
-      pos.globalMessage("The " + getName() + " burns down");
-      pos.updateMovement();
+      switch (burnsDownMessage) {
+        case BurnsDownMessage::BURNS_DOWN:
+          pos.globalMessage("The " + getName() + " burns down");
+          break;
+        case BurnsDownMessage::STOPS_BURNING:
+          pos.globalMessage("The " + getName() + " stops burning");
+          break;
+      }
+      pos.updateMovementDueToFire();
+      pos.removeCreatureLight(false);
       auto myLayer = layer;
       auto myType = type;
-      if (burntRemains)
-        pos.replaceFurniture(this, FurnitureFactory::get(*burntRemains, getTribe()));
-      else
-        pos.removeFurniture(this);
+      pos.removeFurniture(this, burntRemains ?
+          pos.getGame()->getContentFactory()->furniture.getFurniture(*burntRemains, getTribe()) : nullptr);
       pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
       return;
     }
-    pos.fireDamage(fire->getSize());
   }
   if (tickType)
     FurnitureTick::handle(*tickType, pos, this); // this function can delete this
+}
+
+bool Furniture::blocksAnyVision() const {
+  return !blockVision.isEmpty();
 }
 
 bool Furniture::canSeeThru(VisionId id) const {
@@ -175,10 +237,6 @@ bool Furniture::stopsProjectiles(VisionId id) const {
   return !canSeeThru(id) || noProjectiles;
 }
 
-bool Furniture::isClickable() const {
-  return !!clickType;
-}
-
 bool Furniture::overridesMovement() const {
   return overrideMovement;
 }
@@ -186,16 +244,16 @@ bool Furniture::overridesMovement() const {
 void Furniture::click(Position pos) const {
   if (clickType) {
     FurnitureClick::handle(*clickType, pos, this);
-    pos.setNeedsRenderUpdate(true);
+    pos.setNeedsRenderAndMemoryUpdate(true);
   }
 }
 
-void Furniture::use(Position pos, WCreature c) const {
+void Furniture::use(Position pos, Creature* c) const {
   if (usageType)
     FurnitureUsage::handle(*usageType, pos, this, c);
 }
 
-bool Furniture::canUse(WConstCreature c) const {
+bool Furniture::canUse(const Creature* c) const {
   if (usageType)
     return FurnitureUsage::canHandle(*usageType, c);
   else
@@ -206,12 +264,20 @@ optional<FurnitureUsageType> Furniture::getUsageType() const {
   return usageType;
 }
 
-int Furniture::getUsageTime() const {
+TimeInterval Furniture::getUsageTime() const {
   return usageTime;
 }
 
 optional<FurnitureClickType> Furniture::getClickType() const {
   return clickType;
+}
+
+optional<FurnitureTickType> Furniture::getTickType() const {
+  return tickType;
+}
+
+const heap_optional<FurnitureEntry>& Furniture::getEntryType() const {
+  return entryType;
 }
 
 bool Furniture::isTicking() const {
@@ -222,28 +288,36 @@ bool Furniture::isWall() const {
   return wall;
 }
 
-void Furniture::onConstructedBy(WCreature c) {
-  creator = c;
-  createdTime = c->getLocalTime();
-  if (constructMessage)
-    switch (*constructMessage) {
-      case BUILD:
-        c->thirdPerson(c->getName().the() + " builds " + addAParticle(getName()));
-        c->secondPerson("You build " + addAParticle(getName()));
-        break;
-      case FILL_UP:
-        c->thirdPerson(c->getName().the() + " fills up the tunnel");
-        c->secondPerson("You fill up the tunnel");
-        break;
-      case REINFORCE:
-        c->thirdPerson(c->getName().the() + " reinforces the wall");
-        c->secondPerson("You reinforce the wall");
-        break;
-      case SET_UP:
-        c->thirdPerson(c->getName().the() + " sets up " + addAParticle(getName()));
-        c->secondPerson("You set up " + addAParticle(getName()));
-        break;
-    }
+bool Furniture::isBuildingSupport() const {
+  return buildingSupport;
+}
+
+void Furniture::onConstructedBy(Position pos, Creature* c) {
+  if (c) {
+    creator = c;
+    createdTime = c->getLocalTime();
+    if (constructMessage)
+      switch (*constructMessage) {
+        case ConstructMessage::BUILD:
+          c->thirdPerson(c->getName().the() + " builds " + addAParticle(getName()));
+          c->secondPerson("You build " + addAParticle(getName()));
+          break;
+        case ConstructMessage::FILL_UP:
+          c->thirdPerson(c->getName().the() + " fills up the tunnel");
+          c->secondPerson("You fill up the tunnel");
+          break;
+        case ConstructMessage::REINFORCE:
+          c->thirdPerson(c->getName().the() + " reinforces the wall");
+          c->secondPerson("You reinforce the wall");
+          break;
+        case ConstructMessage::SET_UP:
+          c->thirdPerson(c->getName().the() + " sets up " + addAParticle(getName()));
+          c->secondPerson("You set up " + addAParticle(getName()));
+          break;
+      }
+  }
+  if (onBuilt)
+    handleOnBuilt(pos, this, *onBuilt);
 }
 
 FurnitureLayer Furniture::getLayer() const {
@@ -251,27 +325,68 @@ FurnitureLayer Furniture::getLayer() const {
 }
 
 double Furniture::getLightEmission() const {
-  return lightEmission;
+  if (fire && fire->isBurning())
+    return Level::getCreatureLightRadius();
+  else
+    return lightEmission;
 }
 
 bool Furniture::canHide() const {
   return canHideHere;
 }
 
-bool Furniture::emitsWarning(WConstCreature) const {
+bool Furniture::emitsWarning(const Creature*) const {
   return warning;
 }
 
-WCreature Furniture::getCreator() const {
-  return creator;
+bool Furniture::canRemoveWithCreaturePresent() const {
+  return removeWithCreaturePresent && !wall;
 }
 
-optional<double> Furniture::getCreatedTime() const {
+bool Furniture::canRemoveNonFriendly() const {
+  return removeNonFriendly;
+}
+
+Creature* Furniture::getCreator() const {
+  return creator.get();
+}
+
+optional<LocalTime> Furniture::getCreatedTime() const {
   return createdTime;
 }
 
 optional<CreatureId> Furniture::getSummonedElement() const {
   return summonedElement;
+}
+
+bool Furniture::isClearFogOfWar() const {
+  return clearFogOfWar;
+}
+
+bool Furniture::forgetAfterBuilding() const {
+  return xForgetAfterBuilding;
+}
+
+void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
+  if (walkOverFX)
+    pos.getGame()->addEvent((EventInfo::FX{pos, *walkOverFX, direction}));
+}
+
+void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
+  if (walkIntoFX)
+    pos.getGame()->addEvent((EventInfo::FX{pos, *walkIntoFX, direction}));
+}
+
+int Furniture::getMaxTraining(ExperienceType t) const {
+  return maxTraining[t];
+}
+
+optional<FurnitureType> Furniture::getUpgrade() const {
+  return upgrade;
+}
+
+optional<FXVariantName> Furniture::getUsageFX() const {
+  return usageFX;
 }
 
 vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
@@ -285,31 +400,63 @@ bool Furniture::canBuildBridgeOver() const {
   return canBuildBridge;
 }
 
+const LuxuryInfo&Furniture::getLuxuryInfo() const {
+  return luxury;
+}
+
+const Furniture::PopulationInfo& Furniture::getPopulationIncrease() const {
+  return populationIncrease;
+}
+
+optional<FurnitureType> Furniture::getBuiltOver() const {
+  return builtOver;
+}
+
+bool Furniture::isBridge() const {
+  return bridge;
+}
+
+bool Furniture::silentlyReplace() const {
+  return canSilentlyReplace;
+}
+
+void Furniture::setType(FurnitureType t) {
+  type = t;
+}
+
+bool Furniture::buildOutsideOfTerritory() const {
+  return canBuildOutsideOfTerritory;
+}
+
+bool Furniture::isRequiresLight() const {
+  return requiresLight;
+}
+
+bool Furniture::isHostileSpell() const {
+  return hostileSpell;
+}
+
+optional<BedType> Furniture::getBedType() const {
+  return bedType;
+}
+
+optional<LastingEffect> Furniture::getLastingEffect() const {
+  return lastingEffect;
+}
+
 Furniture& Furniture::setBlocking() {
   movementSet->clearTraits();
   return *this;
 }
 
 Furniture& Furniture::setBlockingEnemies() {
+  movementSet->addTrait(MovementTrait::WALK);
   movementSet->setBlockingEnemies();
   return *this;
 }
 
-MovementSet& Furniture::modMovementSet() {
-  return *movementSet;
-}
-
-Furniture& Furniture::setConstructMessage(optional<ConstructMessage> msg) {
-  constructMessage = msg;
-  return *this;
-}
-
-const optional<Fire>& Furniture::getFire() const {
-  return *fire;
-}
-
-optional<Fire>& Furniture::getFire() {
-  return *fire;
+const heap_optional<Fire>& Furniture::getFire() const {
+  return fire;
 }
 
 bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& action) const {
@@ -318,16 +465,18 @@ bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& ac
        (!movement.isCompatible(getTribe()) || action.canDestroyFriendly());
 }
 
-void Furniture::fireDamage(Position pos, double amount) {
-  if (auto& fire = getFire()) {
+void Furniture::fireDamage(Position pos, bool withMessage) {
+  if (fire) {
     bool burning = fire->isBurning();
-    fire->set(amount);
+    fire->set();
     if (!burning && fire->isBurning()) {
-      pos.globalMessage("The " + getName() + " catches fire");
+      if (withMessage)
+        pos.globalMessage("The " + getName() + " catches fire");
       if (viewObject)
-        viewObject->setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
-      pos.updateMovement();
+        viewObject->setModifier(ViewObject::Modifier::BURNING);
+      pos.updateMovementDueToFire();
       pos.getLevel()->addTickingFurniture(pos.getCoord());
+      pos.addCreatureLight(false);
     }
   }
 }
@@ -339,120 +488,81 @@ Furniture& Furniture::setDestroyable(double s) {
 }
 
 Furniture& Furniture::setDestroyable(double s, DestroyAction::Type type) {
-  destroyActions[type] = s;
-  return *this;
-}
-
-Furniture& Furniture::setItemDrop(ItemFactory f) {
-  itemDrop = f;
-  return *this;
-}
-
-Furniture& Furniture::setBurntRemains(FurnitureType t) {
-  burntRemains = t;
-  return *this;
-}
-
-Furniture& Furniture::setDestroyedRemains(FurnitureType t) {
-  destroyedRemains = t;
-  return *this;
-}
-
-Furniture& Furniture::setBlockVision() {
-  for (auto vision : ENUM_ALL(VisionId))
-    blockVision.insert(vision);
-  return *this;
-}
-
-Furniture& Furniture::setBlockVision(VisionId id, bool blocks) {
-  blockVision.set(id, blocks);
-  return *this;
-}
-
-Furniture& Furniture::setUsageType(FurnitureUsageType type) {
-  usageType = type;
-  return *this;
-}
-
-Furniture& Furniture::setUsageTime(int t) {
-  usageTime = t;
-  return *this;
-}
-
-Furniture& Furniture::setClickType(FurnitureClickType type) {
-  clickType = type;
-  return *this;
-}
-
-Furniture& Furniture::setTickType(FurnitureTickType type) {
-  tickType = type;
-  return *this;
-}
-
-Furniture& Furniture::setEntryType(FurnitureEntry type) {
-  entryType = type;
-  return *this;
-}
-
-Furniture& Furniture::setDroppedItems(FurnitureDroppedItems t) {
-  droppedItems = t;
-  return *this;
-}
-
-Furniture& Furniture::setFireInfo(const Fire& f) {
-  fire = f;
-  return *this;
-}
-
-Furniture& Furniture::setIsWall() {
-  wall = true;
-  return *this;
-}
-
-Furniture& Furniture::setOverrideMovement() {
-  overrideMovement = true;
-  return *this;
-}
-
-Furniture& Furniture::setLayer(FurnitureLayer l) {
-  layer = l;
-  return *this;
-}
-
-Furniture& Furniture::setLightEmission(double v) {
-  lightEmission = v;
-  return *this;
-}
-
-Furniture& Furniture::setCanHide() {
-  canHideHere = true;
-  return *this;
-}
-
-Furniture& Furniture::setEmitsWarning() {
-  warning = true;
-  return *this;
-}
-
-Furniture& Furniture::setSummonedElement(CreatureId id) {
-  summonedElement = id;
-  return *this;
-}
-
-Furniture& Furniture::setCanBuildBridgeOver() {
-  canBuildBridge = true;
-  return *this;
-}
-
-Furniture&Furniture::setStopProjectiles() {
-  noProjectiles = true;
+  destroyedInfo[type] = DestroyedInfo{ 1.0, s };
   return *this;
 }
 
 bool Furniture::canDestroy(const DestroyAction& action) const {
-  return !!destroyActions[action.getType()];
+  return !!destroyedInfo[action.getType()];
 }
 
 optional<double> Furniture::getStrength(const DestroyAction& action) const {
-  return destroyActions[action.getType()];
+  if (auto info = destroyedInfo[action.getType()]) {
+    CHECK(info->health > 0) << info->health;
+    CHECK(info->strength > 0) << info->health;
+    return info->strength * info->health;
+  }
+  return none;
+}
+
+static ViewLayer getViewLayer(FurnitureLayer layer) {
+  switch (layer) {
+    case FurnitureLayer::FLOOR:
+    case FurnitureLayer::GROUND:
+      return ViewLayer::FLOOR_BACKGROUND;
+    case FurnitureLayer::MIDDLE:
+      return ViewLayer::FLOOR;
+    case FurnitureLayer::CEILING:
+      return ViewLayer::TORCH1;
+  }
+}
+
+#include "pretty_archive.h"
+template <>
+void Furniture::serialize(PrettyInputArchive& ar, unsigned int v) {
+  optional<ViewId> viewId;
+  if (viewObject)
+    viewId = viewObject->id();
+  ar >> NAMED(viewId);
+  optional<ViewLayer> viewLayer;
+  if (viewObject)
+    viewLayer = viewObject->layer();
+  ar >> NAMED(viewLayer);
+  PrettyFlag blockMovement;
+  ar >> OPTION(blockMovement);
+  optional_no_none<int> strength;
+  ar >> NAMED(strength);
+  optional_no_none<vector<pair<int, DestroyAction::Type>>> strength2;
+  ar >> NAMED(strength2);
+  optional_no_none<Dir> attachmentDir;
+  if (viewObject)
+    if (auto dir = viewObject->getAttachmentDir())
+      attachmentDir = *dir;
+  ar >> NAMED(attachmentDir);
+  PrettyFlag blockingEnemies;
+  ar >> OPTION(blockingEnemies);
+  optional_no_none<double> waterDepth;
+  if (viewObject)
+    if (auto depth = viewObject->getAttribute(ViewObjectAttribute::WATER_DEPTH))
+      waterDepth = *depth;
+  ar >> NAMED(waterDepth);
+  serializeImpl(ar, v);
+  ar >> endInput();
+  if (blockMovement.value)
+    setBlocking();
+  if (strength)
+    setDestroyable(*strength);
+  if (strength2)
+    for (auto& elem : *strength2)
+      setDestroyable(elem.first, elem.second);
+  if (viewId)
+    viewObject = ViewObject(*viewId, viewLayer.value_or(getViewLayer(layer)), capitalFirst(getName()));
+  if (attachmentDir)
+    viewObject->setAttachmentDir(*attachmentDir);
+  if (waterDepth)
+    viewObject->setAttribute(ViewObjectAttribute::WATER_DEPTH, *waterDepth);
+  if (blockingEnemies.value)
+    setBlockingEnemies();
+  if (pluralName.empty())
+    pluralName = makePlural(name);
 }

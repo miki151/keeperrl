@@ -26,11 +26,11 @@ enum class MusicType { INTRO, MAIN, PEACEFUL, BATTLE, NIGHT, ADV_PEACEFUL, ADV_B
 
 class Jukebox {
   public:
-  Jukebox(Options*, AudioDevice&, vector<pair<MusicType, FilePath>> tracks, float maxVolume,
-      map<MusicType, float> maxVolumes);
+  Jukebox(AudioDevice&, vector<pair<MusicType, FilePath>> tracks, double maxVolume);
 
   void setType(MusicType, bool now);
   void toggle(bool on);
+  void setCurrentVolume(int); // between 0..100
 
   private:
   void play(int index);
@@ -50,9 +50,8 @@ class Jukebox {
   int currentPlaying = 0;
   bool on = false;
   int numTracks = 0;
-  float getMaxVolume(int track);
-  float maxVolume;
-  map<MusicType, float> maxVolumes;
+  double maxVolume;
+  double currentVolume = 1;
   optional<MusicType> nextType;
   optional<AsyncLoop> refreshLoop;
   AudioDevice& audioDevice;

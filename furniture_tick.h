@@ -5,7 +5,15 @@
 class Position;
 class Furniture;
 
-enum class FurnitureTickType { BED, PIGSTY, BOULDER_TRAP, PORTAL, METEOR_SHOWER };
+RICH_ENUM(FurnitureTickType,
+  BED,
+  PIGSTY,
+  BOULDER_TRAP,
+  PORTAL,
+  METEOR_SHOWER,
+  PIT,
+  EXTINGUISH_FIRE
+);
 
 class FurnitureTick {
   public:

@@ -4,32 +4,41 @@
 #include "furniture_type.h"
 #include "enum_variant.h"
 
-RICH_ENUM(AttackTriggerId,
-  POWER,
-  SELF_VICTIMS,
-  ENEMY_POPULATION,
-  GOLD,
-  STOLEN_ITEMS,
-  ROOM_BUILT,
-  TIMER,
-  NUM_CONQUERED,
-  ENTRY,
-  FINISH_OFF,
-  PROXIMITY
-);
-
-class AttackTrigger : public EnumVariant<AttackTriggerId, TYPES(int, FurnitureType),
-        ASSIGN(int,
-            AttackTriggerId::ENEMY_POPULATION,
-            AttackTriggerId::GOLD,
-            AttackTriggerId::TIMER,
-            AttackTriggerId::NUM_CONQUERED
-        ),
-        ASSIGN(FurnitureType,
-            AttackTriggerId::ROOM_BUILT
-        )> {
-  using EnumVariant::EnumVariant;
+struct RoomTrigger {
+  FurnitureType type;
+  double probPerSquare;
+  COMPARE_ALL(type, probPerSquare)
 };
+
+EMPTY_STRUCT(Power);
+EMPTY_STRUCT(SelfVictims);
+EMPTY_STRUCT(StolenItems);
+EMPTY_STRUCT(MiningInProximity);
+EMPTY_STRUCT(FinishOff);
+EMPTY_STRUCT(Proximity);
+
+struct EnemyPopulation {
+  int value;
+  COMPARE_ALL(value)
+};
+
+struct Gold {
+  int value;
+  COMPARE_ALL(value)
+};
+
+struct Timer {
+  int value;
+  COMPARE_ALL(value)
+};
+
+struct NumConquered {
+  int value;
+  COMPARE_ALL(value)
+};
+
+MAKE_VARIANT2(AttackTrigger, RoomTrigger, Power, SelfVictims, StolenItems, MiningInProximity, FinishOff, Proximity, EnemyPopulation,
+    Gold, Timer, NumConquered);
 
 struct TriggerInfo {
   AttackTrigger trigger;

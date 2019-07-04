@@ -12,15 +12,26 @@ const static int highscoreVersion = 2;
 Highscores::Highscores(const FilePath& local, FileSharing& sharing, Options* o)
     : localPath(local), fileSharing(sharing), options(o) {
   localScores = fromFile(localPath);
-  remoteScores = fromString(fileSharing.downloadHighscores(highscoreVersion));
-  fileSharing.uploadHighscores(localPath);
+}
+
+vector<Highscores::Score> Highscores::downloadHighscores(View* view) const {
+  vector<Score> ret;
+  view->doWithSplash(SplashType::SMALL, "Downloading online highscores...", 1,
+      [&] (ProgressMeter&) {
+        ret = fromString(fileSharing.downloadHighscores(highscoreVersion));
+        fileSharing.uploadHighscores(localPath);
+      },
+      [&] {
+        fileSharing.cancel();
+      }
+  );
+  return ret;
 }
 
 void Highscores::add(Score s) {
   s.version = highscoreVersion;
   localScores.push_back(s);
   saveToFile(localScores, localPath);
-  remoteScores.push_back(s);
   fileSharing.uploadHighscores(localPath);
 }
 
@@ -99,12 +110,26 @@ bool sortByShortestMostPoints(const Highscores::Score& a, const Highscores::Scor
     return a.points > b.points || (a.points == b.points && a.gameId < b.gameId);
 }
 
+bool sortByMostPoints(const Highscores::Score& a, const Highscores::Score& b) {
+  if (a.gameWon) {
+    if (!b.gameWon)
+      return true;
+    else
+      return a.points > b.points;
+  } else
+  if (b.gameWon)
+    return false;
+  else
+    return a.points > b.points;
+}
+
 bool sortByLongest(const Highscores::Score& a, const Highscores::Score& b) {
   return a.turns > b.turns;
 }
 
 enum class SortingType {
   SHORTEST_MOST_POINTS,
+  MOST_POINTS,
   LONGEST
 };
 
@@ -118,6 +143,8 @@ SortingFun getSortingFun(SortingType type) {
       return sortByShortestMostPoints;
     case SortingType::LONGEST:
       return sortByLongest;
+    case SortingType::MOST_POINTS:
+      return sortByMostPoints;
   }
 }
 
@@ -127,6 +154,8 @@ string getPointsColumn(const Score& score, SortingType sorting) {
       return score.gameWon ? toString(score.turns) + " turns" : toString(score.points) + " points";
     case SortingType::LONGEST:
       return toString(score.turns) + " turns";
+    case SortingType::MOST_POINTS:
+      return toString(score.points) + " points";
   }
 }
 
@@ -154,10 +183,9 @@ struct PublicScorePage {
 
 static vector<PublicScorePage> getPublicScores() {
   return {
-    {CampaignType::CAMPAIGN, PlayerRole::KEEPER, "Keeper", SortingType::SHORTEST_MOST_POINTS},
-    {CampaignType::CAMPAIGN, PlayerRole::ADVENTURER, "Adventurer", SortingType::SHORTEST_MOST_POINTS},
-    {CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "Single map", SortingType::SHORTEST_MOST_POINTS},
-    {CampaignType::ENDLESS, PlayerRole::KEEPER, "Endless", SortingType::LONGEST},
+    {CampaignType::FREE_PLAY, PlayerRole::KEEPER, "Keeper", SortingType::MOST_POINTS},
+    {CampaignType::FREE_PLAY, PlayerRole::ADVENTURER, "Adventurer", SortingType::SHORTEST_MOST_POINTS},
+    {CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "Single map", SortingType::SHORTEST_MOST_POINTS}
   };
 }
 
@@ -172,6 +200,7 @@ void Highscores::present(View* view, optional<Score> lastAdded) const {
   if (lastAdded && !lastAdded->isPublic())
     return;
   vector<HighscoreList> lists;
+  auto remoteScores = concat(downloadHighscores(view), localScores);
   for (auto& elem : getPublicScores())
     lists.push_back(fillScores(elem.name, lastAdded, localScores.filter(
         [&] (const Score& s) { return s.campaignType == elem.type && s.playerRole == elem.role;}), elem.sorting));

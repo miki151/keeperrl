@@ -33,89 +33,107 @@
 #include "attr_type.h"
 #include "attack.h"
 #include "lasting_effect.h"
+#include "creature_name.h"
+#include "creature_attributes.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Item>) & SUBCLASS(UniqueEntity) & SUBCLASS(Renderable);
-  ar(attributes, discarded, shopkeeper, fire, classCache, canEquipCache);
+  ar(attributes, discarded, shopkeeper, fire, classCache, canEquipCache, timeout);
 }
 
 SERIALIZABLE(Item)
 SERIALIZATION_CONSTRUCTOR_IMPL(Item)
 
 Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, capitalFirst(*attr.name))),
-    attributes(attr), fire(*attr.weight, attr.flamability), canEquipCache(!!attributes->equipmentSlot),
+    attributes(attr), fire(attr.burnTime), canEquipCache(!!attributes->equipmentSlot),
     classCache(*attributes->itemClass) {
+  if (!attributes->prefixes.empty())
+    modViewObject().setModifier(ViewObject::Modifier::AURA);
+  modViewObject().setGenericId(getUniqueId().getGenericId());
 }
 
 Item::~Item() {
 }
 
+PItem Item::getCopy() const {
+  return makeOwner<Item>(*attributes);
+}
+
 ItemPredicate Item::effectPredicate(Effect type) {
-  return [type](WConstItem item) { return item->getEffect() == type; };
+  return [type](const Item* item) { return item->getEffect() == type; };
 }
 
 ItemPredicate Item::classPredicate(ItemClass cl) {
-  return [cl](WConstItem item) { return item->getClass() == cl; };
+  return [cl](const Item* item) { return item->getClass() == cl; };
 }
 
 ItemPredicate Item::equipmentSlotPredicate(EquipmentSlot slot) {
-  return [slot](WConstItem item) { return item->canEquip() && item->getEquipmentSlot() == slot; };
+  return [slot](const Item* item) { return item->canEquip() && item->getEquipmentSlot() == slot; };
 }
 
 ItemPredicate Item::classPredicate(vector<ItemClass> cl) {
-  return [cl](WConstItem item) { return cl.contains(item->getClass()); };
+  return [cl](const Item* item) { return cl.contains(item->getClass()); };
 }
 
 ItemPredicate Item::namePredicate(const string& name) {
-  return [name](WConstItem item) { return item->getName() == name; };
+  return [name](const Item* item) { return item->getName() == name; };
 }
 
 ItemPredicate Item::isRangedWeaponPredicate() {
- return [](WConstItem it) { return it->canEquip() && it->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON;};
+ return [](const Item* it) { return it->canEquip() && it->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON;};
 }
 
-vector<vector<WItem>> Item::stackItems(vector<WItem> items, function<string(WConstItem)> suffix) {
-  map<string, vector<WItem>> stacks = groupBy<WItem, string>(items, [suffix](WConstItem item) {
+vector<vector<Item*>> Item::stackItems(vector<Item*> items, function<string(const Item*)> suffix) {
+  map<string, vector<Item*>> stacks = groupBy<Item*, string>(items, [suffix](const Item* item) {
         return item->getNameAndModifiers() + suffix(item);
       });
-  vector<vector<WItem>> ret;
+  vector<vector<Item*>> ret;
   for (auto& elem : stacks)
     ret.push_back(elem.second);
   return ret;
 }
 
-void Item::onEquip(WCreature c) {
-  onEquipSpecial(c);
-  if (attributes->equipedEffect)
-    c->addPermanentEffect(*attributes->equipedEffect);
+void Item::onOwned(Creature* c) {
+  if (attributes->ownedEffect)
+    c->addPermanentEffect(*attributes->ownedEffect);
 }
 
-void Item::onUnequip(WCreature c) {
-  onUnequipSpecial(c);
-  if (attributes->equipedEffect)
-    c->removePermanentEffect(*attributes->equipedEffect);
+void Item::onDropped(Creature* c) {
+  if (attributes->ownedEffect)
+    c->removePermanentEffect(*attributes->ownedEffect);
 }
 
-void Item::fireDamage(double amount, Position position) {
+void Item::onEquip(Creature* c) {
+  for (auto& e : attributes->equipedEffect)
+    c->addPermanentEffect(e);
+}
+
+void Item::onUnequip(Creature* c) {
+  for (auto& e : attributes->equipedEffect)
+    c->removePermanentEffect(e);
+}
+
+void Item::fireDamage(Position position) {
   bool burning = fire->isBurning();
   string noBurningName = getTheName();
-  fire->set(amount);
+  fire->set();
   if (!burning && fire->isBurning()) {
     position.globalMessage(noBurningName + " catches fire");
-    modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
+    modViewObject().setModifier(ViewObject::Modifier::BURNING);
   }
 }
 
-double Item::getFireSize() const {
-  return fire->getSize();
+const Fire& Item::getFire() const {
+  return *fire;
 }
 
 void Item::tick(Position position) {
+  PROFILE_BLOCK("Item::tick");
   if (fire->isBurning()) {
-    INFO << getName() << " burning " << fire->getSize();
-    position.fireDamage(fire->getSize());
-    modViewObject().setAttribute(ViewObject::Attribute::BURNING, fire->getSize());
+    INFO << getName() << " burning ";
+    position.fireDamage(0.2);
+    modViewObject().setModifier(ViewObject::Modifier::BURNING);
     fire->tick();
     if (!fire->isBurning()) {
       position.globalMessage(getTheName() + " burns out");
@@ -123,6 +141,20 @@ void Item::tick(Position position) {
     }
   }
   specialTick(position);
+  if (timeout) {
+    if (position.getGame()->getGlobalTime() >= *timeout) {
+      discarded = true;
+    }
+  }
+}
+
+void Item::applyPrefix(const ItemPrefix& prefix) {
+  modViewObject().setModifier(ViewObject::Modifier::AURA);
+  ::applyPrefix(prefix, *attributes);
+}
+
+void Item::setTimeout(GlobalTime t) {
+  timeout = t;
 }
 
 void Item::onHitSquareMessage(Position pos, int numItems) {
@@ -132,22 +164,24 @@ void Item::onHitSquareMessage(Position pos, int numItems) {
     discarded = true;
   } else
     pos.globalMessage(getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + pos.getName());
+  if (attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
+    pos.fireDamage(1);
 }
 
-void Item::onHitCreature(WCreature c, const Attack& attack, int numItems) {
+void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {
   if (attributes->fragile) {
     c->you(numItems > 1 ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES, getPluralTheName(numItems));
     discarded = true;
   } else
     c->you(numItems > 1 ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getPluralTheName(numItems));
-  if (c->takeDamage(attack))
-    return;
-  if (attributes->effect && getClass() == ItemClass::POTION) {
-    attributes->effect->applyToCreature(c, attack.attacker);
-  }
+  if (attributes->effect && getClass() == ItemClass::POTION)
+    attributes->effect->apply(c->getPosition(), attack.attacker);
+  c->takeDamage(attack);
+  if (!c->isDead() && attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
+    c->affectByFire(1);
 }
 
-double Item::getApplyTime() const {
+TimeInterval Item::getApplyTime() const {
   return attributes->applyTime;
 }
 
@@ -155,8 +189,35 @@ double Item::getWeight() const {
   return *attributes->weight;
 }
 
-string Item::getDescription() const {
-  return attributes->description;
+vector<string> Item::getDescription() const {
+  vector<string> ret;
+  if (!attributes->description.empty())
+    ret.push_back(attributes->description);
+  if (attributes->damageReduction > 0)
+    ret.push_back(toString(int(attributes->damageReduction * 100)) + "% damage reduction");
+  if (auto& effect = attributes->effect)
+    ret.push_back("Usage effect: " + effect->getName());
+  for (auto& effect : getWeaponInfo().victimEffect)
+    ret.push_back("Victim affected by: " + effect.getName());
+  for (auto& effect : getWeaponInfo().attackerEffect)
+    ret.push_back("Attacker affected by: " + effect.getName());
+  for (auto& effect : attributes->equipedEffect)
+    ret.push_back("Effect when equipped: " + LastingEffects::getName(effect));
+  if (auto& info = attributes->upgradeInfo)
+    ret.append(info->getDescription());
+  return ret;
+}
+
+optional<LastingEffect> Item::getOwnedEffect() const {
+  return attributes->ownedEffect;
+}
+
+double Item::getDamageReduction() const {
+  return attributes->damageReduction;
+}
+
+const WeaponInfo& Item::getWeaponInfo() const {
+  return attributes->weaponInfo;
 }
 
 ItemClass Item::getClass() const {
@@ -167,11 +228,11 @@ int Item::getPrice() const {
   return attributes->price;
 }
 
-bool Item::isShopkeeper(WConstCreature c) const {
+bool Item::isShopkeeper(const Creature* c) const {
   return shopkeeper == c->getUniqueId();
 }
 
-void Item::setShopkeeper(WConstCreature s) {
+void Item::setShopkeeper(const Creature* s) {
   if (s)
     shopkeeper = s->getUniqueId();
   else
@@ -182,25 +243,40 @@ bool Item::isOrWasForSale() const {
   return !!shopkeeper;
 }
 
-optional<TrapType> Item::getTrapType() const {
-  return attributes->trapType;
-}
-
 optional<CollectiveResourceId> Item::getResourceId() const {
   return attributes->resourceId;
 }
 
-void Item::apply(WCreature c, bool noSound) {
+const optional<ItemUpgradeInfo>& Item::getUpgradeInfo() const {
+  return attributes->upgradeInfo;
+}
+
+optional<ItemUpgradeType> Item::getAppliedUpgradeType() const {
+  switch (getClass()) {
+    case ItemClass::ARMOR:
+      return ItemUpgradeType::ARMOR;
+    case ItemClass::WEAPON:
+      return ItemUpgradeType::WEAPON;
+    default:
+      return none;
+  }
+}
+
+int Item::getMaxUpgrades() const {
+  return attributes->maxUpgrades;
+}
+
+void Item::apply(Creature* c, bool noSound) {
   if (attributes->applySound && !noSound)
     c->addSound(*attributes->applySound);
   applySpecial(c);
 }
 
-void Item::applySpecial(WCreature c) {
+void Item::applySpecial(Creature* c) {
   if (attributes->itemClass == ItemClass::SCROLL)
     c->getGame()->getStatistics().add(StatId::SCROLL_READ);
   if (attributes->effect)
-    attributes->effect->applyToCreature(c);
+    attributes->effect->apply(c->getPosition(), c);
   if (attributes->uses > -1 && --attributes->uses == 0) {
     discarded = true;
     if (attributes->usedUpMsg)
@@ -208,7 +284,7 @@ void Item::applySpecial(WCreature c) {
   }
 }
 
-string Item::getApplyMsgThirdPerson(WConstCreature owner) const {
+string Item::getApplyMsgThirdPerson(const Creature* owner) const {
   if (attributes->applyMsgThirdPerson)
     return *attributes->applyMsgThirdPerson;
   switch (getClass()) {
@@ -222,7 +298,7 @@ string Item::getApplyMsgThirdPerson(WConstCreature owner) const {
   return "";
 }
 
-string Item::getApplyMsgFirstPerson(WConstCreature owner) const {
+string Item::getApplyMsgFirstPerson(const Creature* owner) const {
   if (attributes->applyMsgFirstPerson)
     return *attributes->applyMsgFirstPerson;
   switch (getClass()) {
@@ -252,15 +328,16 @@ void Item::setName(const string& n) {
   attributes->name = n;
 }
 
-WCreature Item::getShopkeeper(WConstCreature owner) const {
+Creature* Item::getShopkeeper(const Creature* owner) const {
   if (shopkeeper)
-    for (WCreature c : owner->getVisibleCreatures())
+    for (Creature* c : owner->getVisibleCreatures())
       if (c->getUniqueId() == *shopkeeper)
         return c;
   return nullptr;
 }
 
-string Item::getName(bool plural, WConstCreature owner) const {
+string Item::getName(bool plural, const Creature* owner) const {
+  PROFILE;
   string suff;
   if (fire->isBurning())
     suff.append(" (burning)");
@@ -271,14 +348,14 @@ string Item::getName(bool plural, WConstCreature owner) const {
   return getVisibleName(plural) + suff;
 }
 
-string Item::getAName(bool getPlural, WConstCreature owner) const {
+string Item::getAName(bool getPlural, const Creature* owner) const {
   if (attributes->noArticle || getPlural)
     return getName(getPlural, owner);
   else
     return addAParticle(getName(getPlural, owner));
 }
 
-string Item::getTheName(bool getPlural, WConstCreature owner) const {
+string Item::getTheName(bool getPlural, const Creature* owner) const {
   string the = (attributes->noArticle || getPlural) ? "" : "the ";
   return the + getName(getPlural, owner);
 }
@@ -301,15 +378,26 @@ string Item::getPluralTheNameAndVerb(int count, const string& verbSingle, const 
   return getPluralTheName(count) + " " + (count > 1 ? verbPlural : verbSingle);
 }
 
+static void appendWithSpace(string& s, const string& suf) {
+  if (!s.empty() && !suf.empty())
+    s += " ";
+  s += suf;
+}
+
 string Item::getVisibleName(bool getPlural) const {
+  string ret;
   if (!getPlural)
-    return *attributes->name;
+    ret = *attributes->name;
   else {
     if (attributes->plural)
-      return *attributes->plural;
+      ret = *attributes->plural;
+    else if (attributes->name->back() != 's')
+      ret = *attributes->name + "s";
     else
-      return *attributes->name + "s";
+      ret = *attributes->name;
   }
+  appendWithSpace(ret, getSuffix());
+  return ret;
 }
 
 static string withSign(int a) {
@@ -327,13 +415,18 @@ void Item::setArtifactName(const string& s) {
   attributes->artifactName = s;
 }
 
-string Item::getModifiers(bool shorten) const {
+string Item::getSuffix() const {
   string artStr;
-  if (attributes->artifactName) {
-    artStr = *attributes->artifactName;
-    if (!shorten)
-      artStr = " named " + artStr;
-  }
+  if (!attributes->prefixes.empty())
+    artStr += "of " + attributes->prefixes.back();
+  if (attributes->artifactName)
+    appendWithSpace(artStr, "named " + *attributes->artifactName);
+  if (fire->isBurning())
+    appendWithSpace(artStr, "(burning)");
+  return artStr;
+}
+
+string Item::getModifiers(bool shorten) const {
   EnumSet<AttrType> printAttr;
   if (!shorten) {
     for (auto attr : ENUM_ALL(AttrType))
@@ -345,7 +438,7 @@ string Item::getModifiers(bool shorten) const {
         printAttr.insert(getRangedWeapon()->getDamageAttr());
         break;
       case ItemClass::WEAPON:
-        printAttr.insert(attributes->meleeAttackAttr);
+        printAttr.insert(getWeaponInfo().meleeAttackAttr);
         break;
       case ItemClass::ARMOR:
         printAttr.insert(AttrType::DEFENSE);
@@ -355,27 +448,38 @@ string Item::getModifiers(bool shorten) const {
   vector<string> attrStrings;
   for (auto attr : printAttr)
     attrStrings.push_back(withSign(attributes->modifiers[attr]) + (shorten ? "" : " " + ::getName(attr)));
+  if (attributes->damageReduction > 0)
+    attrStrings.push_back(toString(int(attributes->damageReduction * 100)) + "%");
   string attrString = combine(attrStrings, true);
   if (!attrString.empty())
-    attrString = " (" + attrString + ")";
+    attrString = "(" + attrString + ")";
   if (attributes->uses > -1 && attributes->displayUses) 
-    attrString += " (" + toString(attributes->uses) + " uses left)";
-  return artStr + attrString;
+    appendWithSpace(attrString, "(" + toString(attributes->uses) + " uses left)");
+  return attrString;
 }
 
-string Item::getShortName(WConstCreature owner, bool noSuffix) const {
+string Item::getShortName(const Creature* owner, bool plural) const {
+  PROFILE;
   if (owner && owner->isAffected(LastingEffect::BLIND) && attributes->blindName)
-    return getBlindName(false);
-  string name = getModifiers(true);
-  if (attributes->shortName && !attributes->artifactName)
-    name = *attributes->shortName + " " + name;
-  if (fire->isBurning() && !noSuffix)
-    name.append(" (burning)");
+    return getBlindName(plural);
+  if (attributes->artifactName)
+    return *attributes->artifactName + " " + getModifiers(true);
+  string name;
+  if (!attributes->prefixes.empty())
+    name = attributes->prefixes.back();
+  else if (attributes->shortName) {
+    name = *attributes->shortName;
+    appendWithSpace(name, getSuffix());
+  } else
+    name = getVisibleName(plural);
+  appendWithSpace(name, getModifiers(true));
   return name;
 }
 
-string Item::getNameAndModifiers(bool getPlural, WConstCreature owner) const {
-  return getName(getPlural, owner) + getModifiers();
+string Item::getNameAndModifiers(bool getPlural, const Creature* owner) const {
+  auto ret = getName(getPlural, owner);
+  appendWithSpace(ret, getModifiers());
+  return ret;
 }
 
 string Item::getBlindName(bool plural) const {
@@ -391,10 +495,6 @@ bool Item::isDiscarded() {
 
 const optional<Effect>& Item::getEffect() const {
   return attributes->effect;
-}
-
-optional<Effect> Item::getAttackEffect() const {
-  return attributes->attackEffect;
 }
 
 bool Item::canEquip() const {
@@ -420,23 +520,44 @@ const optional<RangedWeapon>& Item::getRangedWeapon() const {
   return attributes->rangedWeapon;
 }
 
-AttrType Item::getMeleeAttackAttr() const {
-  return attributes->meleeAttackAttr;
-}
- 
-AttackType Item::getAttackType() const {
-  return attributes->attackType;
-}
-
-bool Item::isWieldedTwoHanded() const {
-  return attributes->twoHanded;
-}
-
-int Item::getMinStrength() const {
-  return 10 + getWeight();
-}
-
 optional<CorpseInfo> Item::getCorpseInfo() const {
   return none;
 }
 
+void Item::getAttackMsg(const Creature* c, const string& enemyName) const {
+  auto weaponInfo = getWeaponInfo();
+  auto swingMsg = [&] (const char* verb) {
+    c->secondPerson("You "_s + verb + " your " + getName() + " at " + enemyName);
+    c->thirdPerson(c->getName().the() + " " + verb + "s " + his(c->getAttributes().getGender()) + " " + getName() + " at " + enemyName);
+  };
+  auto biteMsg = [&] (const char* verb2, const char* verb3) {
+    c->secondPerson("You "_s + verb2 + " " + enemyName);
+    c->thirdPerson(c->getName().the() + " " + verb3 + " " + enemyName);
+  };
+  switch (weaponInfo.attackMsg) {
+    case AttackMsg::SWING:
+      swingMsg("swing");
+      break;
+    case AttackMsg::THRUST:
+      swingMsg("thrust");
+      break;
+    case AttackMsg::WAVE:
+      swingMsg("wave");
+      break;
+    case AttackMsg::KICK:
+      biteMsg("kick", "kicks");
+      break;
+    case AttackMsg::BITE:
+      biteMsg("bite", "bites");
+      break;
+    case AttackMsg::TOUCH:
+      biteMsg("touch", "touches");
+      break;
+    case AttackMsg::CLAW:
+      biteMsg("claw", "claws");
+      break;
+    case AttackMsg::SPELL:
+      biteMsg("curse", "curses");
+      break;
+  }
+}

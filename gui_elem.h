@@ -19,20 +19,21 @@
 #include "util.h"
 #include "renderer.h"
 #include "drag_and_drop.h"
-#include "player_role_choice.h"
+#include "texture_id.h"
+#include "attr_type.h"
 
 class ViewObject;
 class Clock;
 class Options;
-enum class SpellId;
 class ScrollPosition;
 class KeybindingMap;
 
 class GuiElem {
   public:
   virtual void render(Renderer&) {}
-  virtual bool onLeftClick(Vec2) { return false; }
-  virtual bool onRightClick(Vec2) { return false; }
+  enum ClickButton { LEFT, MIDDLE, RIGHT };
+  virtual bool onClick(ClickButton, Vec2) { return false; }
+  virtual void onClickElsewhere() {}
   virtual bool onMouseMove(Vec2) { return false;}
   virtual void onMouseGone() {}
   virtual void onMouseRelease(Vec2) {}
@@ -40,6 +41,7 @@ class GuiElem {
   virtual void renderPart(Renderer& r, Rectangle) { render(r); }
   virtual bool onKeyPressed2(SDL::SDL_Keysym) { return false;}
   virtual bool onMouseWheel(Vec2 mousePos, bool up) { return false;}
+  virtual bool onTextInput(const char*) { return false; }
   virtual optional<int> getPreferredWidth() { return none; }
   virtual optional<int> getPreferredHeight() { return none; }
 
@@ -55,11 +57,11 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*, Options*, KeybindingMap*);
-  void loadFreeImages(const DirectoryPath&);
-  void loadNonFreeImages(const DirectoryPath&);
+  GuiFactory(Renderer&, Clock*, Options*, KeybindingMap*, const DirectoryPath& freeImages,
+      const optional<DirectoryPath>& nonFreeImages);
+  void loadImages();
 
-  vector<string> breakText(const string& text, int maxWidth);
+  vector<string> breakText(const string& text, int maxWidth, int fontSize);
 
   DragContainer& getDragContainer();
   void propagateEvent(const Event&, vector<SGuiElem>);
@@ -73,6 +75,7 @@ class GuiFactory {
   SGuiElem button(function<void()>, SDL::SDL_Keysym, bool capture = false);
   SGuiElem buttonChar(function<void()>, char, bool capture = false, bool useAltIfWasdScrolling = false);
   SGuiElem button(function<void()>);
+  SGuiElem textField(int maxLength, function<string()> text, function<void(string)> callback);
   SGuiElem buttonPos(function<void(Rectangle, Vec2)>);
   SGuiElem buttonRightClick(function<void()>);
   SGuiElem reverseButton(function<void()>, vector<SDL::SDL_Keysym> = {}, bool capture = false);
@@ -106,7 +109,7 @@ class GuiFactory {
     SGuiElem buildVerticalList();
     SGuiElem buildVerticalListFit();
     SGuiElem buildHorizontalList();
-    SGuiElem buildHorizontalListFit();
+    SGuiElem buildHorizontalListFit(double spacing = 0);
     int getSize() const;
     int getLength() const;
     bool isEmpty() const;
@@ -145,6 +148,19 @@ class GuiFactory {
   SGuiElem bottomMargin(int size, SGuiElem content);
   SGuiElem progressBar(Color, double state);
   SGuiElem label(const string&, Color = Color::WHITE, char hotkey = 0);
+  SGuiElem standardButton();
+  SGuiElem standardButton(SGuiElem content, SGuiElem button, bool matchTextWidth = true);
+  SGuiElem standardButtonBlink(SGuiElem content, SGuiElem button, bool matchTextWidth);
+  SGuiElem standardButtonHighlight();
+  SGuiElem buttonLabel(const string&, SGuiElem button, bool matchTextWidth = true,
+      bool centerHorizontally = false);
+  SGuiElem buttonLabel(const string&, function<void()> button, bool matchTextWidth = true,
+      bool centerHorizontally = false);
+  SGuiElem buttonLabelBlink(const string&, function<void()> button);
+  SGuiElem buttonLabelWithMargin(const string&, bool matchTextWidth = true);
+  SGuiElem buttonLabelSelected(const string&, function<void()> button, bool matchTextWidth = true,
+      bool centerHorizontally = false);
+  SGuiElem buttonLabelInactive(const string&, bool matchTextWidth = true);
   SGuiElem labelHighlight(const string&, Color = Color::WHITE, char hotkey = 0);
   SGuiElem labelHighlightBlink(const string& s, Color, Color, char hotkey = 0);
   SGuiElem label(const string&, int size, Color = Color::WHITE);
@@ -163,12 +179,20 @@ class GuiFactory {
   SGuiElem mainMenuLabelBg(const string&, double vPadding, Color = Color::MAIN_MENU_OFF);
   SGuiElem labelUnicode(const string&, Color = Color::WHITE, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
-  SGuiElem labelUnicode(const string&, function<Color()>, int size = Renderer::textSize,
+  SGuiElem labelUnicodeHighlight(const string&, Color color = Color::WHITE, int size = Renderer::textSize,
       Renderer::FontId = Renderer::SYMBOL_FONT);
+  SGuiElem crossOutText(Color);
   SGuiElem viewObject(const ViewObject&, double scale = 1, Color = Color::WHITE);
   SGuiElem viewObject(ViewId, double scale = 1, Color = Color::WHITE);
+  SGuiElem viewObject(function<ViewId()>, double scale = 1, Color = Color::WHITE);
   SGuiElem asciiBackground(ViewId);
-  SGuiElem translate(SGuiElem, Vec2 pos, optional<Vec2> size = none);
+  enum class TranslateCorner {
+    TOP_LEFT,
+    TOP_RIGHT,
+    BOTTOM_LEFT,
+    BOTTOM_RIGHT
+  };
+  SGuiElem translate(SGuiElem, Vec2 pos, optional<Vec2> size = none, TranslateCorner = TranslateCorner::TOP_LEFT);
   SGuiElem translate(function<Vec2()>, SGuiElem);
   SGuiElem centerHoriz(SGuiElem, optional<int> width = none);
   SGuiElem centerVert(SGuiElem, optional<int> height = none);
@@ -177,8 +201,7 @@ class GuiFactory {
   SGuiElem onMouseLeftButtonHeld(SGuiElem);
   SGuiElem onMouseRightButtonHeld(SGuiElem);
   SGuiElem mouseHighlight(SGuiElem highlight, int myIndex, optional<int>* highlighted);
-  SGuiElem mouseHighlight2(SGuiElem highlight);
-  SGuiElem mouseHighlightGameChoice(SGuiElem, optional<PlayerRoleChoice> my, optional<PlayerRoleChoice>& highlight);
+  SGuiElem mouseHighlight2(SGuiElem highlight, SGuiElem noHighlight = nullptr);
   static int getHeldInitValue();
   SGuiElem scrollable(SGuiElem content, ScrollPosition* scrollPos = nullptr, int* held = nullptr);
   SGuiElem getScrollButton();
@@ -190,64 +213,22 @@ class GuiFactory {
   enum class Alignment { TOP, LEFT, BOTTOM, RIGHT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER,
       TOP_CENTER, LEFT_CENTER, BOTTOM_CENTER, RIGHT_CENTER, VERTICAL_CENTER, LEFT_STRETCHED, RIGHT_STRETCHED,
       CENTER_STRETCHED};
-  SGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
-      Vec2 offset = Vec2(0, 0), optional<Color> = none);
-  SGuiElem sprite(Texture&, Alignment, Color);
-  SGuiElem sprite(Texture&, double scale);
   SGuiElem tooltip(const vector<string>&, milliseconds delay = milliseconds{700});
   typedef function<Vec2(const Rectangle&)> PositionFun;
   SGuiElem tooltip2(SGuiElem, PositionFun);
   SGuiElem darken();
   SGuiElem stopMouseMovement();
   SGuiElem fullScreen(SGuiElem);
+  SGuiElem absolutePosition(SGuiElem content, Vec2 pos);
   SGuiElem alignment(GuiFactory::Alignment, SGuiElem, optional<Vec2> size = none);
   SGuiElem dragSource(DragContent, function<SGuiElem()>);
   SGuiElem dragListener(function<void(DragContent)>);
   SGuiElem renderInBounds(SGuiElem);
   using CustomDrawFun = function<void(Renderer&, Rectangle)>;
   SGuiElem drawCustom(CustomDrawFun);
+  SGuiElem slider(SGuiElem button, shared_ptr<int> position, int max);
 
-  enum class TexId {
-    SCROLLBAR,
-    SCROLL_BUTTON,
-    BACKGROUND_PATTERN,
-    HORI_CORNER1,
-    HORI_CORNER2,
-    HORI_LINE,
-    HORI_MIDDLE,
-    VERT_BAR,
-    HORI_BAR,
-    HORI_BAR_MINI,
-    VERT_BAR_MINI,
-    CORNER_MINI,
-    HORI_BAR_MINI2,
-    VERT_BAR_MINI2,
-    CORNER_MINI2,
-    CORNER_TOP_LEFT,
-    CORNER_TOP_RIGHT,
-    CORNER_BOTTOM_RIGHT,
-    IMMIGRANT_BG,
-    IMMIGRANT2_BG,
-    SCROLL_UP,
-    SCROLL_DOWN,
-    WINDOW_CORNER,
-    WINDOW_CORNER_EXIT,
-    WINDOW_CORNER_EXIT_HIGHLIGHT,
-    WINDOW_VERT_BAR,
-    UI_HIGHLIGHT,
-    MAIN_MENU_HIGHLIGHT,
-    KEEPER_CHOICE,
-    ADVENTURER_CHOICE,
-    KEEPER_HIGHLIGHT,
-    ADVENTURER_HIGHLIGHT,
-    MENU_ITEM,
-    MENU_CORE,
-    MENU_MOUTH,
-    SPLASH1,
-    SPLASH2,
-    LOADING_SPLASH,
-  };
-
+  using TexId = TextureId;
   SGuiElem sprite(TexId, Alignment, optional<Color> = none);
   SGuiElem repeatedPattern(Texture& tex);
   SGuiElem background(Color);
@@ -264,8 +245,11 @@ class GuiFactory {
   SGuiElem invisible(SGuiElem content);
   SGuiElem background(SGuiElem content, Color);
   SGuiElem translucentBackground(SGuiElem content);
+  SGuiElem translucentBackgroundPassMouse(SGuiElem content);
   SGuiElem translucentBackgroundWithBorder(SGuiElem content);
+  SGuiElem translucentBackgroundWithBorderPassMouse(SGuiElem content);
   SGuiElem translucentBackground();
+  SGuiElem textInput(int width, int maxLines, shared_ptr<string> text);
   Color translucentBgColor = Color(0, 0, 0, 150);
   Color foreground1 = Color(0x20, 0x5c, 0x4a, 150);
   Color text = Color::WHITE;
@@ -281,41 +265,57 @@ class GuiFactory {
     MINION,
     BUILDING,
     DEITIES,
-    HIGHLIGHT,
+    KEEPER,
     MORALE_1,
     MORALE_2,
     MORALE_3,
     MORALE_4,
     TEAM_BUTTON,
     TEAM_BUTTON_HIGHLIGHT,
+    MINIMAP_WORLD1,
+    MINIMAP_WORLD2,
+    MINIMAP_WORLD3,
+    MINIMAP_CENTER1,
+    MINIMAP_CENTER2,
+    MINIMAP_CENTER3,
+    EXPAND_UP,
+    SPECIAL_IMMIGRANT
   };
 
+  SGuiElem minimapBar(SGuiElem icon1, SGuiElem icon2);
   SGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = Color::WHITE);
   SGuiElem icon(AttrType);
   Texture& get(TexId);
-  SGuiElem spellIcon(SpellId);
   SGuiElem uiHighlightMouseOver(Color = Color::GREEN);
   SGuiElem uiHighlightConditional(function<bool()>, Color = Color::GREEN);
   SGuiElem uiHighlightLine(Color = Color::GREEN);
   SGuiElem uiHighlight(Color = Color::GREEN);
   SGuiElem blink(SGuiElem);
+  SGuiElem blink(SGuiElem, SGuiElem);
   SGuiElem tutorialHighlight();
   SGuiElem rectangleBorder(Color);
   SGuiElem renderTopLayer(SGuiElem content);
 
   private:
 
+  SGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
+      Vec2 offset = Vec2(0, 0), optional<Color> = none);
+  SGuiElem sprite(Texture&, Alignment, Color);
+  SGuiElem sprite(Texture&, double scale);
   SGuiElem getScrollbar();
   Vec2 getScrollButtonSize();
   SDL::SDL_Keysym getHotkeyEvent(char) ;
 
-  map<TexId, Texture> textures;
+  EnumMap<TexId, optional<Texture>> textures;
   vector<Texture> iconTextures;
-  map<AttrType, Texture> attrTextures;
-  map<SpellId, Texture> spellTextures;
+  EnumMap<AttrType, optional<Texture>> attrTextures;
   Clock* clock;
   Renderer& renderer;
   Options* options;
   DragContainer dragContainer;
   KeybindingMap* keybindingMap;
+  DirectoryPath freeImagesPath;
+  optional<DirectoryPath> nonFreeImagesPath;
+  void loadNonFreeImages(const DirectoryPath&);
+  void loadFreeImages(const DirectoryPath&);
 };

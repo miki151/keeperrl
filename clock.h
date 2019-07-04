@@ -5,18 +5,20 @@
 
 class Clock {
   public:
-  Clock();
+  Clock(bool neverPause = false);
   milliseconds getMillis();
   void pause();
   void cont();
   bool isPaused();
   static milliseconds getRealMillis();
+  static microseconds getRealMicros();
 
   private:
   steady_clock::time_point getCurrent();
   steady_clock::time_point pausedTime;
   optional<steady_clock::time_point> lastPause;
   steady_clock::time_point initTime;
+  bool neverPause = false;
 };
 
 class ScopeTimer {
@@ -33,6 +35,7 @@ class Intervalometer {
   public:
   Intervalometer(milliseconds frequency);
   int getCount(milliseconds currentTime);
+  void clear();
 
   private:
   milliseconds frequency;

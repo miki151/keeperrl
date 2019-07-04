@@ -13,15 +13,13 @@
 #include "construction_map.h"
 #include "player_control.h"
 #include "collective_config.h"
-#include "immigrant_info.h"
 #include "keybinding.h"
 #include "immigration.h"
-#include "tile_efficiency.h"
 #include "container_range.h"
 #include "technology.h"
 #include "workshops.h"
 #include "item_index.h"
-#include "minion_task.h"
+#include "minion_activity.h"
 #include "creature.h"
 #include "body.h"
 #include "equipment.h"
@@ -29,45 +27,10 @@
 #include "collective_warning.h"
 #include "creature_factory.h"
 #include "workshop_item.h"
-
+#include "tutorial_state.h"
+#include "content_factory.h"
 
 SERIALIZE_DEF(Tutorial, state, entrance)
-
-enum class Tutorial::State {
-  WELCOME,
-  INTRO,
-  INTRO2,
-  CUT_TREES,
-  BUILD_STORAGE,
-  CONTROLS1,
-  CONTROLS2,
-  GET_200_WOOD,
-  DIG_ROOM,
-  BUILD_DOOR,
-  BUILD_LIBRARY,
-  DIG_2_ROOMS,
-  ACCEPT_IMMIGRANT,
-  TORCHES,
-  FLOORS,
-  BUILD_WORKSHOP,
-  SCHEDULE_WORKSHOP_ITEMS,
-  ORDER_CRAFTING,
-  EQUIP_WEAPON,
-  ACCEPT_MORE_IMMIGRANTS,
-  EQUIP_ALL_FIGHTERS,
-  CREATE_TEAM,
-  CONTROL_TEAM,
-  CONTROL_MODE_MOVEMENT,
-  FULL_CONTROL,
-  DISCOVER_VILLAGE,
-  KILL_VILLAGE,
-  LOOT_VILLAGE,
-  LEAVE_CONTROL,
-  SUMMARY1,
-  RESEARCH,
-  SUMMARY2,
-  FINISHED,
-};
 
 static bool isTeam(WConstCollective collective) {
   for (auto team : collective->getTeams().getAll())
@@ -78,7 +41,7 @@ static bool isTeam(WConstCollective collective) {
 
 bool Tutorial::canContinue(WConstGame game) const {
   auto collective = game->getPlayerCollective();
-  WCollective villain;
+  WCollective villain = nullptr;
   for (auto c : game->getCollectives())
     if (c != collective) {
       CHECK(!villain) << "Only one villain allowed in tutorial.";
@@ -102,29 +65,28 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::DIG_ROOM:
       return getHighlightedSquaresHigh(game).empty();
     case State::BUILD_DOOR:
-      return collective->getConstructions().getBuiltCount(FurnitureType::DOOR)
-          + collective->getConstructions().getBuiltCount(FurnitureType::LOCKED_DOOR) >= 1;
+      return collective->getConstructions().getBuiltCount(FurnitureType("WOOD_DOOR"));
     case State::BUILD_LIBRARY:
-      return collective->getConstructions().getBuiltCount(FurnitureType::BOOKCASE_WOOD) >= 5;
+      return collective->getConstructions().getBuiltCount(FurnitureType("BOOKCASE_WOOD")) >= 5;
     case State::DIG_2_ROOMS:
       return getHighlightedSquaresHigh(game).empty();
     case State::ACCEPT_IMMIGRANT:
       return collective->getCreatures(MinionTrait::FIGHTER).size() >= 1;
     case State::TORCHES:
-      for (auto furniture : {FurnitureType::BOOKCASE_WOOD, FurnitureType::TRAINING_WOOD})
+      for (auto furniture : {FurnitureType("BOOKCASE_WOOD"), FurnitureType("TRAINING_WOOD")})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
-          if (collective->getTileEfficiency().getEfficiency(pos) < 0.99)
+          if (pos.getLightingEfficiency() < 0.99)
             return false;
       return true;
     case State::FLOORS:
       return getHighlightedSquaresLow(game).empty();
     case State::BUILD_WORKSHOP:
-      return collective->getConstructions().getBuiltCount(FurnitureType::WORKSHOP) >= 2 &&
+      return collective->getConstructions().getBuiltCount(FurnitureType("WORKSHOP")) >= 2 &&
           collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT).size() >= 1;
     case State::SCHEDULE_WORKSHOP_ITEMS: {
       int numWeapons = collective->getNumItems(ItemIndex::WEAPON);
       for (auto& item : collective->getWorkshops().get(WorkshopType::WORKSHOP).getQueued())
-        if (item.type.isType<ItemType::Club>())
+        if (item.item.type.isType<ItemType::Club>())
           ++numWeapons;
       return numWeapons >= 1;
     }
@@ -154,10 +116,7 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::DISCOVER_VILLAGE:
       return collective->isKnownVillain(villain);
     case State::KILL_VILLAGE:
-      for (auto c : villain->getCreatures())
-        if (c->getBody().isHumanoid())
-          return false;
-      return true;
+      return villain->isConquered();
     case State::LOOT_VILLAGE:
       for (auto pos : villain->getTerritory().getAll())
         if (!pos.getItems(ItemIndex::GOLD).empty())
@@ -165,10 +124,12 @@ bool Tutorial::canContinue(WConstGame game) const {
       return true;
     case State::LEAVE_CONTROL:
       return game->getPlayerControl()->getControlled().empty();
+    case State::MINIMAP_BUTTONS:
+      return true;
     case State::SUMMARY1:
       return true;
     case State::RESEARCH:
-      return collective->getTechnologies().size() > collective->getConfig().getInitialTech().size();
+      return collective->getDungeonLevel().numResearchAvailable() == 0;
     case State::SUMMARY2:
       return true;
     case State::FINISHED:
@@ -208,7 +169,7 @@ string Tutorial::getMessage() const {
     case State::CONTROLS2:
       return "Try zooming in and out of the map using the 'z' key or mouse wheel.";
     case State::GET_200_WOOD:
-      return "Cut some more trees until how have gathered at least 200 wood.\n \n";
+      return "Cut some more trees until you have gathered at least 200 wood.\n \n";
           //"You can mark things in bulk by dragging the mouse or by holding SHIFT and selecting a rectangle. Try it!";
     case State::DIG_ROOM:
       return "Time to strike the earth! Dig out a tunnel and a room, as shown by the yellow highlight.\n \n"
@@ -220,7 +181,7 @@ string Tutorial::getMessage() const {
           "Try locking and unlocking your new door.";
     case State::BUILD_LIBRARY:
       return "The first room that you need to build is a library. This is where the Keeper and other minions "
-          "will learn spells, and research new technology. Place 6 bookcases "
+          "will learn spells, and train their spell damage attribute. Place 6 bookcases "
           "in the new room as highlighted. Remember that bookcases and other furniture block your minions' movement.";
     case State::DIG_2_ROOMS:
       return "Dig out some more rooms. "
@@ -229,17 +190,17 @@ string Tutorial::getMessage() const {
           "lower left corner if it's taking too long.";
     case State::ACCEPT_IMMIGRANT:
       return "Your dungeon has attracted an orc. "
-          "Before your new minion joins you, you must fullfil a few requirements. "
+          "Before your new minion joins you, you must fulfill a few requirements. "
           "Hover your mouse over the immigrant icon to see them. "
           "Once you are ready, accept the immigrant with a left click. Click on the '?' icon immediately to the left "
           "to learn more about immigration.";
     case State::TORCHES:
       return "We need to make sure that your minions have good working conditions when studying and training. Place some "
           "torches in your rooms to light them up. Hover your mouse over the book shelves and training dummies "
-          "and look in the lower right corner to make sure that their efficiency is at least 100.";
+          "and look in the lower right corner to check if they have enough light.";
     case State::FLOORS:
       return "Minions are also more efficient if there is a nice floor where they are working. For now you can only "
-          "afford wooden floor, but it should do.\n \n"
+          "afford wooden floors, but it should do.\n \n"
           "Make sure you have enough wood!";
     case State::BUILD_WORKSHOP:
       return "Your minions will need equipment, such as weapons, armor, and consumables, to be more deadly in "
@@ -264,8 +225,7 @@ string Tutorial::getMessage() const {
       return "You are ready to grow your military force. Three more orc immigrants should do.\n \n"
           "You can also invite goblins, which don't fight, but are excellent craftsmen.";
     case State::EQUIP_ALL_FIGHTERS:
-      return "Craft clubs for all of your orcs, and the Keeper, and have them equipped. They will be needed soon.\n \n"
-          "In the meantime, order your Keeper to train by dragging him to the training room.";
+      return "Craft clubs for all of your orcs, and the Keeper, and have them equipped. They will be needed soon.";
     case State::CREATE_TEAM:
       return "Your tiny army is ready! Assemble a team by dragging your orcs onto the [new team] button. You can "
           "drag them straight from the map or from the minion menu.\n \n"
@@ -279,8 +239,8 @@ string Tutorial::getMessage() const {
           "mouse button.\n \n"
           "Notice the rest of your team following you.";
     case State::FULL_CONTROL:
-      return "You can take control over all team members in a tactical situation. To do this click on the appropriate "
-          "command in the upper left corner or press [G]. Clicking again will go back to controlling only the team "
+      return "You can take control over all team members in a tactical situation. To do this click on the [Control mode] "
+          "button in the upper left corner or press [G]. Clicking again will go back to controlling only the team "
           "leader.";
     case State::DISCOVER_VILLAGE:
       return "It's time to discover the whereabouts of the nearby human village. Click on the minimap in the upper "
@@ -293,14 +253,18 @@ string Tutorial::getMessage() const {
       return "There is a nice pile of treasure in one of the houses. Pick it all up by entering the tiles containing "
           "the loot, and clicking in the menu in the upper left corner.";
     case State::LEAVE_CONTROL:
-      return "To relinquish control of your team, choose the appropriate command in the upper left corner.";
+      return "To relinquish control of your team, click the [Exit control mode] button in the upper left corner.";
     case State::SUMMARY1:
       return "You are back in the real-time mode. Your minions will now return to base and resume their normal routine. "
           "Once they are back, they will drop all the loot for the imps to take care of.";
     case State::RESEARCH:
-      return "You have received 100 mana for your conquest. Mana is the main source of progress in the game and allows "
-          "you to research new technologies or increase your population by building statues or a throne.\n \n"
-          "Go ahead and research something in your library.";
+      return "You have increased your malevolence level. This is the main meter of your progress in the game and allows "
+          "you to research new technologies.\n \n"
+          "Click on the level button and research something.";
+    case State::MINIMAP_BUTTONS:
+      return "As the last objective, familiarize yourself with the two buttons under the minimap in the top-right corner. "
+          "The first one opens the world map window, which you can use to travel to other sites when in control mode.\n \n"
+          "The second one centers the map on your Keeper.";
     case State::SUMMARY2:
       return "Thank you for completing the tutorial! We hope that we have made it a bit easier for you to get into "
           "KeeperRL. We would love to hear your comments, so please drop by on the forums on Steam or at keeperrl.com "
@@ -348,6 +312,10 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
       return {TutorialHighlight::CONTROL_TEAM};
     case State::LEAVE_CONTROL:
       return {TutorialHighlight::LEAVE_CONTROL};
+    case State::MINIMAP_BUTTONS:
+      return {TutorialHighlight::MINIMAP_BUTTONS};
+    case State::RESEARCH:
+      return {TutorialHighlight::RESEARCH};
     default:
       return {};
   }
@@ -359,7 +327,7 @@ bool Tutorial::blockAutoEquipment() const {
 
 static void clearDugOutSquares(WConstGame game, vector<Vec2>& highlights) {
   for (auto elem : Iter(highlights)) {
-    if (auto furniture = Position(*elem, game->getPlayerCollective()->getLevel())
+    if (auto furniture = Position(*elem, game->getPlayerCollective()->getModel()->getTopLevel())
         .getFurniture(FurnitureLayer::MIDDLE))
       if (furniture->canDestroy(DestroyAction::Type::DIG))
         continue;
@@ -405,24 +373,21 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
       vector<Vec2> ret;
       for (Vec2 v : roomCenter.neighbors8())
         if (v.y != roomCenter.y && !collective->getConstructions().containsFurniture(
-              Position(v, collective->getLevel()), FurnitureLayer::MIDDLE))
+              Position(v, collective->getModel()->getTopLevel()), FurnitureLayer::MIDDLE))
           ret.push_back(v);
       return ret;
     }
     case State::FLOORS: {
       vector<Vec2> ret;
-      for (auto furniture : {FurnitureType::BOOKCASE_WOOD, FurnitureType::TRAINING_WOOD})
+      for (auto furniture : {FurnitureType("BOOKCASE_WOOD"), FurnitureType("TRAINING_WOOD")})
         for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
           for (auto floorPos : concat({pos}, pos.neighbors8()))
-            if (floorPos.canConstruct(FurnitureType::FLOOR_WOOD1) && !ret.contains(floorPos.getCoord()))
+            if (floorPos.canConstruct(FurnitureType("FLOOR_WOOD1")) && !ret.contains(floorPos.getCoord()))
               ret.push_back(floorPos.getCoord());
       return ret;
     }
     case State::SCHEDULE_WORKSHOP_ITEMS:
-      return collective->getConstructions().getBuiltPositions(FurnitureType::WORKSHOP).transform(
-          [](const Position& pos) { return pos.getCoord(); });
-    case State::RESEARCH:
-      return collective->getConstructions().getBuiltPositions(FurnitureType::BOOKCASE_WOOD).transform(
+      return collective->getConstructions().getBuiltPositions(FurnitureType("WORKSHOP")).transform(
           [](const Position& pos) { return pos.getCoord(); });
     default:
       return {};
@@ -485,20 +450,18 @@ void Tutorial::goBack() {
     state = (State)((int) state - 1);
 }
 
-bool Tutorial::showImmigrant(const ImmigrantInfo& info) const {
-  return info.getId(0) == CreatureId::IMP ||
-      (state == State::ACCEPT_IMMIGRANT && info.isPersistent() && info.getLimit() == 1) ||
-      (state >= State::ACCEPT_MORE_IMMIGRANTS && !info.isPersistent());
+Tutorial::State Tutorial::getState() const {
+  return state;
 }
 
-void Tutorial::createTutorial(Game& game) {
+void Tutorial::createTutorial(Game& game, vector<ImmigrantInfo> immigrants) {
   auto tutorial = make_shared<Tutorial>();
   game.getPlayerControl()->setTutorial(tutorial);
   auto collective = game.getPlayerCollective();
   bool foundEntrance = false;
-  for (auto pos : collective->getLevel()->getAllPositions())
+  for (auto pos : collective->getModel()->getTopLevel()->getAllPositions())
     if (auto f = pos.getFurniture(FurnitureLayer::CEILING))
-      if (f->getType() == FurnitureType::TUTORIAL_ENTRANCE) {
+      if (f->getType() == FurnitureType("TUTORIAL_ENTRANCE")) {
         tutorial->entrance = pos.getCoord() - Vec2(0, 1);
         CHECK(!foundEntrance);
         foundEntrance = true;
@@ -506,29 +469,7 @@ void Tutorial::createTutorial(Game& game) {
   CHECK(foundEntrance);
   collective->setTrait(collective->getLeader(), MinionTrait::NO_AUTO_EQUIPMENT);
   collective->getWarnings().disable();
-  collective->init(CollectiveConfig::keeper(50, 10, false, {}, {
-      ImmigrantInfo(CreatureId::IMP, {MinionTrait::WORKER, MinionTrait::NO_LIMIT, MinionTrait::NO_EQUIPMENT})
-          .setSpawnLocation(NearLeader{})
-          .setKeybinding(Keybinding::CREATE_IMP)
-          .setSound(Sound(SoundId::CREATE_IMP).setPitch(2))
-          .setNoAuto()
-          .addRequirement(ExponentialCost{ CostInfo(CollectiveResourceId::GOLD, 6), 5, 4 }),
-      ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER, MinionTrait::NO_AUTO_EQUIPMENT})
-          .setLimit(1)
-          .setTutorialHighlight(TutorialHighlight::ACCEPT_IMMIGRANT)
-          .addRequirement(0.0, TutorialRequirement {tutorial})
-          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD})
-          .setHiddenInHelp(),
-      ImmigrantInfo(CreatureId::ORC, {MinionTrait::FIGHTER})
-          .setLimit(3)
-          .setFrequency(0.5)
-          .addRequirement(0.0, TutorialRequirement {tutorial})
-          .addRequirement(0.1, AttractionInfo{1, FurnitureType::TRAINING_WOOD}),
-      ImmigrantInfo(CreatureId::GOBLIN, {MinionTrait::NO_EQUIPMENT})
-          .setLimit(1)
-          .setFrequency(0.5)
-          .addRequirement(0.0, TutorialRequirement {tutorial})
-          .addRequirement(0.1, AttractionInfo{1, FurnitureType::WORKSHOP})
-  }),
-      Immigration(collective));
+  collective->init(CollectiveConfig::keeper(50_visible, 10));
+  CollectiveConfig::addBedRequirementToImmigrants(immigrants, game.getContentFactory());
+  collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
 }

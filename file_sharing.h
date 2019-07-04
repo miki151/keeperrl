@@ -9,7 +9,7 @@ class ProgressMeter;
 
 class FileSharing {
   public:
-  FileSharing(const string& uploadUrl, Options&, long long installId);
+  FileSharing(const string& uploadUrl, Options&, string installId);
 
   optional<string> uploadSite(const FilePath& path, ProgressMeter&);
   struct SiteInfo {
@@ -20,11 +20,13 @@ class FileSharing {
     int version;
   };
   optional<vector<SiteInfo>> listSites();
-  optional<string> download(const string& filename, const DirectoryPath& dir, ProgressMeter&);
+  optional<string> download(const string& filename, const string& remoteDir, const DirectoryPath& dir, ProgressMeter&);
 
   typedef map<string, string> GameEvent;
   bool uploadGameEvent(const GameEvent&, bool requireGameEventsPermission = true);
   void uploadHighscores(const FilePath&);
+  optional<string> uploadBugReport(const string& text, optional<FilePath> savefile, optional<FilePath> screenshot,
+      ProgressMeter&);
 
   struct BoardMessage {
     string text;
@@ -32,6 +34,17 @@ class FileSharing {
   };
   optional<vector<BoardMessage>> getBoardMessages(int boardId);
   bool uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text);
+
+  struct OnlineModInfo {
+    string name;
+    string author;
+    string description;
+    int numGames;
+    int version;
+  };
+
+  optional<vector<OnlineModInfo>> getOnlineMods(int modVersion);
+  optional<string> downloadMod(const string& name, const DirectoryPath& modsDir, ProgressMeter&);
 
   string downloadHighscores(int version);
 
@@ -47,7 +60,7 @@ class FileSharing {
   void uploadingLoop();
   void uploadGameEventImpl(const GameEvent&, int tries);
   optional<string> downloadContent(const string& url);
-  long long installId;
+  string installId;
   atomic<bool> wasCancelled;
 };
 

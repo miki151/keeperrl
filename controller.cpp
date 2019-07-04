@@ -27,36 +27,28 @@ SERIALIZATION_CONSTRUCTOR_IMPL(DoNothingController);
 SERIALIZE_DEF(Controller, SUBCLASS(OwnedObject<Controller>), creature)
 SERIALIZATION_CONSTRUCTOR_IMPL(Controller);
 
-Controller::Controller(WCreature c) : creature(c) {
+Controller::Controller(Creature* c) : creature(c) {
 }
 
-ControllerFactory::ControllerFactory(function<PController(WCreature)> f) : fun(f) {}
+ControllerFactory::ControllerFactory(function<PController(Creature*)> f) : fun(f) {}
 
-PController ControllerFactory::get(WCreature c) const {
+PController ControllerFactory::get(Creature* c) const {
   return fun(c);
 }
 
-DoNothingController::DoNothingController(WCreature c) : Controller(c) {}
+DoNothingController::DoNothingController(Creature* c) : Controller(c) {}
 
 bool DoNothingController::isPlayer() const {
   return false;
 }
 
 void DoNothingController::makeMove() {
-  getCreature()->wait().perform(getCreature());
+  creature->wait().perform(creature);
 }
-
-void DoNothingController::onBump(WCreature c) {
-}
-
 
 MessageGenerator& DoNothingController::getMessageGenerator() const {
   static MessageGenerator messageGenerator(MessageGenerator::NONE);
   return messageGenerator;
-}
-
-WCreature Controller::getCreature() const {
-  return creature;
 }
 
 

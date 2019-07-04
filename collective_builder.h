@@ -12,12 +12,14 @@ class ImmigrantInfo;
 class Position;
 class CollectiveConfig;
 struct CollectiveName;
+class ContentFactory;
 
 class CollectiveBuilder {
   public:
   CollectiveBuilder(const CollectiveConfig&, TribeId);
+  CollectiveBuilder& setModel(WModel);
   CollectiveBuilder& setLevel(WLevel);
-  CollectiveBuilder& addCreature(WCreature, EnumSet<MinionTrait>);
+  CollectiveBuilder& addCreature(Creature*, EnumSet<MinionTrait>);
   CollectiveBuilder& addArea(const vector<Vec2>&);
   CollectiveBuilder& setLocationName(const string&);
   CollectiveBuilder& setRaceName(const string&);
@@ -26,14 +28,15 @@ class CollectiveBuilder {
   void setCentralPoint(Vec2);
   bool hasCentralPoint();
 
-  PCollective build();
+  PCollective build(const ContentFactory*);
   bool hasCreatures() const;
 
   private:
   optional<CollectiveName> getCollectiveName();
+  WModel model = nullptr;
   WLevel level = nullptr;
   struct CreatureInfo {
-    WCreature creature;
+    Creature* creature = nullptr;
     EnumSet<MinionTrait> traits;
   };
   vector<CreatureInfo> creatures;

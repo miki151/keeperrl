@@ -32,6 +32,7 @@ class Highscores {
 
   void present(View*, optional<Score> lastAdded = none) const;
   void add(Score);
+  vector<Score> downloadHighscores(View*) const;
 
   static vector<Score> fromFile(const FilePath&);
 
@@ -44,7 +45,6 @@ class Highscores {
   FilePath localPath;
   FileSharing& fileSharing;
   vector<Score> localScores;
-  vector<Score> remoteScores;
   Options* options;
 };
 

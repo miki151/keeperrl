@@ -19,8 +19,10 @@
 #include "enum_variant.h"
 #include "unique_entity.h"
 #include "village_action.h"
-#include "minion_task.h"
+#include "minion_activity.h"
 #include "entity_set.h"
+#include "team_member_action.h"
+#include "tech_id.h"
 
 class PlayerMessage;
 
@@ -32,9 +34,12 @@ enum class UserInputId {
     REFRESH,
     DRAW_LEVEL_MAP,
     DRAW_WORLD_MAP,
+    SCROLL_TO_HOME,
     EXIT,
     MESSAGE_INFO,
     CHEAT_ATTRIBUTES,
+    CHEAT_SPELLS,
+    CHEAT_POTIONS,
     TUTORIAL_CONTINUE,
     TUTORIAL_GO_BACK,
 // real-time actions
@@ -48,7 +53,8 @@ enum class UserInputId {
     ADD_GROUP_TO_TEAM,
     REMOVE_FROM_TEAM,
     CREATURE_BUTTON,
-    CREATURE_BUTTON2,
+    CREATURE_MAP_CLICK,
+    CREATURE_MAP_CLICK_EXTENDED,
     CREATURE_GROUP_BUTTON,
     CREATURE_TASK_ACTION,
     CREATURE_EQUIPMENT_ACTION,
@@ -58,6 +64,7 @@ enum class UserInputId {
     CREATURE_CONSUME,
     CREATURE_DRAG_DROP,
     CREATURE_DRAG,
+    ASSIGN_QUARTERS,
     IMMIGRANT_ACCEPT,
     IMMIGRANT_REJECT,
     IMMIGRANT_AUTO_ACCEPT,
@@ -70,26 +77,35 @@ enum class UserInputId {
     SELECT_TEAM,
     ACTIVATE_TEAM,
     TECHNOLOGY,
+    KEEPEROPEDIA,
     WORKSHOP,
     WORKSHOP_ADD,
     WORKSHOP_ITEM_ACTION,
+    WORKSHOP_UPGRADE,
     LIBRARY_ADD,
     LIBRARY_CLOSE,
     VILLAGE_ACTION,
-    GO_TO_VILLAGE,
+    DISMISS_VILLAGE_INFO,
     PAY_RANSOM,
     IGNORE_RANSOM,
     SHOW_HISTORY,
     DISMISS_NEXT_WAVE,
+    DISMISS_WARNING_WINDOW,
+    SCROLL_DOWN_STAIRS,
+    SCROLL_UP_STAIRS,
 // turn-based actions
     MOVE,
     TRAVEL,
-    FIRE,
     PICK_UP_ITEM,
     PICK_UP_ITEM_MULTI,
     PLAYER_COMMAND,
+    TOGGLE_CONTROL_MODE,
+    EXIT_CONTROL_MODE,
+    TOGGLE_TEAM_ORDER,
+    TEAM_MEMBER_ACTION,
     CAST_SPELL,
     INVENTORY_ITEM,
+    INTRINSIC_ATTACK,
     PAY_DEBT,
     APPLY_EFFECT,
     CREATE_ITEM,
@@ -134,8 +150,8 @@ struct VillageActionInfo {
 
 struct TaskActionInfo {
   UniqueEntity<Creature>::Id SERIAL(creature);
-  optional<MinionTask> SERIAL(switchTo);
-  EnumSet<MinionTask> SERIAL(lock);
+  optional<MinionActivity> SERIAL(switchTo);
+  EnumSet<MinionActivity> SERIAL(lock);
   SERIALIZE_ALL(creature, switchTo, lock)
 };
 
@@ -159,12 +175,35 @@ struct RenameActionInfo {
   SERIALIZE_ALL(creature, name)
 };
 
-enum class SpellId;
+struct TeamMemberActionInfo {
+  TeamMemberAction SERIAL(action);
+  UniqueEntity<Creature>::Id SERIAL(memberId);
+  SERIALIZE_ALL(action, memberId)
+};
+
+struct AssignQuartersInfo {
+  optional<int> SERIAL(index);
+  UniqueEntity<Creature>::Id SERIAL(minionId);
+  SERIALIZE_ALL(index, minionId)
+};
+
+struct DismissVillageInfo {
+  UniqueEntity<Collective>::Id SERIAL(collectiveId);
+  string SERIAL(infoText);
+  SERIALIZE_ALL(collectiveId, infoText)
+};
+
+struct WorkshopUpgradeInfo {
+  int SERIAL(itemIndex);
+  int SERIAL(upgradeIndex);
+  bool SERIAL(remove);
+  SERIALIZE_ALL(itemIndex, upgradeIndex, remove)
+};
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
-    UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, SpellId, VillageActionInfo,
+    UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo,
-    UniqueEntity<Collective>::Id, string),
+    string, TechId, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo),
         ASSIGN(BuildingInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -173,7 +212,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::CREATURE_BUTTON,
             UserInputId::CREATE_TEAM,
             UserInputId::CREATE_TEAM_FROM_GROUP,
-            UserInputId::CREATURE_BUTTON2,
             UserInputId::CREATURE_GROUP_BUTTON,
             UserInputId::CREATURE_CONTROL,
             UserInputId::CREATURE_BANISH,
@@ -184,14 +222,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
         ASSIGN(UniqueEntity<PlayerMessage>::Id,
             UserInputId::MESSAGE_INFO
             ),
-        ASSIGN(UniqueEntity<Collective>::Id,
-            UserInputId::GO_TO_VILLAGE
-            ),
         ASSIGN(int,
-            UserInputId::TECHNOLOGY,
             UserInputId::WORKSHOP,
             UserInputId::WORKSHOP_ADD,
-            UserInputId::LIBRARY_ADD,
             UserInputId::CANCEL_TEAM,
             UserInputId::ACTIVATE_TEAM,
             UserInputId::SELECT_TEAM,
@@ -201,22 +234,24 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::IMMIGRANT_ACCEPT,
             UserInputId::IMMIGRANT_REJECT,
             UserInputId::IMMIGRANT_AUTO_ACCEPT,
-            UserInputId::IMMIGRANT_AUTO_REJECT
+            UserInputId::IMMIGRANT_AUTO_REJECT,
+            UserInputId::CAST_SPELL
         ),
         ASSIGN(InventoryItemInfo,
-            UserInputId::INVENTORY_ITEM),
+            UserInputId::INVENTORY_ITEM,
+            UserInputId::INTRINSIC_ATTACK
+        ),
         ASSIGN(Vec2,
             UserInputId::TILE_CLICK,
-            UserInputId::MOVE, 
+            UserInputId::CREATURE_MAP_CLICK,
+            UserInputId::CREATURE_MAP_CLICK_EXTENDED,
+            UserInputId::MOVE,
             UserInputId::TRAVEL, 
-            UserInputId::FIRE,
             UserInputId::RECT_DESELECTION),
         ASSIGN(TeamCreatureInfo,
             UserInputId::ADD_TO_TEAM,
             UserInputId::ADD_GROUP_TO_TEAM,
             UserInputId::REMOVE_FROM_TEAM),
-        ASSIGN(SpellId,
-            UserInputId::CAST_SPELL),
         ASSIGN(VillageActionInfo,
             UserInputId::VILLAGE_ACTION),
         ASSIGN(TaskActionInfo,
@@ -231,10 +266,25 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, Uniqu
             UserInputId::CREATURE_DRAG_DROP),
         ASSIGN(TeamDropInfo,
             UserInputId::TEAM_DRAG_DROP),
+        ASSIGN(TeamMemberActionInfo,
+            UserInputId::TEAM_MEMBER_ACTION),
+        ASSIGN(AssignQuartersInfo,
+            UserInputId::ASSIGN_QUARTERS),
+        ASSIGN(DismissVillageInfo,
+            UserInputId::DISMISS_VILLAGE_INFO),
         ASSIGN(string,
             UserInputId::CREATE_ITEM,
             UserInputId::APPLY_EFFECT,
             UserInputId::SUMMON_ENEMY
+        ),
+        ASSIGN(TechId,
+            UserInputId::LIBRARY_ADD
+        ),
+        ASSIGN(TeamOrder,
+            UserInputId::TOGGLE_TEAM_ORDER
+        ),
+        ASSIGN(WorkshopUpgradeInfo,
+            UserInputId::WORKSHOP_UPGRADE
         )
         > {
   using EnumVariant::EnumVariant;

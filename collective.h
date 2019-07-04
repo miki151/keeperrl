@@ -1,3 +1,4 @@
+
 /* Copyright (C) 2013-2014 Michal Brzozowski (rusolis@poczta.fm)
 
    This file is part of KeeperRL.
@@ -20,7 +21,8 @@
 #include "event_listener.h"
 #include "entity_map.h"
 #include "minion_trait.h"
-#include "spawn_type.h"
+#include "dungeon_level.h"
+#include "enemy_id.h"
 
 class CollectiveAttack;
 class Creature;
@@ -42,81 +44,77 @@ struct TriggerInfo;
 class Territory;
 struct CollectiveName;
 class Workshops;
-class TileEfficiency;
 class Zones;
 struct ItemFetchInfo;
 class CollectiveWarnings;
 class Immigration;
+class Quarters;
+class PositionMatching;
+class MinionActivities;
 
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
-  static PCollective create(WLevel, TribeId, const optional<CollectiveName>&, bool discoverable);
-  void init(CollectiveConfig&&, Immigration&&);
-  void acquireInitialTech();
-  void addCreature(WCreature, EnumSet<MinionTrait>);
+  static PCollective create(WModel model, TribeId, const optional<CollectiveName>&, bool discoverable,
+      const ContentFactory*);
+  void init(CollectiveConfig);
+  void setWorkshops(unique_ptr<Workshops>);
+  void setImmigration(PImmigration);
+  void addCreature(Creature*, EnumSet<MinionTrait>);
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
-  MoveInfo getMove(WCreature);
+  void setPopulationGroup(const vector<Creature*>&);
   void setControl(PCollectiveControl);
   void tick();
   void update(bool currentlyActive);
   TribeId getTribeId() const;
   Tribe* getTribe() const;
-  WLevel getLevel() const;
   WModel getModel() const;
   WGame getGame() const;
-  void addNewCreatureMessage(const vector<WCreature>&);
-  void setTask(WCreature, PTask);
-  bool hasTask(WConstCreature) const;
-  void cancelTask(WConstCreature);
-  void banishCreature(WCreature);
-  bool wasBanished(WConstCreature) const;
+  void addNewCreatureMessage(const vector<Creature*>&);
+  void setTask(Creature*, PTask);
+  bool hasTask(const Creature*) const;
+  void freeFromTask(const Creature*);
+  void banishCreature(Creature*);
+  bool wasBanished(const Creature*) const;
   void setVillainType(VillainType);
   bool isDiscoverable() const;
   void setEnemyId(EnemyId);
   VillainType getVillainType() const;
   optional<EnemyId> getEnemyId() const;
   WCollectiveControl getControl() const;
-  double getLocalTime() const;
-  double getGlobalTime() const;
+  LocalTime getLocalTime() const;
+  GlobalTime getGlobalTime() const;
+  const PositionSet& getStoragePositions(StorageId) const;
 
   typedef CollectiveResourceId ResourceId;
 
   SERIALIZATION_DECL(Collective)
 
-  const vector<WCreature>& getCreatures() const;
+  const vector<Creature*>& getCreatures() const;
   bool isConquered() const;
 
-  const vector<WCreature>& getCreatures(SpawnType) const;
-  const vector<WCreature>& getCreatures(MinionTrait) const;
-  vector<WCreature> getCreaturesAnyOf(EnumSet<MinionTrait>) const;
-  bool hasTrait(WConstCreature, MinionTrait) const;
-  bool hasAnyTrait(WConstCreature, EnumSet<MinionTrait>) const;
-  void setTrait(WCreature c, MinionTrait);
-  void removeTrait(WCreature c, MinionTrait);
+  const vector<Creature*>& getCreatures(MinionTrait) const;
+  bool hasTrait(const Creature*, MinionTrait) const;
+  void setTrait(Creature* c, MinionTrait);
+  void removeTrait(Creature* c, MinionTrait);
 
-  bool canPillage() const;
   bool hasTradeItems() const;
-  vector<WItem> getTradeItems() const;
-  PItem buyItem(WItem);
+  vector<Item*> getTradeItems() const;
+  PItem buyItem(Item*);
   vector<TriggerInfo> getTriggers(WConstCollective against) const;
 
-  double getEfficiency(WConstCreature) const;
-  WConstCreature getLeader() const;
-  WCreature getLeader();
-  bool hasLeader() const;
-  void clearLeader();
+  double getEfficiency(const Creature*) const;
+  Creature* getLeader() const;
 
   const Territory& getTerritory() const;
   Territory& getTerritory();
   bool canClaimSquare(Position pos) const;
   void claimSquare(Position);
   const KnownTiles& getKnownTiles() const;
-  const TileEfficiency& getTileEfficiency() const;
   void retire();
   CollectiveWarnings& getWarnings();
   const CollectiveConfig& getConfig() const;
 
-  bool usesEquipment(WConstCreature) const;
+  bool usesEquipment(const Creature*) const;
 
   virtual ~Collective();
 
@@ -128,28 +126,29 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   const ConstructionMap& getConstructions() const;
 
-  void setMinionTask(WConstCreature c, MinionTask task);
-  optional<MinionTask> getMinionTask(WConstCreature) const;
-  bool isMinionTaskPossible(WCreature c, MinionTask task);
+  void setMinionActivity(Creature* c, MinionActivity task);
+  bool isActivityGood(Creature*, MinionActivity, bool ignoreTaskLock = false);
+  bool isActivityGoodAssumingHaveTasks(Creature*, MinionActivity, bool ignoreTaskLock = false);
 
-  vector<WItem> getAllItems(bool includeMinions = true) const;
-  vector<WItem> getAllItems(ItemPredicate predicate, bool includeMinions = true) const;
-  vector<WItem> getAllItems(ItemIndex, bool includeMinions = true) const;
+  vector<Item*> getAllItems(bool includeMinions = true) const;
+  vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
+  struct TrapItemInfo;
+  vector<TrapItemInfo> getTrapItems(const vector<Position>&) const;
 
-  vector<pair<WItem, Position>> getTrapItems(TrapType, const vector<Position>&) const;
-
-  void addTrap(Position, TrapType);
+  void addTrap(Position, FurnitureType);
   void removeTrap(Position);
   bool canAddFurniture(Position, FurnitureType) const;
   void addFurniture(Position, FurnitureType, const CostInfo&, bool noCredit);
-  void removeFurniture(Position, FurnitureLayer);
-  void destroySquare(Position, FurnitureLayer);
+  void removeUnbuiltFurniture(Position, FurnitureLayer);
+  void destroyOrder(Position, FurnitureLayer);
   bool isPlannedTorch(Position) const;
   bool canPlaceTorch(Position) const;
   void removeTorch(Position);
   void addTorch(Position);
   Zones& getZones();
   const Zones& getZones() const;
+  Quarters& getQuarters();
+  const Quarters& getQuarters() const;
   void cancelMarkedTask(Position);
   void orderDestruction(Position pos, const DestroyAction&);
   double getDangerLevel() const;
@@ -158,9 +157,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void setPriorityTasks(Position);
   bool hasPriorityTasks(Position) const;
 
-  bool hasTech(TechId id) const;
-  void acquireTech(Technology*);
-  vector<Technology*> getTechnologies() const;
+  void acquireTech(TechId, bool throughLevelling);
+  const Technology& getTechnology() const;
+  void setTechnology(Technology);
   bool addKnownTile(Position);
 
   const EntitySet<Creature>& getKills() const;
@@ -168,34 +167,34 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   MinionEquipment& getMinionEquipment();
   const MinionEquipment& getMinionEquipment() const;
-  optional<FurnitureType> getMissingTrainingFurniture(WConstCreature, ExperienceType) const;
+  optional<FurnitureType> getMissingTrainingFurniture(const Creature*, ExperienceType) const;
 
   Workshops& getWorkshops();
   const Workshops& getWorkshops() const;
 
   Immigration& getImmigration();
   const Immigration& getImmigration() const;
-
+  const MinionActivities& getMinionActivities() const;
   int getPopulationSize() const;
   int getMaxPopulation() const;
+  const DungeonLevel& getDungeonLevel() const;
+  DungeonLevel& getDungeonLevel();
 
-  void orderConsumption(WCreature consumer, WCreature who);
-  vector<WCreature> getConsumptionTargets(WCreature consumer) const;
+  vector<Creature*> getConsumptionTargets(Creature* consumer) const;
   void addAttack(const CollectiveAttack&);
   void onRansomPaid();
   void onExternalEnemyKilled(const string& name);
 
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
-  void freeTeamMembers(TeamId);
+  void freeTeamMembers(const vector<Creature*>& members);
 
-  const optional<CollectiveName>& getName() const;
+  const heap_optional<CollectiveName>& getName() const;
   const TaskMap& getTaskMap() const;
   TaskMap& getTaskMap();
-  void updateResourceProduction();
-  bool isItemMarked(WConstItem) const;
+  bool isItemMarked(const Item*) const;
   int getNumItems(ItemIndex, bool includeMinions = true) const;
-  optional<set<Position>> getStorageFor(WConstItem) const;
+  const PositionSet& getStorageForPillagedItem(const Item*) const;
 
   void addKnownVillain(WConstCollective);
   bool isKnownVillain(WConstCollective) const;
@@ -203,114 +202,113 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool isKnownVillainLocation(WConstCollective) const;
 
   void onEvent(const GameEvent&);
-  void onPositionDiscovered(Position);
+
+  struct CurrentActivity {
+    MinionActivity SERIAL(activity);
+    LocalTime SERIAL(finishTime);
+    SERIALIZE_ALL(activity, finishTime)
+  };
+
+  CurrentActivity getCurrentActivity(const Creature*) const;
+  struct AlarmInfo {
+    GlobalTime SERIAL(finishTime);
+    Position SERIAL(position);
+    SERIALIZE_ALL(finishTime, position)
+  };
+  const optional<AlarmInfo>& getAlarmInfo() const;
+
+  double getRebellionProbability() const;
+
+  // From Task::Callback
+  virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
 
   private:
   struct Private {};
 
   public:
-  Collective(Private, WLevel, TribeId, const optional<CollectiveName>&);
+  Collective(Private, WModel, TribeId, const optional<CollectiveName>&, const ContentFactory*);
 
   protected:
   // From Task::Callback
-  virtual void onAppliedItem(Position, WItem item) override;
-  virtual void onAppliedItemCancel(Position) override;
+  virtual void onAppliedItem(Position, Item* item) override;
   virtual void onConstructed(Position, FurnitureType) override;
-  virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
-  virtual void onAppliedSquare(WCreature, Position) override;
-  virtual void onKillCancelled(WCreature) override;
-  virtual void onCopulated(WCreature who, WCreature with) override;
+  virtual void onAppliedSquare(Creature*, Position) override;
+  virtual void onCopulated(Creature* who, Creature* with) override;
   virtual bool isConstructionReachable(Position) override;
 
   private:
-  void addCreatureInTerritory(PCreature, EnumSet<MinionTrait>);
-  void removeCreature(WCreature);
-  void onMinionKilled(WCreature victim, WCreature killer);
-  void onKilledSomeone(WCreature victim, WCreature killer);
+  void removeCreature(Creature*);
+  void onMinionKilled(Creature* victim, Creature* killer);
+  void onKilledSomeone(Creature* victim, Creature* killer);
 
   void fetchItems(Position, const ItemFetchInfo&);
 
-  void addMoraleForKill(WConstCreature killer, WConstCreature victim);
-  void decreaseMoraleForKill(WConstCreature killer, WConstCreature victim);
-  void decreaseMoraleForBanishing(WConstCreature);
+  void addMoraleForKill(const Creature* killer, const Creature* victim);
+  void decreaseMoraleForKill(const Creature* killer, const Creature* victim);
+  void decreaseMoraleForBanishing(const Creature*);
 
-  bool isItemNeeded(WConstItem) const;
-  void addProducesMessage(WConstCreature, const vector<PItem>&);
+  bool isItemNeeded(const Item*) const;
+  void addProducesMessage(const Creature*, const vector<PItem>&);
   int getDebt(ResourceId id) const;
 
+  PPositionMatching SERIAL(positionMatching);
   HeapAllocated<MinionEquipment> SERIAL(minionEquipment);
   EnumMap<ResourceId, int> SERIAL(credit);
   HeapAllocated<TaskMap> SERIAL(taskMap);
-  vector<TechId> SERIAL(technologies);
-  void markItem(WConstItem, WConstTask);
+  HeapAllocated<Technology> SERIAL(technology);
+  void markItem(const Item*, WConstTask);
   void unmarkItem(UniqueEntity<Item>::Id);
 
   HeapAllocated<KnownTiles> SERIAL(knownTiles);
 
-  struct CurrentTaskInfo {
-    MinionTask SERIAL(task);
-    // If none then it's a one-time task. Upon allocating the task, the variable is set to a negative value,
-    // so the job immediately times out after finishing the task.
-    optional<double> SERIAL(finishTime);
-
-    SERIALIZE_ALL(task, finishTime)
-  };
-
-  EntityMap<Creature, CurrentTaskInfo> SERIAL(currentTasks);
-  optional<Position> getTileToExplore(WConstCreature, MinionTask) const;
-  WTask getStandardTask(WCreature c);
-  PTask getEquipmentTask(WCreature c);
-  void considerHealingTask(WCreature c);
-  bool isTaskGood(WConstCreature, MinionTask, bool ignoreTaskLock = false) const;
-  void setRandomTask(WConstCreature);
+  EntityMap<Creature, CurrentActivity> SERIAL(currentActivity);
+  optional<Position> getTileToExplore(const Creature*, MinionActivity) const;
 
   void handleSurprise(Position);
-  int getTaskDuration(WConstCreature, MinionTask) const;
-  void decayMorale();
-  vector<WCreature> SERIAL(creatures);
-  WCreature SERIAL(leader) = nullptr;
-  EnumMap<MinionTrait, vector<WCreature>> SERIAL(byTrait);
-  EnumMap<SpawnType, vector<WCreature>> SERIAL(bySpawnType);
+  int getTaskDuration(const Creature*, MinionActivity) const;
+  vector<Creature*> SERIAL(creatures);
+  vector<vector<Creature*>> SERIAL(populationGroups);
+  EnumMap<MinionTrait, vector<Creature*>> SERIAL(byTrait);
   PCollectiveControl SERIAL(control);
   HeapAllocated<TribeId> SERIAL(tribe);
-  WLevel SERIAL(level) = nullptr;
+  WModel SERIAL(model) = nullptr;
   HeapAllocated<Territory> SERIAL(territory);
-  struct AlarmInfo {
-    double SERIAL(finishTime);
-    Position SERIAL(position);
-    SERIALIZE_ALL(finishTime, position)
-  };
   optional<AlarmInfo> SERIAL(alarmInfo);
   HeapAllocated<ConstructionMap> SERIAL(constructions);
-  EntityMap<Item, WConstTask> SERIAL(markedItems);
-  EntitySet<Creature> SERIAL(surrendering);
+  EntityMap<Item, WeakPointer<const Task>> SERIAL(markedItems);
   void updateConstructions();
   void handleTrapPlacementAndProduction();
-  void scheduleAutoProduction(function<bool (WConstItem)> itemPredicate, int count);
-  void delayDangerousTasks(const vector<Position>& enemyPos, double delayTime);
+  void scheduleAutoProduction(function<bool (const Item*)> itemPredicate, int count);
+  void delayDangerousTasks(const vector<Position>& enemyPos, LocalTime delayTime);
   bool isDelayed(Position);
-  unordered_map<Position, double, CustomHash<Position>> SERIAL(delayedPos);
+  unordered_map<Position, LocalTime, CustomHash<Position>> SERIAL(delayedPos);
   vector<Position> getEnemyPositions() const;
-  double manaRemainder = 0;
-  double getKillManaScore(WConstCreature) const;
-  void addMana(double);
   EntitySet<Creature> SERIAL(kills);
   int SERIAL(points) = 0;
   HeapAllocated<CollectiveTeams> SERIAL(teams);
-  HeapAllocated<optional<CollectiveName>> SERIAL(name);
+  heap_optional<CollectiveName> SERIAL(name);
   HeapAllocated<CollectiveConfig> SERIAL(config);
   EntitySet<Creature> SERIAL(banished);
   VillainType SERIAL(villainType);
   optional<EnemyId> SERIAL(enemyId);
   unique_ptr<Workshops> SERIAL(workshops);
   HeapAllocated<Zones> SERIAL(zones);
-  HeapAllocated<TileEfficiency> SERIAL(tileEfficiency);
   HeapAllocated<CollectiveWarnings> SERIAL(warnings);
   PImmigration SERIAL(immigration);
   mutable optional<double> dangerLevelCache;
   EntitySet<Collective> SERIAL(knownVillains);
   EntitySet<Collective> SERIAL(knownVillainLocations);
   set<EnemyId> SERIAL(conqueredVillains); // OBSOLETE
-  void setDiscoverable();
   bool SERIAL(discoverable) = false;
+  void considerRebellion();
+  void updateCreatureStatus(Creature*);
+  HeapAllocated<Quarters> SERIAL(quarters);
+  int SERIAL(populationIncrease) = 0;
+  DungeonLevel SERIAL(dungeonLevel);
+  bool SERIAL(hadALeader) = false;
+  vector<Item*> getAllItemsImpl(optional<ItemIndex>, bool includeMinions) const;
+  // Remove after alpha 27
+  void updateBorderTiles();
+  bool updatedBorderTiles = false;
+  HeapAllocated<MinionActivities> SERIAL(minionActivities);
 };

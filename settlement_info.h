@@ -1,12 +1,21 @@
 #pragma once
 
+#include "util.h"
 #include "item_type.h"
 #include "creature_factory.h"
 #include "item_factory.h"
-#include "furniture_factory.h"
+#include "furniture_list.h"
 #include "inhabitants_info.h"
 
-enum class BuildingId { WOOD, MUD, BRICK, WOOD_CASTLE, DUNGEON, DUNGEON_SURFACE};
+RICH_ENUM(BuildingId,
+  WOOD,
+  MUD,
+  BRICK,
+  WOOD_CASTLE,
+  DUNGEON,
+  DUNGEON_SURFACE,
+  RUINS
+);
 
 RICH_ENUM(BiomeId,
   GRASSLAND,
@@ -15,11 +24,14 @@ RICH_ENUM(BiomeId,
 );
 
 struct StockpileInfo {
-  enum Type { GOLD, MINERALS } type;
-  int number;
+  ItemListId SERIAL(items);
+  int SERIAL(count);
+  optional<FurnitureType> SERIAL(furniture);
+  SERIALIZE_ALL(NAMED(items), NAMED(count), NAMED(furniture))
 };
 
-enum class SettlementType {
+RICH_ENUM(
+  SettlementType,
   VILLAGE,
   SMALL_VILLAGE,
   FORREST_VILLAGE,
@@ -29,7 +41,7 @@ enum class SettlementType {
   COTTAGE,
   FORREST_COTTAGE,
   TOWER,
-  WITCH_HOUSE,
+  TEMPLE,
   MINETOWN,
   ANT_NEST,
   SMALL_MINETOWN,
@@ -40,26 +52,35 @@ enum class SettlementType {
   ISLAND_VAULT_DOOR,
   CEMETERY,
   SWAMP,
-  MOUNTAIN_LAKE,
-};
+  MOUNTAIN_LAKE
+);
 
 class CollectiveBuilder;
 
 struct SettlementInfo {
-  SettlementType type;
-  InhabitantsInfo inhabitants;
-  optional<string> locationName;
-  TribeId tribe;
-  optional<string> race;
-  BuildingId buildingId;
+  SettlementType SERIAL(type);
+  InhabitantsInfo SERIAL(inhabitants);
+  optional<InhabitantsInfo> SERIAL(corpses);
+  optional<string> SERIAL(locationName);
+  optional<NameGeneratorId> SERIAL(locationNameGen);
+  TribeId SERIAL(tribe);
+  optional<string> SERIAL(race);
+  BuildingId SERIAL(buildingId);
   vector<StairKey> downStairs;
   vector<StairKey> upStairs;
-  vector<StockpileInfo> stockpiles;
-  optional<CreatureId> guardId;
-  optional<ItemType> elderLoot;
-  optional<ItemFactory> shopFactory;
+  vector<StockpileInfo> SERIAL(stockpiles);
+  optional<ItemType> SERIAL(lootItem);
+  optional<ItemListId> SERIAL(shopItems);
+  bool SERIAL(shopkeeperDead) = false;
   CollectiveBuilder* collective;
-  optional<FurnitureFactory> furniture;
-  optional<FurnitureFactory> outsideFeatures;
-  bool closeToPlayer;
+  optional<FurnitureListId> SERIAL(furniture);
+  optional<FurnitureListId> SERIAL(outsideFeatures);
+  bool SERIAL(closeToPlayer) = false;
+  bool SERIAL(dontConnectCave) = false;
+  bool SERIAL(dontBuildRoad) = false;
+  bool SERIAL(anyPlayerDistance) = false;
+  int SERIAL(surroundWithResources) = 0;
+  optional<FurnitureType> SERIAL(extraResources);
+  optional<int> SERIAL(cropsDistance);
+  SERIALIZE_ALL(NAMED(type), OPTION(inhabitants), NAMED(corpses), NAMED(locationName), NAMED(locationNameGen), NAMED(tribe), NAMED(race), NAMED(buildingId), OPTION(stockpiles), NAMED(lootItem), NAMED(shopItems), OPTION(shopkeeperDead), NAMED(furniture), NAMED(outsideFeatures), OPTION(closeToPlayer), OPTION(dontConnectCave), OPTION(dontBuildRoad), OPTION(anyPlayerDistance), OPTION(surroundWithResources), NAMED(extraResources), NAMED(cropsDistance))
 };

@@ -37,14 +37,19 @@
 #include "field_of_view.h"
 #include "furniture.h"
 #include "furniture_array.h"
+#include "portals.h"
+#include "roof_support.h"
+#include "game_event.h"
 
 template <class Archive> 
 void Level::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Level>);
-  ar(squares, oldSquares, landingSquares, tickingSquares, creatures, model, fieldOfView);
-  ar(name, sunlight, bucketMap, sectors, lightAmount, unavailable);
+  ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
+  ar(name, sunlight, bucketMap, lightAmount, unavailable);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
-  ar(furniture, tickingFurniture, covered);
+  ar(furniture, tickingFurniture, covered, roofSupport, portals);
+  if (Archive::is_loading::value) // some code requires these Sectors to be always initialized
+    getSectors({MovementTrait::WALK});
 }  
 
 SERIALIZABLE(Level);
@@ -54,17 +59,18 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Level);
 Level::~Level() {}
 
 Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, const string& n,
-    Table<double> sun, LevelId id, Table<bool> cover)
-    : squares(std::move(s)), oldSquares(squares->getBounds()), furniture(std::move(f)),
+    Table<double> sun, LevelId id)
+    : squares(std::move(s)), furniture(std::move(f)),
       memoryUpdates(squares->getBounds(), true), model(m),
-      name(n), sunlight(sun), covered(cover), bucketMap(squares->getBounds().width(), squares->getBounds().height(),
+      name(n), sunlight(sun), roofSupport(squares->getBounds()),
+      bucketMap(squares->getBounds().width(), squares->getBounds().height(),
       FieldOfView::sightRange), lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
-      levelId(id) {
+      levelId(id), portals(squares->getBounds()) {
 }
 
 PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
-    Table<double> sun, LevelId id, Table<bool> cover) {
-  auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, n, sun, id, cover);
+    Table<double> sun, LevelId id, Table<bool> covered, Table<bool> unavailable) {
+  auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, n, sun, id);
   for (Vec2 pos : ret->squares->getBounds()) {
     auto square = ret->squares->getReadonly(pos);
     square->onAddedToLevel(Position(pos, ret.get()));
@@ -77,8 +83,18 @@ PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
   }
   for (VisionId vision : ENUM_ALL(VisionId))
     (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision);
-  for (auto pos : ret->getAllPositions())
+  for (auto pos : ret->getAllPositions()) {
     ret->addLightSource(pos.getCoord(), pos.getLightEmission(), 1);
+    if (pos.isBuildingSupport())
+      ret->roofSupport->add(pos.getCoord());
+    for (auto layer : ENUM_ALL(FurnitureLayer))
+      if (auto f = pos.getFurniture(layer))
+        if (auto viewId = f->getSupportViewId(pos))
+          pos.modFurniture(layer)->getViewObject()->setId(*viewId);
+  }
+  ret->unavailable = std::move(unavailable);
+  ret->covered = std::move(covered);
+  ret->getSectors({MovementTrait::WALK});
   return ret;
 }
 
@@ -99,9 +115,11 @@ Rectangle Level::getSplashVisibleBounds() {
   return Rectangle(getSplashBounds().middle() - sz / 2, getSplashBounds().middle() + sz / 2);
 }
 
-const static double darknessRadius = 3.5;
+double Level::getCreatureLightRadius() {
+  return 5.5;
+}
 
-void Level::putCreature(Vec2 position, WCreature c) {
+void Level::putCreature(Vec2 position, Creature* c) {
   CHECK(inBounds(position));
   creatures.push_back(c);
   creatureIds.insert(c);
@@ -119,6 +137,7 @@ void Level::removeLightSource(Vec2 pos, double radius) {
 }
 
 void Level::addLightSource(Vec2 pos, double radius, int numLight) {
+  PROFILE;
   if (radius > 0) {
     for (Vec2 v : getVisibleTilesNoDarkness(pos, VisionId::NORMAL)) {
       double dist = (v - pos).lengthD();
@@ -143,40 +162,40 @@ void Level::addDarknessSource(Vec2 pos, double radius, int numDarkness) {
   }
 }
 
+void Level::updateCreatureLight(Vec2 pos, int diff) {
+  auto square = squares->getReadonly(pos);
+  CHECK(square) << pos << " " << getBounds();
+  if (Creature* c = square->getCreature()) {
+    if (c->isAffected(LastingEffect::DARKNESS_SOURCE))
+      addDarknessSource(pos, getCreatureLightRadius(), diff);
+    if (c->isAffected(LastingEffect::LIGHT_SOURCE) || c->isAffected(LastingEffect::ON_FIRE))
+      addLightSource(pos, getCreatureLightRadius(), diff);
+  }
+}
+
 void Level::updateVisibility(Vec2 changedSquare) {
-  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL)) {
+  auto allVisible = getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL);
+  for (Vec2 pos : allVisible) {
     addLightSource(pos, Position(pos, this).getLightEmission(), -1);
-    auto square = squares->getReadonly(pos);
-    CHECK(square) << pos << " " << getBounds();
-    if (WCreature c = square->getCreature())
-      if (c->isDarknessSource())
-        addDarknessSource(pos, darknessRadius, -1);
+    updateCreatureLight(pos, -1);
   }
   for (VisionId vision : ENUM_ALL(VisionId))
     getFieldOfView(vision).squareChanged(changedSquare);
-  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL)) {
+  for (Vec2 pos : allVisible) {
     addLightSource(pos, Position(pos, this).getLightEmission(), 1);
-    auto square = squares->getReadonly(pos);
-    CHECK(square) << pos << " " << getBounds();
-    if (WCreature c = square->getCreature())
-      if (c->isDarknessSource())
-        addDarknessSource(pos, darknessRadius, 1);
+    updateCreatureLight(pos, 1);
   }
-  for (Vec2 pos : getVisibleTilesNoDarkness(changedSquare, VisionId::NORMAL))
+  for (Vec2 pos : allVisible)
     getModel()->addEvent(EventInfo::VisibilityChanged{Position(pos, this)});
 }
 
-vector<WCreature> Level::getPlayers() const {
+vector<Creature*> Level::getPlayers() const {
   if (auto game = model->getGame())
-    return game->getPlayerCreatures().filter([this](const WCreature& c) { return c->getLevel() == this; });
+    return game->getPlayerCreatures().filter([this](const Creature* c) { return c->getLevel() == this; });
   return {};
 }
 
-const WModel Level::getModel() const {
-  return model;
-}
-
-WModel Level::getModel() {
+WModel Level::getModel() const {
   return model;
 }
 
@@ -184,21 +203,27 @@ WGame Level::getGame() const {
   return model->getGame();
 }
 
+bool Level::isCovered(Vec2 pos) const {
+  return covered[pos] || roofSupport->isRoof(pos);
+}
+
 bool Level::isInSunlight(Vec2 pos) const {
-  return !covered[pos] && lightCapAmount[pos] == 1 &&
+  return !isCovered(pos) && lightCapAmount[pos] >= 1 &&
       getGame()->getSunlightInfo().getState() == SunlightState::DAY;
 }
 
 double Level::getLight(Vec2 pos) const {
-  return max(0.0, min(covered[pos] ? 1 : lightCapAmount[pos], lightAmount[pos] +
-      sunlight[pos] * getGame()->getSunlightInfo().getLightAmount()));
+  return min(1.0, max(0.0, min(isCovered(pos) ? 1.0 : lightCapAmount[pos], lightAmount[pos] +
+      sunlight[pos] * getGame()->getSunlightInfo().getLightAmount())));
 }
 
-vector<Position> Level::getLandingSquares(StairKey key) const {
+const vector<Position>& Level::getLandingSquares(StairKey key) const {
   if (landingSquares.count(key))
     return landingSquares.at(key);
-  else
-    return vector<Position>();
+  else {
+    static vector<Position> empty;
+    return empty;
+  }
 }
 
 vector<StairKey> Level::getAllStairKeys() const {
@@ -213,12 +238,15 @@ optional<Position> Level::getStairsTo(WConstLevel level) {
   return model->getStairs(this, level);
 }
 
-bool Level::landCreature(StairKey key, WCreature creature) {
+bool Level::landCreature(StairKey key, Creature* creature) {
   vector<Position> landing = landingSquares.at(key);
   return landCreature(landing, creature);
 }
 
 bool Level::landCreature(StairKey key, PCreature creature) {
+  // Creature may trigger traps when being placed, which can cause a crash
+  // if it has no global time.
+  creature->setGlobalTime(model->getGame()->getGlobalTime());
   if (landCreature(key, creature.get())) {
     model->addCreature(std::move(creature));
     return true;
@@ -227,6 +255,7 @@ bool Level::landCreature(StairKey key, PCreature creature) {
 }
 
 bool Level::landCreature(StairKey key, PCreature creature, Vec2 travelDir) {
+  creature->setGlobalTime(model->getGame()->getGlobalTime());
   if (landCreature(key, creature.get(), travelDir)) {
     model->addCreature(std::move(creature));
     return true;
@@ -256,7 +285,7 @@ Position Level::getLandingSquare(StairKey key, Vec2 travelDir) const {
   return target;
 }
 
-bool Level::landCreature(StairKey key, WCreature creature, Vec2 travelDir) {
+bool Level::landCreature(StairKey key, Creature* creature, Vec2 travelDir) {
   Position bestLanding = getLandingSquare(key, travelDir);
   return landCreature({bestLanding}, creature) ||
       landCreature(bestLanding.getRectangle(Rectangle::centered(Vec2(0, 0), 10)), creature) ||
@@ -265,6 +294,7 @@ bool Level::landCreature(StairKey key, WCreature creature, Vec2 travelDir) {
 }
 
 bool Level::landCreature(vector<Position> landing, PCreature creature) {
+  creature->setGlobalTime(model->getGame()->getGlobalTime());
   if (landCreature(landing, creature.get())) {
     model->addCreature(std::move(creature));
     return true;
@@ -272,10 +302,11 @@ bool Level::landCreature(vector<Position> landing, PCreature creature) {
     return false;
 }
 
-bool Level::landCreature(vector<Position> landing, WCreature creature) {
+optional<Position> Level::getClosestLanding(vector<Position> landing, Creature* creature) const {
+  PROFILE;
   CHECK(creature);
   queue<Position> q;
-  set<Position> marked;
+  PositionSet marked;
   for (Position pos : Random.permutation(landing)) {
     q.push(pos);
     marked.insert(pos);
@@ -283,70 +314,44 @@ bool Level::landCreature(vector<Position> landing, WCreature creature) {
   while (!q.empty()) {
     Position v = q.front();
     q.pop();
-    if (v.canEnter(creature)) {
-      v.putCreature(creature);
-      return true;
-    } else
+    if (v.canEnter(creature))
+      return v;
+    else
       for (Position next : v.neighbors8(Random))
         if (!marked.count(next) && next.canEnterEmpty(creature)) {
           q.push(next);
           marked.insert(next);
         }
   }
-  return false;
+  return none;
 }
 
-void Level::throwItem(PItem item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction, VisionId vision) {
-  vector<PItem> v;
-  v.push_back(std::move(item));
-  throwItem(std::move(v), attack, maxDist, position, direction, vision);
+bool Level::landCreature(vector<Position> landing, Creature* creature) {
+  PROFILE;
+  if (auto pos = getClosestLanding(std::move(landing), creature)) {
+    pos->putCreature(creature);
+    return true;
+  } else
+    return false;
 }
 
-void Level::throwItem(vector<PItem> item, const Attack& attack, int maxDist, Vec2 position, Vec2 direction,
-    VisionId vision) {
-  CHECK(!item.empty());
-  CHECK(direction.length8() == 1);
-  int cnt = 1;
-  vector<Vec2> trajectory;
-  for (Vec2 v = position + direction; inBounds(v); v += direction) {
-    trajectory.push_back(v);
-    Position pos(v, this);
-    if (pos.stopsProjectiles(vision)) {
-      item[0]->onHitSquareMessage(Position(v, this), item.size());
-      trajectory.pop_back();
-      getGame()->addEvent(
-          EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos.minus(direction)});
-      if (!item[0]->isDiscarded())
-        pos.minus(direction).dropItems(std::move(item));
-      return;
-    }
-    if (++cnt > maxDist || getSafeSquare(v)->getCreature()) {
-      getGame()->addEvent(
-          EventInfo::Projectile{item[0]->getViewObject().id(), Position(position, this), pos});
-      modSafeSquare(v)->onItemLands(Position(v, this), std::move(item), attack, maxDist - cnt - 1, direction,
-          vision);
-      return;
-    }
-  }
-}
-
-void Level::killCreature(WCreature creature) {
+void Level::killCreature(Creature* creature) {
   eraseCreature(creature, creature->getPosition().getCoord());
   getModel()->killCreature(creature);
 }
 
-void Level::removeCreature(WCreature creature) {
+void Level::removeCreature(Creature* creature) {
   eraseCreature(creature, creature->getPosition().getCoord());
 }
 
-void Level::changeLevel(StairKey key, WCreature c) {
+void Level::changeLevel(StairKey key, Creature* c) {
   Vec2 oldPos = c->getPosition().getCoord();
   WLevel otherLevel = model->getLinkedLevel(this, key);
   if (otherLevel->landCreature(key, c))
     eraseCreature(c, oldPos);
   else {
     Position otherPos = Random.choose(otherLevel->landingSquares.at(key));
-    if (WCreature other = otherPos.getCreature()) {
+    if (Creature* other = otherPos.getCreature()) {
       if (!other->isPlayer() && c->getPosition().canEnterEmpty(other) && otherPos.canEnterEmpty(c)) {
         otherLevel->eraseCreature(other, otherPos.getCoord());
         eraseCreature(c, oldPos);
@@ -358,27 +363,27 @@ void Level::changeLevel(StairKey key, WCreature c) {
   }
 }
 
-void Level::changeLevel(Position destination, WCreature c) {
+void Level::changeLevel(Position destination, Creature* c) {
   Vec2 oldPos = c->getPosition().getCoord();
   if (destination.isValid() && destination.getLevel()->landCreature({destination}, c))
     eraseCreature(c, oldPos);
 }
 
-void Level::eraseCreature(WCreature c, Vec2 coord) {
+void Level::eraseCreature(Creature* c, Vec2 coord) {
   creatures.removeElement(c);
   unplaceCreature(c, coord);
   creatureIds.erase(c);
 }
 
-const vector<WCreature>& Level::getAllCreatures() const {
+const vector<Creature*>& Level::getAllCreatures() const {
   return creatures;
 }
 
-vector<WCreature>& Level::getAllCreatures() {
+vector<Creature*>& Level::getAllCreatures() {
   return creatures;
 }
 
-vector<WCreature> Level::getAllCreatures(Rectangle bounds) const {
+vector<Creature*> Level::getAllCreatures(Rectangle bounds) const {
   return bucketMap->getElements(bounds);
 }
 
@@ -387,55 +392,57 @@ bool Level::containsCreature(UniqueEntity<Creature>::Id id) const {
 }
 
 bool Level::isWithinVision(Vec2 from, Vec2 to, const Vision& v) const {
+  PROFILE;
   return v.canSeeAt(getLight(to), from.distD(to));
 }
 
 FieldOfView& Level::getFieldOfView(VisionId vision) const {
+  PROFILE;
   return (*fieldOfView)[vision];
 }
 
 bool Level::canSee(Vec2 from, Vec2 to, const Vision& vision) const {
+  PROFILE;
   return isWithinVision(from, to, vision) && getFieldOfView(vision.getId()).canSee(from, to);
 }
 
-bool Level::canSee(WConstCreature c, Vec2 pos) const {
-  return canSee(c->getPosition().getCoord(), pos, c->getVision());
-}
-
-void Level::moveCreature(WCreature creature, Vec2 direction) {
-//  CHECK(canMoveCreature(creature, direction));
+void Level::moveCreature(Creature* creature, Vec2 direction) {
   Vec2 position = creature->getPosition().getCoord();
   unplaceCreature(creature, position);
   placeCreature(creature, position + direction);
 }
 
-void Level::unplaceCreature(WCreature creature, Vec2 pos) {
+void Level::unplaceCreature(Creature* creature, Vec2 pos) {
   bucketMap->removeElement(pos, creature);
+  updateCreatureLight(pos, -1);
   modSafeSquare(pos)->removeCreature(Position(pos, this));
-  if (creature->isDarknessSource())   
-    addDarknessSource(pos, darknessRadius, -1);
+  model->increaseMoveCounter();
 }
 
-void Level::placeCreature(WCreature creature, Vec2 pos) {
+void Level::placeCreature(Creature* creature, Vec2 pos) {
   Position position(pos, this);
   creature->setPosition(position);
   bucketMap->addElement(pos, creature);
   modSafeSquare(pos)->putCreature(creature);
-  if (creature->isDarknessSource())
-    addDarknessSource(pos, darknessRadius, 1);
+  updateCreatureLight(pos, 1);
   position.onEnter(creature);
+  model->increaseMoveCounter();
 }
 
-void Level::swapCreatures(WCreature c1, WCreature c2) {
+void Level::swapCreatures(Creature* c1, Creature* c2) {
   Vec2 pos1 = c1->getPosition().getCoord();
   Vec2 pos2 = c2->getPosition().getCoord();
   unplaceCreature(c1, pos1);
   unplaceCreature(c2, pos2);
   placeCreature(c1, pos2);
+  auto otherDebug = getSafeSquare(pos1)->getCreature();
+  CHECK(!otherDebug) << "Can't swap " << c2->identify() << " with " << c1->identify() << " "
+      << otherDebug->identify() << " present";
   placeCreature(c2, pos1);
 }
 
 const vector<Vec2>& Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
+  PROFILE;
   return getFieldOfView(vision).getVisibleTiles(pos);
 }
 
@@ -445,7 +452,7 @@ vector<Vec2> Level::getVisibleTiles(Vec2 pos, const Vision& vision) const {
 }
 
 WConstSquare Level::getSafeSquare(Vec2 pos) const {
-  CHECK(inBounds(pos));
+  CHECK(inBounds(pos)) << pos << " " << getBounds();
   return squares->getReadonly(pos);
 }
 
@@ -457,7 +464,7 @@ WSquare Level::modSafeSquare(Vec2 pos) {
 vector<Position> Level::getAllPositions() const {
   vector<Position> ret;
   for (Vec2 v : getBounds())
-    ret.emplace_back(v, getThis().removeConst());
+    ret.emplace_back(v, getThis().removeConst().get());
   return ret;
 }
 
@@ -470,6 +477,7 @@ void Level::addTickingFurniture(Vec2 pos) {
 }
 
 void Level::tick() {
+  PROFILE_BLOCK("Level::tick");
   for (Vec2 pos : tickingSquares)
     squares->getWritable(pos)->tick(Position(pos, this));
   for (Vec2 pos : tickingFurniture)
@@ -479,6 +487,7 @@ void Level::tick() {
 }
 
 bool Level::inBounds(Vec2 pos) const {
+  PROFILE;
   return pos.inRectangle(getBounds());
 }
 
@@ -490,13 +499,21 @@ const string& Level::getName() const {
   return name;
 }
 
-bool Level::areConnected(Vec2 p1, Vec2 p2, const MovementType& movement) const {
-  return inBounds(p1) && inBounds(p2) && getSectors(movement).same(p1, p2);
+Sectors& Level::getSectorsDontCreate(const MovementType& movement) const {
+  return sectors.at(movement);
+}
+
+static Sectors::ExtraConnections getOrCreateExtraConnections(Rectangle bounds,
+    const unordered_map<MovementType, Sectors>& sectors) {
+  if (sectors.empty())
+    return Sectors::ExtraConnections(bounds);
+  else
+    return sectors.begin()->second.getExtraConnections();
 }
 
 Sectors& Level::getSectors(const MovementType& movement) const {
   if (!sectors.count(movement)) {
-    sectors[movement] = Sectors(getBounds());
+    sectors.insert(make_pair(movement, Sectors(getBounds(), getOrCreateExtraConnections(getBounds(), sectors))));
     Sectors& newSectors = sectors.at(movement);
     for (Position pos : getAllPositions())
       if (pos.canNavigate(movement))
@@ -510,15 +527,20 @@ bool Level::isChokePoint(Vec2 pos, const MovementType& movement) const {
 }
 
 void Level::updateSunlightMovement() {
-  sectors.clear();
+  for (auto movement : getKeys(sectors))
+    if (movement.isSunlightVulnerable())
+      sectors.erase(movement);
 }
 
 int Level::getNumGeneratedSquares() const {
-  return squares->getNumGenerated();
+  int ret = 0;
+  for (auto l : ENUM_ALL(FurnitureLayer))
+    ret += furniture->getBuilt(l).getNumGenerated();
+  return ret;
 }
 
 int Level::getNumTotalSquares() const {
-  return squares->getNumTotal();
+  return squares->getNumGenerated();
 }
 
 void Level::setNeedsMemoryUpdate(Vec2 pos, bool s) {
@@ -532,7 +554,6 @@ bool Level::needsRenderUpdate(Vec2 pos) const {
 
 void Level::setNeedsRenderUpdate(Vec2 pos, bool s) {
   renderUpdates[pos] = s;
-  setNeedsMemoryUpdate(pos, s);
 }
 
 bool Level::needsMemoryUpdate(Vec2 pos) const {

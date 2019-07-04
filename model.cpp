@@ -52,13 +52,16 @@
 #include "player_control.h"
 #include "tutorial.h"
 #include "message_buffer.h"
+#include "unknown_locations.h"
+#include "avatar_info.h"
+#include "collective_config.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   ar & SUBCLASS(OwnedObject<Model>);
-  ar(portals, levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
-  ar(stairNavigation, cemetery, topLevel, eventGenerator, externalEnemies);
+  ar(levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
+  ar(stairNavigation, cemetery, mainLevels, eventGenerator, externalEnemies);
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Model)
@@ -68,6 +71,14 @@ SERIALIZABLE(Model)
 void Model::discardForRetirement() {
   serializationLocked = true;
   deadCreatures.clear();
+}
+
+void Model::prepareForRetirement() {
+  for (Creature* c : timeQueue->getAllCreatures())
+    c->clearInfoForRetiring();
+  for (PCreature& c : deadCreatures)
+    c->clearInfoForRetiring();
+  externalEnemies = none;
 }
 
 void Model::addWoodCount(int cnt) {
@@ -96,7 +107,7 @@ void Model::updateSunlightMovement() {
 
 void Model::checkCreatureConsistency() {
   EntitySet<Creature> tmp;
-  for (WCreature c : timeQueue->getAllCreatures()) {
+  for (Creature* c : timeQueue->getAllCreatures()) {
     CHECK(!tmp.contains(c)) << c->getName().bare();
     tmp.insert(c);
   }
@@ -106,35 +117,36 @@ void Model::checkCreatureConsistency() {
   }
 }
 
-void Model::update(double totalTime) {
-  if (WCreature creature = timeQueue->getNextCreature()) {
+bool Model::update(double totalTime) {
+  currentTime = totalTime;
+  if (Creature* creature = timeQueue->getNextCreature(totalTime)) {
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced before processing: " << creature->getName().bare() <<
         ". Any idea why this happened?";
     if (creature->isDead()) {
       checkCreatureConsistency();
       FATAL << "Dead: " << creature->getName().bare();
     }
-    currentTime = creature->getLocalTime();
-    if (currentTime > totalTime)
-      return;
-    while (totalTime > lastTick + 1) {
-      lastTick += 1;
+    while (totalTime > lastTick.getDouble()) {
+      lastTick += 1_visible;
       tick(lastTick);
     }
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced before moving: " << creature->getName().bare() <<
         ". Any idea why this happened?";
-    if (!creature->isDead())
+    if (!creature->isDead()) {
+      INFO << "Turn " << totalTime << " " << creature->getName().bare() << " moving now";
       creature->makeMove();
+    }
     CHECK(creature->getLevel() != nullptr) << "Creature misplaced after moving: " << creature->getName().bare() <<
         ". Any idea why this happened?";
     if (!creature->isDead() && creature->getLevel()->getModel() == this)
       CHECK(creature->getPosition().getCreature() == creature);
-  } else
-    currentTime = totalTime;
+    return true;
+  }
+  return false;
 }
 
-void Model::tick(double time) {
-  for (WCreature c : timeQueue->getAllCreatures()) {
+void Model::tick(LocalTime time) { PROFILE
+  for (Creature* c : timeQueue->getAllCreatures()) {
     c->tick();
   }
   for (PLevel& l : levels)
@@ -146,32 +158,34 @@ void Model::tick(double time) {
 }
 
 void Model::addCreature(PCreature c) {
-  addCreature(std::move(c), 1 + Random.getDouble());
+  addCreature(std::move(c), 1_visible);// + Random.getDouble());
 }
 
-void Model::addCreature(PCreature c, double delay) {
+void Model::addCreature(PCreature c, TimeInterval delay) {
+  if (auto game = getGame())
+    c->setGlobalTime(getGame()->getGlobalTime());
   timeQueue->addCreature(std::move(c), getLocalTime() + delay);
 }
 
-WLevel Model::buildLevel(LevelBuilder&& b, PLevelMaker maker) {
+WLevel Model::buildLevel(LevelBuilder b, PLevelMaker maker) {
   LevelBuilder builder(std::move(b));
   levels.push_back(builder.build(this, maker.get(), Random.getLL()));
   return levels.back().get();
 }
 
-WLevel Model::buildTopLevel(LevelBuilder&& b, PLevelMaker maker) {
-  WLevel ret = buildLevel(std::move(b), std::move(maker));
-  topLevel = ret;
+WLevel Model::buildMainLevel(LevelBuilder b, PLevelMaker maker) {
+  auto ret = buildLevel(std::move(b), std::move(maker));
+  mainLevels.push_back(ret);
   return ret;
 }
 
 Model::Model(Private) {
 }
 
-PModel Model::create() {
+PModel Model::create(ContentFactory* contentFactory) {
   auto ret = makeOwner<Model>(Private{});
-  ret->cemetery = LevelBuilder(Random, 100, 100, "Dead creatures", false)
-      .build(ret.get(), LevelMaker::emptyLevel(Random).get(), Random.getLL());
+  ret->cemetery = LevelBuilder(Random, contentFactory, 100, 100, "Dead creatures", false)
+      .build(ret.get(), LevelMaker::emptyLevel(FurnitureType("GRASS"), false).get(), Random.getLL());
   ret->eventGenerator = makeOwner<EventGenerator>();
   return ret;
 }
@@ -179,16 +193,24 @@ PModel Model::create() {
 Model::~Model() {
 }
 
-double Model::getLocalTime() const {
+LocalTime Model::getLocalTime() const {
+  return LocalTime((int) currentTime);
+}
+
+double Model::getLocalTimeDouble() const {
   return currentTime;
 }
 
-void Model::increaseLocalTime(WCreature c, double diff) {
-  timeQueue->increaseTime(c, diff);
+TimeQueue& Model::getTimeQueue() {
+  return *timeQueue;
 }
 
-double Model::getLocalTime(WConstCreature c) {
-  return timeQueue->getTime(c);
+int Model::getMoveCounter() const {
+  return moveCounter;
+}
+
+void Model::increaseMoveCounter() {
+  ++moveCounter;
 }
 
 void Model::setGame(WGame g) {
@@ -203,7 +225,7 @@ WLevel Model::getLinkedLevel(WLevel from, StairKey key) const {
   for (WLevel target : getLevels())
     if (target != from && target->hasStairKey(key))
       return target;
-  FATAL << "Failed to find next level for " << key.getInternalKey() << " " << from->getName();
+  //FATAL << "Failed to find next level for " << key.getInternalKey() << " " << from->getName();
   return nullptr;
 }
 
@@ -212,6 +234,7 @@ static pair<LevelId, LevelId> getIds(WConstLevel l1, WConstLevel l2) {
 }
 
 void Model::calculateStairNavigation() {
+  stairNavigation.clear();
   // Floyd-Warshall algorithm
   for (auto l1 : getLevels())
     for (auto l2 : getLevels())
@@ -232,7 +255,7 @@ void Model::calculateStairNavigation() {
             "No stair path between levels " << l1->getName() << " " << l2->getName();
 }
 
-optional<StairKey> Model::getStairsBetween(WConstLevel from, WConstLevel to) {
+optional<StairKey> Model::getStairsBetween(WConstLevel from, WConstLevel to) const {
   for (StairKey key : from->getAllStairKeys())
     if (to->hasStairKey(key))
       return key;
@@ -250,40 +273,56 @@ vector<WLevel> Model::getLevels() const {
   return getWeakPointers(levels);
 }
 
-WLevel Model::getTopLevel() const {
-  return topLevel;
+const vector<WLevel>& Model::getMainLevels() const {
+  return mainLevels;
 }
 
-void Model::killCreature(WCreature c) {
+void Model::addCollective(PCollective col) {
+  collectives.push_back(std::move(col));
+}
+
+WLevel Model::getTopLevel() const {
+  return mainLevels[0];
+}
+
+LevelId Model::getUniqueId() const {
+  return mainLevels[0]->getUniqueId();
+}
+
+void Model::killCreature(Creature* c) {
   deadCreatures.push_back(timeQueue->removeCreature(c));
   cemetery->landCreature(cemetery->getAllPositions(), c);
 }
 
-PCreature Model::extractCreature(WCreature c) {
+PCreature Model::extractCreature(Creature* c) {
   PCreature ret = timeQueue->removeCreature(c);
   c->getLevel()->removeCreature(c);
   return ret;
 }
 
 void Model::transferCreature(PCreature c, Vec2 travelDir) {
-  WCreature ref = c.get();
+  Creature* ref = c.get();
   addCreature(std::move(c));
   CHECK(getTopLevel()->landCreature(StairKey::transferLanding(), ref, travelDir));
 }
 
-bool Model::canTransferCreature(WCreature c, Vec2 travelDir) {
+bool Model::canTransferCreature(Creature* c, Vec2 travelDir) {
   for (Position pos : getTopLevel()->getLandingSquares(StairKey::transferLanding()))
     if (pos.canEnter(c))
       return true;
   return false;
 }
 
-vector<WCreature> Model::getAllCreatures() const { 
+vector<Creature*> Model::getAllCreatures() const { 
   return timeQueue->getAllCreatures();
 }
 
+const vector<PCreature>& Model::getDeadCreatures() const {
+  return deadCreatures;
+}
+
 void Model::landHeroPlayer(PCreature player) {
-  WCreature ref = player.get();
+  Creature* ref = player.get();
   WLevel target = getTopLevel();
   vector<Position> landing = target->getLandingSquares(StairKey::heroSpawn());
   if (!target->landCreature(landing, ref)) {
@@ -291,36 +330,18 @@ void Model::landHeroPlayer(PCreature player) {
   }
   addCreature(std::move(player));
   ref->setController(makeOwner<Player>(ref, true, make_shared<MapMemory>(), make_shared<MessageBuffer>(),
-      make_shared<VisibilityMap>()));
+      make_shared<VisibilityMap>(), make_shared<UnknownLocations>()));
 }
 
 void Model::addExternalEnemies(ExternalEnemies e) {
   externalEnemies = std::move(e);
 }
 
-const optional<ExternalEnemies>& Model::getExternalEnemies() const {
-  return *externalEnemies;
-}
-
-void Model::clearExternalEnemies() {
-  externalEnemies = none;
+const heap_optional<ExternalEnemies>& Model::getExternalEnemies() const {
+  return externalEnemies;
 }
 
 void Model::addEvent(const GameEvent& e) {
+  PROFILE;
   eventGenerator->addEvent(e);
-}
-
-optional<Position> Model::getOtherPortal(Position position) const {
-  if (auto index = portals.findElement(position)) {
-    if (*index % 2 == 1)
-      return portals[*index - 1];
-    if (*index < portals.size() - 1)
-      return portals[*index + 1];
-  }
-  return none;
-}
-
-void Model::registerPortal(Position pos) {
-  if (!portals.contains(pos))
-    portals.push_back(pos);
 }

@@ -14,13 +14,7 @@ class VillageBehaviour {
   VillageBehaviour& operator = (const VillageBehaviour&);
 
   typedef AttackTrigger Trigger;
-  enum WelcomeMessage {
-    DRAGON_WELCOME,
-  };
-
-  enum ItemTheftMessage {
-    DRAGON_THEFT,
-  };
+  enum class WelcomeMessage;
 
   int SERIAL(minPopulation);
   int SERIAL(minTeamSize);
@@ -29,10 +23,9 @@ class VillageBehaviour {
   optional<WelcomeMessage> SERIAL(welcomeMessage);
   optional<pair<double, int>> SERIAL(ransom);
 
-  PTask getAttackTask(VillageControl* self);
+  PTask getAttackTask(VillageControl* self) const;
   double getAttackProbability(const VillageControl* self) const;
   double getTriggerValue(const Trigger&, const VillageControl* self) const;
-  bool contains(WConstCreature);
 
   ~VillageBehaviour();
 
@@ -40,3 +33,4 @@ class VillageBehaviour {
   void serialize(Archive& ar, const unsigned int version);
 };
 
+RICH_ENUM(VillageBehaviour::WelcomeMessage, DRAGON_WELCOME);

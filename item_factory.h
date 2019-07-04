@@ -22,50 +22,26 @@
 #include "util.h"
 #include "corpse_info.h"
 #include "item_class.h"
+#include "item_list_id.h"
+#include "item_list.h"
 
 class Item;
 class Technology;
 class ItemType;
 class ItemAttributes;
+class ItemList;
+class GameConfig;
 
 class ItemFactory {
   public:
-  ItemFactory(const ItemFactory&);
-  ItemFactory& operator = (const ItemFactory&);
-  
-  vector<PItem> random();
+  ItemFactory(map<ItemListId, ItemList>);
+  ItemList get(ItemListId);
 
-  static ItemFactory dungeon();
-  static ItemFactory chest();
-  static ItemFactory armory();
-  static ItemFactory potions();
-  static ItemFactory scrolls();
-  static ItemFactory mushrooms(bool onlyGood = false);
-  static ItemFactory amulets();
-  static ItemFactory villageShop();
-  static ItemFactory dwarfShop();
-  static ItemFactory orcShop();
-  static ItemFactory gnomeShop();
-  static ItemFactory dragonCave();
-  static ItemFactory minerals();
-  static ItemFactory singleType(ItemType, Range count = Range(1, 2));
-
-  static PItem corpse(const string& name, const string& rottenName, double weight, ItemClass = ItemClass::CORPSE,
+  static PItem corpse(const string& name, const string& rottenName, double weight, bool instantlyRotten = false,
+      ItemClass = ItemClass::CORPSE,
       CorpseInfo corpseInfo = {UniqueEntity<Creature>::Id(), false, false, false});
 
-  static void init();
-
-  SERIALIZATION_DECL(ItemFactory);
-  ~ItemFactory();
-  
+  SERIALIZATION_DECL(ItemFactory)
   private:
-  struct ItemInfo;
-  ItemFactory(const vector<ItemInfo>&);
-  static ItemAttributes getAttributes(ItemType);
-  ItemFactory& addItem(ItemInfo);
-  ItemFactory& addUniqueItem(ItemType, Range count = Range::singleElem(1));
-  vector<ItemType> SERIAL(items);
-  vector<double> SERIAL(weights);
-  vector<Range> SERIAL(count);
-  vector<pair<ItemType, Range>> SERIAL(uniqueCounts);
+  map<ItemListId, ItemList> SERIAL(lists);
 };

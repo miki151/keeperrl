@@ -19,6 +19,9 @@
 #include "util.h"
 #include "file_path.h"
 
+SERIALIZE_DEF(NameGenerator, names)
+SERIALIZATION_CONSTRUCTOR_IMPL(NameGenerator)
+
 string getSyllable() {
   string vowels = "aeyuio";
   string consonants = "qwrtplkjhgfdszxcvbnm";
@@ -49,8 +52,7 @@ vector<string> readLines(const FilePath& path) {
   return input;
 }
 
-void NameGenerator::init(const DirectoryPath& namesPath) {
-  clearAll();
+NameGenerator::NameGenerator(const DirectoryPath& namesPath) {
   vector<string> input;
   for (int i : Range(1000)) {
     string ret;
@@ -60,37 +62,37 @@ void NameGenerator::init(const DirectoryPath& namesPath) {
     trim(ret);
     input.push_back(ret);
   }
-  set(NameGeneratorId::SCROLL, new NameGenerator(input));
-  set(NameGeneratorId::FIRST_MALE, new NameGenerator(readLines(namesPath.file("first_male.txt"))));
-  set(NameGeneratorId::FIRST_FEMALE, new NameGenerator(readLines(namesPath.file("first_female.txt"))));
-  set(NameGeneratorId::AZTEC, new NameGenerator(readLines(namesPath.file("aztec_names.txt"))));
-  set(NameGeneratorId::CREATURE, new NameGenerator(readLines(namesPath.file("creatures.txt"))));
-  set(NameGeneratorId::WEAPON, new NameGenerator(readLines(namesPath.file("artifacts.txt"))));
-  set(NameGeneratorId::WORLD, new NameGenerator(readLines(namesPath.file("world.txt"))));
-  set(NameGeneratorId::TOWN, new NameGenerator(readLines(namesPath.file("town_names.txt"))));
-  set(NameGeneratorId::DEITY, new NameGenerator(readLines(namesPath.file("gods.txt"))));
-  set(NameGeneratorId::DWARF, new NameGenerator(readLines(namesPath.file("dwarfs.txt"))));
-  set(NameGeneratorId::DEMON, new NameGenerator(readLines(namesPath.file("demons.txt"))));
-  set(NameGeneratorId::DOG, new NameGenerator(readLines(namesPath.file("dogs.txt"))));
-  set(NameGeneratorId::DRAGON, new NameGenerator(readLines(namesPath.file("dragons.txt"))));
-  set(NameGeneratorId::CYCLOPS, new NameGenerator(readLines(namesPath.file("cyclops.txt"))));
-  set(NameGeneratorId::ORC, new NameGenerator(readLines(namesPath.file("orc.txt"))));
-  set(NameGeneratorId::VAMPIRE, new NameGenerator(readLines(namesPath.file("vampires.txt"))));
+  auto set = [&] (NameGeneratorId id, vector<string> input) {
+    for (string name : Random.permutation(input))
+      names[id].push_back(name);
+  };
+  set(NameGeneratorId::SCROLL, input);
+  set(NameGeneratorId::FIRST_MALE, readLines(namesPath.file("first_male.txt")));
+  set(NameGeneratorId::FIRST_FEMALE, readLines(namesPath.file("first_female.txt")));
+  set(NameGeneratorId::AZTEC, readLines(namesPath.file("aztec_names.txt")));
+  set(NameGeneratorId::CREATURE, readLines(namesPath.file("creatures.txt")));
+  set(NameGeneratorId::WEAPON, readLines(namesPath.file("artifacts.txt")));
+  set(NameGeneratorId::WORLD, readLines(namesPath.file("world.txt")));
+  set(NameGeneratorId::TOWN, readLines(namesPath.file("town_names.txt")));
+  set(NameGeneratorId::DEITY, readLines(namesPath.file("gods.txt")));
+  set(NameGeneratorId::DWARF, readLines(namesPath.file("dwarfs.txt")));
+  set(NameGeneratorId::DEMON, readLines(namesPath.file("demons.txt")));
+  set(NameGeneratorId::DOG, readLines(namesPath.file("dogs.txt")));
+  set(NameGeneratorId::DRAGON, readLines(namesPath.file("dragons.txt")));
+  set(NameGeneratorId::CYCLOPS, readLines(namesPath.file("cyclops.txt")));
+  set(NameGeneratorId::ORC, readLines(namesPath.file("orc.txt")));
+  set(NameGeneratorId::VAMPIRE, readLines(namesPath.file("vampires.txt")));
 }
 
 
-string NameGenerator::getNext() {
-  CHECK(!names.empty());
-  string ret = names.front();
-  if (!oneName) {
-    names.pop();
-    names.push(ret);
-  }
+string NameGenerator::getNext(NameGeneratorId id) {
+  CHECK(!names[id].empty());
+  string ret = names[id].front();
+  names[id].pop_front();
+  names[id].push_back(ret);
   return ret;
 }
 
-  
-NameGenerator::NameGenerator(vector<string> list, bool oneN) : oneName(oneN) {
-  for (string name : Random.permutation(list))
-    names.push(name);
+vector<string> NameGenerator::getAll(NameGeneratorId id) {
+  return vector<string>(names[id].begin(), names[id].end());
 }

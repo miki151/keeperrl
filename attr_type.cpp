@@ -7,6 +7,5 @@ string getName(AttrType attr) {
     case AttrType::DEFENSE: return "defense";
     case AttrType::SPELL_DAMAGE: return "spell damage";
     case AttrType::RANGED_DAMAGE: return "ranged damage";
-    case AttrType::SPEED: return "speed";
   }
 }

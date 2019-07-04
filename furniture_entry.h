@@ -10,28 +10,27 @@ class Furniture;
 
 class FurnitureEntry {
   public:
-  struct Sokoban {};
+  using Sokoban = EmptyStruct<struct SokobanTag>;
 
   struct Trap {
-    Trap(Effect e, bool s = false) : effect(e), spiderWeb(s) {}
+    Trap(Effect e, bool s = false) : effect(e), invisible(s) {}
     SERIALIZATION_CONSTRUCTOR(Trap)
     Effect SERIAL(effect);
-    bool SERIAL(spiderWeb);
-    SERIALIZE_ALL(effect, spiderWeb)
+    bool SERIAL(invisible) = false;
+    SERIALIZE_ALL(NAMED(effect), OPTION(invisible))
   };
 
-  struct Water {};
-  struct Magma {};
+  using Water = EmptyStruct<struct WaterTag>;
+  using Magma = EmptyStruct<struct MagmaTag>;
 
-  using EntryData = variant<Sokoban, Trap, Water, Magma>;
+  MAKE_VARIANT(EntryData, Sokoban, Trap, Water, Magma);
   template <typename T>
   FurnitureEntry(const T& t) : FurnitureEntry(EntryData(t)) {}
   FurnitureEntry(EntryData);
-  void handle(WFurniture, WCreature);
-  bool isVisibleTo(WConstFurniture, WConstCreature) const;
+  void handle(WFurniture, Creature*);
+  bool isVisibleTo(WConstFurniture, const Creature*) const;
 
   SERIALIZATION_DECL(FurnitureEntry)
 
-  private:
   EntryData SERIAL(entryData);
 };

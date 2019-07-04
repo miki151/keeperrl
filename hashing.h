@@ -22,6 +22,9 @@ int getHashImpl(const T& obj, general_) {
   return hash<T>()(obj);
 }
 
+template <typename T, typename U>
+size_t combineHash(const pair<T, U>& arg);
+
 template <typename T>
 size_t combineHash(const T& arg) {
   return getHashImpl(arg, special_());
@@ -46,6 +49,16 @@ size_t combineHashIter(Iter begin, Iter end) {
 
 template <typename T>
 size_t combineHash(const vector<T>& v) {
+  return combineHashIter(v.begin(), v.end());
+}
+
+template <typename T, typename U, typename V>
+size_t combineHash(const tuple<T, U, V>& v) {
+  return combineHash(std::get<0>(v), std::get<1>(v), std::get<2>(v));
+}
+
+template <typename T>
+size_t combineHash(const set<T>& v) {
   return combineHashIter(v.begin(), v.end());
 }
 

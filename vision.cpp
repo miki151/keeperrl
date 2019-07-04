@@ -12,13 +12,18 @@ VisionId Vision::getId() const {
 constexpr int darkViewRadius = 5;
 
 bool Vision::canSeeAt(double light, double distance) const {
-  return nightVision || light > 0.9999 || distance <= darkViewRadius;
+  return nightVision || light >= getDarknessVisionThreshold() || distance <= darkViewRadius;
 }
 
-void Vision::update(WConstCreature c) {
+void Vision::update(const Creature* c) {
+  PROFILE;
   nightVision = c->isAffected(LastingEffect::NIGHT_VISION);
   if (c->isAffected(LastingEffect::ELF_VISION) || c->isAffected(LastingEffect::FLYING))
     id = VisionId::ELF;
   else
     id = VisionId::NORMAL;
+}
+
+double Vision::getDarknessVisionThreshold() {
+  return 0.8;
 }

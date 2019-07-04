@@ -12,6 +12,7 @@ class LevelMaker;
 class Square;
 class FurnitureFactory;
 class CollectiveBuilder;
+class ContentFactory;
 
 RICH_ENUM(SquareAttrib,
   NO_DIG,
@@ -30,6 +31,7 @@ RICH_ENUM(SquareAttrib,
   COLLECTIVE_START,
   COLLECTIVE_STAIRS,
   EMPTY_ROOM,
+  FLOOR_OUTSIDE,
   BUILDINGS_CENTER,
   CASTLE_CORNER,
   FOG,
@@ -41,9 +43,9 @@ RICH_ENUM(SquareAttrib,
 class LevelBuilder {
   public:
   /** Constructs a builder with given size and name. */
-  LevelBuilder(ProgressMeter*, RandomGen&, int width, int height, const string& name, bool covered = true,
-      optional<double> defaultLight = none);
-  LevelBuilder(RandomGen&, int width, int height, const string& name, bool covered = true);
+  LevelBuilder(ProgressMeter*, RandomGen&, ContentFactory*, int width, int height, const string& name,
+      bool covered = true, optional<double> defaultLight = none);
+  LevelBuilder(RandomGen&, ContentFactory*, int width, int height, const string& name, bool covered = true);
   
   LevelBuilder(LevelBuilder&&);
   ~LevelBuilder();
@@ -52,13 +54,14 @@ class LevelBuilder {
   WSquare modSquare(Vec2);
 
   /** Checks if it's possible to put a creature on given square.*/
-  bool canPutCreature(Vec2, WCreature);
+  bool canPutCreature(Vec2, Creature*);
 
   /** Puts a creatue on a given square. If the square is later changed to something else, the creature remains.*/
   void putCreature(Vec2, PCreature);
 
   /** Puts items on a given square. If the square is later changed to something else, the items remain.*/
   void putItems(Vec2, vector<PItem> items);
+  bool canPutItems(Vec2);
 
   /** Sets the message displayed when the player first enters the level.*/
   void setMessage(const string& message);
@@ -73,10 +76,12 @@ class LevelBuilder {
   /** Adds attribute to given square. The attribute will remain if the square is changed.*/
   void addAttrib(Vec2 pos, SquareAttrib attr);
 
-  void putFurniture(Vec2 pos, FurnitureFactory&, optional<SquareAttrib> = none);
+  void putFurniture(Vec2 pos, FurnitureList&, TribeId, optional<SquareAttrib> = none);
   void putFurniture(Vec2 pos, FurnitureParams, optional<SquareAttrib> = none);
+  void putFurniture(Vec2 pos, FurnitureType, TribeId tribe, optional<SquareAttrib> attrib = none);
   void putFurniture(Vec2 pos, FurnitureType, optional<SquareAttrib> = none);
   void resetFurniture(Vec2 pos, FurnitureType, optional<SquareAttrib> = none);
+  void resetFurniture(Vec2 pos, FurnitureParams, optional<SquareAttrib> = none);
   bool canPutFurniture(Vec2 pos, FurnitureLayer);
   void removeFurniture(Vec2 pos, FurnitureLayer);
   void removeAllFurniture(Vec2 pos);
@@ -104,7 +109,12 @@ class LevelBuilder {
   void addCollective(CollectiveBuilder*);
 
   /** Sets the cover of the square. The value will remain if square is changed.*/
-  void setCovered(Vec2, bool covered);
+  void setCovered(Vec2, bool state);
+
+  /** Sets building flag for the purpose of building level. Buildings are recomputed after world generation
+   * using the roof support algorithm for the sake of game mechanics */
+  void setBuilding(Vec2, bool state);
+
   void setSunlight(Vec2, double);
 
   void setNoDiagonalPassing();
@@ -117,6 +127,7 @@ class LevelBuilder {
   void popMap();
 
   RandomGen& getRandom();
+  ContentFactory* getContentFactory() const;
   
   private:
   Vec2 transform(Vec2);
@@ -126,6 +137,7 @@ class LevelBuilder {
   Table<double> dark;
   vector<CollectiveBuilder*> collectives;
   Table<bool> covered;
+  Table<bool> building;
   Table<double> sunlight;
   Table<EnumSet<SquareAttrib>> attrib;
   vector<pair<PCreature, Vec2>> creatures;
@@ -136,4 +148,5 @@ class LevelBuilder {
   ProgressMeter* progressMeter = nullptr;
   RandomGen& random;
   bool noDiagonalPassing = false;
+  ContentFactory* contentFactory;
 };

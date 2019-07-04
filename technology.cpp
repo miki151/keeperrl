@@ -34,185 +34,40 @@
 #include "creature.h"
 #include "attr_type.h"
 
-void Technology::init() {
-  Technology::set(TechId::ALCHEMY, new Technology(
-        "alchemy", "Build a laboratory and produce basic potions.", 80));
-  Technology::set(TechId::ALCHEMY_ADV, new Technology(
-        "advanced alchemy", "Produce more powerful potions.", 200, {TechId::ALCHEMY}));
-  Technology::set(TechId::ALCHEMY_CONV, new Technology(
-        "alchemical conversion", "Convert resources to and from gold.", 100, {TechId::ALCHEMY}));
-  Technology::set(TechId::HUMANOID_MUT, new Technology(
-        "humanoid mutation", "Breed new, very powerful humanoid species.", 400, {TechId::ALCHEMY}));
-  Technology::set(TechId::BEAST_MUT, new Technology(
-        "beast mutation", "Breed new, very powerful beast species.", 400, {TechId::ALCHEMY}));
-  Technology::set(TechId::PIGSTY, new Technology(
-        "pig breeding", "Build a pigsty to feed your minions.", 120, {}));
-  Technology::set(TechId::IRON_WORKING, new Technology(
-        "iron working", "Build a forge and produce metal weapons and armor.", 180));
-  Technology::set(TechId::STEEL_MAKING, new Technology(
-        "steelmaking", "Build a steel furnace and produce steel goods.", 400, {TechId::IRON_WORKING}));
-  Technology::set(TechId::JEWELLERY, new Technology(
-        "jewellery", "Build a jeweler room and produce magical rings and amulets.", 200, {TechId::IRON_WORKING}));
-  Technology::set(TechId::TWO_H_WEAP, new Technology(
-        "two-handed weapons", "Produce war hammers and battle axes.", 100, {TechId::IRON_WORKING}));
-  Technology::set(TechId::TRAPS, new Technology(
-        "traps", "Produce traps in the workshop.", 100));
-  Technology::set(TechId::ARCHERY, new Technology(
-        "archery", "Produce bows and arrows.", 100));
-  Technology::set(TechId::SPELLS, new Technology(
-        "sorcery", "Learn basic spells.", 60, {}));
-  Technology::set(TechId::SPELLS_ADV, new Technology(
-        "advanced sorcery", "Learn more advanced spells.", 120, {TechId::SPELLS}));
-  Technology::set(TechId::MAGICAL_WEAPONS, new Technology(
-        "magical weapons", "Produce melee weapons that deal "_s + ::getName(AttrType::SPELL_DAMAGE), 120, {TechId::SPELLS_ADV}));
-  Technology::set(TechId::SPELLS_MAS, new Technology(
-        "master sorcery", "Learn the most powerful spells.", 350, {TechId::SPELLS_ADV}));
-  Technology::set(TechId::GEOLOGY1, new Technology(
-        "geology", "Discover precious ores in the earth.", 60, {}));
-  Technology::set(TechId::GEOLOGY2, new Technology(
-        "advanced geology", "Discover more precious ores in the earth.", 180, {TechId::GEOLOGY1}));
-  Technology::set(TechId::GEOLOGY3, new Technology(
-        "expert geology", "Discover even more precious ores in the earth.", 400, {TechId::GEOLOGY2}));
-  Technology::set(TechId::GEOLOGY4, new Technology(
-        "master geology", "Discover ALL precious ores in the earth!", 1200, {TechId::GEOLOGY3}));
+
+vector<TechId> Technology::getNextTechs() const {
+  PROFILE;
+  return getNextTechs(researched);
 }
 
-bool Technology::canResearch() const {
-  return research;
-}
-
-Technology* Technology::setTutorialHighlight(TutorialHighlight h) {
-  tutorial = h;
-  return this;
-}
-
-constexpr auto resource = CollectiveResourceId::MANA;
-
-CostInfo Technology::getAvailableResource(WConstCollective col) {
-  return CostInfo(resource, col->numResource(resource));
-}
-
-CostInfo Technology::getCost() const {
-  return CostInfo(resource, cost);
-}
-
-vector<Technology*> Technology::getNextTechs(const vector<Technology*>& current) {
-  vector<Technology*> ret;
-  for (Technology* t : Technology::getAll())
-    if (t->canLearnFrom(current) && !current.contains(t))
-      ret.push_back(t);
-  return ret;
-}
-
-Technology::Technology(const string& n, const string& d, int c, const vector<TechId>& pre, bool canR)
-    : name(n), description(d), cost(100), research(canR) {
-  for (TechId id : pre)
-    prerequisites.push_back(Technology::get(id));
-}
-
-bool Technology::canLearnFrom(const vector<Technology*>& techs) const {
-  vector<Technology*> myPre = prerequisites;
-  for (Technology* t : techs)
-    myPre.removeElementMaybe(t);
-  return myPre.empty();
-}
-
-const string& Technology::getName() const {
-  return name;
-}
-
-const string& Technology::getDescription() const {
-  return description;
-}
-
-const optional<TutorialHighlight> Technology::getTutorialHighlight() const {
-  return tutorial;
-}
-
-vector<Technology*> Technology::getSorted() {
-  vector<Technology*> ret;
-  while (ret.size() < getAll().size()) {
-    append(ret, getNextTechs(ret));
-  }
-  return ret;
-}
-
-const vector<Technology*> Technology::getPrerequisites() const {
-  return prerequisites;
-}
-  
-const vector<Technology*> Technology::getAllowed() const {
-  vector<Technology*> ret;
-  for (Technology* t : getAll())
-    if (t->prerequisites.contains(this))
-      ret.push_back(t);
-  return ret;
-}
-
-static bool areaOk(const vector<Position>& v) {
-  for (Position pos : v) {
-    auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE);
-    if (pos.isUnavailable() || !furniture || furniture->getType() != FurnitureType::MOUNTAIN)
-      return false;
-  }
-  return true;
-}
-
-static vector<Vec2> cutShape(Rectangle rect) {
-  vector<Vec2> ret;
-  for (Vec2 v : rect)
-    if ((v.inRectangle(rect.minusMargin(1)) || !Random.roll(4)) &&
-        v != rect.topRight() - Vec2(1, 0) &&
-        v != rect.topLeft() &&
-        v != rect.bottomLeft() - Vec2(0, 1) &&
-        v != rect.bottomRight() - Vec2(1, 1))
-      ret.push_back(v);
-  return ret;
-}
-
-
-static void addResource(WCollective col, FurnitureType type, int maxDist) {
-  Position init = [&]{
-      for (auto f : CollectiveConfig::getTrainingFurniture(ExperienceType::SPELL)) {
-        auto& pos = col->getConstructions().getBuiltPositions(f);
-        if (!pos.empty())
-          return Random.choose(pos);
-      }
-      if (col->hasLeader())
-        return col->getLeader()->getPosition();
-      FATAL << "Couldn't find library to spawn resources.";
-      return Position();
-  }();
-  Rectangle resourceArea(Random.get(4, 7), Random.get(4, 7));
-  resourceArea.translate(-resourceArea.middle());
-  for (int t = 0; t < 200; ++t) {
-    Position center = init.plus(Vec2(Random.get(-maxDist, maxDist + 1), Random.get(-maxDist, maxDist + 1)));
-    vector<Position> all = center.getRectangle(resourceArea.minusMargin(-1));
-    if (areaOk(all)) {
-      for (Vec2 pos : cutShape(resourceArea)) {
-        center.plus(pos).addFurniture(FurnitureFactory::get(type, TribeId::getKeeper()));
-        col->onPositionDiscovered(center.plus(pos));
-      }
-      return;
+vector<TechId> Technology::getNextTechs(set<TechId> from) const {
+  vector<TechId> ret;
+  for (auto& tech : techs)
+    if (!from.count(tech.first)) {
+      bool good = true;
+      for (auto& pre : tech.second.prerequisites)
+        if (!from.count(pre)) {
+          good = false;
+          break;
+        }
+      if (good)
+        ret.push_back(tech.first);
     }
+  return ret;
+}
+
+vector<TechId> Technology::getSorted() const {
+  vector<TechId> ret;
+  while (ret.size() < techs.size()) {
+    append(ret, getNextTechs(set<TechId>(ret.begin(), ret.end())));
   }
+  return ret;
 }
 
-static void addResources(WCollective col, int numGold, int numIron, int numStone, int maxDist) {
-  for (int i : Range(numGold))
-    addResource(col, FurnitureType::GOLD_ORE, maxDist);
-  for (int i : Range(numIron))
-    addResource(col, FurnitureType::IRON_ORE, maxDist);
-  for (int i : Range(numStone))
-    addResource(col, FurnitureType::STONE, maxDist);
-}
-
-void Technology::onAcquired(TechId id, WCollective col) {
-  switch (id) {
-    case TechId::GEOLOGY1: addResources(col, 0, 2, 1, 25); break;
-    case TechId::GEOLOGY2: addResources(col, 1, 3, 2, 35); break;
-    case TechId::GEOLOGY3: addResources(col, 2, 4, 3, 50); break;
-    case TechId::GEOLOGY4: addResources(col, 3, 8, 4, 70); break;
-    default: break;
-  } 
+const vector<TechId> Technology::getAllowed(const TechId& tech) const {
+  vector<TechId> ret;
+  for (auto& other : techs)
+    if (other.second.prerequisites.contains(tech))
+      ret.push_back(other.first);
+  return ret;
 }

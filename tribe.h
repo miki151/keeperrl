@@ -40,7 +40,7 @@ class TribeId {
   static TribeId getHostile();
   static TribeId getShelob();
   static TribeId getPeaceful();
-  static TribeId getKeeper();
+  static TribeId getDarkKeeper();
   static TribeId getRetiredKeeper();
   static TribeId getLizard();
   static TribeId getGreenskin();
@@ -57,9 +57,9 @@ class TribeId {
 
   SERIALIZATION_DECL(TribeId);
 
+  enum class KeyType;
   private:
   friend class TribeSet;
-  typedef char KeyType;
   TribeId(KeyType key);
   KeyType SERIAL(key);
   static optional<pair<TribeId, TribeId>> serialSwitch;
@@ -87,13 +87,13 @@ class Tribe {
   Tribe(const Tribe&) = delete;
   Tribe& operator = (Tribe&&) = default;
   Tribe(Tribe&&) = default;
-  bool isEnemy(WConstCreature) const;
+  bool isEnemy(const Creature*) const;
   bool isEnemy(const Tribe*) const;
   void addEnemy(Tribe*);
   const TribeSet& getFriendlyTribes() const;
 
-  void onMemberKilled(WCreature member, WCreature killer);
-  void onItemsStolen(WConstCreature thief);
+  void onMemberKilled(Creature* member, Creature* killer);
+  void onItemsStolen(const Creature* thief);
 
   SERIALIZATION_DECL(Tribe);
 
@@ -104,12 +104,12 @@ class Tribe {
   private:
   Tribe(TribeId, bool diplomatic);
   static void init(Tribe::Map&, TribeId, bool diplomatic);
-  double getStanding(WConstCreature) const;
+  double getStanding(const Creature*) const;
 
   bool SERIAL(diplomatic);
 
-  void initStanding(WConstCreature);
-  double getMultiplier(WConstCreature member);
+  void initStanding(const Creature*);
+  double getMultiplier(const Creature* member);
 
   EntityMap<Creature, double> SERIAL(standing);
   TribeSet SERIAL(friendlyTribes);

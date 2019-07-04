@@ -34,12 +34,24 @@ FilePath FilePath::changeSuffix(const string& current, const string& newSuf) con
         fullPath.substr(0, fullPath.size() - current.size()) + newSuf);
 }
 
-FilePath::FilePath(const DirectoryPath& dir, const string& f) : filename(f), fullPath(dir.get() + "/"_s + f) {
+optional<string> FilePath::readContents() const {
+  ifstream in;
+  in.open(fullPath);
+  if (!in.good())
+    return none;
+  stringstream ss;
+  ss << in.rdbuf();
+  return ss.str();
+}
+
+FilePath::FilePath(const DirectoryPath& dir, const string& f) : filename(f), fullPath(dir.getPath() + "/"_s + f) {
 }
 
 FilePath::FilePath(const std::string& name, const std::string& path) : filename(name), fullPath(path) {
 
 }
+
+bool FilePath::operator==(const FilePath &rhs) const { return fullPath == rhs.fullPath; }
 
 std::ostream&operator <<(std::ostream& d, const FilePath& path) {
   return d << path.getPath();

@@ -25,35 +25,36 @@ class Item;
 class MinionEquipment {
   public:
 
-  static bool isItemUseful(WConstItem);
-  bool needsItem(WConstCreature c, WConstItem it, bool noLimit = false) const;
-  optional<UniqueEntity<Creature>::Id> getOwner(WConstItem) const;
-  bool isOwner(WConstItem, WConstCreature) const;
-  bool tryToOwn(WConstCreature, WItem);
-  void discard(WConstItem);
+  static bool isItemUseful(const Item*);
+  bool needsItem(const Creature* c, const Item* it, bool noLimit = false) const;
+  optional<UniqueEntity<Creature>::Id> getOwner(const Item*) const;
+  bool isOwner(const Item*, const Creature*) const;
+  bool tryToOwn(const Creature*, Item*);
+  void discard(const Item*);
   void discard(UniqueEntity<Item>::Id);
-  void updateOwners(const vector<WCreature>&);
-  vector<WItem> getItemsOwnedBy(WConstCreature, ItemPredicate = nullptr) const;
+  void updateOwners(const vector<Creature*>&);
+  vector<Item*> getItemsOwnedBy(const Creature*, ItemPredicate = nullptr) const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
-  void setLocked(WConstCreature, UniqueEntity<Item>::Id, bool locked);
-  bool isLocked(WConstCreature, UniqueEntity<Item>::Id) const;
-  void sortByEquipmentValue(WConstCreature, vector<WItem>& items) const;
-  void autoAssign(WConstCreature, vector<WItem> possibleItems);
-  void updateItems(const vector<WItem>& items);
+  void setLocked(const Creature*, UniqueEntity<Item>::Id, bool locked);
+  bool isLocked(const Creature*, UniqueEntity<Item>::Id) const;
+  void sortByEquipmentValue(const Creature*, vector<Item*>& items) const;
+  void autoAssign(const Creature*, vector<Item*> possibleItems);
+  void updateItems(const vector<Item*>& items);
 
   private:
-  enum EquipmentType { ARMOR, HEALING, COMBAT_ITEM };
+  enum EquipmentType { ARMOR, HEALING, MATERIALIZATION, COMBAT_ITEM, TORCH };
 
-  static optional<EquipmentType> getEquipmentType(WConstItem it);
+  static optional<EquipmentType> getEquipmentType(const Item* it);
   optional<int> getEquipmentLimit(EquipmentType type) const;
-  WItem getWorstItem(WConstCreature, vector<WItem>) const;
-  int getItemValue(WConstCreature, WConstItem) const;
+  Item* getWorstItem(const Creature*, vector<Item*>) const;
+  int getItemValue(const Creature*, const Item*) const;
+  bool canUseItemType(const Creature*, MinionEquipment::EquipmentType, const Item*) const;
 
   EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);
-  EntityMap<Creature, vector<WItem>> SERIAL(myItems);
+  EntityMap<Creature, vector<WeakPointer<Item>>> SERIAL(myItems);
   set<pair<UniqueEntity<Creature>::Id, UniqueEntity<Item>::Id>> SERIAL(locked);
 };
 

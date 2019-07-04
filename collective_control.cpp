@@ -9,24 +9,20 @@ SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveControl);
 CollectiveControl::CollectiveControl(WCollective c) : collective(c) {
 }
 
-WCollective CollectiveControl::getCollective() const {
-  return NOTNULL(collective);
-}
-
 void CollectiveControl::update(bool currentlyActive) {
 }
 
 void CollectiveControl::tick() {
 }
 
-const vector<WCreature>& CollectiveControl::getCreatures() const {
-  return getCollective()->getCreatures();
+const vector<Creature*>& CollectiveControl::getCreatures() const {
+  return collective->getCreatures();
 }
 
-void CollectiveControl::onMemberKilled(WConstCreature victim, WConstCreature killer) {
+void CollectiveControl::onMemberKilled(const Creature* victim, const Creature* killer) {
 }
 
-void CollectiveControl::onOtherKilled(WConstCreature victim, WConstCreature killer) {
+void CollectiveControl::onOtherKilled(const Creature* victim, const Creature* killer) {
 }
 
 CollectiveControl::~CollectiveControl() {

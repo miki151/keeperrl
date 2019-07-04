@@ -28,39 +28,49 @@
 #include "creature_attributes.h"
 #include "player_message.h"
 #include "view_id.h"
-#include "event_listener.h"
+#include "game_event.h"
 #include "vision.h"
+#include "draw_line.h"
 
-SERIALIZE_DEF(RangedWeapon, damageAttr, projectileName, projectileViewId)
+SERIALIZE_DEF(RangedWeapon, damageAttr, projectileName, projectileViewId, maxDistance)
 SERIALIZATION_CONSTRUCTOR_IMPL(RangedWeapon)
 
-RangedWeapon::RangedWeapon(AttrType attr, const string& name, ViewId id)
-    : damageAttr(attr), projectileName(name), projectileViewId(id) {}
+RangedWeapon::RangedWeapon(AttrType attr, const string& name, ViewId id, int dist)
+    : damageAttr(attr), projectileName(name), projectileViewId(id), maxDistance(dist) {}
 
-void RangedWeapon::fire(WCreature c, Vec2 dir) const {
-  CHECK(dir.length8() == 1);
-  c->getGame()->getView()->addSound(SoundId::SHOOT_BOW);
+void RangedWeapon::fire(Creature* c, Position target) const {
   int damage = c->getAttr(damageAttr);
   Attack attack(c, Random.choose(AttackLevel::LOW, AttackLevel::MIDDLE, AttackLevel::HIGH),
-      AttackType::SHOOT, damage, damageAttr, none);
+      AttackType::SHOOT, damage, damageAttr, {});
   const auto position = c->getPosition();
   auto vision = c->getVision().getId();
   Position lastPos;
-  for (Position pos = position.plus(dir);; pos = pos.plus(dir)) {
-    lastPos = pos;
-    if (auto c = pos.getCreature()) {
-      c->you(MsgType::HIT_THROWN_ITEM, "the " + projectileName);
-      c->takeDamage(attack);
-      break;
+  for (Vec2 offset : drawLine(position.getCoord(), target.getCoord()))
+    if (offset != position.getCoord()) {
+      Position pos(offset, target.getLevel());
+      lastPos = pos;
+      if (auto c = pos.getCreature()) {
+        c->you(MsgType::HIT_THROWN_ITEM, "the " + projectileName);
+        c->takeDamage(attack);
+        break;
+      }
+      if (pos.stopsProjectiles(vision)) {
+        pos.globalMessage("the " + projectileName + " hits the " + pos.getName());
+        break;
+      }
+      if (*pos.dist8(position) >= maxDistance) {
+        pos.globalMessage("the " + projectileName + " falls short.");
+        break;
+      }
     }
-    if (pos.stopsProjectiles(vision)) {
-      pos.globalMessage("the " + projectileName + " hits the " + pos.getName());
-      break;
-    }
-  }
-  c->getGame()->addEvent(EventInfo::Projectile{projectileViewId, position, lastPos});
+  c->getGame()->addEvent(EventInfo::Projectile{none, projectileViewId, position, lastPos, SoundId::SHOOT_BOW});
 }
 
 AttrType RangedWeapon::getDamageAttr() const {
   return damageAttr;
 }
+
+int RangedWeapon::getMaxDistance() const {
+  return maxDistance;
+}
+

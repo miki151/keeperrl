@@ -6,6 +6,6 @@ struct SaveFileInfo {
   string SERIAL(filename);
   time_t SERIAL(date);
   bool SERIAL(download);
-  SERIALIZE_ALL(filename, date, download);
+  SERIALIZE_ALL(filename, date, download)
 };
 

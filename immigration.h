@@ -7,13 +7,14 @@
 #include "collective_config.h"
 #include "immigrant_info.h"
 #include "immigrant_auto_state.h"
+#include "game_time.h"
 
 class Collective;
 struct AttractionInfo;
 
 class Immigration : public OwnedObject<Immigration> {
   public:
-  Immigration(WCollective);
+  Immigration(WCollective, vector<ImmigrantInfo>);
   void update();
 
   struct Group {
@@ -23,13 +24,14 @@ class Immigration : public OwnedObject<Immigration> {
 
   class Available {
     public:
-    vector<WCreature> getCreatures() const;
-    optional<double> getEndTime() const;
+    vector<Creature*> getCreatures() const;
+    optional<GlobalTime> getEndTime() const;
     optional<CostInfo> getCost() const;
     const ImmigrantInfo& getInfo() const;
     bool isUnavailable() const;
     optional<milliseconds> getCreatedTime() const;
     int getImmigrantIndex() const;
+    const vector<SpecialTrait>& getSpecialTraits() const;
 
     SERIALIZATION_DECL(Available)
 
@@ -37,13 +39,14 @@ class Immigration : public OwnedObject<Immigration> {
     static Available generate(WImmigration, const Group& group);
     static Available generate(WImmigration, int index);
     vector<Position> getSpawnPositions() const;
-    Available(WImmigration, vector<PCreature>, int immigrantIndex, optional<double> endTime);
+    Available(WImmigration, vector<PCreature>, int immigrantIndex, optional<GlobalTime> endTime, vector<SpecialTrait>);
     void addAllCreatures(const vector<Position>& spawnPositions);
     friend class Immigration;
     vector<PCreature> SERIAL(creatures);
     int SERIAL(immigrantIndex);
-    optional<double> SERIAL(endTime);
-    WImmigration SERIAL(immigration);
+    optional<GlobalTime> SERIAL(endTime);
+    WImmigration SERIAL(immigration) = nullptr;
+    vector<SpecialTrait> SERIAL(specialTraits);
     optional<milliseconds> createdTime;
   };
 
@@ -52,6 +55,7 @@ class Immigration : public OwnedObject<Immigration> {
   void accept(int id, bool withMessage = true);
   void rejectIfNonPersistent(int id);
   vector<string> getMissingRequirements(const Available&) const;
+  const vector<ImmigrantInfo>& getImmigrants() const;
 
   void setAutoState(int index, optional<ImmigrantAutoState>);
   optional<ImmigrantAutoState> getAutoState(int index) const;
@@ -62,25 +66,26 @@ class Immigration : public OwnedObject<Immigration> {
   int getAttractionValue(const AttractionType& attraction) const;
 
   private:
-  const vector<ImmigrantInfo>& getImmigrants() const;
   EntityMap<Creature, unordered_map<AttractionType, int, CustomHash<AttractionType>>> SERIAL(minionAttraction);
   map<int, Available> SERIAL(available);
-  WCollective SERIAL(collective);
+  WCollective SERIAL(collective) = nullptr;
   map<int, EntitySet<Creature>> SERIAL(generated);
   double getImmigrantChance(const Group& info) const;
   vector<string> getMissingAttractions(const ImmigrantInfo&) const;
   int SERIAL(idCnt) = 0;
-  int SERIAL(candidateTimeout);
-  void occupyAttraction(WConstCreature, const AttractionInfo&);
-  void occupyRequirements(WConstCreature, int immigrantIndex);
+  TimeInterval SERIAL(candidateTimeout);
+  void occupyAttraction(const Creature*, const AttractionInfo&);
+  void occupyRequirements(const Creature*, int immigrantIndex);
   double getRequirementMultiplier(const Group&) const;
   vector<string> getMissingRequirements(const Group&) const;
+  optional<string> getMissingRequirement(const ImmigrantRequirement&, const Group&) const;
   void considerPersistentImmigrants(const vector<ImmigrantInfo>&);
   CostInfo calculateCost(int index, const ExponentialCost&) const;
   bool SERIAL(initialized) = false;
   void initializePersistent();
-  double SERIAL(nextImmigrantTime) = -1;
+  optional<GlobalTime> SERIAL(nextImmigrantTime);
   void resetImmigrantTime();
   map<int, ImmigrantAutoState> SERIAL(autoState);
   int getNumGeneratedAndCandidates(int index) const;
+  vector<ImmigrantInfo> SERIAL(immigrants);
 };

@@ -11,122 +11,155 @@
 #include "furniture_type.h"
 #include "attr_type.h"
 #include "attack_type.h"
+#include "draw_line.h"
+#include "game.h"
+#include "game_event.h"
+#include "view_id.h"
+#include "move_info.h"
 
-const string& Spell::getName() const {
-  return name;
+SERIALIZE_DEF(Spell, NAMED(id), NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf))
+SERIALIZATION_CONSTRUCTOR_IMPL(Spell)
+
+const string& Spell::getSymbol() const {
+  return symbol;
 }
 
-bool Spell::isDirected() const {
-  return effect->contains<DirEffectType>();
+const Effect& Spell::getEffect() const {
+  return *effect;
 }
 
-bool Spell::hasEffect(Effect t) const {
-  return effect->getReferenceMaybe<Effect>() == t;
+int Spell::getCooldown() const {
+  return cooldown;
 }
 
-bool Spell::hasEffect(DirEffectType t) const {
-  return effect->getReferenceMaybe<DirEffectType>() == t;
-}
-
-Effect Spell::getEffect() const {
-  return *effect->getReferenceMaybe<Effect>();
-}
-
-DirEffectType Spell::getDirEffectType() const{
-  return *effect->getReferenceMaybe<DirEffectType>();
-}
-
-int Spell::getDifficulty() const {
-  return difficulty;
-}
-
-Spell::Spell(const string& n, Effect e, int diff, SoundId s, CastMessageType msg)
-    : name(n), effect(e), difficulty(diff), castMessageType(msg), sound(s) {
-}
-
-Spell::Spell(const string& n, DirEffectType e, int diff, SoundId s, CastMessageType msg)
-    : name(n), effect(e), difficulty(diff), castMessageType(msg), sound(s) {
-}
-
-SoundId Spell::getSound() const {
+optional<SoundId> Spell::getSound() const {
   return sound;
 }
 
-string Spell::getDescription() const {
-  return effect->visit(
-      [](const Effect& e) { return e.getDescription(); },
-      [](const DirEffectType& e) { return ::getDescription(e); }
-  );
+bool Spell::canTargetSelf() const {
+  return targetSelf || range == 0;
 }
 
-void Spell::addMessage(WCreature c) {
+string Spell::getDescription() const {
+  return effect->getDescription();
+}
+
+void Spell::addMessage(Creature* c) const {
   switch (castMessageType) {
     case CastMessageType::STANDARD:
-      c->secondPerson("You cast " + getName());
-      c->thirdPerson(c->getName().the() + " casts a spell");
+      c->verb("cast", "casts", "a spell");
       break;
     case CastMessageType::AIR_BLAST:
-      c->secondPerson("You create an air blast!");
-      c->thirdPerson(c->getName().the() + " creates an air blast!");
+      c->verb("create", "creates", "an air blast!");
+      break;
+    case CastMessageType::BREATHE_FIRE:
+      c->verb("breathe", "breathes", "fire!");
+      break;
+    case CastMessageType::ABILITY:
+      c->verb("use", "uses", "an ability");
       break;
   }
 }
 
-void Spell::init() {
-  set(SpellId::HEAL_SELF, new Spell("heal self", Effect::Heal{}, 30, SoundId::SPELL_HEALING));
-  set(SpellId::SUMMON_INSECTS, new Spell("summon insects", Effect::Summon{CreatureId::FLY}, 30,
-        SoundId::SPELL_SUMMON_INSECTS));
-  set(SpellId::DECEPTION, new Spell("deception", Effect::Deception{}, 60, SoundId::SPELL_DECEPTION));
-  set(SpellId::SPEED_SELF, new Spell("haste self", Effect::Lasting{LastingEffect::SPEED}, 60,
-        SoundId::SPELL_SPEED_SELF));
-  set(SpellId::DAM_BONUS, new Spell("damage", Effect::Lasting{LastingEffect::DAM_BONUS}, 90,
-        SoundId::SPELL_STR_BONUS));
-  set(SpellId::DEF_BONUS, new Spell("defense", Effect::Lasting{LastingEffect::DEF_BONUS}, 90,
-        SoundId::SPELL_DEX_BONUS));
-  set(SpellId::STUN_RAY, new Spell("stun ray",  DirEffectType(4, DirEffectId::CREATURE_EFFECT,
-      Effect::Lasting{LastingEffect::STUNNED}) , 60, SoundId::SPELL_STUN_RAY));
-  set(SpellId::HEAL_OTHER, new Spell("heal other",  DirEffectType(1, DirEffectId::CREATURE_EFFECT,
-      Effect::Heal{}) , 6, SoundId::SPELL_HEALING));
-  set(SpellId::FIRE_SPHERE_PET, new Spell("fire sphere", Effect::Summon{CreatureId::FIRE_SPHERE}, 20,
-        SoundId::SPELL_FIRE_SPHERE_PET));
-  set(SpellId::TELEPORT, new Spell("escape", Effect::Teleport{}, 80, SoundId::SPELL_TELEPORT));
-  set(SpellId::INVISIBILITY, new Spell("invisibility", Effect::Lasting{LastingEffect::INVISIBLE}, 150,
-        SoundId::SPELL_INVISIBILITY));
-  set(SpellId::BLAST, new Spell("blast", DirEffectType(4, DirEffectId::BLAST), 100, SoundId::SPELL_BLAST));
-  set(SpellId::MAGIC_MISSILE, new Spell("magic missile", DirEffectType(4, DirEffectId::CREATURE_EFFECT,
-      Effect::Damage{AttrType::SPELL_DAMAGE, AttackType::SPELL}), 3, SoundId::SPELL_BLAST));
-  set(SpellId::CIRCULAR_BLAST, new Spell("circular blast", Effect::CircularBlast{}, 150, SoundId::SPELL_AIR_BLAST,
-        CastMessageType::AIR_BLAST));
-  set(SpellId::SUMMON_SPIRIT, new Spell("summon spirits", Effect::Summon{CreatureId::SPIRIT}, 150,
-        SoundId::SPELL_SUMMON_SPIRIT));
-  set(SpellId::CURE_POISON, new Spell("cure poisoning", Effect::CurePoison{}, 150, SoundId::SPELL_CURE_POISON));
-  set(SpellId::METEOR_SHOWER, new Spell("meteor shower", Effect::PlaceFurniture{FurnitureType::METEOR_SHOWER}, 150,
-        SoundId::SPELL_METEOR_SHOWER));
-  set(SpellId::PORTAL, new Spell("portal", Effect::PlaceFurniture{FurnitureType::PORTAL}, 150, SoundId::SPELL_PORTAL));
-  set(SpellId::SUMMON_ELEMENT, new Spell("summon element", Effect::SummonElement{}, 150, SoundId::SPELL_SUMMON_SPIRIT));
-}
-
-optional<int> Spell::getLearningExpLevel() const {
-  switch (getId()) {
-    case SpellId::HEAL_SELF: return 1;
-    case SpellId::SUMMON_INSECTS: return 2;
-    case SpellId::HEAL_OTHER: return 3;
-    case SpellId::MAGIC_MISSILE: return 4;
-    case SpellId::DECEPTION: return 4;
-    case SpellId::TELEPORT: return 5;
-    case SpellId::SPEED_SELF: return 5;
-    //case SpellId::STUN_RAY: return 6;
-    case SpellId::CURE_POISON: return 6;
-    case SpellId::BLAST: return 7;
-    case SpellId::CIRCULAR_BLAST: return 7;
-    case SpellId::DEF_BONUS: return 8;
-    case SpellId::SUMMON_ELEMENT: return 8;
-    case SpellId::DAM_BONUS: return 9;
-    case SpellId::FIRE_SPHERE_PET: return 10;
-    case SpellId::METEOR_SHOWER: return 11;
-    case SpellId::INVISIBILITY: return 12;
+static optional<FXInfo> getProjectileFX(LastingEffect effect) {
+  switch (effect) {
     default:
       return none;
   }
-};
+}
 
+static optional<FXInfo> getProjectileFX(const Effect& effect) {
+  return effect.visit(
+      [&](const auto&) -> optional<FXInfo> { return none; },
+      [&](const Effect::Lasting& e) -> optional<FXInfo> { return getProjectileFX(e.lastingEffect); },
+      [&](const Effect::Damage&) -> optional<FXInfo> { return {FXName::MAGIC_MISSILE}; },
+      [&](const Effect::Blast&) -> optional<FXInfo> { return {FXName::AIR_BLAST}; },
+      [&](const Effect::Pull&) -> optional<FXInfo> { return FXInfo{FXName::AIR_BLAST}.setReversed(); }
+  );
+}
+
+static optional<ViewId> getProjectile(LastingEffect effect) {
+  switch (effect) {
+    default:
+      return none;
+  }
+}
+
+static optional<ViewId> getProjectile(const Effect& effect) {
+  return effect.visit(
+      [&](const auto&) -> optional<ViewId> { return none; },
+      [&](const Effect::Lasting& e) -> optional<ViewId> { return getProjectile(e.lastingEffect); },
+      [&](const Effect::Damage&) -> optional<ViewId> { return ViewId("force_bolt"); },
+      [&](const Effect::Fire&) -> optional<ViewId> { return ViewId("fireball"); },
+      [&](const Effect::Blast&) -> optional<ViewId> { return ViewId("air_blast"); }
+  );
+}
+
+void Spell::apply(Creature* c, Position target) const {
+  if (target == c->getPosition()) {
+    if (canTargetSelf())
+      effect->apply(target, c);
+    return;
+  }
+  auto thisFx = getProjectileFX(*effect);
+  if (fx)
+    thisFx = FXInfo{*fx};
+  if (endOnly) {
+    c->getGame()->addEvent(
+        EventInfo::Projectile{std::move(thisFx), getProjectile(*effect), c->getPosition(), target, none});
+    effect->apply(target, c);
+    return;
+  }
+  vector<Position> trajectory;
+  auto origin = c->getPosition().getCoord();
+  for (auto& v : drawLine(origin, target.getCoord()))
+    if (v != origin && v.dist8(origin) <= range) {
+      trajectory.push_back(Position(v, target.getLevel()));
+      if (trajectory.back().isDirEffectBlocked())
+        break;
+    }
+  c->getGame()->addEvent(
+      EventInfo::Projectile{std::move(thisFx), getProjectile(*effect), c->getPosition(), trajectory.back(), none});
+  for (auto& pos : trajectory)
+    effect->apply(pos, c);
+}
+
+int Spell::getRange() const {
+  return range;
+}
+
+bool Spell::isEndOnly() const {
+  return endOnly;
+}
+
+SpellId Spell::getId() const {
+  return id;
+}
+
+const char* Spell::getName() const {
+  return id.data();
+}
+
+optional<SpellId> Spell::getUpgrade() const {
+  return upgrade;
+}
+
+static bool checkTrajectory(Position from, Position to) {
+  for (auto& v : drawLine(from, to))
+    if (v != from && v.isDirEffectBlocked())
+      return false;
+  return true;
+}
+
+MoveInfo Spell::getAIMove(const Creature* c) const {
+  if (c->isReady(this))
+    for (auto pos : c->getPosition().getRectangle(Rectangle::centered(range)))
+      if (canTargetSelf() || (c->canSee(pos) && pos != c->getPosition() && checkTrajectory(c->getPosition(), pos)))
+        if (effect->shouldAIApply(c, pos) == EffectAIIntent::WANTED)
+          return c->castSpell(this, pos);
+  return NoMove;
+}
+
+
+#include "pretty_archive.h"
+template void Spell::serialize(PrettyInputArchive&, unsigned);

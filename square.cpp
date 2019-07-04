@@ -28,7 +28,8 @@
 #include "poison_gas.h"
 #include "tribe.h"
 #include "view.h"
-#include "event_listener.h"
+#include "game_event.h"
+#include "fire.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -51,24 +52,27 @@ Square::Square() : viewIndex(new ViewIndex()) {
 Square::~Square() {
 }
 
-void Square::putCreature(WCreature c) {
-  //CHECK(canEnter(c)) << c->getName().bare() << " " << getName();
-  setCreature(c);
-  onEnter(c);
-  if (WGame game = c->getGame())
+void Square::putCreature(Creature* c) {
+  CHECK(!creature);
+  creature = c;
+  setDirty(c->getPosition());
+  if (auto game = c->getGame())
     game->addEvent(EventInfo::CreatureMoved{c});
 }
 
-void Square::setLandingLink(StairKey key) {
+void Square::removeCreature(Position pos) {
+  setDirty(pos);
+  CHECK(creature);
+  creature = nullptr;
+}
+
+void Square::setLandingLink(optional<StairKey> key) {
+  CHECK(!key || !landingLink);
   landingLink = key;
 }
 
 optional<StairKey> Square::getLandingLink() const {
   return landingLink;
-}
-
-void Square::setCreature(WCreature c) {
-  creature = c;
 }
 
 void Square::onAddedToLevel(Position pos) const {
@@ -77,16 +81,16 @@ void Square::onAddedToLevel(Position pos) const {
 }
 
 void Square::tick(Position pos) {
+  PROFILE_BLOCK("Square::tick");
   setDirty(pos);
   if (!inventory->isEmpty()) {
-    vector<WItem> discarded;
-    for (auto item : copyOf(inventory->getItems())) {
-      item->tick(pos);
-      if (item->isDiscarded())
-        discarded.push_back(item);
-    }
-    for (auto item : discarded)
-      inventory->removeItem(item);
+    inventory->tick(pos);
+    if (!pos.canEnterEmpty(MovementType(MovementTrait::WALK).setForced()))
+      for (auto neighbor : pos.neighbors8(Random))
+        if (neighbor.canEnterEmpty({MovementTrait::WALK})) {
+          neighbor.dropItems(pos.removeItems(pos.getItems()));
+          break;
+        }
   }
   poisonGas->tick(pos);
   if (creature && poisonGas->getAmount() > 0.2) {
@@ -94,7 +98,7 @@ void Square::tick(Position pos) {
   }
 }
 
-bool Square::itemLands(vector<WItem> item, const Attack& attack) const {
+bool Square::itemLands(vector<Item*> item, const Attack& attack) const {
   if (creature) {
     if (item.size() > 1)
       creature->you(MsgType::MISS_THROWN_ITEM_PLURAL, item[0]->getPluralTheName(item.size()));
@@ -104,8 +108,7 @@ bool Square::itemLands(vector<WItem> item, const Attack& attack) const {
   return false;
 }
 
-void Square::onItemLands(Position pos, vector<PItem> item, const Attack& attack, int remainingDist, Vec2 dir,
-    VisionId vision) {
+void Square::onItemLands(Position pos, vector<PItem> item, const Attack& attack) {
   setDirty(pos);
   if (creature) {
     item[0]->onHitCreature(creature, attack, item.size());
@@ -130,26 +133,26 @@ double Square::getPoisonGasAmount() const {
   return poisonGas->getAmount();
 }
 
-void Square::getViewIndex(ViewIndex& ret, WConstCreature viewer) const {
+void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
   if ((!viewer && lastViewer) || (viewer && lastViewer == viewer->getUniqueId())) {
     ret = *viewIndex;
     return;
   }
   // viewer is null only in Spectator mode, so setting a random id to lastViewer is ok
   lastViewer = viewer ? viewer->getUniqueId() : Creature::Id();
-  double fireSize = 0;
-  if (!inventory->isEmpty())
-    for (WItem it : getInventory().getItems())
-      fireSize = max(fireSize, it->getFireSize());
-  if (WItem it = getTopItem())
-    ret.insert(copyOf(it->getViewObject()).setAttribute(ViewObject::Attribute::BURNING, fireSize));
+  ret.modItemCounts() = inventory->getCounts();
+  if (Item* it = getTopItem()) {
+    auto obj = it->getViewObject();
+    for (Item* it : getInventory().getItems())
+      if (it->getFire().isBurning()) {
+        obj.setModifier(ViewObject::Modifier::BURNING);
+        break;
+      }
+    ret.insert(std::move(obj));
+  }
   if (poisonGas->getAmount() > 0)
-    ret.setHighlight(HighlightType::POISON_GAS, min(1.0, poisonGas->getAmount()));
+    ret.setGradient(GradientType::POISON_GAS, min(1.0, poisonGas->getAmount()));
   *viewIndex = ret;
-}
-
-void Square::onEnter(WCreature c) {
-  setDirty(c->getPosition());
 }
 
 void Square::dropItem(Position pos, PItem item) {
@@ -166,7 +169,7 @@ void Square::dropItems(Position pos, vector<PItem> items) {
   dropItemsLevelGen(std::move(items));
 }
 
-WCreature Square::getCreature() const {
+Creature* Square::getCreature() const {
   return creature;
 }
 
@@ -178,33 +181,25 @@ void Square::setOnFire(bool state) {
   onFire = state;
 }
 
-void Square::removeCreature(Position pos) {
-  setDirty(pos);
-  CHECK(creature);
-  WCreature tmp = creature;
-  creature = nullptr;
-}
-
-WItem Square::getTopItem() const {
+Item* Square::getTopItem() const {
   if (inventory->isEmpty())
     return nullptr;
   else
     return inventory->getItems().back();
 }
 
-PItem Square::removeItem(Position pos, WItem it) {
+PItem Square::removeItem(Position pos, Item* it) {
   setDirty(pos);
   return getInventory().removeItem(it);
 }
 
-vector<PItem> Square::removeItems(Position pos, vector<WItem> it) {
+vector<PItem> Square::removeItems(Position pos, vector<Item*> it) {
   setDirty(pos);
   return getInventory().removeItems(it);
 }
 
 void Square::setDirty(Position pos) {
-  pos.getLevel()->setNeedsMemoryUpdate(pos.getCoord(), true);
-  pos.getLevel()->setNeedsRenderUpdate(pos.getCoord(), true);
+  pos.setNeedsRenderAndMemoryUpdate(true);
   lastViewer.reset();
 }
 

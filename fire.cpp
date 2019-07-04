@@ -17,40 +17,31 @@
 
 #include "fire.h"
 
-SERIALIZE_DEF(Fire, burnt, size, weight, flamability)
+SERIALIZE_DEF(Fire, burnTime, SKIP(burning))
 SERIALIZATION_CONSTRUCTOR_IMPL(Fire);
 
-Fire::Fire(double objectWeight, double objectFlamability) : weight(objectWeight), flamability(objectFlamability) {}
+Fire::Fire(int burnTime) : burnTime(burnTime) {}
 
-double epsilon = 0.001;
+constexpr double epsilon = 0.001;
 
 void Fire::tick() {
-  burnt = min(1., burnt + size / weight);
-  size += (burnt * weight - size) / 10;
-  size *= (1 - burnt);
-  if (size < epsilon && burnt > 1 - epsilon) {
-    size = 0;
-    burnt = 1;
-  }
+  PROFILE_BLOCK("Fire::tick");
+  if (burning && burnTime > 0)
+    --burnTime;
 }
 
-void Fire::set(double amount) {
-  if (!isBurntOut() && amount > epsilon)
-    size = max(size, amount * flamability);
+void Fire::set() {
+  if (!burning && burnTime > 0)
+    burning = true;
 }
 
 bool Fire::isBurning() const {
-  return size > 0;
-}
-
-double Fire::getSize() const {
-  return size;
+  return burnTime > 0 && burning;
 }
 
 bool Fire::isBurntOut() const {
-  return burnt > 0.999 && size == 0;
+  return burnTime == 0 && burning;
 }
 
-double Fire::getFlamability() const {
-  return flamability;
-}
+#include "pretty_archive.h"
+template void Fire::serialize(PrettyInputArchive&, unsigned);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "player_message.h"
+#include "furniture_type.h"
 
 class Creature;
 class Collective;
@@ -13,9 +14,9 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   CollectiveControl(WCollective);
   virtual void update(bool currentlyActive);
   virtual void tick();
-  virtual void onMemberKilled(WConstCreature victim, WConstCreature killer);
-  virtual void onOtherKilled(WConstCreature victim, WConstCreature killer);
-  virtual void onMemberAdded(WConstCreature) {}
+  virtual void onMemberKilled(const Creature* victim, const Creature* killer);
+  virtual void onOtherKilled(const Creature* victim, const Creature* killer);
+  virtual void onMemberAdded(Creature*) {}
   virtual void addMessage(const PlayerMessage&) {}
   virtual void addAttack(const CollectiveAttack&) {}
   virtual void onConstructed(Position, FurnitureType) {}
@@ -23,10 +24,7 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) {}
   virtual void onNoEnemies() {}
   virtual void onRansomPaid() {}
-  virtual void onPositionDiscovered(Position) {}
   virtual vector<TriggerInfo> getTriggers(WConstCollective against) const;
-
-  WCollective getCollective() const;
 
   SERIALIZATION_DECL(CollectiveControl)
 
@@ -34,9 +32,8 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
 
   static PCollectiveControl idle(WCollective);
 
-  const vector<WCreature>& getCreatures() const;
+  const vector<Creature*>& getCreatures() const;
 
-  private:
   WCollective SERIAL(collective) = nullptr;
 };
 

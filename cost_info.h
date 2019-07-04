@@ -14,6 +14,6 @@ class CostInfo {
   SERIALIZATION_DECL(CostInfo)
 
   CollectiveResourceId SERIAL(id) = CollectiveResourceId(0);
-  int SERIAL(value) = 0;
+  short SERIAL(value) = 0;
 };
 

@@ -2,7 +2,7 @@
 #include "clock.h"
 #include "debug.h"
 
-Clock::Clock() {
+Clock::Clock(bool neverPause) : neverPause(neverPause) {
   initTime = steady_clock::now();
 }
 
@@ -14,7 +14,7 @@ milliseconds Clock::getMillis() {
 }
 
 void Clock::pause() {
-  if (!lastPause)
+  if (!lastPause && !neverPause)
     lastPause = getCurrent();
 }
 
@@ -33,6 +33,10 @@ milliseconds Clock::getRealMillis() {
   return duration_cast<milliseconds>(steady_clock::now().time_since_epoch());
 }
 
+microseconds Clock::getRealMicros() {
+  return duration_cast<microseconds>(high_resolution_clock::now().time_since_epoch());
+}
+
 steady_clock::time_point Clock::getCurrent() {
   return steady_clock::time_point(steady_clock::now() - initTime);
 }
@@ -49,6 +53,10 @@ int Intervalometer::getCount(milliseconds mill) {
     return diff;
   }
   return 0;
+}
+
+void Intervalometer::clear() {
+  lastUpdate = none;
 }
 
 

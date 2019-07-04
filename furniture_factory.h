@@ -1,10 +1,16 @@
 #pragma once
 
 #include "furniture_type.h"
+#include "furniture_list.h"
 #include "tribe.h"
+#include "experience_type.h"
+#include "bed_type.h"
+#include "view_object.h"
 
-class RandomGen;
 class Position;
+class TribeId;
+class LuxuryInfo;
+class GameConfig;
 
 struct FurnitureParams {
   FurnitureType SERIAL(type); // HASH(type)
@@ -14,31 +20,40 @@ struct FurnitureParams {
   HASH_ALL(type, tribe)
 };
 
+
 class FurnitureFactory {
   public:
-  static bool canBuild(FurnitureType, Position);
-  static bool hasSupport(FurnitureType, Position);
-  static bool isUpgrade(FurnitureType base, FurnitureType upgraded);
-  static const vector<FurnitureType>& getUpgrades(FurnitureType base);
+  FurnitureFactory(map<FurnitureType, OwnerPointer<Furniture>>, map<FurnitureListId, FurnitureList>);
+  void merge(FurnitureFactory);
+  bool canBuild(FurnitureType, Position) const;
+  bool isUpgrade(FurnitureType base, FurnitureType upgraded) const;
+  const vector<FurnitureType>& getUpgrades(FurnitureType base) const;
+  PFurniture getFurniture(FurnitureType, TribeId) const;
+  const Furniture& getData(FurnitureType) const;
+  const ViewObject& getConstructionObject(FurnitureType) const;
+  int getPopulationIncrease(FurnitureType, int numBuilt) const;
+  optional<string> getPopulationIncreaseDescription(FurnitureType) const;
+  FurnitureList getFurnitureList(FurnitureListId) const;
+  FurnitureType getWaterType(double depth) const;
+  const vector<FurnitureType>& getTrainingFurniture(ExperienceType) const;
+  const vector<FurnitureType>& getFurnitureNeedingLight() const;
+  const vector<FurnitureType>& getBedFurniture(BedType) const;
+  vector<FurnitureType> getAllFurnitureType() const;
 
-  FurnitureFactory(TribeId, const EnumMap<FurnitureType, double>& distribution,
-      const vector<FurnitureType>& unique = {});
-  FurnitureFactory(TribeId, FurnitureType);
-  static PFurniture get(FurnitureType, TribeId);
+  ~FurnitureFactory();
+  FurnitureFactory(const FurnitureFactory&) = delete;
+  FurnitureFactory(FurnitureFactory&&);
+  FurnitureFactory& operator = (FurnitureFactory&&);
 
-  FurnitureParams getRandom(RandomGen&);
-
-  static FurnitureFactory roomFurniture(TribeId);
-  static FurnitureFactory castleFurniture(TribeId);
-  static FurnitureFactory dungeonOutside(TribeId);
-  static FurnitureFactory castleOutside(TribeId);
-  static FurnitureFactory villageOutside(TribeId);
-  static FurnitureFactory cryptCoffins(TribeId);
-
-  static FurnitureType getWaterType(double depth);
+  SERIALIZATION_DECL(FurnitureFactory)
 
   private:
-  HeapAllocated<TribeId> tribe;
-  EnumMap<FurnitureType, double> distribution;
-  vector<FurnitureType> unique;
+  map<FurnitureType, OwnerPointer<Furniture>> SERIAL(furniture);
+  map<FurnitureListId, FurnitureList> SERIAL(furnitureLists);
+  EnumMap<ExperienceType, vector<FurnitureType>> SERIAL(trainingFurniture);
+  unordered_map<FurnitureType, vector<FurnitureType>, CustomHash<FurnitureType>> SERIAL(upgrades);
+  vector<FurnitureType> SERIAL(needingLight);
+  EnumMap<BedType, vector<FurnitureType>> SERIAL(bedFurniture);
+  unordered_map<FurnitureType, ViewObject, CustomHash<FurnitureType>> SERIAL(constructionObjects);
+  void initializeInfos();
 };

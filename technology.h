@@ -15,69 +15,24 @@
 
 #pragma once
 
-#include "singleton.h"
+#include "util.h"
 #include "enums.h"
+#include "tech_id.h"
 
-RICH_ENUM(TechId,
-  ALCHEMY,
-  ALCHEMY_ADV,
-  ALCHEMY_CONV,
-  HUMANOID_MUT,
-  BEAST_MUT,
-  PIGSTY,
-  IRON_WORKING,
-  STEEL_MAKING,
-  TWO_H_WEAP,
-  JEWELLERY,
-  TRAPS,
-  ARCHERY,
-  SPELLS,
-  SPELLS_ADV,
-  SPELLS_MAS,
-  MAGICAL_WEAPONS,
-  GEOLOGY1,
-  GEOLOGY2,
-  GEOLOGY3,
-  GEOLOGY4
-);
-
-class Spell;
-class Collective;
-class CostInfo;
-
-class Technology : public Singleton<Technology, TechId> {
+class Technology {
   public:
-  Technology(const string& name, const string& description, int cost, const vector<TechId>& prerequisites = {},
-      bool canResearch = true);
-  const string& getName() const;
-  CostInfo getCost() const;
-  bool canResearch() const;
-  Technology* setTutorialHighlight(TutorialHighlight);
-  const string& getDescription() const;
-  const optional<TutorialHighlight> getTutorialHighlight() const;
-  const vector<Technology*> getPrerequisites() const;
-  const vector<Technology*> getAllowed() const;
+  vector<TechId> getNextTechs(set<TechId> from) const;
+  vector<TechId> getNextTechs() const;
+  const vector<TechId> getAllowed(const TechId&) const;
+  vector<TechId> getSorted() const;
 
-  static CostInfo getAvailableResource(WConstCollective);
-
-  static vector<Technology*> getSorted();
-  static vector<Technology*> getNextTechs(const vector<Technology*>& current);
-  static vector<Spell*> getSpellLearning(TechId tech);
-  static vector<Spell*> getAvailableSpells(WConstCollective);
-  static vector<Spell*> getAllKeeperSpells();
-  static TechId getNeededTech(Spell*);
-
-  static void onAcquired(TechId, WCollective);
-
-  static void init();
-
-  private:
-  bool canLearnFrom(const vector<Technology*>&) const;
-  string name;
-  string description;
-  int cost;
-  vector<Technology*> prerequisites;
-  bool research;
-  optional<TutorialHighlight> tutorial;
+  struct TechDefinition {
+    string SERIAL(description);
+    vector<TechId> SERIAL(prerequisites);
+    SERIALIZE_ALL(NAMED(description), OPTION(prerequisites))
+  };
+  map<PrimaryId<TechId>, TechDefinition> SERIAL(techs);
+  set<TechId> SERIAL(researched);
+  SERIALIZE_ALL(NAMED(techs), OPTION(researched))
 };
 

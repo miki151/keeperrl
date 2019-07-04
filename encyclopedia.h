@@ -15,11 +15,28 @@
 
 #pragma once
 
+#include "util.h"
+#include "spell_school_id.h"
+
 class View;
 class Technology;
+class GameConfig;
+class BuildInfo;
+class SpellSchool;
+class Spell;
 
 class Encyclopedia {
   public:
+  Encyclopedia(vector<BuildInfo>, map<SpellSchoolId, SpellSchool>, vector<Spell>, const Technology&);
   void present(View*, int lastInd = 0);
+
+  private:
+  vector<BuildInfo> buildInfo;
+  map<SpellSchoolId, SpellSchool> schools;
+  vector<Spell> spells;
+  const Technology& technology;
+  void advance(View*, TechId) const;
+  void advances(View*, int lastInd = 0) const;
+  void spellSchools(View*, int lastInd = 0) const;
 };
 

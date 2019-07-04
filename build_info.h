@@ -5,76 +5,50 @@
 #include "cost_info.h"
 #include "enum_variant.h"
 #include "zones.h"
+#include "avatar_info.h"
+#include "view_id.h"
+#include "furniture_type.h"
+#include "tech_id.h"
 
 struct BuildInfo {
-  static const vector<BuildInfo>& get();
-
-  struct FurnitureInfo {
-    FurnitureInfo(FurnitureType type, CostInfo cost = CostInfo::noCost(), bool noCredit = false, optional<int> maxNumber = none);
-    FurnitureInfo(vector<FurnitureType> t, CostInfo c = CostInfo::noCost(), bool n = false, optional<int> m = none);
-    FurnitureInfo() {}
-    vector<FurnitureType> types;
-    CostInfo cost;
-    bool noCredit;
-    optional<int> maxNumber;
-  } furnitureInfo;
-
-  struct TrapInfo {
-    TrapType type;
-    ViewId viewId;
-  } trapInfo;
-
-  enum BuildType {
-    DIG,
-    FURNITURE,
-    TRAP,
-    DESTROY,
-    ZONE,
-    DISPATCH,
-    CLAIM_TILE,
-    FORBID_ZONE
-  } buildType;
-
-  enum class RequirementId {
-    TECHNOLOGY,
-    VILLAGE_CONQUERED,
+  struct Furniture {
+    vector<FurnitureType> SERIAL(types);
+    CostInfo SERIAL(cost);
+    bool SERIAL(noCredit) = false;
+    optional<int> SERIAL(limit);
+    SERIALIZE_ALL(NAMED(types), OPTION(cost), OPTION(noCredit), NAMED(limit))
   };
-  typedef EnumVariant<RequirementId, TYPES(TechId),
-      ASSIGN(TechId, RequirementId::TECHNOLOGY)> Requirement;
+
+  struct Trap {
+    FurnitureType SERIAL(type);
+    ViewId SERIAL(viewId);
+    SERIALIZE_ALL(type, viewId)
+  };
+
+  using DungeonLevel = int;
+  MAKE_VARIANT(Requirement, TechId, DungeonLevel);
 
   static string getRequirementText(Requirement);
   static bool meetsRequirement(WConstCollective, Requirement);
+  bool canSelectRectangle() const;
 
-  struct RoomInfo {
-    string name;
-    string description;
-    vector<Requirement> requirements;
-  };
-  static vector<RoomInfo> getRoomInfo();
-
-  string name;
-  vector<Requirement> requirements;
-  string help;
-  char hotkey;
-  string groupName;
-  bool hotkeyOpensGroup = false;
-  ZoneId zone;
-  ViewId viewId;
-  optional<TutorialHighlight> tutorialHighlight;
-  vector<FurnitureLayer> destroyLayers;
-
-  BuildInfo& setTutorialHighlight(TutorialHighlight t);
-
-  BuildInfo(FurnitureInfo info, const string& n, vector<Requirement> req = {}, const string& h = "", char key = 0,
-      string group = "", bool hotkeyOpens = false);
-
-  BuildInfo(TrapInfo info, const string& n, vector<Requirement> req = {}, const string& h = "", char key = 0,
-      string group = "");
-
-  BuildInfo(BuildType type, const string& n, const string& h = "", char key = 0, string group = "");
-  BuildInfo(const vector<FurnitureLayer>& layers, const string& n, const string& h = "", char key = 0, string group = "");
-
-  BuildInfo(ZoneId zone, ViewId view, const string& n, const string& h = "", char key = 0, string group = "",
-            bool hotkeyOpens = false);
-
+  using DestroyLayers = vector<FurnitureLayer>;
+  using ImmediateDig = EmptyStruct<struct ImmediateDigTag>;
+  using Dig = EmptyStruct<struct DigTag>;
+  using ClaimTile = EmptyStruct<struct ClaimTileTag>;
+  using Dispatch = EmptyStruct<struct DispatchTag>;
+  using ForbidZone = EmptyStruct<struct ForbidZoneTag>;
+  using Zone = ZoneId;
+  using PlaceMinion = EmptyStruct<struct PlaceMinionTag>;
+  using PlaceItem = EmptyStruct<struct PlaceItemTag>;
+  MAKE_VARIANT(BuildType, Furniture, Trap, Zone, DestroyLayers, Dig, ClaimTile, Dispatch, ForbidZone, PlaceMinion, ImmediateDig, PlaceItem);
+  BuildType SERIAL(type);
+  string SERIAL(name);
+  string SERIAL(groupName);
+  string SERIAL(help);
+  char SERIAL(hotkey) = 0;
+  vector<Requirement> SERIAL(requirements);
+  bool SERIAL(hotkeyOpensGroup) = false;
+  optional<TutorialHighlight> SERIAL(tutorialHighlight);
+  SERIALIZE_ALL(NAMED(type), NAMED(name), OPTION(groupName), OPTION(help), OPTION(hotkey), OPTION(requirements), OPTION(hotkeyOpensGroup), NAMED(tutorialHighlight))
 };

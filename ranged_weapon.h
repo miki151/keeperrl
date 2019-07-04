@@ -17,13 +17,15 @@
 
 #include "util.h"
 #include "item.h"
+#include "view_id.h"
 
 class RangedWeapon {
   public:
-  RangedWeapon(AttrType damageAttr, const string& projectileName, ViewId projectileViewId);
+  RangedWeapon(AttrType damageAttr, const string& projectileName, ViewId projectileViewId, int maxDistance);
 
-  void fire(WCreature c, Vec2 dir) const;
+  void fire(Creature* c, Position target) const;
   AttrType getDamageAttr() const;
+  int getMaxDistance() const;
 
   SERIALIZATION_DECL(RangedWeapon);
 
@@ -31,4 +33,5 @@ class RangedWeapon {
   AttrType SERIAL(damageAttr);
   string SERIAL(projectileName);
   ViewId SERIAL(projectileViewId);
+  int SERIAL(maxDistance);
 };

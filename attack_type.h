@@ -1,17 +1,16 @@
 #pragma once
 
+#include "util.h"
+
 RICH_ENUM(
     AttackType,
     CUT,
     STAB,
     CRUSH,
-    PUNCH,
     BITE,
-    EAT,
     HIT,
     SHOOT,
-    SPELL,
-    POSSESS
+    SPELL
 );
 
 

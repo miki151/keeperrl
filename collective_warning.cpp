@@ -11,8 +11,10 @@
 #include "collective_config.h"
 #include "territory.h"
 #include "item.h"
-#include "minion_task.h"
+#include "minion_activity.h"
 #include "experience_type.h"
+#include "game.h"
+#include "content_factory.h"
 
 SERIALIZE_DEF(CollectiveWarnings, warnings, warningTimes, lastWarningTime)
 
@@ -21,29 +23,16 @@ void CollectiveWarnings::setWarning(Warning w, bool state) {
 }
 
 void CollectiveWarnings::disable() {
-  lastWarningTime = 1000000000;
+  lastWarningTime = LocalTime(100000000);
 }
 
 void CollectiveWarnings::considerWarnings(WCollective col) {
-  setWarning(Warning::MANA, col->numResource(CollectiveResourceId::MANA) < 100);
+  PROFILE;
+  setWarning(Warning::DUNGEON_LEVEL, col->getDungeonLevel().level == 0 && col->getGame()->getGlobalTime() > 3000_global);
   setWarning(Warning::DIGGING, col->getTerritory().isEmpty());
-  /*setWarning(Warning::LIBRARY, !col->getTerritory().isEmpty() &&
-      col->getConstructions().getTotalCount(FurnitureType::BOOKCASE) == 0);*/
-  for (SpawnType spawnType : ENUM_ALL(SpawnType)) {
-    DormInfo info = col->getConfig().getDormInfo()[spawnType];
-    if (info.warning)
-      setWarning(*info.warning, col->getConstructions().getBuiltCount(info.bedType) <
-          col->getCreatures(spawnType).size());
-  }
   considerMoraleWarning(col);
   considerWeaponWarning(col);
   considerTorchesWarning(col);
-  considerTrainingRoomWarning(col);
-  /*    for (auto minionTask : ENUM_ALL(MinionTask)) {
-        auto& elem = config->getTaskInfo(minionTask);
-        if (!getAllSquares(elem.squares).empty() && elem.warning)
-          setWarning(*elem.warning, false);
-      }*/
 }
 
 bool CollectiveWarnings::isWarning(Warning w) const {
@@ -54,46 +43,28 @@ void CollectiveWarnings::considerWeaponWarning(WCollective col) {
   int numWeapons = col->getNumItems(ItemIndex::WEAPON);
   PItem genWeapon = ItemType(ItemType::Sword{}).get();
   int numNeededWeapons = 0;
-  for (WCreature c : col->getCreatures(MinionTrait::FIGHTER))
+  for (Creature* c : col->getCreatures(MinionTrait::FIGHTER))
     if (col->usesEquipment(c) && col->getMinionEquipment().needsItem(c, genWeapon.get(), true))
       ++numNeededWeapons;
   setWarning(Warning::NO_WEAPONS, numNeededWeapons > numWeapons);
 }
 
 void CollectiveWarnings::considerMoraleWarning(WCollective col) {
-  vector<WCreature> minions = col->getCreatures(MinionTrait::FIGHTER);
+  vector<Creature*> minions = col->getCreatures(MinionTrait::FIGHTER);
   setWarning(Warning::LOW_MORALE,
-      minions.filter([] (WConstCreature c) { return c->getMorale() < -0.2; }).size() > minions.size() / 2);
+      minions.filter([] (const Creature* c) { return c->getMorale() < -0.2; }).size() > minions.size() / 2);
 }
 
 void CollectiveWarnings::considerTorchesWarning(WCollective col) {
   double numLit = 0;
   const double unlitPen = 4;
-  for (auto type : col->getConfig().getRoomsNeedingLight())
+  for (auto type : col->getGame()->getContentFactory()->furniture.getFurnitureNeedingLight())
     for (auto pos : col->getConstructions().getBuiltPositions(type))
       if (pos.getLight() < 0.8)
         numLit -= unlitPen;
       else
         numLit += 1;
   setWarning(Warning::MORE_LIGHTS, numLit < 0);
-}
-
-void CollectiveWarnings::considerTrainingRoomWarning(WCollective col) {
-  /*optional<FurnitureType> firstDummy;
-  for (auto dummyType : MinionTasks::getAllFurniture(MinionTask::TRAIN))
-    if (!firstDummy ||
-        *col->getConfig().getTrainingMaxLevelIncrease(ExperienceType::MELEE, dummyType) <
-            *col->getConfig().getTrainingMaxLevelIncrease(ExperienceType::MELEE, *firstDummy))
-      firstDummy = dummyType;
-  setWarning(Warning::TRAINING, false);
-  setWarning(Warning::TRAINING_UPGRADE, false);
-  for (auto creature : col->getCreatures())
-    if (auto type = col->getMissingTrainingFurniture(creature)) {
-      if (type == firstDummy)
-        setWarning(Warning::TRAINING, true);
-      else
-        setWarning(Warning::TRAINING_UPGRADE, true);
-    }*/
 }
 
 const char* CollectiveWarnings::getText(Warning w) {
@@ -110,22 +81,21 @@ const char* CollectiveWarnings::getText(Warning w) {
     case Warning::NO_WEAPONS: return "You need weapons for your minions.";
     case Warning::LOW_MORALE: return "Kill some enemies or summon a succubus to increase morale of your minions.";
     case Warning::GRAVES: return "You need a graveyard to collect corpses";
-    case Warning::CHESTS: return "You need to build a treasure room.";
+    case Warning::CHESTS: return "You need to build treasure chests.";
     case Warning::NO_PRISON: return "You need to build a prison.";
     case Warning::LARGER_PRISON: return "You need a larger prison.";
     case Warning::TORTURE_ROOM: return "You need to build a torture room.";
-//    case Warning::ALTAR: return "You need to build a shrine to sacrifice.";
-    case Warning::MORE_CHESTS: return "You need a larger treasure room.";
-    case Warning::MANA: return "Conquer an enemy tribe or torture some innocent beings for more mana.";
+    case Warning::MORE_CHESTS: return "You need more treasure chests.";
+    case Warning::DUNGEON_LEVEL: return "Conquer an enemy tribe to increase your malevolence level.";
     case Warning::MORE_LIGHTS: return "Place some torches to light up your dungeon.";
   }
   return "";
 }
 
-const double anyWarningFrequency = 100;
-const double warningFrequency = 500;
+const auto anyWarningFrequency = 100_visible;
+const auto warningFrequency = 500_visible;
 
-optional<const char*> CollectiveWarnings::getNextWarning(double time) {
+optional<const char*> CollectiveWarnings::getNextWarning(LocalTime time) {
   if (time > lastWarningTime + anyWarningFrequency)
     for (Warning w : ENUM_ALL(Warning))
       if (isWarning(w) && (!warningTimes[w] || time > *warningTimes[w] + warningFrequency)) {

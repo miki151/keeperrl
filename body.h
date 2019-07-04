@@ -4,46 +4,44 @@
 #include "unique_entity.h"
 #include "position.h"
 #include "sound.h"
+#include "item_type.h"
+#include "body_part.h"
+#include "intrinsic_attack.h"
 
 #undef HUGE
 
-RICH_ENUM(BodyPart,
-  HEAD,
-  TORSO,
-  ARM,
-  WING,
-  LEG,
-  BACK
-);
-
-extern const char* getName(BodyPart);
 
 class Attack;
 struct AdjectiveInfo;
 
+RICH_ENUM(BodyMaterial,
+  FLESH,
+  SPIRIT,
+  FIRE,
+  WATER,
+  UNDEAD_FLESH,
+  BONE,
+  ROCK,
+  CLAY,
+  WOOD,
+  IRON,
+  LAVA,
+  ADA
+);
+
+RICH_ENUM(BodySize,
+  SMALL,
+  MEDIUM,
+  LARGE,
+  HUGE
+);
+
+
 class Body {
   public:
 
-  enum class Material {
-    FLESH,
-    SPIRIT,
-    FIRE,
-    WATER,
-    UNDEAD_FLESH,
-    BONE,
-    ROCK,
-    CLAY,
-    WOOD,
-    IRON,
-    LAVA,
-  };
-
-  enum class Size {
-    SMALL,
-    MEDIUM,
-    LARGE,
-    HUGE
-  };
+  using Material = BodyMaterial;
+  using Size = BodySize;
 
   static Body humanoid(Material, Size);
   static Body humanoid(Size);
@@ -52,30 +50,35 @@ class Body {
   static Body humanoidSpirit(Size);
   static Body nonHumanoidSpirit(Size);
   Body(bool humanoid, Material, Size);
-
-  Body& addWings();
-  Body& setWeight(double);
-  Body& setBodyParts(const EnumMap<BodyPart, int>&);
-  Body& setHumanoidBodyParts();
-  Body& setHorseBodyParts();
-  Body& setBirdBodyParts();
-  Body& setMinionFood();
-  Body& setDeathSound(optional<SoundId>);
-  Body& setNoCarryLimit();
-  Body& setDoesntEat();
-
+  // To add once the creature has been constructed, use CreatureAttributes::add().
+  void addWithoutUpdatingPermanentEffects(BodyPart, int cnt);
+  void setWeight(double);
+  void setSize(BodySize);
+  void setBodyParts(const EnumMap<BodyPart, int>&);
+  void setHumanoidBodyParts(int intrinsicDamage);
+  void setHorseBodyParts(int intrinsicDamage);
+  void setBirdBodyParts(int intrinsicDamage);
+  void setMinionFood();
+  void setDeathSound(optional<SoundId>);
+  void setIntrinsicAttack(BodyPart, IntrinsicAttack);
+  void setMinPushSize(Size);
+  void setHumanoid(bool);
   void affectPosition(Position);
 
-  bool takeDamage(const Attack&, WCreature, double damage);
+  enum DamageResult {
+    NOT_HURT,
+    HURT,
+    KILLED
+  };
+  DamageResult takeDamage(const Attack&, Creature*, double damage);
 
-  bool tick(WConstCreature);
-  bool heal(WCreature, double amount);
-  bool affectByFire(WCreature, double amount);
+  bool tick(const Creature*);
+  bool heal(Creature*, double amount);
+  bool affectByFire(Creature*, double amount);
   bool isIntrinsicallyAffected(LastingEffect) const;
-  bool affectByPoisonGas(WCreature, double amount);
-  void affectByTorture(WCreature);
-  bool affectBySilver(WCreature);
-  bool affectByAcid(WCreature);
+  bool affectByPoisonGas(Creature*, double amount);
+  bool affectBySilver(Creature*);
+  bool affectByAcid(Creature*);
   bool isKilledByBoulder() const;
   bool canWade() const;
   bool isMinionFood() const;
@@ -86,64 +89,80 @@ class Body {
   double getHealth() const;
   bool hasBrain() const;
   bool needsToEat() const;
-  vector<PItem> getCorpseItem(const string& name, UniqueEntity<Creature>::Id);
+  bool needsToSleep() const;
+  bool canPush(const Body& other);
+  bool canPerformRituals() const;
+  bool canBeCaptured() const;
+  vector<PItem> getCorpseItems(const string& name, UniqueEntity<Creature>::Id, bool instantlyRotten) const;
 
   vector<AttackLevel> getAttackLevels() const;
-  double modifyAttr(AttrType, double) const;
+  int getAttrBonus(AttrType) const;
 
-  bool isCollapsed(WConstCreature) const;
+  bool isCollapsed(const Creature*) const;
   int numGood(BodyPart) const;
   int numLost(BodyPart) const;
   int numBodyParts(BodyPart) const;
   void getBadAdjectives(vector<AdjectiveInfo>&) const;
   optional<Sound> getDeathSound() const;
-  void injureBodyPart(WCreature, BodyPart, bool drop);
+  optional<AnimationId> getDeathAnimation() const;
+  bool injureBodyPart(Creature*, BodyPart, bool drop);
 
-  void healBodyParts(WCreature, bool regrow);
-  int lostOrInjuredBodyParts() const;
-  bool canHeal() const;
+  void healBodyParts(Creature*, bool regrow);
+  bool fallsApartDueToLostBodyParts() const;
+  bool canHeal(HealthType) const;
   bool isImmuneTo(LastingEffect effect) const;
-  bool hasHealth() const;
+  bool hasHealth(HealthType) const;
+  bool hasAnyHealth() const;
 
-  void consumeBodyParts(WCreature, const Body& other, vector<string>& adjectives);
+  void consumeBodyParts(Creature*, Body& other, vector<string>& adjectives);
 
   bool isHumanoid() const;
   string getDescription() const;
   void updateViewObject(ViewObject&) const;
-  const optional<double>& getCarryLimit() const;
-  void bleed(WCreature, double amount);
+  int getCarryLimit() const;
+  void bleed(Creature*, double amount);
+  Item* chooseRandomWeapon(Item* realWeapon) const;
+  Item* chooseFirstWeapon() const;
+  const EnumMap<BodyPart, optional<IntrinsicAttack>>& getIntrinsicAttacks() const;
+  EnumMap<BodyPart, optional<IntrinsicAttack>>& getIntrinsicAttacks();
 
   bool isUndead() const;
   double getBoulderDamage() const;
 
   SERIALIZATION_DECL(Body);
+  template <class Archive>
+  void serializeImpl(Archive& ar, const unsigned int);
 
   private:
   friend class Test;
-  BodyPart getBodyPart(AttackLevel attack, bool flying, bool collapsed) const;
+  optional<BodyPart> getBodyPart(AttackLevel attack, bool flying, bool collapsed) const;
   BodyPart armOrWing() const;
   int numInjured(BodyPart) const;
   void clearInjured(BodyPart);
   void clearLost(BodyPart);
-  void looseBodyPart(BodyPart);
-  void injureBodyPart(BodyPart);
+  bool looseBodyPart(BodyPart);
+  bool injureBodyPart(BodyPart);
   void decreaseHealth(double amount);
   bool isPartDamaged(BodyPart, double damage) const;
   bool isCritical(BodyPart) const;
   PItem getBodyPartItem(const string& creatureName, BodyPart);
   string getMaterialAndSizeAdjectives() const;
-  bool fallsApartFromDamage() const;
-  bool SERIAL(xhumanoid);
-  Size SERIAL(size);
-  double SERIAL(weight);
+  bool SERIAL(xhumanoid) = false;
+  Size SERIAL(size) = Size::LARGE;
+  double SERIAL(weight) = 90;
   EnumMap<BodyPart, int> SERIAL(bodyParts) = {{BodyPart::TORSO, 1}, {BodyPart::BACK, 1}};
   EnumMap<BodyPart, int> SERIAL(injuredBodyParts);
   EnumMap<BodyPart, int> SERIAL(lostBodyParts);
-  Material SERIAL(material);
+  Material SERIAL(material) = Material::FLESH;
   double SERIAL(health) = 1;
   bool SERIAL(minionFood) = false;
   optional<SoundId> SERIAL(deathSound);
-  optional<double> SERIAL(carryLimit);
-  bool SERIAL(doesntEat) = false;
+  EnumMap<BodyPart, optional<IntrinsicAttack>> SERIAL(intrinsicAttacks);
+  Size SERIAL(minPushSize);
+  bool SERIAL(noHealth) = false;
+  bool SERIAL(fallsApart) = true;
+  optional<BodyPart> getAnyGoodBodyPart() const;
+  double getBodyPartHealth() const;
+  void dropUnsupportedEquipment(const Creature*) const;
 };
 

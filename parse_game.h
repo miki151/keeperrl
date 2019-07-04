@@ -38,7 +38,7 @@ optional<SavedGameInfo> getSavedGameInfoUsing(const FilePath& filename) {
   }
 }
 
-inline optional<SavedGameInfo> getSavedGameInfo(const FilePath& filename) {
+inline optional<SavedGameInfo> loadSavedGameInfo(const FilePath& filename) {
   return getSavedGameInfoUsing<CompressedInput>(filename);
 }
 

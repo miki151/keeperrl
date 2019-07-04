@@ -16,56 +16,56 @@ class ConstructionMap {
     public:
     FurnitureInfo(FurnitureType, CostInfo);
     static FurnitureInfo getBuilt(FurnitureType);
-    void setBuilt();
+    void clearTask();
     void reset();
     void setTask(UniqueEntity<Task>::Id);
     CostInfo getCost() const;
-    bool isBuilt() const;
+    bool isBuilt(Position) const;
+    bool isBuilt(Position, FurnitureLayer) const;
     UniqueEntity<Task>::Id getTask() const;
     bool hasTask() const;
     FurnitureType getFurnitureType() const;
-    FurnitureLayer getLayer() const;
 
-    SERIALIZATION_DECL(FurnitureInfo);
+    SERIALIZATION_DECL(FurnitureInfo)
 
     private:
+    GenericId SERIAL(task);
     CostInfo SERIAL(cost);
-    bool SERIAL(built) = false;
     FurnitureType SERIAL(type);
-    optional<UniqueEntity<Task>::Id> SERIAL(task);
   };
 
   class TrapInfo {
     public:
-    TrapInfo(TrapType);
+    TrapInfo(FurnitureType);
     bool isMarked() const;
     bool isArmed() const;
-    TrapType getType() const;
+    FurnitureType getType() const;
     void setArmed();
     void setMarked();
     void reset();
 
-    SERIALIZATION_DECL(TrapInfo);
+    SERIALIZATION_DECL(TrapInfo)
 
     private:
-    TrapType SERIAL(type);
+    FurnitureType SERIAL(type);
     bool SERIAL(armed) = false;
     bool SERIAL(marked) = false;
   };
 
-  const optional<FurnitureInfo>& getFurniture(Position, FurnitureLayer) const;
+  optional<const FurnitureInfo&> getFurniture(Position, FurnitureLayer) const;
   void setTask(Position, FurnitureLayer, UniqueEntity<Task>::Id);
-  void removeFurniture(Position, FurnitureLayer);
+  void removeFurniturePlan(Position, FurnitureLayer);
   void onFurnitureDestroyed(Position, FurnitureLayer);
-  void addFurniture(Position, const FurnitureInfo&);
+  void addFurniture(Position, const FurnitureInfo&, FurnitureLayer);
   bool containsFurniture(Position, FurnitureLayer) const;
   int getBuiltCount(FurnitureType) const;
   int getTotalCount(FurnitureType) const;
-  const set<Position>& getBuiltPositions(FurnitureType) const;
+  const PositionSet& getBuiltPositions(FurnitureType) const;
   void onConstructed(Position, FurnitureType);
+  void clearUnsupportedFurniturePlans();
 
-  const optional<TrapInfo>& getTrap(Position) const;
-  optional<TrapInfo>& getTrap(Position);
+  optional<const TrapInfo&> getTrap(Position) const;
+  optional<TrapInfo&> getTrap(Position);
   void removeTrap(Position);
   void addTrap(Position, const TrapInfo&);
 
@@ -78,11 +78,11 @@ class ConstructionMap {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  EnumMap<FurnitureLayer, PositionMap<optional<FurnitureInfo>>> SERIAL(furniture);
-  EnumMap<FurnitureType, set<Position>> SERIAL(furniturePositions);
-  EnumMap<FurnitureType, int> SERIAL(unbuiltCounts);
+  EnumMap<FurnitureLayer, PositionMap<FurnitureInfo>> SERIAL(furniture);
+  unordered_map<FurnitureType, PositionSet, CustomHash<FurnitureType>> SERIAL(furniturePositions);
+  unordered_map<FurnitureType, int, CustomHash<FurnitureType>> SERIAL(unbuiltCounts);
   vector<pair<Position, FurnitureLayer>> SERIAL(allFurniture);
-  PositionMap<optional<TrapInfo>> SERIAL(traps);
+  PositionMap<TrapInfo> SERIAL(traps);
   vector<Position> SERIAL(allTraps);
   EnumMap<CollectiveResourceId, int> SERIAL(debt);
   void addDebt(const CostInfo&);

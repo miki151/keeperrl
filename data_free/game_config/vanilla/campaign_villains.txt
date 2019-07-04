@@ -1,0 +1,86 @@
+# Villains for evil keepers
+{
+    # Line goes like this:
+    # ViewId EnemyId Villain-name Villain-type
+    { "duke4" } "KNIGHTS" "Knights" MAIN
+    { "elf_lord" } "ELVES" "Elves" MAIN
+    { "dwarf_baron" } "DWARVES" "Dwarves" MAIN
+    { "red_dragon" } "RED_DRAGON" "Red dragon" MAIN
+    { "red_dragon" Rgb 80 80 80 255 } "BLACK_DRAGON" "Black dragon" MAIN
+    { "elementalist" } "ELEMENTALIST" "Elementalist" MAIN
+    { "green_dragon" } "GREEN_DRAGON" "Green dragon" MAIN
+    { "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN
+    { "shaman" } "WARRIORS" "Warriors" MAIN
+    { "demon_lord" } "DEMON_DEN" "Demon den" MAIN
+
+    { "ent" } "ENTS" "Tree spirits" LESSER
+    { "driad" } "DRIADS" "Driads" LESSER
+    { "cyclops" } "CYCLOPS" "Cyclops" LESSER
+    { "shelob" } "SHELOB" "Giant spider" LESSER
+    { "hydra" } "HYDRA" "Hydra" LESSER
+    { "unicorn" } "UNICORN_HERD" "Unicorn herd" LESSER
+    { "ant_queen" } "ANTS_OPEN" "Ants" LESSER
+#    ZOMBIE CEMETERY "Zombies" LESSER
+
+    { "unknown_monster" } "OGRE_CAVE" "Unknown" ALLY
+    { "unknown_monster" } "HARPY_CAVE" "Unknown" ALLY
+    { "unknown_monster" } "SOKOBAN" "Unknown" ALLY
+    { "dark_elf_lord" } "DARK_ELVES_ALLY" "Dark elves" ALLY
+    { "gnome_boss" } "GNOMES" "Gnomes" ALLY
+    { "orc_captain" } "ORC_VILLAGE" "Greenskin village" ALLY
+}
+
+# Villains for lawful keepers
+{
+    { "red_dragon" } "RED_DRAGON" "Red dragon" MAIN
+    { "green_dragon" } "GREEN_DRAGON" "Green dragon" MAIN
+    { "red_dragon" Rgb 80 80 80 255 } "BLACK_DRAGON" "Black dragon" MAIN
+    { "ant_queen" } "ANTS_OPEN" "Ants" MAIN
+    { "dark_elf_lord" } "DARK_ELVES_ENEMY" "Dark elves" MAIN
+    { "orc_captain" } "ORC_VILLAGE" "Greenskin village" MAIN
+    { "demon_lord" } "DEMON_DEN" "Demon den" MAIN
+    { "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN
+
+    { "shelob" } "SHELOB" "Giant spider" LESSER
+    { "cyclops" } "CYCLOPS" "Cyclops" LESSER
+    { "hydra" } "HYDRA" "Hydra" LESSER
+    { "zombie" } "CEMETERY" "Zombies" LESSER
+    { "ogre" } "OGRE_CAVE" "Ogres" LESSER
+    { "harpy" } "HARPY_CAVE" "Harpies" LESSER
+    { "ant_queen" } "ANTS_OPEN" "Ants" LESSER
+
+    { "dwarf_baron" } "DWARVES" "Dwarves" ALLY
+}
+
+# Villains for evil adventurers
+{
+    { "duke4" } "KNIGHTS" "Knights" MAIN
+    { "zombie" } "CEMETERY" "Zombies" LESSER
+    { "orc_captain" } "ORC_VILLAGE" "Greenskins village" ALLY
+}
+
+# Villains for lawful adventurers
+{
+    { "red_dragon" } "RED_DRAGON" "Red dragon" MAIN
+    { "red_dragon" Rgb 80 80 80 255 } "BLACK_DRAGON" "Black dragon" MAIN
+    { "green_dragon" } "GREEN_DRAGON" "Green dragon" MAIN
+    { "shelob" } "SHELOB" "Giant spider" MAIN
+    { "ant_queen" } "ANTS_OPEN" "Ants" MAIN
+    { "dark_elf_lord" } "DARK_ELVES_ENEMY" "Dark elves" MAIN
+    { "orc_captain" } "ORC_VILLAGE" "Greenskin village" MAIN
+    { "demon_lord" } "DEMON_DEN" "Demon den" MAIN
+    { "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN
+
+    { "bandit" } "BANDITS" "Bandits" LESSER
+    { "cyclops" } "CYCLOPS" "Cyclops" LESSER
+    { "hydra" } "HYDRA" "Hydra" LESSER
+    { "zombie" } "CEMETERY" "Zombies" LESSER
+    { "ogre" } "OGRE_CAVE" "Ogres" LESSER
+    { "harpy" } "HARPY_CAVE" "Harpies" LESSER
+    { "ant_queen" } "ANTS_OPEN" "Ants" LESSER
+
+    { "duke4" } "KNIGHTS" "Knights" ALLY
+    { "elf_lord" } "ELVES" "Elves" ALLY
+    { "dwarf_baron" } "DWARVES" "Dwarves" ALLY
+}
+

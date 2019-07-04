@@ -17,79 +17,126 @@
 
 #include "equipment.h"
 #include "item.h"
+#include "body.h"
 
 map<EquipmentSlot, string> Equipment::slotTitles = {
   {EquipmentSlot::WEAPON, "Weapon"},
   {EquipmentSlot::GLOVES, "Gloves"},
   {EquipmentSlot::RANGED_WEAPON, "Ranged weapon"},
+  {EquipmentSlot::SHIELD, "Shield"},
   {EquipmentSlot::HELMET, "Helmet"},
   {EquipmentSlot::BODY_ARMOR, "Body armor"},
   {EquipmentSlot::BOOTS, "Boots"},
   {EquipmentSlot::RINGS, "Rings"},
   {EquipmentSlot::AMULET, "Amulet"}};
 
-template <class Archive> 
-void Equipment::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(Inventory);
-  ar(items, equipped);
-}
-
-SERIALIZABLE(Equipment);
+SERIALIZE_DEF(Equipment, inventory, items, equipped)
 SERIALIZATION_CONSTRUCTOR_IMPL(Equipment);
 
-vector<WItem> Equipment::getSlotItems(EquipmentSlot slot) const {
+void Equipment::addItem(PItem item, Creature* c) {
+  item->onOwned(c);
+  inventory.addItem(std::move(item));
+}
+
+void Equipment::addItems(vector<PItem> items, Creature* c) {
+  for (auto& item : items)
+    addItem(std::move(item), c);
+}
+
+const vector<Item*>& Equipment::getSlotItems(EquipmentSlot slot) const {
   return items[slot];
 }
 
-const vector<WItem>& Equipment::getAllEquipped() const {
+bool Equipment::hasItem(const Item* it) const {
+  return inventory.hasItem(it);
+}
+
+const vector<Item*>& Equipment::getAllEquipped() const {
   return equipped;
 }
 
-bool Equipment::isEquipped(WConstItem item) const {
+const vector<Item*>& Equipment::getItems() const {
+  return inventory.getItems();
+}
+
+const vector<Item*>& Equipment::getItems(ItemIndex index) const {
+  return inventory.getItems(index);
+}
+
+Item* Equipment::getItemById(UniqueEntity<Item>::Id id) const {
+  return inventory.getItemById(id);
+}
+
+bool Equipment::isEquipped(const Item* item) const {
   return item->canEquip() && items[item->getEquipmentSlot()].contains(item);
 }
 
-int Equipment::getMaxItems(EquipmentSlot slot) const {
+int Equipment::getMaxItems(EquipmentSlot slot, const Body& body) const {
   switch (slot) {
-    case EquipmentSlot::RINGS: return 2;
-    default: return 1;
+    case EquipmentSlot::RINGS:
+      return body.numGood(BodyPart::ARM);
+    case EquipmentSlot::AMULET:
+    case EquipmentSlot::HELMET:
+      return body.numGood(BodyPart::HEAD);
+    default:
+      return 1;
   }
 }
 
-bool Equipment::canEquip(WConstItem item) const {
+bool Equipment::canEquip(const Item* item, const Body& body) const {
   if (!item->canEquip() || isEquipped(item))
     return false;
   EquipmentSlot slot = item->getEquipmentSlot();
-  return items[slot].size() < getMaxItems(slot);
+  return items[slot].size() < getMaxItems(slot, body);
 }
 
-void Equipment::equip(WItem item, EquipmentSlot slot, WCreature c) {
+void Equipment::equip(Item* item, EquipmentSlot slot, Creature* c) {
   items[slot].push_back(item);
   equipped.push_back(item);
   item->onEquip(c);
-  CHECK(hasItem(item));
+  CHECK(inventory.hasItem(item));
 }
 
-void Equipment::unequip(WItem item, WCreature c) {
+void Equipment::unequip(Item* item, Creature* c) {
   items[item->getEquipmentSlot()].removeElement(item);
   equipped.removeElement(item);
   item->onUnequip(c);
 }
 
-PItem Equipment::removeItem(WItem item, WCreature c) {
+PItem Equipment::removeItem(Item* item, Creature* c) {
   if (isEquipped(item))
     unequip(item, c);
-  return Inventory::removeItem(item);
+  item->onDropped(c);
+  return inventory.removeItem(item);
 }
   
-vector<PItem> Equipment::removeItems(const vector<WItem>& items, WCreature c) {
+vector<PItem> Equipment::removeItems(const vector<Item*>& items, Creature* c) {
   vector<PItem> ret;
-  for (WItem& it : copyOf(items))
+  for (Item*& it : copyOf(items))
     ret.push_back(removeItem(it, c));
   return ret;
 }
 
-vector<PItem> Equipment::removeAllItems(WCreature c) {
-  return removeItems(getItems(), c);
+vector<PItem> Equipment::removeAllItems(Creature* c) {
+  return removeItems(inventory.getItems(), c);
 }
 
+double Equipment::getTotalWeight() const {
+  return inventory.getTotalWeight();
+}
+
+bool Equipment::isEmpty() const {
+  return inventory.isEmpty();
+}
+
+const ItemCounts& Equipment::getCounts() const {
+  return inventory.getCounts();
+}
+
+void Equipment::tick(Position pos) {
+  inventory.tick(pos);
+}
+
+bool Equipment::containsAnyOf(const EntitySet<Item>& items) const {
+  return inventory.containsAnyOf(items);
+}

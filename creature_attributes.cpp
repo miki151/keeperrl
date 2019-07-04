@@ -28,27 +28,49 @@
 #include "spell_map.h"
 #include "effect.h"
 #include "minion_trait.h"
+#include "view_id.h"
 
-CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
-  fun(*this);
+void CreatureAttributes::initializeLastingEffects() {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
-    lastingEffects[effect] = -500;
+    lastingEffects[effect] = GlobalTime(-500);
   for (auto effect : ENUM_ALL(LastingEffect))
     if (body->isIntrinsicallyAffected(effect))
       ++permanentEffects[effect];
 }
 
+void CreatureAttributes::randomize() {
+  int chosen = Random.get(genderAlternatives.size() + 1);
+  if (chosen > 0) {
+    gender = genderAlternatives[chosen - 1].first;
+    viewId = genderAlternatives[chosen - 1].second;
+  }
+}
+
+CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
+  fun(*this);
+  initializeLastingEffects();
+}
+
 CreatureAttributes::~CreatureAttributes() {}
 
+CreatureAttributes::CreatureAttributes(const CreatureAttributes&) = default;
+
+CreatureAttributes::CreatureAttributes(CreatureAttributes&&) = default;
+
 template <class Archive> 
+void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) {
+  ar(NAMED(viewId), NAMED(illusionViewObject), NAMED(name), NAMED(attr), NAMED(chatReactionFriendly));
+  ar(NAMED(chatReactionHostile), NAMED(passiveAttack), OPTION(gender), OPTION(viewIdUpgrades));
+  ar(NAMED(body), OPTION(deathDescription), NAMED(hatedByEffect));
+  ar(OPTION(cantEquip), OPTION(courage), OPTION(canJoinCollective), OPTION(genderAlternatives));
+  ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(skills), OPTION(spellSchools), OPTION(spells));
+  ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel));
+  ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience));
+}
+
+template <class Archive>
 void CreatureAttributes::serialize(Archive& ar, const unsigned int version) {
-  ar(viewId, retiredViewId, illusionViewObject, spawnType, name, attr, chatReactionFriendly);
-  ar(chatReactionHostile, barehandedAttack, attackEffect, passiveAttack, gender);
-  ar(body, innocent, moraleSpeedIncrease);
-  ar(animal, cantEquip, courage);
-  ar(boulder, noChase, isSpecial, skills, spells);
-  ar(permanentEffects, lastingEffects, lastAffected, minionTasks, expLevel);
-  ar(noAttackSound, maxLevelIncrease, creatureId);
+  serializeImpl(ar, version);
 }
 
 SERIALIZABLE(CreatureAttributes);
@@ -65,11 +87,15 @@ const optional<CreatureId>& CreatureAttributes::getCreatureId() const {
 }
 
 CreatureName& CreatureAttributes::getName() {
-  return *name;
+  return name;
 }
 
 const CreatureName& CreatureAttributes::getName() const {
-  return *name;
+  return name;
+}
+
+void CreatureAttributes::increaseBaseAttr(AttrType type, int v) {
+  attr[type] += v;
 }
 
 void CreatureAttributes::setBaseAttr(AttrType type, int v) {
@@ -78,7 +104,7 @@ void CreatureAttributes::setBaseAttr(AttrType type, int v) {
 
 double CreatureAttributes::getCourage() const {
   if (!body->hasBrain())
-    return 1;
+    return 100;
   return courage;
 }
 
@@ -86,14 +112,24 @@ void CreatureAttributes::setCourage(double c) {
   courage = c;
 }
 
+string CreatureAttributes::getDeathDescription() const {
+  return deathDescription;
+}
+
+void CreatureAttributes::setDeathDescription(string c) {
+  deathDescription = c;
+}
+
 const Gender& CreatureAttributes::getGender() const {
   return gender;
 }
 
-double CreatureAttributes::getRawAttr(AttrType type) const {
-  double ret = attr[type];
-  if (auto expType = getExperienceType(type))
-    ret += expLevel[*expType];
+int CreatureAttributes::getRawAttr(AttrType type) const {
+  int ret = attr[type];
+  if (auto expType = getExperienceType(type)) {
+    ret += (int) expLevel[*expType];
+    ret += (int) min(combatExperience, expLevel[*expType]);
+  }
   return ret;
 }
 
@@ -109,9 +145,26 @@ const EnumMap<ExperienceType, int>& CreatureAttributes::getMaxExpLevel() const {
   return maxLevelIncrease;
 }
 
+void CreatureAttributes::increaseMaxExpLevel(ExperienceType type, int increase) {
+  maxLevelIncrease[type] += increase;
+}
+
 void CreatureAttributes::increaseExpLevel(ExperienceType type, double increase) {
   increase = max(0.0, min(increase, (double) maxLevelIncrease[type] - expLevel[type]));
   expLevel[type] += increase;
+}
+
+void CreatureAttributes::addCombatExperience(double v) {
+  combatExperience += v;
+  int maxExp = 0;
+  for (auto expType : ENUM_ALL(ExperienceType))
+    maxExp = max(maxExp, maxLevelIncrease[expType]);
+  if (combatExperience > maxExp)
+    combatExperience = maxExp;
+}
+
+double CreatureAttributes::getCombatExperience() const {
+  return combatExperience;
 }
 
 bool CreatureAttributes::isTrainingMaxedOut(ExperienceType type) const {
@@ -123,10 +176,6 @@ void CreatureAttributes::increaseBaseExpLevel(ExperienceType type, double increa
     attr[attrType] += increase;
 }
 
-SpellMap& CreatureAttributes::getSpellMap() {
-  return *spells;
-}
-
 Body& CreatureAttributes::getBody() {
   return *body;
 }
@@ -135,15 +184,10 @@ const Body& CreatureAttributes::getBody() const {
   return *body;
 }
 
-const SpellMap& CreatureAttributes::getSpellMap() const {
-  return *spells;
-}
-
 optional<SoundId> CreatureAttributes::getAttackSound(AttackType type, bool damage) const {
   if (!noAttackSound)
     switch (type) {
       case AttackType::HIT:
-      case AttackType::PUNCH:
       case AttackType::CRUSH: return damage ? SoundId::BLUNT_DAMAGE : SoundId::BLUNT_NO_DAMAGE;
       case AttackType::CUT:
       case AttackType::STAB: return damage ? SoundId::BLADE_DAMAGE : SoundId::BLADE_NO_DAMAGE;
@@ -157,12 +201,29 @@ string CreatureAttributes::getDescription() const {
   if (!isSpecial)
     return "";
   string attack;
-  if (attackEffect)
-    attack = " It has a " + attackEffect->getName() + " attack.";
   return body->getDescription() + ". " + attack;
 }
 
-void CreatureAttributes::chatReaction(WCreature me, WCreature other) {
+void CreatureAttributes::add(BodyPart p, int count) {
+  for (auto effect : ENUM_ALL(LastingEffect))
+    if (body->isIntrinsicallyAffected(effect))
+      --permanentEffects[effect];
+  body->addWithoutUpdatingPermanentEffects(p, count);
+  for (auto effect : ENUM_ALL(LastingEffect))
+    if (body->isIntrinsicallyAffected(effect))
+      ++permanentEffects[effect];
+}
+
+optional<string> CreatureAttributes::getPetReaction(const Creature* me) const {
+  if (!petReaction)
+    return none;
+  if (petReaction->front() == '\"')
+    return *petReaction;
+  else
+    return me->getName().the() + " " + *petReaction;
+}
+
+void CreatureAttributes::chatReaction(Creature* me, Creature* other) {
   if (me->isEnemy(other) && chatReactionHostile) {
     if (chatReactionHostile->front() == '\"')
       other->privateMessage(*chatReactionHostile);
@@ -177,36 +238,30 @@ void CreatureAttributes::chatReaction(WCreature me, WCreature other) {
   }
 }
 
-bool CreatureAttributes::isAffected(LastingEffect effect, double time) const {
+bool CreatureAttributes::isAffected(LastingEffect effect, GlobalTime time) const {
+  PROFILE;
   if (auto suppressor = LastingEffects::getSuppressor(effect))
     if (isAffected(*suppressor, time))
       return false;
-  return lastingEffects[effect] >= time || isAffectedPermanently(effect);
+  return lastingEffects[effect] > time || isAffectedPermanently(effect);
 }
 
-double CreatureAttributes::getTimeOut(LastingEffect effect) const {
+GlobalTime CreatureAttributes::getTimeOut(LastingEffect effect) const {
   return lastingEffects[effect];
 }
 
-bool CreatureAttributes::considerTimeout(LastingEffect effect, double globalTime) {
-  if (lastingEffects[effect] > 0 && lastingEffects[effect] < globalTime) {
-    clearLastingEffect(effect, globalTime);
-    if (!isAffected(effect, globalTime))
+bool CreatureAttributes::considerTimeout(LastingEffect effect, GlobalTime current) {
+  if (lastingEffects[effect] > GlobalTime(0) && lastingEffects[effect] <= current) {
+    clearLastingEffect(effect);
+    if (!isAffected(effect, current))
       return true;
   }
   return false;
 }
   
-void CreatureAttributes::addLastingEffect(LastingEffect effect, double endTime) {
+void CreatureAttributes::addLastingEffect(LastingEffect effect, GlobalTime endTime) {
   if (lastingEffects[effect] < endTime)
     lastingEffects[effect] = endTime;
-}
-
-optional<double> CreatureAttributes::getLastAffected(LastingEffect effect, double currentGlobalTime) const {
-  if (isAffected(effect, currentGlobalTime))
-    return currentGlobalTime;
-  else
-    return lastAffected[effect];
 }
 
 static bool consumeProb() {
@@ -219,14 +274,23 @@ static string getAttrNameMore(AttrType attr) {
     case AttrType::DEFENSE: return "more protected";
     case AttrType::SPELL_DAMAGE: return "more powerful";
     case AttrType::RANGED_DAMAGE: return "more accurate";
-    case AttrType::SPEED: return "faster";
+  }
+}
+
+static int getAbsorbtionLevelCap(AttrType attr) {
+  switch (attr) {
+    case AttrType::DAMAGE: return 25;
+    case AttrType::DEFENSE: return 25;
+    case AttrType::SPELL_DAMAGE: return 20;
+    case AttrType::RANGED_DAMAGE: return 15;
   }
 }
 
 template <typename T>
-void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj) {
-  if (consumeProb() && mine < his) {
-    mine = his;
+void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj, const int& cap) {
+  int hisCapped = (his > cap) ? cap : his;
+  if (consumeProb() && mine < hisCapped) {
+    mine = hisCapped;
     if (!adj.empty())
       adjectives.push_back(adj);
   }
@@ -235,13 +299,13 @@ void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string
 void consumeAttr(Gender& mine, const Gender& his, vector<string>& adjectives) {
   if (consumeProb() && mine != his) {
     mine = his;
-    adjectives.emplace_back(mine == Gender::male ? "more masculine" : "more feminine");
+    adjectives.emplace_back(get(mine, "more masculine", "more feminine", "more neuter"));
   }
 }
 
 
 template <typename T>
-void consumeAttr(optional<T>& mine, const optional<T>& his, vector<string>& adjectives, const string& adj) {
+void consumeAttr(heap_optional<T>& mine, const heap_optional<T>& his, vector<string>& adjectives, const string& adj) {
   if (consumeProb() && !mine && his) {
     mine = *his;
     if (!adj.empty())
@@ -251,13 +315,8 @@ void consumeAttr(optional<T>& mine, const optional<T>& his, vector<string>& adje
 
 void consumeAttr(Skillset& mine, const Skillset& his, vector<string>& adjectives) {
   bool was = false;
-  for (SkillId id : his.getAllDiscrete())
-    if (!mine.hasDiscrete(id) && Skill::get(id)->transferOnConsumption() && consumeProb()) {
-      mine.insert(id);
-      was = true;
-    }
   for (SkillId id : ENUM_ALL(SkillId)) {
-    if (!Skill::get(id)->isDiscrete() && mine.getValue(id) < his.getValue(id)) {
+    if (mine.getValue(id) < his.getValue(id)) {
       mine.setValue(id, his.getValue(id));
       was = true;
     }
@@ -268,22 +327,22 @@ void consumeAttr(Skillset& mine, const Skillset& his, vector<string>& adjectives
 
 void CreatureAttributes::consumeEffects(const EnumMap<LastingEffect, int>& permanentEffects) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
-    if (permanentEffects[effect] > 0 && !isAffectedPermanently(effect) && consumeProb()) {
+    if (permanentEffects[effect] > 0 && !isAffectedPermanently(effect) && consumeProb() &&
+        LastingEffects::canConsume(effect)) {
       addPermanentEffect(effect, 1);
     }
 }
 
-void CreatureAttributes::consume(WCreature self, const CreatureAttributes& other) {
-  INFO << name->bare() << " consume " << other.name->bare();
-  self->you(MsgType::CONSUME, other.name->the());
-  self->addPersonalEvent(self->getName().a() + " absorbs " + other.name->a());
+void CreatureAttributes::consume(Creature* self, CreatureAttributes& other) {
+  INFO << name.bare() << " consume " << other.name.bare();
+  self->you(MsgType::CONSUME, other.name.the());
+  self->addPersonalEvent(self->getName().a() + " absorbs " + other.name.a());
   vector<string> adjectives;
   body->consumeBodyParts(self, other.getBody(), adjectives);
   for (auto t : ENUM_ALL(AttrType))
-    consumeAttr(attr[t], other.attr[t], adjectives, getAttrNameMore(t));
-  consumeAttr(barehandedAttack, other.barehandedAttack, adjectives, "");
-  consumeAttr(*attackEffect, *other.attackEffect, adjectives, "");
-  consumeAttr(*passiveAttack, *other.passiveAttack, adjectives, "");
+    consumeAttr(attr[t], other.attr[t], adjectives,
+      getAttrNameMore(t), getAbsorbtionLevelCap(t));
+  consumeAttr(passiveAttack, other.passiveAttack, adjectives, "");
   consumeAttr(gender, other.gender, adjectives);
   consumeAttr(skills, other.skills, adjectives);
   if (!adjectives.empty()) {
@@ -293,17 +352,8 @@ void CreatureAttributes::consume(WCreature self, const CreatureAttributes& other
   consumeEffects(other.permanentEffects);
 }
 
-AttackType CreatureAttributes::getAttackType(WConstItem weapon) const {
-  if (weapon)
-    return weapon->getAttackType();
-  else if (barehandedAttack)
-    return *barehandedAttack;
-  else
-    return body->isHumanoid() ? AttackType::PUNCH : AttackType::BITE;
-}
-
-string CreatureAttributes::getRemainingString(LastingEffect effect, double time) const {
-  return "[" + toString<int>(lastingEffects[effect] - time) + "]";
+string CreatureAttributes::getRemainingString(LastingEffect effect, GlobalTime time) const {
+  return "[" + toString(lastingEffects[effect] - time) + "]";
 }
 
 bool CreatureAttributes::isBoulder() const {
@@ -319,11 +369,15 @@ const Skillset& CreatureAttributes::getSkills() const {
 }
 
 ViewObject CreatureAttributes::createViewObject() const {
-  return ViewObject(*viewId, ViewLayer::CREATURE, name->bare());
+  return ViewObject(viewId, ViewLayer::CREATURE, name.bare());
 }
 
-const optional<ViewObject>& CreatureAttributes::getIllusionViewObject() const {
-  return *illusionViewObject;
+const heap_optional<ViewObject>& CreatureAttributes::getIllusionViewObject() const {
+  return illusionViewObject;
+}
+
+heap_optional<ViewObject>& CreatureAttributes::getIllusionViewObject() {
+  return illusionViewObject;
 }
 
 bool CreatureAttributes::canEquip() const {
@@ -334,14 +388,8 @@ bool CreatureAttributes::isAffectedPermanently(LastingEffect effect) const {
   return permanentEffects[effect] > 0;
 }
 
-void CreatureAttributes::shortenEffect(LastingEffect effect, double time) {
-  CHECK(lastingEffects[effect] >= time);
-  lastingEffects[effect] -= time;
-}
-
-void CreatureAttributes::clearLastingEffect(LastingEffect effect, double globalTime) {
-  lastingEffects[effect] = 0;
-  lastAffected[effect] = globalTime;
+void CreatureAttributes::clearLastingEffect(LastingEffect effect) {
+  lastingEffects[effect] = GlobalTime(0);
 }
 
 void CreatureAttributes::addPermanentEffect(LastingEffect effect, int count) {
@@ -352,34 +400,29 @@ void CreatureAttributes::removePermanentEffect(LastingEffect effect, int count) 
   permanentEffects[effect] -= count;
 }
 
-optional<Effect> CreatureAttributes::getAttackEffect() const {
-  return *attackEffect;
+const MinionActivityMap& CreatureAttributes::getMinionActivities() const {
+  return minionActivities;
 }
 
-bool CreatureAttributes::isInnocent() const {
-  return innocent;
-}
-
-optional<SpawnType> CreatureAttributes::getSpawnType() const {
-  return spawnType;
-}
- 
-const MinionTaskMap& CreatureAttributes::getMinionTasks() const {
-  return minionTasks;
-}
-
-MinionTaskMap& CreatureAttributes::getMinionTasks() {
-  return minionTasks;
+MinionActivityMap& CreatureAttributes::getMinionActivities() {
+  return minionActivities;
 }
 
 bool CreatureAttributes::dontChase() const {
   return noChase;
 }
 
-optional<ViewId> CreatureAttributes::getRetiredViewId() {
-  return retiredViewId;
+bool CreatureAttributes::getCanJoinCollective() const {
+  return canJoinCollective;
 }
 
-optional<double> CreatureAttributes::getMoraleSpeedIncrease() const {
-  return moraleSpeedIncrease;
+optional<LastingEffect> CreatureAttributes::getHatedByEffect() const {
+  return hatedByEffect;
+}
+
+#include "pretty_archive.h"
+template<> void CreatureAttributes::serialize(PrettyInputArchive& ar1, unsigned version) {
+  serializeImpl(ar1, version);
+  ar1(endInput());
+  initializeLastingEffects();
 }

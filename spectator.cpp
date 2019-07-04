@@ -7,6 +7,8 @@
 #include "game_info.h"
 #include "creature.h"
 #include "view_index.h"
+#include "game.h"
+#include "view_object.h"
 
 Spectator::Spectator(WLevel l) : level(l) {
 }
@@ -16,9 +18,9 @@ const MapMemory& Spectator::getMemory() const {
 }
 
 void Spectator::getViewIndex(Vec2 pos, ViewIndex& index) const {
-  Position position(pos, getLevel());
+  Position position(pos, level);
   position.getViewIndex(index, nullptr);
-  if (WConstCreature c = position.getCreature())
+  if (const Creature* c = position.getCreature())
     index.insert(c->getViewObject());
 }
 
@@ -26,16 +28,16 @@ void Spectator::refreshGameInfo(GameInfo& gameInfo)  const {
   gameInfo.infoType = GameInfo::InfoType::SPECTATOR;
 }
 
-Vec2 Spectator::getPosition() const {
+Vec2 Spectator::getScrollCoord() const {
   return level->getBounds().middle();
 }
 
-WLevel Spectator::getLevel() const {
+Level* Spectator::getCreatureViewLevel() const {
   return level;
 }
 
-double Spectator::getLocalTime() const {
-  return level->getModel()->getLocalTime();
+double Spectator::getAnimationTime() const {
+  return level->getModel()->getLocalTimeDouble();
 }
 
 vector<Vec2> Spectator::getVisibleEnemies() const {
@@ -46,7 +48,8 @@ Spectator::CenterType Spectator::getCenterType() const {
   return CenterType::NONE;
 }
 
-vector<Vec2> Spectator::getUnknownLocations(WConstLevel) const {
-  return {};
+const vector<Vec2>& Spectator::getUnknownLocations(WConstLevel) const {
+  static vector<Vec2> empty;
+  return empty;
 }
 

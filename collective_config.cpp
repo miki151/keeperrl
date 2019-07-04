@@ -14,8 +14,7 @@
 #include "item.h"
 #include "view_id.h"
 #include "furniture_type.h"
-#include "spawn_type.h"
-#include "minion_task.h"
+#include "minion_activity.h"
 #include "furniture_usage.h"
 #include "creature_attributes.h"
 #include "collective.h"
@@ -24,39 +23,31 @@
 #include "item_class.h"
 #include "villain_type.h"
 #include "furniture.h"
-#include "immigrant_info.h"
 #include "tutorial_highlight.h"
-#include "trap_type.h"
-#include "spell_id.h"
 #include "spell.h"
 #include "creature_factory.h"
 #include "resource_info.h"
 #include "workshop_item.h"
-
+#include "body.h"
+#include "view_id.h"
+#include "view_object.h"
+#include "territory.h"
+#include "furniture_factory.h"
+#include "storage_id.h"
+#include "immigrant_info.h"
+#include "conquer_condition.h"
+#include "content_factory.h"
+#include "content_factory.h"
+#include "bed_type.h"
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
-  ar(immigrantInterval, maxPopulation, populationIncreases, immigrantInfo);
-  ar(type, leaderAsFighter, spawnGhosts, ghostProb, guardianInfo, regenerateMana);
+  ar(OPTION(immigrantInterval), OPTION(maxPopulation), OPTION(conquerCondition));
+  ar(SKIP(type), OPTION(leaderAsFighter), OPTION(spawnGhosts), OPTION(ghostProb), OPTION(guardianInfo));
 }
 
 SERIALIZABLE(CollectiveConfig);
 SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveConfig);
-
-template <class Archive>
-void AttractionInfo::serialize(Archive& ar, const unsigned int version) {
-  ar(types, amountClaimed);
-}
-
-SERIALIZABLE(AttractionInfo);
-SERIALIZATION_CONSTRUCTOR_IMPL(AttractionInfo);
-
-template <class Archive>
-void PopulationIncrease::serialize(Archive& ar, const unsigned int version) {
-  ar(type, increasePerSquare, maxIncrease);
-}
-
-SERIALIZABLE(PopulationIncrease);
 
 template <class Archive>
 void GuardianInfo::serialize(Archive& ar, const unsigned int version) {
@@ -65,66 +56,64 @@ void GuardianInfo::serialize(Archive& ar, const unsigned int version) {
 
 SERIALIZABLE(GuardianInfo);
 
-void CollectiveConfig::addBedRequirementToImmigrants() {
+static optional<BedType> getBedType(const Creature* c) {
+  if (!c->getBody().needsToSleep())
+    return none;
+  if (c->getStatus().contains(CreatureStatus::PRISONER))
+    return BedType::PRISON;
+  if (c->getBody().isUndead())
+    return BedType::COFFIN;
+  if (c->getBody().isHumanoid())
+    return BedType::BED;
+  else
+    return BedType::CAGE;
+}
+
+void CollectiveConfig::addBedRequirementToImmigrants(vector<ImmigrantInfo>& immigrantInfo, ContentFactory* factory) {
   for (auto& info : immigrantInfo) {
-    PCreature c = CreatureFactory::fromId(info.getId(0), TribeId::getKeeper());
-    if (auto spawnType = c->getAttributes().getSpawnType()) {
-      AttractionType bedType = getDormInfo()[*spawnType].bedType;
-      bool hasBed = false;
-      info.visitRequirements(makeVisitor(
-          [&](const AttractionInfo& attraction) -> void {
-            for (auto& type : attraction.types)
-              if (type == bedType)
-                hasBed = true;
-          },
-          [&](const auto&) {}
-      ));
-      if (!hasBed)
-        info.addRequirement(AttractionInfo(1, bedType));
-    }
+    PCreature c = factory->creatures.fromId(info.getId(0), TribeId::getDarkKeeper());
+    if (info.getInitialRecruitment() == 0)
+      if (auto bedType = getBedType(c.get())) {
+        bool hasBed = false;
+        info.visitRequirements(makeVisitor(
+            [&](const AttractionInfo& attraction) -> void {
+              for (auto& type : attraction.types)
+                if (auto fType = type.getValueMaybe<FurnitureType>())
+                  if (factory->furniture.getData(*fType).getBedType() == *bedType)
+                    hasBed = true;
+            },
+            [&](const auto&) {}
+        ));
+        if (!hasBed) {
+          info.addRequirement(AttractionInfo(1, factory->furniture.getBedFurniture(*bedType)[0]));
+        }
+      }
   }
 }
 
-CollectiveConfig::CollectiveConfig(int interval, const vector<ImmigrantInfo>& im,
-    CollectiveType t, int maxPop, vector<PopulationIncrease> popInc)
-    : immigrantInterval(interval),
-    maxPopulation(maxPop), populationIncreases(popInc), immigrantInfo(im), type(t) {
-  if (type == KEEPER)
-    addBedRequirementToImmigrants();
+CollectiveConfig::CollectiveConfig(TimeInterval interval, CollectiveType t, int maxPop)
+    : immigrantInterval(interval), maxPopulation(maxPop), type(t),
+      conquerCondition(ConquerCondition::KILL_FIGHTERS_AND_LEADER) {
 }
 
-CollectiveConfig CollectiveConfig::keeper(int immigrantInterval, int maxPopulation, bool regenerateMana,
-    vector<PopulationIncrease> increases, const vector<ImmigrantInfo>& im) {
-  auto ret = CollectiveConfig(immigrantInterval, im, KEEPER, maxPopulation, increases);
-  ret.regenerateMana = regenerateMana;
-  return ret;
+CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation) {
+  return CollectiveConfig(immigrantInterval, KEEPER, maxPopulation);
 }
 
-CollectiveConfig CollectiveConfig::withImmigrants(int interval, int maxPopulation, const vector<ImmigrantInfo>& im) {
-  return CollectiveConfig(interval, im, VILLAGE, maxPopulation, {});
+CollectiveConfig CollectiveConfig::withImmigrants(TimeInterval interval, int maxPopulation) {
+  return CollectiveConfig(interval, VILLAGE, maxPopulation);
 }
 
 CollectiveConfig CollectiveConfig::noImmigrants() {
-  return CollectiveConfig(0, {}, VILLAGE, 10000, {});
-}
-
-CollectiveConfig& CollectiveConfig::setLeaderAsFighter() {
-  leaderAsFighter = true;
-  return *this;
-}
-
-CollectiveConfig& CollectiveConfig::setGhostSpawns(double prob, int num) {
-  ghostProb = prob;
-  spawnGhosts = num;
-  return *this;
+  return CollectiveConfig(TimeInterval {}, VILLAGE, 10000);
 }
 
 int CollectiveConfig::getNumGhostSpawns() const {
   return spawnGhosts;
 }
 
-int CollectiveConfig::getImmigrantTimeout() const {
-  return 500;
+TimeInterval CollectiveConfig::getImmigrantTimeout() const {
+  return 500_visible;
 }
 
 double CollectiveConfig::getGhostProb() const {
@@ -143,12 +132,12 @@ bool CollectiveConfig::getFollowLeaderIfNoTerritory() const {
   return type == KEEPER;
 }
 
-bool CollectiveConfig::hasVillainSleepingTask() const {
+bool CollectiveConfig::stayInTerritory() const {
   return type != KEEPER;
 }
 
-bool CollectiveConfig::getRegenerateMana() const {
-  return regenerateMana;
+bool CollectiveConfig::hasVillainSleepingTask() const {
+  return type != KEEPER;
 }
 
 bool CollectiveConfig::allowHealingTaskOutsideTerritory() const {
@@ -159,15 +148,11 @@ bool CollectiveConfig::hasImmigrantion(bool currentlyActiveModel) const {
   return type != KEEPER || currentlyActiveModel;
 }
 
-int CollectiveConfig::getImmigrantInterval() const {
+TimeInterval CollectiveConfig::getImmigrantInterval() const {
   return immigrantInterval;
 }
 
 bool CollectiveConfig::getStripSpawns() const {
-  return type == KEEPER;
-}
-
-bool CollectiveConfig::getFetchItems() const {
   return type == KEEPER;
 }
 
@@ -183,254 +168,121 @@ bool CollectiveConfig::getConstructions() const {
   return type == KEEPER;
 }
 
-bool CollectiveConfig::bedsLimitImmigration() const {
-  return type == KEEPER;
-}
-
 int CollectiveConfig::getMaxPopulation() const {
   return maxPopulation;
-}
-
-const vector<ImmigrantInfo>& CollectiveConfig::getImmigrantInfo() const {
-  return immigrantInfo;
-}
-
-const vector<PopulationIncrease>& CollectiveConfig::getPopulationIncreases() const {
-  return populationIncreases;
-}
-
-CollectiveConfig& CollectiveConfig::setGuardian(GuardianInfo info) {
-  guardianInfo = info;
-  return *this;
 }
 
 const optional<GuardianInfo>& CollectiveConfig::getGuardianInfo() const {
   return guardianInfo;
 }
 
-const EnumMap<SpawnType, DormInfo>& CollectiveConfig::getDormInfo() const {
-  static EnumMap<SpawnType, DormInfo> dormInfo ([](SpawnType type) -> DormInfo {
-      switch (type) {
-        case SpawnType::HUMANOID: return {FurnitureType::BED, CollectiveWarning::BEDS};
-        case SpawnType::UNDEAD: return {FurnitureType::GRAVE};
-        case SpawnType::BEAST: return {FurnitureType::BEAST_CAGE};
-        case SpawnType::DEMON: return {FurnitureType::DEMON_SHRINE};
-      }
-  });
-  return dormInfo;
-}
-
-const vector<FurnitureType>& CollectiveConfig::getRoomsNeedingLight() const {
-  static vector<FurnitureType> ret {
-    FurnitureType::WORKSHOP,
-    FurnitureType::FORGE,
-    FurnitureType::LABORATORY,
-    FurnitureType::JEWELER,
-    FurnitureType::STEEL_FURNACE,
-    FurnitureType::TRAINING_WOOD,
-    FurnitureType::TRAINING_IRON,
-    FurnitureType::TRAINING_STEEL,
-    FurnitureType::BOOKCASE_WOOD,
-    FurnitureType::BOOKCASE_IRON,
-    FurnitureType::BOOKCASE_GOLD,
-  };
-  return ret;
-};
-
-const vector<FloorInfo>& CollectiveConfig::getFloors() {
-  static vector<FloorInfo> ret = {
-    {FurnitureType::FLOOR_WOOD1, {CollectiveResourceId::WOOD, 2}, "Wooden", 0.02},
-    {FurnitureType::FLOOR_WOOD2, {CollectiveResourceId::WOOD, 2}, "Wooden", 0.02},
-    {FurnitureType::FLOOR_STONE1, {CollectiveResourceId::STONE, 2}, "Stone", 0.04},
-    {FurnitureType::FLOOR_STONE2, {CollectiveResourceId::STONE, 2}, "Stone", 0.04},
-    {FurnitureType::FLOOR_CARPET1, {CollectiveResourceId::GOLD, 2}, "Carpet", 0.06},
-    {FurnitureType::FLOOR_CARPET2, {CollectiveResourceId::GOLD, 2}, "Carpet", 0.06},
-  };
-  return ret;
-}
-
-double CollectiveConfig::getEfficiencyBonus(FurnitureType type) {
-  for (auto& info : getFloors())
-    if (info.type == type)
-      return info.efficiencyBonus;
-  switch (type) {
-    case FurnitureType::DUNGEON_WALL:
-      return 0.04;
-    default:
-      return 0;
+bool CollectiveConfig::isConquered(const Collective* collective) const {
+  switch (conquerCondition) {
+    case ConquerCondition::KILL_FIGHTERS_AND_LEADER:
+      return collective->getCreatures(MinionTrait::FIGHTER).empty() && !collective->getLeader();
+    case ConquerCondition::DESTROY_BUILDINGS:
+      for (auto& elem : collective->getConstructions().getAllFurniture())
+        if (auto f = elem.first.getFurniture(elem.second))
+          if (f->isWall())
+            return false;
+      return true;
   }
 }
 
-bool CollectiveConfig::canBuildOutsideTerritory(FurnitureType type) {
-  switch (type) {
-    case FurnitureType::EYEBALL:
-    case FurnitureType::KEEPER_BOARD:
-    case FurnitureType::DUNGEON_WALL:
-    case FurnitureType::TORCH_N:
-    case FurnitureType::TORCH_E:
-    case FurnitureType::TORCH_S:
-    case FurnitureType::TORCH_W:
-    case FurnitureType::TUTORIAL_ENTRANCE:
-    case FurnitureType::BRIDGE: return true;
-    default: return false;
-  }
-}
-
-static StorageDestinationFun getFurnitureStorage(FurnitureType t) {
-  return [t](WConstCollective col)->const set<Position>& { return col->getConstructions().getBuiltPositions(t); };
-}
-
-static StorageDestinationFun getZoneStorage(ZoneId zone) {
-  return [zone](WConstCollective col)->const set<Position>& { return col->getZones().getPositions(zone); };
+CollectiveConfig& CollectiveConfig::setConquerCondition(ConquerCondition c) {
+  conquerCondition = c;
+  return *this;
 }
 
 const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
   static EnumMap<CollectiveResourceId, ResourceInfo> resourceInfo([](CollectiveResourceId id)->ResourceInfo {
     switch (id) {
-      case CollectiveResourceId::MANA:
-        return { nullptr, none, ItemType::GoldPiece{}, "mana", ViewId::MANA};
       case CollectiveResourceId::PRISONER_HEAD:
-        return { nullptr, none, ItemType::GoldPiece{}, "", ViewId::IMPALED_HEAD, true};
+        return { none, none, ItemType::GoldPiece{}, "prisoner heads", ViewId("impaled_head"), true, none};
+      case CollectiveResourceId::DEMON_PIETY:
+        return { none, none, ItemType::GoldPiece{}, "demon rituals", ViewId("impaled_head"), true, none};
       case CollectiveResourceId::GOLD:
-        return {getFurnitureStorage(FurnitureType::TREASURE_CHEST), ItemIndex::GOLD, ItemType::GoldPiece{}, "gold", ViewId::GOLD};
+        return {StorageId::GOLD, ItemIndex::GOLD, ItemType::GoldPiece{}, "gold", ViewId("gold"), false, none};
       case CollectiveResourceId::WOOD:
-        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::WOOD, ItemType::WoodPlank{}, "wood", ViewId::WOOD_PLANK,
+        return { StorageId::RESOURCE, ItemIndex::WOOD, ItemType::WoodPlank{}, "wood", ViewId("wood_plank"),
             false, TutorialHighlight::WOOD_RESOURCE};
       case CollectiveResourceId::IRON:
-        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::IRON, ItemType::IronOre{}, "iron", ViewId::IRON_ROCK};
-      case CollectiveResourceId::STEEL:
-        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::STEEL, ItemType::SteelIngot{}, "steel", ViewId::STEEL_INGOT};
+        return { StorageId::RESOURCE, ItemIndex::IRON, ItemType::IronOre{}, "iron", ViewId("iron_rock"), false, none};
+      case CollectiveResourceId::ADA:
+        return { StorageId::RESOURCE, ItemIndex::ADA, ItemType::AdaOre{}, "adamantium", ViewId("ada_ore"), false, none};
       case CollectiveResourceId::STONE:
-        return { getZoneStorage(ZoneId::STORAGE_RESOURCES), ItemIndex::STONE, ItemType::Rock{}, "granite", ViewId::ROCK};
+        return { StorageId::RESOURCE, ItemIndex::STONE, ItemType::Rock{}, "granite", ViewId("rock"), false, none};
       case CollectiveResourceId::CORPSE:
-        return { getFurnitureStorage(FurnitureType::GRAVE), ItemIndex::REVIVABLE_CORPSE, ItemType::GoldPiece{}, "corpses", ViewId::BODY_PART, true};
+        return { StorageId::CORPSES, ItemIndex::REVIVABLE_CORPSE, ItemType::GoldPiece{}, "corpses", ViewId("body_part"), true, none};
     }
   });
   return resourceInfo[id];
 }
 
 static CollectiveItemPredicate unMarkedItems() {
-  return [](WConstCollective col, WConstItem it) { return !col->isItemMarked(it); };
+  return [](WConstCollective col, const Item* it) { return !col->isItemMarked(it); };
 }
 
 
-const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() {
-  static vector<ItemFetchInfo> ret {
-      {ItemIndex::CORPSE, unMarkedItems(), getFurnitureStorage(FurnitureType::GRAVE), true, CollectiveWarning::GRAVES},
-      {ItemIndex::GOLD, unMarkedItems(), getFurnitureStorage(FurnitureType::TREASURE_CHEST), false,
-          CollectiveWarning::CHESTS},
-      {ItemIndex::MINION_EQUIPMENT, [](WConstCollective col, WConstItem it)
-          { return it->getClass() != ItemClass::GOLD && !col->isItemMarked(it);},
-          getZoneStorage(ZoneId::STORAGE_EQUIPMENT), false, CollectiveWarning::EQUIPMENT_STORAGE},
-      {ItemIndex::WOOD, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
-          CollectiveWarning::RESOURCE_STORAGE},
-      {ItemIndex::IRON, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
-          CollectiveWarning::RESOURCE_STORAGE},
-      {ItemIndex::STEEL, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
-          CollectiveWarning::RESOURCE_STORAGE},
-      {ItemIndex::STONE, unMarkedItems(), getZoneStorage(ZoneId::STORAGE_RESOURCES), false,
-          CollectiveWarning::RESOURCE_STORAGE},
-  };
-  return ret;
+const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() const {
+  if (type == KEEPER) {
+    static vector<ItemFetchInfo> ret {
+        {ItemIndex::CORPSE, unMarkedItems(), StorageId::CORPSES, CollectiveWarning::GRAVES},
+        {ItemIndex::GOLD, unMarkedItems(), StorageId::GOLD, CollectiveWarning::CHESTS},
+        {ItemIndex::MINION_EQUIPMENT, [](WConstCollective col, const Item* it)
+            { return it->getClass() != ItemClass::GOLD && !col->isItemMarked(it);},
+            StorageId::EQUIPMENT, CollectiveWarning::EQUIPMENT_STORAGE},
+        {ItemIndex::WOOD, unMarkedItems(), StorageId::RESOURCE,
+            CollectiveWarning::RESOURCE_STORAGE},
+        {ItemIndex::IRON, unMarkedItems(), StorageId::RESOURCE,
+            CollectiveWarning::RESOURCE_STORAGE},
+        {ItemIndex::ADA, unMarkedItems(), StorageId::RESOURCE,
+            CollectiveWarning::RESOURCE_STORAGE},
+        {ItemIndex::STONE, unMarkedItems(), StorageId::RESOURCE,
+            CollectiveWarning::RESOURCE_STORAGE},
+        /*{ItemIndex::TRAP, unMarkedItems(), [](WConstCollective col) -> const PositionSet& {
+                return col->getTerritory().getAllAsSet(); },
+            CollectiveWarning::RESOURCE_STORAGE},*/
+    };
+    return ret;
+  } else {
+    static vector<ItemFetchInfo> empty;
+    return empty;
+  }
 }
 
-MinionTaskInfo::MinionTaskInfo(Type t, const string& desc, optional<CollectiveWarning> w)
-    : type(t), description(desc), warning(w) {
+MinionActivityInfo::MinionActivityInfo(Type t, const string& desc) : type(t), description(desc) {
   CHECK(type != FURNITURE);
 }
 
-MinionTaskInfo::MinionTaskInfo() {}
+MinionActivityInfo::MinionActivityInfo() {}
 
-MinionTaskInfo::MinionTaskInfo(FurnitureType type, const string& desc) : type(FURNITURE),
-  furniturePredicate([type](WConstCollective, WConstCreature, FurnitureType t) { return t == type;}),
-    description(desc) {
+MinionActivityInfo::MinionActivityInfo(FurnitureType type, const string& desc)
+    : type(FURNITURE), furniturePredicate(
+        [type](const ContentFactory*, WConstCollective, const Creature*, FurnitureType t) { return t == type;}),
+      description(desc) {
 }
 
-MinionTaskInfo::MinionTaskInfo(UsagePredicate pred, const string& desc) : type(FURNITURE),
-  furniturePredicate(pred), description(desc) {
+MinionActivityInfo::MinionActivityInfo(UsagePredicate pred, const string& desc)
+    : type(FURNITURE), furniturePredicate(pred), description(desc) {
 }
-
-MinionTaskInfo::MinionTaskInfo(UsagePredicate usagePred, ActivePredicate activePred, const string& desc) :
-    type(FURNITURE), furniturePredicate(usagePred), activePredicate(activePred), description(desc) {
-}
-
-static EnumMap<WorkshopType, WorkshopInfo> workshops([](WorkshopType type)->WorkshopInfo {
-  switch (type) {
-    case WorkshopType::WORKSHOP: return {FurnitureType::WORKSHOP, "workshop", SkillId::WORKSHOP};
-    case WorkshopType::FORGE: return {FurnitureType::FORGE, "forge", SkillId::FORGE};
-    case WorkshopType::LABORATORY: return {FurnitureType::LABORATORY, "laboratory", SkillId::LABORATORY};
-    case WorkshopType::JEWELER: return {FurnitureType::JEWELER, "jeweler", SkillId::JEWELER};
-    case WorkshopType::STEEL_FURNACE: return {FurnitureType::STEEL_FURNACE, "steel furnace", SkillId::FURNACE};
-  }});
 
 optional<WorkshopType> CollectiveConfig::getWorkshopType(FurnitureType furniture) {
-  static optional<EnumMap<FurnitureType, optional<WorkshopType>>> map;
+  for (auto type : ENUM_ALL(WorkshopType))
+    if (getWorkshopInfo(type).furniture == furniture)
+      return type;
+  return none;
+  /*static optional<EnumMap<FurnitureType, optional<WorkshopType>>> map;
   if (!map) {
     map.emplace();
     for (auto type : ENUM_ALL(WorkshopType))
       (*map)[workshops[type].furniture] = type;
   }
-  return (*map)[furniture];
+  return (*map)[furniture];*/
 }
 
 map<CollectiveResourceId, int> CollectiveConfig::getStartingResource() const {
   return map<CollectiveResourceId, int>{};
-}
-
-const vector<FurnitureType>& CollectiveConfig::getTrainingFurniture(ExperienceType type) {
-  static EnumMap<ExperienceType, vector<FurnitureType>> ret(
-      [](ExperienceType expType) {
-        vector<FurnitureType> furniture;
-        for (auto type : ENUM_ALL(FurnitureType))
-          if (!!getTrainingMaxLevel(expType, type))
-            furniture.push_back(type);
-        return furniture;
-      });
-  return ret[type];
-}
-
-optional<int> CollectiveConfig::getTrainingMaxLevel(ExperienceType experienceType, FurnitureType type) {
-  switch (experienceType) {
-    case ExperienceType::MELEE:
-      switch (type) {
-        case FurnitureType::TRAINING_WOOD:
-          return 3;
-        case FurnitureType::TRAINING_IRON:
-          return 7;
-        case FurnitureType::TRAINING_STEEL:
-          return 12;
-        default:
-          return none;
-      }
-      break;
-    case ExperienceType::SPELL:
-      switch (type) {
-        case FurnitureType::BOOKCASE_WOOD:
-          return 3;
-        case FurnitureType::BOOKCASE_IRON:
-          return 7;
-        case FurnitureType::BOOKCASE_GOLD:
-          return 12;
-        default:
-          return none;
-      }
-      break;
-    default:
-      return none;
-  }
-}
-
-int CollectiveConfig::getManaForConquering(const optional<VillainType>& type) {
-  if (type)
-    switch (*type) {
-      case VillainType::MAIN:
-        return 200;
-      case VillainType::LESSER:
-        return 100;
-      default:
-        break;
-    }
-  return 50;
 }
 
 CollectiveConfig::CollectiveConfig(const CollectiveConfig&) = default;
@@ -439,57 +291,48 @@ CollectiveConfig::~CollectiveConfig() {
 }
 
 static auto getTrainingPredicate(ExperienceType experienceType) {
-  return [experienceType] (WConstCollective, WConstCreature c, FurnitureType t) {
-      if (auto maxIncrease = CollectiveConfig::getTrainingMaxLevel(experienceType, t))
-        return !c || (c->getAttributes().getExpLevel(experienceType) < *maxIncrease &&
+  return [experienceType] (const ContentFactory* contentFactory, WConstCollective, const Creature* c, FurnitureType t) {
+      if (auto maxIncrease = contentFactory->furniture.getData(t).getMaxTraining(experienceType))
+        return !c || (c->getAttributes().getExpLevel(experienceType) < maxIncrease &&
             !c->getAttributes().isTrainingMaxedOut(experienceType));
       else
         return false;
     };
 }
 
-template <typename Pred>
-static auto addManaGenerationPredicate(Pred p) {
-  return [p] (WConstCollective col, WConstCreature c, FurnitureType t) {
-    return (!!CollectiveConfig::getTrainingMaxLevel(ExperienceType::SPELL, t) &&
-            (!col || col->getConfig().getRegenerateMana()))
-        || p(col, c, t);
-  };
-}
-
-const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
-  static EnumMap<MinionTask, MinionTaskInfo> map([](MinionTask task) -> MinionTaskInfo {
+const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task) {
+  static EnumMap<MinionActivity, MinionActivityInfo> map([](MinionActivity task) -> MinionActivityInfo {
     switch (task) {
-      case MinionTask::WORKER: return {MinionTaskInfo::WORKER, "working"};
-      case MinionTask::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE), "training"};
-      case MinionTask::SLEEP: return {FurnitureType::BED, "sleeping"};
-      case MinionTask::EAT: return {MinionTaskInfo::EAT, "eating"};
-      case MinionTask::GRAVE: return {FurnitureType::GRAVE, "sleeping"};
-      case MinionTask::LAIR: return {FurnitureType::BEAST_CAGE, "sleeping"};
-      case MinionTask::THRONE: return {FurnitureType::THRONE, "throne"};
-      case MinionTask::STUDY: return {addManaGenerationPredicate(getTrainingPredicate(ExperienceType::SPELL)),
-           "studying"};
-      case MinionTask::PRISON: return {FurnitureType::PRISON, "prison"};
-      case MinionTask::CROPS: return {FurnitureType::CROPS, "crops"};
-      case MinionTask::RITUAL: return {FurnitureType::DEMON_SHRINE, "rituals"};
-      case MinionTask::ARCHERY: return {MinionTaskInfo::ARCHERY, "archery range"};
-      case MinionTask::COPULATE: return {MinionTaskInfo::COPULATE, "copulation"};
-      case MinionTask::EXPLORE: return {MinionTaskInfo::EXPLORE, "spying"};
-      case MinionTask::SPIDER: return {MinionTaskInfo::SPIDER, "spider"};
-      case MinionTask::EXPLORE_NOCTURNAL: return {MinionTaskInfo::EXPLORE, "spying"};
-      case MinionTask::EXPLORE_CAVES: return {MinionTaskInfo::EXPLORE, "spying"};
-      case MinionTask::BE_WHIPPED: return {FurnitureType::WHIPPING_POST, "being whipped"};
-      case MinionTask::BE_TORTURED: return {FurnitureType::TORTURE_TABLE, "being tortured"};
-      case MinionTask::BE_EXECUTED: return {FurnitureType::GALLOWS, "being executed"};
-      case MinionTask::CRAFT: return {[](WConstCollective, WConstCreature c, FurnitureType t) {
+      case MinionActivity::IDLE: return {MinionActivityInfo::IDLE, "idle"};
+      case MinionActivity::CONSTRUCTION: return {MinionActivityInfo::WORKER, "construction"};
+      case MinionActivity::HAULING: return {MinionActivityInfo::WORKER, "hauling"};
+      case MinionActivity::WORKING: return {MinionActivityInfo::WORKER, "labour"};
+      case MinionActivity::DIGGING: return {MinionActivityInfo::WORKER, "digging"};
+      case MinionActivity::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE), "training"};
+      case MinionActivity::SLEEP: return {[](const ContentFactory* f, WConstCollective, const Creature* c, FurnitureType t) {
+            if (!c)
+              return !!f->furniture.getData(t).getBedType();
+            return getBedType(c) == f->furniture.getData(t).getBedType();
+          }, "sleeping"};
+      case MinionActivity::EAT: return {MinionActivityInfo::EAT, "eating"};
+      case MinionActivity::THRONE: return {FurnitureType("THRONE"), "throne"};
+      case MinionActivity::STUDY: return {getTrainingPredicate(ExperienceType::SPELL), "studying"};
+      case MinionActivity::CROPS: return {FurnitureType("CROPS"), "crops"};
+      case MinionActivity::RITUAL: return {FurnitureType("DEMON_SHRINE"), "rituals"};
+      case MinionActivity::ARCHERY: return {MinionActivityInfo::ARCHERY, "archery range"};
+      case MinionActivity::COPULATE: return {MinionActivityInfo::COPULATE, "copulation"};
+      case MinionActivity::EXPLORE: return {MinionActivityInfo::EXPLORE, "spying"};
+      case MinionActivity::SPIDER: return {MinionActivityInfo::SPIDER, "spider"};
+      case MinionActivity::EXPLORE_NOCTURNAL: return {MinionActivityInfo::EXPLORE, "spying"};
+      case MinionActivity::EXPLORE_CAVES: return {MinionActivityInfo::EXPLORE, "spying"};
+      case MinionActivity::BE_WHIPPED: return {FurnitureType("WHIPPING_POST"), "being whipped"};
+      case MinionActivity::BE_TORTURED: return {FurnitureType("TORTURE_TABLE"), "being tortured"};
+      case MinionActivity::BE_EXECUTED: return {FurnitureType("GALLOWS"), "being executed"};
+      case MinionActivity::CRAFT: return {[](const ContentFactory*, WConstCollective col, const Creature* c, FurnitureType t) {
             if (auto type = getWorkshopType(t))
-              return !c || c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill) > 0;
-            else
-              return false;
-          },
-          [](WConstCollective collective, FurnitureType t) {
-            if (auto type = getWorkshopType(t))
-              return !collective->getWorkshops().get(*type).isIdle();
+              return !c || !col || (c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill) > 0 &&
+                  !col->getWorkshops().get(*type).isIdle(
+                      col, c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill), c->getMorale()));
             else
               return false;
           },
@@ -500,120 +343,19 @@ const MinionTaskInfo& CollectiveConfig::getTaskInfo(MinionTask task) {
 }
 
 const WorkshopInfo& CollectiveConfig::getWorkshopInfo(WorkshopType type) {
+  static EnumMap<WorkshopType, WorkshopInfo> workshops([](WorkshopType type)->WorkshopInfo {
+    switch (type) {
+      case WorkshopType::WORKSHOP: return {FurnitureType("WORKSHOP"), "workshop", SkillId::WORKSHOP};
+      case WorkshopType::FORGE: return {FurnitureType("FORGE"), "forge", SkillId::FORGE};
+      case WorkshopType::LABORATORY: return {FurnitureType("LABORATORY"), "laboratory", SkillId::LABORATORY};
+      case WorkshopType::JEWELER: return {FurnitureType("JEWELLER"), "jeweler", SkillId::JEWELER};
+    }});
   return workshops[type];
 }
 
+#include "pretty_archive.h"
+template
+void CollectiveConfig::serialize(PrettyInputArchive& ar1, unsigned);
 
-unique_ptr<Workshops> CollectiveConfig::getWorkshops() const {
-  return unique_ptr<Workshops>(new Workshops({
-      {WorkshopType::WORKSHOP, {
-          Workshops::Item::fromType(ItemType::LeatherArmor{}, 6, {CollectiveResourceId::WOOD, 20}),
-          Workshops::Item::fromType(ItemType::LeatherHelm{}, 1, {CollectiveResourceId::WOOD, 6}),
-          Workshops::Item::fromType(ItemType::LeatherBoots{}, 2, {CollectiveResourceId::WOOD, 10}),
-          Workshops::Item::fromType(ItemType::LeatherGloves{}, 1, {CollectiveResourceId::WOOD, 2}),
-          Workshops::Item::fromType(ItemType::Club{}, 3, {CollectiveResourceId::WOOD, 10})
-              .setTutorialHighlight(TutorialHighlight::SCHEDULE_CLUB),
-          Workshops::Item::fromType(ItemType::HeavyClub{}, 5, {CollectiveResourceId::WOOD, 20})
-                  .setTechId(TechId::TWO_H_WEAP),
-          Workshops::Item::fromType(ItemType::Bow{}, 13, {CollectiveResourceId::WOOD, 20}).setTechId(TechId::ARCHERY),
-          Workshops::Item::fromType(ItemType::WoodenStaff{}, 13, {CollectiveResourceId::WOOD, 20})
-                  .setTechId(TechId::MAGICAL_WEAPONS),
-          Workshops::Item::fromType(ItemType::TrapItem{TrapType::BOULDER}, 20, {CollectiveResourceId::STONE, 50})
-                  .setTechId(TechId::TRAPS),
-          Workshops::Item::fromType(ItemType::TrapItem{TrapType::POISON_GAS}, 10, {CollectiveResourceId::WOOD, 20})
-                  .setTechId(TechId::TRAPS),
-          Workshops::Item::fromType(ItemType::TrapItem{TrapType::ALARM}, 8, {CollectiveResourceId::WOOD, 20})
-                  .setTechId(TechId::TRAPS),
-          Workshops::Item::fromType(ItemType::TrapItem{TrapType::WEB}, 8, {CollectiveResourceId::WOOD, 20})
-                  .setTechId(TechId::TRAPS),
-          Workshops::Item::fromType(ItemType::TrapItem{TrapType::SURPRISE}, 8, {CollectiveResourceId::WOOD, 20})
-                  .setTechId(TechId::TRAPS),
-          Workshops::Item::fromType(ItemType::TrapItem{TrapType::TERROR}, 8, {CollectiveResourceId::WOOD, 20})
-                  .setTechId(TechId::TRAPS),
-      }},
-      {WorkshopType::FORGE, {
-          Workshops::Item::fromType(ItemType::Sword{}, 10, {CollectiveResourceId::IRON, 20}),
-          Workshops::Item::fromType(ItemType::SteelSword{}, 20, {CollectiveResourceId::STEEL, 20})
-                  .setTechId(TechId::STEEL_MAKING),
-          Workshops::Item::fromType(ItemType::ChainArmor{}, 30, {CollectiveResourceId::IRON, 40}),
-          Workshops::Item::fromType(ItemType::SteelArmor{}, 30, {CollectiveResourceId::STEEL, 40})
-                  .setTechId(TechId::STEEL_MAKING),
-          Workshops::Item::fromType(ItemType::IronHelm{}, 8, {CollectiveResourceId::IRON, 16}),
-          Workshops::Item::fromType(ItemType::IronBoots{}, 12, {CollectiveResourceId::IRON, 24}),
-          Workshops::Item::fromType(ItemType::WarHammer{}, 16, {CollectiveResourceId::IRON, 40})
-                  .setTechId(TechId::TWO_H_WEAP),
-          Workshops::Item::fromType(ItemType::BattleAxe{}, 22, {CollectiveResourceId::IRON, 50})
-                  .setTechId(TechId::TWO_H_WEAP),
-          Workshops::Item::fromType(ItemType::SteelBattleAxe{}, 22, {CollectiveResourceId::STEEL, 50})
-                  .setTechId(TechId::STEEL_MAKING),
-         Workshops::Item::fromType(ItemType::IronStaff{}, 20, {CollectiveResourceId::IRON, 40})
-                 .setTechId(TechId::MAGICAL_WEAPONS),
-      }},
-      {WorkshopType::LABORATORY, {
-          Workshops::Item::fromType(ItemType::Potion{Effect::Lasting{LastingEffect::SLOWED}}, 2,
-              {CollectiveResourceId::GOLD, 2}),
-          Workshops::Item::fromType(ItemType::Potion{Effect::Lasting{LastingEffect::SLEEP}}, 2,
-              {CollectiveResourceId::GOLD, 2}),
-          Workshops::Item::fromType(ItemType::Potion{
-              Effect::Lasting{LastingEffect::POISON_RESISTANT}}, 4, {CollectiveResourceId::GOLD, 6}),
-          Workshops::Item::fromType(ItemType::Potion{
-              Effect::Lasting{LastingEffect::SPEED}}, 4, {CollectiveResourceId::GOLD, 6}),
-          Workshops::Item::fromType(ItemType::Potion{
-              Effect::Lasting{LastingEffect::TELEPATHY}}, 4, {CollectiveResourceId::GOLD, 6}),
-          Workshops::Item::fromType(ItemType::Potion{
-              Effect::Lasting{LastingEffect::REGENERATION}}, 4, {CollectiveResourceId::GOLD, 8}),
-          Workshops::Item::fromType(ItemType::Potion{
-              Effect::Lasting{LastingEffect::POISON}}, 4, {CollectiveResourceId::GOLD, 8}),
-          Workshops::Item::fromType(ItemType::Potion{
-              Effect::Lasting{LastingEffect::FLYING}}, 4, {CollectiveResourceId::GOLD, 8}),
-          Workshops::Item::fromType(ItemType::Potion{Effect::Heal{}}, 4, {CollectiveResourceId::GOLD, 10})
-             .setTechId(TechId::ALCHEMY_ADV),
-          Workshops::Item::fromType(ItemType::Potion{
-              Effect::Lasting{LastingEffect::BLIND}}, 4, {CollectiveResourceId::GOLD, 15})
-                  .setTechId(TechId::ALCHEMY_ADV),
-          Workshops::Item::fromType(ItemType::Potion{
-              Effect::Lasting{LastingEffect::MELEE_RESISTANCE}}, 6, {CollectiveResourceId::GOLD, 20})
-                  .setTechId(TechId::ALCHEMY_ADV),
-          Workshops::Item::fromType(ItemType::Potion{
-              Effect::Lasting{LastingEffect::INVISIBLE}}, 6, {CollectiveResourceId::GOLD, 20})
-                  .setTechId(TechId::ALCHEMY_ADV),
-          //Alchemical conversion to and from gold
-          Workshops::Item::fromType(ItemType::GoldPiece{}, 5, {CollectiveResourceId::IRON, 30})
-              .setTechId(TechId::ALCHEMY_CONV).setBatchSize(10),
-          Workshops::Item::fromType(ItemType::WoodPlank{}, 5, {CollectiveResourceId::GOLD, 10})
-              .setTechId(TechId::ALCHEMY_CONV).setBatchSize(10),
-          Workshops::Item::fromType(ItemType::IronOre{}, 5, {CollectiveResourceId::GOLD, 10})
-              .setTechId(TechId::ALCHEMY_CONV).setBatchSize(10),
-         Workshops::Item::fromType(ItemType::Rock{}, 5, {CollectiveResourceId::GOLD, 10})
-             .setTechId(TechId::ALCHEMY_CONV).setBatchSize(10),
-      }},
-      {WorkshopType::JEWELER, {
-          Workshops::Item::fromType(ItemType::Ring{LastingEffect::POISON_RESISTANT}, 10,
-              {CollectiveResourceId::GOLD, 20}),
-          Workshops::Item::fromType(ItemType::Ring{LastingEffect::FIRE_RESISTANT}, 10,
-              {CollectiveResourceId::GOLD, 30}),
-          Workshops::Item::fromType(ItemType::Ring{LastingEffect::MAGIC_RESISTANCE}, 10,
-              {CollectiveResourceId::GOLD, 30}),
-          Workshops::Item::fromType(ItemType::Ring{LastingEffect::RESTED}, 10, {CollectiveResourceId::GOLD, 30}),
-          Workshops::Item::fromType(ItemType::Ring{LastingEffect::SATIATED}, 10, {CollectiveResourceId::GOLD, 30}),
-          Workshops::Item::fromType(ItemType::Amulet{LastingEffect::NIGHT_VISION}, 10, {CollectiveResourceId::GOLD, 20}),
-          Workshops::Item::fromType(ItemType::Amulet{LastingEffect::ELF_VISION}, 10, {CollectiveResourceId::GOLD, 20}),
-          Workshops::Item::fromType(ItemType::Amulet{LastingEffect::WARNING}, 10, {CollectiveResourceId::GOLD, 30}),
-          Workshops::Item::fromType(ItemType::DefenseAmulet{}, 10, {CollectiveResourceId::GOLD, 40}),
-          Workshops::Item::fromType(ItemType::Amulet{LastingEffect::REGENERATION}, 10, {CollectiveResourceId::GOLD, 60}),
-      }},
-      {WorkshopType::STEEL_FURNACE, {
-          Workshops::Item::fromType(ItemType::SteelIngot{}, 25, {CollectiveResourceId::IRON, 30}).setBatchSize(10),
-      }},
-  }));
-}
-
-vector<Technology*> CollectiveConfig::getInitialTech() const {
-  if (type == KEEPER)
-    return {
-      Technology::get(TechId::GEOLOGY1),
-      Technology::get(TechId::SPELLS),
-    };
-  else
-    return {};
-}
+template
+void GuardianInfo::serialize(PrettyInputArchive& ar1, unsigned);

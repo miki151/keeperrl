@@ -19,17 +19,22 @@
 #include "enums.h"
 #include "position.h"
 #include "enum_variant.h"
+#include "game_time.h"
+#include "fx_name.h"
+#include "furniture_type.h"
+#include "effect_ai_intent.h"
+#include "health_type.h"
+#include "creature_id.h"
 
 class Level;
 class Creature;
 class Item;
 class Tribe;
-class CreatureFactory;
-class DirEffectType;
+class CreatureGroup;
 
 
 #define EFFECT_TYPE_INTERFACE \
-  void applyToCreature(WCreature, WCreature attacker = nullptr) const;\
+  void applyToCreature(Creature*, Creature* attacker = nullptr) const;\
   string getName() const;\
   string getDescription() const
 
@@ -42,8 +47,13 @@ class DirEffectType;
 
 class Effect {
   public:
+  SIMPLE_EFFECT(Escape);
   SIMPLE_EFFECT(Teleport);
-  SIMPLE_EFFECT(Heal);
+  struct Heal {
+    EFFECT_TYPE_INTERFACE;
+    HealthType healthType;
+    COMPARE_ALL(healthType)
+  };
   SIMPLE_EFFECT(Fire);
   SIMPLE_EFFECT(DestroyEquipment);
   SIMPLE_EFFECT(DestroyWalls);
@@ -58,16 +68,35 @@ class Effect {
   SIMPLE_EFFECT(Deception);
   struct Summon {
     EFFECT_TYPE_INTERFACE;
+    Summon(CreatureId id, Range c) : creature(id), count(c) {}
+    Summon() {}
     CreatureId creature;
-    COMPARE_ALL(creature)
+    Range count;
+    COMPARE_ALL(creature, count)
   };
   SIMPLE_EFFECT(SummonElement);
   SIMPLE_EFFECT(Acid);
-  SIMPLE_EFFECT(Alarm);
+  struct Alarm {
+    EFFECT_TYPE_INTERFACE;
+    bool silent = false;
+    COMPARE_ALL(silent)
+  };
   SIMPLE_EFFECT(TeleEnemies);
   SIMPLE_EFFECT(SilverDamage);
-  SIMPLE_EFFECT(CurePoison);
+
   struct Lasting {
+    EFFECT_TYPE_INTERFACE;
+    LastingEffect lastingEffect;
+    COMPARE_ALL(lastingEffect)
+  };
+
+  struct RemoveLasting {
+    EFFECT_TYPE_INTERFACE;
+    LastingEffect lastingEffect;
+    COMPARE_ALL(lastingEffect)
+  };
+
+  struct Permanent {
     EFFECT_TYPE_INTERFACE;
     LastingEffect lastingEffect;
     COMPARE_ALL(lastingEffect)
@@ -83,6 +112,13 @@ class Effect {
     AttackType attackType;
     COMPARE_ALL(attr, attackType)
   };
+  struct IncreaseAttr {
+    EFFECT_TYPE_INTERFACE;
+    AttrType attr;
+    int amount;
+    const char* get(const char* ifIncrease, const char* ifDecrease) const;
+    COMPARE_ALL(attr, amount)
+  };
   struct InjureBodyPart {
     EFFECT_TYPE_INTERFACE;
     BodyPart part;
@@ -93,11 +129,49 @@ class Effect {
     BodyPart part;
     COMPARE_ALL(part)
   };
+  struct Area {
+    EFFECT_TYPE_INTERFACE;
+    HeapAllocated<Effect> effect;
+    int radius;
+    COMPARE_ALL(effect, radius)
+  };
+  struct CustomArea {
+    EFFECT_TYPE_INTERFACE;
+    HeapAllocated<Effect> effect;
+    vector<Vec2> positions;
+    vector<Position> getTargetPos(const Creature* attacker, Position targetPos) const;
+    COMPARE_ALL(effect, positions)
+  };
   SIMPLE_EFFECT(RegrowBodyPart);
-
-  MAKE_VARIANT(EffectType, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon,
-      EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage,
-      CurePoison, Lasting, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls);
+  SIMPLE_EFFECT(Suicide);
+  SIMPLE_EFFECT(DoubleTrouble);
+  SIMPLE_EFFECT(Blast);
+  SIMPLE_EFFECT(Pull);
+  SIMPLE_EFFECT(Shove);
+  SIMPLE_EFFECT(SwapPosition);
+  struct ReviveCorpse {
+    EFFECT_TYPE_INTERFACE;
+    vector<CreatureId> summoned;
+    int ttl;
+    COMPARE_ALL(summoned, ttl)
+  };
+  struct SummonGhost {
+    EFFECT_TYPE_INTERFACE;
+    optional<TimeInterval> ttl;
+    Range count;
+    int ghostPower;
+    PCreature getBestSpirit(const Model*, TribeId tribe) const;
+    COMPARE_ALL(ttl, count, ghostPower)
+  };
+/*  struct Chain {
+    EFFECT_TYPE_INTERFACE;
+    vector<Effect> effects;
+    COMPARE_ALL(effects)
+  };*/
+  MAKE_VARIANT(EffectType, Escape, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
+      EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
+      Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
+      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost);
 
   template <typename T>
   Effect(T&& t) : effect(std::forward<T>(t)) {}
@@ -113,9 +187,11 @@ class Effect {
   template <class Archive>
   void serialize(Archive&, const unsigned int);
 
-  void applyToCreature(WCreature, WCreature attacker = nullptr) const;
+  void apply(Position, Creature* attacker = nullptr) const;
   string getName() const;
   string getDescription() const;
+
+  EffectAIIntent shouldAIApply(const Creature* caster, Position) const;
 
   template <typename... Args>
   auto visit(Args&&...args) {
@@ -137,35 +213,12 @@ class Effect {
     return effect.getValueMaybe<T>();
   }
 
-  static vector<WCreature> summon(WCreature, CreatureId, int num, int ttl, double delay = 0);
-  static vector<WCreature> summon(Position, CreatureFactory&, int num, int ttl, double delay = 0);
-  static vector<WCreature> summonCreatures(Position, int radius, vector<PCreature>, double delay = 0);
-  static vector<WCreature> summonCreatures(WCreature, int radius, vector<PCreature>, double delay = 0);
+  static vector<Creature*> summon(Creature*, CreatureId, int num, optional<TimeInterval> ttl, TimeInterval delay = 0_visible);
+  static vector<Creature*> summon(Position, CreatureGroup&, int num, optional<TimeInterval> ttl, TimeInterval delay = 0_visible);
+  static vector<Creature*> summonCreatures(Position, int radius, vector<PCreature>, TimeInterval delay = 0_visible);
   static void emitPoisonGas(Position, double amount, bool msg);
 
   private:
+  EffectAIIntent shouldAIApply(const Creature* victim, bool isEnemy) const;
   EffectType SERIAL(effect);
 };
-
-
-enum class DirEffectId {
-  BLAST,
-  CREATURE_EFFECT,
-};
-
-class DirEffectType : public EnumVariant<DirEffectId, TYPES(Effect),
-        ASSIGN(Effect, DirEffectId::CREATURE_EFFECT)> {
-  public:
-  template <typename ...Args>
-  DirEffectType(int r, Args&&...args) : EnumVariant(std::forward<Args>(args)...), range(r) {}
-
-  int getRange() const {
-    return range;
-  }
-
-  private:
-  int range;
-};
-
-extern string getDescription(const DirEffectType&);
-extern void applyDirected(WCreature, Vec2 direction, const DirEffectType&);

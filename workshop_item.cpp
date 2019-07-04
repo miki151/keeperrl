@@ -4,33 +4,22 @@
 #include "item.h"
 #include "view_object.h"
 
-WorkshopItem WorkshopItem::fromType(ItemType type, double workNeeded, CostInfo cost) {
-  PItem item = type.get();
+WorkshopItem WorkshopItemCfg::get() const {
+  // for some reason removing this line causes a linker error, probably a compiler bug
+  auto t = tech;
+  PItem elem = item.get();
   return {
-    type,
-    item->getName(),
-    item->getName(true),
-    item->getViewObject().id(),
+    item,
+    elem->getName(),
+    elem->getName(true),
+    elem->getViewObject().id(),
     cost,
-    item->getDescription(),
-    1,
-    1,
-    workNeeded,
-    none
+    elem->getDescription(),
+    batchSize,
+    work,
+    tech,
+    tutorialHighlight,
+    elem->getAppliedUpgradeType(),
+    elem->getMaxUpgrades()
   };
-}
-
-WorkshopItem& WorkshopItem::setBatchSize(int size) {
-  batchSize = size;
-  return *this;
-}
-
-WorkshopItem& WorkshopItem::setTechId(TechId id) {
-  techId = id;
-  return *this;
-}
-
-WorkshopItem& WorkshopItem::setTutorialHighlight(TutorialHighlight h) {
-  tutorialHighlight = h;
-  return *this;
 }

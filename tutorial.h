@@ -4,6 +4,7 @@
 
 class TutorialInfo;
 class Game;
+class GameConfig;
 class ImmigrantInfo;
 
 class Tutorial {
@@ -12,20 +13,21 @@ class Tutorial {
   void refreshInfo(WConstGame, optional<TutorialInfo>&) const;
   void continueTutorial(WConstGame);
   void goBack();
-  bool showImmigrant(const ImmigrantInfo&) const;
   EnumSet<TutorialHighlight> getHighlights(WConstGame) const;
   bool blockAutoEquipment() const;
 
-  static void createTutorial(Game&);
+  static void createTutorial(Game&, vector<ImmigrantInfo>);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);
+
+  using State = TutorialState;
+  State getState() const;
 
   private:
   string getMessage() const;
   bool canContinue(WConstGame) const;
 
-  enum class State;
   State SERIAL(state);
   vector<Vec2> getHighlightedSquaresHigh(WConstGame) const;
   vector<Vec2> getHighlightedSquaresLow(WConstGame) const;

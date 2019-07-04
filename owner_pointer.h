@@ -13,19 +13,19 @@ class OwnerPointer {
   public:
 
   template <typename U>
-  OwnerPointer(OwnerPointer<U>&& o) : elem(std::move(o.elem)) {
+  OwnerPointer(OwnerPointer<U>&& o) noexcept : elem(std::move(o.elem)) {
   }
 
-  OwnerPointer() {}
-  OwnerPointer(std::nullptr_t) {}
+  OwnerPointer() noexcept {}
+  OwnerPointer(std::nullptr_t) noexcept {}
 
   shared_ptr<T> giveMeSharedPointer() {
     return elem;
   }
 
-  explicit OwnerPointer(shared_ptr<T> t);
+  explicit OwnerPointer(shared_ptr<T> t) noexcept;
 
-  OwnerPointer<T>& operator = (OwnerPointer<T>&& o) {
+  OwnerPointer<T>& operator = (OwnerPointer<T>&& o) noexcept {
     elem = std::move(o.elem);
     return *this;
   }
@@ -43,16 +43,16 @@ class OwnerPointer {
   }
 
   template <typename U>
-  bool operator == (const OwnerPointer<U>& o) const {
+  bool operator == (const OwnerPointer<U>& o) const noexcept {
     return elem == o.elem;
   }
 
   template <typename U>
-  bool operator != (const OwnerPointer<U>& o) const {
+  bool operator != (const OwnerPointer<U>& o) const noexcept {
     return !(*this == o);
   }
 
-  WeakPointer<T> get() const;
+  T* get() const;
 
   explicit operator bool() const {
     return !!elem;
@@ -60,6 +60,10 @@ class OwnerPointer {
 
   bool operator !() const {
     return !elem;
+  }
+
+  ~OwnerPointer() noexcept {
+
   }
 
 /*  weak_ptr<T> getWeakPointer() const {
@@ -170,15 +174,20 @@ class WeakPointer {
     return !!elem.lock();
   }
 
+  T* get() const {
+    return elem.lock().get();
+  }
+
+  int getHash() const {
+    auto sp = elem.lock();
+    return std::hash<decltype(sp)>()(sp);
+  }
+
   SERIALIZE_ALL(elem)
 
   private:
   template<class U>
   friend std::ostream& operator<<(std::ostream&, const WeakPointer<U>&);
-
-  T* get() const {
-    return elem.lock().get();
-  }
 
   template <typename>
   friend class OwnerPointer;
@@ -188,6 +197,12 @@ class WeakPointer {
 
   weak_ptr<T> SERIAL(elem);
 };
+
+template<typename T>
+bool operator == (const T* o, const WeakPointer<T>& p) {
+  return p.get() == o;
+}
+
 
 template<class T>
 std::ostream& operator<<(std::ostream& d, const WeakPointer<T>& p){
@@ -208,7 +223,11 @@ class OwnedObject {
     return weakPointer;
   }
 
-  SERIALIZE_ALL(weakPointer)
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int) {
+    ar(weakPointer);
+    CHECK(!!weakPointer);
+  }
 
   private:
   template <typename>
@@ -217,13 +236,13 @@ class OwnedObject {
 };
 
 template <typename T>
-OwnerPointer<T>::OwnerPointer(shared_ptr<T> t) : elem(t) {
+OwnerPointer<T>::OwnerPointer(shared_ptr<T> t) noexcept : elem(t) {
   elem->weakPointer = WeakPointer<T>(elem);
 }
 
 template <typename T>
-WeakPointer<T> OwnerPointer<T>::get() const {
-  return WeakPointer<T>(elem);
+T* OwnerPointer<T>::get() const {
+  return elem.get();
 }
 
 template <typename T, typename... Args>
@@ -232,14 +251,32 @@ OwnerPointer<T> makeOwner(Args&&... args) {
 }
 
 template<class T>
-vector<WeakPointer<T>> getWeakPointers(const vector<OwnerPointer<T>>& v) {
-  vector<WeakPointer<T>> ret;
+auto getWeakPointers(const vector<OwnerPointer<T>>& v) {
+  vector<decltype(v[0].get())> ret;
   ret.reserve(v.size());
   for (auto& el : v)
     ret.push_back(el.get());
   return ret;
 }
+namespace cereal
+{
 
+template <typename Archive, typename T>
+inline void CEREAL_LOAD_FUNCTION_NAME(Archive& ar1, T*& m) {
+  WeakPointer<T> wptr;
+  ar1(wptr);
+  m = wptr.get();
+}
+
+
+template <typename Archive, typename T>
+inline void CEREAL_SAVE_FUNCTION_NAME(Archive& ar1, T* m) {
+  WeakPointer<T> wptr;
+  if (m)
+    wptr = m->getThis().template dynamicCast<T>();
+  ar1(wptr);
+}
+}
 #define DEF_UNIQUE_PTR(T) class T;\
   typedef unique_ptr<T> P##T
 
@@ -248,8 +285,8 @@ vector<WeakPointer<T>> getWeakPointers(const vector<OwnerPointer<T>>& v) {
 
 #define DEF_OWNER_PTR(T) class T;\
   typedef OwnerPointer<T> P##T; \
-  typedef WeakPointer<T> W##T; \
-  typedef WeakPointer<const T> WConst##T
+  typedef T* W##T; \
+  typedef T const* WConst##T
 
 DEF_OWNER_PTR(Item);
 DEF_UNIQUE_PTR(LevelMaker);
@@ -259,6 +296,7 @@ DEF_OWNER_PTR(Furniture);
 DEF_UNIQUE_PTR(MonsterAI);
 DEF_UNIQUE_PTR(Behaviour);
 DEF_OWNER_PTR(Task);
+DEF_OWNER_PTR(TaskPredicate);
 DEF_OWNER_PTR(Controller);
 DEF_OWNER_PTR(Level);
 DEF_OWNER_PTR(VillageControl);
@@ -277,3 +315,6 @@ DEF_SHARED_PTR(MapMemory);
 DEF_SHARED_PTR(MessageBuffer);
 DEF_SHARED_PTR(VisibilityMap);
 DEF_OWNER_PTR(Immigration);
+DEF_OWNER_PTR(PositionMatching);
+DEF_SHARED_PTR(UnknownLocations);
+DEF_SHARED_PTR(CreatureFactory);

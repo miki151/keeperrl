@@ -21,8 +21,8 @@
 const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::HINTS, 1},
   {OptionId::ASCII, 0},
-  {OptionId::MUSIC, 1},
-  {OptionId::SOUND, 1},
+  {OptionId::MUSIC, 100},
+  {OptionId::SOUND, 100},
   {OptionId::KEEP_SAVEFILES, 0},
   {OptionId::SHOW_MAP, 0},
   {OptionId::FULLSCREEN, 0},
@@ -38,24 +38,23 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::FAST_IMMIGRATION, 0},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
-  {OptionId::KEEPER_NAME, string("")},
-  {OptionId::KEEPER_TYPE, 0},
+  {OptionId::PLAYER_NAME, string("")},
   {OptionId::KEEPER_SEED, string("")},
-  {OptionId::ADVENTURER_NAME, string("")},
-  {OptionId::ADVENTURER_TYPE, 0},
   {OptionId::MAIN_VILLAINS, 4},
   {OptionId::RETIRED_VILLAINS, 1},
   {OptionId::LESSER_VILLAINS, 3},
   {OptionId::ALLIES, 2},
   {OptionId::INFLUENCE_SIZE, 3},
   {OptionId::GENERATE_MANA, 0},
+  {OptionId::CURRENT_MOD, 0},
+  {OptionId::ENDLESS_ENEMIES, 2},
 };
 
 const map<OptionId, string> names {
   {OptionId::HINTS, "In-game hints"},
   {OptionId::ASCII, "Unicode graphics"},
-  {OptionId::MUSIC, "Music"},
-  {OptionId::SOUND, "Sound effects"},
+  {OptionId::MUSIC, "Music volume"},
+  {OptionId::SOUND, "SFX volume"},
   {OptionId::KEEP_SAVEFILES, "Keep save files"},
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::FULLSCREEN, "Fullscreen"},
@@ -71,17 +70,16 @@ const map<OptionId, string> names {
   {OptionId::FAST_IMMIGRATION, "Fast immigration"},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
-  {OptionId::KEEPER_NAME, "Keeper's name"},
-  {OptionId::KEEPER_TYPE, "Keeper's gender"},
+  {OptionId::PLAYER_NAME, "Name"},
   {OptionId::KEEPER_SEED, "Level generation seed"},
-  {OptionId::ADVENTURER_NAME, "Adventurer's name"},
-  {OptionId::ADVENTURER_TYPE, "Adventurer's gender"},
   {OptionId::MAIN_VILLAINS, "Main villains"},
   {OptionId::RETIRED_VILLAINS, "Retired villains"},
   {OptionId::LESSER_VILLAINS, "Lesser villains"},
   {OptionId::ALLIES, "Allies"},
   {OptionId::INFLUENCE_SIZE, "Min. tribes in influence zone"},
   {OptionId::GENERATE_MANA, "Generate mana in library"},
+  {OptionId::CURRENT_MOD, "Current mod"},
+  {OptionId::ENDLESS_ENEMIES, "Start endless enemy waves"},
 };
 
 const map<OptionId, string> hints {
@@ -99,7 +97,8 @@ const map<OptionId, string> hints {
     "The save file will be used to recover in case of a crash."},
   {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
     "using alt + letter."},
-  {OptionId::GENERATE_MANA, "Your minions will generate mana while working in the library."}
+  {OptionId::GENERATE_MANA, "Your minions will generate mana while working in the library."},
+  {OptionId::ENDLESS_ENEMIES, "Turn on recurrent enemy waves that attack your dungeon."}
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -133,7 +132,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::STARTING_RESOURCE,
       OptionId::FAST_IMMIGRATION,
 #endif
-      OptionId::KEEPER_NAME,
+      OptionId::PLAYER_NAME,
       OptionId::KEEPER_SEED,
   }},
 };
@@ -150,13 +149,9 @@ const string& Options::getName(OptionId id) {
 
 Options::Type Options::getType(OptionId id) {
   switch (id) {
-    case OptionId::ADVENTURER_NAME:
+    case OptionId::PLAYER_NAME:
     case OptionId::KEEPER_SEED:
-    case OptionId::KEEPER_NAME:
       return Options::STRING;
-    case OptionId::ADVENTURER_TYPE:
-    case OptionId::KEEPER_TYPE:
-      return Options::PLAYER_TYPE;
     case OptionId::GENERATE_MANA:
       return Options::BOOL;
     default:
@@ -198,19 +193,13 @@ int Options::getIntValue(OptionId id) {
   return v;
 }
 
-CreatureId Options::getCreatureId(OptionId id) {
-  return choicesCreatureId[id][*getValue(id).getValueMaybe<int>() % choicesCreatureId[id].size()];
-}
-
-void Options::setNextCreatureId(OptionId id) {
-  setValue(id, *getValue(id).getValueMaybe<int>() + 1);
-}
-
 void Options::setLimits(OptionId id, int minV, int maxV) {
   limits[id] = make_pair(minV, maxV);
 }
 
 optional<pair<int, int>> Options::getLimits(OptionId id) {
+  if (!choices[id].empty())
+    return make_pair(0, choices[id].size() - 1);
   return limits[id];
 }
 
@@ -220,10 +209,6 @@ void Options::setValue(OptionId id, Value value) {
   if (triggers.count(id))
     triggers.at(id)(*value.getValueMaybe<int>());
   writeValues();
-}
-
-void Options::setDefaultString(OptionId id, const string& s) {
-  defaultStrings[id] = s;
 }
 
 static string getOnOff(const Options::Value& value) {
@@ -243,8 +228,6 @@ string Options::getValueString(OptionId id) {
     case OptionId::VSYNC:
     case OptionId::AUTOSAVE:
     case OptionId::WASD_SCROLLING:
-    case OptionId::SOUND:
-    case OptionId::MUSIC:
       return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:
@@ -258,15 +241,12 @@ string Options::getValueString(OptionId id) {
     case OptionId::GENERATE_MANA:
     case OptionId::START_WITH_NIGHT:
       return getYesNo(value);
-    case OptionId::ADVENTURER_NAME:
+    case OptionId::PLAYER_NAME:
     case OptionId::KEEPER_SEED:
-    case OptionId::KEEPER_NAME: {
-      string val = *value.getValueMaybe<string>();
-      if (val.empty())
-        return defaultStrings[id];
-      else
-        return val;
-      }
+      return *value.getValueMaybe<string>();
+    case OptionId::ENDLESS_ENEMIES:
+    case OptionId::CURRENT_MOD:
+      return choices[id][(*value.getValueMaybe<int>() + choices[id].size()) % choices[id].size()];
     case OptionId::FULLSCREEN_RESOLUTION: {
       int val = *value.getValueMaybe<int>();
       if (val >= 0 && val < choices[id].size())
@@ -280,22 +260,22 @@ string Options::getValueString(OptionId id) {
     case OptionId::INFLUENCE_SIZE:
     case OptionId::ALLIES:
       return toString(getIntValue(id));
-    case OptionId::KEEPER_TYPE:
-    case OptionId::ADVENTURER_TYPE:
-      return toString((int)getCreatureId(id));
+    case OptionId::SOUND:
+    case OptionId::MUSIC:
+      return toString(getIntValue(id)) + "%";
   }
 }
 
 optional<Options::Value> Options::readValue(OptionId id, const string& input) {
   switch (id) {
-    case OptionId::ADVENTURER_NAME:
+    case OptionId::PLAYER_NAME:
     case OptionId::KEEPER_SEED:
-    case OptionId::KEEPER_NAME: return Options::Value(input);
+      return Options::Value(input);
     default:
-        if (auto ret = fromStringSafe<int>(input))
-          return Options::Value(*ret);
-        else
-          return none;
+      if (auto ret = fromStringSafe<int>(input))
+        return Options::Value(*ret);
+      else
+        return none;
   }
 }
 
@@ -307,23 +287,31 @@ static MenuType getMenuType(OptionSet set) {
 
 void Options::changeValue(OptionId id, const Options::Value& value, View* view) {
   switch (id) {
-    case OptionId::KEEPER_NAME:
-    case OptionId::ADVENTURER_NAME:
-        if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
-              "Leave blank to use a random name."))
-          setValue(id, *val);
-        break;
+    case OptionId::PLAYER_NAME:
+      if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
+            "Leave blank to use a random name."))
+        setValue(id, *val);
+      break;
     case OptionId::KEEPER_SEED:
-        if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
-              "Leave blank to use a random seed."))
-          setValue(id, *val);
-        break;
+      if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
+            "Leave blank to use a random seed."))
+        setValue(id, *val);
+      break;
+    case OptionId::MUSIC:
+    case OptionId::SOUND:
+      if (auto val = view->getNumber("Change " + getName(id), Range(0, 100), *value.getValueMaybe<int>(), 5))
+        setValue(id, *val);
+      break;
     case OptionId::FULLSCREEN_RESOLUTION:
-        if (auto index = view->chooseFromList("Choose resolution.", ListElem::convert(choices[id])))
-          setValue(id, *index);
-        break;
+      if (auto index = view->chooseFromList("Choose resolution.", ListElem::convert(choices[id])))
+        setValue(id, *index);
+      break;
     default:
+      if (!choices[id].empty())
+        setValue(id, *value.getValueMaybe<int>() + 1);
+      else
         setValue(id, (int) !*value.getValueMaybe<int>());
+      break;
   }
 }
 
@@ -331,8 +319,8 @@ void Options::setChoices(OptionId id, const vector<string>& v) {
   choices[id] = v;
 }
 
-void Options::setChoices(OptionId id, const vector<CreatureId>& v) {
-  choicesCreatureId[id] = v;
+bool Options::hasChoices(OptionId id) const {
+  return !choices[id].empty();
 }
 
 optional<string> Options::getHint(OptionId id) {
@@ -400,8 +388,11 @@ void Options::readValues() {
         optionId = *id;
       else
         continue;
-      if (auto val = readValue(optionId, p[1]))
+      if (auto val = readValue(optionId, p[1])) {
+        if ((optionId == OptionId::SOUND || optionId == OptionId::MUSIC) && *val == 1)
+          *val = 100;
         (*values)[optionId] = *val;
+      }
     }
   }
 }

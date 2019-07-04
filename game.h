@@ -6,6 +6,7 @@
 #include "enum_variant.h"
 #include "position.h"
 #include "exit_info.h"
+#include "game_time.h"
 
 class Options;
 class Highscores;
@@ -19,21 +20,26 @@ class GameEvent;
 class Campaign;
 class SavedGameInfo;
 struct CampaignSetup;
+class AvatarInfo;
+class ContentFactory;
+class NameGenerator;
 
 class Game : public OwnedObject<Game> {
   public:
-  static PGame campaignGame(Table<PModel>&&, CampaignSetup&);
-  static PGame splashScreen(PModel&&, const CampaignSetup&);
+  static PGame campaignGame(Table<PModel>&&, CampaignSetup&, AvatarInfo, ContentFactory);
+  static PGame splashScreen(PModel&&, const CampaignSetup&, ContentFactory);
 
   optional<ExitInfo> update(double timeDiff);
   Options* getOptions();
   void initialize(Options*, Highscores*, View*, FileSharing*);
   View* getView() const;
+  ContentFactory* getContentFactory();
+  ContentFactory removeContentFactory();
   void exitAction();
-  void transferAction(vector<WCreature>);
+  void transferAction(vector<Creature*>);
   void presentWorldmap();
-  void transferCreature(WCreature, WModel to);
-  bool canTransferCreature(WCreature, WModel to);
+  void transferCreature(Creature*, WModel to);
+  bool canTransferCreature(Creature*, WModel to);
   Position getTransferPos(WModel from, WModel to) const;
   string getGameIdentifier() const;
   string getGameDisplayName() const;
@@ -43,12 +49,12 @@ class Game : public OwnedObject<Game> {
   Statistics& getStatistics();
   const Statistics& getStatistics() const;
   Tribe* getTribe(TribeId) const;
-  double getGlobalTime() const;
+  GlobalTime getGlobalTime() const;
   WCollective getPlayerCollective() const;
   WPlayerControl getPlayerControl() const;
-  void addPlayer(WCreature);
-  void removePlayer(WCreature);
-  const vector<WCreature>& getPlayerCreatures() const;
+  void addPlayer(Creature*);
+  void removePlayer(Creature*);
+  const vector<Creature*>& getPlayerCreatures() const;
 
   int getModelDistance(WConstCollective c1, WConstCollective c2) const;
 
@@ -59,7 +65,7 @@ class Game : public OwnedObject<Game> {
   const string& getWorldName() const;
   bool gameWon() const;
 
-  void gameOver(WConstCreature player, int numKills, const string& enemiesString, int points);
+  void gameOver(const Creature* player, int numKills, const string& enemiesString, int points);
   void conquered(const string& title, int numKills, int points);
   void retired(const string& title, int numKills, int points);
 
@@ -69,14 +75,15 @@ class Game : public OwnedObject<Game> {
   SavedGameInfo getSavedGameInfo() const;
 
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
-  void killCreature(WCreature, WCreature attacker);
+  void killCreature(Creature*, Creature* attacker);
 
-  void handleMessageBoard(Position, WCreature);
+  void handleMessageBoard(Position, Creature*);
 
   PModel& getMainModel();
   vector<WModel> getAllModels() const;
   bool isSingleModel() const;
   int getSaveProgressCount() const;
+  WModel getCurrentModel() const;
 
   void prepareSiteRetirement();
   void doneRetirement();
@@ -87,15 +94,13 @@ class Game : public OwnedObject<Game> {
 
   SERIALIZATION_DECL(Game)
 
-  Game(Table<PModel>&&, Vec2 basePos, const CampaignSetup&);
+  Game(Table<PModel>&&, Vec2 basePos, const CampaignSetup&, ContentFactory);
 
   private:
-  void updateSunlightInfo();
-  void tick(double time);
-  PCreature makeAdventurer(int handicap);
-  WModel getCurrentModel() const;
+  optional<ExitInfo> update();
+  void tick(GlobalTime);
   Vec2 getModelCoords(const WModel) const;
-  optional<ExitInfo> updateModel(WModel, double totalTime);
+  bool updateModel(WModel, double timeDiff);
   string getPlayerName() const;
   void uploadEvent(const string& name, const map<string, string>&);
 
@@ -104,11 +109,11 @@ class Game : public OwnedObject<Game> {
   Table<bool> SERIAL(visited);
   map<LevelId, double> SERIAL(localTime);
   Vec2 SERIAL(baseModel);
-  View* view;
+  View* view = nullptr;
   double SERIAL(currentTime) = 0;
   optional<ExitInfo> exitInfo;
   Tribe::Map SERIAL(tribes);
-  optional<double> SERIAL(lastTick);
+  optional<int> SERIAL(lastTick);
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
   map<VillainType, vector<WCollective>> SERIAL(villainsByType);
@@ -117,19 +122,26 @@ class Game : public OwnedObject<Game> {
   bool SERIAL(finishCurrentMusic) = true;
   unique_ptr<CreatureView> SERIAL(spectator);
   HeapAllocated<Statistics> SERIAL(statistics);
-  Options* options;
-  Highscores* highscores;
+  Options* options = nullptr;
+  Highscores* highscores = nullptr;
   optional<milliseconds> lastUpdate;
-  WeakPointer<PlayerControl> SERIAL(playerControl);
-  WCollective SERIAL(playerCollective);
+  WPlayerControl SERIAL(playerControl) = nullptr;
+  WCollective SERIAL(playerCollective) = nullptr;
   HeapAllocated<Campaign> SERIAL(campaign);
   bool wasTransfered = false;
-  vector<WCreature> SERIAL(players);
-  FileSharing* fileSharing;
+  vector<Creature*> SERIAL(players);
+  FileSharing* fileSharing = nullptr;
   set<int> SERIAL(turnEvents);
+  TimeInterval SERIAL(sunlightTimeOffset);
   friend class GameListener;
   void considerRealTimeRender();
   void considerRetiredLoadedEvent(Vec2 coord);
+  optional<ExitInfo> updateInput();
+  void initializeModels();
+  void increaseTime(double diff);
+  void addCollective(WCollective);
+  void spawnKeeper(AvatarInfo, vector<string> introText);
+  HeapAllocated<ContentFactory> SERIAL(contentFactory);
 };
 
-
+CEREAL_CLASS_VERSION(Game, 1);

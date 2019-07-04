@@ -16,8 +16,6 @@ const Table<Campaign::SiteInfo>& Campaign::getSites() const {
 }
 
 bool Campaign::canEmbark(Vec2 pos) const {
-  if (type == CampaignType::CAMPAIGN)
-    return false;
   switch (playerRole) {
     case PlayerRole::ADVENTURER: return !!sites[pos].dweller;
     case PlayerRole::KEEPER: return !sites[pos].dweller && !sites[pos].blocked;
@@ -46,7 +44,7 @@ const string& Campaign::getWorldName() const {
 
 void Campaign::clearSite(Vec2 v) {
   sites[v] = SiteInfo{};
-  sites[v].viewId = {ViewId::GRASS};
+  sites[v].viewId = {ViewId("grass")};
 }
 
 bool Campaign::isDefeated(Vec2 pos) const {
@@ -100,7 +98,7 @@ optional<string> Campaign::SiteInfo::getDwellerDescription() const {
   if (dweller)
     return dweller->match(
         [](const VillainInfo& info) { return info.name + " (" + info.getDescription() + ")"; },
-        [](const RetiredInfo& info) { return info.gameInfo.getName() + " (main villain)" ;},
+        [](const RetiredInfo& info) { return info.gameInfo.name + " (main villain)" ;},
         [](const KeeperInfo&)->string { return "This is your home site"; });
   else
     return none;
@@ -132,8 +130,8 @@ bool Campaign::SiteInfo::isEnemy() const {
 
 void Campaign::SiteInfo::setBlocked() {
   blocked = true;
-  viewId.push_back(Random.choose(ViewId::MAP_MOUNTAIN1, ViewId::MAP_MOUNTAIN2, ViewId::MAP_MOUNTAIN3,
-        ViewId::CANIF_TREE, ViewId::DECID_TREE));
+  viewId.push_back(Random.choose(ViewId("map_mountain1"), ViewId("map_mountain2"), ViewId("map_mountain3"),
+        ViewId("canif_tree"), ViewId("decid_tree")));
 }
 
 bool Campaign::isInInfluence(Vec2 pos) const {

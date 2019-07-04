@@ -26,6 +26,8 @@
 #include "destroy_action.h"
 #include "best_attack.h"
 #include "msg_type.h"
+#include "game_time.h"
+#include "creature_status.h"
 
 class Skill;
 class Level;
@@ -41,9 +43,8 @@ class Equipment;
 class Spell;
 class CreatureAttributes;
 class Body;
-class MinionTaskMap;
+class MinionActivityMap;
 class CreatureName;
-class Gender;
 class SpellMap;
 class Sound;
 class Game;
@@ -52,29 +53,36 @@ class CreatureDebt;
 class Vision;
 struct AdjectiveInfo;
 struct MovementInfo;
+struct NavigationFlags;
+class SpellMap;
+class SpellSchool;
 
 class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedObject<Creature> {
   public:
-  Creature(TribeId, const CreatureAttributes&);
-  Creature(const ViewObject&, TribeId, const CreatureAttributes&);
+  Creature(TribeId, CreatureAttributes, SpellMap);
+  Creature(const ViewObject&, TribeId, CreatureAttributes, SpellMap);
   virtual ~Creature();
 
-  static vector<vector<WCreature>> stack(const vector<WCreature>&);
+  static vector<vector<Creature*>> stack(const vector<Creature*>&);
 
   const ViewObject& getViewObjectFor(const Tribe* observer) const;
   void makeMove();
-  double getLocalTime() const;
-  double getGlobalTime() const;
+  optional<LocalTime> getLocalTime() const;
+  optional<GlobalTime> getGlobalTime() const;
   WLevel getLevel() const;
-  WGame getGame() const;
-  vector<WCreature> getVisibleEnemies() const;
-  vector<WCreature> getVisibleCreatures() const;
+  Game* getGame() const;
+  const vector<Creature*>& getVisibleEnemies() const;
+  Creature* getClosestEnemy() const;
+  const vector<Creature*>& getVisibleCreatures() const;
+  bool shouldAIAttack(const Creature* enemy) const;
+  bool shouldAIChase(const Creature* enemy) const;
   vector<Position> getVisibleTiles() const;
+  void setGlobalTime(GlobalTime);
   void setPosition(Position);
   Position getPosition() const;
   bool dodgeAttack(const Attack&);
   bool takeDamage(const Attack&);
-  void onAttackedBy(WCreature);
+  void onAttackedBy(Creature*);
   void heal(double amount = 1);
   /** Morale is in the range [-1:1] **/
   double getMorale() const;
@@ -83,19 +91,22 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void take(vector<PItem> item);
   const Equipment& getEquipment() const;
   Equipment& getEquipment();
-  vector<PItem> steal(const vector<WItem> items);
-  bool canSeeInPosition(WConstCreature) const;
-  bool canSeeOutsidePosition(WConstCreature) const;
-  bool canSee(WConstCreature) const;
+  vector<PItem> steal(const vector<Item*> items);
+  bool canSeeInPosition(const Creature*) const;
+  bool canSeeOutsidePosition(const Creature*) const;
+  bool canSee(const Creature*) const;
   bool canSee(Position) const;
   bool canSee(Vec2) const;
-  bool isEnemy(WConstCreature) const;
+  bool isEnemy(const Creature*) const;
   void tick();
+  void upgradeViewId(int level);
+  ViewId getMaxViewIdUpgrade() const;
 
   const CreatureName& getName() const;
   CreatureName& getName();
   const char* identify() const;
-  int getAttr(AttrType) const;
+  int getAttr(AttrType, bool includeWeapon = true) const;
+  int getAttrBonus(AttrType, bool includeWeapon) const;
 
   int getPoints() const;
   const Vision& getVision() const;
@@ -106,112 +117,100 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   Tribe* getTribe();
   TribeId getTribeId() const;
   void setTribe(TribeId);
-  bool isFriend(WConstCreature) const;
-  vector<WItem> getGold(int num) const;
+  bool isFriend(const Creature*) const;
+  vector<Item*> getGold(int num) const;
 
-  void takeItems(vector<PItem> items, WCreature from);
-  bool canTakeItems(const vector<WItem>& items) const;
+  void takeItems(vector<PItem> items, Creature* from);
+  bool canTakeItems(const vector<Item*>& items) const;
 
   const CreatureAttributes& getAttributes() const;
   CreatureAttributes& getAttributes();
   const Body& getBody() const;
   Body& getBody();
   bool isDead() const;
-  void clearLastAttacker();
+  void clearInfoForRetiring();
   optional<string> getDeathReason() const;
-  double getDeathTime() const;
+  GlobalTime getDeathTime() const;
   const EntitySet<Creature>& getKills() const;
 
   MovementType getMovementType() const;
 
   int getDifficultyPoints() const;
 
-  void addSkill(Skill* skill);
-
-  string getPluralTheName(WItem item, int num) const;
-  string getPluralAName(WItem item, int num) const;
-  CreatureAction move(Position) const;
+  string getPluralTheName(Item* item, int num) const;
+  string getPluralAName(Item* item, int num) const;
+  CreatureAction move(Position, optional<Position> nextPosIntent = none) const;
   CreatureAction move(Vec2) const;
   CreatureAction forceMove(Position) const;
   CreatureAction forceMove(Vec2) const;
-  CreatureAction wait() const;
-  vector<WItem> getPickUpOptions() const;
-  CreatureAction pickUp(const vector<WItem>& item) const;
-  CreatureAction drop(const vector<WItem>& item) const;
+  static CreatureAction wait();
+  vector<Item*> getPickUpOptions() const;
+  CreatureAction pickUp(const vector<Item*>& item) const;
+  bool canCarryMoreWeight(double) const;
+  CreatureAction drop(const vector<Item*>& item) const;
   void drop(vector<PItem> item);
   struct AttackParams {
+    Item* weapon = nullptr;
     optional<AttackLevel> level;
-    enum Mod { WILD, SWIFT};
-    optional<Mod> mod;
   };
-  CreatureAction attack(WCreature, optional<AttackParams> = none) const;
-  CreatureAction execute(WCreature) const;
-  CreatureAction bumpInto(Vec2 direction) const;
-  CreatureAction applyItem(WItem item) const;
-  CreatureAction equip(WItem item) const;
-  CreatureAction unequip(WItem item) const;
-  bool canEquipIfEmptySlot(WConstItem item, string* reason = nullptr) const;
-  bool canEquip(WConstItem item) const;
-  CreatureAction throwItem(WItem, Vec2 direction) const;
+  CreatureAction attack(Creature*, optional<AttackParams> = none) const;
+  int getDefaultWeaponDamage() const;
+  CreatureAction execute(Creature*) const;
+  CreatureAction applyItem(Item* item) const;
+  CreatureAction equip(Item* item) const;
+  CreatureAction unequip(Item* item) const;
+  bool canEquipIfEmptySlot(const Item* item, string* reason = nullptr) const;
+  bool canEquip(const Item* item) const;
+  CreatureAction throwItem(Item*, Position target, bool isFriendlyAI) const;
+  optional<int> getThrowDistance(const Item*) const;
   CreatureAction applySquare(Position) const;
   CreatureAction hide() const;
   bool isHidden() const;
-  bool knowsHiding(WConstCreature) const;
+  bool knowsHiding(const Creature*) const;
   CreatureAction flyAway() const;
   CreatureAction disappear() const;
-  CreatureAction torture(WCreature) const;
-  CreatureAction chatTo(WCreature) const;
-  CreatureAction stealFrom(Vec2 direction, const vector<WItem>&) const;
-  CreatureAction give(WCreature whom, vector<WItem> items) const;
-  CreatureAction payFor(const vector<WItem>&) const;
-  CreatureAction fire(Vec2 direction) const;
+  CreatureAction torture(Creature*) const;
+  CreatureAction chatTo(Creature*) const;
+  CreatureAction pet(Creature*) const;
+  CreatureAction stealFrom(Vec2 direction, const vector<Item*>&) const;
+  CreatureAction give(Creature* whom, vector<Item*> items) const;
+  CreatureAction payFor(const vector<Item*>&) const;
+  CreatureAction fire(Position target) const;
   CreatureAction construct(Vec2 direction, FurnitureType) const;
   CreatureAction whip(const Position&) const;
-  bool canConstruct(FurnitureType) const;
-  CreatureAction eat(WItem) const;
+  CreatureAction eat(Item*) const;
   CreatureAction destroy(Vec2 direction, const DestroyAction&) const;
   void destroyImpl(Vec2 direction, const DestroyAction& action);
   CreatureAction copulate(Vec2 direction) const;
-  bool canCopulateWith(WConstCreature) const;
-  CreatureAction consume(WCreature) const;
-  bool canConsume(WConstCreature) const;
-  
-  void displace(double time, Vec2);
-  void surrender(WCreature to);
+  bool canCopulateWith(const Creature*) const;
+  CreatureAction consume(Creature*) const;
+  bool canConsume(const Creature*) const;
+  CreatureAction push(Creature*);
+
+  void displace(Vec2);
   void retire();
   
   void increaseExpLevel(ExperienceType, double increase);
 
   BestAttack getBestAttack() const;
 
-  WItem getWeapon() const;
+  Item* getRandomWeapon() const;
+  Item* getFirstWeapon() const;
   void dropWeapon();
-  vector<vector<WItem>> stackItems(vector<WItem>) const;
-  struct NavigationFlags {
-    NavigationFlags() : stepOnTile(false), destroy(true) {}
-    NavigationFlags& requireStepOnTile() {
-      stepOnTile = true;
-      return *this;
-    }
-    // This makes the creature stop at the obstacle, and not navigate around it
-    NavigationFlags& noDestroying() {
-      destroy = false;
-      return *this;
-    }
-    bool stepOnTile;
-    bool destroy;
-  };
-  CreatureAction moveTowards(Position, NavigationFlags = {});
+  void dropUnsupportedEquipment();
+  vector<vector<Item*>> stackItems(vector<Item*>) const;
+  CreatureAction moveTowards(Position, NavigationFlags);
+  CreatureAction moveTowards(Position);
   CreatureAction moveAway(Position, bool pathfinding = true);
   CreatureAction continueMoving();
   CreatureAction stayIn(WLevel, Rectangle);
-  bool isSameSector(Position) const;
-  bool canNavigateTo(Position) const;
+  bool canNavigateToOrNeighbor(Position) const;
+  bool canNavigateTo(Position pos) const;
 
   bool atTarget() const;
 
   enum class DropType { NOTHING, ONLY_INVENTORY, EVERYTHING };
-  void dieWithAttacker(WCreature attacker, DropType = DropType::EVERYTHING);
+  void dieWithAttacker(Creature* attacker, DropType = DropType::EVERYTHING);
   void dieWithLastAttacker(DropType = DropType::EVERYTHING);
   void dieNoReason(DropType = DropType::EVERYTHING);
   void dieWithReason(const string& reason, DropType = DropType::EVERYTHING);
@@ -220,79 +219,94 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void poisonWithGas(double amount);
   void affectBySilver();
   void affectByAcid();
-  void setHeld(WCreature holding);
-  WCreature getHoldingCreature() const;
+  void setHeld(Creature* holding);
+  Creature* getHoldingCreature() const;
 
   bool isPlayer() const;
 
-  void you(MsgType type, const vector<string>& param) const;
   void you(MsgType type, const string& param = "") const;
   void you(const string& param) const;
-  void youHit(BodyPart part, AttackType type) const;
+  void verb(const string& second, const string& third, const string& param = "") const;
   void secondPerson(const PlayerMessage&) const;
   void thirdPerson(const PlayerMessage& playerCanSee, const PlayerMessage& cant) const;
   void thirdPerson(const PlayerMessage& playerCanSee) const;
   void message(const PlayerMessage&) const;
   void privateMessage(const PlayerMessage&) const;
+  void addFX(const FXInfo&) const;
 
   WController getController() const;
   void pushController(PController);
   void setController(PController);
   void popController();
 
-  CreatureAction castSpell(Spell*) const;
-  CreatureAction castSpell(Spell*, Vec2) const;
-  double getSpellDelay(Spell*) const;
-  bool isReady(Spell*) const;
+  CreatureAction castSpell(const Spell*) const;
+  CreatureAction castSpell(const Spell*, Position) const;
+  TimeInterval getSpellDelay(const Spell*) const;
+  bool isReady(const Spell*) const;
+  const SpellMap& getSpellMap() const;
 
   SERIALIZATION_DECL(Creature)
 
-  void addEffect(LastingEffect, double time, bool msg = true);
-  void removeEffect(LastingEffect, bool msg = true);
+  bool addEffect(LastingEffect, TimeInterval time, bool msg = true);
+  bool removeEffect(LastingEffect, bool msg = true);
   void addPermanentEffect(LastingEffect, int count = 1);
   void removePermanentEffect(LastingEffect, int count = 1);
   bool isAffected(LastingEffect) const;
-  optional<double> getTimeRemaining(LastingEffect) const;
-  optional<double> getLastAffected(LastingEffect) const;
+  optional<TimeInterval> getTimeRemaining(LastingEffect) const;
   bool hasCondition(CreatureCondition) const;
-  bool isDarknessSource() const;
 
-  bool isUnknownAttacker(WConstCreature) const;
+  bool isUnknownAttacker(const Creature*) const;
   vector<AdjectiveInfo> getGoodAdjectives() const;
   vector<AdjectiveInfo> getBadAdjectives() const;
 
   vector<string> popPersonalEvents();
   void addPersonalEvent(const string&);
-  void setInCombat();
-  bool wasInCombat(double numLastTurns) const;
-  void onKilled(WCreature victim, optional<ExperienceType> lastDamage);
+  struct CombatIntentInfo {
+    Creature* SERIAL(attacker) = nullptr;
+    GlobalTime SERIAL(time);
+    SERIALIZE_ALL(attacker, time)
+  };
+  void addCombatIntent(Creature* attacker, bool immediateAttack);
+  optional<CombatIntentInfo> getLastCombatIntent() const;
+  void onKilledOrCaptured(Creature* victim);
 
   void addSound(const Sound&) const;
   void updateViewObject();
-  void swapPosition(Vec2 direction);
+  void swapPosition(Vec2 direction, bool withExcuseMe = true);
+  bool canSwapPositionWithEnemy(Creature* other) const;
+  vector<PItem> generateCorpse(bool instantlyRotten = false) const;
+  int getLastMoveCounter() const;
+
+  EnumSet<CreatureStatus>& getStatus();
+  const EnumSet<CreatureStatus>& getStatus() const;
+
+  void toggleCaptureOrder();
+  bool isCaptureOrdered() const;
+  bool canBeCaptured() const;
+  void removePrivateEnemy(const Creature*); 
+  void cheatAllSpells();
 
   private:
 
   CreatureAction moveTowards(Position, bool away, NavigationFlags);
-  void spendTime(double time);
-  bool canCarry(const vector<WItem>&) const;
+  optional<MovementInfo> spendTime(TimeInterval = 1_visible);
+  int canCarry(const vector<Item*>&) const;
   TribeSet getFriendlyTribes() const;
-  void addMovementInfo(const MovementInfo&);
-  bool canSwapPositionInMovement(WCreature other) const;
+  void addMovementInfo(MovementInfo);
+  bool canSwapPositionInMovement(Creature* other, optional<Position> nextPos) const;
 
   HeapAllocated<CreatureAttributes> SERIAL(attributes);
   Position SERIAL(position);
   HeapAllocated<Equipment> SERIAL(equipment);
-  unique_ptr<LevelShortestPath> SERIAL(shortestPath);
+  heap_optional<LevelShortestPath> SERIAL(shortestPath);
   EntitySet<Creature> SERIAL(knownHiding);
   TribeId SERIAL(tribe);
   double SERIAL(morale) = 0;
-  optional<double> SERIAL(deathTime);
+  optional<GlobalTime> SERIAL(deathTime);
   bool SERIAL(hidden) = false;
-  WCreature lastAttacker;
-  optional<ExperienceType> SERIAL(lastDamageType);
+  Creature* lastAttacker = nullptr;
   optional<string> SERIAL(deathReason);
-  int SERIAL(swapPositionCooldown) = 0;
+  optional<Position> SERIAL(nextPosIntent);
   EntitySet<Creature> SERIAL(unknownAttackers);
   EntitySet<Creature> SERIAL(privateEnemies);
   optional<Creature::Id> SERIAL(holding);
@@ -300,17 +314,28 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   EntitySet<Creature> SERIAL(kills);
   mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
-  void updateVisibleCreatures();
-  vector<Position> visibleEnemies;
-  vector<Position> visibleCreatures;
+  using MoveId = pair<int, LevelId>;
+  MoveId getCurrentMoveId() const;
+  mutable optional<pair<MoveId, vector<Creature*>>> visibleEnemies;
+  mutable optional<pair<MoveId, vector<Creature*>>> visibleCreatures;
   HeapAllocated<Vision> SERIAL(vision);
   bool forceMovement = false;
-  optional<double> SERIAL(lastCombatTime);
+  optional<CombatIntentInfo> SERIAL(lastCombatIntent);
   HeapAllocated<CreatureDebt> SERIAL(debt);
   double SERIAL(highestAttackValueEver) = 0;
+  int SERIAL(lastMoveCounter) = 0;
+  EnumSet<CreatureStatus> SERIAL(statuses);
+  bool SERIAL(capture) = 0;
+  double SERIAL(captureHealth) = 1;
+  bool captureDamage(double damage, Creature* attacker);
+  mutable Game* gameCache = nullptr;
+  optional<GlobalTime> SERIAL(globalTime);
+  void considerMovingFromInaccessibleSquare();
+  void updateLastingFX(ViewObject&);
+  HeapAllocated<SpellMap> SERIAL(spellMap);
 };
 
 struct AdjectiveInfo {
   string name;
-  const char* help;
+  string help;
 };

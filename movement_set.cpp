@@ -5,7 +5,7 @@
 
 template <class Archive> 
 void MovementSet::serialize(Archive& ar, const unsigned int version) {
-  ar(traits, forcibleTraits, blockingEnemies, tribe);
+  ar(NAMED(traits), NAMED(forcibleTraits), SKIP(blockingEnemies), SKIP(tribe));
 }
 
 SERIALIZABLE(MovementSet);
@@ -72,5 +72,9 @@ void MovementSet::setTribe(TribeId id) {
 MovementSet& MovementSet::clearTraits() {
   traits.clear();
   forcibleTraits.clear();
+  blockingEnemies = false;
   return *this;
 }
+
+#include "pretty_archive.h"
+template void MovementSet::serialize(PrettyInputArchive&, unsigned);

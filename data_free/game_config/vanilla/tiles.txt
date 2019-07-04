@@ -1,0 +1,480 @@
+{
+  { "keeper1" "@" ColorId PURPLE }
+  { "keeper2" "@" ColorId PURPLE }
+  { "keeper3" "@" ColorId PURPLE }
+  { "keeper4" "@" ColorId PURPLE }
+  { "keeper_f1" "@" ColorId PINK }
+  { "keeper_f2" "@" ColorId PINK }
+  { "keeper_f3" "@" ColorId PINK }
+  { "keeper_f4" "@" ColorId PINK  }
+  { "keeper_knight1" "@" ColorId YELLOW }
+  { "keeper_knight2" "@" ColorId YELLOW }
+  { "keeper_knight3" "@" ColorId YELLOW }
+  { "keeper_knight4" "@" ColorId YELLOW }
+  { "keeper_knight_f1" "@" ColorId YELLOW }
+  { "keeper_knight_f2" "@" ColorId YELLOW }
+  { "keeper_knight_f3" "@" ColorId YELLOW }
+  { "keeper_knight_f4" "@" ColorId YELLOW }
+  { "player" "@" ColorId WHITE  }
+  { "player_f" "@" ColorId YELLOW }
+  { "demon_dweller" "U" ColorId PURPLE }
+  { "demon_lord" "U" ColorId YELLOW }
+  { "vampire" "V" ColorId DARK_GRAY }
+  { "vampire_lord" "V" ColorId PURPLE }
+  { "unicorn" "h" ColorId WHITE }
+  { "elf" "@" ColorId LIGHT_GREEN }
+  { "elf_woman" "@" ColorId LIGHT_GREEN }
+  { "elf_archer" "@" ColorId GREEN }
+  { "elf_child" "@" ColorId LIGHT_GREEN }
+  { "elf_lord" "@" ColorId DARK_GREEN }
+  { "dark_elf" "@" ColorId ALMOST_DARK_GRAY }
+  { "dark_elf_woman" "@" ColorId ALMOST_DARK_GRAY }
+  { "dark_elf_warrior" "@" ColorId GRAY }
+  { "dark_elf_child" "@" ColorId ALMOST_GRAY }
+  { "dark_elf_lord" "@" ColorId LIGHT_GRAY }
+  { "driad" "@" ColorId LIGHT_BROWN }
+  { "kobold" "k" ColorId LIGHT_BROWN }
+  { "lizardman" "@" ColorId LIGHT_BROWN }
+  { "lizardlord" "@" ColorId BROWN }
+  { "imp" "i" ColorId LIGHT_BROWN }
+  { "prisoner" "@" ColorId LIGHT_BROWN }
+  { "ogre" "O" ColorId GREEN }
+  { "chicken" "c" ColorId YELLOW }
+  { "gnome" "g" ColorId GREEN }
+  { "gnome_boss" "g" ColorId DARK_BLUE }
+  { "dwarf" "h" ColorId BLUE }
+  { "dwarf_baron" "h" ColorId PURPLE }
+  { "dwarf_female" "h" ColorId LIGHT_BLUE }
+  { "shopkeeper" "@" ColorId LIGHT_BLUE }
+  { "floor" "." ColorId LIGHT_GRAY }
+  { "keeper_floor" "." ColorId WHITE }
+  { "wood_floor1" "." ColorId LIGHT_BROWN }
+  { "wood_floor2" "." ColorId BROWN }
+  { "wood_floor3" "." ColorId BROWN }
+  { "wood_floor4" "." ColorId LIGHT_BROWN }
+  { "wood_floor5" "." ColorId BROWN }
+  { "stone_floor1" "." ColorId LIGHT_GRAY }
+  { "stone_floor2" "." ColorId GRAY }
+  { "stone_floor3" "." ColorId GRAY }
+  { "stone_floor4" "." ColorId LIGHT_GRAY }
+  { "stone_floor5" "." ColorId GRAY }
+  { "carpet_floor1" "." ColorId PURPLE }
+  { "carpet_floor2" "." ColorId PINK }
+  { "carpet_floor3" "." ColorId PINK }
+  { "carpet_floor4" "." ColorId PURPLE }
+  { "carpet_floor5" "." ColorId PINK }
+  { "floor_speed" "." ColorId LIGHT_RED }
+  { "floor_blind" "." ColorId YELLOW }
+  { "floor_invi" "." ColorId LIGHT_BLUE }
+  { "floor_regen" "." ColorId GREEN }
+  { "floor_peace" "." ColorId WHITE }
+  { "fallen_tree" "*" ColorId GREEN false "treecut" }
+  { "tree_trunk" "." ColorId BROWN false "treecut" }
+  { "crops" "𝃰" ColorId YELLOW }
+  { "crops2" "𝃰" ColorId YELLOW }
+  { "down_staircase" "➘" ColorId ALMOST_WHITE true }
+  { "up_staircase" "➚" ColorId ALMOST_WHITE true }
+  { "map_mountain1" "^" ColorId DARK_GRAY }
+  { "map_mountain2" "^" ColorId GRAY }
+  { "map_mountain3" "^" ColorId LIGHT_GRAY }
+  { "unknown_monster" "?" ColorId LIGHT_GREEN false "unknown" }
+  { "destroy_button" "X" ColorId RED false "remove" }
+  { "empty" " " ColorId BLACK }
+  { "dig_mark" " " ColorId BLACK }
+  { "dig_mark2" " " ColorId BLACK }
+  { "forbid_zone" "#" ColorId RED false "dig_mark" ColorId RED }
+  { "orc" "o" ColorId DARK_BLUE }
+  { "orc_captain" "o" ColorId PURPLE }
+  { "orc_shaman" "o" ColorId YELLOW }
+  { "harpy" "R" ColorId YELLOW }
+  { "bandit" "@" ColorId DARK_BLUE }
+  { "doppleganger" "&" ColorId YELLOW }
+  { "succubus" "&" ColorId RED }
+  { "ghost" "&" ColorId WHITE }
+  { "spirit" "" ColorId LIGHT_BLUE }
+  { "green_dragon" "D" ColorId GREEN }
+  { "red_dragon" "D" ColorId RED }
+  { "cyclops" "C" ColorId GREEN }
+  { "minotaur" "M" ColorId PURPLE }
+  { "soft_monster" "M" ColorId PINK }
+  { "hydra" "H" ColorId PURPLE }
+  { "shelob" "S" ColorId PURPLE }
+  { "witch" "@" ColorId BROWN }
+  { "witchman" "@" ColorId WHITE }
+  { "knight" "@" ColorId LIGHT_GRAY }
+  { "jester" "@" ColorId PINK }
+  { "priest" "@" ColorId SKY_BLUE }
+  { "warrior" "@" ColorId DARK_GRAY }
+  { "shaman" "@" ColorId YELLOW }
+  { "duke1" "@" ColorId BLUE false "knightboss1" }
+  { "duke2" "@" ColorId BLUE false "knightboss2" }
+  { "duke3" "@" ColorId BLUE false "knightboss3" }
+  { "duke4" "@" ColorId BLUE false "knightboss4" }
+  { "duke_f1" "@" ColorId LIGHT_BLUE false "knightboss_f1" }
+  { "duke_f2" "@" ColorId LIGHT_BLUE false "knightboss_f2" }
+  { "duke_f3" "@" ColorId LIGHT_BLUE false "knightboss_f3" }
+  { "duke_f4" "@" ColorId LIGHT_BLUE false "knightboss_f4" }
+  { "archer" "@" ColorId BROWN }
+  { "peasant" "@" ColorId GREEN }
+  { "peasant_woman" "@" ColorId GREEN }
+  { "child" "@" ColorId LIGHT_GREEN }
+  { "clay_golem" "Y" ColorId YELLOW }
+  { "stone_golem" "Y" ColorId LIGHT_GRAY }
+  { "iron_golem" "Y" ColorId ORANGE }
+  { "lava_golem" "Y" ColorId RED }
+  { "ada_golem" "Y" ColorId LIGHT_BLUE }
+  { "automaton" "A" ColorId LIGHT_GRAY }
+  { "elementalist" "@" ColorId YELLOW }
+  { "air_elemental" "E" ColorId LIGHT_BLUE }
+  { "fire_elemental" "E" ColorId RED }
+  { "water_elemental" "E" ColorId BLUE }
+  { "earth_elemental" "E" ColorId GRAY }
+  { "ent" "E" ColorId LIGHT_BROWN }
+  { "angel" "A" ColorId LIGHT_BLUE }
+  { "zombie" "Z" ColorId GREEN }
+  { "skeleton" "Z" ColorId WHITE }
+  { "mummy" "Z" ColorId YELLOW }
+  { "jackal" "d" ColorId LIGHT_BROWN }
+  { "deer" "R" ColorId DARK_BROWN }
+  { "horse" "H" ColorId LIGHT_BROWN }
+  { "cow" "C" ColorId WHITE }
+  { "pig" "p" ColorId YELLOW }
+  { "donkey" "D" ColorId GRAY }
+  { "goat" "g" ColorId GRAY }
+  { "boar" "b" ColorId LIGHT_BROWN }
+  { "fox" "d" ColorId ORANGE_BROWN }
+  { "wolf" "d" ColorId DARK_BLUE }
+  { "werewolf" "d" ColorId WHITE }
+  { "dog" "d" ColorId BROWN }
+  { "kraken_head" "S" ColorId GREEN }
+  { "kraken_land" "S" ColorId DARK_GREEN }
+  { "kraken_water" "S" ColorId DARK_GREEN }
+  { "death" "D" ColorId DARK_GRAY }
+  { "bear" "N" ColorId BROWN }
+  { "bat" "b" ColorId DARK_GRAY }
+  { "goblin" "o" ColorId GREEN }
+  { "rat" "r" ColorId BROWN }
+  { "rat_soldier" "@" ColorId BROWN }
+  { "rat_lady" "@" ColorId DARK_BROWN }
+  { "rat_king" "@" ColorId LIGHT_BROWN }
+  { "spider" "s" ColorId BROWN }
+  { "fly" "b" ColorId GRAY }
+  { "ant_worker" "a" ColorId BROWN }
+  { "ant_soldier" "a" ColorId YELLOW }
+  { "ant_queen" "a" ColorId PURPLE }
+  { "snake" "S" ColorId YELLOW }
+  { "vulture" "v" ColorId DARK_GRAY }
+  { "raven" "v" ColorId DARK_GRAY }
+  { "body_part" "%" ColorId RED }
+  { "bone" "%" ColorId WHITE }
+  { "dig_icon" "⛏" ColorId LIGHT_GRAY true }
+  { "sword" ")" ColorId LIGHT_GRAY }
+  { "ada_sword" ")" ColorId LIGHT_BLUE }
+  { "spear" "/" ColorId LIGHT_GRAY }
+  { "special_sword" ")" ColorId YELLOW }
+  { "elven_sword" ")" ColorId GRAY }
+  { "knife" ")" ColorId WHITE }
+  { "war_hammer" ")" ColorId BLUE }
+  { "ada_war_hammer" ")" ColorId LIGHT_BLUE }
+  { "special_war_hammer" ")" ColorId LIGHT_BLUE }
+  { "battle_axe" ")" ColorId GREEN }
+  { "ada_battle_axe" ")" ColorId LIGHT_BLUE }
+  { "special_battle_axe" ")" ColorId LIGHT_GREEN }
+  { "bow" ")" ColorId BROWN }
+  { "elven_bow" ")" ColorId YELLOW false "bow" }
+  { "arrow" "/" ColorId BROWN }
+  { "wooden_staff" ")" ColorId DARK_BROWN }
+  { "iron_staff" ")" ColorId ORANGE }
+  { "golden_staff" ")" ColorId YELLOW }
+  { "force_bolt" "*" ColorId DARK_BLUE }
+  { "fireball" "*" ColorId ORANGE }
+  { "air_blast" "*" ColorId WHITE }
+  { "stun_ray" "*" ColorId LIGHT_GREEN }
+  { "club" ")" ColorId BROWN }
+  { "heavy_club" ")" ColorId BROWN }
+  { "scroll" "?" ColorId WHITE }
+  { "amulet1" "\\" ColorId YELLOW }
+  { "amulet2" "\\" ColorId YELLOW }
+  { "amulet3" "\\" ColorId YELLOW }
+  { "amulet4" "\\" ColorId YELLOW }
+  { "amulet5" "\\" ColorId YELLOW }
+  { "ring_red" "=" ColorId RED }
+  { "ring_green" "=" ColorId GREEN }
+  { "book" "+" ColorId YELLOW }
+  { "hand_torch" "/" ColorId YELLOW }
+  { "first_aid" "+" ColorId RED }
+  { "trap_item" "+" ColorId YELLOW }
+  { "potion1" "!" ColorId LIGHT_RED }
+  { "potion2" "!" ColorId BLUE }
+  { "potion3" "!" ColorId YELLOW }
+  { "potion4" "!" ColorId VIOLET }
+  { "potion5" "!" ColorId DARK_BROWN }
+  { "potion6" "!" ColorId LIGHT_GRAY }
+  { "rune1" "~" ColorId GREEN }
+  { "rune2" "~" ColorId PURPLE }
+  { "rune3" "~" ColorId RED }
+  { "rune4" "~" ColorId BLUE }
+  { "key" "*" ColorId YELLOW }
+  { "gold" "$" ColorId YELLOW }
+  { "treasure_chest" "=" ColorId BROWN }
+  { "coffin1" "⚰" ColorId BROWN true }
+  { "coffin2" "⚰" ColorId GRAY true }
+  { "coffin3" "⚰" ColorId YELLOW true }
+  { "loot_coffin" "⚰" ColorId BROWN true "coffin1" }
+  { "opened_coffin" "⚰" ColorId BROWN true }
+  { "gas_trap" "☠" ColorId GREEN true }
+  { "alarm_trap" "^" ColorId RED true }
+  { "web_trap" "#" ColorId WHITE true }
+  { "surprise_trap" "^" ColorId BLUE true }
+  { "terror_trap" "^" ColorId WHITE true }
+  { "fire_trap" "^" ColorId RED true }
+  { "rock" "✱" ColorId LIGHT_GRAY true "stonepile" }
+  { "iron_rock" "✱" ColorId ORANGE true "ironpile" }
+  { "ada_ore" "✱" ColorId LIGHT_BLUE true "steelpile" }
+  { "wood_plank" "\\" ColorId BROWN }
+  { "prison" "." ColorId BLUE }
+  { viewId = "torch" symbol = "*" color = ColorId YELLOW animated = true }
+  { viewId = "candelabrum_ns" symbol = "*" color = ColorId ORANGE animated = true }
+  { viewId = "candelabrum_w" symbol = "*" color = ColorId ORANGE animated = true }
+  { viewId = "candelabrum_e" symbol = "*" color = ColorId ORANGE animated = true }
+  { "sokoban_hole" "0" ColorId DARK_BLUE }
+  { viewId = "cauldron" symbol = "ω" color = ColorId PURPLE
+    isSymbolFont = true roundShadow = true }
+  { "robe" "[" ColorId LIGHT_BROWN }
+  { "leather_gloves" "[" ColorId BROWN }
+  { "iron_gloves" "[" ColorId LIGHT_GRAY }
+  { "ada_gloves" "[" ColorId LIGHT_BLUE }
+  { "blue_gloves" "[" ColorId LIGHT_BLUE }
+  { "red_gloves" "[" ColorId RED }
+  { "leather_armor" "[" ColorId BROWN }
+  { "leather_helm" "[" ColorId BROWN }
+  { "blue_helm" "[" ColorId LIGHT_BLUE }
+  { "chain_armor" "[" ColorId LIGHT_GRAY }
+  { "ada_armor" "[" ColorId LIGHT_BLUE }
+  { "iron_helm" "[" ColorId LIGHT_GRAY }
+  { "ada_helm" "[" ColorId LIGHT_BLUE }
+  { "leather_boots" "[" ColorId BROWN }
+  { "iron_boots" "[" ColorId LIGHT_GRAY }
+  { "ada_boots" "[" ColorId LIGHT_BLUE }
+  { "blue_boots" "[" ColorId LIGHT_BLUE }
+  { "green_boots" "[" ColorId LIGHT_GREEN }
+  { "wooden_shield" "[" ColorId LIGHT_BROWN }
+  { "fetch_icon" "👋" ColorId LIGHT_BROWN true "leather_gloves" }
+  { "pit" "^" ColorId WHITE }
+  { "creature_highlight" " " ColorId WHITE }
+  { "square_highlight" "⛶" ColorId WHITE true }
+  { "round_shadow" " " ColorId WHITE }
+  { "campaign_defeated" "X" ColorId RED }
+  { "special_blbn" "B" ColorId PURPLE }
+  { "special_blbw" "B" ColorId LIGHT_RED }
+  { "special_blgn" "B" ColorId LIGHT_GRAY }
+  { "special_blgw" "B" ColorId WHITE }
+  { "special_bmbn" "B" ColorId YELLOW }
+  { "special_bmbw" "B" ColorId ORANGE }
+  { "special_bmgn" "B" ColorId GREEN }
+  { "special_bmgw" "B" ColorId LIGHT_GREEN }
+  { "special_hlbn" "H" ColorId PURPLE }
+  { "special_hlbw" "H" ColorId LIGHT_RED }
+  { "special_hlgn" "H" ColorId LIGHT_GRAY }
+  { "special_hlgw" "H" ColorId WHITE }
+  { "special_hmbn" "H" ColorId YELLOW }
+  { "special_hmbw" "H" ColorId ORANGE }
+  { "special_hmgn" "H" ColorId GREEN }
+  { "special_hmgw" "H" ColorId LIGHT_GREEN }
+  { "halloween_kid1" "@" ColorId PINK }
+  { "halloween_kid2" "@" ColorId PURPLE }
+  { "halloween_kid3" "@" ColorId BLUE }
+  { "halloween_kid4" "@" ColorId YELLOW }
+  { "halloween_costume" "[" ColorId PINK }
+  { "bag_of_candy" "*" ColorId BLUE }
+  { "horn_attack" "*" ColorId PINK }
+  { "beak_attack" "*" ColorId YELLOW }
+  { "touch_attack" "*" ColorId WHITE  }
+  { "bite_attack" "*" ColorId RED }
+  { "claws_attack" "*" ColorId BROWN }
+  { "leg_attack" "*" ColorId GRAY }
+  { "fist_attack" "*" ColorId ORANGE }
+  { "item_aura" " " ColorId ORANGE }
+  { viewId = "storage_equipment" symbol = "." color = ColorId BLUE
+    sprite = "dig_mark" spriteColor = Rgb 0 0 255 120 }
+  { viewId = "storage_resources" symbol = "." color = ColorId GREEN
+    sprite = "dig_mark" spriteColor = Rgb 0 255 0 120 }
+  { viewId = "quarters1" symbol = "." color = ColorId PINK
+    sprite = "dig_mark2" spriteColor = Rgb 255 20 147 120 }
+  { viewId = "quarters2" symbol = "." color = ColorId SKY_BLUE
+    sprite = "dig_mark2" spriteColor = Rgb 0 191 255 120 }
+  { viewId = "quarters3" symbol = "." color = ColorId ORANGE
+    sprite = "dig_mark2" spriteColor = Rgb 255 165 0 120 }
+  { viewId = "leisure" symbol = "." color = ColorId DARK_BLUE
+    sprite = "dig_mark2" spriteColor = Rgb 50 50 200 120 }
+  { viewId = "standing_torch" symbol = "*" color = ColorId YELLOW
+    moveUp = true animated = true }
+  { viewId = "decid_tree" symbol = "🜍" color = ColorId DARK_GREEN
+    isSymbolFont = true roundShadow = true }
+  { viewId = "canif_tree" symbol = "♣" color = ColorId DARK_GREEN
+    isSymbolFont = true roundShadow = true }
+  { viewId = "burnt_tree" symbol = "." color = ColorId DARK_GRAY
+    roundShadow = true }
+  { viewId = "barricade" symbol = "X" color = ColorId BROWN
+    roundShadow = true }
+  { viewId = "mushroom1" symbol = "⋆" color = ColorId PINK
+    isSymbolFont = true roundShadow = true }
+  { viewId = "mushroom2" symbol = "⋆" color = ColorId YELLOW
+    isSymbolFont = true roundShadow = true }
+  { viewId = "mushroom3" symbol = "⋆" color = ColorId PURPLE
+    isSymbolFont = true roundShadow = true }
+  { viewId = "mushroom4" symbol = "⋆" color = ColorId BROWN
+    isSymbolFont = true roundShadow = true }
+  { viewId = "mushroom5" symbol = "⋆" color = ColorId LIGHT_GRAY
+    isSymbolFont = true roundShadow = true }
+  { viewId = "mushroom6" symbol = "⋆" color = ColorId ORANGE
+    isSymbolFont = true roundShadow = true }
+  { viewId = "mushroom7" symbol = "⋆" color = ColorId ORANGE
+    isSymbolFont = true roundShadow = true sprite = "mushroom2"
+    spriteColor = ColorId LIGHT_BLUE }
+  { viewId = "fountain" symbol = "0" color = ColorId LIGHT_BLUE
+    roundShadow = true animated = true }
+  { viewId = "chest" symbol = "=" color = ColorId BROWN
+    roundShadow = true }
+  { viewId = "opened_chest" symbol = "=" color = ColorId BROWN
+    roundShadow = true }
+  { viewId = "boulder" symbol = "●" color = ColorId LIGHT_GRAY
+    isSymbolFont = true roundShadow = true }
+  { viewId = "portal" symbol = "𝚯" color = ColorId WHITE
+    isSymbolFont = true roundShadow = true }
+  { viewId = "bed1" symbol = "=" color = ColorId WHITE
+    roundShadow = true }
+  { viewId = "bed2" symbol = "=" color = ColorId YELLOW
+    roundShadow = true }
+  { viewId = "bed3" symbol = "=" color = ColorId PURPLE
+    roundShadow = true }
+  { viewId = "altar" symbol = "Ω" color = ColorId WHITE
+    isSymbolFont = true roundShadow = true }
+  { viewId = "bush" symbol = "&" color = ColorId DARK_GREEN
+    roundShadow = true }
+  { viewId = "well" symbol = "0" color = ColorId BLUE
+    roundShadow = true }
+  { viewId = "minion_statue" symbol = "&" color = ColorId LIGHT_GRAY
+    roundShadow = true }
+  { viewId = "stone_minion_statue" symbol = "&" color = ColorId ALMOST_WHITE
+    roundShadow = true }
+  { viewId = "throne" symbol = "Ω" color = ColorId YELLOW
+    isSymbolFont = true roundShadow = true }
+  { viewId = "altar_des" symbol = "Ω" color = ColorId RED
+    isSymbolFont = true roundShadow = true }
+  { viewId = "torture_table" symbol = "=" color = ColorId GRAY
+    roundShadow = true }
+  { viewId = "impaled_head" symbol = "⚲" color = ColorId BROWN
+    isSymbolFont = true roundShadow = true }
+  { viewId = "whipping_post" symbol = "}" color = ColorId BROWN
+    isSymbolFont = true roundShadow = true }
+  { viewId = "gallows" symbol = "}" color = ColorId ORANGE
+    isSymbolFont = true roundShadow = true }
+  { viewId = "notice_board" symbol = "|" color = ColorId BROWN
+    roundShadow = true }
+  { viewId = "training_wood" symbol = "‡" color = ColorId BROWN
+    isSymbolFont = true roundShadow = true }
+  { viewId = "training_iron" symbol = "‡" color = ColorId LIGHT_GRAY
+    isSymbolFont = true roundShadow = true }
+  { viewId = "training_ada" symbol = "‡" color = ColorId LIGHT_BLUE
+    isSymbolFont = true roundShadow = true }
+  { viewId = "archery_range" symbol = "⌾" color = ColorId LIGHT_BLUE
+    isSymbolFont = true roundShadow = true }
+  { viewId = "demon_shrine" symbol = "Ω" color = ColorId PURPLE
+    isSymbolFont = true roundShadow = true }
+  { viewId = "bookcase_wood" symbol = "▤" color = ColorId BROWN
+    roundShadow = true }
+  { viewId = "bookcase_iron" symbol = "▤" color = ColorId LIGHT_GRAY
+    roundShadow = true }
+  { viewId = "bookcase_gold" symbol = "▤" color = ColorId YELLOW
+    roundShadow = true }
+  { viewId = "beast_cage" symbol = "▥" color = ColorId LIGHT_GRAY
+    isSymbolFont = true roundShadow = true }
+  { viewId = "forge" symbol = "&" color = ColorId LIGHT_BLUE
+    roundShadow = true }
+  { viewId = "workshop" symbol = "&" color = ColorId LIGHT_BROWN
+    roundShadow = true }
+  { viewId = "jeweller" symbol = "&" color = ColorId YELLOW
+    roundShadow = true }
+  { viewId = "furnace" symbol = "&" color = ColorId PINK
+    roundShadow = true }
+  { viewId = "grave" symbol = "☗" color = ColorId GRAY
+    isSymbolFont = true roundShadow = true }
+  { viewId = "guard_post" symbol = "⚐" color = ColorId YELLOW
+    isSymbolFont = true roundShadow = true }
+  { viewId = "eyeball" symbol = "e" color = ColorId BLUE
+    roundShadow = true }
+  { viewId = "wood_door_ew" symbol = "-" color = ColorId BROWN
+    wallShadow = true }
+  { viewId = "wood_door_ns" symbol = "|" color = ColorId BROWN }
+  { viewId = "wood_gate_w" symbol = "-" color = ColorId BROWN
+    wallShadow = true }
+  { viewId = "wood_gate_e" symbol = "-" color = ColorId BROWN
+    wallShadow = true }
+  { viewId = "wood_gate_n" symbol = "|" color = ColorId BROWN }
+  { viewId = "wood_gate_s" symbol = "|" color = ColorId BROWN }
+  { viewId = "iron_gate_w" symbol = "-" color = ColorId LIGHT_GRAY
+    wallShadow = true }
+  { viewId = "iron_gate_e" symbol = "-" color = ColorId LIGHT_GRAY
+    wallShadow = true }
+  { viewId = "iron_gate_n" symbol = "|" color = ColorId LIGHT_GRAY }
+  { viewId = "iron_gate_s" symbol = "|" color = ColorId LIGHT_GRAY }
+  { viewId = "ada_gate_w" symbol = "-" color = ColorId LIGHT_BLUE
+    wallShadow = true }
+  { viewId = "ada_gate_e" symbol = "-" color = ColorId LIGHT_BLUE
+    wallShadow = true }
+  { viewId = "ada_gate_n" symbol = "|" color = ColorId LIGHT_BLUE }
+  { viewId = "ada_gate_s" symbol = "|" color = ColorId LIGHT_BLUE }
+  { viewId = "iron_door_ew" symbol = "-" color = ColorId LIGHT_GRAY
+    wallShadow = true }
+  { viewId = "iron_door_ns" symbol = "|" color = ColorId LIGHT_GRAY }
+  { viewId = "ada_door_ew" symbol = "-" color = ColorId LIGHT_BLUE
+    wallShadow = true }
+  { viewId = "ada_door_ns" symbol = "|" color = ColorId LIGHT_BLUE }
+  { viewId = "wood_wall" symbol = "#" color = ColorId DARK_BROWN
+    wallShadow = true wallConnections = true }
+  { viewId = "castle_wall" symbol = "#" color = ColorId LIGHT_GRAY
+    wallShadow = true wallConnections = true }
+  { viewId = "mud_wall" symbol = "#" color = ColorId LIGHT_BROWN
+    wallShadow = true wallConnections = true }
+  { viewId = "ruin_wall" symbol = "#" color = ColorId DARK_GRAY
+    wallConnections = true }
+  { viewId = "road" symbol = "." color = ColorId LIGHT_GRAY
+    roadConnections = true }
+  { viewId = "sand" symbol = "." color = ColorId YELLOW
+    extraBorders = { "water" } }
+  { viewId = "mud" symbol = "." color = ColorId BROWN
+    extraBorders = { "water" "hill" "sand" } }
+  { viewId = "grass" symbol = "𝃰" color = ColorId GREEN
+    isSymbolFont = true
+    extraBorders = { "water" "hill" "sand" "mud" } }
+  { viewId = "hill" symbol = "𝀢" color = ColorId DARK_GREEN
+    isSymbolFont = true
+    extraBorders = { "water" "sand" "floor" "keeper_floor" } }
+  { viewId = "water" symbol = "~" color = ColorId LIGHT_BLUE
+    waterSides = "water" animated = true }
+  { viewId = "magma" symbol = "~" color = ColorId RED
+    waterSides = "magma" animated = true }
+  { viewId = "fog_of_war" symbol = " " color = ColorId WHITE sprite = "empty"
+    waterSides = "fogofwar" }
+  { viewId = "mountain" symbol = "#" color = ColorId GRAY
+    wallShadow = true mountainSides = "mountain" }
+  { viewId = "mountain2" symbol = "#" color = ColorId DARK_GRAY
+    wallShadow = true mountainSides = "mountain" }
+  { viewId = "dungeon_wall" symbol = "#" color = ColorId LIGHT_GRAY
+    sprite = "mountain" wallShadow = true mountainSides = "dungeonwall" }
+  { viewId = "dungeon_wall2" symbol = "#" color = ColorId DARK_BLUE
+    sprite = "mountain2" wallShadow = true mountainSides = "dungeonwall" }
+  { viewId = "gold_ore" symbol = "⁂" color = ColorId YELLOW
+    isSymbolFont = true wallShadow = true mountainSides = "mountain"
+    background = "mountain2" }
+  { viewId = "iron_ore" symbol = "⁂" color = ColorId DARK_BROWN
+    isSymbolFont = true wallShadow = true mountainSides = "mountain"
+    background = "mountain2" }
+  { viewId = "stone" symbol = "⁂" color = ColorId LIGHT_GRAY
+    isSymbolFont = true wallShadow = true mountainSides = "mountain"
+    background = "mountain2" }
+  { viewId = "adamantium_ore" symbol = "⁂" color = ColorId LIGHT_BLUE
+    isSymbolFont = true wallShadow = true mountainSides = "mountain"
+    background = "mountain2" }
+}

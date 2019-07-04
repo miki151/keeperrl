@@ -17,41 +17,50 @@
 
 #include "enums.h"
 #include "util.h"
-#include "singleton.h"
 #include "spell_id.h"
 
-enum class CastMessageType {
+RICH_ENUM(
+  CastMessageType,
   STANDARD,
-  AIR_BLAST
-};
+  AIR_BLAST,
+  BREATHE_FIRE,
+  ABILITY
+);
 
 class Effect;
-class DirEffectType;
+class Position;
+class MoveInfo;
 
-class Spell : public Singleton<Spell, SpellId> {
+class Spell {
   public:
-  const string& getName() const;
-  bool isDirected() const;
-  bool hasEffect(Effect) const;
-  bool hasEffect(DirEffectType) const;
-  Effect getEffect() const;
-  DirEffectType getDirEffectType() const;
-  int getDifficulty() const;
+  const string& getSymbol() const;
+  const Effect& getEffect() const;
+  int getCooldown() const;
   string getDescription() const;
-  void addMessage(WCreature);
-  SoundId getSound() const;
-  optional<int> getLearningExpLevel() const;
+  void addMessage(Creature*) const;
+  optional<SoundId> getSound() const;
+  bool canTargetSelf() const;
+  void apply(Creature*, Position target) const;
+  int getRange() const;
+  bool isEndOnly() const;
+  SpellId getId() const;
+  const char* getName() const;
+  optional<SpellId> getUpgrade() const;
+  MoveInfo getAIMove(const Creature*) const;
 
-  static void init();
+  SERIALIZATION_DECL(Spell)
 
   private:
-  Spell(const string&, Effect, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
-  Spell(const string&, DirEffectType, int difficulty, SoundId, CastMessageType = CastMessageType::STANDARD);
-
-  const string name;
-  const HeapAllocated<variant<Effect, DirEffectType>> effect;
-  const int difficulty;
-  const CastMessageType castMessageType;
-  const SoundId sound;
+  PrimaryId<SpellId> SERIAL(id);
+  optional<SpellId> SERIAL(upgrade);
+  string SERIAL(symbol);
+  HeapAllocated<Effect> SERIAL(effect);
+  int SERIAL(cooldown);
+  CastMessageType SERIAL(castMessageType) = CastMessageType::STANDARD;
+  optional<SoundId> SERIAL(sound);
+  int SERIAL(range) = 0;
+  optional<FXName> SERIAL(fx);
+  bool SERIAL(endOnly) = false;
+  bool SERIAL(targetSelf) = false;
 };
 

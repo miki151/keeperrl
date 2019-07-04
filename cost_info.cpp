@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "cost_info.h"
+#include "resource_id.h"
 
 
 CostInfo::CostInfo(CollectiveResourceId i, int v) : id(i), value(v) {}
@@ -18,3 +19,6 @@ CostInfo CostInfo::operator - () const {
 CostInfo CostInfo::operator * (int a) const {
   return CostInfo(id, a * value);
 }
+
+#include "pretty_archive.h"
+template void CostInfo::serialize(PrettyInputArchive&, unsigned);

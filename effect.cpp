@@ -19,6 +19,7 @@
 #include "creature.h"
 #include "level.h"
 #include "creature_factory.h"
+#include "creature_group.h"
 #include "item.h"
 #include "view_object.h"
 #include "view_id.h"
@@ -35,16 +36,21 @@
 #include "attack_level.h"
 #include "attack_type.h"
 #include "body.h"
-#include "event_listener.h"
+#include "game_event.h"
 #include "item_class.h"
 #include "furniture_factory.h"
 #include "furniture.h"
 #include "movement_set.h"
+#include "weapon_info.h"
+#include "fx_name.h"
+#include "draw_line.h"
+#include "monster.h"
+#include "spell_map.h"
+#include "content_factory.h"
 
-
-vector<WCreature> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, double delay) {
+vector<Creature*> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, TimeInterval delay) {
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
-  vector<WCreature> ret;
+  vector<Creature*> ret;
   for (int i : All(creatures))
     for (Position v : Random.permutation(area))
       if (v.canEnter(creatures[i].get())) {
@@ -55,38 +61,10 @@ vector<WCreature> Effect::summonCreatures(Position pos, int radius, vector<PCrea
   return ret;
 }
 
-vector<WCreature> Effect::summonCreatures(WCreature c, int radius, vector<PCreature> creatures, double delay) {
-  return summonCreatures(c->getPosition(), radius, std::move(creatures), delay);
-}
-
-static void airBlast(WCreature who, Position position, Vec2 direction) {
-  constexpr int maxDistance = 4;
-  if (WCreature c = position.getCreature()) {
-    int dist = 0;
-    for (int i : Range(1, maxDistance))
-      if (position.canMoveCreature(direction * i))
-        dist = i;
-      else
-        break;
-    if (dist > 0) {
-      c->displace(who->getLocalTime(), direction * dist);
-      c->you(MsgType::ARE, "thrown back");
-    }
-  }
-  for (auto& stack : Item::stackItems(position.getItems())) {
-    position.throwItem(
-        position.removeItems(stack),
-        Attack(who, Random.choose<AttackLevel>(),
-          stack[0]->getAttackType(), 15, AttrType::DAMAGE), maxDistance, direction, VisionId::NORMAL);
-  }
-  for (auto furniture : position.modFurniture())
-    if (furniture->canDestroy(DestroyAction::Type::BASH))
-      furniture->destroy(position, DestroyAction::Type::BASH);
-}
-
 void Effect::emitPoisonGas(Position pos, double amount, bool msg) {
+  PROFILE;
   for (Position v : pos.neighbors8())
-    pos.addPoisonGas(amount / 2);
+    v.addPoisonGas(amount / 2);
   pos.addPoisonGas(amount);
   if (msg) {
     pos.globalMessage("A cloud of gas is released");
@@ -94,23 +72,42 @@ void Effect::emitPoisonGas(Position pos, double amount, bool msg) {
   }
 }
 
-vector<WCreature> Effect::summon(WCreature c, CreatureId id, int num, int ttl, double delay) {
-  vector<PCreature> creatures;
-  for (int i : Range(num))
-    creatures.push_back(CreatureFactory::fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c, ttl)));
-  return summonCreatures(c, 2, std::move(creatures), delay);
+static void summonFX(Creature* c) {
+  auto color = Color(240, 146, 184);
+  // TODO: color depending on creature type ?
+
+  c->getGame()->addEvent(EventInfo::FX{c->getPosition(), {FXName::SPAWN, color}});
 }
 
-vector<WCreature> Effect::summon(Position pos, CreatureFactory& factory, int num, int ttl, double delay) {
+vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<TimeInterval> ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(factory.random(MonsterAIFactory::dieTime(pos.getGame()->getGlobalTime() + ttl)));
-  return summonCreatures(pos, 2, std::move(creatures), delay);
+    creatures.push_back(c->getGame()->getContentFactory()->creatures.fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c)));
+  auto ret = summonCreatures(c->getPosition(), 2, std::move(creatures), delay);
+  for (auto c : ret) {
+    if (ttl)
+      c->addEffect(LastingEffect::SUMMONED, *ttl, false);
+    summonFX(c);
+  }
+  return ret;
 }
 
-static void enhanceArmor(WCreature c, int mod, const string& msg) {
+vector<Creature*> Effect::summon(Position pos, CreatureGroup& factory, int num, optional<TimeInterval> ttl, TimeInterval delay) {
+  vector<PCreature> creatures;
+  for (int i : Range(num))
+    creatures.push_back(factory.random(&pos.getGame()->getContentFactory()->creatures, MonsterAIFactory::monster()));
+  auto ret = summonCreatures(pos, 2, std::move(creatures), delay);
+  for (auto c : ret) {
+    if (ttl)
+      c->addEffect(LastingEffect::SUMMONED, *ttl, false);
+    summonFX(c);
+  }
+  return ret;
+}
+
+static void enhanceArmor(Creature* c, int mod, const string& msg) {
   for (EquipmentSlot slot : Random.permutation(getKeys(Equipment::slotTitles)))
-    for (WItem item : c->getEquipment().getSlotItems(slot))
+    for (Item* item : c->getEquipment().getSlotItems(slot))
       if (item->getClass() == ItemClass::ARMOR) {
         c->you(MsgType::YOUR, item->getName() + " " + msg);
         if (item->getModifier(AttrType::DEFENSE) > 0 || mod > 0)
@@ -119,102 +116,83 @@ static void enhanceArmor(WCreature c, int mod, const string& msg) {
       }
 }
 
-static void enhanceWeapon(WCreature c, int mod, const string& msg) {
-  if (WItem item = c->getWeapon()) {
+static void enhanceWeapon(Creature* c, int mod, const string& msg) {
+  if (auto item = c->getFirstWeapon()) {
     c->you(MsgType::YOUR, item->getName() + " " + msg);
-    item->addModifier(item->getMeleeAttackAttr(), mod);
+    item->addModifier(item->getWeaponInfo().meleeAttackAttr, mod);
   }
 }
 
-static double entangledTime(int strength) {
-  return max(5, 30 - strength / 2);
+static TimeInterval entangledTime(int strength) {
+  return TimeInterval(max(5, 30 - strength / 2));
 }
 
-static double getDuration(WConstCreature c, LastingEffect e) {
+static TimeInterval getDuration(const Creature* c, LastingEffect e) {
   switch (e) {
-    case LastingEffect::PREGNANT: return 900;
+    case LastingEffect::SUMMONED: return 900_visible;
+    case LastingEffect::PREGNANT: return 900_visible;
     case LastingEffect::NIGHT_VISION:
-    case LastingEffect::ELF_VISION: return 60;
+    case LastingEffect::ELF_VISION: return  60_visible;
     case LastingEffect::TIED_UP:
     case LastingEffect::WARNING:
     case LastingEffect::REGENERATION:
     case LastingEffect::TELEPATHY:
-    case LastingEffect::BLEEDING: return 50;
-    case LastingEffect::ENTANGLED: return entangledTime(entangledTime(c->getAttr(AttrType::DAMAGE)));
+    case LastingEffect::BLEEDING: return  50_visible;
+    case LastingEffect::ENTANGLED: return entangledTime(c->getAttr(AttrType::DAMAGE));
     case LastingEffect::HALLU:
     case LastingEffect::SLOWED:
     case LastingEffect::SPEED:
     case LastingEffect::RAGE:
+    case LastingEffect::LIGHT_SOURCE:
     case LastingEffect::DARKNESS_SOURCE:
-    case LastingEffect::PANIC: return 15;
-    case LastingEffect::POISON: return 60;
+    case LastingEffect::PANIC: return  15_visible;
+    case LastingEffect::POISON: return  60_visible;
     case LastingEffect::DEF_BONUS:
-    case LastingEffect::DAM_BONUS: return 40;
-    case LastingEffect::BLIND: return 15;
-    case LastingEffect::INVISIBLE: return 15;
-    case LastingEffect::STUNNED: return 7;
+    case LastingEffect::DAM_BONUS: return  40_visible;
+    case LastingEffect::BLIND: return  15_visible;
+    case LastingEffect::INVISIBLE: return  15_visible;
+    case LastingEffect::STUNNED: return  7_visible;
     case LastingEffect::SLEEP_RESISTANT:
     case LastingEffect::FIRE_RESISTANT:
-    case LastingEffect::POISON_RESISTANT: return 60;
-    case LastingEffect::FLYING: return 60;
-    case LastingEffect::COLLAPSED: return 2;
-    case LastingEffect::SLEEP: return 200;
-    case LastingEffect::INSANITY: return 20;
+    case LastingEffect::POISON_RESISTANT: return  60_visible;
+    case LastingEffect::FLYING: return  60_visible;
+    case LastingEffect::COLLAPSED: return  2_visible;
+    case LastingEffect::FAST_CRAFTING:
+    case LastingEffect::FAST_TRAINING:
+    case LastingEffect::SLOW_CRAFTING:
+    case LastingEffect::SLOW_TRAINING:
+    case LastingEffect::SLEEP: return  200_visible;
+    case LastingEffect::PEACEFULNESS:
+    case LastingEffect::INSANITY: return  20_visible;
     case LastingEffect::MAGIC_VULNERABILITY:
     case LastingEffect::MELEE_VULNERABILITY:
     case LastingEffect::RANGED_VULNERABILITY:
+    case LastingEffect::MAGIC_CANCELLATION:
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
     case LastingEffect::SUNLIGHT_VULNERABLE:
-      return 25;
+      return  25_visible;
     case LastingEffect::SATIATED:
-      return 500;
+      return  500_visible;
     case LastingEffect::RESTED:
-      return 1000;
-  }
-  return 0;
-}
-
-static int getSummonTtl(CreatureId id) {
-  switch (id) {
-    case CreatureId::FIRE_SPHERE:
-      return 30;
+    case LastingEffect::HATE_UNDEAD:
+    case LastingEffect::HATE_DWARVES:
+    case LastingEffect::HATE_HUMANS:
+    case LastingEffect::HATE_GREENSKINS:
+    case LastingEffect::HATE_ELVES:
     default:
-      return 100;
+      return  1000_visible;
   }
 }
 
-static Range getSummonNumber(CreatureId id) {
-  switch (id) {
-    case CreatureId::SPIRIT:
-      return Range(2, 5);
-    case CreatureId::FLY:
-      return Range(3, 7);
-    default:
-      return Range(1, 2);
-  }
-}
-
-static double getSummonDelay(CreatureId id) {
-  switch (id) {
-    case CreatureId::AUTOMATON: return 5;
-    default: return 1;
-  }
-}
-
-static void summon(WCreature summoner, CreatureId id) {
-  switch (id) {
-    case CreatureId::AUTOMATON: {
-      CreatureFactory f = CreatureFactory::singleType(TribeId::getHostile(), id);
-      Effect::summon(summoner->getPosition(), f, Random.get(getSummonNumber(id)), getSummonTtl(id),
-          getSummonDelay(id));
-      break;
-    }
-    default:
-      Effect::summon(summoner, id, Random.get(getSummonNumber(id)), getSummonTtl(id), getSummonDelay(id));
-      break;
-  }
+static void summon(Creature* summoner, CreatureId id, Range count) {
+  if (id == "AUTOMATON") {
+    CreatureGroup f = CreatureGroup::singleType(TribeId::getHostile(), id);
+    Effect::summon(summoner->getPosition(), f, Random.get(count), 100_visible,
+        5_visible);
+  } else
+    Effect::summon(summoner, id, Random.get(count), 100_visible, 1_visible);
 }
 
 static bool isConsideredHostile(LastingEffect effect) {
@@ -259,37 +237,45 @@ static bool isConsideredHostile(const Effect& effect) {
   );
 }
 
-void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
+void Effect::Escape::applyToCreature(Creature* c, Creature* attacker) const {
+  PROFILE_BLOCK("Escape::applyToCreature");
   Rectangle area = Rectangle::centered(Vec2(0, 0), 12);
-  int infinity = 10000;
-  PositionMap<int> weight(infinity);
+  PositionMap<int> weight;
   queue<Position> q;
-  for (Position v : c->getPosition().getRectangle(area))
-    if (auto other = v.getCreature())
-      if (other->isEnemy(c)) {
-        q.push(v);
-        weight.set(v, 0);
-      }
+  auto addDanger = [&] (Position pos) {
+    q.push(pos);
+    weight.set(pos, 0);
+  };
+  for (Position v : c->getPosition().getRectangle(area)) {
+    if (v.isBurning())
+      addDanger(v);
+    else if (auto other = v.getCreature())
+      if (other->isEnemy(c))
+        addDanger(v);
+  }
   while (!q.empty()) {
     Position v = q.front();
     q.pop();
     for (Position w : v.neighbors8())
-      if (w.canEnterEmpty({MovementTrait::WALK}) && weight.get(w) == infinity) {
-        weight.set(w, weight.get(v) + 1);
+      if (w.canEnterEmpty({MovementTrait::WALK}) && !weight.contains(w)) {
+        weight.set(w, weight.getOrFail(v) + 1);
         q.push(w);
       }
   }
   vector<Position> good;
   int maxW = 0;
+  auto movementType = c->getMovementType();
   for (Position v : c->getPosition().getRectangle(area)) {
-    if (!v.canEnter(c) || v.isBurning() || v.getPoisonGasAmount() > 0 || !c->isSameSector(v))
+    if (!v.canEnter(c) || v.isBurning() || v.getPoisonGasAmount() > 0 ||
+        !v.isConnectedTo(c->getPosition(), movementType))
       continue;
-    int weightV = weight.get(v);
-    if (weightV == maxW)
-      good.push_back(v);
-    else if (weightV > maxW) {
-      good = {v};
-      maxW = weightV;
+    if (auto weightV = weight.getValueMaybe(v)) {
+      if (*weightV == maxW)
+        good.push_back(v);
+      else if (*weightV > maxW) {
+        good = {v};
+        maxW = *weightV;
+      }
     }
   }
   if (maxW < 2) {
@@ -298,20 +284,33 @@ void Effect::Teleport::applyToCreature(WCreature c, WCreature attacker) const {
   }
   CHECK(!good.empty());
   c->you(MsgType::TELE_DISAPPEAR, "");
-  c->getPosition().moveCreature(Random.choose(good));
+  c->getPosition().moveCreature(Random.choose(good), true);
   c->you(MsgType::TELE_APPEAR, "");
 }
 
-string Effect::Teleport::getName() const {
-  return "teleport";
+string Effect::Escape::getName() const {
+  return "escape";
 }
 
-string Effect::Teleport::getDescription() const {
+string Effect::Escape::getDescription() const {
   return "Teleports to a safer location close by.";
 }
 
-void Effect::Lasting::applyToCreature(WCreature c, WCreature attacker) const {
-  c->addEffect(lastingEffect, getDuration(c, lastingEffect));
+void Effect::Teleport::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effect::Teleport::getName() const {
+  return "escape";
+}
+
+string Effect::Teleport::getDescription() const {
+  return "Teleport to any location that's close by.";
+}
+
+void Effect::Lasting::applyToCreature(Creature* c, Creature* attacker) const {
+  if (c->addEffect(lastingEffect, getDuration(c, lastingEffect)))
+    if (auto fx = LastingEffects::getApplicationFX(lastingEffect))
+      c->addFX(*fx);
 }
 
 string Effect::Lasting::getName() const {
@@ -324,7 +323,53 @@ string Effect::Lasting::getDescription() const {
   return desc.substr(0, desc.size() - 1) + " for some turns.";
 }
 
-void Effect::TeleEnemies::applyToCreature(WCreature, WCreature attacker) const {
+void Effect::RemoveLasting::applyToCreature(Creature* c, Creature* attacker) const {
+  if (c->removeEffect(lastingEffect))
+    c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE));
+}
+
+string Effect::RemoveLasting::getName() const {
+  return "remove " + LastingEffects::getName(lastingEffect);
+}
+
+string Effect::RemoveLasting::getDescription() const {
+  return "Removes/cures from effect: " + LastingEffects::getName(lastingEffect);
+}
+
+void Effect::IncreaseAttr::applyToCreature(Creature* c, Creature*) const {
+  c->you(MsgType::YOUR, ::getName(attr) + get(" improves", " wanes"));
+  c->getAttributes().increaseBaseAttr(attr, amount);
+}
+
+string Effect::IncreaseAttr::getName() const {
+  return ::getName(attr) + get(" boost", " loss");
+}
+
+string Effect::IncreaseAttr::getDescription() const {
+  return get("Increases", "Decreases") + " your "_s + ::getName(attr) + " by " + toString(abs(amount));
+}
+
+const char* Effect::IncreaseAttr::get(const char* ifIncrease, const char* ifDecrease) const {
+  if (amount > 0)
+    return ifIncrease;
+  else
+    return ifDecrease;
+}
+
+void Effect::Permanent::applyToCreature(Creature* c, Creature* attacker) const {
+  c->addPermanentEffect(lastingEffect);
+}
+
+string Effect::Permanent::getName() const {
+  return "permanent " + LastingEffects::getName(lastingEffect);
+}
+
+string Effect::Permanent::getDescription() const {
+  string desc = LastingEffects::getDescription(lastingEffect);
+  return desc.substr(0, desc.size() - 1) + " permanently.";
+}
+
+void Effect::TeleEnemies::applyToCreature(Creature*, Creature* attacker) const {
 }
 
 string Effect::TeleEnemies::getName() const {
@@ -335,8 +380,8 @@ string Effect::TeleEnemies::getDescription() const {
   return "Surprise!";
 }
 
-void Effect::Alarm::applyToCreature(WCreature c, WCreature attacker) const {
-  c->getGame()->addEvent(EventInfo::Alarm{c->getPosition()});
+void Effect::Alarm::applyToCreature(Creature* c, Creature* attacker) const {
+  c->getGame()->addEvent(EventInfo::Alarm{c->getPosition(), silent});
 }
 
 string Effect::Alarm::getName() const {
@@ -347,7 +392,7 @@ string Effect::Alarm::getDescription() const {
   return "Alarm!";
 }
 
-void Effect::Acid::applyToCreature(WCreature c, WCreature attacker) const {
+void Effect::Acid::applyToCreature(Creature* c, Creature* attacker) const {
   c->affectByAcid();
   switch (Random.get(2)) {
     case 0 : enhanceArmor(c, -1, "corrodes"); break;
@@ -363,53 +408,55 @@ string Effect::Acid::getDescription() const {
   return "Causes acid damage to skin and equipment.";
 }
 
-void Effect::Summon::applyToCreature(WCreature c, WCreature attacker) const {
-  ::summon(c, creature);
+void Effect::Summon::applyToCreature(Creature* c, Creature* attacker) const {
+  ::summon(c, creature, count);
 }
 
-static string getCreaturePluralName(CreatureId id) {
+/*static string getCreaturePluralName(CreatureId id) {
   static EnumMap<CreatureId, optional<string>> names;
   if (!names[id])
    names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().plural();
   return *names[id];
-}
+}*/
 
 static string getCreatureName(CreatureId id) {
-  if (getSummonNumber(id).getEnd() > 2)
+  string ret = toLower(id.data());
+  std::replace(ret.begin(), ret.end(), '_', ' ');
+  return ret;
+  /*if (getSummonNumber(id).getEnd() > 2)
     return getCreaturePluralName(id);
   static EnumMap<CreatureId, optional<string>> names;
   if (!names[id])
     names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().bare();
-  return *names[id];
+  return *names[id];*/
 }
 
-static string getCreatureAName(CreatureId id) {
+/*static string getCreatureAName(CreatureId id) {
   static map<CreatureId, string> names;
   if (!names.count(id))
     names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().a();
   return names.at(id);
-}
+}*/
 
 string Effect::Summon::getName() const {
-  return getCreatureName(creature);
+  return "summon " + getCreatureName(creature);
 }
 
 string Effect::Summon::getDescription() const {
-  Range number = getSummonNumber(creature);
-  if (number.getEnd() > 2)
-    return "Summons " + toString(number.getStart()) + " to " + toString(number.getEnd() - 1)
-        + getCreatureName(creature);
+  if (count.getEnd() > 2)
+    return "Summons " + toString(count.getStart()) + " to " + toString(count.getEnd() - 1)
+        + " " + getCreatureName(creature);
   else
-    return "Summons " + getCreatureAName(creature);
+    return "Summons a " + getCreatureName(creature);
 }
 
-void Effect::SummonElement::applyToCreature(WCreature c, WCreature attacker) const {
-  auto id = CreatureId::AIR_ELEMENTAL;
+void Effect::SummonElement::applyToCreature(Creature* c, Creature* attacker) const {
+  auto id = CreatureId("AIR_ELEMENTAL");
   for (Position p : c->getPosition().getRectangle(Rectangle::centered(3)))
     for (auto f : p.getFurniture())
       if (auto elem = f->getSummonedElement())
         id = *elem;
-  ::summon(c, id);
+  ::summon(c, id, Range(1, 2));
 }
 
 string Effect::SummonElement::getName() const {
@@ -420,11 +467,11 @@ string Effect::SummonElement::getDescription() const {
   return "Summons an element or spirit from the surroundings.";
 }
 
-void Effect::Deception::applyToCreature(WCreature c, WCreature attacker) const {
+void Effect::Deception::applyToCreature(Creature* c, Creature* attacker) const {
   vector<PCreature> creatures;
   for (int i : Range(Random.get(3, 7)))
     creatures.push_back(CreatureFactory::getIllusion(c));
-  Effect::summonCreatures(c, 2, std::move(creatures));
+  Effect::summonCreatures(c->getPosition(), 2, std::move(creatures));
 }
 
 string Effect::Deception::getName() const {
@@ -435,9 +482,50 @@ string Effect::Deception::getDescription() const {
   return "Creates multiple illusions of the spellcaster to confuse the enemy.";
 }
 
-void Effect::CircularBlast::applyToCreature(WCreature c, WCreature attacker) const {
+static void airBlast(Creature* who, Position position, Position target) {
+  CHECK(target != who->getPosition());
+  Vec2 direction = who->getPosition().getDir(target);
+  constexpr int maxDistance = 4;
+  while (direction.length8() < maxDistance * 3)
+    direction += who->getPosition().getDir(target);
+  auto trajectory = drawLine(Vec2(0, 0), direction);
+  for (int i : All(trajectory))
+    if (trajectory[i] == who->getPosition().getDir(position)) {
+      trajectory = getSubsequence(trajectory, i + 1, maxDistance);
+      for (auto& v : trajectory)
+        v = v - who->getPosition().getDir(position);
+      break;
+    }
+  CHECK(trajectory.size() == maxDistance);
+  if (Creature* c = position.getCreature()) {
+    optional<Position> target;
+    for (auto& v : trajectory)
+      if (position.canMoveCreature(v))
+        target = position.plus(v);
+      else
+        break;
+    if (target) {
+      c->displace(c->getPosition().getDir(*target));
+      c->you(MsgType::ARE, "thrown back");
+    }
+    c->addEffect(LastingEffect::COLLAPSED, 2_visible);
+  }
+  for (auto& stack : Item::stackItems(position.getItems())) {
+    position.throwItem(
+        position.removeItems(stack),
+        Attack(who, Random.choose<AttackLevel>(),
+          stack[0]->getWeaponInfo().attackType, 15, AttrType::DAMAGE), maxDistance,
+          position.plus(trajectory.back()), VisionId::NORMAL);
+  }
+  for (auto furniture : position.modFurniture())
+    if (furniture->canDestroy(DestroyAction::Type::BASH))
+      furniture->destroy(position, DestroyAction::Type::BASH);
+}
+
+void Effect::CircularBlast::applyToCreature(Creature* c, Creature* attacker) const {
   for (Vec2 v : Vec2::directions8(Random))
-    applyDirected(c, v, DirEffectType(1, DirEffectId::BLAST));
+    airBlast(attacker, c->getPosition().plus(v), c->getPosition().plus(v * 10));
+  c->addFX({FXName::CIRCULAR_BLAST});
 }
 
 string Effect::CircularBlast::getName() const {
@@ -448,7 +536,7 @@ string Effect::CircularBlast::getDescription() const {
   return "Creates a circular blast of air that throws back creatures and items.";
 }
 
-void Effect::EnhanceArmor::applyToCreature(WCreature c, WCreature attacker) const {
+void Effect::EnhanceArmor::applyToCreature(Creature* c, Creature* attacker) const {
   enhanceArmor(c, 1, "is improved");
 }
 
@@ -460,7 +548,7 @@ string Effect::EnhanceArmor::getDescription() const {
   return "Increases armor defense.";
 }
 
-void Effect::EnhanceWeapon::applyToCreature(WCreature c, WCreature attacker) const {
+void Effect::EnhanceWeapon::applyToCreature(Creature* c, Creature* attacker) const {
   enhanceWeapon(c, 1, "is improved");
 }
 
@@ -472,10 +560,13 @@ string Effect::EnhanceWeapon::getDescription() const {
   return "Increases weapon damage.";
 }
 
-void Effect::DestroyEquipment::applyToCreature(WCreature c, WCreature attacker) const {
-  WItem dest = Random.choose(c->getEquipment().getAllEquipped());
-  c->you(MsgType::YOUR, dest->getName() + " crumbles to dust.");
-  c->steal({dest});
+void Effect::DestroyEquipment::applyToCreature(Creature* c, Creature* attacker) const {
+  auto equipped = c->getEquipment().getAllEquipped();
+  if (!equipped.empty()) {
+    Item* dest = Random.choose(equipped);
+    c->you(MsgType::YOUR, dest->getName() + " crumbles to dust.");
+    c->steal({dest});
+  }
 }
 
 string Effect::DestroyEquipment::getName() const {
@@ -486,7 +577,8 @@ string Effect::DestroyEquipment::getDescription() const {
   return "Destroys a random piece of equipment.";
 }
 
-void Effect::DestroyWalls::applyToCreature(WCreature c, WCreature attacker) const {
+void Effect::DestroyWalls::applyToCreature(Creature* c, Creature* attacker) const {
+  PROFILE;
   for (auto pos : c->getPosition().neighbors8())
     for (auto furniture : pos.modFurniture())
       if (furniture->canDestroy(DestroyAction::Type::BOULDER))
@@ -501,24 +593,30 @@ string Effect::DestroyWalls::getDescription() const {
   return "Destroys walls in adjacent tiles.";
 }
 
-void Effect::Heal::applyToCreature(WCreature c, WCreature attacker) const {
-  if (c->getBody().canHeal()) {
+void Effect::Heal::applyToCreature(Creature* c, Creature* attacker) const {
+  if (c->getBody().canHeal(healthType)) {
     c->heal(1);
     c->removeEffect(LastingEffect::BLEEDING);
+    c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN));
   } else
     c->message("Nothing happens.");
 }
 
 string Effect::Heal::getName() const {
-  return "healing";
+  switch (healthType) {
+    case HealthType::FLESH: return "healing";
+    case HealthType::SPIRIT: return "materialization";
+  }
 }
 
 string Effect::Heal::getDescription() const {
-  return "Fully restores your health";
+  switch (healthType) {
+    case HealthType::FLESH: return "Fully restores health.";
+    case HealthType::SPIRIT: return "Fully re-materializes a spirit.";
+  }
 }
 
-void Effect::Fire::applyToCreature(WCreature c, WCreature attacker) const {
-  c->getPosition().fireDamage(1);
+void Effect::Fire::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
 string Effect::Fire::getName() const {
@@ -529,7 +627,57 @@ string Effect::Fire::getDescription() const {
   return "Burns!";
 }
 
-void Effect::EmitPoisonGas::applyToCreature(WCreature c, WCreature attacker) const {
+void Effect::ReviveCorpse::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effect::ReviveCorpse::getName() const {
+  return "revive corpse";
+}
+
+string Effect::ReviveCorpse::getDescription() const {
+  return "Brings a dead corpse back alive as a servant";
+}
+
+PCreature Effect::SummonGhost::getBestSpirit(const Model* model, TribeId tribe) const {
+  auto& factory = model->getGame()->getContentFactory()->creatures;
+  for (auto id : Random.permutation(factory.getAllCreatures())) {
+    auto orig = factory.fromId(id, tribe);
+    if (orig->getBody().hasBrain())
+      return orig;
+  }
+  return nullptr;
+}
+
+void Effect::SummonGhost::applyToCreature(Creature* c, Creature* attacker) const {
+  auto spirits = Effect::summon(c, CreatureId("SPIRIT"), Random.get(count), ttl);
+  if (spirits.empty())
+    attacker->message("The spell failed");
+  for (auto spirit : spirits) {
+    spirit->getAttributes().setBaseAttr(AttrType::DAMAGE, 0);
+    spirit->getAttributes().setBaseAttr(AttrType::RANGED_DAMAGE, 0);
+    spirit->getAttributes().setBaseAttr(AttrType::DEFENSE, ghostPower);
+    spirit->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, ghostPower);
+    spirit->modViewObject().setModifier(ViewObject::Modifier::ILLUSION);
+    auto orig = getBestSpirit(c->getPosition().getModel(), c->getTribeId());
+    spirit->getAttributes().getName() = orig->getAttributes().getName();
+    spirit->getAttributes().getName().setFirst(none);
+    spirit->getAttributes().getName().useFullTitle(false);
+    spirit->modViewObject().setId(orig->getViewObject().id());
+    spirit->getName().addBareSuffix("spirit");
+    spirit->updateViewObject();
+    c->verb("have", "has", "summoned " + spirit->getName().a());
+  }
+}
+
+string Effect::SummonGhost::getName() const {
+  return "summon spirit";
+}
+
+string Effect::SummonGhost::getDescription() const {
+  return "Summons a dead creature's spirit as a servant";
+}
+
+void Effect::EmitPoisonGas::applyToCreature(Creature* c, Creature* attacker) const {
   Effect::emitPoisonGas(c->getPosition(), amount, true);
 }
 
@@ -541,7 +689,7 @@ string Effect::EmitPoisonGas::getDescription() const {
   return "Emits poison gas";
 }
 
-void Effect::SilverDamage::applyToCreature(WCreature c, WCreature attacker) const {
+void Effect::SilverDamage::applyToCreature(Creature* c, Creature* attacker) const {
   c->affectBySilver();
 }
 
@@ -550,54 +698,25 @@ string Effect::SilverDamage::getName() const {
 }
 
 string Effect::SilverDamage::getDescription() const {
-  return "Hurts the undead";
+  return "Hurts the undead.";
 }
 
-void Effect::CurePoison::applyToCreature(WCreature c, WCreature attacker) const {
-  c->removeEffect(LastingEffect::POISON);
-}
-
-string Effect::CurePoison::getName() const {
-  return "cure poisioning";
-}
-
-string Effect::CurePoison::getDescription() const {
-  return "Cures poisoning";
-}
-
-void Effect::PlaceFurniture::applyToCreature(WCreature c, WCreature attacker) const {
-  Position pos = c->getPosition();
-  auto f = FurnitureFactory::get(furniture, c->getTribeId());
-  bool furnitureBlocks = !f->getMovementSet().canEnter(c->getMovementType());
-  if (furnitureBlocks) {
-    optional<Vec2> dest;
-    for (Position pos2 : c->getPosition().neighbors8(Random))
-      if (c->move(pos2) && !pos2.getCreature()) {
-        dest = pos.getDir(pos2);
-        break;
-      }
-    if (dest)
-      c->displace(c->getLocalTime(), *dest);
-    else
-      Effect::Teleport{}.applyToCreature(c);
-  }
-  if (c->getPosition() != pos || !furnitureBlocks) {
-    f->onConstructedBy(c);
-    pos.addFurniture(std::move(f));
-  }
+void Effect::PlaceFurniture::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
 string Effect::PlaceFurniture::getName() const {
-  return Furniture::getName(furniture);
+  return furniture.data();
 }
 
 string Effect::PlaceFurniture::getDescription() const {
-  return "Creates a " + Furniture::getName(furniture);
+  return "Creates a " + getName() + ".";
 }
 
-void Effect::Damage::applyToCreature(WCreature c, WCreature attacker) const {
+void Effect::Damage::applyToCreature(Creature* c, Creature* attacker) const {
   CHECK(attacker) << "Unknown attacker";
   c->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), attackType, attacker->getAttr(attr), attr));
+  if (attr == AttrType::SPELL_DAMAGE)
+    c->addFX({FXName::MAGIC_MISSILE_SPLASH});
 }
 
 string Effect::Damage::getName() const {
@@ -608,8 +727,11 @@ string Effect::Damage::getDescription() const {
   return "Causes " + ::getName(attr);
 }
 
-void Effect::InjureBodyPart::applyToCreature(WCreature c, WCreature attacker) const {
-  c->getBody().injureBodyPart(c, part, false);
+void Effect::InjureBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
+  if (c->getBody().injureBodyPart(c, part, false)) {
+    c->you(MsgType::DIE, "");
+    c->dieWithAttacker(attacker);
+  }
 }
 
 string Effect::InjureBodyPart::getName() const {
@@ -620,8 +742,11 @@ string Effect::InjureBodyPart::getDescription() const {
   return "Injures "_s + ::getName(part);
 }
 
-void Effect::LooseBodyPart::applyToCreature(WCreature c, WCreature attacker) const {
-  c->getBody().injureBodyPart(c, part, true);
+void Effect::LooseBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
+  if (c->getBody().injureBodyPart(c, part, true)) {
+    c->you(MsgType::DIE, "");
+    c->dieWithAttacker(attacker);
+  }
 }
 
 string Effect::LooseBodyPart::getName() const {
@@ -632,16 +757,168 @@ string Effect::LooseBodyPart::getDescription() const {
   return "Causes you to lose a "_s + ::getName(part);
 }
 
-void Effect::RegrowBodyPart::applyToCreature(WCreature c, WCreature attacker) const {
+void Effect::RegrowBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
   c->getBody().healBodyParts(c, true);
 }
 
 string Effect::RegrowBodyPart::getName() const {
-  return "regrow body lost parts";
+  return "regrow lost body parts";
 }
 
 string Effect::RegrowBodyPart::getDescription() const {
-  return "Causes lost body parts to regrow";
+  return "Causes lost body parts to regrow.";
+}
+
+void Effect::Area::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effect::Area::getName() const {
+  return "area " + effect->getName();
+}
+
+string Effect::Area::getDescription() const {
+  return "Area effect of radius " + toString(radius) + ": " + noCapitalFirst(effect->getDescription());
+}
+
+
+void Effect::CustomArea::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effect::CustomArea::getName() const {
+  return "custom area " + effect->getName();
+}
+
+string Effect::CustomArea::getDescription() const {
+  return "Custom area effect: " + noCapitalFirst(effect->getDescription());
+}
+
+static Vec2 rotate(Vec2 v, Vec2 r) {
+  return Vec2(v.x * r.x - v.y * r.y, v.x * r.y + v.y * r.x);
+}
+
+vector<Position> Effect::CustomArea::getTargetPos(const Creature* attacker, Position targetPos) const {
+  Vec2 orientation = Vec2(1, 0);
+  if (attacker)
+    orientation = attacker->getPosition().getDir(targetPos).getBearing();
+  vector<Position> ret;
+  for (auto v : positions)
+    ret.push_back(targetPos.plus(rotate(v, orientation)));
+  return ret;
+}
+
+void Effect::Suicide::applyToCreature(Creature* c, Creature* attacker) const {
+  c->you(MsgType::DIE, "");
+  c->dieNoReason();
+}
+
+string Effect::Suicide::getName() const {
+  return "suicide";
+}
+
+string Effect::Suicide::getDescription() const {
+  return "Causes the *attacker* to die.";
+}
+
+void Effect::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) const {
+  PCreature copy = makeOwner<Creature>(c->getTribeId(), c->getAttributes(), c->getSpellMap());
+  copy->setController(Monster::getFactory(MonsterAIFactory::monster()).get(copy.get()));
+  auto ttl = 50_visible;
+  for (auto& item : c->getEquipment().getItems())
+    if (!item->getResourceId()) {
+      auto itemCopy = item->getCopy();
+      itemCopy->setTimeout(c->getGame()->getGlobalTime() + ttl + 10_visible);
+      copy->take(std::move(itemCopy));
+    }
+  auto cRef = summonCreatures(c->getPosition(), 2, makeVec(std::move(copy))).getOnlyElement();
+  cRef->addEffect(LastingEffect::SUMMONED, ttl, false);
+}
+
+string Effect::DoubleTrouble::getName() const {
+  return "double trouble";
+}
+
+string Effect::DoubleTrouble::getDescription() const {
+  return "Creates a twin copy ally.";
+}
+
+void Effect::Blast::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effect::Blast::getName() const {
+  return "air blast";
+}
+
+string Effect::Blast::getDescription() const {
+  return "Creates a directed blast of air that throws back creatures and items.";
+}
+
+static void pullCreature(Creature* victim, const vector<Position>& trajectory) {
+  auto victimPos = victim->getPosition();
+  optional<Position> target;
+  for (auto& v : trajectory) {
+    if (v == victimPos)
+      break;
+    if (v.canEnter(victim)) {
+      if (!target)
+        target = v;
+    } else
+      target = none;
+  }
+  if (target) {
+    victim->addEffect(LastingEffect::COLLAPSED, 2_visible);
+    victim->displace(victim->getPosition().getDir(*target));
+  }
+}
+
+void Effect::Pull::applyToCreature(Creature* victim, Creature* attacker) const {
+}
+
+string Effect::Pull::getName() const {
+  return "pull";
+}
+
+string Effect::Pull::getDescription() const {
+  return "Pulls a creature towards the spellcaster.";
+}
+
+void Effect::Shove::applyToCreature(Creature* c, Creature* attacker) const {
+  CHECK(attacker);
+  auto origin = attacker->getPosition();
+  auto dir = origin.getDir(c->getPosition());
+  CHECK(dir.length8() == 1);
+  if (c->getPosition().canMoveCreature(dir)) {
+    c->displace(dir);
+    c->you(MsgType::ARE, "thrown back");
+    c->addEffect(LastingEffect::COLLAPSED, 2_visible);
+  }
+}
+
+string Effect::Shove::getName() const {
+  return "shove";
+}
+
+string Effect::Shove::getDescription() const {
+  return "Push back a creature.";
+}
+
+void Effect::SwapPosition::applyToCreature(Creature* c, Creature* attacker) const {
+  CHECK(attacker);
+  auto origin = attacker->getPosition();
+  auto dir = origin.getDir(c->getPosition());
+  CHECK(dir.length8() == 1);
+  if (attacker->canSwapPositionWithEnemy(c)) {
+    attacker->swapPosition(dir, false);
+    attacker->verb("swap", "swaps", "positions with " + c->getName().the());
+  } else
+    attacker->privateMessage(c->getName().the() + " resists");
+}
+
+string Effect::SwapPosition::getName() const {
+  return "swap position";
+}
+
+string Effect::SwapPosition::getDescription() const {
+  return "Swap positions with an enemy.";
 }
 
 #define FORWARD_CALL(Var, Name, ...)\
@@ -662,68 +939,190 @@ bool Effect::operator !=(const Effect& o) const {
   return !(*this == o);
 }
 
-void Effect::applyToCreature(WCreature c, WCreature attacker) const {
-  FORWARD_CALL(effect, applyToCreature, c, attacker);
-  if (isConsideredHostile(effect) && attacker)
-    c->onAttackedBy(attacker);
+void Effect::apply(Position pos, Creature* attacker) const {
+  if (auto c = pos.getCreature()) {
+    FORWARD_CALL(effect, applyToCreature, c, attacker);
+    if (isConsideredHostile(effect) && attacker)
+      c->onAttackedBy(attacker);
+  }
+  effect.visit(
+      [&](const auto&) { },
+      [&](const ReviveCorpse& effect) {
+        for (auto& item : pos.getItems())
+          if (auto info = item->getCorpseInfo())
+            if (info->canBeRevived)
+              for (auto& dead : pos.getModel()->getDeadCreatures())
+                if (dead->getUniqueId() == info->victim) {
+                  bool success = false;
+                  for (auto id : effect.summoned) {
+                    auto summoned = summon(attacker, id, 1, TimeInterval(effect.ttl));
+                    if (!summoned.empty()) {
+                      for (auto& c : summoned) {
+                        c->getName().addBarePrefix(dead->getName().bare());
+                        attacker->message("You have revived " + c->getName().a());
+                      }
+                      pos.removeItems({item});
+                      success = true;
+                      break;
+                    }
+                  }
+                  if (!success)
+                    attacker->message("The spell failed");
+                  return;
+                }
+      },
+      [&](Teleport) {
+        if (attacker->getPosition().canMoveCreature(pos)) {
+          attacker->you(MsgType::TELE_DISAPPEAR, "");
+          attacker->getPosition().moveCreature(pos, true);
+          attacker->you(MsgType::TELE_APPEAR, "");
+        }
+      },
+      [&](Fire) {
+        pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});
+        pos.fireDamage(1);
+      },
+      [&](const Area& area) {
+        for (auto v : pos.getRectangle(Rectangle::centered(area.radius)))
+          area.effect->apply(v, attacker);
+      },
+      [&](const CustomArea& area) {
+        for (auto& v : area.getTargetPos(attacker, pos))
+          area.effect->apply(v, attacker);
+      },
+      [&](const PlaceFurniture& effect) {
+        auto f = pos.getGame()->getContentFactory()->furniture.getFurniture(effect.furniture,
+            attacker ? attacker->getTribeId() : TribeId::getMonster());
+        auto ref = f.get()->getThis();
+        pos.addFurniture(std::move(f));
+        CHECK(!!ref);
+        ref->onConstructedBy(pos, attacker);
+      },
+      [&](Blast) {
+        constexpr int range = 4;
+        CHECK(attacker);
+        vector<Position> trajectory;
+        auto origin = attacker->getPosition().getCoord();
+        for (auto& v : drawLine(origin, pos.getCoord()))
+          if (v != origin && v.dist8(origin) <= range) {
+            trajectory.push_back(Position(v, pos.getLevel()));
+            if (trajectory.back().isDirEffectBlocked())
+              break;
+          }
+        for (int i : All(trajectory).reverse())
+          airBlast(attacker, trajectory[i], pos);
+      },
+      [&](Pull) {
+        CHECK(attacker);
+        vector<Position> trajectory = drawLine(attacker->getPosition(), pos);
+        for (auto& pos : trajectory)
+          if (auto c = pos.getCreature())
+            pullCreature(c, trajectory);
+      }
+  );
 }
 
 string Effect::getDescription() const {
   return FORWARD_CALL(effect, getDescription);
 }
 
-static optional<ViewId> getProjectile(LastingEffect effect) {
-  switch (effect) {
-    case LastingEffect::STUNNED:
-      return ViewId::STUN_RAY;
-    default:
-      return none;
-  }
+static bool isConsideredInDanger(const Creature* c) {
+  if (auto intent = c->getLastCombatIntent())
+    return (intent->time > *c->getGlobalTime() - 5_visible);
+  return false;
 }
 
-static optional<ViewId> getProjectile(const Effect& effect) {
+EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const {
+  bool isFighting = isConsideredInDanger(victim);
   return effect.visit(
-      [&](const auto&) -> optional<ViewId> { return none; },
-      [&](const Effect::Lasting& e) -> optional<ViewId> { return getProjectile(e.lastingEffect); },
-      [&](const Effect::Damage&) -> optional<ViewId> { return ViewId::FORCE_BOLT; }
+      [&] (const Permanent& e) {
+        if (victim->getAttributes().isAffectedPermanently(e.lastingEffect))
+          return EffectAIIntent::NONE;
+        return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
+      },
+      [&] (const Lasting& e) {
+        if (victim->isAffected(e.lastingEffect))
+          return EffectAIIntent::NONE;
+        return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
+      },
+      [&] (const RemoveLasting& e) {
+        if (!victim->isAffected(e.lastingEffect))
+          return EffectAIIntent::NONE;
+        return reverse(LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy));
+      },
+      [&] (const Heal& e) {
+        if (victim->getBody().canHeal(e.healthType))
+          return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
+        return EffectAIIntent::NONE;
+      },
+      [&] (const Fire&) {
+        if (!victim->isAffected(LastingEffect::FIRE_RESISTANT))
+          return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+        return EffectAIIntent::NONE;
+      },
+      [&] (const Damage&) {
+        return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+      },
+      [&] (const DestroyEquipment&) {
+        return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+      },
+      [&] (const Acid&) {
+        return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+      },
+      [&] (const Deception&) {
+        return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      },
+      [&] (const Summon&) {
+        return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      },
+      [&] (const SummonGhost& g) {
+        return (isFighting && !!g.getBestSpirit(victim->getPosition().getModel(), victim->getTribeId()))
+            ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      },
+      [&] (const SummonElement&) {
+        return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      },
+      [&] (const PlaceFurniture& f) {
+        return victim->getGame()->getContentFactory()->furniture.getData(f.furniture).isHostileSpell() && isFighting
+            ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      },
+      [&] (const auto& e) {
+        return EffectAIIntent::NONE;
+      }
   );
 }
 
-static optional<ViewId> getProjectile(const DirEffectType& effect) {
-  switch (effect.getId()) {
-    case DirEffectId::BLAST:
-      return ViewId::AIR_BLAST;
-    case DirEffectId::CREATURE_EFFECT:
-      return getProjectile(effect.get<Effect>());
-  }
-}
+/* Unimplemented: Teleport, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
+      EmitPoisonGas, CircularBlast, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
+      PlaceFurniture, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
+      ReviveCorpse, Blast, Shove, SwapPosition*/
 
-void applyDirected(WCreature c, Vec2 direction, const DirEffectType& type) {
-  auto begin = c->getPosition();
-  int range = type.getRange();
-  if (auto projectile = getProjectile(type))
-    c->getGame()->addEvent(EventInfo::Projectile{*projectile, begin, begin.plus(direction * range)});
-  switch (type.getId()) {
-    case DirEffectId::BLAST:
-      for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
-        airBlast(c, c->getPosition().plus(v), direction);
-      break;
-    case DirEffectId::CREATURE_EFFECT:
-      for (Vec2 v = direction * range; v.length4() >= 1; v -= direction)
-        if (WCreature victim = c->getPosition().plus(v).getCreature())
-          type.get<Effect>().applyToCreature(victim, c);
-      break;
+EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const {
+  if (auto victim = pos.getCreature()) {
+    auto res = shouldAIApply(victim, caster->isEnemy(victim));
+    if (res != EffectAIIntent::NONE)
+      return res;
   }
-}
-
-string getDescription(const DirEffectType& type) {
-  switch (type.getId()) {
-    case DirEffectId::BLAST: return "Creates a directed blast of air that throws back creatures and items.";
-    case DirEffectId::CREATURE_EFFECT:
-        return "Creates a directed ray of range " + toString(type.getRange()) + " that " +
-            noCapitalFirst(type.get<Effect>().getDescription());
-        break;
-  }
+  auto considerArea = [&](const auto& range, const Effect& effect) {
+    auto allRes = EffectAIIntent::UNWANTED;
+    for (auto v : range) {
+      auto res = effect.shouldAIApply(caster, v);
+      if (res == EffectAIIntent::UNWANTED)
+        return EffectAIIntent::UNWANTED;
+      if (res == EffectAIIntent::WANTED)
+        allRes = res;
+    }
+    return allRes;
+  };
+  return effect.visit(
+      [&] (const Area& a) {
+        return considerArea(pos.getRectangle(Rectangle::centered(a.radius)), *a.effect);
+      },
+      [&] (const CustomArea& a) {
+        return considerArea(a.getTargetPos(caster, pos), *a.effect);
+      },
+      [&] (const auto& e) { return EffectAIIntent::NONE; }
+  );
 }
 
 SERIALIZE_DEF(Effect, effect)

@@ -11,9 +11,9 @@ class FurnitureDroppedItems {
     string SERIAL(verbSingle);
     string SERIAL(verbPlural);
     optional<string> SERIAL(unseenMessage);
-    SERIALIZE_ALL(verbSingle, verbPlural, unseenMessage)
+    SERIALIZE_ALL(NAMED(verbSingle), NAMED(verbPlural), NAMED(unseenMessage))
   };
-  using DropData = variant<Water>;
+  using DropData = Water;
   template <typename T>
   FurnitureDroppedItems(const T& t) : FurnitureDroppedItems(DropData(t)) {}
   FurnitureDroppedItems(DropData);

@@ -20,25 +20,21 @@
 #include "workshop_type.h"
 #include "cost_info.h"
 #include "position.h"
+#include "game_time.h"
+#include "furniture_type.h"
+#include "conquer_condition.h"
+#include "creature_id.h"
 
 enum class ItemClass;
 
 class Game;
 class Workshops;
-class ImmigrantInfo;
 class Technology;
+class ImmigrantInfo;
 
 struct ResourceInfo;
 struct ItemFetchInfo;
-
-struct PopulationIncrease {
-  FurnitureType SERIAL(type);
-  double SERIAL(increasePerSquare);
-  int SERIAL(maxIncrease);
-
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);
-};
+class ContentFactory;
 
 struct GuardianInfo {
   CreatureId SERIAL(creature);
@@ -50,24 +46,15 @@ struct GuardianInfo {
   void serialize(Archive& ar, const unsigned int version);
 };
 
-struct DormInfo {
-  FurnitureType bedType;
-  optional<CollectiveWarning> warning;
-};
-
-struct MinionTaskInfo {
-  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY } type;
-  MinionTaskInfo();
-  MinionTaskInfo(FurnitureType, const string& description);
-  typedef function<bool(WConstCollective, WConstCreature, FurnitureType)> UsagePredicate;
-  typedef function<bool(WConstCollective, FurnitureType)> ActivePredicate;
-  MinionTaskInfo(UsagePredicate, const string& description);
-  MinionTaskInfo(UsagePredicate, ActivePredicate, const string& description);
-  MinionTaskInfo(Type, const string& description, optional<CollectiveWarning> = none);
-  UsagePredicate furniturePredicate = [](WConstCollective, WConstCreature, FurnitureType) { return true; };
-  ActivePredicate activePredicate = [](WConstCollective, FurnitureType) { return true; };
+struct MinionActivityInfo {
+  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE } type;
+  MinionActivityInfo();
+  MinionActivityInfo(FurnitureType, const string& description);
+  typedef function<bool(const ContentFactory*, WConstCollective, const Creature*, FurnitureType)> UsagePredicate;
+  MinionActivityInfo(UsagePredicate, const string& description);
+  MinionActivityInfo(Type, const string& description);
+  UsagePredicate furniturePredicate = [](const ContentFactory*, WConstCollective, const Creature*, FurnitureType) { return true; };
   string description;
-  optional<CollectiveWarning> warning;
 };
 
 struct WorkshopInfo {
@@ -85,55 +72,40 @@ struct FloorInfo {
 
 class CollectiveConfig {
   public:
-  static CollectiveConfig keeper(int immigrantInterval, int maxPopulation, bool regenerateMana,
-      vector<PopulationIncrease>, const vector<ImmigrantInfo>&);
-  static CollectiveConfig withImmigrants(int immigrantInterval, int maxPopulation, const vector<ImmigrantInfo>&);
+  static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation);
+  static CollectiveConfig withImmigrants(TimeInterval immigrantInterval, int maxPopulation);
   static CollectiveConfig noImmigrants();
-
-  CollectiveConfig& setLeaderAsFighter();
-  CollectiveConfig& setGhostSpawns(double prob, int number);
-  CollectiveConfig& setGuardian(GuardianInfo);
 
   bool isLeaderFighter() const;
   bool getManageEquipment() const;
   bool getFollowLeaderIfNoTerritory() const;
-  int getImmigrantInterval() const;
+  bool stayInTerritory() const;
+  TimeInterval getImmigrantInterval() const;
   bool getStripSpawns() const;
-  bool getFetchItems() const;
   bool getEnemyPositions() const;
   bool getWarnings() const;
   bool getConstructions() const;
-  bool bedsLimitImmigration() const;
   int getMaxPopulation() const;
   int getNumGhostSpawns() const;
-  int getImmigrantTimeout() const;
+  TimeInterval getImmigrantTimeout() const;
   double getGhostProb() const;
   bool hasVillainSleepingTask() const;
-  bool getRegenerateMana() const;
   bool allowHealingTaskOutsideTerritory() const;
-  const vector<ImmigrantInfo>& getImmigrantInfo() const;
-  const vector<PopulationIncrease>& getPopulationIncreases() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
-  unique_ptr<Workshops> getWorkshops() const;
-  vector<Technology*> getInitialTech() const;
+  bool isConquered(const Collective*) const;
+  CollectiveConfig& setConquerCondition(ConquerCondition);
 
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
   static optional<WorkshopType> getWorkshopType(FurnitureType);
 
+  static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, ContentFactory*);
+
   map<CollectiveResourceId, int> getStartingResource() const;
 
   bool hasImmigrantion(bool currentlyActiveModel) const;
-  const EnumMap<SpawnType, DormInfo>& getDormInfo() const;
-  const vector<FurnitureType>& getRoomsNeedingLight() const;
   static const ResourceInfo& getResourceInfo(CollectiveResourceId);
-  static const vector<ItemFetchInfo>& getFetchInfo();
-  static optional<int> getTrainingMaxLevel(ExperienceType, FurnitureType);
-  static const vector<FurnitureType>& getTrainingFurniture(ExperienceType);
-  static const MinionTaskInfo& getTaskInfo(MinionTask);
-  static const vector<FloorInfo>& getFloors();
-  static double getEfficiencyBonus(FurnitureType);
-  static bool canBuildOutsideTerritory(FurnitureType);
-  static int getManaForConquering(const optional<VillainType>&);
+  const vector<ItemFetchInfo>& getFetchInfo() const;
+  static const MinionActivityInfo& getActivityInfo(MinionActivity);
 
   SERIALIZATION_DECL(CollectiveConfig)
   CollectiveConfig(const CollectiveConfig&);
@@ -141,18 +113,14 @@ class CollectiveConfig {
 
   private:
   enum CollectiveType { KEEPER, VILLAGE };
-  CollectiveConfig(int immigrantInterval, const vector<ImmigrantInfo>&, CollectiveType, int maxPopulation,
-      vector<PopulationIncrease>);
+  CollectiveConfig(TimeInterval immigrantInterval, CollectiveType, int maxPopulation);
 
-  int SERIAL(immigrantInterval);
-  int SERIAL(maxPopulation);
-  vector<PopulationIncrease> SERIAL(populationIncreases);
-  vector<ImmigrantInfo> SERIAL(immigrantInfo);
-  CollectiveType SERIAL(type);
+  TimeInterval SERIAL(immigrantInterval);
+  int SERIAL(maxPopulation) = 10000;
+  CollectiveType SERIAL(type) = CollectiveType::VILLAGE;
   bool SERIAL(leaderAsFighter) = false;
   int SERIAL(spawnGhosts) = 0;
   double SERIAL(ghostProb) = 0;
   optional<GuardianInfo> SERIAL(guardianInfo);
-  void addBedRequirementToImmigrants();
-  bool SERIAL(regenerateMana) = false;
+  ConquerCondition SERIAL(conquerCondition) = ConquerCondition::KILL_FIGHTERS_AND_LEADER;
 };

@@ -22,6 +22,7 @@
 #include "map_memory.h"
 #include "position.h"
 #include "event_listener.h"
+#include "keeper_creature_info.h"
 
 class Model;
 class Technology;
@@ -39,151 +40,152 @@ struct EquipmentActionInfo;
 struct TeamCreatureInfo;
 class CostInfo;
 struct WorkshopItem;
+struct WorkshopQueuedItem;
 class ScrollPosition;
 class Tutorial;
 struct BuildInfo;
 class MoveInfo;
+class UnknownLocations;
+class AttackTrigger;
+class ImmigrantInfo;
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
-  static PPlayerControl create(WCollective col, vector<string> introText);
-  ~PlayerControl();
+  static PPlayerControl create(WCollective col, vector<string> introText, TribeAlignment);
+  ~PlayerControl() override;
 
   void processInput(View* view, UserInput);
-  MoveInfo getMove(WCreature c);
+  MoveInfo getMove(Creature* c);
 
-  WConstCreature getKeeper() const;
-  WCreature getKeeper();
+  const Creature* getKeeper() const;
+  Creature* getKeeper();
 
   void render(View*);
+  void loadImmigrationAndWorkshops(ContentFactory*, const KeeperCreatureInfo&);
 
-  bool isTurnBased();
   void leaveControl();
-  bool swapTeam();
+  void teamMemberAction(TeamMemberAction, UniqueEntity<Creature>::Id);
   void toggleControlAllTeamMembers();
-  void onControlledKilled(WConstCreature victim);
+  void onControlledKilled(const Creature* victim);
   void onSunlightVisibilityChanged();
   void setTutorial(STutorial);
   STutorial getTutorial() const;
+  bool isEnemy(const Creature*) const;
+  void addToMemory(Position);
 
   SERIALIZATION_DECL(PlayerControl)
 
-  vector<WCreature> getTeam(WConstCreature);
-  optional<FurnitureType> getMissingTrainingDummy(WConstCreature);
+  vector<Creature*> getTeam(const Creature*);
+  optional<FurnitureType> getMissingTrainingDummy(const Creature*);
+  bool canControlInTeam(const Creature*) const;
+  bool canControlSingle(const Creature*) const;
+  void addToCurrentTeam(Creature* c);
+  void updateUnknownLocations();
+  vector<Creature*> getConsumptionTargets(Creature* consumer) const;
+  TribeAlignment getTribeAlignment() const;
 
   void onEvent(const GameEvent&);
-  const vector<WCreature>& getControlled() const;
+  const vector<Creature*>& getControlled() const;
+
+  optional<TeamId> getCurrentTeam() const;
+  CollectiveTeams& getTeams();
+  const CollectiveTeams& getTeams() const;
+  WModel getModel() const;
 
   private:
   struct Private {};
 
   public:
-  PlayerControl(Private, WCollective);
+  PlayerControl(Private, WCollective, TribeAlignment);
 
   protected:
   // from CreatureView
-  virtual WLevel getLevel() const override;
   virtual const MapMemory& getMemory() const override;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
-  virtual Vec2 getPosition() const override;
+  virtual Vec2 getScrollCoord() const override;
+  virtual Level* getCreatureViewLevel() const override;
   virtual vector<Vec2> getVisibleEnemies() const override;
-  virtual double getLocalTime() const override;
+  virtual double getAnimationTime() const override;
   virtual CenterType getCenterType() const override;
-  virtual vector<Vec2> getUnknownLocations(WConstLevel) const override;
+  virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const override;
 
   // from CollectiveControl
   virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
-  virtual void onMemberKilled(WConstCreature victim, WConstCreature killer) override;
-  virtual void onMemberAdded(WConstCreature) override;
+  virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
+  virtual void onMemberAdded(Creature*) override;
   virtual void onConstructed(Position, FurnitureType) override;
-  virtual void onClaimedSquare(Position) override;
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
+  virtual void onClaimedSquare(Position) override;
   virtual void onNoEnemies() override;
-  virtual void onPositionDiscovered(Position) override;
   virtual void tick() override;
   virtual void update(bool currentlyActive) override;
 
   private:
 
+  WLevel getCurrentLevel() const;
   void considerNightfallMessage();
   void considerWarning();
 
   TribeId getTribeId() const;
-  bool canSee(WConstCreature) const;
+  bool canSee(const Creature*) const;
   bool canSee(Position) const;
-  void initialize();
-  bool isConsideredAttacking(WConstCreature, WConstCollective enemy);
+  bool isConsideredAttacking(const Creature*, WConstCollective enemy);
 
   void checkKeeperDanger();
   static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Position);
   void updateKnownLocations(const Position&);
-  bool isEnemy(WConstCreature) const;
   vector<WCollective> getKnownVillains() const;
   WCollective getVillain(UniqueEntity<Collective>::Id num);
-  void scrollToMiddle(const vector<Position>&);
 
-  WCreature getConsumptionTarget(View*, WCreature consumer);
-  WCreature getCreature(UniqueEntity<Creature>::Id id) const;
-  void controlSingle(WCreature);
+  Creature* getConsumptionTarget(View*, Creature* consumer);
+  Creature* getCreature(UniqueEntity<Creature>::Id id) const;
+  void controlSingle(Creature*);
   void commandTeam(TeamId);
   void setScrollPos(Position);
 
-  bool canSelectRectangle(const BuildInfo&);
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
-  vector<CollectiveInfo::Button> fillButtons(const vector<BuildInfo>& buildInfo) const;
+  vector<CollectiveInfo::Button> fillButtons() const;
   VillageInfo::Village getVillageInfo(WConstCollective enemy) const;
+  string getTriggerLabel(const AttackTrigger&) const;
   void fillWorkshopInfo(CollectiveInfo&) const;
   void fillImmigration(CollectiveInfo&) const;
   void fillImmigrationHelp(CollectiveInfo&) const;
   void fillLibraryInfo(CollectiveInfo&) const;
-  static const vector<BuildInfo>& getBuildInfo();
-
-  typedef CollectiveInfo::TechButton TechButton;
-
-  int getMinLibrarySize() const;
-
-  struct TechInfo {
-    TechButton button;
-    function<void(PlayerControl*, View*)> butFun;
-  };
-  vector<TechInfo> getTechInfo() const;
+  void fillCurrentLevelInfo(GameInfo&) const;
 
   void getEquipmentItem(View* view, ItemPredicate predicate);
-  ItemInfo getWorkshopItem(const WorkshopItem&) const;
-  WItem chooseEquipmentItem(WCreature creature, vector<WItem> currentItems, ItemPredicate predicate,
+  ItemInfo getWorkshopItem(const WorkshopItem&, int queuedCount) const;
+  Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
       ScrollPosition* scrollPos = nullptr);
 
   int getNumMinions() const;
   void minionTaskAction(const TaskActionInfo&);
   void minionDragAndDrop(const CreatureDropInfo&);
   void fillMinions(CollectiveInfo&) const;
-  vector<WCreature> getMinionsLike(WCreature) const;
-  vector<PlayerInfo> getPlayerInfos(vector<WCreature>, UniqueEntity<Creature>::Id chosenId) const;
-  void sortMinionsForUI(vector<WCreature>&) const;
-  vector<CollectiveInfo::CreatureGroup> getCreatureGroups(vector<WCreature>) const;
+  vector<Creature*> getMinionsLike(Creature*) const;
+  vector<PlayerInfo> getPlayerInfos(vector<Creature*>, UniqueEntity<Creature>::Id chosenId) const;
+  void sortMinionsForUI(vector<Creature*>&) const;
+  vector<CollectiveInfo::CreatureGroup> getCreatureGroups(vector<Creature*>) const;
   vector<CollectiveInfo::CreatureGroup> getEnemyGroups() const;
   void minionEquipmentAction(const EquipmentActionInfo&);
-  void addEquipment(WCreature, EquipmentSlot);
-  void addConsumableItem(WCreature);
-  void handleEquipment(View* view, WCreature creature);
-  void fillEquipment(WCreature, PlayerInfo&) const;
+  void addEquipment(Creature*, EquipmentSlot);
+  void addConsumableItem(Creature*);
+  void handleEquipment(View* view, Creature* creature);
+  void fillEquipment(Creature*, PlayerInfo&) const;
   void handleTrading(WCollective ally);
+  vector<Item*> getPillagedItems(WCollective) const;
+  bool canPillage(WConstCollective) const;
   void handlePillage(WCollective enemy);
   void handleRansom(bool pay);
-  static ViewObject getTrapObject(TrapType, bool built);
-  void addToMemory(Position);
+  ViewObject getTrapObject(FurnitureType, bool built) const;
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
   void onSquareClick(Position);
-  optional<TeamId> getCurrentTeam() const;
-  CollectiveTeams& getTeams();
-  const CollectiveTeams& getTeams() const;
-  WModel getModel() const;
   WGame getGame() const;
   View* getView() const;
-  PController createMinionController(WCreature);
+  PController createMinionController(Creature*);
 
   mutable SMapMemory SERIAL(memory);
   vector<string> SERIAL(introText);
@@ -194,7 +196,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   };
   optional<SelectionInfo> rectSelection;
   void updateSelectionSquares();
-  double SERIAL(lastControlKeeperQuestion) = -100;
+  GlobalTime SERIAL(lastControlKeeperQuestion) = GlobalTime(-1000);
   optional<UniqueEntity<Creature>::Id> chosenCreature;
   void setChosenCreature(optional<UniqueEntity<Creature>::Id>);
   optional<WorkshopType> chosenWorkshop;
@@ -208,20 +210,45 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<PlayerMessage> SERIAL(messages);
   vector<PlayerMessage> SERIAL(messageHistory);
   vector<CollectiveAttack> SERIAL(newAttacks);
+  vector<CollectiveAttack> SERIAL(notifiedAttacks);
   vector<CollectiveAttack> SERIAL(ransomAttacks);
   vector<string> SERIAL(hints);
-  optional<PlayerMessage> findMessage(PlayerMessage::Id);
+  optional<PlayerMessage&> findMessage(PlayerMessage::Id);
   void updateVisibleCreatures();
   vector<Vec2> SERIAL(visibleEnemies);
   SVisibilityMap SERIAL(visibilityMap);
   bool firstRender = true;
   bool isNight = true;
   optional<UniqueEntity<Creature>::Id> draggedCreature;
-  void updateMinionVisibility(WConstCreature);
+  void updateMinionVisibility(const Creature*);
   STutorial SERIAL(tutorial);
   void setChosenLibrary(bool);
-  void acquireTech(int index);
+  void acquireTech(TechId);
   SMessageBuffer SERIAL(controlModeMessages);
   unordered_set<int> dismissedNextWaves;
+  vector<ImmigrantDataInfo> getPrisonerImmigrantData() const;
+  void acceptPrisoner(int index);
+  void rejectPrisoner(int index);
+  struct StunnedInfo {
+    vector<Creature*> creatures;
+    WCollective collective = nullptr;
+  };
+  vector<StunnedInfo> getPrisonerImmigrantStack() const;
+  vector<pair<Creature*, WCollective>> SERIAL(stunnedCreatures);
+  string getMinionGroupName(Creature*) const;
+  ViewId getMinionGroupViewId(Creature*) const;
+  SUnknownLocations SERIAL(unknownLocations);
+  optional<LocalTime> lastWarningDismiss;
+  set<pair<UniqueEntity<Collective>::Id, string>> SERIAL(dismissedVillageInfos);
+  void considerTransferingLostMinions();
+  vector<PItem> retrievePillageItems(WCollective, vector<Item*> items);
+  TribeAlignment SERIAL(tribeAlignment);
+  vector<BuildInfo> SERIAL(buildInfo);
+  void loadBuildingMenu(const ContentFactory*, const KeeperCreatureInfo&);
+  WLevel currentLevel = nullptr;
+  void scrollStairs(bool up);
+  CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&) const;
+  vector<pair<vector<Item*>, Position>> getItemUpgradesFor(const WorkshopItem&) const;
+  void fillDungeonLevel(AvatarLevelInfo&) const;
 };
 

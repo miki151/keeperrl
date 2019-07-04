@@ -2,31 +2,39 @@
 
 #include "util.h"
 #include "position.h"
+#include "position_map.h"
 
 RICH_ENUM(ZoneId,
   FETCH_ITEMS,
   PERMANENT_FETCH_ITEMS,
   STORAGE_EQUIPMENT,
-  STORAGE_RESOURCES
+  STORAGE_RESOURCES,
+  QUARTERS1,
+  QUARTERS2,
+  QUARTERS3,
+  LEISURE
 );
 
 class Position;
 class ViewIndex;
 
+extern ViewId getViewId(ZoneId);
+
 class Zones {
   public:
-
   bool isZone(Position, ZoneId) const;
+  bool isAnyZone(Position, EnumSet<ZoneId>) const;
   void setZone(Position, ZoneId);
   void eraseZone(Position, ZoneId);
-  void eraseZones(Position);
-  const set<Position>& getPositions(ZoneId) const;
+  void onDestroyOrder(Position);
+  const PositionSet& getPositions(ZoneId) const;
   void setHighlights(Position, ViewIndex&) const;
+  bool canSet(Position, ZoneId, WConstCollective) const;
   void tick();
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version);
+  SERIALIZATION_DECL(Zones)
 
   private:
-  EnumMap<ZoneId, set<Position>> SERIAL(zones);
+  EnumMap<ZoneId, PositionSet> SERIAL(positions);
+  PositionMap<EnumSet<ZoneId>> SERIAL(zones);
 };

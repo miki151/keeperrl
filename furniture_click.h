@@ -5,9 +5,14 @@ class Position;
 
 #include "util.h"
 
-enum class FurnitureClickType { LOCK, UNLOCK };
+RICH_ENUM(
+  FurnitureClickType,
+  LOCK,
+  KEEPER_BOARD
+);
 
 class FurnitureClick {
   public:
   static void handle(FurnitureClickType, Position, WConstFurniture);
+  static ViewObjectAction getClickAction(FurnitureClickType, Position, WConstFurniture);
 };

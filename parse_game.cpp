@@ -30,6 +30,7 @@ static string getString(Highscores::Score score) {
 
 int main(int argc, char* argv[]) {
   po::parser flags;
+  setInitializedStatics();
   flags["help"].description("Print help");
   flags["input"].type(po::string).description("Path a KeeperRL save file");
   flags["display_name"].description("Print display name of the save file");
@@ -58,16 +59,16 @@ int main(int argc, char* argv[]) {
     if (flags["version"].was_set())
       std::cout << info->second << endl;
     if (flags["serial_info"].was_set()) {
-      auto savedInfo = getSavedGameInfo(inputPath);
+      auto savedInfo = loadSavedGameInfo(inputPath);
       TextOutput output;
       output.getArchive() << *savedInfo;
       std::cout << output.getStream().str() << endl;
     }
     if (flags["info"].was_set()) {
-      auto savedInfo = getSavedGameInfo(inputPath);
-      std::cout << savedInfo->getName() << endl;
-      for (auto& minion : savedInfo->getMinions())
-        std::cout << EnumInfo<ViewId>::getString(minion.viewId) << " level " << minion.level << endl;
+      auto savedInfo = loadSavedGameInfo(inputPath);
+      std::cout << savedInfo->name << endl;
+      for (auto& minion : savedInfo->minions)
+        std::cout << minion.viewId.data() << " level " << minion.level << endl;
     }
   }
 }

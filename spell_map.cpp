@@ -3,53 +3,105 @@
 #include "spell.h"
 #include "creature.h"
 #include "creature_name.h"
+#include "effect.h"
+#include "experience_type.h"
+#include "creature_attributes.h"
+#include "gender.h"
+#include "creature_factory.h"
+#include "game.h"
+#include "content_factory.h"
 
-void SpellMap::add(Spell* spell) {
-  add(spell->getId());
+void SpellMap::add(Spell spell, ExperienceType expType, int level) {
+  for (auto& elem : elems)
+    if (elem.spell.getId() == spell.getId()) {
+      elem.level = min(elem.level, level);
+      return;
+    }
+  elems.push_back(SpellInfo{std::move(spell), none, level, expType});
+  // it's key to not reference elems in the comparison fun while they are being sorted, so making a copy here
+  // otherwise nasty memory corruption
+  auto origLevel = [self = *this](const SpellInfo* info1) {
+    auto info = info1;
+    while (auto upgrade = info->spell.getUpgrade())
+      if (auto res = self.getInfo(*upgrade))
+        info = res;
+      else
+        break;
+    return info->level;
+  };
+  sort(elems.begin(), elems.end(), [&origLevel](const auto& e1, const auto& e2) {
+      return origLevel(&e1) < origLevel(&e2) || (origLevel(&e1) == origLevel(&e2) && e1.spell.getId() < e2.spell.getId()); });
 }
 
-void SpellMap::add(SpellId id) {
-  if (!elems[id])
-    elems[id] = -1.0;
+void SpellMap::setAllReady() {
+  for (auto& elem : elems)
+    elem.timeout = none;
 }
 
-double SpellMap::getReadyTime(Spell* spell) const {
-  CHECK(contains(spell));
-  return *elems[spell->getId()];
+const SpellMap::SpellInfo* SpellMap::getInfo(SpellId id) const {
+  for (auto& elem : elems)
+    if (elem.spell.getId() == id)
+      return &elem;
+  return nullptr;
 }
 
-void SpellMap::setReadyTime(Spell* spell, double time) {
-  elems[spell->getId()] = time;
+SpellMap::SpellInfo* SpellMap::getInfo(SpellId id) {
+  for (auto& elem : elems)
+    if (elem.spell.getId() == id)
+      return &elem;
+  return nullptr;
 }
 
-vector<Spell*> SpellMap::getAll() const {
-  vector<Spell*> ret;
-  for (Spell* spell : Spell::getAll())
-    if (contains(spell))
-      ret.push_back(spell);
-  return ret;
+GlobalTime SpellMap::getReadyTime(const Spell* spell) const {
+  return getInfo(spell->getId())->timeout.value_or(-1000_global);
 }
 
-bool SpellMap::contains(Spell* spell) const {
-  return !!elems[spell->getId()];
+void SpellMap::setReadyTime(const Spell* spell, GlobalTime time) {
+  getInfo(spell->getId())->timeout = time;
 }
 
-bool SpellMap::contains(SpellId spell) const {
-  return !!elems[spell];
+vector<const Spell*> SpellMap::getAvailable(const Creature* c) const {
+  unordered_set<SpellId, CustomHash<SpellId>> upgraded;
+  for (auto& elem : elems)
+    if (elem.level <= c->getAttributes().getExpLevel(elem.expType))
+      if (auto upgrade = elem.spell.getUpgrade())
+        upgraded.insert(*upgrade);
+  vector<const SpellInfo*> ret;
+  for (auto& elem : elems)
+    if (elem.level <= c->getAttributes().getExpLevel(elem.expType)) {
+      if (!upgraded.count(elem.spell.getId()))
+        ret.push_back(&elem);
+    }
+  return ret.transform([](const auto& elem) { return &elem->spell; } );
 }
 
-void SpellMap::clear() {
-  elems.clear();
+int SpellMap::getLevel(const Spell* s) const {
+  return getInfo(s->getId())->level;
 }
 
-void SpellMap::onExpLevelReached(WCreature c, double level) {
-  for (auto spell : Spell::getAll())
-    if (auto minLevel = spell->getLearningExpLevel())
-      if (level >= *minLevel && !contains(spell)) {
-        add(spell);
-        c->addPersonalEvent(c->getName().a() + " learns the spell of " + spell->getName());
+bool SpellMap::contains(const Spell* s) const {
+  for (auto& elem : elems)
+    if (&elem.spell == s)
+      return true;
+  return false;
+}
+
+void SpellMap::onExpLevelReached(Creature* c, ExperienceType type, int level) {
+  string spellType = type == ExperienceType::SPELL ? "spell"_s : "ability"_s;
+  for (auto& elem : elems) {
+    if (level == elem.level && elem.expType == type) {
+      string spellName = elem.spell.getName();
+      auto upgrade = elem.spell.getUpgrade();
+      if (upgrade && !!getInfo(*upgrade)) {
+        string his = ::his(c->getAttributes().getGender());
+        c->addPersonalEvent(c->getName().a() + " improves " + his + " " + spellType + " of " + upgrade->data());
+        c->verb("improve", "improves", his + " " + spellType + " of " + upgrade->data());
+      } else {
+        c->addPersonalEvent(c->getName().a() + " learns the " + spellType + " of " + spellName);
+        c->verb("learn", "learns", "the " + spellType + " of " + spellName);
       }
+    }
+  }
 }
 
 SERIALIZE_DEF(SpellMap, elems)
-
