@@ -754,6 +754,7 @@ ItemAttributes ItemType::LeatherGloves::getAttributes() const {
       i.viewId = ViewId("leather_gloves");
       i.shortName = "gloves"_s;
       i.name = "pair of leather gloves";
+      i.plural = "pairs of leather gloves"_s;
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::GLOVES;
       i.weight = 0.3;
@@ -768,6 +769,7 @@ ItemAttributes ItemType::IronGloves::getAttributes() const {
       i.viewId = ViewId("iron_gloves");
       i.shortName = "gloves"_s;
       i.name = "pair of iron gloves";
+      i.plural = "pairs of iron gloves"_s;
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::GLOVES;
       i.weight = 1;
@@ -784,6 +786,7 @@ ItemAttributes ItemType::AdaGloves::getAttributes() const {
       i.viewId = ViewId("ada_gloves");
       i.shortName = "gloves"_s;
       i.name = "pair of adamantine gloves";
+      i.plural = "pairs of adamantine gloves"_s;
       i.itemClass = ItemClass::ARMOR;
       i.equipmentSlot = EquipmentSlot::GLOVES;
       i.weight = 0.7;
