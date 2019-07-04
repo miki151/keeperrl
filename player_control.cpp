@@ -2389,7 +2389,10 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
               position.removeFurniture(f);
           getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
           updateSquareMemory(position);
-        }
+        } else
+          if (auto f = position.getFurniture(layer))
+            if (f->getType() == FurnitureType("TREE_TRUNK"))
+              position.removeFurniture(f);
       }
     },
     [&](const BuildInfo::ForbidZone) {
