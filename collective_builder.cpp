@@ -109,7 +109,7 @@ PCollective CollectiveBuilder::build(const ContentFactory* contentFactory) {
     Position pos(v, level);
     c->addKnownTile(pos);
     //if (c->canClaimSquare(pos))
-      c->getTerritory().insert(pos);
+      c->claimSquare(pos);
   }
   if (centralPoint)
     c->getTerritory().setCentralPoint(Position(*centralPoint, level));

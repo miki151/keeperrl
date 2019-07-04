@@ -571,6 +571,14 @@ vector<Player::CommandInfo> Player::getCommands() const {
       [] (Player* player) { auto c = player->creature; player->tryToPerform(c->drop(c->getEquipment().getItems())); }, false},
     {PlayerInfo::CommandInfo{"Message history", 'm', "Show message history.", true},
       [] (Player* player) { player->showHistory(); }, false},
+#ifndef RELEASE
+    {PlayerInfo::CommandInfo{"Wait multiple turns", none, "", true},
+      [] (Player* player) {
+        if (auto num = player->getView()->getNumber("Wait how many turns?", Range(1, 2000), 30, 1))
+          for (int i : Range(*num))
+            player->tryToPerform(player->creature->wait());
+      }, false},
+#endif
   };
 }
 
