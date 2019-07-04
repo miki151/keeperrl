@@ -163,7 +163,7 @@ optional<string> Immigration::getMissingRequirement(const ImmigrantRequirement& 
           return "Ally doesn't exist"_s;
         if (!collective->isKnownVillainLocation(col))
           return "Ally hasn't been discovered"_s;
-        else if (info.getAvailableRecruits(collective->getGame(), immigrantInfo.getId(0)).empty())
+        else if (info.getAvailableRecruits(collective->getGame(), immigrantInfo.getNonRandomId(0)).empty())
           return "Ally doesn't have recruits available at this moment"_s;
         else
           return none;

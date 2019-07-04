@@ -1179,7 +1179,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         },
         [&](const RecruitmentInfo& info) {
           infoLines.push_back(
-              toString(info.getAvailableRecruits(getGame(), candidate.getInfo().getId(0)).size()) +
+              toString(info.getAvailableRecruits(getGame(), candidate.getInfo().getNonRandomId(0)).size()) +
               " recruits available");
         },
         [&](const auto&) {}
