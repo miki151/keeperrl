@@ -36,7 +36,9 @@ bool ConstructionMap::FurnitureInfo::isBuilt(Position pos) const {
 }
 
 bool ConstructionMap::FurnitureInfo::isBuilt(Position pos, FurnitureLayer layer) const {
-  return pos.getFurniture(layer)->getType() == type;
+  if (auto f = pos.getFurniture(layer))
+    return f->getType() == type;
+  return false;
 }
 
 bool ConstructionMap::FurnitureInfo::hasTask() const {
