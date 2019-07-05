@@ -251,6 +251,8 @@ ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Posit
     Position pos(v, level);
     if (creature->getPosition() == pos)
       return 1.0;
+    if (!pos.canNavigate(movementType))
+      return ShortestPath::infinity;
     return pos.getNavigationCost(movementType).value_or(ShortestPath::infinity);
   };
   auto directionsFun = [=] (Vec2 v) {

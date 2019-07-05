@@ -516,7 +516,7 @@ Sectors& Level::getSectors(const MovementType& movement) const {
     sectors.insert(make_pair(movement, Sectors(getBounds(), getOrCreateExtraConnections(getBounds(), sectors))));
     Sectors& newSectors = sectors.at(movement);
     for (Position pos : getAllPositions())
-      if (pos.canNavigate(movement))
+      if (pos.canNavigateCalc(movement))
         newSectors.add(pos.getCoord());
   }
   return sectors.at(movement);
