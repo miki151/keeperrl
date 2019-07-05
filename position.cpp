@@ -474,7 +474,13 @@ bool Position::canEnterEmpty(const Creature* c) const {
   return canEnterEmpty(c->getMovementType());
 } 
 
-bool Position::canEnterEmpty(const MovementType& t, optional<FurnitureLayer> ignore) const {
+bool Position::canEnterEmpty(const MovementType& movement) const {
+  auto onlyMovement = movement;
+  onlyMovement.setCanBuildBridge(false).setDestroyActions({});
+  return canNavigate(onlyMovement);
+}
+
+bool Position::canEnterEmptyCalc(const MovementType& t, optional<FurnitureLayer> ignore) const {
   PROFILE;
   if (isUnavailable())
     return false;
@@ -856,7 +862,7 @@ void Position::updateConnectivity() const {
   bool couldEnter = movementEventPredicate();
   if (isValid()) {
     for (auto& elem : level->sectors)
-      if (canNavigate(elem.first))
+      if (canNavigateCalc(elem.first))
         elem.second.add(coord);
       else
         elem.second.remove(coord);
@@ -884,19 +890,6 @@ void Position::updateSupportViewId(Furniture* furniture) const {
   if (auto id = furniture->getSupportViewId(*this))
     if (*id != furniture->getViewObject()->id())
       furniture->getViewObject()->setId(*id);
-}
-
-bool Position::canNavigate(const MovementType& type) const {
-  PROFILE;
-  optional<FurnitureLayer> ignore;
-  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    for (DestroyAction action : type.getDestroyActions())
-      if (furniture->canDestroy(type, action))
-        ignore = FurnitureLayer::MIDDLE;
-  if (type.canBuildBridge() && canConstruct(FurnitureType("BRIDGE")) &&
-      !type.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
-    return true;
-  return canEnterEmpty(type, ignore);
 }
 
 const vector<Position>& Position::getLandingAtNextLevel(StairKey stairKey) {
@@ -939,7 +932,7 @@ bool Position::canNavigateTo(Position from, const MovementType& type) const {
 optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movement) const {
   PROFILE;
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    if (canEnterEmpty(movement, FurnitureLayer::MIDDLE)) {
+    if (canEnterEmptyCalc(movement, FurnitureLayer::MIDDLE)) {
       optional<double> strength;
       optional<DestroyAction> bestAction;
       for (DestroyAction action : movement.getDestroyActions()) {
@@ -974,6 +967,23 @@ optional<double> Position::getNavigationCost(const MovementType& movement) const
       !movement.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
     return 10;
   return none;
+}
+
+bool Position::canNavigate(const MovementType& type) const {
+  return isValid() && level->getSectors(type).contains(coord);
+}
+
+bool Position::canNavigateCalc(const MovementType& type) const {
+  PROFILE;
+  optional<FurnitureLayer> ignore;
+  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
+    for (DestroyAction action : type.getDestroyActions())
+      if (furniture->canDestroy(type, action))
+        ignore = FurnitureLayer::MIDDLE;
+  if (type.canBuildBridge() && canConstruct(FurnitureType("BRIDGE")) &&
+      !type.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
+    return true;
+  return canEnterEmptyCalc(type, ignore);
 }
 
 bool Position::canSeeThru(VisionId id) const {

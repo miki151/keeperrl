@@ -63,7 +63,8 @@ class Position {
   bool canEnter(const Creature*) const;
   bool canEnter(const MovementType&) const;
   bool canEnterEmpty(const Creature*) const;
-  bool canEnterEmpty(const MovementType&, optional<FurnitureLayer> ignore = none) const;
+  bool canEnterEmpty(const MovementType&) const;
+  bool canEnterEmptyCalc(const MovementType&, optional<FurnitureLayer> ignore = none) const;
   void onEnter(Creature*) const;
   optional<FurnitureClickType> getClickType() const;
   void addSound(const Sound&) const;
@@ -106,7 +107,8 @@ class Position {
   void addCreatureLight(bool darkness);
   void removeCreatureLight(bool darkness);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Position target, VisionId);
-  bool canNavigate(const MovementType&) const;
+  bool canNavigateCalc(const MovementType&) const;
+  bool canNavigate(const MovementType& type) const;
   bool canNavigateToOrNeighbor(Position, const MovementType&) const;
   bool canNavigateTo(Position, const MovementType&) const;
   optional<double> getNavigationCost(const MovementType&) const;
