@@ -224,6 +224,10 @@ bool ShortestPath::isReversed() const {
   return reversed;
 }
 
+const vector<Vec2>& ShortestPath::getPath() const {
+  return path;
+}
+
 bool ShortestPath::isReachable(Vec2 pos) const {
   return (path.size() >= 2 && path.back() == pos) || (path.size() >= 3 && path[path.size() - 2] == pos);
 }
@@ -249,7 +253,7 @@ Vec2 ShortestPath::getTarget() const {
   return target;
 }
 
-ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Position to, double mult) {
+ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Position to, double mult, vector<Vec2>* visited) {
   PROFILE;
   auto from = creature->getPosition();
   WLevel level = from.getLevel();
@@ -260,6 +264,8 @@ ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Posit
   auto& movementSectors = level->getSectors(copyOf(movementType).setCanBuildBridge(false).setDestroyActions({}));
   auto entryFun = [=, &sectors, &movementSectors, fromCoord = from.getCoord()](Vec2 v) {
     PROFILE_BLOCK("entry fun");
+    if (visited)
+      visited->push_back(v);
     if (fromCoord == v)
       return 1.0;
     if (!sectors.contains(v))
@@ -285,7 +291,7 @@ ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Posit
       PROFILE_BLOCK("length fun");
       auto dist2 = Position(to, level, Position::IsValid{}).getDistanceToNearestPortal().value_or(10000);
       // Use a suboptimal, but faster pathfinding.
-      return 2 * min<double>(from.dist8(to) + 0.1 * from.distD(to), dist1 + dist2);
+      return 2 * min<double>(from.dist8(to) + 0.01 * from.distD(to), dist1 + dist2);
     };
     return ShortestPath(ShortestPath::TemplateConstr{}, bounds, entryFun, lengthFun, directionsFun, to.getCoord(), from.getCoord(), mult);
   } else {
@@ -302,12 +308,16 @@ SERIALIZE_DEF(LevelShortestPath, path, level)
 SERIALIZATION_CONSTRUCTOR_IMPL(LevelShortestPath);
 
 
-LevelShortestPath::LevelShortestPath(const Creature* creature, Position to, double mult)
-    : path(makeShortestPath(creature, to, mult)), level(to.getLevel()) {
+LevelShortestPath::LevelShortestPath(const Creature* creature, Position to, double mult, vector<Vec2>* visited)
+    : path(makeShortestPath(creature, to, mult, visited)), level(to.getLevel()) {
 }
 
 WLevel LevelShortestPath::getLevel() const {
   return level;
+}
+
+vector<Position> LevelShortestPath::getPath() const {
+  return path.getPath().transform([this](Vec2 v) { return Position(v, level); });
 }
 
 bool LevelShortestPath::isReachable(Position pos) const {

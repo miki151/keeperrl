@@ -52,6 +52,7 @@ class ShortestPath {
   optional<Vec2> getNextNextMove(Vec2 pos);
   Vec2 getTarget() const;
   bool isReversed() const;
+  const vector<Vec2>& getPath() const;
 
   static const double infinity;
 
@@ -71,20 +72,21 @@ class ShortestPath {
 
 class LevelShortestPath {
   public:
-  LevelShortestPath(const Creature* creature, Position target, double mult = 0);
+  LevelShortestPath(const Creature* creature, Position target, double mult = 0, vector<Vec2>* visited = nullptr);
   bool isReachable(Position) const;
   Position getNextMove(Position);
   optional<Position> getNextNextMove(Position);
   Position getTarget() const;
   bool isReversed() const;
   WLevel getLevel() const;
+  vector<Position> getPath() const;
 
   static const double infinity;
 
   SERIALIZATION_DECL(LevelShortestPath)
 
   private:
-  static ShortestPath makeShortestPath(const Creature* creature, Position to, double mult);
+  static ShortestPath makeShortestPath(const Creature* creature, Position to, double mult, vector<Vec2>* visited);
   ShortestPath SERIAL(path);
   WLevel SERIAL(level) = nullptr;
 };

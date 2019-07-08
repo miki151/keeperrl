@@ -66,6 +66,7 @@
 #include "furniture_factory.h"
 #include "content_factory.h"
 #include "target_type.h"
+#include "shortest_path.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -562,6 +563,23 @@ vector<Player::CommandInfo> Player::getCommands() const {
       [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},*/
     {PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},
       [] (Player* player) { player->chatAction(); }, false},
+    {PlayerInfo::CommandInfo{"Test path-finding", 'C', "Displays calculated path and processed tiles.", true},
+      [] (Player* player) {
+        auto pos = player->getView()->chooseTarget(player->creature->getPosition().getCoord(),
+            TargetType::POSITION, Table<PassableInfo>(), "Choose destination");
+        if (pos) {
+          Position position(*pos, player->getLevel());
+          vector<Vec2> visited;
+          LevelShortestPath path(player->creature, position, 0, &visited);
+          Table<PassableInfo> result(Rectangle::boundingBox(visited), PassableInfo::UNKNOWN);
+          for (auto& v : visited)
+            result[v] = PassableInfo::PASSABLE;
+          for (auto& v : path.getPath())
+            result[v.getCoord()] = PassableInfo::NON_PASSABLE;
+          player->getView()->chooseTarget(player->creature->getPosition().getCoord(), TargetType::SHOW_ALL, result,
+              "Displaying calculated path and processed tiles");
+        }
+      }, false},
     {PlayerInfo::CommandInfo{"Hide", 'h', "Hide behind or under a terrain feature or piece of furniture.",
         !!creature->hide()},
       [] (Player* player) { player->hideAction(); }, false},
