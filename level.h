@@ -172,6 +172,8 @@ class Level : public OwnedObject<Level> {
   LevelId getUniqueId() const;
   void setFurniture(Vec2, PFurniture);
 
+  Sectors& getSectors(const MovementType&) const;
+
   SERIALIZATION_DECL(Level)
 
   private:
@@ -200,8 +202,7 @@ class Level : public OwnedObject<Level> {
   HeapAllocated<CreatureBucketMap> SERIAL(bucketMap);
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
-  mutable unordered_map<MovementType, Sectors> sectors;
-  Sectors& getSectors(const MovementType&) const;
+  mutable unordered_map<MovementType, Sectors, CustomHash<MovementType>> sectors;
   Sectors& getSectorsDontCreate(const MovementType&) const;
 
   friend class LevelBuilder;

@@ -373,8 +373,8 @@ class Connector : public LevelMaker {
   void connect(LevelBuilder* builder, Vec2 p1, Vec2 p2, Rectangle area) {
     ShortestPath path(area,
         [builder, this, &area](Vec2 pos) { return getValue(builder, pos, area); }, 
-        [] (Vec2 from, Vec2 to) { return from.dist4(to); },
-        Vec2::directions4(builder->getRandom()), p1 ,p2);
+        [p2] (Vec2 to) { return p2.dist4(to); },
+        Vec2::directions4(builder->getRandom()), p1, p2);
     for (Vec2 v = p2; v != p1; v = path.getNextMove(v)) {
       if (!builder->canNavigate(v, {MovementTrait::WALK})) {
         if (auto furniture = builder->getFurniture(v, FurnitureLayer::MIDDLE)) {
@@ -1592,7 +1592,7 @@ class Roads : public LevelMaker {
       Vec2 p2 = points[ind - 1];
       ShortestPath path(area,
           [=](Vec2 pos) { return (pos == p1 || pos == p2) ? 1 : getValue(builder, pos); },
-          [] (Vec2 from, Vec2 to) { return from.dist4(to); },
+          [p2] (Vec2 to) { return p2.dist4(to); },
           Vec2::directions4(builder->getRandom()), p1, p2);
       for (Vec2 v = p2; v != p1; v = path.getNextMove(v)) {
         if (!path.isReachable(v))

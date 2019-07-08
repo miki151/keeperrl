@@ -28,15 +28,21 @@ class ShortestPath {
   ShortestPath(
       Rectangle area,
       function<double(Vec2)> entryFun,
-      function<double(Vec2, Vec2)> lengthFun,
+      function<double(Vec2)> lengthFun,
       function<vector<Vec2>(Vec2)> directions,
       Vec2 target,
       Vec2 from,
       double mult = 0);
+
+  struct TemplateConstr {};
+  template <typename EntryFun, typename LengthFun, typename DirectionsFun>
+  ShortestPath(TemplateConstr, Rectangle area, EntryFun entryFun, LengthFun lengthFun, DirectionsFun directions,
+      Vec2 target, Vec2 from, double mult = 0);
+
   ShortestPath(
       Rectangle area,
       function<double(Vec2)> entryFun,
-      function<double(Vec2, Vec2)> lengthFun,
+      function<double(Vec2)> lengthFun,
       vector<Vec2> directions,
       Vec2 target,
       Vec2 from,
@@ -49,12 +55,13 @@ class ShortestPath {
 
   static const double infinity;
 
-  SERIALIZATION_DECL(ShortestPath);
+  SERIALIZATION_DECL(ShortestPath)
 
   private:
-  void init(function<double(Vec2)> entryFun, function<double(Vec2, Vec2)> lengthFun, function<vector<Vec2>(Vec2)> directions,
+  template <typename EntryFun, typename LengthFun, typename DirectionsFun>
+  void init(EntryFun entryFun, LengthFun lengthFun, DirectionsFun directions,
       Vec2 target, optional<Vec2> from, optional<int> limit = none);
-  void reverse(function<double(Vec2)> entryFun, function<double(Vec2, Vec2)> lengthFun, function<vector<Vec2>(Vec2)> directions, double mult, Vec2 from, int limit);
+  void reverse(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, function<vector<Vec2>(Vec2)> directions, double mult, Vec2 from, int limit);
   void constructPath(Vec2 start, function<vector<Vec2>(Vec2)> directions, bool reversed = false);
   vector<Vec2> SERIAL(path);
   Vec2 SERIAL(target);
@@ -64,7 +71,7 @@ class ShortestPath {
 
 class LevelShortestPath {
   public:
-  LevelShortestPath(const Creature* creature, Position target, Position from, double mult = 0);
+  LevelShortestPath(const Creature* creature, Position target, double mult = 0);
   bool isReachable(Position) const;
   Position getNextMove(Position);
   optional<Position> getNextNextMove(Position);
@@ -74,10 +81,10 @@ class LevelShortestPath {
 
   static const double infinity;
 
-  SERIALIZATION_DECL(LevelShortestPath);
+  SERIALIZATION_DECL(LevelShortestPath)
 
   private:
-  static ShortestPath makeShortestPath(const Creature* creature, Position to, Position from, double mult);
+  static ShortestPath makeShortestPath(const Creature* creature, Position to, double mult);
   ShortestPath SERIAL(path);
   WLevel SERIAL(level) = nullptr;
 };

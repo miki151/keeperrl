@@ -32,6 +32,8 @@ class MovementType {
   bool isForced() const;
   bool canBuildBridge() const;
 
+  int getHash() const;
+
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
@@ -47,9 +49,3 @@ class MovementType {
   EnumSet<DestroyAction::Type> SERIAL(destroyActions);
   optional<TribeSet> SERIAL(tribeSet);
 };
-
-namespace std {
-  template <> struct hash<MovementType> {
-    size_t operator()(const MovementType& t) const;
-  };
-}

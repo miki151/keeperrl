@@ -1791,7 +1791,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
     if (!currentPath || Random.roll(10) || currentPath->isReversed() != away ||
         currentPath->getTarget().dist8(pos).value_or(10000000) > *position.dist8(pos) / 10) {
       INFO << "Calculating new path";
-      currentPath = LevelShortestPath(this, pos, position, away ? -1.5 : 0);
+      currentPath = LevelShortestPath(this, pos, away ? -1.5 : 0);
       wasNew = true;
     }
     if (currentPath->isReachable(position)) {

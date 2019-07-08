@@ -19,10 +19,13 @@ class Fire;
 class DestroyAction;
 class Inventory;
 class Vision;
+class Sectors;
 
 class Position {
   public:
   Position(Vec2, WLevel);
+  struct IsValid{};
+  Position(Vec2, WLevel, IsValid);
   static vector<Position> getAll(WLevel, Rectangle);
   WModel getModel() const;
   WGame getGame() const;
@@ -111,7 +114,7 @@ class Position {
   bool canNavigate(const MovementType& type) const;
   bool canNavigateToOrNeighbor(Position, const MovementType&) const;
   bool canNavigateTo(Position, const MovementType&) const;
-  optional<double> getNavigationCost(const MovementType&) const;
+  double getNavigationCost(const MovementType&, const Sectors& onltMovementSectors) const;
   optional<DestroyAction> getBestDestroyAction(const MovementType&) const;
   vector<Position> getVisibleTiles(const Vision&);
   void updateConnectivity() const;
@@ -162,9 +165,9 @@ class Position {
 
 template <>
 inline string toString(const Position& t) {
-	stringstream ss;
-	ss << toString(t.getCoord());
-	return ss.str();
+  stringstream ss;
+  ss << toString(t.getCoord());
+  return ss.str();
 }
 
 using PositionSet = unordered_set<Position, CustomHash<Position>>;

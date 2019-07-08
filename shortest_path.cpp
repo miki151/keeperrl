@@ -32,10 +32,9 @@ const int revShortestLimit = 15;
 
 class DistanceTable {
   public:
-  DistanceTable(Rectangle bounds) : ddist(bounds), dirty(bounds, 0) {} 
+  DistanceTable(Rectangle bounds) : ddist(bounds), dirty(bounds, 0) {}
 
   double getDistance(Vec2 v) const {
-    PROFILE;
     return dirty[v] < counter ? ShortestPath::infinity : ddist[v];
   }
 
@@ -57,7 +56,8 @@ class DistanceTable {
 static DistanceTable distanceTable(Level::getMaxBounds());
 static DirtyTable<double> navigationCostCache(Level::getMaxBounds(), 0);
 
-static function<double(Vec2)> getCached(function<double(Vec2)> fun) {
+template <typename Fun>
+static auto getCached(Fun fun) {
   return [fun] (Vec2 v) {
     if (navigationCostCache.isDirty(v))
       return navigationCostCache.getDirtyValue(v);
@@ -71,8 +71,13 @@ static function<double(Vec2)> getCached(function<double(Vec2)> fun) {
 
 const int margin = 15;
 
-ShortestPath::ShortestPath(Rectangle a, function<double(Vec2)> entryFun, function<double(Vec2, Vec2)> lengthFun,
-    function<vector<Vec2>(Vec2)> directions, Vec2 to, Vec2 from, double mult) : target(to), bounds(a) {
+ShortestPath::ShortestPath(Rectangle a, function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun,
+    function<vector<Vec2>(Vec2)> directions, Vec2 to, Vec2 from, double mult) : ShortestPath(TemplateConstr{},
+    std::move(a), std::move(entryFun), std::move(lengthFun), std::move(directions), to, from, mult) {}
+
+template <typename EntryFun, typename LengthFun, typename DirectionsFun>
+ShortestPath::ShortestPath(TemplateConstr, Rectangle a, EntryFun entryFun, LengthFun lengthFun,
+    DirectionsFun directions, Vec2 to, Vec2 from, double mult) : target(to), bounds(a) {
   PROFILE;
   CHECK(Level::getMaxBounds().contains(a));
   navigationCostCache.clear();
@@ -86,7 +91,7 @@ ShortestPath::ShortestPath(Rectangle a, function<double(Vec2)> entryFun, functio
   }
 }
 
-ShortestPath::ShortestPath(Rectangle area, function<double (Vec2)> entryFun, function<double(Vec2, Vec2)> lengthFun,
+ShortestPath::ShortestPath(Rectangle area, function<double (Vec2)> entryFun, function<double(Vec2)> lengthFun,
     vector<Vec2> directions, Vec2 target, Vec2 from, double mult) : ShortestPath(area, entryFun, lengthFun,
     [directions](Vec2) { return directions; }, target, from, mult)
 {
@@ -101,14 +106,15 @@ bool inline operator < (const QueueElem& e1, const QueueElem& e2) {
   return e1.value > e2.value || (e1.value == e2.value && e1.pos < e2.pos);
 }
 
-void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2, Vec2)> lengthFun, function<vector<Vec2>(Vec2)> directions, Vec2 target,
-    optional<Vec2> from, optional<int> limit) {
+template <typename EntryFun, typename LengthFun, typename DirectionsFun>
+void ShortestPath::init(EntryFun entryFun, LengthFun lengthFun, DirectionsFun directions,
+    Vec2 target, optional<Vec2> from, optional<int> limit) {
   PROFILE;
   reversed = false;
   distanceTable.clear();
   function<QueueElem(Vec2)> makeElem;
   if (from)
-    makeElem = [&](Vec2 pos) ->QueueElem { return {pos, distanceTable.getDistance(pos) + lengthFun(*from, pos)}; };
+    makeElem = [&](Vec2 pos) ->QueueElem { return {pos, distanceTable.getDistance(pos) + lengthFun(pos)}; };
   else
     makeElem = [&](Vec2 pos) ->QueueElem { return {pos, distanceTable.getDistance(pos)}; };
   priority_queue<QueueElem, vector<QueueElem>> q;
@@ -127,17 +133,19 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2, V
       return;
     }
     q.pop();
-    {
-      PROFILE_BLOCK("Process neighbors");
-      for (Vec2 dir : directions(pos)) {
-        Vec2 next = pos + dir;
-        if (next.inRectangle(bounds)) {
-          double nextDist = distanceTable.getDistance(next);
-          if (posDist < nextDist) {
-            double dist = posDist + entryFun(next);
-            CHECK(dist > posDist) << "Entry fun non positive " << dist - posDist;
-            if (dist < nextDist) {
-              distanceTable.setDistance(next, dist);
+    for (Vec2 dir : directions(pos)) {
+      PROFILE_BLOCK("loop body");
+      Vec2 next = pos + dir;
+      if (next.inRectangle(bounds)) {
+        double nextDist = distanceTable.getDistance(next);
+        if (posDist < nextDist) {
+          PROFILE_BLOCK("check entry");
+          double dist = posDist + entryFun(next);
+          CHECK(dist > posDist) << "Entry fun non positive " << dist - posDist;
+          if (dist < nextDist) {
+            distanceTable.setDistance(next, dist);
+            {
+              PROFILE_BLOCK("queue push");
               q.push(makeElem(next));
             }
           }
@@ -148,12 +156,11 @@ void ShortestPath::init(function<double(Vec2)> entryFun, function<double(Vec2, V
   INFO << "Shortest path exhausted, " << numPopped << " visited";
 }
 
-void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2, Vec2)> lengthFun, function<vector<Vec2>(Vec2)> directions,
+void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2)> lengthFun, function<vector<Vec2>(Vec2)> directions,
     double mult, Vec2 from, int limit) {
   PROFILE;
   reversed = true;
-  function<QueueElem(Vec2)> makeElem = [&](Vec2 pos)->QueueElem { return {pos, distanceTable.getDistance(pos)
-      + lengthFun(from, pos)};};
+  function<QueueElem(Vec2)> makeElem = [&](Vec2 pos)->QueueElem { return {pos, distanceTable.getDistance(pos) + lengthFun(pos)};};
   priority_queue<QueueElem, vector<QueueElem>> q;
   for (Vec2 v : bounds) {
     double dist = distanceTable.getDistance(v);
@@ -174,7 +181,7 @@ void ShortestPath::reverse(function<double(Vec2)> entryFun, function<double(Vec2
     q.pop();
     for (Vec2 dir : directions(pos))
       if ((pos + dir).inRectangle(bounds)) {
-        if (distanceTable.getDistance(pos + dir) > distanceTable.getDistance(pos) + entryFun(pos + dir) && 
+        if (distanceTable.getDistance(pos + dir) > distanceTable.getDistance(pos) + entryFun(pos + dir) &&
             distanceTable.getDistance(pos + dir) < 0) {
           distanceTable.setDistance(pos + dir, distanceTable.getDistance(pos) + entryFun(pos + dir));
           q.push(makeElem(pos + dir));
@@ -242,18 +249,22 @@ Vec2 ShortestPath::getTarget() const {
   return target;
 }
 
-ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Position to, Position from, double mult) {
+ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Position to, double mult) {
   PROFILE;
+  auto from = creature->getPosition();
   WLevel level = from.getLevel();
   Rectangle bounds = level->getBounds();
   CHECK(to.isSameLevel(from));
-  auto entryFun = [=, movementType = creature->getMovementType()](Vec2 v) {
-    Position pos(v, level);
-    if (creature->getPosition() == pos)
+  auto movementType = creature->getMovementType();
+  auto& sectors = level->getSectors(movementType);
+  auto& movementSectors = level->getSectors(copyOf(movementType).setCanBuildBridge(false).setDestroyActions({}));
+  auto entryFun = [=, fromCoord = from.getCoord()](Vec2 v) {
+    PROFILE_BLOCK("entry fun");
+    if (fromCoord == v)
       return 1.0;
-    if (!pos.canNavigate(movementType))
+    if (!sectors.contains(v))
       return ShortestPath::infinity;
-    return pos.getNavigationCost(movementType).value_or(ShortestPath::infinity);
+    return Position(v, level, Position::IsValid{}).getNavigationCost(movementType, movementSectors);
   };
   auto directionsFun = [=] (Vec2 v) {
     Position pos(v, level);
@@ -269,20 +280,21 @@ ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Posit
   CHECK(to.getCoord().inRectangle(level->getBounds()));
   CHECK(from.getCoord().inRectangle(level->getBounds()));
   if (mult == 0) {
-    auto lengthFun = [level](Vec2 from, Vec2 to) {
-      auto dist1 = Position(from, level).getDistanceToNearestPortal().value_or(10000);
-      auto dist2 = Position(to, level).getDistanceToNearestPortal().value_or(10000);
+    auto dist1 = from.getDistanceToNearestPortal().value_or(10000);
+    auto lengthFun = [level, from = from.getCoord(), dist1](Vec2 to) {
+      PROFILE_BLOCK("length fun");
+      auto dist2 = Position(to, level, Position::IsValid{}).getDistanceToNearestPortal().value_or(10000);
       // Use a suboptimal, but faster pathfinding.
       return 2 * min<double>(from.dist8(to) + 0.1 * from.distD(to), dist1 + dist2);
     };
-    return ShortestPath(bounds, entryFun, lengthFun, directionsFun, to.getCoord(), from.getCoord(), mult);
+    return ShortestPath(ShortestPath::TemplateConstr{}, bounds, entryFun, lengthFun, directionsFun, to.getCoord(), from.getCoord(), mult);
   } else {
-    auto lengthFun = [](Vec2 from, Vec2 to)->double { return from.dist8(to); };
+    auto lengthFun = [from = from.getCoord()](Vec2 to)->double { return from.dist8(to); };
     Vec2 vTo = to.getCoord();
     Vec2 vFrom = from.getCoord();
     bounds = bounds.intersection(Rectangle(min(vTo.x, vFrom.x) - margin, min(vTo.y, vFrom.y) - margin,
         max(vTo.x, vFrom.x) + margin, max(vTo.y, vFrom.y) + margin));
-    return ShortestPath(bounds, entryFun, lengthFun, directionsFun, to.getCoord(), from.getCoord(), mult);
+    return ShortestPath(ShortestPath::TemplateConstr{}, bounds, entryFun, lengthFun, directionsFun, to.getCoord(), from.getCoord(), mult);
   }
 }
 
@@ -290,8 +302,8 @@ SERIALIZE_DEF(LevelShortestPath, path, level)
 SERIALIZATION_CONSTRUCTOR_IMPL(LevelShortestPath);
 
 
-LevelShortestPath::LevelShortestPath(const Creature* creature, Position to, Position from, double mult)
-    : path(makeShortestPath(creature, to, from, mult)), level(to.getLevel()) {
+LevelShortestPath::LevelShortestPath(const Creature* creature, Position to, double mult)
+    : path(makeShortestPath(creature, to, mult)), level(to.getLevel()) {
 }
 
 WLevel LevelShortestPath::getLevel() const {
@@ -364,7 +376,7 @@ Dijkstra::Dijkstra(Rectangle bounds, vector<Vec2> from, int maxDist, function<do
       }
     }
   }
- 
+
 }
 
 bool Dijkstra::isReachable(Vec2 pos) const {
@@ -399,7 +411,7 @@ BfSearch::BfSearch(Rectangle bounds, Vec2 from, function<bool(Vec2)> entryFun, v
       }
     }
   }
- 
+
 }
 
 bool BfSearch::isReachable(Vec2 pos) const {
