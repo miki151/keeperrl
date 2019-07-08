@@ -161,7 +161,7 @@ class Test {
     vector<vector<double> > table { { 2, 1, 2, 18, 1}, { 1, 1, 18, 1, 2}, {2, 6, 10, 1,1}, {1, 2, 1, 8, 1}, {5, 3, 1, 1, 2}};
     ShortestPath path(Rectangle(5, 5),
         [table](Vec2 pos) { return table[pos.y][pos.x];},
-        [] (Vec2 from, Vec2 to) { return from.dist4(to); },
+        [] (Vec2 to) { return Vec2(1, 0).dist4(to); },
         Vec2::directions4(), Vec2(4, 0), Vec2(1, 0));
     vector<Vec2> res {Vec2(1, 0)};
     while (res.back() != Vec2(4, 0)) {
@@ -175,7 +175,7 @@ class Test {
     vector<vector<double> > table { { 1, 1, 6, 1, 1}, { 1, 1, 6, 1, 1}, {1, 1, 1, 1,1}, {1, 1, 6, 1, 1}, {1, 1, 6, 1, 1}};
     ShortestPath path(Rectangle(5, 5),
         [table](Vec2 pos) { return table[pos.y][pos.x];},
-        [] (Vec2 from, Vec2 to) { return from.dist4(to); },
+        [] (Vec2 to) { return Vec2(0, 0).dist4(to); },
         Vec2::directions4(), Vec2(4, 0), Vec2(0, 0));
   }
 
@@ -183,7 +183,7 @@ class Test {
     vector<vector<double> > table { { 2, 1, 2, ShortestPath::infinity, 1}, { 1, 1, 18, 1, ShortestPath::infinity}, {2, 6, 10, 1,1}, {1, 2, 1, 8, 1}, {5, 3, 1, 1, 2}};
     ShortestPath path(Rectangle(5, 5),
         [table](Vec2 pos) { return table[pos.y][pos.x];},
-        [] (Vec2 from, Vec2 to) { return from.dist4(to); },
+        [] (Vec2 to) { return Vec2(1, 0).dist4(to); },
         Vec2::directions4(), Vec2(4, 0), Vec2(1, 0));
     CHECK(!path.isReachable(Vec2(1, 0)));
   }
@@ -192,7 +192,7 @@ class Test {
     vector<vector<double> > table { { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, { 1, 1, 1, ShortestPath::infinity, ShortestPath::infinity, 1, 1, 1, 1, 1, 1}, { 1, 1, 1, ShortestPath::infinity, ShortestPath::infinity, 1, 1, 1, 1, 1, 1}};
     ShortestPath path(Rectangle(11, 3),
         [table](Vec2 pos) { return table[pos.y][pos.x];},
-        [] (Vec2 from, Vec2 to) { return from.dist4(to); },
+        [] (Vec2 to) { return Vec2(1, 0).dist4(to); },
         Vec2::directions4(), Vec2(1, 1), Vec2(1, 0), -1.3);
   /*  vector<Vec2> res {Vec2(1, 0)};
     while (res.back() != Vec2(4, 0)) {

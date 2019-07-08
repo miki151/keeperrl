@@ -27,6 +27,7 @@
 #include "draw_line.h"
 #include "game_event.h"
 #include "content_factory.h"
+#include "shortest_path.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -65,7 +66,9 @@ WGame Position::getGame() const {
 }
 
 Position::Position(Vec2 v, WLevel l) : coord(v), level(l), valid(level && level->inBounds(coord)) {
-  PROFILE;
+}
+
+Position::Position(Vec2 v, WLevel l, IsValid) : coord(v), level(l), valid(true) {
 }
 
 optional<int> Position::dist8(const Position& pos) const {
@@ -186,10 +189,7 @@ vector<WFurniture> Position::modFurniture() const {
 }
 
 optional<short> Position::getDistanceToNearestPortal() const {
-  if (level)
-    return level->portals->getDistanceToNearest(coord);
-  else
-    return none;
+  return level->portals->getDistanceToNearest(coord);
 }
 
 optional<Position> Position::getOtherPortal() const {
@@ -472,7 +472,7 @@ bool Position::canEnter(const MovementType& t) const {
 bool Position::canEnterEmpty(const Creature* c) const {
   PROFILE;
   return canEnterEmpty(c->getMovementType());
-} 
+}
 
 bool Position::canEnterEmpty(const MovementType& movement) const {
   auto onlyMovement = movement;
@@ -949,24 +949,38 @@ optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movem
   return none;
 }
 
-optional<double> Position::getNavigationCost(const MovementType& movement) const {
+double Position::getNavigationCost(const MovementType& movement, const Sectors& onltMovementSectors) const {
   PROFILE;
-  if (canEnterEmpty(movement)) {
-    if (auto c = getCreature()) {
-      if (c->getAttributes().isBoulder())
-        return none;
-      else
-        return 5.0;
+  if (onltMovementSectors.contains(coord)) {
+    if (level->getSafeSquare(coord)->getCreature()) {
+      return 5.0;
     } else
       return 1.0;
   }
-  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    if (auto destroyAction = getBestDestroyAction(movement))
-      return 1.0 + *furniture->getStrength(*destroyAction) / 10;
+  if (auto destroyAction = getBestDestroyAction(movement))
+    return 1.0 + *getFurniture(FurnitureLayer::MIDDLE)->getStrength(*destroyAction) / 10;
   if (movement.canBuildBridge() && canConstruct(FurnitureType("BRIDGE")) &&
       !movement.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
     return 10;
-  return none;
+  return ShortestPath::infinity;
+}
+
+bool Position::canNavigate(const MovementType& type) const {
+  PROFILE;
+  return isValid() && level->getSectors(type).contains(coord);
+}
+
+bool Position::canNavigateCalc(const MovementType& type) const {
+  PROFILE;
+  optional<FurnitureLayer> ignore;
+  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
+    for (DestroyAction action : type.getDestroyActions())
+      if (furniture->canDestroy(type, action))
+        ignore = FurnitureLayer::MIDDLE;
+  if (type.canBuildBridge() && canConstruct(FurnitureType("BRIDGE")) &&
+      !type.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
+    return true;
+  return canEnterEmptyCalc(type, ignore);
 }
 
 bool Position::canNavigate(const MovementType& type) const {
@@ -1092,7 +1106,7 @@ optional<Position> Position::getStairsTo(Position pos) const {
   PROFILE;
   CHECK(isValid() && pos.isValid());
   CHECK(!isSameLevel(pos));
-  return level->getStairsTo(pos.level); 
+  return level->getStairsTo(pos.level);
 }
 
 void Position::swapCreatures(Creature* c) {

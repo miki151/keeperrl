@@ -35,6 +35,12 @@ bool ConstructionMap::FurnitureInfo::isBuilt(Position pos) const {
   return !!pos.getFurniture(type);
 }
 
+bool ConstructionMap::FurnitureInfo::isBuilt(Position pos, FurnitureLayer layer) const {
+  if (auto f = pos.getFurniture(layer))
+    return f->getType() == type;
+  return false;
+}
+
 bool ConstructionMap::FurnitureInfo::hasTask() const {
   return task != -1;
 }
@@ -79,13 +85,12 @@ void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
   }
 }
 
-void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info) {
-  auto layer = pos.getGame()->getContentFactory()->furniture.getData(info.getFurnitureType()).getLayer();
+void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info, FurnitureLayer layer) {
   CHECK(!furniture[layer].contains(pos));
   allFurniture.push_back({pos, layer});
   furniture[layer].set(pos, info);
   pos.setNeedsRenderAndMemoryUpdate(true);
-  if (info.isBuilt(pos))
+  if (info.isBuilt(pos, layer))
     furniturePositions[info.getFurnitureType()].insert(pos);
   else {
     ++unbuiltCounts[info.getFurnitureType()];
@@ -120,7 +125,7 @@ const vector<pair<Position, FurnitureLayer>>& ConstructionMap::getAllFurniture()
 void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
   auto layer = pos.getGame()->getContentFactory()->furniture.getData(type).getLayer();
   if (!containsFurniture(pos, layer))
-    addFurniture(pos, FurnitureInfo::getBuilt(type));
+    addFurniture(pos, FurnitureInfo::getBuilt(type), layer);
   furniturePositions[type].insert(pos);
   --unbuiltCounts[type];
   if (furniture[layer].contains(pos)) { // why this if?

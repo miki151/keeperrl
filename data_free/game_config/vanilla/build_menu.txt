@@ -215,7 +215,7 @@
     { DestroyLayers {CEILING MIDDLE}                           "Remove construction" "Orders"
         "" e {} false REMOVE_CONSTRUCTION }
  
-    { ForbidZone                                               "Forbind zone"      "Orders"
+    { ForbidZone                                               "Forbid zone"      "Orders"
         "Mark tiles to keep minions from entering."}
   }
 

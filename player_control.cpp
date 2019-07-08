@@ -1179,7 +1179,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         },
         [&](const RecruitmentInfo& info) {
           infoLines.push_back(
-              toString(info.getAvailableRecruits(getGame(), candidate.getInfo().getId(0)).size()) +
+              toString(info.getAvailableRecruits(getGame(), candidate.getInfo().getNonRandomId(0)).size()) +
               " recruits available");
         },
         [&](const auto&) {}
@@ -2389,7 +2389,10 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
               position.removeFurniture(f);
           getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
           updateSquareMemory(position);
-        }
+        } else
+          if (auto f = position.getFurniture(layer))
+            if (f->getType() == FurnitureType("TREE_TRUNK"))
+              position.removeFurniture(f);
       }
     },
     [&](const BuildInfo::ForbidZone) {

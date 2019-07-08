@@ -20,7 +20,8 @@ RICH_ENUM(BuildingId,
 RICH_ENUM(BiomeId,
   GRASSLAND,
   FORREST,
-  MOUNTAIN
+  MOUNTAIN,
+  DESERT
 );
 
 struct StockpileInfo {

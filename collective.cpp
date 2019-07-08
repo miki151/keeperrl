@@ -688,7 +688,7 @@ void Collective::claimSquare(Position pos) {
     if (auto furniture = pos.modFurniture(layer))
       if (!furniture->forgetAfterBuilding()) {
         if (!constructions->containsFurniture(pos, furniture->getLayer()))
-          constructions->addFurniture(pos, ConstructionMap::FurnitureInfo::getBuilt(furniture->getType()));
+          constructions->addFurniture(pos, ConstructionMap::FurnitureInfo::getBuilt(furniture->getType()), layer);
         furniture->setTribe(getTribeId());
       }
   control->onClaimedSquare(pos);
@@ -899,7 +899,8 @@ void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
 
 void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& cost, bool noCredit) {
   if (!noCredit || hasResource(cost)) {
-    constructions->addFurniture(pos, ConstructionMap::FurnitureInfo(type, cost));
+    auto layer = getGame()->getContentFactory()->furniture.getData(type).getLayer();
+    constructions->addFurniture(pos, ConstructionMap::FurnitureInfo(type, cost), layer);
     updateConstructions();
   }
 }

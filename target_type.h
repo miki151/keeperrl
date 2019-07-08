@@ -2,5 +2,6 @@
 
 enum class TargetType {
   TRAJECTORY,
-  POSITION
+  POSITION,
+  SHOW_ALL
 };

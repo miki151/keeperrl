@@ -391,8 +391,10 @@ string Item::getVisibleName(bool getPlural) const {
   else {
     if (attributes->plural)
       ret = *attributes->plural;
-    else
+    else if (attributes->name->back() != 's')
       ret = *attributes->name + "s";
+    else
+      ret = *attributes->name;
   }
   appendWithSpace(ret, getSuffix());
   return ret;

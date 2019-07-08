@@ -21,6 +21,7 @@ class ConstructionMap {
     void setTask(UniqueEntity<Task>::Id);
     CostInfo getCost() const;
     bool isBuilt(Position) const;
+    bool isBuilt(Position, FurnitureLayer) const;
     UniqueEntity<Task>::Id getTask() const;
     bool hasTask() const;
     FurnitureType getFurnitureType() const;
@@ -55,7 +56,7 @@ class ConstructionMap {
   void setTask(Position, FurnitureLayer, UniqueEntity<Task>::Id);
   void removeFurniturePlan(Position, FurnitureLayer);
   void onFurnitureDestroyed(Position, FurnitureLayer);
-  void addFurniture(Position, const FurnitureInfo&);
+  void addFurniture(Position, const FurnitureInfo&, FurnitureLayer);
   bool containsFurniture(Position, FurnitureLayer) const;
   int getBuiltCount(FurnitureType) const;
   int getTotalCount(FurnitureType) const;

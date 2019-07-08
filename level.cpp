@@ -486,7 +486,7 @@ void Level::tick() {
 }
 
 bool Level::inBounds(Vec2 pos) const {
-  PROFILE;
+  //PROFILE;
   return pos.inRectangle(getBounds());
 }
 
@@ -499,7 +499,7 @@ Sectors& Level::getSectorsDontCreate(const MovementType& movement) const {
 }
 
 static Sectors::ExtraConnections getOrCreateExtraConnections(Rectangle bounds,
-    const unordered_map<MovementType, Sectors>& sectors) {
+    const unordered_map<MovementType, Sectors, CustomHash<MovementType>>& sectors) {
   if (sectors.empty())
     return Sectors::ExtraConnections(bounds);
   else
@@ -507,14 +507,17 @@ static Sectors::ExtraConnections getOrCreateExtraConnections(Rectangle bounds,
 }
 
 Sectors& Level::getSectors(const MovementType& movement) const {
-  if (!sectors.count(movement)) {
+  if (auto res = getReferenceMaybe(sectors, movement))
+    return *res;
+  else {
+    PROFILE_BLOCK("Gen sectors");
     sectors.insert(make_pair(movement, Sectors(getBounds(), getOrCreateExtraConnections(getBounds(), sectors))));
     Sectors& newSectors = sectors.at(movement);
     for (Position pos : getAllPositions())
       if (pos.canNavigateCalc(movement))
         newSectors.add(pos.getCoord());
+    return newSectors;
   }
-  return sectors.at(movement);
 }
 
 bool Level::isChokePoint(Vec2 pos, const MovementType& movement) const {

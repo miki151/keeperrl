@@ -780,6 +780,22 @@ optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, TargetType targetType, T
         }
       };
       switch (targetType) {
+        case TargetType::SHOW_ALL:
+          for (auto v : passable.getBounds()) {
+            auto color = [&] {
+              switch (passable[v]) {
+                case PassableInfo::UNKNOWN:
+                  return Color::TRANSPARENT;
+                case PassableInfo::PASSABLE:
+                  return Color::WHITE.transparency(100);
+                case PassableInfo::STOPS_HERE:
+                case PassableInfo::NON_PASSABLE:
+                  return Color::GREEN;
+              }
+            }();
+            drawPoint(mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(), v.x, v.y), color);
+          }
+          break;
         case TargetType::POSITION: {
           auto color = pos->inRectangle(passable.getBounds()) && passable[*pos] == PassableInfo::PASSABLE ? Color::GREEN : Color::RED;
           drawPoint(mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(), pos->x, pos->y), color);
