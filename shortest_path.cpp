@@ -258,7 +258,7 @@ ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Posit
   auto movementType = creature->getMovementType();
   auto& sectors = level->getSectors(movementType);
   auto& movementSectors = level->getSectors(copyOf(movementType).setCanBuildBridge(false).setDestroyActions({}));
-  auto entryFun = [=, fromCoord = from.getCoord()](Vec2 v) {
+  auto entryFun = [=, &sectors, &movementSectors, fromCoord = from.getCoord()](Vec2 v) {
     PROFILE_BLOCK("entry fun");
     if (fromCoord == v)
       return 1.0;

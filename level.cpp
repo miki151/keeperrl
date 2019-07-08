@@ -515,6 +515,7 @@ Sectors& Level::getSectors(const MovementType& movement) const {
   if (auto res = getReferenceMaybe(sectors, movement))
     return *res;
   else {
+    PROFILE_BLOCK("Gen sectors");
     sectors.insert(make_pair(movement, Sectors(getBounds(), getOrCreateExtraConnections(getBounds(), sectors))));
     Sectors& newSectors = sectors.at(movement);
     for (Position pos : getAllPositions())
