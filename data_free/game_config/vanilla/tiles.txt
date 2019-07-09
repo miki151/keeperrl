@@ -448,6 +448,8 @@
     extraBorders = { "water" } }
   { viewId = "mud" symbol = "." color = ColorId BROWN
     extraBorders = { "water" "hill" "sand" } }
+  { viewId = "snow" symbol = "." color = ColorId WHITE }
+  { viewId = "ice" symbol = "." color = ColorId LIGHT_BLUE waterSides = "water" }
   { viewId = "grass" symbol = "𝃰" color = ColorId GREEN
     isSymbolFont = true canMirror = true
     extraBorders = { "water" "hill" "sand" "mud" } }
@@ -463,6 +465,8 @@
   { viewId = "mountain" symbol = "#" color = ColorId GRAY
     wallShadow = true mountainSides = "mountain" }
   { viewId = "mountain_sand" symbol = "#" color = ColorId LIGHT_BROWN
+    wallShadow = true mountainSides = "mountain" }
+  { viewId = "glacier" symbol = "#" color = ColorId SKY_BLUE
     wallShadow = true mountainSides = "mountain" }
   { viewId = "mountain2" symbol = "#" color = ColorId DARK_GRAY
     wallShadow = true mountainSides = "mountain" }

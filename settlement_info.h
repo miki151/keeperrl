@@ -21,7 +21,8 @@ RICH_ENUM(BiomeId,
   GRASSLAND,
   FORREST,
   MOUNTAIN,
-  DESERT
+  DESERT,
+  SNOW
 );
 
 struct StockpileInfo {

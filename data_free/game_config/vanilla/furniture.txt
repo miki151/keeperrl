@@ -731,6 +731,11 @@
     name = "sandstone"
     viewId = { "mountain_sand" }
   }
+  "GLACIER" inherit "MOUNTAIN"
+  {
+    name = "glacier"
+    viewId = { "glacier" }
+  }
   "MOUNTAIN2"
   {
     name = "hard rock"
@@ -1146,6 +1151,18 @@
   {
     name = "grass"
     viewId = { "grass" }
+    layer = GROUND
+  }
+  "SNOW"
+  {
+    name = "snow"
+    viewId = { "snow" }
+    layer = GROUND
+  }
+  "ICE"
+  {
+    name = "ice"
+    viewId = { "ice" }
     layer = GROUND
   }
   "MUD"

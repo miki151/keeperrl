@@ -213,6 +213,8 @@ void ModelBuilder::addMapVillainsForLawfulKeeper(vector<EnemyInfo>& enemyInfo, B
       for (int i : Range(random.get(3, 5)))
         enemyInfo.push_back(enemyFactory->get(EnemyId("LIZARDMEN_SMALL")));
       break;
+    case BiomeId::SNOW:
+      break;
   }
   if (random.chance(0.3))
     enemyInfo.push_back(enemyFactory->get(EnemyId("EVIL_TEMPLE")));
@@ -239,6 +241,8 @@ void ModelBuilder::addMapVillainsForEvilKeeper(vector<EnemyInfo>& enemyInfo, Bio
     case BiomeId::DESERT:
       for (int i : Range(random.get(3, 5)))
         enemyInfo.push_back(enemyFactory->get(EnemyId("LIZARDMEN_SMALL")));
+      break;
+    case BiomeId::SNOW:
       break;
   }
   if (random.chance(0.3))
@@ -280,7 +284,7 @@ PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment al
 
 PModel ModelBuilder::tryTutorialModel() {
   vector<EnemyInfo> enemyInfo;
-  BiomeId biome = BiomeId::DESERT;
+  BiomeId biome = BiomeId::SNOW;
   //enemyInfo.push_back(enemyFactory->get(EnemyId("RED_DRAGON")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
   /*enemyInfo.push_back(enemyFactory->get(EnemyId("BANDITS")));

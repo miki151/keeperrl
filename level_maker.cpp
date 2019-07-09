@@ -683,8 +683,8 @@ class River : public LevelMaker {
 
 class MountainRiver : public LevelMaker {
   public:
-  MountainRiver(int num, Predicate startPred)
-    : number(num), startPredicate(startPred) {}
+  MountainRiver(int num, Predicate startPred, optional<FurnitureType> waterType)
+    : number(num), startPredicate(startPred), waterType(waterType) {}
 
   optional<Vec2> fillLake(LevelBuilder* builder, set<Vec2>& waterTiles, Rectangle area, Vec2 pos) {
     vector<Vec2> ret;
@@ -754,6 +754,8 @@ class MountainRiver : public LevelMaker {
   }
 
   FurnitureType getWaterType(LevelBuilder* builder, Vec2 pos, int numLayer) {
+    if (waterType)
+      return *waterType;
     if (builder->hasAttrib(pos, SquareAttrib::MOUNTAIN))
       return builder->getContentFactory()->furniture.getWaterType(100);
     else if (numLayer == 0)
@@ -765,6 +767,7 @@ class MountainRiver : public LevelMaker {
   private:
   int number;
   Predicate startPredicate;
+  optional<FurnitureType> waterType;
 };
 
 class Blob : public LevelMaker {
@@ -2469,6 +2472,8 @@ static PMakerQueue mountainLake(SettlementInfo info) {
 
 static PLevelMaker getMountains(BiomeId id, TribeId tribe) {
   switch (id) {
+    case BiomeId::SNOW:
+      return unique<Mountains>(0.45, 0.02, NoiseInit{0, 1, 0, 0, 0}, tribe, FurnitureType("SNOW"), FurnitureType("SNOW"), FurnitureType("GLACIER"));
     case BiomeId::DESERT:
       return unique<Mountains>(0.45, 0.02, NoiseInit{0, 1, 0, 0, 0}, tribe, FurnitureType("SAND"), FurnitureType("SAND"), FurnitureType("MOUNTAIN_SAND"));
     case BiomeId::GRASSLAND:
@@ -2497,12 +2502,16 @@ static PLevelMaker getForrest(BiomeId id) {
       return unique<MakerQueue>(
           unique<Forrest>(0.8, 0.015, Predicate::type(FurnitureType("SAND")), FurnitureListId("vegetationDesert"), TribeId::getHostile())
       );
+    case BiomeId::SNOW:
+      return unique<MakerQueue>(
+      );
   }
 }
 
 static PLevelMaker getForrestCreatures(CreatureGroup factory, int levelWidth, BiomeId biome) {
   int div;
   switch (biome) {
+    case BiomeId::SNOW:
     case BiomeId::DESERT:
     case BiomeId::FORREST: div = 2000; break;
     case BiomeId::GRASSLAND:
@@ -2513,6 +2522,7 @@ static PLevelMaker getForrestCreatures(CreatureGroup factory, int levelWidth, Bi
 
 static ItemListId getItems(BiomeId id) {
   switch (id) {
+    case BiomeId::SNOW:
     case BiomeId::DESERT:
       return ItemListId("desertItems");
     default:
@@ -2684,8 +2694,11 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
   int mapBorder = 2;
   queue->addMaker(unique<Empty>(FurnitureType("WATER")));
   queue->addMaker(getMountains(biomeId, keeperTribe.value_or(TribeId::getHostile())));
+  optional<FurnitureType> waterType;
+  if (biomeId == BiomeId::SNOW)
+    waterType = FurnitureType("ICE");
   if (biomeId != BiomeId::DESERT)
-    queue->addMaker(unique<MountainRiver>(1, Predicate::attrib(SquareAttrib::MOUNTAIN)));
+    queue->addMaker(unique<MountainRiver>(1, Predicate::attrib(SquareAttrib::MOUNTAIN), waterType));
   queue->addMaker(unique<AddAttrib>(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::LOWLAND)));
   queue->addMaker(unique<AddAttrib>(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::HILL)));
   queue->addMaker(getForrest(biomeId));
