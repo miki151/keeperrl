@@ -424,6 +424,15 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
     minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numTries << std::endl;
 }
 
+static optional<CreatureGroup> getWildlife(BiomeId id) {
+  switch (id) {
+    case BiomeId::DESERT:
+      return CreatureGroup::singleType(TribeId::getWildlife(), CreatureId("SNAKE"));
+    default:
+      return CreatureGroup::forrest(TribeId::getWildlife());
+  }
+}
+
 PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<TribeId> keeperTribe, BiomeId biomeId,
     optional<ExternalEnemies> externalEnemies, bool hasWildlife) {
   auto model = Model::create(contentFactory);
@@ -459,7 +468,7 @@ PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<T
   append(enemyInfo, extraEnemies);
   optional<CreatureGroup> wildlife;
   if (hasWildlife)
-    wildlife = CreatureGroup::forrest(TribeId::getWildlife());
+    wildlife = getWildlife(biomeId);
   model->buildMainLevel(
       LevelBuilder(meter, random, contentFactory, width, width, false),
       LevelMaker::topLevel(random, wildlife, topLevelSettlements, width,
