@@ -155,6 +155,7 @@ void EnemyFactory::updateCreateOnBones(EnemyInfo& info) const {
   if (info.createOnBones && random.chance(info.createOnBones->probability)) {
     EnemyInfo enemy = get(random.choose(info.createOnBones->enemies));
     info.levelConnection = enemy.levelConnection;
+    info.biomes = enemy.biomes;
     bool makeRuins = Random.roll(2);
     if (makeRuins)
       info.settlement.buildingId = BuildingId::RUINS;

@@ -841,6 +841,7 @@
   }
   "LIZARDMEN"
   {
+    biomes = { DESERT }
     settlement = {
       type = VILLAGE
       tribe = LIZARD
@@ -879,7 +880,7 @@
       }
       attackBehaviour = KillLeader
     }
-    createOnBones = 1.0 { "VILLAGE" "ELVES" }
+    createOnBones = 0.1 { "VILLAGE" "ELVES" }
     immigrants = { 
       {
         ids = { "LIZARDMAN" }

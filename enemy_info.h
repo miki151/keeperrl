@@ -65,8 +65,9 @@ struct EnemyInfo {
   optional<VillainType> villainType;
   optional<LevelConnection> SERIAL(levelConnection);
   optional<EnemyId> id;
+  vector<BiomeId> SERIAL(biomes);
   vector<ImmigrantInfo> SERIAL(immigrants);
   bool SERIAL(discoverable) = true;
   optional<BonesInfo> SERIAL(createOnBones);
-  SERIALIZE_ALL(NAMED(settlement), OPTION(config), NAMED(behaviour), NAMED(levelConnection), OPTION(immigrants), OPTION(discoverable), NAMED(createOnBones))
+  SERIALIZE_ALL(NAMED(settlement), OPTION(config), NAMED(behaviour), NAMED(levelConnection), OPTION(immigrants), OPTION(discoverable), NAMED(createOnBones), OPTION(biomes))
 };

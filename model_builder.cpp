@@ -290,11 +290,14 @@ PModel ModelBuilder::tryTutorialModel() {
   return tryModel(174, enemyInfo, TribeId::getDarkKeeper(), biome, {}, false);
 }
 
-static optional<BiomeId> getBiome(EnemyInfo& enemy, RandomGen& random) {
+static optional<BiomeId> getBiome(const EnemyInfo& enemy, RandomGen& random) {
+  if (!enemy.biomes.empty())
+    return random.choose(enemy.biomes);
   switch (enemy.settlement.type) {
     case SettlementType::CASTLE:
     case SettlementType::CASTLE2:
     case SettlementType::TOWER:
+      return BiomeId::GRASSLAND;
     case SettlementType::VILLAGE:
     case SettlementType::SWAMP:
       return BiomeId::GRASSLAND;

@@ -915,7 +915,7 @@ static BuildingType getBuildingInfo(const SettlementInfo& info) {
       return CONSTRUCT(BuildingType,
           c.wall = FurnitureType("MUD_WALL");
           c.floorInside = FurnitureType("MUD");
-          c.floorOutside = FurnitureType("MUD");
+          //c.floorOutside = FurnitureType("MUD");
       );
     case BuildingId::BRICK:
       return CONSTRUCT(BuildingType,
