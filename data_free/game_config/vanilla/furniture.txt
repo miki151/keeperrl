@@ -728,7 +728,7 @@
   }
   "MOUNTAIN_SAND" inherit "MOUNTAIN"
   {
-    name = "packed sand"
+    name = "sandstone"
     viewId = { "mountain_sand" }
   }
   "MOUNTAIN2"
