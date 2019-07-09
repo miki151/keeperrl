@@ -537,10 +537,6 @@ bool MapGui::fxesAvailable() const {
   return !!fxRenderer && spriteMode;
 }
 
-static bool mirrorSprite(ViewId id) {
-  return id == ViewId("grass") || id == ViewId("hill");
-}
-
 Color MapGui::getHealthBarColor(double health, bool spirit) {
   auto ret = Color::f(min<double>(1.0, 2 - health * 2), min<double>(1.0, 2 * health), 0);
   if (spirit) {
@@ -650,9 +646,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       move.y += getFlyingMovement(size, curTimeReal);
     const auto& coord = tile.getSpriteCoord(dirs);
     if (!fxesAvailable() || !tile.getFX()) {
-      if (mirrorSprite(id))
+      if (tile.canMirror)
         renderer.drawTile(pos + move, coord, size, color,
-            Renderer::SpriteOrientation((bool)(tilePos.getHash() % 2), (bool)(tilePos.getHash() % 4 > 1)));
+            Renderer::SpriteOrientation((bool)(tilePos.getHash() & 1024), (bool)(tilePos.getHash() & 512)));
       else {
         optional<Color> colorVariant;
         if (!tile.animated)

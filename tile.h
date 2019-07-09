@@ -37,6 +37,7 @@ class Tile {
   bool moveUp = false;
   bool floorBorders = false;
   bool wallShadow = false;
+  bool canMirror = false;
 
   Tile addConnection(DirSet, vector<TileCoord>);
   Tile addOption(Dir, vector<TileCoord>);

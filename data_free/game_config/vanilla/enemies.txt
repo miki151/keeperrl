@@ -822,6 +822,23 @@
       }
     }
   }
+  "LIZARDMEN_SMALL"
+  {
+    settlement = {
+      type = COTTAGE
+      tribe = LIZARD
+      inhabitants = {
+        fighters = {
+          count = {3 5}
+          all = { 1 "LIZARDMAN" }
+        }
+      }
+      race = "lizardmen"
+      buildingId = MUD
+      furniture = "roomFurniture"
+      outsideFeatures = "villageOutside"
+    }
+  }
   "LIZARDMEN"
   {
     settlement = {

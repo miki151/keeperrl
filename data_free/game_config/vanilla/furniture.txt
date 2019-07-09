@@ -352,6 +352,13 @@
   {
     viewId = { "decid_tree" }
   }
+  "CACTUS1" inherit "CANIF_TREE"
+  {
+    viewId = { "cactus1" }
+    name = "cactus"
+    destroyedRemains = none
+    summonedElement = none
+  }
   "TREE_TRUNK"
   {
     name = "tree trunk"
@@ -718,6 +725,11 @@
     summonedElement = "EARTH_ELEMENTAL"
     destroyFX = { ROCK_CLOUD Rgb 220 210 180 255 }
     tryDestroyFX = { ROCK_SPLINTERS Rgb 220 210 180 255 }
+  }
+  "MOUNTAIN_SAND" inherit "MOUNTAIN"
+  {
+    name = "packed sand"
+    viewId = { "mountain_sand" }
   }
   "MOUNTAIN2"
   {

@@ -314,6 +314,8 @@
     isSymbolFont = true roundShadow = true }
   { viewId = "canif_tree" symbol = "♣" color = ColorId DARK_GREEN
     isSymbolFont = true roundShadow = true }
+  { viewId = "cactus1" symbol = "!" color = ColorId LIGHT_GREEN
+    isSymbolFont = true roundShadow = true }
   { viewId = "burnt_tree" symbol = "." color = ColorId DARK_GRAY
     roundShadow = true }
   { viewId = "barricade" symbol = "X" color = ColorId BROWN
@@ -442,15 +444,15 @@
     wallConnections = true }
   { viewId = "road" symbol = "." color = ColorId LIGHT_GRAY
     roadConnections = true }
-  { viewId = "sand" symbol = "." color = ColorId YELLOW
+  { viewId = "sand" symbol = "." color = ColorId YELLOW canMirror = true
     extraBorders = { "water" } }
   { viewId = "mud" symbol = "." color = ColorId BROWN
     extraBorders = { "water" "hill" "sand" } }
   { viewId = "grass" symbol = "𝃰" color = ColorId GREEN
-    isSymbolFont = true
+    isSymbolFont = true canMirror = true
     extraBorders = { "water" "hill" "sand" "mud" } }
   { viewId = "hill" symbol = "𝀢" color = ColorId DARK_GREEN
-    isSymbolFont = true
+    isSymbolFont = true canMirror = true
     extraBorders = { "water" "sand" "floor" "keeper_floor" } }
   { viewId = "water" symbol = "~" color = ColorId LIGHT_BLUE
     waterSides = "water" animated = true }
@@ -459,6 +461,8 @@
   { viewId = "fog_of_war" symbol = " " color = ColorId WHITE sprite = "empty"
     waterSides = "fogofwar" }
   { viewId = "mountain" symbol = "#" color = ColorId GRAY
+    wallShadow = true mountainSides = "mountain" }
+  { viewId = "mountain_sand" symbol = "#" color = ColorId LIGHT_BROWN
     wallShadow = true mountainSides = "mountain" }
   { viewId = "mountain2" symbol = "#" color = ColorId DARK_GRAY
     wallShadow = true mountainSides = "mountain" }

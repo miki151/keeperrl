@@ -51,6 +51,12 @@
       "BUSH" 1
     }
   }
+  "vegetationDesert"
+  {
+    {
+      "CACTUS1" 2
+    }
+  }
   "cryptCoffins"
   {
     {
