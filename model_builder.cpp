@@ -10,12 +10,10 @@
 #include "creature.h"
 #include "square.h"
 #include "progress_meter.h"
-#include "collective.h"
 #include "level_maker.h"
 #include "model.h"
 #include "level_builder.h"
 #include "monster_ai.h"
-#include "game.h"
 #include "campaign.h"
 #include "creature_name.h"
 #include "villain_type.h"
@@ -26,7 +24,6 @@
 #include "furniture.h"
 #include "sokoban_input.h"
 #include "external_enemies.h"
-#include "immigration.h"
 #include "technology.h"
 #include "keybinding.h"
 #include "tutorial.h"
@@ -465,23 +462,8 @@ PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<T
       LevelMaker::topLevel(random, wildlife, topLevelSettlements, width,
         keeperTribe, biomeId, *chooseResourceCounts(random, contentFactory->resources, 0)));
   model->calculateStairNavigation();
-  for (auto& enemy : enemyInfo) {
-    if (enemy.settlement.locationName)
-      enemy.settlement.collective->setLocationName(*enemy.settlement.locationName);
-    if (auto race = enemy.settlement.race)
-      enemy.settlement.collective->setRaceName(*race);
-    if (enemy.discoverable)
-      enemy.settlement.collective->setDiscoverable();
-    PCollective collective = enemy.settlement.collective->build(contentFactory);
-    collective->setImmigration(makeOwner<Immigration>(collective.get(), std::move(enemy.immigrants)));
-    auto control = VillageControl::create(collective.get(), enemy.behaviour);
-    if (enemy.villainType)
-      collective->setVillainType(*enemy.villainType);
-    if (enemy.id)
-      collective->setEnemyId(*enemy.id);
-    collective->setControl(std::move(control));
-    model->collectives.push_back(std::move(collective));
-  }
+  for (auto& enemy : enemyInfo)
+    model->addCollective(enemy.buildCollective(contentFactory));
   if (externalEnemies)
     model->addExternalEnemies(std::move(*externalEnemies));
   return model;

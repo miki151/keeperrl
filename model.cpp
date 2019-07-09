@@ -279,6 +279,8 @@ const vector<WLevel>& Model::getMainLevels() const {
 
 void Model::addCollective(PCollective col) {
   collectives.push_back(std::move(col));
+  if (game)
+    game->addCollective(collectives.back().get());
 }
 
 WLevel Model::getTopLevel() const {

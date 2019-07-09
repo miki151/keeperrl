@@ -58,6 +58,7 @@ struct EnemyInfo {
   EnemyInfo& setImmigrants(vector<ImmigrantInfo>);
   EnemyInfo& setNonDiscoverable();
   void updateCreateOnBones(const EnemyFactory&);
+  PCollective buildCollective(ContentFactory*) const;
   SettlementInfo SERIAL(settlement);
   CollectiveConfig SERIAL(config);
   optional<VillageBehaviour> SERIAL(behaviour);

@@ -14,6 +14,12 @@
 #include "creature_group.h"
 #include "name_generator.h"
 #include "enemy_id.h"
+#include "collective_builder.h"
+#include "model.h"
+#include "collective.h"
+#include "village_control.h"
+#include "game.h"
+#include "immigration.h"
 
 EnemyFactory::EnemyFactory(RandomGen& r, NameGenerator* n, map<EnemyId, EnemyInfo> enemies, vector<ExternalEnemy> externalEnemies)
     : random(r), nameGenerator(n), enemies(std::move(enemies)), externalEnemies(std::move(externalEnemies)) {
@@ -42,6 +48,24 @@ EnemyInfo& EnemyInfo::setImmigrants(vector<ImmigrantInfo> i) {
 EnemyInfo& EnemyInfo::setNonDiscoverable() {
   discoverable = false;
   return *this;
+}
+
+PCollective EnemyInfo::buildCollective(ContentFactory* contentFactory) const {
+  if (settlement.locationName)
+    settlement.collective->setLocationName(*settlement.locationName);
+  if (auto race = settlement.race)
+    settlement.collective->setRaceName(*race);
+  if (discoverable)
+    settlement.collective->setDiscoverable();
+  PCollective collective = settlement.collective->build(contentFactory);
+  collective->setImmigration(makeOwner<Immigration>(collective.get(), immigrants));
+  auto control = VillageControl::create(collective.get(), behaviour);
+  if (villainType)
+    collective->setVillainType(*villainType);
+  if (id)
+    collective->setEnemyId(*id);
+  collective->setControl(std::move(control));
+  return collective;
 }
 
 static EnemyInfo getVault(SettlementType type, CreatureId creature, TribeId tribe, int num,
