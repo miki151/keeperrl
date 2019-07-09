@@ -983,23 +983,6 @@ bool Position::canNavigateCalc(const MovementType& type) const {
   return canEnterEmptyCalc(type, ignore);
 }
 
-bool Position::canNavigate(const MovementType& type) const {
-  return isValid() && level->getSectors(type).contains(coord);
-}
-
-bool Position::canNavigateCalc(const MovementType& type) const {
-  PROFILE;
-  optional<FurnitureLayer> ignore;
-  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    for (DestroyAction action : type.getDestroyActions())
-      if (furniture->canDestroy(type, action))
-        ignore = FurnitureLayer::MIDDLE;
-  if (type.canBuildBridge() && canConstruct(FurnitureType("BRIDGE")) &&
-      !type.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
-    return true;
-  return canEnterEmptyCalc(type, ignore);
-}
-
 bool Position::canSeeThru(VisionId id) const {
   PROFILE;
   if (!isValid())
