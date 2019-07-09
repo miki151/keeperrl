@@ -109,6 +109,7 @@ enum class TargetType;
 enum class HealthType;
 enum class ExternalEnemiesType;
 enum class LevelType;
+enum class EnemyAggressionLevel;
 
 struct FXInfo;
 struct FXSpawnInfo;

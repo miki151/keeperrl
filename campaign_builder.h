@@ -46,4 +46,5 @@ struct CampaignSetup {
   string gameDisplayName;
   vector<string> introMessages;
   optional<ExternalEnemiesType> externalEnemies;
+  EnemyAggressionLevel enemyAggressionLevel;
 };

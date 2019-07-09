@@ -48,6 +48,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::GENERATE_MANA, 0},
   {OptionId::CURRENT_MOD, 0},
   {OptionId::ENDLESS_ENEMIES, 2},
+  {OptionId::ENEMY_AGGRESSION, 1},
 };
 
 const map<OptionId, string> names {
@@ -80,6 +81,7 @@ const map<OptionId, string> names {
   {OptionId::GENERATE_MANA, "Generate mana in library"},
   {OptionId::CURRENT_MOD, "Current mod"},
   {OptionId::ENDLESS_ENEMIES, "Start endless enemy waves"},
+  {OptionId::ENEMY_AGGRESSION, "Enemy aggression"},
 };
 
 const map<OptionId, string> hints {
@@ -98,7 +100,8 @@ const map<OptionId, string> hints {
   {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
     "using alt + letter."},
   {OptionId::GENERATE_MANA, "Your minions will generate mana while working in the library."},
-  {OptionId::ENDLESS_ENEMIES, "Turn on recurrent enemy waves that attack your dungeon."}
+  {OptionId::ENDLESS_ENEMIES, "Turn on recurrent enemy waves that attack your dungeon."},
+  {OptionId::ENEMY_AGGRESSION, "The chance of your dungeon being attacked by enemies"},
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -245,6 +248,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::KEEPER_SEED:
       return *value.getValueMaybe<string>();
     case OptionId::ENDLESS_ENEMIES:
+    case OptionId::ENEMY_AGGRESSION:
     case OptionId::CURRENT_MOD:
       return choices[id][(*value.getValueMaybe<int>() + choices[id].size()) % choices[id].size()];
     case OptionId::FULLSCREEN_RESOLUTION: {

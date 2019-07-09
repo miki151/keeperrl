@@ -36,6 +36,7 @@
 #include "creature_attributes.h"
 #include "game_event.h"
 #include "content_factory.h"
+#include "enemy_aggression_level.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl)
 
@@ -108,6 +109,21 @@ void VillageControl::onEvent(const GameEvent& event) {
       },
       [&](const auto&) {}
   );
+}
+
+void VillageControl::updateAggression(EnemyAggressionLevel level) {
+  switch (level) {
+    case EnemyAggressionLevel::NONE:
+      if (villain)
+        villain->triggers.clear();
+      break;
+    case EnemyAggressionLevel::EXTREME:
+      if (villain && !villain->triggers.empty())
+        villain->triggers.push_back(Timer{3000});
+      break;
+    default:
+      break;
+  }
 }
 
 void VillageControl::launchAttack(vector<Creature*> attackers) {

@@ -66,8 +66,11 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, ContentFacto
   gameDisplayName = c.gameDisplayName;
   for (Vec2 v : models.getBounds())
     if (WModel m = models[v].get()) {
-      for (WCollective col : m->getCollectives())
+      for (WCollective col : m->getCollectives()) {
+        auto control = dynamic_cast<VillageControl*>(col->getControl());
+        control->updateAggression(c.enemyAggressionLevel);
         addCollective(col);
+      }
       m->updateSunlightMovement();
       for (auto c : m->getAllCreatures())
         c->setGlobalTime(getGlobalTime());

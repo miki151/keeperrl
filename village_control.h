@@ -29,6 +29,8 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
 
   void onEvent(const GameEvent&);
 
+  void updateAggression(EnemyAggressionLevel);
+
   private:
   struct Private {};
 
