@@ -789,6 +789,8 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
 
 bool Body::isImmuneTo(LastingEffect effect) const {
   switch (effect) {
+    case LastingEffect::FROZEN:
+      return material == Material::FIRE;
     case LastingEffect::BLEEDING:
       return material != Material::FLESH;
     case LastingEffect::ON_FIRE:

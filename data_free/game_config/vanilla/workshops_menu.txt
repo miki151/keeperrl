@@ -66,6 +66,7 @@
 
 {
     {{Ring POISON_RESISTANT}               10       GOLD 20}
+    {{Ring COLD_RESISTANT}                 10       GOLD 20}
     {{Ring FIRE_RESISTANT}                 10       GOLD 30}
     {{Ring MAGIC_RESISTANCE}               10       GOLD 30}
     {{Ring RESTED}                         10       GOLD 30}

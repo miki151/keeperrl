@@ -27,8 +27,13 @@ static void addThird(const Creature* c, MsgType type, const string& param) {
                                (param.size() > 0 ? " on the " + param : ".");
                                unseenMsg = "You hear snoring."; break;
     case MsgType::WAKE_UP: msg = c->getName().the() + " wakes up."; break;
-    case MsgType::DIE: msg = c->getName().the() + " is " + 
-        c->getAttributes().getDeathDescription() + "!"; break;
+    case MsgType::DIE:
+      if (c->isAffected(LastingEffect::FROZEN))
+        msg = c->getName().the() + " shatters into a thousand pieces!";
+      else
+        msg = c->getName().the() + " is " +
+          c->getAttributes().getDeathDescription() + "!";
+      break;
     case MsgType::TELE_APPEAR: msg = c->getName().the() + " appears out of nowhere!"; break;
     case MsgType::TELE_DISAPPEAR: msg = c->getName().the() + " suddenly disappears!"; break;
     case MsgType::BLEEDING_STOPS: msg = c->getName().the() + "'s bleeding stops."; break;
@@ -99,7 +104,12 @@ static void addSecond(const Creature* c, MsgType type, const string& param) {
     case MsgType::WAKE_UP: msg = "You wake up."; break;
     case MsgType::FALL: msg = "You fall " + param; break;
     case MsgType::FALL_ASLEEP: msg = "You fall asleep" + (param.size() > 0 ? " on the " + param : "."); break;
-    case MsgType::DIE: c->secondPerson("You die!!"); break;
+    case MsgType::DIE:
+      if (c->isAffected(LastingEffect::FROZEN))
+        c->secondPerson("You shatter into a thousand pieces!!");
+      else
+        c->secondPerson("You die!!");
+      break;
     case MsgType::TELE_DISAPPEAR: msg = "You are standing somewhere else!"; break;
     case MsgType::BLEEDING_STOPS: msg = "Your bleeding stops."; break;
     case MsgType::DIE_OF: msg = "You die" + (param.empty() ? string(".") : " of " + param); break;

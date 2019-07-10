@@ -1201,6 +1201,7 @@ void Creature::updateViewObject() {
   object.setModifier(ViewObject::Modifier::STUNNED, isAffected(LastingEffect::STUNNED));
   object.setModifier(ViewObject::Modifier::FLYING, isAffected(LastingEffect::FLYING));
   object.setModifier(ViewObject::Modifier::INVISIBLE, isAffected(LastingEffect::INVISIBLE));
+  object.setModifier(ViewObject::Modifier::FROZEN, isAffected(LastingEffect::FROZEN));
   object.setModifier(ViewObject::Modifier::HIDDEN, hidden);
   object.getCreatureStatus() = getStatus();
   object.setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));
@@ -1262,13 +1263,7 @@ void Creature::affectByFire(double amount) {
 }
 
 void Creature::affectByIce(double amount) {
-  /*PROFILE;
-  if (!isAffected(LastingEffect::FIRE_RESISTANT) &&
-      getBody().affectByFire(this, amount)) {
-    verb("burn", "burns", "to death");
-    dieWithReason("burnt to death");
-  }
-  addEffect(LastingEffect::ON_FIRE, 100_visible);*/
+  addEffect(LastingEffect::FROZEN, 5_visible);
 }
 
 void Creature::affectBySilver() {
@@ -1334,6 +1329,8 @@ vector<PItem> Creature::generateCorpse(bool instantlyRotten) const {
 
 void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
+  if (isAffected(LastingEffect::FROZEN))
+    drops = DropType::ONLY_INVENTORY;
   getController()->onKilled(attacker);
   deathTime = *getGlobalTime();
   lastAttacker = attacker;

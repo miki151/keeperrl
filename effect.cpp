@@ -151,6 +151,7 @@ static TimeInterval getDuration(const Creature* c, LastingEffect e) {
     case LastingEffect::DAM_BONUS: return  40_visible;
     case LastingEffect::BLIND: return  15_visible;
     case LastingEffect::INVISIBLE: return  15_visible;
+    case LastingEffect::FROZEN:
     case LastingEffect::STUNNED: return  7_visible;
     case LastingEffect::SLEEP_RESISTANT:
     case LastingEffect::FIRE_RESISTANT:

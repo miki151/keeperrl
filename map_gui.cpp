@@ -614,6 +614,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   const Tile& tile = renderer.getTileSet().getTile(id, spriteMode);
   Color color = tile.color;
   considerWoundedAnimation(object, color, curTimeReal);
+  if (object.hasModifier(ViewObject::Modifier::FROZEN))
+    color = Color::SKY_BLUE;
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
     color = color.transparency(70);
   else if (tile.translucent > 0)
