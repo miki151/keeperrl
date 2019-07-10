@@ -1471,6 +1471,12 @@
       guardianInfo = "WITCHMAN" 0.003 1 2
     }
   }
+  "ESKIMO_COTTAGE" inherit "HUMAN_COTTAGE"
+  {
+    settlement = append {
+      buildingId = SNOW
+    }
+  }
   "ELVEN_COTTAGE"
   {
     settlement = {

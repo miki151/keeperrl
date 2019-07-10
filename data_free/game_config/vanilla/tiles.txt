@@ -440,6 +440,8 @@
     wallShadow = true wallConnections = true }
   { viewId = "mud_wall" symbol = "#" color = ColorId LIGHT_BROWN
     wallShadow = true wallConnections = true }
+  { viewId = "snow_wall" symbol = "#" color = ColorId WHITE
+    wallShadow = true wallConnections = true }
   { viewId = "ruin_wall" symbol = "#" color = ColorId DARK_GRAY
     wallConnections = true }
   { viewId = "road" symbol = "." color = ColorId LIGHT_GRAY

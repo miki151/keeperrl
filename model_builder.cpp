@@ -243,6 +243,8 @@ void ModelBuilder::addMapVillainsForEvilKeeper(vector<EnemyInfo>& enemyInfo, Bio
         enemyInfo.push_back(enemyFactory->get(EnemyId("LIZARDMEN_SMALL")));
       break;
     case BiomeId::SNOW:
+      for (int i : Range(random.get(3, 5)))
+        enemyInfo.push_back(enemyFactory->get(EnemyId("ESKIMO_COTTAGE")));
       break;
   }
   if (random.chance(0.3))
@@ -290,7 +292,7 @@ PModel ModelBuilder::tryTutorialModel() {
   /*enemyInfo.push_back(enemyFactory->get(EnemyId("BANDITS")));
   enemyInfo.push_back(enemyFactory->get(EnemyId("ADA_GOLEMS")));*/
   //enemyInfo.push_back(enemyFactory->get(EnemyId("TEMPLE")));
-  enemyInfo.push_back(enemyFactory->get(EnemyId("TUTORIAL_VILLAGE")));
+  enemyInfo.push_back(enemyFactory->get(EnemyId("ESKIMO_COTTAGE")));
   return tryModel(174, enemyInfo, TribeId::getDarkKeeper(), biome, {}, false);
 }
 

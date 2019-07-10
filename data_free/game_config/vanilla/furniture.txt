@@ -880,6 +880,10 @@
     }
     canBuildOutsideOfTerritory = true
   }
+  "SNOW_WALL" inherit "CASTLE_WALL"
+  {
+    viewId = { "snow_wall" }
+  }
   "WOOD_WALL"
   {
     name = "wall"

@@ -949,6 +949,10 @@ static BuildingType getBuildingInfo(const SettlementInfo& info) {
       return CONSTRUCT(BuildingType,
           c.wall = FurnitureType("RUIN_WALL");
       );
+    case BuildingId::SNOW:
+      return CONSTRUCT(BuildingType,
+          c.wall = FurnitureType("SNOW_WALL");
+      );
   }
 }
 
