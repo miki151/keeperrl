@@ -500,6 +500,16 @@
     }
     createOnBones = 1.0 { "KNIGHTS" "DWARVES" "GREEN_DRAGON" "WARRIORS" }
   }
+  "WHITE_DRAGON" inherit "RED_DRAGON"
+  {
+    biomes = { SNOW }
+    settlement = append {
+      inhabitants = {
+        leader = { { "WHITE_DRAGON" } }
+      }
+    }
+    createOnBones = none
+  }
   "GREEN_DRAGON"
   {
     settlement = {
