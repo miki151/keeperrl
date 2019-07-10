@@ -674,6 +674,9 @@ string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
       },
       [&](const NumConquered&) {
         return "aggression";
+      },
+      [&](Immediate) {
+        return "just doesn't like you";
       }
   );
 }

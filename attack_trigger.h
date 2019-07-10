@@ -16,6 +16,7 @@ EMPTY_STRUCT(StolenItems);
 EMPTY_STRUCT(MiningInProximity);
 EMPTY_STRUCT(FinishOff);
 EMPTY_STRUCT(Proximity);
+EMPTY_STRUCT(Immediate);
 
 struct EnemyPopulation {
   int value;
@@ -38,7 +39,7 @@ struct NumConquered {
 };
 
 MAKE_VARIANT2(AttackTrigger, RoomTrigger, Power, SelfVictims, StolenItems, MiningInProximity, FinishOff, Proximity, EnemyPopulation,
-    Gold, Timer, NumConquered);
+    Gold, Timer, NumConquered, Immediate);
 
 struct TriggerInfo {
   AttackTrigger trigger;

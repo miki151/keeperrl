@@ -1603,6 +1603,11 @@
         dontConnectCave = true
     }
     discoverable = false
+    behaviour = {
+      minPopulation = 0
+      minTeamSize = 1
+      attackBehaviour = KillLeader
+    }
   }
   "DARK_ELF_CAVE"
   {

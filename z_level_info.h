@@ -8,7 +8,8 @@
 
 struct FullZLevel {
   optional<EnemyId> SERIAL(enemy);
-  SERIALIZE_ALL(NAMED(enemy))
+  double SERIAL(attackChance) = 0;
+  SERIALIZE_ALL(NAMED(enemy), OPTION(attackChance))
 };
 
 struct WaterZLevel {

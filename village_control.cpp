@@ -40,11 +40,11 @@
 
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl)
 
-SERIALIZE_DEF(VillageControl, SUBCLASS(CollectiveControl), SUBCLASS(EventListener), villain, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower)
+SERIALIZE_DEF(VillageControl, SUBCLASS(CollectiveControl), SUBCLASS(EventListener), behaviour, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower)
 REGISTER_TYPE(ListenerTemplate<VillageControl>)
 
 VillageControl::VillageControl(Private, WCollective col, optional<VillageBehaviour> v) : CollectiveControl(col),
-    villain(v) {
+    behaviour(v) {
   for (Position v : col->getTerritory().getAll())
     for (Item* it : v.getItems())
       myItems.insert(it);
@@ -83,8 +83,8 @@ void VillageControl::onEvent(const GameEvent& event) {
   event.visit(
       [&](const ItemsPickedUp& info) {
         if (!collective->isConquered() && collective->getTerritory().contains(info.creature->getPosition()))
-          if (isEnemy(info.creature) && villain)
-            if (villain->triggers.contains(AttackTrigger(StolenItems{}))) {
+          if (isEnemy(info.creature) && behaviour)
+            if (behaviour->triggers.contains(AttackTrigger(StolenItems{}))) {
               bool wasTheft = false;
               for (const Item* it : info.items)
                 if (myItems.contains(it)) {
@@ -114,12 +114,12 @@ void VillageControl::onEvent(const GameEvent& event) {
 void VillageControl::updateAggression(EnemyAggressionLevel level) {
   switch (level) {
     case EnemyAggressionLevel::NONE:
-      if (villain)
-        villain->triggers.clear();
+      if (behaviour)
+        behaviour->triggers.clear();
       break;
     case EnemyAggressionLevel::EXTREME:
-      if (villain && !villain->triggers.empty())
-        villain->triggers.push_back(Timer{3000});
+      if (behaviour && !behaviour->triggers.empty())
+        behaviour->triggers.push_back(Timer{3000});
       break;
     default:
       break;
@@ -133,15 +133,15 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
         collective->getGame()->transferCreature(c, enemy->getModel());
     optional<int> ransom;
     int hisGold = enemy->numResource(CollectiveResourceId::GOLD);
-    if (villain->ransom && hisGold >= villain->ransom->second)
-      ransom = max<int>(villain->ransom->second,
-          (Random.getDouble(villain->ransom->first * 0.6, villain->ransom->first * 1.5)) * hisGold);
+    if (behaviour->ransom && hisGold >= behaviour->ransom->second)
+      ransom = max<int>(behaviour->ransom->second,
+          (Random.getDouble(behaviour->ransom->first * 0.6, behaviour->ransom->first * 1.5)) * hisGold);
     TeamId team = collective->getTeams().createPersistent(attackers);
     collective->getTeams().activate(team);
     collective->freeTeamMembers(attackers);
     vector<WConstTask> attackTasks;
     for (Creature* c : attackers) {
-      auto task = Task::withTeam(collective, team, villain->getAttackTask(this));
+      auto task = Task::withTeam(collective, team, behaviour->getAttackTask(this));
       attackTasks.push_back(task.get());
       collective->setTask(c, std::move(task));
     }
@@ -173,9 +173,9 @@ void VillageControl::onRansomPaid() {
 
 vector<TriggerInfo> VillageControl::getTriggers(WConstCollective against) const {
   vector<TriggerInfo> ret;
-  if (collective->getVillainType() != VillainType::ALLY && villain && against == getEnemyCollective())
-    for (auto& elem : villain->triggers) {
-      auto value = villain->getTriggerValue(elem, this);
+  if (collective->getVillainType() != VillainType::ALLY && behaviour && against == getEnemyCollective())
+    for (auto& elem : behaviour->triggers) {
+      auto value = behaviour->getTriggerValue(elem, this);
       if (value > 0)
         ret.push_back({elem, value});
     }
@@ -187,9 +187,9 @@ void VillageControl::considerWelcomeMessage() {
   auto leader = collective->getLeader();
   if (!leader)
     return;
-  if (villain)
-    if (villain->welcomeMessage)
-      switch (*villain->welcomeMessage) {
+  if (behaviour)
+    if (behaviour->welcomeMessage)
+      switch (*behaviour->welcomeMessage) {
         case VillageBehaviour::WelcomeMessage::DRAGON_WELCOME:
           for (Position pos : collective->getTerritory().getAll())
             if (Creature* c = pos.getCreature())
@@ -197,7 +197,7 @@ void VillageControl::considerWelcomeMessage() {
                   && leader->canSee(c->getPosition())) {
                 c->privateMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
                       "I hear your breath. Come along!\"", MessagePriority::CRITICAL));
-                villain->welcomeMessage.reset();
+                behaviour->welcomeMessage.reset();
               }
           break;
       }
@@ -246,10 +246,10 @@ void VillageControl::update(bool currentlyActive) {
   }
   double updateFreq = 0.1;
   if (collective->getVillainType() != VillainType::ALLY && canPerformAttack(currentlyActive) && Random.chance(updateFreq))
-    if (villain) {
+    if (behaviour) {
       if (WCollective enemy = getEnemyCollective())
         maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
-      double prob = villain->getAttackProbability(this) / updateFreq;
+      double prob = behaviour->getAttackProbability(this) / updateFreq;
       if (Random.chance(prob)) {
         vector<Creature*> fighters;
         fighters = collective->getCreatures(MinionTrait::FIGHTER)
@@ -260,10 +260,10 @@ void VillageControl::update(bool currentlyActive) {
         /*if (auto& name = collective->getName())
           INFO << name->shortened << " fighters: " << int(fighters.size())
             << (!collective->getTeams().getAll().empty() ? " attacking " : "");*/
-        if (fighters.size() >= villain->minTeamSize && 
-            allMembers.size() >= villain->minPopulation + villain->minTeamSize)
+        if (fighters.size() >= behaviour->minTeamSize &&
+            allMembers.size() >= behaviour->minPopulation + behaviour->minTeamSize)
         launchAttack(getPrefix(Random.permutation(fighters),
-          Random.get(villain->minTeamSize, min(fighters.size(), allMembers.size() - villain->minPopulation) + 1)));
+          Random.get(behaviour->minTeamSize, min(fighters.size(), allMembers.size() - behaviour->minPopulation) + 1)));
       }
     }
 }

@@ -186,6 +186,9 @@ double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageCo
         },
         [&](const NumConquered& t) {
           return numConqueredMaxProb * getNumConqueredProb(self->collective->getGame(), t.value);
+        },
+        [&](Immediate) {
+          return 1;
         }
     );
   return 0;
