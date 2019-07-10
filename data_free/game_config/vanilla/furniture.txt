@@ -1168,6 +1168,7 @@
     name = "ice"
     viewId = { "ice" }
     layer = GROUND
+    meltTo = "WATER"
   }
   "MUD"
   {

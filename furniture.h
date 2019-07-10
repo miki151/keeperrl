@@ -195,4 +195,6 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FXVariantName> SERIAL(usageFX);
   bool SERIAL(hostileSpell) = false;
   optional<LastingEffect> SERIAL(lastingEffect);
+  optional<FurnitureType> SERIAL(freezeTo);
+  optional<FurnitureType> SERIAL(meltTo);
 };

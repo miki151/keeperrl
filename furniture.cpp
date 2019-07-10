@@ -62,7 +62,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(canBuildBridge), OPTION(noProjectiles), OPTION(clearFogOfWar), OPTION(removeWithCreaturePresent), OPTION(upgrade));
   ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
-  ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect));
+  ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltTo), NAMED(freezeTo));
 }
 
 template <class Archive>
@@ -466,6 +466,9 @@ bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& ac
 }
 
 void Furniture::fireDamage(Position pos, bool withMessage) {
+  if (meltTo) {
+    pos.removeFurniture(this, pos.getGame()->getContentFactory()->furniture.getFurniture(*meltTo, getTribe()));
+  } else
   if (fire) {
     bool burning = fire->isBurning();
     fire->set();

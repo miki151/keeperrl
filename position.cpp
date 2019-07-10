@@ -609,8 +609,11 @@ void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
     updateVisibility();
   updateSupport();
   updateBuildingSupport();
-  if (replacePtr)
+  if (replacePtr) {
     level->addLightSource(coord, replacePtr->getLightEmission());
+    if (auto c = getCreature())
+      replacePtr->onEnter(c);
+  }
   setNeedsRenderAndMemoryUpdate(true);
 }
 
