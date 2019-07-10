@@ -228,6 +228,9 @@ static bool isConsideredHostile(const Effect& effect) {
       [&](const Effect::Fire&) {
         return true;
       },
+      [&](const Effect::Ice&) {
+        return true;
+      },
       [&](const Effect::Damage&) {
         return true;
       },
@@ -627,6 +630,17 @@ string Effect::Fire::getDescription() const {
   return "Burns!";
 }
 
+void Effect::Ice::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effect::Ice::getName() const {
+  return "ice";
+}
+
+string Effect::Ice::getDescription() const {
+  return "Freezes water and causes cold damage";
+}
+
 void Effect::ReviveCorpse::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
@@ -981,6 +995,10 @@ void Effect::apply(Position pos, Creature* attacker) const {
       [&](Fire) {
         pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});
         pos.fireDamage(1);
+      },
+      [&](Ice) {
+        //pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});
+        pos.iceDamage();
       },
       [&](const Area& area) {
         for (auto v : pos.getRectangle(Rectangle::centered(area.radius)))

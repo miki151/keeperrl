@@ -201,6 +201,11 @@ class PotionItem : public Item {
     }
   }
 
+  virtual void iceDamage(Position position) override {
+    position.globalMessage(getAName() + " freezes and explodes!");
+    discarded = true;
+  }
+
   virtual void specialTick(Position position) override {
     heat = max(0., heat - 0.005);
   }

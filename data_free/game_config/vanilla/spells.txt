@@ -324,6 +324,15 @@
     sound = SPELL_FIRE_SPHERE_PET
   }
   {
+    id =  "ice cone"
+    symbol = "❄"
+    effect = Ice
+    fx = ICE
+    range = 4
+    cooldown = 30
+    #sound = SPELL_FIRE_SPHERE_PET
+  }
+  {
     id =  "shove"
     symbol = "👉"
     effect = Shove

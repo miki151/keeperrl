@@ -124,6 +124,9 @@ void Item::fireDamage(Position position) {
   }
 }
 
+void Item::iceDamage(Position) {
+}
+
 const Fire& Item::getFire() const {
   return *fire;
 }

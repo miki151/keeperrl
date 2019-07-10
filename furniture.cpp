@@ -467,6 +467,7 @@ bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& ac
 
 void Furniture::fireDamage(Position pos, bool withMessage) {
   if (meltTo) {
+    pos.globalMessage("The " + getName() + " melts");
     pos.removeFurniture(this, pos.getGame()->getContentFactory()->furniture.getFurniture(*meltTo, getTribe()));
   } else
   if (fire) {
@@ -481,6 +482,13 @@ void Furniture::fireDamage(Position pos, bool withMessage) {
       pos.getLevel()->addTickingFurniture(pos.getCoord());
       pos.addCreatureLight(false);
     }
+  }
+}
+
+void Furniture::iceDamage(Position pos) {
+  if (freezeTo) {
+    pos.globalMessage("The " + getName() + " freezes");
+    pos.removeFurniture(this, pos.getGame()->getContentFactory()->furniture.getFurniture(*freezeTo, getTribe()));
   }
 }
 

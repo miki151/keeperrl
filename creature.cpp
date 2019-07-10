@@ -1261,6 +1261,16 @@ void Creature::affectByFire(double amount) {
   addEffect(LastingEffect::ON_FIRE, 100_visible);
 }
 
+void Creature::affectByIce(double amount) {
+  /*PROFILE;
+  if (!isAffected(LastingEffect::FIRE_RESISTANT) &&
+      getBody().affectByFire(this, amount)) {
+    verb("burn", "burns", "to death");
+    dieWithReason("burnt to death");
+  }
+  addEffect(LastingEffect::ON_FIRE, 100_visible);*/
+}
+
 void Creature::affectBySilver() {
   if (getBody().affectBySilver(this)) {
     you(MsgType::DIE_OF, "silver damage");

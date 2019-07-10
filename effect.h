@@ -55,6 +55,7 @@ class Effect {
     COMPARE_ALL(healthType)
   };
   SIMPLE_EFFECT(Fire);
+  SIMPLE_EFFECT(Ice);
   SIMPLE_EFFECT(DestroyEquipment);
   SIMPLE_EFFECT(DestroyWalls);
   SIMPLE_EFFECT(EnhanceArmor);
@@ -168,7 +169,7 @@ class Effect {
     vector<Effect> effects;
     COMPARE_ALL(effects)
   };*/
-  MAKE_VARIANT(EffectType, Escape, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
+  MAKE_VARIANT(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
       Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
       Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost);

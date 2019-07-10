@@ -92,6 +92,7 @@ class Position {
   bool isActiveConstruction(FurnitureLayer) const;
   bool isBurning() const;
   void fireDamage(double amount);
+  void iceDamage();
   bool needsRenderUpdate() const;
   void setNeedsRenderUpdate(bool) const;
   bool needsMemoryUpdate() const;

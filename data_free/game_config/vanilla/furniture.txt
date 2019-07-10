@@ -1110,6 +1110,7 @@
     droppedItems = { "sinks" "sink" "You hear a splash." }
     canBuildBridge = true
     summonedElement = "WATER_ELEMENTAL"
+    freezeTo = "ICE"
     movementSet = {
       traits = { FLY SWIM }
       forcibleTraits = { WALK }
@@ -1139,6 +1140,7 @@
     lightEmission = 8.2
     canBuildBridge = true
     summonedElement = "FIRE_ELEMENTAL"
+    freezeTo = "FLOOR"
     movementSet = {
       traits = { FLY }
       forcibleTraits = { WALK }

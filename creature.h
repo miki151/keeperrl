@@ -216,6 +216,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void dieWithReason(const string& reason, DropType = DropType::EVERYTHING);
 
   void affectByFire(double amount);
+  void affectByIce(double amount);
   void poisonWithGas(double amount);
   void affectBySilver();
   void affectByAcid();
