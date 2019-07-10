@@ -1079,6 +1079,11 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
           return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
         return EffectAIIntent::NONE;
       },
+      [&] (const Ice&) {
+        if (!victim->isAffected(LastingEffect::COLD_RESISTANT))
+          return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+        return EffectAIIntent::NONE;
+      },
       [&] (const Damage&) {
         return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
       },
