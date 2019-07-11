@@ -83,7 +83,7 @@ Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr,
     obj->setGenericId(getUniqueId().getGenericId());
     obj->setModifier(ViewObject::Modifier::CREATURE);
   }
-  updateViewObject();
+  //updateViewObject();
 }
 
 Creature::Creature(TribeId t, CreatureAttributes attr, SpellMap spellMap)
@@ -1323,8 +1323,8 @@ void Creature::dieWithLastAttacker(DropType drops) {
   dieWithAttacker(lastAttacker, drops);
 }
 
-vector<PItem> Creature::generateCorpse(bool instantlyRotten) const {
-  return getBody().getCorpseItems(getName().bare(), getUniqueId(), instantlyRotten);
+vector<PItem> Creature::generateCorpse(const ContentFactory* factory, bool instantlyRotten) const {
+  return getBody().getCorpseItems(getName().bare(), getUniqueId(), instantlyRotten, factory);
 }
 
 void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
@@ -1339,7 +1339,7 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
     for (PItem& item : equipment->removeAllItems(this))
       getPosition().dropItem(std::move(item));
   if (drops == DropType::EVERYTHING) {
-    getPosition().dropItems(generateCorpse());
+    getPosition().dropItems(generateCorpse(getGame()->getContentFactory()));
     if (auto sound = getBody().getDeathSound())
       addSound(*sound);
   }

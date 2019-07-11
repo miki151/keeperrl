@@ -56,6 +56,7 @@ struct MovementInfo;
 struct NavigationFlags;
 class SpellMap;
 class SpellSchool;
+class ContentFactory;
 
 class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedObject<Creature> {
   public:
@@ -275,7 +276,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void updateViewObject();
   void swapPosition(Vec2 direction, bool withExcuseMe = true);
   bool canSwapPositionWithEnemy(Creature* other) const;
-  vector<PItem> generateCorpse(bool instantlyRotten = false) const;
+  vector<PItem> generateCorpse(const ContentFactory*, bool instantlyRotten = false) const;
   int getLastMoveCounter() const;
 
   EnumSet<CreatureStatus>& getStatus();

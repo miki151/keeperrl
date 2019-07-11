@@ -392,7 +392,7 @@ inline void serialize(PrettyInputArchive& ar1, EnumMap<T, U>& m) {
     if (used.contains(elem.first))
       ar1.error("Repeated enum element: \"" + EnumInfo<T>::getString(elem.first));
     used.insert(elem.first);
-    m[elem.first] = elem.second;
+    m[elem.first] = std::move(elem.second);
   }
 }
 

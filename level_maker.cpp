@@ -525,7 +525,7 @@ class Corpses : public LevelMaker {
       checkGen(numTries > 0);
       if (builder->getRandom().roll(10))
         builder->putItems(pos, creature->getEquipment().removeAllItems(creature.get()));
-      builder->putItems(pos, creature->generateCorpse(true));
+      builder->putItems(pos, creature->generateCorpse(builder->getContentFactory(), true));
       taken[pos] = 1;
     }
   }
@@ -595,7 +595,7 @@ class Items : public LevelMaker {
     checkGen(!available.empty());
     auto itemList = getItems(builder);
     for (int i : Range(numItem))
-      builder->putItems(builder->getRandom().choose(available), itemList.random());
+      builder->putItems(builder->getRandom().choose(available), itemList.random(builder->getContentFactory()));
   }
 
   ItemList getItems(const LevelBuilder* builder) {
@@ -1776,13 +1776,13 @@ class ShopMaker : public LevelMaker {
       builder->putCreature(shopkeeperPos, std::move(shopkeeper));
     else {
       builder->putItems(shopkeeperPos, shopkeeper->getEquipment().removeAllItems(shopkeeper.get()));
-      builder->putItems(shopkeeperPos, shopkeeper->generateCorpse(true));
+      builder->putItems(shopkeeperPos, shopkeeper->generateCorpse(builder->getContentFactory(), true));
     }
     builder->putFurniture(pos[builder->getRandom().get(pos.size())], FurnitureParams{FurnitureType("GROUND_TORCH"), tribe});
     auto itemList = builder->getContentFactory()->itemFactory.get(shopItems);
     for (int i : Range(numItems)) {
       Vec2 v = pos[builder->getRandom().get(pos.size())];
-      builder->putItems(v, itemList.random());
+      builder->putItems(v, itemList.random(builder->getContentFactory()));
     }
   }
 

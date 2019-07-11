@@ -83,7 +83,7 @@ PCollective Collective::create(WModel model, TribeId tribe, const optional<Colle
   auto ret = makeOwner<Collective>(Private {}, model, tribe, name, contentFactory);
   ret->subscribeTo(model);
   ret->discoverable = discoverable;
-  ret->workshops = unique<Workshops>(std::array<vector<WorkshopItemCfg>, 4>());
+  ret->workshops = unique<Workshops>(std::array<vector<WorkshopItemCfg>, 4>(), contentFactory);
   ret->immigration = makeOwner<Immigration>(ret.get(), vector<ImmigrantInfo>());
   return ret;
 }
@@ -766,7 +766,8 @@ void Collective::returnResource(const CostInfo& amount) {
   if (auto storage = config->getResourceInfo(amount.id).storageId) {
     const auto& destination = getStoragePositions(*storage);
     if (!destination.empty()) {
-      Random.choose(destination).dropItems(config->getResourceInfo(amount.id).itemId.get(amount.value));
+      Random.choose(destination).dropItems(config->getResourceInfo(amount.id)
+          .itemId.get(amount.value, getGame()->getContentFactory()));
       return;
     }
   }
@@ -1031,13 +1032,13 @@ void Collective::scheduleAutoProduction(function<bool(const Item*)> itemPredicat
   if (count > 0)
     for (auto workshopType : ENUM_ALL(WorkshopType))
       for (auto& item : workshops->get(workshopType).getQueued())
-        if (itemPredicate(item.item.type.get().get()))
+        if (itemPredicate(item.item.type.get(getGame()->getContentFactory()).get()))
           count -= item.number * item.item.batchSize;
   if (count > 0)
     for (auto workshopType : ENUM_ALL(WorkshopType)) {
       auto& options = workshops->get(workshopType).getOptions();
       for (int index : All(options))
-        if (itemPredicate(options[index].type.get().get())) {
+        if (itemPredicate(options[index].type.get(getGame()->getContentFactory()).get())) {
           workshops->get(workshopType).queue(index, (count + options[index].batchSize - 1) / options[index].batchSize);
           return;
         }

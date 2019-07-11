@@ -10,10 +10,11 @@
 #include "tech_id.h"
 
 class ItemAttributes;
+class ContentFactory;
 
 
 #define ITEM_TYPE_INTERFACE\
-  ItemAttributes getAttributes() const
+  ItemAttributes getAttributes(const ContentFactory*) const
 
 #define SIMPLE_ITEM(Name) \
   struct Name { \
@@ -156,12 +157,12 @@ class ItemType {
   template <class Archive>
   void serialize(Archive&, const unsigned int);
 
-  PItem get() const;
-  vector<PItem> get(int) const;
+  PItem get(const ContentFactory*) const;
+  vector<PItem> get(int, const ContentFactory*) const;
   ~ItemType(){}
 
   private:
   Type SERIAL(type);
-  ItemAttributes getAttributes() const;
+  ItemAttributes getAttributes(const ContentFactory*) const;
   double SERIAL(prefixChance) = 0.0;
 };

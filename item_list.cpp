@@ -30,15 +30,15 @@ ItemList& ItemList::setRandomPrefixes(double chance) {
 ItemList::ItemList(vector<ItemInfo> t) : items(std::move(t)) {}
 ItemList::ItemList(vector<ItemType> t) : ItemList(t.transform([](const auto& t) { return ItemInfo(t, 1); })) {}
 
-vector<PItem> ItemList::random() & {
+vector<PItem> ItemList::random(const ContentFactory* factory) & {
   if (unique.size() > 0) {
     ItemType id = unique.back().first;
     int cnt = Random.get(unique.back().second);
     unique.pop_back();
-    return id.get(cnt);
+    return id.get(cnt, factory);
   }
   int index = Random.get(items.transform([](const auto& elem) { return elem.weight; }));
-  return items[index].id.get(Random.get(items[index].count));
+  return items[index].id.get(Random.get(items[index].count), factory);
 }
 
 #include "pretty_archive.h"

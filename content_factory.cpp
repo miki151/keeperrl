@@ -11,7 +11,13 @@
 #include "key_verifier.h"
 #include "spell_school_id.h"
 
-SERIALIZE_DEF(ContentFactory, creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology)
+template <class Archive>
+void ContentFactory::serialize(Archive& ar, const unsigned int) {
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology);
+  creatures.setContentFactory(this);
+}
+
+SERIALIZABLE(ContentFactory)
 
 static bool isZLevel(const vector<ZLevelInfo>& levels, int depth) {
   for (auto& l : levels)
@@ -52,6 +58,7 @@ optional<string> ContentFactory::readCreatureFactory(NameGenerator nameGenerator
     keyVerifier->addKey<CreatureId>(elem.first.data());
   creatures = CreatureFactory(std::move(nameGenerator), convertKeys(std::move(attributes)), std::move(inventory),
       convertKeys(std::move(spellSchools)), std::move(spells));
+  creatures.setContentFactory(this);
   return none;
 }
 
@@ -148,7 +155,7 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
     for (auto& elem : merged)
       for (auto& item : elem)
         if (item.tech && !technology.techs.count(*item.tech))
-          return "Technology prerequisite \""_s + item.tech->data() + "\" of workshop item \"" + item.item.get()->getName()
+          return "Technology prerequisite \""_s + item.tech->data() + "\" of workshop item \"" + item.item.get(this)->getName()
               + "\" is not available";
     for (auto elem : keeperInfo.immigrantGroups)
       if (!immigrantsData.count(elem))

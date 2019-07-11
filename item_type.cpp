@@ -242,12 +242,12 @@ REGISTER_TYPE(FireScrollItem)
 REGISTER_TYPE(Corpse)
 
 
-ItemAttributes ItemType::getAttributes() const {
-  return type.visit([&](const auto& t) { return t.getAttributes(); });
+ItemAttributes ItemType::getAttributes(const ContentFactory* factory) const {
+  return type.visit([&](const auto& t) { return t.getAttributes(factory); });
 }
 
-PItem ItemType::get() const {
-  auto attributes = getAttributes();
+PItem ItemType::get(const ContentFactory* factory) const {
+  auto attributes = getAttributes(factory);
   if (!attributes.genPrefixes.empty() && Random.chance(prefixChance))
     applyPrefix(Random.choose(attributes.genPrefixes), attributes);
   return type.visit(
@@ -368,14 +368,14 @@ static const vector<pair<string, vector<string>>> badArtifactNames {
   i.price *= 15;
 }*/
 
-vector<PItem> ItemType::get(int num) const {
+vector<PItem> ItemType::get(int num, const ContentFactory* factory) const {
   vector<PItem> ret;
   for (int i : Range(num))
-    ret.push_back(get());
+    ret.push_back(get(factory));
   return ret;
 }
 
-ItemAttributes ItemType::AutomatonItem::getAttributes() const {
+ItemAttributes ItemType::AutomatonItem::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("trap_item");
       i.name = "automaton";
@@ -391,7 +391,7 @@ ItemAttributes ItemType::AutomatonItem::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Knife::getAttributes() const {
+ItemAttributes ItemType::Knife::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("knife");
       i.name = "knife";
@@ -407,7 +407,7 @@ ItemAttributes ItemType::Knife::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Intrinsic::getAttributes() const {
+ItemAttributes ItemType::Intrinsic::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = viewId;
       i.name = name;
@@ -424,7 +424,7 @@ ItemAttributes ItemType::Intrinsic::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::UnicornHorn::getAttributes() const {
+ItemAttributes ItemType::UnicornHorn::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("knife");
       i.name = "horn";
@@ -440,7 +440,7 @@ ItemAttributes ItemType::UnicornHorn::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Spear::getAttributes() const {
+ItemAttributes ItemType::Spear::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("spear");
       i.name = "spear";
@@ -454,7 +454,7 @@ ItemAttributes ItemType::Spear::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Sword::getAttributes() const {
+ItemAttributes ItemType::Sword::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("sword");
       i.name = "sword";
@@ -475,7 +475,7 @@ ItemAttributes ItemType::Sword::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::AdaSword::getAttributes() const {
+ItemAttributes ItemType::AdaSword::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("ada_sword");
       i.name = "adamantine sword";
@@ -492,7 +492,7 @@ ItemAttributes ItemType::AdaSword::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::ElvenSword::getAttributes() const {
+ItemAttributes ItemType::ElvenSword::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("elven_sword");
       i.name = "elven sword";
@@ -506,7 +506,7 @@ ItemAttributes ItemType::ElvenSword::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::BattleAxe::getAttributes() const {
+ItemAttributes ItemType::BattleAxe::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("battle_axe");
       i.name = "battle axe";
@@ -523,7 +523,7 @@ ItemAttributes ItemType::BattleAxe::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::AdaBattleAxe::getAttributes() const {
+ItemAttributes ItemType::AdaBattleAxe::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("ada_battle_axe");
       i.shortName = "adamantine"_s;
@@ -540,7 +540,7 @@ ItemAttributes ItemType::AdaBattleAxe::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::WarHammer::getAttributes() const {
+ItemAttributes ItemType::WarHammer::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("war_hammer");
       i.name = "war hammer";
@@ -556,7 +556,7 @@ ItemAttributes ItemType::WarHammer::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::AdaWarHammer::getAttributes() const {
+ItemAttributes ItemType::AdaWarHammer::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("ada_war_hammer");
       i.name = "adamantine war hammer";
@@ -572,7 +572,7 @@ ItemAttributes ItemType::AdaWarHammer::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Club::getAttributes() const {
+ItemAttributes ItemType::Club::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("club");
       i.name = "club";
@@ -586,7 +586,7 @@ ItemAttributes ItemType::Club::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::HeavyClub::getAttributes() const {
+ItemAttributes ItemType::HeavyClub::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("heavy_club");
       i.name = "heavy club";
@@ -601,7 +601,7 @@ ItemAttributes ItemType::HeavyClub::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::WoodenStaff::getAttributes() const {
+ItemAttributes ItemType::WoodenStaff::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("wooden_staff");
       i.name = "wooden staff";
@@ -618,7 +618,7 @@ ItemAttributes ItemType::WoodenStaff::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::IronStaff::getAttributes() const {
+ItemAttributes ItemType::IronStaff::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("iron_staff");
       i.name = "iron staff";
@@ -640,7 +640,7 @@ ItemAttributes ItemType::IronStaff::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::GoldenStaff::getAttributes() const {
+ItemAttributes ItemType::GoldenStaff::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("golden_staff");
       i.name = "golden staff";
@@ -659,7 +659,7 @@ ItemAttributes ItemType::GoldenStaff::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Scythe::getAttributes() const {
+ItemAttributes ItemType::Scythe::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("sword");
       i.name = "scythe";
@@ -673,7 +673,7 @@ ItemAttributes ItemType::Scythe::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::ElvenBow::getAttributes() const {
+ItemAttributes ItemType::ElvenBow::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("elven_bow");
       i.itemClass = ItemClass::RANGED_WEAPON;
@@ -687,7 +687,7 @@ ItemAttributes ItemType::ElvenBow::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Bow::getAttributes() const {
+ItemAttributes ItemType::Bow::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("bow");
       i.name = "short bow";
@@ -701,7 +701,7 @@ ItemAttributes ItemType::Bow::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Torch::getAttributes() const {
+ItemAttributes ItemType::Torch::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("hand_torch");
       i.itemClass = ItemClass::TOOL;
@@ -713,7 +713,7 @@ ItemAttributes ItemType::Torch::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Robe::getAttributes() const {
+ItemAttributes ItemType::Robe::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("robe");
       i.name = "robe";
@@ -726,7 +726,7 @@ ItemAttributes ItemType::Robe::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::HalloweenCostume::getAttributes() const {
+ItemAttributes ItemType::HalloweenCostume::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("halloween_costume");
       i.name = "halloween costume";
@@ -739,7 +739,7 @@ ItemAttributes ItemType::HalloweenCostume::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::BagOfCandies::getAttributes() const {
+ItemAttributes ItemType::BagOfCandies::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("bag_of_candy");
       i.shortName = "candies"_s;
@@ -754,7 +754,7 @@ ItemAttributes ItemType::BagOfCandies::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::LeatherGloves::getAttributes() const {
+ItemAttributes ItemType::LeatherGloves::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("leather_gloves");
       i.shortName = "gloves"_s;
@@ -769,7 +769,7 @@ ItemAttributes ItemType::LeatherGloves::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::IronGloves::getAttributes() const {
+ItemAttributes ItemType::IronGloves::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("iron_gloves");
       i.shortName = "gloves"_s;
@@ -786,7 +786,7 @@ ItemAttributes ItemType::IronGloves::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::AdaGloves::getAttributes() const {
+ItemAttributes ItemType::AdaGloves::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("ada_gloves");
       i.shortName = "gloves"_s;
@@ -803,7 +803,7 @@ ItemAttributes ItemType::AdaGloves::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::LeatherArmor::getAttributes() const {
+ItemAttributes ItemType::LeatherArmor::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("leather_armor");
       i.shortName = "armor"_s;
@@ -818,7 +818,7 @@ ItemAttributes ItemType::LeatherArmor::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::LeatherHelm::getAttributes() const {
+ItemAttributes ItemType::LeatherHelm::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("leather_helm");
       i.shortName = "helm"_s;
@@ -835,7 +835,7 @@ ItemAttributes ItemType::LeatherHelm::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::WoodenShield::getAttributes() const {
+ItemAttributes ItemType::WoodenShield::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("wooden_shield");
       i.shortName = "wooden"_s;
@@ -849,7 +849,7 @@ ItemAttributes ItemType::WoodenShield::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::ChainArmor::getAttributes() const {
+ItemAttributes ItemType::ChainArmor::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("chain_armor");
       i.shortName = "armor"_s;
@@ -864,7 +864,7 @@ ItemAttributes ItemType::ChainArmor::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::AdaArmor::getAttributes() const {
+ItemAttributes ItemType::AdaArmor::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("ada_armor");
       i.shortName = "armor"_s;
@@ -879,7 +879,7 @@ ItemAttributes ItemType::AdaArmor::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::IronHelm::getAttributes() const {
+ItemAttributes ItemType::IronHelm::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("iron_helm");
       i.shortName = "helm"_s;
@@ -896,7 +896,7 @@ ItemAttributes ItemType::IronHelm::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::AdaHelm::getAttributes() const {
+ItemAttributes ItemType::AdaHelm::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("ada_helm");
       i.shortName = "helm"_s;
@@ -912,7 +912,7 @@ ItemAttributes ItemType::AdaHelm::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::LeatherBoots::getAttributes() const {
+ItemAttributes ItemType::LeatherBoots::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("leather_boots");
       i.shortName = "boots"_s;
@@ -930,7 +930,7 @@ ItemAttributes ItemType::LeatherBoots::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::IronBoots::getAttributes() const {
+ItemAttributes ItemType::IronBoots::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("iron_boots");
       i.shortName = "boots"_s;
@@ -948,7 +948,7 @@ ItemAttributes ItemType::IronBoots::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::AdaBoots::getAttributes() const {
+ItemAttributes ItemType::AdaBoots::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("ada_boots");
       i.shortName = "boots"_s;
@@ -964,7 +964,7 @@ ItemAttributes ItemType::AdaBoots::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Ring::getAttributes() const {
+ItemAttributes ItemType::Ring::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = getRingViewId(lastingEffect);
       i.shortName = LastingEffects::getName(lastingEffect);
@@ -978,7 +978,7 @@ ItemAttributes ItemType::Ring::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Amulet::getAttributes() const {
+ItemAttributes ItemType::Amulet::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = getAmuletViewId(lastingEffect);
       i.shortName = LastingEffects::getName(lastingEffect);
@@ -992,7 +992,7 @@ ItemAttributes ItemType::Amulet::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::DefenseAmulet::getAttributes() const {
+ItemAttributes ItemType::DefenseAmulet::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("amulet3");
       i.shortName = "defense"_s;
@@ -1007,7 +1007,7 @@ ItemAttributes ItemType::DefenseAmulet::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::FirstAidKit::getAttributes() const {
+ItemAttributes ItemType::FirstAidKit::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("first_aid");
       i.name = "first aid kit";
@@ -1023,7 +1023,7 @@ ItemAttributes ItemType::FirstAidKit::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::TrapItem::getAttributes() const {
+ItemAttributes ItemType::TrapItem::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("trap_item");
       i.name = "unarmed " + trapName + " trap";
@@ -1039,7 +1039,7 @@ ItemAttributes ItemType::TrapItem::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Potion::getAttributes() const {
+ItemAttributes ItemType::Potion::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("potion1");
       i.shortName = effect.getName();
@@ -1076,7 +1076,7 @@ static ViewId getMushroomViewId(Effect e) {
   );
 }
 
-ItemAttributes ItemType::Mushroom::getAttributes() const {
+ItemAttributes ItemType::Mushroom::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = getMushroomViewId(effect);
       i.shortName = effect.getName();
@@ -1097,7 +1097,7 @@ static ViewId getRuneViewId(const string& name) {
   return ids[(h % ids.size() + ids.size()) % ids.size()];
 }
 
-ItemAttributes ItemType::Glyph::getAttributes() const {
+ItemAttributes ItemType::Glyph::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.shortName = getGlyphName(rune.prefix);
       i.viewId = getRuneViewId(*i.shortName);
@@ -1113,7 +1113,7 @@ ItemAttributes ItemType::Glyph::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Scroll::getAttributes() const {
+ItemAttributes ItemType::Scroll::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("scroll");
       i.shortName = effect.getName();
@@ -1130,7 +1130,7 @@ ItemAttributes ItemType::Scroll::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::FireScroll::getAttributes() const {
+ItemAttributes ItemType::FireScroll::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("scroll");
       i.name = "scroll of fire";
@@ -1147,7 +1147,7 @@ ItemAttributes ItemType::FireScroll::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::TechBook::getAttributes() const {
+ItemAttributes ItemType::TechBook::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("book");
       i.shortName = string(techId.data());
@@ -1160,7 +1160,7 @@ ItemAttributes ItemType::TechBook::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Rock::getAttributes() const {
+ItemAttributes ItemType::Rock::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("rock");
       i.name = "rock";
@@ -1171,7 +1171,7 @@ ItemAttributes ItemType::Rock::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::IronOre::getAttributes() const {
+ItemAttributes ItemType::IronOre::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("iron_rock");
       i.name = "iron ore";
@@ -1182,7 +1182,7 @@ ItemAttributes ItemType::IronOre::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::AdaOre::getAttributes() const {
+ItemAttributes ItemType::AdaOre::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("ada_ore");
       i.name = "adamantine ore";
@@ -1193,7 +1193,7 @@ ItemAttributes ItemType::AdaOre::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::WoodPlank::getAttributes() const {
+ItemAttributes ItemType::WoodPlank::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("wood_plank");
       i.name = "wood plank";
@@ -1204,7 +1204,7 @@ ItemAttributes ItemType::WoodPlank::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::Bone::getAttributes() const {
+ItemAttributes ItemType::Bone::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("bone");
       i.name = "bone";
@@ -1214,7 +1214,7 @@ ItemAttributes ItemType::Bone::getAttributes() const {
   );
 }
 
-ItemAttributes ItemType::GoldPiece::getAttributes() const {
+ItemAttributes ItemType::GoldPiece::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("gold");
       i.name = "gold piece";

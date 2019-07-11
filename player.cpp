@@ -729,7 +729,7 @@ void Player::makeMove() {
         if (auto error = PrettyPrinting::parseObject(item, action.get<string>()))
           getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
         else
-          creature->take(item.setPrefixChance(1).get());
+          creature->take(item.setPrefixChance(1).get(getGame()->getContentFactory()));
         break;
       }
       case UserInputId::SUMMON_ENEMY: {
@@ -812,7 +812,7 @@ void Player::makeMove() {
                 }
           if (!found) {
             ItemType itemType{ItemType::Potion{Effect::Lasting{leType}}};
-            creature->take(itemType.get());
+            creature->take(itemType.get(getGame()->getContentFactory()));
           }
         }
         break;

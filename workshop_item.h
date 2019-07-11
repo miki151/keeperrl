@@ -7,7 +7,7 @@
 struct WorkshopItem;
 
 struct WorkshopItemCfg {
-  WorkshopItem get() const;
+  WorkshopItem get(const ContentFactory*) const;
   ItemType SERIAL(item);
   double SERIAL(work) = 1;
   CostInfo SERIAL(cost);

@@ -216,6 +216,10 @@ void CreatureFactory::merge(CreatureFactory f) {
   append(spells, std::move(f.spells));
 }
 
+void CreatureFactory::setContentFactory(const ContentFactory* f) {
+  contentFactory = f;
+}
+
 CreatureFactory::CreatureFactory(CreatureFactory&&) = default;
 CreatureFactory& CreatureFactory::operator =(CreatureFactory&&) = default;
 
@@ -469,7 +473,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
     ar(prevCreatures, debtors, thiefCount, thieves, shopArea, myLevel, firstMove);
   }
 
-  SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
+  SERIALIZATION_CONSTRUCTOR(ShopkeeperController)
 
   private:
   EntitySet<Creature> SERIAL(prevCreatures);
@@ -483,7 +487,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
 
 void CreatureFactory::addInventory(Creature* c, const vector<ItemType>& items) {
   for (ItemType item : items)
-    c->take(item.get());
+    c->take(item.get(contentFactory));
 }
 
 PController CreatureFactory::getShopkeeper(Rectangle shopArea, Creature* c) {
@@ -705,12 +709,12 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, SpecialParams p, const Cont
         ), tribe, factory, spells);
   if (body.isHumanoid()) {
     if (Random.roll(4))
-      c->take(ItemType(ItemType::Bow{}).get());
+      c->take(ItemType(ItemType::Bow{}).get(contentFactory));
     c->take(Random.choose(
           ItemType(ItemType::Sword{}).setPrefixChance(1),
           ItemType(ItemType::BattleAxe{}).setPrefixChance(1),
           ItemType(ItemType::WarHammer{}).setPrefixChance(1))
-        .get());
+        .get(contentFactory));
   }
   return c;
 }
@@ -719,6 +723,10 @@ CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
   auto ret = getAttributesFromId(id);
   ret.setCreatureId(id);
   ret.randomize();
+  auto& attacks = ret.getBody().getIntrinsicAttacks();
+  for (auto bodyPart : ENUM_ALL(BodyPart))
+    if (auto& attack = attacks[bodyPart])
+      attack->initializeItem(contentFactory);
   return ret;
 }
 

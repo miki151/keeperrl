@@ -349,7 +349,7 @@ bool Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
       creature->getGame()->getStatistics().add(StatId::CHOPPED_LIMB);
     else if (part == BodyPart::HEAD)
       creature->getGame()->getStatistics().add(StatId::CHOPPED_HEAD);
-    if (PItem item = getBodyPartItem(creature->getAttributes().getName().bare(), part))
+    if (PItem item = getBodyPartItem(creature->getAttributes().getName().bare(), part, creature->getGame()->getContentFactory()))
       creature->getPosition().dropItem(std::move(item));
     if (looseBodyPart(part))
       return true;
@@ -511,7 +511,7 @@ static int numCorpseItems(Body::Size size) {
   }
 }
 
-PItem Body::getBodyPartItem(const string& name, BodyPart part) {
+PItem Body::getBodyPartItem(const string& name, BodyPart part, const ContentFactory* factory) {
   switch (material) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
@@ -519,20 +519,20 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part) {
         weight / 8, false, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE);
     case Material::CLAY:
     case Material::ROCK:
-      return ItemType(ItemType::Rock{}).get();
+      return ItemType(ItemType::Rock{}).get(factory);
     case Material::BONE:
-      return ItemType(ItemType::Bone{}).get();
+      return ItemType(ItemType::Bone{}).get(factory);
     case Material::IRON:
-      return ItemType(ItemType::IronOre{}).get();
+      return ItemType(ItemType::IronOre{}).get(factory);
     case Material::WOOD:
-      return ItemType(ItemType::WoodPlank{}).get();
+      return ItemType(ItemType::WoodPlank{}).get(factory);
     case Material::ADA:
-      return ItemType(ItemType::AdaOre{}).get();
+      return ItemType(ItemType::AdaOre{}).get(factory);
     default: return nullptr;
   }
 }
 
-vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool instantlyRotten) const {
+vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool instantlyRotten, const ContentFactory* factory) const {
   switch (material) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
@@ -542,15 +542,15 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
             {id, material != Material::UNDEAD_FLESH, numBodyParts(BodyPart::HEAD) > 0, false}));
     case Material::CLAY:
     case Material::ROCK:
-      return ItemType(ItemType::Rock{}).get(numCorpseItems(size));
+      return ItemType(ItemType::Rock{}).get(numCorpseItems(size), factory);
     case Material::BONE:
-      return ItemType(ItemType::Bone{}).get(numCorpseItems(size));
+      return ItemType(ItemType::Bone{}).get(numCorpseItems(size), factory);
     case Material::IRON:
-      return ItemType(ItemType::IronOre{}).get(numCorpseItems(size));
+      return ItemType(ItemType::IronOre{}).get(numCorpseItems(size), factory);
     case Material::WOOD:
-      return ItemType(ItemType::WoodPlank{}).get(numCorpseItems(size));
+      return ItemType(ItemType::WoodPlank{}).get(numCorpseItems(size), factory);
     case Material::ADA:
-      return ItemType(ItemType::AdaOre{}).get(numCorpseItems(size));
+      return ItemType(ItemType::AdaOre{}).get(numCorpseItems(size), factory);
     default: return {};
   }
 }

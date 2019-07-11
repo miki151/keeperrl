@@ -4,10 +4,11 @@
 #include "item_factory.h"
 #include "item.h"
 #include "workshop_item.h"
+#include "game.h"
 
-Workshops::Workshops(std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size> options)
-    : types([&options] (WorkshopType t) { return Type(options[(int) t].transform(
-         [](const auto& elem){ return elem.get(); }));}) {
+Workshops::Workshops(std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size> options, const ContentFactory* factory)
+    : types([&] (WorkshopType t) { return Type(options[(int) t].transform(
+         [&](const auto& elem){ return elem.get(factory); }));}) {
 }
 
 Workshops::Type& Workshops::get(WorkshopType type) {
@@ -137,7 +138,7 @@ auto Workshops::Type::addWork(WCollective collective, double amount, double skil
       }
       *product.state += amount * prodMult / product.item.workNeeded;
       if (*product.state >= 1) {
-        vector<PItem> ret = product.item.type.get(product.item.batchSize);
+        vector<PItem> ret = product.item.type.get(product.item.batchSize, collective->getGame()->getContentFactory());
         product.state = none;
         bool wasUpgraded = false;
         for (auto& rune : product.runes)

@@ -171,7 +171,7 @@ void PlayerControl::loadImmigrationAndWorkshops(ContentFactory* contentFactory,
     if (keeperCreatureInfo.workshopGroups.contains(group.first))
       for (int i : Range(EnumInfo<WorkshopType>::size))
         merged[i].append(group.second[i]);
-  collective->setWorkshops(unique<Workshops>(std::move(merged)));
+  collective->setWorkshops(unique<Workshops>(std::move(merged), contentFactory));
   vector<ImmigrantInfo> immigrants;
   for (auto elem : keeperCreatureInfo.immigrantGroups)
     append(immigrants, contentFactory->immigrantsData.at(elem));
@@ -2372,7 +2372,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           if (auto error = PrettyPrinting::parseObject(item, *input))
             getView()->presentText("Sorry", "Couldn't parse \"" + *input + "\": " + *error);
           else {
-              position.dropItems(item.get(*num));
+              position.dropItems(item.get(*num, getGame()->getContentFactory()));
           }
         }
     },

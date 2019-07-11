@@ -93,7 +93,8 @@ class Body {
   bool canPush(const Body& other);
   bool canPerformRituals() const;
   bool canBeCaptured() const;
-  vector<PItem> getCorpseItems(const string& name, UniqueEntity<Creature>::Id, bool instantlyRotten) const;
+  vector<PItem> getCorpseItems(const string& name, UniqueEntity<Creature>::Id, bool instantlyRotten,
+      const ContentFactory* factory) const;
 
   vector<AttackLevel> getAttackLevels() const;
   int getAttrBonus(AttrType) const;
@@ -145,7 +146,7 @@ class Body {
   void decreaseHealth(double amount);
   bool isPartDamaged(BodyPart, double damage) const;
   bool isCritical(BodyPart) const;
-  PItem getBodyPartItem(const string& creatureName, BodyPart);
+  PItem getBodyPartItem(const string& creatureName, BodyPart, const ContentFactory*);
   string getMaterialAndSizeAdjectives() const;
   bool SERIAL(xhumanoid) = false;
   Size SERIAL(size) = Size::LARGE;

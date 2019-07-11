@@ -14,6 +14,7 @@ struct IntrinsicAttack {
   IntrinsicAttack(ItemType, Active = NO_WEAPON);
   IntrinsicAttack(const IntrinsicAttack&);
   IntrinsicAttack& operator = (const IntrinsicAttack&);
+  void initializeItem(const ContentFactory*);
   SERIALIZATION_DECL(IntrinsicAttack)
   PItem SERIAL(item);
   ItemType SERIAL(itemType);

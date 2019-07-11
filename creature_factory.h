@@ -32,6 +32,7 @@ class NameGenerator;
 class GameConfig;
 class CreatureInventory;
 class SpellMap;
+class ContentFactory;
 
 class CreatureFactory {
   public:
@@ -62,6 +63,7 @@ class CreatureFactory {
   CreatureFactory& operator = (CreatureFactory&&);
 
   void merge(CreatureFactory);
+  void setContentFactory(const ContentFactory*);
 
   SERIALIZATION_DECL(CreatureFactory)
 
@@ -88,5 +90,6 @@ class CreatureFactory {
   vector<ItemType> getDefaultInventory(CreatureId) const;
   map<SpellSchoolId, SpellSchool> SERIAL(spellSchools);
   vector<Spell> SERIAL(spells);
-  static void addInventory(Creature*, const vector<ItemType>& items);
+  void addInventory(Creature*, const vector<ItemType>& items);
+  const ContentFactory* contentFactory;
 };

@@ -129,7 +129,7 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
   auto myLayer = layer;
   auto myType = type;
   if (itemDrop)
-    pos.dropItems(itemDrop->random());
+    pos.dropItems(itemDrop->random(pos.getGame()->getContentFactory()));
   if (usageType)
     FurnitureUsage::beforeRemoved(*usageType, pos);
   if (destroyFX)

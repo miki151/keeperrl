@@ -457,6 +457,11 @@ class EnumMap {
     return *this;
   }
 
+  EnumMap& operator = (EnumMap&& other) {
+    elems = std::move(other.elems);
+    return *this;
+  }
+
   const U& operator[](T elem) const {
     CHECK(int(elem) >= 0 && int(elem) < EnumInfo<T>::size) << int(elem);
     return elems[int(elem)];

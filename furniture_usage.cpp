@@ -62,7 +62,7 @@ static void useChest(Position pos, WConstFurniture furniture, Creature* c, const
   if (auto itemInfo = chestInfo.itemInfo) {
     c->message(itemInfo->msgItem);
     auto itemList = pos.getGame()->getContentFactory()->itemFactory.get(itemInfo->items);
-    vector<PItem> items = itemList.random();
+    vector<PItem> items = itemList.random(pos.getGame()->getContentFactory());
     c->getGame()->addEvent(EventInfo::ItemsAppeared{pos, getWeakPointers(items)});
     pos.dropItems(std::move(items));
   }
@@ -121,7 +121,7 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
     }
     case 3: {
       c->verb("find", "finds", "some gold coins in the cracks");
-      pos.dropItems(ItemType(ItemType::GoldPiece{}).get(Random.get(50, 100)));
+      pos.dropItems(ItemType(ItemType::GoldPiece{}).get(Random.get(50, 100), pos.getGame()->getContentFactory()));
       break;
     }
     case 4: {
@@ -131,7 +131,7 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
           ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( ItemAttrBonus{ AttrType::DEFENSE, 2 } ) } }),
           ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( LastingEffect::TELEPATHY ) } }),
           ItemType(ItemType::Glyph{ { ItemUpgradeType::WEAPON, ItemPrefix( VictimEffect { Effect::Lasting{LastingEffect::BLEEDING} } ) } })
-          ).get());
+          ).get(pos.getGame()->getContentFactory()));
       break;
     }
   }
@@ -235,7 +235,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       c->secondPerson("You drink from the fountain.");
       c->thirdPerson(c->getName().the() + " drinks from the fountain.");
       auto itemList = pos.getGame()->getContentFactory()->itemFactory.get(ItemListId("potions"));
-      PItem potion = itemList.random().getOnlyElement();
+      PItem potion = itemList.random(pos.getGame()->getContentFactory()).getOnlyElement();
       potion->apply(c);
       break;
     }

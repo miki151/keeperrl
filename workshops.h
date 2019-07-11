@@ -8,6 +8,7 @@ class WorkshopQueuedItem;
 struct WorkshopItemCfg;
 class Collective;
 class CostInfo;
+class ContentFactory;
 
 class Workshops {
   public:
@@ -33,7 +34,7 @@ class Workshops {
     void addUpgrade(int index, PItem);
     PItem removeUpgrade(int itemIndex, int runeIndex);
 
-    SERIALIZATION_DECL(Type);
+    SERIALIZATION_DECL(Type)
 
     private:
     friend class Workshops;
@@ -46,7 +47,7 @@ class Workshops {
   };
 
   SERIALIZATION_DECL(Workshops)
-  Workshops(std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>);
+  Workshops(std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>, const ContentFactory*);
   Workshops(const Workshops&) = delete;
   Type& get(WorkshopType);
   const Type& get(WorkshopType) const;
