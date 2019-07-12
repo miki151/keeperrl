@@ -40,7 +40,7 @@ class ItemAttributes {
     fun(*this);
   }
 
-  SERIALIZATION_DECL(ItemAttributes);
+  SERIALIZATION_DECL(ItemAttributes)
 
   MustInitialize<ViewId> SERIAL(viewId);
   MustInitialize<string> SERIAL(name);

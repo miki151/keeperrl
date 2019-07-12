@@ -8,6 +8,7 @@
 #include "tech_id.h"
 #include "creature_id.h"
 #include "spell_school_id.h"
+#include "custom_item_id.h"
 #include <cassert>
 
 static const char* staticsInitialized = nullptr;
@@ -194,3 +195,4 @@ INST(SpellId)
 INST(TechId)
 INST(CreatureId)
 INST(SpellSchoolId)
+INST(CustomItemId)

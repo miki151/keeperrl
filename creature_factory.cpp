@@ -216,7 +216,7 @@ void CreatureFactory::merge(CreatureFactory f) {
   append(spells, std::move(f.spells));
 }
 
-void CreatureFactory::setContentFactory(const ContentFactory* f) {
+void CreatureFactory::setContentFactory(const ContentFactory* f) const {
   contentFactory = f;
 }
 
@@ -709,11 +709,11 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, SpecialParams p, const Cont
         ), tribe, factory, spells);
   if (body.isHumanoid()) {
     if (Random.roll(4))
-      c->take(ItemType(ItemType::Bow{}).get(contentFactory));
+      c->take(ItemType(CustomItemId("Bow")).get(contentFactory));
     c->take(Random.choose(
-          ItemType(ItemType::Sword{}).setPrefixChance(1),
-          ItemType(ItemType::BattleAxe{}).setPrefixChance(1),
-          ItemType(ItemType::WarHammer{}).setPrefixChance(1))
+          ItemType(CustomItemId("Sword")).setPrefixChance(1),
+          ItemType(CustomItemId("BattleAxe")).setPrefixChance(1),
+          ItemType(CustomItemId("WarHammer")).setPrefixChance(1))
         .get(contentFactory));
   }
   return c;

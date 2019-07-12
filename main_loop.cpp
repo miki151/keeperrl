@@ -392,12 +392,12 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     auto contentFactory = createContentFactory(false);
     if (tileSet)
       tileSet->setTilePaths(contentFactory.tilePaths);
-    auto avatarChoice = getAvatarInfo(view, &contentFactory.playerCreatures, options, &contentFactory.creatures);
+    auto avatarChoice = getAvatarInfo(view, &contentFactory.playerCreatures, options, &contentFactory.getCreatures());
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, contentFactory.villains, contentFactory.gameIntros, *avatar);
       tileSet->setTilePaths(getTilePathsForAllMods());
       if (auto setup = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::FREE_PLAY,
-          contentFactory.creatures.getNameGenerator()->getNext(NameGeneratorId::WORLD))) {
+          contentFactory.getCreatures().getNameGenerator()->getNext(NameGeneratorId::WORLD))) {
         auto name = options->getStringValue(OptionId::PLAYER_NAME);
         if (!name.empty())
           avatar->playerCreature->getName().setFirst(name);
@@ -440,7 +440,7 @@ void MainLoop::splashScreen() {
   auto contentFactory = createContentFactory(true);
   if (tileSet)
     tileSet->setTilePaths(contentFactory.tilePaths);
-  EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies,
+  EnemyFactory enemyFactory(Random, contentFactory.getCreatures().getNameGenerator(), contentFactory.enemies,
       contentFactory.externalEnemies);
   auto model = ModelBuilder(&meter, Random, options, sokobanInput, &contentFactory, std::move(enemyFactory))
       .splashModel(dataFreePath.file("splash.txt"));
@@ -608,7 +608,7 @@ void MainLoop::launchQuickGame(optional<int> maxTurns) {
     game = loadGame(userPath.file((*toLoad).filename));
   auto contentFactory = createContentFactory(false);
   if (!game) {
-    AvatarInfo avatar = getQuickGameAvatar(view, &contentFactory.playerCreatures, &contentFactory.creatures);
+    AvatarInfo avatar = getQuickGameAvatar(view, &contentFactory.playerCreatures, &contentFactory.getCreatures());
     CampaignBuilder builder(view, Random, options, contentFactory.villains, contentFactory.gameIntros, avatar);
     auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP, "[world]");
     auto models = prepareCampaignModels(*result, std::move(avatar), Random, &contentFactory);
@@ -669,7 +669,7 @@ void MainLoop::doWithSplash(SplashType type, const string& text, function<void()
 void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen& random, Options* options) {
   ProgressMeter meter(1);
   auto contentFactory = createContentFactory(false);
-  EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies,
+  EnemyFactory enemyFactory(Random, contentFactory.getCreatures().getNameGenerator(), contentFactory.enemies,
       contentFactory.externalEnemies);
   ModelBuilder(&meter, random, options, sokobanInput, &contentFactory, std::move(enemyFactory))
       .measureSiteGen(numTries, types);
@@ -726,10 +726,10 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePat
   }
   int cnt = 0;
   input >> cnt;
-  auto creatureFactory = createContentFactory(false);
+  auto contentFactory = createContentFactory(false);
   for (int i : Range(cnt)) {
     auto allies = readAlly(input);
-    std::cout << allies.getSummary(&creatureFactory.creatures) << ": ";
+    std::cout << allies.getSummary(&contentFactory.getCreatures()) << ": ";
     battleTest(numTries, levelPath, allies, enemies, random);
   }
 }
@@ -743,7 +743,7 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
   for (int i : Range(cnt))
     allies.push_back(readAlly(input));
   auto contentFactory = createContentFactory(false);
-  ExternalEnemies enemies(random, &contentFactory.creatures, EnemyFactory(random, contentFactory.creatures.getNameGenerator(),
+  ExternalEnemies enemies(random, &contentFactory.getCreatures(), EnemyFactory(random, contentFactory.getCreatures().getNameGenerator(),
       contentFactory.enemies, contentFactory.externalEnemies)
       .getExternalEnemies(), ExternalEnemiesType::FROM_START);
   for (int turn : Range(100000))
@@ -751,7 +751,7 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
       std::cerr << "Turn " << turn << ": " << wave->enemy.name << "\n";
       int totalWins = 0;
       for (auto& allyInfo : allies) {
-        std::cerr << allyInfo.getSummary(&contentFactory.creatures) << ": ";
+        std::cerr << allyInfo.getSummary(&contentFactory.getCreatures()) << ": ";
         int numWins = battleTest(numTries, levelPath, allyInfo, wave->enemy.creatures, random);
         totalWins += numWins;
       }
@@ -790,7 +790,7 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
   for (int i : Range(numTries)) {
     std::cout << "Creating level" << std::endl;
     auto contentFactory = createContentFactory(false);
-    EnemyFactory enemyFactory(Random, contentFactory.creatures.getNameGenerator(), contentFactory.enemies,
+    EnemyFactory enemyFactory(Random, contentFactory.getCreatures().getNameGenerator(), contentFactory.enemies,
         contentFactory.externalEnemies);
     auto model = ModelBuilder(&meter, Random, options, sokobanInput,
         &contentFactory, std::move(enemyFactory)).battleModel(levelPath, ally, enemies);
@@ -871,7 +871,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
   vector<ContentFactory> factories;
   doWithSplash(SplashType::BIG, "Generating map...", numSites,
       [&] (ProgressMeter& meter) {
-        EnemyFactory enemyFactory(Random, contentFactory->creatures.getNameGenerator(), contentFactory->enemies,
+        EnemyFactory enemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
             contentFactory->externalEnemies);
         ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, contentFactory, std::move(enemyFactory));
         for (Vec2 v : sites.getBounds()) {

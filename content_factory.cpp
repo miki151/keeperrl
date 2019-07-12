@@ -13,7 +13,7 @@
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
-  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology);
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology, items);
   creatures.setContentFactory(this);
 }
 
@@ -196,6 +196,10 @@ optional<string> ContentFactory::readData(NameGenerator nameGenerator, const Gam
     return *res;
   if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS, &keyVerifier))
     return *res;
+  map<PrimaryId<CustomItemId>, ItemAttributes> itemsTmp;
+  if (auto res = config->readObject(itemsTmp, GameConfigId::ITEMS, &keyVerifier))
+    return *res;
+  items = convertKeys(itemsTmp);
   map<PrimaryId<EnemyId>, EnemyInfo> enemiesTmp;
   if (auto res = config->readObject(enemiesTmp, GameConfigId::ENEMIES, &keyVerifier))
     return *res;
@@ -235,4 +239,15 @@ void ContentFactory::merge(ContentFactory f) {
   creatures.merge(std::move(f.creatures));
   furniture.merge(std::move(f.furniture));
   tilePaths.merge(std::move(f.tilePaths));
+  mergeMap(std::move(f.items), items);
+}
+
+CreatureFactory& ContentFactory::getCreatures() {
+  creatures.setContentFactory(this);
+  return creatures;
+}
+
+const CreatureFactory& ContentFactory::getCreatures() const {
+  creatures.setContentFactory(this);
+  return creatures;
 }

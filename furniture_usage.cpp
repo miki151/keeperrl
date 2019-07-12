@@ -53,7 +53,7 @@ static void useChest(Position pos, WConstFurniture furniture, Creature* c, const
       int numSpawned = 0;
       for (int i : Range(creatureInfo->numCreatures))
         if (pos.getLevel()->landCreature({pos}, CreatureGroup(*creatureInfo->creature).random(
-            &pos.getGame()->getContentFactory()->creatures)))
+            &pos.getGame()->getContentFactory()->getCreatures())))
           ++numSpawned;
       if (numSpawned > 0)
         c->message(creatureInfo->msgCreature);
@@ -113,7 +113,7 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
       break;
     }
     case 2: {
-      pos.globalMessage(pos.getGame()->getContentFactory()->creatures.getNameGenerator()->getNext(NameGeneratorId::DEITY)
+      pos.globalMessage(pos.getGame()->getContentFactory()->getCreatures().getNameGenerator()->getNext(NameGeneratorId::DEITY)
           + " seems to be very angry");
       auto group = CreatureGroup::singleType(TribeId::getMonster(), CreatureId("ANGEL"));
       Effect::summon(pos, group, Random.get(3, 6), none);
@@ -121,7 +121,7 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
     }
     case 3: {
       c->verb("find", "finds", "some gold coins in the cracks");
-      pos.dropItems(ItemType(ItemType::GoldPiece{}).get(Random.get(50, 100), pos.getGame()->getContentFactory()));
+      pos.dropItems(ItemType(CustomItemId("GoldPiece")).get(Random.get(50, 100), pos.getGame()->getContentFactory()));
       break;
     }
     case 4: {

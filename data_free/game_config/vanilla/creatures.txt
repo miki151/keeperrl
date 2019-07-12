@@ -175,7 +175,7 @@
         type = FourLegged LARGE
         weight = 500
         intrinsicAttacks = {
-          HEAD { UnicornHorn }
+          HEAD {Simple "UnicornHorn"}
         }
        }
       permanentEffects = {

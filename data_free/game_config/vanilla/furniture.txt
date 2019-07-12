@@ -344,7 +344,7 @@
       70 CUT
     }
     fire = 100
-    itemDrop = {{{{WoodPlank} 1 { 8 14 }}}}
+    itemDrop = {{{{Simple "WoodPlank"} 1 { 8 14 }}}}
     summonedElement = "ENT"
     tryDestroyFX = { WOOD_SPLINTERS }
   }
@@ -382,7 +382,7 @@
     }
     canHideHere = true
     fire = 30
-    itemDrop = {{{{WoodPlank} 1 { 2 4 }}}}
+    itemDrop = {{{{Simple "WoodPlank"} 1 { 2 4 }}}}
     tryDestroyFX = { WOOD_SPLINTERS }
   }
   "CROPS"
@@ -763,7 +763,7 @@
     blockVision = { NORMAL ELF }
     wall = true
     clearFogOfWar = true
-    itemDrop = {{{{AdaOre} 1 { 16 28 }}}}
+    itemDrop = {{{{Simple "AdaOre"} 1 { 16 28 }}}}
     strength2 = {
       500 BOULDER
       500 DIG
@@ -781,7 +781,7 @@
     blockVision = { NORMAL ELF }
     wall = true
     clearFogOfWar = true
-    itemDrop = {{{{IronOre} 1 { 16 28 }}}}
+    itemDrop = {{{{Simple "IronOre"} 1 { 16 28 }}}}
     strength2 = {
       200 BOULDER
       220 DIG
@@ -799,7 +799,7 @@
     blockVision = { NORMAL ELF }
     wall = true
     clearFogOfWar = true
-    itemDrop = {{{{Rock} 1 { 16 28 }}}}
+    itemDrop = {{{{Simple "Rock"} 1 { 16 28 }}}}
     strength2 = {
       200 BOULDER
       250 DIG
@@ -817,7 +817,7 @@
     blockVision = { NORMAL ELF }
     wall = true
     clearFogOfWar = true
-    itemDrop = {{{{GoldPiece} 1 { 16 28 }}}}
+    itemDrop = {{{{Simple "GoldPiece"} 1 { 16 28 }}}}
     strength2 = {
       200 BOULDER
       220 DIG

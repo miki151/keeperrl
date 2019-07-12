@@ -82,7 +82,7 @@ static void summonFX(Creature* c) {
 vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<TimeInterval> ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(c->getGame()->getContentFactory()->creatures.fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c)));
+    creatures.push_back(c->getGame()->getContentFactory()->getCreatures().fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c)));
   auto ret = summonCreatures(c->getPosition(), 2, std::move(creatures), delay);
   for (auto c : ret) {
     if (ttl)
@@ -95,7 +95,7 @@ vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<T
 vector<Creature*> Effect::summon(Position pos, CreatureGroup& factory, int num, optional<TimeInterval> ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(factory.random(&pos.getGame()->getContentFactory()->creatures, MonsterAIFactory::monster()));
+    creatures.push_back(factory.random(&pos.getGame()->getContentFactory()->getCreatures(), MonsterAIFactory::monster()));
   auto ret = summonCreatures(pos, 2, std::move(creatures), delay);
   for (auto c : ret) {
     if (ttl)
@@ -654,7 +654,7 @@ string Effect::ReviveCorpse::getDescription() const {
 }
 
 PCreature Effect::SummonGhost::getBestSpirit(const Model* model, TribeId tribe) const {
-  auto& factory = model->getGame()->getContentFactory()->creatures;
+  auto& factory = model->getGame()->getContentFactory()->getCreatures();
   for (auto id : Random.permutation(factory.getAllCreatures())) {
     auto orig = factory.fromId(id, tribe);
     if (orig->getBody().hasBrain())

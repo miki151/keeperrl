@@ -27,7 +27,7 @@ class RangedWeapon {
   AttrType getDamageAttr() const;
   int getMaxDistance() const;
 
-  SERIALIZATION_DECL(RangedWeapon);
+  SERIALIZATION_DECL(RangedWeapon)
 
   private:
   AttrType SERIAL(damageAttr);

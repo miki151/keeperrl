@@ -6,27 +6,27 @@
   {"KEEPER_MAGE" "KEEPER_MAGE_F"}
       {
         # Here comes a list of items. The format of each element is defined in creature_inventory.h
-        { Robe }
+        { Simple "Robe"}
       }
   {"KEEPER_KNIGHT_F" "KEEPER_KNIGHT" "KEEPER_KNIGHT_WHITE_F" "KEEPER_KNIGHT_WHITE"}
       {
-        { LeatherArmor }
-        { LeatherHelm }
-        { Sword }
+        { Simple "LeatherArmor"}
+        { Simple "LeatherHelm"}
+        { Simple "Sword"}
       }
   {"CYCLOPS"}
       {
-        { HeavyClub }
+        { Simple "HeavyClub"}
         # You can either list the values in the order defined in SERIALIZE_ALL or 
-        { GoldPiece 40 80 }
+        { Simple "GoldPiece" 40 80 }
         # Put them in any order in the format "key = value"
-        { countMin = 10 countMax = 15 type = GoldPiece chance = 0.1}
+        { countMin = 10 countMax = 15 type = Simple "GoldPiece" chance = 0.1}
         { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
         { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       }
   {"GREEN_DRAGON"}
       {
-        { GoldPiece 60 100 }
+        { Simple "GoldPiece" 60 100 }
         { type = Glyph WEAPON VictimEffect Lasting POISON chance = 0.3 }
         { type = Glyph ARMOR LastingEffect POISON_RESISTANT chance = 0.3 }
         { type = Glyph ARMOR LastingEffect REGENERATION chance = 0.3 }
@@ -35,11 +35,11 @@
       }
   {"DEMON_DWELLER"}
       {
-        { GoldPiece 5 10 }
+        { Simple "GoldPiece" 5 10 }
      }
   {"RED_DRAGON"}
       {
-        { GoldPiece 120 200 }
+        { Simple "GoldPiece" 120 200 }
         { type = Glyph WEAPON VictimEffect Fire chance = 0.3 }
         { type = Glyph WEAPON VictimEffect Lasting BLEEDING chance = 0.3 }
         { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
@@ -48,7 +48,7 @@
       }
   {"BLACK_DRAGON"}
       {
-        { GoldPiece 120 200 }
+        { Simple "GoldPiece" 120 200 }
         { type = Glyph WEAPON VictimEffect Lasting BLIND chance = 1.0 }
         { type = Glyph WEAPON VictimEffect Lasting BLEEDING chance = 0.3 }
         { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
@@ -57,13 +57,13 @@
       }
   {"ANGEL"}
       {
-        { type = Sword prefixChance = 0.1 }
+        { type = Simple "Sword" prefixChance = 0.1 }
         { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
         { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       }
   {"DEMON_LORD"}
       {
-        { type = Sword prefixChance = 0.1 }
+        { type = Simple "Sword" prefixChance = 0.1 }
         { type = Glyph ARMOR LastingEffect MAGIC_RESISTANCE chance = 0.3 }
         { type = Glyph ARMOR LastingEffect SPEED chance = 0.3 }
         { type = Glyph ARMOR LastingEffect NO_CARRY_LIMIT chance = 0.3 }
@@ -71,44 +71,44 @@
        }
   {"ADVENTURER_F" "ADVENTURER"}
       {
-        { FirstAidKit 2 4 }
-        { Knife }
-        { Sword }
-        { LeatherGloves }
-        { LeatherArmor }
-        { LeatherHelm }
-        { GoldPiece 16 26 }
+        { Simple "FirstAidKit" 2 4 }
+        { Simple "Knife"}
+        { Simple "Sword"}
+        { Simple "LeatherGloves"}
+        { Simple "LeatherArmor"}
+        { Simple "LeatherHelm"}
+        { Simple "GoldPiece" 16 26 }
       }
   {"ELEMENTALIST"}
       {
-        { IronStaff }
-        { Torch }
+        { Simple "IronStaff"}
+        { Simple "Torch"}
         { type = Glyph ARMOR LastingEffect FIRE_RESISTANT chance = 0.3 }
        }
   {"DEATH"}
       {
-        { Scythe }
+        { Simple "Scythe"}
       }
   {"KOBOLD"}
       {
-        { Spear }
+        { Simple "Spear"}
       }
   {"GOBLIN"}
       {
-        { Club }
-        { type = LeatherBoots chance = 0.3 }
+        { Simple "Club"}
+        { type = Simple "LeatherBoots" chance = 0.3 }
       }
   {"WARRIOR"}
       {
-        { LeatherArmor }
-        { Club }
-        { GoldPiece 2 5 }
+        { Simple "LeatherArmor"}
+        { Simple "Club"}
+        { Simple "GoldPiece" 2 5 }
       }
   {"SHAMAN"}
       {
-        { LeatherArmor }
-        { Club }
-        { GoldPiece 80 120 }
+        { Simple "LeatherArmor"}
+        { Simple "Club"}
+        { Simple "GoldPiece" 80 120 }
         { type = Glyph ARMOR ItemAttrBonus SPELL_DAMAGE 5 chance = 0.3 }
         { type = Glyph ARMOR LastingEffect FLYING chance = 0.3 }
         { type = Glyph ARMOR JoinPrefixes { LastingEffect BLIND LastingEffect INVISIBLE} chance = 0.3 }
@@ -119,127 +119,127 @@
       }
   {"LIZARDLORD"}
       {
-        { LeatherArmor }
+        { Simple "LeatherArmor"}
         { Potion RegrowBodyPart }
-        { GoldPiece 50 90 }
+        { Simple "GoldPiece" 50 90 }
       }
   {"LIZARDMAN"}
       {
-        { LeatherArmor }
-        { GoldPiece 2 4 }
+        { Simple "LeatherArmor"}
+        { Simple "GoldPiece" 2 4 }
       }
   {"HARPY"}
       {
-        { Bow }
+        { Simple "Bow"}
       }
   {"ARCHER"}
       {
-        { Bow }
-        { Knife }
-        { LeatherArmor }
-        { LeatherBoots }
-        { type = Torch chance = 0.3 }
+        { Simple "Bow"}
+        { Simple "Knife"}
+        { Simple "LeatherArmor"}
+        { Simple "LeatherBoots"}
+        { type = Simple "Torch" chance = 0.3 }
         { type = Potion Heal FLESH chance = 0.7 }
-        { GoldPiece 4 10 }
+        { Simple "GoldPiece" 4 10 }
       }
   {"WITCHMAN"}
       {
-        { Sword }
-        { LeatherArmor }
-        { LeatherBoots }
+        { Simple "Sword"}
+        { Simple "LeatherArmor"}
+        { Simple "LeatherBoots"}
         { type = Potion Heal FLESH chance = 0.7 }
         { Potion Lasting SPEED 3 5 }
-        { GoldPiece 60 80 }
+        { Simple "GoldPiece" 60 80 }
       }
   {"PRIEST"}
       {
-        { IronStaff }
-        { LeatherBoots }
-        { type = Robe prefixChance = 1 }
+        { Simple "IronStaff"}
+        { Simple "LeatherBoots"}
+        { type = Simple "Robe" prefixChance = 1 }
       }
   {"KNIGHT"}
       {
-        { Sword }
-        { ChainArmor }
-        { LeatherBoots }
-        { type = Torch chance = 0.3 }
+        { Simple "Sword"}
+        { Simple "ChainArmor"}
+        { Simple "LeatherBoots"}
+        { type = Simple "Torch" chance = 0.3 }
         { type = Potion Heal FLESH chance = 0.7 }
-        { GoldPiece 6 16 }
+        { Simple "GoldPiece" 6 16 }
       }
   {"MINOTAUR"}
       {
-        { BattleAxe }
+        { Simple "BattleAxe"}
         { type = Glyph ARMOR ItemAttrBonus DEFENSE 5 chance = 0.3 }
         { type = Glyph WEAPON ItemAttrBonus DAMAGE 5 chance = 0.3 }
       }
   {"DUKE"}
       {
-        { type = BattleAxe prefixChance = 1 }
-        { ChainArmor }
-        { IronHelm }
-        { IronBoots }
+        { type = Simple "BattleAxe" prefixChance = 1 }
+        { Simple "ChainArmor"}
+        { Simple "IronHelm"}
+        { Simple "IronBoots"}
         { Potion Heal FLESH 3 5 }
-        { type = Torch chance = 0.3 }
-        { GoldPiece 140 200 }
+        { type = Simple "Torch" chance = 0.3 }
+        { Simple "GoldPiece" 140 200 }
       }
   {"ORC"}
       {
-        { Club }
-        { LeatherArmor }
+        { Simple "Club"}
+        { Simple "LeatherArmor"}
       }
   {"ORC_MAGE"}
       {
-        { WoodenStaff }
-        { LeatherArmor }
+        { Simple "WoodenStaff"}
+        { Simple "LeatherArmor"}
       }
   {"OGRE"}
       {
-        { HeavyClub }
+        { Simple "HeavyClub"}
       }
   {"BANDIT" "RAT_SOLDIER" "RAT_KING"}
       {
-        { Sword }
+        { Simple "Sword"}
         { type = Potion Heal FLESH chance = 0.7 }
-        { type = Torch chance = 0.3 }
-        { type = Bow chance = 0.05 }
+        { type = Simple "Torch" chance = 0.3 }
+        { type = Simple "Bow" chance = 0.05 }
       }
   {"DWARF"}
       {
-        { type = BattleAxe, alternative = WarHammer }
-        { ChainArmor }
-        { type = IronHelm chance = 0.5 }
-        { type = IronBoots chance = 0.3 }
-        { type = Torch chance = 0.3 }
-        { GoldPiece 2 6 }
+        { type = Simple "BattleAxe", alternative = Simple "WarHammer" }
+        { Simple "ChainArmor"}
+        { type = Simple "IronHelm" chance = 0.5 }
+        { type = Simple "IronBoots" chance = 0.3 }
+        { type = Simple "Torch" chance = 0.3 }
+        { Simple "GoldPiece" 2 6 }
       }
   {"DWARF_BARON"}
       {
-        { type = BattleAxe, alternative = WarHammer prefixChance = 1 }
+        { type = Simple "BattleAxe", alternative = Simple "WarHammer" prefixChance = 1 }
         { Potion Heal FLESH 2 3 }
-        { type = ChainArmor prefixChance = 1 }
-        { IronBoots }
-        { IronHelm }
-        { type = Torch chance = 0.3 }
-        { GoldPiece 80 120 }
+        { type = Simple "ChainArmor" prefixChance = 1 }
+        { Simple "IronBoots"}
+        { Simple "IronHelm"}
+        { type = Simple "Torch" chance = 0.3 }
+        { Simple "GoldPiece" 80 120 }
         { type = Glyph ARMOR ItemAttrBonus DEFENSE 4 chance = 0.3 }
         { type = Glyph WEAPON JoinPrefixes { LastingEffect BAD_BREATH VictimEffect Lasting PANIC } chance = 0.3 }
       }
   {"GNOME_CHIEF"}
       {
-        { Sword }
+        { Simple "Sword"}
       }
   {"VAMPIRE_LORD"}
       {
-        { Robe }
-        { IronStaff }
+        { Simple "Robe"}
+        { Simple "IronStaff"}
         { type = Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 4 chance = 0.3 }
       }
   {"DARK_ELF_LORD" "ELF_LORD"}
       {
-        { type = ElvenSword prefixChance = 1 }
-        { LeatherArmor }
-        { ElvenBow }
-        { GoldPiece 80 120 }
+        { type = Simple "ElvenSword" prefixChance = 1 }
+        { Simple "LeatherArmor"}
+        { Simple "ElvenBow"}
+        { Simple "GoldPiece" 80 120 }
         { Scroll Escape }
         { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 10 LastingEffect INSANITY} chance = 0.3 }
         { type = Glyph ARMOR LastingEffect NIGHT_VISION chance = 0.3 }
@@ -250,24 +250,24 @@
       }
   {"DRIAD"}
       {
-        { Bow }
+        { Simple "Bow"}
       }
   {"DARK_ELF_WARRIOR"}
       {
-        { ElvenSword }
-        { LeatherArmor }
-        { GoldPiece 2 6 }
+        { Simple "ElvenSword"}
+        { Simple "LeatherArmor"}
+        { Simple "GoldPiece" 2 6 }
       }
   {"ELF_ARCHER"}
       {
-        { ElvenSword }
-        { LeatherArmor }
-        { Bow }
-        { GoldPiece 2 6 }
+        { Simple "ElvenSword"}
+        { Simple "LeatherArmor"}
+        { Simple "Bow"}
+        { Simple "GoldPiece" 2 6 }
       }
   {"WITCH"}
       {
-        { Knife }
+        { Simple "Knife"}
         { Potion Heal FLESH }
         { Potion Lasting SLEEP }
         { Potion Lasting SLOWED }
@@ -283,15 +283,15 @@
       }
   {"HALLOWEEN_KID"}
       {
-        { BagOfCandies }
-        { HalloweenCostume }
+        { Simple "BagOfCandies"}
+        { Simple "HalloweenCostume"}
       }
   {"SHOPKEEPER"}
       {
-        { GoldPiece 20 60 }
-        { Sword }
-        { LeatherArmor }
-        { LeatherBoots }
+        { Simple "GoldPiece" 20 60 }
+        { Simple "Sword"}
+        { Simple "LeatherArmor"}
+        { Simple "LeatherBoots"}
         { Potion Heal FLESH 2 3 }
       }
 }

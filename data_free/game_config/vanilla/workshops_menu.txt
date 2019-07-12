@@ -4,37 +4,37 @@
 
 # Workshop
 {
-    {item = {Club}    work = 3 cost = WOOD 10    tech = none      batchSize = 1    tutorialHighlight = SCHEDULE_CLUB}
-    {{LeatherArmor}          6        WOOD 20}
-    {{LeatherHelm}           1        WOOD 6}
-    {{LeatherBoots}          2        WOOD 10}
-    {{WoodenShield}          2        WOOD 10}
-    {{LeatherGloves}         1        WOOD 2}
-    {{HeavyClub}             5        WOOD 20      "two-handed weapons"}
-    {{Bow}                   13       WOOD 20      "archery"}
-    {{WoodenStaff}           13       WOOD 20      "magical weapons"}
-    {{Torch}                 2        WOOD 4}
+    {item = {Simple "Club"}    work = 3 cost = WOOD 10    tech = none      batchSize = 1    tutorialHighlight = SCHEDULE_CLUB}
+    {{Simple "LeatherArmor"}          6        WOOD 20}
+    {{Simple "LeatherHelm"}           1        WOOD 6}
+    {{Simple "LeatherBoots"}          2        WOOD 10}
+    {{Simple "WoodenShield"}          2        WOOD 10}
+    {{Simple "LeatherGloves"}         1        WOOD 2}
+    {{Simple "HeavyClub"}             5        WOOD 20      "two-handed weapons"}
+    {{Simple "Bow"}                   13       WOOD 20      "archery"}
+    {{Simple "WoodenStaff"}           13       WOOD 20      "magical weapons"}
+    {{Simple "Torch"}                 2        WOOD 4}
 }
 
 # Forge
 
 {
-    {{Sword}                 10       IRON 20}
-    {{ChainArmor}            30       IRON 40}
-    {{IronHelm}              8        IRON 16}
-    {{IronBoots}             12       IRON 24}
-    {{IronGloves}            3        IRON 2}
-    {{WarHammer}             16       IRON 40      "two-handed weapons"}
-    {{BattleAxe}             22       IRON 50      "two-handed weapons"}
-    {{IronStaff}             20       IRON 40      "magical weapons"}
-    {{GoldenStaff}           20       GOLD 200     "magical weapons"}
-    {{AdaSword}              20       ADA 20}
-    {{AdaArmor}              30       ADA 40}
-    {{AdaHelm}               15       ADA 16}
-    {{AdaBoots}              15       ADA 24}
-    {{AdaGloves}             6        ADA 2}
-    {{AdaWarHammer}          20       ADA 40       "two-handed weapons"}
-    {{AdaBattleAxe}          22       ADA 50       "two-handed weapons"}
+    {{Simple "Sword"}                 10       IRON 20}
+    {{Simple "ChainArmor"}            30       IRON 40}
+    {{Simple "IronHelm"}              8        IRON 16}
+    {{Simple "IronBoots"}             12       IRON 24}
+    {{Simple "IronGloves"}            3        IRON 2}
+    {{Simple "WarHammer"}             16       IRON 40      "two-handed weapons"}
+    {{Simple "BattleAxe"}             22       IRON 50      "two-handed weapons"}
+    {{Simple "IronStaff"}             20       IRON 40      "magical weapons"}
+    {{Simple "GoldenStaff"}           20       GOLD 200     "magical weapons"}
+    {{Simple "AdaSword"}              20       ADA 20}
+    {{Simple "AdaArmor"}              30       ADA 40}
+    {{Simple "AdaHelm"}               15       ADA 16}
+    {{Simple "AdaBoots"}              15       ADA 24}
+    {{Simple "AdaGloves"}             6        ADA 2}
+    {{Simple "AdaWarHammer"}          20       ADA 40       "two-handed weapons"}
+    {{Simple "AdaBattleAxe"}          22       ADA 50       "two-handed weapons"}
 }
 
 # Lab
@@ -55,11 +55,11 @@
     {{Potion Lasting MAGIC_VULNERABILITY}  6        GOLD 40      "advanced alchemy"}
     {{Potion Lasting INVISIBLE}            6        GOLD 20      "advanced alchemy"}
     {{Potion Heal SPIRIT}                  4        GOLD 20      "advanced alchemy"}
-    {{GoldPiece}                           5        IRON 30      "alchemical conversion"       10}
-    {{WoodPlank}                           5        GOLD 10      "alchemical conversion"       10}
-    {{IronOre}                             5        GOLD 10      "alchemical conversion"       10}
-    {{AdaOre}                              5        GOLD 40      "alchemical conversion"       10}
-    {{Rock}                                5        GOLD 10      "alchemical conversion"       10}
+    {{Simple "GoldPiece"}                           5        IRON 30      "alchemical conversion"       10}
+    {{Simple "WoodPlank"}                           5        GOLD 10      "alchemical conversion"       10}
+    {{Simple "IronOre"}                             5        GOLD 10      "alchemical conversion"       10}
+    {{Simple "AdaOre"}                              5        GOLD 40      "alchemical conversion"       10}
+    {{Simple "Rock"}                                5        GOLD 10      "alchemical conversion"       10}
 }
 
 # Jeweller
@@ -77,7 +77,7 @@
     {{Amulet NIGHT_VISION}                 10       GOLD 20}
     {{Amulet ELF_VISION}                   10       GOLD 20}
     {{Amulet WARNING}                      10       GOLD 30}
-    {{DefenseAmulet}                       10       GOLD 40}
+    {{Simple "DefenseAmulet"}                       10       GOLD 40}
     {{Amulet REGENERATION}                 10       GOLD 60}
 }
 

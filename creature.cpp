@@ -132,7 +132,7 @@ const SpellMap& Creature::getSpellMap() const {
 }
 
 void Creature::cheatAllSpells() {
-  auto& spells = getGame()->getContentFactory()->creatures.getSpells();
+  auto& spells = getGame()->getContentFactory()->getCreatures().getSpells();
   for (auto& spell : spells)
     spellMap->add(spell, ExperienceType::SPELL, 0);
   spellMap->setAllReady();

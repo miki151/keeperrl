@@ -643,7 +643,7 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
     if (Random.chance(guardianInfo->probability)) {
       auto& extended = territory->getStandardExtended();
       if (!extended.empty())
-        Random.choose(extended).landCreature(getGame()->getContentFactory()->creatures.fromId(
+        Random.choose(extended).landCreature(getGame()->getContentFactory()->getCreatures().fromId(
             guardianInfo->creature, getTribeId()));
     }
 }

@@ -41,7 +41,7 @@ bool CollectiveWarnings::isWarning(Warning w) const {
 
 void CollectiveWarnings::considerWeaponWarning(WCollective col) {
   int numWeapons = col->getNumItems(ItemIndex::WEAPON);
-  PItem genWeapon = ItemType(ItemType::Sword{}).get(col->getGame()->getContentFactory());
+  PItem genWeapon = ItemType(CustomItemId("Sword")).get(col->getGame()->getContentFactory());
   int numNeededWeapons = 0;
   for (Creature* c : col->getCreatures(MinionTrait::FIGHTER))
     if (col->usesEquipment(c) && col->getMinionEquipment().needsItem(c, genWeapon.get(), true))

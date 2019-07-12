@@ -63,7 +63,7 @@ class CreatureFactory {
   CreatureFactory& operator = (CreatureFactory&&);
 
   void merge(CreatureFactory);
-  void setContentFactory(const ContentFactory*);
+  void setContentFactory(const ContentFactory*) const;
 
   SERIALIZATION_DECL(CreatureFactory)
 
@@ -91,5 +91,5 @@ class CreatureFactory {
   map<SpellSchoolId, SpellSchool> SERIAL(spellSchools);
   vector<Spell> SERIAL(spells);
   void addInventory(Creature*, const vector<ItemType>& items);
-  const ContentFactory* contentFactory;
+  mutable const ContentFactory* contentFactory = nullptr;
 };

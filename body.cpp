@@ -519,15 +519,15 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part, const ContentFact
         weight / 8, false, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE);
     case Material::CLAY:
     case Material::ROCK:
-      return ItemType(ItemType::Rock{}).get(factory);
+      return ItemType(CustomItemId("Rock")).get(factory);
     case Material::BONE:
-      return ItemType(ItemType::Bone{}).get(factory);
+      return ItemType(CustomItemId("Bone")).get(factory);
     case Material::IRON:
-      return ItemType(ItemType::IronOre{}).get(factory);
+      return ItemType(CustomItemId("IronOre")).get(factory);
     case Material::WOOD:
-      return ItemType(ItemType::WoodPlank{}).get(factory);
+      return ItemType(CustomItemId("WoodPlank")).get(factory);
     case Material::ADA:
-      return ItemType(ItemType::AdaOre{}).get(factory);
+      return ItemType(CustomItemId("AdaOre")).get(factory);
     default: return nullptr;
   }
 }
@@ -542,15 +542,15 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
             {id, material != Material::UNDEAD_FLESH, numBodyParts(BodyPart::HEAD) > 0, false}));
     case Material::CLAY:
     case Material::ROCK:
-      return ItemType(ItemType::Rock{}).get(numCorpseItems(size), factory);
+      return ItemType(CustomItemId("Rock")).get(numCorpseItems(size), factory);
     case Material::BONE:
-      return ItemType(ItemType::Bone{}).get(numCorpseItems(size), factory);
+      return ItemType(CustomItemId("Bone")).get(numCorpseItems(size), factory);
     case Material::IRON:
-      return ItemType(ItemType::IronOre{}).get(numCorpseItems(size), factory);
+      return ItemType(CustomItemId("IronOre")).get(numCorpseItems(size), factory);
     case Material::WOOD:
-      return ItemType(ItemType::WoodPlank{}).get(numCorpseItems(size), factory);
+      return ItemType(CustomItemId("WoodPlank")).get(numCorpseItems(size), factory);
     case Material::ADA:
-      return ItemType(ItemType::AdaOre{}).get(numCorpseItems(size), factory);
+      return ItemType(CustomItemId("AdaOre")).get(numCorpseItems(size), factory);
     default: return {};
   }
 }

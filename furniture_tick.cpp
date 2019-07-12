@@ -38,7 +38,7 @@ static void handlePigsty(Position pos, WFurniture furniture) {
     if (v.getCreature() && v.getCreature()->getBody().isMinionFood())
       return;
   if (Random.roll(5)) {
-    PCreature pig = pos.getGame()->getContentFactory()->creatures.fromId(CreatureId("PIG"), furniture->getTribe(),
+    PCreature pig = pos.getGame()->getContentFactory()->getCreatures().fromId(CreatureId("PIG"), furniture->getTribe(),
         MonsterAIFactory::stayOnFurniture(furniture->getType()));
     if (pos.canEnter(pig.get()))
       pos.addCreature(std::move(pig));
@@ -93,7 +93,7 @@ static void meteorShower(Position position, WFurniture furniture) {
       if (!targetPoint.plus(direction * i).canEnter(MovementType({MovementTrait::WALK, MovementTrait::FLY})))
         continue;
     targetPoint.plus(direction * range).throwItem(
-        makeVec(ItemType(ItemType::Rock{}).get(position.getGame()->getContentFactory())),
+        makeVec(ItemType(CustomItemId("Rock")).get(position.getGame()->getContentFactory())),
         Attack(furniture->getCreator(), AttackLevel::MIDDLE, AttackType::HIT, 25, AttrType::DAMAGE),
         10,
         position.minus(direction),

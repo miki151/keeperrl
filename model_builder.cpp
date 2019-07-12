@@ -278,7 +278,7 @@ PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment al
     enemyInfo.push_back(enemyFactory->get(EnemyId("KRAKEN")));
   optional<ExternalEnemies> externalEnemies;
   if (externalEnemiesType)
-    externalEnemies = ExternalEnemies(random, &contentFactory->creatures, enemyFactory->getExternalEnemies(), *externalEnemiesType);
+    externalEnemies = ExternalEnemies(random, &contentFactory->getCreatures(), enemyFactory->getExternalEnemies(), *externalEnemiesType);
   for (int i : Range(random.get(3)))
     enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
   return tryModel(174, enemyInfo, keeperTribe, biome, std::move(externalEnemies), true);

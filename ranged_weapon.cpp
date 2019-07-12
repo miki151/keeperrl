@@ -74,3 +74,6 @@ int RangedWeapon::getMaxDistance() const {
   return maxDistance;
 }
 
+#include "pretty_archive.h"
+template
+void RangedWeapon::serialize(PrettyInputArchive& ar1, unsigned);

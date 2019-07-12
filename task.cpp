@@ -822,7 +822,7 @@ class CampAndSpawnTask : public Task {
     }
     updateTeams();
     if (defenseTeam.empty()) {
-      auto team = spawns.generate(Random, &c->getGame()->getContentFactory()->creatures, c->getTribeId(),
+      auto team = spawns.generate(Random, &c->getGame()->getContentFactory()->getCreatures(), c->getTribeId(),
           MonsterAIFactory::summoned(c));
       for (Creature* summon : Effect::summonCreatures(c->getPosition(), 4, std::move(team)))
         defenseTeam.push_back(summon);
@@ -840,7 +840,7 @@ class CampAndSpawnTask : public Task {
       if (*attackCountdown > 0)
         --*attackCountdown;
       else {
-        auto team = spawns.generate(Random, &c->getGame()->getContentFactory()->creatures, c->getTribeId(),
+        auto team = spawns.generate(Random, &c->getGame()->getContentFactory()->getCreatures(), c->getTribeId(),
             MonsterAIFactory::singleTask(Task::attackCreatures({target->getLeader()})));
         for (Creature* summon : Effect::summonCreatures(c->getPosition(), 4, std::move(team)))
           attackTeam.push_back(summon);

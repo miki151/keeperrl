@@ -110,7 +110,7 @@ void ExternalEnemies::update(WLevel level, LocalTime localTime) {
     Vec2 landingDir(Random.choose<Dir>());
     auto attackTask = getAttackTask(target, nextWave->enemy.behaviour);
     auto attackTaskRef = attackTask.get();
-    auto creatures = nextWave->enemy.creatures.generate(Random, &level->getGame()->getContentFactory()->creatures,
+    auto creatures = nextWave->enemy.creatures.generate(Random, &level->getGame()->getContentFactory()->getCreatures(),
         TribeId::getMonster(), MonsterAIFactory::singleTask(std::move(attackTask),
             !nextWave->enemy.behaviour.contains<HalloweenKids>()));
     for (auto& c : creatures) {

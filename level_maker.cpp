@@ -479,7 +479,7 @@ class Inhabitants : public LevelMaker {
     if (!actorFactory)
       actorFactory = MonsterAIFactory::stayInLocation(builder->toGlobalCoordinates(area));
     Table<char> taken(area.right(), area.bottom());
-    auto creatures = inhabitants.generateCreatures(builder->getRandom(), &builder->getContentFactory()->creatures, collective->getTribe(),
+    auto creatures = inhabitants.generateCreatures(builder->getRandom(), &builder->getContentFactory()->getCreatures(), collective->getTribe(),
         *actorFactory);
     for (auto& minion : creatures) {
       PCreature& creature = minion.first;
@@ -512,7 +512,7 @@ class Corpses : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     Table<char> taken(area.right(), area.bottom());
-    auto creatures = inhabitants.generateCreatures(builder->getRandom(), &builder->getContentFactory()->creatures,
+    auto creatures = inhabitants.generateCreatures(builder->getRandom(), &builder->getContentFactory()->getCreatures(),
         TribeId::getMonster(), MonsterAIFactory::monster());
     for (auto& minion : creatures) {
       PCreature& creature = minion.first;
@@ -551,11 +551,11 @@ class Creatures : public LevelMaker {
         [&](CreatureGroup c){
           vector<PCreature> ret;
           for (int i : Range(numCreatures))
-            ret.push_back(c.random(&builder->getContentFactory()->creatures, *actorFactory));
+            ret.push_back(c.random(&builder->getContentFactory()->getCreatures(), *actorFactory));
           return ret;
         },
         [&](const CreatureList& c){
-          return c.generate(builder->getRandom(), &builder->getContentFactory()->creatures, tribe, *actorFactory);
+          return c.generate(builder->getRandom(), &builder->getContentFactory()->getCreatures(), tribe, *actorFactory);
         }
     );
     for (auto& creature : c) {
@@ -1765,7 +1765,7 @@ class ShopMaker : public LevelMaker {
         building(getBuildingInfo(info)), shopkeeperDead(info.shopkeeperDead)  {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    PCreature shopkeeper = builder->getContentFactory()->creatures.fromId(CreatureId("SHOPKEEPER"), tribe, MonsterAIFactory::idle());
+    PCreature shopkeeper = builder->getContentFactory()->getCreatures().fromId(CreatureId("SHOPKEEPER"), tribe, MonsterAIFactory::idle());
     shopkeeper->setController(CreatureFactory::getShopkeeper(builder->toGlobalCoordinates(area), shopkeeper.get()));
     vector<Vec2> pos;
     for (Vec2 v : area)
@@ -1940,7 +1940,7 @@ class CastleExit : public LevelMaker {
         builder->removeFurniture(loc + v, FurnitureLayer::MIDDLE);
     vector<Vec2> guardPos { Vec2(1, 2), Vec2(1, -1) };
     for (Vec2 pos : guardPos) {
-      auto fighters = settlement.inhabitants.fighters.generate(builder->getRandom(), &builder->getContentFactory()->creatures,
+      auto fighters = settlement.inhabitants.fighters.generate(builder->getRandom(), &builder->getContentFactory()->getCreatures(),
           settlement.tribe, MonsterAIFactory::stayInLocation(
               builder->toGlobalCoordinates(Rectangle(loc + pos, loc + pos + Vec2(1, 1))), false));
       if (!fighters.empty())
@@ -2923,7 +2923,7 @@ class SokobanFromFile : public LevelMaker {
           builder->putFurniture(v, FurnitureParams{FurnitureType("IRON_DOOR"), TribeId::getHostile()});
           break;
         case '0':
-          builder->putCreature(v, builder->getContentFactory()->creatures.fromId(CreatureId("SOKOBAN_BOULDER"),
+          builder->putCreature(v, builder->getContentFactory()->getCreatures().fromId(CreatureId("SOKOBAN_BOULDER"),
               TribeId::getPeaceful()));
           break;
         default: FATAL << "Unknown symbol in sokoban data: " << file[v];
@@ -2956,10 +2956,10 @@ class BattleFromFile : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     CHECK(area == level.getBounds()) << "Bad size of battle level input.";
-    auto alliesList = allies.generate(builder->getRandom(), &builder->getContentFactory()->creatures, TribeId::getDarkKeeper(),
+    auto alliesList = allies.generate(builder->getRandom(), &builder->getContentFactory()->getCreatures(), TribeId::getDarkKeeper(),
         MonsterAIFactory::guard());
     int allyIndex = 0;
-    auto enemyList = enemies.generate(builder->getRandom(), &builder->getContentFactory()->creatures, TribeId::getHuman(),
+    auto enemyList = enemies.generate(builder->getRandom(), &builder->getContentFactory()->getCreatures(), TribeId::getHuman(),
         MonsterAIFactory::monster());
     int enemyIndex = 0;
     for (Vec2 v : area) {

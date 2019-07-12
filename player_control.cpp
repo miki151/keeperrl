@@ -561,7 +561,7 @@ static optional<pair<ViewId, int>> getCostObj(const optional<CostInfo>& cost) {
 string PlayerControl::getMinionName(CreatureId id) const {
   static map<CreatureId, string> names;
   if (!names.count(id))
-    names[id] = getGame()->getContentFactory()->creatures.fromId(id, TribeId::getMonster())->getName().bare();
+    names[id] = getGame()->getContentFactory()->getCreatures().fromId(id, TribeId::getMonster())->getName().bare();
   return names.at(id);
 }
 
@@ -1225,7 +1225,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   static map<CreatureId, PCreature> creatureStats;
   auto getStats = [&](CreatureId id) -> Creature* {
     if (!creatureStats[id]) {
-      creatureStats[id] = getGame()->getContentFactory()->creatures.fromId(id, TribeId::getDarkKeeper());
+      creatureStats[id] = getGame()->getContentFactory()->getCreatures().fromId(id, TribeId::getDarkKeeper());
     }
     return creatureStats[id].get();
   };
@@ -1962,8 +1962,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DRAW_WORLD_MAP: getGame()->presentWorldmap(); break;
     case UserInputId::TECHNOLOGY: setChosenLibrary(!chosenLibrary); break;
-    case UserInputId::KEEPEROPEDIA: Encyclopedia(buildInfo, getGame()->getContentFactory()->creatures.getSpellSchools(),
-          getGame()->getContentFactory()->creatures.getSpells(), collective->getTechnology()).present(view);
+    case UserInputId::KEEPEROPEDIA: Encyclopedia(buildInfo, getGame()->getContentFactory()->getCreatures().getSpellSchools(),
+          getGame()->getContentFactory()->getCreatures().getSpells(), collective->getTechnology()).present(view);
       break;
     case UserInputId::WORKSHOP: {
       int index = input.get<int>();
@@ -2448,7 +2448,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       collective->setPriorityTasks(position);
     },
     [&](BuildInfo::PlaceMinion) {
-      auto& factory = getGame()->getContentFactory()->creatures;
+      auto& factory = getGame()->getContentFactory()->getCreatures();
       vector<PCreature> allCreatures = factory.getAllCreatures().transform(
           [this, &factory](CreatureId id){ return factory.fromId(id, getTribeId()); });
       if (auto id = getView()->chooseCreature("Choose creature to place",

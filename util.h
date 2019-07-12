@@ -1228,7 +1228,7 @@ class MustInitialize {
     return *elem;
   }
 
-  SERIALIZE_ALL(elem);
+  SERIALIZE_ALL(elem)
 
   private:
   optional<T> SERIAL(elem);

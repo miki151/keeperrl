@@ -6,7 +6,7 @@
       {{Scroll EnhanceArmor} 5 }
       {{Scroll EnhanceWeapon} 5 }
       {{FireScroll 5 }}
-      {{Torch 10 }}
+      {{Simple "Torch" 10 }}
       {{Scroll Summon "FIRE_ELEMENTAL" {1 2}} 5 }
       {{Scroll CircularBlast} 1 }
       {{Scroll Deception} 2 }
@@ -19,7 +19,7 @@
       {{Potion Lasting INVISIBLE} 2 }
       {{Amulet WARNING} 0.5 }
       {{Amulet REGENERATION} 0.5 }
-      {{DefenseAmulet} 0.5 }
+      {{Simple "DefenseAmulet"} 0.5 }
       {{Ring POISON_RESISTANT} 0.5}
       {{Ring FIRE_RESISTANT} 0.5}
     }
@@ -28,21 +28,21 @@
   "armory"
   {
     items = {
-      {{Knife} 5}
-      {{Sword} 2}
-      {{BattleAxe} 2}
-      {{WarHammer} 2}
-      {{Bow} 4}
-      {{LeatherArmor} 2}
-      {{ChainArmor} 1}
-      {{LeatherHelm} 2}
-      {{IronHelm} 1}
-      {{LeatherBoots} 2}
-      {{LeatherGloves} 2}
-      {{IronBoots} 1}
+      {{Simple "Knife"} 5}
+      {{Simple "Sword"} 2}
+      {{Simple "BattleAxe"} 2}
+      {{Simple "WarHammer"} 2}
+      {{Simple "Bow"} 4}
+      {{Simple "LeatherArmor"} 2}
+      {{Simple "ChainArmor"} 1}
+      {{Simple "LeatherHelm"} 2}
+      {{Simple "IronHelm"} 1}
+      {{Simple "LeatherBoots"} 2}
+      {{Simple "LeatherGloves"} 2}
+      {{Simple "IronBoots"} 1}
     }
     unique = {
-      {Bow} {1 2}
+      {Simple "Bow"} {1 2}
     }
     prefixChance = 0.03
   }
@@ -50,7 +50,7 @@
   "gnomeShop" inherit "armory"
   {
     unique = {
-      {AutomatonItem} { 1 2 }
+      {Simple "AutomatonItem"} { 1 2 }
     }
   }
 
@@ -61,10 +61,10 @@
   "dragonCave"
   {
     items = {
-      {{GoldPiece} 10 {30 100} }
-      {{Sword} 1 }
-      {{BattleAxe} 1 }
-      {{WarHammer} 1 }
+      {{Simple "GoldPiece"} 10 {30 100} }
+      {{Simple "Sword"} 1 }
+      {{Simple "BattleAxe"} 1 }
+      {{Simple "WarHammer"} 1 }
     }
     prefixChance = 1
   }
@@ -72,8 +72,8 @@
   "minerals"
   {
     items = {
-      {{IronOre} 1 }
-      {{Rock} 1 }
+      {{Simple "IronOre"} 1 }
+      {{Simple "Rock"} 1 }
     }
   }
 
@@ -128,7 +128,7 @@
   "desertItems"
   {
     items = {
-      {{Bone} 1}
+      {{Simple "Bone"} 1}
     }
   }
 
@@ -137,25 +137,25 @@
     items = { 
       {{Amulet REGENERATION} 1}
       {{Amulet WARNING} 1}
-      {{DefenseAmulet} 1}
+      {{Simple "DefenseAmulet"} 1}
     }
   }
 
   "dungeon"
   {
     items = {
-      {{Knife} 50 }
-      {{Sword} 50 }
-      {{BattleAxe} 10 }
-      {{WarHammer} 20 }
-      {{LeatherArmor} 20 }
-      {{ChainArmor} 1 }
-      {{LeatherHelm} 20 }
-      {{IronHelm} 5 }
-      {{LeatherBoots} 20 }
-      {{IronBoots} 7 }
-      {{Torch} 7 }
-      {{LeatherGloves} 30 }
+      {{Simple "Knife"} 50 }
+      {{Simple "Sword"} 50 }
+      {{Simple "BattleAxe"} 10 }
+      {{Simple "WarHammer"} 20 }
+      {{Simple "LeatherArmor"} 20 }
+      {{Simple "ChainArmor"} 1 }
+      {{Simple "LeatherHelm"} 20 }
+      {{Simple "IronHelm"} 5 }
+      {{Simple "LeatherBoots"} 20 }
+      {{Simple "IronBoots"} 7 }
+      {{Simple "Torch"} 7 }
+      {{Simple "LeatherGloves"} 30 }
       {{Scroll Escape} 30 }
       {{Scroll EnhanceArmor} 30 }
       {{Scroll EnhanceWeapon} 30 }
@@ -175,7 +175,7 @@
       {{Potion Lasting SPEED} 50 }
       {{Amulet WARNING} 3 }
       {{Amulet REGENERATION} 3 }
-      {{DefenseAmulet} 3 }
+      {{Simple "DefenseAmulet"} 3 }
       {{Ring POISON_RESISTANT} 3}
       {{Ring FIRE_RESISTANT} 3}
     }
@@ -185,7 +185,7 @@
   "chest" inherit "dungeon"
   {
     items = append {
-      {{GoldPiece} 300 {4 9}}
+      {{Simple "GoldPiece"} 300 {4 9}}
     }
     prefixChance = 0
   }
@@ -193,7 +193,7 @@
   "gold"
   {
     items = {
-      {{GoldPiece} 300 {4 9}}
+      {{Simple "GoldPiece"} 300 {4 9}}
     }
   }
 }
