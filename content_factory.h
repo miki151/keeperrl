@@ -49,4 +49,5 @@ class ContentFactory {
   optional<string> readFurnitureFactory(const GameConfig*, KeyVerifier*);
   optional<string> readVillainsTuple(const GameConfig*, KeyVerifier*);
   optional<string> readPlayerCreatures(const GameConfig*, KeyVerifier*);
+  optional<string> readItems(const GameConfig*, KeyVerifier*);
 };

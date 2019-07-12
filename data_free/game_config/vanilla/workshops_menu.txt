@@ -21,8 +21,18 @@
 {
     {{Simple "Sword"}                 10       IRON 20}
     {{Simple "ChainArmor"}            30       IRON 40}
+    {item = {Simple "RedDragonArmor"}
+     work = 30 
+     cost = IRON 40
+     requireIngredient = true
+    }
     {{Simple "IronHelm"}              8        IRON 16}
     {{Simple "IronBoots"}             12       IRON 24}
+    {item = {Simple "CyclopsHelm"}
+     work = 30 
+     cost = IRON 40
+     requireIngredient = true
+    }
     {{Simple "IronGloves"}            3        IRON 2}
     {{Simple "WarHammer"}             16       IRON 40      "two-handed weapons"}
     {{Simple "BattleAxe"}             22       IRON 50      "two-handed weapons"}

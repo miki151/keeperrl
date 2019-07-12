@@ -82,6 +82,14 @@ ItemType ItemType::spellHit(int damage) {
 
 ItemType::ItemType() {}
 
+bool ItemType::operator == (const ItemType& t) const {
+  return t.type == type;
+}
+
+bool ItemType::operator != (const ItemType& t) const {
+  return !(*this == t);
+}
+
 ItemType& ItemType::setPrefixChance(double chance) {
   prefixChance = chance;
   return *this;

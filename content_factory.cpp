@@ -174,6 +174,14 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
   return none;
 }
 
+optional<string> ContentFactory::readItems(const GameConfig* config, KeyVerifier* keyVerifier) {
+  map<PrimaryId<CustomItemId>, ItemAttributes> itemsTmp;
+  if (auto res = config->readObject(itemsTmp, GameConfigId::ITEMS, keyVerifier))
+    return *res;
+  items = convertKeys(itemsTmp);
+  return none;
+}
+
 optional<string> ContentFactory::readData(NameGenerator nameGenerator, const GameConfig* config) {
   KeyVerifier keyVerifier;
   if (auto error = config->readObject(technology, GameConfigId::TECHNOLOGY, &keyVerifier))
@@ -196,10 +204,8 @@ optional<string> ContentFactory::readData(NameGenerator nameGenerator, const Gam
     return *res;
   if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS, &keyVerifier))
     return *res;
-  map<PrimaryId<CustomItemId>, ItemAttributes> itemsTmp;
-  if (auto res = config->readObject(itemsTmp, GameConfigId::ITEMS, &keyVerifier))
+  if (auto res = readItems(config, &keyVerifier))
     return *res;
-  items = convertKeys(itemsTmp);
   map<PrimaryId<EnemyId>, EnemyInfo> enemiesTmp;
   if (auto res = config->readObject(enemiesTmp, GameConfigId::ENEMIES, &keyVerifier))
     return *res;

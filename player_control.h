@@ -249,6 +249,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void scrollStairs(bool up);
   CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&) const;
   vector<pair<vector<Item*>, Position>> getItemUpgradesFor(const WorkshopItem&) const;
+  optional<pair<Item*, Position>> getIngredientFor(const WorkshopItem&) const;
   void fillDungeonLevel(AvatarLevelInfo&) const;
 };
 

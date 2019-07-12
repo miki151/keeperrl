@@ -7,6 +7,7 @@
 #include "corpse_info.h"
 #include "effect.h"
 #include "item_upgrade_info.h"
+#include "item_type.h"
 
 const char* getName(ItemIndex index, int count) {
   switch (index) {
@@ -51,6 +52,6 @@ bool hasIndex(ItemIndex index, const Item* item) {
     case ItemIndex::HEALING_ITEM:
       return item->getEffect() == Effect(Effect::Heal{});
     case ItemIndex::RUNE:
-      return !!item->getUpgradeInfo();
+      return !!item->getUpgradeInfo() || !!item->getIngredientFor();
   }
 }

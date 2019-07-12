@@ -20,6 +20,7 @@ WorkshopItem WorkshopItemCfg::get(const ContentFactory* factory) const {
     tech,
     tutorialHighlight,
     elem->getAppliedUpgradeType(),
-    elem->getMaxUpgrades()
+    elem->getMaxUpgrades(),
+    requireIngredient,
   };
 }

@@ -2039,6 +2039,8 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
   lines.addElem(gui.label("Available:", Color::YELLOW));
   for (int itemIndex : All(options)) {
     auto& elem = options[itemIndex];
+    if (elem.hidden)
+      continue;
     auto line = gui.getListBuilder();
     line.addElem(gui.viewObject(elem.viewId), 35);
     line.addElem(gui.label(elem.name, elem.unavailable ? Color::GRAY : Color::WHITE), 10);
@@ -2053,10 +2055,11 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
     }
     else
       guiElem = gui.stack(
-          getTooltip({elem.description}, THIS_LINE),
           gui.uiHighlightMouseOver(),
           std::move(guiElem),
-          gui.button(getButtonCallback({UserInputId::WORKSHOP_ADD, itemIndex})));
+          gui.button(getButtonCallback({UserInputId::WORKSHOP_ADD, itemIndex})),
+          getTooltip({elem.description}, THIS_LINE)
+      );
     lines.addElem(gui.rightMargin(rightElemMargin, std::move(guiElem)));
   }
   auto lines2 = gui.getListBuilder(legendLineHeight);
@@ -2080,7 +2083,9 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
     lines2.addElem(gui.stack(
         gui.bottomMargin(5,
             gui.progressBar(Color::DARK_GREEN.transparency(128), elem.productionState)),
-        gui.rightMargin(rightElemMargin, line.buildHorizontalList())));
+        gui.rightMargin(rightElemMargin, line.buildHorizontalList()),
+        getTooltip(elem.itemInfo.description, THIS_LINE)
+    ));
   }
   return gui.preferredSize(860, 600,
     gui.miniWindow(gui.stack(

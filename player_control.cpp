@@ -966,6 +966,12 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option, int queuedCo
         c.unavailableReason = "Requires technology: "_s + option.techId->data();
       }
       c.description = option.description;
+      if (option.requireIngredient) {
+        if (auto ingredient = getIngredientFor(option))
+          c.description.push_back("Crafted from " + ingredient->first->getName());
+        else
+          c.hidden = true;
+      }
       c.tutorialHighlight = tutorial && option.tutorialHighlight &&
           tutorial->getHighlights(getGame()).contains(*option.tutorialHighlight);
     );
@@ -1012,16 +1018,25 @@ vector<pair<vector<Item*>, Position>> PlayerControl::getItemUpgradesFor(const Wo
   vector<pair<vector<Item*>, Position>> ret;
   for (auto& pos : collective->getStoragePositions(StorageId::EQUIPMENT))
     for (auto& item : pos.getItems(ItemIndex::RUNE))
-      if (item->getUpgradeInfo()->type == workshopItem.upgradeType) {
-        for (auto& existing : ret)
-          if (existing.first[0]->getUpgradeInfo() == item->getUpgradeInfo()) {
-            existing.first.push_back(item);
-            goto found;
-          }
-        ret.push_back({{item}, pos});
-        found:;
-      }
+      if (auto& upgradeInfo = item->getUpgradeInfo())
+        if (upgradeInfo->type == workshopItem.upgradeType) {
+          for (auto& existing : ret)
+            if (existing.first[0]->getUpgradeInfo() == upgradeInfo) {
+              existing.first.push_back(item);
+              goto found;
+            }
+          ret.push_back({{item}, pos});
+          found:;
+        }
   return ret;
+}
+
+optional<pair<Item*, Position>> PlayerControl::getIngredientFor(const WorkshopItem& workshopItem) const {
+  for (auto& pos : collective->getStoragePositions(StorageId::EQUIPMENT))
+    for (auto& item : pos.getItems(ItemIndex::RUNE))
+      if (item->getIngredientFor() == workshopItem.type)
+        return make_pair(item, pos);
+  return none;
 }
 
 CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQueuedItem& item) const {
@@ -1030,9 +1045,13 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
     ret.available.push_back({it.first[0]->getViewObject().id(), it.first[0]->getName(), it.first.size(),
         it.first[0]->getUpgradeInfo()->getDescription()});
   }
-  for (auto& it : item.runes)
-    ret.added.push_back({it->getViewObject().id(), it->getName(), 1,
-        it->getUpgradeInfo()->getDescription()});
+  for (auto& it : item.runes) {
+    if (auto& upgradeInfo = it->getUpgradeInfo())
+      ret.added.push_back({it->getViewObject().id(), it->getName(), 1,
+          upgradeInfo->getDescription()});
+    else
+      ret.itemInfo.description.push_back("Crafted from: " + it->getName());
+  }
   ret.itemInfo.actions = {ItemAction::REMOVE};
   if (item.runes.empty())
     ret.itemInfo.actions.push_back(ItemAction::CHANGE_NUMBER);
@@ -1979,8 +1998,18 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     }
     case UserInputId::WORKSHOP_ADD:
-      if (chosenWorkshop)
-        collective->getWorkshops().get(*chosenWorkshop).queue(input.get<int>());
+      if (chosenWorkshop) {
+        auto& workshops = collective->getWorkshops().get(*chosenWorkshop);
+        int index = input.get<int>();
+        auto& item = workshops.getOptions()[index];
+        if (item.requireIngredient) {
+          if (auto ingredient = getIngredientFor(item)) {
+            workshops.queue(index);
+            workshops.addUpgrade(workshops.getQueued().size() - 1, ingredient->second.removeItem(ingredient->first));
+          }
+        } else
+          workshops.queue(index);
+      }
       break;
     case UserInputId::WORKSHOP_UPGRADE: {
       auto& info = input.get<WorkshopUpgradeInfo>();

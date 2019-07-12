@@ -24,5 +24,7 @@ struct WeaponInfo {
   vector<Effect> SERIAL(victimEffect);
   vector<Effect> SERIAL(attackerEffect);
   AttackMsg SERIAL(attackMsg) = AttackMsg::SWING;
+  bool operator == (const WeaponInfo&) const;
+  bool operator != (const WeaponInfo&) const;
   SERIALIZE_ALL(OPTION(twoHanded), OPTION(attackType), OPTION(meleeAttackAttr), OPTION(victimEffect), OPTION(attackerEffect), OPTION(attackMsg))
 };

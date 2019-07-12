@@ -94,7 +94,7 @@
     }
   "AdaSword"
     {
-      viewId = { "adaword" }
+      viewId = { "ada_sword" }
       name = "adamantine sword"
       itemClass = WEAPON
       equipmentSlot = WEAPON
@@ -269,7 +269,7 @@
     }
   "IronStaff"
     {
-      viewId = { "irontaff" }
+      viewId = { "iron_staff" }
       name = "iron staff"
       itemClass = WEAPON
       equipmentSlot = WEAPON
@@ -295,7 +295,7 @@
     }
   "GoldenStaff"
     {
-      viewId = { "goldentaff" }
+      viewId = { "golden_staff" }
       name = "golden staff"
       itemClass = WEAPON
       equipmentSlot = WEAPON
@@ -535,6 +535,30 @@
       }
       maxUpgrades = 2
     }
+  "RedDragonScales"
+    {
+      viewId = { "rune2" }
+      shortName = "scales"
+      name = "red dragon scales"
+      itemClass = OTHER
+      weight = 5
+      price = 100
+      ingredientFor = {Simple "RedDragonArmor"}
+    }
+  "RedDragonArmor" inherit "ChainArmor"
+    {
+      viewId = { "chain_armor" Rgb 156 58 68 255 }
+      shortName = "red dragon"
+      name = "red dragon scale armor"
+      weight = 10
+      price = 250
+      modifiers = {
+        DEFENSE 10
+        SPELL_DAMAGE 2
+      }
+      equipedEffect = {FIRE_RESISTANT}
+      maxUpgrades = 2
+    }
   "AdaArmor"
     {
       viewId = { "ada_armor" }
@@ -570,6 +594,28 @@
         3 ItemAttrBonus DEFENSE 3
       }
       maxUpgrades = 1
+    }
+  "CyclopsTesticles"
+    {
+      viewId = { "rune2" }
+      shortName = "cyclops"
+      name = "cyclops testicles"
+      itemClass = OTHER
+      weight = 5
+      price = 50
+      ingredientFor = {Simple "CyclopsHelm"}
+    }
+  "CyclopsHelm" inherit "IronHelm"
+    {
+      viewId = { "cyclops_helm" }
+      shortName = "cyclops"
+      name = "cyclops testicles helmet"
+      plural = "cyclops testicles helmet"
+      modifiers = {
+        DEFENSE 5
+      }
+      equipedEffect = {ENTERTAINER}
+      maxUpgrades = 3
     }
   "AdaHelm"
     {

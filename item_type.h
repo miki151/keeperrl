@@ -19,18 +19,18 @@ class ContentFactory;
 
 #define SIMPLE_ITEM(Name) \
   struct Name { \
-    SERIALIZE_EMPTY()\
     ITEM_TYPE_INTERFACE;\
+    COMPARE_ALL()\
   }
 
 class ItemType {
   public:
   struct Intrinsic {
-    ViewId SERIAL(viewId);
-    string SERIAL(name);
-    int SERIAL(damage);
-    WeaponInfo SERIAL(weaponInfo);
-    SERIALIZE_ALL(viewId, name, damage, weaponInfo)
+    ViewId viewId;
+    string name;
+    int damage;
+    WeaponInfo weaponInfo;
+    COMPARE_ALL(viewId, name, damage, weaponInfo)
     ITEM_TYPE_INTERFACE;
   };
   static ItemType touch(Effect victimEffect, vector<Effect> attackerEffect = {});
@@ -43,33 +43,33 @@ class ItemType {
   static ItemType fangs(int damage, Effect);
   static ItemType spellHit(int damage);
   struct Scroll {
-    Effect SERIAL(effect);
-    SERIALIZE_ALL(effect)
+    Effect effect;
+    COMPARE_ALL(effect)
     ITEM_TYPE_INTERFACE;
   };
   struct Potion {
-    Effect SERIAL(effect);
-    SERIALIZE_ALL(effect)
+    Effect effect;
+    COMPARE_ALL(effect)
     ITEM_TYPE_INTERFACE;
   };
   struct Mushroom {
-    Effect SERIAL(effect);
-    SERIALIZE_ALL(effect)
+    Effect effect;
+    COMPARE_ALL(effect)
     ITEM_TYPE_INTERFACE;
   };
   struct Amulet {
-    LastingEffect SERIAL(lastingEffect);
-    SERIALIZE_ALL(lastingEffect)
+    LastingEffect lastingEffect;
+    COMPARE_ALL(lastingEffect)
     ITEM_TYPE_INTERFACE;
   };
   struct Ring {
-    LastingEffect SERIAL(lastingEffect);
-    SERIALIZE_ALL(lastingEffect)
+    LastingEffect lastingEffect;
+    COMPARE_ALL(lastingEffect)
     ITEM_TYPE_INTERFACE;
   };
   struct Glyph {
-    ItemUpgradeInfo SERIAL(rune);
-    SERIALIZE_ALL(rune)
+    ItemUpgradeInfo rune;
+    COMPARE_ALL(rune)
     ITEM_TYPE_INTERFACE;
   };
   struct TechBook {
@@ -78,9 +78,9 @@ class ItemType {
     ITEM_TYPE_INTERFACE;
   };
   struct TrapItem {
-    FurnitureType SERIAL(trapType);
-    string SERIAL(trapName);
-    SERIALIZE_ALL(trapType, trapName)
+    FurnitureType trapType;
+    string trapName;
+    COMPARE_ALL(trapType, trapName)
     ITEM_TYPE_INTERFACE;
   };
   SIMPLE_ITEM(FireScroll);
@@ -95,6 +95,8 @@ class ItemType {
   ItemType();
   ItemType& operator = (const ItemType&);
   ItemType& operator = (ItemType&&);
+  bool operator == (const ItemType&) const;
+  bool operator != (const ItemType&) const;
 
   ItemType& setPrefixChance(double chance);
 

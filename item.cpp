@@ -269,6 +269,10 @@ int Item::getMaxUpgrades() const {
   return attributes->maxUpgrades;
 }
 
+const optional<ItemType>& Item::getIngredientFor() const {
+  return attributes->ingredientFor;
+}
+
 void Item::apply(Creature* c, bool noSound) {
   if (attributes->applySound && !noSound)
     c->addSound(*attributes->applySound);

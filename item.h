@@ -33,6 +33,7 @@ class RangedWeapon;
 class WeaponInfo;
 struct ItemUpgradeInfo;
 class ItemPrefix;
+class ItemType;
 
 class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
@@ -69,6 +70,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   const optional<ItemUpgradeInfo>& getUpgradeInfo() const;
   optional<ItemUpgradeType> getAppliedUpgradeType() const;
   int getMaxUpgrades() const;
+  const optional<ItemType>& getIngredientFor() const;
 
   bool canEquip() const;
   EquipmentSlot getEquipmentSlot() const;
