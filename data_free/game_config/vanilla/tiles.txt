@@ -253,6 +253,7 @@
   { "chain_armor" "[" ColorId LIGHT_GRAY }
   { "ada_armor" "[" ColorId LIGHT_BLUE }
   { "iron_helm" "[" ColorId LIGHT_GRAY }
+  { "cyclops_helm" "[" ColorId ORANGE }
   { "ada_helm" "[" ColorId LIGHT_BLUE }
   { "leather_boots" "[" ColorId BROWN }
   { "iron_boots" "[" ColorId LIGHT_GRAY }

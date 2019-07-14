@@ -58,7 +58,8 @@ struct ItemInfo {
   optional<pair<ViewId, int>> HASH(price);
   optional<double> HASH(weight);
   bool HASH(tutorialHighlight);
-  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, unavailableReason, weight, tutorialHighlight, intrinsicState, viewIdModifiers)
+  bool HASH(hidden);
+  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, unavailableReason, weight, tutorialHighlight, intrinsicState, viewIdModifiers, hidden)
 };
 
 struct AttributeInfo {
