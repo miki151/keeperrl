@@ -587,10 +587,18 @@ class Test {
     CHECKEQ(numRef, 0);
   }
 
+  static ContentFactory getContentFactory() {
+    GameConfig config(DirectoryPath("data_free/game_config/"), "vanilla");
+    ContentFactory contentFactory;
+    CHECK(!contentFactory.readData(NameGenerator(DirectoryPath("data_free/names")), &config));
+    return contentFactory;
+  }
+
   void testMinionEquipment1() {
-    PItem bow1 = ItemType(CustomItemId("Bow")).get(nullptr);
-    PItem bow2 = ItemType(CustomItemId("Bow")).get(nullptr);
-    PItem bow3 = ItemType(CustomItemId("Bow")).get(nullptr);
+    auto contentFactory = getContentFactory();
+    PItem bow1 = ItemType(CustomItemId("Bow")).get(&contentFactory);
+    PItem bow2 = ItemType(CustomItemId("Bow")).get(&contentFactory);
+    PItem bow3 = ItemType(CustomItemId("Bow")).get(&contentFactory);
     PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.needsItem(human.get(), bow1.get(), false));
@@ -619,8 +627,9 @@ class Test {
   }
 
   void testMinionEquipmentItemDestroyed() {
-    PItem sword = ItemType(CustomItemId("Sword")).get(nullptr);
-    PItem sword2 = ItemType(CustomItemId("Sword")).get(nullptr);
+    auto contentFactory = getContentFactory();
+    PItem sword = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     sword2->addModifier(AttrType::DAMAGE, -5);
     PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
@@ -633,8 +642,9 @@ class Test {
   }
 
   void testMinionEquipmentUpdateItems() {
-    PItem sword = ItemType(CustomItemId("Sword")).get(nullptr);
-    PItem sword2 = ItemType(CustomItemId("Sword")).get(nullptr);
+    auto contentFactory = getContentFactory();
+    PItem sword = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     sword2->addModifier(AttrType::DAMAGE, -5);
     PCreature human = CreatureFactory::getHumanForTests();
     PCreature human2 = CreatureFactory::getHumanForTests();
@@ -650,8 +660,9 @@ class Test {
   }
 
   void testMinionEquipmentUpdateOwners() {
-    PItem sword1 = ItemType(CustomItemId("Sword")).get(nullptr);
-    PItem sword2 = ItemType(CustomItemId("Sword")).get(nullptr);
+    auto contentFactory = getContentFactory();
+    PItem sword1 = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     PCreature human1 = CreatureFactory::getHumanForTests();
     PCreature human2 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
@@ -672,9 +683,10 @@ class Test {
   }
 
   void testMinionEquipmentAutoAssign() {
-    PItem sword1 = ItemType(CustomItemId("Sword")).get(nullptr);
-    PItem sword2 = ItemType(CustomItemId("Sword")).get(nullptr);
-    PItem sword3 = ItemType(CustomItemId("Sword")).get(nullptr);
+    auto contentFactory = getContentFactory();
+    PItem sword1 = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem sword3 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     sword1->addModifier(AttrType::DAMAGE, 12);
     PCreature human1 = CreatureFactory::getHumanForTests();
     PCreature human2 = CreatureFactory::getHumanForTests();
@@ -693,8 +705,8 @@ class Test {
     CHECK(equipment.isOwner(sword1.get(), human2.get()));
     CHECKEQ(equipment.getItemsOwnedBy(human2.get()), makeVec(sword1.get()));
     CHECK(!equipment.getOwner(sword2.get()));
-    PItem bow = ItemType(CustomItemId("Bow")).get(nullptr);
-    PItem bow2 = ItemType(CustomItemId("Bow")).get(nullptr);
+    PItem bow = ItemType(CustomItemId("Bow")).get(&contentFactory);
+    PItem bow2 = ItemType(CustomItemId("Bow")).get(&contentFactory);
     bow2->addModifier(AttrType::DAMAGE, 30);
     CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 0);
     equipment.autoAssign(human1.get(), {bow.get()});
@@ -714,8 +726,9 @@ class Test {
   }
 
   void testMinionEquipmentLocking() {
-    PItem sword1 = ItemType(CustomItemId("Sword")).get(nullptr);
-    PItem sword2 = ItemType(CustomItemId("Sword")).get(nullptr);
+    auto contentFactory = getContentFactory();
+    PItem sword1 = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     sword1->addModifier(AttrType::DAMAGE, 12);
     PCreature human1 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
@@ -739,10 +752,11 @@ class Test {
   }
 
   void testMinionEquipment123() {
-    PItem sword = ItemType(CustomItemId("Sword")).get(nullptr);
-    PItem boots = ItemType(CustomItemId("LeatherBoots")).get(nullptr);
-    PItem gloves = ItemType(CustomItemId("LeatherGloves")).get(nullptr);
-    PItem helmet = ItemType(CustomItemId("LeatherHelm")).get(nullptr);
+    auto contentFactory = getContentFactory();
+    PItem sword = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem boots = ItemType(CustomItemId("LeatherBoots")).get(&contentFactory);
+    PItem gloves = ItemType(CustomItemId("LeatherGloves")).get(&contentFactory);
+    PItem helmet = ItemType(CustomItemId("LeatherHelm")).get(&contentFactory);
     vector<Item*> items = {sword.get(), boots.get(), gloves.get(), helmet.get()};
     PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
@@ -1022,9 +1036,7 @@ class Test {
 
   struct MatchingTest {
     MatchingTest() {
-      GameConfig config(DirectoryPath("data_free/game_config/"), "vanilla");
-      ContentFactory contentFactory;
-      CHECK(!contentFactory.readData(NameGenerator(DirectoryPath("data_free/names")), &config));
+      auto contentFactory = getContentFactory();
       auto model = Model::create(&contentFactory);
       LevelBuilder builder(nullptr, Random, &contentFactory, 10, 10, false, none);
       PLevelMaker levelMaker = LevelMaker::emptyLevel(FurnitureType("MOUNTAIN"), true);
