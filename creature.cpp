@@ -1087,7 +1087,11 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
     if (attackParams && attackParams->level)
       attackLevel = *attackParams->level;
     damageAttr = LastingEffects::modifyMeleeDamageAttr(this, damageAttr);
-    Attack attack(self, attackLevel, weaponInfo.attackType, damage, damageAttr, weaponInfo.victimEffect);
+    vector<Effect> victimEffects;
+    for (auto& e : weaponInfo.victimEffect)
+      if (Random.chance(e.chance))
+        victimEffects.push_back(e.effect);
+    Attack attack(self, attackLevel, weaponInfo.attackType, damage, damageAttr, std::move(victimEffects));
     string enemyName = other->getController()->getMessageGenerator().getEnemyName(other);
     if (!canSee(other))
       enemyName = "something";

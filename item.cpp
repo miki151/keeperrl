@@ -201,7 +201,7 @@ vector<string> Item::getDescription() const {
   if (auto& effect = attributes->effect)
     ret.push_back("Usage effect: " + effect->getName());
   for (auto& effect : getWeaponInfo().victimEffect)
-    ret.push_back("Victim affected by: " + effect.getName());
+    ret.push_back("Victim affected by: " + effect.effect.getName() + " (" + toPercentage(effect.chance) + " chance)");
   for (auto& effect : getWeaponInfo().attackerEffect)
     ret.push_back("Attacker affected by: " + effect.getName());
   for (auto& effect : attributes->equipedEffect)

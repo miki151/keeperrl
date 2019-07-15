@@ -33,14 +33,12 @@ class ItemType {
     COMPARE_ALL(viewId, name, damage, weaponInfo)
     ITEM_TYPE_INTERFACE;
   };
-  static ItemType touch(Effect victimEffect, vector<Effect> attackerEffect = {});
   static ItemType legs(int damage);
   static ItemType claws(int damage);
   static ItemType beak(int damage);
   static ItemType fists(int damage);
-  static ItemType fists(int damage, Effect);
   static ItemType fangs(int damage);
-  static ItemType fangs(int damage, Effect);
+  static ItemType fangs(int damage, VictimEffect);
   static ItemType spellHit(int damage);
   struct Scroll {
     Effect effect;

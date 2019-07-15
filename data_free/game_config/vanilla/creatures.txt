@@ -326,7 +326,7 @@
           TORSO { Intrinsic { "touch_attack" } "touch" 0 {
               attackType = HIT
               attackMsg = TOUCH
-              victimEffect = {Lasting INSANITY}
+              victimEffect = { 0.2 Lasting INSANITY}
               attackerEffect = {Suicide} } }
         }
       }
@@ -359,7 +359,7 @@
           TORSO { Intrinsic { "touch_attack" } "touch" 0 {
               attackType = HIT
               attackMsg = TOUCH
-              victimEffect = {Lasting PEACEFULNESS} } }
+              victimEffect = {1.0 Lasting PEACEFULNESS} } }
         }
         addBodyPart = {
           WING 2
@@ -584,7 +584,7 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 8 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.3 Lasting POISON} } }
         }
         bodyParts = {
           HEAD 7
@@ -622,7 +622,7 @@
           TORSO { Intrinsic { "bite_attack" } "fangs" 8 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.3 Lasting POISON} } }
         }
       }
       permanentEffects = {
@@ -650,7 +650,7 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 12 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.3 Lasting POISON} } }
         }
       }
       permanentEffects = {
@@ -680,7 +680,7 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 15 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Fire} } }
+              victimEffect = {0.5 Fire} } }
         }
       }
       permanentEffects = {
@@ -1230,7 +1230,7 @@
           ARM { Intrinsic { "fist_attack" } "fists" 10 {
               attackType = HIT
               attackMsg = SWING
-              victimEffect = {Fire} } }
+              victimEffect = {0.3 Fire} } }
         }
       }
       permanentEffects = {
@@ -1768,7 +1768,7 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 5 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.1 Lasting POISON} } }
         }
       }
       permanentEffects = {
@@ -1798,7 +1798,7 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 8 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.5 Lasting POISON} } }
         }
       }
       permanentEffects = {
@@ -2265,7 +2265,7 @@
           TORSO { Intrinsic { "bite_attack" } "fangs" 1 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.1 Lasting POISON} } }
         }
       }
       name = {
@@ -2340,7 +2340,7 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 6 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.1 Lasting POISON} } }
         }
       }
       name = {
@@ -2367,7 +2367,7 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 12 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {1.0 Lasting POISON} } }
         }
       }
       name = {
@@ -2393,7 +2393,7 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 1 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.3 Lasting POISON} } }
         }
       }
       permanentEffects = {
@@ -2559,7 +2559,7 @@
         deathSound = none
         intrinsicAttacks = {
           TORSO { Intrinsic { "fist_attack" }  "fists" 5 {
-              attackType = HIT attackMsg = SWING victimEffect = {Fire}} }
+              attackType = HIT attackMsg = SWING victimEffect = {1.0 Fire}} }
         }
       }
       attr = {

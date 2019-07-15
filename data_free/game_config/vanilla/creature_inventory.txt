@@ -27,7 +27,7 @@
   {"GREEN_DRAGON"}
       {
         { Simple "GoldPiece" 60 100 }
-        { type = Glyph WEAPON VictimEffect Lasting POISON chance = 0.3 }
+        { type = Glyph WEAPON VictimEffect 0.3 Lasting POISON chance = 0.3 }
         { type = Glyph ARMOR LastingEffect POISON_RESISTANT chance = 0.3 }
         { type = Glyph ARMOR LastingEffect REGENERATION chance = 0.3 }
         { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
@@ -40,8 +40,8 @@
   {"RED_DRAGON"}
       {
         { Simple "GoldPiece" 120 200 }
-        { type = Glyph WEAPON VictimEffect Fire chance = 0.3 }
-        { type = Glyph WEAPON VictimEffect Lasting BLEEDING chance = 0.3 }
+        { type = Glyph WEAPON VictimEffect 0.3 Fire chance = 0.3 }
+        { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
         { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
         { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
         { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
@@ -49,8 +49,8 @@
   {"BLACK_DRAGON"}
       {
         { Simple "GoldPiece" 120 200 }
-        { type = Glyph WEAPON VictimEffect Lasting BLIND chance = 1.0 }
-        { type = Glyph WEAPON VictimEffect Lasting BLEEDING chance = 0.3 }
+        { type = Glyph WEAPON VictimEffect 0.3 Lasting BLIND chance = 1.0 }
+        { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
         { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
         { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
         { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
@@ -112,8 +112,8 @@
         { type = Glyph ARMOR ItemAttrBonus SPELL_DAMAGE 5 chance = 0.3 }
         { type = Glyph ARMOR LastingEffect FLYING chance = 0.3 }
         { type = Glyph ARMOR JoinPrefixes { LastingEffect BLIND LastingEffect INVISIBLE} chance = 0.3 }
-        { type = Glyph WEAPON VictimEffect DestroyEquipment chance = 0.3 }
-        { type = Glyph WEAPON VictimEffect SilverDamage chance = 0.3 }
+        { type = Glyph WEAPON VictimEffect 0.2 DestroyEquipment chance = 0.3 }
+        { type = Glyph WEAPON VictimEffect 1.0 SilverDamage chance = 0.3 }
         { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
         { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       }
@@ -222,7 +222,7 @@
         { type = Simple "Torch" chance = 0.3 }
         { Simple "GoldPiece" 80 120 }
         { type = Glyph ARMOR ItemAttrBonus DEFENSE 4 chance = 0.3 }
-        { type = Glyph WEAPON JoinPrefixes { LastingEffect BAD_BREATH VictimEffect Lasting PANIC } chance = 0.3 }
+        { type = Glyph WEAPON JoinPrefixes { LastingEffect BAD_BREATH VictimEffect 0.2 Lasting PANIC } chance = 0.3 }
       }
   {"GNOME_CHIEF"}
       {

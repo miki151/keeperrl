@@ -29,11 +29,6 @@ ItemType::ItemType(const ItemType&) = default;
 ItemType::ItemType(ItemType&) = default;
 ItemType::ItemType(ItemType&&) = default;
 
-ItemType ItemType::touch(Effect victimEffect, vector<Effect> attackerEffect) {
-  return ItemType::Intrinsic{ViewId("touch_attack"), "touch", 0,
-      WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {victimEffect}, attackerEffect, AttackMsg::TOUCH}};
-}
-
 ItemType ItemType::legs(int damage) {
   return ItemType::Intrinsic{ViewId("leg_attack"), "legs", damage,
         WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::KICK}};
@@ -49,30 +44,22 @@ ItemType ItemType::beak(int damage) {
         WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::BITE}};
 }
 
-static ItemType fistsBase(int damage, vector<Effect> effect) {
-  return ItemType::Intrinsic{ViewId("fist_attack"), "fists", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, effect, {}, AttackMsg::SWING}};
-}
-
 ItemType ItemType::fists(int damage) {
-  return fistsBase(damage, {});
+  return ItemType::Intrinsic{ViewId("fist_attack"), "fists", damage,
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::SWING}};
 }
 
-ItemType ItemType::fists(int damage, Effect effect) {
-  return fistsBase(damage, {effect});
-}
-
-static ItemType fangsBase(int damage, vector<Effect> effect) {
+static ItemType fangsBase(int damage, vector<VictimEffect> effect) {
   return ItemType::Intrinsic{ViewId("bite_attack"), "fangs", damage,
-      WeaponInfo{false, AttackType::BITE, AttrType::DAMAGE, effect, {}, AttackMsg::BITE}};
+      WeaponInfo{false, AttackType::BITE, AttrType::DAMAGE, std::move(effect), {}, AttackMsg::BITE}};
 }
 
 ItemType ItemType::fangs(int damage) {
   return fangsBase(damage, {});
 }
 
-ItemType ItemType::fangs(int damage, Effect effect) {
-  return fangsBase(damage, {effect});
+ItemType ItemType::fangs(int damage, VictimEffect effect) {
+  return fangsBase(damage, {std::move(effect)});
 }
 
 ItemType ItemType::spellHit(int damage) {
@@ -388,7 +375,7 @@ ItemAttributes ItemType::Intrinsic::getAttributes(const ContentFactory*) const {
       i.viewId = viewId;
       i.name = name;
       for (auto& effect : weaponInfo.victimEffect)
-        i.prefixes.push_back(effect.getName());
+        i.prefixes.push_back(effect.effect.getName());
       for (auto& effect : weaponInfo.attackerEffect)
         i.prefixes.push_back(effect.getName());
       i.itemClass = ItemClass::WEAPON;

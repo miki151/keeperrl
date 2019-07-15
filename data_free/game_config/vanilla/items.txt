@@ -30,7 +30,7 @@
         attackMsg = THRUST
       }
       genPrefixes = {
-        1 VictimEffect Lasting POISON
+        1 VictimEffect 0.1 Lasting POISON
       }
     }
   "UnicornHorn"
@@ -48,7 +48,7 @@
       weaponInfo = {
         attackType = STAB
         attackMsg = THRUST
-        victimEffect = { Lasting POISON }
+        victimEffect = { 0.5 Lasting POISON }
       }
     }
   "Spear"
@@ -82,8 +82,8 @@
         attackType = CUT
       }
       genPrefixes = {
-        1 VictimEffect Fire
-        1 VictimEffect Lasting POISON
+        1 VictimEffect 0.3 Fire
+        1 VictimEffect 0.1 Lasting POISON
         1 LastingEffect RAGE
         1 JoinPrefixes {
           ItemAttrBonus DAMAGE 3
@@ -107,9 +107,9 @@
         attackType = CUT
       }
       genPrefixes = {
-        1 VictimEffect Acid
-        1 VictimEffect Fire
-        1 VictimEffect Lasting POISON
+        1 VictimEffect 0.2 Acid
+        1 VictimEffect 0.3 Fire
+        1 VictimEffect 0.2 Lasting POISON
         1 LastingEffect RAGE
       }
     }
@@ -128,7 +128,7 @@
         attackType = CUT
       }
       genPrefixes = {
-        1 VictimEffect SilverDamage
+        1 VictimEffect 1.0 SilverDamage
       }
     }
   "BattleAxe"
@@ -147,7 +147,7 @@
         twoHanded = true
       }
       genPrefixes = {
-        1 VictimEffect Lasting BLEEDING
+        1 VictimEffect 0.2 Lasting BLEEDING
         1 LastingEffect RAGE
       }
       maxUpgrades = 1
@@ -169,7 +169,7 @@
         twoHanded = true
       }
       genPrefixes = {
-        1 VictimEffect Lasting BLEEDING
+        1 VictimEffect 0.5 Lasting BLEEDING
       }
       maxUpgrades = 2
     }
@@ -189,7 +189,7 @@
         twoHanded = true
       }
       genPrefixes = {
-        1 VictimEffect Lasting COLLAPSED
+        1 VictimEffect 0.3 Lasting COLLAPSED
       }
       maxUpgrades = 1
     }
@@ -209,7 +209,7 @@
         twoHanded = true
       }
       genPrefixes = {
-        1 VictimEffect Lasting COLLAPSED
+        1 VictimEffect 0.5 Lasting COLLAPSED
       }
       maxUpgrades = 2
     }
@@ -263,7 +263,7 @@
         meleeAttackAttr = SPELL_DAMAGE
       }
       genPrefixes = {
-        1 VictimEffect Escape
+        1 VictimEffect 1.0 Escape
       }
       maxUpgrades = 1
     }
@@ -284,8 +284,8 @@
         meleeAttackAttr = SPELL_DAMAGE
       }
       genPrefixes = {
-        1 VictimEffect Escape
-        1 VictimEffect DestroyEquipment
+        1 VictimEffect 1.0 Escape
+        1 VictimEffect 0.4 DestroyEquipment
         1 JoinPrefixes {
           ItemAttrBonus SPELL_DAMAGE 20
           AttackerEffect Suicide
@@ -310,9 +310,9 @@
         meleeAttackAttr = SPELL_DAMAGE
       }
       genPrefixes = {
-        1 VictimEffect Lasting INSANITY
-        1 VictimEffect DestroyEquipment
-        1 VictimEffect Fire
+        1 VictimEffect 0.2 Lasting INSANITY
+        1 VictimEffect 0.2 DestroyEquipment
+        1 VictimEffect 0.5 Fire
       }
       maxUpgrades = 4
     }

@@ -14,7 +14,7 @@ void applyPrefix(const ItemPrefix& prefix, ItemAttributes& attr) {
         attr.weaponInfo.attackerEffect.push_back(e.effect);
       },
       [&](const VictimEffect& e) {
-        attr.weaponInfo.victimEffect.push_back(e.effect);
+        attr.weaponInfo.victimEffect.push_back(e);
       },
       [&](ItemAttrBonus bonus) {
         attr.modifiers[bonus.attr] += bonus.value;
@@ -35,7 +35,7 @@ vector<string> getEffectDescription(const ItemPrefix& prefix) {
         return {"attacker affected by: " + e.effect.getName()};
       },
       [&](const VictimEffect& e) -> vector<string> {
-        return {"victim affected by: " + e.effect.getName()};
+        return {"victim affected by: " + e.effect.getName() + " (" + toPercentage(e.chance) + " chance)"};
       },
       [&](ItemAttrBonus bonus) -> vector<string> {
         return {"+"_s + toString(bonus.value) + " " + getName(bonus.attr)};

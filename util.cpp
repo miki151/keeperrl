@@ -1122,3 +1122,7 @@ void Range::serialize(PrettyInputArchive& ar1, unsigned) {
 string toString(const Range& r) {
   return "[" + toString(r.getStart()) + ", " + toString(r.getEnd()) + "]";
 }
+
+string toPercentage(double v) {
+  return toString<int>(v * 100) + "%";
+}

@@ -130,7 +130,8 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
           ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( ItemAttrBonus{ AttrType::DAMAGE, 2 } ) } }),
           ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( ItemAttrBonus{ AttrType::DEFENSE, 2 } ) } }),
           ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( LastingEffect::TELEPATHY ) } }),
-          ItemType(ItemType::Glyph{ { ItemUpgradeType::WEAPON, ItemPrefix( VictimEffect { Effect::Lasting{LastingEffect::BLEEDING} } ) } })
+          ItemType(ItemType::Glyph{ { ItemUpgradeType::WEAPON,
+              ItemPrefix( VictimEffect { 0.3, Effect::Lasting{LastingEffect::BLEEDING} } ) } })
           ).get(pos.getGame()->getContentFactory()));
       break;
     }
