@@ -129,6 +129,7 @@ static TimeInterval entangledTime(int strength) {
 
 static TimeInterval getDuration(const Creature* c, LastingEffect e) {
   switch (e) {
+    case LastingEffect::PLAGUE: return 1500_visible;
     case LastingEffect::SUMMONED: return 900_visible;
     case LastingEffect::PREGNANT: return 900_visible;
     case LastingEffect::NIGHT_VISION:

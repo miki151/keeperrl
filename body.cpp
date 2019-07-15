@@ -765,9 +765,16 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
       }
     case LastingEffect::SUNLIGHT_VULNERABLE:
       return material == Material::UNDEAD_FLESH;
-    case LastingEffect::POISON_RESISTANT:
-      return material != Material::FLESH;
-    case LastingEffect::SLEEP_RESISTANT:
+    case LastingEffect::FLYING:
+      return numGood(BodyPart::WING) >= 2;
+    default:
+      return false;
+  }
+}
+
+bool Body::isImmuneTo(LastingEffect effect) const {
+  switch (effect) {
+    case LastingEffect::SLEEP:
       switch (material) {
         case Material::WATER:
         case Material::FIRE:
@@ -780,17 +787,10 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
         default:
           return false;
       }
-    case LastingEffect::FLYING:
-      return numGood(BodyPart::WING) >= 2;
-    default:
-      return false;
-  }
-}
-
-bool Body::isImmuneTo(LastingEffect effect) const {
-  switch (effect) {
     case LastingEffect::FROZEN:
       return material == Material::FIRE;
+    case LastingEffect::POISON:
+    case LastingEffect::PLAGUE:
     case LastingEffect::BLEEDING:
       return material != Material::FLESH;
     case LastingEffect::ON_FIRE:
