@@ -164,13 +164,6 @@ class Effect {
     PCreature getBestSpirit(const Model*, TribeId tribe) const;
     COMPARE_ALL(ttl, count, ghostPower)
   };
-  struct Chance {
-    EFFECT_TYPE_INTERFACE;
-    double value;
-    HeapAllocated<Effect> effect;
-    COMPARE_ALL(value, effect)
-  };
-
 /*  struct Chain {
     EFFECT_TYPE_INTERFACE;
     vector<Effect> effects;
@@ -179,7 +172,7 @@ class Effect {
   MAKE_VARIANT(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
       Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost, Chance);
+      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost);
 
   template <typename T>
   Effect(T&& t) : effect(std::forward<T>(t)) {}

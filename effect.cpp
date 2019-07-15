@@ -312,19 +312,6 @@ string Effect::Teleport::getDescription() const {
   return "Teleport to any location that's close by.";
 }
 
-void Effect::Chance::applyToCreature(Creature*, Creature*) const {
-}
-
-string Effect::Chance::getName() const {
-  return effect->getName();
-}
-
-string Effect::Chance::getDescription() const {
-  // Leave out the full stop.
-  string desc = effect->getDescription();
-  return desc.substr(0, desc.size() - 1) + " (" + toString<int>(value * 100) + "% chance)";
-}
-
 void Effect::Lasting::applyToCreature(Creature* c, Creature* attacker) const {
   if (c->addEffect(lastingEffect, getDuration(c, lastingEffect)))
     if (auto fx = LastingEffects::getApplicationFX(lastingEffect))
@@ -976,10 +963,6 @@ void Effect::apply(Position pos, Creature* attacker) const {
   }
   effect.visit(
       [&](const auto&) { },
-      [&](const Chance& effect) {
-        if (Random.chance(effect.value))
-          effect.effect->apply(pos, attacker);
-      },
       [&](const ReviveCorpse& effect) {
         for (auto& item : pos.getItems())
           if (auto info = item->getCorpseInfo())
