@@ -982,22 +982,42 @@ class Test {
     CHECK(!!err);
   }
 
+  void testPrettyInput6() {
+    map<string, TestStruct5> m;
+    string text = "{"
+        "\"r1\" { a = { x = 3 y = 4 }}"
+        "\"r3\" inherit \"r1\" { a = { x = 5 } }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!err);
+    auto r1 = m.at("r1");
+    CHECK(r1.a.x == 3);
+    CHECK(r1.a.y == 4);
+    auto r3 = m.at("r3");
+    CHECK(r3.a.x == 5);
+    CHECK(r3.a.y == 2);
+  }
+
   void testPrettyVector() {
     map<string, TestStruct2> m;
     string text = "{"
         "\"v1\" { v = 1 w = {1 2 3} }"
         "\"v2\" inherit \"v1\" { w = append {4 5 6} }"
+        "\"v3\" inherit \"v1\" { w = {4 5 6} }"
         "}";
     auto expected = TestStruct2 { none, 1, {1, 2, 3} };
     auto err = PrettyPrinting::parseObject(m, text);
     CHECK(!err) << *err;
     auto v1 = m.at("v1");
     auto v2 = m.at("v2");
+    auto v3 = m.at("v3");
     CHECK(expected == v1);
     expected.w.push_back(4);
     expected.w.push_back(5);
     expected.w.push_back(6);
     CHECK(expected == v2);
+    expected.w = {4, 5 ,6};
+    CHECK(expected == v3);
   }
 
   struct MatchingTest {
@@ -1238,6 +1258,7 @@ void testAll() {
   Test().testPrettyInput3();
   Test().testPrettyInput4();
   Test().testPrettyInput5();
+  Test().testPrettyInput6();
   Test().testPrettyVector();
   LastingEffects::runTests();
   INFO << "-----===== OK =====-----";

@@ -28,3 +28,20 @@ struct TestStruct3 {
     return a == o.a;
   }
 };
+
+struct TestStruct4 {
+  int SERIAL(x) = 1;
+  int SERIAL(y) = 2;
+  SERIALIZE_ALL(OPTION(x), OPTION(y))
+  bool operator == (const TestStruct4& o) const {
+    return x == o.x && y == o.y;
+  }
+};
+
+struct TestStruct5 {
+  TestStruct4 SERIAL(a);
+  SERIALIZE_ALL(NAMED(a))
+  bool operator == (const TestStruct5& o) const {
+    return a == o.a;
+  }
+};

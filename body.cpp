@@ -1013,11 +1013,11 @@ RICH_ENUM(BodyType,
 );
 
 struct BodyTypeReader {
+  static Body* body;
   void serialize(PrettyInputArchive& ar1, unsigned v) {
+    BodyType type;
+    BodySize size;
     ar1(type, size);
-  }
-
-  void init(Body* body) {
     body->setWeight(getDefaultWeight(size));
     body->setSize(size);
     body->setMinPushSize(BodySize((int)size + 1));
@@ -1044,19 +1044,19 @@ struct BodyTypeReader {
         break;
     }
   }
-  BodyType type;
-  BodySize size;
 };
+
+Body* BodyTypeReader::body = nullptr;
 
 template <>
 void Body::serialize(PrettyInputArchive& ar1, unsigned v) {
   BodyTypeReader type;
+  BodyTypeReader::body = this;
   ar1(NAMED(type));
   serializeImpl(ar1, v);
   EnumMap<BodyPart, int> addBodyPart;
   ar1(OPTION(addBodyPart));
   ar1(endInput());
-  type.init(this);
   for (auto part : ENUM_ALL(BodyPart)) {
     bodyParts[part] += addBodyPart[part];
     if (bodyParts[part] == 0 && !!intrinsicAttacks[part])
