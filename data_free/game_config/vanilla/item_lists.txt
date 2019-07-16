@@ -128,7 +128,7 @@
   "desertItems"
   {
     items = {
-      {{Simple "Bone"} 1}
+      {{Simple "Skeleton"} 1}
     }
   }
 

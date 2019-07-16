@@ -834,6 +834,14 @@
       price = 0
       weight = 5
     }
+  "Skeleton"
+    {
+      viewId = { "bone" }
+      name = "skeleton"
+      itemClass = CORPSE
+      price = 0
+      weight = 50
+    }
   "GoldPiece"
     {
       viewId = { "gold" }
