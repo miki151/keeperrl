@@ -132,9 +132,9 @@ class Effect {
   };
   struct Area {
     EFFECT_TYPE_INTERFACE;
-    HeapAllocated<Effect> effect;
     int radius;
-    COMPARE_ALL(effect, radius)
+    HeapAllocated<Effect> effect;
+    COMPARE_ALL(radius, effect)
   };
   struct CustomArea {
     EFFECT_TYPE_INTERFACE;
@@ -164,6 +164,12 @@ class Effect {
     PCreature getBestSpirit(const Model*, TribeId tribe) const;
     COMPARE_ALL(ttl, count, ghostPower)
   };
+  struct AllyOnly {
+    EFFECT_TYPE_INTERFACE;
+    HeapAllocated<Effect> effect;
+    COMPARE_ALL(effect)
+  };
+
 /*  struct Chain {
     EFFECT_TYPE_INTERFACE;
     vector<Effect> effects;
@@ -172,7 +178,7 @@ class Effect {
   MAKE_VARIANT(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
       Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost);
+      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost, AllyOnly);
 
   template <typename T>
   Effect(T&& t) : effect(std::forward<T>(t)) {}

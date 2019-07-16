@@ -937,6 +937,19 @@ string Effect::SwapPosition::getDescription() const {
   return "Swap positions with an enemy.";
 }
 
+void Effect::AllyOnly::applyToCreature(Creature* c, Creature* attacker) const {
+  if (attacker->isFriend(c))
+    effect->apply(c->getPosition(), attacker);
+}
+
+string Effect::AllyOnly::getName() const {
+  return effect->getName() + " (ally only)";
+}
+
+string Effect::AllyOnly::getDescription() const {
+  return effect->getDescription() + " (applied only to allies)";
+}
+
 #define FORWARD_CALL(Var, Name, ...)\
 Var.visit([&](const auto& e) { return e.Name(__VA_ARGS__); })
 
@@ -1123,7 +1136,8 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
       ReviveCorpse, Blast, Shove, SwapPosition*/
 
 EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const {
-  if (auto victim = pos.getCreature()) {
+  auto victim = pos.getCreature();
+  if (victim) {
     auto res = shouldAIApply(victim, caster->isEnemy(victim));
     if (res != EffectAIIntent::NONE)
       return res;
@@ -1145,6 +1159,11 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
       },
       [&] (const CustomArea& a) {
         return considerArea(a.getTargetPos(caster, pos), *a.effect);
+      },
+      [&] (const AllyOnly& e) {
+        if (victim && victim->isFriend(caster))
+          return e.effect->shouldAIApply(caster, pos);
+        return EffectAIIntent::NONE;
       },
       [&] (const auto& e) { return EffectAIIntent::NONE; }
   );
