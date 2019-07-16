@@ -130,7 +130,7 @@ class Body {
   bool isUndead() const;
   double getBoulderDamage() const;
 
-  SERIALIZATION_DECL(Body);
+  SERIALIZATION_DECL(Body)
   template <class Archive>
   void serializeImpl(Archive& ar, const unsigned int);
 
@@ -165,5 +165,6 @@ class Body {
   optional<BodyPart> getAnyGoodBodyPart() const;
   double getBodyPartHealth() const;
   void dropUnsupportedEquipment(const Creature*) const;
+  vector<ItemType> SERIAL(drops);
 };
 

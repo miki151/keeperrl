@@ -26,6 +26,11 @@
      cost = IRON 40
      requireIngredient = true
     }
+    {item = {Simple "BlackDragonArmor"}
+     work = 30 
+     cost = IRON 40
+     requireIngredient = true
+    }
     {{Simple "IronHelm"}              8        IRON 16}
     {{Simple "IronBoots"}             12       IRON 24}
     {item = {Simple "CyclopsHelm"}

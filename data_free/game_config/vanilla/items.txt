@@ -538,7 +538,6 @@
   "RedDragonScales"
     {
       viewId = { "rune2" }
-      shortName = "scales"
       name = "red dragon scales"
       itemClass = OTHER
       weight = 5
@@ -557,6 +556,29 @@
         SPELL_DAMAGE 2
       }
       equipedEffect = {FIRE_RESISTANT}
+      maxUpgrades = 2
+    }
+  "BlackDragonScales"
+    {
+      viewId = { "rune2" }
+      name = "black dragon scales"
+      itemClass = OTHER
+      weight = 5
+      price = 100
+      ingredientFor = {Simple "BlackDragonArmor"}
+    }
+  "BlackDragonArmor" inherit "ChainArmor"
+    {
+      viewId = { "chain_armor" Rgb 80 80 80 255 }
+      shortName = "black dragon"
+      name = "black dragon scale armor"
+      weight = 10
+      price = 250
+      modifiers = {
+        DEFENSE 15
+        SPELL_DAMAGE 2
+      }
+      equipedEffect = {DARKNESS_SOURCE TELEPATHY}
       maxUpgrades = 2
     }
   "AdaArmor"

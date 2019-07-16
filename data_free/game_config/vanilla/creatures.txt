@@ -682,6 +682,7 @@
               attackMsg = BITE
               victimEffect = {0.5 Fire} } }
         }
+        drops = { { Simple "RedDragonScales" }}
       }
       permanentEffects = {
         FIRE_RESISTANT 1
@@ -711,6 +712,7 @@
               attackType = BITE
               attackMsg = BITE } }
         }
+        drops = {{ Simple "BlackDragonScales" }}
       }
       permanentEffects = {
         RANGED_VULNERABILITY 1

@@ -31,7 +31,7 @@ template <class Archive>
 void Body::serializeImpl(Archive& ar, const unsigned int) {
   ar(OPTION(xhumanoid), OPTION(size), OPTION(weight), OPTION(bodyParts), OPTION(injuredBodyParts), OPTION(lostBodyParts));
   ar(OPTION(material), OPTION(health), OPTION(minionFood), NAMED(deathSound), OPTION(intrinsicAttacks), OPTION(minPushSize));
-  ar(OPTION(noHealth), OPTION(fallsApart));
+  ar(OPTION(noHealth), OPTION(fallsApart), OPTION(drops));
 }
 
 template <class Archive>
@@ -533,26 +533,31 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part, const ContentFact
 }
 
 vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool instantlyRotten, const ContentFactory* factory) const {
-  switch (material) {
-    case Material::FLESH:
-    case Material::UNDEAD_FLESH:
-      return makeVec(
-          ItemFactory::corpse(name + " corpse", name + " skeleton", weight, instantlyRotten,
-            minionFood ? ItemClass::FOOD : ItemClass::CORPSE,
-            {id, material != Material::UNDEAD_FLESH, numBodyParts(BodyPart::HEAD) > 0, false}));
-    case Material::CLAY:
-    case Material::ROCK:
-      return ItemType(CustomItemId("Rock")).get(numCorpseItems(size), factory);
-    case Material::BONE:
-      return ItemType(CustomItemId("Bone")).get(numCorpseItems(size), factory);
-    case Material::IRON:
-      return ItemType(CustomItemId("IronOre")).get(numCorpseItems(size), factory);
-    case Material::WOOD:
-      return ItemType(CustomItemId("WoodPlank")).get(numCorpseItems(size), factory);
-    case Material::ADA:
-      return ItemType(CustomItemId("AdaOre")).get(numCorpseItems(size), factory);
-    default: return {};
-  }
+  vector<PItem> ret = [&] {
+    switch (material) {
+      case Material::FLESH:
+      case Material::UNDEAD_FLESH:
+        return makeVec(
+            ItemFactory::corpse(name + " corpse", name + " skeleton", weight, instantlyRotten,
+              minionFood ? ItemClass::FOOD : ItemClass::CORPSE,
+              {id, material != Material::UNDEAD_FLESH, numBodyParts(BodyPart::HEAD) > 0, false}));
+      case Material::CLAY:
+      case Material::ROCK:
+        return ItemType(CustomItemId("Rock")).get(numCorpseItems(size), factory);
+      case Material::BONE:
+        return ItemType(CustomItemId("Bone")).get(numCorpseItems(size), factory);
+      case Material::IRON:
+        return ItemType(CustomItemId("IronOre")).get(numCorpseItems(size), factory);
+      case Material::WOOD:
+        return ItemType(CustomItemId("WoodPlank")).get(numCorpseItems(size), factory);
+      case Material::ADA:
+        return ItemType(CustomItemId("AdaOre")).get(numCorpseItems(size), factory);
+      default: return vector<PItem>();
+    }
+  }();
+  for (auto& elem : drops)
+    ret.push_back(elem.get(factory));
+  return ret;
 }
 
 void Body::affectPosition(Position position) {
