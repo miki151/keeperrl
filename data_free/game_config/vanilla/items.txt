@@ -622,7 +622,7 @@
       price = 250
       modifiers = {
         DEFENSE 10
-        SPELL_DAMAGE = 2
+        SPELL_DAMAGE 2
       }
       equipedEffect = {POISON_RESISTANT}
       maxUpgrades = 2
