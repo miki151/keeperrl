@@ -581,6 +581,52 @@
       equipedEffect = {DARKNESS_SOURCE TELEPATHY}
       maxUpgrades = 2
     }
+  "WhiteDragonScales"
+    {
+      viewId = { "rune2" }
+      name = "white dragon scales"
+      itemClass = OTHER
+      weight = 5
+      price = 100
+      ingredientFor = {Simple "WhiteDragonArmor"}
+    }
+  "WhiteDragonArmor" inherit "ChainArmor"
+    {
+      viewId = { "chain_armor" Rgb 254 254 254 255 }
+      shortName = "white dragon"
+      name = "white dragon scale armor"
+      weight = 10
+      price = 250
+      modifiers = {
+        DEFENSE 7
+        SPELL_DAMAGE 4
+      }
+      equipedEffect = {COLD_RESISTANT}
+      maxUpgrades = 2
+    }
+  "GreenDragonScales"
+    {
+      viewId = { "rune2" }
+      name = "green dragon scales"
+      itemClass = OTHER
+      weight = 5
+      price = 100
+      ingredientFor = {Simple "GreenDragonArmor"}
+    }
+  "GreenDragonArmor" inherit "ChainArmor"
+    {
+      viewId = { "chain_armor" Rgb 151 162 81 255 }
+      shortName = "green dragon"
+      name = "green dragon scale armor"
+      weight = 10
+      price = 250
+      modifiers = {
+        DEFENSE 10
+        SPELL_DAMAGE = 2
+      }
+      equipedEffect = {POISON_RESISTANT}
+      maxUpgrades = 2
+    }
   "AdaArmor"
     {
       viewId = { "ada_armor" }

@@ -21,16 +21,10 @@
 {
     {{Simple "Sword"}                 10       IRON 20}
     {{Simple "ChainArmor"}            30       IRON 40}
-    {item = {Simple "RedDragonArmor"}
-     work = 30 
-     cost = IRON 40
-     requireIngredient = true
-    }
-    {item = {Simple "BlackDragonArmor"}
-     work = 30 
-     cost = IRON 40
-     requireIngredient = true
-    }
+    {item = {Simple "RedDragonArmor"}   work = 30 cost = IRON 40 requireIngredient = true }
+    {item = {Simple "BlackDragonArmor"} work = 30 cost = IRON 40 requireIngredient = true }
+    {item = {Simple "WhiteDragonArmor"} work = 30 cost = IRON 40 requireIngredient = true }
+    {item = {Simple "GreenDragonArmor"} work = 30 cost = IRON 40 requireIngredient = true }
     {{Simple "IronHelm"}              8        IRON 16}
     {{Simple "IronBoots"}             12       IRON 24}
     {item = {Simple "CyclopsHelm"}

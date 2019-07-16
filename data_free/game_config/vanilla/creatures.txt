@@ -652,6 +652,7 @@
               attackMsg = BITE
               victimEffect = {0.3 Lasting POISON} } }
         }
+        drops = {{ Simple "GreenDragonScales" }}
       }
       permanentEffects = {
         POISON_RESISTANT 1
@@ -739,6 +740,7 @@
               attackType = BITE
               attackMsg = BITE } }
         }
+        drops = {{ Simple "WhiteDragonScales" }}
       }
       permanentEffects = {
         RANGED_VULNERABILITY 1
