@@ -937,17 +937,43 @@ string Effect::SwapPosition::getDescription() const {
   return "Swap positions with an enemy.";
 }
 
-void Effect::AllyOnly::applyToCreature(Creature* c, Creature* attacker) const {
-  if (attacker->isFriend(c))
+
+bool Effect::Filter::applies(const Creature* victim, const Creature* attacker) const {
+  switch (filter) {
+    case FilterType::ALLY:
+      return victim->isFriend(attacker);
+    case FilterType::ENEMY:
+      return victim->isEnemy(attacker);
+  }
+}
+
+void Effect::Filter::applyToCreature(Creature* c, Creature* attacker) const {
+  if (applies(c, attacker))
     effect->apply(c->getPosition(), attacker);
 }
 
-string Effect::AllyOnly::getName() const {
-  return effect->getName() + " (ally only)";
+string Effect::Filter::getName() const {
+  auto suffix = [&] {
+    switch (filter) {
+      case FilterType::ALLY:
+        return " (ally only)";
+      case FilterType::ENEMY:
+        return " (enemy only)";
+    }
+  };
+  return effect->getName() + suffix();
 }
 
-string Effect::AllyOnly::getDescription() const {
-  return effect->getDescription() + " (applied only to allies)";
+string Effect::Filter::getDescription() const {
+  auto suffix = [&] {
+    switch (filter) {
+      case FilterType::ALLY:
+        return " (applied only to allies)";
+      case FilterType::ENEMY:
+        return " (applied only to enemies)";
+    }
+  };
+  return effect->getDescription() + suffix();
 }
 
 #define FORWARD_CALL(Var, Name, ...)\
@@ -1160,8 +1186,8 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
       [&] (const CustomArea& a) {
         return considerArea(a.getTargetPos(caster, pos), *a.effect);
       },
-      [&] (const AllyOnly& e) {
-        if (victim && victim->isFriend(caster))
+      [&] (const Filter& e) {
+        if (victim && e.applies(victim, caster))
           return e.effect->shouldAIApply(caster, pos);
         return EffectAIIntent::NONE;
       },

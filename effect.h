@@ -33,6 +33,8 @@ class Tribe;
 class CreatureGroup;
 
 
+RICH_ENUM(FilterType, ALLY, ENEMY);
+
 #define EFFECT_TYPE_INTERFACE \
   void applyToCreature(Creature*, Creature* attacker = nullptr) const;\
   string getName() const;\
@@ -164,10 +166,12 @@ class Effect {
     PCreature getBestSpirit(const Model*, TribeId tribe) const;
     COMPARE_ALL(ttl, count, ghostPower)
   };
-  struct AllyOnly {
+  struct Filter {
     EFFECT_TYPE_INTERFACE;
+    bool applies(const Creature* victim, const Creature* attacker) const;
+    FilterType filter;
     HeapAllocated<Effect> effect;
-    COMPARE_ALL(effect)
+    COMPARE_ALL(filter, effect)
   };
 
 /*  struct Chain {
@@ -178,7 +182,7 @@ class Effect {
   MAKE_VARIANT(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
       Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost, AllyOnly);
+      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost, Filter);
 
   template <typename T>
   Effect(T&& t) : effect(std::forward<T>(t)) {}
