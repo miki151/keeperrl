@@ -1095,7 +1095,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
               callbackRet = optional<int>(indexes[*index]);
               break;
             }
-            break;
+            FALLTHROUGH;
           case SDL::SDLK_ESCAPE:
             callbackRet = optional<int>(none);
             break;
