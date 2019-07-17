@@ -500,16 +500,6 @@
     }
     createOnBones = 1.0 { "KNIGHTS" "DWARVES" "GREEN_DRAGON" "WARRIORS" }
   }
-  "WHITE_DRAGON" inherit "RED_DRAGON"
-  {
-    biomes = { SNOW }
-    settlement = append {
-      inhabitants = {
-        leader = { { "WHITE_DRAGON" } }
-      }
-    }
-    createOnBones = none
-  }
   "GREEN_DRAGON"
   {
     settlement = {
@@ -1116,6 +1106,37 @@
       furniture = "roomFurniture"
     }
     discoverable = false
+  }
+  "WHITE_DRAGON_ENTRY" inherit "MAIN_DUNGEON_ENTRY"
+  {
+    settlement = append {
+      buildingId = GLACIER
+    }
+  }
+  "WHITE_DRAGON_FLOOR" inherit "DUNGEON1"
+  {
+    settlement = append {
+      buildingId = GLACIER
+    }
+  }
+  "WHITE_DRAGON" inherit "RED_DRAGON"
+  {
+    biomes = { SNOW }
+    settlement = append {
+      buildingId = GLACIER
+      inhabitants = {
+        leader = { { "WHITE_DRAGON" } }
+      }
+    }
+    createOnBones = none
+    levelConnection = {
+      direction = UP
+      topLevel = ExtraEnemy { "WHITE_DRAGON_ENTRY" }
+      levels = {
+        { ExtraEnemy { "WHITE_DRAGON_FLOOR" { 2 4 }} 30 20 DUNGEON }
+        { MainEnemy 30 20 DUNGEON }
+      }
+    }
   }
   "ENTS"
   {

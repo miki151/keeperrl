@@ -110,8 +110,12 @@ CreatureGroup CreatureGroup::forrest(TribeId tribe) {
       { 4, 2, 2}, {});
 }
 
+CreatureGroup CreatureGroup::iceCreatures(TribeId tribe) {
+  return CreatureGroup(tribe, { CreatureId("WATER_ELEMENTAL") }, {1});
+}
+
 CreatureGroup CreatureGroup::waterCreatures(TribeId tribe) {
-  return CreatureGroup(tribe, { CreatureId("WATER_ELEMENTAL"), CreatureId("KRAKEN") }, {20, 1}, {CreatureId("KRAKEN")});
+  return CreatureGroup(tribe, { CreatureId("WATER_ELEMENTAL") }, {1}, {CreatureId("KRAKEN")});
 }
 
 CreatureGroup CreatureGroup::elementals(TribeId tribe) {

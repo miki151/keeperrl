@@ -13,6 +13,7 @@ class CreatureGroup {
   static CreatureGroup singleType(TribeId, CreatureId);
   static CreatureGroup lavaCreatures(TribeId tribe);
   static CreatureGroup waterCreatures(TribeId tribe);
+  static CreatureGroup iceCreatures(TribeId tribe);
   static CreatureGroup elementals(TribeId tribe);
   static CreatureGroup gnomishMines(TribeId peaceful, TribeId enemy, int level);
 

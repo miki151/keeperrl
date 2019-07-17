@@ -15,7 +15,8 @@ RICH_ENUM(BuildingId,
   DUNGEON,
   DUNGEON_SURFACE,
   RUINS,
-  SNOW
+  SNOW,
+  GLACIER
 );
 
 RICH_ENUM(BiomeId,
