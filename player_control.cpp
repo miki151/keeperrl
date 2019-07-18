@@ -467,7 +467,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
     for (Item* it : ownedItems)
       if (it->canEquip() && it->getEquipmentSlot() == slot)
         items.push_back(it);
-    for (int i = creature->getEquipment().getMaxItems(slot, creature->getBody()); i < items.size(); ++i)
+    for (int i = creature->getEquipment().getMaxItems(slot, creature); i < items.size(); ++i)
       // a rare occurence that minion owns too many items of the same slot,
       //should happen only when an item leaves the fortress and then is braught back
       if (!collective->getMinionEquipment().isLocked(creature, items[i]->getUniqueId()))
@@ -481,7 +481,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
       info.inventory.push_back(getItemInfo({item}, equiped, !equiped, locked, ItemInfo::EQUIPMENT));
       info.inventory.back().actions.push_back(locked ? ItemAction::UNLOCK : ItemAction::LOCK);
     }
-    if (creature->getEquipment().getMaxItems(slot, creature->getBody()) > items.size()) {
+    if (creature->getEquipment().getMaxItems(slot, creature) > items.size()) {
       info.inventory.push_back(getEmptySlotItem(slot));
       slotIndex.push_back(slot);
       slotItems.push_back(nullptr);

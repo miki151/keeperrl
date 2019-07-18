@@ -133,7 +133,7 @@ bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit)
       }
       if (it->canEquip()) {
         auto slot = it->getEquipmentSlot();
-        int limit = c->getEquipment().getMaxItems(slot, c->getBody());
+        int limit = c->getEquipment().getMaxItems(slot, c);
         auto pred = [=](const Item* ownedItem) {
           return ownedItem->canEquip() &&
               ownedItem->getEquipmentSlot() == slot &&
@@ -242,7 +242,7 @@ bool MinionEquipment::tryToOwn(const Creature* c, Item* it) {
   if (it->canEquip()) {
     auto slot = it->getEquipmentSlot();
     vector<Item*> contesting;
-    int slotSize = c->getEquipment().getMaxItems(slot, c->getBody());
+    int slotSize = c->getEquipment().getMaxItems(slot, c);
     for (auto& item : myItems.getOrElse(c, emptyItems))
       if (item)
         if (item->canEquip() && item->getEquipmentSlot() == slot) {
@@ -296,7 +296,7 @@ void MinionEquipment::autoAssign(const Creature* creature, vector<Item*> possibl
         continue;
       }
       Item* replacedItem = getWorstItem(creature, slots[it->getEquipmentSlot()]);
-      int slotSize = creature->getEquipment().getMaxItems(it->getEquipmentSlot(), creature->getBody());
+      int slotSize = creature->getEquipment().getMaxItems(it->getEquipmentSlot(), creature);
       int numInSlot = slots[it->getEquipmentSlot()].size();
       if (numInSlot < slotSize ||
           (replacedItem && getItemValue(creature, replacedItem) < getItemValue(creature, it))) {
