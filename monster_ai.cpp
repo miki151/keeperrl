@@ -135,9 +135,9 @@ MoveInfo Behaviour::tryEffect(const Effect& type, Position target) {
 
 static bool isObstructed(const Creature* creature, const vector<Position>& trajectory) {
   vector<Creature*> ret;
-  for (int i : Range(1, trajectory.size() - 1)) {
+  for (int i : Range(1, trajectory.size())) {
     auto& pos = trajectory[i];
-    if (pos.stopsProjectiles(creature->getVision().getId()) || pos.getCreature())
+    if (pos.stopsProjectiles(creature->getVision().getId()) || (pos.getCreature() && pos != trajectory.back()))
       return true;
   }
   return false;
