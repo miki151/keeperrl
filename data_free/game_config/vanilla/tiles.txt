@@ -256,6 +256,9 @@
   { "iron_helm" "[" ColorId LIGHT_GRAY }
   { "cyclops_helm" "[" ColorId ORANGE }
   { "ada_helm" "[" ColorId LIGHT_BLUE }
+  { "cornuthaum1" "[" ColorId LIGHT_BROWN }
+  { "cornuthaum2" "[" ColorId PINK }
+  { "cornuthaum3" "[" ColorId YELLOW }
   { "leather_boots" "[" ColorId BROWN }
   { "iron_boots" "[" ColorId LIGHT_GRAY }
   { "ada_boots" "[" ColorId LIGHT_BLUE }

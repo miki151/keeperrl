@@ -508,7 +508,7 @@
     }
   "WoodenShield"
     {
-      viewId = { "woodenhield" }
+      viewId = { "wooden_shield" }
       shortName = "wooden"
       name = "wooden shield"
       itemClass = ARMOR
@@ -702,6 +702,48 @@
         1 LastingEffect REGENERATION
       }
       maxUpgrades = 2
+    }
+  "Cornuthaum1"
+    {
+      viewId = { "cornuthaum1" }
+      name = "cornuthaum"
+      itemClass = ARMOR
+      equipmentSlot = HELMET
+      weight = 1
+      price = 30
+      modifiers = {
+        SPELL_DAMAGE 2
+        DAMAGE -2
+      }
+      maxUpgrades = 1
+    }
+  "Cornuthaum2"
+    {
+      viewId = { "cornuthaum2" }
+      name = "ornate cornuthaum"
+      itemClass = ARMOR
+      equipmentSlot = HELMET
+      weight = 1
+      price = 50
+      modifiers = {
+        SPELL_DAMAGE 4
+        DAMAGE -4
+      }
+      maxUpgrades = 2
+    }
+  "Cornuthaum3"
+    {
+      viewId = { "cornuthaum3" }
+      name = "sumptuous cornuthaum"
+      itemClass = ARMOR
+      equipmentSlot = HELMET
+      weight = 1
+      price = 70
+      modifiers = {
+        SPELL_DAMAGE 6
+        DAMAGE -6
+      }
+      maxUpgrades = 4
     }
   "LeatherBoots"
     {

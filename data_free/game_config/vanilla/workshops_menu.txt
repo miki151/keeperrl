@@ -11,6 +11,9 @@
     {{Simple "WoodenShield"}          2        WOOD 10}
     {{Simple "LeatherGloves"}         1        WOOD 2}
     {{Simple "HeavyClub"}             5        WOOD 20      "two-handed weapons"}
+    {{Simple "Cornuthaum1"}           5        GOLD 0       "sorcery"}
+    {{Simple "Cornuthaum2"}           8        GOLD 20      "advanced sorcery"}
+    {{Simple "Cornuthaum3"}           12       GOLD 40      "master sorcery"}
     {{Simple "Bow"}                   13       WOOD 20      "archery"}
     {{Simple "WoodenStaff"}           13       WOOD 20      "magical weapons"}
     {{Simple "Torch"}                 2        WOOD 4}
