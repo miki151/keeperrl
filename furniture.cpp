@@ -440,7 +440,7 @@ optional<BedType> Furniture::getBedType() const {
   return bedType;
 }
 
-optional<LastingEffect> Furniture::getLastingEffect() const {
+const optional<FurnitureEffectInfo>& Furniture::getLastingEffectInfo() const {
   return lastingEffect;
 }
 

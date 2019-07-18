@@ -170,6 +170,12 @@ class Level : public OwnedObject<Level> {
   void setFurniture(Vec2, PFurniture);
 
   Sectors& getSectors(const MovementType&) const;
+  struct EffectSet {
+    vector<LastingEffect> SERIAL(friendly);
+    vector<LastingEffect> SERIAL(hostile);
+    SERIALIZE_ALL(friendly, hostile)
+  };
+  using EffectsTable = Table<EffectSet>;
 
   SERIALIZATION_DECL(Level)
 
@@ -198,6 +204,7 @@ class Level : public OwnedObject<Level> {
   HeapAllocated<CreatureBucketMap> SERIAL(bucketMap);
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
+  EnumMap<TribeId::KeyType, unique_ptr<EffectsTable>> SERIAL(furnitureEffects);
   mutable unordered_map<MovementType, Sectors, CustomHash<MovementType>> sectors;
   Sectors& getSectorsDontCreate(const MovementType&) const;
 
@@ -221,5 +228,7 @@ class Level : public OwnedObject<Level> {
   void updateCreatureLight(Vec2, int diff);
   HeapAllocated<Portals> SERIAL(portals);
   bool isCovered(Vec2) const;
+  template<typename Fun>
+  void forEachEffect(Vec2, TribeId, Fun);
 };
 

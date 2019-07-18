@@ -68,6 +68,7 @@
   { "floor_invi" "." ColorId LIGHT_BLUE }
   { "floor_regen" "." ColorId GREEN }
   { "floor_peace" "." ColorId WHITE }
+  { "totem" "T" ColorId WHITE }
   { "fallen_tree" "*" ColorId GREEN false "treecut" }
   { "tree_trunk" "." ColorId BROWN false "treecut" }
   { "crops" "𝃰" ColorId YELLOW }

@@ -39,6 +39,19 @@ RICH_ENUM(
     SET_UP
 );
 
+struct FurnitureEffectInfo {
+  enum class Target;
+  Target SERIAL(target);
+  LastingEffect SERIAL(effect);
+  int SERIAL(radius);
+  SERIALIZE_ALL(target, effect, radius)
+};
+
+RICH_ENUM(FurnitureEffectInfo::Target,
+    ALLY,
+    ENEMY
+);
+
 class Furniture : public OwnedObject<Furniture> {
   public:
 
@@ -116,7 +129,7 @@ class Furniture : public OwnedObject<Furniture> {
   bool isRequiresLight() const;
   bool isHostileSpell() const;
   optional<BedType> getBedType() const;
-  optional<LastingEffect> getLastingEffect() const;
+  const optional<FurnitureEffectInfo>& getLastingEffectInfo() const;
 
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();
@@ -195,7 +208,7 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FXInfo> SERIAL(walkIntoFX);
   optional<FXVariantName> SERIAL(usageFX);
   bool SERIAL(hostileSpell) = false;
-  optional<LastingEffect> SERIAL(lastingEffect);
+  optional<FurnitureEffectInfo> SERIAL(lastingEffect);
   optional<FurnitureType> SERIAL(freezeTo);
   optional<FurnitureType> SERIAL(meltTo);
 };

@@ -20,6 +20,7 @@ class DestroyAction;
 class Inventory;
 class Vision;
 class Sectors;
+class FurnitureEffectInfo;
 
 class Position {
   public:
@@ -148,6 +149,8 @@ class Position {
   optional<int> getPortalIndex() const;
   double getLightingEfficiency() const;
   bool isDirEffectBlocked() const;
+  void addFurnitureEffect(TribeId, const FurnitureEffectInfo&) const;
+  void removeFurnitureEffect(TribeId, const FurnitureEffectInfo&) const;
 
   SERIALIZATION_DECL(Position)
   int getHash() const;

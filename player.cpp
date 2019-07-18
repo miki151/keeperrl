@@ -789,8 +789,8 @@ void Player::makeMove() {
         creature->getAttributes().increaseBaseAttr(AttrType::DAMAGE, 80);
         creature->getAttributes().increaseBaseAttr(AttrType::DEFENSE, 80);
         creature->getAttributes().increaseBaseAttr(AttrType::SPELL_DAMAGE, 80);
-        creature->addPermanentEffect(LastingEffect::SPEED, true);
-        creature->addPermanentEffect(LastingEffect::FLYING, true);
+        creature->addPermanentEffect(LastingEffect::SPEED);
+        creature->addPermanentEffect(LastingEffect::FLYING);
         avatarLevel->increaseLevel();
         break;
       case UserInputId::CHEAT_SPELLS: {

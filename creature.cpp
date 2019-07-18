@@ -813,34 +813,32 @@ bool Creature::removeEffect(LastingEffect effect, bool msg) {
   return false;
 }
 
-void Creature::addPermanentEffect(LastingEffect effect, int count) {
+void Creature::addPermanentEffect(LastingEffect effect, int count, bool msg) {
   PROFILE;
   if (LastingEffects::affects(this, effect)) {
     bool was = attributes->isAffectedPermanently(effect);
     attributes->addPermanentEffect(effect, count);
     if (!was && attributes->isAffectedPermanently(effect)) {
-      LastingEffects::onAffected(this, effect, true);
-      message(PlayerMessage("The effect is permanent", MessagePriority::HIGH));
+      LastingEffects::onAffected(this, effect, msg);
+      if (msg)
+        message(PlayerMessage("The effect is permanent", MessagePriority::HIGH));
       updateViewObject();
     }
   }
 }
 
-void Creature::removePermanentEffect(LastingEffect effect, int count) {
+void Creature::removePermanentEffect(LastingEffect effect, int count, bool msg) {
   PROFILE;
   bool was = isAffected(effect);
   attributes->removePermanentEffect(effect, count);
   if (was && !isAffected(effect)) {
-    LastingEffects::onRemoved(this, effect, true);
+    LastingEffects::onRemoved(this, effect, msg);
     updateViewObject();
   }
 }
 
 bool Creature::isAffected(LastingEffect effect) const {
   PROFILE;
-  if (auto f = position.getFurniture(FurnitureLayer::FLOOR))
-    if (f->getLastingEffect() == effect && LastingEffects::affects(this, effect))
-      return true;
   if (auto time = getGlobalTime())
     return attributes->isAffected(effect, *time);
   else

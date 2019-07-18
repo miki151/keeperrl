@@ -47,7 +47,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(sunlight, bucketMap, lightAmount, unavailable);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
-  ar(furniture, tickingFurniture, covered, roofSupport, portals);
+  ar(furniture, tickingFurniture, covered, roofSupport, portals, furnitureEffects);
   if (Archive::is_loading::value) // some code requires these Sectors to be always initialized
     getSectors({MovementTrait::WALK});
 }  
@@ -87,9 +87,12 @@ PLevel Level::create(SquareArray s, FurnitureArray f, WModel m,
     if (pos.isBuildingSupport())
       ret->roofSupport->add(pos.getCoord());
     for (auto layer : ENUM_ALL(FurnitureLayer))
-      if (auto f = pos.getFurniture(layer))
+      if (auto f = pos.getFurniture(layer)) {
+        if (auto& effect = f->getLastingEffectInfo())
+          pos.addFurnitureEffect(f->getTribe(), *effect);
         if (auto viewId = f->getSupportViewId(pos))
           pos.modFurniture(layer)->getViewObject()->setId(*viewId);
+      }
   }
   ret->unavailable = std::move(unavailable);
   ret->covered = std::move(covered);
@@ -411,11 +414,25 @@ void Level::moveCreature(Creature* creature, Vec2 direction) {
   placeCreature(creature, position + direction);
 }
 
+template <typename Fun>
+void Level::forEachEffect(Vec2 pos, TribeId tribe, Fun f) {
+  if (auto& effects = furnitureEffects[tribe.getKey()])
+    for (auto effect : effects->operator[](pos).friendly)
+      f(effect);
+  for (auto tribeKey : ENUM_ALL(TribeId::KeyType))
+    if (tribe != TribeId(tribeKey))
+      if (auto& effects = furnitureEffects[tribeKey])
+        for (auto effect : effects->operator[](pos).hostile)
+          f(effect);
+}
+
 void Level::unplaceCreature(Creature* creature, Vec2 pos) {
   bucketMap->removeElement(pos, creature);
   updateCreatureLight(pos, -1);
   modSafeSquare(pos)->removeCreature(Position(pos, this));
   model->increaseMoveCounter();
+  forEachEffect(pos, creature->getTribeId(),
+      [&] (LastingEffect effect) {creature->removePermanentEffect(effect, 1, false);});
 }
 
 void Level::placeCreature(Creature* creature, Vec2 pos) {
@@ -426,6 +443,8 @@ void Level::placeCreature(Creature* creature, Vec2 pos) {
   updateCreatureLight(pos, 1);
   position.onEnter(creature);
   model->increaseMoveCounter();
+  forEachEffect(pos, creature->getTribeId(),
+      [&] (LastingEffect effect) {creature->addPermanentEffect(effect, 1, false);});
 }
 
 void Level::swapCreatures(Creature* c1, Creature* c2) {

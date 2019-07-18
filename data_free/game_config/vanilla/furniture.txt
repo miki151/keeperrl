@@ -967,7 +967,7 @@
     viewId = { "floor_speed" }
     luxury = 0.7
     layer = FLOOR
-    lastingEffect = SPEED
+    lastingEffect = ALLY SPEED 0
   }
   "FLOOR_BLIND"
   {
@@ -975,7 +975,7 @@
     viewId = { "floor_blind" }
     luxury = 0.7
     layer = FLOOR
-    lastingEffect = BLIND
+    lastingEffect = ENEMY BLIND 0
   }
   "FLOOR_INVI"
   {
@@ -983,7 +983,7 @@
     viewId = { "floor_invi" }
     luxury = 0.7
     layer = FLOOR
-    lastingEffect = INVISIBLE
+    lastingEffect = ALLY INVISIBLE 0
   }
   "FLOOR_REGENER"
   {
@@ -991,7 +991,7 @@
     viewId = { "floor_regen" }
     luxury = 0.7
     layer = FLOOR
-    lastingEffect = REGENERATION
+    lastingEffect = ALLY REGENERATION 0
   }
   "FLOOR_PEACE"
   {
@@ -999,7 +999,28 @@
     viewId = { "floor_peace" }
     luxury = 0.7
     layer = FLOOR
-    lastingEffect = PEACEFULNESS
+    lastingEffect = ENEMY PEACEFULNESS 0
+  }
+  "HEALING_TOTEM"
+  {
+    name = "healing totem"
+    viewId = { "totem" Rgb 156 58 68 255 }
+    lastingEffect = ALLY REGENERATION 3 # ALLY/ENEMY LastingEffect radius
+    blockMovement = true
+    canHideHere = true
+    strength = 100
+  }
+  "BLEEDING_TOTEM" inherit "HEALING_TOTEM"
+  {
+    name = "totem of bleeding"
+    viewId = { "totem" Rgb 156 58 156 255 }
+    lastingEffect = ENEMY BLEEDING 3
+  }
+  "DEFENSE_TOTEM" inherit "HEALING_TOTEM"
+  {
+    name = "defense totem"
+    viewId = { "totem" Rgb 68 58 156 255 }
+    lastingEffect = ALLY DEF_BONUS 3
   }
   "ALARM_TRAP"
   {

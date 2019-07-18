@@ -150,28 +150,6 @@ Tribe::Map Tribe::generateTribes() {
 
 TribeId::TribeId(KeyType k) : key(k) {}
 
-RICH_ENUM(
-    TribeId::KeyType,
-    MONSTER,
-    PEST,
-    WILDLIFE,
-    HUMAN,
-    ELF,
-    DARK_ELF,
-    DWARF,
-    GNOME,
-    ADVENTURER,
-    BANDIT,
-    HOSTILE,
-    PEACEFUL,
-    DARK_KEEPER,
-    RETIRED_KEEPER,
-    LIZARD,
-    GREENSKIN,
-    ANT,
-    SHELOB
-);
-
 TribeId TribeId::getMonster() {
   return TribeId(KeyType::MONSTER);
 }
@@ -273,6 +251,10 @@ bool TribeId::operator == (const TribeId& o) const {
 
 bool TribeId::operator != (const TribeId& o) const {
   return !(*this == o);
+}
+
+TribeId::KeyType TribeId::getKey() const {
+  return key;
 }
 
 int TribeId::getHash() const {

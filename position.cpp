@@ -232,7 +232,7 @@ double Position::getLightingEfficiency() const {
 
 bool Position::isDirEffectBlocked() const {
   return !canEnterEmpty(
-      MovementType({MovementTrait::FLY, MovementTrait::WALK}).setFireResistant());
+        MovementType({MovementTrait::FLY, MovementTrait::WALK}).setFireResistant());
 }
 
 Creature* Position::getCreature() const {
@@ -561,6 +561,42 @@ void Position::addFurnitureImpl(PFurniture f) const {
   level->addLightSource(coord, furniture->getLightEmission());
   updateSupportViewId(furniture);
   setNeedsRenderAndMemoryUpdate(true);
+  if (auto& effect = furniture->getLastingEffectInfo())
+    addFurnitureEffect(furniture->getTribe(), *effect);
+}
+
+template <typename Fun1, typename Fun2>
+void handleEffect(TribeId tribe, Level::EffectsTable& effectsTable, vector<Position> positions,
+    const FurnitureEffectInfo& effect, Fun1 fun1, Fun2 fun2) {
+  for (auto pos : positions) {
+    auto c = pos.getCreature();
+    if (effect.target == FurnitureEffectInfo::Target::ENEMY) {
+      fun1(effectsTable[pos.getCoord()].hostile);
+      if (c && c->getTribeId() != tribe)
+        fun2(c);
+    } else {
+      fun1(effectsTable[pos.getCoord()].friendly);
+      if (c && c->getTribeId() == tribe)
+        fun2(c);
+    }
+  }
+}
+
+void Position::addFurnitureEffect(TribeId tribe, const FurnitureEffectInfo& effect) const {
+  auto& effectsTable = level->furnitureEffects[tribe.getKey()];
+  if (!effectsTable)
+    effectsTable = unique<Level::EffectsTable>(level->getBounds());
+  handleEffect(tribe, *effectsTable, getRectangle(Rectangle::centered(effect.radius)), effect,
+      [&](vector<LastingEffect>& effects) { effects.push_back(effect.effect); },
+      [&](Creature* c) { c->addPermanentEffect(effect.effect, 1, false); });
+}
+
+void Position::removeFurnitureEffect(TribeId tribe, const FurnitureEffectInfo& effect) const {
+  auto& effectsTable = level->furnitureEffects[tribe.getKey()];
+  CHECK(!!effectsTable);
+  handleEffect(tribe, *effectsTable, getRectangle(Rectangle::centered(effect.radius)), effect,
+      [&](vector<LastingEffect>& effects) { effects.removeElement(effect.effect); },
+      [&](Creature* c) { c->removePermanentEffect(effect.effect, 1, false); });
 }
 
 void Position::addCreatureLight(bool darkness) {
@@ -596,9 +632,13 @@ void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
   auto layer = f->getLayer();
   CHECK(layer != FurnitureLayer::GROUND || !!replace);
   CHECK(getFurniture(layer) == f);
+  if (auto& effect = f->getLastingEffectInfo())
+    removeFurnitureEffect(f->getTribe(), *effect);
   if (replace) {
     level->setFurniture(coord, std::move(replace));
     updateSupportViewId(replacePtr);
+    if (auto& effect = replacePtr->getLastingEffectInfo())
+      addFurnitureEffect(replacePtr->getTribe(), *effect);
   } else {
     level->furniture->getBuilt(layer).clearElem(coord);
     level->furniture->getConstruction(coord, layer).reset();
