@@ -22,6 +22,14 @@
       "GROUND_TORCH" 1
     }
   }
+  "bleedingTotem"
+  {
+    {
+    }
+    {
+      "BLEEDING_TOTEM"
+    }
+  }
   "castleOutside"
   {
     {

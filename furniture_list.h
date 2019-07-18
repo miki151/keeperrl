@@ -10,7 +10,7 @@ class FurnitureList {
   public:
   FurnitureList(FurnitureType);
   FurnitureList(vector<pair<FurnitureType, double>>, vector<FurnitureType> unique = {});
-  FurnitureParams getRandom(RandomGen&, TribeId);
+  optional<FurnitureParams> getRandom(RandomGen&, TribeId);
   int numUnique() const;
 
   SERIALIZATION_DECL(FurnitureList)

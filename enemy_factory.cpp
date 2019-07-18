@@ -171,7 +171,7 @@ void EnemyFactory::updateCreateOnBones(EnemyInfo& info) const {
           for (auto& enemy : extra->enemyInfo) {
             if (makeRuins) {
               enemy.settlement.buildingId = BuildingId::RUINS;
-              enemy.settlement.furniture.reset();
+              enemy.settlement.furniture.clear();
               enemy.settlement.outsideFeatures.reset();
             }
             enemy.settlement.corpses = enemy.settlement.inhabitants;

@@ -91,7 +91,8 @@ bool LevelBuilder::canPutItems(Vec2 posT) {
 }
 
 void LevelBuilder::putFurniture(Vec2 posT, FurnitureList& f, TribeId tribe, optional<SquareAttrib> attrib) {
-  putFurniture(posT, f.getRandom(getRandom(), tribe), attrib);
+  if (auto res = f.getRandom(getRandom(), tribe))
+    putFurniture(posT, *res, attrib);
 }
 
 void LevelBuilder::putFurniture(Vec2 posT, FurnitureParams f, optional<SquareAttrib> attrib) {

@@ -29,7 +29,7 @@
           { "gold" 50 "TREASURE_CHEST" }
         }
       cropsDistance = 16
-        furniture = "roomFurniture"
+        furniture = { "roomFurniture" }
     }
   }
   "UNICORN_HERD"
@@ -194,7 +194,7 @@
       locationNameGen = TOWN
       race = "greenskins"
       buildingId = BRICK
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
       outsideFeatures = "villageOutside"
     }
     config = {
@@ -229,7 +229,7 @@
       buildingId = DUNGEON_SURFACE
       locationName = "Darkshrine Town"
       race = "ghosts"
-      furniture = "dungeonOutside"
+      furniture = { "dungeonOutside" }
     }
     discoverable = false
     createOnBones = 1.0 { "KNIGHTS" }
@@ -249,7 +249,7 @@
       }
       locationName = "Darkshrine"
       race = "demons"
-      furniture = "dungeonOutside"
+      furniture = { "dungeonOutside" }
       outsideFeatures = "dungeonOutside"
     }
     config = {
@@ -308,7 +308,7 @@
       race = "humans"
       buildingId = WOOD
       shopItems = "armory"
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
     }
     config = {
       spawnGhosts = 4
@@ -332,7 +332,7 @@
       buildingId = WOOD_CASTLE
       stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
       lootItem = {TechBook "beast mutation"}
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
       outsideFeatures = "castleOutside"
     }
     config = {
@@ -397,7 +397,7 @@
       stockpiles = {{ "gold" 140 "TREASURE_CHEST" }}
       buildingId = BRICK
       shopItems = "villageShop"
-      furniture = "castleFurniture"
+      furniture = { "castleFurniture" }
       outsideFeatures = "castleOutside"
     }
     config = {
@@ -450,7 +450,7 @@
       }
       locationName = "maze"
       race = "monsters"
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
       buildingId = BRICK
     }
   }
@@ -563,7 +563,7 @@
       shopItems = "dwarfShop"
       outsideFeatures = "dungeonOutside"
       surroundWithResources = 5
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
     }
     config = {
       immigrantInterval = 500
@@ -619,7 +619,7 @@
       stockpiles = {{ "gold" 100 "TREASURE_CHEST"}}
       buildingId = WOOD
       lootItem = {TechBook "master sorcery"}
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
     }
     config = {
       immigrantInterval = 500
@@ -679,7 +679,7 @@
       }
       tribe = HUMAN
       buildingId = BRICK
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
     }
     config = {
       leaderAsFighter = true
@@ -723,7 +723,7 @@
       race = "dark elves"
       buildingId = DUNGEON
       outsideFeatures = "dungeonOutside"
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
     }
     config = {
       immigrantInterval = 500
@@ -835,7 +835,7 @@
       }
       race = "lizardmen"
       buildingId = MUD
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
       outsideFeatures = "villageOutside"
     }
   }
@@ -857,7 +857,7 @@
       buildingId = MUD
       lootItem = {TechBook "humanoid mutation"}
       shopItems = "goodMushrooms"
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
       outsideFeatures = "villageOutside"
     }
     config = {
@@ -913,7 +913,7 @@
       race = "dark elves"
       buildingId = DUNGEON
       outsideFeatures = "dungeonOutside"
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
     }
     config = {
       immigrantInterval = 500
@@ -968,7 +968,7 @@
       race = "dark elves"
       buildingId = DUNGEON
       outsideFeatures = "dungeonOutside"
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
     }
   }
   "DARK_ELVES_ENTRY"
@@ -985,7 +985,7 @@
       race = "dark elves"
       buildingId = DUNGEON
       outsideFeatures = "dungeonOutside"
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
     }
     discoverable = false
   }
@@ -995,7 +995,7 @@
       type = MINETOWN
       tribe = MONSTER
       buildingId = DUNGEON
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
       inhabitants = {
         fighters = {
           count = {10 15}
@@ -1051,6 +1051,7 @@
   "DUNGEON3" inherit "DUNGEON2"
   {
     settlement = append {
+      furniture = append { "bleedingTotem" }
       inhabitants = append {
         fighters = append {
           all = append {
@@ -1078,7 +1079,7 @@
       buildingId = DUNGEON
       shopItems = "gnomeShop"
       outsideFeatures = "dungeonOutside"
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
     }
     levelConnection = {
       topLevel = ExtraEnemy {"GNOMES_ENTRY"}
@@ -1103,7 +1104,7 @@
       race = "gnomes"
       buildingId = DUNGEON
       outsideFeatures = "dungeonOutside"
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
     }
     discoverable = false
   }
@@ -1283,7 +1284,7 @@
       locationName = "cemetery"
       tribe = MONSTER
       race = "undead"
-      furniture = "cryptCoffins"
+      furniture = { "cryptCoffins" }
       buildingId = BRICK
     }
     levelConnection = {
@@ -1308,7 +1309,7 @@
       locationName = "cemetery"
       race = "undead"
       tribe = MONSTER
-      furniture = "graves"
+      furniture = { "graves" }
       buildingId = BRICK
     }
     discoverable = false
@@ -1326,7 +1327,7 @@
       }
       buildingId = DUNGEON
       closeToPlayer = true
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
       outsideFeatures = "villageOutside"
     }
     config = {
@@ -1354,7 +1355,7 @@
       }
       buildingId = DUNGEON
       closeToPlayer = true
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
       outsideFeatures = "villageOutside"
     }
     config = {
@@ -1407,7 +1408,7 @@
       race = "witch"
       buildingId = WOOD
       lootItem = {TechBook "advanced alchemy"}
-      furniture = "witchInside"
+      furniture = { "witchInside" }
     }
   }
   "TEMPLE"
@@ -1420,7 +1421,7 @@
         leader = { { "PRIEST" } }
       }
       buildingId = BRICK
-      furniture = "templeInside"   
+      furniture = { "templeInside"    }
     }
     discoverable = false
   }
@@ -1437,7 +1438,7 @@
         }
       }
       buildingId = WOOD
-      furniture = "templeInside"
+      furniture = { "templeInside" }
     }
     discoverable = false
   }
@@ -1496,7 +1497,7 @@
       }
       race = "humans"
       buildingId = WOOD
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
     }
     config = {
       guardianInfo = "WITCHMAN" 0.003 1 2
@@ -1531,7 +1532,7 @@
       }
       race = "elves"
       buildingId = WOOD
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
     }
   }
   "LIZARDMEN_COTTAGE"
@@ -1547,7 +1548,7 @@
       }
       race = "lizardmen"
       buildingId = WOOD
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
     }
     createOnBones = 1.0 { "ELVEN_COTTAGE" }
   }
@@ -1586,7 +1587,7 @@
       buildingId = DUNGEON
       stockpiles = {{ "minerals" 60}}
       outsideFeatures = "dungeonOutside"
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
       surroundWithResources = 6     
     }
     behaviour = {
@@ -1666,7 +1667,7 @@
       buildingId = DUNGEON
       stockpiles = {{ "minerals" 60 }}
       outsideFeatures = "dungeonOutside"
-      furniture = "roomFurniture"
+      furniture = { "roomFurniture" }
       surroundWithResources = 6    
     }
     behaviour = {
