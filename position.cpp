@@ -568,18 +568,19 @@ void Position::addFurnitureImpl(PFurniture f) const {
 template <typename Fun1, typename Fun2>
 void handleEffect(TribeId tribe, Level::EffectsTable& effectsTable, vector<Position> positions,
     const FurnitureEffectInfo& effect, Fun1 fun1, Fun2 fun2) {
-  for (auto pos : positions) {
-    auto c = pos.getCreature();
-    if (effect.target == FurnitureEffectInfo::Target::ENEMY) {
-      fun1(effectsTable[pos.getCoord()].hostile);
-      if (c && c->getTribeId() != tribe)
-        fun2(c);
-    } else {
-      fun1(effectsTable[pos.getCoord()].friendly);
-      if (c && c->getTribeId() == tribe)
-        fun2(c);
+  for (auto pos : positions)
+    if (pos.isValid()) {
+      auto c = pos.getCreature();
+      if (effect.target == FurnitureEffectInfo::Target::ENEMY) {
+        fun1(effectsTable[pos.getCoord()].hostile);
+        if (c && c->getTribeId() != tribe)
+          fun2(c);
+      } else {
+        fun1(effectsTable[pos.getCoord()].friendly);
+        if (c && c->getTribeId() == tribe)
+          fun2(c);
+      }
     }
-  }
 }
 
 void Position::addFurnitureEffect(TribeId tribe, const FurnitureEffectInfo& effect) const {
