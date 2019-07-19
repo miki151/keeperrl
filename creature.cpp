@@ -605,34 +605,42 @@ void Creature::drop(vector<PItem> items) {
 }
 
 bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
-  if (!getBody().isHumanoid()) {
+  auto setReason = [reason] (string s) {
     if (reason)
-      *reason = "Only humanoids can equip items!";
+      *reason = std::move(s);
+  };
+  if (!getBody().isHumanoid()) {
+    setReason("Only humanoids can equip items!");
     return false;
   }
   if (!attributes->canEquip()) {
-    if (reason)
-      *reason = "You can't equip items!";
+    setReason("You can't equip items!");
     return false;
   }
   if (getBody().numGood(BodyPart::ARM) == 0) {
-    if (reason)
-      *reason = "You have no healthy arms!";
+    setReason("You have no healthy arms!");
     return false;
   }
   if (getBody().numGood(BodyPart::ARM) == 1 && item->getWeaponInfo().twoHanded) {
-    if (reason)
-      *reason = "You need two hands to wield " + item->getAName() + "!";
+    setReason("You need two hands to wield " + item->getAName() + "!");
     return false;
   }
   if (!item->canEquip()) {
-    if (reason)
-      *reason = "This item can't be equipped";
+    setReason("This item can't be equipped");
     return false;
   }
+  if (!equipment->getSlotItems(EquipmentSlot::SHIELD).empty() && item->getWeaponInfo().twoHanded) {
+    setReason(item->getAName() + " can't be used together with a shield");
+    return false;
+  }
+  if (item->getEquipmentSlot() == EquipmentSlot::SHIELD)
+    for (auto other : equipment->getSlotItems(EquipmentSlot::WEAPON))
+      if (other->getWeaponInfo().twoHanded) {
+        setReason(item->getAName() + " can't be used together with a two-handed weapon");
+        return false;
+      }
   if (equipment->getMaxItems(item->getEquipmentSlot(), this) == 0) {
-    if (reason)
-      *reason = "You lack a required body part to equip this type of item";
+    setReason("You lack a required body part to equip this type of item");
     return false;
   }
   return true;
