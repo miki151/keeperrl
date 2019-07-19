@@ -232,7 +232,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   // From Task::Callback
   virtual void onAppliedItem(Position, Item* item) override;
   virtual void onConstructed(Position, FurnitureType) override;
-  virtual void onAppliedSquare(Creature*, Position) override;
+  virtual void onAppliedSquare(Creature*, pair<Position, FurnitureLayer>) override;
   virtual void onCopulated(Creature* who, Creature* with) override;
   virtual bool isConstructionReachable(Position) override;
 

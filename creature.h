@@ -164,7 +164,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canEquip(const Item* item) const;
   CreatureAction throwItem(Item*, Position target, bool isFriendlyAI) const;
   optional<int> getThrowDistance(const Item*) const;
-  CreatureAction applySquare(Position) const;
+  CreatureAction applySquare(Position, FurnitureLayer) const;
   CreatureAction hide() const;
   bool isHidden() const;
   bool knowsHiding(const Creature*) const;

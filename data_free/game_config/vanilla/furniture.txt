@@ -260,7 +260,8 @@
     viewId = { "prison" }
     tickType = BED
     usageType = SLEEP
-    viewLayer = FLOOR_BACKGROUND
+    bedType = PRISON
+    layer = FLOOR
   }
   "TREASURE_CHEST"
   {

@@ -257,7 +257,7 @@ bool Furniture::canUse(const Creature* c) const {
   if (usageType)
     return FurnitureUsage::canHandle(*usageType, c);
   else
-    return true;
+    return false;
 }
 
 optional<FurnitureUsageType> Furniture::getUsageType() const {

@@ -91,7 +91,8 @@ optional<MinionActivity> MinionActivities::getActivityFor(WConstCollective col, 
   return none;
 }
 
-static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective collective, const Creature* c) {
+template <typename PosType, typename PosFun>
+static vector<PosType> tryInQuarters(vector<PosType> pos, WConstCollective collective, const Creature* c, PosFun posFun) {
   PROFILE;
   auto& quarters = collective->getQuarters();
   auto& zones = collective->getZones();
@@ -104,16 +105,16 @@ static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective col
   if (!hasAnyQuarters)
     return pos;
   auto index = quarters.getAssigned(c->getUniqueId());
-  vector<Position> inQuarters;
+  vector<PosType> inQuarters;
   if (index) {
     PROFILE_BLOCK("has quarters");
-    inQuarters = pos.filter([&](Position pos) {return zones.isZone(pos, quarters.getAllQuarters()[*index].zone);});
+    inQuarters = pos.filter([&](auto& pos) {return zones.isZone(posFun(pos), quarters.getAllQuarters()[*index].zone);});
   } else {
     PROFILE_BLOCK("no quarters");
     EnumSet<ZoneId> allZones;
     for (auto& q : quarters.getAllQuarters())
       allZones.insert(q.zone);
-    inQuarters = pos.filter([&](Position pos) { return !zones.isAnyZone(pos, allZones); });
+    inQuarters = pos.filter([&](auto& pos) { return !zones.isAnyZone(posFun(pos), allZones); });
   }
   if (!inQuarters.empty())
     return inQuarters;
@@ -121,18 +122,25 @@ static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective col
     return pos;
 }
 
-vector<Position> MinionActivities::getAllPositions(WConstCollective collective, const Creature* c,
+static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective collective, const Creature* c) {
+  return tryInQuarters(std::move(pos), collective, c, [](const Position& pos) -> const Position& { return pos; });
+}
+
+vector<pair<Position, FurnitureLayer>> MinionActivities::getAllPositions(WConstCollective collective, const Creature* c,
     MinionActivity activity) const {
   PROFILE;
-  vector<Position> ret;
+  vector<pair<Position, FurnitureLayer>> ret;
   auto& info = CollectiveConfig::getActivityInfo(activity);
   for (auto furnitureType : getAllFurniture(activity))
-    if (info.furniturePredicate(collective->getGame()->getContentFactory(), collective, c, furnitureType))
-      append(ret, collective->getConstructions().getBuiltPositions(furnitureType));
+    if (info.furniturePredicate(collective->getGame()->getContentFactory(), collective, c, furnitureType)) {
+      auto toPair = [layer = collective->getGame()->getContentFactory()->furniture.getData(furnitureType).getLayer()]
+          (Position p) { return make_pair(p, layer); };
+      append(ret, collective->getConstructions().getBuiltPositions(furnitureType).transform(toPair));
+    }
   if (c) {
     auto movement = c->getMovementType();
-    ret = ret.filter([&](Position pos) { return pos.canNavigateToOrNeighbor(c->getPosition(), movement); });
-    ret = tryInQuarters(ret, collective, c);
+    ret = ret.filter([&](auto& pos) { return pos.first.canNavigateToOrNeighbor(c->getPosition(), movement); });
+    ret = tryInQuarters(ret, collective, c, [](const pair<Position, FurnitureLayer>& p) -> const Position& { return p.first; });
   }
   return ret;
 }
@@ -211,9 +219,9 @@ const PositionSet& getIdlePositions(const Collective* collective, const Creature
     return collective->getTerritory().getAllAsSet();
 }
 
-PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActivity task) const {
+PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActivity activity) const {
   PROFILE;
-  auto& info = CollectiveConfig::getActivityInfo(task);
+  auto& info = CollectiveConfig::getActivityInfo(activity);
   switch (info.type) {
     case MinionActivityInfo::IDLE: {
       PROFILE_BLOCK("Idle");
@@ -250,7 +258,7 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
     }
     case MinionActivityInfo::FURNITURE: {
       PROFILE_BLOCK("Furniture");
-      vector<Position> squares = getAllPositions(collective, c, task);
+      vector<pair<Position, FurnitureLayer>> squares = getAllPositions(collective, c, activity);
       if (!squares.empty())
         return Task::applySquare(collective, squares, Task::RANDOM_CLOSE, Task::APPLY);
       break;
@@ -265,7 +273,7 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
     }
     case MinionActivityInfo::EXPLORE: {
       PROFILE_BLOCK("Explore");
-      if (auto pos = getTileToExplore(collective, c, task))
+      if (auto pos = getTileToExplore(collective, c, activity))
         return Task::explore(*pos);
       break;
     }

@@ -698,9 +698,9 @@ CreatureAction Creature::push(Creature* other) {
   });
 }
 
-CreatureAction Creature::applySquare(Position pos) const {
+CreatureAction Creature::applySquare(Position pos, FurnitureLayer layer) const {
   CHECK(*pos.dist8(getPosition()) <= 1);
-  if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE))
+  if (auto furniture = pos.getFurniture(layer))
     if (furniture->canUse(this))
       return CreatureAction(this, [=](Creature* self) {
         self->nextPosIntent = none;
@@ -1767,7 +1767,7 @@ CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
     return moveTowards(pos, false, flags);
   else if (auto stairs = position.getStairsTo(pos)) {
     if (stairs == position)
-      return applySquare(position);
+      return applySquare(position, FurnitureLayer::MIDDLE);
     else
       return moveTowards(*stairs, false, flags);
   } else
@@ -1809,7 +1809,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
       if (pos2.dist8(position).value_or(2) > 1)
         if (auto f = position.getFurniture(FurnitureLayer::MIDDLE))
           if (f->getUsageType() == FurnitureUsageType::PORTAL)
-            return applySquare(position);
+            return applySquare(position, FurnitureLayer::MIDDLE);
       if (auto action = move(pos2, currentPath->getNextNextMove(position))) {
         if (flags.swapPosition || !pos2.getCreature())
           return action.append([path = *currentPath](Creature* c) { c->shortestPath = path; });

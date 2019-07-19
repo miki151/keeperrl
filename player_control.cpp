@@ -1699,7 +1699,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
   if (getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
     for (auto col : getGame()->getCollectives())
-      if (col->getTerritory().contains(position))
+      if (col->getKnownTiles().isKnown(position))
         index.setHighlight(HighlightType::RECT_SELECTION);
   const ConstructionMap& constructions = collective->getConstructions();
   if (auto trap = constructions.getTrap(position))
@@ -1930,7 +1930,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       draggedCreature = input.get<Creature::Id>();
       for (auto task : ENUM_ALL(MinionActivity))
         for (auto& pos : collective->getMinionActivities().getAllPositions(collective, nullptr, task))
-          pos.setNeedsRenderUpdate(true);
+          pos.first.setNeedsRenderUpdate(true);
       break;
     case UserInputId::CREATURE_DRAG_DROP:
       minionDragAndDrop(input.get<CreatureDropInfo>());

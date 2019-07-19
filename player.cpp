@@ -160,7 +160,7 @@ void Player::pickUpItemAction(int numStack, bool multi) {
   if (getUsableUsageType()) {
     --numStack;
     if (numStack == -1) {
-      creature->applySquare(creature->getPosition()).perform(creature);
+      creature->applySquare(creature->getPosition(), FurnitureLayer::MIDDLE).perform(creature);
       return;
     }
   }

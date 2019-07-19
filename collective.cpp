@@ -1192,18 +1192,18 @@ void Collective::addProducesMessage(const Creature* c, const vector<PItem>& item
     control->addMessage(c->getName().a() + " produces " + items[0]->getAName());
 }
 
-void Collective::onAppliedSquare(Creature* c, Position pos) {
-  if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
+void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos) {
+  if (auto furniture = pos.first.getFurniture(pos.second)) {
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
     double efficiency = furniture->getUsageTime().getVisibleDouble() * getEfficiency(c);
     if (furniture->isRequiresLight())
-      efficiency *= pos.getLightingEfficiency();
+      efficiency *= pos.first.getLightingEfficiency();
     if (furniture->getType() == FurnitureType("WHIPPING_POST"))
-      taskMap->addTask(Task::whipping(pos, c), pos, MinionActivity::WORKING);
+      taskMap->addTask(Task::whipping(pos.first, c), pos.first, MinionActivity::WORKING);
     if (furniture->getType() == FurnitureType("GALLOWS"))
-      taskMap->addTask(Task::kill(this, c), pos, MinionActivity::WORKING);
+      taskMap->addTask(Task::kill(this, c), pos.first, MinionActivity::WORKING);
     if (furniture->getType() == FurnitureType("TORTURE_TABLE"))
-      taskMap->addTask(Task::torture(this, c), pos, MinionActivity::WORKING);
+      taskMap->addTask(Task::torture(this, c), pos.first, MinionActivity::WORKING);
     if (auto usage = furniture->getUsageType()) {
       auto increaseLevel = [&] (ExperienceType exp) {
         double increase = 0.007 * efficiency * LastingEffects::getTrainingSpeed(c);

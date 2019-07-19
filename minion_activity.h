@@ -40,7 +40,7 @@ class MinionActivities {
   PTask generate(WCollective, Creature*, MinionActivity) const;
   static PTask generateDropTask(WCollective, Creature*, MinionActivity);
   static optional<TimeInterval> getDuration(const Creature*, MinionActivity);
-  vector<Position> getAllPositions(WConstCollective, const Creature*, MinionActivity) const;
+  vector<pair<Position, FurnitureLayer>> getAllPositions(WConstCollective, const Creature*, MinionActivity) const;
   const vector<FurnitureType>& getAllFurniture(MinionActivity) const;
   optional<MinionActivity> getActivityFor(WConstCollective, const Creature*, FurnitureType) const;
 
