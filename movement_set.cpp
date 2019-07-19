@@ -5,7 +5,7 @@
 
 template <class Archive> 
 void MovementSet::serialize(Archive& ar, const unsigned int version) {
-  ar(NAMED(traits), NAMED(forcibleTraits), SKIP(blockingEnemies), SKIP(tribe));
+  ar(OPTION(traits), OPTION(forcibleTraits), SKIP(blockingEnemies), SKIP(tribe));
 }
 
 SERIALIZABLE(MovementSet);

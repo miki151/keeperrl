@@ -859,7 +859,9 @@
   {
     name = "pit"
     viewId = { "pit" }
-    blockMovement = true
+    movementSet = {
+      traits = { FLY }
+    }
     xForgetAfterBuilding = true
     tickType = PIT
     canBuildOutsideOfTerritory = true
