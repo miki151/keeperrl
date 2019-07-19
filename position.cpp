@@ -232,7 +232,7 @@ double Position::getLightingEfficiency() const {
 
 bool Position::isDirEffectBlocked() const {
   return !canEnterEmpty(
-        MovementType({MovementTrait::FLY, MovementTrait::WALK}).setFireResistant());
+        MovementType({MovementTrait::FLY, MovementTrait::WALK}).setFireResistant().setForced());
 }
 
 Creature* Position::getCreature() const {
