@@ -1749,3 +1749,6 @@ template <class T, class Arg1, class... Args>
 constexpr bool isOneOf(const T& value, const Arg1& arg1, const Args&... args) {
   return value == arg1 || isOneOf(value, args...);
 }
+template <class T, int size> constexpr int arraySize(T (&)[size]) {
+  return size;
+}
