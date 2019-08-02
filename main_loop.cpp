@@ -42,6 +42,11 @@
 #include "miniunz.h"
 #include "external_enemies_type.h"
 
+#ifdef USE_STEAMWORKS
+#include "steam_ugc.h"
+#include "steam_client.h"
+#endif
+
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, TileSet* tileSet, bool singleThread, int sv)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j), highscores(h), fileSharing(fSharing),
@@ -240,8 +245,15 @@ void MainLoop::bugReportSave(PGame& game, FilePath path) {
   Square::progressMeter = nullptr;
 }
 
-MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave,
+MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave, bool splashScreen,
     function<optional<ExitCondition>(WGame)> exitCondition, milliseconds stepTimeMilli, optional<int> maxTurns) {
+  if (!splashScreen)
+    registerModPlaytime(true);
+  OnExit on_exit([&]() {
+    if (!splashScreen)
+      registerModPlaytime(false);
+  });
+
   tileSet->setTilePaths(game->getContentFactory()->tilePaths);
   view->reset();
   if (!noAutoSave)
@@ -445,7 +457,7 @@ void MainLoop::splashScreen() {
   auto model = ModelBuilder(&meter, Random, options, sokobanInput, &contentFactory, std::move(enemyFactory))
       .splashModel(dataFreePath.file("splash.txt"));
   playGame(Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory)),
-      false, true);
+      false, true, true);
 }
 
 void MainLoop::showCredits(const FilePath& path) {
@@ -466,20 +478,38 @@ void MainLoop::showCredits(const FilePath& path) {
   view->presentList("Credits", lines, false);
 }
 
-int MainLoop::getLocalVersion(const string& mod) {
+pair<int, unsigned long long> MainLoop::getLocalVersion(const string& mod) {
   ifstream in(dataFreePath.subdirectory(gameConfigSubdir).subdirectory(mod).file("version").getPath());
   int v = 0;
-  if (!!in) {
-    in >> v;
-  }
-  return v;
+  unsigned long long steamId = 0;
+  if (!!in)
+    in >> v >> steamId;
+  return {v, steamId};
 }
 
-void MainLoop::updateLocalVersion(const string& mod, int version) {
+void MainLoop::updateLocalVersion(const string& mod, int version, unsigned long long steamId) {
   ofstream out(dataFreePath.subdirectory(gameConfigSubdir).subdirectory(mod).file("version").getPath());
   if (!!out) {
-    out << version;
+    out << version << "\n" << steamId;
   }
+}
+
+void MainLoop::removeMod(const string& name) {
+  // TODO: how to make it safer?
+  auto modDir = dataFreePath.subdirectory(gameConfigSubdir).subdirectory(name);
+  modDir.removeRecursively();
+}
+
+// When mod changes name, we have to remove old directory
+void MainLoop::removeOldSteamMod(unsigned long long steamId, const string& newName) {
+  auto modDir = dataFreePath.subdirectory(gameConfigSubdir);
+  auto modList = modDir.getSubDirs();
+  for (auto& modName : modList)
+    if (modName != newName) {
+      auto ver = getLocalVersion(modName);
+      if (ver.second == steamId)
+        removeMod(modName);
+    }
 }
 
 void MainLoop::showMods() {
@@ -501,19 +531,28 @@ void MainLoop::showMods() {
     lines.emplace_back("Installed mods", ListElem::TITLE);
     for (auto& mod : modList) {
       auto title = mod;
+      auto localVer = getLocalVersion(mod);
       if (mod == currentMod)
         title += " [active]";
+      if (localVer.second)
+        title += " [steam]";
+
       auto upToDate = "up-to-date"_s;
       if (onlineMods)
         for (auto& onlineMod : *onlineMods)
-          if (onlineMod.name == mod && onlineMod.version > getLocalVersion(mod))
+          if ((onlineMod.name == mod || (onlineMod.steamId && onlineMod.steamId == localVer.second)) &&
+              onlineMod.version > localVer.first)
             upToDate = "new version available";
       lines.emplace_back(ListElem(title, upToDate, ListElem::NORMAL));
     }
+
     lines.emplace_back(onlineMods ? "Online mods:" : "Unable to fetch online mods", ListElem::TITLE);
     if (onlineMods)
       for (auto& elem : *onlineMods) {
-        lines.emplace_back("Download \"" + elem.name + "\"", ListElem::NORMAL);
+        string suffix;
+        if(elem.steamId)
+          suffix += " [steam]";
+        lines.emplace_back("Download \"" + elem.name + "\"" + suffix, ListElem::NORMAL);
         lines.emplace_back("Author: " + elem.author, ListElem::HELP_TEXT);
         lines.emplace_back(elem.description, ListElem::HELP_TEXT);
         lines.emplace_back("Number of games played: " + toString(elem.numGames), ListElem::HELP_TEXT);
@@ -530,9 +569,14 @@ void MainLoop::showMods() {
       optional<string> error;
       doWithSplash(SplashType::SMALL, "Downloading mod \"" + downloadMod.name + "\"...", 1,
           [&] (ProgressMeter& meter) {
-            error = fileSharing->downloadMod(downloadMod.name, modDir, meter);
-            if (!error)
-              updateLocalVersion(downloadMod.name, downloadMod.version);
+            error = downloadMod.steamId?
+              fileSharing->downloadSteamMod(*downloadMod.steamId, downloadMod.name, modDir, meter) :
+              fileSharing->downloadMod(downloadMod.name, modDir, meter);
+            if (!error) {
+              updateLocalVersion(downloadMod.name, downloadMod.version, downloadMod.steamId.value_or(0));
+              if (downloadMod.steamId)
+                removeOldSteamMod(*downloadMod.steamId, downloadMod.name);
+            }
           },
           [&] {
             cancelled = true;
@@ -614,7 +658,7 @@ void MainLoop::launchQuickGame(optional<int> maxTurns) {
     auto models = prepareCampaignModels(*result, std::move(avatar), Random, &contentFactory);
     game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), std::move(contentFactory));
   }
-  playGame(std::move(game), true, false, nullptr, milliseconds{3}, maxTurns);
+  playGame(std::move(game), true, false, false, nullptr, milliseconds{3}, maxTurns);
 }
 
 void MainLoop::start(bool tilesPresent) {
@@ -634,7 +678,7 @@ void MainLoop::start(bool tilesPresent) {
     switch (*choice) {
       case 0: {
         if (PGame game = prepareCampaign(Random))
-          playGame(std::move(game), true, false);
+          playGame(std::move(game), true, false, false);
         view->reset();
         break;
       }
@@ -814,7 +858,7 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList a
       else
         return none;
     };
-    auto result = playGame(std::move(game), false, true, exitCondition, milliseconds{3});
+    auto result = playGame(std::move(game), false, true, false, exitCondition, milliseconds{3});
     switch (result) {
       case ExitCondition::ALLIES_WON:
         ++numAllies;
@@ -969,3 +1013,20 @@ bool MainLoop::eraseSave() {
   return false;
 }
 
+void MainLoop::registerModPlaytime(bool started) {
+#ifdef USE_STEAMWORKS
+  if (!steam::Client::isAvailable())
+    return;
+
+  string currentMod = options->getStringValue(OptionId::CURRENT_MOD);
+  auto localVer = getLocalVersion(currentMod);
+  if (localVer.second) {
+    steam::ItemId itemId(localVer.second);
+    auto& ugc = steam::UGC::instance();
+    if (started)
+      ugc.startPlaytimeTracking({itemId});
+    else
+      ugc.stopPlaytimeTracking({itemId});
+  }
+#endif
+}

@@ -9,7 +9,7 @@ class ProgressMeter;
 
 class FileSharing {
   public:
-  FileSharing(const string& uploadUrl, Options&, string installId);
+  FileSharing(const string& uploadUrl, const string& modVersion, Options&, string installId);
 
   optional<string> uploadSite(const FilePath& path, ProgressMeter&);
   struct SiteInfo {
@@ -41,9 +41,16 @@ class FileSharing {
     string description;
     int numGames;
     int version;
+    
+    // Steam mod info:
+    optional<unsigned long long> steamId = none;
+    bool isSubscribed = false;
   };
 
+  optional<vector<OnlineModInfo>> getSteamMods();
   optional<vector<OnlineModInfo>> getOnlineMods(int modVersion);
+  optional<string> downloadSteamMod(unsigned long long id, const string& name, const DirectoryPath& modsDir,
+                                    ProgressMeter&);
   optional<string> downloadMod(const string& name, const DirectoryPath& modsDir, ProgressMeter&);
 
   string downloadHighscores(int version);
@@ -54,6 +61,7 @@ class FileSharing {
 
   private:
   string uploadUrl;
+  string modVersion;
   Options& options;
   SyncQueue<function<void()>> uploadQueue;
   AsyncLoop uploadLoop;

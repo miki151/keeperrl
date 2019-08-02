@@ -69,6 +69,12 @@
 
 #endif
 
+#ifdef USE_STEAMWORKS
+#include "steam_base.h"
+#include "steam_client.h"
+#include "steam_user.h"
+#endif
+
 #ifndef DATA_DIR
 #define DATA_DIR "."
 #endif
@@ -318,6 +324,16 @@ static int keeperMain(po::parser& commandLineFlags) {
     else
       return DATA_DIR;
   }());
+
+#ifdef USE_STEAMWORKS
+  bool withSteam = steam::initAPI();
+  optional<steam::Client> steamClient;
+  if (withSteam) {
+	  steamClient.emplace();
+	  INFO << "\n" << steamClient->info();
+  }
+#endif
+  
   auto freeDataPath = dataPath.subdirectory("data_free");
   auto paidDataPath = dataPath.subdirectory("data");
   auto contribDataPath = dataPath.subdirectory("data_contrib");
@@ -383,7 +399,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   AppConfig appConfig(dataPath.file("appconfig-dev.txt"));
 #endif
   string uploadUrl = appConfig.get<string>("upload_url");
-  FileSharing fileSharing(uploadUrl, options, installId);
+  auto modVersion = appConfig.get<string>("mod_version");
+  FileSharing fileSharing(uploadUrl, modVersion, options, installId);
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   if (commandLineFlags["worldgen_test"].was_set()) {
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, nullptr,
@@ -447,7 +464,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
   TileSet tileSet(paidDataPath.subdirectory("images"), freeDataPath.subdirectory(gameConfigSubdir));
   renderer.setTileSet(&tileSet);
-  FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", options, installId);
+  FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", modVersion, options, installId);
   unique_ptr<View> view;
   view.reset(WindowView::createDefaultView(
       {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary, &bugreportSharing, userPath, installId}));
