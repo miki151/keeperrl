@@ -9,8 +9,16 @@
 
 #include <curl/curl.h>
 
-FileSharing::FileSharing(const string& url, Options& o, string id) : uploadUrl(url), options(o),
-    uploadLoop(bindMethod(&FileSharing::uploadingLoop, this)), installId(id), wasCancelled(false) {
+#ifdef USE_STEAMWORKS
+#include "steam_client.h"
+#include "steam_ugc.h"
+#include "steam_user.h"
+#include "steam_friends.h"
+#endif
+
+FileSharing::FileSharing(const string& url, const string& modVer, Options& o, string id)
+    : uploadUrl(url), modVersion(modVer), options(o), uploadLoop(bindMethod(&FileSharing::uploadingLoop, this)),
+      installId(id), wasCancelled(false) {
   curl_global_init(CURL_GLOBAL_ALL);
 }
 
@@ -334,11 +342,169 @@ static optional<FileSharing::OnlineModInfo> parseModInfo(const vector<string>& f
   return none;
 }
 
+static string shortDescription(string text, int max_lines = 3) {
+  int num_lines = 1;
+  for (int n = 0; n < (int)text.size(); n++) {
+    if (text[n] == '\n') {
+      num_lines++;
+      if (num_lines > max_lines) {
+        text.resize(n);
+        break;
+      }
+    }
+  }
+  while (text.back() == '\n')
+    text.pop_back();
+  return text;
+}
+
+optional<vector<FileSharing::OnlineModInfo>> FileSharing::getSteamMods() {
+#ifdef USE_STEAMWORKS
+  if (!steam::Client::isAvailable()) {
+    INFO << "STEAM: Client not available"; // TODO: report info to user
+    return none;
+  }
+
+  // TODO: thread safety
+  // TODO: filter mods by tags early
+  auto& ugc = steam::UGC::instance();
+  auto& user = steam::User::instance();
+  auto& friends = steam::Friends::instance();
+
+  vector<steam::ItemId> items, subscribedItems;
+  subscribedItems = ugc.subscribedItems();
+
+  // TODO: Is this check necessary? Maybe we should try anyways?
+  if (user.isLoggedOn()) {
+    steam::FindItemInfo qinfo;
+    qinfo.order = SteamFindOrder::playtime;
+    auto qid = ugc.createFindQuery(qinfo, 1);
+
+    // TODO: multiple pages
+    // TODO: handle errors
+    // TODO: czy chcemy je jakoś filtrować? Czy na razie po prostu dajemy wszystkie / najpopularniejsze?
+
+    ugc.waitForQueries({qid}, milliseconds(2000));
+
+    if (ugc.queryStatus(qid) == QueryStatus::completed) {
+      items = ugc.finishFindQuery(qid);
+    } else {
+      INFO << "STEAM: FindQuery failed: " << ugc.queryError(qid, "timeout (2 sec)");
+      ugc.finishQuery(qid);
+    }
+
+#ifndef RELEASE
+    // TODO: remove it when finished basic testing
+    items.append({steam::ItemId(1821799810), steam::ItemId(1819019387), steam::ItemId(1819019000)});
+#endif
+  }
+
+  for (auto id : subscribedItems)
+    if (!items.contains(id))
+      items.emplace_back(id);
+
+  if (items.empty()) {
+    INFO << "STEAM: No items present";
+    // TODO: inform that no mods are present (not subscribed or ...)
+    return vector<FileSharing::OnlineModInfo>();
+  }
+
+  steam::ItemDetailsInfo detailsInfo;
+  detailsInfo.longDescription = true;
+  detailsInfo.playtimeStatsDays = 9999;
+  detailsInfo.metadata = true;
+  auto qid = ugc.createDetailsQuery(detailsInfo, items);
+  ugc.waitForQueries({qid}, milliseconds(3000));
+
+  if (ugc.queryStatus(qid) != QueryStatus::completed) {
+    INFO << "STEAM: DetailsQuery failed: " << ugc.queryError(qid, "timeout (3 sec)");
+    ugc.finishQuery(qid);
+    return {};
+  }
+
+  auto infos = ugc.finishDetailsQuery(qid);
+  for (auto& info : infos)
+    friends.requestUserInfo(info.ownerId, true);
+  vector<optional<string>> ownerNames(infos.size());
+  auto retrieveUserNames = [&]() {
+    bool done = true;
+    for (int n = 0; n < infos.size(); n++) {
+      if (!ownerNames[n])
+        ownerNames[n] = friends.retrieveUserName(infos[n].ownerId);
+      if (!ownerNames[n])
+        done = false;
+    }
+    return done;
+  };
+  steam::sleepUntil(retrieveUserNames, milliseconds(1500));
+  vector<OnlineModInfo> out;
+
+  for (int n = 0; n < infos.size(); n++) {
+    auto& info = infos[n];
+    if (!info.tags.contains("Mod") || !info.tags.contains(modVersion))
+      continue;
+
+    OnlineModInfo mod;
+    mod.author = ownerNames[n].value_or("unknown");
+    mod.description = shortDescription(info.description);
+    mod.name = info.title;
+    // TODO: playtimeSessions is not exactly the same as numGames
+    mod.numGames = info.stats->playtimeSessions;
+    mod.steamId = info.id.value;
+    mod.version = steam::getItemVersion(info.metadata).value_or(0);
+    mod.isSubscribed = subscribedItems.contains(info.id);
+    out.emplace_back(mod);
+  }
+
+  return out;
+#else
+  return none;
+#endif
+}
+
 optional<vector<FileSharing::OnlineModInfo>> FileSharing::getOnlineMods(int modVersion) {
+  if (auto steamMods = getSteamMods())
+    return steamMods;
   if (options.getBoolValue(OptionId::ONLINE))
     if (auto content = downloadContent(uploadUrl + "/get_mods.php?version=" + toString(modVersion)))
       return parseLines<FileSharing::OnlineModInfo>(*content, parseModInfo);
   return none;
+}
+
+optional<string> FileSharing::downloadSteamMod(unsigned long long id_, const string& name, const DirectoryPath& modsDir,
+                                               ProgressMeter& meter) {
+#ifdef USE_STEAMWORKS
+  CHECK(steam::Client::isAvailable());
+  steam::ItemId id(id_);
+
+  auto& ugc = steam::UGC::instance();
+  auto& user = steam::User::instance();
+
+  if (!ugc.isInstalled(id)) {
+    if (!ugc.downloadItem(id, true))
+      return string("Error while downloading mod.");
+
+    // TODO: meter support
+    while (!consumeCancelled()) {
+      steam::runCallbacks();
+      if (!ugc.isDownloading(id))
+        break;
+      sleep_for(milliseconds(50));
+    }
+
+    if (!ugc.isInstalled(id))
+      return string("Error while downloading mod.");
+  }
+
+  auto instInfo = ugc.installInfo(id);
+  if (!instInfo)
+    return string("Error while retrieving installation info");
+
+  DirectoryPath subDir(string(modsDir.getPath()) + "/" + name);
+  return DirectoryPath::copyFiles(DirectoryPath(instInfo->folder), subDir, true);
+#else
+  return string("Steam support is not available in this build");
+#endif
 }
 
 optional<string> FileSharing::downloadMod(const string& modName, const DirectoryPath& modsDir, ProgressMeter& meter) {
