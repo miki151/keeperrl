@@ -30,6 +30,10 @@ ifdef AMD64
 GFLAG += -DAMD64
 endif
 
+ifdef STEAMWORKS
+include Makefile-steam
+endif
+
 ifdef OPT
 GFLAG += -O2
 endif
@@ -48,7 +52,11 @@ IPATH = -I. -I./extern
 
 CFLAGS += $(IPATH)
 
+ifdef STEAMWORKS
 SRCS = $(shell ls -t *.cpp)
+else
+SRCS = $(shell ls -t *.cpp | grep -v steam_.*.cpp)
+endif
 
 ifdef AMD64
 RES_FILE=keeper.res
@@ -57,7 +65,7 @@ RES_FILE=keeper32.res
 endif
 
 LIBS = -mwindows ${RES_FILE} -lvorbisfile -lvorbis -logg -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 \
-	   -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid
+	   -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid $(STEAM_LIBS)
 
 ifdef AMD64
 LIBS += -lmingw32 -lSDL2main -lSDL2 -lfreeglut -lglu32 -lz -lglew32 -ljpeg -lopenal -lopengl32 -lcurl -limagehlp -lpthread
