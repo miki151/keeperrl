@@ -72,6 +72,10 @@ ifdef TEXT_SERIALIZATION
 CFLAGS += -DTEXT_SERIALIZATION
 endif
 
+ifdef STEAMWORKS
+include Makefile-steam
+endif
+
 ifdef OPT
 OBJDIR = obj-opt
 else
@@ -96,9 +100,14 @@ endif
 
 LDFLAGS += -L/usr/local/lib
 
+ifdef STEAMWORKS
 SRCS = $(shell ls -t *.cpp)
+else
+SRCS = $(shell ls -t *.cpp | grep -v steam_.*.cpp)
+endif
 
-LIBS = -L/usr/lib/x86_64-linux-gnu $(OPENGL_LIBS) -lSDL2 -lopenal -lvorbis -lvorbisfile -lSDL2_image $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS}
+LIBS = -L/usr/lib/x86_64-linux-gnu $(OPENGL_LIBS) -lSDL2 -lopenal -lvorbis -lvorbisfile -lSDL2_image \
+	   $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS} $(STEAM_LIBS)
 
 ifdef EASY_PROFILER
 LIBS += libeasy_profiler.so

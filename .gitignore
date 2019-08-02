@@ -1,3 +1,4 @@
+extern/steamworks/
 *.kep
 *.aut
 *.sit
@@ -18,5 +19,9 @@ KeeperRL.config
 KeeperRL.files
 KeeperRL.includes
 keeper
+keeper.exe
+steam_api.dll
+steam_api64.dll
 gen_version
 log.gz
+libsteam_api.so
