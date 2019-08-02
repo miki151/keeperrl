@@ -165,4 +165,10 @@ clean:
 	$(RM) $(NAME)
 	$(RM) $(OBJDIR)/stdafx.h.*
 
+# Recreates dependency files, in case they got outdated
+BASE_SRCS=$(basename $(SRCS))
+depends: $(PCH)
+	@echo $(BASE_SRCS) | tr '\n' ' ' | xargs -P16 -t -d' ' -I '{}' $(GCC) $(CFLAGS) $(PCHINC) \
+		'{}.cpp' -MM -MF $(OBJDIR)/'{}'.d -MT $(OBJDIR)/'{}'.o -E > /dev/null
+
 -include $(DEPS)
