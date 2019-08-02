@@ -6,7 +6,8 @@
 #include <unistd.h>
 #include "dirent.h"
 
-DirectoryPath::DirectoryPath(const std::string& p) : path(p) {}
+DirectoryPath::DirectoryPath(string p) : path(move(p)) {
+}
 
 FilePath DirectoryPath::file(const std::string& f) const {
   return FilePath(*this, f);
@@ -26,6 +27,15 @@ static bool isDirectory(const string& path) {
 
 bool DirectoryPath::exists() const {
   return isDirectory(getPath());
+}
+
+bool DirectoryPath::make() {
+#ifdef WINDOWS
+  int ret = mkdir(path.c_str());
+#else
+  int ret = mkdir(path.c_str(), 0775);
+#endif
+  return ret == 0;
 }
 
 void DirectoryPath::createIfDoesntExist() const {
@@ -84,4 +94,58 @@ const char* DirectoryPath::getPath() const {
 
 std::ostream& operator <<(std::ostream& d, const DirectoryPath& path) {
   return d << path.getPath();
+}
+
+bool isAbsolutePath(const char* str) {
+#ifdef WINDOWS
+  if ((str[0] >= 'a' && str[0] <= 'z') || (str[0] >= 'A' && str[0] <= 'Z'))
+    if (str[1] == ':' && (str[2] == '/' || str[2] == '\\'))
+      return true;
+#else
+  if (str[0] == '/')
+    return true;
+#endif
+  return false;
+}
+
+DirectoryPath DirectoryPath::current() {
+  char buffer[2048];
+  char* name = getcwd(buffer, sizeof(buffer) - 1);
+  CHECK(name && "getcwd error");
+  return DirectoryPath(name);
+}
+
+optional<string> DirectoryPath::copyFiles(DirectoryPath from, DirectoryPath to, bool recursive) {
+  if (!to.exists())
+    to.make();
+
+  // TODO: do it in better way
+  // TODO: report errors
+  for (auto file : from.getFiles()) {
+    if (auto contents = file.readContents()) {
+      ofstream out(string(to.getPath()) + "/" + file.getFileName());
+      out << *contents;
+    }
+  }
+
+  if (recursive) {
+    for (auto dir : from.getSubDirs()) {
+      DirectoryPath subTo(string(to.getPath()) + "/" + dir);
+      DirectoryPath subFrom(string(from.getPath()) + "/" + dir);
+      copyFiles(subFrom, subTo, recursive);
+    }
+  }
+
+  return none;
+}
+
+bool DirectoryPath::isAbsolute() const {
+  return isAbsolutePath(path.c_str());
+}
+
+DirectoryPath DirectoryPath::absolute() const {
+  if (isAbsolutePath(path.c_str()))
+    return *this;
+  // TODO: this is not exactly right if paths contain dots (../../)
+  return DirectoryPath(current().path + "/" + path);
 }
