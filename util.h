@@ -112,8 +112,8 @@ string toLower(const string& s);
 
 bool endsWith(const string&, const string& suffix);
 
-vector<string> split(const string& s, const set<char>& delim);
-vector<string> splitIncludeDelim(const string& s, const set<char>& delim);
+vector<string> split(const string& s, const std::initializer_list<char>& delim);
+vector<string> splitIncludeDelim(const string& s, const std::initializer_list<char>& delim);
 string combineWithOr(const vector<string>&);
 
 

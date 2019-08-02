@@ -159,29 +159,29 @@ bool endsWith(const string& s, const string& suffix) {
   return s.size() >= suffix.size() && s.substr(s.size() - suffix.size()) == suffix;
 }
 
-vector<string> split(const string& s, const set<char>& delim) {
+vector<string> split(const string& s, const std::initializer_list<char>& delim) {
   if (s.empty())
     return {};
   int begin = 0;
   vector<string> ret;
   for (int i : Range(s.size() + 1))
-    if (i == s.size() || delim.count(s[i])) {
+    if (i == s.size() || std::find(delim.begin(), delim.end(), s[i]) != delim.end()) {
       ret.push_back(s.substr(begin, i - begin));
       begin = i + 1;
     }
   return ret;
 }
 
-vector<string> splitIncludeDelim(const string& s, const set<char>& delim) {
+vector<string> splitIncludeDelim(const string& s, const std::initializer_list<char>& delim) {
   if (s.empty())
     return {};
   int begin = 0;
   vector<string> ret;
   for (int i : Range(s.size() + 1))
-    if (i == s.size() || delim.count(s[i])) {
+    if (i == s.size() || std::find(delim.begin(), delim.end(), s[i]) != delim.end()) {
       if (i > begin)
         ret.push_back(s.substr(begin, i - begin));
-      if (i < s.size() && delim.count(s[i]))
+      if (i < s.size() && std::find(delim.begin(), delim.end(), s[i]) != delim.end())
         ret.push_back(string(1, s[i]));
       begin = i + 1;
     }
