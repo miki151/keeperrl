@@ -23,6 +23,19 @@ time_t FilePath::getModificationTime() const {
   return buf.st_mtime;
 }
 
+bool FilePath::exists() const {
+#ifdef WINDOWS
+  struct _stat buf;
+  _stat(fullPath.c_str(), &buf);
+  return S_ISREG(buf.st_mode);
+#else
+  struct stat buf;
+  if (lstat(fullPath.c_str(), &buf) != 0)
+    return false;
+  return S_ISREG(buf.st_mode);
+#endif
+}
+
 bool FilePath::hasSuffix(const string& suf) const {
   return filename.size() >= suf.size() && filename.substr(filename.size() - suf.size()) == suf;
 }
@@ -47,12 +60,13 @@ optional<string> FilePath::readContents() const {
 FilePath::FilePath(const DirectoryPath& dir, const string& f) : filename(f), fullPath(dir.getPath() + "/"_s + f) {
 }
 
-FilePath::FilePath(const std::string& name, const std::string& path) : filename(name), fullPath(path) {
-
+FilePath::FilePath(string name, string path) : filename(std::move(name)), fullPath(std::move(path)) {
 }
 
-bool FilePath::operator==(const FilePath &rhs) const { return fullPath == rhs.fullPath; }
+bool FilePath::operator==(const FilePath& rhs) const {
+  return fullPath == rhs.fullPath;
+}
 
-std::ostream&operator <<(std::ostream& d, const FilePath& path) {
+std::ostream& operator <<(std::ostream& d, const FilePath& path) {
   return d << path.getPath();
 }
