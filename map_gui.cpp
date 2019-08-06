@@ -1211,8 +1211,16 @@ void MapGui::render(Renderer& renderer) {
   renderAnimations(renderer, currentTimeReal);
   if (lastHighlighted.tilePos)
     considerRedrawingSquareHighlight(renderer, currentTimeReal, *lastHighlighted.tilePos, size);
-  if (spriteMode && buttonViewId && renderer.getMousePos().inRectangle(getBounds()))
-    renderer.drawViewObject(renderer.getMousePos() + Vec2(15, 15), *buttonViewId, spriteMode, size);
+  if (renderer.getMousePos().inRectangle(getBounds())) {
+    int moveSelectionSize = 0;
+    if (spriteMode && buttonViewId) {
+      renderer.drawViewObject(renderer.getMousePos() + Vec2(15, 15), *buttonViewId, spriteMode, size);
+      moveSelectionSize = size.y;
+    }
+    if (selectionSize)
+      renderer.drawText(Color::WHITE, renderer.getMousePos() + Vec2(15, 20 + moveSelectionSize),
+          toString(abs(selectionSize->x) + 1) + "x" + toString(abs(selectionSize->y) + 1), Renderer::NONE, size.y / 2);
+  }
   processScrolling(currentTimeReal);
 }
 
@@ -1272,6 +1280,7 @@ double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
 
 void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* mapLayout, bool smoothMovement, bool ui,
     const optional<TutorialInfo>& tutorial) {
+  selectionSize = view->getSelectionSize();
   if (tutorial) {
     tutorialHighlightLow = tutorial->highlightedSquaresLow;
     tutorialHighlightHigh = tutorial->highlightedSquaresHigh;

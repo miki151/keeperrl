@@ -109,6 +109,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual double getAnimationTime() const override;
   virtual CenterType getCenterType() const override;
   virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const override;
+  virtual optional<Vec2> getSelectionSize() const override;
 
   // from CollectiveControl
   virtual void addAttack(const CollectiveAttack&) override;

@@ -2557,6 +2557,10 @@ const vector<Vec2>& PlayerControl::getUnknownLocations(WConstLevel) const {
   return unknownLocations->getOnLevel(getCurrentLevel());
 }
 
+optional<Vec2> PlayerControl::getSelectionSize() const {
+  return rectSelection.map([](const SelectionInfo& s) { return s.corner1 - s.corner2; });
+}
+
 const Creature* PlayerControl::getKeeper() const {
   return collective->getLeader();
 }

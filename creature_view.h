@@ -17,6 +17,7 @@
 
 #include "util.h"
 #include "unique_entity.h"
+#include "view_id.h"
 
 class GameInfo;
 class MapMemory;
@@ -42,6 +43,7 @@ class CreatureView {
   virtual double getAnimationTime() const = 0;
   virtual vector<Vec2> getVisibleEnemies() const = 0;
   virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const = 0;
+  virtual optional<Vec2> getSelectionSize() const { return none; }
   virtual ~CreatureView() {}
 };
 
