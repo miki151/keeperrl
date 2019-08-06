@@ -29,15 +29,6 @@ bool DirectoryPath::exists() const {
   return isDirectory(getPath());
 }
 
-bool DirectoryPath::make() {
-#ifdef WINDOWS
-  int ret = mkdir(path.c_str());
-#else
-  int ret = mkdir(path.c_str(), 0775);
-#endif
-  return ret == 0;
-}
-
 void DirectoryPath::createIfDoesntExist() const {
   if (!exists()) {
 #ifndef WINDOWS
@@ -116,8 +107,7 @@ DirectoryPath DirectoryPath::current() {
 }
 
 optional<string> DirectoryPath::copyFiles(DirectoryPath from, DirectoryPath to, bool recursive) {
-  if (!to.exists())
-    to.make();
+  to.createIfDoesntExist();
 
   // TODO: do it in better way
   // TODO: report errors

@@ -342,7 +342,7 @@ static optional<FileSharing::OnlineModInfo> parseModInfo(const vector<string>& f
   return none;
 }
 
-static string shortDescription(string text, int max_lines = 3) {
+static string firstLines(string text, int max_lines = 3) {
   int num_lines = 1;
   for (int n = 0; n < (int)text.size(); n++) {
     if (text[n] == '\n') {
@@ -446,7 +446,7 @@ optional<vector<FileSharing::OnlineModInfo>> FileSharing::getSteamMods() {
 
     OnlineModInfo mod;
     mod.author = ownerNames[n].value_or("unknown");
-    mod.description = shortDescription(info.description);
+    mod.description = firstLines(info.description);
     mod.name = info.title;
     // TODO: playtimeSessions is not exactly the same as numGames
     mod.numGames = info.stats->playtimeSessions;
