@@ -108,6 +108,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
 
   WLevel getLevel() const;
   void considerAdventurerMusic();
+  void considerKeeperModeTravelMusic();
   void creatureClickAction(Position, bool extended);
   void pickUpItemAction(int item, bool multi = false);
   void equipmentAction();

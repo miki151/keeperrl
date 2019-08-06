@@ -45,6 +45,7 @@ class Game : public OwnedObject<Game> {
   string getGameDisplayName() const;
   MusicType getCurrentMusic() const;
   void setCurrentMusic(MusicType, bool now);
+  void setDefaultMusic(bool now);
   bool changeMusicNow() const;
   Statistics& getStatistics();
   const Statistics& getStatistics() const;

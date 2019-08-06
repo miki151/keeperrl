@@ -2610,7 +2610,7 @@ void PlayerControl::checkKeeperDanger() {
 }
 
 void PlayerControl::onNoEnemies() {
-  getGame()->setCurrentMusic(MusicType::PEACEFUL, false);
+  getGame()->setDefaultMusic(false);
 }
 
 void PlayerControl::considerNightfallMessage() {

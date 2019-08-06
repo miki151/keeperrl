@@ -507,11 +507,16 @@ MusicType Game::getCurrentMusic() const {
   return musicType;
 }
 
-void Game::setCurrentMusic(MusicType type, bool now) {
-  if (type == MusicType::PEACEFUL && sunlightInfo.getState() == SunlightState::NIGHT)
+void Game::setDefaultMusic(bool now) {
+  if (sunlightInfo.getState() == SunlightState::NIGHT)
     musicType = MusicType::NIGHT;
   else
-    musicType = type;
+    musicType = getCurrentModel()->getDefaultMusic().value_or(MusicType::PEACEFUL);
+  finishCurrentMusic = now;
+}
+
+void Game::setCurrentMusic(MusicType type, bool now) {
+  musicType = type;
   finishCurrentMusic = now;
 }
 

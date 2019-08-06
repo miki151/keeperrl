@@ -41,6 +41,7 @@
 #include "resource_counts.h"
 #include "content_factory.h"
 #include "item_list.h"
+#include "biome_id.h"
 
 namespace {
 

@@ -1146,6 +1146,20 @@ const vector<Vec2>& Player::getUnknownLocations(WConstLevel level) const {
   return unknownLocations->getOnLevel(level);
 }
 
+void Player::considerKeeperModeTravelMusic() {
+  if (auto t = getModel()->getDefaultMusic()) {
+    getGame()->setCurrentMusic(*t, true);
+    return;
+  }
+  for (WCollective col : getModel()->getCollectives())
+    if (col->getVillainType() == VillainType::MAIN && !col->isConquered() &&
+        col->getTerritory().contains(creature->getPosition())) {
+      getGame()->setCurrentMusic(MusicType::BATTLE, true);
+      return;
+    }
+  getGame()->setCurrentMusic(MusicType::PEACEFUL, true);
+}
+
 void Player::considerAdventurerMusic() {
   for (WCollective col : getModel()->getCollectives())
     if (col->getVillainType() == VillainType::MAIN && !col->isConquered() &&

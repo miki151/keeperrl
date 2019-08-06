@@ -38,6 +38,7 @@
 #include "external_enemies.h"
 #include "test_struct.h"
 #include "item_attributes.h"
+#include "biome_id.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename, KeyVerifier* keyVerifier) {

@@ -38,6 +38,7 @@
 #include "resource_counts.h"
 #include "content_factory.h"
 #include "enemy_id.h"
+#include "biome_id.h"
 
 using namespace std::chrono;
 
@@ -441,7 +442,7 @@ static optional<CreatureGroup> getWildlife(BiomeId id) {
 
 PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<TribeId> keeperTribe, BiomeId biomeId,
     optional<ExternalEnemies> externalEnemies, bool hasWildlife) {
-  auto model = Model::create(contentFactory);
+  auto model = Model::create(contentFactory, biomeId);
   vector<SettlementInfo> topLevelSettlements;
   vector<EnemyInfo> extraEnemies;
   for (auto& elem : enemyInfo) {
@@ -488,7 +489,7 @@ PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<T
 }
 
 PModel ModelBuilder::splashModel(const FilePath& splashPath) {
-  auto m = Model::create(contentFactory);
+  auto m = Model::create(contentFactory, BiomeId::GRASSLAND);
   WLevel l = m->buildMainLevel(
       LevelBuilder(meter, Random, contentFactory, Level::getSplashBounds().width(),
           Level::getSplashBounds().height(), true, 1.0),
@@ -501,7 +502,7 @@ PModel ModelBuilder::splashModel(const FilePath& splashPath) {
 }
 
 PModel ModelBuilder::battleModel(const FilePath& levelPath, CreatureList allies, CreatureList enemies) {
-  auto m = Model::create(contentFactory);
+  auto m = Model::create(contentFactory, BiomeId::GRASSLAND);
   ifstream stream(levelPath.getPath());
   Table<char> level = *SokobanInput::readTable(stream);
   WLevel l = m->buildMainLevel(

@@ -42,7 +42,7 @@ class ContentFactory;
   */
 class Model : public OwnedObject<Model> {
   public:
-  static PModel create(ContentFactory*);
+  static PModel create(ContentFactory*, BiomeId);
   
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
@@ -58,6 +58,7 @@ class Model : public OwnedObject<Model> {
   void landHeroPlayer(PCreature);
   void addExternalEnemies(ExternalEnemies);
   const heap_optional<ExternalEnemies>& getExternalEnemies() const;
+  optional<MusicType> getDefaultMusic() const;
 
   bool isTurnBased();
 
@@ -135,5 +136,6 @@ class Model : public OwnedObject<Model> {
   void checkCreatureConsistency();
   heap_optional<ExternalEnemies> SERIAL(externalEnemies);
   int moveCounter = 0;
+  BiomeId SERIAL(biome);
 };
 

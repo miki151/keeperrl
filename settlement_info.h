@@ -19,14 +19,6 @@ RICH_ENUM(BuildingId,
   GLACIER
 );
 
-RICH_ENUM(BiomeId,
-  GRASSLAND,
-  FORREST,
-  MOUNTAIN,
-  DESERT,
-  SNOW
-);
-
 struct StockpileInfo {
   ItemListId SERIAL(items);
   int SERIAL(count);

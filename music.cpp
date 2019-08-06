@@ -18,7 +18,7 @@
 #include "options.h"
 #include "audio_device.h"
 
-Jukebox::Jukebox(AudioDevice& audio, vector<pair<MusicType, FilePath> > tracks, double maxVol)
+Jukebox::Jukebox(AudioDevice& audio, vector<pair<MusicType, FilePath>> tracks, double maxVol)
     : numTracks(tracks.size()), maxVolume(maxVol), audioDevice(audio) {
   for (int i : All(tracks)) {
     music.emplace_back(tracks[i].second);
