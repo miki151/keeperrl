@@ -14,7 +14,6 @@ class DirectoryPath {
   FilePath file(const string&) const;
   DirectoryPath subdirectory(const string& s) const;
   bool exists() const;
-  bool make();
 
   void createIfDoesntExist() const;
   void removeRecursively() const;
