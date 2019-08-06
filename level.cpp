@@ -436,6 +436,7 @@ void Level::unplaceCreature(Creature* creature, Vec2 pos) {
 }
 
 void Level::placeCreature(Creature* creature, Vec2 pos) {
+  auto prevPos = creature->getPosition();
   Position position(pos, this);
   creature->setPosition(position);
   bucketMap->addElement(pos, creature);
@@ -443,8 +444,14 @@ void Level::placeCreature(Creature* creature, Vec2 pos) {
   updateCreatureLight(pos, 1);
   position.onEnter(creature);
   model->increaseMoveCounter();
+  int numEffects = 0;
   forEachEffect(pos, creature->getTribeId(),
-      [&] (LastingEffect effect) {creature->addPermanentEffect(effect, 1, false);});
+      [&] (LastingEffect effect) {creature->addPermanentEffect(effect, 1, false); ++numEffects;});
+  int numEffectsPrev = 0;
+  if (prevPos.getLevel() == this)
+    forEachEffect(prevPos.getCoord(), creature->getTribeId(), [&] (LastingEffect) {++numEffectsPrev;});
+  if (numEffects > numEffectsPrev)
+    creature->verb("feel", "feels", "the presence of a magical field");
 }
 
 void Level::swapCreatures(Creature* c1, Creature* c2) {
