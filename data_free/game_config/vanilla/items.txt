@@ -520,6 +520,36 @@
       }
       maxUpgrades = 0
     }
+  "IronShield"
+    {
+      viewId = { "wooden_shield" Rgb 189 189 189 255 }
+      shortName = "iron"
+      name = "iron shield"
+      itemClass = ARMOR
+      equipmentSlot = SHIELD
+      weight = 2
+      price = 10
+      modifiers = {
+        PARRY 2
+        DEFENSE 2
+      }
+      maxUpgrades = 1
+    }
+  "AdaShield"
+    {
+      viewId = { "wooden_shield" Rgb 148 189 189 255 }
+      shortName = "adamantine"
+      name = "adamantine shield"
+      itemClass = ARMOR
+      equipmentSlot = SHIELD
+      weight = 1.5
+      price = 50
+      modifiers = {
+        PARRY 3
+        DEFENSE 4
+      }
+      maxUpgrades = 2
+    }
   "ChainArmor"
     {
       viewId = { "chain_armor" }

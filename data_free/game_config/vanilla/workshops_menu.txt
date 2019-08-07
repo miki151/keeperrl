@@ -36,6 +36,7 @@
      requireIngredient = true
     }
     {{Simple "IronGloves"}            3        IRON 2}
+    {{Simple "IronShield"}            12       IRON 24}
     {{Simple "WarHammer"}             16       IRON 40      "two-handed weapons"}
     {{Simple "BattleAxe"}             22       IRON 50      "two-handed weapons"}
     {{Simple "IronStaff"}             20       IRON 40      "magical weapons"}
@@ -45,6 +46,7 @@
     {{Simple "AdaHelm"}               15       ADA 16}
     {{Simple "AdaBoots"}              15       ADA 24}
     {{Simple "AdaGloves"}             6        ADA 2}
+    {{Simple "AdaShield"}             12       ADA 24}
     {{Simple "AdaWarHammer"}          20       ADA 40       "two-handed weapons"}
     {{Simple "AdaBattleAxe"}          22       ADA 50       "two-handed weapons"}
 }
