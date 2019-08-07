@@ -8,16 +8,17 @@ class FilePath {
   const char* getPath() const;
   const char* getFileName() const;
   time_t getModificationTime() const;
+  bool exists() const;
   bool hasSuffix(const string&) const;
   FilePath changeSuffix(const string& current, const string& newSuf) const;
   optional<string> readContents() const;
 
-  bool operator==(const FilePath &) const;
+  bool operator==(const FilePath&) const;
 
   private:
   friend class DirectoryPath;
   FilePath(const DirectoryPath& d, const string& f);
-  FilePath(const string& filename, const string& fullPath);
+  FilePath(string filename, string fullPath);
 
   string filename;
   string fullPath;

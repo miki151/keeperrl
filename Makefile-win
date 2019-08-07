@@ -1,6 +1,6 @@
 
 
-CC = g++
+GCC = g++
 LD = g++
 CFLAGS = -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-strict-aliasing -Wl,--stack,16000000
 
@@ -30,6 +30,10 @@ ifdef AMD64
 GFLAG += -DAMD64
 endif
 
+ifdef STEAMWORKS
+include Makefile-steam
+endif
+
 ifdef OPT
 GFLAG += -O2
 endif
@@ -48,7 +52,11 @@ IPATH = -I. -I./extern
 
 CFLAGS += $(IPATH)
 
+ifdef STEAMWORKS
 SRCS = $(shell ls -t *.cpp)
+else
+SRCS = $(shell ls -t *.cpp | grep -v steam_.*.cpp)
+endif
 
 ifdef AMD64
 RES_FILE=keeper.res
@@ -56,7 +64,8 @@ else
 RES_FILE=keeper32.res
 endif
 
-LIBS = -mwindows ${RES_FILE} -lvorbisfile -lvorbis -logg -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid
+LIBS = -mwindows ${RES_FILE} -lvorbisfile -lvorbis -logg -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 \
+	   -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid $(STEAM_LIBS)
 
 ifdef AMD64
 LIBS += -lmingw32 -lSDL2main -lSDL2 -lfreeglut -lglu32 -lz -lglew32 -ljpeg -lopenal -lopengl32 -lcurl -limagehlp -lpthread
@@ -86,10 +95,15 @@ all:
 compile: gen_version $(NAME)
 
 stdafx.h.gch: stdafx.h $(wildcard *.h)
-	$(CC) -MMD $(CFLAGS) -c $< -o $@
+	$(GCC) -MMD $(CFLAGS) -c $< -o $@
 
-$(OBJDIR)/%.o: %.cpp
-	$(CC) -MMD $(CFLAGS) -c $< -o $@
+ifndef RELEASE
+PCH = $(OBJDIR)/stdafx.h.gch
+PCHINC = -include stdafx.h
+endif
+
+$(OBJDIR)/%.o: %.cpp ${PCH}
+	$(GCC) -MMD $(CFLAGS) $(PCHINC) -c $< -o $@
 
 $(NAME): $(OBJS) $(OBJDIR)/main.o
 	$(LD) $(CFLAGS) -o $@ $^ $(LIBS)
@@ -101,7 +115,7 @@ gen_version:
 	bash ./gen_version.sh
 
 info:
-	@$(CC) -v 2>&1 | head -n 2
+	@$(GCC) -v 2>&1 | head -n 2
 clean:
 	$(RM) $(OBJDIR)/*.o
 	$(RM) $(OBJDIR)/*.d

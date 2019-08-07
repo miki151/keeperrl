@@ -112,8 +112,8 @@ string toLower(const string& s);
 
 bool endsWith(const string&, const string& suffix);
 
-vector<string> split(const string& s, const set<char>& delim);
-vector<string> splitIncludeDelim(const string& s, const set<char>& delim);
+vector<string> split(const string& s, const std::initializer_list<char>& delim);
+vector<string> splitIncludeDelim(const string& s, const std::initializer_list<char>& delim);
 string combineWithOr(const vector<string>&);
 
 
@@ -1748,4 +1748,7 @@ template <class T> constexpr bool isOneOf(const T& value) {
 template <class T, class Arg1, class... Args>
 constexpr bool isOneOf(const T& value, const Arg1& arg1, const Args&... args) {
   return value == arg1 || isOneOf(value, args...);
+}
+template <class T, int size> constexpr int arraySize(T (&)[size]) {
+  return size;
 }

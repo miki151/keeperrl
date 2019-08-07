@@ -64,7 +64,7 @@ class MainLoop {
 
   PGame prepareCampaign(RandomGen&);
   enum class ExitCondition;
-  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave,
+  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, bool splashScreen,
       function<optional<ExitCondition> (WGame)> = nullptr, milliseconds stepTimeMilli = milliseconds{3}, optional<int> maxTurns = none);
   void splashScreen();
   void showCredits(const FilePath& path);
@@ -105,6 +105,12 @@ class MainLoop {
   void saveMainModel(PGame&, const FilePath&);
   ContentFactory createContentFactory(bool vanillaOnly) const;
   TilePaths getTilePathsForAllMods() const;
-  int getLocalVersion(const string& mod);
-  void updateLocalVersion(const string& mod, int version);
+
+  // TODO: move to file_sharing?
+  pair<int, unsigned long long> getLocalVersion(const string& mod);
+  void updateLocalVersion(const string& mod, int version, unsigned long long steamId);
+  void removeMod(const string &modName);
+  void removeOldSteamMod(unsigned long long steamId, const string &newName);
+
+  void registerModPlaytime(bool started);
 };
