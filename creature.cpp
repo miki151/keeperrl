@@ -68,7 +68,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills, statuses);
   ar(difficultyPoints, points, capture, spellMap);
-  ar(vision, debt, highestAttackValueEver, lastCombatIntent);
+  ar(vision, debt, highestAttackValueEver, lastCombatIntent, hitsInfo);
 }
 
 SERIALIZABLE(Creature)
@@ -1157,6 +1157,21 @@ bool Creature::captureDamage(double damage, Creature* attacker) {
     return false;
 }
 
+void Creature::increaseHitCount() {
+  if (hitsInfo.hitTurn != position.getModel()->getLocalTime()) {
+    hitsInfo.numHits = 0;
+    hitsInfo.hitTurn = position.getModel()->getLocalTime();
+  }
+  ++hitsInfo.numHits;
+}
+
+int Creature::getHitCount() const {
+  if (hitsInfo.hitTurn != position.getModel()->getLocalTime())
+    return 0;
+  else
+    return max(0, hitsInfo.numHits - getAttr(AttrType::PARRY));
+}
+
 bool Creature::takeDamage(const Attack& attack) {
   PROFILE;
   if (Creature* attacker = attack.attacker) {
@@ -1165,13 +1180,16 @@ bool Creature::takeDamage(const Attack& attack) {
       if (*c->getPosition().dist8(position) < 10)
         c->removeEffect(LastingEffect::SLEEP);
   }
-  double defense = getAttr(AttrType::DEFENSE);
+  const double hitPenalty = 0.95;
+  int hitCount = getHitCount();
+  increaseHitCount();
+  double defense = getAttr(AttrType::DEFENSE) * pow(hitPenalty, hitCount);
+  if (hitCount > 0)
+    you(MsgType::YOUR, "defense is weakened");
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       defense = LastingEffects::modifyCreatureDefense(effect, defense, attack.damageType);
   double damage = getDamage((double) attack.strength / defense);
-  for (auto& item : equipment->getAllEquipped())
-    damage *= 1.0 - item->getDamageReduction();
   if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
     addSound(*sound);
   bool returnValue = damage > 0;

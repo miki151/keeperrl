@@ -196,8 +196,6 @@ vector<string> Item::getDescription() const {
   vector<string> ret;
   if (!attributes->description.empty())
     ret.push_back(attributes->description);
-  if (attributes->damageReduction > 0)
-    ret.push_back(toString(int(attributes->damageReduction * 100)) + "% damage reduction");
   if (auto& effect = attributes->effect)
     ret.push_back("Usage effect: " + effect->getName());
   for (auto& effect : getWeaponInfo().victimEffect)
@@ -213,10 +211,6 @@ vector<string> Item::getDescription() const {
 
 optional<LastingEffect> Item::getOwnedEffect() const {
   return attributes->ownedEffect;
-}
-
-double Item::getDamageReduction() const {
-  return attributes->damageReduction;
 }
 
 const WeaponInfo& Item::getWeaponInfo() const {
@@ -449,14 +443,14 @@ string Item::getModifiers(bool shorten) const {
         break;
       case ItemClass::ARMOR:
         printAttr.insert(AttrType::DEFENSE);
+        if (attributes->modifiers[AttrType::PARRY])
+          printAttr.insert(AttrType::PARRY);
         break;
       default: break;
     }
   vector<string> attrStrings;
   for (auto attr : printAttr)
     attrStrings.push_back(withSign(attributes->modifiers[attr]) + (shorten ? "" : " " + ::getName(attr)));
-  if (attributes->damageReduction > 0)
-    attrStrings.push_back(toString(int(attributes->damageReduction * 100)) + "%");
   string attrString = combine(attrStrings, true);
   if (!attrString.empty())
     attrString = "(" + attrString + ")";

@@ -515,7 +515,9 @@
       equipmentSlot = SHIELD
       weight = 2
       price = 1
-      damageReduction = 0.1
+      modifiers = {
+        PARRY 1
+      }
       maxUpgrades = 0
     }
   "ChainArmor"

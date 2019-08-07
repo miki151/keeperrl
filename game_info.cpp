@@ -205,5 +205,9 @@ vector<AttributeInfo> AttributeInfo::fromCreature(const Creature* c) {
           AttrType::RANGED_DAMAGE,
           "Affects if and how much damage is dealt when shooting a ranged weapon."
       ),
+      genInfo(
+          AttrType::PARRY,
+          "Prevents defense penalty from multiple attacks in the same turn."
+      ),
     };
 }

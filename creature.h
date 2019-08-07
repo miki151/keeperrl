@@ -278,6 +278,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canSwapPositionWithEnemy(Creature* other) const;
   vector<PItem> generateCorpse(const ContentFactory*, bool instantlyRotten = false) const;
   int getLastMoveCounter() const;
+  int getHitCount() const;
 
   EnumSet<CreatureStatus>& getStatus();
   const EnumSet<CreatureStatus>& getStatus() const;
@@ -335,6 +336,13 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void considerMovingFromInaccessibleSquare();
   void updateLastingFX(ViewObject&);
   HeapAllocated<SpellMap> SERIAL(spellMap);
+  struct HitsInfo {
+    int SERIAL(numHits);
+    LocalTime SERIAL(hitTurn);
+    SERIALIZE_ALL(numHits, hitTurn)
+  };
+  HitsInfo SERIAL(hitsInfo);
+  void increaseHitCount();
 };
 
 struct AdjectiveInfo {

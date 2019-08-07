@@ -29,7 +29,7 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(OPTION(applyTime), NAMED(ownedEffect), OPTION(maxUpgrades), OPTION(fragile), NAMED(effect), OPTION(uses), OPTION(usedUpMsg));
   ar(OPTION(displayUses), OPTION(modifiers), NAMED(shortName), OPTION(equipedEffect), NAMED(upgradeInfo));
   ar(NAMED(applyMsgFirstPerson), NAMED(applyMsgThirdPerson), NAMED(applySound), NAMED(rangedWeapon), OPTION(weaponInfo));
-  ar(OPTION(prefixes), OPTION(genPrefixes), OPTION(damageReduction), NAMED(ingredientFor));
+  ar(OPTION(prefixes), OPTION(genPrefixes), NAMED(ingredientFor));
 }
 
 SERIALIZABLE(ItemAttributes);

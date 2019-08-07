@@ -2855,7 +2855,7 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
         }));
 }
 
-SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem>&& attrs) {
+SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem> attrs) {
   if (attrs.empty())
     return gui.empty();
   vector<SGuiElem> lines[2];
