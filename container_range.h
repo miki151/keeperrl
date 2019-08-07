@@ -242,7 +242,7 @@ ConstContainerRange<Container> Iter(const Container& c) {
 
 template <typename Container>
 TempContainerRange<Container> Iter(Container&& c,
-    typename std::enable_if<std::is_rvalue_reference<Container&&>::value >::type* = 0,
-    typename std::enable_if<!std::is_const<Container>::value>::type* = 0) {
+    typename std::enable_if<std::is_rvalue_reference<Container&&>::value >::type* = nullptr,
+    typename std::enable_if<!std::is_const<Container>::value>::type* = nullptr) {
   return TempContainerRange<Container>(std::move(c));
 }

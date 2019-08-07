@@ -1047,11 +1047,11 @@ int stbtt_GetGlyphShape(const stbtt_fontinfo *info, int glyph_index, stbtt_verte
    stbtt_int16 numberOfContours;
    stbtt_uint8 *endPtsOfContours;
    stbtt_uint8 *data = info->data;
-   stbtt_vertex *vertices=0;
+   stbtt_vertex *vertices=nullptr;
    int num_vertices=0;
    int g = stbtt__GetGlyfOffset(info, glyph_index);
 
-   *pvertices = NULL;
+   *pvertices = nullptr;
 
    if (g < 0) return 0;
 
@@ -1070,7 +1070,7 @@ int stbtt_GetGlyphShape(const stbtt_fontinfo *info, int glyph_index, stbtt_verte
 
       m = n + 2*numberOfContours;  // a loose bound on how many vertices we might need
       vertices = (stbtt_vertex *) STBTT_malloc(m * sizeof(vertices[0]), info->userdata);
-      if (vertices == 0)
+      if (vertices == nullptr)
          return 0;
 
       next_move = 0;
@@ -1185,11 +1185,11 @@ int stbtt_GetGlyphShape(const stbtt_fontinfo *info, int glyph_index, stbtt_verte
       int more = 1;
       stbtt_uint8 *comp = data + g + 10;
       num_vertices = 0;
-      vertices = 0;
+      vertices = nullptr;
       while (more) {
          stbtt_uint16 flags, gidx;
          int comp_num_verts = 0, i;
-         stbtt_vertex *comp_verts = 0, *tmp = 0;
+         stbtt_vertex *comp_verts = nullptr, *tmp = nullptr;
          float mtx[6] = {1,0,0,1,0,0}, m, n;
 
          flags = ttSHORT(comp); comp+=2;
@@ -1416,7 +1416,7 @@ static stbtt__active_edge *new_active(stbtt__edge *e, int off_x, float start_poi
    z->x = STBTT_ifloor(FIX * (e->x0 + dxdy * (start_point - e->y0)));
    z->x -= off_x * FIX;
    z->ey = e->y1;
-   z->next = 0;
+   z->next = nullptr;
    z->valid = e->invert ? 1 : -1;
    return z;
 }
@@ -1468,7 +1468,7 @@ static void stbtt__fill_active_edges(unsigned char *scanline, int len, stbtt__ac
 
 static void stbtt__rasterize_sorted_edges(stbtt__bitmap *result, stbtt__edge *e, int n, int vsubsample, int off_x, int off_y, void *userdata)
 {
-   stbtt__active_edge *active = NULL;
+   stbtt__active_edge *active = nullptr;
    int y,j=0;
    int max_weight = (255 / vsubsample);  // weight per vertical scanline
    int s; // vertical subsample index
@@ -1528,7 +1528,7 @@ static void stbtt__rasterize_sorted_edges(stbtt__bitmap *result, stbtt__edge *e,
             if (e->y1 > scan_y) {
                stbtt__active_edge *z = new_active(e, off_x, scan_y, userdata);
                // find insertion point
-               if (active == NULL)
+               if (active == nullptr)
                   active = z;
                else if (z->x < active->x) {
                   // insert at front
@@ -1596,7 +1596,7 @@ static void stbtt__rasterize(stbtt__bitmap *result, stbtt__point *pts, int *wcou
       n += wcount[i];
 
    e = (stbtt__edge *) STBTT_malloc(sizeof(*e) * (n+1), userdata); // add an extra one as a sentinel
-   if (e == 0) return;
+   if (e == nullptr) return;
    n = 0;
 
    m=0;
@@ -1663,7 +1663,7 @@ static int stbtt__tesselate_curve(stbtt__point *points, int *num_points, float x
 // returns number of contours
 stbtt__point *stbtt_FlattenCurves(stbtt_vertex *vertices, int num_verts, float objspace_flatness, int **contour_lengths, int *num_contours, void *userdata)
 {
-   stbtt__point *points=0;
+   stbtt__point *points=nullptr;
    int num_points=0;
 
    float objspace_flatness_squared = objspace_flatness * objspace_flatness;
@@ -1675,13 +1675,13 @@ stbtt__point *stbtt_FlattenCurves(stbtt_vertex *vertices, int num_verts, float o
          ++n;
 
    *num_contours = n;
-   if (n == 0) return 0;
+   if (n == 0) return nullptr;
 
    *contour_lengths = (int *) STBTT_malloc(sizeof(**contour_lengths) * n, userdata);
 
-   if (*contour_lengths == 0) {
+   if (*contour_lengths == nullptr) {
       *num_contours = 0;
-      return 0;
+      return nullptr;
    }
 
    // make two passes through the points so we don't need to realloc
@@ -1689,7 +1689,7 @@ stbtt__point *stbtt_FlattenCurves(stbtt_vertex *vertices, int num_verts, float o
       float x=0,y=0;
       if (pass == 1) {
          points = (stbtt__point *) STBTT_malloc(num_points * sizeof(points[0]), userdata);
-         if (points == NULL) goto error;
+         if (points == nullptr) goto error;
       }
       num_points = 0;
       n= -1;
@@ -1725,9 +1725,9 @@ stbtt__point *stbtt_FlattenCurves(stbtt_vertex *vertices, int num_verts, float o
 error:
    STBTT_free(points, userdata);
    STBTT_free(*contour_lengths, userdata);
-   *contour_lengths = 0;
+   *contour_lengths = nullptr;
    *num_contours = 0;
-   return NULL;
+   return nullptr;
 }
 
 void stbtt_Rasterize(stbtt__bitmap *result, float flatness_in_pixels, stbtt_vertex *vertices, int num_verts, float scale_x, float scale_y, float shift_x, float shift_y, int x_off, int y_off, int invert, void *userdata)
@@ -1756,7 +1756,7 @@ unsigned char *stbtt_GetGlyphBitmapSubpixel(const stbtt_fontinfo *info, float sc
 
    if (scale_x == 0) scale_x = scale_y;
    if (scale_y == 0) {
-      if (scale_x == 0) return NULL;
+      if (scale_x == 0) return nullptr;
       scale_y = scale_x;
    }
 
@@ -1765,7 +1765,7 @@ unsigned char *stbtt_GetGlyphBitmapSubpixel(const stbtt_fontinfo *info, float sc
    // now we get the size
    gbm.w = (ix1 - ix0);
    gbm.h = (iy1 - iy0);
-   gbm.pixels = NULL; // in case we error
+   gbm.pixels = nullptr; // in case we error
 
    if (width ) *width  = gbm.w;
    if (height) *height = gbm.h;
@@ -1796,7 +1796,7 @@ void stbtt_MakeGlyphBitmapSubpixel(const stbtt_fontinfo *info, unsigned char *ou
    int num_verts = stbtt_GetGlyphShape(info, glyph, &vertices);
    stbtt__bitmap gbm;
 
-   stbtt_GetGlyphBitmapBoxSubpixel(info, glyph, scale_x, scale_y, shift_x, shift_y, &ix0,&iy0,0,0);
+   stbtt_GetGlyphBitmapBoxSubpixel(info, glyph, scale_x, scale_y, shift_x, shift_y, &ix0,&iy0,nullptr,nullptr);
    gbm.pixels = output;
    gbm.w = out_w;
    gbm.h = out_h;
@@ -1962,7 +1962,7 @@ const char *stbtt_GetFontNameString(const stbtt_fontinfo *font, int *length, int
    stbtt_uint8 *fc = font->data;
    stbtt_uint32 offset = font->fontstart;
    stbtt_uint32 nm = stbtt__find_table(fc, offset, "name");
-   if (!nm) return NULL;
+   if (!nm) return nullptr;
 
    count = ttUSHORT(fc+nm+2);
    stringOffset = nm + ttUSHORT(fc+nm+4);
@@ -1974,7 +1974,7 @@ const char *stbtt_GetFontNameString(const stbtt_fontinfo *font, int *length, int
          return (const char *) (fc+stringOffset+ttUSHORT(fc+loc+10));
       }
    }
-   return NULL;
+   return nullptr;
 }
 
 static int stbtt__matchpair(stbtt_uint8 *fc, stbtt_uint32 nm, stbtt_uint8 *name, stbtt_int32 nlen, stbtt_int32 target_id, stbtt_int32 next_id)

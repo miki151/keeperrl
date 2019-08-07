@@ -203,7 +203,7 @@ int printStacktraceWithGdb() {
   void posix_print_stack_trace()
   {
     int i, trace_size = 0;
-    char **messages = (char **)NULL;
+    char **messages = (char **)nullptr;
 
     trace_size = backtrace(stack_traces, MAX_STACK_FRAMES);
     messages = backtrace_symbols(stack_traces, trace_size);
@@ -311,7 +311,7 @@ int printStacktraceWithGdb() {
       default:
         break;
     }
-    time_t curTime = time(0);
+    time_t curTime = time(nullptr);
     fprintf(errorOut, "Current time %ld, running time %ld\n", curTime, curTime - startTime);
     fclose(errorOut);
     posix_print_stack_trace();
@@ -330,7 +330,7 @@ int printStacktraceWithGdb() {
       ss.ss_size = SIGSTKSZ;
       ss.ss_flags = 0;
 
-      if (sigaltstack(&ss, NULL) != 0) { err(1, "sigaltstack"); }
+      if (sigaltstack(&ss, nullptr) != 0) { err(1, "sigaltstack"); }
     }
 
     /* register our signal handlers */
@@ -347,12 +347,12 @@ int printStacktraceWithGdb() {
           sig_action.sa_flags = SA_SIGINFO | SA_ONSTACK;
       #endif
 
-      if (sigaction(SIGSEGV, &sig_action, NULL) != 0) { err(1, "sigaction"); }
-      if (sigaction(SIGFPE,  &sig_action, NULL) != 0) { err(1, "sigaction"); }
-   //   if (sigaction(SIGINT,  &sig_action, NULL) != 0) { err(1, "sigaction"); }
-      if (sigaction(SIGILL,  &sig_action, NULL) != 0) { err(1, "sigaction"); }
-      if (sigaction(SIGTERM, &sig_action, NULL) != 0) { err(1, "sigaction"); }
-      if (sigaction(SIGABRT, &sig_action, NULL) != 0) { err(1, "sigaction"); }
+      if (sigaction(SIGSEGV, &sig_action, nullptr) != 0) { err(1, "sigaction"); }
+      if (sigaction(SIGFPE,  &sig_action, nullptr) != 0) { err(1, "sigaction"); }
+   //   if (sigaction(SIGINT,  &sig_action, nullptr) != 0) { err(1, "sigaction"); }
+      if (sigaction(SIGILL,  &sig_action, nullptr) != 0) { err(1, "sigaction"); }
+      if (sigaction(SIGTERM, &sig_action, nullptr) != 0) { err(1, "sigaction"); }
+      if (sigaction(SIGABRT, &sig_action, nullptr) != 0) { err(1, "sigaction"); }
     }
   }
 #endif
