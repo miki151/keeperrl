@@ -28,6 +28,7 @@
 #include "msg_type.h"
 #include "game_time.h"
 #include "creature_status.h"
+#include "view_id.h"
 
 class Skill;
 class Level;
@@ -67,6 +68,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   static vector<vector<Creature*>> stack(const vector<Creature*>&);
 
   const ViewObject& getViewObjectFor(const Tribe* observer) const;
+  void setAlternativeViewId(optional<ViewId>);
+  bool hasAlternativeViewId() const;
   void makeMove();
   optional<LocalTime> getLocalTime() const;
   optional<GlobalTime> getGlobalTime() const;
@@ -343,6 +346,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   };
   HitsInfo SERIAL(hitsInfo);
   void increaseHitCount();
+  optional<ViewId> SERIAL(primaryViewId);
 };
 
 struct AdjectiveInfo {

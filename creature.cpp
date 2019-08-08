@@ -68,7 +68,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills, statuses);
   ar(difficultyPoints, points, capture, spellMap);
-  ar(vision, debt, highestAttackValueEver, lastCombatIntent, hitsInfo);
+  ar(vision, debt, highestAttackValueEver, lastCombatIntent, hitsInfo, primaryViewId);
 }
 
 SERIALIZABLE(Creature)
@@ -105,6 +105,20 @@ const ViewObject& Creature::getViewObjectFor(const Tribe* observer) const {
     return *attributes->getIllusionViewObject();
   else
     return getViewObject();
+}
+
+void Creature::setAlternativeViewId(optional<ViewId> id) {
+  if (id) {
+    primaryViewId = getViewObject().id();
+    modViewObject().setId(*id);
+  } else if (!!primaryViewId) {
+    modViewObject().setId(*primaryViewId);
+    primaryViewId = none;
+  }
+}
+
+bool Creature::hasAlternativeViewId() const {
+  return !!primaryViewId;
 }
 
 const Body& Creature::getBody() const {

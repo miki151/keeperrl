@@ -12,6 +12,8 @@
 #include "fx_info.h"
 #include "game.h"
 #include "vision.h"
+#include "collective.h"
+#include "territory.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
@@ -286,6 +288,10 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::NO_CARRY_LIMIT:
         c->you(MsgType::YOUR, "carrying capacity increases");
         break;
+      case LastingEffect::SPYING:
+        c->secondPerson("You put on your sunglasses"_s);
+        c->thirdPerson(c->getName().the() + " puts on " + his(c->getAttributes().getGender()) + " sunglasses"_s);
+        break;
     }
 }
 
@@ -510,6 +516,11 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::NO_CARRY_LIMIT:
         c->you(MsgType::YOUR, "carrying capacity decreases");
         break;
+      case LastingEffect::SPYING:
+        c->secondPerson("You remove your sunglasses"_s);
+        c->thirdPerson(c->getName().the() + " removes " + his(c->getAttributes().getGender()) + " sunglasses"_s);
+        c->setAlternativeViewId(none);
+        break;
       default:
         break;
     }
@@ -631,6 +642,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "Builds bridges"_good;
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Digs"_good;
     case LastingEffect::NO_CARRY_LIMIT: return "Infinite carrying capacity"_good;
+    case LastingEffect::SPYING: return "Spy"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::PLAGUE: return "Infected with plague"_bad;
@@ -729,6 +741,19 @@ void LastingEffects::afterCreatureDamage(Creature* c, LastingEffect e) {
 bool LastingEffects::tick(Creature* c, LastingEffect effect) {
   PROFILE_BLOCK("LastingEffects::tick");
   switch (effect) {
+    case LastingEffect::SPYING: {
+      auto enemyId = [&] ()->optional<ViewId> {
+        for (WCollective col : c->getPosition().getModel()->getCollectives())
+          if (col->getTerritory().contains(c->getPosition()) && col->getTribe()->isEnemy(c) && !col->getCreatures().empty())
+            return Random.choose(col->getCreatures())->getViewObject().id();
+        return none;
+      }();
+      if (enemyId && !c->hasAlternativeViewId())
+        c->setAlternativeViewId(*enemyId);
+      if (!enemyId && c->hasAlternativeViewId())
+        c->setAlternativeViewId(none);
+      break;
+    }
     case LastingEffect::BLEEDING:
       if (!c->isAffected(LastingEffect::FROZEN)) {
         c->getBody().bleed(c, 0.03);
@@ -943,6 +968,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::SPELL_DAMAGE: return "magical damage";
     case LastingEffect::DISAPPEAR_DURING_DAY: return "night life";
     case LastingEffect::NO_CARRY_LIMIT: return "infinite carrying capacity";
+    case LastingEffect::SPYING: return "spying";
   }
 }
 
@@ -1023,6 +1049,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::SPELL_DAMAGE: return "All dealt melee damage is transformed into magical damage";
     case LastingEffect::DISAPPEAR_DURING_DAY: return "This creature is only active at night and disappears at dawn";
     case LastingEffect::NO_CARRY_LIMIT: return "The creature can carry items without any weight limit";
+    case LastingEffect::SPYING: return "The creature can infiltrate enemy lines";
   }
 }
 
@@ -1034,7 +1061,7 @@ bool LastingEffects::canSee(const Creature* c1, const Creature* c2) {
 
 bool LastingEffects::modifyIsEnemyResult(const Creature* c, const Creature* other, bool result) {
   PROFILE;
-  if (c->isAffected(LastingEffect::PEACEFULNESS))
+  if (c->isAffected(LastingEffect::PEACEFULNESS) || other->isAffected(LastingEffect::SPYING))
     return false;
   if (c->isAffected(LastingEffect::INSANITY) && !other->getStatus().contains(CreatureStatus::LEADER))
     return true;
@@ -1159,6 +1186,7 @@ bool LastingEffects::canConsume(LastingEffect effect) {
     case LastingEffect::FROZEN:
     case LastingEffect::PLAGUE:
     case LastingEffect::PLAGUE_RESISTANT:
+    case LastingEffect::SPYING:
       return false;
     default:
       return true;

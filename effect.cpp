@@ -183,6 +183,7 @@ static TimeInterval getDuration(const Creature* c, LastingEffect e) {
     case LastingEffect::HATE_HUMANS:
     case LastingEffect::HATE_GREENSKINS:
     case LastingEffect::HATE_ELVES:
+    case LastingEffect::SPYING:
     default:
       return  1000_visible;
   }
