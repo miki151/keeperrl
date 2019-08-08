@@ -88,6 +88,7 @@
     {{Ring FAST_CRAFTING}                  10       GOLD 40}
     {{Ring FAST_TRAINING}                  10       GOLD 40}
     {{Ring SPELL_DAMAGE}                   10       GOLD 40}
+    {{Ring SPYING}                         10       GOLD 40}
     {{Amulet NIGHT_VISION}                 10       GOLD 20}
     {{Amulet ELF_VISION}                   10       GOLD 20}
     {{Amulet WARNING}                      10       GOLD 30}
