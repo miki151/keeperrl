@@ -644,6 +644,8 @@ void Player::makeMove() {
     subscribeTo(getModel());
   if (adventurer)
     considerAdventurerMusic();
+  else
+    considerKeeperModeTravelMusic();
   //if (updateView) { Check disabled so that we update in every frame to avoid some square refreshing issues.
     updateView = false;
     for (Position pos : creature->getVisibleTiles())
