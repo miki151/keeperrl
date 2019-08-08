@@ -1061,7 +1061,8 @@ bool LastingEffects::canSee(const Creature* c1, const Creature* c2) {
 
 bool LastingEffects::modifyIsEnemyResult(const Creature* c, const Creature* other, bool result) {
   PROFILE;
-  if (c->isAffected(LastingEffect::PEACEFULNESS) || other->isAffected(LastingEffect::SPYING))
+  if (c->isAffected(LastingEffect::PEACEFULNESS) ||
+      other->isAffected(LastingEffect::SPYING) || c->isAffected(LastingEffect::SPYING))
     return false;
   if (c->isAffected(LastingEffect::INSANITY) && !other->getStatus().contains(CreatureStatus::LEADER))
     return true;
