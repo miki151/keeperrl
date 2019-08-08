@@ -327,17 +327,7 @@ static int keeperMain(po::parser& commandLineFlags) {
       return commandLineFlags["data_dir"].get().string;
     else
       return DATA_DIR;
-  }());
-
-#ifdef USE_STEAMWORKS
-  bool withSteam = steam::initAPI();
-  optional<steam::Client> steamClient;
-  if (withSteam) {
-	  steamClient.emplace();
-	  INFO << "\n" << steamClient->info();
-  }
-#endif
-  
+  }());  
   auto freeDataPath = dataPath.subdirectory("data_free");
   auto paidDataPath = dataPath.subdirectory("data");
   auto contribDataPath = dataPath.subdirectory("data_contrib");
@@ -451,6 +441,16 @@ static int keeperMain(po::parser& commandLineFlags) {
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+#ifdef USE_STEAMWORKS
+  optional<steam::Client> steamClient;
+  if (appConfig.get<int>("steamworks") > 0) {
+    if (steam::initAPI()) {
+      steamClient.emplace();
+      INFO << "\n" << steamClient->info();
+    } else
+      USER_INFO << "Unable to connect with the Steam client.";
+  }
+#endif
   GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap, freeDataPath.subdirectory("images"),
       tilesPresent ? optional<DirectoryPath>(paidDataPath.subdirectory("images")) : none);
   guiFactory.loadImages();

@@ -361,7 +361,7 @@ static string firstLines(string text, int max_lines = 3) {
 optional<vector<FileSharing::OnlineModInfo>> FileSharing::getSteamMods() {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable()) {
-    INFO << "STEAM: Client not available"; // TODO: report info to user
+    USER_INFO << "STEAM: Client not available";
     return none;
   }
 
@@ -392,11 +392,6 @@ optional<vector<FileSharing::OnlineModInfo>> FileSharing::getSteamMods() {
       INFO << "STEAM: FindQuery failed: " << ugc.queryError(qid, "timeout (2 sec)");
       ugc.finishQuery(qid);
     }
-
-#ifndef RELEASE
-    // TODO: remove it when finished basic testing
-    items.append({steam::ItemId(1821799810), steam::ItemId(1819019387), steam::ItemId(1819019000)});
-#endif
   }
 
   for (auto id : subscribedItems)

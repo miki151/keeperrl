@@ -2,4 +2,5 @@
 "upload_url"     "http://localhost/~retired"
 "save_version"   "4000"
 "mod_version"    "Alpha29"
+"steamworks"     "1"
 }
