@@ -2746,7 +2746,7 @@ static PLevelMaker underground(RandomGen& random, vector<WaterType> waterTypes =
       case WaterType::WATER:
         return FurnitureType("WATER");
       case WaterType::LAVA:
-        return FurnitureType("LAVA");
+        return FurnitureType("MAGMA");
     }
   }();
   auto creatureGroup = [&] {
