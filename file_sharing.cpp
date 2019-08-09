@@ -334,11 +334,12 @@ bool FileSharing::uploadBoardMessage(const string& gameId, int hash, const strin
 }
 
 static optional<FileSharing::OnlineModInfo> parseModInfo(const vector<string>& fields) {
-  if (fields.size() >= 5)
+  if (fields.size() >= 6)
     if (auto numGames = fromStringSafe<int>(unescapeEverything(fields[3])))
       if (auto version = fromStringSafe<int>(unescapeEverything(fields[4])))
+        if (auto steamId = fromStringSafe<SteamId>(unescapeEverything(fields[5])))
       return FileSharing::OnlineModInfo{unescapeEverything(fields[0]), unescapeEverything(fields[1]), unescapeEverything(fields[2]),
-          *numGames, *version};
+          *numGames, *version, *steamId, false};
   return none;
 }
 
@@ -466,8 +467,8 @@ optional<vector<FileSharing::OnlineModInfo>> FileSharing::getOnlineMods(int modV
   return none;
 }
 
-optional<string> FileSharing::downloadSteamMod(unsigned long long id_, const string& name, const DirectoryPath& modsDir,
-                                               ProgressMeter& meter) {
+optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, const DirectoryPath& modsDir,
+    ProgressMeter& meter) {
 #ifdef USE_STEAMWORKS
   CHECK(steam::Client::isAvailable());
   steam::ItemId id(id_);
@@ -494,19 +495,20 @@ optional<string> FileSharing::downloadSteamMod(unsigned long long id_, const str
   auto instInfo = ugc.installInfo(id);
   if (!instInfo)
     return string("Error while retrieving installation info");
-
-  DirectoryPath subDir(string(modsDir.getPath()) + "/" + name);
-  return DirectoryPath::copyFiles(DirectoryPath(instInfo->folder), subDir, true);
+  return DirectoryPath::copyFiles(DirectoryPath(instInfo->folder), modsDir.subdirectory(name), true);
 #else
   return string("Steam support is not available in this build");
 #endif
 }
 
-optional<string> FileSharing::downloadMod(const string& modName, const DirectoryPath& modsDir, ProgressMeter& meter) {
-  auto fileName = modName + ".zip";
-  if (auto err = download(fileName, "mods", modsDir, meter))
-    return err;
-  return unzip(modsDir.file(fileName).getPath(), modsDir.getPath());
+optional<string> FileSharing::downloadMod(const string& modName, SteamId steamId, const DirectoryPath& modsDir, ProgressMeter& meter) {
+  if (!!downloadSteamMod(steamId, modName, modsDir, meter)) {
+    auto fileName = modName + ".zip";
+    if (auto err = download(fileName, "mods", modsDir, meter))
+      return err;
+    return unzip(modsDir.file(fileName).getPath(), modsDir.getPath());
+  } else
+    return none;
 }
 
 void FileSharing::cancel() {

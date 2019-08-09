@@ -77,7 +77,7 @@ bool MainLoop::isCompatible(int loadedVersion) {
 
 GameConfig MainLoop::getGameConfig() const {
   string currentMod = options->getStringValue(OptionId::CURRENT_MOD);
-  return GameConfig(dataFreePath.subdirectory(gameConfigSubdir), std::move(currentMod));
+  return GameConfig(getModsDir(), std::move(currentMod));
 }
 
 static string getSaveSuffix(GameSaveType t) {
@@ -386,8 +386,8 @@ TilePaths MainLoop::getTilePathsForAllMods() const {
   };
   GameConfig currentConfig = getGameConfig();
   auto ret = readTiles(&currentConfig);
-  for (auto modDir : dataFreePath.subdirectory(gameConfigSubdir).getSubDirs()) {
-    GameConfig config(dataFreePath.subdirectory(gameConfigSubdir), modDir);
+  for (auto modDir : getModsDir().getSubDirs()) {
+    GameConfig config(getModsDir(), modDir);
     if (auto paths = readTiles(&config)) {
       if (ret)
         ret->merge(*paths);
@@ -448,7 +448,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
 void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
-  GameConfig gameConfig(dataFreePath.subdirectory(gameConfigSubdir), "vanilla");
+  GameConfig gameConfig(getModsDir(), "vanilla");
   auto contentFactory = createContentFactory(true);
   if (tileSet)
     tileSet->setTilePaths(contentFactory.tilePaths);
@@ -478,31 +478,35 @@ void MainLoop::showCredits(const FilePath& path) {
   view->presentList("Credits", lines, false);
 }
 
-pair<int, unsigned long long> MainLoop::getLocalVersion(const string& mod) {
-  ifstream in(dataFreePath.subdirectory(gameConfigSubdir).subdirectory(mod).file("version").getPath());
+DirectoryPath MainLoop::getModsDir() const {
+  return dataFreePath.subdirectory(gameConfigSubdir);
+}
+
+pair<int, SteamId> MainLoop::getLocalVersion(const string& mod) {
+  ifstream in(getModsDir().subdirectory(mod).file("version").getPath());
   int v = 0;
-  unsigned long long steamId = 0;
+  SteamId steamId = 0;
   if (!!in)
     in >> v >> steamId;
   return {v, steamId};
 }
 
-void MainLoop::updateLocalVersion(const string& mod, int version, unsigned long long steamId) {
-  ofstream out(dataFreePath.subdirectory(gameConfigSubdir).subdirectory(mod).file("version").getPath());
+void MainLoop::updateLocalVersion(const string& mod, int version, SteamId steamId) {
+  ofstream out(getModsDir().subdirectory(mod).file("version").getPath());
   if (!!out) {
-    out << version << "\n" << steamId;
+    out << version << "\n" << steamId << "\n";
   }
 }
 
 void MainLoop::removeMod(const string& name) {
   // TODO: how to make it safer?
-  auto modDir = dataFreePath.subdirectory(gameConfigSubdir).subdirectory(name);
+  auto modDir = getModsDir().subdirectory(name);
   modDir.removeRecursively();
 }
 
 // When mod changes name, we have to remove old directory
-void MainLoop::removeOldSteamMod(unsigned long long steamId, const string& newName) {
-  auto modDir = dataFreePath.subdirectory(gameConfigSubdir);
+void MainLoop::removeOldSteamMod(SteamId steamId, const string& newName) {
+  auto modDir = getModsDir();
   auto modList = modDir.getSubDirs();
   for (auto& modName : modList)
     if (modName != newName) {
@@ -520,7 +524,7 @@ void MainLoop::showMods() {
       [&] (ProgressMeter& meter) {
         onlineMods = fileSharing->getOnlineMods(1);
       });
-  auto modDir = dataFreePath.subdirectory(gameConfigSubdir);
+  auto modDir = getModsDir();
   while (1) {
     auto modList = modDir.getSubDirs();
     USER_CHECK(!modList.empty()) << "No game config data found, please make sure all game data is in place";
@@ -549,10 +553,7 @@ void MainLoop::showMods() {
     lines.emplace_back(onlineMods ? "Online mods:" : "Unable to fetch online mods", ListElem::TITLE);
     if (onlineMods)
       for (auto& elem : *onlineMods) {
-        string suffix;
-        if(elem.steamId)
-          suffix += " [steam]";
-        lines.emplace_back("Download \"" + elem.name + "\"" + suffix, ListElem::NORMAL);
+        lines.emplace_back("Download \"" + elem.name + "\"", ListElem::NORMAL);
         lines.emplace_back("Author: " + elem.author, ListElem::HELP_TEXT);
         lines.emplace_back(elem.description, ListElem::HELP_TEXT);
         lines.emplace_back("Number of games played: " + toString(elem.numGames), ListElem::HELP_TEXT);
@@ -569,13 +570,10 @@ void MainLoop::showMods() {
       optional<string> error;
       doWithSplash(SplashType::SMALL, "Downloading mod \"" + downloadMod.name + "\"...", 1,
           [&] (ProgressMeter& meter) {
-            error = downloadMod.steamId?
-              fileSharing->downloadSteamMod(*downloadMod.steamId, downloadMod.name, modDir, meter) :
-              fileSharing->downloadMod(downloadMod.name, modDir, meter);
+            error = fileSharing->downloadMod(downloadMod.name, downloadMod.steamId, modDir, meter);
             if (!error) {
-              updateLocalVersion(downloadMod.name, downloadMod.version, downloadMod.steamId.value_or(0));
-              if (downloadMod.steamId)
-                removeOldSteamMod(*downloadMod.steamId, downloadMod.name);
+              updateLocalVersion(downloadMod.name, downloadMod.version, downloadMod.steamId);
+              removeOldSteamMod(downloadMod.steamId, downloadMod.name);
             }
           },
           [&] {
@@ -613,7 +611,7 @@ void MainLoop::considerFreeVersionText(bool tilesPresent) {
 ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
   ContentFactory ret;
   auto tryConfig = [this, &ret](const string& modName) {
-    GameConfig config(dataFreePath.subdirectory(gameConfigSubdir), modName);
+    GameConfig config(getModsDir(), modName);
     return ret.readData(NameGenerator(dataFreePath.subdirectory("names")), &config);
   };
   if (vanillaOnly) {

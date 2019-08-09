@@ -107,10 +107,11 @@ class MainLoop {
   TilePaths getTilePathsForAllMods() const;
 
   // TODO: move to file_sharing?
-  pair<int, unsigned long long> getLocalVersion(const string& mod);
-  void updateLocalVersion(const string& mod, int version, unsigned long long steamId);
+  pair<int, SteamId> getLocalVersion(const string& mod);
+  void updateLocalVersion(const string& mod, int version, SteamId);
   void removeMod(const string &modName);
-  void removeOldSteamMod(unsigned long long steamId, const string &newName);
+  void removeOldSteamMod(SteamId, const string &newName);
 
   void registerModPlaytime(bool started);
+  DirectoryPath getModsDir() const;
 };

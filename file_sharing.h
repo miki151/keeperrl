@@ -43,15 +43,15 @@ class FileSharing {
     int version;
     
     // Steam mod info:
-    optional<unsigned long long> steamId = none;
+    SteamId steamId;
     bool isSubscribed = false;
   };
 
   optional<vector<OnlineModInfo>> getSteamMods();
   optional<vector<OnlineModInfo>> getOnlineMods(int modVersion);
-  optional<string> downloadSteamMod(unsigned long long id, const string& name, const DirectoryPath& modsDir,
+  optional<string> downloadSteamMod(SteamId, const string& name, const DirectoryPath& modsDir,
                                     ProgressMeter&);
-  optional<string> downloadMod(const string& name, const DirectoryPath& modsDir, ProgressMeter&);
+  optional<string> downloadMod(const string& name, SteamId, const DirectoryPath& modsDir, ProgressMeter&);
 
   string downloadHighscores(int version);
 
