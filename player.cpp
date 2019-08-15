@@ -731,7 +731,7 @@ void Player::makeMove() {
         if (auto error = PrettyPrinting::parseObject(item, action.get<string>()))
           getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
         else
-          creature->take(item.setPrefixChance(1).get(getGame()->getContentFactory()));
+          creature->take(item/*.setPrefixChance(1)*/.get(getGame()->getContentFactory()));
         break;
       }
       case UserInputId::SUMMON_ENEMY: {

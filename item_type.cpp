@@ -243,6 +243,12 @@ ItemAttributes ItemType::getAttributes(const ContentFactory* factory) const {
 
 PItem ItemType::get(const ContentFactory* factory) const {
   auto attributes = getAttributes(factory);
+  for (auto attr : ENUM_ALL(AttrType)) {
+    auto& mod = attributes.modifiers[attr];
+    auto& var = attributes.modifierVariation[attr];
+    if (Random.chance(attributes.variationChance) && mod > 0)
+      mod = max(1, mod + Random.get(-var, var + 1));
+  }
   if (!attributes.genPrefixes.empty() && Random.chance(prefixChance))
     applyPrefix(Random.choose(attributes.genPrefixes), attributes);
   return type.visit(
@@ -333,12 +339,6 @@ ViewId getAmuletViewId(LastingEffect e) {
     case LastingEffect::WARNING: return ViewId("amulet2");
     default: return ViewId("amulet3");
   }
-}
-
-static int maybePlusMinusOne(int prob) {
-  if (Random.roll(prob))
-    return Random.get(2) * 2 - 1;
-  return 0;
 }
 
 static const vector<pair<string, vector<string>>> badArtifactNames {

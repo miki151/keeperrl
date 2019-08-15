@@ -56,6 +56,17 @@ class ItemAttributes {
   int SERIAL(price) = 0;
   bool SERIAL(noArticle) = false;
   EnumMap<AttrType, int> SERIAL(modifiers);
+  double SERIAL(variationChance) = 0.2;
+  EnumMap<AttrType, int> SERIAL(modifierVariation) = EnumMap<AttrType, int>(
+      [](AttrType type) {
+        switch (type) {
+          case AttrType::PARRY:
+            return 0;
+          default:
+            return 1;
+        }
+        return 0;
+      });
   optional<EquipmentSlot> SERIAL(equipmentSlot);
   TimeInterval SERIAL(applyTime) = 1_visible;
   bool SERIAL(fragile) = false;
