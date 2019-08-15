@@ -63,6 +63,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
   ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltTo), NAMED(freezeTo));
+  ar(OPTION(bloodCountdown), SKIP(bloodTime));
 }
 
 template <class Archive>
@@ -223,6 +224,8 @@ void Furniture::tick(Position pos) {
   }
   if (tickType)
     FurnitureTick::handle(*tickType, pos, this); // this function can delete this
+  if (bloodTime && *bloodTime <= pos.getModel()->getLocalTime())
+    spreadBlood(pos);
 }
 
 bool Furniture::blocksAnyVision() const {
@@ -375,6 +378,28 @@ void Furniture::onCreatureWalkedOver(Position pos, Vec2 direction) const {
 void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
   if (walkIntoFX)
     pos.getGame()->addEvent((EventInfo::FX{pos, *walkIntoFX, direction}));
+}
+
+bool Furniture::onBloodNear(Position pos) {
+  if (bloodCountdown)
+    if (--*bloodCountdown == 0)
+      return true;
+  return false;
+}
+
+void Furniture::spreadBlood(Position pos) {
+  if (!!bloodCountdown) {
+    bloodCountdown = none;
+    viewObject->setModifier(ViewObjectModifier::BLOODY);
+    name = "bloody " + name;
+    viewObject->setDescription(capitalFirst(name));
+    for (auto v : pos.neighbors4())
+      if (auto f = v.getFurniture(layer))
+        if (!!f->bloodCountdown) {
+          v.modFurniture(layer)->bloodTime = pos.getModel()->getLocalTime() + 1_visible;
+          v.getLevel()->addTickingFurniture(v.getCoord());
+        }
+  }
 }
 
 int Furniture::getMaxTraining(ExperienceType t) const {

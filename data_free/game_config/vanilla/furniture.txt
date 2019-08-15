@@ -1128,6 +1128,7 @@
   {
     name = "water"
     viewId = { "water" }
+    bloodCountdown = 30
     layer = GROUND
     waterDepth = 100
     entryType = Water

@@ -27,5 +27,6 @@ RICH_ENUM(ViewObjectModifier,
     CAPTURE_BAR,
     PLAYER_BLINK,
     BURNING,
-    FROZEN
+    FROZEN,
+    BLOODY
 );

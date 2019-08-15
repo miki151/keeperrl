@@ -624,10 +624,12 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       color = color.transparency(150);
   if (object.hasModifier(ViewObject::Modifier::PLANNED))
     color = color.transparency(100);
+  if (object.hasModifier(ViewObject::Modifier::BLOODY))
+    color = Color(160, 0, 0);
   if (auto waterDepth = object.getAttribute(ViewObject::Attribute::WATER_DEPTH))
     if (*waterDepth > 0) {
-      Uint8 val = max(0.0, 255.0 - min(2.0f, *waterDepth) * 60);
-      color = Color(val, val, val);
+      Uint8 val = max(0.0, 255.0 - min(2.0f, *waterDepth) * 40);
+      color = color * Color(val, val, val);
     }
   color = blendNightColor(color, index);
   if (spriteMode && tile.hasSpriteCoord()) {
@@ -706,6 +708,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     auto color = renderer.getTileSet().getColor(object);
     if (object.id().getColor() != Color::WHITE)
       color = object.id().getColor();
+    if (object.hasModifier(ViewObject::Modifier::BLOODY))
+      color = Color(160, 0, 0);
     renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y,
         blendNightColor(color, index), tilePos, tile.text, Renderer::HOR);
     if (object.hasModifier(ViewObject::Modifier::BURNING))

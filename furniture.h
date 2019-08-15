@@ -103,6 +103,8 @@ class Furniture : public OwnedObject<Furniture> {
   bool forgetAfterBuilding() const;
   void onCreatureWalkedOver(Position, Vec2 direction) const;
   void onCreatureWalkedInto(Position, Vec2 direction) const;
+  bool onBloodNear(Position);
+  void spreadBlood(Position);
   int getMaxTraining(ExperienceType) const;
   bool hasRequiredSupport(Position) const;
   optional<ViewId> getSupportViewId(Position) const;
@@ -211,4 +213,6 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FurnitureEffectInfo> SERIAL(lastingEffect);
   optional<FurnitureType> SERIAL(freezeTo);
   optional<FurnitureType> SERIAL(meltTo);
+  optional<int> SERIAL(bloodCountdown);
+  optional<LocalTime> SERIAL(bloodTime);
 };

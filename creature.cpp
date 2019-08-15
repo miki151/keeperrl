@@ -1379,11 +1379,25 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   INFO << getName().the() << " dies. Killed by " << (attacker ? attacker->getName().bare() : "");
   if (drops == DropType::EVERYTHING || drops == DropType::ONLY_INVENTORY)
     for (PItem& item : equipment->removeAllItems(this))
-      getPosition().dropItem(std::move(item));
+      position.dropItem(std::move(item));
   if (drops == DropType::EVERYTHING) {
-    getPosition().dropItems(generateCorpse(getGame()->getContentFactory()));
+    position.dropItems(generateCorpse(getGame()->getContentFactory()));
     if (auto sound = getBody().getDeathSound())
       addSound(*sound);
+    if (getBody().hasHealth(HealthType::FLESH)) {
+      auto addBlood = [](Position v) {
+        for (auto f : v.modFurniture())
+          if (f->onBloodNear(v)) {
+            f->spreadBlood(v);
+            return true;
+          }
+        return false;
+      };
+      if (!addBlood(position))
+        for (auto v : Random.permutation(position.getRectangle(Rectangle::centered(4))))
+          if (v != position && addBlood(v))
+            break;
+    }
   }
   if (statuses.contains(CreatureStatus::CIVILIAN))
     getGame()->getStatistics().add(StatId::INNOCENT_KILLED);

@@ -464,7 +464,7 @@
     isSymbolFont = true canMirror = true
     extraBorders = { "water" "sand" "floor" "keeper_floor" } }
   { viewId = "water" symbol = "~" color = ColorId LIGHT_BLUE
-    waterSides = "water" animated = true }
+    waterSides = "water" animated = true spriteColor = Rgb 100 130 220 255 }
   { viewId = "magma" symbol = "~" color = ColorId RED
     waterSides = "magma" animated = true }
   { viewId = "fog_of_war" symbol = " " color = ColorId WHITE sprite = "empty"
