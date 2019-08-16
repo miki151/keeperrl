@@ -333,13 +333,14 @@ bool FileSharing::uploadBoardMessage(const string& gameId, int hash, const strin
   }, false);
 }
 
-static optional<FileSharing::OnlineModInfo> parseModInfo(const vector<string>& fields) {
-  if (fields.size() >= 6)
+static optional<FileSharing::OnlineModInfo> parseModInfo(const vector<string>& fields, const string& modVersion) {
+  if (fields.size() >= 7)
     if (auto numGames = fromStringSafe<int>(unescapeEverything(fields[3])))
       if (auto version = fromStringSafe<int>(unescapeEverything(fields[4])))
         if (auto steamId = fromStringSafe<SteamId>(unescapeEverything(fields[5])))
-      return FileSharing::OnlineModInfo{unescapeEverything(fields[0]), unescapeEverything(fields[1]), unescapeEverything(fields[2]),
-          *numGames, *version, *steamId, false};
+          if (fields[6] == modVersion)
+            return FileSharing::OnlineModInfo{unescapeEverything(fields[0]), unescapeEverything(fields[1]), unescapeEverything(fields[2]),
+                *numGames, *version, *steamId, false};
   return none;
 }
 
@@ -458,19 +459,20 @@ optional<vector<FileSharing::OnlineModInfo>> FileSharing::getSteamMods() {
 #endif
 }
 
-optional<vector<FileSharing::OnlineModInfo>> FileSharing::getOnlineMods(int modVersion) {
+optional<vector<FileSharing::OnlineModInfo>> FileSharing::getOnlineMods() {
   if (auto steamMods = getSteamMods())
     return steamMods;
   if (options.getBoolValue(OptionId::ONLINE))
-    if (auto content = downloadContent(uploadUrl + "/get_mods.php?version=" + toString(modVersion)))
-      return parseLines<FileSharing::OnlineModInfo>(*content, parseModInfo);
+    if (auto content = downloadContent(uploadUrl + "/get_mods.php"))
+      return parseLines<FileSharing::OnlineModInfo>(*content, [this](auto& e) { return parseModInfo(e, modVersion);});
   return none;
 }
 
 optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, const DirectoryPath& modsDir,
     ProgressMeter& meter) {
 #ifdef USE_STEAMWORKS
-  CHECK(steam::Client::isAvailable());
+  if (!steam::Client::isAvailable())
+    return "Steam client not available"_s;
   steam::ItemId id(id_);
 
   auto& ugc = steam::UGC::instance();
@@ -503,7 +505,7 @@ optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, 
 
 optional<string> FileSharing::downloadMod(const string& modName, SteamId steamId, const DirectoryPath& modsDir, ProgressMeter& meter) {
   if (!!downloadSteamMod(steamId, modName, modsDir, meter)) {
-    auto fileName = modName + ".zip";
+    auto fileName = steamId + ".zip";
     if (auto err = download(fileName, "mods", modsDir, meter))
       return err;
     return unzip(modsDir.file(fileName).getPath(), modsDir.getPath());

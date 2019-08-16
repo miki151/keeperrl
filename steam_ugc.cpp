@@ -112,7 +112,7 @@ bool UGC::downloadItem(ItemId id, bool highPriority) {
 }
 
 UGC::QueryId UGC::createDetailsQuery(const ItemDetailsInfo& info, vector<ItemId> items) {
-  CHECK(items.size() >= 1 && items.size() <= maxItemsPerPage);
+  CHECK(items.size() >= 1 && items.size() <= maxItemsPerPage) << items.size();
 
   auto handle = FUNC(CreateQueryUGCDetailsRequest)(ptr, (PublishedFileId_t*)items.data(), items.size());
   CHECK(handle != k_UGCQueryHandleInvalid);

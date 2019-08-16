@@ -522,7 +522,7 @@ void MainLoop::showMods() {
   optional<vector<FileSharing::OnlineModInfo>> onlineMods;
   doWithSplash(SplashType::SMALL, "Downloading list of online mods...", 1,
       [&] (ProgressMeter& meter) {
-        onlineMods = fileSharing->getOnlineMods(1);
+        onlineMods = fileSharing->getOnlineMods();
       });
   auto modDir = getModsDir();
   while (1) {

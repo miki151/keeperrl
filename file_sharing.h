@@ -48,7 +48,7 @@ class FileSharing {
   };
 
   optional<vector<OnlineModInfo>> getSteamMods();
-  optional<vector<OnlineModInfo>> getOnlineMods(int modVersion);
+  optional<vector<OnlineModInfo>> getOnlineMods();
   optional<string> downloadSteamMod(SteamId, const string& name, const DirectoryPath& modsDir,
                                     ProgressMeter&);
   optional<string> downloadMod(const string& name, SteamId, const DirectoryPath& modsDir, ProgressMeter&);
