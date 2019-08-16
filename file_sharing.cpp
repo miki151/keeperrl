@@ -505,7 +505,7 @@ optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, 
 
 optional<string> FileSharing::downloadMod(const string& modName, SteamId steamId, const DirectoryPath& modsDir, ProgressMeter& meter) {
   if (!!downloadSteamMod(steamId, modName, modsDir, meter)) {
-    auto fileName = steamId + ".zip";
+    auto fileName = toString(steamId) + ".zip";
     if (auto err = download(fileName, "mods", modsDir, meter))
       return err;
     return unzip(modsDir.file(fileName).getPath(), modsDir.getPath());
