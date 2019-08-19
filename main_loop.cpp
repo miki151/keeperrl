@@ -568,11 +568,12 @@ void MainLoop::showMods() {
         }
         allMods.push_back(std::move(modInfo));
       }
-    for (auto& mod : *onlineMods)
-      if (!alreadyDownloaded.count(mod.versionInfo.steamId)) {
-        allMods.push_back(mod);
-        allMods.back().actions.push_back("Download");
-      }
+    if (onlineMods)
+      for (auto& mod : *onlineMods)
+        if (!alreadyDownloaded.count(mod.versionInfo.steamId)) {
+          allMods.push_back(mod);
+          allMods.back().actions.push_back("Download");
+        }
     auto choice = view->getModAction(highlighted, allMods);
     if (!choice)
       break;

@@ -466,6 +466,8 @@ optional<vector<ModInfo>> FileSharing::getSteamMods() {
 }
 
 optional<vector<ModInfo>> FileSharing::getOnlineMods() {
+  if (!options.getBoolValue(OptionId::ONLINE))
+    return none;
   if (auto steamMods = getSteamMods())
     return steamMods;
   if (options.getBoolValue(OptionId::ONLINE))
