@@ -30,6 +30,7 @@ class TileSet;
 class ContentFactory;
 class TilePaths;
 struct ModVersionInfo;
+struct ModDetails;
 
 class MainLoop {
   public:
@@ -108,9 +109,10 @@ class MainLoop {
   ContentFactory createContentFactory(bool vanillaOnly) const;
   TilePaths getTilePathsForAllMods() const;
 
-  // TODO: move to file_sharing?
   optional<ModVersionInfo> getLocalModVersionInfo(const string& mod);
-  void updateLocalVersion(const string& mod, const ModVersionInfo&);
+  void updateLocalModVersion(const string& mod, const ModVersionInfo&);
+  optional<ModDetails> getLocalModDetails(const string& mod);
+  void updateLocalModDetails(const string& mod, const ModDetails&);
   void removeMod(const string &modName);
   void removeOldSteamMod(SteamId, const string &newName);
 

@@ -43,6 +43,7 @@
 #include "external_enemies_type.h"
 #include "mod_info.h"
 #include "container_range.h"
+#include "extern/iomanip.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -499,10 +500,26 @@ optional<ModVersionInfo> MainLoop::getLocalModVersionInfo(const string& mod) {
     return none;
 }
 
-void MainLoop::updateLocalVersion(const string& mod, const ModVersionInfo& info) {
+void MainLoop::updateLocalModVersion(const string& mod, const ModVersionInfo& info) {
   ofstream out(getModsDir().subdirectory(mod).file(modVersionFilename).getPath());
   if (!!out) {
     out << info.steamId << "\n" << info.version << "\n" << info.compatibilityTag << "\n";
+  }
+}
+
+const auto modDetailsFilename = "details.txt";
+
+optional<ModDetails> MainLoop::getLocalModDetails(const string& mod) {
+  ifstream in(getModsDir().subdirectory(mod).file(modDetailsFilename).getPath());
+  ModDetails ret;
+  in >> std::quoted(ret.author) >> std::quoted(ret.description);
+  return ret;
+}
+
+void MainLoop::updateLocalModDetails(const string& mod, const ModDetails& info) {
+  ofstream out(getModsDir().subdirectory(mod).file(modDetailsFilename).getPath());
+  if (!!out) {
+    out << std::quoted(info.author) << "\n" << std::quoted(info.description) << "\n";
   }
 }
 
@@ -549,6 +566,8 @@ void MainLoop::showMods() {
       if (auto version = getLocalModVersionInfo(mod)) {
         ModInfo modInfo;
         modInfo.name = mod;
+        if (auto details = getLocalModDetails(mod))
+          modInfo.details = *details;
         if (onlineMods)
           for (auto& onlineMod : *onlineMods)
             if (onlineMod.versionInfo.steamId == version->steamId) {
@@ -563,9 +582,6 @@ void MainLoop::showMods() {
         else
           modInfo.actions.push_back("Activate");
         modInfo.isLocal = true;
-        if (mod == "vanilla") {
-          modInfo.description = "This is the official content of KeeperRL.";
-        }
         allMods.push_back(std::move(modInfo));
       }
     if (onlineMods)
@@ -589,7 +605,8 @@ void MainLoop::showMods() {
           [&] (ProgressMeter& meter) {
             error = fileSharing->downloadMod(downloadMod.name, downloadMod.versionInfo.steamId, modDir, meter);
             if (!error) {
-              updateLocalVersion(downloadMod.name, downloadMod.versionInfo);
+              updateLocalModVersion(downloadMod.name, downloadMod.versionInfo);
+              updateLocalModDetails(downloadMod.name, downloadMod.details);
               removeOldSteamMod(downloadMod.versionInfo.steamId, downloadMod.name);
             }
           },

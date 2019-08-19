@@ -341,8 +341,8 @@ static optional<ModInfo> parseModInfo(const vector<string>& fields, const string
         if (auto steamId = fromStringSafe<SteamId>(unescapeEverything(fields[5])))
           if (auto rating = fromStringSafe<double>(unescapeEverything(fields[7])))
             if (fields[6] == modVersion)
-              return ModInfo{unescapeEverything(fields[0]), unescapeEverything(fields[1]), unescapeEverything(fields[2]),
-                    ModVersionInfo{*steamId, *version, modVersion}, *numGames, *rating, false, false, false, {}};
+              return ModInfo{unescapeEverything(fields[0]), ModDetails{unescapeEverything(fields[1]), unescapeEverything(fields[2])},
+                    ModVersionInfo{*steamId, *version, modVersion}, *rating, false, false, false, {}};
   return none;
 }
 
@@ -446,11 +446,11 @@ optional<vector<ModInfo>> FileSharing::getSteamMods() {
       continue;
 
     ModInfo mod;
-    mod.author = ownerNames[n].value_or("unknown");
-    mod.description = firstLines(info.description);
+    mod.details.author = ownerNames[n].value_or("unknown");
+    mod.details.description = firstLines(info.description);
     mod.name = info.title;
     // TODO: playtimeSessions is not exactly the same as numGames
-    mod.numGames = info.stats->playtimeSessions;
+    //mod.numGames = info.stats->playtimeSessions;
     mod.versionInfo.steamId = info.id.value;
     mod.versionInfo.version = steam::getItemVersion(info.metadata).value_or(0);
     mod.versionInfo.compatibilityTag = modVersion;

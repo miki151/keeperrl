@@ -8,12 +8,15 @@ struct ModVersionInfo {
   string compatibilityTag;
 };
 
-struct ModInfo {
-  string name;
+struct ModDetails {
   string author;
   string description;
+};
+
+struct ModInfo {
+  string name;
+  ModDetails details;
   ModVersionInfo versionInfo;
-  int numGames;
   double rating = -1; // don't display if less than 0
   // Steam mod info:
   bool isSubscribed = false;

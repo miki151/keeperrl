@@ -3688,8 +3688,9 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
         .addElemAuto(gui.label(mods[i].name))
         .addBackElemAuto(stars.buildHorizontalList())
         .buildHorizontalList());
-    lines.addElem(gui.label(!mods[i].author.empty() ? ("by " + mods[i].author) : "", Renderer::smallTextSize, Color::LIGHT_GRAY));
-    lines.addElemAuto(gui.labelMultiLineWidth(mods[i].description, legendLineHeight, pageWidth - 2 * margin));
+    lines.addElem(gui.label(!mods[i].details.author.empty() ? ("by " + mods[i].details.author) : "",
+        Renderer::smallTextSize, Color::LIGHT_GRAY));
+    lines.addElemAuto(gui.labelMultiLineWidth(mods[i].details.description, legendLineHeight, pageWidth - 2 * margin));
     auto buttons = gui.getListBuilder();
     for (int j : All(mods[i].actions))
       buttons.addElemAuto(
