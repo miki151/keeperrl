@@ -965,6 +965,11 @@ bool WindowView::creatureInfo(const string& title, bool prompt, const vector<Cre
   return getBlockingGui(returnQueue, guiBuilder.drawCreatureInfo(returnQueue, title, prompt, creatures));
 }
 
+optional<ModAction> WindowView::getModAction(int highlighted, const vector<ModInfo>& mods) {
+  SyncQueue<optional<ModAction>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawModMenu(returnQueue, highlighted, mods));
+}
+
 void WindowView::logMessage(const std::string& message) {
   RecursiveLock lock(logMutex);
   messageLog.push_back(message);

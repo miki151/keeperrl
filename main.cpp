@@ -447,8 +447,11 @@ static int keeperMain(po::parser& commandLineFlags) {
     if (steam::initAPI()) {
       steamClient.emplace();
       INFO << "\n" << steamClient->info();
-    } else
+    }
+#ifdef RELEASE
+    else
       USER_INFO << "Unable to connect with the Steam client.";
+#endif
   }
 #endif
   GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap, freeDataPath.subdirectory("images"),

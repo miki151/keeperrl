@@ -104,6 +104,7 @@ class WindowView: public View {
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) override;
   virtual bool creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>&) override;
+  virtual optional<ModAction> getModAction(int highlighted, const vector<ModInfo>&) override;
   virtual void logMessage(const string&) override;
   virtual void setBugReportSaveCallback(BugReportSaveCallback) override;
 

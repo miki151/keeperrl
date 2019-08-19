@@ -42,6 +42,7 @@
 #include "tribe_alignment.h"
 #include "avatar_menu_option.h"
 #include "view_object_action.h"
+#include "mod_info.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -3637,7 +3638,6 @@ SGuiElem GuiBuilder::drawCreatureInfo(SyncQueue<bool>& queue, const string& titl
   int margin = 15;
   return gui.setWidth(2 * margin + windowWidth,
       gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(false); }));
-
 }
 
 SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
@@ -3652,6 +3652,74 @@ SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Crea
   int margin = 15;
   return gui.setWidth(2 * margin + windowWidth,
       gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
+}
+
+SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int highlighted, const vector<ModInfo>& mods) {
+  auto localItems = gui.getListBuilder(legendLineHeight);
+  auto onlineItems = gui.getListBuilder(legendLineHeight);
+  SGuiElem activeItem;
+  shared_ptr<int> chosenMod = make_shared<int>(highlighted);
+  vector<SGuiElem> modPages;
+  const int margin = 15;
+  const int pageWidth = 480;
+  const int listWidth = 200;
+  for (int i : All(mods)) {
+    auto name = mods[i].name;
+    auto itemLabel =
+    gui.stack(
+        gui.conditional(gui.label(name, Color::GREEN), gui.label(name),
+            [chosenMod, i] { return *chosenMod == i; }),
+        gui.button([chosenMod, i] { *chosenMod = i; })
+    );
+    if (mods[i].isActive)
+      activeItem = std::move(itemLabel);
+    else if (mods[i].isLocal)
+      localItems.addElem(std::move(itemLabel));
+    else
+      onlineItems.addElem(std::move(itemLabel));
+    auto lines = gui.getListBuilder(legendLineHeight);
+    auto stars = gui.getListBuilder();
+    if (mods[i].rating >= 0) {
+      const int maxStars = 5;
+      for (int j = 0; j < 5; ++j)
+        stars.addElemAuto(gui.labelUnicode(j < mods[i].rating * maxStars ? "★" : "☆", Color::YELLOW));
+    }
+    lines.addElem(gui.getListBuilder()
+        .addElemAuto(gui.label(mods[i].name))
+        .addBackElemAuto(stars.buildHorizontalList())
+        .buildHorizontalList());
+    lines.addElem(gui.label(!mods[i].author.empty() ? ("by " + mods[i].author) : "", Renderer::smallTextSize, Color::LIGHT_GRAY));
+    lines.addElemAuto(gui.labelMultiLineWidth(mods[i].description, legendLineHeight, pageWidth - 2 * margin));
+    auto buttons = gui.getListBuilder();
+    for (int j : All(mods[i].actions))
+      buttons.addElemAuto(
+          gui.buttonLabel(mods[i].actions[j], [&queue, i, j] { queue.push(ModAction{i, j}); })
+      );
+    lines.addBackElem(buttons.buildHorizontalListFit());
+    modPages.push_back(gui.conditional(
+        lines.buildVerticalList(),
+        [chosenMod, i] { return *chosenMod == i; }
+    ));
+  }
+  auto allItems = gui.getListBuilder(legendLineHeight);
+  allItems.addElem(gui.label("Currently active:", Color::YELLOW));
+  allItems.addElem(std::move(activeItem));
+  if (!localItems.isEmpty()) {
+    allItems.addSpace(legendLineHeight / 2);
+    allItems.addElem(gui.label("Local mods:", Color::YELLOW));
+    allItems.addElemAuto(localItems.buildVerticalList());
+  }
+  if (!onlineItems.isEmpty()) {
+    allItems.addSpace(legendLineHeight / 2);
+    allItems.addElem(gui.label("Online mods:", Color::YELLOW));
+    allItems.addElemAuto(onlineItems.buildVerticalList());
+  }
+  const int windowWidth = 2 * margin + pageWidth + listWidth;
+  return gui.preferredSize(windowWidth, 400,
+      gui.window(gui.margins(gui.getListBuilder()
+          .addElem(allItems.buildVerticalList(), listWidth)
+          .addMiddleElem(gui.stack(std::move(modPages)))
+          .buildHorizontalList(), margin), [&queue] { queue.push(none); }));
 }
 
 SGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, ScrollPosition *scrollPos) {

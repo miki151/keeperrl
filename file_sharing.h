@@ -6,6 +6,7 @@
 #include "saved_game_info.h"
 
 class ProgressMeter;
+class ModInfo;
 
 class FileSharing {
   public:
@@ -35,20 +36,8 @@ class FileSharing {
   optional<vector<BoardMessage>> getBoardMessages(int boardId);
   bool uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text);
 
-  struct OnlineModInfo {
-    string name;
-    string author;
-    string description;
-    int numGames;
-    int version;
-    
-    // Steam mod info:
-    SteamId steamId;
-    bool isSubscribed = false;
-  };
-
-  optional<vector<OnlineModInfo>> getSteamMods();
-  optional<vector<OnlineModInfo>> getOnlineMods();
+  optional<vector<ModInfo>> getSteamMods();
+  optional<vector<ModInfo>> getOnlineMods();
   optional<string> downloadSteamMod(SteamId, const string& name, const DirectoryPath& modsDir,
                                     ProgressMeter&);
   optional<string> downloadMod(const string& name, SteamId, const DirectoryPath& modsDir, ProgressMeter&);

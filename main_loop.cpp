@@ -41,6 +41,8 @@
 #include "scroll_position.h"
 #include "miniunz.h"
 #include "external_enemies_type.h"
+#include "mod_info.h"
+#include "container_range.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -519,53 +521,60 @@ void MainLoop::removeOldSteamMod(SteamId steamId, const string& newName) {
 void MainLoop::showMods() {
   int currentIndex = 0;
   ScrollPosition scrollPos;
-  optional<vector<FileSharing::OnlineModInfo>> onlineMods;
-  doWithSplash(SplashType::SMALL, "Downloading list of online mods...", 1,
-      [&] (ProgressMeter& meter) {
-        onlineMods = fileSharing->getOnlineMods();
-      });
+  const optional<vector<ModInfo>> onlineMods = [&] {
+    optional<vector<ModInfo>> ret;
+    doWithSplash(SplashType::SMALL, "Downloading list of online mods...", 1,
+        [&] (ProgressMeter& meter) {
+          ret = fileSharing->getOnlineMods();
+        });
+    return ret;
+  }();
   auto modDir = getModsDir();
+  int highlighted = 0;
   while (1) {
     auto modList = modDir.getSubDirs();
     USER_CHECK(!modList.empty()) << "No game config data found, please make sure all game data is in place";
     options->setChoices(OptionId::CURRENT_MOD, modList);
     string currentMod = options->getStringValue(OptionId::CURRENT_MOD);
-    vector<ListElem> lines;
-    lines.emplace_back("Note: changing the active mod affects only newly started games.", ListElem::HELP_TEXT);
-    lines.emplace_back("Installed mods", ListElem::TITLE);
+    vector<ModInfo> allMods;
+    set<SteamId> alreadyDownloaded;
     for (auto& mod : modList) {
-      auto title = mod;
-      auto localVer = getLocalVersion(mod);
-      if (mod == currentMod)
-        title += " [active]";
-      if (localVer.second)
-        title += " [steam]";
-
-      auto upToDate = "up-to-date"_s;
+      auto version = getLocalVersion(mod);
+      ModInfo modInfo;
+      modInfo.name = mod;
       if (onlineMods)
         for (auto& onlineMod : *onlineMods)
-          if ((onlineMod.name == mod || (onlineMod.steamId && onlineMod.steamId == localVer.second)) &&
-              onlineMod.version > localVer.first)
-            upToDate = "new version available";
-      lines.emplace_back(ListElem(title, upToDate, ListElem::NORMAL));
-    }
-
-    lines.emplace_back(onlineMods ? "Online mods:" : "Unable to fetch online mods", ListElem::TITLE);
-    if (onlineMods)
-      for (auto& elem : *onlineMods) {
-        lines.emplace_back("Download \"" + elem.name + "\"", ListElem::NORMAL);
-        lines.emplace_back("Author: " + elem.author, ListElem::HELP_TEXT);
-        lines.emplace_back(elem.description, ListElem::HELP_TEXT);
-        lines.emplace_back("Number of games played: " + toString(elem.numGames), ListElem::HELP_TEXT);
+          if (onlineMod.steamId == version.second && version.second != 0) {
+            modInfo = onlineMod;
+            if (modInfo.version > version.first)
+              modInfo.actions.push_back("Update");
+            alreadyDownloaded.insert(onlineMod.steamId);
+            break;
+          }
+      if (currentMod == mod)
+        modInfo.isActive = true;
+      else
+        modInfo.actions.push_back("Activate");
+      modInfo.isLocal = true;
+      if (mod == "vanilla") {
+        modInfo.description = "This is the official content of KeeperRL.";
       }
-    auto choice = view->chooseFromList("", lines, currentIndex, MenuType::NORMAL, &scrollPos);
+      allMods.push_back(std::move(modInfo));
+    }
+    for (auto& mod : *onlineMods)
+      if (!alreadyDownloaded.count(mod.steamId)) {
+        allMods.push_back(mod);
+        allMods.back().actions.push_back("Download");
+      }
+    auto choice = view->getModAction(highlighted, allMods);
     if (!choice)
       break;
-    currentIndex = *choice;
-    if (currentIndex < modList.size())
-      options->setValue(OptionId::CURRENT_MOD, currentIndex);
-    else {
-      auto& downloadMod = (*onlineMods)[currentIndex - modList.size()];
+    highlighted = choice->index;
+    auto action = allMods[highlighted].actions[choice->actionId];
+    if (action == "Activate")
+      options->setValue(OptionId::CURRENT_MOD, highlighted);
+    else if (action == "Download") {
+      auto& downloadMod = allMods[highlighted];
       atomic<bool> cancelled(false);
       optional<string> error;
       doWithSplash(SplashType::SMALL, "Downloading mod \"" + downloadMod.name + "\"...", 1,
