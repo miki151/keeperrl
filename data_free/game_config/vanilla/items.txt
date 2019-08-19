@@ -569,7 +569,7 @@
     }
   "RedDragonScales"
     {
-      viewId = { "rune2" }
+      viewId = { "dragon_scales" ColorId RED }
       name = "red dragon scales"
       itemClass = OTHER
       weight = 5
@@ -592,7 +592,7 @@
     }
   "BlackDragonScales"
     {
-      viewId = { "rune2" }
+      viewId = { "dragon_scales" Rgb 80 80 80 255 }
       name = "black dragon scales"
       itemClass = OTHER
       weight = 5
@@ -615,7 +615,7 @@
     }
   "WhiteDragonScales"
     {
-      viewId = { "rune2" }
+      viewId = { "dragon_scales" Rgb 254 254 254 255 }
       name = "white dragon scales"
       itemClass = OTHER
       weight = 5
@@ -638,7 +638,7 @@
     }
   "GreenDragonScales"
     {
-      viewId = { "rune2" }
+      viewId = { "dragon_scales" }
       name = "green dragon scales"
       itemClass = OTHER
       weight = 5

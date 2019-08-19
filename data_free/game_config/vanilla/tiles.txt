@@ -226,6 +226,7 @@
   { "rune2" "~" ColorId PURPLE }
   { "rune3" "~" ColorId RED }
   { "rune4" "~" ColorId BLUE }
+  { "dragon_scales" "~" ColorId GREEN }
   { "key" "*" ColorId YELLOW }
   { "gold" "$" ColorId YELLOW }
   { "treasure_chest" "=" ColorId BROWN }
