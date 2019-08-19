@@ -916,6 +916,11 @@
       price = 0
       weight = 50
     }
+  "FrozenRemains" inherit "Skeleton"
+    {
+      viewId = { "frozen_remains" }
+      name = "frozen remains"
+    }
   "GoldPiece"
     {
       viewId = { "gold" }

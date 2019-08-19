@@ -931,6 +931,17 @@
     {
       permanentEffects = {}
     }
+  "ESKIMO" inherit "PESEANT"
+    {
+      viewId = { "eskimo" }
+      genderAlternatives = {
+        FEMALE { "eskimo_woman" }
+      }
+      permanentEffects = {}
+      name = {
+        name = "eskimo"
+      }
+    }
   "KNIGHT"
     {
       viewId = { "knight" }
@@ -1115,6 +1126,11 @@
         pluralName = "children"
       }
       hatedByEffect = HATE_HUMANS
+    }
+  "ESKIMO_CHILD" inherit "CHILD"
+    {
+      viewId = { "eskimo_child" }
+      permanentEffects = {}
     }
   "SPIDER_FOOD"
     {
@@ -2209,6 +2225,10 @@
         pluralName = "foxes"
       }
     }
+  "POLAR_FOX" inherit "FOX"
+    {
+      viewId = { "polar_fox" }
+    }
   "CAVE_BEAR"
     {
       viewId = { "bear" }
@@ -2228,6 +2248,14 @@
       }
       name = {
         name = "cave bear"
+      }
+    }
+  "POLAR_BEAR" inherit "CAVE_BEAR"
+    {
+      viewId = { "polar_bear" }
+      permanentEffects = {}
+      name = {
+        name = "polar bear"
       }
     }
   "RAT"
@@ -2523,6 +2551,10 @@
         firstNameGen = DOG
       }
       petReaction = "\"WOOF!\""
+    }
+  "HUSKY" inherit "DOG"
+    {
+      viewId = { "husky" }
     }
   "ELEMENTALIST"
     {

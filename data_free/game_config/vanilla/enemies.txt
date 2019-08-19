@@ -1507,6 +1507,22 @@
   {
     settlement = append {
       buildingId = SNOW
+      cropsDistance = none
+      inhabitants = {
+        fighters = {
+          count = {2 4}
+          all = { 1 "ESKIMO" }
+        }
+        civilians = {
+          count = {5 10},
+          all = {
+            3 "HUSKY"
+            1 "ESKIMO_CHILD"
+          }
+        }
+      }
+      furniture = { }
+      outsideFeatures = "snowFurniture"
     }
   }
   "ELVEN_COTTAGE"

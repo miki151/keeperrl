@@ -658,6 +658,14 @@
     summonedElement = "WATER_ELEMENTAL"
     strength = 80
   }
+  "SNOWMAN"
+  {
+    name = "snowman"
+    viewId = { "snowman" }
+    canHideHere = true
+    blockMovement = true
+    strength = 10
+  }
   "KEEPER_BOARD"
   {
     name = "message board"

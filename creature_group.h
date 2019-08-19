@@ -10,6 +10,7 @@ class CreatureGroup {
   static CreatureGroup splashLeader(TribeId);
   static CreatureGroup splashMonsters(TribeId);
   static CreatureGroup forrest(TribeId);
+  static CreatureGroup snow(TribeId);
   static CreatureGroup singleType(TribeId, CreatureId);
   static CreatureGroup lavaCreatures(TribeId tribe);
   static CreatureGroup waterCreatures(TribeId tribe);

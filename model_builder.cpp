@@ -287,7 +287,7 @@ PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment al
 
 PModel ModelBuilder::tryTutorialModel() {
   vector<EnemyInfo> enemyInfo;
-  BiomeId biome = BiomeId::MOUNTAIN;
+  BiomeId biome = BiomeId::SNOW;
   //enemyInfo.push_back(enemyFactory->get(EnemyId("RED_DRAGON")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
   /*enemyInfo.push_back(enemyFactory->get(EnemyId("BANDITS")));
@@ -435,6 +435,8 @@ static optional<CreatureGroup> getWildlife(BiomeId id) {
   switch (id) {
     case BiomeId::DESERT:
       return CreatureGroup::singleType(TribeId::getWildlife(), CreatureId("SNAKE"));
+    case BiomeId::SNOW:
+      return CreatureGroup::snow(TribeId::getWildlife());
     default:
       return CreatureGroup::forrest(TribeId::getWildlife());
   }

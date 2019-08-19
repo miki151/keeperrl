@@ -107,7 +107,13 @@ CreatureGroup CreatureGroup::splashMonsters(TribeId tribe) {
 CreatureGroup CreatureGroup::forrest(TribeId tribe) {
   return CreatureGroup(tribe,
       { CreatureId("DEER"), CreatureId("FOX"), CreatureId("BOAR") },
-      { 4, 2, 2}, {});
+  { 4, 2, 2}, {});
+}
+
+CreatureGroup CreatureGroup::snow(TribeId tribe) {
+  return CreatureGroup(tribe,
+      { CreatureId("POLAR_FOX"), CreatureId("POLAR_BEAR") },
+  { 4, 1}, {});
 }
 
 CreatureGroup CreatureGroup::iceCreatures(TribeId tribe) {

@@ -2112,11 +2112,11 @@ static PMakerQueue cottage(SettlementInfo info) {
     room->addMaker(unique<Stairs>(StairDirection::DOWN, key, Predicate::attrib(SquareAttrib::ROOM), none));
   for (auto& furniture : info.furniture)
     room->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.3, furniture, info.tribe));
-  if (info.outsideFeatures)
-    room->addMaker(unique<Furnitures>(!Predicate::attrib(SquareAttrib::ROOM), 0.1, *info.outsideFeatures, info.tribe));
   if (building.prettyFloor)
     room->addMaker(unique<Empty>(SquareChange(*building.prettyFloor)));
   queue->addMaker(unique<Buildings>(1, 2, 5, 7, building, false, std::move(room), false));
+  if (info.outsideFeatures)
+    queue->addMaker(unique<Furnitures>(!Predicate::attrib(SquareAttrib::ROOM), 0.1, *info.outsideFeatures, info.tribe));
   queue->addMaker(unique<PlaceCollective>(info.collective));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
   return queue;
@@ -2538,13 +2538,14 @@ static PLevelMaker getForrestCreatures(CreatureGroup factory, int levelWidth, Bi
   return unique<Creatures>(factory, levelWidth * levelWidth / div, MonsterAIFactory::wildlifeNonPredator());
 }
 
-static ItemListId getItems(BiomeId id) {
+static auto getItems(BiomeId id, int mapWidth) {
   switch (id) {
     case BiomeId::SNOW:
+      return unique<Items>(ItemListId("snowItems"), 1, 4);
     case BiomeId::DESERT:
-      return ItemListId("desertItems");
+      return unique<Items>(ItemListId("desertItems"), mapWidth / 30, mapWidth / 15);
     default:
-      return ItemListId("wildernessItems");
+      return unique<Items>(ItemListId("wildernessItems"), mapWidth / 10, mapWidth / 5);
   }
 }
 
@@ -2730,7 +2731,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
           Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR),
       SquareAttrib::CONNECTOR)));
   queue->addMaker(unique<Margin>(mapBorder + locationMargin, std::move(locations2)));
-  queue->addMaker(unique<Items>(getItems(biomeId), mapWidth / 10, mapWidth / 5));
+  queue->addMaker(getItems(biomeId, mapWidth));
   queue->addMaker(unique<AddMapBorder>(mapBorder));
   if (forrestCreatures)
     queue->addMaker(unique<Margin>(mapBorder, getForrestCreatures(*forrestCreatures, mapWidth - 2 * mapBorder, biomeId)));

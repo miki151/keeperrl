@@ -119,6 +119,9 @@
   { "archer" "@" ColorId BROWN }
   { "peasant" "@" ColorId GREEN }
   { "peasant_woman" "@" ColorId GREEN }
+  { "eskimo" "@" ColorId LIGHT_GRAY }
+  { "eskimo_woman" "@" ColorId LIGHT_GRAY }
+  { "eskimo_child" "@" ColorId GRAY }
   { "child" "@" ColorId LIGHT_GREEN }
   { "clay_golem" "Y" ColorId YELLOW }
   { "stone_golem" "Y" ColorId LIGHT_GRAY }
@@ -145,14 +148,19 @@
   { "goat" "g" ColorId GRAY }
   { "boar" "b" ColorId LIGHT_BROWN }
   { "fox" "d" ColorId ORANGE_BROWN }
+  { "polar_fox" "d" ColorId LIGHT_GRAY }
   { "wolf" "d" ColorId DARK_BLUE }
   { "werewolf" "d" ColorId WHITE }
   { "dog" "d" ColorId BROWN }
+  { "husky" "d" ColorId LIGHT_GRAY }
+  { viewId = "snowman" symbol = "@" color = ColorId WHITE
+    roundShadow = true }
   { "kraken_head" "S" ColorId GREEN }
   { "kraken_land" "S" ColorId DARK_GREEN }
   { "kraken_water" "S" ColorId DARK_GREEN }
   { "death" "D" ColorId DARK_GRAY }
   { "bear" "N" ColorId BROWN }
+  { "polar_bear" "N" ColorId LIGHT_GRAY }
   { "bat" "b" ColorId DARK_GRAY }
   { "goblin" "o" ColorId GREEN }
   { "rat" "r" ColorId BROWN }
@@ -169,6 +177,7 @@
   { "raven" "v" ColorId DARK_GRAY }
   { "body_part" "%" ColorId RED }
   { "bone" "%" ColorId WHITE }
+  { "frozen_remains" "%" ColorId LIGHT_GRAY }
   { "dig_icon" "⛏" ColorId LIGHT_GRAY true }
   { "sword" ")" ColorId LIGHT_GRAY }
   { "ada_sword" ")" ColorId LIGHT_BLUE }

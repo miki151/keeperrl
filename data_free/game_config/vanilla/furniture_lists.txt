@@ -7,6 +7,12 @@
       "CHEST" 2
     }
   }
+  "snowFurniture"
+  {
+    {
+      "SNOWMAN" 1
+    }
+  }
   "castleFurniture"
   {
     {

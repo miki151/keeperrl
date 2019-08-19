@@ -131,6 +131,13 @@
       {{Simple "Skeleton"} 1}
     }
   }
+  
+  "snowItems"
+  {
+    items = {
+      {{Simple "FrozenRemains"} 1}
+    }
+  }
 
   "amulets"
   {
