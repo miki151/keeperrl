@@ -2,15 +2,20 @@
 
 #include "util.h"
 
+struct ModVersionInfo {
+  SteamId steamId;
+  int version;
+  string compatibilityTag;
+};
+
 struct ModInfo {
   string name;
   string author;
   string description;
+  ModVersionInfo versionInfo;
   int numGames;
-  int version;
   double rating = -1; // don't display if less than 0
   // Steam mod info:
-  SteamId steamId;
   bool isSubscribed = false;
   bool isActive = false;
   bool isLocal = false;

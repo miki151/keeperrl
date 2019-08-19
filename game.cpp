@@ -361,7 +361,7 @@ void Game::tick(GlobalTime time) {
     auto turn = *turnEvents.begin();
     if (turn == 0) {
       auto values = campaign->getParameters();
-      values["current_mod"] = getOptions()->getStringValue(OptionId::CURRENT_MOD);
+      values["current_mod"] = getOptions()->getStringValue(OptionId::CURRENT_MOD2);
       values["version"] = string(BUILD_DATE) + " " + string(BUILD_VERSION);
       uploadEvent("campaignStarted", values);
     } else

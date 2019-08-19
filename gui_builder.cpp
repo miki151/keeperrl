@@ -3703,6 +3703,7 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
   }
   auto allItems = gui.getListBuilder(legendLineHeight);
   allItems.addElem(gui.label("Currently active:", Color::YELLOW));
+  CHECK(!!activeItem);
   allItems.addElem(std::move(activeItem));
   if (!localItems.isEmpty()) {
     allItems.addSpace(legendLineHeight / 2);

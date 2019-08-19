@@ -50,9 +50,9 @@
 #endif
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
-    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, TileSet* tileSet, bool singleThread, int sv)
+    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, TileSet* tileSet, bool singleThread, int sv, string modVersion)
       : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j), highscores(h), fileSharing(fSharing),
-        useSingleThread(singleThread), sokobanInput(soko), tileSet(tileSet), saveVersion(sv) {
+        useSingleThread(singleThread), sokobanInput(soko), tileSet(tileSet), saveVersion(sv), modVersion(modVersion) {
 }
 
 vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const string& suffix) {
@@ -78,7 +78,7 @@ bool MainLoop::isCompatible(int loadedVersion) {
 }
 
 GameConfig MainLoop::getGameConfig() const {
-  string currentMod = options->getStringValue(OptionId::CURRENT_MOD);
+  string currentMod = options->getStringValue(OptionId::CURRENT_MOD2);
   return GameConfig(getModsDir(), std::move(currentMod));
 }
 
@@ -484,19 +484,25 @@ DirectoryPath MainLoop::getModsDir() const {
   return dataFreePath.subdirectory(gameConfigSubdir);
 }
 
-pair<int, SteamId> MainLoop::getLocalVersion(const string& mod) {
-  ifstream in(getModsDir().subdirectory(mod).file("version").getPath());
-  int v = 0;
-  SteamId steamId = 0;
-  if (!!in)
-    in >> v >> steamId;
-  return {v, steamId};
+const auto modVersionFilename = "version_info";
+
+optional<ModVersionInfo> MainLoop::getLocalModVersionInfo(const string& mod) {
+  if (mod == "vanilla") {
+    return ModVersionInfo{12345, 0, modVersion};
+  }
+  ifstream in(getModsDir().subdirectory(mod).file(modVersionFilename).getPath());
+  ModVersionInfo info;
+  in >> info.steamId >> info.version >> info.compatibilityTag;
+  if (info.compatibilityTag == modVersion) // this also handles the check if the file existed and had sane contents
+    return info;
+  else
+    return none;
 }
 
-void MainLoop::updateLocalVersion(const string& mod, int version, SteamId steamId) {
-  ofstream out(getModsDir().subdirectory(mod).file("version").getPath());
+void MainLoop::updateLocalVersion(const string& mod, const ModVersionInfo& info) {
+  ofstream out(getModsDir().subdirectory(mod).file(modVersionFilename).getPath());
   if (!!out) {
-    out << version << "\n" << steamId << "\n";
+    out << info.steamId << "\n" << info.version << "\n" << info.compatibilityTag << "\n";
   }
 }
 
@@ -511,11 +517,10 @@ void MainLoop::removeOldSteamMod(SteamId steamId, const string& newName) {
   auto modDir = getModsDir();
   auto modList = modDir.getSubDirs();
   for (auto& modName : modList)
-    if (modName != newName) {
-      auto ver = getLocalVersion(modName);
-      if (ver.second == steamId)
-        removeMod(modName);
-    }
+    if (modName != newName)
+      if (auto ver = getLocalModVersionInfo(modName))
+        if (ver->steamId == steamId)
+          removeMod(modName);
 }
 
 void MainLoop::showMods() {
@@ -534,35 +539,37 @@ void MainLoop::showMods() {
   while (1) {
     auto modList = modDir.getSubDirs();
     USER_CHECK(!modList.empty()) << "No game config data found, please make sure all game data is in place";
-    options->setChoices(OptionId::CURRENT_MOD, modList);
-    string currentMod = options->getStringValue(OptionId::CURRENT_MOD);
+    string currentMod = options->getStringValue(OptionId::CURRENT_MOD2);
+    // check if the currentMod exists and has current version
+    if ([&]{for (auto& mod : modList) if (mod == currentMod && !!getLocalModVersionInfo(mod)) return false; return true;}())
+      currentMod = "vanilla";
     vector<ModInfo> allMods;
     set<SteamId> alreadyDownloaded;
-    for (auto& mod : modList) {
-      auto version = getLocalVersion(mod);
-      ModInfo modInfo;
-      modInfo.name = mod;
-      if (onlineMods)
-        for (auto& onlineMod : *onlineMods)
-          if (onlineMod.steamId == version.second && version.second != 0) {
-            modInfo = onlineMod;
-            if (modInfo.version > version.first)
-              modInfo.actions.push_back("Update");
-            alreadyDownloaded.insert(onlineMod.steamId);
-            break;
-          }
-      if (currentMod == mod)
-        modInfo.isActive = true;
-      else
-        modInfo.actions.push_back("Activate");
-      modInfo.isLocal = true;
-      if (mod == "vanilla") {
-        modInfo.description = "This is the official content of KeeperRL.";
+    for (auto& mod : modList)
+      if (auto version = getLocalModVersionInfo(mod)) {
+        ModInfo modInfo;
+        modInfo.name = mod;
+        if (onlineMods)
+          for (auto& onlineMod : *onlineMods)
+            if (onlineMod.versionInfo.steamId == version->steamId) {
+              modInfo = onlineMod;
+              if (modInfo.versionInfo.version > version->version)
+                modInfo.actions.push_back("Update");
+              alreadyDownloaded.insert(onlineMod.versionInfo.steamId);
+              break;
+            }
+        if (currentMod == mod)
+          modInfo.isActive = true;
+        else
+          modInfo.actions.push_back("Activate");
+        modInfo.isLocal = true;
+        if (mod == "vanilla") {
+          modInfo.description = "This is the official content of KeeperRL.";
+        }
+        allMods.push_back(std::move(modInfo));
       }
-      allMods.push_back(std::move(modInfo));
-    }
     for (auto& mod : *onlineMods)
-      if (!alreadyDownloaded.count(mod.steamId)) {
+      if (!alreadyDownloaded.count(mod.versionInfo.steamId)) {
         allMods.push_back(mod);
         allMods.back().actions.push_back("Download");
       }
@@ -572,17 +579,17 @@ void MainLoop::showMods() {
     highlighted = choice->index;
     auto action = allMods[highlighted].actions[choice->actionId];
     if (action == "Activate")
-      options->setValue(OptionId::CURRENT_MOD, highlighted);
+      options->setValue(OptionId::CURRENT_MOD2, allMods[highlighted].name);
     else if (action == "Download") {
       auto& downloadMod = allMods[highlighted];
       atomic<bool> cancelled(false);
       optional<string> error;
       doWithSplash(SplashType::SMALL, "Downloading mod \"" + downloadMod.name + "\"...", 1,
           [&] (ProgressMeter& meter) {
-            error = fileSharing->downloadMod(downloadMod.name, downloadMod.steamId, modDir, meter);
+            error = fileSharing->downloadMod(downloadMod.name, downloadMod.versionInfo.steamId, modDir, meter);
             if (!error) {
-              updateLocalVersion(downloadMod.name, downloadMod.version, downloadMod.steamId);
-              removeOldSteamMod(downloadMod.steamId, downloadMod.name);
+              updateLocalVersion(downloadMod.name, downloadMod.versionInfo);
+              removeOldSteamMod(downloadMod.versionInfo.steamId, downloadMod.name);
             }
           },
           [&] {
@@ -636,7 +643,7 @@ ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
     }
 #endif
   } else {
-    auto chosenMod = options->getStringValue(OptionId::CURRENT_MOD);
+    auto chosenMod = options->getStringValue(OptionId::CURRENT_MOD2);
     if (auto err = tryConfig(chosenMod)) {
       USER_INFO << "Error loading mod \"" << chosenMod << "\": " << *err << "\n\nUsing vanilla game data";
       if (auto err = tryConfig("vanilla"))
@@ -1025,10 +1032,9 @@ void MainLoop::registerModPlaytime(bool started) {
   if (!steam::Client::isAvailable())
     return;
 
-  string currentMod = options->getStringValue(OptionId::CURRENT_MOD);
-  auto localVer = getLocalVersion(currentMod);
-  if (localVer.second) {
-    steam::ItemId itemId(localVer.second);
+  string currentMod = options->getStringValue(OptionId::CURRENT_MOD2);
+  if (auto localVer = getLocalModVersionInfo(currentMod)) {
+    steam::ItemId itemId(localVer->steamId);
     auto& ugc = steam::UGC::instance();
     if (started)
       ugc.startPlaytimeTracking({itemId});

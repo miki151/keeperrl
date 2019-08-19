@@ -376,7 +376,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   jukebox.setCurrentVolume(options.getIntValue(OptionId::MUSIC));
   if (commandLineFlags["verify_mod"].was_set()) {
     MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, &options, &jukebox, nullptr, nullptr,
-        useSingleThread, 0);
+        useSingleThread, 0, "");
     if (auto err = loop.verifyMod(commandLineFlags["verify_mod"].get().string)) {
       std::cout << *err << std::endl;
       return -1;
@@ -386,7 +386,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
   auto modList = freeDataPath.subdirectory(gameConfigSubdir).getSubDirs();
   USER_CHECK(!modList.empty()) << "No game config data found, please make sure all game data is in place";
-  options.setChoices(OptionId::CURRENT_MOD, modList);
+  options.setChoices(OptionId::CURRENT_MOD2, modList);
 #ifdef RELEASE
   AppConfig appConfig(dataPath.file("appconfig.txt"));
 #else
@@ -398,7 +398,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   if (commandLineFlags["worldgen_test"].was_set()) {
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, nullptr,
-        useSingleThread, 0);
+        useSingleThread, 0, "");
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
       types = split(commandLineFlags["worldgen_maps"].get().string, {','});
@@ -407,7 +407,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   auto battleTest = [&] (View* view, TileSet* tileSet) {
     MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, tileSet,
-        useSingleThread, 0);
+        useSingleThread, 0, "");
     auto level = commandLineFlags["battle_level"].get().string;
     auto info = commandLineFlags["battle_info"].get().string;
     auto numRounds = commandLineFlags["battle_rounds"].get().i32;
@@ -497,7 +497,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     return 0;
   }
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, &tileSet,
-      useSingleThread, appConfig.get<int>("save_version"));
+      useSingleThread, appConfig.get<int>("save_version"), modVersion);
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
