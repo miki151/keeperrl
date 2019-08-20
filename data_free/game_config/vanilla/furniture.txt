@@ -364,6 +364,13 @@
   {
     viewId = { "palm_tree" }
   }
+  "GIANT_MUSHROOM" inherit "CANIF_TREE"
+  {
+    viewId = { "giant_mushroom" }
+    name = "giant treeshroom"
+    clearFogOfWar = true
+    blockVision = {}
+  }
   "TREE_TRUNK"
   {
     name = "tree trunk"
