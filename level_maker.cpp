@@ -155,10 +155,13 @@ class SquareChange {
     return SquareChange([](LevelBuilder*, Vec2) {});
   }
 
-  SquareChange& add(SquareChange added) {
+  SquareChange& add(SquareChange added, double prob = 1.0) {
     auto funCopy = changeFun; // copy just the function because storing "this" leads to a crash
-    changeFun = [added, funCopy] (LevelBuilder* builder, Vec2 pos) {
-        funCopy(builder, pos); added.changeFun(builder, pos); };
+    changeFun = [prob, added, funCopy] (LevelBuilder* builder, Vec2 pos) {
+      funCopy(builder, pos);
+      if (builder->getRandom().chance(prob))
+        added.changeFun(builder, pos);
+    };
     return *this;
   }
 
@@ -858,11 +861,11 @@ class FurnitureBlob : public Blob {
 
 class Lake : public Blob {
   public:
-  Lake(optional<FurnitureType> sandType) : sandType(sandType) {}
+  Lake(optional<SquareChange> sandType) : sandType(sandType) {}
   virtual void addSquare(LevelBuilder* builder, Vec2 pos, int edgeDist) override {
     builder->addAttrib(pos, SquareAttrib::LAKE);
     if (sandType && edgeDist == 1/* && !builder->isFurnitureType(pos, waterType)*/)
-      builder->resetFurniture(pos, *sandType);
+      sandType->apply(builder, pos);
     else {
       if (!!sandType)
         --edgeDist;
@@ -871,7 +874,7 @@ class Lake : public Blob {
   }
 
   private:
-  optional<FurnitureType> sandType;
+  optional<SquareChange> sandType;
 };
 
 class RemoveFurniture : public LevelMaker {
@@ -2695,7 +2698,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
       locations->add(unique<Lake>(none), {random.get(20, 30), random.get(20, 30)}, Predicate::attrib(SquareAttrib::LOWLAND));
   if (biomeId == BiomeId::DESERT)
     for (int i : Range(random.get(1, 3)))
-      locations->add(unique<Lake>(FurnitureType("GRASS")), {random.get(7, 12), random.get(7, 12)}, Predicate::attrib(SquareAttrib::LOWLAND));
+      locations->add(unique<Lake>(SquareChange::reset(FurnitureType("GRASS")).add(FurnitureType("PALM_TREE"), 0.5)),
+          {random.get(7, 12), random.get(7, 12)}, Predicate::attrib(SquareAttrib::LOWLAND));
   if (biomeId == BiomeId::MOUNTAIN)
     for (int i : Range(random.get(3, 6))) {
       locations->add(unique<UniformBlob>(SquareChange::reset(FurnitureType("WATER"), SquareAttrib::LAKE), none),

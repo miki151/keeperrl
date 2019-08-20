@@ -330,6 +330,8 @@
     isSymbolFont = true roundShadow = true }
   { viewId = "canif_tree" symbol = "♣" color = ColorId DARK_GREEN
     isSymbolFont = true roundShadow = true }
+  { viewId = "palm_tree" symbol = "⥾" color = ColorId LIGHT_GREEN
+    isSymbolFont = true roundShadow = true }
   { viewId = "cactus1" symbol = "!" color = ColorId LIGHT_GREEN
     isSymbolFont = true roundShadow = true }
   { viewId = "burnt_tree" symbol = "." color = ColorId DARK_GRAY

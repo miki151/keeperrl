@@ -360,6 +360,10 @@
     destroyedRemains = none
     summonedElement = none
   }
+  "PALM_TREE" inherit "CANIF_TREE"
+  {
+    viewId = { "palm_tree" }
+  }
   "TREE_TRUNK"
   {
     name = "tree trunk"
