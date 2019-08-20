@@ -249,6 +249,8 @@ PItem ItemType::get(const ContentFactory* factory) const {
     if (Random.chance(attributes.variationChance) && mod > 0)
       mod = max(1, mod + Random.get(-var, var + 1));
   }
+  if (attributes.ingredientFor)
+    attributes.description = "Ingredient for " + attributes.ingredientFor->get(factory)->getName();
   if (!attributes.genPrefixes.empty() && Random.chance(prefixChance))
     applyPrefix(Random.choose(attributes.genPrefixes), attributes);
   return type.visit(

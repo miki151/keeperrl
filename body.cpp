@@ -555,8 +555,8 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
       default: return vector<PItem>();
     }
   }();
-  for (auto& elem : drops)
-    ret.push_back(elem.get(factory));
+  if (!drops.empty())
+    ret.push_back(Random.choose(drops).get(factory));
   return ret;
 }
 

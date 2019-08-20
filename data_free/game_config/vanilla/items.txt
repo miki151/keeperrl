@@ -695,6 +695,16 @@
       }
       maxUpgrades = 1
     }
+  "CyclopsBrain"
+    {
+      viewId = { "brain" }
+      shortName = "cyclops"
+      name = "cyclops brain"
+      itemClass = OTHER
+      weight = 5
+      price = 50
+      ingredientFor = {Potion IncreaseAttr DEFENSE 5}
+    }
   "CyclopsTesticles"
     {
       viewId = { "nuts" }

@@ -453,6 +453,10 @@
       body = {
         type = Humanoid LARGE
         weight = 400
+        drops = {
+          { Simple "CyclopsBrain" } 10
+          { Simple "CyclopsTesticles" } 1
+        }
       }
       permanentEffects = {
         RANGED_RESISTANCE 1
@@ -652,7 +656,7 @@
               attackMsg = BITE
               victimEffect = {0.3 Lasting POISON} } }
         }
-        drops = {{ Simple "GreenDragonScales" }}
+        drops = {{ Simple "GreenDragonScales" } 1}
       }
       permanentEffects = {
         POISON_RESISTANT 1
@@ -683,7 +687,7 @@
               attackMsg = BITE
               victimEffect = {0.5 Fire} } }
         }
-        drops = { { Simple "RedDragonScales" }}
+        drops = { { Simple "RedDragonScales" } 1}
       }
       permanentEffects = {
         FIRE_RESISTANT 1
@@ -713,7 +717,7 @@
               attackType = BITE
               attackMsg = BITE } }
         }
-        drops = {{ Simple "BlackDragonScales" }}
+        drops = {{ Simple "BlackDragonScales" } 1}
       }
       permanentEffects = {
         RANGED_VULNERABILITY 1
@@ -740,7 +744,7 @@
               attackType = BITE
               attackMsg = BITE } }
         }
-        drops = {{ Simple "WhiteDragonScales" }}
+        drops = {{ Simple "WhiteDragonScales" } 1}
       }
       permanentEffects = {
         RANGED_VULNERABILITY 1
