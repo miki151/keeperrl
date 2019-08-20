@@ -697,7 +697,7 @@
     }
   "CyclopsTesticles"
     {
-      viewId = { "rune2" }
+      viewId = { "nuts" }
       shortName = "cyclops"
       name = "cyclops testicles"
       itemClass = OTHER
