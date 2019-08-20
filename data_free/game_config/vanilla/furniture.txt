@@ -868,6 +868,10 @@
     destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
     tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
   }
+  "SANDSTONE_WALL" inherit "DUNGEON_WALL"
+  {
+    viewId = { "sandstone_wall" }
+  }
   "PIT"
   {
     name = "pit"

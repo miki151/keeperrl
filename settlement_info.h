@@ -16,7 +16,8 @@ RICH_ENUM(BuildingId,
   DUNGEON_SURFACE,
   RUINS,
   SNOW,
-  GLACIER
+  GLACIER,
+  SANDSTONE
 );
 
 struct StockpileInfo {

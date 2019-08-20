@@ -1528,7 +1528,7 @@
   "NOMAD_COTTAGE" inherit "HUMAN_COTTAGE"
   {
     settlement = append {
-      buildingId = MUD
+      buildingId = SANDSTONE
       cropsDistance = none
       inhabitants = {
         fighters = {
