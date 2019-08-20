@@ -1547,6 +1547,56 @@
       furniture = { }
     }
   }
+  "THIEVES"
+  {
+    biomes = { DESERT }
+    settlement = {
+      type = CASTLE2
+      tribe = HUMAN
+      buildingId = SANDSTONE
+      inhabitants = {
+        leader = { { "THIEF_LEADER" } }
+        fighters = {
+          count = {8 14}
+          all = { 1 "THIEF" }
+          uniques = { "SORCERER" }
+        }
+      }
+      locationNameGen = TOWN
+      race = "thieves"
+      stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
+      furniture = { "roomFurniture" }
+      outsideFeatures = "castleOutside"
+    }
+    config = {
+      immigrantInterval = 300
+      maxPopulation = 10
+      ghostProb = 0.1
+      spawnGhosts = 6
+    }
+    behaviour = {
+      minPopulation = 3
+      minTeamSize = 5
+      triggers = {
+        RoomTrigger "THRONE" 0.0003
+        RoomTrigger "IMPALED_HEAD" 0.0001
+        SelfVictims
+        NumConquered 2
+        StolenItems
+        FinishOff
+        Proximity
+      }
+      attackBehaviour = KillLeader
+      ransom = 0.8 140
+    }
+    immigrants = {
+      {
+        ids = {"THIEF"}
+        traits = {FIGHTER}
+        frequency = 1
+      }
+    }
+  }
   "ELVEN_COTTAGE"
   {
     settlement = {

@@ -109,6 +109,9 @@
   { "priest" "@" ColorId SKY_BLUE }
   { "warrior" "@" ColorId DARK_GRAY }
   { "shaman" "@" ColorId YELLOW }
+  { "thief" "@" ColorId LIGHT_BROWN }
+  { "thief_leader" "@" ColorId BROWN }
+  { "sorcerer" "@" ColorId PURPLE }
   { "duke1" "@" ColorId BLUE false "knightboss1" }
   { "duke2" "@" ColorId BLUE false "knightboss2" }
   { "duke3" "@" ColorId BLUE false "knightboss3" }

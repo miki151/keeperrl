@@ -1117,6 +1117,46 @@
       }
       hatedByEffect = HATE_HUMANS
     }
+  "THIEF" inherit "WARRIOR"
+    {
+      viewId = { "thief" }
+      name = {
+        name = "thief"
+      }
+    }
+  "THIEF_LEADER" inherit "THIEF"
+    {
+      viewId = { "thief_leader" }
+      name = {
+        name = "thief leader"
+      }
+    }
+  "SORCERER"
+    {
+      viewId = { "sorcerer" }
+      attr = {
+        DAMAGE 15
+        DEFENSE 25
+        SPELL_DAMAGE 35
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+        FLYING 1
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      maxLevelIncrease = {
+        SPELL 2
+      }
+      name = {
+        name = "sorcerer"
+      }
+      spells = { "advanced healing" "haste" "defense bonus" "directed blast" "magic missile" }
+      hatedByEffect = HATE_HUMANS
+    }
   "CHILD"
     {
       viewId = { "child" }

@@ -12,6 +12,7 @@
     { "green_dragon" } "GREEN_DRAGON" "Green dragon" MAIN
     { "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN
     { "shaman" } "WARRIORS" "Warriors" MAIN
+    { "thief_leader" } "THIEVES" "Thieves" MAIN
     { "demon_lord" } "DEMON_DEN" "Demon den" MAIN
     { "dungeon_entrance" } "MAIN_DUNGEON" "Unremarkable dungeon" MAIN
 

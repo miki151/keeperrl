@@ -959,7 +959,7 @@ static BuildingType getBuildingInfo(const SettlementInfo& info) {
     case BuildingId::SANDSTONE:
       return CONSTRUCT(BuildingType,
           c.wall = FurnitureType("SANDSTONE_WALL");
-          c.floorInside = FurnitureType("FLOOR");
+          //c.floorInside = FurnitureType("FLOOR");
           c.door = Connector::DoorInfo LIST(FurnitureType("WOOD_DOOR"), info.tribe, 1.0);
           c.gate = Connector::DoorInfo LIST(FurnitureType("WOOD_GATE"), info.tribe, 1.0);
       );

@@ -212,9 +212,11 @@ void ModelBuilder::addMapVillainsForLawfulKeeper(vector<EnemyInfo>& enemyInfo, B
       break;
     case BiomeId::DESERT:
       for (int i : Range(random.get(3, 5)))
-        enemyInfo.push_back(enemyFactory->get(EnemyId("LIZARDMEN_SMALL")));
+        enemyInfo.push_back(enemyFactory->get(EnemyId("NOMAD_COTTAGE")));
       break;
     case BiomeId::SNOW:
+      for (int i : Range(random.get(3, 5)))
+        enemyInfo.push_back(enemyFactory->get(EnemyId("ESKIMO_COTTAGE")));
       break;
   }
   if (random.chance(0.3))
@@ -241,7 +243,7 @@ void ModelBuilder::addMapVillainsForEvilKeeper(vector<EnemyInfo>& enemyInfo, Bio
       break;
     case BiomeId::DESERT:
       for (int i : Range(random.get(3, 5)))
-        enemyInfo.push_back(enemyFactory->get(EnemyId("LIZARDMEN_SMALL")));
+        enemyInfo.push_back(enemyFactory->get(EnemyId("NOMAD_COTTAGE")));
       break;
     case BiomeId::SNOW:
       for (int i : Range(random.get(3, 5)))
