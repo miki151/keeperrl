@@ -289,7 +289,7 @@ PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment al
 
 PModel ModelBuilder::tryTutorialModel() {
   vector<EnemyInfo> enemyInfo;
-  BiomeId biome = BiomeId::DESERT;
+  BiomeId biome = BiomeId::MOUNTAIN;
   //enemyInfo.push_back(enemyFactory->get(EnemyId("RED_DRAGON")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
   /*enemyInfo.push_back(enemyFactory->get(EnemyId("BANDITS")));

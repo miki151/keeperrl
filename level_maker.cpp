@@ -2732,6 +2732,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
   queue->addMaker(unique<AddAttrib>(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::LOWLAND)));
   queue->addMaker(unique<AddAttrib>(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::HILL)));
   queue->addMaker(getForrest(biomeId));
+  queue->addMaker(unique<Furnitures>(Predicate::canEnter(MovementTrait::WALK), 0.003, FurnitureListId("randomTerrain"), TribeId::getHostile()));
   queue->addMaker(unique<Margin>(mapBorder + locationMargin, std::move(locations)));
   queue->addMaker(unique<Margin>(mapBorder, unique<Roads>()));
   queue->addMaker(unique<Margin>(mapBorder,

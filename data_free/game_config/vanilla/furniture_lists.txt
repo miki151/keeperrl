@@ -71,6 +71,12 @@
       "CACTUS1" 2
     }
   }
+  "randomTerrain"
+  {
+    {
+      "STONES" 1
+    }
+  }
   "cryptCoffins"
   {
     {

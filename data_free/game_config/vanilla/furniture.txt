@@ -397,6 +397,11 @@
     itemDrop = {{{{Simple "WoodPlank"} 1 { 2 4 }}}}
     tryDestroyFX = { WOOD_SPLINTERS }
   }
+  "STONES"
+  {
+    name = "rocks"
+    viewId = { "stones" }
+  }
   "CROPS"
   {
     name = "wheat"

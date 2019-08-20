@@ -74,6 +74,7 @@
   { "tree_trunk" "." ColorId BROWN false "treecut" }
   { "crops" "𝃰" ColorId YELLOW }
   { "crops2" "𝃰" ColorId YELLOW }
+  { "stones" "." ColorId GRAY }
   { "down_staircase" "➘" ColorId ALMOST_WHITE true }
   { "up_staircase" "➚" ColorId ALMOST_WHITE true }
   { "map_mountain1" "^" ColorId DARK_GRAY }
