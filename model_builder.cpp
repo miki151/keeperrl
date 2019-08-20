@@ -293,7 +293,7 @@ PModel ModelBuilder::tryTutorialModel() {
   /*enemyInfo.push_back(enemyFactory->get(EnemyId("BANDITS")));
   enemyInfo.push_back(enemyFactory->get(EnemyId("ADA_GOLEMS")));*/
   //enemyInfo.push_back(enemyFactory->get(EnemyId("TEMPLE")));
-  enemyInfo.push_back(enemyFactory->get(EnemyId("ESKIMO_COTTAGE")));
+  enemyInfo.push_back(enemyFactory->get(EnemyId("NOMAD_COTTAGE")));
   return tryModel(174, enemyInfo, TribeId::getDarkKeeper(), biome, {}, false);
 }
 

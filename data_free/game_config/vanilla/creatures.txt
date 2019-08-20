@@ -931,6 +931,17 @@
     {
       permanentEffects = {}
     }
+  "NOMAD" inherit "PESEANT"
+    {
+      viewId = { "nomad" }
+      genderAlternatives = {
+        FEMALE { "nomad_woman" }
+      }
+      name = {
+        name = "nomad"
+      }
+      permanentEffects = {}
+    }
   "ESKIMO" inherit "PESEANT"
     {
       viewId = { "eskimo" }
@@ -1130,6 +1141,11 @@
   "ESKIMO_CHILD" inherit "CHILD"
     {
       viewId = { "eskimo_child" }
+      permanentEffects = {}
+    }
+  "NOMAD_CHILD" inherit "CHILD"
+    {
+      viewId = { "nomad_child" }
       permanentEffects = {}
     }
   "SPIDER_FOOD"
@@ -2082,6 +2098,14 @@
       petReaction = "neighs"
       name = {
         name = "horse"
+      }
+    }
+  "CAMEL" inherit "HORSE"
+    {
+      viewId = { "camel" }
+      petReaction = "growls"
+      name = {
+        name = "camel"
       }
     }
   "COW"

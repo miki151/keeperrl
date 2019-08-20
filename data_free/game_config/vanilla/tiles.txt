@@ -120,10 +120,13 @@
   { "archer" "@" ColorId BROWN }
   { "peasant" "@" ColorId GREEN }
   { "peasant_woman" "@" ColorId GREEN }
+  { "child" "@" ColorId LIGHT_GREEN }
   { "eskimo" "@" ColorId LIGHT_GRAY }
   { "eskimo_woman" "@" ColorId LIGHT_GRAY }
   { "eskimo_child" "@" ColorId GRAY }
-  { "child" "@" ColorId LIGHT_GREEN }
+  { "nomad" "@" ColorId LIGHT_BROWN }
+  { "nomad_woman" "@" ColorId LIGHT_BROWN }
+  { "nomad_child" "@" ColorId BROWN }
   { "clay_golem" "Y" ColorId YELLOW }
   { "stone_golem" "Y" ColorId LIGHT_GRAY }
   { "iron_golem" "Y" ColorId ORANGE }
@@ -143,6 +146,7 @@
   { "jackal" "d" ColorId LIGHT_BROWN }
   { "deer" "R" ColorId DARK_BROWN }
   { "horse" "H" ColorId LIGHT_BROWN }
+  { "camel" "C" ColorId LIGHT_BROWN }
   { "cow" "C" ColorId WHITE }
   { "pig" "p" ColorId YELLOW }
   { "donkey" "D" ColorId GRAY }

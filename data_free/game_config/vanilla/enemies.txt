@@ -1525,6 +1525,28 @@
       outsideFeatures = "snowFurniture"
     }
   }
+  "NOMAD_COTTAGE" inherit "HUMAN_COTTAGE"
+  {
+    settlement = append {
+      buildingId = MUD
+      cropsDistance = none
+      inhabitants = {
+        fighters = {
+          count = {2 4}
+          all = { 1 "NOMAD" }
+        }
+        civilians = {
+          count = {7 12},
+          all = {
+            3 "GOAT"
+            3 "CAMEL"
+            1 "NOMAD_CHILD"
+          }
+        }
+      }
+      furniture = { }
+    }
+  }
   "ELVEN_COTTAGE"
   {
     settlement = {
