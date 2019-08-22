@@ -695,10 +695,18 @@
       }
       maxUpgrades = 1
     }
+  "ZombieBrain"
+    {
+      viewId = { "brain" }
+      name = "zombie brain"
+      itemClass = OTHER
+      weight = 5
+      price = 20
+      ingredientFor = {Potion Lasting PLAGUE}
+    }
   "CyclopsBrain"
     {
       viewId = { "brain" }
-      shortName = "cyclops"
       name = "cyclops brain"
       itemClass = OTHER
       weight = 5

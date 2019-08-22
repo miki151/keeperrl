@@ -165,6 +165,6 @@ class Body {
   optional<BodyPart> getAnyGoodBodyPart() const;
   double getBodyPartHealth() const;
   void dropUnsupportedEquipment(const Creature*) const;
-  vector<pair<ItemType, double>> SERIAL(drops);
+  vector<pair<optional<ItemType>, double>> SERIAL(drops);
 };
 

@@ -1372,6 +1372,10 @@
       body = {
         type = Humanoid LARGE
         material = UNDEAD_FLESH
+        drops = {
+          none 20
+          { Simple "ZombieBrain" } 1
+        }
       }
       permanentEffects = {
         RANGED_RESISTANCE 1
