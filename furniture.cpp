@@ -62,7 +62,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(canBuildBridge), OPTION(noProjectiles), OPTION(clearFogOfWar), OPTION(removeWithCreaturePresent), OPTION(upgrade));
   ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
-  ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltTo), NAMED(freezeTo));
+  ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(freezeTo));
   ar(OPTION(bloodCountdown), SKIP(bloodTime));
 }
 
@@ -491,9 +491,12 @@ bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& ac
 }
 
 void Furniture::fireDamage(Position pos, bool withMessage) {
-  if (meltTo) {
+  if (meltInfo) {
     pos.globalMessage("The " + getName() + " melts");
-    pos.removeFurniture(this, pos.getGame()->getContentFactory()->furniture.getFurniture(*meltTo, getTribe()));
+    PFurniture replace;
+    if (meltInfo->meltTo)
+      replace = pos.getGame()->getContentFactory()->furniture.getFurniture(*meltInfo->meltTo, getTribe());
+    pos.removeFurniture(this, std::move(replace));
   } else
   if (fire) {
     bool burning = fire->isBurning();

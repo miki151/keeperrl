@@ -212,7 +212,11 @@ class Furniture : public OwnedObject<Furniture> {
   bool SERIAL(hostileSpell) = false;
   optional<FurnitureEffectInfo> SERIAL(lastingEffect);
   optional<FurnitureType> SERIAL(freezeTo);
-  optional<FurnitureType> SERIAL(meltTo);
+  struct MeltInfo {
+    optional<FurnitureType> SERIAL(meltTo);
+    SERIALIZE_ALL(OPTION(meltTo))
+  };
+  optional<MeltInfo> SERIAL(meltInfo);
   optional<int> SERIAL(bloodCountdown);
   optional<LocalTime> SERIAL(bloodTime);
 };
