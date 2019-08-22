@@ -71,6 +71,7 @@
     {{Potion Heal SPIRIT}                  4        GOLD 20      "advanced alchemy"}
     {item = {Potion IncreaseAttr DEFENSE 5} work = 20 cost = GOLD 100 requireIngredient = true }
     {item = {Potion Lasting PLAGUE} work = 5 cost = GOLD 10 requireIngredient = true }
+    {item = {Potion Permanent POISON_RESISTANT} work = 20 cost = GOLD 80 requireIngredient = true }
     {{Simple "GoldPiece"}                           5        IRON 30      "alchemical conversion"       10}
     {{Simple "WoodPlank"}                           5        GOLD 10      "alchemical conversion"       10}
     {{Simple "IronOre"}                             5        GOLD 10      "alchemical conversion"       10}

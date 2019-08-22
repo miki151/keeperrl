@@ -238,6 +238,7 @@
   { "dragon_scales" "~" ColorId GREEN }
   { "nuts" "⠤" ColorId ORANGE true }
   { "brain" "⚭" ColorId PINK true }
+  { "tongue" "~" ColorId RED true }
   { "key" "*" ColorId YELLOW }
   { "gold" "$" ColorId YELLOW }
   { "treasure_chest" "=" ColorId BROWN }

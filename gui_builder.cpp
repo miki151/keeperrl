@@ -2044,7 +2044,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
       continue;
     auto line = gui.getListBuilder();
     line.addElem(gui.viewObject(elem.viewId), 35);
-    line.addElem(gui.label(elem.name, elem.unavailable ? Color::GRAY : Color::WHITE), 10);
+    line.addMiddleElem(gui.renderInBounds(gui.label(elem.name, elem.unavailable ? Color::GRAY : Color::WHITE)));
     if (elem.price)
       line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
     SGuiElem guiElem = line.buildHorizontalList();
@@ -2073,7 +2073,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
         gui.uiHighlightMouseOver(),
         gui.getListBuilder()
             .addElem(gui.viewObject(elem.itemInfo.viewId), 35)
-            .addElemAuto(gui.label(elem.itemInfo.name))
+            .addMiddleElem(gui.renderInBounds(gui.label(elem.itemInfo.name)))
             .buildHorizontalList()
     ));
     if ((!elem.available.empty() || !elem.added.empty()) && elem.maxUpgrades > 0) {

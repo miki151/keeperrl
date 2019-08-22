@@ -695,12 +695,21 @@
       }
       maxUpgrades = 1
     }
+  "HydraTongue"
+    {
+      viewId = { "tongue" }
+      name = "hydra tongue"
+      itemClass = OTHER
+      weight = 15
+      price = 100
+      ingredientFor = {Potion Permanent POISON_RESISTANT}
+    }
   "ZombieBrain"
     {
       viewId = { "brain" }
       name = "zombie brain"
       itemClass = OTHER
-      weight = 5
+      weight = 2
       price = 20
       ingredientFor = {Potion Lasting PLAGUE}
     }

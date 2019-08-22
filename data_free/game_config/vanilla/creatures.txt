@@ -595,6 +595,9 @@
           BACK 0
           TORSO 0
         }
+        drops = {
+          { Simple "HydraTongue" } 1
+        }
         noHealth = true
         fallsApart = false
       }
