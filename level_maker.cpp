@@ -1965,7 +1965,7 @@ class CastleExit : public LevelMaker {
     for (Vec2 pos : guardPos) {
       auto fighters = settlement.inhabitants.fighters.generate(builder->getRandom(), &builder->getContentFactory()->getCreatures(),
           settlement.tribe, MonsterAIFactory::stayInLocation(
-              builder->toGlobalCoordinates(Rectangle(loc + pos, loc + pos + Vec2(1, 1))), false));
+              builder->toGlobalCoordinates(Rectangle(loc + pos, loc + pos + Vec2(1, 1))), false), true);
       if (!fighters.empty())
         builder->putCreature(loc + pos, std::move(fighters[0]));
     }

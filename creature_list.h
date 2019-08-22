@@ -26,7 +26,7 @@ struct CreatureList {
   string getSummary(CreatureFactory* factory) const;
 
   ViewId getViewId(CreatureFactory*) const;
-  vector<PCreature> generate(RandomGen&, CreatureFactory*, TribeId, MonsterAIFactory) const;
+  vector<PCreature> generate(RandomGen&, CreatureFactory*, TribeId, MonsterAIFactory, bool nonUnique = false) const;
 
   template<typename Archive>
   void serialize(Archive&, const unsigned int);
