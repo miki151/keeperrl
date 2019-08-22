@@ -2346,6 +2346,16 @@
         name = "rat"
       }
     }
+  "BLACK_RAT" inherit "RAT"
+    {
+      viewId = { "black_rat" }
+      permanentEffects = append {
+        PLAGUE 1
+      }
+      name = {
+        name = "black rat"
+      }
+    }
   "SPIDER"
     {
       viewId = { "spider" }

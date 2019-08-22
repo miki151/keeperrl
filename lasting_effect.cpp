@@ -780,7 +780,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         bool canDie = sample >= 9000 && !c->getStatus().contains(CreatureStatus::LEADER);
         for (auto pos : c->getPosition().neighbors8())
           if (auto other = pos.getCreature())
-            if (Random.roll(20))
+            if (Random.roll(10))
               Effect::Lasting{LastingEffect::PLAGUE}.applyToCreature(other, nullptr);
         if (suffers) {
           if (c->getBody().getHealth() > 0.5 || canDie) {

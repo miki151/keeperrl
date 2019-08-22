@@ -173,6 +173,7 @@
   { "bat" "b" ColorId DARK_GRAY }
   { "goblin" "o" ColorId GREEN }
   { "rat" "r" ColorId BROWN }
+  { "black_rat" "r" ColorId GRAY }
   { "rat_soldier" "@" ColorId BROWN }
   { "rat_lady" "@" ColorId DARK_BROWN }
   { "rat_king" "@" ColorId LIGHT_BROWN }

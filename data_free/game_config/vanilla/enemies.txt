@@ -131,6 +131,23 @@
       attackBehaviour = KillLeader
     }
   }
+  "BLACK_RATS" 
+  {
+    settlement = {
+      type = ANT_NEST
+      inhabitants = {
+        fighters = {
+          count = {12 20}
+          all = { 1 "BLACK_RAT" }
+        }
+      }
+      tribe = ANT
+      race = "black rats"
+      buildingId = DUNGEON
+    }
+    discoverable = false
+    createOnBones = 1.0 { "DWARVES" }
+  }
   "ANTS_OPEN" inherit "ANTS_CLOSED"
   {
     settlement = {
