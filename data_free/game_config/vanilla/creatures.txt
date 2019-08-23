@@ -325,6 +325,7 @@
       name = {
         name = "djinn"
       }
+      spells = { "grant wish" }
     }
   "LOST_SOUL"
     {
@@ -337,7 +338,7 @@
               attackType = HIT
               attackMsg = TOUCH
               victimEffect = { 0.2 Lasting INSANITY}
-              attackerEffect = {Suicide} } }
+              attackerEffect = {Suicide DIE} } }
         }
       }
       viewId = { "ghost" }

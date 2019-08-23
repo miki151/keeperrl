@@ -354,4 +354,12 @@
     effect = Area 30 Filter ENEMY Lasting BLIND
     cooldown = 3
   }
+  {
+    id = "grant wish"
+    symbol = "$"
+    effect = Chain { Wish Caster Suicide TURN_INVISIBLE }
+    range = 1
+    targetSelf = false
+    cooldown = 150
+  }
 }

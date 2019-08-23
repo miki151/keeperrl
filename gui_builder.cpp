@@ -3826,8 +3826,9 @@ Rectangle GuiBuilder::getTextInputPosition() {
 
 SGuiElem GuiBuilder::getTextContent(const string& title, const string& value, const string& hint) {
   auto lines = gui.getListBuilder(legendLineHeight);
+  lines.addElem(gui.label(capitalFirst(title)));
   lines.addElem(
-      gui.variableLabel([&] { return title + ":  " + value + "_"; }, legendLineHeight), 3 * legendLineHeight);
+      gui.variableLabel([&] { return value + "_"; }, legendLineHeight), 2 * legendLineHeight);
   if (!hint.empty())
     lines.addElem(gui.label(hint, gui.inactiveText));
   return lines.buildVerticalList();

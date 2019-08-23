@@ -972,32 +972,34 @@ MessageGenerator& Player::getMessageGenerator() const {
 static double getScore(string target, string candidate) {
   set<string> ngrams;
   const int n = 3;
-  const string prefSuf(' ', n - 1);
-  target = prefSuf + target + prefSuf;
-  candidate = prefSuf + candidate + prefSuf;
+  auto addPrefAndSuf = [] (string& s) {
+    s = "__ " + s + " __";
+  };
+  addPrefAndSuf(target);
+  addPrefAndSuf(candidate);
   for (int i : Range(target.size() - n + 1))
     ngrams.insert(target.substr(i, n));
   int result = 0;
   for (int i : Range(candidate.size() - n + 1))
     result += ngrams.count(candidate.substr(i, n));
-  return result;
+  return result - int(candidate.size()) / 3;
 }
 
 void Player::grantWish(const string& message) {
   if (auto text = getView()->getText(message, "", 40)) {
     int count = 1;
-    ItemType itemType = ItemType::Simple("Rock");
-    double bestScore = -10000000;
+    optional<ItemType> itemType;
+    double bestScore = 0;
     for (auto& elem : getGame()->getContentFactory()->items) {
       double score = getScore(*text, *elem.second.name);
       std::cout << *elem.second.name << " score " << score << std::endl;
-      if (score > bestScore) {
+      if (score > bestScore || !itemType) {
         bestScore = score;
         itemType = ItemType(elem.first);
         count = Random.get(elem.second.wishedCount);
       }
     }
-    auto items = itemType.get(count, getGame()->getContentFactory());
+    auto items = itemType->get(count, getGame()->getContentFactory());
     creature->verb("receive", "receives", items[0]->getPluralAName(items.size()));
     creature->getEquipment().addItems(std::move(items), creature);
   }

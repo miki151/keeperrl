@@ -288,7 +288,7 @@
         1 VictimEffect 0.4 DestroyEquipment
         1 JoinPrefixes {
           ItemAttrBonus SPELL_DAMAGE 20
-          AttackerEffect Suicide
+          AttackerEffect Suicide DIE
         }
       }
       maxUpgrades = 2
@@ -913,6 +913,7 @@
       price = 0
       resourceId = STONE
       weight = 0.3
+      wishedCount = { 5 10 }
     }
   "IronOre"
     {

@@ -839,7 +839,7 @@ vector<Position> Effect::CustomArea::getTargetPos(const Creature* attacker, Posi
 }
 
 void Effect::Suicide::applyToCreature(Creature* c, Creature* attacker) const {
-  c->you(MsgType::DIE, "");
+  c->you(message, "");
   c->dieNoReason();
 }
 
@@ -862,6 +862,28 @@ string Effect::Wish::getName() const {
 
 string Effect::Wish::getDescription() const {
   return "Gives you one wish.";
+}
+
+void Effect::Chain::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effect::Chain::getName() const {
+  return effects[0].getName();
+}
+
+string Effect::Chain::getDescription() const {
+  return effects[0].getDescription();
+}
+
+void Effect::Caster::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effect::Caster::getName() const {
+  return effect->getName();
+}
+
+string Effect::Caster::getDescription() const {
+  return effect->getDescription();
 }
 
 void Effect::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) const {
@@ -1078,6 +1100,14 @@ void Effect::apply(Position pos, Creature* attacker) const {
         for (auto& v : area.getTargetPos(attacker, pos))
           area.effect->apply(v, attacker);
       },
+      [&](const Chain& chain) {
+        for (auto& e : chain.effects)
+          e.apply(pos, attacker);
+      },
+      [&](const Caster& chain) {
+        if (attacker)
+          chain.effect->apply(attacker->getPosition(), attacker);
+      },
       [&](const PlaceFurniture& effect) {
         auto f = pos.getGame()->getContentFactory()->furniture.getFurniture(effect.furniture,
             attacker ? attacker->getTribeId() : TribeId::getMonster());
@@ -1209,6 +1239,23 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
     return allRes;
   };
   return effect.visit(
+      [&] (const Wish&){
+        if (victim && victim->isPlayer() && !caster->isEnemy(victim))
+          return EffectAIIntent::WANTED;
+        else
+          return EffectAIIntent::UNWANTED;
+      },
+      [&] (const Chain& chain){
+        auto allRes = EffectAIIntent::UNWANTED;
+        for (auto& e : chain.effects) {
+          auto res = e.shouldAIApply(caster, pos);
+          if (res == EffectAIIntent::UNWANTED)
+            return EffectAIIntent::UNWANTED;
+          if (res == EffectAIIntent::WANTED)
+            allRes = res;
+        }
+        return allRes;
+      },
       [&] (const Area& a) {
         return considerArea(pos.getRectangle(Rectangle::centered(a.radius)), *a.effect);
       },

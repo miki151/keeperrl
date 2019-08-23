@@ -67,7 +67,7 @@
         { type = Glyph ARMOR LastingEffect MAGIC_RESISTANCE chance = 0.3 }
         { type = Glyph ARMOR LastingEffect SPEED chance = 0.3 }
         { type = Glyph ARMOR LastingEffect NO_CARRY_LIMIT chance = 0.3 }
-        { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 20 AttackerEffect Suicide} chance = 0.3 }
+        { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 20 AttackerEffect Suicide DIE} chance = 0.3 }
        }
   {"ADVENTURER_F" "ADVENTURER"}
       {
