@@ -181,6 +181,7 @@ class Effect {
     HeapAllocated<Effect> effect;
     COMPARE_ALL(filter, effect)
   };
+  SIMPLE_EFFECT(Wish);
 
 /*  struct Chain {
     EFFECT_TYPE_INTERFACE;
@@ -190,7 +191,7 @@ class Effect {
   MAKE_VARIANT(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
       Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost, Filter, SummonEnemy);
+      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost, Filter, SummonEnemy, Wish);
 
   template <typename T>
   Effect(T&& t) : effect(std::forward<T>(t)) {}

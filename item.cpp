@@ -376,6 +376,13 @@ string Item::getPluralTheName(int count) const {
     return getTheName(false);
 }
 
+string Item::getPluralAName(int count) const {
+  if (count > 1)
+    return toString(count) + " " + getTheName(true);
+  else
+    return getAName(false);
+}
+
 string Item::getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const {
   return getPluralTheName(count) + " " + (count > 1 ? verbPlural : verbSingle);
 }

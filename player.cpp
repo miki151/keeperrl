@@ -947,6 +947,61 @@ MessageGenerator& Player::getMessageGenerator() const {
   return messageGenerator;
 }
 
+
+/* edit distance, doesn't work very well
+  static double getScore(const string& target, const string& candidate) {
+  int m = target.size();
+  int n = candidate.size();
+  Table<double> res(Rectangle(-1, -1, m, n), 0);
+  for (int i : Range(m))
+    res[i][-1] = i + 1;
+  for (int i : Range(n))
+    res[-1][i] = i + 1;
+  for (Vec2 v : Rectangle(0, 0, m, n))
+    if (tolower(target[v.x]) == tolower(candidate[v.y]))
+      res[v] = res[v - Vec2(1, 1)];
+    else
+      res[v] = min(min(
+          1 + res[v - Vec2(1, 0)],
+          0.1 + res[v - Vec2(0, 1)]),
+          1.1 + res[v - Vec2(1, 1)]);
+  return res[target.size() - 1][candidate.size() - 1];
+}*/
+
+// trigrams
+static double getScore(string target, string candidate) {
+  set<string> ngrams;
+  const int n = 3;
+  const string prefSuf('_', n - 1);
+  target = prefSuf + target + prefSuf;
+  candidate = prefSuf + candidate + prefSuf;
+  for (int i : Range(target.size() - n + 1))
+    ngrams.insert(target.substr(i, n));
+  int result = 0;
+  for (int i : Range(candidate.size() - n + 1))
+    result += ngrams.count(candidate.substr(i, n));
+  return result;
+}
+
+void Player::grantWish(const string& message) {
+  if (auto text = getView()->getText(message, "", 40)) {
+    int count = 1;
+    ItemType itemType = ItemType::Simple("Rock");
+    double bestScore = -10000000;
+    for (auto& elem : getGame()->getContentFactory()->items) {
+      double score = getScore(*text, *elem.second.name);
+      std::cout << *elem.second.name << " score " << score << std::endl;
+      if (score > bestScore) {
+        bestScore = score;
+        itemType = ItemType(elem.first);
+      }
+    }
+    auto items = itemType.get(count, getGame()->getContentFactory());
+    creature->verb("receive", "receives", items[0]->getPluralAName(items.size()));
+    creature->getEquipment().addItems(std::move(items), creature);
+  }
+}
+
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   bool canSee = visibilityMap->isVisible(Position(pos, getLevel())) ||
       getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP);

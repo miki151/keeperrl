@@ -44,6 +44,7 @@ class Controller : public OwnedObject<Controller> {
 
   virtual void makeMove() = 0;
   virtual void sleeping() {}
+  virtual void grantWish(const string& message) { }
 
   virtual ~Controller() {}
 

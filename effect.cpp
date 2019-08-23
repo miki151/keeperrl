@@ -851,6 +851,19 @@ string Effect::Suicide::getDescription() const {
   return "Causes the *attacker* to die.";
 }
 
+void Effect::Wish::applyToCreature(Creature* c, Creature* attacker) const {
+  c->getController()->grantWish((attacker ? attacker->getName().the() + " grants you a wish." : "You are granted a wish.") +
+      " What do you wish for?");
+}
+
+string Effect::Wish::getName() const {
+  return "wishing";
+}
+
+string Effect::Wish::getDescription() const {
+  return "Gives you one wish.";
+}
+
 void Effect::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) const {
   PCreature copy = makeOwner<Creature>(c->getTribeId(), c->getAttributes(), c->getSpellMap());
   copy->setController(Monster::getFactory(MonsterAIFactory::monster()).get(copy.get()));

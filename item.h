@@ -54,6 +54,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getShortName(const Creature* owner = nullptr, bool plural = false) const;
   string getPluralName(int count) const;
   string getPluralTheName(int count) const;
+  string getPluralAName(int count) const;
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 
   const optional<Effect>& getEffect() const;
