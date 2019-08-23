@@ -972,7 +972,7 @@ MessageGenerator& Player::getMessageGenerator() const {
 static double getScore(string target, string candidate) {
   set<string> ngrams;
   const int n = 3;
-  const string prefSuf('_', n - 1);
+  const string prefSuf(' ', n - 1);
   target = prefSuf + target + prefSuf;
   candidate = prefSuf + candidate + prefSuf;
   for (int i : Range(target.size() - n + 1))
@@ -994,6 +994,7 @@ void Player::grantWish(const string& message) {
       if (score > bestScore) {
         bestScore = score;
         itemType = ItemType(elem.first);
+        count = Random.get(elem.second.wishedCount);
       }
     }
     auto items = itemType.get(count, getGame()->getContentFactory());

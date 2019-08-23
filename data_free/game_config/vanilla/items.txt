@@ -970,5 +970,6 @@
       price = 1
       resourceId = GOLD
       weight = 0.01
+      wishedCount = { 500 1000 }
     }
 }

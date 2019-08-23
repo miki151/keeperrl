@@ -87,4 +87,5 @@ class ItemAttributes {
   optional<ItemUpgradeInfo> SERIAL(upgradeInfo);
   int SERIAL(maxUpgrades) = 3;
   optional<ItemType> SERIAL(ingredientFor);
+  Range SERIAL(wishedCount) = Range(1, 2);
 };
