@@ -27,7 +27,7 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(NAMED(name), NAMED(viewId), OPTION(description), NAMED(weight), NAMED(itemClass), NAMED(plural), NAMED(blindName));
   ar(NAMED(artifactName), NAMED(resourceId), OPTION(burnTime), OPTION(price), OPTION(noArticle), NAMED(equipmentSlot));
   ar(OPTION(applyTime), NAMED(ownedEffect), OPTION(maxUpgrades), OPTION(fragile), NAMED(effect), OPTION(uses), OPTION(usedUpMsg));
-  ar(OPTION(displayUses), OPTION(modifiers), NAMED(shortName), OPTION(equipedEffect), NAMED(upgradeInfo));
+  ar(OPTION(displayUses), OPTION(modifiers), NAMED(shortName), OPTION(equipedEffect), NAMED(upgradeInfo), OPTION(effectDescription));
   ar(NAMED(applyMsgFirstPerson), NAMED(applyMsgThirdPerson), NAMED(applySound), NAMED(rangedWeapon), OPTION(weaponInfo));
   ar(OPTION(prefixes), OPTION(genPrefixes), NAMED(ingredientFor), OPTION(modifierVariation), OPTION(variationChance));
 }

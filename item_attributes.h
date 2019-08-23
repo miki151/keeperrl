@@ -74,6 +74,7 @@ class ItemAttributes {
   int SERIAL(uses) = -1;
   bool SERIAL(usedUpMsg) = false;
   bool SERIAL(displayUses) = false;
+  bool SERIAL(effectDescription) = true;
   vector<LastingEffect> SERIAL(equipedEffect);
   optional<LastingEffect> SERIAL(ownedEffect);
   optional<string> SERIAL(applyMsgFirstPerson);

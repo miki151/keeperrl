@@ -316,6 +316,16 @@
         name = "ancient spirit"
       }
     }
+  "DJINN" inherit "SPIRIT"
+    {
+      viewId = { "djinn" }
+      permanentEffects = {
+        FLYING 1
+      }
+      name = {
+        name = "djinn"
+      }
+    }
   "LOST_SOUL"
     {
       body = {

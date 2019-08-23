@@ -189,11 +189,10 @@ static TimeInterval getDuration(const Creature* c, LastingEffect e) {
   }
 }
 
-static void summon(Creature* summoner, CreatureId id, Range count) {
-  if (id == "AUTOMATON") {
+static void summon(Creature* summoner, CreatureId id, Range count, bool hostile) {
+  if (hostile) {
     CreatureGroup f = CreatureGroup::singleType(TribeId::getHostile(), id);
-    Effect::summon(summoner->getPosition(), f, Random.get(count), 100_visible,
-        5_visible);
+    Effect::summon(summoner->getPosition(), f, Random.get(count), 100_visible, 1_visible);
   } else
     Effect::summon(summoner, id, Random.get(count), 100_visible, 1_visible);
 }
@@ -415,7 +414,7 @@ string Effect::Acid::getDescription() const {
 }
 
 void Effect::Summon::applyToCreature(Creature* c, Creature* attacker) const {
-  ::summon(c, creature, count);
+  ::summon(c, creature, count, false);
 }
 
 /*static string getCreaturePluralName(CreatureId id) {
@@ -456,13 +455,29 @@ string Effect::Summon::getDescription() const {
     return "Summons a " + getCreatureName(creature);
 }
 
+void Effect::SummonEnemy::applyToCreature(Creature* c, Creature* attacker) const {
+  ::summon(c, creature, count, true);
+}
+
+string Effect::SummonEnemy::getName() const {
+  return "summon hostile " + getCreatureName(creature);
+}
+
+string Effect::SummonEnemy::getDescription() const {
+  if (count.getEnd() > 2)
+    return "Summons " + toString(count.getStart()) + " to " + toString(count.getEnd() - 1)
+        + " hostile " + getCreatureName(creature);
+  else
+    return "Summons a hostile " + getCreatureName(creature);
+}
+
 void Effect::SummonElement::applyToCreature(Creature* c, Creature* attacker) const {
   auto id = CreatureId("AIR_ELEMENTAL");
   for (Position p : c->getPosition().getRectangle(Rectangle::centered(3)))
     for (auto f : p.getFurniture())
       if (auto elem = f->getSummonedElement())
         id = *elem;
-  ::summon(c, id, Range(1, 2));
+  ::summon(c, id, Range(1, 2), false);
 }
 
 string Effect::SummonElement::getName() const {

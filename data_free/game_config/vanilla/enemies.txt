@@ -1545,7 +1545,7 @@
   "NOMAD_COTTAGE" inherit "HUMAN_COTTAGE"
   {
     settlement = append {
-      buildingId = SANDSTONE
+      buildingId = SANDSTONE_WALL
       cropsDistance = none
       inhabitants = {
         fighters = {
@@ -1570,7 +1570,7 @@
     settlement = {
       type = CASTLE2
       tribe = HUMAN
-      buildingId = SANDSTONE
+      buildingId = SANDSTONE_WALL
       inhabitants = {
         leader = { { "THIEF_LEADER" } }
         fighters = {
@@ -1583,7 +1583,7 @@
       race = "thieves"
       stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
       furniture = { "roomFurniture" }
-      outsideFeatures = "castleOutside"
+      outsideFeatures = "bleedingTotem"
     }
     config = {
       immigrantInterval = 300
@@ -1612,6 +1612,29 @@
         traits = {FIGHTER}
         frequency = 1
       }
+    }
+    levelConnection = {
+      topLevel = MainEnemy
+      levels = {
+        { ExtraEnemy { "DJINN_EMPTY" { 2 } } 20 20 MAZE }
+        { ExtraEnemy { "DJINN" { 1 } } 20 20 MAZE }
+      }
+    }
+  }
+  "DJINN_EMPTY"
+  {
+    settlement = {
+      type = CAVE
+      tribe = MONSTER
+      locationName = "maze"
+      race = "monsters"
+      buildingId = SANDSTONE
+    }
+  }
+  "DJINN" inherit "DJINN_EMPTY"
+  {
+    settlement = append {
+      shopItems = "magicLamp"
     }
   }
   "ELVEN_COTTAGE"

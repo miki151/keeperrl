@@ -95,7 +95,8 @@
   { "doppleganger" "&" ColorId YELLOW }
   { "succubus" "&" ColorId RED }
   { "ghost" "&" ColorId WHITE }
-  { "spirit" "" ColorId LIGHT_BLUE }
+  { "spirit" "&" ColorId YELLOW }
+  { "djinn" "&" ColorId LIGHT_BLUE }
   { "green_dragon" "D" ColorId GREEN }
   { "red_dragon" "D" ColorId RED }
   { "cyclops" "C" ColorId GREEN }
@@ -224,6 +225,7 @@
   { "book" "+" ColorId YELLOW }
   { "hand_torch" "/" ColorId YELLOW }
   { "first_aid" "+" ColorId RED }
+  { "lamp" "🜽" ColorId YELLOW true }
   { "trap_item" "+" ColorId YELLOW }
   { "potion1" "!" ColorId LIGHT_RED }
   { "potion2" "!" ColorId BLUE }

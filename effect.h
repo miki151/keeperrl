@@ -77,6 +77,14 @@ class Effect {
     Range count;
     COMPARE_ALL(creature, count)
   };
+  struct SummonEnemy {
+    EFFECT_TYPE_INTERFACE;
+    SummonEnemy(CreatureId id, Range c) : creature(id), count(c) {}
+    SummonEnemy() {}
+    CreatureId creature;
+    Range count;
+    COMPARE_ALL(creature, count)
+  };
   SIMPLE_EFFECT(SummonElement);
   SIMPLE_EFFECT(Acid);
   struct Alarm {
@@ -182,7 +190,7 @@ class Effect {
   MAKE_VARIANT(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
       Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost, Filter);
+      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost, Filter, SummonEnemy);
 
   template <typename T>
   Effect(T&& t) : effect(std::forward<T>(t)) {}

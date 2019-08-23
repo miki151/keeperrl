@@ -752,7 +752,7 @@
     destroyFX = { ROCK_CLOUD Rgb 220 210 180 255 }
     tryDestroyFX = { ROCK_SPLINTERS Rgb 220 210 180 255 }
   }
-  "MOUNTAIN_SAND" inherit "MOUNTAIN"
+  "SANDSTONE" inherit "MOUNTAIN"
   {
     name = "sandstone"
     viewId = { "mountain_sand" }

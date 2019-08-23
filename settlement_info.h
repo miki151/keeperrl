@@ -17,6 +17,7 @@ RICH_ENUM(BuildingId,
   RUINS,
   SNOW,
   GLACIER,
+  SANDSTONE_WALL,
   SANDSTONE
 );
 

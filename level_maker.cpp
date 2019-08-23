@@ -956,12 +956,18 @@ static BuildingType getBuildingInfo(const SettlementInfo& info) {
           c.door = Connector::DoorInfo LIST(FurnitureType("WOOD_DOOR"), info.tribe, 1.0);
           c.gate = Connector::DoorInfo LIST(FurnitureType("WOOD_GATE"), info.tribe, 1.0);
       );
-    case BuildingId::SANDSTONE:
+    case BuildingId::SANDSTONE_WALL:
       return CONSTRUCT(BuildingType,
           c.wall = FurnitureType("SANDSTONE_WALL");
           //c.floorInside = FurnitureType("FLOOR");
           c.door = Connector::DoorInfo LIST(FurnitureType("WOOD_DOOR"), info.tribe, 1.0);
           c.gate = Connector::DoorInfo LIST(FurnitureType("WOOD_GATE"), info.tribe, 1.0);
+      );
+    case BuildingId::SANDSTONE:
+      return CONSTRUCT(BuildingType,
+          c.wall = FurnitureType("SANDSTONE");
+          c.floorInside = FurnitureType("SAND");
+          c.floorOutside = FurnitureType("SAND");
       );
     case BuildingId::RUINS:
       return CONSTRUCT(BuildingType,
@@ -1538,9 +1544,9 @@ class Mountains : public LevelMaker {
   public:
   static constexpr double varianceM = 0.45;
   Mountains(double lowland, double hill, NoiseInit init, TribeId tribe, FurnitureType hillType, FurnitureType grassType,
-      FurnitureType mountainType)
+      FurnitureType mountainType, FurnitureType mountainFloorType)
       : ratioLowland(lowland), ratioHill(hill), noiseInit(init), varianceMult(varianceM), tribe(tribe), hillType(hillType),
-        grassType(grassType), mountainType(mountainType) {
+        grassType(grassType), mountainType(mountainType), mountainFloorType(mountainFloorType) {
   }
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -1556,7 +1562,7 @@ class Mountains : public LevelMaker {
       builder->setHeightMap(v, wys[v]);
       if (wys[v] >= cutOffHill) {
         isMountain[v] = true;
-        builder->putFurniture(v, FurnitureType("FLOOR"));
+        builder->putFurniture(v, mountainFloorType);
         builder->putFurniture(v, {mountainType, tribe}, SquareAttrib::MOUNTAIN);
         builder->setSunlight(v, max(0.0, 1. - (wys[v] - cutOffHill) / (cutOffDarkness - cutOffHill)));
         builder->setCovered(v, true);
@@ -1588,6 +1594,7 @@ class Mountains : public LevelMaker {
   FurnitureType hillType;
   FurnitureType grassType;
   FurnitureType mountainType;
+  FurnitureType mountainFloorType;
 };
 
 class Roads : public LevelMaker {
@@ -2042,19 +2049,21 @@ static PMakerQueue stockpileMaker(StockpileInfo info) {
 PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info) {
   auto queue = unique<MakerQueue>();
   BuildingType building = getBuildingInfo(info);
-  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"), FurnitureType("MOUNTAIN"))));
+  auto floor = building.floorOutside.value_or(FurnitureType("FLOOR"));
+  queue->addMaker(unique<Empty>(SquareChange(floor, building.wall)));
   queue->addMaker(unique<PlaceCollective>(info.collective));
-  queue->addMaker(unique<RoomMaker>(random.get(8, 15), 3, 5));
+  queue->addMaker(unique<RoomMaker>(random.get(8, 15), 3, 5, SquareChange::none(), none, unique<Empty>(floor)));
   queue->addMaker(unique<Connector>(building.door));
   for (auto& furniture : info.furniture)
     queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, furniture, info.tribe));
   for (StairKey key : info.downStairs)
-    queue->addMaker(unique<Stairs>(StairDirection::DOWN, key, Predicate::type(FurnitureType("FLOOR"))));
+    queue->addMaker(unique<Stairs>(StairDirection::DOWN, key, Predicate::type(floor)));
   for (StairKey key : info.upStairs)
-    queue->addMaker(unique<Stairs>(StairDirection::UP, key, Predicate::type(FurnitureType("FLOOR"))));
+    queue->addMaker(unique<Stairs>(StairDirection::UP, key, Predicate::type(floor)));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
-  queue->addMaker(unique<Items>(ItemListId("dungeon"), 5, 10));
-  return unique<BorderGuard>(std::move(queue), SquareChange(FurnitureType("FLOOR"), FurnitureType("MOUNTAIN")));
+  if (info.shopItems)
+    queue->addMaker(unique<Items>(*info.shopItems, 5, 10));
+  return unique<BorderGuard>(std::move(queue), SquareChange(floor, building.wall));
 }
 
 static PMakerQueue getElderRoom(SettlementInfo info) {
@@ -2230,6 +2239,8 @@ static PMakerQueue castle2(RandomGen& random, SettlementInfo info) {
   if (!info.stockpiles.empty())
     insideMaker->addMaker(stockpileMaker(info.stockpiles.getOnlyElement()));
   inside->addMaker(unique<Buildings>(1, 2, 3, 4, building, false, std::move(insideMaker), false));
+  for (StairKey key : info.downStairs)
+    inside->addMaker(unique<Stairs>(StairDirection::DOWN, key, Predicate::alwaysTrue(), none));
   auto insidePlusWall = unique<MakerQueue>();
   insidePlusWall->addMaker(unique<Empty>(SquareChange(building.floorOutside, SquareAttrib::FLOOR_OUTSIDE)));
   insidePlusWall->addMaker(unique<BorderGuard>(std::move(inside), building.wall));
@@ -2501,14 +2512,18 @@ static PMakerQueue mountainLake(SettlementInfo info) {
 static PLevelMaker getMountains(BiomeId id, TribeId tribe) {
   switch (id) {
     case BiomeId::SNOW:
-      return unique<Mountains>(0.45, 0.02, NoiseInit{0, 1, 0, 0, 0}, tribe, FurnitureType("SNOW"), FurnitureType("SNOW"), FurnitureType("GLACIER"));
+      return unique<Mountains>(0.45, 0.02, NoiseInit{0, 1, 0, 0, 0}, tribe,
+          FurnitureType("SNOW"), FurnitureType("SNOW"), FurnitureType("GLACIER"), FurnitureType("SNOW"));
     case BiomeId::DESERT:
-      return unique<Mountains>(0.45, 0.02, NoiseInit{0, 1, 0, 0, 0}, tribe, FurnitureType("SAND"), FurnitureType("SAND"), FurnitureType("MOUNTAIN_SAND"));
+      return unique<Mountains>(0.45, 0.02, NoiseInit{0, 1, 0, 0, 0}, tribe,
+          FurnitureType("SAND"), FurnitureType("SAND"), FurnitureType("SANDSTONE"), FurnitureType("SAND"));
     case BiomeId::GRASSLAND:
     case BiomeId::FORREST:
-      return unique<Mountains>(0.45, 0.06, NoiseInit{0, 1, 0, 0, 0}, tribe, FurnitureType("HILL"), FurnitureType("GRASS"), FurnitureType("MOUNTAIN"));
+      return unique<Mountains>(0.45, 0.06, NoiseInit{0, 1, 0, 0, 0}, tribe,
+          FurnitureType("HILL"), FurnitureType("GRASS"), FurnitureType("MOUNTAIN"), FurnitureType("FLOOR"));
     case BiomeId::MOUNTAIN:
-      return unique<Mountains>(0.25, 0.1, NoiseInit{0, 1, 0, 0, 0}, tribe, FurnitureType("HILL"), FurnitureType("GRASS"), FurnitureType("MOUNTAIN"));
+      return unique<Mountains>(0.25, 0.1, NoiseInit{0, 1, 0, 0, 0}, tribe,
+          FurnitureType("HILL"), FurnitureType("GRASS"), FurnitureType("MOUNTAIN"), FurnitureType("FLOOR"));
   }
 }
 

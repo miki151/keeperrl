@@ -11,7 +11,7 @@
       applyTime = 3
       uses = 1
       price = 60
-      effect = Summon "AUTOMATON" {1}
+      effect = SummonEnemy "AUTOMATON" {1}
     }
   "Knife"
     {
@@ -890,6 +890,20 @@
       displayUses = true
       price = 2
       effect = Heal FLESH
+    }
+  "MagicLamp"
+    {
+      viewId = { "lamp" }
+      name = "oil lamp"
+      applyMsgFirstPerson = "rub the lamp"
+      applyMsgThirdPerson = "rubs the lamp"
+      weight = 1
+      itemClass = TOOL
+      description = "Just an oil lamp"
+      uses = 1
+      price = 1000
+      effect = SummonEnemy "DJINN" {1}
+      effectDescription = false
     }
   "Rock"
     {

@@ -203,4 +203,10 @@
       {{Simple "GoldPiece"} 300 {4 9}}
     }
   }
+  "magicLamp"
+  {
+    unique = {
+      {Simple "MagicLamp"} {1}
+    }
+  }
 }

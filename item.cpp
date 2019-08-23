@@ -196,8 +196,9 @@ vector<string> Item::getDescription() const {
   vector<string> ret;
   if (!attributes->description.empty())
     ret.push_back(attributes->description);
-  if (auto& effect = attributes->effect)
-    ret.push_back("Usage effect: " + effect->getName());
+  if (attributes->effectDescription)
+    if (auto& effect = attributes->effect)
+      ret.push_back("Usage effect: " + effect->getName());
   for (auto& effect : getWeaponInfo().victimEffect)
     ret.push_back("Victim affected by: " + effect.effect.getName() + " (" + toPercentage(effect.chance) + " chance)");
   for (auto& effect : getWeaponInfo().attackerEffect)

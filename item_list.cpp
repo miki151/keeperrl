@@ -7,7 +7,7 @@ ItemList::ItemList(const ItemList&) = default;
 
 ItemList::~ItemList() {}
 
-SERIALIZE_DEF(ItemList, NAMED(items), OPTION(unique))
+SERIALIZE_DEF(ItemList, OPTION(items), OPTION(unique))
 SERIALIZATION_CONSTRUCTOR_IMPL(ItemList)
 
 struct ItemList::ItemInfo {
@@ -37,6 +37,8 @@ vector<PItem> ItemList::random(const ContentFactory* factory) & {
     unique.pop_back();
     return id.get(cnt, factory);
   }
+  if (items.empty())
+    return {};
   int index = Random.get(items.transform([](const auto& elem) { return elem.weight; }));
   return items[index].id.get(Random.get(items[index].count), factory);
 }
@@ -44,7 +46,7 @@ vector<PItem> ItemList::random(const ContentFactory* factory) & {
 #include "pretty_archive.h"
 template<> void ItemList::serialize(PrettyInputArchive& ar1, unsigned) {
   double prefixChance = 0;
-  ar1(NAMED(items), OPTION(unique), OPTION(prefixChance));
+  ar1(OPTION(items), OPTION(unique), OPTION(prefixChance));
   ar1 >> endInput();
   setRandomPrefixes(prefixChance);
 }
