@@ -31,7 +31,7 @@ template <class Archive>
 void Body::serializeImpl(Archive& ar, const unsigned int) {
   ar(OPTION(xhumanoid), OPTION(size), OPTION(weight), OPTION(bodyParts), OPTION(injuredBodyParts), OPTION(lostBodyParts));
   ar(OPTION(material), OPTION(health), OPTION(minionFood), NAMED(deathSound), OPTION(intrinsicAttacks), OPTION(minPushSize));
-  ar(OPTION(noHealth), OPTION(fallsApart), OPTION(drops));
+  ar(OPTION(noHealth), OPTION(fallsApart), OPTION(drops), OPTION(canCapture));
 }
 
 template <class Archive>
@@ -949,6 +949,8 @@ bool Body::canPerformRituals() const {
 }
 
 bool Body::canBeCaptured() const {
+  if (canCapture)
+    return *canCapture;
   return xhumanoid && !isImmuneTo(LastingEffect::TIED_UP);
 }
 

@@ -1162,10 +1162,15 @@ bool Creature::captureDamage(double damage, Creature* attacker) {
   updateViewObject();
   if (captureHealth <= 0) {
     toggleCaptureOrder();
-    addEffect(LastingEffect::STUNNED, 300_visible);
-    captureHealth = 1;
-    updateViewObject();
-    getGame()->addEvent(EventInfo::CreatureStunned{this, attacker});
+    if (attributes->isInstantPrisoner()) {
+      setTribe(attacker->getTribeId());
+      you(MsgType::ARE, "captured");
+    } else {
+      addEffect(LastingEffect::STUNNED, 300_visible);
+      captureHealth = 1;
+      updateViewObject();
+      getGame()->addEvent(EventInfo::CreatureStunned{this, attacker});
+    }
     return true;
   } else
     return false;

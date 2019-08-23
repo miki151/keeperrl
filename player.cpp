@@ -982,7 +982,7 @@ static double getScore(string target, string candidate) {
   int result = 0;
   for (int i : Range(candidate.size() - n + 1))
     result += ngrams.count(candidate.substr(i, n));
-  return result - int(candidate.size()) / 3;
+  return result - int(candidate.size()) / 6;
 }
 
 void Player::grantWish(const string& message) {

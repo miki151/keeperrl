@@ -316,9 +316,22 @@
         name = "ancient spirit"
       }
     }
-  "DJINN" inherit "SPIRIT"
+  "DJINN"
     {
       viewId = { "djinn" }
+      attr = {
+        DEFENSE 50
+        SPELL_DAMAGE 50
+      }
+      body = {
+        type = Humanoid LARGE
+        material = SPIRIT
+        canCapture = true
+        intrinsicAttacks = {
+          TORSO { Intrinsic { "fist_attack" } "spell" 1 {
+              attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }
+        }
+      }
       permanentEffects = {
         FLYING 1
       }
@@ -326,6 +339,7 @@
         name = "djinn"
       }
       spells = { "grant wish" }
+      instantPrisoner = true
     }
   "LOST_SOUL"
     {

@@ -46,6 +46,10 @@ void CreatureAttributes::randomize() {
   }
 }
 
+bool CreatureAttributes::isInstantPrisoner() const {
+  return instantPrisoner;
+}
+
 CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
   fun(*this);
   initializeLastingEffects();
@@ -61,7 +65,7 @@ template <class Archive>
 void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(NAMED(viewId), NAMED(illusionViewObject), NAMED(name), NAMED(attr), NAMED(chatReactionFriendly));
   ar(NAMED(chatReactionHostile), NAMED(passiveAttack), OPTION(gender), OPTION(viewIdUpgrades));
-  ar(NAMED(body), OPTION(deathDescription), NAMED(hatedByEffect));
+  ar(NAMED(body), OPTION(deathDescription), NAMED(hatedByEffect), OPTION(instantPrisoner));
   ar(OPTION(cantEquip), OPTION(courage), OPTION(canJoinCollective), OPTION(genderAlternatives));
   ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(skills), OPTION(spellSchools), OPTION(spells));
   ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel));
