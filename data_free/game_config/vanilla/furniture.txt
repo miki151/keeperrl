@@ -712,6 +712,14 @@
     xForgetAfterBuilding = true
     usageType = STAIRS
   }
+  "UP_STAIRS_ROCK" inherit "UP_STAIRS"
+  {
+    viewId = { "up_staircase_rock" }
+  }
+  "DOWN_STAIRS_ROCK" inherit "DOWN_STAIRS"
+  {
+    viewId = { "down_staircase_rock" }
+  }
   "SOKOBAN_HOLE"
   {
     name = "hole"

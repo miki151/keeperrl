@@ -77,6 +77,8 @@
   { "stones" "." ColorId GRAY }
   { "down_staircase" "➘" ColorId ALMOST_WHITE true }
   { "up_staircase" "➚" ColorId ALMOST_WHITE true }
+  { "down_staircase_rock" "➘" ColorId YELLOW true }
+  { "up_staircase_rock" "➚" ColorId YELLOW true }
   { "map_mountain1" "^" ColorId DARK_GRAY }
   { "map_mountain2" "^" ColorId GRAY }
   { "map_mountain3" "^" ColorId LIGHT_GRAY }
