@@ -1127,3 +1127,7 @@ string toString(const Range& r) {
 string toPercentage(double v) {
   return toString<int>(v * 100) + "%";
 }
+
+void openUrl(const string& url) {
+  system(("xdg-open " + url).data());
+}

@@ -489,10 +489,10 @@ const auto modVersionFilename = "version_info";
 
 optional<ModVersionInfo> MainLoop::getLocalModVersionInfo(const string& mod) {
   if (mod == "vanilla") {
-    return ModVersionInfo{12345, 0, modVersion};
+    return ModVersionInfo{0, 0, modVersion};
   }
   ifstream in(getModsDir().subdirectory(mod).file(modVersionFilename).getPath());
-  ModVersionInfo info;
+  ModVersionInfo info {};
   in >> info.steamId >> info.version >> info.compatibilityTag;
   if (info.compatibilityTag == modVersion) // this also handles the check if the file existed and had sane contents
     return info;
@@ -565,6 +565,7 @@ void MainLoop::showMods() {
     for (auto& mod : modList)
       if (auto version = getLocalModVersionInfo(mod)) {
         ModInfo modInfo;
+        modInfo.versionInfo = *version;
         modInfo.name = mod;
         if (auto details = getLocalModDetails(mod))
           modInfo.details = *details;
@@ -597,7 +598,7 @@ void MainLoop::showMods() {
     auto action = allMods[highlighted].actions[choice->actionId];
     if (action == "Activate")
       options->setValue(OptionId::CURRENT_MOD2, allMods[highlighted].name);
-    else if (action == "Download") {
+    else if (action == "Download" || action == "Update") {
       auto& downloadMod = allMods[highlighted];
       atomic<bool> cancelled(false);
       optional<string> error;

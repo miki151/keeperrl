@@ -3736,11 +3736,21 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
         Renderer::smallTextSize, Color::LIGHT_GRAY));
     lines.addElemAuto(gui.labelMultiLineWidth(mods[i].details.description, legendLineHeight, pageWidth - 2 * margin));
     auto buttons = gui.getListBuilder();
-    for (int j : All(mods[i].actions))
+    for (int j : All(mods[i].actions)) {
       buttons.addElemAuto(
           gui.buttonLabel(mods[i].actions[j], [&queue, i, j] { queue.push(ModAction{i, j}); })
       );
-    lines.addBackElem(buttons.buildHorizontalListFit());
+      buttons.addSpace(15);
+    }
+    if (mods[i].versionInfo.steamId != 0) {
+      buttons.addElemAuto(
+          gui.buttonLabel("Show in Steam Workshop", [id = mods[i].versionInfo.steamId] {
+            openUrl("https://steamcommunity.com/sharedfiles/filedetails/?id=" + toString(id));
+          })
+      );
+      buttons.addSpace(15);
+    }
+    lines.addBackElem(buttons.buildHorizontalList());
     modPages.push_back(gui.conditional(
         lines.buildVerticalList(),
         [chosenMod, i] { return *chosenMod == i; }

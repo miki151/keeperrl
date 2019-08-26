@@ -1604,8 +1604,9 @@ class AsyncLoop {
   thread t;
 };
 
-
 thread makeThread(function<void()> fun);
+
+void openUrl(const string& url);
 
 template <typename T, typename... Args>
 auto bindMethod(void (T::*ptr) (Args...), T* t) {
