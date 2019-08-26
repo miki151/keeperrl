@@ -329,6 +329,8 @@ static optional<BiomeId> getBiome(const EnemyInfo& enemy, RandomGen& random) {
 
 PModel ModelBuilder::tryCampaignSiteModel(EnemyId enemyId, VillainType type, TribeAlignment alignment) {
   vector<EnemyInfo> enemyInfo { enemyFactory->get(enemyId).setVillainType(type)};
+  if (auto id = enemyInfo[0].otherEnemy)
+    enemyInfo.push_back(enemyFactory->get(*id));
   auto biomeId = getBiome(enemyInfo[0], random);
   CHECK(biomeId) << "Unimplemented enemy in campaign " << enemyId.data();
   switch (alignment) {

@@ -1613,13 +1613,7 @@
         frequency = 1
       }
     }
-    levelConnection = {
-      topLevel = MainEnemy
-      levels = {
-        { ExtraEnemy { "DJINN_EMPTY" { 2 } } 20 20 MAZE }
-        { ExtraEnemy { "DJINN" { 1 } } 20 20 MAZE }
-      }
-    }
+    otherEnemy = "DJINN_ENTRANCE"
   }
   "DJINN_EMPTY"
   {
@@ -1629,6 +1623,16 @@
       locationName = "maze"
       race = "monsters"
       buildingId = SANDSTONE
+    }
+  }
+  "DJINN_ENTRANCE" inherit "DJINN_EMPTY"
+  {
+    levelConnection = {
+      topLevel = MainEnemy
+      levels = {
+        { ExtraEnemy { "DJINN_EMPTY" { 2 } } 20 20 MAZE }
+        { ExtraEnemy { "DJINN" { 1 } } 20 20 MAZE }
+      }
     }
   }
   "DJINN" inherit "DJINN_EMPTY"
