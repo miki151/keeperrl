@@ -124,9 +124,8 @@ optional<string> ContentFactory::readVillainsTuple(const GameConfig* gameConfig,
 optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, KeyVerifier* keyVerifier) {
   if (auto error = config->readObject(playerCreatures, GameConfigId::PLAYER_CREATURES, keyVerifier))
     return "Error reading player creature definitions"_s + *error;
-  if (playerCreatures.first.empty() || playerCreatures.second.empty() || playerCreatures.first.size() > 10 ||
-      playerCreatures.second.size() > 10)
-    return "Keeper and adventurer lists must each contain between 1 and 10 entries."_s;
+  if (playerCreatures.first.empty() || playerCreatures.second.empty())
+    return "Keeper and adventurer lists must each contain at least 1 entry."_s;
   for (auto& keeperInfo : playerCreatures.first) {
     bool hotkeys[128] = {0};
     vector<BuildInfo> buildInfoTmp;

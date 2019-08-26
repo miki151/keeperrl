@@ -3248,12 +3248,13 @@ SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatar
   return gui.stack(std::move(firstNameOptions));
 }
 
-SGuiElem GuiBuilder::drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_ptr<int> chosenAvatar,
+SGuiElem GuiBuilder::drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_ptr<int> chosenAvatar, shared_ptr<int> avatarPage,
     const vector<View::AvatarData>& avatars) {
   auto roleList = gui.getListBuilder();
   for (auto role : ENUM_ALL(PlayerRole)) {
-    auto chooseFun = [chosenRole, chosenAvatar, &avatars, role] {
+    auto chooseFun = [chosenRole, chosenAvatar, &avatars, role, avatarPage] {
       *chosenRole = role;
+      *avatarPage = 0;
       for (int i : All(avatars))
         if (avatars[i].role == *chosenRole) {
           *chosenAvatar = i;
@@ -3269,22 +3270,29 @@ SGuiElem GuiBuilder::drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_p
   return roleList.buildHorizontalListFit(0.2);
 }
 
-SGuiElem GuiBuilder::drawChosenCreatureButtons(PlayerRole role, shared_ptr<int> chosenAvatar, shared_ptr<int> gender,
+constexpr int avatarsPerPage = 10;
+
+SGuiElem GuiBuilder::drawChosenCreatureButtons(PlayerRole role, shared_ptr<int> chosenAvatar, shared_ptr<int> gender, int page,
     const vector<View::AvatarData>& avatars) {
   auto allLines = gui.getListBuilder(legendLineHeight);
   auto line = gui.getListBuilder();
+  const int start = page * avatarsPerPage;
+  const int end = (page + 1) * avatarsPerPage;
+  int processed = 0;
   for (int i : All(avatars)) {
     auto& elem = avatars[i];
     auto viewIdFun = [gender, id = elem.viewId] { return id[min(*gender, id.size() - 1)].back(); };
     if (elem.role == role) {
-      line.addElemAuto(gui.stack(
-          gui.button([i, chosenAvatar]{ *chosenAvatar = i; }),
-          gui.mouseHighlight2(
-              gui.rightMargin(10, gui.topMargin(-5, gui.viewObject(viewIdFun, 2))),
-              gui.rightMargin(10, gui.conditional2(
-                  gui.topMargin(-5, gui.viewObject(viewIdFun, 2)),
-                  gui.viewObject(viewIdFun, 2), [=](GuiElem*){ return *chosenAvatar == i;})))
-      ));
+      if (processed >= start && processed < end)
+        line.addElemAuto(gui.stack(
+            gui.button([i, chosenAvatar]{ *chosenAvatar = i; }),
+            gui.mouseHighlight2(
+                gui.rightMargin(10, gui.topMargin(-5, gui.viewObject(viewIdFun, 2))),
+                gui.rightMargin(10, gui.conditional2(
+                    gui.topMargin(-5, gui.viewObject(viewIdFun, 2)),
+                    gui.viewObject(viewIdFun, 2), [=](GuiElem*){ return *chosenAvatar == i;})))
+        ));
+      ++processed;
       if (line.getLength() >= 5) {
         allLines.addElemAuto(line.buildHorizontalList());
         line.clear();
@@ -3296,25 +3304,61 @@ SGuiElem GuiBuilder::drawChosenCreatureButtons(PlayerRole role, shared_ptr<int> 
   return allLines.buildVerticalList();
 };
 
+SGuiElem GuiBuilder::drawAvatarsForRole(const vector<View::AvatarData>& avatars, shared_ptr<int> avatarPage,
+    shared_ptr<int> chosenAvatar, shared_ptr<int> gender, shared_ptr<PlayerRole> chosenRole) {
+  vector<SGuiElem> avatarsForRole;
+  int maxAvatarPagesHeight = 0;
+  for (auto role : ENUM_ALL(PlayerRole)) {
+    int numAvatars = 0;
+    for (auto& a : avatars)
+      if (a.role == role)
+        ++numAvatars;
+    vector<SGuiElem> avatarPages;
+    const int numPages = 1 + (numAvatars - 1) / avatarsPerPage;
+    for (int page = 0; page < numPages; ++page)
+      avatarPages.push_back(gui.conditional(
+          drawChosenCreatureButtons(role, chosenAvatar, gender, page, avatars),
+          [avatarPage, page] { return *avatarPage == page; }));
+    maxAvatarPagesHeight = max(maxAvatarPagesHeight, *avatarPages[0]->getPreferredHeight());
+    if (numPages > 1) {
+      avatarPages.push_back(gui.alignment(GuiFactory::Alignment::BOTTOM_RIGHT,
+          gui.translate(
+              gui.getListBuilder(24)
+                .addElem(gui.conditional2(
+                    gui.buttonLabel("<", [avatarPage]{ *avatarPage = max(0, *avatarPage - 1); }),
+                    gui.buttonLabelInactive("<"),
+                    [=] (GuiElem*) { return *avatarPage > 0; }))
+                .addElem(gui.conditional2(
+                    gui.buttonLabel(">", [=]{ *avatarPage = min(numPages - 1, *avatarPage + 1); }),
+                    gui.buttonLabelInactive(">"),
+                    [=] (GuiElem*) { return *avatarPage < numPages - 1; }))
+                .buildHorizontalList(),
+             Vec2(12, 32), Vec2(48, 30)
+          )));
+    }
+    avatarsForRole.push_back(gui.conditional(gui.stack(std::move(avatarPages)),
+        [chosenRole, role] { return *chosenRole == role; }));
+  }
+  return gui.setHeight(maxAvatarPagesHeight, gui.stack(std::move(avatarsForRole)));
+}
+
 SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>& queue,
     const vector<View::AvatarData>& avatars) {
   auto gender = make_shared<int>(0);
   auto chosenAvatar = make_shared<int>(0);
   auto entered = options->getValueString(OptionId::PLAYER_NAME);
   auto chosenName = make_shared<int>(0);
+  auto avatarPage = make_shared<int>(0);
   auto chosenRole = make_shared<PlayerRole>(PlayerRole::KEEPER);
   auto leftLines = gui.getListBuilder(legendLineHeight);
   auto rightLines = gui.getListBuilder(legendLineHeight);
-  leftLines.addElem(drawRoleButtons(chosenRole, chosenAvatar, avatars));
+  leftLines.addElem(drawRoleButtons(chosenRole, chosenAvatar, avatarPage, avatars));
   leftLines.addSpace(15);
   leftLines.addElem(drawGenderButtons(avatars, gender, chosenAvatar));
   leftLines.addSpace(15);
   leftLines.addElem(drawFirstNameButtons(avatars, gender, chosenAvatar, chosenName));
   leftLines.addSpace(15);
-  rightLines.addElemAuto(gui.conditional2(
-      drawChosenCreatureButtons(PlayerRole::KEEPER, chosenAvatar, gender, avatars),
-      drawChosenCreatureButtons(PlayerRole::ADVENTURER, chosenAvatar, gender, avatars),
-      [chosenRole] (GuiElem*){ return *chosenRole == PlayerRole::KEEPER; }));
+  rightLines.addElemAuto(drawAvatarsForRole(avatars, avatarPage, chosenAvatar, gender, chosenRole));
   rightLines.addSpace(12);
   rightLines.addElem(gui.labelFun([&avatars, chosenAvatar] {
       return capitalFirst(avatars[*chosenAvatar].name) + ", " + getName(avatars[*chosenAvatar].alignment);}));

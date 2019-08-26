@@ -294,12 +294,14 @@ class GuiBuilder {
   SGuiElem drawGenderButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar);
   SGuiElem drawFirstNameButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar,
       shared_ptr<int> chosenName);
-  SGuiElem drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_ptr<int> chosenAvatar,
+  SGuiElem drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_ptr<int> chosenAvatar, shared_ptr<int> avatarPage,
       const vector<View::AvatarData>&);
-  SGuiElem drawChosenCreatureButtons(PlayerRole, shared_ptr<int> chosenAvatar, shared_ptr<int> gender,
+  SGuiElem drawChosenCreatureButtons(PlayerRole, shared_ptr<int> chosenAvatar, shared_ptr<int> gender, int page,
       const vector<View::AvatarData>&);
   SGuiElem drawCreatureList(const vector<CreatureInfo>&, function<void(UniqueEntity<Creature>::Id)> button);
   Color getElemColor(ListElem::ElemMod);
+  SGuiElem drawAvatarsForRole(const vector<View::AvatarData>&, shared_ptr<int> avatarPage, shared_ptr<int> chosenAvatar,
+      shared_ptr<int> gender, shared_ptr<PlayerRole> chosenRole);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,
