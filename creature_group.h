@@ -4,19 +4,16 @@
 
 class CreatureGroup {
   public:
-  static CreatureGroup singleCreature(TribeId, CreatureId);
+  static CreatureGroup singleType(TribeId, CreatureId);
 
   static CreatureGroup splashHeroes(TribeId);
   static CreatureGroup splashLeader(TribeId);
   static CreatureGroup splashMonsters(TribeId);
   static CreatureGroup forrest(TribeId);
   static CreatureGroup snow(TribeId);
-  static CreatureGroup singleType(TribeId, CreatureId);
   static CreatureGroup lavaCreatures(TribeId tribe);
   static CreatureGroup waterCreatures(TribeId tribe);
   static CreatureGroup iceCreatures(TribeId tribe);
-  static CreatureGroup elementals(TribeId tribe);
-  static CreatureGroup gnomishMines(TribeId peaceful, TribeId enemy, int level);
 
   PCreature random(CreatureFactory*, const MonsterAIFactory&);
   PCreature random(CreatureFactory*);

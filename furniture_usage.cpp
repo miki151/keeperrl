@@ -199,7 +199,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
           ChestInfo {
               FurnitureType("OPENED_CHEST"),
               ChestInfo::CreatureInfo {
-                  CreatureGroup::singleCreature(TribeId::getPest(), CreatureId("RAT")),
+                  CreatureGroup::singleType(TribeId::getPest(), CreatureId("RAT")),
                   10,
                   Random.get(3, 6),
                   "It's full of rats!",
@@ -226,7 +226,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
           ChestInfo {
               FurnitureType("OPENED_COFFIN"),
               ChestInfo::CreatureInfo {
-                  CreatureGroup::singleCreature(TribeId::getMonster(), CreatureId("VAMPIRE_LORD")), 1, 1,
+                  CreatureGroup::singleType(TribeId::getMonster(), CreatureId("VAMPIRE_LORD")), 1, 1,
                   "There is a rotting corpse inside. The corpse is alive!"
               },
               none

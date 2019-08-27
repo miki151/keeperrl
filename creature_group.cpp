@@ -9,10 +9,9 @@
 SERIALIZE_DEF(CreatureGroup, tribe, creatures, weights, unique, tribeOverrides, baseLevelIncrease, inventory)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureGroup)
 
-CreatureGroup CreatureGroup::singleCreature(TribeId tribe, CreatureId id) {
-  return CreatureGroup(tribe, {id}, {1}, {});
+CreatureGroup CreatureGroup::singleType(TribeId tribe, CreatureId id) {
+  return CreatureGroup(tribe, { id}, {1}, {});
 }
-
 
 TribeId CreatureGroup::getTribeFor(CreatureId id) {
   if (auto t = tribeOverrides[id])
@@ -124,48 +123,10 @@ CreatureGroup CreatureGroup::waterCreatures(TribeId tribe) {
   return CreatureGroup(tribe, { CreatureId("WATER_ELEMENTAL") }, {1}, {CreatureId("KRAKEN")});
 }
 
-CreatureGroup CreatureGroup::elementals(TribeId tribe) {
-  return CreatureGroup(tribe, {CreatureId("AIR_ELEMENTAL"), CreatureId("FIRE_ELEMENTAL"), CreatureId("WATER_ELEMENTAL"),
-      CreatureId("EARTH_ELEMENTAL")}, {1, 1, 1, 1}, {});
-}
-
 CreatureGroup CreatureGroup::lavaCreatures(TribeId tribe) {
   return CreatureGroup(tribe, { CreatureId("FIRE_ELEMENTAL") }, {1}, { });
 }
 
-CreatureGroup CreatureGroup::singleType(TribeId tribe, CreatureId id) {
-  return CreatureGroup(tribe, { id}, {1}, {});
-}
-
-CreatureGroup CreatureGroup::gnomishMines(TribeId peaceful, TribeId enemy, int level) {
-  return CreatureGroup(enemy, {
-      make_pair(CreatureId("BANDIT"), 100.),
-      make_pair(CreatureId("GREEN_DRAGON"), 5.),
-      make_pair(CreatureId("RED_DRAGON"), 5.),
-      make_pair(CreatureId("BLACK_DRAGON"), 5.),
-      make_pair(CreatureId("SOFT_MONSTER"), 5.),
-      make_pair(CreatureId("CYCLOPS"), 15.),
-      make_pair(CreatureId("WITCH"), 15.),
-      make_pair(CreatureId("CLAY_GOLEM"), 20.),
-      make_pair(CreatureId("STONE_GOLEM"), 20.),
-      make_pair(CreatureId("IRON_GOLEM"), 20.),
-      make_pair(CreatureId("LAVA_GOLEM"), 20.),
-      make_pair(CreatureId("FIRE_ELEMENTAL"), 10.),
-      make_pair(CreatureId("WATER_ELEMENTAL"), 10.),
-      make_pair(CreatureId("EARTH_ELEMENTAL"), 10.),
-      make_pair(CreatureId("AIR_ELEMENTAL"), 10.),
-      make_pair(CreatureId("GNOME"), 100.),
-      make_pair(CreatureId("GNOME_CHIEF"), 20.),
-      make_pair(CreatureId("DWARF"), 100.),
-      make_pair(CreatureId("DWARF_FEMALE"), 40.),
-      make_pair(CreatureId("JACKAL"), 200.),
-      make_pair(CreatureId("BAT"), 200.),
-      make_pair(CreatureId("SNAKE"), 150.),
-      make_pair(CreatureId("SPIDER"), 200.),
-      make_pair(CreatureId("FLY"), 100.),
-      make_pair(CreatureId("RAT"), 100.)},
-      {}, {{CreatureId("GNOME"), peaceful}, {CreatureId("GNOME_CHIEF"), peaceful} });
-}
 
 #include "pretty_archive.h"
 template

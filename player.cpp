@@ -739,7 +739,7 @@ void Player::makeMove() {
         if (auto error = PrettyPrinting::parseObject(id, action.get<string>()))
           getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
         else {
-          auto factory = CreatureGroup::singleCreature(TribeId::getMonster(), id);
+          auto factory = CreatureGroup::singleType(TribeId::getMonster(), id);
           Effect::summon(creature->getPosition(), factory, 1, 1000_visible,
               3_visible);
         }
