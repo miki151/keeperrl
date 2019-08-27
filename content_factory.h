@@ -35,6 +35,7 @@ class ContentFactory {
   GameIntros SERIAL(gameIntros);
   PlayerCreaturesInfo SERIAL(playerCreatures);
   map<CustomItemId, ItemAttributes> SERIAL(items);
+  map<BuildingId, BuildingInfo> SERIAL(buildingInfo);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();
@@ -50,4 +51,5 @@ class ContentFactory {
   optional<string> readVillainsTuple(const GameConfig*, KeyVerifier*);
   optional<string> readPlayerCreatures(const GameConfig*, KeyVerifier*);
   optional<string> readItems(const GameConfig*, KeyVerifier*);
+  optional<string> readBuildingInfo(const GameConfig*, KeyVerifier*);
 };

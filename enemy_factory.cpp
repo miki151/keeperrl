@@ -76,7 +76,7 @@ static EnemyInfo getVault(SettlementType type, CreatureId creature, TribeId trib
       c.tribe = tribe;
       c.closeToPlayer = true;
       c.dontConnectCave = true;
-      c.buildingId = BuildingId::DUNGEON;
+      c.buildingId = BuildingId("DUNGEON");
       c.shopItems = itemFactory;
     ), CollectiveConfig::noImmigrants())
     .setNonDiscoverable();
@@ -158,7 +158,7 @@ void EnemyFactory::updateCreateOnBones(EnemyInfo& info) const {
     info.biomes = enemy.biomes;
     bool makeRuins = Random.roll(2);
     if (makeRuins)
-      info.settlement.buildingId = BuildingId::RUINS;
+      info.settlement.buildingId = BuildingId("RUINS");
     else {
       info.settlement.buildingId = enemy.settlement.buildingId;
       info.settlement.furniture = enemy.settlement.furniture;
@@ -170,7 +170,7 @@ void EnemyFactory::updateCreateOnBones(EnemyInfo& info) const {
         if (auto extra = enemy.getReferenceMaybe<LevelConnection::ExtraEnemy>())
           for (auto& enemy : extra->enemyInfo) {
             if (makeRuins) {
-              enemy.settlement.buildingId = BuildingId::RUINS;
+              enemy.settlement.buildingId = BuildingId("RUINS");
               enemy.settlement.furniture.clear();
               enemy.settlement.outsideFeatures.reset();
             }

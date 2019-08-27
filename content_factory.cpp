@@ -13,7 +13,7 @@
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
-  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology, items);
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology, items, buildingInfo);
   creatures.setContentFactory(this);
 }
 
@@ -181,6 +181,14 @@ optional<string> ContentFactory::readItems(const GameConfig* config, KeyVerifier
   return none;
 }
 
+optional<string> ContentFactory::readBuildingInfo(const GameConfig* config, KeyVerifier* keyVerifier) {
+  map<PrimaryId<BuildingId>, BuildingInfo> buildingsTmp;
+  if (auto res = config->readObject(buildingsTmp, GameConfigId::BUILDING_INFO, keyVerifier))
+    return *res;
+  buildingInfo = convertKeys(buildingsTmp);
+  return none;
+}
+
 optional<string> ContentFactory::readData(NameGenerator nameGenerator, const GameConfig* config) {
   KeyVerifier keyVerifier;
   if (auto error = config->readObject(technology, GameConfigId::TECHNOLOGY, &keyVerifier))
@@ -205,10 +213,15 @@ optional<string> ContentFactory::readData(NameGenerator nameGenerator, const Gam
     return *res;
   if (auto res = readItems(config, &keyVerifier))
     return *res;
+  if (auto res = readBuildingInfo(config, &keyVerifier))
+    return *res;
   map<PrimaryId<EnemyId>, EnemyInfo> enemiesTmp;
   if (auto res = config->readObject(enemiesTmp, GameConfigId::ENEMIES, &keyVerifier))
     return *res;
   enemies = convertKeys(enemiesTmp);
+  for (auto& enemy : enemies)
+    if (auto res = getReferenceMaybe(buildingInfo, enemy.second.settlement.buildingId))
+      enemy.second.settlement.buildingInfo = *res;
   if (auto res = config->readObject(externalEnemies, GameConfigId::EXTERNAL_ENEMIES, &keyVerifier))
     return *res;
   if (auto res = readCreatureFactory(std::move(nameGenerator), config, &keyVerifier))

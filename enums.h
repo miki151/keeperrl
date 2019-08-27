@@ -120,5 +120,6 @@ class EnemyId;
 class FurnitureListId;
 class SpellId;
 class CreatureId;
+class BuildingId;
 
 using SteamId = unsigned long long;

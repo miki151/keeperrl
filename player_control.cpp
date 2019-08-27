@@ -2234,7 +2234,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     }
     case UserInputId::RECT_SELECTION: {
-      auto& info = input.get<BuildingInfo>();
+      auto& info = input.get<BuildingClickInfo>();
       if (buildInfo[info.building].canSelectRectangle()) {
         updateSelectionSquares();
         if (rectSelection) {
@@ -2255,7 +2255,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       updateSelectionSquares();
       break;
     case UserInputId::BUILD: {
-      auto& info = input.get<BuildingInfo>();
+      auto& info = input.get<BuildingClickInfo>();
       handleSelection(info.pos, buildInfo[info.building], false);
       break;
     }
@@ -2298,7 +2298,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       if (rectSelection) {
         selection = rectSelection->deselect ? DESELECT : SELECT;
         for (Vec2 v : Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2}))
-          handleSelection(v, buildInfo[input.get<BuildingInfo>().building], true, rectSelection->deselect);
+          handleSelection(v, buildInfo[input.get<BuildingClickInfo>().building], true, rectSelection->deselect);
       }
       FALLTHROUGH;
     case UserInputId::RECT_CANCEL:

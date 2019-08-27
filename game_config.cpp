@@ -44,6 +44,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "endless_enemies";
     case GameConfigId::ITEMS:
       return "items";
+    case GameConfigId::BUILDING_INFO:
+      return "building_info";
   }
 }
 

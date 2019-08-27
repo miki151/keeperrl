@@ -24,7 +24,7 @@
         }
       }
       race = "humans"
-        buildingId = WOOD
+        buildingId = "WOOD"
         stockpiles = {
           { "gold" 50 "TREASURE_CHEST" }
         }
@@ -46,7 +46,7 @@
       }
       tribe = MONSTER
       race = "unicorns"
-      buildingId = WOOD
+      buildingId = "WOOD"
     }
     config = {
       immigrantInterval = 200
@@ -79,7 +79,7 @@
       surroundWithResources = 5
       tribe = ANT
       race = "ants"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
     }
     config = {
       immigrantInterval = 500
@@ -122,7 +122,7 @@
       dontConnectCave = true
       closeToPlayer = true
       surroundWithResources = 6
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
     }
     behaviour = {
       minPopulation = 0
@@ -143,7 +143,7 @@
       }
       tribe = ANT
       race = "black rats"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
     }
     discoverable = false
     createOnBones = 1.0 { "DWARVES" }
@@ -166,7 +166,7 @@
       surroundWithResources = 5
       tribe = ANT
       race = "ants"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
     }
     createOnBones = 0.1 { "DWARVES" }
   }
@@ -185,7 +185,7 @@
       dontConnectCave = true
       surroundWithResources = 3
       extraResources = "ADAMANTIUM_ORE"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
     }
     behaviour = {
       minPopulation = 0
@@ -210,7 +210,7 @@
       }
       locationNameGen = TOWN
       race = "greenskins"
-      buildingId = BRICK
+      buildingId = "BRICK"
       furniture = { "roomFurniture" }
       outsideFeatures = "villageOutside"
     }
@@ -243,7 +243,7 @@
           all = { 1 "LOST_SOUL" }
         }
       }
-      buildingId = DUNGEON_SURFACE
+      buildingId = "DUNGEON_SURFACE"
       locationName = "Darkshrine Town"
       race = "ghosts"
       furniture = { "dungeonOutside" }
@@ -255,7 +255,7 @@
   {
     settlement = {
       type = VILLAGE
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       tribe = MONSTER
       inhabitants = {
         leader = { { "DEMON_LORD" } }
@@ -323,7 +323,7 @@
       }
       locationNameGen = TOWN
       race = "humans"
-      buildingId = WOOD
+      buildingId = "WOOD"
       shopItems = "armory"
       furniture = { "roomFurniture" }
     }
@@ -346,7 +346,7 @@
       }
       locationNameGen = TOWN
       race = "humans"
-      buildingId = WOOD_CASTLE
+      buildingId = "WOOD_CASTLE"
       stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
       lootItem = {TechBook "beast mutation"}
       furniture = { "roomFurniture" }
@@ -412,7 +412,7 @@
       locationNameGen = TOWN
       race = "humans"
       stockpiles = {{ "gold" 140 "TREASURE_CHEST" }}
-      buildingId = BRICK
+      buildingId = "BRICK"
       shopItems = "villageShop"
       furniture = { "castleFurniture" }
       outsideFeatures = "castleOutside"
@@ -468,7 +468,7 @@
       locationName = "maze"
       race = "monsters"
       furniture = { "roomFurniture" }
-      buildingId = BRICK
+      buildingId = "BRICK"
     }
   }
   "RED_DRAGON"
@@ -480,7 +480,7 @@
       }
       race = "dragon"
       tribe = MONSTER
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       shopItems = "dragonCave"
     }
     config = {
@@ -512,7 +512,7 @@
       }
       race = "dragon"
       tribe = MONSTER
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       shopItems = "dragonCave"
     }
     createOnBones = 1.0 { "KNIGHTS" "DWARVES" "GREEN_DRAGON" "WARRIORS" }
@@ -526,7 +526,7 @@
       }
       tribe = MONSTER
       race = "dragon"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       shopItems = "dragonCave"
     }
     config = {
@@ -575,7 +575,7 @@
       }
       locationNameGen = TOWN
       race = "dwarves"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       stockpiles = {{ "gold" 200 "TREASURE_CHEST"} {"minerals" 120 }}
       shopItems = "dwarfShop"
       outsideFeatures = "dungeonOutside"
@@ -634,7 +634,7 @@
       tribe = ELF
       race = "elves"
       stockpiles = {{ "gold" 100 "TREASURE_CHEST"}}
-      buildingId = WOOD
+      buildingId = "WOOD"
       lootItem = {TechBook "master sorcery"}
       furniture = { "roomFurniture" }
     }
@@ -663,7 +663,7 @@
     settlement = {
       type = TOWER
       tribe = HUMAN
-      buildingId = BRICK
+      buildingId = "BRICK"
     }
     discoverable = false
   }
@@ -683,7 +683,7 @@
       }
       type = TOWER
       tribe = HUMAN
-      buildingId = BRICK
+      buildingId = "BRICK"
     }
     discoverable = false
   }
@@ -695,7 +695,7 @@
         leader = { { "ELEMENTALIST" } }
       }
       tribe = HUMAN
-      buildingId = BRICK
+      buildingId = "BRICK"
       furniture = { "roomFurniture" }
     }
     config = {
@@ -738,7 +738,7 @@
       tribe = DARK_ELF
       locationNameGen = TOWN
       race = "dark elves"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       outsideFeatures = "dungeonOutside"
       furniture = { "roomFurniture" }
     }
@@ -761,7 +761,7 @@
     settlement = {
       type = CAVE
       tribe = BANDIT
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
     }
   }
   "NO_AGGRO_BANDITS"
@@ -776,7 +776,7 @@
       }
       tribe = BANDIT
       race = "bandits"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
     }
     config = {
       immigrantInterval = 1000
@@ -817,7 +817,7 @@
       }
       tribe = BANDIT
       race = "orcs"
-      buildingId = DUNGEON   
+      buildingId = "DUNGEON"
     }
     config = {
       immigrantInterval = 1000
@@ -851,7 +851,7 @@
         }
       }
       race = "lizardmen"
-      buildingId = MUD
+      buildingId = "MUD"
       furniture = { "roomFurniture" }
       outsideFeatures = "villageOutside"
     }
@@ -871,7 +871,7 @@
       }
       locationNameGen = TOWN
       race = "lizardmen"
-      buildingId = MUD
+      buildingId = "MUD"
       lootItem = {TechBook "humanoid mutation"}
       shopItems = "goodMushrooms"
       furniture = { "roomFurniture" }
@@ -928,7 +928,7 @@
       }
       locationNameGen = TOWN
       race = "dark elves"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       outsideFeatures = "dungeonOutside"
       furniture = { "roomFurniture" }
     }
@@ -983,7 +983,7 @@
       }
       locationNameGen = TOWN
       race = "dark elves"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       outsideFeatures = "dungeonOutside"
       furniture = { "roomFurniture" }
     }
@@ -1000,7 +1000,7 @@
         }
       }
       race = "dark elves"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       outsideFeatures = "dungeonOutside"
       furniture = { "roomFurniture" }
     }
@@ -1011,7 +1011,7 @@
     settlement = {
       type = MINETOWN
       tribe = MONSTER
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       furniture = { "roomFurniture" }
       inhabitants = {
         fighters = {
@@ -1093,7 +1093,7 @@
       }
       locationNameGen = TOWN
       race = "gnomes"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       shopItems = "gnomeShop"
       outsideFeatures = "dungeonOutside"
       furniture = { "roomFurniture" }
@@ -1119,7 +1119,7 @@
         }
       }
       race = "gnomes"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       outsideFeatures = "dungeonOutside"
       furniture = { "roomFurniture" }
     }
@@ -1128,20 +1128,20 @@
   "WHITE_DRAGON_ENTRY" inherit "MAIN_DUNGEON_ENTRY"
   {
     settlement = append {
-      buildingId = GLACIER
+      buildingId = "GLACIER"
     }
   }
   "WHITE_DRAGON_FLOOR" inherit "DUNGEON1"
   {
     settlement = append {
-      buildingId = GLACIER
+      buildingId = "GLACIER"
     }
   }
   "WHITE_DRAGON" inherit "RED_DRAGON"
   {
     biomes = { SNOW }
     settlement = append {
-      buildingId = GLACIER
+      buildingId = "GLACIER"
       inhabitants = {
         leader = { { "WHITE_DRAGON" } }
       }
@@ -1168,7 +1168,7 @@
       }
       tribe = MONSTER
       race = "tree spirits"
-      buildingId = WOOD
+      buildingId = "WOOD"
     }
     config = {
       immigrantInterval = 300
@@ -1194,7 +1194,7 @@
       }
       tribe = MONSTER
       race = "dryads"
-      buildingId = WOOD
+      buildingId = "WOOD"
     }
     config = {
       immigrantInterval = 300
@@ -1224,7 +1224,7 @@
         }
       }
       race = "giant spider"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
     }
     config = {
      leaderAsFighter = true
@@ -1240,7 +1240,7 @@
       }
       race = "cyclops"
       tribe = HOSTILE
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       shopItems = "goodMushrooms"
     }
     config = {
@@ -1264,7 +1264,7 @@
       }
       race = "hydra"
       tribe = HOSTILE
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
     }
     config = {
       leaderAsFighter = true
@@ -1281,7 +1281,7 @@
       }
       race = "kraken"
       tribe = MONSTER
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
     }
     config = {
       leaderAsFighter = true
@@ -1302,7 +1302,7 @@
       tribe = MONSTER
       race = "undead"
       furniture = { "cryptCoffins" }
-      buildingId = BRICK
+      buildingId = "BRICK"
     }
     levelConnection = {
       topLevel = ExtraEnemy { "CEMETERY_ENTRY" }
@@ -1327,7 +1327,7 @@
       race = "undead"
       tribe = MONSTER
       furniture = { "graves" }
-      buildingId = BRICK
+      buildingId = "BRICK"
     }
     discoverable = false
   }
@@ -1342,7 +1342,7 @@
           all = { 1 "OGRE" }
         }
       }
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       closeToPlayer = true
       furniture = { "roomFurniture" }
       outsideFeatures = "villageOutside"
@@ -1370,7 +1370,7 @@
           all = { 1 "HARPY" }
         }
       }
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       closeToPlayer = true
       furniture = { "roomFurniture" }
       outsideFeatures = "villageOutside"
@@ -1391,7 +1391,7 @@
   {
     settlement = {
       type = ISLAND_VAULT_DOOR
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       tribe = MONSTER
     }
   }
@@ -1403,7 +1403,7 @@
         leader = {{ "SPECIAL_HLBN" "SPECIAL_HLBW" "SPECIAL_HLGN" "SPECIAL_HLGW" }}
       }
       tribe = DARK_KEEPER
-      buildingId = DUNGEON  
+      buildingId = "DUNGEON"
     }
     levelConnection = {
       direction = UP
@@ -1423,7 +1423,7 @@
         leader = { { "WITCH" } }
       }
       race = "witch"
-      buildingId = WOOD
+      buildingId = "WOOD"
       lootItem = {TechBook "advanced alchemy"}
       furniture = { "witchInside" }
     }
@@ -1437,7 +1437,7 @@
       inhabitants = {
         leader = { { "PRIEST" } }
       }
-      buildingId = BRICK
+      buildingId = "BRICK"
       furniture = { "templeInside"    }
     }
     discoverable = false
@@ -1454,7 +1454,7 @@
           expLevelIncrease = { SPELL 7 }
         }
       }
-      buildingId = WOOD
+      buildingId = "WOOD"
       furniture = { "templeInside" }
     }
     discoverable = false
@@ -1467,7 +1467,7 @@
       race = "ruins"
       dontBuildRoad = true
       closeToPlayer = true
-      buildingId = RUINS
+      buildingId = "RUINS"
     }
     config = {
       immigrantInterval = 700
@@ -1513,7 +1513,7 @@
         }
       }
       race = "humans"
-      buildingId = WOOD
+      buildingId = "WOOD"
       furniture = { "roomFurniture" }
     }
     config = {
@@ -1523,7 +1523,7 @@
   "ESKIMO_COTTAGE" inherit "HUMAN_COTTAGE"
   {
     settlement = append {
-      buildingId = SNOW
+      buildingId = "SNOW"
       cropsDistance = none
       inhabitants = {
         fighters = {
@@ -1545,7 +1545,7 @@
   "NOMAD_COTTAGE" inherit "HUMAN_COTTAGE"
   {
     settlement = append {
-      buildingId = SANDSTONE_WALL
+      buildingId = "SANDSTONE_WALL"
       cropsDistance = none
       inhabitants = {
         fighters = {
@@ -1570,7 +1570,7 @@
     settlement = {
       type = CASTLE2
       tribe = HUMAN
-      buildingId = SANDSTONE_WALL
+      buildingId = "SANDSTONE_WALL"
       inhabitants = {
         leader = { { "THIEF_LEADER" } }
         fighters = {
@@ -1622,7 +1622,7 @@
       tribe = MONSTER
       locationName = "maze"
       race = "monsters"
-      buildingId = SANDSTONE
+      buildingId = "SANDSTONE"
     }
   }
   "DJINN_ENTRANCE" inherit "DJINN_EMPTY"
@@ -1663,7 +1663,7 @@
         }
       }
       race = "elves"
-      buildingId = WOOD
+      buildingId = "WOOD"
       furniture = { "roomFurniture" }
     }
   }
@@ -1679,7 +1679,7 @@
         }
       }
       race = "lizardmen"
-      buildingId = WOOD
+      buildingId = "WOOD"
       furniture = { "roomFurniture" }
     }
     createOnBones = 1.0 { "ELVEN_COTTAGE" }
@@ -1696,7 +1696,7 @@
         }
       }
       race = "kobolds"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       stockpiles = {{ "minerals" 60 }}
     }
   }
@@ -1716,7 +1716,7 @@
         }
       }
       race = "dwarves"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       stockpiles = {{ "minerals" 60}}
       outsideFeatures = "dungeonOutside"
       furniture = { "roomFurniture" }
@@ -1745,7 +1745,7 @@
       closeToPlayer = true
       dontConnectCave = true
       tribe = MONSTER
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
     }
     discoverable = false
   }
@@ -1753,7 +1753,7 @@
   {
     settlement = {
       type = VAULT
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       tribe = MONSTER
       inhabitants = {
         leader = { { "RAT_KING" } }
@@ -1796,7 +1796,7 @@
         }
       }
       race = "dark elves"
-      buildingId = DUNGEON
+      buildingId = "DUNGEON"
       stockpiles = {{ "minerals" 60 }}
       outsideFeatures = "dungeonOutside"
       furniture = { "roomFurniture" }

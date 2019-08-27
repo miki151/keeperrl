@@ -6,20 +6,8 @@
 #include "item_factory.h"
 #include "furniture_list.h"
 #include "inhabitants_info.h"
-
-RICH_ENUM(BuildingId,
-  WOOD,
-  MUD,
-  BRICK,
-  WOOD_CASTLE,
-  DUNGEON,
-  DUNGEON_SURFACE,
-  RUINS,
-  SNOW,
-  GLACIER,
-  SANDSTONE_WALL,
-  SANDSTONE
-);
+#include "building_id.h"
+#include "building_info.h"
 
 struct StockpileInfo {
   ItemListId SERIAL(items);
@@ -64,6 +52,7 @@ struct SettlementInfo {
   TribeId SERIAL(tribe);
   optional<string> SERIAL(race);
   BuildingId SERIAL(buildingId);
+  BuildingInfo buildingInfo;
   vector<StairKey> downStairs;
   vector<StairKey> upStairs;
   vector<StockpileInfo> SERIAL(stockpiles);
