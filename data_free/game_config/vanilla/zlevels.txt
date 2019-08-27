@@ -60,6 +60,7 @@
     }
     minDepth = 7
     maxDepth = 10
+    width = 60
   }
   {
     type = WaterZLevel {
@@ -73,6 +74,7 @@
       }
     }
     minDepth = 10
+    width = 60
   }
 }
 

@@ -30,15 +30,16 @@ static EnemyInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
 struct LevelMakerResult {
   PLevelMaker maker;
   optional<EnemyInfo> enemy;
+  int levelWidth;
 };
 
-static LevelMakerResult getLevelMaker(const ZLevelType& level, ResourceCounts resources, int width, TribeId tribe,
+static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCounts resources, TribeId tribe,
     StairKey stairKey, ContentFactory* contentFactory) {
-  return level.visit(
+  return levelInfo.type.visit(
       [&](const WaterZLevel& level) {
         return LevelMakerResult{
-            LevelMaker::getWaterZLevel(Random, level.waterType, width, level.creatures, stairKey),
-            none
+            LevelMaker::getWaterZLevel(Random, level.waterType, levelInfo.width, level.creatures, stairKey),
+            none, levelInfo.width
         };
       },
       [&](const FullZLevel& level) {
@@ -54,30 +55,30 @@ static LevelMakerResult getLevelMaker(const ZLevelType& level, ResourceCounts re
           }
         }
         return LevelMakerResult{
-            LevelMaker::getFullZLevel(Random, settlement, resources, width, tribe, stairKey),
-            std::move(enemy)
+            LevelMaker::getFullZLevel(Random, settlement, resources, levelInfo.width, tribe, stairKey),
+            std::move(enemy), levelInfo.width
         };
       });
 }
 
-static optional<ZLevelType> chooseZLevel(RandomGen& random, const vector<ZLevelInfo>& levels, int depth) {
-  vector<ZLevelType> available;
+static optional<ZLevelInfo> chooseZLevel(RandomGen& random, const vector<ZLevelInfo>& levels, int depth) {
+  vector<ZLevelInfo> available;
   for (auto& l : levels)
     if (l.minDepth.value_or(-100) <= depth && l.maxDepth.value_or(1000000) >= depth)
-      available.push_back(l.type);
+      available.push_back(l);
   if (available.empty())
     return none;
   return random.choose(available);
 }
 
 static LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory, TribeAlignment alignment,
-    int depth, int width, TribeId tribe, StairKey stairKey) {
+    int depth, TribeId tribe, StairKey stairKey) {
   auto& allLevels = contentFactory->zLevels;
   auto& resources = contentFactory->resources;
   vector<ZLevelInfo> levels = concat<ZLevelInfo>({allLevels[0], allLevels[1 + int(alignment)]});
   auto zLevel = *chooseZLevel(random, levels, depth);
   auto res = *chooseResourceCounts(random, resources, depth);
-  return getLevelMaker(zLevel, res, width, tribe, stairKey, contentFactory);
+  return getLevelMaker(zLevel, res, tribe, stairKey, contentFactory);
 }
 
 static void removeOldStairs(Level* level, StairKey stairKey) {
@@ -113,14 +114,13 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
       auto levels = pos.getModel()->getMainLevels();
       int levelIndex = *levels.findElement(pos.getLevel());
       if (levelIndex == levels.size() - 1) {
-        int width = 140;
         auto stairKey = StairKey::getNew();
         auto newLevel = tryBuilding(20,
             [&]{
               auto contentFactory = pos.getGame()->getContentFactory();
               auto maker = getLevelMaker(Random, contentFactory, pos.getGame()->getPlayerControl()->getTribeAlignment(),
-                  levelIndex + 1, width, pos.getGame()->getPlayerCollective()->getTribeId(), stairKey);
-              auto level = pos.getModel()->buildMainLevel(LevelBuilder(Random, contentFactory, width, width, true),
+                  levelIndex + 1, pos.getGame()->getPlayerCollective()->getTribeId(), stairKey);
+              auto level = pos.getModel()->buildMainLevel(LevelBuilder(Random, contentFactory, maker.levelWidth, maker.levelWidth, true),
                   std::move(maker.maker));
               return ZLevelResult{ level, maker.enemy ? maker.enemy->buildCollective(contentFactory) : nullptr};
             },
