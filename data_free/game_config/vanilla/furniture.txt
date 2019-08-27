@@ -966,6 +966,9 @@
     canBuildOutsideOfTerritory = true
     strength2 = {
       100 BOULDER
+      100 DIG
+      300 HOSTILE_DIG
+      300 HOSTILE_DIG_NO_SKILL
     }
   }
   "FLOOR_WOOD1"
