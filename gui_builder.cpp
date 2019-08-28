@@ -3773,6 +3773,7 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
   addList(localItems, "Installed:");
   addList(subscribedItems, "Subscribed:");
   addList(onlineItems, "Online:");
+  allItems.addElem(gui.buttonLabel("Create new", [&queue] { queue.push(ModAction{-1, 0}); }));
   const int windowWidth = 2 * margin + pageWidth + listWidth;
   return gui.preferredSize(windowWidth, 400,
       gui.window(gui.margins(gui.getListBuilder()

@@ -121,4 +121,5 @@ class MainLoop {
   vector<ModInfo> getAllMods();
   void downloadMod(ModInfo&, const DirectoryPath& modDir);
   void uploadMod(ModInfo&, const DirectoryPath& modDir);
+  void createNewMod();
 };

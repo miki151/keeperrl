@@ -628,6 +628,23 @@ void MainLoop::uploadMod(ModInfo& mod, const DirectoryPath& modDir) {
     view->presentText("Error uploading mod:", *error);
 }
 
+void MainLoop::createNewMod() {
+  auto modsDir = getModsDir();
+  if (auto name = view->getText("Enter name of new mod", "", 15)) {
+    if (modsDir.getSubDirs().contains(*name)) {
+      view->presentText("Error", "Mod \"" + *name + "\" is alread installed");
+      return;
+    }
+    auto targetPath = modsDir.subdirectory(*name);
+    doWithSplash(SplashType::SMALL, "Copying files...", 1,
+       [&] (ProgressMeter& meter) {
+         DirectoryPath::copyFiles(modsDir.subdirectory("vanilla"), targetPath, true);
+       });
+    updateLocalModVersion(*name, ModVersionInfo{0, 0, modVersion});
+    updateLocalModDetails(*name, ModDetails{"", ""});
+  }
+}
+
 void MainLoop::showMods() {
   auto modDir = getModsDir();
   int highlighted = 0;
@@ -637,6 +654,10 @@ void MainLoop::showMods() {
     if (!choice)
       break;
     highlighted = choice->index;
+    if (highlighted == -1) {
+      createNewMod();
+      return showMods();
+    }
     auto& chosenMod = allMods[highlighted];
     auto action = chosenMod.actions[choice->actionId];
     if (action == "Activate")
