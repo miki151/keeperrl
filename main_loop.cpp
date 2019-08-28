@@ -589,6 +589,7 @@ vector<ModInfo> MainLoop::getAllMods() {
         allMods.push_back(mod);
         allMods.back().actions.push_back("Download");
       }
+  return allMods;
 }
 
 void MainLoop::downloadMod(ModInfo& mod, const DirectoryPath& modDir) {
