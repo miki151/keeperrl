@@ -29,7 +29,7 @@ string formatError(int value, const pair<int, const char*>* strings, int count) 
 }
 
 static const pair<int, const char*> results[] = {
-#define CASE(item)                                                                                                     \
+#define CASE(item) \
   { k_EResult##item, #item }
     CASE(Fail),
     CASE(NoConnection),

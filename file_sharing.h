@@ -41,6 +41,7 @@ class FileSharing {
   optional<string> downloadSteamMod(SteamId, const string& name, const DirectoryPath& modsDir,
                                     ProgressMeter&);
   optional<string> downloadMod(const string& name, SteamId, const DirectoryPath& modsDir, ProgressMeter&);
+  optional<string> uploadMod(ModInfo& modInfo, const DirectoryPath& modsDir, ProgressMeter&);
 
   string downloadHighscores(int version);
 

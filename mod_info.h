@@ -18,7 +18,7 @@ struct ModInfo {
   ModDetails details;
   ModVersionInfo versionInfo;
   double rating = -1; // don't display if less than 0
-  // Steam mod info:
+  bool canUpload = false;
   bool isSubscribed = false;
   bool isActive = false;
   bool isLocal = false;

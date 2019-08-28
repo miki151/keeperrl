@@ -540,9 +540,13 @@ void MainLoop::removeOldSteamMod(SteamId steamId, const string& newName) {
           removeMod(modName);
 }
 
-void MainLoop::showMods() {
-  int currentIndex = 0;
-  ScrollPosition scrollPos;
+vector<ModInfo> MainLoop::getAllMods() {
+  auto modList = getModsDir().getSubDirs();
+  USER_CHECK(!modList.empty()) << "No game config data found, please make sure all game data is in place";
+  string currentMod = options->getStringValue(OptionId::CURRENT_MOD2);
+  // check if the currentMod exists and has current version
+  if ([&]{for (auto& mod : modList) if (mod == currentMod && !!getLocalModVersionInfo(mod)) return false; return true;}())
+    currentMod = "vanilla";
   const optional<vector<ModInfo>> onlineMods = [&] {
     optional<vector<ModInfo>> ret;
     doWithSplash(SplashType::SMALL, "Downloading list of online mods...", 1,
@@ -551,72 +555,95 @@ void MainLoop::showMods() {
         });
     return ret;
   }();
+  vector<ModInfo> allMods;
+  set<SteamId> alreadyDownloaded;
+  for (auto& mod : modList)
+    if (auto version = getLocalModVersionInfo(mod)) {
+      ModInfo modInfo;
+      modInfo.versionInfo = *version;
+      modInfo.name = mod;
+      modInfo.canUpload = (mod != "vanilla");
+      if (auto details = getLocalModDetails(mod))
+        modInfo.details = *details;
+      if (onlineMods)
+        for (auto& onlineMod : *onlineMods)
+          if (onlineMod.versionInfo.steamId == version->steamId) {
+            modInfo = onlineMod;
+            if (modInfo.versionInfo.version > version->version)
+              modInfo.actions.push_back("Update");
+            alreadyDownloaded.insert(onlineMod.versionInfo.steamId);
+            break;
+          }
+      if (currentMod == mod)
+        modInfo.isActive = true;
+      else
+        modInfo.actions.push_back("Activate");
+      if (modInfo.canUpload)
+        modInfo.actions.push_back("Upload");
+      modInfo.isLocal = true;
+      allMods.push_back(std::move(modInfo));
+    }
+  if (onlineMods)
+    for (auto& mod : *onlineMods)
+      if (!alreadyDownloaded.count(mod.versionInfo.steamId)) {
+        allMods.push_back(mod);
+        allMods.back().actions.push_back("Download");
+      }
+}
+
+void MainLoop::downloadMod(ModInfo& mod, const DirectoryPath& modDir) {
+  atomic<bool> cancelled(false);
+  optional<string> error;
+  doWithSplash(SplashType::SMALL, "Downloading mod \"" + mod.name + "\"...", 1,
+      [&] (ProgressMeter& meter) {
+        error = fileSharing->downloadMod(mod.name, mod.versionInfo.steamId, modDir, meter);
+        if (!error) {
+          updateLocalModVersion(mod.name, mod.versionInfo);
+          updateLocalModDetails(mod.name, mod.details);
+          removeOldSteamMod(mod.versionInfo.steamId, mod.name);
+        }
+      },
+      [&] {
+        cancelled = true;
+        fileSharing->cancel();
+      });
+  if (error && !cancelled)
+    view->presentText("Error downloading file", *error);
+}
+
+void MainLoop::uploadMod(ModInfo& mod, const DirectoryPath& modDir) {
+  atomic<bool> cancelled(false);
+  optional<string> error;
+  doWithSplash(SplashType::SMALL, "Uploading mod \"" + mod.name + "\"...", 1,
+      [&] (ProgressMeter& meter) {
+        error = fileSharing->uploadMod(mod, modDir, meter);
+        updateLocalModVersion(mod.name, mod.versionInfo);
+      },
+      [&] {
+        cancelled = true;
+        fileSharing->cancel();
+      });
+  if (error && !cancelled)
+    view->presentText("Error uploading mod:", *error);
+}
+
+void MainLoop::showMods() {
   auto modDir = getModsDir();
   int highlighted = 0;
   while (1) {
-    auto modList = modDir.getSubDirs();
-    USER_CHECK(!modList.empty()) << "No game config data found, please make sure all game data is in place";
-    string currentMod = options->getStringValue(OptionId::CURRENT_MOD2);
-    // check if the currentMod exists and has current version
-    if ([&]{for (auto& mod : modList) if (mod == currentMod && !!getLocalModVersionInfo(mod)) return false; return true;}())
-      currentMod = "vanilla";
-    vector<ModInfo> allMods;
-    set<SteamId> alreadyDownloaded;
-    for (auto& mod : modList)
-      if (auto version = getLocalModVersionInfo(mod)) {
-        ModInfo modInfo;
-        modInfo.versionInfo = *version;
-        modInfo.name = mod;
-        if (auto details = getLocalModDetails(mod))
-          modInfo.details = *details;
-        if (onlineMods)
-          for (auto& onlineMod : *onlineMods)
-            if (onlineMod.versionInfo.steamId == version->steamId) {
-              modInfo = onlineMod;
-              if (modInfo.versionInfo.version > version->version)
-                modInfo.actions.push_back("Update");
-              alreadyDownloaded.insert(onlineMod.versionInfo.steamId);
-              break;
-            }
-        if (currentMod == mod)
-          modInfo.isActive = true;
-        else
-          modInfo.actions.push_back("Activate");
-        modInfo.isLocal = true;
-        allMods.push_back(std::move(modInfo));
-      }
-    if (onlineMods)
-      for (auto& mod : *onlineMods)
-        if (!alreadyDownloaded.count(mod.versionInfo.steamId)) {
-          allMods.push_back(mod);
-          allMods.back().actions.push_back("Download");
-        }
+    vector<ModInfo> allMods = getAllMods();
     auto choice = view->getModAction(highlighted, allMods);
     if (!choice)
       break;
     highlighted = choice->index;
-    auto action = allMods[highlighted].actions[choice->actionId];
+    auto& chosenMod = allMods[highlighted];
+    auto action = chosenMod.actions[choice->actionId];
     if (action == "Activate")
       options->setValue(OptionId::CURRENT_MOD2, allMods[highlighted].name);
-    else if (action == "Download" || action == "Update") {
-      auto& downloadMod = allMods[highlighted];
-      atomic<bool> cancelled(false);
-      optional<string> error;
-      doWithSplash(SplashType::SMALL, "Downloading mod \"" + downloadMod.name + "\"...", 1,
-          [&] (ProgressMeter& meter) {
-            error = fileSharing->downloadMod(downloadMod.name, downloadMod.versionInfo.steamId, modDir, meter);
-            if (!error) {
-              updateLocalModVersion(downloadMod.name, downloadMod.versionInfo);
-              updateLocalModDetails(downloadMod.name, downloadMod.details);
-              removeOldSteamMod(downloadMod.versionInfo.steamId, downloadMod.name);
-            }
-          },
-          [&] {
-            cancelled = true;
-            fileSharing->cancel();
-          });
-      if (error && !cancelled)
-        view->presentText("Error downloading file", *error);
+    else if (action == "Download" || action == "Update")
+      downloadMod(chosenMod, modDir);
+    else if (action == "Upload") {
+      uploadMod(chosenMod, modDir);
     }
   }
 }

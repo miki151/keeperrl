@@ -452,10 +452,11 @@ optional<vector<ModInfo>> FileSharing::getSteamMods() {
     // TODO: playtimeSessions is not exactly the same as numGames
     //mod.numGames = info.stats->playtimeSessions;
     mod.versionInfo.steamId = info.id.value;
-    mod.versionInfo.version = steam::getItemVersion(info.metadata).value_or(0);
+    mod.versionInfo.version = (int) info.updateTime;
     mod.versionInfo.compatibilityTag = modVersion;
     mod.isSubscribed = subscribedItems.contains(info.id);
     mod.rating = (info.votesUp + info.votesDown > 0) ? double(info.votesUp) / (info.votesUp + info.votesDown) : -1.0;
+    mod.canUpload = infos[n].ownerId == user.id();
     out.emplace_back(mod);
   }
 
@@ -519,6 +520,46 @@ optional<string> FileSharing::downloadMod(const string& modName, SteamId steamId
     return unzip(modsDir.file(fileName).getPath(), modsDir.getPath());
   } else
     return none;
+}
+
+optional<string> FileSharing::uploadMod(ModInfo& modInfo, const DirectoryPath& modsDir, ProgressMeter& meter) {
+#ifdef USE_STEAMWORKS
+  if (!steam::Client::isAvailable())
+    return "Steam client not available"_s;
+  auto& ugc = steam::UGC::instance();
+  //auto& user = steam::User::instance();
+
+  steam::UpdateItemInfo info;
+  if (modInfo.versionInfo.steamId != 0)
+    info.id = steam::ItemId(modInfo.versionInfo.steamId);
+  info.tags = "Mod," + modInfo.versionInfo.compatibilityTag;
+  info.title = modInfo.name;
+  info.folder = string(modsDir.subdirectory(modInfo.name).absolute().getPath());
+  info.description = modInfo.details.description;
+  info.visibility = SteamItemVisibility::public_;
+  ugc.beginUpdateItem(info);
+
+  // Item update may take some time; Should we loop indefinitely?
+  optional<steam::UpdateItemResult> result;
+  steam::sleepUntil([&]() { return (bool)(result = ugc.tryUpdateItem()); }, milliseconds(600 * 1000));
+  if (!result) {
+    ugc.cancelUpdateItem();
+    return "Uploading mod has timed out"_s;
+  }
+  if (result->valid()) {
+    modInfo.versionInfo.steamId = *result->itemId;
+    return none;
+  } else {
+    return *result->error;
+
+    // Remove partially created item
+    /*if (!itemInfo.id && result->itemId)
+      ugc.deleteItem(*result->itemId);*/
+  }
+
+#else
+  return string("Steam support is not available in this build");
+#endif
 }
 
 void FileSharing::cancel() {
