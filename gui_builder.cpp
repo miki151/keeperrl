@@ -3700,6 +3700,7 @@ SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Crea
 
 SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int highlighted, const vector<ModInfo>& mods) {
   auto localItems = gui.getListBuilder(legendLineHeight);
+  auto subscribedItems = gui.getListBuilder(legendLineHeight);
   auto onlineItems = gui.getListBuilder(legendLineHeight);
   SGuiElem activeItem;
   shared_ptr<int> chosenMod = make_shared<int>(highlighted);
@@ -3719,6 +3720,8 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
       activeItem = std::move(itemLabel);
     else if (mods[i].isLocal)
       localItems.addElem(std::move(itemLabel));
+    else if (mods[i].isSubscribed)
+      subscribedItems.addElem(std::move(itemLabel));
     else
       onlineItems.addElem(std::move(itemLabel));
     auto lines = gui.getListBuilder(legendLineHeight);
@@ -3760,20 +3763,21 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
   allItems.addElem(gui.label("Currently active:", Color::YELLOW));
   CHECK(!!activeItem);
   allItems.addElem(std::move(activeItem));
-  if (!localItems.isEmpty()) {
-    allItems.addSpace(legendLineHeight / 2);
-    allItems.addElem(gui.label("Local mods:", Color::YELLOW));
-    allItems.addElemAuto(localItems.buildVerticalList());
-  }
-  if (!onlineItems.isEmpty()) {
-    allItems.addSpace(legendLineHeight / 2);
-    allItems.addElem(gui.label("Online mods:", Color::YELLOW));
-    allItems.addElemAuto(onlineItems.buildVerticalList());
-  }
+  auto addList = [&] (GuiFactory::ListBuilder& list, const char* title) {
+    if (!list.isEmpty()) {
+      allItems.addSpace(legendLineHeight / 2);
+      allItems.addElem(gui.label(title, Color::YELLOW));
+      allItems.addElemAuto(list.buildVerticalList());
+    }
+  };
+  addList(localItems, "Installed:");
+  addList(subscribedItems, "Subscribed:");
+  addList(onlineItems, "Online:");
   const int windowWidth = 2 * margin + pageWidth + listWidth;
   return gui.preferredSize(windowWidth, 400,
       gui.window(gui.margins(gui.getListBuilder()
-          .addElem(allItems.buildVerticalList(), listWidth)
+          .addElem(gui.scrollable(allItems.buildVerticalList()), listWidth)
+          .addSpace(25)
           .addMiddleElem(gui.stack(std::move(modPages)))
           .buildHorizontalList(), margin), [&queue] { queue.push(none); }));
 }
