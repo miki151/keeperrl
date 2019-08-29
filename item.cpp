@@ -171,13 +171,17 @@ void Item::onHitSquareMessage(Position pos, int numItems) {
     pos.fireDamage(1);
 }
 
+bool Item::effectAppliedWhenThrown() const {
+  return getClass() == ItemClass::POTION;
+}
+
 void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {
   if (attributes->fragile) {
     c->you(numItems > 1 ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES, getPluralTheName(numItems));
     discarded = true;
   } else
     c->you(numItems > 1 ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getPluralTheName(numItems));
-  if (attributes->effect && getClass() == ItemClass::POTION)
+  if (attributes->effect && effectAppliedWhenThrown())
     attributes->effect->apply(c->getPosition(), attack.attacker);
   c->takeDamage(attack);
   if (!c->isDead() && attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)

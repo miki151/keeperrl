@@ -58,6 +58,8 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 
   const optional<Effect>& getEffect() const;
+  bool effectAppliedWhenThrown() const;
+
   ItemClass getClass() const;
   
   int getPrice() const;
@@ -118,7 +120,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   virtual optional<CorpseInfo> getCorpseInfo() const;
 
-  SERIALIZATION_DECL(Item);
+  SERIALIZATION_DECL(Item)
 
   protected:
   virtual void specialTick(Position) {}

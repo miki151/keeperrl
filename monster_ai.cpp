@@ -161,13 +161,14 @@ class EffectsAI : public Behaviour {
     if (isObstructed(creature, trajectory))
       return NoMove;
     for (auto item : creature->getEquipment().getItems())
-      if (auto effect = item->getEffect())
-        if (effect->shouldAIApply(creature, target) == EffectAIIntent::WANTED)
-          if (!creature->getEquipment().isEquipped(item) &&
-             creature->getThrowDistance(item).value_or(-1) >=
-                 trajectory.back().dist8(creature->getPosition()).value_or(10000))
-            if (auto action = creature->throwItem(item, target, creature->isFriend(other)))
-              return action;
+      if (item->effectAppliedWhenThrown())
+        if (auto effect = item->getEffect())
+          if (effect->shouldAIApply(creature, target) == EffectAIIntent::WANTED)
+            if (!creature->getEquipment().isEquipped(item) &&
+               creature->getThrowDistance(item).value_or(-1) >=
+                   trajectory.back().dist8(creature->getPosition()).value_or(10000))
+              if (auto action = creature->throwItem(item, target, creature->isFriend(other)))
+                return action;
     return NoMove;
   }
 
