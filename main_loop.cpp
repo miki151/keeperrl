@@ -159,7 +159,7 @@ int MainLoop::getSaveVersion(const SaveFileInfo& save) {
 void MainLoop::uploadFile(const FilePath& path, GameSaveType type) {
   atomic<bool> cancelled(false);
   optional<string> error;
-  doWithSplash(SplashType::BIG, "Uploading "_s + path.getPath() + "...", 1,
+  doWithSplash(SplashType::AUTOSAVING, "Uploading "_s + path.getPath() + "...", 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->uploadSite(path, meter);
       },
@@ -302,10 +302,10 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
           [&](GameSaveType type) {
             if (type == GameSaveType::RETIRED_SITE) {
               game->prepareSiteRetirement();
-              saveUI(game, type, SplashType::BIG);
+              saveUI(game, type, SplashType::AUTOSAVING);
               game->doneRetirement();
             } else
-              saveUI(game, type, SplashType::BIG);
+              saveUI(game, type, SplashType::AUTOSAVING);
             eraseAllSavesExcept(game, type);
           }
       );
@@ -1001,7 +1001,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
   optional<string> failedToLoad;
   int numSites = setup.campaign.getNumNonEmpty();
   vector<ContentFactory> factories;
-  doWithSplash(SplashType::BIG, "Generating map...", numSites,
+  doWithSplash(SplashType::AUTOSAVING, "Generating map...", numSites,
       [&] (ProgressMeter& meter) {
         EnemyFactory enemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
             contentFactory->externalEnemies);
@@ -1032,7 +1032,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
 PGame MainLoop::loadGame(const FilePath& file) {
   optional<PGame> game;
   if (auto info = loadSavedGameInfo(file))
-    doWithSplash(SplashType::BIG, "Loading "_s + file.getPath() + "...", info->progressCount,
+    doWithSplash(SplashType::AUTOSAVING, "Loading "_s + file.getPath() + "...", info->progressCount,
         [&] (ProgressMeter& meter) {
           Square::progressMeter = &meter;
           INFO << "Loading from " << file;
@@ -1045,7 +1045,7 @@ PGame MainLoop::loadGame(const FilePath& file) {
 bool MainLoop::downloadGame(const string& filename) {
   atomic<bool> cancelled(false);
   optional<string> error;
-  doWithSplash(SplashType::BIG, "Downloading " + filename + "...", 1,
+  doWithSplash(SplashType::AUTOSAVING, "Downloading " + filename + "...", 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->download(filename, "uploads", userPath, meter);
       },
