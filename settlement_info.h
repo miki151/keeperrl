@@ -8,6 +8,7 @@
 #include "inhabitants_info.h"
 #include "building_id.h"
 #include "building_info.h"
+#include "name_generator_id.h"
 
 struct StockpileInfo {
   ItemListId SERIAL(items);

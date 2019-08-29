@@ -18,9 +18,9 @@
 #include "name_generator.h"
 #include "util.h"
 #include "file_path.h"
+#include "name_generator_id.h"
 
 SERIALIZE_DEF(NameGenerator, names)
-SERIALIZATION_CONSTRUCTOR_IMPL(NameGenerator)
 
 string getSyllable() {
   string vowels = "aeyuio";
@@ -52,7 +52,7 @@ vector<string> readLines(const FilePath& path) {
   return input;
 }
 
-NameGenerator::NameGenerator(const DirectoryPath& namesPath) {
+NameGenerator::NameGenerator() {
   vector<string> input;
   for (int i : Range(1000)) {
     string ret;
@@ -66,24 +66,14 @@ NameGenerator::NameGenerator(const DirectoryPath& namesPath) {
     for (string name : Random.permutation(input))
       names[id].push_back(name);
   };
-  set(NameGeneratorId::SCROLL, input);
-  set(NameGeneratorId::FIRST_MALE, readLines(namesPath.file("first_male.txt")));
-  set(NameGeneratorId::FIRST_FEMALE, readLines(namesPath.file("first_female.txt")));
-  set(NameGeneratorId::AZTEC, readLines(namesPath.file("aztec_names.txt")));
-  set(NameGeneratorId::CREATURE, readLines(namesPath.file("creatures.txt")));
-  set(NameGeneratorId::WEAPON, readLines(namesPath.file("artifacts.txt")));
-  set(NameGeneratorId::WORLD, readLines(namesPath.file("world.txt")));
-  set(NameGeneratorId::TOWN, readLines(namesPath.file("town_names.txt")));
-  set(NameGeneratorId::DEITY, readLines(namesPath.file("gods.txt")));
-  set(NameGeneratorId::DWARF, readLines(namesPath.file("dwarfs.txt")));
-  set(NameGeneratorId::DEMON, readLines(namesPath.file("demons.txt")));
-  set(NameGeneratorId::DOG, readLines(namesPath.file("dogs.txt")));
-  set(NameGeneratorId::DRAGON, readLines(namesPath.file("dragons.txt")));
-  set(NameGeneratorId::CYCLOPS, readLines(namesPath.file("cyclops.txt")));
-  set(NameGeneratorId::ORC, readLines(namesPath.file("orc.txt")));
-  set(NameGeneratorId::VAMPIRE, readLines(namesPath.file("vampires.txt")));
+  set(NameGeneratorId("SCROLL"), input);
 }
 
+
+void NameGenerator::setNames(NameGeneratorId id, vector<string> v) {
+  for (auto& name : Random.permutation(v))
+    names[id].push_back(name);
+}
 
 string NameGenerator::getNext(NameGeneratorId id) {
   CHECK(!names[id].empty());

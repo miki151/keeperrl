@@ -16,6 +16,7 @@
 #pragma once
 
 #include "util.h"
+#include "name_generator_id.h"
 
 class NameGenerator;
 

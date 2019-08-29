@@ -46,6 +46,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "items";
     case GameConfigId::BUILDING_INFO:
       return "building_info";
+    case GameConfigId::NAMES:
+      return "names";
   }
 }
 

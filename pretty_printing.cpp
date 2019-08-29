@@ -40,6 +40,7 @@
 #include "item_attributes.h"
 #include "biome_id.h"
 #include "building_info.h"
+#include "name_generator_id.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename, KeyVerifier* keyVerifier) {
@@ -82,6 +83,7 @@ ADD_IMP(map<PrimaryId<ItemListId>, ItemList>)
 ADD_IMP(map<PrimaryId<FurnitureListId>, FurnitureList>)
 ADD_IMP(map<PrimaryId<CustomItemId>, ItemAttributes>)
 ADD_IMP(map<PrimaryId<BuildingId>, BuildingInfo>)
+ADD_IMP(map<PrimaryId<NameGeneratorId>, vector<string>>)
 ADD_IMP(map<string, TestStruct2>)
 ADD_IMP(map<string, TestStruct3>)
 ADD_IMP(map<string, TestStruct5>)

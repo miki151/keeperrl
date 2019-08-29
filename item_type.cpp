@@ -348,23 +348,6 @@ static const vector<pair<string, vector<string>>> badArtifactNames {
   {"battle axe", {"crush", "tooth", "razor", "fist", "bite", "bolt", "sword"}},
   {"war hammer", {"blade", "tooth", "bite", "bolt", "sword", "steel"}}};
 
-/*static void makeArtifact(ItemAttributes& i) {
-  bool good;
-  do {
-    good = true;
-    i.artifactName = NameGenerator::get(NameGeneratorId::WEAPON)->getNext();
-    for (auto elem : badArtifactNames)
-      for (auto pattern : elem.second)
-        if (contains(toLower(*i.artifactName), pattern) && contains(*i.name, elem.first)) {
-          INFO << "Rejected artifact " << *i.name << " " << *i.artifactName;
-          good = false;
-        }
-  } while (!good);
-  INFO << "Making artifact " << *i.name << " " << *i.artifactName;
-  i.modifiers[AttrType::DAMAGE] += Random.get(1, 4);
-  i.price *= 15;
-}*/
-
 vector<PItem> ItemType::get(int num, const ContentFactory* factory) const {
   vector<PItem> ret;
   for (int i : Range(num))

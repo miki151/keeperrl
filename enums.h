@@ -77,7 +77,6 @@ enum class VisionId;
 enum class LastingEffect;
 enum class CreatureCondition;
 
-enum class NameGeneratorId;
 enum class ItemIndex;
 
 enum class CollectiveWarning;
@@ -121,5 +120,6 @@ class FurnitureListId;
 class SpellId;
 class CreatureId;
 class BuildingId;
+class NameGeneratorId;
 
 using SteamId = unsigned long long;

@@ -10,6 +10,7 @@
 #include "spell_school_id.h"
 #include "custom_item_id.h"
 #include "building_id.h"
+#include "name_generator_id.h"
 #include <cassert>
 
 static const char* staticsInitialized = nullptr;
@@ -198,3 +199,4 @@ INST(CreatureId)
 INST(SpellSchoolId)
 INST(CustomItemId)
 INST(BuildingId)
+INST(NameGeneratorId)

@@ -16,38 +16,21 @@
 #pragma once
 
 #include "util.h"
+#include "name_generator_id.h"
 
-RICH_ENUM(NameGeneratorId,
-  FIRST_MALE,
-  FIRST_FEMALE,
-  SCROLL,
-  AZTEC,
-  CREATURE,
-  WEAPON,
-  WORLD,
-  TOWN,
-  DWARF,
-  DEITY,
-  DEMON,
-  DOG,
-  DRAGON,
-  CYCLOPS,
-  ORC,
-  VAMPIRE
-);
-
-class DirectoryPath;
 
 class NameGenerator {
   public:
-  NameGenerator(const DirectoryPath&);
+  NameGenerator();
+  void setNames(NameGeneratorId, vector<string> names);
   string getNext(NameGeneratorId);
   vector<string> getAll(NameGeneratorId);
   NameGenerator(const NameGenerator&) = delete;
   NameGenerator(NameGenerator&&) = default;
 
-  SERIALIZATION_DECL(NameGenerator)
+  template <typename Archive>
+  void serialize(Archive&, unsigned);
 
   private:
-  EnumMap<NameGeneratorId, deque<string>> SERIAL(names);
+  map<NameGeneratorId, deque<string>> SERIAL(names);
 };

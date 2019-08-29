@@ -13,7 +13,7 @@
         # The name gets changed appropriately to Keeper and Adventurer
         name = "wizard"
         # Definitions in name_generator.h
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
         # Creature is always referred to as [FirstName] the [Creature name]
         fullTitle = true
       }
@@ -47,7 +47,7 @@
       gender = FEMALE
       name = {
         name = "wizard"
-        firstNameGen = FIRST_FEMALE
+        firstNameGen = "FIRST_FEMALE"
         fullTitle = true
       }
       viewIdUpgrades = { { "keeper_f2" } { "keeper_f3" } { "keeper_f4" }}
@@ -64,7 +64,7 @@
       }
       name = {
         name = "knight"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
         fullTitle = true
       }
       viewIdUpgrades = { { "keeper_knight2" } { "keeper_knight3" } { "keeper_knight4" }}
@@ -84,7 +84,7 @@
       gender = FEMALE
       name = {
         name = "knight"
-        firstNameGen = FIRST_FEMALE
+        firstNameGen = "FIRST_FEMALE"
         fullTitle = true
       }
       viewIdUpgrades = { { "keeper_knight_f2" } { "keeper_knight_f3" } { "keeper_knight_f4" }}
@@ -101,7 +101,7 @@
       }
       name = {
         name = "knight"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
         fullTitle = true
       }
       viewIdUpgrades = { { "duke2" } { "duke3" } { "duke4" }}
@@ -122,7 +122,7 @@
       gender = FEMALE
       name = {
         name = "knight"
-        firstNameGen = FIRST_FEMALE
+        firstNameGen = "FIRST_FEMALE"
         fullTitle = true
        }
       viewIdUpgrades = { { "duke_f2" } { "duke_f3" } { "duke_f4" }}
@@ -139,7 +139,7 @@
       }
       name = {
         name = "squire"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
         fullTitle = true
        }
       permanentEffects = {
@@ -159,7 +159,7 @@
       gender = FEMALE
       name = {
         name = "squire"
-        firstNameGen = FIRST_FEMALE
+        firstNameGen = "FIRST_FEMALE"
         fullTitle = true
        }
     }
@@ -188,7 +188,7 @@
       petReaction = "neighs"
       name = {
         name = "unicorn"
-        firstNameGen = DEITY
+        firstNameGen = "DEITY"
         groupName = "herd"
       }
     }
@@ -459,7 +459,7 @@
       name = {
         name = "witchman"
         pluralName = "witchmen"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
       }
       permanentEffects = {
         MAGIC_RESISTANCE 1
@@ -489,7 +489,7 @@
       name = {
         name = "cyclops"
         pluralName = "cyclopes"
-        firstNameGen = CYCLOPS
+        firstNameGen = "CYCLOPS"
       }
       maxLevelIncrease = {
         MELEE 5
@@ -521,7 +521,7 @@
       chatReactionHostile = "\"Face your death!\""
       name = {
         name = "demon dweller"
-        firstNameGen = DEMON
+        firstNameGen = "DEMON"
         groupName = "pack"
       }
       maxLevelIncrease = {
@@ -555,7 +555,7 @@
       chatReactionHostile = "\"Face your death!\""
       name = {
         name = "Demon Lord"
-        firstNameGen = DEMON
+        firstNameGen = "DEMON"
         groupName = "pack"
        }
      maxLevelIncrease = {
@@ -693,7 +693,7 @@
       name = {
         name = "green dragon"
         stackName = "dragon"
-        firstNameGen = DRAGON
+        firstNameGen = "DRAGON"
       }
       spells = { "healing" "deception" "haste" "cure poison" }
     }
@@ -723,7 +723,7 @@
       }
       name = {
         name = "red dragon"
-        firstNameGen = DRAGON
+        firstNameGen = "DRAGON"
         stackName = "dragon"
       }
       spells = { "healing" "deception" "haste" "cure poison" "fire breath"}
@@ -754,7 +754,7 @@
       }
       name = {
         name = "black dragon"
-        firstNameGen = DRAGON
+        firstNameGen = "DRAGON"
         stackName = "dragon"
       }
       spells = { "healing" "haste" "cure poison" "black dragon blindness"}
@@ -780,7 +780,7 @@
       }
       name = {
         name = "white dragon"
-        firstNameGen = DRAGON
+        firstNameGen = "DRAGON"
         stackName = "dragon"
       }
       spells = { "healing" "haste" "cure poison" "ice cone"}
@@ -806,7 +806,7 @@
       }
       name = {
         name = "knight"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
       }
       hatedByEffect = HATE_HUMANS
     }
@@ -827,7 +827,7 @@
       chatReactionHostile = "\"Die!\""
       name = {
         name = "jester"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
       }
       hatedByEffect = HATE_HUMANS
     }
@@ -850,7 +850,7 @@
       }
       name = {
         name = "archer"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
       }
       hatedByEffect = HATE_HUMANS
     }
@@ -872,7 +872,7 @@
       }
       name = {
         name = "priest"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
       }
       spellSchools = { "healer" }
       hatedByEffect = HATE_HUMANS
@@ -896,7 +896,7 @@
       gender = FEMALE
       name = {
         name = "fire mage"
-        firstNameGen = FIRST_FEMALE
+        firstNameGen = "FIRST_FEMALE"
       }
       spellSchools = { "fire" }
       hatedByEffect = HATE_HUMANS
@@ -906,7 +906,7 @@
       viewId = { "elementalist" Rgb 58 68 156 255 }
       name = {
         name = "battle mage"
-        firstNameGen = FIRST_FEMALE
+        firstNameGen = "FIRST_FEMALE"
       }
       spellSchools = { "mage" }
     }
@@ -930,7 +930,7 @@
       }
       name = {
         name = "gnome"
-        firstNameGen = DWARF
+        firstNameGen = "DWARF"
       }
     }
   "PESEANT"
@@ -1049,7 +1049,7 @@
       courage = 1
       name = {
         name = "Duke"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
         fullTitle = true
       }
       hatedByEffect = HATE_HUMANS
@@ -1466,7 +1466,7 @@
       spellSchools = { "illusion" }
       name = {
         name = "vampire"
-        firstNameGen = VAMPIRE
+        firstNameGen = "VAMPIRE"
       }
       hatedByEffect = HATE_UNDEAD
     }
@@ -1484,7 +1484,7 @@
       }
       name = {
         name = "vampire lord"
-        firstNameGen = VAMPIRE
+        firstNameGen = "VAMPIRE"
       }
       maxLevelIncrease = {
         MELEE 12
@@ -1550,7 +1550,7 @@
       }
       name = {
         name = "orc"
-        firstNameGen = ORC
+        firstNameGen = "ORC"
       }
       hatedByEffect = HATE_GREENSKINS
     }
@@ -1577,7 +1577,7 @@
       spellSchools = { "mage" }
       name = {
         name = "orc mage"
-        firstNameGen = ORC
+        firstNameGen = "ORC"
       }
       hatedByEffect = HATE_GREENSKINS
     }
@@ -1590,7 +1590,7 @@
       }
       name = {
         name = "orc healer"
-        firstNameGen = ORC
+        firstNameGen = "ORC"
       }
     }
   "HARPY"
@@ -1618,7 +1618,7 @@
       name = {
         name = "harpy"
         pluralName = "harpies"
-        firstNameGen = ORC
+        firstNameGen = "ORC"
       }
       hatedByEffect = HATE_GREENSKINS
     }
@@ -1703,7 +1703,7 @@
       }
       name = {
         name = "goblin"
-        firstNameGen = ORC
+        firstNameGen = "ORC"
       }
       hatedByEffect = HATE_GREENSKINS
     }
@@ -1747,7 +1747,7 @@
       }
       name = {
         name = "ogre"
-        firstNameGen = ORC
+        firstNameGen = "ORC"
       }
       permanentEffects = {
         MAGIC_VULNERABILITY 1
@@ -1795,7 +1795,7 @@
       name = {
         name = "dwarf"
         pluralName = "dwarves"
-        firstNameGen = DWARF
+        firstNameGen = "DWARF"
       }
       skills = {
         FORGE 0.8
@@ -1826,7 +1826,7 @@
       name = {
         name = "dwarf"
         pluralName = "dwarves"
-        firstNameGen = DWARF
+        firstNameGen = "DWARF"
       }
       skills = {
         WORKSHOP 0.5
@@ -1863,7 +1863,7 @@
       courage = 1
       name = {
         name = "dwarf baron"
-        firstNameGen = DWARF
+        firstNameGen = "DWARF"
       }
       hatedByEffect = HATE_DWARVES
     }
@@ -2608,7 +2608,7 @@
       name = {
         name = "wolf"
         pluralName = "wolves"
-        firstNameGen = DOG
+        firstNameGen = "DOG"
         groupName = "pack"
       }
     }
@@ -2638,7 +2638,7 @@
       name = {
         name = "werewolf"
         pluralName = "werewolves"
-        firstNameGen = DOG
+        firstNameGen = "DOG"
       }
     }
   "DOG"
@@ -2658,7 +2658,7 @@
       name = {
         name = "dog"
         groupName = "pack"
-        firstNameGen = DOG
+        firstNameGen = "DOG"
       }
       petReaction = "\"WOOF!\""
     }
@@ -2692,7 +2692,7 @@
       chatReactionHostile = "\"Die!\""
       name = {
         name = "elementalist"
-        firstNameGen = FIRST_FEMALE
+        firstNameGen = "FIRST_FEMALE"
       }
       hatedByEffect = HATE_HUMANS
     }
@@ -2881,7 +2881,7 @@
       chatReactionHostile = "\"Die!\""
       name = {
         name = "shopkeeper"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
       }
     }
 }

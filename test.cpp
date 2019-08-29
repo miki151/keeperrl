@@ -591,7 +591,7 @@ class Test {
   static ContentFactory getContentFactory() {
     GameConfig config(DirectoryPath("data_free/game_config/"), "vanilla");
     ContentFactory contentFactory;
-    CHECK(!contentFactory.readData(NameGenerator(DirectoryPath("data_free/names")), &config));
+    CHECK(!contentFactory.readData(&config));
     return contentFactory;
   }
 

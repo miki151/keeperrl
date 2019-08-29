@@ -113,7 +113,7 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
       break;
     }
     case 2: {
-      pos.globalMessage(pos.getGame()->getContentFactory()->getCreatures().getNameGenerator()->getNext(NameGeneratorId::DEITY)
+      pos.globalMessage(pos.getGame()->getContentFactory()->getCreatures().getNameGenerator()->getNext(NameGeneratorId("DEITY"))
           + " seems to be very angry");
       auto group = CreatureGroup::singleType(TribeId::getMonster(), CreatureId("ANGEL"));
       Effect::summon(pos, group, Random.get(3, 6), none);

@@ -19,7 +19,7 @@ class KeyVerifier;
 
 class ContentFactory {
   public:
-  optional<string> readData(NameGenerator, const GameConfig*);
+  optional<string> readData(const GameConfig*);
   FurnitureFactory SERIAL(furniture);
   array<vector<ZLevelInfo>, 3> SERIAL(zLevels);
   vector<ResourceDistribution> SERIAL(resources);
@@ -46,7 +46,7 @@ class ContentFactory {
 
   private:
   CreatureFactory SERIAL(creatures);
-  optional<string> readCreatureFactory(NameGenerator, const GameConfig*, KeyVerifier*);
+  optional<string> readCreatureFactory(const GameConfig*, KeyVerifier*);
   optional<string> readFurnitureFactory(const GameConfig*, KeyVerifier*);
   optional<string> readVillainsTuple(const GameConfig*, KeyVerifier*);
   optional<string> readPlayerCreatures(const GameConfig*, KeyVerifier*);

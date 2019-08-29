@@ -696,7 +696,7 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
         }
         c.name = name;
         c.name.setStack(p.humanoid ? "legendary humanoid" : "legendary beast");
-        c.name.setFirst(nameGenerator->getNext(NameGeneratorId::DEMON));
+        c.name.setFirst(nameGenerator->getNext(NameGeneratorId("DEMON")));
         if (!p.humanoid) {
           c.body->setBodyParts(getSpecialBeastBody(p.large, p.living, p.wings));
           c.attr[AttrType::DAMAGE] += 5;

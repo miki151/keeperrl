@@ -412,7 +412,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
       CampaignBuilder builder(view, random, options, contentFactory.villains, contentFactory.gameIntros, *avatar);
       tileSet->setTilePaths(getTilePathsForAllMods());
       if (auto setup = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::FREE_PLAY,
-          contentFactory.getCreatures().getNameGenerator()->getNext(NameGeneratorId::WORLD))) {
+          contentFactory.getCreatures().getNameGenerator()->getNext(NameGeneratorId("WORLD")))) {
         auto name = options->getStringValue(OptionId::PLAYER_NAME);
         if (!name.empty())
           avatar->playerCreature->getName().setFirst(name);
@@ -615,7 +615,7 @@ void MainLoop::downloadMod(ModInfo& mod, const DirectoryPath& modDir) {
 void MainLoop::uploadMod(ModInfo& mod, const DirectoryPath& modDir) {
   GameConfig config(modDir, mod.name);
   ContentFactory f;
-  if (auto err = f.readData(NameGenerator(dataFreePath.subdirectory("names")), &config)) {
+  if (auto err = f.readData(&config)) {
     view->presentText("Mod \"" + mod.name + "\" has errors: ", *err);
     return;
   }
@@ -702,7 +702,7 @@ ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
   ContentFactory ret;
   auto tryConfig = [this, &ret](const string& modName) {
     GameConfig config(getModsDir(), modName);
-    return ret.readData(NameGenerator(dataFreePath.subdirectory("names")), &config);
+    return ret.readData(&config);
   };
   if (vanillaOnly) {
 #ifdef RELEASE
@@ -901,7 +901,7 @@ optional<string> MainLoop::verifyMod(const string& path) {
   for (auto mod : modsPath.getSubDirs()) {
     GameConfig config(modsPath, mod);
     ContentFactory f;
-    if (auto err = f.readData(NameGenerator(dataFreePath.subdirectory("names")), &config))
+    if (auto err = f.readData(&config))
       return err;
     else {
       std::cout << mod << std::endl;

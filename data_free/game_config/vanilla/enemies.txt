@@ -208,7 +208,7 @@
           }
         }
       }
-      locationNameGen = TOWN
+      locationNameGen = "TOWN"
       race = "greenskins"
       buildingId = "BRICK"
       furniture = { "roomFurniture" }
@@ -321,7 +321,7 @@
           }
         }
       }
-      locationNameGen = TOWN
+      locationNameGen = "TOWN"
       race = "humans"
       buildingId = "WOOD"
       shopItems = "armory"
@@ -344,7 +344,7 @@
           all = { 1 "WARRIOR" }
         }
       }
-      locationNameGen = TOWN
+      locationNameGen = "TOWN"
       race = "humans"
       buildingId = "WOOD_CASTLE"
       stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
@@ -409,7 +409,7 @@
           }
         }
       }
-      locationNameGen = TOWN
+      locationNameGen = "TOWN"
       race = "humans"
       stockpiles = {{ "gold" 140 "TREASURE_CHEST" }}
       buildingId = "BRICK"
@@ -573,7 +573,7 @@
           }
         }
       }
-      locationNameGen = TOWN
+      locationNameGen = "TOWN"
       race = "dwarves"
       buildingId = "DUNGEON"
       stockpiles = {{ "gold" 200 "TREASURE_CHEST"} {"minerals" 120 }}
@@ -630,7 +630,7 @@
           }
         }
       }
-      locationNameGen = TOWN
+      locationNameGen = "TOWN"
       tribe = ELF
       race = "elves"
       stockpiles = {{ "gold" 100 "TREASURE_CHEST"}}
@@ -736,7 +736,7 @@
     settlement = {
       type = MINETOWN
       tribe = DARK_ELF
-      locationNameGen = TOWN
+      locationNameGen = "TOWN"
       race = "dark elves"
       buildingId = "DUNGEON"
       outsideFeatures = "dungeonOutside"
@@ -869,7 +869,7 @@
           all = { 1 "LIZARDMAN" }
         }
       }
-      locationNameGen = TOWN
+      locationNameGen = "TOWN"
       race = "lizardmen"
       buildingId = "MUD"
       lootItem = {TechBook "humanoid mutation"}
@@ -926,7 +926,7 @@
           }
         }
       }
-      locationNameGen = TOWN
+      locationNameGen = "TOWN"
       race = "dark elves"
       buildingId = "DUNGEON"
       outsideFeatures = "dungeonOutside"
@@ -981,7 +981,7 @@
           }
         }
       }
-      locationNameGen = TOWN
+      locationNameGen = "TOWN"
       race = "dark elves"
       buildingId = "DUNGEON"
       outsideFeatures = "dungeonOutside"
@@ -1091,7 +1091,7 @@
           all = { 1 "GNOME" }
         }
       }
-      locationNameGen = TOWN
+      locationNameGen = "TOWN"
       race = "gnomes"
       buildingId = "DUNGEON"
       shopItems = "gnomeShop"
@@ -1579,7 +1579,7 @@
           uniques = { "SORCERER" }
         }
       }
-      locationNameGen = TOWN
+      locationNameGen = "TOWN"
       race = "thieves"
       stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
       furniture = { "roomFurniture" }

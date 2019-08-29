@@ -28,7 +28,8 @@ enum class GameConfigId {
   ITEM_LISTS,
   EXTERNAL_ENEMIES,
   ITEMS,
-  BUILDING_INFO
+  BUILDING_INFO,
+  NAMES
 };
 
 class GameConfig {
