@@ -310,8 +310,15 @@ vector<Position> Immigration::Available::getSpawnPositions() const {
     },
     [&] (OutsideTerritory) {
       auto ret = immigration->collective->getTerritory().getExtended(10, 20);
+      auto tryLimitingToTopLevel = [&] {
+        auto tmp = ret.filter([](Position pos) { return pos.getLevel() == pos.getModel()->getTopLevel(); });
+        if (!tmp.empty())
+          ret = tmp;
+      };
+      tryLimitingToTopLevel();
       if (ret.empty())
         ret = immigration->collective->getTerritory().getAll();
+      tryLimitingToTopLevel();
       auto leader = immigration->collective->getLeader();
       if (ret.empty() && leader)
         ret = {leader->getPosition()};
