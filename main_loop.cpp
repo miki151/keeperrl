@@ -569,7 +569,7 @@ vector<ModInfo> MainLoop::getAllMods() {
         for (auto& onlineMod : *onlineMods)
           if (onlineMod.versionInfo.steamId == version->steamId) {
             modInfo = onlineMod;
-            if (modInfo.versionInfo.version > version->version)
+            if (!modInfo.canUpload && modInfo.versionInfo.version > version->version)
               modInfo.actions.push_back("Update");
             alreadyDownloaded.insert(onlineMod.versionInfo.steamId);
             break;
@@ -613,6 +613,12 @@ void MainLoop::downloadMod(ModInfo& mod, const DirectoryPath& modDir) {
 }
 
 void MainLoop::uploadMod(ModInfo& mod, const DirectoryPath& modDir) {
+  GameConfig config(modDir, mod.name);
+  ContentFactory f;
+  if (auto err = f.readData(NameGenerator(dataFreePath.subdirectory("names")), &config)) {
+    view->presentText("Mod \"" + mod.name + "\" has errors: ", *err);
+    return;
+  }
   atomic<bool> cancelled(false);
   optional<string> error;
   doWithSplash(SplashType::SMALL, "Uploading mod \"" + mod.name + "\"...", 1,
