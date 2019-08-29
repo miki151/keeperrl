@@ -797,7 +797,8 @@ PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory ai
     return getSokobanBoulder(tribe);
   else {
     auto attr = getAttributesFromId(id);
-    return get(std::move(attr), tribe, getController(id, aiFactory), getSpellMap(attr));
+    auto spells = getSpellMap(attr);
+    return get(std::move(attr), tribe, getController(id, aiFactory), std::move(spells));
   }
 }
 
