@@ -1058,7 +1058,7 @@
   {
     name = "bleeding totem"
     viewId = { "totem" Rgb 156 58 156 255 }
-    lastingEffect = ENEMY BLEEDING 15
+    lastingEffect = ENEMY BLEEDING 7
   }
   "DEFENSE_TOTEM" inherit "HEALING_TOTEM"
   {
