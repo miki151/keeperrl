@@ -2944,10 +2944,14 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const CollectiveIn
   for (auto& elem : drawEffectsList(minion))
     leftLines.addElem(std::move(elem));
   leftLines.addSpace();
-  if (auto elem = drawTrainingInfo(minion.experienceInfo)) {
+  if (auto elem = drawTrainingInfo(minion.experienceInfo))
     leftLines.addElemAuto(std::move(elem));
-    leftLines.addSpace();
-  }
+  if (!minion.spellSchools.empty())
+    leftLines.addElem(gui.getListBuilder()
+        .addElemAuto(gui.label("Spell schools: ", Color::YELLOW))
+        .addElemAuto(gui.label(combine(minion.spellSchools, true)))
+        .buildHorizontalList());
+  leftLines.addSpace();
   leftLines.addElem(drawActivityButton(minion));
   if (minion.canAssignQuarters)
     leftLines.addElem(drawQuartersButton(minion, collective));

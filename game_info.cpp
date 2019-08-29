@@ -138,6 +138,7 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   creatureId = c->getUniqueId();
   attributes = AttributeInfo::fromCreature(c);
   experienceInfo = getCreatureExperienceInfo(c);
+  spellSchools = c->getAttributes().getSpellSchools();
   intrinsicAttacks = fillIntrinsicAttacks(c);
   skills = getSkillNames(c);
   effects.clear();
