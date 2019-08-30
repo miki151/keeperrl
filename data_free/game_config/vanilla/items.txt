@@ -248,7 +248,7 @@
     }
   "WoodenStaff"
     {
-      viewId = { "woodentaff" }
+      viewId = { "wooden_staff" }
       name = "wooden staff"
       itemClass = WEAPON
       equipmentSlot = WEAPON
