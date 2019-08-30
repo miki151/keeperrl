@@ -1052,6 +1052,8 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
     else
       ret.itemInfo.description.push_back("Crafted from: " + it->getName());
   }
+  if (!item.runes.empty())
+    ret.itemInfo.description.push_back("Requires a craftsman of legendary skills.");
   ret.itemInfo.actions = {ItemAction::REMOVE};
   if (item.runes.empty())
     ret.itemInfo.actions.push_back(ItemAction::CHANGE_NUMBER);
@@ -1699,7 +1701,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
   if (getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
     for (auto col : getGame()->getCollectives())
-      if (col->getKnownTiles().isKnown(position))
+      if (col->getTerritory().contains(position))
         index.setHighlight(HighlightType::RECT_SELECTION);
   const ConstructionMap& constructions = collective->getConstructions();
   if (auto trap = constructions.getTrap(position))

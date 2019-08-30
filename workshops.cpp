@@ -141,11 +141,12 @@ auto Workshops::Type::addWork(WCollective collective, double amount, double skil
         vector<PItem> ret = product.item.type.get(product.item.batchSize, collective->getGame()->getContentFactory());
         product.state = none;
         bool wasUpgraded = false;
-        for (auto& rune : product.runes)
-          for (auto& item : ret) {
-            item->applyPrefix(rune->getUpgradeInfo()->prefix);
-            wasUpgraded = true;
-          }
+        for (auto& rune : product.runes) {
+          if (auto& upgradeInfo = rune->getUpgradeInfo())
+            for (auto& item : ret)
+              item->applyPrefix(upgradeInfo->prefix);
+          wasUpgraded = true;
+        }
         if (!--product.number)
           queued.removeIndexPreserveOrder(productIndex);
         checkDebtConsistency();
