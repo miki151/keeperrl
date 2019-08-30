@@ -5,18 +5,27 @@
 
 class FilePath;
 
+bool isAbsolutePath(const char* path);
+
 class DirectoryPath {
   public:
-  explicit DirectoryPath(const string&);
+  explicit DirectoryPath(string);
 
   FilePath file(const string&) const;
   DirectoryPath subdirectory(const string& s) const;
   bool exists() const;
+
   void createIfDoesntExist() const;
   void removeRecursively() const;
   vector<FilePath> getFiles() const;
   vector<string> getSubDirs() const;
   const char* getPath() const;
+
+  static DirectoryPath current();
+  static optional<string> copyFiles(DirectoryPath from, DirectoryPath to, bool recursive);
+
+  bool isAbsolute() const;
+  DirectoryPath absolute() const;
 
   private:
   friend class FilePath;

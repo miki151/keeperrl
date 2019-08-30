@@ -105,9 +105,6 @@ class Level : public OwnedObject<Level> {
   /** Returns the level's boundaries.*/
   const Rectangle& getBounds() const;
 
-  /** Returns the name of the level. */
-  const string& getName() const;
-
   //@{
   /** Returns the given square. \paramname{pos} must lie within the boundaries. */
   vector<Position> getAllPositions() const;
@@ -172,6 +169,14 @@ class Level : public OwnedObject<Level> {
   LevelId getUniqueId() const;
   void setFurniture(Vec2, PFurniture);
 
+  Sectors& getSectors(const MovementType&) const;
+  struct EffectSet {
+    vector<LastingEffect> SERIAL(friendly);
+    vector<LastingEffect> SERIAL(hostile);
+    SERIALIZE_ALL(friendly, hostile)
+  };
+  using EffectsTable = Table<EffectSet>;
+
   SERIALIZATION_DECL(Level)
 
   private:
@@ -193,25 +198,24 @@ class Level : public OwnedObject<Level> {
   EntitySet<Creature> SERIAL(creatureIds);
   WModel SERIAL(model) = nullptr;
   mutable HeapAllocated<EnumMap<VisionId, FieldOfView>> SERIAL(fieldOfView);
-  string SERIAL(name);
   Table<double> SERIAL(sunlight);
   Table<bool> SERIAL(covered);
   HeapAllocated<RoofSupport> SERIAL(roofSupport);
   HeapAllocated<CreatureBucketMap> SERIAL(bucketMap);
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
-  mutable unordered_map<MovementType, Sectors> sectors;
-  Sectors& getSectors(const MovementType&) const;
+  EnumMap<TribeId::KeyType, unique_ptr<EffectsTable>> SERIAL(furnitureEffects);
+  mutable unordered_map<MovementType, Sectors, CustomHash<MovementType>> sectors;
   Sectors& getSectorsDontCreate(const MovementType&) const;
 
   friend class LevelBuilder;
   struct Private {};
 
-  static PLevel create(SquareArray s, FurnitureArray f, WModel m, const string& n, Table<double> sun, LevelId id,
+  static PLevel create(SquareArray s, FurnitureArray f, WModel m, Table<double> sun, LevelId id,
       Table<bool> cover, Table<bool> unavailable);
 
   public:
-  Level(Private, SquareArray, FurnitureArray, WModel, const string& name, Table<double> sunlight, LevelId);
+  Level(Private, SquareArray, FurnitureArray, WModel, Table<double> sunlight, LevelId);
 
   private:
   void addLightSource(Vec2 pos, double radius, int numLight);
@@ -224,5 +228,7 @@ class Level : public OwnedObject<Level> {
   void updateCreatureLight(Vec2, int diff);
   HeapAllocated<Portals> SERIAL(portals);
   bool isCovered(Vec2) const;
+  template<typename Fun>
+  void forEachEffect(Vec2, TribeId, Fun);
 };
 

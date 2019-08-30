@@ -36,6 +36,7 @@ class Options;
 class RetiredGames;
 class ScrollPosition;
 class FilePath;
+class ModInfo;
 struct Color;
 namespace fx {
   class FXRenderer;
@@ -126,6 +127,11 @@ class CampaignAction : public EnumVariant<CampaignActionId, TYPES(OptionId, Camp
     using EnumVariant::EnumVariant;
 };
 
+struct ModAction {
+  int index;
+  int actionId;
+};
+
 class View {
   public:
   View();
@@ -213,6 +219,8 @@ class View {
   virtual optional<ExperienceType> getCreatureUpgrade(const CreatureExperienceInfo&) = 0;
 
   virtual optional<int> chooseAtMouse(const vector<string>& elems) = 0;
+
+  virtual optional<ModAction> getModAction(int highlighted, const vector<ModInfo>&) = 0;
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
   using BugReportSaveCallback = function<void(FilePath)>;

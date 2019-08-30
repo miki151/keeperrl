@@ -124,6 +124,9 @@ void Item::fireDamage(Position position) {
   }
 }
 
+void Item::iceDamage(Position) {
+}
+
 const Fire& Item::getFire() const {
   return *fire;
 }
@@ -168,13 +171,17 @@ void Item::onHitSquareMessage(Position pos, int numItems) {
     pos.fireDamage(1);
 }
 
+bool Item::effectAppliedWhenThrown() const {
+  return getClass() == ItemClass::POTION;
+}
+
 void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {
   if (attributes->fragile) {
     c->you(numItems > 1 ? MsgType::ITEM_CRASHES_PLURAL : MsgType::ITEM_CRASHES, getPluralTheName(numItems));
     discarded = true;
   } else
     c->you(numItems > 1 ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getPluralTheName(numItems));
-  if (attributes->effect && getClass() == ItemClass::POTION)
+  if (attributes->effect && effectAppliedWhenThrown())
     attributes->effect->apply(c->getPosition(), attack.attacker);
   c->takeDamage(attack);
   if (!c->isDead() && attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
@@ -193,12 +200,11 @@ vector<string> Item::getDescription() const {
   vector<string> ret;
   if (!attributes->description.empty())
     ret.push_back(attributes->description);
-  if (attributes->damageReduction > 0)
-    ret.push_back(toString(int(attributes->damageReduction * 100)) + "% damage reduction");
-  if (auto& effect = attributes->effect)
-    ret.push_back("Usage effect: " + effect->getName());
+  if (attributes->effectDescription)
+    if (auto& effect = attributes->effect)
+      ret.push_back("Usage effect: " + effect->getName());
   for (auto& effect : getWeaponInfo().victimEffect)
-    ret.push_back("Victim affected by: " + effect.getName());
+    ret.push_back("Victim affected by: " + effect.effect.getName() + " (" + toPercentage(effect.chance) + " chance)");
   for (auto& effect : getWeaponInfo().attackerEffect)
     ret.push_back("Attacker affected by: " + effect.getName());
   for (auto& effect : attributes->equipedEffect)
@@ -210,10 +216,6 @@ vector<string> Item::getDescription() const {
 
 optional<LastingEffect> Item::getOwnedEffect() const {
   return attributes->ownedEffect;
-}
-
-double Item::getDamageReduction() const {
-  return attributes->damageReduction;
 }
 
 const WeaponInfo& Item::getWeaponInfo() const {
@@ -264,6 +266,10 @@ optional<ItemUpgradeType> Item::getAppliedUpgradeType() const {
 
 int Item::getMaxUpgrades() const {
   return attributes->maxUpgrades;
+}
+
+const optional<ItemType>& Item::getIngredientFor() const {
+  return attributes->ingredientFor;
 }
 
 void Item::apply(Creature* c, bool noSound) {
@@ -374,6 +380,13 @@ string Item::getPluralTheName(int count) const {
     return getTheName(false);
 }
 
+string Item::getPluralAName(int count) const {
+  if (count > 1)
+    return toString(count) + " " + getTheName(true);
+  else
+    return getAName(false);
+}
+
 string Item::getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const {
   return getPluralTheName(count) + " " + (count > 1 ? verbPlural : verbSingle);
 }
@@ -442,14 +455,14 @@ string Item::getModifiers(bool shorten) const {
         break;
       case ItemClass::ARMOR:
         printAttr.insert(AttrType::DEFENSE);
+        if (attributes->modifiers[AttrType::PARRY])
+          printAttr.insert(AttrType::PARRY);
         break;
       default: break;
     }
   vector<string> attrStrings;
   for (auto attr : printAttr)
     attrStrings.push_back(withSign(attributes->modifiers[attr]) + (shorten ? "" : " " + ::getName(attr)));
-  if (attributes->damageReduction > 0)
-    attrStrings.push_back(toString(int(attributes->damageReduction * 100)) + "%");
   string attrString = combine(attrStrings, true);
   if (!attrString.empty())
     attrString = "(" + attrString + ")";

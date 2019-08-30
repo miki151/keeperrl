@@ -40,7 +40,7 @@ class ItemAttributes {
     fun(*this);
   }
 
-  SERIALIZATION_DECL(ItemAttributes);
+  SERIALIZATION_DECL(ItemAttributes)
 
   MustInitialize<ViewId> SERIAL(viewId);
   MustInitialize<string> SERIAL(name);
@@ -56,6 +56,17 @@ class ItemAttributes {
   int SERIAL(price) = 0;
   bool SERIAL(noArticle) = false;
   EnumMap<AttrType, int> SERIAL(modifiers);
+  double SERIAL(variationChance) = 0.2;
+  EnumMap<AttrType, int> SERIAL(modifierVariation) = EnumMap<AttrType, int>(
+      [](AttrType type) {
+        switch (type) {
+          case AttrType::PARRY:
+            return 0;
+          default:
+            return 1;
+        }
+        return 0;
+      });
   optional<EquipmentSlot> SERIAL(equipmentSlot);
   TimeInterval SERIAL(applyTime) = 1_visible;
   bool SERIAL(fragile) = false;
@@ -63,6 +74,7 @@ class ItemAttributes {
   int SERIAL(uses) = -1;
   bool SERIAL(usedUpMsg) = false;
   bool SERIAL(displayUses) = false;
+  bool SERIAL(effectDescription) = true;
   vector<LastingEffect> SERIAL(equipedEffect);
   optional<LastingEffect> SERIAL(ownedEffect);
   optional<string> SERIAL(applyMsgFirstPerson);
@@ -74,6 +86,6 @@ class ItemAttributes {
   vector<string> SERIAL(prefixes);
   optional<ItemUpgradeInfo> SERIAL(upgradeInfo);
   int SERIAL(maxUpgrades) = 3;
-  double SERIAL(damageReduction) = 0;
+  optional<ItemType> SERIAL(ingredientFor);
+  Range SERIAL(wishedCount) = Range(1, 2);
 };
-

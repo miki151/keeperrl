@@ -64,7 +64,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask applyItem(WTaskCallback, Position target, Item*);
   enum SearchType { LAZY, RANDOM_CLOSE };
   enum ActionType { APPLY, NONE };
-  static PTask applySquare(WTaskCallback, vector<Position>, SearchType, ActionType);
+  static PTask applySquare(WTaskCallback, vector<pair<Position, FurnitureLayer>>, SearchType, ActionType);
   static PTask archeryRange(WTaskCallback, vector<Position>);
   static PTask pickAndEquipItem(Position, Item* item);
   static PTask equipItem(Item*);

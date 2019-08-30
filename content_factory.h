@@ -12,13 +12,14 @@
 #include "build_info.h"
 #include "campaign_builder.h"
 #include "external_enemies.h"
+#include "item_attributes.h"
 
 class KeyVerifier;
 
+
 class ContentFactory {
   public:
-  optional<string> readData(NameGenerator, const GameConfig*);
-  CreatureFactory SERIAL(creatures);
+  optional<string> readData(const GameConfig*);
   FurnitureFactory SERIAL(furniture);
   array<vector<ZLevelInfo>, 3> SERIAL(zLevels);
   vector<ResourceDistribution> SERIAL(resources);
@@ -33,14 +34,22 @@ class ContentFactory {
   VillainsTuple SERIAL(villains);
   GameIntros SERIAL(gameIntros);
   PlayerCreaturesInfo SERIAL(playerCreatures);
+  map<CustomItemId, ItemAttributes> SERIAL(items);
+  map<BuildingId, BuildingInfo> SERIAL(buildingInfo);
   void merge(ContentFactory);
+
+  CreatureFactory& getCreatures();
+  const CreatureFactory& getCreatures() const;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);
 
   private:
-  optional<string> readCreatureFactory(NameGenerator, const GameConfig*, KeyVerifier*);
+  CreatureFactory SERIAL(creatures);
+  optional<string> readCreatureFactory(const GameConfig*, KeyVerifier*);
   optional<string> readFurnitureFactory(const GameConfig*, KeyVerifier*);
   optional<string> readVillainsTuple(const GameConfig*, KeyVerifier*);
   optional<string> readPlayerCreatures(const GameConfig*, KeyVerifier*);
+  optional<string> readItems(const GameConfig*, KeyVerifier*);
+  optional<string> readBuildingInfo(const GameConfig*, KeyVerifier*);
 };

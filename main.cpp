@@ -69,6 +69,12 @@
 
 #endif
 
+#ifdef USE_STEAMWORKS
+#include "steam_base.h"
+#include "steam_client.h"
+#include "steam_user.h"
+#endif
+
 #ifndef DATA_DIR
 #define DATA_DIR "."
 #endif
@@ -94,6 +100,10 @@ vector<pair<MusicType, FilePath>> getMusicTracks(const DirectoryPath& path, bool
       {MusicType::PEACEFUL, path.file("peaceful3.ogg")},
       {MusicType::PEACEFUL, path.file("peaceful4.ogg")},
       {MusicType::PEACEFUL, path.file("peaceful5.ogg")},
+      {MusicType::DESERT, path.file("desert1.ogg")},
+      {MusicType::DESERT, path.file("desert2.ogg")},
+      {MusicType::SNOW, path.file("snow1.ogg")},
+      {MusicType::SNOW, path.file("snow2.ogg")},
       {MusicType::BATTLE, path.file("battle1.ogg")},
       {MusicType::BATTLE, path.file("battle2.ogg")},
       {MusicType::BATTLE, path.file("battle3.ogg")},
@@ -289,7 +299,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   bool useSingleThread =
 #ifndef RELEASE
-      true;
+      false;
 #else
       commandLineFlags["single_thread"].was_set();
 #endif
@@ -317,7 +327,7 @@ static int keeperMain(po::parser& commandLineFlags) {
       return commandLineFlags["data_dir"].get().string;
     else
       return DATA_DIR;
-  }());
+  }());  
   auto freeDataPath = dataPath.subdirectory("data_free");
   auto paidDataPath = dataPath.subdirectory("data");
   auto contribDataPath = dataPath.subdirectory("data_contrib");
@@ -351,7 +361,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   if (commandLineFlags["restore_settings"].was_set())
     remove(settingsPath.getPath());
   Options options(settingsPath);
-  int seed = commandLineFlags["seed"].was_set() ? commandLineFlags["seed"].get().i32 : int(time(0));
+  int seed = commandLineFlags["seed"].was_set() ? commandLineFlags["seed"].get().i32 : int(time(nullptr));
   Random.init(seed);
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
   SoundLibrary* soundLibrary = nullptr;
@@ -366,7 +376,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   jukebox.setCurrentVolume(options.getIntValue(OptionId::MUSIC));
   if (commandLineFlags["verify_mod"].was_set()) {
     MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, &options, &jukebox, nullptr, nullptr,
-        useSingleThread, 0);
+        useSingleThread, 0, "");
     if (auto err = loop.verifyMod(commandLineFlags["verify_mod"].get().string)) {
       std::cout << *err << std::endl;
       return -1;
@@ -376,18 +386,19 @@ static int keeperMain(po::parser& commandLineFlags) {
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
   auto modList = freeDataPath.subdirectory(gameConfigSubdir).getSubDirs();
   USER_CHECK(!modList.empty()) << "No game config data found, please make sure all game data is in place";
-  options.setChoices(OptionId::CURRENT_MOD, modList);
+  options.setChoices(OptionId::CURRENT_MOD2, modList);
 #ifdef RELEASE
   AppConfig appConfig(dataPath.file("appconfig.txt"));
 #else
   AppConfig appConfig(dataPath.file("appconfig-dev.txt"));
 #endif
   string uploadUrl = appConfig.get<string>("upload_url");
-  FileSharing fileSharing(uploadUrl, options, installId);
+  auto modVersion = appConfig.get<string>("mod_version");
+  FileSharing fileSharing(uploadUrl, modVersion, options, installId);
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   if (commandLineFlags["worldgen_test"].was_set()) {
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, nullptr,
-        useSingleThread, 0);
+        useSingleThread, 0, "");
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
       types = split(commandLineFlags["worldgen_maps"].get().string, {','});
@@ -396,7 +407,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   auto battleTest = [&] (View* view, TileSet* tileSet) {
     MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, tileSet,
-        useSingleThread, 0);
+        useSingleThread, 0, "");
     auto level = commandLineFlags["battle_level"].get().string;
     auto info = commandLineFlags["battle_info"].get().string;
     auto numRounds = commandLineFlags["battle_rounds"].get().i32;
@@ -430,6 +441,19 @@ static int keeperMain(po::parser& commandLineFlags) {
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
+#ifdef USE_STEAMWORKS
+  optional<steam::Client> steamClient;
+  if (appConfig.get<int>("steamworks") > 0) {
+    if (steam::initAPI()) {
+      steamClient.emplace();
+      INFO << "\n" << steamClient->info();
+    }
+#ifdef RELEASE
+    else
+      USER_INFO << "Unable to connect with the Steam client.";
+#endif
+  }
+#endif
   GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap, freeDataPath.subdirectory("images"),
       tilesPresent ? optional<DirectoryPath>(paidDataPath.subdirectory("images")) : none);
   guiFactory.loadImages();
@@ -447,7 +471,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
   TileSet tileSet(paidDataPath.subdirectory("images"), freeDataPath.subdirectory(gameConfigSubdir));
   renderer.setTileSet(&tileSet);
-  FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", options, installId);
+  FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", modVersion, options, installId);
   unique_ptr<View> view;
   view.reset(WindowView::createDefaultView(
       {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary, &bugreportSharing, userPath, installId}));
@@ -473,7 +497,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     return 0;
   }
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, &tileSet,
-      useSingleThread, appConfig.get<int>("save_version"));
+      useSingleThread, appConfig.get<int>("save_version"), modVersion);
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);

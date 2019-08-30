@@ -14,16 +14,16 @@
 #include "content_factory.h"
 
 LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, ContentFactory* contentFactory, int width, int height,
-    const string& n, bool allCovered, optional<double> defaultLight)
+    bool allCovered, optional<double> defaultLight)
   : squares(Rectangle(width, height)), unavailable(width, height, false),
     heightMap(width, height, 0), covered(width, height, allCovered), building(width, height, false),
     sunlight(width, height, defaultLight ? *defaultLight : (allCovered ? 0.0 : 1.0)),
     attrib(width, height), items(width, height), furniture(Rectangle(width, height)),
-    name(n), progressMeter(meter), random(r), contentFactory(contentFactory) {
+    progressMeter(meter), random(r), contentFactory(contentFactory) {
 }
 
-LevelBuilder::LevelBuilder(RandomGen& r, ContentFactory* contentFactory, int width, int height, const string& n, bool covered)
-  : LevelBuilder(nullptr, r, contentFactory, width, height, n, covered) {
+LevelBuilder::LevelBuilder(RandomGen& r, ContentFactory* contentFactory, int width, int height, bool covered)
+  : LevelBuilder(nullptr, r, contentFactory, width, height, covered) {
 }
 
 LevelBuilder::~LevelBuilder() {}
@@ -91,7 +91,8 @@ bool LevelBuilder::canPutItems(Vec2 posT) {
 }
 
 void LevelBuilder::putFurniture(Vec2 posT, FurnitureList& f, TribeId tribe, optional<SquareAttrib> attrib) {
-  putFurniture(posT, f.getRandom(getRandom(), tribe), attrib);
+  if (auto res = f.getRandom(getRandom(), tribe))
+    putFurniture(posT, *res, attrib);
 }
 
 void LevelBuilder::putFurniture(Vec2 posT, FurnitureParams f, optional<SquareAttrib> attrib) {
@@ -181,7 +182,7 @@ PLevel LevelBuilder::build(WModel m, LevelMaker* maker, LevelId levelId) {
   for (Vec2 v : squares.getBounds())
     if (!items[v].empty())
       squares.getWritable(v)->dropItemsLevelGen(std::move(items[v]));
-  auto l = Level::create(std::move(squares), std::move(furniture), m, name, sunlight, levelId, covered, unavailable);
+  auto l = Level::create(std::move(squares), std::move(furniture), m, sunlight, levelId, covered, unavailable);
   for (pair<PCreature, Vec2>& c : creatures) {
     Position pos(c.second, l.get());
     CHECK(pos.canEnter(c.first.get()));

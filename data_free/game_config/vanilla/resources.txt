@@ -28,5 +28,10 @@
     }
     minDepth = 6
   }
-
+  {
+    counts = {
+        "GIANT_MUSHROOM" 6 0
+    }
+    minDepth = 4
+  }
 }

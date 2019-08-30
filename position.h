@@ -19,10 +19,14 @@ class Fire;
 class DestroyAction;
 class Inventory;
 class Vision;
+class Sectors;
+class FurnitureEffectInfo;
 
 class Position {
   public:
   Position(Vec2, WLevel);
+  struct IsValid{};
+  Position(Vec2, WLevel, IsValid);
   static vector<Position> getAll(WLevel, Rectangle);
   WModel getModel() const;
   WGame getGame() const;
@@ -63,7 +67,8 @@ class Position {
   bool canEnter(const Creature*) const;
   bool canEnter(const MovementType&) const;
   bool canEnterEmpty(const Creature*) const;
-  bool canEnterEmpty(const MovementType&, optional<FurnitureLayer> ignore = none) const;
+  bool canEnterEmpty(const MovementType&) const;
+  bool canEnterEmptyCalc(const MovementType&, optional<FurnitureLayer> ignore = none) const;
   void onEnter(Creature*) const;
   optional<FurnitureClickType> getClickType() const;
   void addSound(const Sound&) const;
@@ -88,6 +93,7 @@ class Position {
   bool isActiveConstruction(FurnitureLayer) const;
   bool isBurning() const;
   void fireDamage(double amount);
+  void iceDamage();
   bool needsRenderUpdate() const;
   void setNeedsRenderUpdate(bool) const;
   bool needsMemoryUpdate() const;
@@ -106,10 +112,11 @@ class Position {
   void addCreatureLight(bool darkness);
   void removeCreatureLight(bool darkness);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Position target, VisionId);
-  bool canNavigate(const MovementType&) const;
+  bool canNavigateCalc(const MovementType&) const;
+  bool canNavigate(const MovementType& type) const;
   bool canNavigateToOrNeighbor(Position, const MovementType&) const;
   bool canNavigateTo(Position, const MovementType&) const;
-  optional<double> getNavigationCost(const MovementType&) const;
+  double getNavigationCost(const MovementType&, const Sectors& onltMovementSectors) const;
   optional<DestroyAction> getBestDestroyAction(const MovementType&) const;
   vector<Position> getVisibleTiles(const Vision&);
   void updateConnectivity() const;
@@ -142,6 +149,8 @@ class Position {
   optional<int> getPortalIndex() const;
   double getLightingEfficiency() const;
   bool isDirEffectBlocked() const;
+  void addFurnitureEffect(TribeId, const FurnitureEffectInfo&) const;
+  void removeFurnitureEffect(TribeId, const FurnitureEffectInfo&) const;
 
   SERIALIZATION_DECL(Position)
   int getHash() const;
@@ -160,9 +169,9 @@ class Position {
 
 template <>
 inline string toString(const Position& t) {
-	stringstream ss;
-	ss << toString(t.getCoord());
-	return ss.str();
+  stringstream ss;
+  ss << toString(t.getCoord());
+  return ss.str();
 }
 
 using PositionSet = unordered_set<Position, CustomHash<Position>>;

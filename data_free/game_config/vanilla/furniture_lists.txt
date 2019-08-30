@@ -7,6 +7,12 @@
       "CHEST" 2
     }
   }
+  "snowFurniture"
+  {
+    {
+      "SNOWMAN" 1
+    }
+  }
   "castleFurniture"
   {
     {
@@ -20,6 +26,14 @@
   {
     {
       "GROUND_TORCH" 1
+    }
+  }
+  "bleedingTotem"
+  {
+    {
+    }
+    {
+      "BLEEDING_TOTEM"
     }
   }
   "castleOutside"
@@ -49,6 +63,18 @@
     {
       "DECID_TREE" 2
       "BUSH" 1
+    }
+  }
+  "vegetationDesert"
+  {
+    {
+      "CACTUS1" 2
+    }
+  }
+  "randomTerrain"
+  {
+    {
+      "STONES" 1
     }
   }
   "cryptCoffins"

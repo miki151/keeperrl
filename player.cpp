@@ -66,6 +66,7 @@
 #include "furniture_factory.h"
 #include "content_factory.h"
 #include "target_type.h"
+#include "shortest_path.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -159,7 +160,7 @@ void Player::pickUpItemAction(int numStack, bool multi) {
   if (getUsableUsageType()) {
     --numStack;
     if (numStack == -1) {
-      creature->applySquare(creature->getPosition()).perform(creature);
+      creature->applySquare(creature->getPosition(), FurnitureLayer::MIDDLE).perform(creature);
       return;
     }
   }
@@ -562,6 +563,23 @@ vector<Player::CommandInfo> Player::getCommands() const {
       [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},*/
     {PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},
       [] (Player* player) { player->chatAction(); }, false},
+    {PlayerInfo::CommandInfo{"Test path-finding", 'C', "Displays calculated path and processed tiles.", true},
+      [] (Player* player) {
+        auto pos = player->getView()->chooseTarget(player->creature->getPosition().getCoord(),
+            TargetType::POSITION, Table<PassableInfo>(), "Choose destination");
+        if (pos) {
+          Position position(*pos, player->getLevel());
+          vector<Vec2> visited;
+          LevelShortestPath path(player->creature, position, 0, &visited);
+          Table<PassableInfo> result(Rectangle::boundingBox(visited), PassableInfo::UNKNOWN);
+          for (auto& v : visited)
+            result[v] = PassableInfo::PASSABLE;
+          for (auto& v : path.getPath())
+            result[v.getCoord()] = PassableInfo::NON_PASSABLE;
+          player->getView()->chooseTarget(player->creature->getPosition().getCoord(), TargetType::SHOW_ALL, result,
+              "Displaying calculated path and processed tiles");
+        }
+      }, false},
     {PlayerInfo::CommandInfo{"Hide", 'h', "Hide behind or under a terrain feature or piece of furniture.",
         !!creature->hide()},
       [] (Player* player) { player->hideAction(); }, false},
@@ -626,6 +644,8 @@ void Player::makeMove() {
     subscribeTo(getModel());
   if (adventurer)
     considerAdventurerMusic();
+  else
+    considerKeeperModeTravelMusic();
   //if (updateView) { Check disabled so that we update in every frame to avoid some square refreshing issues.
     updateView = false;
     for (Position pos : creature->getVisibleTiles())
@@ -711,7 +731,7 @@ void Player::makeMove() {
         if (auto error = PrettyPrinting::parseObject(item, action.get<string>()))
           getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
         else
-          creature->take(item.setPrefixChance(1).get());
+          creature->take(item/*.setPrefixChance(1)*/.get(getGame()->getContentFactory()));
         break;
       }
       case UserInputId::SUMMON_ENEMY: {
@@ -719,7 +739,7 @@ void Player::makeMove() {
         if (auto error = PrettyPrinting::parseObject(id, action.get<string>()))
           getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
         else {
-          auto factory = CreatureGroup::singleCreature(TribeId::getMonster(), id);
+          auto factory = CreatureGroup::singleType(TribeId::getMonster(), id);
           Effect::summon(creature->getPosition(), factory, 1, 1000_visible,
               3_visible);
         }
@@ -771,8 +791,8 @@ void Player::makeMove() {
         creature->getAttributes().increaseBaseAttr(AttrType::DAMAGE, 80);
         creature->getAttributes().increaseBaseAttr(AttrType::DEFENSE, 80);
         creature->getAttributes().increaseBaseAttr(AttrType::SPELL_DAMAGE, 80);
-        creature->addPermanentEffect(LastingEffect::SPEED, true);
-        creature->addPermanentEffect(LastingEffect::FLYING, true);
+        creature->addPermanentEffect(LastingEffect::SPEED);
+        creature->addPermanentEffect(LastingEffect::FLYING);
         avatarLevel->increaseLevel();
         break;
       case UserInputId::CHEAT_SPELLS: {
@@ -794,7 +814,7 @@ void Player::makeMove() {
                 }
           if (!found) {
             ItemType itemType{ItemType::Potion{Effect::Lasting{leType}}};
-            creature->take(itemType.get());
+            creature->take(itemType.get(getGame()->getContentFactory()));
           }
         }
         break;
@@ -865,6 +885,8 @@ void Player::moveAction(Vec2 dir) {
   }
   if (!dirPos.canEnterEmpty(creature))
     tryToPerform(creature->destroy(dir, DestroyAction::Type::BASH));
+  if (dirPos.isUnavailable() && canTravel())
+    getGame()->transferAction(getTeam());
 }
 
 bool Player::isPlayer() const {
@@ -923,6 +945,64 @@ static MessageGenerator messageGenerator(MessageGenerator::SECOND_PERSON);
 
 MessageGenerator& Player::getMessageGenerator() const {
   return messageGenerator;
+}
+
+
+/* edit distance, doesn't work very well
+  static double getScore(const string& target, const string& candidate) {
+  int m = target.size();
+  int n = candidate.size();
+  Table<double> res(Rectangle(-1, -1, m, n), 0);
+  for (int i : Range(m))
+    res[i][-1] = i + 1;
+  for (int i : Range(n))
+    res[-1][i] = i + 1;
+  for (Vec2 v : Rectangle(0, 0, m, n))
+    if (tolower(target[v.x]) == tolower(candidate[v.y]))
+      res[v] = res[v - Vec2(1, 1)];
+    else
+      res[v] = min(min(
+          1 + res[v - Vec2(1, 0)],
+          0.1 + res[v - Vec2(0, 1)]),
+          1.1 + res[v - Vec2(1, 1)]);
+  return res[target.size() - 1][candidate.size() - 1];
+}*/
+
+// trigrams
+static double getScore(string target, string candidate) {
+  set<string> ngrams;
+  const int n = 3;
+  auto addPrefAndSuf = [] (string& s) {
+    s = "__ " + s + " __";
+  };
+  addPrefAndSuf(target);
+  addPrefAndSuf(candidate);
+  for (int i : Range(target.size() - n + 1))
+    ngrams.insert(target.substr(i, n));
+  int result = 0;
+  for (int i : Range(candidate.size() - n + 1))
+    result += ngrams.count(candidate.substr(i, n));
+  return result - int(candidate.size()) / 6;
+}
+
+void Player::grantWish(const string& message) {
+  if (auto text = getView()->getText(message, "", 40)) {
+    int count = 1;
+    optional<ItemType> itemType;
+    double bestScore = 0;
+    for (auto& elem : getGame()->getContentFactory()->items) {
+      double score = getScore(*text, *elem.second.name);
+      std::cout << *elem.second.name << " score " << score << std::endl;
+      if (score > bestScore || !itemType) {
+        bestScore = score;
+        itemType = ItemType(elem.first);
+        count = Random.get(elem.second.wishedCount);
+      }
+    }
+    auto items = itemType->get(count, getGame()->getContentFactory());
+    creature->verb("receive", "receives", items[0]->getPluralAName(items.size()));
+    creature->getEquipment().addItems(std::move(items), creature);
+  }
 }
 
 void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
@@ -994,8 +1074,8 @@ ViewId Player::shuffleViewId(const ViewId& id) const {
 void Player::generateHalluIds() {
   if (halluIds.empty()) {
     halluIds.emplace_back();
-    for (auto& id : getGame()->getContentFactory()->creatures.getAllCreatures())
-      halluIds.back().insert(getGame()->getContentFactory()->creatures.getViewId(id));
+    for (auto& id : getGame()->getContentFactory()->getCreatures().getAllCreatures())
+      halluIds.back().insert(getGame()->getContentFactory()->getCreatures().getViewId(id));
     /*for (auto type : ENUM_ALL(FurnitureType)) {
       auto f = FurnitureFactory::get(type, creature->getTribeId());
       if (f->getLayer() == FurnitureLayer::MIDDLE && !f->isWall())
@@ -1124,6 +1204,20 @@ Player::CenterType Player::getCenterType() const {
 
 const vector<Vec2>& Player::getUnknownLocations(WConstLevel level) const {
   return unknownLocations->getOnLevel(level);
+}
+
+void Player::considerKeeperModeTravelMusic() {
+  if (auto t = getModel()->getDefaultMusic()) {
+    getGame()->setCurrentMusic(*t, true);
+    return;
+  }
+  for (WCollective col : getModel()->getCollectives())
+    if (col->getVillainType() == VillainType::MAIN && !col->isConquered() &&
+        col->getTerritory().contains(creature->getPosition())) {
+      getGame()->setCurrentMusic(MusicType::BATTLE, true);
+      return;
+    }
+  getGame()->setCurrentMusic(MusicType::PEACEFUL, true);
 }
 
 void Player::considerAdventurerMusic() {

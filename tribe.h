@@ -49,18 +49,21 @@ class TribeId {
   bool operator == (const TribeId&) const;
   bool operator != (const TribeId&) const;
 
+  enum class KeyType;
+  KeyType getKey() const;
+
   int getHash() const;
 
   // This is a ridiculous, but effective hack to switch one tribe for another in entire model before retiring a game.
   static void switchForSerialization(TribeId from, TribeId to);
   static void clearSwitch();
 
-  SERIALIZATION_DECL(TribeId);
+  SERIALIZATION_DECL(TribeId)
 
-  enum class KeyType;
+  TribeId(KeyType key);
+
   private:
   friend class TribeSet;
-  TribeId(KeyType key);
   KeyType SERIAL(key);
   static optional<pair<TribeId, TribeId>> serialSwitch;
 };
@@ -95,7 +98,7 @@ class Tribe {
   void onMemberKilled(Creature* member, Creature* killer);
   void onItemsStolen(const Creature* thief);
 
-  SERIALIZATION_DECL(Tribe);
+  SERIALIZATION_DECL(Tribe)
 
   typedef unordered_map<TribeId, PTribe, CustomHash<TribeId>> Map;
 
@@ -116,3 +119,24 @@ class Tribe {
   TribeId SERIAL(id);
 };
 
+RICH_ENUM(
+    TribeId::KeyType,
+    MONSTER,
+    PEST,
+    WILDLIFE,
+    HUMAN,
+    ELF,
+    DARK_ELF,
+    DWARF,
+    GNOME,
+    ADVENTURER,
+    BANDIT,
+    HOSTILE,
+    PEACEFUL,
+    DARK_KEEPER,
+    RETIRED_KEEPER,
+    LIZARD,
+    GREENSKIN,
+    ANT,
+    SHELOB
+);

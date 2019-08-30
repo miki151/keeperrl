@@ -37,6 +37,7 @@ string toString(const T& t) {
 }
 
 string toStringWithSign(int);
+string toPercentage(double);
 
 template <class T>
 string toString(const optional<T>& t) {
@@ -111,8 +112,8 @@ string toLower(const string& s);
 
 bool endsWith(const string&, const string& suffix);
 
-vector<string> split(const string& s, const set<char>& delim);
-vector<string> splitIncludeDelim(const string& s, const set<char>& delim);
+vector<string> split(const string& s, const std::initializer_list<char>& delim);
+vector<string> splitIncludeDelim(const string& s, const std::initializer_list<char>& delim);
 string combineWithOr(const vector<string>&);
 
 
@@ -454,6 +455,11 @@ class EnumMap {
 
   EnumMap& operator = (const EnumMap& other) {
     elems = other.elems;
+    return *this;
+  }
+
+  EnumMap& operator = (EnumMap&& other) {
+    elems = std::move(other.elems);
     return *this;
   }
 
@@ -1223,7 +1229,7 @@ class MustInitialize {
     return *elem;
   }
 
-  SERIALIZE_ALL(elem);
+  SERIALIZE_ALL(elem)
 
   private:
   optional<T> SERIAL(elem);
@@ -1598,8 +1604,9 @@ class AsyncLoop {
   thread t;
 };
 
-
 thread makeThread(function<void()> fun);
+
+void openUrl(const string& url);
 
 template <typename T, typename... Args>
 auto bindMethod(void (T::*ptr) (Args...), T* t) {
@@ -1742,4 +1749,7 @@ template <class T> constexpr bool isOneOf(const T& value) {
 template <class T, class Arg1, class... Args>
 constexpr bool isOneOf(const T& value, const Arg1& arg1, const Args&... args) {
   return value == arg1 || isOneOf(value, args...);
+}
+template <class T, int size> constexpr int arraySize(T (&)[size]) {
+  return size;
 }

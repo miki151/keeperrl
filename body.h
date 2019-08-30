@@ -93,7 +93,8 @@ class Body {
   bool canPush(const Body& other);
   bool canPerformRituals() const;
   bool canBeCaptured() const;
-  vector<PItem> getCorpseItems(const string& name, UniqueEntity<Creature>::Id, bool instantlyRotten) const;
+  vector<PItem> getCorpseItems(const string& name, UniqueEntity<Creature>::Id, bool instantlyRotten,
+      const ContentFactory* factory) const;
 
   vector<AttackLevel> getAttackLevels() const;
   int getAttrBonus(AttrType) const;
@@ -129,7 +130,7 @@ class Body {
   bool isUndead() const;
   double getBoulderDamage() const;
 
-  SERIALIZATION_DECL(Body);
+  SERIALIZATION_DECL(Body)
   template <class Archive>
   void serializeImpl(Archive& ar, const unsigned int);
 
@@ -145,7 +146,7 @@ class Body {
   void decreaseHealth(double amount);
   bool isPartDamaged(BodyPart, double damage) const;
   bool isCritical(BodyPart) const;
-  PItem getBodyPartItem(const string& creatureName, BodyPart);
+  PItem getBodyPartItem(const string& creatureName, BodyPart, const ContentFactory*);
   string getMaterialAndSizeAdjectives() const;
   bool SERIAL(xhumanoid) = false;
   Size SERIAL(size) = Size::LARGE;
@@ -164,5 +165,7 @@ class Body {
   optional<BodyPart> getAnyGoodBodyPart() const;
   double getBodyPartHealth() const;
   void dropUnsupportedEquipment(const Creature*) const;
+  vector<pair<optional<ItemType>, double>> SERIAL(drops);
+  optional<bool> SERIAL(canCapture);
 };
 

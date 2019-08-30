@@ -1,7 +1,9 @@
 #pragma once
 
+#include "util.h"
 
-enum class MsgType {
+RICH_ENUM(
+  MsgType,
   FEEL, // better
   BLEEDING_STOPS,
   COLLAPSE,
@@ -47,6 +49,6 @@ enum class MsgType {
   PRAY,
   SACRIFICE,
   COPULATE,
-  CONSUME,
-};
+  CONSUME
+);
 

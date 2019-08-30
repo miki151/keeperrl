@@ -31,7 +31,7 @@ template <class Archive>
 void Body::serializeImpl(Archive& ar, const unsigned int) {
   ar(OPTION(xhumanoid), OPTION(size), OPTION(weight), OPTION(bodyParts), OPTION(injuredBodyParts), OPTION(lostBodyParts));
   ar(OPTION(material), OPTION(health), OPTION(minionFood), NAMED(deathSound), OPTION(intrinsicAttacks), OPTION(minPushSize));
-  ar(OPTION(noHealth), OPTION(fallsApart));
+  ar(OPTION(noHealth), OPTION(fallsApart), OPTION(drops), OPTION(canCapture));
 }
 
 template <class Archive>
@@ -349,7 +349,7 @@ bool Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
       creature->getGame()->getStatistics().add(StatId::CHOPPED_LIMB);
     else if (part == BodyPart::HEAD)
       creature->getGame()->getStatistics().add(StatId::CHOPPED_HEAD);
-    if (PItem item = getBodyPartItem(creature->getAttributes().getName().bare(), part))
+    if (PItem item = getBodyPartItem(creature->getAttributes().getName().bare(), part, creature->getGame()->getContentFactory()))
       creature->getPosition().dropItem(std::move(item));
     if (looseBodyPart(part))
       return true;
@@ -511,7 +511,7 @@ static int numCorpseItems(Body::Size size) {
   }
 }
 
-PItem Body::getBodyPartItem(const string& name, BodyPart part) {
+PItem Body::getBodyPartItem(const string& name, BodyPart part, const ContentFactory* factory) {
   switch (material) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
@@ -519,40 +519,46 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part) {
         weight / 8, false, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE);
     case Material::CLAY:
     case Material::ROCK:
-      return ItemType(ItemType::Rock{}).get();
+      return ItemType(CustomItemId("Rock")).get(factory);
     case Material::BONE:
-      return ItemType(ItemType::Bone{}).get();
+      return ItemType(CustomItemId("Bone")).get(factory);
     case Material::IRON:
-      return ItemType(ItemType::IronOre{}).get();
+      return ItemType(CustomItemId("IronOre")).get(factory);
     case Material::WOOD:
-      return ItemType(ItemType::WoodPlank{}).get();
+      return ItemType(CustomItemId("WoodPlank")).get(factory);
     case Material::ADA:
-      return ItemType(ItemType::AdaOre{}).get();
+      return ItemType(CustomItemId("AdaOre")).get(factory);
     default: return nullptr;
   }
 }
 
-vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool instantlyRotten) const {
-  switch (material) {
-    case Material::FLESH:
-    case Material::UNDEAD_FLESH:
-      return makeVec(
-          ItemFactory::corpse(name + " corpse", name + " skeleton", weight, instantlyRotten,
-            minionFood ? ItemClass::FOOD : ItemClass::CORPSE,
-            {id, material != Material::UNDEAD_FLESH, numBodyParts(BodyPart::HEAD) > 0, false}));
-    case Material::CLAY:
-    case Material::ROCK:
-      return ItemType(ItemType::Rock{}).get(numCorpseItems(size));
-    case Material::BONE:
-      return ItemType(ItemType::Bone{}).get(numCorpseItems(size));
-    case Material::IRON:
-      return ItemType(ItemType::IronOre{}).get(numCorpseItems(size));
-    case Material::WOOD:
-      return ItemType(ItemType::WoodPlank{}).get(numCorpseItems(size));
-    case Material::ADA:
-      return ItemType(ItemType::AdaOre{}).get(numCorpseItems(size));
-    default: return {};
-  }
+vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool instantlyRotten, const ContentFactory* factory) const {
+  vector<PItem> ret = [&] {
+    switch (material) {
+      case Material::FLESH:
+      case Material::UNDEAD_FLESH:
+        return makeVec(
+            ItemFactory::corpse(name + " corpse", name + " skeleton", weight, instantlyRotten,
+              minionFood ? ItemClass::FOOD : ItemClass::CORPSE,
+              {id, material != Material::UNDEAD_FLESH, numBodyParts(BodyPart::HEAD) > 0, false}));
+      case Material::CLAY:
+      case Material::ROCK:
+        return ItemType(CustomItemId("Rock")).get(numCorpseItems(size), factory);
+      case Material::BONE:
+        return ItemType(CustomItemId("Bone")).get(numCorpseItems(size), factory);
+      case Material::IRON:
+        return ItemType(CustomItemId("IronOre")).get(numCorpseItems(size), factory);
+      case Material::WOOD:
+        return ItemType(CustomItemId("WoodPlank")).get(numCorpseItems(size), factory);
+      case Material::ADA:
+        return ItemType(CustomItemId("AdaOre")).get(numCorpseItems(size), factory);
+      default: return vector<PItem>();
+    }
+  }();
+  if (!drops.empty())
+    if (auto item = Random.choose(drops))
+      ret.push_back(item->get(factory));
+  return ret;
 }
 
 void Body::affectPosition(Position position) {
@@ -765,9 +771,16 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
       }
     case LastingEffect::SUNLIGHT_VULNERABLE:
       return material == Material::UNDEAD_FLESH;
-    case LastingEffect::POISON_RESISTANT:
-      return material != Material::FLESH;
-    case LastingEffect::SLEEP_RESISTANT:
+    case LastingEffect::FLYING:
+      return numGood(BodyPart::WING) >= 2;
+    default:
+      return false;
+  }
+}
+
+bool Body::isImmuneTo(LastingEffect effect) const {
+  switch (effect) {
+    case LastingEffect::SLEEP:
       switch (material) {
         case Material::WATER:
         case Material::FIRE:
@@ -780,15 +793,10 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
         default:
           return false;
       }
-    case LastingEffect::FLYING:
-      return numGood(BodyPart::WING) >= 2;
-    default:
-      return false;
-  }
-}
-
-bool Body::isImmuneTo(LastingEffect effect) const {
-  switch (effect) {
+    case LastingEffect::FROZEN:
+      return material == Material::FIRE;
+    case LastingEffect::POISON:
+    case LastingEffect::PLAGUE:
     case LastingEffect::BLEEDING:
       return material != Material::FLESH;
     case LastingEffect::ON_FIRE:
@@ -941,6 +949,8 @@ bool Body::canPerformRituals() const {
 }
 
 bool Body::canBeCaptured() const {
+  if (canCapture)
+    return *canCapture;
   return xhumanoid && !isImmuneTo(LastingEffect::TIED_UP);
 }
 
@@ -1011,11 +1021,11 @@ RICH_ENUM(BodyType,
 );
 
 struct BodyTypeReader {
+  static Body* body;
   void serialize(PrettyInputArchive& ar1, unsigned v) {
+    BodyType type;
+    BodySize size;
     ar1(type, size);
-  }
-
-  void init(Body* body) {
     body->setWeight(getDefaultWeight(size));
     body->setSize(size);
     body->setMinPushSize(BodySize((int)size + 1));
@@ -1042,19 +1052,19 @@ struct BodyTypeReader {
         break;
     }
   }
-  BodyType type;
-  BodySize size;
 };
+
+Body* BodyTypeReader::body = nullptr;
 
 template <>
 void Body::serialize(PrettyInputArchive& ar1, unsigned v) {
   BodyTypeReader type;
+  BodyTypeReader::body = this;
   ar1(NAMED(type));
   serializeImpl(ar1, v);
   EnumMap<BodyPart, int> addBodyPart;
   ar1(OPTION(addBodyPart));
   ar1(endInput());
-  type.init(this);
   for (auto part : ENUM_ALL(BodyPart)) {
     bodyParts[part] += addBodyPart[part];
     if (bodyParts[part] == 0 && !!intrinsicAttacks[part])

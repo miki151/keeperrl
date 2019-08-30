@@ -10,8 +10,15 @@
 #include "item.h"
 #include "key_verifier.h"
 #include "spell_school_id.h"
+#include "name_generator_id.h"
 
-SERIALIZE_DEF(ContentFactory, creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology)
+template <class Archive>
+void ContentFactory::serialize(Archive& ar, const unsigned int) {
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology, items, buildingInfo);
+  creatures.setContentFactory(this);
+}
+
+SERIALIZABLE(ContentFactory)
 
 static bool isZLevel(const vector<ZLevelInfo>& levels, int depth) {
   for (auto& l : levels)
@@ -27,7 +34,7 @@ bool areResourceCounts(const vector<ResourceDistribution>& resources, int depth)
   return false;
 }
 
-optional<string> ContentFactory::readCreatureFactory(NameGenerator nameGenerator, const GameConfig* config, KeyVerifier* keyVerifier) {
+optional<string> ContentFactory::readCreatureFactory(const GameConfig* config, KeyVerifier* keyVerifier) {
   map<PrimaryId<CreatureId>, CreatureAttributes> attributes;
   map<CreatureId, CreatureInventory> inventory;
   if (auto res = config->readObject(attributes, GameConfigId::CREATURE_ATTRIBUTES, keyVerifier))
@@ -47,11 +54,18 @@ optional<string> ContentFactory::readCreatureFactory(NameGenerator nameGenerator
     return *res;
   if (auto res = config->readObject(spellSchools, GameConfigId::SPELL_SCHOOLS, keyVerifier))
     return *res;
+  map<PrimaryId<NameGeneratorId>, vector<string>> firstNames;
+  if (auto res = config->readObject(firstNames, GameConfigId::NAMES, keyVerifier))
+    return *res;
+  NameGenerator nameGenerator;
+  for (auto& elem : firstNames)
+    nameGenerator.setNames(elem.first, elem.second);
   keyVerifier->addKey<CreatureId>("KRAKEN");
   for (auto& elem : CreatureFactory::getSpecialParams())
     keyVerifier->addKey<CreatureId>(elem.first.data());
   creatures = CreatureFactory(std::move(nameGenerator), convertKeys(std::move(attributes)), std::move(inventory),
       convertKeys(std::move(spellSchools)), std::move(spells));
+  creatures.setContentFactory(this);
   return none;
 }
 
@@ -117,9 +131,8 @@ optional<string> ContentFactory::readVillainsTuple(const GameConfig* gameConfig,
 optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, KeyVerifier* keyVerifier) {
   if (auto error = config->readObject(playerCreatures, GameConfigId::PLAYER_CREATURES, keyVerifier))
     return "Error reading player creature definitions"_s + *error;
-  if (playerCreatures.first.empty() || playerCreatures.second.empty() || playerCreatures.first.size() > 10 ||
-      playerCreatures.second.size() > 10)
-    return "Keeper and adventurer lists must each contain between 1 and 10 entries."_s;
+  if (playerCreatures.first.empty() || playerCreatures.second.empty())
+    return "Keeper and adventurer lists must each contain at least 1 entry."_s;
   for (auto& keeperInfo : playerCreatures.first) {
     bool hotkeys[128] = {0};
     vector<BuildInfo> buildInfoTmp;
@@ -148,7 +161,7 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
     for (auto& elem : merged)
       for (auto& item : elem)
         if (item.tech && !technology.techs.count(*item.tech))
-          return "Technology prerequisite \""_s + item.tech->data() + "\" of workshop item \"" + item.item.get()->getName()
+          return "Technology prerequisite \""_s + item.tech->data() + "\" of workshop item \"" + item.item.get(this)->getName()
               + "\" is not available";
     for (auto elem : keeperInfo.immigrantGroups)
       if (!immigrantsData.count(elem))
@@ -167,7 +180,23 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
   return none;
 }
 
-optional<string> ContentFactory::readData(NameGenerator nameGenerator, const GameConfig* config) {
+optional<string> ContentFactory::readItems(const GameConfig* config, KeyVerifier* keyVerifier) {
+  map<PrimaryId<CustomItemId>, ItemAttributes> itemsTmp;
+  if (auto res = config->readObject(itemsTmp, GameConfigId::ITEMS, keyVerifier))
+    return *res;
+  items = convertKeys(itemsTmp);
+  return none;
+}
+
+optional<string> ContentFactory::readBuildingInfo(const GameConfig* config, KeyVerifier* keyVerifier) {
+  map<PrimaryId<BuildingId>, BuildingInfo> buildingsTmp;
+  if (auto res = config->readObject(buildingsTmp, GameConfigId::BUILDING_INFO, keyVerifier))
+    return *res;
+  buildingInfo = convertKeys(buildingsTmp);
+  return none;
+}
+
+optional<string> ContentFactory::readData(const GameConfig* config) {
   KeyVerifier keyVerifier;
   if (auto error = config->readObject(technology, GameConfigId::TECHNOLOGY, &keyVerifier))
     return *error;
@@ -189,13 +218,20 @@ optional<string> ContentFactory::readData(NameGenerator nameGenerator, const Gam
     return *res;
   if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS, &keyVerifier))
     return *res;
+  if (auto res = readItems(config, &keyVerifier))
+    return *res;
+  if (auto res = readBuildingInfo(config, &keyVerifier))
+    return *res;
   map<PrimaryId<EnemyId>, EnemyInfo> enemiesTmp;
   if (auto res = config->readObject(enemiesTmp, GameConfigId::ENEMIES, &keyVerifier))
     return *res;
   enemies = convertKeys(enemiesTmp);
+  for (auto& enemy : enemies)
+    if (auto res = getReferenceMaybe(buildingInfo, enemy.second.settlement.buildingId))
+      enemy.second.settlement.buildingInfo = *res;
   if (auto res = config->readObject(externalEnemies, GameConfigId::EXTERNAL_ENEMIES, &keyVerifier))
     return *res;
-  if (auto res = readCreatureFactory(std::move(nameGenerator), config, &keyVerifier))
+  if (auto res = readCreatureFactory(config, &keyVerifier))
     return *res;
   if (auto res = readFurnitureFactory(config, &keyVerifier))
     return *res;
@@ -228,4 +264,15 @@ void ContentFactory::merge(ContentFactory f) {
   creatures.merge(std::move(f.creatures));
   furniture.merge(std::move(f.furniture));
   tilePaths.merge(std::move(f.tilePaths));
+  mergeMap(std::move(f.items), items);
+}
+
+CreatureFactory& ContentFactory::getCreatures() {
+  creatures.setContentFactory(this);
+  return creatures;
+}
+
+const CreatureFactory& ContentFactory::getCreatures() const {
+  creatures.setContentFactory(this);
+  return creatures;
 }

@@ -22,7 +22,7 @@ class AudioDevice;
 class SoundStream;
 class FilePath;
 
-enum class MusicType { INTRO, MAIN, PEACEFUL, BATTLE, NIGHT, ADV_PEACEFUL, ADV_BATTLE };
+enum class MusicType { INTRO, MAIN, PEACEFUL, BATTLE, NIGHT, ADV_PEACEFUL, ADV_BATTLE, SNOW, DESERT };
 
 class Jukebox {
   public:

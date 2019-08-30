@@ -62,7 +62,8 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(canBuildBridge), OPTION(noProjectiles), OPTION(clearFogOfWar), OPTION(removeWithCreaturePresent), OPTION(upgrade));
   ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
-  ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect));
+  ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(freezeTo));
+  ar(OPTION(bloodCountdown), SKIP(bloodTime));
 }
 
 template <class Archive>
@@ -129,7 +130,7 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
   auto myLayer = layer;
   auto myType = type;
   if (itemDrop)
-    pos.dropItems(itemDrop->random());
+    pos.dropItems(itemDrop->random(pos.getGame()->getContentFactory()));
   if (usageType)
     FurnitureUsage::beforeRemoved(*usageType, pos);
   if (destroyFX)
@@ -223,6 +224,8 @@ void Furniture::tick(Position pos) {
   }
   if (tickType)
     FurnitureTick::handle(*tickType, pos, this); // this function can delete this
+  if (bloodTime && *bloodTime <= pos.getModel()->getLocalTime())
+    spreadBlood(pos);
 }
 
 bool Furniture::blocksAnyVision() const {
@@ -377,6 +380,28 @@ void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
     pos.getGame()->addEvent((EventInfo::FX{pos, *walkIntoFX, direction}));
 }
 
+bool Furniture::onBloodNear(Position pos) {
+  if (bloodCountdown)
+    if (--*bloodCountdown == 0)
+      return true;
+  return false;
+}
+
+void Furniture::spreadBlood(Position pos) {
+  if (!!bloodCountdown) {
+    bloodCountdown = none;
+    viewObject->setModifier(ViewObjectModifier::BLOODY);
+    name = "bloody " + name;
+    viewObject->setDescription(capitalFirst(name));
+    for (auto v : pos.neighbors4())
+      if (auto f = v.getFurniture(layer))
+        if (!!f->bloodCountdown) {
+          v.modFurniture(layer)->bloodTime = pos.getModel()->getLocalTime() + 1_visible;
+          v.getLevel()->addTickingFurniture(v.getCoord());
+        }
+  }
+}
+
 int Furniture::getMaxTraining(ExperienceType t) const {
   return maxTraining[t];
 }
@@ -440,7 +465,7 @@ optional<BedType> Furniture::getBedType() const {
   return bedType;
 }
 
-optional<LastingEffect> Furniture::getLastingEffect() const {
+const optional<FurnitureEffectInfo>& Furniture::getLastingEffectInfo() const {
   return lastingEffect;
 }
 
@@ -466,6 +491,13 @@ bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& ac
 }
 
 void Furniture::fireDamage(Position pos, bool withMessage) {
+  if (meltInfo) {
+    pos.globalMessage("The " + getName() + " melts");
+    PFurniture replace;
+    if (meltInfo->meltTo)
+      replace = pos.getGame()->getContentFactory()->furniture.getFurniture(*meltInfo->meltTo, getTribe());
+    pos.removeFurniture(this, std::move(replace));
+  } else
   if (fire) {
     bool burning = fire->isBurning();
     fire->set();
@@ -478,6 +510,13 @@ void Furniture::fireDamage(Position pos, bool withMessage) {
       pos.getLevel()->addTickingFurniture(pos.getCoord());
       pos.addCreatureLight(false);
     }
+  }
+}
+
+void Furniture::iceDamage(Position pos) {
+  if (freezeTo) {
+    pos.globalMessage("The " + getName() + " freezes");
+    pos.removeFurniture(this, pos.getGame()->getContentFactory()->furniture.getFurniture(*freezeTo, getTribe()));
   }
 }
 

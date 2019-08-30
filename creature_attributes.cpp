@@ -46,6 +46,10 @@ void CreatureAttributes::randomize() {
   }
 }
 
+bool CreatureAttributes::isInstantPrisoner() const {
+  return instantPrisoner;
+}
+
 CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) {
   fun(*this);
   initializeLastingEffects();
@@ -61,7 +65,7 @@ template <class Archive>
 void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(NAMED(viewId), NAMED(illusionViewObject), NAMED(name), NAMED(attr), NAMED(chatReactionFriendly));
   ar(NAMED(chatReactionHostile), NAMED(passiveAttack), OPTION(gender), OPTION(viewIdUpgrades));
-  ar(NAMED(body), OPTION(deathDescription), NAMED(hatedByEffect));
+  ar(NAMED(body), OPTION(deathDescription), NAMED(hatedByEffect), OPTION(instantPrisoner));
   ar(OPTION(cantEquip), OPTION(courage), OPTION(canJoinCollective), OPTION(genderAlternatives));
   ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(skills), OPTION(spellSchools), OPTION(spells));
   ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel));
@@ -176,6 +180,10 @@ void CreatureAttributes::increaseBaseExpLevel(ExperienceType type, double increa
     attr[attrType] += increase;
 }
 
+vector<string> CreatureAttributes::getSpellSchools() const {
+  return spellSchools.transform([](auto& school) { return string(school.data()); });
+}
+
 Body& CreatureAttributes::getBody() {
   return *body;
 }
@@ -274,6 +282,7 @@ static string getAttrNameMore(AttrType attr) {
     case AttrType::DEFENSE: return "more protected";
     case AttrType::SPELL_DAMAGE: return "more powerful";
     case AttrType::RANGED_DAMAGE: return "more accurate";
+    case AttrType::PARRY: return "more evasive";
   }
 }
 
@@ -283,6 +292,7 @@ static int getAbsorbtionLevelCap(AttrType attr) {
     case AttrType::DEFENSE: return 25;
     case AttrType::SPELL_DAMAGE: return 20;
     case AttrType::RANGED_DAMAGE: return 15;
+    case AttrType::PARRY: return 3;
   }
 }
 

@@ -135,9 +135,9 @@ MoveInfo Behaviour::tryEffect(const Effect& type, Position target) {
 
 static bool isObstructed(const Creature* creature, const vector<Position>& trajectory) {
   vector<Creature*> ret;
-  for (int i : Range(1, trajectory.size() - 1)) {
+  for (int i : Range(1, trajectory.size())) {
     auto& pos = trajectory[i];
-    if (pos.stopsProjectiles(creature->getVision().getId()) || pos.getCreature())
+    if (pos.stopsProjectiles(creature->getVision().getId()) || (pos.getCreature() && pos != trajectory.back()))
       return true;
   }
   return false;
@@ -161,13 +161,14 @@ class EffectsAI : public Behaviour {
     if (isObstructed(creature, trajectory))
       return NoMove;
     for (auto item : creature->getEquipment().getItems())
-      if (auto effect = item->getEffect())
-        if (effect->shouldAIApply(creature, target) == EffectAIIntent::WANTED)
-          if (!creature->getEquipment().isEquipped(item) &&
-             creature->getThrowDistance(item).value_or(-1) >=
-                 trajectory.back().dist8(creature->getPosition()).value_or(10000))
-            if (auto action = creature->throwItem(item, target, creature->isFriend(other)))
-              return action;
+      if (item->effectAppliedWhenThrown())
+        if (auto effect = item->getEffect())
+          if (effect->shouldAIApply(creature, target) == EffectAIIntent::WANTED)
+            if (!creature->getEquipment().isEquipped(item) &&
+               creature->getThrowDistance(item).value_or(-1) >=
+                   trajectory.back().dist8(creature->getPosition()).value_or(10000))
+              if (auto action = creature->throwItem(item, target, creature->isFriend(other)))
+                return action;
     return NoMove;
   }
 
@@ -926,7 +927,7 @@ class ByCollective : public Behaviour {
       minionEquipment.autoAssign(creature, collective->getAllItems(ItemIndex::MINION_EQUIPMENT, false));
     vector<PTask> tasks;
     for (Item* it : creature->getEquipment().getItems())
-      if (!creature->getEquipment().isEquipped(it) && creature->getEquipment().canEquip(it, creature->getBody()))
+      if (!creature->getEquipment().isEquipped(it) && creature->getEquipment().canEquip(it, creature))
         tasks.push_back(Task::equipItem(it));
     {
       PROFILE_BLOCK("tasks assignment");

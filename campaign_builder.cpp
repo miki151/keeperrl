@@ -14,6 +14,7 @@
 #include "creature_factory.h"
 #include "tribe_alignment.h"
 #include "external_enemies_type.h"
+#include "enemy_aggression_level.h"
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
   if (campaign.getPlayerRole() == PlayerRole::ADVENTURER && options->getIntValue(OptionId::ALLIES) == 0)
@@ -40,7 +41,13 @@ vector<OptionId> CampaignBuilder::getCampaignOptions(CampaignType type) const {
       if (getPlayerRole() == PlayerRole::ADVENTURER)
         return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES};
       else
-        return {OptionId::MAIN_VILLAINS, OptionId::LESSER_VILLAINS, OptionId::ALLIES, OptionId::ENDLESS_ENEMIES};
+        return {
+          OptionId::MAIN_VILLAINS,
+          OptionId::LESSER_VILLAINS,
+          OptionId::ALLIES,
+          OptionId::ENDLESS_ENEMIES,
+          OptionId::ENEMY_AGGRESSION,
+        };
     case CampaignType::SINGLE_KEEPER:
       return {};
   }
@@ -303,6 +310,18 @@ static optional<ExternalEnemiesType> getExternalEnemies(Options* options) {
   fail();
 }
 
+static EnemyAggressionLevel getAggressionLevel(Options* options) {
+  auto v = options->getIntValue(OptionId::ENEMY_AGGRESSION);
+  if (v == 0)
+    return EnemyAggressionLevel::NONE;
+  if (v == 1)
+    return EnemyAggressionLevel::MODERATE;
+  if (v == 2)
+    return EnemyAggressionLevel::EXTREME;
+  FATAL << "Bad enemy aggression value " << v;
+  fail();
+}
+
 optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<RetiredGames>(CampaignType)> genRetired,
     CampaignType type, string worldName) {
   Vec2 size(17, 9);
@@ -313,6 +332,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
   string searchString;
   const auto playerRole = getPlayerRole();
   options->setChoices(OptionId::ENDLESS_ENEMIES, {"none", "from the start", "after winning"});
+  options->setChoices(OptionId::ENEMY_AGGRESSION, {"none", "moderate", "extreme"});
   while (1) {
     setCountLimits();
     Campaign campaign(terrain, type, playerRole, worldName);
@@ -358,6 +378,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
             case OptionId::GENERATE_MANA:
             case OptionId::INFLUENCE_SIZE:
             case OptionId::ENDLESS_ENEMIES:
+            case OptionId::ENEMY_AGGRESSION:
               break;
             default:
               updateMap = true;
@@ -374,7 +395,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
             string gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
             string gameDisplayName = name + " of " + campaign.worldName;
             return CampaignSetup{campaign, gameIdentifier, gameDisplayName,
-                getIntroMessages(type), getExternalEnemies(options)};
+                getIntroMessages(type), getExternalEnemies(options), getAggressionLevel(options)};
           }
       }
       if (updateMap)
@@ -385,5 +406,5 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
 
 CampaignSetup CampaignBuilder::getEmptyCampaign() {
   Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "");
-  return CampaignSetup{ret, "", "", {}, none};
+  return CampaignSetup{ret, "", "", {}, none, EnemyAggressionLevel::MODERATE};
 }

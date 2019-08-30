@@ -7,14 +7,15 @@
 struct WorkshopItem;
 
 struct WorkshopItemCfg {
-  WorkshopItem get() const;
+  WorkshopItem get(const ContentFactory*) const;
   ItemType SERIAL(item);
   double SERIAL(work) = 1;
   CostInfo SERIAL(cost);
   optional<TechId> SERIAL(tech);
   int SERIAL(batchSize) = 1;
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
-  SERIALIZE_ALL(NAMED(item), OPTION(work), OPTION(cost), NAMED(tech), OPTION(batchSize), NAMED(tutorialHighlight))
+  bool SERIAL(requireIngredient) = false;
+  SERIALIZE_ALL(NAMED(item), OPTION(work), OPTION(cost), NAMED(tech), OPTION(batchSize), NAMED(tutorialHighlight), OPTION(requireIngredient))
 };
 
 struct WorkshopItem {
@@ -30,7 +31,8 @@ struct WorkshopItem {
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
   optional<ItemUpgradeType> SERIAL(upgradeType);
   int SERIAL(maxUpgrades);
-  SERIALIZE_ALL(type, name, pluralName, viewId, cost, batchSize, workNeeded, techId, description, tutorialHighlight, upgradeType, maxUpgrades)
+  bool SERIAL(requireIngredient);
+  SERIALIZE_ALL(type, name, pluralName, viewId, cost, batchSize, workNeeded, techId, description, tutorialHighlight, upgradeType, maxUpgrades, requireIngredient)
 };
 
 struct WorkshopQueuedItem {

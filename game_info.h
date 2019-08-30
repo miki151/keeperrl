@@ -58,7 +58,8 @@ struct ItemInfo {
   optional<pair<ViewId, int>> HASH(price);
   optional<double> HASH(weight);
   bool HASH(tutorialHighlight);
-  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, unavailableReason, weight, tutorialHighlight, intrinsicState, viewIdModifiers)
+  bool HASH(hidden);
+  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, unavailableReason, weight, tutorialHighlight, intrinsicState, viewIdModifiers, hidden)
 };
 
 struct AttributeInfo {
@@ -98,6 +99,7 @@ class PlayerInfo {
   string HASH(name);
   string HASH(title);
   CreatureExperienceInfo HASH(experienceInfo);
+  vector<string> HASH(spellSchools);
   string description;
   int HASH(positionHash);
   struct Effect {
@@ -159,7 +161,7 @@ class PlayerInfo {
   optional<double> HASH(carryLimit);
   optional<ViewId> HASH(quarters);
   bool HASH(canAssignQuarters);
-  HASH_ALL(attributes, skills, firstName, name, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo)
+  HASH_ALL(attributes, skills, firstName, name, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools)
 };
 
 struct ImmigrantDataInfo {

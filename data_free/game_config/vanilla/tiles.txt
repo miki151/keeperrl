@@ -68,15 +68,21 @@
   { "floor_invi" "." ColorId LIGHT_BLUE }
   { "floor_regen" "." ColorId GREEN }
   { "floor_peace" "." ColorId WHITE }
+  { viewId = "totem" symbol = "T" color = ColorId WHITE
+    roundShadow = true }
   { "fallen_tree" "*" ColorId GREEN false "treecut" }
   { "tree_trunk" "." ColorId BROWN false "treecut" }
   { "crops" "𝃰" ColorId YELLOW }
   { "crops2" "𝃰" ColorId YELLOW }
+  { "stones" "." ColorId GRAY }
   { "down_staircase" "➘" ColorId ALMOST_WHITE true }
   { "up_staircase" "➚" ColorId ALMOST_WHITE true }
+  { "down_staircase_rock" "➘" ColorId YELLOW true }
+  { "up_staircase_rock" "➚" ColorId YELLOW true }
   { "map_mountain1" "^" ColorId DARK_GRAY }
   { "map_mountain2" "^" ColorId GRAY }
   { "map_mountain3" "^" ColorId LIGHT_GRAY }
+  { "dungeon_entrance" "➘" ColorId GRAY }
   { "unknown_monster" "?" ColorId LIGHT_GREEN false "unknown" }
   { "destroy_button" "X" ColorId RED false "remove" }
   { "empty" " " ColorId BLACK }
@@ -91,7 +97,8 @@
   { "doppleganger" "&" ColorId YELLOW }
   { "succubus" "&" ColorId RED }
   { "ghost" "&" ColorId WHITE }
-  { "spirit" "" ColorId LIGHT_BLUE }
+  { "spirit" "&" ColorId YELLOW }
+  { "djinn" "&" ColorId LIGHT_BLUE }
   { "green_dragon" "D" ColorId GREEN }
   { "red_dragon" "D" ColorId RED }
   { "cyclops" "C" ColorId GREEN }
@@ -106,6 +113,9 @@
   { "priest" "@" ColorId SKY_BLUE }
   { "warrior" "@" ColorId DARK_GRAY }
   { "shaman" "@" ColorId YELLOW }
+  { "thief" "@" ColorId LIGHT_BROWN }
+  { "thief_leader" "@" ColorId BROWN }
+  { "sorcerer" "@" ColorId PURPLE }
   { "duke1" "@" ColorId BLUE false "knightboss1" }
   { "duke2" "@" ColorId BLUE false "knightboss2" }
   { "duke3" "@" ColorId BLUE false "knightboss3" }
@@ -118,6 +128,12 @@
   { "peasant" "@" ColorId GREEN }
   { "peasant_woman" "@" ColorId GREEN }
   { "child" "@" ColorId LIGHT_GREEN }
+  { "eskimo" "@" ColorId LIGHT_GRAY }
+  { "eskimo_woman" "@" ColorId LIGHT_GRAY }
+  { "eskimo_child" "@" ColorId GRAY }
+  { "nomad" "@" ColorId LIGHT_BROWN }
+  { "nomad_woman" "@" ColorId LIGHT_BROWN }
+  { "nomad_child" "@" ColorId BROWN }
   { "clay_golem" "Y" ColorId YELLOW }
   { "stone_golem" "Y" ColorId LIGHT_GRAY }
   { "iron_golem" "Y" ColorId ORANGE }
@@ -137,23 +153,30 @@
   { "jackal" "d" ColorId LIGHT_BROWN }
   { "deer" "R" ColorId DARK_BROWN }
   { "horse" "H" ColorId LIGHT_BROWN }
+  { "camel" "C" ColorId LIGHT_BROWN }
   { "cow" "C" ColorId WHITE }
   { "pig" "p" ColorId YELLOW }
   { "donkey" "D" ColorId GRAY }
   { "goat" "g" ColorId GRAY }
   { "boar" "b" ColorId LIGHT_BROWN }
   { "fox" "d" ColorId ORANGE_BROWN }
+  { "polar_fox" "d" ColorId LIGHT_GRAY }
   { "wolf" "d" ColorId DARK_BLUE }
   { "werewolf" "d" ColorId WHITE }
   { "dog" "d" ColorId BROWN }
+  { "husky" "d" ColorId LIGHT_GRAY }
+  { viewId = "snowman" symbol = "@" color = ColorId WHITE
+    roundShadow = true }
   { "kraken_head" "S" ColorId GREEN }
   { "kraken_land" "S" ColorId DARK_GREEN }
   { "kraken_water" "S" ColorId DARK_GREEN }
   { "death" "D" ColorId DARK_GRAY }
   { "bear" "N" ColorId BROWN }
+  { "polar_bear" "N" ColorId LIGHT_GRAY }
   { "bat" "b" ColorId DARK_GRAY }
   { "goblin" "o" ColorId GREEN }
   { "rat" "r" ColorId BROWN }
+  { "black_rat" "r" ColorId GRAY }
   { "rat_soldier" "@" ColorId BROWN }
   { "rat_lady" "@" ColorId DARK_BROWN }
   { "rat_king" "@" ColorId LIGHT_BROWN }
@@ -167,6 +190,7 @@
   { "raven" "v" ColorId DARK_GRAY }
   { "body_part" "%" ColorId RED }
   { "bone" "%" ColorId WHITE }
+  { "frozen_remains" "%" ColorId LIGHT_GRAY }
   { "dig_icon" "⛏" ColorId LIGHT_GRAY true }
   { "sword" ")" ColorId LIGHT_GRAY }
   { "ada_sword" ")" ColorId LIGHT_BLUE }
@@ -203,6 +227,7 @@
   { "book" "+" ColorId YELLOW }
   { "hand_torch" "/" ColorId YELLOW }
   { "first_aid" "+" ColorId RED }
+  { "lamp" "🜽" ColorId YELLOW true }
   { "trap_item" "+" ColorId YELLOW }
   { "potion1" "!" ColorId LIGHT_RED }
   { "potion2" "!" ColorId BLUE }
@@ -214,6 +239,10 @@
   { "rune2" "~" ColorId PURPLE }
   { "rune3" "~" ColorId RED }
   { "rune4" "~" ColorId BLUE }
+  { "dragon_scales" "~" ColorId GREEN }
+  { "nuts" "⠤" ColorId ORANGE true }
+  { "brain" "⚭" ColorId PINK true }
+  { "tongue" "~" ColorId RED true }
   { "key" "*" ColorId YELLOW }
   { "gold" "$" ColorId YELLOW }
   { "treasure_chest" "=" ColorId BROWN }
@@ -252,7 +281,11 @@
   { "chain_armor" "[" ColorId LIGHT_GRAY }
   { "ada_armor" "[" ColorId LIGHT_BLUE }
   { "iron_helm" "[" ColorId LIGHT_GRAY }
+  { "cyclops_helm" "[" ColorId ORANGE }
   { "ada_helm" "[" ColorId LIGHT_BLUE }
+  { "cornuthaum1" "[" ColorId LIGHT_BROWN }
+  { "cornuthaum2" "[" ColorId PINK }
+  { "cornuthaum3" "[" ColorId YELLOW }
   { "leather_boots" "[" ColorId BROWN }
   { "iron_boots" "[" ColorId LIGHT_GRAY }
   { "ada_boots" "[" ColorId LIGHT_BLUE }
@@ -312,6 +345,12 @@
   { viewId = "decid_tree" symbol = "🜍" color = ColorId DARK_GREEN
     isSymbolFont = true roundShadow = true }
   { viewId = "canif_tree" symbol = "♣" color = ColorId DARK_GREEN
+    isSymbolFont = true roundShadow = true }
+  { viewId = "palm_tree" symbol = "⥾" color = ColorId LIGHT_GREEN
+    isSymbolFont = true roundShadow = true }
+  { viewId = "giant_mushroom" symbol = "Ϯ" color = ColorId PINK
+    isSymbolFont = true roundShadow = true }
+  { viewId = "cactus1" symbol = "!" color = ColorId LIGHT_GREEN
     isSymbolFont = true roundShadow = true }
   { viewId = "burnt_tree" symbol = "." color = ColorId DARK_GRAY
     roundShadow = true }
@@ -437,27 +476,35 @@
     wallShadow = true wallConnections = true }
   { viewId = "mud_wall" symbol = "#" color = ColorId LIGHT_BROWN
     wallShadow = true wallConnections = true }
+  { viewId = "snow_wall" symbol = "#" color = ColorId WHITE
+    wallShadow = true wallConnections = true }
   { viewId = "ruin_wall" symbol = "#" color = ColorId DARK_GRAY
     wallConnections = true }
   { viewId = "road" symbol = "." color = ColorId LIGHT_GRAY
     roadConnections = true }
-  { viewId = "sand" symbol = "." color = ColorId YELLOW
+  { viewId = "sand" symbol = "." color = ColorId YELLOW canMirror = true
     extraBorders = { "water" } }
   { viewId = "mud" symbol = "." color = ColorId BROWN
     extraBorders = { "water" "hill" "sand" } }
+  { viewId = "snow" symbol = "." color = ColorId WHITE }
+  { viewId = "ice" symbol = "." color = ColorId LIGHT_BLUE waterSides = "water" }
   { viewId = "grass" symbol = "𝃰" color = ColorId GREEN
-    isSymbolFont = true
+    isSymbolFont = true canMirror = true
     extraBorders = { "water" "hill" "sand" "mud" } }
   { viewId = "hill" symbol = "𝀢" color = ColorId DARK_GREEN
-    isSymbolFont = true
+    isSymbolFont = true canMirror = true
     extraBorders = { "water" "sand" "floor" "keeper_floor" } }
   { viewId = "water" symbol = "~" color = ColorId LIGHT_BLUE
-    waterSides = "water" animated = true }
+    waterSides = "water" animated = true spriteColor = Rgb 100 130 220 255 }
   { viewId = "magma" symbol = "~" color = ColorId RED
     waterSides = "magma" animated = true }
   { viewId = "fog_of_war" symbol = " " color = ColorId WHITE sprite = "empty"
     waterSides = "fogofwar" }
   { viewId = "mountain" symbol = "#" color = ColorId GRAY
+    wallShadow = true mountainSides = "mountain" }
+  { viewId = "mountain_sand" symbol = "#" color = ColorId LIGHT_BROWN
+    wallShadow = true mountainSides = "mountain" }
+  { viewId = "glacier" symbol = "#" color = ColorId SKY_BLUE
     wallShadow = true mountainSides = "mountain" }
   { viewId = "mountain2" symbol = "#" color = ColorId DARK_GRAY
     wallShadow = true mountainSides = "mountain" }
@@ -465,6 +512,8 @@
     sprite = "mountain" wallShadow = true mountainSides = "dungeonwall" }
   { viewId = "dungeon_wall2" symbol = "#" color = ColorId DARK_BLUE
     sprite = "mountain2" wallShadow = true mountainSides = "dungeonwall" }
+  { viewId = "sandstone_wall" symbol = "#" color = ColorId YELLOW
+    sprite = "mountain_sand" wallShadow = true mountainSides = "dungeonwall" }
   { viewId = "gold_ore" symbol = "⁂" color = ColorId YELLOW
     isSymbolFont = true wallShadow = true mountainSides = "mountain"
     background = "mountain2" }
@@ -478,3 +527,4 @@
     isSymbolFont = true wallShadow = true mountainSides = "mountain"
     background = "mountain2" }
 }
+

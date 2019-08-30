@@ -138,6 +138,7 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   creatureId = c->getUniqueId();
   attributes = AttributeInfo::fromCreature(c);
   experienceInfo = getCreatureExperienceInfo(c);
+  spellSchools = c->getAttributes().getSpellSchools();
   intrinsicAttacks = fillIntrinsicAttacks(c);
   skills = getSkillNames(c);
   effects.clear();
@@ -204,6 +205,10 @@ vector<AttributeInfo> AttributeInfo::fromCreature(const Creature* c) {
       genInfo(
           AttrType::RANGED_DAMAGE,
           "Affects if and how much damage is dealt when shooting a ranged weapon."
+      ),
+      genInfo(
+          AttrType::PARRY,
+          "Prevents defense penalty from multiple attacks in the same turn."
       ),
     };
 }

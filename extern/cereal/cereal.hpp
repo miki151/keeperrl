@@ -304,7 +304,7 @@ namespace cereal
       inline std::uint32_t registerSharedPointer( void const * addr )
       {
         // Handle null pointers by just returning 0
-        if(addr == 0) return 0;
+        if(addr == nullptr) return 0;
 
         auto id = itsSharedPointerMap.find( addr );
         if( id == itsSharedPointerMap.end() )

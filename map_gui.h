@@ -209,4 +209,5 @@ class MapGui : public GuiElem {
   unique_ptr<FXViewManager> fxViewManager;
   void updateFX(milliseconds currentTimeReal);
   void drawFurnitureCracks(Renderer&, Vec2 tilePos, float state, Vec2 pos, Vec2 size, const ViewIndex& index);
+  optional<Vec2> selectionSize;
 };

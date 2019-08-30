@@ -28,7 +28,7 @@ class CollectiveBuilder {
   void setCentralPoint(Vec2);
   bool hasCentralPoint();
 
-  PCollective build(const ContentFactory*);
+  PCollective build(const ContentFactory*) const;
   bool hasCreatures() const;
 
   private:
@@ -47,5 +47,5 @@ class CollectiveBuilder {
   optional<string> locationName;
   optional<string> raceName;
   bool discoverable = false;
-  optional<CollectiveName> generateName();
+  optional<CollectiveName> generateName() const;
 };

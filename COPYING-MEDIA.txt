@@ -1,6 +1,6 @@
 Every file located in directory 'data' is granted to use only with the official binary distribution of KeeperRL. 
 
-Every file located in directory 'data_free' is granted under the Creative Commons BY-NC-SA licence. See https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+Every file located in directory 'data_free' is granted under the Creative Commons BY-SA licence. See https://creativecommons.org/licenses/by-sa/2.0/
 
 The file Lato-Bol.ttf was made by Łukasz Dziedzic (latofonts.com) and is distributed under the SIL Open Font License.
 

@@ -80,7 +80,7 @@ class CreatureAttributes {
   bool isTrainingMaxedOut(ExperienceType) const;
   void increaseBaseExpLevel(ExperienceType type, double increase);
   string bodyDescription() const;
-  const optional<string>& getSpellSchool() const;
+  vector<string> getSpellSchools() const;
   optional<SoundId> getAttackSound(AttackType, bool damage) const;
   bool isBoulder() const;
   Skillset& getSkills();
@@ -113,6 +113,7 @@ class CreatureAttributes {
   void increaseExpFromCombat(double attackDiff);
   optional<LastingEffect> getHatedByEffect() const;
   void randomize();
+  bool isInstantPrisoner() const;
 
   friend class ContentFactory;
   friend class CreatureFactory;
@@ -151,5 +152,6 @@ class CreatureAttributes {
   bool SERIAL(canJoinCollective) = true;
   optional<string> SERIAL(petReaction);
   optional<LastingEffect> SERIAL(hatedByEffect);
+  bool SERIAL(instantPrisoner) = false;
   void initializeLastingEffects();
 };

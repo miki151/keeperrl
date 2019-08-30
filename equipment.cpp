@@ -18,6 +18,7 @@
 #include "equipment.h"
 #include "item.h"
 #include "body.h"
+#include "creature.h"
 
 map<EquipmentSlot, string> Equipment::slotTitles = {
   {EquipmentSlot::WEAPON, "Weapon"},
@@ -71,7 +72,8 @@ bool Equipment::isEquipped(const Item* item) const {
   return item->canEquip() && items[item->getEquipmentSlot()].contains(item);
 }
 
-int Equipment::getMaxItems(EquipmentSlot slot, const Body& body) const {
+int Equipment::getMaxItems(EquipmentSlot slot, const Creature* c) const {
+  auto& body = c->getBody();
   switch (slot) {
     case EquipmentSlot::RINGS:
       return body.numGood(BodyPart::ARM);
@@ -83,11 +85,11 @@ int Equipment::getMaxItems(EquipmentSlot slot, const Body& body) const {
   }
 }
 
-bool Equipment::canEquip(const Item* item, const Body& body) const {
+bool Equipment::canEquip(const Item* item, const Creature* c) const {
   if (!item->canEquip() || isEquipped(item))
     return false;
   EquipmentSlot slot = item->getEquipmentSlot();
-  return items[slot].size() < getMaxItems(slot, body);
+  return items[slot].size() < getMaxItems(slot, c);
 }
 
 void Equipment::equip(Item* item, EquipmentSlot slot, Creature* c) {

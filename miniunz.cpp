@@ -62,7 +62,7 @@ void change_file_date(
   FILETIME ftm,ftLocal,ftCreate,ftLastAcc,ftLastWrite;
 
   hFile = CreateFile(filename,GENERIC_READ | GENERIC_WRITE,
-                      0,NULL,OPEN_EXISTING,0,NULL);
+                      0,nullptr,OPEN_EXISTING,0,nullptr);
   GetFileTime(hFile,&ftCreate,&ftLastAcc,&ftLastWrite);
   DosDateTimeToFileTime((WORD)(dosdate>>16),(WORD)dosdate,&ftLocal);
   LocalFileTimeToFileTime(&ftLocal,&ftm);
@@ -159,13 +159,13 @@ optional<string> do_extract_currentfile(
     char* filename_withoutpath;
     char* p;
     int err=UNZ_OK;
-    FILE *fout=NULL;
+    FILE *fout=nullptr;
     void* buf;
     uInt size_buf;
 
     unz_file_info file_info;
     uLong ratio=0;
-    err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip),NULL,0,NULL,0);
+    err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip),nullptr,0,nullptr,0);
 
     if (err!=UNZ_OK)
     {
@@ -174,7 +174,7 @@ optional<string> do_extract_currentfile(
 
     size_buf = WRITEBUFFERSIZE;
     buf = (void*)malloc(size_buf);
-    if (buf==NULL)
+    if (buf==nullptr)
     {
         return "Error allocating memory"_s;
     }
@@ -214,7 +214,7 @@ optional<string> do_extract_currentfile(
             fout=fopen(filename.data(),"wb");
 
             /* some zipfile don't contain directory alone before file */
-            if ((fout==NULL) && (filename_withoutpath!=(char*)filename_inzip))
+            if ((fout==nullptr) && (filename_withoutpath!=(char*)filename_inzip))
             {
                 char c=*(filename_withoutpath-1);
                 *(filename_withoutpath-1)='\0';
@@ -223,13 +223,13 @@ optional<string> do_extract_currentfile(
                 fout=fopen(filename.data(),"wb");
             }
 
-            if (fout==NULL)
+            if (fout==nullptr)
             {
                 return "error creating file "_s + filename + ": " + string(strerror(errno));
             }
         }
 
-        if (fout!=NULL)
+        if (fout!=nullptr)
         {
             do
             {
@@ -277,7 +277,7 @@ optional<string> do_extract(
     uLong i;
     unz_global_info gi;
     int err;
-    FILE* fout=NULL;
+    FILE* fout=nullptr;
 
     err = unzGetGlobalInfo (uf,&gi);
     if (err!=UNZ_OK)
@@ -307,7 +307,7 @@ optional<string> unzip(const string& zipfilename, const char* dirname)
     int opt_do_extract=1;
     int opt_overwrite=0;
     int opt_extractdir=0;
-    unzFile uf=NULL;
+    unzFile uf=nullptr;
 
 #    ifdef USEWIN32IOAPI
     zlib_filefunc_def ffunc;
@@ -320,7 +320,7 @@ optional<string> unzip(const string& zipfilename, const char* dirname)
     uf = unzOpen(zipfilename.data());
 #    endif
 
-    if (uf==NULL)
+    if (uf==nullptr)
     {
         return "Cannot open " + zipfilename;
     }

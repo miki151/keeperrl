@@ -9,7 +9,7 @@ class ItemList {
   ItemList& operator = (const ItemList&);
   ItemList(vector<ItemType>);
 
-  vector<PItem> random() &;
+  vector<PItem> random(const ContentFactory*) &;
 
   SERIALIZATION_DECL(ItemList)
   ~ItemList();

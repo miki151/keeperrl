@@ -39,11 +39,11 @@ class Equipment {
   const vector<Item*>& getSlotItems(EquipmentSlot slot) const;
   bool hasItem(const Item*) const;
   bool isEquipped(const Item*) const;
-  bool canEquip(const Item*, const Body&) const;
+  bool canEquip(const Item*, const Creature*) const;
   void equip(Item*, EquipmentSlot, Creature*);
   void unequip(Item*, Creature*);
   PItem removeItem(Item*, Creature*);
-  int getMaxItems(EquipmentSlot, const Body&) const;
+  int getMaxItems(EquipmentSlot, const Creature*) const;
   const vector<Item*>& getAllEquipped() const;
   const vector<Item*>& getItems() const;
   const vector<Item*>& getItems(ItemIndex) const;

@@ -376,26 +376,31 @@ PTask Task::applyItem(WTaskCallback c, Position target, Item* item) {
 
 class ApplySquare : public Task {
   public:
-  ApplySquare(WTaskCallback c, vector<Position> pos, SearchType t, ActionType a)
+  using PositionInfo = pair<Position, FurnitureLayer>;
+  ApplySquare(WTaskCallback c, vector<PositionInfo> pos, SearchType t, ActionType a)
       : positions(pos), callback(c), searchType(t), actionType(a) {}
 
   void changePosIfOccupied() {
     if (position)
-      if (Creature* c = position->getCreature())
+      if (Creature* c = position->first.getCreature())
         if (c->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
           position = none;
   }
 
-  optional<Position> choosePosition(Creature* c) {
+  optional<PositionInfo> choosePosition(Creature* c) {
     vector<Position> candidates;
     for (auto& pos : positions) {
-      if (Creature* other = pos.getCreature())
+      if (Creature* other = pos.first.getCreature())
         if (other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
           continue;
-      if (!rejectedPosition.count(pos))
-        candidates.push_back(pos);
+      if (!rejectedPosition.count(pos.first))
+        candidates.push_back(pos.first);
     }
-    return chooseRandomClose(c, candidates, searchType, false);
+    if (auto res = chooseRandomClose(c, candidates, searchType, false))
+      for (auto& pos : positions)
+        if (pos.first == *res)
+          return pos;
+    return none;
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -420,10 +425,10 @@ class ApplySquare : public Task {
         return NoMove;
       }
     } else {
-      MoveInfo move(c->moveTowards(*position));
-      if (!move || (position->dist8(c->getPosition()) == 1 && position->getCreature() &&
-          position->getCreature()->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))) {
-        rejectedPosition.insert(*position);
+      MoveInfo move(c->moveTowards(position->first));
+      if (!move || (position->first.dist8(c->getPosition()) == 1 && position->first.getCreature() &&
+          position->first.getCreature()->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))) {
+        rejectedPosition.insert(position->first);
         position = none;
         if (--invalidCount == 0) {
           setDone();
@@ -438,34 +443,36 @@ class ApplySquare : public Task {
   CreatureAction getAction(Creature* c) {
     switch (actionType) {
       case ActionType::APPLY:
-        return c->applySquare(*position);
+        return c->applySquare(position->first, position->second);
       case ActionType::NONE:
         return c->wait();
     }
   }
 
   virtual string getDescription() const override {
-    return "Apply square " + (position ? toString(*position) : "");
+    return "Apply square " + (position ? toString(position->first) : "");
   }
 
   bool atTarget(Creature* c) {
-    return position == c->getPosition() || (!position->canEnterEmpty(c) && position->dist8(c->getPosition()) == 1);
+    return position->first == c->getPosition() ||
+        (!position->first.canEnterEmpty(c) && position->first.dist8(c->getPosition()) == 1);
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), positions, rejectedPosition, invalidCount, position, callback, searchType, actionType)
   SERIALIZATION_CONSTRUCTOR(ApplySquare)
 
   private:
-  vector<Position> SERIAL(positions);
+  vector<pair<Position, FurnitureLayer>> SERIAL(positions);
   PositionSet SERIAL(rejectedPosition);
   int SERIAL(invalidCount) = 5;
-  optional<Position> SERIAL(position);
+  optional<pair<Position, FurnitureLayer>> SERIAL(position);
   WTaskCallback SERIAL(callback) = nullptr;
   SearchType SERIAL(searchType);
   ActionType SERIAL(actionType);
 };
 
-PTask Task::applySquare(WTaskCallback c, vector<Position> position, SearchType searchType, ActionType actionType) {
+PTask Task::applySquare(WTaskCallback c, vector<pair<Position, FurnitureLayer>> position, SearchType searchType,
+    ActionType actionType) {
   CHECK(position.size() > 0);
   return makeOwner<ApplySquare>(c, position, searchType, actionType);
 }
@@ -501,7 +508,7 @@ class ArcheryRange : public Task {
     if (auto move = c->fire(shootInfo->target))
       return move.append(
           [this, target = shootInfo->target](Creature* c) {
-            callback->onAppliedSquare(c, target);
+            callback->onAppliedSquare(c, make_pair(target, FurnitureLayer::MIDDLE));
             setDone();
           });
     return NoMove;
@@ -822,7 +829,7 @@ class CampAndSpawnTask : public Task {
     }
     updateTeams();
     if (defenseTeam.empty()) {
-      auto team = spawns.generate(Random, &c->getGame()->getContentFactory()->creatures, c->getTribeId(),
+      auto team = spawns.generate(Random, &c->getGame()->getContentFactory()->getCreatures(), c->getTribeId(),
           MonsterAIFactory::summoned(c));
       for (Creature* summon : Effect::summonCreatures(c->getPosition(), 4, std::move(team)))
         defenseTeam.push_back(summon);
@@ -840,7 +847,7 @@ class CampAndSpawnTask : public Task {
       if (*attackCountdown > 0)
         --*attackCountdown;
       else {
-        auto team = spawns.generate(Random, &c->getGame()->getContentFactory()->creatures, c->getTribeId(),
+        auto team = spawns.generate(Random, &c->getGame()->getContentFactory()->getCreatures(), c->getTribeId(),
             MonsterAIFactory::singleTask(Task::attackCreatures({target->getLeader()})));
         for (Creature* summon : Effect::summonCreatures(c->getPosition(), 4, std::move(team)))
           attackTeam.push_back(summon);
@@ -1449,8 +1456,8 @@ class DropItemsAnywhere : public Task {
     return "Drop items anywhere";
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), items); 
-  SERIALIZATION_CONSTRUCTOR(DropItemsAnywhere);
+  SERIALIZE_ALL(SUBCLASS(Task), items)
+  SERIALIZATION_CONSTRUCTOR(DropItemsAnywhere)
 
   protected:
   EntitySet<Item> SERIAL(items);

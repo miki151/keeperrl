@@ -33,6 +33,8 @@ class Tribe;
 class CreatureGroup;
 
 
+RICH_ENUM(FilterType, ALLY, ENEMY);
+
 #define EFFECT_TYPE_INTERFACE \
   void applyToCreature(Creature*, Creature* attacker = nullptr) const;\
   string getName() const;\
@@ -55,6 +57,7 @@ class Effect {
     COMPARE_ALL(healthType)
   };
   SIMPLE_EFFECT(Fire);
+  SIMPLE_EFFECT(Ice);
   SIMPLE_EFFECT(DestroyEquipment);
   SIMPLE_EFFECT(DestroyWalls);
   SIMPLE_EFFECT(EnhanceArmor);
@@ -70,6 +73,14 @@ class Effect {
     EFFECT_TYPE_INTERFACE;
     Summon(CreatureId id, Range c) : creature(id), count(c) {}
     Summon() {}
+    CreatureId creature;
+    Range count;
+    COMPARE_ALL(creature, count)
+  };
+  struct SummonEnemy {
+    EFFECT_TYPE_INTERFACE;
+    SummonEnemy(CreatureId id, Range c) : creature(id), count(c) {}
+    SummonEnemy() {}
     CreatureId creature;
     Range count;
     COMPARE_ALL(creature, count)
@@ -131,9 +142,9 @@ class Effect {
   };
   struct Area {
     EFFECT_TYPE_INTERFACE;
-    HeapAllocated<Effect> effect;
     int radius;
-    COMPARE_ALL(effect, radius)
+    HeapAllocated<Effect> effect;
+    COMPARE_ALL(radius, effect)
   };
   struct CustomArea {
     EFFECT_TYPE_INTERFACE;
@@ -143,7 +154,11 @@ class Effect {
     COMPARE_ALL(effect, positions)
   };
   SIMPLE_EFFECT(RegrowBodyPart);
-  SIMPLE_EFFECT(Suicide);
+  struct Suicide {
+    EFFECT_TYPE_INTERFACE;
+    MsgType message;
+    COMPARE_ALL(message)
+  };
   SIMPLE_EFFECT(DoubleTrouble);
   SIMPLE_EFFECT(Blast);
   SIMPLE_EFFECT(Pull);
@@ -163,15 +178,28 @@ class Effect {
     PCreature getBestSpirit(const Model*, TribeId tribe) const;
     COMPARE_ALL(ttl, count, ghostPower)
   };
-/*  struct Chain {
+  struct Filter {
+    EFFECT_TYPE_INTERFACE;
+    bool applies(const Creature* victim, const Creature* attacker) const;
+    FilterType filter;
+    HeapAllocated<Effect> effect;
+    COMPARE_ALL(filter, effect)
+  };
+  SIMPLE_EFFECT(Wish);
+  struct Caster {
+    EFFECT_TYPE_INTERFACE;
+    HeapAllocated<Effect> effect;
+    COMPARE_ALL(effect)
+  };
+  struct Chain {
     EFFECT_TYPE_INTERFACE;
     vector<Effect> effects;
     COMPARE_ALL(effects)
-  };*/
-  MAKE_VARIANT(EffectType, Escape, Teleport, Heal, Fire, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
+  };
+  MAKE_VARIANT(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
       Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost);
+      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost, Filter, SummonEnemy, Wish, Chain, Caster);
 
   template <typename T>
   Effect(T&& t) : effect(std::forward<T>(t)) {}

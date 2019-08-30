@@ -171,7 +171,7 @@ void PlayerControl::loadImmigrationAndWorkshops(ContentFactory* contentFactory,
     if (keeperCreatureInfo.workshopGroups.contains(group.first))
       for (int i : Range(EnumInfo<WorkshopType>::size))
         merged[i].append(group.second[i]);
-  collective->setWorkshops(unique<Workshops>(std::move(merged)));
+  collective->setWorkshops(unique<Workshops>(std::move(merged), contentFactory));
   vector<ImmigrantInfo> immigrants;
   for (auto elem : keeperCreatureInfo.immigrantGroups)
     append(immigrants, contentFactory->immigrantsData.at(elem));
@@ -467,7 +467,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
     for (Item* it : ownedItems)
       if (it->canEquip() && it->getEquipmentSlot() == slot)
         items.push_back(it);
-    for (int i = creature->getEquipment().getMaxItems(slot, creature->getBody()); i < items.size(); ++i)
+    for (int i = creature->getEquipment().getMaxItems(slot, creature); i < items.size(); ++i)
       // a rare occurence that minion owns too many items of the same slot,
       //should happen only when an item leaves the fortress and then is braught back
       if (!collective->getMinionEquipment().isLocked(creature, items[i]->getUniqueId()))
@@ -481,7 +481,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
       info.inventory.push_back(getItemInfo({item}, equiped, !equiped, locked, ItemInfo::EQUIPMENT));
       info.inventory.back().actions.push_back(locked ? ItemAction::UNLOCK : ItemAction::LOCK);
     }
-    if (creature->getEquipment().getMaxItems(slot, creature->getBody()) > items.size()) {
+    if (creature->getEquipment().getMaxItems(slot, creature) > items.size()) {
       info.inventory.push_back(getEmptySlotItem(slot));
       slotIndex.push_back(slot);
       slotItems.push_back(nullptr);
@@ -561,7 +561,7 @@ static optional<pair<ViewId, int>> getCostObj(const optional<CostInfo>& cost) {
 string PlayerControl::getMinionName(CreatureId id) const {
   static map<CreatureId, string> names;
   if (!names.count(id))
-    names[id] = getGame()->getContentFactory()->creatures.fromId(id, TribeId::getMonster())->getName().bare();
+    names[id] = getGame()->getContentFactory()->getCreatures().fromId(id, TribeId::getMonster())->getName().bare();
   return names.at(id);
 }
 
@@ -674,6 +674,9 @@ string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
       },
       [&](const NumConquered&) {
         return "aggression";
+      },
+      [&](Immediate) {
+        return "just doesn't like you";
       }
   );
 }
@@ -963,6 +966,12 @@ ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option, int queuedCo
         c.unavailableReason = "Requires technology: "_s + option.techId->data();
       }
       c.description = option.description;
+      if (option.requireIngredient) {
+        if (auto ingredient = getIngredientFor(option))
+          c.description.push_back("Crafted from " + ingredient->first->getName());
+        else
+          c.hidden = true;
+      }
       c.tutorialHighlight = tutorial && option.tutorialHighlight &&
           tutorial->getHighlights(getGame()).contains(*option.tutorialHighlight);
     );
@@ -1009,16 +1018,25 @@ vector<pair<vector<Item*>, Position>> PlayerControl::getItemUpgradesFor(const Wo
   vector<pair<vector<Item*>, Position>> ret;
   for (auto& pos : collective->getStoragePositions(StorageId::EQUIPMENT))
     for (auto& item : pos.getItems(ItemIndex::RUNE))
-      if (item->getUpgradeInfo()->type == workshopItem.upgradeType) {
-        for (auto& existing : ret)
-          if (existing.first[0]->getUpgradeInfo() == item->getUpgradeInfo()) {
-            existing.first.push_back(item);
-            goto found;
-          }
-        ret.push_back({{item}, pos});
-        found:;
-      }
+      if (auto& upgradeInfo = item->getUpgradeInfo())
+        if (upgradeInfo->type == workshopItem.upgradeType) {
+          for (auto& existing : ret)
+            if (existing.first[0]->getUpgradeInfo() == upgradeInfo) {
+              existing.first.push_back(item);
+              goto found;
+            }
+          ret.push_back({{item}, pos});
+          found:;
+        }
   return ret;
+}
+
+optional<pair<Item*, Position>> PlayerControl::getIngredientFor(const WorkshopItem& workshopItem) const {
+  for (auto& pos : collective->getStoragePositions(StorageId::EQUIPMENT))
+    for (auto& item : pos.getItems(ItemIndex::RUNE))
+      if (item->getIngredientFor() == workshopItem.type)
+        return make_pair(item, pos);
+  return none;
 }
 
 CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQueuedItem& item) const {
@@ -1027,9 +1045,13 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
     ret.available.push_back({it.first[0]->getViewObject().id(), it.first[0]->getName(), it.first.size(),
         it.first[0]->getUpgradeInfo()->getDescription()});
   }
-  for (auto& it : item.runes)
-    ret.added.push_back({it->getViewObject().id(), it->getName(), 1,
-        it->getUpgradeInfo()->getDescription()});
+  for (auto& it : item.runes) {
+    if (auto& upgradeInfo = it->getUpgradeInfo())
+      ret.added.push_back({it->getViewObject().id(), it->getName(), 1,
+          upgradeInfo->getDescription()});
+    else
+      ret.itemInfo.description.push_back("Crafted from: " + it->getName());
+  }
   ret.itemInfo.actions = {ItemAction::REMOVE};
   if (item.runes.empty())
     ret.itemInfo.actions.push_back(ItemAction::CHANGE_NUMBER);
@@ -1222,7 +1244,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   static map<CreatureId, PCreature> creatureStats;
   auto getStats = [&](CreatureId id) -> Creature* {
     if (!creatureStats[id]) {
-      creatureStats[id] = getGame()->getContentFactory()->creatures.fromId(id, TribeId::getDarkKeeper());
+      creatureStats[id] = getGame()->getContentFactory()->getCreatures().fromId(id, TribeId::getDarkKeeper());
     }
     return creatureStats[id].get();
   };
@@ -1677,7 +1699,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
   if (getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
     for (auto col : getGame()->getCollectives())
-      if (col->getTerritory().contains(position))
+      if (col->getKnownTiles().isKnown(position))
         index.setHighlight(HighlightType::RECT_SELECTION);
   const ConstructionMap& constructions = collective->getConstructions();
   if (auto trap = constructions.getTrap(position))
@@ -1908,7 +1930,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       draggedCreature = input.get<Creature::Id>();
       for (auto task : ENUM_ALL(MinionActivity))
         for (auto& pos : collective->getMinionActivities().getAllPositions(collective, nullptr, task))
-          pos.setNeedsRenderUpdate(true);
+          pos.first.setNeedsRenderUpdate(true);
       break;
     case UserInputId::CREATURE_DRAG_DROP:
       minionDragAndDrop(input.get<CreatureDropInfo>());
@@ -1959,8 +1981,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DRAW_WORLD_MAP: getGame()->presentWorldmap(); break;
     case UserInputId::TECHNOLOGY: setChosenLibrary(!chosenLibrary); break;
-    case UserInputId::KEEPEROPEDIA: Encyclopedia(buildInfo, getGame()->getContentFactory()->creatures.getSpellSchools(),
-          getGame()->getContentFactory()->creatures.getSpells(), collective->getTechnology()).present(view);
+    case UserInputId::KEEPEROPEDIA: Encyclopedia(buildInfo, getGame()->getContentFactory()->getCreatures().getSpellSchools(),
+          getGame()->getContentFactory()->getCreatures().getSpells(), collective->getTechnology()).present(view);
       break;
     case UserInputId::WORKSHOP: {
       int index = input.get<int>();
@@ -1976,8 +1998,18 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     }
     case UserInputId::WORKSHOP_ADD:
-      if (chosenWorkshop)
-        collective->getWorkshops().get(*chosenWorkshop).queue(input.get<int>());
+      if (chosenWorkshop) {
+        auto& workshops = collective->getWorkshops().get(*chosenWorkshop);
+        int index = input.get<int>();
+        auto& item = workshops.getOptions()[index];
+        if (item.requireIngredient) {
+          if (auto ingredient = getIngredientFor(item)) {
+            workshops.queue(index);
+            workshops.addUpgrade(workshops.getQueued().size() - 1, ingredient->second.removeItem(ingredient->first));
+          }
+        } else
+          workshops.queue(index);
+      }
       break;
     case UserInputId::WORKSHOP_UPGRADE: {
       auto& info = input.get<WorkshopUpgradeInfo>();
@@ -2202,7 +2234,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     }
     case UserInputId::RECT_SELECTION: {
-      auto& info = input.get<BuildingInfo>();
+      auto& info = input.get<BuildingClickInfo>();
       if (buildInfo[info.building].canSelectRectangle()) {
         updateSelectionSquares();
         if (rectSelection) {
@@ -2223,7 +2255,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       updateSelectionSquares();
       break;
     case UserInputId::BUILD: {
-      auto& info = input.get<BuildingInfo>();
+      auto& info = input.get<BuildingClickInfo>();
       handleSelection(info.pos, buildInfo[info.building], false);
       break;
     }
@@ -2266,7 +2298,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       if (rectSelection) {
         selection = rectSelection->deselect ? DESELECT : SELECT;
         for (Vec2 v : Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2}))
-          handleSelection(v, buildInfo[input.get<BuildingInfo>().building], true, rectSelection->deselect);
+          handleSelection(v, buildInfo[input.get<BuildingClickInfo>().building], true, rectSelection->deselect);
       }
       FALLTHROUGH;
     case UserInputId::RECT_CANCEL:
@@ -2369,7 +2401,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           if (auto error = PrettyPrinting::parseObject(item, *input))
             getView()->presentText("Sorry", "Couldn't parse \"" + *input + "\": " + *error);
           else {
-              position.dropItems(item.get(*num));
+              position.dropItems(item.get(*num, getGame()->getContentFactory()));
           }
         }
     },
@@ -2445,7 +2477,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
       collective->setPriorityTasks(position);
     },
     [&](BuildInfo::PlaceMinion) {
-      auto& factory = getGame()->getContentFactory()->creatures;
+      auto& factory = getGame()->getContentFactory()->getCreatures();
       vector<PCreature> allCreatures = factory.getAllCreatures().transform(
           [this, &factory](CreatureId id){ return factory.fromId(id, getTribeId()); });
       if (auto id = getView()->chooseCreature("Choose creature to place",
@@ -2525,6 +2557,10 @@ const vector<Vec2>& PlayerControl::getUnknownLocations(WConstLevel) const {
   return unknownLocations->getOnLevel(getCurrentLevel());
 }
 
+optional<Vec2> PlayerControl::getSelectionSize() const {
+  return rectSelection.map([](const SelectionInfo& s) { return s.corner1 - s.corner2; });
+}
+
 const Creature* PlayerControl::getKeeper() const {
   return collective->getLeader();
 }
@@ -2578,7 +2614,7 @@ void PlayerControl::checkKeeperDanger() {
 }
 
 void PlayerControl::onNoEnemies() {
-  getGame()->setCurrentMusic(MusicType::PEACEFUL, false);
+  getGame()->setDefaultMusic(false);
 }
 
 void PlayerControl::considerNightfallMessage() {

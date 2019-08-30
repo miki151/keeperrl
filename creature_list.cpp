@@ -73,9 +73,11 @@ ViewId CreatureList::getViewId(CreatureFactory* factory) const {
 }
 
 vector<PCreature> CreatureList::generate(RandomGen& random, CreatureFactory* factory, TribeId tribe,
-    MonsterAIFactory aiFactory) const {
+    MonsterAIFactory aiFactory, bool nonUnique) const {
   vector<PCreature> ret;
   vector<CreatureId> uniquesCopy = uniques;
+  if (nonUnique)
+    uniquesCopy.clear();
   for (int i : Range(random.get(count))) {
     optional<CreatureId> id;
     if (!uniquesCopy.empty()) {

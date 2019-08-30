@@ -216,6 +216,10 @@ void CreatureFactory::merge(CreatureFactory f) {
   append(spells, std::move(f.spells));
 }
 
+void CreatureFactory::setContentFactory(const ContentFactory* f) const {
+  contentFactory = f;
+}
+
 CreatureFactory::CreatureFactory(CreatureFactory&&) = default;
 CreatureFactory& CreatureFactory::operator =(CreatureFactory&&) = default;
 
@@ -469,7 +473,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
     ar(prevCreatures, debtors, thiefCount, thieves, shopArea, myLevel, firstMove);
   }
 
-  SERIALIZATION_CONSTRUCTOR(ShopkeeperController);
+  SERIALIZATION_CONSTRUCTOR(ShopkeeperController)
 
   private:
   EntitySet<Creature> SERIAL(prevCreatures);
@@ -483,7 +487,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
 
 void CreatureFactory::addInventory(Creature* c, const vector<ItemType>& items) {
   for (ItemType item : items)
-    c->take(item.get());
+    c->take(item.get(contentFactory));
 }
 
 PController CreatureFactory::getShopkeeper(Rectangle shopArea, Creature* c) {
@@ -594,12 +598,12 @@ static string getSpeciesName(bool humanoid, bool large, bool living, bool wings)
 static optional<ItemType> getSpecialBeastAttack(bool large, bool living, bool wings) {
   static vector<optional<ItemType>> attacks {
     ItemType(ItemType::fangs(7)),
-    ItemType(ItemType::fangs(7, Effect::Fire{})),
-    ItemType(ItemType::fangs(7, Effect::Fire{})),
+    ItemType(ItemType::fangs(7, VictimEffect{0.7, Effect::Fire{}})),
+    ItemType(ItemType::fangs(7, VictimEffect{0.7, Effect::Fire{}})),
     ItemType(ItemType::fists(7)),
-    ItemType(ItemType::fangs(7, Effect::Lasting{LastingEffect::POISON})),
+    ItemType(ItemType::fangs(7, VictimEffect{0.3, Effect::Lasting{LastingEffect::POISON}})),
     ItemType(ItemType::fangs(7)),
-    ItemType(ItemType::fangs(7, Effect::Lasting{LastingEffect::POISON})),
+    ItemType(ItemType::fangs(7, VictimEffect{0.3, Effect::Lasting{LastingEffect::POISON}})),
     ItemType(ItemType::fists(7)),
   };
   return attacks[(!large) * 4 + (!living) * 2 + wings];
@@ -654,14 +658,13 @@ static vector<LastingEffect> getResistanceAndVulnerability(RandomGen& random) {
   return ret;
 }
 
-PCreature CreatureFactory::getSpecial(TribeId tribe, SpecialParams p, const ControllerFactory& factory) {
+PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParams p, const ControllerFactory& factory) {
   Body body = Body(p.humanoid, p.living ? Body::Material::FLESH : Body::Material::SPIRIT,
       p.large ? Body::Size::LARGE : Body::Size::MEDIUM);
   if (p.wings)
     body.addWithoutUpdatingPermanentEffects(BodyPart::WING, 2);
   string name = getSpeciesName(p.humanoid, p.large, p.living, p.wings);
-  SpellMap spells;
-  PCreature c = get(CATTR(
+  auto attributes = CATTR(
         c.viewId = getSpecialViewId(p.humanoid, p.large, p.living, p.wings);
         c.isSpecial = true;
         c.body = std::move(body);
@@ -683,6 +686,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, SpecialParams p, const Cont
           c.skills.setValue(SkillId::FURNACE, Random.getDouble(0, 1));
           c.maxLevelIncrease[ExperienceType::MELEE] = 10;
           c.maxLevelIncrease[ExperienceType::SPELL] = 10;
+          c.spellSchools = LIST(SpellSchoolId("mage"));
         }
         if (p.humanoid) {
           c.chatReactionFriendly = "\"I am the mighty " + name + "\"";
@@ -692,7 +696,7 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, SpecialParams p, const Cont
         }
         c.name = name;
         c.name.setStack(p.humanoid ? "legendary humanoid" : "legendary beast");
-        c.name.setFirst(nameGenerator->getNext(NameGeneratorId::DEMON));
+        c.name.setFirst(nameGenerator->getNext(NameGeneratorId("DEMON")));
         if (!p.humanoid) {
           c.body->setBodyParts(getSpecialBeastBody(p.large, p.living, p.wings));
           c.attr[AttrType::DAMAGE] += 5;
@@ -702,34 +706,43 @@ PCreature CreatureFactory::getSpecial(TribeId tribe, SpecialParams p, const Cont
         }
         if (Random.roll(3))
           c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
-        ), tribe, factory, spells);
+        );
+  initializeAttributes(id, attributes);
+  auto spells = getSpellMap(attributes);
+  PCreature c = get(std::move(attributes), tribe, factory, std::move(spells));
   if (body.isHumanoid()) {
     if (Random.roll(4))
-      c->take(ItemType(ItemType::Bow{}).get());
+      c->take(ItemType(CustomItemId("Bow")).get(contentFactory));
     c->take(Random.choose(
-          ItemType(ItemType::Sword{}).setPrefixChance(1),
-          ItemType(ItemType::BattleAxe{}).setPrefixChance(1),
-          ItemType(ItemType::WarHammer{}).setPrefixChance(1))
-        .get());
+          ItemType(CustomItemId("Sword")).setPrefixChance(1),
+          ItemType(CustomItemId("BattleAxe")).setPrefixChance(1),
+          ItemType(CustomItemId("WarHammer")).setPrefixChance(1))
+        .get(contentFactory));
   }
   return c;
 }
 
-CreatureAttributes CreatureFactory::getAttributes(CreatureId id) {
-  auto ret = getAttributesFromId(id);
-  ret.setCreatureId(id);
-  ret.randomize();
-  return ret;
+void CreatureFactory::initializeAttributes(CreatureId id, CreatureAttributes& attr) {
+  attr.setCreatureId(id);
+  attr.randomize();
+  auto& attacks = attr.getBody().getIntrinsicAttacks();
+  for (auto bodyPart : ENUM_ALL(BodyPart))
+    if (auto& attack = attacks[bodyPart])
+      attack->initializeItem(contentFactory);
 }
 
 CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {
-  if (auto ret = getValueMaybe(attributes, id)) {
-    ret->name.generateFirst(&*nameGenerator);
-    return std::move(*ret);
-  } else if (id == "KRAKEN")
+  auto ret = [this, id] {
+    if (auto ret = getValueMaybe(attributes, id)) {
+      ret->name.generateFirst(&*nameGenerator);
+      return std::move(*ret);
+    } else if (id == "KRAKEN")
       return getKrakenAttributes(ViewId("kraken_head"), "kraken");
-  FATAL << "Unrecognized creature type: \"" << id << "\"";
-  fail();
+    FATAL << "Unrecognized creature type: \"" << id << "\"";
+    fail();
+  }();
+  initializeAttributes(id, ret);
+  return ret;
 }
 
 ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
@@ -763,24 +776,29 @@ const map<CreatureId, CreatureFactory::SpecialParams>& CreatureFactory::getSpeci
   return ret;
 }
 
+SpellMap CreatureFactory::getSpellMap(const CreatureAttributes& attr) {
+  SpellMap spellMap;
+  for (auto& schoolName : attr.spellSchools) {
+    auto& school = spellSchools.at(schoolName);
+    for (auto& spell : school.spells)
+      spellMap.add(*getSpell(spell.first), school.expType, spell.second);
+  }
+  for (auto& spell : attr.spells)
+    spellMap.add(*getSpell(spell), ExperienceType::SPELL, 0);
+  return spellMap;
+}
+
 PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory aiFactory) {
   ControllerFactory factory = Monster::getFactory(aiFactory);
   auto& special = getSpecialParams();
   if (special.count(id))
-    return getSpecial(tribe, special.at(id), factory);
+    return getSpecial(id, tribe, special.at(id), factory);
   else if (id == "SOKOBAN_BOULDER")
     return getSokobanBoulder(tribe);
   else {
-    auto attr = getAttributes(id);
-    SpellMap spellMap;
-    for (auto& schoolName : attr.spellSchools) {
-      auto& school = spellSchools.at(schoolName);
-      for (auto& spell : school.spells)
-        spellMap.add(*getSpell(spell.first), school.expType, spell.second);
-    }
-    for (auto& spell : attr.spells)
-      spellMap.add(*getSpell(spell), ExperienceType::SPELL, 0);
-    return get(std::move(attr), tribe, getController(id, aiFactory), std::move(spellMap));
+    auto attr = getAttributesFromId(id);
+    auto spells = getSpellMap(attr);
+    return get(std::move(attr), tribe, getController(id, aiFactory), std::move(spells));
   }
 }
 
@@ -794,7 +812,7 @@ const Spell* CreatureFactory::getSpell(SpellId id) const {
 PCreature CreatureFactory::getGhost(Creature* creature) {
   ViewObject viewObject(creature->getViewObject().id(), ViewLayer::CREATURE, "Ghost");
   viewObject.setModifier(ViewObject::Modifier::ILLUSION);
-  auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), getAttributes(CreatureId("LOST_SOUL")), SpellMap{});
+  auto ret = makeOwner<Creature>(viewObject, creature->getTribeId(), getAttributesFromId(CreatureId("LOST_SOUL")), SpellMap{});
   ret->setController(Monster::getFactory(MonsterAIFactory::monster()).get(ret.get()));
   return ret;
 }

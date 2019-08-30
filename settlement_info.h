@@ -6,22 +6,9 @@
 #include "item_factory.h"
 #include "furniture_list.h"
 #include "inhabitants_info.h"
-
-RICH_ENUM(BuildingId,
-  WOOD,
-  MUD,
-  BRICK,
-  WOOD_CASTLE,
-  DUNGEON,
-  DUNGEON_SURFACE,
-  RUINS
-);
-
-RICH_ENUM(BiomeId,
-  GRASSLAND,
-  FORREST,
-  MOUNTAIN
-);
+#include "building_id.h"
+#include "building_info.h"
+#include "name_generator_id.h"
 
 struct StockpileInfo {
   ItemListId SERIAL(items);
@@ -66,6 +53,7 @@ struct SettlementInfo {
   TribeId SERIAL(tribe);
   optional<string> SERIAL(race);
   BuildingId SERIAL(buildingId);
+  BuildingInfo buildingInfo;
   vector<StairKey> downStairs;
   vector<StairKey> upStairs;
   vector<StockpileInfo> SERIAL(stockpiles);
@@ -73,7 +61,7 @@ struct SettlementInfo {
   optional<ItemListId> SERIAL(shopItems);
   bool SERIAL(shopkeeperDead) = false;
   CollectiveBuilder* collective;
-  optional<FurnitureListId> SERIAL(furniture);
+  vector<FurnitureListId> SERIAL(furniture);
   optional<FurnitureListId> SERIAL(outsideFeatures);
   bool SERIAL(closeToPlayer) = false;
   bool SERIAL(dontConnectCave) = false;
@@ -82,5 +70,5 @@ struct SettlementInfo {
   int SERIAL(surroundWithResources) = 0;
   optional<FurnitureType> SERIAL(extraResources);
   optional<int> SERIAL(cropsDistance);
-  SERIALIZE_ALL(NAMED(type), OPTION(inhabitants), NAMED(corpses), NAMED(locationName), NAMED(locationNameGen), NAMED(tribe), NAMED(race), NAMED(buildingId), OPTION(stockpiles), NAMED(lootItem), NAMED(shopItems), OPTION(shopkeeperDead), NAMED(furniture), NAMED(outsideFeatures), OPTION(closeToPlayer), OPTION(dontConnectCave), OPTION(dontBuildRoad), OPTION(anyPlayerDistance), OPTION(surroundWithResources), NAMED(extraResources), NAMED(cropsDistance))
+  SERIALIZE_ALL(NAMED(type), OPTION(inhabitants), NAMED(corpses), NAMED(locationName), NAMED(locationNameGen), NAMED(tribe), NAMED(race), NAMED(buildingId), OPTION(stockpiles), NAMED(lootItem), NAMED(shopItems), OPTION(shopkeeperDead), OPTION(furniture), NAMED(outsideFeatures), OPTION(closeToPlayer), OPTION(dontConnectCave), OPTION(dontBuildRoad), OPTION(anyPlayerDistance), OPTION(surroundWithResources), NAMED(extraResources), NAMED(cropsDistance))
 };

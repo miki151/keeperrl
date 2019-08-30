@@ -17,8 +17,9 @@ struct JoinPrefixes {
 };
 
 struct VictimEffect {
+  double chance;
   Effect effect;
-  COMPARE_ALL(effect)
+  COMPARE_ALL(chance, effect)
 };
 
 struct AttackerEffect {

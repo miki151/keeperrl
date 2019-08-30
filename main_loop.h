@@ -29,11 +29,13 @@ struct ModelTable;
 class TileSet;
 class ContentFactory;
 class TilePaths;
+struct ModVersionInfo;
+struct ModDetails;
 
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      Options*, Jukebox*, SokobanInput*, TileSet*, bool useSingleThread, int saveVersion);
+      Options*, Jukebox*, SokobanInput*, TileSet*, bool useSingleThread, int saveVersion, string modVersion);
 
   void start(bool tilesPresent);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
@@ -64,7 +66,7 @@ class MainLoop {
 
   PGame prepareCampaign(RandomGen&);
   enum class ExitCondition;
-  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave,
+  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, bool splashScreen,
       function<optional<ExitCondition> (WGame)> = nullptr, milliseconds stepTimeMilli = milliseconds{3}, optional<int> maxTurns = none);
   void splashScreen();
   void showCredits(const FilePath& path);
@@ -94,17 +96,30 @@ class MainLoop {
   bool useSingleThread;
   SokobanInput* sokobanInput;
   TileSet* tileSet;
+  int saveVersion;
+  string modVersion;
   PModel getBaseModel(ModelBuilder&, CampaignSetup&, const AvatarInfo&);
   void considerGameEventsPrompt();
   void considerFreeVersionText(bool tilesPresent);
   void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);
   PGame prepareTutorial(const ContentFactory*);
   void bugReportSave(PGame&, FilePath);
-  int saveVersion;
   void saveGame(PGame&, const FilePath&);
   void saveMainModel(PGame&, const FilePath&);
   ContentFactory createContentFactory(bool vanillaOnly) const;
   TilePaths getTilePathsForAllMods() const;
-  int getLocalVersion(const string& mod);
-  void updateLocalVersion(const string& mod, int version);
+
+  optional<ModVersionInfo> getLocalModVersionInfo(const string& mod);
+  void updateLocalModVersion(const string& mod, const ModVersionInfo&);
+  optional<ModDetails> getLocalModDetails(const string& mod);
+  void updateLocalModDetails(const string& mod, const ModDetails&);
+  void removeMod(const string &modName);
+  void removeOldSteamMod(SteamId, const string &newName);
+
+  void registerModPlaytime(bool started);
+  DirectoryPath getModsDir() const;
+  vector<ModInfo> getAllMods();
+  void downloadMod(ModInfo&, const DirectoryPath& modDir);
+  void uploadMod(ModInfo&, const DirectoryPath& modDir);
+  void createNewMod();
 };

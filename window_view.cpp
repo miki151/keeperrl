@@ -170,11 +170,11 @@ void WindowView::mapContinuousLeftClickFun(Vec2 pos) {
       else*/
       if (collectiveTab == CollectiveTab::BUILDINGS) {
         if (activeBuilding && (isKeyPressed(SDL::SDL_SCANCODE_LSHIFT) || isKeyPressed(SDL::SDL_SCANCODE_RSHIFT)))
-          inputQueue.push(UserInput(UserInputId::RECT_SELECTION, BuildingInfo{pos, *activeBuilding}));
+          inputQueue.push(UserInput(UserInputId::RECT_SELECTION, BuildingClickInfo{pos, *activeBuilding}));
         else if (activeBuilding && (isKeyPressed(SDL::SDL_SCANCODE_LCTRL) || isKeyPressed(SDL::SDL_SCANCODE_RCTRL)))
           inputQueue.push(UserInput(UserInputId::RECT_DESELECTION, pos));
         else if (activeBuilding)
-          inputQueue.push(UserInput(UserInputId::BUILD, BuildingInfo{pos, *activeBuilding}));
+          inputQueue.push(UserInput(UserInputId::BUILD, BuildingClickInfo{pos, *activeBuilding}));
       }
       break;
     default:
@@ -780,6 +780,22 @@ optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, TargetType targetType, T
         }
       };
       switch (targetType) {
+        case TargetType::SHOW_ALL:
+          for (auto v : passable.getBounds()) {
+            auto color = [&] {
+              switch (passable[v]) {
+                case PassableInfo::UNKNOWN:
+                  return Color::TRANSPARENT;
+                case PassableInfo::PASSABLE:
+                  return Color::WHITE.transparency(100);
+                case PassableInfo::STOPS_HERE:
+                case PassableInfo::NON_PASSABLE:
+                  return Color::GREEN;
+              }
+            }();
+            drawPoint(mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(), v.x, v.y), color);
+          }
+          break;
         case TargetType::POSITION: {
           auto color = pos->inRectangle(passable.getBounds()) && passable[*pos] == PassableInfo::PASSABLE ? Color::GREEN : Color::RED;
           drawPoint(mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(), pos->x, pos->y), color);
@@ -949,6 +965,11 @@ bool WindowView::creatureInfo(const string& title, bool prompt, const vector<Cre
   return getBlockingGui(returnQueue, guiBuilder.drawCreatureInfo(returnQueue, title, prompt, creatures));
 }
 
+optional<ModAction> WindowView::getModAction(int highlighted, const vector<ModInfo>& mods) {
+  SyncQueue<optional<ModAction>> returnQueue;
+  return getBlockingGui(returnQueue, guiBuilder.drawModMenu(returnQueue, highlighted, mods));
+}
+
 void WindowView::logMessage(const std::string& message) {
   RecursiveLock lock(logMutex);
   messageLog.push_back(message);
@@ -1079,7 +1100,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
               callbackRet = optional<int>(indexes[*index]);
               break;
             }
-            break;
+            FALLTHROUGH;
           case SDL::SDLK_ESCAPE:
             callbackRet = optional<int>(none);
             break;
@@ -1285,9 +1306,9 @@ void WindowView::processEvents() {
       case SDL::SDL_MOUSEBUTTONUP:
         if (event.button.button == SDL_BUTTON_LEFT) {
           if (auto building = guiBuilder.getActiveButton(CollectiveTab::BUILDINGS))
-            inputQueue.push(UserInput(UserInputId::RECT_CONFIRM, BuildingInfo{Vec2(0, 0), *building}));
+            inputQueue.push(UserInput(UserInputId::RECT_CONFIRM, BuildingClickInfo{Vec2(0, 0), *building}));
           else if (auto building = guiBuilder.getActiveButton(CollectiveTab::TECHNOLOGY))
-            inputQueue.push(UserInput(UserInputId::RECT_CONFIRM, BuildingInfo{Vec2(0, 0), *building}));
+            inputQueue.push(UserInput(UserInputId::RECT_CONFIRM, BuildingClickInfo{Vec2(0, 0), *building}));
           else if (gameInfo.infoType == GameInfo::InfoType::BAND)
             inputQueue.push(UserInputId::RECT_CANCEL);
         }

@@ -33,6 +33,7 @@ class RangedWeapon;
 class WeaponInfo;
 struct ItemUpgradeInfo;
 class ItemPrefix;
+class ItemType;
 
 class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
@@ -53,9 +54,12 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getShortName(const Creature* owner = nullptr, bool plural = false) const;
   string getPluralName(int count) const;
   string getPluralTheName(int count) const;
+  string getPluralAName(int count) const;
   string getPluralTheNameAndVerb(int count, const string& verbSingle, const string& verbPlural) const;
 
   const optional<Effect>& getEffect() const;
+  bool effectAppliedWhenThrown() const;
+
   ItemClass getClass() const;
   
   int getPrice() const;
@@ -69,6 +73,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   const optional<ItemUpgradeInfo>& getUpgradeInfo() const;
   optional<ItemUpgradeType> getAppliedUpgradeType() const;
   int getMaxUpgrades() const;
+  const optional<ItemType>& getIngredientFor() const;
 
   bool canEquip() const;
   EquipmentSlot getEquipmentSlot() const;
@@ -88,6 +93,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   void onOwned(Creature*);
   void onDropped(Creature*);
   virtual void fireDamage(Position);
+  virtual void iceDamage(Position);
   const Fire& getFire() const;
 
   void onHitSquareMessage(Position, int numItems);
@@ -98,7 +104,6 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   vector<string> getDescription() const;
 
   optional<LastingEffect> getOwnedEffect() const;
-  double getDamageReduction() const;
 
   const WeaponInfo& getWeaponInfo() const;
   void getAttackMsg(const Creature*, const string& enemyName) const;
@@ -115,7 +120,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   virtual optional<CorpseInfo> getCorpseInfo() const;
 
-  SERIALIZATION_DECL(Item);
+  SERIALIZATION_DECL(Item)
 
   protected:
   virtual void specialTick(Position) {}

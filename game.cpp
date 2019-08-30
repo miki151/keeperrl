@@ -66,8 +66,11 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, ContentFacto
   gameDisplayName = c.gameDisplayName;
   for (Vec2 v : models.getBounds())
     if (WModel m = models[v].get()) {
-      for (WCollective col : m->getCollectives())
+      for (WCollective col : m->getCollectives()) {
+        auto control = dynamic_cast<VillageControl*>(col->getControl());
+        control->updateAggression(c.enemyAggressionLevel);
         addCollective(col);
+      }
       m->updateSunlightMovement();
       for (auto c : m->getAllCreatures())
         c->setGlobalTime(getGlobalTime());
@@ -338,10 +341,12 @@ bool Game::updateModel(WModel model, double totalTime) {
       return false;
     if (wasPlayer && getPlayerCreatures().empty())
       return true;
-    if (wasTransfered || exitInfo) {
+    if (wasTransfered) {
       wasTransfered = false;
       return false;
     }
+    if (exitInfo)
+      return true;
   } while (1);
 }
 
@@ -356,7 +361,7 @@ void Game::tick(GlobalTime time) {
     auto turn = *turnEvents.begin();
     if (turn == 0) {
       auto values = campaign->getParameters();
-      values["current_mod"] = getOptions()->getStringValue(OptionId::CURRENT_MOD);
+      values["current_mod"] = getOptions()->getStringValue(OptionId::CURRENT_MOD2);
       values["version"] = string(BUILD_DATE) + " " + string(BUILD_VERSION);
       uploadEvent("campaignStarted", values);
     } else
@@ -504,11 +509,16 @@ MusicType Game::getCurrentMusic() const {
   return musicType;
 }
 
-void Game::setCurrentMusic(MusicType type, bool now) {
-  if (type == MusicType::PEACEFUL && sunlightInfo.getState() == SunlightState::NIGHT)
+void Game::setDefaultMusic(bool now) {
+  if (sunlightInfo.getState() == SunlightState::NIGHT)
     musicType = MusicType::NIGHT;
   else
-    musicType = type;
+    musicType = getCurrentModel()->getDefaultMusic().value_or(MusicType::PEACEFUL);
+  finishCurrentMusic = now;
+}
+
+void Game::setCurrentMusic(MusicType type, bool now) {
+  musicType = type;
   finishCurrentMusic = now;
 }
 

@@ -6,7 +6,8 @@ RICH_ENUM(AttrType,
   DAMAGE,
   DEFENSE,
   SPELL_DAMAGE,
-  RANGED_DAMAGE
+  RANGED_DAMAGE,
+  PARRY
 );
 
 extern string getName(AttrType);

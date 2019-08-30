@@ -29,7 +29,7 @@ AudioDevice::~AudioDevice() {
   if (device) {
     RecursiveLock lock(mutex);
     sources.clear();
-    alcMakeContextCurrent(NULL);
+    alcMakeContextCurrent(nullptr);
     alcDestroyContext((ALCcontext*)context);
     alcCloseDevice((ALCdevice*)device);
   }

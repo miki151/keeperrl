@@ -11,13 +11,16 @@ FurnitureList::FurnitureList(vector<pair<FurnitureType, double>> elems, vector<F
   : elems(std::move(elems)), unique(std::move(unique)) {
 }
 
-FurnitureParams FurnitureList::getRandom(RandomGen& random, TribeId tribe) {
+optional<FurnitureParams> FurnitureList::getRandom(RandomGen& random, TribeId tribe) {
   if (!unique.empty()) {
     FurnitureType f = unique.back();
     unique.pop_back();
-    return {f, tribe};
+    return FurnitureParams{f, tribe};
   } else
-    return {random.choose(elems), tribe};
+  if (!elems.empty())
+    return FurnitureParams{random.choose(elems), tribe};
+  else
+    return none;
 }
 
 int FurnitureList::numUnique() const {

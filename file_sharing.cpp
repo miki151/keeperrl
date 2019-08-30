@@ -6,11 +6,20 @@
 #include "options.h"
 #include "text_serialization.h"
 #include "miniunz.h"
+#include "mod_info.h"
 
 #include <curl/curl.h>
 
-FileSharing::FileSharing(const string& url, Options& o, string id) : uploadUrl(url), options(o),
-    uploadLoop(bindMethod(&FileSharing::uploadingLoop, this)), installId(id), wasCancelled(false) {
+#ifdef USE_STEAMWORKS
+#include "steam_client.h"
+#include "steam_ugc.h"
+#include "steam_user.h"
+#include "steam_friends.h"
+#endif
+
+FileSharing::FileSharing(const string& url, const string& modVer, Options& o, string id)
+    : uploadUrl(url), modVersion(modVer), options(o), uploadLoop(bindMethod(&FileSharing::uploadingLoop, this)),
+      installId(id), wasCancelled(false) {
   curl_global_init(CURL_GLOBAL_ALL);
 }
 
@@ -325,27 +334,232 @@ bool FileSharing::uploadBoardMessage(const string& gameId, int hash, const strin
   }, false);
 }
 
-static optional<FileSharing::OnlineModInfo> parseModInfo(const vector<string>& fields) {
-  if (fields.size() >= 5)
+static optional<ModInfo> parseModInfo(const vector<string>& fields, const string& modVersion) {
+  if (fields.size() >= 8)
     if (auto numGames = fromStringSafe<int>(unescapeEverything(fields[3])))
       if (auto version = fromStringSafe<int>(unescapeEverything(fields[4])))
-      return FileSharing::OnlineModInfo{unescapeEverything(fields[0]), unescapeEverything(fields[1]), unescapeEverything(fields[2]),
-          *numGames, *version};
+        if (auto steamId = fromStringSafe<SteamId>(unescapeEverything(fields[5])))
+          if (auto rating = fromStringSafe<double>(unescapeEverything(fields[7])))
+            if (fields[6] == modVersion)
+              return ModInfo{unescapeEverything(fields[0]), ModDetails{unescapeEverything(fields[1]), unescapeEverything(fields[2])},
+                    ModVersionInfo{*steamId, *version, modVersion}, *rating, false, false, false, {}};
   return none;
 }
 
-optional<vector<FileSharing::OnlineModInfo>> FileSharing::getOnlineMods(int modVersion) {
+static string firstLines(string text, int max_lines = 3) {
+  int num_lines = 1;
+  for (int n = 0; n < (int)text.size(); n++) {
+    if (text[n] == '\n') {
+      num_lines++;
+      if (num_lines > max_lines) {
+        text.resize(n);
+        break;
+      }
+    }
+  }
+  while (text.back() == '\n')
+    text.pop_back();
+  return text;
+}
+
+optional<vector<ModInfo>> FileSharing::getSteamMods() {
+#ifdef USE_STEAMWORKS
+  if (!steam::Client::isAvailable()) {
+#ifdef RELEASE
+    USER_INFO << "Steam client not available";
+#endif
+    return none;
+  }
+
+  // TODO: thread safety
+  // TODO: filter mods by tags early
+  auto& ugc = steam::UGC::instance();
+  auto& user = steam::User::instance();
+  auto& friends = steam::Friends::instance();
+
+  vector<steam::ItemId> items, subscribedItems;
+  subscribedItems = ugc.subscribedItems();
+
+  // TODO: Is this check necessary? Maybe we should try anyways?
+  if (user.isLoggedOn()) {
+    steam::FindItemInfo qinfo;
+    qinfo.order = SteamFindOrder::playtime;
+    auto qid = ugc.createFindQuery(qinfo, 1);
+
+    // TODO: multiple pages
+    // TODO: handle errors
+    // TODO: czy chcemy je jakoś filtrować? Czy na razie po prostu dajemy wszystkie / najpopularniejsze?
+
+    ugc.waitForQueries({qid}, milliseconds(2000));
+
+    if (ugc.queryStatus(qid) == QueryStatus::completed) {
+      items = ugc.finishFindQuery(qid);
+    } else {
+      INFO << "STEAM: FindQuery failed: " << ugc.queryError(qid, "timeout (2 sec)");
+      ugc.finishQuery(qid);
+    }
+  }
+
+  for (auto id : subscribedItems)
+    if (!items.contains(id))
+      items.emplace_back(id);
+
+  if (items.empty()) {
+    INFO << "STEAM: No items present";
+    // TODO: inform that no mods are present (not subscribed or ...)
+    return vector<ModInfo>();
+  }
+
+  steam::ItemDetailsInfo detailsInfo;
+  detailsInfo.longDescription = true;
+  detailsInfo.playtimeStatsDays = 9999;
+  detailsInfo.metadata = true;
+  auto qid = ugc.createDetailsQuery(detailsInfo, items);
+  ugc.waitForQueries({qid}, milliseconds(3000));
+
+  if (ugc.queryStatus(qid) != QueryStatus::completed) {
+    INFO << "STEAM: DetailsQuery failed: " << ugc.queryError(qid, "timeout (3 sec)");
+    ugc.finishQuery(qid);
+    return {};
+  }
+
+  auto infos = ugc.finishDetailsQuery(qid);
+  for (auto& info : infos)
+    friends.requestUserInfo(info.ownerId, true);
+  vector<optional<string>> ownerNames(infos.size());
+  auto retrieveUserNames = [&]() {
+    bool done = true;
+    for (int n = 0; n < infos.size(); n++) {
+      if (!ownerNames[n])
+        ownerNames[n] = friends.retrieveUserName(infos[n].ownerId);
+      if (!ownerNames[n])
+        done = false;
+    }
+    return done;
+  };
+  steam::sleepUntil(retrieveUserNames, milliseconds(1500));
+  vector<ModInfo> out;
+
+  for (int n = 0; n < infos.size(); n++) {
+    auto& info = infos[n];
+    if (!info.tags.contains("Mod") || !info.tags.contains(modVersion))
+      continue;
+
+    ModInfo mod;
+    mod.details.author = ownerNames[n].value_or("unknown");
+    mod.details.description = firstLines(info.description);
+    mod.name = info.title;
+    // TODO: playtimeSessions is not exactly the same as numGames
+    //mod.numGames = info.stats->playtimeSessions;
+    mod.versionInfo.steamId = info.id.value;
+    mod.versionInfo.version = (int) info.updateTime;
+    mod.versionInfo.compatibilityTag = modVersion;
+    mod.isSubscribed = subscribedItems.contains(info.id);
+    mod.rating = (info.votesUp + info.votesDown > 0) ? double(info.votesUp) / (info.votesUp + info.votesDown) : -1.0;
+    mod.canUpload = infos[n].ownerId == user.id();
+    out.emplace_back(mod);
+  }
+
+  return out;
+#else
+  return none;
+#endif
+}
+
+optional<vector<ModInfo>> FileSharing::getOnlineMods() {
+  if (!options.getBoolValue(OptionId::ONLINE))
+    return none;
+  if (auto steamMods = getSteamMods())
+    return steamMods;
   if (options.getBoolValue(OptionId::ONLINE))
-    if (auto content = downloadContent(uploadUrl + "/get_mods.php?version=" + toString(modVersion)))
-      return parseLines<FileSharing::OnlineModInfo>(*content, parseModInfo);
+    if (auto content = downloadContent(uploadUrl + "/get_mods.php"))
+      return parseLines<ModInfo>(*content, [this](auto& e) { return parseModInfo(e, modVersion);});
   return none;
 }
 
-optional<string> FileSharing::downloadMod(const string& modName, const DirectoryPath& modsDir, ProgressMeter& meter) {
-  auto fileName = modName + ".zip";
-  if (auto err = download(fileName, "mods", modsDir, meter))
-    return err;
-  return unzip(modsDir.file(fileName).getPath(), modsDir.getPath());
+optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, const DirectoryPath& modsDir,
+    ProgressMeter& meter) {
+#ifdef USE_STEAMWORKS
+  if (!steam::Client::isAvailable())
+    return "Steam client not available"_s;
+  steam::ItemId id(id_);
+
+  auto& ugc = steam::UGC::instance();
+  auto& user = steam::User::instance();
+
+  if (!ugc.isInstalled(id)) {
+    if (!ugc.downloadItem(id, true))
+      return string("Error while downloading mod.");
+
+    // TODO: meter support
+    while (!consumeCancelled()) {
+      steam::runCallbacks();
+      if (!ugc.isDownloading(id))
+        break;
+      sleep_for(milliseconds(50));
+    }
+
+    if (!ugc.isInstalled(id))
+      return string("Error while downloading mod.");
+  }
+
+  auto instInfo = ugc.installInfo(id);
+  if (!instInfo)
+    return string("Error while retrieving installation info");
+  return DirectoryPath::copyFiles(DirectoryPath(instInfo->folder), modsDir.subdirectory(name), true);
+#else
+  return string("Steam support is not available in this build");
+#endif
+}
+
+optional<string> FileSharing::downloadMod(const string& modName, SteamId steamId, const DirectoryPath& modsDir, ProgressMeter& meter) {
+  if (!!downloadSteamMod(steamId, modName, modsDir, meter)) {
+    auto fileName = toString(steamId) + ".zip";
+    if (auto err = download(fileName, "mods", modsDir, meter))
+      return err;
+    return unzip(modsDir.file(fileName).getPath(), modsDir.getPath());
+  } else
+    return none;
+}
+
+optional<string> FileSharing::uploadMod(ModInfo& modInfo, const DirectoryPath& modsDir, ProgressMeter& meter) {
+#ifdef USE_STEAMWORKS
+  if (!steam::Client::isAvailable())
+    return "Steam client not available"_s;
+  auto& ugc = steam::UGC::instance();
+  //auto& user = steam::User::instance();
+
+  steam::UpdateItemInfo info;
+  if (modInfo.versionInfo.steamId != 0)
+    info.id = steam::ItemId(modInfo.versionInfo.steamId);
+  info.tags = "Mod," + modInfo.versionInfo.compatibilityTag;
+  info.title = modInfo.name;
+  info.folder = string(modsDir.subdirectory(modInfo.name).absolute().getPath());
+  info.description = modInfo.details.description;
+  info.visibility = SteamItemVisibility::public_;
+  ugc.beginUpdateItem(info);
+
+  // Item update may take some time; Should we loop indefinitely?
+  optional<steam::UpdateItemResult> result;
+  steam::sleepUntil([&]() { return (bool)(result = ugc.tryUpdateItem()); }, milliseconds(600 * 1000));
+  if (!result) {
+    ugc.cancelUpdateItem();
+    return "Uploading mod has timed out"_s;
+  }
+  if (result->valid()) {
+    modInfo.versionInfo.steamId = *result->itemId;
+    return none;
+  } else {
+    return *result->error;
+
+    // Remove partially created item
+    /*if (!itemInfo.id && result->itemId)
+      ugc.deleteItem(*result->itemId);*/
+  }
+
+#else
+  return string("Steam support is not available in this build");
+#endif
 }
 
 void FileSharing::cancel() {

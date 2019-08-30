@@ -12,13 +12,19 @@
 #include "fx_info.h"
 #include "game.h"
 #include "vision.h"
+#include "collective.h"
+#include "territory.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
+    case LastingEffect::PLAGUE_RESISTANT:
+      return LastingEffect::PLAGUE;
     case LastingEffect::POISON_RESISTANT:
       return LastingEffect::POISON;
     case LastingEffect::FIRE_RESISTANT:
       return LastingEffect::ON_FIRE;
+    case LastingEffect::COLD_RESISTANT:
+      return LastingEffect::FROZEN;
     case LastingEffect::SLEEP_RESISTANT:
       return LastingEffect::SLEEP;
     case LastingEffect::REGENERATION:
@@ -36,6 +42,8 @@ static optional<LastingEffect> getMutuallyExclusiveImpl(LastingEffect effect) {
       return LastingEffect::SLOWED;
     case LastingEffect::PEACEFULNESS:
       return LastingEffect::INSANITY;
+    case LastingEffect::FROZEN:
+      return LastingEffect::ON_FIRE;
     default:
       return none;
   }
@@ -154,6 +162,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::FIRE_RESISTANT:
         c->you(MsgType::ARE, "now fire resistant");
         break;
+      case LastingEffect::COLD_RESISTANT:
+        c->you(MsgType::ARE, "now cold resistant");
+        break;
       case LastingEffect::INSANITY:
         c->you(MsgType::BECOME, "insane");
         break;
@@ -246,6 +257,16 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "on fire!");
         c->getPosition().addCreatureLight(false);
         break;
+      case LastingEffect::FROZEN:
+        c->you(MsgType::ARE, "frozen!");
+        c->getPosition().addCreatureLight(false);
+        break;
+      case LastingEffect::PLAGUE:
+        c->you(MsgType::ARE, "infected by plague!");
+        break;
+      case LastingEffect::PLAGUE_RESISTANT:
+        c->you(MsgType::ARE, "resistant to plague");
+        break;
       case LastingEffect::AMBUSH_SKILL:
       case LastingEffect::STEALING_SKILL:
       case LastingEffect::SWIMMING_SKILL:
@@ -266,6 +287,10 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::NO_CARRY_LIMIT:
         c->you(MsgType::YOUR, "carrying capacity increases");
+        break;
+      case LastingEffect::SPYING:
+        c->secondPerson("You put on your sunglasses"_s);
+        c->thirdPerson(c->getName().the() + " puts on " + his(c->getAttributes().getGender()) + " sunglasses"_s);
         break;
     }
 }
@@ -294,6 +319,10 @@ optional<LastingEffect> LastingEffects::getSuppressor(LastingEffect effect) {
 
 void LastingEffects::onRemoved(Creature* c, LastingEffect effect, bool msg) {
   switch (effect) {
+    case LastingEffect::PLAGUE:
+      if (msg)
+        c->you(MsgType::ARE, "cured from plague!");
+      break;
     case LastingEffect::POISON:
       if (msg)
         c->you(MsgType::ARE, "cured from poisoning");
@@ -358,11 +387,21 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::POISON:
         c->you(MsgType::ARE, "no longer poisoned");
         break;
+      case LastingEffect::PLAGUE:
+        c->you(MsgType::YOUR, "plague infection subsides");
+        c->addPermanentEffect(LastingEffect::PLAGUE_RESISTANT);
+        break;
+      case LastingEffect::PLAGUE_RESISTANT:
+        c->you(MsgType::ARE, "no longer plague resistant");
+        break;
       case LastingEffect::POISON_RESISTANT:
         c->you(MsgType::ARE, "no longer poison resistant");
         break;
       case LastingEffect::FIRE_RESISTANT:
         c->you(MsgType::ARE, "no longer fire resistant");
+        break;
+      case LastingEffect::COLD_RESISTANT:
+        c->you(MsgType::ARE, "no longer cold resistant");
         break;
       case LastingEffect::FLYING:
         c->you(MsgType::FALL, "on the " + c->getPosition().getName());
@@ -454,6 +493,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         c->verb("burn", "burns", "to death");
         c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
         break;
+      case LastingEffect::FROZEN:
+        c->verb("thaw", "thaws");
+        break;
       case LastingEffect::AMBUSH_SKILL:
       case LastingEffect::STEALING_SKILL:
       case LastingEffect::SWIMMING_SKILL:
@@ -473,6 +515,11 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::NO_CARRY_LIMIT:
         c->you(MsgType::YOUR, "carrying capacity decreases");
+        break;
+      case LastingEffect::SPYING:
+        c->secondPerson("You remove your sunglasses"_s);
+        c->thirdPerson(c->getName().the() + " removes " + his(c->getAttributes().getGender()) + " sunglasses"_s);
+        c->setAlternativeViewId(none);
         break;
       default:
         break;
@@ -559,7 +606,9 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::SLEEP_RESISTANT: return "Sleep resistant"_good;
     case LastingEffect::SPEED: return "Speed bonus"_good;
     case LastingEffect::POISON_RESISTANT: return "Poison resistant"_good;
+    case LastingEffect::PLAGUE_RESISTANT: return "Plague resistant"_good;
     case LastingEffect::FIRE_RESISTANT: return "Fire resistant"_good;
+    case LastingEffect::COLD_RESISTANT: return "Cold resistant"_good;
     case LastingEffect::FLYING: return "Flying"_good;
     case LastingEffect::LIGHT_SOURCE: return "Source of light"_good;
     case LastingEffect::DARKNESS_SOURCE: return "Source of darkness"_good;
@@ -593,8 +642,10 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "Builds bridges"_good;
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Digs"_good;
     case LastingEffect::NO_CARRY_LIMIT: return "Infinite carrying capacity"_good;
+    case LastingEffect::SPYING: return "Spy"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
+    case LastingEffect::PLAGUE: return "Infected with plague"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
     case LastingEffect::SLEEP: return "Sleeping"_bad;
     case LastingEffect::ENTANGLED: return "Entangled"_bad;
@@ -618,6 +669,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::SLOW_TRAINING: return "Slow trainee"_bad;
     case LastingEffect::BAD_BREATH: return "Smelly breath"_bad;
     case LastingEffect::ON_FIRE: return "On fire"_bad;
+    case LastingEffect::FROZEN: return "Frozen"_bad;
     case LastingEffect::MAGIC_CANCELLATION: return "Cancelled"_bad;
     case LastingEffect::DISAPPEAR_DURING_DAY: return "Disappears at dawn"_bad;
   }
@@ -645,7 +697,7 @@ const vector<LastingEffect>& LastingEffects::getCausingCondition(CreatureConditi
       return ret;
     }
     case CreatureCondition::SLEEPING: {
-      static vector<LastingEffect> ret { LastingEffect::SLEEP, LastingEffect::STUNNED};
+      static vector<LastingEffect> ret { LastingEffect::SLEEP, LastingEffect::STUNNED, LastingEffect::FROZEN};
       return ret;
     }
   }
@@ -689,30 +741,73 @@ void LastingEffects::afterCreatureDamage(Creature* c, LastingEffect e) {
 bool LastingEffects::tick(Creature* c, LastingEffect effect) {
   PROFILE_BLOCK("LastingEffects::tick");
   switch (effect) {
+    case LastingEffect::SPYING: {
+      auto enemyId = [&] ()->optional<ViewId> {
+        for (WCollective col : c->getPosition().getModel()->getCollectives())
+          if (col->getTerritory().contains(c->getPosition()) && col->getTribe()->isEnemy(c) && !col->getCreatures().empty())
+            return Random.choose(col->getCreatures())->getViewObject().id();
+        return none;
+      }();
+      if (enemyId && !c->hasAlternativeViewId())
+        c->setAlternativeViewId(*enemyId);
+      if (!enemyId && c->hasAlternativeViewId())
+        c->setAlternativeViewId(none);
+      break;
+    }
     case LastingEffect::BLEEDING:
-      c->getBody().bleed(c, 0.03);
-      c->secondPerson(PlayerMessage("You are bleeding.", MessagePriority::HIGH));
-      c->thirdPerson(PlayerMessage(c->getName().the() + " is bleeding.", MessagePriority::HIGH));
-      if (c->getBody().getHealth() <= 0) {
-        c->you(MsgType::DIE_OF, "bleeding");
-        c->dieWithLastAttacker();
-        return true;
+      if (!c->isAffected(LastingEffect::FROZEN)) {
+        c->getBody().bleed(c, 0.03);
+        c->secondPerson(PlayerMessage("You are bleeding.", MessagePriority::HIGH));
+        c->thirdPerson(PlayerMessage(c->getName().the() + " is bleeding.", MessagePriority::HIGH));
+        if (c->getBody().getHealth() <= 0) {
+          c->you(MsgType::DIE_OF, "bleeding");
+          c->dieWithLastAttacker();
+          return true;
+        }
       }
       break;
     case LastingEffect::REGENERATION:
-      c->getBody().heal(c, 0.03);
+      if (!c->isAffected(LastingEffect::FROZEN))
+        c->getBody().heal(c, 0.03);
       break;
     case LastingEffect::ON_FIRE:
       c->getPosition().fireDamage(0.1);
       break;
+    case LastingEffect::PLAGUE:
+      if (!c->isAffected(LastingEffect::FROZEN)) {
+        int sample = (int) std::abs(c->getUniqueId().getGenericId() % 10000);
+        bool suffers = sample >= 1000;
+        bool canDie = sample >= 9000 && !c->getStatus().contains(CreatureStatus::LEADER);
+        for (auto pos : c->getPosition().neighbors8())
+          if (auto other = pos.getCreature())
+            if (Random.roll(10))
+              Effect::Lasting{LastingEffect::PLAGUE}.applyToCreature(other, nullptr);
+        if (suffers) {
+          if (c->getBody().getHealth() > 0.5 || canDie) {
+            if (Random.roll(10)) {
+              c->getBody().bleed(c, 0.03);
+              c->secondPerson(PlayerMessage("You suffer from plague.", MessagePriority::HIGH));
+              c->thirdPerson(PlayerMessage(c->getName().the() + " suffers from plague.", MessagePriority::HIGH));
+              if (c->getBody().getHealth() <= 0) {
+                c->you(MsgType::DIE_OF, "plague");
+                c->dieWithReason("plague");
+                return true;
+              }
+            }
+          }
+        }
+      }
+      break;
     case LastingEffect::POISON:
-      c->getBody().bleed(c, 0.03);
-      c->secondPerson(PlayerMessage("You suffer from poisoning.", MessagePriority::HIGH));
-      c->thirdPerson(PlayerMessage(c->getName().the() + " suffers from poisoning.", MessagePriority::HIGH));
-      if (c->getBody().getHealth() <= 0) {
-        c->you(MsgType::DIE_OF, "poisoning");
-        c->dieWithLastAttacker();
-        return true;
+      if (!c->isAffected(LastingEffect::FROZEN)) {
+        c->getBody().bleed(c, 0.03);
+        c->secondPerson(PlayerMessage("You suffer from poisoning.", MessagePriority::HIGH));
+        c->thirdPerson(PlayerMessage(c->getName().the() + " suffers from poisoning.", MessagePriority::HIGH));
+        if (c->getBody().getHealth() <= 0) {
+          c->you(MsgType::DIE_OF, "poisoning");
+          c->dieWithLastAttacker();
+          return true;
+        }
       }
       break;
     case LastingEffect::WARNING: {
@@ -747,7 +842,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
       break;
     }
     case LastingEffect::SUNLIGHT_VULNERABLE:
-      if (c->getPosition().sunlightBurns()) {
+      if (c->getPosition().sunlightBurns() && !c->isAffected(LastingEffect::FROZEN)) {
         c->you(MsgType::ARE, "burnt by the sun");
         if (Random.roll(10)) {
           c->you(MsgType::YOUR, "body crumbles to dust");
@@ -757,7 +852,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
       }
       break;
     case LastingEffect::ENTERTAINER:
-      if (!c->isAffected(LastingEffect::SLEEP) && Random.roll(50)) {
+      if (!c->hasCondition(CreatureCondition::SLEEPING) && Random.roll(50)) {
         auto others = c->getVisibleCreatures().filter([](const Creature* c) { return c->getBody().hasBrain() && c->getBody().isHumanoid(); });
         if (others.empty())
           break;
@@ -807,7 +902,9 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::BLIND: return "blindness";
     case LastingEffect::INVISIBLE: return "invisibility";
     case LastingEffect::POISON: return "poison";
+    case LastingEffect::PLAGUE: return "plague";
     case LastingEffect::POISON_RESISTANT: return "poison resistance";
+    case LastingEffect::PLAGUE_RESISTANT: return "plague resistance";
     case LastingEffect::FLYING: return "levitation";
     case LastingEffect::COLLAPSED: return "collapse";
     case LastingEffect::PANIC: return "panic";
@@ -821,6 +918,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::ENTANGLED: return "web";
     case LastingEffect::STUNNED: return "stunning";
     case LastingEffect::FIRE_RESISTANT: return "fire resistance";
+    case LastingEffect::COLD_RESISTANT: return "cold resistance";
     case LastingEffect::INSANITY: return "insanity";
     case LastingEffect::PEACEFULNESS: return "love";
     case LastingEffect::MAGIC_RESISTANCE: return "magic resistance";
@@ -865,10 +963,12 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "bridge building";
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "digging";
     case LastingEffect::ON_FIRE: return "combustion";
+    case LastingEffect::FROZEN: return "freezing";
     case LastingEffect::MAGIC_CANCELLATION: return "magic cancellation";
     case LastingEffect::SPELL_DAMAGE: return "magical damage";
     case LastingEffect::DISAPPEAR_DURING_DAY: return "night life";
     case LastingEffect::NO_CARRY_LIMIT: return "infinite carrying capacity";
+    case LastingEffect::SPYING: return "spying";
   }
 }
 
@@ -880,6 +980,9 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::SPEED: return "Causes unnaturally quick movement.";
     case LastingEffect::BLIND: return "Causes blindness";
     case LastingEffect::INVISIBLE: return "Makes you invisible to enemies.";
+    case LastingEffect::PLAGUE: return "Decreases health every turn when it's above 50%. "
+                                       "A small percent of creatures can die, others don't suffer from health loss.";
+    case LastingEffect::PLAGUE_RESISTANT: return "Protects from plague infection";
     case LastingEffect::POISON: return "Decreases health every turn by a little bit.";
     case LastingEffect::POISON_RESISTANT: return "Gives poison resistance.";
     case LastingEffect::FLYING: return "Causes levitation.";
@@ -895,7 +998,8 @@ string LastingEffects::getDescription(LastingEffect type) {
       FALLTHROUGH;
     case LastingEffect::ENTANGLED: return "web";
     case LastingEffect::STUNNED: return "Allows enslaving as a prisoner, otherwise creature will die.";
-    case LastingEffect::FIRE_RESISTANT: return "Gives fire resistance.";
+    case LastingEffect::FIRE_RESISTANT: return "Protects from fire damage.";
+    case LastingEffect::COLD_RESISTANT: return "Protects from ice damage.";
     case LastingEffect::INSANITY: return "Makes the target hostile to every creature.";
     case LastingEffect::PEACEFULNESS: return "Makes the target friendly to every creature.";
     case LastingEffect::MAGIC_RESISTANCE: return "Increases defense against magical attacks by 30%.";
@@ -940,10 +1044,12 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "Creature will try to build bridges when travelling somewhere";
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Creature will try to dig when travelling somewhere";
     case LastingEffect::ON_FIRE: return "The creature is burning alive";
+    case LastingEffect::FROZEN: return "The creature is frozen and cannot move";
     case LastingEffect::MAGIC_CANCELLATION: return "Prevents from casting any spells";
     case LastingEffect::SPELL_DAMAGE: return "All dealt melee damage is transformed into magical damage";
     case LastingEffect::DISAPPEAR_DURING_DAY: return "This creature is only active at night and disappears at dawn";
     case LastingEffect::NO_CARRY_LIMIT: return "The creature can carry items without any weight limit";
+    case LastingEffect::SPYING: return "The creature can infiltrate enemy lines";
   }
 }
 
@@ -955,7 +1061,8 @@ bool LastingEffects::canSee(const Creature* c1, const Creature* c2) {
 
 bool LastingEffects::modifyIsEnemyResult(const Creature* c, const Creature* other, bool result) {
   PROFILE;
-  if (c->isAffected(LastingEffect::PEACEFULNESS))
+  if (c->isAffected(LastingEffect::PEACEFULNESS) ||
+      other->isAffected(LastingEffect::SPYING) || c->isAffected(LastingEffect::SPYING))
     return false;
   if (c->isAffected(LastingEffect::INSANITY) && !other->getStatus().contains(CreatureStatus::LEADER))
     return true;
@@ -1008,6 +1115,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::POISON_RESISTANT:
     case LastingEffect::SLEEP_RESISTANT:
     case LastingEffect::FIRE_RESISTANT:
+    case LastingEffect::COLD_RESISTANT:
     case LastingEffect::POISON:
     case LastingEffect::TELEPATHY:
       return 20;
@@ -1076,6 +1184,10 @@ bool LastingEffects::canConsume(LastingEffect effect) {
     case LastingEffect::COPULATION_SKILL:
     case LastingEffect::CROPS_SKILL:
     case LastingEffect::ON_FIRE:
+    case LastingEffect::FROZEN:
+    case LastingEffect::PLAGUE:
+    case LastingEffect::PLAGUE_RESISTANT:
+    case LastingEffect::SPYING:
       return false;
     default:
       return true;
@@ -1092,6 +1204,7 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::SLOWED:
       return FXVariantName::DEBUFF_BLUE;
 
+    case LastingEffect::COLD_RESISTANT:
     case LastingEffect::REGENERATION:
       return FXVariantName::BUFF_RED;
     case LastingEffect::BLEEDING:
@@ -1116,6 +1229,7 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::SLOW_TRAINING:
     case LastingEffect::MAGIC_CANCELLATION:
       return FXVariantName::DEBUFF_BROWN;
+    case LastingEffect::PLAGUE_RESISTANT:
     case LastingEffect::POISON_RESISTANT:
       return FXVariantName::BUFF_GREEN2;
     case LastingEffect::MAGIC_VULNERABILITY:
@@ -1131,6 +1245,7 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::INSANITY:
       return FXVariantName::DEBUFF_PINK;
 
+    case LastingEffect::PLAGUE:
     case LastingEffect::POISON:
       return FXVariantName::DEBUFF_GREEN2;
 
@@ -1154,6 +1269,7 @@ optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
       return FXInfo(FXName::CIRCULAR_SPELL, Color::YELLOW);
     case LastingEffect::INVISIBLE:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE);
+    case LastingEffect::PLAGUE:
     case LastingEffect::POISON:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::GREEN);
     case LastingEffect::POISON_RESISTANT:
@@ -1165,12 +1281,15 @@ optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::SKY_BLUE);
+    case LastingEffect::COLD_RESISTANT:
     case LastingEffect::REGENERATION:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::RED);
     case LastingEffect::MAGIC_CANCELLATION:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::BROWN);
     case LastingEffect::SPELL_DAMAGE:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::PURPLE);
+    case LastingEffect::FROZEN:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::BLUE);
     default:
       return none;
   }

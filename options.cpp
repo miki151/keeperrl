@@ -46,8 +46,9 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::ALLIES, 2},
   {OptionId::INFLUENCE_SIZE, 3},
   {OptionId::GENERATE_MANA, 0},
-  {OptionId::CURRENT_MOD, 0},
+  {OptionId::CURRENT_MOD2, string("vanilla")},
   {OptionId::ENDLESS_ENEMIES, 2},
+  {OptionId::ENEMY_AGGRESSION, 1},
 };
 
 const map<OptionId, string> names {
@@ -78,8 +79,9 @@ const map<OptionId, string> names {
   {OptionId::ALLIES, "Allies"},
   {OptionId::INFLUENCE_SIZE, "Min. tribes in influence zone"},
   {OptionId::GENERATE_MANA, "Generate mana in library"},
-  {OptionId::CURRENT_MOD, "Current mod"},
+  {OptionId::CURRENT_MOD2, "Current mod"},
   {OptionId::ENDLESS_ENEMIES, "Start endless enemy waves"},
+  {OptionId::ENEMY_AGGRESSION, "Enemy aggression"},
 };
 
 const map<OptionId, string> hints {
@@ -98,7 +100,8 @@ const map<OptionId, string> hints {
   {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
     "using alt + letter."},
   {OptionId::GENERATE_MANA, "Your minions will generate mana while working in the library."},
-  {OptionId::ENDLESS_ENEMIES, "Turn on recurrent enemy waves that attack your dungeon."}
+  {OptionId::ENDLESS_ENEMIES, "Turn on recurrent enemy waves that attack your dungeon."},
+  {OptionId::ENEMY_AGGRESSION, "The chance of your dungeon being attacked by enemies"},
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -243,9 +246,10 @@ string Options::getValueString(OptionId id) {
       return getYesNo(value);
     case OptionId::PLAYER_NAME:
     case OptionId::KEEPER_SEED:
+    case OptionId::CURRENT_MOD2:
       return *value.getValueMaybe<string>();
     case OptionId::ENDLESS_ENEMIES:
-    case OptionId::CURRENT_MOD:
+    case OptionId::ENEMY_AGGRESSION:
       return choices[id][(*value.getValueMaybe<int>() + choices[id].size()) % choices[id].size()];
     case OptionId::FULLSCREEN_RESOLUTION: {
       int val = *value.getValueMaybe<int>();
@@ -270,6 +274,7 @@ optional<Options::Value> Options::readValue(OptionId id, const string& input) {
   switch (id) {
     case OptionId::PLAYER_NAME:
     case OptionId::KEEPER_SEED:
+    case OptionId::CURRENT_MOD2:
       return Options::Value(input);
     default:
       if (auto ret = fromStringSafe<int>(input))

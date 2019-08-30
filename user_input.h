@@ -124,7 +124,7 @@ struct TeamDropInfo {
   SERIALIZE_ALL(pos, teamId)
 };
 
-struct BuildingInfo {
+struct BuildingClickInfo {
   Vec2 SERIAL(pos);
   int SERIAL(building);
   SERIALIZE_ALL(pos, building)
@@ -200,11 +200,11 @@ struct WorkshopUpgradeInfo {
   SERIALIZE_ALL(itemIndex, upgradeIndex, remove)
 };
 
-class UserInput : public EnumVariant<UserInputId, TYPES(BuildingInfo, int, UniqueEntity<Creature>::Id,
+class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo,
     string, TechId, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo),
-        ASSIGN(BuildingInfo,
+        ASSIGN(BuildingClickInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
             UserInputId::RECT_CONFIRM),

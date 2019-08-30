@@ -77,7 +77,6 @@ enum class VisionId;
 enum class LastingEffect;
 enum class CreatureCondition;
 
-enum class NameGeneratorId;
 enum class ItemIndex;
 
 enum class CollectiveWarning;
@@ -108,6 +107,8 @@ enum class BedType;
 enum class TargetType;
 enum class HealthType;
 enum class ExternalEnemiesType;
+enum class LevelType;
+enum class EnemyAggressionLevel;
 
 struct FXInfo;
 struct FXSpawnInfo;
@@ -118,3 +119,7 @@ class EnemyId;
 class FurnitureListId;
 class SpellId;
 class CreatureId;
+class BuildingId;
+class NameGeneratorId;
+
+using SteamId = unsigned long long;

@@ -43,6 +43,8 @@
 #include "game_config.h"
 #include "name_generator.h"
 #include "lasting_effect.h"
+#include "test_struct.h"
+#include "biome_id.h"
 
 class Test {
   public:
@@ -160,7 +162,7 @@ class Test {
     vector<vector<double> > table { { 2, 1, 2, 18, 1}, { 1, 1, 18, 1, 2}, {2, 6, 10, 1,1}, {1, 2, 1, 8, 1}, {5, 3, 1, 1, 2}};
     ShortestPath path(Rectangle(5, 5),
         [table](Vec2 pos) { return table[pos.y][pos.x];},
-        [] (Vec2 from, Vec2 to) { return from.dist4(to); },
+        [] (Vec2 to) { return Vec2(1, 0).dist4(to); },
         Vec2::directions4(), Vec2(4, 0), Vec2(1, 0));
     vector<Vec2> res {Vec2(1, 0)};
     while (res.back() != Vec2(4, 0)) {
@@ -174,7 +176,7 @@ class Test {
     vector<vector<double> > table { { 1, 1, 6, 1, 1}, { 1, 1, 6, 1, 1}, {1, 1, 1, 1,1}, {1, 1, 6, 1, 1}, {1, 1, 6, 1, 1}};
     ShortestPath path(Rectangle(5, 5),
         [table](Vec2 pos) { return table[pos.y][pos.x];},
-        [] (Vec2 from, Vec2 to) { return from.dist4(to); },
+        [] (Vec2 to) { return Vec2(0, 0).dist4(to); },
         Vec2::directions4(), Vec2(4, 0), Vec2(0, 0));
   }
 
@@ -182,7 +184,7 @@ class Test {
     vector<vector<double> > table { { 2, 1, 2, ShortestPath::infinity, 1}, { 1, 1, 18, 1, ShortestPath::infinity}, {2, 6, 10, 1,1}, {1, 2, 1, 8, 1}, {5, 3, 1, 1, 2}};
     ShortestPath path(Rectangle(5, 5),
         [table](Vec2 pos) { return table[pos.y][pos.x];},
-        [] (Vec2 from, Vec2 to) { return from.dist4(to); },
+        [] (Vec2 to) { return Vec2(1, 0).dist4(to); },
         Vec2::directions4(), Vec2(4, 0), Vec2(1, 0));
     CHECK(!path.isReachable(Vec2(1, 0)));
   }
@@ -191,7 +193,7 @@ class Test {
     vector<vector<double> > table { { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, { 1, 1, 1, ShortestPath::infinity, ShortestPath::infinity, 1, 1, 1, 1, 1, 1}, { 1, 1, 1, ShortestPath::infinity, ShortestPath::infinity, 1, 1, 1, 1, 1, 1}};
     ShortestPath path(Rectangle(11, 3),
         [table](Vec2 pos) { return table[pos.y][pos.x];},
-        [] (Vec2 from, Vec2 to) { return from.dist4(to); },
+        [] (Vec2 to) { return Vec2(1, 0).dist4(to); },
         Vec2::directions4(), Vec2(1, 1), Vec2(1, 0), -1.3);
   /*  vector<Vec2> res {Vec2(1, 0)};
     while (res.back() != Vec2(4, 0)) {
@@ -586,10 +588,18 @@ class Test {
     CHECKEQ(numRef, 0);
   }
 
+  static ContentFactory getContentFactory() {
+    GameConfig config(DirectoryPath("data_free/game_config/"), "vanilla");
+    ContentFactory contentFactory;
+    CHECK(!contentFactory.readData(&config));
+    return contentFactory;
+  }
+
   void testMinionEquipment1() {
-    PItem bow1 = ItemType(ItemType::Bow{}).get();
-    PItem bow2 = ItemType(ItemType::Bow{}).get();
-    PItem bow3 = ItemType(ItemType::Bow{}).get();
+    auto contentFactory = getContentFactory();
+    PItem bow1 = ItemType(CustomItemId("Bow")).get(&contentFactory);
+    PItem bow2 = ItemType(CustomItemId("Bow")).get(&contentFactory);
+    PItem bow3 = ItemType(CustomItemId("Bow")).get(&contentFactory);
     PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.needsItem(human.get(), bow1.get(), false));
@@ -618,8 +628,9 @@ class Test {
   }
 
   void testMinionEquipmentItemDestroyed() {
-    PItem sword = ItemType(ItemType::Sword{}).get();
-    PItem sword2 = ItemType(ItemType::Sword{}).get();
+    auto contentFactory = getContentFactory();
+    PItem sword = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     sword2->addModifier(AttrType::DAMAGE, -5);
     PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
@@ -632,8 +643,9 @@ class Test {
   }
 
   void testMinionEquipmentUpdateItems() {
-    PItem sword = ItemType(ItemType::Sword{}).get();
-    PItem sword2 = ItemType(ItemType::Sword{}).get();
+    auto contentFactory = getContentFactory();
+    PItem sword = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     sword2->addModifier(AttrType::DAMAGE, -5);
     PCreature human = CreatureFactory::getHumanForTests();
     PCreature human2 = CreatureFactory::getHumanForTests();
@@ -649,8 +661,9 @@ class Test {
   }
 
   void testMinionEquipmentUpdateOwners() {
-    PItem sword1 = ItemType(ItemType::Sword{}).get();
-    PItem sword2 = ItemType(ItemType::Sword{}).get();
+    auto contentFactory = getContentFactory();
+    PItem sword1 = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     PCreature human1 = CreatureFactory::getHumanForTests();
     PCreature human2 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
@@ -671,9 +684,10 @@ class Test {
   }
 
   void testMinionEquipmentAutoAssign() {
-    PItem sword1 = ItemType(ItemType::Sword{}).get();
-    PItem sword2 = ItemType(ItemType::Sword{}).get();
-    PItem sword3 = ItemType(ItemType::Sword{}).get();
+    auto contentFactory = getContentFactory();
+    PItem sword1 = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem sword3 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     sword1->addModifier(AttrType::DAMAGE, 12);
     PCreature human1 = CreatureFactory::getHumanForTests();
     PCreature human2 = CreatureFactory::getHumanForTests();
@@ -692,8 +706,8 @@ class Test {
     CHECK(equipment.isOwner(sword1.get(), human2.get()));
     CHECKEQ(equipment.getItemsOwnedBy(human2.get()), makeVec(sword1.get()));
     CHECK(!equipment.getOwner(sword2.get()));
-    PItem bow = ItemType(ItemType::Bow{}).get();
-    PItem bow2 = ItemType(ItemType::Bow{}).get();
+    PItem bow = ItemType(CustomItemId("Bow")).get(&contentFactory);
+    PItem bow2 = ItemType(CustomItemId("Bow")).get(&contentFactory);
     bow2->addModifier(AttrType::DAMAGE, 30);
     CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 0);
     equipment.autoAssign(human1.get(), {bow.get()});
@@ -713,8 +727,9 @@ class Test {
   }
 
   void testMinionEquipmentLocking() {
-    PItem sword1 = ItemType(ItemType::Sword{}).get();
-    PItem sword2 = ItemType(ItemType::Sword{}).get();
+    auto contentFactory = getContentFactory();
+    PItem sword1 = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     sword1->addModifier(AttrType::DAMAGE, 12);
     PCreature human1 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
@@ -738,10 +753,11 @@ class Test {
   }
 
   void testMinionEquipment123() {
-    PItem sword = ItemType(ItemType::Sword{}).get();
-    PItem boots = ItemType(ItemType::LeatherBoots{}).get();
-    PItem gloves = ItemType(ItemType::LeatherGloves{}).get();
-    PItem helmet = ItemType(ItemType::LeatherHelm{}).get();
+    auto contentFactory = getContentFactory();
+    PItem sword = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem boots = ItemType(CustomItemId("LeatherBoots")).get(&contentFactory);
+    PItem gloves = ItemType(CustomItemId("LeatherGloves")).get(&contentFactory);
+    PItem helmet = ItemType(CustomItemId("LeatherHelm")).get(&contentFactory);
     vector<Item*> items = {sword.get(), boots.get(), gloves.get(), helmet.get()};
     PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
@@ -918,13 +934,112 @@ class Test {
     CHECK(a == b);
   }
 
+  void testPrettyInput() {
+    map<string, TestStruct2> m;
+    string text = "{"
+        "\"r1\" { s = { 1 2 } v = 2 w = { 3 4 } }"
+        "\"r2\" inherit \"r1\" { }"
+        "\"r3\" inherit \"r1\" { s = append { x = 2 } w = { 5 6 } }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!err) << *err;
+    auto expect = TestStruct2{TestStruct1{1, 2}, 2, {3, 4}};
+    auto r1 = m.at("r1");
+    auto r2 = m.at("r2");
+    auto r3 = m.at("r3");
+    CHECK(r1 == expect);
+    CHECK(r2 == expect);
+    expect.s->x = 2;
+    expect.w = {5, 6};
+    CHECK(r3 == expect);
+  }
+
+  void testPrettyInput2() {
+    map<string, TestStruct2> m;
+    string text = "{"
+        "\"r1\" { s = { 1 2 } v = 2 }"
+        "\"r3\" { s = append { x = 2 } v = 2 }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!!err);
+  }
+
+  void testPrettyInput3() {
+    map<string, TestStruct2> m;
+    string text = "{"
+        "\"r1\" { v = 2 }"
+        "\"r3\" inherit \"r1\" { s = append { x = 2 } v = 2 }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!!err) << *err;
+  }
+
+  void testPrettyInput4() {
+    map<string, TestStruct3> m;
+    string text = "{"
+        "\"r1\" { a = { s = { 1 2 } v = 2 }}"
+        "\"r3\" inherit \"r1\" { a = append { s = append { x = 2 } v = 2 } }"
+        "}";
+    auto expected = TestStruct3 { TestStruct2 { TestStruct1 { 2, 2 }, 2, {} } };
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!err) << *err;
+    auto r3 = m.at("r3");
+    CHECK(r3 == expected);
+  }
+
+  void testPrettyInput5() {
+    map<string, TestStruct3> m;
+    string text = "{"
+        "\"r1\" { a = { s = { 1 2 } v = 2 }}"
+        "\"r3\" inherit \"r1\" { a = { s = append { x = 2 } v = 2 } }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!!err);
+  }
+
+  void testPrettyInput6() {
+    map<string, TestStruct5> m;
+    string text = "{"
+        "\"r1\" { a = { x = 3 y = 4 }}"
+        "\"r3\" inherit \"r1\" { a = { x = 5 } }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!err);
+    auto r1 = m.at("r1");
+    CHECK(r1.a.x == 3);
+    CHECK(r1.a.y == 4);
+    auto r3 = m.at("r3");
+    CHECK(r3.a.x == 5);
+    CHECK(r3.a.y == 2);
+  }
+
+  void testPrettyVector() {
+    map<string, TestStruct2> m;
+    string text = "{"
+        "\"v1\" { v = 1 w = {1 2 3} }"
+        "\"v2\" inherit \"v1\" { w = append {4 5 6} }"
+        "\"v3\" inherit \"v1\" { w = {4 5 6} }"
+        "}";
+    auto expected = TestStruct2 { none, 1, {1, 2, 3} };
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!err) << *err;
+    auto v1 = m.at("v1");
+    auto v2 = m.at("v2");
+    auto v3 = m.at("v3");
+    CHECK(expected == v1);
+    expected.w.push_back(4);
+    expected.w.push_back(5);
+    expected.w.push_back(6);
+    CHECK(expected == v2);
+    expected.w = {4, 5 ,6};
+    CHECK(expected == v3);
+  }
+
   struct MatchingTest {
     MatchingTest() {
-      GameConfig config(DirectoryPath("data_free/game_config/"), "vanilla");
-      ContentFactory contentFactory;
-      CHECK(!contentFactory.readData(NameGenerator(DirectoryPath("data_free/names")), &config));
-      auto model = Model::create(&contentFactory);
-      LevelBuilder builder(nullptr, Random, &contentFactory, 10, 10, "", false, none);
+      auto contentFactory = getContentFactory();
+      auto model = Model::create(&contentFactory, BiomeId::GRASSLAND);
+      LevelBuilder builder(nullptr, Random, &contentFactory, 10, 10, false, none);
       PLevelMaker levelMaker = LevelMaker::emptyLevel(FurnitureType("MOUNTAIN"), true);
       level = model->buildMainLevel(std::move(builder), std::move(levelMaker));
       game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory));
@@ -1151,6 +1266,13 @@ void testAll() {
   Test().testRoofSupport3();
   Test().testRoofSupport4();
   Test().testRoofSupport5();
+  Test().testPrettyInput();
+  Test().testPrettyInput2();
+  Test().testPrettyInput3();
+  Test().testPrettyInput4();
+  Test().testPrettyInput5();
+  Test().testPrettyInput6();
+  Test().testPrettyVector();
   LastingEffects::runTests();
   INFO << "-----===== OK =====-----";
 }

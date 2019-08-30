@@ -39,6 +39,19 @@ RICH_ENUM(
     SET_UP
 );
 
+struct FurnitureEffectInfo {
+  enum class Target;
+  Target SERIAL(target);
+  LastingEffect SERIAL(effect);
+  int SERIAL(radius);
+  SERIALIZE_ALL(target, effect, radius)
+};
+
+RICH_ENUM(FurnitureEffectInfo::Target,
+    ALLY,
+    ENEMY
+);
+
 class Furniture : public OwnedObject<Furniture> {
   public:
 
@@ -59,6 +72,7 @@ class Furniture : public OwnedObject<Furniture> {
   void setTribe(TribeId);
   const heap_optional<Fire>& getFire() const;
   void fireDamage(Position, bool withMessage = true);
+  void iceDamage(Position);
   void tick(Position);
   bool canSeeThru(VisionId) const;
   bool blocksAnyVision() const;
@@ -89,6 +103,8 @@ class Furniture : public OwnedObject<Furniture> {
   bool forgetAfterBuilding() const;
   void onCreatureWalkedOver(Position, Vec2 direction) const;
   void onCreatureWalkedInto(Position, Vec2 direction) const;
+  bool onBloodNear(Position);
+  void spreadBlood(Position);
   int getMaxTraining(ExperienceType) const;
   bool hasRequiredSupport(Position) const;
   optional<ViewId> getSupportViewId(Position) const;
@@ -115,7 +131,7 @@ class Furniture : public OwnedObject<Furniture> {
   bool isRequiresLight() const;
   bool isHostileSpell() const;
   optional<BedType> getBedType() const;
-  optional<LastingEffect> getLastingEffect() const;
+  const optional<FurnitureEffectInfo>& getLastingEffectInfo() const;
 
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();
@@ -194,5 +210,13 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FXInfo> SERIAL(walkIntoFX);
   optional<FXVariantName> SERIAL(usageFX);
   bool SERIAL(hostileSpell) = false;
-  optional<LastingEffect> SERIAL(lastingEffect);
+  optional<FurnitureEffectInfo> SERIAL(lastingEffect);
+  optional<FurnitureType> SERIAL(freezeTo);
+  struct MeltInfo {
+    optional<FurnitureType> SERIAL(meltTo);
+    SERIALIZE_ALL(OPTION(meltTo))
+  };
+  optional<MeltInfo> SERIAL(meltInfo);
+  optional<int> SERIAL(bloodCountdown);
+  optional<LocalTime> SERIAL(bloodTime);
 };

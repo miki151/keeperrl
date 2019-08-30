@@ -16,15 +16,25 @@
 #include "stdafx.h"
 
 #include "item_attributes.h"
+#include "item_class.h"
+#include "resource_id.h"
+#include "equipment.h"
+#include "lasting_effect.h"
+#include "sound.h"
 
 template <class Archive> 
 void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
-  ar(name, viewId, description, weight, itemClass, plural, blindName, artifactName);
-  ar(resourceId, burnTime, price, noArticle, equipmentSlot, applyTime, ownedEffect, maxUpgrades);
-  ar(fragile, effect, uses, usedUpMsg, displayUses, modifiers, shortName, equipedEffect, upgradeInfo);
-  ar(applyMsgFirstPerson, applyMsgThirdPerson, applySound, rangedWeapon, weaponInfo, prefixes, genPrefixes);
-  ar(damageReduction);
+  ar(NAMED(name), NAMED(viewId), OPTION(description), NAMED(weight), NAMED(itemClass), NAMED(plural), NAMED(blindName));
+  ar(NAMED(artifactName), NAMED(resourceId), OPTION(burnTime), OPTION(price), OPTION(noArticle), NAMED(equipmentSlot));
+  ar(OPTION(applyTime), NAMED(ownedEffect), OPTION(maxUpgrades), OPTION(fragile), NAMED(effect), OPTION(uses), OPTION(usedUpMsg));
+  ar(OPTION(displayUses), OPTION(modifiers), NAMED(shortName), OPTION(equipedEffect), NAMED(upgradeInfo), OPTION(effectDescription));
+  ar(NAMED(applyMsgFirstPerson), NAMED(applyMsgThirdPerson), NAMED(applySound), NAMED(rangedWeapon), OPTION(weaponInfo));
+  ar(OPTION(prefixes), OPTION(genPrefixes), NAMED(ingredientFor), OPTION(modifierVariation), OPTION(variationChance), OPTION(wishedCount));
 }
 
 SERIALIZABLE(ItemAttributes);
 SERIALIZATION_CONSTRUCTOR_IMPL(ItemAttributes);
+
+#include "pretty_archive.h"
+template
+void ItemAttributes::serialize(PrettyInputArchive& ar1, unsigned);

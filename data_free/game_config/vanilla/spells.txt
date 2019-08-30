@@ -29,7 +29,7 @@
   {
     id =  "group healing"
     symbol = "💕"
-    effect = Area Heal FLESH 2
+    effect = Area 2 Filter ALLY Heal FLESH
     cooldown = 50
     sound = SPELL_HEALING
   }
@@ -324,6 +324,15 @@
     sound = SPELL_FIRE_SPHERE_PET
   }
   {
+    id =  "ice cone"
+    symbol = "❄"
+    effect = Ice
+    fx = ICE
+    range = 4
+    cooldown = 30
+    #sound = SPELL_FIRE_SPHERE_PET
+  }
+  {
     id =  "shove"
     symbol = "👉"
     effect = Shove
@@ -342,7 +351,15 @@
   {
     id =  "black dragon blindness"
     symbol = "🙈"
-    effect = Area Lasting BLIND 30
+    effect = Area 30 Filter ENEMY Lasting BLIND
     cooldown = 3
+  }
+  {
+    id = "grant wish"
+    symbol = "$"
+    effect = Chain { Wish Caster Suicide TURN_INVISIBLE }
+    range = 1
+    targetSelf = false
+    cooldown = 150
   }
 }

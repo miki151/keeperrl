@@ -109,6 +109,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual double getAnimationTime() const override;
   virtual CenterType getCenterType() const override;
   virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const override;
+  virtual optional<Vec2> getSelectionSize() const override;
 
   // from CollectiveControl
   virtual void addAttack(const CollectiveAttack&) override;
@@ -249,6 +250,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void scrollStairs(bool up);
   CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&) const;
   vector<pair<vector<Item*>, Position>> getItemUpgradesFor(const WorkshopItem&) const;
+  optional<pair<Item*, Position>> getIngredientFor(const WorkshopItem&) const;
   void fillDungeonLevel(AvatarLevelInfo&) const;
 };
 

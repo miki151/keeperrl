@@ -1,6 +1,5 @@
 # Here come levels for all keeper types
 # At every depth the game chooses a random level that's available
-# They are generated on the fly when stairs are built so you can edit this file while the game is running.
 {
   # This is a filled level that can appear at all depths
   {
@@ -22,10 +21,22 @@
       # You can optionally add an EnemyId. The player will dig down right into their base.
       # Warning: some enemies might not work
       enemy = "RAT_PEOPLE_CAVE"
+      # The probability that the enemy will immediately attack when uncovered. 
+      # Make sure the enemy has behaviour defined in enemies.txt.
+      attackChance = 0.3
     }
     # Possible depths for this level, inclusive. The first level when you dig down is 1.
     minDepth = 3
     maxDepth = 7
+  }
+  {
+    type = FullZLevel {
+      # You can optionally add an EnemyId. The player will dig down right into their base.
+      # Warning: some enemies might not work
+      enemy = "BLACK_RATS"
+    }
+    # Possible depths for this level, inclusive. The first level when you dig down is 1.
+    minDepth = 5
   }
   { # adamantium, the ores are added automatically around the golems
     type = FullZLevel {
@@ -49,6 +60,7 @@
     }
     minDepth = 7
     maxDepth = 10
+    width = 60
   }
   {
     type = WaterZLevel {
@@ -62,6 +74,7 @@
       }
     }
     minDepth = 10
+    width = 60
   }
 }
 
@@ -70,6 +83,7 @@
   {
     type = FullZLevel {
       enemy = "DARK_ELF_CAVE"
+      attackChance = 0.6
     }
     minDepth = 5
   }
@@ -80,6 +94,7 @@
   {
     type = FullZLevel {
       enemy = "DWARF_CAVE"
+      attackChance = 0.6
     }
     minDepth = 5
   }

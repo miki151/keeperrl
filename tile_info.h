@@ -17,9 +17,10 @@ struct TileInfo {
   bool SERIAL(roadConnections) = false;
   bool SERIAL(moveUp) = false;
   bool SERIAL(animated) = false;
+  bool SERIAL(canMirror) = false;
   optional<string> SERIAL(mountainSides);
   optional<string> SERIAL(waterSides);
   optional<string> SERIAL(background);
   vector<string> SERIAL(extraBorders);
-  SERIALIZE_ALL(NAMED(viewId), NAMED(symbol), NAMED(color), OPTION(isSymbolFont), NAMED(sprite), NAMED(spriteColor), OPTION(roundShadow), OPTION(wallShadow), OPTION(wallConnections), NAMED(mountainSides), NAMED(waterSides), NAMED(background), OPTION(roadConnections), OPTION(extraBorders), OPTION(moveUp), OPTION(animated))
+  SERIALIZE_ALL(NAMED(viewId), NAMED(symbol), NAMED(color), OPTION(isSymbolFont), NAMED(sprite), NAMED(spriteColor), OPTION(roundShadow), OPTION(wallShadow), OPTION(wallConnections), NAMED(mountainSides), NAMED(waterSides), NAMED(background), OPTION(roadConnections), OPTION(extraBorders), OPTION(moveUp), OPTION(animated), OPTION(canMirror))
 };

@@ -27,6 +27,7 @@
 #include "draw_line.h"
 #include "game_event.h"
 #include "content_factory.h"
+#include "shortest_path.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -65,7 +66,9 @@ WGame Position::getGame() const {
 }
 
 Position::Position(Vec2 v, WLevel l) : coord(v), level(l), valid(level && level->inBounds(coord)) {
-  PROFILE;
+}
+
+Position::Position(Vec2 v, WLevel l, IsValid) : coord(v), level(l), valid(true) {
 }
 
 optional<int> Position::dist8(const Position& pos) const {
@@ -186,10 +189,7 @@ vector<WFurniture> Position::modFurniture() const {
 }
 
 optional<short> Position::getDistanceToNearestPortal() const {
-  if (level)
-    return level->portals->getDistanceToNearest(coord);
-  else
-    return none;
+  return level->portals->getDistanceToNearest(coord);
 }
 
 optional<Position> Position::getOtherPortal() const {
@@ -232,7 +232,7 @@ double Position::getLightingEfficiency() const {
 
 bool Position::isDirEffectBlocked() const {
   return !canEnterEmpty(
-      MovementType({MovementTrait::FLY, MovementTrait::WALK}).setFireResistant());
+        MovementType({MovementTrait::FLY, MovementTrait::WALK}).setFireResistant().setForced());
 }
 
 Creature* Position::getCreature() const {
@@ -472,9 +472,15 @@ bool Position::canEnter(const MovementType& t) const {
 bool Position::canEnterEmpty(const Creature* c) const {
   PROFILE;
   return canEnterEmpty(c->getMovementType());
-} 
+}
 
-bool Position::canEnterEmpty(const MovementType& t, optional<FurnitureLayer> ignore) const {
+bool Position::canEnterEmpty(const MovementType& movement) const {
+  auto onlyMovement = movement;
+  onlyMovement.setCanBuildBridge(false).setDestroyActions({});
+  return canNavigate(onlyMovement);
+}
+
+bool Position::canEnterEmptyCalc(const MovementType& t, optional<FurnitureLayer> ignore) const {
   PROFILE;
   if (isUnavailable())
     return false;
@@ -555,6 +561,43 @@ void Position::addFurnitureImpl(PFurniture f) const {
   level->addLightSource(coord, furniture->getLightEmission());
   updateSupportViewId(furniture);
   setNeedsRenderAndMemoryUpdate(true);
+  if (auto& effect = furniture->getLastingEffectInfo())
+    addFurnitureEffect(furniture->getTribe(), *effect);
+}
+
+template <typename Fun1, typename Fun2>
+void handleEffect(TribeId tribe, Level::EffectsTable& effectsTable, vector<Position> positions,
+    const FurnitureEffectInfo& effect, Fun1 fun1, Fun2 fun2) {
+  for (auto pos : positions)
+    if (pos.isValid()) {
+      auto c = pos.getCreature();
+      if (effect.target == FurnitureEffectInfo::Target::ENEMY) {
+        fun1(effectsTable[pos.getCoord()].hostile);
+        if (c && c->getTribeId() != tribe)
+          fun2(c);
+      } else {
+        fun1(effectsTable[pos.getCoord()].friendly);
+        if (c && c->getTribeId() == tribe)
+          fun2(c);
+      }
+    }
+}
+
+void Position::addFurnitureEffect(TribeId tribe, const FurnitureEffectInfo& effect) const {
+  auto& effectsTable = level->furnitureEffects[tribe.getKey()];
+  if (!effectsTable)
+    effectsTable = unique<Level::EffectsTable>(level->getBounds());
+  handleEffect(tribe, *effectsTable, getRectangle(Rectangle::centered(effect.radius)), effect,
+      [&](vector<LastingEffect>& effects) { effects.push_back(effect.effect); },
+      [&](Creature* c) { c->addPermanentEffect(effect.effect, 1, false); });
+}
+
+void Position::removeFurnitureEffect(TribeId tribe, const FurnitureEffectInfo& effect) const {
+  auto& effectsTable = level->furnitureEffects[tribe.getKey()];
+  CHECK(!!effectsTable);
+  handleEffect(tribe, *effectsTable, getRectangle(Rectangle::centered(effect.radius)), effect,
+      [&](vector<LastingEffect>& effects) { effects.removeElement(effect.effect); },
+      [&](Creature* c) { c->removePermanentEffect(effect.effect, 1, false); });
 }
 
 void Position::addCreatureLight(bool darkness) {
@@ -590,9 +633,13 @@ void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
   auto layer = f->getLayer();
   CHECK(layer != FurnitureLayer::GROUND || !!replace);
   CHECK(getFurniture(layer) == f);
+  if (auto& effect = f->getLastingEffectInfo())
+    removeFurnitureEffect(f->getTribe(), *effect);
   if (replace) {
     level->setFurniture(coord, std::move(replace));
     updateSupportViewId(replacePtr);
+    if (auto& effect = replacePtr->getLastingEffectInfo())
+      addFurnitureEffect(replacePtr->getTribe(), *effect);
   } else {
     level->furniture->getBuilt(layer).clearElem(coord);
     level->furniture->getConstruction(coord, layer).reset();
@@ -603,8 +650,11 @@ void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
     updateVisibility();
   updateSupport();
   updateBuildingSupport();
-  if (replacePtr)
+  if (replacePtr) {
     level->addLightSource(coord, replacePtr->getLightEmission());
+    if (auto c = getCreature())
+      replacePtr->onEnter(c);
+  }
   setNeedsRenderAndMemoryUpdate(true);
 }
 
@@ -702,6 +752,19 @@ void Position::fireDamage(double amount) {
   for (Item* it : getItems())
     if (Random.chance(amount))
       it->fireDamage(*this);
+}
+
+void Position::iceDamage() {
+  PROFILE;
+  double amount = 1.0;
+  for (auto furniture : modFurniture())
+    if (Random.chance(amount))
+      furniture->iceDamage(*this);
+  if (Creature* creature = getCreature())
+    creature->affectByIce(amount);
+  for (Item* it : getItems())
+    if (Random.chance(amount))
+      it->iceDamage(*this);
 }
 
 bool Position::needsMemoryUpdate() const {
@@ -856,7 +919,7 @@ void Position::updateConnectivity() const {
   bool couldEnter = movementEventPredicate();
   if (isValid()) {
     for (auto& elem : level->sectors)
-      if (canNavigate(elem.first))
+      if (canNavigateCalc(elem.first))
         elem.second.add(coord);
       else
         elem.second.remove(coord);
@@ -884,19 +947,6 @@ void Position::updateSupportViewId(Furniture* furniture) const {
   if (auto id = furniture->getSupportViewId(*this))
     if (*id != furniture->getViewObject()->id())
       furniture->getViewObject()->setId(*id);
-}
-
-bool Position::canNavigate(const MovementType& type) const {
-  PROFILE;
-  optional<FurnitureLayer> ignore;
-  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    for (DestroyAction action : type.getDestroyActions())
-      if (furniture->canDestroy(type, action))
-        ignore = FurnitureLayer::MIDDLE;
-  if (type.canBuildBridge() && canConstruct(FurnitureType("BRIDGE")) &&
-      !type.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
-    return true;
-  return canEnterEmpty(type, ignore);
 }
 
 const vector<Position>& Position::getLandingAtNextLevel(StairKey stairKey) {
@@ -939,7 +989,7 @@ bool Position::canNavigateTo(Position from, const MovementType& type) const {
 optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movement) const {
   PROFILE;
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    if (canEnterEmpty(movement, FurnitureLayer::MIDDLE)) {
+    if (canEnterEmptyCalc(movement, FurnitureLayer::MIDDLE)) {
       optional<double> strength;
       optional<DestroyAction> bestAction;
       for (DestroyAction action : movement.getDestroyActions()) {
@@ -956,24 +1006,38 @@ optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movem
   return none;
 }
 
-optional<double> Position::getNavigationCost(const MovementType& movement) const {
+double Position::getNavigationCost(const MovementType& movement, const Sectors& onltMovementSectors) const {
   PROFILE;
-  if (canEnterEmpty(movement)) {
-    if (auto c = getCreature()) {
-      if (c->getAttributes().isBoulder())
-        return none;
-      else
-        return 5.0;
+  if (onltMovementSectors.contains(coord)) {
+    if (level->getSafeSquare(coord)->getCreature()) {
+      return 5.0;
     } else
       return 1.0;
   }
-  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    if (auto destroyAction = getBestDestroyAction(movement))
-      return 1.0 + *furniture->getStrength(*destroyAction) / 10;
+  if (auto destroyAction = getBestDestroyAction(movement))
+    return 1.0 + *getFurniture(FurnitureLayer::MIDDLE)->getStrength(*destroyAction) / 10;
   if (movement.canBuildBridge() && canConstruct(FurnitureType("BRIDGE")) &&
       !movement.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
     return 10;
-  return none;
+  return ShortestPath::infinity;
+}
+
+bool Position::canNavigate(const MovementType& type) const {
+  PROFILE;
+  return isValid() && level->getSectors(type).contains(coord);
+}
+
+bool Position::canNavigateCalc(const MovementType& type) const {
+  PROFILE;
+  optional<FurnitureLayer> ignore;
+  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
+    for (DestroyAction action : type.getDestroyActions())
+      if (furniture->canDestroy(type, action))
+        ignore = FurnitureLayer::MIDDLE;
+  if (type.canBuildBridge() && canConstruct(FurnitureType("BRIDGE")) &&
+      !type.isCompatible(getFurniture(FurnitureLayer::GROUND)->getTribe()))
+    return true;
+  return canEnterEmptyCalc(type, ignore);
 }
 
 bool Position::canSeeThru(VisionId id) const {
@@ -1082,7 +1146,7 @@ optional<Position> Position::getStairsTo(Position pos) const {
   PROFILE;
   CHECK(isValid() && pos.isValid());
   CHECK(!isSameLevel(pos));
-  return level->getStairsTo(pos.level); 
+  return level->getStairsTo(pos.level);
 }
 
 void Position::swapCreatures(Creature* c) {

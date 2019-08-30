@@ -13,7 +13,7 @@
         # The name gets changed appropriately to Keeper and Adventurer
         name = "wizard"
         # Definitions in name_generator.h
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
         # Creature is always referred to as [FirstName] the [Creature name]
         fullTitle = true
       }
@@ -47,7 +47,7 @@
       gender = FEMALE
       name = {
         name = "wizard"
-        firstNameGen = FIRST_FEMALE
+        firstNameGen = "FIRST_FEMALE"
         fullTitle = true
       }
       viewIdUpgrades = { { "keeper_f2" } { "keeper_f3" } { "keeper_f4" }}
@@ -64,7 +64,7 @@
       }
       name = {
         name = "knight"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
         fullTitle = true
       }
       viewIdUpgrades = { { "keeper_knight2" } { "keeper_knight3" } { "keeper_knight4" }}
@@ -84,7 +84,7 @@
       gender = FEMALE
       name = {
         name = "knight"
-        firstNameGen = FIRST_FEMALE
+        firstNameGen = "FIRST_FEMALE"
         fullTitle = true
       }
       viewIdUpgrades = { { "keeper_knight_f2" } { "keeper_knight_f3" } { "keeper_knight_f4" }}
@@ -101,7 +101,7 @@
       }
       name = {
         name = "knight"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
         fullTitle = true
       }
       viewIdUpgrades = { { "duke2" } { "duke3" } { "duke4" }}
@@ -122,7 +122,7 @@
       gender = FEMALE
       name = {
         name = "knight"
-        firstNameGen = FIRST_FEMALE
+        firstNameGen = "FIRST_FEMALE"
         fullTitle = true
        }
       viewIdUpgrades = { { "duke_f2" } { "duke_f3" } { "duke_f4" }}
@@ -139,7 +139,7 @@
       }
       name = {
         name = "squire"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
         fullTitle = true
        }
       permanentEffects = {
@@ -159,7 +159,7 @@
       gender = FEMALE
       name = {
         name = "squire"
-        firstNameGen = FIRST_FEMALE
+        firstNameGen = "FIRST_FEMALE"
         fullTitle = true
        }
     }
@@ -175,7 +175,7 @@
         type = FourLegged LARGE
         weight = 500
         intrinsicAttacks = {
-          HEAD { UnicornHorn }
+          HEAD {Simple "UnicornHorn"}
         }
        }
       permanentEffects = {
@@ -188,7 +188,7 @@
       petReaction = "neighs"
       name = {
         name = "unicorn"
-        firstNameGen = DEITY
+        firstNameGen = "DEITY"
         groupName = "herd"
       }
     }
@@ -316,6 +316,31 @@
         name = "ancient spirit"
       }
     }
+  "DJINN"
+    {
+      viewId = { "djinn" }
+      attr = {
+        DEFENSE 50
+        SPELL_DAMAGE 50
+      }
+      body = {
+        type = Humanoid LARGE
+        material = SPIRIT
+        canCapture = true
+        intrinsicAttacks = {
+          TORSO { Intrinsic { "fist_attack" } "spell" 1 {
+              attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }
+        }
+      }
+      permanentEffects = {
+        FLYING 1
+      }
+      name = {
+        name = "djinn"
+      }
+      spells = { "grant wish" }
+      instantPrisoner = true
+    }
   "LOST_SOUL"
     {
       body = {
@@ -326,8 +351,8 @@
           TORSO { Intrinsic { "touch_attack" } "touch" 0 {
               attackType = HIT
               attackMsg = TOUCH
-              victimEffect = {Lasting INSANITY}
-              attackerEffect = {Suicide} } }
+              victimEffect = { 0.2 Lasting INSANITY}
+              attackerEffect = {Suicide DIE} } }
         }
       }
       viewId = { "ghost" }
@@ -359,7 +384,7 @@
           TORSO { Intrinsic { "touch_attack" } "touch" 0 {
               attackType = HIT
               attackMsg = TOUCH
-              victimEffect = {Lasting PEACEFULNESS} } }
+              victimEffect = {1.0 Lasting PEACEFULNESS} } }
         }
         addBodyPart = {
           WING 2
@@ -434,7 +459,7 @@
       name = {
         name = "witchman"
         pluralName = "witchmen"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
       }
       permanentEffects = {
         MAGIC_RESISTANCE 1
@@ -453,6 +478,10 @@
       body = {
         type = Humanoid LARGE
         weight = 400
+        drops = {
+          { Simple "CyclopsBrain" } 10
+          { Simple "CyclopsTesticles" } 1
+        }
       }
       permanentEffects = {
         RANGED_RESISTANCE 1
@@ -460,7 +489,7 @@
       name = {
         name = "cyclops"
         pluralName = "cyclopes"
-        firstNameGen = CYCLOPS
+        firstNameGen = "CYCLOPS"
       }
       maxLevelIncrease = {
         MELEE 5
@@ -492,7 +521,7 @@
       chatReactionHostile = "\"Face your death!\""
       name = {
         name = "demon dweller"
-        firstNameGen = DEMON
+        firstNameGen = "DEMON"
         groupName = "pack"
       }
       maxLevelIncrease = {
@@ -526,7 +555,7 @@
       chatReactionHostile = "\"Face your death!\""
       name = {
         name = "Demon Lord"
-        firstNameGen = DEMON
+        firstNameGen = "DEMON"
         groupName = "pack"
        }
      maxLevelIncrease = {
@@ -584,12 +613,15 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 8 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.3 Lasting POISON} } }
         }
         bodyParts = {
           HEAD 7
           BACK 0
           TORSO 0
+        }
+        drops = {
+          { Simple "HydraTongue" } 1
         }
         noHealth = true
         fallsApart = false
@@ -622,7 +654,7 @@
           TORSO { Intrinsic { "bite_attack" } "fangs" 8 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.3 Lasting POISON} } }
         }
       }
       permanentEffects = {
@@ -650,8 +682,9 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 12 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.3 Lasting POISON} } }
         }
+        drops = {{ Simple "GreenDragonScales" } 1}
       }
       permanentEffects = {
         POISON_RESISTANT 1
@@ -660,7 +693,7 @@
       name = {
         name = "green dragon"
         stackName = "dragon"
-        firstNameGen = DRAGON
+        firstNameGen = "DRAGON"
       }
       spells = { "healing" "deception" "haste" "cure poison" }
     }
@@ -680,8 +713,9 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 15 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Fire} } }
+              victimEffect = {0.5 Fire} } }
         }
+        drops = { { Simple "RedDragonScales" } 1}
       }
       permanentEffects = {
         FIRE_RESISTANT 1
@@ -689,7 +723,7 @@
       }
       name = {
         name = "red dragon"
-        firstNameGen = DRAGON
+        firstNameGen = "DRAGON"
         stackName = "dragon"
       }
       spells = { "healing" "deception" "haste" "cure poison" "fire breath"}
@@ -711,6 +745,7 @@
               attackType = BITE
               attackMsg = BITE } }
         }
+        drops = {{ Simple "BlackDragonScales" } 1}
       }
       permanentEffects = {
         RANGED_VULNERABILITY 1
@@ -719,10 +754,36 @@
       }
       name = {
         name = "black dragon"
-        firstNameGen = DRAGON
+        firstNameGen = "DRAGON"
         stackName = "dragon"
       }
       spells = { "healing" "haste" "cure poison" "black dragon blindness"}
+    }
+  "WHITE_DRAGON" inherit "BLACK_DRAGON"
+    {
+      viewId = { "red_dragon" Rgb 240 240 240 255 }
+      body = {
+        type = FourLegged HUGE
+        addBodyPart = {
+          WING 2
+        }
+        intrinsicAttacks = {
+          HEAD { Intrinsic { "bite_attack" } "fangs" 15 {
+              attackType = BITE
+              attackMsg = BITE } }
+        }
+        drops = {{ Simple "WhiteDragonScales" } 1}
+      }
+      permanentEffects = {
+        RANGED_VULNERABILITY 1
+        COLD_RESISTANT 1
+      }
+      name = {
+        name = "white dragon"
+        firstNameGen = "DRAGON"
+        stackName = "dragon"
+      }
+      spells = { "healing" "haste" "cure poison" "ice cone"}
     }
   "KNIGHT_PLAYER"
     {
@@ -745,7 +806,7 @@
       }
       name = {
         name = "knight"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
       }
       hatedByEffect = HATE_HUMANS
     }
@@ -766,7 +827,7 @@
       chatReactionHostile = "\"Die!\""
       name = {
         name = "jester"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
       }
       hatedByEffect = HATE_HUMANS
     }
@@ -789,7 +850,7 @@
       }
       name = {
         name = "archer"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
       }
       hatedByEffect = HATE_HUMANS
     }
@@ -811,7 +872,7 @@
       }
       name = {
         name = "priest"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
       }
       spellSchools = { "healer" }
       hatedByEffect = HATE_HUMANS
@@ -835,7 +896,7 @@
       gender = FEMALE
       name = {
         name = "fire mage"
-        firstNameGen = FIRST_FEMALE
+        firstNameGen = "FIRST_FEMALE"
       }
       spellSchools = { "fire" }
       hatedByEffect = HATE_HUMANS
@@ -845,7 +906,7 @@
       viewId = { "elementalist" Rgb 58 68 156 255 }
       name = {
         name = "battle mage"
-        firstNameGen = FIRST_FEMALE
+        firstNameGen = "FIRST_FEMALE"
       }
       spellSchools = { "mage" }
     }
@@ -869,7 +930,7 @@
       }
       name = {
         name = "gnome"
-        firstNameGen = DWARF
+        firstNameGen = "DWARF"
       }
     }
   "PESEANT"
@@ -901,6 +962,28 @@
   "PESEANT_PLAYER" inherit "PESEANT"
     {
       permanentEffects = {}
+    }
+  "NOMAD" inherit "PESEANT"
+    {
+      viewId = { "nomad" }
+      genderAlternatives = {
+        FEMALE { "nomad_woman" }
+      }
+      name = {
+        name = "nomad"
+      }
+      permanentEffects = {}
+    }
+  "ESKIMO" inherit "PESEANT"
+    {
+      viewId = { "eskimo" }
+      genderAlternatives = {
+        FEMALE { "eskimo_woman" }
+      }
+      permanentEffects = {}
+      name = {
+        name = "eskimo"
+      }
     }
   "KNIGHT"
     {
@@ -966,7 +1049,7 @@
       courage = 1
       name = {
         name = "Duke"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
         fullTitle = true
       }
       hatedByEffect = HATE_HUMANS
@@ -1066,6 +1149,46 @@
       }
       hatedByEffect = HATE_HUMANS
     }
+  "THIEF" inherit "WARRIOR"
+    {
+      viewId = { "thief" }
+      name = {
+        name = "thief"
+      }
+    }
+  "THIEF_LEADER" inherit "THIEF"
+    {
+      viewId = { "thief_leader" }
+      name = {
+        name = "thief leader"
+      }
+    }
+  "SORCERER"
+    {
+      viewId = { "sorcerer" }
+      attr = {
+        DAMAGE 15
+        DEFENSE 25
+        SPELL_DAMAGE 35
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      permanentEffects = {
+        MAGIC_RESISTANCE 1
+        FLYING 1
+      }
+      chatReactionFriendly = "curses all dungeons"
+      chatReactionHostile = "\"Die!\""
+      maxLevelIncrease = {
+        SPELL 2
+      }
+      name = {
+        name = "sorcerer"
+      }
+      spells = { "advanced healing" "haste" "defense bonus" "directed blast" "magic missile" }
+      hatedByEffect = HATE_HUMANS
+    }
   "CHILD"
     {
       viewId = { "child" }
@@ -1086,6 +1209,16 @@
         pluralName = "children"
       }
       hatedByEffect = HATE_HUMANS
+    }
+  "ESKIMO_CHILD" inherit "CHILD"
+    {
+      viewId = { "eskimo_child" }
+      permanentEffects = {}
+    }
+  "NOMAD_CHILD" inherit "CHILD"
+    {
+      viewId = { "nomad_child" }
+      permanentEffects = {}
     }
   "SPIDER_FOOD"
     {
@@ -1205,7 +1338,7 @@
           ARM { Intrinsic { "fist_attack" } "fists" 10 {
               attackType = HIT
               attackMsg = SWING
-              victimEffect = {Fire} } }
+              victimEffect = {0.3 Fire} } }
         }
       }
       permanentEffects = {
@@ -1267,6 +1400,10 @@
       body = {
         type = Humanoid LARGE
         material = UNDEAD_FLESH
+        drops = {
+          none 20
+          { Simple "ZombieBrain" } 1
+        }
       }
       permanentEffects = {
         RANGED_RESISTANCE 1
@@ -1329,7 +1466,7 @@
       spellSchools = { "illusion" }
       name = {
         name = "vampire"
-        firstNameGen = VAMPIRE
+        firstNameGen = "VAMPIRE"
       }
       hatedByEffect = HATE_UNDEAD
     }
@@ -1347,7 +1484,7 @@
       }
       name = {
         name = "vampire lord"
-        firstNameGen = VAMPIRE
+        firstNameGen = "VAMPIRE"
       }
       maxLevelIncrease = {
         MELEE 12
@@ -1413,7 +1550,7 @@
       }
       name = {
         name = "orc"
-        firstNameGen = ORC
+        firstNameGen = "ORC"
       }
       hatedByEffect = HATE_GREENSKINS
     }
@@ -1440,7 +1577,7 @@
       spellSchools = { "mage" }
       name = {
         name = "orc mage"
-        firstNameGen = ORC
+        firstNameGen = "ORC"
       }
       hatedByEffect = HATE_GREENSKINS
     }
@@ -1453,7 +1590,7 @@
       }
       name = {
         name = "orc healer"
-        firstNameGen = ORC
+        firstNameGen = "ORC"
       }
     }
   "HARPY"
@@ -1481,7 +1618,7 @@
       name = {
         name = "harpy"
         pluralName = "harpies"
-        firstNameGen = ORC
+        firstNameGen = "ORC"
       }
       hatedByEffect = HATE_GREENSKINS
     }
@@ -1566,7 +1703,7 @@
       }
       name = {
         name = "goblin"
-        firstNameGen = ORC
+        firstNameGen = "ORC"
       }
       hatedByEffect = HATE_GREENSKINS
     }
@@ -1610,7 +1747,7 @@
       }
       name = {
         name = "ogre"
-        firstNameGen = ORC
+        firstNameGen = "ORC"
       }
       permanentEffects = {
         MAGIC_VULNERABILITY 1
@@ -1658,7 +1795,7 @@
       name = {
         name = "dwarf"
         pluralName = "dwarves"
-        firstNameGen = DWARF
+        firstNameGen = "DWARF"
       }
       skills = {
         FORGE 0.8
@@ -1689,7 +1826,7 @@
       name = {
         name = "dwarf"
         pluralName = "dwarves"
-        firstNameGen = DWARF
+        firstNameGen = "DWARF"
       }
       skills = {
         WORKSHOP 0.5
@@ -1726,7 +1863,7 @@
       courage = 1
       name = {
         name = "dwarf baron"
-        firstNameGen = DWARF
+        firstNameGen = "DWARF"
       }
       hatedByEffect = HATE_DWARVES
     }
@@ -1743,7 +1880,7 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 5 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.1 Lasting POISON} } }
         }
       }
       permanentEffects = {
@@ -1773,7 +1910,7 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 8 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.5 Lasting POISON} } }
         }
       }
       permanentEffects = {
@@ -2039,6 +2176,14 @@
         name = "horse"
       }
     }
+  "CAMEL" inherit "HORSE"
+    {
+      viewId = { "camel" }
+      petReaction = "growls"
+      name = {
+        name = "camel"
+      }
+    }
   "COW"
     {
       viewId = { "cow" }
@@ -2180,6 +2325,10 @@
         pluralName = "foxes"
       }
     }
+  "POLAR_FOX" inherit "FOX"
+    {
+      viewId = { "polar_fox" }
+    }
   "CAVE_BEAR"
     {
       viewId = { "bear" }
@@ -2199,6 +2348,14 @@
       }
       name = {
         name = "cave bear"
+      }
+    }
+  "POLAR_BEAR" inherit "CAVE_BEAR"
+    {
+      viewId = { "polar_bear" }
+      permanentEffects = {}
+      name = {
+        name = "polar bear"
       }
     }
   "RAT"
@@ -2221,6 +2378,16 @@
         name = "rat"
       }
     }
+  "BLACK_RAT" inherit "RAT"
+    {
+      viewId = { "black_rat" }
+      permanentEffects = append {
+        PLAGUE 1
+      }
+      name = {
+        name = "black rat"
+      }
+    }
   "SPIDER"
     {
       viewId = { "spider" }
@@ -2240,7 +2407,7 @@
           TORSO { Intrinsic { "bite_attack" } "fangs" 1 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.1 Lasting POISON} } }
         }
       }
       name = {
@@ -2315,7 +2482,7 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 6 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.1 Lasting POISON} } }
         }
       }
       name = {
@@ -2342,7 +2509,7 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 12 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {1.0 Lasting POISON} } }
         }
       }
       name = {
@@ -2368,7 +2535,7 @@
           HEAD { Intrinsic { "bite_attack" } "fangs" 1 {
               attackType = BITE
               attackMsg = BITE
-              victimEffect = {Lasting POISON} } }
+              victimEffect = {0.3 Lasting POISON} } }
         }
       }
       permanentEffects = {
@@ -2441,7 +2608,7 @@
       name = {
         name = "wolf"
         pluralName = "wolves"
-        firstNameGen = DOG
+        firstNameGen = "DOG"
         groupName = "pack"
       }
     }
@@ -2471,7 +2638,7 @@
       name = {
         name = "werewolf"
         pluralName = "werewolves"
-        firstNameGen = DOG
+        firstNameGen = "DOG"
       }
     }
   "DOG"
@@ -2491,9 +2658,13 @@
       name = {
         name = "dog"
         groupName = "pack"
-        firstNameGen = DOG
+        firstNameGen = "DOG"
       }
       petReaction = "\"WOOF!\""
+    }
+  "HUSKY" inherit "DOG"
+    {
+      viewId = { "husky" }
     }
   "ELEMENTALIST"
     {
@@ -2521,7 +2692,7 @@
       chatReactionHostile = "\"Die!\""
       name = {
         name = "elementalist"
-        firstNameGen = FIRST_FEMALE
+        firstNameGen = "FIRST_FEMALE"
       }
       hatedByEffect = HATE_HUMANS
     }
@@ -2534,7 +2705,7 @@
         deathSound = none
         intrinsicAttacks = {
           TORSO { Intrinsic { "fist_attack" }  "fists" 5 {
-              attackType = HIT attackMsg = SWING victimEffect = {Fire}} }
+              attackType = HIT attackMsg = SWING victimEffect = {1.0 Fire}} }
         }
       }
       attr = {
@@ -2710,7 +2881,7 @@
       chatReactionHostile = "\"Die!\""
       name = {
         name = "shopkeeper"
-        firstNameGen = FIRST_MALE
+        firstNameGen = "FIRST_MALE"
       }
     }
 }

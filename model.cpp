@@ -55,13 +55,14 @@
 #include "unknown_locations.h"
 #include "avatar_info.h"
 #include "collective_config.h"
+#include "biome_id.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   ar & SUBCLASS(OwnedObject<Model>);
   ar(levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
-  ar(stairNavigation, cemetery, mainLevels, eventGenerator, externalEnemies);
+  ar(stairNavigation, cemetery, mainLevels, eventGenerator, externalEnemies, biome);
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Model)
@@ -182,11 +183,12 @@ WLevel Model::buildMainLevel(LevelBuilder b, PLevelMaker maker) {
 Model::Model(Private) {
 }
 
-PModel Model::create(ContentFactory* contentFactory) {
+PModel Model::create(ContentFactory* contentFactory, BiomeId biome) {
   auto ret = makeOwner<Model>(Private{});
-  ret->cemetery = LevelBuilder(Random, contentFactory, 100, 100, "Dead creatures", false)
+  ret->cemetery = LevelBuilder(Random, contentFactory, 100, 100, false)
       .build(ret.get(), LevelMaker::emptyLevel(FurnitureType("GRASS"), false).get(), Random.getLL());
   ret->eventGenerator = makeOwner<EventGenerator>();
+  ret->biome = biome;
   return ret;
 }
 
@@ -252,7 +254,7 @@ void Model::calculateStairNavigation() {
     for (auto l2 : getLevels())
       if (l1 != l2)
         CHECK(stairNavigation.count(getIds(l1, l2))) <<
-            "No stair path between levels " << l1->getName() << " " << l2->getName();
+            "No stair path between levels ";// << l1->getName() << " " << l2->getName();
 }
 
 optional<StairKey> Model::getStairsBetween(WConstLevel from, WConstLevel to) const {
@@ -279,6 +281,8 @@ const vector<WLevel>& Model::getMainLevels() const {
 
 void Model::addCollective(PCollective col) {
   collectives.push_back(std::move(col));
+  if (game)
+    game->addCollective(collectives.back().get());
 }
 
 WLevel Model::getTopLevel() const {
@@ -344,4 +348,15 @@ const heap_optional<ExternalEnemies>& Model::getExternalEnemies() const {
 void Model::addEvent(const GameEvent& e) {
   PROFILE;
   eventGenerator->addEvent(e);
+}
+
+optional<MusicType> Model::getDefaultMusic() const {
+  switch (biome) {
+    case BiomeId::SNOW:
+      return MusicType::SNOW;
+    case BiomeId::DESERT:
+      return MusicType::DESERT;
+    default:
+      return none;
+  }
 }

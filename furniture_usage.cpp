@@ -53,7 +53,7 @@ static void useChest(Position pos, WConstFurniture furniture, Creature* c, const
       int numSpawned = 0;
       for (int i : Range(creatureInfo->numCreatures))
         if (pos.getLevel()->landCreature({pos}, CreatureGroup(*creatureInfo->creature).random(
-            &pos.getGame()->getContentFactory()->creatures)))
+            &pos.getGame()->getContentFactory()->getCreatures())))
           ++numSpawned;
       if (numSpawned > 0)
         c->message(creatureInfo->msgCreature);
@@ -62,7 +62,7 @@ static void useChest(Position pos, WConstFurniture furniture, Creature* c, const
   if (auto itemInfo = chestInfo.itemInfo) {
     c->message(itemInfo->msgItem);
     auto itemList = pos.getGame()->getContentFactory()->itemFactory.get(itemInfo->items);
-    vector<PItem> items = itemList.random();
+    vector<PItem> items = itemList.random(pos.getGame()->getContentFactory());
     c->getGame()->addEvent(EventInfo::ItemsAppeared{pos, getWeakPointers(items)});
     pos.dropItems(std::move(items));
   }
@@ -113,7 +113,7 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
       break;
     }
     case 2: {
-      pos.globalMessage(pos.getGame()->getContentFactory()->creatures.getNameGenerator()->getNext(NameGeneratorId::DEITY)
+      pos.globalMessage(pos.getGame()->getContentFactory()->getCreatures().getNameGenerator()->getNext(NameGeneratorId("DEITY"))
           + " seems to be very angry");
       auto group = CreatureGroup::singleType(TribeId::getMonster(), CreatureId("ANGEL"));
       Effect::summon(pos, group, Random.get(3, 6), none);
@@ -121,7 +121,7 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
     }
     case 3: {
       c->verb("find", "finds", "some gold coins in the cracks");
-      pos.dropItems(ItemType(ItemType::GoldPiece{}).get(Random.get(50, 100)));
+      pos.dropItems(ItemType(CustomItemId("GoldPiece")).get(Random.get(50, 100), pos.getGame()->getContentFactory()));
       break;
     }
     case 4: {
@@ -130,8 +130,9 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
           ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( ItemAttrBonus{ AttrType::DAMAGE, 2 } ) } }),
           ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( ItemAttrBonus{ AttrType::DEFENSE, 2 } ) } }),
           ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( LastingEffect::TELEPATHY ) } }),
-          ItemType(ItemType::Glyph{ { ItemUpgradeType::WEAPON, ItemPrefix( VictimEffect { Effect::Lasting{LastingEffect::BLEEDING} } ) } })
-          ).get());
+          ItemType(ItemType::Glyph{ { ItemUpgradeType::WEAPON,
+              ItemPrefix( VictimEffect { 0.3, Effect::Lasting{LastingEffect::BLEEDING} } ) } })
+          ).get(pos.getGame()->getContentFactory()));
       break;
     }
   }
@@ -198,7 +199,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
           ChestInfo {
               FurnitureType("OPENED_CHEST"),
               ChestInfo::CreatureInfo {
-                  CreatureGroup::singleCreature(TribeId::getPest(), CreatureId("RAT")),
+                  CreatureGroup::singleType(TribeId::getPest(), CreatureId("RAT")),
                   10,
                   Random.get(3, 6),
                   "It's full of rats!",
@@ -225,7 +226,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
           ChestInfo {
               FurnitureType("OPENED_COFFIN"),
               ChestInfo::CreatureInfo {
-                  CreatureGroup::singleCreature(TribeId::getMonster(), CreatureId("VAMPIRE_LORD")), 1, 1,
+                  CreatureGroup::singleType(TribeId::getMonster(), CreatureId("VAMPIRE_LORD")), 1, 1,
                   "There is a rotting corpse inside. The corpse is alive!"
               },
               none
@@ -235,7 +236,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       c->secondPerson("You drink from the fountain.");
       c->thirdPerson(c->getName().the() + " drinks from the fountain.");
       auto itemList = pos.getGame()->getContentFactory()->itemFactory.get(ItemListId("potions"));
-      PItem potion = itemList.random().getOnlyElement();
+      PItem potion = itemList.random(pos.getGame()->getContentFactory()).getOnlyElement();
       potion->apply(c);
       break;
     }

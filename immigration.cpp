@@ -310,8 +310,15 @@ vector<Position> Immigration::Available::getSpawnPositions() const {
     },
     [&] (OutsideTerritory) {
       auto ret = immigration->collective->getTerritory().getExtended(10, 20);
+      auto tryLimitingToTopLevel = [&] {
+        auto tmp = ret.filter([](Position pos) { return pos.getLevel() == pos.getModel()->getTopLevel(); });
+        if (!tmp.empty())
+          ret = tmp;
+      };
+      tryLimitingToTopLevel();
       if (ret.empty())
         ret = immigration->collective->getTerritory().getAll();
+      tryLimitingToTopLevel();
       auto leader = immigration->collective->getLeader();
       if (ret.empty() && leader)
         ret = {leader->getPosition()};
@@ -481,7 +488,7 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
   int numGenerated = immigration->generated[group.immigrantIndex].getSize();
   vector<SpecialTrait> specialTraits;
   for (int i : Range(group.count)) {
-    immigrants.push_back(immigration->collective->getGame()->getContentFactory()->creatures.
+    immigrants.push_back(immigration->collective->getGame()->getContentFactory()->getCreatures().
         fromId(info.getId(numGenerated), immigration->collective->getTribeId(),
             MonsterAIFactory::collective(immigration->collective)));
     if (immigration->collective->getConfig().getStripSpawns() && info.stripEquipment)

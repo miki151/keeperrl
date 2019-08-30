@@ -537,10 +537,6 @@ bool MapGui::fxesAvailable() const {
   return !!fxRenderer && spriteMode;
 }
 
-static bool mirrorSprite(ViewId id) {
-  return id == ViewId("grass") || id == ViewId("hill");
-}
-
 Color MapGui::getHealthBarColor(double health, bool spirit) {
   auto ret = Color::f(min<double>(1.0, 2 - health * 2), min<double>(1.0, 2 * health), 0);
   if (spirit) {
@@ -618,6 +614,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   const Tile& tile = renderer.getTileSet().getTile(id, spriteMode);
   Color color = tile.color;
   considerWoundedAnimation(object, color, curTimeReal);
+  if (object.hasModifier(ViewObject::Modifier::FROZEN))
+    color = Color::SKY_BLUE;
   if (object.hasModifier(ViewObject::Modifier::INVISIBLE) || object.hasModifier(ViewObject::Modifier::HIDDEN))
     color = color.transparency(70);
   else if (tile.translucent > 0)
@@ -626,10 +624,12 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       color = color.transparency(150);
   if (object.hasModifier(ViewObject::Modifier::PLANNED))
     color = color.transparency(100);
+  if (object.hasModifier(ViewObject::Modifier::BLOODY))
+    color = Color(160, 0, 0);
   if (auto waterDepth = object.getAttribute(ViewObject::Attribute::WATER_DEPTH))
     if (*waterDepth > 0) {
-      Uint8 val = max(0.0, 255.0 - min(2.0f, *waterDepth) * 60);
-      color = Color(val, val, val);
+      Uint8 val = max(0.0, 255.0 - min(2.0f, *waterDepth) * 40);
+      color = color * Color(val, val, val);
     }
   color = blendNightColor(color, index);
   if (spriteMode && tile.hasSpriteCoord()) {
@@ -650,9 +650,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       move.y += getFlyingMovement(size, curTimeReal);
     const auto& coord = tile.getSpriteCoord(dirs);
     if (!fxesAvailable() || !tile.getFX()) {
-      if (mirrorSprite(id))
+      if (tile.canMirror)
         renderer.drawTile(pos + move, coord, size, color,
-            Renderer::SpriteOrientation((bool)(tilePos.getHash() % 2), (bool)(tilePos.getHash() % 4 > 1)));
+            Renderer::SpriteOrientation((bool)(tilePos.getHash() & 1024), (bool)(tilePos.getHash() & 512)));
       else {
         optional<Color> colorVariant;
         if (!tile.animated)
@@ -708,6 +708,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     auto color = renderer.getTileSet().getColor(object);
     if (object.id().getColor() != Color::WHITE)
       color = object.id().getColor();
+    if (object.hasModifier(ViewObject::Modifier::BLOODY))
+      color = Color(160, 0, 0);
     renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y,
         blendNightColor(color, index), tilePos, tile.text, Renderer::HOR);
     if (object.hasModifier(ViewObject::Modifier::BURNING))
@@ -1213,8 +1215,16 @@ void MapGui::render(Renderer& renderer) {
   renderAnimations(renderer, currentTimeReal);
   if (lastHighlighted.tilePos)
     considerRedrawingSquareHighlight(renderer, currentTimeReal, *lastHighlighted.tilePos, size);
-  if (spriteMode && buttonViewId && renderer.getMousePos().inRectangle(getBounds()))
-    renderer.drawViewObject(renderer.getMousePos() + Vec2(15, 15), *buttonViewId, spriteMode, size);
+  if (renderer.getMousePos().inRectangle(getBounds())) {
+    int moveSelectionSize = 0;
+    if (spriteMode && buttonViewId) {
+      renderer.drawViewObject(renderer.getMousePos() + Vec2(15, 15), *buttonViewId, spriteMode, size);
+      moveSelectionSize = size.y;
+    }
+    if (selectionSize)
+      renderer.drawText(Color::WHITE, renderer.getMousePos() + Vec2(15, 20 + moveSelectionSize),
+          toString(abs(selectionSize->x) + 1) + "x" + toString(abs(selectionSize->y) + 1), Renderer::NONE, size.y / 2);
+  }
   processScrolling(currentTimeReal);
 }
 
@@ -1274,6 +1284,7 @@ double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
 
 void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* mapLayout, bool smoothMovement, bool ui,
     const optional<TutorialInfo>& tutorial) {
+  selectionSize = view->getSelectionSize();
   if (tutorial) {
     tutorialHighlightLow = tutorial->highlightedSquaresLow;
     tutorialHighlightHigh = tutorial->highlightedSquaresHigh;

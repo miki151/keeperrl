@@ -11,7 +11,7 @@ auto InhabitantsInfo::generateCreatures(RandomGen& random, CreatureFactory* fact
   Generated ret;
   bool wasLeader = false;
   auto addCreatures = [&](const CreatureList& info, EnumSet<MinionTrait> traits) {
-    for (auto& creature : info.generate(random, factory, tribe, aiFactory)) {
+    for (auto& creature : info.generate(random, factory, tribe, aiFactory, false)) {
       auto myTraits = traits;
       if (!wasLeader) {
         wasLeader = true;

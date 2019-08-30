@@ -28,6 +28,7 @@
 #include "msg_type.h"
 #include "game_time.h"
 #include "creature_status.h"
+#include "view_id.h"
 
 class Skill;
 class Level;
@@ -56,6 +57,7 @@ struct MovementInfo;
 struct NavigationFlags;
 class SpellMap;
 class SpellSchool;
+class ContentFactory;
 
 class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedObject<Creature> {
   public:
@@ -66,6 +68,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   static vector<vector<Creature*>> stack(const vector<Creature*>&);
 
   const ViewObject& getViewObjectFor(const Tribe* observer) const;
+  void setAlternativeViewId(optional<ViewId>);
+  bool hasAlternativeViewId() const;
   void makeMove();
   optional<LocalTime> getLocalTime() const;
   optional<GlobalTime> getGlobalTime() const;
@@ -163,7 +167,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canEquip(const Item* item) const;
   CreatureAction throwItem(Item*, Position target, bool isFriendlyAI) const;
   optional<int> getThrowDistance(const Item*) const;
-  CreatureAction applySquare(Position) const;
+  CreatureAction applySquare(Position, FurnitureLayer) const;
   CreatureAction hide() const;
   bool isHidden() const;
   bool knowsHiding(const Creature*) const;
@@ -216,6 +220,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void dieWithReason(const string& reason, DropType = DropType::EVERYTHING);
 
   void affectByFire(double amount);
+  void affectByIce(double amount);
   void poisonWithGas(double amount);
   void affectBySilver();
   void affectByAcid();
@@ -249,8 +254,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   bool addEffect(LastingEffect, TimeInterval time, bool msg = true);
   bool removeEffect(LastingEffect, bool msg = true);
-  void addPermanentEffect(LastingEffect, int count = 1);
-  void removePermanentEffect(LastingEffect, int count = 1);
+  void addPermanentEffect(LastingEffect, int count = 1, bool msg = true);
+  void removePermanentEffect(LastingEffect, int count = 1, bool msg = true);
   bool isAffected(LastingEffect) const;
   optional<TimeInterval> getTimeRemaining(LastingEffect) const;
   bool hasCondition(CreatureCondition) const;
@@ -274,8 +279,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void updateViewObject();
   void swapPosition(Vec2 direction, bool withExcuseMe = true);
   bool canSwapPositionWithEnemy(Creature* other) const;
-  vector<PItem> generateCorpse(bool instantlyRotten = false) const;
+  vector<PItem> generateCorpse(const ContentFactory*, bool instantlyRotten = false) const;
   int getLastMoveCounter() const;
+  int getHitCount() const;
 
   EnumSet<CreatureStatus>& getStatus();
   const EnumSet<CreatureStatus>& getStatus() const;
@@ -333,6 +339,14 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void considerMovingFromInaccessibleSquare();
   void updateLastingFX(ViewObject&);
   HeapAllocated<SpellMap> SERIAL(spellMap);
+  struct HitsInfo {
+    int SERIAL(numHits);
+    LocalTime SERIAL(hitTurn);
+    SERIALIZE_ALL(numHits, hitTurn)
+  };
+  HitsInfo SERIAL(hitsInfo);
+  void increaseHitCount();
+  optional<ViewId> SERIAL(primaryViewId);
 };
 
 struct AdjectiveInfo {

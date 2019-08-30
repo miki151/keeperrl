@@ -42,6 +42,7 @@
 #include "tribe_alignment.h"
 #include "avatar_menu_option.h"
 #include "view_object_action.h"
+#include "mod_info.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -2039,9 +2040,11 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
   lines.addElem(gui.label("Available:", Color::YELLOW));
   for (int itemIndex : All(options)) {
     auto& elem = options[itemIndex];
+    if (elem.hidden)
+      continue;
     auto line = gui.getListBuilder();
     line.addElem(gui.viewObject(elem.viewId), 35);
-    line.addElem(gui.label(elem.name, elem.unavailable ? Color::GRAY : Color::WHITE), 10);
+    line.addMiddleElem(gui.renderInBounds(gui.label(elem.name, elem.unavailable ? Color::GRAY : Color::WHITE)));
     if (elem.price)
       line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
     SGuiElem guiElem = line.buildHorizontalList();
@@ -2053,10 +2056,11 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
     }
     else
       guiElem = gui.stack(
-          getTooltip({elem.description}, THIS_LINE),
           gui.uiHighlightMouseOver(),
           std::move(guiElem),
-          gui.button(getButtonCallback({UserInputId::WORKSHOP_ADD, itemIndex})));
+          gui.button(getButtonCallback({UserInputId::WORKSHOP_ADD, itemIndex})),
+          getTooltip({elem.description}, THIS_LINE)
+      );
     lines.addElem(gui.rightMargin(rightElemMargin, std::move(guiElem)));
   }
   auto lines2 = gui.getListBuilder(legendLineHeight);
@@ -2069,7 +2073,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
         gui.uiHighlightMouseOver(),
         gui.getListBuilder()
             .addElem(gui.viewObject(elem.itemInfo.viewId), 35)
-            .addElemAuto(gui.label(elem.itemInfo.name))
+            .addMiddleElem(gui.renderInBounds(gui.label(elem.itemInfo.name)))
             .buildHorizontalList()
     ));
     if ((!elem.available.empty() || !elem.added.empty()) && elem.maxUpgrades > 0) {
@@ -2080,7 +2084,9 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
     lines2.addElem(gui.stack(
         gui.bottomMargin(5,
             gui.progressBar(Color::DARK_GREEN.transparency(128), elem.productionState)),
-        gui.rightMargin(rightElemMargin, line.buildHorizontalList())));
+        gui.rightMargin(rightElemMargin, line.buildHorizontalList()),
+        getTooltip(elem.itemInfo.description, THIS_LINE)
+    ));
   }
   return gui.preferredSize(860, 600,
     gui.miniWindow(gui.stack(
@@ -2850,7 +2856,7 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
         }));
 }
 
-SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem>&& attrs) {
+SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem> attrs) {
   if (attrs.empty())
     return gui.empty();
   vector<SGuiElem> lines[2];
@@ -2938,10 +2944,14 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const CollectiveIn
   for (auto& elem : drawEffectsList(minion))
     leftLines.addElem(std::move(elem));
   leftLines.addSpace();
-  if (auto elem = drawTrainingInfo(minion.experienceInfo)) {
+  if (auto elem = drawTrainingInfo(minion.experienceInfo))
     leftLines.addElemAuto(std::move(elem));
-    leftLines.addSpace();
-  }
+  if (!minion.spellSchools.empty())
+    leftLines.addElem(gui.getListBuilder()
+        .addElemAuto(gui.label("Spell schools: ", Color::YELLOW))
+        .addElemAuto(gui.label(combine(minion.spellSchools, true)))
+        .buildHorizontalList());
+  leftLines.addSpace();
   leftLines.addElem(drawActivityButton(minion));
   if (minion.canAssignQuarters)
     leftLines.addElem(drawQuartersButton(minion, collective));
@@ -3242,12 +3252,13 @@ SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatar
   return gui.stack(std::move(firstNameOptions));
 }
 
-SGuiElem GuiBuilder::drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_ptr<int> chosenAvatar,
+SGuiElem GuiBuilder::drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_ptr<int> chosenAvatar, shared_ptr<int> avatarPage,
     const vector<View::AvatarData>& avatars) {
   auto roleList = gui.getListBuilder();
   for (auto role : ENUM_ALL(PlayerRole)) {
-    auto chooseFun = [chosenRole, chosenAvatar, &avatars, role] {
+    auto chooseFun = [chosenRole, chosenAvatar, &avatars, role, avatarPage] {
       *chosenRole = role;
+      *avatarPage = 0;
       for (int i : All(avatars))
         if (avatars[i].role == *chosenRole) {
           *chosenAvatar = i;
@@ -3263,22 +3274,29 @@ SGuiElem GuiBuilder::drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_p
   return roleList.buildHorizontalListFit(0.2);
 }
 
-SGuiElem GuiBuilder::drawChosenCreatureButtons(PlayerRole role, shared_ptr<int> chosenAvatar, shared_ptr<int> gender,
+constexpr int avatarsPerPage = 10;
+
+SGuiElem GuiBuilder::drawChosenCreatureButtons(PlayerRole role, shared_ptr<int> chosenAvatar, shared_ptr<int> gender, int page,
     const vector<View::AvatarData>& avatars) {
   auto allLines = gui.getListBuilder(legendLineHeight);
   auto line = gui.getListBuilder();
+  const int start = page * avatarsPerPage;
+  const int end = (page + 1) * avatarsPerPage;
+  int processed = 0;
   for (int i : All(avatars)) {
     auto& elem = avatars[i];
     auto viewIdFun = [gender, id = elem.viewId] { return id[min(*gender, id.size() - 1)].back(); };
     if (elem.role == role) {
-      line.addElemAuto(gui.stack(
-          gui.button([i, chosenAvatar]{ *chosenAvatar = i; }),
-          gui.mouseHighlight2(
-              gui.rightMargin(10, gui.topMargin(-5, gui.viewObject(viewIdFun, 2))),
-              gui.rightMargin(10, gui.conditional2(
-                  gui.topMargin(-5, gui.viewObject(viewIdFun, 2)),
-                  gui.viewObject(viewIdFun, 2), [=](GuiElem*){ return *chosenAvatar == i;})))
-      ));
+      if (processed >= start && processed < end)
+        line.addElemAuto(gui.stack(
+            gui.button([i, chosenAvatar]{ *chosenAvatar = i; }),
+            gui.mouseHighlight2(
+                gui.rightMargin(10, gui.topMargin(-5, gui.viewObject(viewIdFun, 2))),
+                gui.rightMargin(10, gui.conditional2(
+                    gui.topMargin(-5, gui.viewObject(viewIdFun, 2)),
+                    gui.viewObject(viewIdFun, 2), [=](GuiElem*){ return *chosenAvatar == i;})))
+        ));
+      ++processed;
       if (line.getLength() >= 5) {
         allLines.addElemAuto(line.buildHorizontalList());
         line.clear();
@@ -3290,25 +3308,61 @@ SGuiElem GuiBuilder::drawChosenCreatureButtons(PlayerRole role, shared_ptr<int> 
   return allLines.buildVerticalList();
 };
 
+SGuiElem GuiBuilder::drawAvatarsForRole(const vector<View::AvatarData>& avatars, shared_ptr<int> avatarPage,
+    shared_ptr<int> chosenAvatar, shared_ptr<int> gender, shared_ptr<PlayerRole> chosenRole) {
+  vector<SGuiElem> avatarsForRole;
+  int maxAvatarPagesHeight = 0;
+  for (auto role : ENUM_ALL(PlayerRole)) {
+    int numAvatars = 0;
+    for (auto& a : avatars)
+      if (a.role == role)
+        ++numAvatars;
+    vector<SGuiElem> avatarPages;
+    const int numPages = 1 + (numAvatars - 1) / avatarsPerPage;
+    for (int page = 0; page < numPages; ++page)
+      avatarPages.push_back(gui.conditional(
+          drawChosenCreatureButtons(role, chosenAvatar, gender, page, avatars),
+          [avatarPage, page] { return *avatarPage == page; }));
+    maxAvatarPagesHeight = max(maxAvatarPagesHeight, *avatarPages[0]->getPreferredHeight());
+    if (numPages > 1) {
+      avatarPages.push_back(gui.alignment(GuiFactory::Alignment::BOTTOM_RIGHT,
+          gui.translate(
+              gui.getListBuilder(24)
+                .addElem(gui.conditional2(
+                    gui.buttonLabel("<", [avatarPage]{ *avatarPage = max(0, *avatarPage - 1); }),
+                    gui.buttonLabelInactive("<"),
+                    [=] (GuiElem*) { return *avatarPage > 0; }))
+                .addElem(gui.conditional2(
+                    gui.buttonLabel(">", [=]{ *avatarPage = min(numPages - 1, *avatarPage + 1); }),
+                    gui.buttonLabelInactive(">"),
+                    [=] (GuiElem*) { return *avatarPage < numPages - 1; }))
+                .buildHorizontalList(),
+             Vec2(12, 32), Vec2(48, 30)
+          )));
+    }
+    avatarsForRole.push_back(gui.conditional(gui.stack(std::move(avatarPages)),
+        [chosenRole, role] { return *chosenRole == role; }));
+  }
+  return gui.setHeight(maxAvatarPagesHeight, gui.stack(std::move(avatarsForRole)));
+}
+
 SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>& queue,
     const vector<View::AvatarData>& avatars) {
   auto gender = make_shared<int>(0);
   auto chosenAvatar = make_shared<int>(0);
   auto entered = options->getValueString(OptionId::PLAYER_NAME);
   auto chosenName = make_shared<int>(0);
+  auto avatarPage = make_shared<int>(0);
   auto chosenRole = make_shared<PlayerRole>(PlayerRole::KEEPER);
   auto leftLines = gui.getListBuilder(legendLineHeight);
   auto rightLines = gui.getListBuilder(legendLineHeight);
-  leftLines.addElem(drawRoleButtons(chosenRole, chosenAvatar, avatars));
+  leftLines.addElem(drawRoleButtons(chosenRole, chosenAvatar, avatarPage, avatars));
   leftLines.addSpace(15);
   leftLines.addElem(drawGenderButtons(avatars, gender, chosenAvatar));
   leftLines.addSpace(15);
   leftLines.addElem(drawFirstNameButtons(avatars, gender, chosenAvatar, chosenName));
   leftLines.addSpace(15);
-  rightLines.addElemAuto(gui.conditional2(
-      drawChosenCreatureButtons(PlayerRole::KEEPER, chosenAvatar, gender, avatars),
-      drawChosenCreatureButtons(PlayerRole::ADVENTURER, chosenAvatar, gender, avatars),
-      [chosenRole] (GuiElem*){ return *chosenRole == PlayerRole::KEEPER; }));
+  rightLines.addElemAuto(drawAvatarsForRole(avatars, avatarPage, chosenAvatar, gender, chosenRole));
   rightLines.addSpace(12);
   rightLines.addElem(gui.labelFun([&avatars, chosenAvatar] {
       return capitalFirst(avatars[*chosenAvatar].name) + ", " + getName(avatars[*chosenAvatar].alignment);}));
@@ -3632,7 +3686,6 @@ SGuiElem GuiBuilder::drawCreatureInfo(SyncQueue<bool>& queue, const string& titl
   int margin = 15;
   return gui.setWidth(2 * margin + windowWidth,
       gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(false); }));
-
 }
 
 SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
@@ -3647,6 +3700,91 @@ SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Crea
   int margin = 15;
   return gui.setWidth(2 * margin + windowWidth,
       gui.window(gui.margins(lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
+}
+
+SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int highlighted, const vector<ModInfo>& mods) {
+  auto localItems = gui.getListBuilder(legendLineHeight);
+  auto subscribedItems = gui.getListBuilder(legendLineHeight);
+  auto onlineItems = gui.getListBuilder(legendLineHeight);
+  SGuiElem activeItem;
+  shared_ptr<int> chosenMod = make_shared<int>(highlighted);
+  vector<SGuiElem> modPages;
+  const int margin = 15;
+  const int pageWidth = 480;
+  const int listWidth = 200;
+  for (int i : All(mods)) {
+    auto name = mods[i].name;
+    auto itemLabel =
+    gui.stack(
+        gui.conditional(gui.label(name, Color::GREEN), gui.label(name),
+            [chosenMod, i] { return *chosenMod == i; }),
+        gui.button([chosenMod, i] { *chosenMod = i; })
+    );
+    if (mods[i].isActive)
+      activeItem = std::move(itemLabel);
+    else if (mods[i].isLocal)
+      localItems.addElem(std::move(itemLabel));
+    else if (mods[i].isSubscribed)
+      subscribedItems.addElem(std::move(itemLabel));
+    else
+      onlineItems.addElem(std::move(itemLabel));
+    auto lines = gui.getListBuilder(legendLineHeight);
+    auto stars = gui.getListBuilder();
+    if (mods[i].rating >= 0) {
+      const int maxStars = 5;
+      for (int j = 0; j < 5; ++j)
+        stars.addElemAuto(gui.labelUnicode(j < mods[i].rating * maxStars ? "★" : "☆", Color::YELLOW));
+    }
+    lines.addElem(gui.getListBuilder()
+        .addElemAuto(gui.label(mods[i].name))
+        .addBackElemAuto(stars.buildHorizontalList())
+        .buildHorizontalList());
+    lines.addElem(gui.label(!mods[i].details.author.empty() ? ("by " + mods[i].details.author) : "",
+        Renderer::smallTextSize, Color::LIGHT_GRAY));
+    lines.addElemAuto(gui.labelMultiLineWidth(mods[i].details.description, legendLineHeight, pageWidth - 2 * margin));
+    auto buttons = gui.getListBuilder();
+    for (int j : All(mods[i].actions)) {
+      buttons.addElemAuto(
+          gui.buttonLabel(mods[i].actions[j], [&queue, i, j] { queue.push(ModAction{i, j}); })
+      );
+      buttons.addSpace(15);
+    }
+    if (mods[i].versionInfo.steamId != 0) {
+      buttons.addElemAuto(
+          gui.buttonLabel("Show in Steam Workshop", [id = mods[i].versionInfo.steamId] {
+            openUrl("https://steamcommunity.com/sharedfiles/filedetails/?id=" + toString(id));
+          })
+      );
+      buttons.addSpace(15);
+    }
+    lines.addBackElem(buttons.buildHorizontalList());
+    modPages.push_back(gui.conditional(
+        lines.buildVerticalList(),
+        [chosenMod, i] { return *chosenMod == i; }
+    ));
+  }
+  auto allItems = gui.getListBuilder(legendLineHeight);
+  allItems.addElem(gui.label("Currently active:", Color::YELLOW));
+  CHECK(!!activeItem);
+  allItems.addElem(std::move(activeItem));
+  auto addList = [&] (GuiFactory::ListBuilder& list, const char* title) {
+    if (!list.isEmpty()) {
+      allItems.addSpace(legendLineHeight / 2);
+      allItems.addElem(gui.label(title, Color::YELLOW));
+      allItems.addElemAuto(list.buildVerticalList());
+    }
+  };
+  addList(localItems, "Installed:");
+  addList(subscribedItems, "Subscribed:");
+  addList(onlineItems, "Online:");
+  allItems.addElem(gui.buttonLabel("Create new", [&queue] { queue.push(ModAction{-1, 0}); }));
+  const int windowWidth = 2 * margin + pageWidth + listWidth;
+  return gui.preferredSize(windowWidth, 400,
+      gui.window(gui.margins(gui.getListBuilder()
+          .addElem(gui.scrollable(allItems.buildVerticalList()), listWidth)
+          .addSpace(25)
+          .addMiddleElem(gui.stack(std::move(modPages)))
+          .buildHorizontalList(), margin), [&queue] { queue.push(none); }));
 }
 
 SGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, ScrollPosition *scrollPos) {
@@ -3751,8 +3889,9 @@ Rectangle GuiBuilder::getTextInputPosition() {
 
 SGuiElem GuiBuilder::getTextContent(const string& title, const string& value, const string& hint) {
   auto lines = gui.getListBuilder(legendLineHeight);
+  lines.addElem(gui.label(capitalFirst(title)));
   lines.addElem(
-      gui.variableLabel([&] { return title + ":  " + value + "_"; }, legendLineHeight), 3 * legendLineHeight);
+      gui.variableLabel([&] { return value + "_"; }, legendLineHeight), 2 * legendLineHeight);
   if (!hint.empty())
     lines.addElem(gui.label(hint, gui.inactiveText));
   return lines.buildVerticalList();

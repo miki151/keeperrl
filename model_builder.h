@@ -20,14 +20,15 @@ class FilePath;
 class CreatureList;
 class GameConfig;
 class ContentFactory;
+struct LevelConnection;
 
 class ModelBuilder {
   public:
   ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*, ContentFactory*, EnemyFactory);
-  PModel singleMapModel(const string& worldName, TribeId keeperTribe, TribeAlignment);
-  PModel campaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment, optional<ExternalEnemiesType>);
-  PModel campaignSiteModel(const string& siteName, EnemyId, VillainType, TribeAlignment);
-  PModel tutorialModel(const string& siteName);
+  PModel singleMapModel(TribeId keeperTribe, TribeAlignment);
+  PModel campaignBaseModel(TribeId keeperTribe, TribeAlignment, optional<ExternalEnemiesType>);
+  PModel campaignSiteModel(EnemyId, VillainType, TribeAlignment);
+  PModel tutorialModel();
 
   void measureSiteGen(int numTries, vector<string> types);
 
@@ -40,13 +41,12 @@ class ModelBuilder {
 
   private:
   void measureModelGen(const std::string& name, int numTries, function<void()> genFun);
-  PModel trySingleMapModel(const string& worldName, TribeId keeperTribe, TribeAlignment);
-  PModel tryCampaignBaseModel(const string& siteName, TribeId keeperTribe, TribeAlignment, optional<ExternalEnemiesType>);
-  PModel tryTutorialModel(const string& siteName);
-  PModel tryCampaignSiteModel(const string& siteName, EnemyId, VillainType, TribeAlignment);
-  PModel tryModel(int width, const string& levelName, vector<EnemyInfo>,
-      optional<TribeId> keeperTribe, BiomeId, optional<ExternalEnemies>, bool wildlife);
-  SettlementInfo& makeExtraLevel(WModel, EnemyInfo&);
+  PModel trySingleMapModel(TribeId keeperTribe, TribeAlignment);
+  PModel tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment, optional<ExternalEnemiesType>);
+  PModel tryTutorialModel();
+  PModel tryCampaignSiteModel(EnemyId, VillainType, TribeAlignment);
+  PModel tryModel(int width, vector<EnemyInfo>, optional<TribeId> keeperTribe, BiomeId, optional<ExternalEnemies>, bool wildlife);
+  void makeExtraLevel(WModel model, LevelConnection& connection, SettlementInfo& mainSettlement, StairKey upLink);
   PModel tryBuilding(int numTries, function<PModel()> buildFun, const string& name);
   void addMapVillainsForEvilKeeper(vector<EnemyInfo>&, BiomeId);
   void addMapVillainsForLawfulKeeper(vector<EnemyInfo>&, BiomeId);
@@ -58,4 +58,6 @@ class ModelBuilder {
   vector<EnemyInfo> getSingleMapEnemiesForEvilKeeper(TribeId keeperTribe);
   vector<EnemyInfo> getSingleMapEnemiesForLawfulKeeper(TribeId keeperTribe);
   ContentFactory* contentFactory = nullptr;
+  using LevelMakerMethod = function<PLevelMaker(RandomGen&, SettlementInfo)>;
+  LevelMakerMethod getMaker(LevelType);
 };

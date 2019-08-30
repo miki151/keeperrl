@@ -4,7 +4,10 @@ ifndef RPATH
 RPATH = .
 endif
 
-CFLAGS = -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512 -Wno-implicit-conversion-floating-point-to-bool -Wno-string-conversion -Wno-bool-conversion
+CFLAGS = -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512 -Wno-implicit-conversion-floating-point-to-bool -Wno-string-conversion -Wno-bool-conversion -ftemplate-backtrace-limit=0
+
+# Remove if you wish to build KeeperRL without steamworks integration.
+STEAMWORKS = true
 
 ifndef GCC
 GCC = g++
@@ -72,6 +75,10 @@ ifdef TEXT_SERIALIZATION
 CFLAGS += -DTEXT_SERIALIZATION
 endif
 
+ifdef STEAMWORKS
+include Makefile-steam
+endif
+
 ifdef OPT
 OBJDIR = obj-opt
 else
@@ -96,9 +103,14 @@ endif
 
 LDFLAGS += -L/usr/local/lib
 
+ifdef STEAMWORKS
 SRCS = $(shell ls -t *.cpp)
+else
+SRCS = $(shell ls -t *.cpp | grep -v steam_.*.cpp)
+endif
 
-LIBS = -L/usr/lib/x86_64-linux-gnu $(OPENGL_LIBS) -lSDL2 -lopenal -lvorbis -lvorbisfile -lSDL2_image $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS}
+LIBS = -L/usr/lib/x86_64-linux-gnu $(OPENGL_LIBS) -lSDL2 -lopenal -lvorbis -lvorbisfile -lSDL2_image \
+	   $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS} $(STEAM_LIBS)
 
 ifdef EASY_PROFILER
 LIBS += libeasy_profiler.so
@@ -164,5 +176,11 @@ clean:
 	$(RM) $(OBJDIR)-opt/*.gch
 	$(RM) $(NAME)
 	$(RM) $(OBJDIR)/stdafx.h.*
+
+# Recreates dependency files, in case they got outdated
+BASE_SRCS=$(basename $(SRCS))
+depends: $(PCH)
+	@echo $(BASE_SRCS) | tr '\n' ' ' | xargs -P16 -t -d' ' -I '{}' $(GCC) $(CFLAGS) $(PCHINC) \
+		'{}.cpp' -MM -MF $(OBJDIR)/'{}'.d -MT $(OBJDIR)/'{}'.o -E > /dev/null
 
 -include $(DEPS)

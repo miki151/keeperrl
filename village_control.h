@@ -29,6 +29,8 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
 
   void onEvent(const GameEvent&);
 
+  void updateAggression(EnemyAggressionLevel);
+
   private:
   struct Private {};
 
@@ -42,7 +44,7 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   virtual void onRansomPaid() override;
   virtual vector<TriggerInfo> getTriggers(WConstCollective against) const override;
 
-  SERIALIZATION_DECL(VillageControl);
+  SERIALIZATION_DECL(VillageControl)
 
   private:
   friend class VillageBehaviour;
@@ -54,7 +56,7 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   bool canPerformAttack(bool currentlyActive);
   void acceptImmigration();
 
-  heap_optional<VillageBehaviour> SERIAL(villain);
+  heap_optional<VillageBehaviour> SERIAL(behaviour);
 
   double SERIAL(victims) = 0;
   EntitySet<Item> SERIAL(myItems);

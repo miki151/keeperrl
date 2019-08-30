@@ -100,6 +100,7 @@ class GuiBuilder {
   SGuiElem drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
       const vector<CreatureInfo>&, const string& cancelText);
   SGuiElem drawCreatureInfo(SyncQueue<bool>&, const string& title, bool prompt, const vector<CreatureInfo>& creatures);
+  SGuiElem drawModMenu(SyncQueue<optional<ModAction>>&, int highlighted, const vector<ModInfo>&);
   SGuiElem drawCost(pair<ViewId, int>, Color = Color::WHITE);
   SGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<ScrollPosition>& scrollPos,
       bool& online);
@@ -168,7 +169,7 @@ class GuiBuilder {
   int minionButtonsHash = 0;
   SGuiElem drawMinionPage(const PlayerInfo&, const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawActivityButton(const PlayerInfo&);
-  SGuiElem drawAttributesOnPage(vector<SGuiElem>&&);
+  SGuiElem drawAttributesOnPage(vector<SGuiElem>);
   SGuiElem drawEquipmentAndConsumables(const PlayerInfo&);
   vector<SGuiElem> drawSkillsList(const PlayerInfo&);
   SGuiElem drawSpellsList(const PlayerInfo&, bool active);
@@ -293,12 +294,14 @@ class GuiBuilder {
   SGuiElem drawGenderButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar);
   SGuiElem drawFirstNameButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar,
       shared_ptr<int> chosenName);
-  SGuiElem drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_ptr<int> chosenAvatar,
+  SGuiElem drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_ptr<int> chosenAvatar, shared_ptr<int> avatarPage,
       const vector<View::AvatarData>&);
-  SGuiElem drawChosenCreatureButtons(PlayerRole, shared_ptr<int> chosenAvatar, shared_ptr<int> gender,
+  SGuiElem drawChosenCreatureButtons(PlayerRole, shared_ptr<int> chosenAvatar, shared_ptr<int> gender, int page,
       const vector<View::AvatarData>&);
   SGuiElem drawCreatureList(const vector<CreatureInfo>&, function<void(UniqueEntity<Creature>::Id)> button);
   Color getElemColor(ListElem::ElemMod);
+  SGuiElem drawAvatarsForRole(const vector<View::AvatarData>&, shared_ptr<int> avatarPage, shared_ptr<int> chosenAvatar,
+      shared_ptr<int> gender, shared_ptr<PlayerRole> chosenRole);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

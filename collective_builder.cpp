@@ -64,7 +64,7 @@ CollectiveBuilder& CollectiveBuilder::addArea(const vector<Vec2>& v) {
   return *this;
 }
 
-optional<CollectiveName> CollectiveBuilder::generateName() {
+optional<CollectiveName> CollectiveBuilder::generateName() const {
   if (!creatures.empty()) {
     CollectiveName ret;
     auto leader = creatures[0].creature;
@@ -90,11 +90,9 @@ optional<CollectiveName> CollectiveBuilder::generateName() {
     return none;
 }
 
-PCollective CollectiveBuilder::build(const ContentFactory* contentFactory) {
+PCollective CollectiveBuilder::build(const ContentFactory* contentFactory) const {
   CHECK(model || level);
-  if (!model)
-    model = level->getModel();
-  auto c = Collective::create(model, *tribe, generateName(), discoverable, contentFactory);
+  auto c = Collective::create(!!model ? model : level->getModel(), *tribe, generateName(), discoverable, contentFactory);
   c->init(std::move(*config));
   c->setControl(CollectiveControl::idle(c.get()));
   bool wasLeader = false;

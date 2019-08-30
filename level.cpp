@@ -45,9 +45,9 @@ template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Level>);
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
-  ar(name, sunlight, bucketMap, lightAmount, unavailable);
+  ar(sunlight, bucketMap, lightAmount, unavailable);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
-  ar(furniture, tickingFurniture, covered, roofSupport, portals);
+  ar(furniture, tickingFurniture, covered, roofSupport, portals, furnitureEffects);
   if (Archive::is_loading::value) // some code requires these Sectors to be always initialized
     getSectors({MovementTrait::WALK});
 }  
@@ -58,19 +58,18 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Level);
 
 Level::~Level() {}
 
-Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, const string& n,
-    Table<double> sun, LevelId id)
+Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, Table<double> sun, LevelId id)
     : squares(std::move(s)), furniture(std::move(f)),
       memoryUpdates(squares->getBounds(), true), model(m),
-      name(n), sunlight(sun), roofSupport(squares->getBounds()),
+      sunlight(sun), roofSupport(squares->getBounds()),
       bucketMap(squares->getBounds().width(), squares->getBounds().height(),
       FieldOfView::sightRange), lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
       levelId(id), portals(squares->getBounds()) {
 }
 
-PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
+PLevel Level::create(SquareArray s, FurnitureArray f, WModel m,
     Table<double> sun, LevelId id, Table<bool> covered, Table<bool> unavailable) {
-  auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, n, sun, id);
+  auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, sun, id);
   for (Vec2 pos : ret->squares->getBounds()) {
     auto square = ret->squares->getReadonly(pos);
     square->onAddedToLevel(Position(pos, ret.get()));
@@ -88,9 +87,12 @@ PLevel Level::create(SquareArray s, FurnitureArray f, WModel m, const string& n,
     if (pos.isBuildingSupport())
       ret->roofSupport->add(pos.getCoord());
     for (auto layer : ENUM_ALL(FurnitureLayer))
-      if (auto f = pos.getFurniture(layer))
+      if (auto f = pos.getFurniture(layer)) {
+        if (auto& effect = f->getLastingEffectInfo())
+          pos.addFurnitureEffect(f->getTribe(), *effect);
         if (auto viewId = f->getSupportViewId(pos))
           pos.modFurniture(layer)->getViewObject()->setId(*viewId);
+      }
   }
   ret->unavailable = std::move(unavailable);
   ret->covered = std::move(covered);
@@ -412,14 +414,29 @@ void Level::moveCreature(Creature* creature, Vec2 direction) {
   placeCreature(creature, position + direction);
 }
 
+template <typename Fun>
+void Level::forEachEffect(Vec2 pos, TribeId tribe, Fun f) {
+  if (auto& effects = furnitureEffects[tribe.getKey()])
+    for (auto effect : effects->operator[](pos).friendly)
+      f(effect);
+  for (auto tribeKey : ENUM_ALL(TribeId::KeyType))
+    if (tribe != TribeId(tribeKey))
+      if (auto& effects = furnitureEffects[tribeKey])
+        for (auto effect : effects->operator[](pos).hostile)
+          f(effect);
+}
+
 void Level::unplaceCreature(Creature* creature, Vec2 pos) {
   bucketMap->removeElement(pos, creature);
   updateCreatureLight(pos, -1);
   modSafeSquare(pos)->removeCreature(Position(pos, this));
   model->increaseMoveCounter();
+  forEachEffect(pos, creature->getTribeId(),
+      [&] (LastingEffect effect) {creature->removePermanentEffect(effect, 1, false);});
 }
 
 void Level::placeCreature(Creature* creature, Vec2 pos) {
+  auto prevPos = creature->getPosition();
   Position position(pos, this);
   creature->setPosition(position);
   bucketMap->addElement(pos, creature);
@@ -427,6 +444,14 @@ void Level::placeCreature(Creature* creature, Vec2 pos) {
   updateCreatureLight(pos, 1);
   position.onEnter(creature);
   model->increaseMoveCounter();
+  int numEffects = 0;
+  forEachEffect(pos, creature->getTribeId(),
+      [&] (LastingEffect effect) {creature->addPermanentEffect(effect, 1, false); ++numEffects;});
+  int numEffectsPrev = 0;
+  if (prevPos.getLevel() == this)
+    forEachEffect(prevPos.getCoord(), creature->getTribeId(), [&] (LastingEffect) {++numEffectsPrev;});
+  if (numEffects > numEffectsPrev)
+    creature->verb("feel", "feels", "the presence of a magical field");
 }
 
 void Level::swapCreatures(Creature* c1, Creature* c2) {
@@ -487,7 +512,7 @@ void Level::tick() {
 }
 
 bool Level::inBounds(Vec2 pos) const {
-  PROFILE;
+  //PROFILE;
   return pos.inRectangle(getBounds());
 }
 
@@ -495,16 +520,12 @@ const Rectangle& Level::getBounds() const {
   return squares->getBounds();
 }
 
-const string& Level::getName() const {
-  return name;
-}
-
 Sectors& Level::getSectorsDontCreate(const MovementType& movement) const {
   return sectors.at(movement);
 }
 
 static Sectors::ExtraConnections getOrCreateExtraConnections(Rectangle bounds,
-    const unordered_map<MovementType, Sectors>& sectors) {
+    const unordered_map<MovementType, Sectors, CustomHash<MovementType>>& sectors) {
   if (sectors.empty())
     return Sectors::ExtraConnections(bounds);
   else
@@ -512,14 +533,17 @@ static Sectors::ExtraConnections getOrCreateExtraConnections(Rectangle bounds,
 }
 
 Sectors& Level::getSectors(const MovementType& movement) const {
-  if (!sectors.count(movement)) {
+  if (auto res = getReferenceMaybe(sectors, movement))
+    return *res;
+  else {
+    PROFILE_BLOCK("Gen sectors");
     sectors.insert(make_pair(movement, Sectors(getBounds(), getOrCreateExtraConnections(getBounds(), sectors))));
     Sectors& newSectors = sectors.at(movement);
     for (Position pos : getAllPositions())
-      if (pos.canNavigate(movement))
+      if (pos.canNavigateCalc(movement))
         newSectors.add(pos.getCoord());
+    return newSectors;
   }
-  return sectors.at(movement);
 }
 
 bool Level::isChokePoint(Vec2 pos, const MovementType& movement) const {

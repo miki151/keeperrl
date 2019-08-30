@@ -45,6 +45,7 @@ class Game : public OwnedObject<Game> {
   string getGameDisplayName() const;
   MusicType getCurrentMusic() const;
   void setCurrentMusic(MusicType, bool now);
+  void setDefaultMusic(bool now);
   bool changeMusicNow() const;
   Statistics& getStatistics();
   const Statistics& getStatistics() const;
@@ -87,6 +88,7 @@ class Game : public OwnedObject<Game> {
 
   void prepareSiteRetirement();
   void doneRetirement();
+  void addCollective(WCollective);
 
   void addEvent(const GameEvent&);
 
@@ -139,7 +141,6 @@ class Game : public OwnedObject<Game> {
   optional<ExitInfo> updateInput();
   void initializeModels();
   void increaseTime(double diff);
-  void addCollective(WCollective);
   void spawnKeeper(AvatarInfo, vector<string> introText);
   HeapAllocated<ContentFactory> SERIAL(contentFactory);
 };

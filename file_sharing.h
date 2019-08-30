@@ -6,10 +6,11 @@
 #include "saved_game_info.h"
 
 class ProgressMeter;
+class ModInfo;
 
 class FileSharing {
   public:
-  FileSharing(const string& uploadUrl, Options&, string installId);
+  FileSharing(const string& uploadUrl, const string& modVersion, Options&, string installId);
 
   optional<string> uploadSite(const FilePath& path, ProgressMeter&);
   struct SiteInfo {
@@ -35,16 +36,12 @@ class FileSharing {
   optional<vector<BoardMessage>> getBoardMessages(int boardId);
   bool uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text);
 
-  struct OnlineModInfo {
-    string name;
-    string author;
-    string description;
-    int numGames;
-    int version;
-  };
-
-  optional<vector<OnlineModInfo>> getOnlineMods(int modVersion);
-  optional<string> downloadMod(const string& name, const DirectoryPath& modsDir, ProgressMeter&);
+  optional<vector<ModInfo>> getSteamMods();
+  optional<vector<ModInfo>> getOnlineMods();
+  optional<string> downloadSteamMod(SteamId, const string& name, const DirectoryPath& modsDir,
+                                    ProgressMeter&);
+  optional<string> downloadMod(const string& name, SteamId, const DirectoryPath& modsDir, ProgressMeter&);
+  optional<string> uploadMod(ModInfo& modInfo, const DirectoryPath& modsDir, ProgressMeter&);
 
   string downloadHighscores(int version);
 
@@ -54,6 +51,7 @@ class FileSharing {
 
   private:
   string uploadUrl;
+  string modVersion;
   Options& options;
   SyncQueue<function<void()>> uploadQueue;
   AsyncLoop uploadLoop;

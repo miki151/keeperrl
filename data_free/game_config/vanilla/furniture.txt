@@ -260,7 +260,8 @@
     viewId = { "prison" }
     tickType = BED
     usageType = SLEEP
-    viewLayer = FLOOR_BACKGROUND
+    bedType = PRISON
+    layer = FLOOR
   }
   "TREASURE_CHEST"
   {
@@ -344,13 +345,31 @@
       70 CUT
     }
     fire = 100
-    itemDrop = {{{{WoodPlank} 1 { 8 14 }}}}
+    itemDrop = {{{{Simple "WoodPlank"} 1 { 8 14 }}}}
     summonedElement = "ENT"
     tryDestroyFX = { WOOD_SPLINTERS }
   }
   "DECID_TREE" inherit "CANIF_TREE"
   {
     viewId = { "decid_tree" }
+  }
+  "CACTUS1" inherit "CANIF_TREE"
+  {
+    viewId = { "cactus1" }
+    name = "cactus"
+    destroyedRemains = none
+    summonedElement = none
+  }
+  "PALM_TREE" inherit "CANIF_TREE"
+  {
+    viewId = { "palm_tree" }
+  }
+  "GIANT_MUSHROOM" inherit "CANIF_TREE"
+  {
+    viewId = { "giant_mushroom" }
+    name = "giant treeshroom"
+    clearFogOfWar = true
+    blockVision = {}
   }
   "TREE_TRUNK"
   {
@@ -375,8 +394,13 @@
     }
     canHideHere = true
     fire = 30
-    itemDrop = {{{{WoodPlank} 1 { 2 4 }}}}
+    itemDrop = {{{{Simple "WoodPlank"} 1 { 2 4 }}}}
     tryDestroyFX = { WOOD_SPLINTERS }
+  }
+  "STONES"
+  {
+    name = "rocks"
+    viewId = { "stones" }
   }
   "CROPS"
   {
@@ -650,6 +674,15 @@
     summonedElement = "WATER_ELEMENTAL"
     strength = 80
   }
+  "SNOWMAN"
+  {
+    name = "snowman"
+    viewId = { "snowman" }
+    canHideHere = true
+    blockMovement = true
+    strength = 10
+    meltInfo = { none }
+  }
   "KEEPER_BOARD"
   {
     name = "message board"
@@ -678,6 +711,14 @@
     onBuilt = DOWN_STAIRS
     xForgetAfterBuilding = true
     usageType = STAIRS
+  }
+  "UP_STAIRS_ROCK" inherit "UP_STAIRS"
+  {
+    viewId = { "up_staircase_rock" }
+  }
+  "DOWN_STAIRS_ROCK" inherit "DOWN_STAIRS"
+  {
+    viewId = { "down_staircase_rock" }
   }
   "SOKOBAN_HOLE"
   {
@@ -719,6 +760,16 @@
     destroyFX = { ROCK_CLOUD Rgb 220 210 180 255 }
     tryDestroyFX = { ROCK_SPLINTERS Rgb 220 210 180 255 }
   }
+  "SANDSTONE" inherit "MOUNTAIN"
+  {
+    name = "sandstone"
+    viewId = { "mountain_sand" }
+  }
+  "GLACIER" inherit "MOUNTAIN"
+  {
+    name = "glacier"
+    viewId = { "glacier" }
+  }
   "MOUNTAIN2"
   {
     name = "hard rock"
@@ -746,7 +797,7 @@
     blockVision = { NORMAL ELF }
     wall = true
     clearFogOfWar = true
-    itemDrop = {{{{AdaOre} 1 { 16 28 }}}}
+    itemDrop = {{{{Simple "AdaOre"} 1 { 16 28 }}}}
     strength2 = {
       500 BOULDER
       500 DIG
@@ -764,7 +815,7 @@
     blockVision = { NORMAL ELF }
     wall = true
     clearFogOfWar = true
-    itemDrop = {{{{IronOre} 1 { 16 28 }}}}
+    itemDrop = {{{{Simple "IronOre"} 1 { 16 28 }}}}
     strength2 = {
       200 BOULDER
       220 DIG
@@ -782,7 +833,7 @@
     blockVision = { NORMAL ELF }
     wall = true
     clearFogOfWar = true
-    itemDrop = {{{{Rock} 1 { 16 28 }}}}
+    itemDrop = {{{{Simple "Rock"} 1 { 16 28 }}}}
     strength2 = {
       200 BOULDER
       250 DIG
@@ -800,7 +851,7 @@
     blockVision = { NORMAL ELF }
     wall = true
     clearFogOfWar = true
-    itemDrop = {{{{GoldPiece} 1 { 16 28 }}}}
+    itemDrop = {{{{Simple "GoldPiece"} 1 { 16 28 }}}}
     strength2 = {
       200 BOULDER
       220 DIG
@@ -838,11 +889,17 @@
     destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
     tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
   }
+  "SANDSTONE_WALL" inherit "DUNGEON_WALL"
+  {
+    viewId = { "sandstone_wall" }
+  }
   "PIT"
   {
     name = "pit"
     viewId = { "pit" }
-    blockMovement = true
+    movementSet = {
+      traits = { FLY }
+    }
     xForgetAfterBuilding = true
     tickType = PIT
     canBuildOutsideOfTerritory = true
@@ -862,6 +919,11 @@
       2000 HOSTILE_DIG_NO_SKILL
     }
     canBuildOutsideOfTerritory = true
+  }
+  "SNOW_WALL" inherit "CASTLE_WALL"
+  {
+    viewId = { "snow_wall" }
+    meltInfo = { none }
   }
   "WOOD_WALL"
   {
@@ -904,6 +966,9 @@
     canBuildOutsideOfTerritory = true
     strength2 = {
       100 BOULDER
+      100 DIG
+      300 HOSTILE_DIG
+      300 HOSTILE_DIG_NO_SKILL
     }
   }
   "FLOOR_WOOD1"
@@ -946,7 +1011,7 @@
     viewId = { "floor_speed" }
     luxury = 0.7
     layer = FLOOR
-    lastingEffect = SPEED
+    lastingEffect = ALLY SPEED 0
   }
   "FLOOR_BLIND"
   {
@@ -954,7 +1019,7 @@
     viewId = { "floor_blind" }
     luxury = 0.7
     layer = FLOOR
-    lastingEffect = BLIND
+    lastingEffect = ENEMY BLIND 0
   }
   "FLOOR_INVI"
   {
@@ -962,7 +1027,7 @@
     viewId = { "floor_invi" }
     luxury = 0.7
     layer = FLOOR
-    lastingEffect = INVISIBLE
+    lastingEffect = ALLY INVISIBLE 0
   }
   "FLOOR_REGENER"
   {
@@ -970,7 +1035,7 @@
     viewId = { "floor_regen" }
     luxury = 0.7
     layer = FLOOR
-    lastingEffect = REGENERATION
+    lastingEffect = ALLY REGENERATION 0
   }
   "FLOOR_PEACE"
   {
@@ -978,7 +1043,28 @@
     viewId = { "floor_peace" }
     luxury = 0.7
     layer = FLOOR
-    lastingEffect = PEACEFULNESS
+    lastingEffect = ENEMY PEACEFULNESS 0
+  }
+  "HEALING_TOTEM"
+  {
+    name = "healing totem"
+    viewId = { "totem" Rgb 156 58 68 255 }
+    lastingEffect = ALLY REGENERATION 3 # ALLY/ENEMY LastingEffect radius
+    blockMovement = true
+    canHideHere = true
+    strength = 100
+  }
+  "BLEEDING_TOTEM" inherit "HEALING_TOTEM"
+  {
+    name = "bleeding totem"
+    viewId = { "totem" Rgb 156 58 156 255 }
+    lastingEffect = ENEMY BLEEDING 7
+  }
+  "DEFENSE_TOTEM" inherit "HEALING_TOTEM"
+  {
+    name = "defense totem"
+    viewId = { "totem" Rgb 68 58 156 255 }
+    lastingEffect = ALLY DEF_BONUS 3
   }
   "ALARM_TRAP"
   {
@@ -1083,12 +1169,14 @@
   {
     name = "water"
     viewId = { "water" }
+    bloodCountdown = 30
     layer = GROUND
     waterDepth = 100
     entryType = Water
     droppedItems = { "sinks" "sink" "You hear a splash." }
     canBuildBridge = true
     summonedElement = "WATER_ELEMENTAL"
+    freezeTo = "ICE"
     movementSet = {
       traits = { FLY SWIM }
       forcibleTraits = { WALK }
@@ -1118,6 +1206,7 @@
     lightEmission = 8.2
     canBuildBridge = true
     summonedElement = "FIRE_ELEMENTAL"
+    freezeTo = "FLOOR"
     movementSet = {
       traits = { FLY }
       forcibleTraits = { WALK }
@@ -1135,6 +1224,19 @@
     name = "grass"
     viewId = { "grass" }
     layer = GROUND
+  }
+  "SNOW"
+  {
+    name = "snow"
+    viewId = { "snow" }
+    layer = GROUND
+  }
+  "ICE"
+  {
+    name = "ice"
+    viewId = { "ice" }
+    layer = GROUND
+    meltInfo = { "WATER" }
   }
   "MUD"
   {

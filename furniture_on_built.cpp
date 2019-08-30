@@ -20,43 +20,65 @@
 #include "resource_counts.h"
 #include "content_factory.h"
 
-static SettlementInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
-  auto enemy = EnemyFactory(Random, contentFactory->creatures.getNameGenerator(), contentFactory->enemies,
+static EnemyInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
+  auto enemy = EnemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
       contentFactory->externalEnemies).get(id);
   enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
-  return enemy.settlement;
+  return enemy;
 }
 
-static PLevelMaker getLevelMaker(const ZLevelType& level, ResourceCounts resources, int width, TribeId tribe,
+struct LevelMakerResult {
+  PLevelMaker maker;
+  optional<EnemyInfo> enemy;
+  int levelWidth;
+};
+
+static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCounts resources, TribeId tribe,
     StairKey stairKey, ContentFactory* contentFactory) {
-  return level.visit(
+  return levelInfo.type.visit(
       [&](const WaterZLevel& level) {
-        return LevelMaker::getWaterZLevel(Random, level.waterType, width, level.creatures, stairKey);
+        return LevelMakerResult{
+            LevelMaker::getWaterZLevel(Random, level.waterType, levelInfo.width, level.creatures, stairKey),
+            none, levelInfo.width
+        };
       },
       [&](const FullZLevel& level) {
-        return LevelMaker::getFullZLevel(Random, level.enemy.map([&](auto id) { return getEnemy(id, contentFactory); }), resources,
-            width, tribe, stairKey);
+        optional<SettlementInfo> settlement;
+        optional<EnemyInfo> enemy;
+        if (level.enemy) {
+          enemy = getEnemy(*level.enemy, contentFactory);
+          settlement = enemy->settlement;
+          USER_CHECK(level.attackChance < 0.0001 || !!enemy->behaviour)
+              << "Z-level enemy " << level.enemy->data() << " has positive attack chance, but no attack behaviour defined";
+          if (Random.chance(level.attackChance)) {
+            enemy->behaviour->triggers.push_back(Immediate{});
+          }
+        }
+        return LevelMakerResult{
+            LevelMaker::getFullZLevel(Random, settlement, resources, levelInfo.width, tribe, stairKey),
+            std::move(enemy), levelInfo.width
+        };
       });
 }
 
-static optional<ZLevelType> chooseZLevel(RandomGen& random, const vector<ZLevelInfo>& levels, int depth) {
-  vector<ZLevelType> available;
+static optional<ZLevelInfo> chooseZLevel(RandomGen& random, const vector<ZLevelInfo>& levels, int depth) {
+  vector<ZLevelInfo> available;
   for (auto& l : levels)
     if (l.minDepth.value_or(-100) <= depth && l.maxDepth.value_or(1000000) >= depth)
-      available.push_back(l.type);
+      available.push_back(l);
   if (available.empty())
     return none;
   return random.choose(available);
 }
 
-static PLevelMaker getLevelMaker(RandomGen& random, ContentFactory* contentFactory, TribeAlignment alignment,
-    int depth, int width, TribeId tribe, StairKey stairKey) {
+static LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory, TribeAlignment alignment,
+    int depth, TribeId tribe, StairKey stairKey) {
   auto& allLevels = contentFactory->zLevels;
   auto& resources = contentFactory->resources;
   vector<ZLevelInfo> levels = concat<ZLevelInfo>({allLevels[0], allLevels[1 + int(alignment)]});
   auto zLevel = *chooseZLevel(random, levels, depth);
   auto res = *chooseResourceCounts(random, resources, depth);
-  return getLevelMaker(zLevel, res, width, tribe, stairKey, contentFactory);
+  return getLevelMaker(zLevel, res, tribe, stairKey, contentFactory);
 }
 
 static void removeOldStairs(Level* level, StairKey stairKey) {
@@ -68,8 +90,13 @@ static void removeOldStairs(Level* level, StairKey stairKey) {
     }
 }
 
+struct ZLevelResult {
+  WLevel level;
+  PCollective collective;
+};
+
 template <typename BuildFun>
-static WLevel tryBuilding(int numTries, BuildFun buildFun, const string& name) {
+static ZLevelResult tryBuilding(int numTries, BuildFun buildFun, const string& name) {
   for (int i : Range(numTries)) {
     try {
       return buildFun();
@@ -78,7 +105,7 @@ static WLevel tryBuilding(int numTries, BuildFun buildFun, const string& name) {
     }
   }
   FATAL << "Couldn't generate a level: " << name;
-  return nullptr;
+  fail();
 }
 
 void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
@@ -87,18 +114,20 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
       auto levels = pos.getModel()->getMainLevels();
       int levelIndex = *levels.findElement(pos.getLevel());
       if (levelIndex == levels.size() - 1) {
-        int width = 140;
         auto stairKey = StairKey::getNew();
         auto newLevel = tryBuilding(20,
             [&]{
-              return pos.getModel()->buildMainLevel(
-                LevelBuilder(Random, pos.getGame()->getContentFactory(), width, width, "", true),
-                getLevelMaker(Random, pos.getGame()->getContentFactory(),
-                    pos.getGame()->getPlayerControl()->getTribeAlignment(),
-                    levelIndex + 1, width, pos.getGame()->getPlayerCollective()->getTribeId(), stairKey));
+              auto contentFactory = pos.getGame()->getContentFactory();
+              auto maker = getLevelMaker(Random, contentFactory, pos.getGame()->getPlayerControl()->getTribeAlignment(),
+                  levelIndex + 1, pos.getGame()->getPlayerCollective()->getTribeId(), stairKey);
+              auto level = pos.getModel()->buildMainLevel(LevelBuilder(Random, contentFactory, maker.levelWidth, maker.levelWidth, true),
+                  std::move(maker.maker));
+              return ZLevelResult{ level, maker.enemy ? maker.enemy->buildCollective(contentFactory) : nullptr};
             },
             "z-level " + toString(levelIndex));
-        Position landing = newLevel->getLandingSquares(stairKey).getOnlyElement();
+        if (newLevel.collective)
+          pos.getModel()->addCollective(std::move(newLevel.collective));
+        Position landing = newLevel.level->getLandingSquares(stairKey).getOnlyElement();
         landing.addFurniture(pos.getGame()->getContentFactory()->furniture.getFurniture(
             FurnitureType("UP_STAIRS"), TribeId::getMonster()));
         pos.setLandingLink(stairKey);
@@ -107,7 +136,7 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
         pos.getGame()->getPlayerControl()->addToMemory(landing);
         for (auto v : landing.neighbors8())
           pos.getGame()->getPlayerControl()->addToMemory(v);
-        for (auto pos : newLevel->getAllPositions())
+        for (auto pos : newLevel.level->getAllPositions())
           if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
             if (f->isClearFogOfWar())
               pos.getGame()->getPlayerControl()->addToMemory(pos);

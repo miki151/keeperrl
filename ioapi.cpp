@@ -70,8 +70,8 @@ voidpf ZCALLBACK fopen_file_func (
    const char* filename,
    int mode)
 {
-    FILE* file = NULL;
-    const char* mode_fopen = NULL;
+    FILE* file = nullptr;
+    const char* mode_fopen = nullptr;
     if ((mode & ZLIB_FILEFUNC_MODE_READWRITEFILTER)==ZLIB_FILEFUNC_MODE_READ)
         mode_fopen = "rb";
     else
@@ -81,7 +81,7 @@ voidpf ZCALLBACK fopen_file_func (
     if (mode & ZLIB_FILEFUNC_MODE_CREATE)
         mode_fopen = "wb";
 
-    if ((filename!=NULL) && (mode_fopen != NULL))
+    if ((filename!=nullptr) && (mode_fopen != nullptr))
         file = fopen(filename, mode_fopen);
     return file;
 }
@@ -173,5 +173,5 @@ void fill_fopen_filefunc (
     pzlib_filefunc_def->zseek_file = fseek_file_func;
     pzlib_filefunc_def->zclose_file = fclose_file_func;
     pzlib_filefunc_def->zerror_file = ferror_file_func;
-    pzlib_filefunc_def->opaque = NULL;
+    pzlib_filefunc_def->opaque = nullptr;
 }

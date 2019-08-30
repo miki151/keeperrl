@@ -27,10 +27,8 @@ const EnumSet<MovementTrait>& MovementType::getTraits() const {
   return traits;
 }
 
-namespace std {
-  size_t hash<MovementType>::operator()(const MovementType& t) const {
-      return combineHash(t.getTraits());
-  }
+int MovementType::getHash() const {
+  return destroyActions.getHash() + traits.getHash() + sunlightVulnerable + 2 * fireResistant + 4 * forced + 8 * buildBridge;
 }
 
 bool MovementType::isCompatible(TribeId id) const {

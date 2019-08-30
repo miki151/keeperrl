@@ -14,6 +14,12 @@
 #include "creature_group.h"
 #include "name_generator.h"
 #include "enemy_id.h"
+#include "collective_builder.h"
+#include "model.h"
+#include "collective.h"
+#include "village_control.h"
+#include "game.h"
+#include "immigration.h"
 
 EnemyFactory::EnemyFactory(RandomGen& r, NameGenerator* n, map<EnemyId, EnemyInfo> enemies, vector<ExternalEnemy> externalEnemies)
     : random(r), nameGenerator(n), enemies(std::move(enemies)), externalEnemies(std::move(externalEnemies)) {
@@ -44,6 +50,24 @@ EnemyInfo& EnemyInfo::setNonDiscoverable() {
   return *this;
 }
 
+PCollective EnemyInfo::buildCollective(ContentFactory* contentFactory) const {
+  if (settlement.locationName)
+    settlement.collective->setLocationName(*settlement.locationName);
+  if (auto race = settlement.race)
+    settlement.collective->setRaceName(*race);
+  if (discoverable)
+    settlement.collective->setDiscoverable();
+  PCollective collective = settlement.collective->build(contentFactory);
+  collective->setImmigration(makeOwner<Immigration>(collective.get(), immigrants));
+  auto control = VillageControl::create(collective.get(), behaviour);
+  if (villainType)
+    collective->setVillainType(*villainType);
+  if (id)
+    collective->setEnemyId(*id);
+  collective->setControl(std::move(control));
+  return collective;
+}
+
 static EnemyInfo getVault(SettlementType type, CreatureId creature, TribeId tribe, int num,
     optional<ItemListId> itemFactory = none) {
   return EnemyInfo(CONSTRUCT(SettlementInfo,
@@ -52,7 +76,7 @@ static EnemyInfo getVault(SettlementType type, CreatureId creature, TribeId trib
       c.tribe = tribe;
       c.closeToPlayer = true;
       c.dontConnectCave = true;
-      c.buildingId = BuildingId::DUNGEON;
+      c.buildingId = BuildingId("DUNGEON");
       c.shopItems = itemFactory;
     ), CollectiveConfig::noImmigrants())
     .setNonDiscoverable();
@@ -114,9 +138,14 @@ EnemyInfo EnemyFactory::get(EnemyId id) const {
   CHECK(enemies.count(id)) << "Enemy not found: \"" << id.data() << "\"";
   auto ret = enemies.at(id);
   ret.setId(id);
+  if (ret.levelConnection) {
+    for (auto& level : ret.levelConnection->levels)
+      if (auto extra = level.enemy.getReferenceMaybe<LevelConnection::ExtraEnemy>())
+        extra->enemyInfo = vector<EnemyInfo>(random.get(extra->numLevels), get(extra->enemy));
+    if (auto extra = ret.levelConnection->topLevel.getReferenceMaybe<LevelConnection::ExtraEnemy>())
+      extra->enemyInfo = vector<EnemyInfo>(random.get(extra->numLevels), get(extra->enemy));
+  }
   updateCreateOnBones(ret);
-  if (ret.levelConnection)
-    ret.levelConnection->otherEnemy = get(ret.levelConnection->enemyId);
   if (ret.settlement.locationNameGen)
     ret.settlement.locationName = nameGenerator->getNext(*ret.settlement.locationNameGen);
   return ret;
@@ -126,20 +155,32 @@ void EnemyFactory::updateCreateOnBones(EnemyInfo& info) const {
   if (info.createOnBones && random.chance(info.createOnBones->probability)) {
     EnemyInfo enemy = get(random.choose(info.createOnBones->enemies));
     info.levelConnection = enemy.levelConnection;
-    if (info.levelConnection) {
-      info.levelConnection->otherEnemy->settlement.buildingId = BuildingId::RUINS;
-      info.levelConnection->deadInhabitants = true;
-    }
-    if (Random.roll(2)) {
-      info.settlement.buildingId = BuildingId::RUINS;
-      if (info.levelConnection)
-        info.levelConnection->otherEnemy->settlement.buildingId = BuildingId::RUINS;
-    } else {
-      // 50% chance that the original settlement is intact
+    info.biomes = enemy.biomes;
+    bool makeRuins = Random.roll(2);
+    if (makeRuins)
+      info.settlement.buildingId = BuildingId("RUINS");
+    else {
       info.settlement.buildingId = enemy.settlement.buildingId;
       info.settlement.furniture = enemy.settlement.furniture;
       info.settlement.outsideFeatures = enemy.settlement.outsideFeatures;
       info.settlement.shopItems = enemy.settlement.shopItems;
+    }
+    if (info.levelConnection) {
+      auto processLevel = [&](LevelConnection::EnemyLevelInfo& enemy) {
+        if (auto extra = enemy.getReferenceMaybe<LevelConnection::ExtraEnemy>())
+          for (auto& enemy : extra->enemyInfo) {
+            if (makeRuins) {
+              enemy.settlement.buildingId = BuildingId("RUINS");
+              enemy.settlement.furniture.clear();
+              enemy.settlement.outsideFeatures.reset();
+            }
+            enemy.settlement.corpses = enemy.settlement.inhabitants;
+            enemy.settlement.inhabitants = InhabitantsInfo();
+          }
+      };
+      for (auto& level : info.levelConnection->levels)
+        processLevel(level.enemy);
+      processLevel(info.levelConnection->topLevel);
     }
     info.settlement.type = enemy.settlement.type;
     info.settlement.corpses = enemy.settlement.inhabitants;
