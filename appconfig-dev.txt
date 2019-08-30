@@ -1,6 +1,6 @@
 {
 "upload_url"     "http://localhost/~michal/29"
-"save_version"   "4000"
+"save_version"   "3500"
 "mod_version"    "Alpha29"
 "steamworks"     "1"
 }
