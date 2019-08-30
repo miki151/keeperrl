@@ -115,7 +115,7 @@
     }
   "ElvenSword"
     {
-      viewId = { "elvenword" }
+      viewId = { "elven_sword" }
       name = "elven sword"
       itemClass = WEAPON
       equipmentSlot = WEAPON
