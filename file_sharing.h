@@ -12,7 +12,8 @@ class FileSharing {
   public:
   FileSharing(const string& uploadUrl, const string& modVersion, int saveVersion, Options&, string installId);
 
-  optional<string> uploadSite(const FilePath& path, const string& title, ProgressMeter&, optional<string>& url);
+  optional<string> uploadSite(const FilePath& path, const string& title, const SavedGameInfo&, ProgressMeter&,
+      optional<string>& url);
   struct SiteInfo {
     SavedGameInfo gameInfo;
     SaveFileInfo fileInfo;
@@ -59,7 +60,8 @@ class FileSharing {
   void uploadingLoop();
   void uploadGameEventImpl(const GameEvent&, int tries);
   optional<string> downloadContent(const string& url);
-  optional<string> uploadSiteToSteam(const FilePath&, const string& title, ProgressMeter&, optional<string>& url);
+  optional<string> uploadSiteToSteam(const FilePath&, const string& title, const SavedGameInfo&,
+      ProgressMeter&, optional<string>& url);
   string installId;
   atomic<bool> wasCancelled;
 };

@@ -51,7 +51,7 @@ class MainLoop {
 
   optional<RetiredGames> getRetiredGames(CampaignType);
   int getSaveVersion(const SaveFileInfo& save);
-  void uploadFile(const FilePath& path, const string& title);
+  void uploadFile(const FilePath& path, const string& title, const SavedGameInfo&);
   void saveUI(PGame&, GameSaveType type, SplashType splashType);
   void getSaveOptions(const vector<pair<GameSaveType, string>>&,
       vector<ListElem>& options, vector<SaveFileInfo>& allFiles);

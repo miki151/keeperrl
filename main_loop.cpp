@@ -156,13 +156,13 @@ int MainLoop::getSaveVersion(const SaveFileInfo& save) {
     return -1;
 }
 
-void MainLoop::uploadFile(const FilePath& path, const string& title) {
+void MainLoop::uploadFile(const FilePath& path, const string& title, const SavedGameInfo& info) {
   atomic<bool> cancelled(false);
   optional<string> error;
   optional<string> url;
   doWithSplash(SplashType::AUTOSAVING, "Uploading "_s + path.getPath() + "...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->uploadSite(path, title, meter, url);
+        error = fileSharing->uploadSite(path, title, info, meter, url);
       },
       [&] {
         cancelled = true;
@@ -197,7 +197,7 @@ void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
   }
   Square::progressMeter = nullptr;
   if (GameSaveType::RETIRED_SITE == type)
-    uploadFile(path, game->getGameDisplayName());
+    uploadFile(path, game->getGameDisplayName(), game->getSavedGameInfo());
 }
 
 void MainLoop::eraseSaveFile(const PGame& game, GameSaveType type) {

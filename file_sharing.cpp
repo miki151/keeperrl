@@ -124,11 +124,12 @@ static CallbackData getCallbackData(FileSharing* f, ProgressMeter& meter) {
   return { [&meter] (double p) { meter.setProgress((float) p); }, f };
 }
 
-optional<string> FileSharing::uploadSite(const FilePath& path, const string& title, ProgressMeter& meter, optional<string>& url) {
+optional<string> FileSharing::uploadSite(const FilePath& path, const string& title, const SavedGameInfo& info,
+    ProgressMeter& meter, optional<string>& url) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return none;
 #ifdef USE_STEAMWORKS
-  return uploadSiteToSteam(path, title, meter, url);
+  return uploadSiteToSteam(path, title, info, meter, url);
 #else
   return curlUpload(path.getPath(), (uploadUrl + "/upload_site.php").c_str(), getCallbackData(this, meter), 0);
 #endif
@@ -566,7 +567,14 @@ optional<string> FileSharing::uploadMod(ModInfo& modInfo, const DirectoryPath& m
 #endif
 }
 
-optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const string& title, ProgressMeter&, optional<string>& url) {
+static string serializeInfo(const SavedGameInfo& savedInfo) {
+  TextOutput output;
+  output.getArchive() << savedInfo;
+  return output.getStream().str();
+}
+
+optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const string& title, const SavedGameInfo& savedInfo,
+    ProgressMeter&, optional<string>& url) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
     return "Steam client not available"_s;
@@ -577,6 +585,7 @@ optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const stri
   info.tags = "Dungeon," + toString(saveVersion);
   info.title = title;
   info.folder = string(path.absolute().getPath());
+  info.metadata = serializeInfo(savedInfo);
   info.visibility = SteamItemVisibility::public_;
   ugc.beginUpdateItem(info);
 
