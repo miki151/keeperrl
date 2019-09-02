@@ -363,7 +363,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
       if (onlineSites) {
         for (auto& elem : *onlineSites)
           if (isCompatible(elem.version))
-            ret.addOnline(elem.gameInfo, elem.fileInfo, elem.totalGames, elem.wonGames);
+            ret.addOnline(elem.gameInfo, elem.fileInfo, elem.totalGames, elem.wonGames, elem.subscribed);
       } else
         view->presentText("", "Failed to fetch list of retired dungeons from the server.");
       ret.sort();

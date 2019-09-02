@@ -21,6 +21,7 @@ class FileSharing {
     int totalGames;
     int wonGames;
     int version;
+    bool subscribed;
   };
   optional<vector<SiteInfo>> listSites();
 

@@ -296,7 +296,7 @@ static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
   if (fields.size() < 6)
     return none;
   INFO << "Parsed " << fields;
-  FileSharing::SiteInfo elem;
+  FileSharing::SiteInfo elem {};
   elem.fileInfo.filename = fields[0];
   try {
     elem.fileInfo.date = fromString<int>(fields[1]);
@@ -511,6 +511,7 @@ optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites() {
     site.fileInfo.date = info.updateTime;
     site.fileInfo.filename = toString(info.id);
     site.fileInfo.download = true;
+    site.subscribed = infos[n].subscribed;
     TextInput input(info.metadata);
     input.getArchive() >> site.gameInfo;
     out.push_back(std::move(site));
