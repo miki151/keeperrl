@@ -14,6 +14,7 @@ class FileSharing {
 
   optional<string> uploadSite(const FilePath& path, const string& title, const SavedGameInfo&, ProgressMeter&,
       optional<string>& url);
+  optional<string> downloadSite(const string& filename, const DirectoryPath& targetDir, ProgressMeter&);
   struct SiteInfo {
     SavedGameInfo gameInfo;
     SaveFileInfo fileInfo;
@@ -22,7 +23,6 @@ class FileSharing {
     int version;
   };
   optional<vector<SiteInfo>> listSites();
-  optional<string> download(const string& filename, const string& remoteDir, const DirectoryPath& dir, ProgressMeter&);
 
   typedef map<string, string> GameEvent;
   bool uploadGameEvent(const GameEvent&, bool requireGameEventsPermission = true);
@@ -37,10 +37,7 @@ class FileSharing {
   optional<vector<BoardMessage>> getBoardMessages(int boardId);
   bool uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text);
 
-  optional<vector<ModInfo>> getSteamMods();
   optional<vector<ModInfo>> getOnlineMods();
-  optional<string> downloadSteamMod(SteamId, const string& name, const DirectoryPath& modsDir,
-                                    ProgressMeter&);
   optional<string> downloadMod(const string& name, SteamId, const DirectoryPath& modsDir, ProgressMeter&);
   optional<string> uploadMod(ModInfo& modInfo, const DirectoryPath& modsDir, ProgressMeter&);
 
@@ -62,6 +59,11 @@ class FileSharing {
   optional<string> downloadContent(const string& url);
   optional<string> uploadSiteToSteam(const FilePath&, const string& title, const SavedGameInfo&,
       ProgressMeter&, optional<string>& url);
+  optional<vector<ModInfo>> getSteamMods();
+  optional<vector<SiteInfo>> getSteamSites();
+  optional<string> downloadSteamMod(SteamId, const string& name, const DirectoryPath& modsDir, ProgressMeter&);
+  optional<string> downloadSteamSite(SteamId, const DirectoryPath& targetDir, ProgressMeter&);
+  optional<string> download(const string& filename, const string& remoteDir, const DirectoryPath& dir, ProgressMeter&);
   string installId;
   atomic<bool> wasCancelled;
 };

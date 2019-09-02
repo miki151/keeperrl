@@ -135,6 +135,14 @@ optional<string> FileSharing::uploadSite(const FilePath& path, const string& tit
 #endif
 }
 
+optional<string> FileSharing::downloadSite(const string& filename, const DirectoryPath& targetDir, ProgressMeter& meter) {
+#ifdef USE_STEAMWORKS
+  return downloadSteamSite(fromString<SteamId>(filename), targetDir, meter);
+#else
+  return download(filename, "uploads", targetDir, meter);
+#endif
+}
+
 void FileSharing::uploadHighscores(const FilePath& path) {
   if (options.getBoolValue(OptionId::ONLINE))
     uploadQueue.push([this, path] {
@@ -309,6 +317,8 @@ static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
 optional<vector<FileSharing::SiteInfo>> FileSharing::listSites() {
   if (!options.getBoolValue(OptionId::ONLINE))
     return {};
+  if (auto sites = getSteamSites())
+    return sites;
   if (auto content = downloadContent(uploadUrl + "/get_sites.php"))
     return parseLines<FileSharing::SiteInfo>(*content, parseSite);
   else
@@ -367,13 +377,20 @@ static string firstLines(string text, int max_lines = 3) {
   return text;
 }
 
-optional<vector<ModInfo>> FileSharing::getSteamMods() {
+struct SteamItemInfo {
+  steam::ItemInfo info;
+  optional<string> owner;
+  bool subscribed;
+  bool isOwner;
+};
+
+static vector<SteamItemInfo> getSteamItems() {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable()) {
 #ifdef RELEASE
     USER_INFO << "Steam client not available";
 #endif
-    return none;
+    return {};
   }
 
   // TODO: thread safety
@@ -412,7 +429,7 @@ optional<vector<ModInfo>> FileSharing::getSteamMods() {
   if (items.empty()) {
     INFO << "STEAM: No items present";
     // TODO: inform that no mods are present (not subscribed or ...)
-    return vector<ModInfo>();
+    return {};
   }
 
   steam::ItemDetailsInfo detailsInfo;
@@ -443,15 +460,30 @@ optional<vector<ModInfo>> FileSharing::getSteamMods() {
     return done;
   };
   steam::sleepUntil(retrieveUserNames, milliseconds(1500));
-  vector<ModInfo> out;
+  vector<SteamItemInfo> ret;
+  for (int n = 0; n < infos.size(); n++)
+    ret.push_back(SteamItemInfo{
+        infos[n],
+        ownerNames[n],
+        subscribedItems.contains(infos[n].id),
+        infos[n].ownerId == user.id()
+    });
+  return ret;
+#else
+  return {};
+#endif
+}
 
+optional<vector<ModInfo>> FileSharing::getSteamMods() {
+  vector<ModInfo> out;
+  auto infos = getSteamItems();
   for (int n = 0; n < infos.size(); n++) {
-    auto& info = infos[n];
+    auto& info = infos[n].info;
     if (!info.tags.contains("Mod") || !info.tags.contains(modVersion))
       continue;
 
     ModInfo mod;
-    mod.details.author = ownerNames[n].value_or("unknown");
+    mod.details.author = infos[n].owner.value_or("unknown");
     mod.details.description = firstLines(info.description);
     mod.name = info.title;
     // TODO: playtimeSessions is not exactly the same as numGames
@@ -459,16 +491,31 @@ optional<vector<ModInfo>> FileSharing::getSteamMods() {
     mod.versionInfo.steamId = info.id.value;
     mod.versionInfo.version = (int) info.updateTime;
     mod.versionInfo.compatibilityTag = modVersion;
-    mod.isSubscribed = subscribedItems.contains(info.id);
+    mod.isSubscribed = infos[n].subscribed;
     mod.rating = (info.votesUp + info.votesDown > 0) ? double(info.votesUp) / (info.votesUp + info.votesDown) : -1.0;
-    mod.canUpload = infos[n].ownerId == user.id();
+    mod.canUpload = infos[n].isOwner;
     out.emplace_back(mod);
   }
-
   return out;
-#else
-  return none;
-#endif
+}
+
+optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites() {
+  vector<SiteInfo> out;
+  auto infos = getSteamItems();
+  for (int n = 0; n < infos.size(); n++) {
+    auto& info = infos[n].info;
+    if (!info.tags.contains("Dungeon") || !info.tags.contains(toString(saveVersion)))
+      continue;
+    SiteInfo site {};
+    site.version = saveVersion;
+    site.fileInfo.date = info.updateTime;
+    site.fileInfo.filename = toString(info.id);
+    site.fileInfo.download = true;
+    TextInput input(info.metadata);
+    input.getArchive() >> site.gameInfo;
+    out.push_back(std::move(site));
+  }
+  return out;
 }
 
 optional<vector<ModInfo>> FileSharing::getOnlineMods() {
@@ -607,6 +654,43 @@ optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const stri
       ugc.deleteItem(*result->itemId);*/
   }
 
+#else
+  return string("Steam support is not available in this build");
+#endif
+}
+
+optional<string> FileSharing::downloadSteamSite(SteamId id_, const DirectoryPath& targetDir, ProgressMeter&) {
+#ifdef USE_STEAMWORKS
+  if (!steam::Client::isAvailable())
+    return "Steam client not available"_s;
+  steam::ItemId id(id_);
+
+  auto& ugc = steam::UGC::instance();
+  auto& user = steam::User::instance();
+
+  if (!ugc.isInstalled(id)) {
+    if (!ugc.downloadItem(id, true))
+      return string("Error while downloading mod.");
+
+    // TODO: meter support
+    while (!consumeCancelled()) {
+      steam::runCallbacks();
+      if (!ugc.isDownloading(id))
+        break;
+      sleep_for(milliseconds(50));
+    }
+
+    if (!ugc.isInstalled(id))
+      return string("Error while downloading mod.");
+  }
+
+  auto instInfo = ugc.installInfo(id);
+  if (!instInfo)
+    return string("Error while retrieving installation info");
+  for (auto file : DirectoryPath(instInfo->folder).getFiles())
+    // There should be only one file, and we use the SteamId as the file name.
+    file.copyTo(targetDir.file(toString(id_)));
+  return none;
 #else
   return string("Steam support is not available in this build");
 #endif

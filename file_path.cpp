@@ -78,3 +78,8 @@ bool FilePath::isAbsolute() const {
 FilePath FilePath::absolute() const {
   return FilePath::fromFullPath(getAbsolute(fullPath.data()));
 }
+
+void FilePath::copyTo(FilePath to) const {
+  if (auto contents = readContents())
+    ofstream(to.getPath()) << *contents;
+}

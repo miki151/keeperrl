@@ -182,11 +182,15 @@ FilePath MainLoop::getSavePath(const PGame& game, GameSaveType gameType) {
 
 void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
   auto path = getSavePath(game, type);
+  function<void()> uploadFun = nullptr;
   if (type == GameSaveType::RETIRED_SITE) {
     int saveTime = game->getMainModel()->getSaveProgressCount();
     doWithSplash(splashType, "Retiring site...", saveTime,
         [&] (ProgressMeter& meter) {
         Square::progressMeter = &meter;
+        uploadFun = [this, path, name = game->getGameDisplayName(), savedInfo = game->getSavedGameInfo()] {
+          uploadFile(path, name, savedInfo);
+        };
         MEASURE(saveMainModel(game, path), "saving time")});
   } else {
     int saveTime = game->getSaveProgressCount();
@@ -196,8 +200,8 @@ void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
         MEASURE(saveGame(game, path), "saving time")});
   }
   Square::progressMeter = nullptr;
-  if (GameSaveType::RETIRED_SITE == type)
-    uploadFile(path, game->getGameDisplayName(), game->getSavedGameInfo());
+  if (uploadFun)
+    uploadFun();
 }
 
 void MainLoop::eraseSaveFile(const PGame& game, GameSaveType type) {
@@ -1052,7 +1056,7 @@ bool MainLoop::downloadGame(const string& filename) {
   optional<string> error;
   doWithSplash(SplashType::AUTOSAVING, "Downloading " + filename + "...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->download(filename, "uploads", userPath, meter);
+        error = fileSharing->downloadSite(filename, userPath, meter);
       },
       [&] {
         cancelled = true;
