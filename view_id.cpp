@@ -50,6 +50,7 @@ void ViewId::serialize(PrettyInputArchive& ar, unsigned) {
   if (colorInfo != Color::WHITE)
     color = colorInfo;
   *this = ViewId(id.data(), colorInfo);
+  ar.keyVerifier.verifyContentId<ViewId>(id);
 }
 
 #include "text_serialization.h"
