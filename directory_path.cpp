@@ -99,6 +99,13 @@ bool isAbsolutePath(const char* str) {
   return false;
 }
 
+string getAbsolute(const char* path) {
+  if (isAbsolutePath(path))
+    return path;
+  // TODO: this is not exactly right if paths contain dots (../../)
+  return DirectoryPath::current().getPath() + string("/") + path;
+}
+
 DirectoryPath DirectoryPath::current() {
   char buffer[2048];
   char* name = getcwd(buffer, sizeof(buffer) - 1);
@@ -134,8 +141,5 @@ bool DirectoryPath::isAbsolute() const {
 }
 
 DirectoryPath DirectoryPath::absolute() const {
-  if (isAbsolutePath(path.c_str()))
-    return *this;
-  // TODO: this is not exactly right if paths contain dots (../../)
-  return DirectoryPath(current().path + "/" + path);
+  return DirectoryPath(getAbsolute(path.data()));
 }

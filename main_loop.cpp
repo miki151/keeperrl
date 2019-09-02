@@ -156,17 +156,22 @@ int MainLoop::getSaveVersion(const SaveFileInfo& save) {
     return -1;
 }
 
-void MainLoop::uploadFile(const FilePath& path, GameSaveType type) {
+void MainLoop::uploadFile(const FilePath& path, const string& title) {
   atomic<bool> cancelled(false);
   optional<string> error;
+  optional<string> url;
   doWithSplash(SplashType::AUTOSAVING, "Uploading "_s + path.getPath() + "...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->uploadSite(path, meter);
+        error = fileSharing->uploadSite(path, title, meter, url);
       },
       [&] {
         cancelled = true;
         fileSharing->cancel();
       });
+  if (url)
+    if (view->yesOrNoPrompt("Your retired dungeon has been uploaded to Steam Workshop. "
+        "Would you like to open its page in your browser now?"))
+      openUrl("https://steamcommunity.com/sharedfiles/filedetails/?id=" + *url);
   if (error && !cancelled)
     view->presentText("Error uploading file", *error);
 }
@@ -192,7 +197,7 @@ void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
   }
   Square::progressMeter = nullptr;
   if (GameSaveType::RETIRED_SITE == type)
-    uploadFile(path, type);
+    uploadFile(path, game->getGameDisplayName());
 }
 
 void MainLoop::eraseSaveFile(const PGame& game, GameSaveType type) {

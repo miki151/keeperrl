@@ -6,6 +6,7 @@
 class FilePath;
 
 bool isAbsolutePath(const char* path);
+string getAbsolute(const char* path);
 
 class DirectoryPath {
   public:

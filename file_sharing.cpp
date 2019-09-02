@@ -17,9 +17,9 @@
 #include "steam_friends.h"
 #endif
 
-FileSharing::FileSharing(const string& url, const string& modVer, Options& o, string id)
-    : uploadUrl(url), modVersion(modVer), options(o), uploadLoop(bindMethod(&FileSharing::uploadingLoop, this)),
-      installId(id), wasCancelled(false) {
+FileSharing::FileSharing(const string& url, const string& modVer, int saveVersion, Options& o, string id)
+    : uploadUrl(url), modVersion(modVer), saveVersion(saveVersion), options(o),
+      uploadLoop(bindMethod(&FileSharing::uploadingLoop, this)), installId(id), wasCancelled(false) {
   curl_global_init(CURL_GLOBAL_ALL);
 }
 
@@ -124,10 +124,14 @@ static CallbackData getCallbackData(FileSharing* f, ProgressMeter& meter) {
   return { [&meter] (double p) { meter.setProgress((float) p); }, f };
 }
 
-optional<string> FileSharing::uploadSite(const FilePath& path, ProgressMeter& meter) {
+optional<string> FileSharing::uploadSite(const FilePath& path, const string& title, ProgressMeter& meter, optional<string>& url) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return none;
+#ifdef USE_STEAMWORKS
+  return uploadSiteToSteam(path, title, meter, url);
+#else
   return curlUpload(path.getPath(), (uploadUrl + "/upload_site.php").c_str(), getCallbackData(this, meter), 0);
+#endif
 }
 
 void FileSharing::uploadHighscores(const FilePath& path) {
@@ -548,6 +552,43 @@ optional<string> FileSharing::uploadMod(ModInfo& modInfo, const DirectoryPath& m
   }
   if (result->valid()) {
     modInfo.versionInfo.steamId = *result->itemId;
+    return none;
+  } else {
+    return *result->error;
+
+    // Remove partially created item
+    /*if (!itemInfo.id && result->itemId)
+      ugc.deleteItem(*result->itemId);*/
+  }
+
+#else
+  return string("Steam support is not available in this build");
+#endif
+}
+
+optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const string& title, ProgressMeter&, optional<string>& url) {
+#ifdef USE_STEAMWORKS
+  if (!steam::Client::isAvailable())
+    return "Steam client not available"_s;
+  auto& ugc = steam::UGC::instance();
+  //auto& user = steam::User::instance();
+
+  steam::UpdateItemInfo info;
+  info.tags = "Dungeon," + toString(saveVersion);
+  info.title = title;
+  info.folder = string(path.absolute().getPath());
+  info.visibility = SteamItemVisibility::public_;
+  ugc.beginUpdateItem(info);
+
+  // Item update may take some time; Should we loop indefinitely?
+  optional<steam::UpdateItemResult> result;
+  steam::sleepUntil([&]() { return (bool)(result = ugc.tryUpdateItem()); }, milliseconds(600 * 1000));
+  if (!result) {
+    ugc.cancelUpdateItem();
+    return "Uploading mod has timed out"_s;
+  }
+  if (result->valid()) {
+    url = toString(*result->itemId);
     return none;
   } else {
     return *result->error;
