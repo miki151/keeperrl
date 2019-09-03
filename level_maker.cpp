@@ -2854,6 +2854,7 @@ PLevelMaker LevelMaker::roomLevel(RandomGen& random, SettlementInfo info) {
   for (StairKey key : info.upStairs)
     queue->addMaker(unique<Stairs>(StairDirection::UP, key, building, Predicate::type(FurnitureType("FLOOR"))));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
+  queue->addMaker(unique<PlaceCollective>(info.collective));
   queue->addMaker(unique<Items>(ItemListId("dungeon"), 5, 10));
   return unique<BorderGuard>(std::move(queue), wall);
 }
