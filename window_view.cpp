@@ -1369,8 +1369,8 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       break;
     case SDL::SDLK_TAB:
       // TODO: put it under different shortcut?
-      inputQueue.push(UserInputId::CHEAT_SPELLS);
-      inputQueue.push(UserInputId::CHEAT_POTIONS);
+      //inputQueue.push(UserInputId::CHEAT_SPELLS);
+      //inputQueue.push(UserInputId::CHEAT_POTIONS);
       break;
 #endif
     case SDL::SDLK_F7:
