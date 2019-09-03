@@ -79,7 +79,7 @@ class MainLoop {
   FilePath getSavePath(const PGame&, GameSaveType);
   void eraseSaveFile(const PGame&, GameSaveType);
 
-  bool downloadGame(const string& filename);
+  bool downloadGame(const SaveFileInfo&);
   bool eraseSave();
   static vector<SaveFileInfo> getSaveFiles(const DirectoryPath& path, const string& suffix);
   bool isCompatible(int loadedVersion);

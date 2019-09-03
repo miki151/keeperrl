@@ -135,11 +135,11 @@ optional<string> FileSharing::uploadSite(const FilePath& path, const string& tit
 #endif
 }
 
-optional<string> FileSharing::downloadSite(const string& filename, const DirectoryPath& targetDir, ProgressMeter& meter) {
+optional<string> FileSharing::downloadSite(const SaveFileInfo& file, const DirectoryPath& targetDir, ProgressMeter& meter) {
 #ifdef USE_STEAMWORKS
-  return downloadSteamSite(fromString<SteamId>(filename), targetDir, meter);
+  return downloadSteamSite(file, targetDir, meter);
 #else
-  return download(filename, "uploads", targetDir, meter);
+  return download(file.filename, "uploads", targetDir, meter);
 #endif
 }
 
@@ -509,11 +509,11 @@ optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites() {
     SiteInfo site {};
     site.version = saveVersion;
     site.fileInfo.date = info.updateTime;
-    site.fileInfo.filename = toString(info.id);
+    site.fileInfo.steamId = info.id.value;
     site.fileInfo.download = true;
     site.subscribed = infos[n].subscribed;
     TextInput input(info.metadata);
-    input.getArchive() >> site.gameInfo;
+    input.getArchive() >> site.fileInfo.filename >> site.gameInfo;
     out.push_back(std::move(site));
   }
   return out;
@@ -615,9 +615,9 @@ optional<string> FileSharing::uploadMod(ModInfo& modInfo, const DirectoryPath& m
 #endif
 }
 
-static string serializeInfo(const SavedGameInfo& savedInfo) {
+static string serializeInfo(const string& fileName, const SavedGameInfo& savedInfo) {
   TextOutput output;
-  output.getArchive() << savedInfo;
+  output.getArchive() << fileName << savedInfo;
   return output.getStream().str();
 }
 
@@ -633,7 +633,7 @@ optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const stri
   info.tags = "Dungeon," + toString(saveVersion);
   info.title = title;
   info.folder = string(path.absolute().getPath());
-  info.metadata = serializeInfo(savedInfo);
+  info.metadata = serializeInfo(path.getFileName(), savedInfo);
   info.visibility = SteamItemVisibility::public_;
   ugc.beginUpdateItem(info);
 
@@ -660,11 +660,11 @@ optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const stri
 #endif
 }
 
-optional<string> FileSharing::downloadSteamSite(SteamId id_, const DirectoryPath& targetDir, ProgressMeter&) {
+optional<string> FileSharing::downloadSteamSite(const SaveFileInfo& file, const DirectoryPath& targetDir, ProgressMeter&) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
     return "Steam client not available"_s;
-  steam::ItemId id(id_);
+  steam::ItemId id(*file.steamId);
 
   auto& ugc = steam::UGC::instance();
   auto& user = steam::User::instance();
@@ -688,9 +688,8 @@ optional<string> FileSharing::downloadSteamSite(SteamId id_, const DirectoryPath
   auto instInfo = ugc.installInfo(id);
   if (!instInfo)
     return string("Error while retrieving installation info");
-  for (auto file : DirectoryPath(instInfo->folder).getFiles())
-    // There should be only one file, and we use the SteamId as the file name.
-    file.copyTo(targetDir.file(toString(id_)));
+  for (auto downloaded : DirectoryPath(instInfo->folder).getFiles())
+    downloaded.copyTo(targetDir.file(file.filename));
   return none;
 #else
   return string("Steam support is not available in this build");

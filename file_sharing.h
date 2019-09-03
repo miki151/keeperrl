@@ -14,7 +14,7 @@ class FileSharing {
 
   optional<string> uploadSite(const FilePath& path, const string& title, const SavedGameInfo&, ProgressMeter&,
       optional<string>& url);
-  optional<string> downloadSite(const string& filename, const DirectoryPath& targetDir, ProgressMeter&);
+  optional<string> downloadSite(const SaveFileInfo&, const DirectoryPath& targetDir, ProgressMeter&);
   struct SiteInfo {
     SavedGameInfo gameInfo;
     SaveFileInfo fileInfo;
@@ -63,7 +63,7 @@ class FileSharing {
   optional<vector<ModInfo>> getSteamMods();
   optional<vector<SiteInfo>> getSteamSites();
   optional<string> downloadSteamMod(SteamId, const string& name, const DirectoryPath& modsDir, ProgressMeter&);
-  optional<string> downloadSteamSite(SteamId, const DirectoryPath& targetDir, ProgressMeter&);
+  optional<string> downloadSteamSite(const SaveFileInfo&, const DirectoryPath& targetDir, ProgressMeter&);
   optional<string> download(const string& filename, const string& remoteDir, const DirectoryPath& dir, ProgressMeter&);
   string installId;
   atomic<bool> wasCancelled;

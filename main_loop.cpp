@@ -1005,7 +1005,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
   for (Vec2 v : sites.getBounds())
     if (auto retired = sites[v].getRetired()) {
       if (retired->fileInfo.download)
-        downloadGame(retired->fileInfo.filename);
+        downloadGame(retired->fileInfo);
     }
   optional<string> failedToLoad;
   int numSites = setup.campaign.getNumNonEmpty();
@@ -1051,12 +1051,12 @@ PGame MainLoop::loadGame(const FilePath& file) {
   return game ? std::move(*game) : nullptr;
 }
 
-bool MainLoop::downloadGame(const string& filename) {
+bool MainLoop::downloadGame(const SaveFileInfo& file) {
   atomic<bool> cancelled(false);
   optional<string> error;
-  doWithSplash(SplashType::AUTOSAVING, "Downloading " + filename + "...", 1,
+  doWithSplash(SplashType::AUTOSAVING, "Downloading " + file.filename + "...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->downloadSite(filename, userPath, meter);
+        error = fileSharing->downloadSite(file, userPath, meter);
       },
       [&] {
         cancelled = true;
