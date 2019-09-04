@@ -1827,7 +1827,7 @@ class Division : public LevelMaker {
 
 class AreaCorners : public LevelMaker {
   public:
-  AreaCorners(PLevelMaker _maker, Vec2 _size, vector<PLevelMaker> _insideMakers)
+  AreaCorners(PLevelMaker _maker, Vec2 _size, vector<PLevelMaker> _insideMakers = {})
       : maker(std::move(_maker)), size(_size), insideMakers(std::move(_insideMakers)) {}
 
   vector<Rectangle> getCorners(Rectangle area) {
@@ -2857,6 +2857,41 @@ PLevelMaker LevelMaker::roomLevel(RandomGen& random, SettlementInfo info) {
   queue->addMaker(unique<PlaceCollective>(info.collective));
   queue->addMaker(unique<Items>(ItemListId("dungeon"), 5, 10));
   return unique<BorderGuard>(std::move(queue), wall);
+}
+
+PLevelMaker LevelMaker::adoxieTemple(RandomGen&, SettlementInfo info) {
+  auto queue = unique<MakerQueue>();
+  auto& building = info.buildingInfo;
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"))
+      .add(FurnitureType("MOUNTAIN2"))));
+  queue->addMaker(unique<Margin>(5, unique<UniformBlob>(SquareChange::reset(FurnitureType("MAGMA")))));
+  auto locations = unique<RandomLocations>();
+  const int templeRoomSize = 5;
+  const int templeRoomMargin = 5;
+  auto templeRoom = unique<MakerQueue>();
+  auto floor = building.floorInside.value_or(FurnitureType("FLOOR"));
+  templeRoom->addMaker(unique<Empty>(SquareChange::reset(FurnitureType("FLOOR"))
+      .add(building.prettyFloor.value_or(FurnitureType("FLOOR")))));
+  templeRoom->addMaker(unique<PlaceCollective>(info.collective));
+  templeRoom->addMaker(unique<AreaCorners>(unique<Empty>(building.wall), Vec2(1, 1)));
+  templeRoom->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
+  for (auto& furniture : info.furniture)
+    templeRoom->addMaker(unique<Margin>((templeRoomSize - 1) / 2,
+        unique<Furnitures>(Predicate::alwaysTrue(), 0.05, furniture, info.tribe)));
+  locations->add(unique<Margin>(templeRoomMargin, std::move(templeRoom)),
+      Vec2(templeRoomSize + 2 * templeRoomMargin, templeRoomSize + 2 * templeRoomMargin),
+      RandomLocations::LocationPredicate(Predicate::type(FurnitureType("MAGMA"))));
+  auto entryRoom = unique<MakerQueue>();
+  entryRoom->addMaker(unique<Empty>(SquareChange::reset(floor)));
+  for (StairKey key : info.downStairs)
+    entryRoom->addMaker(unique<Stairs>(StairDirection::DOWN, key, building, Predicate::type(floor)));
+  for (StairKey key : info.upStairs)
+    entryRoom->addMaker(unique<Stairs>(StairDirection::UP, key, building, Predicate::type(floor)));
+  locations->add(unique<Margin>(1, std::move(entryRoom)), Vec2(7, 7),
+      RandomLocations::LocationPredicate(Predicate::type(FurnitureType("MOUNTAIN2"))));
+  queue->addMaker(std::move(locations));
+  queue->addMaker(unique<Connector>(none, info.tribe));
+  return queue;
 }
 
 namespace {

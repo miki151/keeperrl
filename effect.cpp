@@ -52,7 +52,7 @@ vector<Creature*> Effect::summonCreatures(Position pos, int radius, vector<PCrea
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
   vector<Creature*> ret;
   for (int i : All(creatures))
-    for (Position v : Random.permutation(area))
+    for (Position v : concat({pos}, Random.permutation(area)))
       if (v.canEnter(creatures[i].get())) {
         ret.push_back(creatures[i].get());
         v.addCreature(std::move(creatures[i]), delay);
@@ -456,7 +456,6 @@ string Effect::Summon::getDescription() const {
 }
 
 void Effect::SummonEnemy::applyToCreature(Creature* c, Creature* attacker) const {
-  ::summon(c, creature, count, true);
 }
 
 string Effect::SummonEnemy::getName() const {
@@ -1110,6 +1109,10 @@ void Effect::apply(Position pos, Creature* attacker) const {
       [&](const Caster& chain) {
         if (attacker)
           chain.effect->apply(attacker->getPosition(), attacker);
+      },
+      [&](const SummonEnemy& summon) {
+        CreatureGroup f = CreatureGroup::singleType(TribeId::getMonster(), summon.creature);
+        Effect::summon(pos, f, Random.get(summon.count), 100_visible, 1_visible);
       },
       [&](const PlaceFurniture& effect) {
         auto f = pos.getGame()->getContentFactory()->furniture.getFurniture(effect.furniture,

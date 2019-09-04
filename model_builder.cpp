@@ -60,6 +60,8 @@ ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
       return &LevelMaker::roomLevel;
     case LevelType::MINETOWN:
       return &LevelMaker::mineTownLevel;
+    case LevelType::ADOXIE_TEMPLE:
+      return &LevelMaker::adoxieTemple;
     case LevelType::SOKOBAN: {
       Table<char> sokoLevel = sokobanInput->getNext();
       return [sokoLevel](RandomGen& random, SettlementInfo info) {
@@ -295,7 +297,7 @@ PModel ModelBuilder::tryTutorialModel() {
   /*enemyInfo.push_back(enemyFactory->get(EnemyId("BANDITS")));
   enemyInfo.push_back(enemyFactory->get(EnemyId("ADA_GOLEMS")));*/
   //enemyInfo.push_back(enemyFactory->get(EnemyId("TEMPLE")));
-  enemyInfo.push_back(enemyFactory->get(EnemyId("THIEVES")));
+  enemyInfo.push_back(enemyFactory->get(EnemyId("MAIN_DUNGEON")));
   return tryModel(174, enemyInfo, TribeId::getDarkKeeper(), biome, {}, false);
 }
 

@@ -219,4 +219,5 @@ class Furniture : public OwnedObject<Furniture> {
   optional<MeltInfo> SERIAL(meltInfo);
   optional<int> SERIAL(bloodCountdown);
   optional<LocalTime> SERIAL(bloodTime);
+  optional<Effect> SERIAL(destroyedEffect);
 };

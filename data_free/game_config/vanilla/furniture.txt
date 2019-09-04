@@ -323,6 +323,17 @@
     populationIncrease = 1 4
     destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   }
+  "ADOXIE_STATUE"
+  {
+    name = "statue of Evil God Adoxie"
+    viewId = { "adoxie_statue" }
+    blockMovement = true
+    canHideHere = true
+    luxury = 0.7
+    strength = 250
+    destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+    destroyedEffect = SummonEnemy "ADOXIE_HEAD" {1}
+  }
   "BARRICADE"
   {
     name = "barricade"

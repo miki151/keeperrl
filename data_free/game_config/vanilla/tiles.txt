@@ -26,6 +26,8 @@
   { "adoxie_hand_right" "u" ColorId PURPLE }
   { "adoxie_hand_left" "u" ColorId PURPLE }
   { "adoxie_head" "U" ColorId PURPLE }
+  { viewId = "adoxie_statue" symbol = "U" color = ColorId LIGHT_GRAY
+    roundShadow = true }
   { "unicorn" "h" ColorId WHITE }
   { "elf" "@" ColorId LIGHT_GREEN }
   { "elf_woman" "@" ColorId LIGHT_GREEN }
