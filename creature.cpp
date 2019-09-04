@@ -1691,9 +1691,8 @@ CreatureAction Creature::applyItem(Item* item) const {
       thirdPerson(getName().the() + " " + item->getApplyMsgThirdPerson(self));
       position.unseenMessage(item->getNoSeeApplyMsg());
       item->apply(self);
-      if (item->isDiscarded()) {
+      if (item->isDiscarded())
         self->equipment->removeItem(item, self);
-      }
       self->spendTime(time);
   });
 }

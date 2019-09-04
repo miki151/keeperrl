@@ -281,13 +281,13 @@ void Item::apply(Creature* c, bool noSound) {
 void Item::applySpecial(Creature* c) {
   if (attributes->itemClass == ItemClass::SCROLL)
     c->getGame()->getStatistics().add(StatId::SCROLL_READ);
-  if (attributes->effect)
-    attributes->effect->apply(c->getPosition(), c);
   if (attributes->uses > -1 && --attributes->uses == 0) {
     discarded = true;
     if (attributes->usedUpMsg)
       c->privateMessage(getTheName() + " is used up.");
   }
+  if (attributes->effect)
+    attributes->effect->apply(c->getPosition(), c);
 }
 
 string Item::getApplyMsgThirdPerson(const Creature* owner) const {

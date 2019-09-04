@@ -893,13 +893,14 @@ void Effect::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) con
   copy->setController(Monster::getFactory(MonsterAIFactory::monster()).get(copy.get()));
   auto ttl = 50_visible;
   for (auto& item : c->getEquipment().getItems())
-    if (!item->getResourceId()) {
+    if (!item->getResourceId() && !item->isDiscarded()) {
       auto itemCopy = item->getCopy();
       itemCopy->setTimeout(c->getGame()->getGlobalTime() + ttl + 10_visible);
       copy->take(std::move(itemCopy));
     }
   auto cRef = summonCreatures(c->getPosition(), 2, makeVec(std::move(copy))).getOnlyElement();
   cRef->addEffect(LastingEffect::SUMMONED, ttl, false);
+  c->message(PlayerMessage("Double trouble!", MessagePriority::HIGH));
 }
 
 string Effect::DoubleTrouble::getName() const {
