@@ -80,6 +80,8 @@ FilePath FilePath::absolute() const {
 }
 
 void FilePath::copyTo(FilePath to) const {
-  if (auto contents = readContents())
-    ofstream(to.getPath()) << *contents;
+  CHECK(exists());
+  ifstream in(fullPath, std::ios::binary);
+  ofstream out(to.fullPath, std::ios::binary);
+  out << in.rdbuf();
 }
