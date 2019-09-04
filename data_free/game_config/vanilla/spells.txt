@@ -362,4 +362,32 @@
     targetSelf = false
     cooldown = 150
   }
+  {
+    id =  "adoxie right hand"
+    symbol = "-."
+    effect = Summon "ADOXIE_HAND_RIGHT" { 1 2 }
+    cooldown = 50
+    sound = SPELL_SUMMON_SPIRIT
+  }
+  {
+    id =  "adoxie left hand"
+    symbol = ".-"
+    effect = Summon "ADOXIE_LEFT_HAND" { 1 2 }
+    cooldown = 50
+    sound = SPELL_SUMMON_SPIRIT
+  }
+  {
+    id =  "adoxie left foot"
+    symbol = "_|"
+    effect = Summon "ADOXIE_FOOT_LEFT" { 1 2 }
+    cooldown = 50
+    sound = SPELL_SUMMON_SPIRIT
+  }
+  {
+    id =  "adoxie right foot"
+    symbol = "|_"
+    effect = Summon "ADOXIE_FOOT_RIGHT" { 1 2 }
+    cooldown = 50
+    sound = SPELL_SUMMON_SPIRIT
+  }
 }

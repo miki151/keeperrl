@@ -18,6 +18,10 @@ Consultations:
 Ted Martens, @ted_martens
 DarkGod, @darkgodone
 
+Extra content:
+SoftMonster
+RighteousSinner
+
 Font:
 Lato by Łukasz Dziedzic
 latofonts.com
