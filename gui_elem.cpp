@@ -224,17 +224,19 @@ class TextFieldElem : public GuiElem {
   virtual bool onClick(ClickButton b, Vec2 pos) override {
     if (b == LEFT) {
       if (pos.inRectangle(getBounds())) {
-        current = getText();
-      } else {
-        current = none;
-      }
+        if (!current)
+          current = getText();
+      } else
+      if (current)
+        confirmCurrent();
       return !!current;
     } else
       return false;
   }
 
   virtual void onClickElsewhere() override {
-    current = none;
+    if (!!current)
+      confirmCurrent();
   }
 
   virtual void render(Renderer& r) override {
@@ -259,6 +261,11 @@ class TextFieldElem : public GuiElem {
       r.popLayer();
   }
 
+  void confirmCurrent() {
+    callback(*current);
+    current = none;
+  }
+
   virtual bool onKeyPressed2(SDL::SDL_Keysym sym) override {
     if (!!current) {
       switch (sym.sym) {
@@ -273,8 +280,7 @@ class TextFieldElem : public GuiElem {
           break;
         case SDL::SDLK_KP_ENTER:
         case SDL::SDLK_RETURN:
-          callback(*current);
-          current = none;
+          confirmCurrent();
           break;
         default:
           break;
