@@ -99,6 +99,13 @@ bool isAbsolutePath(const char* str) {
   return false;
 }
 
+string getAbsolute(const char* path) {
+  if (isAbsolutePath(path))
+    return path;
+  // TODO: this is not exactly right if paths contain dots (../../)
+  return DirectoryPath::current().getPath() + string("/") + path;
+}
+
 DirectoryPath DirectoryPath::current() {
   char buffer[2048];
   char* name = getcwd(buffer, sizeof(buffer) - 1);
@@ -108,16 +115,8 @@ DirectoryPath DirectoryPath::current() {
 
 optional<string> DirectoryPath::copyFiles(DirectoryPath from, DirectoryPath to, bool recursive) {
   to.createIfDoesntExist();
-
-  // TODO: do it in better way
-  // TODO: report errors
-  for (auto file : from.getFiles()) {
-    if (auto contents = file.readContents()) {
-      ofstream out(string(to.getPath()) + "/" + file.getFileName());
-      out << *contents;
-    }
-  }
-
+  for (auto file : from.getFiles())
+    file.copyTo(to.file(file.getFileName()));
   if (recursive) {
     for (auto dir : from.getSubDirs()) {
       DirectoryPath subTo(string(to.getPath()) + "/" + dir);
@@ -125,7 +124,6 @@ optional<string> DirectoryPath::copyFiles(DirectoryPath from, DirectoryPath to, 
       copyFiles(subFrom, subTo, recursive);
     }
   }
-
   return none;
 }
 
@@ -134,8 +132,5 @@ bool DirectoryPath::isAbsolute() const {
 }
 
 DirectoryPath DirectoryPath::absolute() const {
-  if (isAbsolutePath(path.c_str()))
-    return *this;
-  // TODO: this is not exactly right if paths contain dots (../../)
-  return DirectoryPath(current().path + "/" + path);
+  return DirectoryPath(getAbsolute(path.data()));
 }

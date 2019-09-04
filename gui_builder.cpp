@@ -3473,7 +3473,10 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
   bool displayActive = !maxActive;
   for (int i : All(allGames)) {
     if (i == retired.getNumLocal() && !displayActive)
-      lines.addElem(gui.label("Online dungeons:", Color::YELLOW));
+      lines.addElem(gui.label(allGames[i].subscribed ? "Subscribed:" : "Online:", Color::YELLOW));
+    else
+      if (i > 0 && !allGames[i].subscribed && allGames[i - 1].subscribed && !displayActive)
+        lines.addElem(gui.label("Online:", Color::YELLOW));
     if (searchString != "" && !contains(toLower(allGames[i].gameInfo.name), toLower(searchString)))
       continue;
     if (retired.isActive(i) == displayActive) {
@@ -3575,7 +3578,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
         *retiredGames, [&queue] { queue.push(CampaignActionId::UPDATE_MAP);}, none, "");
     int addedHeight = addedDungeons.getSize();
     if (!addedDungeons.isEmpty()) {
-      retiredMenuLines.addElem(gui.label("Added dungeons:", Color::YELLOW));
+      retiredMenuLines.addElem(gui.label("Added:", Color::YELLOW));
       retiredMenuLines.addElem(addedDungeons.buildVerticalList(), addedHeight);
     }
     GuiFactory::ListBuilder retiredList = drawRetiredGames(*retiredGames,
@@ -3583,7 +3586,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
     if (retiredList.isEmpty())
       retiredList.addElem(gui.label("No retired dungeons found :("));
     else
-      retiredMenuLines.addElem(gui.label("Local dungeons:", Color::YELLOW));
+      retiredMenuLines.addElem(gui.label("Local:", Color::YELLOW));
     retiredMenuLines.addElemAuto(retiredList.buildVerticalList());
     lines.addElem(gui.leftMargin(optionMargin,
         gui.buttonLabel("Add retired dungeons", [&menuState] { menuState.retiredWindow = !menuState.retiredWindow;})));

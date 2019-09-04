@@ -51,7 +51,7 @@ class MainLoop {
 
   optional<RetiredGames> getRetiredGames(CampaignType);
   int getSaveVersion(const SaveFileInfo& save);
-  void uploadFile(const FilePath& path, GameSaveType);
+  void uploadFile(const FilePath& path, const string& title, const SavedGameInfo&);
   void saveUI(PGame&, GameSaveType type, SplashType splashType);
   void getSaveOptions(const vector<pair<GameSaveType, string>>&,
       vector<ListElem>& options, vector<SaveFileInfo>& allFiles);
@@ -79,7 +79,7 @@ class MainLoop {
   FilePath getSavePath(const PGame&, GameSaveType);
   void eraseSaveFile(const PGame&, GameSaveType);
 
-  bool downloadGame(const string& filename);
+  bool downloadGame(const SaveFileInfo&);
   bool eraseSave();
   static vector<SaveFileInfo> getSaveFiles(const DirectoryPath& path, const string& suffix);
   bool isCompatible(int loadedVersion);

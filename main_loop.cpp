@@ -156,17 +156,22 @@ int MainLoop::getSaveVersion(const SaveFileInfo& save) {
     return -1;
 }
 
-void MainLoop::uploadFile(const FilePath& path, GameSaveType type) {
+void MainLoop::uploadFile(const FilePath& path, const string& title, const SavedGameInfo& info) {
   atomic<bool> cancelled(false);
   optional<string> error;
+  optional<string> url;
   doWithSplash(SplashType::AUTOSAVING, "Uploading "_s + path.getPath() + "...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->uploadSite(path, meter);
+        error = fileSharing->uploadSite(path, title, info, meter, url);
       },
       [&] {
         cancelled = true;
         fileSharing->cancel();
       });
+  if (url)
+    if (view->yesOrNoPrompt("Your retired dungeon has been uploaded to Steam Workshop. "
+        "Would you like to open its page in your browser now?"))
+      openUrl("https://steamcommunity.com/sharedfiles/filedetails/?id=" + *url);
   if (error && !cancelled)
     view->presentText("Error uploading file", *error);
 }
@@ -177,11 +182,15 @@ FilePath MainLoop::getSavePath(const PGame& game, GameSaveType gameType) {
 
 void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
   auto path = getSavePath(game, type);
+  function<void()> uploadFun = nullptr;
   if (type == GameSaveType::RETIRED_SITE) {
     int saveTime = game->getMainModel()->getSaveProgressCount();
     doWithSplash(splashType, "Retiring site...", saveTime,
         [&] (ProgressMeter& meter) {
         Square::progressMeter = &meter;
+        uploadFun = [this, path, name = game->getGameDisplayName(), savedInfo = game->getSavedGameInfo()] {
+          uploadFile(path, name, savedInfo);
+        };
         MEASURE(saveMainModel(game, path), "saving time")});
   } else {
     int saveTime = game->getSaveProgressCount();
@@ -191,8 +200,8 @@ void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
         MEASURE(saveGame(game, path), "saving time")});
   }
   Square::progressMeter = nullptr;
-  if (GameSaveType::RETIRED_SITE == type)
-    uploadFile(path, type);
+  if (uploadFun)
+    uploadFun();
 }
 
 void MainLoop::eraseSaveFile(const PGame& game, GameSaveType type) {
@@ -354,7 +363,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
       if (onlineSites) {
         for (auto& elem : *onlineSites)
           if (isCompatible(elem.version))
-            ret.addOnline(elem.gameInfo, elem.fileInfo, elem.totalGames, elem.wonGames);
+            ret.addOnline(elem.gameInfo, elem.fileInfo, elem.totalGames, elem.wonGames, elem.subscribed);
       } else
         view->presentText("", "Failed to fetch list of retired dungeons from the server.");
       ret.sort();
@@ -996,7 +1005,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
   for (Vec2 v : sites.getBounds())
     if (auto retired = sites[v].getRetired()) {
       if (retired->fileInfo.download)
-        downloadGame(retired->fileInfo.filename);
+        downloadGame(retired->fileInfo);
     }
   optional<string> failedToLoad;
   int numSites = setup.campaign.getNumNonEmpty();
@@ -1042,12 +1051,12 @@ PGame MainLoop::loadGame(const FilePath& file) {
   return game ? std::move(*game) : nullptr;
 }
 
-bool MainLoop::downloadGame(const string& filename) {
+bool MainLoop::downloadGame(const SaveFileInfo& file) {
   atomic<bool> cancelled(false);
   optional<string> error;
-  doWithSplash(SplashType::AUTOSAVING, "Downloading " + filename + "...", 1,
+  doWithSplash(SplashType::AUTOSAVING, "Downloading " + file.filename + "...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->download(filename, "uploads", userPath, meter);
+        error = fileSharing->downloadSite(file, userPath, meter);
       },
       [&] {
         cancelled = true;

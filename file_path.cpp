@@ -70,3 +70,18 @@ bool FilePath::operator==(const FilePath& rhs) const {
 std::ostream& operator <<(std::ostream& d, const FilePath& path) {
   return d << path.getPath();
 }
+
+bool FilePath::isAbsolute() const {
+  return isAbsolutePath(fullPath.c_str());
+}
+
+FilePath FilePath::absolute() const {
+  return FilePath::fromFullPath(getAbsolute(fullPath.data()));
+}
+
+void FilePath::copyTo(FilePath to) const {
+  CHECK(exists());
+  ifstream in(fullPath, std::ios::binary);
+  ofstream out(to.fullPath, std::ios::binary);
+  out << in.rdbuf();
+}

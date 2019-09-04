@@ -10,18 +10,20 @@ class ModInfo;
 
 class FileSharing {
   public:
-  FileSharing(const string& uploadUrl, const string& modVersion, Options&, string installId);
+  FileSharing(const string& uploadUrl, const string& modVersion, int saveVersion, Options&, string installId);
 
-  optional<string> uploadSite(const FilePath& path, ProgressMeter&);
+  optional<string> uploadSite(const FilePath& path, const string& title, const SavedGameInfo&, ProgressMeter&,
+      optional<string>& url);
+  optional<string> downloadSite(const SaveFileInfo&, const DirectoryPath& targetDir, ProgressMeter&);
   struct SiteInfo {
     SavedGameInfo gameInfo;
     SaveFileInfo fileInfo;
     int totalGames;
     int wonGames;
     int version;
+    bool subscribed;
   };
   optional<vector<SiteInfo>> listSites();
-  optional<string> download(const string& filename, const string& remoteDir, const DirectoryPath& dir, ProgressMeter&);
 
   typedef map<string, string> GameEvent;
   bool uploadGameEvent(const GameEvent&, bool requireGameEventsPermission = true);
@@ -36,10 +38,7 @@ class FileSharing {
   optional<vector<BoardMessage>> getBoardMessages(int boardId);
   bool uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text);
 
-  optional<vector<ModInfo>> getSteamMods();
   optional<vector<ModInfo>> getOnlineMods();
-  optional<string> downloadSteamMod(SteamId, const string& name, const DirectoryPath& modsDir,
-                                    ProgressMeter&);
   optional<string> downloadMod(const string& name, SteamId, const DirectoryPath& modsDir, ProgressMeter&);
   optional<string> uploadMod(ModInfo& modInfo, const DirectoryPath& modsDir, ProgressMeter&);
 
@@ -52,12 +51,20 @@ class FileSharing {
   private:
   string uploadUrl;
   string modVersion;
+  int saveVersion;
   Options& options;
   SyncQueue<function<void()>> uploadQueue;
   AsyncLoop uploadLoop;
   void uploadingLoop();
   void uploadGameEventImpl(const GameEvent&, int tries);
   optional<string> downloadContent(const string& url);
+  optional<string> uploadSiteToSteam(const FilePath&, const string& title, const SavedGameInfo&,
+      ProgressMeter&, optional<string>& url);
+  optional<vector<ModInfo>> getSteamMods();
+  optional<vector<SiteInfo>> getSteamSites();
+  optional<string> downloadSteamMod(SteamId, const string& name, const DirectoryPath& modsDir, ProgressMeter&);
+  optional<string> downloadSteamSite(const SaveFileInfo&, const DirectoryPath& targetDir, ProgressMeter&);
+  optional<string> download(const string& filename, const string& remoteDir, const DirectoryPath& dir, ProgressMeter&);
   string installId;
   atomic<bool> wasCancelled;
 };

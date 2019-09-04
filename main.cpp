@@ -393,8 +393,9 @@ static int keeperMain(po::parser& commandLineFlags) {
   AppConfig appConfig(dataPath.file("appconfig-dev.txt"));
 #endif
   string uploadUrl = appConfig.get<string>("upload_url");
-  auto modVersion = appConfig.get<string>("mod_version");
-  FileSharing fileSharing(uploadUrl, modVersion, options, installId);
+  const auto modVersion = appConfig.get<string>("mod_version");
+  const auto saveVersion = appConfig.get<int>("save_version");
+  FileSharing fileSharing(uploadUrl, modVersion, saveVersion, options, installId);
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   if (commandLineFlags["worldgen_test"].was_set()) {
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, nullptr,
@@ -471,7 +472,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
   TileSet tileSet(paidDataPath.subdirectory("images"), freeDataPath.subdirectory(gameConfigSubdir));
   renderer.setTileSet(&tileSet);
-  FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", modVersion, options, installId);
+  FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", modVersion, saveVersion, options, installId);
   unique_ptr<View> view;
   view.reset(WindowView::createDefaultView(
       {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary, &bugreportSharing, userPath, installId}));
@@ -497,7 +498,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     return 0;
   }
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, &tileSet,
-      useSingleThread, appConfig.get<int>("save_version"), modVersion);
+      useSingleThread, saveVersion, modVersion);
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);

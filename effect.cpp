@@ -1222,6 +1222,8 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
 
 EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const {
   auto victim = pos.getCreature();
+  if (victim && !caster->canSee(victim))
+    victim = nullptr;
   if (victim) {
     auto res = shouldAIApply(victim, caster->isEnemy(victim));
     if (res != EffectAIIntent::NONE)

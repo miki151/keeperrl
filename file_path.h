@@ -15,6 +15,11 @@ class FilePath {
 
   bool operator==(const FilePath&) const;
 
+  bool isAbsolute() const;
+  FilePath absolute() const;
+
+  void copyTo(FilePath) const;
+
   private:
   friend class DirectoryPath;
   FilePath(const DirectoryPath& d, const string& f);
