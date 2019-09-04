@@ -985,18 +985,90 @@ static double getScore(string target, string candidate) {
   return result - int(candidate.size()) / 6;
 }
 
+struct WishedItemInfo {
+  ItemType type;
+  string name;
+  Range count;
+};
+
+static vector<WishedItemInfo> getWishedItems(const ContentFactory* factory) {
+  vector<WishedItemInfo> ret;
+  for (auto& elem : factory->items) {
+    ret.push_back(WishedItemInfo {
+      ItemType(elem.first),
+      *elem.second.name,
+      elem.second.wishedCount
+    });
+  }
+  for (auto effect : ENUM_ALL(LastingEffect)) {
+    ret.push_back(WishedItemInfo {
+      ItemType::Ring{effect},
+      "ring of " + LastingEffects::getName(effect),
+      Range(1, 2)
+    });
+    ret.push_back(WishedItemInfo {
+      ItemType::Amulet{effect},
+      "amulet of " + LastingEffects::getName(effect),
+      Range(1, 2)
+    });
+  }
+  vector<Effect> allEffects {
+       Effect(Effect::Escape{}),
+       Effect(Effect::Heal{HealthType::FLESH}),
+       Effect(Effect::Heal{HealthType::SPIRIT}),
+       Effect(Effect::Ice{}),
+       Effect(Effect::Fire{}),
+       Effect(Effect::DestroyEquipment{}),
+       Effect(Effect::DestroyWalls{}),
+       Effect(Effect::EnhanceArmor{}),
+       Effect(Effect::EnhanceWeapon{}),
+       Effect(Effect::CircularBlast{}),
+       Effect(Effect::Deception{}),
+       Effect(Effect::SummonElement{}),
+       Effect(Effect::Acid{}),
+       Effect(Effect::Suicide{MsgType::DIE}),
+       Effect(Effect::DoubleTrouble{})
+  };
+  for (auto effect : ENUM_ALL(LastingEffect)) {
+    allEffects.push_back(Effect::Lasting{effect});
+    allEffects.push_back(Effect::Permanent{effect});
+    allEffects.push_back(Effect::RemoveLasting{effect});
+  }
+  for (auto attr : ENUM_ALL(AttrType))
+    allEffects.push_back(Effect::IncreaseAttr{attr, (attr == AttrType::PARRY ? 2 : 5)});
+  for (auto& effect : allEffects) {
+    ret.push_back(WishedItemInfo {
+      ItemType::Scroll{effect},
+      "scroll of " + effect.getName(),
+      Range(1, 2)
+    });
+    ret.push_back(WishedItemInfo {
+      ItemType::Potion{effect},
+      "potion of " + effect.getName(),
+      Range(1, 2)
+    });
+    ret.push_back(WishedItemInfo {
+      ItemType::Mushroom{effect},
+      "mushroom of " + effect.getName(),
+      Range(1, 2)
+    });
+  }
+
+  return ret;
+}
+
 void Player::grantWish(const string& message) {
   if (auto text = getView()->getText(message, "", 40)) {
     int count = 1;
     optional<ItemType> itemType;
     double bestScore = 0;
-    for (auto& elem : getGame()->getContentFactory()->items) {
-      double score = getScore(*text, *elem.second.name);
-      std::cout << *elem.second.name << " score " << score << std::endl;
+    for (auto& elem : getWishedItems(getGame()->getContentFactory())) {
+      double score = getScore(*text, elem.name);
+      std::cout << elem.name << " score " << score << std::endl;
       if (score > bestScore || !itemType) {
         bestScore = score;
-        itemType = ItemType(elem.first);
-        count = Random.get(elem.second.wishedCount);
+        itemType = elem.type;
+        count = Random.get(elem.count);
       }
     }
     auto items = itemType->get(count, getGame()->getContentFactory());
