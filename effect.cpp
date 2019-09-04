@@ -887,7 +887,9 @@ string Effect::Caster::getDescription() const {
 }
 
 void Effect::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) const {
-  PCreature copy = makeOwner<Creature>(c->getTribeId(), c->getAttributes(), c->getSpellMap());
+  auto attributes = c->getAttributes();
+  c->getGame()->getContentFactory()->getCreatures().initializeAttributes(*c->getAttributes().getCreatureId(), attributes);
+  PCreature copy = makeOwner<Creature>(c->getTribeId(), std::move(attributes), c->getSpellMap());
   copy->setController(Monster::getFactory(MonsterAIFactory::monster()).get(copy.get()));
   auto ttl = 50_visible;
   for (auto& item : c->getEquipment().getItems())
