@@ -1084,7 +1084,9 @@ void Player::grantWish(const string& message) {
           creature->getEquipment().addItems(std::move(items), creature);
         },
         [&](CreatureId id) {
-          Effect::summon(creature, id, 1, 100_visible);
+          auto res = Effect::summon(creature, id, 1, 100_visible);
+          if (!res.empty())
+            res[0]->message(res[0]->getName().a() + " is summoned"_s);
         }
     );
   }
