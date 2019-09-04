@@ -986,13 +986,19 @@ static double getScore(string target, string candidate) {
 }
 
 struct WishedItemInfo {
-  ItemType type;
+  variant<ItemType, CreatureId> type;
   string name;
   Range count;
 };
 
-static vector<WishedItemInfo> getWishedItems(const ContentFactory* factory) {
+static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
   vector<WishedItemInfo> ret;
+  for (auto& creature : factory->getCreatures().getAllCreatures())
+    ret.push_back(WishedItemInfo {
+      creature,
+      factory->getCreatures().fromId(creature, TribeId::getMonster())->getName().bare(),
+      Range(1, 2)
+    });
   for (auto& elem : factory->items) {
     ret.push_back(WishedItemInfo {
       ItemType(elem.first),
@@ -1002,12 +1008,12 @@ static vector<WishedItemInfo> getWishedItems(const ContentFactory* factory) {
   }
   for (auto effect : ENUM_ALL(LastingEffect)) {
     ret.push_back(WishedItemInfo {
-      ItemType::Ring{effect},
+      ItemType(ItemType::Ring{effect}),
       "ring of " + LastingEffects::getName(effect),
       Range(1, 2)
     });
     ret.push_back(WishedItemInfo {
-      ItemType::Amulet{effect},
+      ItemType(ItemType::Amulet{effect}),
       "amulet of " + LastingEffects::getName(effect),
       Range(1, 2)
     });
@@ -1038,17 +1044,17 @@ static vector<WishedItemInfo> getWishedItems(const ContentFactory* factory) {
     allEffects.push_back(Effect::IncreaseAttr{attr, (attr == AttrType::PARRY ? 2 : 5)});
   for (auto& effect : allEffects) {
     ret.push_back(WishedItemInfo {
-      ItemType::Scroll{effect},
+      ItemType(ItemType::Scroll{effect}),
       "scroll of " + effect.getName(),
       Range(1, 2)
     });
     ret.push_back(WishedItemInfo {
-      ItemType::Potion{effect},
+      ItemType(ItemType::Potion{effect}),
       "potion of " + effect.getName(),
       Range(1, 2)
     });
     ret.push_back(WishedItemInfo {
-      ItemType::Mushroom{effect},
+      ItemType(ItemType::Mushroom{effect}),
       "mushroom of " + effect.getName(),
       Range(1, 2)
     });
@@ -1060,20 +1066,27 @@ static vector<WishedItemInfo> getWishedItems(const ContentFactory* factory) {
 void Player::grantWish(const string& message) {
   if (auto text = getView()->getText(message, "", 40)) {
     int count = 1;
-    optional<ItemType> itemType;
+    optional<variant<ItemType, CreatureId>> wishType;
     double bestScore = 0;
     for (auto& elem : getWishedItems(getGame()->getContentFactory())) {
       double score = getScore(*text, elem.name);
       std::cout << elem.name << " score " << score << std::endl;
-      if (score > bestScore || !itemType) {
+      if (score > bestScore || !wishType) {
         bestScore = score;
-        itemType = elem.type;
+        wishType = elem.type;
         count = Random.get(elem.count);
       }
     }
-    auto items = itemType->get(count, getGame()->getContentFactory());
-    creature->verb("receive", "receives", items[0]->getPluralAName(items.size()));
-    creature->getEquipment().addItems(std::move(items), creature);
+    wishType->visit(
+        [&](ItemType itemType) {
+          auto items = itemType.get(count, getGame()->getContentFactory());
+          creature->verb("receive", "receives", items[0]->getPluralAName(items.size()));
+          creature->getEquipment().addItems(std::move(items), creature);
+        },
+        [&](CreatureId id) {
+          Effect::summon(creature, id, 1, 100_visible);
+        }
+    );
   }
 }
 

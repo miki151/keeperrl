@@ -2861,6 +2861,7 @@
         type = Humanoid LARGE
         material = SPIRIT
       }
+      permanentEffects = { INSANITY 1 }
       chatReactionFriendly = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""
       chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""
       name = {

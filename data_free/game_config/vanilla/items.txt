@@ -330,6 +330,7 @@
       weaponInfo = {
         attackType = CUT
         twoHanded = true
+        meleeAttackAttr = SPELL_DAMAGE
       }
     }
   "ElvenBow"
