@@ -196,7 +196,7 @@
       {
         { Simple "HeavyClub"}
       }
-  {"BANDIT" "RAT_SOLDIER" "RAT_KING"}
+  {"BANDIT" "RAT_SOLDIER" "RAT_KING" "THIEF" "THIEF_LEADER" }
       {
         { Simple "Sword"}
         { type = Potion Heal FLESH chance = 0.7 }
