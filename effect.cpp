@@ -556,28 +556,36 @@ string Effect::CircularBlast::getDescription() const {
   return "Creates a circular blast of air that throws back creatures and items.";
 }
 
-void Effect::EnhanceArmor::applyToCreature(Creature* c, Creature* attacker) const {
-  enhanceArmor(c, 1, "is improved");
+const char* Effect::Enhance::typeAsString() const {
+  switch (type) {
+    case ItemUpgradeType::WEAPON:
+      return "weapon";
+    case ItemUpgradeType::ARMOR:
+      return "armor";
+  }
 }
 
-string Effect::EnhanceArmor::getName() const {
-  return "armor enchantment";
+const char* Effect::Enhance::amountAs(const char* positive, const char* negative) const {
+  return amount > 0 ? positive : negative;
 }
 
-string Effect::EnhanceArmor::getDescription() const {
-  return "Increases armor defense.";
+void Effect::Enhance::applyToCreature(Creature* c, Creature* attacker) const {
+  switch (type) {
+    case ItemUpgradeType::WEAPON:
+      enhanceWeapon(c, amount, amountAs("is improved", "degrades"));
+      break;
+    case ItemUpgradeType::ARMOR:
+      enhanceArmor(c, amount, amountAs("is improved", "degrades"));
+      break;
+  }
 }
 
-void Effect::EnhanceWeapon::applyToCreature(Creature* c, Creature* attacker) const {
-  enhanceWeapon(c, 1, "is improved");
+string Effect::Enhance::getName() const {
+  return typeAsString() + " "_s + amountAs("enchantment", "degradation");
 }
 
-string Effect::EnhanceWeapon::getName() const {
-  return "weapon enchantment";
-}
-
-string Effect::EnhanceWeapon::getDescription() const {
-  return "Increases weapon damage.";
+string Effect::Enhance::getDescription() const {
+  return amountAs("Increases", "Decreases") + " "_s + typeAsString() + " capability"_s;
 }
 
 void Effect::DestroyEquipment::applyToCreature(Creature* c, Creature* attacker) const {

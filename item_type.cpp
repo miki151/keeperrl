@@ -306,10 +306,7 @@ static int getEffectPrice(Effect type) {
       [&](const Effect::DestroyWalls&) {
         return 30;
       },
-      [&](const Effect::EnhanceWeapon&) {
-        return 12;
-      },
-      [&](const Effect::EnhanceArmor&) {
+      [&](const Effect::Enhance&) {
         return 12;
       },
       [&](const Effect::TeleEnemies&) {
