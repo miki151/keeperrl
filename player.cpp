@@ -985,23 +985,112 @@ static double getScore(string target, string candidate) {
   return result - int(candidate.size()) / 6;
 }
 
+struct WishedItemInfo {
+  variant<ItemType, CreatureId> type;
+  string name;
+  Range count;
+};
+
+static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
+  vector<WishedItemInfo> ret;
+  for (auto& creature : factory->getCreatures().getAllCreatures())
+    ret.push_back(WishedItemInfo {
+      creature,
+      factory->getCreatures().fromId(creature, TribeId::getMonster())->getName().bare(),
+      Range(1, 2)
+    });
+  for (auto& elem : factory->items) {
+    ret.push_back(WishedItemInfo {
+      ItemType(elem.first),
+      *elem.second.name,
+      elem.second.wishedCount
+    });
+  }
+  for (auto effect : ENUM_ALL(LastingEffect)) {
+    ret.push_back(WishedItemInfo {
+      ItemType(ItemType::Ring{effect}),
+      "ring of " + LastingEffects::getName(effect),
+      Range(1, 2)
+    });
+    ret.push_back(WishedItemInfo {
+      ItemType(ItemType::Amulet{effect}),
+      "amulet of " + LastingEffects::getName(effect),
+      Range(1, 2)
+    });
+  }
+  vector<Effect> allEffects {
+       Effect(Effect::Escape{}),
+       Effect(Effect::Heal{HealthType::FLESH}),
+       Effect(Effect::Heal{HealthType::SPIRIT}),
+       Effect(Effect::Ice{}),
+       Effect(Effect::Fire{}),
+       Effect(Effect::DestroyEquipment{}),
+       Effect(Effect::DestroyWalls{}),
+       Effect(Effect::Enhance{ItemUpgradeType::WEAPON, 2}),
+       Effect(Effect::Enhance{ItemUpgradeType::ARMOR, 2}),
+       Effect(Effect::Enhance{ItemUpgradeType::WEAPON, -2}),
+       Effect(Effect::Enhance{ItemUpgradeType::ARMOR, -2}),
+       Effect(Effect::CircularBlast{}),
+       Effect(Effect::Deception{}),
+       Effect(Effect::SummonElement{}),
+       Effect(Effect::Acid{}),
+       Effect(Effect::Suicide{MsgType::DIE}),
+       Effect(Effect::DoubleTrouble{})
+  };
+  for (auto effect : ENUM_ALL(LastingEffect)) {
+    allEffects.push_back(Effect::Lasting{effect});
+    allEffects.push_back(Effect::Permanent{effect});
+    allEffects.push_back(Effect::RemoveLasting{effect});
+  }
+  for (auto attr : ENUM_ALL(AttrType))
+    allEffects.push_back(Effect::IncreaseAttr{attr, (attr == AttrType::PARRY ? 2 : 5)});
+  for (auto& effect : allEffects) {
+    ret.push_back(WishedItemInfo {
+      ItemType(ItemType::Scroll{effect}),
+      "scroll of " + effect.getName(),
+      Range(1, 2)
+    });
+    ret.push_back(WishedItemInfo {
+      ItemType(ItemType::Potion{effect}),
+      "potion of " + effect.getName(),
+      Range(1, 2)
+    });
+    ret.push_back(WishedItemInfo {
+      ItemType(ItemType::Mushroom{effect}),
+      "mushroom of " + effect.getName(),
+      Range(1, 2)
+    });
+  }
+
+  return ret;
+}
+
 void Player::grantWish(const string& message) {
   if (auto text = getView()->getText(message, "", 40)) {
     int count = 1;
-    optional<ItemType> itemType;
+    optional<variant<ItemType, CreatureId>> wishType;
     double bestScore = 0;
-    for (auto& elem : getGame()->getContentFactory()->items) {
-      double score = getScore(*text, *elem.second.name);
-      std::cout << *elem.second.name << " score " << score << std::endl;
-      if (score > bestScore || !itemType) {
+    for (auto& elem : getWishedItems(getGame()->getContentFactory())) {
+      double score = getScore(*text, elem.name);
+      std::cout << elem.name << " score " << score << std::endl;
+      if (score > bestScore || !wishType) {
         bestScore = score;
-        itemType = ItemType(elem.first);
-        count = Random.get(elem.second.wishedCount);
+        wishType = elem.type;
+        count = Random.get(elem.count);
       }
     }
-    auto items = itemType->get(count, getGame()->getContentFactory());
-    creature->verb("receive", "receives", items[0]->getPluralAName(items.size()));
-    creature->getEquipment().addItems(std::move(items), creature);
+    wishType->visit(
+        [&](ItemType itemType) {
+          auto items = itemType.get(count, getGame()->getContentFactory());
+          creature->verb("receive", "receives", items[0]->getPluralAName(items.size()));
+          creature->getEquipment().addItems(std::move(items), creature);
+        },
+        [&](CreatureId id) {
+          auto res = Effect::summon(creature, id, 1, 100_visible);
+          if (!res.empty())
+            res[0]->message(res[0]->getName().a() + " is summoned"_s);
+        }
+    );
   }
 }
 

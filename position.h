@@ -20,7 +20,7 @@ class DestroyAction;
 class Inventory;
 class Vision;
 class Sectors;
-class FurnitureEffectInfo;
+struct FurnitureEffectInfo;
 
 class Position {
   public:

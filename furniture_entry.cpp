@@ -66,6 +66,7 @@ void FurnitureEntry::handle(WFurniture f, Creature* c) {
         MovementType realMovement = c->getMovementType();
         realMovement.setForced(false);
         if (!f->getMovementSet().canEnter(realMovement)) {
+          c->verb("scream!", "screams!");
           c->you(MsgType::BURN, f->getName());
           c->dieWithReason("burned to death", Creature::DropType::NOTHING);
         }

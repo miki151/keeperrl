@@ -61,7 +61,7 @@ static void addThird(const Creature* c, MsgType type, const string& param) {
     case MsgType::TURN_VISIBLE: msg = c->getName().the() + " appears out of nowhere!"; break;
     case MsgType::ENTER_PORTAL: msg = c->getName().the() + " disappears in the portal."; break;
     case MsgType::HAPPENS_TO: msg = param + " " + c->getName().the(); break;
-    case MsgType::BURN: msg = c->getName().the() + " burns in the " + param; unseenMsg = "You hear a horrible shriek"; break;
+    case MsgType::BURN: msg = c->getName().the() + " burns in the " + param; unseenMsg = "You hear a horrible scream"; break;
     case MsgType::DROWN: msg = c->getName().the() + " drowns in the " + param; unseenMsg = "You hear a loud splash" ;break;
     case MsgType::SET_UP_TRAP: msg = c->getName().the() + " sets up the trap"; break;
     case MsgType::KILLED_BY: msg = c->getName().the() + " is "+

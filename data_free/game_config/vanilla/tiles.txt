@@ -21,6 +21,15 @@
   { "demon_lord" "U" ColorId YELLOW }
   { "vampire" "V" ColorId DARK_GRAY }
   { "vampire_lord" "V" ColorId PURPLE }
+  { "adoxie_foot_left" "u" ColorId PURPLE }
+  { "adoxie_foot_right" "u" ColorId PURPLE }
+  { "adoxie_hand_right" "u" ColorId PURPLE }
+  { "adoxie_hand_left" "u" ColorId PURPLE }
+  { "adoxie_head" "U" ColorId PURPLE }
+  { "adoxie_priest" "@" ColorId PURPLE }
+  { "abomination" "z" ColorId PURPLE }
+  { viewId = "adoxie_statue" symbol = "U" color = ColorId LIGHT_GRAY
+    roundShadow = true }
   { "unicorn" "h" ColorId WHITE }
   { "elf" "@" ColorId LIGHT_GREEN }
   { "elf_woman" "@" ColorId LIGHT_GREEN }

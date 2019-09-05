@@ -330,6 +330,7 @@
       weaponInfo = {
         attackType = CUT
         twoHanded = true
+        meleeAttackAttr = SPELL_DAMAGE
       }
     }
   "ElvenBow"
@@ -904,6 +905,7 @@
       price = 1000
       effect = SummonEnemy "DJINN" {1}
       effectDescription = false
+      ownedEffect = LIGHT_SOURCE
     }
   "Rock"
     {

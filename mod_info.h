@@ -17,7 +17,8 @@ struct ModInfo {
   string name;
   ModDetails details;
   ModVersionInfo versionInfo;
-  double rating = -1; // don't display if less than 0
+  int upvotes = 0;
+  int downvotes = 0;
   bool canUpload = false;
   bool isSubscribed = false;
   bool isActive = false;

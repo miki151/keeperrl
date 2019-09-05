@@ -63,7 +63,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
   ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(freezeTo));
-  ar(OPTION(bloodCountdown), SKIP(bloodTime));
+  ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect));
 }
 
 template <class Archive>
@@ -135,9 +135,12 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
     FurnitureUsage::beforeRemoved(*usageType, pos);
   if (destroyFX)
     pos.getGame()->addEvent(EventInfo::FX{pos, *destroyFX});
+  auto effect = destroyedEffect;
   pos.removeFurniture(this, destroyedRemains
       ? pos.getGame()->getContentFactory()->furniture.getFurniture(*destroyedRemains, getTribe()) : nullptr);
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
+  if (effect)
+    effect->apply(pos);
 }
 
 void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& action) {

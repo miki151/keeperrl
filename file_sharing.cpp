@@ -350,14 +350,15 @@ bool FileSharing::uploadBoardMessage(const string& gameId, int hash, const strin
 }
 
 static optional<ModInfo> parseModInfo(const vector<string>& fields, const string& modVersion) {
-  if (fields.size() >= 8)
+  if (fields.size() >= 9)
     if (auto numGames = fromStringSafe<int>(unescapeEverything(fields[3])))
       if (auto version = fromStringSafe<int>(unescapeEverything(fields[4])))
         if (auto steamId = fromStringSafe<SteamId>(unescapeEverything(fields[5])))
-          if (auto rating = fromStringSafe<double>(unescapeEverything(fields[7])))
-            if (fields[6] == modVersion)
-              return ModInfo{unescapeEverything(fields[0]), ModDetails{unescapeEverything(fields[1]), unescapeEverything(fields[2])},
-                    ModVersionInfo{*steamId, *version, modVersion}, *rating, false, false, false, {}};
+          if (auto upvotes = fromStringSafe<int>(unescapeEverything(fields[7])))
+            if (auto downvotes = fromStringSafe<int>(unescapeEverything(fields[8])))
+              if (fields[6] == modVersion)
+                return ModInfo{unescapeEverything(fields[0]), ModDetails{unescapeEverything(fields[1]), unescapeEverything(fields[2])},
+                      ModVersionInfo{*steamId, *version, modVersion}, *upvotes, *downvotes, false, false, false, {}};
   return none;
 }
 
@@ -492,7 +493,8 @@ optional<vector<ModInfo>> FileSharing::getSteamMods() {
     mod.versionInfo.version = (int) info.updateTime;
     mod.versionInfo.compatibilityTag = modVersion;
     mod.isSubscribed = infos[n].subscribed;
-    mod.rating = (info.votesUp + info.votesDown > 0) ? double(info.votesUp) / (info.votesUp + info.votesDown) : -1.0;
+    mod.upvotes = info.votesUp;
+    mod.downvotes = info.votesDown;
     mod.canUpload = infos[n].isOwner;
     out.emplace_back(mod);
   }

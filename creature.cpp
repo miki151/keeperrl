@@ -331,6 +331,8 @@ CreatureAction Creature::move(Vec2 dir) const {
 
 CreatureAction Creature::move(Position pos, optional<Position> nextPos) const {
   PROFILE;
+  if (isAffected(LastingEffect::IMMOBILE))
+    return CreatureAction("");
   Vec2 direction = getPosition().getDir(pos);
   if (getHoldingCreature())
     return CreatureAction("You can't break free!");
@@ -708,12 +710,13 @@ CreatureAction Creature::unequip(Item* item) const {
 
 CreatureAction Creature::push(Creature* other) {
   Vec2 goDir = position.getDir(other->position);
-  if (!goDir.isCardinal4() || !other->position.plus(goDir).canEnter(
+  if (!goDir.isCardinal8() || !other->position.plus(goDir).canEnter(
       other->getMovementType()))
     return CreatureAction("You can't push " + other->getName().the());
   if (!getBody().canPush(other->getBody()))
     return CreatureAction("You are too small to push " + other->getName().the());
   return CreatureAction(this, [=](Creature* self) {
+    self->verb("push", "pushes", other->getName().the());
     other->displace(goDir);
     if (auto m = self->move(goDir))
       m.perform(self);
@@ -1691,9 +1694,8 @@ CreatureAction Creature::applyItem(Item* item) const {
       thirdPerson(getName().the() + " " + item->getApplyMsgThirdPerson(self));
       position.unseenMessage(item->getNoSeeApplyMsg());
       item->apply(self);
-      if (item->isDiscarded()) {
+      if (item->isDiscarded())
         self->equipment->removeItem(item, self);
-      }
       self->spendTime(time);
   });
 }

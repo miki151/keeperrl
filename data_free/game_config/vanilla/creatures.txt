@@ -1231,7 +1231,7 @@
         type = Humanoid MEDIUM
       }
       permanentEffects = {
-        ENTANGLED 1
+        IMMOBILE 1
         BLIND 1
       }
       chatReactionFriendly = "\"Put me out of my misery PLEASE!\""
@@ -2861,6 +2861,7 @@
         type = Humanoid LARGE
         material = SPIRIT
       }
+      permanentEffects = { INSANITY 1 }
       chatReactionFriendly = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""
       chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""
       name = {
@@ -2884,4 +2885,181 @@
         firstNameGen = "FIRST_MALE"
       }
     }
+  "ADOXIE_HEAD"
+    {
+      viewId = { "adoxie_head" }
+      attr = {
+        DAMAGE 45
+        DEFENSE 60 
+        SPELL_DAMAGE 35        
+      }
+      body = {
+        type = NonHumanoid HUGE
+        bodyParts = {
+          BACK 1
+          HEAD 1
+          TORSO 1
+        }
+        material = SPIRIT
+        intrinsicAttacks = {
+          BACK { Intrinsic { "bite_attack" }  "fangs" 5 { attackType = BITE attackMsg = BITE } }
+        }
+      }
+      spells = {
+        "adoxie left hand"
+        "adoxie right hand"
+        "adoxie left foot"
+        "adoxie right foot"
+      }
+      permanentEffects = {
+        SLOWED 1
+        RAGE 1
+        NIGHT_VISION 1
+        MAGIC_RESISTANCE 1
+        MELEE_RESISTANCE 1
+        RANGED_RESISTANCE 1
+        POISON_RESISTANT 1
+        SLEEP_RESISTANT 1
+        FIRE_RESISTANT 1
+        FLYING 1
+      }
+      cantEquip = true
+      name = {
+        name = "Evil God Adoxie"
+        pluralName = "gods"
+      }
+      chatReactionFriendly = "\"Gaze upon my magnificence and tremble, mortal!\""
+      chatReactionHostile = "\"How dare you defy a GOD!\""
+      deathDescription = "vanquished. May he never rise again"
+    }
+  "ADOXIE_FOOT_LEFT" inherit "ADOXIE_HEAD"
+    {
+      viewId = { "adoxie_foot_left" }
+      attr = {
+        DAMAGE 30
+        DEFENSE 50 
+        SPELL_DAMAGE 30  
+      }
+      body = {
+        type = NonHumanoid HUGE
+        bodyParts = {
+          BACK 1
+          TORSO 1
+        }        
+        intrinsicAttacks = {
+          BACK { Intrinsic { "claws_attack" } "foot" 10 { attackType = HIT attackMsg = KICK } }
+        }
+      }
+      spells = {
+        "circular blast"
+        "fireball"
+        "meteor shower"
+      }
+      name = {
+        name = "Adoxie's left foot"
+        pluralName = "Feet"
+      }
+      chatReactionFriendly = "\"nothing, why did you think a foot could talk?\""
+      chatReactionHostile = "\"nothing, why did you think a foot could talk?\""
+      deathDescription = "destroyed"
+      courage = 1
+    }
+  "ADOXIE_FOOT_RIGHT" inherit "ADOXIE_FOOT_LEFT"
+    {
+      viewId = { "adoxie_foot_right" }
+      spells = {
+        "slow"
+      }
+      name = {
+        name = "Adoxie's Right Foot"
+        pluralName = "Feet"
+      }
+    }
+  "ADOXIE_LEFT_HAND" inherit "ADOXIE_HEAD"
+    {
+      viewId = { "adoxie_hand_left" }
+      attr = {
+        DAMAGE 50
+        DEFENSE 50 
+        SPELL_DAMAGE 50  
+      }
+      body = {
+        type = NonHumanoid HUGE
+        bodyParts = {
+          BACK 1
+          TORSO 1
+        }
+        intrinsicAttacks = {
+          BACK { Intrinsic { "fist_attack" }  "fist" 5 {
+              attackType = HIT attackMsg = SWING victimEffect = {1.0 Lasting SLOWED}} }
+        }
+        material = SPIRIT
+      }
+      spells = {
+        "haste"
+      }
+      name = {
+        name = "Adoxie's Left Hand"
+        pluralName = "Hands"
+      }
+      chatReactionFriendly = "\"nothing, why did you think a hand could talk?\""
+      chatReactionHostile = "\"nothing, why did you think a hand could talk?\""
+      deathDescription = "destroyed"
+      courage = 1
+    }
+  "ADOXIE_HAND_RIGHT" inherit "ADOXIE_LEFT_HAND"
+    {
+      viewId = { "adoxie_hand_right" }
+      spells = {
+        "swap positions"
+        "shove"
+        "firewall"
+      }
+      name = {
+        name = "Adoxie's Right Hand"
+        pluralName = "Hands"
+      }
+    }
+  "ADOXIE_PRIEST"
+    {
+      viewId = { "adoxie_priest" }
+      name = {
+        name = "high priest of Adoxie"
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      attr = {
+        DAMAGE 12
+        DEFENSE 50
+        SPELL_DAMAGE 50
+      }
+      skills = {
+        LABORATORY 1.0
+      }
+      maxLevelIncrease = {
+        MELEE 2
+        SPELL 4
+      }
+      spellSchools = { "mage" }
+      spells = { "summon flies" "expert magic missile" "advanced haste" "slow" "magic cancellation" "pull"
+          "advanced defense bonus" "advanced damage bonus" "advanced fire elemental" }
+    }
+  "ABOMINATION" 
+    {
+      viewId = { "abomination" }
+      attr = {
+        DAMAGE 60
+        DEFENSE 40 
+      }
+      body = {
+        type = FourLegged HUGE
+        weight = 500
+      }
+      name = {
+        name = "abomination"
+      }
+    }
 }
+
+

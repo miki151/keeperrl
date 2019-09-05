@@ -52,7 +52,7 @@ vector<Creature*> Effect::summonCreatures(Position pos, int radius, vector<PCrea
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
   vector<Creature*> ret;
   for (int i : All(creatures))
-    for (Position v : Random.permutation(area))
+    for (Position v : concat({pos}, Random.permutation(area)))
       if (v.canEnter(creatures[i].get())) {
         ret.push_back(creatures[i].get());
         v.addCreature(std::move(creatures[i]), delay);
@@ -456,7 +456,6 @@ string Effect::Summon::getDescription() const {
 }
 
 void Effect::SummonEnemy::applyToCreature(Creature* c, Creature* attacker) const {
-  ::summon(c, creature, count, true);
 }
 
 string Effect::SummonEnemy::getName() const {
@@ -557,28 +556,36 @@ string Effect::CircularBlast::getDescription() const {
   return "Creates a circular blast of air that throws back creatures and items.";
 }
 
-void Effect::EnhanceArmor::applyToCreature(Creature* c, Creature* attacker) const {
-  enhanceArmor(c, 1, "is improved");
+const char* Effect::Enhance::typeAsString() const {
+  switch (type) {
+    case ItemUpgradeType::WEAPON:
+      return "weapon";
+    case ItemUpgradeType::ARMOR:
+      return "armor";
+  }
 }
 
-string Effect::EnhanceArmor::getName() const {
-  return "armor enchantment";
+const char* Effect::Enhance::amountAs(const char* positive, const char* negative) const {
+  return amount > 0 ? positive : negative;
 }
 
-string Effect::EnhanceArmor::getDescription() const {
-  return "Increases armor defense.";
+void Effect::Enhance::applyToCreature(Creature* c, Creature* attacker) const {
+  switch (type) {
+    case ItemUpgradeType::WEAPON:
+      enhanceWeapon(c, amount, amountAs("is improved", "degrades"));
+      break;
+    case ItemUpgradeType::ARMOR:
+      enhanceArmor(c, amount, amountAs("is improved", "degrades"));
+      break;
+  }
 }
 
-void Effect::EnhanceWeapon::applyToCreature(Creature* c, Creature* attacker) const {
-  enhanceWeapon(c, 1, "is improved");
+string Effect::Enhance::getName() const {
+  return typeAsString() + " "_s + amountAs("enchantment", "degradation");
 }
 
-string Effect::EnhanceWeapon::getName() const {
-  return "weapon enchantment";
-}
-
-string Effect::EnhanceWeapon::getDescription() const {
-  return "Increases weapon damage.";
+string Effect::Enhance::getDescription() const {
+  return amountAs("Increases", "Decreases") + " "_s + typeAsString() + " capability"_s;
 }
 
 void Effect::DestroyEquipment::applyToCreature(Creature* c, Creature* attacker) const {
@@ -887,17 +894,20 @@ string Effect::Caster::getDescription() const {
 }
 
 void Effect::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) const {
-  PCreature copy = makeOwner<Creature>(c->getTribeId(), c->getAttributes(), c->getSpellMap());
+  auto attributes = c->getAttributes();
+  c->getGame()->getContentFactory()->getCreatures().initializeAttributes(*c->getAttributes().getCreatureId(), attributes);
+  PCreature copy = makeOwner<Creature>(c->getTribeId(), std::move(attributes), c->getSpellMap());
   copy->setController(Monster::getFactory(MonsterAIFactory::monster()).get(copy.get()));
   auto ttl = 50_visible;
   for (auto& item : c->getEquipment().getItems())
-    if (!item->getResourceId()) {
+    if (!item->getResourceId() && !item->isDiscarded()) {
       auto itemCopy = item->getCopy();
       itemCopy->setTimeout(c->getGame()->getGlobalTime() + ttl + 10_visible);
       copy->take(std::move(itemCopy));
     }
   auto cRef = summonCreatures(c->getPosition(), 2, makeVec(std::move(copy))).getOnlyElement();
   cRef->addEffect(LastingEffect::SUMMONED, ttl, false);
+  c->message(PlayerMessage("Double trouble!", MessagePriority::HIGH));
 }
 
 string Effect::DoubleTrouble::getName() const {
@@ -1107,6 +1117,10 @@ void Effect::apply(Position pos, Creature* attacker) const {
       [&](const Caster& chain) {
         if (attacker)
           chain.effect->apply(attacker->getPosition(), attacker);
+      },
+      [&](const SummonEnemy& summon) {
+        CreatureGroup f = CreatureGroup::singleType(TribeId::getMonster(), summon.creature);
+        Effect::summon(pos, f, Random.get(summon.count), 100_visible, 1_visible);
       },
       [&](const PlaceFurniture& effect) {
         auto f = pos.getGame()->getContentFactory()->furniture.getFurniture(effect.furniture,

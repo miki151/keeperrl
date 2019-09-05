@@ -74,6 +74,7 @@ class CreatureFactory {
     bool wings;
   };
   static const map<CreatureId, SpecialParams>& getSpecialParams();
+  void initializeAttributes(CreatureId, CreatureAttributes&);
 
   private:
   void initSplash(TribeId);
@@ -91,6 +92,5 @@ class CreatureFactory {
   vector<Spell> SERIAL(spells);
   void addInventory(Creature*, const vector<ItemType>& items);
   mutable const ContentFactory* contentFactory = nullptr;
-  void initializeAttributes(CreatureId, CreatureAttributes&);
   SpellMap getSpellMap(const CreatureAttributes&);
 };

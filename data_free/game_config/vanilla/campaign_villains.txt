@@ -14,7 +14,6 @@
     { "shaman" } "WARRIORS" "Warriors" MAIN
     { "thief_leader" } "THIEVES" "Thieves" MAIN
     { "demon_lord" } "DEMON_DEN" "Demon den" MAIN
-    { "dungeon_entrance" } "MAIN_DUNGEON" "Unremarkable dungeon" MAIN
 
     { "ent" } "ENTS" "Tree spirits" LESSER
     { "driad" } "DRIADS" "Driads" LESSER
@@ -23,6 +22,7 @@
     { "hydra" } "HYDRA" "Hydra" LESSER
     { "unicorn" } "UNICORN_HERD" "Unicorn herd" LESSER
     { "ant_queen" } "ANTS_OPEN" "Ants" LESSER
+    { "dungeon_entrance" } "MAIN_DUNGEON" "Unremarkable dungeon" LESSER
 #    ZOMBIE CEMETERY "Zombies" LESSER
 
     { "unknown_monster" } "OGRE_CAVE" "Unknown" ALLY
@@ -52,6 +52,7 @@
     { "ogre" } "OGRE_CAVE" "Ogres" LESSER
     { "harpy" } "HARPY_CAVE" "Harpies" LESSER
     { "ant_queen" } "ANTS_OPEN" "Ants" LESSER
+    { "dungeon_entrance" } "MAIN_DUNGEON" "Unremarkable dungeon" LESSER
 
     { "dwarf_baron" } "DWARVES" "Dwarves" ALLY
 }
@@ -83,6 +84,7 @@
     { "ogre" } "OGRE_CAVE" "Ogres" LESSER
     { "harpy" } "HARPY_CAVE" "Harpies" LESSER
     { "ant_queen" } "ANTS_OPEN" "Ants" LESSER
+    { "dungeon_entrance" } "MAIN_DUNGEON" "Unremarkable dungeon" LESSER
 
     { "duke4" } "KNIGHTS" "Knights" ALLY
     { "elf_lord" } "ELVES" "Elves" ALLY

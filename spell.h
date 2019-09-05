@@ -62,5 +62,6 @@ class Spell {
   optional<FXName> SERIAL(fx);
   bool SERIAL(endOnly) = false;
   bool SERIAL(targetSelf) = false;
+  bool checkTrajectory(const Creature* caster, Position to) const;
 };
 

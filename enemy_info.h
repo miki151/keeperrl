@@ -19,7 +19,8 @@ RICH_ENUM(
     DUNGEON,
     MINETOWN,
     MAZE,
-    SOKOBAN
+    SOKOBAN,
+    ADOXIE_TEMPLE
 );
 
 struct LevelConnection {

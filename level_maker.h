@@ -47,6 +47,7 @@ class LevelMaker {
   static PLevelMaker towerLevel(RandomGen&, SettlementInfo);
   static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
   static PLevelMaker roomLevel(RandomGen&, SettlementInfo);
+  static PLevelMaker adoxieTemple(RandomGen&, SettlementInfo);
   static PLevelMaker mazeLevel(RandomGen&, SettlementInfo);
   static PLevelMaker emptyLevel(FurnitureType, bool withFloor);
   static PLevelMaker sokobanFromFile(RandomGen&, SettlementInfo, Table<char>);
