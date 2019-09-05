@@ -946,7 +946,7 @@ void WindowView::presentWorldmap(const Campaign& campaign) {
 
 variant<View::AvatarChoice, AvatarMenuOption> WindowView::chooseAvatar(const vector<AvatarData>& avatars) {
   SyncQueue<variant<AvatarChoice, AvatarMenuOption>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.drawAvatarMenu(returnQueue, avatars), none, false);
+  return getBlockingGui(returnQueue, guiBuilder.getMainMenuLinks(guiBuilder.drawAvatarMenu(returnQueue, avatars)), none, false);
 }
 
 CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, CampaignMenuState& state) {
@@ -1108,6 +1108,8 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
             break;
         }
       }, true));
+  if (menuType == MenuType::MAIN || menuType == MenuType::MAIN_NO_TILES)
+    stuff = guiBuilder.getMainMenuLinks(std::move(stuff));
   while (1) {
     refreshScreen(false);
     stuff->setBounds(guiBuilder.getMenuPosition(menuType, options.size()));

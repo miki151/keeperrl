@@ -2624,6 +2624,28 @@ static int getLineHeight(ListElem::ElemMod mod) {
   }
 }
 
+SGuiElem GuiBuilder::getMainMenuLinks(SGuiElem elem) {
+  auto getButton = [&](const char* viewId, const char* label, const char* url) {
+    return gui.stack(
+        gui.button([url] { openUrl(url); }),
+        gui.getListBuilder()
+          .addElem(gui.viewObject(ViewId(viewId)), 30)
+          .addElemAuto(gui.labelHighlight(label))
+          .buildHorizontalList()
+    );
+  };
+  return gui.stack(std::move(elem),
+      gui.fullScreen(gui.alignment(GuiFactory::Alignment::BOTTOM, gui.bottomMargin(10,
+      gui.centerHoriz(gui.translucentBackgroundWithBorder(gui.margins(gui.getListBuilder()
+          .addElemAuto(getButton("keeper4", "News", "https://keeperrl.com/category/News/"))
+          .addSpace(100)
+          .addElemAuto(getButton("elementalist", "Wiki", "http://keeperrl.com/wiki/index.php?title=Main_Page"))
+          .addSpace(100)
+          .addElemAuto(getButton("jester", "Discord", "https://discordapp.com/invite/XZfCCs5"))
+          .buildHorizontalList(), 15, 4, 15, 5)))))));
+
+}
+
 SGuiElem GuiBuilder::drawListGui(const string& title, const vector<ListElem>& options,
     MenuType menuType, optional<int>* highlight, int* choice, vector<int>* positions) {
   auto lines = gui.getListBuilder(listLineHeight);
