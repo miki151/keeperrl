@@ -3733,10 +3733,11 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
       onlineItems.addElem(std::move(itemLabel));
     auto lines = gui.getListBuilder(legendLineHeight);
     auto stars = gui.getListBuilder();
-    if (mods[i].rating >= 0) {
+    if (mods[i].upvotes + mods[i].downvotes > 0) {
       const int maxStars = 5;
+      double rating = double(mods[i].upvotes) / (mods[i].downvotes + mods[i].upvotes);
       for (int j = 0; j < 5; ++j)
-        stars.addElemAuto(gui.labelUnicode(j < mods[i].rating * maxStars ? "★" : "☆", Color::YELLOW));
+        stars.addElemAuto(gui.labelUnicode(j < rating * maxStars ? "★" : "☆", Color::YELLOW));
     }
     lines.addElem(gui.getListBuilder()
         .addElemAuto(gui.label(mods[i].name))

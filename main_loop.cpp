@@ -561,6 +561,8 @@ vector<ModInfo> MainLoop::getAllMods() {
     doWithSplash(SplashType::SMALL, "Downloading list of online mods...", 1,
         [&] (ProgressMeter& meter) {
           ret = fileSharing->getOnlineMods();
+          if (ret)
+            sort(ret->begin(), ret->end(), [](const ModInfo& m1, const ModInfo& m2) { return m1.upvotes > m2.upvotes; });
         });
     return ret;
   }();
