@@ -2874,10 +2874,10 @@ PLevelMaker LevelMaker::adoxieTemple(RandomGen&, SettlementInfo info) {
       .add(building.prettyFloor.value_or(FurnitureType("FLOOR")))));
   templeRoom->addMaker(unique<PlaceCollective>(info.collective));
   templeRoom->addMaker(unique<AreaCorners>(unique<Empty>(building.wall), Vec2(1, 1)));
-  templeRoom->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
   for (auto& furniture : info.furniture)
     templeRoom->addMaker(unique<Margin>((templeRoomSize - 1) / 2,
         unique<Furnitures>(Predicate::alwaysTrue(), 0.05, furniture, info.tribe)));
+  templeRoom->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, Predicate::near4AtLeast(FurnitureType("MAGMA"), 1)));
   locations->add(unique<Margin>(templeRoomMargin, std::move(templeRoom)),
       Vec2(templeRoomSize + 2 * templeRoomMargin, templeRoomSize + 2 * templeRoomMargin),
       RandomLocations::LocationPredicate(Predicate::type(FurnitureType("MAGMA"))));

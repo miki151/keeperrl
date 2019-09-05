@@ -736,6 +736,17 @@
     settlement = {
       type = ISLAND_VAULT_DOOR
       tribe = MONSTER
+      inhabitants = {
+        leader = { { "ADOXIE_PRIEST" } }
+        fighters = {
+          count = {4 5}
+          all = { 1 "ABOMINATION" }
+        }
+        civilians = {
+          count = { 4 5 }
+          all = { 1 "SPIDER_FOOD" }
+        }
+      }
       buildingId = "BRICK"
       outsideFeatures = "dungeonOutside"
       furniture = { "adoxie" }

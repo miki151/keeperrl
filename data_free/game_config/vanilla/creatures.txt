@@ -3020,6 +3020,46 @@
         pluralName = "Hands"
       }
     }
+  "ADOXIE_PRIEST"
+    {
+      viewId = { "adoxie_priest" }
+      name = {
+        name = "high priest of Adoxie"
+      }
+      body = {
+        type = Humanoid LARGE
+      }
+      attr = {
+        DAMAGE 12
+        DEFENSE 50
+        SPELL_DAMAGE 50
+      }
+      skills = {
+        LABORATORY 1.0
+      }
+      maxLevelIncrease = {
+        MELEE 2
+        SPELL 4
+      }
+      spellSchools = { "mage" }
+      spells = { "summon flies" "expert magic missile" "advanced haste" "slow" "magic cancellation" "pull"
+          "advanced defense bonus" "advanced damage bonus" "advanced fire elemental" }
+    }
+  "ABOMINATION" 
+    {
+      viewId = { "abomination" }
+      attr = {
+        DAMAGE 60
+        DEFENSE 40 
+      }
+      body = {
+        type = FourLegged HUGE
+        weight = 500
+      }
+      name = {
+        name = "abomination"
+      }
+    }
 }
 
 

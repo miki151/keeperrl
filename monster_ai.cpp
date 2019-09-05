@@ -349,6 +349,30 @@ class Wildlife : public Behaviour {
   SERIALIZE_ALL(SUBCLASS(Behaviour))
 };
 
+class AdoxieSacrifice : public Behaviour {
+  public:
+  AdoxieSacrifice(Creature* c) : Behaviour(c) {}
+
+  virtual MoveInfo getMove() override {
+    if (creature->getBody().isHumanoid()) {
+      auto pos = creature->getPosition();
+      for (auto player : pos.getGame()->getPlayerCreatures())
+        if (creature->canSee(player)) {
+          for (auto v : Vec2::directions8())
+            if (auto c = pos.plus(v).getCreature())
+              if (c->isAffected(LastingEffect::BLIND) && c->isAffected(LastingEffect::ENTANGLED))
+                if (pos.plus(v * 2).canEnter(c) && !pos.plus(v * 2).canEnter(creature))
+                  return creature->push(c);
+          break;
+        }
+    }
+    return NoMove;
+  }
+
+  SERIALIZATION_CONSTRUCTOR(AdoxieSacrifice)
+  SERIALIZE_ALL(SUBCLASS(Behaviour))
+};
+
 class Fighter : public Behaviour {
   public:
   using Behaviour::Behaviour;
@@ -1389,6 +1413,7 @@ REGISTER_TYPE(ChooseRandom);
 REGISTER_TYPE(SingleTask);
 REGISTER_TYPE(AvoidFire);
 REGISTER_TYPE(StayOnFurniture);
+REGISTER_TYPE(AdoxieSacrifice);
 
 MonsterAI::MonsterAI(Creature* c, const vector<Behaviour*>& beh, const vector<int>& w, bool pick) :
     weights(w), creature(c), pickItems(pick) {
@@ -1465,10 +1490,11 @@ MonsterAIFactory MonsterAIFactory::collective(WCollective col) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
         new AvoidFire(c),
+        new AdoxieSacrifice(c),
         new EffectsAI(c),
         new ByCollective(c, col, unique<Fighter>(c)),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
-        { 10, 6, 2, 1}, false);
+        { 10, 9, 6, 2, 1}, false);
       });
 }
 

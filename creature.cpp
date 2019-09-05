@@ -714,6 +714,7 @@ CreatureAction Creature::push(Creature* other) {
   if (!getBody().canPush(other->getBody()))
     return CreatureAction("You are too small to push " + other->getName().the());
   return CreatureAction(this, [=](Creature* self) {
+    self->verb("push", "pushes", other->getName().the());
     other->displace(goDir);
     if (auto m = self->move(goDir))
       m.perform(self);
