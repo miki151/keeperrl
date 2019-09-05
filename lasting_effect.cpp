@@ -292,6 +292,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         c->secondPerson("You put on your sunglasses"_s);
         c->thirdPerson(c->getName().the() + " puts on " + his(c->getAttributes().getGender()) + " sunglasses"_s);
         break;
+      case LastingEffect::IMMOBILE:
+        c->you("can't move anymore");
+        break;
     }
 }
 
@@ -650,6 +653,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::SLEEP: return "Sleeping"_bad;
     case LastingEffect::ENTANGLED: return "Entangled"_bad;
     case LastingEffect::TIED_UP: return "Tied up"_bad;
+    case LastingEffect::IMMOBILE: return "Immobile"_bad;
     case LastingEffect::SLOWED: return "Slowed"_bad;
     case LastingEffect::INSANITY: return "Insane"_bad;
     case LastingEffect::BLIND: return "Blind"_bad;
@@ -692,7 +696,7 @@ optional<std::string> LastingEffects::getBadAdjective(LastingEffect effect) {
 const vector<LastingEffect>& LastingEffects::getCausingCondition(CreatureCondition condition) {
   switch (condition) {
     case CreatureCondition::RESTRICTED_MOVEMENT: {
-      static vector<LastingEffect> ret {LastingEffect::ENTANGLED, LastingEffect::TIED_UP,
+      static vector<LastingEffect> ret {LastingEffect::ENTANGLED, LastingEffect::TIED_UP, LastingEffect::IMMOBILE,
           LastingEffect::SLEEP};
       return ret;
     }
@@ -914,6 +918,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::DAM_BONUS: return "damage";
     case LastingEffect::DEF_BONUS: return "defense";
     case LastingEffect::SLEEP: return "sleep";
+    case LastingEffect::IMMOBILE: return "immobility";
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED: return "web";
     case LastingEffect::STUNNED: return "stunning";
@@ -994,6 +999,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::DEF_BONUS: return "Gives a defense bonus.";
     case LastingEffect::SLEEP_RESISTANT: return "Prevents being put to sleep.";
     case LastingEffect::SLEEP: return "Puts to sleep.";
+    case LastingEffect::IMMOBILE: return "Creature does not move";
     case LastingEffect::TIED_UP:
       FALLTHROUGH;
     case LastingEffect::ENTANGLED: return "web";

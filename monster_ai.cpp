@@ -360,7 +360,7 @@ class AdoxieSacrifice : public Behaviour {
         if (creature->canSee(player)) {
           for (auto v : Vec2::directions8())
             if (auto c = pos.plus(v).getCreature())
-              if (c->isAffected(LastingEffect::BLIND) && c->isAffected(LastingEffect::ENTANGLED))
+              if (c->isAffected(LastingEffect::BLIND) && c->isAffected(LastingEffect::IMMOBILE))
                 if (pos.plus(v * 2).canEnter(c) && !pos.plus(v * 2).canEnter(creature))
                   return creature->push(c);
           break;

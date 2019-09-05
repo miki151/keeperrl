@@ -1231,7 +1231,7 @@
         type = Humanoid MEDIUM
       }
       permanentEffects = {
-        ENTANGLED 1
+        IMMOBILE 1
         BLIND 1
       }
       chatReactionFriendly = "\"Put me out of my misery PLEASE!\""

@@ -331,6 +331,8 @@ CreatureAction Creature::move(Vec2 dir) const {
 
 CreatureAction Creature::move(Position pos, optional<Position> nextPos) const {
   PROFILE;
+  if (isAffected(LastingEffect::IMMOBILE))
+    return CreatureAction("");
   Vec2 direction = getPosition().getDir(pos);
   if (getHoldingCreature())
     return CreatureAction("You can't break free!");
@@ -708,7 +710,7 @@ CreatureAction Creature::unequip(Item* item) const {
 
 CreatureAction Creature::push(Creature* other) {
   Vec2 goDir = position.getDir(other->position);
-  if (!goDir.isCardinal4() || !other->position.plus(goDir).canEnter(
+  if (!goDir.isCardinal8() || !other->position.plus(goDir).canEnter(
       other->getMovementType()))
     return CreatureAction("You can't push " + other->getName().the());
   if (!getBody().canPush(other->getBody()))
