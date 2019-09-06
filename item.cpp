@@ -66,7 +66,9 @@ Item::~Item() {
 }
 
 PItem Item::getCopy(const ContentFactory* f) const {
-  return makeOwner<Item>(*attributes, f);
+  auto ret = makeOwner<Item>(*attributes, f);
+  ret->getAbility().reset();
+  return ret;
 }
 
 ItemPredicate Item::effectPredicate(Effect type) {
