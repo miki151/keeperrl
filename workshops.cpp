@@ -93,7 +93,7 @@ void Workshops::Type::changeNumber(int index, int number) {
 static const double prodMult = 0.1;
 
 double Workshops::getLegendarySkillThreshold() {
-  return 0.0;
+  return 0.9;
 }
 
 static bool allowUpgrades(double skillAmount, double morale) {

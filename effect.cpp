@@ -1212,6 +1212,9 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
       [&] (const Summon&) {
         return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
       },
+      [&] (const DoubleTrouble&) {
+        return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      },
       [&] (const SummonGhost& g) {
         return (isFighting && !!g.getBestSpirit(victim->getPosition().getModel(), victim->getTribeId()))
             ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
