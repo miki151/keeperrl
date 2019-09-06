@@ -118,8 +118,9 @@ class MainLoop {
 
   void registerModPlaytime(bool started);
   DirectoryPath getModsDir() const;
-  vector<ModInfo> getAllMods();
+  vector<ModInfo> getAllMods(const vector<ModInfo>& onlineMods);
   void downloadMod(ModInfo&, const DirectoryPath& modDir);
   void uploadMod(ModInfo&, const DirectoryPath& modDir);
   void createNewMod();
+  vector<ModInfo> getOnlineMods();
 };
