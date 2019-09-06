@@ -88,7 +88,7 @@ ItemType& ItemType::operator = (ItemType&&) = default;
 
 class FireScrollItem : public Item {
   public:
-  FireScrollItem(const ItemAttributes& attr) : Item(attr) {}
+  FireScrollItem(const ItemAttributes& attr, const ContentFactory* f) : Item(attr, f) {}
 
   virtual void applySpecial(Creature* c) override {
     fireDamage(c->getPosition());
@@ -112,8 +112,8 @@ class FireScrollItem : public Item {
 class Corpse : public Item {
   public:
   Corpse(const ViewObject& obj2, const ItemAttributes& attr, const string& rottenN,
-      TimeInterval rottingT, CorpseInfo info, bool instantlyRotten) :
-      Item(attr),
+      TimeInterval rottingT, CorpseInfo info, bool instantlyRotten, const ContentFactory* f) :
+      Item(attr, f),
       object2(obj2),
       rottingTime(rottingT),
       rottenName(rottenN),
@@ -166,8 +166,8 @@ class Corpse : public Item {
   CorpseInfo SERIAL(corpseInfo);
 };
 
-PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, bool instantlyRotten,
-    ItemClass itemClass, CorpseInfo corpseInfo) {
+PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, const ContentFactory* f,
+    bool instantlyRotten, ItemClass itemClass, CorpseInfo corpseInfo) {
   const auto rotTime = 300_visible;
   return makeOwner<Corpse>(
         ViewObject(ViewId("bone"), ViewLayer::ITEM, rottenName),
@@ -180,12 +180,13 @@ PItem ItemFactory::corpse(const string& name, const string& rottenName, double w
         rottenName,
         rotTime,
         corpseInfo,
-        instantlyRotten);
+        instantlyRotten,
+        f);
 }
 
 class PotionItem : public Item {
   public:
-  PotionItem(const ItemAttributes& attr) : Item(attr) {}
+  PotionItem(const ItemAttributes& attr, const ContentFactory* f) : Item(attr, f) {}
 
   virtual void fireDamage(Position position) override {
     heat += 0.3;
@@ -214,7 +215,7 @@ class PotionItem : public Item {
 
 class TechBookItem : public Item {
   public:
-  TechBookItem(const ItemAttributes& attr, TechId t) : Item(attr), tech(t) {}
+  TechBookItem(const ItemAttributes& attr, TechId t, const ContentFactory* f) : Item(attr, f), tech(t) {}
 
   virtual void applySpecial(Creature* c) override {
     if (!read) {
@@ -255,16 +256,16 @@ PItem ItemType::get(const ContentFactory* factory) const {
     applyPrefix(Random.choose(attributes.genPrefixes), attributes);
   return type.visit(
       [&](const FireScroll&) {
-        return makeOwner<FireScrollItem>(std::move(attributes));
+        return makeOwner<FireScrollItem>(std::move(attributes), factory);
       },
       [&](const TechBook& t) {
-        return makeOwner<TechBookItem>(std::move(attributes), t.techId);
+        return makeOwner<TechBookItem>(std::move(attributes), t.techId, factory);
       },
       [&](const Potion& t) {
-        return makeOwner<PotionItem>(std::move(attributes));
+        return makeOwner<PotionItem>(std::move(attributes), factory);
       },
       [&](const auto&) {
-        return makeOwner<Item>(std::move(attributes));
+        return makeOwner<Item>(std::move(attributes), factory);
       }
   );
 }

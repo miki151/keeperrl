@@ -37,7 +37,7 @@ class ItemFactory {
   ItemFactory(map<ItemListId, ItemList>);
   ItemList get(ItemListId);
 
-  static PItem corpse(const string& name, const string& rottenName, double weight, bool instantlyRotten = false,
+  static PItem corpse(const string& name, const string& rottenName, double weight, const ContentFactory* f, bool instantlyRotten = false,
       ItemClass = ItemClass::CORPSE,
       CorpseInfo corpseInfo = {UniqueEntity<Creature>::Id(), false, false, false});
 

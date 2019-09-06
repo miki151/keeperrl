@@ -93,7 +93,7 @@ void Workshops::Type::changeNumber(int index, int number) {
 static const double prodMult = 0.1;
 
 double Workshops::getLegendarySkillThreshold() {
-  return 0.9;
+  return 0.0;
 }
 
 static bool allowUpgrades(double skillAmount, double morale) {
@@ -144,7 +144,7 @@ auto Workshops::Type::addWork(WCollective collective, double amount, double skil
         for (auto& rune : product.runes) {
           if (auto& upgradeInfo = rune->getUpgradeInfo())
             for (auto& item : ret)
-              item->applyPrefix(upgradeInfo->prefix);
+              item->applyPrefix(upgradeInfo->prefix, collective->getGame()->getContentFactory());
           wasUpgraded = true;
         }
         if (!--product.number)

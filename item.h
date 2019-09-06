@@ -22,6 +22,7 @@
 #include "position.h"
 #include "owner_pointer.h"
 #include "game_time.h"
+#include "item_ability.h"
 
 class Level;
 class Attack;
@@ -34,12 +35,13 @@ class WeaponInfo;
 struct ItemUpgradeInfo;
 class ItemPrefix;
 class ItemType;
+class ContentFactory;
 
 class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
-  Item(const ItemAttributes&);
+  Item(const ItemAttributes&, const ContentFactory*);
   virtual ~Item();
-  PItem getCopy() const;
+  PItem getCopy(const ContentFactory* f) const;
 
   void apply(Creature*, bool noSound = false);
 
@@ -59,6 +61,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   const optional<Effect>& getEffect() const;
   bool effectAppliedWhenThrown() const;
+  optional<ItemAbility>& getAbility();
 
   ItemClass getClass() const;
   
@@ -81,7 +84,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   int getModifier(AttrType) const;
   const optional<RangedWeapon>& getRangedWeapon() const;
   void tick(Position);
-  void applyPrefix(const ItemPrefix&);
+  void applyPrefix(const ItemPrefix&, const ContentFactory*);
   void setTimeout(GlobalTime);
   
   string getApplyMsgThirdPerson(const Creature* owner) const;
@@ -139,4 +142,6 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   ItemClass SERIAL(classCache);
   string getSuffix() const;
   optional<GlobalTime> SERIAL(timeout);
+  optional<ItemAbility> SERIAL(abilityInfo);
+  void updateAbility(const ContentFactory*);
 };

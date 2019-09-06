@@ -35,29 +35,38 @@
 #include "lasting_effect.h"
 #include "creature_name.h"
 #include "creature_attributes.h"
+#include "content_factory.h"
+#include "creature_factory.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Item>) & SUBCLASS(UniqueEntity) & SUBCLASS(Renderable);
-  ar(attributes, discarded, shopkeeper, fire, classCache, canEquipCache, timeout);
+  ar(attributes, discarded, shopkeeper, fire, classCache, canEquipCache, timeout, abilityInfo);
 }
 
 SERIALIZABLE(Item)
 SERIALIZATION_CONSTRUCTOR_IMPL(Item)
 
-Item::Item(const ItemAttributes& attr) : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, capitalFirst(*attr.name))),
-    attributes(attr), fire(attr.burnTime), canEquipCache(!!attributes->equipmentSlot),
-    classCache(*attributes->itemClass) {
+Item::Item(const ItemAttributes& attr, const ContentFactory* factory)
+    : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, capitalFirst(*attr.name))),
+      attributes(attr), fire(attr.burnTime), canEquipCache(!!attributes->equipmentSlot),
+      classCache(*attributes->itemClass) {
   if (!attributes->prefixes.empty())
     modViewObject().setModifier(ViewObject::Modifier::AURA);
   modViewObject().setGenericId(getUniqueId().getGenericId());
+  updateAbility(factory);
+}
+
+void Item::updateAbility(const ContentFactory* factory) {
+  if (auto id = attributes->equipedAbility)
+    abilityInfo = ItemAbility { *factory->getCreatures().getSpell(*id), none };
 }
 
 Item::~Item() {
 }
 
-PItem Item::getCopy() const {
-  return makeOwner<Item>(*attributes);
+PItem Item::getCopy(const ContentFactory* f) const {
+  return makeOwner<Item>(*attributes, f);
 }
 
 ItemPredicate Item::effectPredicate(Effect type) {
@@ -151,9 +160,10 @@ void Item::tick(Position position) {
   }
 }
 
-void Item::applyPrefix(const ItemPrefix& prefix) {
+void Item::applyPrefix(const ItemPrefix& prefix, const ContentFactory* factory) {
   modViewObject().setModifier(ViewObject::Modifier::AURA);
   ::applyPrefix(prefix, *attributes);
+  updateAbility(factory);
 }
 
 void Item::setTimeout(GlobalTime t) {
@@ -173,6 +183,10 @@ void Item::onHitSquareMessage(Position pos, int numItems) {
 
 bool Item::effectAppliedWhenThrown() const {
   return getClass() == ItemClass::POTION;
+}
+
+optional<ItemAbility>& Item::getAbility() {
+  return abilityInfo;
 }
 
 void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {
@@ -211,6 +225,8 @@ vector<string> Item::getDescription() const {
     ret.push_back("Effect when equipped: " + LastingEffects::getName(effect));
   if (auto& info = attributes->upgradeInfo)
     ret.append(info->getDescription());
+  if (abilityInfo)
+    ret.push_back("Grants ability: "_s + abilityInfo->spell.getName());
   return ret;
 }
 

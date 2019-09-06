@@ -10,6 +10,7 @@
 #include "creature_factory.h"
 #include "game.h"
 #include "content_factory.h"
+#include "equipment.h"
 
 void SpellMap::add(Spell spell, ExperienceType expType, int level) {
   for (auto& elem : elems)
@@ -30,7 +31,7 @@ void SpellMap::add(Spell spell, ExperienceType expType, int level) {
     return info->level;
   };
   sort(elems.begin(), elems.end(), [&origLevel](const auto& e1, const auto& e2) {
-      return origLevel(&e1) < origLevel(&e2) || (origLevel(&e1) == origLevel(&e2) && e1.spell.getId() < e2.spell.getId()); });
+    return origLevel(&e1) < origLevel(&e2) || (origLevel(&e1) == origLevel(&e2) && e1.spell.getId() < e2.spell.getId()); });
 }
 
 void SpellMap::setAllReady() {
@@ -52,12 +53,31 @@ SpellMap::SpellInfo* SpellMap::getInfo(SpellId id) {
   return nullptr;
 }
 
-GlobalTime SpellMap::getReadyTime(const Spell* spell) const {
-  return getInfo(spell->getId())->timeout.value_or(-1000_global);
+static optional<ItemAbility>& getItemAbility(const Creature* c, const Spell* spell) {
+  for (auto it : c->getEquipment().getAllEquipped())
+    if (auto& a = it->getAbility())
+      if (&a->spell == spell)
+        return a;
+  static optional<ItemAbility> empty;
+  return empty;
 }
 
-void SpellMap::setReadyTime(const Spell* spell, GlobalTime time) {
-  getInfo(spell->getId())->timeout = time;
+GlobalTime SpellMap::getReadyTime(const Creature* c, const Spell* spell) const {
+  if (auto info = getInfo(spell->getId()))
+    return info->timeout.value_or(-1000_global);
+  if (auto& a = getItemAbility(c, spell))
+    return a->timeout.value_or(-1000_global);
+  FATAL << "spell not found";
+  fail();
+}
+
+void SpellMap::setReadyTime(const Creature* c, const Spell* spell, GlobalTime time) {
+  if (auto info = getInfo(spell->getId()))
+    info->timeout = time;
+  else if (auto& a = getItemAbility(c, spell))
+    a->timeout = time;
+  else
+    FATAL << "spell not found";
 }
 
 vector<const Spell*> SpellMap::getAvailable(const Creature* c) const {
@@ -66,24 +86,23 @@ vector<const Spell*> SpellMap::getAvailable(const Creature* c) const {
     if (elem.level <= c->getAttributes().getExpLevel(elem.expType))
       if (auto upgrade = elem.spell.getUpgrade())
         upgraded.insert(*upgrade);
-  vector<const SpellInfo*> ret;
+  vector<const Spell*> ret;
   for (auto& elem : elems)
     if (elem.level <= c->getAttributes().getExpLevel(elem.expType)) {
       if (!upgraded.count(elem.spell.getId()))
-        ret.push_back(&elem);
+        ret.push_back(&elem.spell);
     }
-  return ret.transform([](const auto& elem) { return &elem->spell; } );
+  for (auto it : c->getEquipment().getAllEquipped())
+    if (auto& a = it->getAbility())
+      ret.push_back(&a->spell);
+  return ret;
 }
 
-int SpellMap::getLevel(const Spell* s) const {
-  return getInfo(s->getId())->level;
-}
-
-bool SpellMap::contains(const Spell* s) const {
+bool SpellMap::contains(const Creature* c, const Spell* s) const {
   for (auto& elem : elems)
     if (&elem.spell == s)
       return true;
-  return false;
+  return !!getItemAbility(c, s);
 }
 
 void SpellMap::onExpLevelReached(Creature* c, ExperienceType type, int level) {
