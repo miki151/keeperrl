@@ -22,6 +22,9 @@ void applyPrefix(const ItemPrefix& prefix, ItemAttributes& attr) {
       [&](const JoinPrefixes& join) {
         for (auto& elem : join.prefixes)
           applyPrefix(elem, attr);
+      },
+      [&](const SpellId& spell) {
+        attr.equipedAbility = spell;
       }
   );
 }
@@ -45,6 +48,9 @@ vector<string> getEffectDescription(const ItemPrefix& prefix) {
         for (auto& e : join.prefixes)
           ret.append(getEffectDescription(e));
         return ret;
+      },
+      [&](const SpellId& id) -> vector<string> {
+        return {"grants "_s + id.data() + " ability"};
       }
   );
 }
@@ -65,6 +71,9 @@ string getItemName(const ItemPrefix& prefix) {
       },
       [&](const JoinPrefixes& join) {
         return getItemName(join.prefixes.back());
+      },
+      [&](const SpellId& id) -> string {
+        return id.data();
       }
   );
 }

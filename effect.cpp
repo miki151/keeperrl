@@ -901,7 +901,7 @@ void Effect::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) con
   auto ttl = 50_visible;
   for (auto& item : c->getEquipment().getItems())
     if (!item->getResourceId() && !item->isDiscarded()) {
-      auto itemCopy = item->getCopy();
+      auto itemCopy = item->getCopy(c->getGame()->getContentFactory());
       itemCopy->setTimeout(c->getGame()->getGlobalTime() + ttl + 10_visible);
       copy->take(std::move(itemCopy));
     }
@@ -1210,6 +1210,9 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
         return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
       },
       [&] (const Summon&) {
+        return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      },
+      [&] (const DoubleTrouble&) {
         return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
       },
       [&] (const SummonGhost& g) {

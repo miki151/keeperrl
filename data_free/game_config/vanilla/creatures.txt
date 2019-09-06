@@ -2904,7 +2904,10 @@
         intrinsicAttacks = {
           BACK { Intrinsic { "bite_attack" }  "fangs" 5 { attackType = BITE attackMsg = BITE } }
         }
-      }
+        drops = {
+          { Simple "AdoxieEye" } 1
+        }
+   }
       spells = {
         "adoxie left hand"
         "adoxie right hand"

@@ -17,17 +17,18 @@
 
 #include "game_time.h"
 #include "spell.h"
+#include "entity_map.h"
 
 class Spell;
+struct ItemAbility;
 
 class SpellMap {
   public:
   void add(Spell, ExperienceType, int level);
-  GlobalTime getReadyTime(const Spell*) const;
-  void setReadyTime(const Spell*, GlobalTime);
+  GlobalTime getReadyTime(const Creature*, const Spell*) const;
+  void setReadyTime(const Creature*, const Spell*, GlobalTime);
   vector<const Spell*> getAvailable(const Creature*) const;
-  int getLevel(const Spell*) const;
-  bool contains(const Spell*) const;
+  bool contains(const Creature* c, const Spell*) const;
   void onExpLevelReached(Creature*, ExperienceType, int level);
   void setAllReady();
 

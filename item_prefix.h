@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "effect.h"
+#include "spell_id.h"
 
 struct ItemAttrBonus {
   AttrType attr;
@@ -27,7 +28,7 @@ struct AttackerEffect {
   COMPARE_ALL(effect)
 };
 
-MAKE_VARIANT2(ItemPrefix, LastingEffect, VictimEffect, AttackerEffect, ItemAttrBonus, JoinPrefixes);
+MAKE_VARIANT2(ItemPrefix, LastingEffect, VictimEffect, AttackerEffect, ItemAttrBonus, JoinPrefixes, SpellId);
 
 class ItemAttributes;
 extern void applyPrefix(const ItemPrefix&, ItemAttributes&);

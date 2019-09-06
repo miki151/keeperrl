@@ -26,6 +26,7 @@
   { "adoxie_hand_right" "u" ColorId PURPLE }
   { "adoxie_hand_left" "u" ColorId PURPLE }
   { "adoxie_head" "U" ColorId PURPLE }
+  { "adoxie_eye" "," ColorId PURPLE }
   { "adoxie_priest" "@" ColorId PURPLE }
   { "abomination" "z" ColorId PURPLE }
   { viewId = "adoxie_statue" symbol = "U" color = ColorId LIGHT_GRAY

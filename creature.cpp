@@ -131,12 +131,12 @@ Body& Creature::getBody() {
 
 TimeInterval Creature::getSpellDelay(const Spell* spell) const {
   CHECK(!isReady(spell));
-  return spellMap->getReadyTime(spell) - *getGlobalTime();
+  return spellMap->getReadyTime(this, spell) - *getGlobalTime();
 }
 
 bool Creature::isReady(const Spell* spell) const {
   if (auto time = getGlobalTime())
-    return spellMap->getReadyTime(spell) <= *time;
+    return spellMap->getReadyTime(this, spell) <= *time;
   else
     return true;
 }
@@ -168,7 +168,7 @@ CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
   if (isAffected(LastingEffect::MAGIC_CANCELLATION))
     return CreatureAction("You can't cast spells while under the effect of "
         + LastingEffects::getName(LastingEffect::MAGIC_CANCELLATION) + ".");
-  if (!spellMap->contains(spell))
+  if (!spellMap->contains(this, spell))
     return CreatureAction("You don't know this spell.");
   if (!isReady(spell))
     return CreatureAction("You can't cast this spell yet.");
@@ -180,7 +180,7 @@ CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
     spell->addMessage(c);
     spell->apply(c, target);
     getGame()->getStatistics().add(StatId::SPELL_CAST);
-    c->spellMap->setReadyTime(spell, *getGlobalTime() + TimeInterval(spell->getCooldown()));
+    c->spellMap->setReadyTime(c, spell, *getGlobalTime() + TimeInterval(spell->getCooldown()));
     c->spendTime();
   });
 }

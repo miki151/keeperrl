@@ -144,7 +144,7 @@ auto Workshops::Type::addWork(WCollective collective, double amount, double skil
         for (auto& rune : product.runes) {
           if (auto& upgradeInfo = rune->getUpgradeInfo())
             for (auto& item : ret)
-              item->applyPrefix(upgradeInfo->prefix);
+              item->applyPrefix(upgradeInfo->prefix, collective->getGame()->getContentFactory());
           wasUpgraded = true;
         }
         if (!--product.number)
