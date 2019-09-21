@@ -2205,7 +2205,7 @@ SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo& info, const option
           gui.margins(gui.sprite(GuiFactory::TexId::VERT_BAR_MINI, GuiFactory::Alignment::LEFT),
             0, -15, 0, -15)), minionListWidth),
       gui.leftMargin(minionListWidth + 20, std::move(minionPage)));
-  return gui.preferredSize(600 + minionListWidth, 600,
+  return gui.preferredSize(640 + minionListWidth, 600,
       gui.miniWindow(gui.stack(
       gui.keyHandler(getButtonCallback({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}),
         {gui.getKey(SDL::SDLK_ESCAPE)}, true),
