@@ -83,6 +83,7 @@ Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr,
     obj->setGenericId(getUniqueId().getGenericId());
     obj->setModifier(ViewObject::Modifier::CREATURE);
   }
+  capture = attributes->isInstantPrisoner();
   //updateViewObject();
 }
 
