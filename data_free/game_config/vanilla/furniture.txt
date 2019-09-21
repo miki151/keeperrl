@@ -332,7 +332,8 @@
     luxury = 0.7
     strength = 250
     destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
-    destroyedEffect = SummonEnemy "ADOXIE_HEAD" {1}
+# if there is a destroyedEffect then the standard "is destroyed" text is not displayed, you need to add your own
+    destroyedEffect = Chain { Message "The statue comes to life!" SummonEnemy "ADOXIE_HEAD" {1} }
   }
   "BARRICADE"
   {

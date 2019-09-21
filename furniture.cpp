@@ -126,7 +126,8 @@ void Furniture::onEnter(Creature* c) const {
 }
 
 void Furniture::destroy(Position pos, const DestroyAction& action) {
-  pos.globalMessage("The " + name + " " + action.getIsDestroyed());
+  if (!destroyedEffect)
+    pos.globalMessage("The " + name + " " + action.getIsDestroyed());
   auto myLayer = layer;
   auto myType = type;
   if (itemDrop)

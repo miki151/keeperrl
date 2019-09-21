@@ -882,6 +882,17 @@ string Effect::Chain::getDescription() const {
   return effects[0].getDescription();
 }
 
+void Effect::Message::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effect::Message::getName() const {
+  return "message";
+}
+
+string Effect::Message::getDescription() const {
+  return text;
+}
+
 void Effect::Caster::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
@@ -1113,6 +1124,9 @@ void Effect::apply(Position pos, Creature* attacker) const {
       [&](const Chain& chain) {
         for (auto& e : chain.effects)
           e.apply(pos, attacker);
+      },
+      [&](const Message& msg) {
+        pos.globalMessage(msg.text);
       },
       [&](const Caster& chain) {
         if (attacker)
