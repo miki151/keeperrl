@@ -1303,6 +1303,7 @@ optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
 
 bool LastingEffects::canProlong(LastingEffect effect) {
   switch (effect) {
+    case LastingEffect::PLAGUE:
     case LastingEffect::ON_FIRE:
       return false;
     default:
