@@ -1184,12 +1184,12 @@ bool Collective::addKnownTile(Position pos) {
     return false;
 }
 
-void Collective::addProducesMessage(const Creature* c, const vector<PItem>& items) {
+void Collective::addProducesMessage(const Creature* c, const vector<PItem>& items, const char* verb) {
   if (items.size() > 1)
-    control->addMessage(c->getName().a() + " produces " + toString(items.size())
+    control->addMessage(c->getName().a() + " " + verb + " " + toString(items.size())
         + " " + items[0]->getName(true));
   else
-    control->addMessage(c->getName().a() + " produces " + items[0]->getAName());
+    control->addMessage(c->getName().a() + " " + verb + " " + items[0]->getAName());
 }
 
 void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos) {
@@ -1204,6 +1204,11 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
       taskMap->addTask(Task::kill(this, c), pos.first, MinionActivity::WORKING);
     if (furniture->getType() == FurnitureType("TORTURE_TABLE"))
       taskMap->addTask(Task::torture(this, c), pos.first, MinionActivity::WORKING);
+    if (furniture->getType() == FurnitureType("POETRY_TABLE") && Random.chance(0.01 * efficiency)) {
+      auto poem = ItemType(ItemType::Poem{}).get(1, getGame()->getContentFactory());
+      addProducesMessage(c, poem, "writes");
+      c->getPosition().dropItems(std::move(poem));
+    }
     if (auto usage = furniture->getUsageType()) {
       auto increaseLevel = [&] (ExperienceType exp) {
         double increase = 0.007 * efficiency * LastingEffects::getTrainingSpeed(c);

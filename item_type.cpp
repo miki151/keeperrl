@@ -353,6 +353,26 @@ vector<PItem> ItemType::get(int num, const ContentFactory* factory) const {
   return ret;
 }
 
+static string getRandomPoem() {
+  return Random.choose(makeVec<string>("bad", "obscene", "vulgar")) + " " +
+      Random.choose(makeVec<string>("poem", "haiku", "sonnet", "limerick"));
+}
+
+ItemAttributes ItemType::Poem::getAttributes(const ContentFactory*) const {
+  return ITATTR(
+      i.viewId = ViewId("scroll");
+      i.name = getRandomPoem();
+      i.blindName = "scroll"_s;
+      i.itemClass = ItemClass::SCROLL;
+      i.weight = 0.1;
+      i.modifiers[AttrType::DAMAGE] = -10;
+      i.effect = Effect(Effect::Area{10, Effect::Filter{FilterType::ENEMY, Effect::IncreaseMorale{-0.1}}});
+      i.price = getEffectPrice(*i.effect);
+      i.burnTime = 5;
+      i.uses = 1;
+  );
+}
+
 ItemAttributes ItemType::Intrinsic::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = viewId;

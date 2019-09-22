@@ -82,8 +82,9 @@ class ItemType {
     ITEM_TYPE_INTERFACE;
   };
   SIMPLE_ITEM(FireScroll);
+  SIMPLE_ITEM(Poem);
   using Simple = CustomItemId;
-  MAKE_VARIANT(Type, Scroll, Potion, Mushroom, Amulet, Ring, TechBook, TrapItem,  Intrinsic, Glyph, Simple, FireScroll);
+  MAKE_VARIANT(Type, Scroll, Potion, Mushroom, Amulet, Ring, TechBook, TrapItem,  Intrinsic, Glyph, Simple, FireScroll, Poem);
 
   template <typename T>
   ItemType(T&& t) : type(std::forward<T>(t)) {}

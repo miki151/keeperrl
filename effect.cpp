@@ -893,6 +893,22 @@ string Effect::Message::getDescription() const {
   return text;
 }
 
+void Effect::IncreaseMorale::applyToCreature(Creature* c, Creature* attacker) const {
+  if (amount > 0)
+    c->you(MsgType::YOUR, "spirits are lifted");
+  else
+    c->you(MsgType::ARE, "disheartened");
+  c->addMorale(amount);
+}
+
+string Effect::IncreaseMorale::getName() const {
+  return amount > 0 ? "morale increase" : "morale decrease";
+}
+
+string Effect::IncreaseMorale::getDescription() const {
+  return amount > 0 ? "Increases morale" : "Decreases morale";
+}
+
 void Effect::Caster::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
@@ -1200,6 +1216,9 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
         if (victim->getBody().canHeal(e.healthType))
           return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
         return EffectAIIntent::NONE;
+      },
+      [&] (const IncreaseMorale& e) {
+        return isEnemy == (e.amount < 0) ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
       },
       [&] (const Fire&) {
         if (!victim->isAffected(LastingEffect::FIRE_RESISTANT))

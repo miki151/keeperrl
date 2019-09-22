@@ -207,10 +207,17 @@ class Effect {
     string text;
     COMPARE_ALL(text)
   };
+  struct IncreaseMorale {
+    EFFECT_TYPE_INTERFACE;
+    double amount;
+    COMPARE_ALL(amount)
+  };
+
   MAKE_VARIANT(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, Enhance, Suicide, IncreaseAttr, Message,
       EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
       Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost, Filter, SummonEnemy, Wish, Chain, Caster);
+      Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost, Filter, SummonEnemy, Wish, Chain, Caster,
+      IncreaseMorale);
 
   template <typename T>
   Effect(T&& t) : effect(std::forward<T>(t)) {}

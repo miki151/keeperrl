@@ -105,6 +105,12 @@
     destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
     usageFX = JEWELLER
   }
+  "POETRY_TABLE" inherit "JEWELLER"
+  {
+    name = "poetry table"
+    viewId = { "poetry_table" }
+    usageFX = none
+  }
   "FURNACE"
   {
     name = "furnace"

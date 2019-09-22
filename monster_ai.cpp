@@ -176,18 +176,20 @@ class EffectsAI : public Behaviour {
     for (auto spell : creature->getSpellMap().getAvailable(creature))
       if (auto move = spell->getAIMove(creature))
         return move;
-    for (auto item : creature->getEquipment().getItems())
-      if (auto effect = item->getEffect()) {
-        if (effect->shouldAIApply(creature, creature->getPosition()) == EffectAIIntent::WANTED)
-          if (auto move = creature->applyItem(item))
-            return move;
-        for (Position pos : creature->getPosition().neighbors8())
-          if (Creature* c = pos.getCreature())
-            if (creature->isFriend(c) && effect->shouldAIApply(c, c->getPosition()) == EffectAIIntent::WANTED &&
-                c->getEquipment().getItems().filter(Item::effectPredicate(*effect)).empty())
-              if (auto action = creature->give(c, {item}))
-                return MoveInfo(0.5, action);
-      }
+    // prevent workers from using up items that they're hauling
+    if (!creature->getStatus().contains(CreatureStatus::CIVILIAN))
+      for (auto item : creature->getEquipment().getItems())
+        if (auto effect = item->getEffect()) {
+          if (effect->shouldAIApply(creature, creature->getPosition()) == EffectAIIntent::WANTED)
+            if (auto move = creature->applyItem(item))
+              return move;
+          for (Position pos : creature->getPosition().neighbors8())
+            if (Creature* c = pos.getCreature())
+              if (creature->isFriend(c) && effect->shouldAIApply(c, c->getPosition()) == EffectAIIntent::WANTED &&
+                  c->getEquipment().getItems().filter(Item::effectPredicate(*effect)).empty())
+                if (auto action = creature->give(c, {item}))
+                  return MoveInfo(0.5, action);
+        }
     for (auto c : creature->getVisibleCreatures())
       if (auto move = getThrowMove(c))
         return move;

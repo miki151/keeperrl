@@ -68,6 +68,7 @@ bool MinionActivityMap::isAvailable(WConstCollective col, const Creature* c, Min
       return !c->getBody().isImmuneTo(LastingEffect::ENTANGLED) &&
           !c->getBody().isMinionFood() &&
           c->getBody().isHumanoid();
+    case MinionActivity::POETRY:
     case MinionActivity::THRONE:
       return col->getLeader() == c;
     case MinionActivity::BE_EXECUTED:

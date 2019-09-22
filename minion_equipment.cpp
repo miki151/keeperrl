@@ -29,6 +29,9 @@
 
 static bool isCombatConsumable(Effect type) {
   return type.visit(
+      [&](const Effect::IncreaseMorale&) { return true; },
+      [&](const Effect::Area& a) { return isCombatConsumable(*a.effect); },
+      [&](const Effect::Filter& f) { return isCombatConsumable(*f.effect); },
       [&](const Effect::Escape&) { return true; },
       [&](const Effect::Lasting& e) {
         switch (e.lastingEffect) {

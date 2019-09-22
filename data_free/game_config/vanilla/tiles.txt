@@ -445,6 +445,8 @@
     roundShadow = true }
   { viewId = "jeweller" symbol = "&" color = ColorId YELLOW
     roundShadow = true }
+  { viewId = "poetry_table" symbol = "&" color = ColorId DARK_BROWN
+    roundShadow = true }
   { viewId = "furnace" symbol = "&" color = ColorId PINK
     roundShadow = true }
   { viewId = "grave" symbol = "☗" color = ColorId GRAY
