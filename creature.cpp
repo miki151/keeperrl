@@ -1782,7 +1782,7 @@ TribeSet Creature::getFriendlyTribes() const {
 
 MovementType Creature::getMovementType() const {
   PROFILE;
-  return MovementType(getFriendlyTribes(), {
+  return MovementType(hasAlternativeViewId() ? TribeSet::getFull() : getFriendlyTribes(), {
       true,
       isAffected(LastingEffect::FLYING),
       isAffected(LastingEffect::SWIMMING_SKILL),
