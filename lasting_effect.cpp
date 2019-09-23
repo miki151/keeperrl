@@ -541,6 +541,13 @@ int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
         value += attrBonus;
       if (c->isAffected(LastingEffect::DAM_BONUS))
         value += attrBonus;
+      if (c->hasAlternativeViewId() && c->isAffected(LastingEffect::SPYING))
+        value -= 99;
+      break;
+    case AttrType::RANGED_DAMAGE:
+    case AttrType::SPELL_DAMAGE:
+      if (c->hasAlternativeViewId() && c->isAffected(LastingEffect::SPYING))
+        value -= 99;
       break;
     case AttrType::DEFENSE:
       if (c->isAffected(LastingEffect::PANIC))
@@ -748,7 +755,9 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
     case LastingEffect::SPYING: {
       auto enemyId = [&] ()->optional<ViewId> {
         for (WCollective col : c->getPosition().getModel()->getCollectives())
-          if (col->getTerritory().contains(c->getPosition()) && col->getTribe()->isEnemy(c) && !col->getCreatures().empty())
+          if ((col->getTerritory().contains(c->getPosition()) ||
+                 col->getTerritory().getStandardExtended().contains(c->getPosition())) &&
+              col->getTribe()->isEnemy(c) && !col->getCreatures().empty())
             return Random.choose(col->getCreatures())->getViewObject().id();
         return none;
       }();
@@ -1068,7 +1077,7 @@ bool LastingEffects::canSee(const Creature* c1, const Creature* c2) {
 bool LastingEffects::modifyIsEnemyResult(const Creature* c, const Creature* other, bool result) {
   PROFILE;
   if (c->isAffected(LastingEffect::PEACEFULNESS) ||
-      other->isAffected(LastingEffect::SPYING) || c->isAffected(LastingEffect::SPYING))
+      other->isAffected(LastingEffect::SPYING) || (c->isAffected(LastingEffect::SPYING) && c->hasAlternativeViewId()))
     return false;
   if (c->isAffected(LastingEffect::INSANITY) && !other->getStatus().contains(CreatureStatus::LEADER))
     return true;
