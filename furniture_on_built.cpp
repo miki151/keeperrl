@@ -22,7 +22,7 @@
 
 static EnemyInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
   auto enemy = EnemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
-      contentFactory->externalEnemies).get(id);
+      contentFactory->buildingInfo, contentFactory->externalEnemies).get(id);
   enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
   return enemy;
 }
