@@ -651,7 +651,7 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
     return false;
   }
   if (item->getEquipmentSlot() == EquipmentSlot::SHIELD)
-    for (auto other : equipment->getSlotItems(EquipmentSlot::WEAPON))
+    for (auto other : equipment->getAllEquipped())
       if (other->getWeaponInfo().twoHanded) {
         setReason(item->getAName() + " can't be used together with a two-handed weapon");
         return false;
