@@ -72,6 +72,7 @@ class MapGui : public GuiElem {
   bool isCentered() const;
   Vec2 getScreenPos() const;
   optional<Vec2> projectOnMap(Vec2 screenCoord);
+  Vec2 projectOnScreen(Vec2 wpos);
   void highlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void setButtonViewId(ViewId);
@@ -117,7 +118,6 @@ class MapGui : public GuiElem {
   void renderAnimations(Renderer&, milliseconds currentTimeReal);
 
   Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, milliseconds curTimeReal, bool verticalMovement, Vec2 pos);
-  Vec2 projectOnScreen(Vec2 wpos);
   bool considerCreatureClick(Vec2 mousePos);
   struct CreatureInfo {
     UniqueEntity<Creature>::Id id;

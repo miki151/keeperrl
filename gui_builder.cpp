@@ -2378,7 +2378,33 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
   return gui.stack(allElems);
 }
 
+SGuiElem GuiBuilder::drawScreenshotOverlay() {
+  const int width = 600;
+  const int height = 360;
+  const int margin = 20;
+  return gui.preferredSize(width, height, gui.stack(
+      gui.keyHandler(getButtonCallback(UserInputId::CANCEL_SCREENSHOT), {gui.getKey(SDL::SDLK_ESCAPE)}, true),
+      gui.rectangle(Color::TRANSPARENT, Color::LIGHT_GRAY),
+      gui.translate(gui.centerHoriz(gui.miniWindow(gui.margins(gui.getListBuilder(legendLineHeight)
+              .addElem(gui.labelMultiLineWidth("Your dungeon will be shared in Steam Workshop with an attached screenshot. "
+                  "Steer the rectangle below to a particularly pretty or representative area of your dungeon and confirm.",
+                  legendLineHeight, width - 2 * margin), legendLineHeight * 4)
+              .addElem(gui.centerHoriz(gui.getListBuilder()
+                  .addElemAuto(gui.buttonLabel("Confirm", getButtonCallback({UserInputId::TAKE_SCREENSHOT, Vec2(width, height)})))
+                  .addSpace(15)
+                  .addElemAuto(gui.buttonLabel("Cancel", getButtonCallback(UserInputId::CANCEL_SCREENSHOT)))
+                  .buildHorizontalList()))
+              .buildVerticalList(), margin))),
+          Vec2(0, -legendLineHeight * 6), Vec2(width, legendLineHeight * 6))
+  ));
+}
+
 void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
+  if (info.takingScreenshot) {
+    ret.push_back({cache->get(bindMethod(&GuiBuilder::drawScreenshotOverlay, this), THIS_LINE),
+        OverlayInfo::CENTER});
+    return;
+  }
   if (info.tutorial)
     ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTutorialOverlay, this), THIS_LINE,
          *info.tutorial), OverlayInfo::TUTORIAL});

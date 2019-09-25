@@ -93,8 +93,10 @@ class DummyView : public View {
   virtual bool isClockStopped() override { return false; }
   virtual void addSound(const Sound&) override {}
   virtual void logMessage(const string&) override {}
-  virtual void setBugReportSaveCallback(BugReportSaveCallback) override {};
+  virtual void setBugReportSaveCallback(BugReportSaveCallback) override {}
   virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&) override {
     return AvatarMenuOption::GO_BACK;
+  }
+  virtual void dungeonScreenshot(Vec2 size) override {
   }
 };

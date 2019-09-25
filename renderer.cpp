@@ -15,6 +15,7 @@
 
 #include "stdafx.h"
 #include "dirent.h"
+#include "extern/lodepng.h"
 
 #include "renderer.h"
 #include "view_object.h"
@@ -652,19 +653,13 @@ SDL::SDL_Surface* flipVert(SDL::SDL_Surface* sfc) {
    return result;
 }
 
-void Renderer::makeScreenshot(const FilePath& path) {
-  auto image = SDL::SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 24, 0x000000FF, 0x0000FF00, 0x00FF0000, 0);
+void Renderer::makeScreenshot(const FilePath& path, Rectangle bounds) {
+  auto image = SDL::SDL_CreateRGBSurface(SDL_SWSURFACE, bounds.width(), bounds.height(), 24, 0x000000FF, 0x0000FF00, 0x00FF0000, 0);
   SDL::glReadBuffer(GL_FRONT);
-  SDL::glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
+  SDL::glReadPixels(bounds.left(), height - bounds.bottom(), bounds.width(), bounds.height(), GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
   auto inverted = flipVert(image);
-  int bmpSize = width * height * 3 + 1000;
-  unique_ptr<char[]> bitmap(new char[bmpSize]);
-  auto *rw = SDL::SDL_RWFromMem(bitmap.get(), bmpSize);
-  CHECK(rw) << SDL::SDL_GetError();
-  CHECK(SDL::SDL_SaveBMP_RW(inverted, rw, 1) == 0) << SDL::SDL_GetError();
+  unsigned error = lodepng::encode(path.getPath(), (unsigned char*)inverted->pixels, bounds.width(), bounds.height(), LCT_RGB);
+  USER_CHECK(!error) << "encoder error " << error << ": "<< lodepng_error_text(error);
   SDL_FreeSurface(image);
   SDL_FreeSurface(inverted);
-  ogzstream output(path.getPath());
-  for (int i : Range(bmpSize))
-    output << bitmap[i];
 }

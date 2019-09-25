@@ -222,6 +222,8 @@ class View {
 
   virtual optional<ModAction> getModAction(int highlighted, const vector<ModInfo>&) = 0;
 
+  virtual void dungeonScreenshot(Vec2 size) = 0;
+
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
   using BugReportSaveCallback = function<void(FilePath)>;
   virtual void setBugReportSaveCallback(BugReportSaveCallback) = 0;

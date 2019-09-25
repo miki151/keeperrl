@@ -26,7 +26,6 @@ Font:
 Lato by Łukasz Dziedzic
 latofonts.com
 
-Welcome text:
-Oliver C. Mattson
+LodePNG library by Lode Vandevenne
 
 See license.txt for licence of particular data.

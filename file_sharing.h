@@ -69,3 +69,4 @@ class FileSharing {
   atomic<bool> wasCancelled;
 };
 
+constexpr auto retiredScreenshotFilename = "retired_screenshot.png";

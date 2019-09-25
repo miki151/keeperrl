@@ -410,5 +410,6 @@ class GameInfo {
   optional<CurrentLevelInfo> HASH(currentLevel);
 
   vector<PlayerMessage> HASH(messageBuffer);
-  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, singleModel, modifiedSquares, totalSquares, tutorial, currentLevel)
+  bool HASH(takingScreenshot) = false;
+  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, singleModel, modifiedSquares, totalSquares, tutorial, currentLevel, takingScreenshot)
 };

@@ -30,6 +30,7 @@ class Game : public OwnedObject<Game> {
   static PGame splashScreen(PModel&&, const CampaignSetup&, ContentFactory);
 
   optional<ExitInfo> update(double timeDiff);
+  void setExitInfo(ExitInfo);
   Options* getOptions();
   void initialize(Options*, Highscores*, View*, FileSharing*);
   View* getView() const;
