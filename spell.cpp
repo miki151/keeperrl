@@ -155,7 +155,7 @@ bool Spell::checkTrajectory(const Creature* c, Position to) const {
 MoveInfo Spell::getAIMove(const Creature* c) const {
   if (c->isReady(this))
     for (auto pos : c->getPosition().getRectangle(Rectangle::centered(range)))
-      if (canTargetSelf() || (c->canSee(pos) && pos != c->getPosition() && checkTrajectory(c, pos)))
+      if ((pos == c->getPosition() && canTargetSelf()) || (c->canSee(pos) && pos != c->getPosition() && checkTrajectory(c, pos)))
         if (effect->shouldAIApply(c, pos) == EffectAIIntent::WANTED)
           return c->castSpell(this, pos);
   return NoMove;

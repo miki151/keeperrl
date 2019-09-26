@@ -96,6 +96,7 @@ bool MinimapGui::onClick(ClickButton, Vec2 v) {
 constexpr auto visibleLayers = { ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR };
 
 void MinimapGui::update(Rectangle bounds, const CreatureView* creature, Renderer& renderer) {
+  PROFILE;
   auto level = creature->getCreatureViewLevel();
   info.bounds = bounds;
   info.enemies.clear();

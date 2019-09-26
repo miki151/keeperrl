@@ -173,6 +173,7 @@ class EffectsAI : public Behaviour {
   }
 
   virtual MoveInfo getMove() {
+    PROFILE_BLOCK("EffectsAI::getMove");
     for (auto spell : creature->getSpellMap().getAvailable(creature))
       if (auto move = spell->getAIMove(creature))
         return move;
@@ -853,6 +854,7 @@ class Thief : public Behaviour {
   Thief(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
+    PROFILE;
     if (!creature->isAffected(LastingEffect::STEALING_SKILL))
       return NoMove;
     for (const Creature* other : creature->getVisibleEnemies()) {

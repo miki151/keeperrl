@@ -96,9 +96,11 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const Equipment& getEquipment() const;
   Equipment& getEquipment();
   vector<PItem> steal(const vector<Item*> items);
-  bool canSeeInPosition(const Creature*) const;
+  bool canSeeInPosition(const Creature*, GlobalTime) const;
+  bool canSeeInPositionIfNotBlind(const Creature*, GlobalTime) const;
   bool canSeeOutsidePosition(const Creature*) const;
   bool canSee(const Creature*) const;
+  bool canSeeIfNotBlind(const Creature*, GlobalTime) const;
   bool canSee(Position) const;
   bool canSee(Vec2) const;
   bool isEnemy(const Creature*) const;
@@ -257,6 +259,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void addPermanentEffect(LastingEffect, int count = 1, bool msg = true);
   void removePermanentEffect(LastingEffect, int count = 1, bool msg = true);
   bool isAffected(LastingEffect) const;
+  bool isAffected(LastingEffect, GlobalTime) const;
   optional<TimeInterval> getTimeRemaining(LastingEffect) const;
   bool hasCondition(CreatureCondition) const;
 

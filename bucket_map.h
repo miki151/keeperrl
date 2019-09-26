@@ -15,7 +15,7 @@ class BucketMap {
 
   vector<T*> getElements(Rectangle area) const;
 
-  SERIALIZATION_DECL(BucketMap);
+  SERIALIZATION_DECL(BucketMap)
 
   private:
   int SERIAL(bucketSize);

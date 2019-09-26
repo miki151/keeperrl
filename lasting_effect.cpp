@@ -1069,20 +1069,20 @@ string LastingEffects::getDescription(LastingEffect type) {
 }
 
 bool LastingEffects::canSee(const Creature* c1, const Creature* c2) {
-  PROFILE;
+  PROFILE_BLOCK("LastingEffects::canSee");
   return c1->getPosition().dist8(c2->getPosition()).value_or(5) < 5 && c2->getBody().hasBrain() &&
       c1->isAffected(LastingEffect::TELEPATHY);
 }
 
-bool LastingEffects::modifyIsEnemyResult(const Creature* c, const Creature* other, bool result) {
+bool LastingEffects::modifyIsEnemyResult(const Creature* c, const Creature* other, GlobalTime time, bool result) {
   PROFILE;
-  if (c->isAffected(LastingEffect::PEACEFULNESS) ||
-      other->isAffected(LastingEffect::SPYING) || (c->isAffected(LastingEffect::SPYING) && c->hasAlternativeViewId()))
+  if (c->isAffected(LastingEffect::PEACEFULNESS, time) ||
+      other->isAffected(LastingEffect::SPYING, time) || (c->isAffected(LastingEffect::SPYING, time) && c->hasAlternativeViewId()))
     return false;
-  if (c->isAffected(LastingEffect::INSANITY) && !other->getStatus().contains(CreatureStatus::LEADER))
+  if (c->isAffected(LastingEffect::INSANITY, time) && !other->getStatus().contains(CreatureStatus::LEADER))
     return true;
   if (auto effect = other->getAttributes().getHatedByEffect())
-    if (c->isAffected(*effect))
+    if (c->isAffected(*effect, time))
       return true;
   return result;
 }

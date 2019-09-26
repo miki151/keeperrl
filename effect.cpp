@@ -1272,6 +1272,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
       ReviveCorpse, Blast, Shove, SwapPosition*/
 
 EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const {
+  PROFILE;
   auto victim = pos.getCreature();
   if (victim && !caster->canSee(victim))
     victim = nullptr;
