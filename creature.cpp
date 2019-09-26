@@ -1235,8 +1235,11 @@ bool Creature::takeDamage(const Attack& attack) {
     }
   } else
     you(MsgType::GET_HIT_NODAMAGE);
-  for (auto& e : attack.effect)
+  for (auto& e : attack.effect) {
     e.apply(position, attack.attacker);
+    if (isDead())
+      break;
+  }
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       LastingEffects::afterCreatureDamage(this, effect);
