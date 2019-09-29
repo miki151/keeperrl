@@ -12,7 +12,6 @@ RICH_ENUM(
     EAT,
     CRAFT,
     STUDY,
-    POETRY,
     EXPLORE,
     EXPLORE_NOCTURNAL,
     EXPLORE_CAVES,
@@ -28,7 +27,8 @@ RICH_ENUM(
     DIGGING,
     WORKING,
     HAULING,
-    IDLE
+    IDLE,
+    POETRY
 );
 
 class Position;
