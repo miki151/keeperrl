@@ -1867,18 +1867,18 @@ class CastleExit : public LevelMaker {
         builder->putFurniture(loc + Vec2(2, i), building.gate->type, settlement.tribe);
       else
         builder->removeFurniture(loc + Vec2(2, i), FurnitureLayer::MIDDLE);
-      settlement.collective->addArea(builder->toGlobalCoordinates({loc + Vec2(2, i)}));
+      settlement.collective->addArea(builder->toGlobalCoordinates(makeVec(loc + Vec2(2, i))));
     }
     if (!settlement.dontBuildRoad)
       builder->addAttrib(loc + Vec2(2, 0), SquareAttrib::CONNECT_ROAD);
     vector<Vec2> walls { Vec2(1, -2), Vec2(2, -2), Vec2(2, -1), Vec2(2, 2), Vec2(2, 3), Vec2(1, 3)};
     for (Vec2 v : walls) {
       builder->putFurniture(loc + v, building.wall);
-      settlement.collective->addArea(builder->toGlobalCoordinates({loc + v}));
+      settlement.collective->addArea(builder->toGlobalCoordinates(makeVec(loc + v)));
     }
     vector<Vec2> floor { Vec2(1, -1), Vec2(1, 0), Vec2(1, 1), Vec2(1, 2), Vec2(0, -1), Vec2(0, 0), Vec2(0, 1), Vec2(0, 2) };
     for (Vec2 v : floor) {
-      settlement.collective->addArea(builder->toGlobalCoordinates({loc + v}));
+      settlement.collective->addArea(builder->toGlobalCoordinates(makeVec(loc + v)));
       if (building.floorInside)
         builder->resetFurniture(loc + v, *building.floorInside);
       else
