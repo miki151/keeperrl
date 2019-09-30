@@ -18,11 +18,11 @@
 #include "intrinsic_attack.h"
 #include "team_member_action.h"
 #include "team_order.h"
-#include "special_trait.h"
 #include "view_object_modifier.h"
 #include "creature_experience_info.h"
 
 class PlayerMessage;
+class SpecialTrait;
 
 struct CreatureInfo {
   CreatureInfo(const Creature*);
@@ -165,6 +165,8 @@ class PlayerInfo {
 };
 
 struct ImmigrantDataInfo {
+  ImmigrantDataInfo();
+  STRUCT_DECLARATIONS(ImmigrantDataInfo)
   vector<string> HASH(requirements);
   vector<string> HASH(info);
   vector<SpecialTrait> HASH(specialTraits);
@@ -180,7 +182,7 @@ struct ImmigrantDataInfo {
   optional<milliseconds> HASH(generatedTime);
   optional<Keybinding> HASH(keybinding);
   optional<TutorialHighlight> HASH(tutorialHighlight);
-  HASH_ALL(requirements, info, name, viewId, attributes, count, timeLeft, id, autoState, cost, generatedTime, keybinding, tutorialHighlight, specialTraits)
+  size_t getHash() const;
 };
 
 class CollectiveInfo {

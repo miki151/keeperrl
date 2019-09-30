@@ -8,14 +8,12 @@
 #include "enemy_info.h"
 #include "technology.h"
 #include "workshop_array.h"
-#include "immigrant_info.h"
-#include "build_info.h"
 #include "campaign_builder.h"
 #include "external_enemies.h"
 #include "item_attributes.h"
 
 class KeyVerifier;
-
+class BuildInfo;
 
 class ContentFactory {
   public:
@@ -40,6 +38,10 @@ class ContentFactory {
 
   CreatureFactory& getCreatures();
   const CreatureFactory& getCreatures() const;
+
+  ContentFactory();
+  ~ContentFactory();
+  ContentFactory(ContentFactory&&);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);

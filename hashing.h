@@ -87,6 +87,11 @@ size_t getHash() const {\
   return combineHash(__VA_ARGS__);\
 }
 
+#define HASH_DEF(Type, ...)\
+size_t Type::getHash() const {\
+  return combineHash(__VA_ARGS__);\
+}
+
 #define HASH(X) X
 
 template <typename T>

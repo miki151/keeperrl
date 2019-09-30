@@ -1,10 +1,13 @@
 #pragma once
 
 #include "util.h"
-#include "special_trait.h"
 #include "tech_id.h"
 
+class SpecialTrait;
+
 struct KeeperCreatureInfo {
+  KeeperCreatureInfo();
+  STRUCT_DECLARATIONS(KeeperCreatureInfo)
   vector<CreatureId> SERIAL(creatureId);
   TribeAlignment SERIAL(tribeAlignment);
   vector<string> SERIAL(immigrantGroups);
@@ -15,8 +18,5 @@ struct KeeperCreatureInfo {
   string SERIAL(description);
   vector<SpecialTrait> SERIAL(specialTraits);
   template <class Archive>
-  void serialize(Archive& ar, const unsigned int) {
-    ar(NAMED(creatureId), NAMED(tribeAlignment), NAMED(immigrantGroups), NAMED(technology), NAMED(initialTech), NAMED(buildingGroups));
-    ar(NAMED(workshopGroups), NAMED(description), OPTION(specialTraits));
-  }
+  void serialize(Archive& ar, const unsigned int);
 };

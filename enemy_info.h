@@ -4,9 +4,8 @@
 #include "villain_type.h"
 #include "collective_config.h"
 #include "village_behaviour.h"
-#include "attack_trigger.h"
-#include "immigrant_info.h"
 #include "enemy_id.h"
+#include "biome_id.h"
 
 struct EnemyInfo;
 class EnemyFactory;
@@ -53,7 +52,8 @@ struct BonesInfo {
 struct EnemyInfo {
   EnemyInfo(SettlementInfo s, CollectiveConfig c, optional<VillageBehaviour> v = none,
       optional<LevelConnection> = none);
-  SERIALIZATION_CONSTRUCTOR(EnemyInfo)
+  STRUCT_DECLARATIONS(EnemyInfo)
+  SERIALIZATION_DECL(EnemyInfo)
   EnemyInfo& setVillainType(VillainType type);
   EnemyInfo& setId(EnemyId);
   EnemyInfo& setImmigrants(vector<ImmigrantInfo>);
@@ -71,5 +71,4 @@ struct EnemyInfo {
   bool SERIAL(discoverable) = true;
   optional<BonesInfo> SERIAL(createOnBones);
   optional<EnemyId> SERIAL(otherEnemy);
-  SERIALIZE_ALL(NAMED(settlement), OPTION(config), NAMED(behaviour), NAMED(levelConnection), OPTION(immigrants), OPTION(discoverable), NAMED(createOnBones), OPTION(biomes), NAMED(otherEnemy))
 };

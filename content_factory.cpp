@@ -11,6 +11,8 @@
 #include "key_verifier.h"
 #include "spell_school_id.h"
 #include "name_generator_id.h"
+#include "build_info.h"
+#include "immigrant_info.h"
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
@@ -276,3 +278,7 @@ const CreatureFactory& ContentFactory::getCreatures() const {
   creatures.setContentFactory(this);
   return creatures;
 }
+
+ContentFactory::ContentFactory() {}
+ContentFactory::~ContentFactory() {}
+ContentFactory::ContentFactory(ContentFactory&&) = default;

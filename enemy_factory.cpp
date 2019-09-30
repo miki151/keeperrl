@@ -27,31 +27,6 @@ EnemyFactory::EnemyFactory(RandomGen& r, NameGenerator* n, map<EnemyId, EnemyInf
     externalEnemies(std::move(externalEnemies)) {
 }
 
-EnemyInfo::EnemyInfo(SettlementInfo s, CollectiveConfig c, optional<VillageBehaviour> v,
-    optional<LevelConnection> l)
-  : settlement(s), config(c), behaviour(v), levelConnection(l) {
-}
-
-EnemyInfo& EnemyInfo::setVillainType(VillainType type) {
-  villainType = type;
-  return *this;
-}
-
-EnemyInfo& EnemyInfo::setId(EnemyId i) {
-  id = i;
-  return *this;
-}
-
-EnemyInfo& EnemyInfo::setImmigrants(vector<ImmigrantInfo> i) {
-  immigrants = std::move(i);
-  return *this;
-}
-
-EnemyInfo& EnemyInfo::setNonDiscoverable() {
-  discoverable = false;
-  return *this;
-}
-
 PCollective EnemyInfo::buildCollective(ContentFactory* contentFactory) const {
   if (settlement.locationName)
     settlement.collective->setLocationName(*settlement.locationName);

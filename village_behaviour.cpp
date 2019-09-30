@@ -133,7 +133,7 @@ static double getNumConqueredProb(WConstGame game, int minCount) {
     return 0;
 }
 
-double VillageBehaviour::getTriggerValue(const Trigger& trigger, const VillageControl* self) const {
+double VillageBehaviour::getTriggerValue(const AttackTrigger& trigger, const VillageControl* self) const {
   double powerMaxProb = 1.0 / 10000; // rather small chance that they attack just because you are strong
   double victimsMaxProb = 1.0 / 500;
   double populationMaxProb = 1.0 / 500;

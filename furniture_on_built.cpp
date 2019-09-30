@@ -19,6 +19,7 @@
 #include "game_config.h"
 #include "resource_counts.h"
 #include "content_factory.h"
+#include "attack_trigger.h"
 
 static EnemyInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
   auto enemy = EnemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,

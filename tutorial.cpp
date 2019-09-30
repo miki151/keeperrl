@@ -29,6 +29,7 @@
 #include "workshop_item.h"
 #include "tutorial_state.h"
 #include "content_factory.h"
+#include "immigrant_info.h"
 
 SERIALIZE_DEF(Tutorial, state, entrance)
 
@@ -454,7 +455,7 @@ Tutorial::State Tutorial::getState() const {
   return state;
 }
 
-void Tutorial::createTutorial(Game& game, vector<ImmigrantInfo> immigrants) {
+void Tutorial::createTutorial(Game& game, const ContentFactory* factory) {
   auto tutorial = make_shared<Tutorial>();
   game.getPlayerControl()->setTutorial(tutorial);
   auto collective = game.getPlayerCollective();
@@ -470,6 +471,7 @@ void Tutorial::createTutorial(Game& game, vector<ImmigrantInfo> immigrants) {
   collective->setTrait(collective->getLeader(), MinionTrait::NO_AUTO_EQUIPMENT);
   collective->getWarnings().disable();
   collective->init(CollectiveConfig::keeper(50_visible, 10));
+  auto immigrants = factory->immigrantsData.at("tutorial");
   CollectiveConfig::addBedRequirementToImmigrants(immigrants, game.getContentFactory());
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
 }

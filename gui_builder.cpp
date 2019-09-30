@@ -43,6 +43,7 @@
 #include "avatar_menu_option.h"
 #include "view_object_action.h"
 #include "mod_info.h"
+#include "special_trait.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;

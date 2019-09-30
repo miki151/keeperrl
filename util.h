@@ -1768,3 +1768,17 @@ constexpr bool isOneOf(const T& value, const Arg1& arg1, const Args&... args) {
 template <class T, int size> constexpr int arraySize(T (&)[size]) {
   return size;
 }
+
+#define STRUCT_DECLARATIONS(TYPE) \
+  ~TYPE(); \
+  TYPE(TYPE&&); \
+  TYPE& operator = (TYPE&&); \
+  TYPE(const TYPE&); \
+  TYPE& operator = (const TYPE&);
+
+#define STRUCT_IMPL(TYPE) \
+  TYPE::~TYPE() {} \
+  TYPE::TYPE(TYPE&&) = default; \
+  TYPE::TYPE(const TYPE&) = default; \
+  TYPE& TYPE::operator =(TYPE&&) = default; \
+  TYPE& TYPE::operator = (const TYPE&) = default;

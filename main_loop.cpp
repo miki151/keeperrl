@@ -378,7 +378,7 @@ PGame MainLoop::prepareTutorial(const ContentFactory* contentFactory) {
   PGame game = loadGame(dataFreePath.file("tutorial.kep"));
   if (game) {
     USER_CHECK(contentFactory->immigrantsData.count("tutorial"));
-    Tutorial::createTutorial(*game, contentFactory->immigrantsData.at("tutorial"));
+    Tutorial::createTutorial(*game, contentFactory);
   } else
     view->presentText("Sorry", "Failed to load the tutorial :(");
   return game;

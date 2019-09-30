@@ -37,6 +37,7 @@
 #include "game_event.h"
 #include "content_factory.h"
 #include "enemy_aggression_level.h"
+#include "immigrant_info.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl)
 

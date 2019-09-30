@@ -57,6 +57,7 @@
 #include "view_object.h"
 #include "content_factory.h"
 #include "effect_type.h"
+#include "immigrant_info.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {

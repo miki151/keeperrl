@@ -19,6 +19,7 @@
 #include "time_queue.h"
 #include "game.h"
 #include "content_factory.h"
+#include "special_trait.h"
 
 CreatureInfo::CreatureInfo(const Creature* c)
     : viewId(c->getViewObject().id()),
@@ -212,3 +213,7 @@ vector<AttributeInfo> AttributeInfo::fromCreature(const Creature* c) {
       ),
     };
 }
+
+STRUCT_IMPL(ImmigrantDataInfo)
+ImmigrantDataInfo::ImmigrantDataInfo() {}
+HASH_DEF(ImmigrantDataInfo, requirements, info, name, viewId, attributes, count, timeLeft, id, autoState, cost, generatedTime, keybinding, tutorialHighlight, specialTraits)
