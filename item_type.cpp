@@ -26,6 +26,7 @@
 #include "tech_id.h"
 #include "effect_type.h"
 #include "item_types.h"
+#include "item_prefix.h"
 
 STRUCT_IMPL(ItemType)
 
@@ -498,7 +499,7 @@ static ViewId getRuneViewId(const string& name) {
 
 ItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory*) const {
   return ITATTR(
-      i.shortName = getGlyphName(rune.prefix);
+      i.shortName = getGlyphName(*rune.prefix);
       i.viewId = getRuneViewId(*i.shortName);
       i.upgradeInfo = rune;
       i.name = "glyph of " + *i.shortName;

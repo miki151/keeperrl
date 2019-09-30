@@ -13,6 +13,12 @@
 #include "name_generator_id.h"
 #include "build_info.h"
 #include "immigrant_info.h"
+#include "external_enemies.h"
+#include "external_enemies.h"
+#include "enemy_info.h"
+#include "item_attributes.h"
+#include "resource_counts.h"
+#include "z_level_info.h"
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {

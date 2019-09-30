@@ -1,6 +1,6 @@
 #pragma once
 
-#include "item_prefix.h"
+#include "util.h"
 
 RICH_ENUM(
     ItemUpgradeType,
@@ -8,10 +8,15 @@ RICH_ENUM(
     ARMOR
 );
 
+class ItemPrefix;
+
 struct ItemUpgradeInfo {
   vector<string> getDescription() const;
-  ItemUpgradeType type;
-  ItemPrefix prefix;
-  COMPARE_ALL(type, prefix)
+  ItemUpgradeType SERIAL(type);
+  HeapAllocatedSerializationWorkaround<ItemPrefix> SERIAL(prefix);
+  bool operator == (const ItemUpgradeInfo& o) const;
+  bool operator != (const ItemUpgradeInfo& o) const;
+  template <class Archive>
+  void serialize(Archive& ar1, const unsigned int);
 };
 

@@ -44,6 +44,7 @@
 #include "mod_info.h"
 #include "container_range.h"
 #include "extern/iomanip.h"
+#include "enemy_info.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"

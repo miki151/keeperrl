@@ -68,6 +68,7 @@
 #include "target_type.h"
 #include "shortest_path.h"
 #include "item_types.h"
+#include "item_attributes.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
