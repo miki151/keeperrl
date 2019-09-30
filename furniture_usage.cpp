@@ -27,6 +27,7 @@
 #include "content_factory.h"
 #include "item_list.h"
 #include "effect_type.h"
+#include "item_types.h"
 
 struct ChestInfo {
   FurnitureType openedType;
@@ -128,10 +129,10 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
     case 4: {
       c->verb("find", "finds", "a glyph in the cracks!");
       pos.dropItem(Random.choose(
-          ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( ItemAttrBonus{ AttrType::DAMAGE, 2 } ) } }),
-          ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( ItemAttrBonus{ AttrType::DEFENSE, 2 } ) } }),
-          ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( LastingEffect::TELEPATHY ) } }),
-          ItemType(ItemType::Glyph{ { ItemUpgradeType::WEAPON,
+          ItemType(ItemTypes::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( ItemAttrBonus{ AttrType::DAMAGE, 2 } ) } }),
+          ItemType(ItemTypes::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( ItemAttrBonus{ AttrType::DEFENSE, 2 } ) } }),
+          ItemType(ItemTypes::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( LastingEffect::TELEPATHY ) } }),
+          ItemType(ItemTypes::Glyph{ { ItemUpgradeType::WEAPON,
               ItemPrefix( VictimEffect { 0.3, EffectType(Effects::Lasting{LastingEffect::BLEEDING}) } ) } })
           ).get(pos.getGame()->getContentFactory()));
       break;

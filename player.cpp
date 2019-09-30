@@ -67,6 +67,7 @@
 #include "content_factory.h"
 #include "target_type.h"
 #include "shortest_path.h"
+#include "item_types.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -1008,12 +1009,12 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
   }
   for (auto effect : ENUM_ALL(LastingEffect)) {
     ret.push_back(WishedItemInfo {
-      ItemType(ItemType::Ring{effect}),
+      ItemType(ItemTypes::Ring{effect}),
       "ring of " + LastingEffects::getName(effect),
       Range(1, 2)
     });
     ret.push_back(WishedItemInfo {
-      ItemType(ItemType::Amulet{effect}),
+      ItemType(ItemTypes::Amulet{effect}),
       "amulet of " + LastingEffects::getName(effect),
       Range(1, 2)
     });
@@ -1021,17 +1022,17 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
   vector<Effect> allEffects = Effect::getWishedForEffects();
   for (auto& effect : allEffects) {
     ret.push_back(WishedItemInfo {
-      ItemType(ItemType::Scroll{effect}),
+      ItemType(ItemTypes::Scroll{effect}),
       "scroll of " + effect.getName(),
       Range(1, 2)
     });
     ret.push_back(WishedItemInfo {
-      ItemType(ItemType::Potion{effect}),
+      ItemType(ItemTypes::Potion{effect}),
       "potion of " + effect.getName(),
       Range(1, 2)
     });
     ret.push_back(WishedItemInfo {
-      ItemType(ItemType::Mushroom{effect}),
+      ItemType(ItemTypes::Mushroom{effect}),
       "mushroom of " + effect.getName(),
       Range(1, 2)
     });

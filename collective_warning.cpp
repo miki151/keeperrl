@@ -15,6 +15,7 @@
 #include "experience_type.h"
 #include "game.h"
 #include "content_factory.h"
+#include "item_types.h"
 
 SERIALIZE_DEF(CollectiveWarnings, warnings, warningTimes, lastWarningTime)
 

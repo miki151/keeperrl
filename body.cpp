@@ -17,6 +17,7 @@
 #include "item.h"
 #include "game_time.h"
 #include "animation_id.h"
+#include "item_types.h"
 
 static double getDefaultWeight(Body::Size size) {
   switch (size) {

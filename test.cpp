@@ -45,6 +45,7 @@
 #include "lasting_effect.h"
 #include "test_struct.h"
 #include "biome_id.h"
+#include "item_types.h"
 
 class Test {
   public:

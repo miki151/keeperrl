@@ -51,6 +51,7 @@
 #include "game_config.h"
 #include "creature_inventory.h"
 #include "effect_type.h"
+#include "item_types.h"
 
 SERIALIZE_DEF(CreatureFactory, nameGenerator, attributes, inventory, spellSchools, spells)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)

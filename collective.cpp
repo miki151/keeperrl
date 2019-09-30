@@ -58,6 +58,7 @@
 #include "content_factory.h"
 #include "effect_type.h"
 #include "immigrant_info.h"
+#include "item_types.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -1207,7 +1208,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
     if (furniture->getType() == FurnitureType("TORTURE_TABLE"))
       taskMap->addTask(Task::torture(this, c), pos.first, MinionActivity::WORKING);
     if (furniture->getType() == FurnitureType("POETRY_TABLE") && Random.chance(0.01 * efficiency)) {
-      auto poem = ItemType(ItemType::Poem{}).get(1, getGame()->getContentFactory());
+      auto poem = ItemType(ItemTypes::Poem{}).get(1, getGame()->getContentFactory());
       addProducesMessage(c, poem, "writes");
       c->getPosition().dropItems(std::move(poem));
     }
