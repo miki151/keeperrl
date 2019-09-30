@@ -14,7 +14,7 @@ GCC = g++
 endif
 LD = $(GCC)
 
-DEBUG_LD=gold
+DEBUG_LD=lld
 
 ifndef RELEASE
 CFLAGS += -Werror -Wimplicit-fallthrough -Wno-unused-function
