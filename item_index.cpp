@@ -8,6 +8,7 @@
 #include "effect.h"
 #include "item_upgrade_info.h"
 #include "item_type.h"
+#include "effect_type.h"
 
 const char* getName(ItemIndex index, int count) {
   switch (index) {
@@ -37,7 +38,7 @@ bool hasIndex(ItemIndex index, const Item* item) {
       return item->getClass() == ItemClass::WEAPON;
     case ItemIndex::TRAP:
       if (auto& effect = item->getEffect())
-        return !!effect->getValueMaybe<Effect::PlaceFurniture>();
+        return !!effect->effect->getValueMaybe<Effects::PlaceFurniture>();
       return false;
     case ItemIndex::CORPSE:
       return item->getClass() == ItemClass::CORPSE;
@@ -50,7 +51,7 @@ bool hasIndex(ItemIndex index, const Item* item) {
     case ItemIndex::FOR_SALE:
       return item->isOrWasForSale();
     case ItemIndex::HEALING_ITEM:
-      return item->getEffect() == Effect(Effect::Heal{});
+      return item->getEffect() == Effect(Effects::Heal{});
     case ItemIndex::RUNE:
       return !!item->getUpgradeInfo() || !!item->getIngredientFor();
   }

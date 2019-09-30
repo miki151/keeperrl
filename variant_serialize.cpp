@@ -18,6 +18,7 @@
 #include "attack_behaviour.h"
 #include "tech_id.h"
 #include "enemy_info.h"
+#include "effect_type.h"
 
 namespace cereal {
   namespace variant_detail {
@@ -77,7 +78,7 @@ namespace cereal {
   INST2(AttractionType_impl)
   INST2(ItemPrefix_impl)
   INST2(FurnitureEntry::EntryData_impl)
-  INST2(Effect::EffectType_impl)
+  INST2(Effects::EffectType_impl)
   INST2(Campaign::SiteInfo::Dweller)
   INST2(ZLevelType_impl)
   INST2(AttackTrigger_impl)

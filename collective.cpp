@@ -56,6 +56,7 @@
 #include "game_event.h"
 #include "view_object.h"
 #include "content_factory.h"
+#include "effect_type.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -786,7 +787,7 @@ vector<Collective::TrapItemInfo> Collective::getTrapItems(const vector<Position>
   for (Position pos : squares)
     for (auto it : pos.getItems(ItemIndex::TRAP))
       if (!isItemMarked(it))
-        ret.push_back(TrapItemInfo{it, pos, it->getEffect()->getValueMaybe<Effect::PlaceFurniture>()->furniture});
+        ret.push_back(TrapItemInfo{it, pos, it->getEffect()->effect->getValueMaybe<Effects::PlaceFurniture>()->furniture});
   return ret;
 }
 
@@ -954,7 +955,7 @@ void Collective::addTrap(Position pos, FurnitureType type) {
 }
 
 void Collective::onAppliedItem(Position pos, Item* item) {
-  CHECK(!!item->getEffect()->getValueMaybe<Effect::PlaceFurniture>());
+  CHECK(!!item->getEffect()->effect->getValueMaybe<Effects::PlaceFurniture>());
   if (auto trap = constructions->getTrap(pos))
     trap->setArmed();
 }
@@ -1022,7 +1023,7 @@ void Collective::handleTrapPlacementAndProduction() {
   for (auto& elem : missingTraps)
     scheduleAutoProduction([&elem](const Item* it) {
           if (auto& effect = it->getEffect())
-            if (auto furnitureEffect = effect->getValueMaybe<Effect::PlaceFurniture>())
+            if (auto furnitureEffect = effect->effect->getValueMaybe<Effects::PlaceFurniture>())
               return furnitureEffect->furniture == elem.first;
           return false;
         }, elem.second);

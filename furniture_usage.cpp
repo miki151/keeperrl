@@ -26,6 +26,7 @@
 #include "name_generator.h"
 #include "content_factory.h"
 #include "item_list.h"
+#include "effect_type.h"
 
 struct ChestInfo {
   FurnitureType openedType;
@@ -98,16 +99,16 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
     case 1: {
       pos.globalMessage("A streak of magical energy is released");
       auto ef = Random.choose(
-          Effect(Effect::IncreaseAttr{ Random.choose(
+          Effect(Effects::IncreaseAttr{ Random.choose(
               AttrType::DAMAGE, AttrType::DEFENSE, AttrType::SPELL_DAMAGE, AttrType::RANGED_DAMAGE),
               Random.choose(-3, -2, -1, 1, 2, 3) }),
-          Effect(Effect::Acid{}),
-          Effect(Effect::Fire{}),
-          Effect(Effect::Lasting { LastingEffect::DAM_BONUS }),
-          Effect(Effect::Lasting { LastingEffect::BLIND }),
-          Effect(Effect::Lasting { LastingEffect::POISON }),
-          Effect(Effect::Lasting { LastingEffect::BLEEDING }),
-          Effect(Effect::Lasting { LastingEffect::HALLU })
+          Effect(Effects::Acid{}),
+          Effect(Effects::Fire{}),
+          Effect(Effects::Lasting { LastingEffect::DAM_BONUS }),
+          Effect(Effects::Lasting { LastingEffect::BLIND }),
+          Effect(Effects::Lasting { LastingEffect::POISON }),
+          Effect(Effects::Lasting { LastingEffect::BLEEDING }),
+          Effect(Effects::Lasting { LastingEffect::HALLU })
       );
       ef.apply(pos);
       break;
@@ -131,7 +132,7 @@ static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
           ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( ItemAttrBonus{ AttrType::DEFENSE, 2 } ) } }),
           ItemType(ItemType::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( LastingEffect::TELEPATHY ) } }),
           ItemType(ItemType::Glyph{ { ItemUpgradeType::WEAPON,
-              ItemPrefix( VictimEffect { 0.3, Effect::Lasting{LastingEffect::BLEEDING} } ) } })
+              ItemPrefix( VictimEffect { 0.3, EffectType(Effects::Lasting{LastingEffect::BLEEDING}) } ) } })
           ).get(pos.getGame()->getContentFactory()));
       break;
     }
@@ -241,7 +242,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       break;
     }
     case FurnitureUsageType::SLEEP:
-      Effect::Lasting{LastingEffect::SLEEP}.applyToCreature(c);
+      Effects::Lasting{LastingEffect::SLEEP}.applyToCreature(c);
       break;
     case FurnitureUsageType::KEEPER_BOARD:
       c->getGame()->handleMessageBoard(pos, c);

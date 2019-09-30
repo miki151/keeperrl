@@ -24,6 +24,7 @@
 #include "game_event.h"
 #include "content_factory.h"
 #include "tech_id.h"
+#include "effect_type.h"
 
 ItemType::ItemType(const ItemType&) = default;
 ItemType::ItemType(ItemType&) = default;
@@ -272,51 +273,51 @@ PItem ItemType::get(const ContentFactory* factory) const {
 
 
 static int getEffectPrice(Effect type) {
-  return type.visit(
-      [&](const Effect::Lasting& e) {
+  return type.effect->visit(
+      [&](const Effects::Lasting& e) {
         return LastingEffects::getPrice(e.lastingEffect);
       },
-      [&](const Effect::Permanent& e) {
+      [&](const Effects::Permanent& e) {
         //Permanent effects will probably be from consumable artifacts.
         return LastingEffects::getPrice(e.lastingEffect) * 100;
       },
-      [&](const Effect::Acid&) {
+      [&](const Effects::Acid&) {
         return 8;
       },
-      [&](const Effect::Suicide&) {
+      [&](const Effects::Suicide&) {
         return 8;
       },
-      [&](const Effect::Heal&) {
+      [&](const Effects::Heal&) {
         return 8;
       },
-      [&](const Effect::Escape&) {
+      [&](const Effects::Escape&) {
         return 12;
       },
-      [&](const Effect::Fire&) {
+      [&](const Effects::Fire&) {
         return 12;
       },
-      [&](const Effect::Alarm&) {
+      [&](const Effects::Alarm&) {
         return 12;
       },
-      [&](const Effect::SilverDamage&) {
+      [&](const Effects::SilverDamage&) {
         return 12;
       },
-      [&](const Effect::DestroyEquipment&) {
+      [&](const Effects::DestroyEquipment&) {
         return 12;
       },
-      [&](const Effect::DestroyWalls&) {
+      [&](const Effects::DestroyWalls&) {
         return 30;
       },
-      [&](const Effect::Enhance&) {
+      [&](const Effects::Enhance&) {
         return 12;
       },
-      [&](const Effect::TeleEnemies&) {
+      [&](const Effects::TeleEnemies&) {
         return 12;
       },
-      [&](const Effect::Summon&) {
+      [&](const Effects::Summon&) {
         return 12;
       },
-      [&](const Effect::EmitPoisonGas&) {
+      [&](const Effects::EmitPoisonGas&) {
         return 20;
       },
       [&](const auto&) {
@@ -366,7 +367,7 @@ ItemAttributes ItemType::Poem::getAttributes(const ContentFactory*) const {
       i.itemClass = ItemClass::SCROLL;
       i.weight = 0.1;
       i.modifiers[AttrType::DAMAGE] = -10;
-      i.effect = Effect(Effect::Area{10, Effect::Filter{FilterType::ENEMY, Effect::IncreaseMorale{-0.1}}});
+      i.effect = Effect(Effects::Area{10, Effects::Filter{FilterType::ENEMY, Effects::IncreaseMorale{-0.1}}});
       i.price = getEffectPrice(*i.effect);
       i.burnTime = 5;
       i.uses = 1;
@@ -429,7 +430,7 @@ ItemAttributes ItemType::TrapItem::getAttributes(const ContentFactory*) const {
       i.applySound = SoundId::TRAP_ARMING;
       i.uses = 1;
       i.usedUpMsg = true;
-      i.effect = Effect(Effect::PlaceFurniture{trapType});
+      i.effect = Effect(Effects::PlaceFurniture{trapType});
       i.price = 2;
   );
 }
@@ -456,8 +457,8 @@ ItemAttributes ItemType::Potion::getAttributes(const ContentFactory*) const {
 }
 
 static ViewId getMushroomViewId(Effect e) {
-  return e.visit(
-      [&](const Effect::Lasting& e) {
+  return e.effect->visit(
+      [&](const Effects::Lasting& e) {
         switch (e.lastingEffect) {
           case LastingEffect::DAM_BONUS: return ViewId("mushroom1");
           case LastingEffect::DEF_BONUS: return ViewId("mushroom2");

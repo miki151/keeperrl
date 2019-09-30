@@ -109,6 +109,7 @@ enum class HealthType;
 enum class ExternalEnemiesType;
 enum class LevelType;
 enum class EnemyAggressionLevel;
+enum class MinionEquipmentType;
 
 struct FXInfo;
 struct FXSpawnInfo;

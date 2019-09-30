@@ -116,5 +116,6 @@ class LastingEffects {
   static bool obeysFormation(const Creature*, const Creature* against);
   static EffectAIIntent shouldAIApply(const Creature* victim, LastingEffect, bool isEnemy);
   static AttrType modifyMeleeDamageAttr(const Creature* attacker, AttrType);
+  static TimeInterval getDuration(const Creature* c, LastingEffect);
   static void runTests();
 };

@@ -802,21 +802,21 @@ void Player::makeMove() {
         break;
       }
       case UserInputId::CHEAT_POTIONS: {
-        auto &items = creature->getEquipment().getItems();
+        /*auto &items = creature->getEquipment().getItems();
         for (auto leType : ENUM_ALL(LastingEffect)) {
           bool found = false;
           for (auto &item : items)
             if (auto &eff = item->getEffect())
-              if (auto le = eff->getValueMaybe<Effect::Lasting>())
+              if (auto le = eff->effect->getValueMaybe<Effects::Lasting>())
                 if (le->lastingEffect == leType) {
                   found = true;
                   break;
                 }
           if (!found) {
-            ItemType itemType{ItemType::Potion{Effect::Lasting{leType}}};
+            ItemType itemType{ItemType::Potion{EffectType(Effects::Lasting{leType})}};
             creature->take(itemType.get(getGame()->getContentFactory()));
           }
-        }
+        }*/
         break;
       }
   #endif
@@ -1018,32 +1018,7 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
       Range(1, 2)
     });
   }
-  vector<Effect> allEffects {
-       Effect(Effect::Escape{}),
-       Effect(Effect::Heal{HealthType::FLESH}),
-       Effect(Effect::Heal{HealthType::SPIRIT}),
-       Effect(Effect::Ice{}),
-       Effect(Effect::Fire{}),
-       Effect(Effect::DestroyEquipment{}),
-       Effect(Effect::DestroyWalls{}),
-       Effect(Effect::Enhance{ItemUpgradeType::WEAPON, 2}),
-       Effect(Effect::Enhance{ItemUpgradeType::ARMOR, 2}),
-       Effect(Effect::Enhance{ItemUpgradeType::WEAPON, -2}),
-       Effect(Effect::Enhance{ItemUpgradeType::ARMOR, -2}),
-       Effect(Effect::CircularBlast{}),
-       Effect(Effect::Deception{}),
-       Effect(Effect::SummonElement{}),
-       Effect(Effect::Acid{}),
-       Effect(Effect::Suicide{MsgType::DIE}),
-       Effect(Effect::DoubleTrouble{})
-  };
-  for (auto effect : ENUM_ALL(LastingEffect)) {
-    allEffects.push_back(Effect::Lasting{effect});
-    allEffects.push_back(Effect::Permanent{effect});
-    allEffects.push_back(Effect::RemoveLasting{effect});
-  }
-  for (auto attr : ENUM_ALL(AttrType))
-    allEffects.push_back(Effect::IncreaseAttr{attr, (attr == AttrType::PARRY ? 2 : 5)});
+  vector<Effect> allEffects = Effect::getWishedForEffects();
   for (auto& effect : allEffects) {
     ret.push_back(WishedItemInfo {
       ItemType(ItemType::Scroll{effect}),

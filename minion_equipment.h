@@ -45,13 +45,11 @@ class MinionEquipment {
   void updateItems(const vector<Item*>& items);
 
   private:
-  enum EquipmentType { ARMOR, HEALING, MATERIALIZATION, COMBAT_ITEM, TORCH };
-
-  static optional<EquipmentType> getEquipmentType(const Item* it);
-  optional<int> getEquipmentLimit(EquipmentType type) const;
+  static optional<MinionEquipmentType> getEquipmentType(const Item* it);
+  optional<int> getEquipmentLimit(MinionEquipmentType type) const;
   Item* getWorstItem(const Creature*, vector<Item*>) const;
   int getItemValue(const Creature*, const Item*) const;
-  bool canUseItemType(const Creature*, MinionEquipment::EquipmentType, const Item*) const;
+  bool canUseItemType(const Creature*, MinionEquipmentType, const Item*) const;
 
   EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);
   EntityMap<Creature, vector<WeakPointer<Item>>> SERIAL(myItems);
