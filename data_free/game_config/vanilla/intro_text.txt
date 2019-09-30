@@ -1,8 +1,10 @@
-{"Welcome to KeeperRL Alpha 27! This patch was released on March Xth, 2019.
+{"Welcome to KeeperRL Alpha 28 hotfix 1! This patch was released on July 4th, 2019.
   
-A lot of gameplay changes have arrived with this update. Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
+A lot of changes have arrived with this update. Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
 
-KeeperRL now allows you to dig down and build your dungeon vertically across multiple levels. Try it out! Note that in this patch you can build up to one staircase between subsequent levels, and portals connect only within the same level. We will work to remove these limitations in future updates.
+The \"campaign\", \"free play\" and \"endless\" game modes have been merged into one. There is a new setting that allows you to turn on endless enemy waves to start at the beginning of the game or after you win (by default it's set to the latter). Make sure to switch it if you'd like to have the previous \"endless\" experience! You'll find it in the \"Customize\" options in the campaign menu.
+
+KeeperRL allows sharing mods from within the game. Make sure to explore them and get in touch if you'd like to get into modding!
 
 If this is your first time playing KeeperRL, remember to start with the tutorial!"}
 {
