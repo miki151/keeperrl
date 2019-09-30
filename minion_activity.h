@@ -27,7 +27,8 @@ RICH_ENUM(
     DIGGING,
     WORKING,
     HAULING,
-    IDLE
+    IDLE,
+    POETRY
 );
 
 class Position;

@@ -248,7 +248,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void decreaseMoraleForBanishing(const Creature*);
 
   bool isItemNeeded(const Item*) const;
-  void addProducesMessage(const Creature*, const vector<PItem>&);
+  void addProducesMessage(const Creature*, const vector<PItem>&, const char* verb = "produces");
   int getDebt(ResourceId id) const;
 
   PPositionMatching SERIAL(positionMatching);

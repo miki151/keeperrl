@@ -2,20 +2,21 @@
 
 #include "furniture_factory.h"
 #include "creature_factory.h"
-#include "z_level_info.h"
-#include "resource_counts.h"
 #include "tile_paths.h"
-#include "enemy_info.h"
 #include "technology.h"
 #include "workshop_array.h"
-#include "immigrant_info.h"
-#include "build_info.h"
 #include "campaign_builder.h"
-#include "external_enemies.h"
-#include "item_attributes.h"
+#include "custom_item_id.h"
+#include "item_factory.h"
 
 class KeyVerifier;
-
+class BuildInfo;
+class ExternalEnemy;
+class ResourceDistribution;
+class EnemyInfo;
+class ImmigrantInfo;
+class ZLevelInfo;
+class BuildingInfo;
 
 class ContentFactory {
   public:
@@ -40,6 +41,10 @@ class ContentFactory {
 
   CreatureFactory& getCreatures();
   const CreatureFactory& getCreatures() const;
+
+  ContentFactory();
+  ~ContentFactory();
+  ContentFactory(ContentFactory&&);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);

@@ -3,9 +3,9 @@
 #include "util.h"
 #include "enum_variant.h"
 #include "creature_factory.h"
-#include "attack_trigger.h"
 
 class AttackBehaviour;
+class AttackTrigger;
 
 class VillageBehaviour {
   public:
@@ -13,19 +13,18 @@ class VillageBehaviour {
   VillageBehaviour(const VillageBehaviour&);
   VillageBehaviour& operator = (const VillageBehaviour&);
 
-  typedef AttackTrigger Trigger;
   enum class WelcomeMessage;
 
   int SERIAL(minPopulation);
   int SERIAL(minTeamSize);
-  vector<Trigger> SERIAL(triggers);
+  vector<AttackTrigger> SERIAL(triggers);
   HeapAllocated<AttackBehaviour> SERIAL(attackBehaviour);
   optional<WelcomeMessage> SERIAL(welcomeMessage);
   optional<pair<double, int>> SERIAL(ransom);
 
   PTask getAttackTask(VillageControl* self) const;
   double getAttackProbability(const VillageControl* self) const;
-  double getTriggerValue(const Trigger&, const VillageControl* self) const;
+  double getTriggerValue(const AttackTrigger&, const VillageControl* self) const;
 
   ~VillageBehaviour();
 

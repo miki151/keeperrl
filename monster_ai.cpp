@@ -52,6 +52,8 @@
 #include "furniture_entry.h"
 #include "spell_map.h"
 #include "vision.h"
+#include "effect_type.h"
+#include "health_type.h"
 
 class Behaviour {
   public:
@@ -108,7 +110,7 @@ Item* Behaviour::getBestWeapon() {
 }
 
 MoveInfo Behaviour::tryEffect(const Effect& type, TimeInterval maxTurns) {
-  if (auto effect = type.getValueMaybe<Effect::Lasting>())
+  if (auto effect = type.effect->getValueMaybe<Effects::Lasting>())
     if (creature->isAffected(effect->lastingEffect))
       return NoMove;
   for (auto spell : creature->getSpellMap().getAvailable(creature)) {
@@ -149,7 +151,7 @@ class EffectsAI : public Behaviour {
 
   virtual double itemValue(const Item* item) {
     if (auto& effect = item->getEffect())
-      if (effect->isType<Effect::Heal>())
+      if (effect->effect->contains<Effects::Heal>())
         return 0.5;
     return 0;
   }
@@ -173,21 +175,24 @@ class EffectsAI : public Behaviour {
   }
 
   virtual MoveInfo getMove() {
+    PROFILE_BLOCK("EffectsAI::getMove");
     for (auto spell : creature->getSpellMap().getAvailable(creature))
       if (auto move = spell->getAIMove(creature))
         return move;
-    for (auto item : creature->getEquipment().getItems())
-      if (auto effect = item->getEffect()) {
-        if (effect->shouldAIApply(creature, creature->getPosition()) == EffectAIIntent::WANTED)
-          if (auto move = creature->applyItem(item))
-            return move;
-        for (Position pos : creature->getPosition().neighbors8())
-          if (Creature* c = pos.getCreature())
-            if (creature->isFriend(c) && effect->shouldAIApply(c, c->getPosition()) == EffectAIIntent::WANTED &&
-                c->getEquipment().getItems().filter(Item::effectPredicate(*effect)).empty())
-              if (auto action = creature->give(c, {item}))
-                return MoveInfo(0.5, action);
-      }
+    // prevent workers from using up items that they're hauling
+    if (!creature->getStatus().contains(CreatureStatus::CIVILIAN))
+      for (auto item : creature->getEquipment().getItems())
+        if (auto effect = item->getEffect()) {
+          if (effect->shouldAIApply(creature, creature->getPosition()) == EffectAIIntent::WANTED)
+            if (auto move = creature->applyItem(item))
+              return move;
+          for (Position pos : creature->getPosition().neighbors8())
+            if (Creature* c = pos.getCreature())
+              if (creature->isFriend(c) && effect->shouldAIApply(c, c->getPosition()) == EffectAIIntent::WANTED &&
+                  c->getEquipment().getItems().filter(Item::effectPredicate(*effect)).empty())
+                if (auto action = creature->give(c, {item}))
+                  return MoveInfo(0.5, action);
+        }
     for (auto c : creature->getVisibleCreatures())
       if (auto move = getThrowMove(c))
         return move;
@@ -411,7 +416,7 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo getPanicMove(Creature* other) {
-    if (auto teleMove = tryEffect(Effect::Escape{}))
+    if (auto teleMove = tryEffect(EffectType(Effects::Escape{})))
       return teleMove;
     if (auto action = creature->moveAway(other->getPosition(), true))
       return {1.0, action.prepend([=](Creature* creature) {
@@ -423,18 +428,18 @@ class Fighter : public Behaviour {
 
   virtual double itemValue(const Item* item) override {
     if (auto& effect = item->getEffect())
-      if (contains<Effect>({
-            Effect::Lasting{LastingEffect::INVISIBLE},
-            Effect::Lasting{LastingEffect::SLOWED},
-            Effect::Lasting{LastingEffect::BLIND},
-            Effect::Lasting{LastingEffect::SLEEP},
-            Effect::Lasting{LastingEffect::POISON},
-            Effect::Lasting{LastingEffect::POISON_RESISTANT},
-            Effect::RemoveLasting{LastingEffect::POISON},
-            Effect::Escape{},
-            Effect::Lasting{LastingEffect::DAM_BONUS},
-            Effect::Lasting{LastingEffect::DEF_BONUS}},
-            *effect))
+      if (contains<EffectType>({
+            Effects::Lasting{LastingEffect::INVISIBLE},
+            Effects::Lasting{LastingEffect::SLOWED},
+            Effects::Lasting{LastingEffect::BLIND},
+            Effects::Lasting{LastingEffect::SLEEP},
+            Effects::Lasting{LastingEffect::POISON},
+            Effects::Lasting{LastingEffect::POISON_RESISTANT},
+            Effects::RemoveLasting{LastingEffect::POISON},
+            Effects::Escape{},
+            Effects::Lasting{LastingEffect::DAM_BONUS},
+            Effects::Lasting{LastingEffect::DEF_BONUS}},
+            *effect->effect))
       return 1;
     int damage = item->getModifier(AttrType::DAMAGE);
     Item* best = getBestWeapon();
@@ -486,7 +491,7 @@ class Fighter : public Behaviour {
         if (c->isEnemy(creature))
           ++numEnemies;
     if (numEnemies >= 3)
-      if (MoveInfo move = tryEffect(Effect::CircularBlast{}))
+      if (MoveInfo move = tryEffect(EffectType(Effects::CircularBlast{})))
         return move;
     return NoMove;
   }
@@ -526,7 +531,7 @@ class Fighter : public Behaviour {
               destroyMove = move;
       }
     if (isFriendBetween) {
-      if (auto move = tryEffect(Effect::DestroyWalls{}))
+      if (auto move = tryEffect(EffectType(Effects::DestroyWalls{})))
         return move;
       return destroyMove;
     } else
@@ -630,7 +635,7 @@ class Fighter : public Behaviour {
   FighterPosition getFighterPosition() {
     auto ret = FighterPosition::MELEE;
     for (auto spell : creature->getSpellMap().getAvailable(creature))
-      if (spell->getRange() > 0 && spell->getEffect().isType<Effect::Heal>())
+      if (spell->getRange() > 0 && spell->getEffect().effect->contains<Effects::Heal>())
         ret = FighterPosition::HEALER;
     else if (!creature->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).empty()
         && creature->getAttr(AttrType::RANGED_DAMAGE) >= creature->getAttr(AttrType::DAMAGE))
@@ -851,11 +856,12 @@ class Thief : public Behaviour {
   Thief(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
+    PROFILE;
     if (!creature->isAffected(LastingEffect::STEALING_SKILL))
       return NoMove;
     for (const Creature* other : creature->getVisibleEnemies()) {
       if (robbed.contains(other)) {
-        if (MoveInfo teleMove = tryEffect(Effect::Escape{}))
+        if (MoveInfo teleMove = tryEffect(EffectType(Effects::Escape{})))
           return teleMove;
         if (auto action = creature->moveAway(other->getPosition()))
         return {1.0, action};

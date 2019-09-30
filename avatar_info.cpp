@@ -12,6 +12,7 @@
 #include "gender.h"
 #include "creature_name.h"
 #include "name_generator.h"
+#include "special_trait.h"
 
 static TribeId getPlayerTribeId(TribeAlignment variant) {
   switch (variant) {
@@ -91,7 +92,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const PlayerCrea
   }
   ret->getName().setFirst(result->name);
   auto villains = creatureInfo.visit([](const auto& elem) { return elem.tribeAlignment;});
-  return AvatarInfo{std::move(ret), creatureInfo, villains };
+  return AvatarInfo{std::move(ret), std::move(creatureInfo), villains };
 }
 
 AvatarInfo getQuickGameAvatar(View* view, const PlayerCreaturesInfo* creatures, CreatureFactory* creatureFactory) {
@@ -99,7 +100,7 @@ AvatarInfo getQuickGameAvatar(View* view, const PlayerCreaturesInfo* creatures, 
   AvatarInfo ret;
   ret.playerCreature = creatureFactory->fromId(keeperCreatures[0].creatureId[0], TribeId::getDarkKeeper());
   ret.playerCreature->getName().setBare("Keeper");
-  ret.creatureInfo = keeperCreatures[0];
+  ret.creatureInfo = std::move(keeperCreatures[0]);
   ret.tribeAlignment = TribeAlignment::EVIL;
   return ret;
 }

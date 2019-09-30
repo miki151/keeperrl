@@ -35,7 +35,7 @@ void FurnitureEntry::handle(WFurniture f, Creature* c) {
       [&](Trap type) {
         auto position = c->getPosition();
         if (auto game = c->getGame()) // check in case the creature is placed here during level generation
-          if (game->getTribe(f->getTribe())->isEnemy(c)) {
+          if (game->getTribe(f->getTribe())->isEnemy(c) && !c->hasAlternativeViewId()) {
             if (type.invisible || !c->isAffected(LastingEffect::DISARM_TRAPS_SKILL)) {
               if (!type.invisible)
                 c->you(MsgType::TRIGGER_TRAP, "");

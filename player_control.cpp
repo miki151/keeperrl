@@ -91,6 +91,9 @@
 #include "content_factory.h"
 #include "tech_id.h"
 #include "pretty_printing.h"
+#include "game_save_type.h"
+#include "immigrant_info.h"
+#include "special_trait.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -1155,22 +1158,14 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
     }
     if (stack.collective)
       requirements.push_back("Requires conquering " + stack.collective->getName()->full);
-    ret.push_back(ImmigrantDataInfo {
-        requirements,
-        {},
-        {},
-        none,
-        c->getName().bare() + " (prisoner)",
-        c->getViewObject().id(),
-        AttributeInfo::fromCreature(c),
-        stack.creatures.size() == 1 ? none : optional<int>(stack.creatures.size()),
-        c->getTimeRemaining(LastingEffect::STUNNED),
-        index,
-        none,
-        none,
-        none,
-        none
-    });
+    ret.push_back(ImmigrantDataInfo());
+    ret.back().requirements = requirements;
+    ret.back().name = c->getName().bare() + " (prisoner)";
+    ret.back().viewId = c->getViewObject().id();
+    ret.back().attributes = AttributeInfo::fromCreature(c);
+    ret.back().count = stack.creatures.size() == 1 ? none : optional<int>(stack.creatures.size());
+    ret.back().timeLeft = c->getTimeRemaining(LastingEffect::STUNNED);
+    ret.back().id = index;
     --index;
   }
   return ret;
@@ -1217,22 +1212,20 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     for (auto trait : candidate.getInfo().getTraits())
       if (auto desc = getImmigrantDescription(trait))
         infoLines.push_back(desc);
-    info.immigration.push_back(ImmigrantDataInfo {
-        immigration.getMissingRequirements(candidate),
-        infoLines,
-        candidate.getSpecialTraits(),
-        getCostObj(candidate.getCost()),
-        name,
-        c->getViewObject().id(),
-        AttributeInfo::fromCreature(c),
-        count == 1 ? none : optional<int>(count),
-        timeRemaining,
-        elem.first,
-        none,
-        candidate.getCreatedTime(),
-        candidate.getInfo().getKeybinding(),
-        candidate.getInfo().getTutorialHighlight()
-    });
+    info.immigration.push_back(ImmigrantDataInfo());
+    info.immigration.back().requirements = immigration.getMissingRequirements(candidate);
+    info.immigration.back().info = infoLines;
+    info.immigration.back().specialTraits = candidate.getSpecialTraits();
+    info.immigration.back().cost = getCostObj(candidate.getCost());
+    info.immigration.back().name = name;
+    info.immigration.back().viewId = c->getViewObject().id();
+    info.immigration.back().attributes = AttributeInfo::fromCreature(c);
+    info.immigration.back().count = count == 1 ? none : optional<int>(count);
+    info.immigration.back().timeLeft = timeRemaining;
+    info.immigration.back().id = elem.first;
+    info.immigration.back().generatedTime = candidate.getCreatedTime();
+    info.immigration.back().keybinding = candidate.getInfo().getKeybinding();
+    info.immigration.back().tutorialHighlight = candidate.getInfo().getTutorialHighlight();
   }
   sort(info.immigration.begin(), info.immigration.end(),
       [](const ImmigrantDataInfo& i1, const ImmigrantDataInfo& i2) {
@@ -1308,32 +1301,22 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     for (auto trait : elem->getTraits())
       if (auto desc = getImmigrantDescription(trait))
         infoLines.push_back(desc);
-    info.allImmigration.push_back(ImmigrantDataInfo {
-        requirements,
-        infoLines,
-        {},
-        costObj,
-        c->getName().stack(),
-        c->getViewObject().id(),
-        AttributeInfo::fromCreature(c),
-        0,
-        none,
-        elem.index(),
-        collective->getImmigration().getAutoState(elem.index())
-    });
+    info.allImmigration.push_back(ImmigrantDataInfo());
+    info.allImmigration.back().requirements = requirements;
+    info.allImmigration.back().info = infoLines;
+    info.allImmigration.back().cost = costObj;
+    info.allImmigration.back().name = c->getName().stack();
+    info.allImmigration.back().viewId = c->getViewObject().id();
+    info.allImmigration.back().attributes = AttributeInfo::fromCreature(c);
+    info.allImmigration.back().id = elem.index();
+    info.allImmigration.back().autoState = collective->getImmigration().getAutoState(elem.index());
   }
-  info.allImmigration.push_back(ImmigrantDataInfo {
-      {"Requires 2 prison tiles", "Requires knocking out a hostile creature"},
-      {"Supplies your imp force", "Can be converted to your side using torture"},
-      {},
-      none,
-      "prisoner",
-      ViewId("prisoner"),
-      {},
-      0,
-      none,
-      -1,
-  });
+  info.allImmigration.push_back(ImmigrantDataInfo());
+  info.allImmigration.back().requirements = {"Requires 2 prison tiles", "Requires knocking out a hostile creature"};
+  info.allImmigration.back().info = {"Supplies your imp force", "Can be converted to your side using torture"};
+  info.allImmigration.back().name = "prisoner";
+  info.allImmigration.back().viewId = ViewId("prisoner");
+  info.allImmigration.back().id =-1;
 }
 
 static optional<CollectiveInfo::RebellionChance> getRebellionChance(double prob) {
@@ -1366,6 +1349,7 @@ void PlayerControl::fillDungeonLevel(AvatarLevelInfo& info) const {
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
+  gameInfo.takingScreenshot = takingScreenshot;
   fillCurrentLevelInfo(gameInfo);
   if (tutorial)
     tutorial->refreshInfo(getGame(), gameInfo.tutorial);
@@ -1893,6 +1877,38 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
   }
 }
 
+void PlayerControl::exitAction() {
+  enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
+#ifdef RELEASE
+  bool canRetire = !tutorial && getGame()->getPlayerCreatures().empty() && getGame()->gameWon();
+#else
+  bool canRetire = !tutorial && getGame()->getPlayerCreatures().empty();
+#endif
+  vector<ListElem> elems { "Save and exit the game",
+    {"Retire", canRetire ? ListElem::NORMAL : ListElem::INACTIVE} , "Change options", "Abandon the game" };
+  auto ind = getView()->chooseFromList("Would you like to:", elems);
+  if (!ind)
+    return;
+  switch (Action(*ind)) {
+    case RETIRE:
+      getView()->stopClock();
+      takingScreenshot = true;
+      break;
+    case SAVE:
+      getGame()->setExitInfo(GameSaveType::KEEPER);
+      break;
+    case ABANDON:
+      if (getView()->yesOrNoPrompt("Do you want to abandon your game? This is permanent and the save file will be removed!")) {
+        getGame()->setExitInfo(ExitAndQuit());
+        return;
+      }
+      break;
+    case OPTIONS:
+      getGame()->getOptions()->handle(getView(), OptionSet::GENERAL);
+      break;
+  }
+}
+
 void PlayerControl::processInput(View* view, UserInput input) {
   switch (input.getId()) {
     case UserInputId::MESSAGE_INFO:
@@ -2308,7 +2324,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       rectSelection = none;
       selection = NONE;
       break;
-    case UserInputId::EXIT: getGame()->exitAction(); return;
+    case UserInputId::EXIT: exitAction(); return;
     case UserInputId::IDLE: break;
     case UserInputId::DISMISS_NEXT_WAVE:
       if (auto& enemies = getModel()->getExternalEnemies())
@@ -2326,6 +2342,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::SCROLL_UP_STAIRS:
       scrollStairs(true);
+      break;
+    case UserInputId::TAKE_SCREENSHOT:
+      getView()->dungeonScreenshot(input.get<Vec2>());
+      getGame()->addEvent(EventInfo::RetiredGame{});
+      getGame()->setExitInfo(GameSaveType::RETIRED_SITE);
+      break;
+    case UserInputId::CANCEL_SCREENSHOT:
+      takingScreenshot = false;
       break;
     default:
       break;

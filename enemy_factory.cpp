@@ -21,33 +21,10 @@
 #include "game.h"
 #include "immigration.h"
 
-EnemyFactory::EnemyFactory(RandomGen& r, NameGenerator* n, map<EnemyId, EnemyInfo> enemies, vector<ExternalEnemy> externalEnemies)
-    : random(r), nameGenerator(n), enemies(std::move(enemies)), externalEnemies(std::move(externalEnemies)) {
-}
-
-EnemyInfo::EnemyInfo(SettlementInfo s, CollectiveConfig c, optional<VillageBehaviour> v,
-    optional<LevelConnection> l)
-  : settlement(s), config(c), behaviour(v), levelConnection(l) {
-}
-
-EnemyInfo& EnemyInfo::setVillainType(VillainType type) {
-  villainType = type;
-  return *this;
-}
-
-EnemyInfo& EnemyInfo::setId(EnemyId i) {
-  id = i;
-  return *this;
-}
-
-EnemyInfo& EnemyInfo::setImmigrants(vector<ImmigrantInfo> i) {
-  immigrants = std::move(i);
-  return *this;
-}
-
-EnemyInfo& EnemyInfo::setNonDiscoverable() {
-  discoverable = false;
-  return *this;
+EnemyFactory::EnemyFactory(RandomGen& r, NameGenerator* n, map<EnemyId, EnemyInfo> enemies, map<BuildingId, BuildingInfo> buildingInfo,
+    vector<ExternalEnemy> externalEnemies)
+  : random(r), nameGenerator(n), enemies(std::move(enemies)), buildingInfo(std::move(buildingInfo)),
+    externalEnemies(std::move(externalEnemies)) {
 }
 
 PCollective EnemyInfo::buildCollective(ContentFactory* contentFactory) const {
@@ -146,6 +123,7 @@ EnemyInfo EnemyFactory::get(EnemyId id) const {
       extra->enemyInfo = vector<EnemyInfo>(random.get(extra->numLevels), get(extra->enemy));
   }
   updateCreateOnBones(ret);
+  ret.settlement.buildingInfo = buildingInfo.at(ret.settlement.buildingId);
   if (ret.settlement.locationNameGen)
     ret.settlement.locationName = nameGenerator->getNext(*ret.settlement.locationNameGen);
   return ret;

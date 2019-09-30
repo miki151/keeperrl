@@ -46,6 +46,7 @@
 #include "navigation_flags.h"
 #include "storage_info.h"
 #include "content_factory.h"
+#include "creature_list.h"
 
 template <class Archive> 
 void Task::serialize(Archive& ar, const unsigned int version) {

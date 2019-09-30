@@ -11,6 +11,7 @@
 #include "game.h"
 #include "content_factory.h"
 #include "equipment.h"
+#include "item.h"
 
 void SpellMap::add(Spell spell, ExperienceType expType, int level) {
   for (auto& elem : elems)

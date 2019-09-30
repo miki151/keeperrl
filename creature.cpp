@@ -58,6 +58,7 @@
 #include "game_event.h"
 #include "spell_school.h"
 #include "content_factory.h"
+#include "health_type.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -83,6 +84,7 @@ Creature::Creature(const ViewObject& object, TribeId t, CreatureAttributes attr,
     obj->setGenericId(getUniqueId().getGenericId());
     obj->setModifier(ViewObject::Modifier::CREATURE);
   }
+  capture = attributes->isInstantPrisoner();
   //updateViewObject();
 }
 
@@ -649,8 +651,12 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
     setReason(item->getAName() + " can't be used together with a shield");
     return false;
   }
+  if (item->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON && getAttr(AttrType::RANGED_DAMAGE, false) == 0) {
+    setReason("You are not skilled in archery");
+    return false;
+  }
   if (item->getEquipmentSlot() == EquipmentSlot::SHIELD)
-    for (auto other : equipment->getSlotItems(EquipmentSlot::WEAPON))
+    for (auto other : equipment->getAllEquipped())
       if (other->getWeaponInfo().twoHanded) {
         setReason(item->getAName() + " can't be used together with a two-handed weapon");
         return false;
@@ -870,6 +876,11 @@ bool Creature::isAffected(LastingEffect effect) const {
     return attributes->isAffectedPermanently(effect);
 }
 
+bool Creature::isAffected(LastingEffect effect, GlobalTime time) const {
+  //PROFILE;
+  return attributes->isAffected(effect, time);
+}
+
 optional<TimeInterval> Creature::getTimeRemaining(LastingEffect effect) const {
   auto t = attributes->getTimeOut(effect);
   if (auto global = getGlobalTime())
@@ -946,11 +957,13 @@ bool Creature::isFriend(const Creature* c) const {
 }
 
 bool Creature::isEnemy(const Creature* c) const {
+  PROFILE;
   if (c == this)
     return false;
   auto result = getTribe()->isEnemy(c) || c->getTribe()->isEnemy(this) ||
     privateEnemies.contains(c) || c->privateEnemies.contains(this);
-  return LastingEffects::modifyIsEnemyResult(this, c, result);
+  auto time = getGlobalTime();
+  return (!time && result) || LastingEffects::modifyIsEnemyResult(this, c, *time, result);
 }
 
 vector<Item*> Creature::getGold(int num) const {
@@ -1230,8 +1243,11 @@ bool Creature::takeDamage(const Attack& attack) {
     }
   } else
     you(MsgType::GET_HIT_NODAMAGE);
-  for (auto& e : attack.effect)
+  for (auto& e : attack.effect) {
     e.apply(position, attack.attacker);
+    if (isDead())
+      break;
+  }
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       LastingEffects::afterCreatureDamage(this, effect);
@@ -1734,16 +1750,27 @@ bool Creature::canSeeOutsidePosition(const Creature* c) const {
   return LastingEffects::canSee(this, c);
 }
 
-bool Creature::canSeeInPosition(const Creature* c) const {
+bool Creature::canSeeInPositionIfNotBlind(const Creature* c, GlobalTime time) const {
   PROFILE;
-  if (!c->getPosition().isSameLevel(position))
-    return false;
-  return !isAffected(LastingEffect::BLIND) && (!c->isAffected(LastingEffect::INVISIBLE) || isFriend(c)) &&
+  return (!c->isAffected(LastingEffect::INVISIBLE, time) || isFriend(c)) &&
       (!c->isHidden() || c->knowsHiding(this));
 }
 
+bool Creature::canSeeInPosition(const Creature* c, GlobalTime time) const {
+  return !isAffected(LastingEffect::BLIND) && canSeeInPositionIfNotBlind(c, time);
+}
+
+bool Creature::canSeeIfNotBlind(const Creature* c, GlobalTime time) const {
+  PROFILE;
+  return (canSeeInPositionIfNotBlind(c, time) &&
+          getLevel()->canSee(position.getCoord(), c->position.getCoord(), c->getVision())) ||
+      canSeeOutsidePosition(c);
+}
+
 bool Creature::canSee(const Creature* c) const {
-  return (canSeeInPosition(c) && c->getPosition().isVisibleBy(this)) || canSeeOutsidePosition(c);
+  PROFILE;
+  auto time = getGlobalTime();
+  return time && ((canSeeInPosition(c, *time) && c->getPosition().isVisibleBy(this)) || canSeeOutsidePosition(c));
 }
 
 bool Creature::canSee(Position pos) const {
@@ -1781,7 +1808,7 @@ TribeSet Creature::getFriendlyTribes() const {
 
 MovementType Creature::getMovementType() const {
   PROFILE;
-  return MovementType(getFriendlyTribes(), {
+  return MovementType(hasAlternativeViewId() ? TribeSet::getFull() : getFriendlyTribes(), {
       true,
       isAffected(LastingEffect::FLYING),
       isAffected(LastingEffect::SWIMMING_SKILL),
@@ -1941,10 +1968,11 @@ Creature::MoveId Creature::getCurrentMoveId() const {
 }
 
 const vector<Creature*>& Creature::getVisibleEnemies() const {
+  PROFILE;
   auto get = [&] {
     vector<Creature*> ret;
-    for (Creature* c : position.getAllCreatures(FieldOfView::sightRange))
-      if ((canSee(c) || isUnknownAttacker(c)) && isEnemy(c)) {
+    for (Creature* c : getVisibleCreatures())
+      if (isEnemy(c)) {
         ret.push_back(c);
       }
     return ret;
@@ -1956,12 +1984,21 @@ const vector<Creature*>& Creature::getVisibleEnemies() const {
 }
 
 const vector<Creature*>& Creature::getVisibleCreatures() const {
+  PROFILE;
   auto get = [&] {
     vector<Creature*> ret;
-    for (Creature* c : position.getAllCreatures(FieldOfView::sightRange))
-      if (canSee(c) || isUnknownAttacker(c)) {
-        ret.push_back(c);
-      }
+    if (!getGlobalTime())
+      return ret;
+    auto globalTime = *getGlobalTime();
+    if (isAffected(LastingEffect::BLIND)) {
+      for (Creature* c : position.getAllCreatures(FieldOfView::sightRange))
+        if (canSeeOutsidePosition(c) || isUnknownAttacker(c))
+          ret.push_back(c);
+    } else
+      for (Creature* c : position.getAllCreatures(FieldOfView::sightRange))
+        if (canSeeIfNotBlind(c, globalTime) || isUnknownAttacker(c)) {
+          ret.push_back(c);
+        }
     return ret;
   };
   auto currentMoveId = getCurrentMoveId();
@@ -2066,7 +2103,8 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
 
 void Creature::addCombatIntent(Creature* attacker, bool immediateAttack) {
   lastCombatIntent = CombatIntentInfo{attacker, *getGlobalTime()};
-  if (immediateAttack)
+  if (immediateAttack && (!attacker->isAffected(LastingEffect::INSANITY) ||
+      attacker->getAttributes().isAffectedPermanently(LastingEffect::INSANITY)))
     privateEnemies.insert(attacker);
 }
 

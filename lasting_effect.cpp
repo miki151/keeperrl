@@ -14,6 +14,7 @@
 #include "vision.h"
 #include "collective.h"
 #include "territory.h"
+#include "health_type.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
@@ -541,6 +542,13 @@ int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
         value += attrBonus;
       if (c->isAffected(LastingEffect::DAM_BONUS))
         value += attrBonus;
+      if (c->hasAlternativeViewId() && c->isAffected(LastingEffect::SPYING))
+        value -= 99;
+      break;
+    case AttrType::RANGED_DAMAGE:
+    case AttrType::SPELL_DAMAGE:
+      if (c->hasAlternativeViewId() && c->isAffected(LastingEffect::SPYING))
+        value -= 99;
       break;
     case AttrType::DEFENSE:
       if (c->isAffected(LastingEffect::PANIC))
@@ -748,7 +756,9 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
     case LastingEffect::SPYING: {
       auto enemyId = [&] ()->optional<ViewId> {
         for (WCollective col : c->getPosition().getModel()->getCollectives())
-          if (col->getTerritory().contains(c->getPosition()) && col->getTribe()->isEnemy(c) && !col->getCreatures().empty())
+          if ((col->getTerritory().contains(c->getPosition()) ||
+                 col->getTerritory().getStandardExtended().contains(c->getPosition())) &&
+              col->getTribe()->isEnemy(c) && !col->getCreatures().empty())
             return Random.choose(col->getCreatures())->getViewObject().id();
         return none;
       }();
@@ -784,8 +794,11 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         bool canDie = sample >= 9000 && !c->getStatus().contains(CreatureStatus::LEADER);
         for (auto pos : c->getPosition().neighbors8())
           if (auto other = pos.getCreature())
-            if (Random.roll(10))
-              Effect::Lasting{LastingEffect::PLAGUE}.applyToCreature(other, nullptr);
+            if (Random.roll(10)) {
+              if (c->addEffect(LastingEffect::PLAGUE, getDuration(c, LastingEffect::PLAGUE)))
+                if (auto fx = LastingEffects::getApplicationFX(LastingEffect::PLAGUE))
+                  c->addFX(*fx);
+            }
         if (suffers) {
           if (c->getBody().getHealth() > 0.5 || canDie) {
             if (Random.roll(10)) {
@@ -1060,20 +1073,20 @@ string LastingEffects::getDescription(LastingEffect type) {
 }
 
 bool LastingEffects::canSee(const Creature* c1, const Creature* c2) {
-  PROFILE;
+  PROFILE_BLOCK("LastingEffects::canSee");
   return c1->getPosition().dist8(c2->getPosition()).value_or(5) < 5 && c2->getBody().hasBrain() &&
       c1->isAffected(LastingEffect::TELEPATHY);
 }
 
-bool LastingEffects::modifyIsEnemyResult(const Creature* c, const Creature* other, bool result) {
+bool LastingEffects::modifyIsEnemyResult(const Creature* c, const Creature* other, GlobalTime time, bool result) {
   PROFILE;
-  if (c->isAffected(LastingEffect::PEACEFULNESS) ||
-      other->isAffected(LastingEffect::SPYING) || c->isAffected(LastingEffect::SPYING))
+  if (c->isAffected(LastingEffect::PEACEFULNESS, time) ||
+      other->isAffected(LastingEffect::SPYING, time) || (c->isAffected(LastingEffect::SPYING, time) && c->hasAlternativeViewId()))
     return false;
-  if (c->isAffected(LastingEffect::INSANITY) && !other->getStatus().contains(CreatureStatus::LEADER))
+  if (c->isAffected(LastingEffect::INSANITY, time) && !other->getStatus().contains(CreatureStatus::LEADER))
     return true;
   if (auto effect = other->getAttributes().getHatedByEffect())
-    if (c->isAffected(*effect))
+    if (c->isAffected(*effect, time))
       return true;
   return result;
 }
@@ -1303,6 +1316,7 @@ optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
 
 bool LastingEffects::canProlong(LastingEffect effect) {
   switch (effect) {
+    case LastingEffect::PLAGUE:
     case LastingEffect::ON_FIRE:
       return false;
     default:
@@ -1401,4 +1415,70 @@ AttrType LastingEffects::modifyMeleeDamageAttr(const Creature* attacker, AttrTyp
   if (attacker->isAffected(LastingEffect::SPELL_DAMAGE) && type == AttrType::DAMAGE)
     return AttrType::SPELL_DAMAGE;
   return type;
+}
+
+static TimeInterval entangledTime(int strength) {
+  return TimeInterval(max(5, 30 - strength / 2));
+}
+
+TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
+  switch (e) {
+    case LastingEffect::PLAGUE: return 1500_visible;
+    case LastingEffect::SUMMONED: return 900_visible;
+    case LastingEffect::PREGNANT: return 900_visible;
+    case LastingEffect::NIGHT_VISION:
+    case LastingEffect::ELF_VISION: return  60_visible;
+    case LastingEffect::TIED_UP:
+    case LastingEffect::WARNING:
+    case LastingEffect::REGENERATION:
+    case LastingEffect::TELEPATHY:
+    case LastingEffect::BLEEDING: return  50_visible;
+    case LastingEffect::ENTANGLED: return entangledTime(c->getAttr(AttrType::DAMAGE));
+    case LastingEffect::HALLU:
+    case LastingEffect::SLOWED:
+    case LastingEffect::SPEED:
+    case LastingEffect::RAGE:
+    case LastingEffect::LIGHT_SOURCE:
+    case LastingEffect::DARKNESS_SOURCE:
+    case LastingEffect::PANIC: return  15_visible;
+    case LastingEffect::POISON: return  60_visible;
+    case LastingEffect::DEF_BONUS:
+    case LastingEffect::DAM_BONUS: return  40_visible;
+    case LastingEffect::BLIND: return  15_visible;
+    case LastingEffect::INVISIBLE: return  15_visible;
+    case LastingEffect::FROZEN:
+    case LastingEffect::STUNNED: return  7_visible;
+    case LastingEffect::SLEEP_RESISTANT:
+    case LastingEffect::FIRE_RESISTANT:
+    case LastingEffect::POISON_RESISTANT: return  60_visible;
+    case LastingEffect::FLYING: return  60_visible;
+    case LastingEffect::COLLAPSED: return  2_visible;
+    case LastingEffect::FAST_CRAFTING:
+    case LastingEffect::FAST_TRAINING:
+    case LastingEffect::SLOW_CRAFTING:
+    case LastingEffect::SLOW_TRAINING:
+    case LastingEffect::SLEEP: return  200_visible;
+    case LastingEffect::PEACEFULNESS:
+    case LastingEffect::INSANITY: return  20_visible;
+    case LastingEffect::MAGIC_VULNERABILITY:
+    case LastingEffect::MELEE_VULNERABILITY:
+    case LastingEffect::RANGED_VULNERABILITY:
+    case LastingEffect::MAGIC_CANCELLATION:
+    case LastingEffect::MAGIC_RESISTANCE:
+    case LastingEffect::MELEE_RESISTANCE:
+    case LastingEffect::RANGED_RESISTANCE:
+    case LastingEffect::SUNLIGHT_VULNERABLE:
+      return  25_visible;
+    case LastingEffect::SATIATED:
+      return  500_visible;
+    case LastingEffect::RESTED:
+    case LastingEffect::HATE_UNDEAD:
+    case LastingEffect::HATE_DWARVES:
+    case LastingEffect::HATE_HUMANS:
+    case LastingEffect::HATE_GREENSKINS:
+    case LastingEffect::HATE_ELVES:
+    case LastingEffect::SPYING:
+    default:
+      return  1000_visible;
+  }
 }

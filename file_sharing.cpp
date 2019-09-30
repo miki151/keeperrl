@@ -637,6 +637,9 @@ optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const stri
   info.folder = string(path.absolute().getPath());
   info.metadata = serializeInfo(path.getFileName(), savedInfo);
   info.visibility = SteamItemVisibility::public_;
+  auto screenshot = DirectoryPath::current().file(retiredScreenshotFilename);
+  if (screenshot.exists())
+    info.previewFile = string(screenshot.absolute().getPath());
   ugc.beginUpdateItem(info);
 
   // Item update may take some time; Should we loop indefinitely?

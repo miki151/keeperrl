@@ -18,6 +18,8 @@
 #include "attack_behaviour.h"
 #include "tech_id.h"
 #include "enemy_info.h"
+#include "effect_type.h"
+#include "item_types.h"
 
 namespace cereal {
   namespace variant_detail {
@@ -71,13 +73,13 @@ namespace cereal {
   INST2(SpecialTrait_impl)
   INST2(BuildInfo::BuildType_impl)
   INST(TechId, int)
-  INST2(ItemType::Type_impl)
+  INST2(ItemTypes::ItemTypeVariant_impl)
   INST2(ImmigrantRequirement_impl)
   INST2(SpawnLocation_impl)
   INST2(AttractionType_impl)
   INST2(ItemPrefix_impl)
   INST2(FurnitureEntry::EntryData_impl)
-  INST2(Effect::EffectType_impl)
+  INST2(Effects::EffectType_impl)
   INST2(Campaign::SiteInfo::Dweller)
   INST2(ZLevelType_impl)
   INST2(AttackTrigger_impl)

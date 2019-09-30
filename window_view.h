@@ -107,6 +107,7 @@ class WindowView: public View {
   virtual optional<ModAction> getModAction(int highlighted, const vector<ModInfo>&) override;
   virtual void logMessage(const string&) override;
   virtual void setBugReportSaveCallback(BugReportSaveCallback) override;
+  virtual void dungeonScreenshot(Vec2 size) override;
 
   private:
 

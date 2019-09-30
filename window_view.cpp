@@ -65,18 +65,22 @@ constexpr int bottomBarHeightCollective = 66;
 constexpr int bottomBarHeightPlayer = 66;
 
 Rectangle WindowView::getMapGuiBounds() const {
-  switch (gameInfo.infoType) {
-    case GameInfo::InfoType::PLAYER:
-      return Rectangle(Vec2(rightBarWidthPlayer, 0), renderer.getSize() - Vec2(0, bottomBarHeightPlayer));
-    case GameInfo::InfoType::BAND:
-      return Rectangle(Vec2(rightBarWidthCollective, 0), renderer.getSize() - Vec2(0, bottomBarHeightCollective));
-    case GameInfo::InfoType::SPECTATOR: {
-      Vec2 levelSize = Level::getSplashVisibleBounds().getSize();
-      return Rectangle(
-          (renderer.getSize() - levelSize.mult(mapLayout->getSquareSize())) / 2,
-          (renderer.getSize() + levelSize.mult(mapLayout->getSquareSize())) / 2);
-      }
-  }
+  auto type = gameInfo.infoType;
+  if (gameInfo.takingScreenshot)
+    return Rectangle(renderer.getSize());
+  else
+    switch (type) {
+      case GameInfo::InfoType::PLAYER:
+        return Rectangle(Vec2(rightBarWidthPlayer, 0), renderer.getSize() - Vec2(0, bottomBarHeightPlayer));
+      case GameInfo::InfoType::BAND:
+        return Rectangle(Vec2(rightBarWidthCollective, 0), renderer.getSize() - Vec2(0, bottomBarHeightCollective));
+      case GameInfo::InfoType::SPECTATOR: {
+        Vec2 levelSize = Level::getSplashVisibleBounds().getSize();
+        return Rectangle(
+            (renderer.getSize() - levelSize.mult(mapLayout->getSquareSize())) / 2,
+            (renderer.getSize() + levelSize.mult(mapLayout->getSquareSize())) / 2);
+        }
+    }
 }
 
 int WindowView::getMinimapWidth() const {
@@ -388,41 +392,47 @@ void WindowView::rebuildGui() {
   }
   tempGuiElems.push_back(gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)));
   tempGuiElems.back()->setBounds(getMapGuiBounds());
-  switch (gameInfo.infoType) {
-    case GameInfo::InfoType::SPECTATOR:
-        right = gui.empty();
-        bottom = gui.empty();
-        rightBarWidth = 0;
-        bottomBarHeight = 0;
-        if (getMapGuiBounds().left() > 0) {
-          tempGuiElems.push_back(gui.rectangle(Color::BLACK));
-          tempGuiElems.back()->setBounds(Rectangle(0, 0, getMapGuiBounds().left(), renderer.getSize().y));
-          tempGuiElems.push_back(gui.rectangle(Color::BLACK));
-          tempGuiElems.back()->setBounds(Rectangle(Vec2(getMapGuiBounds().right(), 0), renderer.getSize()));
-        }
-        if (getMapGuiBounds().top() > 0) {
-          tempGuiElems.push_back(gui.rectangle(Color::BLACK));
-          tempGuiElems.back()->setBounds(Rectangle(0, 0, renderer.getSize().x, getMapGuiBounds().top()));
-          tempGuiElems.push_back(gui.rectangle(Color::BLACK));
-          tempGuiElems.back()->setBounds(Rectangle(Vec2(0, getMapGuiBounds().bottom()), renderer.getSize()));
-        }
-        break;
-    case GameInfo::InfoType::PLAYER:
-        right = guiBuilder.drawRightPlayerInfo(*gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>());
-        bottom = guiBuilder.drawBottomPlayerInfo(gameInfo);
-        rightBarWidth = rightBarWidthPlayer;
-        bottomBarHeight = bottomBarHeightPlayer;
-        break;
-    case GameInfo::InfoType::BAND:
-        right = guiBuilder.drawRightBandInfo(gameInfo);
-        bottom = guiBuilder.drawBottomBandInfo(gameInfo);
-        rightBarWidth = rightBarWidthCollective;
-        bottomBarHeight = bottomBarHeightCollective;
-        topBarHeight = 85;
-        break;
-  }
+  if (gameInfo.takingScreenshot) {
+    right = gui.empty();
+    bottom = gui.empty();
+    rightBarWidth = 0;
+    bottomBarHeight = 0;
+  } else
+    switch (gameInfo.infoType) {
+      case GameInfo::InfoType::SPECTATOR:
+          right = gui.empty();
+          bottom = gui.empty();
+          rightBarWidth = 0;
+          bottomBarHeight = 0;
+          if (getMapGuiBounds().left() > 0) {
+            tempGuiElems.push_back(gui.rectangle(Color::BLACK));
+            tempGuiElems.back()->setBounds(Rectangle(0, 0, getMapGuiBounds().left(), renderer.getSize().y));
+            tempGuiElems.push_back(gui.rectangle(Color::BLACK));
+            tempGuiElems.back()->setBounds(Rectangle(Vec2(getMapGuiBounds().right(), 0), renderer.getSize()));
+          }
+          if (getMapGuiBounds().top() > 0) {
+            tempGuiElems.push_back(gui.rectangle(Color::BLACK));
+            tempGuiElems.back()->setBounds(Rectangle(0, 0, renderer.getSize().x, getMapGuiBounds().top()));
+            tempGuiElems.push_back(gui.rectangle(Color::BLACK));
+            tempGuiElems.back()->setBounds(Rectangle(Vec2(0, getMapGuiBounds().bottom()), renderer.getSize()));
+          }
+          break;
+      case GameInfo::InfoType::PLAYER:
+          right = guiBuilder.drawRightPlayerInfo(*gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>());
+          bottom = guiBuilder.drawBottomPlayerInfo(gameInfo);
+          rightBarWidth = rightBarWidthPlayer;
+          bottomBarHeight = bottomBarHeightPlayer;
+          break;
+      case GameInfo::InfoType::BAND:
+          right = guiBuilder.drawRightBandInfo(gameInfo);
+          bottom = guiBuilder.drawBottomBandInfo(gameInfo);
+          rightBarWidth = rightBarWidthCollective;
+          bottomBarHeight = bottomBarHeightCollective;
+          topBarHeight = 85;
+          break;
+    }
   guiBuilder.drawOverlays(overlays, gameInfo);
-  if (rightBarWidth > 0) {
+  if (gameInfo.infoType != GameInfo::InfoType::SPECTATOR) {
     overlays.push_back({guiBuilder.drawMessages(gameInfo.messageBuffer, renderer.getSize().x - rightBarWidth),
                        GuiBuilder::OverlayInfo::MESSAGES});
     for (auto& overlay : overlays)
@@ -436,8 +446,10 @@ void WindowView::rebuildGui() {
             tempGuiElems.back()->setBounds(Rectangle(pos, pos + Vec2(*width, *height)));
           }
       }
-    tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight, topBarHeight));
-    tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
+    if (!gameInfo.takingScreenshot) {
+      tempGuiElems.push_back(gui.mainDecoration(rightBarWidth, bottomBarHeight, topBarHeight));
+      tempGuiElems.back()->setBounds(Rectangle(renderer.getSize()));
+    }
     tempGuiElems.push_back(gui.margins(std::move(right), 20, 20, 10, 0));
     tempGuiElems.back()->setBounds(Rectangle(Vec2(0, 0),
           Vec2(rightBarWidth, renderer.getSize().y - rightBottomMargin)));
@@ -487,6 +499,8 @@ Vec2 WindowView::getOverlayPosition(GuiBuilder::OverlayInfo::Alignment alignment
           renderer.getSize().y - bottomBarHeight - height);
     case GuiBuilder::OverlayInfo::MAP_HINT:
       return Vec2(renderer.getSize().x - width, renderer.getSize().y - bottomBarHeight - height);
+    case GuiBuilder::OverlayInfo::CENTER:
+      return (renderer.getSize() - Vec2(width, height)) / 2;
   }
 }
 
@@ -1223,6 +1237,13 @@ void WindowView::setBugReportSaveCallback(BugReportSaveCallback f) {
   bugReportSaveCallback = f;
 }
 
+void WindowView::dungeonScreenshot(Vec2 size) {
+  mapGui->render(renderer);
+  renderer.drawAndClearBuffer();
+  renderer.makeScreenshot(DirectoryPath::current().file(retiredScreenshotFilename),
+      Rectangle((renderer.getSize() - size) / 2, (renderer.getSize() + size) / 2));
+}
+
 bool WindowView::considerBugReportEvent(Event& event) {
   if (event.type == SDL::SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT &&
       Vec2(event.button.x, event.button.y).inRectangle(getBugReportPos(renderer))) {
@@ -1253,8 +1274,8 @@ bool WindowView::considerBugReportEvent(Event& event) {
         bugReportSaveCallback(*savefile);
       }
       if (bugreportInfo->includeScreenshot) {
-        screenshot = bugreportDir.file("bugreport.bmp.gz");
-        renderer.makeScreenshot(*screenshot);
+        screenshot = bugreportDir.file("bugreport.png");
+        renderer.makeScreenshot(*screenshot, Rectangle(renderer.getSize()));
       }
       if (!savefile && !screenshot && bugreportInfo->text.size() < 5)
         return true;

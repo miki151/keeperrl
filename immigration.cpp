@@ -25,6 +25,8 @@
 #include "player_control.h"
 #include "view_object.h"
 #include "content_factory.h"
+#include "immigrant_info.h"
+#include "special_trait.h"
 
 template <class Archive>
 void Immigration::serialize(Archive& ar, const unsigned int) {
@@ -258,7 +260,10 @@ double Immigration::getImmigrantChance(const Group& group) const {
 }
 
 Immigration::Immigration(WCollective c, vector<ImmigrantInfo> immigrants)
-    : collective(c), candidateTimeout(c->getConfig().getImmigrantTimeout()), immigrants(std::move(immigrants)) {
+  : collective(c), candidateTimeout(c->getConfig().getImmigrantTimeout()), immigrants(std::move(immigrants)) {
+}
+
+Immigration::~Immigration() {
 }
 
 map<int, std::reference_wrapper<const Immigration::Available>> Immigration::getAvailable() const {

@@ -1129,5 +1129,9 @@ string toPercentage(double v) {
 }
 
 void openUrl(const string& url) {
+#if defined(WINDOWS) || defined(OSX)
+  system(("cmd /c start " + url).data());
+#else
   system(("xdg-open " + url).data());
+#endif
 }

@@ -1,11 +1,8 @@
-{"Welcome to KeeperRL Alpha 28 hotfix 1! This patch was released on July 4th, 2019.
-  
-A lot of changes have arrived with this update. Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
+{"Welcome to KeeperRL Alpha 29 testing! This patch was released on September 30th, 2019.
 
-The \"campaign\", \"free play\" and \"endless\" game modes have been merged into one. There is a new setting that allows you to turn on endless enemy waves to start at the beginning of the game or after you win (by default it's set to the latter). Make sure to switch it if you'd like to have the previous \"endless\" experience! You'll find it in the \"Customize\" options in the campaign menu.
+This unofficial build is intended for testing purposes, and is released for experienced players who want to get an early glimpse of Alpha 29, and are ready to help with fixing the remaining issues.
 
-KeeperRL allows sharing mods from within the game. Make sure to explore them and get in touch if you'd like to get into modding!
-
-If this is your first time playing KeeperRL, remember to start with the tutorial!"}
+If you are a new player, it is strongly recommended that you go back to Alpha 28, until Alpha 29 is officially released.
+"}
 {
 }

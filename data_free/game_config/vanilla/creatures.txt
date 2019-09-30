@@ -2512,6 +2512,7 @@
               victimEffect = {1.0 Lasting POISON} } }
         }
       }
+      gender = FEMALE
       name = {
         name = "ant queen"
       }

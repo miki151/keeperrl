@@ -384,6 +384,10 @@ void Game::tick(GlobalTime time) {
   }
 }
 
+void Game::setExitInfo(ExitInfo info) {
+  exitInfo = std::move(info);
+}
+
 void Game::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
 #ifdef RELEASE

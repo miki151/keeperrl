@@ -76,7 +76,7 @@ class GuiBuilder {
 
   struct OverlayInfo {
     SGuiElem elem;
-    enum Alignment { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, MINIONS, IMMIGRATION, VILLAINS, TUTORIAL, MAP_HINT } alignment;
+    enum Alignment { LEFT, TOP_LEFT, BOTTOM_LEFT, MESSAGES, GAME_SPEED, MINIONS, IMMIGRATION, VILLAINS, TUTORIAL, MAP_HINT, CENTER } alignment;
   };
   SGuiElem drawPlayerOverlay(const PlayerInfo&);
   void drawOverlays(vector<OverlayInfo>&, GameInfo&);
@@ -302,7 +302,8 @@ class GuiBuilder {
   SGuiElem drawCreatureList(const vector<CreatureInfo>&, function<void(UniqueEntity<Creature>::Id)> button);
   Color getElemColor(ListElem::ElemMod);
   SGuiElem drawAvatarsForRole(const vector<View::AvatarData>&, shared_ptr<int> avatarPage, shared_ptr<int> chosenAvatar,
-      shared_ptr<int> gender, shared_ptr<PlayerRole> chosenRole);
+                              shared_ptr<int> gender, shared_ptr<PlayerRole> chosenRole);
+  SGuiElem drawScreenshotOverlay();
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

@@ -43,6 +43,7 @@
 #include "avatar_menu_option.h"
 #include "view_object_action.h"
 #include "mod_info.h"
+#include "special_trait.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -2205,7 +2206,7 @@ SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo& info, const option
           gui.margins(gui.sprite(GuiFactory::TexId::VERT_BAR_MINI, GuiFactory::Alignment::LEFT),
             0, -15, 0, -15)), minionListWidth),
       gui.leftMargin(minionListWidth + 20, std::move(minionPage)));
-  return gui.preferredSize(600 + minionListWidth, 600,
+  return gui.preferredSize(640 + minionListWidth, 600,
       gui.miniWindow(gui.stack(
       gui.keyHandler(getButtonCallback({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}),
         {gui.getKey(SDL::SDLK_ESCAPE)}, true),
@@ -2378,7 +2379,33 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
   return gui.stack(allElems);
 }
 
+SGuiElem GuiBuilder::drawScreenshotOverlay() {
+  const int width = 600;
+  const int height = 360;
+  const int margin = 20;
+  return gui.preferredSize(width, height, gui.stack(
+      gui.keyHandler(getButtonCallback(UserInputId::CANCEL_SCREENSHOT), {gui.getKey(SDL::SDLK_ESCAPE)}, true),
+      gui.rectangle(Color::TRANSPARENT, Color::LIGHT_GRAY),
+      gui.translate(gui.centerHoriz(gui.miniWindow(gui.margins(gui.getListBuilder(legendLineHeight)
+              .addElem(gui.labelMultiLineWidth("Your dungeon will be shared in Steam Workshop with an attached screenshot. "
+                  "Steer the rectangle below to a particularly pretty or representative area of your dungeon and confirm.",
+                  legendLineHeight, width - 2 * margin), legendLineHeight * 4)
+              .addElem(gui.centerHoriz(gui.getListBuilder()
+                  .addElemAuto(gui.buttonLabel("Confirm", getButtonCallback({UserInputId::TAKE_SCREENSHOT, Vec2(width, height)})))
+                  .addSpace(15)
+                  .addElemAuto(gui.buttonLabel("Cancel", getButtonCallback(UserInputId::CANCEL_SCREENSHOT)))
+                  .buildHorizontalList()))
+              .buildVerticalList(), margin))),
+          Vec2(0, -legendLineHeight * 6), Vec2(width, legendLineHeight * 6))
+  ));
+}
+
 void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
+  if (info.takingScreenshot) {
+    ret.push_back({cache->get(bindMethod(&GuiBuilder::drawScreenshotOverlay, this), THIS_LINE),
+        OverlayInfo::CENTER});
+    return;
+  }
   if (info.tutorial)
     ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTutorialOverlay, this), THIS_LINE,
          *info.tutorial), OverlayInfo::TUTORIAL});
@@ -2773,6 +2800,7 @@ static string getTaskText(MinionActivity option) {
     case MinionActivity::ARCHERY: return "Archery range";
     case MinionActivity::CRAFT: return "Crafting";
     case MinionActivity::STUDY: return "Studying";
+    case MinionActivity::POETRY: return "Poetry";
     case MinionActivity::COPULATE: return "Copulating";
     case MinionActivity::SPIDER: return "Spinning webs";
     case MinionActivity::THRONE: return "Throne";

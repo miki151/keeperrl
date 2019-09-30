@@ -33,6 +33,7 @@ class MoveInfo;
 
 class Spell {
   public:
+  STRUCT_DECLARATIONS(Spell)
   const string& getSymbol() const;
   const Effect& getEffect() const;
   int getCooldown() const;

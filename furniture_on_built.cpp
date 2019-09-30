@@ -19,10 +19,12 @@
 #include "game_config.h"
 #include "resource_counts.h"
 #include "content_factory.h"
+#include "attack_trigger.h"
+#include "external_enemies.h"
 
 static EnemyInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
   auto enemy = EnemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
-      contentFactory->externalEnemies).get(id);
+      contentFactory->buildingInfo, contentFactory->externalEnemies).get(id);
   enemy.settlement.collective = new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
   return enemy;
 }

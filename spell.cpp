@@ -16,9 +16,11 @@
 #include "game_event.h"
 #include "view_id.h"
 #include "move_info.h"
+#include "fx_name.h"
 
 SERIALIZE_DEF(Spell, NAMED(id), NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf))
 SERIALIZATION_CONSTRUCTOR_IMPL(Spell)
+STRUCT_IMPL(Spell)
 
 const string& Spell::getSymbol() const {
   return symbol;
@@ -61,52 +63,18 @@ void Spell::addMessage(Creature* c) const {
   }
 }
 
-static optional<FXInfo> getProjectileFX(LastingEffect effect) {
-  switch (effect) {
-    default:
-      return none;
-  }
-}
-
-static optional<FXInfo> getProjectileFX(const Effect& effect) {
-  return effect.visit(
-      [&](const auto&) -> optional<FXInfo> { return none; },
-      [&](const Effect::Lasting& e) -> optional<FXInfo> { return getProjectileFX(e.lastingEffect); },
-      [&](const Effect::Damage&) -> optional<FXInfo> { return {FXName::MAGIC_MISSILE}; },
-      [&](const Effect::Blast&) -> optional<FXInfo> { return {FXName::AIR_BLAST}; },
-      [&](const Effect::Pull&) -> optional<FXInfo> { return FXInfo{FXName::AIR_BLAST}.setReversed(); }
-  );
-}
-
-static optional<ViewId> getProjectile(LastingEffect effect) {
-  switch (effect) {
-    default:
-      return none;
-  }
-}
-
-static optional<ViewId> getProjectile(const Effect& effect) {
-  return effect.visit(
-      [&](const auto&) -> optional<ViewId> { return none; },
-      [&](const Effect::Lasting& e) -> optional<ViewId> { return getProjectile(e.lastingEffect); },
-      [&](const Effect::Damage&) -> optional<ViewId> { return ViewId("force_bolt"); },
-      [&](const Effect::Fire&) -> optional<ViewId> { return ViewId("fireball"); },
-      [&](const Effect::Blast&) -> optional<ViewId> { return ViewId("air_blast"); }
-  );
-}
-
 void Spell::apply(Creature* c, Position target) const {
   if (target == c->getPosition()) {
     if (canTargetSelf())
       effect->apply(target, c);
     return;
   }
-  auto thisFx = getProjectileFX(*effect);
+  auto thisFx = effect->getProjectileFX();
   if (fx)
     thisFx = FXInfo{*fx};
   if (endOnly) {
     c->getGame()->addEvent(
-        EventInfo::Projectile{std::move(thisFx), getProjectile(*effect), c->getPosition(), target, none});
+        EventInfo::Projectile{std::move(thisFx), effect->getProjectile(), c->getPosition(), target, none});
     effect->apply(target, c);
     return;
   }
@@ -119,7 +87,7 @@ void Spell::apply(Creature* c, Position target) const {
         break;
     }
   c->getGame()->addEvent(
-      EventInfo::Projectile{std::move(thisFx), getProjectile(*effect), c->getPosition(), trajectory.back(), none});
+      EventInfo::Projectile{std::move(thisFx), effect->getProjectile(), c->getPosition(), trajectory.back(), none});
   for (auto& pos : trajectory)
     effect->apply(pos, c);
 }
@@ -155,7 +123,7 @@ bool Spell::checkTrajectory(const Creature* c, Position to) const {
 MoveInfo Spell::getAIMove(const Creature* c) const {
   if (c->isReady(this))
     for (auto pos : c->getPosition().getRectangle(Rectangle::centered(range)))
-      if (canTargetSelf() || (c->canSee(pos) && pos != c->getPosition() && checkTrajectory(c, pos)))
+      if ((pos == c->getPosition() && canTargetSelf()) || (c->canSee(pos) && pos != c->getPosition() && checkTrajectory(c, pos)))
         if (effect->shouldAIApply(c, pos) == EffectAIIntent::WANTED)
           return c->castSpell(this, pos);
   return NoMove;

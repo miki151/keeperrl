@@ -50,6 +50,8 @@
 #include "game_event.h"
 #include "game_config.h"
 #include "creature_inventory.h"
+#include "effect_type.h"
+#include "item_types.h"
 
 SERIALIZE_DEF(CreatureFactory, nameGenerator, attributes, inventory, spellSchools, spells)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)
@@ -598,12 +600,12 @@ static string getSpeciesName(bool humanoid, bool large, bool living, bool wings)
 static optional<ItemType> getSpecialBeastAttack(bool large, bool living, bool wings) {
   static vector<optional<ItemType>> attacks {
     ItemType(ItemType::fangs(7)),
-    ItemType(ItemType::fangs(7, VictimEffect{0.7, Effect::Fire{}})),
-    ItemType(ItemType::fangs(7, VictimEffect{0.7, Effect::Fire{}})),
+    ItemType(ItemType::fangs(7, VictimEffect{0.7, EffectType(Effects::Fire{})})),
+    ItemType(ItemType::fangs(7, VictimEffect{0.7, EffectType(Effects::Fire{})})),
     ItemType(ItemType::fists(7)),
-    ItemType(ItemType::fangs(7, VictimEffect{0.3, Effect::Lasting{LastingEffect::POISON}})),
+    ItemType(ItemType::fangs(7, VictimEffect{0.3, EffectType(Effects::Lasting{LastingEffect::POISON})})),
     ItemType(ItemType::fangs(7)),
-    ItemType(ItemType::fangs(7, VictimEffect{0.3, Effect::Lasting{LastingEffect::POISON}})),
+    ItemType(ItemType::fangs(7, VictimEffect{0.3, EffectType(Effects::Lasting{LastingEffect::POISON})})),
     ItemType(ItemType::fists(7)),
   };
   return attacks[(!large) * 4 + (!living) * 2 + wings];

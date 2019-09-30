@@ -314,8 +314,9 @@ void UGC::beginUpdateItem(const UpdateItemInfo& info) {
       FUNC(SetItemDescription)(ptr, handle, info.description->c_str());
     if (info.folder)
       FUNC(SetItemContent)(ptr, handle, info.folder->c_str());
-    if (info.previewFile)
+    if (info.previewFile) {
       FUNC(SetItemPreview)(ptr, handle, info.previewFile->c_str());
+    }
     if (info.visibility)
       FUNC(SetItemVisibility)(ptr, handle, itemVisibilityMap[*info.visibility]);
     if (info.tags) {

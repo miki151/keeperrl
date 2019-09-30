@@ -394,17 +394,17 @@ bool Level::containsCreature(UniqueEntity<Creature>::Id id) const {
 }
 
 bool Level::isWithinVision(Vec2 from, Vec2 to, const Vision& v) const {
-  PROFILE;
+  //PROFILE;
   return v.canSeeAt(getLight(to), from.distD(to));
 }
 
 FieldOfView& Level::getFieldOfView(VisionId vision) const {
-  PROFILE;
+  //PROFILE;
   return (*fieldOfView)[vision];
 }
 
 bool Level::canSee(Vec2 from, Vec2 to, const Vision& vision) const {
-  PROFILE;
+  //PROFILE_BLOCK("Level::canSee");
   return isWithinVision(from, to, vision) && getFieldOfView(vision.getId()).canSee(from, to);
 }
 

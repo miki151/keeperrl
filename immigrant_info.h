@@ -6,12 +6,13 @@
 #include "minion_trait.h"
 #include "enemy_factory.h"
 #include "sound.h"
-#include "special_trait.h"
 #include "tutorial_state.h"
 #include "furniture_type.h"
 #include "tech_id.h"
 
 class ContentFactory;
+struct SpecialTraitInfo;
+class SpecialTrait;
 
 MAKE_VARIANT2(AttractionType, FurnitureType, ItemIndex);
 
@@ -90,6 +91,7 @@ class ImmigrantInfo {
   public:
   ImmigrantInfo(CreatureId, EnumSet<MinionTrait>);
   ImmigrantInfo(vector<CreatureId>, EnumSet<MinionTrait>);
+  STRUCT_DECLARATIONS(ImmigrantInfo)
   CreatureId getId(int numCreated) const;
   CreatureId getNonRandomId(int numCreated) const;
   bool isAvailable(int numCreated) const;

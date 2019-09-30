@@ -26,36 +26,8 @@
 #include "item_class.h"
 #include "corpse_info.h"
 #include "weapon_info.h"
-
-static bool isCombatConsumable(Effect type) {
-  return type.visit(
-      [&](const Effect::Escape&) { return true; },
-      [&](const Effect::Lasting& e) {
-        switch (e.lastingEffect) {
-          case LastingEffect::SPEED:
-          case LastingEffect::SLOWED:
-          case LastingEffect::SLEEP:
-          case LastingEffect::POISON:
-          case LastingEffect::BLIND:
-          case LastingEffect::INVISIBLE:
-          case LastingEffect::DAM_BONUS:
-          case LastingEffect::DEF_BONUS:
-          case LastingEffect::POISON_RESISTANT:
-          case LastingEffect::MELEE_RESISTANCE:
-          case LastingEffect::RANGED_RESISTANCE:
-          case LastingEffect::MAGIC_RESISTANCE:
-          case LastingEffect::MELEE_VULNERABILITY:
-          case LastingEffect::RANGED_VULNERABILITY:
-          case LastingEffect::MAGIC_VULNERABILITY:
-          case LastingEffect::REGENERATION:
-            return true;
-          default:
-            return false;
-        }
-      },
-      [&](const auto&) { return false; }
-  );
-}
+#include "minion_equipment_type.h"
+#include "health_type.h"
 
 template <class Archive>
 void MinionEquipment::serialize(Archive& ar, const unsigned int) {
@@ -64,33 +36,25 @@ void MinionEquipment::serialize(Archive& ar, const unsigned int) {
 
 SERIALIZABLE(MinionEquipment);
 
-optional<int> MinionEquipment::getEquipmentLimit(EquipmentType type) const {
+optional<int> MinionEquipment::getEquipmentLimit(MinionEquipmentType type) const {
   switch (type) {
-    case MinionEquipment::COMBAT_ITEM:
-    case MinionEquipment::HEALING:
+    case MinionEquipmentType::COMBAT_ITEM:
+    case MinionEquipmentType::HEALING:
       return 6;
-    case MinionEquipment::TORCH:
+    case MinionEquipmentType::TORCH:
       return 1;
     default:
       return none;
   }
 }
 
-optional<MinionEquipment::EquipmentType> MinionEquipment::getEquipmentType(const Item* it) {
+optional<MinionEquipmentType> MinionEquipment::getEquipmentType(const Item* it) {
   if (it->canEquip())
-    return MinionEquipment::ARMOR;
-  if (auto& effect = it->getEffect()) {
-    if (auto e = effect->getValueMaybe<Effect::Heal>()) {
-      if (e->healthType == HealthType::FLESH)
-        return MinionEquipment::HEALING;
-      else
-        return MinionEquipment::MATERIALIZATION;
-    }
-    if (isCombatConsumable(*effect))
-      return MinionEquipment::COMBAT_ITEM;
-  }
+    return MinionEquipmentType::ARMOR;
+  if (auto& effect = it->getEffect())
+    return effect->getMinionEquipmentType();
   if (it->getOwnedEffect() == LastingEffect::LIGHT_SOURCE)
-    return MinionEquipment::TORCH;
+    return MinionEquipmentType::TORCH;
   return none;
 }
 
@@ -100,24 +64,24 @@ bool MinionEquipment::isItemUseful(const Item* it) {
       || (it->getClass() == ItemClass::FOOD && !it->getCorpseInfo()) || it->getIngredientFor();
 }
 
-bool MinionEquipment::canUseItemType(const Creature* c, EquipmentType type, const Item* it) const {
+bool MinionEquipment::canUseItemType(const Creature* c, MinionEquipmentType type, const Item* it) const {
   switch (type) {
-    case EquipmentType::TORCH:
+    case MinionEquipmentType::TORCH:
       return !c->isAffected(LastingEffect::NIGHT_VISION);
-    case EquipmentType::HEALING:
+    case MinionEquipmentType::HEALING:
       return c->getBody().hasHealth(HealthType::FLESH);
-    case EquipmentType::MATERIALIZATION:
+    case MinionEquipmentType::MATERIALIZATION:
       return c->getBody().hasHealth(HealthType::SPIRIT);
-    case EquipmentType::COMBAT_ITEM:
+    case MinionEquipmentType::COMBAT_ITEM:
       return true;
-    case EquipmentType::ARMOR:
+    case MinionEquipmentType::ARMOR:
       return c->canEquipIfEmptySlot(it);
   }
 }
 
 bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit) const {
   PROFILE;
-  if (optional<EquipmentType> type = getEquipmentType(it)) {
+  if (optional<MinionEquipmentType> type = getEquipmentType(it)) {
     if (!canUseItemType(c, *type, it))
       return false;
     if (!noLimit) {
@@ -275,7 +239,7 @@ Item* MinionEquipment::getWorstItem(const Creature* c, vector<Item*> items) cons
 
 static bool canAutoAssignItem(const Item* item) {
   for (auto effect : item->getWeaponInfo().attackerEffect)
-    if (effect.isType<Effect::Suicide>())
+    if (!effect.canAutoAssignMinionEquipment())
       return false;
   return true;
 }

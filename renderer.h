@@ -119,7 +119,7 @@ class Renderer {
   void addTilesDirectory(const DirectoryPath&, Vec2 size);
   void setAnimationsDirectory(const DirectoryPath&);
   void loadAnimations();
-  void makeScreenshot(const FilePath&);
+  void makeScreenshot(const FilePath&, Rectangle bounds);
   void renderDeferredSprites();
 
   private:

@@ -5,16 +5,21 @@
 #include "entity_map.h"
 #include "entity_set.h"
 #include "collective_config.h"
-#include "immigrant_info.h"
 #include "immigrant_auto_state.h"
 #include "game_time.h"
 
 class Collective;
+class SpecialTrait;
+class AttractionType;
+class ImmigrantRequirement;
+class ExponentialCost;
 struct AttractionInfo;
 
 class Immigration : public OwnedObject<Immigration> {
   public:
   Immigration(WCollective, vector<ImmigrantInfo>);
+  ~Immigration();
+  Immigration(Immigration&&);
   void update();
 
   struct Group {

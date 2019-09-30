@@ -56,6 +56,10 @@
 #include "game_event.h"
 #include "view_object.h"
 #include "content_factory.h"
+#include "effect_type.h"
+#include "immigrant_info.h"
+#include "item_types.h"
+#include "health_type.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -786,7 +790,7 @@ vector<Collective::TrapItemInfo> Collective::getTrapItems(const vector<Position>
   for (Position pos : squares)
     for (auto it : pos.getItems(ItemIndex::TRAP))
       if (!isItemMarked(it))
-        ret.push_back(TrapItemInfo{it, pos, it->getEffect()->getValueMaybe<Effect::PlaceFurniture>()->furniture});
+        ret.push_back(TrapItemInfo{it, pos, it->getEffect()->effect->getValueMaybe<Effects::PlaceFurniture>()->furniture});
   return ret;
 }
 
@@ -954,7 +958,7 @@ void Collective::addTrap(Position pos, FurnitureType type) {
 }
 
 void Collective::onAppliedItem(Position pos, Item* item) {
-  CHECK(!!item->getEffect()->getValueMaybe<Effect::PlaceFurniture>());
+  CHECK(!!item->getEffect()->effect->getValueMaybe<Effects::PlaceFurniture>());
   if (auto trap = constructions->getTrap(pos))
     trap->setArmed();
 }
@@ -1022,7 +1026,7 @@ void Collective::handleTrapPlacementAndProduction() {
   for (auto& elem : missingTraps)
     scheduleAutoProduction([&elem](const Item* it) {
           if (auto& effect = it->getEffect())
-            if (auto furnitureEffect = effect->getValueMaybe<Effect::PlaceFurniture>())
+            if (auto furnitureEffect = effect->effect->getValueMaybe<Effects::PlaceFurniture>())
               return furnitureEffect->furniture == elem.first;
           return false;
         }, elem.second);
@@ -1184,12 +1188,12 @@ bool Collective::addKnownTile(Position pos) {
     return false;
 }
 
-void Collective::addProducesMessage(const Creature* c, const vector<PItem>& items) {
+void Collective::addProducesMessage(const Creature* c, const vector<PItem>& items, const char* verb) {
   if (items.size() > 1)
-    control->addMessage(c->getName().a() + " produces " + toString(items.size())
+    control->addMessage(c->getName().a() + " " + verb + " " + toString(items.size())
         + " " + items[0]->getName(true));
   else
-    control->addMessage(c->getName().a() + " produces " + items[0]->getAName());
+    control->addMessage(c->getName().a() + " " + verb + " " + items[0]->getAName());
 }
 
 void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos) {
@@ -1204,6 +1208,11 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
       taskMap->addTask(Task::kill(this, c), pos.first, MinionActivity::WORKING);
     if (furniture->getType() == FurnitureType("TORTURE_TABLE"))
       taskMap->addTask(Task::torture(this, c), pos.first, MinionActivity::WORKING);
+    if (furniture->getType() == FurnitureType("POETRY_TABLE") && Random.chance(0.01 * efficiency)) {
+      auto poem = ItemType(ItemTypes::Poem{}).get(1, getGame()->getContentFactory());
+      addProducesMessage(c, poem, "writes");
+      c->getPosition().dropItems(std::move(poem));
+    }
     if (auto usage = furniture->getUsageType()) {
       auto increaseLevel = [&] (ExperienceType exp) {
         double increase = 0.007 * efficiency * LastingEffects::getTrainingSpeed(c);

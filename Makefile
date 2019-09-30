@@ -14,7 +14,7 @@ GCC = g++
 endif
 LD = $(GCC)
 
-DEBUG_LD=gold
+DEBUG_LD=lld
 
 ifndef RELEASE
 CFLAGS += -Werror -Wimplicit-fallthrough -Wno-unused-function
@@ -108,6 +108,7 @@ SRCS = $(shell ls -t *.cpp)
 else
 SRCS = $(shell ls -t *.cpp | grep -v steam_.*.cpp)
 endif
+SRCS += $(shell ls -t extern/*.cpp)
 
 LIBS = -L/usr/lib/x86_64-linux-gnu $(OPENGL_LIBS) -lSDL2 -lopenal -lvorbis -lvorbisfile -lSDL2_image \
 	   $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS} $(STEAM_LIBS)

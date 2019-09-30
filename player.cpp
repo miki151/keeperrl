@@ -67,6 +67,8 @@
 #include "content_factory.h"
 #include "target_type.h"
 #include "shortest_path.h"
+#include "item_types.h"
+#include "item_attributes.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -802,21 +804,21 @@ void Player::makeMove() {
         break;
       }
       case UserInputId::CHEAT_POTIONS: {
-        auto &items = creature->getEquipment().getItems();
+        /*auto &items = creature->getEquipment().getItems();
         for (auto leType : ENUM_ALL(LastingEffect)) {
           bool found = false;
           for (auto &item : items)
             if (auto &eff = item->getEffect())
-              if (auto le = eff->getValueMaybe<Effect::Lasting>())
+              if (auto le = eff->effect->getValueMaybe<Effects::Lasting>())
                 if (le->lastingEffect == leType) {
                   found = true;
                   break;
                 }
           if (!found) {
-            ItemType itemType{ItemType::Potion{Effect::Lasting{leType}}};
+            ItemType itemType{ItemType::Potion{EffectType(Effects::Lasting{leType})}};
             creature->take(itemType.get(getGame()->getContentFactory()));
           }
-        }
+        }*/
         break;
       }
   #endif
@@ -1008,55 +1010,30 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
   }
   for (auto effect : ENUM_ALL(LastingEffect)) {
     ret.push_back(WishedItemInfo {
-      ItemType(ItemType::Ring{effect}),
+      ItemType(ItemTypes::Ring{effect}),
       "ring of " + LastingEffects::getName(effect),
       Range(1, 2)
     });
     ret.push_back(WishedItemInfo {
-      ItemType(ItemType::Amulet{effect}),
+      ItemType(ItemTypes::Amulet{effect}),
       "amulet of " + LastingEffects::getName(effect),
       Range(1, 2)
     });
   }
-  vector<Effect> allEffects {
-       Effect(Effect::Escape{}),
-       Effect(Effect::Heal{HealthType::FLESH}),
-       Effect(Effect::Heal{HealthType::SPIRIT}),
-       Effect(Effect::Ice{}),
-       Effect(Effect::Fire{}),
-       Effect(Effect::DestroyEquipment{}),
-       Effect(Effect::DestroyWalls{}),
-       Effect(Effect::Enhance{ItemUpgradeType::WEAPON, 2}),
-       Effect(Effect::Enhance{ItemUpgradeType::ARMOR, 2}),
-       Effect(Effect::Enhance{ItemUpgradeType::WEAPON, -2}),
-       Effect(Effect::Enhance{ItemUpgradeType::ARMOR, -2}),
-       Effect(Effect::CircularBlast{}),
-       Effect(Effect::Deception{}),
-       Effect(Effect::SummonElement{}),
-       Effect(Effect::Acid{}),
-       Effect(Effect::Suicide{MsgType::DIE}),
-       Effect(Effect::DoubleTrouble{})
-  };
-  for (auto effect : ENUM_ALL(LastingEffect)) {
-    allEffects.push_back(Effect::Lasting{effect});
-    allEffects.push_back(Effect::Permanent{effect});
-    allEffects.push_back(Effect::RemoveLasting{effect});
-  }
-  for (auto attr : ENUM_ALL(AttrType))
-    allEffects.push_back(Effect::IncreaseAttr{attr, (attr == AttrType::PARRY ? 2 : 5)});
+  vector<Effect> allEffects = Effect::getWishedForEffects();
   for (auto& effect : allEffects) {
     ret.push_back(WishedItemInfo {
-      ItemType(ItemType::Scroll{effect}),
+      ItemType(ItemTypes::Scroll{effect}),
       "scroll of " + effect.getName(),
       Range(1, 2)
     });
     ret.push_back(WishedItemInfo {
-      ItemType(ItemType::Potion{effect}),
+      ItemType(ItemTypes::Potion{effect}),
       "potion of " + effect.getName(),
       Range(1, 2)
     });
     ret.push_back(WishedItemInfo {
-      ItemType(ItemType::Mushroom{effect}),
+      ItemType(ItemTypes::Mushroom{effect}),
       "mushroom of " + effect.getName(),
       Range(1, 2)
     });
@@ -1119,7 +1096,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
             index.getObject(obj->layer()).setExtendedActions({FurnitureClick::getClickAction(*clickType, position, furniture)});
   }
   if (Creature* c = position.getCreature()) {
-    if ((canSee && creature->canSeeInPosition(c)) || c == creature ||
+    if ((canSee && creature->canSeeInPosition(c, *c->getGlobalTime())) || c == creature ||
         creature->canSeeOutsidePosition(c)) {
       index.insert(c->getViewObjectFor(creature->getTribe()));
       index.modEquipmentCounts() = c->getEquipment().getCounts();

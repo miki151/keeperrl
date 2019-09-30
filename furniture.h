@@ -12,6 +12,9 @@
 #include "bed_type.h"
 #include "fx_info.h"
 #include "view_id.h"
+#include "effect.h"
+#include "creature_id.h"
+#include "fx_variant_name.h"
 
 class TribeId;
 class Creature;
@@ -24,6 +27,7 @@ class FurnitureEntry;
 class FurnitureDroppedItems;
 class ViewObject;
 class MovementSet;
+class Effect;
 
 RICH_ENUM(
     BurnsDownMessage,

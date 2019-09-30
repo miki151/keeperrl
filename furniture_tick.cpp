@@ -22,6 +22,7 @@
 #include "game_event.h"
 #include "color.h"
 #include "content_factory.h"
+#include "item_types.h"
 
 static void handleBed(Position pos) {
   PROFILE;

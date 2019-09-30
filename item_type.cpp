@@ -24,34 +24,35 @@
 #include "game_event.h"
 #include "content_factory.h"
 #include "tech_id.h"
+#include "effect_type.h"
+#include "item_types.h"
+#include "item_prefix.h"
 
-ItemType::ItemType(const ItemType&) = default;
-ItemType::ItemType(ItemType&) = default;
-ItemType::ItemType(ItemType&&) = default;
+STRUCT_IMPL(ItemType)
 
 ItemType ItemType::legs(int damage) {
-  return ItemType::Intrinsic{ViewId("leg_attack"), "legs", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::KICK}};
+  return ItemType(ItemTypes::Intrinsic{ViewId("leg_attack"), "legs", damage,
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::KICK}});
 }
 
 ItemType ItemType::claws(int damage) {
-  return ItemType::Intrinsic{ViewId("claws_attack"), "claws", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::CLAW}};
+  return ItemType(ItemTypes::Intrinsic{ViewId("claws_attack"), "claws", damage,
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::CLAW}});
 }
 
 ItemType ItemType::beak(int damage) {
-  return ItemType::Intrinsic{ViewId("beak_attack"), "beak", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::BITE}};
+  return ItemType(ItemTypes::Intrinsic{ViewId("beak_attack"), "beak", damage,
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::BITE}});
 }
 
 ItemType ItemType::fists(int damage) {
-  return ItemType::Intrinsic{ViewId("fist_attack"), "fists", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::SWING}};
+  return ItemType(ItemTypes::Intrinsic{ViewId("fist_attack"), "fists", damage,
+        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::SWING}});
 }
 
 static ItemType fangsBase(int damage, vector<VictimEffect> effect) {
-  return ItemType::Intrinsic{ViewId("bite_attack"), "fangs", damage,
-      WeaponInfo{false, AttackType::BITE, AttrType::DAMAGE, std::move(effect), {}, AttackMsg::BITE}};
+  return ItemType(ItemTypes::Intrinsic{ViewId("bite_attack"), "fangs", damage,
+      WeaponInfo{false, AttackType::BITE, AttrType::DAMAGE, std::move(effect), {}, AttackMsg::BITE}});
 }
 
 ItemType ItemType::fangs(int damage) {
@@ -63,8 +64,11 @@ ItemType ItemType::fangs(int damage, VictimEffect effect) {
 }
 
 ItemType ItemType::spellHit(int damage) {
-  return ItemType::Intrinsic{ViewId("fist_attack"), "spell", damage,
-      WeaponInfo{false, AttackType::HIT, AttrType::SPELL_DAMAGE, {}, {}, AttackMsg::SPELL}};
+  return ItemType(ItemTypes::Intrinsic{ViewId("fist_attack"), "spell", damage,
+                                       WeaponInfo{false, AttackType::HIT, AttrType::SPELL_DAMAGE, {}, {}, AttackMsg::SPELL}});
+}
+
+ItemType::ItemType(const ItemTypeVariant& v) : type(v) {
 }
 
 ItemType::ItemType() {}
@@ -81,9 +85,6 @@ ItemType& ItemType::setPrefixChance(double chance) {
   prefixChance = chance;
   return *this;
 }
-
-ItemType& ItemType::operator = (const ItemType&) = default;
-ItemType& ItemType::operator = (ItemType&&) = default;
 
 
 class FireScrollItem : public Item {
@@ -239,7 +240,7 @@ REGISTER_TYPE(Corpse)
 
 
 ItemAttributes ItemType::getAttributes(const ContentFactory* factory) const {
-  return type.visit([&](const auto& t) { return t.getAttributes(factory); });
+  return type->visit([&](const auto& t) { return t.getAttributes(factory); });
 }
 
 PItem ItemType::get(const ContentFactory* factory) const {
@@ -254,14 +255,14 @@ PItem ItemType::get(const ContentFactory* factory) const {
     attributes.description = "Ingredient for " + attributes.ingredientFor->get(factory)->getName();
   if (!attributes.genPrefixes.empty() && Random.chance(prefixChance))
     applyPrefix(Random.choose(attributes.genPrefixes), attributes);
-  return type.visit(
-      [&](const FireScroll&) {
+  return type->visit(
+      [&](const ItemTypes::FireScroll&) {
         return makeOwner<FireScrollItem>(std::move(attributes), factory);
       },
-      [&](const TechBook& t) {
+      [&](const ItemTypes::TechBook& t) {
         return makeOwner<TechBookItem>(std::move(attributes), t.techId, factory);
       },
-      [&](const Potion& t) {
+      [&](const ItemTypes::Potion& t) {
         return makeOwner<PotionItem>(std::move(attributes), factory);
       },
       [&](const auto&) {
@@ -272,51 +273,51 @@ PItem ItemType::get(const ContentFactory* factory) const {
 
 
 static int getEffectPrice(Effect type) {
-  return type.visit(
-      [&](const Effect::Lasting& e) {
+  return type.effect->visit(
+      [&](const Effects::Lasting& e) {
         return LastingEffects::getPrice(e.lastingEffect);
       },
-      [&](const Effect::Permanent& e) {
+      [&](const Effects::Permanent& e) {
         //Permanent effects will probably be from consumable artifacts.
         return LastingEffects::getPrice(e.lastingEffect) * 100;
       },
-      [&](const Effect::Acid&) {
+      [&](const Effects::Acid&) {
         return 8;
       },
-      [&](const Effect::Suicide&) {
+      [&](const Effects::Suicide&) {
         return 8;
       },
-      [&](const Effect::Heal&) {
+      [&](const Effects::Heal&) {
         return 8;
       },
-      [&](const Effect::Escape&) {
+      [&](const Effects::Escape&) {
         return 12;
       },
-      [&](const Effect::Fire&) {
+      [&](const Effects::Fire&) {
         return 12;
       },
-      [&](const Effect::Alarm&) {
+      [&](const Effects::Alarm&) {
         return 12;
       },
-      [&](const Effect::SilverDamage&) {
+      [&](const Effects::SilverDamage&) {
         return 12;
       },
-      [&](const Effect::DestroyEquipment&) {
+      [&](const Effects::DestroyEquipment&) {
         return 12;
       },
-      [&](const Effect::DestroyWalls&) {
+      [&](const Effects::DestroyWalls&) {
         return 30;
       },
-      [&](const Effect::Enhance&) {
+      [&](const Effects::Enhance&) {
         return 12;
       },
-      [&](const Effect::TeleEnemies&) {
+      [&](const Effects::TeleEnemies&) {
         return 12;
       },
-      [&](const Effect::Summon&) {
+      [&](const Effects::Summon&) {
         return 12;
       },
-      [&](const Effect::EmitPoisonGas&) {
+      [&](const Effects::EmitPoisonGas&) {
         return 20;
       },
       [&](const auto&) {
@@ -353,7 +354,27 @@ vector<PItem> ItemType::get(int num, const ContentFactory* factory) const {
   return ret;
 }
 
-ItemAttributes ItemType::Intrinsic::getAttributes(const ContentFactory*) const {
+static string getRandomPoem() {
+  return Random.choose(makeVec<string>("bad", "obscene", "vulgar")) + " " +
+      Random.choose(makeVec<string>("poem", "haiku", "sonnet", "limerick"));
+}
+
+ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory*) const {
+  return ITATTR(
+      i.viewId = ViewId("scroll");
+      i.name = getRandomPoem();
+      i.blindName = "scroll"_s;
+      i.itemClass = ItemClass::SCROLL;
+      i.weight = 0.1;
+      i.modifiers[AttrType::DAMAGE] = -10;
+      i.effect = Effect(Effects::Area{10, Effects::Filter{FilterType::ENEMY, Effects::IncreaseMorale{-0.1}}});
+      i.price = getEffectPrice(*i.effect);
+      i.burnTime = 5;
+      i.uses = 1;
+  );
+}
+
+ItemAttributes ItemTypes::Intrinsic::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = viewId;
       i.name = name;
@@ -370,7 +391,7 @@ ItemAttributes ItemType::Intrinsic::getAttributes(const ContentFactory*) const {
   );
 }
 
-ItemAttributes ItemType::Ring::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Ring::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = getRingViewId(lastingEffect);
       i.shortName = LastingEffects::getName(lastingEffect);
@@ -384,7 +405,7 @@ ItemAttributes ItemType::Ring::getAttributes(const ContentFactory*) const {
   );
 }
 
-ItemAttributes ItemType::Amulet::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Amulet::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = getAmuletViewId(lastingEffect);
       i.shortName = LastingEffects::getName(lastingEffect);
@@ -398,7 +419,7 @@ ItemAttributes ItemType::Amulet::getAttributes(const ContentFactory*) const {
   );
 }
 
-ItemAttributes ItemType::TrapItem::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::TrapItem::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("trap_item");
       i.name = "unarmed " + trapName + " trap";
@@ -409,7 +430,7 @@ ItemAttributes ItemType::TrapItem::getAttributes(const ContentFactory*) const {
       i.applySound = SoundId::TRAP_ARMING;
       i.uses = 1;
       i.usedUpMsg = true;
-      i.effect = Effect(Effect::PlaceFurniture{trapType});
+      i.effect = Effect(Effects::PlaceFurniture{trapType});
       i.price = 2;
   );
 }
@@ -418,7 +439,7 @@ ItemAttributes CustomItemId::getAttributes(const ContentFactory* factory) const 
   return factory->items.at(*this);
 }
 
-ItemAttributes ItemType::Potion::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("potion1");
       i.shortName = effect.getName();
@@ -436,8 +457,8 @@ ItemAttributes ItemType::Potion::getAttributes(const ContentFactory*) const {
 }
 
 static ViewId getMushroomViewId(Effect e) {
-  return e.visit(
-      [&](const Effect::Lasting& e) {
+  return e.effect->visit(
+      [&](const Effects::Lasting& e) {
         switch (e.lastingEffect) {
           case LastingEffect::DAM_BONUS: return ViewId("mushroom1");
           case LastingEffect::DEF_BONUS: return ViewId("mushroom2");
@@ -455,7 +476,7 @@ static ViewId getMushroomViewId(Effect e) {
   );
 }
 
-ItemAttributes ItemType::Mushroom::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = getMushroomViewId(effect);
       i.shortName = effect.getName();
@@ -476,9 +497,9 @@ static ViewId getRuneViewId(const string& name) {
   return ids[(h % ids.size() + ids.size()) % ids.size()];
 }
 
-ItemAttributes ItemType::Glyph::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory*) const {
   return ITATTR(
-      i.shortName = getGlyphName(rune.prefix);
+      i.shortName = getGlyphName(*rune.prefix);
       i.viewId = getRuneViewId(*i.shortName);
       i.upgradeInfo = rune;
       i.name = "glyph of " + *i.shortName;
@@ -492,7 +513,7 @@ ItemAttributes ItemType::Glyph::getAttributes(const ContentFactory*) const {
   );
 }
 
-ItemAttributes ItemType::Scroll::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("scroll");
       i.shortName = effect.getName();
@@ -509,7 +530,7 @@ ItemAttributes ItemType::Scroll::getAttributes(const ContentFactory*) const {
   );
 }
 
-ItemAttributes ItemType::FireScroll::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("scroll");
       i.name = "scroll of fire";
@@ -526,7 +547,7 @@ ItemAttributes ItemType::FireScroll::getAttributes(const ContentFactory*) const 
   );
 }
 
-ItemAttributes ItemType::TechBook::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::TechBook::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("book");
       i.shortName = string(techId.data());

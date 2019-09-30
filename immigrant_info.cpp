@@ -14,6 +14,7 @@
 #include "keybinding.h"
 #include "tutorial_highlight.h"
 #include "content_factory.h"
+#include "special_trait.h"
 
 SERIALIZE_DEF(ImmigrantInfo, NAMED(ids), NAMED(frequency), OPTION(requirements), OPTION(traits), OPTION(spawnLocation), OPTION(groupSize), OPTION(autoTeam), OPTION(initialRecruitment), OPTION(consumeIds), NAMED(keybinding), NAMED(sound), OPTION(noAuto), NAMED(tutorialHighlight), OPTION(hiddenInHelp), OPTION(invisible), OPTION(specialTraits), OPTION(stripEquipment))
 SERIALIZATION_CONSTRUCTOR_IMPL(ImmigrantInfo)
@@ -43,6 +44,8 @@ AttractionInfo::AttractionInfo(int cl, vector<AttractionType> a)
 ImmigrantInfo::ImmigrantInfo(CreatureId id, EnumSet<MinionTrait> t) : ids({id}), traits(t) {}
 ImmigrantInfo::ImmigrantInfo(vector<CreatureId> id, EnumSet<MinionTrait> t) : ids(id), traits(t) {
 }
+
+STRUCT_IMPL(ImmigrantInfo)
 
 CreatureId ImmigrantInfo::getId(int numCreated) const {
   if (!consumeIds)

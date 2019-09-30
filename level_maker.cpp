@@ -1867,18 +1867,23 @@ class CastleExit : public LevelMaker {
         builder->putFurniture(loc + Vec2(2, i), building.gate->type, settlement.tribe);
       else
         builder->removeFurniture(loc + Vec2(2, i), FurnitureLayer::MIDDLE);
+      settlement.collective->addArea(builder->toGlobalCoordinates(makeVec(loc + Vec2(2, i))));
     }
     if (!settlement.dontBuildRoad)
       builder->addAttrib(loc + Vec2(2, 0), SquareAttrib::CONNECT_ROAD);
     vector<Vec2> walls { Vec2(1, -2), Vec2(2, -2), Vec2(2, -1), Vec2(2, 2), Vec2(2, 3), Vec2(1, 3)};
-    for (Vec2 v : walls)
+    for (Vec2 v : walls) {
       builder->putFurniture(loc + v, building.wall);
+      settlement.collective->addArea(builder->toGlobalCoordinates(makeVec(loc + v)));
+    }
     vector<Vec2> floor { Vec2(1, -1), Vec2(1, 0), Vec2(1, 1), Vec2(1, 2), Vec2(0, -1), Vec2(0, 0), Vec2(0, 1), Vec2(0, 2) };
-    for (Vec2 v : floor)
+    for (Vec2 v : floor) {
+      settlement.collective->addArea(builder->toGlobalCoordinates(makeVec(loc + v)));
       if (building.floorInside)
         builder->resetFurniture(loc + v, *building.floorInside);
       else
         builder->removeFurniture(loc + v, FurnitureLayer::MIDDLE);
+    }
     vector<Vec2> guardPos { Vec2(1, 2), Vec2(1, -1) };
     for (Vec2 pos : guardPos) {
       auto fighters = settlement.inhabitants.fighters.generate(builder->getRandom(), &builder->getContentFactory()->getCreatures(),
@@ -2127,8 +2132,12 @@ static PMakerQueue castle(RandomGen& random, SettlementInfo info) {
   for (auto& elem : info.stockpiles)
     cornerMakers.push_back(unique<Margin>(1, stockpileMaker(elem)));
   queue->addMaker(unique<AreaCorners>(
-      unique<BorderGuard>(unique<Empty>(SquareChange::resetOrRemove(building.floorInside, FurnitureLayer::MIDDLE, SquareAttrib::CASTLE_CORNER)),
-          SquareChange(building.wall, SquareAttrib::ROOM_WALL)),
+      unique<MakerQueue>(makeVec<PLevelMaker>(
+          unique<BorderGuard>(unique<Empty>(
+              SquareChange::resetOrRemove(building.floorInside, FurnitureLayer::MIDDLE, SquareAttrib::CASTLE_CORNER)),
+              SquareChange(building.wall, SquareAttrib::ROOM_WALL)),
+          unique<Empty>(SquareChange::addTerritory(info.collective))
+      )),
       Vec2(5, 5),
       std::move(cornerMakers)));
   queue->addMaker(unique<Margin>(insideMargin, unique<Connector>(building.door, info.tribe, 18)));
@@ -2155,15 +2164,15 @@ static PMakerQueue castle2(RandomGen& random, SettlementInfo info) {
   auto insidePlusWall = unique<MakerQueue>();
   insidePlusWall->addMaker(unique<Empty>(SquareChange(building.floorOutside, SquareAttrib::FLOOR_OUTSIDE)));
   insidePlusWall->addMaker(unique<BorderGuard>(std::move(inside), building.wall));
-  auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<PlaceCollective>(info.collective));
-  queue->addMaker(std::move(insidePlusWall));
-  queue->addMaker(unique<Connector>(building.door, info.tribe, 18));
-  queue->addMaker(unique<CastleExit>(info));
+  insidePlusWall->addMaker(unique<PlaceCollective>(info.collective));
+  insidePlusWall->addMaker(unique<CastleExit>(info));
+  insidePlusWall->addMaker(unique<Connector>(building.door, info.tribe, 18));
   if (info.outsideFeatures)
-    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::FLOOR_OUTSIDE), 0.05, *info.outsideFeatures, info.tribe));
-  queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
-  queue->addMaker(unique<AddAttrib>(SquareAttrib::NO_DIG, Predicate::type(building.wall)));
+    insidePlusWall->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::FLOOR_OUTSIDE), 0.05, *info.outsideFeatures, info.tribe));
+  insidePlusWall->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
+  insidePlusWall->addMaker(unique<AddAttrib>(SquareAttrib::NO_DIG, Predicate::type(building.wall)));
+  auto queue = unique<MakerQueue>();
+  queue->addMaker(unique<Margin>(0, 0, 2, 0, std::move(insidePlusWall)));
   return queue;
 }
 
@@ -2215,7 +2224,7 @@ Vec2 getSize(RandomGen& random, SettlementType type) {
     case SettlementType::VILLAGE:
     case SettlementType::ANT_NEST:  return {20, 20};
     case SettlementType::CASTLE: return {30, 20};
-    case SettlementType::CASTLE2: return {13, 14};
+    case SettlementType::CASTLE2: return {15, 14};
     case SettlementType::MINETOWN: return {30, 20};
     case SettlementType::SMALL_MINETOWN: return {15, 15};
     case SettlementType::CAVE: return {12, 12};
@@ -2877,6 +2886,9 @@ PLevelMaker LevelMaker::adoxieTemple(RandomGen&, SettlementInfo info) {
   for (auto& furniture : info.furniture)
     templeRoom->addMaker(unique<Margin>((templeRoomSize - 1) / 2,
         unique<Furnitures>(Predicate::alwaysTrue(), 0.05, furniture, info.tribe)));
+  for (StairKey key : info.downStairs)
+    templeRoom->addMaker(unique<Margin>((templeRoomSize - 1) / 2,
+        unique<StartingPos>(Predicate::type(FurnitureType("FLOOR")), key)));
   templeRoom->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, Predicate::near4AtLeast(FurnitureType("MAGMA"), 1)));
   locations->add(unique<Margin>(templeRoomMargin, std::move(templeRoom)),
       Vec2(templeRoomSize + 2 * templeRoomMargin, templeRoomSize + 2 * templeRoomMargin),

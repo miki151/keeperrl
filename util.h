@@ -1458,8 +1458,23 @@ class HeapAllocated {
 
   SERIALIZE_ALL(elem)
 
-  private:
+  protected:
   unique_ptr<T> SERIAL(elem);
+};
+
+// Merge into HeapAllocated with the new serialize method after Alpha29
+template <class T>
+class HeapAllocatedSerializationWorkaround : public HeapAllocated<T> {
+  public:
+  using HeapAllocated<T>::HeapAllocated;
+
+  template <class Archive>
+  void serialize(Archive& ar1) {
+    if (Archive::is_loading::value) {
+      HeapAllocated<T>::elem = unique<T>();
+    }
+    ar1(*HeapAllocated<T>::elem);
+  }
 };
 
 template <class T>
@@ -1753,3 +1768,17 @@ constexpr bool isOneOf(const T& value, const Arg1& arg1, const Args&... args) {
 template <class T, int size> constexpr int arraySize(T (&)[size]) {
   return size;
 }
+
+#define STRUCT_DECLARATIONS(TYPE) \
+  ~TYPE(); \
+  TYPE(TYPE&&); \
+  TYPE& operator = (TYPE&&); \
+  TYPE(const TYPE&); \
+  TYPE& operator = (const TYPE&);
+
+#define STRUCT_IMPL(TYPE) \
+  TYPE::~TYPE() {} \
+  TYPE::TYPE(TYPE&&) = default; \
+  TYPE::TYPE(const TYPE&) = default; \
+  TYPE& TYPE::operator =(TYPE&&) = default; \
+  TYPE& TYPE::operator = (const TYPE&) = default;

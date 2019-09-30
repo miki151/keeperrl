@@ -29,6 +29,8 @@
 #include "workshop_item.h"
 #include "tutorial_state.h"
 #include "content_factory.h"
+#include "immigrant_info.h"
+#include "item_types.h"
 
 SERIALIZE_DEF(Tutorial, state, entrance)
 
@@ -86,7 +88,7 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::SCHEDULE_WORKSHOP_ITEMS: {
       int numWeapons = collective->getNumItems(ItemIndex::WEAPON);
       for (auto& item : collective->getWorkshops().get(WorkshopType::WORKSHOP).getQueued())
-        if (item.item.type.get<CustomItemId>() == CustomItemId("Club"))
+        if (item.item.type.type->getValueMaybe<CustomItemId>() == CustomItemId("Club"))
           ++numWeapons;
       return numWeapons >= 1;
     }
@@ -454,7 +456,7 @@ Tutorial::State Tutorial::getState() const {
   return state;
 }
 
-void Tutorial::createTutorial(Game& game, vector<ImmigrantInfo> immigrants) {
+void Tutorial::createTutorial(Game& game, const ContentFactory* factory) {
   auto tutorial = make_shared<Tutorial>();
   game.getPlayerControl()->setTutorial(tutorial);
   auto collective = game.getPlayerCollective();
@@ -470,6 +472,7 @@ void Tutorial::createTutorial(Game& game, vector<ImmigrantInfo> immigrants) {
   collective->setTrait(collective->getLeader(), MinionTrait::NO_AUTO_EQUIPMENT);
   collective->getWarnings().disable();
   collective->init(CollectiveConfig::keeper(50_visible, 10));
+  auto immigrants = factory->immigrantsData.at("tutorial");
   CollectiveConfig::addBedRequirementToImmigrants(immigrants, game.getContentFactory());
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
 }

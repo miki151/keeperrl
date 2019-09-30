@@ -39,6 +39,7 @@
 #include "content_factory.h"
 #include "content_factory.h"
 #include "bed_type.h"
+#include "item_types.h"
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
@@ -198,22 +199,22 @@ const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
   static EnumMap<CollectiveResourceId, ResourceInfo> resourceInfo([](CollectiveResourceId id)->ResourceInfo {
     switch (id) {
       case CollectiveResourceId::PRISONER_HEAD:
-        return { none, none, CustomItemId("GoldPiece"), "prisoner heads", ViewId("impaled_head"), true, none};
+        return { none, none, ItemType(CustomItemId("GoldPiece")), "prisoner heads", ViewId("impaled_head"), true, none};
       case CollectiveResourceId::DEMON_PIETY:
-        return { none, none, CustomItemId("GoldPiece"), "demon rituals", ViewId("impaled_head"), true, none};
+        return { none, none, ItemType(CustomItemId("GoldPiece")), "demon rituals", ViewId("impaled_head"), true, none};
       case CollectiveResourceId::GOLD:
-        return {StorageId::GOLD, ItemIndex::GOLD, CustomItemId("GoldPiece"), "gold", ViewId("gold"), false, none};
+        return {StorageId::GOLD, ItemIndex::GOLD, ItemType(CustomItemId("GoldPiece")), "gold", ViewId("gold"), false, none};
       case CollectiveResourceId::WOOD:
-        return { StorageId::RESOURCE, ItemIndex::WOOD, CustomItemId("WoodPlank"), "wood", ViewId("wood_plank"),
+        return { StorageId::RESOURCE, ItemIndex::WOOD, ItemType(CustomItemId("WoodPlank")), "wood", ViewId("wood_plank"),
             false, TutorialHighlight::WOOD_RESOURCE};
       case CollectiveResourceId::IRON:
-        return { StorageId::RESOURCE, ItemIndex::IRON, CustomItemId("IronOre"), "iron", ViewId("iron_rock"), false, none};
+        return { StorageId::RESOURCE, ItemIndex::IRON, ItemType(CustomItemId("IronOre")), "iron", ViewId("iron_rock"), false, none};
       case CollectiveResourceId::ADA:
-        return { StorageId::RESOURCE, ItemIndex::ADA, CustomItemId("AdaOre"), "adamantium", ViewId("ada_ore"), false, none};
+        return { StorageId::RESOURCE, ItemIndex::ADA, ItemType(CustomItemId("AdaOre")), "adamantium", ViewId("ada_ore"), false, none};
       case CollectiveResourceId::STONE:
-        return { StorageId::RESOURCE, ItemIndex::STONE, CustomItemId("Rock"), "granite", ViewId("rock"), false, none};
+        return { StorageId::RESOURCE, ItemIndex::STONE, ItemType(CustomItemId("Rock")), "granite", ViewId("rock"), false, none};
       case CollectiveResourceId::CORPSE:
-        return { StorageId::CORPSES, ItemIndex::REVIVABLE_CORPSE, CustomItemId("GoldPiece"), "corpses", ViewId("body_part"), true, none};
+        return { StorageId::CORPSES, ItemIndex::REVIVABLE_CORPSE, ItemType(CustomItemId("GoldPiece")), "corpses", ViewId("body_part"), true, none};
     }
   });
   return resourceInfo[id];
@@ -316,6 +317,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
           }, "sleeping"};
       case MinionActivity::EAT: return {MinionActivityInfo::EAT, "eating"};
       case MinionActivity::THRONE: return {FurnitureType("THRONE"), "throne"};
+      case MinionActivity::POETRY: return {FurnitureType("POETRY_TABLE"), "poetry"};
       case MinionActivity::STUDY: return {getTrainingPredicate(ExperienceType::SPELL), "studying"};
       case MinionActivity::CROPS: return {FurnitureType("CROPS"), "crops"};
       case MinionActivity::RITUAL: return {FurnitureType("DEMON_SHRINE"), "rituals"};

@@ -57,6 +57,7 @@ SRCS = $(shell ls -t *.cpp)
 else
 SRCS = $(shell ls -t *.cpp | grep -v steam_.*.cpp)
 endif
+SRCS += $(shell ls -t extern/*.cpp)
 
 ifdef AMD64
 RES_FILE=keeper.res

@@ -5,6 +5,7 @@
 #include "enemy_id.h"
 
 struct EnemyInfo;
+struct BuildingInfo;
 
 struct ExternalEnemy;
 struct SettlementInfo;
@@ -13,7 +14,8 @@ class NameGenerator;
 
 class EnemyFactory {
   public:
-  EnemyFactory(RandomGen&, NameGenerator*, map<EnemyId, EnemyInfo> enemies, vector<ExternalEnemy>);
+  EnemyFactory(RandomGen&, NameGenerator*, map<EnemyId, EnemyInfo> enemies, map<BuildingId, BuildingInfo> buildingInfo,
+      vector<ExternalEnemy>);
   EnemyFactory(const EnemyFactory&) = delete;
   EnemyFactory(EnemyFactory&&) = default;
   EnemyInfo get(EnemyId) const;
@@ -26,6 +28,7 @@ class EnemyFactory {
   RandomGen& random;
   NameGenerator* nameGenerator;
   map<EnemyId, EnemyInfo> enemies;
+  map<BuildingId, BuildingInfo> buildingInfo;
   vector<ExternalEnemy> externalEnemies;
   void updateCreateOnBones(EnemyInfo&) const;
 };
