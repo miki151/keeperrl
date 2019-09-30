@@ -1,6 +1,12 @@
 #pragma once
 
 #include "util.h"
+#include "weapon_info.h"
+#include "item_prefix.h"
+#include "item_upgrade_info.h"
+#include "view_id.h"
+#include "tech_id.h"
+#include "custom_item_id.h"
 
 #define ITEM_TYPE_INTERFACE\
   ItemAttributes getAttributes(const ContentFactory*) const

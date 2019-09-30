@@ -110,6 +110,7 @@ enum class ExternalEnemiesType;
 enum class LevelType;
 enum class EnemyAggressionLevel;
 enum class MinionEquipmentType;
+enum class EffectAIIntent;
 
 struct FXInfo;
 struct FXSpawnInfo;

@@ -9,6 +9,7 @@
 #include "building_id.h"
 #include "building_info.h"
 #include "name_generator_id.h"
+#include "stair_key.h"
 
 struct StockpileInfo {
   ItemListId SERIAL(items);

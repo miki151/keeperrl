@@ -3,6 +3,7 @@
 #include "util.h"
 #include "position.h"
 #include "color.h"
+#include "fx_name.h"
 
 RICH_ENUM(FXStackId, debuff, buff, generic);
 

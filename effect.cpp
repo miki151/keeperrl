@@ -49,6 +49,7 @@
 #include "content_factory.h"
 #include "effect_type.h"
 #include "minion_equipment_type.h"
+#include "health_type.h"
 
 vector<Creature*> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, TimeInterval delay) {
   vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));

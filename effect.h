@@ -16,15 +16,7 @@
 #pragma once
 
 #include "util.h"
-#include "enums.h"
 #include "position.h"
-#include "enum_variant.h"
-#include "game_time.h"
-#include "fx_name.h"
-#include "furniture_type.h"
-#include "effect_ai_intent.h"
-#include "health_type.h"
-#include "creature_id.h"
 
 class Level;
 class Creature;

@@ -11,6 +11,7 @@
 #include "campaign_builder.h"
 #include "external_enemies.h"
 #include "item_attributes.h"
+#include "custom_item_id.h"
 
 class KeyVerifier;
 class BuildInfo;

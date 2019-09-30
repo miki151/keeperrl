@@ -59,6 +59,7 @@
 #include "effect_type.h"
 #include "immigrant_info.h"
 #include "item_types.h"
+#include "health_type.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {

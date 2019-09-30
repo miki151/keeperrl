@@ -27,6 +27,7 @@
 #include "corpse_info.h"
 #include "weapon_info.h"
 #include "minion_equipment_type.h"
+#include "health_type.h"
 
 template <class Archive>
 void MinionEquipment::serialize(Archive& ar, const unsigned int) {

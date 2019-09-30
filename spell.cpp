@@ -16,9 +16,11 @@
 #include "game_event.h"
 #include "view_id.h"
 #include "move_info.h"
+#include "fx_name.h"
 
 SERIALIZE_DEF(Spell, NAMED(id), NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf))
 SERIALIZATION_CONSTRUCTOR_IMPL(Spell)
+STRUCT_IMPL(Spell)
 
 const string& Spell::getSymbol() const {
   return symbol;

@@ -53,6 +53,7 @@
 #include "spell_map.h"
 #include "vision.h"
 #include "effect_type.h"
+#include "health_type.h"
 
 class Behaviour {
   public:

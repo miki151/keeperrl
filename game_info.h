@@ -20,6 +20,7 @@
 #include "team_order.h"
 #include "view_object_modifier.h"
 #include "creature_experience_info.h"
+#include "tech_id.h"
 
 class PlayerMessage;
 class SpecialTrait;

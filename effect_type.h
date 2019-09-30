@@ -2,6 +2,8 @@
 
 #include "util.h"
 #include "effect.h"
+#include "creature_id.h"
+#include "furniture_type.h"
 
 RICH_ENUM(FilterType, ALLY, ENEMY);
 

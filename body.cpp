@@ -18,6 +18,7 @@
 #include "game_time.h"
 #include "animation_id.h"
 #include "item_types.h"
+#include "health_type.h"
 
 static double getDefaultWeight(Body::Size size) {
   switch (size) {

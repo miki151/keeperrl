@@ -58,6 +58,7 @@
 #include "game_event.h"
 #include "spell_school.h"
 #include "content_factory.h"
+#include "health_type.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {

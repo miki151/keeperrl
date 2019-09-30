@@ -14,6 +14,7 @@
 #include "vision.h"
 #include "collective.h"
 #include "territory.h"
+#include "health_type.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
