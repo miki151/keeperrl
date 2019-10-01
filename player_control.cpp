@@ -1281,7 +1281,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
             infoLines.push_back("First " + toString(cost.numFree) + " " + c->getName().plural() + " are free");
         },
         [&](const Pregnancy&) {
-          requirements.push_back("Requires a pregnant succubus");
+          requirements.push_back("Requires a pregnant minion");
         },
         [&](const RecruitmentInfo& info) {
           if (info.findEnemy(getGame()))

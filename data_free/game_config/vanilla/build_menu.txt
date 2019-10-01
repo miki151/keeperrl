@@ -23,7 +23,7 @@
       "Outdoor building. Tiles covered by the roof are considered territory and can be built on." }
 
     { Furniture {{ "BRIDGE" }                     WOOD 5 }       "Bridge"            "Structure"
-      "Build to pass over water of lava." }
+      "Build to pass over water or lava." }
 
     { Furniture {{ "DOWN_STAIRS" }                }              "Down stairs"       "Structure"
       "Build to pass over water of lava." }
