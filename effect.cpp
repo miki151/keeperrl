@@ -857,6 +857,17 @@ string Effects::Caster::getDescription() const {
   return effect->getDescription();
 }
 
+void Effects::Chance::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effects::Chance::getName() const {
+  return effect->getName();
+}
+
+string Effects::Chance::getDescription() const {
+  return effect->getDescription() + " (" + toString(int(value * 100)) + "% chance)";
+}
+
 void Effects::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) const {
   auto attributes = c->getAttributes();
   c->getGame()->getContentFactory()->getCreatures().initializeAttributes(*c->getAttributes().getCreatureId(), attributes);
@@ -1096,9 +1107,13 @@ void Effect::apply(Position pos, Creature* attacker) const {
       [&](const Effects::Message& msg) {
         pos.globalMessage(msg.text);
       },
-      [&](const Effects::Caster& chain) {
+      [&](const Effects::Caster& e) {
         if (attacker)
-          chain.effect->apply(attacker->getPosition(), attacker);
+          e.effect->apply(attacker->getPosition(), attacker);
+      },
+      [&](const Effects::Chance& e) {
+        if (Random.chance(e.value))
+          e.effect->apply(pos, attacker);
       },
       [&](const Effects::SummonEnemy& summon) {
         CreatureGroup f = CreatureGroup::singleType(TribeId::getMonster(), summon.creature);
@@ -1272,7 +1287,10 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
           return e.effect->shouldAIApply(caster, pos);
         return EffectAIIntent::NONE;
       },
-      [&] (const auto& e) { return EffectAIIntent::NONE; }
+      [&] (const Effects::Chance& e) {
+        return e.effect->shouldAIApply(caster, pos);
+      },
+      [&] (const auto&) { return EffectAIIntent::NONE; }
   );
 }
 
@@ -1295,7 +1313,8 @@ optional<FXInfo> Effect::getProjectileFX() const {
       [&](const Effects::Lasting& e) -> optional<FXInfo> { return ::getProjectileFX(e.lastingEffect); },
       [&](const Effects::Damage&) -> optional<FXInfo> { return {FXName::MAGIC_MISSILE}; },
       [&](const Effects::Blast&) -> optional<FXInfo> { return {FXName::AIR_BLAST}; },
-      [&](const Effects::Pull&) -> optional<FXInfo> { return FXInfo{FXName::AIR_BLAST}.setReversed(); }
+      [&](const Effects::Pull&) -> optional<FXInfo> { return FXInfo{FXName::AIR_BLAST}.setReversed(); },
+      [&](const Effects::Chance& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); }
   );
 }
 
@@ -1305,7 +1324,8 @@ optional<ViewId> Effect::getProjectile() const {
       [&](const Effects::Lasting& e) -> optional<ViewId> { return ::getProjectile(e.lastingEffect); },
       [&](const Effects::Damage&) -> optional<ViewId> { return ViewId("force_bolt"); },
       [&](const Effects::Fire&) -> optional<ViewId> { return ViewId("fireball"); },
-      [&](const Effects::Blast&) -> optional<ViewId> { return ViewId("air_blast"); }
+      [&](const Effects::Blast&) -> optional<ViewId> { return ViewId("air_blast"); },
+      [&](const Effects::Chance& e) -> optional<ViewId> { return e.effect->getProjectile(); }
   );
 }
 
@@ -1342,6 +1362,7 @@ vector<Effect> Effect::getWishedForEffects() {
 optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
   return effect->visit(
       [&](const Effects::IncreaseMorale&) -> optional<MinionEquipmentType> { return MinionEquipmentType::COMBAT_ITEM; },
+      [&](const Effects::Chance& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
       [&](const Effects::Area& a) -> optional<MinionEquipmentType> { return a.effect->getMinionEquipmentType(); },
       [&](const Effects::Filter& f) -> optional<MinionEquipmentType> { return f.effect->getMinionEquipmentType(); },
       [&](const Effects::Escape&) -> optional<MinionEquipmentType> { return MinionEquipmentType::COMBAT_ITEM; },
@@ -1387,6 +1408,7 @@ optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
 bool Effect::canAutoAssignMinionEquipment() const {
   return effect->visit(
       [&](const Effects::Suicide&) { return false; },
+      [&](const Effects::Chance& e) { return e.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Area& a) { return a.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Filter& f) { return f.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Chain& c) {
