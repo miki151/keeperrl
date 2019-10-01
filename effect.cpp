@@ -439,18 +439,18 @@ string Effects::Deception::getDescription() const {
   return "Creates multiple illusions of the spellcaster to confuse the enemy.";
 }
 
-static void airBlast(Creature* who, Position position, Position target) {
-  CHECK(target != who->getPosition());
-  Vec2 direction = who->getPosition().getDir(target);
+static void airBlast(Creature* attacker, Position origin, Position position, Position target) {
+  CHECK(target != origin);
+  Vec2 direction = origin.getDir(target);
   constexpr int maxDistance = 4;
   while (direction.length8() < maxDistance * 3)
-    direction += who->getPosition().getDir(target);
+    direction += origin.getDir(target);
   auto trajectory = drawLine(Vec2(0, 0), direction);
   for (int i : All(trajectory))
-    if (trajectory[i] == who->getPosition().getDir(position)) {
+    if (trajectory[i] == origin.getDir(position)) {
       trajectory = getSubsequence(trajectory, i + 1, maxDistance);
       for (auto& v : trajectory)
-        v = v - who->getPosition().getDir(position);
+        v = v - origin.getDir(position);
       break;
     }
   CHECK(trajectory.size() == maxDistance);
@@ -470,7 +470,7 @@ static void airBlast(Creature* who, Position position, Position target) {
   for (auto& stack : Item::stackItems(position.getItems())) {
     position.throwItem(
         position.removeItems(stack),
-        Attack(who, Random.choose<AttackLevel>(),
+        Attack(attacker, Random.choose<AttackLevel>(),
           stack[0]->getWeaponInfo().attackType, 15, AttrType::DAMAGE), maxDistance,
           position.plus(trajectory.back()), VisionId::NORMAL);
   }
@@ -481,7 +481,7 @@ static void airBlast(Creature* who, Position position, Position target) {
 
 void Effects::CircularBlast::applyToCreature(Creature* c, Creature* attacker) const {
   for (Vec2 v : Vec2::directions8(Random))
-    airBlast(attacker, c->getPosition().plus(v), c->getPosition().plus(v * 10));
+    airBlast(attacker, c->getPosition(), c->getPosition().plus(v), c->getPosition().plus(v * 10));
   c->addFX({FXName::CIRCULAR_BLAST});
 }
 
@@ -1124,7 +1124,7 @@ void Effect::apply(Position pos, Creature* attacker) const {
               break;
           }
         for (int i : All(trajectory).reverse())
-          airBlast(attacker, trajectory[i], pos);
+          airBlast(attacker, attacker->getPosition(), trajectory[i], pos);
       },
       [&](Effects::Pull) {
         CHECK(attacker);
