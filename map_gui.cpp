@@ -728,6 +728,8 @@ void MapGui::clearCenter() {
   center = mouseOffset = {0.0, 0.0};
   softCenter = none;
   screenMovement = none;
+  for (auto v : objects.getBounds())
+    objects[v].reset();
 }
 
 bool MapGui::isCentered() const {
