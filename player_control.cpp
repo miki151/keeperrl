@@ -94,6 +94,7 @@
 #include "game_save_type.h"
 #include "immigrant_info.h"
 #include "special_trait.h"
+#include "user_input.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -916,6 +917,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, Un
         minionInfo.canAssignQuarters = false;
       if (c->isAffected(LastingEffect::CONSUMPTION_SKILL))
         minionInfo.actions.push_back(PlayerInfo::CONSUME);
+      minionInfo.actions.push_back(PlayerInfo::LOCATE);
     }
   }
   return minions;
@@ -2150,6 +2152,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
           if (Creature* consumed = getCreature(*creatureId))
             collective->setTask(c, Task::consume(consumed));
       }
+      break;
+    case UserInputId::CREATURE_LOCATE:
+      if (Creature* c = getCreature(input.get<Creature::Id>()))
+        setScrollPos(c->getPosition());
       break;
     case UserInputId::CREATURE_BANISH:
       if (Creature* c = getCreature(input.get<Creature::Id>()))

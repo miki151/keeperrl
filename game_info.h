@@ -154,7 +154,8 @@ class PlayerInfo {
     CONTROL,
     RENAME,
     BANISH,
-    CONSUME
+    CONSUME,
+    LOCATE
   };
   optional<EnumSet<TeamOrder>> HASH(teamOrders);
   vector<Action> HASH(actions);

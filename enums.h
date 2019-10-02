@@ -111,6 +111,7 @@ enum class LevelType;
 enum class EnemyAggressionLevel;
 enum class MinionEquipmentType;
 enum class EffectAIIntent;
+enum class UserInputId;
 
 struct FXInfo;
 struct FXSpawnInfo;

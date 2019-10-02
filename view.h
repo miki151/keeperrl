@@ -17,11 +17,12 @@
 
 #include "util.h"
 #include "debug.h"
-#include "user_input.h"
 #include "animation_id.h"
 #include "gender.h"
 #include "fx_info.h"
 #include "creature_experience_info.h"
+#include "enum_variant.h"
+#include "unique_entity.h"
 
 class CreatureView;
 class Level;
@@ -37,6 +38,7 @@ class RetiredGames;
 class ScrollPosition;
 class FilePath;
 class ModInfo;
+class UserInput;
 struct Color;
 namespace fx {
   class FXRenderer;
