@@ -1379,27 +1379,7 @@ optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
           return MinionEquipmentType::MATERIALIZATION;
       },
       [&](const Effects::Lasting& e) -> optional<MinionEquipmentType> {
-        switch (e.lastingEffect) {
-          case LastingEffect::SPEED:
-          case LastingEffect::SLOWED:
-          case LastingEffect::SLEEP:
-          case LastingEffect::POISON:
-          case LastingEffect::BLIND:
-          case LastingEffect::INVISIBLE:
-          case LastingEffect::DAM_BONUS:
-          case LastingEffect::DEF_BONUS:
-          case LastingEffect::POISON_RESISTANT:
-          case LastingEffect::MELEE_RESISTANCE:
-          case LastingEffect::RANGED_RESISTANCE:
-          case LastingEffect::MAGIC_RESISTANCE:
-          case LastingEffect::MELEE_VULNERABILITY:
-          case LastingEffect::RANGED_VULNERABILITY:
-          case LastingEffect::MAGIC_VULNERABILITY:
-          case LastingEffect::REGENERATION:
-            return MinionEquipmentType::COMBAT_ITEM;
-          default:
-            return none;
-        }
+        return MinionEquipmentType::COMBAT_ITEM;
       },
       [&](const auto&) -> optional<MinionEquipmentType> { return none; }
   );
