@@ -587,7 +587,7 @@ optional<string> FileSharing::uploadMod(ModInfo& modInfo, const DirectoryPath& m
   steam::UpdateItemInfo info;
   if (modInfo.versionInfo.steamId != 0)
     info.id = steam::ItemId(modInfo.versionInfo.steamId);
-  info.tags = "Mod," + modInfo.versionInfo.compatibilityTag;
+  info.tags = {"Mod", modInfo.versionInfo.compatibilityTag};
   info.title = modInfo.name;
   info.folder = string(modsDir.subdirectory(modInfo.name).absolute().getPath());
   info.description = modInfo.details.description;
@@ -632,7 +632,7 @@ optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const stri
   //auto& user = steam::User::instance();
 
   steam::UpdateItemInfo info;
-  info.tags = "Dungeon," + toString(saveVersion);
+  info.tags = {"Dungeon", toString(saveVersion)};
   info.title = title;
   info.folder = string(path.absolute().getPath());
   info.metadata = serializeInfo(path.getFileName(), savedInfo);

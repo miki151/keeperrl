@@ -319,15 +319,14 @@ void UGC::beginUpdateItem(const UpdateItemInfo& info) {
     }
     if (info.visibility)
       FUNC(SetItemVisibility)(ptr, handle, itemVisibilityMap[*info.visibility]);
-    if (info.tags) {
+    if (!info.tags.empty()) {
       vector<const char*> buffer;
-      for (auto& tag : parseTagList(*info.tags))
-        buffer.emplace_back(tag.c_str());
-
+      for (auto& tag : info.tags)
+        buffer.push_back(tag.c_str());
       SteamParamStringArray_t strings;
       strings.m_nNumStrings = buffer.size();
       strings.m_ppStrings = buffer.data();
-      auto ret = FUNC(SetItemTags)(ptr, handle, &strings);
+      auto ret = SteamAPI_ISteamUGC_SetItemTags(ptr, handle, &strings);
       CHECK(ret);
     }
 
