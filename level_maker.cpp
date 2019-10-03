@@ -2903,7 +2903,7 @@ PLevelMaker LevelMaker::adoxieTemple(RandomGen&, SettlementInfo info) {
       RandomLocations::LocationPredicate(Predicate::type(FurnitureType("MOUNTAIN2"))));
   queue->addMaker(std::move(locations));
   queue->addMaker(unique<Connector>(none, info.tribe));
-  return queue;
+  return PLevelMaker(queue.release());
 }
 
 namespace {
