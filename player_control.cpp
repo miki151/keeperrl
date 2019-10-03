@@ -1880,8 +1880,7 @@ void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
 void PlayerControl::exitAction() {
   enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
 #ifdef RELEASE
-  bool canRetire = !tutorial && getGame()->getPlayerCreatures().empty() && gameWon() &&
-      campaign->getType() != CampaignType::SINGLE_KEEPER;
+  bool canRetire = !tutorial && getGame()->getPlayerCreatures().empty() && getGame()->gameWon();
 #else
   bool canRetire = !tutorial && getGame()->getPlayerCreatures().empty();
 #endif
