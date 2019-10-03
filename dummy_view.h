@@ -3,6 +3,7 @@
 #include "view.h"
 #include "clock.h"
 #include "avatar_menu_option.h"
+#include "user_input.h"
 
 class DummyView : public View {
   public:
@@ -41,7 +42,7 @@ class DummyView : public View {
   virtual void presentText(const string&, const string&) override {}
   virtual void presentTextBelow(const string&, const string&) override {}
   virtual void presentList(const string&, const vector<ListElem>&, bool = false,
-      MenuType = MenuType::NORMAL, optional<UserInputId> = none) override {}
+      MenuType = MenuType::NORMAL) override {}
   virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) override {
     return none;
   }

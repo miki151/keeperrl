@@ -202,7 +202,7 @@ class View {
 
   /** Draws a window with a list of items.*/
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = MenuType::NORMAL, optional<UserInputId> exitAction = none) = 0;
+      MenuType = MenuType::NORMAL) = 0;
 
   /** Lets the player choose a number. Returns none if the player cancelled the choice.*/
   virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) = 0;
