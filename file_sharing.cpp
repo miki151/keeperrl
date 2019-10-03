@@ -589,6 +589,9 @@ optional<string> FileSharing::uploadMod(ModInfo& modInfo, const DirectoryPath& m
     info.id = steam::ItemId(modInfo.versionInfo.steamId);
   info.tags = {"Mod", modInfo.versionInfo.compatibilityTag};
   info.title = modInfo.name;
+  auto previewFile = modsDir.subdirectory(modInfo.name).file("preview.png");
+  if (previewFile.exists())
+    info.previewFile = string(previewFile.absolute().getPath());
   info.folder = string(modsDir.subdirectory(modInfo.name).absolute().getPath());
   info.description = modInfo.details.description;
   info.visibility = SteamItemVisibility::public_;
