@@ -46,7 +46,7 @@ struct UpdateItemInfo {
   optional<string> folder;
   optional<string> previewFile;
   optional<ItemVisibility> visibility;
-  optional<string> tags;
+  vector<string> tags;
   optional<vector<pair<string, string>>> keyValues;
   optional<string> metadata;
 };
