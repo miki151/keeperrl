@@ -17,11 +17,12 @@
 
 #include "util.h"
 #include "debug.h"
-#include "user_input.h"
 #include "animation_id.h"
 #include "gender.h"
 #include "fx_info.h"
 #include "creature_experience_info.h"
+#include "enum_variant.h"
+#include "unique_entity.h"
 
 class CreatureView;
 class Level;
@@ -37,6 +38,7 @@ class RetiredGames;
 class ScrollPosition;
 class FilePath;
 class ModInfo;
+class UserInput;
 struct Color;
 namespace fx {
   class FXRenderer;
@@ -200,7 +202,7 @@ class View {
 
   /** Draws a window with a list of items.*/
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = MenuType::NORMAL, optional<UserInputId> exitAction = none) = 0;
+      MenuType = MenuType::NORMAL) = 0;
 
   /** Lets the player choose a number. Returns none if the player cancelled the choice.*/
   virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) = 0;

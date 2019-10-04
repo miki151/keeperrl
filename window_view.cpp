@@ -1158,13 +1158,12 @@ void WindowView::presentTextBelow(const string& title, const string& text) {
   presentList(title, ListElem::convert({text}), false, MenuType::NORMAL_BELOW);
 }
 
-void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown, MenuType menu,
-    optional<UserInputId> exitAction) {
+void WindowView::presentList(const string& title, const vector<ListElem>& options, bool scrollDown, MenuType menu) {
   vector<ListElem> conv(options);
   for (ListElem& e : conv)
     if (e.getMod() == ListElem::NORMAL)
       e.setMod(ListElem::TEXT);
-  ScrollPosition scrollPos(scrollDown ? options.size() - 1 : 0);
+  ScrollPosition scrollPos(scrollDown ? 10000000 : 0);
   chooseFromListInternal(title, conv, none, menu, &scrollPos);
 }
 

@@ -18,7 +18,9 @@ Color TileSet::getColor(const ViewObject& object) const {
     return Color::DARK_GRAY;
   if (object.hasModifier(ViewObject::Modifier::HIDDEN))
     return Color::LIGHT_GRAY;
-  Color color = symbols.at(object.id().getInternalId()).color;
+  auto symbol = getReferenceMaybe(symbols, object.id().getInternalId());
+  CHECK(!!symbol) << "No symbol found for : " << object.id().data();
+  Color color = symbol->color;
   if (object.hasModifier(ViewObject::Modifier::PLANNED))
     return Color(color.r / 2, color.g / 2, color.b / 2);
   return color;

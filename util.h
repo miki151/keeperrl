@@ -1473,6 +1473,7 @@ class HeapAllocatedSerializationWorkaround : public HeapAllocated<T> {
     if (Archive::is_loading::value) {
       HeapAllocated<T>::elem = unique<T>();
     }
+    CHECK(!!HeapAllocated<T>::elem);
     ar1(*HeapAllocated<T>::elem);
   }
 };
