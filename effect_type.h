@@ -184,12 +184,17 @@ struct IncreaseMorale {
   double amount;
   COMPARE_ALL(amount)
 };
-
+struct Chance {
+  EFFECT_TYPE_INTERFACE;
+  double value;
+  HeapAllocated<Effect> effect;
+  COMPARE_ALL(value, effect)
+};
 MAKE_VARIANT2(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, Enhance, Suicide, IncreaseAttr,
     EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
     Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
     Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost, Filter, SummonEnemy, Wish, Chain, Caster,
-    IncreaseMorale, Message);
+    IncreaseMorale, Message, Chance);
 }
 
 class EffectType : public Effects::EffectType {

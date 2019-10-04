@@ -2977,6 +2977,10 @@ vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const o
         line.push_back(gui.buttonLabel("Absorb",
             getButtonCallback({UserInputId::CREATURE_CONSUME, minion.creatureId})));
         break;
+      case PlayerInfo::LOCATE:
+        line.push_back(gui.buttonLabel("Locate",
+            getButtonCallback({UserInputId::CREATURE_LOCATE, minion.creatureId})));
+        break;
     }
   return line;
 }

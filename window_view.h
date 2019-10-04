@@ -79,7 +79,7 @@ class WindowView: public View {
   virtual void presentText(const string& title, const string& text) override;
   virtual void presentTextBelow(const string& title, const string& text) override;
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
-      MenuType = MenuType::NORMAL, optional<UserInputId> exitAction = none) override;
+      MenuType = MenuType::NORMAL) override;
   virtual optional<int> getNumber(const string& title, Range range, int initial, int increments = 1) override;
   virtual optional<string> getText(const string& title, const string& value, int maxLength,
       const string& hint) override;

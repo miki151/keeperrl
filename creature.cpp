@@ -1763,7 +1763,7 @@ bool Creature::canSeeInPosition(const Creature* c, GlobalTime time) const {
 bool Creature::canSeeIfNotBlind(const Creature* c, GlobalTime time) const {
   PROFILE;
   return (canSeeInPositionIfNotBlind(c, time) &&
-          getLevel()->canSee(position.getCoord(), c->position.getCoord(), c->getVision())) ||
+          getLevel()->canSee(position.getCoord(), c->position.getCoord(), getVision())) ||
       canSeeOutsidePosition(c);
 }
 
