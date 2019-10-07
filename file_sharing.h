@@ -44,6 +44,9 @@ class FileSharing {
 
   string downloadHighscores(int version);
 
+  const string& getPersonalMessage();
+  void downloadPersonalMessage();
+
   void cancel();
   bool consumeCancelled();
   ~FileSharing();
@@ -67,6 +70,8 @@ class FileSharing {
   optional<string> download(const string& filename, const string& remoteDir, const DirectoryPath& dir, ProgressMeter&);
   string installId;
   atomic<bool> wasCancelled;
+  string personalMessage;
+  recursive_mutex personalMessageMutex;
 };
 
 constexpr auto retiredScreenshotFilename = "retired_screenshot.png";

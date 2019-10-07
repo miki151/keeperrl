@@ -137,7 +137,7 @@ class GuiBuilder {
   Rectangle getTextInputPosition();
   SGuiElem drawListGui(const string& title, const vector<ListElem>& options,
       MenuType, optional<int>* highlight, int* choice, vector<int>* positions);
-  SGuiElem getMainMenuLinks(SGuiElem);
+  SGuiElem getMainMenuLinks(const string& personalMessage, SGuiElem);
   int getScrollPos(int index, int count);
   void setMapGui(shared_ptr<MapGui>);
   void clearHint();

@@ -256,6 +256,23 @@ string FileSharing::downloadHighscores(int version) {
   return ret;
 }
 
+void FileSharing::downloadPersonalMessage() {
+  uploadQueue.push([this] {
+    RecursiveLock lock(personalMessageMutex);
+    personalMessage = downloadContent(uploadUrl + "/get_personal.php?installId=" + escapeEverything(installId)).value_or(""_s);
+    auto prefix = "personal123"_s;
+    if (startsWith(personalMessage, prefix))
+      personalMessage = personalMessage.substr(prefix.size());
+    else
+      personalMessage = "";
+  });
+}
+
+const std::string& FileSharing::getPersonalMessage() {
+  RecursiveLock lock(personalMessageMutex);
+  return personalMessage;
+}
+
 template<typename Elem>
 static vector<Elem> parseLines(const string& s, function<optional<Elem>(const vector<string>&)> parseLine) {
   std::stringstream iss(s);
