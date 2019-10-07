@@ -74,7 +74,7 @@ class Game : public OwnedObject<Game> {
   bool isGameOver() const;
   bool isTurnBased();
   bool isVillainActive(WConstCollective);
-  SavedGameInfo getSavedGameInfo() const;
+  SavedGameInfo getSavedGameInfo(vector<string> spriteMods) const;
 
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
   void killCreature(Creature*, Creature* attacker);

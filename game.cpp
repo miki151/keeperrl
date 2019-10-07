@@ -689,7 +689,7 @@ string Game::getPlayerName() const {
     return players.getOnlyElement()->getName().firstOrBare();
 }
 
-SavedGameInfo Game::getSavedGameInfo() const {
+SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
   if (WCollective col = getPlayerCollective()) {
     vector<Creature*> creatures = col->getCreatures();
     CHECK(!creatures.empty());
@@ -702,10 +702,10 @@ SavedGameInfo Game::getSavedGameInfo() const {
     vector<SavedGameInfo::MinionInfo> minions;
     for (Creature* c : creatures)
       minions.push_back(getMinionInfo(c));
-    return SavedGameInfo{minions, col->getDangerLevel(), getPlayerName(), getSaveProgressCount(), {}};
+    return SavedGameInfo{minions, col->getDangerLevel(), getPlayerName(), getSaveProgressCount(), std::move(spriteMods)};
   } else {
     auto player = players.getOnlyElement(); // adventurer mode
-    return SavedGameInfo{{getMinionInfo(player)}, 0, player->getName().bare(), getSaveProgressCount(), {}};
+    return SavedGameInfo{{getMinionInfo(player)}, 0, player->getName().bare(), getSaveProgressCount(), std::move(spriteMods)};
   }
 }
 

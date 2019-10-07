@@ -125,8 +125,7 @@ static string stripFilename(string s) {
 void MainLoop::saveGame(PGame& game, const FilePath& path) {
   CompressedOutput out(path.getPath());
   string name = game->getGameDisplayName();
-  SavedGameInfo savedInfo = game->getSavedGameInfo();
-  savedInfo.spriteMods = tileSet->getSpriteMods();
+  SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
   out.getArchive() << saveVersion << name << savedInfo;
   out.getArchive() << game;
 }
@@ -140,8 +139,7 @@ struct RetiredModelInfo {
 void MainLoop::saveMainModel(PGame& game, const FilePath& path) {
   CompressedOutput out(path.getPath());
   string name = game->getGameDisplayName();
-  SavedGameInfo savedInfo = game->getSavedGameInfo();
-  savedInfo.spriteMods = tileSet->getSpriteMods();
+  SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
   out.getArchive() << saveVersion << name << savedInfo;
   RetiredModelInfo info {
     std::move(game->getMainModel()),
@@ -189,7 +187,7 @@ void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
     doWithSplash(splashType, "Retiring site...", saveTime,
         [&] (ProgressMeter& meter) {
         Square::progressMeter = &meter;
-        uploadFun = [this, path, name = game->getGameDisplayName(), savedInfo = game->getSavedGameInfo()] {
+        uploadFun = [this, path, name = game->getGameDisplayName(), savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods())] {
           uploadFile(path, name, savedInfo);
         };
         MEASURE(saveMainModel(game, path), "saving time")});
