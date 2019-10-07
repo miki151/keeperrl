@@ -400,6 +400,7 @@ void Body::consumeBodyParts(Creature* c, Body& other, vector<string>& adjectives
       c->verb("develop", "develops",  "a " + attack->item->getNameAndModifiers() + " attack");
       c->addPersonalEvent(c->getName().the() + " develops a " + attack->item->getNameAndModifiers() + " attack");
       intrinsicAttacks[part] = std::move(*attack);
+      other.intrinsicAttacks[part] = none;
     }
   }
   if (other.isHumanoid() && !isHumanoid() && numBodyParts(BodyPart::ARM) >= 2 &&
