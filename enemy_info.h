@@ -36,7 +36,8 @@ struct LevelConnection {
     Vec2 SERIAL(levelSize);
     LevelType SERIAL(levelType);
     EnemyLevelInfo SERIAL(enemy);
-    SERIALIZE_ALL(NAMED(enemy), NAMED(levelSize), NAMED(levelType))
+    bool SERIAL(isLit) = false;
+    SERIALIZE_ALL(NAMED(enemy), NAMED(levelSize), NAMED(levelType), OPTION(isLit))
   };
   EnemyLevelInfo SERIAL(topLevel);
   vector<LevelInfo> SERIAL(levels);

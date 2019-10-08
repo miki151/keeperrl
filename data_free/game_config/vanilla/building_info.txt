@@ -6,6 +6,11 @@
       door = { "WOOD_DOOR" 1.0 }
       gate = { "WOOD_GATE" 1.0 }
     }
+  "BLACK"
+    {
+      wall = "BLACK_WALL"
+      floorInside = "BLACK_FLOOR"
+    }
   "WOOD_CASTLE"
     {
       wall = "WOOD_WALL"

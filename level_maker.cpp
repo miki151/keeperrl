@@ -2895,8 +2895,8 @@ PLevelMaker LevelMaker::adoxieTemple(RandomGen&, SettlementInfo info) {
       RandomLocations::LocationPredicate(Predicate::type(FurnitureType("MAGMA"))));
   auto entryRoom = unique<MakerQueue>();
   entryRoom->addMaker(unique<Empty>(SquareChange::reset(floor)));
-  for (StairKey key : info.downStairs)
-    entryRoom->addMaker(unique<Stairs>(StairDirection::DOWN, key, building, Predicate::type(floor)));
+  /*for (StairKey key : info.downStairs)
+    entryRoom->addMaker(unique<Stairs>(StairDirection::DOWN, key, building, Predicate::type(floor)));*/
   for (StairKey key : info.upStairs)
     entryRoom->addMaker(unique<Stairs>(StairDirection::UP, key, building, Predicate::type(floor)));
   locations->add(unique<Margin>(1, std::move(entryRoom)), Vec2(7, 7),

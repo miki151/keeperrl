@@ -339,8 +339,8 @@
     strength = 250
     destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
 # if there is a destroyedEffect then the standard "is destroyed" text is not displayed, you need to add your own
-    destroyedEffect = Chain { Message "The statue comes to life!" SummonEnemy "ADOXIE_HEAD" {1} }
-#    destroyedRemains = "DOWN_STAIRS"
+#    destroyedEffect = Chain { Message "The statue comes to life!" SummonEnemy "ADOXIE_HEAD" {1} }
+    destroyedRemains = "DOWN_STAIRS"
   }
   "BARRICADE"
   {
@@ -990,6 +990,21 @@
       300 HOSTILE_DIG_NO_SKILL
     }
   }
+  "BLACK_WALL"
+  {
+    name = "void"
+    viewId = { "black" }
+    blockMovement = true
+    blockVision = { NORMAL ELF }
+    wall = true
+    buildingSupport = true
+  }
+  "BLACK_FLOOR"
+  {
+    name = "void"
+    viewId = { "black" }
+    layer = GROUND
+  }
   "FLOOR_WOOD1"
   {
     name = "floor"
@@ -1273,12 +1288,6 @@
   {
     name = "floor"
     viewId = { "floor" }
-    layer = GROUND
-  }
-  "BLACK_FLOOR"
-  {
-    name = "floor"
-    viewId = { "empty" }
     layer = GROUND
   }
   "TUTORIAL_ENTRANCE"

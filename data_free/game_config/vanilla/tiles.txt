@@ -96,6 +96,7 @@
   { "unknown_monster" "?" ColorId LIGHT_GREEN false "unknown" }
   { "destroy_button" "X" ColorId RED false "remove" }
   { "empty" " " ColorId BLACK }
+  { "black" " " ColorId BLACK }
   { "dig_mark" " " ColorId BLACK }
   { "dig_mark2" " " ColorId BLACK }
   { "forbid_zone" "#" ColorId RED false "dig_mark" ColorId RED }
