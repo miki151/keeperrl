@@ -356,15 +356,21 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
         if (isCompatible(getSaveVersion(info)))
           if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
             ret.addLocal(*saved, info, false);
-      optional<vector<FileSharing::SiteInfo>> onlineSites;
+      vector<FileSharing::SiteInfo> onlineSites;
+      optional<string> error;
       doWithSplash(SplashType::SMALL, "Fetching list of retired dungeons from the server...",
-          [&] { onlineSites = fileSharing->listSites(); }, [&] { fileSharing->cancel(); });
-      if (onlineSites) {
-        for (auto& elem : *onlineSites)
-          if (isCompatible(elem.version))
-            ret.addOnline(elem.gameInfo, elem.fileInfo, elem.totalGames, elem.wonGames, elem.subscribed);
-      } else
-        view->presentText("", "Failed to fetch list of retired dungeons from the server.");
+          [&] {
+            if (auto sites = fileSharing->listSites())
+              onlineSites = *sites;
+            else
+              error = sites.error();
+          },
+          [&] { fileSharing->cancel(); });
+      if (error)
+        view->presentText("", *error);
+      for (auto& elem : onlineSites)
+        if (isCompatible(elem.version))
+          ret.addOnline(elem.gameInfo, elem.fileInfo, elem.totalGames, elem.wonGames, elem.subscribed);
       ret.sort();
       return ret;
     }
@@ -651,11 +657,17 @@ void MainLoop::createNewMod() {
 
 vector<ModInfo> MainLoop::getOnlineMods() {
   vector<ModInfo> ret;
+  optional<string> error;
   doWithSplash(SplashType::SMALL, "Downloading list of online mods...", 1,
       [&] (ProgressMeter& meter) {
-        ret = fileSharing->getOnlineMods().value_or(vector<ModInfo>());
+        if (auto mods = fileSharing->getOnlineMods())
+          ret = *mods;
+        else
+          error = mods.error();
         sort(ret.begin(), ret.end(), [](const ModInfo& m1, const ModInfo& m2) { return m1.upvotes > m2.upvotes; });
       });
+  if (error)
+    view->presentText("", *error);
   return ret;
 }
 

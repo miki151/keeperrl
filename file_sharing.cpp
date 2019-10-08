@@ -127,7 +127,7 @@ static CallbackData getCallbackData(FileSharing* f, ProgressMeter& meter) {
 optional<string> FileSharing::uploadSite(const FilePath& path, const string& title, const SavedGameInfo& info,
     ProgressMeter& meter, optional<string>& url) {
   if (!options.getBoolValue(OptionId::ONLINE))
-    return none;
+    return "Online features not enabled!"_s;
 #ifdef USE_STEAMWORKS
   return uploadSiteToSteam(path, title, info, meter, url);
 #else
@@ -331,15 +331,15 @@ static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
   return elem;
 }
 
-optional<vector<FileSharing::SiteInfo>> FileSharing::listSites() {
+expected<vector<FileSharing::SiteInfo>, string> FileSharing::listSites() {
   if (!options.getBoolValue(OptionId::ONLINE))
-    return {};
+    return make_unexpected("Please enable online features in the settings in order to download retired dungeons!"_s);
   if (auto sites = getSteamSites())
-    return sites;
+    return *sites;
   if (auto content = downloadContent(uploadUrl + "/get_sites.php"))
     return parseLines<FileSharing::SiteInfo>(*content, parseSite);
   else
-    return none;
+    return make_unexpected("Error fetching online dungeons."_s);
 }
 
 static optional<FileSharing::BoardMessage> parseBoardMessage(const vector<string>& fields) {
@@ -349,11 +349,11 @@ static optional<FileSharing::BoardMessage> parseBoardMessage(const vector<string
     return none;
 }
 
-optional<vector<FileSharing::BoardMessage>> FileSharing::getBoardMessages(int boardId) {
+expected<vector<FileSharing::BoardMessage>, string> FileSharing::getBoardMessages(int boardId) {
   if (options.getBoolValue(OptionId::ONLINE))
     if (auto content = downloadContent(uploadUrl + "/get_messages.php?boardId=" + toString(boardId)))
       return parseLines<FileSharing::BoardMessage>(*content, parseBoardMessage);
-  return none;
+  return make_unexpected("Please enable online features in the settings in order to download messages!"_s);
 }
 
 bool FileSharing::uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text) {
@@ -538,15 +538,14 @@ optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites() {
   return out;
 }
 
-optional<vector<ModInfo>> FileSharing::getOnlineMods() {
+expected<vector<ModInfo>, string> FileSharing::getOnlineMods() {
   if (!options.getBoolValue(OptionId::ONLINE))
-    return none;
+    return make_unexpected("Please enable online features in the settings in order to download mods."_s);
   if (auto steamMods = getSteamMods())
-    return steamMods;
-  if (options.getBoolValue(OptionId::ONLINE))
-    if (auto content = downloadContent(uploadUrl + "/get_mods.php"))
-      return parseLines<ModInfo>(*content, [this](auto& e) { return parseModInfo(e, modVersion);});
-  return none;
+    return *steamMods;
+  if (auto content = downloadContent(uploadUrl + "/get_mods.php"))
+    return parseLines<ModInfo>(*content, [this](auto& e) { return parseModInfo(e, modVersion);});
+  return make_unexpected("Error fetching online mods."_s);
 }
 
 optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, const DirectoryPath& modsDir,

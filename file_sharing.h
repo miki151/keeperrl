@@ -23,7 +23,7 @@ class FileSharing {
     int version;
     bool subscribed;
   };
-  optional<vector<SiteInfo>> listSites();
+  expected<vector<SiteInfo>, string> listSites();
 
   typedef map<string, string> GameEvent;
   bool uploadGameEvent(const GameEvent&, bool requireGameEventsPermission = true);
@@ -35,10 +35,10 @@ class FileSharing {
     string text;
     string author;
   };
-  optional<vector<BoardMessage>> getBoardMessages(int boardId);
+  expected<vector<BoardMessage>, string> getBoardMessages(int boardId);
   bool uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text);
 
-  optional<vector<ModInfo>> getOnlineMods();
+  expected<vector<ModInfo>, string> getOnlineMods();
   optional<string> downloadMod(const string& name, SteamId, const DirectoryPath& modsDir, ProgressMeter&);
   optional<string> uploadMod(ModInfo& modInfo, const DirectoryPath& modsDir, ProgressMeter&);
 

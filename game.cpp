@@ -724,20 +724,26 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
       cancelled = true;
       fileSharing->cancel();
       });
-  optional<vector<FileSharing::BoardMessage>> messages;
-  thread t([&] { messages = fileSharing->getBoardMessages(boardId); view->clearSplash(); });
+  vector<FileSharing::BoardMessage> messages;
+  optional<string> error;
+  thread t([&] {
+    if (auto m = fileSharing->getBoardMessages(boardId))
+      messages = *m;
+    else
+      error = m.error();
+    view->clearSplash();
+  });
   view->refreshView();
   t.join();
-  if (!messages || cancelled) {
-    view->presentText("", "Couldn't download board contents. Please check your internet connection and "
-        "enable online features in the settings.");
+  if (error) {
+    view->presentText("", *error);
     return;
   }
-  for (auto message : *messages) {
+  for (auto message : messages) {
     options.emplace_back(message.author + " wrote:", ListElem::TITLE);
     options.emplace_back("\"" + message.text + "\"", ListElem::TEXT);
   }
-  if (messages->empty())
+  if (messages.empty())
     options.emplace_back("The board is empty.", ListElem::TITLE);
   options.emplace_back("", ListElem::TEXT);
   options.emplace_back("[Write something]");
