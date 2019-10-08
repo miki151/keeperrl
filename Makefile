@@ -175,6 +175,9 @@ clean:
 	$(RM) $(OBJDIR)-opt/*.o
 	$(RM) $(OBJDIR)-opt/*.d
 	$(RM) $(OBJDIR)-opt/*.gch
+	$(RM) $(OBJDIR)-opt/extern/*.o
+	$(RM) $(OBJDIR)-opt/extern/*.d
+	$(RM) $(OBJDIR)-opt/extern/*.gch
 	$(RM) $(NAME)
 	$(RM) $(OBJDIR)/stdafx.h.*
 
