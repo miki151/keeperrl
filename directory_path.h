@@ -23,7 +23,7 @@ class DirectoryPath {
   const char* getPath() const;
 
   static DirectoryPath current();
-  static optional<string> copyFiles(DirectoryPath from, DirectoryPath to, bool recursive);
+  optional<string> copyRecursively(DirectoryPath to);
 
   bool isAbsolute() const;
   DirectoryPath absolute() const;

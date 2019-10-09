@@ -366,19 +366,6 @@ bool FileSharing::uploadBoardMessage(const string& gameId, int hash, const strin
   }, false);
 }
 
-static optional<ModInfo> parseModInfo(const vector<string>& fields, const string& modVersion) {
-  if (fields.size() >= 9)
-    if (auto numGames = fromStringSafe<int>(unescapeEverything(fields[3])))
-      if (auto version = fromStringSafe<int>(unescapeEverything(fields[4])))
-        if (auto steamId = fromStringSafe<SteamId>(unescapeEverything(fields[5])))
-          if (auto upvotes = fromStringSafe<int>(unescapeEverything(fields[7])))
-            if (auto downvotes = fromStringSafe<int>(unescapeEverything(fields[8])))
-              if (fields[6] == modVersion)
-                return ModInfo{unescapeEverything(fields[0]), ModDetails{unescapeEverything(fields[1]), unescapeEverything(fields[2])},
-                      ModVersionInfo{*steamId, *version, modVersion}, *upvotes, *downvotes, false, false, false, {}};
-  return none;
-}
-
 static string firstLines(string text, int max_lines = 3) {
   int num_lines = 1;
   for (int n = 0; n < (int)text.size(); n++) {
@@ -393,6 +380,20 @@ static string firstLines(string text, int max_lines = 3) {
   while (text.back() == '\n')
     text.pop_back();
   return text;
+}
+
+static optional<ModInfo> parseModInfo(const vector<string>& fields, const string& modVersion) {
+  if (fields.size() >= 9)
+    if (auto numGames = fromStringSafe<int>(unescapeEverything(fields[3])))
+      if (auto version = fromStringSafe<int>(unescapeEverything(fields[4])))
+        if (auto steamId = fromStringSafe<SteamId>(unescapeEverything(fields[5])))
+          if (auto upvotes = fromStringSafe<int>(unescapeEverything(fields[7])))
+            if (auto downvotes = fromStringSafe<int>(unescapeEverything(fields[8])))
+              if (fields[6] == modVersion)
+                return ModInfo{unescapeEverything(fields[0]),
+                      ModDetails{unescapeEverything(fields[1]), firstLines(unescapeEverything(fields[2]))},
+                      ModVersionInfo{*steamId, *version, modVersion}, *upvotes, *downvotes, false, false, false, {}};
+  return none;
 }
 
 struct SteamItemInfo {
@@ -543,7 +544,7 @@ expected<vector<ModInfo>, string> FileSharing::getOnlineMods() {
     return make_unexpected("Please enable online features in the settings in order to download mods."_s);
   if (auto steamMods = getSteamMods())
     return *steamMods;
-  if (auto content = downloadContent(uploadUrl + "/get_mods.php"))
+  if (auto content = downloadContent(uploadUrl + "/get_mods.txt"))
     return parseLines<ModInfo>(*content, [this](auto& e) { return parseModInfo(e, modVersion);});
   return make_unexpected("Error fetching online mods."_s);
 }
@@ -577,7 +578,7 @@ optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, 
   auto instInfo = ugc.installInfo(id);
   if (!instInfo)
     return string("Error while retrieving installation info");
-  return DirectoryPath::copyFiles(DirectoryPath(instInfo->folder), modsDir.subdirectory(name), true);
+  return DirectoryPath(instInfo->folder).copyRecursively(modsDir.subdirectory(name));
 #else
   return string("Steam support is not available in this build");
 #endif

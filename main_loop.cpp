@@ -648,7 +648,7 @@ void MainLoop::createNewMod() {
     auto targetPath = modsDir.subdirectory(*name);
     doWithSplash(SplashType::SMALL, "Copying files...", 1,
        [&] (ProgressMeter& meter) {
-         DirectoryPath::copyFiles(modsDir.subdirectory("vanilla"), targetPath, true);
+         modsDir.subdirectory("vanilla").copyRecursively(targetPath);
        });
     updateLocalModVersion(*name, ModVersionInfo{0, 0, modVersion});
     updateLocalModDetails(*name, ModDetails{"", ""});
