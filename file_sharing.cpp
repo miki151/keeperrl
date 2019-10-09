@@ -136,11 +136,9 @@ optional<string> FileSharing::uploadSite(const FilePath& path, const string& tit
 }
 
 optional<string> FileSharing::downloadSite(const SaveFileInfo& file, const DirectoryPath& targetDir, ProgressMeter& meter) {
-#ifdef USE_STEAMWORKS
-  return downloadSteamSite(file, targetDir, meter);
-#else
-  return download(file.filename, "uploads", targetDir, meter);
-#endif
+  if (!!downloadSteamSite(file, targetDir, meter))
+    return download(file.filename, "dungeons", targetDir, meter);
+  return none;
 }
 
 void FileSharing::uploadHighscores(const FilePath& path) {
@@ -310,19 +308,18 @@ optional<string> FileSharing::downloadContent(const string& url) {
 }
 
 static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
-  if (fields.size() < 6)
+  if (fields.size() < 5)
     return none;
   INFO << "Parsed " << fields;
   FileSharing::SiteInfo elem {};
-  elem.fileInfo.filename = fields[0];
+  TextInput input(unescapeEverything(fields[0]));
+  input.getArchive() >> elem.fileInfo.filename >> elem.gameInfo;
   try {
     elem.fileInfo.date = fromString<int>(fields[1]);
     elem.wonGames = fromString<int>(fields[2]);
     elem.totalGames = fromString<int>(fields[3]);
-    elem.version = fromString<int>(fields[5]);
+    elem.version = fromString<int>(fields[4]);
     elem.fileInfo.download = true;
-    TextInput input(fields[4]);
-    input.getArchive() >> elem.gameInfo;
   } catch (cereal::Exception) {
     return none;
   } catch (ParsingException e) {
@@ -336,7 +333,7 @@ expected<vector<FileSharing::SiteInfo>, string> FileSharing::listSites() {
     return make_unexpected("Please enable online features in the settings in order to download retired dungeons!"_s);
   if (auto sites = getSteamSites())
     return *sites;
-  if (auto content = downloadContent(uploadUrl + "/get_sites.php"))
+  if (auto content = downloadContent(uploadUrl + "/dungeons.txt"))
     return parseLines<FileSharing::SiteInfo>(*content, parseSite);
   else
     return make_unexpected("Error fetching online dungeons."_s);
@@ -403,15 +400,10 @@ struct SteamItemInfo {
   bool isOwner;
 };
 
-static vector<SteamItemInfo> getSteamItems() {
+static optional<vector<SteamItemInfo>> getSteamItems() {
 #ifdef USE_STEAMWORKS
-  if (!steam::Client::isAvailable()) {
-#ifdef RELEASE
-    USER_INFO << "Steam client not available";
-#endif
-    return {};
-  }
-
+  if (!steam::Client::isAvailable())
+    return none;
   // TODO: thread safety
   // TODO: filter mods by tags early
   auto& ugc = steam::UGC::instance();
@@ -489,13 +481,16 @@ static vector<SteamItemInfo> getSteamItems() {
     });
   return ret;
 #else
-  return {};
+  return none;
 #endif
 }
 
 optional<vector<ModInfo>> FileSharing::getSteamMods() {
   vector<ModInfo> out;
-  auto infos = getSteamItems();
+  auto infos1 = getSteamItems();
+  if (!infos1)
+    return none;
+  auto& infos = *infos1;
   for (int n = 0; n < infos.size(); n++) {
     auto& info = infos[n].info;
     if (!info.tags.contains("Mod") || !info.tags.contains(modVersion))
@@ -521,7 +516,10 @@ optional<vector<ModInfo>> FileSharing::getSteamMods() {
 
 optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites() {
   vector<SiteInfo> out;
-  auto infos = getSteamItems();
+  auto infos1 = getSteamItems();
+  if (!infos1)
+    return none;
+  auto& infos = *infos1;
   for (int n = 0; n < infos.size(); n++) {
     auto& info = infos[n].info;
     if (!info.tags.contains("Dungeon") || !info.tags.contains(toString(saveVersion)))
@@ -586,7 +584,7 @@ optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, 
 
 optional<string> FileSharing::downloadMod(const string& modName, SteamId steamId, const DirectoryPath& modsDir, ProgressMeter& meter) {
   if (!!downloadSteamMod(steamId, modName, modsDir, meter)) {
-    auto fileName = toString(steamId) + ".zip";
+    auto fileName = toString(modName) + ".zip";
     if (auto err = download(fileName, "mods", modsDir, meter))
       return err;
     return unzip(modsDir.file(fileName).getPath(), modsDir.getPath());
