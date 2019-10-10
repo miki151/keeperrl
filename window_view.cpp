@@ -252,9 +252,11 @@ void WindowView::getAutosaveSplash(const ProgressMeter& meter, const string& tex
     refreshScreen(false);
     window->render(renderer);
     double progress = meter.getProgress();
-    Rectangle bar(progressBar.topLeft(), Vec2(1 + progressBar.left() * (1.0 - progress) +
-          progressBar.right() * progress, progressBar.bottom()));
-    renderer.drawFilledRectangle(bar, Color::DARK_GREEN.transparency(50));
+    if (progress > 0) {
+      Rectangle bar(progressBar.topLeft(), Vec2(1 + progressBar.left() * (1.0 - progress) +
+            progressBar.right() * progress, progressBar.bottom()));
+      renderer.drawFilledRectangle(bar, Color::DARK_GREEN.transparency(50));
+    }
     renderer.drawText(Color::WHITE, Vec2(bounds.middle().x, bounds.top() + 20), text, Renderer::HOR);
     renderer.drawAndClearBuffer();
     sleep_for(milliseconds(30));
@@ -266,7 +268,7 @@ void WindowView::getAutosaveSplash(const ProgressMeter& meter, const string& tex
   }
 }
 
-void WindowView::getSmallSplash(const string& text, function<void()> cancelFun) {
+void WindowView::getSmallSplash(const ProgressMeter& meter, const string& text, function<void()> cancelFun) {
   SGuiElem window = gui.miniWindow(gui.empty(), []{});
   Vec2 windowSize(500, 90);
   string cancelText = "[cancel]";
@@ -276,6 +278,12 @@ void WindowView::getSmallSplash(const string& text, function<void()> cancelFun) 
   while (!splashDone) {
     refreshScreen(false);
     window->render(renderer);
+    double progress = meter.getProgress();
+    if (progress > 0) {
+      Rectangle bar(progressBar.topLeft(), Vec2(1 + progressBar.left() * (1.0 - progress) +
+            progressBar.right() * progress, progressBar.bottom()));
+      renderer.drawFilledRectangle(bar, Color::DARK_GREEN.transparency(50));
+    }
     renderer.drawText(Color::WHITE, Vec2(bounds.middle().x, bounds.top() + 20), text, Renderer::HOR);
     Rectangle cancelBut(bounds.middle().x - renderer.getTextLength(cancelText) / 2, bounds.top() + 50,
         bounds.middle().x + renderer.getTextLength(cancelText) / 2, bounds.top() + 80);
@@ -333,7 +341,7 @@ void WindowView::displaySplash(const ProgressMeter* meter, const string& text, S
     switch (type) {
       case SplashType::BIG: getBigSplash(*meter, text, cancelFun); break;
       case SplashType::AUTOSAVING: getAutosaveSplash(*meter, text); break;
-      case SplashType::SMALL: getSmallSplash(text, cancelFun); break;
+      case SplashType::SMALL: getSmallSplash(*meter, text, cancelFun); break;
     }
     splashDone = false;
     renderDialog.pop();

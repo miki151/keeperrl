@@ -658,7 +658,7 @@ void MainLoop::createNewMod() {
 vector<ModInfo> MainLoop::getOnlineMods() {
   vector<ModInfo> ret;
   optional<string> error;
-  doWithSplash(SplashType::SMALL, "Downloading list of online mods...", 1,
+  doWithSplash(SplashType::AUTOSAVING, "Downloading list of online mods...", 1,
       [&] (ProgressMeter& meter) {
         if (auto mods = fileSharing->getOnlineMods())
           ret = *mods;
@@ -802,10 +802,10 @@ void MainLoop::start(bool tilesPresent) {
 
 void MainLoop::doWithSplash(SplashType type, const string& text, int totalProgress,
     function<void(ProgressMeter&)> fun, function<void()> cancelFun) {
-  ProgressMeter meter(1.0 / totalProgress);
-  if (useSingleThread)
+  if (useSingleThread) {
+    ProgressMeter meter(1.0 / totalProgress);
     fun(meter);
-  else
+  } else
     view->doWithSplash(type, text, totalProgress, std::move(fun), std::move(cancelFun));
 }
 

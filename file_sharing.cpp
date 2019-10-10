@@ -561,11 +561,12 @@ optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, 
     if (!ugc.downloadItem(id, true))
       return string("Error while downloading mod.");
 
-    // TODO: meter support
     while (!consumeCancelled()) {
       steam::runCallbacks();
       if (!ugc.isDownloading(id))
         break;
+      if (auto info = ugc.downloadInfo(id))
+        meter.setProgress(float(info->bytesDownloaded) / info->bytesTotal);
       sleep_for(milliseconds(50));
     }
 
@@ -614,7 +615,9 @@ optional<string> FileSharing::uploadMod(ModInfo& modInfo, const DirectoryPath& m
 
   // Item update may take some time; Should we loop indefinitely?
   optional<steam::UpdateItemResult> result;
-  steam::sleepUntil([&]() { return (bool)(result = ugc.tryUpdateItem()); }, milliseconds(600 * 1000));
+  steam::sleepUntil([&]() {
+    return (bool)(result = ugc.tryUpdateItem(meter)); },
+    milliseconds(600 * 1000));
   if (!result) {
     ugc.cancelUpdateItem();
     return "Uploading mod has timed out"_s;
@@ -642,7 +645,7 @@ static string serializeInfo(const string& fileName, const SavedGameInfo& savedIn
 }
 
 optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const string& title, const SavedGameInfo& savedInfo,
-    ProgressMeter&, optional<string>& url) {
+    ProgressMeter& meter, optional<string>& url) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
     return "Steam client not available"_s;
@@ -662,7 +665,7 @@ optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const stri
 
   // Item update may take some time; Should we loop indefinitely?
   optional<steam::UpdateItemResult> result;
-  steam::sleepUntil([&]() { return (bool)(result = ugc.tryUpdateItem()); }, milliseconds(600 * 1000));
+  steam::sleepUntil([&]() { return (bool)(result = ugc.tryUpdateItem(meter)); }, milliseconds(600 * 1000));
   if (!result) {
     ugc.cancelUpdateItem();
     return "Uploading mod has timed out"_s;
@@ -683,7 +686,7 @@ optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const stri
 #endif
 }
 
-optional<string> FileSharing::downloadSteamSite(const SaveFileInfo& file, const DirectoryPath& targetDir, ProgressMeter&) {
+optional<string> FileSharing::downloadSteamSite(const SaveFileInfo& file, const DirectoryPath& targetDir, ProgressMeter& meter) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
     return "Steam client not available"_s;
@@ -694,18 +697,19 @@ optional<string> FileSharing::downloadSteamSite(const SaveFileInfo& file, const 
 
   if (!ugc.isInstalled(id)) {
     if (!ugc.downloadItem(id, true))
-      return string("Error while downloading mod.");
+      return string("Error while downloading dungeon.");
 
-    // TODO: meter support
     while (!consumeCancelled()) {
       steam::runCallbacks();
       if (!ugc.isDownloading(id))
         break;
+      if (auto info = ugc.downloadInfo(id))
+        meter.setProgress(float(info->bytesDownloaded) / info->bytesTotal);
       sleep_for(milliseconds(50));
     }
 
     if (!ugc.isInstalled(id))
-      return string("Error while downloading mod.");
+      return string("Error while downloading dungeon.");
   }
 
   auto instInfo = ugc.installInfo(id);

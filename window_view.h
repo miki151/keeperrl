@@ -135,7 +135,7 @@ class WindowView: public View {
   void drawAndClearBuffer();
   void getAutosaveSplash(const ProgressMeter&, const string& text);
   void getBigSplash(const ProgressMeter&, const string& text, function<void()> cancelFun);
-  void getSmallSplash(const string& text, function<void()> cancelFun);
+  void getSmallSplash(const ProgressMeter&, const string& text, function<void()> cancelFun);
 
   void zoom(int dir);
   void resize(int width, int height);
