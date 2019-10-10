@@ -159,7 +159,7 @@ void MainLoop::uploadFile(const FilePath& path, const string& title, const Saved
   atomic<bool> cancelled(false);
   optional<string> error;
   optional<string> url;
-  doWithSplash(SplashType::AUTOSAVING, "Uploading "_s + path.getPath() + "...", 1,
+  doWithSplash("Uploading "_s + path.getPath() + "...", 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->uploadSite(path, title, info, meter, url);
       },
@@ -179,12 +179,12 @@ FilePath MainLoop::getSavePath(const PGame& game, GameSaveType gameType) {
   return userPath.file(stripFilename(game->getGameIdentifier()) + getSaveSuffix(gameType));
 }
 
-void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
+void MainLoop::saveUI(PGame& game, GameSaveType type) {
   auto path = getSavePath(game, type);
   function<void()> uploadFun = nullptr;
   if (type == GameSaveType::RETIRED_SITE) {
     int saveTime = game->getMainModel()->getSaveProgressCount();
-    doWithSplash(splashType, "Retiring site...", saveTime,
+    doWithSplash("Retiring site...", saveTime,
         [&] (ProgressMeter& meter) {
         Square::progressMeter = &meter;
         uploadFun = [this, path, name = game->getGameDisplayName(), savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods())] {
@@ -193,7 +193,7 @@ void MainLoop::saveUI(PGame& game, GameSaveType type, SplashType splashType) {
         MEASURE(saveMainModel(game, path), "saving time")});
   } else {
     int saveTime = game->getSaveProgressCount();
-    doWithSplash(splashType, type == GameSaveType::AUTOSAVE ? "Autosaving" : "Saving game...", saveTime,
+    doWithSplash(type == GameSaveType::AUTOSAVE ? "Autosaving" : "Saving game...", saveTime,
         [&] (ProgressMeter& meter) {
         Square::progressMeter = &meter;
         MEASURE(saveGame(game, path), "saving time")});
@@ -249,7 +249,7 @@ enum class MainLoop::ExitCondition {
 
 void MainLoop::bugReportSave(PGame& game, FilePath path) {
   int saveTime = game->getSaveProgressCount();
-  doWithSplash(SplashType::AUTOSAVING, "Saving game...", saveTime,
+  doWithSplash("Saving game...", saveTime,
       [&] (ProgressMeter& meter) {
       Square::progressMeter = &meter;
       MEASURE(saveGame(game, path), "saving time")});
@@ -310,10 +310,10 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
           [&](GameSaveType type) {
             if (type == GameSaveType::RETIRED_SITE) {
               game->prepareSiteRetirement();
-              saveUI(game, type, SplashType::AUTOSAVING);
+              saveUI(game, type);
               game->doneRetirement();
             } else
-              saveUI(game, type, SplashType::AUTOSAVING);
+              saveUI(game, type);
             eraseAllSavesExcept(game, type);
           }
       );
@@ -329,7 +329,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
     }
     if (lastAutoSave < gameTime - getAutosaveFreq() && !noAutoSave) {
       if (options->getBoolValue(OptionId::AUTOSAVE)) {
-        saveUI(game, GameSaveType::AUTOSAVE, SplashType::AUTOSAVING);
+        saveUI(game, GameSaveType::AUTOSAVE);
         eraseAllSavesExcept(game, GameSaveType::AUTOSAVE);
       }
       lastAutoSave = gameTime;
@@ -358,7 +358,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
             ret.addLocal(*saved, info, false);
       vector<FileSharing::SiteInfo> onlineSites;
       optional<string> error;
-      doWithSplash(SplashType::SMALL, "Fetching list of retired dungeons from the server...",
+      doWithSplash("Fetching list of retired dungeons from the server...",
           [&] {
             if (auto sites = fileSharing->listSites())
               onlineSites = *sites;
@@ -599,7 +599,7 @@ vector<ModInfo> MainLoop::getAllMods(const vector<ModInfo>& onlineMods) {
 void MainLoop::downloadMod(ModInfo& mod, const DirectoryPath& modDir) {
   atomic<bool> cancelled(false);
   optional<string> error;
-  doWithSplash(SplashType::SMALL, "Downloading mod \"" + mod.name + "\"...", 1,
+  doWithSplash("Downloading mod \"" + mod.name + "\"...", 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->downloadMod(mod.name, mod.versionInfo.steamId, modDir, meter);
         if (!error) {
@@ -625,7 +625,7 @@ void MainLoop::uploadMod(ModInfo& mod, const DirectoryPath& modDir) {
   }
   atomic<bool> cancelled(false);
   optional<string> error;
-  doWithSplash(SplashType::SMALL, "Uploading mod \"" + mod.name + "\"...", 1,
+  doWithSplash("Uploading mod \"" + mod.name + "\"...", 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->uploadMod(mod, modDir, meter);
         updateLocalModVersion(mod.name, mod.versionInfo);
@@ -646,7 +646,7 @@ void MainLoop::createNewMod() {
       return;
     }
     auto targetPath = modsDir.subdirectory(*name);
-    doWithSplash(SplashType::SMALL, "Copying files...", 1,
+    doWithSplash("Copying files...", 1,
        [&] (ProgressMeter& meter) {
          modsDir.subdirectory("vanilla").copyRecursively(targetPath);
        });
@@ -658,7 +658,7 @@ void MainLoop::createNewMod() {
 vector<ModInfo> MainLoop::getOnlineMods() {
   vector<ModInfo> ret;
   optional<string> error;
-  doWithSplash(SplashType::AUTOSAVING, "Downloading list of online mods...", 1,
+  doWithSplash( "Downloading list of online mods...", 1,
       [&] (ProgressMeter& meter) {
         if (auto mods = fileSharing->getOnlineMods())
           ret = *mods;
@@ -800,20 +800,20 @@ void MainLoop::start(bool tilesPresent) {
   }
 }
 
-void MainLoop::doWithSplash(SplashType type, const string& text, int totalProgress,
+void MainLoop::doWithSplash(const string& text, int totalProgress,
     function<void(ProgressMeter&)> fun, function<void()> cancelFun) {
   if (useSingleThread) {
     ProgressMeter meter(1.0 / totalProgress);
     fun(meter);
   } else
-    view->doWithSplash(type, text, totalProgress, std::move(fun), std::move(cancelFun));
+    view->doWithSplash(text, totalProgress, std::move(fun), std::move(cancelFun));
 }
 
-void MainLoop::doWithSplash(SplashType type, const string& text, function<void()> fun, function<void()> cancelFun) {
+void MainLoop::doWithSplash(const string& text, function<void()> fun, function<void()> cancelFun) {
   if (useSingleThread)
     fun();
   else {
-    view->displaySplash(nullptr, text, type, cancelFun);
+    view->displaySplash(nullptr, text, cancelFun);
     thread t = makeThread([fun, this] { fun(); view->clearSplash(); });
     view->refreshView();
     t.join();
@@ -1023,7 +1023,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
   optional<string> failedToLoad;
   int numSites = setup.campaign.getNumNonEmpty();
   vector<ContentFactory> factories;
-  doWithSplash(SplashType::AUTOSAVING, "Generating map...", numSites,
+  doWithSplash("Generating map...", numSites,
       [&] (ProgressMeter& meter) {
         EnemyFactory enemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
             contentFactory->buildingInfo, contentFactory->externalEnemies);
@@ -1054,7 +1054,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
 PGame MainLoop::loadGame(const FilePath& file) {
   optional<PGame> game;
   if (auto info = loadSavedGameInfo(file))
-    doWithSplash(SplashType::AUTOSAVING, "Loading "_s + file.getPath() + "...", info->progressCount,
+    doWithSplash("Loading "_s + file.getPath() + "...", info->progressCount,
         [&] (ProgressMeter& meter) {
           Square::progressMeter = &meter;
           INFO << "Loading from " << file;
@@ -1067,7 +1067,7 @@ PGame MainLoop::loadGame(const FilePath& file) {
 bool MainLoop::downloadGame(const SaveFileInfo& file) {
   atomic<bool> cancelled(false);
   optional<string> error;
-  doWithSplash(SplashType::AUTOSAVING, "Downloading " + file.filename + "...", 1,
+  doWithSplash("Downloading " + file.filename + "...", 1,
       [&] (ProgressMeter& meter) {
         error = fileSharing->downloadSite(file, userPath, meter);
       },

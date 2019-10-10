@@ -720,7 +720,7 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
   int boardId = pos.getHash();
   vector<ListElem> options;
   atomic<bool> cancelled(false);
-  view->displaySplash(nullptr, "Fetching board contents...", SplashType::SMALL, [&] {
+  view->displaySplash(nullptr, "Fetching board contents...", [&] {
       cancelled = true;
       fileSharing->cancel();
       });

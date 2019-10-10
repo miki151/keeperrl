@@ -136,7 +136,7 @@ optional<string> FileSharing::uploadSite(const FilePath& path, const string& tit
 }
 
 optional<string> FileSharing::downloadSite(const SaveFileInfo& file, const DirectoryPath& targetDir, ProgressMeter& meter) {
-  if (!!downloadSteamSite(file, targetDir, meter))
+  if (!file.steamId || !!downloadSteamSite(file, targetDir, meter))
     return download(file.filename, "dungeons", targetDir, meter);
   return none;
 }

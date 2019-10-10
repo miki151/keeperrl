@@ -52,17 +52,17 @@ class MainLoop {
   optional<RetiredGames> getRetiredGames(CampaignType);
   int getSaveVersion(const SaveFileInfo& save);
   void uploadFile(const FilePath& path, const string& title, const SavedGameInfo&);
-  void saveUI(PGame&, GameSaveType type, SplashType splashType);
+  void saveUI(PGame&, GameSaveType type);
   void getSaveOptions(const vector<pair<GameSaveType, string>>&,
       vector<ListElem>& options, vector<SaveFileInfo>& allFiles);
 
   optional<SaveFileInfo> chooseSaveFile(const vector<ListElem>& options, const vector<SaveFileInfo>& allFiles,
       string noSaveMsg, View*);
 
-  void doWithSplash(SplashType, const string& text, int totalProgress, function<void(ProgressMeter&)> fun,
+  void doWithSplash(const string& text, int totalProgress, function<void(ProgressMeter&)> fun,
     function<void()> cancelFun = nullptr);
 
-  void doWithSplash(SplashType, const string& text, function<void()> fun, function<void()> cancelFun = nullptr);
+  void doWithSplash(const string& text, function<void()> fun, function<void()> cancelFun = nullptr);
 
   PGame prepareCampaign(RandomGen&);
   enum class ExitCondition;

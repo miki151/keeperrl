@@ -45,8 +45,6 @@ namespace fx {
 }
 class FXViewManager;
 
-enum class SplashType { BIG, AUTOSAVING, SMALL };
-
 class ListElem {
   public:
   enum ElemMod {
@@ -146,12 +144,12 @@ class View {
   virtual void reset() = 0;
 
   /** Displays a splash screen in an active loop until \paramname{ready} is set to true in another thread.*/
-  virtual void displaySplash(const ProgressMeter*, const string& text, SplashType type,
+  virtual void displaySplash(const ProgressMeter*, const string& text,
       function<void()> cancelFun = nullptr) = 0;
 
   virtual void clearSplash() = 0;
 
-  void doWithSplash(SplashType, const string& text, int totalProgress,
+  void doWithSplash(const string& text, int totalProgress,
       function<void(ProgressMeter&)> fun, function<void()> cancelFun = nullptr);
 
   /** Shutdown routine.*/
