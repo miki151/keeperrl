@@ -23,6 +23,7 @@ class NameGenerator {
   public:
   NameGenerator();
   void setNames(NameGeneratorId, vector<string> names);
+  void merge(NameGenerator);
   string getNext(NameGeneratorId);
   vector<string> getAll(NameGeneratorId);
   NameGenerator(const NameGenerator&) = delete;

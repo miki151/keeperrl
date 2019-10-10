@@ -75,6 +75,12 @@ void NameGenerator::setNames(NameGeneratorId id, vector<string> v) {
     names[id].push_back(name);
 }
 
+void NameGenerator::merge(NameGenerator g) {
+  for (auto& elem : g.names)
+    if (!names.count(elem.first))
+      names.insert(std::move(elem));
+}
+
 string NameGenerator::getNext(NameGeneratorId id) {
   CHECK(!names[id].empty());
   string ret = names[id].front();
