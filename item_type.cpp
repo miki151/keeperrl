@@ -436,7 +436,12 @@ ItemAttributes ItemTypes::TrapItem::getAttributes(const ContentFactory*) const {
 }
 
 ItemAttributes CustomItemId::getAttributes(const ContentFactory* factory) const {
-  return factory->items.at(*this);
+  if (auto ret = getReferenceMaybe(factory->items, *this))
+    return *ret;
+  else {
+    USER_INFO << "Item not found: " << data() << ". Returning a rock.";
+    return CustomItemId("Rock").getAttributes(factory);
+  }
 }
 
 ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory*) const {
