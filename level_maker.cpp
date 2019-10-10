@@ -1962,7 +1962,7 @@ static PMakerQueue stockpileMaker(StockpileInfo info) {
   return queue;
 }
 
-PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info) {
+PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info, Vec2 size) {
   auto queue = unique<MakerQueue>();
   auto& building = info.buildingInfo;
   auto floor = building.floorOutside.value_or(FurnitureType("FLOOR"));
@@ -2206,7 +2206,7 @@ static PMakerQueue tower(RandomGen& random, SettlementInfo info, bool withExit) 
   return queue;
 }
 
-PLevelMaker LevelMaker::towerLevel(RandomGen& random, SettlementInfo info) {
+PLevelMaker LevelMaker::towerLevel(RandomGen& random, SettlementInfo info, Vec2 size) {
   return PLevelMaker(tower(random, info, false));
 }
 
@@ -2384,7 +2384,7 @@ static PMakerQueue islandVaultMaker(RandomGen& random, SettlementInfo info, bool
         unique<Margin>(1, std::move(buildingMaker)));
 }
 
-PLevelMaker LevelMaker::mineTownLevel(RandomGen& random, SettlementInfo info) {
+PLevelMaker LevelMaker::mineTownLevel(RandomGen& random, SettlementInfo info, Vec2 size) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"), FurnitureType("MOUNTAIN"))));
   queue->addMaker(mineTownMaker(random, info));
@@ -2685,7 +2685,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
   return std::move(queue);
 }
 
-static PLevelMaker underground(RandomGen& random, vector<WaterType> waterTypes = { WaterType::LAVA, WaterType::WATER }) {
+static PLevelMaker underground(RandomGen& random, Vec2 size, vector<WaterType> waterTypes = { WaterType::LAVA, WaterType::WATER }) {
   auto waterType = random.choose(waterTypes);
   auto water = [&] {
     switch (waterType) {
@@ -2727,8 +2727,9 @@ static PLevelMaker underground(RandomGen& random, vector<WaterType> waterTypes =
       int numLakes = sqrt(random.get(1, 100));
       auto caverns = unique<RandomLocations>();
       for (int i : Range(numLakes)) {
-        int size = random.get(6, 20);
-        caverns->add(unique<UniformBlob>(SquareChange::reset(water, SquareAttrib::LAKE), none), Vec2(size, size), Predicate::alwaysTrue());
+        int lakeSize = random.get(size.x / 10, size.x / 3);
+        caverns->add(unique<UniformBlob>(SquareChange::reset(water, SquareAttrib::LAKE), none),
+            Vec2(lakeSize, lakeSize), Predicate::alwaysTrue());
         caverns->setCanOverlap(caverns->getLast());
       }
       queue->addMaker(std::move(caverns));
@@ -2745,7 +2746,7 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"))
       .add(FurnitureParams{FurnitureType("MOUNTAIN2"), keeperTribe})));
-  queue->addMaker(underground(random));
+  queue->addMaker(underground(random, Vec2(mapWidth, mapWidth)));
   auto locations = unique<RandomLocations>();
   auto startingPosMaker = unique<MakerQueue>(
       unique<Empty>(SquareChange(FurnitureType("FLOOR"))),
@@ -2848,12 +2849,12 @@ PLevelMaker LevelMaker::splashLevel(CreatureGroup heroLeader, CreatureGroup hero
   return std::move(queue);
 }
 
-PLevelMaker LevelMaker::roomLevel(RandomGen& random, SettlementInfo info) {
+PLevelMaker LevelMaker::roomLevel(RandomGen& random, SettlementInfo info, Vec2 size) {
   auto queue = unique<MakerQueue>();
   auto& building = info.buildingInfo;
   SquareChange wall(FurnitureType("FLOOR"), building.wall);
   queue->addMaker(unique<Empty>(wall));
-  queue->addMaker(underground(random, building.water));
+  queue->addMaker(underground(random, size, building.water));
   queue->addMaker(unique<RoomMaker>(random.get(8, 15), 4, 7));
   queue->addMaker(unique<Connector>(building.door, info.tribe));
   for (auto& furniture : info.furniture)
@@ -2868,7 +2869,7 @@ PLevelMaker LevelMaker::roomLevel(RandomGen& random, SettlementInfo info) {
   return unique<BorderGuard>(std::move(queue), wall);
 }
 
-PLevelMaker LevelMaker::adoxieTemple(RandomGen&, SettlementInfo info) {
+PLevelMaker LevelMaker::adoxieTemple(RandomGen&, SettlementInfo info, Vec2 size) {
   auto queue = unique<MakerQueue>();
   auto& building = info.buildingInfo;
   queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"))

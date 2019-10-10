@@ -64,7 +64,7 @@ ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
       return &LevelMaker::adoxieTemple;
     case LevelType::SOKOBAN: {
       Table<char> sokoLevel = sokobanInput->getNext();
-      return [sokoLevel](RandomGen& random, SettlementInfo info) {
+      return [sokoLevel](RandomGen& random, SettlementInfo info, Vec2) {
         return LevelMaker::sokobanFromFile(random, info, sokoLevel);
       };
     }
@@ -83,7 +83,7 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
         swap(settlement.upStairs, settlement.downStairs);
       model->buildLevel(
           LevelBuilder(meter, random, contentFactory, level.levelSize.x, level.levelSize.y, true, level.isLit ? 1.0 : 0.0),
-          getMaker(level.levelType)(random, settlement));
+          getMaker(level.levelType)(random, settlement, level.levelSize));
       upLink = downLink;
       downLink = StairKey::getNew();
     };
