@@ -339,9 +339,8 @@ void Position::addCreature(PCreature c) {
   }
 }
 
-void Position::landCreature(PCreature c) {
-  if (isValid())
-    level->landCreature({*this}, std::move(c));
+bool Position::landCreature(PCreature c) {
+  return isValid() && level->landCreature({*this}, std::move(c));
 }
 
 void Position::addCreature(PCreature c, TimeInterval delay) {
