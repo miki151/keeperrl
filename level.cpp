@@ -508,7 +508,7 @@ void Level::tick() {
   for (Vec2 pos : tickingFurniture)
     for (auto layer : ENUM_ALL(FurnitureLayer))
       if (auto f = furniture->getBuilt(layer).getWritable(pos))
-        f->tick(Position(pos, this));
+        f->tick(Position(pos, this), layer);
 }
 
 bool Level::inBounds(Vec2 pos) const {

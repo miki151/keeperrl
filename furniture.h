@@ -77,7 +77,7 @@ class Furniture : public OwnedObject<Furniture> {
   const heap_optional<Fire>& getFire() const;
   void fireDamage(Position, bool withMessage = true);
   void iceDamage(Position);
-  void tick(Position);
+  void tick(Position, FurnitureLayer supposedLayer);
   bool canSeeThru(VisionId) const;
   bool blocksAnyVision() const;
   bool stopsProjectiles(VisionId) const;
