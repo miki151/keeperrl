@@ -47,6 +47,12 @@ optional<string> ContentFactory::readCreatureFactory(const GameConfig* config, K
   map<CreatureId, CreatureInventory> inventory;
   if (auto res = config->readObject(attributes, GameConfigId::CREATURE_ATTRIBUTES, keyVerifier))
     return *res;
+  for (auto& attr : attributes)
+    for (auto skill : ENUM_ALL(SkillId)) {
+      auto value = attr.second.getSkills().getValue(skill);
+      if (value < 0 || value > 1)
+        return "Skill value for "_s + attr.first.data() + " must be between 0 and one, inclusive.";
+    }
   vector<pair<vector<CreatureId>, CreatureInventory>> input;
   if (auto res = config->readObject(input, GameConfigId::CREATURE_INVENTORY, keyVerifier))
     return *res;
