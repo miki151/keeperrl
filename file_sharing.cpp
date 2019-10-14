@@ -315,7 +315,7 @@ optional<string> FileSharing::downloadContent(const string& url) {
 }
 
 static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
-  if (fields.size() < 5)
+  if (fields.size() < 3)
     return none;
   INFO << "Parsed " << fields;
   FileSharing::SiteInfo elem {};
@@ -323,10 +323,33 @@ static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
   input.getArchive() >> elem.fileInfo.filename >> elem.gameInfo;
   try {
     elem.fileInfo.date = fromString<int>(fields[1]);
-    elem.wonGames = fromString<int>(fields[2]);
-    elem.totalGames = fromString<int>(fields[3]);
-    elem.version = fromString<int>(fields[4]);
+    elem.version = fromString<int>(fields[2]);
     elem.fileInfo.download = true;
+  } catch (cereal::Exception) {
+    return none;
+  } catch (ParsingException e) {
+    return none;
+  }
+  return elem;
+}
+
+namespace {
+struct SiteConquestInfo {
+  string filename;
+  int totalGames;
+  int wonGames;
+};
+}
+
+static optional<SiteConquestInfo> parseSiteConquest(const vector<string>& fields) {
+  if (fields.size() < 3)
+    return none;
+  INFO << "Parsed " << fields;
+  SiteConquestInfo elem {};
+  try {
+    elem.filename = unescapeEverything(fields[0]);
+    elem.wonGames = fromString<int>(fields[1]);
+    elem.totalGames = fromString<int>(fields[2]);
   } catch (cereal::Exception) {
     return none;
   } catch (ParsingException e) {
@@ -338,12 +361,25 @@ static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
 expected<vector<FileSharing::SiteInfo>, string> FileSharing::listSites() {
   if (!options.getBoolValue(OptionId::ONLINE))
     return make_unexpected("Please enable online features in the settings in order to download retired dungeons!"_s);
-  if (auto sites = getSteamSites())
-    return *sites;
-  if (auto content = downloadContent(uploadUrl + "/dungeons.txt"))
-    return parseLines<FileSharing::SiteInfo>(*content, parseSite);
-  else
+  vector<SiteConquestInfo> conquestInfo;
+  thread downloadConquest([&conquestInfo, this] {
+    if (auto content = downloadContent(uploadUrl + "/get_sites.php"))
+      conquestInfo = parseLines<SiteConquestInfo>(*content, parseSiteConquest);
+  });
+  optional<vector<FileSharing::SiteInfo>> ret = getSteamSites();
+  if (!ret)
+    if (auto content = downloadContent(uploadUrl + "/dungeons.txt"))
+      ret = parseLines<FileSharing::SiteInfo>(*content, parseSite);
+  downloadConquest.join();
+  if (!ret)
     return make_unexpected("Error fetching online dungeons."_s);
+  for (auto& conquestElem : conquestInfo)
+    for (auto& elem : *ret)
+      if (elem.fileInfo.filename == conquestElem.filename) {
+        elem.wonGames = conquestElem.wonGames;
+        elem.totalGames = conquestElem.totalGames;
+      }
+  return *ret;
 }
 
 static optional<FileSharing::BoardMessage> parseBoardMessage(const vector<string>& fields) {
