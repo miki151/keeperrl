@@ -75,15 +75,23 @@ static string unescapeEverything(const string& s) {
   return ret;
 }
 
-static optional<string> curlUpload(const char* path, const char* url, const CallbackData& callback, int timeout) {
+namespace {
+struct UploadedFile {
+  const char* path;
+  const char* paramName;
+};
+}
+
+static optional<string> curlUpload(vector<UploadedFile> files, const char* url, const CallbackData& callback, int timeout) {
   curl_httppost* formpost = nullptr;
   curl_httppost* lastptr = nullptr;
 
-  curl_formadd(&formpost,
-      &lastptr,
-      CURLFORM_COPYNAME, "fileToUpload",
-      CURLFORM_FILE, path,
-      CURLFORM_END);
+  for (auto file : files)
+    curl_formadd(&formpost,
+        &lastptr,
+        CURLFORM_COPYNAME, file.paramName,
+        CURLFORM_FILE, file.path,
+        CURLFORM_END);
 
   curl_formadd(&formpost,
       &lastptr,
@@ -128,11 +136,10 @@ optional<string> FileSharing::uploadSite(const FilePath& path, const string& tit
     ProgressMeter& meter, optional<string>& url) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return "Online features not enabled!"_s;
-#ifdef USE_STEAMWORKS
-  return uploadSiteToSteam(path, title, info, meter, url);
-#else
-  return curlUpload(path.getPath(), (uploadUrl + "/upload_site.php").c_str(), getCallbackData(this, meter), 0);
-#endif
+  if (!!uploadSiteToSteam(path, title, info, meter, url))
+    return curlUpload({UploadedFile{path.getPath(), "fileToUpload"},UploadedFile{retiredScreenshotFilename, "screenshot"}},
+          (uploadUrl + "/upload_site.php").c_str(), getCallbackData(this, meter), 0);
+  return none;
 }
 
 optional<string> FileSharing::downloadSite(const SaveFileInfo& file, const DirectoryPath& targetDir, ProgressMeter& meter) {
@@ -144,7 +151,7 @@ optional<string> FileSharing::downloadSite(const SaveFileInfo& file, const Direc
 void FileSharing::uploadHighscores(const FilePath& path) {
   if (options.getBoolValue(OptionId::ONLINE))
     uploadQueue.push([this, path] {
-      curlUpload(path.getPath(), (uploadUrl + "/upload_scores.php").c_str(), getCallbackData(this), 5);
+      curlUpload({UploadedFile{path.getPath(), "fileToUpload"}}, (uploadUrl + "/upload_scores.php").c_str(), getCallbackData(this), 5);
     });
 }
 
