@@ -19,9 +19,9 @@ struct TileCoord {
 class TileSet {
   public:
   TileSet(const DirectoryPath& defaultDir, const DirectoryPath& modsDir);
-  void setTilePaths(const TilePaths&);
+  optional<string> setTilePaths(const TilePaths&);
   const TilePaths& getTilePaths() const;
-  void reload();
+  optional<string> reload();
   const Tile& getTile(ViewId id, bool sprite = true) const;
   Color getColor(const ViewObject&) const;
   const vector<TileCoord>& getTileCoord(const string&) const;
@@ -39,7 +39,8 @@ class TileSet {
   vector<unique_ptr<Texture>> textures;
   map<string, vector<TileCoord>> tileCoords;
   vector<string> spriteMods;
-  bool loadTilesFromDir(const DirectoryPath&, Vec2 size, bool overwrite);
+
+  optional<string> loadTilesFromDir(const DirectoryPath&, Vec2 size, bool overwrite);
   void loadTiles();
   void loadUnicode();
   const vector<TileCoord>& byName(const string&);
