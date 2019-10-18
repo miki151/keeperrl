@@ -419,10 +419,8 @@ TilePaths MainLoop::getTilePathsForAllMods() const {
 PGame MainLoop::prepareCampaign(RandomGen& random) {
   while (1) {
     auto contentFactory = createContentFactory(false);
-    if (tileSet) {
-      if (auto error = tileSet->setTilePaths(contentFactory.tilePaths))
-        USER_INFO << *error;
-    }
+    if (tileSet)
+      tileSet->setTilePaths(contentFactory.tilePaths);
     auto avatarChoice = getAvatarInfo(view, &contentFactory.playerCreatures, options, &contentFactory.getCreatures());
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, contentFactory.villains, contentFactory.gameIntros, *avatar);

@@ -215,35 +215,22 @@ Tile TileSet::symbol(const string& s, Color id, bool symbol) {
 TileSet::TileSet(const DirectoryPath& defaultDir, const DirectoryPath& modsDir) : defaultDir(defaultDir), modsDir(modsDir) {
 }
 
-optional<string> TileSet::setTilePaths(const TilePaths& p) {
+void TileSet::setTilePaths(const TilePaths& p) {
   tilePaths = p;
-  return reload();
+  reload();
 }
 
-optional<string> TileSet::reload() {
+void TileSet::reload() {
   tiles.clear();
   textures.clear();
   symbols.clear();
   tileCoords.clear();
   spriteMods.clear();
-  optional<string> error;
-  auto mergeError = [&] (optional<string> newError) {
-    if (!error)
-      error = newError;
-  };
   auto reloadDir = [&] (const DirectoryPath& path, bool overwrite) {
-    vector<pair<string, Vec2>> dirs = {
-      {"orig16", Vec2(16, 16)},
-      {"orig24", Vec2(24, 24)},
-      {"orig30", Vec2(30, 30)}
-    };
     bool hadTiles = false;
-    for (auto& dir : dirs) {
-      if (path.subdirectory(dir.first).exists()) {
-        hadTiles = true;
-        mergeError(loadTilesFromDir(path.subdirectory(dir.first), dir.second, overwrite));
-      }
-    }
+    hadTiles |= loadTilesFromDir(path.subdirectory("orig16"), Vec2(16, 16), overwrite);
+    hadTiles |= loadTilesFromDir(path.subdirectory("orig24"), Vec2(24, 24), overwrite);
+    hadTiles |= loadTilesFromDir(path.subdirectory("orig30"), Vec2(30, 30), overwrite);
     return hadTiles;
   };
   reloadDir(defaultDir, true);
@@ -253,13 +240,10 @@ optional<string> TileSet::reload() {
   for (auto& subdir : tilePaths->mergedMods)
     if (reloadDir(modsDir.subdirectory(subdir), false) && !spriteMods.contains(subdir))
       spriteMods.push_back(subdir);
-  if (error)
-    return error;
   loadUnicode();
   if (useTiles)
     loadTiles();
   loadModdedTiles(tilePaths->definitions, useTiles);
-  return none;
 }
 
 const Tile& TileSet::getTile(ViewId viewId, bool sprite) const {
@@ -276,11 +260,13 @@ const Tile& TileSet::getTile(ViewId viewId, bool sprite) const {
 
 constexpr int textureWidth = 720;
 
-optional<string> TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwrite) {
+bool TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwrite) {
+  if (!path.exists())
+    return false;
   const static string imageSuf = ".png";
   auto files = path.getFiles().filter([](const FilePath& f) { return f.hasSuffix(imageSuf);});
   if (files.empty())
-    return "Sprites folder empty : "_s + path.getPath();
+    return false;
   int rowLength = textureWidth / size.x;
   SDL::SDL_Surface* image = Texture::createSurface(textureWidth, textureWidth);
   SDL::SDL_SetSurfaceBlendMode(image, SDL::SDL_BLENDMODE_NONE);
@@ -291,8 +277,7 @@ optional<string> TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size,
     SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath());
     SDL::SDL_SetSurfaceBlendMode(im, SDL::SDL_BLENDMODE_NONE);
     CHECK(im) << files[i] << ": "<< SDL::IMG_GetError();
-    if (im->w % size.x != 0 || im->h != size.y)
-      return files[i].getPath() + " has wrong size "_s + toString(im->w) + " " + toString(im->h);
+    USER_CHECK((im->w % size.x == 0) && im->h == size.y) << files[i] << " has wrong size " << im->w << " " << im->h;
     string fileName = files[i].getFileName();
     string spriteName = fileName.substr(0, fileName.size() - imageSuf.size());
     if (tileCoords.count(spriteName)) {
@@ -324,5 +309,5 @@ optional<string> TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size,
   for (auto& pos : addedPositions)
     tileCoords[pos.first].push_back({size, pos.second, textures.back().get()});
   SDL::SDL_FreeSurface(image);
-  return none;
+  return true;
 }
