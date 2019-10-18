@@ -10,9 +10,10 @@
 
 #include <curl/curl.h>
 
+#include "steam_ugc.h"
+
 #ifdef USE_STEAMWORKS
 #include "steam_client.h"
-#include "steam_ugc.h"
 #include "steam_user.h"
 #include "steam_friends.h"
 #endif
