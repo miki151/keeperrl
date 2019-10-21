@@ -1124,8 +1124,8 @@ void Effect::apply(Position pos, Creature* attacker) const {
             attacker ? attacker->getTribeId() : TribeId::getMonster());
         auto ref = f.get()->getThis();
         pos.addFurniture(std::move(f));
-        CHECK(!!ref);
-        ref->onConstructedBy(pos, attacker);
+        if (ref)
+          ref->onConstructedBy(pos, attacker);
       },
       [&](Effects::Blast) {
         constexpr int range = 4;
