@@ -595,3 +595,11 @@ void Level::setFurniture(Vec2 pos, PFurniture f) {
     addTickingFurniture(pos);
   furniture->getBuilt(layer).putElem(pos, std::move(f));
 }
+
+void Level::fixRetiredKeeperEffectsTable() {
+  if (auto& e = furnitureEffects[TribeId::KeyType::ADVENTURER])
+    furnitureEffects[TribeId::KeyType::RETIRED_KEEPER] = std::move(e);
+  else
+  if (auto& e = furnitureEffects[TribeId::KeyType::DARK_KEEPER])
+    furnitureEffects[TribeId::KeyType::RETIRED_KEEPER] = std::move(e);
+}
