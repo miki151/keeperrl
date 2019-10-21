@@ -917,25 +917,15 @@ class Table {
   }
 
   T& operator[](const Vec2& vAbs) {
-#ifdef RELEASE
-    return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
-#else
-    Vec2 v = vAbs - bounds.topLeft();
     CHECK(vAbs.inRectangle(bounds)) <<
         "Table index out of bounds " << bounds << " " << vAbs;
-    return mem[v.x * bounds.h + v.y];
-#endif
+    return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
   }
 
   const T& operator[](const Vec2& vAbs) const {
-#ifdef RELEASE
-    return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
-#else
-    Vec2 v = vAbs - bounds.topLeft();
     CHECK(vAbs.inRectangle(bounds)) <<
         "Table index out of bounds " << bounds << " " << vAbs;
-    return mem[v.x * bounds.h + v.y];
-#endif
+    return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
   }
 
   template <class Archive>
