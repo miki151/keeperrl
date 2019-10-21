@@ -19,6 +19,7 @@
 #include "item_attributes.h"
 #include "resource_counts.h"
 #include "z_level_info.h"
+#include "equipment.h"
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
@@ -198,6 +199,9 @@ optional<string> ContentFactory::readItems(const GameConfig* config, KeyVerifier
   map<PrimaryId<CustomItemId>, ItemAttributes> itemsTmp;
   if (auto res = config->readObject(itemsTmp, GameConfigId::ITEMS, keyVerifier))
     return *res;
+  for (auto& elem : itemsTmp)
+    if (elem.second.equipmentSlot == EquipmentSlot::RANGED_WEAPON && !elem.second.rangedWeapon)
+      return "Item "_s + elem.first.data() + " has RANGED_WEAPON slot, but no rangedWeapon entry.";
   items = convertKeys(itemsTmp);
   return none;
 }
