@@ -186,8 +186,11 @@ PLevel LevelBuilder::build(WModel m, LevelMaker* maker, LevelId levelId) {
   auto l = Level::create(std::move(squares), std::move(furniture), m, sunlight, levelId, covered, unavailable);
   for (pair<PCreature, Vec2>& c : creatures) {
     Position pos(c.second, l.get());
-    CHECK(pos.canEnter(c.first.get())) << c.first->getName().bare();
-    pos.addCreature(std::move(c.first));
+    /*CHECK(pos.canEnter(c.first.get())) << c.first->getName().bare();
+    pos.addCreature(std::move(c.first));*/
+    // Use landCreature instead, because it will try to put it in adjacent positions
+    CHECK(l->landCreature({pos}, c.first.get()));
+    m->addCreature(std::move(c.first));
   }
   for (CollectiveBuilder* c : collectives)
     c->setLevel(l.get());
