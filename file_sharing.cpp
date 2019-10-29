@@ -444,6 +444,15 @@ struct SteamItemInfo {
   bool isOwner;
 };
 
+template <typename T>
+static vector<T> removeDuplicates(vector<T> input) {
+  vector<T> ret;
+  for (auto& elem : input)
+    if (!ret.contains(elem))
+      ret.push_back(std::move(elem));
+  return ret;
+}
+
 static optional<vector<SteamItemInfo>> getSteamItems() {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
@@ -459,48 +468,60 @@ static optional<vector<SteamItemInfo>> getSteamItems() {
 
   // TODO: Is this check necessary? Maybe we should try anyways?
   if (user.isLoggedOn()) {
-    steam::FindItemInfo qinfo;
-    qinfo.order = SteamFindOrder::playtime;
-    auto qid = ugc.createFindQuery(qinfo, 1);
+    auto getForPage = [&ugc](int page) {
+      vector<steam::ItemId> ret;
+      steam::FindItemInfo qinfo;
+      qinfo.order = SteamFindOrder::playtime;
+      auto qid = ugc.createFindQuery(qinfo, page);
+      ugc.waitForQueries({qid}, milliseconds(2000));
 
-    // TODO: multiple pages
-    // TODO: handle errors
-    // TODO: czy chcemy je jakoś filtrować? Czy na razie po prostu dajemy wszystkie / najpopularniejsze?
-
-    ugc.waitForQueries({qid}, milliseconds(2000));
-
-    if (ugc.queryStatus(qid) == QueryStatus::completed) {
-      items = ugc.finishFindQuery(qid);
-    } else {
-      INFO << "STEAM: FindQuery failed: " << ugc.queryError(qid, "timeout (2 sec)");
-      ugc.finishQuery(qid);
+      if (ugc.queryStatus(qid) == QueryStatus::completed) {
+        ret = ugc.finishFindQuery(qid);
+      } else {
+        INFO << "STEAM: FindQuery failed: " << ugc.queryError(qid, "timeout (2 sec)");
+        ugc.finishQuery(qid);
+      }
+      return ret;
+    };
+    int page = 1;
+    while (1) {
+      auto v = getForPage(page);
+      if (v.empty())
+        break;
+      else
+        items.append(std::move(v));
+      ++page;
     }
   }
 
   for (auto id : subscribedItems)
     if (!items.contains(id))
       items.emplace_back(id);
-
+  items = removeDuplicates(items);
   if (items.empty()) {
     INFO << "STEAM: No items present";
     // TODO: inform that no mods are present (not subscribed or ...)
     return {};
   }
 
-  steam::ItemDetailsInfo detailsInfo;
-  detailsInfo.longDescription = true;
-  detailsInfo.playtimeStatsDays = 9999;
-  detailsInfo.metadata = true;
-  auto qid = ugc.createDetailsQuery(detailsInfo, items);
-  ugc.waitForQueries({qid}, milliseconds(3000));
+  auto getForPage = [&ugc](vector<steam::ItemId> items) {
+    steam::ItemDetailsInfo detailsInfo;
+    detailsInfo.longDescription = true;
+    detailsInfo.playtimeStatsDays = 9999;
+    detailsInfo.metadata = true;
+    auto qid = ugc.createDetailsQuery(detailsInfo, items);
+    ugc.waitForQueries({qid}, milliseconds(3000));
 
-  if (ugc.queryStatus(qid) != QueryStatus::completed) {
-    INFO << "STEAM: DetailsQuery failed: " << ugc.queryError(qid, "timeout (3 sec)");
-    ugc.finishQuery(qid);
-    return {};
-  }
-
-  auto infos = ugc.finishDetailsQuery(qid);
+    if (ugc.queryStatus(qid) != QueryStatus::completed) {
+      INFO << "STEAM: DetailsQuery failed: " << ugc.queryError(qid, "timeout (3 sec)");
+      ugc.finishQuery(qid);
+      return vector<steam::ItemInfo>();
+    }
+    return ugc.finishDetailsQuery(qid);
+  };
+  vector<steam::ItemInfo> infos;
+  for (int i = 0; i < items.size(); i += steam::UGC::maxItemsPerPage)
+    infos.append(getForPage(getSubsequence(items, i, steam::UGC::maxItemsPerPage)));
   for (auto& info : infos)
     friends.requestUserInfo(info.ownerId, true);
   vector<optional<string>> ownerNames(infos.size());
