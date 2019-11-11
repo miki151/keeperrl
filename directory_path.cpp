@@ -113,16 +113,14 @@ DirectoryPath DirectoryPath::current() {
   return DirectoryPath(name);
 }
 
-optional<string> DirectoryPath::copyFiles(DirectoryPath from, DirectoryPath to, bool recursive) {
+optional<string> DirectoryPath::copyRecursively(DirectoryPath to) {
   to.createIfDoesntExist();
-  for (auto file : from.getFiles())
+  for (auto file : getFiles())
     file.copyTo(to.file(file.getFileName()));
-  if (recursive) {
-    for (auto dir : from.getSubDirs()) {
-      DirectoryPath subTo(string(to.getPath()) + "/" + dir);
-      DirectoryPath subFrom(string(from.getPath()) + "/" + dir);
-      copyFiles(subFrom, subTo, recursive);
-    }
+  for (auto dir : getSubDirs()) {
+    DirectoryPath subTo = to.subdirectory(dir);
+    DirectoryPath subFrom = subdirectory(dir);
+    subFrom.copyRecursively(subTo);
   }
   return none;
 }

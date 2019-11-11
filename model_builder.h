@@ -58,6 +58,6 @@ class ModelBuilder {
   vector<EnemyInfo> getSingleMapEnemiesForEvilKeeper(TribeId keeperTribe);
   vector<EnemyInfo> getSingleMapEnemiesForLawfulKeeper(TribeId keeperTribe);
   ContentFactory* contentFactory = nullptr;
-  using LevelMakerMethod = function<PLevelMaker(RandomGen&, SettlementInfo)>;
+  using LevelMakerMethod = function<PLevelMaker(RandomGen&, SettlementInfo, Vec2 size)>;
   LevelMakerMethod getMaker(LevelType);
 };

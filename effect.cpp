@@ -51,16 +51,13 @@
 #include "minion_equipment_type.h"
 #include "health_type.h"
 
-vector<Creature*> Effect::summonCreatures(Position pos, int radius, vector<PCreature> creatures, TimeInterval delay) {
-  vector<Position> area = pos.getRectangle(Rectangle(-Vec2(radius, radius), Vec2(radius + 1, radius + 1)));
+vector<Creature*> Effect::summonCreatures(Position pos, vector<PCreature> creatures, TimeInterval delay) {
   vector<Creature*> ret;
   for (int i : All(creatures))
-    for (Position v : concat({pos}, Random.permutation(area)))
-      if (v.canEnter(creatures[i].get())) {
-        ret.push_back(creatures[i].get());
-        v.addCreature(std::move(creatures[i]), delay);
-        break;
-  }
+    if (auto v = pos.getLevel()->getClosestLanding({pos}, creatures[i].get())) {
+      ret.push_back(creatures[i].get());
+      v->addCreature(std::move(creatures[i]), delay);
+    }
   return ret;
 }
 
@@ -86,7 +83,7 @@ vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<T
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(c->getGame()->getContentFactory()->getCreatures().fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c)));
-  auto ret = summonCreatures(c->getPosition(), 2, std::move(creatures), delay);
+  auto ret = summonCreatures(c->getPosition(), std::move(creatures), delay);
   for (auto c : ret) {
     if (ttl)
       c->addEffect(LastingEffect::SUMMONED, *ttl, false);
@@ -99,7 +96,7 @@ vector<Creature*> Effect::summon(Position pos, CreatureGroup& factory, int num, 
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(factory.random(&pos.getGame()->getContentFactory()->getCreatures(), MonsterAIFactory::monster()));
-  auto ret = summonCreatures(pos, 2, std::move(creatures), delay);
+  auto ret = summonCreatures(pos, std::move(creatures), delay);
   for (auto c : ret) {
     if (ttl)
       c->addEffect(LastingEffect::SUMMONED, *ttl, false);
@@ -428,7 +425,7 @@ void Effects::Deception::applyToCreature(Creature* c, Creature* attacker) const 
   vector<PCreature> creatures;
   for (int i : Range(Random.get(3, 7)))
     creatures.push_back(CreatureFactory::getIllusion(c));
-  Effect::summonCreatures(c->getPosition(), 2, std::move(creatures));
+  Effect::summonCreatures(c->getPosition(), std::move(creatures));
 }
 
 string Effects::Deception::getName() const {
@@ -881,9 +878,12 @@ void Effects::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) co
       itemCopy->setTimeout(c->getGame()->getGlobalTime() + ttl + 10_visible);
       copy->take(std::move(itemCopy));
     }
-  auto cRef = Effect::summonCreatures(c->getPosition(), 2, makeVec(std::move(copy))).getOnlyElement();
-  cRef->addEffect(LastingEffect::SUMMONED, ttl, false);
-  c->message(PlayerMessage("Double trouble!", MessagePriority::HIGH));
+  auto cRef = Effect::summonCreatures(c->getPosition(), makeVec(std::move(copy)));
+  if (!cRef.empty()) {
+    cRef[0]->addEffect(LastingEffect::SUMMONED, ttl, false);
+    c->message(PlayerMessage("Double trouble!", MessagePriority::HIGH));
+  } else
+    c->message(PlayerMessage("The spell failed!", MessagePriority::HIGH));
 }
 
 string Effects::DoubleTrouble::getName() const {
@@ -1124,8 +1124,8 @@ void Effect::apply(Position pos, Creature* attacker) const {
             attacker ? attacker->getTribeId() : TribeId::getMonster());
         auto ref = f.get()->getThis();
         pos.addFurniture(std::move(f));
-        CHECK(!!ref);
-        ref->onConstructedBy(pos, attacker);
+        if (ref)
+          ref->onConstructedBy(pos, attacker);
       },
       [&](Effects::Blast) {
         constexpr int range = 4;

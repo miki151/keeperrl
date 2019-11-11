@@ -12,7 +12,7 @@ class DummyView : public View {
   virtual ~DummyView() override {}
   virtual void initialize(unique_ptr<fx::FXRenderer>, unique_ptr<FXViewManager>) override {}
   virtual void reset() override {}
-  virtual void displaySplash(const ProgressMeter*, const string&, SplashType, function<void()> = nullptr) override {}
+  virtual void displaySplash(const ProgressMeter*, const string&, function<void()> = nullptr) override {}
   virtual void clearSplash() override {}
   virtual void close() override {}
   virtual void refreshView() override {}

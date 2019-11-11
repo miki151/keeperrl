@@ -3,6 +3,7 @@
 #include "steam_utils.h"
 #include "steam_call_result.h"
 #include "steamworks/public/steam/isteamugc.h"
+#include "progress_meter.h"
 
 #define FUNC(name, ...) SteamAPI_ISteamUGC_##name
 
@@ -59,6 +60,7 @@ struct UGC::Impl {
   optional<UpdateItemInfo> createItemInfo;
   CallResult<CreateItemResult_t> createItem;
   CallResult<SubmitItemUpdateResult_t> updateItem;
+  optional<UGCUpdateHandle_t> updateHandle;
 };
 
 UGC::UGC(intptr_t ptr) : ptr(ptr) {
@@ -307,6 +309,7 @@ void UGC::beginUpdateItem(const UpdateItemInfo& info) {
 
   if (info.id) {
     auto handle = FUNC(StartItemUpdate)(ptr, appId, *info.id);
+    impl->updateHandle = handle;
 
     if (info.title)
       FUNC(SetItemTitle)(ptr, handle, info.title->c_str());
@@ -347,7 +350,7 @@ void UGC::beginUpdateItem(const UpdateItemInfo& info) {
   }
 }
 
-optional<UpdateItemResult> UGC::tryUpdateItem() {
+optional<UpdateItemResult> UGC::tryUpdateItem(ProgressMeter& meter) {
   if (impl->createItem) {
     impl->createItem.update();
     if (impl->createItem.isCompleted()) {
@@ -367,6 +370,12 @@ optional<UpdateItemResult> UGC::tryUpdateItem() {
   }
 
   impl->updateItem.update();
+  if (impl->updateHandle) {
+    uint64 downloaded = 0, total = 0;
+    auto res = FUNC(GetItemUpdateProgress)(ptr, *impl->updateHandle, &downloaded, &total);
+    std::cout << "progress " << res << " " << downloaded << ", " << total << std::endl;
+    meter.setProgress(float(res) / 5);
+  }
   if (impl->updateItem.isCompleted()) {
     auto& out = impl->updateItem.result();
     impl->updateItem.clear();

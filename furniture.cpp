@@ -192,13 +192,18 @@ const Furniture::SupportInfo* Furniture::getSupportInfo(Position pos) const {
   return nullptr;
 }
 
-void Furniture::tick(Position pos) {
+void Furniture::tick(Position pos, FurnitureLayer supposedLayer) {
   PROFILE_BLOCK("Furniture::tick");
   if (fire && fire->isBurning()) {
     {
       auto otherF = pos.getFurniture(layer);
-      CHECK(otherF == this) << EnumInfo<FurnitureLayer>::getString(layer) << " " << getName()
-          << " " << (otherF ? (otherF->getName() + " " + EnumInfo<FurnitureLayer>::getString(otherF->getLayer())): "null"_s);
+      auto otherFMod = pos.modFurniture(layer);
+      CHECK(otherF == this)
+          << EnumInfo<FurnitureLayer>::getString(layer) << " "
+          << EnumInfo<FurnitureLayer>::getString(supposedLayer) << " "
+          << getName()
+          << " " << (otherF ? (otherF->getName() + " " + EnumInfo<FurnitureLayer>::getString(otherF->getLayer())): "null"_s)
+          << " " << (otherFMod ? (otherFMod->getName() + " " + EnumInfo<FurnitureLayer>::getString(otherFMod->getLayer())): "null"_s);
     }
     if (viewObject)
       viewObject->setModifier(ViewObject::Modifier::BURNING);

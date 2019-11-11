@@ -429,7 +429,7 @@ void Creature::secondPerson(const PlayerMessage& message) const {
 
 WController Creature::getController() const {
   if (!controllerStack.empty())
-    return controllerStack.back().get();
+    return NOTNULL(controllerStack.back().get());
   else
     return nullptr;
 }

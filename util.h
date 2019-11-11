@@ -111,6 +111,7 @@ string toUpper(const string& s);
 string toLower(const string& s);
 
 bool endsWith(const string&, const string& suffix);
+bool startsWith(const string&, const string& prefix);
 
 vector<string> split(const string& s, const std::initializer_list<char>& delim);
 vector<string> splitIncludeDelim(const string& s, const std::initializer_list<char>& delim);
@@ -916,25 +917,15 @@ class Table {
   }
 
   T& operator[](const Vec2& vAbs) {
-#ifdef RELEASE
-    return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
-#else
-    Vec2 v = vAbs - bounds.topLeft();
     CHECK(vAbs.inRectangle(bounds)) <<
         "Table index out of bounds " << bounds << " " << vAbs;
-    return mem[v.x * bounds.h + v.y];
-#endif
+    return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
   }
 
   const T& operator[](const Vec2& vAbs) const {
-#ifdef RELEASE
-    return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
-#else
-    Vec2 v = vAbs - bounds.topLeft();
     CHECK(vAbs.inRectangle(bounds)) <<
         "Table index out of bounds " << bounds << " " << vAbs;
-    return mem[v.x * bounds.h + v.y];
-#endif
+    return mem[(vAbs.x - bounds.px) * bounds.h + vAbs.y - bounds.py];
   }
 
   template <class Archive>
@@ -1040,7 +1031,8 @@ map<V, vector<T> > groupBy(const vector<T>& values, function<V (const T&)> getKe
 
 template <typename T>
 vector<T> getSubsequence(const vector<T>& v, int start, int length) {
-  CHECK(start >= 0 && length >= 0 && start + length <= v.size());
+  CHECK(start >= 0 && length >= 0);
+  length = min(length, v.size() - start);
   vector<T> ret;
   ret.reserve(length);
   for (int i : Range(start, start + length))

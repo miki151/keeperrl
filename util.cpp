@@ -160,6 +160,10 @@ bool endsWith(const string& s, const string& suffix) {
   return s.size() >= suffix.size() && s.substr(s.size() - suffix.size()) == suffix;
 }
 
+bool startsWith(const string& s, const string& prefix) {
+  return s.size() >= prefix.size() && s.substr(0, prefix.size()) == prefix;
+}
+
 vector<string> split(const string& s, const std::initializer_list<char>& delim) {
   if (s.empty())
     return {};

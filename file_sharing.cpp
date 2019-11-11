@@ -10,9 +10,10 @@
 
 #include <curl/curl.h>
 
+#include "steam_ugc.h"
+
 #ifdef USE_STEAMWORKS
 #include "steam_client.h"
-#include "steam_ugc.h"
 #include "steam_user.h"
 #include "steam_friends.h"
 #endif
@@ -75,15 +76,23 @@ static string unescapeEverything(const string& s) {
   return ret;
 }
 
-static optional<string> curlUpload(const char* path, const char* url, const CallbackData& callback, int timeout) {
+namespace {
+struct UploadedFile {
+  const char* path;
+  const char* paramName;
+};
+}
+
+static optional<string> curlUpload(vector<UploadedFile> files, const char* url, const CallbackData& callback, int timeout) {
   curl_httppost* formpost = nullptr;
   curl_httppost* lastptr = nullptr;
 
-  curl_formadd(&formpost,
-      &lastptr,
-      CURLFORM_COPYNAME, "fileToUpload",
-      CURLFORM_FILE, path,
-      CURLFORM_END);
+  for (auto file : files)
+    curl_formadd(&formpost,
+        &lastptr,
+        CURLFORM_COPYNAME, file.paramName,
+        CURLFORM_FILE, file.path,
+        CURLFORM_END);
 
   curl_formadd(&formpost,
       &lastptr,
@@ -127,26 +136,23 @@ static CallbackData getCallbackData(FileSharing* f, ProgressMeter& meter) {
 optional<string> FileSharing::uploadSite(const FilePath& path, const string& title, const SavedGameInfo& info,
     ProgressMeter& meter, optional<string>& url) {
   if (!options.getBoolValue(OptionId::ONLINE))
-    return none;
-#ifdef USE_STEAMWORKS
-  return uploadSiteToSteam(path, title, info, meter, url);
-#else
-  return curlUpload(path.getPath(), (uploadUrl + "/upload_site.php").c_str(), getCallbackData(this, meter), 0);
-#endif
+    return "Online features not enabled!"_s;
+  if (!!uploadSiteToSteam(path, title, info, meter, url))
+    return curlUpload({UploadedFile{path.getPath(), "fileToUpload"},UploadedFile{retiredScreenshotFilename, "screenshot"}},
+          (uploadUrl + "/upload_site.php").c_str(), getCallbackData(this, meter), 0);
+  return none;
 }
 
 optional<string> FileSharing::downloadSite(const SaveFileInfo& file, const DirectoryPath& targetDir, ProgressMeter& meter) {
-#ifdef USE_STEAMWORKS
-  return downloadSteamSite(file, targetDir, meter);
-#else
-  return download(file.filename, "uploads", targetDir, meter);
-#endif
+  if (!file.steamId || !!downloadSteamSite(file, targetDir, meter))
+    return download(file.filename, "dungeons", targetDir, meter);
+  return none;
 }
 
 void FileSharing::uploadHighscores(const FilePath& path) {
   if (options.getBoolValue(OptionId::ONLINE))
     uploadQueue.push([this, path] {
-      curlUpload(path.getPath(), (uploadUrl + "/upload_scores.php").c_str(), getCallbackData(this), 5);
+      curlUpload({UploadedFile{path.getPath(), "fileToUpload"}}, (uploadUrl + "/upload_scores.php").c_str(), getCallbackData(this), 5);
     });
 }
 
@@ -256,6 +262,23 @@ string FileSharing::downloadHighscores(int version) {
   return ret;
 }
 
+void FileSharing::downloadPersonalMessage() {
+  uploadQueue.push([this] {
+    RecursiveLock lock(personalMessageMutex);
+    personalMessage = downloadContent(uploadUrl + "/get_personal.php?installId=" + escapeEverything(installId)).value_or(""_s);
+    auto prefix = "personal123"_s;
+    if (startsWith(personalMessage, prefix))
+      personalMessage = personalMessage.substr(prefix.size());
+    else
+      personalMessage = "";
+  });
+}
+
+const std::string& FileSharing::getPersonalMessage() {
+  RecursiveLock lock(personalMessageMutex);
+  return personalMessage;
+}
+
 template<typename Elem>
 static vector<Elem> parseLines(const string& s, function<optional<Elem>(const vector<string>&)> parseLine) {
   std::stringstream iss(s);
@@ -293,19 +316,16 @@ optional<string> FileSharing::downloadContent(const string& url) {
 }
 
 static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
-  if (fields.size() < 6)
+  if (fields.size() < 3)
     return none;
   INFO << "Parsed " << fields;
   FileSharing::SiteInfo elem {};
-  elem.fileInfo.filename = fields[0];
+  TextInput input(unescapeEverything(fields[0]));
+  input.getArchive() >> elem.fileInfo.filename >> elem.gameInfo;
   try {
     elem.fileInfo.date = fromString<int>(fields[1]);
-    elem.wonGames = fromString<int>(fields[2]);
-    elem.totalGames = fromString<int>(fields[3]);
-    elem.version = fromString<int>(fields[5]);
+    elem.version = fromString<int>(fields[2]);
     elem.fileInfo.download = true;
-    TextInput input(fields[4]);
-    input.getArchive() >> elem.gameInfo;
   } catch (cereal::Exception) {
     return none;
   } catch (ParsingException e) {
@@ -314,15 +334,53 @@ static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
   return elem;
 }
 
-optional<vector<FileSharing::SiteInfo>> FileSharing::listSites() {
-  if (!options.getBoolValue(OptionId::ONLINE))
-    return {};
-  if (auto sites = getSteamSites())
-    return sites;
-  if (auto content = downloadContent(uploadUrl + "/get_sites.php"))
-    return parseLines<FileSharing::SiteInfo>(*content, parseSite);
-  else
+namespace {
+struct SiteConquestInfo {
+  string filename;
+  int totalGames;
+  int wonGames;
+};
+}
+
+static optional<SiteConquestInfo> parseSiteConquest(const vector<string>& fields) {
+  if (fields.size() < 3)
     return none;
+  INFO << "Parsed " << fields;
+  SiteConquestInfo elem {};
+  try {
+    elem.filename = unescapeEverything(fields[0]);
+    elem.wonGames = fromString<int>(fields[1]);
+    elem.totalGames = fromString<int>(fields[2]);
+  } catch (cereal::Exception) {
+    return none;
+  } catch (ParsingException e) {
+    return none;
+  }
+  return elem;
+}
+
+expected<vector<FileSharing::SiteInfo>, string> FileSharing::listSites() {
+  if (!options.getBoolValue(OptionId::ONLINE))
+    return make_unexpected("Please enable online features in the settings in order to download retired dungeons!"_s);
+  vector<SiteConquestInfo> conquestInfo;
+  thread downloadConquest([&conquestInfo, this] {
+    if (auto content = downloadContent(uploadUrl + "/get_sites.php"))
+      conquestInfo = parseLines<SiteConquestInfo>(*content, parseSiteConquest);
+  });
+  optional<vector<FileSharing::SiteInfo>> ret = getSteamSites();
+  if (!ret)
+    if (auto content = downloadContent(uploadUrl + "/dungeons.txt"))
+      ret = parseLines<FileSharing::SiteInfo>(*content, parseSite);
+  downloadConquest.join();
+  if (!ret)
+    return make_unexpected("Error fetching online dungeons."_s);
+  for (auto& conquestElem : conquestInfo)
+    for (auto& elem : *ret)
+      if (elem.fileInfo.filename == conquestElem.filename) {
+        elem.wonGames = conquestElem.wonGames;
+        elem.totalGames = conquestElem.totalGames;
+      }
+  return *ret;
 }
 
 static optional<FileSharing::BoardMessage> parseBoardMessage(const vector<string>& fields) {
@@ -332,11 +390,11 @@ static optional<FileSharing::BoardMessage> parseBoardMessage(const vector<string
     return none;
 }
 
-optional<vector<FileSharing::BoardMessage>> FileSharing::getBoardMessages(int boardId) {
+expected<vector<FileSharing::BoardMessage>, string> FileSharing::getBoardMessages(int boardId) {
   if (options.getBoolValue(OptionId::ONLINE))
     if (auto content = downloadContent(uploadUrl + "/get_messages.php?boardId=" + toString(boardId)))
       return parseLines<FileSharing::BoardMessage>(*content, parseBoardMessage);
-  return none;
+  return make_unexpected("Please enable online features in the settings in order to download messages!"_s);
 }
 
 bool FileSharing::uploadBoardMessage(const string& gameId, int hash, const string& author, const string& text) {
@@ -347,19 +405,6 @@ bool FileSharing::uploadBoardMessage(const string& gameId, int hash, const strin
       { "author", author },
       { "text", text }
   }, false);
-}
-
-static optional<ModInfo> parseModInfo(const vector<string>& fields, const string& modVersion) {
-  if (fields.size() >= 9)
-    if (auto numGames = fromStringSafe<int>(unescapeEverything(fields[3])))
-      if (auto version = fromStringSafe<int>(unescapeEverything(fields[4])))
-        if (auto steamId = fromStringSafe<SteamId>(unescapeEverything(fields[5])))
-          if (auto upvotes = fromStringSafe<int>(unescapeEverything(fields[7])))
-            if (auto downvotes = fromStringSafe<int>(unescapeEverything(fields[8])))
-              if (fields[6] == modVersion)
-                return ModInfo{unescapeEverything(fields[0]), ModDetails{unescapeEverything(fields[1]), unescapeEverything(fields[2])},
-                      ModVersionInfo{*steamId, *version, modVersion}, *upvotes, *downvotes, false, false, false, {}};
-  return none;
 }
 
 static string firstLines(string text, int max_lines = 3) {
@@ -378,6 +423,20 @@ static string firstLines(string text, int max_lines = 3) {
   return text;
 }
 
+static optional<ModInfo> parseModInfo(const vector<string>& fields, const string& modVersion) {
+  if (fields.size() >= 9)
+    if (auto numGames = fromStringSafe<int>(unescapeEverything(fields[3])))
+      if (auto version = fromStringSafe<int>(unescapeEverything(fields[4])))
+        if (auto steamId = fromStringSafe<SteamId>(unescapeEverything(fields[5])))
+          if (auto upvotes = fromStringSafe<int>(unescapeEverything(fields[7])))
+            if (auto downvotes = fromStringSafe<int>(unescapeEverything(fields[8])))
+              if (fields[6] == modVersion)
+                return ModInfo{unescapeEverything(fields[0]),
+                      ModDetails{unescapeEverything(fields[1]), firstLines(unescapeEverything(fields[2]))},
+                      ModVersionInfo{*steamId, *version, modVersion}, *upvotes, *downvotes, false, false, false, {}};
+  return none;
+}
+
 struct SteamItemInfo {
   steam::ItemInfo info;
   optional<string> owner;
@@ -385,15 +444,19 @@ struct SteamItemInfo {
   bool isOwner;
 };
 
-static vector<SteamItemInfo> getSteamItems() {
-#ifdef USE_STEAMWORKS
-  if (!steam::Client::isAvailable()) {
-#ifdef RELEASE
-    USER_INFO << "Steam client not available";
-#endif
-    return {};
-  }
+template <typename T>
+static vector<T> removeDuplicates(vector<T> input) {
+  vector<T> ret;
+  for (auto& elem : input)
+    if (!ret.contains(elem))
+      ret.push_back(std::move(elem));
+  return ret;
+}
 
+static optional<vector<SteamItemInfo>> getSteamItems() {
+#ifdef USE_STEAMWORKS
+  if (!steam::Client::isAvailable())
+    return none;
   // TODO: thread safety
   // TODO: filter mods by tags early
   auto& ugc = steam::UGC::instance();
@@ -405,48 +468,60 @@ static vector<SteamItemInfo> getSteamItems() {
 
   // TODO: Is this check necessary? Maybe we should try anyways?
   if (user.isLoggedOn()) {
-    steam::FindItemInfo qinfo;
-    qinfo.order = SteamFindOrder::playtime;
-    auto qid = ugc.createFindQuery(qinfo, 1);
+    auto getForPage = [&ugc](int page) {
+      vector<steam::ItemId> ret;
+      steam::FindItemInfo qinfo;
+      qinfo.order = SteamFindOrder::playtime;
+      auto qid = ugc.createFindQuery(qinfo, page);
+      ugc.waitForQueries({qid}, milliseconds(2000));
 
-    // TODO: multiple pages
-    // TODO: handle errors
-    // TODO: czy chcemy je jakoś filtrować? Czy na razie po prostu dajemy wszystkie / najpopularniejsze?
-
-    ugc.waitForQueries({qid}, milliseconds(2000));
-
-    if (ugc.queryStatus(qid) == QueryStatus::completed) {
-      items = ugc.finishFindQuery(qid);
-    } else {
-      INFO << "STEAM: FindQuery failed: " << ugc.queryError(qid, "timeout (2 sec)");
-      ugc.finishQuery(qid);
+      if (ugc.queryStatus(qid) == QueryStatus::completed) {
+        ret = ugc.finishFindQuery(qid);
+      } else {
+        INFO << "STEAM: FindQuery failed: " << ugc.queryError(qid, "timeout (2 sec)");
+        ugc.finishQuery(qid);
+      }
+      return ret;
+    };
+    int page = 1;
+    while (1) {
+      auto v = getForPage(page);
+      if (v.empty())
+        break;
+      else
+        items.append(std::move(v));
+      ++page;
     }
   }
 
   for (auto id : subscribedItems)
     if (!items.contains(id))
       items.emplace_back(id);
-
+  items = removeDuplicates(items);
   if (items.empty()) {
     INFO << "STEAM: No items present";
     // TODO: inform that no mods are present (not subscribed or ...)
     return {};
   }
 
-  steam::ItemDetailsInfo detailsInfo;
-  detailsInfo.longDescription = true;
-  detailsInfo.playtimeStatsDays = 9999;
-  detailsInfo.metadata = true;
-  auto qid = ugc.createDetailsQuery(detailsInfo, items);
-  ugc.waitForQueries({qid}, milliseconds(3000));
+  auto getForPage = [&ugc](vector<steam::ItemId> items) {
+    steam::ItemDetailsInfo detailsInfo;
+    detailsInfo.longDescription = true;
+    detailsInfo.playtimeStatsDays = 9999;
+    detailsInfo.metadata = true;
+    auto qid = ugc.createDetailsQuery(detailsInfo, items);
+    ugc.waitForQueries({qid}, milliseconds(3000));
 
-  if (ugc.queryStatus(qid) != QueryStatus::completed) {
-    INFO << "STEAM: DetailsQuery failed: " << ugc.queryError(qid, "timeout (3 sec)");
-    ugc.finishQuery(qid);
-    return {};
-  }
-
-  auto infos = ugc.finishDetailsQuery(qid);
+    if (ugc.queryStatus(qid) != QueryStatus::completed) {
+      INFO << "STEAM: DetailsQuery failed: " << ugc.queryError(qid, "timeout (3 sec)");
+      ugc.finishQuery(qid);
+      return vector<steam::ItemInfo>();
+    }
+    return ugc.finishDetailsQuery(qid);
+  };
+  vector<steam::ItemInfo> infos;
+  for (int i = 0; i < items.size(); i += steam::UGC::maxItemsPerPage)
+    infos.append(getForPage(getSubsequence(items, i, steam::UGC::maxItemsPerPage)));
   for (auto& info : infos)
     friends.requestUserInfo(info.ownerId, true);
   vector<optional<string>> ownerNames(infos.size());
@@ -471,13 +546,16 @@ static vector<SteamItemInfo> getSteamItems() {
     });
   return ret;
 #else
-  return {};
+  return none;
 #endif
 }
 
 optional<vector<ModInfo>> FileSharing::getSteamMods() {
   vector<ModInfo> out;
-  auto infos = getSteamItems();
+  auto infos1 = getSteamItems();
+  if (!infos1)
+    return none;
+  auto& infos = *infos1;
   for (int n = 0; n < infos.size(); n++) {
     auto& info = infos[n].info;
     if (!info.tags.contains("Mod") || !info.tags.contains(modVersion))
@@ -503,7 +581,10 @@ optional<vector<ModInfo>> FileSharing::getSteamMods() {
 
 optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites() {
   vector<SiteInfo> out;
-  auto infos = getSteamItems();
+  auto infos1 = getSteamItems();
+  if (!infos1)
+    return none;
+  auto& infos = *infos1;
   for (int n = 0; n < infos.size(); n++) {
     auto& info = infos[n].info;
     if (!info.tags.contains("Dungeon") || !info.tags.contains(toString(saveVersion)))
@@ -521,15 +602,14 @@ optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites() {
   return out;
 }
 
-optional<vector<ModInfo>> FileSharing::getOnlineMods() {
+expected<vector<ModInfo>, string> FileSharing::getOnlineMods() {
   if (!options.getBoolValue(OptionId::ONLINE))
-    return none;
+    return make_unexpected("Please enable online features in the settings in order to download mods."_s);
   if (auto steamMods = getSteamMods())
-    return steamMods;
-  if (options.getBoolValue(OptionId::ONLINE))
-    if (auto content = downloadContent(uploadUrl + "/get_mods.php"))
-      return parseLines<ModInfo>(*content, [this](auto& e) { return parseModInfo(e, modVersion);});
-  return none;
+    return *steamMods;
+  if (auto content = downloadContent(uploadUrl + "/get_mods.txt"))
+    return parseLines<ModInfo>(*content, [this](auto& e) { return parseModInfo(e, modVersion);});
+  return make_unexpected("Error fetching online mods."_s);
 }
 
 optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, const DirectoryPath& modsDir,
@@ -546,11 +626,12 @@ optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, 
     if (!ugc.downloadItem(id, true))
       return string("Error while downloading mod.");
 
-    // TODO: meter support
     while (!consumeCancelled()) {
       steam::runCallbacks();
       if (!ugc.isDownloading(id))
         break;
+      if (auto info = ugc.downloadInfo(id))
+        meter.setProgress(float(info->bytesDownloaded) / info->bytesTotal);
       sleep_for(milliseconds(50));
     }
 
@@ -561,7 +642,7 @@ optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, 
   auto instInfo = ugc.installInfo(id);
   if (!instInfo)
     return string("Error while retrieving installation info");
-  return DirectoryPath::copyFiles(DirectoryPath(instInfo->folder), modsDir.subdirectory(name), true);
+  return DirectoryPath(instInfo->folder).copyRecursively(modsDir.subdirectory(name));
 #else
   return string("Steam support is not available in this build");
 #endif
@@ -569,7 +650,7 @@ optional<string> FileSharing::downloadSteamMod(SteamId id_, const string& name, 
 
 optional<string> FileSharing::downloadMod(const string& modName, SteamId steamId, const DirectoryPath& modsDir, ProgressMeter& meter) {
   if (!!downloadSteamMod(steamId, modName, modsDir, meter)) {
-    auto fileName = toString(steamId) + ".zip";
+    auto fileName = toString(modName) + ".zip";
     if (auto err = download(fileName, "mods", modsDir, meter))
       return err;
     return unzip(modsDir.file(fileName).getPath(), modsDir.getPath());
@@ -599,7 +680,9 @@ optional<string> FileSharing::uploadMod(ModInfo& modInfo, const DirectoryPath& m
 
   // Item update may take some time; Should we loop indefinitely?
   optional<steam::UpdateItemResult> result;
-  steam::sleepUntil([&]() { return (bool)(result = ugc.tryUpdateItem()); }, milliseconds(600 * 1000));
+  steam::sleepUntil([&]() {
+    return (bool)(result = ugc.tryUpdateItem(meter)); },
+    milliseconds(600 * 1000));
   if (!result) {
     ugc.cancelUpdateItem();
     return "Uploading mod has timed out"_s;
@@ -627,7 +710,7 @@ static string serializeInfo(const string& fileName, const SavedGameInfo& savedIn
 }
 
 optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const string& title, const SavedGameInfo& savedInfo,
-    ProgressMeter&, optional<string>& url) {
+    ProgressMeter& meter, optional<string>& url) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
     return "Steam client not available"_s;
@@ -647,7 +730,7 @@ optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const stri
 
   // Item update may take some time; Should we loop indefinitely?
   optional<steam::UpdateItemResult> result;
-  steam::sleepUntil([&]() { return (bool)(result = ugc.tryUpdateItem()); }, milliseconds(600 * 1000));
+  steam::sleepUntil([&]() { return (bool)(result = ugc.tryUpdateItem(meter)); }, milliseconds(600 * 1000));
   if (!result) {
     ugc.cancelUpdateItem();
     return "Uploading mod has timed out"_s;
@@ -668,7 +751,7 @@ optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const stri
 #endif
 }
 
-optional<string> FileSharing::downloadSteamSite(const SaveFileInfo& file, const DirectoryPath& targetDir, ProgressMeter&) {
+optional<string> FileSharing::downloadSteamSite(const SaveFileInfo& file, const DirectoryPath& targetDir, ProgressMeter& meter) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
     return "Steam client not available"_s;
@@ -679,18 +762,19 @@ optional<string> FileSharing::downloadSteamSite(const SaveFileInfo& file, const 
 
   if (!ugc.isInstalled(id)) {
     if (!ugc.downloadItem(id, true))
-      return string("Error while downloading mod.");
+      return string("Error while downloading dungeon.");
 
-    // TODO: meter support
     while (!consumeCancelled()) {
       steam::runCallbacks();
       if (!ugc.isDownloading(id))
         break;
+      if (auto info = ugc.downloadInfo(id))
+        meter.setProgress(float(info->bytesDownloaded) / info->bytesTotal);
       sleep_for(milliseconds(50));
     }
 
     if (!ugc.isInstalled(id))
-      return string("Error while downloading mod.");
+      return string("Error while downloading dungeon.");
   }
 
   auto instInfo = ugc.installInfo(id);

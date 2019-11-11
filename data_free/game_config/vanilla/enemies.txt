@@ -758,10 +758,11 @@
     levelConnection = {
       topLevel = ExtraEnemy {"MAIN_DUNGEON_ENTRY"}
       levels = {
-#        { ExtraEnemy { "DUNGEON1" { 1 } } 60 40 DUNGEON }
-#        { ExtraEnemy { "DUNGEON2" { 1 } } 60 40 DUNGEON }
-#        { ExtraEnemy { "DUNGEON3" { 1 } } 60 40 DUNGEON }
+        { ExtraEnemy { "DUNGEON1" { 1 } } 40 30 DUNGEON }
+        { ExtraEnemy { "DUNGEON2" { 1 } } 40 30 DUNGEON }
+        { ExtraEnemy { "DUNGEON3" { 1 } } 40 30 DUNGEON }
         { MainEnemy 60 40 ADOXIE_TEMPLE }
+        { ExtraEnemy { "ADOXIE" { 1 } } 15 15 TOWER true }
       }
     }
   }
@@ -775,6 +776,20 @@
         fighters = {
           count = {2 4}
           all = { 1 "RAT" }
+        }
+      }
+    }
+  }
+  "ADOXIE"
+  {
+    settlement = {
+      type = CAVE
+      tribe = MONSTER
+      buildingId = "BLACK"
+      inhabitants = {
+        fighters = {
+          count = {1}
+          all = { 1 "ADOXIE_HEAD" }
         }
       }
     }

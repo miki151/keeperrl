@@ -16,7 +16,7 @@ Highscores::Highscores(const FilePath& local, FileSharing& sharing, Options* o)
 
 vector<Highscores::Score> Highscores::downloadHighscores(View* view) const {
   vector<Score> ret;
-  view->doWithSplash(SplashType::SMALL, "Downloading online highscores...", 1,
+  view->doWithSplash("Downloading online highscores...", 1,
       [&] (ProgressMeter&) {
         ret = fromString(fileSharing.downloadHighscores(highscoreVersion));
         fileSharing.uploadHighscores(localPath);

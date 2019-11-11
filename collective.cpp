@@ -141,8 +141,8 @@ void Collective::setPopulationGroup(const vector<Creature*>& creatures) {
 
 void Collective::addCreature(PCreature creature, Position pos, EnumSet<MinionTrait> traits) {
   Creature* c = creature.get();
-  pos.landCreature(std::move(creature));
-  addCreature(c, traits);
+  if (pos.landCreature(std::move(creature)))
+    addCreature(c, traits);
 }
 
 void Collective::updateCreatureStatus(Creature* c) {

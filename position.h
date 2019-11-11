@@ -63,7 +63,7 @@ class Position {
   // will crash if it's not possible to place creature here
   void addCreature(PCreature);
   // will try to place creature somewhere else close on the level if it's not possible
-  void landCreature(PCreature);
+  bool landCreature(PCreature);
   bool canEnter(const Creature*) const;
   bool canEnter(const MovementType&) const;
   bool canEnterEmpty(const Creature*) const;

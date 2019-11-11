@@ -36,12 +36,16 @@ struct LevelConnection {
     Vec2 SERIAL(levelSize);
     LevelType SERIAL(levelType);
     EnemyLevelInfo SERIAL(enemy);
-    SERIALIZE_ALL(NAMED(enemy), NAMED(levelSize), NAMED(levelType))
+    bool SERIAL(isLit) = false;
+    template <class Archive>
+    void serialize(Archive& ar, unsigned int v);
   };
   EnemyLevelInfo SERIAL(topLevel);
   vector<LevelInfo> SERIAL(levels);
   SERIALIZE_ALL(NAMED(topLevel), NAMED(levels), OPTION(direction))
 };
+
+CEREAL_CLASS_VERSION(LevelConnection::LevelInfo, 1)
 
 struct BonesInfo {
   double SERIAL(probability);

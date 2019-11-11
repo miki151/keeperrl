@@ -2651,7 +2651,7 @@ static int getLineHeight(ListElem::ElemMod mod) {
   }
 }
 
-SGuiElem GuiBuilder::getMainMenuLinks(SGuiElem elem) {
+SGuiElem GuiBuilder::getMainMenuLinks(const string& personalMessage, SGuiElem elem) {
   auto getButton = [&](const char* viewId, const char* label, const char* url) {
     return gui.stack(
         gui.button([url] { openUrl(url); }),
@@ -2661,15 +2661,24 @@ SGuiElem GuiBuilder::getMainMenuLinks(SGuiElem elem) {
           .buildHorizontalList()
     );
   };
+  auto makeWindow = [&](SGuiElem elem) {
+    return gui.centerHoriz(gui.translucentBackgroundWithBorder(gui.margins(std::move(elem), 15, 4, 15, 5)));
+  };
+  auto buttonsLine = makeWindow(gui.getListBuilder()
+      .addElemAuto(getButton("keeper4", "News", "https://keeperrl.com/category/News/"))
+      .addSpace(100)
+      .addElemAuto(getButton("elementalist", "Wiki", "http://keeperrl.com/wiki/index.php?title=Main_Page"))
+      .addSpace(100)
+      .addElemAuto(getButton("jester", "Discord", "https://discordapp.com/invite/XZfCCs5"))
+      .buildHorizontalList());
+  if (!personalMessage.empty())
+    buttonsLine = gui.getListBuilder(legendLineHeight)
+        .addElemAuto(makeWindow(gui.label(personalMessage)))
+        .addSpace(10)
+        .addElem(std::move(buttonsLine))
+        .buildVerticalList();
   return gui.stack(std::move(elem),
-      gui.fullScreen(gui.alignment(GuiFactory::Alignment::BOTTOM, gui.bottomMargin(10,
-      gui.centerHoriz(gui.translucentBackgroundWithBorder(gui.margins(gui.getListBuilder()
-          .addElemAuto(getButton("keeper4", "News", "https://keeperrl.com/category/News/"))
-          .addSpace(100)
-          .addElemAuto(getButton("elementalist", "Wiki", "http://keeperrl.com/wiki/index.php?title=Main_Page"))
-          .addSpace(100)
-          .addElemAuto(getButton("jester", "Discord", "https://discordapp.com/invite/XZfCCs5"))
-          .buildHorizontalList(), 15, 4, 15, 5)))))));
+      gui.fullScreen(gui.alignment(GuiFactory::Alignment::BOTTOM, gui.bottomMargin(10, std::move(buttonsLine)))));
 
 }
 

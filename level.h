@@ -169,6 +169,8 @@ class Level : public OwnedObject<Level> {
   LevelId getUniqueId() const;
   void setFurniture(Vec2, PFurniture);
 
+  void fixRetiredKeeperEffectsTable();
+
   Sectors& getSectors(const MovementType&) const;
   struct EffectSet {
     vector<LastingEffect> SERIAL(friendly);

@@ -242,33 +242,9 @@ void WindowView::drawMenuBackground(double barState, double mouthState) {
       Renderer::NONE, 16);
 }
 
-void WindowView::getAutosaveSplash(const ProgressMeter& meter, const string& text) {
+void WindowView::getSmallSplash(const ProgressMeter* meter, const string& text, function<void()> cancelFun) {
   SGuiElem window = gui.miniWindow(gui.empty(), []{});
-  Vec2 windowSize(440, 70);
-  Rectangle bounds((renderer.getSize() - windowSize) / 2, (renderer.getSize() + windowSize) / 2);
-  Rectangle progressBar(bounds.minusMargin(15));
-  window->setBounds(bounds);
-  while (!splashDone) {
-    refreshScreen(false);
-    window->render(renderer);
-    double progress = meter.getProgress();
-    Rectangle bar(progressBar.topLeft(), Vec2(1 + progressBar.left() * (1.0 - progress) +
-          progressBar.right() * progress, progressBar.bottom()));
-    renderer.drawFilledRectangle(bar, Color::DARK_GREEN.transparency(50));
-    renderer.drawText(Color::WHITE, Vec2(bounds.middle().x, bounds.top() + 20), text, Renderer::HOR);
-    renderer.drawAndClearBuffer();
-    sleep_for(milliseconds(30));
-    Event event;
-    while (renderer.pollEvent(event)) {
-      propagateEvent(event, {});
-      considerResizeEvent(event);
-    }
-  }
-}
-
-void WindowView::getSmallSplash(const string& text, function<void()> cancelFun) {
-  SGuiElem window = gui.miniWindow(gui.empty(), []{});
-  Vec2 windowSize(500, 90);
+  Vec2 windowSize(500, cancelFun ? 90 : 70);
   string cancelText = "[cancel]";
   Rectangle bounds((renderer.getSize() - windowSize) / 2, (renderer.getSize() + windowSize) / 2);
   Rectangle progressBar(bounds.minusMargin(15));
@@ -276,6 +252,12 @@ void WindowView::getSmallSplash(const string& text, function<void()> cancelFun) 
   while (!splashDone) {
     refreshScreen(false);
     window->render(renderer);
+    double progress = meter ? meter->getProgress() : 0;
+    if (progress > 0) {
+      Rectangle bar(progressBar.topLeft(), Vec2(1 + progressBar.left() * (1.0 - progress) +
+            progressBar.right() * progress, progressBar.bottom()));
+      renderer.drawFilledRectangle(bar, Color::DARK_GREEN.transparency(50));
+    }
     renderer.drawText(Color::WHITE, Vec2(bounds.middle().x, bounds.top() + 20), text, Renderer::HOR);
     Rectangle cancelBut(bounds.middle().x - renderer.getTextLength(cancelText) / 2, bounds.top() + 50,
         bounds.middle().x + renderer.getTextLength(cancelText) / 2, bounds.top() + 80);
@@ -295,46 +277,10 @@ void WindowView::getSmallSplash(const string& text, function<void()> cancelFun) 
   }
 }
 
-void WindowView::getBigSplash(const ProgressMeter& meter, const string& text, function<void()> cancelFun) {
-  auto t0 = clock->getRealMillis();
-  int mouthMillis = 400;
-  Texture& loadingSplash = gui.get(GuiFactory::TexId::LOADING_SPLASH);
-  string cancelText = "[cancel]";
-  while (!splashDone) {
-    Vec2 textPos = useTiles ? Vec2(renderer.getSize().x / 2, renderer.getSize().y * 0.5)
-      : Vec2(renderer.getSize().x / 2, renderer.getSize().y - 60);
-    Rectangle cancelBut(textPos.x - renderer.getTextLength(cancelText) / 2, textPos.y + 30,
-        textPos.x + renderer.getTextLength(cancelText) / 2, textPos.y + 60);
-    if (useTiles)
-      drawMenuBackground(meter.getProgress(), min(1.0, (double)(clock->getRealMillis() - t0).count() / mouthMillis));
-    else
-      renderer.drawImage((renderer.getSize().x - loadingSplash.getSize().x) / 2,
-          (renderer.getSize().y - loadingSplash.getSize().y) / 2, loadingSplash);
-    renderer.drawText(Color::WHITE, textPos, text, Renderer::HOR);
-    if (cancelFun)
-      renderer.drawText(Color::LIGHT_BLUE, cancelBut.topLeft(), cancelText);
-    renderer.drawAndClearBuffer();
-    sleep_for(milliseconds(30));
-    Event event;
-    while (renderer.pollEvent(event)) {
-      considerResizeEvent(event);
-      if (event.type == SDL::SDL_MOUSEBUTTONDOWN && cancelFun) {
-        if (Vec2(event.button.x, event.button.y).inRectangle(cancelBut))
-          cancelFun();
-      }
-    }
-  }
-}
-
-void WindowView::displaySplash(const ProgressMeter* meter, const string& text, SplashType type,
-    function<void()> cancelFun) {
+void WindowView::displaySplash(const ProgressMeter* meter, const string& text, function<void()> cancelFun) {
   splashDone = false;
   renderDialog.push([=] {
-    switch (type) {
-      case SplashType::BIG: getBigSplash(*meter, text, cancelFun); break;
-      case SplashType::AUTOSAVING: getAutosaveSplash(*meter, text); break;
-      case SplashType::SMALL: getSmallSplash(text, cancelFun); break;
-    }
+    getSmallSplash(meter, text, cancelFun);
     splashDone = false;
     renderDialog.pop();
   });
@@ -960,7 +906,8 @@ void WindowView::presentWorldmap(const Campaign& campaign) {
 
 variant<View::AvatarChoice, AvatarMenuOption> WindowView::chooseAvatar(const vector<AvatarData>& avatars) {
   SyncQueue<variant<AvatarChoice, AvatarMenuOption>> returnQueue;
-  return getBlockingGui(returnQueue, guiBuilder.getMainMenuLinks(guiBuilder.drawAvatarMenu(returnQueue, avatars)), none, false);
+  return getBlockingGui(returnQueue, guiBuilder.getMainMenuLinks(bugreportSharing->getPersonalMessage(),
+      guiBuilder.drawAvatarMenu(returnQueue, avatars)), none, false);
 }
 
 CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, CampaignMenuState& state) {
@@ -1123,7 +1070,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
         }
       }, true));
   if (menuType == MenuType::MAIN || menuType == MenuType::MAIN_NO_TILES)
-    stuff = guiBuilder.getMainMenuLinks(std::move(stuff));
+    stuff = guiBuilder.getMainMenuLinks(bugreportSharing->getPersonalMessage(), std::move(stuff));
   while (1) {
     refreshScreen(false);
     stuff->setBounds(guiBuilder.getMenuPosition(menuType, options.size()));
@@ -1280,7 +1227,7 @@ bool WindowView::considerBugReportEvent(Event& event) {
         return true;
       ProgressMeter meter(1.0);
       optional<string> result;
-      displaySplash(&meter, "Uploading bug report", SplashType::AUTOSAVING, [this]{bugreportSharing->cancel();});
+      displaySplash(&meter, "Uploading bug report", [this]{bugreportSharing->cancel();});
       thread t([&] {
         result = bugreportSharing->uploadBugReport(bugreportInfo->text, savefile, screenshot, meter);
         clearSplash();

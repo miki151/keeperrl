@@ -207,18 +207,20 @@ bool MinionEquipment::tryToOwn(const Creature* c, Item* it) {
     auto slot = it->getEquipmentSlot();
     vector<Item*> contesting;
     int slotSize = c->getEquipment().getMaxItems(slot, c);
-    for (auto& item : myItems.getOrElse(c, emptyItems))
-      if (item)
-        if (item->canEquip() && item->getEquipmentSlot() == slot) {
-          if (!isLocked(c, item->getUniqueId()))
-            contesting.push_back(item.get());
-          else if (--slotSize <= 0)
-            return false;
-        }
-    if (contesting.size() >= slotSize) {
-      sortByEquipmentValue(c, contesting);
-      for (int i = slotSize - 1; i < contesting.size(); ++i)
-        discard(contesting[i]);
+    if (slotSize > 0) {
+      for (auto& item : myItems.getOrElse(c, emptyItems))
+        if (item)
+          if (item->canEquip() && item->getEquipmentSlot() == slot) {
+            if (!isLocked(c, item->getUniqueId()))
+              contesting.push_back(item.get());
+            else if (--slotSize <= 0)
+              return false;
+          }
+      if (contesting.size() >= slotSize) {
+        sortByEquipmentValue(c, contesting);
+        for (int i = slotSize - 1; i < contesting.size(); ++i)
+          discard(contesting[i]);
+      }
     }
   }
   discard(it);

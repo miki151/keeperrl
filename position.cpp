@@ -339,9 +339,8 @@ void Position::addCreature(PCreature c) {
   }
 }
 
-void Position::landCreature(PCreature c) {
-  if (isValid())
-    level->landCreature({*this}, std::move(c));
+bool Position::landCreature(PCreature c) {
+  return isValid() && level->landCreature({*this}, std::move(c));
 }
 
 void Position::addCreature(PCreature c, TimeInterval delay) {
@@ -551,18 +550,20 @@ void Position::addFurniture(PFurniture f) const {
 
 void Position::addFurnitureImpl(PFurniture f) const {
   PROFILE;
-  CHECK(!getFurniture(f->getLayer()));
-  auto furniture = f.get();
-  level->setFurniture(coord, std::move(f));
-  updateConnectivity();
-  if (furniture->blocksAnyVision())
-    updateVisibility();
-  updateBuildingSupport();
-  level->addLightSource(coord, furniture->getLightEmission());
-  updateSupportViewId(furniture);
-  setNeedsRenderAndMemoryUpdate(true);
-  if (auto& effect = furniture->getLastingEffectInfo())
-    addFurnitureEffect(furniture->getTribe(), *effect);
+  if (isValid()) {
+    CHECK(!getFurniture(f->getLayer()));
+    auto furniture = f.get();
+    level->setFurniture(coord, std::move(f));
+    updateConnectivity();
+    if (furniture->blocksAnyVision())
+      updateVisibility();
+    updateBuildingSupport();
+    level->addLightSource(coord, furniture->getLightEmission());
+    updateSupportViewId(furniture);
+    setNeedsRenderAndMemoryUpdate(true);
+    if (auto& effect = furniture->getLastingEffectInfo())
+      addFurnitureEffect(furniture->getTribe(), *effect);
+  }
 }
 
 template <typename Fun1, typename Fun2>

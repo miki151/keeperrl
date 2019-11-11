@@ -83,6 +83,9 @@
 #include <deque>
 #include <map>
 #include <set>
+#include "extern/expected.hpp"
+using tl::expected;
+using tl::make_unexpected;
 using std::map;
 using std::multiset;
 using std::deque;

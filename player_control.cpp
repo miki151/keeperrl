@@ -273,18 +273,20 @@ void PlayerControl::teamMemberAction(TeamMemberAction action, Creature::Id id) {
             }
           }
         break;
-      case TeamMemberAction::REMOVE_MEMBER:
+      case TeamMemberAction::REMOVE_MEMBER: {
+        auto& teams = getTeams();
         if (auto teamId = getCurrentTeam())
-          if (getTeams().getMembers(*teamId).size() > 1) {
-            getTeams().remove(*teamId, c);
+          if (teams.getMembers(*teamId).size() > 1 && teams.contains(*teamId, c)) {
+            teams.remove(*teamId, c);
             if (c->isPlayer()) {
               c->popController();
-              auto newLeader = getTeams().getLeader(*teamId);
+              auto newLeader = teams.getLeader(*teamId);
               if (!newLeader->isPlayer())
                 newLeader->pushController(createMinionController(newLeader));
             }
           }
         break;
+      }
     }
 }
 

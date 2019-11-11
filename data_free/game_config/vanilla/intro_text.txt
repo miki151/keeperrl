@@ -1,8 +1,14 @@
-{"Welcome to KeeperRL Alpha 29 testing! This patch was released on September 30th, 2019.
+{"Welcome to KeeperRL Alpha 29.1! This patch was released on October 22nd, 2019.
 
-This unofficial build is intended for testing purposes, and is released for experienced players who want to get an early glimpse of Alpha 29, and are ready to help with fixing the remaining issues.
+A lot of changes have arrived with this update. Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
 
-If you are a new player, it is strongly recommended that you go back to Alpha 28, until Alpha 29 is officially released.
-"}
+* Steam Workshop integration for sharing mods and retired dungeons.
+* Two new biomes with dedicated content.
+* Special item ingredients dropped by major enemies.
+* Shields and parry mechanic.
+* Enemy aggression setting.
+* Improved mod support.
+
+If this is your first time playing KeeperRL, remember to start with the tutorial!"}
 {
 }

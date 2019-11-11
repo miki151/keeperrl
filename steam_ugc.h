@@ -5,6 +5,8 @@
 RICH_ENUM(SteamFindOrder, votes, date, subscriptions, playtime);
 RICH_ENUM(SteamItemVisibility, public_, friends, private_);
 
+class ProgressMeter;
+
 namespace steam {
 
 using FindOrder = SteamFindOrder;
@@ -90,7 +92,7 @@ struct ItemInfo {
 };
 
 class UGC {
-  STEAM_IFACE_DECL(UGC);
+  STEAM_IFACE_DECL(UGC)
 
   int numSubscribedItems() const;
   vector<ItemId> subscribedItems() const;
@@ -126,7 +128,7 @@ class UGC {
 
   // Pass empty itemId to create new item
   void beginUpdateItem(const UpdateItemInfo&);
-  optional<UpdateItemResult> tryUpdateItem();
+  optional<UpdateItemResult> tryUpdateItem(ProgressMeter&);
   bool isUpdatingItem();
 
   // Will remove partially created item

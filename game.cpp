@@ -689,7 +689,7 @@ string Game::getPlayerName() const {
     return players.getOnlyElement()->getName().firstOrBare();
 }
 
-SavedGameInfo Game::getSavedGameInfo() const {
+SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
   if (WCollective col = getPlayerCollective()) {
     vector<Creature*> creatures = col->getCreatures();
     CHECK(!creatures.empty());
@@ -702,10 +702,10 @@ SavedGameInfo Game::getSavedGameInfo() const {
     vector<SavedGameInfo::MinionInfo> minions;
     for (Creature* c : creatures)
       minions.push_back(getMinionInfo(c));
-    return SavedGameInfo{minions, col->getDangerLevel(), getPlayerName(), getSaveProgressCount(), {}};
+    return SavedGameInfo{minions, col->getDangerLevel(), getPlayerName(), getSaveProgressCount(), std::move(spriteMods)};
   } else {
     auto player = players.getOnlyElement(); // adventurer mode
-    return SavedGameInfo{{getMinionInfo(player)}, 0, player->getName().bare(), getSaveProgressCount(), {}};
+    return SavedGameInfo{{getMinionInfo(player)}, 0, player->getName().bare(), getSaveProgressCount(), std::move(spriteMods)};
   }
 }
 
@@ -720,24 +720,30 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
   int boardId = pos.getHash();
   vector<ListElem> options;
   atomic<bool> cancelled(false);
-  view->displaySplash(nullptr, "Fetching board contents...", SplashType::SMALL, [&] {
+  view->displaySplash(nullptr, "Fetching board contents...", [&] {
       cancelled = true;
       fileSharing->cancel();
       });
-  optional<vector<FileSharing::BoardMessage>> messages;
-  thread t([&] { messages = fileSharing->getBoardMessages(boardId); view->clearSplash(); });
+  vector<FileSharing::BoardMessage> messages;
+  optional<string> error;
+  thread t([&] {
+    if (auto m = fileSharing->getBoardMessages(boardId))
+      messages = *m;
+    else
+      error = m.error();
+    view->clearSplash();
+  });
   view->refreshView();
   t.join();
-  if (!messages || cancelled) {
-    view->presentText("", "Couldn't download board contents. Please check your internet connection and "
-        "enable online features in the settings.");
+  if (error) {
+    view->presentText("", *error);
     return;
   }
-  for (auto message : *messages) {
+  for (auto message : messages) {
     options.emplace_back(message.author + " wrote:", ListElem::TITLE);
     options.emplace_back("\"" + message.text + "\"", ListElem::TEXT);
   }
-  if (messages->empty())
+  if (messages.empty())
     options.emplace_back("The board is empty.", ListElem::TITLE);
   options.emplace_back("", ListElem::TEXT);
   options.emplace_back("[Write something]");

@@ -53,7 +53,7 @@ class WindowView: public View {
   WindowView(ViewParams); 
   virtual void initialize(unique_ptr<fx::FXRenderer>, unique_ptr<FXViewManager>) override;
   virtual void reset() override;
-  virtual void displaySplash(const ProgressMeter*, const string&, SplashType, function<void()> cancelFun) override;
+  virtual void displaySplash(const ProgressMeter*, const string&, function<void()> cancelFun) override;
   virtual void clearSplash() override;
 
   virtual void close() override;
@@ -133,9 +133,7 @@ class WindowView: public View {
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
   void drawAndClearBuffer();
-  void getAutosaveSplash(const ProgressMeter&, const string& text);
-  void getBigSplash(const ProgressMeter&, const string& text, function<void()> cancelFun);
-  void getSmallSplash(const string& text, function<void()> cancelFun);
+  void getSmallSplash(const ProgressMeter*, const string& text, function<void()> cancelFun);
 
   void zoom(int dir);
   void resize(int width, int height);

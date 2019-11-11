@@ -64,7 +64,7 @@ ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
       return &LevelMaker::adoxieTemple;
     case LevelType::SOKOBAN: {
       Table<char> sokoLevel = sokobanInput->getNext();
-      return [sokoLevel](RandomGen& random, SettlementInfo info) {
+      return [sokoLevel](RandomGen& random, SettlementInfo info, Vec2) {
         return LevelMaker::sokobanFromFile(random, info, sokoLevel);
       };
     }
@@ -82,8 +82,8 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
       if (connection.direction == LevelConnectionDir::UP)
         swap(settlement.upStairs, settlement.downStairs);
       model->buildLevel(
-          LevelBuilder(meter, random, contentFactory, level.levelSize.x, level.levelSize.y),
-          getMaker(level.levelType)(random, settlement));
+          LevelBuilder(meter, random, contentFactory, level.levelSize.x, level.levelSize.y, true, level.isLit ? 1.0 : 0.0),
+          getMaker(level.levelType)(random, settlement, level.levelSize));
       upLink = downLink;
       downLink = StairKey::getNew();
     };
@@ -292,6 +292,7 @@ PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment al
 PModel ModelBuilder::tryTutorialModel() {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
+  enemyInfo.push_back(enemyFactory->get(EnemyId("TUTORIAL_VILLAGE")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("RED_DRAGON")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
   /*enemyInfo.push_back(enemyFactory->get(EnemyId("BANDITS")));

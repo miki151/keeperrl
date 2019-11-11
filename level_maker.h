@@ -41,14 +41,14 @@ class LevelMaker {
 
   static PLevelMaker topLevel(RandomGen&, optional<CreatureGroup> wildlife, vector<SettlementInfo> village, int width,
       optional<TribeId> keeperTribe, BiomeId, ResourceCounts);
-  static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo);
+  static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo, Vec2 size);
   static PLevelMaker splashLevel(CreatureGroup heroLeader, CreatureGroup heroes,
       CreatureGroup monsters, CreatureGroup imps, const FilePath& splashPath);
-  static PLevelMaker towerLevel(RandomGen&, SettlementInfo);
+  static PLevelMaker towerLevel(RandomGen&, SettlementInfo, Vec2 size);
   static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
-  static PLevelMaker roomLevel(RandomGen&, SettlementInfo);
-  static PLevelMaker adoxieTemple(RandomGen&, SettlementInfo);
-  static PLevelMaker mazeLevel(RandomGen&, SettlementInfo);
+  static PLevelMaker roomLevel(RandomGen&, SettlementInfo, Vec2 size);
+  static PLevelMaker adoxieTemple(RandomGen&, SettlementInfo, Vec2 size);
+  static PLevelMaker mazeLevel(RandomGen&, SettlementInfo, Vec2 size);
   static PLevelMaker emptyLevel(FurnitureType, bool withFloor);
   static PLevelMaker sokobanFromFile(RandomGen&, SettlementInfo, Table<char>);
   static PLevelMaker battleLevel(Table<char>, CreatureList allies, CreatureList enemies);

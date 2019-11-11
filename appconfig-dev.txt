@@ -1,5 +1,5 @@
 {
-"upload_url"     "http://localhost/~michal/29"
+"upload_url"     "http://keeperrl.com/~retired/29"
 "save_version"   "3500"
 "mod_version"    "Alpha29"
 "steamworks"     "1"

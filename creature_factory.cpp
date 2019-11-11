@@ -216,6 +216,7 @@ void CreatureFactory::merge(CreatureFactory f) {
   mergeMap(std::move(f.inventory), inventory);
   mergeMap(std::move(f.spellSchools), spellSchools);
   append(spells, std::move(f.spells));
+  nameGenerator->merge(std::move(*f.nameGenerator));
 }
 
 void CreatureFactory::setContentFactory(const ContentFactory* f) const {
