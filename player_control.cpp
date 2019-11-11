@@ -2556,8 +2556,15 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
 }
 
 void PlayerControl::onSquareClick(Position pos) {
-  if (collective->getTerritory().contains(pos))
-    if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
+  if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
+    if (furniture->getUsageType() == FurnitureUsageType::STAIRS) {
+      auto otherLevel = getModel()->getLinkedLevel(pos.getLevel(), *pos.getLandingLink());
+      if (getModel()->getMainLevels().contains(otherLevel)) {
+        currentLevel = otherLevel;
+        getView()->updateView(this, false);
+      }
+    }
+    if (collective->getTerritory().contains(pos)) {
       if (furniture->getClickType()) {
         furniture->click(pos); // this can remove the furniture
         updateSquareMemory(pos);
@@ -2568,6 +2575,7 @@ void PlayerControl::onSquareClick(Position pos) {
           setChosenLibrary(!chosenLibrary);
       }
     }
+  }
 }
 
 double PlayerControl::getAnimationTime() const {
