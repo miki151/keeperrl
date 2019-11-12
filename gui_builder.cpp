@@ -1500,7 +1500,13 @@ SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info,
 SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addSpace();
-  list.addElem(gui.label(info.title, Color::WHITE));
+  auto titleLine = gui.getListBuilder();
+  titleLine.addElemAuto(gui.label(info.title));
+  if (auto titlesButton = drawKillTitlesButton(info))
+    titleLine.addElemAuto(std::move(titlesButton));
+  list.addElem(titleLine.buildHorizontalList());
+  if (auto killsLabel = drawKillsLabel(info))
+    list.addElem(std::move(killsLabel));
   vector<SGuiElem> keyElems;
   bool isTutorial = false;
   for (int i : All(info.commands)) {
@@ -2994,23 +3000,7 @@ vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const o
   return line;
 }
 
-SGuiElem GuiBuilder::drawMinionTitle(const PlayerInfo& minion) {
-  auto titleLine = gui.getListBuilder();
-  titleLine.addElemAuto(gui.label(minion.title));
-  if (!minion.killTitles.empty()) {
-    auto lines = gui.getListBuilder(legendLineHeight);
-    for (auto& title : minion.killTitles)
-      lines.addElem(gui.label(title));
-    auto addLegend = [&] (const char* text) {
-      lines.addElem(gui.label(text, Renderer::smallTextSize, Color::LIGHT_GRAY), legendLineHeight * 2 / 3);
-    };
-    addLegend("Titles are awarded for killing tribe leaders, and increase");
-    addLegend("each attribute up to a maximum of the attribute's base value.");
-    titleLine.addElemAuto(gui.stack(
-        gui.label(toString("+"), Color::YELLOW),
-        gui.tooltip2(gui.miniWindow(gui.margins(lines.buildVerticalList(), 15)), [](Rectangle rect){ return rect.bottomLeft(); })
-    ));
-  }
+SGuiElem GuiBuilder::drawKillsLabel(const PlayerInfo& minion) {
   if (!minion.kills.empty()) {
     auto lines = gui.getListBuilder(legendLineHeight);
     auto line = gui.getListBuilder();
@@ -3024,18 +3014,42 @@ SGuiElem GuiBuilder::drawMinionTitle(const PlayerInfo& minion) {
     }
     if (!line.isEmpty())
       lines.addElem(line.buildHorizontalList());
-    titleLine.addBackElemAuto(gui.stack(
+    return gui.stack(
         gui.label(toString(minion.kills.size()) + " kills"),
         gui.tooltip2(gui.miniWindow(gui.margins(lines.buildVerticalList(), 15)), [](Rectangle rect){ return rect.bottomLeft(); })
-    ));
-  }
-  return titleLine.buildHorizontalList();
+    );
+  } else
+    return nullptr;
+}
+
+SGuiElem GuiBuilder::drawKillTitlesButton(const PlayerInfo& minion) {
+  if (!minion.killTitles.empty()) {
+    auto lines = gui.getListBuilder(legendLineHeight);
+    for (auto& title : minion.killTitles)
+      lines.addElem(gui.label(title));
+    auto addLegend = [&] (const char* text) {
+      lines.addElem(gui.label(text, Renderer::smallTextSize, Color::LIGHT_GRAY), legendLineHeight * 2 / 3);
+    };
+    addLegend("Titles are awarded for killing tribe leaders, and increase");
+    addLegend("each attribute up to a maximum of the attribute's base value.");
+    return gui.stack(
+        gui.label(toString("+"), Color::YELLOW),
+        gui.tooltip2(gui.miniWindow(gui.margins(lines.buildVerticalList(), 15)), [](Rectangle rect){ return rect.bottomLeft(); })
+    );
+  } else
+    return nullptr;
 }
 
 SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const CollectiveInfo& collective,
     const optional<TutorialInfo>& tutorial) {
   auto list = gui.getListBuilder(legendLineHeight);
-  list.addElem(drawMinionTitle(minion));
+  auto titleLine = gui.getListBuilder();
+  titleLine.addElemAuto(gui.label(minion.title));
+  if (auto titlesButton = drawKillTitlesButton(minion))
+    titleLine.addElemAuto(std::move(titlesButton));
+  if (auto killsLabel = drawKillsLabel(minion))
+    titleLine.addBackElemAuto(std::move(killsLabel));
+  list.addElem(titleLine.buildHorizontalList());
   if (!minion.description.empty())
     list.addElem(gui.label(minion.description, Renderer::smallTextSize, Color::LIGHT_GRAY));
   list.addElem(gui.horizontalList(drawMinionActions(minion, tutorial), 140));

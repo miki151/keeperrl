@@ -169,7 +169,6 @@ class GuiBuilder {
   SGuiElem minionButtonsCache;
   int minionButtonsHash = 0;
   SGuiElem drawMinionPage(const PlayerInfo&, const CollectiveInfo&, const optional<TutorialInfo>&);
-  SGuiElem drawMinionTitle(const PlayerInfo&);
   SGuiElem drawActivityButton(const PlayerInfo&);
   SGuiElem drawAttributesOnPage(vector<SGuiElem>);
   SGuiElem drawEquipmentAndConsumables(const PlayerInfo&);
@@ -305,6 +304,8 @@ class GuiBuilder {
   SGuiElem drawAvatarsForRole(const vector<View::AvatarData>&, shared_ptr<int> avatarPage, shared_ptr<int> chosenAvatar,
                               shared_ptr<int> gender, shared_ptr<PlayerRole> chosenRole);
   SGuiElem drawScreenshotOverlay();
+  SGuiElem drawKillTitlesButton(const PlayerInfo& minion);
+  SGuiElem drawKillsLabel(const PlayerInfo& minion);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,
