@@ -434,8 +434,11 @@ Position Game::getTransferPos(WModel from, WModel to) const {
 
 void Game::transferCreature(Creature* c, WModel to) {
   WModel from = c->getLevel()->getModel();
-  if (from != to)
+  if (from != to) {
     to->transferCreature(from->extractCreature(c), getModelCoords(from) - getModelCoords(to));
+    for (auto& summon : c->getShamanSummons())
+      to->transferCreature(from->extractCreature(summon), getModelCoords(from) - getModelCoords(to));
+  }
 }
 
 bool Game::canTransferCreature(Creature* c, WModel to) {

@@ -182,7 +182,10 @@
         RANGED_RESISTANCE 1
         MAGIC_RESISTANCE 1
       }
-      spells = { "advanced healing" "summon spirit" }
+      skills = { 
+        SHAMANISM 0.5
+      }
+      spells = { "advanced healing" "heal spirit" }
       chatReactionFriendly = "\"mhhhhhrrrr!\""
       chatReactionHostile = "\"mhhhhhrrrr!\""
       petReaction = "neighs"
@@ -1140,7 +1143,10 @@
       chatReactionFriendly = "curses all dungeons"
       chatReactionHostile = "\"Die!\""
       courage = 1
-      spells = { "advanced healing" "defense bonus" "directed blast" "summon spirit" }
+      skills = { 
+        SHAMANISM 0.7
+      }
+      spells = { "advanced healing" "defense bonus" "directed blast" "heal spirit" }
       maxLevelIncrease = {
         SPELL 5
       }
@@ -1580,6 +1586,28 @@
         firstNameGen = "ORC"
       }
       hatedByEffect = HATE_GREENSKINS
+    }
+  "ORC_SHAMAN" inherit "ORC_MAGE"
+    {
+      viewId = { "orc_shaman" }
+      attr = {
+        DAMAGE 12
+        DEFENSE 8
+        SPELL_DAMAGE 25 
+      }
+      maxLevelIncrease = {
+        MELEE 4
+        SPELL 12
+      }
+      spellSchools = {}
+      spells = { "heal spirit" }
+      skills = {
+        SHAMANISM 0.4
+      }
+      name = {
+        name = "orc shaman"
+        firstNameGen = "ORC"
+      }
     }
   "ORC_HEALER" inherit "ORC_MAGE"
     {

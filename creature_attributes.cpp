@@ -426,6 +426,10 @@ bool CreatureAttributes::getCanJoinCollective() const {
   return canJoinCollective;
 }
 
+void CreatureAttributes::setCanJoinCollective(bool b) {
+  canJoinCollective = b;
+}
+
 optional<LastingEffect> CreatureAttributes::getHatedByEffect() const {
   return hatedByEffect;
 }

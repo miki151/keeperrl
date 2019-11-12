@@ -110,6 +110,7 @@ class CreatureAttributes {
   MinionActivityMap& getMinionActivities();
   bool dontChase() const;
   bool getCanJoinCollective() const;
+  void setCanJoinCollective(bool);
   void increaseExpFromCombat(double attackDiff);
   optional<LastingEffect> getHatedByEffect() const;
   void randomize();

@@ -34,6 +34,15 @@
     sound = SPELL_HEALING
   }
   {
+    id = "heal spirit"
+    symbol = "✴"
+    effect = Heal SPIRIT
+    range = 1
+    targetSelf = true
+    cooldown = 15
+    sound = SPELL_HEALING
+  }
+  {
     id =  "cure poison"
     symbol = "⚕"
     effect = RemoveLasting POISON
@@ -272,13 +281,6 @@
     effect = PlaceFurniture "METEOR_SHOWER"
     cooldown = 150
     sound = SPELL_METEOR_SHOWER
-  }
-  {
-    id =  "summon spirit"
-    symbol = "👾"
-    effect = SummonGhost 100 { 3 5} 50
-    cooldown = 100
-    sound = SPELL_FIRE_SPHERE_PET
   }
   {
     id =  "fire elemental"

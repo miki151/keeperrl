@@ -294,7 +294,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   EnumSet<CreatureStatus>& getStatus();
   const EnumSet<CreatureStatus>& getStatus() const;
-
+  const vector<Creature*>& getShamanSummons() const;
   void toggleCaptureOrder();
   bool isCaptureOrdered() const;
   bool canBeCaptured() const;
@@ -357,6 +357,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   HitsInfo SERIAL(hitsInfo);
   void increaseHitCount();
   optional<ViewId> SERIAL(primaryViewId);
+  vector<Creature*> SERIAL(shamanSummons);
+  void tickShamanSummons();
 };
 
 struct AdjectiveInfo {

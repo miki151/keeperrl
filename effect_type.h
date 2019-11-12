@@ -148,14 +148,6 @@ struct ReviveCorpse {
   int ttl;
   COMPARE_ALL(summoned, ttl)
 };
-struct SummonGhost {
-  EFFECT_TYPE_INTERFACE;
-  optional<TimeInterval> ttl;
-  Range count;
-  int ghostPower;
-  PCreature getBestSpirit(const Model*, TribeId tribe) const;
-  COMPARE_ALL(ttl, count, ghostPower)
-};
 struct Filter {
   EFFECT_TYPE_INTERFACE;
   bool applies(const Creature* victim, const Creature* attacker) const;
@@ -193,7 +185,7 @@ struct Chance {
 MAKE_VARIANT2(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, Enhance, Suicide, IncreaseAttr,
     EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
     Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-    Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, SummonGhost, Filter, SummonEnemy, Wish, Chain, Caster,
+    Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, Filter, SummonEnemy, Wish, Chain, Caster,
     IncreaseMorale, Message, Chance);
 }
 
