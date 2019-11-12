@@ -86,7 +86,6 @@ class PlayerInfo {
   public:
   PlayerInfo(const Creature*);
   string getFirstName() const;
-  string getTitle() const;
   vector<AttributeInfo> HASH(attributes);
   optional<AvatarLevelInfo> HASH(avatarLevelInfo);
   BestAttack HASH(bestAttack);

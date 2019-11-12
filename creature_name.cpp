@@ -59,10 +59,17 @@ string CreatureName::groupOf(int count) const {
 }
 
 string CreatureName::title() const {
-  if (firstName)
-    return *firstName + " the " + name;
-  else
-    return capitalFirst(bare());
+  if (firstName) {
+    if (killTitle)
+      return *firstName + " the " + *killTitle;
+    else
+      return *firstName + " the " + name;
+  } else {
+    if (killTitle)
+      return capitalFirst(bare()) + " the " + *killTitle;
+    else
+      return capitalFirst(bare());
+  }
 }
 
 void CreatureName::setFirst(optional<string> s) {
@@ -125,9 +132,13 @@ void CreatureName::useFullTitle(bool b) {
   fullTitle = b;
 }
 
+void CreatureName::setKillTitle(const string& t) {
+  killTitle = t;
+}
+
 template <class Archive>
 void CreatureName::serialize(Archive& ar, const unsigned int version) {
-  ar(name, pluralName, stackName, firstName, groupName, fullTitle, firstNameGen);
+  ar(name, pluralName, stackName, firstName, groupName, fullTitle, firstNameGen, killTitle);
 }
 
 SERIALIZABLE(CreatureName);

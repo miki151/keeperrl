@@ -37,10 +37,6 @@ string PlayerInfo::getFirstName() const {
     return capitalFirst(name);
 }
 
-string PlayerInfo::getTitle() const {
-  return title;
-}
-
 vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
   vector<PlayerInfo::SkillInfo> ret;
   for (SkillId id : ENUM_ALL(SkillId))

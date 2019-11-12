@@ -36,6 +36,7 @@ class CreatureName {
   void addBarePrefix(const string&);
   void addBareSuffix(const string&);
   void useFullTitle(bool = true);
+  void setKillTitle(const string&);
   const string& stack() const;
   const char* identify() const;
   const optional<string>& stackOnly() const;
@@ -56,6 +57,7 @@ class CreatureName {
   string SERIAL(pluralName);
   optional<string> SERIAL(stackName);
   optional<string> SERIAL(firstName);
+  optional<string> SERIAL(killTitle);
   optional<NameGeneratorId> SERIAL(firstNameGen);
   string SERIAL(groupName) = "group";
   bool SERIAL(fullTitle) = false;

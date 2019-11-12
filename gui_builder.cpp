@@ -1500,7 +1500,7 @@ SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info,
 SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addSpace();
-  list.addElem(gui.label(info.getTitle(), Color::WHITE));
+  list.addElem(gui.label(info.title, Color::WHITE));
   vector<SGuiElem> keyElems;
   bool isTutorial = false;
   for (int i : All(info.commands)) {
@@ -2996,7 +2996,7 @@ vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const o
 
 SGuiElem GuiBuilder::drawMinionTitle(const PlayerInfo& minion) {
   auto titleLine = gui.getListBuilder();
-  titleLine.addElemAuto(gui.label(minion.getTitle()));
+  titleLine.addElemAuto(gui.label(minion.title));
   if (!minion.kills.empty()) {
     auto lines = gui.getListBuilder(legendLineHeight);
     auto line = gui.getListBuilder();
