@@ -2997,6 +2997,20 @@ vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const o
 SGuiElem GuiBuilder::drawMinionTitle(const PlayerInfo& minion) {
   auto titleLine = gui.getListBuilder();
   titleLine.addElemAuto(gui.label(minion.title));
+  if (!minion.killTitles.empty()) {
+    auto lines = gui.getListBuilder(legendLineHeight);
+    for (auto& title : minion.killTitles)
+      lines.addElem(gui.label(title));
+    auto addLegend = [&] (const char* text) {
+      lines.addElem(gui.label(text, Renderer::smallTextSize, Color::LIGHT_GRAY), legendLineHeight * 2 / 3);
+    };
+    addLegend("Titles are awarded for killing tribe leaders, and increase");
+    addLegend("each attribute up to a maximum of the attribute's base value.");
+    titleLine.addElemAuto(gui.stack(
+        gui.label(toString("+"), Color::YELLOW),
+        gui.tooltip2(gui.miniWindow(gui.margins(lines.buildVerticalList(), 15)), [](Rectangle rect){ return rect.bottomLeft(); })
+    ));
+  }
   if (!minion.kills.empty()) {
     auto lines = gui.getListBuilder(legendLineHeight);
     auto line = gui.getListBuilder();

@@ -68,7 +68,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathReason, nextPosIntent, globalTime);
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills, statuses);
-  ar(difficultyPoints, points, capture, spellMap);
+  ar(difficultyPoints, points, capture, spellMap, killTitles);
   ar(vision, debt, highestAttackValueEver, lastCombatIntent, hitsInfo, primaryViewId);
 }
 
@@ -254,6 +254,10 @@ optional<string> Creature::getDeathReason() const {
 
 const vector<Creature::KillInfo>& Creature::getKills() const {
   return kills;
+}
+
+const vector<string>& Creature::getKillTitles() const {
+  return killTitles;
 }
 
 int Creature::getLastMoveCounter() const {
@@ -896,6 +900,7 @@ int simulAttackPen(int attackers) {
 
 int Creature::getAttrBonus(AttrType type, bool includeWeapon) const {
   int def = getBody().getAttrBonus(type);
+  def += min(killTitles.size(), attributes->getRawAttr(type));
   for (auto& item : equipment->getAllEquipped())
     if (item->getClass() != ItemClass::WEAPON || type != item->getWeaponInfo().meleeAttackAttr)
       def += item->getModifier(type);
@@ -935,8 +940,13 @@ void Creature::onKilledOrCaptured(Creature* victim) {
     CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
     points += difficulty;
     kills.push_back(KillInfo{victim->getUniqueId(), victim->getViewObject().id()});
-    if (victim->getStatus().contains(CreatureStatus::LEADER))
-      attributes->getName().setKillTitle(capitalFirst(victim->getName().stack()) + " Slayer");
+    if (victim->getStatus().contains(CreatureStatus::LEADER)) {
+      auto title = capitalFirst(victim->getName().bare()) + " Slayer";
+      if (!killTitles.contains(title)) {
+        attributes->getName().setKillTitle(title);
+        killTitles.push_back(title);
+      }
+    }
   }
 }
 

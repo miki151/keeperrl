@@ -36,6 +36,8 @@ WTask TaskMap::getClosestTask(const Creature* c, MinionActivity activity, bool p
         storageDropTask = *id;
         break;
       }
+  auto movementType = c->getMovementType();
+  auto creaturePosition = c->getPosition();
   for (auto& task : taskByActivity[activity])
     if (task->canPerform(c) && (!priorityOnly || isPriorityTask(task)) &&
         (!storageDropTask || storageDropTask == task->getStorageId(false)))
@@ -47,7 +49,7 @@ WTask TaskMap::getClosestTask(const Creature* c, MinionActivity activity, bool p
         if (!task->isDone() &&
             (!owner || (task->canTransfer() && dist && pos->dist8(owner->getPosition()).value_or(10000) > *dist && *dist <= 6)) &&
             isBetter(task, dist) &&
-            c->canNavigateToOrNeighbor(*pos) &&
+            pos->canNavigateToOrNeighbor(creaturePosition, movementType) &&
             (!delayed || *delayed < *c->getLocalTime())) {
           closest = task;
         }

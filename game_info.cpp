@@ -139,6 +139,7 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   intrinsicAttacks = fillIntrinsicAttacks(c);
   skills = getSkillNames(c);
   kills = c->getKills().transform([&](auto& info){ return info.viewId; });
+  killTitles = c->getKillTitles();
   effects.clear();
   for (auto& adj : c->getBadAdjectives())
     effects.push_back({adj.name, adj.help, true});

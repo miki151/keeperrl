@@ -143,6 +143,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
     SERIALIZE_ALL(creature, viewId)
   };
   const vector<KillInfo>& getKills() const;
+  const vector<string>& getKillTitles() const;
 
   MovementType getMovementType() const;
 
@@ -325,6 +326,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   EntitySet<Creature> SERIAL(privateEnemies);
   optional<Creature::Id> SERIAL(holding);
   vector<PController> SERIAL(controllerStack);
+  vector<string> SERIAL(killTitles);
   vector<KillInfo> SERIAL(kills);
   mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
