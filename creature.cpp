@@ -252,7 +252,7 @@ optional<string> Creature::getDeathReason() const {
   return none;
 }
 
-const EntitySet<Creature>& Creature::getKills() const {
+const vector<Creature::KillInfo>& Creature::getKills() const {
   return kills;
 }
 
@@ -916,24 +916,26 @@ int Creature::getPoints() const {
 }
 
 void Creature::onKilledOrCaptured(Creature* victim) {
-  double attackDiff = victim->highestAttackValueEver - highestAttackValueEver;
-  constexpr double maxLevelGain = 3.0;
-  constexpr double minLevelGain = 0.02;
-  constexpr double equalLevelGain = 0.5;
-  constexpr double maxLevelDiff = 10;
-  double expIncrease = max(minLevelGain, min(maxLevelGain,
-      (maxLevelGain - equalLevelGain) * attackDiff / maxLevelDiff + equalLevelGain));
-  int curLevel = (int)getAttributes().getCombatExperience();
-  getAttributes().addCombatExperience(expIncrease);
-  int newLevel = (int)getAttributes().getCombatExperience();
-  if (curLevel != newLevel) {
-    you(MsgType::ARE, "more experienced");
-    addPersonalEvent(getName().a() + " reaches combat experience level " + toString(newLevel));
+  if (!victim->getBody().isMinionFood() && !victim->getAttributes().getIllusionViewObject()) {
+    double attackDiff = victim->highestAttackValueEver - highestAttackValueEver;
+    constexpr double maxLevelGain = 3.0;
+    constexpr double minLevelGain = 0.02;
+    constexpr double equalLevelGain = 0.5;
+    constexpr double maxLevelDiff = 10;
+    double expIncrease = max(minLevelGain, min(maxLevelGain,
+        (maxLevelGain - equalLevelGain) * attackDiff / maxLevelDiff + equalLevelGain));
+    int curLevel = (int)getAttributes().getCombatExperience();
+    getAttributes().addCombatExperience(expIncrease);
+    int newLevel = (int)getAttributes().getCombatExperience();
+    if (curLevel != newLevel) {
+      you(MsgType::ARE, "more experienced");
+      addPersonalEvent(getName().a() + " reaches combat experience level " + toString(newLevel));
+    }
+    int difficulty = victim->getDifficultyPoints();
+    CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
+    points += difficulty;
+    kills.push_back(KillInfo{victim->getUniqueId(), victim->getViewObject().id()});
   }
-  int difficulty = victim->getDifficultyPoints();
-  CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
-  points += difficulty;
-  kills.insert(victim);
 }
 
 Tribe* Creature::getTribe() {

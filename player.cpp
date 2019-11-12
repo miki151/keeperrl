@@ -150,7 +150,7 @@ void Player::onEvent(const GameEvent& event) {
       },
       [&](const WonGame&) {
         if (adventurer)
-          getGame()->conquered(creature->getName().firstOrBare(), creature->getKills().getSize(), creature->getPoints());
+          getGame()->conquered(creature->getName().firstOrBare(), creature->getKills().size(), creature->getPoints());
       },
       [&](const auto&) {}
   );
@@ -1158,7 +1158,7 @@ void Player::onKilled(const Creature* attacker) {
   if (getGame()->getPlayerCreatures().size() == 1 && getView()->yesOrNoPromptBelow("Display message history?"))
     showHistory();
   if (adventurer)
-    getGame()->gameOver(creature, creature->getKills().getSize(), "monsters", creature->getPoints());
+    getGame()->gameOver(creature, creature->getKills().size(), "monsters", creature->getPoints());
 }
 
 void Player::onFellAsleep() {

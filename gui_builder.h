@@ -169,6 +169,7 @@ class GuiBuilder {
   SGuiElem minionButtonsCache;
   int minionButtonsHash = 0;
   SGuiElem drawMinionPage(const PlayerInfo&, const CollectiveInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawMinionTitle(const PlayerInfo&);
   SGuiElem drawActivityButton(const PlayerInfo&);
   SGuiElem drawAttributesOnPage(vector<SGuiElem>);
   SGuiElem drawEquipmentAndConsumables(const PlayerInfo&);

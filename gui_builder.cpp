@@ -2994,10 +2994,34 @@ vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const o
   return line;
 }
 
+SGuiElem GuiBuilder::drawMinionTitle(const PlayerInfo& minion) {
+  auto titleLine = gui.getListBuilder();
+  titleLine.addElemAuto(gui.label(minion.getTitle()));
+  if (!minion.kills.empty()) {
+    auto lines = gui.getListBuilder(legendLineHeight);
+    auto line = gui.getListBuilder();
+    const int rowSize = 8;
+    for (auto& kill : minion.kills) {
+      line.addElemAuto(gui.viewObject(kill, 1));
+      if (line.getLength() >= rowSize) {
+        lines.addElem(line.buildHorizontalList());
+        line.clear();
+      }
+    }
+    if (!line.isEmpty())
+      lines.addElem(line.buildHorizontalList());
+    titleLine.addBackElemAuto(gui.stack(
+        gui.label(toString(minion.kills.size()) + " kills"),
+        gui.tooltip2(gui.miniWindow(gui.margins(lines.buildVerticalList(), 15)), [](Rectangle rect){ return rect.bottomLeft(); })
+    ));
+  }
+  return titleLine.buildHorizontalList();
+}
+
 SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const CollectiveInfo& collective,
     const optional<TutorialInfo>& tutorial) {
   auto list = gui.getListBuilder(legendLineHeight);
-  list.addElem(gui.label(minion.getTitle()));
+  list.addElem(drawMinionTitle(minion));
   if (!minion.description.empty())
     list.addElem(gui.label(minion.description, Renderer::smallTextSize, Color::LIGHT_GRAY));
   list.addElem(gui.horizontalList(drawMinionActions(minion, tutorial), 140));

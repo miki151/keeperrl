@@ -137,7 +137,12 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void clearInfoForRetiring();
   optional<string> getDeathReason() const;
   GlobalTime getDeathTime() const;
-  const EntitySet<Creature>& getKills() const;
+  struct KillInfo {
+    Creature::Id SERIAL(creature);
+    ViewId SERIAL(viewId);
+    SERIALIZE_ALL(creature, viewId)
+  };
+  const vector<KillInfo>& getKills() const;
 
   MovementType getMovementType() const;
 
@@ -320,7 +325,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   EntitySet<Creature> SERIAL(privateEnemies);
   optional<Creature::Id> SERIAL(holding);
   vector<PController> SERIAL(controllerStack);
-  EntitySet<Creature> SERIAL(kills);
+  vector<KillInfo> SERIAL(kills);
   mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
   using MoveId = pair<int, LevelId>;

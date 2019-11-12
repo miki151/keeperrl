@@ -892,8 +892,8 @@ class KillFighters : public Task {
     for (const Creature* target : collective->getCreatures(MinionTrait::FIGHTER))
       targets.insert(target);
     int numKilled = 0;
-    for (Creature::Id victim : c->getKills())
-      if (targets.contains(victim))
+    for (auto& info : c->getKills())
+      if (targets.contains(info.creature))
         ++numKilled;
     if (numKilled >= numCreatures || targets.empty()) {
       setDone();
@@ -906,8 +906,8 @@ class KillFighters : public Task {
     return "Kill " + toString(numCreatures) + " minions of " + collective->getName()->full;
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), collective, numCreatures, targets); 
-  SERIALIZATION_CONSTRUCTOR(KillFighters);
+  SERIALIZE_ALL(SUBCLASS(Task), collective, numCreatures, targets)
+  SERIALIZATION_CONSTRUCTOR(KillFighters)
 
   private:
   WCollective SERIAL(collective) = nullptr;
