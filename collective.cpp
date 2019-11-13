@@ -1219,13 +1219,22 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
       taskMap->addTask(Task::torture(this, c), pos.first, MinionActivity::WORKING);
     if (furniture->getType() == FurnitureType("POETRY_TABLE") && Random.chance(0.01 * efficiency)) {
       auto poem = ItemType(ItemTypes::Poem{}).get(1, getGame()->getContentFactory());
+      bool summonDemon = Random.roll(500);
       if (!recordedEvents.empty() && Random.roll(3)) {
         auto event = Random.choose(recordedEvents);
         recordedEvents.erase(event);
         poem = ItemType(ItemTypes::EventPoem{event}).get(1, getGame()->getContentFactory());
+        summonDemon = false;
       }
       addProducesMessage(c, poem, "writes");
       c->getPosition().dropItems(std::move(poem));
+      if (summonDemon) {
+        auto id = Random.choose(CreatureId("SPECIAL_BLGN"), CreatureId("SPECIAL_BLGW"), CreatureId("SPECIAL_HLGN"), CreatureId("SPECIAL_HLGW"));
+        Effect::summon(c, id, 1, 500_visible);
+        auto message = PlayerMessage(c->getName().the() + " has summoned a friendly demon!", MessagePriority::CRITICAL);
+        c->thirdPerson(message);
+        control->addMessage(message);
+      }
     }
     if (auto usage = furniture->getUsageType()) {
       auto increaseLevel = [&] (ExperienceType exp) {
