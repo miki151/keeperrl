@@ -72,6 +72,20 @@ string CreatureName::title() const {
   }
 }
 
+string CreatureName::aOrTitle() const {
+  if (firstName) {
+    if (killTitle)
+      return *firstName + " the " + *killTitle;
+    else
+      return *firstName + " the " + name;
+  } else {
+    if (killTitle)
+      return capitalFirst(bare()) + " the " + *killTitle;
+    else
+      return a();
+  }
+}
+
 void CreatureName::setFirst(optional<string> s) {
   firstName = std::move(s);
 }

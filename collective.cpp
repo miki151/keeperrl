@@ -66,7 +66,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
   ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
-  ar(delayedPos, knownTiles, technology, kills, points, currentActivity);
+  ar(delayedPos, knownTiles, technology, kills, points, currentActivity, recordedEvents);
   ar(credit, model, immigration, teams, name, conqueredVillains, minionActivities);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
   ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease, dungeonLevel);
@@ -556,6 +556,7 @@ void Collective::onEvent(const GameEvent& event) {
         auto victim = info.victim;
         if (getCreatures().contains(victim)) {
           if (Random.roll(30)) {
+            addRecordedEvent("the torturing of " + victim->getName().title());
             if (Random.roll(2)) {
               victim->dieWithReason("killed by torture");
             } else {
@@ -572,6 +573,7 @@ void Collective::onEvent(const GameEvent& event) {
       },
       [&](const CreatureStunned& info) {
         auto victim = info.victim;
+        addRecordedEvent("the capturing of " + victim->getName().title());
         if (getCreatures().contains(victim)) {
           bool fighterStunned = hasTrait(victim, MinionTrait::FIGHTER) || victim == getLeader();
           removeTrait(victim, MinionTrait::FIGHTER);
@@ -613,10 +615,11 @@ void Collective::onEvent(const GameEvent& event) {
       [&](const ConqueredEnemy& info) {
         auto col = info.collective;
         if (col->isDiscoverable()) {
-          if (auto& name = col->getName())
+          if (auto& name = col->getName()) {
+            addRecordedEvent("the conquering of " + name->full);
             control->addMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
                 MessagePriority::CRITICAL));
-          else
+          } else
             control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
           dungeonLevel.onKilledVillain(col->getVillainType());
         }
@@ -626,6 +629,10 @@ void Collective::onEvent(const GameEvent& event) {
 }
 
 void Collective::onMinionKilled(Creature* victim, Creature* killer) {
+  if (killer)
+    addRecordedEvent("the slaying of " + victim->getName().title() + " by " + killer->getName().title());
+  else
+    addRecordedEvent("the death of " + victim->getName().title());
   string deathDescription = victim->getAttributes().getDeathDescription();
   control->onMemberKilled(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
@@ -653,8 +660,10 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
 }
 
 void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
-  string deathDescription=victim->getAttributes().getDeathDescription();
+  string deathDescription = victim->getAttributes().getDeathDescription();
   if (victim->getTribe() != getTribe()) {
+    if (victim->getStatus().contains(CreatureStatus::LEADER))
+      addRecordedEvent("the slaying of " + victim->getName().title());
     addMoraleForKill(killer, victim);
     kills.insert(victim);
     int difficulty = victim->getDifficultyPoints();
@@ -1210,6 +1219,11 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
       taskMap->addTask(Task::torture(this, c), pos.first, MinionActivity::WORKING);
     if (furniture->getType() == FurnitureType("POETRY_TABLE") && Random.chance(0.01 * efficiency)) {
       auto poem = ItemType(ItemTypes::Poem{}).get(1, getGame()->getContentFactory());
+      if (!recordedEvents.empty() && Random.roll(3)) {
+        auto event = Random.choose(recordedEvents);
+        recordedEvents.erase(event);
+        poem = ItemType(ItemTypes::EventPoem{event}).get(1, getGame()->getContentFactory());
+      }
       addProducesMessage(c, poem, "writes");
       c->getPosition().dropItems(std::move(poem));
     }
@@ -1265,6 +1279,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
         if (result.wasUpgraded) {
           control->addMessage(PlayerMessage(c->getName().the() + " is depressed after crafting his masterpiece.", MessagePriority::HIGH));
           c->addMorale(-2);
+          addRecordedEvent("the crafting of " + result.items[0]->getTheName(result.items.size() > 1));
         }
         c->getPosition().dropItems(std::move(result.items));
       }
@@ -1329,6 +1344,10 @@ void Collective::onExternalEnemyKilled(const std::string& name) {
   control->addMessage(PlayerMessage("You resisted the attack of " + name + ".",
       MessagePriority::CRITICAL));
   dungeonLevel.onKilledWave();
+}
+
+void Collective::addRecordedEvent(string s) {
+  recordedEvents.insert(std::move(s));
 }
 
 void Collective::onCopulated(Creature* who, Creature* with) {

@@ -159,6 +159,8 @@ void VillageControl::considerCancellingAttack() {
       for (Creature* c : members)
         collective->freeFromTask(c);
       collective->getTeams().cancel(team);
+      if (auto& name = collective->getName())
+        getEnemyCollective()->addRecordedEvent("resisting the attack of " + name->full);
     }
   }
 }

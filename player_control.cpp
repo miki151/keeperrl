@@ -826,6 +826,8 @@ void PlayerControl::handlePillage(WCollective col) {
       break;
     CHECK(!options[*index].storage.empty());
     Random.choose(options[*index].storage).dropItems(retrievePillageItems(col, options[*index].items));
+    if (auto& name = col->getName())
+      collective->addRecordedEvent("the pillaging of " + name->full);
     getView()->updateView(this, true);
   }
 }
