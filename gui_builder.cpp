@@ -2893,7 +2893,8 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
           bool exit = false;
           TaskActionInfo retAction;
           retAction.creature = minion.creatureId;
-          for (auto task : minion.minionTasks) {
+          for (int i : All(minion.minionTasks)) {
+            auto& task = minion.minionTasks[i];
             function<void()> buttonFun = [] {};
             if (!task.inactive)
               buttonFun = [&exit, &retAction, task] {
@@ -2910,7 +2911,7 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
                     gui.button(buttonFun),
                     gui.label(getTaskText(task.task), getTaskColor(task))))
                 .addBackElemAuto(gui.stack(
-                    getTooltip({"Click to turn this task on/off."}, THIS_LINE),
+                    getTooltip({"Click to turn this task on/off."}, THIS_LINE + i),
                     gui.button([&retAction, task] {
                       retAction.lock.toggle(task.task);
                     }),
