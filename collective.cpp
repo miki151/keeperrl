@@ -65,7 +65,7 @@ template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
   ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader);
-  ar(territory, alarmInfo, markedItems, constructions, minionEquipment);
+  ar(territory, alarmInfo, markedItems, constructions, minionEquipment, groupLockedAcitivities);
   ar(delayedPos, knownTiles, technology, kills, points, currentActivity, recordedEvents);
   ar(credit, model, immigration, teams, name, conqueredVillains, minionActivities);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
@@ -320,6 +320,13 @@ Collective::CurrentActivity Collective::getCurrentActivity(const Creature* c) co
       .value_or(CurrentActivity{MinionActivity::IDLE, getLocalTime() - 1_visible});
 }
 
+string Collective::getMinionGroupName(const Creature* c) const {
+  if (hasTrait(c, MinionTrait::PRISONER)) {
+    return "prisoner";
+  } else
+    return c->getName().stack();
+}
+
 bool Collective::isActivityGoodAssumingHaveTasks(Creature* c, MinionActivity activity, bool ignoreTaskLock) {
   PROFILE;
   if (!c->getAttributes().getMinionActivities().isAvailable(this, c, activity, ignoreTaskLock))
@@ -340,6 +347,19 @@ bool Collective::isActivityGoodAssumingHaveTasks(Creature* c, MinionActivity act
       return getMaxPopulation() > getPopulationSize();
     default: return true;
   }
+}
+
+Collective::GroupLockedActivities& Collective::getGroupLockedActivities(const Creature* c) {
+  return groupLockedAcitivities[getMinionGroupName(c)];
+}
+
+const Collective::GroupLockedActivities& Collective::getGroupLockedActivities(const Creature* c) const {
+  static GroupLockedActivities empty;
+  auto group = getMinionGroupName(c);
+  if (groupLockedAcitivities.count(group))
+    return groupLockedAcitivities.at(group);
+  else
+    return empty;
 }
 
 bool Collective::isActivityGood(Creature* c, MinionActivity activity, bool ignoreTaskLock) {

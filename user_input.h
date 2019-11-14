@@ -155,7 +155,8 @@ struct TaskActionInfo {
   UniqueEntity<Creature>::Id SERIAL(creature);
   optional<MinionActivity> SERIAL(switchTo);
   EnumSet<MinionActivity> SERIAL(lock);
-  SERIALIZE_ALL(creature, switchTo, lock)
+  EnumSet<MinionActivity> SERIAL(lockGroup);
+  SERIALIZE_ALL(creature, switchTo, lock, lockGroup)
 };
 
 struct EquipmentActionInfo {

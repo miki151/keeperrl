@@ -573,6 +573,12 @@ class EnumSet {
     return ret;
   }
 
+  EnumSet ex_or(const EnumSet& other) const {
+    EnumSet<T> ret(other);
+    ret.elems ^= elems;
+    return ret;
+  }
+
   void sumWith(const EnumSet& other) {
     elems |= other.elems;
   }
@@ -1270,6 +1276,7 @@ string combine(const vector<string>& adj, bool commasOnly = false);
 string getPlural(const string& singular, const string& plural, int num);
 string getPlural(const string&, int num);
 string getPluralText(const string&, int num);
+string makePlural(const string&);
 
 template<class T, class U>
 vector<T> asVector(const U& u) {

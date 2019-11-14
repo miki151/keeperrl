@@ -306,6 +306,7 @@ class GuiBuilder {
   SGuiElem drawScreenshotOverlay();
   SGuiElem drawKillTitlesButton(const PlayerInfo& minion);
   SGuiElem drawKillsLabel(const PlayerInfo& minion);
+  function<void(Rectangle)> getActivityButtonFun(const PlayerInfo&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

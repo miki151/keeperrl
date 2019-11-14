@@ -130,6 +130,10 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool isActivityGood(Creature*, MinionActivity, bool ignoreTaskLock = false);
   bool isActivityGoodAssumingHaveTasks(Creature*, MinionActivity, bool ignoreTaskLock = false);
 
+  using GroupLockedActivities = EnumSet<MinionActivity>;
+  GroupLockedActivities& getGroupLockedActivities(const Creature*);
+  const GroupLockedActivities& getGroupLockedActivities(const Creature*) const;
+
   vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
   struct TrapItemInfo;
@@ -216,6 +220,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
     Position SERIAL(position);
     SERIALIZE_ALL(finishTime, position)
   };
+  string getMinionGroupName(const Creature*) const;
   const optional<AlarmInfo>& getAlarmInfo() const;
 
   double getRebellionProbability() const;
@@ -313,4 +318,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool updatedBorderTiles = false;
   HeapAllocated<MinionActivities> SERIAL(minionActivities);
   set<string> SERIAL(recordedEvents);
+  map<string, GroupLockedActivities> SERIAL(groupLockedAcitivities);
 };

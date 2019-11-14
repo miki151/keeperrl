@@ -207,6 +207,7 @@ class GuiFactory {
   SGuiElem getScrollButton();
   SGuiElem conditional2(SGuiElem elem, function<bool(GuiElem*)> cond);
   SGuiElem conditional(SGuiElem elem, function<bool()> cond);
+  SGuiElem conditional(function<int()> cond, vector<SGuiElem> elem);
   SGuiElem conditionalStopKeys(SGuiElem elem, function<bool()> cond);
   SGuiElem conditional2(SGuiElem elem, SGuiElem alter, function<bool(GuiElem*)> cond);
   SGuiElem conditional(SGuiElem elem, SGuiElem alter, function<bool()> cond);

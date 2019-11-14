@@ -2878,6 +2878,66 @@ SGuiElem GuiBuilder::drawQuartersButton(const PlayerInfo& minion, const Collecti
         }));
 }
 
+function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& minion) {
+  return [=] (Rectangle bounds) {
+    auto tasks = gui.getListBuilder(legendLineHeight);
+    tasks.addElem(gui.getListBuilder()
+        .addBackElemAuto(gui.label("Enable", Renderer::smallTextSize))
+        .addBackSpace(40)
+        .addBackElem(gui.renderInBounds(gui.label("Disable for all " + makePlural(minion.groupName), Renderer::smallTextSize)), 134)
+        .buildHorizontalList());
+    bool exit = false;
+    TaskActionInfo retAction;
+    retAction.creature = minion.creatureId;
+    for (int i : All(minion.minionTasks)) {
+      auto& task = minion.minionTasks[i];
+      function<void()> buttonFun = [] {};
+      if (!task.inactive)
+        buttonFun = [&exit, &retAction, task] {
+            retAction.switchTo = task.task;
+            exit = true;
+          };
+      auto lockButton = gui.rightMargin(20, gui.conditional(
+            [&retAction, task] {
+              if (!!task.locked && !(retAction.lockGroup.contains(task.task) ^ task.lockedForGroup)) {
+                if (retAction.lock.contains(task.task) ^ *task.locked)
+                  return 1;
+                else
+                  return 2;
+              } else
+                return 0;
+            }, {gui.empty(), gui.labelUnicodeHighlight(u8"✘", Color::RED),
+                 gui.labelUnicodeHighlight(u8"✓", Color::GREEN)}));
+      auto lockButton2 = !!task.locked
+            ? gui.rightMargin(20, gui.conditional(gui.labelUnicodeHighlight(u8"✘", Color::RED),
+                 gui.labelUnicodeHighlight(u8"✘", Color::LIGHT_GRAY), [&retAction, task] {
+                      return retAction.lockGroup.contains(task.task) ^ task.lockedForGroup;}))
+            : gui.empty();
+      tasks.addElem(GuiFactory::ListBuilder(gui)
+          .addMiddleElem(gui.stack(
+              gui.button(buttonFun),
+              gui.label(getTaskText(task.task), getTaskColor(task))))
+          .addBackElem(gui.stack(
+              getTooltip({"Click to turn this activity on/off for this minion."}, THIS_LINE + i),
+              gui.button([&retAction, task] {
+                retAction.lock.toggle(task.task);
+              }),
+              lockButton), 37)
+          .addBackSpace(43)
+          .addBackElemAuto(gui.stack(
+              getTooltip({"Click to turn this activity off for all " + makePlural(minion.groupName)}, THIS_LINE + i + 54321),
+              gui.button([&retAction, task] {
+                retAction.lockGroup.toggle(task.task);
+              }),
+              lockButton2))
+          .addBackSpace(99)
+          .buildHorizontalList());
+    }
+    drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), 362, true);
+    callbacks.input({UserInputId::CREATURE_TASK_ACTION, retAction});
+  };
+}
+
 SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
   string curTask = "(none)";
   for (auto task : minion.minionTasks)
@@ -2889,38 +2949,7 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
           .addElemAuto(gui.label("Activity: ", Color::YELLOW))
           .addElemAuto(gui.label(curTask))
           .buildHorizontalList(),
-      gui.buttonRect([=] (Rectangle bounds) {
-          auto tasks = gui.getListBuilder(legendLineHeight);
-          bool exit = false;
-          TaskActionInfo retAction;
-          retAction.creature = minion.creatureId;
-          for (int i : All(minion.minionTasks)) {
-            auto& task = minion.minionTasks[i];
-            function<void()> buttonFun = [] {};
-            if (!task.inactive)
-              buttonFun = [&exit, &retAction, task] {
-                  retAction.switchTo = task.task;
-                  exit = true;
-                };
-            auto lockButton = task.locked
-                  ? gui.rightMargin(20, gui.conditional(gui.labelUnicodeHighlight(u8"✓", Color::LIGHT_GRAY),
-                       gui.labelUnicodeHighlight(u8"✓", Color::GREEN), [&retAction, task] {
-                            return retAction.lock.contains(task.task) ^ *task.locked;}))
-                  : gui.empty();
-            tasks.addElem(GuiFactory::ListBuilder(gui)
-                .addMiddleElem(gui.stack(
-                    gui.button(buttonFun),
-                    gui.label(getTaskText(task.task), getTaskColor(task))))
-                .addBackElemAuto(gui.stack(
-                    getTooltip({"Click to turn this task on/off."}, THIS_LINE + i),
-                    gui.button([&retAction, task] {
-                      retAction.lock.toggle(task.task);
-                    }),
-                    lockButton)).buildHorizontalList());
-          }
-          drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), 200, true);
-          callbacks.input({UserInputId::CREATURE_TASK_ACTION, retAction});
-        }));
+      gui.buttonRect(getActivityButtonFun(minion)));
 }
 
 SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem> attrs) {

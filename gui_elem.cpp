@@ -2760,19 +2760,27 @@ Vec2 GuiFactory::getScrollButtonSize() {
   return Vec2(get(TexId::SCROLL_BUTTON).getSize().x, get(TexId::SCROLL_BUTTON).getSize().x);
 }
 
+namespace {
 class Conditional : public GuiStack {
   public:
-  Conditional(SGuiElem e, function<bool(GuiElem*)> f) : GuiStack(makeVec(std::move(e))), cond(f) {}
+  Conditional(vector<SGuiElem> e, function<int(GuiElem*)> f) : GuiStack(std::move(e)), cond(f) {}
+  Conditional(SGuiElem e, function<bool(GuiElem*)> f) : GuiStack(makeVec(std::move(e))),
+      cond([f = std::move(f)] (GuiElem* e) { return f(e) ? 0 : -1; }) {}
 
   virtual bool isVisible(int num) override {
-    return cond(this);
+    return cond(this) == num;
   }
 
   protected:
-  function<bool(GuiElem*)> cond;
+  function<int(GuiElem*)> cond;
 };
+}
 
 SGuiElem GuiFactory::conditional(SGuiElem elem, function<bool()> f) {
+  return SGuiElem(new Conditional(std::move(elem), [f](GuiElem*) { return f(); }));
+}
+
+SGuiElem GuiFactory::conditional(function<int()> f, vector<SGuiElem> elem) {
   return SGuiElem(new Conditional(std::move(elem), [f](GuiElem*) { return f(); }));
 }
 
@@ -2781,7 +2789,7 @@ class ConditionalStopKeys : public Conditional {
   using Conditional::Conditional;
 
   virtual bool onKeyPressed2(SDL_Keysym key) override {
-    if (cond(this))
+    if (cond(this) == 0)
       return Conditional::onKeyPressed2(key);
     else
       return false;
@@ -2797,8 +2805,7 @@ SGuiElem GuiFactory::conditional2(SGuiElem elem, function<bool(GuiElem*)> f) {
 }
 
 SGuiElem GuiFactory::conditional2(SGuiElem elem, SGuiElem alter, function<bool(GuiElem*)> f) {
-  return stack(SGuiElem(new Conditional(std::move(elem), f)),
-      SGuiElem(new Conditional(std::move(alter), [=] (GuiElem* e) { return !f(e);})));
+  return SGuiElem(new Conditional(makeVec(std::move(elem), std::move(alter)), [f](GuiElem* e){ return f(e) ? 0 : 1; }));
 }
 
 SGuiElem GuiFactory::conditional(SGuiElem elem, SGuiElem alter, function<bool()> f) {

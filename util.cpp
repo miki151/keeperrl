@@ -861,7 +861,21 @@ string getPlural(const string& a, int num) {
   if (num == 1)
     return "1 " + a;
   else
-    return toString(num) + " " + a + "s";
+    return toString(num) + " " + makePlural(a);
+}
+
+string makePlural(const string& s) {
+  if (s.empty())
+    return "";
+  if (s.back() == 'y')
+    return s.substr(0, s.size() - 1) + "ies";
+  if (s.back() == 'h')
+    return s + "es";
+  if (s.back() == 's')
+    return s;
+  if (endsWith(s, "shelf"))
+    return s.substr(0, s.size() - 5) + "shelves";
+  return s + "s";
 }
 
 static string toText(int num) {

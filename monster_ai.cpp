@@ -902,13 +902,14 @@ class ByCollective : public Behaviour {
     if (auto task = taskMap.getTask(creature))
       if (taskMap.isPriorityTask(task))
         return task->getMove(creature).orWait();
-    for (auto activity : ENUM_ALL(MinionActivity))
+    for (auto activity : ENUM_ALL(MinionActivity)) {
       if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, activity))
         if (auto task = taskMap.getClosestTask(creature, activity, true)) {
           taskMap.freeFromTask(creature);
           taskMap.takeTask(creature, task);
           return task->getMove(creature).orWait();
         }
+    }
     return NoMove;
   }
 

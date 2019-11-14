@@ -97,6 +97,7 @@ class PlayerInfo {
   vector<SkillInfo> HASH(skills);
   string HASH(firstName);
   string HASH(name);
+  string HASH(groupName);
   string HASH(title);
   CreatureExperienceInfo HASH(experienceInfo);
   vector<string> HASH(spellSchools);
@@ -136,7 +137,8 @@ class PlayerInfo {
     bool HASH(inactive);
     bool HASH(current);
     optional<bool> HASH(locked);
-    HASH_ALL(task, inactive, current, locked)
+    bool HASH(lockedForGroup);
+    HASH_ALL(task, inactive, current, locked, lockedForGroup)
   };
   vector<MinionActivityInfo> HASH(minionTasks);
   UniqueEntity<Creature>::Id HASH(creatureId);
@@ -164,7 +166,7 @@ class PlayerInfo {
   bool HASH(canAssignQuarters);
   vector<ViewId> HASH(kills);
   vector<string> HASH(killTitles);
-  HASH_ALL(attributes, skills, firstName, name, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles)
+  HASH_ALL(attributes, skills, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles)
 };
 
 struct ImmigrantDataInfo {

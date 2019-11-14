@@ -49,7 +49,7 @@ static bool canLock(MinionActivity t) {
 }
 
 bool MinionActivityMap::isAvailable(WConstCollective col, const Creature* c, MinionActivity t, bool ignoreTaskLock) const {
-  if (locked.contains(t) && !ignoreTaskLock)
+  if ((locked.contains(t) || col->getGroupLockedActivities(c).contains(t)) && !ignoreTaskLock)
     return false;
   switch (t) {
     case MinionActivity::IDLE:

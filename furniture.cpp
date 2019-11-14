@@ -24,20 +24,6 @@
 #include "content_factory.h"
 #include "item_list.h"
 
-static string makePlural(const string& s) {
-  if (s.empty())
-    return "";
-  if (s.back() == 'y')
-    return s.substr(0, s.size() - 1) + "ies";
-  if (s.back() == 'h')
-    return s + "es";
-  if (s.back() == 's')
-    return s;
-  if (endsWith(s, "shelf"))
-    return s.substr(0, s.size() - 5) + "shelves";
-  return s + "s";
-}
-
 /*Furniture::Furniture(const string& n, const optional<ViewObject>& o, FurnitureType t, TribeId id)
     : viewObject(o), name(n), pluralName(makePlural(name)), type(t), movementSet(id) {
   movementSet->addTrait(MovementTrait::WALK);

@@ -396,6 +396,8 @@ void PlayerControl::minionTaskAction(const TaskActionInfo& action) {
       collective->setMinionActivity(c, *action.switchTo);
     for (MinionActivity task : action.lock)
       c->getAttributes().getMinionActivities().toggleLock(task);
+    auto& groupLocked = collective->getGroupLockedActivities(c);
+    groupLocked = groupLocked.ex_or(action.lockGroup);
   }
 }
 
@@ -850,13 +852,6 @@ vector<WCollective> PlayerControl::getKnownVillains() const {
       return showAll || collective->isKnownVillain(c) || !c->getTriggers(collective).empty();});
 }
 
-string PlayerControl::getMinionGroupName(Creature* c) const {
-  if (collective->hasTrait(c, MinionTrait::PRISONER)) {
-    return "prisoner";
-  } else
-    return c->getName().stack();
-}
-
 ViewId PlayerControl::getMinionGroupViewId(Creature* c) const {
   if (collective->hasTrait(c, MinionTrait::PRISONER)) {
     return ViewId("prisoner");
@@ -867,7 +862,7 @@ ViewId PlayerControl::getMinionGroupViewId(Creature* c) const {
 vector<Creature*> PlayerControl::getMinionsLike(Creature* like) const {
   vector<Creature*> minions;
   for (Creature* c : getCreatures())
-    if (getMinionGroupName(c) == getMinionGroupName(like))
+    if (collective->getMinionGroupName(c) == collective->getMinionGroupName(like))
       minions.push_back(c);
   return minions;
 }
@@ -887,6 +882,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, Un
   for (Creature* c : creatures) {
     minions.emplace_back(c);
     auto& minionInfo = minions.back();
+    minionInfo.groupName = collective->getMinionGroupName(c);
     // only fill equipment for the chosen minion to avoid lag
     if (c->getUniqueId() == chosenId) {
       for (auto expType : ENUM_ALL(ExperienceType))
@@ -898,7 +894,8 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, Un
           minionInfo.minionTasks.push_back({t,
               !collective->isActivityGood(c, t, true),
               collective->getCurrentActivity(c).activity == t,
-              c->getAttributes().getMinionActivities().isLocked(t)});
+              c->getAttributes().getMinionActivities().isLocked(t),
+              collective->getGroupLockedActivities(c).contains(t)});
         }
       if (collective->usesEquipment(c))
         fillEquipment(c, minionInfo);
@@ -931,7 +928,7 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<Cr
   sortMinionsForUI(v);
   map<string, CollectiveInfo::CreatureGroup> groups;
   for (Creature* c : v) {
-    auto groupName = getMinionGroupName(c);
+    auto groupName = collective->getMinionGroupName(c);
     auto viewId = getMinionGroupViewId(c);
     if (!groups.count(groupName))
       groups[groupName] = { c->getUniqueId(), groupName, viewId, 0};
