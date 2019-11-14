@@ -247,9 +247,7 @@ string Effects::Teleport::getDescription() const {
 }
 
 void Effects::Lasting::applyToCreature(Creature* c, Creature* attacker) const {
-  if (c->addEffect(lastingEffect, LastingEffects::getDuration(c, lastingEffect)))
-    if (auto fx = LastingEffects::getApplicationFX(lastingEffect))
-      c->addFX(*fx);
+  c->addEffect(lastingEffect, LastingEffects::getDuration(c, lastingEffect));
 }
 
 string Effects::Lasting::getName() const {

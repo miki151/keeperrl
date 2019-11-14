@@ -28,7 +28,8 @@ RICH_ENUM(
     WORKING,
     HAULING,
     IDLE,
-    POETRY
+    POETRY,
+    MINION_ABUSE
 );
 
 class Position;

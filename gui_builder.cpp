@@ -2816,6 +2816,7 @@ static string getTaskText(MinionActivity option) {
     case MinionActivity::CRAFT: return "Crafting";
     case MinionActivity::STUDY: return "Studying";
     case MinionActivity::POETRY: return "Poetry";
+    case MinionActivity::MINION_ABUSE: return "Abusing minions";
     case MinionActivity::COPULATE: return "Copulating";
     case MinionActivity::SPIDER: return "Spinning webs";
     case MinionActivity::THRONE: return "Throne";

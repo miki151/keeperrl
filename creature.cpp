@@ -831,6 +831,8 @@ bool Creature::addEffect(LastingEffect effect, TimeInterval time, bool msg) {
     if (!was && isAffected(effect)) {
       LastingEffects::onAffected(this, effect, msg);
       updateViewObject();
+      if (auto fx = LastingEffects::getApplicationFX(effect))
+        addFX(*fx);
       return true;
     }
   }

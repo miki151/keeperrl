@@ -749,6 +749,39 @@ PTask Task::explore(Position pos) {
 
 namespace {
 
+class AbuseMinion : public Task {
+  public:
+  AbuseMinion(Creature* target) : target(target) {}
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (c->getPosition().dist8(target->getPosition()).value_or(2) > 1)
+      return c->moveTowards(target->getPosition());
+    else {
+      return c->whip(target->getPosition()).append([this](Creature*) {
+        target->addEffect(LastingEffect::SPEED, 10_visible); setDone();
+      });
+    }
+  }
+
+  virtual string getDescription() const override {
+    return "Abuse " + target->getName().bare();
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), target)
+  SERIALIZATION_CONSTRUCTOR(AbuseMinion)
+
+  private:
+  Creature* SERIAL(target);
+};
+
+}
+
+PTask Task::abuseMinion(Creature* c) {
+  return makeOwner<AbuseMinion>(c);
+}
+
+namespace {
+
 class AttackCreatures : public Task {
   public:
   AttackCreatures(vector<Creature*> v) : creatures(v) {}
@@ -1797,6 +1830,7 @@ REGISTER_TYPE(Kill)
 REGISTER_TYPE(Disappear)
 REGISTER_TYPE(Chain)
 REGISTER_TYPE(Explore)
+REGISTER_TYPE(AbuseMinion)
 REGISTER_TYPE(AttackCreatures)
 REGISTER_TYPE(KillFighters)
 REGISTER_TYPE(ConsumeItem)

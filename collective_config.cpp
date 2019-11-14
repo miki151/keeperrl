@@ -325,6 +325,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::COPULATE: return {MinionActivityInfo::COPULATE, "copulation"};
       case MinionActivity::EXPLORE: return {MinionActivityInfo::EXPLORE, "spying"};
       case MinionActivity::SPIDER: return {MinionActivityInfo::SPIDER, "spider"};
+      case MinionActivity::MINION_ABUSE: return {MinionActivityInfo::MINION_ABUSE, "minion abuse"};
       case MinionActivity::EXPLORE_NOCTURNAL: return {MinionActivityInfo::EXPLORE, "spying"};
       case MinionActivity::EXPLORE_CAVES: return {MinionActivityInfo::EXPLORE, "spying"};
       case MinionActivity::BE_WHIPPED: return {FurnitureType("WHIPPING_POST"), "being whipped"};

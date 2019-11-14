@@ -47,7 +47,7 @@ struct GuardianInfo {
 };
 
 struct MinionActivityInfo {
-  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE } type;
+  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE, MINION_ABUSE } type;
   MinionActivityInfo();
   MinionActivityInfo(FurnitureType, const string& description);
   typedef function<bool(const ContentFactory*, WConstCollective, const Creature*, FurnitureType)> UsagePredicate;

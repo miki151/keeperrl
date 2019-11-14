@@ -70,6 +70,17 @@ static optional<Position> getTileToExplore(WCollective collective, const Creatur
   }
 }
 
+static Creature* getMinionToAbuse(WCollective collective, const Creature* c) {
+  auto minions = collective->getCreatures(MinionTrait::FIGHTER);
+  if (minions.empty() || (minions.size() == 1 && minions[0] == c))
+    return nullptr;
+  do {
+    auto ret = Random.choose(minions);
+    if (ret != c)
+      return ret;
+  } while (true);
+}
+
 static Creature* getCopulationTarget(WConstCollective collective, const Creature* succubus) {
   for (Creature* c : Random.permutation(collective->getCreatures(MinionTrait::FIGHTER)))
     if (succubus->canCopulateWith(c))
@@ -275,6 +286,12 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
       PROFILE_BLOCK("Explore");
       if (auto pos = getTileToExplore(collective, c, activity))
         return Task::explore(*pos);
+      break;
+    }
+    case MinionActivityInfo::MINION_ABUSE: {
+      PROFILE_BLOCK("Minion abuse");
+      if (auto minion = getMinionToAbuse(collective, c))
+        return Task::abuseMinion(minion);
       break;
     }
     case MinionActivityInfo::COPULATE: {
