@@ -197,6 +197,7 @@ WTask MinionActivities::getExisting(WCollective collective, Creature* c, MinionA
   PROFILE;
   auto& info = CollectiveConfig::getActivityInfo(activity);
   switch (info.type) {
+    case MinionActivityInfo::GUARD:
     case MinionActivityInfo::WORKER: {
       return collective->getTaskMap().getClosestTask(c, activity, false);
     } default:
@@ -259,7 +260,7 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
         PROFILE_BLOCK("Stay in territory");
         return Task::chain(Task::transferTo(collective->getModel()), Task::stayIn(myTerritory.asVector()));
       } else if (collective->getConfig().getFollowLeaderIfNoTerritory() && leader) {
-        PROFILE_BLOCK("Follor leader");
+        PROFILE_BLOCK("Follow leader");
         return Task::alwaysDone(Task::follow(leader));
       }
       {
@@ -314,9 +315,9 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
         return Task::spider(territory.getAll().front(), territory.getExtended(3));
       break;
     }
-    case MinionActivityInfo::WORKER: {
+    case MinionActivityInfo::GUARD:
+    case MinionActivityInfo::WORKER:
       return nullptr;
-    }
   }
   return nullptr;
 }

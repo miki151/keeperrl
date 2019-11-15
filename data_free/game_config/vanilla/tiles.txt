@@ -343,14 +343,8 @@
     sprite = "dig_mark" spriteColor = Rgb 0 0 255 120 }
   { viewId = "storage_resources" symbol = "." color = ColorId GREEN
     sprite = "dig_mark" spriteColor = Rgb 0 255 0 120 }
-  { viewId = "quarters1" symbol = "." color = ColorId PINK
-    sprite = "dig_mark2" spriteColor = Rgb 255 20 147 120 }
-  { viewId = "quarters2" symbol = "." color = ColorId SKY_BLUE
-    sprite = "dig_mark2" spriteColor = Rgb 0 191 255 120 }
-  { viewId = "quarters3" symbol = "." color = ColorId ORANGE
-    sprite = "dig_mark2" spriteColor = Rgb 255 165 0 120 }
-  { viewId = "leisure" symbol = "." color = ColorId DARK_BLUE
-    sprite = "dig_mark2" spriteColor = Rgb 50 50 200 120 }
+  { viewId = "quarters" symbol = "." color = ColorId PINK
+    sprite = "dig_mark2" }
   { viewId = "standing_torch" symbol = "*" color = ColorId YELLOW
     moveUp = true animated = true }
   { viewId = "decid_tree" symbol = "🜍" color = ColorId DARK_GREEN

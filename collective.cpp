@@ -463,10 +463,22 @@ void Collective::updateBorderTiles() {
   }
 }
 
+void Collective::updateGuardTasks() {
+  const auto activity = MinionActivity::GUARDING;
+  for (auto& pos : zones->getPositions(ZoneId::GUARD))
+    if (!taskMap->hasTask(pos, activity))
+      taskMap->addTask(Task::goToAndWait(pos, 400_visible), pos, activity);
+  for (auto& task : taskMap->getTasks(activity))
+    if (auto pos = taskMap->getPosition(task))
+      if (!zones->getPositions(ZoneId::GUARD).count(*pos))
+        taskMap->removeTask(task);
+}
+
 void Collective::tick() {
   PROFILE_BLOCK("Collective::tick");
   updateBorderTiles();
   considerRebellion();
+  updateGuardTasks();
   dangerLevelCache = none;
   control->tick();
   zones->tick();

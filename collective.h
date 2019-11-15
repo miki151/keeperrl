@@ -319,4 +319,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   HeapAllocated<MinionActivities> SERIAL(minionActivities);
   set<string> SERIAL(recordedEvents);
   map<string, GroupLockedActivities> SERIAL(groupLockedAcitivities);
+  void updateGuardTasks();
 };

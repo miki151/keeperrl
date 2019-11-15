@@ -5,6 +5,7 @@
 #include "movement_type.h"
 #include "collective.h"
 #include "territory.h"
+#include "quarters.h"
 
 SERIALIZE_DEF(Zones, positions, zones)
 SERIALIZATION_CONSTRUCTOR_IMPL(Zones)
@@ -42,7 +43,8 @@ static ZoneId destroyedOnOrder[] = {
   ZoneId::FETCH_ITEMS,
   ZoneId::PERMANENT_FETCH_ITEMS,
   ZoneId::STORAGE_EQUIPMENT,
-  ZoneId::STORAGE_RESOURCES
+  ZoneId::STORAGE_RESOURCES,
+  ZoneId::GUARD
 };
 
 void Zones::onDestroyOrder(Position pos) {
@@ -72,6 +74,8 @@ static HighlightType getHighlight(ZoneId id) {
       return HighlightType::QUARTERS3;
     case ZoneId::LEISURE:
       return HighlightType::LEISURE;
+    case ZoneId::GUARD:
+      return HighlightType::GUARD_ZONE;
   }
 }
 
@@ -86,6 +90,7 @@ bool Zones::canSet(Position pos, ZoneId id, WConstCollective col) const {
   switch (id) {
     case ZoneId::STORAGE_EQUIPMENT:
     case ZoneId::STORAGE_RESOURCES:
+    case ZoneId::GUARD:
       return pos.canEnterEmpty(MovementTrait::WALK);
     case ZoneId::QUARTERS1:
     case ZoneId::QUARTERS2:
@@ -107,13 +112,13 @@ void Zones::tick() {
 ViewId getViewId(ZoneId id) {
   switch (id) {
     case ZoneId::QUARTERS1:
-      return ViewId("quarters1");
+      return Quarters::getAllQuarters()[0].viewId;
     case ZoneId::QUARTERS2:
-      return ViewId("quarters2");
+      return Quarters::getAllQuarters()[1].viewId;
     case ZoneId::QUARTERS3:
-      return ViewId("quarters3");
+      return Quarters::getAllQuarters()[2].viewId;
     case ZoneId::LEISURE:
-      return ViewId("leisure");
+      return ViewId("quarters", Color(50, 50, 200));
     case ZoneId::FETCH_ITEMS:
     case ZoneId::PERMANENT_FETCH_ITEMS:
       return ViewId("fetch_icon");
@@ -121,5 +126,7 @@ ViewId getViewId(ZoneId id) {
       return ViewId("storage_equipment");
     case ZoneId::STORAGE_RESOURCES:
       return ViewId("storage_resources");
+    case ZoneId::GUARD:
+      return ViewId("dig_mark", Color(254, 254, 254));
   }
 }

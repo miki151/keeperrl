@@ -316,6 +316,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
             return getBedType(c) == f->furniture.getData(t).getBedType();
           }, "sleeping"};
       case MinionActivity::EAT: return {MinionActivityInfo::EAT, "eating"};
+      case MinionActivity::GUARDING: return {MinionActivityInfo::GUARD, "guarding"};
       case MinionActivity::THRONE: return {FurnitureType("THRONE"), "throne"};
       case MinionActivity::POETRY: return {FurnitureType("POETRY_TABLE"), "poetry"};
       case MinionActivity::STUDY: return {getTrainingPredicate(ExperienceType::SPELL), "studying"};

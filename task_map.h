@@ -19,6 +19,8 @@ class TaskMap {
   WTask getTask(const Creature*);
   bool hasTask(const Creature*) const;
   const vector<WTask>& getTasks(Position) const;
+  bool hasTask(Position, MinionActivity) const;
+  vector<WTask> getTasks(MinionActivity) const;
   vector<WConstTask> getAllTasks() const;
   Creature* getOwner(WConstTask) const;
   optional<Position> getPosition(WTask) const;
@@ -41,7 +43,7 @@ class TaskMap {
   WTask getTask(UniqueEntity<Task>::Id) const;
   void clearFinishedTasks();
 
-  SERIALIZATION_DECL(TaskMap);
+  SERIALIZATION_DECL(TaskMap)
 
   private:
   EntityMap<Creature, WTask> SERIAL(taskByCreature);

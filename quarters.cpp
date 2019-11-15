@@ -15,11 +15,12 @@ optional<int> Quarters::getAssigned(UniqueEntity<Creature>::Id id) const {
 }
 
 vector<Quarters::QuartersInfo> Quarters::getAllQuarters() {
-  return {
-    { ZoneId::QUARTERS1, ViewId("quarters1") },
-    { ZoneId::QUARTERS2, ViewId("quarters2") },
-    { ZoneId::QUARTERS3, ViewId("quarters3") },
+  static vector<Quarters::QuartersInfo> ret {
+    { ZoneId::QUARTERS1, ViewId("quarters", Color(255, 20, 147)) },
+    { ZoneId::QUARTERS2, ViewId("quarters", Color(0, 191, 255)) },
+    { ZoneId::QUARTERS3, ViewId("quarters", Color(255, 165, 0)) },
   };
+  return ret;
 }
 
 SERIALIZE_DEF(Quarters, assignment)

@@ -11,7 +11,7 @@
     }
     initialTech = { "sorcery" }
     buildingGroups = {
-        "structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
+        "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
     }
     workshopGroups = { "basic" "traps" }
@@ -30,7 +30,7 @@
     }
     initialTech = { "iron working" }
     buildingGroups = {
-        "structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
+        "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
         "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
     }
     workshopGroups = { "basic" "traps" }
@@ -47,7 +47,7 @@
     }
     initialTech = { "archery" }
     buildingGroups = {
-        "structure" "doors" "floors" "storage" "quarters" "library" "throne" "beds" "beast_cage"
+        "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage"
         "pigsty" "training" "crafting" "prison" "orders" "installations"
     }
     workshopGroups = { "basic" }

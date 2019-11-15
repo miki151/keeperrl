@@ -141,8 +141,7 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer&) {
 }
 
 Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
-  bool quartersSelected = buttonViewId == ViewId("quarters1") || buttonViewId == ViewId("quarters2") ||
-      buttonViewId == ViewId("quarters3") || buttonViewId == ViewId("leisure");
+  bool quartersSelected = (buttonViewId && buttonViewId->data() == "quarters"_s);
   bool buildingSelected = buttonViewId == ViewId("wood_wall") || buttonViewId == ViewId("castle_wall");
   switch (type) {
     case HighlightType::RECT_DESELECTION: return Color::RED.transparency(100);
@@ -166,6 +165,7 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
         return Color(0, 255, 0, 120);
     case HighlightType::CLICKABLE_FURNITURE: return Color(255, 255, 0, 120);
     case HighlightType::CLICKED_FURNITURE: return Color(255, 255, 0);
+    case HighlightType::GUARD_ZONE: return Color(255, 255, 255, 120);
     case HighlightType::FORBIDDEN_ZONE: return Color(255, 0, 0, 120);
     case HighlightType::UNAVAILABLE: return Color(0, 0, 0, 120);
     case HighlightType::INDOORS: return Color(0, 0, 255, buildingSelected ? 40 : 0);
@@ -871,6 +871,7 @@ bool MapGui::isRenderedHighlightLow(const ViewIndex& index, HighlightType type) 
     case HighlightType::QUARTERS1:
     case HighlightType::QUARTERS2:
     case HighlightType::QUARTERS3:
+    case HighlightType::GUARD_ZONE:
     case HighlightType::LEISURE:
     case HighlightType::CLICKED_FURNITURE:
     case HighlightType::CUT_TREE:

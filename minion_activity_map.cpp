@@ -88,6 +88,8 @@ bool MinionActivityMap::isAvailable(WConstCollective col, const Creature* c, Min
       return c->isAffected(LastingEffect::COPULATION_SKILL);
     case MinionActivity::RITUAL:
       return c->getBody().canPerformRituals() && !col->hasTrait(c, MinionTrait::WORKER);
+    case MinionActivity::GUARDING:
+      return col->hasTrait(c, MinionTrait::FIGHTER);
     case MinionActivity::CROPS:
       return c->isAffected(LastingEffect::CROPS_SKILL);
     case MinionActivity::SPIDER:

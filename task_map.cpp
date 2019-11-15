@@ -172,6 +172,18 @@ const vector<WTask>& TaskMap::getTasks(Position pos) const {
   }
 }
 
+bool TaskMap::hasTask(Position pos, MinionActivity activity) const {
+  if (auto tasks = getReferenceMaybe(reversePositions, pos))
+    for (auto task : *tasks)
+      if (activityByTask.getMaybe(task) == activity)
+        return true;
+  return false;
+}
+
+vector<WTask> TaskMap::getTasks(MinionActivity a) const {
+  return taskByActivity[a];
+}
+
 WTask TaskMap::addTaskFor(PTask task, Creature* c) {
   auto previousTask = getTask(c);
   CHECK(!previousTask) << c->getName().bare() << " already has a task " << previousTask->getDescription();

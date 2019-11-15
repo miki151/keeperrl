@@ -83,19 +83,22 @@
         "All corpses are stored here."}
   }
 
-  "quarters"
+  "zones"
   {
-    { Zone QUARTERS1                                           "Quarters 1"        "Quarters"
+    { Zone QUARTERS1                                           "Quarters 1"        "Zones"
         "Designate separate quarters for chosen minions." q {} true}
 
-    { Zone QUARTERS2                                           "Quarters 2"        "Quarters"
+    { Zone QUARTERS2                                           "Quarters 2"        "Zones"
         "Designate separate quarters for chosen minions."}
 
-    { Zone QUARTERS3                                           "Quarters 3"        "Quarters"
+    { Zone QUARTERS3                                           "Quarters 3"        "Zones"
         "Designate separate quarters for chosen minions."}
 
-    { Zone LEISURE                                             "Leisure"           "Quarters"
+    { Zone LEISURE                                             "Leisure"           "Zones"
         "Designate leisure zone where minions will hang out when they have nothing to do."}
+
+    { Zone GUARD                                               "Guard area"        "Zones"
+        "Designate area that minions will actively guard."}
    }
 
   "library"
