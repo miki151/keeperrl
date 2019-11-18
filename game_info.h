@@ -100,7 +100,6 @@ class PlayerInfo {
   string HASH(groupName);
   string HASH(title);
   CreatureExperienceInfo HASH(experienceInfo);
-  vector<string> HASH(spellSchools);
   string description;
   int HASH(positionHash);
   struct Effect {
@@ -113,11 +112,20 @@ class PlayerInfo {
   struct Spell {
     string HASH(name);
     string HASH(symbol);
+    optional<int> HASH(level);
+    bool HASH(available) = true;
     vector<string> HASH(help);
     optional<TimeInterval> HASH(timeout);
-    HASH_ALL(name, symbol, help, timeout)
+    HASH_ALL(name, symbol, help, timeout, available, level)
   };
   vector<Spell> HASH(spells);
+  struct SpellSchool {
+    string HASH(name);
+    ExperienceType HASH(experienceType);
+    vector<Spell> HASH(spells);
+    HASH_ALL(name, experienceType, spells)
+  };
+  vector<SpellSchool> HASH(spellSchools);
   vector<ItemInfo> HASH(lyingItems);
   vector<ItemInfo> HASH(inventory);
   vector<ItemInfo> HASH(intrinsicAttacks);

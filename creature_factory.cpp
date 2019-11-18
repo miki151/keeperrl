@@ -196,7 +196,7 @@ NameGenerator* CreatureFactory::getNameGenerator() {
   return &*nameGenerator;
 }
 
-const map<SpellSchoolId, SpellSchool> CreatureFactory::getSpellSchools() const {
+const map<SpellSchoolId, SpellSchool>& CreatureFactory::getSpellSchools() const {
   return spellSchools;
 }
 

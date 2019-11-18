@@ -180,8 +180,8 @@ void CreatureAttributes::increaseBaseExpLevel(ExperienceType type, double increa
     attr[attrType] += increase;
 }
 
-vector<string> CreatureAttributes::getSpellSchools() const {
-  return spellSchools.transform([](auto& school) { return string(school.data()); });
+vector<SpellSchoolId> CreatureAttributes::getSpellSchools() const {
+  return spellSchools;
 }
 
 Body& CreatureAttributes::getBody() {

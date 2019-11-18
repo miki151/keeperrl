@@ -124,6 +124,26 @@ static vector<ItemInfo> getItemInfos(const Creature* c, const vector<Item*>& ite
   return ret;
 }
 
+static PlayerInfo::SpellSchool fillSpellSchool(const Creature* c, SpellSchoolId id, const CreatureFactory* factory) {
+  PlayerInfo::SpellSchool ret;
+  auto& spellSchool = factory->getSpellSchools().at(id);
+  ret.name = id.data();
+  ret.experienceType = spellSchool.expType;
+  for (auto& id : spellSchool.spells) {
+    auto spell = factory->getSpell(id.first);
+    ret.spells.push_back(
+        PlayerInfo::Spell {
+          spell->getName(),
+          spell->getSymbol(),
+          id.second,
+          c->getAttributes().getExpLevel(spellSchool.expType) >= id.second,
+          {spell->getDescription()},
+          none
+        });
+  }
+  return ret;
+}
+
 PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   firstName = c->getName().firstOrBare();
   name = c->getName().bare();
@@ -135,7 +155,8 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   creatureId = c->getUniqueId();
   attributes = AttributeInfo::fromCreature(c);
   experienceInfo = getCreatureExperienceInfo(c);
-  spellSchools = c->getAttributes().getSpellSchools();
+  for (auto& id : c->getAttributes().getSpellSchools())
+    spellSchools.push_back(fillSpellSchool(c, id, &c->getGame()->getContentFactory()->getCreatures()));
   intrinsicAttacks = fillIntrinsicAttacks(c);
   skills = getSkillNames(c);
   kills = c->getKills().transform([&](auto& info){ return info.viewId; });
@@ -153,6 +174,8 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
     spells.push_back({
         spell->getName(),
         spell->getSymbol(),
+        none,
+        true,
         std::move(description),
         c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell))
     });

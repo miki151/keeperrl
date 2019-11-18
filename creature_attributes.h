@@ -80,7 +80,7 @@ class CreatureAttributes {
   bool isTrainingMaxedOut(ExperienceType) const;
   void increaseBaseExpLevel(ExperienceType type, double increase);
   string bodyDescription() const;
-  vector<string> getSpellSchools() const;
+  vector<SpellSchoolId> getSpellSchools() const;
   optional<SoundId> getAttackSound(AttackType, bool damage) const;
   bool isBoulder() const;
   Skillset& getSkills();

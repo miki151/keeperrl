@@ -52,7 +52,7 @@ class CreatureFactory {
 
   NameGenerator* getNameGenerator();
 
-  const map<SpellSchoolId, SpellSchool> getSpellSchools() const;
+  const map<SpellSchoolId, SpellSchool>& getSpellSchools() const;
   const vector<Spell>& getSpells() const;
   const Spell* getSpell(SpellId) const;
   CreatureFactory(NameGenerator, map<CreatureId, CreatureAttributes>, map<CreatureId, CreatureInventory>,

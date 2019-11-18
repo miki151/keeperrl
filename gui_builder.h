@@ -173,8 +173,8 @@ class GuiBuilder {
   SGuiElem drawAttributesOnPage(vector<SGuiElem>);
   SGuiElem drawEquipmentAndConsumables(const PlayerInfo&);
   vector<SGuiElem> drawSkillsList(const PlayerInfo&);
-  SGuiElem drawSpellsList(const PlayerInfo&, bool active);
-  SGuiElem getSpellIcon(const PlayerInfo::Spell&, int index, bool active, UniqueEntity<Creature>::Id);
+  SGuiElem drawSpellsList(const vector<PlayerInfo::Spell>&, GenericId creatureId, bool active);
+  SGuiElem getSpellIcon(const PlayerInfo::Spell&, int index, bool active, GenericId creatureId);
   vector<SGuiElem> drawEffectsList(const PlayerInfo&);
   vector<SGuiElem> drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&);
   function<void()> getButtonCallback(UserInput);
@@ -307,6 +307,7 @@ class GuiBuilder {
   SGuiElem drawKillTitlesButton(const PlayerInfo& minion);
   SGuiElem drawKillsLabel(const PlayerInfo& minion);
   function<void(Rectangle)> getActivityButtonFun(const PlayerInfo&);
+  SGuiElem drawSpellSchoolLabel(const PlayerInfo::SpellSchool&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

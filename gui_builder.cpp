@@ -1371,7 +1371,9 @@ vector<SGuiElem> GuiBuilder::drawSkillsList(const PlayerInfo& info) {
   return lines;
 }
 
-SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, int index, bool active, UniqueEntity<Creature>::Id id) {
+const Vec2 spellIconSize = Vec2(47, 47);
+
+SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, int index, bool active, GenericId creatureId) {
   vector<SGuiElem> ret;
   if (!spell.timeout) {
     ret.push_back(gui.mouseHighlight2(gui.standardButtonHighlight(), gui.standardButton()));
@@ -1384,21 +1386,19 @@ SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, int index, boo
     ret.push_back(gui.darken());
     ret.push_back(gui.centeredLabel(Renderer::HOR_VER, toString(*spell.timeout)));
   }
-  ret.push_back(getTooltip(concat({capitalFirst(spell.name)}, spell.help), THIS_LINE + index + id.getGenericId()));
-  return gui.stack(std::move(ret));
+  ret.push_back(getTooltip(concat({capitalFirst(spell.name)}, spell.help), THIS_LINE + index + creatureId));
+  return gui.preferredSize(spellIconSize, gui.stack(std::move(ret)));
 }
 
-const Vec2 spellIconSize = Vec2(47, 47);
-
-SGuiElem GuiBuilder::drawSpellsList(const PlayerInfo& info, bool active) {
+SGuiElem GuiBuilder::drawSpellsList(const vector<PlayerInfo::Spell>& spells, GenericId creatureId, bool active) {
   constexpr int spellsPerRow = 5;
-  if (!info.spells.empty()) {
+  if (!spells.empty()) {
     auto list = gui.getListBuilder(spellIconSize.y);
     list.addElem(gui.label("Abilities", Color::YELLOW), legendLineHeight);
-    auto line = gui.getListBuilder(spellIconSize.x);
-    for (int index : All(info.spells)) {
-      auto& elem = info.spells[index];
-      line.addElem(getSpellIcon(elem, index, active, info.creatureId));
+    auto line = gui.getListBuilder();
+    for (int index : All(spells)) {
+      auto& elem = spells[index];
+      line.addElemAuto(getSpellIcon(elem, index, active, creatureId));
       if (line.getLength() >= spellsPerRow) {
         list.addElem(line.buildHorizontalList());
         line.clear();
@@ -1552,7 +1552,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   list.addSpace();
   for (auto& elem : drawSkillsList(info))
     list.addElem(std::move(elem));
-  if (auto spells = drawSpellsList(info, true)) {
+  if (auto spells = drawSpellsList(info.spells, info.creatureId.getGenericId(), true)) {
     list.addElemAuto(std::move(spells));
     list.addSpace();
   }
@@ -3072,6 +3072,23 @@ SGuiElem GuiBuilder::drawKillTitlesButton(const PlayerInfo& minion) {
     return nullptr;
 }
 
+SGuiElem GuiBuilder::drawSpellSchoolLabel(const PlayerInfo::SpellSchool& school) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  lines.addElem(gui.label("Experience type: "_s + getName(school.experienceType)));
+  for (auto& spell : school.spells) {
+    auto color = spell.available ? Color::WHITE : Color::LIGHT_GRAY;
+    lines.addElem(gui.getListBuilder()
+        .addElemAuto(getSpellIcon(spell, 0, false, 0))
+        .addElemAuto(gui.label(spell.name, color))
+        .addBackElemAuto(gui.label("Level " + toString(*spell.level), color))
+        .buildHorizontalList());
+  }
+  return gui.stack(
+      gui.label(school.name),
+      gui.tooltip2(gui.setWidth(350, gui.miniWindow(gui.margins(lines.buildVerticalList(), 15))),
+          [](const Rectangle& r) { return r.bottomRight(); }));
+}
+
 SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const CollectiveInfo& collective,
     const optional<TutorialInfo>& tutorial) {
   auto list = gui.getListBuilder(legendLineHeight);
@@ -3093,11 +3110,13 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const CollectiveIn
   leftLines.addSpace();
   if (auto elem = drawTrainingInfo(minion.experienceInfo))
     leftLines.addElemAuto(std::move(elem));
-  if (!minion.spellSchools.empty())
-    leftLines.addElem(gui.getListBuilder()
-        .addElemAuto(gui.label("Spell schools: ", Color::YELLOW))
-        .addElemAuto(gui.label(combine(minion.spellSchools, true)))
-        .buildHorizontalList());
+  if (!minion.spellSchools.empty()) {
+    auto line = gui.getListBuilder()
+        .addElemAuto(gui.label("Spell schools: ", Color::YELLOW));
+    for (auto& school : minion.spellSchools)
+      line.addElemAuto(drawSpellSchoolLabel(school));
+    leftLines.addElem(line.buildHorizontalList());
+  }
   leftLines.addSpace();
   leftLines.addElem(drawActivityButton(minion));
   if (minion.canAssignQuarters)
@@ -3105,7 +3124,7 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const CollectiveIn
   leftLines.addSpace();
   for (auto& elem : drawSkillsList(minion))
     leftLines.addElem(std::move(elem));
-  if (auto spells = drawSpellsList(minion, false))
+  if (auto spells = drawSpellsList(minion.spells, minion.creatureId.getGenericId(), false))
     leftLines.addElemAuto(std::move(spells));
   int topMargin = list.getSize() + 20;
   return gui.margin(list.buildVerticalList(),
