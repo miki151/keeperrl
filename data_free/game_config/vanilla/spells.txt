@@ -269,6 +269,20 @@
     sound = SPELL_STR_BONUS
   }
   {
+    id =  "bolster"
+    symbol = "🛡"
+    effect = Area 1 Filter ALLY Lasting DEF_BONUS 
+    cooldown = 70
+    sound = SPELL_DEX_BONUS
+  }
+  {
+    id =  "rally"
+    symbol = "💪"
+    effect = Area 1 Filter ALLY Lasting DAM_BONUS 
+    cooldown = 70
+    sound = SPELL_DEX_BONUS
+  }
+  {
     id =  "summon element"
     symbol = "👾"
     effect = SummonElement

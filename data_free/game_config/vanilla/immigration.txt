@@ -482,6 +482,16 @@
           }
         }
         {
+          ids = { "GALEAM" }
+          traits = { FIGHTER }
+          frequency = 10.0
+          spawnLocation = FurnitureType "ANGEL_SHRINE"
+          requirements = {
+            { 0.3 AttractionInfo 1 {FurnitureType "ANGEL_SHRINE"}}
+            { 0.0 CostInfo DEMON_PIETY 300 }
+          }
+        }
+        {
           ids = { "DOG" }
           traits = { FIGHTER DOESNT_TRIGGER NO_LIMIT }
           frequency = 0.1

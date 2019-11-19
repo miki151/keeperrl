@@ -201,7 +201,7 @@ const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
       case CollectiveResourceId::PRISONER_HEAD:
         return { none, none, ItemType(CustomItemId("GoldPiece")), "prisoner heads", ViewId("impaled_head"), true, none};
       case CollectiveResourceId::DEMON_PIETY:
-        return { none, none, ItemType(CustomItemId("GoldPiece")), "demon rituals", ViewId("impaled_head"), true, none};
+        return { none, none, ItemType(CustomItemId("GoldPiece")), "rituals", ViewId("impaled_head"), true, none};
       case CollectiveResourceId::GOLD:
         return {StorageId::GOLD, ItemIndex::GOLD, ItemType(CustomItemId("GoldPiece")), "gold", ViewId("gold"), false, none};
       case CollectiveResourceId::WOOD:

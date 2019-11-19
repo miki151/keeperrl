@@ -109,6 +109,7 @@
   { "succubus" "&" ColorId RED }
   { "ghost" "&" ColorId WHITE }
   { "spirit" "&" ColorId YELLOW }
+  { "galeam" "c" ColorId LIGHT_BROWN }
   { "djinn" "&" ColorId LIGHT_BLUE }
   { "green_dragon" "D" ColorId GREEN }
   { "red_dragon" "D" ColorId RED }
@@ -425,6 +426,8 @@
   { viewId = "archery_range" symbol = "⌾" color = ColorId LIGHT_BLUE
     isSymbolFont = true roundShadow = true }
   { viewId = "demon_shrine" symbol = "Ω" color = ColorId PURPLE
+    isSymbolFont = true roundShadow = true }
+  { viewId = "angel_shrine" symbol = "Ω" color = ColorId WHITE
     isSymbolFont = true roundShadow = true }
   { viewId = "bookcase_wood" symbol = "▤" color = ColorId BROWN
     roundShadow = true }

@@ -260,6 +260,12 @@
     strength = 80
     destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
   }
+  "ANGEL_SHRINE" inherit "DEMON_SHRINE"
+  {
+    name = "angel shrine"
+    viewId = { "angel_shrine" }
+    destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  }
   "PRISON"
   {
     name = "prison"

@@ -403,6 +403,26 @@
         pluralName = "succubi"
       }
     }
+  "GALEAM"
+  {
+    attr = {
+      DEFENSE 30
+    }
+    viewId = { "galeam" }
+    body = {
+      type = NonHumanoid LARGE
+      material = SPIRIT
+      addBodyPart = {
+        WING 2
+      }
+    }
+    courage = -1
+    spells = { "bolster" "rally" }
+    name = {
+      name = "galeam"
+      pluralName = "galea"
+    }
+  }
   "DOPPLEGANGER"
     {
       viewId = { "doppleganger" }

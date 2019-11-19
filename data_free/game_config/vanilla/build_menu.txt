@@ -193,6 +193,12 @@
         "" 0 { TechId "demonology" }}
   }
 
+  "angel_shrine"
+  {
+    { Furniture {{ "ANGEL_SHRINE" } GOLD 30 }                    "Angel shrine"      ""
+        "" 0 { TechId "worship" }}
+  }
+
   "prison"
   {
     { Furniture {{ "PRISON" }        IRON 15 }                   "Prison"            "Prison"
