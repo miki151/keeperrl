@@ -27,7 +27,6 @@ class TaskMap {
   void takeTask(Creature*, WTask);
   void freeTask(WTask);
 
-  void setPosition(WTask, Position);
   WTask addTaskCost(PTask, Position, CostInfo, MinionActivity);
   void markSquare(Position, HighlightType, PTask, MinionActivity);
   WTask getMarked(Position) const;
@@ -46,6 +45,7 @@ class TaskMap {
   SERIALIZATION_DECL(TaskMap)
 
   private:
+  void setPosition(WTask, Position);
   EntityMap<Creature, WTask> SERIAL(taskByCreature);
   EntityMap<Task, Creature*> SERIAL(creatureByTask);
   EntityMap<Task, Position> SERIAL(positionMap);
