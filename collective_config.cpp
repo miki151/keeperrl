@@ -264,6 +264,14 @@ MinionActivityInfo::MinionActivityInfo(FurnitureType type, const string& desc)
       description(desc) {
 }
 
+MinionActivityInfo::MinionActivityInfo(FurnitureUsageType usage, const string& desc)
+  : type(FURNITURE), furniturePredicate(
+      [usage](const ContentFactory* f, WConstCollective, const Creature*, FurnitureType t) {
+        return f->furniture.getData(t).getUsageType() == usage;
+      }),
+    description(desc) {
+}
+
 MinionActivityInfo::MinionActivityInfo(UsagePredicate pred, const string& desc)
     : type(FURNITURE), furniturePredicate(pred), description(desc) {
 }
@@ -317,11 +325,11 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
           }, "sleeping"};
       case MinionActivity::EAT: return {MinionActivityInfo::EAT, "eating"};
       case MinionActivity::GUARDING: return {MinionActivityInfo::GUARD, "guarding"};
-      case MinionActivity::THRONE: return {FurnitureType("THRONE"), "throne"};
+      case MinionActivity::THRONE: return {FurnitureUsageType::SIT_ON_THRONE, "throne"};
       case MinionActivity::POETRY: return {FurnitureType("POETRY_TABLE"), "poetry"};
       case MinionActivity::STUDY: return {getTrainingPredicate(ExperienceType::SPELL), "studying"};
       case MinionActivity::CROPS: return {FurnitureType("CROPS"), "crops"};
-      case MinionActivity::RITUAL: return {FurnitureType("DEMON_SHRINE"), "rituals"};
+      case MinionActivity::RITUAL: return {FurnitureUsageType::DEMON_RITUAL, "rituals"};
       case MinionActivity::ARCHERY: return {MinionActivityInfo::ARCHERY, "archery range"};
       case MinionActivity::COPULATE: return {MinionActivityInfo::COPULATE, "copulation"};
       case MinionActivity::EXPLORE: return {MinionActivityInfo::EXPLORE, "spying"};
