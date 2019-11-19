@@ -97,6 +97,7 @@ CostInfo TaskMap::removeTask(WTask task) {
     positionMap.erase(task);
   }
   if (auto activity = activityByTask.getMaybe(task)) {
+    CHECK(activityByTask.getMaybe(task));
     activityByTask.erase(task);
     taskByActivity[*activity].removeElement(task);
   }
@@ -203,6 +204,7 @@ WTask TaskMap::addTask(PTask task, Position position, MinionActivity activity) {
   setPosition(task.get(), position);
   taskById.set(task.get(), task.get());
   taskByActivity[activity].push_back(task.get());
+  CHECK(!activityByTask.getMaybe(task.get()));
   activityByTask.set(task.get(), activity);
   tasks.push_back(std::move(task));
   return tasks.back().get();
@@ -240,6 +242,7 @@ void TaskMap::freeTask(WTask task) {
 }
 
 void TaskMap::setPosition(WTask task, Position position) {
+  CHECK(!positionMap.getMaybe(task));
   positionMap.set(task, position);
   reversePositions[position].push_back(task);
 }
