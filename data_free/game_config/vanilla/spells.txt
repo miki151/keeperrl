@@ -43,6 +43,23 @@
     sound = SPELL_HEALING
   }
   {
+    id =  "advanced heal spirit"
+    upgrade = "heal spirit"
+    symbol = "✴"
+    effect = Heal SPIRIT
+    targetSelf = true
+    range = 4
+    cooldown = 10
+    sound = SPELL_HEALING
+  }
+  {
+    id =  "heal spirit group"
+    symbol = "✴✴"
+    effect = Area 2 Filter ALLY Heal SPIRIT
+    cooldown = 50
+    sound = SPELL_HEALING
+  }
+  {
     id =  "cure poison"
     symbol = "⚕"
     effect = RemoveLasting POISON

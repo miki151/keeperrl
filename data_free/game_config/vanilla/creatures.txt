@@ -891,13 +891,13 @@
       chatReactionFriendly = "curses all dungeons"
       chatReactionHostile = "\"Die!\""
       maxLevelIncrease = {
-        SPELL 9
+        SPELL 7
       }
       name = {
         name = "priest"
         firstNameGen = "FIRST_MALE"
       }
-      spellSchools = { "healer" }
+      spellSchools = { "spiritualist" }
       hatedByEffect = HATE_HUMANS
     }
   "FIRE_MAGE_PLAYER"

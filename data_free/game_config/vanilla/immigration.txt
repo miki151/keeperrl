@@ -484,7 +484,7 @@
         {
           ids = { "GALEAM" }
           traits = { FIGHTER }
-          frequency = 10.0
+          frequency = 0.3
           spawnLocation = FurnitureType "ANGEL_SHRINE"
           requirements = {
             { 0.3 AttractionInfo 1 {FurnitureType "ANGEL_SHRINE"}}

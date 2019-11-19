@@ -24,6 +24,12 @@
     "poison resistance" 6
     "group healing" 7
   }
+  "spiritualist" SPELL
+  {
+    "heal spirit" 1
+    "advanced heal spirit" 4
+    "heal spirit group" 7
+  }
   "fire" SPELL
   {
     "fire elemental" 1
