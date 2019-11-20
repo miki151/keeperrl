@@ -404,13 +404,13 @@
       }
     }
   "GALEAM"
-  {
+    {
     attr = {
       DEFENSE 30
     }
     viewId = { "galeam" }
     body = {
-      type = NonHumanoid LARGE
+      type = NonHumanoid SMALL
       material = SPIRIT
       addBodyPart = {
         WING 2
@@ -422,7 +422,27 @@
       name = "galeam"
       pluralName = "galea"
     }
-  }
+    }
+  "CHERUB"
+    {
+    attr = {
+      DEFENSE 5
+      RANGED_DAMAGE 20
+    }
+    viewId = { "cherub" }
+    body = {
+      type = Humanoid MEDIUM
+      material = SPIRIT
+      addBodyPart = {
+        WING 2
+      }
+    }
+    permanentEffects = { SPEED 1 }
+    courage = -1
+    name = {
+      name = "cherub"
+    }
+    }
   "DOPPLEGANGER"
     {
       viewId = { "doppleganger" }

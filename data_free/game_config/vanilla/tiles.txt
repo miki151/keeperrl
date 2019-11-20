@@ -110,6 +110,7 @@
   { "ghost" "&" ColorId WHITE }
   { "spirit" "&" ColorId YELLOW }
   { "galeam" "c" ColorId LIGHT_BROWN }
+  { "cherub" "c" ColorId YELLOW }
   { "djinn" "&" ColorId LIGHT_BLUE }
   { "green_dragon" "D" ColorId GREEN }
   { "red_dragon" "D" ColorId RED }
