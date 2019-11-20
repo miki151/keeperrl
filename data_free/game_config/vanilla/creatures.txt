@@ -900,42 +900,18 @@
       spellSchools = { "spiritualist" }
       hatedByEffect = HATE_HUMANS
     }
-  "FIRE_MAGE_PLAYER"
+  "CLERIC" inherit "PRIEST_PLAYER"
     {
-      viewId = { "elementalist" Rgb 156 58 68 255 }
-      attr = {
-        DAMAGE 12
-        DEFENSE 8
-        SPELL_DAMAGE 16
-      }
-      body = {
-        type = Humanoid LARGE
-      }
-      chatReactionFriendly = "curses all dungeons"
-      chatReactionHostile = "\"Die!\""
-      maxLevelIncrease = {
-        SPELL 9
-      }
-      gender = FEMALE
+      viewId = { "cleric" }
+      spellSchools = { "healer" }
       name = {
-        name = "fire mage"
-        firstNameGen = "FIRST_FEMALE"
+        name = "cleric"
+        firstNameGen = "FIRST_MALE"
       }
-      spellSchools = { "fire" }
-      hatedByEffect = HATE_HUMANS
     }
-  "BATTLE_MAGE_PLAYER" inherit "FIRE_MAGE_PLAYER"
+  "ARTISAN"
     {
-      viewId = { "elementalist" Rgb 58 68 156 255 }
-      name = {
-        name = "battle mage"
-        firstNameGen = "FIRST_FEMALE"
-      }
-      spellSchools = { "mage" }
-    }
-  "GNOME_PLAYER"
-    {
-      viewId = { "gnome" }
+      viewId = { "artisan" }
       attr = {
         DAMAGE 10
         DEFENSE 10 
@@ -946,14 +922,13 @@
       chatReactionFriendly = "talks about crafting"
       chatReactionHostile = "\"Die!\""
       skills = {
-        LABORATORY 0.3
         WORKSHOP 0.6
         FORGE 0.6
         JEWELER 0.6
       }
       name = {
-        name = "gnome"
-        firstNameGen = "DWARF"
+        name = "artisan"
+        firstNameGen = "FIRST_MALE"
       }
     }
   "PESEANT"
@@ -1030,6 +1005,31 @@
         name = "knight"
       }
       hatedByEffect = HATE_HUMANS
+    }
+  "TEUTON" inherit "KNIGHT"
+    {
+      viewId = { "teuton" }
+      spells = { "healing" }
+      name = {
+        name = "Teutonic Knight"
+        firstNameGen = "GERMANIC"
+      }
+    }
+  "TEUTON_BOSS" inherit "TEUTON"
+    {
+      viewId = { "teuton_boss" }
+      name = {
+        name = "Teutonic Grand Master"
+        fullTitle = true
+        firstNameGen = "GERMANIC"
+      }
+    }
+  "FRIAR" inherit "CLERIC"
+    {
+      viewId = { "friar" }
+      name = {
+        name = "friar"
+      }
     }
   "JESTER"
     {

@@ -379,7 +379,7 @@
     "white_keeper"
     {
         {
-          ids = { "GNOME_PLAYER" }
+          ids = { "ARTISAN" }
           traits = { FIGHTER NO_AUTO_EQUIPMENT }
           frequency = 0.7
           requirements = {
@@ -424,28 +424,14 @@
           }
         }
         {
-          ids = { "FIRE_MAGE_PLAYER" }
+          ids = { "CLERIC" }
           traits = { FIGHTER }
           frequency = 0.3
           requirements = {
-            { 0.1 AttractionInfo 1 {FurnitureType "BOOKCASE_IRON"}}
+            { 0.1 AttractionInfo 1 {FurnitureType "BOOKCASE_WOOD"}}
             { 0.0 MinTurnRequirement 500 }
           }
           specialTraits = {
-             { 0.03 { AttrBonus SPELL_DAMAGE 4 AttrBonus DEFENSE -4}}
-             { 0.05 { ExtraTraining SPELL 2}}
-          }
-        }
-        {
-          ids = { "BATTLE_MAGE_PLAYER" }
-          traits = { FIGHTER }
-          frequency = 0.3
-          requirements = {
-            { 0.1 AttractionInfo 1 {FurnitureType "BOOKCASE_IRON"}}
-            { 0.0 MinTurnRequirement 500 }
-          }
-          specialTraits = {
-             { 0.03 { AttrBonus SPELL_DAMAGE 4 AttrBonus DEFENSE -4}}
              { 0.05 { ExtraTraining SPELL 2}}
           }
         }
@@ -489,6 +475,14 @@
           requirements = {
             { 0.3 AttractionInfo 1 {FurnitureType "ANGEL_SHRINE"}}
             { 0.0 CostInfo DEMON_PIETY 300 }
+          }
+        }
+        {
+          ids = { "TEUTON" }
+          traits = { FIGHTER }
+          requirements = {
+            { 0.0 RecruitmentInfo { "TEUTONS" } 3 FIGHTER }
+            { 1.0 CostInfo GOLD 150 }
           }
         }
         {

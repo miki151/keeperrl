@@ -457,6 +457,63 @@
       }
     }
   }
+  "TEUTONS"
+  {
+    settlement = {
+      type = CASTLE2
+      tribe = HUMAN
+      inhabitants = {
+        leader = { { "TEUTON_BOSS" } }
+        fighters = {
+          count = {6 9}
+          all = {
+            1 "TEUTON"
+          }
+        }
+        civilians = {
+          count = {2 5}
+          all = {
+            1 "FRIAR"
+          }
+        }
+      }
+      locationNameGen = "TOWN"
+      race = "Teutonic Knights"
+      stockpiles = {{ "gold" 140 "TREASURE_CHEST" }}
+      buildingId = "BRICK"
+      furniture = { "castleFurniture" }
+      outsideFeatures = "castleOutside"
+    }
+    config = {
+      immigrantInterval = 300
+      maxPopulation = 14
+      ghostProb = 0.1
+      spawnGhosts = 6
+      leaderAsFighter = true
+    }
+    behaviour = {
+      minPopulation = 0
+      minTeamSize = 5
+      triggers = {
+        RoomTrigger "THRONE" 0.0003
+        RoomTrigger "IMPALED_HEAD" 0.0001
+        SelfVictims
+        NumConquered 3
+        StolenItems
+        FinishOff
+        Proximity
+      }
+      attackBehaviour = KillLeader
+      ransom = 0.9 1000
+    }
+    immigrants = {
+      {
+        ids = {"TEUTON"}
+        traits = {FIGHTER}
+        frequency = 1
+      }
+    }
+  }
   "MINOTAUR"
   {
     settlement = {

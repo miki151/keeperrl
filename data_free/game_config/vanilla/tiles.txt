@@ -123,6 +123,11 @@
   { "knight" "@" ColorId LIGHT_GRAY }
   { "jester" "@" ColorId PINK }
   { "priest" "@" ColorId SKY_BLUE }
+  { "cleric" "@" ColorId WHITE }
+  { "teuton" "@" ColorId ALMOST_WHITE }
+  { "teuton_boss" "@" ColorId PINK }
+  { "artisan" "@" ColorId LIGHT_BROWN }
+  { "friar" "@" ColorId DARK_BROWN }
   { "warrior" "@" ColorId DARK_GRAY }
   { "shaman" "@" ColorId YELLOW }
   { "thief" "@" ColorId LIGHT_BROWN }

@@ -55,6 +55,7 @@
     { "unknown_monster" ColorId RED } "MAIN_DUNGEON" "Unknown" MAIN
 
     { "dwarf_baron" } "DWARVES" "Dwarves" ALLY
+    { "teuton_boss" } "TEUTONS" "Teutonic Knights" ALLY
 }
 
 # Villains for evil adventurers
