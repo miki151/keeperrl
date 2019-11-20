@@ -160,15 +160,19 @@ optional<string> Immigration::getMissingRequirement(const ImmigrantRequirement& 
         return "Requires a pregnant succubus"_s;
       },
       [&](const RecruitmentInfo& info) -> optional<string> {
-        auto col = info.findEnemy(collective->getGame());
-        if (!col)
+        auto cols = info.findEnemy(collective->getGame());
+        if (cols.empty())
           return "Ally doesn't exist"_s;
-        if (!collective->isKnownVillainLocation(col))
-          return "Ally hasn't been discovered"_s;
-        else if (info.getAvailableRecruits(collective->getGame(), immigrantInfo.getNonRandomId(0)).empty())
-          return "Ally doesn't have recruits available at this moment"_s;
-        else
-          return none;
+        optional<string> result;
+        for (auto col : cols) {
+          if (!collective->isKnownVillainLocation(col))
+            result = "Ally hasn't been discovered"_s;
+          else if (info.getAvailableRecruits(collective->getGame(), immigrantInfo.getNonRandomId(0)).empty())
+            result = "Ally doesn't have recruits available at this moment"_s;
+          else
+            return none;
+        }
+        return result;
       },
       [&](const TutorialRequirement& t) -> optional<string> {
         if ((int) collective->getGame()->getPlayerControl()->getTutorial()->getState() < (int) t.state)

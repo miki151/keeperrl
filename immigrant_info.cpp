@@ -221,8 +221,8 @@ ImmigrantInfo& ImmigrantInfo::addOneOrMoreTraits(double chance, vector<LastingEf
 
 vector<Creature*> RecruitmentInfo::getAllRecruits(WGame game, CreatureId id) const {
   vector<Creature*> ret;
-  if (WCollective col = findEnemy(game))
-    ret = col->getCreatures().filter([&](const Creature* c) { return c->getAttributes().getCreatureId() == id; });
+  for (auto col : findEnemy(game))
+    ret.append(col->getCreatures().filter([&](const Creature* c) { return c->getAttributes().getCreatureId() == id; }));
   return ret;
 }
 
@@ -231,12 +231,13 @@ vector<Creature*> RecruitmentInfo::getAvailableRecruits(WGame game, CreatureId i
   return getPrefix(ret, max(0, (int)ret.size() - minPopulation));
 }
 
-WCollective RecruitmentInfo::findEnemy(WGame game) const {
+vector<WCollective> RecruitmentInfo::findEnemy(WGame game) const {
+  vector<WCollective> ret;
   for (WCollective col : game->getCollectives())
     if (auto id = col->getEnemyId())
       if (enemyId.contains(*id))
-        return col;
-  return nullptr;
+        ret.push_back(col);
+  return ret;
 }
 
 #include "pretty_archive.h"

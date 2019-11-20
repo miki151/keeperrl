@@ -1287,7 +1287,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
           requirements.push_back("Requires a pregnant minion");
         },
         [&](const RecruitmentInfo& info) {
-          if (info.findEnemy(getGame()))
+          if (!info.findEnemy(getGame()).empty())
             requirements.push_back("Ally must be discovered and have recruits available");
           else
             requirements.push_back("Recruit is not available in this game");
