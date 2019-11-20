@@ -45,7 +45,6 @@ bool areResourceCounts(const vector<ResourceDistribution>& resources, int depth)
 
 optional<string> ContentFactory::readCreatureFactory(const GameConfig* config, KeyVerifier* keyVerifier) {
   map<PrimaryId<CreatureId>, CreatureAttributes> attributes;
-  map<CreatureId, CreatureInventory> inventory;
   if (auto res = config->readObject(attributes, GameConfigId::CREATURE_ATTRIBUTES, keyVerifier))
     return *res;
   for (auto& attr : attributes)
@@ -53,15 +52,6 @@ optional<string> ContentFactory::readCreatureFactory(const GameConfig* config, K
       auto value = attr.second.getSkills().getValue(skill);
       if (value < 0 || value > 1)
         return "Skill value for "_s + attr.first.data() + " must be between 0 and one, inclusive.";
-    }
-  vector<pair<vector<CreatureId>, CreatureInventory>> input;
-  if (auto res = config->readObject(input, GameConfigId::CREATURE_INVENTORY, keyVerifier))
-    return *res;
-  for (auto& elem : input)
-    for (auto& id : elem.first) {
-      if (inventory.count(id))
-        return "CreatureId appears more than once: "_s + id.data();
-      inventory.insert(make_pair(id, elem.second));
     }
   map<PrimaryId<SpellSchoolId>, SpellSchool> spellSchools;
   vector<Spell> spells;
@@ -78,7 +68,7 @@ optional<string> ContentFactory::readCreatureFactory(const GameConfig* config, K
   keyVerifier->addKey<CreatureId>("KRAKEN");
   for (auto& elem : CreatureFactory::getSpecialParams())
     keyVerifier->addKey<CreatureId>(elem.first.data());
-  creatures = CreatureFactory(std::move(nameGenerator), convertKeys(std::move(attributes)), std::move(inventory),
+  creatures = CreatureFactory(std::move(nameGenerator), convertKeys(std::move(attributes)),
       convertKeys(std::move(spellSchools)), std::move(spells));
   creatures.setContentFactory(this);
   return none;

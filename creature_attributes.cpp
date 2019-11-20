@@ -68,7 +68,7 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(NAMED(body), OPTION(deathDescription), NAMED(hatedByEffect), OPTION(instantPrisoner));
   ar(OPTION(cantEquip), OPTION(courage), OPTION(canJoinCollective), OPTION(genderAlternatives));
   ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(skills), OPTION(spellSchools), OPTION(spells));
-  ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel));
+  ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel), OPTION(inventory));
   ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience));
 }
 

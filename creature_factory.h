@@ -55,7 +55,7 @@ class CreatureFactory {
   const map<SpellSchoolId, SpellSchool>& getSpellSchools() const;
   const vector<Spell>& getSpells() const;
   const Spell* getSpell(SpellId) const;
-  CreatureFactory(NameGenerator, map<CreatureId, CreatureAttributes>, map<CreatureId, CreatureInventory>,
+  CreatureFactory(NameGenerator, map<CreatureId, CreatureAttributes>,
       map<SpellSchoolId, SpellSchool>, vector<Spell>);
   ~CreatureFactory();
   CreatureFactory(const CreatureFactory&) = delete;
@@ -86,7 +86,6 @@ class CreatureFactory {
   map<CreatureId, ViewId> idMap;
   HeapAllocated<NameGenerator> SERIAL(nameGenerator);
   map<CreatureId, CreatureAttributes> SERIAL(attributes);
-  map<CreatureId, CreatureInventory> SERIAL(inventory);
   vector<ItemType> getDefaultInventory(CreatureId) const;
   map<SpellSchoolId, SpellSchool> SERIAL(spellSchools);
   vector<Spell> SERIAL(spells);

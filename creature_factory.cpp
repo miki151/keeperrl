@@ -53,7 +53,7 @@
 #include "effect_type.h"
 #include "item_types.h"
 
-SERIALIZE_DEF(CreatureFactory, nameGenerator, attributes, inventory, spellSchools, spells)
+SERIALIZE_DEF(CreatureFactory, nameGenerator, attributes, spellSchools, spells)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)
 
 class BoulderController : public Monster {
@@ -204,16 +204,15 @@ const vector<Spell>& CreatureFactory::getSpells() const {
   return spells;
 }
 
-CreatureFactory::CreatureFactory(NameGenerator n, map<CreatureId, CreatureAttributes> a, map<CreatureId, CreatureInventory> i,
+CreatureFactory::CreatureFactory(NameGenerator n, map<CreatureId, CreatureAttributes> a,
     map<SpellSchoolId, SpellSchool> s, vector<Spell> sp)
-  : nameGenerator(std::move(n)), attributes(a), inventory(i), spellSchools(s), spells(sp) {}
+  : nameGenerator(std::move(n)), attributes(a), spellSchools(s), spells(sp) {}
 
 CreatureFactory::~CreatureFactory() {
 }
 
 void CreatureFactory::merge(CreatureFactory f) {
   mergeMap(std::move(f.attributes), attributes);
-  mergeMap(std::move(f.inventory), inventory);
   mergeMap(std::move(f.spellSchools), spellSchools);
   append(spells, std::move(f.spells));
   nameGenerator->merge(std::move(*f.nameGenerator));
@@ -821,16 +820,13 @@ PCreature CreatureFactory::getGhost(Creature* creature) {
 }
 
 vector<ItemType> CreatureFactory::getDefaultInventory(CreatureId id) const {
-  if (inventory.count(id)) {
-    auto& inventoryGen = inventory.at(id);
-    vector<ItemType> items;
-    for (auto& elem : inventoryGen.elems)
-      if (Random.chance(elem.chance))
-        for (int i : Range(Random.get(elem.countMin, elem.countMax + 1)))
-          items.push_back(ItemType(elem.type).setPrefixChance(elem.prefixChance));
-    return items;
-  } else
-    return {};
+  auto& inventoryGen = attributes.at(id).inventory;
+  vector<ItemType> items;
+  for (auto& elem : inventoryGen.elems)
+    if (Random.chance(elem.chance))
+      for (int i : Range(Random.get(elem.countMin, elem.countMax + 1)))
+        items.push_back(ItemType(elem.type).setPrefixChance(elem.prefixChance));
+  return items;
 }
 
 PCreature CreatureFactory::fromId(CreatureId id, TribeId t) {

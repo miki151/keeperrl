@@ -18,8 +18,6 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "technology";
     case GameConfigId::CREATURE_ATTRIBUTES:
       return "creatures";
-    case GameConfigId::CREATURE_INVENTORY:
-      return "creature_inventory";
     case GameConfigId::Z_LEVELS:
       return "zlevels";
     case GameConfigId::RESOURCE_COUNTS:

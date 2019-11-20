@@ -67,7 +67,6 @@ ADD_IMP(vector<pair<string, std::array<vector<WorkshopItemCfg>, EnumInfo<Worksho
 ADD_IMP(map<string, vector<ImmigrantInfo>>)
 ADD_IMP(map<string, string>)
 ADD_IMP(map<PrimaryId<CreatureId>, CreatureAttributes>)
-ADD_IMP(vector<pair<vector<CreatureId>, CreatureInventory>>)
 ADD_IMP(Technology)
 ADD_IMP(array<vector<ZLevelInfo>, 3>)
 ADD_IMP(vector<ResourceDistribution>)

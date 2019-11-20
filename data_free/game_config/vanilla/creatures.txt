@@ -39,8 +39,12 @@
       }
       spellSchools = { "mage" }
       spells = { "healing" }
+      inventory = {
+        # Here comes a list of items. The format of each element is defined in creature_inventory.h
+        { Simple "Robe"}
+        # Take a look a CYCLOPS for a more detailed example.
+      }
     }
-
   "KEEPER_MAGE_F" inherit "KEEPER_MAGE"
     {
       viewId = { "keeper_f1" }
@@ -77,6 +81,11 @@
       }
       spellSchools = { "fighter" }
       spells = { "healing" }
+      inventory = {
+        { Simple "LeatherArmor"}
+        { Simple "LeatherHelm"}
+        { Simple "Sword"}
+      }
     }
   "KEEPER_KNIGHT_F" inherit "KEEPER_KNIGHT"
     {
@@ -115,6 +124,11 @@
       hatedByEffect = HATE_HUMANS
       spellSchools = { "fighter" }
       spells = { "healing" }
+      inventory = {
+        { Simple "LeatherArmor"}
+        { Simple "LeatherHelm"}
+        { Simple "Sword"}
+      }
     }
   "KEEPER_KNIGHT_WHITE_F" inherit "KEEPER_KNIGHT_WHITE"
     {
@@ -152,6 +166,15 @@
       }
       hatedByEffect = HATE_HUMANS
       spellSchools = { "fighter" "mage" }
+      inventory = {
+        { Simple "FirstAidKit" 2 4 }
+        { Simple "Knife"}
+        { Simple "Sword"}
+        { Simple "LeatherGloves"}
+        { Simple "LeatherArmor"}
+        { Simple "LeatherHelm"}
+        { Simple "GoldPiece" 16 26 }
+      }
     }
   "ADVENTURER_F" inherit "ADVENTURER"
     {
@@ -214,6 +237,12 @@
         name = "bandit"
       }
       hatedByEffect = HATE_HUMANS
+      inventory = {
+        { Simple "Sword"}
+        { type = Potion Heal FLESH chance = 0.7 }
+        { type = Simple "Torch" chance = 0.3 }
+        { type = Simple "Bow" chance = 0.05 }
+      }
     }
   "RAT_SOLDIER"
     {
@@ -232,6 +261,12 @@
       }
       name = {
         name = "rat soldier"
+      }
+      inventory = {
+        { Simple "Sword"}
+        { type = Potion Heal FLESH chance = 0.7 }
+        { type = Simple "Torch" chance = 0.3 }
+        { type = Simple "Bow" chance = 0.05 }
       }
     }
   "RAT_LADY"
@@ -271,6 +306,12 @@
       }
       name = {
         name = "rat king"
+      }
+      inventory = {
+        { Simple "Sword"}
+        { type = Potion Heal FLESH chance = 0.7 }
+        { type = Simple "Torch" chance = 0.3 }
+        { type = Simple "Bow" chance = 0.05 }
       }
     }
   "GHOST"
@@ -487,6 +528,21 @@
         SPELL 4
       }
       hatedByEffect = HATE_HUMANS
+      inventory = {
+        { Simple "Knife"}
+        { Potion Heal FLESH }
+        { Potion Lasting SLEEP }
+        { Potion Lasting SLOWED }
+        { Potion Lasting BLIND }
+        { Potion Lasting INVISIBLE }
+        { Potion Lasting POISON }
+        { Potion Lasting SPEED }
+        { type = Glyph ARMOR JoinPrefixes {
+            LastingEffect MAGIC_VULNERABILITY
+            LastingEffect MELEE_VULNERABILITY
+            LastingEffect RANGED_VULNERABILITY
+            LastingEffect INVISIBLE } chance = 0.3 }
+      }
     }
   "WITCHMAN"
     {
@@ -510,6 +566,14 @@
       chatReactionFriendly = "curses all monsters"
       chatReactionHostile = "\"Die!\""
       hatedByEffect = HATE_HUMANS
+      inventory = {
+        { Simple "Sword"}
+        { Simple "LeatherArmor"}
+        { Simple "LeatherBoots"}
+        { type = Potion Heal FLESH chance = 0.7 }
+        { Potion Lasting SPEED 3 5 }
+        { Simple "GoldPiece" 60 80 }
+      }
     }
   "CYCLOPS"
     {
@@ -536,6 +600,15 @@
       }
       maxLevelIncrease = {
         MELEE 5
+      }
+      inventory = {
+        { Simple "HeavyClub"}
+        # You can either list the values in the order defined in SERIALIZE_ALL or 
+        { Simple "GoldPiece" 40 80 }
+        # Put them in any order in the format "key = value"
+        { countMin = 10 countMax = 15 type = Simple "GoldPiece" chance = 0.1}
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       }
     }
   "DEMON_DWELLER"
@@ -571,6 +644,9 @@
         MELEE 4
         SPELL 4
       }
+      inventory = {
+        { Simple "GoldPiece" 5 10 }
+      }
     }
   "DEMON_LORD"
     {
@@ -600,9 +676,16 @@
         name = "Demon Lord"
         firstNameGen = "DEMON"
         groupName = "pack"
-       }
-     maxLevelIncrease = {
+      }
+      maxLevelIncrease = {
         SPELL 7
+      }
+      inventory = {
+        { type = Simple "Sword" prefixChance = 0.1 }
+        { type = Glyph ARMOR LastingEffect MAGIC_RESISTANCE chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect SPEED chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect NO_CARRY_LIMIT chance = 0.3 }
+        { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 20 AttackerEffect Suicide DIE} chance = 0.3 }
       }
     }
   "MINOTAUR"
@@ -624,6 +707,11 @@
       }
       name = {
         name = "minotaur"
+      }
+      inventory = {
+        { Simple "BattleAxe"}
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 5 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 5 chance = 0.3 }
       }
     }
   "SOFT_MONSTER"
@@ -739,6 +827,14 @@
         firstNameGen = "DRAGON"
       }
       spells = { "healing" "deception" "haste" "cure poison" }
+      inventory = {
+        { Simple "GoldPiece" 60 100 }
+        { type = Glyph WEAPON VictimEffect 0.3 Lasting POISON chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect POISON_RESISTANT chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect REGENERATION chance = 0.3 }
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      }
     }
   "RED_DRAGON"
     {
@@ -770,6 +866,14 @@
         stackName = "dragon"
       }
       spells = { "healing" "deception" "haste" "cure poison" "fire breath"}
+      inventory = {
+        { Simple "GoldPiece" 120 200 }
+        { type = Glyph WEAPON VictimEffect 0.3 Fire chance = 0.3 }
+        { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
+        { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      }
     }
   "BLACK_DRAGON"
     {
@@ -801,6 +905,14 @@
         stackName = "dragon"
       }
       spells = { "healing" "haste" "cure poison" "black dragon blindness"}
+      inventory = {
+        { Simple "GoldPiece" 120 200 }
+        { type = Glyph WEAPON VictimEffect 0.3 Lasting BLIND chance = 1.0 }
+        { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
+        { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      }
     }
   "WHITE_DRAGON" inherit "BLACK_DRAGON"
     {
@@ -827,6 +939,14 @@
         stackName = "dragon"
       }
       spells = { "healing" "haste" "cure poison" "ice cone"}
+      inventory = {
+        { Simple "GoldPiece" 120 200 }
+        { type = Glyph WEAPON VictimEffect 0.3 Lasting FROZEN chance = 1.0 }
+        { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
+        { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      }
     }
   "KNIGHT_PLAYER"
     {
@@ -1025,6 +1145,14 @@
         name = "knight"
       }
       hatedByEffect = HATE_HUMANS
+      inventory = {
+        { Simple "Sword"}
+        { Simple "ChainArmor"}
+        { Simple "LeatherBoots"}
+        { type = Simple "Torch" chance = 0.3 }
+        { type = Potion Heal FLESH chance = 0.7 }
+        { Simple "GoldPiece" 6 16 }
+      }
     }
   "TEUTON" inherit "KNIGHT"
     {
@@ -1096,6 +1224,15 @@
         fullTitle = true
       }
       hatedByEffect = HATE_HUMANS
+      inventory = {
+        { type = Simple "BattleAxe" prefixChance = 1 }
+        { Simple "ChainArmor"}
+        { Simple "IronHelm"}
+        { Simple "IronBoots"}
+        { Potion Heal FLESH 3 5 }
+        { type = Simple "Torch" chance = 0.3 }
+        { Simple "GoldPiece" 140 200 }
+      }
     }
   "ARCHER"
     {
@@ -1117,6 +1254,15 @@
         name = "archer"
       }
       hatedByEffect = HATE_HUMANS
+      inventory = {
+        { Simple "Bow"}
+        { Simple "Knife"}
+        { Simple "LeatherArmor"}
+        { Simple "LeatherBoots"}
+        { type = Simple "Torch" chance = 0.3 }
+        { type = Potion Heal FLESH chance = 0.7 }
+        { Simple "GoldPiece" 4 10 }
+      }
     }
   "PRIEST"
     {
@@ -1142,6 +1288,11 @@
       }
       spells = { "advanced healing" "haste" "defense bonus" "directed blast" "magic missile" }
       hatedByEffect = HATE_HUMANS
+      inventory = {
+        { Simple "IronStaff"}
+        { Simple "LeatherBoots"}
+        { type = Simple "Robe" prefixChance = 1 }
+      }
     }
   "WARRIOR"
     {
@@ -1165,6 +1316,11 @@
         name = "warrior"
       }
       hatedByEffect = HATE_HUMANS
+      inventory = {
+        { Simple "LeatherArmor"}
+        { Simple "Club"}
+        { Simple "GoldPiece" 2 5 }
+      }
     }
   "SHAMAN"
     {
@@ -1194,6 +1350,18 @@
         name = "shaman"
       }
       hatedByEffect = HATE_HUMANS
+      inventory = {
+        { Simple "LeatherArmor"}
+        { Simple "Club"}
+        { Simple "GoldPiece" 80 120 }
+        { type = Glyph ARMOR ItemAttrBonus SPELL_DAMAGE 5 chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect FLYING chance = 0.3 }
+        { type = Glyph ARMOR JoinPrefixes { LastingEffect BLIND LastingEffect INVISIBLE} chance = 0.3 }
+        { type = Glyph WEAPON VictimEffect 0.2 DestroyEquipment chance = 0.3 }
+        { type = Glyph WEAPON VictimEffect 1.0 SilverDamage chance = 0.3 }
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      }
     }
   "THIEF" inherit "WARRIOR"
     {
@@ -1312,6 +1480,10 @@
         pluralName = "children"
       }
       hatedByEffect = HATE_HUMANS
+      inventory = {
+        { Simple "BagOfCandies"}
+        { Simple "HalloweenCostume"}
+      }
     }
   "CLAY_GOLEM"
     {
@@ -1548,6 +1720,11 @@
       chatReactionFriendly = "\"There are times when you simply nnot refuse a drink!\""
       chatReactionHostile = "\"There are times when you simply nnot refuse a drink!\""
       hatedByEffect = HATE_UNDEAD
+      inventory = {
+        { Simple "Robe"}
+        { Simple "IronStaff"}
+        { type = Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 4 chance = 0.3 }
+      }
     }
   "MUMMY"
     {
@@ -1599,6 +1776,10 @@
         firstNameGen = "ORC"
       }
       hatedByEffect = HATE_GREENSKINS
+      inventory = {
+        { Simple "Club"}
+        { Simple "LeatherArmor"}
+      }
     }
   "ORC_MAGE"
     {
@@ -1626,6 +1807,10 @@
         firstNameGen = "ORC"
       }
       hatedByEffect = HATE_GREENSKINS
+      inventory = {
+        { Simple "WoodenStaff"}
+        { Simple "LeatherArmor"}
+      }
     }
   "ORC_SHAMAN" inherit "ORC_MAGE"
     {
@@ -1689,6 +1874,9 @@
         firstNameGen = "ORC"
       }
       hatedByEffect = HATE_GREENSKINS
+      inventory = {
+        { Simple "Bow"}
+      }
     }
   "KOBOLD"
     {
@@ -1707,6 +1895,9 @@
       chatReactionHostile = "\"Die!\""
       name = {
         name = "kobold"
+      }
+      inventory = {
+        { Simple "Spear"}
       }
     }
   "GNOME"
@@ -1746,6 +1937,9 @@
       name = {
         name = "gnome chief"
       }
+      inventory = {
+        { Simple "Sword"}
+      }
     }
   "GOBLIN"
     {
@@ -1774,6 +1968,10 @@
         firstNameGen = "ORC"
       }
       hatedByEffect = HATE_GREENSKINS
+      inventory = {
+        { Simple "Club"}
+        { type = Simple "LeatherBoots" chance = 0.3 }
+      }
     }
   "IMP"
     {
@@ -1829,6 +2027,9 @@
         MELEE 12
       }
       hatedByEffect = HATE_GREENSKINS
+      inventory = {
+        { Simple "HeavyClub"}
+      }
     }
   "CHICKEN"
     {
@@ -1879,6 +2080,14 @@
       chatReactionFriendly = "curses all orcs"
       chatReactionHostile = "\"Die!\""
       hatedByEffect = HATE_DWARVES
+      inventory = {
+        { type = Simple "BattleAxe", alternative = Simple "WarHammer" }
+        { Simple "ChainArmor"}
+        { type = Simple "IronHelm" chance = 0.5 }
+        { type = Simple "IronBoots" chance = 0.3 }
+        { type = Simple "Torch" chance = 0.3 }
+        { Simple "GoldPiece" 2 6 }
+      }
     }
   "DWARF_FEMALE"
     {
@@ -1934,6 +2143,17 @@
         firstNameGen = "DWARF"
       }
       hatedByEffect = HATE_DWARVES
+      inventory = {
+        { type = Simple "BattleAxe", alternative = Simple "WarHammer" prefixChance = 1 }
+        { Potion Heal FLESH 2 3 }
+        { type = Simple "ChainArmor" prefixChance = 1 }
+        { Simple "IronBoots"}
+        { Simple "IronHelm"}
+        { type = Simple "Torch" chance = 0.3 }
+        { Simple "GoldPiece" 80 120 }
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 4 chance = 0.3 }
+        { type = Glyph WEAPON JoinPrefixes { LastingEffect BAD_BREATH VictimEffect 0.2 Lasting PANIC } chance = 0.3 }
+      }
     }
   "LIZARDMAN"
     {
@@ -1964,6 +2184,10 @@
         name = "lizardman"
         pluralName = "lizardmen"
       }
+      inventory = {
+        { Simple "LeatherArmor"}
+        { Simple "GoldPiece" 2 4 }
+      }
     }
   "LIZARDLORD"
     {
@@ -1993,6 +2217,11 @@
       courage = 1
       name = {
         name = "lizardman chief"
+      }
+      inventory = {
+        { Simple "LeatherArmor"}
+        { Potion RegrowBodyPart }
+        { Simple "GoldPiece" 50 90 }
       }
     }
   "ELF"
@@ -2051,6 +2280,12 @@
         name = "elven archer"
       }
       hatedByEffect = HATE_ELVES
+      inventory = {
+        { Simple "ElvenSword"}
+        { Simple "LeatherArmor"}
+        { Simple "Bow"}
+        { Simple "GoldPiece" 2 6 }
+      }
     }
   "ELF_CHILD"
     {
@@ -2101,6 +2336,19 @@
         name = "elf lord"
       }
       hatedByEffect = HATE_ELVES
+      inventory = {
+        { type = Simple "ElvenSword" prefixChance = 1 }
+        { Simple "LeatherArmor"}
+        { Simple "ElvenBow"}
+        { Simple "GoldPiece" 80 120 }
+        { Scroll Escape }
+        { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 10 LastingEffect INSANITY} chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect NIGHT_VISION chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect ELF_VISION chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect REGENERATION chance = 0.3 }
+        { type = Glyph WEAPON LastingEffect DARKNESS_SOURCE chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 4 chance = 0.3 }
+      }
     }
   "DARK_ELF"
     {
@@ -2156,6 +2404,11 @@
         pluralName = "dark elves"
       }
       hatedByEffect = HATE_ELVES
+      inventory = {
+        { Simple "ElvenSword"}
+        { Simple "LeatherArmor"}
+        { Simple "GoldPiece" 2 6 }
+      }
     }
   "DARK_ELF_CHILD"
     {
@@ -2201,6 +2454,19 @@
         name = "dark elf lord"
       }
       hatedByEffect = HATE_ELVES
+      inventory = {
+        { type = Simple "ElvenSword" prefixChance = 1 }
+        { Simple "LeatherArmor"}
+        { Simple "ElvenBow"}
+        { Simple "GoldPiece" 80 120 }
+        { Scroll Escape }
+        { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 10 LastingEffect INSANITY} chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect NIGHT_VISION chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect ELF_VISION chance = 0.3 }
+        { type = Glyph ARMOR LastingEffect REGENERATION chance = 0.3 }
+        { type = Glyph WEAPON LastingEffect DARKNESS_SOURCE chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 4 chance = 0.3 }
+      }
     }
   "DRIAD"
     {
@@ -2225,6 +2491,9 @@
       }
       name = {
         name = "dryad"
+      }
+      inventory = {
+        { Simple "Bow"}
       }
     }
   "HORSE"
@@ -2764,6 +3033,11 @@
         firstNameGen = "FIRST_FEMALE"
       }
       hatedByEffect = HATE_HUMANS
+      inventory = {
+        { Simple "IronStaff"}
+        { Simple "Torch"}
+        { type = Glyph ARMOR LastingEffect FIRE_RESISTANT chance = 0.3 }
+      }
     }
   "FIRE_ELEMENTAL"
     {
@@ -2893,6 +3167,11 @@
       name = {
         name = "angel"
       }
+      inventory = {
+        { type = Simple "Sword" prefixChance = 0.1 }
+        { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
+        { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      }
     }
   "BAT"
     {
@@ -2936,6 +3215,9 @@
       name = {
         name = "Death"
       }
+      inventory = {
+        { Simple "Scythe"}
+      }
     }
   "SHOPKEEPER"
     {
@@ -2952,6 +3234,13 @@
       name = {
         name = "shopkeeper"
         firstNameGen = "FIRST_MALE"
+      }
+      inventory = {
+        { Simple "GoldPiece" 20 60 }
+        { Simple "Sword"}
+        { Simple "LeatherArmor"}
+        { Simple "LeatherBoots"}
+        { Potion Heal FLESH 2 3 }
       }
     }
   "ADOXIE_HEAD"
