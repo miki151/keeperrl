@@ -483,8 +483,18 @@
           frequency = 0.2
           spawnLocation = FurnitureType "ANGEL_SHRINE"
           requirements = {
-            { 0.3 AttractionInfo 1 {FurnitureType "ANGEL_SHRINE"}}
+            { 0.3 AttractionInfo 2 {FurnitureType "ANGEL_SHRINE"}}
             { 0.0 CostInfo DEMON_PIETY 1000 }
+          }
+        }
+        {
+          ids = { "ANGEL" }
+          traits = { FIGHTER }
+          frequency = 0.15
+          spawnLocation = FurnitureType "ANGEL_SHRINE"
+          requirements = {
+            { 0.3 AttractionInfo 2 {FurnitureType "ANGEL_SHRINE"}}
+            { 0.0 CostInfo DEMON_PIETY 3000 }
           }
         }
         {
