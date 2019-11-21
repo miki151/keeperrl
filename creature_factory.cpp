@@ -758,22 +758,22 @@ ControllerFactory getController(CreatureId id, MonsterAIFactory normalFactory) {
 
 const map<CreatureId, CreatureFactory::SpecialParams>& CreatureFactory::getSpecialParams() {
   static map<CreatureId, CreatureFactory::SpecialParams> ret = {
-    { CreatureId("SPECIAL_BLBN"), {false, true, true, false}},
-    { CreatureId("SPECIAL_BLBW"), {false, true, true, true}},
-    { CreatureId("SPECIAL_BLGN"), {false, true, false, false}},
-    { CreatureId("SPECIAL_BLGW"), {false, true, false, true}},
-    { CreatureId("SPECIAL_BMBN"), {false, false, true, false}},
-    { CreatureId("SPECIAL_BMBW"), {false, false, true, true}},
-    { CreatureId("SPECIAL_BMGN"), {false, false, false, false}},
-    { CreatureId("SPECIAL_BMGW"), {false, false, false, true}},
-    { CreatureId("SPECIAL_HLBN"), {true, true, true, false}},
-    { CreatureId("SPECIAL_HLBW"), {true, true, true, true}},
-    { CreatureId("SPECIAL_HLGN"), {true, true, false, false}},
-    { CreatureId("SPECIAL_HLGW"), {true, true, false, true}},
-    { CreatureId("SPECIAL_HMBN"), {true, false, true, false}},
-    { CreatureId("SPECIAL_HMBW"), {true, false, true, true}},
-    { CreatureId("SPECIAL_HMGN"), {true, false, false, false}},
-    { CreatureId("SPECIAL_HMGW"), {true, false, false, true}},
+    { CreatureId("SPECIAL_BLBN"), {false, true, true, false, {}}},
+    { CreatureId("SPECIAL_BLBW"), {false, true, true, true, {}}},
+    { CreatureId("SPECIAL_BLGN"), {false, true, false, false, {}}},
+    { CreatureId("SPECIAL_BLGW"), {false, true, false, true, {}}},
+    { CreatureId("SPECIAL_BMBN"), {false, false, true, false, {}}},
+    { CreatureId("SPECIAL_BMBW"), {false, false, true, true, {}}},
+    { CreatureId("SPECIAL_BMGN"), {false, false, false, false, {}}},
+    { CreatureId("SPECIAL_BMGW"), {false, false, false, true, {}}},
+    { CreatureId("SPECIAL_HLBN"), {true, true, true, false, {}}},
+    { CreatureId("SPECIAL_HLBW"), {true, true, true, true, {}}},
+    { CreatureId("SPECIAL_HLGN"), {true, true, false, false, {}}},
+    { CreatureId("SPECIAL_HLGW"), {true, true, false, true, {}}},
+    { CreatureId("SPECIAL_HMBN"), {true, false, true, false, {}}},
+    { CreatureId("SPECIAL_HMBW"), {true, false, true, true, {}}},
+    { CreatureId("SPECIAL_HMGN"), {true, false, false, false, {}}},
+    { CreatureId("SPECIAL_HMGW"), {true, false, false, true, {}}},
   };
   return ret;
 }
@@ -820,7 +820,9 @@ PCreature CreatureFactory::getGhost(Creature* creature) {
 }
 
 vector<ItemType> CreatureFactory::getDefaultInventory(CreatureId id) const {
-  auto& inventoryGen = attributes.at(id).inventory;
+  auto& inventoryGen = getSpecialParams().count(id)
+      ? getSpecialParams().at(id).inventory
+      : attributes.at(id).inventory;
   vector<ItemType> items;
   for (auto& elem : inventoryGen.elems)
     if (Random.chance(elem.chance))

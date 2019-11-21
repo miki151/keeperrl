@@ -21,6 +21,7 @@
 #include "spell_school.h"
 #include "creature_id.h"
 #include "spell_school_id.h"
+#include "creature_inventory.h"
 
 class Creature;
 class MonsterAIFactory;
@@ -72,6 +73,7 @@ class CreatureFactory {
     bool large;
     bool living;
     bool wings;
+    CreatureInventory inventory;
   };
   static const map<CreatureId, SpecialParams>& getSpecialParams();
   void initializeAttributes(CreatureId, CreatureAttributes&);
