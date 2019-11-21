@@ -1296,6 +1296,9 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         },
         [&](const MinTurnRequirement&) {
         },
+        [&](const AssembledRequirement&) {
+          requirements.push_back("Must be crafted at a workshop");
+        },
         [&](const NegateRequirement&) {
         }
     ));

@@ -8,6 +8,7 @@
 #include "tech_id.h"
 #include "custom_item_id.h"
 #include "furniture_type.h"
+#include "creature_id.h"
 
 #define ITEM_TYPE_INTERFACE\
   ItemAttributes getAttributes(const ContentFactory*) const
@@ -75,8 +76,13 @@ struct EventPoem {
   COMPARE_ALL(eventName)
   ITEM_TYPE_INTERFACE;
 };
+struct Assembled {
+  CreatureId creature;
+  COMPARE_ALL(creature)
+  ITEM_TYPE_INTERFACE;
+};
 using Simple = CustomItemId;
-MAKE_VARIANT(ItemTypeVariant, Scroll, Potion, Mushroom, Amulet, Ring, TechBook, TrapItem,  Intrinsic, Glyph, Simple, FireScroll, Poem, EventPoem);
+MAKE_VARIANT(ItemTypeVariant, Scroll, Potion, Mushroom, Amulet, Ring, TechBook, TrapItem,  Intrinsic, Glyph, Simple, FireScroll, Poem, EventPoem, Assembled);
 
 }
 

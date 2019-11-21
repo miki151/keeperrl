@@ -98,9 +98,9 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const PlayerCrea
 AvatarInfo getQuickGameAvatar(View* view, const PlayerCreaturesInfo* creatures, CreatureFactory* creatureFactory) {
   auto keeperCreatures = creatures->first;
   AvatarInfo ret;
-  ret.playerCreature = creatureFactory->fromId(keeperCreatures[2].creatureId[0], TribeId::getDarkKeeper());
+  ret.playerCreature = creatureFactory->fromId(keeperCreatures[3].creatureId[0], TribeId::getDarkKeeper());
   ret.playerCreature->getName().setBare("Keeper");
-  ret.creatureInfo = std::move(keeperCreatures[2]);
+  ret.creatureInfo = std::move(keeperCreatures[3]);
   ret.tribeAlignment = TribeAlignment::EVIL;
   return ret;
 }

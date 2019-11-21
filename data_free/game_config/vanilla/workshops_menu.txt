@@ -123,6 +123,24 @@
 {
 }
 
+"gnomes"
+# Workshop
+{
+    {{Assembled "AUTOMATON_WORKER"}      6       WOOD 20    "automatons"}
+}
+
+# Forge
+{
+}
+
+# Lab
+{
+}
+
+# Jeweller
+{
+}
+
 # Add more groups here, remember that there need to be 4 lists in each group, each for each workshop type.
 # And you need to add your new group to your keeper in player_creatures.txt
 

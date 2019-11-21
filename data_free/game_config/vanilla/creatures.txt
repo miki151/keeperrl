@@ -1608,6 +1608,28 @@
         name = "automaton"
       }
     }
+  "AUTOMATON_WORKER"
+    {
+      viewId = { "automaton_worker" }
+      attr = {
+        DAMAGE 5
+        DEFENSE 10
+      }
+      permanentEffects = {
+        MELEE_RESISTANCE 1
+      }
+      body = {
+        type = Humanoid MEDIUM
+        material = WOOD
+      }
+      cantEquip = true
+      skills = {
+        DIGGING 1.0
+      }
+      name = {
+        name = "automaton worker"
+      }
+    }
   "ZOMBIE"
     {
       viewId = { "zombie" }
@@ -1911,7 +1933,8 @@
         type = Humanoid MEDIUM
       }
       skills = {
-        JEWELER 0.5
+        WORKSHOP 0.5
+        FORGE 0.5
       }
       chatReactionFriendly = "talks about digging"
       chatReactionHostile = "\"Die!\""

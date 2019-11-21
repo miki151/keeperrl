@@ -177,13 +177,22 @@
 
     { Furniture {{ "FORGE" }      IRON 20 }                      "Forge"             "Crafting"
         "Produces metal weapons and armor."    0 { TechId "iron working" }}
+  }
 
+  "laboratory"
+  {
     { Furniture {{ "LABORATORY" } STONE 10 }                     "Laboratory"        "Crafting"
         "Produces magical potions."            0 { TechId "alchemy" }}
+  }
 
+  "jeweller"
+  {
     { Furniture {{ "JEWELLER" }   WOOD 12 }                      "Jeweller"          "Crafting"
         "Produces magical rings and amulets."  0 { TechId "jewellery" }}
-    { Furniture {{ "POETRY_TABLE" } WOOD 12 }                    "Poetry table"          "Crafting"
+  }
+  "poetry"
+  {
+    { Furniture {{ "POETRY_TABLE" } WOOD 12 }                    "Poetry table"       "Crafting"
         "Allows writing poems."}
   }
 

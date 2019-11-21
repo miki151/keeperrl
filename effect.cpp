@@ -50,6 +50,9 @@
 #include "effect_type.h"
 #include "minion_equipment_type.h"
 #include "health_type.h"
+#include "collective.h"
+#include "immigration.h"
+#include "immigrant_info.h"
 
 vector<Creature*> Effect::summonCreatures(Position pos, vector<PCreature> creatures, TimeInterval delay) {
   vector<Creature*> ret;
@@ -385,6 +388,17 @@ string Effects::Summon::getDescription() const {
         + " " + getCreatureName(creature);
   else
     return "Summons a " + getCreatureName(creature);
+}
+
+void Effects::AssembledMinion::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effects::AssembledMinion::getName() const {
+  return getCreatureName(creature);
+}
+
+string Effects::AssembledMinion::getDescription() const {
+  return "Can be assembled to a " + getCreatureName(creature);
 }
 
 void Effects::SummonEnemy::applyToCreature(Creature* c, Creature* attacker) const {
@@ -1002,9 +1016,9 @@ Effect::Effect() {
 Effect::~Effect() {
 }
 
-Effect&Effect::operator =(Effect&&) = default;
+Effect& Effect::operator =(Effect&&) = default;
 
-Effect&Effect::operator =(const Effect&) = default;
+Effect& Effect::operator =(const Effect&) = default;
 
 bool Effect::operator ==(const Effect& o) const {
   return o.effect == effect;
@@ -1116,6 +1130,18 @@ void Effect::apply(Position pos, Creature* attacker) const {
         for (auto& pos : trajectory)
           if (auto c = pos.getCreature())
             pullCreature(c, trajectory);
+      },
+      [&](const Effects::AssembledMinion& m) {
+        auto group = CreatureGroup::singleType(attacker->getTribeId(), m.creature);
+        auto c = Effect::summon(pos, group, 1, none);
+        if (!c.empty()) {
+          for (auto col : pos.getGame()->getCollectives())
+            if (col->getCreatures().contains(attacker)) {
+              for (auto& elem : col->getImmigration().getImmigrants())
+                if (elem.getId(0) == m.creature)
+                  col->addCreature(c[0], elem.getTraits());
+            }
+        }
       }
   );
 }

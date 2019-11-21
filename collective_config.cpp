@@ -241,6 +241,8 @@ const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() const {
             CollectiveWarning::RESOURCE_STORAGE},
         {ItemIndex::STONE, unMarkedItems(), StorageId::RESOURCE,
             CollectiveWarning::RESOURCE_STORAGE},
+        {ItemIndex::ASSEMBLED_MINION, unMarkedItems(), StorageId::EQUIPMENT,
+            CollectiveWarning::EQUIPMENT_STORAGE},
         /*{ItemIndex::TRAP, unMarkedItems(), [](WConstCollective col) -> const PositionSet& {
                 return col->getTerritory().getAllAsSet(); },
             CollectiveWarning::RESOURCE_STORAGE},*/

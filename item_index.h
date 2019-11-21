@@ -17,7 +17,8 @@ RICH_ENUM(ItemIndex,
   CAN_EQUIP,
   FOR_SALE,
   HEALING_ITEM,
-  RUNE
+  RUNE,
+  ASSEMBLED_MINION
 );
 
 extern const char* getName(ItemIndex, int count = 1);

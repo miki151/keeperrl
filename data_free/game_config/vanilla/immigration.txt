@@ -519,7 +519,27 @@
         }
 
     }
-
+    "gnomes"
+    {
+        {
+          ids = { "AUTOMATON_WORKER" }
+          traits = { WORKER }
+          invisible = true
+          initialRecruitment = 2
+        }
+        {
+          ids = { "GNOME" }
+          traits = { WORKER }
+          frequency = 0.1
+        }
+        {
+          ids = { "AUTOMATON_WORKER" }
+          traits = { WORKER }
+          requirements = {
+            { 0.0 AssembledRequirement }
+          }
+        }
+    }
     "tutorial"
 
     {

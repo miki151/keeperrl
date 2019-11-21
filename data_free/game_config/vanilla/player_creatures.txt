@@ -12,7 +12,7 @@
     initialTech = { "sorcery" }
     buildingGroups = {
         "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
-        "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
+        "training" "crafting" "laboratory" "jeweller" "poetry" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
     }
     workshopGroups = { "basic" "traps" }
     description = "Build and manage your dream dungeon, defend against raids, and attack your enemies!"
@@ -31,7 +31,7 @@
     initialTech = { "iron working" }
     buildingGroups = {
         "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
-        "training" "crafting" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
+        "training" "crafting" "laboratory" "jeweller" "poetry" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
     }
     workshopGroups = { "basic" "traps" }
     description = "Build and manage your dream dungeon, defend against raids, and attack your enemies!"
@@ -48,10 +48,27 @@
     initialTech = { "archery" }
     buildingGroups = {
         "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage"
-        "pigsty" "training" "crafting" "angel_shrine" "prison" "orders" "installations"
+        "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "angel_shrine" "prison" "orders" "installations"
     }
     workshopGroups = { "basic" }
-    description = "This Keeper character is new in the game, and is not fully fleshed out yet. It isn't recommended for new players."
+    description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"
+  }
+  {
+    creatureId = { "GNOME" }
+    tribeAlignment = LAWFUL
+    immigrantGroups = {"gnomes"}
+    technology = {
+        "traps"# "advanced traps" "master traps"
+        "automatons" "advanced automatons" #"master automatons"
+        "pig breeding" "iron working"
+    }
+    initialTech = { "automatons" }
+    buildingGroups = {
+        "structure" "doors" "floors" "storage" "zones" "throne" "beds"
+        "pigsty" "crafting" "orders" "installations"
+    }
+    workshopGroups = { "traps" "gnomes" }
+    description = "Seize the means of production and engineer traps, automatons and other contraptions."
   }
 }
 

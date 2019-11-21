@@ -27,6 +27,9 @@
 #include "content_factory.h"
 #include "immigrant_info.h"
 #include "special_trait.h"
+#include "item.h"
+#include "effect_type.h"
+#include "storage_id.h"
 
 template <class Archive>
 void Immigration::serialize(Archive& ar, const unsigned int) {
@@ -153,6 +156,13 @@ optional<string> Immigration::getMissingRequirement(const ImmigrantRequirement& 
         else
           return none;
       },
+      [&](const AssembledRequirement&) -> optional<string> {
+        for (auto& list : collective->getStoredItems(ItemIndex::ASSEMBLED_MINION, StorageId::EQUIPMENT))
+          for (auto& item : list.second)
+            if (item->getEffect()->effect->getReferenceMaybe<Effects::AssembledMinion>()->creature == immigrantInfo.getId(0))
+              return none;
+        return "Must be crafted at a workshop"_s;
+      },
       [&](const Pregnancy&) -> optional<string> {
         for (Creature* c : collective->getCreatures())
           if (c->isAffected(LastingEffect::PREGNANT))
@@ -232,6 +242,7 @@ void Immigration::occupyRequirements(const Creature* c, int index) {
       },
       [&](const RecruitmentInfo&) {},
       [&](const MinTurnRequirement&) {},
+      [&](const AssembledRequirement&) {},
       [&](const TutorialRequirement&) {},
       [&](const NegateRequirement&) {}
   );
@@ -412,12 +423,21 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
         auto recruits = recruitmentInfo.getAllRecruits(immigration->collective->getGame(), info.getId(0));
         if (!recruits.empty()) {
           Creature* c = recruits[0];
-          immigration->collective->addCreature(c, {MinionTrait::FIGHTER});
+          immigration->collective->addCreature(c, info.getTraits());
           WModel target = immigration->collective->getModel();
           if (c->getPosition().getModel() != target)
             c->getGame()->transferCreature(c, target);
           addedRecruits = true;
         }
+      },
+      [&](const AssembledRequirement&) {
+        for (auto& list : immigration->collective->getStoredItems(ItemIndex::ASSEMBLED_MINION, StorageId::EQUIPMENT))
+          for (auto& item : list.second)
+            if (item->getEffect()->effect->getReferenceMaybe<Effects::AssembledMinion>()->creature == info.getId(0)) {
+              item->getEffect()->apply(list.first, immigration->collective->getLeader());
+              list.first.removeItem(item);
+              addedRecruits = true;
+            }
       },
       [](const auto&) {}
   ));

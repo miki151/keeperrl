@@ -55,6 +55,11 @@ struct Summon {
   Range count;
   COMPARE_ALL(creature, count)
 };
+struct AssembledMinion {
+  EFFECT_TYPE_INTERFACE;
+  CreatureId creature;
+  COMPARE_ALL(creature)
+};
 struct SummonEnemy {
   EFFECT_TYPE_INTERFACE;
   SummonEnemy(CreatureId id, Range c) : creature(id), count(c) {}
@@ -186,7 +191,7 @@ MAKE_VARIANT2(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, E
     EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
     Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
     Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, Filter, SummonEnemy, Wish, Chain, Caster,
-    IncreaseMorale, Message, Chance);
+    IncreaseMorale, Message, Chance, AssembledMinion);
 }
 
 class EffectType : public Effects::EffectType {

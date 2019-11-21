@@ -136,6 +136,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
+  vector<pair<Position, vector<Item*>>> getStoredItems(ItemIndex, StorageId) const;
   struct TrapItemInfo;
   vector<TrapItemInfo> getTrapItems(const vector<Position>&) const;
 

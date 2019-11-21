@@ -17,5 +17,7 @@
   "master sorcery"           { "Learn the most powerful spells."                              {"advanced sorcery"}}
   "demonology"               { "Build demon shrines and attract demons."                      {"advanced sorcery"}}
   "worship"                  { "Build angel shrines and attract angels."}
+  "automatons"               { "Build mechanical creatures that work and fight for you."}
+  "advanced automatons"      { "Build advanced mechanical creatures that work and fight for you." {"automatons"}}
 }
 }

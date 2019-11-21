@@ -393,6 +393,18 @@ ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory*) const 
   );
 }
 
+ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory*) const {
+  return ITATTR(
+      i.viewId = ViewId("trap_item");
+      i.effect = Effect(Effects::AssembledMinion{creature});
+      i.name = i.effect->getName();
+      i.itemClass = ItemClass::TOOL;
+      i.weight = 1;
+      i.price = getEffectPrice(*i.effect);
+      i.uses = 1;
+  );
+}
+
 ItemAttributes ItemTypes::Intrinsic::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = viewId;

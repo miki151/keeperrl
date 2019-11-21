@@ -67,6 +67,8 @@ struct NegateRequirement {
   SERIALIZE_ALL(r)
 };
 
+struct AssembledRequirement { SERIALIZE_EMPTY() };
+
 MAKE_VARIANT2(ImmigrantRequirement,
     AttractionInfo,
     TechId,
@@ -78,6 +80,7 @@ MAKE_VARIANT2(ImmigrantRequirement,
     RecruitmentInfo,
     TutorialRequirement,
     MinTurnRequirement,
+    AssembledRequirement,
     NegateRequirement
 );
 

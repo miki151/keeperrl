@@ -849,6 +849,13 @@ vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) cons
   return getAllItemsImpl(index, includeMinions);
 }
 
+vector<pair<Position, vector<Item*>>> Collective::getStoredItems(ItemIndex index, StorageId storage) const {
+  vector<pair<Position, vector<Item*>>> ret;
+  for (auto& v : getStoragePositions(storage))
+    ret.push_back(make_pair(v, v.getItems(index)));
+  return ret;
+}
+
 vector<Item*> Collective::getAllItemsImpl(optional<ItemIndex> index, bool includeMinions) const {
   vector<Item*> allItems;
   for (auto& v : territory->getAll())
