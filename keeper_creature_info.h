@@ -17,6 +17,7 @@ struct KeeperCreatureInfo {
   vector<string> SERIAL(workshopGroups);
   string SERIAL(description);
   vector<SpecialTrait> SERIAL(specialTraits);
+  bool SERIAL(noLeader) = false;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);
 };

@@ -57,6 +57,8 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
       [&](KillLeader) {
         if (auto leader = enemy->getLeader())
           return Task::attackCreatures({leader});
+        else if (!enemy->getCreatures(MinionTrait::FIGHTER).empty())
+          return Task::attackCreatures(enemy->getCreatures(MinionTrait::FIGHTER));
         else
           return Task::idle();
       },

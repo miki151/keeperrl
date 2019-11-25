@@ -101,7 +101,7 @@ PCollective CollectiveBuilder::build(const ContentFactory* contentFactory) const
     if (elem.traits.contains(MinionTrait::LEADER))
       wasLeader = true;
   }
-  CHECK(wasLeader || creatures.empty()) << "No leader added to collective " << c->getName()->full;
+  //CHECK(wasLeader || creatures.empty()) << "No leader added to collective " << c->getName()->full;
   for (Vec2 v : squares) {
     CHECK(level);
     Position pos(v, level);

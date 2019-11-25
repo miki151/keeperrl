@@ -104,6 +104,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   double getEfficiency(const Creature*) const;
   Creature* getLeader() const;
+  Creature* getLeaderOrOtherMinion() const;
+  bool needsToBeKilledToConquer(const Creature*) const;
 
   const Territory& getTerritory() const;
   Territory& getTerritory();

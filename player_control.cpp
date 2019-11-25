@@ -954,7 +954,8 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
       if (!minions.contains(c))
         minions.push_back(c);
   if (auto leader = collective->getLeader())
-    minions.push_back(leader);
+    if (!minions.contains(leader))
+      minions.push_back(leader);
   info.minionGroups = getCreatureGroups(minions);
   info.minions = minions.transform([](const Creature* c) { return CreatureInfo(c) ;});
   info.minionCount = collective->getPopulationSize();
@@ -1348,8 +1349,8 @@ void PlayerControl::fillCurrentLevelInfo(GameInfo& gameInfo) const {
 void PlayerControl::fillDungeonLevel(AvatarLevelInfo& info) const {
   const auto& dungeonLevel = collective->getDungeonLevel();
   info.level = dungeonLevel.level + 1;
-  info.viewId = collective->getLeader()->getViewObject().id();
-  info.title = collective->getLeader()->getName().title();
+  info.viewId = collective->getLeaderOrOtherMinion()->getViewObject().id();
+  info.title = collective->getLeaderOrOtherMinion()->getName().title();
   info.progress = dungeonLevel.progress;
   info.numAvailable = min(dungeonLevel.numResearchAvailable(), collective->getTechnology().getNextTechs().size());
 }
@@ -1729,8 +1730,9 @@ Vec2 PlayerControl::getScrollCoord() const {
   };
   if (auto pos = processTiles(collective->getTerritory().getAll()))
     return *pos;
-  if (getKeeper()->getPosition().isSameLevel(currentLevel))
-    return getKeeper()->getPosition().getCoord();
+  auto keeperPos = collective->getLeaderOrOtherMinion()->getPosition();
+  if (keeperPos.isSameLevel(currentLevel))
+    return keeperPos.getCoord();
   if (auto pos = processTiles(collective->getKnownTiles().getAll()))
     return *pos;
   return currentLevel->getBounds().middle();
@@ -2793,22 +2795,23 @@ TribeId PlayerControl::getTribeId() const {
 }
 
 bool PlayerControl::isEnemy(const Creature* c) const {
-  auto keeper = getKeeper();
+  auto keeper = collective->getLeaderOrOtherMinion();
   return c->getTribeId() != getTribeId() && keeper && keeper->isEnemy(c);
+}
+
+void PlayerControl::onConquered(const Creature* victim) {
+  if (!victim->isPlayer()) {
+    setScrollPos(victim->getPosition().plus(Vec2(0, 5)));
+    getView()->updateView(this, false);
+  }
+  getGame()->gameOver(victim, collective->getKills().getSize(), "enemies",
+      collective->getDangerLevel() + collective->getPoints());
 }
 
 void PlayerControl::onMemberKilled(const Creature* victim, const Creature* killer) {
   if (victim->isPlayer() && victim != getKeeper())
     onControlledKilled(victim);
   visibilityMap->remove(victim);
-  if (victim == getKeeper() && !getGame()->isGameOver()) {
-    if (!victim->isPlayer()) {
-      setScrollPos(victim->getPosition().plus(Vec2(0, 5)));
-      getView()->updateView(this, false);
-    }
-    getGame()->gameOver(victim, collective->getKills().getSize(), "enemies",
-        collective->getDangerLevel() + collective->getPoints());
-  }
 }
 
 void PlayerControl::onMemberAdded(Creature* c) {

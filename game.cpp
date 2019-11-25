@@ -86,10 +86,10 @@ void Game::addCollective(WCollective col) {
   villainsByType[type].push_back(col);
 }
 
-static CollectiveConfig getKeeperConfig(bool fastImmigration) {
+static CollectiveConfig getKeeperConfig(bool fastImmigration, bool noLeader) {
   return CollectiveConfig::keeper(
       TimeInterval(fastImmigration ? 10 : 140),
-      10);
+      10, noLeader ? ConquerCondition::KILL_FIGHTERS_AND_LEADER : ConquerCondition::KILL_LEADER);
 }
 
 void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
@@ -98,19 +98,22 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
   Creature* keeperRef = avatarInfo.playerCreature.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   model->addCreature(std::move(avatarInfo.playerCreature));
-  auto keeperInfo = avatarInfo.creatureInfo.getReferenceMaybe<KeeperCreatureInfo>();
-  model->addCollective(CollectiveBuilder(getKeeperConfig(false), keeperRef->getTribeId())
+  auto keeperInfo = *avatarInfo.creatureInfo.getReferenceMaybe<KeeperCreatureInfo>();
+  auto traits = keeperInfo.noLeader
+      ? EnumSet<MinionTrait>{MinionTrait::WORKER, MinionTrait::FIGHTER}
+      : EnumSet<MinionTrait>{MinionTrait::LEADER};
+  model->addCollective(CollectiveBuilder(getKeeperConfig(false, keeperInfo.noLeader), keeperRef->getTribeId())
       .setModel(model)
-      .addCreature(keeperRef, {MinionTrait::LEADER})
+      .addCreature(keeperRef, traits)
       .build(contentFactory.get()));
   playerCollective = model->getCollectives().back();
-  auto playerControlOwned = PlayerControl::create(playerCollective, introText, keeperInfo->tribeAlignment);
+  auto playerControlOwned = PlayerControl::create(playerCollective, introText, keeperInfo.tribeAlignment);
   playerControl = playerControlOwned.get();
   playerCollective->setControl(std::move(playerControlOwned));
   playerCollective->setVillainType(VillainType::PLAYER);
   addCollective(playerCollective);
-  playerControl->loadImmigrationAndWorkshops(contentFactory.get(), *keeperInfo);
-  for (auto tech : keeperInfo->initialTech)
+  playerControl->loadImmigrationAndWorkshops(contentFactory.get(), keeperInfo);
+  for (auto tech : keeperInfo.initialTech)
     playerCollective->acquireTech(tech, false);
 }
 
@@ -685,7 +688,7 @@ static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {
 
 string Game::getPlayerName() const {
   if (playerCollective) {
-    auto leader = playerCollective->getLeader();
+    auto leader = playerCollective->getLeaderOrOtherMinion();
     CHECK(leader);
     return leader->getName().firstOrBare();
   } else // adventurer mode
@@ -696,7 +699,7 @@ SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
   if (WCollective col = getPlayerCollective()) {
     vector<Creature*> creatures = col->getCreatures();
     CHECK(!creatures.empty());
-    Creature* leader = col->getLeader();
+    Creature* leader = col->getLeaderOrOtherMinion();
     CHECK(leader);
     sort(creatures.begin(), creatures.end(), [leader] (const Creature* c1, const Creature* c2) {
         return c1 == leader || (c2 != leader && c1->getBestAttack().value > c2->getBestAttack().value);});

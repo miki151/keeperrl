@@ -183,8 +183,8 @@ static void sitOnThrone(Position pos, WConstFurniture furniture, Creature* c) {
     };
     for (auto enemy : collective->getCreatures(MinionTrait::FIGHTER))
       tryTeleporting(enemy);
-    if (collective->getLeader())
-      tryTeleporting(collective->getLeader());
+    if (auto l = collective->getLeader())
+      tryTeleporting(l);
     if (wasTeleported)
       c->privateMessage(PlayerMessage("Thy audience hath been summoned"_s +
           get(c->getAttributes().getGender(), ", Sire", ", Dame", ""), MessagePriority::HIGH));

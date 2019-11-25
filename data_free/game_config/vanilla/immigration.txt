@@ -522,14 +522,15 @@
     "gnomes"
     {
         {
-          ids = { "AUTOMATON_WORKER" }
-          traits = { WORKER }
+          ids = { "GNOME" }
+          traits = { WORKER FIGHTER }
           invisible = true
-          initialRecruitment = 2
+          initialRecruitment = 1
+          spawnLocation = NearLeader
         }
         {
           ids = { "GNOME" }
-          traits = { WORKER }
+          traits = { WORKER FIGHTER }
           frequency = 0.1
         }
         {

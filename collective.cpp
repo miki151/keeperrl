@@ -274,6 +274,18 @@ vector<TriggerInfo> Collective::getTriggers(WConstCollective against) const {
     return {};
 }
 
+Creature* Collective::getLeaderOrOtherMinion() const {
+  if (auto l = getLeader())
+    return l;
+  if (!getCreatures(MinionTrait::FIGHTER).empty())
+    return getCreatures(MinionTrait::FIGHTER)[0];
+/*  if (!getCreatures(MinionTrait::WORKER).empty())
+    return getCreatures(MinionTrait::WORKER)[0];
+  if (!creatures.empty())
+    return creatures[0];*/
+  return nullptr;
+}
+
 Creature* Collective::getLeader() const {
   if (!byTrait[MinionTrait::LEADER].empty())
     return byTrait[MinionTrait::LEADER].getOnlyElement();
@@ -563,6 +575,10 @@ const optional<Collective::AlarmInfo>& Collective::getAlarmInfo() const {
   return alarmInfo;
 }
 
+bool Collective::needsToBeKilledToConquer(const Creature* c) const {
+  return hasTrait(c, MinionTrait::FIGHTER) || hasTrait(c, MinionTrait::LEADER);
+}
+
 void Collective::onEvent(const GameEvent& event) {
   PROFILE;
   using namespace EventInfo;
@@ -607,7 +623,7 @@ void Collective::onEvent(const GameEvent& event) {
         auto victim = info.victim;
         addRecordedEvent("the capturing of " + victim->getName().title());
         if (getCreatures().contains(victim)) {
-          bool fighterStunned = hasTrait(victim, MinionTrait::FIGHTER) || victim == getLeader();
+          bool fighterStunned = needsToBeKilledToConquer(victim);
           removeTrait(victim, MinionTrait::FIGHTER);
           removeTrait(victim, MinionTrait::LEADER);
           control->addMessage(PlayerMessage(victim->getName().a() + " is unconsious.")
@@ -678,10 +694,12 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
       control->addMessage(PlayerMessage(victim->getName().a() + " is " + deathDescription + ".", MessagePriority::HIGH)
           .setPosition(victim->getPosition()));
   }
-  bool fighterKilled = hasTrait(victim, MinionTrait::FIGHTER) || victim == getLeader();
+  bool fighterKilled = needsToBeKilledToConquer(victim);
   removeCreature(victim);
-  if (isConquered() && fighterKilled)
+  if (isConquered() && fighterKilled) {
+    control->onConquered(victim);
     getGame()->addEvent(EventInfo::ConqueredEnemy{this});
+  }
   if (auto& guardianInfo = getConfig().getGuardianInfo())
     if (Random.chance(guardianInfo->probability)) {
       auto& extended = territory->getStandardExtended();

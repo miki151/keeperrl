@@ -84,7 +84,8 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const PlayerCrea
   if (result->creatureIndex < keeperCreatures.size()) {
     creatureInfo = creatures->first[result->creatureIndex];
     ret = std::move(keeperCreatures[result->creatureIndex][result->genderIndex]);
-    ret->getName().setBare("Keeper");
+    if (!creatures->first[result->creatureIndex].noLeader)
+      ret->getName().setBare("Keeper");
   } else {
     creatureInfo = creatures->second[result->creatureIndex - keeperCreatures.size()];
     ret = std::move(adventurerCreatures[result->creatureIndex - keeperCreatures.size()][result->genderIndex]);
@@ -99,7 +100,8 @@ AvatarInfo getQuickGameAvatar(View* view, const PlayerCreaturesInfo* creatures, 
   auto keeperCreatures = creatures->first;
   AvatarInfo ret;
   ret.playerCreature = creatureFactory->fromId(keeperCreatures[3].creatureId[0], TribeId::getDarkKeeper());
-  ret.playerCreature->getName().setBare("Keeper");
+  if (!keeperCreatures[3].noLeader)
+    ret.playerCreature->getName().setBare("Keeper");
   ret.creatureInfo = std::move(keeperCreatures[3]);
   ret.tribeAlignment = TribeAlignment::EVIL;
   return ret;

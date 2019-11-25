@@ -6,7 +6,7 @@
 #include "skill.h"
 #include "attr_type.h"
 
-SERIALIZE_DEF(KeeperCreatureInfo, NAMED(creatureId), NAMED(tribeAlignment), NAMED(immigrantGroups), NAMED(technology), NAMED(initialTech), NAMED(buildingGroups), NAMED(workshopGroups), NAMED(description), OPTION(specialTraits));
+SERIALIZE_DEF(KeeperCreatureInfo, NAMED(creatureId), NAMED(tribeAlignment), NAMED(immigrantGroups), NAMED(technology), NAMED(initialTech), NAMED(buildingGroups), NAMED(workshopGroups), NAMED(description), OPTION(specialTraits), OPTION(noLeader));
 
 KeeperCreatureInfo::KeeperCreatureInfo() {
 }

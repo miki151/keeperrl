@@ -115,6 +115,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual void addAttack(const CollectiveAttack&) override;
   virtual void addMessage(const PlayerMessage&) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
+  virtual void onConquered(const Creature* victim) override;
   virtual void onMemberAdded(Creature*) override;
   virtual void onConstructed(Position, FurnitureType) override;
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;

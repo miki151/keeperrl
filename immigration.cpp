@@ -352,7 +352,7 @@ vector<Position> Immigration::Available::getSpawnPositions() const {
       return ret;
     },
     [&] (NearLeader) -> vector<Position> {
-      if (auto leader = immigration->collective->getLeader())
+      if (auto leader = immigration->collective->getLeaderOrOtherMinion())
         return {leader->getPosition()};
       else
         return {};

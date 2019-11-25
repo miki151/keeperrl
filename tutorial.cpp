@@ -471,7 +471,7 @@ void Tutorial::createTutorial(Game& game, const ContentFactory* factory) {
   CHECK(foundEntrance);
   collective->setTrait(collective->getLeader(), MinionTrait::NO_AUTO_EQUIPMENT);
   collective->getWarnings().disable();
-  collective->init(CollectiveConfig::keeper(50_visible, 10));
+  collective->init(CollectiveConfig::keeper(50_visible, 10, ConquerCondition::KILL_LEADER));
   auto immigrants = factory->immigrantsData.at("tutorial");
   CollectiveConfig::addBedRequirementToImmigrants(immigrants, game.getContentFactory());
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));

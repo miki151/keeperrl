@@ -69,6 +69,7 @@
     }
     workshopGroups = { "traps" "gnomes" }
     description = "Seize the means of production and engineer traps, automatons and other contraptions."
+    noLeader = true
   }
 }
 

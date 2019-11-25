@@ -73,8 +73,7 @@ struct FloorInfo {
 
 class CollectiveConfig {
   public:
-  static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation);
-  static CollectiveConfig withImmigrants(TimeInterval immigrantInterval, int maxPopulation);
+  static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, ConquerCondition);
   static CollectiveConfig noImmigrants();
 
   bool isLeaderFighter() const;
@@ -114,7 +113,7 @@ class CollectiveConfig {
 
   private:
   enum CollectiveType { KEEPER, VILLAGE };
-  CollectiveConfig(TimeInterval immigrantInterval, CollectiveType, int maxPopulation);
+  CollectiveConfig(TimeInterval immigrantInterval, CollectiveType, int maxPopulation, ConquerCondition);
 
   TimeInterval SERIAL(immigrantInterval);
   int SERIAL(maxPopulation) = 10000;

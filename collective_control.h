@@ -17,6 +17,7 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   virtual void onMemberKilled(const Creature* victim, const Creature* killer);
   virtual void onOtherKilled(const Creature* victim, const Creature* killer);
   virtual void onMemberAdded(Creature*) {}
+  virtual void onConquered(const Creature* victim) {}
   virtual void addMessage(const PlayerMessage&) {}
   virtual void addAttack(const CollectiveAttack&) {}
   virtual void onConstructed(Position, FurnitureType) {}

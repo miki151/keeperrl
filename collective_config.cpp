@@ -92,21 +92,17 @@ void CollectiveConfig::addBedRequirementToImmigrants(vector<ImmigrantInfo>& immi
   }
 }
 
-CollectiveConfig::CollectiveConfig(TimeInterval interval, CollectiveType t, int maxPop)
+CollectiveConfig::CollectiveConfig(TimeInterval interval, CollectiveType t, int maxPop, ConquerCondition conquerCondition)
     : immigrantInterval(interval), maxPopulation(maxPop), type(t),
-      conquerCondition(ConquerCondition::KILL_FIGHTERS_AND_LEADER) {
+      conquerCondition(conquerCondition) {
 }
 
-CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation) {
-  return CollectiveConfig(immigrantInterval, KEEPER, maxPopulation);
-}
-
-CollectiveConfig CollectiveConfig::withImmigrants(TimeInterval interval, int maxPopulation) {
-  return CollectiveConfig(interval, VILLAGE, maxPopulation);
+CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation, ConquerCondition conquerCondition) {
+  return CollectiveConfig(immigrantInterval, KEEPER, maxPopulation, conquerCondition);
 }
 
 CollectiveConfig CollectiveConfig::noImmigrants() {
-  return CollectiveConfig(TimeInterval {}, VILLAGE, 10000);
+  return CollectiveConfig(TimeInterval {}, VILLAGE, 10000, ConquerCondition::KILL_FIGHTERS_AND_LEADER);
 }
 
 int CollectiveConfig::getNumGhostSpawns() const {
@@ -179,6 +175,8 @@ const optional<GuardianInfo>& CollectiveConfig::getGuardianInfo() const {
 
 bool CollectiveConfig::isConquered(const Collective* collective) const {
   switch (conquerCondition) {
+    case ConquerCondition::KILL_LEADER:
+      return !collective->getLeader();
     case ConquerCondition::KILL_FIGHTERS_AND_LEADER:
       return collective->getCreatures(MinionTrait::FIGHTER).empty() && !collective->getLeader();
     case ConquerCondition::DESTROY_BUILDINGS:
