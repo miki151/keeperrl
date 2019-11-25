@@ -525,6 +525,13 @@
           ids = { "GNOME" }
           traits = { WORKER FIGHTER }
           invisible = true
+          initialRecruitment = 2
+          spawnLocation = NearLeader
+        }
+        {
+          ids = { "AUTOMATON_WORKER" }
+          traits = { WORKER }
+          invisible = true
           initialRecruitment = 1
           spawnLocation = NearLeader
         }
