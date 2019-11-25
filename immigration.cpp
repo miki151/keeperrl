@@ -305,6 +305,9 @@ static vector<Position> pickSpawnPositions(const vector<Creature*>& creatures, c
       for (auto& neighbor : pos.neighbors8())
         if (neighbor.canEnter(movementType) && !spawnPos.contains(neighbor))
           return neighbor;
+      for (auto& neighbor : pos.getRectangle(Rectangle::centered(3)))
+        if (neighbor.canEnter(movementType) && !spawnPos.contains(neighbor))
+          return neighbor;
       return none;
     };
     optional<Position> mySpawnPos;
