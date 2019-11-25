@@ -434,9 +434,10 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
         for (auto& list : immigration->collective->getStoredItems(ItemIndex::ASSEMBLED_MINION, StorageId::EQUIPMENT))
           for (auto& item : list.second)
             if (item->getEffect()->effect->getReferenceMaybe<Effects::AssembledMinion>()->creature == info.getId(0)) {
-              item->getEffect()->apply(list.first, immigration->collective->getLeader());
+              item->getEffect()->apply(list.first, immigration->collective->getLeaderOrOtherMinion());
               list.first.removeItem(item);
               addedRecruits = true;
+              return;
             }
       },
       [](const auto&) {}
