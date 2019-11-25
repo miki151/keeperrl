@@ -914,6 +914,10 @@ const ConstructionMap& Collective::getConstructions() const {
   return *constructions;
 }
 
+ConstructionMap& Collective::getConstructions() {
+  return *constructions;
+}
+
 void Collective::cancelMarkedTask(Position pos) {
   taskMap->removeTask(taskMap->getMarked(pos));
 }

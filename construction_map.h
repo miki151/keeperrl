@@ -73,6 +73,7 @@ class ConstructionMap {
   const vector<pair<Position, FurnitureLayer>>& getAllFurniture() const;
   const vector<Position>& getAllTraps() const;
   int getDebt(CollectiveResourceId) const;
+  void checkDebtConsistency();
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

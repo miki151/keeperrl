@@ -319,6 +319,7 @@ void PlayerControl::leaveControl() {
 }
 
 void PlayerControl::render(View* view) {
+  //collective->getConstructions().checkDebtConsistency();
   if (firstRender) {
     firstRender = false;
     for (Creature* c : getCreatures())
