@@ -127,6 +127,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void returnResource(const CostInfo&);
 
   const ConstructionMap& getConstructions() const;
+  ConstructionMap& getConstructions();
 
   void setMinionActivity(Creature* c, MinionActivity task);
   bool isActivityGood(Creature*, MinionActivity, bool ignoreTaskLock = false);

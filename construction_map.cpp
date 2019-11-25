@@ -202,6 +202,16 @@ int ConstructionMap::getDebt(CollectiveResourceId id) const {
   return debt[id];
 }
 
+void ConstructionMap::checkDebtConsistency() {
+  EnumMap<CollectiveResourceId, int> nowDebt;
+  for (auto& f : allFurniture) {
+    auto& info = furniture[f.second].getOrFail(f.first);
+    nowDebt[info.getCost().id] += info.getCost().value;
+  }
+  debt = nowDebt;
+  CHECK(nowDebt == debt);
+}
+
 template <class Archive>
 void ConstructionMap::TrapInfo::serialize(Archive& ar, const unsigned int version) {
   ar(type, armed, marked);
