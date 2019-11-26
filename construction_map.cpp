@@ -73,16 +73,18 @@ void ConstructionMap::removeFurniturePlan(Position pos, FurnitureLayer layer) {
 
 void ConstructionMap::addDebt(const CostInfo& cost) {
   debt[cost.id] += cost.value;
+  //checkDebtConsistency();
   CHECK(debt[cost.id] >= 0);
 }
 
-void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer) {
+void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer, FurnitureType type) {
   PROFILE;
-  if (auto info = furniture[layer].getReferenceMaybe(pos)) {
-    addDebt(info->getCost());
-    furniturePositions[info->getFurnitureType()].erase(pos);
-    info->reset();
-  }
+  if (auto info = furniture[layer].getReferenceMaybe(pos))
+    if (info->getFurnitureType() == type) {
+      addDebt(info->getCost());
+      furniturePositions[info->getFurnitureType()].erase(pos);
+      info->reset();
+    }
 }
 
 void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info, FurnitureLayer layer) {
@@ -206,9 +208,9 @@ void ConstructionMap::checkDebtConsistency() {
   EnumMap<CollectiveResourceId, int> nowDebt;
   for (auto& f : allFurniture) {
     auto& info = furniture[f.second].getOrFail(f.first);
-    nowDebt[info.getCost().id] += info.getCost().value;
+    if (!info.isBuilt(f.first))
+      nowDebt[info.getCost().id] += info.getCost().value;
   }
-  debt = nowDebt;
   CHECK(nowDebt == debt);
 }
 
