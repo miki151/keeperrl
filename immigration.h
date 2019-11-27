@@ -7,6 +7,7 @@
 #include "collective_config.h"
 #include "immigrant_auto_state.h"
 #include "game_time.h"
+#include "immigrant_info.h"
 
 class Collective;
 class SpecialTrait;
