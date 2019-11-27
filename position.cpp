@@ -483,18 +483,19 @@ bool Position::canEnterEmptyCalc(const MovementType& t, optional<FurnitureLayer>
   PROFILE;
   if (isUnavailable())
     return false;
-  auto square = getSquare();
+  const auto square = getSquare();
   bool result = true;
-  for (auto furniture : getFurniture()) {
-    if (ignore == furniture->getLayer())
-      continue;
-    bool canEnter =
-        furniture->getMovementSet().canEnter(t, isCovered(), square->isOnFire(), square->getForbiddenTribe());
-    if (furniture->overridesMovement())
-      return canEnter;
-    else
-      result &= canEnter;
-  }
+  const bool covered = isCovered();
+  for (auto layer : ENUM_ALL(FurnitureLayer))
+    if (layer != ignore)
+      if (auto furniture = level->furniture->getBuilt(layer).getReadonly(coord)) {
+        bool canEnter =
+            furniture->getMovementSet().canEnter(t, covered, square->isOnFire(), square->getForbiddenTribe());
+        if (furniture->overridesMovement())
+          return canEnter;
+        else
+          result &= canEnter;
+      }
   return result;
 }
 
