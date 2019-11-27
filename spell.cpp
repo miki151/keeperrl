@@ -113,6 +113,7 @@ optional<SpellId> Spell::getUpgrade() const {
 }
 
 bool Spell::checkTrajectory(const Creature* c, Position to) const {
+  PROFILE;
   Position from = c->getPosition();
   for (auto& v : drawLine(from, to))
     if (v != from && (v.isDirEffectBlocked() || (effect->shouldAIApply(c, v) == EffectAIIntent::UNWANTED && !endOnly)))
@@ -121,11 +122,12 @@ bool Spell::checkTrajectory(const Creature* c, Position to) const {
 }
 
 MoveInfo Spell::getAIMove(const Creature* c) const {
+  PROFILE;
   if (c->isReady(this))
     for (auto pos : c->getPosition().getRectangle(Rectangle::centered(range)))
-      if ((pos == c->getPosition() && canTargetSelf()) || (c->canSee(pos) && pos != c->getPosition() && checkTrajectory(c, pos)))
-        if (effect->shouldAIApply(c, pos) == EffectAIIntent::WANTED)
-          return c->castSpell(this, pos);
+      if (effect->shouldAIApply(c, pos) == EffectAIIntent::WANTED &&
+          ((pos == c->getPosition() && canTargetSelf()) || (c->canSee(pos) && pos != c->getPosition() && checkTrajectory(c, pos))))
+        return c->castSpell(this, pos);
   return NoMove;
 }
 
