@@ -258,8 +258,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool removeEffect(LastingEffect, bool msg = true);
   void addPermanentEffect(LastingEffect, int count = 1, bool msg = true);
   void removePermanentEffect(LastingEffect, int count = 1, bool msg = true);
-  bool isAffected(LastingEffect) const;
+  bool isAffected(LastingEffect, optional<GlobalTime>) const;
   bool isAffected(LastingEffect, GlobalTime) const;
+  bool isAffected(LastingEffect) const;
   optional<TimeInterval> getTimeRemaining(LastingEffect) const;
   bool hasCondition(CreatureCondition) const;
 

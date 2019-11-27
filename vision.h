@@ -17,13 +17,14 @@
 
 #include "enums.h"
 #include "level.h"
+#include "game_time.h"
 
 class Vision {
   public:
   Vision() {}
   VisionId getId() const;
   bool canSeeAt(double light, double distance) const;
-  void update(const Creature*);
+  void update(const Creature*, GlobalTime);
   static double getDarknessVisionThreshold();
 
   template <class Archive>

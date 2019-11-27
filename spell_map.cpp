@@ -82,6 +82,7 @@ void SpellMap::setReadyTime(const Creature* c, const Spell* spell, GlobalTime ti
 }
 
 vector<const Spell*> SpellMap::getAvailable(const Creature* c) const {
+  PROFILE;
   unordered_set<SpellId, CustomHash<SpellId>> upgraded;
   for (auto& elem : elems)
     if (elem.level <= c->getAttributes().getExpLevel(elem.expType))
