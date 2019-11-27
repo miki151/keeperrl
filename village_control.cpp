@@ -223,8 +223,11 @@ void VillageControl::acceptImmigration() {
 }
 
 void VillageControl::healAllCreatures() {
-  for (auto c : collective->getCreatures())
-    c->heal(0.002);
+  PROFILE;
+  const double freq = 0.1;
+  if (Random.chance(freq))
+    for (auto c : collective->getCreatures())
+      c->heal(0.002 / freq);
 }
 
 void VillageControl::update(bool currentlyActive) {
