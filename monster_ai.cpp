@@ -904,7 +904,7 @@ class ByCollective : public Behaviour {
         return task->getMove(creature).orWait();
     for (auto activity : ENUM_ALL(MinionActivity))
       if (creature->getAttributes().getMinionActivities().isAvailable(collective, creature, activity))
-        if (auto task = taskMap.getClosestTask(creature, activity, true)) {
+        if (auto task = taskMap.getClosestTask(creature, activity, true, collective)) {
           taskMap.freeFromTask(creature);
           taskMap.takeTask(creature, task);
           return task->getMove(creature).orWait();
@@ -1065,6 +1065,7 @@ class ByCollective : public Behaviour {
   }
 
   MoveInfo newStandardTask() {
+    //if (Random.roll(5))
     if (auto t = getStandardTask())
       if (auto move = t->getMove(creature))
         return move;
@@ -1429,6 +1430,7 @@ MonsterAI::MonsterAI(Creature* c, const vector<Behaviour*>& beh, const vector<in
 }
 
 void MonsterAI::makeMove() {
+  PROFILE;
   vector<MoveInfo> moves;
   for (int i : All(behaviours)) {
     MoveInfo move = behaviours[i]->getMove();
@@ -1465,7 +1467,10 @@ void MonsterAI::makeMove() {
     if (moves[i].getValue() > winner.getValue())
       winner = moves[i];
   CHECK(winner.getValue() > 0);
-  winner.getMove().perform(creature);
+  {
+    PROFILE_BLOCK("Perform move")
+    winner.getMove().perform(creature);
+  }
 }
 
 PMonsterAI MonsterAIFactory::getMonsterAI(Creature* c) const {

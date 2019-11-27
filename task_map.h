@@ -36,7 +36,7 @@ class TaskMap {
   bool isPriorityTask(WConstTask) const;
   bool hasPriorityTasks(Position) const;
   void setPriorityTasks(Position);
-  WTask getClosestTask(const Creature*, MinionActivity, bool priorityOnly) const;
+  WTask getClosestTask(const Creature*, MinionActivity, bool priorityOnly, const Collective*) const;
   const EntityMap<Task, CostInfo>& getCompletionCosts() const;
   WTask getTask(UniqueEntity<Task>::Id) const;
   void clearFinishedTasks();
@@ -55,7 +55,10 @@ class TaskMap {
   EntityMap<Task, CostInfo> SERIAL(completionCost);
   EntityMap<Task, LocalTime> SERIAL(delayedTasks);
   EntitySet<Task> SERIAL(priorityTasks);
-  EnumMap<MinionActivity, vector<WTask>> SERIAL(taskByActivity);
+  struct TaskByActivityInfo {
+    vector<WTask> byPriority[2];
+  };
+  EnumMap<MinionActivity, TaskByActivityInfo> taskByActivity;
   EntityMap<Task, MinionActivity> SERIAL(activityByTask);
 };
 
