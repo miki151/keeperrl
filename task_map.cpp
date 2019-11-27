@@ -8,13 +8,13 @@
 
 template <class Archive>
 void TaskMap::serialize(Archive& ar, const unsigned int) {
-  EnumMap<MinionActivity, vector<WTask>> SERIAL(taskByActivity1);
-  ar(tasks, positionMap, reversePositions, taskByCreature, creatureByTask, marked, completionCost, priorityTasks, delayedTasks, highlight, taskById, taskByActivity1, activityByTask);
-  for (auto activity : ENUM_ALL(MinionActivity)) {
-    taskByActivity[activity].byPriority[0] = taskByActivity1[activity];
-    for (auto& task : taskByActivity1[activity])
-      if (isPriorityTask(task))
-      taskByActivity[activity].byPriority[1].push_back(task);
+  ar(tasks, positionMap, reversePositions, taskByCreature, creatureByTask, marked, completionCost, priorityTasks, delayedTasks, highlight, taskById, taskByActivity, activityByTask);
+  if (Archive::is_loading::value) {
+    for (auto activity : ENUM_ALL(MinionActivity)) {
+      for (auto& task : taskByActivity[activity])
+        if (isPriorityTask(task))
+          priorityTaskByActivity[activity].push_back(task);
+    }
   }
 }
 
@@ -57,7 +57,8 @@ WTask TaskMap::getClosestTask(const Creature* c, MinionActivity activity, bool p
   }
   {
     PROFILE_BLOCK("ByActivity");
-    for (auto& task : taskByActivity[activity].byPriority[(int)priorityOnly])
+    auto& taskList = priorityOnly ? priorityTaskByActivity : taskByActivity;
+    for (auto& task : taskList[activity])
       if ((!storageDropTask || storageDropTask == task->getStorageId(false)) &&
           task->canPerform(c))
         if (auto pos = getPosition(task)) {
@@ -82,8 +83,11 @@ vector<WConstTask> TaskMap::getAllTasks() const {
 }
 
 void TaskMap::setPriorityTasks(Position pos) {
-  for (WTask t : getTasks(pos))
+  for (WTask t : getTasks(pos)) {
+    if (auto activity = activityByTask.getMaybe(t))
+      priorityTaskByActivity[*activity].push_back(t);
     priorityTasks.insert(t);
+  }
   pos.setNeedsRenderUpdate(true);
 }
 
@@ -118,8 +122,8 @@ CostInfo TaskMap::removeTask(WTask task) {
   }
   if (auto activity = activityByTask.getMaybe(task)) {
     activityByTask.erase(task);
-    taskByActivity[*activity].byPriority[0].removeElement(task);
-    taskByActivity[*activity].byPriority[1].removeElementMaybe(task);
+    taskByActivity[*activity].removeElement(task);
+    priorityTaskByActivity[*activity].removeElementMaybe(task);
   }
   for (int i : All(tasks))
     if (tasks[i].get() == task) {
@@ -211,7 +215,7 @@ WTask TaskMap::addTaskFor(PTask task, Creature* c) {
 WTask TaskMap::addTask(PTask task, Position position, MinionActivity activity) {
   setPosition(task.get(), position);
   taskById.set(task.get(), task.get());
-  taskByActivity[activity].byPriority[0].push_back(task.get());
+  taskByActivity[activity].push_back(task.get());
   activityByTask.set(task.get(), activity);
   tasks.push_back(std::move(task));
   return tasks.back().get();

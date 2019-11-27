@@ -55,10 +55,8 @@ class TaskMap {
   EntityMap<Task, CostInfo> SERIAL(completionCost);
   EntityMap<Task, LocalTime> SERIAL(delayedTasks);
   EntitySet<Task> SERIAL(priorityTasks);
-  struct TaskByActivityInfo {
-    vector<WTask> byPriority[2];
-  };
-  EnumMap<MinionActivity, TaskByActivityInfo> taskByActivity;
+  EnumMap<MinionActivity, vector<Task*>> SERIAL(taskByActivity);
+  EnumMap<MinionActivity, vector<Task*>> priorityTaskByActivity;
   EntityMap<Task, MinionActivity> SERIAL(activityByTask);
 };
 
