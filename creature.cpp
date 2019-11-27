@@ -1332,7 +1332,6 @@ void Creature::heal(double amount) {
   PROFILE;
   if (getBody().heal(this, amount))
     lastAttacker = nullptr;
-  updateViewObject();
 }
 
 void Creature::affectByFire(double amount) {

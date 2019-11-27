@@ -755,9 +755,9 @@ bool Body::heal(Creature* c, double amount) {
     if (health >= 1) {
       c->you(MsgType::ARE, hasHealth(HealthType::FLESH) ? "fully healed" : "fully materialized");
       health = 1;
-      c->updateViewObject();
       return true;
     }
+    updateViewObject(c->modViewObject());
   }
   return false;
 }
