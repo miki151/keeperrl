@@ -975,17 +975,17 @@ string Effects::SwapPosition::getDescription() const {
 }
 
 
-bool Effects::Filter::applies(const Creature* victim, const Creature* attacker) const {
+bool Effects::Filter::applies(bool isEnemy) const {
   switch (filter) {
     case FilterType::ALLY:
-      return victim->isFriend(attacker);
+      return !isEnemy;
     case FilterType::ENEMY:
-      return victim->isEnemy(attacker);
+      return isEnemy;
   }
 }
 
 void Effects::Filter::applyToCreature(Creature* c, Creature* attacker) const {
-  if (applies(c, attacker))
+  if (applies(c->isEnemy(attacker)))
     effect->apply(c->getPosition(), attacker);
 }
 
@@ -1242,8 +1242,10 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
   auto victim = pos.getCreature();
   if (victim && !caster->canSee(victim))
     victim = nullptr;
+  bool isEnemy = false;
   if (victim) {
-    auto res = shouldAIApply(victim, caster->isEnemy(victim));
+    isEnemy = caster->isEnemy(victim);
+    auto res = shouldAIApply(victim, isEnemy);
     if (res != EffectAIIntent::NONE)
       return res;
   }
@@ -1260,7 +1262,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
   };
   return effect->visit(
       [&] (const Effects::Wish&){
-        if (victim && victim->isPlayer() && !caster->isEnemy(victim))
+        if (victim && victim->isPlayer() && !isEnemy)
           return EffectAIIntent::WANTED;
         else
           return EffectAIIntent::UNWANTED;
@@ -1283,7 +1285,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
         return considerArea(a.getTargetPos(caster, pos), *a.effect);
       },
       [&] (const Effects::Filter& e) {
-        if (victim && e.applies(victim, caster))
+        if (victim && e.applies(isEnemy))
           return e.effect->shouldAIApply(caster, pos);
         return EffectAIIntent::NONE;
       },
