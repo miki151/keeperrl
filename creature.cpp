@@ -508,7 +508,6 @@ WLevel Creature::getLevel() const {
 }
 
 Game* Creature::getGame() const {
-  PROFILE;
   if (!gameCache)
     gameCache = getPosition().getGame();
   return gameCache;

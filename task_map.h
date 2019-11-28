@@ -39,9 +39,9 @@ class TaskMap {
   WTask getClosestTask(const Creature*, MinionActivity, bool priorityOnly, const Collective*) const;
   const EntityMap<Task, CostInfo>& getCompletionCosts() const;
   WTask getTask(UniqueEntity<Task>::Id) const;
-  void clearFinishedTasks();
+  void tick();
 
-  SERIALIZATION_DECL(TaskMap);
+  SERIALIZATION_DECL(TaskMap)
 
   private:
   EntityMap<Creature, WTask> SERIAL(taskByCreature);
@@ -57,6 +57,8 @@ class TaskMap {
   EntitySet<Task> SERIAL(priorityTasks);
   EnumMap<MinionActivity, vector<Task*>> SERIAL(taskByActivity);
   EnumMap<MinionActivity, vector<Task*>> priorityTaskByActivity;
+  EnumMap<MinionActivity, vector<Task*>> cantPerformByAnyone;
   EntityMap<Task, MinionActivity> SERIAL(activityByTask);
+  void releaseOnHoldTask(Task*);
 };
 

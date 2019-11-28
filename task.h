@@ -51,7 +51,9 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   virtual bool canTransfer();
   virtual void cancel() {}
   virtual string getDescription() const = 0;
-  virtual bool canPerform(const Creature* c) const;
+  virtual bool canPerform(const Creature* c, const MovementType&) const;
+  bool canPerform(const Creature* c) const;
+  virtual bool canPerformByAnyone() const;
   virtual optional<Position> getPosition() const;
   virtual optional<StorageId> getStorageId(bool dropOnly) const;
   optional<ViewId> getViewId() const;

@@ -450,7 +450,7 @@ void Collective::tick() {
   dangerLevelCache = none;
   control->tick();
   zones->tick();
-  taskMap->clearFinishedTasks();
+  taskMap->tick();
   constructions->clearUnsupportedFurniturePlans();
   if (config->getWarnings() && Random.roll(5))
     warnings->considerWarnings(this);
