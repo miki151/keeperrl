@@ -1049,7 +1049,7 @@ void Creature::tick() {
   vision->update(this, time);
   if (Random.roll(5))
     getDifficultyPoints();
-  equipment->tick(position);
+  equipment->tick(position, this);
   if (isDead())
     return;
   for (LastingEffect effect : ENUM_ALL(LastingEffect)) {

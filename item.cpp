@@ -157,6 +157,7 @@ void Item::tick(Position position) {
   specialTick(position);
   if (timeout) {
     if (position.getGame()->getGlobalTime() >= *timeout) {
+      position.globalMessage(getTheName() + " disappears!");
       discarded = true;
     }
   }

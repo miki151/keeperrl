@@ -53,10 +53,10 @@ class Equipment {
   double getTotalWeight() const;
   bool isEmpty() const;
   const ItemCounts& getCounts() const;
-  void tick(Position);
+  void tick(Position, Creature*);
   bool containsAnyOf(const EntitySet<Item>&) const;
 
-  SERIALIZATION_DECL(Equipment);
+  SERIALIZATION_DECL(Equipment)
 
   static map<EquipmentSlot, string> slotTitles;
 
@@ -64,5 +64,6 @@ class Equipment {
   Inventory SERIAL(inventory);
   EnumMap<EquipmentSlot, vector<Item*>> SERIAL(items);
   vector<Item*> SERIAL(equipped);
+  void onRemoved(Item*, Creature*);
 };
 

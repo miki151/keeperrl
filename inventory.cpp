@@ -124,8 +124,9 @@ double Inventory::getTotalWeight() const {
   return weight;
 }
 
-void Inventory::tick(Position pos) {
+vector<PItem> Inventory::tick(Position pos) {
   PROFILE_BLOCK("Inventory::tick");
+  vector<PItem> removed;
   const vector<WeakPointer<Item>> itemsCopy = getItems().transform([](const auto& it){ return it->getThis(); });
   for (auto& item : itemsCopy) {
     auto itemRef = item.get();
@@ -141,9 +142,10 @@ void Inventory::tick(Position pos) {
         addViewId(newViewId, 1);
       }
       if (itemRef->isDiscarded() && hasItem(itemRef))
-        removeItem(itemRef);
+        removed.push_back(removeItem(itemRef));
     }
   }
+  return removed;
 }
 
 bool Inventory::containsAnyOf(const EntitySet<Item>& items) const {
