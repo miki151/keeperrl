@@ -94,7 +94,7 @@ optional<ViewId> Task::getViewId() const {
   return viewId;
 }
 
-bool Task::isDone() {
+bool Task::isDone() const {
   return isBogus() || done;
 }
 
@@ -1536,7 +1536,7 @@ class DropItems : public Task {
   }
 
   virtual bool isBogus() const override {
-    return origin && !origin->getInventory().containsAnyOf(items) &&
+    return origin && (pickedUpCreature || !origin->getInventory().containsAnyOf(items)) &&
         (!pickedUpCreature || !pickedUpCreature->getEquipment().containsAnyOf(items));
   }
 

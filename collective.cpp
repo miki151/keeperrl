@@ -859,6 +859,7 @@ WConstTask Collective::getItemTask(const Item* it) const {
 }
 
 void Collective::markItem(const Item* it, WConstTask task) {
+  CHECK(!getItemTask(it));
   markedItems.set(it, task);
 }
 

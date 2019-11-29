@@ -57,7 +57,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   virtual optional<Position> getPosition() const;
   virtual optional<StorageId> getStorageId(bool dropOnly) const;
   optional<ViewId> getViewId() const;
-  bool isDone();
+  bool isDone() const;
   void setViewId(ViewId);
 
   static PTask construction(WTaskCallback, Position, FurnitureType);
