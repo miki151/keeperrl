@@ -1243,7 +1243,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
   if (victim && !caster->canSee(victim))
     victim = nullptr;
   bool isEnemy = false;
-  if (victim) {
+  if (victim && !victim->isAffected(LastingEffect::STUNNED)) {
     isEnemy = caster->isEnemy(victim);
     auto res = shouldAIApply(victim, isEnemy);
     if (res != EffectAIIntent::NONE)
