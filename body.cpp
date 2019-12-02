@@ -279,6 +279,8 @@ optional<BodyPart> Body::getAnyGoodBodyPart() const {
   for (auto part : ENUM_ALL(BodyPart))
     if (numGood(part) > 0)
       good.push_back(part);
+  if (good.empty())
+    return none;
   return Random.choose(good);
 }
 
