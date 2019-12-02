@@ -810,7 +810,7 @@ class RandomGen {
   }
 
   private:
-  default_random_engine generator;
+  std::mt19937 generator;
   std::uniform_real_distribution<double> defaultDist;
 
   template <typename T>

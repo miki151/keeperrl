@@ -25,7 +25,6 @@ class TaskMap {
   void takeTask(Creature*, WTask);
   void freeTask(WTask);
 
-  void setPosition(WTask, Position);
   WTask addTaskCost(PTask, Position, CostInfo, MinionActivity);
   void markSquare(Position, HighlightType, PTask, MinionActivity);
   WTask getMarked(Position) const;
@@ -60,5 +59,6 @@ class TaskMap {
   EnumMap<MinionActivity, vector<Task*>> cantPerformByAnyone;
   EntityMap<Task, MinionActivity> SERIAL(activityByTask);
   void releaseOnHoldTask(Task*);
+  void setPosition(WTask, Position);
 };
 
