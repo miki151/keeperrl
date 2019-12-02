@@ -7,12 +7,18 @@
 #include "collective.h"
 #include "container_range.h"
 
+void TaskMap::addToTaskByActivity(Task* task, MinionActivity activity) {
+  taskByActivity[activity].push_back(task);
+  if (isPriorityTask(task))
+    priorityTaskByActivity[activity].push_back(task);
+}
+
 template <class Archive>
 void TaskMap::serialize(Archive& ar, const unsigned int) {
   if (Archive::is_saving::value) {
     for (auto activity : ENUM_ALL(MinionActivity)) {
       for (auto task : cantPerformByAnyone[activity])
-        (isPriorityTask(task) ? priorityTaskByActivity : taskByActivity)[activity].push_back(task);
+        addToTaskByActivity(task, activity);
       cantPerformByAnyone[activity].clear();
     }
   }
@@ -36,19 +42,18 @@ void TaskMap::tick() {
       removeTask(t);
   }
   for (auto activity : ENUM_ALL(MinionActivity)) {
-    auto handle = [&] (vector<Task*>& tasks) {
-      for (auto task : Iter(tasks))
-        if (!(*task)->canPerformByAnyone()) {
-          task.markToErase();
-          cantPerformByAnyone[activity].push_back(*task);
-        }
-    };
-    handle(taskByActivity[activity]);
-    handle(priorityTaskByActivity[activity]);
+    for (auto task : Iter(taskByActivity[activity]))
+      if (!(*task)->canPerformByAnyone()) {
+        task.markToErase();
+        cantPerformByAnyone[activity].push_back(*task);
+      }
+    for (auto task : Iter(priorityTaskByActivity[activity]))
+      if (!(*task)->canPerformByAnyone())
+        task.markToErase();
     for (auto task : Iter(cantPerformByAnyone[activity]))
       if ((*task)->canPerformByAnyone()) {
         task.markToErase();
-        (isPriorityTask(*task) ? priorityTaskByActivity : taskByActivity)[activity].push_back(*task);
+        addToTaskByActivity(*task, activity);
       }
   }
 }

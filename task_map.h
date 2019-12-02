@@ -60,5 +60,6 @@ class TaskMap {
   EntityMap<Task, MinionActivity> SERIAL(activityByTask);
   void releaseOnHoldTask(Task*);
   void setPosition(WTask, Position);
+  void addToTaskByActivity(Task*, MinionActivity);
 };
 
