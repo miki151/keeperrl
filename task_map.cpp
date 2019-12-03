@@ -153,8 +153,9 @@ CostInfo TaskMap::removeTask(WTask task) {
   }
   if (auto activity = activityByTask.getMaybe(task)) {
     activityByTask.erase(task);
-    taskByActivity[*activity].removeElement(task);
+    taskByActivity[*activity].removeElementMaybe(task);
     priorityTaskByActivity[*activity].removeElementMaybe(task);
+    cantPerformByAnyone[*activity].removeElementMaybe(task);
   }
   for (int i : All(tasks))
     if (tasks[i].get() == task) {
