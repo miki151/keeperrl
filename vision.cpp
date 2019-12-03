@@ -15,10 +15,10 @@ bool Vision::canSeeAt(double light, double distance) const {
   return nightVision || light >= getDarknessVisionThreshold() || distance <= darkViewRadius;
 }
 
-void Vision::update(const Creature* c) {
+void Vision::update(const Creature* c, GlobalTime time) {
   PROFILE;
-  nightVision = c->isAffected(LastingEffect::NIGHT_VISION);
-  if (c->isAffected(LastingEffect::ELF_VISION) || c->isAffected(LastingEffect::FLYING))
+  nightVision = c->isAffected(LastingEffect::NIGHT_VISION, time);
+  if (c->isAffected(LastingEffect::ELF_VISION, time) || c->isAffected(LastingEffect::FLYING, time))
     id = VisionId::ELF;
   else
     id = VisionId::NORMAL;

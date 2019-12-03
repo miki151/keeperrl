@@ -155,7 +155,7 @@ struct ReviveCorpse {
 };
 struct Filter {
   EFFECT_TYPE_INTERFACE;
-  bool applies(const Creature* victim, const Creature* attacker) const;
+  bool applies(bool isEnemy) const;
   FilterType filter;
   HeapAllocated<Effect> effect;
   COMPARE_ALL(filter, effect)

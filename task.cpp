@@ -48,7 +48,7 @@
 #include "content_factory.h"
 #include "creature_list.h"
 
-template <class Archive> 
+template <class Archive>
 void Task::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Task>) & SUBCLASS(UniqueEntity);
   ar(done, transfer, viewId);
@@ -70,7 +70,15 @@ bool Task::canTransfer() {
   return transfer;
 }
 
+bool Task::canPerform(const Creature* c, const MovementType&) const {
+  return canPerformByAnyone();
+}
+
 bool Task::canPerform(const Creature* c) const {
+  return canPerform(c, c->getMovementType());
+}
+
+bool Task::canPerformByAnyone() const {
   return true;
 }
 
@@ -86,7 +94,7 @@ optional<ViewId> Task::getViewId() const {
   return viewId;
 }
 
-bool Task::isDone() {
+bool Task::isDone() const {
   return isBogus() || done;
 }
 
@@ -169,7 +177,7 @@ class Destruction : public Task {
     return true;
   }
 
-  virtual bool canPerform(const Creature*) const override {
+  virtual bool canPerformByAnyone() const override {
     PROFILE_BLOCK("Destruction::canPerform");
     return callback->isConstructionReachable(position) && (!matching || matching->getMatch(position));
   }
@@ -299,8 +307,8 @@ class GoToAnd : public Task {
   public:
   GoToAnd(vector<Position> targets, PTask task) : targets(targets), task(std::move(task)) {}
 
-  virtual bool canPerform(const Creature* c) const override {
-    if (!task->canPerform(c))
+  virtual bool canPerform(const Creature* c, const MovementType& type) const override {
+    if (!task->canPerform(c, type))
       return false;
     for (auto pos : targets)
       if (c->canNavigateTo(pos))
@@ -346,7 +354,7 @@ class ApplyItem : public Task {
     return "Set up " + itemName + " trap";
   }
 
-  virtual bool canPerform(const Creature* c) const override {
+  virtual bool canPerform(const Creature* c, const MovementType&) const override {
     return !!c->getEquipment().getItemById(itemId);
   }
 
@@ -436,7 +444,7 @@ class ApplySquare : public Task {
         }
         return NoMove;
       }
-      else 
+      else
         return move;
     }
   }
@@ -484,7 +492,7 @@ class ArcheryRange : public Task {
   public:
   ArcheryRange(WTaskCallback c, vector<Position> pos) : callback(c), targets(pos) {}
 
-  virtual bool canPerform(const Creature* c) const override {
+  virtual bool canPerform(const Creature* c, const MovementType&) const override {
     return !!getShootInfo(c);
   }
 
@@ -586,7 +594,7 @@ class Kill : public Task {
     }
   }
 
-  virtual bool canPerform(const Creature* c) const override {
+  virtual bool canPerform(const Creature* c, const MovementType&) const override {
     return creature != c;
   }
 
@@ -635,7 +643,7 @@ class Disappear : public Task {
     return "Disappear";
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task)); 
+  SERIALIZE_ALL(SUBCLASS(Task));
 };
 
 }
@@ -656,10 +664,10 @@ class Chain : public Task {
     return current >= tasks.size();
   }
 
-  virtual bool canPerform(const Creature* c) const override {
+  virtual bool canPerform(const Creature* c, const MovementType& type) const override {
     if (current >= tasks.size())
       return false;
-    return tasks[current]->canPerform(c);
+    return tasks[current]->canPerform(c, type);
   }
 
   virtual bool canTransfer() override {
@@ -689,7 +697,7 @@ class Chain : public Task {
     return tasks[current]->getDescription();
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), tasks, current); 
+  SERIALIZE_ALL(SUBCLASS(Task), tasks, current);
   SERIALIZATION_CONSTRUCTOR(Chain);
 
   private:
@@ -734,7 +742,7 @@ class Explore : public Task {
     return "Explore " + toString(position);
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), position); 
+  SERIALIZE_ALL(SUBCLASS(Task), position);
   SERIALIZATION_CONSTRUCTOR(Explore);
 
   private:
@@ -805,7 +813,7 @@ class AttackCreatures : public Task {
     else
       return "Attack someone, but everyone is dead";
   }
-  
+
   SERIALIZE_ALL(SUBCLASS(Task), creatures);
   SERIALIZATION_CONSTRUCTOR(AttackCreatures);
 
@@ -894,7 +902,7 @@ class CampAndSpawnTask : public Task {
   virtual string getDescription() const override {
     return "Camp and spawn " + target->getLeader()->getName().bare();
   }
- 
+
   SERIALIZE_ALL(SUBCLASS(Task), target, spawns, campPos, attackCountdown, defenseTeam, attackTeam, numAttacks)
   SERIALIZATION_CONSTRUCTOR(CampAndSpawnTask)
 
@@ -967,8 +975,8 @@ class ConsumeItem : public Task {
   virtual string getDescription() const override {
     return "Consume item";
   }
-  
-  SERIALIZE_ALL(SUBCLASS(Task), items, callback); 
+
+  SERIALIZE_ALL(SUBCLASS(Task), items, callback);
   SERIALIZATION_CONSTRUCTOR(ConsumeItem);
 
   protected:
@@ -1101,7 +1109,7 @@ class Eat : public Task {
       });
     for (Position pos : c->getPosition().neighbors8(Random)) {
       Item* chicken = getDeadChicken(pos);
-      if (chicken) 
+      if (chicken)
         if (auto move = c->move(pos))
           return move;
       if (Creature* ch = pos.getCreature())
@@ -1281,8 +1289,8 @@ class AlwaysDone : public Task {
     task->cancel();
   }
 
-  virtual bool canPerform(const Creature* c) const override {
-    return task->canPerform(c);
+  virtual bool canPerform(const Creature* c, const MovementType& type) const override {
+    return task->canPerform(c, type);
   }
 
   virtual optional<Position> getPosition() const override {
@@ -1445,7 +1453,7 @@ class Whipping : public Task {
   public:
   Whipping(Position pos, Creature* w) : position(pos), whipped(w) {}
 
-  virtual bool canPerform(const Creature* c) const override {
+  virtual bool canPerform(const Creature* c, const MovementType&) const override {
     return whipped != c;
   }
 
@@ -1561,11 +1569,11 @@ class DropItems : public Task {
   }
 
   virtual bool isBogus() const override {
-    return origin && !origin->getInventory().containsAnyOf(items) &&
+    return origin && (pickedUpCreature || !origin->getInventory().containsAnyOf(items)) &&
         (!pickedUpCreature || !pickedUpCreature->getEquipment().containsAnyOf(items));
   }
 
-  virtual bool canPerform(const Creature* c) const override {
+  virtual bool canPerform(const Creature* c, const MovementType&) const override {
     PROFILE_BLOCK("DropItems::canPerform");
     return (!origin || c == pickedUpCreature ) && c->getEquipment().containsAnyOf(items);
   }
@@ -1655,9 +1663,9 @@ class PickUpItem : public Task {
     return NoMove;
   }
 
-  virtual bool canPerform(const Creature* c) const override {
+  virtual bool canPerform(const Creature* c, const MovementType& movement) const override {
     PROFILE_BLOCK("PickUpItem::canPerform");
-    return c->canCarryMoreWeight(lightestItem) && c->canNavigateTo(position);
+    return c->canCarryMoreWeight(lightestItem) && position.canNavigateTo(c->getPosition(), movement);
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), items, pickedUp, position, tries, lightestItem, storage, dropTask)

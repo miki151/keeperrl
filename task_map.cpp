@@ -3,19 +3,64 @@
 #include "creature.h"
 #include "task.h"
 #include "creature_name.h"
+#include "equipment.h"
+#include "collective.h"
+#include "container_range.h"
 
-SERIALIZE_DEF(TaskMap, tasks, positionMap, reversePositions, taskByCreature, creatureByTask, marked, completionCost, priorityTasks, delayedTasks, highlight, taskById, taskByActivity, activityByTask);
+void TaskMap::addToTaskByActivity(Task* task, MinionActivity activity) {
+  taskByActivity[activity].push_back(task);
+  if (isPriorityTask(task))
+    priorityTaskByActivity[activity].push_back(task);
+}
+
+template <class Archive>
+void TaskMap::serialize(Archive& ar, const unsigned int) {
+  if (Archive::is_saving::value) {
+    for (auto activity : ENUM_ALL(MinionActivity)) {
+      for (auto task : cantPerformByAnyone[activity])
+        addToTaskByActivity(task, activity);
+      cantPerformByAnyone[activity].clear();
+    }
+  }
+  ar(tasks, positionMap, reversePositions, taskByCreature, creatureByTask, marked, completionCost, priorityTasks, delayedTasks, highlight, taskById, taskByActivity, activityByTask);
+  if (Archive::is_loading::value) {
+    for (auto activity : ENUM_ALL(MinionActivity)) {
+      for (auto& task : taskByActivity[activity])
+        if (isPriorityTask(task))
+          priorityTaskByActivity[activity].push_back(task);
+    }
+  }
+}
+
+SERIALIZABLE(TaskMap);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(TaskMap);
 
-void TaskMap::clearFinishedTasks() {
-  for (WTask t : getWeakPointers(tasks))
+void TaskMap::tick() {
+  for (WTask t : getWeakPointers(tasks)) {
     if (t->isDone())
       removeTask(t);
+  }
+  for (auto activity : ENUM_ALL(MinionActivity)) {
+    for (auto task : Iter(taskByActivity[activity]))
+      if (!(*task)->canPerformByAnyone()) {
+        task.markToErase();
+        cantPerformByAnyone[activity].push_back(*task);
+      }
+    for (auto task : Iter(priorityTaskByActivity[activity]))
+      if (!(*task)->canPerformByAnyone())
+        task.markToErase();
+    for (auto task : Iter(cantPerformByAnyone[activity]))
+      if ((*task)->canPerformByAnyone()) {
+        task.markToErase();
+        addToTaskByActivity(*task, activity);
+      }
+  }
 }
 
-WTask TaskMap::getClosestTask(const Creature* c, MinionActivity activity, bool priorityOnly) const {
-  PROFILE;
+WTask TaskMap::getClosestTask(const Creature* c, MinionActivity activity, bool priorityOnly, const Collective* col) const {
+  auto header = "getClosestTask " + EnumInfo<MinionActivity>::getString(activity);
+  PROFILE_BLOCK(header.data());
   WTask closest = nullptr;
   auto isBetter = [&](WTask task, optional<int> dist) {
     PROFILE_BLOCK("isBetter");
@@ -29,31 +74,38 @@ WTask TaskMap::getClosestTask(const Creature* c, MinionActivity activity, bool p
       return false;
     return dist.value_or(10000) < getPosition(closest)->dist8(c->getPosition()).value_or(10000);
   };
-  optional<StorageId> storageDropTask;
-  for (auto& task : taskByActivity[activity])
-    if (auto id = task->getStorageId(true))
-      if (task->canPerform(c)) {
-        storageDropTask = *id;
-        break;
-      }
   auto movementType = c->getMovementType();
-  auto creaturePosition = c->getPosition();
-  for (auto& task : taskByActivity[activity])
-    if (task->canPerform(c) && (!priorityOnly || isPriorityTask(task)) &&
-        (!storageDropTask || storageDropTask == task->getStorageId(false)))
-      if (auto pos = getPosition(task)) {
-        PROFILE_BLOCK("Task check");
-        auto dist = pos->dist8(c->getPosition());
-        const Creature* owner = getOwner(task);
-        auto delayed = delayedTasks.getMaybe(task);
-        if (!task->isDone() &&
-            (!owner || (task->canTransfer() && dist && pos->dist8(owner->getPosition()).value_or(10000) > *dist && *dist <= 6)) &&
-            isBetter(task, dist) &&
-            pos->canNavigateToOrNeighbor(creaturePosition, movementType) &&
-            (!delayed || *delayed < *c->getLocalTime())) {
-          closest = task;
+  optional<StorageId> storageDropTask;
+  {
+    PROFILE_BLOCK("StorageId");
+    for (auto it : c->getEquipment().getItems())
+      if (auto task = col->getItemTask(it))
+        if (auto id = task->getStorageId(true))
+          if (task->canPerform(c, movementType)) {
+            storageDropTask = *id;
+            break;
+          }
+  }
+  {
+    PROFILE_BLOCK("ByActivity");
+    auto& taskList = priorityOnly ? priorityTaskByActivity : taskByActivity;
+    for (auto& task : taskList[activity])
+      if ((!storageDropTask || storageDropTask == task->getStorageId(false)) &&
+          task->canPerform(c, movementType))
+        if (auto pos = getPosition(task)) {
+          PROFILE_BLOCK("Task check");
+          auto dist = pos->dist8(c->getPosition());
+          const Creature* owner = getOwner(task);
+          auto delayed = delayedTasks.getMaybe(task);
+          if (!task->isDone() &&
+              (!owner || (task->canTransfer() && dist && pos->dist8(owner->getPosition()).value_or(10000) > *dist && *dist <= 6)) &&
+              isBetter(task, dist) &&
+              pos->canNavigateToOrNeighbor(c->getPosition(), movementType) &&
+              (!delayed || *delayed < *c->getLocalTime())) {
+            closest = task;
+          }
         }
-      }
+  }
   return closest;
 }
 
@@ -62,8 +114,11 @@ vector<WConstTask> TaskMap::getAllTasks() const {
 }
 
 void TaskMap::setPriorityTasks(Position pos) {
-  for (WTask t : getTasks(pos))
+  for (WTask t : getTasks(pos)) {
+    if (auto activity = activityByTask.getMaybe(t))
+      priorityTaskByActivity[*activity].push_back(t);
     priorityTasks.insert(t);
+  }
   pos.setNeedsRenderUpdate(true);
 }
 
@@ -99,7 +154,9 @@ CostInfo TaskMap::removeTask(WTask task) {
   if (auto activity = activityByTask.getMaybe(task)) {
     CHECK(activityByTask.getMaybe(task));
     activityByTask.erase(task);
-    taskByActivity[*activity].removeElement(task);
+    taskByActivity[*activity].removeElementMaybe(task);
+    priorityTaskByActivity[*activity].removeElementMaybe(task);
+    cantPerformByAnyone[*activity].removeElementMaybe(task);
   }
   for (int i : All(tasks))
     if (tasks[i].get() == task) {

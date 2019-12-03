@@ -55,7 +55,7 @@ class ConstructionMap {
   optional<const FurnitureInfo&> getFurniture(Position, FurnitureLayer) const;
   void setTask(Position, FurnitureLayer, UniqueEntity<Task>::Id);
   void removeFurniturePlan(Position, FurnitureLayer);
-  void onFurnitureDestroyed(Position, FurnitureLayer);
+  void onFurnitureDestroyed(Position, FurnitureLayer, FurnitureType);
   void addFurniture(Position, const FurnitureInfo&, FurnitureLayer);
   bool containsFurniture(Position, FurnitureLayer) const;
   int getBuiltCount(FurnitureType) const;

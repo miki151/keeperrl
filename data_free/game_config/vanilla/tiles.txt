@@ -437,11 +437,11 @@
   { viewId = "angel_shrine" symbol = "Ω" color = ColorId WHITE
     isSymbolFont = true roundShadow = true }
   { viewId = "bookcase_wood" symbol = "▤" color = ColorId BROWN
-    roundShadow = true }
+    roundShadow = true isSymbolFont = true }
   { viewId = "bookcase_iron" symbol = "▤" color = ColorId LIGHT_GRAY
-    roundShadow = true }
+    roundShadow = true isSymbolFont = true }
   { viewId = "bookcase_gold" symbol = "▤" color = ColorId YELLOW
-    roundShadow = true }
+    roundShadow = true isSymbolFont = true }
   { viewId = "beast_cage" symbol = "▥" color = ColorId LIGHT_GRAY
     isSymbolFont = true roundShadow = true }
   { viewId = "forge" symbol = "&" color = ColorId LIGHT_BLUE

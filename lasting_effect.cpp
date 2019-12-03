@@ -534,34 +534,35 @@ static const int attrBonus = 3;
 
 int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
   int value = 0;
+  auto time = c->getGlobalTime();
   switch (type) {
     case AttrType::DAMAGE:
-      if (c->isAffected(LastingEffect::PANIC))
+      if (c->isAffected(LastingEffect::PANIC, time))
         value -= attrBonus;
-      if (c->isAffected(LastingEffect::RAGE))
+      if (c->isAffected(LastingEffect::RAGE, time))
         value += attrBonus;
-      if (c->isAffected(LastingEffect::DAM_BONUS))
+      if (c->isAffected(LastingEffect::DAM_BONUS, time))
         value += attrBonus;
-      if (c->hasAlternativeViewId() && c->isAffected(LastingEffect::SPYING))
+      if (c->hasAlternativeViewId() && c->isAffected(LastingEffect::SPYING, time))
         value -= 99;
       break;
     case AttrType::RANGED_DAMAGE:
     case AttrType::SPELL_DAMAGE:
-      if (c->hasAlternativeViewId() && c->isAffected(LastingEffect::SPYING))
+      if (c->hasAlternativeViewId() && c->isAffected(LastingEffect::SPYING, time))
         value -= 99;
       break;
     case AttrType::DEFENSE:
-      if (c->isAffected(LastingEffect::PANIC))
+      if (c->isAffected(LastingEffect::PANIC, time))
         value += attrBonus;
-      if (c->isAffected(LastingEffect::RAGE))
+      if (c->isAffected(LastingEffect::RAGE, time))
         value -= attrBonus;
-      if (c->isAffected(LastingEffect::SLEEP))
+      if (c->isAffected(LastingEffect::SLEEP, time))
         value -= attrBonus;
-      if (c->isAffected(LastingEffect::DEF_BONUS))
+      if (c->isAffected(LastingEffect::DEF_BONUS, time))
         value += attrBonus;
-      if (c->isAffected(LastingEffect::SATIATED))
+      if (c->isAffected(LastingEffect::SATIATED, time))
         value += 1;
-      if (c->isAffected(LastingEffect::RESTED))
+      if (c->isAffected(LastingEffect::RESTED, time))
         value += 1;
       break;
     default: break;
@@ -1154,14 +1155,14 @@ int LastingEffects::getPrice(LastingEffect e) {
   }
 }
 
-double LastingEffects::getMoraleIncrease(const Creature* c) {
+double LastingEffects::getMoraleIncrease(const Creature* c, optional<GlobalTime> time) {
   PROFILE;
   double ret = 0;
-  if (c->isAffected(LastingEffect::RESTED))
+  if (c->isAffected(LastingEffect::RESTED, time))
     ret += 0.1;
   else
     ret -= 0.1;
-  if (c->isAffected(LastingEffect::SATIATED))
+  if (c->isAffected(LastingEffect::SATIATED, time))
     ret += 0.1;
   else
     ret -= 0.1;
@@ -1398,6 +1399,7 @@ static bool shouldEnemyApply(const Creature* victim, LastingEffect effect) {
 }
 
 EffectAIIntent LastingEffects::shouldAIApply(const Creature* victim, LastingEffect effect, bool isEnemy) {
+  PROFILE_BLOCK("LastingEffects::shouldAIApply");
   if (!affects(victim, effect))
     return EffectAIIntent::NONE;
   if (shouldEnemyApply(victim, effect))

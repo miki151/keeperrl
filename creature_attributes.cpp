@@ -247,7 +247,7 @@ void CreatureAttributes::chatReaction(Creature* me, Creature* other) {
 }
 
 bool CreatureAttributes::isAffected(LastingEffect effect, GlobalTime time) const {
-  PROFILE;
+  //PROFILE;
   if (auto suppressor = LastingEffects::getSuppressor(effect))
     if (isAffected(*suppressor, time))
       return false;

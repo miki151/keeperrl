@@ -43,8 +43,8 @@ class EntitySet {
   void serialize(Archive& ar, const unsigned int version);
 
   ItemPredicate containsPredicate() const;
-
-  typedef typename set<typename UniqueEntity<T>::Id>::const_iterator Iter;
+  using SetType = unordered_set<typename UniqueEntity<T>::Id, CustomHash<typename UniqueEntity<T>::Id>>;
+  using Iter = typename SetType::const_iterator;
 
   Iter begin() const;
   Iter end() const;
@@ -54,6 +54,6 @@ class EntitySet {
   }
 
   private:
-  set<typename UniqueEntity<T>::Id> SERIAL(elems);
+  SetType SERIAL(elems);
 };
 

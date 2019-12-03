@@ -60,12 +60,13 @@ class EntityMap {
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
-  typedef typename map<EntityId, Value>::const_iterator Iter;
+  typedef typename unordered_map<EntityId, Value, CustomHash<EntityId>>::const_iterator Iter;
+  ~EntityMap();
 
   Iter begin() const;
   Iter end() const;
 
   private:
-  map<EntityId, Value> SERIAL(elems);
+  unordered_map<EntityId, Value, CustomHash<EntityId>> SERIAL(elems);
 };
 

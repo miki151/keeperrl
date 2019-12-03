@@ -279,6 +279,8 @@ optional<BodyPart> Body::getAnyGoodBodyPart() const {
   for (auto part : ENUM_ALL(BodyPart))
     if (numGood(part) > 0)
       good.push_back(part);
+  if (good.empty())
+    return none;
   return Random.choose(good);
 }
 
@@ -755,9 +757,9 @@ bool Body::heal(Creature* c, double amount) {
     if (health >= 1) {
       c->you(MsgType::ARE, hasHealth(HealthType::FLESH) ? "fully healed" : "fully materialized");
       health = 1;
-      c->updateViewObject();
       return true;
     }
+    updateViewObject(c->modViewObject());
   }
   return false;
 }

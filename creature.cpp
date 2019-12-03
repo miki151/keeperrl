@@ -190,10 +190,11 @@ CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
 
 void Creature::updateLastingFX(ViewObject& object) {
   object.particleEffects.clear();
-  for (auto effect : ENUM_ALL(LastingEffect))
-    if (isAffected(effect))
-      if (auto fx = LastingEffects::getFX(effect))
-        object.particleEffects.insert(*fx);
+  if (auto time = getGlobalTime())
+    for (auto effect : ENUM_ALL(LastingEffect))
+      if (isAffected(effect, *time))
+        if (auto fx = LastingEffects::getFX(effect))
+          object.particleEffects.insert(*fx);
 }
 
 
@@ -461,14 +462,16 @@ void Creature::swapPosition(Vec2 direction, bool withExcuseMe) {
 }
 
 void Creature::makeMove() {
-  vision->update(this);
+  PROFILE;
+  auto time = *getGlobalTime();
+  vision->update(this, time);
   CHECK(!isDead());
   if (hasCondition(CreatureCondition::SLEEPING)) {
     getController()->sleeping();
     spendTime();
     return;
   }
-  updateViewObject();
+  //updateViewObject();
   {
     // Calls makeMove() while preventing Controller destruction by holding a shared_ptr on stack.
     // This is needed, otherwise Controller could be destroyed during makeMove() if creature committed suicide.
@@ -480,7 +483,7 @@ void Creature::makeMove() {
   unknownAttackers.clear();
   getBody().affectPosition(position);
   highestAttackValueEver = max(highestAttackValueEver, getBestAttack().value);
-  vision->update(this);
+  vision->update(this, time);
 }
 
 CreatureAction Creature::wait() {
@@ -510,7 +513,6 @@ WLevel Creature::getLevel() const {
 }
 
 Game* Creature::getGame() const {
-  PROFILE;
   if (!gameCache)
     gameCache = getPosition().getGame();
   return gameCache;
@@ -883,6 +885,14 @@ bool Creature::isAffected(LastingEffect effect) const {
     return attributes->isAffectedPermanently(effect);
 }
 
+bool Creature::isAffected(LastingEffect effect, optional<GlobalTime> time) const {
+  PROFILE;
+  if (time)
+    return attributes->isAffected(effect, *time);
+  else
+    return attributes->isAffectedPermanently(effect);
+}
+
 bool Creature::isAffected(LastingEffect effect, GlobalTime time) const {
   //PROFILE;
   return attributes->isAffected(effect, time);
@@ -1019,7 +1029,8 @@ optional<GlobalTime> Creature::getGlobalTime() const {
 void Creature::considerMovingFromInaccessibleSquare() {
   PROFILE;
   auto movement = getMovementType();
-  auto forced = getMovementType().setForced();
+  auto forced = movement;
+  forced.setForced();
   if (!position.canEnterEmpty(forced))
     for (auto neighbor : position.neighbors8(Random))
       if (neighbor.canEnter(movement)) {
@@ -1043,24 +1054,28 @@ void Creature::tick() {
         if (!info->isSkeleton && it->getClass() != ItemClass::FOOD)
           addMorale(-2 * mult);
   };
-  for (auto pos : position.neighbors8())
-    updateMorale(pos, 0.0004);
-  updateMorale(position, 0.001);
+  const double moraleUpdateFreq = 0.1;
+  if (Random.chance(moraleUpdateFreq)) {
+    for (auto pos : position.neighbors8())
+      updateMorale(pos, 0.0004 / moraleUpdateFreq);
+    updateMorale(position, 0.001 / moraleUpdateFreq);
+  }
   considerMovingFromInaccessibleSquare();
   captureHealth = min(1.0, captureHealth + 0.02);
-  vision->update(this);
+  auto time = *getGlobalTime();
+  vision->update(this, time);
   if (Random.roll(5))
     getDifficultyPoints();
-  equipment->tick(position);
+  equipment->tick(position, this);
   if (isDead())
     return;
   tickShamanSummons();
   for (LastingEffect effect : ENUM_ALL(LastingEffect)) {
-    if (attributes->considerTimeout(effect, *getGlobalTime()))
+    if (attributes->considerTimeout(effect, time))
       LastingEffects::onTimedOut(this, effect, true);
     if (isDead())
       return;
-    if (isAffected(effect) && LastingEffects::tick(this, effect))
+    if (isAffected(effect, time) && LastingEffects::tick(this, effect))
       return;
   }
   updateViewObject();
@@ -1349,7 +1364,7 @@ void Creature::updateViewObject() {
 }
 
 double Creature::getMorale() const {
-  return min(1.0, max(-1.0, morale + LastingEffects::getMoraleIncrease(this)));
+  return min(1.0, max(-1.0, morale + LastingEffects::getMoraleIncrease(this, getGlobalTime())));
 }
 
 void Creature::addMorale(double val) {
@@ -1380,9 +1395,9 @@ string attrStr(bool strong, bool agile, bool fast) {
 }
 
 void Creature::heal(double amount) {
+  PROFILE;
   if (getBody().heal(this, amount))
     lastAttacker = nullptr;
-  updateViewObject();
 }
 
 void Creature::affectByFire(double amount) {
@@ -1875,17 +1890,18 @@ TribeSet Creature::getFriendlyTribes() const {
 
 MovementType Creature::getMovementType() const {
   PROFILE;
+  auto time = getGlobalTime();
   return MovementType(hasAlternativeViewId() ? TribeSet::getFull() : getFriendlyTribes(), {
       true,
-      isAffected(LastingEffect::FLYING),
-      isAffected(LastingEffect::SWIMMING_SKILL),
+      isAffected(LastingEffect::FLYING, time),
+      isAffected(LastingEffect::SWIMMING_SKILL, time),
       getBody().canWade()})
     .setDestroyActions(EnumSet<DestroyAction::Type>([this](auto t) { return DestroyAction(t).canNavigate(this); }))
-    .setForced(isAffected(LastingEffect::BLIND) || getHoldingCreature() || forceMovement)
-    .setFireResistant(isAffected(LastingEffect::FIRE_RESISTANT))
-    .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE) && !isAffected(LastingEffect::DARKNESS_SOURCE)
+    .setForced(isAffected(LastingEffect::BLIND, time) || getHoldingCreature() || forceMovement)
+    .setFireResistant(isAffected(LastingEffect::FIRE_RESISTANT, time))
+    .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE, time) && !isAffected(LastingEffect::DARKNESS_SOURCE, time)
         && (!getGame() || getGame()->getSunlightInfo().getState() == SunlightState::DAY))
-    .setCanBuildBridge(isAffected(LastingEffect::BRIDGE_BUILDING_SKILL));
+    .setCanBuildBridge(isAffected(LastingEffect::BRIDGE_BUILDING_SKILL, time));
 }
 
 int Creature::getDifficultyPoints() const {

@@ -105,10 +105,14 @@ void Equipment::unequip(Item* item, Creature* c) {
   item->onUnequip(c);
 }
 
-PItem Equipment::removeItem(Item* item, Creature* c) {
+void Equipment::onRemoved(Item* item, Creature* c) {
   if (isEquipped(item))
     unequip(item, c);
   item->onDropped(c);
+}
+
+PItem Equipment::removeItem(Item* item, Creature* c) {
+  onRemoved(item, c);
   return inventory.removeItem(item);
 }
   
@@ -135,8 +139,9 @@ const ItemCounts& Equipment::getCounts() const {
   return inventory.getCounts();
 }
 
-void Equipment::tick(Position pos) {
-  inventory.tick(pos);
+void Equipment::tick(Position pos, Creature* c) {
+  for (auto& item : inventory.tick(pos))
+    onRemoved(item.get(), c);
 }
 
 bool Equipment::containsAnyOf(const EntitySet<Item>& items) const {

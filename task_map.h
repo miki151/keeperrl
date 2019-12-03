@@ -37,15 +37,14 @@ class TaskMap {
   bool isPriorityTask(WConstTask) const;
   bool hasPriorityTasks(Position) const;
   void setPriorityTasks(Position);
-  WTask getClosestTask(const Creature*, MinionActivity, bool priorityOnly) const;
+  WTask getClosestTask(const Creature*, MinionActivity, bool priorityOnly, const Collective*) const;
   const EntityMap<Task, CostInfo>& getCompletionCosts() const;
   WTask getTask(UniqueEntity<Task>::Id) const;
-  void clearFinishedTasks();
+  void tick();
 
   SERIALIZATION_DECL(TaskMap)
 
   private:
-  void setPosition(WTask, Position);
   EntityMap<Creature, WTask> SERIAL(taskByCreature);
   EntityMap<Task, Creature*> SERIAL(creatureByTask);
   EntityMap<Task, Position> SERIAL(positionMap);
@@ -57,7 +56,12 @@ class TaskMap {
   EntityMap<Task, CostInfo> SERIAL(completionCost);
   EntityMap<Task, LocalTime> SERIAL(delayedTasks);
   EntitySet<Task> SERIAL(priorityTasks);
-  EnumMap<MinionActivity, vector<WTask>> SERIAL(taskByActivity);
+  EnumMap<MinionActivity, vector<Task*>> SERIAL(taskByActivity);
+  EnumMap<MinionActivity, vector<Task*>> priorityTaskByActivity;
+  EnumMap<MinionActivity, vector<Task*>> cantPerformByAnyone;
   EntityMap<Task, MinionActivity> SERIAL(activityByTask);
+  void releaseOnHoldTask(Task*);
+  void setPosition(WTask, Position);
+  void addToTaskByActivity(Task*, MinionActivity);
 };
 

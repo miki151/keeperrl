@@ -494,7 +494,7 @@ void Collective::tick() {
   dangerLevelCache = none;
   control->tick();
   zones->tick();
-  taskMap->clearFinishedTasks();
+  taskMap->tick();
   constructions->clearUnsupportedFurniturePlans();
   if (config->getWarnings() && Random.roll(5))
     warnings->considerWarnings(this);
@@ -655,7 +655,7 @@ void Collective::onEvent(const GameEvent& event) {
         if (info.position.getModel() == model) {
           populationIncrease -= getGame()->getContentFactory()->furniture.getPopulationIncrease(
               info.type, constructions->getBuiltCount(info.type));
-          constructions->onFurnitureDestroyed(info.position, info.layer);
+          constructions->onFurnitureDestroyed(info.position, info.layer, info.type);
           populationIncrease += getGame()->getContentFactory()->furniture.getPopulationIncrease(
               info.type, constructions->getBuiltCount(info.type));
         }
@@ -848,7 +848,7 @@ vector<Collective::TrapItemInfo> Collective::getTrapItems(const vector<Position>
   vector<TrapItemInfo> ret;
   for (Position pos : squares)
     for (auto it : pos.getItems(ItemIndex::TRAP))
-      if (!isItemMarked(it))
+      if (!getItemTask(it))
         ret.push_back(TrapItemInfo{it, pos, it->getEffect()->effect->getValueMaybe<Effects::PlaceFurniture>()->furniture});
   return ret;
 }
@@ -920,11 +920,12 @@ bool Collective::isKnownVillainLocation(WConstCollective col) const {
   return knownVillainLocations.contains(col);
 }
 
-bool Collective::isItemMarked(const Item* it) const {
-  return !!markedItems.getOrElse(it, nullptr);
+WConstTask Collective::getItemTask(const Item* it) const {
+  return markedItems.getOrElse(it, nullptr).get();
 }
 
 void Collective::markItem(const Item* it, WConstTask task) {
+  CHECK(!getItemTask(it));
   markedItems.set(it, task);
 }
 

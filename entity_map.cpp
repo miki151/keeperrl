@@ -15,6 +15,10 @@ EntityMap<Key, Value>::EntityMap() {
 }
 
 template <typename Key, typename Value>
+EntityMap<Key, Value>::~EntityMap() {
+}
+
+template <typename Key, typename Value>
 void EntityMap<Key, Value>::set(const Key* key, const Value& v) {
   set(key->getUniqueId(), v);
 }
