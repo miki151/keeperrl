@@ -2452,13 +2452,13 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           selection = SELECT;
           collective->destroyOrder(position, layer);
           if (auto f = position.getFurniture(layer))
-            if (f->getType() == FurnitureType("TREE_TRUNK"))
+            if (f->getType() == FurnitureType("TREE_TRUNK") || f->getType() == FurnitureType("STONES"))
               position.removeFurniture(f);
           getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
           updateSquareMemory(position);
         } else
           if (auto f = position.getFurniture(layer))
-            if (f->getType() == FurnitureType("TREE_TRUNK"))
+            if (f->getType() == FurnitureType("TREE_TRUNK") || f->getType() == FurnitureType("STONES"))
               position.removeFurniture(f);
       }
     },
