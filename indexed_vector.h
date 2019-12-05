@@ -28,6 +28,13 @@ class IndexedVector {
     return elems;
   }
 
+  void insertIfDoesntContain(T t) {
+    if (!contains(t)) {
+      indexes.emplace(t->getUniqueId(), elems.size());
+      elems.push_back(std::move(t));
+    }
+  }
+
   void insert(T t) {
     CHECK(!contains(t));
     indexes.emplace(t->getUniqueId(), elems.size());
@@ -36,6 +43,11 @@ class IndexedVector {
 
   bool contains(const T& t) const {
     return indexes.count(t->getUniqueId());
+  }
+
+  void removeMaybe(const T& t) {
+    if (contains(t))
+      remove(t);
   }
 
   void remove(const T& t) {
