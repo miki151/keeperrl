@@ -8,6 +8,7 @@
 #include "minion_trait.h"
 #include "game_time.h"
 #include "minion_activity.h"
+#include "indexed_vector.h"
 
 class Task;
 class Creature;
@@ -57,7 +58,7 @@ class TaskMap {
   EntityMap<Task, LocalTime> SERIAL(delayedTasks);
   EntitySet<Task> SERIAL(priorityTasks);
   EnumMap<MinionActivity, vector<Task*>> SERIAL(taskByActivity);
-  EnumMap<MinionActivity, vector<Task*>> priorityTaskByActivity;
+  EnumMap<MinionActivity, IndexedVector<Task*, UniqueEntity<Task>::Id>> priorityTaskByActivity;
   EnumMap<MinionActivity, vector<Task*>> cantPerformByAnyone;
   EntityMap<Task, MinionActivity> SERIAL(activityByTask);
   void releaseOnHoldTask(Task*);

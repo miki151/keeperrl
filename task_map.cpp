@@ -10,7 +10,7 @@
 void TaskMap::addToTaskByActivity(Task* task, MinionActivity activity) {
   taskByActivity[activity].push_back(task);
   if (isPriorityTask(task))
-    priorityTaskByActivity[activity].push_back(task);
+    priorityTaskByActivity[activity].insertIfDoesntContain(task);
 }
 
 template <class Archive>
@@ -27,7 +27,7 @@ void TaskMap::serialize(Archive& ar, const unsigned int) {
     for (auto activity : ENUM_ALL(MinionActivity)) {
       for (auto& task : taskByActivity[activity])
         if (isPriorityTask(task))
-          priorityTaskByActivity[activity].push_back(task);
+          priorityTaskByActivity[activity].insertIfDoesntContain(task);
     }
   }
 }
@@ -47,9 +47,12 @@ void TaskMap::tick() {
         task.markToErase();
         cantPerformByAnyone[activity].push_back(*task);
       }
-    for (auto task : Iter(priorityTaskByActivity[activity]))
-      if (!(*task)->canPerformByAnyone())
-        task.markToErase();
+    EntitySet<Task> toErase;
+    for (auto task : priorityTaskByActivity[activity].getElems())
+      if (!task->canPerformByAnyone())
+        toErase.insert(task);
+    for (auto& elem : toErase)
+      priorityTaskByActivity[activity].remove(elem);
     for (auto task : Iter(cantPerformByAnyone[activity]))
       if ((*task)->canPerformByAnyone()) {
         task.markToErase();
@@ -88,8 +91,8 @@ WTask TaskMap::getClosestTask(const Creature* c, MinionActivity activity, bool p
   }
   {
     PROFILE_BLOCK("ByActivity");
-    auto& taskList = priorityOnly ? priorityTaskByActivity : taskByActivity;
-    for (auto& task : taskList[activity])
+    auto& taskList = priorityOnly ? priorityTaskByActivity[activity].getElems() : taskByActivity[activity];
+    for (auto& task : taskList)
       if ((!storageDropTask || storageDropTask == task->getStorageId(false)) &&
           task->canPerform(c, movementType))
         if (auto pos = getPosition(task)) {
@@ -116,7 +119,7 @@ vector<WConstTask> TaskMap::getAllTasks() const {
 void TaskMap::setPriorityTasks(Position pos) {
   for (WTask t : getTasks(pos)) {
     if (auto activity = activityByTask.getMaybe(t))
-      priorityTaskByActivity[*activity].push_back(t);
+      priorityTaskByActivity[*activity].insertIfDoesntContain(t);
     priorityTasks.insert(t);
   }
   pos.setNeedsRenderUpdate(true);
@@ -155,7 +158,7 @@ CostInfo TaskMap::removeTask(WTask task) {
     CHECK(activityByTask.getMaybe(task));
     activityByTask.erase(task);
     taskByActivity[*activity].removeElementMaybe(task);
-    priorityTaskByActivity[*activity].removeElementMaybe(task);
+    priorityTaskByActivity[*activity].removeMaybe(task);
     cantPerformByAnyone[*activity].removeElementMaybe(task);
   }
   for (int i : All(tasks))

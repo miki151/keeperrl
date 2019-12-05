@@ -1959,6 +1959,8 @@ SGuiElem GuiBuilder::drawNextWaveOverlay(const optional<CollectiveInfo::NextWave
 SGuiElem GuiBuilder::drawWorkshopItemActionButton(const CollectiveInfo::QueuedItemInfo& elem, int itemIndex) {
   return gui.buttonRect([=] (Rectangle bounds) {
       auto lines = gui.getListBuilder(legendLineHeight);
+      disableTooltip = true;
+      DestructorFunction dFun([this] { disableTooltip = false; });
       bool exit = false;
       optional<ItemAction> ret;
       for (auto action : elem.itemInfo.actions) {
@@ -1981,6 +1983,8 @@ SGuiElem GuiBuilder::drawWorkshopItemActionButton(const CollectiveInfo::QueuedIt
 SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo& elem, int itemIndex) {
   auto buttonHandler = gui.buttonRect([=] (Rectangle bounds) {
       auto lines = gui.getListBuilder(legendLineHeight);
+      disableTooltip = true;
+      DestructorFunction dFun([this] { disableTooltip = false; });
       bool exit = false;
       optional<WorkshopUpgradeInfo> ret;
       for (int i : All(elem.added)) {
