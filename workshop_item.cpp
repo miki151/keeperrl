@@ -14,7 +14,7 @@ WorkshopItem WorkshopItemCfg::get(const ContentFactory* factory) const {
     elem->getName(true),
     elem->getViewObject().id(),
     cost,
-    concat(elem->getDescription(), {elem->getNameAndModifiers()}),
+    concat(elem->getDescription(factory), {elem->getNameAndModifiers()}),
     batchSize,
     work,
     tech,

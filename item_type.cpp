@@ -254,7 +254,7 @@ PItem ItemType::get(const ContentFactory* factory) const {
   if (attributes.ingredientFor)
     attributes.description = "Ingredient for " + attributes.ingredientFor->get(factory)->getName();
   if (!attributes.genPrefixes.empty() && Random.chance(prefixChance))
-    applyPrefix(Random.choose(attributes.genPrefixes), attributes);
+    applyPrefix(factory, Random.choose(attributes.genPrefixes), attributes);
   return type->visit(
       [&](const ItemTypes::FireScroll&) {
         return makeOwner<FireScrollItem>(std::move(attributes), factory);
@@ -393,11 +393,11 @@ ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory*) const 
   );
 }
 
-ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
       i.viewId = ViewId("trap_item");
       i.effect = Effect(Effects::AssembledMinion{creature});
-      i.name = i.effect->getName();
+      i.name = i.effect->getName(factory);
       i.itemClass = ItemClass::TOOL;
       i.weight = 1;
       i.price = getEffectPrice(*i.effect);
@@ -405,14 +405,14 @@ ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory*) const 
   );
 }
 
-ItemAttributes ItemTypes::Intrinsic::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Intrinsic::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
       i.viewId = viewId;
       i.name = name;
       for (auto& effect : weaponInfo.victimEffect)
-        i.prefixes.push_back(effect.effect.getName());
+        i.prefixes.push_back(effect.effect.getName(factory));
       for (auto& effect : weaponInfo.attackerEffect)
-        i.prefixes.push_back(effect.getName());
+        i.prefixes.push_back(effect.getName(factory));
       i.itemClass = ItemClass::WEAPON;
       i.equipmentSlot = EquipmentSlot::WEAPON;
       i.weight = 0.3;
@@ -475,10 +475,10 @@ ItemAttributes CustomItemId::getAttributes(const ContentFactory* factory) const 
   }
 }
 
-ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
       i.viewId = ViewId("potion1");
-      i.shortName = effect.getName();
+      i.shortName = effect.getName(factory);
       i.name = "potion of " + *i.shortName;
       i.plural = "potions of " + *i.shortName;
       i.blindName = "potion"_s;
@@ -512,10 +512,10 @@ static ViewId getMushroomViewId(Effect e) {
   );
 }
 
-ItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
       i.viewId = getMushroomViewId(effect);
-      i.shortName = effect.getName();
+      i.shortName = effect.getName(factory);
       i.name = *i.shortName + " mushroom";
       i.blindName = "mushroom"_s;
       i.itemClass= ItemClass::FOOD;
@@ -533,9 +533,9 @@ static ViewId getRuneViewId(const string& name) {
   return ids[(h % ids.size() + ids.size()) % ids.size()];
 }
 
-ItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
-      i.shortName = getGlyphName(*rune.prefix);
+      i.shortName = getGlyphName(factory, *rune.prefix);
       i.viewId = getRuneViewId(*i.shortName);
       i.upgradeInfo = rune;
       i.name = "glyph of " + *i.shortName;
@@ -549,10 +549,10 @@ ItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory*) const {
   );
 }
 
-ItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory*) const {
+ItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
       i.viewId = ViewId("scroll");
-      i.shortName = effect.getName();
+      i.shortName = effect.getName(factory);
       i.name = "scroll of " + *i.shortName;
       i.plural= "scrolls of "  + *i.shortName;
       i.blindName = "scroll"_s;

@@ -79,7 +79,7 @@ ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack) {
     c.name = stack[0]->getShortName(creature, stack.size() > 1);
     c.fullName = stack[0]->getNameAndModifiers(false, creature);
     c.description = creature->isAffected(LastingEffect::BLIND)
-        ? vector<string>() : stack[0]->getDescription();
+        ? vector<string>() : stack[0]->getDescription(creature->getGame()->getContentFactory());
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().id();
     c.viewIdModifiers = stack[0]->getViewObject().getAllModifiers();
@@ -124,20 +124,20 @@ static vector<ItemInfo> getItemInfos(const Creature* c, const vector<Item*>& ite
   return ret;
 }
 
-static PlayerInfo::SpellSchool fillSpellSchool(const Creature* c, SpellSchoolId id, const CreatureFactory* factory) {
+static PlayerInfo::SpellSchool fillSpellSchool(const Creature* c, SpellSchoolId id, const ContentFactory* factory) {
   PlayerInfo::SpellSchool ret;
-  auto& spellSchool = factory->getSpellSchools().at(id);
+  auto& spellSchool = factory->getCreatures().getSpellSchools().at(id);
   ret.name = id.data();
   ret.experienceType = spellSchool.expType;
   for (auto& id : spellSchool.spells) {
-    auto spell = factory->getSpell(id.first);
+    auto spell = factory->getCreatures().getSpell(id.first);
     ret.spells.push_back(
         PlayerInfo::Spell {
           spell->getName(),
           spell->getSymbol(),
           id.second,
           c->getAttributes().getExpLevel(spellSchool.expType) >= id.second,
-          {spell->getDescription()},
+          {spell->getDescription(factory)},
           none
         });
   }
@@ -155,8 +155,9 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   creatureId = c->getUniqueId();
   attributes = AttributeInfo::fromCreature(c);
   experienceInfo = getCreatureExperienceInfo(c);
+  auto contentFactory = c->getGame()->getContentFactory();
   for (auto& id : c->getAttributes().getSpellSchools())
-    spellSchools.push_back(fillSpellSchool(c, id, &c->getGame()->getContentFactory()->getCreatures()));
+    spellSchools.push_back(fillSpellSchool(c, id, contentFactory));
   intrinsicAttacks = fillIntrinsicAttacks(c);
   skills = getSkillNames(c);
   kills = c->getKills().transform([&](auto& info){ return info.viewId; });
@@ -168,7 +169,7 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
     effects.push_back({adj.name, adj.help, false});
   spells.clear();
   for (auto spell : c->getSpellMap().getAvailable(c)) {
-    vector<string> description = {spell->getDescription(), "Cooldown: " + toString(spell->getCooldown())};
+    vector<string> description = {spell->getDescription(contentFactory), "Cooldown: " + toString(spell->getCooldown())};
     if (spell->getRange() > 0)
       description.push_back("Range: " + toString(spell->getRange()));
     spells.push_back({

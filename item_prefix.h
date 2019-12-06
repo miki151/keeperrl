@@ -31,7 +31,7 @@ struct AttackerEffect {
 MAKE_VARIANT2(ItemPrefix, LastingEffect, VictimEffect, AttackerEffect, ItemAttrBonus, JoinPrefixes, SpellId);
 
 class ItemAttributes;
-extern void applyPrefix(const ItemPrefix&, ItemAttributes&);
-extern string getItemName(const ItemPrefix&);
-extern string getGlyphName(const ItemPrefix&);
-extern vector<string> getEffectDescription(const ItemPrefix&);
+extern void applyPrefix(const ContentFactory*, const ItemPrefix&, ItemAttributes&);
+extern string getItemName(const ContentFactory*, const ItemPrefix&);
+extern string getGlyphName(const ContentFactory*, const ItemPrefix&);
+extern vector<string> getEffectDescription(const ContentFactory*, const ItemPrefix&);

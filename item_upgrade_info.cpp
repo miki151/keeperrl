@@ -13,9 +13,9 @@ static const char* getName(ItemUpgradeType type) {
   }
 }
 
-vector<string> ItemUpgradeInfo::getDescription() const {
+vector<string> ItemUpgradeInfo::getDescription(const ContentFactory* factory) const {
   vector<string> ret { "Crafting upgrade for "_s + getName(type) + ":" };
-  ret.append(getEffectDescription(*prefix));
+  ret.append(getEffectDescription(factory, *prefix));
   return ret;
 }
 

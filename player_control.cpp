@@ -402,12 +402,12 @@ void PlayerControl::minionTaskAction(const TaskActionInfo& action) {
   }
 }
 
-static ItemInfo getItemInfo(const vector<Item*>& stack, bool equiped, bool pending, bool locked,
+static ItemInfo getItemInfo(const ContentFactory* factory, const vector<Item*>& stack, bool equiped, bool pending, bool locked,
     optional<ItemInfo::Type> type = none) {
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(nullptr, stack.size() > 1);
     c.fullName = stack[0]->getNameAndModifiers(false);
-    c.description = stack[0]->getDescription();
+    c.description = stack[0]->getDescription(factory);
     c.number = stack.size();
     if (stack[0]->canEquip())
       c.slot = stack[0]->getEquipmentSlot();
@@ -448,12 +448,12 @@ static ItemInfo getEmptySlotItem(EquipmentSlot slot) {
     c.pending = false;);
 }
 
-static ItemInfo getTradeItemInfo(const vector<Item*>& stack, int budget) {
+static ItemInfo getTradeItemInfo(const ContentFactory* factory, const vector<Item*>& stack, int budget) {
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(nullptr, stack.size() > 1);
     c.price = make_pair(ViewId("gold"), stack[0]->getPrice());
     c.fullName = stack[0]->getNameAndModifiers(false);
-    c.description = stack[0]->getDescription();
+    c.description = stack[0]->getDescription(factory);
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().id();
     for (auto it : stack)
@@ -487,7 +487,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
       ownedItems.removeElement(item);
       bool equiped = creature->getEquipment().isEquipped(item);
       bool locked = collective->getMinionEquipment().isLocked(creature, item->getUniqueId());
-      info.inventory.push_back(getItemInfo({item}, equiped, !equiped, locked, ItemInfo::EQUIPMENT));
+      info.inventory.push_back(getItemInfo(getGame()->getContentFactory(), {item}, equiped, !equiped, locked, ItemInfo::EQUIPMENT));
       info.inventory.back().actions.push_back(locked ? ItemAction::UNLOCK : ItemAction::LOCK);
     }
     if (creature->getEquipment().getMaxItems(slot, creature) > items.size()) {
@@ -502,11 +502,11 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   vector<vector<Item*>> consumables = Item::stackItems(ownedItems,
       [&](const Item* it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
   for (auto& stack : consumables)
-    info.inventory.push_back(getItemInfo(stack, false,
+    info.inventory.push_back(getItemInfo(getGame()->getContentFactory(), stack, false,
           !creature->getEquipment().hasItem(stack[0]), false, ItemInfo::CONSUMABLE));
   for (Item* item : creature->getEquipment().getItems())
     if (!collective->getMinionEquipment().isItemUseful(item))
-      info.inventory.push_back(getItemInfo({item}, false, false, false, ItemInfo::OTHER));
+      info.inventory.push_back(getItemInfo(getGame()->getContentFactory(), {item}, false, false, false, ItemInfo::OTHER));
 }
 
 Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
@@ -532,9 +532,9 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
   vector<Item*> allStacked;
   vector<ItemInfo> options;
   for (Item* it : currentItems)
-    options.push_back(getItemInfo({it}, true, false, false));
+    options.push_back(getItemInfo(getGame()->getContentFactory(), {it}, true, false, false));
   for (auto& stack : concat(Item::stackItems(availableItems), usedStacks)) {
-    options.emplace_back(getItemInfo(stack, false, false, false));
+    options.emplace_back(getItemInfo(getGame()->getContentFactory(), stack, false, false, false));
     if (auto creatureId = collective->getMinionEquipment().getOwner(stack[0]))
       if (const Creature* c = getCreature(*creatureId))
         options.back().owner = CreatureInfo(c);
@@ -751,7 +751,7 @@ void PlayerControl::handleTrading(WCollective ally) {
       break;
     int budget = collective->numResource(ResourceId::GOLD);
     vector<ItemInfo> itemInfo = items.transform(
-        [budget] (const vector<Item*>& it) { return getTradeItemInfo(it, budget); });
+        [&] (const vector<Item*>& it) { return getTradeItemInfo(getGame()->getContentFactory(), it, budget); });
     auto index = getView()->chooseTradeItem("Trade with " + ally->getName()->full,
         {ViewId("gold"), collective->numResource(ResourceId::GOLD)}, itemInfo, &scrollPos);
     if (!index)
@@ -765,11 +765,11 @@ void PlayerControl::handleTrading(WCollective ally) {
   }
 }
 
-static ItemInfo getPillageItemInfo(const vector<Item*>& stack, bool noStorage) {
+static ItemInfo getPillageItemInfo(const ContentFactory* factory, const vector<Item*>& stack, bool noStorage) {
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(nullptr, stack.size() > 1);
     c.fullName = stack[0]->getNameAndModifiers(false);
-    c.description = stack[0]->getDescription();
+    c.description = stack[0]->getDescription(factory);
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().id();
     for (auto it : stack)
@@ -822,8 +822,8 @@ void PlayerControl::handlePillage(WCollective col) {
       options.push_back({elem, collective->getStorageForPillagedItem(elem.front())});
     if (options.empty())
       return;
-    vector<ItemInfo> itemInfo = options.transform([] (const PillageOption& it) {
-            return getPillageItemInfo(it.items, it.storage.empty());});
+    vector<ItemInfo> itemInfo = options.transform([&] (const PillageOption& it) {
+            return getPillageItemInfo(getGame()->getContentFactory(), it.items, it.storage.empty());});
     auto index = getView()->choosePillageItem("Pillage " + col->getName()->full, itemInfo, &scrollPos);
     if (!index)
       break;
@@ -1051,12 +1051,12 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
   CollectiveInfo::QueuedItemInfo ret {item.state.value_or(0), getWorkshopItem(item.item, item.number), {}, {} };
   for (auto& it : getItemUpgradesFor(item.item)) {
     ret.available.push_back({it.first[0]->getViewObject().id(), it.first[0]->getName(), it.first.size(),
-        it.first[0]->getUpgradeInfo()->getDescription()});
+        it.first[0]->getUpgradeInfo()->getDescription(getGame()->getContentFactory())});
   }
   for (auto& it : item.runes) {
     if (auto& upgradeInfo = it->getUpgradeInfo())
       ret.added.push_back({it->getViewObject().id(), it->getName(), 1,
-          upgradeInfo->getDescription()});
+          upgradeInfo->getDescription(getGame()->getContentFactory())});
     else
       ret.itemInfo.description.push_back("Crafted from: " + it->getName());
   }

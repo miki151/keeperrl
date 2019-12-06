@@ -30,6 +30,7 @@ RICH_ENUM(
 class Effect;
 class Position;
 class MoveInfo;
+class ContentFactory;
 
 class Spell {
   public:
@@ -37,7 +38,7 @@ class Spell {
   const string& getSymbol() const;
   const Effect& getEffect() const;
   int getCooldown() const;
-  string getDescription() const;
+  string getDescription(const ContentFactory*) const;
   void addMessage(Creature*) const;
   optional<SoundId> getSound() const;
   bool canTargetSelf() const;

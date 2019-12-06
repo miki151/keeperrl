@@ -31,7 +31,7 @@ class CreatureAttributes;
 class ControllerFactory;
 class NameGenerator;
 class GameConfig;
-class CreatureInventory;
+struct CreatureInventory;
 class SpellMap;
 class ContentFactory;
 
@@ -47,7 +47,8 @@ class CreatureFactory {
   static PCreature getIllusion(Creature*);
 
   static CreatureAttributes getKrakenAttributes(ViewId, const char* name);
-  ViewId getViewId(CreatureId);
+  ViewId getViewId(CreatureId) const;
+  string getName(CreatureId) const;
   const Gender& getGender(CreatureId);
   vector<CreatureId> getAllCreatures() const;
 
@@ -85,7 +86,6 @@ class CreatureFactory {
   PCreature get(CreatureId, TribeId, MonsterAIFactory);
   static PCreature get(CreatureAttributes, TribeId, const ControllerFactory&, SpellMap);
   CreatureAttributes getAttributesFromId(CreatureId);
-  map<CreatureId, ViewId> idMap;
   HeapAllocated<NameGenerator> SERIAL(nameGenerator);
   map<CreatureId, CreatureAttributes> SERIAL(attributes);
   vector<ItemType> getDefaultInventory(CreatureId) const;

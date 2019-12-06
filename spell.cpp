@@ -42,8 +42,8 @@ bool Spell::canTargetSelf() const {
   return targetSelf || range == 0;
 }
 
-string Spell::getDescription() const {
-  return effect->getDescription();
+string Spell::getDescription(const ContentFactory* f) const {
+  return effect->getDescription(f);
 }
 
 void Spell::addMessage(Creature* c) const {

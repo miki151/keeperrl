@@ -165,7 +165,7 @@ void Item::tick(Position position) {
 
 void Item::applyPrefix(const ItemPrefix& prefix, const ContentFactory* factory) {
   modViewObject().setModifier(ViewObject::Modifier::AURA);
-  ::applyPrefix(prefix, *attributes);
+  ::applyPrefix(factory, prefix, *attributes);
   updateAbility(factory);
 }
 
@@ -213,23 +213,23 @@ double Item::getWeight() const {
   return *attributes->weight;
 }
 
-vector<string> Item::getDescription() const {
+vector<string> Item::getDescription(const ContentFactory* factory) const {
   vector<string> ret;
   if (!attributes->description.empty())
     ret.push_back(attributes->description);
   if (attributes->effectDescription)
     if (auto& effect = attributes->effect) {
-      ret.push_back("Usage effect: " + effect->getName());
-      ret.push_back(effect->getDescription());
+      ret.push_back("Usage effect: " + effect->getName(factory));
+      ret.push_back(effect->getDescription(factory));
     }
   for (auto& effect : getWeaponInfo().victimEffect)
-    ret.push_back("Victim affected by: " + effect.effect.getName() + " (" + toPercentage(effect.chance) + " chance)");
+    ret.push_back("Victim affected by: " + effect.effect.getName(factory) + " (" + toPercentage(effect.chance) + " chance)");
   for (auto& effect : getWeaponInfo().attackerEffect)
-    ret.push_back("Attacker affected by: " + effect.getName());
+    ret.push_back("Attacker affected by: " + effect.getName(factory));
   for (auto& effect : attributes->equipedEffect)
     ret.push_back("Effect when equipped: " + LastingEffects::getName(effect));
   if (auto& info = attributes->upgradeInfo)
-    ret.append(info->getDescription());
+    ret.append(info->getDescription(factory));
   if (abilityInfo)
     ret.push_back("Grants ability: "_s + abilityInfo->spell.getName());
   return ret;

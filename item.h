@@ -104,7 +104,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   TimeInterval getApplyTime() const;
   double getWeight() const;
-  vector<string> getDescription() const;
+  vector<string> getDescription(const ContentFactory*) const;
 
   optional<LastingEffect> getOwnedEffect() const;
 

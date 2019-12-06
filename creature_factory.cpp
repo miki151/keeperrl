@@ -180,12 +180,12 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* n
       c.name = name;);
 }
 
-ViewId CreatureFactory::getViewId(CreatureId id) {
-  if (!idMap.count(id)) {
-    auto c = fromId(id, TribeId::getMonster());
-    idMap[id] = c->getViewObject().id();
-  }
-  return idMap.at(id);
+ViewId CreatureFactory::getViewId(CreatureId id) const {
+  return attributes.at(id).viewId;
+}
+
+string CreatureFactory::getName(CreatureId id) const {
+  return attributes.at(id).name.bare();
 }
 
 vector<CreatureId> CreatureFactory::getAllCreatures() const {

@@ -1024,17 +1024,17 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
   for (auto& effect : allEffects) {
     ret.push_back(WishedItemInfo {
       ItemType(ItemTypes::Scroll{effect}),
-      "scroll of " + effect.getName(),
+      "scroll of " + effect.getName(factory),
       Range(1, 2)
     });
     ret.push_back(WishedItemInfo {
       ItemType(ItemTypes::Potion{effect}),
-      "potion of " + effect.getName(),
+      "potion of " + effect.getName(factory),
       Range(1, 2)
     });
     ret.push_back(WishedItemInfo {
       ItemType(ItemTypes::Mushroom{effect}),
-      "mushroom of " + effect.getName(),
+      "mushroom of " + effect.getName(factory),
       Range(1, 2)
     });
   }

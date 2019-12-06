@@ -230,22 +230,22 @@ void Effects::Escape::applyToCreature(Creature* c, Creature* attacker) const {
   c->you(MsgType::TELE_APPEAR, "");
 }
 
-string Effects::Escape::getName() const {
+string Effects::Escape::getName(const ContentFactory*) const {
   return "escape";
 }
 
-string Effects::Escape::getDescription() const {
+string Effects::Escape::getDescription(const ContentFactory*) const {
   return "Teleports to a safer location close by.";
 }
 
 void Effects::Teleport::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::Teleport::getName() const {
+string Effects::Teleport::getName(const ContentFactory*) const {
   return "escape";
 }
 
-string Effects::Teleport::getDescription() const {
+string Effects::Teleport::getDescription(const ContentFactory*) const {
   return "Teleport to any location that's close by.";
 }
 
@@ -253,11 +253,11 @@ void Effects::Lasting::applyToCreature(Creature* c, Creature* attacker) const {
   c->addEffect(lastingEffect, LastingEffects::getDuration(c, lastingEffect));
 }
 
-string Effects::Lasting::getName() const {
+string Effects::Lasting::getName(const ContentFactory*) const {
   return LastingEffects::getName(lastingEffect);
 }
 
-string Effects::Lasting::getDescription() const {
+string Effects::Lasting::getDescription(const ContentFactory*) const {
   // Leave out the full stop.
   string desc = LastingEffects::getDescription(lastingEffect);
   return desc.substr(0, desc.size() - 1) + " for some turns.";
@@ -268,11 +268,11 @@ void Effects::RemoveLasting::applyToCreature(Creature* c, Creature* attacker) co
     c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE));
 }
 
-string Effects::RemoveLasting::getName() const {
+string Effects::RemoveLasting::getName(const ContentFactory*) const {
   return "remove " + LastingEffects::getName(lastingEffect);
 }
 
-string Effects::RemoveLasting::getDescription() const {
+string Effects::RemoveLasting::getDescription(const ContentFactory*) const {
   return "Removes/cures from effect: " + LastingEffects::getName(lastingEffect);
 }
 
@@ -281,11 +281,11 @@ void Effects::IncreaseAttr::applyToCreature(Creature* c, Creature*) const {
   c->getAttributes().increaseBaseAttr(attr, amount);
 }
 
-string Effects::IncreaseAttr::getName() const {
+string Effects::IncreaseAttr::getName(const ContentFactory*) const {
   return ::getName(attr) + get(" boost", " loss");
 }
 
-string Effects::IncreaseAttr::getDescription() const {
+string Effects::IncreaseAttr::getDescription(const ContentFactory*) const {
   return get("Increases", "Decreases") + " your "_s + ::getName(attr) + " by " + toString(abs(amount));
 }
 
@@ -300,11 +300,11 @@ void Effects::Permanent::applyToCreature(Creature* c, Creature* attacker) const 
   c->addPermanentEffect(lastingEffect);
 }
 
-string Effects::Permanent::getName() const {
+string Effects::Permanent::getName(const ContentFactory*) const {
   return "permanent " + LastingEffects::getName(lastingEffect);
 }
 
-string Effects::Permanent::getDescription() const {
+string Effects::Permanent::getDescription(const ContentFactory*) const {
   string desc = LastingEffects::getDescription(lastingEffect);
   return desc.substr(0, desc.size() - 1) + " permanently.";
 }
@@ -312,11 +312,11 @@ string Effects::Permanent::getDescription() const {
 void Effects::TeleEnemies::applyToCreature(Creature*, Creature* attacker) const {
 }
 
-string Effects::TeleEnemies::getName() const {
+string Effects::TeleEnemies::getName(const ContentFactory*) const {
   return "surprise";
 }
 
-string Effects::TeleEnemies::getDescription() const {
+string Effects::TeleEnemies::getDescription(const ContentFactory*) const {
   return "Surprise!";
 }
 
@@ -324,11 +324,11 @@ void Effects::Alarm::applyToCreature(Creature* c, Creature* attacker) const {
   c->getGame()->addEvent(EventInfo::Alarm{c->getPosition(), silent});
 }
 
-string Effects::Alarm::getName() const {
+string Effects::Alarm::getName(const ContentFactory*) const {
   return "alarm";
 }
 
-string Effects::Alarm::getDescription() const {
+string Effects::Alarm::getDescription(const ContentFactory*) const {
   return "Alarm!";
 }
 
@@ -340,11 +340,11 @@ void Effects::Acid::applyToCreature(Creature* c, Creature* attacker) const {
   }
 }
 
-string Effects::Acid::getName() const {
+string Effects::Acid::getName(const ContentFactory*) const {
   return "acid";
 }
 
-string Effects::Acid::getDescription() const {
+string Effects::Acid::getDescription(const ContentFactory*) const {
   return "Causes acid damage to skin and equipment.";
 }
 
@@ -352,68 +352,40 @@ void Effects::Summon::applyToCreature(Creature* c, Creature* attacker) const {
   ::summon(c, creature, count, false);
 }
 
-/*static string getCreaturePluralName(CreatureId id) {
-  static EnumMap<CreatureId, optional<string>> names;
-  if (!names[id])
-   names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().plural();
-  return *names[id];
-}*/
-
-static string getCreatureName(CreatureId id) {
-  string ret = toLower(id.data());
-  std::replace(ret.begin(), ret.end(), '_', ' ');
-  return ret;
-  /*if (getSummonNumber(id).getEnd() > 2)
-    return getCreaturePluralName(id);
-  static EnumMap<CreatureId, optional<string>> names;
-  if (!names[id])
-    names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().bare();
-  return *names[id];*/
+string Effects::Summon::getName(const ContentFactory* f) const {
+  return "summon " + f->getCreatures().getName(creature);
 }
 
-/*static string getCreatureAName(CreatureId id) {
-  static map<CreatureId, string> names;
-  if (!names.count(id))
-    names[id] = CreatureFactory::fromId(id, TribeId::getHuman())->getName().a();
-  return names.at(id);
-}*/
-
-string Effects::Summon::getName() const {
-  return "summon " + getCreatureName(creature);
-}
-
-string Effects::Summon::getDescription() const {
+string Effects::Summon::getDescription(const ContentFactory* f) const {
   if (count.getEnd() > 2)
-    return "Summons " + toString(count.getStart()) + " to " + toString(count.getEnd() - 1)
-        + " " + getCreatureName(creature);
+    return "Summons " + toString(count.getStart()) + " to " + toString(count.getEnd() - 1) + " " + getName(f);
   else
-    return "Summons a " + getCreatureName(creature);
+    return "Summons a " + getName(f);
 }
 
 void Effects::AssembledMinion::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::AssembledMinion::getName() const {
-  return getCreatureName(creature);
+string Effects::AssembledMinion::getName(const ContentFactory* f) const {
+  return f->getCreatures().getName(creature);
 }
 
-string Effects::AssembledMinion::getDescription() const {
-  return "Can be assembled to a " + getCreatureName(creature);
+string Effects::AssembledMinion::getDescription(const ContentFactory* f) const {
+  return "Can be assembled to a " + getName(f);
 }
 
 void Effects::SummonEnemy::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::SummonEnemy::getName() const {
-  return "summon hostile " + getCreatureName(creature);
+string Effects::SummonEnemy::getName(const ContentFactory* f) const {
+  return "summon hostile " + f->getCreatures().getName(creature);
 }
 
-string Effects::SummonEnemy::getDescription() const {
+string Effects::SummonEnemy::getDescription(const ContentFactory* f) const {
   if (count.getEnd() > 2)
-    return "Summons " + toString(count.getStart()) + " to " + toString(count.getEnd() - 1)
-        + " hostile " + getCreatureName(creature);
+    return "Summons " + toString(count.getStart()) + " to " + toString(count.getEnd() - 1) + " hostile " + getName(f);
   else
-    return "Summons a hostile " + getCreatureName(creature);
+    return "Summons a hostile " + getName(f);
 }
 
 void Effects::SummonElement::applyToCreature(Creature* c, Creature* attacker) const {
@@ -425,11 +397,11 @@ void Effects::SummonElement::applyToCreature(Creature* c, Creature* attacker) co
   ::summon(c, id, Range(1, 2), false);
 }
 
-string Effects::SummonElement::getName() const {
+string Effects::SummonElement::getName(const ContentFactory*) const {
   return "summon element";
 }
 
-string Effects::SummonElement::getDescription() const {
+string Effects::SummonElement::getDescription(const ContentFactory*) const {
   return "Summons an element or spirit from the surroundings.";
 }
 
@@ -440,11 +412,11 @@ void Effects::Deception::applyToCreature(Creature* c, Creature* attacker) const 
   Effect::summonCreatures(c->getPosition(), std::move(creatures));
 }
 
-string Effects::Deception::getName() const {
+string Effects::Deception::getName(const ContentFactory*) const {
   return "deception";
 }
 
-string Effects::Deception::getDescription() const {
+string Effects::Deception::getDescription(const ContentFactory*) const {
   return "Creates multiple illusions of the spellcaster to confuse the enemy.";
 }
 
@@ -494,11 +466,11 @@ void Effects::CircularBlast::applyToCreature(Creature* c, Creature* attacker) co
   c->addFX({FXName::CIRCULAR_BLAST});
 }
 
-string Effects::CircularBlast::getName() const {
+string Effects::CircularBlast::getName(const ContentFactory*) const {
   return "air blast";
 }
 
-string Effects::CircularBlast::getDescription() const {
+string Effects::CircularBlast::getDescription(const ContentFactory*) const {
   return "Creates a circular blast of air that throws back creatures and items.";
 }
 
@@ -526,11 +498,11 @@ void Effects::Enhance::applyToCreature(Creature* c, Creature* attacker) const {
   }
 }
 
-string Effects::Enhance::getName() const {
+string Effects::Enhance::getName(const ContentFactory*) const {
   return typeAsString() + " "_s + amountAs("enchantment", "degradation");
 }
 
-string Effects::Enhance::getDescription() const {
+string Effects::Enhance::getDescription(const ContentFactory*) const {
   return amountAs("Increases", "Decreases") + " "_s + typeAsString() + " capability"_s;
 }
 
@@ -543,11 +515,11 @@ void Effects::DestroyEquipment::applyToCreature(Creature* c, Creature* attacker)
   }
 }
 
-string Effects::DestroyEquipment::getName() const {
+string Effects::DestroyEquipment::getName(const ContentFactory*) const {
   return "equipment destruction";
 }
 
-string Effects::DestroyEquipment::getDescription() const {
+string Effects::DestroyEquipment::getDescription(const ContentFactory*) const {
   return "Destroys a random piece of equipment.";
 }
 
@@ -559,11 +531,11 @@ void Effects::DestroyWalls::applyToCreature(Creature* c, Creature* attacker) con
         furniture->destroy(pos, DestroyAction::Type::BOULDER);
 }
 
-string Effects::DestroyWalls::getName() const {
+string Effects::DestroyWalls::getName(const ContentFactory*) const {
   return "wall destruction";
 }
 
-string Effects::DestroyWalls::getDescription() const {
+string Effects::DestroyWalls::getDescription(const ContentFactory*) const {
   return "Destroys walls in adjacent tiles.";
 }
 
@@ -576,14 +548,14 @@ void Effects::Heal::applyToCreature(Creature* c, Creature* attacker) const {
     c->message("Nothing happens.");
 }
 
-string Effects::Heal::getName() const {
+string Effects::Heal::getName(const ContentFactory*) const {
   switch (healthType) {
     case HealthType::FLESH: return "healing";
     case HealthType::SPIRIT: return "materialization";
   }
 }
 
-string Effects::Heal::getDescription() const {
+string Effects::Heal::getDescription(const ContentFactory*) const {
   switch (healthType) {
     case HealthType::FLESH: return "Fully restores health.";
     case HealthType::SPIRIT: return "Fully re-materializes a spirit.";
@@ -593,33 +565,33 @@ string Effects::Heal::getDescription() const {
 void Effects::Fire::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::Fire::getName() const {
+string Effects::Fire::getName(const ContentFactory*) const {
   return "fire";
 }
 
-string Effects::Fire::getDescription() const {
+string Effects::Fire::getDescription(const ContentFactory*) const {
   return "Burns!";
 }
 
 void Effects::Ice::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::Ice::getName() const {
+string Effects::Ice::getName(const ContentFactory*) const {
   return "ice";
 }
 
-string Effects::Ice::getDescription() const {
+string Effects::Ice::getDescription(const ContentFactory*) const {
   return "Freezes water and causes cold damage";
 }
 
 void Effects::ReviveCorpse::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::ReviveCorpse::getName() const {
+string Effects::ReviveCorpse::getName(const ContentFactory*) const {
   return "revive corpse";
 }
 
-string Effects::ReviveCorpse::getDescription() const {
+string Effects::ReviveCorpse::getDescription(const ContentFactory*) const {
   return "Brings a dead corpse back alive as a servant";
 }
 
@@ -637,11 +609,11 @@ void Effects::EmitPoisonGas::applyToCreature(Creature* c, Creature* attacker) co
   Effect::emitPoisonGas(c->getPosition(), amount, true);
 }
 
-string Effects::EmitPoisonGas::getName() const {
+string Effects::EmitPoisonGas::getName(const ContentFactory*) const {
   return "poison gas";
 }
 
-string Effects::EmitPoisonGas::getDescription() const {
+string Effects::EmitPoisonGas::getDescription(const ContentFactory*) const {
   return "Emits poison gas";
 }
 
@@ -649,23 +621,23 @@ void Effects::SilverDamage::applyToCreature(Creature* c, Creature* attacker) con
   c->affectBySilver();
 }
 
-string Effects::SilverDamage::getName() const {
+string Effects::SilverDamage::getName(const ContentFactory*) const {
   return "silver";
 }
 
-string Effects::SilverDamage::getDescription() const {
+string Effects::SilverDamage::getDescription(const ContentFactory*) const {
   return "Hurts the undead.";
 }
 
 void Effects::PlaceFurniture::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::PlaceFurniture::getName() const {
+string Effects::PlaceFurniture::getName(const ContentFactory*) const {
   return furniture.data();
 }
 
-string Effects::PlaceFurniture::getDescription() const {
-  return "Creates a " + getName() + ".";
+string Effects::PlaceFurniture::getDescription(const ContentFactory*) const {
+  return "Creates a " /*+ getName() + "."*/;
 }
 
 void Effects::Damage::applyToCreature(Creature* c, Creature* attacker) const {
@@ -675,11 +647,11 @@ void Effects::Damage::applyToCreature(Creature* c, Creature* attacker) const {
     c->addFX({FXName::MAGIC_MISSILE_SPLASH});
 }
 
-string Effects::Damage::getName() const {
+string Effects::Damage::getName(const ContentFactory*) const {
   return ::getName(attr);
 }
 
-string Effects::Damage::getDescription() const {
+string Effects::Damage::getDescription(const ContentFactory*) const {
   return "Causes " + ::getName(attr);
 }
 
@@ -690,11 +662,11 @@ void Effects::InjureBodyPart::applyToCreature(Creature* c, Creature* attacker) c
   }
 }
 
-string Effects::InjureBodyPart::getName() const {
+string Effects::InjureBodyPart::getName(const ContentFactory*) const {
   return "injure "_s + ::getName(part);
 }
 
-string Effects::InjureBodyPart::getDescription() const {
+string Effects::InjureBodyPart::getDescription(const ContentFactory*) const {
   return "Injures "_s + ::getName(part);
 }
 
@@ -705,11 +677,11 @@ void Effects::LooseBodyPart::applyToCreature(Creature* c, Creature* attacker) co
   }
 }
 
-string Effects::LooseBodyPart::getName() const {
+string Effects::LooseBodyPart::getName(const ContentFactory*) const {
   return "lose "_s + ::getName(part);
 }
 
-string Effects::LooseBodyPart::getDescription() const {
+string Effects::LooseBodyPart::getDescription(const ContentFactory*) const {
   return "Causes you to lose a "_s + ::getName(part);
 }
 
@@ -717,35 +689,35 @@ void Effects::RegrowBodyPart::applyToCreature(Creature* c, Creature* attacker) c
   c->getBody().healBodyParts(c, true);
 }
 
-string Effects::RegrowBodyPart::getName() const {
+string Effects::RegrowBodyPart::getName(const ContentFactory*) const {
   return "regrow lost body parts";
 }
 
-string Effects::RegrowBodyPart::getDescription() const {
+string Effects::RegrowBodyPart::getDescription(const ContentFactory*) const {
   return "Causes lost body parts to regrow.";
 }
 
 void Effects::Area::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::Area::getName() const {
-  return "area " + effect->getName();
+string Effects::Area::getName(const ContentFactory* f) const {
+  return "area " + effect->getName(f);
 }
 
-string Effects::Area::getDescription() const {
-  return "Area effect of radius " + toString(radius) + ": " + noCapitalFirst(effect->getDescription());
+string Effects::Area::getDescription(const ContentFactory* factory) const {
+  return "Area effect of radius " + toString(radius) + ": " + noCapitalFirst(effect->getDescription(factory));
 }
 
 
 void Effects::CustomArea::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::CustomArea::getName() const {
-  return "custom area " + effect->getName();
+string Effects::CustomArea::getName(const ContentFactory* f) const {
+  return "custom area " + effect->getName(f);
 }
 
-string Effects::CustomArea::getDescription() const {
-  return "Custom area effect: " + noCapitalFirst(effect->getDescription());
+string Effects::CustomArea::getDescription(const ContentFactory* factory) const {
+  return "Custom area effect: " + noCapitalFirst(effect->getDescription(factory));
 }
 
 static Vec2 rotate(Vec2 v, Vec2 r) {
@@ -767,11 +739,11 @@ void Effects::Suicide::applyToCreature(Creature* c, Creature* attacker) const {
   c->dieNoReason();
 }
 
-string Effects::Suicide::getName() const {
+string Effects::Suicide::getName(const ContentFactory*) const {
   return "suicide";
 }
 
-string Effects::Suicide::getDescription() const {
+string Effects::Suicide::getDescription(const ContentFactory*) const {
   return "Causes the *attacker* to die.";
 }
 
@@ -780,33 +752,33 @@ void Effects::Wish::applyToCreature(Creature* c, Creature* attacker) const {
       " What do you wish for?");
 }
 
-string Effects::Wish::getName() const {
+string Effects::Wish::getName(const ContentFactory*) const {
   return "wishing";
 }
 
-string Effects::Wish::getDescription() const {
+string Effects::Wish::getDescription(const ContentFactory*) const {
   return "Gives you one wish.";
 }
 
 void Effects::Chain::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::Chain::getName() const {
-  return effects[0].getName();
+string Effects::Chain::getName(const ContentFactory* f) const {
+  return effects[0].getName(f);
 }
 
-string Effects::Chain::getDescription() const {
-  return effects[0].getDescription();
+string Effects::Chain::getDescription(const ContentFactory* f) const {
+  return effects[0].getDescription(f);
 }
 
 void Effects::Message::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::Message::getName() const {
+string Effects::Message::getName(const ContentFactory*) const {
   return "message";
 }
 
-string Effects::Message::getDescription() const {
+string Effects::Message::getDescription(const ContentFactory*) const {
   return text;
 }
 
@@ -818,34 +790,34 @@ void Effects::IncreaseMorale::applyToCreature(Creature* c, Creature* attacker) c
   c->addMorale(amount);
 }
 
-string Effects::IncreaseMorale::getName() const {
+string Effects::IncreaseMorale::getName(const ContentFactory*) const {
   return amount > 0 ? "morale increase" : "morale decrease";
 }
 
-string Effects::IncreaseMorale::getDescription() const {
+string Effects::IncreaseMorale::getDescription(const ContentFactory*) const {
   return amount > 0 ? "Increases morale" : "Decreases morale";
 }
 
 void Effects::Caster::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::Caster::getName() const {
-  return effect->getName();
+string Effects::Caster::getName(const ContentFactory* f) const {
+  return effect->getName(f);
 }
 
-string Effects::Caster::getDescription() const {
-  return effect->getDescription();
+string Effects::Caster::getDescription(const ContentFactory* f) const {
+  return effect->getDescription(f);
 }
 
 void Effects::Chance::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::Chance::getName() const {
-  return effect->getName();
+string Effects::Chance::getName(const ContentFactory* f) const {
+  return effect->getName(f);
 }
 
-string Effects::Chance::getDescription() const {
-  return effect->getDescription() + " (" + toString(int(value * 100)) + "% chance)";
+string Effects::Chance::getDescription(const ContentFactory* f) const {
+  return effect->getDescription(f) + " (" + toString(int(value * 100)) + "% chance)";
 }
 
 void Effects::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) const {
@@ -869,22 +841,22 @@ void Effects::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) co
     c->message(PlayerMessage("The spell failed!", MessagePriority::HIGH));
 }
 
-string Effects::DoubleTrouble::getName() const {
+string Effects::DoubleTrouble::getName(const ContentFactory*) const {
   return "double trouble";
 }
 
-string Effects::DoubleTrouble::getDescription() const {
+string Effects::DoubleTrouble::getDescription(const ContentFactory*) const {
   return "Creates a twin copy ally.";
 }
 
 void Effects::Blast::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::Blast::getName() const {
+string Effects::Blast::getName(const ContentFactory*) const {
   return "air blast";
 }
 
-string Effects::Blast::getDescription() const {
+string Effects::Blast::getDescription(const ContentFactory*) const {
   return "Creates a directed blast of air that throws back creatures and items.";
 }
 
@@ -909,11 +881,11 @@ static void pullCreature(Creature* victim, const vector<Position>& trajectory) {
 void Effects::Pull::applyToCreature(Creature* victim, Creature* attacker) const {
 }
 
-string Effects::Pull::getName() const {
+string Effects::Pull::getName(const ContentFactory*) const {
   return "pull";
 }
 
-string Effects::Pull::getDescription() const {
+string Effects::Pull::getDescription(const ContentFactory*) const {
   return "Pulls a creature towards the spellcaster.";
 }
 
@@ -929,11 +901,11 @@ void Effects::Shove::applyToCreature(Creature* c, Creature* attacker) const {
   }
 }
 
-string Effects::Shove::getName() const {
+string Effects::Shove::getName(const ContentFactory*) const {
   return "shove";
 }
 
-string Effects::Shove::getDescription() const {
+string Effects::Shove::getDescription(const ContentFactory*) const {
   return "Push back a creature.";
 }
 
@@ -949,11 +921,11 @@ void Effects::SwapPosition::applyToCreature(Creature* c, Creature* attacker) con
     attacker->privateMessage(c->getName().the() + " resists");
 }
 
-string Effects::SwapPosition::getName() const {
+string Effects::SwapPosition::getName(const ContentFactory*) const {
   return "swap position";
 }
 
-string Effects::SwapPosition::getDescription() const {
+string Effects::SwapPosition::getDescription(const ContentFactory*) const {
   return "Swap positions with an enemy.";
 }
 
@@ -972,7 +944,7 @@ void Effects::Filter::applyToCreature(Creature* c, Creature* attacker) const {
     effect->apply(c->getPosition(), attacker);
 }
 
-string Effects::Filter::getName() const {
+string Effects::Filter::getName(const ContentFactory* f) const {
   auto suffix = [&] {
     switch (filter) {
       case FilterType::ALLY:
@@ -981,10 +953,10 @@ string Effects::Filter::getName() const {
         return " (enemy only)";
     }
   };
-  return effect->getName() + suffix();
+  return effect->getName(f) + suffix();
 }
 
-string Effects::Filter::getDescription() const {
+string Effects::Filter::getDescription(const ContentFactory* f) const {
   auto suffix = [&] {
     switch (filter) {
       case FilterType::ALLY:
@@ -993,14 +965,14 @@ string Effects::Filter::getDescription() const {
         return " (applied only to enemies)";
     }
   };
-  return effect->getDescription() + suffix();
+  return effect->getDescription(f) + suffix();
 }
 
 #define FORWARD_CALL(Var, Name, ...)\
 Var->visit([&](const auto& e) { return e.Name(__VA_ARGS__); })
 
-string Effect::getName() const {
-  return FORWARD_CALL(effect, getName);
+string Effect::getName(const ContentFactory* f) const {
+  return FORWARD_CALL(effect, getName, f);
 }
 
 Effect::Effect(const EffectType& t) : effect(t) {
@@ -1146,8 +1118,8 @@ void Effect::apply(Position pos, Creature* attacker) const {
   );
 }
 
-string Effect::getDescription() const {
-  return FORWARD_CALL(effect, getDescription);
+string Effect::getDescription(const ContentFactory* f) const {
+  return FORWARD_CALL(effect, getDescription, f);
 }
 
 static bool isConsideredInDanger(const Creature* c) {

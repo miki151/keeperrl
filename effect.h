@@ -25,6 +25,7 @@ class Tribe;
 class CreatureGroup;
 
 class EffectType;
+class ContentFactory;
 
 class Effect {
   public:
@@ -43,8 +44,8 @@ class Effect {
   void serialize(Archive&, const unsigned int);
 
   void apply(Position, Creature* attacker = nullptr) const;
-  string getName() const;
-  string getDescription() const;
+  string getName(const ContentFactory*) const;
+  string getDescription(const ContentFactory*) const;
   bool isConsideredHostile() const;
   optional<MinionEquipmentType> getMinionEquipmentType() const;
   bool canAutoAssignMinionEquipment() const;

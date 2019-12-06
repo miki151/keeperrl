@@ -9,8 +9,8 @@ RICH_ENUM(FilterType, ALLY, ENEMY);
 
 #define EFFECT_TYPE_INTERFACE \
   void applyToCreature(Creature*, Creature* attacker = nullptr) const;\
-  string getName() const;\
-  string getDescription() const
+  string getName(const ContentFactory*) const;\
+  string getDescription(const ContentFactory*) const
 
 
 #define SIMPLE_EFFECT(Name) \
