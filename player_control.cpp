@@ -504,9 +504,12 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   for (auto& stack : consumables)
     info.inventory.push_back(getItemInfo(getGame()->getContentFactory(), stack, false,
           !creature->getEquipment().hasItem(stack[0]), false, ItemInfo::CONSUMABLE));
-  for (Item* item : creature->getEquipment().getItems())
+  vector<Item*> otherItems;
+  for (auto item : creature->getEquipment().getItems())
     if (!collective->getMinionEquipment().isItemUseful(item))
-      info.inventory.push_back(getItemInfo(getGame()->getContentFactory(), {item}, false, false, false, ItemInfo::OTHER));
+      otherItems.push_back(item);
+  for (auto item : Item::stackItems(otherItems))
+    info.inventory.push_back(getItemInfo(getGame()->getContentFactory(), {item}, false, false, false, ItemInfo::OTHER));
 }
 
 Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,

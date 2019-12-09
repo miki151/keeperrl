@@ -658,7 +658,8 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
     setReason(item->getAName() + " can't be used together with a shield");
     return false;
   }
-  if (item->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON && getAttr(AttrType::RANGED_DAMAGE, false) == 0) {
+  if (item->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON && getAttr(AttrType::RANGED_DAMAGE, false) == 0 &&
+      attributes->getMaxExpLevel()[ExperienceType::ARCHERY] == 0) {
     setReason("You are not skilled in archery");
     return false;
   }
