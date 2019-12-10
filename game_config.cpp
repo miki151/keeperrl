@@ -49,7 +49,7 @@ const char* GameConfig::getConfigName(GameConfigId id) {
   }
 }
 
-GameConfig::GameConfig(DirectoryPath modsPath, string modName) : path(modsPath.subdirectory(modName)), modName(std::move(modName)) {
+GameConfig::GameConfig(DirectoryPath modPath, string modName) : path(modPath), modName(std::move(modName)) {
 }
 
 const DirectoryPath& GameConfig::getPath() const {

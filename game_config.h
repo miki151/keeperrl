@@ -5,7 +5,7 @@
 #include "pretty_printing.h"
 #include "file_path.h"
 
-constexpr auto gameConfigSubdir = "game_config";
+constexpr auto gameConfigSubdir = "mods";
 
 enum class GameConfigId {
   CAMPAIGN_VILLAINS,
@@ -33,7 +33,7 @@ enum class GameConfigId {
 
 class GameConfig {
   public:
-  GameConfig(DirectoryPath modsPath, string modName);
+  GameConfig(DirectoryPath modPath, string modName);
   template<typename T>
   [[nodiscard]] optional<string> readObject(T& object, GameConfigId id, KeyVerifier* keyVerifier) const {
     return PrettyPrinting::parseObject<T>(object, path.file(getConfigName(id) + ".txt"_s), keyVerifier);

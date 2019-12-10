@@ -374,8 +374,9 @@ static int keeperMain(po::parser& commandLineFlags) {
       getMaxVolume());
   options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
   jukebox.setCurrentVolume(options.getIntValue(OptionId::MUSIC));
+  auto modsDir = userPath.subdirectory(gameConfigSubdir);
   if (commandLineFlags["verify_mod"].was_set()) {
-    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, &options, &jukebox, nullptr, nullptr,
+    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, &jukebox, nullptr, nullptr,
         useSingleThread, 0, "");
     if (auto err = loop.verifyMod(commandLineFlags["verify_mod"].get().string)) {
       std::cout << *err << std::endl;
@@ -384,9 +385,6 @@ static int keeperMain(po::parser& commandLineFlags) {
       return 0;
   }
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
-  auto modList = freeDataPath.subdirectory(gameConfigSubdir).getSubDirs();
-  USER_CHECK(!modList.empty()) << "No game config data found, please make sure all game data is in place";
-  options.setChoices(OptionId::CURRENT_MOD2, modList);
 #ifdef RELEASE
   AppConfig appConfig(dataPath.file("appconfig.txt"));
 #else
@@ -398,7 +396,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   FileSharing fileSharing(uploadUrl, modVersion, saveVersion, options, installId);
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   if (commandLineFlags["worldgen_test"].was_set()) {
-    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, nullptr,
+    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, &jukebox, &sokobanInput, nullptr,
         useSingleThread, 0, "");
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
@@ -407,7 +405,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     return 0;
   }
   auto battleTest = [&] (View* view, TileSet* tileSet) {
-    MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, tileSet,
+    MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, &jukebox, &sokobanInput, tileSet,
         useSingleThread, 0, "");
     auto level = commandLineFlags["battle_level"].get().string;
     auto info = commandLineFlags["battle_info"].get().string;
@@ -498,7 +496,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     battleTest(view.get(), &tileSet);
     return 0;
   }
-  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, &options, &jukebox, &sokobanInput, &tileSet,
+  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, &jukebox, &sokobanInput, &tileSet,
       useSingleThread, saveVersion, modVersion);
   try {
     if (audioError)

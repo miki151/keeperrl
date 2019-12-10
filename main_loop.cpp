@@ -53,8 +53,9 @@
 #endif
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
-    const DirectoryPath& uPath, Options* o, Jukebox* j, SokobanInput* soko, TileSet* tileSet, bool singleThread, int sv, string modVersion)
-      : view(v), dataFreePath(freePath), userPath(uPath), options(o), jukebox(j), highscores(h), fileSharing(fSharing),
+    const DirectoryPath& uPath, const DirectoryPath& modsDir, Options* o, Jukebox* j, SokobanInput* soko,
+    TileSet* tileSet, bool singleThread, int sv, string modVersion)
+      : view(v), dataFreePath(freePath), userPath(uPath), modsDir(modsDir), options(o), jukebox(j), highscores(h), fileSharing(fSharing),
         useSingleThread(singleThread), sokobanInput(soko), tileSet(tileSet), saveVersion(sv), modVersion(modVersion) {
 }
 
@@ -82,7 +83,7 @@ bool MainLoop::isCompatible(int loadedVersion) {
 
 GameConfig MainLoop::getGameConfig() const {
   string currentMod = options->getStringValue(OptionId::CURRENT_MOD2);
-  return GameConfig(getModsDir(), std::move(currentMod));
+  return GameConfig(modsDir, std::move(currentMod));
 }
 
 static string getSaveSuffix(GameSaveType t) {
@@ -404,8 +405,8 @@ TilePaths MainLoop::getTilePathsForAllMods() const {
   };
   GameConfig currentConfig = getGameConfig();
   auto ret = readTiles(&currentConfig);
-  for (auto modDir : getModsDir().getSubDirs()) {
-    GameConfig config(getModsDir(), modDir);
+  for (auto modDir : modsDir.getSubDirs()) {
+    GameConfig config(modsDir, modDir);
     if (auto paths = readTiles(&config)) {
       if (ret)
         ret->merge(*paths);
@@ -466,7 +467,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
 void MainLoop::splashScreen() {
   ProgressMeter meter(1);
   jukebox->setType(MusicType::INTRO, true);
-  GameConfig gameConfig(getModsDir(), "vanilla");
+  auto gameConfig = getVanillaConfig();
   auto contentFactory = createContentFactory(true);
   if (tileSet)
     tileSet->setTilePaths(contentFactory.tilePaths);
@@ -496,17 +497,13 @@ void MainLoop::showCredits(const FilePath& path) {
   view->presentList("Credits", lines, false);
 }
 
-DirectoryPath MainLoop::getModsDir() const {
-  return dataFreePath.subdirectory(gameConfigSubdir);
-}
-
 const auto modVersionFilename = "version_info";
 
 optional<ModVersionInfo> MainLoop::getLocalModVersionInfo(const string& mod) {
   if (mod == "vanilla") {
     return ModVersionInfo{0, 0, modVersion};
   }
-  ifstream in(getModsDir().subdirectory(mod).file(modVersionFilename).getPath());
+  ifstream in(modsDir.subdirectory(mod).file(modVersionFilename).getPath());
   ModVersionInfo info {};
   in >> info.steamId >> info.version >> info.compatibilityTag;
   if (info.compatibilityTag == modVersion) // this also handles the check if the file existed and had sane contents
@@ -516,7 +513,7 @@ optional<ModVersionInfo> MainLoop::getLocalModVersionInfo(const string& mod) {
 }
 
 void MainLoop::updateLocalModVersion(const string& mod, const ModVersionInfo& info) {
-  ofstream out(getModsDir().subdirectory(mod).file(modVersionFilename).getPath());
+  ofstream out(modsDir.subdirectory(mod).file(modVersionFilename).getPath());
   if (!!out) {
     out << info.steamId << "\n" << info.version << "\n" << info.compatibilityTag << "\n";
   }
@@ -525,14 +522,14 @@ void MainLoop::updateLocalModVersion(const string& mod, const ModVersionInfo& in
 const auto modDetailsFilename = "details.txt";
 
 optional<ModDetails> MainLoop::getLocalModDetails(const string& mod) {
-  ifstream in(getModsDir().subdirectory(mod).file(modDetailsFilename).getPath());
+  ifstream in(modsDir.subdirectory(mod).file(modDetailsFilename).getPath());
   ModDetails ret;
   in >> std::quoted(ret.author) >> std::quoted(ret.description);
   return ret;
 }
 
 void MainLoop::updateLocalModDetails(const string& mod, const ModDetails& info) {
-  ofstream out(getModsDir().subdirectory(mod).file(modDetailsFilename).getPath());
+  ofstream out(modsDir.subdirectory(mod).file(modDetailsFilename).getPath());
   if (!!out) {
     out << std::quoted(info.author) << "\n" << std::quoted(info.description) << "\n";
   }
@@ -540,13 +537,13 @@ void MainLoop::updateLocalModDetails(const string& mod, const ModDetails& info) 
 
 void MainLoop::removeMod(const string& name) {
   // TODO: how to make it safer?
-  auto modDir = getModsDir().subdirectory(name);
+  auto modDir = modsDir.subdirectory(name);
   modDir.removeRecursively();
 }
 
 // When mod changes name, we have to remove old directory
 void MainLoop::removeOldSteamMod(SteamId steamId, const string& newName) {
-  auto modDir = getModsDir();
+  auto modDir = modsDir;
   auto modList = modDir.getSubDirs();
   for (auto& modName : modList)
     if (modName != newName)
@@ -556,7 +553,8 @@ void MainLoop::removeOldSteamMod(SteamId steamId, const string& newName) {
 }
 
 vector<ModInfo> MainLoop::getAllMods(const vector<ModInfo>& onlineMods) {
-  auto modList = getModsDir().getSubDirs();
+  vector<string> modList {"vanilla"};
+  modList.append(modsDir.getSubDirs());
   USER_CHECK(!modList.empty()) << "No game config data found, please make sure all game data is in place";
   string currentMod = options->getStringValue(OptionId::CURRENT_MOD2);
   // check if the currentMod exists and has current version
@@ -597,12 +595,12 @@ vector<ModInfo> MainLoop::getAllMods(const vector<ModInfo>& onlineMods) {
   return allMods;
 }
 
-void MainLoop::downloadMod(ModInfo& mod, const DirectoryPath& modDir) {
+void MainLoop::downloadMod(ModInfo& mod) {
   atomic<bool> cancelled(false);
   optional<string> error;
   doWithSplash("Downloading mod \"" + mod.name + "\"...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->downloadMod(mod.name, mod.versionInfo.steamId, modDir, meter);
+        error = fileSharing->downloadMod(mod.name, mod.versionInfo.steamId, modsDir, meter);
         if (!error) {
           updateLocalModVersion(mod.name, mod.versionInfo);
           updateLocalModDetails(mod.name, mod.details);
@@ -617,8 +615,8 @@ void MainLoop::downloadMod(ModInfo& mod, const DirectoryPath& modDir) {
     view->presentText("Error downloading file", *error);
 }
 
-void MainLoop::uploadMod(ModInfo& mod, const DirectoryPath& modDir) {
-  GameConfig config(modDir, mod.name);
+void MainLoop::uploadMod(ModInfo& mod) {
+  GameConfig config(modsDir, mod.name);
   ContentFactory f;
   if (auto err = f.readData(&config)) {
     view->presentText("Mod \"" + mod.name + "\" has errors: ", *err);
@@ -628,7 +626,7 @@ void MainLoop::uploadMod(ModInfo& mod, const DirectoryPath& modDir) {
   optional<string> error;
   doWithSplash("Uploading mod \"" + mod.name + "\"...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->uploadMod(mod, modDir, meter);
+        error = fileSharing->uploadMod(mod, modsDir, meter);
         updateLocalModVersion(mod.name, mod.versionInfo);
       },
       [&] {
@@ -640,7 +638,6 @@ void MainLoop::uploadMod(ModInfo& mod, const DirectoryPath& modDir) {
 }
 
 void MainLoop::createNewMod() {
-  auto modsDir = getModsDir();
   if (auto name = view->getText("Enter name of new mod", "", 15)) {
     if (modsDir.getSubDirs().contains(*name)) {
       view->presentText("Error", "Mod \"" + *name + "\" is alread installed");
@@ -649,7 +646,8 @@ void MainLoop::createNewMod() {
     auto targetPath = modsDir.subdirectory(*name);
     doWithSplash("Copying files...", 1,
        [&] (ProgressMeter& meter) {
-         modsDir.subdirectory("vanilla").copyRecursively(targetPath);
+          FATAL;
+         //modsDir.subdirectory("vanilla").copyRecursively(targetPath);
        });
     updateLocalModVersion(*name, ModVersionInfo{0, 0, modVersion});
     updateLocalModDetails(*name, ModDetails{"", ""});
@@ -673,7 +671,6 @@ vector<ModInfo> MainLoop::getOnlineMods() {
 }
 
 void MainLoop::showMods() {
-  auto modDir = getModsDir();
   int highlighted = 0;
   vector<ModInfo> onlineMods = getOnlineMods();
   while (1) {
@@ -691,9 +688,9 @@ void MainLoop::showMods() {
     if (action == "Activate")
       options->setValue(OptionId::CURRENT_MOD2, allMods[highlighted].name);
     else if (action == "Download" || action == "Update")
-      downloadMod(chosenMod, modDir);
+      downloadMod(chosenMod);
     else if (action == "Upload") {
-      uploadMod(chosenMod, modDir);
+      uploadMod(chosenMod);
       onlineMods = getOnlineMods();
     }
   }
@@ -721,19 +718,29 @@ void MainLoop::considerFreeVersionText(bool tilesPresent) {
         "More information on the website.");
 }
 
+GameConfig MainLoop::getVanillaConfig() const {
+  return GameConfig(dataFreePath.subdirectory("game_config"), "vanilla");
+}
+
 ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
   ContentFactory ret;
-  auto tryConfig = [this, &ret](const string& modName) {
-    GameConfig config(getModsDir(), modName);
+  auto tryVanillaConfig = [&] {
+    auto config = getVanillaConfig();
+    return ret.readData(&config);
+  };
+  auto tryConfig = [&](const string& modName) {
+    if (modName == "vanilla")
+      return tryVanillaConfig();
+    GameConfig config(modsDir.subdirectory(modName), modName);
     return ret.readData(&config);
   };
   if (vanillaOnly) {
 #ifdef RELEASE
-    if (auto err = tryConfig("vanilla"))
+    if (auto err = tryVanillaConfig())
       USER_FATAL << "Error loading vanilla game data: " << *err;
 #else
     while (true) {
-      if (auto err = tryConfig("vanilla"))
+      if (auto err = tryVanillaConfig())
         USER_INFO << "Error loading vanilla game data: " << *err;
       else
         break;
@@ -743,7 +750,7 @@ ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
     auto chosenMod = options->getStringValue(OptionId::CURRENT_MOD2);
     if (auto err = tryConfig(chosenMod)) {
       USER_INFO << "Error loading mod \"" << chosenMod << "\": " << *err << "\n\nUsing vanilla game data";
-      if (auto err = tryConfig("vanilla"))
+      if (auto err = tryVanillaConfig())
         USER_FATAL << "Error loading vanilla game data: " << *err;
     }
   }

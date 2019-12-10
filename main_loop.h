@@ -35,7 +35,8 @@ struct ModDetails;
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      Options*, Jukebox*, SokobanInput*, TileSet*, bool useSingleThread, int saveVersion, string modVersion);
+      const DirectoryPath& modsDir, Options*, Jukebox*, SokobanInput*, TileSet*, bool useSingleThread, int saveVersion,
+      string modVersion);
 
   void start(bool tilesPresent);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
@@ -89,6 +90,7 @@ class MainLoop {
   View* view = nullptr;
   DirectoryPath dataFreePath;
   DirectoryPath userPath;
+  DirectoryPath modsDir;
   Options* options = nullptr;
   Jukebox* jukebox = nullptr;
   Highscores* highscores = nullptr;
@@ -117,10 +119,10 @@ class MainLoop {
   void removeOldSteamMod(SteamId, const string &newName);
 
   void registerModPlaytime(bool started);
-  DirectoryPath getModsDir() const;
   vector<ModInfo> getAllMods(const vector<ModInfo>& onlineMods);
-  void downloadMod(ModInfo&, const DirectoryPath& modDir);
-  void uploadMod(ModInfo&, const DirectoryPath& modDir);
+  void downloadMod(ModInfo&);
+  void uploadMod(ModInfo&);
   void createNewMod();
   vector<ModInfo> getOnlineMods();
+  GameConfig getVanillaConfig() const;
 };
