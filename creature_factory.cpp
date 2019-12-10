@@ -852,6 +852,7 @@ PCreature CreatureFactory::getHumanForTests() {
       c.viewId = ViewId("keeper1");
       c.attr[AttrType::DAMAGE] = 12;
       c.attr[AttrType::DEFENSE] = 12;
+      c.attr[AttrType::RANGED_DAMAGE] = 12;
       c.body = Body::humanoid(Body::Size::LARGE);
       c.name = "wizard";
       c.viewIdUpgrades = LIST(ViewId("keeper2"), ViewId("keeper3"), ViewId("keeper4"));
