@@ -590,9 +590,9 @@ class Test {
   }
 
   static ContentFactory getContentFactory() {
-    GameConfig config(DirectoryPath("data_free/game_config/"), "vanilla");
+    GameConfig config({DirectoryPath("data_free/game_config/")});
     ContentFactory contentFactory;
-    CHECK(!contentFactory.readData(&config));
+    CHECK(!contentFactory.readData(&config, "vanilla"));
     return contentFactory;
   }
 

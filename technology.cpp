@@ -40,6 +40,8 @@ vector<TechId> Technology::getNextTechs() const {
   return getNextTechs(researched);
 }
 
+Technology::Technology(map<TechId, Technology::TechDefinition> m) : techs(std::move(m)) {}
+
 vector<TechId> Technology::getNextTechs(set<TechId> from) const {
   vector<TechId> ret;
   for (auto& tech : techs)

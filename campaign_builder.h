@@ -9,7 +9,7 @@ struct VillainCounts;
 class GameConfig;
 
 using VillainsTuple = std::array<vector<Campaign::VillainInfo>, 4>;
-using GameIntros = pair<vector<string>, map<CampaignType, vector<string>>>;
+using GameIntros = vector<string>;
 
 class CampaignBuilder {
   public:
@@ -36,7 +36,7 @@ class CampaignBuilder {
   void placeVillains(Campaign&, vector<Campaign::SiteInfo::Dweller>, const VillainPlacement&, int count);
   void placeVillains(Campaign&, const VillainCounts&, const optional<RetiredGames>&, TribeAlignment);
   PlayerRole getPlayerRole() const;
-  vector<string> getIntroMessages(CampaignType) const;
+  const vector<string>& getIntroMessages(CampaignType) const;
   void setCountLimits();
 };
 

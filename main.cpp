@@ -271,7 +271,7 @@ static string getInstallId(const FilePath& path, RandomGen& random) {
 
 struct AppConfig {
   AppConfig(FilePath path) {
-    if (auto error = PrettyPrinting::parseObject(values, path, nullptr))
+    if (auto error = PrettyPrinting::parseObject(values, {path}, nullptr))
       USER_FATAL << *error;
   }
 

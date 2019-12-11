@@ -18,11 +18,19 @@ class ImmigrantInfo;
 class ZLevelInfo;
 class BuildingInfo;
 
+RICH_ENUM(
+  ZLevelGroup,
+  ALL,
+  EVIL,
+  LAWFUL
+);
+
+
 class ContentFactory {
   public:
-  optional<string> readData(const GameConfig*);
+  optional<string> readData(const GameConfig*, const string& modName);
   FurnitureFactory SERIAL(furniture);
-  array<vector<ZLevelInfo>, 3> SERIAL(zLevels);
+  map<ZLevelGroup, vector<ZLevelInfo>> SERIAL(zLevels);
   vector<ResourceDistribution> SERIAL(resources);
   TilePaths SERIAL(tilePaths);
   map<EnemyId, EnemyInfo> SERIAL(enemies);
@@ -34,7 +42,8 @@ class ContentFactory {
   vector<pair<string, vector<BuildInfo>>> SERIAL(buildInfo);
   VillainsTuple SERIAL(villains);
   GameIntros SERIAL(gameIntros);
-  PlayerCreaturesInfo SERIAL(playerCreatures);
+  vector<KeeperCreatureInfo> SERIAL(keeperCreatures);
+  vector<AdventurerCreatureInfo> SERIAL(adventurerCreatures);
   map<CustomItemId, ItemAttributes> SERIAL(items);
   map<BuildingId, BuildingInfo> SERIAL(buildingInfo);
   void merge(ContentFactory);

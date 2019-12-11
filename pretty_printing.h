@@ -11,13 +11,24 @@ class KeyVerifier;
 class PrettyPrinting {
   public:
   template<typename T>
-  static optional<string> parseObject(T& object, const string&, optional<string> filename = none, KeyVerifier* keyVerifier = nullptr);
+  static optional<string> parseObject(T& object, const vector<string>&, vector<string> filename = {}, KeyVerifier* keyVerifier = nullptr);
 
   template<typename T>
-  static optional<string> parseObject(T& object, FilePath path, KeyVerifier* keyVerifier) {
-    if (auto contents = path.readContents())
-      return PrettyPrinting::parseObject<T>(object, *contents,  string(path.getFileName()), keyVerifier);
-    else
-      return "Couldn't open file: "_s + path.getPath();
+  static optional<string> parseObject(T& object, const string& text) {
+    return parseObject(object, vector<string>(1, text));
+  }
+
+  template<typename T>
+  static optional<string> parseObject(T& object, vector<FilePath> paths, KeyVerifier* keyVerifier) {
+    vector<string> allContent;
+    vector<string> pathStrings;
+    for (auto& path : paths) {
+      pathStrings.push_back(path.getFileName());
+      if (auto contents = path.readContents())
+        allContent.push_back(*contents);
+      else
+        return "Couldn't open file: "_s + path.getPath();
+    }
+    return PrettyPrinting::parseObject<T>(object, allContent, pathStrings, keyVerifier);
   }
 };

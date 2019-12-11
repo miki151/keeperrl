@@ -294,8 +294,8 @@ static bool autoConfirm(CampaignType type) {
   }
 }
 
-vector<string> CampaignBuilder::getIntroMessages(CampaignType type) const {
-  return concat(gameIntros.first, getReferenceMaybe(gameIntros.second, type).value_or(vector<string>()));
+const vector<string>& CampaignBuilder::getIntroMessages(CampaignType type) const {
+  return gameIntros;
 }
 
 static optional<ExternalEnemiesType> getExternalEnemies(Options* options) {

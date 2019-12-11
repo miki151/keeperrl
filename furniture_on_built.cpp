@@ -21,6 +21,7 @@
 #include "content_factory.h"
 #include "attack_trigger.h"
 #include "external_enemies.h"
+#include "tribe_alignment.h"
 
 static EnemyInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
   auto enemy = EnemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
@@ -77,7 +78,15 @@ static LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* content
     int depth, TribeId tribe, StairKey stairKey) {
   auto& allLevels = contentFactory->zLevels;
   auto& resources = contentFactory->resources;
-  vector<ZLevelInfo> levels = concat<ZLevelInfo>({allLevels[0], allLevels[1 + int(alignment)]});
+  auto zLevelGroup = [&] {
+    switch (alignment) {
+      case TribeAlignment::LAWFUL:
+        return ZLevelGroup::LAWFUL;
+      case TribeAlignment::EVIL:
+        return ZLevelGroup::EVIL;
+    }
+  }();
+  vector<ZLevelInfo> levels = concat<ZLevelInfo>({allLevels[ZLevelGroup::ALL], allLevels[zLevelGroup]});
   auto zLevel = *chooseZLevel(random, levels, depth);
   auto res = *chooseResourceCounts(random, resources, depth);
   return getLevelMaker(zLevel, res, tribe, stairKey, contentFactory);

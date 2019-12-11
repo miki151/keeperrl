@@ -6,8 +6,10 @@ const char* GameConfig::getConfigName(GameConfigId id) {
   switch (id) {
     case GameConfigId::CAMPAIGN_VILLAINS:
       return "campaign_villains";
-    case GameConfigId::PLAYER_CREATURES:
-      return "player_creatures";
+    case GameConfigId::KEEPER_CREATURES:
+      return "keeper_creatures";
+    case GameConfigId::ADVENTURER_CREATURES:
+      return "adventurer_creatures";
     case GameConfigId::BUILD_MENU:
       return "build_menu";
     case GameConfigId::WORKSHOPS_MENU:
@@ -49,13 +51,5 @@ const char* GameConfig::getConfigName(GameConfigId id) {
   }
 }
 
-GameConfig::GameConfig(DirectoryPath modPath, string modName) : path(modPath), modName(std::move(modName)) {
-}
-
-const DirectoryPath& GameConfig::getPath() const {
-  return path;
-}
-
-const string& GameConfig::getModName() const {
-  return modName;
+GameConfig::GameConfig(vector<DirectoryPath> modDirs) : dirs(std::move(modDirs)) {
 }

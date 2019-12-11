@@ -21,17 +21,18 @@
 
 class Technology {
   public:
-  vector<TechId> getNextTechs(set<TechId> from) const;
-  vector<TechId> getNextTechs() const;
-  const vector<TechId> getAllowed(const TechId&) const;
-  vector<TechId> getSorted() const;
-
   struct TechDefinition {
     string SERIAL(description);
     vector<TechId> SERIAL(prerequisites);
     SERIALIZE_ALL(NAMED(description), OPTION(prerequisites))
   };
-  map<PrimaryId<TechId>, TechDefinition> SERIAL(techs);
+  Technology(map<TechId, TechDefinition>);
+  Technology() {}
+  vector<TechId> getNextTechs(set<TechId> from) const;
+  vector<TechId> getNextTechs() const;
+  const vector<TechId> getAllowed(const TechId&) const;
+  vector<TechId> getSorted() const;
+  map<TechId, TechDefinition> SERIAL(techs);
   set<TechId> SERIAL(researched);
   SERIALIZE_ALL(NAMED(techs), OPTION(researched))
 };

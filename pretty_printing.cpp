@@ -41,11 +41,13 @@
 #include "biome_id.h"
 #include "building_info.h"
 #include "name_generator_id.h"
+#include "campaign_builder.h"
+#include "content_factory.h"
 
 template <typename T>
-optional<string> PrettyPrinting::parseObject(T& object, const string& s, optional<string> filename, KeyVerifier* keyVerifier) {
+optional<string> PrettyPrinting::parseObject(T& object, const vector<string>& s, vector<string> filename, KeyVerifier* keyVerifier) {
   try {
-    PrettyInput input(s, filename, keyVerifier);
+    PrettyInputArchive input(s, filename, keyVerifier);
     input(object);
     return none;
   } catch (PrettyException ex) {
@@ -55,23 +57,23 @@ optional<string> PrettyPrinting::parseObject(T& object, const string& s, optiona
 
 #define ADD_IMP(...) \
 template \
-optional<string> PrettyPrinting::parseObject<__VA_ARGS__>(__VA_ARGS__&, const string&, optional<string>, KeyVerifier*);
+optional<string> PrettyPrinting::parseObject<__VA_ARGS__>(__VA_ARGS__&, const vector<string>&, vector<string>, KeyVerifier*);
 
 ADD_IMP(Effect)
 ADD_IMP(ItemType)
 ADD_IMP(CreatureId)
 ADD_IMP(array<vector<Campaign::VillainInfo>, 4>)
-ADD_IMP(pair<vector<KeeperCreatureInfo>, vector<AdventurerCreatureInfo>>)
+ADD_IMP(vector<KeeperCreatureInfo>)
+ADD_IMP(vector<AdventurerCreatureInfo>)
 ADD_IMP(vector<pair<string, vector<BuildInfo>>>)
 ADD_IMP(vector<pair<string, std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>>>)
 ADD_IMP(map<string, vector<ImmigrantInfo>>)
 ADD_IMP(map<string, string>)
 ADD_IMP(map<PrimaryId<CreatureId>, CreatureAttributes>)
-ADD_IMP(Technology)
-ADD_IMP(array<vector<ZLevelInfo>, 3>)
+ADD_IMP(map<PrimaryId<TechId>, Technology::TechDefinition>)
+ADD_IMP(map<ZLevelGroup, vector<ZLevelInfo>>)
 ADD_IMP(vector<ResourceDistribution>)
-ADD_IMP(pair<vector<string>, map<CampaignType, vector<string>>>)
-ADD_IMP(Spell)
+ADD_IMP(GameIntros)
 ADD_IMP(vector<Spell>)
 ADD_IMP(map<PrimaryId<SpellSchoolId>, SpellSchool>)
 ADD_IMP(vector<TileInfo>)

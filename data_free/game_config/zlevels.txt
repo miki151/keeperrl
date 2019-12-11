@@ -1,5 +1,7 @@
 # Here come levels for all keeper types
 # At every depth the game chooses a random level that's available
+
+ALL
 {
   # This is a filled level that can appear at all depths
   {
@@ -79,6 +81,7 @@
 }
 
 # Here come levels specific to white keepers
+LAWFUL
 {
   {
     type = FullZLevel {
@@ -90,6 +93,7 @@
 }
 
 # Here come levels specific to dark keepers
+EVIL
 {
   {
     type = FullZLevel {

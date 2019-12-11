@@ -27,14 +27,15 @@ class PrettyOutputArchive : public cereal::OutputArchive<PrettyOutputArchive> {
 };
 
 struct StreamPos {
+  optional<string> filename;
   int line;
   int column;
 };
 
-static pair<string, vector<StreamPos>> removeFormatting(string contents) {
+static pair<string, vector<StreamPos>> removeFormatting(string contents, optional<string> filename) {
   string ret;
   vector<StreamPos> pos;
-  StreamPos cur {1, 1};
+  StreamPos cur {filename, 1, 1};
   bool inQuote = false;
   for (int i = 0; i < contents.size(); ++i) {
     if (contents[i] == '"')
@@ -61,11 +62,19 @@ static pair<string, vector<StreamPos>> removeFormatting(string contents) {
 
 class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
   public:
-    PrettyInputArchive(const string& input, optional<string> filename, KeyVerifier* v)
-          : InputArchive<PrettyInputArchive>(this), keyVerifier(v ? *v : dummyKeyVerifier), filename(filename) {
-      auto p = removeFormatting(input);
-      is.str(p.first);
-      streamPos = p.second;
+    PrettyInputArchive(const vector<string>& inputs, const vector<string>& filenames, KeyVerifier* v)
+          : InputArchive<PrettyInputArchive>(this), keyVerifier(v ? *v : dummyKeyVerifier) {
+      string allInput;
+      if (!filenames.empty())
+        allInput = "{\n";
+      for (int i = 0; i < inputs.size(); ++i) {
+        auto p = removeFormatting(inputs[i], i < filenames.size() ? filenames[i] : optional<string>());
+        allInput.append(p.first);
+        streamPos.append(p.second);
+      }
+      if (!filenames.empty())
+        allInput.append("\n}");
+      is.str(allInput);
     }
 
     ~PrettyInputArchive() CEREAL_NOEXCEPT = default;
@@ -97,7 +106,7 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
       int n = (int) is.tellg();
       auto pos = streamPos.empty() ? StreamPos{} : streamPos[max(0, min<int>(n, streamPos.size() - 1))];
       string msg;
-      if (filename)
+      if (auto& filename = pos.filename)
         msg = *filename + ": ";
       throw PrettyException{msg + "line: " + toString(pos.line) + " column: " + toString(pos.column) + ": " + s};
     }
@@ -164,7 +173,6 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
     bool nextElemInherited = false;
     std::istringstream is;
     vector<StreamPos> streamPos;
-    optional<string> filename;
     KeyVerifier dummyKeyVerifier;
 };
 
@@ -311,8 +319,6 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, PrettyFlag& c) {
 
 typedef StreamCombiner<ostringstream, PrettyOutputArchive> PrettyOutput;
 //typedef StreamCombiner<istringstream, PrettyInputArchive> PrettyInput;
-
-using PrettyInput = PrettyInputArchive;
 
 template <typename T>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, vector<T>& v) {

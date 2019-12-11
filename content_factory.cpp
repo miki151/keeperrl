@@ -23,7 +23,7 @@
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
-  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, playerCreatures, technology, items, buildingInfo);
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo);
   creatures.setContentFactory(this);
 }
 
@@ -134,11 +134,13 @@ optional<string> ContentFactory::readVillainsTuple(const GameConfig* gameConfig,
 }
 
 optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, KeyVerifier* keyVerifier) {
-  if (auto error = config->readObject(playerCreatures, GameConfigId::PLAYER_CREATURES, keyVerifier))
-    return "Error reading player creature definitions"_s + *error;
-  if (playerCreatures.first.empty() || playerCreatures.second.empty())
+  if (auto error = config->readObject(adventurerCreatures, GameConfigId::ADVENTURER_CREATURES, keyVerifier))
+    return "Error reading player creature definitions: "_s + *error;
+  if (auto error = config->readObject(keeperCreatures, GameConfigId::KEEPER_CREATURES, keyVerifier))
+    return "Error reading player creature definitions: "_s + *error;
+  if (keeperCreatures.empty() || adventurerCreatures.empty())
     return "Keeper and adventurer lists must each contain at least 1 entry."_s;
-  for (auto& keeperInfo : playerCreatures.first) {
+  for (auto& keeperInfo : keeperCreatures) {
     bool hotkeys[128] = {0};
     vector<BuildInfo> buildInfoTmp;
     set<string> allDataGroups;
@@ -204,10 +206,12 @@ optional<string> ContentFactory::readBuildingInfo(const GameConfig* config, KeyV
   return none;
 }
 
-optional<string> ContentFactory::readData(const GameConfig* config) {
+optional<string> ContentFactory::readData(const GameConfig* config, const string& modName) {
   KeyVerifier keyVerifier;
-  if (auto error = config->readObject(technology, GameConfigId::TECHNOLOGY, &keyVerifier))
+  map<PrimaryId<TechId>, Technology::TechDefinition> techsTmp;
+  if (auto error = config->readObject(techsTmp, GameConfigId::TECHNOLOGY, &keyVerifier))
     return *error;
+  technology = Technology(convertKeys(techsTmp));
   if (auto error = config->readObject(workshopGroups, GameConfigId::WORKSHOPS_MENU, &keyVerifier))
     return *error;
   if (auto error = config->readObject(immigrantsData, GameConfigId::IMMIGRATION, &keyVerifier))
@@ -252,9 +256,9 @@ optional<string> ContentFactory::readData(const GameConfig* config) {
     keyVerifier.addKey<ViewId>(id);
   if (auto res = config->readObject(tileDefs, GameConfigId::TILES, &keyVerifier))
     return *res;
-  tilePaths = TilePaths(std::move(tileDefs), config->getModName());
-  for (int alignment = 0; alignment < 2; ++alignment) {
-    vector<ZLevelInfo> levels = concat<ZLevelInfo>({zLevels[0], zLevels[1 + alignment]});
+  tilePaths = TilePaths(std::move(tileDefs), modName);
+  for (auto alignment : {ZLevelGroup::EVIL, ZLevelGroup::LAWFUL}) {
+    vector<ZLevelInfo> levels = concat<ZLevelInfo>({zLevels[ZLevelGroup::ALL], zLevels[alignment]});
     for (int depth = 0; depth < 1000; ++depth) {
       if (!isZLevel(levels, depth))
         return "No z-level found for depth " + toString(depth) + ". Please fix z-level config.";

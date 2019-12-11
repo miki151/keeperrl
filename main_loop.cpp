@@ -81,11 +81,6 @@ bool MainLoop::isCompatible(int loadedVersion) {
   return loadedVersion > 2 && loadedVersion <= saveVersion && loadedVersion / 100 == saveVersion / 100;
 }
 
-GameConfig MainLoop::getGameConfig() const {
-  string currentMod = options->getStringValue(OptionId::CURRENT_MOD2);
-  return GameConfig(modsDir, std::move(currentMod));
-}
-
 static string getSaveSuffix(GameSaveType t) {
   switch (t) {
     case GameSaveType::KEEPER: return ".kep";
@@ -397,17 +392,18 @@ struct ModelTable {
 };
 
 TilePaths MainLoop::getTilePathsForAllMods() const {
-  auto readTiles = [&] (const GameConfig* config) {
+  auto readTiles = [&] (const GameConfig* config, string modName) {
     vector<TileInfo> tileDefs;
     if (auto res = config->readObject(tileDefs, GameConfigId::TILES, nullptr))
       return optional<TilePaths>();
-    return optional<TilePaths>(TilePaths(std::move(tileDefs), config->getModName()));
+    return optional<TilePaths>(TilePaths(std::move(tileDefs), std::move(modName)));
   };
-  GameConfig currentConfig = getGameConfig();
-  auto ret = readTiles(&currentConfig);
-  for (auto modDir : modsDir.getSubDirs()) {
-    GameConfig config(modsDir, modDir);
-    if (auto paths = readTiles(&config)) {
+  string currentMod = options->getStringValue(OptionId::CURRENT_MOD2);
+  GameConfig currentConfig = getGameConfig(currentMod);
+  auto ret = readTiles(&currentConfig, currentMod);
+  for (auto modName : modsDir.getSubDirs()) {
+    GameConfig config({modsDir});
+    if (auto paths = readTiles(&config, modName)) {
       if (ret)
         ret->merge(*paths);
       else
@@ -423,7 +419,8 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     auto contentFactory = createContentFactory(false);
     if (tileSet)
       tileSet->setTilePaths(contentFactory.tilePaths);
-    auto avatarChoice = getAvatarInfo(view, &contentFactory.playerCreatures, options, &contentFactory.getCreatures());
+    auto avatarChoice = getAvatarInfo(view, contentFactory.keeperCreatures, contentFactory.adventurerCreatures,
+        &contentFactory.getCreatures());
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, contentFactory.villains, contentFactory.gameIntros, *avatar);
       tileSet->setTilePaths(getTilePathsForAllMods());
@@ -616,9 +613,9 @@ void MainLoop::downloadMod(ModInfo& mod) {
 }
 
 void MainLoop::uploadMod(ModInfo& mod) {
-  GameConfig config(modsDir, mod.name);
+  auto config = getGameConfig(mod.name);
   ContentFactory f;
-  if (auto err = f.readData(&config)) {
+  if (auto err = f.readData(&config, mod.name)) {
     view->presentText("Mod \"" + mod.name + "\" has errors: ", *err);
     return;
   }
@@ -646,8 +643,8 @@ void MainLoop::createNewMod() {
     auto targetPath = modsDir.subdirectory(*name);
     doWithSplash("Copying files...", 1,
        [&] (ProgressMeter& meter) {
-          FATAL;
-         //modsDir.subdirectory("vanilla").copyRecursively(targetPath);
+          //FATAL;
+         getVanillaDir().copyRecursively(targetPath);
        });
     updateLocalModVersion(*name, ModVersionInfo{0, 0, modVersion});
     updateLocalModDetails(*name, ModDetails{"", ""});
@@ -718,29 +715,34 @@ void MainLoop::considerFreeVersionText(bool tilesPresent) {
         "More information on the website.");
 }
 
+DirectoryPath MainLoop::getVanillaDir() const {
+  return dataFreePath.subdirectory("game_config");
+}
+
 GameConfig MainLoop::getVanillaConfig() const {
-  return GameConfig(dataFreePath.subdirectory("game_config"), "vanilla");
+  return GameConfig({getVanillaDir()});
+}
+
+GameConfig MainLoop::getGameConfig(const string& modName) const {
+  if (modName != "vanilla")
+    return GameConfig({getVanillaDir(), modsDir.subdirectory(modName)});
+  else
+    return getVanillaConfig();
 }
 
 ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
   ContentFactory ret;
-  auto tryVanillaConfig = [&] {
-    auto config = getVanillaConfig();
-    return ret.readData(&config);
-  };
   auto tryConfig = [&](const string& modName) {
-    if (modName == "vanilla")
-      return tryVanillaConfig();
-    GameConfig config(modsDir.subdirectory(modName), modName);
-    return ret.readData(&config);
+    auto config = getGameConfig(modName);
+    return ret.readData(&config, modName);
   };
   if (vanillaOnly) {
 #ifdef RELEASE
-    if (auto err = tryVanillaConfig())
+    if (auto err = tryConfig("vanilla"))
       USER_FATAL << "Error loading vanilla game data: " << *err;
 #else
     while (true) {
-      if (auto err = tryVanillaConfig())
+      if (auto err = tryConfig("vanilla"))
         USER_INFO << "Error loading vanilla game data: " << *err;
       else
         break;
@@ -750,7 +752,7 @@ ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
     auto chosenMod = options->getStringValue(OptionId::CURRENT_MOD2);
     if (auto err = tryConfig(chosenMod)) {
       USER_INFO << "Error loading mod \"" << chosenMod << "\": " << *err << "\n\nUsing vanilla game data";
-      if (auto err = tryVanillaConfig())
+      if (auto err = tryConfig("vanilla"))
         USER_FATAL << "Error loading vanilla game data: " << *err;
     }
   }
@@ -770,7 +772,7 @@ void MainLoop::launchQuickGame(optional<int> maxTurns) {
     game = loadGame(userPath.file((*toLoad).filename));
   auto contentFactory = createContentFactory(false);
   if (!game) {
-    AvatarInfo avatar = getQuickGameAvatar(view, &contentFactory.playerCreatures, &contentFactory.getCreatures());
+    AvatarInfo avatar = getQuickGameAvatar(view, contentFactory.keeperCreatures, &contentFactory.getCreatures());
     CampaignBuilder builder(view, Random, options, contentFactory.villains, contentFactory.gameIntros, avatar);
     auto result = builder.prepareCampaign(bindMethod(&MainLoop::getRetiredGames, this), CampaignType::QUICK_MAP, "[world]");
     auto models = prepareCampaignModels(*result, std::move(avatar), Random, &contentFactory);
@@ -929,9 +931,9 @@ optional<string> MainLoop::verifyMod(const string& path) {
   if (auto err = unzip(path, modsPath.getPath()))
     return err;
   for (auto mod : modsPath.getSubDirs()) {
-    GameConfig config(modsPath, mod);
+    GameConfig config({modsPath.subdirectory(mod)});
     ContentFactory f;
-    if (auto err = f.readData(&config))
+    if (auto err = f.readData(&config, mod))
       return err;
     else {
       std::cout << mod << std::endl;

@@ -9,7 +9,8 @@ constexpr auto gameConfigSubdir = "mods";
 
 enum class GameConfigId {
   CAMPAIGN_VILLAINS,
-  PLAYER_CREATURES,
+  KEEPER_CREATURES,
+  ADVENTURER_CREATURES,
   BUILD_MENU,
   WORKSHOPS_MENU,
   IMMIGRATION,
@@ -33,17 +34,20 @@ enum class GameConfigId {
 
 class GameConfig {
   public:
-  GameConfig(DirectoryPath modPath, string modName);
+  GameConfig(vector<DirectoryPath> modDirs);
   template<typename T>
   [[nodiscard]] optional<string> readObject(T& object, GameConfigId id, KeyVerifier* keyVerifier) const {
-    return PrettyPrinting::parseObject<T>(object, path.file(getConfigName(id) + ".txt"_s), keyVerifier);
+    vector<FilePath> paths;
+    string fileName = getConfigName(id) + ".txt"_s;
+    for (auto& dir : dirs) {
+      auto path = dir.file(fileName);
+      if (path.exists())
+        paths.push_back(std::move(path));
+    }
+    return PrettyPrinting::parseObject<T>(object, paths, keyVerifier);
   }
-
-  const DirectoryPath& getPath() const;
-  const string& getModName() const;
 
   private:
   static const char* getConfigName(GameConfigId);
-  DirectoryPath path;
-  string modName;
+  vector<DirectoryPath> dirs;
 };

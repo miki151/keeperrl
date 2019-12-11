@@ -85,8 +85,6 @@ class MainLoop {
   static vector<SaveFileInfo> getSaveFiles(const DirectoryPath& path, const string& suffix);
   bool isCompatible(int loadedVersion);
 
-  GameConfig getGameConfig() const;
-
   View* view = nullptr;
   DirectoryPath dataFreePath;
   DirectoryPath userPath;
@@ -125,4 +123,6 @@ class MainLoop {
   void createNewMod();
   vector<ModInfo> getOnlineMods();
   GameConfig getVanillaConfig() const;
+  GameConfig getGameConfig(const string&) const;
+  DirectoryPath getVanillaDir() const;
 };
