@@ -1014,6 +1014,41 @@ class Test {
     CHECK(r3.a.y == 2);
   }
 
+  void testPrettyInput7() {
+    map<string, TestStruct5> m;
+    string text = "{"
+        "\"r1\" { a = { x = 3 y = 4 }}"
+        "\"r1\" modify { a = { x = 5 y = 6 } }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!err) << *err;
+    auto r1 = m.at("r1");
+    CHECK(r1.a.x == 5);
+    CHECK(r1.a.y == 6);
+  }
+
+  void testPrettyInput8() {
+    map<string, TestStruct5> m;
+    string text = "{"
+        "\"r1\" { a = { x = 3 y = 4 }}"
+        "\"r1\" modify { a = append { y = 6 } }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!err) << *err;
+    auto r1 = m.at("r1");
+    CHECK(r1.a.x == 3);
+    CHECK(r1.a.y == 6);
+  }
+
+  void testPrettyInput9() {
+    map<string, TestStruct5> m;
+    string text = "{"
+        "\"r1\" { a = { x = 3 y = 4 }}"
+        "\"r2\" modify { a = append { y = 6 } }"
+        "}";
+    CHECK(!!PrettyPrinting::parseObject(m, text));
+  }
+
   void testPrettyVector() {
     map<string, TestStruct2> m;
     string text = "{"
@@ -1273,6 +1308,9 @@ void testAll() {
   Test().testPrettyInput4();
   Test().testPrettyInput5();
   Test().testPrettyInput6();
+  Test().testPrettyInput7();
+  Test().testPrettyInput8();
+  Test().testPrettyInput9();
   Test().testPrettyVector();
   LastingEffects::runTests();
   INFO << "-----===== OK =====-----";

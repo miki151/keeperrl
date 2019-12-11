@@ -353,23 +353,27 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, map<T, U>& m) {
       break;
     T key;
     ar1(key);
-    bookmarks[key] = ar1.bookmark();
-    if (keys.count(key))
+    auto thisKeyBookmark = ar1.bookmark();
+    if (ar1.peek() != "modify" && keys.count(key))
       ar1.error("Duplicate key");
     keys.insert(key);
     U value;
     vector<long> toRead;
     while (true) {
-      if (ar1.eatMaybe("inherit")) {
+      bool modifying = false;
+      if (ar1.eatMaybe("inherit") || (modifying = ar1.eatMaybe("modify"))) {
         T inheritKey;
         ar1.inheritingKey = true;
-        ar1(inheritKey);
+        if (!modifying)
+          ar1(inheritKey);
+        else
+          inheritKey = key;
         ar1.inheritingKey = false;
         toRead.push_back(ar1.bookmark());
         if (auto bookmark = getValueMaybe(bookmarks, inheritKey))
           ar1.seek(*bookmark);
         else
-          ar1.error("Key to inherit not found");
+          ar1.error(modifying ? "Key to modify not found" : "Key to inherit not found");
       } else {
         toRead.push_back(ar1.bookmark());
         break;
@@ -382,6 +386,8 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, map<T, U>& m) {
       else
         ar1.loadInherited(value);
     }
+    bookmarks[key] = thisKeyBookmark;
+    m.erase(key);
     m.insert(make_pair(std::move(key), std::move(value)));
   }
   ar1.eat("}");
