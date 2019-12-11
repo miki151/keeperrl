@@ -1,2 +1,3 @@
 # CreatureId                     TribeAlignment 
+"1_lawful_adventurer"
 { "ADVENTURER" "ADVENTURER_F" }      LAWFUL             "Roam the land in search of adventures and loot!"

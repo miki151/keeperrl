@@ -134,10 +134,14 @@ optional<string> ContentFactory::readVillainsTuple(const GameConfig* gameConfig,
 }
 
 optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, KeyVerifier* keyVerifier) {
-  if (auto error = config->readObject(adventurerCreatures, GameConfigId::ADVENTURER_CREATURES, keyVerifier))
+  map<string, KeeperCreatureInfo> keeperCreaturesTmp;
+  map<string, AdventurerCreatureInfo> adventurerCreaturesTmp;
+  if (auto error = config->readObject(adventurerCreaturesTmp, GameConfigId::ADVENTURER_CREATURES, keyVerifier))
     return "Error reading player creature definitions: "_s + *error;
-  if (auto error = config->readObject(keeperCreatures, GameConfigId::KEEPER_CREATURES, keyVerifier))
+  if (auto error = config->readObject(keeperCreaturesTmp, GameConfigId::KEEPER_CREATURES, keyVerifier))
     return "Error reading player creature definitions: "_s + *error;
+  keeperCreatures = getValues(keeperCreaturesTmp);
+  adventurerCreatures = getValues(adventurerCreaturesTmp);
   if (keeperCreatures.empty() || adventurerCreatures.empty())
     return "Keeper and adventurer lists must each contain at least 1 entry."_s;
   for (auto& keeperInfo : keeperCreatures) {

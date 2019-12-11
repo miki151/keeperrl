@@ -1,3 +1,7 @@
+# The ids are there to identify, inherit, etc.
+# They also get ordered alphabetically, hence the 1, 2, ... in the front.
+
+"1_dark_mage"
 {
   creatureId = { "KEEPER_MAGE" "KEEPER_MAGE_F" }
   tribeAlignment = EVIL
@@ -17,23 +21,12 @@
 # Special traits example, all traits are added
 #   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
 }
+"2_dark_knight" inherit "1_dark_mage"
 {
   creatureId = { "KEEPER_KNIGHT" "KEEPER_KNIGHT_F" }
-  tribeAlignment = EVIL
-  immigrantGroups = {"peseant_prisoners" "dark_keeper"}
-  technology = {
-      "alchemy" "advanced alchemy" "alchemical conversion" "humanoid mutation" "beast mutation"
-      "pig breeding" "iron working" "jewellery" "two-handed weapons" "traps" "archery" "sorcery"
-      "advanced sorcery" "magical weapons" "master sorcery" "demonology"
-  }
   initialTech = { "iron working" }
-  buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
-      "training" "crafting" "laboratory" "jeweller" "poetry" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
-  }
-  workshopGroups = { "basic" "traps" }
-  description = "Build and manage your dream dungeon, defend against raids, and attack your enemies!"
 }
+"3_white_knight"
 {
   creatureId = { "KEEPER_KNIGHT_WHITE" "KEEPER_KNIGHT_WHITE_F" }
   tribeAlignment = LAWFUL
@@ -51,6 +44,7 @@
   workshopGroups = { "basic" }
   description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"
 }
+"4_gnomes"
 {
   creatureId = { "GNOME" }
   tribeAlignment = LAWFUL
