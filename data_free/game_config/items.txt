@@ -1,0 +1,985 @@
+"AutomatonItem"
+  {
+    viewId = { "trap_item" }
+    name = "automaton"
+    applyMsgFirstPerson = "assemble the automaton"
+    applyMsgThirdPerson = "assembles an automaton"
+    applySound = TRAP_ARMING
+    weight = 30
+    itemClass = TOOL
+    applyTime = 3
+    uses = 1
+    price = 60
+    effect = SummonEnemy "AUTOMATON" {1}
+  }
+"Knife"
+  {
+    viewId = { "knife" }
+    name = "knife"
+    plural = "knives"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 0.3
+    modifiers = {
+      DAMAGE 5
+    }
+    price = 1
+    weaponInfo = {
+      attackType = STAB
+      attackMsg = THRUST
+    }
+    genPrefixes = {
+      1 VictimEffect 0.1 Lasting POISON
+    }
+  }
+"UnicornHorn"
+  {
+    viewId = { "knife" }
+    name = "horn"
+    plural = "horn"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 0.3
+    modifiers = {
+      DAMAGE 5
+    }
+    price = 1
+    weaponInfo = {
+      attackType = STAB
+      attackMsg = THRUST
+      victimEffect = { 0.5 Lasting POISON }
+    }
+  }
+"Spear"
+  {
+    viewId = { "spear" }
+    name = "spear"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 1.5
+    modifiers = {
+      DAMAGE 6
+    }
+    price = 4
+    weaponInfo = {
+      attackType = STAB
+      attackMsg = THRUST
+    }
+  }
+"Sword"
+  {
+    viewId = { "sword" }
+    name = "sword"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 1.5
+    modifiers = {
+      DAMAGE 8
+    }
+    price = 4
+    weaponInfo = {
+      attackType = CUT
+    }
+    genPrefixes = {
+      1 VictimEffect 0.3 Fire
+      1 VictimEffect 0.1 Lasting POISON
+      1 LastingEffect RAGE
+      1 JoinPrefixes {
+        ItemAttrBonus DAMAGE 3
+        LastingEffect HALLU
+      }
+    }
+    maxUpgrades = 1
+  }
+"AdaSword"
+  {
+    viewId = { "ada_sword" }
+    name = "adamantine sword"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 1.2
+    modifiers = {
+      DAMAGE 11
+    }
+    price = 20
+    weaponInfo = {
+      attackType = CUT
+    }
+    genPrefixes = {
+      1 VictimEffect 0.2 Acid
+      1 VictimEffect 0.3 Fire
+      1 VictimEffect 0.2 Lasting POISON
+      1 LastingEffect RAGE
+    }
+  }
+"ElvenSword"
+  {
+    viewId = { "elven_sword" }
+    name = "elven sword"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 1
+    modifiers = {
+      DAMAGE 9
+    }
+    price = 8
+    weaponInfo = {
+      attackType = CUT
+    }
+    genPrefixes = {
+      1 VictimEffect 1.0 SilverDamage
+    }
+  }
+"BattleAxe"
+  {
+    viewId = { "battle_axe" }
+    name = "battle axe"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 8
+    modifiers = {
+      DAMAGE 14
+    }
+    price = 30
+    weaponInfo = {
+      attackType = CUT
+      twoHanded = true
+    }
+    genPrefixes = {
+      1 VictimEffect 0.2 Lasting BLEEDING
+      1 LastingEffect RAGE
+    }
+    maxUpgrades = 1
+  }
+"AdaBattleAxe"
+  {
+    viewId = { "ada_battle_axe" }
+    shortName = "adamantine"
+    name = "adamantine battle axe"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 7
+    modifiers = {
+      DAMAGE 18
+    }
+    price = 150
+    weaponInfo = {
+      attackType = CUT
+      twoHanded = true
+    }
+    genPrefixes = {
+      1 VictimEffect 0.5 Lasting BLEEDING
+    }
+    maxUpgrades = 2
+  }
+"WarHammer"
+  {
+    viewId = { "war_hammer" }
+    name = "war hammer"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 8
+    modifiers = {
+      DAMAGE 12
+    }
+    price = 20
+    weaponInfo = {
+      attackType = CRUSH
+      twoHanded = true
+    }
+    genPrefixes = {
+      1 VictimEffect 0.3 Lasting COLLAPSED
+    }
+    maxUpgrades = 1
+  }
+"AdaWarHammer"
+  {
+    viewId = { "ada_war_hammer" }
+    name = "adamantine war hammer"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 6
+    modifiers = {
+      DAMAGE 15
+    }
+    price = 100
+    weaponInfo = {
+      attackType = CRUSH
+      twoHanded = true
+    }
+    genPrefixes = {
+      1 VictimEffect 0.5 Lasting COLLAPSED
+    }
+    maxUpgrades = 2
+  }
+"Club"
+  {
+    viewId = { "club" }
+    name = "club"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 2
+    modifiers = {
+      DAMAGE 4
+    }
+    price = 2
+    weaponInfo = {
+      attackType = CRUSH
+    }
+    maxUpgrades = 0
+  }
+"HeavyClub"
+  {
+    viewId = { "heavy_club" }
+    name = "heavy club"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 8
+    modifiers = {
+      DAMAGE 10
+    }
+    price = 4
+    weaponInfo = {
+      attackType = CRUSH
+      twoHanded = true
+    }
+    maxUpgrades = 0
+  }
+"WoodenStaff"
+  {
+    viewId = { "wooden_staff" }
+    name = "wooden staff"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 1.5
+    modifiers = {
+      SPELL_DAMAGE 4
+    }
+    price = 30
+    weaponInfo = {
+      attackType = SPELL
+      attackMsg = WAVE
+      meleeAttackAttr = SPELL_DAMAGE
+    }
+    genPrefixes = {
+      1 VictimEffect 1.0 Escape
+    }
+    maxUpgrades = 1
+  }
+"IronStaff"
+  {
+    viewId = { "iron_staff" }
+    name = "iron staff"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 1.5
+    modifiers = {
+      SPELL_DAMAGE 8
+    }
+    price = 60
+    weaponInfo = {
+      attackType = SPELL
+      attackMsg = WAVE
+      meleeAttackAttr = SPELL_DAMAGE
+    }
+    genPrefixes = {
+      1 VictimEffect 1.0 Escape
+      1 VictimEffect 0.4 DestroyEquipment
+      1 JoinPrefixes {
+        ItemAttrBonus SPELL_DAMAGE 20
+        AttackerEffect Suicide DIE
+      }
+    }
+    maxUpgrades = 2
+  }
+"GoldenStaff"
+  {
+    viewId = { "golden_staff" }
+    name = "golden staff"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 2.5
+    modifiers = {
+      SPELL_DAMAGE 11
+    }
+    price = 180
+    weaponInfo = {
+      attackType = SPELL
+      attackMsg = WAVE
+      meleeAttackAttr = SPELL_DAMAGE
+    }
+    genPrefixes = {
+      1 VictimEffect 0.2 Lasting INSANITY
+      1 VictimEffect 0.2 DestroyEquipment
+      1 VictimEffect 0.5 Fire
+    }
+    maxUpgrades = 4
+  }
+"Scythe"
+  {
+    viewId = { "sword" }
+    name = "scythe"
+    itemClass = WEAPON
+    equipmentSlot = WEAPON
+    weight = 5
+    modifiers = {
+      DAMAGE 12
+    }
+    price = 20
+    weaponInfo = {
+      attackType = CUT
+      twoHanded = true
+      meleeAttackAttr = SPELL_DAMAGE
+    }
+  }
+"ElvenBow"
+  {
+    viewId = { "elven_bow" }
+    itemClass = RANGED_WEAPON
+    equipmentSlot = RANGED_WEAPON
+    rangedWeapon = RANGED_DAMAGE "arrow" {"arrow"} 12
+    weaponInfo = {
+      twoHanded = true
+    }
+    weight = 1
+    modifiers = {
+      RANGED_DAMAGE 16
+    }
+    name = "silver elven bow"
+    price = 100
+  }
+"Bow"
+  {
+    viewId = { "bow" }
+    name = "short bow"
+    itemClass = RANGED_WEAPON
+    equipmentSlot = RANGED_WEAPON
+    rangedWeapon = RANGED_DAMAGE "arrow" {"arrow"} 10
+    weaponInfo = {
+      twoHanded = true
+    }
+    weight = 1
+    modifiers = {
+      RANGED_DAMAGE 10
+    }
+    price = 12
+  }
+"Torch"
+  {
+    viewId = { "hand_torch" }
+    itemClass = TOOL
+    weight = 1
+    ownedEffect = LIGHT_SOURCE
+    name = "hand torch"
+    plural = "hand torches"
+    price = 2
+  }
+"Robe"
+  {
+    viewId = { "robe" }
+    name = "robe"
+    itemClass = ARMOR
+    equipmentSlot = BODY_ARMOR
+    weight = 2
+    price = 10
+    modifiers = {
+      DEFENSE 1
+    }
+    genPrefixes = {
+      1 LastingEffect MAGIC_RESISTANCE
+    }
+  }
+"HalloweenCostume"
+  {
+    viewId = { "halloween_costume" }
+    name = "halloween costume"
+    shortName = "halloween costume"
+    itemClass = ARMOR
+    equipmentSlot = BODY_ARMOR
+    weight = 1
+    price = 10
+    modifiers = {
+      DEFENSE 1
+    }
+  }
+"BagOfCandies"
+  {
+    viewId = { "bag_of_candy" }
+    shortName = "candies"
+    name = "bag of candies"
+    blindName = "bag"
+    description = "Really, just a bag of candies."
+    itemClass = FOOD
+    weight = 0.1
+    modifiers = {
+      DAMAGE -15
+    }
+    price = 1
+    uses = 1
+  }
+"LeatherGloves"
+  {
+    viewId = { "leather_gloves" }
+    shortName = "gloves"
+    name = "pair of leather gloves"
+    plural = "pairs of leather gloves"
+    itemClass = ARMOR
+    equipmentSlot = GLOVES
+    weight = 0.3
+    price = 2
+    modifiers = {
+      DEFENSE 1
+    }
+    maxUpgrades = 0
+  }
+"IronGloves"
+  {
+    viewId = { "iron_gloves" }
+    shortName = "gloves"
+    name = "pair of iron gloves"
+    plural = "pairs of iron gloves"
+    itemClass = ARMOR
+    equipmentSlot = GLOVES
+    weight = 1
+    price = 10
+    modifiers = {
+      DEFENSE 2
+    }
+    genPrefixes = {
+      1 ItemAttrBonus DAMAGE 3
+      1 ItemAttrBonus SPELL_DAMAGE 3
+    }
+    maxUpgrades = 1
+  }
+"AdaGloves"
+  {
+    viewId = { "ada_gloves" }
+    shortName = "gloves"
+    name = "pair of adamantine gloves"
+    plural = "pairs of adamantine gloves"
+    itemClass = ARMOR
+    equipmentSlot = GLOVES
+    weight = 0.7
+    price = 25
+    modifiers = {
+      DEFENSE 3
+    }
+    genPrefixes = {
+      1 ItemAttrBonus DAMAGE 3
+      1 ItemAttrBonus SPELL_DAMAGE 3
+    }
+    maxUpgrades = 2
+  }
+"LeatherArmor"
+  {
+    viewId = { "leather_armor" }
+    shortName = "armor"
+    name = "leather armor"
+    itemClass = ARMOR
+    equipmentSlot = BODY_ARMOR
+    weight = 7
+    price = 4
+    modifiers = {
+      DEFENSE 3
+    }
+    genPrefixes = {
+      1 ItemAttrBonus DEFENSE 3
+    }
+    maxUpgrades = 0
+  }
+"LeatherHelm"
+  {
+    viewId = { "leather_helm" }
+    shortName = "helm"
+    name = "leather helm"
+    itemClass = ARMOR
+    equipmentSlot = HELMET
+    weight = 1.5
+    price = 1
+    modifiers = {
+      DEFENSE 1
+    }
+    genPrefixes = {
+      1 LastingEffect TELEPATHY
+      1 LastingEffect SLEEP_RESISTANT
+      2 ItemAttrBonus DEFENSE 3
+    }
+    maxUpgrades = 0
+  }
+"WoodenShield"
+  {
+    viewId = { "wooden_shield" }
+    shortName = "wooden"
+    name = "wooden shield"
+    itemClass = ARMOR
+    equipmentSlot = SHIELD
+    weight = 2
+    price = 1
+    modifiers = {
+      PARRY 1
+    }
+    maxUpgrades = 0
+  }
+"IronShield"
+  {
+    viewId = { "wooden_shield" Rgb 189 189 189 255 }
+    shortName = "iron"
+    name = "iron shield"
+    itemClass = ARMOR
+    equipmentSlot = SHIELD
+    weight = 2
+    price = 10
+    modifiers = {
+      PARRY 2
+      DEFENSE 2
+    }
+    maxUpgrades = 1
+  }
+"AdaShield"
+  {
+    viewId = { "wooden_shield" Rgb 148 189 189 255 }
+    shortName = "adamantine"
+    name = "adamantine shield"
+    itemClass = ARMOR
+    equipmentSlot = SHIELD
+    weight = 1.5
+    price = 50
+    modifiers = {
+      PARRY 3
+      DEFENSE 4
+    }
+    maxUpgrades = 2
+  }
+"ChainArmor"
+  {
+    viewId = { "chain_armor" }
+    shortName = "armor"
+    name = "chain armor"
+    itemClass = ARMOR
+    equipmentSlot = BODY_ARMOR
+    weight = 15
+    price = 25
+    modifiers = {
+      DEFENSE 5
+    }
+    genPrefixes = {
+      1 ItemAttrBonus DEFENSE 3
+    }
+    maxUpgrades = 2
+  }
+"RedDragonScales"
+  {
+    viewId = { "dragon_scales" ColorId RED }
+    name = "red dragon scales"
+    itemClass = OTHER
+    weight = 5
+    price = 100
+    ingredientFor = {Simple "RedDragonArmor"}
+  }
+"RedDragonArmor" inherit "ChainArmor"
+  {
+    viewId = { "chain_armor" Rgb 156 58 68 255 }
+    shortName = "red dragon"
+    name = "red dragon scale armor"
+    weight = 10
+    price = 250
+    modifiers = {
+      DEFENSE 10
+      SPELL_DAMAGE 2
+    }
+    equipedEffect = {FIRE_RESISTANT}
+    maxUpgrades = 2
+  }
+"BlackDragonScales"
+  {
+    viewId = { "dragon_scales" Rgb 80 80 80 255 }
+    name = "black dragon scales"
+    itemClass = OTHER
+    weight = 5
+    price = 100
+    ingredientFor = {Simple "BlackDragonArmor"}
+  }
+"BlackDragonArmor" inherit "ChainArmor"
+  {
+    viewId = { "chain_armor" Rgb 80 80 80 255 }
+    shortName = "black dragon"
+    name = "black dragon scale armor"
+    weight = 10
+    price = 250
+    modifiers = {
+      DEFENSE 15
+      SPELL_DAMAGE 2
+    }
+    equipedEffect = {DARKNESS_SOURCE TELEPATHY}
+    maxUpgrades = 2
+  }
+"WhiteDragonScales"
+  {
+    viewId = { "dragon_scales" Rgb 254 254 254 255 }
+    name = "white dragon scales"
+    itemClass = OTHER
+    weight = 5
+    price = 100
+    ingredientFor = {Simple "WhiteDragonArmor"}
+  }
+"WhiteDragonArmor" inherit "ChainArmor"
+  {
+    viewId = { "chain_armor" Rgb 254 254 254 255 }
+    shortName = "white dragon"
+    name = "white dragon scale armor"
+    weight = 10
+    price = 250
+    modifiers = {
+      DEFENSE 7
+      SPELL_DAMAGE 4
+    }
+    equipedEffect = {COLD_RESISTANT}
+    maxUpgrades = 2
+  }
+"GreenDragonScales"
+  {
+    viewId = { "dragon_scales" }
+    name = "green dragon scales"
+    itemClass = OTHER
+    weight = 5
+    price = 100
+    ingredientFor = {Simple "GreenDragonArmor"}
+  }
+"GreenDragonArmor" inherit "ChainArmor"
+  {
+    viewId = { "chain_armor" Rgb 151 162 81 255 }
+    shortName = "green dragon"
+    name = "green dragon scale armor"
+    weight = 10
+    price = 250
+    modifiers = {
+      DEFENSE 10
+      SPELL_DAMAGE 2
+    }
+    equipedEffect = {POISON_RESISTANT}
+    maxUpgrades = 2
+  }
+"AdaArmor"
+  {
+    viewId = { "ada_armor" }
+    shortName = "armor"
+    name = "adamantine armor"
+    itemClass = ARMOR
+    equipmentSlot = BODY_ARMOR
+    weight = 13
+    price = 160
+    modifiers = {
+      DEFENSE 8
+    }
+    genPrefixes = {
+      1 ItemAttrBonus DEFENSE 3
+    }
+    maxUpgrades = 4
+  }
+"IronHelm"
+  {
+    viewId = { "iron_helm" }
+    shortName = "helm"
+    name = "iron helm"
+    itemClass = ARMOR
+    equipmentSlot = HELMET
+    weight = 4
+    price = 8
+    modifiers = {
+      DEFENSE 2
+    }
+    genPrefixes = {
+      1 LastingEffect WARNING
+      1 LastingEffect SLEEP_RESISTANT
+      3 ItemAttrBonus DEFENSE 3
+    }
+    maxUpgrades = 1
+  }
+"HydraTongue"
+  {
+    viewId = { "tongue" }
+    name = "hydra tongue"
+    itemClass = OTHER
+    weight = 15
+    price = 100
+    ingredientFor = {Potion Permanent POISON_RESISTANT}
+  }
+"ZombieBrain"
+  {
+    viewId = { "brain" }
+    name = "zombie brain"
+    itemClass = OTHER
+    weight = 2
+    price = 20
+    ingredientFor = {Potion Lasting PLAGUE}
+  }
+"CyclopsBrain"
+  {
+    viewId = { "brain" }
+    name = "cyclops brain"
+    itemClass = OTHER
+    weight = 5
+    price = 50
+    ingredientFor = {Potion IncreaseAttr DEFENSE 5}
+  }
+"CyclopsTesticles"
+  {
+    viewId = { "nuts" }
+    shortName = "cyclops"
+    name = "cyclops testicles"
+    itemClass = OTHER
+    weight = 5
+    price = 50
+    ingredientFor = {Simple "CyclopsHelm"}
+  }
+"CyclopsHelm" inherit "IronHelm"
+  {
+    viewId = { "cyclops_helm" }
+    shortName = "cyclops"
+    name = "cyclops testicles helmet"
+    plural = "cyclops testicles helmet"
+    modifiers = {
+      DEFENSE 5
+    }
+    equipedEffect = {ENTERTAINER}
+    maxUpgrades = 3
+  }
+"AdoxieEye"
+  {
+    name = "Adoxie's eye"
+    viewId = { "adoxie_eye" }
+    upgradeInfo = ARMOR SpellId "double trouble"
+    itemClass = SCROLL
+    weight = 2
+    price = 500
+  }
+"AdaHelm"
+  {
+    viewId = { "ada_helm" }
+    shortName = "helm"
+    name = "adamantine helm"
+    itemClass = ARMOR
+    equipmentSlot = HELMET
+    weight = 3
+    price = 40
+    modifiers = {
+      DEFENSE 4 
+    }
+    genPrefixes = {
+      1 LastingEffect TELEPATHY
+      1 LastingEffect REGENERATION
+    }
+    maxUpgrades = 2
+  }
+"Cornuthaum1"
+  {
+    viewId = { "cornuthaum1" }
+    name = "cornuthaum"
+    itemClass = ARMOR
+    equipmentSlot = HELMET
+    weight = 1
+    price = 30
+    modifiers = {
+      SPELL_DAMAGE 2
+      DAMAGE -2
+    }
+    maxUpgrades = 1
+  }
+"Cornuthaum2"
+  {
+    viewId = { "cornuthaum2" }
+    name = "ornate cornuthaum"
+    itemClass = ARMOR
+    equipmentSlot = HELMET
+    weight = 1
+    price = 50
+    modifiers = {
+      SPELL_DAMAGE 4
+      DAMAGE -4
+    }
+    maxUpgrades = 2
+  }
+"Cornuthaum3"
+  {
+    viewId = { "cornuthaum3" }
+    name = "sumptuous cornuthaum"
+    itemClass = ARMOR
+    equipmentSlot = HELMET
+    weight = 1
+    price = 70
+    modifiers = {
+      SPELL_DAMAGE 6
+      DAMAGE -6
+    }
+    maxUpgrades = 4
+  }
+"LeatherBoots"
+  {
+    viewId = { "leather_boots" }
+    shortName = "boots"
+    name = "pair of leather boots"
+    plural = "pairs of leather boots"
+    itemClass = ARMOR
+    equipmentSlot = BOOTS
+    weight = 2
+    price = 2
+    modifiers = {
+      DEFENSE 1
+    }
+    genPrefixes = {
+      1 LastingEffect FLYING
+      1 LastingEffect SPEED
+      2 ItemAttrBonus DEFENSE 3
+    }
+    maxUpgrades = 0
+  }
+"IronBoots"
+  {
+    viewId = { "iron_boots" }
+    shortName = "boots"
+    name = "pair of iron boots"
+    plural = "pairs of iron boots"
+    itemClass = ARMOR
+    equipmentSlot = BOOTS
+    weight = 4
+    price = 8
+    modifiers = {
+      DEFENSE 2
+    }
+    genPrefixes = {
+      1 LastingEffect FLYING
+      1 LastingEffect FIRE_RESISTANT
+      3 ItemAttrBonus DEFENSE 3
+    }
+    maxUpgrades = 1
+  }
+"AdaBoots"
+  {
+    viewId = { "ada_boots" }
+    shortName = "boots"
+    name = "pair of adamantine boots"
+    plural = "pairs of admantine boots"
+    itemClass = ARMOR
+    equipmentSlot = BOOTS
+    weight = 3
+    price = 50
+    modifiers = {
+      DEFENSE 4
+    }
+    genPrefixes = {
+      1 LastingEffect SPEED
+    }
+    maxUpgrades = 2
+  }
+"DefenseAmulet"
+  {
+    viewId = { "amulet3" }
+    shortName = "defense"
+    name = "amulet of defense"
+    plural = "amulets of defense"
+    description = "Increases the toughness of your skin and flesh, making you harder to wound."
+    itemClass = AMULET
+    equipmentSlot = AMULET
+    price = 60
+    modifiers = {
+      DEFENSE 3
+    }
+    weight = 0.3
+  }
+"FirstAidKit"
+  {
+    viewId = { "first_aid" }
+    name = "first aid kit"
+    weight = 0.5
+    itemClass = TOOL
+    description = "Heals your wounds, but requires a few turns to apply."
+    applyTime = 3
+    uses = 3
+    usedUpMsg = true
+    displayUses = true
+    price = 2
+    effect = Heal FLESH
+  }
+"MagicLamp"
+  {
+    viewId = { "lamp" }
+    name = "oil lamp"
+    applyMsgFirstPerson = "rub the lamp"
+    applyMsgThirdPerson = "rubs the lamp"
+    weight = 1
+    itemClass = TOOL
+    description = "Just an oil lamp"
+    uses = 1
+    price = 1000
+    effect = SummonEnemy "DJINN" {1}
+    effectDescription = false
+    ownedEffect = LIGHT_SOURCE
+  }
+"Rock"
+  {
+    viewId = { "rock" }
+    name = "rock"
+    itemClass = OTHER
+    price = 0
+    resourceId = STONE
+    weight = 0.3
+    wishedCount = { 5 10 }
+  }
+"IronOre"
+  {
+    viewId = { "iron_rock" }
+    name = "iron ore"
+    itemClass = OTHER
+    price = 0
+    resourceId = IRON
+    weight = 0.5
+  }
+"AdaOre"
+  {
+    viewId = { "ada_ore" }
+    name = "adamantine ore"
+    itemClass = OTHER
+    price = 0
+    resourceId = ADA
+    weight = 0.5
+  }
+"WoodPlank"
+  {
+    viewId = { "wood_plank" }
+    name = "wood plank"
+    itemClass = OTHER
+    price = 0
+    resourceId = WOOD
+    weight = 5
+  }
+"Bone"
+  {
+    viewId = { "bone" }
+    name = "bone"
+    itemClass = CORPSE
+    price = 0
+    weight = 5
+  }
+"Skeleton"
+  {
+    viewId = { "bone" }
+    name = "skeleton"
+    itemClass = CORPSE
+    price = 0
+    weight = 50
+  }
+"FrozenRemains" inherit "Skeleton"
+  {
+    viewId = { "frozen_remains" }
+    name = "frozen remains"
+  }
+"GoldPiece"
+  {
+    viewId = { "gold" }
+    name = "gold piece"
+    itemClass = GOLD
+    price = 1
+    resourceId = GOLD
+    weight = 0.01
+    wishedCount = { 500 1000 }
+  }

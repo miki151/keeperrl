@@ -1,0 +1,101 @@
+# Here come levels for all keeper types
+# At every depth the game chooses a random level that's available
+{
+  # This is a filled level that can appear at all depths
+  {
+    type = FullZLevel {
+    }
+  }
+  {
+    type = FullZLevel {
+      # You can optionally add an EnemyId. The player will dig down right into their base.
+      # Warning: some enemies might not work
+      enemy = "RAT_CAVE"
+    }
+    # Possible depths for this level, inclusive. The first level when you dig down is 1.
+    minDepth = 2
+    maxDepth = 4
+  }
+  {
+    type = FullZLevel {
+      # You can optionally add an EnemyId. The player will dig down right into their base.
+      # Warning: some enemies might not work
+      enemy = "RAT_PEOPLE_CAVE"
+      # The probability that the enemy will immediately attack when uncovered. 
+      # Make sure the enemy has behaviour defined in enemies.txt.
+      attackChance = 0.3
+    }
+    # Possible depths for this level, inclusive. The first level when you dig down is 1.
+    minDepth = 3
+    maxDepth = 7
+  }
+  {
+    type = FullZLevel {
+      # You can optionally add an EnemyId. The player will dig down right into their base.
+      # Warning: some enemies might not work
+      enemy = "BLACK_RATS"
+    }
+    # Possible depths for this level, inclusive. The first level when you dig down is 1.
+    minDepth = 5
+  }
+  { # adamantium, the ores are added automatically around the golems
+    type = FullZLevel {
+      enemy = "ADA_GOLEMS"
+    }
+    minDepth = 10
+  }
+  {
+    # A level full of water with some islands
+    type = WaterZLevel {
+      waterType = "WATER"
+      creatures = {
+        # Total no of creatures on this level. All are hostile
+        count = {10 11}
+        all = {
+          # The number is the weight, i.e. rats are twice as many as elementals
+          2 "RAT"
+          1 "WATER_ELEMENTAL"
+        }
+      }
+    }
+    minDepth = 7
+    maxDepth = 10
+    width = 60
+  }
+  {
+    type = WaterZLevel {
+      waterType = "MAGMA"
+      creatures = {
+        count = {10 11}
+        all = {
+          10 "FIRE_ELEMENTAL"
+          1 "RED_DRAGON"
+        }
+      }
+    }
+    minDepth = 10
+    width = 60
+  }
+}
+
+# Here come levels specific to white keepers
+{
+  {
+    type = FullZLevel {
+      enemy = "DARK_ELF_CAVE"
+      attackChance = 0.6
+    }
+    minDepth = 5
+  }
+}
+
+# Here come levels specific to dark keepers
+{
+  {
+    type = FullZLevel {
+      enemy = "DWARF_CAVE"
+      attackChance = 0.6
+    }
+    minDepth = 5
+  }
+}

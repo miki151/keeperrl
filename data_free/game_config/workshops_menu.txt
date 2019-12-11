@@ -1,0 +1,145 @@
+ 
+"basic"
+
+# Workshop
+{
+    {item = {Simple "Club"}    work = 3 cost = WOOD 10    tech = none      batchSize = 1    tutorialHighlight = SCHEDULE_CLUB}
+    {{Simple "LeatherArmor"}          6        WOOD 20}
+    {{Simple "LeatherHelm"}           1        WOOD 6}
+    {{Simple "LeatherBoots"}          2        WOOD 10}
+    {{Simple "WoodenShield"}          2        WOOD 10}
+    {{Simple "LeatherGloves"}         1        WOOD 2}
+    {{Simple "HeavyClub"}             5        WOOD 20      "two-handed weapons"}
+    {{Simple "Cornuthaum1"}           5        GOLD 0       "sorcery"}
+    {{Simple "Cornuthaum2"}           8        GOLD 20      "advanced sorcery"}
+    {{Simple "Cornuthaum3"}           12       GOLD 40      "master sorcery"}
+    {{Simple "Bow"}                   13       WOOD 20      "archery"}
+    {{Simple "WoodenStaff"}           13       WOOD 20      "magical weapons"}
+    {{Simple "Torch"}                 2        WOOD 4}
+}
+
+# Forge
+
+{
+    {{Simple "Sword"}                 10       IRON 20}
+    {{Simple "ChainArmor"}            30       IRON 40}
+    {item = {Simple "RedDragonArmor"}   work = 30 cost = IRON 40 requireIngredient = true }
+    {item = {Simple "BlackDragonArmor"} work = 30 cost = IRON 40 requireIngredient = true }
+    {item = {Simple "WhiteDragonArmor"} work = 30 cost = IRON 40 requireIngredient = true }
+    {item = {Simple "GreenDragonArmor"} work = 30 cost = IRON 40 requireIngredient = true }
+    {{Simple "IronHelm"}              8        IRON 16}
+    {{Simple "IronBoots"}             12       IRON 24}
+    {item = {Simple "CyclopsHelm"}
+     work = 30 
+     cost = IRON 40
+     requireIngredient = true
+    }
+    {{Simple "IronGloves"}            3        IRON 2}
+    {{Simple "IronShield"}            12       IRON 24}
+    {{Simple "WarHammer"}             16       IRON 40      "two-handed weapons"}
+    {{Simple "BattleAxe"}             22       IRON 50      "two-handed weapons"}
+    {{Simple "IronStaff"}             20       IRON 40      "magical weapons"}
+    {{Simple "GoldenStaff"}           20       GOLD 200     "magical weapons"}
+    {{Simple "AdaSword"}              20       ADA 20}
+    {{Simple "AdaArmor"}              30       ADA 40}
+    {{Simple "AdaHelm"}               15       ADA 16}
+    {{Simple "AdaBoots"}              15       ADA 24}
+    {{Simple "AdaGloves"}             6        ADA 2}
+    {{Simple "AdaShield"}             12       ADA 24}
+    {{Simple "AdaWarHammer"}          20       ADA 40       "two-handed weapons"}
+    {{Simple "AdaBattleAxe"}          22       ADA 50       "two-handed weapons"}
+}
+
+# Lab
+
+{
+    {{Potion Lasting SLOWED}               2        GOLD 2}
+    {{Potion Lasting SLEEP}                2        GOLD 2}
+    {{Potion Lasting POISON_RESISTANT}     4        GOLD 6}
+    {{Potion Lasting SPEED}                4        GOLD 6}
+    {{Potion Lasting TELEPATHY}            4        GOLD 6}
+    {{Potion Lasting REGENERATION}         4        GOLD 8}
+    {{Potion Lasting POISON}               4        GOLD 8}
+    {{Potion Lasting FLYING}               4        GOLD 8}
+    {{Potion Heal FLESH}                   4        GOLD 10      "advanced alchemy"}
+    {{Potion Lasting BLIND}                4        GOLD 15      "advanced alchemy"}
+    {{Potion Lasting MELEE_RESISTANCE}     6        GOLD 20      "advanced alchemy"}
+    {{Potion Lasting MELEE_VULNERABILITY}  6        GOLD 40      "advanced alchemy"}
+    {{Potion Lasting MAGIC_VULNERABILITY}  6        GOLD 40      "advanced alchemy"}
+    {{Potion Lasting INVISIBLE}            6        GOLD 20      "advanced alchemy"}
+    {{Potion Heal SPIRIT}                  4        GOLD 20      "advanced alchemy"}
+    {item = {Potion IncreaseAttr DEFENSE 5} work = 20 cost = GOLD 100 requireIngredient = true }
+    {item = {Potion Lasting PLAGUE} work = 5 cost = GOLD 10 requireIngredient = true }
+    {item = {Potion Permanent POISON_RESISTANT} work = 20 cost = GOLD 80 requireIngredient = true }
+    {{Simple "GoldPiece"}                           5        IRON 30      "alchemical conversion"       10}
+    {{Simple "WoodPlank"}                           5        GOLD 10      "alchemical conversion"       10}
+    {{Simple "IronOre"}                             5        GOLD 10      "alchemical conversion"       10}
+    {{Simple "AdaOre"}                              5        GOLD 40      "alchemical conversion"       10}
+    {{Simple "Rock"}                                5        GOLD 10      "alchemical conversion"       10}
+}
+
+# Jeweller
+
+{
+    {{Ring POISON_RESISTANT}               10       GOLD 20}
+    {{Ring COLD_RESISTANT}                 10       GOLD 20}
+    {{Ring FIRE_RESISTANT}                 10       GOLD 30}
+    {{Ring MAGIC_RESISTANCE}               10       GOLD 30}
+    {{Ring RESTED}                         10       GOLD 30}
+    {{Ring SATIATED}                       10       GOLD 30}
+    {{Ring FAST_CRAFTING}                  10       GOLD 40}
+    {{Ring FAST_TRAINING}                  10       GOLD 40}
+    {{Ring SPELL_DAMAGE}                   10       GOLD 40}
+    {{Ring SPYING}                         10       GOLD 40}
+    {{Amulet NIGHT_VISION}                 10       GOLD 20}
+    {{Amulet ELF_VISION}                   10       GOLD 20}
+    {{Amulet WARNING}                      10       GOLD 30}
+    {{Simple "DefenseAmulet"}                       10       GOLD 40}
+    {{Amulet REGENERATION}                 10       GOLD 60}
+}
+
+"traps"
+# Workshop
+{
+    {{TrapItem "BOULDER_TRAP" "boulder"}      20       STONE 120    "traps"}
+    {{TrapItem "POISON_GAS_TRAP" "poison"}    10       WOOD 20      "traps"}
+    {{TrapItem "ALARM_TRAP" "alarm"}          8        WOOD 20      "traps"}
+    {{TrapItem "WEB_TRAP" "web"}              8        WOOD 20      "traps"}
+    {{TrapItem "SURPRISE_TRAP" "surprise"}    8        WOOD 20      "traps"}
+    {{TrapItem "TERROR_TRAP" "terror"}        8        WOOD 20      "traps"}
+    {{TrapItem "FIRE_TRAP" "fire"}            8        WOOD 20      "traps"}
+}
+
+# Forge
+{
+}
+
+# Lab
+{
+}
+
+# Jeweller
+{
+}
+
+"gnomes"
+# Workshop
+{
+    {{Assembled "AUTOMATON_WORKER"}      6       WOOD 20    "automatons"}
+}
+
+# Forge
+{
+}
+
+# Lab
+{
+}
+
+# Jeweller
+{
+}
+
+# Add more groups here, remember that there need to be 4 lists in each group, each for each workshop type.
+# And you need to add your new group to your keeper in player_creatures.txt
+
