@@ -87,7 +87,7 @@ PCollective Collective::create(WModel model, TribeId tribe, const optional<Colle
   auto ret = makeOwner<Collective>(Private {}, model, tribe, name, contentFactory);
   ret->subscribeTo(model);
   ret->discoverable = discoverable;
-  ret->workshops = unique<Workshops>(std::array<vector<WorkshopItemCfg>, 4>(), contentFactory);
+  ret->workshops = unique<Workshops>(WorkshopArray(), contentFactory);
   ret->immigration = makeOwner<Immigration>(ret.get(), vector<ImmigrantInfo>());
   return ret;
 }

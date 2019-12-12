@@ -167,15 +167,16 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
           if (!keeperInfo.technology.contains(*tech))
             return "Technology prerequisite \""_s + tech->data() + "\" of build item \"" + info.name + "\" is not available";
     WorkshopArray merged;
-    set<string> allWorkshopGroups;
+    for (auto& group : keeperInfo.workshopGroups)
+      if (!workshopGroups.count(group))
+        return "Undefined workshop group \"" + group + "\"";
     for (auto& group : workshopGroups) {
-      allWorkshopGroups.insert(group.first);
       if (keeperInfo.workshopGroups.contains(group.first))
-        for (int i : Range(EnumInfo<WorkshopType>::size))
-          merged[i].append(group.second[i]);
+        for (auto elem : group.second)
+          merged[elem.first].append(elem.second);
     }
     for (auto& elem : merged)
-      for (auto& item : elem)
+      for (auto& item : elem.second)
         if (item.tech && !technology.techs.count(*item.tech))
           return "Technology prerequisite \""_s + item.tech->data() + "\" of workshop item \"" + item.item.get(this)->getName()
               + "\" is not available";

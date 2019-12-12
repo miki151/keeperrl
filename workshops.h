@@ -2,6 +2,7 @@
 
 #include "resource_id.h"
 #include "workshop_type.h"
+#include "workshop_array.h"
 
 class WorkshopItem;
 class WorkshopQueuedItem;
@@ -47,7 +48,7 @@ class Workshops {
   };
 
   SERIALIZATION_DECL(Workshops)
-  Workshops(std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size>, const ContentFactory*);
+  Workshops(WorkshopArray, const ContentFactory*);
   Workshops(const Workshops&) = delete;
   Type& get(WorkshopType);
   const Type& get(WorkshopType) const;

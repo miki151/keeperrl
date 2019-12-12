@@ -170,10 +170,9 @@ void PlayerControl::loadImmigrationAndWorkshops(ContentFactory* contentFactory,
     if (!keeperCreatureInfo.technology.contains(tech.first))
       technology.techs.erase(tech.first);
   WorkshopArray merged;
-  for (auto& group : contentFactory->workshopGroups)
-    if (keeperCreatureInfo.workshopGroups.contains(group.first))
-      for (int i : Range(EnumInfo<WorkshopType>::size))
-        merged[i].append(group.second[i]);
+  for (auto& group : keeperCreatureInfo.workshopGroups)
+    for (auto& elem : contentFactory->workshopGroups.at(group))
+      merged[elem.first].append(elem.second);
   collective->setWorkshops(unique<Workshops>(std::move(merged), contentFactory));
   vector<ImmigrantInfo> immigrants;
   for (auto elem : keeperCreatureInfo.immigrantGroups)

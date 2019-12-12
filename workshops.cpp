@@ -6,8 +6,8 @@
 #include "workshop_item.h"
 #include "game.h"
 
-Workshops::Workshops(std::array<vector<WorkshopItemCfg>, EnumInfo<WorkshopType>::size> options, const ContentFactory* factory)
-    : types([&] (WorkshopType t) { return Type(options[(int) t].transform(
+Workshops::Workshops(WorkshopArray options, const ContentFactory* factory)
+    : types([&] (WorkshopType t) { return Type(options[t].transform(
          [&](const auto& elem){ return elem.get(factory); }));}) {
 }
 

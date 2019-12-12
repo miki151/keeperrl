@@ -36,7 +36,7 @@ class ContentFactory {
   vector<ExternalEnemy> SERIAL(externalEnemies);
   ItemFactory SERIAL(itemFactory);
   Technology SERIAL(technology);
-  vector<pair<string, WorkshopArray>> SERIAL(workshopGroups);
+  map<string, WorkshopArray> SERIAL(workshopGroups);
   map<string, vector<ImmigrantInfo>> SERIAL(immigrantsData);
   map<string, vector<BuildInfo>> SERIAL(buildInfo);
   VillainsTuple SERIAL(villains);

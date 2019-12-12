@@ -1,4 +1,4 @@
-# The ids are there to identify, inherit, etc.
+# The ids are there to modify, inherit, etc.
 # They also get ordered alphabetically, hence the 1, 2, ... in the front.
 
 "1_dark_mage"
