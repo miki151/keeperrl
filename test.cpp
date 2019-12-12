@@ -1071,6 +1071,30 @@ class Test {
     CHECK(expected == v3);
   }
 
+  void testPrettyVector2() {
+    map<string, vector<int>> m;
+    string text = "{"
+        "\"v1\" { 1 2 3 4 5 }"
+        "\"v1\" modify { 6 7 8 }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!err) << *err;
+    auto res = m["v1"];
+    CHECK(res == makeVec(6, 7, 8)) << res;
+  }
+
+  void testPrettyVector3() {
+    map<string, vector<int>> m;
+    string text = "{"
+        "\"v1\" { 1 2 3 4 5 }"
+        "\"v1\" modify append { 6 7 8 }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!err) << *err;
+    auto res = m["v1"];
+    CHECK(res == makeVec(1, 2, 3, 4, 5, 6, 7, 8)) << res;
+  }
+
   struct MatchingTest {
     MatchingTest() {
       auto contentFactory = getContentFactory();
@@ -1312,6 +1336,8 @@ void testAll() {
   Test().testPrettyInput8();
   Test().testPrettyInput9();
   Test().testPrettyVector();
+  Test().testPrettyVector2();
+  Test().testPrettyVector3();
   LastingEffects::runTests();
   INFO << "-----===== OK =====-----";
 }
