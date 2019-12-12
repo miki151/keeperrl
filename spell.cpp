@@ -21,7 +21,7 @@
 
 template <class Archive>
 void Spell::serializeImpl(Archive& ar, const unsigned int) {
-  ar(NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf));
+  ar(NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf), OPTION(blockedByWall));
 }
 
 template <class Archive>
@@ -95,7 +95,7 @@ void Spell::apply(Creature* c, Position target) const {
   for (auto& v : drawLine(origin, target.getCoord()))
     if (v != origin && v.dist8(origin) <= range) {
       trajectory.push_back(Position(v, target.getLevel()));
-      if (trajectory.back().isDirEffectBlocked())
+      if (isBlockedBy(trajectory.back()))
         break;
     }
   c->getGame()->addEvent(
@@ -132,7 +132,7 @@ bool Spell::checkTrajectory(const Creature* c, Position to) const {
   PROFILE;
   Position from = c->getPosition();
   for (auto& v : drawLine(from, to))
-    if (v != from && (v.isDirEffectBlocked() || (effect->shouldAIApply(c, v) == EffectAIIntent::UNWANTED && !endOnly)))
+    if (v != from && (isBlockedBy(v) || (effect->shouldAIApply(c, v) == EffectAIIntent::UNWANTED && !endOnly)))
       return false;
   return true;
 }
@@ -145,6 +145,10 @@ MoveInfo Spell::getAIMove(const Creature* c) const {
           ((pos == c->getPosition() && canTargetSelf()) || (c->canSee(pos) && pos != c->getPosition() && checkTrajectory(c, pos))))
         return c->castSpell(this, pos);
   return NoMove;
+}
+
+bool Spell::isBlockedBy(Position pos) const {
+  return blockedByWall && pos.isDirEffectBlocked();
 }
 
 

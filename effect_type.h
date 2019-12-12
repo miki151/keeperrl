@@ -4,6 +4,7 @@
 #include "effect.h"
 #include "creature_id.h"
 #include "furniture_type.h"
+#include "destroy_action.h"
 
 RICH_ENUM(FilterType, ALLY, ENEMY);
 
@@ -31,7 +32,11 @@ struct Heal {
 SIMPLE_EFFECT(Fire);
 SIMPLE_EFFECT(Ice);
 SIMPLE_EFFECT(DestroyEquipment);
-SIMPLE_EFFECT(DestroyWalls);
+struct DestroyWalls {
+  EFFECT_TYPE_INTERFACE;
+  DestroyAction::Type action;
+  COMPARE_ALL(action)
+};
 struct Enhance {
   EFFECT_TYPE_INTERFACE;
   ItemUpgradeType type;

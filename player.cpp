@@ -458,7 +458,7 @@ void Player::spellAction(int id) {
         Position pos(v, getLevel());
         if (!creature->canSee(pos) && !getMemory().getViewIndex(pos))
           passable[v] = PassableInfo::UNKNOWN;
-        if (pos.isDirEffectBlocked())
+        if (spell->isBlockedBy(pos))
           passable[v] = PassableInfo::STOPS_HERE;
       }
       if (auto target = chooseTarget(std::move(passable), spell->isEndOnly() ? TargetType::POSITION : TargetType::TRAJECTORY,

@@ -50,6 +50,7 @@ class Spell {
   const char* getName() const;
   optional<SpellId> getUpgrade() const;
   MoveInfo getAIMove(const Creature*) const;
+  bool isBlockedBy(Position pos) const;
 
   SERIALIZATION_DECL(Spell)
   template <class Archive>
@@ -67,6 +68,7 @@ class Spell {
   optional<FXName> SERIAL(fx);
   bool SERIAL(endOnly) = false;
   bool SERIAL(targetSelf) = false;
+  bool SERIAL(blockedByWall) = true;
   bool checkTrajectory(const Creature* caster, Position to) const;
 };
 

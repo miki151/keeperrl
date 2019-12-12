@@ -524,19 +524,14 @@ string Effects::DestroyEquipment::getDescription(const ContentFactory*) const {
 }
 
 void Effects::DestroyWalls::applyToCreature(Creature* c, Creature* attacker) const {
-  PROFILE;
-  for (auto pos : c->getPosition().neighbors8())
-    for (auto furniture : pos.modFurniture())
-      if (furniture->canDestroy(DestroyAction::Type::BOULDER))
-        furniture->destroy(pos, DestroyAction::Type::BOULDER);
 }
 
 string Effects::DestroyWalls::getName(const ContentFactory*) const {
-  return "wall destruction";
+  return "destruction";
 }
 
 string Effects::DestroyWalls::getDescription(const ContentFactory*) const {
-  return "Destroys walls in adjacent tiles.";
+  return "Destroys terrain and objects.";
 }
 
 void Effects::Heal::applyToCreature(Creature* c, Creature* attacker) const {
@@ -701,7 +696,7 @@ void Effects::Area::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
 string Effects::Area::getName(const ContentFactory* f) const {
-  return "area " + effect->getName(f);
+  return effect->getName(f);
 }
 
 string Effects::Area::getDescription(const ContentFactory* factory) const {
@@ -1114,6 +1109,12 @@ void Effect::apply(Position pos, Creature* attacker) const {
                   col->addCreature(c[0], elem.getTraits());
             }
         }
+      },
+      [&](const Effects::DestroyWalls& m) {
+        PROFILE;
+        for (auto furniture : pos.modFurniture())
+          if (furniture->canDestroy(m.action))
+            furniture->destroy(pos, m.action);
       }
   );
 }
@@ -1302,7 +1303,7 @@ vector<Effect> Effect::getWishedForEffects() {
        Effect(Effects::Ice{}),
        Effect(Effects::Fire{}),
        Effect(Effects::DestroyEquipment{}),
-       Effect(Effects::DestroyWalls{}),
+       Effect(Effects::Area{2,  Effects::DestroyWalls{DestroyAction::Type::BOULDER}}),
        Effect(Effects::Enhance{ItemUpgradeType::WEAPON, 2}),
        Effect(Effects::Enhance{ItemUpgradeType::ARMOR, 2}),
        Effect(Effects::Enhance{ItemUpgradeType::WEAPON, -2}),
