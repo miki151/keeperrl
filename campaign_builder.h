@@ -8,7 +8,15 @@ struct VillainPlacement;
 struct VillainCounts;
 class GameConfig;
 
-using VillainsTuple = std::array<vector<Campaign::VillainInfo>, 4>;
+RICH_ENUM(
+  VillainGroup,
+  EVIL_KEEPER,
+  LAWFUL_KEEPER,
+  EVIL_ADVENTURER,
+  LAWFUL_ADVENTURER
+);
+
+using VillainsTuple = map<VillainGroup, vector<Campaign::VillainInfo>>;
 using GameIntros = vector<string>;
 
 class CampaignBuilder {

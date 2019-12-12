@@ -25,7 +25,6 @@ RICH_ENUM(
   LAWFUL
 );
 
-
 class ContentFactory {
   public:
   optional<string> readData(const GameConfig*, const string& modName);

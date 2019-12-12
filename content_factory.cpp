@@ -113,21 +113,21 @@ optional<string> ContentFactory::readVillainsTuple(const GameConfig* gameConfig,
   for (auto villainType : {VillainType::ALLY, VillainType::MAIN, VillainType::LESSER})
     for (auto role : ENUM_ALL(PlayerRole))
       for (auto alignment : ENUM_ALL(TribeAlignment)) {
-        int index = [&] {
+        auto index = [&] {
           switch (role) {
             case PlayerRole::KEEPER:
               switch (alignment) {
                 case TribeAlignment::EVIL:
-                  return 0;
+                  return VillainGroup::EVIL_KEEPER;
                 case TribeAlignment::LAWFUL:
-                  return 1;
+                  return VillainGroup::LAWFUL_KEEPER;
               }
             case PlayerRole::ADVENTURER:
               switch (alignment) {
                 case TribeAlignment::EVIL:
-                  return 2;
+                  return VillainGroup::EVIL_ADVENTURER;
                 case TribeAlignment::LAWFUL:
-                  return 3;
+                  return VillainGroup::LAWFUL_ADVENTURER;
               }
           }
         }();

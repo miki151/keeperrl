@@ -95,16 +95,16 @@ vector<Campaign::VillainInfo> CampaignBuilder::getVillains(TribeAlignment tribeA
     case PlayerRole::KEEPER:
       switch (tribeAlignment) {
         case TribeAlignment::EVIL:
-          return filter(villains[0], type);
+          return filter(villains[VillainGroup::EVIL_KEEPER], type);
         case TribeAlignment::LAWFUL:
-          return filter(villains[1], type);
+          return filter(villains[VillainGroup::LAWFUL_KEEPER], type);
       }
     case PlayerRole::ADVENTURER:
       switch (tribeAlignment) {
         case TribeAlignment::EVIL:
-          return filter(villains[2], type);
+          return filter(villains[VillainGroup::EVIL_ADVENTURER], type);
         case TribeAlignment::LAWFUL:
-          return filter(villains[3], type);
+          return filter(villains[VillainGroup::LAWFUL_ADVENTURER], type);
       }
   }
 }
