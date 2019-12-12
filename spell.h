@@ -45,12 +45,15 @@ class Spell {
   void apply(Creature*, Position target) const;
   int getRange() const;
   bool isEndOnly() const;
+  void setSpellId(SpellId);
   SpellId getId() const;
   const char* getName() const;
   optional<SpellId> getUpgrade() const;
   MoveInfo getAIMove(const Creature*) const;
 
   SERIALIZATION_DECL(Spell)
+  template <class Archive>
+  void serializeImpl(Archive& ar1, const unsigned int);
 
   private:
   PrimaryId<SpellId> SERIAL(id);

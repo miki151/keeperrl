@@ -18,7 +18,19 @@
 #include "move_info.h"
 #include "fx_name.h"
 
-SERIALIZE_DEF(Spell, NAMED(id), NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf))
+
+template <class Archive>
+void Spell::serializeImpl(Archive& ar, const unsigned int) {
+  ar(NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf));
+}
+
+template <class Archive>
+void Spell::serialize(Archive& ar, const unsigned int v) {
+  ar(id);
+  serializeImpl(ar, v);
+}
+
+SERIALIZABLE(Spell)
 SERIALIZATION_CONSTRUCTOR_IMPL(Spell)
 STRUCT_IMPL(Spell)
 
@@ -100,6 +112,10 @@ bool Spell::isEndOnly() const {
   return endOnly;
 }
 
+void Spell::setSpellId(SpellId i) {
+  id = i;
+}
+
 SpellId Spell::getId() const {
   return id;
 }
@@ -133,4 +149,8 @@ MoveInfo Spell::getAIMove(const Creature* c) const {
 
 
 #include "pretty_archive.h"
-template void Spell::serialize(PrettyInputArchive&, unsigned);
+template <>
+void Spell::serialize(PrettyInputArchive& ar1, unsigned v) {
+  serializeImpl(ar1, v);
+}
+

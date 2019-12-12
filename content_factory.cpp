@@ -54,9 +54,14 @@ optional<string> ContentFactory::readCreatureFactory(const GameConfig* config, K
         return "Skill value for "_s + attr.first.data() + " must be between 0 and one, inclusive.";
     }
   map<PrimaryId<SpellSchoolId>, SpellSchool> spellSchools;
-  vector<Spell> spells;
-  if (auto res = config->readObject(spells, GameConfigId::SPELLS, keyVerifier))
+  map<PrimaryId<SpellId>, Spell> spellsTmp;
+  if (auto res = config->readObject(spellsTmp, GameConfigId::SPELLS, keyVerifier))
     return *res;
+  vector<Spell> spells;
+  for (auto& elem : spellsTmp) {
+    elem.second.setSpellId(elem.first);
+    spells.push_back(elem.second);
+  }
   if (auto res = config->readObject(spellSchools, GameConfigId::SPELL_SCHOOLS, keyVerifier))
     return *res;
   map<PrimaryId<NameGeneratorId>, vector<string>> firstNames;

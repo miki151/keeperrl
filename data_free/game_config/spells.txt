@@ -1,12 +1,12 @@
+"healing"
 {
-  id =  "healing"
   symbol = "❤️"
   effect = Heal FLESH
   cooldown = 30
   sound = SPELL_HEALING
 }
+"advanced healing"
 {
-  id = "advanced healing"
   upgrade = "healing"
   symbol = "❤️"
   effect = Heal FLESH
@@ -15,8 +15,8 @@
   cooldown = 15
   sound = SPELL_HEALING
 }
+"expert healing"
 {
-  id =  "expert healing"
   upgrade = "advanced healing"
   symbol = "❤️"
   effect = Heal FLESH
@@ -25,15 +25,15 @@
   cooldown = 10
   sound = SPELL_HEALING
 }
+"group healing"
 {
-  id =  "group healing"
   symbol = "💕"
   effect = Area 2 Filter ALLY Heal FLESH
   cooldown = 50
   sound = SPELL_HEALING
 }
+"heal spirit"
 {
-  id = "heal spirit"
   symbol = "✴"
   effect = Heal SPIRIT
   range = 1
@@ -41,8 +41,8 @@
   cooldown = 15
   sound = SPELL_HEALING
 }
+"advanced heal spirit"
 {
-  id =  "advanced heal spirit"
   upgrade = "heal spirit"
   symbol = "✴"
   effect = Heal SPIRIT
@@ -51,22 +51,22 @@
   cooldown = 10
   sound = SPELL_HEALING
 }
+"heal spirit group"
 {
-  id =  "heal spirit group"
   symbol = "✴✴"
   effect = Area 2 Filter ALLY Heal SPIRIT
   cooldown = 50
   sound = SPELL_HEALING
 }
+"cure poison"
 {
-  id =  "cure poison"
   symbol = "⚕"
   effect = RemoveLasting POISON
   cooldown = 50
   sound = SPELL_CURE_POISON
 }
+"advanced cure poison"
 {
-  id =  "advanced cure poison"
   upgrade = "cure poison"
   symbol = "⚕"
   effect = RemoveLasting POISON
@@ -75,8 +75,8 @@
   range = 1
   sound = SPELL_CURE_POISON
 }
+"cure blindness"
 {
-  id =  "cure blindness"
   symbol = "👁"
   effect = RemoveLasting BLIND
   cooldown = 50
@@ -84,8 +84,8 @@
   range = 1
   sound = SPELL_CURE_POISON
 }
+"poison resistance"
 {
-  id =  "poison resistance"
   symbol = "🐍"
   effect = Lasting POISON_RESISTANT
   cooldown = 100
@@ -93,23 +93,23 @@
   range = 1
   sound = SPELL_CURE_POISON
 }
+"summon flies"
 {
-  id =  "summon flies"
   symbol = "🐝"
   effect = Summon "FLY" {3 7}
   cooldown = 40
   sound = SPELL_SUMMON_INSECTS
 }
+"magic missile"
 {
-  id =  "magic missile"
   symbol = "⥇"
   effect = Damage SPELL_DAMAGE SPELL
   range = 4
   cooldown = 20
   sound = SPELL_BLAST
 }
+"advanced magic missile"
 {
-  id =  "advanced magic missile"
   upgrade = "magic missile"
   symbol = "⥇"
   effect = Damage SPELL_DAMAGE SPELL
@@ -117,8 +117,8 @@
   cooldown = 10
   sound = SPELL_BLAST
 }
+"expert magic missile"
 {
-  id =  "expert magic missile"
   upgrade = "advanced magic missile"
   symbol = "⥇"
   effect = Damage SPELL_DAMAGE SPELL
@@ -126,37 +126,37 @@
   cooldown = 5
   sound = SPELL_BLAST
 }
+"deception"
 {
-  id =  "deception"
   symbol = "🎭"
   effect = Deception
   cooldown = 60
   sound = SPELL_DECEPTION
 }
+"invisibility"
 {
-  id =  "invisibility"
   symbol = "🕵️"
   effect = Lasting INVISIBLE
   cooldown = 300
   sound = SPELL_INVISIBILITY
 }
+"advanced invisibility"
 {
-  id =  "advanced invisibility"
   upgrade = "invisibility"
   symbol = "🕵️"
   effect = Lasting INVISIBLE
   cooldown = 150
   sound = SPELL_INVISIBILITY
 }
+"escape"
 {
-  id =  "escape"
   symbol = "✈️"
   effect = Escape
   cooldown = 80
   sound = SPELL_TELEPORT
 }
+"teleport"
 {
-  id =  "teleport"
   symbol = "🌀"
   effect = Teleport
   range = 3
@@ -164,8 +164,8 @@
   endOnly = true
   sound = SPELL_TELEPORT
 }
+"advanced teleport"
 {
-  id =  "advanced teleport"
   upgrade = "teleport"
   symbol = "🌀"
   effect = Teleport
@@ -174,16 +174,16 @@
   endOnly = true
   sound = SPELL_TELEPORT
 }
+"panic"
 {
-  id =  "panic"
   symbol = "😱"
   effect = Lasting PANIC
   range = 5
   cooldown = 50
   sound = SPELL_STR_BONUS
 }
+"pacify"
 {
-  id =  "pacify"
   symbol = "☮"
   effect = Lasting PEACEFULNESS
   range = 2
@@ -191,15 +191,15 @@
   endOnly = true
   sound = SPELL_STR_BONUS
 }
+"haste"
 {
-  id =  "haste"
   symbol = "🏃"
   effect = Lasting SPEED
   cooldown = 120
   sound = SPELL_SPEED_SELF
 }
+"advanced haste"
 {
-  id =  "advanced haste"
   upgrade = "haste"
   symbol = "🏃"
   effect = Lasting SPEED
@@ -208,24 +208,24 @@
   cooldown = 120
   sound = SPELL_SPEED_SELF
 }
+"slow"
 {
-  id =  "slow"
   symbol = "🐢"
   effect = Lasting SLOWED
   range = 3
   cooldown = 120
   sound = SPELL_SPEED_SELF
 }
+"magic cancellation"
 {
-  id =  "magic cancellation"
   symbol = "🔮"
   effect = Lasting MAGIC_CANCELLATION
   range = 2
   cooldown = 150
   sound = SPELL_STR_BONUS
 }
+"directed blast"
 {
-  id =  "directed blast"
   symbol = "💨"
   effect = Blast
   range = 4
@@ -233,8 +233,8 @@
   cooldown = 30
   sound = SPELL_BLAST
 }
+"pull"
 {
-  id =  "pull"
   symbol = "⮄"
   effect = Pull
   range = 6
@@ -242,23 +242,23 @@
   cooldown = 30
   sound = SPELL_BLAST
 }
+"circular blast"
 {
-  id =  "circular blast"
   symbol = "💥"
   effect = CircularBlast
   cooldown = 50
   sound = SPELL_AIR_BLAST
   castMessageType = AIR_BLAST
 }
+"defense bonus"
 {
-  id =  "defense bonus"
   symbol = "🛡"
   effect = Lasting DEF_BONUS
   cooldown = 80
   sound = SPELL_DEX_BONUS
 }
+"advanced defense bonus"
 {
-  id =  "advanced defense bonus"
   upgrade = "defense bonus"
   symbol = "🛡"
   effect = Lasting DEF_BONUS
@@ -267,15 +267,15 @@
   cooldown = 80
   sound = SPELL_DEX_BONUS
 }
+"damage bonus"
 {
-  id =  "damage bonus"
   symbol = "💪"
   effect = Lasting DAM_BONUS
   cooldown = 80
   sound = SPELL_STR_BONUS
 }
+"advanced damage bonus"
 {
-  id =  "advanced damage bonus"
   upgrade = "damage bonus"
   symbol = "💪"
   effect = Lasting DAM_BONUS
@@ -284,51 +284,51 @@
   cooldown = 80
   sound = SPELL_STR_BONUS
 }
+"bolster"
 {
-  id =  "bolster"
   symbol = "🛡"
   effect = Area 1 Filter ALLY Lasting DEF_BONUS 
   cooldown = 70
   sound = SPELL_DEX_BONUS
 }
+"rally"
 {
-  id =  "rally"
   symbol = "💪"
   effect = Area 1 Filter ALLY Lasting DAM_BONUS 
   cooldown = 70
   sound = SPELL_DEX_BONUS
 }
+"summon element"
 {
-  id =  "summon element"
   symbol = "👾"
   effect = SummonElement
   cooldown = 100
   sound = SPELL_SUMMON_SPIRIT
 }
+"meteor shower"
 {
-  id =  "meteor shower"
   symbol = "☄"
   effect = PlaceFurniture "METEOR_SHOWER"
   cooldown = 150
   sound = SPELL_METEOR_SHOWER
 }
+"fire elemental"
 {
-  id =  "fire elemental"
   symbol = "👾"
   effect = Summon "FIRE_ELEMENTAL" { 1 2 }
   cooldown = 100
   sound = SPELL_FIRE_SPHERE_PET
 }
+"advanced fire elemental"
 {
-  id =  "advanced fire elemental"
   upgrade = "fire elemental"
   symbol = "👾"
   effect = Summon "FIRE_ELEMENTAL" { 2 4 }
   cooldown = 100
   sound = SPELL_FIRE_SPHERE_PET
 }
+"fire breath"
 {
-  id =  "fire breath"
   symbol = "🐲"
   effect = Fire
   fx = FLAMETHROWER
@@ -337,8 +337,8 @@
   sound = SPELL_BLAST
   castMessageType = BREATHE_FIRE
 }
+"firewall"
 {
-  id =  "firewall"
   symbol = "𝍔"
   effect =  CustomArea PlaceFurniture "FIRE_WALL" { 0 -2 0 -1 0 0 0 1 0 2 }
   endOnly = true
@@ -346,8 +346,8 @@
   cooldown = 30
   sound = SPELL_BLAST
 }
+"fireball"
 {
-  id =  "fireball"
   symbol = "🔥"
   effect = Fire
   fx = FIREBALL
@@ -355,8 +355,8 @@
   cooldown = 30
   sound = SPELL_FIRE_SPHERE_PET
 }
+"ice cone"
 {
-  id =  "ice cone"
   symbol = "❄"
   effect = Ice
   fx = ICE
@@ -364,65 +364,65 @@
   cooldown = 30
   #sound = SPELL_FIRE_SPHERE_PET
 }
+"shove"
 {
-  id =  "shove"
   symbol = "👉"
   effect = Shove
   range = 1
   cooldown = 30
   castMessageType = ABILITY
 }
+"swap positions"
 {
-  id =  "swap positions"
   symbol = "⇅"
   effect = SwapPosition
   range = 1
   cooldown = 30
   castMessageType = ABILITY
 }
+"black dragon blindness"
 {
-  id =  "black dragon blindness"
   symbol = "🙈"
   effect = Area 30 Filter ENEMY Lasting BLIND
   cooldown = 3
 }
+"grant wish"
 {
-  id = "grant wish"
   symbol = "$"
   effect = Chain { Wish Caster Suicide TURN_INVISIBLE }
   range = 1
   targetSelf = false
   cooldown = 150
 }
+"double trouble"
 {
-  id = "double trouble"
   symbol = "👤👤"
   effect = DoubleTrouble
   cooldown = 1000
 }
+"adoxie right hand"
 {
-  id =  "adoxie right hand"
   symbol = "-."
   effect = Summon "ADOXIE_HAND_RIGHT" { 1 }
   cooldown = 50
   sound = SPELL_SUMMON_SPIRIT
 }
+"adoxie left hand"
 {
-  id =  "adoxie left hand"
   symbol = ".-"
   effect = Summon "ADOXIE_LEFT_HAND" { 1 }
   cooldown = 50
   sound = SPELL_SUMMON_SPIRIT
 }
+"adoxie left foot"
 {
-  id =  "adoxie left foot"
   symbol = "_|"
   effect = Summon "ADOXIE_FOOT_LEFT" { 1 }
   cooldown = 50
   sound = SPELL_SUMMON_SPIRIT
 }
+"adoxie right foot"
 {
-  id =  "adoxie right foot"
   symbol = "|_"
   effect = Summon "ADOXIE_FOOT_RIGHT" { 1 }
   cooldown = 50
