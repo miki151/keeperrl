@@ -192,11 +192,12 @@ struct Chance {
   HeapAllocated<Effect> effect;
   COMPARE_ALL(value, effect)
 };
+SIMPLE_EFFECT(TriggerTrap);
 MAKE_VARIANT2(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, Enhance, Suicide, IncreaseAttr,
     EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
     Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
     Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, Filter, SummonEnemy, Wish, Chain, Caster,
-    IncreaseMorale, Message, Chance, AssembledMinion);
+    IncreaseMorale, Message, Chance, AssembledMinion, TriggerTrap);
 }
 
 class EffectType : public Effects::EffectType {

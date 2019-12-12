@@ -53,6 +53,7 @@
 #include "collective.h"
 #include "immigration.h"
 #include "immigrant_info.h"
+#include "furniture_entry.h"
 
 vector<Creature*> Effect::summonCreatures(Position pos, vector<PCreature> creatures, TimeInterval delay) {
   vector<Creature*> ret;
@@ -601,7 +602,6 @@ static PCreature getBestSpirit(const Model* model, TribeId tribe) {
 }
 
 void Effects::EmitPoisonGas::applyToCreature(Creature* c, Creature* attacker) const {
-  Effect::emitPoisonGas(c->getPosition(), amount, true);
 }
 
 string Effects::EmitPoisonGas::getName(const ContentFactory*) const {
@@ -627,8 +627,8 @@ string Effects::SilverDamage::getDescription(const ContentFactory*) const {
 void Effects::PlaceFurniture::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
-string Effects::PlaceFurniture::getName(const ContentFactory*) const {
-  return furniture.data();
+string Effects::PlaceFurniture::getName(const ContentFactory* c) const {
+  return c->furniture.getData(furniture).getName();
 }
 
 string Effects::PlaceFurniture::getDescription(const ContentFactory*) const {
@@ -924,6 +924,16 @@ string Effects::SwapPosition::getDescription(const ContentFactory*) const {
   return "Swap positions with an enemy.";
 }
 
+void Effects::TriggerTrap::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effects::TriggerTrap::getName(const ContentFactory*) const {
+  return "trigger trap";
+}
+
+string Effects::TriggerTrap::getDescription(const ContentFactory*) const {
+  return "Triggers a trap if present.";
+}
 
 bool Effects::Filter::applies(bool isEnemy) const {
   switch (filter) {
@@ -1111,10 +1121,23 @@ void Effect::apply(Position pos, Creature* attacker) const {
         }
       },
       [&](const Effects::DestroyWalls& m) {
-        PROFILE;
         for (auto furniture : pos.modFurniture())
           if (furniture->canDestroy(m.action))
             furniture->destroy(pos, m.action);
+      },
+      [&](const Effects::EmitPoisonGas& m) {
+        Effect::emitPoisonGas(pos, m.amount, true);
+      },
+      [&](const Effects::TriggerTrap&) {
+        for (auto furniture : pos.getFurniture())
+          if (auto& entry = furniture->getEntryType())
+            if (auto trapInfo = entry->entryData.getReferenceMaybe<FurnitureEntry::Trap>()) {
+              pos.globalMessage("A " + trapInfo->effect.getName(pos.getGame()->getContentFactory()) + " trap is triggered");
+              trapInfo->effect.apply(pos, attacker);
+              pos.getGame()->addEvent(EventInfo::TrapTriggered{pos});
+              pos.removeFurniture(furniture);
+              return;
+            }
       }
   );
 }

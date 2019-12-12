@@ -90,6 +90,7 @@ class Furniture : public OwnedObject<Furniture> {
   optional<FurnitureClickType> getClickType() const;
   optional<FurnitureTickType> getTickType() const;
   const heap_optional<FurnitureEntry>& getEntryType() const;
+  heap_optional<FurnitureEntry>& getEntryType();
   bool isTicking() const;
   bool isWall() const;
   bool isBuildingSupport() const;
