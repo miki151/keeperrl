@@ -144,9 +144,8 @@ PlayerControl::~PlayerControl() {
 }
 
 void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const KeeperCreatureInfo& keeperCreatureInfo) {
-  for (auto& group : contentFactory->buildInfo)
-    if (keeperCreatureInfo.buildingGroups.contains(group.first))
-      buildInfo.append(group.second);
+  for (auto& group : keeperCreatureInfo.buildingGroups)
+    buildInfo.append(contentFactory->buildInfo.at(group));
   for (auto& info : buildInfo)
     if (auto furniture = info.type.getReferenceMaybe<BuildInfo::Furniture>()) {
       for (auto type : furniture->types) {

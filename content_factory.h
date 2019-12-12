@@ -38,7 +38,7 @@ class ContentFactory {
   Technology SERIAL(technology);
   vector<pair<string, WorkshopArray>> SERIAL(workshopGroups);
   map<string, vector<ImmigrantInfo>> SERIAL(immigrantsData);
-  vector<pair<string, vector<BuildInfo>>> SERIAL(buildInfo);
+  map<string, vector<BuildInfo>> SERIAL(buildInfo);
   VillainsTuple SERIAL(villains);
   GameIntros SERIAL(gameIntros);
   vector<KeeperCreatureInfo> SERIAL(keeperCreatures);
