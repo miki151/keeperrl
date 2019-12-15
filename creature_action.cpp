@@ -18,16 +18,18 @@ void CreatureAction::perform(Creature* c) {
 }
 
 CreatureAction CreatureAction::prepend(ActionFun f) {
-  CHECK(action);
-  ActionFun tmp = action;
-  action = [=] (Creature* c) { f(c); tmp(c); };
+  if (!!action) {
+    ActionFun tmp = action;
+    action = [=] (Creature* c) { f(c); tmp(c); };
+  }
   return *this;
 }
 
 CreatureAction CreatureAction::append(ActionFun f) {
-  CHECK(action);
-  ActionFun tmp = action;
-  action = [=] (Creature* c) { tmp(c); f(c); };
+  if (!!action) {
+    ActionFun tmp = action;
+    action = [=] (Creature* c) { tmp(c); f(c); };
+  }
   return *this;
 }
 

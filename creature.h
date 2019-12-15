@@ -277,11 +277,13 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<string> popPersonalEvents();
   void addPersonalEvent(const string&);
   struct CombatIntentInfo {
+    enum class Type { ATTACK, CHASE, RETREAT } SERIAL(type);
+    bool isHostile() const;
     Creature* SERIAL(attacker) = nullptr;
     GlobalTime SERIAL(time);
-    SERIALIZE_ALL(attacker, time)
+    SERIALIZE_ALL(attacker, time, type)
   };
-  void addCombatIntent(Creature* attacker, bool immediateAttack);
+  void addCombatIntent(Creature* attacker, CombatIntentInfo::Type);
   optional<CombatIntentInfo> getLastCombatIntent() const;
   void onKilledOrCaptured(Creature* victim);
 

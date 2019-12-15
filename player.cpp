@@ -298,7 +298,8 @@ void Player::hideAction() {
 
 bool Player::interruptedByEnemy() {
   if (auto combatIntent = creature->getLastCombatIntent())
-    if (combatIntent->time > lastEnemyInterruption.value_or(GlobalTime(-1)) &&
+    if (combatIntent->isHostile() &&
+        combatIntent->time > lastEnemyInterruption.value_or(GlobalTime(-1)) &&
         combatIntent->time > getGame()->getGlobalTime() - 5_visible) {
       lastEnemyInterruption = combatIntent->time;
       privateMessage("You are being attacked by " + combatIntent->attacker->getName().a());

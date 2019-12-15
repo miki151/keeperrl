@@ -65,6 +65,7 @@ class Behaviour {
   Creature* getClosestCreature();
   MoveInfo tryEffect(const Effect&, TimeInterval maxTurns = 1_visible);
   MoveInfo tryEffect(const Effect&, Position target);
+  void addCombatIntent(Creature* attacked, Creature::CombatIntentInfo::Type);
 
   virtual ~Behaviour() {}
 
@@ -135,6 +136,12 @@ MoveInfo Behaviour::tryEffect(const Effect& type, Position target) {
   return NoMove;
 }
 
+void Behaviour::addCombatIntent(Creature* attacked, Creature::CombatIntentInfo::Type type) {
+  if (attacked->canSee(creature))
+    attacked->addCombatIntent(creature, type);
+  creature->addCombatIntent(attacked, type);
+}
+
 static bool isObstructed(const Creature* creature, const vector<Position>& trajectory) {
   vector<Creature*> ret;
   for (int i : Range(1, trajectory.size())) {
@@ -170,7 +177,10 @@ class EffectsAI : public Behaviour {
                creature->getThrowDistance(item).value_or(-1) >=
                    trajectory.back().dist8(creature->getPosition()).value_or(10000))
               if (auto action = creature->throwItem(item, target, creature->isFriend(other)))
-                return action;
+                return action.append([=](Creature*) {
+                  if (other->isEnemy(creature))
+                    addCombatIntent(other, Creature::CombatIntentInfo::Type::ATTACK);
+              });
     return NoMove;
   }
 
@@ -345,7 +355,9 @@ class Wildlife : public Behaviour {
         return creature->attack(other);
       if (dist < 7)
         // pathfinding is expensive so only do it when running away from the player
-        return creature->moveAway(other->getPosition(), other->isPlayer());
+        return creature->moveAway(other->getPosition(), other->isPlayer()).prepend([=](Creature* creature) {
+          addCombatIntent(other, Creature::CombatIntentInfo::Type::RETREAT);
+        });
     }
     return NoMove;
   }
@@ -409,17 +421,12 @@ class Fighter : public Behaviour {
       return NoMove;
   }
 
-  void addCombatIntent(Creature* attacked, bool immediateAttack) {
-    if (attacked->canSee(creature))
-      attacked->addCombatIntent(creature, immediateAttack);
-    creature->addCombatIntent(attacked, immediateAttack);
-  }
-
   MoveInfo getPanicMove(Creature* other) {
     if (auto teleMove = tryEffect(EffectType(Effects::Escape{})))
       return teleMove;
     if (auto action = creature->moveAway(other->getPosition(), true))
       return {1.0, action.prepend([=](Creature* creature) {
+        addCombatIntent(other, Creature::CombatIntentInfo::Type::RETREAT);
         lastSeen = LastSeen{creature->getPosition(), *creature->getGlobalTime(), LastSeen::PANIC, other->getUniqueId()};
       })};
     else
@@ -458,7 +465,7 @@ class Fighter : public Behaviour {
     if (dist <= getFiringRange(creature))
       if (auto action = creature->fire(target))
         return {1.0, action.append([=](Creature*) {
-            addCombatIntent(enemy, true);
+            addCombatIntent(enemy, Creature::CombatIntentInfo::Type::ATTACK);
         })};
     return NoMove;
   }
@@ -501,7 +508,7 @@ class Fighter : public Behaviour {
       if (Item* weapon = getBestWeapon())
         if (auto action = creature->equip(weapon))
           return {3.0 / (2.0 + distance), action.prepend([=](Creature*) {
-            addCombatIntent(other, false);
+            addCombatIntent(other, Creature::CombatIntentInfo::Type::CHASE);
         })};
     }
     return NoMove;
@@ -604,7 +611,9 @@ class Fighter : public Behaviour {
         return move;
     if (position != FighterPosition::MELEE) {
       if (distance == 1)
-        return creature->moveAway(otherPosition);
+        return creature->moveAway(otherPosition).prepend([=](Creature* creature) {
+          addCombatIntent(other, Creature::CombatIntentInfo::Type::RETREAT);
+        });
       if (distance == 2)
         return creature->wait();
     }
@@ -676,7 +685,7 @@ class Fighter : public Behaviour {
           // TODO: instead consider treating a 0-weighted move as NoMove.
           if (distance < 20) {
             return {max(0., 1.0 - double(distance) / 20), action.prepend([=](Creature* creature) {
-              addCombatIntent(other, false);
+              addCombatIntent(other, Creature::CombatIntentInfo::Type::CHASE);
               lastSeen = LastSeen{other->getPosition(), *creature->getGlobalTime(), LastSeen::ATTACK, other->getUniqueId()};
               auto chaseInfo = chaseFreeze.getMaybe(other);
               auto startChaseFreeze = 20_visible;
@@ -696,7 +705,7 @@ class Fighter : public Behaviour {
     if (distance == 1)
       if (auto action = creature->attack(other, getAttackParams(other)))
         return {1.0, action.prepend([=](Creature*) {
-            addCombatIntent(other, true);
+            addCombatIntent(other, Creature::CombatIntentInfo::Type::ATTACK);
         })};
     return NoMove;
   }

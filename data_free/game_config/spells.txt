@@ -400,6 +400,12 @@
   effect = DoubleTrouble
   cooldown = 1000
 }
+"animate weapons"
+{
+  symbol = "⚔️"
+  effect = AnimateItems 5 5 {30 50}
+  cooldown = 200
+}
 "adoxie right hand"
 {
   symbol = "-."

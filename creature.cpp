@@ -1197,7 +1197,7 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
   if (!weapon)
     return CreatureAction("No available weapon or intrinsic attack");
   return CreatureAction(this, [=] (Creature* self) {
-    other->addCombatIntent(self, true);
+    other->addCombatIntent(self, CombatIntentInfo::Type::ATTACK);
     INFO << getName().the() << " attacking " << other->getName().the();
     auto& weaponInfo = weapon->getWeaponInfo();
     auto damageAttr = weaponInfo.meleeAttackAttr;
@@ -1236,6 +1236,7 @@ void Creature::onAttackedBy(Creature* attacker) {
     // To handle intended attacks within one tribe, private enemy will be added in addCombatIntent
     privateEnemies.insert(attacker);
   lastAttacker = attacker;
+  addCombatIntent(attacker, CombatIntentInfo::Type::ATTACK);
 }
 
 void Creature::removePrivateEnemy(const Creature* c) {
@@ -2185,9 +2186,14 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
   return ret;
 }
 
-void Creature::addCombatIntent(Creature* attacker, bool immediateAttack) {
-  lastCombatIntent = CombatIntentInfo{attacker, *getGlobalTime()};
-  if (immediateAttack && (!attacker->isAffected(LastingEffect::INSANITY) ||
+
+bool Creature::CombatIntentInfo::isHostile() const {
+  return type != Creature::CombatIntentInfo::Type::RETREAT;
+}
+
+void Creature::addCombatIntent(Creature* attacker, CombatIntentInfo::Type type) {
+  lastCombatIntent = CombatIntentInfo{type, attacker, *getGlobalTime()};
+  if (type == CombatIntentInfo::Type::ATTACK && (!attacker->isAffected(LastingEffect::INSANITY) ||
       attacker->getAttributes().isAffectedPermanently(LastingEffect::INSANITY)))
     privateEnemies.insert(attacker);
 }
@@ -2214,4 +2220,3 @@ Creature* Creature::getClosestEnemy() const {
   }
   return result;
 }
-

@@ -193,11 +193,18 @@ struct Chance {
   COMPARE_ALL(value, effect)
 };
 SIMPLE_EFFECT(TriggerTrap);
+struct AnimateItems {
+  EFFECT_TYPE_INTERFACE;
+  int maxCount;
+  int radius;
+  Range time;
+  COMPARE_ALL(maxCount, radius, time)
+};
 MAKE_VARIANT2(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, Enhance, Suicide, IncreaseAttr,
     EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
     Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
     Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, Filter, SummonEnemy, Wish, Chain, Caster,
-    IncreaseMorale, Message, Chance, AssembledMinion, TriggerTrap);
+    IncreaseMorale, Message, Chance, AssembledMinion, TriggerTrap, AnimateItems);
 }
 
 class EffectType : public Effects::EffectType {

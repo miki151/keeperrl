@@ -1368,9 +1368,18 @@
     name = {
       name = "thief"
     }
+    inventory = {
+      { Simple "LeatherArmor"}
+      { Simple "Sword"}
+      { Simple "GoldPiece" 2 5 }
+    }
   }
 "THIEF_LEADER" inherit "THIEF"
   {
+   attr = {
+      DAMAGE 37
+      DEFENSE 23
+    }
     viewId = { "thief_leader" }
     name = {
       name = "thief leader"
@@ -1399,7 +1408,7 @@
     name = {
       name = "sorcerer"
     }
-    spells = { "advanced healing" "haste" "defense bonus" "directed blast" "magic missile" }
+    spells = { "advanced healing" "haste" "defense bonus" "directed blast" "magic missile" "animate weapons" }
     hatedByEffect = HATE_HUMANS
   }
 "CHILD"

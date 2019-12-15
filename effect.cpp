@@ -55,12 +55,18 @@
 #include "immigrant_info.h"
 #include "furniture_entry.h"
 
+
+static void summonFX(Position pos) {
+  auto color = Color(240, 146, 184);
+  pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::SPAWN, color}});
+}
 vector<Creature*> Effect::summonCreatures(Position pos, vector<PCreature> creatures, TimeInterval delay) {
   vector<Creature*> ret;
   for (int i : All(creatures))
     if (auto v = pos.getLevel()->getClosestLanding({pos}, creatures[i].get())) {
       ret.push_back(creatures[i].get());
       v->addCreature(std::move(creatures[i]), delay);
+      summonFX(*v);
     }
   return ret;
 }
@@ -76,23 +82,14 @@ void Effect::emitPoisonGas(Position pos, double amount, bool msg) {
   }
 }
 
-static void summonFX(Creature* c) {
-  auto color = Color(240, 146, 184);
-  // TODO: color depending on creature type ?
-
-  c->getGame()->addEvent(EventInfo::FX{c->getPosition(), {FXName::SPAWN, color}});
-}
-
 vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<TimeInterval> ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(c->getGame()->getContentFactory()->getCreatures().fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c)));
   auto ret = summonCreatures(c->getPosition(), std::move(creatures), delay);
-  for (auto c : ret) {
+  for (auto c : ret)
     if (ttl)
       c->addEffect(LastingEffect::SUMMONED, *ttl, false);
-    summonFX(c);
-  }
   return ret;
 }
 
@@ -101,11 +98,9 @@ vector<Creature*> Effect::summon(Position pos, CreatureGroup& factory, int num, 
   for (int i : Range(num))
     creatures.push_back(factory.random(&pos.getGame()->getContentFactory()->getCreatures(), MonsterAIFactory::monster()));
   auto ret = summonCreatures(pos, std::move(creatures), delay);
-  for (auto c : ret) {
+  for (auto c : ret)
     if (ttl)
       c->addEffect(LastingEffect::SUMMONED, *ttl, false);
-    summonFX(c);
-  }
   return ret;
 }
 
@@ -935,6 +930,17 @@ string Effects::TriggerTrap::getDescription(const ContentFactory*) const {
   return "Triggers a trap if present.";
 }
 
+void Effects::AnimateItems::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effects::AnimateItems::getName(const ContentFactory*) const {
+  return "animate weapons";
+}
+
+string Effects::AnimateItems::getDescription(const ContentFactory*) const {
+  return "Animates up to " + toString(maxCount) + " weapons from the surroundings";
+}
+
 bool Effects::Filter::applies(bool isEnemy) const {
   switch (filter) {
     case FilterType::ALLY:
@@ -1138,6 +1144,21 @@ void Effect::apply(Position pos, Creature* attacker) const {
               pos.removeFurniture(furniture);
               return;
             }
+      },
+      [&](const Effects::AnimateItems& m) {
+        vector<pair<Position, Item*>> candidates;
+        for (auto v : pos.getRectangle(Rectangle::centered(m.radius)))
+          for (auto item : v.getItems(ItemIndex::WEAPON))
+            candidates.push_back(make_pair(v, item));
+        candidates = Random.permutation(candidates);
+        for (int i : Range(min(m.maxCount, candidates.size()))) {
+          auto v = candidates[i].first;
+          auto creature = pos.getGame()->getContentFactory()->getCreatures().
+              getAnimatedItem(v.removeItem(candidates[i].second), attacker->getTribeId(),
+                  attacker->getAttr(AttrType::SPELL_DAMAGE));
+          for (auto c : Effect::summonCreatures(v, makeVec(std::move(creature))))
+            c->addEffect(LastingEffect::SUMMONED, TimeInterval{Random.get(m.time)}, false);
+        }
       }
   );
 }
@@ -1278,6 +1299,17 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
       },
       [&] (const Effects::Chance& e) {
         return e.effect->shouldAIApply(caster, pos);
+      },
+      [&](const Effects::AnimateItems& m) {
+        if (caster && isConsideredInDanger(caster)) {
+          int totalWeapons = 0;
+          for (auto v : pos.getRectangle(Rectangle::centered(m.radius))) {
+            totalWeapons += v.getItems(ItemIndex::WEAPON).size();
+            if (totalWeapons >= m.maxCount / 2)
+              return EffectAIIntent::WANTED;
+          }
+        }
+        return EffectAIIntent::NONE;
       },
       [&] (const auto&) { return EffectAIIntent::NONE; }
   );

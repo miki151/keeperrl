@@ -42,6 +42,7 @@ class CreatureFactory {
   PCreature fromId(CreatureId, TribeId);
   static PController getShopkeeper(Rectangle shopArea, Creature*);
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
+  PCreature getAnimatedItem(PItem, TribeId, int attrBonus);
   static PCreature getHumanForTests();
   PCreature getGhost(Creature*);
   static PCreature getIllusion(Creature*);
@@ -77,7 +78,7 @@ class CreatureFactory {
     CreatureInventory inventory;
   };
   static const map<CreatureId, SpecialParams>& getSpecialParams();
-  void initializeAttributes(CreatureId, CreatureAttributes&);
+  void initializeAttributes(optional<CreatureId>, CreatureAttributes&);
 
   private:
   void initSplash(TribeId);

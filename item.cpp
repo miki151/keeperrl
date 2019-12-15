@@ -561,8 +561,13 @@ optional<CorpseInfo> Item::getCorpseInfo() const {
 void Item::getAttackMsg(const Creature* c, const string& enemyName) const {
   auto weaponInfo = getWeaponInfo();
   auto swingMsg = [&] (const char* verb) {
-    c->secondPerson("You "_s + verb + " your " + getName() + " at " + enemyName);
-    c->thirdPerson(c->getName().the() + " " + verb + "s " + his(c->getAttributes().getGender()) + " " + getName() + " at " + enemyName);
+    if (!weaponInfo.itselfMessage) {
+      c->secondPerson("You "_s + verb + " your " + getName() + " at " + enemyName);
+      c->thirdPerson(c->getName().the() + " " + verb + "s " + his(c->getAttributes().getGender()) + " " + getName() + " at " + enemyName);
+    } else {
+      c->secondPerson("You "_s + verb + " yourself at " + enemyName);
+      c->thirdPerson(c->getName().the() + " " + verb + "s itself at " + enemyName);
+    }
   };
   auto biteMsg = [&] (const char* verb2, const char* verb3) {
     c->secondPerson("You "_s + verb2 + " " + enemyName);

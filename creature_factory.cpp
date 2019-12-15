@@ -135,6 +135,27 @@ PCreature CreatureFactory::getRollingBoulder(TribeId tribe, Vec2 direction) {
   return ret;
 }
 
+PCreature CreatureFactory::getAnimatedItem(PItem item, TribeId tribe, int attrBonus) {
+  auto ret = makeOwner<Creature>(tribe, CATTR(
+            c.viewId = item->getViewObject().id();
+            c.attr[AttrType::DAMAGE] = item->getModifier(AttrType::DAMAGE) + attrBonus;
+            c.attr[AttrType::DEFENSE] = item->getModifier(AttrType::DEFENSE) + attrBonus;
+            c.body = Body::nonHumanoid(Body::Material::SPIRIT, Body::Size::SMALL);
+            c.body->setDeathSound(none);
+            c.name = "animated " + item->getName();
+            c.gender = Gender::IT;
+            auto weaponInfo = item->getWeaponInfo();
+            weaponInfo.itselfMessage = true;
+            c.body->setIntrinsicAttack(BodyPart::TORSO, IntrinsicAttack(ItemType(
+                ItemTypes::Intrinsic{item->getViewObject().id(), item->getName(), 0, std::move(weaponInfo)})));
+            c.permanentEffects[LastingEffect::FLYING] = 1;
+            ), SpellMap{});
+  ret->setController(Monster::getFactory(MonsterAIFactory::monster()).get(ret.get()));
+  ret->take(std::move(item));
+  initializeAttributes(none, ret->getAttributes());
+  return ret;
+}
+
 class SokobanController : public Monster {
   public:
   SokobanController(Creature* c) : Monster(c, MonsterAIFactory::idle()) {}
@@ -724,8 +745,9 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
   return c;
 }
 
-void CreatureFactory::initializeAttributes(CreatureId id, CreatureAttributes& attr) {
-  attr.setCreatureId(id);
+void CreatureFactory::initializeAttributes(optional<CreatureId> id, CreatureAttributes& attr) {
+  if (id)
+    attr.setCreatureId(*id);
   attr.randomize();
   auto& attacks = attr.getBody().getIntrinsicAttacks();
   for (auto bodyPart : ENUM_ALL(BodyPart))
