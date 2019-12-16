@@ -27,7 +27,8 @@ RICH_ENUM(SkillId,
   LABORATORY,
   JEWELER,
   FURNACE,
-  SHAMANISM
+  SHAMANISM,
+  MULTI_WEAPON
 );
 
 class Creature;

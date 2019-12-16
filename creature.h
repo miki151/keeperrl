@@ -206,7 +206,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   BestAttack getBestAttack() const;
 
-  Item* getRandomWeapon() const;
+  vector<Item*> getRandomWeapons() const;
+  int getMaxSimultaneousWeapons() const;
   Item* getFirstWeapon() const;
   void dropWeapon();
   void dropUnsupportedEquipment();

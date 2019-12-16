@@ -43,6 +43,7 @@ void Skill::init() {
   Skill::set(SkillId::JEWELER, new Skill("jeweler", "Craft items at the jeweler's shop."));
   Skill::set(SkillId::FURNACE, new Skill("furnace", "Craft items at the furnace."));
   Skill::set(SkillId::SHAMANISM, new Skill("shamanism", "Summon ghosts that follow you around."));
+  Skill::set(SkillId::MULTI_WEAPON, new Skill("multi-weapon", "Allows using multiple weapons in a single attack."));
 }
 
 Skill::Skill(string _name, string _helpText)

@@ -120,20 +120,24 @@ void Body::setHumanoid(bool h) {
   xhumanoid = h;
 }
 
-Item* Body::chooseRandomWeapon(Item* weapon) const {
-  // choose one of the available weapons with equal probability
-  bool hasRealWeapon = !!weapon;
-  double numOptions = !!weapon ? 1 : 0;
-  for (auto part : ENUM_ALL(BodyPart)) {
-    auto& attack = intrinsicAttacks[part];
-    if (numGood(part) > 0 && attack &&
-        (attack->active == attack->ALWAYS || (attack->active == attack->NO_WEAPON && !hasRealWeapon))) {
-      ++numOptions;
-      if (!weapon || Random.chance(1.0 / numOptions))
-        weapon = intrinsicAttacks[part]->item.get();
+vector<Item*> Body::chooseRandomWeapon(vector<Item*> weapons, int maxCount) const {
+  auto addIntrinsic = [&] (IntrinsicAttack::Active activePred) {
+    for (auto part : ENUM_ALL(BodyPart)) {
+      auto& attack = intrinsicAttacks[part];
+      if (numGood(part) > 0 && attack && attack->active == activePred)
+        weapons.push_back(intrinsicAttacks[part]->item.get());
     }
+  };
+  addIntrinsic(IntrinsicAttack::ALWAYS);
+  weapons = Random.permutation(weapons);
+  if (weapons.size() > maxCount)
+    weapons.resize(maxCount);
+  else {
+    addIntrinsic(IntrinsicAttack::NO_WEAPON);
+    if (weapons.size() > maxCount)
+      weapons.resize(maxCount);
   }
-  return weapon;
+  return weapons;
 }
 
 Item* Body::chooseFirstWeapon() const {

@@ -75,6 +75,8 @@ bool Equipment::isEquipped(const Item* item) const {
 int Equipment::getMaxItems(EquipmentSlot slot, const Creature* c) const {
   auto& body = c->getBody();
   switch (slot) {
+    case EquipmentSlot::WEAPON:
+      return min(body.numGood(BodyPart::ARM), c->getMaxSimultaneousWeapons());
     case EquipmentSlot::RINGS:
       return body.numGood(BodyPart::ARM);
     case EquipmentSlot::AMULET:
