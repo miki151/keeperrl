@@ -104,12 +104,12 @@ void Body::setBodyParts(const EnumMap<BodyPart, int>& p) {
   bodyParts[BodyPart::BACK] = 1;
 }
 
-void Body::setIntrinsicAttack(BodyPart part, IntrinsicAttack attack) {
+void Body::addIntrinsicAttack(BodyPart part, IntrinsicAttack attack) {
   if (!numGood(part)) {
     part = BodyPart::TORSO;
     CHECK(numGood(part));
   }
-  intrinsicAttacks[part] = std::move(attack);
+  intrinsicAttacks[part].push_back(std::move(attack));
 }
 
 void Body::setMinPushSize(Body::Size size) {
@@ -122,12 +122,15 @@ void Body::setHumanoid(bool h) {
 
 vector<Item*> Body::chooseRandomWeapon(vector<Item*> weapons, int maxCount) const {
   auto addIntrinsic = [&] (IntrinsicAttack::Active activePred) {
-    for (auto part : ENUM_ALL(BodyPart)) {
-      auto& attack = intrinsicAttacks[part];
-      if (numGood(part) > 0 && attack && attack->active == activePred)
-        weapons.push_back(intrinsicAttacks[part]->item.get());
-    }
+    for (auto part : ENUM_ALL(BodyPart))
+      for (auto& attack : intrinsicAttacks[part])
+        if (numGood(part) > 0 && attack.active == activePred)
+          weapons.push_back(attack.item.get());
   };
+  int numExtra = weapons.size();
+  addIntrinsic(IntrinsicAttack::EXTRA);
+  numExtra = weapons.size() - numExtra;
+  maxCount += numExtra;
   addIntrinsic(IntrinsicAttack::ALWAYS);
   weapons = Random.permutation(weapons);
   if (weapons.size() > maxCount)
@@ -141,40 +144,39 @@ vector<Item*> Body::chooseRandomWeapon(vector<Item*> weapons, int maxCount) cons
 }
 
 Item* Body::chooseFirstWeapon() const {
-  for (auto part : ENUM_ALL(BodyPart)) {
-    auto& attack = intrinsicAttacks[part];
-    if (numGood(part) > 0 && attack && attack->active != attack->NEVER)
-      return intrinsicAttacks[part]->item.get();
-  }
+  for (auto part : ENUM_ALL(BodyPart))
+    for (auto& attack : intrinsicAttacks[part])
+      if (numGood(part) > 0 && attack.active != attack.NEVER)
+        return attack.item.get();
   return nullptr;
 }
 
-EnumMap<BodyPart, optional<IntrinsicAttack>>& Body::getIntrinsicAttacks() {
+EnumMap<BodyPart, vector<IntrinsicAttack>>& Body::getIntrinsicAttacks() {
   return intrinsicAttacks;
 }
 
-const EnumMap<BodyPart, optional<IntrinsicAttack>>& Body::getIntrinsicAttacks() const {
+const EnumMap<BodyPart, vector<IntrinsicAttack>>& Body::getIntrinsicAttacks() const {
   return intrinsicAttacks;
 }
 
 void Body::setHumanoidBodyParts(int intrinsicDamage) {
   setBodyParts({{BodyPart::LEG, 2}, {BodyPart::ARM, 2}, {BodyPart::HEAD, 1}, {BodyPart::BACK, 1},
       {BodyPart::TORSO, 1}});
-  setIntrinsicAttack(BodyPart::ARM, IntrinsicAttack(ItemType::fists(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
-  setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::legs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
+  addIntrinsicAttack(BodyPart::ARM, IntrinsicAttack(ItemType::fists(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
+  addIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::legs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
 }
 
 void Body::setHorseBodyParts(int intrinsicDamage) {
   setBodyParts({{BodyPart::LEG, 4}, {BodyPart::HEAD, 1}, {BodyPart::BACK, 1},
       {BodyPart::TORSO, 1}});
-  setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
-  setIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::legs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
+  addIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
+  addIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::legs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
 }
 
 void Body::setBirdBodyParts(int intrinsicDamage) {
   setBodyParts({{BodyPart::LEG, 2}, {BodyPart::WING, 2}, {BodyPart::HEAD, 1}, {BodyPart::BACK, 1},
       {BodyPart::TORSO, 1}});
-  setIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::beak(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
+  addIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::beak(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
 }
 
 void Body::setMinionFood() {
@@ -402,12 +404,12 @@ void Body::consumeBodyParts(Creature* c, Body& other, vector<string>& adjectives
       c->addPersonalEvent(c->getName().the() + " grows "_s + what);
       bodyParts[part] = other.bodyParts[part];
     }
-    if (auto& attack = other.intrinsicAttacks[part]) {
-      c->verb("develop", "develops",  "a " + attack->item->getNameAndModifiers() + " attack");
-      c->addPersonalEvent(c->getName().the() + " develops a " + attack->item->getNameAndModifiers() + " attack");
-      intrinsicAttacks[part] = std::move(*attack);
-      other.intrinsicAttacks[part] = none;
+    for (auto& attack : other.intrinsicAttacks[part]) {
+      c->verb("develop", "develops",  "a " + attack.item->getNameAndModifiers() + " attack");
+      c->addPersonalEvent(c->getName().the() + " develops a " + attack.item->getNameAndModifiers() + " attack");
+      intrinsicAttacks[part].push_back(std::move(attack));
     }
+    other.intrinsicAttacks[part].clear();
   }
   if (other.isHumanoid() && !isHumanoid() && numBodyParts(BodyPart::ARM) >= 2 &&
       numBodyParts(BodyPart::LEG) >= 2 && numBodyParts(BodyPart::HEAD) >= 1) {
@@ -1076,7 +1078,7 @@ void Body::serialize(PrettyInputArchive& ar1, unsigned v) {
   ar1(endInput());
   for (auto part : ENUM_ALL(BodyPart)) {
     bodyParts[part] += addBodyPart[part];
-    if (bodyParts[part] == 0 && !!intrinsicAttacks[part])
+    if (bodyParts[part] == 0 && !intrinsicAttacks[part].empty())
       ar1.error("Creature has an intrinsic attack attached to non-existent body part"_s);
   }
 }

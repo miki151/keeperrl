@@ -7,6 +7,7 @@ class ItemType;
 
 struct IntrinsicAttack {
   enum Active {
+    EXTRA,
     ALWAYS,
     NO_WEAPON,
     NEVER

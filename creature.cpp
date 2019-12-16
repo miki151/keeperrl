@@ -1207,8 +1207,6 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
     INFO << getName().the() << " attacking " << other->getName().the();
     bool wasDamaged = false;
     for (auto weapon : weapons) {
-      if (other->isDead())
-        break;
       auto& weaponInfo = weapon->getWeaponInfo();
       auto damageAttr = weaponInfo.meleeAttackAttr;
       int damage = getAttr(damageAttr, false) + weapon->getModifier(damageAttr);
@@ -1229,6 +1227,8 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
       wasDamaged = wasDamaged || other->takeDamage(attack);
       for (auto& e : weaponInfo.attackerEffect)
         e.apply(position);
+      if (other->isDead() || Random.chance(0.4))
+        break;
     }
     auto movementInfo = (*self->spendTime())
         .setDirection(dir)

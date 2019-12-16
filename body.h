@@ -60,7 +60,7 @@ class Body {
   void setBirdBodyParts(int intrinsicDamage);
   void setMinionFood();
   void setDeathSound(optional<SoundId>);
-  void setIntrinsicAttack(BodyPart, IntrinsicAttack);
+  void addIntrinsicAttack(BodyPart, IntrinsicAttack);
   void setMinPushSize(Size);
   void setHumanoid(bool);
   void affectPosition(Position);
@@ -124,8 +124,8 @@ class Body {
   void bleed(Creature*, double amount);
   vector<Item*> chooseRandomWeapon(vector<Item*> weapons, int maxCount) const;
   Item* chooseFirstWeapon() const;
-  const EnumMap<BodyPart, optional<IntrinsicAttack>>& getIntrinsicAttacks() const;
-  EnumMap<BodyPart, optional<IntrinsicAttack>>& getIntrinsicAttacks();
+  const EnumMap<BodyPart, vector<IntrinsicAttack> >& getIntrinsicAttacks() const;
+  EnumMap<BodyPart, vector<IntrinsicAttack> >& getIntrinsicAttacks();
 
   bool isUndead() const;
   double getBoulderDamage() const;
@@ -158,7 +158,7 @@ class Body {
   double SERIAL(health) = 1;
   bool SERIAL(minionFood) = false;
   optional<SoundId> SERIAL(deathSound);
-  EnumMap<BodyPart, optional<IntrinsicAttack>> SERIAL(intrinsicAttacks);
+  EnumMap<BodyPart, vector<IntrinsicAttack>> SERIAL(intrinsicAttacks);
   Size SERIAL(minPushSize);
   bool SERIAL(noHealth) = false;
   bool SERIAL(fallsApart) = true;

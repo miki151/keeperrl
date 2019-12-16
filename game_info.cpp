@@ -97,8 +97,8 @@ static vector<ItemInfo> fillIntrinsicAttacks(const Creature* c) {
   vector<ItemInfo> ret;
   auto& intrinsicAttacks = c->getBody().getIntrinsicAttacks();
   for (auto part : ENUM_ALL(BodyPart))
-    if (auto& attack = intrinsicAttacks[part]) {
-      ret.push_back(ItemInfo::get(c, {attack->item.get()}));
+    for (auto& attack : intrinsicAttacks[part]) {
+      ret.push_back(ItemInfo::get(c, {attack.item.get()}));
       auto& item = ret.back();
       item.weight.reset();
       if (!c->getBody().numGood(part)) {
@@ -106,7 +106,7 @@ static vector<ItemInfo> fillIntrinsicAttacks(const Creature* c) {
         item.unavailableReason = "No functional body part: "_s + getName(part);
         item.actions.clear();
       } else {
-        item.intrinsicState = attack->active;
+        item.intrinsicState = attack.active;
         item.actions = {
             ItemAction::INTRINSIC_ALWAYS, ItemAction::INTRINSIC_NO_WEAPON, ItemAction::INTRINSIC_NEVER};
       }

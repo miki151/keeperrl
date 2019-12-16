@@ -245,17 +245,17 @@ void Player::throwItem(Item* item, optional<Position> target) {
 void Player::handleIntrinsicAttacks(const EntitySet<Item>& itemIds, ItemAction action) {
   auto& attacks = creature->getBody().getIntrinsicAttacks();
   for (auto part : ENUM_ALL(BodyPart))
-    if (auto& attack = attacks[part])
-      if (itemIds.contains(attack->item.get()))
+    for (auto& attack : attacks[part])
+      if (itemIds.contains(attack.item.get()))
         switch (action) {
           case ItemAction::INTRINSIC_ALWAYS:
-            attack->active = IntrinsicAttack::ALWAYS;
+            attack.active = IntrinsicAttack::ALWAYS;
             break;
           case ItemAction::INTRINSIC_NO_WEAPON:
-            attack->active = IntrinsicAttack::NO_WEAPON;
+            attack.active = IntrinsicAttack::NO_WEAPON;
             break;
           case ItemAction::INTRINSIC_NEVER:
-            attack->active = IntrinsicAttack::NEVER;
+            attack.active = IntrinsicAttack::NEVER;
             break;
           default:
             FATAL << "Unhandled intrinsic item action: " << (int) action;
@@ -499,9 +499,9 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(Creature* 
           CONSTRUCT(Creature::AttackParams, c.weapon = weapon;)));
     }
     for (auto part : ENUM_ALL(BodyPart))
-      if (auto& attack = creature->getBody().getIntrinsicAttacks()[part])
+      for (auto& attack : creature->getBody().getIntrinsicAttacks()[part])
         genAction(4, getAttackAction(part), true, creature->attack(c,
-            CONSTRUCT(Creature::AttackParams, c.weapon = attack->item.get();)));
+            CONSTRUCT(Creature::AttackParams, c.weapon = attack.item.get();)));
   } else {
     genAction(1, ViewObjectAction::ATTACK, false, creature->attack(c));
     genAction(1, ViewObjectAction::PET, false, creature->pet(c));

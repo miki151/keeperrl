@@ -1047,6 +1047,8 @@ int GuiBuilder::getItemLineOwnerMargin() {
 
 static string getIntrinsicStateText(IntrinsicAttack::Active state) {
   switch (state) {
+    case IntrinsicAttack::EXTRA:
+      return "extra attack in the same turn.";
     case IntrinsicAttack::ALWAYS:
       return "always active.";
     case IntrinsicAttack::NO_WEAPON:
@@ -1085,6 +1087,8 @@ static string getWeightString(double weight) {
 
 static Color getIntrinsicStateColor(IntrinsicAttack::Active state) {
   switch (state) {
+    case IntrinsicAttack::EXTRA:
+      return Color::YELLOW;
     case IntrinsicAttack::ALWAYS:
       return Color::GREEN;
     case IntrinsicAttack::NO_WEAPON:

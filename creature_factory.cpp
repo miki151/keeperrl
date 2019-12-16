@@ -146,7 +146,7 @@ PCreature CreatureFactory::getAnimatedItem(PItem item, TribeId tribe, int attrBo
             c.gender = Gender::IT;
             auto weaponInfo = item->getWeaponInfo();
             weaponInfo.itselfMessage = true;
-            c.body->setIntrinsicAttack(BodyPart::TORSO, IntrinsicAttack(ItemType(
+            c.body->addIntrinsicAttack(BodyPart::TORSO, IntrinsicAttack(ItemType(
                 ItemTypes::Intrinsic{item->getViewObject().id(), item->getName(), 0, std::move(weaponInfo)})));
             c.permanentEffects[LastingEffect::FLYING] = 1;
             ), SpellMap{});
@@ -725,7 +725,7 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
           c.attr[AttrType::DAMAGE] += 5;
           c.attr[AttrType::DEFENSE] += 5;
           if (auto attack = getSpecialBeastAttack(p.large, p.living, p.wings))
-            c.body->setIntrinsicAttack(BodyPart::HEAD, *attack);
+            c.body->addIntrinsicAttack(BodyPart::HEAD, *attack);
         }
         if (Random.roll(3))
           c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
@@ -751,8 +751,8 @@ void CreatureFactory::initializeAttributes(optional<CreatureId> id, CreatureAttr
   attr.randomize();
   auto& attacks = attr.getBody().getIntrinsicAttacks();
   for (auto bodyPart : ENUM_ALL(BodyPart))
-    if (auto& attack = attacks[bodyPart])
-      attack->initializeItem(contentFactory);
+    for (auto& attack : attacks[bodyPart])
+      attack.initializeItem(contentFactory);
 }
 
 CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {

@@ -197,7 +197,7 @@
       type = FourLegged LARGE
       weight = 500
       intrinsicAttacks = {
-        HEAD {Simple "UnicornHorn"}
+        HEAD {{Simple "UnicornHorn"}}
       }
      }
     permanentEffects = {
@@ -345,8 +345,8 @@
       type = NonHumanoid LARGE
       material = SPIRIT
       intrinsicAttacks = {
-        TORSO { Intrinsic { "fist_attack" } "spell" 1 {
-            attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }
+        TORSO {{ Intrinsic { "fist_attack" } "spell" 1 {
+            attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}
       }
     }
     permanentEffects = {
@@ -371,8 +371,8 @@
       material = SPIRIT
       canCapture = true
       intrinsicAttacks = {
-        TORSO { Intrinsic { "fist_attack" } "spell" 1 {
-            attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }
+        TORSO {{ Intrinsic { "fist_attack" } "spell" 1 {
+            attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}
       }
     }
     permanentEffects = {
@@ -391,11 +391,11 @@
       material = SPIRIT
       deathSound = none
       intrinsicAttacks = {
-        TORSO { Intrinsic { "touch_attack" } "touch" 0 {
+        TORSO {{ Intrinsic { "touch_attack" } "touch" 0 {
             attackType = HIT
             attackMsg = TOUCH
             victimEffect = { 0.2 Lasting INSANITY}
-            attackerEffect = {Suicide DIE} } }
+            attackerEffect = {Suicide DIE} } }}
       }
     }
     viewId = { "ghost" }
@@ -424,10 +424,10 @@
       type = Humanoid LARGE
       material = SPIRIT
       intrinsicAttacks = {
-        TORSO { Intrinsic { "touch_attack" } "touch" 0 {
+        TORSO {{ Intrinsic { "touch_attack" } "touch" 0 {
             attackType = HIT
             attackMsg = TOUCH
-            victimEffect = {1.0 Lasting PEACEFULNESS} } }
+            victimEffect = {1.0 Lasting PEACEFULNESS} } }}
       }
       addBodyPart = {
         WING 2
@@ -740,10 +740,10 @@
       type = NonHumanoid LARGE
       weight = 400
       intrinsicAttacks = {
-        HEAD { Intrinsic { "bite_attack" } "fangs" 8 {
+        HEAD {{ Intrinsic { "bite_attack" } "fangs" 8 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.3 Lasting POISON} } }
+            victimEffect = {0.3 Lasting POISON} } }}
       }
       bodyParts = {
         HEAD 7
@@ -781,10 +781,10 @@
       weight = 400
       deathSound = none
       intrinsicAttacks = {
-        TORSO { Intrinsic { "bite_attack" } "fangs" 8 {
+        TORSO {{ Intrinsic { "bite_attack" } "fangs" 8 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.3 Lasting POISON} } }
+            victimEffect = {0.3 Lasting POISON} } }}
       }
     }
     permanentEffects = {
@@ -809,10 +809,10 @@
         WING 2
       }
       intrinsicAttacks = {
-        HEAD { Intrinsic { "bite_attack" } "fangs" 12 {
+        HEAD {{ Intrinsic { "bite_attack" } "fangs" 12 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.3 Lasting POISON} } }
+            victimEffect = {0.3 Lasting POISON} } }}
       }
       drops = {{ Simple "GreenDragonScales" } 1}
     }
@@ -848,10 +848,10 @@
         WING 2
       }
       intrinsicAttacks = {
-        HEAD { Intrinsic { "bite_attack" } "fangs" 15 {
+        HEAD {{ Intrinsic { "bite_attack" } "fangs" 15 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.5 Fire} } }
+            victimEffect = {0.5 Fire} } }}
       }
       drops = { { Simple "RedDragonScales" } 1}
     }
@@ -887,9 +887,9 @@
         WING 2
       }
       intrinsicAttacks = {
-        HEAD { Intrinsic { "bite_attack" } "fangs" 15 {
+        HEAD {{ Intrinsic { "bite_attack" } "fangs" 15 {
             attackType = BITE
-            attackMsg = BITE } }
+            attackMsg = BITE } }}
       }
       drops = {{ Simple "BlackDragonScales" } 1}
     }
@@ -922,9 +922,9 @@
         WING 2
       }
       intrinsicAttacks = {
-        HEAD { Intrinsic { "bite_attack" } "fangs" 15 {
+        HEAD {{ Intrinsic { "bite_attack" } "fangs" 15 {
             attackType = BITE
-            attackMsg = BITE } }
+            attackMsg = BITE } }}
       }
       drops = {{ Simple "WhiteDragonScales" } 1}
     }
@@ -1561,10 +1561,10 @@
       type = HumanoidLike LARGE
       material = IRON
       intrinsicAttacks = {
-        ARM { Intrinsic { "fist_attack" } "fists" 10 {
+        ARM {{ Intrinsic { "fist_attack" } "fists" 10 {
             attackType = HIT
             attackMsg = SWING
-            victimEffect = {0.3 Fire} } }
+            victimEffect = {0.3 Fire} } }}
       }
     }
     permanentEffects = {
@@ -2196,10 +2196,10 @@
     body = {
       type = Humanoid MEDIUM
       intrinsicAttacks = {
-        HEAD { Intrinsic { "bite_attack" } "fangs" 5 {
+        HEAD {{ Intrinsic { "bite_attack" } "fangs" 5 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.1 Lasting POISON} } }
+            victimEffect = {0.1 Lasting POISON} } }}
       }
     }
     permanentEffects = {
@@ -2230,10 +2230,10 @@
     body = {
       type = Humanoid MEDIUM
       intrinsicAttacks = {
-        HEAD { Intrinsic { "bite_attack" } "fangs" 8 {
+        HEAD {{ Intrinsic { "bite_attack" } "fangs" 8 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.5 Lasting POISON} } }
+            victimEffect = {0.5 Lasting POISON} } }}
       }
     }
     permanentEffects = {
@@ -2708,7 +2708,7 @@
       type = FourLegged MEDIUM
       weight = 250
       intrinsicAttacks = {
-        LEG { Intrinsic { "claws_attack" } "claws" 10 { attackType = HIT attackMsg = CLAW } }
+        LEG {{ Intrinsic { "claws_attack" } "claws" 10 { attackType = HIT attackMsg = CLAW } }}
       }
     }
     permanentEffects = {
@@ -2772,10 +2772,10 @@
       weight = 0.3
       deathSound = none
       intrinsicAttacks = {
-        TORSO { Intrinsic { "bite_attack" } "fangs" 1 {
+        TORSO {{ Intrinsic { "bite_attack" } "fangs" 1 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.1 Lasting POISON} } }
+            victimEffect = {0.1 Lasting POISON} } }}
       }
     }
     name = {
@@ -2847,10 +2847,10 @@
       }
       deathSound = none
       intrinsicAttacks = {
-        HEAD { Intrinsic { "bite_attack" } "fangs" 6 {
+        HEAD {{ Intrinsic { "bite_attack" } "fangs" 6 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.1 Lasting POISON} } }
+            victimEffect = {0.1 Lasting POISON} } }}
       }
     }
     name = {
@@ -2874,10 +2874,10 @@
       }
       deathSound = none
       intrinsicAttacks = {
-        HEAD { Intrinsic { "bite_attack" } "fangs" 12 {
+        HEAD {{ Intrinsic { "bite_attack" } "fangs" 12 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {1.0 Lasting POISON} } }
+            victimEffect = {1.0 Lasting POISON} } }}
       }
     }
     gender = FEMALE
@@ -2901,10 +2901,10 @@
       }
       deathSound = none
       intrinsicAttacks = {
-        HEAD { Intrinsic { "bite_attack" } "fangs" 1 {
+        HEAD {{ Intrinsic { "bite_attack" } "fangs" 1 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.3 Lasting POISON} } }
+            victimEffect = {0.3 Lasting POISON} } }}
       }
     }
     permanentEffects = {
@@ -2966,8 +2966,8 @@
       type = FourLegged MEDIUM
       weight = 35
       intrinsicAttacks = {
-        LEG  { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } }
-        HEAD { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE } }
+        LEG  {{ Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } }}
+        HEAD {{ Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE } }}
       }
     }
     permanentEffects = {
@@ -2991,8 +2991,8 @@
     body = {
       type = Humanoid LARGE
       intrinsicAttacks = {
-        LEG  { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } }
-        HEAD { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE } }
+        LEG  {{ Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } }}
+        HEAD {{ Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE } }}
       }
     }
     permanentEffects = {
@@ -3020,7 +3020,7 @@
     body = {
       type = FourLegged MEDIUM
       intrinsicAttacks = {
-        HEAD { Intrinsic { "bite_attack" }  "fangs" 4 { attackType = BITE attackMsg = BITE } }
+        HEAD {{ Intrinsic { "bite_attack" }  "fangs" 4 { attackType = BITE attackMsg = BITE } }}
       }
       weight = 25
     }
@@ -3078,8 +3078,8 @@
       material = FIRE
       deathSound = none
       intrinsicAttacks = {
-        TORSO { Intrinsic { "fist_attack" }  "fists" 5 {
-            attackType = HIT attackMsg = SWING victimEffect = {1.0 Fire}} }
+        TORSO {{ Intrinsic { "fist_attack" }  "fists" 5 {
+            attackType = HIT attackMsg = SWING victimEffect = {1.0 Fire}} }}
       }
     }
     attr = {
@@ -3102,7 +3102,7 @@
       material = SPIRIT
       deathSound = none
       intrinsicAttacks = {
-        TORSO { Intrinsic { "fist_attack" }  "fists" 5 { attackType = HIT attackMsg = SWING} }
+        TORSO {{ Intrinsic { "fist_attack" }  "fists" 5 { attackType = HIT attackMsg = SWING} }}
       }
     }
     attr = {
@@ -3211,7 +3211,7 @@
       type = Bird SMALL
       weight = 1
       intrinsicAttacks = {
-        HEAD { Intrinsic { "bite_attack" } "fangs" 3 { attackType = BITE attackMsg = BITE } }
+        HEAD {{ Intrinsic { "bite_attack" } "fangs" 3 { attackType = BITE attackMsg = BITE } }}
       }
     }
     attr = {
@@ -3291,7 +3291,7 @@
       }
       material = SPIRIT
       intrinsicAttacks = {
-        BACK { Intrinsic { "bite_attack" }  "fangs" 5 { attackType = BITE attackMsg = BITE } }
+        BACK {{ Intrinsic { "bite_attack" }  "fangs" 5 { attackType = BITE attackMsg = BITE } }}
       }
       drops = {
         { Simple "AdoxieEye" } 1
@@ -3339,7 +3339,7 @@
         TORSO 1
       }        
       intrinsicAttacks = {
-        BACK { Intrinsic { "claws_attack" } "foot" 10 { attackType = HIT attackMsg = KICK } }
+        BACK {{ Intrinsic { "claws_attack" } "foot" 10 { attackType = HIT attackMsg = KICK } }}
       }
     }
     spells = {
@@ -3382,8 +3382,8 @@
         TORSO 1
       }
       intrinsicAttacks = {
-        BACK { Intrinsic { "fist_attack" }  "fist" 5 {
-            attackType = HIT attackMsg = SWING victimEffect = {1.0 Lasting SLOWED}} }
+        BACK {{ Intrinsic { "fist_attack" }  "fist" 5 {
+            attackType = HIT attackMsg = SWING victimEffect = {1.0 Lasting SLOWED}} }}
       }
       material = SPIRIT
     }
