@@ -1783,6 +1783,8 @@ int Creature::getMaxSimultaneousWeapons() const {
   const double skillValue = attributes->getSkills().getValue(SkillId::MULTI_WEAPON);
   if (skillValue < 0.01)
     return 1;
+  if (skillValue > 0.95)
+    return 10;
   int result = 2;
   double curMultiplier = skillValue * skillValue;
   while (curMultiplier >= minMultiplier) {

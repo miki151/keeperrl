@@ -467,8 +467,6 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   for (auto slot : Equipment::slotTitles)
     slots.push_back(slot.first);
   vector<Item*> ownedItems = collective->getMinionEquipment().getItemsOwnedBy(creature);
-  vector<Item*> slotItems;
-  vector<EquipmentSlot> slotIndex;
   for (auto slot : slots) {
     vector<Item*> items;
     for (Item* it : ownedItems)
@@ -479,8 +477,6 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
       //should happen only when an item leaves the fortress and then is braught back
       if (!collective->getMinionEquipment().isLocked(creature, items[i]->getUniqueId()))
         collective->getMinionEquipment().discard(items[i]);
-    append(slotItems, items);
-    append(slotIndex, vector<EquipmentSlot>(items.size(), slot));
     for (Item* item : items) {
       ownedItems.removeElement(item);
       bool equiped = creature->getEquipment().isEquipped(item);
@@ -488,11 +484,8 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
       info.inventory.push_back(getItemInfo(getGame()->getContentFactory(), {item}, equiped, !equiped, locked, ItemInfo::EQUIPMENT));
       info.inventory.back().actions.push_back(locked ? ItemAction::UNLOCK : ItemAction::LOCK);
     }
-    if (creature->getEquipment().getMaxItems(slot, creature) > items.size()) {
+    for (int i : Range(creature->getEquipment().getMaxItems(slot, creature) - items.size()))
       info.inventory.push_back(getEmptySlotItem(slot));
-      slotIndex.push_back(slot);
-      slotItems.push_back(nullptr);
-    }
     if (slot == EquipmentSlot::WEAPON && tutorial &&
         tutorial->getHighlights(getGame()).contains(TutorialHighlight::EQUIPMENT_SLOT_WEAPON))
       info.inventory.back().tutorialHighlight = true;
