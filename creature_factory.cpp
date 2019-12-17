@@ -842,9 +842,11 @@ PCreature CreatureFactory::getGhost(Creature* creature) {
 }
 
 vector<ItemType> CreatureFactory::getDefaultInventory(CreatureId id) const {
+  CreatureInventory empty;
   auto& inventoryGen = getSpecialParams().count(id)
       ? getSpecialParams().at(id).inventory
-      : attributes.at(id).inventory;
+      : attributes.count(id) ? attributes.at(id).inventory
+      : empty;
   vector<ItemType> items;
   for (auto& elem : inventoryGen.elems)
     if (Random.chance(elem.chance))
