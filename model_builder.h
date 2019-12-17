@@ -46,7 +46,8 @@ class ModelBuilder {
   PModel tryTutorialModel();
   PModel tryCampaignSiteModel(EnemyId, VillainType, TribeAlignment);
   PModel tryModel(int width, vector<EnemyInfo>, optional<TribeId> keeperTribe, BiomeId, optional<ExternalEnemies>, bool wildlife);
-  void makeExtraLevel(WModel model, LevelConnection& connection, SettlementInfo& mainSettlement, StairKey upLink);
+  void makeExtraLevel(WModel model, LevelConnection& connection, SettlementInfo& mainSettlement, StairKey upLink,
+      vector<EnemyInfo>& extraEnemies);
   PModel tryBuilding(int numTries, function<PModel()> buildFun, const string& name);
   void addMapVillainsForEvilKeeper(vector<EnemyInfo>&, BiomeId);
   void addMapVillainsForLawfulKeeper(vector<EnemyInfo>&, BiomeId);
@@ -60,4 +61,5 @@ class ModelBuilder {
   ContentFactory* contentFactory = nullptr;
   using LevelMakerMethod = function<PLevelMaker(RandomGen&, SettlementInfo, Vec2 size)>;
   LevelMakerMethod getMaker(LevelType);
+  SettlementInfo processLevelConnection(Model*, EnemyInfo&, vector<EnemyInfo>& extraEnemies);
 };

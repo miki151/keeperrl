@@ -71,34 +71,6 @@ ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
   }
 }
 
-void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, SettlementInfo& mainSettlement, StairKey upLink) {
-  StairKey downLink = StairKey::getNew();
-  for (int index : All(connection.levels)) {
-    auto& level = connection.levels[index];
-    auto addLevel = [&] (SettlementInfo& settlement) {
-      settlement.upStairs = {upLink};
-      if (index < connection.levels.size() - 1)
-        settlement.downStairs = {downLink};
-      if (connection.direction == LevelConnectionDir::UP)
-        swap(settlement.upStairs, settlement.downStairs);
-      model->buildLevel(
-          LevelBuilder(meter, random, contentFactory, level.levelSize.x, level.levelSize.y, true, level.isLit ? 1.0 : 0.0),
-          getMaker(level.levelType)(random, settlement, level.levelSize));
-      upLink = downLink;
-      downLink = StairKey::getNew();
-    };
-    level.enemy.match(
-        [&](LevelConnection::ExtraEnemy& e) {
-          for (auto& enemy : e.enemyInfo)
-            addLevel(enemy.settlement);
-        },
-        [&](LevelConnection::MainEnemy&) {
-          addLevel(mainSettlement);
-        }
-    );
-  }
-}
-
 PModel ModelBuilder::singleMapModel(TribeId keeperTribe, TribeAlignment alignment) {
   return tryBuilding(10, [&] { return trySingleMapModel(keeperTribe, alignment);}, "single map");
 }
@@ -295,7 +267,7 @@ PModel ModelBuilder::tryTutorialModel() {
   //enemyInfo.push_back(enemyFactory->get(EnemyId("TUTORIAL_VILLAGE")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("RED_DRAGON")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
-  enemyInfo.push_back(enemyFactory->get(EnemyId("BANDITS")));
+  enemyInfo.push_back(enemyFactory->get(EnemyId("MAIN_DUNGEON")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("ADA_GOLEMS")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("TEMPLE")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("LIZARDMEN")));
@@ -449,6 +421,65 @@ static optional<CreatureGroup> getWildlife(BiomeId id) {
   }
 }
 
+void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, SettlementInfo& mainSettlement,
+    StairKey upLink, vector<EnemyInfo>& extraEnemies) {
+  StairKey downLink = StairKey::getNew();
+  for (int index : All(connection.levels)) {
+    auto& level = connection.levels[index];
+    auto addLevel = [&] (SettlementInfo& settlement) {
+      settlement.upStairs.push_back(upLink);
+      if (index < connection.levels.size() - 1)
+        settlement.downStairs.push_back(downLink);
+      if (connection.direction == LevelConnectionDir::UP)
+        swap(settlement.upStairs, settlement.downStairs);
+      model->buildLevel(
+          LevelBuilder(meter, random, contentFactory, level.levelSize.x, level.levelSize.y, true, level.isLit ? 1.0 : 0.0),
+          getMaker(level.levelType)(random, settlement, level.levelSize));
+      upLink = downLink;
+      downLink = StairKey::getNew();
+    };
+    level.enemy.match(
+        [&](LevelConnection::ExtraEnemy& e) {
+          for (auto& enemy : e.enemyInfo) {
+            auto set = processLevelConnection(model, enemy, extraEnemies);
+            addLevel(set);
+          }
+        },
+        [&](LevelConnection::MainEnemy&) {
+          addLevel(mainSettlement);
+        }
+    );
+  }
+}
+
+SettlementInfo ModelBuilder::processLevelConnection(Model* model, EnemyInfo& enemyInfo,
+    vector<EnemyInfo>& extraEnemies) {
+  if (!enemyInfo.levelConnection)
+    return enemyInfo.settlement;
+  auto processExtraEnemy = [&] (LevelConnection::EnemyLevelInfo& enemyInfo) {
+    if (auto extra = enemyInfo.getReferenceMaybe<LevelConnection::ExtraEnemy>()) {
+      for (auto& enemy : extra->enemyInfo) {
+        enemy.settlement.collective =
+            new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
+        extraEnemies.push_back(enemy);
+      }
+    }
+  };
+  for (auto& level : enemyInfo.levelConnection->levels)
+    processExtraEnemy(level.enemy);
+  processExtraEnemy(enemyInfo.levelConnection->topLevel);
+  StairKey downLink = StairKey::getNew();
+  makeExtraLevel(model, *enemyInfo.levelConnection, enemyInfo.settlement, downLink, extraEnemies);
+  SettlementInfo* ret = nullptr;
+  if (auto extra = enemyInfo.levelConnection->topLevel.getReferenceMaybe<LevelConnection::ExtraEnemy>()) {
+    for (auto& enemy : extra->enemyInfo)
+      ret = &enemy.settlement;
+  } else
+    ret = &enemyInfo.settlement;
+  (enemyInfo.levelConnection->direction == LevelConnectionDir::DOWN ? ret->downStairs : ret->upStairs).push_back(downLink);
+  return *ret;
+}
+
 PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<TribeId> keeperTribe, BiomeId biomeId,
     optional<ExternalEnemies> externalEnemies, bool hasWildlife) {
   auto model = Model::create(contentFactory, biomeId);
@@ -456,30 +487,7 @@ PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<T
   vector<EnemyInfo> extraEnemies;
   for (auto& elem : enemyInfo) {
     elem.settlement.collective = new CollectiveBuilder(elem.config, elem.settlement.tribe);
-    if (elem.levelConnection) {
-      auto processExtraEnemy = [&] (LevelConnection::EnemyLevelInfo& enemyInfo) {
-        if (auto extra = enemyInfo.getReferenceMaybe<LevelConnection::ExtraEnemy>()) {
-          for (auto& enemy : extra->enemyInfo) {
-            enemy.settlement.collective =
-                new CollectiveBuilder(enemy.config, enemy.settlement.tribe);
-            extraEnemies.push_back(enemy);
-          }
-        }
-      };
-      for (auto& level : elem.levelConnection->levels)
-        processExtraEnemy(level.enemy);
-      processExtraEnemy(elem.levelConnection->topLevel);
-      StairKey downLink = StairKey::getNew();
-      makeExtraLevel(model.get(), *elem.levelConnection, elem.settlement, downLink);
-      if (auto extra = elem.levelConnection->topLevel.getReferenceMaybe<LevelConnection::ExtraEnemy>()) {
-        for (auto& enemy : extra->enemyInfo)
-          topLevelSettlements.push_back(enemy.settlement);
-      } else
-        topLevelSettlements.push_back(elem.settlement);
-      (elem.levelConnection->direction == LevelConnectionDir::DOWN ?
-            topLevelSettlements.back().downStairs : topLevelSettlements.back().upStairs) = {downLink};
-    } else
-      topLevelSettlements.push_back(elem.settlement);
+    topLevelSettlements.push_back(processLevelConnection(model.get(), elem, extraEnemies));
   }
   append(enemyInfo, extraEnemies);
   optional<CreatureGroup> wildlife;
