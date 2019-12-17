@@ -2953,8 +2953,8 @@
       type = FourLegged MEDIUM
       weight = 35
       intrinsicAttacks = {
-        LEG  {{{ Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } isExtraAttack = true }}}
-        HEAD {{{ Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE } isExtraAttack = true }}}
+        LEG  {{itemType = { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
+        HEAD {{itemType = { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
       }
     }
     permanentEffects = {
@@ -2978,8 +2978,8 @@
     body = {
       type = Humanoid LARGE
       intrinsicAttacks = {
-        LEG  {{{ Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } isExtraAttack = true }}}
-        HEAD {{{ Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE } isExtraAttack = true }}}
+        LEG  {{ itemType = { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW }} isExtraAttack = true }}
+        HEAD {{ itemType = { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE }} isExtraAttack = true }}
       }
     }
     permanentEffects = {

@@ -1224,7 +1224,7 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
         enemyName = "something";
       weapon->getAttackMsg(this, enemyName);
       getGame()->addEvent(EventInfo::CreatureAttacked{other, self, damageAttr});
-      wasDamaged |= other->takeDamage(attack);
+      wasDamaged |= other->takeDamage(attack, true);
       for (auto& e : weaponInfo.attackerEffect)
         e.apply(position);
       if (other->isDead())
@@ -1233,8 +1233,10 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
     auto movementInfo = (*self->spendTime())
         .setDirection(dir)
         .setType(MovementInfo::ATTACK);
-    if (wasDamaged)
+    if (wasDamaged) {
       movementInfo.setVictim(other->getUniqueId());
+      other->increaseHitCount();
+    }
     self->addMovementInfo(movementInfo);
   });
 }
@@ -1302,7 +1304,7 @@ int Creature::getHitCount() const {
     return max(0, hitsInfo.numHits - getAttr(AttrType::PARRY));
 }
 
-bool Creature::takeDamage(const Attack& attack) {
+bool Creature::takeDamage(const Attack& attack, bool noIncreaseHitCount) {
   PROFILE;
   if (Creature* attacker = attack.attacker) {
     onAttackedBy(attacker);
@@ -1312,8 +1314,9 @@ bool Creature::takeDamage(const Attack& attack) {
   }
   const double hitPenalty = 0.95;
   int hitCount = getHitCount();
-  increaseHitCount();
   double defense = getAttr(AttrType::DEFENSE) * pow(hitPenalty, hitCount);
+  if (!noIncreaseHitCount)
+    increaseHitCount();
   if (hitCount > 0)
     you(MsgType::YOUR, "defense is weakened");
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
