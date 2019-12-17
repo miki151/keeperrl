@@ -115,6 +115,10 @@ void Item::onDropped(Creature* c) {
     c->removePermanentEffect(*attributes->ownedEffect);
 }
 
+const vector<LastingEffect>& Item::getEquipedEffects() const {
+  return attributes->equipedEffect;
+}
+
 void Item::onEquip(Creature* c) {
   for (auto& e : attributes->equipedEffect)
     c->addPermanentEffect(e);

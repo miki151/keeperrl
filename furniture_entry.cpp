@@ -55,10 +55,10 @@ void FurnitureEntry::handle(WFurniture f, Creature* c) {
         if (!f->getMovementSet().canEnter(realMovement)) {
           if (auto holding = c->getHoldingCreature()) {
             c->you(MsgType::ARE, "drowned by " + holding->getName().the());
-            c->dieWithAttacker(holding, Creature::DropType::NOTHING);
+            c->dieWithAttacker(holding, Creature::DropType::ONLY_INVENTORY);
           } else {
             c->you(MsgType::DROWN, f->getName());
-            c->dieWithReason("drowned", Creature::DropType::NOTHING);
+            c->dieWithReason("drowned", Creature::DropType::ONLY_INVENTORY);
           }
         }
       },
@@ -68,7 +68,7 @@ void FurnitureEntry::handle(WFurniture f, Creature* c) {
         if (!f->getMovementSet().canEnter(realMovement)) {
           c->verb("scream!", "screams!");
           c->you(MsgType::BURN, f->getName());
-          c->dieWithReason("burned to death", Creature::DropType::NOTHING);
+          c->dieWithReason("burned to death", Creature::DropType::ONLY_INVENTORY);
         }
       }
   );

@@ -807,6 +807,7 @@ bool Body::isImmuneTo(LastingEffect effect) const {
       return material == Material::FIRE;
     case LastingEffect::POISON:
     case LastingEffect::PLAGUE:
+    case LastingEffect::LIFE_SAVED:
     case LastingEffect::BLEEDING:
       return material != Material::FLESH;
     case LastingEffect::ON_FIRE:

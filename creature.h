@@ -87,7 +87,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool dodgeAttack(const Attack&);
   bool takeDamage(const Attack&, bool noIncreaseHitCount = false);
   void onAttackedBy(Creature*);
-  void heal(double amount = 1);
+  void heal(double amount = 1000);
   /** Morale is in the range [-1:1] **/
   double getMorale() const;
   void addMorale(double);
@@ -363,6 +363,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<ViewId> SERIAL(primaryViewId);
   vector<Creature*> SERIAL(shamanSummons);
   void tickShamanSummons();
+  bool considerSavingLife(DropType);
 };
 
 struct AdjectiveInfo {

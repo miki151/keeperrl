@@ -1491,9 +1491,36 @@ vector<PItem> Creature::generateCorpse(const ContentFactory* factory, bool insta
   return getBody().getCorpseItems(getName().bare(), getUniqueId(), instantlyRotten, factory);
 }
 
+bool Creature::considerSavingLife(DropType drops) {
+  if (drops != DropType::NOTHING && isAffected(LastingEffect::LIFE_SAVED)) {
+    message("But wait!");
+    you(MsgType::YOUR, "life has been saved!");
+    removeEffect(LastingEffect::LIFE_SAVED, false);
+    for (auto item : equipment->getAllEquipped())
+      for (auto e : item->getEquipedEffects())
+        if (e == LastingEffect::LIFE_SAVED) {
+          you(MsgType::YOUR, item->getName() + " crumbles to dust");
+          equipment->removeItem(item, this);
+        }
+    if (attributes->isAffectedPermanently(LastingEffect::LIFE_SAVED))
+      attributes->removePermanentEffect(LastingEffect::LIFE_SAVED, 1);
+    heal();
+    removeEffect(LastingEffect::BLEEDING, false);
+    getBody().healBodyParts(this, true);
+    forceMovement = false;
+    if (!position.canEnterEmpty(this))
+      if (auto neighbor = position.getLevel()->getClosestLanding({position}, this))
+        displace(position.getDir(*neighbor));
+    return true;
+  }
+  return false;
+}
+
 void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
-  if (isAffected(LastingEffect::FROZEN))
+  if (considerSavingLife(drops))
+    return;
+  if (isAffected(LastingEffect::FROZEN) && drops == DropType::EVERYTHING)
     drops = DropType::ONLY_INVENTORY;
   getController()->onKilled(attacker);
   deathTime = *getGlobalTime();

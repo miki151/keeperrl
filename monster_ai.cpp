@@ -810,28 +810,8 @@ class Wait : public Behaviour {
     return {1.0, creature->wait()};
   }
 
-  SERIALIZATION_CONSTRUCTOR(Wait);
-  SERIALIZE_ALL(SUBCLASS(Behaviour));
-};
-
-class DieTime : public Behaviour {
-  public:
-  DieTime(Creature* c, GlobalTime t) : Behaviour(c), dieTime(t) {}
-
-  virtual MoveInfo getMove() override {
-    if (*creature->getGlobalTime() > dieTime) {
-      return {1.0, CreatureAction(creature, [=](Creature* creature) {
-        creature->dieNoReason(Creature::DropType::NOTHING);
-      })};
-    }
-    return NoMove;
-  }
-
-  SERIALIZATION_CONSTRUCTOR(DieTime);
-  SERIALIZE_ALL(SUBCLASS(Behaviour), dieTime);
-
-  private:
-  GlobalTime SERIAL(dieTime);
+  SERIALIZATION_CONSTRUCTOR(Wait)
+  SERIALIZE_ALL(SUBCLASS(Behaviour))
 };
 
 class Summoned : public GuardTarget {
@@ -852,8 +832,8 @@ class Summoned : public GuardTarget {
       return NoMove;
   }
 
-  SERIALIZATION_CONSTRUCTOR(Summoned);
-  SERIALIZE_ALL(SUBCLASS(GuardTarget), target, dieTime);
+  SERIALIZATION_CONSTRUCTOR(Summoned)
+  SERIALIZE_ALL(SUBCLASS(GuardTarget), target, dieTime)
 
   private:
   Creature* SERIAL(target) = nullptr;
@@ -1422,7 +1402,6 @@ REGISTER_TYPE(FighterStandGround);
 REGISTER_TYPE(GuardTarget);
 REGISTER_TYPE(GuardArea);
 REGISTER_TYPE(Summoned);
-REGISTER_TYPE(DieTime);
 REGISTER_TYPE(Wait);
 REGISTER_TYPE(Thief);
 REGISTER_TYPE(ByCollective);

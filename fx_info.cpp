@@ -34,6 +34,7 @@ FXInfo getFXInfo(FXVariantName var) {
       return {FXName::JEWELLER, Color(253, 247, 140)};
 
     case Name::BUFF_RED:     return {FXName::BUFF,   Color(250, 40, 40), 0.0f, FXStackId::buff};
+    case Name::BUFF_WHITE:   return {FXName::BUFF,   Color(255, 255, 255), 0.0f, FXStackId::buff};
     case Name::BUFF_YELLOW:  return {FXName::BUFF,   Color(255, 255, 100), 0.0f, FXStackId::buff};
     case Name::BUFF_BLUE:    return {FXName::BUFF,   Color(70, 130, 225), 0.0f, FXStackId::buff};
     case Name::BUFF_PINK:    return {FXName::BUFF,   Color(255, 100, 255), 0.0f, FXStackId::buff};

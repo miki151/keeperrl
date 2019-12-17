@@ -313,6 +313,7 @@ optional<Position> Level::getClosestLanding(vector<Position> landing, Creature* 
     q.push(pos);
     marked.insert(pos);
   }
+  auto movement = creature->getMovementType().setForced();
   while (!q.empty()) {
     Position v = q.front();
     q.pop();
@@ -320,7 +321,7 @@ optional<Position> Level::getClosestLanding(vector<Position> landing, Creature* 
       return v;
     else
       for (Position next : v.neighbors8(Random))
-        if (!marked.count(next) && next.canEnterEmpty(creature)) {
+        if (!marked.count(next) && next.canEnterEmpty(movement)) {
           q.push(next);
           marked.insert(next);
         }

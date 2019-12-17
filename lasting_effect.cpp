@@ -296,6 +296,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::IMMOBILE:
         c->you("can't move anymore");
         break;
+      case LastingEffect::LIFE_SAVED:
+        c->you(MsgType::YOUR, "life will be saved");
+        break;
     }
 }
 
@@ -525,6 +528,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         c->thirdPerson(c->getName().the() + " removes " + his(c->getAttributes().getGender()) + " sunglasses"_s);
         c->setAlternativeViewId(none);
         break;
+      case LastingEffect::LIFE_SAVED:
+        c->you(MsgType::YOUR, "life will no longer be saved");
+        break;
       default:
         break;
     }
@@ -655,6 +661,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Digs"_good;
     case LastingEffect::NO_CARRY_LIMIT: return "Infinite carrying capacity"_good;
     case LastingEffect::SPYING: return "Spy"_good;
+    case LastingEffect::LIFE_SAVED: return "Life will be saved"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::PLAGUE: return "Infected with plague"_bad;
@@ -988,6 +995,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::DISAPPEAR_DURING_DAY: return "night life";
     case LastingEffect::NO_CARRY_LIMIT: return "infinite carrying capacity";
     case LastingEffect::SPYING: return "spying";
+    case LastingEffect::LIFE_SAVED: return "life saving";
   }
 }
 
@@ -1070,6 +1078,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::DISAPPEAR_DURING_DAY: return "This creature is only active at night and disappears at dawn";
     case LastingEffect::NO_CARRY_LIMIT: return "The creature can carry items without any weight limit";
     case LastingEffect::SPYING: return "The creature can infiltrate enemy lines";
+    case LastingEffect::LIFE_SAVED: return "Prevents the death of the creature";
   }
 }
 
@@ -1139,6 +1148,8 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::POISON:
     case LastingEffect::TELEPATHY:
       return 20;
+    case LastingEffect::LIFE_SAVED:
+      return 1000;
     case LastingEffect::INVISIBLE:
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
@@ -1208,6 +1219,7 @@ bool LastingEffects::canConsume(LastingEffect effect) {
     case LastingEffect::PLAGUE:
     case LastingEffect::PLAGUE_RESISTANT:
     case LastingEffect::SPYING:
+    case LastingEffect::LIFE_SAVED:
       return false;
     default:
       return true;
@@ -1218,7 +1230,8 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::SLEEP:
       return FXVariantName::SLEEP;
-
+    case LastingEffect::LIFE_SAVED:
+      return FXVariantName::BUFF_WHITE;
     case LastingEffect::SPEED:
       return FXVariantName::BUFF_BLUE;
     case LastingEffect::SLOWED:
@@ -1281,6 +1294,8 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
 
 optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
   switch (effect) {
+    case LastingEffect::LIFE_SAVED:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE);
     case LastingEffect::SPEED:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_BLUE);
     case LastingEffect::DAM_BONUS:
@@ -1336,6 +1351,7 @@ bool LastingEffects::obeysFormation(const Creature* c, const Creature* against) 
 
 static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect effect) {
   switch (effect) {
+    case LastingEffect::LIFE_SAVED:
     case LastingEffect::INVISIBLE:
     case LastingEffect::DAM_BONUS:
     case LastingEffect::DEF_BONUS:
@@ -1448,6 +1464,7 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
     case LastingEffect::DAM_BONUS: return  40_visible;
     case LastingEffect::BLIND: return  15_visible;
     case LastingEffect::INVISIBLE: return  15_visible;
+    case LastingEffect::LIFE_SAVED:
     case LastingEffect::FROZEN:
     case LastingEffect::STUNNED: return  7_visible;
     case LastingEffect::SLEEP_RESISTANT:

@@ -79,7 +79,8 @@ RICH_ENUM(LastingEffect,
     NAVIGATION_DIGGING_SKILL,
     DISAPPEAR_DURING_DAY,
     NO_CARRY_LIMIT,
-    SPYING
+    SPYING,
+    LIFE_SAVED
 );
 
 RICH_ENUM(CreatureCondition,
