@@ -1170,6 +1170,42 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
   return ret;
 }
 
+static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrait& trait, const ContentFactory* factory) {
+  using TraitInfo = ImmigrantDataInfo::SpecialTraitInfo;
+  return trait.visit(
+      [&] (const ExtraTraining& t) {
+        return TraitInfo{"Extra "_s + toLower(getName(t.type)) + " training potential", false};
+      },
+      [&] (const AttrBonus& t) {
+        return TraitInfo{toStringWithSign(t.increase) + " " + getName(t.attr), t.increase <= 0};
+      },
+      [&] (LastingEffect effect) {
+        if (auto adj = LastingEffects::getGoodAdjective(effect))
+          return TraitInfo{"Permanent trait: "_s + *adj, false};
+        if (auto adj = LastingEffects::getBadAdjective(effect))
+          return TraitInfo{"Permanent trait: "_s + *adj, true};
+        FATAL << "No adjective found: "_s + LastingEffects::getName(effect);
+        fail();
+      },
+      [&] (SkillId skill) {
+        return TraitInfo{"Legendary skill level: " + Skill::get(skill)->getName(), false};
+      },
+      [&] (ExtraBodyPart part) {
+        if (part.count == 1)
+          return TraitInfo{"Extra "_s + getName(part.part), false};
+        else
+          return TraitInfo{toString(part.count) + " extra "_s + getName(part.part) + "s", false};
+      },
+      [&] (const ExtraIntrinsicAttack& a) {
+        return TraitInfo{capitalFirst(a.item.get(factory)->getName()), false};
+      },
+      [&] (const OneOfTraits&) -> TraitInfo {
+        FATAL << "Can't draw traits alternative";
+        fail();
+      }
+  );
+}
+
 void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   PROFILE;
   info.immigration.clear();
@@ -1214,7 +1250,8 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     info.immigration.push_back(ImmigrantDataInfo());
     info.immigration.back().requirements = immigration.getMissingRequirements(candidate);
     info.immigration.back().info = infoLines;
-    info.immigration.back().specialTraits = candidate.getSpecialTraits();
+    info.immigration.back().specialTraits = candidate.getSpecialTraits().transform(
+        [&](const auto& trait){ return getSpecialTraitInfo(trait, getGame()->getContentFactory()); });
     info.immigration.back().cost = getCostObj(candidate.getCost());
     info.immigration.back().name = name;
     info.immigration.back().viewId = c->getViewObject().id();

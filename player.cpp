@@ -248,14 +248,11 @@ void Player::handleIntrinsicAttacks(const EntitySet<Item>& itemIds, ItemAction a
     for (auto& attack : attacks[part])
       if (itemIds.contains(attack.item.get()))
         switch (action) {
-          case ItemAction::INTRINSIC_ALWAYS:
-            attack.active = IntrinsicAttack::ALWAYS;
+          case ItemAction::INTRINSIC_ACTIVATE:
+            attack.active = true;
             break;
-          case ItemAction::INTRINSIC_NO_WEAPON:
-            attack.active = IntrinsicAttack::NO_WEAPON;
-            break;
-          case ItemAction::INTRINSIC_NEVER:
-            attack.active = IntrinsicAttack::NEVER;
+          case ItemAction::INTRINSIC_DEACTIVATE:
+            attack.active = false;
             break;
           default:
             FATAL << "Unhandled intrinsic item action: " << (int) action;

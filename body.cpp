@@ -121,22 +121,21 @@ void Body::setHumanoid(bool h) {
 }
 
 vector<Item*> Body::chooseRandomWeapon(vector<Item*> weapons, int maxCount) const {
-  auto addIntrinsic = [&] (IntrinsicAttack::Active activePred) {
+  auto addIntrinsic = [&] (bool extraAttack) {
     for (auto part : ENUM_ALL(BodyPart))
       for (auto& attack : intrinsicAttacks[part])
-        if (numGood(part) > 0 && attack.active == activePred)
+        if (numGood(part) > 0 && attack.isExtraAttack == extraAttack) {
           weapons.push_back(attack.item.get());
+          if (attack.isExtraAttack)
+            ++maxCount;
+        }
   };
-  int numExtra = weapons.size();
-  addIntrinsic(IntrinsicAttack::EXTRA);
-  numExtra = weapons.size() - numExtra;
-  maxCount += numExtra;
-  addIntrinsic(IntrinsicAttack::ALWAYS);
+  addIntrinsic(true);
   weapons = Random.permutation(weapons);
   if (weapons.size() > maxCount)
     weapons.resize(maxCount);
   else {
-    addIntrinsic(IntrinsicAttack::NO_WEAPON);
+    addIntrinsic(false);
     if (weapons.size() > maxCount)
       weapons.resize(maxCount);
   }
@@ -146,7 +145,7 @@ vector<Item*> Body::chooseRandomWeapon(vector<Item*> weapons, int maxCount) cons
 Item* Body::chooseFirstWeapon() const {
   for (auto part : ENUM_ALL(BodyPart))
     for (auto& attack : intrinsicAttacks[part])
-      if (numGood(part) > 0 && attack.active != attack.NEVER)
+      if (numGood(part) > 0 && attack.active)
         return attack.item.get();
   return nullptr;
 }
@@ -162,21 +161,21 @@ const EnumMap<BodyPart, vector<IntrinsicAttack>>& Body::getIntrinsicAttacks() co
 void Body::setHumanoidBodyParts(int intrinsicDamage) {
   setBodyParts({{BodyPart::LEG, 2}, {BodyPart::ARM, 2}, {BodyPart::HEAD, 1}, {BodyPart::BACK, 1},
       {BodyPart::TORSO, 1}});
-  addIntrinsicAttack(BodyPart::ARM, IntrinsicAttack(ItemType::fists(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
-  addIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::legs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
+  addIntrinsicAttack(BodyPart::ARM, IntrinsicAttack(ItemType::fists(intrinsicDamage)));
+  addIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::legs(intrinsicDamage)));
 }
 
 void Body::setHorseBodyParts(int intrinsicDamage) {
   setBodyParts({{BodyPart::LEG, 4}, {BodyPart::HEAD, 1}, {BodyPart::BACK, 1},
       {BodyPart::TORSO, 1}});
-  addIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
-  addIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::legs(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
+  addIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::fangs(intrinsicDamage), true));
+  addIntrinsicAttack(BodyPart::LEG, IntrinsicAttack(ItemType::legs(intrinsicDamage), true));
 }
 
 void Body::setBirdBodyParts(int intrinsicDamage) {
   setBodyParts({{BodyPart::LEG, 2}, {BodyPart::WING, 2}, {BodyPart::HEAD, 1}, {BodyPart::BACK, 1},
       {BodyPart::TORSO, 1}});
-  addIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::beak(intrinsicDamage), IntrinsicAttack::NO_WEAPON));
+  addIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::beak(intrinsicDamage)));
 }
 
 void Body::setMinionFood() {

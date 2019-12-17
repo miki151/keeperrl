@@ -13,6 +13,7 @@
 #include "creature_name.h"
 #include "name_generator.h"
 #include "special_trait.h"
+#include "content_factory.h"
 
 static TribeId getPlayerTribeId(TribeAlignment variant) {
   switch (variant) {
@@ -31,24 +32,25 @@ static vector<ViewId> getUpgradedViewId(const Creature* c) {
 }
 
 variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const vector<KeeperCreatureInfo>& keeperCreatureInfos,
-    const vector<AdventurerCreatureInfo>& adventurerCreatureInfos, CreatureFactory* creatureFactory) {
+    const vector<AdventurerCreatureInfo>& adventurerCreatureInfos, ContentFactory* contentFactory) {
+  auto& creatureFactory = contentFactory->getCreatures();
   auto keeperCreatures = keeperCreatureInfos.transform([&](auto& elem) {
     return elem.creatureId.transform([&](auto& id) {
-      auto ret = creatureFactory->fromId(id, getPlayerTribeId(elem.tribeAlignment));
+      auto ret = creatureFactory.fromId(id, getPlayerTribeId(elem.tribeAlignment));
       for (auto& trait : elem.specialTraits)
-        applySpecialTrait(trait, ret.get());
+        applySpecialTrait(trait, ret.get(), contentFactory);
       return ret;
     });
   });
   auto adventurerCreatures = adventurerCreatureInfos.transform([&](auto& elem) {
     return elem.creatureId.transform([&](auto& id) {
-      return creatureFactory->fromId(id, getPlayerTribeId(elem.tribeAlignment));
+      return creatureFactory.fromId(id, getPlayerTribeId(elem.tribeAlignment));
     });
   });
   vector<View::AvatarData> keeperAvatarData;
   auto getAllNames = [&] (const PCreature& c) {
     if (auto id = c->getName().getNameGenerator())
-      return creatureFactory->getNameGenerator()->getAll(*id);
+      return creatureFactory.getNameGenerator()->getAll(*id);
     else
       return makeVec(c->getName().firstOrBare());
   };

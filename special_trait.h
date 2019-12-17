@@ -4,39 +4,42 @@
 #include "experience_type.h"
 #include "body_part.h"
 #include "color.h"
+#include "item_type.h"
 
 struct ExtraTraining {
-  ExperienceType HASH(type);
-  int HASH(increase);
+  ExperienceType type;
+  int increase;
   COMPARE_ALL(type, increase)
-  HASH_ALL(type, increase)
 };
 
 struct ExtraBodyPart {
-  BodyPart HASH(part);
-  int HASH(count);
+  BodyPart part;
+  int count;
   COMPARE_ALL(part, count)
-  HASH_ALL(part, count)
+};
+
+struct ExtraIntrinsicAttack {
+  BodyPart part;
+  ItemType item;
+  COMPARE_ALL(part, item)
 };
 
 struct AttrBonus {
-  AttrType HASH(attr);
-  int HASH(increase);
+  AttrType attr;
+  int increase;
   COMPARE_ALL(attr, increase)
-  HASH_ALL(attr, increase)
 };
 
 class SpecialTrait;
 
 struct OneOfTraits {
-  vector<SpecialTrait> HASH(traits);
+  vector<SpecialTrait> traits;
   COMPARE_ALL(traits)
-  HASH_ALL(traits)
 };
 
-MAKE_VARIANT2(SpecialTrait, ExtraTraining, LastingEffect, SkillId, AttrBonus, OneOfTraits, ExtraBodyPart);
+MAKE_VARIANT2(SpecialTrait, ExtraTraining, LastingEffect, SkillId, AttrBonus, OneOfTraits, ExtraBodyPart, ExtraIntrinsicAttack);
 
-extern void applySpecialTrait(SpecialTrait, Creature*);
+extern void applySpecialTrait(SpecialTrait, Creature*, const ContentFactory*);
 extern SpecialTrait transformBeforeApplying(SpecialTrait);
 
 struct SpecialTraitInfo {

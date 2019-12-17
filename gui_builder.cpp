@@ -579,36 +579,8 @@ SGuiElem GuiBuilder::drawGameSpeedDialog() {
       gui.preferredSize(size, gui.conditional(std::move(dialog), [this] { return gameSpeedDialogOpen; })));
 }
 
-SGuiElem GuiBuilder::drawSpecialTrait(const SpecialTrait& trait) {
-  return trait.visit(
-      [&] (const ExtraTraining& t) {
-        return gui.label("Extra "_s + toLower(getName(t.type)) + " training potential", Color::GREEN);
-      },
-      [&] (const AttrBonus& t) {
-        return gui.label(toStringWithSign(t.increase) + " " + getName(t.attr), t.increase > 0 ? Color::GREEN : Color::RED);
-      },
-      [&] (LastingEffect effect) {
-        if (auto adj = LastingEffects::getGoodAdjective(effect))
-          return gui.label("Permanent trait: "_s + *adj, Color::GREEN);
-        if (auto adj = LastingEffects::getBadAdjective(effect))
-          return gui.label("Permanent trait: "_s + *adj, Color::RED);
-        FATAL << "No adjective found: "_s + LastingEffects::getName(effect);
-        return gui.empty();
-      },
-      [&] (SkillId skill) {
-        return gui.label("Legendary skill level: " + Skill::get(skill)->getName(), Color::GREEN);
-      },
-      [&] (ExtraBodyPart part) {
-        if (part.count == 1)
-          return gui.label("Extra "_s + getName(part.part), Color::GREEN);
-        else
-          return gui.label(toString(part.count) + " extra "_s + getName(part.part) + "s", Color::GREEN);
-      },
-      [&] (const OneOfTraits&)-> SGuiElem {
-        FATAL << "Can't draw traits alternative";
-        return {};
-      }
-);
+SGuiElem GuiBuilder::drawSpecialTrait(const ImmigrantDataInfo::SpecialTraitInfo& trait) {
+  return gui.label(trait.label, trait.bad ? Color::RED : Color::GREEN);
 }
 
 void GuiBuilder::toggleBottomWindow(GuiBuilder::BottomWindowId id) {
@@ -1045,17 +1017,22 @@ int GuiBuilder::getItemLineOwnerMargin() {
   return viewObjectWidth + 60;
 }
 
-static string getIntrinsicStateText(IntrinsicAttack::Active state) {
-  switch (state) {
-    case IntrinsicAttack::EXTRA:
-      return "extra attack in the same turn.";
-    case IntrinsicAttack::ALWAYS:
-      return "always active.";
-    case IntrinsicAttack::NO_WEAPON:
-      return "active when no weapon is equipped.";
-    case IntrinsicAttack::NEVER:
-      return "disabled.";
+static const char* getIntrinsicStateText(const ItemInfo& item) {
+  if (auto state = item.intrinsicAttackState) {
+    if (state == item.INACTIVE)
+      return "Inactive";
+    return item.intrinsicExtraAttack ? "Extra attack in addition to wielded weapon" : "Used when no weapon equiped";
   }
+  return nullptr;
+}
+
+static optional<Color> getIntrinsicStateColor(const ItemInfo& item) {
+  if (auto state = item.intrinsicAttackState) {
+    if (state == item.INACTIVE)
+      return Color::LIGHT_GRAY;
+    return item.intrinsicExtraAttack ? Color::GREEN : Color::WHITE;
+  }
+  return none;
 }
 
 vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
@@ -1067,8 +1044,8 @@ vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
     out.push_back("Not equipped yet.");
   if (item.locked)
     out.push_back("Locked: minion won't change to another item.");
-  if (item.intrinsicState)
-    out.push_back(capitalFirst(getIntrinsicStateText(*item.intrinsicState)));
+  if (auto text = getIntrinsicStateText(item))
+    out.push_back(text);
   if (!item.unavailableReason.empty())
     out.push_back(item.unavailableReason);
   return out;
@@ -1085,19 +1062,6 @@ static string getWeightString(double weight) {
   return toString<int>((int)(weight * 10)) + "s";
 }
 
-static Color getIntrinsicStateColor(IntrinsicAttack::Active state) {
-  switch (state) {
-    case IntrinsicAttack::EXTRA:
-      return Color::YELLOW;
-    case IntrinsicAttack::ALWAYS:
-      return Color::GREEN;
-    case IntrinsicAttack::NO_WEAPON:
-      return Color::WHITE;
-    case IntrinsicAttack::NEVER:
-      return Color::GRAY;
-  }
-}
-
 SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)> onClick,
     function<void()> onMultiClick) {
   GuiFactory::ListBuilder line(gui);
@@ -1112,8 +1076,8 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   line.addElem(std::move(viewId), viewObjectWidth);
   Color color = item.equiped ? Color::GREEN : (item.pending || item.unavailable) ?
       Color::GRAY : Color::WHITE;
-  if (item.intrinsicState)
-    color = getIntrinsicStateColor(*item.intrinsicState);
+  if (auto col = getIntrinsicStateColor(item))
+    color = *col;
   if (item.number > 1)
     line.addElemAuto(gui.rightMargin(0, gui.label(toString(item.number) + " ", color)));
   line.addMiddleElem(gui.label(item.name, color));
@@ -1248,9 +1212,8 @@ static string getActionText(ItemAction a) {
     case ItemAction::REMOVE: return "remove item";
     case ItemAction::CHANGE_NUMBER: return "change number";
     case ItemAction::NAME: return "name";
-    case ItemAction::INTRINSIC_ALWAYS: return "set " + getIntrinsicStateText(IntrinsicAttack::ALWAYS);
-    case ItemAction::INTRINSIC_NO_WEAPON: return "set " + getIntrinsicStateText(IntrinsicAttack::NO_WEAPON);
-    case ItemAction::INTRINSIC_NEVER: return "set " + getIntrinsicStateText(IntrinsicAttack::NEVER);
+    case ItemAction::INTRINSIC_ACTIVATE: return "activate attack";
+    case ItemAction::INTRINSIC_DEACTIVATE: return "deactivate attack";
   }
 }
 

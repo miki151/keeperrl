@@ -5,6 +5,7 @@
 #include "skill.h"
 #include "body.h"
 #include "workshops.h"
+#include "intrinsic_attack.h"
 
 optional<string> getExtraBodyPartPrefix(const ExtraBodyPart& part) {
   switch (part.part) {
@@ -20,7 +21,7 @@ optional<string> getExtraBodyPartPrefix(const ExtraBodyPart& part) {
   }
 }
 
-void applySpecialTrait(SpecialTrait trait, Creature* c) {
+void applySpecialTrait(SpecialTrait trait, Creature* c, const ContentFactory* factory) {
   trait.visit(
       [&] (const ExtraTraining& t) {
         c->getAttributes().increaseMaxExpLevel(t.type, t.increase);
@@ -36,6 +37,12 @@ void applySpecialTrait(SpecialTrait trait, Creature* c) {
         if (auto prefix = getExtraBodyPartPrefix(part)) {
           c->getName().addBarePrefix(*prefix);
         }
+      },
+      [&] (const ExtraIntrinsicAttack& a) {
+        auto attack = IntrinsicAttack(a.item);
+        attack.isExtraAttack = true;
+        attack.initializeItem(factory);
+        c->getBody().addIntrinsicAttack(a.part, std::move(attack));
       },
       [&] (SkillId skill) {
         c->getAttributes().getSkills().setValue(skill, Workshops::getLegendarySkillThreshold());

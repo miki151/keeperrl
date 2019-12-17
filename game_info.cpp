@@ -106,9 +106,9 @@ static vector<ItemInfo> fillIntrinsicAttacks(const Creature* c) {
         item.unavailableReason = "No functional body part: "_s + getName(part);
         item.actions.clear();
       } else {
-        item.intrinsicState = attack.active;
-        item.actions = {
-            ItemAction::INTRINSIC_ALWAYS, ItemAction::INTRINSIC_NO_WEAPON, ItemAction::INTRINSIC_NEVER};
+        item.intrinsicAttackState = attack.active ? ItemInfo::ACTIVE : ItemInfo::INACTIVE;
+        item.intrinsicExtraAttack = attack.isExtraAttack;
+        item.actions = {attack.active ? ItemAction::INTRINSIC_DEACTIVATE : ItemAction::INTRINSIC_ACTIVATE};
       }
     }
   return ret;

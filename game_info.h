@@ -51,7 +51,9 @@ struct ItemInfo {
   bool HASH(locked);
   bool HASH(pending);
   bool HASH(unavailable);
-  optional<IntrinsicAttack::Active> HASH(intrinsicState);
+  enum IntrinsicAttackState { ACTIVE, INACTIVE };
+  optional<IntrinsicAttackState> HASH(intrinsicAttackState);
+  bool HASH(intrinsicExtraAttack);
   string HASH(unavailableReason);
   optional<EquipmentSlot> HASH(slot);
   optional<CreatureInfo> HASH(owner);
@@ -60,7 +62,7 @@ struct ItemInfo {
   optional<double> HASH(weight);
   bool HASH(tutorialHighlight);
   bool HASH(hidden);
-  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, unavailableReason, weight, tutorialHighlight, intrinsicState, viewIdModifiers, hidden)
+  HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, unavailableReason, weight, tutorialHighlight, intrinsicAttackState, intrinsicExtraAttack, viewIdModifiers, hidden)
 };
 
 struct AttributeInfo {
@@ -182,7 +184,12 @@ struct ImmigrantDataInfo {
   STRUCT_DECLARATIONS(ImmigrantDataInfo)
   vector<string> HASH(requirements);
   vector<string> HASH(info);
-  vector<SpecialTrait> HASH(specialTraits);
+  struct SpecialTraitInfo {
+    string HASH(label);
+    bool HASH(bad);
+    HASH_ALL(label, bad)
+  };
+  vector<SpecialTraitInfo> HASH(specialTraits);
   optional<pair<ViewId, int>> HASH(cost);
   string HASH(name);
   ViewId HASH(viewId);

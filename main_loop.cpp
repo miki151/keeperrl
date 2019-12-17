@@ -420,7 +420,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     if (tileSet)
       tileSet->setTilePaths(contentFactory.tilePaths);
     auto avatarChoice = getAvatarInfo(view, contentFactory.keeperCreatures, contentFactory.adventurerCreatures,
-        &contentFactory.getCreatures());
+        &contentFactory);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, contentFactory.villains, contentFactory.gameIntros, *avatar);
       tileSet->setTilePaths(getTilePathsForAllMods());

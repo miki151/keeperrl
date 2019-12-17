@@ -6,13 +6,7 @@
 class ItemType;
 
 struct IntrinsicAttack {
-  enum Active {
-    EXTRA,
-    ALWAYS,
-    NO_WEAPON,
-    NEVER
-  };
-  IntrinsicAttack(ItemType, Active = NO_WEAPON);
+  IntrinsicAttack(ItemType, bool isExtraAttack = false);
   IntrinsicAttack(const IntrinsicAttack&);
   IntrinsicAttack& operator = (const IntrinsicAttack&);
   IntrinsicAttack(IntrinsicAttack&&) = default;
@@ -21,5 +15,6 @@ struct IntrinsicAttack {
   SERIALIZATION_DECL(IntrinsicAttack)
   PItem SERIAL(item);
   ItemType SERIAL(itemType);
-  Active SERIAL(active) = NO_WEAPON;
+  bool SERIAL(active) = true;
+  bool SERIAL(isExtraAttack) = false;
 };

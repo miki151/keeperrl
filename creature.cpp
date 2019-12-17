@@ -1224,10 +1224,10 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
         enemyName = "something";
       weapon->getAttackMsg(this, enemyName);
       getGame()->addEvent(EventInfo::CreatureAttacked{other, self, damageAttr});
-      wasDamaged = wasDamaged || other->takeDamage(attack);
+      wasDamaged |= other->takeDamage(attack);
       for (auto& e : weaponInfo.attackerEffect)
         e.apply(position);
-      if (other->isDead() || Random.chance(0.4))
+      if (other->isDead())
         break;
     }
     auto movementInfo = (*self->spendTime())
