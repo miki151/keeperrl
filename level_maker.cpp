@@ -2210,8 +2210,6 @@ PLevelMaker LevelMaker::blackMarket(RandomGen& random, SettlementInfo info, Vec2
   auto& building = info.buildingInfo;
   auto marketArea = unique<MakerQueue>();
   marketArea->addMaker(unique<Empty>(SquareChange::reset(FurnitureType("FLOOR")).add(SquareAttrib::ROOM)));
-  if (info.collective)
-    marketArea->addMaker(unique<PlaceCollective>(info.collective));
   auto locations = unique<RandomLocations>();
   for (auto& items : info.shopItems)
     locations->add(
@@ -2220,12 +2218,14 @@ PLevelMaker LevelMaker::blackMarket(RandomGen& random, SettlementInfo info, Vec2
             SquareChange(building.wall)),
         Vec2(Random.get(5, 8), Random.get(5, 8)),
         Predicate::alwaysTrue());
+  marketArea->addMaker(unique<BorderGuard>(std::move(locations), SquareChange(building.wall)));
+  if (info.collective)
+    marketArea->addMaker(unique<PlaceCollective>(info.collective));
   marketArea->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, Predicate::attrib(SquareAttrib::ROOM)));
   for (auto& furniture : info.furniture)
     marketArea->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.05, furniture, info.tribe));
   if (info.corpses)
     marketArea->addMaker(unique<Corpses>(*info.corpses));
-  marketArea->addMaker(unique<BorderGuard>(std::move(locations), SquareChange(building.wall)));
   auto leftSide = unique<RandomLocations>();
   for (StairKey key : info.downStairs)
     leftSide->add(unique<MakerQueue>(
