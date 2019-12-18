@@ -482,6 +482,9 @@
   name = {
     name = "cherub"
   }
+  inventory = {
+    { Simple "Bow"}
+  }
   }
 "DOPPLEGANGER"
   {
