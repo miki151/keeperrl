@@ -631,6 +631,11 @@ bool Player::canTravel() const {
         getView()->presentText("Sorry", "You can't travel while being attacked by " + intent->attacker->getName().a());
         return false;
       }
+    for (auto item : c->getEquipment().getItems())
+      if (item->getShopkeeper(c)) {
+        getView()->presentText("Sorry", "You can't travel while carrying unpaid items");
+        return false;
+      }
   }
   return true;
 }
