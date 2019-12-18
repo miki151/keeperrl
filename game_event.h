@@ -109,6 +109,11 @@ namespace EventInfo {
     string message;
   };
 
+  struct ItemStolen {
+    Creature* creature = nullptr;
+    Position shopPosition;
+  };
+
   struct VisibilityChanged {
     Position pos;
   };
@@ -120,7 +125,7 @@ namespace EventInfo {
   class GameEvent : public variant<CreatureMoved, CreatureKilled, ItemsPickedUp, ItemsDropped, ItemsAppeared, Projectile,
       ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureStunned, MovementChanged,
       TrapTriggered, TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged, RetiredGame,
-      CreatureAttacked, FX> {
+      CreatureAttacked, FX, ItemStolen> {
     using variant::variant;
   };
 

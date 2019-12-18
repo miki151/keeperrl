@@ -17,7 +17,7 @@ SERIALIZE_DEF(VillageBehaviour, NAMED(minPopulation), NAMED(minTeamSize), OPTION
 VillageBehaviour::VillageBehaviour() {}
 
 VillageBehaviour::VillageBehaviour(const VillageBehaviour&) = default;
-VillageBehaviour&VillageBehaviour::operator =(const VillageBehaviour&) = default;
+VillageBehaviour& VillageBehaviour::operator =(const VillageBehaviour&) = default;
 
 VillageBehaviour::~VillageBehaviour() {}
 

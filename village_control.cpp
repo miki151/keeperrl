@@ -38,6 +38,7 @@
 #include "content_factory.h"
 #include "enemy_aggression_level.h"
 #include "immigrant_info.h"
+#include "item.h"
 
 SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl)
 
@@ -82,21 +83,31 @@ void VillageControl::onMemberKilled(const Creature* victim, const Creature* kill
 void VillageControl::onEvent(const GameEvent& event) {
   using namespace EventInfo;
   event.visit(
+      [&](const ItemStolen& info) {
+        if (!collective->isConquered() && collective->getTerritory().contains(info.shopPosition)
+            && behaviour && behaviour->triggers.contains(AttackTrigger(StolenItems{}))
+            && getEnemyCollective()->getCreatures().contains(info.creature)) {
+          if (stolenItemCount == 0)
+            info.creature->privateMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
+          ++stolenItemCount;
+        }
+      },
       [&](const ItemsPickedUp& info) {
-        if (!collective->isConquered() && collective->getTerritory().contains(info.creature->getPosition()))
-          if (isEnemy(info.creature) && behaviour)
-            if (behaviour->triggers.contains(AttackTrigger(StolenItems{}))) {
-              bool wasTheft = false;
-              for (const Item* it : info.items)
-                if (myItems.contains(it)) {
-                  wasTheft = true;
-                  ++stolenItemCount;
-                  myItems.erase(it);
-                }
-              if (wasTheft) {
-                info.creature->privateMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
-              }
+        if (!collective->isConquered() && collective->getTerritory().contains(info.creature->getPosition())
+            && isEnemy(info.creature) && behaviour
+            && behaviour->triggers.contains(AttackTrigger(StolenItems{}))
+            && getEnemyCollective()->getCreatures().contains(info.creature)) {
+          bool wasTheft = false;
+          for (const Item* it : info.items)
+            if (myItems.contains(it) && !it->getShopkeeper(info.creature)) {
+              wasTheft = true;
+              ++stolenItemCount;
+              myItems.erase(it);
             }
+          if (wasTheft) {
+            info.creature->privateMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
+          }
+        }
       },
       [&](const FurnitureDestroyed& info) {
         if (collective->getTerritory().contains(info.position) &&

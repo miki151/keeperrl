@@ -436,6 +436,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
               if (++thiefCount.getOrInit(debtor) == 4) {
                 debtor->privateMessage("\"Thief! Thief!\"");
                 creature->getTribe()->onItemsStolen(debtor);
+                creature->getGame()->addEvent(EventInfo::ItemStolen{debtor, Position(shopArea.middle(), myLevel)});
                 thiefCount.erase(debtor);
                 debtors.erase(debtor);
                 thieves.insert(debtor);

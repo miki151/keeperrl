@@ -1159,6 +1159,7 @@
   settlement = {
     type = TOWER
     tribe = GNOME
+    race = "the Black Market"
     buildingId = "DUNGEON"
     furniture = { "dungeonOutside" }
     shopItems = { "blackMarketAmulet" "blackMarketScrolls" "blackMarketPotions"  }
@@ -1170,6 +1171,14 @@
         }
       }
     }
+  }
+  behaviour = {
+    minPopulation = 0
+    minTeamSize = 3
+    triggers = {
+      StolenItems
+    }
+    attackBehaviour = KillLeader
   }
 }
 
