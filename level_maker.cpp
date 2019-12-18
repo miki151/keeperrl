@@ -1077,6 +1077,9 @@ class RandomLocations : public LevelMaker {
     CHECK(predicate.size() == sizes.size());
   }
 
+  RandomLocations() {}
+
+
   class LocationPredicate {
     public:
     LocationPredicate(Predicate main, Predicate sec, int minSec, int maxSec)
@@ -1116,7 +1119,9 @@ class RandomLocations : public LevelMaker {
     int maxSecond = 1;
   };
 
-  RandomLocations() {}
+  RandomLocations(Vec2 size, LocationPredicate pred, PLevelMaker _insideMaker)
+      : insideMakers(makeVec(std::move(_insideMaker))), sizes({make_pair(size.x, size.y)}), predicate(1, pred) {
+  }
 
   void add(PLevelMaker maker, Vec2 size, LocationPredicate pred) {
     insideMakers.push_back(std::move(maker));
@@ -1672,31 +1677,43 @@ enum class StairDirection {
   UP, DOWN
 };
 
+static FurnitureType getUpStairs(const BuildingInfo& info) {
+  return info.upStairs.value_or(FurnitureType("UP_STAIRS"));
+}
+
+static FurnitureType getDownStairs(const BuildingInfo& info) {
+  return info.downStairs.value_or(FurnitureType("DOWN_STAIRS"));
+}
+
 class Stairs : public LevelMaker {
   public:
   Stairs(StairDirection dir, StairKey k, BuildingInfo building, Predicate onPred, optional<SquareAttrib> _setAttr = none)
-    : direction(dir), key(k), onPredicate(onPred), setAttr(_setAttr), building(std::move(building)) {}
+    : Stairs(k, getStairs(building, dir), onPred, _setAttr) {}
+
+  Stairs(StairKey k, FurnitureType stairs, Predicate onPred, optional<SquareAttrib> _setAttr = none)
+    : key(k), onPredicate(onPred), setAttr(_setAttr), stairs(stairs) {}
+
+  FurnitureType getStairs(const BuildingInfo& info, StairDirection dir) {
+    return dir == StairDirection::DOWN ? getDownStairs(info) : getUpStairs(info);
+  }
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    auto type = direction == StairDirection::DOWN
-        ? building.downStairs.value_or(FurnitureType("DOWN_STAIRS"))
-        : building.upStairs.value_or(FurnitureType("UP_STAIRS"));
     vector<Vec2> allPos;
     for (Vec2 v : area)
-      if (onPredicate.apply(builder, v) && builder->canPutFurniture(v, builder->getContentFactory()->furniture.getData(type).getLayer()))
+      if (onPredicate.apply(builder, v) && builder->canPutFurniture(v,
+          builder->getContentFactory()->furniture.getData(stairs).getLayer()))
         allPos.push_back(v);
     checkGen(allPos.size() > 0);
     Vec2 pos = allPos[builder->getRandom().get(allPos.size())];
-    builder->putFurniture(pos, FurnitureParams{type, TribeId::getHostile()});
+    builder->putFurniture(pos, FurnitureParams{stairs, TribeId::getHostile()});
     builder->setLandingLink(pos, key);
   }
 
   private:
-  StairDirection direction;
   StairKey key;
   Predicate onPredicate;
   optional<SquareAttrib> setAttr;
-  BuildingInfo building;
+  FurnitureType stairs;
 };
 
 class ShopMaker : public LevelMaker {
@@ -2901,11 +2918,20 @@ PLevelMaker LevelMaker::roomLevel(RandomGen& random, SettlementInfo info, Vec2 s
     queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.05, furniture, info.tribe));
   for (StairKey key : info.downStairs)
     queue->addMaker(unique<Stairs>(StairDirection::DOWN, key, building, Predicate::type(FurnitureType("FLOOR"))));
-  for (StairKey key : info.upStairs)
-    queue->addMaker(unique<Stairs>(StairDirection::UP, key, building, Predicate::type(FurnitureType("FLOOR"))));
+  for (StairKey key : info.upStairs) {
+    if (key == info.upStairs[0] && info.upStairs.size() > 1)
+      queue->addMaker(unique<RandomLocations>(Vec2(5, 5),
+            RandomLocations::LocationPredicate(Predicate::type(building.wall), Predicate::canEnter({MovementTrait::WALK}), 1, 2),
+            unique<Margin>(2, unique<MakerQueue>(
+                unique<Empty>(SquareChange::remove(FurnitureLayer::MIDDLE)),
+                unique<Stairs>(key, FurnitureType("HIDDEN_UP_STAIRS"), Predicate::alwaysTrue())))));
+    else
+      queue->addMaker(unique<Stairs>(StairDirection::UP, key, building, Predicate::type(FurnitureType("FLOOR"))));
+  }
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
   queue->addMaker(unique<PlaceCollective>(info.collective));
-  queue->addMaker(unique<Items>(ItemListId("dungeon"), 5, 10));
+  for (auto& items : info.shopItems)
+    queue->addMaker(unique<Items>(items, 5, 10));
   return unique<BorderGuard>(std::move(queue), wall);
 }
 

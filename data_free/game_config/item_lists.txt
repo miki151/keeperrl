@@ -208,6 +208,15 @@
     {Simple "MagicLamp"} {1}
   }
 }
+
+"diggingScroll"
+{
+  unique = {
+    {Scroll Area 2 DestroyWalls DIG} {1}
+  }
+}
+
+
 "blackMarketAmulet" inherit "villageShop"
 {
   unique = {

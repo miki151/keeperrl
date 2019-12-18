@@ -1131,6 +1131,11 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (position != creature->getPosition() && creature->isAffected(LastingEffect::HALLU))
     for (auto& object : index.getAllObjects())
       object.setId(shuffleViewId(object.id()));
+  if (creature->isAffected(LastingEffect::BLIND))
+    for (auto f : position.getFurniture())
+      if (f->isVisibleWhileBlind())
+        if (auto& obj = f->getViewObject())
+          index.insert(*obj);
 }
 
 ViewId Player::shuffleViewId(const ViewId& id) const {

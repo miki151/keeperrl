@@ -727,6 +727,10 @@
   xForgetAfterBuilding = true
   usageType = STAIRS
 }
+"HIDDEN_UP_STAIRS" inherit "UP_STAIRS"
+{
+  visibleWhileBlind = true
+}
 "DOWN_STAIRS"
 {
   name = "stairs"

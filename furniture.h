@@ -135,6 +135,7 @@ class Furniture : public OwnedObject<Furniture> {
   bool buildOutsideOfTerritory() const;
   bool isRequiresLight() const;
   bool isHostileSpell() const;
+  bool isVisibleWhileBlind() const;
   optional<BedType> getBedType() const;
   const optional<FurnitureEffectInfo>& getLastingEffectInfo() const;
 
@@ -225,4 +226,5 @@ class Furniture : public OwnedObject<Furniture> {
   optional<int> SERIAL(bloodCountdown);
   optional<LocalTime> SERIAL(bloodTime);
   optional<Effect> SERIAL(destroyedEffect);
+  bool SERIAL(visibleWhileBlind) = false;
 };

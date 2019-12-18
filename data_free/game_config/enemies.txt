@@ -1100,6 +1100,7 @@
     tribe = MONSTER
     buildingId = "DUNGEON"
     furniture = { "roomFurniture" }
+    shopItems = { "dungeon" }
     inhabitants = {
       fighters = {
         count = {10 15}
@@ -1175,6 +1176,14 @@
 
 "BLACK_MARKET_ENTRY" inherit "DUNGEON1"
 {
+  settlement = append {
+    shopItems = append { "diggingScroll" }
+    inhabitants = append {
+      fighters = append {
+        uniques = append { "WITCH" }
+      }
+    }
+  }
   levelConnection = {
     topLevel = MainEnemy
     direction = UP
