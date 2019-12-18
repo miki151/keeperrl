@@ -19,7 +19,8 @@ RICH_ENUM(
     MINETOWN,
     MAZE,
     SOKOBAN,
-    ADOXIE_TEMPLE
+    ADOXIE_TEMPLE,
+    BLACK_MARKET
 );
 
 struct LevelConnection {

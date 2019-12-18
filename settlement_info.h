@@ -59,7 +59,7 @@ struct SettlementInfo {
   vector<StairKey> upStairs;
   vector<StockpileInfo> SERIAL(stockpiles);
   optional<ItemType> SERIAL(lootItem);
-  optional<ItemListId> SERIAL(shopItems);
+  vector<ItemListId> SERIAL(shopItems);
   bool SERIAL(shopkeeperDead) = false;
   CollectiveBuilder* collective;
   vector<FurnitureListId> SERIAL(furniture);
@@ -71,5 +71,5 @@ struct SettlementInfo {
   int SERIAL(surroundWithResources) = 0;
   optional<FurnitureType> SERIAL(extraResources);
   optional<int> SERIAL(cropsDistance);
-  SERIALIZE_ALL(NAMED(type), OPTION(inhabitants), NAMED(corpses), NAMED(locationName), NAMED(locationNameGen), NAMED(tribe), NAMED(race), NAMED(buildingId), OPTION(stockpiles), NAMED(lootItem), NAMED(shopItems), OPTION(shopkeeperDead), OPTION(furniture), NAMED(outsideFeatures), OPTION(closeToPlayer), OPTION(dontConnectCave), OPTION(dontBuildRoad), OPTION(anyPlayerDistance), OPTION(surroundWithResources), NAMED(extraResources), NAMED(cropsDistance))
+  SERIALIZE_ALL(NAMED(type), OPTION(inhabitants), NAMED(corpses), NAMED(locationName), NAMED(locationNameGen), NAMED(tribe), NAMED(race), NAMED(buildingId), OPTION(stockpiles), NAMED(lootItem), OPTION(shopItems), OPTION(shopkeeperDead), OPTION(furniture), NAMED(outsideFeatures), OPTION(closeToPlayer), OPTION(dontConnectCave), OPTION(dontBuildRoad), OPTION(anyPlayerDistance), OPTION(surroundWithResources), NAMED(extraResources), NAMED(cropsDistance))
 };

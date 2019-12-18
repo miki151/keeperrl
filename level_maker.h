@@ -49,6 +49,7 @@ class LevelMaker {
   static PLevelMaker roomLevel(RandomGen&, SettlementInfo, Vec2 size);
   static PLevelMaker adoxieTemple(RandomGen&, SettlementInfo, Vec2 size);
   static PLevelMaker mazeLevel(RandomGen&, SettlementInfo, Vec2 size);
+  static PLevelMaker blackMarket(RandomGen&, SettlementInfo, Vec2 size);
   static PLevelMaker emptyLevel(FurnitureType, bool withFloor);
   static PLevelMaker sokobanFromFile(RandomGen&, SettlementInfo, Table<char>);
   static PLevelMaker battleLevel(Table<char>, CreatureList allies, CreatureList enemies);

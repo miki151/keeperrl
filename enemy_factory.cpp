@@ -54,7 +54,8 @@ static EnemyInfo getVault(SettlementType type, CreatureId creature, TribeId trib
       c.closeToPlayer = true;
       c.dontConnectCave = true;
       c.buildingId = BuildingId("DUNGEON");
-      c.shopItems = itemFactory;
+      if (itemFactory)
+        c.shopItems = {*itemFactory};
     ), CollectiveConfig::noImmigrants())
     .setNonDiscoverable();
 }

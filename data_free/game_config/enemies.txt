@@ -323,7 +323,7 @@
     locationNameGen = "TOWN"
     race = "humans"
     buildingId = "WOOD"
-    shopItems = "armory"
+    shopItems = { "armory" }
     furniture = { "roomFurniture" }
   }
   config = {
@@ -412,7 +412,7 @@
     race = "humans"
     stockpiles = {{ "gold" 140 "TREASURE_CHEST" }}
     buildingId = "BRICK"
-    shopItems = "villageShop"
+    shopItems = { "villageShop" }
     furniture = { "castleFurniture" }
     outsideFeatures = "castleOutside"
   }
@@ -537,7 +537,7 @@
     race = "dragon"
     tribe = MONSTER
     buildingId = "DUNGEON"
-    shopItems = "dragonCave"
+    shopItems = { "dragonCave" }
   }
   config = {
     leaderAsFighter = true
@@ -569,7 +569,7 @@
     race = "dragon"
     tribe = MONSTER
     buildingId = "DUNGEON"
-    shopItems = "dragonCave"
+    shopItems = { "dragonCave" }
   }
   createOnBones = 1.0 { "KNIGHTS" "DWARVES" "GREEN_DRAGON" "WARRIORS" }
 }
@@ -583,7 +583,7 @@
     tribe = MONSTER
     race = "dragon"
     buildingId = "DUNGEON"
-    shopItems = "dragonCave"
+    shopItems = { "dragonCave" }
   }
   config = {
     leaderAsFighter = true
@@ -633,7 +633,7 @@
     race = "dwarves"
     buildingId = "DUNGEON"
     stockpiles = {{ "gold" 200 "TREASURE_CHEST"} {"minerals" 120 }}
-    shopItems = "dwarfShop"
+    shopItems = { "dwarfShop" }
     outsideFeatures = "dungeonOutside"
     surroundWithResources = 5
     furniture = { "roomFurniture" }
@@ -815,8 +815,9 @@
     topLevel = ExtraEnemy {"MAIN_DUNGEON_ENTRY"}
     levels = {
       { ExtraEnemy { "DUNGEON1" { 1 } } 40 30 DUNGEON }
+      { ExtraEnemy { "BLACK_MARKET_ENTRY" { 1 } } 40 30 DUNGEON }
       { ExtraEnemy { "DUNGEON2" { 1 } } 40 30 DUNGEON }
-      { ExtraEnemy { "DUNGEON3" { 1 } } 40 30 DUNGEON }
+#      { ExtraEnemy { "DUNGEON3" { 1 } } 40 30 DUNGEON }
       { MainEnemy 60 40 ADOXIE_TEMPLE }
       { ExtraEnemy { "ADOXIE" { 1 } } 15 15 TOWER true }
     }
@@ -959,7 +960,7 @@
     race = "lizardmen"
     buildingId = "MUD"
     lootItem = {TechBook "humanoid mutation"}
-    shopItems = "goodMushrooms"
+    shopItems = { "goodMushrooms" }
     furniture = { "roomFurniture" }
     outsideFeatures = "villageOutside"
   }
@@ -1151,6 +1152,38 @@
     }
   }
 }
+
+"BLACK_MARKET"
+{
+  settlement = {
+    type = TOWER
+    tribe = GNOME
+    buildingId = "DUNGEON"
+    furniture = { "dungeonOutside" }
+    shopItems = { "blackMarketAmulet" "blackMarketScrolls" "blackMarketPotions"  }
+    inhabitants = {
+      fighters = {
+        count = {8 10}
+        all = {
+          1 "BLACK_MARKET_GUARD"
+        }
+      }
+    }
+  }
+}
+
+
+"BLACK_MARKET_ENTRY" inherit "DUNGEON1"
+{
+  levelConnection = {
+    topLevel = MainEnemy
+    direction = UP
+    levels = {
+      { ExtraEnemy {"BLACK_MARKET"} 30 20 BLACK_MARKET }
+    }
+  }
+}
+
 "DUNGEON3" inherit "DUNGEON2"
 {
   settlement = append {
@@ -1180,7 +1213,7 @@
     locationNameGen = "TOWN"
     race = "gnomes"
     buildingId = "DUNGEON"
-    shopItems = "gnomeShop"
+    shopItems = { "gnomeShop" }
     outsideFeatures = "dungeonOutside"
     furniture = { "roomFurniture" }
   }
@@ -1327,7 +1360,7 @@
     race = "cyclops"
     tribe = HOSTILE
     buildingId = "DUNGEON"
-    shopItems = "goodMushrooms"
+    shopItems = { "goodMushrooms" }
   }
   config = {
     leaderAsFighter = true
@@ -1724,7 +1757,7 @@
 "DJINN" inherit "DJINN_EMPTY"
 {
   settlement = append {
-    shopItems = "magicLamp"
+    shopItems = { "magicLamp" }
   }
 }
 "ELVEN_COTTAGE"

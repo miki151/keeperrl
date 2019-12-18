@@ -1293,6 +1293,23 @@
       { type = Simple "Robe" prefixChance = 1 }
     }
   }
+"BLACK_MARKET_GUARD" inherit "KNIGHT"
+  {
+    viewId = { "black_market_guard" }
+    attr = {
+      DAMAGE 60
+      DEFENSE 60
+    }
+    chatReactionFriendly = "\"Steal a rock and I'll chop your head off!\""
+    chatReactionHostile = "\"Die!\""
+    name = {
+      name = "guard"
+    }
+    inventory = {
+      { Simple "Spear" }
+      { Simple "IronShield" }
+    }
+  }
 "WARRIOR"
   {
     viewId = { "warrior" }

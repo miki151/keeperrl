@@ -1701,8 +1701,8 @@ class Stairs : public LevelMaker {
 
 class ShopMaker : public LevelMaker {
   public:
-  ShopMaker(const SettlementInfo& info, int _numItems)
-      : shopItems(*info.shopItems), tribe(info.tribe), numItems(_numItems),
+  ShopMaker(const ItemListId& items, const SettlementInfo& info, int _numItems)
+      : shopItems(items), tribe(info.tribe), numItems(_numItems),
         building(info.buildingInfo), shopkeeperDead(info.shopkeeperDead)  {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
@@ -1977,8 +1977,8 @@ PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info, Vec2 s
   for (StairKey key : info.upStairs)
     queue->addMaker(unique<Stairs>(StairDirection::UP, key, building, Predicate::type(floor)));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
-  if (info.shopItems)
-    queue->addMaker(unique<Items>(*info.shopItems, 5, 10));
+  for (auto& items : info.shopItems)
+    queue->addMaker(unique<Items>(items, 5, 10));
   return unique<BorderGuard>(std::move(queue), SquareChange(floor, building.wall));
 }
 
@@ -1997,8 +1997,8 @@ static PMakerQueue village2(RandomGen& random, SettlementInfo info) {
   vector<PLevelMaker> insideMakers = makeVec<PLevelMaker>(getElderRoom(info));
   for (auto& elem : info.stockpiles)
     insideMakers.push_back(stockpileMaker(elem));
-  if (info.shopItems)
-    insideMakers.push_back(unique<ShopMaker>(info, random.get(8, 16)));
+  for (auto& items : info.shopItems)
+    insideMakers.push_back(unique<ShopMaker>(items, info, random.get(8, 16)));
   queue->addMaker(unique<Buildings>(6, 10, 3, 4, building, info.tribe, false, std::move(insideMakers)));
   for (auto& furniture : info.furniture)
     queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, furniture, info.tribe));
@@ -2016,8 +2016,8 @@ static PMakerQueue village(RandomGen& random, SettlementInfo info, int minRooms,
   vector<PLevelMaker> insideMakers = makeVec<PLevelMaker>(
  //     hatchery(CreatureGroup::singleType(info.tribe, "PIG"), random.get(2, 5)),
       getElderRoom(info));
-  if (info.shopItems)
-    insideMakers.push_back(unique<ShopMaker>(info, random.get(8, 16)));
+  for (auto& items : info.shopItems)
+    insideMakers.push_back(unique<ShopMaker>(items, info, random.get(8, 16)));
   for (auto& elem : info.stockpiles)
     insideMakers.push_back(stockpileMaker(elem));
   queue->addMaker(unique<Buildings>(minRooms, maxRooms, 3, 7, building, info.tribe, true, std::move(insideMakers), !info.dontBuildRoad));
@@ -2112,8 +2112,8 @@ static PMakerQueue castle(RandomGen& random, SettlementInfo info) {
   leftSide->addMaker(getElderRoom(info));
   auto inside = unique<MakerQueue>();
   vector<PLevelMaker> insideMakers;
-  if (info.shopItems)
-    insideMakers.push_back(unique<ShopMaker>(info, random.get(8, 16)));
+  for (auto& items : info.shopItems)
+    insideMakers.push_back(unique<ShopMaker>(items, info, random.get(8, 16)));
   inside->addMaker(unique<Division>(random.getDouble(0.25, 0.4), std::move(leftSide),
         unique<Buildings>(1, 3, 3, 6, building, info.tribe, false, std::move(insideMakers), false),
             SquareChange(building.wall, SquareAttrib::ROOM_WALL)));
@@ -2206,6 +2206,46 @@ static PMakerQueue tower(RandomGen& random, SettlementInfo info, bool withExit) 
   return queue;
 }
 
+PLevelMaker LevelMaker::blackMarket(RandomGen& random, SettlementInfo info, Vec2 size) {
+  auto& building = info.buildingInfo;
+  auto marketArea = unique<MakerQueue>();
+  marketArea->addMaker(unique<Empty>(SquareChange::reset(FurnitureType("FLOOR")).add(SquareAttrib::ROOM)));
+  if (info.collective)
+    marketArea->addMaker(unique<PlaceCollective>(info.collective));
+  auto locations = unique<RandomLocations>();
+  for (auto& items : info.shopItems)
+    locations->add(
+        unique<BorderGuard>(
+            unique<ShopMaker>(items, info, random.get(10, 15)),
+            SquareChange(building.wall)),
+        Vec2(Random.get(5, 8), Random.get(5, 8)),
+        Predicate::alwaysTrue());
+  marketArea->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, Predicate::attrib(SquareAttrib::ROOM)));
+  for (auto& furniture : info.furniture)
+    marketArea->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.05, furniture, info.tribe));
+  if (info.corpses)
+    marketArea->addMaker(unique<Corpses>(*info.corpses));
+  marketArea->addMaker(unique<BorderGuard>(std::move(locations), SquareChange(building.wall)));
+  auto leftSide = unique<RandomLocations>();
+  for (StairKey key : info.downStairs)
+    leftSide->add(unique<MakerQueue>(
+          unique<Empty>(SquareChange::reset(FurnitureType("FLOOR"))),
+          unique<Stairs>(StairDirection::DOWN, key, building, Predicate::alwaysTrue())),
+        Vec2(3, 3),
+        Predicate::alwaysTrue());
+  for (StairKey key : info.upStairs)
+    leftSide->add(unique<MakerQueue>(
+          unique<Empty>(SquareChange::reset(FurnitureType("FLOOR"))),
+          unique<Stairs>(StairDirection::UP, key, building, Predicate::alwaysTrue())),
+        Vec2(3, 3),
+        Predicate::alwaysTrue());
+  return unique<MakerQueue>(
+      unique<Empty>(SquareChange(FurnitureType("FLOOR"), building.wall)),
+      unique<Margin>(2, unique<Division>(0.3, std::move(leftSide), std::move(marketArea))),
+      unique<Margin>(2, unique<Connector>(building.door, info.tribe)));
+
+}
+
 PLevelMaker LevelMaker::towerLevel(RandomGen& random, SettlementInfo info, Vec2 size) {
   return PLevelMaker(tower(random, info, false));
 }
@@ -2281,8 +2321,8 @@ static PMakerQueue genericMineTownMaker(RandomGen& random, SettlementInfo info, 
   }
   queue->addMaker(std::move(caverns));
   vector<PLevelMaker> roomInsides;
-  if (info.shopItems)
-    roomInsides.push_back(unique<ShopMaker>(info, random.get(8, 16)));
+  for (auto& items : info.shopItems)
+    roomInsides.push_back(unique<ShopMaker>(items, info, random.get(8, 16)));
   for (auto& elem : info.stockpiles)
     roomInsides.push_back(stockpileMaker(elem));
   queue->addMaker(unique<RoomMaker>(numRooms, minRoomSize, maxRoomSize, SquareChange::none(), none,
@@ -2335,8 +2375,8 @@ static PMakerQueue vaultMaker(SettlementInfo info) {
     queue->addMaker(unique<Stairs>(StairDirection::DOWN, key, building, insidePredicate));
   for (StairKey key : info.upStairs)
     queue->addMaker(unique<Stairs>(StairDirection::UP, key, building, insidePredicate));
-  if (info.shopItems)
-    queue->addMaker(unique<Items>(*info.shopItems, 16, 20, insidePredicate));
+  for (auto& items : info.shopItems)
+    queue->addMaker(unique<Items>(items, 16, 20, insidePredicate));
   queue->addMaker(unique<PlaceCollective>(info.collective, insidePredicate));
   if (info.dontConnectCave)
     queue->addMaker(unique<AddAttrib>(SquareAttrib::NO_DIG));
@@ -2350,8 +2390,8 @@ static PMakerQueue spiderCaveMaker(SettlementInfo info) {
   inside->addMaker(unique<UniformBlob>(SquareChange::resetOrRemove(
       building.floorOutside, FurnitureLayer::MIDDLE, SquareAttrib::CONNECT_CORRIDOR), none));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
-  if (info.shopItems)
-    inside->addMaker(unique<Items>(*info.shopItems, 5, 10));
+  for (auto& items : info.shopItems)
+    inside->addMaker(unique<Items>(items, 5, 10));
   queue->addMaker(unique<Margin>(3, std::move(inside)));
   queue->addMaker(unique<PlaceCollective>(info.collective));
   queue->addMaker(unique<Connector>(none, info.tribe, 0));

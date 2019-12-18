@@ -62,6 +62,8 @@ ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
       return &LevelMaker::mineTownLevel;
     case LevelType::ADOXIE_TEMPLE:
       return &LevelMaker::adoxieTemple;
+    case LevelType::BLACK_MARKET:
+      return &LevelMaker::blackMarket;
     case LevelType::SOKOBAN: {
       Table<char> sokoLevel = sokobanInput->getNext();
       return [sokoLevel](RandomGen& random, SettlementInfo info, Vec2) {

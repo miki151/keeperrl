@@ -208,3 +208,53 @@
     {Simple "MagicLamp"} {1}
   }
 }
+"blackMarketAmulet" inherit "villageShop"
+{
+  unique = {
+    {Amulet LIFE_SAVED} {1}
+  }
+}
+"blackMarketScrolls"
+{
+  items = {
+    {{Scroll Summon "ANGEL" {1}} 1 }
+    {{Scroll Summon "FIRE_ELEMENTAL" {3 4}} 1 }
+    {{Scroll Summon "EARTH_ELEMENTAL" {3 4}} 1 }
+    {{Scroll Summon "AIR_ELEMENTAL" {3 4}} 1 }
+    {{Scroll Summon "WATER_ELEMENTAL" {3 4}} 1 }
+    {{Scroll Summon "ANT_SOLDIER" {12 20}} 1 }
+    {{Scroll Summon "CHICKEN" {12 20}} 1 }
+    {{Scroll Summon "ZOMBIE" {12 20}} 1 }
+    {{Scroll Summon "HYDRA" {1}} 1 }
+    {{Scroll Summon "MINOTAUR" {1}} 1 }
+    {{Scroll Summon "CHERUB" {3 6}} 1 }
+    {{Scroll Enhance ARMOR 3} 1 }
+    {{Scroll Enhance WEAPON 3} 1 }
+    {{Scroll Area 2 DestroyWalls DIG} 10 }
+    {{Scroll DoubleTrouble} 2 }
+    {{Scroll Deception} 1 }
+  }
+}
+
+"blackMarketPotions"
+{
+  items = {
+    {{Potion Lasting INVISIBLE} 1 }
+    {{Potion Lasting INSANITY} 1 }
+    {{Potion Lasting PEACEFULNESS} 1 }
+    {{Potion Lasting PLAGUE} 1 }
+    {{Potion Permanent PLAGUE_RESISTANT} 1 }
+    {{Potion Permanent TELEPATHY} 1 }
+    {{Potion Permanent BAD_BREATH} 1 }
+    {{Potion Lasting FROZEN} 1 }
+    {{Potion Lasting ON_FIRE} 1 }
+    {{Potion Permanent NO_CARRY_LIMIT} 1 }
+    {{Potion Lasting BLIND} 1 }
+    {{Potion Lasting INVISIBLE} 1 }
+    {{Potion Lasting POISON} 1 }
+    {{Potion Permanent POISON_RESISTANT} 1 }
+    {{Potion Permanent FLYING} 1 }
+    {{Potion Lasting SPEED} 1 }
+  }
+}
+
