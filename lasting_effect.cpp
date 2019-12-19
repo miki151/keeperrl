@@ -299,6 +299,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::LIFE_SAVED:
         c->you(MsgType::YOUR, "life will be saved");
         break;
+      case LastingEffect::UNSTABLE:
+        c->you(MsgType::FEEL, "mentally unstable");
+        break;
     }
 }
 
@@ -531,6 +534,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::LIFE_SAVED:
         c->you(MsgType::YOUR, "life will no longer be saved");
         break;
+      case LastingEffect::UNSTABLE:
+        c->you(MsgType::FEEL, "mentally stable again");
+        break;
       default:
         break;
     }
@@ -692,6 +698,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::FROZEN: return "Frozen"_bad;
     case LastingEffect::MAGIC_CANCELLATION: return "Cancelled"_bad;
     case LastingEffect::DISAPPEAR_DURING_DAY: return "Disappears at dawn"_bad;
+    case LastingEffect::UNSTABLE: return "Mentally unstable"_bad;
   }
 }
 
@@ -746,6 +753,13 @@ double LastingEffects::modifyCreatureDefense(LastingEffect e, double defense, At
       return multiplyFor(AttrType::RANGED_DAMAGE, 1.0 / baseMultiplier);
     default:
       return defense;
+  }
+}
+
+void LastingEffects::onAllyKilled(Creature* c) {
+  if (Random.chance(0.05) && c->isAffected(LastingEffect::UNSTABLE)) {
+    c->verb("have", "has", "gone berskerk!");
+    c->addEffect(LastingEffect::INSANITY, 100_visible);
   }
 }
 
@@ -996,6 +1010,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::NO_CARRY_LIMIT: return "infinite carrying capacity";
     case LastingEffect::SPYING: return "spying";
     case LastingEffect::LIFE_SAVED: return "life saving";
+    case LastingEffect::UNSTABLE: return "mental instability";
   }
 }
 
@@ -1079,6 +1094,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::NO_CARRY_LIMIT: return "The creature can carry items without any weight limit";
     case LastingEffect::SPYING: return "The creature can infiltrate enemy lines";
     case LastingEffect::LIFE_SAVED: return "Prevents the death of the creature";
+    case LastingEffect::UNSTABLE: return "Creature may become insane when having witnessed the death of an ally.";
   }
 }
 

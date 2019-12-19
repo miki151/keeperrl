@@ -2127,6 +2127,7 @@
     permanentEffects = {
       MAGIC_VULNERABILITY 1
       NAVIGATION_DIGGING_SKILL 1
+      UNSTABLE 1
     }
     chatReactionFriendly = "curses all orcs"
     chatReactionHostile = "\"Die!\""
@@ -2184,6 +2185,7 @@
     permanentEffects = {
       NAVIGATION_DIGGING_SKILL 1
       MAGIC_VULNERABILITY 1
+      UNSTABLE 1
     }
     maxLevelIncrease = {
       MELEE 10

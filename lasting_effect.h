@@ -80,7 +80,8 @@ RICH_ENUM(LastingEffect,
     DISAPPEAR_DURING_DAY,
     NO_CARRY_LIMIT,
     SPYING,
-    LIFE_SAVED
+    LIFE_SAVED,
+    UNSTABLE
 );
 
 RICH_ENUM(CreatureCondition,
@@ -102,6 +103,7 @@ class LastingEffects {
   static optional<string> getBadAdjective(LastingEffect);
   static const vector<LastingEffect>& getCausingCondition(CreatureCondition);
   static double modifyCreatureDefense(LastingEffect, double damage, AttrType damageAttr);
+  static void onAllyKilled(Creature*);
   static string getName(LastingEffect);
   static string getDescription(LastingEffect);
   static bool canSee(const Creature*, const Creature*);

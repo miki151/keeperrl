@@ -694,6 +694,10 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
       control->addMessage(PlayerMessage(victim->getName().a() + " is " + deathDescription + ".", MessagePriority::HIGH)
           .setPosition(victim->getPosition()));
   }
+  if (hasTrait(victim, MinionTrait::FIGHTER) || hasTrait(victim, MinionTrait::LEADER))
+    for (auto other : getCreatures(MinionTrait::FIGHTER))
+      if (other != victim && other->canSee(victim))
+        LastingEffects::onAllyKilled(other);
   bool fighterKilled = needsToBeKilledToConquer(victim);
   removeCreature(victim);
   if (isConquered() && fighterKilled) {
