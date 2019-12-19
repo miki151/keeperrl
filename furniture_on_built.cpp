@@ -143,7 +143,9 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
             FurnitureType("UP_STAIRS"), TribeId::getMonster()));
         pos.setLandingLink(stairKey);
         pos.getModel()->calculateStairNavigation();
-        pos.getGame()->getPlayerCollective()->addKnownTile(landing);
+        // Add known tiles around the stairs so it's possible to build bridge on water/lava levels.
+        for (auto v : landing.getRectangle(Rectangle::centered(1)))
+          pos.getGame()->getPlayerCollective()->addKnownTile(v);
         pos.getGame()->getPlayerControl()->addToMemory(landing);
         for (auto v : landing.neighbors8())
           pos.getGame()->getPlayerControl()->addToMemory(v);
