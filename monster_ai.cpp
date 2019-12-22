@@ -624,9 +624,9 @@ class Fighter : public Behaviour {
       bool allyBehind = false;
       bool allyInFront = false;
       for (auto ally : allies)
-        if (ally->isFriend(creature))
+        if (ally->isFriend(creature) && !ally->getAttributes().getIllusionViewObject())
           if (auto allysEnemy = ally->getClosestEnemy())
-            if (/*allysEnemy == other && */ally->shouldAIAttack(allysEnemy)) {
+            if (ally->shouldAIAttack(allysEnemy)) {
               auto allyDist = *ally->getPosition().dist8(allysEnemy->getPosition());
               if (allyDist < distance)
                 allyInFront = true;
