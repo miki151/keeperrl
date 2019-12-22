@@ -38,8 +38,13 @@ static pair<string, vector<StreamPos>> removeFormatting(string contents, optiona
   StreamPos cur {filename, 1, 1};
   bool inQuote = false;
   for (int i = 0; i < contents.size(); ++i) {
-    if (contents[i] == '"')
+    bool addSpace = false;
+    if (contents[i] == '"' && (i == 0 || contents[i - 1] != '\\')) {
       inQuote = !inQuote;
+      if (inQuote)
+        ret += " ";
+      else addSpace = true;
+    }
     if (contents[i] == '#' && !inQuote) {
       while (contents[i] != '\n' && i < contents.size())
         ++i;
@@ -51,6 +56,9 @@ static pair<string, vector<StreamPos>> removeFormatting(string contents, optiona
       ret += contents[i];
       pos.push_back(cur);
     }
+    if (addSpace)
+      ret += " ";
+    addSpace = false;
     if (contents[i] == '\n') {
       ++cur.line;
       cur.column = 1;
