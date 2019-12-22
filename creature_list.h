@@ -21,6 +21,8 @@ struct CreatureList {
   CreatureList& addUnique(CreatureId);
   CreatureList& increaseBaseLevel(EnumMap<ExperienceType, int>);
   CreatureList& increaseExpLevel(EnumMap<ExperienceType, int>);
+  CreatureList& clearBaseLevel();
+  CreatureList& clearExpLevel();
   CreatureList& addInventory(vector<ItemType>);
 
   string getSummary(CreatureFactory* factory) const;

@@ -261,8 +261,8 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
     if (!splashScreen)
       registerModPlaytime(false);
   });
-
-  tileSet->setTilePaths(game->getContentFactory()->tilePaths);
+  if (tileSet)
+    tileSet->setTilePaths(game->getContentFactory()->tilePaths);
   view->reset();
   if (!noAutoSave)
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
@@ -877,8 +877,7 @@ static CreatureList readAlly(ifstream& input) {
   return ret;
 }
 
-void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, string enemy,
-    RandomGen& random) {
+void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, string enemy) {
   ifstream input(battleInfoPath.getPath());
   CreatureList enemies;
   for (auto& elem : split(enemy, {','})) {
@@ -894,20 +893,56 @@ void MainLoop::battleTest(int numTries, const FilePath& levelPath, const FilePat
   for (int i : Range(cnt)) {
     auto allies = readAlly(input);
     std::cout << allies.getSummary(&contentFactory.getCreatures()) << ": ";
-    battleTest(numTries, levelPath, allies, enemies, random);
+    battleTest(numTries, levelPath, {allies}, {enemies});
   }
 }
 
-void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath,
-    RandomGen& random, optional<int> numEnemy) {
+static vector<CreatureList> readAllies(const FilePath& battleInfoPath) {
   ifstream input(battleInfoPath.getPath());
   int cnt = 0;
   input >> cnt;
   vector<CreatureList> allies;
   for (int i : Range(cnt))
     allies.push_back(readAlly(input));
+  return allies;
+}
+
+void MainLoop::campaignBattleText(int numTries, const FilePath& levelPath, EnemyId keeperId, VillainGroup group) {
   auto contentFactory = createContentFactory(false);
-  ExternalEnemies enemies(random, &contentFactory.getCreatures(), EnemyFactory(random, contentFactory.getCreatures().getNameGenerator(),
+  for (auto villainType : {VillainType::NONE, VillainType::LESSER, VillainType::MAIN})
+    for (auto& villain : contentFactory.villains.at(group))
+      if (villain.type == villainType) {
+        std::cerr << "Running " << villain.enemyId.data() << std::endl;
+        auto res = campaignBattleText(numTries, levelPath, keeperId, villain.enemyId);
+        std::cerr << villain.enemyId.data() << " RES " << res << std::endl;
+      }
+}
+
+int MainLoop::campaignBattleText(int numTries, const FilePath& levelPath, EnemyId keeperId, EnemyId enemyId) {
+  auto contentFactory = createContentFactory(false);
+  auto minionsTmp = contentFactory.enemies.at(keeperId).settlement.inhabitants;
+  auto enemy = contentFactory.enemies.at(enemyId);
+  for (int increase : Range(0, 100)) {
+    vector<CreatureList> minions = {minionsTmp.leader, minionsTmp.fighters};
+    for (auto& elem : minions) {
+      //elem.clearExpLevel();
+      elem.clearBaseLevel();
+      elem.increaseBaseLevel(EnumMap<ExperienceType, int>([increase](ExperienceType t) { return increase; }));
+    }
+    std::cerr << "Increase " << increase << std::endl;
+    int res = battleTest(numTries, levelPath, minions,
+        {enemy.settlement.inhabitants.fighters, enemy.settlement.inhabitants.leader});
+    if (res >= numTries * 9 / 10)
+      return increase;
+  }
+  return -1;
+}
+
+void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, optional<int> numEnemy) {
+  auto allies = readAllies(battleInfoPath);
+  auto contentFactory = createContentFactory(false);
+  //RandomGen random;
+  ExternalEnemies enemies(Random, &contentFactory.getCreatures(), EnemyFactory(Random, contentFactory.getCreatures().getNameGenerator(),
       contentFactory.enemies, contentFactory.buildingInfo, contentFactory.externalEnemies)
       .getExternalEnemies(), ExternalEnemiesType::FROM_START);
   for (int turn : Range(100000))
@@ -915,8 +950,8 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
       std::cerr << "Turn " << turn << ": " << wave->enemy.name << "\n";
       int totalWins = 0;
       for (auto& allyInfo : allies) {
-        std::cerr << allyInfo.getSummary(&contentFactory.getCreatures()) << ": ";
-        int numWins = battleTest(numTries, levelPath, allyInfo, wave->enemy.creatures, random);
+        //std::cerr << allyInfo.getSummary(&contentFactory.getCreatures()) << ": ";
+        int numWins = battleTest(numTries, levelPath, {allyInfo}, {wave->enemy.creatures});
         totalWins += numWins;
       }
       std::cerr << totalWins << " wins\n";
@@ -943,23 +978,19 @@ optional<string> MainLoop::verifyMod(const string& path) {
   return "Failed to load any mod"_s;
 }
 
-int MainLoop::battleTest(int numTries, const FilePath& levelPath, CreatureList ally, CreatureList enemies,
-    RandomGen& random) {
+int MainLoop::battleTest(int numTries, const FilePath& levelPath, vector<CreatureList> ally, vector<CreatureList> enemies) {
   ProgressMeter meter(1);
   int numAllies = 0;
   int numEnemies = 0;
   int numUnknown = 0;
   auto allyTribe = TribeId::getDarkKeeper();
-  std::cout.flush();
   for (int i : Range(numTries)) {
-    std::cout << "Creating level" << std::endl;
     auto contentFactory = createContentFactory(false);
     EnemyFactory enemyFactory(Random, contentFactory.getCreatures().getNameGenerator(),
         contentFactory.enemies, contentFactory.buildingInfo, contentFactory.externalEnemies);
     auto model = ModelBuilder(&meter, Random, options, sokobanInput,
         &contentFactory, std::move(enemyFactory)).battleModel(levelPath, ally, enemies);
     auto game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory));
-    std::cout << "Done" << std::endl;
     auto exitCondition = [&](WGame game) -> optional<ExitCondition> {
       unordered_set<TribeId, CustomHash<TribeId>> tribes;
       for (auto& m : game->getAllModels())

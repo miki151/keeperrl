@@ -1,12 +1,12 @@
 11
-ORC M0 {Club}
-ORC M1 {LeatherArmor},{Club},{LeatherGloves}
-ORC M3 {ChainArmor},{Sword},{LeatherGloves},{LeatherBoots}
-ORC M7 {ChainArmor},{Sword},{IronBoots},{LeatherGloves}
-OGRE M7 {ChainArmor},{BattleAxe},{IronBoots},{IronHelm},{LeatherGloves}
-OGRE M12 {ChainArmor},{BattleAxe},{IronBoots},{IronHelm},{LeatherGloves}
-VAMPIRE M7,S7 {ChainArmor},{BattleAxe},{IronBoots},{IronHelm},{LeatherGloves}
-SPECIAL_HMBN M15,S12 {ChainArmor},{BattleAxe},{IronBoots},{IronHelm},{LeatherGloves}
-SPECIAL_HMBN M18,S12 {ChainArmor},{BattleAxe},{IronBoots},{IronHelm},{LeatherGloves}
-SPECIAL_HMBN M24,S12 {ChainArmor},{BattleAxe},{IronBoots},{IronHelm},{LeatherGloves}
-SPECIAL_HMBN M33,S12 {ChainArmor},{BattleAxe},{IronBoots},{IronHelm},{LeatherGloves}
+ORC M0 {Simple"Club"}
+ORC M1 {Simple"LeatherArmor"},{Simple"Club"},{Simple"LeatherGloves"}
+ORC M3 {Simple"ChainArmor"},{Simple"Sword"},{Simple"LeatherGloves"},{Simple"LeatherBoots"}
+ORC M7 {Simple"ChainArmor"},{Simple"Sword"},{Simple"IronBoots"},{Simple"LeatherGloves"}
+OGRE M7 {Simple"ChainArmor"},{Simple"BattleAxe"},{Simple"IronBoots"},{Simple"IronHelm"},{Simple"LeatherGloves"}
+OGRE M12 {Simple"ChainArmor"},{Simple"BattleAxe"},{Simple"IronBoots"},{Simple"IronHelm"},{Simple"LeatherGloves"}
+VAMPIRE M7,S7 {Simple"ChainArmor"},{Simple"BattleAxe"},{Simple"IronBoots"},{Simple"IronHelm"},{Simple"LeatherGloves"}
+SPECIAL_HMBN M15,S12 {Simple"ChainArmor"},{Simple"BattleAxe"},{Simple"IronBoots"},{Simple"IronHelm"},{Simple"LeatherGloves"}
+SPECIAL_HMBN M18,S12 {Simple"ChainArmor"},{Simple"BattleAxe"},{Simple"IronBoots"},{Simple"IronHelm"},{Simple"LeatherGloves"}
+SPECIAL_HMBN M24,S12 {Simple"ChainArmor"},{Simple"BattleAxe"},{Simple"IronBoots"},{Simple"IronHelm"},{Simple"LeatherGloves"}
+SPECIAL_HMBN M33,S12 {Simple"ChainArmor"},{Simple"BattleAxe"},{Simple"IronBoots"},{Simple"IronHelm"},{Simple"LeatherGloves"}

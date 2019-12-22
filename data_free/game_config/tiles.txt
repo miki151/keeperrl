@@ -236,11 +236,11 @@
 { "club" ")" ColorId BROWN }
 { "heavy_club" ")" ColorId BROWN }
 { "scroll" "?" ColorId WHITE }
-{ "amulet1" "\\" ColorId YELLOW }
-{ "amulet2" "\\" ColorId YELLOW }
-{ "amulet3" "\\" ColorId YELLOW }
-{ "amulet4" "\\" ColorId YELLOW }
-{ "amulet5" "\\" ColorId YELLOW }
+{ "amulet1" "\"" ColorId YELLOW }
+{ "amulet2" "\"" ColorId YELLOW }
+{ "amulet3" "\"" ColorId YELLOW }
+{ "amulet4" "\"" ColorId YELLOW }
+{ "amulet5" "\"" ColorId YELLOW }
 { "ring_red" "=" ColorId RED }
 { "ring_green" "=" ColorId GREEN }
 { "book" "+" ColorId YELLOW }
@@ -279,7 +279,7 @@
 { "rock" "✱" ColorId LIGHT_GRAY true "stonepile" }
 { "iron_rock" "✱" ColorId ORANGE true "ironpile" }
 { "ada_ore" "✱" ColorId LIGHT_BLUE true "steelpile" }
-{ "wood_plank" "\\" ColorId BROWN }
+{ "wood_plank" "/" ColorId BROWN }
 { "prison" "." ColorId BLUE }
 { viewId = "torch" symbol = "*" color = ColorId YELLOW animated = true }
 { viewId = "candelabrum_ns" symbol = "*" color = ColorId ORANGE animated = true }

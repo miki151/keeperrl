@@ -33,7 +33,7 @@ class ModelBuilder {
   void measureSiteGen(int numTries, vector<string> types);
 
   PModel splashModel(const FilePath& splashPath);
-  PModel battleModel(const FilePath& levelPath, CreatureList allies, CreatureList enemies);
+  PModel battleModel(const FilePath& levelPath, vector<CreatureList> allies, vector<CreatureList> enemies);
 
   static WCollective spawnKeeper(WModel, AvatarInfo, bool regenerateMana, vector<string> introText);
 

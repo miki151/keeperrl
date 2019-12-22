@@ -1947,4 +1947,77 @@
     ransom = 0.5 80
   }
 }
+"DARK_MAGE"
+{
+  settlement = {
+    type = MINETOWN
+    tribe = DARK_ELF
+    inhabitants = {
+      leader = {
+        id = { "KEEPER_MAGE" }
+        baseLevelIncrease = {
+          MELEE 12
+          SPELL 12
+        }
+      }
+      fighters = {
+        count = {12 18}
+        all = {
+          5 "ORC"
+          2 "OGRE"
+          1 "ORC_HEALER"
+          1 "ORC_MAGE"
+          1 "VAMPIRE"
+          1 "SPECIAL_HMBN"
+          1 "HARPY"
+        }
+        baseLevelIncrease = {
+          MELEE 10
+          SPELL 10
+          ARCHERY 6
+        }
+      }
+      civilians = {
+        count = {3 5}
+        all = {
+          1 "IMP"
+        }
+      }
+    }
+    locationNameGen = "TOWN"
+    race = "dark mage"
+    buildingId = "DUNGEON"
+    stockpiles = {{ "gold" 200 "TREASURE_CHEST"} {"minerals" 120 }}
+    outsideFeatures = "dungeonOutside"
+    furniture = { "roomFurniture" }
+  }
+  config = {
+    immigrantInterval = 500
+    maxPopulation = 15
+    ghostProb = 0.1
+    spawnGhosts = 4
+  }
+  behaviour = {
+    minPopulation = 3
+    minTeamSize = 4
+    triggers = {
+      RoomTrigger "THRONE" 0.0003
+      RoomTrigger "IMPALED_HEAD" 0.0001
+      SelfVictims
+      NumConquered 3
+      StolenItems
+      FinishOff
+      Proximity
+    }
+    attackBehaviour = KillMembers 3
+    ransom = 0.8 320
+  }
+  immigrants = {
+    {
+      ids = {"DWARF"}
+      traits = {FIGHTER}
+      frequency = 1
+    }
+  }
+}
 

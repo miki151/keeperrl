@@ -33,7 +33,11 @@ CreatureList::CreatureList(int c, vector<CreatureId> ids) : count(c, c + 1),
 CreatureList::CreatureList(int c, vector<pair<int, CreatureId>> ids) : count(c, c + 1), all(ids) {}
 
 string CreatureList::getSummary(CreatureFactory* factory) const {
-  auto ret = toLower(getViewId(factory).data());
+  string ret;
+  if (!uniques.empty())
+    ret = uniques[0].data();
+  else
+    ret = all[0].second.data();
   int inc = 0;
   for (auto exp : ENUM_ALL(ExperienceType))
     inc = max(inc, baseLevelIncrease[exp]);
@@ -43,6 +47,16 @@ string CreatureList::getSummary(CreatureFactory* factory) const {
 
 CreatureList& CreatureList::addInventory(vector<ItemType> v) {
   inventory = v;
+  return *this;
+}
+
+CreatureList& CreatureList::clearBaseLevel() {
+  baseLevelIncrease.clear();
+  return *this;
+}
+
+CreatureList& CreatureList::clearExpLevel() {
+  expLevelIncrease.clear();
   return *this;
 }
 

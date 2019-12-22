@@ -520,7 +520,7 @@ PModel ModelBuilder::splashModel(const FilePath& splashPath) {
   return m;
 }
 
-PModel ModelBuilder::battleModel(const FilePath& levelPath, CreatureList allies, CreatureList enemies) {
+PModel ModelBuilder::battleModel(const FilePath& levelPath, vector<CreatureList> allies, vector<CreatureList> enemies) {
   auto m = Model::create(contentFactory, BiomeId::GRASSLAND);
   ifstream stream(levelPath.getPath());
   Table<char> level = *SokobanInput::readTable(stream);

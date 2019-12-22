@@ -40,9 +40,11 @@ class MainLoop {
 
   void start(bool tilesPresent);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
-  void battleTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, string enemyId, RandomGen&);
-  int battleTest(int numTries, const FilePath& levelPath, CreatureList ally, CreatureList enemyId, RandomGen&);
-  void endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, RandomGen&, optional<int> numEnemy);
+  void battleTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, string enemyId);
+  int battleTest(int numTries, const FilePath& levelPath, vector<CreatureList> ally, vector<CreatureList> enemyId);
+  void endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, optional<int> numEnemy);
+  void campaignBattleText(int numTries, const FilePath& levelPath, EnemyId keeperId, VillainGroup);
+  int campaignBattleText(int numTries, const FilePath& levelPath, EnemyId keeperId, EnemyId);
   optional<string> verifyMod(const string& path);
   void launchQuickGame(optional<int> maxTurns);
 

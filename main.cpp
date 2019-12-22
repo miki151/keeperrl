@@ -52,6 +52,7 @@
 #include "name_generator.h"
 #include "enemy_factory.h"
 #include "tileset.h"
+#include "campaign_builder.h"
 
 #include "fx_manager.h"
 #include "fx_renderer.h"
@@ -416,10 +417,13 @@ static int keeperMain(po::parser& commandLineFlags) {
         optional<int> chosenEnemy;
         if (enemy != "all")
           chosenEnemy = fromString<int>(enemy);
-        loop.endlessTest(numRounds, FilePath::fromFullPath(level), FilePath::fromFullPath(info), Random, chosenEnemy);
+        loop.endlessTest(numRounds, FilePath::fromFullPath(level), FilePath::fromFullPath(info), chosenEnemy);
       } else {
         auto enemyId = commandLineFlags["battle_enemy"].get().string;
-        loop.battleTest(numRounds, FilePath::fromFullPath(level), FilePath::fromFullPath(info), enemyId, Random);
+        if (enemyId == "campaign")
+          loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId("DARK_MAGE"), VillainGroup::EVIL_KEEPER);
+        else
+          loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId("DARK_MAGE"), EnemyId(enemyId.data()));
       }
     } catch (GameExitException) {}
   };

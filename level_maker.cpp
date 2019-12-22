@@ -43,6 +43,7 @@
 #include "item_list.h"
 #include "biome_id.h"
 #include "build_info.h"
+#include "creature_attributes.h"
 
 namespace {
 
@@ -3031,16 +3032,28 @@ namespace {
 
 class BattleFromFile : public LevelMaker {
   public:
-  BattleFromFile(Table<char> f, CreatureList a, CreatureList e)
+  BattleFromFile(Table<char> f, vector<CreatureList> a, vector<CreatureList> e)
       : level(f), allies(a), enemies(e) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     CHECK(area == level.getBounds()) << "Bad size of battle level input.";
-    auto alliesList = allies.generate(builder->getRandom(), &builder->getContentFactory()->getCreatures(), TribeId::getDarkKeeper(),
-        MonsterAIFactory::guard());
+    vector<PCreature> alliesList;
+    for (auto& ally : allies)
+      alliesList.append(ally.generate(builder->getRandom(), &builder->getContentFactory()->getCreatures(), TribeId::getDarkKeeper(),
+          MonsterAIFactory::monster()));
     int allyIndex = 0;
-    auto enemyList = enemies.generate(builder->getRandom(), &builder->getContentFactory()->getCreatures(), TribeId::getHuman(),
-        MonsterAIFactory::monster());
+    vector<PCreature> enemyList;
+    for (auto& enemy : enemies)
+      enemyList.append(enemy.generate(builder->getRandom(), &builder->getContentFactory()->getCreatures(), TribeId::getHuman(),
+        MonsterAIFactory::monster()));
+    for (auto& c : enemyList) {
+      c->getAttributes().setCourage(100);
+      c->removePermanentEffect(LastingEffect::BLIND);
+    }
+    for (auto& c : alliesList) {
+      c->getAttributes().setCourage(100);
+      c->removePermanentEffect(LastingEffect::BLIND);
+    }
     int enemyIndex = 0;
     for (Vec2 v : area) {
       builder->resetFurniture(v, FurnitureType("FLOOR"));
@@ -3071,13 +3084,13 @@ class BattleFromFile : public LevelMaker {
   }
 
   Table<char> level;
-  CreatureList allies;
-  CreatureList enemies;
+  vector<CreatureList> allies;
+  vector<CreatureList> enemies;
 };
 
 }
 
-PLevelMaker LevelMaker::battleLevel(Table<char> level, CreatureList allies, CreatureList enemies) {
+PLevelMaker LevelMaker::battleLevel(Table<char> level, vector<CreatureList> allies, vector<CreatureList> enemies) {
   return unique<BattleFromFile>(level, allies, enemies);
 }
 
