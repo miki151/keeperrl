@@ -811,11 +811,7 @@ string Effects::Chance::getDescription(const ContentFactory* f) const {
 }
 
 void Effects::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) const {
-  auto attributes = c->getAttributes();
-  c->getGame()->getContentFactory()->getCreatures().initializeAttributes(*c->getAttributes().getCreatureId(), attributes);
-  PCreature copy = makeOwner<Creature>(c->getTribeId(), std::move(attributes), c->getSpellMap());
-  copy->setController(Monster::getFactory(MonsterAIFactory::monster()).get(copy.get()));
-  copy->modViewObject() = c->getViewObject();
+  PCreature copy = c->getGame()->getContentFactory()->getCreatures().makeCopy(c);
   auto ttl = 50_visible;
   for (auto& item : c->getEquipment().getItems())
     if (!item->getResourceId() && !item->isDiscarded()) {

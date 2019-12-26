@@ -863,6 +863,20 @@ PCreature CreatureFactory::fromId(CreatureId id, TribeId t) {
 }
 
 
+PCreature CreatureFactory::makeCopy(Creature* c, const MonsterAIFactory& aiFactory) {
+  auto attributes = c->getAttributes();
+  initializeAttributes(*c->getAttributes().getCreatureId(), attributes);
+  auto ret = makeOwner<Creature>(c->getTribeId(), std::move(attributes), c->getSpellMap());
+  ret->modViewObject() = c->getViewObject();
+  ret->setController(Monster::getFactory(aiFactory).get(ret.get()));
+  return ret;
+}
+
+PCreature CreatureFactory::makeCopy(Creature* c) {
+  return makeCopy(c, MonsterAIFactory::monster());
+}
+
+
 PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFactory& f) {
   return fromId(id, t, f, {});
 }

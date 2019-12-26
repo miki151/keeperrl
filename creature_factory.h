@@ -40,6 +40,8 @@ class CreatureFactory {
   PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&);
   PCreature fromId(CreatureId, TribeId, const MonsterAIFactory&, const vector<ItemType>& inventory);
   PCreature fromId(CreatureId, TribeId);
+  PCreature makeCopy(Creature*, const MonsterAIFactory&);
+  PCreature makeCopy(Creature*);
   static PController getShopkeeper(Rectangle shopArea, Creature*);
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
   PCreature getAnimatedItem(PItem, TribeId, int attrBonus);

@@ -3,33 +3,34 @@
 {
   counts = {
       # First comes FurnitureType
+      # Then the range of length of the side of the rectangle in which a resource patch is placed
       # The numbers represent patches close to and far from the starting position, respectively.
       # If you add too many patches, level generation might fail.
-      "STONE" 2 4
-      "IRON_ORE" 3 4
-      "GOLD_ORE" 1 3
+      "STONE" {5 10} 2 4
+      "IRON_ORE" {5 10} 3 4
+      "GOLD_ORE" {5 10} 1 3
   }
   minDepth = 0
   maxDepth = 0
 }
 {
   counts = {
-      "STONE" 2 0
-      "IRON_ORE" 2 0
-      "GOLD_ORE" 1 0
+      "STONE" {5 10} 2 0
+      "IRON_ORE" {5 10} 2 0
+      "GOLD_ORE" {5 10} 1 0
   }
   minDepth = 1
 }
 {
   counts = {
-      "GOLD_ORE" 2 0
-      "ADAMANTIUM_ORE" 2 0
+      "GOLD_ORE" {5 10} 2 0
+      "ADAMANTIUM_ORE" {5 10} 2 0
   }
   minDepth = 6
 }
 {
   counts = {
-      "GIANT_MUSHROOM" 6 0
+      "GIANT_MUSHROOM" {5 10} 6 0
   }
   minDepth = 4
 }

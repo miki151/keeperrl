@@ -41,12 +41,14 @@ class MainLoop {
   void start(bool tilesPresent);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
   void battleTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, string enemyId);
-  int battleTest(int numTries, const FilePath& levelPath, vector<CreatureList> ally, vector<CreatureList> enemyId);
+  int battleTest(int numTries, const FilePath& levelPath, vector<CreatureList> ally, vector<CreatureList> enemies);
+  int battleTest(int numTries, const FilePath& levelPath, vector<Creature*> ally, vector<CreatureList> enemies);
   void endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, optional<int> numEnemy);
   void campaignBattleText(int numTries, const FilePath& levelPath, EnemyId keeperId, VillainGroup);
   int campaignBattleText(int numTries, const FilePath& levelPath, EnemyId keeperId, EnemyId);
   optional<string> verifyMod(const string& path);
   void launchQuickGame(optional<int> maxTurns);
+  void playSimpleGame();
 
   static TimeInterval getAutosaveFreq();
 

@@ -6,9 +6,10 @@
 struct ResourceCounts {
   struct Elem {
     FurnitureType SERIAL(type);
+    Range SERIAL(size);
     int SERIAL(countStartingPos);
     int SERIAL(countFurther);
-    SERIALIZE_ALL(type, countStartingPos, countFurther)
+    SERIALIZE_ALL(type, size, countStartingPos, countFurther)
   };
   vector<Elem> SERIAL(elems);
   SERIALIZE_ALL(elems)

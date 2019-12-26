@@ -111,6 +111,10 @@ void Furniture::onEnter(Creature* c) const {
   }
 }
 
+const heap_optional<ItemList>& Furniture::getItemDrop() const {
+  return itemDrop;
+}
+
 void Furniture::destroy(Position pos, const DestroyAction& action) {
   if (!destroyedEffect)
     pos.globalMessage("The " + name + " " + action.getIsDestroyed());

@@ -220,6 +220,7 @@ static po::parser getCommandLineFlags() {
   flags["stderr"].description("Log to stderr");
   flags["nolog"].description("No logging");
   flags["free_mode"].description("Run in free ascii mode");
+  flags["simple_game"].description("Start \"simple game\"");
 #ifndef RELEASE
   flags["quick_game"].description("Skip main menu and load the last save file or start a single map game");
   flags["max_turns"].type(po::i32).description("Quit the game after a given max number of turns");
@@ -376,6 +377,11 @@ static int keeperMain(po::parser& commandLineFlags) {
   options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
   jukebox.setCurrentVolume(options.getIntValue(OptionId::MUSIC));
   auto modsDir = userPath.subdirectory(gameConfigSubdir);
+  if (commandLineFlags["simple_game"].was_set()) {
+    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, &jukebox, nullptr, nullptr,
+        useSingleThread, 0, "");
+    loop.playSimpleGame();
+  }
   if (commandLineFlags["verify_mod"].was_set()) {
     MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, &jukebox, nullptr, nullptr,
         useSingleThread, 0, "");

@@ -2573,7 +2573,7 @@ static void generateResources(RandomGen& random, ResourceCounts resourceCounts, 
   };
   const int closeDist = 0;
   for (auto& info : resourceCounts.elems)
-    addResources(info.countStartingPos, Range(5, 10), 20, info.type, startingPos, nullptr);
+    addResources(info.countStartingPos, info.size, 20, info.type, startingPos, nullptr);
   for (auto enemy : surroundWithResources)
     for (int i : Range(enemy.info.surroundWithResources))
       if (auto type = enemy.info.extraResources)
@@ -2581,13 +2581,13 @@ static void generateResources(RandomGen& random, ResourceCounts resourceCounts, 
       else {
         auto& info = resourceCounts.elems[i % resourceCounts.elems.size()];
         if (info.countFurther > 0) {
-          addResources(1, Range(5, 10), closeDist, info.type, enemy.maker, enemy.info.collective);
+          addResources(1, info.size, closeDist, info.type, enemy.maker, enemy.info.collective);
           --info.countFurther;
       }
     }
   for (auto& info : resourceCounts.elems)
     if (info.countFurther > 0)
-      addResources(info.countFurther, Range(5, 10), mapWidth / 3, info.type, startingPos, nullptr);
+      addResources(info.countFurther, info.size, mapWidth / 3, info.type, startingPos, nullptr);
 }
 
 static PMakerQueue getSettlementMaker(RandomGen& random, const SettlementInfo& settlement) {
@@ -3032,15 +3032,11 @@ namespace {
 
 class BattleFromFile : public LevelMaker {
   public:
-  BattleFromFile(Table<char> f, vector<CreatureList> a, vector<CreatureList> e)
-      : level(f), allies(a), enemies(e) {}
+  BattleFromFile(Table<char> f, vector<PCreature> a, vector<CreatureList> e)
+      : level(f), allies(std::move(a)), enemies(e) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     CHECK(area == level.getBounds()) << "Bad size of battle level input.";
-    vector<PCreature> alliesList;
-    for (auto& ally : allies)
-      alliesList.append(ally.generate(builder->getRandom(), &builder->getContentFactory()->getCreatures(), TribeId::getDarkKeeper(),
-          MonsterAIFactory::monster()));
     int allyIndex = 0;
     vector<PCreature> enemyList;
     for (auto& enemy : enemies)
@@ -3050,7 +3046,7 @@ class BattleFromFile : public LevelMaker {
       c->getAttributes().setCourage(100);
       c->removePermanentEffect(LastingEffect::BLIND);
     }
-    for (auto& c : alliesList) {
+    for (auto& c : allies) {
       c->getAttributes().setCourage(100);
       c->removePermanentEffect(LastingEffect::BLIND);
     }
@@ -3067,8 +3063,8 @@ class BattleFromFile : public LevelMaker {
           builder->putFurniture(v, FurnitureType("WATER"));
           break;
         case 'a':
-          if (allyIndex < alliesList.size()) {
-            builder->putCreature(v, std::move(alliesList[allyIndex]));
+          if (allyIndex < allies.size()) {
+            builder->putCreature(v, std::move(allies[allyIndex]));
             ++allyIndex;
           }
           break;
@@ -3084,14 +3080,14 @@ class BattleFromFile : public LevelMaker {
   }
 
   Table<char> level;
-  vector<CreatureList> allies;
+  vector<PCreature> allies;
   vector<CreatureList> enemies;
 };
 
 }
 
-PLevelMaker LevelMaker::battleLevel(Table<char> level, vector<CreatureList> allies, vector<CreatureList> enemies) {
-  return unique<BattleFromFile>(level, allies, enemies);
+PLevelMaker LevelMaker::battleLevel(Table<char> level, vector<PCreature> allies, vector<CreatureList> enemies) {
+  return unique<BattleFromFile>(level, std::move(allies), enemies);
 }
 
 PLevelMaker LevelMaker::emptyLevel(FurnitureType t, bool withFloor) {

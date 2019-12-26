@@ -520,12 +520,12 @@ PModel ModelBuilder::splashModel(const FilePath& splashPath) {
   return m;
 }
 
-PModel ModelBuilder::battleModel(const FilePath& levelPath, vector<CreatureList> allies, vector<CreatureList> enemies) {
+PModel ModelBuilder::battleModel(const FilePath& levelPath, vector<PCreature> allies, vector<CreatureList> enemies) {
   auto m = Model::create(contentFactory, BiomeId::GRASSLAND);
   ifstream stream(levelPath.getPath());
   Table<char> level = *SokobanInput::readTable(stream);
   WLevel l = m->buildMainLevel(
       LevelBuilder(meter, Random, contentFactory, level.getBounds().width(), level.getBounds().height(), true, 1.0),
-      LevelMaker::battleLevel(level, allies, enemies));
+      LevelMaker::battleLevel(level, std::move(allies), enemies));
   return m;
 }

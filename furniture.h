@@ -138,6 +138,7 @@ class Furniture : public OwnedObject<Furniture> {
   bool isVisibleWhileBlind() const;
   optional<BedType> getBedType() const;
   const optional<FurnitureEffectInfo>& getLastingEffectInfo() const;
+  const heap_optional<ItemList>& getItemDrop() const;
 
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();

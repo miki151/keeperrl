@@ -27,3 +27,5 @@ struct ZLevelInfo {
   int SERIAL(width) = 140;
   SERIALIZE_ALL(NAMED(type), NAMED(minDepth), NAMED(maxDepth), OPTION(width))
 };
+
+optional<ZLevelInfo> chooseZLevel(RandomGen&, const vector<ZLevelInfo>&, int depth);

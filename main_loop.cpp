@@ -46,6 +46,8 @@
 #include "extern/iomanip.h"
 #include "enemy_info.h"
 #include "level.h"
+#include "simple_game.h"
+#include "monster_ai.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -723,6 +725,14 @@ GameConfig MainLoop::getVanillaConfig() const {
   return GameConfig({getVanillaDir()});
 }
 
+void MainLoop::playSimpleGame() {
+  auto factory = createContentFactory(false);
+  SimpleGame game(&factory, this);
+  while (1) {
+    game.update();
+  }
+}
+
 GameConfig MainLoop::getGameConfig(const string& modName) const {
   if (modName != "vanilla")
     return GameConfig({getVanillaDir(), modsDir.subdirectory(modName)});
@@ -979,6 +989,14 @@ optional<string> MainLoop::verifyMod(const string& path) {
 }
 
 int MainLoop::battleTest(int numTries, const FilePath& levelPath, vector<CreatureList> ally, vector<CreatureList> enemies) {
+  vector<PCreature> allies;
+  auto contentFactory = createContentFactory(false);
+  for (auto& elem : ally)
+    allies.append(elem.generate(Random, &contentFactory.getCreatures(), TribeId::getDarkKeeper(), MonsterAIFactory::monster()));
+  return battleTest(numTries, levelPath, getWeakPointers(allies), enemies);
+}
+
+int MainLoop::battleTest(int numTries, const FilePath& levelPath, vector<Creature*> ally, vector<CreatureList> enemies) {
   ProgressMeter meter(1);
   int numAllies = 0;
   int numEnemies = 0;
@@ -988,8 +1006,9 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, vector<Creatur
     auto contentFactory = createContentFactory(false);
     EnemyFactory enemyFactory(Random, contentFactory.getCreatures().getNameGenerator(),
         contentFactory.enemies, contentFactory.buildingInfo, contentFactory.externalEnemies);
+    auto allyCopy = ally.transform([&](Creature* c) { return contentFactory.getCreatures().makeCopy(c); });
     auto model = ModelBuilder(&meter, Random, options, sokobanInput,
-        &contentFactory, std::move(enemyFactory)).battleModel(levelPath, ally, enemies);
+        &contentFactory, std::move(enemyFactory)).battleModel(levelPath, std::move(allyCopy), enemies);
     auto game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory));
     auto exitCondition = [&](WGame game) -> optional<ExitCondition> {
       unordered_set<TribeId, CustomHash<TribeId>> tribes;
