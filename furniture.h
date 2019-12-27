@@ -76,6 +76,7 @@ class Furniture : public OwnedObject<Furniture> {
   void setTribe(TribeId);
   const heap_optional<Fire>& getFire() const;
   void fireDamage(Position, bool withMessage = true);
+  void acidDamage(Position);
   void iceDamage(Position);
   void tick(Position, FurnitureLayer supposedLayer);
   bool canSeeThru(VisionId) const;
@@ -224,6 +225,7 @@ class Furniture : public OwnedObject<Furniture> {
     SERIALIZE_ALL(OPTION(meltTo))
   };
   optional<MeltInfo> SERIAL(meltInfo);
+  optional<FurnitureType> SERIAL(dissolveTo);
   optional<int> SERIAL(bloodCountdown);
   optional<LocalTime> SERIAL(bloodTime);
   optional<Effect> SERIAL(destroyedEffect);

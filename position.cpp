@@ -769,6 +769,19 @@ void Position::iceDamage() {
       it->iceDamage(*this);
 }
 
+void Position::acidDamage() {
+  PROFILE;
+  double amount = 1.0;
+  for (auto furniture : modFurniture())
+    if (Random.chance(amount))
+      furniture->acidDamage(*this);
+  if (Creature* creature = getCreature())
+    creature->affectByAcid();
+  for (Item* it : getItems())
+    if (Random.chance(amount))
+      it->iceDamage(*this);
+}
+
 bool Position::needsMemoryUpdate() const {
   PROFILE;
   return isValid() && level->needsMemoryUpdate(getCoord());

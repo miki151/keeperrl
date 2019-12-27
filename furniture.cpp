@@ -48,8 +48,8 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(canBuildBridge), OPTION(noProjectiles), OPTION(clearFogOfWar), OPTION(removeWithCreaturePresent), OPTION(upgrade));
   ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
-  ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(freezeTo));
-  ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), OPTION(visibleWhileBlind));
+  ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(dissolveTo));
+  ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), OPTION(visibleWhileBlind), NAMED(freezeTo));
 }
 
 template <class Archive>
@@ -491,6 +491,16 @@ bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& ac
    return canDestroy(action) &&
        (!fire || !fire->isBurning()) &&
        (!movement.isCompatible(getTribe()) || action.canDestroyFriendly());
+}
+
+void Furniture::acidDamage(Position pos) {
+  if (dissolveTo) {
+    pos.globalMessage("The " + getName() + " is dissolved");
+    PFurniture replace = pos.getGame()->getContentFactory()->furniture.getFurniture(*dissolveTo, getTribe());
+    pos.removeFurniture(this, std::move(replace));
+  } else
+  if (destroyedInfo[DestroyAction::Type::BASH])
+    destroy(pos, DestroyAction(DestroyAction::Type::BASH));
 }
 
 void Furniture::fireDamage(Position pos, bool withMessage) {

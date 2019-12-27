@@ -361,7 +361,16 @@
   effect = Ice
   fx = ICE
   range = 4
-  cooldown = 30
+  cooldown = 5
+  #sound = SPELL_FIRE_SPHERE_PET
+}
+"acid stream"
+{
+  symbol = "🜅"
+  effect = Acid
+  fx = ACID
+  range = 4
+  cooldown = 5
   #sound = SPELL_FIRE_SPHERE_PET
 }
 "shove"

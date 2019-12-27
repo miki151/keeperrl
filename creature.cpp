@@ -1441,6 +1441,17 @@ void Creature::affectByAcid() {
   if (getBody().affectByAcid(this)) {
     you(MsgType::ARE, "dissolved by acid");
     dieWithReason("dissolved by acid");
+  } else {
+    auto& items = equipment->getAllEquipped();
+    if (!items.empty()) {
+      auto item = Random.choose(items);
+      for (auto mod : ENUM_ALL(AttrType))
+        if (item->getModifier(mod) > 0) {
+          you(MsgType::YOUR, item->getName() + " corrodes");
+          item->addModifier(mod, -1);
+          break;
+        }
+    }
   }
 }
 

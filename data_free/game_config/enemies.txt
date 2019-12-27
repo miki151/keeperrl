@@ -1211,6 +1211,7 @@
         all = append {
           150 "RED_DRAGON"
           150 "BLACK_DRAGON"
+          150 "YELLOW_DRAGON"
         }
       }
     }

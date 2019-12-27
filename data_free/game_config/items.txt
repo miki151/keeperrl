@@ -636,6 +636,29 @@
     equipedEffect = {COLD_RESISTANT}
     maxUpgrades = 2
   }
+"YellowDragonScales"
+  {
+    viewId = { "dragon_scales" Rgb 254 254 10 255 }
+    name = "yellow dragon scales"
+    itemClass = OTHER
+    weight = 5
+    price = 100
+    ingredientFor = {Simple "YellowDragonArmor"}
+  }
+"YellowDragonArmor" inherit "ChainArmor"
+  {
+    viewId = { "chain_armor" Rgb 254 254 10 255 }
+    shortName = "yellow dragon"
+    name = "yellow dragon scale armor"
+    weight = 10
+    price = 250
+    modifiers = {
+      DEFENSE 7
+      SPELL_DAMAGE 4
+    }
+    equipedAbility = "acid stream"
+    maxUpgrades = 2
+  }
 "GreenDragonScales"
   {
     viewId = { "dragon_scales" }

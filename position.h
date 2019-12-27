@@ -94,6 +94,7 @@ class Position {
   bool isBurning() const;
   void fireDamage(double amount);
   void iceDamage();
+  void acidDamage();
   bool needsRenderUpdate() const;
   void setNeedsRenderUpdate(bool) const;
   bool needsMemoryUpdate() const;

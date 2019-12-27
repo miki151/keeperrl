@@ -364,6 +364,7 @@
   blockVision = { NORMAL }
   destroyedRemains = "TREE_TRUNK"
   burntRemains = "BURNT_TREE"
+  dissolveTo = "BURNT_TREE"
   strength2 = {
     100 BOULDER
     70 CUT

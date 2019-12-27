@@ -329,11 +329,6 @@ string Effects::Alarm::getDescription(const ContentFactory*) const {
 }
 
 void Effects::Acid::applyToCreature(Creature* c, Creature* attacker) const {
-  c->affectByAcid();
-  switch (Random.get(2)) {
-    case 0 : enhanceArmor(c, -1, "corrodes"); break;
-    case 1 : enhanceWeapon(c, -1, "corrodes"); break;
-  }
 }
 
 string Effects::Acid::getName(const ContentFactory*) const {
@@ -1053,6 +1048,9 @@ void Effect::apply(Position pos, Creature* attacker) const {
       [&](Effects::Ice) {
         //pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});
         pos.iceDamage();
+      },
+      [&](Effects::Acid) {
+        pos.acidDamage();
       },
       [&](const Effects::Area& area) {
         for (auto v : pos.getRectangle(Rectangle::centered(area.radius)))

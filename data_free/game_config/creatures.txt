@@ -950,6 +950,39 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
     }
   }
+"YELLOW_DRAGON" inherit "BLACK_DRAGON"
+  {
+    viewId = { "red_dragon" Rgb 240 240 10 255 }
+    body = {
+      type = FourLegged HUGE
+      addBodyPart = {
+        WING 2
+      }
+      intrinsicAttacks = {
+        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 15 {
+            attackType = BITE
+            attackMsg = BITE } }}}
+      }
+      drops = {{ Simple "YellowDragonScales" } 1}
+    }
+    permanentEffects = {
+      RANGED_VULNERABILITY 1
+    }
+    name = {
+      name = "yellow dragon"
+      firstNameGen = "DRAGON"
+      stackName = "dragon"
+    }
+    spells = { "healing" "haste" "cure poison" "acid stream"}
+    inventory = {
+      { Simple "GoldPiece" 120 200 }
+      { type = Glyph WEAPON VictimEffect 0.3 Acid chance = 0.1 }
+      { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
+      { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
+      { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
+      { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+    }
+  }
 "KNIGHT_PLAYER"
   {
     viewId = { "knight" }

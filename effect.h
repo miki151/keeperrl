@@ -59,6 +59,8 @@ class Effect {
   static vector<Creature*> summonCreatures(Position, vector<PCreature>, TimeInterval delay = 0_visible);
   static void emitPoisonGas(Position, double amount, bool msg);
   static vector<Effect> getWishedForEffects();
+  static void enhanceWeapon(Creature*, int mod, const string& msg);
+  static void enhanceArmor(Creature*, int mod, const string& msg);
 
   HeapAllocatedSerializationWorkaround<EffectType> SERIAL(effect);
 

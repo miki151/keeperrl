@@ -1018,7 +1018,7 @@ static void addFireballEffect(FXManager& mgr) {
   mgr.addDef(FXName::FIREBALL, psdef);
 }
 
-static void addFlamethrowerEffect(FXManager& mgr) {
+static void addFlamethrowerEffect(FXManager& mgr, FXName fxName, Color flameColor1, Color flameColor2, Color glowColor) {
   ParticleSystemDef psdef;
 
   auto emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
@@ -1046,7 +1046,7 @@ static void addFlamethrowerEffect(FXManager& mgr) {
     ParticleDef pdef;
     pdef.life = 0.5f;
     pdef.size = 12.0f;
-    pdef.color = {{rgb(Color(155, 85, 30)), rgb(Color(45, 35, 30))}};
+    pdef.color = {{rgb(flameColor1), rgb(flameColor2)}};
     pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
     pdef.textureName = TextureName::FLAMES_BLURRED;
 
@@ -1066,7 +1066,7 @@ static void addFlamethrowerEffect(FXManager& mgr) {
     pdef.life = 0.5f;
     pdef.size = 55.0f;
 
-    pdef.color = rgb(Color(185, 155, 100));
+    pdef.color = rgb(glowColor);
     pdef.alpha = {{0.0f, 0.2f, 0.7f, 1.0f}, {0.0f, 0.5f, 0.5f, 0.0f}};
     pdef.textureName = TextureName::CIRCULAR;
 
@@ -1077,69 +1077,7 @@ static void addFlamethrowerEffect(FXManager& mgr) {
     psdef.subSystems.emplace_back(ssdef);
   }
 
-  mgr.addDef(FXName::FLAMETHROWER, psdef);
-}
-
-static void addIceEffect(FXManager& mgr) {
-  ParticleSystemDef psdef;
-
-  auto emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
-    defaultEmitParticle(ctx, em, pinst);
-    float mod = ctx.ps.params.scalar[0];
-    pinst.size *= (1.0f + mod * 0.25f);
-  };
-
-  auto prepFunc = [](AnimationContext& ctx, EmissionState& em) {
-    float freq = defaultPrepareEmission(ctx, em);
-    em.direction = ctx.ps.targetDirAngle;
-    em.directionSpread /= ctx.ps.targetTileDist;
-    em.strength *= ctx.ps.targetTileDist;
-    freq *= ctx.ps.targetTileDist;
-    return freq;
-  };
-
-  { // Flames
-    EmitterDef edef;
-    edef.strength = 50.0f;
-    edef.setDirectionSpread(0.0f, 0.3f);
-    edef.frequency = 40.0f;
-    edef.source = FVec2(0.0f);
-
-    ParticleDef pdef;
-    pdef.life = 0.5f;
-    pdef.size = 12.0f;
-    pdef.color = {{rgb(Color(30, 85, 155)), rgb(Color(30, 35, 45))}};
-    pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
-    pdef.textureName = TextureName::FLAMES_BLURRED;
-
-    SubSystemDef ssdef(pdef, edef, 0.0f, 0.7f);
-    ssdef.prepareFunc = prepFunc;
-    ssdef.emitFunc = emitFunc;
-    psdef.subSystems.emplace_back(ssdef);
-  }
-  { // Glow
-    EmitterDef edef;
-    edef.strength = 50.0f;
-    edef.setDirectionSpread(0.0f, 0.3f);
-    edef.frequency = 8.0f;
-    edef.source = FVec2(0.0f);
-
-    ParticleDef pdef;
-    pdef.life = 0.5f;
-    pdef.size = 55.0f;
-
-    pdef.color = rgb(Color(100, 155, 185));
-    pdef.alpha = {{0.0f, 0.2f, 0.7f, 1.0f}, {0.0f, 0.5f, 0.5f, 0.0f}};
-    pdef.textureName = TextureName::CIRCULAR;
-
-    SubSystemDef ssdef(pdef, edef, 0.0f, 0.65f);
-    ssdef.prepareFunc = prepFunc;
-    ssdef.emitFunc = emitFunc;
-    ssdef.layer = Layer::back;
-    psdef.subSystems.emplace_back(ssdef);
-  }
-
-  mgr.addDef(FXName::ICE, psdef);
+  mgr.addDef(fxName, psdef);
 }
 
 static void addSleepEffect(FXManager& mgr) {
@@ -1784,9 +1722,10 @@ void FXManager::initializeDefs() {
   addMagicMissileEffect(*this);
   addMagicMissileSplashEffect(*this);
   addFireballEffect(*this);
-  addIceEffect(*this);
+  addFlamethrowerEffect(*this, FXName::ICE, Color(30, 85, 155), Color(30, 35, 45), Color(100, 155, 185));
+  addFlamethrowerEffect(*this, FXName::ACID, Color(155, 155, 30), Color(45, 45, 30), Color(185, 155, 50));
   addFireballSplashEffect(*this);
-  addFlamethrowerEffect(*this);
+  addFlamethrowerEffect(*this, FXName::FLAMETHROWER, Color(155, 85, 30), Color(45, 35, 30), Color(185, 155, 100));
 
   addSleepEffect(*this);
   addLoveEffect(*this);
