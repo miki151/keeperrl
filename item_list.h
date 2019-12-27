@@ -21,5 +21,7 @@ class ItemList {
   ItemList& addUniqueItem(ItemType, Range count = Range::singleElem(1));
   ItemList& setRandomPrefixes(double chance);
   vector<ItemInfo> SERIAL(items);
+  struct MultiItemInfo;
+  vector<MultiItemInfo> SERIAL(multiItems);
   vector<pair<ItemType, Range>> SERIAL(unique);
 };

@@ -122,6 +122,28 @@
   items = append {
     {{Mushroom Lasting HALLU} 10}
   }
+# When you want to express multiple items at the same spot.
+# First is the range (bottom inclusive, top exclusive), then a list of items
+# and probabilities that each item is included.
+  multiItems = {
+    {0 2} {
+      {Simple "BattleAxe"} 0.1
+      {Potion Heal FLESH} 0.3
+      {Simple "IronHelm"} 0.5
+      {Simple "Sword"} 0.5
+      {Simple "Skeleton"} 1
+    }
+    {0 2} {
+      {Mushroom Lasting HALLU} 0.5
+      {Mushroom Lasting DAM_BONUS} 0.5
+      {Mushroom Lasting DEF_BONUS} 0.5
+      {Mushroom Lasting NIGHT_VISION} 0.5
+      {Mushroom Lasting REGENERATION} 0.5
+      {Mushroom Lasting RAGE} 0.5
+      {Mushroom Lasting PANIC} 0.5
+      {Simple "Skeleton"} 1
+    }
+  }
 }
 
 "desertItems"
