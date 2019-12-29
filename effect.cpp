@@ -627,7 +627,7 @@ string Effects::PlaceFurniture::getDescription(const ContentFactory*) const {
 
 void Effects::Damage::applyToCreature(Creature* c, Creature* attacker) const {
   CHECK(attacker) << "Unknown attacker";
-  c->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), attackType, attacker->getAttr(attr), attr));
+  c->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), attackType, attacker->getAttr(attr), attr), true);
   if (attr == AttrType::SPELL_DAMAGE)
     c->addFX({FXName::MAGIC_MISSILE_SPLASH});
 }

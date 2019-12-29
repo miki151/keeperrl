@@ -51,7 +51,7 @@ void RangedWeapon::fire(Creature* c, Position target) const {
       lastPos = pos;
       if (auto c = pos.getCreature()) {
         c->you(MsgType::HIT_THROWN_ITEM, "the " + projectileName);
-        c->takeDamage(attack);
+        c->takeDamage(attack, true);
         break;
       }
       if (pos.stopsProjectiles(vision)) {
