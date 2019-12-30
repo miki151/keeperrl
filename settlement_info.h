@@ -10,6 +10,7 @@
 #include "building_info.h"
 #include "name_generator_id.h"
 #include "stair_key.h"
+#include "map_layout_id.h"
 
 struct StockpileInfo {
   ItemListId SERIAL(items);
@@ -19,7 +20,7 @@ struct StockpileInfo {
 };
 
 RICH_ENUM(
-  SettlementType,
+  BuiltinLayoutId,
   VILLAGE,
   SMALL_VILLAGE,
   FORREST_VILLAGE,
@@ -43,10 +44,20 @@ RICH_ENUM(
   MOUNTAIN_LAKE
 );
 
+
+namespace SettlementDetail {
+
+using Builtin = BuiltinLayoutId;
+
+MAKE_VARIANT2(LayoutType, MapLayoutId, Builtin);
+}
+
+using SettlementDetail::LayoutType;
+
 class CollectiveBuilder;
 
 struct SettlementInfo {
-  SettlementType SERIAL(type);
+  LayoutType SERIAL(type);
   InhabitantsInfo SERIAL(inhabitants);
   optional<InhabitantsInfo> SERIAL(corpses);
   optional<string> SERIAL(locationName);

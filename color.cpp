@@ -209,3 +209,7 @@ template<> void Color::serialize(TextOutputArchive& ar1, unsigned) {
   int a = this->a;
   ar1 << r << g << b << a;
 }
+
+string toString(const Color& c) {
+  return "(" + toString<int>(c.r) + ", " + toString<int>(c.g) + ", " + toString<int>(c.b) + ")";
+}

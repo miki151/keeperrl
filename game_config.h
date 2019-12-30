@@ -47,7 +47,6 @@ class GameConfig {
     return PrettyPrinting::parseObject<T>(object, paths, keyVerifier);
   }
 
-  private:
   static const char* getConfigName(GameConfigId);
   vector<DirectoryPath> dirs;
 };

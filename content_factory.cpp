@@ -20,10 +20,11 @@
 #include "resource_counts.h"
 #include "z_level_info.h"
 #include "equipment.h"
+#include "sdl.h"
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
-  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo);
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts);
   creatures.setContentFactory(this);
 }
 
@@ -216,12 +217,75 @@ optional<string> ContentFactory::readBuildingInfo(const GameConfig* config, KeyV
   return none;
 }
 
+static Color getpixel(SDL::SDL_Surface *surface, int x, int y) {
+  auto get = [&]() -> SDL::Uint32 {
+    int bpp = surface->format->BytesPerPixel;
+    Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+    switch (bpp) {
+      case 1:
+        return *p;
+      case 2:
+        return *(SDL::Uint16*)p;
+      case 3:
+        if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+          return p[0] << 16 | p[1] << 8 | p[2];
+        else
+          return p[0] | p[1] << 8 | p[2] << 16;
+        case 4:
+          return *(SDL::Uint32 *)p;
+        default:
+          fail();
+    }
+  };
+  Color ret;
+  SDL::SDL_GetRGB(get(), surface->format, &ret.r, &ret.g, &ret.b);
+  return ret;
+}
+
+static optional<string> readMapLayouts(MapLayouts& layouts, KeyVerifier& keyVerifier, const DirectoryPath& path) {
+  if (path.exists())
+    for (auto subdir : path.getSubDirs()) {
+      for (auto file : path.subdirectory(subdir).getFiles()) {
+        SDL::SDL_Surface* im = SDL::IMG_Load(file.getPath());
+        MapLayouts::Layout layout(im->w, im->h - 1);
+        for (auto v : layout.getBounds()) {
+          auto color = getpixel(im, v.x, v.y);
+          if (color == Color(0, 0, 0))
+            layout[v] = LayoutPiece::WALL;
+          else if (color == Color(0, 255, 0))
+            layout[v] = LayoutPiece::FLOOR_INSIDE;
+          else if (color == Color(80, 40, 0))
+            layout[v] = LayoutPiece::FLOOR_OUTSIDE;
+          else if (color == Color(0, 0, 255))
+            layout[v] = LayoutPiece::WATER;
+          else if (color == Color(255, 0, 255))
+            layout[v] = LayoutPiece::PRETTY_FLOOR;
+          else if (color == Color(160, 80, 0))
+            layout[v] = LayoutPiece::BRIDGE;
+          else if (color == Color(255, 0, 0))
+            layout[v] = LayoutPiece::DOOR;
+          else if (color != Color(255, 255, 255))
+            return "Unrecognized color in "_s +  file.getPath() + ": " + toString(color);
+        }
+        SDL::SDL_FreeSurface(im);
+        auto id = MapLayoutId(subdir.data());
+        keyVerifier.addKey<MapLayoutId>(subdir.data());
+        if (auto error = layouts.addLayout(id, std::move(layout)))
+          return "Error reading map layout "_s + file.getPath() + ": " + *error;
+      }
+    }
+  return none;
+}
+
 optional<string> ContentFactory::readData(const GameConfig* config, const string& modName) {
   KeyVerifier keyVerifier;
   map<PrimaryId<TechId>, Technology::TechDefinition> techsTmp;
   if (auto error = config->readObject(techsTmp, GameConfigId::TECHNOLOGY, &keyVerifier))
     return *error;
   technology = Technology(convertKeys(techsTmp));
+  for (auto& dir : config->dirs)
+    if (auto error = readMapLayouts(mapLayouts, keyVerifier, dir.subdirectory("map_layouts")))
+      return *error;
   if (auto error = config->readObject(workshopGroups, GameConfigId::WORKSHOPS_MENU, &keyVerifier))
     return *error;
   if (auto error = config->readObject(immigrantsData, GameConfigId::IMMIGRATION, &keyVerifier))

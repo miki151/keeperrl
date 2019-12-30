@@ -1,7 +1,7 @@
 "TUTORIAL_VILLAGE"
 {
   settlement = {
-    type = SMALL_VILLAGE
+    type = Builtin SMALL_VILLAGE
     tribe = HUMAN
     inhabitants = {
       fighters = {
@@ -34,7 +34,7 @@
 "UNICORN_HERD"
 {
   settlement = {
-    type = FOREST
+    type = Builtin FOREST
     inhabitants = {
       fighters = {
         count = {5 8}
@@ -62,7 +62,7 @@
 "ANTS_CLOSED"
 {
   settlement = {
-    type = ANT_NEST
+    type = Builtin ANT_NEST
     inhabitants = {
       leader = { { "ANT_QUEEN" } }
       civilians = {
@@ -105,7 +105,7 @@
 "ANTS_CLOSED_SMALL"
 {
   settlement = {
-    type = SMALL_MINETOWN
+    type = Builtin SMALL_MINETOWN
     inhabitants = {
       civilians = {
         count = {2 5}
@@ -133,7 +133,7 @@
 "BLACK_RATS" 
 {
   settlement = {
-    type = ANT_NEST
+    type = Builtin ANT_NEST
     inhabitants = {
       fighters = {
         count = {12 20}
@@ -150,7 +150,7 @@
 "ANTS_OPEN" inherit "ANTS_CLOSED"
 {
   settlement = {
-    type = ANT_NEST
+    type = Builtin ANT_NEST
     inhabitants = {
       leader = { { "ANT_QUEEN" } }
       civilians = {
@@ -172,7 +172,7 @@
 "ADA_GOLEMS"
 {
   settlement = {
-    type = VAULT
+    type = Builtin VAULT
     inhabitants = {
       fighters = {
         count = {8 9}
@@ -196,7 +196,7 @@
 "ORC_VILLAGE"
 {
   settlement = {
-    type = VILLAGE
+    type = Builtin VILLAGE
     tribe = GREENSKIN
     inhabitants = {
       fighters = {
@@ -234,7 +234,7 @@
 "DEMON_DEN_ABOVE"
 {
   settlement = {
-    type = VILLAGE
+    type = Builtin VILLAGE
     tribe = MONSTER
     inhabitants = {
       fighters = {
@@ -253,7 +253,7 @@
 "DEMON_DEN"
 {
   settlement = {
-    type = VILLAGE
+    type = Builtin VILLAGE
     buildingId = "DUNGEON"
     tribe = MONSTER
     inhabitants = {
@@ -296,7 +296,7 @@
 "VILLAGE"
 {
   settlement = {
-    type = VILLAGE
+    type = Builtin VILLAGE
     tribe = HUMAN
     inhabitants = {
       leader = { { "KNIGHT" } }
@@ -334,7 +334,7 @@
 "WARRIORS"
 {
   settlement = {
-    type = CASTLE2
+    type = Builtin CASTLE2
     tribe = HUMAN
     inhabitants = {
       leader = { { "SHAMAN" } }
@@ -383,7 +383,7 @@
 "KNIGHTS"
 {
   settlement = {
-    type = CASTLE
+    type = Builtin CASTLE
     tribe = HUMAN
     inhabitants = {
       leader = { { "DUKE" } }
@@ -459,7 +459,7 @@
 "TEUTONS"
 {
   settlement = {
-    type = CASTLE2
+    type = MapLayoutId "castle1"
     tribe = HUMAN
     inhabitants = {
       leader = { { "TEUTON_BOSS" } }
@@ -516,7 +516,7 @@
 "MINOTAUR"
 {
   settlement = {
-    type = CAVE
+    type = Builtin CAVE
     tribe = MONSTER
     inhabitants = {
       leader = { { "MINOTAUR" } }
@@ -530,7 +530,7 @@
 "RED_DRAGON"
 {
   settlement = {
-    type = CAVE
+    type = Builtin CAVE
     inhabitants = {
       leader = { { "RED_DRAGON" } }
     }
@@ -562,7 +562,7 @@
 "BLACK_DRAGON" inherit "RED_DRAGON"
 {
   settlement = {
-    type = CAVE
+    type = Builtin CAVE
     inhabitants = {
       leader = { { "BLACK_DRAGON" } }
     }
@@ -576,7 +576,7 @@
 "GREEN_DRAGON"
 {
   settlement = {
-    type = CAVE
+    type = Builtin CAVE
     inhabitants = {
       leader = { { "GREEN_DRAGON" } }
     }
@@ -608,7 +608,7 @@
 "DWARVES"
 {
   settlement = {
-    type = MINETOWN
+    type = Builtin MINETOWN
     tribe = DWARF
     inhabitants = {
       leader = { { "DWARF_BARON" } }
@@ -670,7 +670,7 @@
 "ELVES"
 {
   settlement = {
-    type = FORREST_VILLAGE
+    type = Builtin FORREST_VILLAGE
     inhabitants = {
       leader = { { "ELF_LORD" } }
       fighters = {
@@ -717,7 +717,7 @@
 "ELEMENTALIST_ENTRY"
 {
   settlement = {
-    type = TOWER
+    type = Builtin TOWER
     tribe = HUMAN
     buildingId = "BRICK"
   }
@@ -737,7 +737,7 @@
         }
       }
     }
-    type = TOWER
+    type = Builtin TOWER
     tribe = HUMAN
     buildingId = "BRICK"
   }
@@ -746,7 +746,7 @@
 "ELEMENTALIST"
 {
   settlement = {
-    type = TOWER
+    type = Builtin TOWER
     inhabitants = {
       leader = { { "ELEMENTALIST" } }
     }
@@ -790,7 +790,7 @@
 "MAIN_DUNGEON"
 {
   settlement = {
-    type = ISLAND_VAULT_DOOR
+    type = Builtin ISLAND_VAULT_DOOR
     tribe = MONSTER
     inhabitants = {
       leader = { { "ADOXIE_PRIEST" } }
@@ -826,7 +826,7 @@
 "MAIN_DUNGEON_ENTRY"
 {
   settlement = {
-    type = CAVE
+    type = Builtin CAVE
     tribe = BANDIT
     buildingId = "DUNGEON"
     inhabitants = {
@@ -840,7 +840,7 @@
 "ADOXIE"
 {
   settlement = {
-    type = CAVE
+    type = Builtin CAVE
     tribe = MONSTER
     buildingId = "BLACK"
     inhabitants = {
@@ -854,7 +854,7 @@
 "NO_AGGRO_BANDITS"
 {
   settlement = {
-    type = CAVE
+    type = Builtin CAVE
     inhabitants = {
       fighters = {
         count = {4 9}
@@ -895,7 +895,7 @@
 "ORC_CAVE"
 {
   settlement = {
-    type = CAVE
+    type = Builtin CAVE
     inhabitants = {
       fighters = {
         count = {4 9}
@@ -929,7 +929,7 @@
 "LIZARDMEN_SMALL"
 {
   settlement = {
-    type = COTTAGE
+    type = Builtin COTTAGE
     tribe = LIZARD
     inhabitants = {
       fighters = {
@@ -947,7 +947,7 @@
 {
   biomes = { DESERT }
   settlement = {
-    type = VILLAGE
+    type = Builtin VILLAGE
     tribe = LIZARD
     inhabitants = {
       leader = { { "LIZARDLORD" } }
@@ -996,7 +996,7 @@
 "DARK_ELVES_ALLY"
 {
   settlement = {
-    type = MINETOWN
+    type = Builtin MINETOWN
     tribe = DARK_ELF
     inhabitants = {
       leader = { { "DARK_ELF_LORD" } }
@@ -1042,7 +1042,7 @@
 "DARK_ELVES_ENEMY" inherit "DARK_ELVES_ALLY"
 {
   settlement = {
-    type = MINETOWN
+    type = Builtin MINETOWN
     tribe = DARK_ELF
     inhabitants = {
       leader = {
@@ -1078,7 +1078,7 @@
 "DARK_ELVES_ENTRY"
 {
   settlement = {
-    type = SMALL_MINETOWN
+    type = Builtin SMALL_MINETOWN
     tribe = DARK_ELF
     inhabitants = {
       fighters = {
@@ -1096,7 +1096,7 @@
 "DUNGEON1"
 {
   settlement = {
-    type = MINETOWN
+    type = Builtin MINETOWN
     tribe = MONSTER
     buildingId = "DUNGEON"
     furniture = { "roomFurniture" }
@@ -1157,7 +1157,7 @@
 "BLACK_MARKET"
 {
   settlement = {
-    type = TOWER
+    type = Builtin TOWER
     tribe = GNOME
     race = "the Black Market"
     buildingId = "DUNGEON"
@@ -1220,7 +1220,7 @@
 "GNOMES"
 {
   settlement = {
-    type = MINETOWN
+    type = Builtin MINETOWN
     tribe = GNOME
     inhabitants = {
       leader = { { "GNOME_CHIEF" } }
@@ -1248,7 +1248,7 @@
 "GNOMES_ENTRY"
 {
   settlement = {
-    type = SMALL_MINETOWN
+    type = Builtin SMALL_MINETOWN
     tribe = GNOME
     inhabitants = {
       fighters = {
@@ -1297,7 +1297,7 @@
 "ENTS"
 {
   settlement = {
-    type = FOREST
+    type = Builtin FOREST
     inhabitants = {
       fighters = {
         count = {7 10}
@@ -1323,7 +1323,7 @@
 "DRIADS"
 {
   settlement = {
-    type = FOREST
+    type = Builtin FOREST
     inhabitants = {
       fighters = {
         count = {7 10}
@@ -1349,7 +1349,7 @@
 "SHELOB"
 {
   settlement = {
-    type = CAVE
+    type = Builtin CAVE
     tribe = SHELOB
     inhabitants = {
       leader = { { "SHELOB" } }
@@ -1372,7 +1372,7 @@
 "CYCLOPS"
 {
   settlement = {
-    type = CAVE
+    type = Builtin CAVE
     inhabitants = {
       leader = { { "CYCLOPS" } }
     }
@@ -1396,7 +1396,7 @@
 "HYDRA"
 {
   settlement = {
-    type = SWAMP
+    type = Builtin SWAMP
     inhabitants = {
       leader = { { "HYDRA" } }
     }
@@ -1413,7 +1413,7 @@
 "KRAKEN"
 {
   settlement = {
-    type = MOUNTAIN_LAKE
+    type = Builtin MOUNTAIN_LAKE
     inhabitants = {
       leader = { { "KRAKEN" } }
     }
@@ -1429,7 +1429,7 @@
 "CEMETERY"
 {
   settlement = {
-    type = CEMETERY
+    type = Builtin CEMETERY
     inhabitants = {
       fighters = {
         count = {8 12}
@@ -1452,7 +1452,7 @@
 "CEMETERY_ENTRY"
 {
   settlement = {
-    type = CEMETERY
+    type = Builtin CEMETERY
     inhabitants = {
       fighters = {
         count = {1 2}
@@ -1472,7 +1472,7 @@
 "OGRE_CAVE"
 {
   settlement = {
-    type = CAVE
+    type = Builtin CAVE
     tribe = GREENSKIN
     inhabitants = {
       fighters = {
@@ -1500,7 +1500,7 @@
 "HARPY_CAVE"
 {
   settlement = {
-    type = CAVE
+    type = Builtin CAVE
     tribe = GREENSKIN
     inhabitants = {
       fighters = {
@@ -1528,7 +1528,7 @@
 "SOKOBAN_ENTRY"
 {
   settlement = {
-    type = ISLAND_VAULT_DOOR
+    type = Builtin ISLAND_VAULT_DOOR
     buildingId = "DUNGEON"
     tribe = MONSTER
   }
@@ -1536,7 +1536,7 @@
 "SOKOBAN"
 {
   settlement = {
-    type = CAVE
+    type = Builtin CAVE
     inhabitants = {
       leader = {{ "SPECIAL_HLBN" "SPECIAL_HLBW" "SPECIAL_HLGN" "SPECIAL_HLGW" }}
     }
@@ -1555,7 +1555,7 @@
 "WITCH"
 {
   settlement = {
-    type = COTTAGE
+    type = Builtin COTTAGE
     tribe = MONSTER
     inhabitants = {
       leader = { { "WITCH" } }
@@ -1569,7 +1569,7 @@
 "TEMPLE"
 {
   settlement = {
-    type = TEMPLE
+    type = Builtin TEMPLE
     tribe = HUMAN
     race = "altar"
     inhabitants = {
@@ -1583,7 +1583,7 @@
 "EVIL_TEMPLE"
 {
   settlement = {
-    type = TEMPLE
+    type = Builtin TEMPLE
     tribe = DARK_KEEPER
     race = "altar"
     inhabitants = {
@@ -1600,7 +1600,7 @@
 "RUINS"
 {
   settlement = {
-    type = COTTAGE
+    type = Builtin COTTAGE
     tribe = MONSTER
     race = "ruins"
     dontBuildRoad = true
@@ -1630,7 +1630,7 @@
 "HUMAN_COTTAGE"
 {
   settlement = {
-    type = COTTAGE
+    type = Builtin COTTAGE
     tribe = HUMAN
     cropsDistance = 13
     inhabitants = {
@@ -1706,7 +1706,7 @@
 {
   biomes = { DESERT }
   settlement = {
-    type = CASTLE2
+    type = Builtin CASTLE2
     tribe = HUMAN
     buildingId = "SANDSTONE_WALL"
     inhabitants = {
@@ -1756,7 +1756,7 @@
 "DJINN_EMPTY"
 {
   settlement = {
-    type = CAVE
+    type = Builtin CAVE
     tribe = MONSTER
     locationName = "maze"
     race = "monsters"
@@ -1782,7 +1782,7 @@
 "ELVEN_COTTAGE"
 {
   settlement = {
-    type = FORREST_COTTAGE
+    type = Builtin FORREST_COTTAGE
     tribe = ELF
     inhabitants = {
       leader = { { "ELF_ARCHER" } }
@@ -1808,7 +1808,7 @@
 "LIZARDMEN_COTTAGE"
 {
   settlement = {
-    type = FORREST_COTTAGE
+    type = Builtin FORREST_COTTAGE
     tribe = LIZARD
     inhabitants = {
       fighters = {
@@ -1825,7 +1825,7 @@
 "KOBOLD_CAVE"
 {
   settlement = {
-    type = SMALL_MINETOWN
+    type = Builtin SMALL_MINETOWN
     tribe = DWARF
     inhabitants = {
       fighters = {
@@ -1841,7 +1841,7 @@
 "DWARF_CAVE"
 {
   settlement = {
-    type = SMALL_MINETOWN
+    type = Builtin SMALL_MINETOWN
     tribe = DWARF
     inhabitants = {
       fighters = {
@@ -1871,7 +1871,7 @@
 "RAT_CAVE"
 {
   settlement = {
-    type = VAULT
+    type = Builtin VAULT
     inhabitants = {
       fighters = {
         count = {10 11} 
@@ -1890,7 +1890,7 @@
 "RAT_PEOPLE_CAVE"
 {
   settlement = {
-    type = VAULT
+    type = Builtin VAULT
     buildingId = "DUNGEON"
     tribe = MONSTER
     inhabitants = {
@@ -1920,7 +1920,7 @@
 "DARK_ELF_CAVE"
 {
   settlement = {
-    type = SMALL_MINETOWN
+    type = Builtin SMALL_MINETOWN
     tribe = DARK_ELF
     inhabitants = {
       fighters = {
@@ -1951,7 +1951,7 @@
 "DARK_MAGE"
 {
   settlement = {
-    type = MINETOWN
+    type = Builtin MINETOWN
     tribe = DARK_ELF
     inhabitants = {
       leader = {

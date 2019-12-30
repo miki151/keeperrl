@@ -83,6 +83,7 @@ namespace cereal {
   INST2(Campaign::SiteInfo::Dweller)
   INST2(ZLevelType_impl)
   INST2(AttackTrigger_impl)
+  INST2(SettlementDetail::LayoutType_impl)
   INST2(AttackBehaviour_impl)
   INST2(LevelConnection::EnemyLevelInfo_impl)
 } // namespace cereal

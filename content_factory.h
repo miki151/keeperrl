@@ -8,6 +8,7 @@
 #include "campaign_builder.h"
 #include "custom_item_id.h"
 #include "item_factory.h"
+#include "map_layouts.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -45,6 +46,7 @@ class ContentFactory {
   vector<AdventurerCreatureInfo> SERIAL(adventurerCreatures);
   map<CustomItemId, ItemAttributes> SERIAL(items);
   map<BuildingId, BuildingInfo> SERIAL(buildingInfo);
+  MapLayouts SERIAL(mapLayouts);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

@@ -75,3 +75,5 @@ struct Color {
   template <typename Archive>
   void serialize(Archive&, unsigned int);
 };
+
+extern string toString(const Color&);

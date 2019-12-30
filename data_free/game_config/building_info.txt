@@ -4,11 +4,13 @@
     floorInside = "FLOOR"
     door = { "WOOD_DOOR" 1.0 }
     gate = { "WOOD_GATE" 1.0 }
+    water = {WATER}
   }
 "BLACK"
   {
     wall = "BLACK_WALL"
     floorInside = "BLACK_FLOOR"
+    water = {LAVA}
   }
 "WOOD_CASTLE"
   {
@@ -17,11 +19,13 @@
     floorOutside = "MUD"
     door = { "WOOD_DOOR" 1.0 }
     gate = { "WOOD_GATE" 1.0 }
+    water = {WATER}
   }
 "MUD" 
   {
     wall = "MUD_WALL"
     floorInside = "MUD"
+    water = {WATER}
   }
 "BRICK"
   {
@@ -31,6 +35,7 @@
     prettyFloor = "FLOOR_CARPET1"
     door = { "IRON_DOOR" 1.0 }
     gate = { "IRON_GATE" 1.0 }
+    water = {WATER}
   }
 "DUNGEON"
   {
@@ -55,6 +60,7 @@
     gate = { "WOOD_GATE" 1.0 }
     downStairs = "DOWN_STAIRS_ROCK"
     upStairs = "UP_STAIRS_ROCK"
+    water = {WATER}
   }
 "SANDSTONE"
   {
@@ -63,14 +69,17 @@
     floorOutside = "SAND"
     downStairs = "DOWN_STAIRS_ROCK"
     upStairs = "UP_STAIRS_ROCK"
+    water = {WATER}
   }
 "RUINS"
   {
     wall = "RUIN_WALL"
+    water = {WATER}
   }
 "SNOW"
   {
     wall = "SNOW_WALL"
+    water = {ICE}
   }
 "GLACIER"
   {

@@ -266,10 +266,10 @@ PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment al
 PModel ModelBuilder::tryTutorialModel() {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
-  //enemyInfo.push_back(enemyFactory->get(EnemyId("TUTORIAL_VILLAGE")));
+  enemyInfo.push_back(enemyFactory->get(EnemyId("TEUTONS")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("RED_DRAGON")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
-  enemyInfo.push_back(enemyFactory->get(EnemyId("MAIN_DUNGEON")));
+  //enemyInfo.push_back(enemyFactory->get(EnemyId("MAIN_DUNGEON")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("ADA_GOLEMS")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("TEMPLE")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("LIZARDMEN")));
@@ -279,29 +279,36 @@ PModel ModelBuilder::tryTutorialModel() {
 static optional<BiomeId> getBiome(const EnemyInfo& enemy, RandomGen& random) {
   if (!enemy.biomes.empty())
     return random.choose(enemy.biomes);
-  switch (enemy.settlement.type) {
-    case SettlementType::CASTLE:
-    case SettlementType::CASTLE2:
-    case SettlementType::TOWER:
-      return BiomeId::GRASSLAND;
-    case SettlementType::VILLAGE:
-    case SettlementType::SWAMP:
-      return BiomeId::GRASSLAND;
-    case SettlementType::CAVE:
-    case SettlementType::MINETOWN:
-    case SettlementType::SMALL_MINETOWN:
-    case SettlementType::ANT_NEST:
-    case SettlementType::VAULT:
-      return BiomeId::MOUNTAIN;
-    case SettlementType::FORREST_COTTAGE:
-    case SettlementType::FORREST_VILLAGE:
-    case SettlementType::ISLAND_VAULT_DOOR:
-    case SettlementType::FOREST:
-      return BiomeId::FORREST;
-    case SettlementType::CEMETERY:
-      return random.choose(BiomeId::GRASSLAND, BiomeId::FORREST);
-    default: return none;
-  }
+  return enemy.settlement.type.visit(
+      [&](BuiltinLayoutId id) -> optional<BiomeId> {
+        switch (id) {
+          case BuiltinLayoutId::CASTLE:
+          case BuiltinLayoutId::CASTLE2:
+          case BuiltinLayoutId::TOWER:
+            return BiomeId::GRASSLAND;
+          case BuiltinLayoutId::VILLAGE:
+          case BuiltinLayoutId::SWAMP:
+            return BiomeId::GRASSLAND;
+          case BuiltinLayoutId::CAVE:
+          case BuiltinLayoutId::MINETOWN:
+          case BuiltinLayoutId::SMALL_MINETOWN:
+          case BuiltinLayoutId::ANT_NEST:
+          case BuiltinLayoutId::VAULT:
+            return BiomeId::MOUNTAIN;
+          case BuiltinLayoutId::FORREST_COTTAGE:
+          case BuiltinLayoutId::FORREST_VILLAGE:
+          case BuiltinLayoutId::ISLAND_VAULT_DOOR:
+          case BuiltinLayoutId::FOREST:
+            return BiomeId::FORREST;
+          case BuiltinLayoutId::CEMETERY:
+            return random.choose(BiomeId::GRASSLAND, BiomeId::FORREST);
+          default: return none;
+        }
+      },
+      [&](MapLayoutId id) -> optional<BiomeId> {
+        return BiomeId::GRASSLAND;
+      }
+    );
 }
 
 PModel ModelBuilder::tryCampaignSiteModel(EnemyId enemyId, VillainType type, TribeAlignment alignment) {
@@ -498,7 +505,7 @@ PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<T
   model->buildMainLevel(
       LevelBuilder(meter, random, contentFactory, width, width, false),
       LevelMaker::topLevel(random, wildlife, topLevelSettlements, width,
-        keeperTribe, biomeId, *chooseResourceCounts(random, contentFactory->resources, 0)));
+        keeperTribe, biomeId, *chooseResourceCounts(random, contentFactory->resources, 0), &contentFactory->mapLayouts));
   model->calculateStairNavigation();
   for (auto& enemy : enemyInfo)
     model->addCollective(enemy.buildCollective(contentFactory));

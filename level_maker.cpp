@@ -44,6 +44,7 @@
 #include "biome_id.h"
 #include "build_info.h"
 #include "creature_attributes.h"
+#include "map_layouts.h"
 
 namespace {
 
@@ -2268,60 +2269,73 @@ PLevelMaker LevelMaker::towerLevel(RandomGen& random, SettlementInfo info, Vec2 
   return PLevelMaker(tower(random, info, false));
 }
 
-Vec2 getSize(RandomGen& random, SettlementType type) {
-  switch (type) {
-    case SettlementType::CEMETERY:
-    case SettlementType::MOUNTAIN_LAKE:
-    case SettlementType::SMALL_VILLAGE: return {15, 15};
-    case SettlementType::SWAMP: return {random.get(12, 16), random.get(12, 16)};
-    case SettlementType::TEMPLE:
-    case SettlementType::COTTAGE: return {random.get(8, 10), random.get(8, 10)};
-    case SettlementType::FORREST_COTTAGE: return {15, 15};
-    case SettlementType::FOREST: return {18, 13};
-    case SettlementType::FORREST_VILLAGE: return {20, 20};
-    case SettlementType::VILLAGE:
-    case SettlementType::ANT_NEST:  return {20, 20};
-    case SettlementType::CASTLE: return {30, 20};
-    case SettlementType::CASTLE2: return {15, 14};
-    case SettlementType::MINETOWN: return {30, 20};
-    case SettlementType::SMALL_MINETOWN: return {15, 15};
-    case SettlementType::CAVE: return {12, 12};
-    case SettlementType::SPIDER_CAVE: return {12, 12};
-    case SettlementType::VAULT: return {10, 10};
-    case SettlementType::TOWER: return {5, 5};
-    case SettlementType::ISLAND_VAULT_DOOR:
-    case SettlementType::ISLAND_VAULT: return {6, 6};
-  }
+static Vec2 getSize(const MapLayouts* layouts, RandomGen& random, LayoutType type) {
+  return type.visit(
+      [&](BuiltinLayoutId id) -> Vec2 {
+        switch (id) {
+          case BuiltinLayoutId::CEMETERY:
+          case BuiltinLayoutId::MOUNTAIN_LAKE:
+          case BuiltinLayoutId::SMALL_VILLAGE: return {15, 15};
+          case BuiltinLayoutId::SWAMP: return {random.get(12, 16), random.get(12, 16)};
+          case BuiltinLayoutId::TEMPLE:
+          case BuiltinLayoutId::COTTAGE: return {random.get(8, 10), random.get(8, 10)};
+          case BuiltinLayoutId::FORREST_COTTAGE: return {15, 15};
+          case BuiltinLayoutId::FOREST: return {18, 13};
+          case BuiltinLayoutId::FORREST_VILLAGE: return {20, 20};
+          case BuiltinLayoutId::VILLAGE:
+          case BuiltinLayoutId::ANT_NEST:  return {20, 20};
+          case BuiltinLayoutId::CASTLE: return {30, 20};
+          case BuiltinLayoutId::CASTLE2: return {15, 14};
+          case BuiltinLayoutId::MINETOWN: return {30, 20};
+          case BuiltinLayoutId::SMALL_MINETOWN: return {15, 15};
+          case BuiltinLayoutId::CAVE: return {12, 12};
+          case BuiltinLayoutId::SPIDER_CAVE: return {12, 12};
+          case BuiltinLayoutId::VAULT: return {10, 10};
+          case BuiltinLayoutId::TOWER: return {5, 5};
+          case BuiltinLayoutId::ISLAND_VAULT_DOOR:
+          case BuiltinLayoutId::ISLAND_VAULT: return {6, 6};
+        }
+      },
+      [&](MapLayoutId id) {
+        return layouts->getSize(id);
+      }
+    );
 }
 
 RandomLocations::LocationPredicate getSettlementPredicate(const SettlementInfo& info) {
-  switch (info.type) {
-    case SettlementType::FOREST:
-    case SettlementType::FORREST_COTTAGE:
-    case SettlementType::FORREST_VILLAGE:
-      return !Predicate::attrib(SquareAttrib::RIVER) && Predicate::attrib(SquareAttrib::FORREST);
-    case SettlementType::CAVE:
-      return RandomLocations::LocationPredicate(
-          Predicate::attrib(SquareAttrib::MOUNTAIN), Predicate::attrib(SquareAttrib::HILL), 5, 15);
-    case SettlementType::VAULT:
-    case SettlementType::ANT_NEST:
-    case SettlementType::SMALL_MINETOWN:
-    case SettlementType::MINETOWN:
-      return Predicate::attrib(SquareAttrib::MOUNTAIN);
-    case SettlementType::SPIDER_CAVE:
-      return RandomLocations::LocationPredicate(
-          Predicate::attrib(SquareAttrib::MOUNTAIN),
-          Predicate::attrib(SquareAttrib::CONNECTOR), 1, 2);
-    case SettlementType::MOUNTAIN_LAKE:
-    case SettlementType::ISLAND_VAULT:
-      return Predicate::attrib(SquareAttrib::MOUNTAIN);
-    case SettlementType::ISLAND_VAULT_DOOR:
-      return RandomLocations::LocationPredicate(
-            Predicate::attrib(SquareAttrib::MOUNTAIN) && !Predicate::attrib(SquareAttrib::RIVER),
-            Predicate::attrib(SquareAttrib::RIVER), 10, 30);
-    default:
-      return Predicate::canEnter({MovementTrait::WALK});
-  }
+  return info.type.visit(
+      [&](BuiltinLayoutId id) -> RandomLocations::LocationPredicate {
+        switch (id) {
+          case BuiltinLayoutId::FOREST:
+          case BuiltinLayoutId::FORREST_COTTAGE:
+          case BuiltinLayoutId::FORREST_VILLAGE:
+            return !Predicate::attrib(SquareAttrib::RIVER) && Predicate::attrib(SquareAttrib::FORREST);
+          case BuiltinLayoutId::CAVE:
+            return RandomLocations::LocationPredicate(
+                Predicate::attrib(SquareAttrib::MOUNTAIN), Predicate::attrib(SquareAttrib::HILL), 5, 15);
+          case BuiltinLayoutId::VAULT:
+          case BuiltinLayoutId::ANT_NEST:
+          case BuiltinLayoutId::SMALL_MINETOWN:
+          case BuiltinLayoutId::MINETOWN:
+            return Predicate::attrib(SquareAttrib::MOUNTAIN);
+          case BuiltinLayoutId::SPIDER_CAVE:
+            return RandomLocations::LocationPredicate(
+                Predicate::attrib(SquareAttrib::MOUNTAIN),
+                Predicate::attrib(SquareAttrib::CONNECTOR), 1, 2);
+          case BuiltinLayoutId::MOUNTAIN_LAKE:
+          case BuiltinLayoutId::ISLAND_VAULT:
+            return Predicate::attrib(SquareAttrib::MOUNTAIN);
+          case BuiltinLayoutId::ISLAND_VAULT_DOOR:
+            return RandomLocations::LocationPredicate(
+                  Predicate::attrib(SquareAttrib::MOUNTAIN) && !Predicate::attrib(SquareAttrib::RIVER),
+                  Predicate::attrib(SquareAttrib::RIVER), 10, 30);
+          default:
+            return Predicate::canEnter({MovementTrait::WALK});
+        }
+      },
+      [&](MapLayoutId id) -> RandomLocations::LocationPredicate {
+        return Predicate::canEnter({MovementTrait::WALK});
+      });
 }
 
 static PMakerQueue genericMineTownMaker(RandomGen& random, SettlementInfo info, int numCavern, int maxCavernSize,
@@ -2590,55 +2604,155 @@ static void generateResources(RandomGen& random, ResourceCounts resourceCounts, 
       addResources(info.countFurther, info.size, mapWidth / 3, info.type, startingPos, nullptr);
 }
 
-static PMakerQueue getSettlementMaker(RandomGen& random, const SettlementInfo& settlement) {
-  switch (settlement.type) {
-    case SettlementType::SMALL_VILLAGE:
-      return village(random, settlement, 3, 4);
-    case SettlementType::VILLAGE:
-      return village(random, settlement, 4, 8);
-    case SettlementType::FORREST_VILLAGE:
-      return village2(random, settlement);
-    case SettlementType::CASTLE:
-      return castle(random, settlement);
-    case SettlementType::CASTLE2:
-      return castle2(random, settlement);
-    case SettlementType::COTTAGE:
-      return cottage(settlement);
-    case SettlementType::FORREST_COTTAGE:
-      return forrestCottage(settlement);
-    case SettlementType::TOWER:
-      return tower(random, settlement, true);
-    case SettlementType::TEMPLE:
-      return temple(random, settlement);
-    case SettlementType::FOREST:
-      return emptyCollective(settlement);
-    case SettlementType::MINETOWN:
-      return mineTownMaker(random, settlement);
-    case SettlementType::ANT_NEST:
-      return antNestMaker(random, settlement);
-    case SettlementType::SMALL_MINETOWN:
-      return smallMineTownMaker(random, settlement);
-    case SettlementType::ISLAND_VAULT:
-      return islandVaultMaker(random, settlement, false);
-    case SettlementType::ISLAND_VAULT_DOOR:
-      return islandVaultMaker(random, settlement, true);
-    case SettlementType::VAULT:
-    case SettlementType::CAVE:
-      return vaultMaker(settlement);
-    case SettlementType::SPIDER_CAVE:
-      return spiderCaveMaker(settlement);
-    case SettlementType::CEMETERY:
-      return cemetery(settlement);
-    case SettlementType::MOUNTAIN_LAKE:
-      return mountainLake(settlement);
-    case SettlementType::SWAMP:
-      return swamp(settlement);
+
+static FurnitureType getWaterFurniture(WaterType waterType) {
+  switch (waterType) {
+    case WaterType::ICE:
+      return FurnitureType("ICE");
+    case WaterType::WATER:
+      return FurnitureType("WATER");
+    case WaterType::LAVA:
+      return FurnitureType("MAGMA");
   }
+}
+
+namespace {
+  class MapLayoutMaker : public LevelMaker {
+    public:
+    MapLayoutMaker(const MapLayouts::Layout& layout, const BuildingInfo& info, TribeId tribe)
+        : layout(layout), buildingInfo(info), tribe(tribe) {}
+
+    virtual void make(LevelBuilder* builder, Rectangle area) override {
+      CHECK(area.getSize() == layout.getBounds().getSize());
+      auto waterType = getWaterFurniture(builder->getRandom().choose(buildingInfo.water));
+      set<Vec2> isGate;
+      for (auto v : layout.getBounds())
+        if (layout[v] == LayoutPiece::DOOR)
+          for (auto w : v.neighbors4())
+            if (layout[w] == LayoutPiece::DOOR)
+              isGate.insert(v);
+      for (auto v : layout.getBounds()) {
+        auto targetV = area.topLeft() + v;
+        if (layout[v])
+          switch (*layout[v]) {
+            case LayoutPiece::WALL:
+              builder->putFurniture(targetV, buildingInfo.wall, tribe);
+              break;
+            case LayoutPiece::DOOR: {
+              if (buildingInfo.floorInside)
+                builder->resetFurniture(targetV, {*buildingInfo.floorInside, tribe}, SquareAttrib::EMPTY_ROOM);
+              auto& doorInfo = (isGate.count(v) ? buildingInfo.gate : buildingInfo.door);
+              if (doorInfo && builder->getRandom().chance(doorInfo->prob))
+                builder->putFurniture(targetV, doorInfo->type, tribe);
+              break;
+            }
+            case LayoutPiece::FLOOR_INSIDE:
+              if (buildingInfo.floorInside)
+                builder->resetFurniture(targetV, {*buildingInfo.floorInside, tribe}, SquareAttrib::EMPTY_ROOM);
+              break;
+            case LayoutPiece::FLOOR_OUTSIDE:
+              if (buildingInfo.floorOutside)
+                builder->resetFurniture(targetV, {*buildingInfo.floorOutside, tribe}, SquareAttrib::FLOOR_OUTSIDE);
+              break;
+            case LayoutPiece::PRETTY_FLOOR:
+              if (buildingInfo.prettyFloor) {
+                builder->resetFurniture(targetV, {*buildingInfo.floorInside, tribe}, SquareAttrib::EMPTY_ROOM);
+                builder->putFurniture(targetV, *buildingInfo.prettyFloor, tribe);
+              }
+              break;
+            case LayoutPiece::BRIDGE:
+              builder->resetFurniture(targetV, {waterType, tribe});
+              builder->putFurniture(targetV, FurnitureType("BRIDGE"), tribe);
+              break;
+            case LayoutPiece::UP_STAIRS:
+              builder->putFurniture(targetV, buildingInfo.upStairs.value_or(FurnitureType("UP_STAIRS")), tribe);
+              break;
+            case LayoutPiece::DOWN_STAIRS:
+              builder->putFurniture(targetV, buildingInfo.downStairs.value_or(FurnitureType("DOWN_STAIRS")), tribe);
+              break;
+            case LayoutPiece::WATER:
+              builder->resetFurniture(targetV, {waterType, tribe});
+              break;
+          }
+      }
+    }
+
+    private:
+    MapLayouts::Layout layout;
+    BuildingInfo buildingInfo;
+    TribeId tribe;
+  };
+}
+
+static PMakerQueue makeMapLayout(const MapLayouts::Layout& layout, const SettlementInfo& info) {
+  auto queue = unique<MakerQueue>();
+  queue->addMaker(unique<MakerQueue>(
+      unique<AddAttrib>(SquareAttrib::NO_DIG),
+      unique<MapLayoutMaker>(layout, info.buildingInfo, info.tribe)));
+  queue->addMaker(unique<PlaceCollective>(info.collective));
+  for (auto& furniture : info.furniture)
+    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, furniture, info.tribe));
+  if (info.outsideFeatures)
+    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::FLOOR_OUTSIDE), 0.01, *info.outsideFeatures, info.tribe));
+  queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
+  return queue;
+}
+
+static PMakerQueue getSettlementMaker(const MapLayouts* layouts, RandomGen& random, const SettlementInfo& settlement) {
+  return settlement.type.visit(
+      [&] (MapLayoutId id) {
+        return makeMapLayout(layouts->getRandomLayout(id, random), settlement);
+      },
+      [&] (BuiltinLayoutId id) {
+        switch (id) {
+          case BuiltinLayoutId::SMALL_VILLAGE:
+            return village(random, settlement, 3, 4);
+          case BuiltinLayoutId::VILLAGE:
+            return village(random, settlement, 4, 8);
+          case BuiltinLayoutId::FORREST_VILLAGE:
+            return village2(random, settlement);
+          case BuiltinLayoutId::CASTLE:
+            return castle(random, settlement);
+          case BuiltinLayoutId::CASTLE2:
+            return castle2(random, settlement);
+          case BuiltinLayoutId::COTTAGE:
+            return cottage(settlement);
+          case BuiltinLayoutId::FORREST_COTTAGE:
+            return forrestCottage(settlement);
+          case BuiltinLayoutId::TOWER:
+            return tower(random, settlement, true);
+          case BuiltinLayoutId::TEMPLE:
+            return temple(random, settlement);
+          case BuiltinLayoutId::FOREST:
+            return emptyCollective(settlement);
+          case BuiltinLayoutId::MINETOWN:
+            return mineTownMaker(random, settlement);
+          case BuiltinLayoutId::ANT_NEST:
+            return antNestMaker(random, settlement);
+          case BuiltinLayoutId::SMALL_MINETOWN:
+            return smallMineTownMaker(random, settlement);
+          case BuiltinLayoutId::ISLAND_VAULT:
+            return islandVaultMaker(random, settlement, false);
+          case BuiltinLayoutId::ISLAND_VAULT_DOOR:
+            return islandVaultMaker(random, settlement, true);
+          case BuiltinLayoutId::VAULT:
+          case BuiltinLayoutId::CAVE:
+            return vaultMaker(settlement);
+          case BuiltinLayoutId::SPIDER_CAVE:
+            return spiderCaveMaker(settlement);
+          case BuiltinLayoutId::CEMETERY:
+            return cemetery(settlement);
+          case BuiltinLayoutId::MOUNTAIN_LAKE:
+            return mountainLake(settlement);
+          case BuiltinLayoutId::SWAMP:
+            return swamp(settlement);
+        }
+      });
 }
 
 PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forrestCreatures,
     vector<SettlementInfo> settlements, int mapWidth, optional<TribeId> keeperTribe, BiomeId biomeId,
-    ResourceCounts resourceCounts) {
+    ResourceCounts resourceCounts, const MapLayouts* mapLayouts) {
   auto queue = unique<MakerQueue>();
   auto locations = unique<RandomLocations>();
   auto locations2 = unique<RandomLocations>();
@@ -2662,15 +2776,15 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
   vector<CottageInfo> cottages;
   vector<SurroundWithResourcesInfo> surroundWithResources;
   for (SettlementInfo settlement : settlements) {
-    auto queue = getSettlementMaker(random, settlement);
+    auto queue = getSettlementMaker(mapLayouts, random, settlement);
     if (settlement.cropsDistance)
       cottages.push_back({queue.get(), settlement.collective, settlement.tribe, *settlement.cropsDistance});
     if (settlement.corpses)
       queue->addMaker(unique<Corpses>(*settlement.corpses));
     if (settlement.surroundWithResources > 0)
       surroundWithResources.push_back({queue.get(), settlement});
-    if (settlement.type == SettlementType::SPIDER_CAVE)
-      locations2->add(std::move(queue), getSize(random, settlement.type), getSettlementPredicate(settlement));
+    if (settlement.type == BuiltinLayoutId::SPIDER_CAVE)
+      locations2->add(std::move(queue), getSize(mapLayouts, random, settlement.type), getSettlementPredicate(settlement));
     else {
       if (keeperTribe && !settlement.anyPlayerDistance) {
         if (settlement.closeToPlayer) {
@@ -2679,7 +2793,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
         } else
           locations->setMinDistance(startingPos, queue.get(), 70);
       }
-      locations->add(std::move(queue), getSize(random, settlement.type), getSettlementPredicate(settlement));
+      locations->add(std::move(queue), getSize(mapLayouts, random, settlement.type), getSettlementPredicate(settlement));
     }
   }
   Predicate lowlandPred = Predicate::attrib(SquareAttrib::LOWLAND) && !Predicate::attrib(SquareAttrib::RIVER);
@@ -2745,16 +2859,6 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, optional<CreatureGroup> forr
 
 static PLevelMaker underground(RandomGen& random, Vec2 size, vector<WaterType> waterTypes = { WaterType::LAVA, WaterType::WATER }) {
   auto waterType = random.choose(waterTypes);
-  auto water = [&] {
-    switch (waterType) {
-      case WaterType::ICE:
-        return FurnitureType("ICE");
-      case WaterType::WATER:
-        return FurnitureType("WATER");
-      case WaterType::LAVA:
-        return FurnitureType("MAGMA");
-    }
-  }();
   auto creatureGroup = [&] {
     switch (waterType) {
       case WaterType::ICE:
@@ -2765,6 +2869,7 @@ static PLevelMaker underground(RandomGen& random, Vec2 size, vector<WaterType> w
         return CreatureGroup::lavaCreatures(TribeId::getMonster());
     }
   }();
+  auto water = getWaterFurniture(waterType);
   auto queue = unique<MakerQueue>();
   if (random.roll(1)) {
     auto caverns = unique<RandomLocations>();
@@ -2800,7 +2905,7 @@ static PLevelMaker underground(RandomGen& random, Vec2 size, vector<WaterType> w
 }
 
 PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo> settlement, ResourceCounts resourceCounts,
-    int mapWidth, TribeId keeperTribe, StairKey landingLink) {
+    int mapWidth, TribeId keeperTribe, StairKey landingLink, const MapLayouts* mapLayouts) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"))
       .add(FurnitureParams{FurnitureType("MOUNTAIN2"), keeperTribe})));
@@ -2812,7 +2917,7 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
   LevelMaker* startingPos = startingPosMaker.get();
   vector<SurroundWithResourcesInfo> surroundWithResources;
   if (settlement) {
-    auto maker = getSettlementMaker(random, *settlement);
+    auto maker = getSettlementMaker(mapLayouts, random, *settlement);
     if (settlement->corpses)
       maker->addMaker(unique<Corpses>(*settlement->corpses));
     maker->addMaker(unique<RandomLocations>(makeVec<PLevelMaker>(std::move(startingPosMaker)), makeVec<pair<int, int>>({1, 1}),
@@ -2823,7 +2928,7 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
       surroundWithResources.push_back({maker.get(), *settlement});
     // assign the whole settlement maker to startingPos, otherwise resource distance constraint doesn't work
     startingPos = maker.get();
-    locations->add(std::move(maker), getSize(random, settlement->type),
+    locations->add(std::move(maker), getSize(mapLayouts, random, settlement->type),
         RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
   } else {
     locations->add(std::move(startingPosMaker), Vec2(1, 1),

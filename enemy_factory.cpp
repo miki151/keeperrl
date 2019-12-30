@@ -45,7 +45,7 @@ PCollective EnemyInfo::buildCollective(ContentFactory* contentFactory) const {
   return collective;
 }
 
-static EnemyInfo getVault(SettlementType type, CreatureId creature, TribeId tribe, int num,
+static EnemyInfo getVault(LayoutType type, CreatureId creature, TribeId tribe, int num,
     optional<ItemListId> itemFactory = none) {
   return EnemyInfo(CONSTRUCT(SettlementInfo,
       c.type = type;
@@ -92,18 +92,18 @@ static vector<VaultInfo> getHostileVaults() {
 
 vector<EnemyInfo> EnemyFactory::getVaults(TribeAlignment alignment, TribeId allied) const {
   vector<EnemyInfo> ret {
- /*   getVault(SettlementType::VAULT, CreatureGroup::insects(TribeId::getMonster()),
+ /*   getVault(BuiltinLayoutId::VAULT, CreatureGroup::insects(TribeId::getMonster()),
         TribeId::getMonster(), random.get(6, 12)),*/
-    getVault(SettlementType::VAULT, CreatureId("RAT"), TribeId::getPest(), random.get(3, 8),
+    getVault(BuiltinLayoutId::VAULT, CreatureId("RAT"), TribeId::getPest(), random.get(3, 8),
         ItemListId("armory")),
   };
   for (int i : Range(1)) {
     VaultInfo v = random.choose(getFriendlyVaults()[alignment]);
-    ret.push_back(getVault(SettlementType::VAULT, v.id, allied, random.get(v.min, v.max)));
+    ret.push_back(getVault(BuiltinLayoutId::VAULT, v.id, allied, random.get(v.min, v.max)));
   }
   for (int i : Range(1)) {
     VaultInfo v = random.choose(getHostileVaults());
-    ret.push_back(getVault(SettlementType::VAULT, v.id, TribeId::getMonster(), random.get(v.min, v.max)));
+    ret.push_back(getVault(BuiltinLayoutId::VAULT, v.id, TribeId::getMonster(), random.get(v.min, v.max)));
   }
   return ret;
 }

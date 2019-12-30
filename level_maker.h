@@ -33,6 +33,7 @@ class LevelGenException {
 class FilePath;
 class CreatureList;
 class TribeId;
+class MapLayouts;
 
 class LevelMaker {
   public:
@@ -40,7 +41,7 @@ class LevelMaker {
   virtual ~LevelMaker() {}
 
   static PLevelMaker topLevel(RandomGen&, optional<CreatureGroup> wildlife, vector<SettlementInfo> village, int width,
-      optional<TribeId> keeperTribe, BiomeId, ResourceCounts);
+      optional<TribeId> keeperTribe, BiomeId, ResourceCounts, const MapLayouts*);
   static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo, Vec2 size);
   static PLevelMaker splashLevel(CreatureGroup heroLeader, CreatureGroup heroes,
       CreatureGroup monsters, CreatureGroup imps, const FilePath& splashPath);
@@ -53,7 +54,8 @@ class LevelMaker {
   static PLevelMaker emptyLevel(FurnitureType, bool withFloor);
   static PLevelMaker sokobanFromFile(RandomGen&, SettlementInfo, Table<char>);
   static PLevelMaker battleLevel(Table<char>, vector<PCreature> allies, vector<CreatureList> enemies);
-  static PLevelMaker getFullZLevel(RandomGen&, optional<SettlementInfo>, ResourceCounts, int mapWidth, TribeId keeperTribe, StairKey);
+  static PLevelMaker getFullZLevel(RandomGen&, optional<SettlementInfo>, ResourceCounts, int mapWidth, TribeId keeperTribe,
+      StairKey, const MapLayouts*);
   static PLevelMaker getWaterZLevel(RandomGen&, FurnitureType waterType, int mapWidth, CreatureList, StairKey);
 };
 
