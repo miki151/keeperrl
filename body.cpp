@@ -810,8 +810,6 @@ bool Body::isImmuneTo(LastingEffect effect) const {
     case LastingEffect::LIFE_SAVED:
     case LastingEffect::BLEEDING:
       return material != Material::FLESH;
-    case LastingEffect::ON_FIRE:
-      return material != Material::WOOD;
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED:
       switch (material) {
@@ -945,6 +943,15 @@ bool Body::needsToSleep() const {
     case Material::FLESH:
     case Material::BONE:
     case Material::UNDEAD_FLESH:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool Body::burnsIntrinsically() const {
+  switch (material) {
+    case Material::WOOD:
       return true;
     default:
       return false;

@@ -50,7 +50,8 @@ FXInfo getFXInfo(FXVariantName var) {
     case Name::DEBUFF_GREEN2:return {FXName::DEBUFF, Color(80, 255, 120), 0.0f, FXStackId::debuff};
     case Name::DEBUFF_PINK:  return {FXName::DEBUFF, Color(160, 10, 180), 0.0f, FXStackId::debuff};
     case Name::DEBUFF_ORANGE:return {FXName::DEBUFF, Color::ORANGE, 0.0f, FXStackId::debuff};
-    case Name::DEBUFF_BROWN:   return {FXName::DEBUFF, Color::BROWN, 0.0f, FXStackId::debuff};
+    case Name::DEBUFF_BROWN: return {FXName::DEBUFF, Color::BROWN, 0.0f, FXStackId::debuff};
+    case Name::DEBUFF_BLACK: return {FXName::DEBUFF, Color::BLACK, 0.0f, FXStackId::debuff};
   }
 }
 

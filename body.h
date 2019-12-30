@@ -90,6 +90,7 @@ class Body {
   bool hasBrain() const;
   bool needsToEat() const;
   bool needsToSleep() const;
+  bool burnsIntrinsically() const;
   bool canPush(const Body& other);
   bool canPerformRituals() const;
   bool canBeCaptured() const;

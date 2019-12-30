@@ -78,6 +78,17 @@ static optional<LastingEffect> getPreventing(LastingEffect effect) {
   return ret[effect];
 }
 
+static optional<LastingEffect> getRequired(LastingEffect effect, const Creature *c) {
+  switch (effect) {
+    case LastingEffect::ON_FIRE:
+      if (c->getBody().burnsIntrinsically())
+        return none;
+      return LastingEffect::OIL;
+    default:
+      return none;
+  }
+}
+
 void LastingEffects::runTests() {
   CHECK(getPreventing(LastingEffect::POISON) == LastingEffect::POISON_RESISTANT);
   CHECK(!getPreventing(LastingEffect::POISON_RESISTANT));
@@ -302,6 +313,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::UNSTABLE:
         c->you(MsgType::FEEL, "mentally unstable");
         break;
+      case LastingEffect::OIL:
+        c->you(MsgType::ARE, "covered in oil!");
+        break;
     }
 }
 
@@ -310,6 +324,9 @@ bool LastingEffects::affects(const Creature* c, LastingEffect effect) {
     return false;
   if (auto preventing = getPreventing(effect))
     if (c->isAffected(*preventing))
+      return false;
+  if (auto required = getRequired(effect, c))
+    if (!c->isAffected(*required))
       return false;
   return true;
 }
@@ -500,8 +517,11 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::ON_FIRE:
         c->getPosition().removeCreatureLight(false);
-        c->verb("burn", "burns", "to death");
-        c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
+        if (c->getBody().burnsIntrinsically()) {
+          c->verb("burn", "burns", "to death");
+          c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
+        } else
+          c->verb("stop", "stops", "burning");
         break;
       case LastingEffect::FROZEN:
         c->verb("thaw", "thaws");
@@ -536,6 +556,10 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::UNSTABLE:
         c->you(MsgType::FEEL, "mentally stable again");
+        break;
+      case LastingEffect::OIL:
+        c->you(MsgType::ARE, "no longer covered in oil");
+        c->removeEffect(LastingEffect::ON_FIRE);
         break;
       default:
         break;
@@ -699,6 +723,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::MAGIC_CANCELLATION: return "Cancelled"_bad;
     case LastingEffect::DISAPPEAR_DURING_DAY: return "Disappears at dawn"_bad;
     case LastingEffect::UNSTABLE: return "Mentally unstable"_bad;
+    case LastingEffect::OIL: return "Covered in oil"_bad;
   }
 }
 
@@ -1011,6 +1036,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::SPYING: return "spying";
     case LastingEffect::LIFE_SAVED: return "life saving";
     case LastingEffect::UNSTABLE: return "mental instability";
+    case LastingEffect::OIL: return "covered in oil";
   }
 }
 
@@ -1038,7 +1064,6 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::SLEEP: return "Puts to sleep.";
     case LastingEffect::IMMOBILE: return "Creature does not move";
     case LastingEffect::TIED_UP:
-      FALLTHROUGH;
     case LastingEffect::ENTANGLED: return "web";
     case LastingEffect::STUNNED: return "Allows enslaving as a prisoner, otherwise creature will die.";
     case LastingEffect::FIRE_RESISTANT: return "Protects from fire damage.";
@@ -1095,6 +1120,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::SPYING: return "The creature can infiltrate enemy lines";
     case LastingEffect::LIFE_SAVED: return "Prevents the death of the creature";
     case LastingEffect::UNSTABLE: return "Creature may become insane when having witnessed the death of an ally.";
+    case LastingEffect::OIL: return "Creature may be set on fire.";
   }
 }
 
@@ -1278,6 +1304,8 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::SLOW_TRAINING:
     case LastingEffect::MAGIC_CANCELLATION:
       return FXVariantName::DEBUFF_BROWN;
+    case LastingEffect::OIL:
+      return FXVariantName::DEBUFF_BLACK;
     case LastingEffect::PLAGUE_RESISTANT:
     case LastingEffect::POISON_RESISTANT:
       return FXVariantName::BUFF_GREEN2;
@@ -1310,6 +1338,8 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
 
 optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
   switch (effect) {
+    case LastingEffect::OIL:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::BLACK);
     case LastingEffect::LIFE_SAVED:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE);
     case LastingEffect::SPEED:
@@ -1503,6 +1533,7 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
     case LastingEffect::SUNLIGHT_VULNERABLE:
+    case LastingEffect::OIL:
       return  25_visible;
     case LastingEffect::SATIATED:
       return  500_visible;
