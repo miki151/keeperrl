@@ -879,7 +879,7 @@ class Table {
     return bounds;
   }
 
-  Table& operator = (Table&& other) = default;
+  Table& operator = (Table&& other) noexcept = default;
   Table& operator = (const Table& other) {
     bounds = other.bounds;
     mem.reset(new T[bounds.w * bounds.h]);
@@ -897,7 +897,7 @@ class Table {
 
   class RowAccess {
     public:
-    RowAccess(T* m, int p, int w) : px(p), width(w), mem(m) {};
+    RowAccess(T* m, int p, int w) : px(p), width(w), mem(m) {}
     T& operator[](int ind) {
       CHECK(ind >= px && ind < px + width);
       return mem[ind - px];

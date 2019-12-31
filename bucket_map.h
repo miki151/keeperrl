@@ -7,11 +7,12 @@
 template <typename T>
 class BucketMap {
   public:
-  BucketMap(int width, int height, int bucketSize);
+  BucketMap(Vec2 size, int bucketSize);
 
   void addElement(Vec2, T*);
   void removeElement(Vec2, T*);
   void moveElement(Vec2 from, Vec2 to, T*);
+  int countElementsInBucket(Vec2) const;
 
   vector<T*> getElements(Rectangle area) const;
 

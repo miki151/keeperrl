@@ -10,8 +10,8 @@ template <class T>
 SERIALIZATION_CONSTRUCTOR_IMPL2(BucketMap<T>, BucketMap);
 
 template<class T>
-BucketMap<T>::BucketMap(int w, int h, int size)
-    : bucketSize(size), buckets((w + size - 1) / size, (h + size - 1) / size) {
+BucketMap<T>::BucketMap(Vec2 size, int bucketSize)
+    : bucketSize(bucketSize), buckets((size.x + bucketSize - 1) / bucketSize, (size.y + bucketSize - 1) / bucketSize) {
 }
 
 template<class T>
@@ -24,6 +24,11 @@ template<class T>
 void BucketMap<T>::removeElement(Vec2 v, T* elem) {
   CHECK(buckets[v.x / bucketSize][v.y / bucketSize].contains(elem));
   buckets[v.x / bucketSize][v.y / bucketSize].remove(elem);
+}
+
+template<class T>
+int BucketMap<T>::countElementsInBucket(Vec2 v) const {
+  return buckets[v.x / bucketSize][v.y / bucketSize].getElems().size();
 }
 
 template<class T>

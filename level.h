@@ -204,6 +204,7 @@ class Level : public OwnedObject<Level> {
   Table<bool> SERIAL(covered);
   HeapAllocated<RoofSupport> SERIAL(roofSupport);
   HeapAllocated<CreatureBucketMap> SERIAL(bucketMap);
+  vector<pair<int, CreatureBucketMap>> SERIAL(swarmMaps);
   Table<double> SERIAL(lightAmount);
   Table<double> SERIAL(lightCapAmount);
   EnumMap<TribeId::KeyType, unique_ptr<EffectsTable>> SERIAL(furnitureEffects);
@@ -232,5 +233,7 @@ class Level : public OwnedObject<Level> {
   bool isCovered(Vec2) const;
   template<typename Fun>
   void forEachEffect(Vec2, TribeId, Fun);
+  void placeSwarmer(Vec2, Creature*);
+  void unplaceSwarmer(Vec2, Creature*);
 };
 

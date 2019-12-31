@@ -271,7 +271,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::FROZEN:
         c->you(MsgType::ARE, "frozen!");
-        c->getPosition().addCreatureLight(false);
         break;
       case LastingEffect::PLAGUE:
         c->you(MsgType::ARE, "infected by plague!");
@@ -315,6 +314,10 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::OIL:
         c->you(MsgType::ARE, "covered in oil!");
+        break;
+      case LastingEffect::SWARMER:
+        c->verb("feel", "feels", "like swarming someone");
+        c->getPosition().addSwarmer();
         break;
     }
 }
@@ -561,6 +564,10 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "no longer covered in oil");
         c->removeEffect(LastingEffect::ON_FIRE);
         break;
+      case LastingEffect::SWARMER:
+        c->verb("no longer feel", "no longer feels", "like swarming someone");
+        c->getPosition().removeSwarmer();
+        break;
       default:
         break;
     }
@@ -579,6 +586,8 @@ int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
         value += attrBonus;
       if (c->isAffected(LastingEffect::DAM_BONUS, time))
         value += attrBonus;
+      if (c->isAffected(LastingEffect::SWARMER, time))
+        value += c->getPosition().countSwarmers() - 1;
       if (c->hasAlternativeViewId() && c->isAffected(LastingEffect::SPYING, time))
         value -= 99;
       break;
@@ -600,6 +609,8 @@ int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
         value += 1;
       if (c->isAffected(LastingEffect::RESTED, time))
         value += 1;
+      if (c->isAffected(LastingEffect::SWARMER, time))
+        value += c->getPosition().countSwarmers() - 1;
       break;
     default: break;
   }
@@ -692,6 +703,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::NO_CARRY_LIMIT: return "Infinite carrying capacity"_good;
     case LastingEffect::SPYING: return "Spy"_good;
     case LastingEffect::LIFE_SAVED: return "Life will be saved"_good;
+    case LastingEffect::SWARMER: return "Swarmer"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::PLAGUE: return "Infected with plague"_bad;
@@ -1036,7 +1048,8 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::SPYING: return "spying";
     case LastingEffect::LIFE_SAVED: return "life saving";
     case LastingEffect::UNSTABLE: return "mental instability";
-    case LastingEffect::OIL: return "covered in oil";
+    case LastingEffect::OIL: return "oil";
+    case LastingEffect::SWARMER: return "swarming";
   }
 }
 
@@ -1121,6 +1134,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::LIFE_SAVED: return "Prevents the death of the creature";
     case LastingEffect::UNSTABLE: return "Creature may become insane when having witnessed the death of an ally.";
     case LastingEffect::OIL: return "Creature may be set on fire.";
+    case LastingEffect::SWARMER: return "Grants damage and defense bonus for every other swarmer in vicinity.";
   }
 }
 
@@ -1306,6 +1320,8 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
       return FXVariantName::DEBUFF_BROWN;
     case LastingEffect::OIL:
       return FXVariantName::DEBUFF_BLACK;
+    case LastingEffect::SWARMER:
+      return FXVariantName::BUFF_GREEN1;
     case LastingEffect::PLAGUE_RESISTANT:
     case LastingEffect::POISON_RESISTANT:
       return FXVariantName::BUFF_GREEN2;
@@ -1487,44 +1503,61 @@ static TimeInterval entangledTime(int strength) {
 
 TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
   switch (e) {
-    case LastingEffect::PLAGUE: return 1500_visible;
-    case LastingEffect::SUMMONED: return 900_visible;
-    case LastingEffect::PREGNANT: return 900_visible;
+    case LastingEffect::PLAGUE:
+      return 1500_visible;
+    case LastingEffect::SUMMONED:
+      return 900_visible;
+    case LastingEffect::PREGNANT:
+      return 900_visible;
     case LastingEffect::NIGHT_VISION:
-    case LastingEffect::ELF_VISION: return  60_visible;
+    case LastingEffect::ELF_VISION:
+      return 60_visible;
     case LastingEffect::TIED_UP:
     case LastingEffect::WARNING:
     case LastingEffect::REGENERATION:
     case LastingEffect::TELEPATHY:
-    case LastingEffect::BLEEDING: return  50_visible;
-    case LastingEffect::ENTANGLED: return entangledTime(c->getAttr(AttrType::DAMAGE));
+    case LastingEffect::BLEEDING:
+      return 50_visible;
+    case LastingEffect::ENTANGLED:
+      return entangledTime(c->getAttr(AttrType::DAMAGE));
     case LastingEffect::HALLU:
     case LastingEffect::SLOWED:
     case LastingEffect::SPEED:
     case LastingEffect::RAGE:
     case LastingEffect::LIGHT_SOURCE:
     case LastingEffect::DARKNESS_SOURCE:
-    case LastingEffect::PANIC: return  15_visible;
-    case LastingEffect::POISON: return  60_visible;
+    case LastingEffect::PANIC:
+      return 15_visible;
+    case LastingEffect::POISON:
+      return 60_visible;
     case LastingEffect::DEF_BONUS:
-    case LastingEffect::DAM_BONUS: return  40_visible;
-    case LastingEffect::BLIND: return  15_visible;
-    case LastingEffect::INVISIBLE: return  15_visible;
+    case LastingEffect::DAM_BONUS:
+      return 40_visible;
+    case LastingEffect::BLIND:
+      return 15_visible;
+    case LastingEffect::INVISIBLE:
+      return 15_visible;
     case LastingEffect::LIFE_SAVED:
     case LastingEffect::FROZEN:
-    case LastingEffect::STUNNED: return  7_visible;
+    case LastingEffect::STUNNED:
+      return 7_visible;
     case LastingEffect::SLEEP_RESISTANT:
     case LastingEffect::FIRE_RESISTANT:
-    case LastingEffect::POISON_RESISTANT: return  60_visible;
-    case LastingEffect::FLYING: return  60_visible;
-    case LastingEffect::COLLAPSED: return  2_visible;
+    case LastingEffect::SWARMER:
+    case LastingEffect::POISON_RESISTANT:
+    case LastingEffect::FLYING:
+      return 60_visible;
+    case LastingEffect::COLLAPSED:
+      return 2_visible;
     case LastingEffect::FAST_CRAFTING:
     case LastingEffect::FAST_TRAINING:
     case LastingEffect::SLOW_CRAFTING:
     case LastingEffect::SLOW_TRAINING:
-    case LastingEffect::SLEEP: return  200_visible;
+    case LastingEffect::SLEEP:
+      return 200_visible;
     case LastingEffect::PEACEFULNESS:
-    case LastingEffect::INSANITY: return  20_visible;
+    case LastingEffect::INSANITY:
+      return 20_visible;
     case LastingEffect::MAGIC_VULNERABILITY:
     case LastingEffect::MELEE_VULNERABILITY:
     case LastingEffect::RANGED_VULNERABILITY:

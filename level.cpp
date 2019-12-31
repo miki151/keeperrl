@@ -45,7 +45,7 @@ template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Level>);
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
-  ar(sunlight, bucketMap, lightAmount, unavailable);
+  ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
   ar(furniture, tickingFurniture, covered, roofSupport, portals, furnitureEffects);
   if (Archive::is_loading::value) // some code requires these Sectors to be always initialized
@@ -58,12 +58,21 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Level);
 
 Level::~Level() {}
 
+static vector<pair<int, CreatureBucketMap>> getSwarmMaps(Vec2 size) {
+  constexpr int bucketSize = 10;
+  return makeVec(
+    make_pair(0, CreatureBucketMap(size, bucketSize)),
+    make_pair(bucketSize/ 2, CreatureBucketMap(size + Vec2(bucketSize / 2, bucketSize/ 2), bucketSize))
+  );
+}
+
 Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, Table<double> sun, LevelId id)
     : squares(std::move(s)), furniture(std::move(f)),
       memoryUpdates(squares->getBounds(), true), model(m),
       sunlight(sun), roofSupport(squares->getBounds()),
-      bucketMap(squares->getBounds().width(), squares->getBounds().height(),
-      FieldOfView::sightRange), lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
+      bucketMap(squares->getBounds().getSize(), FieldOfView::sightRange),
+      swarmMaps(getSwarmMaps(squares->getBounds().getSize())),
+      lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
       levelId(id), portals(squares->getBounds()) {
 }
 
@@ -427,8 +436,20 @@ void Level::forEachEffect(Vec2 pos, TribeId tribe, Fun f) {
           f(effect);
 }
 
+void Level::unplaceSwarmer(Vec2 pos, Creature* c) {
+  for (auto& map : swarmMaps)
+    map.second.removeElement(pos + Vec2(map.first, map.first), c);
+}
+
+void Level::placeSwarmer(Vec2 pos, Creature* c) {
+  for (auto& map : swarmMaps)
+    map.second.addElement(pos + Vec2(map.first, map.first), c);
+}
+
 void Level::unplaceCreature(Creature* creature, Vec2 pos) {
   bucketMap->removeElement(pos, creature);
+  if (creature->isAffected(LastingEffect::SWARMER))
+    unplaceSwarmer(pos, creature);
   updateCreatureLight(pos, -1);
   modSafeSquare(pos)->removeCreature(Position(pos, this));
   model->increaseMoveCounter();
@@ -441,6 +462,8 @@ void Level::placeCreature(Creature* creature, Vec2 pos) {
   Position position(pos, this);
   creature->setPosition(position);
   bucketMap->addElement(pos, creature);
+  if (creature->isAffected(LastingEffect::SWARMER))
+    placeSwarmer(pos, creature);
   modSafeSquare(pos)->putCreature(creature);
   updateCreatureLight(pos, 1);
   position.onEnter(creature);

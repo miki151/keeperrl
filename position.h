@@ -111,6 +111,8 @@ class Position {
   bool sunlightBurns() const;
   double getLightEmission() const;
   void addCreatureLight(bool darkness);
+  void addSwarmer();
+  void removeSwarmer();
   void removeCreatureLight(bool darkness);
   void throwItem(vector<PItem> item, const Attack& attack, int maxDist, Position target, VisionId);
   bool canNavigateCalc(const MovementType&) const;
@@ -152,6 +154,7 @@ class Position {
   bool isDirEffectBlocked() const;
   void addFurnitureEffect(TribeId, const FurnitureEffectInfo&) const;
   void removeFurnitureEffect(TribeId, const FurnitureEffectInfo&) const;
+  int countSwarmers() const;
 
   SERIALIZATION_DECL(Position)
   int getHash() const;

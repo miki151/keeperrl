@@ -28,6 +28,7 @@
 #include "game_event.h"
 #include "content_factory.h"
 #include "shortest_path.h"
+#include "bucket_map.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -599,7 +600,16 @@ void Position::removeFurnitureEffect(TribeId tribe, const FurnitureEffectInfo& e
   CHECK(!!effectsTable);
   handleEffect(tribe, *effectsTable, getRectangle(Rectangle::centered(effect.radius)), effect,
       [&](vector<LastingEffect>& effects) { effects.removeElement(effect.effect); },
-      [&](Creature* c) { c->removePermanentEffect(effect.effect, 1, false); });
+  [&](Creature* c) { c->removePermanentEffect(effect.effect, 1, false); });
+}
+
+int Position::countSwarmers() const {
+  if (!isValid())
+    return 0;
+  int result = 0;
+  for (auto& map : level->swarmMaps)
+    result = max(result, map.second.countElementsInBucket(coord + Vec2(map.first, map.first)));
+  return result;
 }
 
 void Position::addCreatureLight(bool darkness) {
@@ -610,6 +620,16 @@ void Position::addCreatureLight(bool darkness) {
     else
       level->addLightSource(coord, Level::getCreatureLightRadius(), 1);
   }
+}
+
+void Position::addSwarmer() {
+  if (isValid())
+    level->placeSwarmer(coord, NOTNULL(getCreature()));
+}
+
+void Position::removeSwarmer() {
+  if (isValid())
+    level->unplaceSwarmer(coord, NOTNULL(getCreature()));
 }
 
 void Position::removeCreatureLight(bool darkness) {
