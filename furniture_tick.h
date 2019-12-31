@@ -12,7 +12,8 @@ RICH_ENUM(FurnitureTickType,
   PORTAL,
   METEOR_SHOWER,
   PIT,
-  EXTINGUISH_FIRE
+  EXTINGUISH_FIRE,
+  SET_FURNITURE_ON_FIRE
 );
 
 class FurnitureTick {

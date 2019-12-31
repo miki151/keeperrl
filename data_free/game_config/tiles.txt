@@ -56,6 +56,8 @@
 { "dwarf_female" "h" ColorId LIGHT_BLUE }
 { "shopkeeper" "@" ColorId LIGHT_BLUE }
 { "floor" "." ColorId LIGHT_GRAY }
+{ viewId = "bridge" symbol = "_" color = ColorId BROWN
+  southSide = "bridge2" }
 { "keeper_floor" "." ColorId WHITE }
 { "wood_floor1" "." ColorId LIGHT_BROWN }
 { "wood_floor2" "." ColorId BROWN }

@@ -761,10 +761,17 @@
   name = "bridge"
   viewId = { "bridge" }
   overrideMovement = true
+  fire = 50
   removeNonFriendly = true
   removeWithCreaturePresent = false
   bridge = true
   canBuildOutsideOfTerritory = true
+}
+"STONE_BRIDGE" inherit "BRIDGE"
+{
+  viewId = { "bridge" ColorId GRAY }
+  fire = 0
+  name = "bridge"
 }
 "ROAD"
 {
@@ -1254,6 +1261,7 @@
   summonedElement = "FIRE_ELEMENTAL"
   freezeTo = "FLOOR"
   canSilentlyReplace = true
+  tickType = SET_FURNITURE_ON_FIRE
   movementSet = {
     traits = { FLY }
     forcibleTraits = { WALK }

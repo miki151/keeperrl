@@ -176,6 +176,8 @@ void TileSet::loadModdedTiles(const vector<TileInfo>& tiles, bool useTiles) {
         t.addBackground(byName(*tile.background));
       if (tile.moveUp)
         t.setMoveUp();
+      if (tile.southSide)
+        t.addOption(Dir::S, byName(*tile.southSide));
       t.animated = tile.animated;
       t.canMirror = tile.canMirror;
       addTile(tile.viewId.data(), std::move(t));
@@ -185,7 +187,6 @@ void TileSet::loadModdedTiles(const vector<TileInfo>& tiles, bool useTiles) {
 }
 
 void TileSet::loadUnicode() {
-  addSymbol("bridge", symbol(u8"_", Color::BROWN));
   addSymbol("accept_immigrant", symbol(u8"✓", Color::GREEN, true));
   addSymbol("reject_immigrant", symbol(u8"✘", Color::RED, true));
   addSymbol("fog_of_war_corner", symbol(u8" ", Color::WHITE));
@@ -193,7 +194,6 @@ void TileSet::loadUnicode() {
 }
 
 void TileSet::loadTiles() {
-  addTile("bridge", sprite("bridge").addOption(Dir::S, byName("bridge2")));
   addTile("accept_immigrant", symbol(u8"✓", Color::GREEN, true));
   addTile("reject_immigrant", symbol(u8"✘", Color::RED, true));
   addTile("fog_of_war_corner", sprite("fogofwarall")

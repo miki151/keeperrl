@@ -24,7 +24,10 @@
     { Furniture {{ "CASTLE_WALL" }                STONE 5 }      "Stone building"    "Structure"
       "Outdoor building. Tiles covered by the roof are considered territory and can be built on." }
 
-    { Furniture {{ "BRIDGE" }                     WOOD 5 }       "Bridge"            "Structure"
+    { Furniture {{ "BRIDGE" }                     WOOD 5 }       "Wooden bridge"     "Structure"
+      "Build to pass over water. Will burn on lava." }
+
+    { Furniture {{ "STONE_BRIDGE" }               STONE 5 }      "Stone bridge"      "Structure"
       "Build to pass over water or lava." }
 
     { Furniture {{ "DOWN_STAIRS" }                }              "Down stairs"       "Structure"

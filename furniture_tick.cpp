@@ -159,5 +159,17 @@ void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furn
       if (auto c = pos.getCreature())
         c->removeEffect(LastingEffect::ON_FIRE);
       break;
+    case FurnitureTickType::SET_FURNITURE_ON_FIRE: {
+      auto handle = [] (const Position& pos) {
+        for (auto& f : pos.getFurniture())
+          if (f->getFire())
+            pos.modFurniture(f->getLayer())->fireDamage(pos, true);
+      };
+      for (auto& v : pos.neighbors8())
+        if (Random.roll(30))
+          handle(v);
+      if (Random.roll(10))
+        handle(pos);
+    }
   }
 }
