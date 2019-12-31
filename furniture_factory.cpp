@@ -104,8 +104,8 @@ bool FurnitureFactory::canBuild(FurnitureType type, Position pos) const {
   if (auto over = data.getBuiltOver())
     return !!pos.getFurniture(*over);
   auto original = pos.getFurniture(getData(type).getLayer());
-  return groundF->getMovementSet().canEnter({MovementTrait::WALK}) &&
-      (!original || data.silentlyReplace()) && !pos.isWall();
+  return (groundF->getMovementSet().canEnter({MovementTrait::WALK}) || data.getLayer() == FurnitureLayer::GROUND) &&
+      (!original || original->silentlyReplace()) && !pos.isWall();
 }
 
 bool FurnitureFactory::isUpgrade(FurnitureType base, FurnitureType upgraded) const {

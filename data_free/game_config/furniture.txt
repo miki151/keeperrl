@@ -426,6 +426,7 @@
 {
   name = "rocks"
   viewId = { "stones" }
+  canSilentlyReplace = true
 }
 "CROPS"
 {
@@ -1221,6 +1222,7 @@
   canBuildBridge = true
   summonedElement = "WATER_ELEMENTAL"
   freezeTo = "ICE"
+  canSilentlyReplace = true
   movementSet = {
     traits = { FLY SWIM }
     forcibleTraits = { WALK }
@@ -1251,6 +1253,7 @@
   canBuildBridge = true
   summonedElement = "FIRE_ELEMENTAL"
   freezeTo = "FLOOR"
+  canSilentlyReplace = true
   movementSet = {
     traits = { FLY }
     forcibleTraits = { WALK }
@@ -1299,6 +1302,8 @@
   name = "floor"
   viewId = { "floor" }
   layer = GROUND
+  canBuildOutsideOfTerritory = true
+  xForgetAfterBuilding = true
 }
 "TUTORIAL_ENTRANCE"
 {
