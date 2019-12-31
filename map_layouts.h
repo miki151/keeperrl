@@ -4,6 +4,7 @@
 #include "map_layout_id.h"
 
 enum class LayoutPiece {
+  CORRIDOR,
   WALL,
   DOOR,
   FLOOR_INSIDE,

@@ -48,7 +48,6 @@ class LevelMaker {
   static PLevelMaker towerLevel(RandomGen&, SettlementInfo, Vec2 size);
   static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
   static PLevelMaker roomLevel(RandomGen&, SettlementInfo, Vec2 size);
-  static PLevelMaker adoxieTemple(RandomGen&, SettlementInfo, Vec2 size);
   static PLevelMaker mazeLevel(RandomGen&, SettlementInfo, Vec2 size);
   static PLevelMaker blackMarket(RandomGen&, SettlementInfo, Vec2 size);
   static PLevelMaker emptyLevel(FurnitureType, bool withFloor);
@@ -57,5 +56,6 @@ class LevelMaker {
   static PLevelMaker getFullZLevel(RandomGen&, optional<SettlementInfo>, ResourceCounts, int mapWidth, TribeId keeperTribe,
       StairKey, const MapLayouts*);
   static PLevelMaker getWaterZLevel(RandomGen&, FurnitureType waterType, int mapWidth, CreatureList, StairKey);
+  static PLevelMaker settlementLevel(const MapLayouts*, RandomGen&, SettlementInfo, Vec2 size);
 };
 

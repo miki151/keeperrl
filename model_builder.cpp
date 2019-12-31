@@ -52,6 +52,10 @@ ModelBuilder::~ModelBuilder() {
 
 ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
   switch (type) {
+    case LevelType::BASIC:
+      return [layouts = &contentFactory->mapLayouts](RandomGen& random, SettlementInfo info, Vec2 size) {
+        return LevelMaker::settlementLevel(layouts, random, info, size);
+      };
     case LevelType::TOWER:
       return &LevelMaker::towerLevel;
     case LevelType::MAZE:
@@ -60,8 +64,6 @@ ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
       return &LevelMaker::roomLevel;
     case LevelType::MINETOWN:
       return &LevelMaker::mineTownLevel;
-    case LevelType::ADOXIE_TEMPLE:
-      return &LevelMaker::adoxieTemple;
     case LevelType::BLACK_MARKET:
       return &LevelMaker::blackMarket;
     case LevelType::SOKOBAN: {
@@ -266,7 +268,7 @@ PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment al
 PModel ModelBuilder::tryTutorialModel() {
   vector<EnemyInfo> enemyInfo;
   BiomeId biome = BiomeId::MOUNTAIN;
-  enemyInfo.push_back(enemyFactory->get(EnemyId("TEUTONS")));
+  //enemyInfo.push_back(enemyFactory->get(EnemyId("TEUTONS")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("RED_DRAGON")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("MAIN_DUNGEON")));

@@ -790,7 +790,7 @@
 "MAIN_DUNGEON"
 {
   settlement = {
-    type = Builtin ISLAND_VAULT_DOOR
+    type = MapLayoutId "adoxie_temple"
     tribe = MONSTER
     inhabitants = {
       leader = { { "ADOXIE_PRIEST" } }
@@ -803,9 +803,7 @@
         all = { 1 "SPIDER_FOOD" }
       }
     }
-    buildingId = "BRICK"
-    outsideFeatures = "dungeonOutside"
-    furniture = { "adoxie" }
+    buildingId = "ADOXIE_TEMPLE"
   }
   config = {
     immigrantInterval = 500
@@ -817,8 +815,8 @@
       { ExtraEnemy { "DUNGEON1" { 1 } } 40 30 DUNGEON }
       { ExtraEnemy { "BLACK_MARKET_ENTRY" { 1 } } 40 30 DUNGEON }
       { ExtraEnemy { "DUNGEON2" { 1 } } 40 30 DUNGEON }
-#      { ExtraEnemy { "DUNGEON3" { 1 } } 40 30 DUNGEON }
-      { MainEnemy 60 40 ADOXIE_TEMPLE }
+      { ExtraEnemy { "DUNGEON3" { 1 } } 40 30 DUNGEON }
+      { MainEnemy 60 40 BASIC }
       { ExtraEnemy { "ADOXIE" { 1 } } 15 15 TOWER true }
     }
   }

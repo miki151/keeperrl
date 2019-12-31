@@ -250,7 +250,9 @@ static optional<string> readMapLayouts(MapLayouts& layouts, KeyVerifier& keyVeri
         MapLayouts::Layout layout(im->w, im->h - 1);
         for (auto v : layout.getBounds()) {
           auto color = getpixel(im, v.x, v.y);
-          if (color == Color(0, 0, 0))
+          if (color == Color(255, 255, 255))
+            layout[v] = LayoutPiece::CORRIDOR;
+          else if (color == Color(0, 0, 0))
             layout[v] = LayoutPiece::WALL;
           else if (color == Color(0, 255, 0))
             layout[v] = LayoutPiece::FLOOR_INSIDE;
@@ -264,7 +266,11 @@ static optional<string> readMapLayouts(MapLayouts& layouts, KeyVerifier& keyVeri
             layout[v] = LayoutPiece::BRIDGE;
           else if (color == Color(255, 0, 0))
             layout[v] = LayoutPiece::DOOR;
-          else if (color != Color(255, 255, 255))
+          else if (color == Color(255, 255, 0))
+            layout[v] = LayoutPiece::UP_STAIRS;
+          else if (color == Color(0, 255, 255))
+            layout[v] = LayoutPiece::DOWN_STAIRS;
+          else if (color != Color(128, 128, 128))
             return "Unrecognized color in "_s +  file.getPath() + ": " + toString(color);
         }
         SDL::SDL_FreeSurface(im);

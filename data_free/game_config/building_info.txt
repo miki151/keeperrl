@@ -86,3 +86,8 @@
     wall = "GLACIER"
     water = {ICE}
   }
+"ADOXIE_TEMPLE" inherit "BRICK"
+  {
+    downStairs = "ADOXIE_STATUE"
+    water = {LAVA}
+  }

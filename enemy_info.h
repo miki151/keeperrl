@@ -14,12 +14,12 @@ RICH_ENUM(LevelConnectionDir, UP, DOWN);
 
 RICH_ENUM(
     LevelType,
+    BASIC,
     TOWER,
     DUNGEON,
     MINETOWN,
     MAZE,
     SOKOBAN,
-    ADOXIE_TEMPLE,
     BLACK_MARKET
 );
 

@@ -2619,22 +2619,42 @@ static FurnitureType getWaterFurniture(WaterType waterType) {
 namespace {
   class MapLayoutMaker : public LevelMaker {
     public:
-    MapLayoutMaker(const MapLayouts::Layout& layout, const BuildingInfo& info, TribeId tribe)
-        : layout(layout), buildingInfo(info), tribe(tribe) {}
+    MapLayoutMaker(const MapLayouts::Layout& layout, const BuildingInfo& info, vector<StairKey> downStairs,
+        vector<StairKey> upStairs, TribeId tribe)
+        : layout(layout), buildingInfo(info), tribe(tribe), downStairs(std::move(downStairs)), upStairs(std::move(upStairs)) {}
 
     virtual void make(LevelBuilder* builder, Rectangle area) override {
       CHECK(area.getSize() == layout.getBounds().getSize());
       auto waterType = getWaterFurniture(builder->getRandom().choose(buildingInfo.water));
       set<Vec2> isGate;
-      for (auto v : layout.getBounds())
+      vector<Vec2> upStairsPositions;
+      vector<Vec2> downStairsPositions;
+      for (auto v : layout.getBounds()) {
         if (layout[v] == LayoutPiece::DOOR)
           for (auto w : v.neighbors4())
             if (layout[w] == LayoutPiece::DOOR)
               isGate.insert(v);
+        auto handleStairs = [&] (LayoutPiece stairsPiece, vector<Vec2>& positions) {
+          if (layout[v] == stairsPiece) {
+            positions.push_back(area.topLeft() + v);
+            layout[v] = LayoutPiece::CORRIDOR;
+            for (auto w : v.neighbors4())
+              if (layout[w] == LayoutPiece::FLOOR_INSIDE || layout[w] == LayoutPiece::FLOOR_OUTSIDE ||
+                  layout[w] == LayoutPiece::PRETTY_FLOOR) {
+                layout[v] = layout[w];
+              }
+          }
+        };
+        handleStairs(LayoutPiece::UP_STAIRS, upStairsPositions);
+        handleStairs(LayoutPiece::DOWN_STAIRS, downStairsPositions);
+      }
       for (auto v : layout.getBounds()) {
         auto targetV = area.topLeft() + v;
         if (layout[v])
           switch (*layout[v]) {
+            case LayoutPiece::CORRIDOR:
+              builder->removeFurniture(targetV, FurnitureLayer::MIDDLE);
+              break;
             case LayoutPiece::WALL:
               builder->putFurniture(targetV, buildingInfo.wall, tribe);
               break;
@@ -2664,23 +2684,37 @@ namespace {
               builder->resetFurniture(targetV, {waterType, tribe});
               builder->putFurniture(targetV, FurnitureType("BRIDGE"), tribe);
               break;
-            case LayoutPiece::UP_STAIRS:
-              builder->putFurniture(targetV, buildingInfo.upStairs.value_or(FurnitureType("UP_STAIRS")), tribe);
-              break;
-            case LayoutPiece::DOWN_STAIRS:
-              builder->putFurniture(targetV, buildingInfo.downStairs.value_or(FurnitureType("DOWN_STAIRS")), tribe);
-              break;
             case LayoutPiece::WATER:
               builder->resetFurniture(targetV, {waterType, tribe});
               break;
+            case LayoutPiece::UP_STAIRS:
+            case LayoutPiece::DOWN_STAIRS:
+              // these are handled below and should have been replaced with floor
+              fail();
           }
       }
+      auto placeStairs = [builder, this] (FurnitureType type, vector<Vec2> positions, vector<StairKey>& keys) {
+      for (auto& pos : positions)
+        if (!keys.empty()) {
+          builder->putFurniture(pos, type, tribe);
+          builder->setLandingLink(pos, keys.back());
+          keys.pop_back();
+        }
+      };
+      placeStairs(buildingInfo.upStairs.value_or(FurnitureType("UP_STAIRS")),
+          builder->getRandom().permutation(upStairsPositions), upStairs);
+      placeStairs(buildingInfo.downStairs.value_or(FurnitureType("DOWN_STAIRS")),
+          builder->getRandom().permutation(downStairsPositions), downStairs);
+      CHECK(downStairs.empty()) << "Custom map doesn't contain required down stairs";
+      CHECK(upStairs.empty()) << "Custom map doesn't contain required up stairs";
     }
 
     private:
     MapLayouts::Layout layout;
     BuildingInfo buildingInfo;
     TribeId tribe;
+    vector<StairKey> downStairs;
+    vector<StairKey> upStairs;
   };
 }
 
@@ -2688,13 +2722,13 @@ static PMakerQueue makeMapLayout(const MapLayouts::Layout& layout, const Settlem
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<MakerQueue>(
       unique<AddAttrib>(SquareAttrib::NO_DIG),
-      unique<MapLayoutMaker>(layout, info.buildingInfo, info.tribe)));
-  queue->addMaker(unique<PlaceCollective>(info.collective));
+      unique<MapLayoutMaker>(layout, info.buildingInfo, info.downStairs, info.upStairs, info.tribe)));
+  queue->addMaker(unique<PlaceCollective>(info.collective, Predicate::attrib(SquareAttrib::EMPTY_ROOM)));
   for (auto& furniture : info.furniture)
     queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, furniture, info.tribe));
   if (info.outsideFeatures)
     queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::FLOOR_OUTSIDE), 0.01, *info.outsideFeatures, info.tribe));
-  queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
+  queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, Predicate::attrib(SquareAttrib::EMPTY_ROOM)));
   return queue;
 }
 
@@ -2904,6 +2938,18 @@ static PLevelMaker underground(RandomGen& random, Vec2 size, vector<WaterType> w
   return std::move(queue);
 }
 
+PLevelMaker LevelMaker::settlementLevel(const MapLayouts* mapLayouts, RandomGen& random, SettlementInfo settlement, Vec2 size) {
+  auto queue = unique<MakerQueue>();
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR")).add(FurnitureType("MOUNTAIN2"))));
+  auto locations = unique<RandomLocations>();
+  auto maker = getSettlementMaker(mapLayouts, random, settlement);
+  if (settlement.corpses)
+    maker->addMaker(unique<Corpses>(*settlement.corpses));
+  locations->add(std::move(maker), getSize(mapLayouts, random, settlement.type), Predicate::alwaysTrue());
+  queue->addMaker(std::move(locations));
+  return std::move(queue);
+}
+
 PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo> settlement, ResourceCounts resourceCounts,
     int mapWidth, TribeId keeperTribe, StairKey landingLink, const MapLayouts* mapLayouts) {
   auto queue = unique<MakerQueue>();
@@ -2918,8 +2964,6 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
   vector<SurroundWithResourcesInfo> surroundWithResources;
   if (settlement) {
     auto maker = getSettlementMaker(mapLayouts, random, *settlement);
-    if (settlement->corpses)
-      maker->addMaker(unique<Corpses>(*settlement->corpses));
     maker->addMaker(unique<RandomLocations>(makeVec<PLevelMaker>(std::move(startingPosMaker)), makeVec<pair<int, int>>({1, 1}),
         Predicate::canEnter(MovementTrait::WALK)));
     if (settlement->corpses)
@@ -3039,44 +3083,6 @@ PLevelMaker LevelMaker::roomLevel(RandomGen& random, SettlementInfo info, Vec2 s
   for (auto& items : info.shopItems)
     queue->addMaker(unique<Items>(items, 5, 10));
   return unique<BorderGuard>(std::move(queue), wall);
-}
-
-PLevelMaker LevelMaker::adoxieTemple(RandomGen&, SettlementInfo info, Vec2 size) {
-  auto queue = unique<MakerQueue>();
-  auto& building = info.buildingInfo;
-  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"))
-      .add(FurnitureType("MOUNTAIN2"))));
-  queue->addMaker(unique<Margin>(5, unique<UniformBlob>(SquareChange::reset(FurnitureType("MAGMA")))));
-  auto locations = unique<RandomLocations>();
-  const int templeRoomSize = 5;
-  const int templeRoomMargin = 5;
-  auto templeRoom = unique<MakerQueue>();
-  auto floor = building.floorInside.value_or(FurnitureType("FLOOR"));
-  templeRoom->addMaker(unique<Empty>(SquareChange::reset(FurnitureType("FLOOR"))
-      .add(building.prettyFloor.value_or(FurnitureType("FLOOR")))));
-  templeRoom->addMaker(unique<PlaceCollective>(info.collective));
-  templeRoom->addMaker(unique<AreaCorners>(unique<Empty>(building.wall), Vec2(1, 1)));
-  for (auto& furniture : info.furniture)
-    templeRoom->addMaker(unique<Margin>((templeRoomSize - 1) / 2,
-        unique<Furnitures>(Predicate::alwaysTrue(), 0.05, furniture, info.tribe)));
-  for (StairKey key : info.downStairs)
-    templeRoom->addMaker(unique<Margin>((templeRoomSize - 1) / 2,
-        unique<StartingPos>(Predicate::type(FurnitureType("FLOOR")), key)));
-  templeRoom->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, Predicate::near4AtLeast(FurnitureType("MAGMA"), 1)));
-  locations->add(unique<Margin>(templeRoomMargin, std::move(templeRoom)),
-      Vec2(templeRoomSize + 2 * templeRoomMargin, templeRoomSize + 2 * templeRoomMargin),
-      RandomLocations::LocationPredicate(Predicate::type(FurnitureType("MAGMA"))));
-  auto entryRoom = unique<MakerQueue>();
-  entryRoom->addMaker(unique<Empty>(SquareChange::reset(floor)));
-  /*for (StairKey key : info.downStairs)
-    entryRoom->addMaker(unique<Stairs>(StairDirection::DOWN, key, building, Predicate::type(floor)));*/
-  for (StairKey key : info.upStairs)
-    entryRoom->addMaker(unique<Stairs>(StairDirection::UP, key, building, Predicate::type(floor)));
-  locations->add(unique<Margin>(1, std::move(entryRoom)), Vec2(7, 7),
-      RandomLocations::LocationPredicate(Predicate::type(FurnitureType("MOUNTAIN2"))));
-  queue->addMaker(std::move(locations));
-  queue->addMaker(unique<Connector>(none, info.tribe));
-  return PLevelMaker(queue.release());
 }
 
 namespace {
