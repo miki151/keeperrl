@@ -1381,8 +1381,10 @@ void PlayerControl::fillCurrentLevelInfo(GameInfo& gameInfo) const {
 void PlayerControl::fillDungeonLevel(AvatarLevelInfo& info) const {
   const auto& dungeonLevel = collective->getDungeonLevel();
   info.level = dungeonLevel.level + 1;
-  info.viewId = collective->getLeaderOrOtherMinion()->getViewObject().id();
-  info.title = collective->getLeaderOrOtherMinion()->getName().title();
+  if (auto leader = collective->getLeaderOrOtherMinion()) {
+    info.viewId = leader->getViewObject().id();
+    info.title = leader->getName().title();
+  }
   info.progress = dungeonLevel.progress;
   info.numAvailable = min(dungeonLevel.numResearchAvailable(), collective->getTechnology().getNextTechs().size());
 }
@@ -1762,9 +1764,11 @@ Vec2 PlayerControl::getScrollCoord() const {
   };
   if (auto pos = processTiles(collective->getTerritory().getAll()))
     return *pos;
-  auto keeperPos = collective->getLeaderOrOtherMinion()->getPosition();
-  if (keeperPos.isSameLevel(currentLevel))
-    return keeperPos.getCoord();
+  if (auto leader = collective->getLeaderOrOtherMinion()) {
+    auto keeperPos = leader->getPosition();
+    if (keeperPos.isSameLevel(currentLevel))
+      return keeperPos.getCoord();
+  }
   if (auto pos = processTiles(collective->getKnownTiles().getAll()))
     return *pos;
   return currentLevel->getBounds().middle();

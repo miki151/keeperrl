@@ -118,7 +118,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   bool usesEquipment(const Creature*) const;
 
-  virtual ~Collective();
+  virtual ~Collective() override;
 
   int numResource(ResourceId) const;
   int numResourcePlusDebt(ResourceId) const;
