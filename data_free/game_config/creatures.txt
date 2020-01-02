@@ -1753,6 +1753,15 @@
     body = {
       type = Humanoid LARGE
       material = UNDEAD_FLESH
+      intrinsicAttacks = {
+        HEAD {{
+          isExtraAttack = true
+          itemType = { Intrinsic { "bite_attack" } "fangs" 5 {
+            attackType = BITE
+            attackMsg = BITE
+            attackerEffect = { RegrowBodyPart 1 }
+            victimEffect = { 0.1 Lasting BLEEDING  } } }}}
+      }
     }
     chatReactionFriendly = "\"All men be cursed!\""
     chatReactionHostile = "\"Die!\""
@@ -1771,17 +1780,13 @@
     }
     hatedByEffect = HATE_UNDEAD
   }
-"VAMPIRE_LORD"
+"VAMPIRE_LORD" inherit "VAMPIRE"
   {
     viewId = { "vampire_lord" }
     attr = {
       DAMAGE 17
       DEFENSE 23
       SPELL_DAMAGE 27 
-    }
-    body = {
-      type = Humanoid LARGE
-      material = UNDEAD_FLESH
     }
     name = {
       name = "vampire lord"
@@ -1800,9 +1805,8 @@
     }
     spellSchools = { "mage" }
     spells = { "defense bonus" "damage bonus" "deception" }
-    chatReactionFriendly = "\"There are times when you simply nnot refuse a drink!\""
-    chatReactionHostile = "\"There are times when you simply nnot refuse a drink!\""
-    hatedByEffect = HATE_UNDEAD
+    chatReactionFriendly = "\"There are times when you simply cannot refuse a drink!\""
+    chatReactionHostile = "\"There are times when you simply cannot refuse a drink!\""
     inventory = {
       { Simple "Robe"}
       { Simple "IronStaff"}
@@ -2293,7 +2297,7 @@
     }
     inventory = {
       { Simple "LeatherArmor"}
-      { Potion RegrowBodyPart }
+      { Potion RegrowBodyPart 1000 }
       { Simple "GoldPiece" 50 90 }
     }
   }

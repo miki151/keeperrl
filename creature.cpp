@@ -1517,7 +1517,7 @@ bool Creature::considerSavingLife(DropType drops) {
       attributes->removePermanentEffect(LastingEffect::LIFE_SAVED, 1);
     heal();
     removeEffect(LastingEffect::BLEEDING, false);
-    getBody().healBodyParts(this, true);
+    getBody().healBodyParts(this, 1000);
     forceMovement = false;
     if (!position.canEnterEmpty(this))
       if (auto neighbor = position.getLevel()->getClosestLanding({position}, this))

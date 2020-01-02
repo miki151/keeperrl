@@ -141,7 +141,11 @@ struct CustomArea {
   vector<Position> getTargetPos(const Creature* attacker, Position targetPos) const;
   COMPARE_ALL(effect, positions)
 };
-SIMPLE_EFFECT(RegrowBodyPart);
+struct RegrowBodyPart {
+  EFFECT_TYPE_INTERFACE;
+  int maxCount;
+  COMPARE_ALL(maxCount)
+};
 struct Suicide {
   EFFECT_TYPE_INTERFACE;
   MsgType message;

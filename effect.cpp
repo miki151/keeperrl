@@ -671,7 +671,7 @@ string Effects::LooseBodyPart::getDescription(const ContentFactory*) const {
 }
 
 void Effects::RegrowBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
-  c->getBody().healBodyParts(c, true);
+  c->getBody().healBodyParts(c, maxCount);
 }
 
 string Effects::RegrowBodyPart::getName(const ContentFactory*) const {
