@@ -656,7 +656,7 @@ std::string operator "" _s(const char* str, size_t);
 
 class RandomGen {
   public:
-  RandomGen() {}
+  RandomGen();
   RandomGen(RandomGen&) = delete;
   void init(int seed);
   int get(int max);

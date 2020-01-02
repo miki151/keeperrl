@@ -297,12 +297,15 @@ static void drawTexturedQuad(const FRect& rect, const FRect& trect) {
 
 void FXRenderer::drawOrdered(const int* ids, int count, float offsetX, float offsetY, Color color) {
   PROFILE;
-
-  SDL::glPushAttrib(GL_ENABLE_BIT);
-  SDL::glDisable(GL_DEPTH_TEST);
-  SDL::glDisable(GL_CULL_FACE);
-  SDL::glEnable(GL_TEXTURE_2D);
-  glColor(color);
+  bool wasInitialized = false;
+  auto initialize = [&] {
+    wasInitialized = true;
+    SDL::glPushAttrib(GL_ENABLE_BIT);
+    SDL::glDisable(GL_DEPTH_TEST);
+    SDL::glDisable(GL_CULL_FACE);
+    SDL::glEnable(GL_TEXTURE_2D);
+    glColor(color);
+  };
 
   if (useFramebuffer) {
     tempRects.clear();
@@ -326,46 +329,48 @@ void FXRenderer::drawOrdered(const int* ids, int count, float offsetX, float off
       tempRects.emplace_back(rect);
       tempRects.emplace_back(trect);
     }
+    if (!tempRects.empty()) {
+      initialize();
+      int defaultMode = 0, defaultCombine = 0;
+      SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &defaultMode);
+      SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_COMBINE_RGB, &defaultCombine);
 
-    int defaultMode = 0, defaultCombine = 0;
-    SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &defaultMode);
-    SDL::glGetTexEnviv(GL_TEXTURE_ENV, GL_COMBINE_RGB, &defaultCombine);
+      SDL::glBlendFunc(GL_ONE, GL_SRC_ALPHA);
+      SDL::glBindTexture(GL_TEXTURE_2D, orderedBlendFBO->texId);
 
-    SDL::glBlendFunc(GL_ONE, GL_SRC_ALPHA);
-    SDL::glBindTexture(GL_TEXTURE_2D, orderedBlendFBO->texId);
+      for (int n = 0; n < tempRects.size(); n += 2)
+        drawTexturedQuad(tempRects[n], tempRects[n + 1]);
 
-    for (int n = 0; n < tempRects.size(); n += 2)
-      drawTexturedQuad(tempRects[n], tempRects[n + 1]);
+      // Here we're performing blend-add:
+      // - for high alpha values we're blending
+      // - for low alpha values we're adding
+      // For this to work nicely, additive textures need properly prepared alpha channel
+      SDL::glBindTexture(GL_TEXTURE_2D, orderedAddFBO->texId);
+      SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // Here we're performing blend-add:
-    // - for high alpha values we're blending
-    // - for low alpha values we're adding
-    // For this to work nicely, additive textures need properly prepared alpha channel
-    SDL::glBindTexture(GL_TEXTURE_2D, orderedAddFBO->texId);
-    SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      // These states multiply alpha by itself
+      SDL::glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+      SDL::glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+      SDL::glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
+      SDL::glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
+      SDL::glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+      SDL::glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
 
-    // These states multiply alpha by itself
-    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
-    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
-    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
-    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+      for (int n = 0; n < tempRects.size(); n += 2)
+        drawTexturedQuad(tempRects[n], tempRects[n + 1]);
 
-    for (int n = 0; n < tempRects.size(); n += 2)
-      drawTexturedQuad(tempRects[n], tempRects[n + 1]);
+      // Here we should really multiply by (1 - a), not (1 - a^2), but it looks better
+      SDL::glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_ONE);
 
-    // Here we should really multiply by (1 - a), not (1 - a^2), but it looks better
-    SDL::glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_ONE);
+      for (int n = 0; n < tempRects.size(); n += 2)
+        drawTexturedQuad(tempRects[n], tempRects[n + 1]);
 
-    for (int n = 0; n < tempRects.size(); n += 2)
-      drawTexturedQuad(tempRects[n], tempRects[n + 1]);
-
-    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, defaultMode);
-    SDL::glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, defaultCombine);
+      SDL::glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, defaultMode);
+      SDL::glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, defaultCombine);
+    }
   } else {
+    initialize();
     drawBuffers->clear();
-
     for (int n = 0; n < count; n++) {
       auto id = ids[n];
       if (id < 0 || id >= systemDraws.size())
@@ -387,9 +392,10 @@ void FXRenderer::drawOrdered(const int* ids, int count, float offsetX, float off
     SDL::glBlendFunc(GL_ONE, GL_ONE);
     drawParticles(view, BlendMode::additive);
   }
-
-  SDL::glPopAttrib();
-  SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  if (wasInitialized) {
+    SDL::glPopAttrib();
+    SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  }
 }
 
 void FXRenderer::drawUnordered(Layer layer) {

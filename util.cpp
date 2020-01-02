@@ -19,7 +19,12 @@
 #include "position.h"
 #include <time.h>
 
+RandomGen::RandomGen() {
+  PROFILE;
+}
+
 void RandomGen::init(int seed) {
+  PROFILE;
   generator.seed(seed);
 }
 

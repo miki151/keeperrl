@@ -196,6 +196,7 @@ void FXViewManager::finishFrame() {
 }
 
 void FXViewManager::drawFX(Renderer& renderer, GenericId id, Color color) {
+  PROFILE;
   auto it = entities->find(id);
   PASSERT(it != entities->end());
   auto& entity = it->second;

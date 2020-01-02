@@ -70,19 +70,17 @@ void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
   auto &psdef = (*this)[ps.defId];
 
   // Animating live particles
-  for (int ssid = 0; ssid < (int)psdef.subSystems.size(); ssid++) {
-    auto &ss = ps[ssid];
-    auto &ssdef = psdef[ssid];
+  for (int ssid = 0; ssid < (int)psdef.subSystems.size(); ssid++)
+    if (!ps[ssid].particles.empty()) {
+      auto &ss = ps[ssid];
+      auto &ssdef = psdef[ssid];
+      AnimationContext ctx(ssctx(ps, ssid), globalSimTime, ps.animTime, timeDelta);
+      ctx.rand.init(ss.randomSeed);
 
-    AnimationContext ctx(ssctx(ps, ssid), globalSimTime, ps.animTime, timeDelta);
-    ctx.rand.init(ss.randomSeed);
-
-    for (auto &pinst : ss.particles)
-      ssdef.animateFunc(ctx, pinst);
-
-    ss.randomSeed = ctx.randomSeed();
-  }
-
+      for (auto &pinst : ss.particles)
+        ssdef.animateFunc(ctx, pinst);
+      ss.randomSeed = ctx.randomSeed();
+    }
   // Removing dead particles
   for (auto &ssinst : ps.subSystems)
     for (int n = 0; n < (int)ssinst.particles.size(); n++) {
