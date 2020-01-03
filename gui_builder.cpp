@@ -1468,10 +1468,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   GuiFactory::ListBuilder list(gui, legendLineHeight);
   list.addSpace();
   auto titleLine = gui.getListBuilder();
-  titleLine.addElemAuto(gui.label(info.title));
-  if (auto titlesButton = drawKillTitlesButton(info))
-    titleLine.addElemAuto(std::move(titlesButton));
-  list.addElem(titleLine.buildHorizontalList());
+  list.addElem(gui.renderInBounds(drawTitleButton(info)));
   if (auto killsLabel = drawKillsLabel(info))
     list.addElem(std::move(killsLabel));
   vector<SGuiElem> keyElems;
@@ -3025,8 +3022,10 @@ SGuiElem GuiBuilder::drawKillsLabel(const PlayerInfo& minion) {
     return nullptr;
 }
 
-SGuiElem GuiBuilder::drawKillTitlesButton(const PlayerInfo& minion) {
+SGuiElem GuiBuilder::drawTitleButton(const PlayerInfo& minion) {
   if (!minion.killTitles.empty()) {
+    auto titleLine = gui.getListBuilder();
+    titleLine.addElemAuto(gui.label(minion.title));
     auto lines = gui.getListBuilder(legendLineHeight);
     for (auto& title : minion.killTitles)
       lines.addElem(gui.label(title));
@@ -3035,12 +3034,13 @@ SGuiElem GuiBuilder::drawKillTitlesButton(const PlayerInfo& minion) {
     };
     addLegend("Titles are awarded for killing tribe leaders, and increase");
     addLegend("each attribute up to a maximum of the attribute's base value.");
+    titleLine.addElemAuto(gui.label(toString("+"), Color::YELLOW));
     return gui.stack(
-        gui.label(toString("+"), Color::YELLOW),
+        titleLine.buildHorizontalList(),
         gui.tooltip2(gui.miniWindow(gui.margins(lines.buildVerticalList(), 15)), [](Rectangle rect){ return rect.bottomLeft(); })
     );
   } else
-    return nullptr;
+    return gui.label(minion.title);
 }
 
 SGuiElem GuiBuilder::drawSpellSchoolLabel(const PlayerInfo::SpellSchool& school) {
@@ -3064,9 +3064,7 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const CollectiveIn
     const optional<TutorialInfo>& tutorial) {
   auto list = gui.getListBuilder(legendLineHeight);
   auto titleLine = gui.getListBuilder();
-  titleLine.addElemAuto(gui.label(minion.title));
-  if (auto titlesButton = drawKillTitlesButton(minion))
-    titleLine.addElemAuto(std::move(titlesButton));
+  titleLine.addElemAuto(drawTitleButton(minion));
   if (auto killsLabel = drawKillsLabel(minion))
     titleLine.addBackElemAuto(std::move(killsLabel));
   list.addElem(titleLine.buildHorizontalList());

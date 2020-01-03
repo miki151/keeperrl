@@ -304,7 +304,7 @@ class GuiBuilder {
   SGuiElem drawAvatarsForRole(const vector<View::AvatarData>&, shared_ptr<int> avatarPage, shared_ptr<int> chosenAvatar,
                               shared_ptr<int> gender, shared_ptr<PlayerRole> chosenRole);
   SGuiElem drawScreenshotOverlay();
-  SGuiElem drawKillTitlesButton(const PlayerInfo& minion);
+  SGuiElem drawTitleButton(const PlayerInfo& minion);
   SGuiElem drawKillsLabel(const PlayerInfo& minion);
   function<void(Rectangle)> getActivityButtonFun(const PlayerInfo&);
   SGuiElem drawSpellSchoolLabel(const PlayerInfo::SpellSchool&);
