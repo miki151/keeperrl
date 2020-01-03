@@ -1502,10 +1502,36 @@ vector<PItem> Creature::generateCorpse(const ContentFactory* factory, bool insta
   return getBody().getCorpseItems(getName().bare(), getUniqueId(), instantlyRotten, factory);
 }
 
-bool Creature::considerSavingLife(DropType drops) {
+static optional<Position> findInaccessiblePos(Position startingPos) {
+  PositionSet visited;
+  queue<Position> q;
+  q.push(startingPos);
+  visited.insert(startingPos);
+  while (!q.empty()) {
+    auto pos = q.front();
+    q.pop();
+    for (auto v : pos.neighbors8())
+      if (v.canEnterEmpty({MovementTrait::WALK}) && !visited.count(v)) {
+        visited.insert(v);
+        q.push(v);
+      }
+  }
+  auto notVisited = startingPos.getLevel()->getAllPositions().filter(
+      [&](auto& pos) { return pos.canEnterEmpty({MovementTrait::WALK}) && !visited.count(pos); });
+  if (!notVisited.empty())
+    return Random.choose(notVisited);
+  return none;
+}
+
+bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
   if (drops != DropType::NOTHING && isAffected(LastingEffect::LIFE_SAVED)) {
     message("But wait!");
     you(MsgType::YOUR, "life has been saved!");
+    if (attacker->getName().bare() == "Death") {
+      privateMessage(PlayerMessage("You have escaped death!", MessagePriority::HIGH));
+      if (auto target = findInaccessiblePos(position))
+        position.moveCreature(*target, true);
+    }
     removeEffect(LastingEffect::LIFE_SAVED, false);
     for (auto item : equipment->getAllEquipped())
       for (auto e : item->getEquipedEffects())
@@ -1529,7 +1555,7 @@ bool Creature::considerSavingLife(DropType drops) {
 
 void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
-  if (considerSavingLife(drops))
+  if (considerSavingLife(drops, attacker))
     return;
   if (isAffected(LastingEffect::FROZEN) && drops == DropType::EVERYTHING)
     drops = DropType::ONLY_INVENTORY;

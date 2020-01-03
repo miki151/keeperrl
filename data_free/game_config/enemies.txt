@@ -817,7 +817,8 @@
       { ExtraEnemy { "DUNGEON2" { 1 } } 40 30 DUNGEON }
       { ExtraEnemy { "DUNGEON3" { 1 } } 40 30 DUNGEON }
       { MainEnemy 60 40 BASIC }
-      { ExtraEnemy { "ADOXIE" { 1 } } 15 15 TOWER true }
+      { ExtraEnemy { "DEATH" { 1 } } 40 30 BASIC true }
+      { ExtraEnemy { "DUNGEON1" { 1 } } 40 30 DUNGEON }
     }
   }
 }
@@ -835,10 +836,10 @@
     }
   }
 }
-"ADOXIE"
+"DEATH"
 {
   settlement = {
-    type = Builtin CAVE
+    type = MapLayoutId "death"
     tribe = MONSTER
     buildingId = "BLACK"
     inhabitants = {

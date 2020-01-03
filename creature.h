@@ -363,7 +363,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<ViewId> SERIAL(primaryViewId);
   vector<Creature*> SERIAL(shamanSummons);
   void tickShamanSummons();
-  bool considerSavingLife(DropType);
+  bool considerSavingLife(DropType, const Creature* attacker);
 };
 
 struct AdjectiveInfo {

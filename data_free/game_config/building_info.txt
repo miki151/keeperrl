@@ -10,6 +10,7 @@
   {
     wall = "BLACK_WALL"
     floorInside = "BLACK_FLOOR"
+    floorOutside = "BLACK_FLOOR"
     water = {LAVA}
   }
 "WOOD_CASTLE"

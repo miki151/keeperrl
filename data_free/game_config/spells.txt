@@ -443,3 +443,12 @@
   cooldown = 50
   sound = SPELL_SUMMON_SPIRIT
 }
+"dig"
+{
+  symbol = "X"
+  effect = DestroyWalls DIG
+  range = 7
+  cooldown = 10
+  blockedByWall = false
+}
+
