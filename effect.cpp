@@ -122,12 +122,12 @@ static void enhanceWeapon(Creature* c, int mod, const string& msg) {
   }
 }
 
-static void summon(Creature* summoner, CreatureId id, Range count, bool hostile) {
+static void summon(Creature* summoner, CreatureId id, Range count, bool hostile, optional<TimeInterval> ttl) {
   if (hostile) {
     CreatureGroup f = CreatureGroup::singleType(TribeId::getHostile(), id);
-    Effect::summon(summoner->getPosition(), f, Random.get(count), 100_visible, 1_visible);
+    Effect::summon(summoner->getPosition(), f, Random.get(count), ttl, 1_visible);
   } else
-    Effect::summon(summoner, id, Random.get(count), 100_visible, 1_visible);
+    Effect::summon(summoner, id, Random.get(count), ttl, 1_visible);
 }
 
 static bool isConsideredHostile(LastingEffect effect) {
@@ -340,7 +340,7 @@ string Effects::Acid::getDescription(const ContentFactory*) const {
 }
 
 void Effects::Summon::applyToCreature(Creature* c, Creature* attacker) const {
-  ::summon(c, creature, count, false);
+  ::summon(c, creature, count, false, ttl.map([](int v) { return TimeInterval(v); }));
 }
 
 string Effects::Summon::getName(const ContentFactory* f) const {
@@ -385,7 +385,7 @@ void Effects::SummonElement::applyToCreature(Creature* c, Creature* attacker) co
     for (auto f : p.getFurniture())
       if (auto elem = f->getSummonedElement())
         id = *elem;
-  ::summon(c, id, Range(1, 2), false);
+  ::summon(c, id, Range(1, 2), false, 100_visible);
 }
 
 string Effects::SummonElement::getName(const ContentFactory*) const {
@@ -1077,7 +1077,7 @@ void Effect::apply(Position pos, Creature* attacker) const {
       },
       [&](const Effects::SummonEnemy& summon) {
         CreatureGroup f = CreatureGroup::singleType(TribeId::getMonster(), summon.creature);
-        Effect::summon(pos, f, Random.get(summon.count), 100_visible, 1_visible);
+        Effect::summon(pos, f, Random.get(summon.count), summon.ttl.map([](int v) { return TimeInterval(v); }), 1_visible);
       },
       [&](const Effects::PlaceFurniture& effect) {
         auto f = pos.getGame()->getContentFactory()->furniture.getFurniture(effect.furniture,

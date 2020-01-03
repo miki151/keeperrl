@@ -96,7 +96,7 @@
 "summon flies"
 {
   symbol = "🐝"
-  effect = Summon "FLY" {3 7}
+  effect = Summon "FLY" {3 7} 100
   cooldown = 40
   sound = SPELL_SUMMON_INSECTS
 }
@@ -315,7 +315,7 @@
 "fire elemental"
 {
   symbol = "👾"
-  effect = Summon "FIRE_ELEMENTAL" { 1 2 }
+  effect = Summon "FIRE_ELEMENTAL" { 1 2 } 100
   cooldown = 100
   sound = SPELL_FIRE_SPHERE_PET
 }
@@ -323,7 +323,7 @@
 {
   upgrade = "fire elemental"
   symbol = "👾"
-  effect = Summon "FIRE_ELEMENTAL" { 2 4 }
+  effect = Summon "FIRE_ELEMENTAL" { 2 4 } 100
   cooldown = 100
   sound = SPELL_FIRE_SPHERE_PET
 }
@@ -418,28 +418,28 @@
 "adoxie right hand"
 {
   symbol = "-."
-  effect = Summon "ADOXIE_HAND_RIGHT" { 1 }
+  effect = Summon "ADOXIE_HAND_RIGHT" { 1 } 50
   cooldown = 50
   sound = SPELL_SUMMON_SPIRIT
 }
 "adoxie left hand"
 {
   symbol = ".-"
-  effect = Summon "ADOXIE_LEFT_HAND" { 1 }
+  effect = Summon "ADOXIE_LEFT_HAND" { 1 } 50
   cooldown = 50
   sound = SPELL_SUMMON_SPIRIT
 }
 "adoxie left foot"
 {
   symbol = "_|"
-  effect = Summon "ADOXIE_FOOT_LEFT" { 1 }
+  effect = Summon "ADOXIE_FOOT_LEFT" { 1 } 50
   cooldown = 50
   sound = SPELL_SUMMON_SPIRIT
 }
 "adoxie right foot"
 {
   symbol = "|_"
-  effect = Summon "ADOXIE_FOOT_RIGHT" { 1 }
+  effect = Summon "ADOXIE_FOOT_RIGHT" { 1 } 50
   cooldown = 50
   sound = SPELL_SUMMON_SPIRIT
 }

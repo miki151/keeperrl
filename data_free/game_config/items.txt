@@ -10,7 +10,7 @@
     applyTime = 3
     uses = 1
     price = 60
-    effect = SummonEnemy "AUTOMATON" {1}
+    effect = SummonEnemy "AUTOMATON" {1} 100
   }
 "Knife"
   {
@@ -934,7 +934,7 @@
     description = "Just an oil lamp"
     uses = 1
     price = 1000
-    effect = SummonEnemy "DJINN" {1}
+    effect = SummonEnemy "DJINN" {1} none
     effectDescription = false
     ownedEffect = LIGHT_SOURCE
   }

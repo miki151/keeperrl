@@ -58,7 +58,8 @@ struct Summon {
   Summon() {}
   CreatureId creature;
   Range count;
-  COMPARE_ALL(creature, count)
+  optional<int> ttl;
+  COMPARE_ALL(creature, count, ttl)
 };
 struct AssembledMinion {
   EFFECT_TYPE_INTERFACE;
@@ -71,7 +72,8 @@ struct SummonEnemy {
   SummonEnemy() {}
   CreatureId creature;
   Range count;
-  COMPARE_ALL(creature, count)
+  optional<int> ttl;
+  COMPARE_ALL(creature, count, ttl)
 };
 SIMPLE_EFFECT(SummonElement);
 SIMPLE_EFFECT(Acid);

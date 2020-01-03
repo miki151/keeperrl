@@ -6,10 +6,10 @@
     {{Scroll Enhance WEAPON 1} 5 }
     {{FireScroll 5 }}
     {{Simple "Torch" 10 }}
-    {{Scroll Summon "FIRE_ELEMENTAL" {1 2}} 5 }
+    {{Scroll Summon "FIRE_ELEMENTAL" {1 2} 100} 5 }
     {{Scroll CircularBlast} 1 }
     {{Scroll Deception} 2 }
-    {{Scroll Summon "FLY" {3 6}} 5 }
+    {{Scroll Summon "FLY" {3 6} 100} 5 }
     {{Potion Heal FLESH} 7 }
     {{Potion Lasting SLEEP} 5 }
     {{Potion Lasting SLOWED} 5 }
@@ -98,10 +98,10 @@
     {{Scroll Enhance ARMOR 1} 1 }
     {{Scroll Enhance WEAPON 1} 1 }
     {{FireScroll} 1 }
-    {{Scroll Summon "FIRE_ELEMENTAL" {1 2}} 1 }
+    {{Scroll Summon "FIRE_ELEMENTAL" {1 2} 100} 1 }
     {{Scroll CircularBlast} 1 }
     {{Scroll Deception} 1 }
-    {{Scroll Summon "FLY" {3 6}} 1 }
+    {{Scroll Summon "FLY" {3 6} 100} 1 }
   }
 }
 
@@ -188,10 +188,10 @@
     {{Scroll Enhance ARMOR 1} 30 }
     {{Scroll Enhance WEAPON 1} 30 }
     {{FireScroll} 30 }
-    {{Scroll Summon "FIRE_ELEMENTAL" {1 2}} 30 }
+    {{Scroll Summon "FIRE_ELEMENTAL" {1 2} 100} 30 }
     {{Scroll CircularBlast} 5 }
     {{Scroll Deception} 10 }
-    {{Scroll Summon "FLY" {3 6}} 30 }
+    {{Scroll Summon "FLY" {3 6} 100} 30 }
     {{Potion Heal FLESH} 50 }
     {{Potion Lasting SLEEP} 50 }
     {{Potion Lasting SLOWED} 50 }
@@ -248,17 +248,17 @@
 "blackMarketScrolls"
 {
   items = {
-    {{Scroll Summon "ANGEL" {1}} 1 }
-    {{Scroll Summon "FIRE_ELEMENTAL" {3 4}} 1 }
-    {{Scroll Summon "EARTH_ELEMENTAL" {3 4}} 1 }
-    {{Scroll Summon "AIR_ELEMENTAL" {3 4}} 1 }
-    {{Scroll Summon "WATER_ELEMENTAL" {3 4}} 1 }
-    {{Scroll Summon "ANT_SOLDIER" {12 20}} 1 }
-    {{Scroll Summon "CHICKEN" {12 20}} 1 }
-    {{Scroll Summon "ZOMBIE" {12 20}} 1 }
-    {{Scroll Summon "HYDRA" {1}} 1 }
-    {{Scroll Summon "MINOTAUR" {1}} 1 }
-    {{Scroll Summon "CHERUB" {3 6}} 1 }
+    {{Scroll Summon "ANGEL" {1} 100} 1 }
+    {{Scroll Summon "FIRE_ELEMENTAL" {3 4} 100} 1 }
+    {{Scroll Summon "EARTH_ELEMENTAL" {3 4} 100} 1 }
+    {{Scroll Summon "AIR_ELEMENTAL" {3 4} 100} 1 }
+    {{Scroll Summon "WATER_ELEMENTAL" {3 4} 100} 1 }
+    {{Scroll Summon "ANT_SOLDIER" {12 20} 100} 1 }
+    {{Scroll Summon "CHICKEN" {12 20} 100} 1 }
+    {{Scroll Summon "ZOMBIE" {12 20} 100} 1 }
+    {{Scroll Summon "HYDRA" {1} 100} 1 }
+    {{Scroll Summon "MINOTAUR" {1} 100} 1 }
+    {{Scroll Summon "CHERUB" {3 6} 100} 1 }
     {{Scroll Enhance ARMOR 3} 1 }
     {{Scroll Enhance WEAPON 3} 1 }
     {{Scroll Area 2 DestroyWalls DIG} 10 }
