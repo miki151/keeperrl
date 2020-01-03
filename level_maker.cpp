@@ -2682,7 +2682,7 @@ namespace {
               break;
             case LayoutPiece::BRIDGE:
               builder->resetFurniture(targetV, {waterType, tribe});
-              builder->putFurniture(targetV, FurnitureType("BRIDGE"), tribe);
+              builder->putFurniture(targetV, buildingInfo.bridge, tribe);
               break;
             case LayoutPiece::WATER:
               builder->resetFurniture(targetV, {waterType, tribe});

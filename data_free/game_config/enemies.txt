@@ -844,7 +844,7 @@
     inhabitants = {
       fighters = {
         count = {1}
-        all = { 1 "ADOXIE_HEAD" }
+        all = { 1 "DEATH" }
       }
     }
   }

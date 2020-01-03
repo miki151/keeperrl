@@ -90,4 +90,5 @@
   {
     downStairs = "ADOXIE_STATUE"
     water = {LAVA}
+    bridge = "STONE_BRIDGE"
   }

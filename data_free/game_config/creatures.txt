@@ -3280,18 +3280,23 @@
     viewId = { "death" }
     attr = {
       SPELL_DAMAGE 100
-      DEFENSE 35
+      DEFENSE 100
     }
     body = {
       type = Humanoid LARGE
       material = SPIRIT
     }
-    permanentEffects = { INSANITY 1 }
+    permanentEffects = {
+      INSANITY 1
+      SPEED 1
+    }
     chatReactionFriendly = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""
     chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""
     name = {
       name = "Death"
+      fullTitle = true
     }
+    gender = IT
     inventory = {
       { Simple "Scythe"}
     }
@@ -3324,9 +3329,7 @@
   {
     viewId = { "adoxie_head" }
     attr = {
-      DAMAGE 45
-      DEFENSE 60 
-      SPELL_DAMAGE 35        
+      DEFENSE 60
     }
     body = {
       type = NonHumanoid HUGE
@@ -3336,9 +3339,6 @@
         TORSO 1
       }
       material = SPIRIT
-      intrinsicAttacks = {
-        BACK {{{ Intrinsic { "bite_attack" }  "fangs" 5 { attackType = BITE attackMsg = BITE } }}}
-      }
       drops = {
         { Simple "AdoxieEye" } 1
       }
@@ -3350,112 +3350,91 @@
       "adoxie right foot"
     }
     permanentEffects = {
-      SLOWED 1
-      RAGE 1
-      NIGHT_VISION 1
+      IMMOBILE 1
       MAGIC_RESISTANCE 1
       MELEE_RESISTANCE 1
       RANGED_RESISTANCE 1
-      POISON_RESISTANT 1
       SLEEP_RESISTANT 1
       FIRE_RESISTANT 1
       FLYING 1
     }
-    cantEquip = true
     name = {
       name = "Evil God Adoxie"
       pluralName = "gods"
+      fullTitle = true
     }
     chatReactionFriendly = "\"Gaze upon my magnificence and tremble, mortal!\""
     chatReactionHostile = "\"How dare you defy a GOD!\""
     deathDescription = "vanquished. May he never rise again"
   }
-"ADOXIE_FOOT_LEFT" inherit "ADOXIE_HEAD"
+"ADOXIE_FOOT_LEFT"
   {
     viewId = { "adoxie_foot_left" }
     attr = {
-      DAMAGE 30
       DEFENSE 50 
-      SPELL_DAMAGE 30  
+      SPELL_DAMAGE 60
     }
     body = {
       type = NonHumanoid HUGE
       bodyParts = {
         BACK 1
         TORSO 1
-      }        
+      }
       intrinsicAttacks = {
-        BACK {{{ Intrinsic { "claws_attack" } "foot" 10 { attackType = HIT attackMsg = KICK } }}}
+        TORSO {{{ Intrinsic { "leg_attack" } "foot" 1 {
+            attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = KICK } }}}
       }
     }
     spells = {
-      "circular blast"
-      "fireball"
-      "meteor shower"
+      "heal spirit"
+    }
+    permanentEffects = {
+      MAGIC_RESISTANCE 1
+      MELEE_RESISTANCE 1
+      RANGED_RESISTANCE 1
+      FIRE_RESISTANT 1
+      FLYING 1
     }
     name = {
       name = "Adoxie's left foot"
       pluralName = "Feet"
+      fullTitle = true
     }
     chatReactionFriendly = "\"nothing, why did you think a foot could talk?\""
     chatReactionHostile = "\"nothing, why did you think a foot could talk?\""
     deathDescription = "destroyed"
-    courage = 1
   }
 "ADOXIE_FOOT_RIGHT" inherit "ADOXIE_FOOT_LEFT"
   {
     viewId = { "adoxie_foot_right" }
-    spells = {
-      "slow"
-    }
     name = {
       name = "Adoxie's Right Foot"
       pluralName = "Feet"
+      fullTitle = true
     }
   }
-"ADOXIE_LEFT_HAND" inherit "ADOXIE_HEAD"
+"ADOXIE_LEFT_HAND" inherit "ADOXIE_FOOT_LEFT"
   {
     viewId = { "adoxie_hand_left" }
-    attr = {
-      DAMAGE 50
-      DEFENSE 50 
-      SPELL_DAMAGE 50  
-    }
-    body = {
-      type = NonHumanoid HUGE
-      bodyParts = {
-        BACK 1
-        TORSO 1
-      }
+    body = append {
       intrinsicAttacks = {
-        BACK {{{ Intrinsic { "fist_attack" }  "fist" 5 {
-            attackType = HIT attackMsg = SWING victimEffect = {1.0 Lasting SLOWED}} }}}
+        TORSO {{{ Intrinsic { "leg_attack" } "foot" 1 {
+            attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = PUNCH } }}}
       }
-      material = SPIRIT
-    }
-    spells = {
-      "haste"
     }
     name = {
       name = "Adoxie's Left Hand"
       pluralName = "Hands"
+      fullTitle = true
     }
-    chatReactionFriendly = "\"nothing, why did you think a hand could talk?\""
-    chatReactionHostile = "\"nothing, why did you think a hand could talk?\""
-    deathDescription = "destroyed"
-    courage = 1
   }
 "ADOXIE_HAND_RIGHT" inherit "ADOXIE_LEFT_HAND"
   {
     viewId = { "adoxie_hand_right" }
-    spells = {
-      "swap positions"
-      "shove"
-      "firewall"
-    }
     name = {
       name = "Adoxie's Right Hand"
       pluralName = "Hands"
+      fullTitle = true
     }
   }
 "ADOXIE_PRIEST"
