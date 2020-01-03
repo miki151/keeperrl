@@ -535,26 +535,43 @@
 {
     {
       ids = { "GNOME" }
-      traits = { WORKER FIGHTER }
+      traits = { FIGHTER }
       invisible = true
-      initialRecruitment = 2
+      initialRecruitment = 0
       spawnLocation = NearLeader
     }
     {
       ids = { "AUTOMATON_WORKER" }
       traits = { WORKER }
       invisible = true
-      initialRecruitment = 1
+      initialRecruitment = 3
       spawnLocation = NearLeader
     }
     {
       ids = { "GNOME" }
-      traits = { WORKER FIGHTER }
+      traits = { FIGHTER }
       frequency = 0.1
+      requirements = {
+        { 0.0 AttractionInfo 1 { FurnitureType "BED1" } } 
+      }
     }
     {
       ids = { "AUTOMATON_WORKER" }
       traits = { WORKER }
+      requirements = {
+        { 0.0 AssembledRequirement }
+      }
+    }
+    {
+      ids = { "AUTOMATON_SMALL_CORPUS" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 AssembledRequirement }
+      }
+    }
+    {
+      ids = { "AUTOMATON_LARGE_CORPUS" }
+      traits = { FIGHTER }
       requirements = {
         { 0.0 AssembledRequirement }
       }

@@ -161,6 +161,7 @@
 { "ada_golem" "Y" ColorId LIGHT_BLUE }
 { "automaton" "A" ColorId LIGHT_GRAY }
 { "automaton_worker" "a" ColorId LIGHT_BROWN }
+{ "automaton_corpus" "a" ColorId LIGHT_GRAY }
 { "elementalist" "@" ColorId YELLOW }
 { "air_elemental" "E" ColorId LIGHT_BLUE }
 { "fire_elemental" "E" ColorId RED }

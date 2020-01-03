@@ -1691,6 +1691,38 @@
       name = "automaton worker"
     }
   }
+"AUTOMATON_CORPUS_WOOD" inherit "AUTOMATON_WORKER"
+  {
+    viewId = { "automaton_corpus" }
+    automatonSlots = 3
+    body = {
+      type = NonHumanoid LARGE
+      material = WOOD
+      bodyParts = {
+        BACK 1
+        TORSO 1
+      }
+    }
+    permanentEffects = {
+      IMMOBILE 1
+    }
+    name = {
+      name = "wooden automaton corpus"
+    }
+  }
+"AUTOMATON_CORPUS_IRON" inherit "AUTOMATON_CORPUS_WOOD"
+  {
+    attr = {
+      DAMAGE 10
+      DEFENSE 15
+    }
+    body = append {
+      material = IRON
+    }
+    name = {
+      name = "iron automaton corpus"
+    }
+  }
 "ZOMBIE"
   {
     viewId = { "zombie" }

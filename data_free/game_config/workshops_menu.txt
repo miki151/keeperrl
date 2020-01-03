@@ -113,8 +113,13 @@
 {
   WORKSHOP
   {
-      {{Assembled "AUTOMATON_WORKER"}      6       WOOD 20    "automatons"}
-  }
+      {{Assembled "AUTOMATON_WORKER"}        6       WOOD 20    "automatons"}
+      {{Assembled "AUTOMATON_CORPUS_WOOD"}   8       WOOD 30    "automatons"}
+  } 
+  FORGE
+  {
+      {{Assembled "AUTOMATON_CORPUS_IRON"}   8       IRON 30    "automatons"}
+  } 
 }
 
 # Add more groups here, remember that you need to add your new group to your keeper in player_creatures.txt

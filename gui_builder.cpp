@@ -2945,6 +2945,14 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion) {
           callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
               EquipmentActionInfo{minion.creatureId, item.ids, item.slot, *choice}});
       });
+  if (!minion.bodyParts.empty() || minion.canAddBodyPart) {
+    lines.addElem(gui.label("Body parts", Color::YELLOW));
+    for (auto& part : minion.bodyParts)
+      lines.addElem(gui.label(part.name));
+    if (minion.canAddBodyPart)
+      lines.addElem(gui.buttonLabel("Install body part",
+          getButtonCallback({UserInputId::CREATURE_ADD_BODY_PART, minion.creatureId})));
+  }
   lines.addElem(gui.label("Equipment", Color::YELLOW));
   for (int i : All(itemElems))
     if (items[i].type == items[i].EQUIPMENT)

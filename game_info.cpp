@@ -191,6 +191,8 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   if (c->getPosition().isValid())
     moveCounter = c->getPosition().getModel()->getMoveCounter();
   isPlayerControlled = c->isPlayer();
+  if (c->getAttributes().getAutomatonSlots() > 0)
+    canAddBodyPart = true;
 }
 
 const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) const {

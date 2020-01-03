@@ -131,6 +131,14 @@ class PlayerInfo {
   vector<ItemInfo> HASH(lyingItems);
   vector<ItemInfo> HASH(inventory);
   vector<ItemInfo> HASH(intrinsicAttacks);
+  struct BodyPartInfo {
+    BodyPart HASH(part);
+    ViewId HASH(viewId);
+    string HASH(name);
+    HASH_ALL(part, viewId, name)
+  };
+  vector<BodyPartInfo> HASH(bodyParts);
+  bool HASH(canAddBodyPart) = false;
   int HASH(debt);
   vector<PlayerInfo> HASH(teamInfos);
   struct CommandInfo {
@@ -176,7 +184,7 @@ class PlayerInfo {
   bool HASH(canAssignQuarters);
   vector<ViewId> HASH(kills);
   vector<string> HASH(killTitles);
-  HASH_ALL(attributes, skills, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles)
+  HASH_ALL(attributes, skills, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles, bodyParts, canAddBodyPart)
 };
 
 struct ImmigrantDataInfo {

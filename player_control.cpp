@@ -1372,7 +1372,7 @@ void PlayerControl::fillCurrentLevelInfo(GameInfo& gameInfo) const {
   auto& levels = getModel()->getMainLevels();
   int index = *levels.findElement(getCurrentLevel());
   gameInfo.currentLevel = CurrentLevelInfo {
-    "Level " + toString(index),
+    "Z-Level " + toString(index),
     index > 0,
     index < levels.size() - 1
   };
@@ -2169,6 +2169,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::CREATURE_EQUIPMENT_ACTION:
       minionEquipmentAction(input.get<EquipmentActionInfo>());
+      break;
+    case UserInputId::CREATURE_ADD_BODY_PART:
+      if (Creature* c = getCreature(input.get<Creature::Id>())) {
+
+      }
       break;
     case UserInputId::CREATURE_CONTROL:
       if (Creature* c = getCreature(input.get<Creature::Id>())) {
