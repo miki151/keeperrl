@@ -3277,17 +3277,24 @@
   }
 "DEATH"
   {
-    viewId = { "death" }
+    viewId = { "special_hlgn" }
     attr = {
       SPELL_DAMAGE 100
       DEFENSE 100
     }
     body = {
-      type = Humanoid LARGE
+      type = NonHumanoid LARGE
       material = SPIRIT
+      noHealth = true
+      fallsApart = false
+      intrinsicAttacks = {
+        TORSO {{{ Intrinsic { "fist_attack" } "scythe" 1 {
+            attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SWING } }}}
+      }
     }
     permanentEffects = {
       INSANITY 1
+      FLYING 1
     }
     chatReactionFriendly = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""
     chatReactionHostile = "\"IN ORDER TO HAVE A CHANGE OF FORTUNE AT THE LAST MINUTE YOU HAVE TO TAKE YOUR FORTUNE TO THE LAST MINUTE.\""
@@ -3296,9 +3303,6 @@
       fullTitle = true
     }
     gender = IT
-    inventory = {
-      { Simple "Scythe"}
-    }
   }
 "SHOPKEEPER"
   {
