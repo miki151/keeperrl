@@ -2748,9 +2748,9 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
         line.addElem(gui.leftMargin(-16, gui.stack(
             gui.button(getButtonCallback({UserInputId::REMOVE_FROM_TEAM, TeamCreatureInfo{*teamId, minionId}})),
             gui.labelUnicodeHighlight(u8"✘", Color::RED))), 1);
-      line.addElemAuto(gui.rightMargin(5, gui.label(minion.getFirstName())));
+      line.addMiddleElem(gui.rightMargin(5, gui.renderInBounds(gui.label(minion.getFirstName()))));
       if (auto icon = getMoraleIcon(minion.morale))
-        line.addElem(gui.topMargin(-2, gui.icon(*icon)), 20);
+        line.addBackElem(gui.topMargin(-2, gui.icon(*icon)), 20);
       line.addBackElem(drawBestAttack(minion.bestAttack), 52);
       list.addElem(gui.stack(makeVec(
             cache->get(selectButton, THIS_LINE, minionId),
