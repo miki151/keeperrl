@@ -21,6 +21,7 @@
 #include "content_factory.h"
 #include "special_trait.h"
 #include "automaton_part.h"
+#include "container_range.h"
 
 CreatureInfo::CreatureInfo(const Creature* c)
     : viewId(c->getViewObject().id()),
@@ -145,12 +146,27 @@ static PlayerInfo::SpellSchool fillSpellSchool(const Creature* c, SpellSchoolId 
   return ret;
 }
 
-ItemInfo getInstalledPartInfo(const AutomatonPart& part, int index) {
+static string getOrdinal(int index) {
+  switch (index) {
+    case 1: return "first";
+    case 2: return "second";
+    case 3: return "third";
+    default:
+      return toString(index) + "th";
+  }
+}
+
+void fillInstalledPartDescription(const ContentFactory* factory, ItemInfo& info, const AutomatonPart& part) {
+  for (auto e : Iter(part.effect))
+    info.description.push_back(getOrdinal(e.index() + 1) + " upgrade: " + e->getDescription(factory));
+}
+
+ItemInfo getInstalledPartInfo(const ContentFactory* factory, const AutomatonPart& part, int index) {
   ItemInfo ret {};
   ret.ids.insert(Item::Id(index));
-  ret.name = getName(part.slot);
+  ret.fullName = ret.name = getName(part.slot);
   ret.viewId = ViewId("trap_item");
-  ret.equiped = true;
+  fillInstalledPartDescription(factory, ret, part);
   return ret;
 }
 
@@ -203,7 +219,7 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   isPlayerControlled = c->isPlayer();
   canAddBodyPart = c->getAttributes().getAutomatonSlots() > c->automatonParts.size();
   for (int i : All(c->automatonParts))
-    bodyParts.push_back(getInstalledPartInfo(c->automatonParts[i], i));
+    bodyParts.push_back(getInstalledPartInfo(contentFactory, c->automatonParts[i], i));
 }
 
 const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) const {

@@ -418,7 +418,10 @@ static ItemInfo getItemInfo(const ContentFactory* factory, const vector<Item*>& 
     c.locked = locked;
     if (type)
       c.type = *type;
-    c.pending = pending;);
+    c.pending = pending;
+    if (auto& part = stack[0]->getAutomatonPart())
+      fillInstalledPartDescription(factory, c, *part);
+  );
 }
 
 static ViewId getSlotViewId(EquipmentSlot slot) {
@@ -464,8 +467,7 @@ void PlayerControl::fillAutomatonParts(Creature* creature, PlayerInfo& info) con
   int index = 0;
   for (auto item : collective->getMinionEquipment().getItemsOwnedBy(creature))
     if (auto& part = item->getAutomatonPart()) {
-      info.bodyParts.push_back(getInstalledPartInfo(*part, ++index));
-      info.bodyParts.back().equiped = false;
+      info.bodyParts.push_back(getInstalledPartInfo(getGame()->getContentFactory(), *part, ++index));
       info.bodyParts.back().pending = true;
     }
 }

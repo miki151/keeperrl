@@ -5,12 +5,12 @@
 const char* getName(AutomatonSlot slot) {
   switch (slot) {
     case AutomatonSlot::ARMS:
-      return "arms";
+      return "pair of arms";
     case AutomatonSlot::HEAD:
       return "head";
     case AutomatonSlot::LEGS:
-      return "legs";
+      return "pair of legs";
     case AutomatonSlot::WINGS:
-      return "wings";
+      return "pair of wings";
   }
 }

@@ -282,7 +282,7 @@ string Effects::IncreaseAttr::getName(const ContentFactory*) const {
 }
 
 string Effects::IncreaseAttr::getDescription(const ContentFactory*) const {
-  return get("Increases", "Decreases") + " your "_s + ::getName(attr) + " by " + toString(abs(amount));
+  return get("Increases", "Decreases") + " "_s + ::getName(attr) + " by " + toString(abs(amount));
 }
 
 const char* Effects::IncreaseAttr::get(const char* ifIncrease, const char* ifDecrease) const {
@@ -696,7 +696,7 @@ string Effects::AddBodyPart::getName(const ContentFactory*) const {
 }
 
 string Effects::AddBodyPart::getDescription(const ContentFactory*) const {
-  return "Causes you to lose a "_s + ::getName(part);
+  return "Adds "_s + getPlural(::getName(part), count);
 }
 
 void Effects::MakeHumanoid::applyToCreature(Creature* c, Creature* attacker) const {

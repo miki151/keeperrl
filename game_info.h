@@ -439,4 +439,5 @@ class GameInfo {
 };
 
 struct AutomatonPart;
-ItemInfo getInstalledPartInfo(const AutomatonPart&, int index);
+ItemInfo getInstalledPartInfo(const ContentFactory*, const AutomatonPart&, int index);
+void fillInstalledPartDescription(const ContentFactory*, ItemInfo&, const AutomatonPart&);
