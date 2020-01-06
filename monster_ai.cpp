@@ -54,6 +54,7 @@
 #include "vision.h"
 #include "effect_type.h"
 #include "health_type.h"
+#include "automaton_part.h"
 
 class Behaviour {
   public:
@@ -954,7 +955,7 @@ class ByCollective : public Behaviour {
       for (Position v : collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT)) {
         vector<Item*> consumables;
         for (auto item : v.getItems(ItemIndex::MINION_EQUIPMENT))
-          if (minionEquipment.isOwner(item, creature)) {
+          if (minionEquipment.isOwner(item, creature) && !item->getAutomatonPart()) {
             if (item->canEquip())
               tasks.push_back(Task::pickAndEquipItem(v, item));
             else

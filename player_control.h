@@ -160,7 +160,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   void getEquipmentItem(View* view, ItemPredicate predicate);
   ItemInfo getWorkshopItem(const WorkshopItem&, int queuedCount) const;
-  Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
+  Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate,
+      ScrollPosition* scrollPos = nullptr);
+  Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, vector<Item*> allItems,
       ScrollPosition* scrollPos = nullptr);
 
   int getNumMinions() const;
@@ -177,6 +179,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void addConsumableItem(Creature*);
   void handleEquipment(View* view, Creature* creature);
   void fillEquipment(Creature*, PlayerInfo&) const;
+  void fillAutomatonParts(Creature*, PlayerInfo&) const;
   void handleTrading(WCollective ally);
   vector<Item*> getPillagedItems(WCollective) const;
   bool canPillage(WConstCollective) const;
@@ -254,5 +257,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void fillDungeonLevel(AvatarLevelInfo&) const;
   bool takingScreenshot = false;
   void exitAction();
+  void addBodyPart(Creature*);
 };
 

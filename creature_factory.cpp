@@ -752,10 +752,7 @@ void CreatureFactory::initializeAttributes(optional<CreatureId> id, CreatureAttr
   if (id)
     attr.setCreatureId(*id);
   attr.randomize();
-  auto& attacks = attr.getBody().getIntrinsicAttacks();
-  for (auto bodyPart : ENUM_ALL(BodyPart))
-    for (auto& attack : attacks[bodyPart])
-      attack.initializeItem(contentFactory);
+  attr.getBody().initializeIntrinsicAttack(contentFactory);
 }
 
 CreatureAttributes CreatureFactory::getAttributesFromId(CreatureId id) {

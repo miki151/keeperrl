@@ -60,6 +60,7 @@
 #include "content_factory.h"
 #include "health_type.h"
 #include "effect_type.h"
+#include "automaton_part.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -68,7 +69,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathTime, hidden, lastMoveCounter, captureHealth);
   ar(deathReason, nextPosIntent, globalTime);
   ar(unknownAttackers, privateEnemies, holding);
-  ar(controllerStack, kills, statuses);
+  ar(controllerStack, kills, statuses, automatonParts);
   ar(difficultyPoints, points, capture, spellMap, killTitles, shamanSummons);
   ar(vision, debt, highestAttackValueEver, lastCombatIntent, hitsInfo, primaryViewId);
 }

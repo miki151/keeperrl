@@ -28,6 +28,7 @@
 #include "weapon_info.h"
 #include "minion_equipment_type.h"
 #include "health_type.h"
+#include "automaton_part.h"
 
 template <class Archive>
 void MinionEquipment::serialize(Archive& ar, const unsigned int) {
@@ -60,7 +61,7 @@ optional<MinionEquipmentType> MinionEquipment::getEquipmentType(const Item* it) 
 
 bool MinionEquipment::isItemUseful(const Item* it) {
   static EnumSet<ItemClass> usefulItems {ItemClass::GOLD, ItemClass::POTION, ItemClass::SCROLL};
-  return getEquipmentType(it) || usefulItems.contains(it->getClass())
+  return getEquipmentType(it) || usefulItems.contains(it->getClass()) || it->getAutomatonPart()
       || (it->getClass() == ItemClass::FOOD && !it->getCorpseInfo()) || it->getIngredientFor();
 }
 
@@ -77,6 +78,12 @@ bool MinionEquipment::canUseItemType(const Creature* c, MinionEquipmentType type
     case MinionEquipmentType::ARMOR:
       return c->canEquipIfEmptySlot(it);
   }
+}
+
+static bool automatonNeedsPart(const Creature* c, const Item* it) {
+  if (auto& part = it->getAutomatonPart())
+    return part->isAvailable(c);
+  return false;
 }
 
 bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit) const {
@@ -110,14 +117,11 @@ bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit)
     }
     return true;
   } else
-    return false;
+    return automatonNeedsPart(c, it);
 }
 
 optional<Creature::Id> MinionEquipment::getOwner(const Item* it) const {
-  if (auto creature = owners.getMaybe(it))
-    return *creature;
-  else
-    return none;
+  return owners.getMaybe(it);
 }
 
 bool MinionEquipment::isOwner(const Item* it, const Creature* c) const {
@@ -240,6 +244,8 @@ Item* MinionEquipment::getWorstItem(const Creature* c, vector<Item*> items) cons
 }
 
 static bool canAutoAssignItem(const Item* item) {
+  if (item->getAutomatonPart())
+    return false;
   for (auto effect : item->getWeaponInfo().attackerEffect)
     if (!effect.canAutoAssignMinionEquipment())
       return false;

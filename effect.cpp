@@ -305,6 +305,19 @@ string Effects::Permanent::getDescription(const ContentFactory*) const {
   return desc.substr(0, desc.size() - 1) + " permanently.";
 }
 
+void Effects::RemovePermanent::applyToCreature(Creature* c, Creature* attacker) const {
+  c->removePermanentEffect(lastingEffect);
+}
+
+string Effects::RemovePermanent::getName(const ContentFactory*) const {
+  return "removes/cures from permanent effect: " + LastingEffects::getName(lastingEffect);
+}
+
+string Effects::RemovePermanent::getDescription(const ContentFactory*) const {
+  string desc = LastingEffects::getDescription(lastingEffect);
+  return "Removes " + desc.substr(0, desc.size() - 1) + " permanently.";
+}
+
 void Effects::TeleEnemies::applyToCreature(Creature*, Creature* attacker) const {
 }
 
@@ -655,19 +668,47 @@ string Effects::InjureBodyPart::getDescription(const ContentFactory*) const {
   return "Injures "_s + ::getName(part);
 }
 
-void Effects::LooseBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
+void Effects::LoseBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
   if (c->getBody().injureBodyPart(c, part, true)) {
     c->you(MsgType::DIE, "");
     c->dieWithAttacker(attacker);
   }
 }
 
-string Effects::LooseBodyPart::getName(const ContentFactory*) const {
+string Effects::LoseBodyPart::getName(const ContentFactory*) const {
   return "lose "_s + ::getName(part);
 }
 
-string Effects::LooseBodyPart::getDescription(const ContentFactory*) const {
+string Effects::LoseBodyPart::getDescription(const ContentFactory*) const {
   return "Causes you to lose a "_s + ::getName(part);
+}
+
+void Effects::AddBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
+  c->getBody().addBodyPart(part, count);
+  if (attack) {
+    c->getBody().addIntrinsicAttack(part, IntrinsicAttack{*attack, true});
+    c->getBody().initializeIntrinsicAttack(c->getGame()->getContentFactory());
+  }
+}
+
+string Effects::AddBodyPart::getName(const ContentFactory*) const {
+  return "add "_s + getPlural(::getName(part), count);
+}
+
+string Effects::AddBodyPart::getDescription(const ContentFactory*) const {
+  return "Causes you to lose a "_s + ::getName(part);
+}
+
+void Effects::MakeHumanoid::applyToCreature(Creature* c, Creature* attacker) const {
+  c->getBody().setHumanoid(true);
+}
+
+string Effects::MakeHumanoid::getName(const ContentFactory*) const {
+  return "turn into a humanoid";
+}
+
+string Effects::MakeHumanoid::getDescription(const ContentFactory*) const {
+  return "Turns creature into a humanoid";
 }
 
 void Effects::RegrowBodyPart::applyToCreature(Creature* c, Creature* attacker) const {

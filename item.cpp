@@ -177,6 +177,10 @@ void Item::setTimeout(GlobalTime t) {
   timeout = t;
 }
 
+const optional<AutomatonPart>& Item::getAutomatonPart() const {
+  return attributes->automatonPart;
+}
+
 void Item::onHitSquareMessage(Position pos, int numItems) {
   if (attributes->fragile) {
     pos.globalMessage(getPluralTheNameAndVerb(numItems, "crashes", "crash") + " on the " + pos.getName());

@@ -29,6 +29,7 @@
 #include "game_time.h"
 #include "creature_status.h"
 #include "view_id.h"
+#include "automaton_slot.h"
 
 class Skill;
 class Level;
@@ -58,6 +59,7 @@ struct NavigationFlags;
 class SpellMap;
 class SpellSchool;
 class ContentFactory;
+struct AutomatonPart;
 
 class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedObject<Creature> {
   public:
@@ -304,6 +306,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canBeCaptured() const;
   void removePrivateEnemy(const Creature*); 
   void cheatAllSpells();
+
+  vector<AutomatonPart> SERIAL(automatonParts);
 
   private:
 

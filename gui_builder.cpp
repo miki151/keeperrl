@@ -2935,43 +2935,43 @@ SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem> attrs) {
 
 SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion) {
   const vector<ItemInfo>& items = minion.inventory;
-  if (items.empty())
-    return gui.empty();
   auto lines = gui.getListBuilder(legendLineHeight);
-  vector<SGuiElem> itemElems = drawItemMenu(items,
-      [=](Rectangle butBounds, optional<int> index) {
-        const ItemInfo& item = items[*index];
-        if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), true))
-          callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
-              EquipmentActionInfo{minion.creatureId, item.ids, item.slot, *choice}});
-      });
   if (!minion.bodyParts.empty() || minion.canAddBodyPart) {
     lines.addElem(gui.label("Body parts", Color::YELLOW));
     for (auto& part : minion.bodyParts)
-      lines.addElem(gui.label(part.name));
+      lines.addElem(getItemLine(part, [](Rectangle) {}));
     if (minion.canAddBodyPart)
       lines.addElem(gui.buttonLabel("Install body part",
           getButtonCallback({UserInputId::CREATURE_ADD_BODY_PART, minion.creatureId})));
   }
-  lines.addElem(gui.label("Equipment", Color::YELLOW));
-  for (int i : All(itemElems))
-    if (items[i].type == items[i].EQUIPMENT)
-      lines.addElem(gui.leftMargin(3, std::move(itemElems[i])));
-  lines.addElem(gui.label("Consumables", Color::YELLOW));
-  for (int i : All(itemElems))
-    if (items[i].type == items[i].CONSUMABLE)
-      lines.addElem(gui.leftMargin(3, std::move(itemElems[i])));
-  lines.addElem(gui.buttonLabel("Add consumable",
-      getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
-          EquipmentActionInfo{minion.creatureId, {}, none, ItemAction::REPLACE}})));
-  for (int i : All(itemElems))
-    if (items[i].type == items[i].OTHER) {
-      lines.addElem(gui.label("Other", Color::YELLOW));
-      break;
-    }
-  for (int i : All(itemElems))
-    if (items[i].type == items[i].OTHER)
-      lines.addElem(gui.leftMargin(3, std::move(itemElems[i])));
+  if (!items.empty()) {
+    lines.addElem(gui.label("Equipment", Color::YELLOW));
+    vector<SGuiElem> itemElems = drawItemMenu(items,
+        [=](Rectangle butBounds, optional<int> index) {
+          const ItemInfo& item = items[*index];
+          if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), true))
+            callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
+                EquipmentActionInfo{minion.creatureId, item.ids, item.slot, *choice}});
+        });
+    for (int i : All(itemElems))
+      if (items[i].type == items[i].EQUIPMENT)
+        lines.addElem(gui.leftMargin(3, std::move(itemElems[i])));
+    lines.addElem(gui.label("Consumables", Color::YELLOW));
+    for (int i : All(itemElems))
+      if (items[i].type == items[i].CONSUMABLE)
+        lines.addElem(gui.leftMargin(3, std::move(itemElems[i])));
+    lines.addElem(gui.buttonLabel("Add consumable",
+        getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
+            EquipmentActionInfo{minion.creatureId, {}, none, ItemAction::REPLACE}})));
+    for (int i : All(itemElems))
+      if (items[i].type == items[i].OTHER) {
+        lines.addElem(gui.label("Other", Color::YELLOW));
+        break;
+      }
+    for (int i : All(itemElems))
+      if (items[i].type == items[i].OTHER)
+        lines.addElem(gui.leftMargin(3, std::move(itemElems[i])));
+  }
   return lines.buildVerticalList();
 }
 

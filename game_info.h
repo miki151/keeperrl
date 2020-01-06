@@ -131,13 +131,7 @@ class PlayerInfo {
   vector<ItemInfo> HASH(lyingItems);
   vector<ItemInfo> HASH(inventory);
   vector<ItemInfo> HASH(intrinsicAttacks);
-  struct BodyPartInfo {
-    BodyPart HASH(part);
-    ViewId HASH(viewId);
-    string HASH(name);
-    HASH_ALL(part, viewId, name)
-  };
-  vector<BodyPartInfo> HASH(bodyParts);
+  vector<ItemInfo> HASH(bodyParts);
   bool HASH(canAddBodyPart) = false;
   int HASH(debt);
   vector<PlayerInfo> HASH(teamInfos);
@@ -443,3 +437,6 @@ class GameInfo {
   bool HASH(takingScreenshot) = false;
   HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, singleModel, modifiedSquares, totalSquares, tutorial, currentLevel, takingScreenshot)
 };
+
+struct AutomatonPart;
+ItemInfo getInstalledPartInfo(const AutomatonPart&, int index);

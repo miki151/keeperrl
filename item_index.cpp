@@ -9,6 +9,7 @@
 #include "item_upgrade_info.h"
 #include "item_type.h"
 #include "effect_type.h"
+#include "automaton_slot.h"
 
 const char* getName(ItemIndex index, int count) {
   switch (index) {
@@ -54,10 +55,9 @@ bool hasIndex(ItemIndex index, const Item* item) {
       return item->getEffect() == Effect(Effects::Heal{});
     case ItemIndex::RUNE:
       return !!item->getUpgradeInfo() || !!item->getIngredientFor();
-    case ItemIndex::ASSEMBLED_MINION: {
+    case ItemIndex::ASSEMBLED_MINION:
       if (auto& e = item->getEffect())
         return !!e->effect->getReferenceMaybe<Effects::AssembledMinion>();
       return false;
-    }
   }
 }

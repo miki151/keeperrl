@@ -29,6 +29,7 @@
 #include "weapon_info.h"
 #include "item_prefix.h"
 #include "item_upgrade_info.h"
+#include "automaton_part.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
@@ -89,4 +90,5 @@ class ItemAttributes {
   optional<ItemType> SERIAL(ingredientFor);
   Range SERIAL(wishedCount) = Range(1, 2);
   optional<SpellId> SERIAL(equipedAbility);
+  optional<AutomatonPart> SERIAL(automatonPart);
 };

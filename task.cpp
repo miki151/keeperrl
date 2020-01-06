@@ -47,6 +47,7 @@
 #include "storage_info.h"
 #include "content_factory.h"
 #include "creature_list.h"
+#include "automaton_part.h"
 
 template <class Archive>
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -283,7 +284,9 @@ template <typename PositionContainer>
 static optional<Position> chooseRandomClose(const Creature* c, const PositionContainer& squares, Task::SearchType type,
     bool stepOn) {
   auto canNavigate = [&] (const Position& pos) {
-    return stepOn ? c->canNavigateTo(pos) : c->canNavigateToOrNeighbor(pos);
+    auto other = pos.getCreature();
+    return (!other || !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
+        && (stepOn ? c->canNavigateTo(pos) : c->canNavigateToOrNeighbor(pos));
   };
   int minD = 10000000;
   int margin = type == Task::LAZY ? 0 : 3;
@@ -370,8 +373,8 @@ class ApplyItem : public Task {
     });
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), callback, itemId, itemName);
-  SERIALIZATION_CONSTRUCTOR(ApplyItem);
+  SERIALIZE_ALL(SUBCLASS(Task), callback, itemId, itemName)
+  SERIALIZATION_CONSTRUCTOR(ApplyItem)
 
   private:
   WTaskCallback SERIAL(callback) = nullptr;
@@ -1543,8 +1546,13 @@ class DropItems : public Task {
       return none;
   }
 
+  bool isBlocked(Position pos) const {
+    auto c = pos.getCreature();
+    return c && c->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT);
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
-    if (!target || !c->canNavigateTo(*target))
+    if (!target || !c->canNavigateTo(*target) || isBlocked(*target))
       target = chooseTarget(c);
     if (!target)
       return c->drop(c->getEquipment().getItems().filter(items.containsPredicate())).append(
@@ -1783,6 +1791,56 @@ PTask Task::withTeam(WCollective col, TeamId teamId, PTask task) {
 }
 
 namespace {
+class InstallBodyPart : public Task {
+  public:
+  InstallBodyPart(WTaskCallback call, Creature* c, Item* it)
+      : Task(true), creature(c), callback(call), itemId(it->getUniqueId()) {}
+
+  virtual string getDescription() const override {
+    return "Install automaton part";
+  }
+
+  virtual bool canPerform(const Creature* c, const MovementType&) const override {
+    return creature != c;
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
+    auto item = c->getEquipment().getItemById(itemId);
+    if (!item) {
+      setDone();
+      return NoMove;
+    }
+    CHECK(creature != c);
+    if (!creature || creature->isDead()) {
+      setDone();
+      return NoMove;
+    }
+    if (creature->getPosition().dist8(c->getPosition()).value_or(2) == 1)
+      return c->wait().append([=](Creature* c) {
+        c->verb("install", "installs", item->getAName() + " on " + creature->getName().the());
+        item->getAutomatonPart()->apply(creature.get());
+        c->getEquipment().removeItem(item, c);
+
+      });
+    else
+      return c->moveTowards(creature->getPosition());
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), creature, callback, itemId)
+  SERIALIZATION_CONSTRUCTOR(InstallBodyPart)
+
+  private:
+  WeakPointer<Creature> SERIAL(creature);
+  WTaskCallback SERIAL(callback) = nullptr;
+  Item::Id SERIAL(itemId);
+};
+}
+
+PTask Task::installBodyPart(WTaskCallback call, Creature* target, Item* item) {
+  return makeOwner<InstallBodyPart>(call, target, item);
+}
+
+namespace {
 class OutsidePredicate : public TaskPredicate {
   public:
   OutsidePredicate(Creature* c, PositionSet pos) : creature(c), positions(pos) {}
@@ -1860,5 +1918,6 @@ REGISTER_TYPE(CampAndSpawnTask)
 REGISTER_TYPE(Spider)
 REGISTER_TYPE(WithTeam)
 REGISTER_TYPE(ArcheryRange)
+REGISTER_TYPE(InstallBodyPart)
 REGISTER_TYPE(OutsidePredicate)
 REGISTER_TYPE(AlwaysPredicate)

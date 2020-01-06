@@ -563,14 +563,7 @@
       }
     }
     {
-      ids = { "AUTOMATON_SMALL_CORPUS" }
-      traits = { FIGHTER }
-      requirements = {
-        { 0.0 AssembledRequirement }
-      }
-    }
-    {
-      ids = { "AUTOMATON_LARGE_CORPUS" }
+      ids = { "AUTOMATON_CORPUS_WOOD" }
       traits = { FIGHTER }
       requirements = {
         { 0.0 AssembledRequirement }

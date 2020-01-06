@@ -30,6 +30,7 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(OPTION(displayUses), OPTION(modifiers), NAMED(shortName), OPTION(equipedEffect), NAMED(upgradeInfo), OPTION(effectDescription));
   ar(NAMED(applyMsgFirstPerson), NAMED(applyMsgThirdPerson), NAMED(applySound), NAMED(rangedWeapon), OPTION(weaponInfo));
   ar(OPTION(prefixes), OPTION(genPrefixes), NAMED(ingredientFor), OPTION(modifierVariation), OPTION(variationChance), OPTION(wishedCount));
+  ar(NAMED(automatonPart));
 }
 
 SERIALIZABLE(ItemAttributes);

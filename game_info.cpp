@@ -20,6 +20,7 @@
 #include "game.h"
 #include "content_factory.h"
 #include "special_trait.h"
+#include "automaton_part.h"
 
 CreatureInfo::CreatureInfo(const Creature* c)
     : viewId(c->getViewObject().id()),
@@ -144,6 +145,15 @@ static PlayerInfo::SpellSchool fillSpellSchool(const Creature* c, SpellSchoolId 
   return ret;
 }
 
+ItemInfo getInstalledPartInfo(const AutomatonPart& part, int index) {
+  ItemInfo ret {};
+  ret.ids.insert(Item::Id(index));
+  ret.name = getName(part.slot);
+  ret.viewId = ViewId("trap_item");
+  ret.equiped = true;
+  return ret;
+}
+
 PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   firstName = c->getName().firstOrBare();
   name = c->getName().bare();
@@ -191,8 +201,9 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   if (c->getPosition().isValid())
     moveCounter = c->getPosition().getModel()->getMoveCounter();
   isPlayerControlled = c->isPlayer();
-  if (c->getAttributes().getAutomatonSlots() > 0)
-    canAddBodyPart = true;
+  canAddBodyPart = c->getAttributes().getAutomatonSlots() > c->automatonParts.size();
+  for (int i : All(c->automatonParts))
+    bodyParts.push_back(getInstalledPartInfo(c->automatonParts[i], i));
 }
 
 const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) const {

@@ -115,6 +115,9 @@
   {
       {{Assembled "AUTOMATON_WORKER"}        6       WOOD 20    "automatons"}
       {{Assembled "AUTOMATON_CORPUS_WOOD"}   8       WOOD 30    "automatons"}
+      {{Simple    "AutomatonHead"}           2       WOOD 5    "automatons"}
+      {{Simple    "AutomatonArms"}           2       WOOD 5    "automatons"}
+      {{Simple    "AutomatonLegs"}           2       WOOD 5    "automatons"}
   } 
   FORGE
   {

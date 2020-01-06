@@ -526,14 +526,29 @@ void Collective::tick() {
             fetchItems(pos, elem);
     }
   }
+
   if (config->getManageEquipment() && Random.roll(40)) {
     minionEquipment->updateOwners(getCreatures());
     minionEquipment->updateItems(getAllItems(ItemIndex::MINION_EQUIPMENT, true));
   }
   for (auto c : getCreatures())
-    if (!usesEquipment(c))
+    if (!usesEquipment(c) && c->getAttributes().getAutomatonSlots() == 0)
       for (auto it : minionEquipment->getItemsOwnedBy(c))
         minionEquipment->discard(it);
+  updateAutomatonPartsTasks();
+}
+
+void Collective::updateAutomatonPartsTasks() {
+  for (auto c : getCreatures())
+    if (c->getAttributes().getAutomatonSlots() > 0)
+      for (auto items : getStoredItems(ItemIndex::MINION_EQUIPMENT, StorageId::EQUIPMENT))
+        for (auto item : items.second)
+          if (minionEquipment->isOwner(item, c) && !getItemTask(item)) {
+            auto task = taskMap->addTask(Task::chain(Task::pickUpItem(items.first, {item}),
+                Task::installBodyPart(this, c, item)),
+                items.first, MinionActivity::WORKING);
+            markItem(item, task);
+          }
 }
 
 const vector<Creature*>& Collective::getCreatures(MinionTrait trait) const {

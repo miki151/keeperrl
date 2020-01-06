@@ -61,9 +61,11 @@ class Body {
   void setMinionFood();
   void setDeathSound(optional<SoundId>);
   void addIntrinsicAttack(BodyPart, IntrinsicAttack);
+  void initializeIntrinsicAttack(const ContentFactory*);
   void setMinPushSize(Size);
   void setHumanoid(bool);
   void affectPosition(Position);
+  void addBodyPart(BodyPart, int count);
 
   enum DamageResult {
     NOT_HURT,

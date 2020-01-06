@@ -12,6 +12,45 @@
     price = 60
     effect = SummonEnemy "AUTOMATON" {1} 100
   }
+"AutomatonHead"
+  {
+    viewId = { "trap_item" }
+    name = "automaton head"
+    weight = 4
+    itemClass = TOOL
+    automatonPart = HEAD {
+      Chain { MakeHumanoid AddBodyPart HEAD 1 none }
+      Chain { IncreaseAttr RANGED_DAMAGE 30 AddBodyPart HEAD 1 none }
+      Chain { IncreaseAttr RANGED_DAMAGE 15 AddBodyPart HEAD 1 none }
+    }
+  }
+"AutomatonLegs"
+  {
+    viewId = { "trap_item" }
+    name = "automaton legs"
+    weight = 8
+    itemClass = TOOL
+    automatonPart = LEGS {
+      Chain { AddBodyPart LEG 2 { Intrinsic { "leg_attack" } "legs" 5 { attackMsg = KICK } }
+        RemovePermanent IMMOBILE }
+      Chain {
+        Permanent SPEED
+        AddBodyPart LEG 2 { Intrinsic { "leg_attack" } "legs" 5 { attackMsg = KICK } }
+      }
+    }
+  }
+"AutomatonArms"
+  {
+    viewId = { "trap_item" }
+    name = "automaton arms"
+    weight = 6
+    itemClass = TOOL
+    automatonPart = ARMS {
+      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } }
+      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } }
+      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } }
+    }
+  }
 "Knife"
   {
     viewId = { "knife" }

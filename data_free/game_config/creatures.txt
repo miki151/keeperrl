@@ -619,7 +619,6 @@
     attr = {
       DAMAGE 25
       DEFENSE 30
-      SPELL_DAMAGE 35 
     }
     body = {
       type = Humanoid LARGE
@@ -656,7 +655,6 @@
     attr = {
       DAMAGE 40
       DEFENSE 45
-      SPELL_DAMAGE 50 
     }
     body = {
       type = Humanoid LARGE
@@ -1693,8 +1691,9 @@
   }
 "AUTOMATON_CORPUS_WOOD" inherit "AUTOMATON_WORKER"
   {
-    viewId = { "automaton_corpus" }
+    viewId = { "automaton" }
     automatonSlots = 3
+    cantEquip = false
     body = {
       type = NonHumanoid LARGE
       material = WOOD
@@ -1707,7 +1706,7 @@
       IMMOBILE 1
     }
     name = {
-      name = "wooden automaton corpus"
+      name = "wooden automaton"
     }
   }
 "AUTOMATON_CORPUS_IRON" inherit "AUTOMATON_CORPUS_WOOD"

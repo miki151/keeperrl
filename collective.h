@@ -159,6 +159,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const Quarters& getQuarters() const;
   void cancelMarkedTask(Position);
   void orderDestruction(Position pos, const DestroyAction&);
+  void installBodyPart(Item*, Creature* target);
   double getDangerLevel() const;
   bool isMarked(Position) const;
   HighlightType getMarkHighlight(Position) const;
@@ -324,4 +325,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   set<string> SERIAL(recordedEvents);
   map<string, GroupLockedActivities> SERIAL(groupLockedAcitivities);
   void updateGuardTasks();
+  void updateAutomatonPartsTasks();
 };

@@ -16,7 +16,8 @@ IntrinsicAttack& IntrinsicAttack::operator =(const IntrinsicAttack& o) {
 }
 
 void IntrinsicAttack::initializeItem(const ContentFactory* factory) {
-  item = itemType.get(factory);
+  if (!item)
+    item = itemType.get(factory);
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(IntrinsicAttack)

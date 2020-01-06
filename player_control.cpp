@@ -95,6 +95,7 @@
 #include "immigrant_info.h"
 #include "special_trait.h"
 #include "user_input.h"
+#include "automaton_part.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -459,6 +460,16 @@ static ItemInfo getTradeItemInfo(const ContentFactory* factory, const vector<Ite
     c.unavailable = c.price->second > budget;);
 }
 
+void PlayerControl::fillAutomatonParts(Creature* creature, PlayerInfo& info) const {
+  int index = 0;
+  for (auto item : collective->getMinionEquipment().getItemsOwnedBy(creature))
+    if (auto& part = item->getAutomatonPart()) {
+      info.bodyParts.push_back(getInstalledPartInfo(*part, ++index));
+      info.bodyParts.back().equiped = false;
+      info.bodyParts.back().pending = true;
+    }
+}
+
 void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   info.inventory.clear();
   if (!creature->getBody().isHumanoid())
@@ -505,9 +516,13 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
 
 Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
     ScrollPosition* scrollPos) {
+  return chooseEquipmentItem(creature, std::move(currentItems), collective->getAllItems().filter(predicate), scrollPos);
+}
+
+Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, vector<Item*> allItems,
+    ScrollPosition* scrollPos) {
   vector<Item*> availableItems;
   vector<Item*> usedItems;
-  vector<Item*> allItems = collective->getAllItems().filter(predicate);
   collective->getMinionEquipment().sortByEquipmentValue(creature, allItems);
   for (Item* item : allItems)
     if (!currentItems.contains(item)) {
@@ -894,6 +909,8 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, Un
         }
       if (collective->usesEquipment(c))
         fillEquipment(c, minionInfo);
+      if (c->getAttributes().getAutomatonSlots() > 0)
+        fillAutomatonParts(c, minionInfo);
       if (canControlSingle(c))
         minionInfo.actions.push_back(PlayerInfo::CONTROL);
       if (!collective->hasTrait(c, MinionTrait::PRISONER)) {
@@ -2171,9 +2188,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
       minionEquipmentAction(input.get<EquipmentActionInfo>());
       break;
     case UserInputId::CREATURE_ADD_BODY_PART:
-      if (Creature* c = getCreature(input.get<Creature::Id>())) {
-
-      }
+      if (Creature* c = getCreature(input.get<Creature::Id>()))
+        addConsumableItem(c);
       break;
     case UserInputId::CREATURE_CONTROL:
       if (Creature* c = getCreature(input.get<Creature::Id>())) {

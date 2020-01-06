@@ -5,6 +5,7 @@
 #include "creature_id.h"
 #include "furniture_type.h"
 #include "destroy_action.h"
+#include "intrinsic_attack.h"
 
 RICH_ENUM(FilterType, ALLY, ENEMY);
 
@@ -96,8 +97,12 @@ struct RemoveLasting {
   LastingEffect lastingEffect;
   COMPARE_ALL(lastingEffect)
 };
-
 struct Permanent {
+  EFFECT_TYPE_INTERFACE;
+  LastingEffect lastingEffect;
+  COMPARE_ALL(lastingEffect)
+};
+struct RemovePermanent {
   EFFECT_TYPE_INTERFACE;
   LastingEffect lastingEffect;
   COMPARE_ALL(lastingEffect)
@@ -125,11 +130,19 @@ struct InjureBodyPart {
   BodyPart part;
   COMPARE_ALL(part)
 };
-struct LooseBodyPart {
+struct LoseBodyPart {
   EFFECT_TYPE_INTERFACE;
   BodyPart part;
   COMPARE_ALL(part)
 };
+struct AddBodyPart {
+  EFFECT_TYPE_INTERFACE;
+  BodyPart part;
+  int count;
+  optional<ItemType> attack;
+  COMPARE_ALL(part, count, attack)
+};
+SIMPLE_EFFECT(MakeHumanoid);
 struct Area {
   EFFECT_TYPE_INTERFACE;
   int radius;
@@ -208,9 +221,9 @@ struct AnimateItems {
 };
 MAKE_VARIANT2(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, Enhance, Suicide, IncreaseAttr,
     EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
-    Lasting, RemoveLasting, Permanent, PlaceFurniture, Damage, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-    Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, Filter, SummonEnemy, Wish, Chain, Caster,
-    IncreaseMorale, Message, Chance, AssembledMinion, TriggerTrap, AnimateItems);
+    Lasting, RemoveLasting, Permanent, RemovePermanent, PlaceFurniture, Damage, InjureBodyPart, LoseBodyPart, RegrowBodyPart,
+    AddBodyPart, DestroyWalls, Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, Filter, SummonEnemy, Wish,
+    Chain, Caster, IncreaseMorale, Message, Chance, AssembledMinion, TriggerTrap, AnimateItems, MakeHumanoid);
 }
 
 class EffectType : public Effects::EffectType {

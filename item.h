@@ -36,6 +36,7 @@ struct ItemUpgradeInfo;
 class ItemPrefix;
 class ItemType;
 class ContentFactory;
+struct AutomatonPart;
 
 class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
@@ -86,6 +87,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   void tick(Position);
   void applyPrefix(const ItemPrefix&, const ContentFactory*);
   void setTimeout(GlobalTime);
+  const optional<AutomatonPart>& getAutomatonPart() const;
   
   string getApplyMsgThirdPerson(const Creature* owner) const;
   string getApplyMsgFirstPerson(const Creature* owner) const;

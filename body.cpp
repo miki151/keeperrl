@@ -104,6 +104,12 @@ void Body::setBodyParts(const EnumMap<BodyPart, int>& p) {
   bodyParts[BodyPart::BACK] = 1;
 }
 
+void Body::initializeIntrinsicAttack(const ContentFactory* factory) {
+  for (auto bodyPart : ENUM_ALL(BodyPart))
+    for (auto& attack : intrinsicAttacks[bodyPart])
+      attack.initializeItem(factory);
+}
+
 void Body::addIntrinsicAttack(BodyPart part, IntrinsicAttack attack) {
   if (!numGood(part)) {
     part = BodyPart::TORSO;
@@ -395,6 +401,11 @@ void consumeBodyAttr(T& mine, const T& his, vector<string>& adjectives, const st
     if (!adj.empty())
       adjectives.push_back(adj);
   }
+}
+
+void Body::addBodyPart(BodyPart parts, int count) {
+  CHECK(count > 0);
+  bodyParts[parts] += count;
 }
 
 void Body::consumeBodyParts(Creature* c, Body& other, vector<string>& adjectives) {
