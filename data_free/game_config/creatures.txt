@@ -1689,11 +1689,14 @@
       name = "automaton worker"
     }
   }
-"AUTOMATON_CORPUS_WOOD" inherit "AUTOMATON_WORKER"
+"AUTOMATON_CORPUS_WOOD"
   {
     viewId = { "automaton" Rgb 180 140 55 255 }
     automatonSlots = 3
-    cantEquip = false
+    attr = {
+      DAMAGE 15
+      DEFENSE 20
+    }
     body = {
       type = NonHumanoid LARGE
       material = WOOD
@@ -1713,8 +1716,8 @@
   {
     viewId = { "automaton" Rgb 140 148 148 255 }
     attr = {
-      DAMAGE 10
-      DEFENSE 15
+      DAMAGE 25
+      DEFENSE 25
     }
     body = append {
       material = IRON

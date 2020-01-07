@@ -808,6 +808,18 @@ string Effects::Message::getDescription(const ContentFactory*) const {
   return text;
 }
 
+void Effects::GrantAbility::applyToCreature(Creature* c, Creature* attacker) const {
+  c->getSpellMap().add(*c->getGame()->getContentFactory()->getCreatures().getSpell(id), ExperienceType::MELEE, 0);
+}
+
+string Effects::GrantAbility::getName(const ContentFactory* f) const {
+  return f->getCreatures().getSpell(id)->getName();
+}
+
+string Effects::GrantAbility::getDescription(const ContentFactory* f) const {
+  return "Grants ability: " + getName(f);
+}
+
 void Effects::IncreaseMorale::applyToCreature(Creature* c, Creature* attacker) const {
   if (amount > 0)
     c->you(MsgType::YOUR, "spirits are lifted");

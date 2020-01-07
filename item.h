@@ -119,7 +119,6 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   static ItemPredicate equipmentSlotPredicate(EquipmentSlot);
   static ItemPredicate classPredicate(vector<ItemClass>);
   static ItemPredicate namePredicate(const string& name);
-  static ItemPredicate isRangedWeaponPredicate();
 
   static vector<vector<Item*>> stackItems(vector<Item*>,
       function<string(const Item*)> addSuffix = [](const Item*) { return ""; });

@@ -451,4 +451,12 @@
   cooldown = 10
   blockedByWall = false
 }
-
+"shoot arrow"
+{
+  symbol = "↣"
+  effect = Damage RANGED_DAMAGE SHOOT
+  range = 7
+  cooldown = 1
+  projectileViewId = {"arrow"}
+  castMessageType = SHOOT_ARROW
+}

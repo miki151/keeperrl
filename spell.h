@@ -18,13 +18,15 @@
 #include "enums.h"
 #include "util.h"
 #include "spell_id.h"
+#include "view_id.h"
 
 RICH_ENUM(
   CastMessageType,
   STANDARD,
   AIR_BLAST,
   BREATHE_FIRE,
-  ABILITY
+  ABILITY,
+  SHOOT_ARROW
 );
 
 class Effect;
@@ -66,6 +68,7 @@ class Spell {
   optional<SoundId> SERIAL(sound);
   int SERIAL(range) = 0;
   optional<FXName> SERIAL(fx);
+  optional<ViewId> SERIAL(projectileViewId);
   bool SERIAL(endOnly) = false;
   bool SERIAL(targetSelf) = false;
   bool SERIAL(blockedByWall) = true;

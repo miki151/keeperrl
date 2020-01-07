@@ -91,10 +91,6 @@ ItemPredicate Item::namePredicate(const string& name) {
   return [name](const Item* item) { return item->getName() == name; };
 }
 
-ItemPredicate Item::isRangedWeaponPredicate() {
- return [](const Item* it) { return it->canEquip() && it->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON;};
-}
-
 vector<vector<Item*>> Item::stackItems(vector<Item*> items, function<string(const Item*)> suffix) {
   map<string, vector<Item*>> stacks = groupBy<Item*, string>(items, [suffix](const Item* item) {
         return item->getNameAndModifiers() + suffix(item);

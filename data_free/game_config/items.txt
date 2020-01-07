@@ -21,7 +21,7 @@
     itemClass = TOOL
     automatonPart = HEAD {
       Chain { MakeHumanoid AddBodyPart HEAD 1 none }
-      Chain { IncreaseAttr RANGED_DAMAGE 25 AddBodyPart HEAD 1 none }
+      Chain { IncreaseAttr RANGED_DAMAGE 25 AddBodyPart HEAD 1 none GrantAbility "shoot arrow" }
       Chain { IncreaseAttr RANGED_DAMAGE 10 AddBodyPart HEAD 1 none }
     }
   }
@@ -33,12 +33,8 @@
     weight = 8
     itemClass = TOOL
     automatonPart = LEGS {
-      Chain { AddBodyPart LEG 2 { Intrinsic { "leg_attack" } "legs" 5 { attackMsg = KICK } }
-        RemovePermanent IMMOBILE }
-      Chain {
-        Permanent SPEED
-        AddBodyPart LEG 2 { Intrinsic { "leg_attack" } "legs" 5 { attackMsg = KICK } }
-      }
+      Chain { AddBodyPart LEG 2 none RemovePermanent IMMOBILE }
+      Chain { Permanent SPEED AddBodyPart LEG 2 none }
     }
   }
 "AutomatonArmsWood"
@@ -63,7 +59,7 @@
     itemClass = TOOL
     automatonPart = HEAD {
       Chain { MakeHumanoid AddBodyPart HEAD 1 none  }
-      Chain { IncreaseAttr RANGED_DAMAGE 30 AddBodyPart HEAD 1 none }
+      Chain { IncreaseAttr RANGED_DAMAGE 30 AddBodyPart HEAD 1 none GrantAbility "shoot arrow"}
       Chain { IncreaseAttr RANGED_DAMAGE 15 AddBodyPart HEAD 1 none }
     }
   }
@@ -75,12 +71,8 @@
     weight = 8
     itemClass = TOOL
     automatonPart = LEGS {
-      Chain { AddBodyPart LEG 2 { Intrinsic { "leg_attack" } "legs" 12 { attackMsg = KICK } }
-        RemovePermanent IMMOBILE }
-      Chain {
-        Permanent SPEED
-        AddBodyPart LEG 2 { Intrinsic { "leg_attack" } "legs" 12 { attackMsg = KICK } }
-      }
+      Chain { AddBodyPart LEG 2 none RemovePermanent IMMOBILE }
+      Chain { Permanent SPEED AddBodyPart LEG 2 none }
     }
   }
 "AutomatonArmsIron"
@@ -91,9 +83,9 @@
     weight = 6
     itemClass = TOOL
     automatonPart = ARMS {
-      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 12 { attackMsg = SWING } }
-      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 12 { attackMsg = SWING } }
-      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 12 { attackMsg = SWING } }
+      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } }
+      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } }
+      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } }
     }
   }
 "Knife"

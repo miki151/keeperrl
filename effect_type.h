@@ -6,6 +6,7 @@
 #include "furniture_type.h"
 #include "destroy_action.h"
 #include "intrinsic_attack.h"
+#include "spell_id.h"
 
 RICH_ENUM(FilterType, ALLY, ENEMY);
 
@@ -200,6 +201,11 @@ struct Message {
   string text;
   COMPARE_ALL(text)
 };
+struct GrantAbility {
+  EFFECT_TYPE_INTERFACE;
+  SpellId id;
+  COMPARE_ALL(id)
+};
 struct IncreaseMorale {
   EFFECT_TYPE_INTERFACE;
   double amount;
@@ -223,7 +229,7 @@ MAKE_VARIANT2(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, E
     EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
     Lasting, RemoveLasting, Permanent, RemovePermanent, PlaceFurniture, Damage, InjureBodyPart, LoseBodyPart, RegrowBodyPart,
     AddBodyPart, DestroyWalls, Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, Filter, SummonEnemy, Wish,
-    Chain, Caster, IncreaseMorale, Message, Chance, AssembledMinion, TriggerTrap, AnimateItems, MakeHumanoid);
+    Chain, Caster, IncreaseMorale, Message, Chance, AssembledMinion, TriggerTrap, AnimateItems, MakeHumanoid, GrantAbility);
 }
 
 class EffectType : public Effects::EffectType {

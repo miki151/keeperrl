@@ -21,7 +21,7 @@
 
 template <class Archive>
 void Spell::serializeImpl(Archive& ar, const unsigned int) {
-  ar(NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf), OPTION(blockedByWall));
+  ar(NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf), OPTION(blockedByWall), NAMED(projectileViewId));
 }
 
 template <class Archive>
@@ -72,6 +72,9 @@ void Spell::addMessage(Creature* c) const {
     case CastMessageType::ABILITY:
       c->verb("use", "uses", "an ability");
       break;
+    case CastMessageType::SHOOT_ARROW:
+      c->verb("shoot", "shoots", "an arrow");
+      break;
   }
 }
 
@@ -84,9 +87,14 @@ void Spell::apply(Creature* c, Position target) const {
   auto thisFx = effect->getProjectileFX();
   if (fx)
     thisFx = FXInfo{*fx};
+  auto thisProjectile = effect->getProjectile();
+  if (projectileViewId) {
+    thisProjectile = projectileViewId;
+    thisFx = none;
+  }
   if (endOnly) {
     c->getGame()->addEvent(
-        EventInfo::Projectile{std::move(thisFx), effect->getProjectile(), c->getPosition(), target, none});
+        EventInfo::Projectile{std::move(thisFx), thisProjectile, c->getPosition(), target, none});
     effect->apply(target, c);
     return;
   }
@@ -99,7 +107,7 @@ void Spell::apply(Creature* c, Position target) const {
         break;
     }
   c->getGame()->addEvent(
-      EventInfo::Projectile{std::move(thisFx), effect->getProjectile(), c->getPosition(), trajectory.back(), none});
+      EventInfo::Projectile{std::move(thisFx), thisProjectile, c->getPosition(), trajectory.back(), none});
   for (auto& pos : trajectory)
     effect->apply(pos, c);
 }

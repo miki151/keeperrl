@@ -260,6 +260,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   TimeInterval getSpellDelay(const Spell*) const;
   bool isReady(const Spell*) const;
   const SpellMap& getSpellMap() const;
+  SpellMap& getSpellMap();
 
   SERIALIZATION_DECL(Creature)
 

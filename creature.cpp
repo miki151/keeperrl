@@ -149,6 +149,10 @@ const SpellMap& Creature::getSpellMap() const {
   return *spellMap;
 }
 
+SpellMap& Creature::getSpellMap() {
+  return *spellMap;
+}
+
 void Creature::cheatAllSpells() {
   auto& spells = getGame()->getContentFactory()->getCreatures().getSpells();
   for (auto& spell : spells)
