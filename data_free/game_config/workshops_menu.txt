@@ -113,15 +113,20 @@
 {
   WORKSHOP
   {
-      {{Assembled "AUTOMATON_WORKER"}        6       WOOD 20    "automatons"}
-      {{Assembled "AUTOMATON_CORPUS_WOOD"}   8       WOOD 30    "automatons"}
-      {{Simple    "AutomatonHead"}           2       WOOD 5    "automatons"}
-      {{Simple    "AutomatonArms"}           2       WOOD 5    "automatons"}
-      {{Simple    "AutomatonLegs"}           2       WOOD 5    "automatons"}
+      {{Assembled "AUTOMATON_WORKER" none}   6       WOOD 20    "automatons"}
+      {{Assembled "AUTOMATON_CORPUS_WOOD" {"automaton_corpus" Rgb 180 140 55 255}}
+            8       WOOD 30    "automatons"}
+      {{Simple    "AutomatonHeadWood"}       2       WOOD 5    "automatons"}
+      {{Simple    "AutomatonArmsWood"}       2       WOOD 5    "automatons"}
+      {{Simple    "AutomatonLegsWood"}       2       WOOD 5    "automatons"}
   } 
   FORGE
   {
-      {{Assembled "AUTOMATON_CORPUS_IRON"}   8       IRON 30    "automatons"}
+      {{Assembled "AUTOMATON_CORPUS_IRON" {"automaton_corpus" Rgb 140 148 148 255}}
+            8       IRON 30    "automatons"}
+      {{Simple    "AutomatonHeadIron"}       2       IRON 5    "automatons"}
+      {{Simple    "AutomatonArmsIron"}       2       IRON 5    "automatons"}
+      {{Simple    "AutomatonLegsIron"}       2       IRON 5    "automatons"}
   } 
 }
 

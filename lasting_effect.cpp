@@ -1058,7 +1058,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::PREGNANT: return "This is no dream! This is really happening!";
     case LastingEffect::SLOWED: return "Causes unnaturally slow movement.";
     case LastingEffect::BLEEDING: return "Causes loss of health points over time.";
-    case LastingEffect::SPEED: return "Causes unnaturally quick movement.";
+    case LastingEffect::SPEED: return "Grants an extra move every turn.";
     case LastingEffect::BLIND: return "Causes blindness";
     case LastingEffect::INVISIBLE: return "Makes you invisible to enemies.";
     case LastingEffect::PLAGUE: return "Decreases health every turn when it's above 50%. "

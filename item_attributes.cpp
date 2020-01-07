@@ -23,7 +23,7 @@
 #include "sound.h"
 
 template <class Archive> 
-void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
+void ItemAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(NAMED(name), NAMED(viewId), OPTION(description), NAMED(weight), NAMED(itemClass), NAMED(plural), NAMED(blindName));
   ar(NAMED(artifactName), NAMED(resourceId), OPTION(burnTime), OPTION(price), OPTION(noArticle), NAMED(equipmentSlot), NAMED(equipedAbility));
   ar(OPTION(applyTime), NAMED(ownedEffect), OPTION(maxUpgrades), OPTION(fragile), NAMED(effect), OPTION(uses), OPTION(usedUpMsg));
@@ -33,9 +33,21 @@ void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
   ar(NAMED(automatonPart));
 }
 
+template <class Archive>
+void ItemAttributes::serialize(Archive& ar, const unsigned int version) {
+  serializeImpl(ar, version);
+}
+
 SERIALIZABLE(ItemAttributes);
 SERIALIZATION_CONSTRUCTOR_IMPL(ItemAttributes);
 
 #include "pretty_archive.h"
-template
-void ItemAttributes::serialize(PrettyInputArchive& ar1, unsigned);
+template<>
+void ItemAttributes::serialize(PrettyInputArchive& ar1, unsigned version) {
+  serializeImpl(ar1, version);
+  ar1(endInput());
+  if (automatonPart) {
+    automatonPart->viewId = *viewId;
+    automatonPart->name = shortName.value_or(*name);
+  }
+}

@@ -164,8 +164,8 @@ void fillInstalledPartDescription(const ContentFactory* factory, ItemInfo& info,
 ItemInfo getInstalledPartInfo(const ContentFactory* factory, const AutomatonPart& part, int index) {
   ItemInfo ret {};
   ret.ids.insert(Item::Id(index));
-  ret.fullName = ret.name = getName(part.slot);
-  ret.viewId = ViewId("trap_item");
+  ret.fullName = ret.name = part.name;
+  ret.viewId = part.viewId;
   fillInstalledPartDescription(factory, ret, part);
   return ret;
 }

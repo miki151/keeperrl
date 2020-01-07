@@ -78,7 +78,8 @@ struct EventPoem {
 };
 struct Assembled {
   CreatureId creature;
-  COMPARE_ALL(creature)
+  optional<ViewId> viewId;
+  COMPARE_ALL(creature, viewId)
   ITEM_TYPE_INTERFACE;
 };
 using Simple = CustomItemId;

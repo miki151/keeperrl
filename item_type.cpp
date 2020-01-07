@@ -395,7 +395,7 @@ ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory*) const 
 
 ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
-      i.viewId = ViewId("trap_item");
+      i.viewId = viewId.value_or(factory->getCreatures().getViewId(creature));
       i.effect = Effect(Effects::AssembledMinion{creature});
       i.name = i.effect->getName(factory);
       i.itemClass = ItemClass::TOOL;

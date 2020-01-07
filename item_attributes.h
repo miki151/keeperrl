@@ -40,7 +40,8 @@ class ItemAttributes {
   ItemAttributes(function<void(ItemAttributes&)> fun) {
     fun(*this);
   }
-
+  template <class Archive>
+  void serializeImpl(Archive& ar, const unsigned int);
   SERIALIZATION_DECL(ItemAttributes)
 
   MustInitialize<ViewId> SERIAL(viewId);

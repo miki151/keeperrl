@@ -1651,7 +1651,7 @@
   }
 "AUTOMATON"
   {
-    viewId = { "automaton" }
+    viewId = { "automaton" Rgb 204 202 196 255 }
     attr = {
       DAMAGE 40
       DEFENSE 40 
@@ -1691,7 +1691,7 @@
   }
 "AUTOMATON_CORPUS_WOOD" inherit "AUTOMATON_WORKER"
   {
-    viewId = { "automaton" }
+    viewId = { "automaton" Rgb 180 140 55 255 }
     automatonSlots = 3
     cantEquip = false
     body = {
@@ -1711,6 +1711,7 @@
   }
 "AUTOMATON_CORPUS_IRON" inherit "AUTOMATON_CORPUS_WOOD"
   {
+    viewId = { "automaton" Rgb 140 148 148 255 }
     attr = {
       DAMAGE 10
       DEFENSE 15
@@ -1719,7 +1720,7 @@
       material = IRON
     }
     name = {
-      name = "iron automaton corpus"
+      name = "iron automaton"
     }
   }
 "ZOMBIE"

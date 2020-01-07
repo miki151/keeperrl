@@ -569,6 +569,13 @@
         { 0.0 AssembledRequirement }
       }
     }
+    {
+      ids = { "AUTOMATON_CORPUS_IRON" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 AssembledRequirement }
+      }
+    }
 }
 "tutorial"
 

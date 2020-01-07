@@ -4,7 +4,7 @@
 #include "creature_attributes.h"
 #include "item.h"
 
-SERIALIZE_DEF(AutomatonPart, slot, effect)
+SERIALIZE_DEF(AutomatonPart, slot, effect, viewId, name)
 
 bool AutomatonPart::isAvailable(const Creature* c) const {
   if (c->automatonParts.size() >= c->getAttributes().getAutomatonSlots())
@@ -26,6 +26,8 @@ void AutomatonPart::apply(Creature* c) const {
 }
 
 #include "pretty_archive.h"
-template
-void AutomatonPart::serialize(PrettyInputArchive& ar1, unsigned);
+template <>
+void AutomatonPart::serialize(PrettyInputArchive& ar1, unsigned) {
+  ar1(slot, effect);
+}
 
