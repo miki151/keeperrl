@@ -2280,6 +2280,17 @@
       { type = Glyph WEAPON JoinPrefixes { LastingEffect BAD_BREATH VictimEffect 0.2 Lasting PANIC } chance = 0.3 }
     }
   }
+"DWARF_BLACKSMITH" inherit "DWARF"
+  {
+    viewId = { "dwarf_blacksmith" }
+    name = append {
+      name = "dwarf blacksmith"
+    }
+    skills = {
+      FORGE 1.0
+    }
+    inventory = {}
+  }
 "LIZARDMAN"
   {
     viewId = { "lizardman" }

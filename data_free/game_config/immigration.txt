@@ -480,6 +480,17 @@
       }
     }
     {
+      ids = { "DWARF_BLACKSMITH" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 RecruitmentInfo { "DWARVES" } 0 FIGHTER }
+        { 1.0 CostInfo GOLD 100 }
+      }
+      specialTraits = {
+       { 1.0 { SkillId FORGE }}
+      }
+    }
+    {
       ids = { "GALEAM" }
       traits = { FIGHTER }
       frequency = 0.3

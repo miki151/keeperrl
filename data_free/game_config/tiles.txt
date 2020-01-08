@@ -52,6 +52,7 @@
 { "gnome" "g" ColorId GREEN }
 { "gnome_boss" "g" ColorId DARK_BLUE }
 { "dwarf" "h" ColorId BLUE }
+{ "dwarf_blacksmith" "h" ColorId WHITE }
 { "dwarf_baron" "h" ColorId PURPLE }
 { "dwarf_female" "h" ColorId LIGHT_BLUE }
 { "shopkeeper" "@" ColorId LIGHT_BLUE }

@@ -627,6 +627,7 @@
           2 "DWARF_FEMALE"
           1 "RAT"
         }
+        uniques = { "DWARF_BLACKSMITH" }
       }
     }
     locationNameGen = "TOWN"
