@@ -236,6 +236,12 @@ struct AnimateItems {
   Range SERIAL(time);
   SERIALIZE_ALL(maxCount, radius, time)
 };
+struct DropItems {
+  EFFECT_TYPE_INTERFACE;
+  ItemType SERIAL(type);
+  Range SERIAL(count);
+  SERIALIZE_ALL(type, count)
+};
 struct SoundEffect {
   EFFECT_TYPE_INTERFACE;
   Sound SERIAL(sound);
@@ -246,7 +252,7 @@ MAKE_VARIANT2(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, E
     Lasting, RemoveLasting, Permanent, RemovePermanent, PlaceFurniture, Damage, InjureBodyPart, LoseBodyPart, RegrowBodyPart,
     AddBodyPart, DestroyWalls, Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, Filter, SummonEnemy, Wish,
     Chain, ChooseRandom, Caster, IncreaseMorale, Message, Chance, AssembledMinion, TriggerTrap, AnimateItems, MakeHumanoid,
-    GrantAbility, CreatureMessage, SoundEffect);
+    GrantAbility, CreatureMessage, SoundEffect, DropItems);
 }
 
 class EffectType : public Effects::EffectType {

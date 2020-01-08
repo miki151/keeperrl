@@ -70,76 +70,6 @@ static void useChest(Position pos, WConstFurniture furniture, Creature* c, const
   }
 }
 
-static void desecrate(Position pos, WConstFurniture furniture, Creature* c) {
-  c->verb("desecrate", "desecrates", "the "+ furniture->getName());
-  pos.removeFurniture(furniture, pos.getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("ALTAR_DES"), furniture->getTribe()));
-  switch (Random.get(5)) {
-    case 0:
-      pos.globalMessage("A streak of magical energy is released");
-      c->addPermanentEffect(Random.choose(
-          LastingEffect::RAGE,
-          LastingEffect::BLIND,
-          LastingEffect::PANIC,
-          LastingEffect::SPEED,
-          LastingEffect::FLYING,
-          LastingEffect::SLOWED,
-          LastingEffect::INSANITY,
-          LastingEffect::COLLAPSED,
-          LastingEffect::INVISIBLE,
-          LastingEffect::TELEPATHY,
-          LastingEffect::MELEE_RESISTANCE,
-          LastingEffect::MELEE_VULNERABILITY,
-          LastingEffect::MAGIC_RESISTANCE,
-          LastingEffect::MAGIC_VULNERABILITY,
-          LastingEffect::RANGED_RESISTANCE,
-          LastingEffect::RANGED_VULNERABILITY,
-          LastingEffect::BAD_BREATH,
-          LastingEffect::NIGHT_VISION,
-          LastingEffect::PEACEFULNESS));
-      break;
-    case 1: {
-      pos.globalMessage("A streak of magical energy is released");
-      auto ef = Random.choose(
-          Effect(Effects::IncreaseAttr{ Random.choose(
-              AttrType::DAMAGE, AttrType::DEFENSE, AttrType::SPELL_DAMAGE, AttrType::RANGED_DAMAGE),
-              Random.choose(-3, -2, -1, 1, 2, 3) }),
-          Effect(Effects::Acid{}),
-          Effect(Effects::Fire{}),
-          Effect(Effects::Lasting { LastingEffect::DAM_BONUS }),
-          Effect(Effects::Lasting { LastingEffect::BLIND }),
-          Effect(Effects::Lasting { LastingEffect::POISON }),
-          Effect(Effects::Lasting { LastingEffect::BLEEDING }),
-          Effect(Effects::Lasting { LastingEffect::HALLU })
-      );
-      ef.apply(pos);
-      break;
-    }
-    case 2: {
-      pos.globalMessage(pos.getGame()->getContentFactory()->getCreatures().getNameGenerator()->getNext(NameGeneratorId("DEITY"))
-          + " seems to be very angry");
-      auto group = CreatureGroup::singleType(TribeId::getMonster(), CreatureId("ANGEL"));
-      Effect::summon(pos, group, Random.get(3, 6), none);
-      break;
-    }
-    case 3: {
-      c->verb("find", "finds", "some gold coins in the cracks");
-      pos.dropItems(ItemType(CustomItemId("GoldPiece")).get(Random.get(50, 100), pos.getGame()->getContentFactory()));
-      break;
-    }
-    case 4: {
-      c->verb("find", "finds", "a glyph in the cracks!");
-      pos.dropItem(Random.choose(
-          ItemType(ItemTypes::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( ItemAttrBonus{ AttrType::DAMAGE, 2 } ) } }),
-          ItemType(ItemTypes::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( ItemAttrBonus{ AttrType::DEFENSE, 2 } ) } }),
-          ItemType(ItemTypes::Glyph{ { ItemUpgradeType::ARMOR, ItemPrefix( LastingEffect::TELEPATHY ) } }),
-          ItemType(ItemTypes::Glyph{ { ItemUpgradeType::WEAPON,
-              ItemPrefix( VictimEffect { 0.3, EffectType(Effects::Lasting{LastingEffect::BLEEDING}) } ) } })
-          ).get(pos.getGame()->getContentFactory()));
-      break;
-    }
-  }
-}
-
 static void usePortal(Position pos, Creature* c) {
   c->you(MsgType::ENTER_PORTAL, "");
   if (auto otherPos = pos.getOtherPortal())
@@ -238,12 +168,6 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       case BuiltinUsageId::KEEPER_BOARD:
         c->getGame()->handleMessageBoard(pos, c);
         break;
-      case BuiltinUsageId::CROPS:
-        if (Random.roll(3)) {
-          c->thirdPerson(c->getName().the() + " scythes the field.");
-          c->secondPerson("You scythe the field.");
-        }
-        break;
       case BuiltinUsageId::STAIRS:
         c->getLevel()->changeLevel(*pos.getLandingLink(), c);
         break;
@@ -258,9 +182,6 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
         break;
       case BuiltinUsageId::SIT_ON_THRONE:
         sitOnThrone(pos, furniture, c);
-        break;
-      case BuiltinUsageId::DESECRATE:
-        desecrate(pos, furniture, c);
         break;
       case BuiltinUsageId::DEMON_RITUAL:
       case BuiltinUsageId::STUDY:
@@ -298,7 +219,6 @@ string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitur
           case BuiltinUsageId::KEEPER_BOARD: return "view " + furnitureName;
           case BuiltinUsageId::PORTAL: return "enter " + furnitureName;
           case BuiltinUsageId::SIT_ON_THRONE: return "sit on " + furnitureName;
-          case BuiltinUsageId::DESECRATE: return "desecrate " + furnitureName;
           default:
             return "use " + furnitureName;
         }

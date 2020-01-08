@@ -634,8 +634,19 @@ string Effects::PlaceFurniture::getName(const ContentFactory* c) const {
   return c->furniture.getData(furniture).getName();
 }
 
-string Effects::PlaceFurniture::getDescription(const ContentFactory*) const {
-  return "Creates a " /*+ getName() + "."*/;
+string Effects::PlaceFurniture::getDescription(const ContentFactory* c) const {
+  return "Creates a " + getName(c);
+}
+
+void Effects::DropItems::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effects::DropItems::getName(const ContentFactory* c) const {
+  return "create items";
+}
+
+string Effects::DropItems::getDescription(const ContentFactory* c) const {
+  return "Creates items";
 }
 
 void Effects::Damage::applyToCreature(Creature* c, Creature* attacker) const {
@@ -1169,6 +1180,9 @@ void Effect::apply(Position pos, Creature* attacker) const {
         if (ref)
           ref->onConstructedBy(pos, attacker);
       },
+      [&](const Effects::DropItems& effect) {
+        pos.dropItems(effect.type.get(Random.get(effect.count), pos.getGame()->getContentFactory()));
+      },
       [&](Effects::Blast) {
         constexpr int range = 4;
         CHECK(attacker);
@@ -1313,7 +1327,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
         return victim->getGame()->getContentFactory()->furniture.getData(f.furniture).isHostileSpell() && isFighting
             ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
       },
-      [&] (const auto& e) {
+      [&] (const auto&) {
         return EffectAIIntent::NONE;
       }
   );

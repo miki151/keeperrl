@@ -438,7 +438,7 @@
 {
   name = "wheat"
   viewId = { "crops" }
-  usageType = BuiltinUsageId CROPS
+  usageType = UsageEffect "scythe " Chance 0.3 CreatureMessage "scythe the field" "scythes the field"
   usageTime = 3
 }
 "PIGSTY"
@@ -545,7 +545,75 @@
   name = "altar"
   viewId = { "altar" }
   canHideHere = true
-  usageType = BuiltinUsageId DESECRATE
+  strength = 80
+  usageType = UsageEffect "desecrate" Chain {
+    CreatureMessage "desecrate the altar" "desecrates the altar"
+    DestroyWalls BASH
+    ChooseRandom {
+      Chain {
+        Message "A streak of magical energy is released"
+        ChooseRandom {
+          Permanent RAGE
+          Permanent BLIND
+          Permanent PANIC
+          Permanent SPEED
+          Permanent FLYING
+          Permanent SLOWED
+          Permanent INSANITY
+          Permanent COLLAPSED
+          Permanent INVISIBLE
+          Permanent TELEPATHY
+          Permanent MELEE_RESISTANCE
+          Permanent MELEE_VULNERABILITY
+          Permanent MAGIC_RESISTANCE
+          Permanent MAGIC_VULNERABILITY
+          Permanent RANGED_RESISTANCE
+          Permanent RANGED_VULNERABILITY
+          Permanent BAD_BREATH
+          Permanent NIGHT_VISION
+          Permanent PEACEFULNESS
+        }
+      }
+      Chain {
+        Message "A streak of magical energy is released"
+        ChooseRandom {
+          IncreaseAttr DAMAGE -3
+          IncreaseAttr DAMAGE 3
+          IncreaseAttr RANGED_DAMAGE -3
+          IncreaseAttr RANGED_DAMAGE 3
+          IncreaseAttr SPELL_DAMAGE -3
+          IncreaseAttr SPELL_DAMAGE 3
+          IncreaseAttr DEFENSE -3
+          IncreaseAttr DEFENSE 3
+          Acid
+          Fire
+          Lasting DAM_BONUS
+          Lasting BLIND
+          Lasting POISON
+          Lasting BLEEDING
+          Lasting HALLU
+        }
+      }
+      Chain {
+        Message "Wrath upon you!"
+        SummonEnemy "ANGEL" {3 6} none
+      }
+      Chain {
+        CreatureMessage "find some gold coins in the cracks" "finds some gold coins in the cracks"
+        DropItems {Simple "GoldPiece"} {50 100}
+      }
+      Chain {
+        CreatureMessage "find a glyph in the cracks!" "finds a glyph in the cracks!"
+        ChooseRandom {
+          DropItems {Glyph ARMOR ItemAttrBonus DAMAGE 2} {1}
+          DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 2} {1}
+          DropItems {Glyph ARMOR LastingEffect TELEPATHY} {1}
+          DropItems {Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING} {1}
+        }
+      }
+    }
+  }
+  destroyedRemains = "ALTAR_DES"
 }
 "ALTAR_DES"
 {
