@@ -1,13 +1,14 @@
 #pragma once
 
 #include "util.h"
+#include "effect.h"
 
 class Position;
 class Furniture;
 class Creature;
 
 RICH_ENUM(
-  FurnitureUsageType,
+  BuiltinUsageId,
   CHEST,
   COFFIN,
   VAMPIRE_COFFIN,
@@ -25,6 +26,8 @@ RICH_ENUM(
   DESECRATE,
   DEMON_RITUAL
 );
+
+MAKE_VARIANT2(FurnitureUsageType, BuiltinUsageId, Effect);
 
 class FurnitureUsage {
   public:

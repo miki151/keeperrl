@@ -16,7 +16,7 @@ struct WorkshopItemCfg {
   optional<TechId> SERIAL(tech);
   int SERIAL(batchSize) = 1;
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
-  bool SERIAL(requireIngredient) = false;
+  optional<string> SERIAL(requireIngredient);
   SERIALIZE_ALL(NAMED(item), OPTION(work), OPTION(cost), NAMED(tech), OPTION(batchSize), NAMED(tutorialHighlight), OPTION(requireIngredient))
 };
 
@@ -33,7 +33,7 @@ struct WorkshopItem {
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
   optional<ItemUpgradeType> SERIAL(upgradeType);
   int SERIAL(maxUpgrades);
-  bool SERIAL(requireIngredient);
+  optional<string> SERIAL(requireIngredient);
   SERIALIZE_ALL(type, name, pluralName, viewId, cost, batchSize, workNeeded, techId, description, tutorialHighlight, upgradeType, maxUpgrades, requireIngredient)
 };
 

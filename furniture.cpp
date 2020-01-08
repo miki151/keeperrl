@@ -266,6 +266,10 @@ optional<FurnitureUsageType> Furniture::getUsageType() const {
   return usageType;
 }
 
+bool Furniture::hasUsageType(BuiltinUsageId id) const {
+  return usageType && usageType->getReferenceMaybe<BuiltinUsageId>() == id;
+}
+
 TimeInterval Furniture::getUsageTime() const {
   return usageTime;
 }

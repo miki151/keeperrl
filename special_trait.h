@@ -7,34 +7,34 @@
 #include "item_type.h"
 
 struct ExtraTraining {
-  ExperienceType type;
-  int increase;
-  COMPARE_ALL(type, increase)
+  ExperienceType SERIAL(type);
+  int SERIAL(increase);
+  SERIALIZE_ALL(type, increase)
 };
 
 struct ExtraBodyPart {
-  BodyPart part;
-  int count;
-  COMPARE_ALL(part, count)
+  BodyPart SERIAL(part);
+  int SERIAL(count);
+  SERIALIZE_ALL(part, count)
 };
 
 struct ExtraIntrinsicAttack {
-  BodyPart part;
-  ItemType item;
-  COMPARE_ALL(part, item)
+  BodyPart SERIAL(part);
+  ItemType SERIAL(item);
+  SERIALIZE_ALL(part, item)
 };
 
 struct AttrBonus {
-  AttrType attr;
-  int increase;
-  COMPARE_ALL(attr, increase)
+  AttrType SERIAL(attr);
+  int SERIAL(increase);
+  SERIALIZE_ALL(attr, increase)
 };
 
 class SpecialTrait;
 
 struct OneOfTraits {
-  vector<SpecialTrait> traits;
-  COMPARE_ALL(traits)
+  vector<SpecialTrait> SERIAL(traits);
+  SERIALIZE_ALL(traits)
 };
 
 MAKE_VARIANT2(SpecialTrait, ExtraTraining, LastingEffect, SkillId, AttrBonus, OneOfTraits, ExtraBodyPart, ExtraIntrinsicAttack);

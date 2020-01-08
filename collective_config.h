@@ -35,6 +35,7 @@ class ImmigrantInfo;
 struct ResourceInfo;
 struct ItemFetchInfo;
 class ContentFactory;
+class FurnitureUsageType;
 
 struct GuardianInfo {
   CreatureId SERIAL(creature);
@@ -50,7 +51,7 @@ struct MinionActivityInfo {
   enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE, MINION_ABUSE, GUARD } type;
   MinionActivityInfo();
   MinionActivityInfo(FurnitureType, const string& description);
-  MinionActivityInfo(FurnitureUsageType, const string& description);
+  MinionActivityInfo(BuiltinUsageId, const string& description);
   typedef function<bool(const ContentFactory*, WConstCollective, const Creature*, FurnitureType)> UsagePredicate;
   MinionActivityInfo(UsagePredicate, const string& description);
   MinionActivityInfo(Type, const string& description);

@@ -77,7 +77,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   const optional<ItemUpgradeInfo>& getUpgradeInfo() const;
   optional<ItemUpgradeType> getAppliedUpgradeType() const;
   int getMaxUpgrades() const;
-  const optional<ItemType>& getIngredientFor() const;
+  const optional<string>& getIngredientType() const;
 
   bool canEquip() const;
   EquipmentSlot getEquipmentSlot() const;
@@ -114,7 +114,6 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   const WeaponInfo& getWeaponInfo() const;
   void getAttackMsg(const Creature*, const string& enemyName) const;
 
-  static ItemPredicate effectPredicate(Effect);
   static ItemPredicate classPredicate(ItemClass);
   static ItemPredicate equipmentSlotPredicate(EquipmentSlot);
   static ItemPredicate classPredicate(vector<ItemClass>);

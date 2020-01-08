@@ -71,10 +71,6 @@ PItem Item::getCopy(const ContentFactory* f) const {
   return ret;
 }
 
-ItemPredicate Item::effectPredicate(Effect type) {
-  return [type](const Item* item) { return item->getEffect() == type; };
-}
-
 ItemPredicate Item::classPredicate(ItemClass cl) {
   return [cl](const Item* item) { return item->getClass() == cl; };
 }
@@ -293,8 +289,8 @@ int Item::getMaxUpgrades() const {
   return attributes->maxUpgrades;
 }
 
-const optional<ItemType>& Item::getIngredientFor() const {
-  return attributes->ingredientFor;
+const optional<string>& Item::getIngredientType() const {
+  return attributes->ingredientType;
 }
 
 void Item::apply(Creature* c, bool noSound) {

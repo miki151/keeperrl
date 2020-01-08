@@ -51,10 +51,8 @@ bool hasIndex(ItemIndex index, const Item* item) {
       return item->canEquip();
     case ItemIndex::FOR_SALE:
       return item->isOrWasForSale();
-    case ItemIndex::HEALING_ITEM:
-      return item->getEffect() == Effect(Effects::Heal{});
     case ItemIndex::RUNE:
-      return !!item->getUpgradeInfo() || !!item->getIngredientFor();
+      return !!item->getUpgradeInfo() || !!item->getIngredientType();
     case ItemIndex::ASSEMBLED_MINION:
       if (auto& e = item->getEffect())
         return !!e->effect->getReferenceMaybe<Effects::AssembledMinion>();

@@ -14,72 +14,71 @@
   ItemAttributes getAttributes(const ContentFactory*) const
 
 #define SIMPLE_ITEM(Name) \
-  struct Name { \
+  struct Name : public EmptyStruct<Name> { \
     ITEM_TYPE_INTERFACE;\
-    COMPARE_ALL()\
   }
 
 namespace ItemTypes {
 struct Intrinsic {
-  ViewId viewId;
-  string name;
-  int damage;
-  WeaponInfo weaponInfo;
-  COMPARE_ALL(viewId, name, damage, weaponInfo)
+  ViewId SERIAL(viewId);
+  string SERIAL(name);
+  int SERIAL(damage);
+  WeaponInfo SERIAL(weaponInfo);
+  SERIALIZE_ALL(viewId, name, damage, weaponInfo)
   ITEM_TYPE_INTERFACE;
 };
 struct Scroll {
-  Effect effect;
-  COMPARE_ALL(effect)
+  Effect SERIAL(effect);
+  SERIALIZE_ALL(effect)
   ITEM_TYPE_INTERFACE;
 };
 struct Potion {
-  Effect effect;
-  COMPARE_ALL(effect)
+  Effect SERIAL(effect);
+  SERIALIZE_ALL(effect)
   ITEM_TYPE_INTERFACE;
 };
 struct Mushroom {
-  Effect effect;
-  COMPARE_ALL(effect)
+  Effect SERIAL(effect);
+  SERIALIZE_ALL(effect)
   ITEM_TYPE_INTERFACE;
 };
 struct Amulet {
-  LastingEffect lastingEffect;
-  COMPARE_ALL(lastingEffect)
+  LastingEffect SERIAL(lastingEffect);
+  SERIALIZE_ALL(lastingEffect)
   ITEM_TYPE_INTERFACE;
 };
 struct Ring {
-  LastingEffect lastingEffect;
-  COMPARE_ALL(lastingEffect)
+  LastingEffect SERIAL(lastingEffect);
+  SERIALIZE_ALL(lastingEffect)
   ITEM_TYPE_INTERFACE;
 };
 struct Glyph {
-  ItemUpgradeInfo rune;
-  COMPARE_ALL(rune)
+  ItemUpgradeInfo SERIAL(rune);
+  SERIALIZE_ALL(rune)
   ITEM_TYPE_INTERFACE;
 };
 struct TechBook {
-  TechId techId;
-  COMPARE_ALL(techId)
+  TechId SERIAL(techId);
+  SERIALIZE_ALL(techId)
   ITEM_TYPE_INTERFACE;
 };
 struct TrapItem {
-  FurnitureType trapType;
-  string trapName;
-  COMPARE_ALL(trapType, trapName)
+  FurnitureType SERIAL(trapType);
+  string SERIAL(trapName);
+  SERIALIZE_ALL(trapType, trapName)
   ITEM_TYPE_INTERFACE;
 };
 SIMPLE_ITEM(FireScroll);
 SIMPLE_ITEM(Poem);
 struct EventPoem {
-  string eventName;
-  COMPARE_ALL(eventName)
+  string SERIAL(eventName);
+  SERIALIZE_ALL(eventName)
   ITEM_TYPE_INTERFACE;
 };
 struct Assembled {
-  CreatureId creature;
-  optional<ViewId> viewId;
-  COMPARE_ALL(creature, viewId)
+  CreatureId SERIAL(creature);
+  optional<ViewId> SERIAL(viewId);
+  SERIALIZE_ALL(creature, viewId)
   ITEM_TYPE_INTERFACE;
 };
 using Simple = CustomItemId;

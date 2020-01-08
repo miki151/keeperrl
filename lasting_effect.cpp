@@ -279,7 +279,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "resistant to plague");
         break;
       case LastingEffect::AMBUSH_SKILL:
-      case LastingEffect::STEALING_SKILL:
       case LastingEffect::SWIMMING_SKILL:
       case LastingEffect::DISARM_TRAPS_SKILL:
       case LastingEffect::CONSUMPTION_SKILL:
@@ -530,7 +529,6 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         c->verb("thaw", "thaws");
         break;
       case LastingEffect::AMBUSH_SKILL:
-      case LastingEffect::STEALING_SKILL:
       case LastingEffect::SWIMMING_SKILL:
       case LastingEffect::DISARM_TRAPS_SKILL:
       case LastingEffect::CONSUMPTION_SKILL:
@@ -688,7 +686,6 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::FAST_TRAINING: return "Fast trainee"_good;
     case LastingEffect::ENTERTAINER: return "Entertainer"_good;
     case LastingEffect::AMBUSH_SKILL: return "Ambusher"_good;
-    case LastingEffect::STEALING_SKILL: return "Thief"_good;
     case LastingEffect::SWIMMING_SKILL: return "Swimmer"_good;
     case LastingEffect::DISARM_TRAPS_SKILL: return "Disarms traps"_good;
     case LastingEffect::CONSUMPTION_SKILL: return "Absorbs"_good;
@@ -1027,7 +1024,6 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::ENTERTAINER: return "entertainment";
     case LastingEffect::BAD_BREATH: return "smelly breath";
     case LastingEffect::AMBUSH_SKILL: return "ambush";
-    case LastingEffect::STEALING_SKILL: return "stealing";
     case LastingEffect::SWIMMING_SKILL: return "swimming";
     case LastingEffect::DISARM_TRAPS_SKILL: return "trap disarming";
     case LastingEffect::CONSUMPTION_SKILL: return "absorbtion";
@@ -1112,7 +1108,6 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::ENTERTAINER: return "Makes jokes, increasing morale of nearby creatures";
     case LastingEffect::BAD_BREATH: return "Decreases morale of all nearby creatures";
     case LastingEffect::AMBUSH_SKILL: return "Can hide and ambush unsuspecting enemies. Press 'h' to hide on a tile that allows it.";
-    case LastingEffect::STEALING_SKILL: return "Can steal from other monsters";
     case LastingEffect::SWIMMING_SKILL: return "Can cross water without drowning.";
     case LastingEffect::DISARM_TRAPS_SKILL: return "Can evade traps and disarm them.";
     case LastingEffect::CONSUMPTION_SKILL: return "Can absorb other creatures and retain their attributes.";
@@ -1450,7 +1445,6 @@ static bool shouldAllyApply(const Creature* victim, LastingEffect effect) {
     case LastingEffect::FAST_TRAINING:
     case LastingEffect::ENTERTAINER:
     case LastingEffect::AMBUSH_SKILL:
-    case LastingEffect::STEALING_SKILL:
     case LastingEffect::SWIMMING_SKILL:
     case LastingEffect::DISARM_TRAPS_SKILL:
     case LastingEffect::CONSUMPTION_SKILL:

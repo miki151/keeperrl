@@ -3,7 +3,7 @@
   name = "wooden training dummy"
   viewId = { "training_wood" }
   blockMovement = true
-  usageType = TRAIN
+  usageType = BuiltinUsageId TRAIN
   fire = 50
   canHideHere = true
   strength = 80
@@ -18,7 +18,7 @@
   name = "iron training dummy"
   viewId = { "training_iron" }
   blockMovement = true
-  usageType = TRAIN
+  usageType = BuiltinUsageId TRAIN
   canHideHere = true
   strength = 80
   upgrade = "TRAINING_WOOD"
@@ -33,7 +33,7 @@
   name = "adamantine training dummy"
   viewId = { "training_ada" }
   blockMovement = true
-  usageType = TRAIN
+  usageType = BuiltinUsageId TRAIN
   canHideHere = true
   strength = 80
   upgrade = "TRAINING_IRON"
@@ -49,7 +49,7 @@
   viewId = { "archery_range" }
   blockMovement = true
   noProjectiles = true
-  usageType = ARCHERY_RANGE
+  usageType = BuiltinUsageId ARCHERY_RANGE
   canHideHere = true
   strength = 80
   requiresLight = true
@@ -110,6 +110,12 @@
   viewId = { "poetry_table" }
   usageFX = none
 }
+"DINING_TABLE" inherit "JEWELLER"
+{
+  name = "dining table"
+  usageFX = none
+  usageType = Effect Lasting SATIATED
+}
 "FURNACE"
 {
   name = "furnace"
@@ -124,7 +130,7 @@
   name = "wooden bookcase"
   viewId = { "bookcase_wood" }
   blockMovement = true
-  usageType = STUDY
+  usageType = BuiltinUsageId STUDY
   usageTime = 5
   canHideHere = true
   fire = 70
@@ -140,7 +146,7 @@
   name = "iron bookcase"
   viewId = { "bookcase_iron" }
   blockMovement = true
-  usageType = STUDY
+  usageType = BuiltinUsageId STUDY
   usageTime = 5
   canHideHere = true
   fire = 70
@@ -157,7 +163,7 @@
   name = "golden bookcase"
   viewId = { "bookcase_gold" }
   blockMovement = true
-  usageType = STUDY
+  usageType = BuiltinUsageId STUDY
   usageTime = 5
   canHideHere = true
   fire = 70
@@ -174,7 +180,7 @@
   name = "throne"
   viewId = { "throne" }
   canHideHere = true
-  usageType = SIT_ON_THRONE
+  usageType = BuiltinUsageId SIT_ON_THRONE
   luxury = 1.0
   strength = 80
   populationIncrease = 10 none
@@ -191,7 +197,7 @@
 {
   name = "beast cage"
   viewId = { "beast_cage" }
-  usageType = SLEEP
+  usageType = BuiltinUsageId SLEEP
   tickType = BED
   canHideHere = true
   fire = 50
@@ -203,7 +209,7 @@
 {
   name = "basic bed"
   viewId = { "bed1" }
-  usageType = SLEEP
+  usageType = BuiltinUsageId SLEEP
   tickType = BED
   canHideHere = true
   fire = 50
@@ -215,7 +221,7 @@
 {
   name = "fine bed"
   viewId = { "bed2" }
-  usageType = SLEEP
+  usageType = BuiltinUsageId SLEEP
   tickType = BED
   canHideHere = true
   fire = 50
@@ -229,7 +235,7 @@
 {
   name = "luxurious bed"
   viewId = { "bed3" }
-  usageType = SLEEP
+  usageType = BuiltinUsageId SLEEP
   tickType = BED
   canHideHere = true
   luxury = 0.7
@@ -254,7 +260,7 @@
   viewId = { "demon_shrine" }
   blockMovement = true
   usageTime = 5
-  usageType = DEMON_RITUAL
+  usageType = BuiltinUsageId DEMON_RITUAL
   luxury = 0.4
   strength = 80
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
@@ -270,7 +276,7 @@
   name = "prison"
   viewId = { "prison" }
   tickType = BED
-  usageType = SLEEP
+  usageType = BuiltinUsageId SLEEP
   bedType = PRISON
   layer = FLOOR
 }
@@ -298,7 +304,7 @@
 {
   name = "whipping post"
   viewId = { "whipping_post" }
-  usageType = TIE_UP
+  usageType = BuiltinUsageId TIE_UP
   fire = 30
   strength = 30
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
@@ -307,7 +313,7 @@
 {
   name = "gallows"
   viewId = { "gallows" }
-  usageType = TIE_UP
+  usageType = BuiltinUsageId TIE_UP
   fire = 30
   strength = 30
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
@@ -432,7 +438,7 @@
 {
   name = "wheat"
   viewId = { "crops" }
-  usageType = CROPS
+  usageType = BuiltinUsageId CROPS
   usageTime = 3
 }
 "PIGSTY"
@@ -505,7 +511,7 @@
   name = "torture table"
   viewId = { "torture_table" }
   canHideHere = true
-  usageType = TIE_UP
+  usageType = BuiltinUsageId TIE_UP
   strength = 80
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
@@ -515,7 +521,7 @@
   viewId = { "fountain" }
   canHideHere = true
   luxury = 0.7
-  usageType = FOUNTAIN
+  usageType = BuiltinUsageId FOUNTAIN
   summonedElement = "WATER_ELEMENTAL"
   strength = 80
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
@@ -525,7 +531,7 @@
   name = "altar"
   viewId = { "altar" }
   canHideHere = true
-  usageType = DESECRATE
+  usageType = BuiltinUsageId DESECRATE
 }
 "ALTAR_DES"
 {
@@ -538,7 +544,7 @@
   name = "chest"
   viewId = { "chest" }
   canHideHere = true
-  usageType = CHEST
+  usageType = BuiltinUsageId CHEST
   fire = 50
   strength = 30
 }
@@ -555,7 +561,7 @@
   name = "basic coffin"
   viewId = { "coffin1" }
   canHideHere = true
-  usageType = SLEEP
+  usageType = BuiltinUsageId SLEEP
   fire = 50
   strength = 40
   bedType = COFFIN
@@ -566,7 +572,7 @@
   name = "fine coffin"
   viewId = { "coffin2" }
   canHideHere = true
-  usageType = SLEEP
+  usageType = BuiltinUsageId SLEEP
   luxury = 0.3
   fire = 50
   strength = 40
@@ -579,7 +585,7 @@
   name = "luxurious coffin"
   viewId = { "coffin3" }
   canHideHere = true
-  usageType = SLEEP
+  usageType = BuiltinUsageId SLEEP
   luxury = 0.7
   fire = 50
   strength = 40
@@ -592,7 +598,7 @@
   name = "coffin"
   viewId = { "coffin1" }
   canHideHere = true
-  usageType = COFFIN
+  usageType = BuiltinUsageId COFFIN
   fire = 50
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
@@ -602,7 +608,7 @@
   name = "coffin"
   viewId = { "coffin1" }
   canHideHere = true
-  usageType = VAMPIRE_COFFIN
+  usageType = BuiltinUsageId VAMPIRE_COFFIN
   fire = 50
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
@@ -612,7 +618,7 @@
   name = "opened coffin"
   viewId = { "opened_coffin" }
   canHideHere = true
-  usageType = SLEEP
+  usageType = BuiltinUsageId SLEEP
   fire = 50
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
@@ -714,7 +720,7 @@
   name = "message board"
   viewId = { "notice_board" }
   canHideHere = true
-  usageType = KEEPER_BOARD
+  usageType = BuiltinUsageId KEEPER_BOARD
   clickType = KEEPER_BOARD
   fire = 50
   strength = 50
@@ -727,7 +733,7 @@
   viewId = { "up_staircase" }
   canHideHere = true
   xForgetAfterBuilding = true
-  usageType = STAIRS
+  usageType = BuiltinUsageId STAIRS
 }
 "HIDDEN_UP_STAIRS" inherit "UP_STAIRS"
 {
@@ -740,7 +746,7 @@
   canHideHere = true
   onBuilt = DOWN_STAIRS
   xForgetAfterBuilding = true
-  usageType = STAIRS
+  usageType = BuiltinUsageId STAIRS
 }
 "UP_STAIRS_ROCK" inherit "UP_STAIRS"
 {
@@ -1195,7 +1201,7 @@
   name = "portal"
   viewId = { "portal" }
   strength = 40
-  usageType = PORTAL
+  usageType = BuiltinUsageId PORTAL
   tickType = PORTAL
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }

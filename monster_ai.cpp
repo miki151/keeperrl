@@ -64,8 +64,8 @@ class Behaviour {
   virtual double itemValue(const Item*) { return 0; }
   Item* getBestWeapon();
   Creature* getClosestCreature();
-  MoveInfo tryEffect(const Effect&, TimeInterval maxTurns = 1_visible);
-  MoveInfo tryEffect(const Effect&, Position target);
+  template <typename Effect>
+  MoveInfo tryEffect(TimeInterval maxTurns = 1_visible);
   void addCombatIntent(Creature* attacked, Creature::CombatIntentInfo::Type);
 
   virtual ~Behaviour() {}
@@ -111,29 +111,17 @@ Item* Behaviour::getBestWeapon() {
   return best;
 }
 
-MoveInfo Behaviour::tryEffect(const Effect& type, TimeInterval maxTurns) {
-  if (auto effect = type.effect->getValueMaybe<Effects::Lasting>())
-    if (creature->isAffected(effect->lastingEffect))
-      return NoMove;
+template <typename Effect>
+MoveInfo Behaviour::tryEffect(TimeInterval maxTurns) {
   for (auto spell : creature->getSpellMap().getAvailable(creature)) {
-    if (spell->getEffect() == type)
+    if (spell->getEffect().effect->contains<Effect>())
       if (auto action = creature->castSpell(spell))
         return { 1, action };
   }
-  auto items = creature->getEquipment().getItems().filter(Item::effectPredicate(type));
-  for (Item* item : items)
-    if (item->getApplyTime() <= maxTurns)
+  for (Item* item : creature->getEquipment().getItems())
+    if (item->getEffect() && item->getEffect()->effect->contains<Effect>() && item->getApplyTime() <= maxTurns)
       if (auto action = creature->applyItem(item))
         return MoveInfo(1, action);
-  return NoMove;
-}
-
-MoveInfo Behaviour::tryEffect(const Effect& type, Position target) {
-  for (auto spell : creature->getSpellMap().getAvailable(creature)) {
-    if (spell->getEffect() == type)
-      if (auto action = creature->castSpell(spell, target))
-        return { 1, action };
-  }
   return NoMove;
 }
 
@@ -200,7 +188,7 @@ class EffectsAI : public Behaviour {
           for (Position pos : creature->getPosition().neighbors8())
             if (Creature* c = pos.getCreature())
               if (creature->isFriend(c) && effect->shouldAIApply(c, c->getPosition()) == EffectAIIntent::WANTED &&
-                  c->getEquipment().getItems().filter(Item::effectPredicate(*effect)).empty())
+                  c->getEquipment().getItems().filter(Item::namePredicate(item->getName())).empty())
                 if (auto action = creature->give(c, {item}))
                   return MoveInfo(0.5, action);
         }
@@ -423,7 +411,7 @@ class Fighter : public Behaviour {
   }
 
   MoveInfo getPanicMove(Creature* other) {
-    if (auto teleMove = tryEffect(EffectType(Effects::Escape{})))
+    if (auto teleMove = tryEffect<Effects::Escape>())
       return teleMove;
     if (auto action = creature->moveAway(other->getPosition(), true))
       return {1.0, action.prepend([=](Creature* creature) {
@@ -432,28 +420,6 @@ class Fighter : public Behaviour {
       })};
     else
       return NoMove;
-  }
-
-  virtual double itemValue(const Item* item) override {
-    if (auto& effect = item->getEffect())
-      if (contains<EffectType>({
-            Effects::Lasting{LastingEffect::INVISIBLE},
-            Effects::Lasting{LastingEffect::SLOWED},
-            Effects::Lasting{LastingEffect::BLIND},
-            Effects::Lasting{LastingEffect::SLEEP},
-            Effects::Lasting{LastingEffect::POISON},
-            Effects::Lasting{LastingEffect::POISON_RESISTANT},
-            Effects::RemoveLasting{LastingEffect::POISON},
-            Effects::Escape{},
-            Effects::Lasting{LastingEffect::DAM_BONUS},
-            Effects::Lasting{LastingEffect::DEF_BONUS}},
-            *effect->effect))
-      return 1;
-    int damage = item->getModifier(AttrType::DAMAGE);
-    Item* best = getBestWeapon();
-    if (best && best != item && best->getModifier(AttrType::DAMAGE) >= damage)
-        return 0;
-    return (double)damage / 50;
   }
 
   MoveInfo getFireMove(Creature* enemy) {
@@ -499,7 +465,7 @@ class Fighter : public Behaviour {
         if (c->isEnemy(creature))
           ++numEnemies;
     if (numEnemies >= 3)
-      if (MoveInfo move = tryEffect(EffectType(Effects::CircularBlast{})))
+      if (MoveInfo move = tryEffect<Effects::CircularBlast>())
         return move;
     return NoMove;
   }
@@ -539,7 +505,7 @@ class Fighter : public Behaviour {
               destroyMove = move;
       }
     if (isFriendBetween) {
-      if (auto move = tryEffect(EffectType(Effects::DestroyWalls{})))
+      if (auto move = tryEffect<Effects::DestroyWalls>())
         return move;
       return destroyMove;
     } else
@@ -839,47 +805,6 @@ class Summoned : public GuardTarget {
   private:
   Creature* SERIAL(target) = nullptr;
   GlobalTime SERIAL(dieTime);
-};
-
-class Thief : public Behaviour {
-  public:
-  Thief(Creature* c) : Behaviour(c) {}
-
-  virtual MoveInfo getMove() override {
-    PROFILE;
-    if (!creature->isAffected(LastingEffect::STEALING_SKILL))
-      return NoMove;
-    for (const Creature* other : creature->getVisibleEnemies()) {
-      if (robbed.contains(other)) {
-        if (MoveInfo teleMove = tryEffect(EffectType(Effects::Escape{})))
-          return teleMove;
-        if (auto action = creature->moveAway(other->getPosition()))
-        return {1.0, action};
-      }
-    }
-    for (Position pos : creature->getPosition().neighbors8(Random)) {
-      const Creature* other = pos.getCreature();
-      if (other && !robbed.contains(other)) {
-        vector<Item*> allGold;
-        for (Item* it : other->getEquipment().getItems())
-          if (it->getClass() == ItemClass::GOLD)
-            allGold.push_back(it);
-        if (allGold.size() > 0)
-          if (auto action = creature->stealFrom(creature->getPosition().getDir(other->getPosition()), allGold))
-          return {1.0, action.append([=](Creature* creature) {
-            other->secondPerson(creature->getName().the() + " steals all your gold!");
-            robbed.insert(other);
-          })};
-      }
-    }
-    return NoMove;
-  }
-
-  SERIALIZATION_CONSTRUCTOR(Thief);
-  SERIALIZE_ALL(SUBCLASS(Behaviour), robbed);
-
-  private:
-  EntitySet<Creature> SERIAL(robbed);
 };
 
 class ByCollective : public Behaviour {
@@ -1404,7 +1329,6 @@ REGISTER_TYPE(GuardTarget);
 REGISTER_TYPE(GuardArea);
 REGISTER_TYPE(Summoned);
 REGISTER_TYPE(Wait);
-REGISTER_TYPE(Thief);
 REGISTER_TYPE(ByCollective);
 REGISTER_TYPE(ChooseRandom);
 REGISTER_TYPE(SingleTask);
@@ -1504,12 +1428,11 @@ MonsterAIFactory MonsterAIFactory::stayInLocation(Rectangle rect, bool moveRando
       vector<Behaviour*> actors {
           new AvoidFire(c),
           new EffectsAI(c),
-          new Thief(c),
           new Fighter(c),
           new GoldLust(c),
           new GuardArea(c, rect)
       };
-      vector<int> weights { 10, 5, 4, 3, 1, 1 };
+      vector<int> weights { 10, 5, 3, 1, 1 };
       if (moveRandomly) {
         actors.push_back(new MoveRandomly(c));
         weights.push_back(1);

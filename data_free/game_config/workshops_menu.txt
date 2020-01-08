@@ -22,16 +22,17 @@
   {
       {{Simple "Sword"}                 10       IRON 20}
       {{Simple "ChainArmor"}            30       IRON 40}
-      {item = {Simple "RedDragonArmor"}   work = 30 cost = IRON 40 requireIngredient = true }
-      {item = {Simple "BlackDragonArmor"} work = 30 cost = IRON 40 requireIngredient = true }
-      {item = {Simple "WhiteDragonArmor"} work = 30 cost = IRON 40 requireIngredient = true }
-      {item = {Simple "GreenDragonArmor"} work = 30 cost = IRON 40 requireIngredient = true }
+      {item = {Simple "RedDragonArmor"}   work = 30 cost = IRON 40 requireIngredient = "red_scales" }
+      {item = {Simple "BlackDragonArmor"} work = 30 cost = IRON 40 requireIngredient = "black_scales" }
+      {item = {Simple "WhiteDragonArmor"} work = 30 cost = IRON 40 requireIngredient = "white_scales" }
+      {item = {Simple "GreenDragonArmor"} work = 30 cost = IRON 40 requireIngredient = "green_scales" }
+      {item = {Simple "YellowDragonArmor"}work = 30 cost = IRON 40 requireIngredient = "yellow_scales" }
       {{Simple "IronHelm"}              8        IRON 16}
       {{Simple "IronBoots"}             12       IRON 24}
       {item = {Simple "CyclopsHelm"}
        work = 30 
        cost = IRON 40
-       requireIngredient = true
+       requireIngredient = "cyclops_testes"
       }
       {{Simple "IronGloves"}            3        IRON 2}
       {{Simple "IronShield"}            12       IRON 24}
@@ -66,9 +67,9 @@
       {{Potion Lasting MAGIC_VULNERABILITY}  6        GOLD 40      "advanced alchemy"}
       {{Potion Lasting INVISIBLE}            6        GOLD 20      "advanced alchemy"}
       {{Potion Heal SPIRIT}                  4        GOLD 20      "advanced alchemy"}
-      {item = {Potion IncreaseAttr DEFENSE 5} work = 20 cost = GOLD 100 requireIngredient = true }
-      {item = {Potion Lasting PLAGUE} work = 5 cost = GOLD 10 requireIngredient = true }
-      {item = {Potion Permanent POISON_RESISTANT} work = 20 cost = GOLD 80 requireIngredient = true }
+      {item = {Potion IncreaseAttr DEFENSE 5} work = 20 cost = GOLD 100 requireIngredient = "cyclops_brain" }
+      {item = {Potion Lasting PLAGUE} work = 5 cost = GOLD 10 requireIngredient = "zombie_brain" }
+      {item = {Potion Permanent POISON_RESISTANT} work = 20 cost = GOLD 80 requireIngredient = "hydra_tongue" }
       {{Simple "GoldPiece"}                           5        IRON 30      "alchemical conversion"       10}
       {{Simple "WoodPlank"}                           5        GOLD 10      "alchemical conversion"       10}
       {{Simple "IronOre"}                             5        GOLD 10      "alchemical conversion"       10}

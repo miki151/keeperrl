@@ -2076,7 +2076,7 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
       Position pos2 = currentPath->getNextMove(position);
       if (pos2.dist8(position).value_or(2) > 1)
         if (auto f = position.getFurniture(FurnitureLayer::MIDDLE))
-          if (f->getUsageType() == FurnitureUsageType::PORTAL)
+          if (f->hasUsageType(BuiltinUsageId::PORTAL))
             return applySquare(position, FurnitureLayer::MIDDLE);
       if (auto action = move(pos2, currentPath->getNextNextMove(position))) {
         if (flags.swapPosition || !pos2.getCreature())

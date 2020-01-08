@@ -20,6 +20,7 @@
 #include "enemy_info.h"
 #include "effect_type.h"
 #include "item_types.h"
+#include "furniture_usage.h"
 
 namespace cereal {
   namespace variant_detail {
@@ -86,4 +87,5 @@ namespace cereal {
   INST2(SettlementDetail::LayoutType_impl)
   INST2(AttackBehaviour_impl)
   INST2(LevelConnection::EnemyLevelInfo_impl)
+  INST2(FurnitureUsageType_impl)
 } // namespace cereal

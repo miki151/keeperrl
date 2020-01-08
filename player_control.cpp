@@ -1041,13 +1041,13 @@ vector<pair<vector<Item*>, Position>> PlayerControl::getItemUpgradesFor(const Wo
     for (auto& item : pos.getItems(ItemIndex::RUNE))
       if (auto& upgradeInfo = item->getUpgradeInfo())
         if (upgradeInfo->type == workshopItem.upgradeType) {
-          for (auto& existing : ret)
+          /*for (auto& existing : ret)
             if (existing.first[0]->getUpgradeInfo() == upgradeInfo) {
               existing.first.push_back(item);
               goto found;
-            }
+            }*/
           ret.push_back({{item}, pos});
-          found:;
+          //found:;
         }
   return ret;
 }
@@ -1055,7 +1055,7 @@ vector<pair<vector<Item*>, Position>> PlayerControl::getItemUpgradesFor(const Wo
 optional<pair<Item*, Position>> PlayerControl::getIngredientFor(const WorkshopItem& workshopItem) const {
   for (auto& pos : collective->getStoragePositions(StorageId::EQUIPMENT))
     for (auto& item : pos.getItems(ItemIndex::RUNE))
-      if (item->getIngredientFor() == workshopItem.type)
+      if (item->getIngredientType() == workshopItem.requireIngredient)
         return make_pair(item, pos);
   return none;
 }
@@ -1710,10 +1710,11 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         if (auto& obj = furniture->getViewObject())
           if (index.hasObject(obj->layer()))
             index.getObject(obj->layer()).setClickAction(FurnitureClick::getClickAction(*clickType, position, furniture));
-      if (furniture->getUsageType() == FurnitureUsageType::STUDY || CollectiveConfig::getWorkshopType(furniture->getType()))
+      if (furniture->hasUsageType(BuiltinUsageId::STUDY) ||
+          CollectiveConfig::getWorkshopType(furniture->getType()))
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
       if ((chosenWorkshop && chosenWorkshop == CollectiveConfig::getWorkshopType(furniture->getType())) ||
-          (chosenLibrary && furniture->getUsageType() == FurnitureUsageType::STUDY))
+          (chosenLibrary && furniture->hasUsageType(BuiltinUsageId::STUDY)))
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (Creature* c = getCreature(*draggedCreature))
@@ -2622,7 +2623,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
 
 void PlayerControl::onSquareClick(Position pos) {
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
-    if (furniture->getUsageType() == FurnitureUsageType::STAIRS) {
+    if (furniture->hasUsageType(BuiltinUsageId::STAIRS)) {
       auto otherLevel = getModel()->getLinkedLevel(pos.getLevel(), *pos.getLandingLink());
       if (getModel()->getMainLevels().contains(otherLevel)) {
         currentLevel = otherLevel;
@@ -2636,7 +2637,7 @@ void PlayerControl::onSquareClick(Position pos) {
       } else {
         if (auto workshopType = CollectiveConfig::getWorkshopType(furniture->getType()))
           setChosenWorkshop(*workshopType);
-        if (furniture->getUsageType() == FurnitureUsageType::STUDY)
+        if (furniture->hasUsageType(BuiltinUsageId::STUDY))
           setChosenLibrary(!chosenLibrary);
       }
     }

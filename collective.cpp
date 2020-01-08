@@ -1326,31 +1326,32 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
         if (increase > 0)
           c->increaseExpLevel(exp, increase);
       };
-      switch (*usage) {
-        case FurnitureUsageType::DEMON_RITUAL: {
-          vector<Creature*> toHeal;
-          for (auto c : getCreatures())
-            if (c->getBody().canHeal(HealthType::SPIRIT))
-              toHeal.push_back(c);
-          if (!toHeal.empty()) {
-            for (auto c : toHeal)
-              c->heal(double(efficiency) * 0.05 / toHeal.size());
-          } else
-            returnResource(CostInfo(ResourceId::DEMON_PIETY, int(efficiency)));
-          break;
+      if (auto id = usage->getReferenceMaybe<BuiltinUsageId>())
+        switch (*id) {
+          case BuiltinUsageId::DEMON_RITUAL: {
+            vector<Creature*> toHeal;
+            for (auto c : getCreatures())
+              if (c->getBody().canHeal(HealthType::SPIRIT))
+                toHeal.push_back(c);
+            if (!toHeal.empty()) {
+              for (auto c : toHeal)
+                c->heal(double(efficiency) * 0.05 / toHeal.size());
+            } else
+              returnResource(CostInfo(ResourceId::DEMON_PIETY, int(efficiency)));
+            break;
+          }
+          case BuiltinUsageId::TRAIN:
+            increaseLevel(ExperienceType::MELEE);
+            break;
+          case BuiltinUsageId::STUDY:
+            increaseLevel(ExperienceType::SPELL);
+            break;
+          case BuiltinUsageId::ARCHERY_RANGE:
+            increaseLevel(ExperienceType::ARCHERY);
+            break;
+          default:
+            break;
         }
-        case FurnitureUsageType::TRAIN:
-          increaseLevel(ExperienceType::MELEE);
-          break;
-        case FurnitureUsageType::STUDY:
-          increaseLevel(ExperienceType::SPELL);
-          break;
-        case FurnitureUsageType::ARCHERY_RANGE:
-          increaseLevel(ExperienceType::ARCHERY);
-          break;
-        default:
-          break;
-      }
     }
     if (auto workshopType = config->getWorkshopType(furniture->getType())) {
       auto& workshop = workshops->get(*workshopType);

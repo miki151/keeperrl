@@ -534,10 +534,10 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
             c->modViewObject().setColorVariant(*specialTrait.colorVariant);
         for (auto& trait1 : specialTrait.traits) {
           auto trait = transformBeforeApplying(trait1);
-          if (!specialTraits.contains(trait)) {
+          //if (!specialTraits.contains(trait)) {
             applySpecialTrait(trait, immigrants.back().get(), contentFactory);
             specialTraits.push_back(trait);
-          }
+          //}
         }
       }
   }

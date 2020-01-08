@@ -20,8 +20,6 @@ class ItemType {
   ItemType(const ItemTypeVariant&);
   ItemType();
   STRUCT_DECLARATIONS(ItemType)
-  bool operator == (const ItemType&) const;
-  bool operator != (const ItemType&) const;
 
   ItemType& setPrefixChance(double chance);
 

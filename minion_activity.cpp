@@ -325,12 +325,14 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
 optional<TimeInterval> MinionActivities::getDuration(const Creature* c, MinionActivity task) {
   switch (task) {
     case MinionActivity::COPULATE:
-    case MinionActivity::EAT:
     case MinionActivity::IDLE:
     case MinionActivity::BE_WHIPPED:
     case MinionActivity::BE_TORTURED:
     case MinionActivity::SLEEP: return none;
-    default: return TimeInterval((int) 500 + 250 * c->getMorale());
+    case MinionActivity::EAT:
+      return TimeInterval((int) 30 + Random.get(-10, 10));
+    default:
+      return TimeInterval((int) 500 + 250 * c->getMorale());
   }
 }
 

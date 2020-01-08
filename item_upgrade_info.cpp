@@ -19,14 +19,6 @@ vector<string> ItemUpgradeInfo::getDescription(const ContentFactory* factory) co
   return ret;
 }
 
-bool ItemUpgradeInfo::operator ==(const ItemUpgradeInfo& o) const {
-  return type == o.type && prefix == o.prefix;
-}
-
-bool ItemUpgradeInfo::operator !=(const ItemUpgradeInfo& o) const {
-  return !(*this == o);
-}
-
 SERIALIZE_DEF(ItemUpgradeInfo, type, prefix)
 
 #include "pretty_archive.h"

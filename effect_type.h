@@ -7,6 +7,7 @@
 #include "destroy_action.h"
 #include "intrinsic_attack.h"
 #include "spell_id.h"
+#include "sound.h"
 
 RICH_ENUM(FilterType, ALLY, ENEMY);
 
@@ -17,9 +18,8 @@ RICH_ENUM(FilterType, ALLY, ENEMY);
 
 
 #define SIMPLE_EFFECT(Name) \
-  struct Name { \
+  struct Name : public EmptyStruct<Name> { \
     EFFECT_TYPE_INTERFACE;\
-    COMPARE_ALL()\
   }
 
 namespace Effects {
@@ -28,29 +28,29 @@ SIMPLE_EFFECT(Escape);
 SIMPLE_EFFECT(Teleport);
 struct Heal {
   EFFECT_TYPE_INTERFACE;
-  HealthType healthType;
-  COMPARE_ALL(healthType)
+  HealthType SERIAL(healthType);
+  SERIALIZE_ALL(healthType)
 };
 SIMPLE_EFFECT(Fire);
 SIMPLE_EFFECT(Ice);
 SIMPLE_EFFECT(DestroyEquipment);
 struct DestroyWalls {
   EFFECT_TYPE_INTERFACE;
-  DestroyAction::Type action;
-  COMPARE_ALL(action)
+  DestroyAction::Type SERIAL(action);
+  SERIALIZE_ALL(action)
 };
 struct Enhance {
   EFFECT_TYPE_INTERFACE;
-  ItemUpgradeType type;
-  int amount;
+  ItemUpgradeType SERIAL(type);
+  int SERIAL(amount);
   const char* typeAsString() const;
   const char* amountAs(const char* positive, const char* negative) const;
-  COMPARE_ALL(type, amount)
+  SERIALIZE_ALL(type, amount)
 };
 struct EmitPoisonGas {
   EFFECT_TYPE_INTERFACE;
-  double amount = 0.8;
-  COMPARE_ALL(amount)
+  double SERIAL(amount) = 0.8;
+  SERIALIZE_ALL(amount)
 };
 SIMPLE_EFFECT(CircularBlast);
 SIMPLE_EFFECT(Deception);
@@ -58,114 +58,114 @@ struct Summon {
   EFFECT_TYPE_INTERFACE;
   Summon(CreatureId id, Range c) : creature(id), count(c) {}
   Summon() {}
-  CreatureId creature;
-  Range count;
-  optional<int> ttl;
-  COMPARE_ALL(creature, count, ttl)
+  CreatureId SERIAL(creature);
+  Range SERIAL(count);
+  optional<int> SERIAL(ttl);
+  SERIALIZE_ALL(creature, count, ttl)
 };
 struct AssembledMinion {
   EFFECT_TYPE_INTERFACE;
-  CreatureId creature;
-  COMPARE_ALL(creature)
+  CreatureId SERIAL(creature);
+  SERIALIZE_ALL(creature)
 };
 struct SummonEnemy {
   EFFECT_TYPE_INTERFACE;
   SummonEnemy(CreatureId id, Range c) : creature(id), count(c) {}
   SummonEnemy() {}
-  CreatureId creature;
-  Range count;
-  optional<int> ttl;
-  COMPARE_ALL(creature, count, ttl)
+  CreatureId SERIAL(creature);
+  Range SERIAL(count);
+  optional<int> SERIAL(ttl);
+  SERIALIZE_ALL(creature, count, ttl)
 };
 SIMPLE_EFFECT(SummonElement);
 SIMPLE_EFFECT(Acid);
 struct Alarm {
   EFFECT_TYPE_INTERFACE;
-  bool silent = false;
-  COMPARE_ALL(silent)
+  bool SERIAL(silent) = false;
+  SERIALIZE_ALL(silent)
 };
 SIMPLE_EFFECT(TeleEnemies);
 SIMPLE_EFFECT(SilverDamage);
 
 struct Lasting {
   EFFECT_TYPE_INTERFACE;
-  LastingEffect lastingEffect;
-  COMPARE_ALL(lastingEffect)
+  LastingEffect SERIAL(lastingEffect);
+  SERIALIZE_ALL(lastingEffect)
 };
 
 struct RemoveLasting {
   EFFECT_TYPE_INTERFACE;
-  LastingEffect lastingEffect;
-  COMPARE_ALL(lastingEffect)
+  LastingEffect SERIAL(lastingEffect);
+  SERIALIZE_ALL(lastingEffect)
 };
 struct Permanent {
   EFFECT_TYPE_INTERFACE;
-  LastingEffect lastingEffect;
-  COMPARE_ALL(lastingEffect)
+  LastingEffect SERIAL(lastingEffect);
+  SERIALIZE_ALL(lastingEffect)
 };
 struct RemovePermanent {
   EFFECT_TYPE_INTERFACE;
-  LastingEffect lastingEffect;
-  COMPARE_ALL(lastingEffect)
+  LastingEffect SERIAL(lastingEffect);
+  SERIALIZE_ALL(lastingEffect)
 };
 struct PlaceFurniture {
   EFFECT_TYPE_INTERFACE;
-  FurnitureType furniture;
-  COMPARE_ALL(furniture)
+  FurnitureType SERIAL(furniture);
+  SERIALIZE_ALL(furniture)
 };
 struct Damage {
   EFFECT_TYPE_INTERFACE;
-  AttrType attr;
-  AttackType attackType;
-  COMPARE_ALL(attr, attackType)
+  AttrType SERIAL(attr);
+  AttackType SERIAL(attackType);
+  SERIALIZE_ALL(attr, attackType)
 };
 struct IncreaseAttr {
   EFFECT_TYPE_INTERFACE;
-  AttrType attr;
-  int amount;
+  AttrType SERIAL(attr);
+  int SERIAL(amount);
   const char* get(const char* ifIncrease, const char* ifDecrease) const;
-  COMPARE_ALL(attr, amount)
+  SERIALIZE_ALL(attr, amount)
 };
 struct InjureBodyPart {
   EFFECT_TYPE_INTERFACE;
-  BodyPart part;
-  COMPARE_ALL(part)
+  BodyPart SERIAL(part);
+  SERIALIZE_ALL(part)
 };
 struct LoseBodyPart {
   EFFECT_TYPE_INTERFACE;
-  BodyPart part;
-  COMPARE_ALL(part)
+  BodyPart SERIAL(part);
+  SERIALIZE_ALL(part)
 };
 struct AddBodyPart {
   EFFECT_TYPE_INTERFACE;
-  BodyPart part;
-  int count;
-  optional<ItemType> attack;
-  COMPARE_ALL(part, count, attack)
+  BodyPart SERIAL(part);
+  int SERIAL(count);
+  optional<ItemType> SERIAL(attack);
+  SERIALIZE_ALL(part, count, attack)
 };
 SIMPLE_EFFECT(MakeHumanoid);
 struct Area {
   EFFECT_TYPE_INTERFACE;
-  int radius;
-  HeapAllocated<Effect> effect;
-  COMPARE_ALL(radius, effect)
+  int SERIAL(radius);
+  HeapAllocated<Effect> SERIAL(effect);
+  SERIALIZE_ALL(radius, effect)
 };
 struct CustomArea {
   EFFECT_TYPE_INTERFACE;
-  HeapAllocated<Effect> effect;
-  vector<Vec2> positions;
+  HeapAllocated<Effect> SERIAL(effect);
+  vector<Vec2> SERIAL(positions);
   vector<Position> getTargetPos(const Creature* attacker, Position targetPos) const;
-  COMPARE_ALL(effect, positions)
+  SERIALIZE_ALL(effect, positions)
 };
 struct RegrowBodyPart {
   EFFECT_TYPE_INTERFACE;
-  int maxCount;
-  COMPARE_ALL(maxCount)
+  int SERIAL(maxCount);
+  SERIALIZE_ALL(maxCount)
 };
 struct Suicide {
   EFFECT_TYPE_INTERFACE;
-  MsgType message;
-  COMPARE_ALL(message)
+  MsgType SERIAL(message);
+  SERIALIZE_ALL(message)
 };
 SIMPLE_EFFECT(DoubleTrouble);
 SIMPLE_EFFECT(Blast);
@@ -174,62 +174,74 @@ SIMPLE_EFFECT(Shove);
 SIMPLE_EFFECT(SwapPosition);
 struct ReviveCorpse {
   EFFECT_TYPE_INTERFACE;
-  vector<CreatureId> summoned;
-  int ttl;
-  COMPARE_ALL(summoned, ttl)
+  vector<CreatureId> SERIAL(summoned);
+  int SERIAL(ttl);
+  SERIALIZE_ALL(summoned, ttl)
 };
 struct Filter {
   EFFECT_TYPE_INTERFACE;
   bool applies(bool isEnemy) const;
-  FilterType filter;
-  HeapAllocated<Effect> effect;
-  COMPARE_ALL(filter, effect)
+  FilterType SERIAL(filter);
+  HeapAllocated<Effect> SERIAL(effect);
+  SERIALIZE_ALL(filter, effect)
 };
 SIMPLE_EFFECT(Wish);
 struct Caster {
   EFFECT_TYPE_INTERFACE;
-  HeapAllocated<Effect> effect;
-  COMPARE_ALL(effect)
+  HeapAllocated<Effect> SERIAL(effect);
+  SERIALIZE_ALL(effect)
 };
 struct Chain {
   EFFECT_TYPE_INTERFACE;
-  vector<Effect> effects;
-  COMPARE_ALL(effects)
+  vector<Effect> SERIAL(effects);
+  SERIALIZE_ALL(effects)
 };
 struct Message {
   EFFECT_TYPE_INTERFACE;
-  string text;
-  COMPARE_ALL(text)
+  string SERIAL(text);
+  SERIALIZE_ALL(text)
+};
+struct CreatureMessage {
+  EFFECT_TYPE_INTERFACE;
+  string SERIAL(secondPerson);
+  string SERIAL(thirdPerson);
+  SERIALIZE_ALL(secondPerson, thirdPerson)
 };
 struct GrantAbility {
   EFFECT_TYPE_INTERFACE;
-  SpellId id;
-  COMPARE_ALL(id)
+  SpellId SERIAL(id);
+  SERIALIZE_ALL(id)
 };
 struct IncreaseMorale {
   EFFECT_TYPE_INTERFACE;
-  double amount;
-  COMPARE_ALL(amount)
+  double SERIAL(amount);
+  SERIALIZE_ALL(amount)
 };
 struct Chance {
   EFFECT_TYPE_INTERFACE;
-  double value;
-  HeapAllocated<Effect> effect;
-  COMPARE_ALL(value, effect)
+  double SERIAL(value);
+  HeapAllocated<Effect> SERIAL(effect);
+  SERIALIZE_ALL(value, effect)
 };
 SIMPLE_EFFECT(TriggerTrap);
 struct AnimateItems {
   EFFECT_TYPE_INTERFACE;
-  int maxCount;
-  int radius;
-  Range time;
-  COMPARE_ALL(maxCount, radius, time)
+  int SERIAL(maxCount);
+  int SERIAL(radius);
+  Range SERIAL(time);
+  SERIALIZE_ALL(maxCount, radius, time)
+};
+struct SoundEffect {
+  EFFECT_TYPE_INTERFACE;
+  Sound SERIAL(sound);
+  SERIALIZE_ALL(sound)
 };
 MAKE_VARIANT2(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, Enhance, Suicide, IncreaseAttr,
     EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
     Lasting, RemoveLasting, Permanent, RemovePermanent, PlaceFurniture, Damage, InjureBodyPart, LoseBodyPart, RegrowBodyPart,
     AddBodyPart, DestroyWalls, Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, Filter, SummonEnemy, Wish,
-    Chain, Caster, IncreaseMorale, Message, Chance, AssembledMinion, TriggerTrap, AnimateItems, MakeHumanoid, GrantAbility);
+    Chain, Caster, IncreaseMorale, Message, Chance, AssembledMinion, TriggerTrap, AnimateItems, MakeHumanoid, GrantAbility,
+    CreatureMessage, SoundEffect);
 }
 
 class EffectType : public Effects::EffectType {

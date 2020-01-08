@@ -144,7 +144,7 @@ static void usePortal(Position pos, Creature* c) {
   c->you(MsgType::ENTER_PORTAL, "");
   if (auto otherPos = pos.getOtherPortal())
     for (auto f : otherPos->getFurniture())
-      if (f->getUsageType() == FurnitureUsageType::PORTAL) {
+      if (f->hasUsageType(BuiltinUsageId::PORTAL)) {
         if (pos.canMoveCreature(*otherPos)) {
           pos.moveCreature(*otherPos, true);
           return;
@@ -195,126 +195,135 @@ static void sitOnThrone(Position pos, WConstFurniture furniture, Creature* c) {
 
 void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurniture furniture, Creature* c) {
   CHECK(c != nullptr);
-  switch (type) {
-    case FurnitureUsageType::CHEST:
-      useChest(pos, furniture, c,
-          ChestInfo {
-              FurnitureType("OPENED_CHEST"),
-              ChestInfo::CreatureInfo {
-                  CreatureGroup::singleType(TribeId::getPest(), CreatureId("RAT")),
-                  10,
-                  Random.get(3, 6),
-                  "It's full of rats!",
-              },
-              ChestInfo::ItemInfo {
-                  ItemListId("chest"),
-                  "There is an item inside"
-              }
-          });
-      break;
-    case FurnitureUsageType::COFFIN:
-      useChest(pos, furniture, c,
-          ChestInfo {
-              FurnitureType("OPENED_COFFIN"),
-              none,
-              ChestInfo::ItemInfo {
-                  ItemListId("chest"),
-                  "There is a rotting corpse inside. You find an item."
-              }
-          });
-      break;
-    case FurnitureUsageType::VAMPIRE_COFFIN:
-      useChest(pos, furniture, c,
-          ChestInfo {
-              FurnitureType("OPENED_COFFIN"),
-              ChestInfo::CreatureInfo {
-                  CreatureGroup::singleType(TribeId::getMonster(), CreatureId("VAMPIRE_LORD")), 1, 1,
-                  "There is a rotting corpse inside. The corpse is alive!"
-              },
-              none
-          });
-      break;
-    case FurnitureUsageType::FOUNTAIN: {
-      c->secondPerson("You drink from the fountain.");
-      c->thirdPerson(c->getName().the() + " drinks from the fountain.");
-      auto itemList = pos.getGame()->getContentFactory()->itemFactory.get(ItemListId("potions"));
-      PItem potion = itemList.random(pos.getGame()->getContentFactory()).getOnlyElement();
-      potion->apply(c);
-      break;
-    }
-    case FurnitureUsageType::SLEEP:
-      Effects::Lasting{LastingEffect::SLEEP}.applyToCreature(c);
-      break;
-    case FurnitureUsageType::KEEPER_BOARD:
-      c->getGame()->handleMessageBoard(pos, c);
-      break;
-    case FurnitureUsageType::CROPS:
-      if (Random.roll(3)) {
-        c->thirdPerson(c->getName().the() + " scythes the field.");
-        c->secondPerson("You scythe the field.");
+  type.visit([&] (BuiltinUsageId id) {
+    switch (id) {
+      case BuiltinUsageId::CHEST:
+        useChest(pos, furniture, c,
+            ChestInfo {
+                FurnitureType("OPENED_CHEST"),
+                ChestInfo::CreatureInfo {
+                    CreatureGroup::singleType(TribeId::getPest(), CreatureId("RAT")),
+                    10,
+                    Random.get(3, 6),
+                    "It's full of rats!",
+                },
+                ChestInfo::ItemInfo {
+                    ItemListId("chest"),
+                    "There is an item inside"
+                }
+            });
+        break;
+      case BuiltinUsageId::COFFIN:
+        useChest(pos, furniture, c,
+            ChestInfo {
+                FurnitureType("OPENED_COFFIN"),
+                none,
+                ChestInfo::ItemInfo {
+                    ItemListId("chest"),
+                    "There is a rotting corpse inside. You find an item."
+                }
+            });
+        break;
+      case BuiltinUsageId::VAMPIRE_COFFIN:
+        useChest(pos, furniture, c,
+            ChestInfo {
+                FurnitureType("OPENED_COFFIN"),
+                ChestInfo::CreatureInfo {
+                    CreatureGroup::singleType(TribeId::getMonster(), CreatureId("VAMPIRE_LORD")), 1, 1,
+                    "There is a rotting corpse inside. The corpse is alive!"
+                },
+                none
+            });
+        break;
+      case BuiltinUsageId::FOUNTAIN: {
+        c->secondPerson("You drink from the fountain.");
+        c->thirdPerson(c->getName().the() + " drinks from the fountain.");
+        auto itemList = pos.getGame()->getContentFactory()->itemFactory.get(ItemListId("potions"));
+        PItem potion = itemList.random(pos.getGame()->getContentFactory()).getOnlyElement();
+        potion->apply(c);
+        break;
       }
-      break;
-    case FurnitureUsageType::STAIRS:
-      c->getLevel()->changeLevel(*pos.getLandingLink(), c);
-      break;
-    case FurnitureUsageType::TIE_UP:
-      c->addEffect(LastingEffect::TIED_UP, 100_visible);
-      break;
-    case FurnitureUsageType::TRAIN:
-      c->addSound(SoundId::MISSED_ATTACK);
-      break;
-    case FurnitureUsageType::PORTAL:
-      usePortal(pos, c);
-      break;
-    case FurnitureUsageType::SIT_ON_THRONE:
-      sitOnThrone(pos, furniture, c);
-      break;
-    case FurnitureUsageType::DESECRATE:
-      desecrate(pos, furniture, c);
-      break;
-    case FurnitureUsageType::DEMON_RITUAL:
-    case FurnitureUsageType::STUDY:
-    case FurnitureUsageType::ARCHERY_RANGE:
-      break;
-  }
+      case BuiltinUsageId::SLEEP:
+        Effects::Lasting{LastingEffect::SLEEP}.applyToCreature(c);
+        break;
+      case BuiltinUsageId::KEEPER_BOARD:
+        c->getGame()->handleMessageBoard(pos, c);
+        break;
+      case BuiltinUsageId::CROPS:
+        if (Random.roll(3)) {
+          c->thirdPerson(c->getName().the() + " scythes the field.");
+          c->secondPerson("You scythe the field.");
+        }
+        break;
+      case BuiltinUsageId::STAIRS:
+        c->getLevel()->changeLevel(*pos.getLandingLink(), c);
+        break;
+      case BuiltinUsageId::TIE_UP:
+        c->addEffect(LastingEffect::TIED_UP, 100_visible);
+        break;
+      case BuiltinUsageId::TRAIN:
+        c->addSound(SoundId::MISSED_ATTACK);
+        break;
+      case BuiltinUsageId::PORTAL:
+        usePortal(pos, c);
+        break;
+      case BuiltinUsageId::SIT_ON_THRONE:
+        sitOnThrone(pos, furniture, c);
+        break;
+      case BuiltinUsageId::DESECRATE:
+        desecrate(pos, furniture, c);
+        break;
+      case BuiltinUsageId::DEMON_RITUAL:
+      case BuiltinUsageId::STUDY:
+      case BuiltinUsageId::ARCHERY_RANGE:
+        break;
+    }
+  },
+  [&](const Effect& effect) {
+    effect.apply(c->getPosition());
+  });
 }
 
 bool FurnitureUsage::canHandle(FurnitureUsageType type, const Creature* c) {
-  switch (type) {
-    case FurnitureUsageType::KEEPER_BOARD:
-    case FurnitureUsageType::FOUNTAIN:
-    case FurnitureUsageType::VAMPIRE_COFFIN:
-    case FurnitureUsageType::COFFIN:
-    case FurnitureUsageType::CHEST:
-      return c->getBody().isHumanoid();
-    default:
-      return true;
-  }
+  if (auto id = type.getReferenceMaybe<BuiltinUsageId>())
+    switch (*id) {
+      case BuiltinUsageId::KEEPER_BOARD:
+      case BuiltinUsageId::FOUNTAIN:
+      case BuiltinUsageId::VAMPIRE_COFFIN:
+      case BuiltinUsageId::COFFIN:
+      case BuiltinUsageId::CHEST:
+        return c->getBody().isHumanoid();
+      default:
+        return true;
+    }
+  return true;
 }
 
 string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitureName) {
-  switch (type) {
-    case FurnitureUsageType::STAIRS: return "use " + furnitureName;
-    case FurnitureUsageType::COFFIN:
-    case FurnitureUsageType::VAMPIRE_COFFIN:
-    case FurnitureUsageType::CHEST: return "open " + furnitureName;
-    case FurnitureUsageType::FOUNTAIN: return "drink from " + furnitureName;
-    case FurnitureUsageType::SLEEP: return "sleep in " + furnitureName;
-    case FurnitureUsageType::KEEPER_BOARD: return "view " + furnitureName;
-    case FurnitureUsageType::PORTAL: return "enter " + furnitureName;
-    case FurnitureUsageType::SIT_ON_THRONE: return "sit on " + furnitureName;
-    case FurnitureUsageType::DESECRATE: return "desecrate " + furnitureName;
-    default: break;
-  }
-  return "";
+  if (auto id = type.getReferenceMaybe<BuiltinUsageId>())
+    switch (*id) {
+      case BuiltinUsageId::STAIRS: return "use " + furnitureName;
+      case BuiltinUsageId::COFFIN:
+      case BuiltinUsageId::VAMPIRE_COFFIN:
+      case BuiltinUsageId::CHEST: return "open " + furnitureName;
+      case BuiltinUsageId::FOUNTAIN: return "drink from " + furnitureName;
+      case BuiltinUsageId::SLEEP: return "sleep in " + furnitureName;
+      case BuiltinUsageId::KEEPER_BOARD: return "view " + furnitureName;
+      case BuiltinUsageId::PORTAL: return "enter " + furnitureName;
+      case BuiltinUsageId::SIT_ON_THRONE: return "sit on " + furnitureName;
+      case BuiltinUsageId::DESECRATE: return "desecrate " + furnitureName;
+      default: break;
+    }
+  return "use " + furnitureName;
 }
 
 void FurnitureUsage::beforeRemoved(FurnitureUsageType type, Position pos) {
-  switch (type) {
-    case FurnitureUsageType::PORTAL:
-      pos.removePortal();
-      break;
-    default:
-      break;
-  }
+  if (auto id = type.getReferenceMaybe<BuiltinUsageId>())
+    switch (*id) {
+      case BuiltinUsageId::PORTAL:
+        pos.removePortal();
+        break;
+      default:
+        break;
+    }
 }

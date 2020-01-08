@@ -73,14 +73,6 @@ ItemType::ItemType(const ItemTypeVariant& v) : type(v) {
 
 ItemType::ItemType() {}
 
-bool ItemType::operator == (const ItemType& t) const {
-  return t.type == type;
-}
-
-bool ItemType::operator != (const ItemType& t) const {
-  return !(*this == t);
-}
-
 ItemType& ItemType::setPrefixChance(double chance) {
   prefixChance = chance;
   return *this;
@@ -251,8 +243,8 @@ PItem ItemType::get(const ContentFactory* factory) const {
     if (Random.chance(attributes.variationChance) && mod > 0)
       mod = max(1, mod + Random.get(-var, var + 1));
   }
-  if (attributes.ingredientFor)
-    attributes.description = "Ingredient for " + attributes.ingredientFor->get(factory)->getName();
+  if (attributes.ingredientType)
+    attributes.description = "Special crafting ingredient";
   if (!attributes.genPrefixes.empty() && Random.chance(prefixChance))
     applyPrefix(factory, Random.choose(attributes.genPrefixes), attributes);
   return type->visit(

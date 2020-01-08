@@ -15,6 +15,7 @@
 #include "effect.h"
 #include "creature_id.h"
 #include "fx_variant_name.h"
+#include "furniture_usage.h"
 
 class TribeId;
 class Creature;
@@ -28,6 +29,7 @@ class FurnitureDroppedItems;
 class ViewObject;
 class MovementSet;
 class Effect;
+class FurnitureUsageType;
 
 RICH_ENUM(
     BurnsDownMessage,
@@ -87,6 +89,7 @@ class Furniture : public OwnedObject<Furniture> {
   void use(Position, Creature*) const;
   bool canUse(const Creature*) const;
   optional<FurnitureUsageType> getUsageType() const;
+  bool hasUsageType(BuiltinUsageId) const;
   TimeInterval getUsageTime() const;
   optional<FurnitureClickType> getClickType() const;
   optional<FurnitureTickType> getTickType() const;

@@ -36,6 +36,7 @@ class Tutorial;
 class MessageBuffer;
 class UnknownLocations;
 class DungeonLevel;
+class FurnitureUsageType;
 
 class Player : public Controller, public CreatureView, public EventListener<Player> {
   public:

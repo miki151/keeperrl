@@ -38,8 +38,6 @@ class Effect {
   Effect& operator = (Effect&&);
   ~Effect();
 
-  bool operator == (const Effect&) const;
-  bool operator != (const Effect&) const;
   template <class Archive>
   void serialize(Archive&, const unsigned int);
 

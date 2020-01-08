@@ -29,7 +29,7 @@ void ItemAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(OPTION(applyTime), NAMED(ownedEffect), OPTION(maxUpgrades), OPTION(fragile), NAMED(effect), OPTION(uses), OPTION(usedUpMsg));
   ar(OPTION(displayUses), OPTION(modifiers), NAMED(shortName), OPTION(equipedEffect), NAMED(upgradeInfo), OPTION(effectDescription));
   ar(NAMED(applyMsgFirstPerson), NAMED(applyMsgThirdPerson), NAMED(applySound), NAMED(rangedWeapon), OPTION(weaponInfo));
-  ar(OPTION(prefixes), OPTION(genPrefixes), NAMED(ingredientFor), OPTION(modifierVariation), OPTION(variationChance), OPTION(wishedCount));
+  ar(OPTION(prefixes), OPTION(genPrefixes), NAMED(ingredientType), OPTION(modifierVariation), OPTION(variationChance), OPTION(wishedCount));
   ar(NAMED(automatonPart));
 }
 

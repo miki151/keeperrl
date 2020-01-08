@@ -276,10 +276,10 @@ ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Posit
     Position pos(v, level);
     vector<Vec2> ret = Vec2::directions8();
     if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
-      if (f->getUsageType() == FurnitureUsageType::PORTAL)
+      if (f->hasUsageType(BuiltinUsageId::PORTAL))
         if (auto otherPos = pos.getOtherPortal())
           if (auto f2 = otherPos->getFurniture(FurnitureLayer::MIDDLE))
-            if (f2->getUsageType() == FurnitureUsageType::PORTAL)
+            if (f2->hasUsageType(BuiltinUsageId::PORTAL))
               ret.push_back(otherPos->getCoord() - v);
     return ret;
   };

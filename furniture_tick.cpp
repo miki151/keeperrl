@@ -141,7 +141,7 @@ void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furn
       furniture->getViewObject()->setColorVariant(Color::WHITE);
       if (auto otherPos = pos.getOtherPortal())
         for (auto f : otherPos->modFurniture())
-          if (f->getUsageType() == FurnitureUsageType::PORTAL) {
+          if (f->hasUsageType(BuiltinUsageId::PORTAL)) {
             auto color = getPortalColor(*pos.getPortalIndex());
             furniture->getViewObject()->setColorVariant(color);
             f->getViewObject()->setColorVariant(color);

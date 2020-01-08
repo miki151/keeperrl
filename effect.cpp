@@ -808,6 +808,18 @@ string Effects::Message::getDescription(const ContentFactory*) const {
   return text;
 }
 
+void Effects::CreatureMessage::applyToCreature(Creature* c, Creature* attacker) const {
+  c->verb(secondPerson, thirdPerson);
+}
+
+string Effects::CreatureMessage::getName(const ContentFactory*) const {
+  return "message";
+}
+
+string Effects::CreatureMessage::getDescription(const ContentFactory*) const {
+  return "Custom message";
+}
+
 void Effects::GrantAbility::applyToCreature(Creature* c, Creature* attacker) const {
   c->getSpellMap().add(*c->getGame()->getContentFactory()->getCreatures().getSpell(id), ExperienceType::MELEE, 0);
 }
@@ -985,6 +997,17 @@ string Effects::AnimateItems::getDescription(const ContentFactory*) const {
   return "Animates up to " + toString(maxCount) + " weapons from the surroundings";
 }
 
+void Effects::SoundEffect::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effects::SoundEffect::getName(const ContentFactory*) const {
+  return "sound effect";
+}
+
+string Effects::SoundEffect::getDescription(const ContentFactory*) const {
+  return "Makes a real sound";
+}
+
 bool Effects::Filter::applies(bool isEnemy) const {
   switch (filter) {
     case FilterType::ALLY:
@@ -1046,14 +1069,6 @@ Effect::~Effect() {
 Effect& Effect::operator =(Effect&&) = default;
 
 Effect& Effect::operator =(const Effect&) = default;
-
-bool Effect::operator ==(const Effect& o) const {
-  return o.effect == effect;
-}
-
-bool Effect::operator !=(const Effect& o) const {
-  return !(*this == o);
-}
 
 void Effect::apply(Position pos, Creature* attacker) const {
   if (auto c = pos.getCreature()) {
@@ -1206,6 +1221,9 @@ void Effect::apply(Position pos, Creature* attacker) const {
           for (auto c : Effect::summonCreatures(v, makeVec(std::move(creature))))
             c->addEffect(LastingEffect::SUMMONED, TimeInterval{Random.get(m.time)}, false);
         }
+      },
+      [&](const Effects::SoundEffect& e) {
+        pos.addSound(e.sound);
       }
   );
 }

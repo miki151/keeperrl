@@ -142,6 +142,8 @@
   {
     { Furniture {{ "PIGSTY" }     WOOD 5 }                       "Pigsty"            "Living"
         "" 0 {TechId "pig breeding"}}
+    { Furniture {{ "DINING_TABLE" }WOOD 5 }                      "Dining table"      "Living"
+        "" 0 {}}
   }
 
   "coffins"

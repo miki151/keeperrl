@@ -650,7 +650,7 @@
     itemClass = OTHER
     weight = 5
     price = 100
-    ingredientFor = {Simple "RedDragonArmor"}
+    ingredientType = "red_scales"
   }
 "RedDragonArmor" inherit "ChainArmor"
   {
@@ -673,7 +673,7 @@
     itemClass = OTHER
     weight = 5
     price = 100
-    ingredientFor = {Simple "BlackDragonArmor"}
+    ingredientType = "black_scales"
   }
 "BlackDragonArmor" inherit "ChainArmor"
   {
@@ -696,7 +696,7 @@
     itemClass = OTHER
     weight = 5
     price = 100
-    ingredientFor = {Simple "WhiteDragonArmor"}
+    ingredientType = "white_scales"
   }
 "WhiteDragonArmor" inherit "ChainArmor"
   {
@@ -719,7 +719,7 @@
     itemClass = OTHER
     weight = 5
     price = 100
-    ingredientFor = {Simple "YellowDragonArmor"}
+    ingredientType = "yellow_scales"
   }
 "YellowDragonArmor" inherit "ChainArmor"
   {
@@ -742,7 +742,7 @@
     itemClass = OTHER
     weight = 5
     price = 100
-    ingredientFor = {Simple "GreenDragonArmor"}
+    ingredientType = "green_scales"
   }
 "GreenDragonArmor" inherit "ChainArmor"
   {
@@ -801,7 +801,7 @@
     itemClass = OTHER
     weight = 15
     price = 100
-    ingredientFor = {Potion Permanent POISON_RESISTANT}
+    ingredientType = "hydra_tongue"
   }
 "ZombieBrain"
   {
@@ -810,7 +810,7 @@
     itemClass = OTHER
     weight = 2
     price = 20
-    ingredientFor = {Potion Lasting PLAGUE}
+    ingredientType = "zombie_brain"
   }
 "CyclopsBrain"
   {
@@ -819,7 +819,7 @@
     itemClass = OTHER
     weight = 5
     price = 50
-    ingredientFor = {Potion IncreaseAttr DEFENSE 5}
+    ingredientType = "cyclops_brain"
   }
 "CyclopsTesticles"
   {
@@ -829,7 +829,7 @@
     itemClass = OTHER
     weight = 5
     price = 50
-    ingredientFor = {Simple "CyclopsHelm"}
+    ingredientType = "cyclops_testes"
   }
 "CyclopsHelm" inherit "IronHelm"
   {
