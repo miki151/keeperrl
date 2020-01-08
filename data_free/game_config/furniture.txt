@@ -114,7 +114,7 @@
 {
   name = "dining table"
   usageFX = none
-  usageType = Effect Lasting SATIATED
+  usageType = UsageEffect "eat from" Lasting SATIATED
 }
 "FURNACE"
 {
@@ -197,7 +197,7 @@
 {
   name = "beast cage"
   viewId = { "beast_cage" }
-  usageType = BuiltinUsageId SLEEP
+  usageType = UsageEffect "sleep in" Lasting SLEEP
   tickType = BED
   canHideHere = true
   fire = 50
@@ -209,7 +209,7 @@
 {
   name = "basic bed"
   viewId = { "bed1" }
-  usageType = BuiltinUsageId SLEEP
+  usageType = UsageEffect "sleep in" Lasting SLEEP
   tickType = BED
   canHideHere = true
   fire = 50
@@ -221,7 +221,7 @@
 {
   name = "fine bed"
   viewId = { "bed2" }
-  usageType = BuiltinUsageId SLEEP
+  usageType = UsageEffect "sleep in" Lasting SLEEP
   tickType = BED
   canHideHere = true
   fire = 50
@@ -235,7 +235,7 @@
 {
   name = "luxurious bed"
   viewId = { "bed3" }
-  usageType = BuiltinUsageId SLEEP
+  usageType = UsageEffect "sleep in" Lasting SLEEP
   tickType = BED
   canHideHere = true
   luxury = 0.7
@@ -276,7 +276,7 @@
   name = "prison"
   viewId = { "prison" }
   tickType = BED
-  usageType = BuiltinUsageId SLEEP
+  usageType = UsageEffect "sleep in" Lasting SLEEP
   bedType = PRISON
   layer = FLOOR
 }
@@ -521,7 +521,21 @@
   viewId = { "fountain" }
   canHideHere = true
   luxury = 0.7
-  usageType = BuiltinUsageId FOUNTAIN
+  usageType = UsageEffect "drink from"
+      Chain {
+        CreatureMessage "take a sip" "takes a sip"
+        ChooseRandom {
+          Heal FLESH
+          Lasting SLEEP
+          Lasting SLOWED
+          Lasting BLIND
+          Lasting INVISIBLE
+          Lasting POISON
+          Lasting POISON_RESISTANT
+          Lasting FLYING
+          Lasting SPEED
+        }
+      }
   summonedElement = "WATER_ELEMENTAL"
   strength = 80
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
@@ -561,7 +575,7 @@
   name = "basic coffin"
   viewId = { "coffin1" }
   canHideHere = true
-  usageType = BuiltinUsageId SLEEP
+  usageType = UsageEffect "sleep in" Lasting SLEEP
   fire = 50
   strength = 40
   bedType = COFFIN
@@ -572,7 +586,7 @@
   name = "fine coffin"
   viewId = { "coffin2" }
   canHideHere = true
-  usageType = BuiltinUsageId SLEEP
+  usageType = UsageEffect "sleep in" Lasting SLEEP
   luxury = 0.3
   fire = 50
   strength = 40
@@ -585,7 +599,7 @@
   name = "luxurious coffin"
   viewId = { "coffin3" }
   canHideHere = true
-  usageType = BuiltinUsageId SLEEP
+  usageType = UsageEffect "sleep in" Lasting SLEEP
   luxury = 0.7
   fire = 50
   strength = 40
@@ -618,7 +632,7 @@
   name = "opened coffin"
   viewId = { "opened_coffin" }
   canHideHere = true
-  usageType = BuiltinUsageId SLEEP
+  usageType = UsageEffect "sleep in" Lasting SLEEP
   fire = 50
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }

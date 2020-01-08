@@ -196,6 +196,11 @@ struct Chain {
   vector<Effect> SERIAL(effects);
   SERIALIZE_ALL(effects)
 };
+struct ChooseRandom {
+  EFFECT_TYPE_INTERFACE;
+  vector<Effect> SERIAL(effects);
+  SERIALIZE_ALL(effects)
+};
 struct Message {
   EFFECT_TYPE_INTERFACE;
   string SERIAL(text);
@@ -240,8 +245,8 @@ MAKE_VARIANT2(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, E
     EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
     Lasting, RemoveLasting, Permanent, RemovePermanent, PlaceFurniture, Damage, InjureBodyPart, LoseBodyPart, RegrowBodyPart,
     AddBodyPart, DestroyWalls, Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, Filter, SummonEnemy, Wish,
-    Chain, Caster, IncreaseMorale, Message, Chance, AssembledMinion, TriggerTrap, AnimateItems, MakeHumanoid, GrantAbility,
-    CreatureMessage, SoundEffect);
+    Chain, ChooseRandom, Caster, IncreaseMorale, Message, Chance, AssembledMinion, TriggerTrap, AnimateItems, MakeHumanoid,
+    GrantAbility, CreatureMessage, SoundEffect);
 }
 
 class EffectType : public Effects::EffectType {

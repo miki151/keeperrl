@@ -235,17 +235,6 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
                 none
             });
         break;
-      case BuiltinUsageId::FOUNTAIN: {
-        c->secondPerson("You drink from the fountain.");
-        c->thirdPerson(c->getName().the() + " drinks from the fountain.");
-        auto itemList = pos.getGame()->getContentFactory()->itemFactory.get(ItemListId("potions"));
-        PItem potion = itemList.random(pos.getGame()->getContentFactory()).getOnlyElement();
-        potion->apply(c);
-        break;
-      }
-      case BuiltinUsageId::SLEEP:
-        Effects::Lasting{LastingEffect::SLEEP}.applyToCreature(c);
-        break;
       case BuiltinUsageId::KEEPER_BOARD:
         c->getGame()->handleMessageBoard(pos, c);
         break;
@@ -279,8 +268,8 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
         break;
     }
   },
-  [&](const Effect& effect) {
-    effect.apply(c->getPosition());
+  [&](const UsageEffect& effect) {
+    effect.effect.apply(c->getPosition());
   });
 }
 
@@ -288,7 +277,6 @@ bool FurnitureUsage::canHandle(FurnitureUsageType type, const Creature* c) {
   if (auto id = type.getReferenceMaybe<BuiltinUsageId>())
     switch (*id) {
       case BuiltinUsageId::KEEPER_BOARD:
-      case BuiltinUsageId::FOUNTAIN:
       case BuiltinUsageId::VAMPIRE_COFFIN:
       case BuiltinUsageId::COFFIN:
       case BuiltinUsageId::CHEST:
@@ -300,21 +288,25 @@ bool FurnitureUsage::canHandle(FurnitureUsageType type, const Creature* c) {
 }
 
 string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitureName) {
-  if (auto id = type.getReferenceMaybe<BuiltinUsageId>())
-    switch (*id) {
-      case BuiltinUsageId::STAIRS: return "use " + furnitureName;
-      case BuiltinUsageId::COFFIN:
-      case BuiltinUsageId::VAMPIRE_COFFIN:
-      case BuiltinUsageId::CHEST: return "open " + furnitureName;
-      case BuiltinUsageId::FOUNTAIN: return "drink from " + furnitureName;
-      case BuiltinUsageId::SLEEP: return "sleep in " + furnitureName;
-      case BuiltinUsageId::KEEPER_BOARD: return "view " + furnitureName;
-      case BuiltinUsageId::PORTAL: return "enter " + furnitureName;
-      case BuiltinUsageId::SIT_ON_THRONE: return "sit on " + furnitureName;
-      case BuiltinUsageId::DESECRATE: return "desecrate " + furnitureName;
-      default: break;
-    }
-  return "use " + furnitureName;
+  return type.visit(
+      [&] (BuiltinUsageId id) {
+        switch (id) {
+          case BuiltinUsageId::STAIRS: return "use " + furnitureName;
+          case BuiltinUsageId::COFFIN:
+          case BuiltinUsageId::VAMPIRE_COFFIN:
+          case BuiltinUsageId::CHEST: return "open " + furnitureName;
+          case BuiltinUsageId::KEEPER_BOARD: return "view " + furnitureName;
+          case BuiltinUsageId::PORTAL: return "enter " + furnitureName;
+          case BuiltinUsageId::SIT_ON_THRONE: return "sit on " + furnitureName;
+          case BuiltinUsageId::DESECRATE: return "desecrate " + furnitureName;
+          default:
+            return "use " + furnitureName;
+        }
+      },
+      [&](const UsageEffect& e) {
+        return e.usageVerb + " " + furnitureName;
+      }
+  );
 }
 
 void FurnitureUsage::beforeRemoved(FurnitureUsageType type, Position pos) {

@@ -797,6 +797,17 @@ string Effects::Chain::getDescription(const ContentFactory* f) const {
   return effects[0].getDescription(f);
 }
 
+void Effects::ChooseRandom::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effects::ChooseRandom::getName(const ContentFactory* f) const {
+  return effects[0].getName(f);
+}
+
+string Effects::ChooseRandom::getDescription(const ContentFactory* f) const {
+  return effects[0].getDescription(f);
+}
+
 void Effects::Message::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
@@ -1131,6 +1142,9 @@ void Effect::apply(Position pos, Creature* attacker) const {
       [&](const Effects::Chain& chain) {
         for (auto& e : chain.effects)
           e.apply(pos, attacker);
+      },
+      [&](const Effects::ChooseRandom& r) {
+        r.effects[Random.get(r.effects.size())].apply(pos, attacker);
       },
       [&](const Effects::Message& msg) {
         pos.globalMessage(msg.text);

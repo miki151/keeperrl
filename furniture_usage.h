@@ -12,8 +12,6 @@ RICH_ENUM(
   CHEST,
   COFFIN,
   VAMPIRE_COFFIN,
-  SLEEP,
-  FOUNTAIN,
   KEEPER_BOARD,
   CROPS,
   STAIRS,
@@ -27,7 +25,13 @@ RICH_ENUM(
   DEMON_RITUAL
 );
 
-MAKE_VARIANT2(FurnitureUsageType, BuiltinUsageId, Effect);
+struct UsageEffect {
+  string SERIAL(usageVerb);
+  Effect SERIAL(effect);
+  SERIALIZE_ALL(usageVerb, effect)
+};
+
+MAKE_VARIANT2(FurnitureUsageType, BuiltinUsageId, UsageEffect);
 
 class FurnitureUsage {
   public:
