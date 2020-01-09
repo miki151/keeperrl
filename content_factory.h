@@ -9,6 +9,8 @@
 #include "custom_item_id.h"
 #include "item_factory.h"
 #include "map_layouts.h"
+#include "biome_info.h"
+#include "biome_id.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -47,6 +49,7 @@ class ContentFactory {
   map<CustomItemId, ItemAttributes> SERIAL(items);
   map<BuildingId, BuildingInfo> SERIAL(buildingInfo);
   MapLayouts SERIAL(mapLayouts);
+  map<BiomeId, BiomeInfo> SERIAL(biomeInfo);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

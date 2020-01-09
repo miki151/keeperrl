@@ -1098,7 +1098,7 @@ class Test {
   struct MatchingTest {
     MatchingTest() {
       auto contentFactory = getContentFactory();
-      auto model = Model::create(&contentFactory, BiomeId::GRASSLAND);
+      auto model = Model::create(&contentFactory, none);
       LevelBuilder builder(nullptr, Random, &contentFactory, 10, 10, false, none);
       PLevelMaker levelMaker = LevelMaker::emptyLevel(FurnitureType("MOUNTAIN"), true);
       level = model->buildMainLevel(std::move(builder), std::move(levelMaker));

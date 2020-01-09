@@ -39,6 +39,8 @@
 #include "test_struct.h"
 #include "item_attributes.h"
 #include "biome_id.h"
+#include "biome_info.h"
+#include "music_type.h"
 #include "building_info.h"
 #include "name_generator_id.h"
 #include "campaign_builder.h"
@@ -84,6 +86,7 @@ ADD_IMP(map<PrimaryId<ItemListId>, ItemList>)
 ADD_IMP(map<PrimaryId<FurnitureListId>, FurnitureList>)
 ADD_IMP(map<PrimaryId<CustomItemId>, ItemAttributes>)
 ADD_IMP(map<PrimaryId<BuildingId>, BuildingInfo>)
+ADD_IMP(map<PrimaryId<BiomeId>, BiomeInfo>)
 ADD_IMP(map<PrimaryId<NameGeneratorId>, vector<string>>)
 ADD_IMP(map<string, TestStruct2>)
 ADD_IMP(map<string, TestStruct3>)

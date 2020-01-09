@@ -29,7 +29,8 @@ enum class GameConfigId {
   EXTERNAL_ENEMIES,
   ITEMS,
   BUILDING_INFO,
-  NAMES
+  NAMES,
+  BIOMES
 };
 
 class GameConfig {

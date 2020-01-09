@@ -34,14 +34,15 @@ class FilePath;
 class CreatureList;
 class TribeId;
 class MapLayouts;
+struct BiomeInfo;
 
 class LevelMaker {
   public:
   virtual void make(LevelBuilder* builder, Rectangle area) = 0;
   virtual ~LevelMaker() {}
 
-  static PLevelMaker topLevel(RandomGen&, optional<CreatureGroup> wildlife, vector<SettlementInfo> village, int width,
-      optional<TribeId> keeperTribe, BiomeId, ResourceCounts, const MapLayouts*);
+  static PLevelMaker topLevel(RandomGen&, vector<SettlementInfo> village, int width,
+      optional<TribeId> keeperTribe, BiomeInfo biomeInfo, ResourceCounts, const MapLayouts*);
   static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo, Vec2 size);
   static PLevelMaker splashLevel(CreatureGroup heroLeader, CreatureGroup heroes,
       CreatureGroup monsters, CreatureGroup imps, const FilePath& splashPath);

@@ -1,11 +1,9 @@
 #pragma once
 
 #include "util.h"
+#include "content_id.h"
 
-RICH_ENUM(BiomeId,
-  GRASSLAND,
-  FORREST,
-  MOUNTAIN,
-  DESERT,
-  SNOW
-);
+class BiomeId : public ContentId<BiomeId> {
+  public:
+  using ContentId::ContentId;
+};

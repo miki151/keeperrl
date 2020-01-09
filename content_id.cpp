@@ -12,6 +12,7 @@
 #include "building_id.h"
 #include "name_generator_id.h"
 #include "map_layout_id.h"
+#include "biome_id.h"
 #include <cassert>
 
 static const char* staticsInitialized = nullptr;
@@ -202,3 +203,4 @@ INST(CustomItemId)
 INST(BuildingId)
 INST(NameGeneratorId)
 INST(MapLayoutId)
+INST(BiomeId)

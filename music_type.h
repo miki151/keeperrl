@@ -1,0 +1,5 @@
+#pragma once
+
+#include "util.h"
+
+RICH_ENUM(MusicType, INTRO, MAIN, PEACEFUL, BATTLE, NIGHT, ADV_PEACEFUL, ADV_BATTLE, SNOW, DESERT);

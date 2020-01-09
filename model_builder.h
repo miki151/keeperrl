@@ -21,6 +21,8 @@ class CreatureList;
 class GameConfig;
 class ContentFactory;
 struct LevelConnection;
+struct BiomeInfo;
+struct BiomeEnemyInfo;
 
 class ModelBuilder {
   public:
@@ -49,8 +51,7 @@ class ModelBuilder {
   void makeExtraLevel(WModel model, LevelConnection& connection, SettlementInfo& mainSettlement, StairKey upLink,
       vector<EnemyInfo>& extraEnemies);
   PModel tryBuilding(int numTries, function<PModel()> buildFun, const string& name);
-  void addMapVillainsForEvilKeeper(vector<EnemyInfo>&, BiomeId);
-  void addMapVillainsForLawfulKeeper(vector<EnemyInfo>&, BiomeId);
+  void addMapVillains(vector<EnemyInfo>&, const vector<BiomeEnemyInfo>&);
   RandomGen& random;
   ProgressMeter* meter = nullptr;
   Options* options = nullptr;

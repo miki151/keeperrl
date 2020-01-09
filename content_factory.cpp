@@ -24,7 +24,7 @@
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
-  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts);
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo);
   creatures.setContentFactory(this);
 }
 
@@ -327,6 +327,10 @@ optional<string> ContentFactory::readData(const GameConfig* config, const string
     return *res;
   if (auto res = readFurnitureFactory(config, &keyVerifier))
     return *res;
+  map<PrimaryId<BiomeId>, BiomeInfo> biomesTmp;
+  if (auto res = config->readObject(biomesTmp, GameConfigId::BIOMES, &keyVerifier))
+    return *res;
+  biomeInfo = convertKeys(biomesTmp);
   map<PrimaryId<ItemListId>, ItemList> itemLists;
   if (auto res = config->readObject(itemLists, GameConfigId::ITEM_LISTS, &keyVerifier))
     return *res;

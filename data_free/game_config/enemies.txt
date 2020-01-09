@@ -945,7 +945,7 @@
 }
 "LIZARDMEN"
 {
-  biomes = { DESERT }
+  biomes = { "DESERT" }
   settlement = {
     type = Builtin VILLAGE
     tribe = LIZARD
@@ -1277,7 +1277,7 @@
 }
 "WHITE_DRAGON" inherit "RED_DRAGON"
 {
-  biomes = { SNOW }
+  biomes = { "SNOW" }
   settlement = append {
     buildingId = "GLACIER"
     inhabitants = {
@@ -1704,7 +1704,7 @@
 }
 "THIEVES"
 {
-  biomes = { DESERT }
+  biomes = { "DESERT" }
   settlement = {
     type = Builtin CASTLE2
     tribe = HUMAN

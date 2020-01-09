@@ -64,7 +64,6 @@ enum class HighlightType;
 enum class StairLook;
 
 enum class VillainType;
-enum class BiomeId;
 enum class ZoneId;
 class ViewId;
 enum class AnimationId;
@@ -124,5 +123,6 @@ class SpellId;
 class CreatureId;
 class BuildingId;
 class NameGeneratorId;
+class BiomeId;
 
 using SteamId = unsigned long long;

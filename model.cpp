@@ -55,14 +55,13 @@
 #include "unknown_locations.h"
 #include "avatar_info.h"
 #include "collective_config.h"
-#include "biome_id.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   ar & SUBCLASS(OwnedObject<Model>);
   ar(levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
-  ar(stairNavigation, cemetery, mainLevels, eventGenerator, externalEnemies, biome);
+  ar(stairNavigation, cemetery, mainLevels, eventGenerator, externalEnemies, defaultMusic);
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Model)
@@ -183,12 +182,12 @@ WLevel Model::buildMainLevel(LevelBuilder b, PLevelMaker maker) {
 Model::Model(Private) {
 }
 
-PModel Model::create(ContentFactory* contentFactory, BiomeId biome) {
+PModel Model::create(ContentFactory* contentFactory, optional<MusicType> music) {
   auto ret = makeOwner<Model>(Private{});
   ret->cemetery = LevelBuilder(Random, contentFactory, 100, 100, false)
       .build(ret.get(), LevelMaker::emptyLevel(FurnitureType("GRASS"), false).get(), Random.getLL());
   ret->eventGenerator = makeOwner<EventGenerator>();
-  ret->biome = biome;
+  ret->defaultMusic = music;
   return ret;
 }
 
@@ -351,12 +350,5 @@ void Model::addEvent(const GameEvent& e) {
 }
 
 optional<MusicType> Model::getDefaultMusic() const {
-  switch (biome) {
-    case BiomeId::SNOW:
-      return MusicType::SNOW;
-    case BiomeId::DESERT:
-      return MusicType::DESERT;
-    default:
-      return none;
-  }
+  return defaultMusic;
 }

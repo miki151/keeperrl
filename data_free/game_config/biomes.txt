@@ -1,0 +1,185 @@
+"GRASSLAND"
+{
+  lakes = {
+    size = {20 30}
+    count = {0 3}
+  }
+  items = "wildernessItems"
+  itemCount = {20 40}
+  mountains = {
+    lowlandRatio = 0.60
+    hillRatio = 0.06
+    hill = "HILL"
+    grass = "GRASS"
+    mountain = "MOUNTAIN"
+    mountainDeep = "MOUNTAIN2"
+    mountainFloor = "FLOOR"
+  }
+  forests = {
+    {
+      ratio = 0.3
+      density = 0.25
+      onType = "GRASS"
+      trees = "vegetationLow"
+    }
+    {
+      ratio = 0.8
+      density = 0.25
+      onType = "HILL"
+      trees = "vegetationHigh"
+    }
+  }
+  wildlife = {
+    count = { 3 6 }
+    all = {
+      4 "DEER"
+      2 "FOX"
+      2 "BOAR"
+    }
+  }
+  darkKeeperEnemies = {
+    { id = "HUMAN_COTTAGE" count = { 3 5 } }
+    { id = "COTTAGE_BANDITS" probability = 0.5 }
+  }
+  whiteKeeperEnemies = {
+    { id = "COTTAGE_BANDITS" count = { 3 5 } }
+  }
+}
+"FOREST" inherit "GRASSLAND"
+{
+  forests = {
+    {
+      ratio = 0.8
+      density = 0.5
+      onType = "GRASS"
+      trees = "vegetationLow"
+    }
+    {
+      ratio = 0.8
+      density = 0.5
+      onType = "HILL"
+      trees = "vegetationHigh"
+    }
+  }
+  wildlife = append {
+    count = { 6 12 }
+  }
+  darkKeeperEnemies = {
+    { id = "ELVEN_COTTAGE" count = { 3 5 } }
+  }
+  whiteKeeperEnemies = {
+    { id = "LIZARDMEN_COTTAGE" count = { 3 5 } }
+  }
+}
+"MOUNTAIN" inherit "GRASSLAND"
+{
+  lakes = {
+    size = {10 30}
+    count = {3 6}
+    where = MOUNTAIN
+  }
+  mountains = append {
+    lowlandRatio = 0.25
+    hillRatio = 0.1
+  }
+  forests = {
+    {
+      ratio = 0.3
+      density = 0.5
+      onType = "GRASS"
+      trees = "vegetationLow"
+    }
+    {
+      ratio = 0.8
+      density = 0.5
+      onType = "HILL"
+      trees = "vegetationHigh"
+    }
+  }
+  darkKeeperEnemies = {
+    { id = "DWARF_CAVE" count = { 1 3 } }
+    { id = "KOBOLD_CAVE" count = { 1 3 } }
+    { id = "NO_AGGRO_BANDITS" count = { 0 2 } }
+    { id = "BANDITS" }
+  }
+  whiteKeeperEnemies = {
+    { id = "DARK_ELF_CAVE" count = { 1 4 } }
+    { id = "NO_AGGRO_BANDITS" count = { 0 2 } }
+    { id = "BANDITS" }
+  }
+}
+"SNOW"
+{
+  overrideMusic = SNOW
+  lakes = {
+    size = {5 15}
+    count = {2 6}
+  }
+  overrideWaterType = "ICE"
+  items = "snowItems"
+  itemCount = {7 12}
+  mountains = {
+    lowlandRatio = 0.45
+    hillRatio = 0.2
+    hill = "SNOW"
+    grass = "SNOW"
+    mountain = "GLACIER"
+    mountainDeep = "MOUNTAIN2"
+    mountainFloor = "SNOW"
+  }
+  wildlife = {
+    count = { 6 12 }
+    all = {
+      4 "POLAR_FOX"
+      1 "POLAR_BEAR"
+    }
+  }
+  darkKeeperEnemies = {
+    { id = "ESKIMO_COTTAGE" count = { 3 5 } }
+  }
+  whiteKeeperEnemies = {
+    { id = "ESKIMO_COTTAGE" count = { 3 5 } }
+  }
+}
+"DESERT"
+{
+  overrideMusic = DESERT
+  lakes = {
+    size = {7 12}
+    count = {1 3}
+    treeType = "PALM_TREE"
+  }
+  items = "desertItems"
+  itemCount = {7 12}
+  overrideWaterType = "SAND"
+  mountains = {
+    lowlandRatio = 0.45
+    hillRatio = 0.2
+    hill = "SAND"
+    grass = "SAND"
+    mountain = "SANDSTONE"
+    mountainDeep = "MOUNTAIN2"
+    mountainFloor = "SAND"
+  }
+  forests = {
+    {
+      ratio = 0.8
+      density = 0.015
+      onType = "SAND"
+      trees = "vegetationDesert"
+    }
+  }
+  wildlife = {
+    count = { 6 12 }
+    all = {
+      1 "SNAKE"
+    }
+  }
+  darkKeeperEnemies = {
+    { id = "NOMAD_COTTAGE" count = { 3 5 } }
+  }
+  whiteKeeperEnemies = {
+    { id = "NOMAD_COTTAGE" count = { 3 5 } }
+  }
+}
+

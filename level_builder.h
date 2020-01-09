@@ -5,6 +5,7 @@
 #include "square_array.h"
 #include "furniture_array.h"
 #include "view_object.h"
+#include "square_attrib.h"
 
 class ProgressMeter;
 class Model;
@@ -13,32 +14,6 @@ class Square;
 class FurnitureFactory;
 class CollectiveBuilder;
 class ContentFactory;
-
-RICH_ENUM(SquareAttrib,
-  NO_DIG,
-  MOUNTAIN,
-  HILL,
-  LOWLAND,
-  CONNECT_ROAD, 
-  CONNECT_CORRIDOR,
-  CONNECTOR,
-  LAKE,
-  RIVER,
-  ROAD_CUT_THRU,
-  NO_ROAD,
-  ROOM,
-  ROOM_WALL,
-  COLLECTIVE_START,
-  COLLECTIVE_STAIRS,
-  EMPTY_ROOM,
-  FLOOR_OUTSIDE,
-  BUILDINGS_CENTER,
-  CASTLE_CORNER,
-  FOG,
-  FORREST,
-  SOKOBAN_ENTRY,
-  SOKOBAN_PRIZE
-);
 
 class LevelBuilder {
   public:
