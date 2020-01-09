@@ -80,7 +80,6 @@ namespace cereal {
   INST2(AttractionType_impl)
   INST2(ItemPrefix_impl)
   INST2(FurnitureEntry::EntryData_impl)
-  INST2(Effects::EffectType_impl)
   INST2(Campaign::SiteInfo::Dweller)
   INST2(ZLevelType_impl)
   INST2(AttackTrigger_impl)

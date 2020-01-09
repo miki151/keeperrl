@@ -247,15 +247,179 @@ struct SoundEffect {
   Sound SERIAL(sound);
   SERIALIZE_ALL(sound)
 };
-MAKE_VARIANT2(EffectType, Escape, Teleport, Heal, Fire, Ice, DestroyEquipment, Enhance, Suicide, IncreaseAttr,
-    EmitPoisonGas, CircularBlast, Deception, Summon, SummonElement, Acid, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
-    Lasting, RemoveLasting, Permanent, RemovePermanent, PlaceFurniture, Damage, InjureBodyPart, LoseBodyPart, RegrowBodyPart,
-    AddBodyPart, DestroyWalls, Area, CustomArea, ReviveCorpse, Blast, Pull, Shove, SwapPosition, Filter, SummonEnemy, Wish,
-    Chain, ChooseRandom, Caster, IncreaseMorale, Message, Chance, AssembledMinion, TriggerTrap, AnimateItems, MakeHumanoid,
-    GrantAbility, CreatureMessage, SoundEffect, DropItems);
+
+#define EFFECT_TYPES_LIST\
+  X(Escape, 0)\
+  X(Teleport, 1)\
+  X(Heal, 2)\
+  X(Fire, 3)\
+  X(Ice, 4)\
+  X(DestroyEquipment, 5)\
+  X(Enhance, 6)\
+  X(Suicide, 7)\
+  X(IncreaseAttr, 8)\
+  X(EmitPoisonGas, 9)\
+  X(CircularBlast, 10)\
+  X(Deception, 11)\
+  X(Summon, 12)\
+  X(SummonElement, 13)\
+  X(Acid, 14)\
+  X(Alarm, 15)\
+  X(TeleEnemies, 16)\
+  X(SilverDamage, 17)\
+  X(DoubleTrouble, 18)\
+  X(Lasting, 19)\
+  X(RemoveLasting, 20)\
+  X(Permanent, 21)\
+  X(RemovePermanent, 22)\
+  X(PlaceFurniture, 23)\
+  X(Damage, 24)\
+  X(InjureBodyPart, 25)\
+  X(LoseBodyPart, 26)\
+  X(RegrowBodyPart, 27)\
+  X(AddBodyPart, 28)\
+  X(DestroyWalls, 29)\
+  X(Area, 30)\
+  X(CustomArea, 31)\
+  X(ReviveCorpse, 32)\
+  X(Blast, 33)\
+  X(Pull, 34)\
+  X(Shove, 35)\
+  X(SwapPosition, 36)\
+  X(Filter, 37)\
+  X(SummonEnemy, 38)\
+  X(Wish, 39)\
+  X(Chain, 40)\
+  X(ChooseRandom, 41)\
+  X(Caster, 42)\
+  X(IncreaseMorale, 43)\
+  X(Message, 44)\
+  X(Chance, 45)\
+  X(AssembledMinion, 46)\
+  X(TriggerTrap, 47)\
+  X(AnimateItems, 48)\
+  X(MakeHumanoid, 49)\
+  X(GrantAbility, 50)\
+  X(CreatureMessage, 51)\
+  X(SoundEffect, 52)\
+  X(DropItems, 53)
+
+
+struct EffectType {
+  int index;
+  template <typename T>
+  optional<T> getValueMaybe() const {
+    return none;
+  }
+  template <typename T>
+  optional<T&> getReferenceMaybe() const {
+    return none;
+  }
+  template <typename T>
+  bool contains() const {
+    return !!getReferenceMaybe<T>();
+  }
+  EffectType() : index(0), elem0(Escape{}) {}
+#define X(Type, Index) \
+  EffectType(Type&& t) : index(Index), elem##Index(std::move(t)) {}\
+  EffectType(const Type& t) : index(Index), elem##Index(t) {}\
+  template<>\
+  optional<Type> getValueMaybe<Type>() const {\
+    if (index == Index)\
+      return elem##Index;\
+    return none;\
+  }\
+  template<>\
+  optional<const Type&> getReferenceMaybe() const {\
+    if (index == Index)\
+      return elem##Index;\
+    return none;\
+  }
+  EFFECT_TYPES_LIST
+#undef X
+
+  template<typename... Fs>
+  auto visit(Fs... fs) const {
+    auto f = variant_helpers::LambdaVisitor<Fs...>(fs...);
+    switch (index) {
+#define X(Type, Index)\
+      case Index: return f(elem##Index); break;
+      EFFECT_TYPES_LIST
+#undef X
+      default: fail();
+    }
+  }
+  EffectType(const EffectType& t) : index(t.index) {
+    switch (index) {
+#define X(Type, Index)\
+      case Index: new(&elem##Index) Type(t.elem##Index); break;
+      EFFECT_TYPES_LIST
+#undef X
+      default: fail();
+    }
+  }
+  EffectType(EffectType&& t) : index(t.index) {
+    switch (index) {
+#define X(Type, Index)\
+      case Index: new(&elem##Index) Type(std::move(t.elem##Index)); break;
+      EFFECT_TYPES_LIST
+#undef X
+      default: fail();
+    }
+  }
+  EffectType& operator = (const EffectType& t) {
+    if (index == t.index)
+      switch (index) {
+  #define X(Type, Index)\
+        case Index: elem##Index = t.elem##Index; break;
+        EFFECT_TYPES_LIST
+  #undef X
+        default: fail();
+      }
+    else {
+      this->~EffectType();
+      new (this) EffectType(t);
+    }
+    return *this;
+  }
+  EffectType& operator = (EffectType&& t) {
+    if (index == t.index)
+      switch (index) {
+  #define X(Type, Index)\
+        case Index: elem##Index = std::move(t.elem##Index); break;
+        EFFECT_TYPES_LIST
+  #undef X
+        default: fail();
+      }
+    else {
+      this->~EffectType();
+      new (this) EffectType(std::move(t));
+    }
+    return *this;
+  }
+  ~EffectType() {
+    switch (index) {
+#define X(Type, Index)\
+      case Index: elem##Index.~Type(); break;
+      EFFECT_TYPES_LIST
+#undef X
+      default: fail();
+    }
+  }
+  union {
+#define X(Type, Index) \
+    Type elem##Index;
+    EFFECT_TYPES_LIST
+#undef X
+  };
+};
+
 }
 
 class EffectType : public Effects::EffectType {
   public:
   using Effects::EffectType::EffectType;
 };
+
+template <class Archive>
+void serialize(Archive& ar1, EffectType& v);

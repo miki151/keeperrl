@@ -1517,5 +1517,36 @@ bool Effect::canAutoAssignMinionEquipment() const {
 
 SERIALIZE_DEF(Effect, effect)
 
+template <class Archive>
+void serialize(Archive& ar1, EffectType& v) {
+  ar1(v.index);
+  switch (v.index) {
+#define X(Type, Index)\
+    case Index: \
+      if (Archive::is_loading::value) \
+        new(&v.elem##Index) Effects::Type; \
+      ar1(v.elem##Index); \
+      break;
+    EFFECT_TYPES_LIST
+#undef X
+    default: FATAL << "Error saving EffectType";
+  }
+}
+
 #include "pretty_archive.h"
 template void Effect::serialize(PrettyInputArchive&, unsigned);
+
+template <>
+void serialize(PrettyInputArchive& ar1, EffectType& v) {
+  string name;
+  ar1.readText(name);
+#define X(Type, Index)\
+  if (name == #Type) { \
+    v.index = Index; \
+    new(&v.elem##Index) Effects::Type;\
+    ar1(v.elem##Index); \
+  } else
+  EFFECT_TYPES_LIST
+#undef X
+  ar1.error(name + " is not part of EffectType");
+}
