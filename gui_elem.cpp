@@ -2366,6 +2366,83 @@ SGuiElem GuiFactory::tooltip(const vector<string>& v, milliseconds delayMilli) {
     return empty();
   return SGuiElem(new Tooltip(v, stack(background(background1), miniBorder()), clock, delayMilli));
 }
+namespace {
+class ScrollArea : public GuiElem {
+  public:
+  ScrollArea(SGuiElem c) : content(c) {
+  }
+
+  virtual void onRefreshBounds() override {
+    if (!scrollPos)
+      scrollPos = (Vec2(*content->getPreferredWidth(), *content->getPreferredHeight()) - getBounds().getSize()) / 2;
+    content->setBounds(getBounds().translate(-*scrollPos));
+  }
+
+  virtual void render(Renderer& r) override {
+    r.setScissor(getBounds());
+    onRefreshBounds();
+    content->renderPart(r, getBounds());
+    r.setScissor(none);
+  }
+
+  virtual bool onClick(ClickButton b, Vec2 v) override {
+    if (v.inRectangle(getBounds()) && b == ClickButton::RIGHT) {
+      clickPos = *scrollPos + v;
+      return true;
+    } else {
+      if (v.y >= getBounds().top() && v.y < getBounds().bottom())
+        return content->onClick(b, v);
+    }
+    return false;
+  }
+
+  virtual void onMouseGone() override {
+//    clickPos = none;
+    content->onMouseGone();
+  }
+
+  virtual bool onMouseMove(Vec2 v) override {
+    if (clickPos) {
+      scrollPos = *clickPos - v;
+      scrollPos->x = max(0, min(*content->getPreferredWidth() - getBounds().width(), scrollPos->x));
+      scrollPos->y = max(0, min(*content->getPreferredHeight() - getBounds().height(), scrollPos->y));
+      return true;
+    } else {
+      if (v.inRectangle(getBounds()))
+        return content->onMouseMove(v);
+      else
+        content->onMouseGone();
+      return false;
+    }
+  }
+
+  virtual void onMouseRelease(Vec2 pos) override {
+    clickPos = none;
+    content->onMouseRelease(pos);
+  }
+
+  virtual bool onKeyPressed2(SDL_Keysym key) override {
+    return content->onKeyPressed2(key);
+  }
+
+  virtual void onClickElsewhere() override {
+    content->onClickElsewhere();
+  }
+
+  virtual bool onTextInput(const char* c) override {
+    return content->onTextInput(c);
+  }
+
+  private:
+  SGuiElem content;
+  optional<Vec2> scrollPos;
+  optional<Vec2> clickPos;
+};
+}
+
+SGuiElem GuiFactory::scrollArea(SGuiElem elem) {
+  return make_shared<ScrollArea>(std::move(elem));
+}
 
 const static int notHeld = -1000;
 

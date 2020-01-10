@@ -3290,9 +3290,14 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
     }
     rows.addElem(gui.stack(columns.buildHorizontalList(), columns2.buildHorizontalList()));
   }
-  return gui.stack(
+  Vec2 maxSize(17 * iconSize, 9 * iconSize);
+  auto mapContent = rows.buildVerticalList();
+  if (*mapContent->getPreferredWidth() > maxSize.x || *mapContent->getPreferredHeight() > maxSize.y)
+    mapContent = gui.scrollArea(std::move(mapContent));
+  int margin = 8;
+  return gui.preferredSize(maxSize + Vec2(margin, margin) * 2, gui.stack(
     gui.miniBorder2(),
-    gui.margins(rows.buildVerticalList(), 8));
+    gui.margins(std::move(mapContent), margin)));
 }
 
 SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
