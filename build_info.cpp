@@ -18,9 +18,9 @@ string BuildInfo::getRequirementText(Requirement req) {
 }
 
 bool BuildInfo::canSelectRectangle() const {
-  return type.visit(
+  return type.visit<bool>(
         [](const auto&) { return true; },
-        [](const Trap&) { return false; },
-        [](const PlaceItem&) { return false; }
+        [](const BuildInfoTypes::Trap&) { return false; },
+        [](const BuildInfoTypes::PlaceItem&) { return false; }
   );
 }

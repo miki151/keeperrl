@@ -304,115 +304,16 @@ struct SoundEffect {
   X(SoundEffect, 52)\
   X(DropItems, 53)
 
+#define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
+#define VARIANT_NAME EffectType
 
-struct EffectType {
-  int index;
-  template <typename T>
-  optional<T> getValueMaybe() const {
-    return none;
-  }
-  template <typename T>
-  optional<T&> getReferenceMaybe() const {
-    return none;
-  }
-  template <typename T>
-  bool contains() const {
-    return !!getReferenceMaybe<T>();
-  }
-  EffectType() : index(0), elem0(Escape{}) {}
-#define X(Type, Index) \
-  EffectType(Type&& t) : index(Index), elem##Index(std::move(t)) {}\
-  EffectType(const Type& t) : index(Index), elem##Index(t) {}\
-  template<>\
-  optional<Type> getValueMaybe<Type>() const {\
-    if (index == Index)\
-      return elem##Index;\
-    return none;\
-  }\
-  template<>\
-  optional<const Type&> getReferenceMaybe() const {\
-    if (index == Index)\
-      return elem##Index;\
-    return none;\
-  }
-  EFFECT_TYPES_LIST
-#undef X
+#include "gen_variant.h"
 
-  template<typename... Fs>
-  auto visit(Fs... fs) const {
-    auto f = variant_helpers::LambdaVisitor<Fs...>(fs...);
-    switch (index) {
-#define X(Type, Index)\
-      case Index: return f(elem##Index); break;
-      EFFECT_TYPES_LIST
-#undef X
-      default: fail();
-    }
-  }
-  EffectType(const EffectType& t) : index(t.index) {
-    switch (index) {
-#define X(Type, Index)\
-      case Index: new(&elem##Index) Type(t.elem##Index); break;
-      EFFECT_TYPES_LIST
-#undef X
-      default: fail();
-    }
-  }
-  EffectType(EffectType&& t) : index(t.index) {
-    switch (index) {
-#define X(Type, Index)\
-      case Index: new(&elem##Index) Type(std::move(t.elem##Index)); break;
-      EFFECT_TYPES_LIST
-#undef X
-      default: fail();
-    }
-  }
-  EffectType& operator = (const EffectType& t) {
-    if (index == t.index)
-      switch (index) {
-  #define X(Type, Index)\
-        case Index: elem##Index = t.elem##Index; break;
-        EFFECT_TYPES_LIST
-  #undef X
-        default: fail();
-      }
-    else {
-      this->~EffectType();
-      new (this) EffectType(t);
-    }
-    return *this;
-  }
-  EffectType& operator = (EffectType&& t) {
-    if (index == t.index)
-      switch (index) {
-  #define X(Type, Index)\
-        case Index: elem##Index = std::move(t.elem##Index); break;
-        EFFECT_TYPES_LIST
-  #undef X
-        default: fail();
-      }
-    else {
-      this->~EffectType();
-      new (this) EffectType(std::move(t));
-    }
-    return *this;
-  }
-  ~EffectType() {
-    switch (index) {
-#define X(Type, Index)\
-      case Index: elem##Index.~Type(); break;
-      EFFECT_TYPES_LIST
-#undef X
-      default: fail();
-    }
-  }
-  union {
-#define X(Type, Index) \
-    Type elem##Index;
-    EFFECT_TYPES_LIST
-#undef X
-  };
-};
+#undef VARIANT_TYPES_LIST
+#undef VARIANT_NAME
+
+template <class Archive>
+void serialize(Archive& ar1, EffectType& v);
 
 }
 
@@ -420,6 +321,3 @@ class EffectType : public Effects::EffectType {
   public:
   using Effects::EffectType::EffectType;
 };
-
-template <class Archive>
-void serialize(Archive& ar1, EffectType& v);

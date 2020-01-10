@@ -23,7 +23,7 @@ VillageBehaviour::~VillageBehaviour() {}
 
 PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
   WCollective enemy = self->getEnemyCollective();
-  return attackBehaviour->visit(
+  return attackBehaviour->visit<PTask>(
       [&](KillLeader) {
         if (auto leader = enemy->getLeader())
           return Task::attackCreatures({leader});
@@ -145,9 +145,9 @@ double VillageBehaviour::getTriggerValue(const AttackTrigger& trigger, const Vil
   double timerProb = 1.0 / 3000;
   double numConqueredMaxProb = 1.0 / 3000;
   if (auto enemy = self->getEnemyCollective())
-    return trigger.visit(
+    return trigger.visit<double>(
         [&](const Timer& t) {
-          return enemy->getGlobalTime().getVisibleInt() >= t.value ? timerProb : 0;
+          return enemy->getGlobalTime().getVisibleInt() >= t.value ? timerProb : 0.0;
         },
         [&](const RoomTrigger& t) {
           return t.probPerSquare * enemy->getConstructions().getBuiltCount(t.type);
@@ -200,9 +200,9 @@ double VillageBehaviour::getAttackProbability(const VillageControl* self) const 
     double val = getTriggerValue(elem, self);
     CHECK(val >= 0 && val <= 1);
     ret = max(ret, val);
-    if (auto& name = self->collective->getName())
-      INFO << "trigger " << elem.getName() << " village "
-          << name->full << " under attack probability " << val;
+  //  if (auto& name = self->collective->getName())
+      /*INFO << "trigger " << elem.getName() << " village "
+          << name->full << " under attack probability " << val;*/
   }
   return ret;
 }

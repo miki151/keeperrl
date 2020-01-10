@@ -232,7 +232,7 @@ REGISTER_TYPE(Corpse)
 
 
 ItemAttributes ItemType::getAttributes(const ContentFactory* factory) const {
-  return type->visit([&](const auto& t) { return t.getAttributes(factory); });
+  return type->visit<ItemAttributes>([&](const auto& t) { return t.getAttributes(factory); });
 }
 
 PItem ItemType::get(const ContentFactory* factory) const {
@@ -247,14 +247,14 @@ PItem ItemType::get(const ContentFactory* factory) const {
     attributes.description = "Special crafting ingredient";
   if (!attributes.genPrefixes.empty() && Random.chance(prefixChance))
     applyPrefix(factory, Random.choose(attributes.genPrefixes), attributes);
-  return type->visit(
+  return type->visit<PItem>(
       [&](const ItemTypes::FireScroll&) {
         return makeOwner<FireScrollItem>(std::move(attributes), factory);
       },
       [&](const ItemTypes::TechBook& t) {
         return makeOwner<TechBookItem>(std::move(attributes), t.techId, factory);
       },
-      [&](const ItemTypes::Potion& t) {
+      [&](const ItemTypes::Potion&) {
         return makeOwner<PotionItem>(std::move(attributes), factory);
       },
       [&](const auto&) {
@@ -265,7 +265,7 @@ PItem ItemType::get(const ContentFactory* factory) const {
 
 
 static int getEffectPrice(Effect type) {
-  return type.effect->visit(
+  return type.effect->visit<int>(
       [&](const Effects::Lasting& e) {
         return LastingEffects::getPrice(e.lastingEffect);
       },
@@ -485,7 +485,7 @@ ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) c
 }
 
 static ViewId getMushroomViewId(Effect e) {
-  return e.effect->visit(
+  return e.effect->visit<ViewId>(
       [&](const Effects::Lasting& e) {
         switch (e.lastingEffect) {
           case LastingEffect::DAM_BONUS: return ViewId("mushroom1");
@@ -590,5 +590,20 @@ ItemAttributes ItemTypes::TechBook::getAttributes(const ContentFactory*) const {
 
 SERIALIZE_DEF(ItemType, NAMED(type), OPTION(prefixChance))
 
+
+#define VARIANT_TYPES_LIST ITEM_TYPES_LIST
+#define VARIANT_NAME ItemTypeVariant
+
+namespace ItemTypes {
+
+#include "gen_variant_serialize.h"
+}
+
 #include "pretty_archive.h"
 template void ItemType::serialize(PrettyInputArchive&, unsigned);
+
+namespace ItemTypes {
+
+template<>
+#include "gen_variant_serialize_pretty.h"
+}

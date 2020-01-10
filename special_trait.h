@@ -5,6 +5,9 @@
 #include "body_part.h"
 #include "color.h"
 #include "item_type.h"
+#include "pretty_archive.h"
+#include "lasting_effect.h"
+#include "skill.h"
 
 struct ExtraTraining {
   ExperienceType SERIAL(type);
@@ -37,7 +40,25 @@ struct OneOfTraits {
   SERIALIZE_ALL(traits)
 };
 
-MAKE_VARIANT2(SpecialTrait, ExtraTraining, LastingEffect, SkillId, AttrBonus, OneOfTraits, ExtraBodyPart, ExtraIntrinsicAttack);
+#define VARIANT_TYPES_LIST\
+  X(ExtraTraining, 0)\
+  X(LastingEffect, 1)\
+  X(SkillId, 2)\
+  X(AttrBonus, 3)\
+  X(OneOfTraits, 4)\
+  X(ExtraBodyPart, 5)\
+  X(ExtraIntrinsicAttack, 6)
+
+#define VARIANT_NAME SpecialTrait
+
+#include "gen_variant.h"
+#include "gen_variant_serialize.h"
+inline
+#include "gen_variant_serialize_pretty.h"
+
+#undef VARIANT_TYPES_LIST
+#undef VARIANT_NAME
+
 
 extern void applySpecialTrait(SpecialTrait, Creature*, const ContentFactory*);
 extern SpecialTrait transformBeforeApplying(SpecialTrait);

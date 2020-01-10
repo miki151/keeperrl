@@ -148,7 +148,7 @@ void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const
   for (auto& group : keeperCreatureInfo.buildingGroups)
     buildInfo.append(contentFactory->buildInfo.at(group));
   for (auto& info : buildInfo)
-    if (auto furniture = info.type.getReferenceMaybe<BuildInfo::Furniture>()) {
+    if (auto furniture = info.type.getReferenceMaybe<BuildInfoTypes::Furniture>()) {
       for (auto type : furniture->types) {
         double luxury = getGame()->getContentFactory()->furniture.getData(type).getLuxuryInfo().luxury;
         if (luxury > 0) {
@@ -589,8 +589,8 @@ vector<Button> PlayerControl::fillButtons() const {
   vector<Button> buttons;
   EnumMap<ResourceId, int> numResource([this](ResourceId id) { return collective->numResource(id);});
   for (auto& button : buildInfo) {
-    button.type.visit(
-        [&](const BuildInfo::Furniture& elem) {
+    button.type.visit<void>(
+        [&](const BuildInfoTypes::Furniture& elem) {
           ViewId viewId = getGame()->getContentFactory()->furniture.getData(elem.types[0]).getViewObject()->id();
           string description;
           if (elem.cost.value > 0) {
@@ -609,35 +609,35 @@ vector<Button> PlayerControl::fillButtons() const {
               (elem.noCredit && !availableNow) ?
                  CollectiveInfo::Button::GRAY_CLICKABLE : CollectiveInfo::Button::ACTIVE });
           },
-        [&](const BuildInfo::Dig&) {
+        [&](const BuildInfoTypes::Dig&) {
           buttons.push_back({ViewId("dig_icon"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
-        [&](const BuildInfo::ImmediateDig&) {
+        [&](const BuildInfoTypes::ImmediateDig&) {
           buttons.push_back({ViewId("dig_icon"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](ZoneId zone) {
           buttons.push_back({getViewId(zone), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
-        [&](BuildInfo::ClaimTile) {
+        [&](BuildInfoTypes::ClaimTile) {
           buttons.push_back({ViewId("keeper_floor"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
-        [&](BuildInfo::Dispatch) {
+        [&](BuildInfoTypes::Dispatch) {
           buttons.push_back({ViewId("imp"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
-        [&](const BuildInfo::Trap& elem) {
+        [&](const BuildInfoTypes::Trap& elem) {
           buttons.push_back({elem.viewId, button.name, none});
         },
-        [&](const BuildInfo::DestroyLayers&) {
+        [&](const BuildInfoTypes::DestroyLayers&) {
            buttons.push_back({ViewId("destroy_button"), button.name, none, "",
                CollectiveInfo::Button::ACTIVE});
         },
-        [&](BuildInfo::ForbidZone) {
+        [&](BuildInfoTypes::ForbidZone) {
           buttons.push_back({ViewId("forbid_zone"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
-        [&](BuildInfo::PlaceMinion) {
+        [&](BuildInfoTypes::PlaceMinion) {
           buttons.push_back({ViewId("special_blbn"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
-        [&](BuildInfo::PlaceItem) {
+        [&](BuildInfoTypes::PlaceItem) {
           buttons.push_back({ViewId("potion1"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         }
     );
@@ -660,7 +660,7 @@ vector<Button> PlayerControl::fillButtons() const {
 }
 
 string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
-  return trigger.visit(
+  return trigger.visit<string>(
       [&](const Timer&) {
         return "evil";
       },
@@ -1191,7 +1191,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
 
 static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrait& trait, const ContentFactory* factory) {
   using TraitInfo = ImmigrantDataInfo::SpecialTraitInfo;
-  return trait.visit(
+  return trait.visit<ImmigrantDataInfo::SpecialTraitInfo>(
       [&] (const ExtraTraining& t) {
         return TraitInfo{"Extra "_s + toLower(getName(t.type)) + " training potential", false};
       },
@@ -2465,8 +2465,8 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
     return;
   if (!deselectOnly && rectangle && !building.canSelectRectangle())
     return;
-  building.type.visit(
-    [&](const BuildInfo::Trap& trap) {
+  building.type.visit<void>(
+    [&](const BuildInfoTypes::Trap& trap) {
       if (collective->getConstructions().getTrap(position) && selection != SELECT) {
         collective->removeTrap(position);
         getView()->addSound(SoundId::DIG_UNMARK);
@@ -2483,7 +2483,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         selection = SELECT;
       }
     },
-    [&](const BuildInfo::ImmediateDig&) {
+    [&](const BuildInfoTypes::ImmediateDig&) {
       auto furniture = position.modFurniture(FurnitureLayer::MIDDLE);
       if (furniture && furniture->isWall())
         furniture->destroy(position, DestroyAction::Type::BASH);
@@ -2492,7 +2492,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         collective->addKnownTile(v);
       }
     },
-    [&](const BuildInfo::PlaceItem&) {
+    [&](const BuildInfoTypes::PlaceItem&) {
       ItemType item;
       if (auto num = getView()->getNumber("Enter amount", Range(1, 10000), 1))
         if (auto input = getView()->getText("Enter item type", "", 100, "")) {
@@ -2503,7 +2503,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           }
         }
     },
-    [&](const BuildInfo::DestroyLayers& layers) {
+    [&](const BuildInfoTypes::DestroyLayers& layers) {
       for (auto layer : layers) {
         auto f = collective->getConstructions().getFurniture(position, layer);
         if (f && !f->isBuilt(position)) {
@@ -2525,7 +2525,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
               position.removeFurniture(f);
       }
     },
-    [&](const BuildInfo::ForbidZone) {
+    [&](const BuildInfoTypes::ForbidZone) {
       if (position.isTribeForbidden(getTribeId()) && selection != SELECT) {
         position.allowMovementForTribe(getTribeId());
         selection = DESELECT;
@@ -2535,7 +2535,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         selection = SELECT;
       }
     },
-    [&](const BuildInfo::Dig&) {
+    [&](const BuildInfoTypes::Dig&) {
       bool markedToDig = collective->isMarked(position) &&
           (collective->getMarkHighlight(position) == HighlightType::DIG ||
            collective->getMarkHighlight(position) == HighlightType::CUT_TREE);
@@ -2567,14 +2567,14 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         selection = SELECT;
       }
     },
-    [&](BuildInfo::ClaimTile) {
+    [&](BuildInfoTypes::ClaimTile) {
       if (collective->canClaimSquare(position))
         collective->claimSquare(position);
     },
-    [&](BuildInfo::Dispatch) {
+    [&](BuildInfoTypes::Dispatch) {
       collective->setPriorityTasks(position);
     },
-    [&](BuildInfo::PlaceMinion) {
+    [&](BuildInfoTypes::PlaceMinion) {
       auto& factory = getGame()->getContentFactory()->getCreatures();
       vector<PCreature> allCreatures = factory.getAllCreatures().transform(
           [this, &factory](CreatureId id){ return factory.fromId(id, getTribeId()); });
@@ -2586,7 +2586,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           }
       }
     },
-    [&](const BuildInfo::Furniture& info) {
+    [&](const BuildInfoTypes::Furniture& info) {
       auto layer = getGame()->getContentFactory()->furniture.getData(info.types[0]).getLayer();
       auto currentPlanned = collective->getConstructions().getFurniture(position, layer);
       if (currentPlanned && currentPlanned->isBuilt(position))

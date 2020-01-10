@@ -197,7 +197,7 @@ optional<string> Immigration::getMissingRequirement(const ImmigrantRequirement& 
           return "Not available"_s;
       }
   );
-  return requirement.visit(visitor);
+  return requirement.visit<optional<string>>(visitor);
 }
 
 vector<string> Immigration::getMissingRequirements(const Group& group) const {
@@ -327,7 +327,7 @@ static vector<Position> pickSpawnPositions(const vector<Creature*>& creatures, c
 
 vector<Position> Immigration::Available::getSpawnPositions() const {
   PROFILE;
-  vector<Position> positions = getInfo().getSpawnLocation().match(
+  vector<Position> positions = getInfo().getSpawnLocation().visit<vector<Position>>(
     [&] (FurnitureType type) {
       return asVector<Position>(immigration->collective->getConstructions().getBuiltPositions(type));
     },

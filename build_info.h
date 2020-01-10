@@ -9,8 +9,10 @@
 #include "view_id.h"
 #include "furniture_type.h"
 #include "tech_id.h"
+#include "pretty_archive.h"
+#include "furniture_layer.h"
 
-struct BuildInfo {
+namespace BuildInfoTypes {
   struct Furniture {
     vector<FurnitureType> SERIAL(types);
     CostInfo SERIAL(cost);
@@ -24,14 +26,6 @@ struct BuildInfo {
     ViewId SERIAL(viewId);
     SERIALIZE_ALL(type, viewId)
   };
-
-  using DungeonLevel = int;
-  MAKE_VARIANT(Requirement, TechId, DungeonLevel);
-
-  static string getRequirementText(Requirement);
-  static bool meetsRequirement(WConstCollective, Requirement);
-  bool canSelectRectangle() const;
-
   using DestroyLayers = vector<FurnitureLayer>;
   using ImmediateDig = EmptyStruct<struct ImmediateDigTag>;
   using Dig = EmptyStruct<struct DigTag>;
@@ -41,8 +35,40 @@ struct BuildInfo {
   using Zone = ZoneId;
   using PlaceMinion = EmptyStruct<struct PlaceMinionTag>;
   using PlaceItem = EmptyStruct<struct PlaceItemTag>;
-  MAKE_VARIANT(BuildType, Furniture, Trap, Zone, DestroyLayers, Dig, ClaimTile, Dispatch, ForbidZone, PlaceMinion, ImmediateDig, PlaceItem);
-  BuildType SERIAL(type);
+  #define VARIANT_TYPES_LIST\
+    X(Furniture, 0)\
+    X(Trap, 1)\
+    X(Zone, 2)\
+    X(DestroyLayers, 3)\
+    X(Dig, 4)\
+    X(ClaimTile, 5)\
+    X(Dispatch, 6)\
+    X(ForbidZone, 7)\
+    X(PlaceMinion, 8)\
+    X(ImmediateDig, 9)\
+    X(PlaceItem, 10)
+
+  #define VARIANT_NAME BuildType
+
+  #include "gen_variant.h"
+  #include "gen_variant_serialize.h"
+  inline
+  #include "gen_variant_serialize_pretty.h"
+
+  #undef VARIANT_TYPES_LIST
+  #undef VARIANT_NAME
+
+}
+
+struct BuildInfo {
+  using DungeonLevel = int;
+  MAKE_VARIANT(Requirement, TechId, DungeonLevel);
+
+  static string getRequirementText(Requirement);
+  static bool meetsRequirement(WConstCollective, Requirement);
+  bool canSelectRectangle() const;
+
+  BuildInfoTypes::BuildType SERIAL(type);
   string SERIAL(name);
   string SERIAL(groupName);
   string SERIAL(help);

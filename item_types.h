@@ -82,7 +82,34 @@ struct Assembled {
   ITEM_TYPE_INTERFACE;
 };
 using Simple = CustomItemId;
-MAKE_VARIANT(ItemTypeVariant, Scroll, Potion, Mushroom, Amulet, Ring, TechBook, TrapItem,  Intrinsic, Glyph, Simple, FireScroll, Poem, EventPoem, Assembled);
+
+
+#define ITEM_TYPES_LIST\
+  X(Scroll, 0)\
+  X(Potion, 1)\
+  X(Mushroom, 2)\
+  X(Amulet, 3)\
+  X(Ring, 4)\
+  X(TechBook, 5)\
+  X(TrapItem, 6)\
+  X(Intrinsic, 7)\
+  X(Glyph, 8)\
+  X(Simple, 9)\
+  X(FireScroll, 10)\
+  X(Poem, 11)\
+  X(EventPoem, 12)\
+  X(Assembled, 13)
+
+#define VARIANT_TYPES_LIST ITEM_TYPES_LIST
+#define VARIANT_NAME ItemTypeVariant
+
+#include "gen_variant.h"
+
+#undef VARIANT_TYPES_LIST
+#undef VARIANT_NAME
+
+template <class Archive>
+void serialize(Archive& ar1, ItemTypeVariant& v);
 
 }
 

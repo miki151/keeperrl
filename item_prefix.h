@@ -3,6 +3,8 @@
 #include "util.h"
 #include "effect.h"
 #include "spell_id.h"
+#include "pretty_archive.h"
+#include "lasting_effect.h"
 
 struct ItemAttrBonus {
   AttrType attr;
@@ -28,7 +30,23 @@ struct AttackerEffect {
   COMPARE_ALL(effect)
 };
 
-MAKE_VARIANT2(ItemPrefix, LastingEffect, VictimEffect, AttackerEffect, ItemAttrBonus, JoinPrefixes, SpellId);
+#define VARIANT_TYPES_LIST\
+  X(LastingEffect, 0)\
+  X(VictimEffect, 1)\
+  X(AttackerEffect, 2)\
+  X(ItemAttrBonus, 3)\
+  X(JoinPrefixes, 4)\
+  X(SpellId, 5)
+
+#define VARIANT_NAME ItemPrefix
+
+#include "gen_variant.h"
+#include "gen_variant_serialize.h"
+inline
+#include "gen_variant_serialize_pretty.h"
+
+#undef VARIANT_TYPES_LIST
+#undef VARIANT_NAME
 
 class ItemAttributes;
 extern void applyPrefix(const ContentFactory*, const ItemPrefix&, ItemAttributes&);

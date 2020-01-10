@@ -42,7 +42,7 @@ bool SimpleGame::meetsRequirements(const ImmigrantInfo& info) {
   if (!info.getTraits().contains(MinionTrait::FIGHTER) || minions.size() >= maxPopulation)
     return false;
   for (auto& req : info.requirements)
-    if (!req.type.visit(
+    if (!req.type.visit<bool>(
           [&](TechId id) { return technology.researched.count(id); },
           [](const auto&) { return true; }
     ))

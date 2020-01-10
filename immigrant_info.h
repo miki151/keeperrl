@@ -9,6 +9,8 @@
 #include "tutorial_state.h"
 #include "furniture_type.h"
 #include "tech_id.h"
+#include "pretty_archive.h"
+#include "sunlight_info.h"
 
 class ContentFactory;
 struct SpecialTraitInfo;
@@ -69,26 +71,52 @@ struct NegateRequirement {
 
 struct AssembledRequirement { SERIALIZE_EMPTY() };
 
-MAKE_VARIANT2(ImmigrantRequirement,
-    AttractionInfo,
-    TechId,
-    SunlightState,
-    FurnitureType,
-    CostInfo,
-    ExponentialCost,
-    Pregnancy,
-    RecruitmentInfo,
-    TutorialRequirement,
-    MinTurnRequirement,
-    AssembledRequirement,
-    NegateRequirement
-);
+#define IMMIGRANT_REQUIREMENT_LIST\
+  X(AttractionInfo, 0)\
+  X(TechId, 1)\
+  X(SunlightState, 2)\
+  X(FurnitureType, 3)\
+  X(CostInfo, 4)\
+  X(ExponentialCost, 5)\
+  X(Pregnancy, 6)\
+  X(RecruitmentInfo, 7)\
+  X(TutorialRequirement, 8)\
+  X(MinTurnRequirement, 9)\
+  X(AssembledRequirement, 10)\
+  X(NegateRequirement, 11)
+
+#define VARIANT_TYPES_LIST IMMIGRANT_REQUIREMENT_LIST
+#define VARIANT_NAME ImmigrantRequirement
+
+#include "gen_variant.h"
+#include "gen_variant_serialize.h"
+inline
+#include "gen_variant_serialize_pretty.h"
+
+#undef VARIANT_TYPES_LIST
+#undef VARIANT_NAME
 
 struct OutsideTerritory { SERIALIZE_EMPTY() };
 struct InsideTerritory { SERIALIZE_EMPTY() };
 struct NearLeader { SERIALIZE_EMPTY() };
 
-MAKE_VARIANT2(SpawnLocation, FurnitureType, OutsideTerritory, InsideTerritory, NearLeader, Pregnancy);
+#define VARIANT_TYPES_LIST\
+  X(FurnitureType, 0)\
+  X(OutsideTerritory, 1)\
+  X(InsideTerritory, 2)\
+  X(NearLeader, 3)\
+  X(Pregnancy, 4)
+
+#define VARIANT_NAME SpawnLocation
+
+#include "gen_variant.h"
+#include "gen_variant_serialize.h"
+inline
+#include "gen_variant_serialize_pretty.h"
+
+#undef VARIANT_TYPES_LIST
+#undef VARIANT_NAME
+
 
 class ImmigrantInfo {
   public:
@@ -136,7 +164,7 @@ class ImmigrantInfo {
   template <typename Visitor>
   void visitRequirements(const Visitor& visitor) const {
     for (auto& requirement : requirements) {
-      requirement.type.visit(visitor);
+      requirement.type.visit<void>(visitor);
     }
   }
 

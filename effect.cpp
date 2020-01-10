@@ -147,7 +147,7 @@ static bool isConsideredHostile(LastingEffect effect) {
 }
 
 bool Effect::isConsideredHostile() const {
-  return effect->visit(
+  return effect->visit<bool>(
       [&](const Effects::Lasting& e) {
         return ::isConsideredHostile(e.lastingEffect);
       },
@@ -1068,11 +1068,11 @@ string Effects::Filter::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f) + suffix();
 }
 
-#define FORWARD_CALL(Var, Name, ...)\
-Var->visit([&](const auto& e) { return e.Name(__VA_ARGS__); })
+#define FORWARD_CALL(RetType, Var, Name, ...)\
+Var->visit<RetType>([&](const auto& e) { return e.Name(__VA_ARGS__); })
 
 string Effect::getName(const ContentFactory* f) const {
-  return FORWARD_CALL(effect, getName, f);
+  return FORWARD_CALL(string, effect, getName, f);
 }
 
 Effect::Effect(const EffectType& t) : effect(t) {
@@ -1094,11 +1094,11 @@ Effect& Effect::operator =(const Effect&) = default;
 
 void Effect::apply(Position pos, Creature* attacker) const {
   if (auto c = pos.getCreature()) {
-    FORWARD_CALL(effect, applyToCreature, c, attacker);
+    FORWARD_CALL(void, effect, applyToCreature, c, attacker);
     if (isConsideredHostile() && attacker)
       c->onAttackedBy(attacker);
   }
-  effect->visit(
+  effect->visit<void>(
       [&](const auto&) { },
       [&](const Effects::ReviveCorpse& effect) {
         for (auto& item : pos.getItems())
@@ -1257,7 +1257,7 @@ void Effect::apply(Position pos, Creature* attacker) const {
 }
 
 string Effect::getDescription(const ContentFactory* f) const {
-  return FORWARD_CALL(effect, getDescription, f);
+  return FORWARD_CALL(string, effect, getDescription, f);
 }
 
 static bool isConsideredInDanger(const Creature* c) {
@@ -1268,7 +1268,7 @@ static bool isConsideredInDanger(const Creature* c) {
 
 EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const {
   bool isFighting = isConsideredInDanger(victim);
-  return effect->visit(
+  return effect->visit<EffectAIIntent>(
       [&] (const Effects::Permanent& e) {
         if (victim->getAttributes().isAffectedPermanently(e.lastingEffect))
           return EffectAIIntent::NONE;
@@ -1361,7 +1361,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
     }
     return allRes;
   };
-  return effect->visit(
+  return effect->visit<EffectAIIntent>(
       [&] (const Effects::Wish&){
         if (victim && victim->isPlayer() && !isEnemy)
           return EffectAIIntent::WANTED;
@@ -1422,8 +1422,8 @@ static optional<ViewId> getProjectile(LastingEffect effect) {
   }
 }
 optional<FXInfo> Effect::getProjectileFX() const {
-  return effect->visit(
-      [&](const auto&) -> optional<FXInfo> { return none; },
+  return effect->visit<optional<FXInfo>>(
+      [&](const auto&) { return none; },
       [&](const Effects::Lasting& e) -> optional<FXInfo> { return ::getProjectileFX(e.lastingEffect); },
       [&](const Effects::Damage&) -> optional<FXInfo> { return {FXName::MAGIC_MISSILE}; },
       [&](const Effects::Blast&) -> optional<FXInfo> { return {FXName::AIR_BLAST}; },
@@ -1433,7 +1433,7 @@ optional<FXInfo> Effect::getProjectileFX() const {
 }
 
 optional<ViewId> Effect::getProjectile() const {
-  return effect->visit(
+  return effect->visit<optional<ViewId>>(
       [&](const auto&) -> optional<ViewId> { return none; },
       [&](const Effects::Lasting& e) -> optional<ViewId> { return ::getProjectile(e.lastingEffect); },
       [&](const Effects::Damage&) -> optional<ViewId> { return ViewId("force_bolt"); },
@@ -1474,7 +1474,7 @@ vector<Effect> Effect::getWishedForEffects() {
 }
 
 optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
-  return effect->visit(
+  return effect->visit<optional<MinionEquipmentType>>(
       [&](const Effects::IncreaseMorale&) -> optional<MinionEquipmentType> { return MinionEquipmentType::COMBAT_ITEM; },
       [&](const Effects::Chance& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
       [&](const Effects::Area& a) -> optional<MinionEquipmentType> { return a.effect->getMinionEquipmentType(); },
@@ -1500,7 +1500,7 @@ optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
 }
 
 bool Effect::canAutoAssignMinionEquipment() const {
-  return effect->visit(
+  return effect->visit<bool>(
       [&](const Effects::Suicide&) { return false; },
       [&](const Effects::Chance& e) { return e.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Area& a) { return a.effect->canAutoAssignMinionEquipment(); },
@@ -1517,36 +1517,18 @@ bool Effect::canAutoAssignMinionEquipment() const {
 
 SERIALIZE_DEF(Effect, effect)
 
-template <class Archive>
-void serialize(Archive& ar1, EffectType& v) {
-  ar1(v.index);
-  switch (v.index) {
-#define X(Type, Index)\
-    case Index: \
-      if (Archive::is_loading::value) \
-        new(&v.elem##Index) Effects::Type; \
-      ar1(v.elem##Index); \
-      break;
-    EFFECT_TYPES_LIST
-#undef X
-    default: FATAL << "Error saving EffectType";
-  }
+#define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
+#define VARIANT_NAME EffectType
+namespace Effects {
+#include "gen_variant_serialize.h"
 }
 
 #include "pretty_archive.h"
 template void Effect::serialize(PrettyInputArchive&, unsigned);
 
-template <>
-void serialize(PrettyInputArchive& ar1, EffectType& v) {
-  string name;
-  ar1.readText(name);
-#define X(Type, Index)\
-  if (name == #Type) { \
-    v.index = Index; \
-    new(&v.elem##Index) Effects::Type;\
-    ar1(v.elem##Index); \
-  } else
-  EFFECT_TYPES_LIST
-#undef X
-  ar1.error(name + " is not part of EffectType");
+namespace Effects {
+template<>
+#include "gen_variant_serialize_pretty.h"
 }
+#undef VARIANT_TYPES_LIST
+#undef VARIANT_NAME

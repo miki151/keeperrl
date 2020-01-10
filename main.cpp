@@ -53,7 +53,7 @@
 #include "enemy_factory.h"
 #include "tileset.h"
 #include "campaign_builder.h"
-
+#include "attack_trigger.h"
 #include "fx_manager.h"
 #include "fx_renderer.h"
 #include "fx_view_manager.h"
@@ -310,6 +310,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   UserErrorLog.addOutput(DebugOutput::exitProgram());
   UserErrorLog.addOutput(DebugOutput::toStream(std::cerr));
   UserInfoLog.addOutput(DebugOutput::toStream(std::cerr));
+  auto trigger = AttackTrigger(StolenItems{});
+  CHECK(!!trigger.getReferenceMaybe<StolenItems>());
 #ifndef RELEASE
   ogzstream compressedLog("log.gz");
   if (!commandLineFlags["nolog"].was_set())

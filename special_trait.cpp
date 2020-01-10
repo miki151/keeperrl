@@ -22,7 +22,7 @@ optional<string> getExtraBodyPartPrefix(const ExtraBodyPart& part) {
 }
 
 void applySpecialTrait(SpecialTrait trait, Creature* c, const ContentFactory* factory) {
-  trait.visit(
+  trait.visit<void>(
       [&] (const ExtraTraining& t) {
         c->getAttributes().increaseMaxExpLevel(t.type, t.increase);
       },
@@ -54,7 +54,7 @@ void applySpecialTrait(SpecialTrait trait, Creature* c, const ContentFactory* fa
 }
 
 SpecialTrait transformBeforeApplying(SpecialTrait trait) {
-  return trait.visit(
+  return trait.visit<SpecialTrait>(
       [&] (const auto&) {
         return trait;
       },

@@ -80,12 +80,20 @@ void VillageControl::onMemberKilled(const Creature* victim, const Creature* kill
     victims += 1;
 }
 
+template <typename TriggerType>
+bool contains(const vector<AttackTrigger>& triggers) {
+  for (auto& t : triggers)
+    if (t.contains<TriggerType>())
+      return true;
+  return false;
+}
+
 void VillageControl::onEvent(const GameEvent& event) {
   using namespace EventInfo;
   event.visit(
       [&](const ItemStolen& info) {
         if (!collective->isConquered() && collective->getTerritory().contains(info.shopPosition)
-            && behaviour && behaviour->triggers.contains(AttackTrigger(StolenItems{}))
+            && behaviour && contains<StolenItems>(behaviour->triggers)
             && getEnemyCollective()->getCreatures().contains(info.creature)) {
           if (stolenItemCount == 0)
             info.creature->privateMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
@@ -95,7 +103,7 @@ void VillageControl::onEvent(const GameEvent& event) {
       [&](const ItemsPickedUp& info) {
         if (!collective->isConquered() && collective->getTerritory().contains(info.creature->getPosition())
             && isEnemy(info.creature) && behaviour
-            && behaviour->triggers.contains(AttackTrigger(StolenItems{}))
+            && contains<StolenItems>(behaviour->triggers)
             && getEnemyCollective()->getCreatures().contains(info.creature)) {
           bool wasTheft = false;
           for (const Item* it : info.items)
@@ -285,3 +293,10 @@ void VillageControl::update(bool currentlyActive) {
     }
 }
 
+#define VARIANT_TYPES_LIST ATTACK_TRIGGERS_LIST
+#define VARIANT_NAME AttackTrigger
+
+template<>
+#include "gen_variant_serialize_pretty.h"
+#undef VARIANT_TYPES_LIST
+#undef VARIANT_NAME

@@ -53,7 +53,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, CreatureFactory* factory, ve
 }
 
 PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviour) {
-  return behaviour.visit(
+  return behaviour.visit<PTask>(
       [&](KillLeader) {
         if (auto leader = enemy->getLeader())
           return Task::attackCreatures({leader});

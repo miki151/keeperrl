@@ -6,7 +6,7 @@
 
 void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAttributes& attr) {
   attr.prefixes.push_back(getItemName(factory, prefix));
-  prefix.visit(
+  prefix.visit<void>(
       [&](LastingEffect effect) {
         attr.equipedEffect.push_back(effect);
       },
@@ -30,7 +30,7 @@ void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAt
 }
 
 vector<string> getEffectDescription(const ContentFactory* factory, const ItemPrefix& prefix) {
-  return prefix.visit(
+  return prefix.visit<vector<string>>(
       [&](LastingEffect effect) -> vector<string> {
         return {"grants " + LastingEffects::getName(effect)};
       },
@@ -56,7 +56,7 @@ vector<string> getEffectDescription(const ContentFactory* factory, const ItemPre
 }
 
 string getItemName(const ContentFactory* factory, const ItemPrefix& prefix) {
-  return prefix.visit(
+  return prefix.visit<string>(
       [&](LastingEffect effect) {
         return LastingEffects::getName(effect);
       },
@@ -79,7 +79,7 @@ string getItemName(const ContentFactory* factory, const ItemPrefix& prefix) {
 }
 
 string getGlyphName(const ContentFactory* factory, const ItemPrefix& prefix) {
-  return prefix.visit(
+  return prefix.visit<string>(
       [&](const auto&) {
         return ::getItemName(factory, prefix);
       },
