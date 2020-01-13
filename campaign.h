@@ -18,10 +18,11 @@ class Campaign {
     ViewId SERIAL(viewId);
     EnemyId SERIAL(enemyId);
     string SERIAL(name);
+    bool SERIAL(alwaysPresent) = false;
     string getDescription() const;
     bool isEnemy() const;
     VillainType SERIAL(type);
-    SERIALIZE_ALL(viewId, enemyId, name, type)
+    SERIALIZE_ALL(NAMED(viewId), NAMED(enemyId), NAMED(name), NAMED(type), OPTION(alwaysPresent))
   };
   struct KeeperInfo {
     ViewId SERIAL(viewId);

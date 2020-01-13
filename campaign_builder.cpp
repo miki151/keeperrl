@@ -209,7 +209,6 @@ struct VillainPlacement {
 
 void CampaignBuilder::placeVillains(Campaign& campaign, vector<Campaign::SiteInfo::Dweller> villains,
     const VillainPlacement& placement, int count) {
-  random.shuffle(villains.begin(), villains.end());
   for (int i = 0; villains.size() < count; ++i)
     villains.push_back(villains[i]);
   if (villains.size() > count)
@@ -256,10 +255,15 @@ VillainPlacement CampaignBuilder::getVillainPlacement(const Campaign& campaign, 
 
 using Dweller = Campaign::SiteInfo::Dweller;
 
-template <typename T>
-vector<Dweller> shuffle(RandomGen& random, vector<T> v) {
-  random.shuffle(v.begin(), v.end());
-  return v.transform([](const T& t) { return Dweller(t); });
+vector<Dweller> shuffle(RandomGen& random, vector<Campaign::VillainInfo> v) {
+  int numAlways = 0;
+  for (auto& elem : v)
+    if (elem.alwaysPresent) {
+      swap(v[numAlways], elem);
+      ++numAlways;
+    }
+  random.shuffle(v.begin() + numAlways, v.end());
+  return v.transform([](auto& t) { return Dweller(t); });
 }
 
 void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& counts,
