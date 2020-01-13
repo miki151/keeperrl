@@ -1487,6 +1487,10 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
         collective->hasResource({ResourceId::GOLD, *elem.getRansom()})};
     break;
   }
+  for (auto& elem : notifiedAttacks)
+    if (elem.isOngoing())
+      info.onGoingAttacks.push_back(CollectiveInfo::OnGoingAttack{elem.getAttackerViewId(), elem.getAttackerName(),
+          elem.getCreatures()[0]->getUniqueId()});
   const auto maxEnemyCountdown = 500_visible;
   if (auto& enemies = getModel()->getExternalEnemies())
     if (auto nextWave = enemies->getNextWave()) {
@@ -2241,8 +2245,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
         }
       break;
     case UserInputId::GO_TO_ENEMY:
-      for (Vec2 v : getVisibleEnemies())
-        if (Creature* c = Position(v, getCurrentLevel()).getCreature())
+      for (auto c : getModel()->getAllCreatures())
+        if (c->getUniqueId() == input.get<Creature::Id>())
           setScrollPos(c->getPosition());
       break;
     case UserInputId::ADD_GROUP_TO_TEAM: {

@@ -17,6 +17,7 @@
 #include "territory.h"
 #include "content_factory.h"
 #include "external_enemies_type.h"
+#include "collective_control.h"
 
 SERIALIZE_DEF(ExternalEnemies, currentWaves, waves, nextWave)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
@@ -107,12 +108,13 @@ void ExternalEnemies::update(WLevel level, LocalTime localTime) {
   WCollective target = level->getModel()->getGame()->getPlayerCollective();
   CHECK(!!target);
   updateCurrentWaves(target);
+  auto& creatureFactory = level->getGame()->getContentFactory()->getCreatures();
   if (auto nextWave = popNextWave(localTime)) {
     vector<Creature*> attackers;
     Vec2 landingDir(Random.choose<Dir>());
     auto attackTask = getAttackTask(target, nextWave->enemy.behaviour);
     auto attackTaskRef = attackTask.get();
-    auto creatures = nextWave->enemy.creatures.generate(Random, &level->getGame()->getContentFactory()->getCreatures(),
+    auto creatures = nextWave->enemy.creatures.generate(Random, &creatureFactory,
         TribeId::getMonster(), MonsterAIFactory::singleTask(std::move(attackTask),
             !nextWave->enemy.behaviour.contains<HalloweenKids>()));
     for (auto& c : creatures) {
@@ -122,7 +124,8 @@ void ExternalEnemies::update(WLevel level, LocalTime localTime) {
         attackers.push_back(ref);
     }
     if (!nextWave->enemy.behaviour.contains<HalloweenKids>()) {
-      target->addAttack(CollectiveAttack({attackTaskRef}, nextWave->enemy.name, attackers));
+      target->getControl()->addAttack(CollectiveAttack({attackTaskRef}, nextWave->enemy.name,
+          nextWave->enemy.creatures.getViewId(&creatureFactory), attackers));
       currentWaves.push_back(CurrentWave{nextWave->enemy.name, attackers});
     }
   }

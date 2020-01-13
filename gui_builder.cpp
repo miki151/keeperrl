@@ -1801,6 +1801,17 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialIn
               gui.label("Show message history"),
               gui.button(getButtonCallback(UserInputId::SHOW_HISTORY))));
     list.addSpace();
+    if (!info.onGoingAttacks.empty()) {
+      list.addElem(gui.label("Ongoing attacks:", Color::WHITE));
+      for (auto& elem : info.onGoingAttacks)
+        list.addElem(gui.stack(
+            gui.button(getButtonCallback({UserInputId::GO_TO_ENEMY, elem.creatureId})),
+            gui.uiHighlightMouseOver(),
+            gui.getListBuilder()
+                .addElem(gui.viewObject(elem.viewId), 30)
+                .addElemAuto(gui.label(elem.attacker))
+                .buildHorizontalList()));
+    }
     if (!info.enemyGroups.empty()) {
       list.addElem(gui.label("Enemies:", Color::WHITE));
       for (auto& elem : info.enemyGroups){
