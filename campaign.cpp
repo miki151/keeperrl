@@ -9,7 +9,7 @@
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Campaign);
 
-SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, influenceSize, playerRole, type)
+SERIALIZE_DEF(Campaign, sites, playerPos, worldName, defeated, influencePos, influenceSize, playerRole, type, mapZoom)
 
 const Table<Campaign::SiteInfo>& Campaign::getSites() const {
   return sites;
@@ -161,6 +161,10 @@ int Campaign::getNumNonEmpty() const {
     if (!sites[v].isEmpty())
       ++ret;
   return ret;
+}
+
+int Campaign::getMapZoom() const {
+  return mapZoom;
 }
 
 map<string, string> Campaign::getParameters() const {

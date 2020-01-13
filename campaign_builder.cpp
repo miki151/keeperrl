@@ -345,6 +345,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
   while (1) {
     setCountLimits(campaignInfo);
     Campaign campaign(terrain, type, playerRole, worldName);
+    campaign.mapZoom = campaignInfo.mapZoom;
     if (auto pos = considerStaticPlayerPos(campaign)) {
       campaign.clearSite(*pos);
       setPlayerPos(campaign, *pos, avatarInfo.playerCreature->getMaxViewIdUpgrade());

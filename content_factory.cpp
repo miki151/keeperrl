@@ -362,6 +362,8 @@ optional<string> ContentFactory::readData(const GameConfig* config, const string
       return "Campaign villain limits must be between 1 and 20"_s;
   if (campaignInfo.influenceSize < 1)
     return "Campaign influence size must be 1 or higher"_s;
+  if (campaignInfo.mapZoom < 1 || campaignInfo.mapZoom > 3)
+    return "Campaign map zoom must be between 1 and 3"_s;
   auto errors = keyVerifier.verify();
   if (!errors.empty())
     return errors.front();

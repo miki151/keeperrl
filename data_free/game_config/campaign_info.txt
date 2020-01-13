@@ -1,8 +1,9 @@
 "default" {
-  size = 30 15
-# Warning: the lower bound of the range is inclusive, higher bound is exclusive
-  maxMainVillains = 20
-  maxLesserVillains = 20
-  maxAllies = 20
-  influenceSize = 1000
+# if you want to have a "huge" map, I recommend setting size to 34 18 and mapZoom to 1, this way there is no scrolling needed
+  size = 17 9
+  mapZoom = 2
+  maxMainVillains = 4
+  maxLesserVillains = 6
+  maxAllies = 4
+  influenceSize = 3
 }

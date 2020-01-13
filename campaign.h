@@ -58,6 +58,7 @@ class Campaign {
   bool canTravelTo(Vec2) const;
   bool isInInfluence(Vec2) const;
   int getNumNonEmpty() const;
+  int getMapZoom() const;
   bool canEmbark(Vec2) const;
   CampaignType getType() const;
   PlayerRole getPlayerRole() const;
@@ -78,4 +79,5 @@ class Campaign {
   int SERIAL(influenceSize);
   PlayerRole SERIAL(playerRole);
   CampaignType SERIAL(type);
+  int SERIAL(mapZoom);
 };
