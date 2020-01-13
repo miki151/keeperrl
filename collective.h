@@ -190,7 +190,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   DungeonLevel& getDungeonLevel();
 
   vector<Creature*> getConsumptionTargets(Creature* consumer) const;
-  void addAttack(const CollectiveAttack&);
   void onRansomPaid();
   void onExternalEnemyKilled(const string& name);
   void addRecordedEvent(string);

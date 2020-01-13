@@ -51,9 +51,9 @@ const vector<Creature*>& CollectiveTeams::getMembers(TeamId team) const {
 
 vector<TeamId> CollectiveTeams::getContaining(const Creature* c) const {
   vector<TeamId> ret;
-  for (auto team : getKeys(teamInfo))
-    if (contains(team, c))
-      ret.push_back(team);
+  for (auto& team : teamInfo)
+    if (contains(team.first, c))
+      ret.push_back(team.first);
   return ret;
 }
 

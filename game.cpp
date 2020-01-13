@@ -46,7 +46,7 @@ void Game::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Game>);
   ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
   ar(musicType, statistics, spectator, tribes, gameIdentifier, players, contentFactory, sunlightTimeOffset);
-  ar(gameDisplayName, finishCurrentMusic, models, visited, baseModel, campaign, localTime, turnEvents);
+  ar(gameDisplayName, models, visited, baseModel, campaign, localTime, turnEvents);
   if (Archive::is_loading::value)
     sunlightInfo.update(getGlobalTime() + sunlightTimeOffset);
 }
@@ -516,21 +516,15 @@ MusicType Game::getCurrentMusic() const {
   return musicType;
 }
 
-void Game::setDefaultMusic(bool now) {
+void Game::setDefaultMusic() {
   if (sunlightInfo.getState() == SunlightState::NIGHT)
     musicType = MusicType::NIGHT;
   else
     musicType = getCurrentModel()->getDefaultMusic().value_or(MusicType::PEACEFUL);
-  finishCurrentMusic = now;
 }
 
-void Game::setCurrentMusic(MusicType type, bool now) {
+void Game::setCurrentMusic(MusicType type) {
   musicType = type;
-  finishCurrentMusic = now;
-}
-
-bool Game::changeMusicNow() const {
-  return true;
 }
 
 const SunlightInfo& Game::getSunlightInfo() const {

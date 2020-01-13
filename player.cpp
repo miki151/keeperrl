@@ -1282,26 +1282,26 @@ const vector<Vec2>& Player::getUnknownLocations(WConstLevel level) const {
 
 void Player::considerKeeperModeTravelMusic() {
   if (auto t = getModel()->getDefaultMusic()) {
-    getGame()->setCurrentMusic(*t, true);
+    getGame()->setCurrentMusic(*t);
     return;
   }
   for (WCollective col : getModel()->getCollectives())
     if (col->getVillainType() == VillainType::MAIN && !col->isConquered() &&
         col->getTerritory().contains(creature->getPosition())) {
-      getGame()->setCurrentMusic(MusicType::BATTLE, true);
+      getGame()->setCurrentMusic(MusicType::BATTLE);
       return;
     }
-  getGame()->setCurrentMusic(MusicType::PEACEFUL, true);
+  getGame()->setCurrentMusic(MusicType::PEACEFUL);
 }
 
 void Player::considerAdventurerMusic() {
   for (WCollective col : getModel()->getCollectives())
     if (col->getVillainType() == VillainType::MAIN && !col->isConquered() &&
         col->getTerritory().contains(creature->getPosition())) {
-      getGame()->setCurrentMusic(MusicType::ADV_BATTLE, true);
+      getGame()->setCurrentMusic(MusicType::ADV_BATTLE);
       return;
     }
-  getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL, true);
+  getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL);
 }
 
 REGISTER_TYPE(ListenerTemplate<Player>)

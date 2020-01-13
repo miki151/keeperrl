@@ -323,7 +323,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
         return *c;
     auto gameTime = game->getGlobalTime();
     if (lastMusicUpdate < gameTime && withMusic) {
-      jukebox->setType(game->getCurrentMusic(), game->changeMusicNow());
+      jukebox->setType(game->getCurrentMusic(), true);
       lastMusicUpdate = gameTime;
     }
     if (lastAutoSave < gameTime - getAutosaveFreq() && !noAutoSave) {

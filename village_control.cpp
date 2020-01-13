@@ -165,7 +165,7 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
       attackTasks.push_back(task.get());
       collective->setTask(c, std::move(task));
     }
-    enemy->addAttack(CollectiveAttack(std::move(attackTasks), collective, attackers, ransom));
+    enemy->getControl()->addAttack(CollectiveAttack(std::move(attackTasks), collective, attackers, ransom));
     attackSizes[team] = attackers.size();
   }
 }
@@ -276,9 +276,9 @@ void VillageControl::update(bool currentlyActive) {
         maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
       double prob = behaviour->getAttackProbability(this) / updateFreq;
       if (Random.chance(prob)) {
-        vector<Creature*> fighters;
-        fighters = collective->getCreatures(MinionTrait::FIGHTER)
-            .filter([](const Creature* c) { return !c->isAffected(LastingEffect::INSANITY); });
+        vector<Creature*> fighters = collective->getCreatures(MinionTrait::FIGHTER).filter([&](auto c) {
+          return collective->getTeams().getContaining(c).empty() && !c->isAffected(LastingEffect::INSANITY);
+        });
         /*if (getCollective()->getGame()->isSingleModel())
           fighters = filter(fighters, [this] (const Creature* c) {
               return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });*/

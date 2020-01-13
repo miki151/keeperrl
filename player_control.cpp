@@ -2719,10 +2719,6 @@ void PlayerControl::checkKeeperDanger() {
   }
 }
 
-void PlayerControl::onNoEnemies() {
-  getGame()->setDefaultMusic(false);
-}
-
 void PlayerControl::considerNightfallMessage() {
   /*if (getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
     if (!isNight) {
@@ -2823,7 +2819,7 @@ void PlayerControl::tick() {
       if (isConsideredAttacking(c, attack.getAttacker())) {
         addMessage(PlayerMessage("You are under attack by " + attack.getAttackerName() + "!",
             MessagePriority::CRITICAL).setPosition(c->getPosition()));
-        getGame()->setCurrentMusic(MusicType::BATTLE, true);
+        getGame()->setCurrentMusic(MusicType::BATTLE);
         newAttacks.removeElement(attack);
         if (auto attacker = attack.getAttacker())
           collective->addKnownVillain(attacker);
@@ -2832,6 +2828,8 @@ void PlayerControl::tick() {
           ransomAttacks.push_back(attack);
         break;
       }
+  if (notifiedAttacks.empty())
+    getGame()->setDefaultMusic();
   auto time = collective->getLocalTime();
   if (getGame()->getOptions()->getBoolValue(OptionId::HINTS) && time > hintFrequency) {
     int numHint = time.getDouble() / hintFrequency.getDouble() - 1;

@@ -45,9 +45,8 @@ class Game : public OwnedObject<Game> {
   string getGameIdentifier() const;
   string getGameDisplayName() const;
   MusicType getCurrentMusic() const;
-  void setCurrentMusic(MusicType, bool now);
-  void setDefaultMusic(bool now);
-  bool changeMusicNow() const;
+  void setCurrentMusic(MusicType);
+  void setDefaultMusic();
   Statistics& getStatistics();
   const Statistics& getStatistics() const;
   Tribe* getTribe(TribeId) const;
@@ -122,7 +121,6 @@ class Game : public OwnedObject<Game> {
   map<VillainType, vector<WCollective>> SERIAL(villainsByType);
   vector<WCollective> SERIAL(collectives);
   MusicType SERIAL(musicType);
-  bool SERIAL(finishCurrentMusic) = true;
   unique_ptr<CreatureView> SERIAL(spectator);
   HeapAllocated<Statistics> SERIAL(statistics);
   Options* options = nullptr;

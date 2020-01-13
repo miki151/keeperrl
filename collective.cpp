@@ -502,10 +502,8 @@ void Collective::tick() {
     vector<Position> enemyPos = getEnemyPositions();
     if (!enemyPos.empty())
       delayDangerousTasks(enemyPos, getLocalTime() + 20_visible);
-    else {
+    else
       alarmInfo.reset();
-      control->onNoEnemies();
-    }
   }
   if (config->getConstructions())
     updateConstructions();
@@ -1482,10 +1480,6 @@ const Immigration& Collective::getImmigration() const {
 
 const MinionActivities& Collective::getMinionActivities() const {
   return *minionActivities;
-}
-
-void Collective::addAttack(const CollectiveAttack& attack) {
-  control->addAttack(attack);
 }
 
 CollectiveTeams& Collective::getTeams() {
