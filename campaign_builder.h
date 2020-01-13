@@ -6,6 +6,7 @@
 struct CampaignSetup;
 struct VillainPlacement;
 struct VillainCounts;
+struct CampaignInfo;
 class GameConfig;
 
 RICH_ENUM(
@@ -22,8 +23,8 @@ using GameIntros = vector<string>;
 class CampaignBuilder {
   public:
   CampaignBuilder(View*, RandomGen&, Options*, VillainsTuple, GameIntros, const AvatarInfo&);
-  optional<CampaignSetup> prepareCampaign(function<optional<RetiredGames>(CampaignType)>, CampaignType defaultType,
-      string worldName);
+  optional<CampaignSetup> prepareCampaign(const ContentFactory*, function<optional<RetiredGames>(CampaignType)>,
+      CampaignType defaultType, string worldName);
   static CampaignSetup getEmptyCampaign();
 
   private:
@@ -45,7 +46,7 @@ class CampaignBuilder {
   void placeVillains(Campaign&, const VillainCounts&, const optional<RetiredGames>&, TribeAlignment);
   PlayerRole getPlayerRole() const;
   const vector<string>& getIntroMessages(CampaignType) const;
-  void setCountLimits();
+  void setCountLimits(const CampaignInfo&);
 };
 
 struct CampaignSetup {

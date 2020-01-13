@@ -44,7 +44,6 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::RETIRED_VILLAINS, 1},
   {OptionId::LESSER_VILLAINS, 3},
   {OptionId::ALLIES, 2},
-  {OptionId::INFLUENCE_SIZE, 3},
   {OptionId::GENERATE_MANA, 0},
   {OptionId::CURRENT_MOD2, string("vanilla")},
   {OptionId::ENDLESS_ENEMIES, 2},
@@ -77,7 +76,6 @@ const map<OptionId, string> names {
   {OptionId::RETIRED_VILLAINS, "Retired villains"},
   {OptionId::LESSER_VILLAINS, "Lesser villains"},
   {OptionId::ALLIES, "Allies"},
-  {OptionId::INFLUENCE_SIZE, "Min. tribes in influence zone"},
   {OptionId::GENERATE_MANA, "Generate mana in library"},
   {OptionId::CURRENT_MOD2, "Current mod"},
   {OptionId::ENDLESS_ENEMIES, "Start endless enemy waves"},
@@ -187,22 +185,18 @@ string Options::getStringValue(OptionId id) {
 
 int Options::getIntValue(OptionId id) {
   int v = *getValue(id).getValueMaybe<int>();
-  if (limits[id]) {
-    if (v > limits[id]->second)
-      return limits[id]->second;
-    if (v < limits[id]->first)
-      return limits[id]->first;
-  }
+  if (auto& limit = limits[id])
+    v = max(limit->getStart(), min(limit->getEnd() - 1, v));
   return v;
 }
 
-void Options::setLimits(OptionId id, int minV, int maxV) {
-  limits[id] = make_pair(minV, maxV);
+void Options::setLimits(OptionId id, Range r) {
+  limits[id] = r;
 }
 
-optional<pair<int, int>> Options::getLimits(OptionId id) {
+optional<Range> Options::getLimits(OptionId id) {
   if (!choices[id].empty())
-    return make_pair(0, choices[id].size() - 1);
+    return Range(0, choices[id].size());
   return limits[id];
 }
 
@@ -261,7 +255,6 @@ string Options::getValueString(OptionId id) {
     case OptionId::MAIN_VILLAINS:
     case OptionId::LESSER_VILLAINS:
     case OptionId::RETIRED_VILLAINS:
-    case OptionId::INFLUENCE_SIZE:
     case OptionId::ALLIES:
       return toString(getIntValue(id));
     case OptionId::SOUND:

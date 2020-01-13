@@ -11,6 +11,7 @@
 #include "map_layouts.h"
 #include "biome_info.h"
 #include "biome_id.h"
+#include "campaign_info.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -50,6 +51,7 @@ class ContentFactory {
   map<BuildingId, BuildingInfo> SERIAL(buildingInfo);
   MapLayouts SERIAL(mapLayouts);
   map<BiomeId, BiomeInfo> SERIAL(biomeInfo);
+  CampaignInfo SERIAL(campaignInfo);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

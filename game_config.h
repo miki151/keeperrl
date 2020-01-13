@@ -30,7 +30,8 @@ enum class GameConfigId {
   ITEMS,
   BUILDING_INFO,
   NAMES,
-  BIOMES
+  BIOMES,
+  CAMPAIGN_INFO
 };
 
 class GameConfig {

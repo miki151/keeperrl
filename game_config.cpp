@@ -50,6 +50,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "names";
     case GameConfigId::BIOMES:
       return "biomes";
+    case GameConfigId::CAMPAIGN_INFO:
+      return "campaign_info";
   }
 }
 

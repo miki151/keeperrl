@@ -3290,7 +3290,7 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
     }
     rows.addElem(gui.stack(columns.buildHorizontalList(), columns2.buildHorizontalList()));
   }
-  Vec2 maxSize(17 * iconSize, 9 * iconSize);
+  Vec2 maxSize(min(sites.getBounds().width(), 17) * iconSize, min(sites.getBounds().height(), 9) * iconSize);
   auto mapContent = rows.buildVerticalList();
   if (*mapContent->getPreferredWidth() > maxSize.x || *mapContent->getPreferredHeight() > maxSize.y)
     mapContent = gui.scrollArea(std::move(mapContent));
@@ -3593,7 +3593,7 @@ SGuiElem GuiBuilder::drawOptionElem(OptionId id, function<void()> onChanged, opt
       ret = gui.getListBuilder()
           .addElem(gui.labelFun([=]{ return name + ": " + getValue(); }), renderer.getTextLength(name) + 20)
           .addBackElemAuto(drawPlusMinus([=] (int v) { options->setValue(id, value + v); onChanged();},
-              value < limits->second, value > limits->first, options->hasChoices(id)))
+              value < limits->getEnd() - 1, value > limits->getStart(), options->hasChoices(id)))
           .buildHorizontalList();
       break;
     }

@@ -15,6 +15,8 @@
 #include "tribe_alignment.h"
 #include "external_enemies_type.h"
 #include "enemy_aggression_level.h"
+#include "campaign_info.h"
+#include "content_factory.h"
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
   if (campaign.getPlayerRole() == PlayerRole::ADVENTURER && options->getIntValue(OptionId::ALLIES) == 0)
@@ -22,15 +24,16 @@ optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign
   return campaign.sites.getBounds().middle();
 }
 
-void CampaignBuilder::setCountLimits() {
+void CampaignBuilder::setCountLimits(const CampaignInfo& info) {
+  int minMainVillains =
 #ifdef RELEASE
-  options->setLimits(OptionId::MAIN_VILLAINS, 1, 4);
+  1;
 #else
-  options->setLimits(OptionId::MAIN_VILLAINS, 0, 4);
+  0;
 #endif
-  options->setLimits(OptionId::LESSER_VILLAINS, 0, 6);
-  options->setLimits(OptionId::ALLIES, getPlayerRole() == PlayerRole::ADVENTURER ? 1 : 0, 4);
-  options->setLimits(OptionId::INFLUENCE_SIZE, 3, 6);
+  options->setLimits(OptionId::MAIN_VILLAINS, Range(minMainVillains, info.maxMainVillains + 1));
+  options->setLimits(OptionId::LESSER_VILLAINS, Range(0, info.maxLesserVillains + 1));
+  options->setLimits(OptionId::ALLIES, Range(getPlayerRole() == PlayerRole::ADVENTURER ? 1 : 0, info.maxAllies + 1));
 }
 
 vector<OptionId> CampaignBuilder::getCampaignOptions(CampaignType type) const {
@@ -219,19 +222,23 @@ void CampaignBuilder::placeVillains(Campaign& campaign, vector<Campaign::SiteInf
   if (auto& pos = placement.firstLocation)
     freePos = concat({*pos}, freePos);
   for (int i : All(villains))
-    campaign.sites[freePos[i]].dweller = villains[i];
+    if (i < freePos.size())
+      campaign.sites[freePos[i]].dweller = villains[i];
 }
 
 VillainPlacement CampaignBuilder::getVillainPlacement(const Campaign& campaign, VillainType type) {
+  auto size = campaign.getSites().getBounds().getSize();
+  int middle = (size.x - 1) / 2;
+  int mainMargin = 3;
   VillainPlacement ret { [&campaign](int x) { return campaign.sites.getBounds().getXRange().contains(x);}, none };
   switch (campaign.getType()) {
     case CampaignType::FREE_PLAY:
       switch (type) {
         case VillainType::LESSER:
-          ret.xPredicate = [](int x) { return x >= 5 && x < 12; };
+          ret.xPredicate = [=](int x) { return abs(x - middle) <= mainMargin; };
           break;
         case VillainType::MAIN:
-          ret.xPredicate = [](int x) { return (x >= 1 && x < 5) || (x >= 12 && x < 16) ; };
+          ret.xPredicate = [=](int x) { return x > 0 && x < size.x - 1 && abs(x - middle) > mainMargin; };
           break;
         case VillainType::ALLY:
           if (campaign.getPlayerRole() == PlayerRole::ADVENTURER)
@@ -322,9 +329,11 @@ static EnemyAggressionLevel getAggressionLevel(Options* options) {
   fail();
 }
 
-optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<RetiredGames>(CampaignType)> genRetired,
+optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* contentFactory,
+    function<optional<RetiredGames>(CampaignType)> genRetired,
     CampaignType type, string worldName) {
-  Vec2 size(17, 9);
+  auto& campaignInfo = contentFactory->campaignInfo;
+  Vec2 size = campaignInfo.size;
   int numBlocked = 0.6 * size.x * size.y;
   Table<Campaign::SiteInfo> terrain = getTerrain(random, size, numBlocked);
   auto retired = genRetired(type);
@@ -334,7 +343,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
   options->setChoices(OptionId::ENDLESS_ENEMIES, {"none", "from the start", "after winning"});
   options->setChoices(OptionId::ENEMY_AGGRESSION, {"none", "moderate", "extreme"});
   while (1) {
-    setCountLimits();
+    setCountLimits(campaignInfo);
     Campaign campaign(terrain, type, playerRole, worldName);
     if (auto pos = considerStaticPlayerPos(campaign)) {
       campaign.clearSite(*pos);
@@ -343,7 +352,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
     placeVillains(campaign, getVillainCounts(type, options), retired, avatarInfo.tribeAlignment);
     while (1) {
       bool updateMap = false;
-      campaign.influenceSize = options->getIntValue(OptionId::INFLUENCE_SIZE);
+      campaign.influenceSize = campaignInfo.influenceSize;
       campaign.refreshInfluencePos();
       CampaignAction action = autoConfirm(type) ? CampaignActionId::CONFIRM
           : view->prepareCampaign({
@@ -376,7 +385,6 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(function<optional<Retir
           switch (action.get<OptionId>()) {
             case OptionId::PLAYER_NAME:
             case OptionId::GENERATE_MANA:
-            case OptionId::INFLUENCE_SIZE:
             case OptionId::ENDLESS_ENEMIES:
             case OptionId::ENEMY_AGGRESSION:
               break;

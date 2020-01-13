@@ -24,7 +24,7 @@
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
-  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo);
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo);
   creatures.setContentFactory(this);
 }
 
@@ -350,6 +350,18 @@ optional<string> ContentFactory::readData(const GameConfig* config, const string
         return "No resource distribution found for depth " + toString(depth) + ". Please fix resources config.";
     }
   }
+  map<string, CampaignInfo> campaignTmp;
+  if (auto res = config->readObject(campaignTmp, GameConfigId::CAMPAIGN_INFO, &keyVerifier))
+    return *res;
+  string elemName = "default";
+  if (campaignTmp.size() != 1 || !campaignTmp.count(elemName))
+    return "Campaign info table should contain exactly one element named \"" + elemName + "\""_s;
+  campaignInfo = campaignTmp.at(elemName);
+  for (auto& l : {campaignInfo.maxAllies, campaignInfo.maxMainVillains, campaignInfo.maxLesserVillains})
+    if (l < 1 || l > 20)
+      return "Campaign villain limits must be between 1 and 20"_s;
+  if (campaignInfo.influenceSize < 1)
+    return "Campaign influence size must be 1 or higher"_s;
   auto errors = keyVerifier.verify();
   if (!errors.empty())
     return errors.front();

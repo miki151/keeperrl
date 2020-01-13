@@ -1,0 +1,8 @@
+"default" {
+  size = 30 15
+# Warning: the lower bound of the range is inclusive, higher bound is exclusive
+  maxMainVillains = 20
+  maxLesserVillains = 20
+  maxAllies = 20
+  influenceSize = 1000
+}

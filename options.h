@@ -47,7 +47,6 @@ RICH_ENUM(OptionId,
   RETIRED_VILLAINS,
   LESSER_VILLAINS,
   ALLIES,
-  INFLUENCE_SIZE,
   GENERATE_MANA,
   CURRENT_MOD2,
   ENDLESS_ENEMIES,
@@ -74,8 +73,8 @@ class Options {
   string getValueString(OptionId);
   void setValue(OptionId, Value);
   int getIntValue(OptionId);
-  void setLimits(OptionId, int min, int max);
-  optional<pair<int, int>> getLimits(OptionId);
+  void setLimits(OptionId, Range);
+  optional<Range> getLimits(OptionId);
   vector<OptionId> getOptions(OptionSet);
   void handle(View*, OptionSet, int lastIndex = 0);
   bool handleOrExit(View*, OptionSet, int lastIndex = -1);
@@ -95,7 +94,7 @@ class Options {
   FilePath filename;
   EnumMap<OptionId, optional<Value>> overrides;
   EnumMap<OptionId, vector<string>> choices;
-  EnumMap<OptionId, optional<pair<int, int>>> limits;
+  EnumMap<OptionId, optional<Range>> limits;
 };
 
 
