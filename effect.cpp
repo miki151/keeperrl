@@ -1211,8 +1211,10 @@ void Effect::apply(Position pos, Creature* attacker) const {
           for (auto col : pos.getGame()->getCollectives())
             if (col->getCreatures().contains(attacker)) {
               for (auto& elem : col->getImmigration().getImmigrants())
-                if (elem.getId(0) == m.creature)
+                if (elem.getId(0) == m.creature) {
                   col->addCreature(c[0], elem.getTraits());
+                  break;
+                }
             }
         }
       },
