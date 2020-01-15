@@ -60,6 +60,7 @@
 #include "immigrant_info.h"
 #include "item_types.h"
 #include "health_type.h"
+#include "village_control.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -158,6 +159,7 @@ void Collective::updateCreatureStatus(Creature* c) {
 }
 
 void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
+  CHECK(!creatures.contains(c));
   if (c->getGlobalTime()) { // only do this if creature already exists on the map
     c->addEffect(LastingEffect::RESTED, 500_visible, false);
     c->addEffect(LastingEffect::SATIATED, 500_visible, false);
@@ -401,6 +403,23 @@ void Collective::setControl(PCollectiveControl c) {
   control = std::move(c);
 }
 
+void Collective::makeConqueredRetired(Collective* conqueror) {
+  setControl(VillageControl::copyOf(this, dynamic_cast<VillageControl*>(conqueror->control.get())));
+  name = conqueror->name;
+  config = conqueror->config;
+  discoverable = conqueror->discoverable;
+  immigration = makeOwner<Immigration>(this, conqueror->immigration->getImmigrants());
+  setVillainType(conqueror->getVillainType());
+  setEnemyId(*conqueror->getEnemyId());
+  auto oldCreatures = getCreatures();
+  for (auto c : copyOf(conqueror->getCreatures()))
+    addCreature(c, conqueror->getAllTraits(c));
+  for (auto c : creatures)
+    getGame()->transferCreature(c, getModel(), territory->getAll());
+  for (auto c : oldCreatures)
+    c->dieNoReason();
+}
+
 vector<Position> Collective::getEnemyPositions() const {
   PROFILE;
   vector<Position> enemyPos;
@@ -551,6 +570,15 @@ void Collective::updateAutomatonPartsTasks() {
 
 const vector<Creature*>& Collective::getCreatures(MinionTrait trait) const {
   return byTrait[trait];
+}
+
+EnumSet<MinionTrait> Collective::getAllTraits(Creature* c) const {
+  CHECK(creatures.contains(c));
+  EnumSet<MinionTrait> ret;
+  for (auto t : ENUM_ALL(MinionTrait))
+    if (hasTrait(c, t))
+      ret.insert(t);
+  return ret;
 }
 
 bool Collective::hasTrait(const Creature* c, MinionTrait t) const {
@@ -714,7 +742,7 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
   bool fighterKilled = needsToBeKilledToConquer(victim);
   removeCreature(victim);
   if (isConquered() && fighterKilled) {
-    control->onConquered(victim);
+    control->onConquered(victim, killer);
     getGame()->addEvent(EventInfo::ConqueredEnemy{this});
   }
   if (auto& guardianInfo = getConfig().getGuardianInfo())

@@ -133,7 +133,7 @@ static CallbackData getCallbackData(FileSharing* f, ProgressMeter& meter) {
   return { [&meter] (double p) { meter.setProgress((float) p); }, f };
 }
 
-optional<string> FileSharing::uploadSite(const FilePath& path, const string& title, const SavedGameInfo& info,
+optional<string> FileSharing::uploadSite(const FilePath& path, const string& title, const OldSavedGameInfo& info,
     ProgressMeter& meter, optional<string>& url) {
   if (!options.getBoolValue(OptionId::ONLINE))
     return "Online features not enabled!"_s;
@@ -703,13 +703,13 @@ optional<string> FileSharing::uploadMod(ModInfo& modInfo, const DirectoryPath& m
 #endif
 }
 
-static string serializeInfo(const string& fileName, const SavedGameInfo& savedInfo) {
+static string serializeInfo(const string& fileName, const OldSavedGameInfo& savedInfo) {
   TextOutput output;
   output.getArchive() << fileName << savedInfo;
   return output.getStream().str();
 }
 
-optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const string& title, const SavedGameInfo& savedInfo,
+optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const string& title, const OldSavedGameInfo& savedInfo,
     ProgressMeter& meter, optional<string>& url) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())

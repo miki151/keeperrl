@@ -199,8 +199,23 @@ void Game::prepareSiteRetirement() {
     if (models[v] && v != baseModel)
       models[v]->discardForRetirement();
   for (WCollective col : models[baseModel]->getCollectives())
-    col->setVillainType(VillainType::NONE);
-  playerCollective->setVillainType(VillainType::MAIN);
+    if (col != playerCollective)
+      col->setVillainType(VillainType::NONE);
+  if (playerCollective->getVillainType() == VillainType::PLAYER) {
+    // if it's not PLAYER then it's a conquered collective and villainType and VillageControl is already set up
+    playerCollective->setVillainType(VillainType::MAIN);
+    playerCollective->setControl(VillageControl::create(
+        playerCollective, CONSTRUCT(VillageBehaviour,
+            c.minPopulation = 24;
+            c.minTeamSize = 5;
+            c.triggers = makeVec<AttackTrigger>(
+                RoomTrigger{FurnitureType("THRONE"), 0.0003},
+                SelfVictims{},
+                StolenItems{}
+            );
+            c.attackBehaviour = KillLeader{};
+            c.ransom = make_pair(0.8, Random.get(500, 700));)));
+  }
   playerCollective->retire();
   vector<Position> locationPos;
   for (auto f : contentFactory->furniture.getTrainingFurniture(ExperienceType::SPELL))
@@ -215,17 +230,6 @@ void Game::prepareSiteRetirement() {
   for (auto c : playerCollective->getCreatures())
     c->retire();
   playerControl = nullptr;
-  playerCollective->setControl(VillageControl::create(
-      playerCollective, CONSTRUCT(VillageBehaviour,
-          c.minPopulation = 24;
-          c.minTeamSize = 5;
-          c.triggers = makeVec<AttackTrigger>(
-              RoomTrigger{FurnitureType("THRONE"), 0.0003},
-              SelfVictims{},
-              StolenItems{}
-          );
-          c.attackBehaviour = KillLeader{};
-          c.ransom = make_pair(0.8, Random.get(500, 700));)));
   WModel mainModel = models[baseModel].get();
   mainModel->setGame(nullptr);
   for (WCollective col : models[baseModel]->getCollectives())
@@ -432,12 +436,18 @@ Position Game::getTransferPos(WModel from, WModel to) const {
       getModelCoords(from) - getModelCoords(to));
 }
 
-void Game::transferCreature(Creature* c, WModel to) {
+void Game::transferCreature(Creature* c, WModel to, const vector<Position>& destinations) {
   WModel from = c->getLevel()->getModel();
   if (from != to) {
-    to->transferCreature(from->extractCreature(c), getModelCoords(from) - getModelCoords(to));
+    auto transfer = [&] (Creature* c) {
+      if (destinations.empty())
+        to->transferCreature(from->extractCreature(c), getModelCoords(from) - getModelCoords(to));
+      else
+        to->transferCreature(from->extractCreature(c), destinations);
+    };
+    transfer(c);
     for (auto& summon : c->getShamanSummons())
-      to->transferCreature(from->extractCreature(summon), getModelCoords(from) - getModelCoords(to));
+      transfer(summon);
   }
 }
 
@@ -699,10 +709,16 @@ SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
     vector<SavedGameInfo::MinionInfo> minions;
     for (Creature* c : creatures)
       minions.push_back(getMinionInfo(c));
-    return SavedGameInfo{minions, col->getDangerLevel(), getPlayerName(), getSaveProgressCount(), std::move(spriteMods)};
+    optional<SavedGameInfo::RetiredEnemyInfo> retiredInfo;
+    if (auto id = col->getEnemyId()) {
+      retiredInfo = SavedGameInfo::RetiredEnemyInfo{*id, col->getVillainType()};
+      CHECK(retiredInfo->villainType == VillainType::LESSER || retiredInfo->villainType == VillainType::MAIN)
+          << EnumInfo<VillainType>::getString(retiredInfo->villainType);
+    }
+    return SavedGameInfo{minions, retiredInfo, getPlayerName(), getSaveProgressCount(), std::move(spriteMods)};
   } else {
     auto player = players.getOnlyElement(); // adventurer mode
-    return SavedGameInfo{{getMinionInfo(player)}, 0, player->getName().bare(), getSaveProgressCount(), std::move(spriteMods)};
+    return SavedGameInfo{{getMinionInfo(player)}, none, player->getName().bare(), getSaveProgressCount(), std::move(spriteMods)};
   }
 }
 

@@ -12,11 +12,11 @@ class FileSharing {
   public:
   FileSharing(const string& uploadUrl, const string& modVersion, int saveVersion, Options&, string installId);
 
-  optional<string> uploadSite(const FilePath& path, const string& title, const SavedGameInfo&, ProgressMeter&,
+  optional<string> uploadSite(const FilePath& path, const string& title, const OldSavedGameInfo&, ProgressMeter&,
       optional<string>& url);
   optional<string> downloadSite(const SaveFileInfo&, const DirectoryPath& targetDir, ProgressMeter&);
   struct SiteInfo {
-    SavedGameInfo gameInfo;
+    OldSavedGameInfo gameInfo;
     SaveFileInfo fileInfo;
     int totalGames;
     int wonGames;
@@ -61,7 +61,7 @@ class FileSharing {
   void uploadingLoop();
   void uploadGameEventImpl(const GameEvent&, int tries);
   optional<string> downloadContent(const string& url);
-  optional<string> uploadSiteToSteam(const FilePath&, const string& title, const SavedGameInfo&,
+  optional<string> uploadSiteToSteam(const FilePath&, const string& title, const OldSavedGameInfo&,
       ProgressMeter&, optional<string>& url);
   optional<vector<ModInfo>> getSteamMods();
   optional<vector<SiteInfo>> getSteamSites();

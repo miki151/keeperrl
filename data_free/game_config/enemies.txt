@@ -809,6 +809,7 @@
   config = {
     immigrantInterval = 500
     maxPopulation = 15
+    canEnemyRetire = false
   }
   levelConnection = {
     topLevel = ExtraEnemy {"MAIN_DUNGEON_ENTRY"}
@@ -1389,7 +1390,7 @@
   behaviour = {
     minPopulation = 0
     minTeamSize = 1
-    triggers = {EnemyPopulation 13}
+    triggers = {EnemyPopulation 13 Timer 10}
     attackBehaviour = KillMembers 4
   }
 }

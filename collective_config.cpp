@@ -43,7 +43,7 @@
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
-  ar(OPTION(immigrantInterval), OPTION(maxPopulation), OPTION(conquerCondition));
+  ar(OPTION(immigrantInterval), OPTION(maxPopulation), OPTION(conquerCondition), OPTION(canEnemyRetire));
   ar(SKIP(type), OPTION(leaderAsFighter), OPTION(spawnGhosts), OPTION(ghostProb), OPTION(guardianInfo));
 }
 
@@ -186,6 +186,10 @@ bool CollectiveConfig::isConquered(const Collective* collective) const {
             return false;
       return true;
   }
+}
+
+bool CollectiveConfig::xCanEnemyRetire() const {
+  return canEnemyRetire;
 }
 
 CollectiveConfig& CollectiveConfig::setConquerCondition(ConquerCondition c) {

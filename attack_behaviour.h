@@ -1,6 +1,5 @@
 #pragma once
 
-#include "enum_variant.h"
 #include "creature_list.h"
 
 EMPTY_STRUCT(KillLeader);

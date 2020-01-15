@@ -26,6 +26,7 @@ class VillageBehaviour;
 class VillageControl : public CollectiveControl, public EventListener<VillageControl> {
   public:
   static PVillageControl create(WCollective col, optional<VillageBehaviour> v);
+  static PVillageControl copyOf(WCollective col, const VillageControl*);
 
   void onEvent(const GameEvent&);
 

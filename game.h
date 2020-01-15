@@ -39,7 +39,8 @@ class Game : public OwnedObject<Game> {
   void exitAction();
   void transferAction(vector<Creature*>);
   void presentWorldmap();
-  void transferCreature(Creature*, WModel to);
+  // if destinations are empty then creature is placed on the edge of the map
+  void transferCreature(Creature*, WModel to, const vector<Position>& destinations = {});
   bool canTransferCreature(Creature*, WModel to);
   Position getTransferPos(WModel from, WModel to) const;
   string getGameIdentifier() const;

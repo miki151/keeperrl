@@ -309,6 +309,12 @@ void Model::transferCreature(PCreature c, Vec2 travelDir) {
   CHECK(getTopLevel()->landCreature(StairKey::transferLanding(), ref, travelDir));
 }
 
+void Model::transferCreature(PCreature c, const vector<Position>& destinations) {
+  Creature* ref = c.get();
+  addCreature(std::move(c));
+  CHECK(getTopLevel()->landCreature(destinations, ref));
+}
+
 bool Model::canTransferCreature(Creature* c, Vec2 travelDir) {
   for (Position pos : getTopLevel()->getLandingSquares(StairKey::transferLanding()))
     if (pos.canEnter(c))

@@ -58,6 +58,15 @@ PVillageControl VillageControl::create(WCollective col, optional<VillageBehaviou
   return ret;
 }
 
+PVillageControl VillageControl::copyOf(WCollective col, const VillageControl* control) {
+  optional<VillageBehaviour> b;
+  if (control->behaviour)
+    b = *control->behaviour;
+  auto ret = makeOwner<VillageControl>(Private{}, col, std::move(b));
+  ret->subscribeTo(col->getModel());
+  return ret;
+}
+
 WCollective VillageControl::getEnemyCollective() const {
   return collective->getGame()->getPlayerCollective();
 }

@@ -63,6 +63,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void addCreature(PCreature, Position, EnumSet<MinionTrait>);
   void setPopulationGroup(const vector<Creature*>&);
   void setControl(PCollectiveControl);
+  void makeConqueredRetired(Collective* conqueror);
   void tick();
   void update(bool currentlyActive);
   TribeId getTribeId() const;
@@ -74,6 +75,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool hasTask(const Creature*) const;
   void freeFromTask(const Creature*);
   void banishCreature(Creature*);
+  void removeCreature(Creature*);
   bool wasBanished(const Creature*) const;
   void setVillainType(VillainType);
   bool isDiscoverable() const;
@@ -96,6 +98,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool hasTrait(const Creature*, MinionTrait) const;
   void setTrait(Creature* c, MinionTrait);
   void removeTrait(Creature* c, MinionTrait);
+  EnumSet<MinionTrait> getAllTraits(Creature*) const;
 
   bool hasTradeItems() const;
   vector<Item*> getTradeItems() const;
@@ -247,7 +250,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   virtual bool isConstructionReachable(Position) override;
 
   private:
-  void removeCreature(Creature*);
   void onMinionKilled(Creature* victim, Creature* killer);
   void onKilledSomeone(Creature* victim, Creature* killer);
 

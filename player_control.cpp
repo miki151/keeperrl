@@ -2861,13 +2861,20 @@ bool PlayerControl::isEnemy(const Creature* c) const {
   return c->getTribeId() != getTribeId() && keeper && keeper->isEnemy(c);
 }
 
-void PlayerControl::onConquered(const Creature* victim) {
+void PlayerControl::onConquered(Creature* victim, Creature* killer) {
   if (!victim->isPlayer()) {
     setScrollPos(victim->getPosition().plus(Vec2(0, 5)));
     getView()->updateView(this, false);
   }
   getGame()->gameOver(victim, collective->getKills().getSize(), "enemies",
       collective->getDangerLevel() + collective->getPoints());
+  if (!collective->getTerritory().isEmpty())
+    for (auto col : getGame()->getCollectives())
+      if (col != collective && col->getCreatures().contains(killer) && col->getConfig().xCanEnemyRetire() &&
+          isOneOf(col->getVillainType(), VillainType::MAIN, VillainType::LESSER)) {
+        collective->makeConqueredRetired(col);
+        getGame()->setExitInfo(GameSaveType::RETIRED_SITE);
+      }
 }
 
 void PlayerControl::onMemberKilled(const Creature* victim, const Creature* killer) {

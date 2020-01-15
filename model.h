@@ -92,6 +92,7 @@ class Model : public OwnedObject<Model> {
 
   PCreature extractCreature(Creature*);
   void transferCreature(PCreature, Vec2 travelDir);
+  void transferCreature(PCreature, const vector<Position>& destinations);
   bool canTransferCreature(Creature*, Vec2 travelDir);
 
   SERIALIZATION_DECL(Model)

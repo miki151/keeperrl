@@ -160,7 +160,7 @@ void MainLoop::uploadFile(const FilePath& path, const string& title, const Saved
   optional<string> url;
   doWithSplash("Uploading "_s + path.getPath() + "...", 1,
       [&] (ProgressMeter& meter) {
-        error = fileSharing->uploadSite(path, title, info, meter, url);
+        error = fileSharing->uploadSite(path, title, getOldInfo(info), meter, url);
       },
       [&] {
         cancelled = true;
@@ -185,11 +185,14 @@ void MainLoop::saveUI(PGame& game, GameSaveType type) {
     int saveTime = game->getMainModel()->getSaveProgressCount();
     doWithSplash("Retiring site...", saveTime,
         [&] (ProgressMeter& meter) {
-        Square::progressMeter = &meter;
-        uploadFun = [this, path, name = game->getGameDisplayName(), savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods())] {
-          uploadFile(path, name, savedInfo);
-        };
-        MEASURE(saveMainModel(game, path), "saving time")});
+          Square::progressMeter = &meter;
+          if (!game->getSavedGameInfo(tileSet->getSpriteMods()).retiredEnemyInfo)
+            // only upload if it's not a retired enemy
+            uploadFun = [this, path, name = game->getGameDisplayName(), savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods())] {
+              uploadFile(path, name, savedInfo);
+            };
+          saveMainModel(game, path);
+        });
   } else {
     int saveTime = game->getSaveProgressCount();
     doWithSplash(type == GameSaveType::AUTOSAVE ? "Autosaving" : "Saving game...", saveTime,
@@ -354,7 +357,8 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
       for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
         if (isCompatible(getSaveVersion(info)))
           if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
-            ret.addLocal(*saved, info, false);
+            if (!saved->retiredEnemyInfo)
+              ret.addLocal(*saved, info, false);
       vector<FileSharing::SiteInfo> onlineSites;
       optional<string> error;
       doWithSplash("Fetching list of retired dungeons from the server...",
@@ -369,7 +373,7 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
         view->presentText("", *error);
       for (auto& elem : onlineSites)
         if (isCompatible(elem.version))
-          ret.addOnline(elem.gameInfo, elem.fileInfo, elem.totalGames, elem.wonGames, elem.subscribed);
+          ret.addOnline(fromOldInfo(elem.gameInfo), elem.fileInfo, elem.totalGames, elem.wonGames, elem.subscribed);
       ret.sort();
       return ret;
     }
@@ -1095,9 +1099,19 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
             meter.addProgress();
           if (sites[v].getKeeper()) {
             models[v] = getBaseModel(modelBuilder, setup, avatarInfo);
-          } else if (auto villain = sites[v].getVillain())
-            models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, avatarInfo.tribeAlignment);
-          else if (auto retired = sites[v].getRetired()) {
+          } else if (auto villain = sites[v].getVillain()) {
+            for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
+              if (isCompatible(getSaveVersion(info)))
+                if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
+                  if (auto& retiredInfo = saved->retiredEnemyInfo)
+                    if (retiredInfo->enemyId == villain->enemyId)
+                      if (auto model = loadFromFile<RetiredModelInfo>(userPath.file(info.filename), !useSingleThread)) {
+                        models[v] = std::move(model->model);
+                        break;
+                      }
+            if (!models[v])
+              models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, avatarInfo.tribeAlignment);
+          } else if (auto retired = sites[v].getRetired()) {
             if (auto info = loadFromFile<RetiredModelInfo>(userPath.file(retired->fileInfo.filename), !useSingleThread)) {
               models[v] = std::move(info->model);
               for (auto l : models[v]->getMainLevels())

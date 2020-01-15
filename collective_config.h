@@ -94,6 +94,7 @@ class CollectiveConfig {
   bool allowHealingTaskOutsideTerritory() const;
   const optional<GuardianInfo>& getGuardianInfo() const;
   bool isConquered(const Collective*) const;
+  bool xCanEnemyRetire() const;
   CollectiveConfig& setConquerCondition(ConquerCondition);
 
   static const WorkshopInfo& getWorkshopInfo(WorkshopType);
@@ -123,5 +124,6 @@ class CollectiveConfig {
   int SERIAL(spawnGhosts) = 0;
   double SERIAL(ghostProb) = 0;
   optional<GuardianInfo> SERIAL(guardianInfo);
+  bool SERIAL(canEnemyRetire) = true;
   ConquerCondition SERIAL(conquerCondition) = ConquerCondition::KILL_FIGHTERS_AND_LEADER;
 };
