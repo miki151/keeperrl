@@ -849,7 +849,7 @@ void Effects::GrantAbility::applyToCreature(Creature* c, Creature* attacker) con
 }
 
 string Effects::GrantAbility::getName(const ContentFactory* f) const {
-  return f->getCreatures().getSpell(id)->getName();
+  return "grant"_s + f->getCreatures().getSpell(id)->getName();
 }
 
 string Effects::GrantAbility::getDescription(const ContentFactory* f) const {
@@ -1365,6 +1365,9 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
         return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
       },
       [&] (const Effects::Summon&) {
+        return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      },
+      [&] (const Effects::Audience&) {
         return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
       },
       [&] (const Effects::DoubleTrouble&) {

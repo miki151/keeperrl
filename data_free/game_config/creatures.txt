@@ -1204,6 +1204,9 @@
       fullTitle = true
       firstNameGen = "GERMANIC"
     }
+    inventory = {
+      { type = Glyph WEAPON SpellId "audience" }
+    }
   }
 "FRIAR" inherit "CLERIC"
   {

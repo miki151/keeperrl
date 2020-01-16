@@ -460,3 +460,9 @@
   projectileViewId = {"arrow"}
   castMessageType = SHOOT_ARROW
 }
+"audience"
+{
+  symbol = "👑"
+  effect = Audience
+  cooldown = 100
+}
