@@ -610,7 +610,7 @@ bool Collective::needsToBeKilledToConquer(const Creature* c) const {
 void Collective::onEvent(const GameEvent& event) {
   PROFILE;
   using namespace EventInfo;
-  event.visit(
+  event.visit<void>(
       [&](const Alarm& info) {
         static const auto alarmTime = 100_visible;
         if (getTerritory().contains(info.pos)) {

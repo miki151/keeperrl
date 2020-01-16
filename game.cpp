@@ -780,7 +780,7 @@ void Game::addEvent(const GameEvent& event) {
     if (models[v])
       models[v]->addEvent(event);
   using namespace EventInfo;
-  event.visit(
+  event.visit<void>(
       [&](const ConqueredEnemy& info) {
         WCollective col = info.collective;
         if (col->getVillainType() != VillainType::NONE) {

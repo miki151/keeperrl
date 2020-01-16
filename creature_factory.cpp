@@ -460,7 +460,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
   
   void onEvent(const GameEvent& event) {
     using namespace EventInfo;
-    event.visit(
+    event.visit<void>(
         [&](const ItemsAppeared& info) {
           if (isShopPosition(info.position)) {
             for (auto& it : info.items) {

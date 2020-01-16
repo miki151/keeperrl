@@ -93,7 +93,7 @@ Player::~Player() {
 
 void Player::onEvent(const GameEvent& event) {
   using namespace EventInfo;
-  event.visit(
+  event.visit<void>(
       [&](const CreatureMoved& info) {
         if (info.creature == creature)
           visibilityMap->update(creature, creature->getVisibleTiles());

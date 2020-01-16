@@ -1540,7 +1540,7 @@ void PlayerControl::updateMinionVisibility(const Creature* c) {
 
 void PlayerControl::onEvent(const GameEvent& event) {
   using namespace EventInfo;
-  event.visit(
+  event.visit<void>(
       [&](const Projectile& info) {
         if (getControlled().empty() && (canSee(info.begin) || canSee(info.end)) && info.begin.isSameLevel(getCurrentLevel())) {
           getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId, info.fx);

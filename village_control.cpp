@@ -99,7 +99,7 @@ bool contains(const vector<AttackTrigger>& triggers) {
 
 void VillageControl::onEvent(const GameEvent& event) {
   using namespace EventInfo;
-  event.visit(
+  event.visit<void>(
       [&](const ItemStolen& info) {
         if (!collective->isConquered() && collective->getTerritory().contains(info.shopPosition)
             && behaviour && contains<StolenItems>(behaviour->triggers)

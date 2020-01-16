@@ -118,12 +118,36 @@ namespace EventInfo {
     Position pos;
   };
 
-  class GameEvent : public variant<CreatureMoved, CreatureKilled, ItemsPickedUp, ItemsDropped, ItemsAppeared, Projectile,
-      ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureStunned, MovementChanged,
-      TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged, RetiredGame,
-      CreatureAttacked, FX, ItemStolen> {
-    using variant::variant;
-  };
+#define VARIANT_TYPES_LIST\
+  X(CreatureMoved, 0)\
+  X(CreatureKilled, 1)\
+  X(ItemsPickedUp, 2)\
+  X(ItemsDropped, 3)\
+  X(ItemsAppeared, 4)\
+  X(Projectile, 5)\
+  X(ConqueredEnemy, 6)\
+  X(WonGame, 7)\
+  X(TechbookRead, 8)\
+  X(Alarm, 9)\
+  X(CreatureTortured, 10)\
+  X(CreatureStunned, 11)\
+  X(MovementChanged, 12)\
+  X(TrapDisarmed, 13)\
+  X(FurnitureDestroyed, 14)\
+  X(ItemsEquipped, 15)\
+  X(CreatureEvent, 16)\
+  X(VisibilityChanged, 17)\
+  X(RetiredGame, 18)\
+  X(CreatureAttacked, 19)\
+  X(FX, 20)\
+  X(ItemStolen, 21)
+
+#define VARIANT_NAME GameEvent
+
+#include "gen_variant.h"
+
+#undef VARIANT_TYPES_LIST
+#undef VARIANT_NAME
 
 }
 
