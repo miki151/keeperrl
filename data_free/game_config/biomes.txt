@@ -40,9 +40,11 @@
   darkKeeperEnemies = {
     { id = "HUMAN_COTTAGE" count = { 3 5 } }
     { id = "COTTAGE_BANDITS" probability = 0.5 }
+    { id = "CORPSES" probability = 0.2 }
   }
   whiteKeeperEnemies = {
     { id = "COTTAGE_BANDITS" count = { 3 5 } }
+    { id = "CORPSES" probability = 0.2 }
   }
 }
 "FOREST" inherit "GRASSLAND"
@@ -66,9 +68,11 @@
   }
   darkKeeperEnemies = {
     { id = "ELVEN_COTTAGE" count = { 3 5 } }
+    { id = "CORPSES" probability = 0.2 }
   }
   whiteKeeperEnemies = {
     { id = "LIZARDMEN_COTTAGE" count = { 3 5 } }
+    { id = "CORPSES" probability = 0.2 }
   }
 }
 "MOUNTAIN" inherit "GRASSLAND"
@@ -101,11 +105,13 @@
     { id = "KOBOLD_CAVE" count = { 1 3 } }
     { id = "NO_AGGRO_BANDITS" count = { 0 2 } }
     { id = "BANDITS" }
+    { id = "CORPSES" probability = 0.2 }
   }
   whiteKeeperEnemies = {
     { id = "DARK_ELF_CAVE" count = { 1 4 } }
     { id = "NO_AGGRO_BANDITS" count = { 0 2 } }
     { id = "BANDITS" }
+    { id = "CORPSES" probability = 0.2 }
   }
 }
 "SNOW"

@@ -539,7 +539,7 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part, const ContentFact
   switch (material) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
-      return ItemFactory::corpse(name + " " + getName(part), name + " " + getBodyPartBone(part),
+      return ItemType::corpse(name + " " + getName(part), name + " " + getBodyPartBone(part),
         weight / 8, factory, false, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE);
     case Material::CLAY:
     case Material::ROCK:
@@ -562,7 +562,7 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
       case Material::FLESH:
       case Material::UNDEAD_FLESH:
         return makeVec(
-            ItemFactory::corpse(name + " corpse", name + " skeleton", weight, factory, instantlyRotten,
+            ItemType::corpse(name + " corpse", name + " skeleton", weight, factory, instantlyRotten,
               minionFood ? ItemClass::FOOD : ItemClass::CORPSE,
               {id, material != Material::UNDEAD_FLESH, numBodyParts(BodyPart::HEAD) > 0, false}));
       case Material::CLAY:
@@ -817,6 +817,11 @@ bool Body::isImmuneTo(LastingEffect effect) const {
         default:
           return false;
       }
+    case LastingEffect::RAGE:
+    case LastingEffect::PANIC:
+    case LastingEffect::TELEPATHY:
+    case LastingEffect::INSANITY:
+      return !hasBrain();
     case LastingEffect::FROZEN:
       return material == Material::FIRE;
     case LastingEffect::POISON:

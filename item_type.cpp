@@ -159,22 +159,31 @@ class Corpse : public Item {
   CorpseInfo SERIAL(corpseInfo);
 };
 
-PItem ItemFactory::corpse(const string& name, const string& rottenName, double weight, const ContentFactory* f,
-    bool instantlyRotten, ItemClass itemClass, CorpseInfo corpseInfo) {
+static PItem corpse(const ItemAttributes& attr, const string& rottenName, const ContentFactory* f,
+    bool instantlyRotten, CorpseInfo corpseInfo) {
   const auto rotTime = 300_visible;
   return makeOwner<Corpse>(
         ViewObject(ViewId("bone"), ViewLayer::ITEM, rottenName),
-        ITATTR(
-          i.viewId = ViewId("body_part");
-          i.name = name;
-          i.shortName = name;
-          i.itemClass = itemClass;
-          i.weight = weight;),
+        attr,
         rottenName,
         rotTime,
         corpseInfo,
         instantlyRotten,
         f);
+}
+
+static ItemAttributes getCorpseAttr(const string& name, ItemClass itemClass, double weight) {
+  return ITATTR(
+    i.viewId = ViewId("body_part");
+    i.name = name;
+    i.shortName = name;
+    i.itemClass = itemClass;
+    i.weight = weight;);
+}
+
+PItem ItemType::corpse(const string& name, const string& rottenName, double weight, const ContentFactory* f,
+    bool instantlyRotten, ItemClass itemClass, CorpseInfo corpseInfo) {
+  return ::corpse(getCorpseAttr(name, itemClass, weight), rottenName, f, instantlyRotten, corpseInfo);
 }
 
 class PotionItem : public Item {
@@ -256,6 +265,9 @@ PItem ItemType::get(const ContentFactory* factory) const {
       },
       [&](const ItemTypes::Potion&) {
         return makeOwner<PotionItem>(std::move(attributes), factory);
+      },
+      [&](const ItemTypes::Corpse&) {
+        return ::corpse(attributes, "skeleton", factory, false, CorpseInfo{UniqueEntity<Creature>::Id(), false, false, false});
       },
       [&](const auto&) {
         return makeOwner<Item>(std::move(attributes), factory);
@@ -349,6 +361,10 @@ static string getRandomPoemType() {
 
 static string getRandomPoem() {
   return Random.choose(makeVec<string>("bad", "obscene", "vulgar")) + " " + getRandomPoemType();
+}
+
+ItemAttributes ItemTypes::Corpse::getAttributes(const ContentFactory*) const {
+  return getCorpseAttr("corpse", ItemClass::CORPSE, 100);
 }
 
 ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory*) const {

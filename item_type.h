@@ -1,6 +1,8 @@
 #pragma once
 
 #include "util.h"
+#include "corpse_info.h"
+#include "item_class.h"
 
 class ItemAttributes;
 class ContentFactory;
@@ -16,6 +18,9 @@ class ItemType {
   static ItemType fangs(int damage);
   static ItemType fangs(int damage, VictimEffect);
   static ItemType spellHit(int damage);
+  static PItem corpse(const string& name, const string& rottenName, double weight, const ContentFactory* f, bool instantlyRotten = false,
+      ItemClass = ItemClass::CORPSE,
+      CorpseInfo corpseInfo = {UniqueEntity<Creature>::Id(), false, false, false});
 
   ItemType(const ItemTypeVariant&);
   ItemType();

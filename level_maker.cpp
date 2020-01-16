@@ -2272,7 +2272,8 @@ static Vec2 getSize(const MapLayouts* layouts, RandomGen& random, LayoutType typ
           case BuiltinLayoutId::TEMPLE:
           case BuiltinLayoutId::COTTAGE: return {random.get(8, 10), random.get(8, 10)};
           case BuiltinLayoutId::FORREST_COTTAGE: return {15, 15};
-          case BuiltinLayoutId::FOREST: return {18, 13};
+          case BuiltinLayoutId::EMPTY: return {8, 8};
+          case BuiltinLayoutId::FOREST: return {13, 13};
           case BuiltinLayoutId::FORREST_VILLAGE: return {20, 20};
           case BuiltinLayoutId::VILLAGE:
           case BuiltinLayoutId::ANT_NEST:  return {20, 20};
@@ -2470,9 +2471,12 @@ static PMakerQueue cemetery(SettlementInfo info) {
 }
 
 static PMakerQueue emptyCollective(SettlementInfo info) {
-  return unique<MakerQueue>(
+  auto ret = unique<MakerQueue>(
       unique<PlaceCollective>(info.collective),
       unique<Inhabitants>(info.inhabitants, info.collective));
+  for (auto& items : info.shopItems)
+    ret->addMaker(unique<Items>(items, Range(10, 15)));
+  return ret;
 }
 
 static PMakerQueue swamp(SettlementInfo info) {
@@ -2699,6 +2703,7 @@ static PMakerQueue getSettlementMaker(const MapLayouts* layouts, RandomGen& rand
             return tower(random, settlement, true);
           case BuiltinLayoutId::TEMPLE:
             return temple(random, settlement);
+          case BuiltinLayoutId::EMPTY:
           case BuiltinLayoutId::FOREST:
             return emptyCollective(settlement);
           case BuiltinLayoutId::MINETOWN:

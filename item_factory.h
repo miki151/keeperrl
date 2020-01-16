@@ -20,8 +20,6 @@
 #include <functional>
 
 #include "util.h"
-#include "corpse_info.h"
-#include "item_class.h"
 #include "item_list_id.h"
 #include "item_list.h"
 
@@ -36,10 +34,6 @@ class ItemFactory {
   public:
   ItemFactory(map<ItemListId, ItemList>);
   ItemList get(ItemListId);
-
-  static PItem corpse(const string& name, const string& rottenName, double weight, const ContentFactory* f, bool instantlyRotten = false,
-      ItemClass = ItemClass::CORPSE,
-      CorpseInfo corpseInfo = {UniqueEntity<Creature>::Id(), false, false, false});
 
   SERIALIZATION_DECL(ItemFactory)
   private:

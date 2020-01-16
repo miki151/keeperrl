@@ -146,6 +146,19 @@
   }
 }
 
+"corpse"
+{
+  multiItems = {
+    {10000} {
+      {Simple "BattleAxe"} 0.1
+      {Potion Heal FLESH} 0.3
+      {Simple "IronHelm"} 0.5
+      {Simple "Sword"} 0.5
+      {Corpse} 1
+    }
+  }
+}
+
 "desertItems"
 {
   items = {

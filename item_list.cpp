@@ -20,8 +20,8 @@ struct ItemList::ItemInfo {
 };
 
 struct ItemList::MultiItemInfo {
-  vector<pair<ItemType, double>> SERIAL(items);
   Range SERIAL(count) = Range(1, 2);
+  vector<pair<ItemType, double>> SERIAL(items);
   SERIALIZE_ALL(count, items)
 };
 

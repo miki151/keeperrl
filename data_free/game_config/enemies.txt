@@ -193,6 +193,16 @@
     attackBehaviour = KillLeader
   }
 }
+"CORPSES"
+{
+  settlement = {
+    type = Builtin EMPTY
+    tribe = MONSTER
+    dontBuildRoad = true
+    buildingId = "BRICK"
+    shopItems = { "corpse" }
+  }
+}
 "ORC_VILLAGE"
 {
   settlement = {

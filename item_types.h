@@ -70,6 +70,7 @@ struct TrapItem {
 };
 SIMPLE_ITEM(FireScroll);
 SIMPLE_ITEM(Poem);
+SIMPLE_ITEM(Corpse);
 struct EventPoem {
   string SERIAL(eventName);
   SERIALIZE_ALL(eventName)
@@ -98,7 +99,8 @@ using Simple = CustomItemId;
   X(FireScroll, 10)\
   X(Poem, 11)\
   X(EventPoem, 12)\
-  X(Assembled, 13)
+  X(Assembled, 13) \
+  X(Corpse, 14)
 
 #define VARIANT_TYPES_LIST ITEM_TYPES_LIST
 #define VARIANT_NAME ItemTypeVariant
