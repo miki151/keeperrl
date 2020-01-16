@@ -661,13 +661,6 @@ void Collective::onEvent(const GameEvent& event) {
           freeFromTask(victim);
         }
       },
-      [&](const TrapTriggered& info) {
-        if (auto trap = constructions->getTrap(info.pos)) {
-          trap->reset();
-          if (trap->getType() == FurnitureType("SURPRISE_TRAP"))
-            handleSurprise(info.pos);
-        }
-      },
       [&](const TrapDisarmed& info) {
         if (auto trap = constructions->getTrap(info.pos)) {
           control->addMessage(PlayerMessage(info.creature->getName().a() +

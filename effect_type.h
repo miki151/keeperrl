@@ -84,7 +84,6 @@ struct Alarm {
   bool SERIAL(silent) = false;
   SERIALIZE_ALL(silent)
 };
-SIMPLE_EFFECT(TeleEnemies);
 SIMPLE_EFFECT(SilverDamage);
 
 struct Lasting {
@@ -247,7 +246,11 @@ struct SoundEffect {
   Sound SERIAL(sound);
   SERIALIZE_ALL(sound)
 };
-SIMPLE_EFFECT(Audience);
+struct Audience {
+  EFFECT_TYPE_INTERFACE;
+  optional<int> SERIAL(maxDistance);
+  SERIALIZE_ALL(maxDistance)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -266,29 +269,29 @@ SIMPLE_EFFECT(Audience);
   X(SummonElement, 13)\
   X(Acid, 14)\
   X(Alarm, 15)\
-  X(TeleEnemies, 16)\
-  X(SilverDamage, 17)\
-  X(DoubleTrouble, 18)\
-  X(Lasting, 19)\
-  X(RemoveLasting, 20)\
-  X(Permanent, 21)\
-  X(RemovePermanent, 22)\
-  X(PlaceFurniture, 23)\
-  X(Damage, 24)\
-  X(InjureBodyPart, 25)\
-  X(LoseBodyPart, 26)\
-  X(RegrowBodyPart, 27)\
-  X(AddBodyPart, 28)\
-  X(DestroyWalls, 29)\
-  X(Area, 30)\
-  X(CustomArea, 31)\
-  X(ReviveCorpse, 32)\
-  X(Blast, 33)\
-  X(Pull, 34)\
-  X(Shove, 35)\
-  X(SwapPosition, 36)\
-  X(Filter, 37)\
-  X(SummonEnemy, 38)\
+  X(SilverDamage, 16)\
+  X(DoubleTrouble, 17)\
+  X(Lasting, 18)\
+  X(RemoveLasting, 19)\
+  X(Permanent, 20)\
+  X(RemovePermanent, 21)\
+  X(PlaceFurniture, 22)\
+  X(Damage, 23)\
+  X(InjureBodyPart, 24)\
+  X(LoseBodyPart, 25)\
+  X(RegrowBodyPart, 26)\
+  X(AddBodyPart, 27)\
+  X(DestroyWalls, 28)\
+  X(Area, 29)\
+  X(CustomArea, 30)\
+  X(ReviveCorpse, 31)\
+  X(Blast, 32)\
+  X(Pull, 33)\
+  X(Shove, 34)\
+  X(SwapPosition, 35)\
+  X(Filter, 36)\
+  X(SummonEnemy, 37)\
+  X(Audience, 38)\
   X(Wish, 39)\
   X(Chain, 40)\
   X(ChooseRandom, 41)\
@@ -303,8 +306,7 @@ SIMPLE_EFFECT(Audience);
   X(GrantAbility, 50)\
   X(CreatureMessage, 51)\
   X(SoundEffect, 52)\
-  X(DropItems, 53)\
-  X(Audience, 54)
+  X(DropItems, 53)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

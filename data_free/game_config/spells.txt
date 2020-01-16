@@ -463,6 +463,6 @@
 "audience"
 {
   symbol = "👑"
-  effect = Audience
+  effect = Audience none
   cooldown = 100
 }

@@ -57,7 +57,7 @@
   initialTech = { "automatons" }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "throne" "beds"
-      "pigsty" "crafting" "orders" "installations"
+      "pigsty" "crafting" "orders" "installations" "traps"
   }
   workshopGroups = { "traps" "gnomes" }
   description = "Seize the means of production and engineer traps, automatons and other contraptions."

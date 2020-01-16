@@ -78,10 +78,6 @@ namespace EventInfo {
     AttrType damageAttr;
   };
 
-  struct TrapTriggered {
-    Position pos;
-  };
-
   struct TrapDisarmed {
     Position pos;
     Creature* creature = nullptr;
@@ -124,7 +120,7 @@ namespace EventInfo {
 
   class GameEvent : public variant<CreatureMoved, CreatureKilled, ItemsPickedUp, ItemsDropped, ItemsAppeared, Projectile,
       ConqueredEnemy, WonGame, TechbookRead, Alarm, CreatureTortured, CreatureStunned, MovementChanged,
-      TrapTriggered, TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged, RetiredGame,
+      TrapDisarmed, FurnitureDestroyed, ItemsEquipped, CreatureEvent, VisibilityChanged, RetiredGame,
       CreatureAttacked, FX, ItemStolen> {
     using variant::variant;
   };

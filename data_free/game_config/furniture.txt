@@ -180,7 +180,7 @@
   name = "throne"
   viewId = { "throne" }
   canHideHere = true
-  usageType = UsageEffect "sit on" Chain { CreatureMessage "sit on the throne" "sits on the throne" Audience }
+  usageType = UsageEffect "sit on" Chain { CreatureMessage "sit on the throne" "sits on the throne" Audience none }
   luxury = 1.0
   strength = 80
   populationIncrease = 10 none
@@ -1246,7 +1246,7 @@
 {
   name = "surprise trap"
   viewId = { "surprise_trap" }
-  entryType = Trap { TeleEnemies }
+  entryType = Trap { Audience none }
   warning = true
   constructMessage = SET_UP
 }

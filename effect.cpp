@@ -320,17 +320,6 @@ string Effects::RemovePermanent::getDescription(const ContentFactory*) const {
   return "Removes " + desc.substr(0, desc.size() - 1) + " permanently.";
 }
 
-void Effects::TeleEnemies::applyToCreature(Creature*, Creature* attacker) const {
-}
-
-string Effects::TeleEnemies::getName(const ContentFactory*) const {
-  return "surprise";
-}
-
-string Effects::TeleEnemies::getDescription(const ContentFactory*) const {
-  return "Surprise!";
-}
-
 void Effects::Alarm::applyToCreature(Creature* c, Creature* attacker) const {
   c->getGame()->addEvent(EventInfo::Alarm{c->getPosition(), silent});
 }
@@ -1245,7 +1234,6 @@ void Effect::apply(Position pos, Creature* attacker) const {
             if (auto trapInfo = entry->entryData.getReferenceMaybe<FurnitureEntry::Trap>()) {
               pos.globalMessage("A " + trapInfo->effect.getName(pos.getGame()->getContentFactory()) + " trap is triggered");
               trapInfo->effect.apply(pos, attacker);
-              pos.getGame()->addEvent(EventInfo::TrapTriggered{pos});
               pos.removeFurniture(furniture);
               return;
             }
@@ -1268,7 +1256,7 @@ void Effect::apply(Position pos, Creature* attacker) const {
       [&](const Effects::SoundEffect& e) {
         pos.addSound(e.sound);
       },
-      [&](const Effects::Audience&) {
+      [&](const Effects::Audience& a) {
         auto collective = [&]() -> WCollective {
           for (auto col : pos.getGame()->getCollectives())
             if (col->getTerritory().contains(pos))
@@ -1281,7 +1269,9 @@ void Effect::apply(Position pos, Creature* attacker) const {
         if (collective) {
           bool wasTeleported = false;
           auto tryTeleporting = [&] (Creature* enemy) {
-            if (enemy->getPosition().dist8(pos).value_or(4) > 3 || !pos.canSee(enemy->getPosition(), Vision()))
+            auto distance = enemy->getPosition().dist8(pos);
+            if ((!a.maxDistance || *a.maxDistance >= distance.value_or(10000)) &&
+                (distance.value_or(4) > 3 || !pos.canSee(enemy->getPosition(), Vision())))
               if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
                 enemy->getPosition().moveCreature(*landing, true);
                 wasTeleported = true;
@@ -1387,7 +1377,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
 }
 
 /* Unimplemented: Teleport, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
-      EmitPoisonGas, CircularBlast, Alarm, TeleEnemies, SilverDamage, DoubleTrouble,
+      EmitPoisonGas, CircularBlast, Alarm, SilverDamage, DoubleTrouble,
       PlaceFurniture, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
       ReviveCorpse, Blast, Shove, SwapPosition*/
 
