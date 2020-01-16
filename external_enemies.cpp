@@ -56,8 +56,8 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, CreatureFactory* factory, ve
 PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviour) {
   return behaviour.visit<PTask>(
       [&](KillLeader) {
-        if (auto leader = enemy->getLeader())
-          return Task::attackCreatures({leader});
+        if (!enemy->getLeaders().empty())
+          return Task::attackCreatures(enemy->getLeaders());
         else if (!enemy->getCreatures(MinionTrait::FIGHTER).empty())
           return Task::attackCreatures(enemy->getCreatures(MinionTrait::FIGHTER));
         else
@@ -75,8 +75,8 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
       [&](HalloweenKids) {
         auto nextToDoor = enemy->getTerritory().getExtended(2, 4);
         if (nextToDoor.empty()) {
-          if (auto leader = enemy->getLeader())
-            return Task::goToTryForever(leader->getPosition());
+          if (auto leader = enemy->getLeaders().getFirstElement())
+            return Task::goToTryForever((*leader)->getPosition());
           else
             return Task::idle();
         } else

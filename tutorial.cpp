@@ -96,7 +96,7 @@ bool Tutorial::canContinue(WConstGame game) const {
       return collective->getNumItems(ItemIndex::WEAPON) >= 1;
     case State::EQUIP_WEAPON:
       for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
-        if (c != collective->getLeader() && !c->getEquipment().getSlotItems(EquipmentSlot::WEAPON).empty())
+        if (!collective->hasTrait(c, MinionTrait::LEADER) && !c->getEquipment().getSlotItems(EquipmentSlot::WEAPON).empty())
           return true;
       return false;
     case State::ACCEPT_MORE_IMMIGRANTS:
@@ -469,7 +469,8 @@ void Tutorial::createTutorial(Game& game, const ContentFactory* factory) {
         foundEntrance = true;
       }
   CHECK(foundEntrance);
-  collective->setTrait(collective->getLeader(), MinionTrait::NO_AUTO_EQUIPMENT);
+  for (auto l : collective->getLeaders())
+    collective->setTrait(l, MinionTrait::NO_AUTO_EQUIPMENT);
   collective->getWarnings().disable();
   collective->init(CollectiveConfig::keeper(50_visible, 10, ConquerCondition::KILL_LEADER));
   auto immigrants = factory->immigrantsData.at("tutorial");

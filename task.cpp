@@ -868,7 +868,7 @@ class CampAndSpawnTask : public Task {
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (!target->getLeader() || campPos.empty()) {
+    if (target->getLeaders().empty() || campPos.empty()) {
       setDone();
       return NoMove;
     }
@@ -893,7 +893,7 @@ class CampAndSpawnTask : public Task {
         --*attackCountdown;
       else {
         auto team = spawns.generate(Random, &c->getGame()->getContentFactory()->getCreatures(), c->getTribeId(),
-            MonsterAIFactory::singleTask(Task::attackCreatures({target->getLeader()})));
+            MonsterAIFactory::singleTask(Task::attackCreatures(target->getLeaders())));
         for (Creature* summon : Effect::summonCreatures(c->getPosition(), std::move(team)))
           attackTeam.push_back(summon);
         attackCountdown = none;
@@ -903,7 +903,7 @@ class CampAndSpawnTask : public Task {
   }
 
   virtual string getDescription() const override {
-    return "Camp and spawn " + target->getLeader()->getName().bare();
+    return "Camp and spawn";
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), target, spawns, campPos, attackCountdown, defenseTeam, attackTeam, numAttacks)
@@ -933,8 +933,15 @@ class KillFighters : public Task {
   KillFighters(WCollective col, int numC) : collective(col), numCreatures(numC) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    for (const Creature* target : collective->getCreatures(MinionTrait::FIGHTER))
+    optional<Position> moveTarget;
+    for (const Creature* target : collective->getCreatures(MinionTrait::FIGHTER)) {
       targets.insert(target);
+      moveTarget = target->getPosition();
+    }
+    for (const Creature* target : collective->getCreatures(MinionTrait::LEADER)) {
+      targets.insert(target);
+      moveTarget = target->getPosition();
+    }
     int numKilled = 0;
     for (auto& info : c->getKills())
       if (targets.contains(info.creature))
@@ -943,7 +950,7 @@ class KillFighters : public Task {
       setDone();
       return NoMove;
     }
-    return c->moveTowards(collective->getLeader()->getPosition());
+    return c->moveTowards(*moveTarget);
   }
 
   virtual string getDescription() const override {

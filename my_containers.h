@@ -212,6 +212,27 @@ class vector {
     return std::move(impl[0]);
   }
 
+  const T* getFirstElement() const& {
+    if (!empty())
+      return &impl[0];
+    else
+      return nullptr;
+  }
+
+  T* getFirstElement() & {
+    if (!empty())
+      return &impl[0];
+    else
+      return nullptr;
+  }
+
+  optional<T> getFirstElement() && {
+    if (!empty())
+      return std::move(impl[0]);
+    else
+      return none;
+  }
+
   vector<T> reverse() const {
     return vector<T>(impl.rbegin(), impl.rend());
   }

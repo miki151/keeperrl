@@ -17,9 +17,15 @@ static string generateAttackerName(WConstCollective attacker) {
     return "an unnamed attacker";
 }
 
+static ViewId getAttackViewId(const Collective* col, const vector<Creature*>& attackers) {
+  if (auto leader = col->getLeaders().getFirstElement())
+    return (*leader)->getViewObject().id();
+  return attackers[0]->getViewObject().id();
+}
+
 CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, WCollective att, const vector<Creature*>& c, optional<int> r)
     : ransom(r), creatures(c), attacker(att), attackerName(generateAttackerName(att)),
-      attackerViewId(att->getLeaderOrOtherMinion()->getViewObject().id()),
+      attackerViewId(getAttackViewId(att, c)),
       attackTasks(attackTasks.transform([](auto elem) { return elem->getThis(); })) {}
 
 CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, const string& name, ViewId id, const vector<Creature*>& c)

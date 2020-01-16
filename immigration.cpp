@@ -342,23 +342,18 @@ vector<Position> Immigration::Available::getSpawnPositions() const {
       if (ret.empty())
         ret = immigration->collective->getTerritory().getAll();
       tryLimitingToTopLevel();
-      auto leader = immigration->collective->getLeader();
-      if (ret.empty() && leader)
-        ret = {leader->getPosition()};
+      if (ret.empty())
+        ret = immigration->collective->getLeaders().transform([](auto c) { return c->getPosition(); });
       return ret;
     },
     [&] (InsideTerritory) {
       auto ret = immigration->collective->getTerritory().getAll();
-      auto leader = immigration->collective->getLeader();
-      if (ret.empty() && leader)
-        ret = {leader->getPosition()};
+      if (ret.empty())
+        ret = immigration->collective->getLeaders().transform([](auto c) { return c->getPosition(); });
       return ret;
     },
     [&] (NearLeader) -> vector<Position> {
-      if (auto leader = immigration->collective->getLeaderOrOtherMinion())
-        return {leader->getPosition()};
-      else
-        return {};
+      return immigration->collective->getLeaders().transform([](auto c) { return c->getPosition(); });
     },
     [&] (Pregnancy) {
       vector<Position> ret;
@@ -437,7 +432,7 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
         for (auto& list : immigration->collective->getStoredItems(ItemIndex::ASSEMBLED_MINION, StorageId::EQUIPMENT))
           for (auto& item : list.second)
             if (item->getEffect()->effect->getReferenceMaybe<Effects::AssembledMinion>()->creature == info.getId(0)) {
-              item->getEffect()->apply(list.first, immigration->collective->getLeaderOrOtherMinion());
+              item->getEffect()->apply(list.first, immigration->collective->getCreatures()[0]);
               list.first.removeItem(item);
               addedRecruits = true;
               return;

@@ -70,7 +70,7 @@ bool MinionActivityMap::isAvailable(WConstCollective col, const Creature* c, Min
           c->getBody().isHumanoid();
     case MinionActivity::POETRY:
     case MinionActivity::THRONE:
-      return col->getLeader() == c;
+      return col->hasTrait(c, MinionTrait::LEADER);
     case MinionActivity::BE_EXECUTED:
     case MinionActivity::BE_TORTURED:
       return col->hasTrait(c, MinionTrait::PRISONER);

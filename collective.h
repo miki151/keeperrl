@@ -106,8 +106,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   vector<TriggerInfo> getTriggers(WConstCollective against) const;
 
   double getEfficiency(const Creature*) const;
-  Creature* getLeader() const;
-  Creature* getLeaderOrOtherMinion() const;
+  const vector<Creature*>& getLeaders() const;
   bool needsToBeKilledToConquer(const Creature*) const;
 
   const Territory& getTerritory() const;

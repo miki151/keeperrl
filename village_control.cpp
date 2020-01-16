@@ -215,21 +215,19 @@ vector<TriggerInfo> VillageControl::getTriggers(WConstCollective against) const 
 
 void VillageControl::considerWelcomeMessage() {
   PROFILE;
-  auto leader = collective->getLeader();
-  if (!leader)
-    return;
   if (behaviour)
     if (behaviour->welcomeMessage)
       switch (*behaviour->welcomeMessage) {
         case VillageBehaviour::WelcomeMessage::DRAGON_WELCOME:
-          for (Position pos : collective->getTerritory().getAll())
-            if (Creature* c = pos.getCreature())
-              if (c->isAffected(LastingEffect::INVISIBLE) && isEnemy(c) && c->isPlayer()
-                  && leader->canSee(c->getPosition())) {
-                c->privateMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
-                      "I hear your breath. Come along!\"", MessagePriority::CRITICAL));
-                behaviour->welcomeMessage.reset();
-              }
+          for (auto leader : collective->getLeaders())
+            for (Position pos : collective->getTerritory().getAll())
+              if (Creature* c = pos.getCreature())
+                if (c->isAffected(LastingEffect::INVISIBLE) && isEnemy(c) && c->isPlayer()
+                    && leader->canSee(c->getPosition())) {
+                  c->privateMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
+                        "I hear your breath. Come along!\"", MessagePriority::CRITICAL));
+                  behaviour->welcomeMessage.reset();
+                }
           break;
       }
 }

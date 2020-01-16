@@ -255,13 +255,13 @@ PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActi
         return Task::doneWhen(Task::goTo(Random.choose(myTerritory)),
             TaskPredicate::outsidePositions(c, pigstyPos));
       }
-      auto leader = collective->getLeader();
+      auto& leaders = collective->getLeaders();
       if (!myTerritory.empty()) {
         PROFILE_BLOCK("Stay in territory");
         return Task::chain(Task::transferTo(collective->getModel()), Task::stayIn(myTerritory.asVector()));
-      } else if (collective->getConfig().getFollowLeaderIfNoTerritory() && leader) {
+      } else if (collective->getConfig().getFollowLeaderIfNoTerritory() && !leaders.empty()) {
         PROFILE_BLOCK("Follow leader");
-        return Task::alwaysDone(Task::follow(leader));
+        return Task::alwaysDone(Task::follow(leaders[0]));
       }
       {
         PROFILE_BLOCK("Just idle");

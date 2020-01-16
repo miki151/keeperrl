@@ -57,9 +57,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void processInput(View* view, UserInput);
   MoveInfo getMove(Creature* c);
 
-  const Creature* getKeeper() const;
-  Creature* getKeeper();
-
   void render(View*);
   void loadImmigrationAndWorkshops(ContentFactory*, const KeeperCreatureInfo&);
 

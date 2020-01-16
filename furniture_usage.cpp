@@ -113,7 +113,7 @@ static void sitOnThrone(Position pos, WConstFurniture furniture, Creature* c) {
     };
     for (auto enemy : collective->getCreatures(MinionTrait::FIGHTER))
       tryTeleporting(enemy);
-    if (auto l = collective->getLeader())
+    for (auto l : collective->getLeaders())
       tryTeleporting(l);
     if (wasTeleported)
       c->privateMessage(PlayerMessage("Thy audience hath been summoned"_s +

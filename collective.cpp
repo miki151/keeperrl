@@ -172,7 +172,6 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
     c->setController(makeOwner<Monster>(c, MonsterAIFactory::collective(this)));
   if (traits.contains(MinionTrait::LEADER)) {
     hadALeader = true;
-    CHECK(!getLeader());
     if (config->isLeaderFighter())
       traits.insert(MinionTrait::FIGHTER);
   }
@@ -276,23 +275,8 @@ vector<TriggerInfo> Collective::getTriggers(WConstCollective against) const {
     return {};
 }
 
-Creature* Collective::getLeaderOrOtherMinion() const {
-  if (auto l = getLeader())
-    return l;
-  if (!getCreatures(MinionTrait::FIGHTER).empty())
-    return getCreatures(MinionTrait::FIGHTER)[0];
-/*  if (!getCreatures(MinionTrait::WORKER).empty())
-    return getCreatures(MinionTrait::WORKER)[0];
-  if (!creatures.empty())
-    return creatures[0];*/
-  return nullptr;
-}
-
-Creature* Collective::getLeader() const {
-  if (!byTrait[MinionTrait::LEADER].empty())
-    return byTrait[MinionTrait::LEADER].getOnlyElement();
-  else
-    return nullptr;
+const vector<Creature*>& Collective::getLeaders() const {
+  return byTrait[MinionTrait::LEADER];
 }
 
 WGame Collective::getGame() const {
@@ -445,13 +429,12 @@ static int getKeeperUpgradeLevel(int dungeonLevel) {
 }
 
 void Collective::update(bool currentlyActive) {
-  auto leader = getLeader();
-  if (leader) {
+  for (auto leader : getLeaders()) {
     leader->upgradeViewId(getKeeperUpgradeLevel(dungeonLevel.level));
     name->viewId = leader->getViewObject().id();
   }
   control->update(currentlyActive);
-  if (config->hasImmigrantion(currentlyActive) && (leader || !hadALeader) && !isConquered())
+  if (config->hasImmigrantion(currentlyActive) && (!getLeaders().empty() || !hadALeader) && !isConquered())
     immigration->update();
 }
 
@@ -603,8 +586,12 @@ void Collective::addMoraleForKill(const Creature* killer, const Creature* victim
 }
 
 void Collective::decreaseMoraleForKill(const Creature* killer, const Creature* victim) {
-  for (Creature* c : getCreatures(MinionTrait::FIGHTER))
-    c->addMorale(victim == getLeader() ? -2 : -0.015);
+  for (Creature* c : getCreatures(MinionTrait::FIGHTER)) {
+    double change = -0.015;
+    if (hasTrait(victim, MinionTrait::LEADER) && getCreatures(MinionTrait::LEADER).size() == 1)
+      change = -2;
+    c->addMorale(change);
+  }
 }
 
 void Collective::decreaseMoraleForBanishing(const Creature*) {

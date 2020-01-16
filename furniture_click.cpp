@@ -28,7 +28,7 @@ void FurnitureClick::handle(FurnitureClickType type, Position pos, WConstFurnitu
       break;
     }
     case FurnitureClickType::KEEPER_BOARD:
-      pos.getGame()->handleMessageBoard(pos, pos.getGame()->getPlayerCollective()->getLeaderOrOtherMinion());
+      pos.getGame()->handleMessageBoard(pos, pos.getGame()->getPlayerCollective()->getLeaders()[0]);
       break;
   }
 }

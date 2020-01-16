@@ -40,6 +40,7 @@
 #include "game_event.h"
 #include "version.h"
 #include "content_factory.h"
+#include "collective_name.h"
 
 template <class Archive> 
 void Game::serialize(Archive& ar, const unsigned int version) {
@@ -88,8 +89,7 @@ void Game::addCollective(WCollective col) {
 
 static CollectiveConfig getKeeperConfig(bool fastImmigration, bool noLeader) {
   return CollectiveConfig::keeper(
-      TimeInterval(fastImmigration ? 10 : 140),
-      10, noLeader ? ConquerCondition::KILL_FIGHTERS_AND_LEADER : ConquerCondition::KILL_LEADER);
+      TimeInterval(fastImmigration ? 10 : 140), 10, ConquerCondition::KILL_LEADER);
 }
 
 void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
@@ -689,9 +689,7 @@ static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {
 
 string Game::getPlayerName() const {
   if (playerCollective) {
-    auto leader = playerCollective->getLeaderOrOtherMinion();
-    CHECK(leader);
-    return leader->getName().firstOrBare();
+    return *playerCollective->getName()->shortened;
   } else // adventurer mode
     return players.getOnlyElement()->getName().firstOrBare();
 }
@@ -700,7 +698,7 @@ SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
   if (WCollective col = getPlayerCollective()) {
     vector<Creature*> creatures = col->getCreatures();
     CHECK(!creatures.empty());
-    Creature* leader = col->getLeaderOrOtherMinion();
+    Creature* leader = col->getLeaders()[0];
     CHECK(leader);
     sort(creatures.begin(), creatures.end(), [leader] (const Creature* c1, const Creature* c2) {
         return c1 == leader || (c2 != leader && c1->getBestAttack().value > c2->getBestAttack().value);});

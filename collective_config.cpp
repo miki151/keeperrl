@@ -176,9 +176,9 @@ const optional<GuardianInfo>& CollectiveConfig::getGuardianInfo() const {
 bool CollectiveConfig::isConquered(const Collective* collective) const {
   switch (conquerCondition) {
     case ConquerCondition::KILL_LEADER:
-      return !collective->getLeader();
+      return collective->getLeaders().empty();
     case ConquerCondition::KILL_FIGHTERS_AND_LEADER:
-      return collective->getCreatures(MinionTrait::FIGHTER).empty() && !collective->getLeader();
+      return collective->getCreatures(MinionTrait::FIGHTER).empty() && collective->getLeaders().empty();
     case ConquerCondition::DESTROY_BUILDINGS:
       for (auto& elem : collective->getConstructions().getAllFurniture())
         if (auto f = elem.first.getFurniture(elem.second))

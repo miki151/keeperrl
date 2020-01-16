@@ -25,8 +25,8 @@ PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
   WCollective enemy = self->getEnemyCollective();
   return attackBehaviour->visit<PTask>(
       [&](KillLeader) {
-        if (auto leader = enemy->getLeader())
-          return Task::attackCreatures({leader});
+        if (!enemy->getLeaders().empty())
+          return Task::attackCreatures(enemy->getLeaders());
         else
           return Task::killFighters(enemy, 1000);
       },
@@ -36,8 +36,8 @@ PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
       [&](StealGold) {
         if (auto ret = Task::stealFrom(enemy))
           return ret;
-        else if (auto leader = enemy->getLeader())
-          return Task::attackCreatures({leader});
+        else if (!enemy->getLeaders().empty())
+          return Task::attackCreatures(enemy->getLeaders());
         else
           return Task::killFighters(enemy, 1000);
       },

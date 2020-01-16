@@ -243,7 +243,7 @@ bool PlayerControl::canControlSingle(const Creature* c) const {
 }
 
 bool PlayerControl::canControlInTeam(const Creature* c) const {
-  return collective->hasTrait(c, MinionTrait::FIGHTER) || c == collective->getLeader();
+  return collective->hasTrait(c, MinionTrait::FIGHTER) || collective->hasTrait(c, MinionTrait::LEADER);
 }
 
 void PlayerControl::addToCurrentTeam(Creature* c) {
@@ -292,7 +292,7 @@ void PlayerControl::teamMemberAction(TeamMemberAction action, Creature::Id id) {
 void PlayerControl::leaveControl() {
   set<TeamId> allTeams;
   for (auto controlled : copyOf(getControlled())) {
-    if (controlled == getKeeper())
+    if (collective->hasTrait(controlled, MinionTrait::LEADER))
       lastControlKeeperQuestion = collective->getGlobalTime();
     auto controlledLevel = controlled->getPosition().getLevel();
     if (getModel()->getMainLevels().contains(controlledLevel))
@@ -919,7 +919,8 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, Un
         minionInfo.actions.push_back(PlayerInfo::RENAME);
       } else
         minionInfo.experienceInfo.limit.clear();
-      if (c != collective->getLeader())
+      auto& leaders = collective->getLeaders();
+      if (leaders.size() > 1 || !collective->hasTrait(c, MinionTrait::LEADER))
         minionInfo.actions.push_back(PlayerInfo::BANISH);
       if (!collective->hasTrait(c, MinionTrait::WORKER)) {
         minionInfo.canAssignQuarters = true;
@@ -963,13 +964,10 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getEnemyGroups() const {
 
 void PlayerControl::fillMinions(CollectiveInfo& info) const {
   vector<Creature*> minions;
-  for (auto trait : {MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER, MinionTrait::INCREASE_POPULATION})
+  for (auto trait : {MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER, MinionTrait::INCREASE_POPULATION, MinionTrait::LEADER})
     for (Creature* c : collective->getCreatures(trait))
       if (!minions.contains(c))
         minions.push_back(c);
-  if (auto leader = collective->getLeader())
-    if (!minions.contains(leader))
-      minions.push_back(leader);
   info.minionGroups = getCreatureGroups(minions);
   info.minions = minions.transform([](const Creature* c) { return CreatureInfo(c) ;});
   info.minionCount = collective->getPopulationSize();
@@ -1400,9 +1398,9 @@ void PlayerControl::fillCurrentLevelInfo(GameInfo& gameInfo) const {
 void PlayerControl::fillDungeonLevel(AvatarLevelInfo& info) const {
   const auto& dungeonLevel = collective->getDungeonLevel();
   info.level = dungeonLevel.level + 1;
-  if (auto leader = collective->getLeaderOrOtherMinion()) {
-    info.viewId = leader->getViewObject().id();
-    info.title = leader->getName().title();
+  if (auto leader = collective->getLeaders().getFirstElement()) {
+    info.viewId = leader[0]->getViewObject().id();
+    info.title = leader[0]->getName().title();
   }
   info.progress = dungeonLevel.progress;
   info.numAvailable = min(dungeonLevel.numResearchAvailable(), collective->getTechnology().getNextTechs().size());
@@ -1567,19 +1565,16 @@ void PlayerControl::onEvent(const GameEvent& event) {
           getView()->presentText("", "Item won't be permanently assigned to creature because the equipment slot is locked.");
       },
       [&](const WonGame&) {
-        if (auto keeper = getKeeper()) { // Check if keeper is alive just in case. If he's not then game over has already happened
-          getGame()->conquered(keeper->getName().firstOrBare(), collective->getKills().getSize(),
-              (int) collective->getDangerLevel() + collective->getPoints());
-          getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
-            "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
-        }
+        getGame()->conquered(*collective->getName()->shortened, collective->getKills().getSize(),
+            (int) collective->getDangerLevel() + collective->getPoints());
+        getView()->presentText("", "When you are ready, retire your dungeon and share it online. "
+          "Other players will be able to invade it as adventurers. To do this, press Escape and choose \'retire\'.");
       },
       [&](const RetiredGame&) {
-        if (auto keeper = getKeeper()) // Check if keeper is alive just in case. If he's not then game over has already happened
-          if (getGame()->getVillains(VillainType::MAIN).empty())
-            // No victory condition in this game, so we generate a highscore when retiring.
-            getGame()->retired(keeper->getName().firstOrBare(), collective->getKills().getSize(),
-                (int) collective->getDangerLevel() + collective->getPoints());
+        if (getGame()->getVillains(VillainType::MAIN).empty())
+          // No victory condition in this game, so we generate a highscore when retiring.
+          getGame()->retired(*collective->getName()->shortened, collective->getKills().getSize(),
+              (int) collective->getDangerLevel() + collective->getPoints());
       },
       [&](const TechbookRead& info) {
         auto tech = info.technology;
@@ -1670,16 +1665,16 @@ const MapMemory& PlayerControl::getMemory() const {
 
 void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& index) const {
   // use the leader as a generic viewer
-  auto leader = collective->getLeader();
-  if (!leader) { // if no leader try any creature, else bail out
+  auto leaders = collective->getLeaders();
+  if (leaders.empty()) { // if no leader try any creature, else bail out
     auto& creatures = collective->getCreatures();
     if (!creatures.empty())
-      leader = creatures[0];
+      leaders = {creatures[0]};
     else
       return;
   }
   if (canSee)
-    pos.getViewIndex(index, leader);
+    pos.getViewIndex(index, leaders[0]);
   else
     index.setHiddenId(pos.getTopViewId());
   if (const Creature* c = pos.getCreature())
@@ -1788,8 +1783,8 @@ Vec2 PlayerControl::getScrollCoord() const {
   };
   if (auto pos = processTiles(collective->getTerritory().getAll()))
     return *pos;
-  if (auto leader = collective->getLeaderOrOtherMinion()) {
-    auto keeperPos = leader->getPosition();
+  if (auto leader = collective->getLeaders().getFirstElement()) {
+    auto keeperPos = leader[0]->getPosition();
     if (keeperPos.isSameLevel(currentLevel))
       return keeperPos.getCoord();
   }
@@ -1996,7 +1991,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::CREATE_TEAM:
       if (Creature* c = getCreature(input.get<Creature::Id>()))
-        if (collective->hasTrait(c, MinionTrait::FIGHTER) || c == collective->getLeader())
+        if (canControlInTeam(c))
           getTeams().create({c});
       break;
     case UserInputId::CREATE_TEAM_FROM_GROUP:
@@ -2004,7 +1999,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         vector<Creature*> group = getMinionsLike(creature);
         optional<TeamId> team;
         for (Creature* c : group)
-          if (collective->hasTrait(c, MinionTrait::FIGHTER) || c == collective->getLeader()) {
+          if (canControlInTeam(c)) {
             if (!team)
               team = getTeams().create({c});
             else
@@ -2254,8 +2249,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       if (Creature* creature = getCreature(info.creatureId)) {
         vector<Creature*> group = getMinionsLike(creature);
         for (Creature* c : group)
-          if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) &&
-              (collective->hasTrait(c, MinionTrait::FIGHTER) || c == collective->getLeader()))
+          if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) && canControlInTeam(c))
             getTeams().add(info.team, c);
       }
       break;
@@ -2411,7 +2405,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       lastWarningDismiss = getModel()->getLocalTime();
       break;
     case UserInputId::SCROLL_TO_HOME:
-      setScrollPos(getKeeper()->getPosition());
+      setScrollPos(collective->getLeaders()[0]->getPosition());
       break;
     case UserInputId::SCROLL_DOWN_STAIRS:
       scrollStairs(false);
@@ -2448,7 +2442,7 @@ void PlayerControl::scrollStairs(bool up) {
 vector<Creature*> PlayerControl::getConsumptionTargets(Creature* consumer) const {
   vector<Creature*> ret;
   for (Creature* c : getCreatures())
-    if (consumer->canConsume(c) && c != collective->getLeader())
+    if (consumer->canConsume(c) && (collective->getLeaders().size() > 1 || !collective->hasTrait(c, MinionTrait::LEADER)))
       ret.push_back(c);
   return ret;
 }
@@ -2671,14 +2665,6 @@ optional<Vec2> PlayerControl::getSelectionSize() const {
   return rectSelection.map([](const SelectionInfo& s) { return s.corner1 - s.corner2; });
 }
 
-const Creature* PlayerControl::getKeeper() const {
-  return collective->getLeader();
-}
-
-Creature* PlayerControl::getKeeper() {
-  return collective->getLeader();
-}
-
 void PlayerControl::addToMemory(Position pos) {
   if (!pos.needsMemoryUpdate())
     return;
@@ -2691,17 +2677,18 @@ void PlayerControl::addToMemory(Position pos) {
 void PlayerControl::checkKeeperDanger() {
   PROFILE;
   auto controlled = getControlled();
-  if (auto keeper = getKeeper()) {
+  for (auto keeper : collective->getLeaders()) {
     auto prompt = [&] (const string& reason) {
-        return getView()->yesOrNoPrompt(reason + ". Do you want to control " +
-            him(keeper->getAttributes().getGender()) + "?");
+      auto prefix = collective->getLeaders().size() > 1 ? "A Keeper " : "The Keeper ";
+      return getView()->yesOrNoPrompt(prefix + reason + ". Do you want to control " +
+          him(keeper->getAttributes().getGender()) + "?");
     };
     if (!keeper->isDead() && !controlled.contains(keeper) &&
         lastControlKeeperQuestion < collective->getGlobalTime() - 50_visible) {
       if (auto lastCombatIntent = keeper->getLastCombatIntent())
         if (lastCombatIntent->isHostile() && lastCombatIntent->time > getGame()->getGlobalTime() - 5_visible) {
           lastControlKeeperQuestion = collective->getGlobalTime();
-          if (prompt("The Keeper is engaged in a fight with " + lastCombatIntent->attacker->getName().a())) {
+          if (prompt("is engaged in a fight with " + lastCombatIntent->attacker->getName().a())) {
             controlSingle(keeper);
             return;
           }
@@ -2714,11 +2701,11 @@ void PlayerControl::checkKeeperDanger() {
         }
       };
       if (keeper->isAffected(LastingEffect::POISON))
-        prompt2("The Keeper is suffering from poisoning");
+        prompt2("is suffering from poisoning");
       else if (keeper->isAffected(LastingEffect::BLEEDING))
-        prompt2("The Keeper is bleeding");
+        prompt2("is bleeding");
       else if (keeper->getBody().isWounded())
-        prompt2("The Keeper is wounded");
+        prompt2("is wounded");
     }
   }
 }
@@ -2748,8 +2735,7 @@ void PlayerControl::update(bool currentlyActive) {
           addedCreatures.push_back(c);
           collective->addCreature(c, {MinionTrait::FIGHTER});
           for (auto controlled : getControlled())
-            if ((collective->hasTrait(controlled, MinionTrait::FIGHTER)
-                  || controlled == collective->getLeader())
+            if (canControlInTeam(c)
                 && c->getPosition().isSameLevel(controlled->getPosition())
                 && canControlInTeam(c)
                 && !collective->hasTrait(c, MinionTrait::SUMMONED)) {
@@ -2857,8 +2843,8 @@ TribeId PlayerControl::getTribeId() const {
 }
 
 bool PlayerControl::isEnemy(const Creature* c) const {
-  auto keeper = collective->getLeaderOrOtherMinion();
-  return c->getTribeId() != getTribeId() && keeper && keeper->isEnemy(c);
+  auto& leaders = collective->getLeaders();
+  return c->getTribeId() != getTribeId() && !leaders.empty() && leaders[0]->isEnemy(c);
 }
 
 void PlayerControl::onConquered(Creature* victim, Creature* killer) {
@@ -2878,7 +2864,8 @@ void PlayerControl::onConquered(Creature* victim, Creature* killer) {
 }
 
 void PlayerControl::onMemberKilled(const Creature* victim, const Creature* killer) {
-  if (victim->isPlayer() && victim != getKeeper())
+  if (victim->isPlayer() &&
+      (!collective->hasTrait(victim, MinionTrait::LEADER) || collective->getCreatures(MinionTrait::LEADER).size() > 1))
     onControlledKilled(victim);
   visibilityMap->remove(victim);
 }
@@ -2909,7 +2896,7 @@ void PlayerControl::addAttack(const CollectiveAttack& attack) {
 
 void PlayerControl::updateSquareMemory(Position pos) {
   ViewIndex index;
-  pos.getViewIndex(index, collective->getLeader()); // use the leader as a generic viewer
+  pos.getViewIndex(index, collective->getLeaders()[0]); // use the leader as a generic viewer
   memory->update(pos, index);
 }
 

@@ -546,7 +546,7 @@
 {
     {
       ids = { "GNOME" }
-      traits = { FIGHTER }
+      traits = { LEADER }
       invisible = true
       initialRecruitment = 0
       spawnLocation = NearLeader
@@ -560,7 +560,7 @@
     }
     {
       ids = { "GNOME" }
-      traits = { FIGHTER }
+      traits = { LEADER }
       frequency = 0.1
       requirements = {
         { 0.0 AttractionInfo 1 { FurnitureType "BED1" } } 
