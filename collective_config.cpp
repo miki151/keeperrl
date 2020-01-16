@@ -329,7 +329,6 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
           }, "sleeping"};
       case MinionActivity::EAT: return {FurnitureType("DINING_TABLE"), "eating"};
       case MinionActivity::GUARDING: return {MinionActivityInfo::GUARD, "guarding"};
-      case MinionActivity::THRONE: return {BuiltinUsageId::SIT_ON_THRONE, "throne"};
       case MinionActivity::POETRY: return {FurnitureType("POETRY_TABLE"), "poetry"};
       case MinionActivity::STUDY: return {getTrainingPredicate(ExperienceType::SPELL), "studying"};
       case MinionActivity::CROPS: return {FurnitureType("CROPS"), "crops"};

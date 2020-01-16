@@ -54,6 +54,8 @@
 #include "immigration.h"
 #include "immigrant_info.h"
 #include "furniture_entry.h"
+#include "territory.h"
+#include "vision.h"
 
 
 static void summonFX(Position pos) {
@@ -1019,6 +1021,17 @@ string Effects::AnimateItems::getDescription(const ContentFactory*) const {
   return "Animates up to " + toString(maxCount) + " weapons from the surroundings";
 }
 
+void Effects::Audience::applyToCreature(Creature* c, Creature* attacker) const {
+}
+
+string Effects::Audience::getName(const ContentFactory*) const {
+  return "audience";
+}
+
+string Effects::Audience::getDescription(const ContentFactory*) const {
+  return "Summons all fighters defending the territory that the creature is in";
+}
+
 void Effects::SoundEffect::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
@@ -1254,6 +1267,41 @@ void Effect::apply(Position pos, Creature* attacker) const {
       },
       [&](const Effects::SoundEffect& e) {
         pos.addSound(e.sound);
+      },
+      [&](const Effects::Audience&) {
+        auto collective = [&]() -> WCollective {
+          for (auto col : pos.getGame()->getCollectives())
+            if (col->getTerritory().contains(pos))
+              return col;
+          for (auto col : pos.getGame()->getCollectives())
+            if (col->getTerritory().getStandardExtended().contains(pos))
+              return col;
+          return nullptr;
+        }();
+        if (collective) {
+          bool wasTeleported = false;
+          auto tryTeleporting = [&] (Creature* enemy) {
+            if (enemy->getPosition().dist8(pos).value_or(4) > 3 || !pos.canSee(enemy->getPosition(), Vision()))
+              if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
+                enemy->getPosition().moveCreature(*landing, true);
+                wasTeleported = true;
+                enemy->removeEffect(LastingEffect::SLEEP);
+              }
+          };
+          for (auto enemy : collective->getCreatures(MinionTrait::FIGHTER))
+            tryTeleporting(enemy);
+          for (auto l : collective->getLeaders())
+            tryTeleporting(l);
+          if (wasTeleported) {
+            if (attacker)
+              attacker->privateMessage(PlayerMessage("Thy audience hath been summoned"_s +
+                  get(attacker->getAttributes().getGender(), ", Sire", ", Dame", ""), MessagePriority::HIGH));
+            else
+              pos.globalMessage(PlayerMessage("The audience has been summoned"_s, MessagePriority::HIGH));
+            return;
+          }
+        }
+        pos.globalMessage("Nothing happens");
       }
   );
 }

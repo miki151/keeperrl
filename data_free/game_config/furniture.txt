@@ -180,7 +180,7 @@
   name = "throne"
   viewId = { "throne" }
   canHideHere = true
-  usageType = BuiltinUsageId SIT_ON_THRONE
+  usageType = UsageEffect "sit on" Chain { CreatureMessage "sit on the throne" "sits on the throne" Audience }
   luxury = 1.0
   strength = 80
   populationIncrease = 10 none

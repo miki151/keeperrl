@@ -19,7 +19,6 @@ RICH_ENUM(
     RITUAL,
     CROPS,
     SPIDER,
-    THRONE,
     BE_WHIPPED,
     BE_TORTURED,
     BE_EXECUTED,

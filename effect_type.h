@@ -247,6 +247,7 @@ struct SoundEffect {
   Sound SERIAL(sound);
   SERIALIZE_ALL(sound)
 };
+SIMPLE_EFFECT(Audience);
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -302,7 +303,8 @@ struct SoundEffect {
   X(GrantAbility, 50)\
   X(CreatureMessage, 51)\
   X(SoundEffect, 52)\
-  X(DropItems, 53)
+  X(DropItems, 53)\
+  X(Audience, 54)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

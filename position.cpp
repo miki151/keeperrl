@@ -1093,10 +1093,12 @@ bool Position::stopsProjectiles(VisionId id) const {
 }
 
 bool Position::isVisibleBy(const Creature* c) const {
-  PROFILE;
+  return c->getPosition().canSee(*this, c->getVision());
+}
 
-  return isValid() && c->getPosition().isSameLevel(*this) &&
-      level->canSee(c->getPosition().getCoord(), coord, c->getVision());
+bool Position::canSee(Position other, const Vision& vision) const {
+  PROFILE;
+  return isValid() && other.isSameLevel(*this) && level->canSee(coord, other.coord, vision);
 }
 
 void Position::clearItemIndex(ItemIndex index) const {

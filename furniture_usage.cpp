@@ -88,41 +88,6 @@ static void usePortal(Position pos, Creature* c) {
   c->privateMessage("The portal is inactive. Create another one to open a connection.");
 }
 
-static void sitOnThrone(Position pos, WConstFurniture furniture, Creature* c) {
-  c->thirdPerson(c->getName().the() + " sits on the " + furniture->getName());
-  c->secondPerson("You sit on the " + furniture->getName());
-  if (furniture->getTribe() == c->getTribeId())
-    c->privateMessage("Frankly, it's not as exciting as it sounds");
-  else {
-    auto collective = [&]() -> WCollective {
-      for (auto col : c->getGame()->getCollectives())
-        if (col->getTerritory().contains(pos))
-          return col;
-      return nullptr;
-    }();
-    if (!collective)
-      return;
-    bool wasTeleported = false;
-    auto tryTeleporting = [&] (Creature* enemy) {
-      if (enemy->getPosition().dist8(pos).value_or(4) > 3 || !c->canSee(enemy))
-        if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
-          enemy->getPosition().moveCreature(*landing, true);
-          wasTeleported = true;
-          enemy->removeEffect(LastingEffect::SLEEP);
-        }
-    };
-    for (auto enemy : collective->getCreatures(MinionTrait::FIGHTER))
-      tryTeleporting(enemy);
-    for (auto l : collective->getLeaders())
-      tryTeleporting(l);
-    if (wasTeleported)
-      c->privateMessage(PlayerMessage("Thy audience hath been summoned"_s +
-          get(c->getAttributes().getGender(), ", Sire", ", Dame", ""), MessagePriority::HIGH));
-    else
-      c->privateMessage("Nothing happens");
-  }
-}
-
 void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurniture furniture, Creature* c) {
   CHECK(c != nullptr);
   type.visit([&] (BuiltinUsageId id) {
@@ -180,9 +145,6 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
       case BuiltinUsageId::PORTAL:
         usePortal(pos, c);
         break;
-      case BuiltinUsageId::SIT_ON_THRONE:
-        sitOnThrone(pos, furniture, c);
-        break;
       case BuiltinUsageId::DEMON_RITUAL:
       case BuiltinUsageId::STUDY:
       case BuiltinUsageId::ARCHERY_RANGE:
@@ -190,7 +152,7 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurnitu
     }
   },
   [&](const UsageEffect& effect) {
-    effect.effect.apply(c->getPosition());
+    effect.effect.apply(c->getPosition(), c);
   });
 }
 
@@ -218,7 +180,6 @@ string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitur
           case BuiltinUsageId::CHEST: return "open " + furnitureName;
           case BuiltinUsageId::KEEPER_BOARD: return "view " + furnitureName;
           case BuiltinUsageId::PORTAL: return "enter " + furnitureName;
-          case BuiltinUsageId::SIT_ON_THRONE: return "sit on " + furnitureName;
           default:
             return "use " + furnitureName;
         }
