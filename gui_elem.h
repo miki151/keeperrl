@@ -153,9 +153,9 @@ class GuiFactory {
   SGuiElem standardButtonBlink(SGuiElem content, SGuiElem button, bool matchTextWidth);
   SGuiElem standardButtonHighlight();
   SGuiElem buttonLabel(const string&, SGuiElem button, bool matchTextWidth = true,
-      bool centerHorizontally = false);
+      bool centerHorizontally = false, bool unicode = false);
   SGuiElem buttonLabel(const string&, function<void()> button, bool matchTextWidth = true,
-      bool centerHorizontally = false);
+      bool centerHorizontally = false, bool unicode = false);
   SGuiElem buttonLabelBlink(const string&, function<void()> button);
   SGuiElem buttonLabelWithMargin(const string&, bool matchTextWidth = true);
   SGuiElem buttonLabelSelected(const string&, function<void()> button, bool matchTextWidth = true,

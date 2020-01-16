@@ -642,16 +642,16 @@ SGuiElem GuiFactory::labelHighlight(const string& s, Color c, char hotkey) {
   return mouseHighlight2(label(s, highlighted, hotkey), label(s, c, hotkey));
 }
 
-SGuiElem GuiFactory::buttonLabel(const string& s, function<void()> f, bool matchTextWidth, bool centerHorizontally) {
-  return buttonLabel(s, button(std::move(f)), matchTextWidth, centerHorizontally);
+SGuiElem GuiFactory::buttonLabel(const string& s, function<void()> f, bool matchTextWidth, bool centerHorizontally, bool unicode) {
+  return buttonLabel(s, button(std::move(f)), matchTextWidth, centerHorizontally, unicode);
 }
 
 SGuiElem GuiFactory::buttonLabelBlink(const string& s, function<void()> f) {
   return standardButtonBlink(label(s), button(std::move(f)), true);
 }
 
-SGuiElem GuiFactory::buttonLabel(const string& s, SGuiElem button, bool matchTextWidth, bool centerHorizontally) {
-  auto text = label(s);
+SGuiElem GuiFactory::buttonLabel(const string& s, SGuiElem button, bool matchTextWidth, bool centerHorizontally, bool unicode) {
+  auto text = unicode ? labelUnicode(s) : label(s);
   if (centerHorizontally)
     text = centerHoriz(std::move(text));
   return standardButton(std::move(text), std::move(button), matchTextWidth);

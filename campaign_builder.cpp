@@ -404,9 +404,17 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
           if (!retired || retired->getNumActive() > 0 || playerRole != PlayerRole::KEEPER ||
               retired->getAllGames().empty() ||
               view->yesOrNoPrompt("The imps are going to be sad if you don't add any retired dungeons. Continue?")) {
-            string name = avatarInfo.playerCreature->getName().firstOrBare();
-            string gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
-            string gameDisplayName = name + " of " + campaign.worldName;
+            string gameIdentifier;
+            string gameDisplayName;
+            if (avatarInfo.chosenBaseName) {
+              string name = avatarInfo.playerCreature->getName().firstOrBare();
+              gameIdentifier = *avatarInfo.chosenBaseName + "_" + campaign.worldName + getNewIdSuffix();
+              gameDisplayName = capitalFirst(avatarInfo.playerCreature->getName().plural()) + " of " + *avatarInfo.chosenBaseName;
+            } else {
+              string name = avatarInfo.playerCreature->getName().firstOrBare();
+              gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
+              gameDisplayName = name + " of " + campaign.worldName;
+            }
             return CampaignSetup{campaign, gameIdentifier, gameDisplayName,
                 getIntroMessages(type), getExternalEnemies(options), getAggressionLevel(options)};
           }

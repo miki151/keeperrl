@@ -55,6 +55,7 @@
       "pig breeding" "iron working"
   }
   initialTech = { "automatons" }
+  baseNameGen = "TOWN"
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "throne" "beds"
       "pigsty" "crafting" "orders" "installations" "traps"

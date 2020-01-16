@@ -99,11 +99,14 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   model->addCreature(std::move(avatarInfo.playerCreature));
   auto keeperInfo = *avatarInfo.creatureInfo.getReferenceMaybe<KeeperCreatureInfo>();
-  model->addCollective(CollectiveBuilder(getKeeperConfig(false, keeperInfo.noLeader), keeperRef->getTribeId())
+  auto builder = CollectiveBuilder(getKeeperConfig(false, keeperInfo.noLeader), keeperRef->getTribeId())
       .setModel(model)
-      .addCreature(keeperRef, {MinionTrait::LEADER})
-      .build(contentFactory.get()));
+      .addCreature(keeperRef, {MinionTrait::LEADER});
+  if (avatarInfo.chosenBaseName)
+    builder.setLocationName(*avatarInfo.chosenBaseName);
+  model->addCollective(builder.build(contentFactory.get()));
   playerCollective = model->getCollectives().back();
+  CHECK(!!playerCollective->getName()->shortened);
   auto playerControlOwned = PlayerControl::create(playerCollective, introText, keeperInfo.tribeAlignment);
   playerControl = playerControlOwned.get();
   playerCollective->setControl(std::move(playerControlOwned));

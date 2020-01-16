@@ -8,6 +8,7 @@ struct AvatarInfo {
   PCreature playerCreature;
   variant<KeeperCreatureInfo, AdventurerCreatureInfo> creatureInfo;
   TribeAlignment tribeAlignment;
+  optional<string> chosenBaseName;
 };
 
 class View;

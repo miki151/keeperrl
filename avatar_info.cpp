@@ -12,6 +12,7 @@
 #include "gender.h"
 #include "creature_name.h"
 #include "name_generator.h"
+#include "name_generator_id.h"
 #include "special_trait.h"
 #include "content_factory.h"
 
@@ -54,15 +55,30 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const vector<Kee
     else
       return makeVec(c->getName().firstOrBare());
   };
+  auto getKeeperFirstNames = [&] (int index) {
+    if (auto& nameId = keeperCreatureInfos[index].baseNameGen) {
+      vector<vector<string>> ret;
+      for (auto id : keeperCreatureInfos[index].creatureId)
+        ret.push_back(creatureFactory.getNameGenerator()->getAll(*nameId));
+      return ret;
+    } else
+      return keeperCreatures[index].transform(getAllNames);
+  };
+  auto getKeeperName = [&](int index) -> string {
+    if (keeperCreatureInfos[index].noLeader)
+      return keeperCreatures[index][0]->getName().plural();
+    return keeperCreatures[index][0]->getName().identify();
+  };
   for (int i : All(keeperCreatures))
     keeperAvatarData.push_back(View::AvatarData {
       keeperCreatures[i].transform([](const auto& c) { return string(getName(c->getAttributes().getGender())); }),
       keeperCreatures[i].transform([](const auto& c) { return getUpgradedViewId(c.get()); }),
-      keeperCreatures[i].transform(getAllNames),
+      getKeeperFirstNames(i),
       keeperCreatureInfos[i].tribeAlignment,
-      keeperCreatures[i][0]->getName().identify(),
+      getKeeperName(i),
       PlayerRole::KEEPER,
-      keeperCreatureInfos[i].description
+      keeperCreatureInfos[i].description,
+      !!keeperCreatureInfos[i].baseNameGen
     });
   vector<View::AvatarData> adventurerAvatarData;
   for (int i : All(adventurerCreatures))
@@ -73,7 +89,8 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const vector<Kee
       adventurerCreatureInfos[i].tribeAlignment,
       adventurerCreatures[i][0]->getName().identify(),
       PlayerRole::ADVENTURER,
-      adventurerCreatureInfos[i].description
+      adventurerCreatureInfos[i].description,
+      false
     });
   auto result1 = view->chooseAvatar(concat(keeperAvatarData, adventurerAvatarData));
   if (auto option = result1.getValueMaybe<AvatarMenuOption>())
@@ -81,19 +98,23 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const vector<Kee
   auto result = result1.getReferenceMaybe<View::AvatarChoice>();
   variant<KeeperCreatureInfo, AdventurerCreatureInfo> creatureInfo;
   PCreature ret;
+  optional<string> chosenBaseName;
   if (result->creatureIndex < keeperCreatures.size()) {
     creatureInfo = keeperCreatureInfos[result->creatureIndex];
     ret = std::move(keeperCreatures[result->creatureIndex][result->genderIndex]);
-    if (!keeperCreatureInfos[result->creatureIndex].noLeader)
+    if (!keeperCreatureInfos[result->creatureIndex].noLeader) {
       ret->getName().setBare("Keeper");
+      ret->getName().setFirst(result->name);
+    } else
+      chosenBaseName = result->name;
   } else {
     creatureInfo = adventurerCreatureInfos[result->creatureIndex - keeperCreatures.size()];
     ret = std::move(adventurerCreatures[result->creatureIndex - keeperCreatures.size()][result->genderIndex]);
     ret->getName().setBare("Adventurer");
+    ret->getName().setFirst(result->name);
   }
-  ret->getName().setFirst(result->name);
   auto villains = creatureInfo.visit([](const auto& elem) { return elem.tribeAlignment;});
-  return AvatarInfo{std::move(ret), std::move(creatureInfo), villains };
+  return AvatarInfo{std::move(ret), std::move(creatureInfo), villains, chosenBaseName };
 }
 
 AvatarInfo getQuickGameAvatar(View* view, const vector<KeeperCreatureInfo>& keeperCreatures, CreatureFactory* creatureFactory) {

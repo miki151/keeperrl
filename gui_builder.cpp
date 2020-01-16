@@ -3364,14 +3364,15 @@ SGuiElem GuiBuilder::drawGenderButtons(const vector<View::AvatarData>& avatars,
   for (int avatarIndex : All(avatars)) {
     auto& avatar = avatars[avatarIndex];
     auto genderList = gui.getListBuilder();
-    for (int i : All(avatar.viewId)) {
-      auto selectFun = [i, gender] { *gender = i; };
-      genderList.addElemAuto(gui.conditional(
-          gui.conditional(gui.buttonLabelSelected(capitalFirst(avatar.genderNames[i]), selectFun, false, true),
-              gui.buttonLabel(capitalFirst(capitalFirst(avatar.genderNames[i])), selectFun, false, true),
-             [gender, i] { return *gender == i; }),
-          [=] { return avatarIndex == *chosenAvatar; }));
-    }
+    if (avatar.viewId.size() > 1 || !avatar.settlementNames)
+      for (int i : All(avatar.viewId)) {
+        auto selectFun = [i, gender] { *gender = i; };
+        genderList.addElemAuto(gui.conditional(
+            gui.conditional(gui.buttonLabelSelected(capitalFirst(avatar.genderNames[i]), selectFun, false, true),
+                gui.buttonLabel(capitalFirst(capitalFirst(avatar.genderNames[i])), selectFun, false, true),
+               [gender, i] { return *gender == i; }),
+            [=] { return avatarIndex == *chosenAvatar; }));
+      }
     genderOptions.push_back(genderList.buildHorizontalListFit(0.2));
   }
   return gui.stack(std::move(genderOptions));
@@ -3389,7 +3390,7 @@ SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatar
     auto& avatar = avatars[avatarIndex];
     for (int genderIndex : All(avatar.viewId)) {
       auto elem = gui.getListBuilder()
-          .addElemAuto(gui.label("Name: "))
+          .addElemAuto(gui.label(avatar.settlementNames ? "Settlement: " : "First name: "))
           .addMiddleElem(gui.textField(maxFirstNameLength,
               [=] {
                 auto entered = options->getValueString(OptionId::PLAYER_NAME);
@@ -3401,7 +3402,7 @@ SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatar
                 options->setValue(OptionId::PLAYER_NAME, s);
               }))
           .addSpace(10)
-          .addBackElemAuto(gui.buttonLabel("random", [=] { options->setValue(OptionId::PLAYER_NAME, ""_s); ++*chosenName; }))
+          .addBackElemAuto(gui.buttonLabel("🔄", [=] { options->setValue(OptionId::PLAYER_NAME, ""_s); ++*chosenName; }, true, false, true))
           .buildHorizontalList();
       firstNameOptions.push_back(gui.conditional(std::move(elem),
           [=]{ return getChosenGender(gender, chosenAvatar, avatars) == genderIndex && avatarIndex == *chosenAvatar; }));
