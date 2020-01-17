@@ -52,6 +52,7 @@
 #include "creature_inventory.h"
 #include "effect_type.h"
 #include "item_types.h"
+#include "content_factory.h"
 
 SERIALIZE_DEF(CreatureFactory, nameGenerator, attributes, spellSchools, spells)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)
@@ -705,11 +706,9 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
           c.attr[AttrType::SPELL_DAMAGE] -= 6;
         }
         if (p.humanoid) {
-          c.skills.setValue(SkillId::WORKSHOP, Random.getDouble(0, 1));
-          c.skills.setValue(SkillId::FORGE, Random.getDouble(0, 1));
-          c.skills.setValue(SkillId::LABORATORY, Random.getDouble(0, 1));
-          c.skills.setValue(SkillId::JEWELER, Random.getDouble(0, 1));
-          c.skills.setValue(SkillId::FURNACE, Random.getDouble(0, 1));
+          for (auto& elem : contentFactory->workshopInfo)
+            c.skills.setValue(elem.first, Random.getDouble(0, 1));
+          c.skills.setValue(SkillId::MULTI_WEAPON, Random.getDouble(0, 1));
           c.maxLevelIncrease[ExperienceType::MELEE] = 10;
           c.maxLevelIncrease[ExperienceType::SPELL] = 10;
           c.spellSchools = LIST(SpellSchoolId("mage"));
@@ -896,7 +895,7 @@ PCreature CreatureFactory::getHumanForTests() {
       c.viewIdUpgrades = LIST(ViewId("keeper2"), ViewId("keeper3"), ViewId("keeper4"));
       c.name.setFirst("keeper"_s);
       c.name.useFullTitle();
-      c.skills.setValue(SkillId::LABORATORY, 0.2);
+      c.skills.setValue(WorkshopType("LABORATORY"), 0.2);
       c.maxLevelIncrease[ExperienceType::MELEE] = 7;
       c.maxLevelIncrease[ExperienceType::SPELL] = 12;
       //c.spells->add(SpellId::HEAL_SELF);

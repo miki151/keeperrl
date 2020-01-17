@@ -29,7 +29,7 @@
     }
     # skill.h
     skills = {
-      LABORATORY 0.2
+      "LABORATORY" 0.2
     }
     # experience_type.h
     maxLevelIncrease = {
@@ -72,7 +72,7 @@
     }
     viewIdUpgrades = { { "keeper_knight2" } { "keeper_knight3" } { "keeper_knight4" }}
     skills = {
-      FORGE 0.2
+      "FORGE" 0.2
     }
     maxLevelIncrease = {
       MELEE 12
@@ -114,7 +114,7 @@
     }
     viewIdUpgrades = { { "duke2" } { "duke3" } { "duke4" }}
     skills = {
-      FORGE 0.2
+      "FORGE" 0.2
     }
     maxLevelIncrease = {
       MELEE 12
@@ -205,7 +205,7 @@
       MAGIC_RESISTANCE 1
     }
     skills = { 
-      SHAMANISM 0.5
+      "SHAMANISM" 0.5
     }
     spells = { "advanced healing" "heal spirit" }
     chatReactionFriendly = "\"mhhhhhrrrr!\""
@@ -524,7 +524,7 @@
     chatReactionFriendly = "curses all humans"
     chatReactionHostile = "\"Die!\""
     skills = {
-      LABORATORY 0.7
+      "LABORATORY" 0.7
     }
     maxLevelIncrease = {
       SPELL 4
@@ -997,8 +997,8 @@
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     skills = {
-      WORKSHOP 0.3
-      FORGE 0.3
+      "WORKSHOP" 0.3
+      "FORGE" 0.3
     }
     name = {
       name = "knight"
@@ -1095,9 +1095,9 @@
     chatReactionFriendly = "talks about crafting"
     chatReactionHostile = "\"Die!\""
     skills = {
-      WORKSHOP 0.6
-      FORGE 0.6
-      JEWELER 0.6
+      "WORKSHOP" 0.6
+      "FORGE" 0.6
+      "JEWELER" 0.6
     }
     name = {
       name = "artisan"
@@ -1123,7 +1123,7 @@
       CROPS_SKILL 1
     }
     skills = {
-      DIGGING 0.1
+      "DIGGING" 0.1
     }
     name = {
       name = "peasant"
@@ -1361,7 +1361,7 @@
       MELEE 5
     }
     skills = {
-      WORKSHOP 0.3
+      "WORKSHOP" 0.3
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
@@ -1393,7 +1393,7 @@
     chatReactionHostile = "\"Die!\""
     courage = 1
     skills = { 
-      SHAMANISM 0.7
+      "SHAMANISM" 0.7
     }
     spells = { "advanced healing" "defense bonus" "directed blast" "heal spirit" }
     maxLevelIncrease = {
@@ -1522,7 +1522,7 @@
 "PESEANT_PRISONER" inherit "PESEANT_PLAYER"
   {
     skills = {
-      DIGGING 0.3
+      "DIGGING" 0.3
     }
   }
 "HALLOWEEN_KID"
@@ -1686,7 +1686,7 @@
     }
     cantEquip = true
     skills = {
-      DIGGING 1.0
+      "DIGGING" 1.0
     }
     name = {
       name = "automaton worker"
@@ -1890,8 +1890,8 @@
     chatReactionFriendly = "curses all elves"
     chatReactionHostile = "\"Die!\""
     skills = {
-      WORKSHOP 0.3
-      FORGE 0.3
+      "WORKSHOP" 0.3
+      "FORGE" 0.3
     }
     maxLevelIncrease = {
       MELEE 7
@@ -1918,7 +1918,7 @@
       type = Humanoid LARGE
     }
     skills = {
-      LABORATORY 0.7
+      "LABORATORY" 0.7
     }
     chatReactionFriendly = "curses all elves"
     chatReactionHostile = "\"Die!\""
@@ -1952,7 +1952,7 @@
     spellSchools = {}
     spells = { "heal spirit" }
     skills = {
-      SHAMANISM 0.4
+      "SHAMANISM" 0.4
     }
     name = {
       name = "orc shaman"
@@ -1986,7 +1986,7 @@
       }
     }
     skills = {
-      LABORATORY 0.3
+      "LABORATORY" 0.3
     }
     gender = FEMALE
     maxLevelIncrease = {
@@ -2036,8 +2036,8 @@
       type = Humanoid MEDIUM
     }
     skills = {
-      WORKSHOP 0.5
-      FORGE 0.5
+      "WORKSHOP" 0.5
+      "FORGE" 0.5
     }
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""
@@ -2056,7 +2056,7 @@
       type = Humanoid MEDIUM
     }
     skills = {
-      JEWELER 1
+      "JEWELER" 1
     }
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""
@@ -2083,11 +2083,10 @@
       DISARM_TRAPS_SKILL 1
     }
     skills = {
-      LABORATORY 0.3
-      WORKSHOP 0.6
-      FORGE 0.6
-      JEWELER 0.6
-      FURNACE 0.6
+      "LABORATORY" 0.3
+      "WORKSHOP" 0.6
+      "FORGE" 0.6
+      "JEWELER" 0.6
     }
     name = {
       name = "goblin"
@@ -2114,7 +2113,7 @@
     noChase = true
     cantEquip = true
     skills = {
-      DIGGING 0.4
+      "DIGGING" 0.4
     }
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""
@@ -2145,9 +2144,8 @@
       MAGIC_VULNERABILITY 1
     }
     skills = {
-      WORKSHOP 0.5
-      FORGE 0.5
-      FURNACE 0.9
+      "WORKSHOP" 0.5
+      "FORGE" 0.5
     }
     maxLevelIncrease = {
       MELEE 12
@@ -2193,8 +2191,7 @@
       firstNameGen = "DWARF"
     }
     skills = {
-      FORGE 0.8
-      FURNACE 0.8
+      "FORGE" 0.8
     }
     maxLevelIncrease = {
       MELEE 2
@@ -2233,7 +2230,7 @@
       firstNameGen = "DWARF"
     }
     skills = {
-      WORKSHOP 0.5
+      "WORKSHOP" 0.5
     }
     permanentEffects = {
       NAVIGATION_DIGGING_SKILL 1
@@ -2290,7 +2287,7 @@
       name = "dwarf blacksmith"
     }
     skills = {
-      FORGE 1.0
+      "FORGE" 1.0
     }
     inventory = {}
   }
@@ -2367,7 +2364,7 @@
     chatReactionHostile = "\"Die!\""
     spells = { "healing" }
     skills = {
-      JEWELER 0.9
+      "JEWELER" 0.9
     }
     maxLevelIncrease = {
       SPELL 1
@@ -3142,7 +3139,7 @@
       type = Humanoid LARGE
     }
     skills = {
-      LABORATORY 1
+      "LABORATORY" 1
     }
     maxLevelIncrease = {
       SPELL 9
@@ -3504,7 +3501,7 @@
       SPELL_DAMAGE 50
     }
     skills = {
-      LABORATORY 1.0
+      "LABORATORY" 1.0
     }
     maxLevelIncrease = {
       MELEE 2

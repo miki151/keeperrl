@@ -1362,8 +1362,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
     }
     if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType())) {
       auto& workshop = workshops->get(*workshopType);
-      auto& info = getGame()->getContentFactory()->workshopInfo.at(*workshopType);
-      auto craftingSkill = c->getAttributes().getSkills().getValue(info.skill);
+      auto craftingSkill = c->getAttributes().getSkills().getValue(*workshopType);
       auto result = workshop.addWork(this, efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c),
           craftingSkill, c->getMorale());
       if (!result.items.empty()) {

@@ -41,9 +41,14 @@ string PlayerInfo::getFirstName() const {
 
 vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
   vector<PlayerInfo::SkillInfo> ret;
+  auto& skills = c->getAttributes().getSkills();
   for (SkillId id : ENUM_ALL(SkillId))
-    if (c->getAttributes().getSkills().getValue(id) > 0)
+    if (skills.getValue(id) > 0)
       ret.push_back(PlayerInfo::SkillInfo{Skill::get(id)->getNameForCreature(c), Skill::get(id)->getHelpText()});
+  for (auto& elem : skills.getWorkshopValues())
+    if (elem.second > 0)
+      ret.push_back(PlayerInfo::SkillInfo{skills.getNameForCreature(c->getGame()->getContentFactory(), elem.first),
+          skills.getHelpText(c->getGame()->getContentFactory(), elem.first)});
   return ret;
 }
 

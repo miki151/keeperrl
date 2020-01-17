@@ -4,7 +4,6 @@
 
 struct WorkshopInfo {
   FurnitureType SERIAL(furniture);
-  string SERIAL(taskName);
-  SkillId SERIAL(skill);
-  SERIALIZE_ALL(furniture, taskName, skill)
+  string SERIAL(name);
+  SERIALIZE_ALL(furniture, name)
 };

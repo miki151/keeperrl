@@ -50,8 +50,8 @@
         { 0.1 AttractionInfo 1 {FurnitureType "FORGE" FurnitureType "WORKSHOP" FurnitureType "JEWELLER"}}
       }
       specialTraits = {
-         { 0.03 { SkillId WORKSHOP LastingEffect INSANITY }}
-         { 0.05 { SkillId FORGE LastingEffect INSANITY }}
+         { 0.03 { WorkshopType "WORKSHOP" LastingEffect INSANITY }}
+         { 0.05 { WorkshopType "FORGE" LastingEffect INSANITY }}
          { 0.03 { LastingEffect BAD_BREATH }}
          { 0.01 { LastingEffect ENTERTAINER }}
       }
@@ -95,7 +95,7 @@
       }
       specialTraits = {
          { 0.10 { ExtraTraining SPELL 4}}
-         { 0.05 { SkillId LABORATORY }}
+         { 0.05 { WorkshopType "LABORATORY" }}
          { 0.02 { LastingEffect HATE_ELVES }}
          { 0.02 { LastingEffect HATE_HUMANS }}
          { 0.01 { LastingEffect ENTERTAINER }}
@@ -112,7 +112,7 @@
       specialTraits = {
          { 0.03 { AttrBonus SPELL_DAMAGE 13 LastingEffect INSANITY}}
          { 0.10 { ExtraTraining SPELL 4}}
-         { 0.05 { SkillId LABORATORY }}
+         { 0.05 { WorkshopType "LABORATORY" }}
          { 0.10 { LastingEffect MAGIC_RESISTANCE }}
          { 0.02 { LastingEffect HATE_ELVES }}
          { 0.02 { LastingEffect HATE_HUMANS }}
@@ -128,7 +128,7 @@
         { 0.0 MinTurnRequirement 500 }
       }
       specialTraits = {
-         { 0.05 { SkillId LABORATORY }}
+         { 0.05 { WorkshopType "LABORATORY" }}
          { 0.10 { LastingEffect MAGIC_RESISTANCE }}
          { 0.02 { LastingEffect HATE_ELVES }}
          { 0.02 { LastingEffect HATE_HUMANS }}
@@ -399,8 +399,8 @@
       }
       specialTraits = {
          { 0.05 { OneOfTraits { LastingEffect FAST_CRAFTING LastingEffect SLOW_CRAFTING } }}
-         { 0.03 { SkillId WORKSHOP LastingEffect INSANITY }}
-         { 0.03 { SkillId FORGE LastingEffect INSANITY }}
+         { 0.03 { WorkshopType "WORKSHOP" LastingEffect INSANITY }}
+         { 0.03 { WorkshopType "FORGE" LastingEffect INSANITY }}
          { 0.03 { LastingEffect BAD_BREATH }}
       }
     }
@@ -487,7 +487,7 @@
         { 1.0 CostInfo GOLD 100 }
       }
       specialTraits = {
-       { 1.0 { SkillId FORGE }}
+       { 1.0 { WorkshopType "FORGE" }}
       }
     }
     {

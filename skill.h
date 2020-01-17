@@ -19,19 +19,17 @@
 
 #include "singleton.h"
 #include "enums.h"
+#include "workshop_type.h"
 
 RICH_ENUM(SkillId,
   DIGGING,
-  WORKSHOP,
-  FORGE,
-  LABORATORY,
-  JEWELER,
-  FURNACE,
   SHAMANISM,
   MULTI_WEAPON
 );
 
 class Creature;
+class ContentFactory;
+
 class Skill : public Singleton<Skill, SkillId> {
   public:
   string getName() const;
@@ -51,7 +49,12 @@ class Skill : public Singleton<Skill, SkillId> {
 class Skillset {
   public:
   double getValue(SkillId) const;
+  double getValue(WorkshopType) const;
+  const map<WorkshopType, double>& getWorkshopValues() const;
+  string getNameForCreature(const ContentFactory*, WorkshopType) const;
+  string getHelpText(const ContentFactory*, WorkshopType) const;
   void setValue(SkillId, double);
+  void setValue(WorkshopType, double);
   void increaseValue(SkillId, double);
 
   template <class Archive>
@@ -59,5 +62,6 @@ class Skillset {
 
   private:
   EnumMap<SkillId, double> SERIAL(values);
+  map<WorkshopType, double> SERIAL(workshopValues);
 };
 

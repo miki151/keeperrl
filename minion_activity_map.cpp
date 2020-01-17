@@ -74,11 +74,7 @@ bool MinionActivityMap::isAvailable(WConstCollective col, const Creature* c, Min
     case MinionActivity::BE_TORTURED:
       return col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::CRAFT:
-      return c->getAttributes().getSkills().getValue(SkillId::FORGE) > 0 ||
-          c->getAttributes().getSkills().getValue(SkillId::WORKSHOP) > 0 ||
-          c->getAttributes().getSkills().getValue(SkillId::FURNACE) > 0 ||
-          c->getAttributes().getSkills().getValue(SkillId::JEWELER) > 0 ||
-          c->getAttributes().getSkills().getValue(SkillId::LABORATORY) > 0;
+      return !c->getAttributes().getSkills().getWorkshopValues().empty();
     case MinionActivity::SLEEP:
       return c->getBody().needsToSleep() && !c->isAffected(LastingEffect::POISON);
     case MinionActivity::EAT:

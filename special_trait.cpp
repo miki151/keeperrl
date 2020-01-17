@@ -44,8 +44,8 @@ void applySpecialTrait(SpecialTrait trait, Creature* c, const ContentFactory* fa
         attack.initializeItem(factory);
         c->getBody().addIntrinsicAttack(a.part, std::move(attack));
       },
-      [&] (SkillId skill) {
-        c->getAttributes().getSkills().setValue(skill, Workshops::getLegendarySkillThreshold());
+      [&] (WorkshopType type) {
+        c->getAttributes().getSkills().setValue(type, Workshops::getLegendarySkillThreshold());
       },
       [&] (const OneOfTraits&) {
         FATAL << "Can't apply traits alternative";

@@ -1087,7 +1087,7 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   for (auto workshopType : collective->getWorkshops().getWorkshopsTypes()) {
     auto& workshopInfo = getGame()->getContentFactory()->workshopInfo.at(workshopType);
     bool unavailable = collective->getConstructions().getBuiltPositions(workshopInfo.furniture).empty();
-    info.workshopButtons.push_back({capitalFirst(workshopInfo.taskName),
+    info.workshopButtons.push_back({capitalFirst(workshopInfo.name),
         getGame()->getContentFactory()->furniture.getConstructionObject(workshopInfo.furniture).id(), false, unavailable});
     if (chosenWorkshop == workshopType) {
       index = i;
@@ -1204,8 +1204,8 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
         FATAL << "No adjective found: "_s + LastingEffects::getName(effect);
         fail();
       },
-      [&] (SkillId skill) {
-        return TraitInfo{"Legendary skill level: " + Skill::get(skill)->getName(), false};
+      [&] (WorkshopType type) {
+        return TraitInfo{"Legendary craftsman at: " + factory->workshopInfo.at(type).name, false};
       },
       [&] (ExtraBodyPart part) {
         if (part.count == 1)

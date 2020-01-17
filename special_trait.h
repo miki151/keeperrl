@@ -43,7 +43,7 @@ struct OneOfTraits {
 #define VARIANT_TYPES_LIST\
   X(ExtraTraining, 0)\
   X(LastingEffect, 1)\
-  X(SkillId, 2)\
+  X(WorkshopType, 2)\
   X(AttrBonus, 3)\
   X(OneOfTraits, 4)\
   X(ExtraBodyPart, 5)\
