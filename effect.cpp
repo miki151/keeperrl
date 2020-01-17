@@ -1266,30 +1266,33 @@ void Effect::apply(Position pos, Creature* attacker) const {
               return col;
           return nullptr;
         }();
+        bool wasTeleported = false;
+        auto tryTeleporting = [&] (Creature* enemy) {
+          auto distance = enemy->getPosition().dist8(pos);
+          if ((!a.maxDistance || *a.maxDistance >= distance.value_or(10000)) &&
+              (distance.value_or(4) > 3 || !pos.canSee(enemy->getPosition(), Vision())))
+            if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
+              enemy->getPosition().moveCreature(*landing, true);
+              wasTeleported = true;
+              enemy->removeEffect(LastingEffect::SLEEP);
+            }
+        };
         if (collective) {
-          bool wasTeleported = false;
-          auto tryTeleporting = [&] (Creature* enemy) {
-            auto distance = enemy->getPosition().dist8(pos);
-            if ((!a.maxDistance || *a.maxDistance >= distance.value_or(10000)) &&
-                (distance.value_or(4) > 3 || !pos.canSee(enemy->getPosition(), Vision())))
-              if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
-                enemy->getPosition().moveCreature(*landing, true);
-                wasTeleported = true;
-                enemy->removeEffect(LastingEffect::SLEEP);
-              }
-          };
           for (auto enemy : collective->getCreatures(MinionTrait::FIGHTER))
             tryTeleporting(enemy);
           for (auto l : collective->getLeaders())
             tryTeleporting(l);
-          if (wasTeleported) {
-            if (attacker)
-              attacker->privateMessage(PlayerMessage("Thy audience hath been summoned"_s +
-                  get(attacker->getAttributes().getGender(), ", Sire", ", Dame", ""), MessagePriority::HIGH));
-            else
-              pos.globalMessage(PlayerMessage("The audience has been summoned"_s, MessagePriority::HIGH));
-            return;
-          }
+        }
+        for (auto enemy : pos.getLevel()->getAllCreatures())
+          if (!collective || !collective->getCreatures().contains(enemy))
+          tryTeleporting(enemy);
+        if (wasTeleported) {
+          if (attacker)
+            attacker->privateMessage(PlayerMessage("Thy audience hath been summoned"_s +
+                get(attacker->getAttributes().getGender(), ", Sire", ", Dame", ""), MessagePriority::HIGH));
+          else
+            pos.globalMessage(PlayerMessage("The audience has been summoned"_s, MessagePriority::HIGH));
+          return;
         }
         pos.globalMessage("Nothing happens");
       }
