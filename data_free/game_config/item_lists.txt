@@ -206,7 +206,7 @@
     {{Scroll Summon "FIRE_ELEMENTAL" {1 2} 100} 30 }
     {{Scroll CircularBlast} 5 }
     {{Scroll Deception} 10 }
-    {{Scroll Audience} 5 }
+    {{Scroll Audience none} 5 }
     {{Scroll Summon "FLY" {3 6} 100} 30 }
     {{Potion Heal FLESH} 50 }
     {{Potion Lasting SLEEP} 50 }
@@ -279,7 +279,7 @@
     {{Scroll Enhance WEAPON 3} 1 }
     {{Scroll Area 2 DestroyWalls DIG} 10 }
     {{Scroll DoubleTrouble} 2 }
-    {{Scroll Audience} 2 }
+    {{Scroll Audience none} 2 }
     {{Scroll Deception} 1 }
   }
 }
