@@ -53,7 +53,8 @@ class Workshops {
   Type& get(WorkshopType);
   const Type& get(WorkshopType) const;
   int getDebt(CollectiveResourceId) const;
+  vector<WorkshopType> getWorkshopsTypes() const;
 
   private:
-  EnumMap<WorkshopType, Type> SERIAL(types);
+  map<WorkshopType, Type> SERIAL(types);
 };

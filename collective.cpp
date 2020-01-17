@@ -1129,13 +1129,14 @@ void Collective::handleTrapPlacementAndProduction() {
 }
 
 void Collective::scheduleAutoProduction(function<bool(const Item*)> itemPredicate, int count) {
+  auto types = workshops->getWorkshopsTypes();
   if (count > 0)
-    for (auto workshopType : ENUM_ALL(WorkshopType))
+    for (auto workshopType : types)
       for (auto& item : workshops->get(workshopType).getQueued())
         if (itemPredicate(item.item.type.get(getGame()->getContentFactory()).get()))
           count -= item.number * item.item.batchSize;
   if (count > 0)
-    for (auto workshopType : ENUM_ALL(WorkshopType)) {
+    for (auto workshopType : types) {
       auto& options = workshops->get(workshopType).getOptions();
       for (int index : All(options))
         if (itemPredicate(options[index].type.get(getGame()->getContentFactory()).get())) {
@@ -1359,9 +1360,9 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
             break;
         }
     }
-    if (auto workshopType = config->getWorkshopType(furniture->getType())) {
+    if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType())) {
       auto& workshop = workshops->get(*workshopType);
-      auto& info = config->getWorkshopInfo(*workshopType);
+      auto& info = getGame()->getContentFactory()->workshopInfo.at(*workshopType);
       auto craftingSkill = c->getAttributes().getSkills().getValue(info.skill);
       auto result = workshop.addWork(this, efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c),
           craftingSkill, c->getMorale());

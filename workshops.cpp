@@ -6,9 +6,10 @@
 #include "workshop_item.h"
 #include "game.h"
 
-Workshops::Workshops(WorkshopArray options, const ContentFactory* factory)
-    : types([&] (WorkshopType t) { return Type(options[t].transform(
-         [&](const auto& elem){ return elem.get(factory); }));}) {
+Workshops::Workshops(WorkshopArray options, const ContentFactory* factory) {
+  for (auto& elem : options)
+    types.insert(make_pair(elem.first, Type(elem.second.transform(
+        [&](const auto& elem){ return elem.get(factory); }))));
 }
 
 Workshops::Type& Workshops::get(WorkshopType type) {
@@ -16,7 +17,7 @@ Workshops::Type& Workshops::get(WorkshopType type) {
 }
 
 const Workshops::Type& Workshops::get(WorkshopType type) const {
-  return types[type];
+  return types.at(type);
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Workshops)
@@ -165,8 +166,12 @@ const vector<Workshops::QueuedItem>& Workshops::Type::getQueued() const {
 
 int Workshops::getDebt(CollectiveResourceId resource) const {
   int ret = 0;
-  for (auto type : ENUM_ALL(WorkshopType))
-    ret += types[type].debt[resource];
+  for (auto& elem : types)
+    ret += elem.second.debt[resource];
   return ret;
+}
+
+vector<WorkshopType> Workshops::getWorkshopsTypes() const {
+  return getKeys(types);
 }
 

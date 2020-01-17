@@ -24,7 +24,7 @@
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
-  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo);
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo);
   creatures.setContentFactory(this);
 }
 
@@ -283,6 +283,32 @@ static optional<string> readMapLayouts(MapLayouts& layouts, KeyVerifier& keyVeri
   return none;
 }
 
+optional<string> ContentFactory::readWorkshopInfo(const GameConfig* config, KeyVerifier* keyVerifier) {
+  map<PrimaryId<WorkshopType>, WorkshopInfo> tmp;
+  if (auto error = config->readObject(tmp, GameConfigId::WORKSHOP_INFO, keyVerifier))
+    return *error;
+  workshopInfo = convertKeys(tmp);
+  return none;
+}
+
+optional<string> ContentFactory::readCampaignInfo(const GameConfig* config, KeyVerifier* keyVerifier) {
+  map<string, CampaignInfo> campaignTmp;
+  if (auto res = config->readObject(campaignTmp, GameConfigId::CAMPAIGN_INFO, keyVerifier))
+    return *res;
+  string elemName = "default";
+  if (campaignTmp.size() != 1 || !campaignTmp.count(elemName))
+    return "Campaign info table should contain exactly one element named \"" + elemName + "\""_s;
+  campaignInfo = campaignTmp.at(elemName);
+  for (auto& l : {campaignInfo.maxAllies, campaignInfo.maxMainVillains, campaignInfo.maxLesserVillains})
+    if (l < 1 || l > 20)
+      return "Campaign villain limits must be between 1 and 20"_s;
+  if (campaignInfo.influenceSize < 1)
+    return "Campaign influence size must be 1 or higher"_s;
+  if (campaignInfo.mapZoom < 1 || campaignInfo.mapZoom > 3)
+    return "Campaign map zoom must be between 1 and 3"_s;
+  return none;
+}
+
 optional<string> ContentFactory::readData(const GameConfig* config, const string& modName) {
   KeyVerifier keyVerifier;
   map<PrimaryId<TechId>, Technology::TechDefinition> techsTmp;
@@ -305,6 +331,10 @@ optional<string> ContentFactory::readData(const GameConfig* config, const string
   if (auto error = config->readObject(gameIntros, GameConfigId::GAME_INTRO_TEXT, &keyVerifier))
     return *error;
   if (auto error = readPlayerCreatures(config, &keyVerifier))
+    return *error;
+  if (auto error = readWorkshopInfo(config, &keyVerifier))
+    return *error;
+  if (auto error = readCampaignInfo(config, &keyVerifier))
     return *error;
   if (auto res = config->readObject(zLevels, GameConfigId::Z_LEVELS, &keyVerifier))
     return *res;
@@ -350,31 +380,20 @@ optional<string> ContentFactory::readData(const GameConfig* config, const string
         return "No resource distribution found for depth " + toString(depth) + ". Please fix resources config.";
     }
   }
-  map<string, CampaignInfo> campaignTmp;
-  if (auto res = config->readObject(campaignTmp, GameConfigId::CAMPAIGN_INFO, &keyVerifier))
-    return *res;
-  string elemName = "default";
-  if (campaignTmp.size() != 1 || !campaignTmp.count(elemName))
-    return "Campaign info table should contain exactly one element named \"" + elemName + "\""_s;
-  campaignInfo = campaignTmp.at(elemName);
-  for (auto& l : {campaignInfo.maxAllies, campaignInfo.maxMainVillains, campaignInfo.maxLesserVillains})
-    if (l < 1 || l > 20)
-      return "Campaign villain limits must be between 1 and 20"_s;
-  if (campaignInfo.influenceSize < 1)
-    return "Campaign influence size must be 1 or higher"_s;
-  if (campaignInfo.mapZoom < 1 || campaignInfo.mapZoom > 3)
-    return "Campaign map zoom must be between 1 and 3"_s;
   auto errors = keyVerifier.verify();
   if (!errors.empty())
     return errors.front();
   return none;
 }
 
+
+
 void ContentFactory::merge(ContentFactory f) {
   creatures.merge(std::move(f.creatures));
   furniture.merge(std::move(f.furniture));
   tilePaths.merge(std::move(f.tilePaths));
   mergeMap(std::move(f.items), items);
+  mergeMap(std::move(f.workshopInfo), workshopInfo);
 }
 
 CreatureFactory& ContentFactory::getCreatures() {
@@ -385,6 +404,13 @@ CreatureFactory& ContentFactory::getCreatures() {
 const CreatureFactory& ContentFactory::getCreatures() const {
   creatures.setContentFactory(this);
   return creatures;
+}
+
+optional<WorkshopType> ContentFactory::getWorkshopType(FurnitureType type) const {
+  for (auto& elem : workshopInfo)
+    if (elem.second.furniture == type)
+      return elem.first;
+  return none;
 }
 
 ContentFactory::ContentFactory() {}

@@ -59,12 +59,6 @@ struct MinionActivityInfo {
   string description;
 };
 
-struct WorkshopInfo {
-  FurnitureType furniture;
-  string taskName;
-  SkillId skill;
-};
-
 struct FloorInfo {
   FurnitureType type;
   CostInfo cost;
@@ -96,9 +90,6 @@ class CollectiveConfig {
   bool isConquered(const Collective*) const;
   bool xCanEnemyRetire() const;
   CollectiveConfig& setConquerCondition(ConquerCondition);
-
-  static const WorkshopInfo& getWorkshopInfo(WorkshopType);
-  static optional<WorkshopType> getWorkshopType(FurnitureType);
 
   static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, ContentFactory*);
 

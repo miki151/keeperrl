@@ -23,6 +23,7 @@
 #include "position.h"
 #include "event_listener.h"
 #include "keeper_creature_info.h"
+#include "workshop_type.h"
 
 class Model;
 class Technology;

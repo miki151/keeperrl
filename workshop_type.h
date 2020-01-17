@@ -1,11 +1,10 @@
 #pragma once
 
 #include "util.h"
+#include "content_id.h"
 
-RICH_ENUM(WorkshopType,
-    WORKSHOP,
-    FORGE,
-    LABORATORY,
-    JEWELER
-);
+class WorkshopType : public ContentId<WorkshopType> {
+  public:
+  using ContentId::ContentId;
+};
 

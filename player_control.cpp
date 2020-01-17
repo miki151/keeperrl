@@ -1084,8 +1084,8 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   info.workshopButtons.clear();
   int index = 0;
   int i = 0;
-  for (auto workshopType : ENUM_ALL(WorkshopType)) {
-    auto& workshopInfo = CollectiveConfig::getWorkshopInfo(workshopType);
+  for (auto workshopType : collective->getWorkshops().getWorkshopsTypes()) {
+    auto& workshopInfo = getGame()->getContentFactory()->workshopInfo.at(workshopType);
     bool unavailable = collective->getConstructions().getBuiltPositions(workshopInfo.furniture).empty();
     info.workshopButtons.push_back({capitalFirst(workshopInfo.taskName),
         getGame()->getContentFactory()->furniture.getConstructionObject(workshopInfo.furniture).id(), false, unavailable});
@@ -1709,10 +1709,10 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         if (auto& obj = furniture->getViewObject())
           if (index.hasObject(obj->layer()))
             index.getObject(obj->layer()).setClickAction(FurnitureClick::getClickAction(*clickType, position, furniture));
-      if (furniture->hasUsageType(BuiltinUsageId::STUDY) ||
-          CollectiveConfig::getWorkshopType(furniture->getType()))
+      auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType());
+      if (furniture->hasUsageType(BuiltinUsageId::STUDY) || !!workshopType)
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
-      if ((chosenWorkshop && chosenWorkshop == CollectiveConfig::getWorkshopType(furniture->getType())) ||
+      if ((chosenWorkshop && chosenWorkshop == workshopType) ||
           (chosenLibrary && furniture->hasUsageType(BuiltinUsageId::STUDY)))
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
@@ -1909,7 +1909,7 @@ void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
   auto refreshHighlights = [&] {
     if (chosenWorkshop)
       for (auto pos : collective->getConstructions().getBuiltPositions(
-             CollectiveConfig::getWorkshopInfo(*chosenWorkshop).furniture))
+             getGame()->getContentFactory()->workshopInfo.at(*chosenWorkshop).furniture))
         pos.setNeedsRenderUpdate(true);
   };
   refreshHighlights();
@@ -2066,11 +2066,12 @@ void PlayerControl::processInput(View* view, UserInput input) {
           getGame()->getContentFactory()->getCreatures().getSpells(), collective->getTechnology()).present(view);
       break;
     case UserInputId::WORKSHOP: {
+      auto types = collective->getWorkshops().getWorkshopsTypes();
       int index = input.get<int>();
-      if (index < 0 || index >= EnumInfo<WorkshopType>::size)
+      if (index < 0 || index >= types.size())
         setChosenWorkshop(none);
       else {
-        WorkshopType type = (WorkshopType) index;
+        WorkshopType type = types[index];
         if (chosenWorkshop == type)
           setChosenWorkshop(none);
         else
@@ -2633,7 +2634,7 @@ void PlayerControl::onSquareClick(Position pos) {
         furniture->click(pos); // this can remove the furniture
         updateSquareMemory(pos);
       } else {
-        if (auto workshopType = CollectiveConfig::getWorkshopType(furniture->getType()))
+        if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType()))
           setChosenWorkshop(*workshopType);
         if (furniture->hasUsageType(BuiltinUsageId::STUDY))
           setChosenLibrary(!chosenLibrary);

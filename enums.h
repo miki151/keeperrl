@@ -82,7 +82,6 @@ enum class Keybinding;
 enum class TutorialHighlight;
 
 enum class MessagePriority;
-enum class WorkshopType;
 enum class PlayerType;
 enum class CreatureStatus;
 enum class TeamOrder;
@@ -124,5 +123,6 @@ class CreatureId;
 class BuildingId;
 class NameGeneratorId;
 class BiomeId;
+class WorkshopType;
 
 using SteamId = unsigned long long;

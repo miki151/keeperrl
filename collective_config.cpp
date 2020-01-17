@@ -280,20 +280,6 @@ MinionActivityInfo::MinionActivityInfo(UsagePredicate pred, const string& desc)
     : type(FURNITURE), furniturePredicate(pred), description(desc) {
 }
 
-optional<WorkshopType> CollectiveConfig::getWorkshopType(FurnitureType furniture) {
-  for (auto type : ENUM_ALL(WorkshopType))
-    if (getWorkshopInfo(type).furniture == furniture)
-      return type;
-  return none;
-  /*static optional<EnumMap<FurnitureType, optional<WorkshopType>>> map;
-  if (!map) {
-    map.emplace();
-    for (auto type : ENUM_ALL(WorkshopType))
-      (*map)[workshops[type].furniture] = type;
-  }
-  return (*map)[furniture];*/
-}
-
 map<CollectiveResourceId, int> CollectiveConfig::getStartingResource() const {
   return map<CollectiveResourceId, int>{};
 }
@@ -343,29 +329,19 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::BE_WHIPPED: return {FurnitureType("WHIPPING_POST"), "being whipped"};
       case MinionActivity::BE_TORTURED: return {FurnitureType("TORTURE_TABLE"), "being tortured"};
       case MinionActivity::BE_EXECUTED: return {FurnitureType("GALLOWS"), "being executed"};
-      case MinionActivity::CRAFT: return {[](const ContentFactory*, WConstCollective col, const Creature* c, FurnitureType t) {
-            if (auto type = getWorkshopType(t))
-              return !c || !col || (c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill) > 0 &&
-                  !col->getWorkshops().get(*type).isIdle(
-                      col, c->getAttributes().getSkills().getValue(getWorkshopInfo(*type).skill), c->getMorale()));
-            else
+      case MinionActivity::CRAFT: return {[](const ContentFactory* f, WConstCollective col, const Creature* c, FurnitureType t) {
+            if (auto type = f->getWorkshopType(t)) {
+              if (!c || !col)
+                return true;
+              auto skill = c->getAttributes().getSkills().getValue(f->workshopInfo.at(*type).skill);
+              return skill > 0 && !col->getWorkshops().get(*type).isIdle(col, skill, c->getMorale());
+            } else
               return false;
           },
           "crafting"};
     }
   });
   return map[task];
-}
-
-const WorkshopInfo& CollectiveConfig::getWorkshopInfo(WorkshopType type) {
-  static EnumMap<WorkshopType, WorkshopInfo> workshops([](WorkshopType type)->WorkshopInfo {
-    switch (type) {
-      case WorkshopType::WORKSHOP: return {FurnitureType("WORKSHOP"), "workshop", SkillId::WORKSHOP};
-      case WorkshopType::FORGE: return {FurnitureType("FORGE"), "forge", SkillId::FORGE};
-      case WorkshopType::LABORATORY: return {FurnitureType("LABORATORY"), "laboratory", SkillId::LABORATORY};
-      case WorkshopType::JEWELER: return {FurnitureType("JEWELLER"), "jeweler", SkillId::JEWELER};
-    }});
-  return workshops[type];
 }
 
 #include "pretty_archive.h"
