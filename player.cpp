@@ -489,16 +489,6 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(Creature* 
   }
   if (creature->isEnemy(c)) {
     genAction(1, ViewObjectAction::ATTACK, true, creature->attack(c));
-    auto equipped = creature->getEquipment().getSlotItems(EquipmentSlot::WEAPON);
-    if (equipped.size() == 1) {
-      auto weapon = equipped[0];
-      genAction(4, ViewObjectAction::ATTACK_USING_WEAPON, true, creature->attack(c,
-          CONSTRUCT(Creature::AttackParams, c.weapon = weapon;)));
-    }
-    for (auto part : ENUM_ALL(BodyPart))
-      for (auto& attack : creature->getBody().getIntrinsicAttacks()[part])
-        genAction(4, getAttackAction(part), true, creature->attack(c,
-            CONSTRUCT(Creature::AttackParams, c.weapon = attack.item.get();)));
   } else {
     genAction(1, ViewObjectAction::ATTACK, false, creature->attack(c));
     genAction(1, ViewObjectAction::PET, false, creature->pet(c));

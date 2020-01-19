@@ -30,6 +30,7 @@
     # skill.h
     skills = {
       "LABORATORY" 0.2
+      "MULTI_WEAPON" 1
     }
     # experience_type.h
     maxLevelIncrease = {

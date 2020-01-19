@@ -11,20 +11,6 @@ const char* getText(ViewObjectAction action) {
       return "push";
     case ViewObjectAction::ATTACK:
       return "attack";
-    case ViewObjectAction::ATTACK_USING_WEAPON:
-      return "attack using weapon";
-    case ViewObjectAction::ATTACK_USING_ARM:
-      return "punch";
-    case ViewObjectAction::ATTACK_USING_LEG:
-      return "kick";
-    case ViewObjectAction::ATTACK_USING_BACK:
-      return "attack using back";
-    case ViewObjectAction::ATTACK_USING_HEAD:
-      return "butt or bite";
-    case ViewObjectAction::ATTACK_USING_WING:
-      return "attack using wing";
-    case ViewObjectAction::ATTACK_USING_TORSO:
-      return "attack using torso";
     case ViewObjectAction::MOVE_NOW:
       return "move now";
     case ViewObjectAction::LOCK_DOOR:

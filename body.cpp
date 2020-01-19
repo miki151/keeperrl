@@ -126,26 +126,21 @@ void Body::setHumanoid(bool h) {
   xhumanoid = h;
 }
 
-vector<Item*> Body::chooseRandomWeapon(vector<Item*> weapons, int maxCount) const {
-  auto addIntrinsic = [&] (bool extraAttack) {
-    for (auto part : ENUM_ALL(BodyPart))
-      for (auto& attack : intrinsicAttacks[part])
-        if (numGood(part) > 0 && attack.isExtraAttack == extraAttack) {
-          weapons.push_back(attack.item.get());
-          if (attack.isExtraAttack)
-            ++maxCount;
-        }
-  };
-  addIntrinsic(true);
+vector<pair<Item*, double>> Body::chooseRandomWeapon(vector<Item*> weapons, vector<double> multipliers) const {
+  vector<pair<Item*, double>> ret;
+  for (auto part : ENUM_ALL(BodyPart))
+    for (auto& attack : intrinsicAttacks[part])
+      if (numGood(part) > 0 && !attack.isExtraAttack && weapons.size() < multipliers.size())
+        weapons.push_back(attack.item.get());
   weapons = Random.permutation(weapons);
-  if (weapons.size() > maxCount)
-    weapons.resize(maxCount);
-  else {
-    addIntrinsic(false);
-    if (weapons.size() > maxCount)
-      weapons.resize(maxCount);
-  }
-  return weapons;
+  for (auto i : All(weapons))
+    if (i < multipliers.size())
+      ret.push_back({weapons[i], multipliers[i]});
+  for (auto part : ENUM_ALL(BodyPart))
+    for (auto& attack : intrinsicAttacks[part])
+      if (numGood(part) > 0 && attack.isExtraAttack)
+        ret.push_back({attack.item.get(), 1});
+  return ret;
 }
 
 Item* Body::chooseFirstWeapon() const {

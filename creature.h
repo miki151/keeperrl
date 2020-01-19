@@ -163,11 +163,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canCarryMoreWeight(double) const;
   CreatureAction drop(const vector<Item*>& item) const;
   void drop(vector<PItem> item);
-  struct AttackParams {
-    Item* weapon = nullptr;
-    optional<AttackLevel> level;
-  };
-  CreatureAction attack(Creature*, optional<AttackParams> = none) const;
+  CreatureAction attack(Creature*) const;
   int getDefaultWeaponDamage() const;
   CreatureAction execute(Creature*) const;
   CreatureAction applyItem(Item* item) const;
@@ -208,7 +204,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   BestAttack getBestAttack() const;
 
-  vector<Item*> getRandomWeapons() const;
+  vector<pair<Item*, double>> getRandomWeapons() const;
   int getMaxSimultaneousWeapons() const;
   Item* getFirstWeapon() const;
   void dropWeapon();

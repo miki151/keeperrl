@@ -1189,7 +1189,7 @@ int Creature::getDefaultWeaponDamage() const {
     return 0;
 }
 
-CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackParams) const {
+CreatureAction Creature::attack(Creature* other) const {
   CHECK(!other->isDead());
   if (!position.isSameLevel(other->getPosition()))
     return CreatureAction();
@@ -1197,14 +1197,6 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
   if (dir.length8() != 1)
     return CreatureAction();
   auto weapons = getRandomWeapons();
-  if (attackParams && attackParams->weapon) {
-    if (auto index = weapons.findElement(attackParams->weapon))
-      swap(weapons[0], weapons[*index]);
-    else {
-      weapons = concat({attackParams->weapon}, weapons);
-      weapons.pop_back();
-    }
-  }
   if (weapons.empty())
     return CreatureAction("No available weapon or intrinsic attack");
   return CreatureAction(this, [=] (Creature* self) {
@@ -1212,12 +1204,10 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
     INFO << getName().the() << " attacking " << other->getName().the();
     bool wasDamaged = false;
     for (auto weapon : weapons) {
-      auto& weaponInfo = weapon->getWeaponInfo();
+      auto& weaponInfo = weapon.first->getWeaponInfo();
       auto damageAttr = weaponInfo.meleeAttackAttr;
-      int damage = getAttr(damageAttr, false) + weapon->getModifier(damageAttr);
+      const int damage = max(1, int(weapon.second * (getAttr(damageAttr, false) + weapon.first->getModifier(damageAttr))));
       AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
-      if (attackParams && attackParams->level)
-        attackLevel = *attackParams->level;
       damageAttr = LastingEffects::modifyMeleeDamageAttr(this, damageAttr);
       vector<Effect> victimEffects;
       for (auto& e : weaponInfo.victimEffect)
@@ -1227,7 +1217,7 @@ CreatureAction Creature::attack(Creature* other, optional<AttackParams> attackPa
       string enemyName = other->getController()->getMessageGenerator().getEnemyName(other);
       if (!canSee(other))
         enemyName = "something";
-      weapon->getAttackMsg(this, enemyName);
+      weapon.first->getAttackMsg(this, enemyName);
       getGame()->addEvent(EventInfo::CreatureAttacked{other, self, damageAttr});
       wasDamaged |= other->takeDamage(attack, true);
       for (auto& e : weaponInfo.attackerEffect)
@@ -1850,24 +1840,36 @@ CreatureAction Creature::consume(Creature* other) const {
   });
 }
 
-int Creature::getMaxSimultaneousWeapons() const {
+template <typename Visitor>
+static void visitMaxSimultaneousWeapons(const Creature* c, Visitor visitor) {
   constexpr double minMultiplier = 0.5;
-  const double skillValue = attributes->getSkills().getValue(SkillId::MULTI_WEAPON);
+  const double skillValue = c->getAttributes().getSkills().getValue(SkillId::MULTI_WEAPON);
+  visitor(1);
   if (skillValue < 0.01)
-    return 1;
-  if (skillValue > 0.95)
-    return 10;
-  int result = 2;
+    return;
+  if (skillValue > 0.95) {
+    for (int i : Range(10))
+      visitor(1);
+    return;
+  }
+  visitor(skillValue);
   double curMultiplier = skillValue * skillValue;
   while (curMultiplier >= minMultiplier) {
-    ++result;
+    visitor(curMultiplier);
     curMultiplier *= skillValue;
   }
-  return result;
 }
 
-vector<Item*> Creature::getRandomWeapons() const {
-  return getBody().chooseRandomWeapon(equipment->getSlotItems(EquipmentSlot::WEAPON), getMaxSimultaneousWeapons());
+int Creature::getMaxSimultaneousWeapons() const {
+  int res = 0;
+  visitMaxSimultaneousWeapons(this, [&](double){ ++res; });
+  return res;
+}
+
+vector<pair<Item*, double>> Creature::getRandomWeapons() const {
+  vector<double> multipliers;
+  visitMaxSimultaneousWeapons(this, [&](double m) { multipliers.push_back(m); });
+  return getBody().chooseRandomWeapon(equipment->getSlotItems(EquipmentSlot::WEAPON), multipliers);
 }
 
 Item* Creature::getFirstWeapon() const {

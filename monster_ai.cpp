@@ -670,15 +670,11 @@ class Fighter : public Behaviour {
           return move;
     }
     if (distance == 1)
-      if (auto action = creature->attack(other, getAttackParams(other)))
+      if (auto action = creature->attack(other))
         return {1.0, action.prepend([=](Creature*) {
             addCombatIntent(other, Creature::CombatIntentInfo::Type::ATTACK);
         })};
     return NoMove;
-  }
-
-  Creature::AttackParams getAttackParams(const Creature*) {
-    return Creature::AttackParams {};
   }
 
   SERIALIZATION_CONSTRUCTOR(Fighter)
