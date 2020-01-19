@@ -14,7 +14,7 @@ class ContentFactory;
 struct ItemUpgradeInfo {
   vector<string> getDescription(const ContentFactory*) const;
   ItemUpgradeType SERIAL(type);
-  HeapAllocatedSerializationWorkaround<ItemPrefix> SERIAL(prefix);
+  HeapAllocated<ItemPrefix> SERIAL(prefix);
   template <class Archive>
   void serialize(Archive& ar1, const unsigned int);
 };

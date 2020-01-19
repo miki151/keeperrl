@@ -34,7 +34,7 @@ class ItemType {
   PItem get(const ContentFactory*) const;
   vector<PItem> get(int, const ContentFactory*) const;
 
-  HeapAllocatedSerializationWorkaround<ItemTypeVariant> SERIAL(type);
+  HeapAllocated<ItemTypeVariant> SERIAL(type);
 
   private:
   ItemAttributes getAttributes(const ContentFactory*) const;

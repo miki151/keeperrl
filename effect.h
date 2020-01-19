@@ -60,7 +60,7 @@ class Effect {
   static void enhanceWeapon(Creature*, int mod, const string& msg);
   static void enhanceArmor(Creature*, int mod, const string& msg);
 
-  HeapAllocatedSerializationWorkaround<EffectType> SERIAL(effect);
+  HeapAllocated<EffectType> SERIAL(effect);
 
   private:
   EffectAIIntent shouldAIApply(const Creature* victim, bool isEnemy) const;

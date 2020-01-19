@@ -1455,26 +1455,17 @@ class HeapAllocated {
     return *elem == *o.elem;
   }
 
-  SERIALIZE_ALL(elem)
-
-  protected:
-  unique_ptr<T> SERIAL(elem);
-};
-
-// Merge into HeapAllocated with the new serialize method after Alpha29
-template <class T>
-class HeapAllocatedSerializationWorkaround : public HeapAllocated<T> {
-  public:
-  using HeapAllocated<T>::HeapAllocated;
-
   template <class Archive>
   void serialize(Archive& ar1) {
     if (Archive::is_loading::value) {
-      HeapAllocated<T>::elem = unique<T>();
+      elem = unique<T>();
     }
-    CHECK(!!HeapAllocated<T>::elem);
-    ar1(*HeapAllocated<T>::elem);
+    CHECK(!!elem);
+    ar1(*elem);
   }
+
+  protected:
+  unique_ptr<T> elem;
 };
 
 template <class T>
