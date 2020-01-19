@@ -309,7 +309,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   mutable optional<double> dangerLevelCache;
   EntitySet<Collective> SERIAL(knownVillains);
   EntitySet<Collective> SERIAL(knownVillainLocations);
-  set<EnemyId> SERIAL(conqueredVillains); // OBSOLETE
   bool SERIAL(discoverable) = false;
   void considerRebellion();
   void updateCreatureStatus(Creature*);

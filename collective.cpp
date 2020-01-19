@@ -68,7 +68,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment, groupLockedAcitivities);
   ar(delayedPos, knownTiles, technology, kills, points, currentActivity, recordedEvents);
-  ar(credit, model, immigration, teams, name, conqueredVillains, minionActivities);
+  ar(credit, model, immigration, teams, name, minionActivities);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
   ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease, dungeonLevel);
 }
