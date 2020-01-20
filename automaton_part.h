@@ -10,7 +10,7 @@ struct AutomatonPart {
   vector<Effect> SERIAL(effect);
   ViewId SERIAL(viewId);
   string SERIAL(name);
-  bool isAvailable(const Creature*) const;
+  bool isAvailable(const Creature*, int numAssigned = 0) const;
   void apply(Creature*) const;
   template <class Archive>
   void serialize(Archive& ar1, const unsigned int);

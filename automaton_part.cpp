@@ -6,8 +6,8 @@
 
 SERIALIZE_DEF(AutomatonPart, slot, effect, viewId, name)
 
-bool AutomatonPart::isAvailable(const Creature* c) const {
-  if (c->automatonParts.size() >= c->getAttributes().getAutomatonSlots())
+bool AutomatonPart::isAvailable(const Creature* c, int numAssigned) const {
+  if (c->automatonParts.size() + numAssigned >= c->getAttributes().getAutomatonSlots())
     return false;
   int numInSlot = 0;
   for (auto& part : c->automatonParts)

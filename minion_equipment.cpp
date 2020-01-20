@@ -41,6 +41,7 @@ optional<int> MinionEquipment::getEquipmentLimit(MinionEquipmentType type) const
   switch (type) {
     case MinionEquipmentType::COMBAT_ITEM:
     case MinionEquipmentType::HEALING:
+    case MinionEquipmentType::MATERIALIZATION:
       return 6;
     case MinionEquipmentType::TORCH:
       return 1;
@@ -80,9 +81,9 @@ bool MinionEquipment::canUseItemType(const Creature* c, MinionEquipmentType type
   }
 }
 
-static bool automatonNeedsPart(const Creature* c, const Item* it) {
+static bool automatonNeedsPart(const Creature* c, const Item* it, int numAssigned) {
   if (auto& part = it->getAutomatonPart())
-    return part->isAvailable(c);
+    return part->isAvailable(c, numAssigned);
   return false;
 }
 
@@ -117,7 +118,7 @@ bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit)
     }
     return true;
   } else
-    return automatonNeedsPart(c, it);
+    return automatonNeedsPart(c, it, getItemsOwnedBy(c, [&](auto item) { return !!item->getAutomatonPart() && item != it; }).size());
 }
 
 optional<Creature::Id> MinionEquipment::getOwner(const Item* it) const {
