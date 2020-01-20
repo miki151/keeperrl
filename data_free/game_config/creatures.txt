@@ -1671,7 +1671,7 @@
       name = "automaton"
     }
   }
-"AUTOMATON_WORKER"
+"AUTOMATON_WORKER_WOOD"
   {
     viewId = { "automaton_worker" }
     attr = {
@@ -1691,6 +1691,21 @@
     }
     name = {
       name = "automaton worker"
+    }
+  }
+"AUTOMATON_WORKER_IRON" inherit "AUTOMATON_WORKER_WOOD"
+  {
+    viewId = { "automaton_worker" Rgb 140 148 148 255 }
+    permanentEffects = append {
+      SPEED 1
+    }
+    attr = {
+      DAMAGE 10
+      DEFENSE 15
+    }
+    body = {
+      type = Humanoid MEDIUM
+      material = IRON
     }
   }
 "AUTOMATON_CORPUS_WOOD"

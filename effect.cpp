@@ -792,11 +792,21 @@ void Effects::Chain::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
 string Effects::Chain::getName(const ContentFactory* f) const {
-  return effects[0].getName(f);
+  string ret;
+  for (auto& e : effects)
+    ret += e.getName(f) + ", ";
+  ret.pop_back();
+  ret.pop_back();
+  return ret;
 }
 
 string Effects::Chain::getDescription(const ContentFactory* f) const {
-  return effects[0].getDescription(f);
+  string ret;
+  for (auto& e : effects)
+    ret += e.getDescription(f) + ", ";
+  ret.pop_back();
+  ret.pop_back();
+  return ret;
 }
 
 void Effects::ChooseRandom::applyToCreature(Creature* c, Creature* attacker) const {

@@ -552,7 +552,7 @@
       spawnLocation = NearLeader
     }
     {
-      ids = { "AUTOMATON_WORKER" }
+      ids = { "AUTOMATON_WORKER_WOOD" }
       traits = { WORKER NO_LIMIT }
       invisible = true
       initialRecruitment = 3
@@ -567,7 +567,14 @@
       }
     }
     {
-      ids = { "AUTOMATON_WORKER" }
+      ids = { "AUTOMATON_WORKER_WOOD" }
+      traits = { WORKER NO_LIMIT }
+      requirements = {
+        { 0.0 AssembledRequirement }
+      }
+    }
+    {
+      ids = { "AUTOMATON_WORKER_IRON" }
       traits = { WORKER NO_LIMIT }
       requirements = {
         { 0.0 AssembledRequirement }

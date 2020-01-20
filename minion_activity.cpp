@@ -195,14 +195,7 @@ MinionActivities::MinionActivities(const ContentFactory* contentFactory) {
 
 WTask MinionActivities::getExisting(Collective* collective, Creature* c, MinionActivity activity) {
   PROFILE;
-  auto& info = CollectiveConfig::getActivityInfo(activity);
-  switch (info.type) {
-    case MinionActivityInfo::GUARD:
-    case MinionActivityInfo::WORKER: {
-      return collective->getTaskMap().getClosestTask(c, activity, false, collective);
-    } default:
-      return nullptr;
-  }
+  return collective->getTaskMap().getClosestTask(c, activity, false, collective);
 }
 
 PTask MinionActivities::generateDropTask(Collective* collective, Creature* c, MinionActivity task) {

@@ -546,7 +546,7 @@ void Collective::updateAutomatonPartsTasks() {
           if (minionEquipment->isOwner(item, c) && !getItemTask(item)) {
             auto task = taskMap->addTask(Task::chain(Task::pickUpItem(items.first, {item}),
                 Task::installBodyPart(this, c, item)),
-                items.first, MinionActivity::WORKING);
+                items.first, MinionActivity::CRAFT);
             markItem(item, task);
           }
 }

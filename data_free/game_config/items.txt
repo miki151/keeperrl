@@ -46,8 +46,8 @@
     itemClass = TOOL
     automatonPart = ARMS {
       AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } }
-      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } }
-      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } }
+      Chain { IncreaseAttr DAMAGE 6 AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } } }
+      Chain { IncreaseAttr DAMAGE 6 AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } } }
     }
   }
 "AutomatonHeadIron"
@@ -84,8 +84,8 @@
     itemClass = TOOL
     automatonPart = ARMS {
       AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } }
-      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } }
-      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } }
+      Chain { IncreaseAttr DAMAGE 10 AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } } }
+      Chain { IncreaseAttr DAMAGE 10 AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } } }
     }
   }
 "Knife"
