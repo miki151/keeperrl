@@ -1400,7 +1400,7 @@
   behaviour = {
     minPopulation = 0
     minTeamSize = 1
-    triggers = {EnemyPopulation 13 Timer 10}
+    triggers = {EnemyPopulation 13}
     attackBehaviour = KillMembers 4
   }
 }
