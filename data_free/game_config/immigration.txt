@@ -553,7 +553,7 @@
     }
     {
       ids = { "AUTOMATON_WORKER" }
-      traits = { WORKER }
+      traits = { WORKER NO_LIMIT }
       invisible = true
       initialRecruitment = 3
       spawnLocation = NearLeader
@@ -568,7 +568,7 @@
     }
     {
       ids = { "AUTOMATON_WORKER" }
-      traits = { WORKER }
+      traits = { WORKER NO_LIMIT }
       requirements = {
         { 0.0 AssembledRequirement }
       }
