@@ -1129,18 +1129,17 @@ void Collective::handleTrapPlacementAndProduction() {
 }
 
 void Collective::scheduleAutoProduction(function<bool(const Item*)> itemPredicate, int count) {
-  auto types = workshops->getWorkshopsTypes();
   if (count > 0)
-    for (auto workshopType : types)
-      for (auto& item : workshops->get(workshopType).getQueued())
+    for (auto& workshop : workshops->types)
+      for (auto& item : workshop.second.getQueued())
         if (itemPredicate(item.item.type.get(getGame()->getContentFactory()).get()))
           count -= item.number * item.item.batchSize;
   if (count > 0)
-    for (auto workshopType : types) {
-      auto& options = workshops->get(workshopType).getOptions();
+    for (auto& workshop : workshops->types) {
+      auto& options = workshop.second.getOptions();
       for (int index : All(options))
         if (itemPredicate(options[index].type.get(getGame()->getContentFactory()).get())) {
-          workshops->get(workshopType).queue(index, (count + options[index].batchSize - 1) / options[index].batchSize);
+          workshop.second.queue(index, (count + options[index].batchSize - 1) / options[index].batchSize);
           return;
         }
     }
@@ -1360,26 +1359,26 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
             break;
         }
     }
-    if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType())) {
-      auto& workshop = workshops->get(*workshopType);
-      auto craftingSkill = c->getAttributes().getSkills().getValue(*workshopType);
-      auto result = workshop.addWork(this, efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c),
-          craftingSkill, c->getMorale());
-      if (!result.items.empty()) {
-        if (result.items[0]->getClass() == ItemClass::WEAPON)
-          getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
-        if (result.items[0]->getClass() == ItemClass::ARMOR)
-          getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
-        if (result.items[0]->getClass() == ItemClass::POTION)
-          getGame()->getStatistics().add(StatId::POTION_PRODUCED);
-        addProducesMessage(c, result.items);
-        if (result.wasUpgraded) {
-          control->addMessage(PlayerMessage(c->getName().the() + " is depressed after crafting his masterpiece.", MessagePriority::HIGH));
-          c->addMorale(-2);
-          addRecordedEvent("the crafting of " + result.items[0]->getTheName(result.items.size() > 1));
+    if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType()))
+      if (auto workshop = getReferenceMaybe(workshops->types, *workshopType)) {
+        auto craftingSkill = c->getAttributes().getSkills().getValue(*workshopType);
+        auto result = workshop->addWork(this, efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c),
+            craftingSkill, c->getMorale());
+        if (!result.items.empty()) {
+          if (result.items[0]->getClass() == ItemClass::WEAPON)
+            getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
+          if (result.items[0]->getClass() == ItemClass::ARMOR)
+            getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
+          if (result.items[0]->getClass() == ItemClass::POTION)
+            getGame()->getStatistics().add(StatId::POTION_PRODUCED);
+          addProducesMessage(c, result.items);
+          if (result.wasUpgraded) {
+            control->addMessage(PlayerMessage(c->getName().the() + " is depressed after crafting his masterpiece.", MessagePriority::HIGH));
+            c->addMorale(-2);
+            addRecordedEvent("the crafting of " + result.items[0]->getTheName(result.items.size() > 1));
+          }
+          c->getPosition().dropItems(std::move(result.items));
         }
-        c->getPosition().dropItems(std::move(result.items));
-      }
     }
   }
 }

@@ -50,11 +50,7 @@ class Workshops {
   SERIALIZATION_DECL(Workshops)
   Workshops(WorkshopArray, const ContentFactory*);
   Workshops(const Workshops&) = delete;
-  Type& get(WorkshopType);
-  const Type& get(WorkshopType) const;
   int getDebt(CollectiveResourceId) const;
   vector<WorkshopType> getWorkshopsTypes() const;
-
-  private:
   map<WorkshopType, Type> SERIAL(types);
 };

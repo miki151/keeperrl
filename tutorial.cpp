@@ -87,7 +87,7 @@ bool Tutorial::canContinue(WConstGame game) const {
           collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT).size() >= 1;
     case State::SCHEDULE_WORKSHOP_ITEMS: {
       int numWeapons = collective->getNumItems(ItemIndex::WEAPON);
-      for (auto& item : collective->getWorkshops().get(WorkshopType("WORKSHOP")).getQueued())
+      for (auto& item : collective->getWorkshops().types.at(WorkshopType("WORKSHOP")).getQueued())
         if (item.item.type.type->getValueMaybe<CustomItemId>() == CustomItemId("Club"))
           ++numWeapons;
       return numWeapons >= 1;

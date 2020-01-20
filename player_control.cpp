@@ -1099,8 +1099,8 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
     auto transFun = [this](const WorkshopItem& item) { return getWorkshopItem(item, 1); };
     auto queuedFun = [this](const WorkshopQueuedItem& item) { return getQueuedItemInfo(item); };
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
-        collective->getWorkshops().get(*chosenWorkshop).getOptions().transform(transFun),
-        collective->getWorkshops().get(*chosenWorkshop).getQueued().transform(queuedFun),
+        collective->getWorkshops().types.at(*chosenWorkshop).getOptions().transform(transFun),
+        collective->getWorkshops().types.at(*chosenWorkshop).getQueued().transform(queuedFun),
         index
     };
   }
@@ -2081,22 +2081,22 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::WORKSHOP_ADD:
       if (chosenWorkshop) {
-        auto& workshops = collective->getWorkshops().get(*chosenWorkshop);
+        auto& workshop = collective->getWorkshops().types.at(*chosenWorkshop);
         int index = input.get<int>();
-        auto& item = workshops.getOptions()[index];
+        auto& item = workshop.getOptions()[index];
         if (item.requireIngredient) {
           if (auto ingredient = getIngredientFor(item)) {
-            workshops.queue(index);
-            workshops.addUpgrade(workshops.getQueued().size() - 1, ingredient->second.removeItem(ingredient->first));
+            workshop.queue(index);
+            workshop.addUpgrade(workshop.getQueued().size() - 1, ingredient->second.removeItem(ingredient->first));
           }
         } else
-          workshops.queue(index);
+          workshop.queue(index);
       }
       break;
     case UserInputId::WORKSHOP_UPGRADE: {
       auto& info = input.get<WorkshopUpgradeInfo>();
       if (chosenWorkshop) {
-        auto& workshop = collective->getWorkshops().get(*chosenWorkshop);
+        auto& workshop = collective->getWorkshops().types.at(*chosenWorkshop);
         if (info.itemIndex < workshop.getQueued().size()) {
           auto& item = workshop.getQueued()[info.itemIndex];
           if (info.remove) {
@@ -2117,7 +2117,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::WORKSHOP_ITEM_ACTION: {
       auto& info = input.get<WorkshopQueuedActionInfo>();
       if (chosenWorkshop) {
-        auto& workshop = collective->getWorkshops().get(*chosenWorkshop);
+        auto& workshop = collective->getWorkshops().types.at(*chosenWorkshop);
         if (info.itemIndex < workshop.getQueued().size()) {
           switch (info.action) {
             case ItemAction::REMOVE:

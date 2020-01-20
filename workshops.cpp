@@ -12,14 +12,6 @@ Workshops::Workshops(WorkshopArray options, const ContentFactory* factory) {
         [&](const auto& elem){ return elem.get(factory); }))));
 }
 
-Workshops::Type& Workshops::get(WorkshopType type) {
-  return types[type];
-}
-
-const Workshops::Type& Workshops::get(WorkshopType type) const {
-  return types.at(type);
-}
-
 SERIALIZATION_CONSTRUCTOR_IMPL(Workshops)
 SERIALIZE_DEF(Workshops, types)
 
