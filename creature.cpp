@@ -732,7 +732,7 @@ CreatureAction Creature::push(Creature* other) {
   if (!goDir.isCardinal8() || !other->position.plus(goDir).canEnter(
       other->getMovementType()))
     return CreatureAction("You can't push " + other->getName().the());
-  if (!getBody().canPush(other->getBody()))
+  if (!getBody().canPush(other->getBody()) && (!other->isAffected(LastingEffect::IMMOBILE) || isEnemy(other)))
     return CreatureAction("You are too small to push " + other->getName().the());
   return CreatureAction(this, [=](Creature* self) {
     self->verb("push", "pushes", other->getName().the());
