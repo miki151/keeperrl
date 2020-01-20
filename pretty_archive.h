@@ -41,8 +41,10 @@ static pair<string, vector<StreamPos>> removeFormatting(string contents, optiona
     bool addSpace = false;
     if (contents[i] == '"' && (i == 0 || contents[i - 1] != '\\')) {
       inQuote = !inQuote;
-      if (inQuote)
+      if (inQuote) {
         ret += " ";
+        pos.push_back(cur);
+      }
       else addSpace = true;
     }
     if (contents[i] == '#' && !inQuote) {
@@ -56,8 +58,10 @@ static pair<string, vector<StreamPos>> removeFormatting(string contents, optiona
       ret += contents[i];
       pos.push_back(cur);
     }
-    if (addSpace)
+    if (addSpace) {
       ret += " ";
+      pos.push_back(cur);
+    }
     addSpace = false;
     if (contents[i] == '\n') {
       ++cur.line;
