@@ -3393,16 +3393,16 @@ SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatar
           .addElemAuto(gui.label(avatar.settlementNames ? "Settlement: " : "First name: "))
           .addMiddleElem(gui.textField(maxFirstNameLength,
               [=] {
-                auto entered = options->getValueString(OptionId::PLAYER_NAME);
+                auto entered = options->getValueString(avatar.nameOption);
                 return entered.empty() ?
                     avatar.firstNames[genderIndex][*chosenName % avatar.firstNames[genderIndex].size()] :
                     entered;
               },
               [=] (string s) {
-                options->setValue(OptionId::PLAYER_NAME, s);
+                options->setValue(avatar.nameOption, s);
               }))
           .addSpace(10)
-          .addBackElemAuto(gui.buttonLabel("🔄", [=] { options->setValue(OptionId::PLAYER_NAME, ""_s); ++*chosenName; }, true, false, true))
+          .addBackElemAuto(gui.buttonLabel("🔄", [=] { options->setValue(avatar.nameOption, ""_s); ++*chosenName; }, true, false, true))
           .buildHorizontalList();
       firstNameOptions.push_back(gui.conditional(std::move(elem),
           [=]{ return getChosenGender(gender, chosenAvatar, avatars) == genderIndex && avatarIndex == *chosenAvatar; }));
@@ -3509,7 +3509,6 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
     const vector<View::AvatarData>& avatars) {
   auto gender = make_shared<int>(0);
   auto chosenAvatar = make_shared<int>(0);
-  auto entered = options->getValueString(OptionId::PLAYER_NAME);
   auto chosenName = make_shared<int>(0);
   auto avatarPage = make_shared<int>(0);
   auto chosenRole = make_shared<PlayerRole>(PlayerRole::KEEPER);
@@ -3542,7 +3541,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   lines.addBackElem(gui.centerHoriz(gui.buttonLabel("Start new game",
       [&queue, chosenAvatar, chosenName, gender, &avatars, this] {
         auto chosenGender = getChosenGender(gender, chosenAvatar, avatars);
-        auto enteredName = options->getValueString(OptionId::PLAYER_NAME);
+        auto enteredName = options->getValueString(avatars[*chosenAvatar].nameOption);
         auto& firstNames = avatars[*chosenAvatar].firstNames[chosenGender];
         queue.push(View::AvatarChoice{*chosenAvatar, chosenGender, enteredName.empty() ?
             firstNames[*chosenName % firstNames.size()] :
@@ -3713,14 +3712,6 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   centerLines.addElem(gui.centerHoriz(
             gui.buttonLabel("Help", [&] { menuState.helpText = !menuState.helpText; })));
   lines.addElem(gui.leftMargin(optionMargin, gui.label("World name: " + campaign.getWorldName())));
-  auto getDefaultString = [&](OptionId id) -> optional<string> {
-    switch(id) {
-      case OptionId::PLAYER_NAME:
-        return campaignOptions.player->getName().firstOrBare();
-      default:
-        return none;
-    }
-  };
   lines.addSpace(10);
   GuiFactory::ListBuilder retiredMenuLines(gui, getStandardLineHeight());
   if (retiredGames) {
@@ -3757,8 +3748,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
         gui.buttonLabel("Customize", [&menuState] { menuState.options = !menuState.options;})));
     for (OptionId id : campaignOptions.options)
       optionsLines.addElem(
-          drawOptionElem(id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});},
-              getDefaultString(id)));
+          drawOptionElem(id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});}, none));
   }
   lines.addBackElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, nullptr,
         [&campaign](Vec2 pos) { return campaign.canEmbark(pos); }, [](Vec2) {})));

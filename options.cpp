@@ -39,6 +39,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
   {OptionId::PLAYER_NAME, string("")},
+  {OptionId::SETTLEMENT_NAME, string("")},
   {OptionId::KEEPER_SEED, string("")},
   {OptionId::MAIN_VILLAINS, 4},
   {OptionId::RETIRED_VILLAINS, 1},
@@ -71,6 +72,7 @@ const map<OptionId, string> names {
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
   {OptionId::PLAYER_NAME, "Name"},
+  {OptionId::SETTLEMENT_NAME, "Settlement name"},
   {OptionId::KEEPER_SEED, "Level generation seed"},
   {OptionId::MAIN_VILLAINS, "Main villains"},
   {OptionId::RETIRED_VILLAINS, "Retired villains"},
@@ -134,6 +136,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::FAST_IMMIGRATION,
 #endif
       OptionId::PLAYER_NAME,
+      OptionId::SETTLEMENT_NAME,
       OptionId::KEEPER_SEED,
   }},
 };
@@ -150,6 +153,7 @@ const string& Options::getName(OptionId id) {
 
 Options::Type Options::getType(OptionId id) {
   switch (id) {
+    case OptionId::SETTLEMENT_NAME:
     case OptionId::PLAYER_NAME:
     case OptionId::KEEPER_SEED:
       return Options::STRING;
@@ -238,6 +242,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::GENERATE_MANA:
     case OptionId::START_WITH_NIGHT:
       return getYesNo(value);
+    case OptionId::SETTLEMENT_NAME:
     case OptionId::PLAYER_NAME:
     case OptionId::KEEPER_SEED:
     case OptionId::CURRENT_MOD2:
@@ -265,6 +270,7 @@ string Options::getValueString(OptionId id) {
 
 optional<Options::Value> Options::readValue(OptionId id, const string& input) {
   switch (id) {
+    case OptionId::SETTLEMENT_NAME:
     case OptionId::PLAYER_NAME:
     case OptionId::KEEPER_SEED:
     case OptionId::CURRENT_MOD2:

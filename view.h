@@ -242,6 +242,7 @@ class View {
     PlayerRole role;
     string description;
     bool settlementNames;
+    OptionId nameOption;
   };
   virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&) = 0;
 

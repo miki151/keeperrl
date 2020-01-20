@@ -15,6 +15,7 @@
 #include "name_generator_id.h"
 #include "special_trait.h"
 #include "content_factory.h"
+#include "options.h"
 
 static TribeId getPlayerTribeId(TribeAlignment variant) {
   switch (variant) {
@@ -78,7 +79,8 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const vector<Kee
       getKeeperName(i),
       PlayerRole::KEEPER,
       keeperCreatureInfos[i].description,
-      !!keeperCreatureInfos[i].baseNameGen
+      !!keeperCreatureInfos[i].baseNameGen,
+      !!keeperCreatureInfos[i].baseNameGen ? OptionId::SETTLEMENT_NAME : OptionId::PLAYER_NAME
     });
   vector<View::AvatarData> adventurerAvatarData;
   for (int i : All(adventurerCreatures))
@@ -90,7 +92,8 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const vector<Kee
       adventurerCreatures[i][0]->getName().identify(),
       PlayerRole::ADVENTURER,
       adventurerCreatureInfos[i].description,
-      false
+      false,
+      OptionId::PLAYER_NAME
     });
   auto result1 = view->chooseAvatar(concat(keeperAvatarData, adventurerAvatarData));
   if (auto option = result1.getValueMaybe<AvatarMenuOption>())
