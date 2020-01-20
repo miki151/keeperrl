@@ -198,6 +198,25 @@ bool Body::hasAnyHealth() const {
   return false;
 }
 
+const char* Body::getDeathDescription() const {
+  switch (material) {
+    case Body::Material::SPIRIT:
+    case Body::Material::UNDEAD_FLESH:
+    case Body::Material::FLESH:
+      return "killed";
+    case Body::Material::BONE:
+    case Body::Material::WATER:
+    case Body::Material::LAVA:
+    case Body::Material::ROCK:
+    case Body::Material::FIRE:
+    case Body::Material::WOOD:
+    case Body::Material::CLAY:
+    case Body::Material::IRON:
+    case Body::Material::ADA:
+      return "destroyed";
+  }
+}
+
 bool Body::hasHealth(HealthType type) const {
   switch (material) {
     case Material::FLESH:

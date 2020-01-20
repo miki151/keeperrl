@@ -118,6 +118,8 @@ class Body {
   bool hasHealth(HealthType) const;
   bool hasAnyHealth() const;
 
+  const char* getDeathDescription() const;
+
   void consumeBodyParts(Creature*, Body& other, vector<string>& adjectives);
 
   bool isHumanoid() const;

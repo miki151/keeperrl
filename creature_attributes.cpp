@@ -117,7 +117,7 @@ void CreatureAttributes::setCourage(double c) {
 }
 
 string CreatureAttributes::getDeathDescription() const {
-  return deathDescription;
+  return deathDescription.value_or(body->getDeathDescription());
 }
 
 void CreatureAttributes::setDeathDescription(string c) {

@@ -151,7 +151,7 @@ class CreatureAttributes {
   double SERIAL(combatExperience) = 0;
   bool SERIAL(noAttackSound) = false;
   optional<CreatureId> SERIAL(creatureId);
-  string SERIAL(deathDescription) = "killed"_s;
+  optional<string> SERIAL(deathDescription);
   bool SERIAL(canJoinCollective) = true;
   optional<string> SERIAL(petReaction);
   optional<LastingEffect> SERIAL(hatedByEffect);
