@@ -28,7 +28,7 @@
 "AutomatonLegsWood"
   {
     viewId = { "automaton_legs" Rgb 180 140 55 255 }
-    name = "wooden automaton legs"
+    name = "pair of wooden automaton legs"
     shortName = "wooden legs"
     weight = 8
     itemClass = TOOL
@@ -40,7 +40,7 @@
 "AutomatonArmsWood"
   {
     viewId = { "automaton_arms" Rgb 180 140 55 255 }
-    name = "wooden automaton arms"
+    name = "pair of wooden automaton arms"
     shortName = "wooden arms"
     weight = 6
     itemClass = TOOL
@@ -66,7 +66,7 @@
 "AutomatonLegsIron"
   {
     viewId = { "automaton_legs" Rgb 140 148 148 255 }
-    name = "iron automaton legs"
+    name = "pair of iron automaton legs"
     shortName = "iron legs"
     weight = 8
     itemClass = TOOL
@@ -78,7 +78,7 @@
 "AutomatonArmsIron"
   {
     viewId = { "automaton_arms" Rgb 140 148 148 255 }
-    name = "iron automaton arms"
+    name = "pair of iron automaton arms"
     shortName = "iron arms"
     weight = 6
     itemClass = TOOL
