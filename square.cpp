@@ -30,6 +30,7 @@
 #include "view.h"
 #include "game_event.h"
 #include "fire.h"
+#include "lasting_effect.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -85,7 +86,8 @@ void Square::tick(Position pos) {
   setDirty(pos);
   if (!inventory->isEmpty()) {
     inventory->tick(pos);
-    if (!pos.canEnterEmpty(MovementType(MovementTrait::WALK).setForced()))
+    if (!pos.canEnterEmpty(MovementType(MovementTrait::WALK).setForced()) ||
+        (creature && creature->isAffected(LastingEffect::IMMOBILE)))
       for (auto neighbor : pos.neighbors8(Random))
         if (neighbor.canEnterEmpty({MovementTrait::WALK})) {
           neighbor.dropItems(pos.removeItems(pos.getItems()));
