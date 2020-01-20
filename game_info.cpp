@@ -222,7 +222,6 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   if (c->getPosition().isValid())
     moveCounter = c->getPosition().getModel()->getMoveCounter();
   isPlayerControlled = c->isPlayer();
-  canAddBodyPart = c->getAttributes().getAutomatonSlots() > c->automatonParts.size();
   for (int i : All(c->automatonParts))
     bodyParts.push_back(getInstalledPartInfo(contentFactory, c->automatonParts[i], i));
 }

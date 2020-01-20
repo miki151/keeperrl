@@ -470,6 +470,7 @@ void PlayerControl::fillAutomatonParts(Creature* creature, PlayerInfo& info) con
       info.bodyParts.push_back(getInstalledPartInfo(getGame()->getContentFactory(), *part, ++index));
       info.bodyParts.back().pending = true;
     }
+  info.canAddBodyPart = creature->getAttributes().getAutomatonSlots() > info.bodyParts.size();
 }
 
 void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
