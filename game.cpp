@@ -82,9 +82,11 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, ContentFacto
 }
 
 void Game::addCollective(Collective* col) {
-  collectives.push_back(col);
-  auto type = col->getVillainType();
-  villainsByType[type].push_back(col);
+  if (!collectives.contains(col)) {
+    collectives.push_back(col);
+    auto type = col->getVillainType();
+    villainsByType[type].push_back(col);
+  }
 }
 
 static CollectiveConfig getKeeperConfig(bool fastImmigration, bool noLeader) {
