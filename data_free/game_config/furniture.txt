@@ -114,7 +114,7 @@
 {
   name = "dining table"
   usageFX = none
-  usageType = UsageEffect "eat from" Lasting SATIATED
+  usageType = UsageEffect "eat from" Chain { CreatureMessage "eat a meal" "eats a meal" Lasting SATIATED }
 }
 "FURNACE"
 {
