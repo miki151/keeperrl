@@ -3587,37 +3587,13 @@ SGuiElem GuiBuilder::drawOptionElem(OptionId id, function<void()> onChanged, opt
   };
   string name = options->getName(id);
   SGuiElem ret;
-  switch (options->getType(id)) {
-    case Options::STRING:
-      ret = gui.getListBuilder()
-          .addElemAuto(gui.label(name + ":"))
-          .addMiddleElem(gui.textField(maxFirstNameLength, getValue, [=] (string s) {
-            options->setValue(id, s);
-            onChanged();
-          }))
-          .buildHorizontalList();
-      break;
-    case Options::INT: {
-      auto limits = options->getLimits(id);
-      int value = options->getIntValue(id);
-      ret = gui.getListBuilder()
-          .addElem(gui.labelFun([=]{ return name + ": " + getValue(); }), renderer.getTextLength(name) + 20)
-          .addBackElemAuto(drawPlusMinus([=] (int v) { options->setValue(id, value + v); onChanged();},
-              value < limits->getEnd() - 1, value > limits->getStart(), options->hasChoices(id)))
-          .buildHorizontalList();
-      break;
-    }
-    case Options::BOOL: {
-      bool value = options->getBoolValue(id);
-      ret = gui.getListBuilder()
-          .addElemAuto(gui.label(name + ": "))
-          .addElem(gui.stack(
-              gui.button([=]{options->setValue(id, int(!value)); onChanged();}),
-              gui.labelFun([getValue]{ return "[" + getValue() + "]";}, Color::LIGHT_BLUE)), 50)
-          .buildHorizontalList();
-      break;
-    }
-  }
+  auto limits = options->getLimits(id);
+  int value = options->getIntValue(id);
+  ret = gui.getListBuilder()
+      .addElem(gui.labelFun([=]{ return name + ": " + getValue(); }), renderer.getTextLength(name) + 20)
+      .addBackElemAuto(drawPlusMinus([=] (int v) { options->setValue(id, value + v); onChanged();},
+          value < limits->getEnd() - 1, value > limits->getStart(), options->hasChoices(id)))
+      .buildHorizontalList();
   return gui.stack(
       gui.tooltip({options->getHint(id).value_or("")}),
       std::move(ret)

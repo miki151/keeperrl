@@ -40,12 +40,10 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::START_WITH_NIGHT, 0},
   {OptionId::PLAYER_NAME, string("")},
   {OptionId::SETTLEMENT_NAME, string("")},
-  {OptionId::KEEPER_SEED, string("")},
   {OptionId::MAIN_VILLAINS, 4},
   {OptionId::RETIRED_VILLAINS, 1},
   {OptionId::LESSER_VILLAINS, 3},
   {OptionId::ALLIES, 2},
-  {OptionId::GENERATE_MANA, 0},
   {OptionId::CURRENT_MOD2, string("vanilla")},
   {OptionId::ENDLESS_ENEMIES, 2},
   {OptionId::ENEMY_AGGRESSION, 1},
@@ -73,12 +71,10 @@ const map<OptionId, string> names {
   {OptionId::START_WITH_NIGHT, "Start with night"},
   {OptionId::PLAYER_NAME, "Name"},
   {OptionId::SETTLEMENT_NAME, "Settlement name"},
-  {OptionId::KEEPER_SEED, "Level generation seed"},
   {OptionId::MAIN_VILLAINS, "Main villains"},
   {OptionId::RETIRED_VILLAINS, "Retired villains"},
   {OptionId::LESSER_VILLAINS, "Lesser villains"},
   {OptionId::ALLIES, "Allies"},
-  {OptionId::GENERATE_MANA, "Generate mana in library"},
   {OptionId::CURRENT_MOD2, "Current mod"},
   {OptionId::ENDLESS_ENEMIES, "Start endless enemy waves"},
   {OptionId::ENEMY_AGGRESSION, "Enemy aggression"},
@@ -99,7 +95,6 @@ const map<OptionId, string> hints {
     "The save file will be used to recover in case of a crash."},
   {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
     "using alt + letter."},
-  {OptionId::GENERATE_MANA, "Your minions will generate mana while working in the library."},
   {OptionId::ENDLESS_ENEMIES, "Turn on recurrent enemy waves that attack your dungeon."},
   {OptionId::ENEMY_AGGRESSION, "The chance of your dungeon being attacked by enemies"},
 };
@@ -137,7 +132,6 @@ const map<OptionSet, vector<OptionId>> optionSets {
 #endif
       OptionId::PLAYER_NAME,
       OptionId::SETTLEMENT_NAME,
-      OptionId::KEEPER_SEED,
   }},
 };
 
@@ -149,19 +143,6 @@ void Options::addTrigger(OptionId id, Trigger trigger) {
 
 const string& Options::getName(OptionId id) {
   return names.at(id);
-}
-
-Options::Type Options::getType(OptionId id) {
-  switch (id) {
-    case OptionId::SETTLEMENT_NAME:
-    case OptionId::PLAYER_NAME:
-    case OptionId::KEEPER_SEED:
-      return Options::STRING;
-    case OptionId::GENERATE_MANA:
-      return Options::BOOL;
-    default:
-      return Options::INT;
-  }
 }
 
 vector<OptionId> Options::getOptions(OptionSet set) {
@@ -239,12 +220,10 @@ string Options::getValueString(OptionId id) {
     case OptionId::ZOOM_UI:
     case OptionId::DISABLE_MOUSE_WHEEL:
     case OptionId::DISABLE_CURSOR:
-    case OptionId::GENERATE_MANA:
     case OptionId::START_WITH_NIGHT:
       return getYesNo(value);
     case OptionId::SETTLEMENT_NAME:
     case OptionId::PLAYER_NAME:
-    case OptionId::KEEPER_SEED:
     case OptionId::CURRENT_MOD2:
       return *value.getValueMaybe<string>();
     case OptionId::ENDLESS_ENEMIES:
@@ -272,7 +251,6 @@ optional<Options::Value> Options::readValue(OptionId id, const string& input) {
   switch (id) {
     case OptionId::SETTLEMENT_NAME:
     case OptionId::PLAYER_NAME:
-    case OptionId::KEEPER_SEED:
     case OptionId::CURRENT_MOD2:
       return Options::Value(input);
     default:
@@ -294,11 +272,6 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
     case OptionId::PLAYER_NAME:
       if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
             "Leave blank to use a random name."))
-        setValue(id, *val);
-      break;
-    case OptionId::KEEPER_SEED:
-      if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
-            "Leave blank to use a random seed."))
         setValue(id, *val);
       break;
     case OptionId::MUSIC:

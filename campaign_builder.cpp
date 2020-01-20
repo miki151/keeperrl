@@ -389,7 +389,6 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
         case CampaignActionId::UPDATE_OPTION:
           switch (action.get<OptionId>()) {
             case OptionId::PLAYER_NAME:
-            case OptionId::GENERATE_MANA:
             case OptionId::ENDLESS_ENEMIES:
             case OptionId::ENEMY_AGGRESSION:
               break;

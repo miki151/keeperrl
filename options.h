@@ -39,7 +39,6 @@ RICH_ENUM(OptionId,
 
   PLAYER_NAME,
   SETTLEMENT_NAME,
-  KEEPER_SEED,
   SHOW_MAP,
   START_WITH_NIGHT,
   STARTING_RESOURCE,
@@ -48,7 +47,6 @@ RICH_ENUM(OptionId,
   RETIRED_VILLAINS,
   LESSER_VILLAINS,
   ALLIES,
-  GENERATE_MANA,
   CURRENT_MOD2,
   ENDLESS_ENEMIES,
   ENEMY_AGGRESSION
@@ -70,7 +68,6 @@ class Options {
   string getStringValue(OptionId);
   const string& getName(OptionId);
   enum Type { INT, BOOL, STRING };
-  Type getType(OptionId);
   string getValueString(OptionId);
   void setValue(OptionId, Value);
   int getIntValue(OptionId);
