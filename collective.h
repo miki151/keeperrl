@@ -82,7 +82,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void setEnemyId(EnemyId);
   VillainType getVillainType() const;
   optional<EnemyId> getEnemyId() const;
-  WCollectiveControl getControl() const;
+  CollectiveControl* getControl() const;
   LocalTime getLocalTime() const;
   GlobalTime getGlobalTime() const;
   const PositionSet& getStoragePositions(StorageId) const;
@@ -103,7 +103,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool hasTradeItems() const;
   vector<Item*> getTradeItems() const;
   PItem buyItem(Item*);
-  vector<TriggerInfo> getTriggers(WConstCollective against) const;
+  vector<TriggerInfo> getTriggers(const Collective* against) const;
 
   double getEfficiency(const Creature*) const;
   const vector<Creature*>& getLeaders() const;
@@ -207,10 +207,10 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   int getNumItems(ItemIndex, bool includeMinions = true) const;
   const PositionSet& getStorageForPillagedItem(const Item*) const;
 
-  void addKnownVillain(WConstCollective);
-  bool isKnownVillain(WConstCollective) const;
-  void addKnownVillainLocation(WConstCollective);
-  bool isKnownVillainLocation(WConstCollective) const;
+  void addKnownVillain(const Collective*);
+  bool isKnownVillain(const Collective*) const;
+  void addKnownVillainLocation(const Collective*);
+  bool isKnownVillainLocation(const Collective*) const;
 
   void onEvent(const GameEvent&);
 

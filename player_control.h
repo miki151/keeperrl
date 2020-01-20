@@ -52,7 +52,7 @@ class ImmigrantInfo;
 
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
-  static PPlayerControl create(WCollective col, vector<string> introText, TribeAlignment);
+  static PPlayerControl create(Collective* col, vector<string> introText, TribeAlignment);
   ~PlayerControl() override;
 
   void processInput(View* view, UserInput);
@@ -94,7 +94,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   struct Private {};
 
   public:
-  PlayerControl(Private, WCollective, TribeAlignment);
+  PlayerControl(Private, Collective*, TribeAlignment);
 
   protected:
   // from CreatureView
@@ -130,14 +130,14 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   TribeId getTribeId() const;
   bool canSee(const Creature*) const;
   bool canSee(Position) const;
-  bool isConsideredAttacking(const Creature*, WConstCollective enemy);
+  bool isConsideredAttacking(const Creature*, const Collective* enemy);
 
   void checkKeeperDanger();
   static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Position);
   void updateKnownLocations(const Position&);
-  vector<WCollective> getKnownVillains() const;
-  WCollective getVillain(UniqueEntity<Collective>::Id num);
+  vector<Collective*> getKnownVillains() const;
+  Collective* getVillain(UniqueEntity<Collective>::Id num);
 
   Creature* getConsumptionTarget(View*, Creature* consumer);
   Creature* getCreature(UniqueEntity<Creature>::Id id) const;
@@ -147,7 +147,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
   vector<CollectiveInfo::Button> fillButtons() const;
-  VillageInfo::Village getVillageInfo(WConstCollective enemy) const;
+  VillageInfo::Village getVillageInfo(const Collective* enemy) const;
   string getTriggerLabel(const AttackTrigger&) const;
   void fillWorkshopInfo(CollectiveInfo&) const;
   void fillImmigration(CollectiveInfo&) const;
@@ -177,10 +177,10 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void handleEquipment(View* view, Creature* creature);
   void fillEquipment(Creature*, PlayerInfo&) const;
   void fillAutomatonParts(Creature*, PlayerInfo&) const;
-  void handleTrading(WCollective ally);
-  vector<Item*> getPillagedItems(WCollective) const;
-  bool canPillage(WConstCollective) const;
-  void handlePillage(WCollective enemy);
+  void handleTrading(Collective* ally);
+  vector<Item*> getPillagedItems(Collective*) const;
+  bool canPillage(const Collective*) const;
+  void handlePillage(Collective* enemy);
   void handleRansom(bool pay);
   ViewObject getTrapObject(FurnitureType, bool built) const;
   void getSquareViewIndex(Position, bool canSee, ViewIndex&) const;
@@ -233,16 +233,16 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void rejectPrisoner(int index);
   struct StunnedInfo {
     vector<Creature*> creatures;
-    WCollective collective = nullptr;
+    Collective* collective = nullptr;
   };
   vector<StunnedInfo> getPrisonerImmigrantStack() const;
-  vector<pair<Creature*, WCollective>> SERIAL(stunnedCreatures);
+  vector<pair<Creature*, Collective*>> SERIAL(stunnedCreatures);
   ViewId getMinionGroupViewId(Creature*) const;
   SUnknownLocations SERIAL(unknownLocations);
   optional<LocalTime> lastWarningDismiss;
   set<pair<UniqueEntity<Collective>::Id, string>> SERIAL(dismissedVillageInfos);
   void considerTransferingLostMinions();
-  vector<PItem> retrievePillageItems(WCollective, vector<Item*> items);
+  vector<PItem> retrievePillageItems(Collective*, vector<Item*> items);
   TribeAlignment SERIAL(tribeAlignment);
   vector<BuildInfo> SERIAL(buildInfo);
   void loadBuildingMenu(const ContentFactory*, const KeeperCreatureInfo&);

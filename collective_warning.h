@@ -33,7 +33,7 @@ class CollectiveWarnings {
   typedef CollectiveWarning Warning;
 
   void disable();
-  void considerWarnings(WCollective);
+  void considerWarnings(Collective*);
   bool isWarning(Warning) const;
   void setWarning(Warning, bool state = true);
   optional<const char*> getNextWarning(LocalTime localTime);
@@ -42,9 +42,9 @@ class CollectiveWarnings {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  void considerWeaponWarning(WCollective);
-  void considerMoraleWarning(WCollective);
-  void considerTorchesWarning(WCollective);
+  void considerWeaponWarning(Collective*);
+  void considerMoraleWarning(Collective*);
+  void considerTorchesWarning(Collective*);
   const char*getText(Warning w);
   EnumSet<Warning> SERIAL(warnings);
   EnumMap<CollectiveWarning, optional<LocalTime>> SERIAL(warningTimes);

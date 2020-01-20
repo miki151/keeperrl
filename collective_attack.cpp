@@ -10,7 +10,7 @@
 SERIALIZE_DEF(CollectiveAttack, attacker, ransom, creatures, attackerName, attackTasks, attackerViewId)
 SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveAttack);
 
-static string generateAttackerName(WConstCollective attacker) {
+static string generateAttackerName(const Collective* attacker) {
   if (auto& name = attacker->getName())
     return name->full;
   else
@@ -23,7 +23,7 @@ static ViewId getAttackViewId(const Collective* col, const vector<Creature*>& at
   return attackers[0]->getViewObject().id();
 }
 
-CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, WCollective att, const vector<Creature*>& c, optional<int> r)
+CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, Collective* att, const vector<Creature*>& c, optional<int> r)
     : ransom(r), creatures(c), attacker(att), attackerName(generateAttackerName(att)),
       attackerViewId(getAttackViewId(att, c)),
       attackTasks(attackTasks.transform([](auto elem) { return elem->getThis(); })) {}
@@ -33,7 +33,7 @@ CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, const string&
       attackTasks(attackTasks.transform([](auto elem) { return elem->getThis(); })) {}
 
 
-WCollective CollectiveAttack::getAttacker() const {
+Collective* CollectiveAttack::getAttacker() const {
   return attacker;
 }
 

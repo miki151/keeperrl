@@ -811,7 +811,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
   switch (effect) {
     case LastingEffect::SPYING: {
       auto enemyId = [&] ()->optional<ViewId> {
-        for (WCollective col : c->getPosition().getModel()->getCollectives())
+        for (Collective* col : c->getPosition().getModel()->getCollectives())
           if ((col->getTerritory().contains(c->getPosition()) ||
                  col->getTerritory().getStandardExtended().contains(c->getPosition())) &&
               col->getTribe()->isEnemy(c) && !col->getCreatures().empty())

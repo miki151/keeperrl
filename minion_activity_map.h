@@ -22,7 +22,7 @@ class MinionActivityMap {
   void toggleLock(MinionActivity);
   optional<bool> isLocked(MinionActivity) const;
   
-  bool isAvailable(WConstCollective, const Creature*, MinionActivity, bool ignoreTaskLock = false) const;
+  bool isAvailable(const Collective*, const Creature*, MinionActivity, bool ignoreTaskLock = false) const;
   bool canChooseRandomly(const Creature* c, MinionActivity) const;
 
   template <class Archive>

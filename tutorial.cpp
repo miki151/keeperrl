@@ -34,7 +34,7 @@
 
 SERIALIZE_DEF(Tutorial, state, entrance)
 
-static bool isTeam(WConstCollective collective) {
+static bool isTeam(const Collective* collective) {
   for (auto team : collective->getTeams().getAll())
     if (collective->getTeams().getMembers(team).size() >= 4)
       return true;
@@ -43,7 +43,7 @@ static bool isTeam(WConstCollective collective) {
 
 bool Tutorial::canContinue(WConstGame game) const {
   auto collective = game->getPlayerCollective();
-  WCollective villain = nullptr;
+  Collective* villain = nullptr;
   for (auto c : game->getCollectives())
     if (c != collective) {
       CHECK(!villain) << "Only one villain allowed in tutorial.";

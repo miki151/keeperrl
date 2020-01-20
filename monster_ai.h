@@ -53,7 +53,7 @@ class MonsterAIFactory {
   public:
   PMonsterAI getMonsterAI(Creature* c) const;
 
-  static MonsterAIFactory collective(WCollective);
+  static MonsterAIFactory collective(Collective*);
   static MonsterAIFactory monster();
   static MonsterAIFactory singleTask(PTask&&, bool chaseEnemies = true);
   static MonsterAIFactory stayInLocation(Rectangle, bool moveRandomly = true);

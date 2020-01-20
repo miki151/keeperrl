@@ -40,10 +40,10 @@ class ExternalEnemies {
   SERIALIZATION_DECL(ExternalEnemies)
 
   private:
-  void updateCurrentWaves(WCollective target);
+  void updateCurrentWaves(Collective* target);
   vector<CurrentWave> SERIAL(currentWaves);
   int SERIAL(nextWave) = 0;
   vector<EnemyEvent> SERIAL(waves);
-  PTask getAttackTask(WCollective target, AttackBehaviour);
+  PTask getAttackTask(Collective* target, AttackBehaviour);
   optional<LocalTime> startTime;
 };

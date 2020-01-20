@@ -72,7 +72,7 @@ class Model : public OwnedObject<Model> {
   void setGame(WGame);
   WGame getGame() const;
   void tick(LocalTime);
-  vector<WCollective> getCollectives() const;
+  vector<Collective*> getCollectives() const;
   vector<Creature*> getAllCreatures() const;
   const vector<PCreature>& getDeadCreatures() const;
   vector<WLevel> getLevels() const;

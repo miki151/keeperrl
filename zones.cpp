@@ -86,7 +86,7 @@ void Zones::setHighlights(Position pos, ViewIndex& index) const {
       index.setHighlight(getHighlight(id));
 }
 
-bool Zones::canSet(Position pos, ZoneId id, WConstCollective col) const {
+bool Zones::canSet(Position pos, ZoneId id, const Collective* col) const {
   switch (id) {
     case ZoneId::STORAGE_EQUIPMENT:
     case ZoneId::STORAGE_RESOURCES:

@@ -101,7 +101,7 @@ static bool allowUpgrades(double skillAmount, double morale) {
   return skillAmount >= Workshops::getLegendarySkillThreshold() && morale >= 0;
 }
 
-bool Workshops::Type::isIdle(WConstCollective collective, double skillAmount, double morale) const {
+bool Workshops::Type::isIdle(const Collective* collective, double skillAmount, double morale) const {
   for (auto& product : queued)
     if ((product.state || collective->hasResource(product.item.cost)) &&
         (allowUpgrades(skillAmount, morale) || product.runes.empty()))
@@ -127,7 +127,7 @@ PItem Workshops::Type::removeUpgrade(int itemIndex, int runeIndex) {
   return ret;
 }
 
-auto Workshops::Type::addWork(WCollective collective, double amount, double skillAmount, double morale) -> WorkshopResult {
+auto Workshops::Type::addWork(Collective* collective, double amount, double skillAmount, double morale) -> WorkshopResult {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
     if ((product.state || collective->hasResource(product.item.cost)) &&

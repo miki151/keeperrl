@@ -11,7 +11,7 @@ struct TriggerInfo;
 
 class CollectiveControl : public OwnedObject<CollectiveControl> {
   public:
-  CollectiveControl(WCollective);
+  CollectiveControl(Collective*);
   virtual void update(bool currentlyActive);
   virtual void tick();
   virtual void onMemberKilled(const Creature* victim, const Creature* killer);
@@ -24,17 +24,17 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   virtual void onClaimedSquare(Position) {}
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) {}
   virtual void onRansomPaid() {}
-  virtual vector<TriggerInfo> getTriggers(WConstCollective against) const;
+  virtual vector<TriggerInfo> getTriggers(const Collective* against) const;
 
   SERIALIZATION_DECL(CollectiveControl)
 
   virtual ~CollectiveControl();
 
-  static PCollectiveControl idle(WCollective);
+  static PCollectiveControl idle(Collective*);
 
   const vector<Creature*>& getCreatures() const;
 
-  WCollective SERIAL(collective) = nullptr;
+  Collective* SERIAL(collective) = nullptr;
 };
 
 

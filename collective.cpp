@@ -178,7 +178,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
   if (c->getTribeId() != *tribe)
     c->setTribe(*tribe);
   if (auto game = getGame())
-    for (WCollective col : getGame()->getCollectives())
+    for (Collective* col : getGame()->getCollectives())
       if (col->getCreatures().contains(c))
         col->removeCreature(c);
   creatures.push_back(c);
@@ -268,7 +268,7 @@ PItem Collective::buyItem(Item* item) {
   return nullptr;
 }
 
-vector<TriggerInfo> Collective::getTriggers(WConstCollective against) const {
+vector<TriggerInfo> Collective::getTriggers(const Collective* against) const {
   if (!isConquered())
     return control->getTriggers(against);
   else
@@ -283,7 +283,7 @@ WGame Collective::getGame() const {
   return model->getGame();
 }
 
-WCollectiveControl Collective::getControl() const {
+CollectiveControl* Collective::getControl() const {
   return control.get();
 }
 
@@ -929,19 +929,19 @@ const PositionSet& Collective::getStorageForPillagedItem(const Item* item) const
   return zones->getPositions(ZoneId::STORAGE_EQUIPMENT);
 }
 
-void Collective::addKnownVillain(WConstCollective col) {
+void Collective::addKnownVillain(const Collective* col) {
   knownVillains.insert(col);
 }
 
-bool Collective::isKnownVillain(WConstCollective col) const {
+bool Collective::isKnownVillain(const Collective* col) const {
   return (getModel() != col->getModel() && col->getVillainType() != VillainType::NONE) || knownVillains.contains(col);
 }
 
-void Collective::addKnownVillainLocation(WConstCollective col) {
+void Collective::addKnownVillainLocation(const Collective* col) {
   knownVillainLocations.insert(col);
 }
 
-bool Collective::isKnownVillainLocation(WConstCollective col) const {
+bool Collective::isKnownVillainLocation(const Collective* col) const {
   return knownVillainLocations.contains(col);
 }
 

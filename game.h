@@ -52,16 +52,16 @@ class Game : public OwnedObject<Game> {
   const Statistics& getStatistics() const;
   Tribe* getTribe(TribeId) const;
   GlobalTime getGlobalTime() const;
-  WCollective getPlayerCollective() const;
+  Collective* getPlayerCollective() const;
   WPlayerControl getPlayerControl() const;
   void addPlayer(Creature*);
   void removePlayer(Creature*);
   const vector<Creature*>& getPlayerCreatures() const;
 
-  int getModelDistance(WConstCollective c1, WConstCollective c2) const;
+  int getModelDistance(const Collective* c1, const Collective* c2) const;
 
-  const vector<WCollective>& getVillains(VillainType) const;
-  const vector<WCollective>& getCollectives() const;
+  const vector<Collective*>& getVillains(VillainType) const;
+  const vector<Collective*>& getCollectives() const;
 
   const SunlightInfo& getSunlightInfo() const;
   const string& getWorldName() const;
@@ -73,7 +73,7 @@ class Game : public OwnedObject<Game> {
 
   bool isGameOver() const;
   bool isTurnBased();
-  bool isVillainActive(WConstCollective);
+  bool isVillainActive(const Collective*);
   SavedGameInfo getSavedGameInfo(vector<string> spriteMods) const;
 
   /** Removes creature from the queue. Assumes it has already been removed from its level. */
@@ -89,7 +89,7 @@ class Game : public OwnedObject<Game> {
 
   void prepareSiteRetirement();
   void doneRetirement();
-  void addCollective(WCollective);
+  void addCollective(Collective*);
 
   void addEvent(const GameEvent&);
 
@@ -119,8 +119,8 @@ class Game : public OwnedObject<Game> {
   optional<int> SERIAL(lastTick);
   string SERIAL(gameIdentifier);
   string SERIAL(gameDisplayName);
-  map<VillainType, vector<WCollective>> SERIAL(villainsByType);
-  vector<WCollective> SERIAL(collectives);
+  map<VillainType, vector<Collective*>> SERIAL(villainsByType);
+  vector<Collective*> SERIAL(collectives);
   MusicType SERIAL(musicType);
   unique_ptr<CreatureView> SERIAL(spectator);
   HeapAllocated<Statistics> SERIAL(statistics);
@@ -128,7 +128,7 @@ class Game : public OwnedObject<Game> {
   Highscores* highscores = nullptr;
   optional<milliseconds> lastUpdate;
   WPlayerControl SERIAL(playerControl) = nullptr;
-  WCollective SERIAL(playerCollective) = nullptr;
+  Collective* SERIAL(playerCollective) = nullptr;
   HeapAllocated<Campaign> SERIAL(campaign);
   bool wasTransfered = false;
   vector<Creature*> SERIAL(players);

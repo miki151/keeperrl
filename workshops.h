@@ -27,11 +27,11 @@ class Workshops {
       vector<PItem> items;
       bool wasUpgraded;
     };
-    WorkshopResult addWork(WCollective, double workAmount, double skillAmount, double morale);
+    WorkshopResult addWork(Collective*, double workAmount, double skillAmount, double morale);
     void queue(int index, int count = 1);
     vector<PItem> unqueue(int index);
     void changeNumber(int index, int number);
-    bool isIdle(WConstCollective, double skillAmount, double morale) const;
+    bool isIdle(const Collective*, double skillAmount, double morale) const;
     void addUpgrade(int index, PItem);
     PItem removeUpgrade(int itemIndex, int runeIndex);
 

@@ -1257,7 +1257,7 @@ void Effect::apply(Position pos, Creature* attacker) const {
         pos.addSound(e.sound);
       },
       [&](const Effects::Audience& a) {
-        auto collective = [&]() -> WCollective {
+        auto collective = [&]() -> Collective* {
           for (auto col : pos.getGame()->getCollectives())
             if (col->getTerritory().contains(pos))
               return col;

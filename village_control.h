@@ -25,8 +25,8 @@ class VillageBehaviour;
 
 class VillageControl : public CollectiveControl, public EventListener<VillageControl> {
   public:
-  static PVillageControl create(WCollective col, optional<VillageBehaviour> v);
-  static PVillageControl copyOf(WCollective col, const VillageControl*);
+  static PVillageControl create(Collective* col, optional<VillageBehaviour> v);
+  static PVillageControl copyOf(Collective* col, const VillageControl*);
 
   void onEvent(const GameEvent&);
 
@@ -36,14 +36,14 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   struct Private {};
 
   public:
-  VillageControl(Private, WCollective, optional<VillageBehaviour>);
+  VillageControl(Private, Collective*, optional<VillageBehaviour>);
 
   protected:
   virtual void update(bool currentlyActive) override;
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
   virtual void onRansomPaid() override;
-  virtual vector<TriggerInfo> getTriggers(WConstCollective against) const override;
+  virtual vector<TriggerInfo> getTriggers(const Collective* against) const override;
 
   SERIALIZATION_DECL(VillageControl)
 
@@ -53,7 +53,7 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   void considerWelcomeMessage();
   void considerCancellingAttack();
   bool isEnemy(const Creature*);
-  WCollective getEnemyCollective() const;
+  Collective* getEnemyCollective() const;
   bool canPerformAttack(bool currentlyActive);
   void acceptImmigration();
 

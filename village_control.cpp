@@ -45,20 +45,20 @@ SERIALIZATION_CONSTRUCTOR_IMPL(VillageControl)
 SERIALIZE_DEF(VillageControl, SUBCLASS(CollectiveControl), SUBCLASS(EventListener), behaviour, victims, myItems, stolenItemCount, attackSizes, entries, maxEnemyPower)
 REGISTER_TYPE(ListenerTemplate<VillageControl>)
 
-VillageControl::VillageControl(Private, WCollective col, optional<VillageBehaviour> v) : CollectiveControl(col),
+VillageControl::VillageControl(Private, Collective* col, optional<VillageBehaviour> v) : CollectiveControl(col),
     behaviour(v) {
   for (Position v : col->getTerritory().getAll())
     for (Item* it : v.getItems())
       myItems.insert(it);
 }
 
-PVillageControl VillageControl::create(WCollective col, optional<VillageBehaviour> v) {
+PVillageControl VillageControl::create(Collective* col, optional<VillageBehaviour> v) {
   auto ret = makeOwner<VillageControl>(Private{}, col, v);
   ret->subscribeTo(col->getModel());
   return ret;
 }
 
-PVillageControl VillageControl::copyOf(WCollective col, const VillageControl* control) {
+PVillageControl VillageControl::copyOf(Collective* col, const VillageControl* control) {
   optional<VillageBehaviour> b;
   if (control->behaviour)
     b = *control->behaviour;
@@ -67,12 +67,12 @@ PVillageControl VillageControl::copyOf(WCollective col, const VillageControl* co
   return ret;
 }
 
-WCollective VillageControl::getEnemyCollective() const {
+Collective* VillageControl::getEnemyCollective() const {
   return collective->getGame()->getPlayerCollective();
 }
 
 bool VillageControl::isEnemy(const Creature* c) {
-  if (WCollective col = getEnemyCollective())
+  if (Collective* col = getEnemyCollective())
     return col->getCreatures().contains(c) && !col->hasTrait(c, MinionTrait::DOESNT_TRIGGER);
   else
     return false;
@@ -156,7 +156,7 @@ void VillageControl::updateAggression(EnemyAggressionLevel level) {
 }
 
 void VillageControl::launchAttack(vector<Creature*> attackers) {
-  if (WCollective enemy = getEnemyCollective()) {
+  if (Collective* enemy = getEnemyCollective()) {
     for (Creature* c : attackers)
 //      if (getCollective()->getGame()->canTransferCreature(c, enemy->getLevel()->getModel()))
         collective->getGame()->transferCreature(c, enemy->getModel());
@@ -202,7 +202,7 @@ void VillageControl::onRansomPaid() {
   }
 }
 
-vector<TriggerInfo> VillageControl::getTriggers(WConstCollective against) const {
+vector<TriggerInfo> VillageControl::getTriggers(const Collective* against) const {
   vector<TriggerInfo> ret;
   if (collective->getVillainType() != VillainType::ALLY && behaviour && against == getEnemyCollective())
     for (auto& elem : behaviour->triggers) {
@@ -279,7 +279,7 @@ void VillageControl::update(bool currentlyActive) {
   double updateFreq = 0.1;
   if (collective->getVillainType() != VillainType::ALLY && canPerformAttack(currentlyActive) && Random.chance(updateFreq))
     if (behaviour) {
-      if (WCollective enemy = getEnemyCollective())
+      if (Collective* enemy = getEnemyCollective())
         maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
       double prob = behaviour->getAttackProbability(this) / updateFreq;
       if (Random.chance(prob)) {

@@ -223,7 +223,7 @@ const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
 }
 
 static CollectiveItemPredicate unMarkedItems() {
-  return [](WConstCollective col, const Item* it) { return !col->getItemTask(it); };
+  return [](const Collective* col, const Item* it) { return !col->getItemTask(it); };
 }
 
 
@@ -232,7 +232,7 @@ const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() const {
     static vector<ItemFetchInfo> ret {
         {ItemIndex::CORPSE, unMarkedItems(), StorageId::CORPSES, CollectiveWarning::GRAVES},
         {ItemIndex::GOLD, unMarkedItems(), StorageId::GOLD, CollectiveWarning::CHESTS},
-        {ItemIndex::MINION_EQUIPMENT, [](WConstCollective col, const Item* it)
+        {ItemIndex::MINION_EQUIPMENT, [](const Collective* col, const Item* it)
             { return it->getClass() != ItemClass::GOLD && !col->getItemTask(it);},
             StorageId::EQUIPMENT, CollectiveWarning::EQUIPMENT_STORAGE},
         {ItemIndex::WOOD, unMarkedItems(), StorageId::RESOURCE,
@@ -245,7 +245,7 @@ const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() const {
             CollectiveWarning::RESOURCE_STORAGE},
         {ItemIndex::ASSEMBLED_MINION, unMarkedItems(), StorageId::EQUIPMENT,
             CollectiveWarning::EQUIPMENT_STORAGE},
-        /*{ItemIndex::TRAP, unMarkedItems(), [](WConstCollective col) -> const PositionSet& {
+        /*{ItemIndex::TRAP, unMarkedItems(), [](const Collective* col) -> const PositionSet& {
                 return col->getTerritory().getAllAsSet(); },
             CollectiveWarning::RESOURCE_STORAGE},*/
     };
@@ -264,13 +264,13 @@ MinionActivityInfo::MinionActivityInfo() {}
 
 MinionActivityInfo::MinionActivityInfo(FurnitureType type, const string& desc)
     : type(FURNITURE), furniturePredicate(
-        [type](const ContentFactory*, WConstCollective, const Creature*, FurnitureType t) { return t == type;}),
+        [type](const ContentFactory*, const Collective*, const Creature*, FurnitureType t) { return t == type;}),
       description(desc) {
 }
 
 MinionActivityInfo::MinionActivityInfo(BuiltinUsageId usage, const string& desc)
   : type(FURNITURE), furniturePredicate(
-      [usage](const ContentFactory* f, WConstCollective, const Creature*, FurnitureType t) {
+      [usage](const ContentFactory* f, const Collective*, const Creature*, FurnitureType t) {
         return f->furniture.getData(t).hasUsageType(usage);
       }),
     description(desc) {
@@ -290,7 +290,7 @@ CollectiveConfig::~CollectiveConfig() {
 }
 
 static auto getTrainingPredicate(ExperienceType experienceType) {
-  return [experienceType] (const ContentFactory* contentFactory, WConstCollective, const Creature* c, FurnitureType t) {
+  return [experienceType] (const ContentFactory* contentFactory, const Collective*, const Creature* c, FurnitureType t) {
       if (auto maxIncrease = contentFactory->furniture.getData(t).getMaxTraining(experienceType))
         return !c || (c->getAttributes().getExpLevel(experienceType) < maxIncrease &&
             !c->getAttributes().isTrainingMaxedOut(experienceType));
@@ -308,7 +308,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::WORKING: return {MinionActivityInfo::WORKER, "labour"};
       case MinionActivity::DIGGING: return {MinionActivityInfo::WORKER, "digging"};
       case MinionActivity::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE), "training"};
-      case MinionActivity::SLEEP: return {[](const ContentFactory* f, WConstCollective, const Creature* c, FurnitureType t) {
+      case MinionActivity::SLEEP: return {[](const ContentFactory* f, const Collective*, const Creature* c, FurnitureType t) {
             if (!c)
               return !!f->furniture.getData(t).getBedType();
             return getBedType(c) == f->furniture.getData(t).getBedType();
@@ -329,7 +329,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::BE_WHIPPED: return {FurnitureType("WHIPPING_POST"), "being whipped"};
       case MinionActivity::BE_TORTURED: return {FurnitureType("TORTURE_TABLE"), "being tortured"};
       case MinionActivity::BE_EXECUTED: return {FurnitureType("GALLOWS"), "being executed"};
-      case MinionActivity::CRAFT: return {[](const ContentFactory* f, WConstCollective col, const Creature* c, FurnitureType t) {
+      case MinionActivity::CRAFT: return {[](const ContentFactory* f, const Collective* col, const Creature* c, FurnitureType t) {
             if (auto type = f->getWorkshopType(t)) {
               if (!c || !col)
                 return true;

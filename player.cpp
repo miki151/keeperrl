@@ -1275,7 +1275,7 @@ void Player::considerKeeperModeTravelMusic() {
     getGame()->setCurrentMusic(*t);
     return;
   }
-  for (WCollective col : getModel()->getCollectives())
+  for (Collective* col : getModel()->getCollectives())
     if (col->getVillainType() == VillainType::MAIN && !col->isConquered() &&
         col->getTerritory().contains(creature->getPosition())) {
       getGame()->setCurrentMusic(MusicType::BATTLE);
@@ -1285,7 +1285,7 @@ void Player::considerKeeperModeTravelMusic() {
 }
 
 void Player::considerAdventurerMusic() {
-  for (WCollective col : getModel()->getCollectives())
+  for (Collective* col : getModel()->getCollectives())
     if (col->getVillainType() == VillainType::MAIN && !col->isConquered() &&
         col->getTerritory().contains(creature->getPosition())) {
       getGame()->setCurrentMusic(MusicType::ADV_BATTLE);

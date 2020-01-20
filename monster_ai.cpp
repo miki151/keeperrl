@@ -805,7 +805,7 @@ class Summoned : public GuardTarget {
 
 class ByCollective : public Behaviour {
   public:
-  ByCollective(Creature* c, WCollective col, unique_ptr<Fighter> fighter) : Behaviour(c), collective(col),
+  ByCollective(Creature* c, Collective* col, unique_ptr<Fighter> fighter) : Behaviour(c), collective(col),
       fighter(std::move(fighter)) {}
 
   MoveInfo priorityTask() {
@@ -1035,7 +1035,7 @@ class ByCollective : public Behaviour {
   SERIALIZE_ALL(SUBCLASS(Behaviour), collective, fighter)
 
   private:
-  WCollective SERIAL(collective) = nullptr;
+  Collective* SERIAL(collective) = nullptr;
   unique_ptr<Fighter> SERIAL(fighter);
 };
 
@@ -1407,7 +1407,7 @@ MonsterAIFactory MonsterAIFactory::monster() {
   return stayInLocation(Level::getMaxBounds());
 }
 
-MonsterAIFactory MonsterAIFactory::collective(WCollective col) {
+MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
         new AvoidFire(c),

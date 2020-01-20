@@ -65,7 +65,7 @@ struct BuildInfo {
   MAKE_VARIANT(Requirement, TechId, DungeonLevel);
 
   static string getRequirementText(Requirement);
-  static bool meetsRequirement(WConstCollective, Requirement);
+  static bool meetsRequirement(const Collective*, Requirement);
   bool canSelectRectangle() const;
 
   BuildInfoTypes::BuildType SERIAL(type);

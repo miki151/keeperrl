@@ -53,7 +53,7 @@ ExternalEnemies::ExternalEnemies(RandomGen& random, CreatureFactory* factory, ve
   }
 }
 
-PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviour) {
+PTask ExternalEnemies::getAttackTask(Collective* enemy, AttackBehaviour behaviour) {
   return behaviour.visit<PTask>(
       [&](KillLeader) {
         if (!enemy->getLeaders().empty())
@@ -85,7 +85,7 @@ PTask ExternalEnemies::getAttackTask(WCollective enemy, AttackBehaviour behaviou
   );
 }
 
-void ExternalEnemies::updateCurrentWaves(WCollective target) {
+void ExternalEnemies::updateCurrentWaves(Collective* target) {
   auto areAllDead = [](const vector<Creature*>& wave) {
     for (auto c : wave)
       if (!c->isDead() && !c->isAffected(LastingEffect::STUNNED))
@@ -105,7 +105,7 @@ void ExternalEnemies::update(WLevel level, LocalTime localTime) {
   if (!startTime)
     return;
   localTime = 0_local + (localTime - *startTime);
-  WCollective target = level->getModel()->getGame()->getPlayerCollective();
+  Collective* target = level->getModel()->getGame()->getPlayerCollective();
   CHECK(!!target);
   updateCurrentWaves(target);
   auto& creatureFactory = level->getGame()->getContentFactory()->getCreatures();

@@ -38,13 +38,13 @@ class ContentFactory;
 class MinionActivities {
   public:
   MinionActivities(const ContentFactory*);
-  static WTask getExisting(WCollective, Creature*, MinionActivity);
-  PTask generate(WCollective, Creature*, MinionActivity) const;
-  static PTask generateDropTask(WCollective, Creature*, MinionActivity);
+  static WTask getExisting(Collective*, Creature*, MinionActivity);
+  PTask generate(Collective*, Creature*, MinionActivity) const;
+  static PTask generateDropTask(Collective*, Creature*, MinionActivity);
   static optional<TimeInterval> getDuration(const Creature*, MinionActivity);
-  vector<pair<Position, FurnitureLayer>> getAllPositions(WConstCollective, const Creature*, MinionActivity) const;
+  vector<pair<Position, FurnitureLayer>> getAllPositions(const Collective*, const Creature*, MinionActivity) const;
   const vector<FurnitureType>& getAllFurniture(MinionActivity) const;
-  optional<MinionActivity> getActivityFor(WConstCollective, const Creature*, FurnitureType) const;
+  optional<MinionActivity> getActivityFor(const Collective*, const Creature*, FurnitureType) const;
 
   SERIALIZATION_DECL(MinionActivities)
 

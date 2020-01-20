@@ -22,7 +22,7 @@ VillageBehaviour& VillageBehaviour::operator =(const VillageBehaviour&) = defaul
 VillageBehaviour::~VillageBehaviour() {}
 
 PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
-  WCollective enemy = self->getEnemyCollective();
+  Collective* enemy = self->getEnemyCollective();
   return attackBehaviour->visit<PTask>(
       [&](KillLeader) {
         if (!enemy->getLeaders().empty())

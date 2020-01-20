@@ -46,7 +46,7 @@ namespace EventInfo {
   };
 
   struct ConqueredEnemy {
-    WCollective collective = nullptr;
+    Collective* collective = nullptr;
   };
 
   struct WonGame {};

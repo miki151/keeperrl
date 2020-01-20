@@ -27,7 +27,7 @@ static bool betterPos(Position from, Position current, Position candidate) {
   return from.dist8(current).value_or(1000000) > from.dist8(candidate).value_or(1000000);
 }
 
-static optional<Position> getTileToExplore(WCollective collective, const Creature* c, MinionActivity task) {
+static optional<Position> getTileToExplore(Collective* collective, const Creature* c, MinionActivity task) {
   auto& borderTiles = collective->getKnownTiles().getBorderTiles();
   auto blockName = "get tile to explore " + toString(borderTiles.size());
   PROFILE_BLOCK(blockName.data());
@@ -70,7 +70,7 @@ static optional<Position> getTileToExplore(WCollective collective, const Creatur
   }
 }
 
-static Creature* getMinionToAbuse(WCollective collective, const Creature* c) {
+static Creature* getMinionToAbuse(Collective* collective, const Creature* c) {
   auto minions = collective->getCreatures(MinionTrait::FIGHTER);
   if (minions.empty() || (minions.size() == 1 && minions[0] == c))
     return nullptr;
@@ -81,7 +81,7 @@ static Creature* getMinionToAbuse(WCollective collective, const Creature* c) {
   } while (true);
 }
 
-static Creature* getCopulationTarget(WConstCollective collective, const Creature* succubus) {
+static Creature* getCopulationTarget(const Collective* collective, const Creature* succubus) {
   for (Creature* c : Random.permutation(collective->getCreatures(MinionTrait::FIGHTER)))
     if (succubus->canCopulateWith(c))
       return c;
@@ -92,7 +92,7 @@ const vector<FurnitureType>& MinionActivities::getAllFurniture(MinionActivity ta
   return allFurniture[task];
 }
 
-optional<MinionActivity> MinionActivities::getActivityFor(WConstCollective col, const Creature* c,
+optional<MinionActivity> MinionActivities::getActivityFor(const Collective* col, const Creature* c,
     FurnitureType type) const {
   if (auto task = getReferenceMaybe(activities, type)) {
     auto& info = CollectiveConfig::getActivityInfo(*task);
@@ -103,7 +103,7 @@ optional<MinionActivity> MinionActivities::getActivityFor(WConstCollective col, 
 }
 
 template <typename PosType, typename PosFun>
-static vector<PosType> tryInQuarters(vector<PosType> pos, WConstCollective collective, const Creature* c, PosFun posFun) {
+static vector<PosType> tryInQuarters(vector<PosType> pos, const Collective* collective, const Creature* c, PosFun posFun) {
   PROFILE;
   auto& quarters = collective->getQuarters();
   auto& zones = collective->getZones();
@@ -133,11 +133,11 @@ static vector<PosType> tryInQuarters(vector<PosType> pos, WConstCollective colle
     return pos;
 }
 
-static vector<Position> tryInQuarters(vector<Position> pos, WConstCollective collective, const Creature* c) {
+static vector<Position> tryInQuarters(vector<Position> pos, const Collective* collective, const Creature* c) {
   return tryInQuarters(std::move(pos), collective, c, [](const Position& pos) -> const Position& { return pos; });
 }
 
-vector<pair<Position, FurnitureLayer>> MinionActivities::getAllPositions(WConstCollective collective, const Creature* c,
+vector<pair<Position, FurnitureLayer>> MinionActivities::getAllPositions(const Collective* collective, const Creature* c,
     MinionActivity activity) const {
   PROFILE;
   vector<pair<Position, FurnitureLayer>> ret;
@@ -156,7 +156,7 @@ vector<pair<Position, FurnitureLayer>> MinionActivities::getAllPositions(WConstC
   return ret;
 }
 
-static PTask getDropItemsTask(WCollective collective, const Creature* creature) {
+static PTask getDropItemsTask(Collective* collective, const Creature* creature) {
   auto& config = collective->getConfig();
   for (const ItemFetchInfo& elem : config.getFetchInfo()) {
     vector<Item*> items = creature->getEquipment().getItems(elem.index).filter([&elem, &collective, &creature](const Item* item) {
@@ -193,7 +193,7 @@ MinionActivities::MinionActivities(const ContentFactory* contentFactory) {
     }
 }
 
-WTask MinionActivities::getExisting(WCollective collective, Creature* c, MinionActivity activity) {
+WTask MinionActivities::getExisting(Collective* collective, Creature* c, MinionActivity activity) {
   PROFILE;
   auto& info = CollectiveConfig::getActivityInfo(activity);
   switch (info.type) {
@@ -205,7 +205,7 @@ WTask MinionActivities::getExisting(WCollective collective, Creature* c, MinionA
   }
 }
 
-PTask MinionActivities::generateDropTask(WCollective collective, Creature* c, MinionActivity task) {
+PTask MinionActivities::generateDropTask(Collective* collective, Creature* c, MinionActivity task) {
   if (task != MinionActivity::HAULING)
     if (PTask ret = getDropItemsTask(collective, c))
       return ret;
@@ -231,7 +231,7 @@ const PositionSet& getIdlePositions(const Collective* collective, const Creature
     return collective->getTerritory().getAllAsSet();
 }
 
-PTask MinionActivities::generate(WCollective collective, Creature* c, MinionActivity activity) const {
+PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActivity activity) const {
   PROFILE;
   auto& info = CollectiveConfig::getActivityInfo(activity);
   switch (info.type) {

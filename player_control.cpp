@@ -122,7 +122,7 @@ static vector<string> getHints() {
   };
 }
 
-PlayerControl::PlayerControl(Private, WCollective col, TribeAlignment alignment)
+PlayerControl::PlayerControl(Private, Collective* col, TribeAlignment alignment)
     : CollectiveControl(col), hints(getHints()), tribeAlignment(alignment) {
   controlModeMessages = make_shared<MessageBuffer>();
   visibilityMap = make_shared<VisibilityMap>();
@@ -134,7 +134,7 @@ PlayerControl::PlayerControl(Private, WCollective col, TribeAlignment alignment)
         addToMemory(pos);
 }
 
-PPlayerControl PlayerControl::create(WCollective col, vector<string> introText, TribeAlignment alignment) {
+PPlayerControl PlayerControl::create(Collective* col, vector<string> introText, TribeAlignment alignment) {
   auto ret = makeOwner<PlayerControl>(Private{}, col, alignment);
   ret->subscribeTo(col->getModel());
   ret->introText = introText;
@@ -701,7 +701,7 @@ string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
   );
 }
 
-VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
+VillageInfo::Village PlayerControl::getVillageInfo(const Collective* col) const {
   VillageInfo::Village info;
   info.name = col->getName()->shortened;
   info.id = col->getUniqueId();
@@ -748,7 +748,7 @@ VillageInfo::Village PlayerControl::getVillageInfo(WConstCollective col) const {
   return info;
 }
 
-void PlayerControl::handleTrading(WCollective ally) {
+void PlayerControl::handleTrading(Collective* ally) {
   ScrollPosition scrollPos;
   auto& storage = collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT);
   if (storage.empty()) {
@@ -790,7 +790,7 @@ static ItemInfo getPillageItemInfo(const ContentFactory* factory, const vector<I
   );
 }
 
-vector<PItem> PlayerControl::retrievePillageItems(WCollective col, vector<Item*> items) {
+vector<PItem> PlayerControl::retrievePillageItems(Collective* col, vector<Item*> items) {
   vector<PItem> ret;
   EntitySet<Item> index(items);
   for (auto pos : col->getTerritory().getAll()) {
@@ -806,7 +806,7 @@ vector<PItem> PlayerControl::retrievePillageItems(WCollective col, vector<Item*>
   return ret;
 }
 
-vector<Item*> PlayerControl::getPillagedItems(WCollective col) const {
+vector<Item*> PlayerControl::getPillagedItems(Collective* col) const {
   vector<Item*> ret;
   for (Position v : col->getTerritory().getAll())
     if (!collective->getTerritory().contains(v))
@@ -814,14 +814,14 @@ vector<Item*> PlayerControl::getPillagedItems(WCollective col) const {
   return ret;
 }
 
-bool PlayerControl::canPillage(WConstCollective col) const {
+bool PlayerControl::canPillage(const Collective* col) const {
   for (Position v : col->getTerritory().getAll())
     if (!collective->getTerritory().contains(v) && !v.getItems().empty())
       return true;
   return false;
 }
 
-void PlayerControl::handlePillage(WCollective col) {
+void PlayerControl::handlePillage(Collective* col) {
   ScrollPosition scrollPos;
   while (1) {
     struct PillageOption {
@@ -858,9 +858,9 @@ void PlayerControl::handleRansom(bool pay) {
   ransomAttacks.removeIndex(0);
 }
 
-vector<WCollective> PlayerControl::getKnownVillains() const {
+vector<Collective*> PlayerControl::getKnownVillains() const {
   auto showAll = getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP);
-  return getGame()->getCollectives().filter([&](WCollective c) {
+  return getGame()->getCollectives().filter([&](Collective* c) {
       return showAll || collective->isKnownVillain(c) || !c->getTriggers(collective).empty();});
 }
 
@@ -1136,7 +1136,7 @@ void PlayerControl::rejectPrisoner(int index) {
 vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() const {
   vector<StunnedInfo> ret;
   vector<Creature*> outside;
-  unordered_map<WCollective, vector<Creature*>, CustomHash<WCollective>> inside;
+  unordered_map<Collective*, vector<Creature*>, CustomHash<Collective*>> inside;
   for (auto stunned : stunnedCreatures)
     if (stunned.first->isAffected(LastingEffect::STUNNED) && !stunned.first->isDead()) {
       if (auto villain = stunned.second) {
@@ -1645,7 +1645,7 @@ void PlayerControl::updateKnownLocations(const Position& pos) {
           addMessage(PlayerMessage("Your minions discover a new location.").setLocation(loc));
       }*/
   if (getGame()) // check in case this method is called before Game is constructed
-    for (WConstCollective col : getGame()->getCollectives())
+    for (const Collective* col : getGame()->getCollectives())
       if (col != collective && col->getTerritory().contains(pos)) {
         collective->addKnownVillain(col);
         if (!collective->isKnownVillainLocation(col)) {
@@ -1867,7 +1867,7 @@ void PlayerControl::setScrollPos(Position pos) {
   }
 }
 
-WCollective PlayerControl::getVillain(UniqueEntity<Collective>::Id id) {
+Collective* PlayerControl::getVillain(UniqueEntity<Collective>::Id id) {
   for (auto col : getGame()->getCollectives())
     if (col->getUniqueId() == id)
       return col;
@@ -2350,7 +2350,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::VILLAGE_ACTION: {
       auto& info = input.get<VillageActionInfo>();
-      if (WCollective village = getVillain(info.id))
+      if (Collective* village = getVillain(info.id))
         switch (info.action) {
           case VillageAction::TRADE:
             handleTrading(village);
@@ -2761,7 +2761,7 @@ WLevel PlayerControl::getCurrentLevel() const {
     return currentLevel;
 }
 
-bool PlayerControl::isConsideredAttacking(const Creature* c, WConstCollective enemy) {
+bool PlayerControl::isConsideredAttacking(const Creature* c, const Collective* enemy) {
   if (enemy && enemy->getModel() == getModel())
     return canSee(c) && (collective->getTerritory().contains(c->getPosition()) ||
         collective->getTerritory().getStandardExtended().contains(c->getPosition()));

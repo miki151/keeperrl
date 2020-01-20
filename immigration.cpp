@@ -274,7 +274,7 @@ double Immigration::getImmigrantChance(const Group& group) const {
     return info.getFrequency() * getRequirementMultiplier(group);
 }
 
-Immigration::Immigration(WCollective c, vector<ImmigrantInfo> immigrants)
+Immigration::Immigration(Collective* c, vector<ImmigrantInfo> immigrants)
   : collective(c), candidateTimeout(c->getConfig().getImmigrantTimeout()), immigrants(std::move(immigrants)) {
 }
 

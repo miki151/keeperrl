@@ -30,7 +30,7 @@ class Zones {
   void onDestroyOrder(Position);
   const PositionSet& getPositions(ZoneId) const;
   void setHighlights(Position, ViewIndex&) const;
-  bool canSet(Position, ZoneId, WConstCollective) const;
+  bool canSet(Position, ZoneId, const Collective*) const;
   void tick();
 
   SERIALIZATION_DECL(Zones)

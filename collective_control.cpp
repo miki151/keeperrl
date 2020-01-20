@@ -6,7 +6,7 @@
 SERIALIZE_DEF(CollectiveControl, SUBCLASS(OwnedObject<CollectiveControl>), collective)
 SERIALIZATION_CONSTRUCTOR_IMPL(CollectiveControl);
 
-CollectiveControl::CollectiveControl(WCollective c) : collective(c) {
+CollectiveControl::CollectiveControl(Collective* c) : collective(c) {
 }
 
 void CollectiveControl::update(bool currentlyActive) {
@@ -44,11 +44,11 @@ class IdleControl : public CollectiveControl {
   }
 };
 
-vector<TriggerInfo> CollectiveControl::getTriggers(WConstCollective against) const {
+vector<TriggerInfo> CollectiveControl::getTriggers(const Collective* against) const {
   return {};
 }
 
-PCollectiveControl CollectiveControl::idle(WCollective col) {
+PCollectiveControl CollectiveControl::idle(Collective* col) {
   return makeOwner<IdleControl>(col);
 }
 

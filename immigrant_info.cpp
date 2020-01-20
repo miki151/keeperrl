@@ -231,9 +231,9 @@ vector<Creature*> RecruitmentInfo::getAvailableRecruits(WGame game, CreatureId i
   return getPrefix(ret, max(0, (int)ret.size() - minPopulation));
 }
 
-vector<WCollective> RecruitmentInfo::findEnemy(WGame game) const {
-  vector<WCollective> ret;
-  for (WCollective col : game->getCollectives())
+vector<Collective*> RecruitmentInfo::findEnemy(WGame game) const {
+  vector<Collective*> ret;
+  for (Collective* col : game->getCollectives())
     if (auto id = col->getEnemyId())
       if (enemyId.contains(*id))
         ret.push_back(col);

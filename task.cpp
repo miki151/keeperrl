@@ -830,7 +830,7 @@ PTask Task::attackCreatures(vector<Creature*> c) {
   return makeOwner<AttackCreatures>(std::move(c));
 }
 
-PTask Task::stealFrom(WCollective collective) {
+PTask Task::stealFrom(Collective* collective) {
   vector<PTask> tasks;
   for (Position pos : collective->getConstructions().getBuiltPositions(FurnitureType("TREASURE_CHEST"))) {
     vector<Item*> gold = pos.getItems().filter(Item::classPredicate(ItemClass::GOLD));
@@ -847,7 +847,7 @@ namespace {
 
 class CampAndSpawnTask : public Task {
   public:
-  CampAndSpawnTask(WCollective _target, CreatureList s, int numAtt)
+  CampAndSpawnTask(Collective* _target, CreatureList s, int numAtt)
     : target(_target), spawns(s),
       campPos(Random.permutation(target->getTerritory().getStandardExtended())), numAttacks(numAtt) {}
 
@@ -910,7 +910,7 @@ class CampAndSpawnTask : public Task {
   SERIALIZATION_CONSTRUCTOR(CampAndSpawnTask)
 
   private:
-  WCollective SERIAL(target) = nullptr;
+  Collective* SERIAL(target) = nullptr;
   CreatureList SERIAL(spawns);
   vector<Position> SERIAL(campPos);
   optional<int> SERIAL(attackCountdown);
@@ -922,7 +922,7 @@ class CampAndSpawnTask : public Task {
 
 }
 
-PTask Task::campAndSpawn(WCollective target, const CreatureList& spawns, int numAttacks) {
+PTask Task::campAndSpawn(Collective* target, const CreatureList& spawns, int numAttacks) {
   return makeOwner<CampAndSpawnTask>(target, spawns, numAttacks);
 }
 
@@ -930,7 +930,7 @@ namespace {
 
 class KillFighters : public Task {
   public:
-  KillFighters(WCollective col, int numC) : collective(col), numCreatures(numC) {}
+  KillFighters(Collective* col, int numC) : collective(col), numCreatures(numC) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     optional<Position> moveTarget;
@@ -961,14 +961,14 @@ class KillFighters : public Task {
   SERIALIZATION_CONSTRUCTOR(KillFighters)
 
   private:
-  WCollective SERIAL(collective) = nullptr;
+  Collective* SERIAL(collective) = nullptr;
   int SERIAL(numCreatures);
   EntitySet<Creature> SERIAL(targets);
 };
 
 }
 
-PTask Task::killFighters(WCollective col, int numCreatures) {
+PTask Task::killFighters(Collective* col, int numCreatures) {
   return makeOwner<KillFighters>(col, numCreatures);
 }
 
@@ -1523,7 +1523,7 @@ PTask Task::dropItemsAnywhere(vector<Item*> items) {
 namespace {
 class DropItems : public Task {
   public:
-  DropItems(EntitySet<Item> items, StorageId storage, WCollective collective, optional<Position> origin)
+  DropItems(EntitySet<Item> items, StorageId storage, Collective* collective, optional<Position> origin)
       : items(std::move(items)), positions(StorageInfo{storage, collective}), origin(origin) {}
 
   DropItems(EntitySet<Item> items, vector<Position> positions)
@@ -1605,7 +1605,7 @@ class DropItems : public Task {
 };
 }
 
-PTask Task::dropItems(vector<Item*> items, StorageId storage, WCollective collective) {
+PTask Task::dropItems(vector<Item*> items, StorageId storage, Collective* collective) {
   return makeOwner<DropItems>(items, storage, collective, none);
 }
 
@@ -1701,7 +1701,7 @@ PTask Task::pickUpItem(Position position, vector<Item*> items, optional<StorageI
   return makeOwner<PickUpItem>(position, items, storage, nullptr);
 }
 
-Task::PickUpAndDrop Task::pickUpAndDrop(Position origin, vector<Item*> items, StorageId storage, WCollective col) {
+Task::PickUpAndDrop Task::pickUpAndDrop(Position origin, vector<Item*> items, StorageId storage, Collective* col) {
   auto drop = makeOwner<DropItems>(items, storage, col, origin);
   auto pickUp = makeOwner<PickUpItem>(origin, items, storage, drop.get());
   return PickUpAndDrop { std::move(pickUp), std::move(drop)};
@@ -1755,7 +1755,7 @@ PTask Task::spider(Position origin, const vector<Position>& posClose) {
 namespace {
 class WithTeam : public Task {
   public:
-  WithTeam(WCollective col, TeamId teamId, PTask task)
+  WithTeam(Collective* col, TeamId teamId, PTask task)
       : collective(std::move(col)), teamId(teamId), task(std::move(task)) {}
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -1787,13 +1787,13 @@ class WithTeam : public Task {
   SERIALIZATION_CONSTRUCTOR(WithTeam)
 
   private:
-  WCollective SERIAL(collective) = nullptr;
+  Collective* SERIAL(collective) = nullptr;
   TeamId SERIAL(teamId);
   PTask SERIAL(task);
 };
 }
 
-PTask Task::withTeam(WCollective col, TeamId teamId, PTask task) {
+PTask Task::withTeam(Collective* col, TeamId teamId, PTask task) {
   return makeOwner<WithTeam>(std::move(col), teamId, std::move(task));
 }
 

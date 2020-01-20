@@ -18,7 +18,7 @@ struct AttractionInfo;
 
 class Immigration : public OwnedObject<Immigration> {
   public:
-  Immigration(WCollective, vector<ImmigrantInfo>);
+  Immigration(Collective*, vector<ImmigrantInfo>);
   ~Immigration();
   Immigration(Immigration&&);
   void update();
@@ -74,7 +74,7 @@ class Immigration : public OwnedObject<Immigration> {
   private:
   EntityMap<Creature, unordered_map<AttractionType, int, CustomHash<AttractionType>>> SERIAL(minionAttraction);
   map<int, Available> SERIAL(available);
-  WCollective SERIAL(collective) = nullptr;
+  Collective* SERIAL(collective) = nullptr;
   map<int, EntitySet<Creature>> SERIAL(generated);
   double getImmigrantChance(const Group& info) const;
   vector<string> getMissingAttractions(const ImmigrantInfo&) const;

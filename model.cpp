@@ -96,7 +96,7 @@ int Model::getSaveProgressCount() const {
   return ret;
 }
 
-vector<WCollective> Model::getCollectives() const {
+vector<Collective*> Model::getCollectives() const {
   return getWeakPointers(collectives);
 }
 

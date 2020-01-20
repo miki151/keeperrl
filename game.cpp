@@ -67,7 +67,7 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, ContentFacto
   gameDisplayName = c.gameDisplayName;
   for (Vec2 v : models.getBounds())
     if (WModel m = models[v].get()) {
-      for (WCollective col : m->getCollectives()) {
+      for (Collective* col : m->getCollectives()) {
         auto control = dynamic_cast<VillageControl*>(col->getControl());
         control->updateAggression(c.enemyAggressionLevel);
         addCollective(col);
@@ -81,7 +81,7 @@ Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, ContentFacto
     turnEvents.insert(1000 * (i + 1));
 }
 
-void Game::addCollective(WCollective col) {
+void Game::addCollective(Collective* col) {
   collectives.push_back(col);
   auto type = col->getVillainType();
   villainsByType[type].push_back(col);
@@ -159,8 +159,8 @@ GlobalTime Game::getGlobalTime() const {
   return GlobalTime((int) currentTime);
 }
 
-const vector<WCollective>& Game::getVillains(VillainType type) const {
-  static vector<WCollective> empty;
+const vector<Collective*>& Game::getVillains(VillainType type) const {
+  static vector<Collective*> empty;
   if (villainsByType.count(type))
     return villainsByType.at(type);
   else
@@ -201,7 +201,7 @@ void Game::prepareSiteRetirement() {
   for (Vec2 v : models.getBounds())
     if (models[v] && v != baseModel)
       models[v]->discardForRetirement();
-  for (WCollective col : models[baseModel]->getCollectives())
+  for (Collective* col : models[baseModel]->getCollectives())
     if (col != playerCollective)
       col->setVillainType(VillainType::NONE);
   if (playerCollective->getVillainType() == VillainType::PLAYER) {
@@ -235,13 +235,13 @@ void Game::prepareSiteRetirement() {
   playerControl = nullptr;
   WModel mainModel = models[baseModel].get();
   mainModel->setGame(nullptr);
-  for (WCollective col : models[baseModel]->getCollectives())
+  for (Collective* col : models[baseModel]->getCollectives())
     for (Creature* c : copyOf(col->getCreatures()))
       if (c->getPosition().getModel() != mainModel)
         transferCreature(c, mainModel);
   for (Vec2 v : models.getBounds())
     if (models[v] && v != baseModel)
-      for (WCollective col : models[v]->getCollectives())
+      for (Collective* col : models[v]->getCollectives())
         for (Creature* c : copyOf(col->getCreatures()))
           if (c->getPosition().getModel() == mainModel)
             transferCreature(c, models[v].get());
@@ -357,7 +357,7 @@ bool Game::updateModel(WModel model, double totalTime) {
   } while (1);
 }
 
-bool Game::isVillainActive(WConstCollective col) {
+bool Game::isVillainActive(const Collective* col) {
   const WModel m = col->getModel();
   return m == getMainModel().get() || campaign->isInInfluence(getModelCoords(m));
 }
@@ -385,7 +385,7 @@ void Game::tick(GlobalTime time) {
           playerControl->onSunlightVisibilityChanged();
       }
   INFO << "Global time " << time;
-  for (WCollective col : collectives) {
+  for (Collective* col : collectives) {
     if (isVillainActive(col))
       col->update(col->getModel() == getCurrentModel());
   }
@@ -458,7 +458,7 @@ bool Game::canTransferCreature(Creature* c, WModel to) {
   return to->canTransferCreature(c, getModelCoords(c->getLevel()->getModel()) - getModelCoords(to));
 }
 
-int Game::getModelDistance(WConstCollective c1, WConstCollective c2) const {
+int Game::getModelDistance(const Collective* c1, const Collective* c2) const {
   return getModelCoords(c1->getModel()).dist8(getModelCoords(c2->getModel()));
 }
  
@@ -517,7 +517,7 @@ Tribe* Game::getTribe(TribeId id) const {
   return tribes.at(id).get();
 }
 
-WCollective Game::getPlayerCollective() const {
+Collective* Game::getPlayerCollective() const {
   return playerCollective;
 }
 
@@ -666,7 +666,7 @@ const string& Game::getWorldName() const {
   return campaign->getWorldName();
 }
 
-const vector<WCollective>& Game::getCollectives() const {
+const vector<Collective*>& Game::getCollectives() const {
   return collectives;
 }
 
@@ -698,7 +698,7 @@ string Game::getPlayerName() const {
 }
 
 SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
-  if (WCollective col = getPlayerCollective()) {
+  if (Collective* col = getPlayerCollective()) {
     vector<Creature*> creatures = col->getCreatures();
     CHECK(!creatures.empty());
     Creature* leader = col->getLeaders()[0];
@@ -772,7 +772,7 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
 }
 
 bool Game::gameWon() const {
-  for (WCollective col : getCollectives())
+  for (Collective* col : getCollectives())
     if (!col->isConquered() && col->getVillainType() == VillainType::MAIN)
       return false;
   return true;
@@ -785,7 +785,7 @@ void Game::addEvent(const GameEvent& event) {
   using namespace EventInfo;
   event.visit<void>(
       [&](const ConqueredEnemy& info) {
-        WCollective col = info.collective;
+        Collective* col = info.collective;
         if (col->getVillainType() != VillainType::NONE) {
           Vec2 coords = getModelCoords(col->getModel());
           if (!campaign->isDefeated(coords)) {

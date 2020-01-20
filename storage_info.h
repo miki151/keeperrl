@@ -4,6 +4,6 @@
 
 struct StorageInfo {
   StorageId SERIAL(storage);
-  WCollective SERIAL(collective) = nullptr;
+  Collective* SERIAL(collective) = nullptr;
   SERIALIZE_ALL(storage, collective);
 };

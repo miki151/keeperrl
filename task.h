@@ -81,9 +81,9 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask explore(Position);
   static PTask abuseMinion(Creature*);
   static PTask attackCreatures(vector<Creature*>);
-  static PTask campAndSpawn(WCollective target, const CreatureList&, int numAttacks);
-  static PTask killFighters(WCollective, int numFighters);
-  static PTask stealFrom(WCollective);
+  static PTask campAndSpawn(Collective* target, const CreatureList&, int numAttacks);
+  static PTask killFighters(Collective*, int numFighters);
+  static PTask stealFrom(Collective*);
   static PTask consumeItem(WTaskCallback, vector<Item*> items);
   static PTask copulate(WTaskCallback, Creature* target, int numTurns);
   static PTask consume(Creature* target);
@@ -100,14 +100,14 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask whipping(Position, Creature* whipped);
   static PTask dropItemsAnywhere(vector<Item*>);
   static PTask dropItems(vector<Item*>, vector<Position>);
-  static PTask dropItems(vector<Item*>, StorageId, WCollective);
+  static PTask dropItems(vector<Item*>, StorageId, Collective*);
   struct PickUpAndDrop {
     PTask pickUp;
     PTask drop;
   };
-  static PickUpAndDrop pickUpAndDrop(Position origin, vector<Item*>, StorageId, WCollective);
+  static PickUpAndDrop pickUpAndDrop(Position origin, vector<Item*>, StorageId, Collective*);
   static PTask spider(Position origin, const vector<Position>& posClose);
-  static PTask withTeam(WCollective, TeamId, PTask);
+  static PTask withTeam(Collective*, TeamId, PTask);
   static PTask installBodyPart(WTaskCallback, Creature* target, Item*);
 
   template <class Archive>

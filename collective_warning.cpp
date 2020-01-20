@@ -27,7 +27,7 @@ void CollectiveWarnings::disable() {
   lastWarningTime = LocalTime(100000000);
 }
 
-void CollectiveWarnings::considerWarnings(WCollective col) {
+void CollectiveWarnings::considerWarnings(Collective* col) {
   PROFILE;
   setWarning(Warning::DUNGEON_LEVEL, col->getDungeonLevel().level == 0 && col->getGame()->getGlobalTime() > 3000_global);
   setWarning(Warning::DIGGING, col->getTerritory().isEmpty());
@@ -40,7 +40,7 @@ bool CollectiveWarnings::isWarning(Warning w) const {
   return warnings.contains(w);
 }
 
-void CollectiveWarnings::considerWeaponWarning(WCollective col) {
+void CollectiveWarnings::considerWeaponWarning(Collective* col) {
   int numWeapons = col->getNumItems(ItemIndex::WEAPON);
   PItem genWeapon = ItemType(CustomItemId("Sword")).get(col->getGame()->getContentFactory());
   int numNeededWeapons = 0;
@@ -50,13 +50,13 @@ void CollectiveWarnings::considerWeaponWarning(WCollective col) {
   setWarning(Warning::NO_WEAPONS, numNeededWeapons > numWeapons);
 }
 
-void CollectiveWarnings::considerMoraleWarning(WCollective col) {
+void CollectiveWarnings::considerMoraleWarning(Collective* col) {
   vector<Creature*> minions = col->getCreatures(MinionTrait::FIGHTER);
   setWarning(Warning::LOW_MORALE,
       minions.filter([] (const Creature* c) { return c->getMorale() < -0.2; }).size() > minions.size() / 2);
 }
 
-void CollectiveWarnings::considerTorchesWarning(WCollective col) {
+void CollectiveWarnings::considerTorchesWarning(Collective* col) {
   double numLit = 0;
   const double unlitPen = 4;
   for (auto type : col->getGame()->getContentFactory()->furniture.getFurnitureNeedingLight())
