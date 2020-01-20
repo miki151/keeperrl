@@ -1699,7 +1699,7 @@
     automatonSlots = 3
     attr = {
       DAMAGE 15
-      DEFENSE 20
+      DEFENSE 24
     }
     body = {
       type = NonHumanoid LARGE
@@ -1721,7 +1721,7 @@
     viewId = { "automaton" Rgb 140 148 148 255 }
     attr = {
       DAMAGE 25
-      DEFENSE 25
+      DEFENSE 29
     }
     body = append {
       material = IRON
