@@ -87,7 +87,7 @@
   behaviour = {
     minPopulation = 1
     minTeamSize = 4
-    triggers = { MiningInProximity }
+    triggers = { SelfVictims }
     attackBehaviour = KillLeader
   }
   immigrants = {
@@ -122,12 +122,6 @@
     closeToPlayer = true
     surroundWithResources = 6
     buildingId = "DUNGEON"
-  }
-  behaviour = {
-    minPopulation = 0
-    minTeamSize = 2
-    triggers = { MiningInProximity }
-    attackBehaviour = KillLeader
   }
 }
 "BLACK_RATS" 
@@ -185,12 +179,6 @@
     surroundWithResources = 3
     extraResources = "ADAMANTIUM_ORE"
     buildingId = "DUNGEON"
-  }
-  behaviour = {
-    minPopulation = 0
-    minTeamSize = 8
-    triggers = {MiningInProximity}
-    attackBehaviour = KillLeader
   }
 }
 "CORPSES"
@@ -1874,7 +1862,7 @@
   behaviour = {
     minPopulation = 0
     minTeamSize = 1
-    triggers = { SelfVictims StolenItems MiningInProximity }
+    triggers = { SelfVictims StolenItems }
     attackBehaviour = KillLeader
     ransom = 0.5 80
   }
@@ -1954,7 +1942,7 @@
   behaviour = {
     minPopulation = 0
     minTeamSize = 1
-    triggers = {SelfVictims StolenItems MiningInProximity}
+    triggers = {SelfVictims StolenItems }
     attackBehaviour = KillLeader
     ransom = 0.5 80
   }
