@@ -303,7 +303,7 @@ optional<string> ContentFactory::readCampaignInfo(const GameConfig* config, KeyV
   return none;
 }
 
-optional<string> ContentFactory::readData(const GameConfig* config, const string& modName) {
+optional<string> ContentFactory::readData(const GameConfig* config, const vector<string>& modNames) {
   KeyVerifier keyVerifier;
   map<PrimaryId<TechId>, Technology::TechDefinition> techsTmp;
   if (auto error = config->readObject(techsTmp, GameConfigId::TECHNOLOGY, &keyVerifier))
@@ -364,7 +364,7 @@ optional<string> ContentFactory::readData(const GameConfig* config, const string
     keyVerifier.addKey<ViewId>(id);
   if (auto res = config->readObject(tileDefs, GameConfigId::TILES, &keyVerifier))
     return *res;
-  tilePaths = TilePaths(std::move(tileDefs), modName);
+  tilePaths = TilePaths(std::move(tileDefs), modNames);
   for (auto alignment : {ZLevelGroup::EVIL, ZLevelGroup::LAWFUL}) {
     vector<ZLevelInfo> levels = concat<ZLevelInfo>({zLevels[ZLevelGroup::ALL], zLevels[alignment]});
     for (int depth = 0; depth < 1000; ++depth) {

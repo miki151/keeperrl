@@ -6,11 +6,11 @@
 class GameConfig;
 
 struct TilePaths {
-  TilePaths(vector<TileInfo>, string mainMod);
+  TilePaths(vector<TileInfo>, vector<string> mainMods);
   void merge(TilePaths);
   SERIALIZATION_CONSTRUCTOR(TilePaths)
   vector<TileInfo> SERIAL(definitions);
-  string SERIAL(mainMod);
+  vector<string> SERIAL(mainMods);
   vector<string> SERIAL(mergedMods);
-  SERIALIZE_ALL(definitions, mainMod, mergedMods)
+  SERIALIZE_ALL(definitions, mainMods, mergedMods)
 };

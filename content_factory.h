@@ -32,7 +32,7 @@ RICH_ENUM(
 
 class ContentFactory {
   public:
-  optional<string> readData(const GameConfig*, const string& modName);
+  optional<string> readData(const GameConfig*, const vector<string>& modNames);
   FurnitureFactory SERIAL(furniture);
   map<ZLevelGroup, vector<ZLevelInfo>> SERIAL(zLevels);
   vector<ResourceDistribution> SERIAL(resources);

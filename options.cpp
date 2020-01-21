@@ -168,6 +168,28 @@ string Options::getStringValue(OptionId id) {
   return getValueString(id);
 }
 
+vector<string> Options::getVectorStringValue(OptionId id) {
+  return *getValue(id).getValueMaybe<vector<string>>();
+}
+
+bool Options::hasVectorStringValue(OptionId id, const string& value) {
+  return getValue(id).getValueMaybe<vector<string>>()->contains(value);
+}
+
+void Options::addVectorStringValue(OptionId id, const string& value) {
+  if (!hasVectorStringValue(id, value)) {
+    auto v = * getValue(id).getValueMaybe<vector<string>>();
+    v.push_back(value);
+    setValue(id, v);
+  }
+}
+
+void Options::removeVectorStringValue(OptionId id, const string& value) {
+  auto v = *getValue(id).getValueMaybe<vector<string>>();
+  v.removeElementMaybe(value);
+  setValue(id, v);
+}
+
 int Options::getIntValue(OptionId id) {
   int v = *getValue(id).getValueMaybe<int>();
   if (auto& limit = limits[id])
@@ -224,8 +246,9 @@ string Options::getValueString(OptionId id) {
       return getYesNo(value);
     case OptionId::SETTLEMENT_NAME:
     case OptionId::PLAYER_NAME:
-    case OptionId::CURRENT_MOD2:
       return *value.getValueMaybe<string>();
+    case OptionId::CURRENT_MOD2:
+      return combine(*value.getValueMaybe<vector<string>>(), true);
     case OptionId::ENDLESS_ENEMIES:
     case OptionId::ENEMY_AGGRESSION:
       return choices[id][(*value.getValueMaybe<int>() + choices[id].size()) % choices[id].size()];
@@ -247,14 +270,17 @@ string Options::getValueString(OptionId id) {
   }
 }
 
-optional<Options::Value> Options::readValue(OptionId id, const string& input) {
+optional<Options::Value> Options::readValue(OptionId id, const vector<string>& input) {
   switch (id) {
     case OptionId::SETTLEMENT_NAME:
     case OptionId::PLAYER_NAME:
+      return Options::Value(input[0]);
     case OptionId::CURRENT_MOD2:
+      if (input.size() == 1 && input[0].empty())
+        return Options::Value(vector<string>());
       return Options::Value(input);
     default:
-      if (auto ret = fromStringSafe<int>(input))
+      if (auto ret = fromStringSafe<int>(input[0]))
         return Options::Value(*ret);
       else
         return none;
@@ -358,14 +384,12 @@ void Options::readValues() {
       vector<string> p = split(string(buf), {','});
       if (p.empty())
         continue;
-      if (p.size() == 1)
-        p.push_back("");
       OptionId optionId;
       if (auto id = EnumInfo<OptionId>::fromStringSafe(p[0]))
         optionId = *id;
       else
         continue;
-      if (auto val = readValue(optionId, p[1])) {
+      if (auto val = readValue(optionId, getSuffix(p, p.size() - 1))) {
         if ((optionId == OptionId::SOUND || optionId == OptionId::MUSIC) && *val == 1)
           *val = 100;
         (*values)[optionId] = *val;
@@ -374,9 +398,27 @@ void Options::readValues() {
   }
 }
 
+static void outputConfigString(ostream& os, const Options::Value& value) {
+  value.visit(
+      [&](const vector<string>& v) {
+        for (int i : All(v)) {
+          os << v[i];
+          if (i < v.size() - 1)
+            os << ",";
+        }
+      },
+      [&](const auto& x) {
+        os << x;
+      }
+  );
+}
+
 void Options::writeValues() {
   ofstream out(filename.getPath());
-  for (OptionId id : ENUM_ALL(OptionId))
-    out << EnumInfo<OptionId>::getString(id) << "," << (*values)[id] << std::endl;
+  for (OptionId id : ENUM_ALL(OptionId)) {
+    out << EnumInfo<OptionId>::getString(id) << ",";
+    outputConfigString(out, (*values)[id]);
+    out << std::endl;
+  }
 }
 

@@ -62,12 +62,15 @@ class View;
 
 class Options {
   public:
-  typedef variant<int, string> Value;
+  typedef variant<int, string, vector<string>> Value;
   Options(const FilePath& path);
   bool getBoolValue(OptionId);
   string getStringValue(OptionId);
+  vector<string> getVectorStringValue(OptionId);
+  bool hasVectorStringValue(OptionId, const string&);
+  void addVectorStringValue(OptionId, const string&);
+  void removeVectorStringValue(OptionId, const string&);
   const string& getName(OptionId);
-  enum Type { INT, BOOL, STRING };
   string getValueString(OptionId);
   void setValue(OptionId, Value);
   int getIntValue(OptionId);
@@ -83,7 +86,7 @@ class Options {
   optional<string> getHint(OptionId);
 
   private:
-  optional<Value> readValue(OptionId, const string&);
+  optional<Value> readValue(OptionId, const vector<string>&);
   void changeValue(OptionId, const Options::Value&, View*);
   Value getValue(OptionId);
   void readValues();

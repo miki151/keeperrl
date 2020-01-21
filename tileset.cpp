@@ -235,8 +235,9 @@ void TileSet::reload() {
   };
   reloadDir(defaultDir, true);
   bool useTiles = !tileCoords.empty();
-  if (reloadDir(modsDir.subdirectory(tilePaths->mainMod), true))
-    spriteMods.push_back(tilePaths->mainMod);
+  for (auto& mod : tilePaths->mainMods)
+    if (reloadDir(modsDir.subdirectory(mod), true))
+      spriteMods.push_back(mod);
   for (auto& subdir : tilePaths->mergedMods)
     if (reloadDir(modsDir.subdirectory(subdir), false) && !spriteMods.contains(subdir))
       spriteMods.push_back(subdir);

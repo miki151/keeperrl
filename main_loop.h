@@ -127,6 +127,6 @@ class MainLoop {
   void createNewMod();
   vector<ModInfo> getOnlineMods();
   GameConfig getVanillaConfig() const;
-  GameConfig getGameConfig(const string&) const;
+  GameConfig getGameConfig(const vector<string>& modNames) const;
   DirectoryPath getVanillaDir() const;
 };

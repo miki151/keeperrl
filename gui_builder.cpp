@@ -3834,7 +3834,7 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
   auto localItems = gui.getListBuilder(legendLineHeight);
   auto subscribedItems = gui.getListBuilder(legendLineHeight);
   auto onlineItems = gui.getListBuilder(legendLineHeight);
-  SGuiElem activeItem;
+  auto activeItems = gui.getListBuilder(legendLineHeight);;
   shared_ptr<int> chosenMod = make_shared<int>(highlighted);
   vector<SGuiElem> modPages;
   const int margin = 15;
@@ -3844,12 +3844,12 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
     auto name = mods[i].name;
     auto itemLabel =
     gui.stack(
-        gui.conditional(gui.label(name, Color::GREEN), gui.label(name),
-            [chosenMod, i] { return *chosenMod == i; }),
+        gui.label(name),
+        gui.uiHighlightConditional([chosenMod, i] { return *chosenMod == i; }),
         gui.button([chosenMod, i] { *chosenMod = i; })
     );
     if (mods[i].isActive)
-      activeItem = std::move(itemLabel);
+      activeItems.addElem(std::move(itemLabel));
     else if (mods[i].isLocal)
       localItems.addElem(std::move(itemLabel));
     else if (mods[i].isSubscribed)
@@ -3893,9 +3893,6 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
     ));
   }
   auto allItems = gui.getListBuilder(legendLineHeight);
-  allItems.addElem(gui.label("Currently active:", Color::YELLOW));
-  CHECK(!!activeItem);
-  allItems.addElem(std::move(activeItem));
   auto addList = [&] (GuiFactory::ListBuilder& list, const char* title) {
     if (!list.isEmpty()) {
       allItems.addSpace(legendLineHeight / 2);
@@ -3903,9 +3900,11 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
       allItems.addElemAuto(list.buildVerticalList());
     }
   };
+  addList(activeItems, "Active:");
   addList(localItems, "Installed:");
   addList(subscribedItems, "Subscribed:");
   addList(onlineItems, "Online:");
+  allItems.addSpace(15);
   allItems.addElem(gui.buttonLabel("Create new", [&queue] { queue.push(ModAction{-1, 0}); }));
   const int windowWidth = 2 * margin + pageWidth + listWidth;
   return gui.preferredSize(windowWidth, 400,
