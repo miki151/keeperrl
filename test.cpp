@@ -592,7 +592,7 @@ class Test {
   static ContentFactory getContentFactory() {
     GameConfig config({DirectoryPath("data_free/game_config/")});
     ContentFactory contentFactory;
-    CHECK(!contentFactory.readData(&config, "vanilla"));
+    CHECK(!contentFactory.readData(&config, {"vanilla"}));
     return contentFactory;
   }
 
@@ -1049,6 +1049,40 @@ class Test {
     CHECK(!!PrettyPrinting::parseObject(m, text));
   }
 
+  void testPrettyInput10() {
+    map<string, TestStruct5> m;
+    string text = "{"
+        "\"r1\" { a = { x = 3 y = 4 }}"
+        "\"r1\" modify { a = append { y = 5 } }"
+        "\"r1\" modify { a = append { y = 6 } }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!err) << *err;
+    auto r1 = m.at("r1");
+    CHECK(r1.a.x == 3);
+    CHECK(r1.a.y == 6);
+  }
+
+  void testPrettyInput11() {
+    map<string, TestStruct2> m;
+    string text = "{"
+        "\"r1\" { w = {1 2} v = 4}"
+        "\"r1\" modify { w = append { 3 } v = 5 }"
+        "\"r1\" modify { w = append { 4 5 } }"
+        "\"r2\" inherit \"r1\" { w = append { 6 7 } }"
+        "\"r2\" modify { w = append { 8 9 } v = 6 }"
+        "\"r2\" modify { w = append { 10 11 } }"
+        "}";
+    auto err = PrettyPrinting::parseObject(m, text);
+    CHECK(!err) << *err;
+    auto r1 = m.at("r1");
+    auto r2 = m.at("r2");
+    CHECK(r1.w == makeVec(1, 2, 3, 4, 5));
+    CHECK(r1.v == 5);
+    CHECK(r2.w == makeVec(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11));
+    CHECK(r2.v == 6);
+  }
+
   void testPrettyVector() {
     map<string, TestStruct2> m;
     string text = "{"
@@ -1335,6 +1369,8 @@ void testAll() {
   Test().testPrettyInput7();
   Test().testPrettyInput8();
   Test().testPrettyInput9();
+  Test().testPrettyInput10();
+  Test().testPrettyInput11();
   Test().testPrettyVector();
   Test().testPrettyVector2();
   Test().testPrettyVector3();

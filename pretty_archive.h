@@ -352,7 +352,19 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, vector<T>& v) {
 
 template <typename T, typename U>
 inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, map<T, U>& m) {
-  map<T, long> bookmarks;
+  map<T, vector<long>> bookmarks;
+  auto getBookmarkFor = [&bookmarks] (const T& key, long location) -> optional<long> {
+    auto& all = bookmarks[key];
+    for (int i : All(all))
+      if (all[i] == location) {
+        if (i == 0)
+          return none;
+        return all[i - 1];
+      }
+    if (!all.empty())
+      return all.back();
+    return none;
+  };
   set<T> keys;
   if (!ar1.eatMaybe("append"))
     m.clear();
@@ -366,6 +378,8 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, map<T, U>& m) {
     T key;
     ar1(key);
     auto thisKeyBookmark = ar1.bookmark();
+    auto searchedBookmark = thisKeyBookmark;
+    auto searchedKey = key;
     if (ar1.peek() != "modify" && keys.count(key))
       ar1.error("Duplicate key");
     keys.insert(key);
@@ -379,12 +393,14 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, map<T, U>& m) {
         if (!modifying)
           ar1(inheritKey);
         else
-          inheritKey = key;
+          inheritKey = searchedKey;
         ar1.inheritingKey = false;
         toRead.push_back(ar1.bookmark());
-        if (auto bookmark = getValueMaybe(bookmarks, inheritKey))
+        if (auto bookmark = getBookmarkFor(inheritKey, searchedBookmark)) {
+          searchedBookmark = *bookmark;
+          searchedKey = inheritKey;
           ar1.seek(*bookmark);
-        else
+        } else
           ar1.error(modifying ? "Key to modify not found" : "Key to inherit not found");
       } else {
         toRead.push_back(ar1.bookmark());
@@ -398,7 +414,7 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, map<T, U>& m) {
       else
         ar1.loadInherited(value);
     }
-    bookmarks[key] = thisKeyBookmark;
+    bookmarks[key].push_back(thisKeyBookmark);
     m.erase(key);
     m.insert(make_pair(std::move(key), std::move(value)));
   }
