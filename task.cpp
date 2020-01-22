@@ -580,12 +580,13 @@ namespace {
 
 class Kill : public Task {
   public:
-  enum Type { ATTACK, TORTURE };
-  Kill(WTaskCallback call, Creature* c, Type t) : Task(true), creature(c), type(t), callback(call) {}
+  enum Type { ATTACK, TORTURE, DISASSEMBLE };
+  Kill(Creature* c, Type t) : Task(true), creature(c), type(t) {}
 
   CreatureAction getAction(Creature* c) {
     switch (type) {
-      case ATTACK: return c->execute(creature.get());
+      case ATTACK: return c->execute(creature.get(), "execute", "executes");
+      case DISASSEMBLE: return c->execute(creature.get(), "disassemble", "disassembles");
       case TORTURE: return c->torture(creature.get());
     }
   }
@@ -594,6 +595,7 @@ class Kill : public Task {
     switch (type) {
       case ATTACK: return "Kill " + creature->getName().bare();
       case TORTURE: return "Torture " + creature->getName().bare();
+      case DISASSEMBLE: return "Disassemble " + creature->getName().bare();
     }
   }
 
@@ -613,23 +615,26 @@ class Kill : public Task {
       return c->moveTowards(creature->getPosition());
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), creature, type, callback)
+  SERIALIZE_ALL(SUBCLASS(Task), creature, type)
   SERIALIZATION_CONSTRUCTOR(Kill)
 
   private:
   WeakPointer<Creature> SERIAL(creature);
   Type SERIAL(type);
-  WTaskCallback SERIAL(callback) = nullptr;
 };
 
 }
 
-PTask Task::kill(WTaskCallback callback, Creature* creature) {
-  return makeOwner<Kill>(callback, creature, Kill::ATTACK);
+PTask Task::kill(Creature* creature) {
+  return makeOwner<Kill>(creature, Kill::ATTACK);
 }
 
-PTask Task::torture(WTaskCallback callback, Creature* creature) {
-  return makeOwner<Kill>(callback, creature, Kill::TORTURE);
+PTask Task::torture(Creature* creature) {
+  return makeOwner<Kill>(creature, Kill::TORTURE);
+}
+
+PTask Task::disassemble(Creature* creature) {
+  return makeOwner<Kill>(creature, Kill::DISASSEMBLE);
 }
 
 namespace {
@@ -1826,8 +1831,7 @@ class InstallBodyPart : public Task {
       return c->wait().append([=](Creature* c) {
         c->verb("install", "installs", item->getAName() + " on " + creature->getName().the());
         item->getAutomatonPart()->apply(creature.get());
-        c->getEquipment().removeItem(item, c);
-
+        creature->drops.push_back(c->getEquipment().removeItem(item, c));
       });
     else
       return c->moveTowards(creature->getPosition());

@@ -67,7 +67,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Creature>) & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
   ar(deathTime, hidden, lastMoveCounter, captureHealth);
-  ar(deathReason, nextPosIntent, globalTime);
+  ar(deathReason, nextPosIntent, globalTime, drops);
   ar(unknownAttackers, privateEnemies, holding);
   ar(controllerStack, kills, statuses, automatonParts);
   ar(difficultyPoints, points, capture, spellMap, killTitles, shamanSummons);
@@ -1175,12 +1175,11 @@ void Creature::dropWeapon() {
 }
 
 
-CreatureAction Creature::execute(Creature* c) const {
+CreatureAction Creature::execute(Creature* c, const char* verbSecond, const char* verbThird) const {
   if (c->getPosition().dist8(getPosition()).value_or(2) > 1)
     return CreatureAction();
   return CreatureAction(this, [=] (Creature* self) {
-    self->secondPerson("You execute " + c->getName().the());
-    self->thirdPerson(self->getName().the() + " executes " + c->getName().the());
+    self->verb(verbSecond, verbThird, c->getName().the());
     c->dieWithAttacker(self);
   });
 }
@@ -1502,8 +1501,10 @@ void Creature::dieWithLastAttacker(DropType drops) {
   dieWithAttacker(lastAttacker, drops);
 }
 
-vector<PItem> Creature::generateCorpse(const ContentFactory* factory, bool instantlyRotten) const {
-  return getBody().getCorpseItems(getName().bare(), getUniqueId(), instantlyRotten, factory);
+vector<PItem> Creature::generateCorpse(const ContentFactory* factory, bool instantlyRotten) {
+  auto ret = getBody().getCorpseItems(getName().bare(), getUniqueId(), instantlyRotten, factory);
+  append(ret, std::move(drops));
+  return ret;
 }
 
 static optional<Position> findInaccessiblePos(Position startingPos) {

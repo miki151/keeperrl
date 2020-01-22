@@ -167,6 +167,7 @@ class PlayerInfo {
     CONTROL,
     RENAME,
     BANISH,
+    DISASSEMBLE,
     CONSUME,
     LOCATE
   };

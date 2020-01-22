@@ -71,8 +71,9 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask pickAndEquipItem(Position, Item* item);
   static PTask equipItem(Item*);
   static PTask pickUpItem(Position, vector<Item*>, optional<StorageId> = none);
-  static PTask kill(WTaskCallback, Creature*);
-  static PTask torture(WTaskCallback, Creature*);
+  static PTask kill(Creature*);
+  static PTask torture(Creature*);
+  static PTask disassemble(Creature*);
   static PTask sacrifice(WTaskCallback, Creature*);
   static PTask disappear();
   static PTask chain(PTask, PTask);

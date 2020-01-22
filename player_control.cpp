@@ -921,7 +921,9 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, Un
       } else
         minionInfo.experienceInfo.limit.clear();
       auto& leaders = collective->getLeaders();
-      if (leaders.size() > 1 || !collective->hasTrait(c, MinionTrait::LEADER))
+      if (c->getAttributes().getAutomatonSlots() > 0)
+        minionInfo.actions.push_back(PlayerInfo::DISASSEMBLE);
+      else if (leaders.size() > 1 || !collective->hasTrait(c, MinionTrait::LEADER))
         minionInfo.actions.push_back(PlayerInfo::BANISH);
       if (!collective->hasTrait(c, MinionTrait::WORKER)) {
         minionInfo.canAssignQuarters = true;
@@ -1973,6 +1975,27 @@ void PlayerControl::exitAction() {
   }
 }
 
+void PlayerControl::handleBanishing(Creature* c) {
+  auto message = c->getAttributes().getAutomatonSlots()
+      ? "Do you want to disassemble " + c->getName().the() + "?"
+      : "Do you want to banish " + c->getName().the() + " forever? "
+          "Banishing has a negative impact on morale of other minions.";
+  if (getView()->yesOrNoPrompt(message)) {
+    vector<Creature*> like = getMinionsLike(c);
+    sortMinionsForUI(like);
+    if (like.size() > 1)
+      for (int i : All(like))
+        if (like[i] == c) {
+          if (i < like.size() - 1)
+            setChosenCreature(like[i + 1]->getUniqueId());
+          else
+            setChosenCreature(like[like.size() - 2]->getUniqueId());
+          break;
+        }
+    collective->banishCreature(c);
+  }
+}
+
 void PlayerControl::processInput(View* view, UserInput input) {
   switch (input.getId()) {
     case UserInputId::MESSAGE_INFO:
@@ -2225,21 +2248,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::CREATURE_BANISH:
       if (Creature* c = getCreature(input.get<Creature::Id>()))
-        if (getView()->yesOrNoPrompt("Do you want to banish " + c->getName().the() + " forever? "
-            "Banishing has a negative impact on morale of other minions.")) {
-          vector<Creature*> like = getMinionsLike(c);
-          sortMinionsForUI(like);
-          if (like.size() > 1)
-            for (int i : All(like))
-              if (like[i] == c) {
-                if (i < like.size() - 1)
-                  setChosenCreature(like[i + 1]->getUniqueId());
-                else
-                  setChosenCreature(like[like.size() - 2]->getUniqueId());
-                break;
-              }
-          collective->banishCreature(c);
-        }
+        handleBanishing(c);
       break;
     case UserInputId::GO_TO_ENEMY:
       for (auto c : getModel()->getAllCreatures())

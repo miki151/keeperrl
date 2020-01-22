@@ -164,7 +164,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void drop(vector<PItem> item);
   CreatureAction attack(Creature*) const;
   int getDefaultWeaponDamage() const;
-  CreatureAction execute(Creature*) const;
+  CreatureAction execute(Creature*, const char* verbSecond, const char* verbThird) const;
   CreatureAction applyItem(Item* item) const;
   CreatureAction equip(Item* item) const;
   CreatureAction unequip(Item* item) const;
@@ -290,7 +290,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void updateViewObject();
   void swapPosition(Vec2 direction, bool withExcuseMe = true);
   bool canSwapPositionWithEnemy(Creature* other) const;
-  vector<PItem> generateCorpse(const ContentFactory*, bool instantlyRotten = false) const;
+  vector<PItem> generateCorpse(const ContentFactory*, bool instantlyRotten = false);
   int getLastMoveCounter() const;
   int getHitCount() const;
 
@@ -304,7 +304,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void cheatAllSpells();
 
   vector<AutomatonPart> SERIAL(automatonParts);
-
+  vector<PItem> SERIAL(drops);
   private:
 
   CreatureAction moveTowards(Position, bool away, NavigationFlags);

@@ -255,5 +255,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool takingScreenshot = false;
   void exitAction();
   void addBodyPart(Creature*);
+  void handleBanishing(Creature*);
 };
 

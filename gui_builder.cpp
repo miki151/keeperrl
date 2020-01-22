@@ -3006,6 +3006,10 @@ vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const o
         line.push_back(gui.buttonLabel("Banish",
             getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId})));
         break;
+      case PlayerInfo::DISASSEMBLE:
+        line.push_back(gui.buttonLabel("Disassemble",
+            getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId})));
+        break;
       case PlayerInfo::CONSUME:
         line.push_back(gui.buttonLabel("Absorb",
             getButtonCallback({UserInputId::CREATURE_CONSUME, minion.creatureId})));

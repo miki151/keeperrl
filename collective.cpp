@@ -213,17 +213,21 @@ void Collective::removeCreature(Creature* c) {
 }
 
 void Collective::banishCreature(Creature* c) {
-  decreaseMoraleForBanishing(c);
   removeCreature(c);
-  vector<Position> exitTiles = territory->getExtended(10, 20);
-  vector<PTask> tasks;
-  vector<Item*> items = c->getEquipment().getItems();
-  if (!items.empty())
-    tasks.push_back(Task::dropItemsAnywhere(items));
-  if (!exitTiles.empty())
-    tasks.push_back(Task::goToTryForever(Random.choose(exitTiles)));
-  tasks.push_back(Task::disappear());
-  c->setController(makeOwner<Monster>(c, MonsterAIFactory::singleTask(Task::chain(std::move(tasks)))));
+  if (c->getAttributes().getAutomatonSlots()) {
+    taskMap->addTask(Task::disassemble(c), c->getPosition(), MinionActivity::CRAFT);
+  } else {
+    decreaseMoraleForBanishing(c);
+    vector<Position> exitTiles = territory->getExtended(10, 20);
+    vector<PTask> tasks;
+    vector<Item*> items = c->getEquipment().getItems();
+    if (!items.empty())
+      tasks.push_back(Task::dropItemsAnywhere(items));
+    if (!exitTiles.empty())
+      tasks.push_back(Task::goToTryForever(Random.choose(exitTiles)));
+    tasks.push_back(Task::disappear());
+    c->setController(makeOwner<Monster>(c, MonsterAIFactory::singleTask(Task::chain(std::move(tasks)))));
+  }
   banished.insert(c);
 }
 
@@ -1302,9 +1306,9 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
     if (furniture->getType() == FurnitureType("WHIPPING_POST"))
       taskMap->addTask(Task::whipping(pos.first, c), pos.first, MinionActivity::WORKING);
     if (furniture->getType() == FurnitureType("GALLOWS"))
-      taskMap->addTask(Task::kill(this, c), pos.first, MinionActivity::WORKING);
+      taskMap->addTask(Task::kill(c), pos.first, MinionActivity::WORKING);
     if (furniture->getType() == FurnitureType("TORTURE_TABLE"))
-      taskMap->addTask(Task::torture(this, c), pos.first, MinionActivity::WORKING);
+      taskMap->addTask(Task::torture(c), pos.first, MinionActivity::WORKING);
     if (furniture->getType() == FurnitureType("POETRY_TABLE") && Random.chance(0.01 * efficiency)) {
       auto poem = ItemType(ItemTypes::Poem{}).get(1, getGame()->getContentFactory());
       bool summonDemon = Random.roll(500);
