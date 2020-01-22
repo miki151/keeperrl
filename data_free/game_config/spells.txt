@@ -174,6 +174,14 @@
   endOnly = true
   sound = SPELL_TELEPORT
 }
+"jump"
+{
+  symbol = "👟"
+  effect = Jump
+  range = 3
+  cooldown = 10
+  message = "jump" "jumps"
+}
 "panic"
 {
   symbol = "😱"
@@ -248,7 +256,7 @@
   effect = CircularBlast
   cooldown = 50
   sound = SPELL_AIR_BLAST
-  castMessageType = AIR_BLAST
+  message = "create an air blast!" "creates an air blast!"
 }
 "defense bonus"
 {
@@ -335,7 +343,7 @@
   range = 4
   cooldown = 30
   sound = SPELL_BLAST
-  castMessageType = BREATHE_FIRE
+  message = "breathe fire!" "breathes fire!"
 }
 "firewall"
 {
@@ -379,7 +387,7 @@
   effect = Shove
   range = 1
   cooldown = 30
-  castMessageType = ABILITY
+  message = "use an ability" "uses an ability"
 }
 "swap positions"
 {
@@ -387,7 +395,7 @@
   effect = SwapPosition
   range = 1
   cooldown = 30
-  castMessageType = ABILITY
+  message = "use an ability" "uses an ability"
 }
 "black dragon blindness"
 {
@@ -458,7 +466,7 @@
   range = 7
   cooldown = 1
   projectileViewId = {"arrow"}
-  castMessageType = SHOOT_ARROW
+  message = "shoot an arrow" "shoots an arrow"
 }
 "audience"
 {
@@ -474,6 +482,6 @@
   targetSelf = true
   cooldown = 15
   sound = TRAP_ARMING
-  castMessageType = ABILITY
+  message = "repair the automaton" "repairs the automaton"
 }
 

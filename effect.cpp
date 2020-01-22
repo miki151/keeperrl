@@ -245,11 +245,23 @@ bool Effects::Teleport::applyToCreature(Creature* c, Creature* attacker) const {
 }
 
 string Effects::Teleport::getName(const ContentFactory*) const {
-  return "escape";
+  return "teleport";
 }
 
 string Effects::Teleport::getDescription(const ContentFactory*) const {
   return "Teleport to any location that's close by.";
+}
+
+bool Effects::Jump::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
+}
+
+string Effects::Jump::getName(const ContentFactory*) const {
+  return "jumping";
+}
+
+string Effects::Jump::getDescription(const ContentFactory*) const {
+  return "Jump!";
 }
 
 bool Effects::Lasting::applyToCreature(Creature* c, Creature* attacker) const {
@@ -1250,6 +1262,17 @@ bool Effect::apply(Position pos, Creature* attacker) const {
           attacker->you(MsgType::TELE_DISAPPEAR, "");
           attacker->getPosition().moveCreature(pos, true);
           attacker->you(MsgType::TELE_APPEAR, "");
+          return true;
+        }
+        return false;
+      },
+      [&](Effects::Jump) {
+        auto from = attacker->getPosition();
+        if (pos.canEnter(attacker)) {
+          for (auto v : drawLine(from, pos))
+            if (v != from && !v.canEnter(MovementType({MovementTrait::WALK, MovementTrait::FLY})))
+              return false;
+          attacker->displace(attacker->getPosition().getDir(pos));
           return true;
         }
         return false;

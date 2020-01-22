@@ -21,7 +21,7 @@
 
 template <class Archive>
 void Spell::serializeImpl(Archive& ar, const unsigned int) {
-  ar(NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(castMessageType), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf), OPTION(blockedByWall), NAMED(projectileViewId));
+  ar(NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(message), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf), OPTION(blockedByWall), NAMED(projectileViewId));
 }
 
 template <class Archive>
@@ -59,23 +59,7 @@ string Spell::getDescription(const ContentFactory* f) const {
 }
 
 void Spell::addMessage(Creature* c) const {
-  switch (castMessageType) {
-    case CastMessageType::STANDARD:
-      c->verb("cast", "casts", "a spell");
-      break;
-    case CastMessageType::AIR_BLAST:
-      c->verb("create", "creates", "an air blast!");
-      break;
-    case CastMessageType::BREATHE_FIRE:
-      c->verb("breathe", "breathes", "fire!");
-      break;
-    case CastMessageType::ABILITY:
-      c->verb("use", "uses", "an ability");
-      break;
-    case CastMessageType::SHOOT_ARROW:
-      c->verb("shoot", "shoots", "an arrow");
-      break;
-  }
+  c->verb(message.first, message.second);
 }
 
 void Spell::apply(Creature* c, Position target) const {

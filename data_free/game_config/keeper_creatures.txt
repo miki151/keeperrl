@@ -44,7 +44,7 @@
   workshopGroups = { "basic" }
   description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"
 }
-"0_gnomes"
+"4_gnomes"
 {
   creatureId = { "GNOME" }
   tribeAlignment = LAWFUL

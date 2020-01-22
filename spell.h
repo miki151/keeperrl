@@ -20,14 +20,6 @@
 #include "spell_id.h"
 #include "view_id.h"
 
-RICH_ENUM(
-  CastMessageType,
-  STANDARD,
-  AIR_BLAST,
-  BREATHE_FIRE,
-  ABILITY,
-  SHOOT_ARROW
-);
 
 class Effect;
 class Position;
@@ -64,7 +56,7 @@ class Spell {
   string SERIAL(symbol);
   HeapAllocated<Effect> SERIAL(effect);
   int SERIAL(cooldown);
-  CastMessageType SERIAL(castMessageType) = CastMessageType::STANDARD;
+  pair<string, string> SERIAL(message) = {"cast a spell"_s, "casts a spell"_s};
   optional<SoundId> SERIAL(sound);
   int SERIAL(range) = 0;
   optional<FXName> SERIAL(fx);

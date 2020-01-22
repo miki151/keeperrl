@@ -27,6 +27,7 @@ namespace Effects {
 
 SIMPLE_EFFECT(Escape);
 SIMPLE_EFFECT(Teleport);
+SIMPLE_EFFECT(Jump);
 struct Heal {
   EFFECT_TYPE_INTERFACE;
   HealthType SERIAL(healthType);
@@ -325,7 +326,8 @@ struct ColorVariant {
   X(DropItems, 53)\
   X(FirstSuccessful, 54)\
   X(ChainFirstResult, 55)\
-  X(ColorVariant, 56)
+  X(ColorVariant, 56)\
+  X(Jump, 57)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
