@@ -61,6 +61,7 @@
 #include "item_types.h"
 #include "health_type.h"
 #include "village_control.h"
+#include "automaton_part.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
