@@ -162,8 +162,7 @@ static string getOrdinal(int index) {
 }
 
 void fillInstalledPartDescription(const ContentFactory* factory, ItemInfo& info, const AutomatonPart& part) {
-  for (auto e : Iter(part.effect))
-    info.description.push_back(getOrdinal(e.index() + 1) + " upgrade: " + e->getDescription(factory));
+  info.description.push_back(part.effect.getDescription(factory));
 }
 
 ItemInfo getInstalledPartInfo(const ContentFactory* factory, const AutomatonPart& part, int index) {

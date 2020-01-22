@@ -12,18 +12,19 @@
     price = 60
     effect = SummonEnemy "AUTOMATON" {1} 100
   }
-"AutomatonHeadWood"
+"HumanoidHeadWood"
   {
     viewId = { "automaton_head" Rgb 180 140 55 255 }
-    name = "wooden automaton head"
-    shortName = "wooden head"
+    name = "wooden humanoid head"
+    shortName = "humanoid head"
     weight = 4
     itemClass = TOOL
-    automatonPart = HEAD {
-      Chain { MakeHumanoid AddBodyPart HEAD 1 none }
+    automatonPart = HEAD Chain { MakeHumanoid AddBodyPart HEAD 1 none }
+  }
+"ArcherHeadWood" inherit "HumanoidHeadWood"
+  {
+    automatonPart = HEAD
       Chain { IncreaseAttr RANGED_DAMAGE 25 AddBodyPart HEAD 1 none GrantAbility "shoot arrow" }
-      Chain { IncreaseAttr RANGED_DAMAGE 10 AddBodyPart HEAD 1 none }
-    }
   }
 "AutomatonLegsWood"
   {
@@ -32,10 +33,7 @@
     shortName = "wooden legs"
     weight = 8
     itemClass = TOOL
-    automatonPart = LEGS {
-      Chain { AddBodyPart LEG 2 none RemovePermanent IMMOBILE }
-      Chain { Permanent SPEED AddBodyPart LEG 2 none }
-    }
+    automatonPart = LEGS Chain { AddBodyPart LEG 2 none RemovePermanent IMMOBILE }
   }
 "AutomatonArmsWood"
   {
@@ -44,49 +42,8 @@
     shortName = "wooden arms"
     weight = 6
     itemClass = TOOL
-    automatonPart = ARMS {
-      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } }
+    automatonPart = ARMS
       Chain { IncreaseAttr DAMAGE 6 AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } } }
-      Chain { IncreaseAttr DAMAGE 6 AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } } }
-    }
-  }
-"AutomatonHeadIron"
-  {
-    viewId = { "automaton_head" Rgb 140 148 148 255 }
-    name = "iron automaton head"
-    shortName = "iron head"
-    weight = 7
-    itemClass = TOOL
-    automatonPart = HEAD {
-      Chain { MakeHumanoid AddBodyPart HEAD 1 none  }
-      Chain { IncreaseAttr RANGED_DAMAGE 30 AddBodyPart HEAD 1 none GrantAbility "shoot arrow"}
-      Chain { IncreaseAttr RANGED_DAMAGE 15 AddBodyPart HEAD 1 none }
-    }
-  }
-"AutomatonLegsIron"
-  {
-    viewId = { "automaton_legs" Rgb 140 148 148 255 }
-    name = "pair of iron automaton legs"
-    shortName = "iron legs"
-    weight = 8
-    itemClass = TOOL
-    automatonPart = LEGS {
-      Chain { AddBodyPart LEG 2 none RemovePermanent IMMOBILE }
-      Chain { Permanent SPEED AddBodyPart LEG 2 none }
-    }
-  }
-"AutomatonArmsIron"
-  {
-    viewId = { "automaton_arms" Rgb 140 148 148 255 }
-    name = "pair of iron automaton arms"
-    shortName = "iron arms"
-    weight = 6
-    itemClass = TOOL
-    automatonPart = ARMS {
-      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } }
-      Chain { IncreaseAttr DAMAGE 10 AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } } }
-      Chain { IncreaseAttr DAMAGE 10 AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } } }
-    }
   }
 "Knife"
   {

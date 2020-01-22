@@ -7,21 +7,11 @@
 SERIALIZE_DEF(AutomatonPart, slot, effect, viewId, name)
 
 bool AutomatonPart::isAvailable(const Creature* c, int numAssigned) const {
-  if (c->automatonParts.size() + numAssigned >= c->getAttributes().getAutomatonSlots())
-    return false;
-  int numInSlot = 0;
-  for (auto& part : c->automatonParts)
-    if (part.slot == slot)
-      ++numInSlot;
-  return numInSlot < effect.size();
+  return c->automatonParts.size() + numAssigned < c->getAttributes().getAutomatonSlots();
 }
 
 void AutomatonPart::apply(Creature* c) const {
-  int numInSlot = 0;
-  for (auto& part : c->automatonParts)
-    if (part.slot == slot)
-      ++numInSlot;
-  effect[numInSlot].apply(c->getPosition());
+  effect.apply(c->getPosition());
   c->automatonParts.push_back(*this);
 }
 

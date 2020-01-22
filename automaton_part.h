@@ -7,7 +7,7 @@
 
 struct AutomatonPart {
   AutomatonSlot SERIAL(slot);
-  vector<Effect> SERIAL(effect);
+  Effect SERIAL(effect);
   ViewId SERIAL(viewId);
   string SERIAL(name);
   bool isAvailable(const Creature*, int numAssigned = 0) const;
