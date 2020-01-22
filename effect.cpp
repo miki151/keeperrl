@@ -820,48 +820,58 @@ string Effects::Wish::getDescription(const ContentFactory*) const {
   return "Gives you one wish.";
 }
 
+static string combineNames(const ContentFactory* f, const vector<Effect>& effects) {
+  string ret;
+  for (auto& e : effects)
+    ret += e.getName(f) + ", ";
+  ret.pop_back();
+  ret.pop_back();
+  return ret;
+}
+
+static string combineDescriptions(const ContentFactory* f, const vector<Effect>& effects) {
+  string ret;
+  for (auto& e : effects)
+    ret += e.getDescription(f) + ", ";
+  ret.pop_back();
+  ret.pop_back();
+  return ret;
+}
+
 bool Effects::Chain::applyToCreature(Creature* c, Creature* attacker) const {
   return false;
 }
 
 string Effects::Chain::getName(const ContentFactory* f) const {
-  string ret;
-  for (auto& e : effects)
-    ret += e.getName(f) + ", ";
-  ret.pop_back();
-  ret.pop_back();
-  return ret;
+  return combineNames(f, effects);
 }
 
 string Effects::Chain::getDescription(const ContentFactory* f) const {
-  string ret;
-  for (auto& e : effects)
-    ret += e.getDescription(f) + ", ";
-  ret.pop_back();
-  ret.pop_back();
-  return ret;
+  return combineDescriptions(f, effects);
 }
 
-bool Effects::Try::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::ChainFirstResult::applyToCreature(Creature* c, Creature* attacker) const {
   return false;
 }
 
-string Effects::Try::getName(const ContentFactory* f) const {
-  string ret = "try: ";
-  for (auto& e : effects)
-    ret += e.getName(f) + ", ";
-  ret.pop_back();
-  ret.pop_back();
-  return ret;
+string Effects::ChainFirstResult::getName(const ContentFactory* f) const {
+  return combineNames(f, effects);
 }
 
-string Effects::Try::getDescription(const ContentFactory* f) const {
-  string ret = "Try one of: ";
-  for (auto& e : effects)
-    ret += e.getDescription(f) + ", ";
-  ret.pop_back();
-  ret.pop_back();
-  return ret;
+string Effects::ChainFirstResult::getDescription(const ContentFactory* f) const {
+  return combineDescriptions(f, effects);
+}
+
+bool Effects::FirstSuccessful::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
+}
+
+string Effects::FirstSuccessful::getName(const ContentFactory* f) const {
+  return "try: " + combineNames(f, effects);
+}
+
+string Effects::FirstSuccessful::getDescription(const ContentFactory* f) const {
+  return "First successful: " + combineDescriptions(f, effects);
 }
 
 bool Effects::ChooseRandom::applyToCreature(Creature* c, Creature* attacker) const {
@@ -908,11 +918,11 @@ bool Effects::GrantAbility::applyToCreature(Creature* c, Creature* attacker) con
 }
 
 string Effects::GrantAbility::getName(const ContentFactory* f) const {
-  return "grant"_s + f->getCreatures().getSpell(id)->getName();
+  return "grant "_s + f->getCreatures().getSpell(id)->getName();
 }
 
 string Effects::GrantAbility::getDescription(const ContentFactory* f) const {
-  return "Grants ability: " + getName(f);
+  return "Grants ability: "_s + f->getCreatures().getSpell(id)->getName();
 }
 
 bool Effects::IncreaseMorale::applyToCreature(Creature* c, Creature* attacker) const {
@@ -1253,7 +1263,16 @@ bool Effect::apply(Position pos, Creature* attacker) const {
           res |= e.apply(pos, attacker);
         return res;
       },
-      [&](const Effects::Try& chain) {
+      [&](const Effects::ChainFirstResult& chain) {
+        bool res = false;
+        for (int i : All(chain.effects)) {
+          auto value = chain.effects[i].apply(pos, attacker);
+          if (i == 0)
+            res = value;
+        }
+        return res;
+      },
+      [&](const Effects::FirstSuccessful& chain) {
         for (auto& e : chain.effects)
           if (e.apply(pos, attacker))
             return true;

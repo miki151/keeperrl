@@ -127,9 +127,13 @@
       {{Assembled "AUTOMATON_WORKER_IRON" none}   6       IRON 20    "automatons"}
       {{Assembled "AUTOMATON_CORPUS_IRON" {"automaton_corpus" Rgb 140 148 148 255}}
             8       IRON 30    "automatons"}
-#      {{Simple    "AutomatonHeadIron"}       2       IRON 5    "automatons"}
-#      {{Simple    "AutomatonArmsIron"}       2       IRON 5    "automatons"}
-#      {{Simple    "AutomatonLegsIron"}       2       IRON 5    "automatons"}
+      {{Simple    "HumanoidHeadIron"}        2       IRON 5    "advanced automatons"}
+      {{Simple    "ArcherHeadIron"}          2       IRON 5    "advanced automatons"}
+      {{Simple    "FireHeadIron"}            2       IRON 5    "advanced automatons"}
+      {{Simple    "AcidHeadIron"}            2       IRON 5    "advanced automatons"}
+      {{Simple    "AutomatonArmsIron"}       2       IRON 5    "automatons"}
+      {{Simple    "SharpAutomatonArmsIron"}  2       IRON 5    "advanced automatons"}
+      {{Simple    "AutomatonLegsIron"}       2       IRON 5    "automatons"}
   } 
 }
 

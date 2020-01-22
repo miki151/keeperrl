@@ -251,7 +251,12 @@ struct Audience {
   optional<int> SERIAL(maxDistance);
   SERIALIZE_ALL(maxDistance)
 };
-struct Try {
+struct FirstSuccessful {
+  EFFECT_TYPE_INTERFACE;
+  vector<Effect> SERIAL(effects);
+  SERIALIZE_ALL(effects)
+};
+struct ChainFirstResult {
   EFFECT_TYPE_INTERFACE;
   vector<Effect> SERIAL(effects);
   SERIALIZE_ALL(effects)
@@ -312,7 +317,8 @@ struct Try {
   X(CreatureMessage, 51)\
   X(SoundEffect, 52)\
   X(DropItems, 53)\
-  X(Try, 54)
+  X(FirstSuccessful, 54)\
+  X(ChainFirstResult, 55)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
