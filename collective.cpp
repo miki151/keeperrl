@@ -543,7 +543,7 @@ void Collective::updateAutomatonPartsTasks() {
     if (c->getAttributes().getAutomatonSlots() > 0)
       for (auto items : getStoredItems(ItemIndex::MINION_EQUIPMENT, StorageId::EQUIPMENT))
         for (auto item : items.second)
-          if (minionEquipment->isOwner(item, c) && !getItemTask(item)) {
+          if (item->getAutomatonPart() && minionEquipment->isOwner(item, c) && !getItemTask(item)) {
             auto task = taskMap->addTask(Task::chain(Task::pickUpItem(items.first, {item}),
                 Task::installBodyPart(this, c, item)),
                 items.first, MinionActivity::CRAFT);
