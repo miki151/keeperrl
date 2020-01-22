@@ -766,7 +766,7 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
   if (auto index = view->chooseFromList("", options))
     if (auto text = view->getText("Enter message", "", 80)) {
       if (text->size() >= 2) {
-        if (!fileSharing->uploadBoardMessage(getGameIdentifier(), pos.getHash(), c->getName().title(), *text))
+        if (!fileSharing->uploadBoardMessage(getGameIdentifier(), int(combineHash(pos, getGameIdentifier())), c->getName().title(), *text))
           view->presentText("", "Please enable online features in the settings.");
       } else
         view->presentText("", "The message was too short.");

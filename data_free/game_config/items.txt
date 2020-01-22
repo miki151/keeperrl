@@ -79,8 +79,8 @@
   }
 "AcidHeadIron" inherit "HumanoidHeadIron"
   {
-    name = "iron acid breathing head"
-    shortName = "acid breathing"
+    name = "iron acid spitting head"
+    shortName = "acid spitting"
     automatonPart = {FirstSuccessful {
       ChainFirstResult { GrantAbility "acid stream" IncreaseAttr DEFENSE 2 AddBodyPart HEAD 1 none }
     }}
