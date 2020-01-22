@@ -1731,6 +1731,17 @@
       name = "wooden automaton"
     }
   }
+"LIGHT_AUTOMATON_CORPUS_WOOD" inherit "AUTOMATON_CORPUS_WOOD"
+  {
+    attr = append {
+      DEFENSE 16
+    }
+    permanentEffects = append { SPEED 1 }
+    name = {
+      name = "light wooden automaton"
+    }
+  }
+
 "AUTOMATON_CORPUS_IRON" inherit "AUTOMATON_CORPUS_WOOD"
   {
     viewId = { "automaton" Rgb 140 148 148 255 }
@@ -1743,6 +1754,26 @@
     }
     name = {
       name = "iron automaton"
+    }
+  }
+"HEAVY_AUTOMATON_CORPUS_IRON" inherit "AUTOMATON_CORPUS_IRON"
+  {
+    attr = append {
+      DEFENSE 42
+    }
+    permanentEffects = append { SLOWED 1 }
+    name = {
+      name = "heavy iron automaton"
+    }
+  }
+"LIGHT_AUTOMATON_CORPUS_IRON" inherit "AUTOMATON_CORPUS_IRON"
+  {
+    attr = append {
+      DEFENSE 19
+    }
+    permanentEffects = append { SPEED 1 }
+    name = {
+      name = "light iron automaton"
     }
   }
 "ZOMBIE"

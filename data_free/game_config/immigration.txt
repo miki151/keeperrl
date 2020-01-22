@@ -588,7 +588,28 @@
       }
     }
     {
+      ids = { "LIGHT_AUTOMATON_CORPUS_WOOD" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 AssembledRequirement }
+      }
+    }
+    {
       ids = { "AUTOMATON_CORPUS_IRON" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 AssembledRequirement }
+      }
+    }
+    {
+      ids = { "LIGHT_AUTOMATON_CORPUS_IRON" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 AssembledRequirement }
+      }
+    }
+    {
+      ids = { "HEAVY_AUTOMATON_CORPUS_IRON" }
       traits = { FIGHTER }
       requirements = {
         { 0.0 AssembledRequirement }

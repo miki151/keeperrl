@@ -39,7 +39,7 @@
     itemClass = TOOL
     automatonPart = {FirstSuccessful {
       ChainFirstResult { RemovePermanent IMMOBILE AddBodyPart LEG 2 none  }
-      Chain { Permanent SPEED AddBodyPart LEG 2 none  }
+      Chain { GrantAbility "jump" AddBodyPart LEG 2 none  }
     }}
   }
 "AutomatonArmsWood"
@@ -94,7 +94,7 @@
     itemClass = TOOL
     automatonPart = {FirstSuccessful {
       ChainFirstResult { RemovePermanent IMMOBILE IncreaseAttr DEFENSE 2 AddBodyPart LEG 2 none  }
-      Chain { Permanent SPEED IncreaseAttr DEFENSE 2 AddBodyPart LEG 2 none  }
+      Chain { GrantAbility "jump" IncreaseAttr DEFENSE 2 AddBodyPart LEG 2 none  }
     }}
   }
 "AutomatonArmsIron"

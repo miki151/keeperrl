@@ -379,7 +379,7 @@
   fx = ACID
   range = 4
   cooldown = 5
-  #sound = SPELL_FIRE_SPHERE_PET
+  message = "spit acid!" "spits acid!"
 }
 "shove"
 {
