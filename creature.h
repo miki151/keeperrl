@@ -89,7 +89,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool dodgeAttack(const Attack&);
   bool takeDamage(const Attack&, bool noIncreaseHitCount = false);
   void onAttackedBy(Creature*);
-  void heal(double amount = 1000);
+  bool heal(double amount = 1000);
   /** Morale is in the range [-1:1] **/
   double getMorale() const;
   void addMorale(double);
@@ -226,11 +226,11 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void dieNoReason(DropType = DropType::EVERYTHING);
   void dieWithReason(const string& reason, DropType = DropType::EVERYTHING);
 
-  void affectByFire(double amount);
-  void affectByIce(double amount);
+  bool affectByFire(double amount);
+  bool affectByIce(double amount);
   void poisonWithGas(double amount);
   void affectBySilver();
-  void affectByAcid();
+  bool affectByAcid();
   void setHeld(Creature* holding);
   Creature* getHoldingCreature() const;
 
@@ -262,8 +262,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   bool addEffect(LastingEffect, TimeInterval time, bool msg = true);
   bool removeEffect(LastingEffect, bool msg = true);
-  void addPermanentEffect(LastingEffect, int count = 1, bool msg = true);
-  void removePermanentEffect(LastingEffect, int count = 1, bool msg = true);
+  bool addPermanentEffect(LastingEffect, int count = 1, bool msg = true);
+  bool removePermanentEffect(LastingEffect, int count = 1, bool msg = true);
   bool isAffected(LastingEffect, optional<GlobalTime>) const;
   bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffected(LastingEffect) const;

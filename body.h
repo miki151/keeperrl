@@ -111,7 +111,7 @@ class Body {
   optional<AnimationId> getDeathAnimation() const;
   bool injureBodyPart(Creature*, BodyPart, bool drop);
 
-  void healBodyParts(Creature*, int max);
+  bool healBodyParts(Creature*, int max);
   bool fallsApartDueToLostBodyParts() const;
   bool canHeal(HealthType) const;
   bool isImmuneTo(LastingEffect effect) const;

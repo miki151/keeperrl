@@ -100,11 +100,8 @@ vector<const Spell*> SpellMap::getAvailable(const Creature* c) const {
   return ret;
 }
 
-bool SpellMap::contains(const Creature* c, const Spell* s) const {
-  for (auto& elem : elems)
-    if (&elem.spell == s)
-      return true;
-  return !!getItemAbility(c, s);
+bool SpellMap::contains(const SpellId id) const {
+  return !!getInfo(id);
 }
 
 void SpellMap::onExpLevelReached(Creature* c, ExperienceType type, int level) {

@@ -337,7 +337,8 @@ optional<BodyPart> Body::getBodyPart(AttackLevel attack, bool flying, bool colla
     return getAnyGoodBodyPart();
 }
 
-void Body::healBodyParts(Creature* creature, int max) {
+bool Body::healBodyParts(Creature* creature, int max) {
+  bool result = false;
   auto updateEffects = [&] (BodyPart part, int count) {
     switch (part) {
       case BodyPart::LEG:
@@ -356,6 +357,7 @@ void Body::healBodyParts(Creature* creature, int max) {
   };
   for (BodyPart part : ENUM_ALL(BodyPart)) {
     if (int count = numInjured(part)) {
+      result = true;
       creature->you(MsgType::YOUR,
           string(getName(part)) + (count > 1 ? "s are" : " is") + " in better shape");
       clearInjured(part);
@@ -364,6 +366,7 @@ void Body::healBodyParts(Creature* creature, int max) {
         break;
     }
     if (int count = numLost(part)) {
+      result = true;
       creature->you(MsgType::YOUR, string(getName(part)) + (count > 1 ? "s grow back!" : " grows back!"));
       clearLost(part);
       updateEffects(part, count);
@@ -371,6 +374,7 @@ void Body::healBodyParts(Creature* creature, int max) {
         break;
     }
   }
+  return result;
 }
 
 bool Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {

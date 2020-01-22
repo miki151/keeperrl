@@ -12,7 +12,7 @@
 RICH_ENUM(FilterType, ALLY, ENEMY);
 
 #define EFFECT_TYPE_INTERFACE \
-  void applyToCreature(Creature*, Creature* attacker = nullptr) const;\
+  bool applyToCreature(Creature*, Creature* attacker = nullptr) const;\
   string getName(const ContentFactory*) const;\
   string getDescription(const ContentFactory*) const
 
@@ -251,6 +251,11 @@ struct Audience {
   optional<int> SERIAL(maxDistance);
   SERIALIZE_ALL(maxDistance)
 };
+struct Try {
+  EFFECT_TYPE_INTERFACE;
+  vector<Effect> SERIAL(effects);
+  SERIALIZE_ALL(effects)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -306,7 +311,8 @@ struct Audience {
   X(GrantAbility, 50)\
   X(CreatureMessage, 51)\
   X(SoundEffect, 52)\
-  X(DropItems, 53)
+  X(DropItems, 53)\
+  X(Try, 54)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

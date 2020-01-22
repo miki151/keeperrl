@@ -41,7 +41,7 @@ class Effect {
   template <class Archive>
   void serialize(Archive&, const unsigned int);
 
-  void apply(Position, Creature* attacker = nullptr) const;
+  bool apply(Position, Creature* attacker = nullptr) const;
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;
   bool isConsideredHostile() const;

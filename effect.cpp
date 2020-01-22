@@ -106,30 +106,33 @@ vector<Creature*> Effect::summon(Position pos, CreatureGroup& factory, int num, 
   return ret;
 }
 
-static void enhanceArmor(Creature* c, int mod, const string& msg) {
+static bool enhanceArmor(Creature* c, int mod, const string& msg) {
   for (EquipmentSlot slot : Random.permutation(getKeys(Equipment::slotTitles)))
     for (Item* item : c->getEquipment().getSlotItems(slot))
       if (item->getClass() == ItemClass::ARMOR) {
         c->you(MsgType::YOUR, item->getName() + " " + msg);
         if (item->getModifier(AttrType::DEFENSE) > 0 || mod > 0)
           item->addModifier(AttrType::DEFENSE, mod);
-        return;
+        return true;
       }
+  return false;
 }
 
-static void enhanceWeapon(Creature* c, int mod, const string& msg) {
+static bool enhanceWeapon(Creature* c, int mod, const string& msg) {
   if (auto item = c->getFirstWeapon()) {
     c->you(MsgType::YOUR, item->getName() + " " + msg);
     item->addModifier(item->getWeaponInfo().meleeAttackAttr, mod);
+    return true;
   }
+  return false;
 }
 
-static void summon(Creature* summoner, CreatureId id, Range count, bool hostile, optional<TimeInterval> ttl) {
+static bool summon(Creature* summoner, CreatureId id, Range count, bool hostile, optional<TimeInterval> ttl) {
   if (hostile) {
     CreatureGroup f = CreatureGroup::singleType(TribeId::getHostile(), id);
-    Effect::summon(summoner->getPosition(), f, Random.get(count), ttl, 1_visible);
+    return !Effect::summon(summoner->getPosition(), f, Random.get(count), ttl, 1_visible).empty();
   } else
-    Effect::summon(summoner, id, Random.get(count), ttl, 1_visible);
+    return !Effect::summon(summoner, id, Random.get(count), ttl, 1_visible).empty();
 }
 
 static bool isConsideredHostile(LastingEffect effect) {
@@ -177,7 +180,7 @@ bool Effect::isConsideredHostile() const {
   );
 }
 
-void Effects::Escape::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Escape::applyToCreature(Creature* c, Creature* attacker) const {
   PROFILE_BLOCK("Escape::applyToCreature");
   Rectangle area = Rectangle::centered(Vec2(0, 0), 12);
   PositionMap<int> weight;
@@ -220,12 +223,13 @@ void Effects::Escape::applyToCreature(Creature* c, Creature* attacker) const {
   }
   if (maxW < 2) {
     c->message("The spell didn't work.");
-    return;
+    return false;
   }
   CHECK(!good.empty());
   c->you(MsgType::TELE_DISAPPEAR, "");
   c->getPosition().moveCreature(Random.choose(good), true);
   c->you(MsgType::TELE_APPEAR, "");
+  return true;
 }
 
 string Effects::Escape::getName(const ContentFactory*) const {
@@ -236,7 +240,8 @@ string Effects::Escape::getDescription(const ContentFactory*) const {
   return "Teleports to a safer location close by.";
 }
 
-void Effects::Teleport::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Teleport::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::Teleport::getName(const ContentFactory*) const {
@@ -247,8 +252,8 @@ string Effects::Teleport::getDescription(const ContentFactory*) const {
   return "Teleport to any location that's close by.";
 }
 
-void Effects::Lasting::applyToCreature(Creature* c, Creature* attacker) const {
-  c->addEffect(lastingEffect, LastingEffects::getDuration(c, lastingEffect));
+bool Effects::Lasting::applyToCreature(Creature* c, Creature* attacker) const {
+  return c->addEffect(lastingEffect, LastingEffects::getDuration(c, lastingEffect));
 }
 
 string Effects::Lasting::getName(const ContentFactory*) const {
@@ -261,9 +266,8 @@ string Effects::Lasting::getDescription(const ContentFactory*) const {
   return desc.substr(0, desc.size() - 1) + " for some turns.";
 }
 
-void Effects::RemoveLasting::applyToCreature(Creature* c, Creature* attacker) const {
-  if (c->removeEffect(lastingEffect))
-    c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE));
+bool Effects::RemoveLasting::applyToCreature(Creature* c, Creature* attacker) const {
+  return c->removeEffect(lastingEffect);
 }
 
 string Effects::RemoveLasting::getName(const ContentFactory*) const {
@@ -274,9 +278,10 @@ string Effects::RemoveLasting::getDescription(const ContentFactory*) const {
   return "Removes/cures from effect: " + LastingEffects::getName(lastingEffect);
 }
 
-void Effects::IncreaseAttr::applyToCreature(Creature* c, Creature*) const {
+bool Effects::IncreaseAttr::applyToCreature(Creature* c, Creature*) const {
   c->you(MsgType::YOUR, ::getName(attr) + get(" improves", " wanes"));
   c->getAttributes().increaseBaseAttr(attr, amount);
+  return true;
 }
 
 string Effects::IncreaseAttr::getName(const ContentFactory*) const {
@@ -294,8 +299,8 @@ const char* Effects::IncreaseAttr::get(const char* ifIncrease, const char* ifDec
     return ifDecrease;
 }
 
-void Effects::Permanent::applyToCreature(Creature* c, Creature* attacker) const {
-  c->addPermanentEffect(lastingEffect);
+bool Effects::Permanent::applyToCreature(Creature* c, Creature* attacker) const {
+  return c->addPermanentEffect(lastingEffect);
 }
 
 string Effects::Permanent::getName(const ContentFactory*) const {
@@ -307,8 +312,8 @@ string Effects::Permanent::getDescription(const ContentFactory*) const {
   return desc.substr(0, desc.size() - 1) + " permanently.";
 }
 
-void Effects::RemovePermanent::applyToCreature(Creature* c, Creature* attacker) const {
-  c->removePermanentEffect(lastingEffect);
+bool Effects::RemovePermanent::applyToCreature(Creature* c, Creature* attacker) const {
+  return c->removePermanentEffect(lastingEffect);
 }
 
 string Effects::RemovePermanent::getName(const ContentFactory*) const {
@@ -320,8 +325,9 @@ string Effects::RemovePermanent::getDescription(const ContentFactory*) const {
   return "Removes " + desc.substr(0, desc.size() - 1) + " permanently.";
 }
 
-void Effects::Alarm::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Alarm::applyToCreature(Creature* c, Creature* attacker) const {
   c->getGame()->addEvent(EventInfo::Alarm{c->getPosition(), silent});
+  return true;
 }
 
 string Effects::Alarm::getName(const ContentFactory*) const {
@@ -332,7 +338,8 @@ string Effects::Alarm::getDescription(const ContentFactory*) const {
   return "Alarm!";
 }
 
-void Effects::Acid::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Acid::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::Acid::getName(const ContentFactory*) const {
@@ -343,8 +350,8 @@ string Effects::Acid::getDescription(const ContentFactory*) const {
   return "Causes acid damage to skin and equipment.";
 }
 
-void Effects::Summon::applyToCreature(Creature* c, Creature* attacker) const {
-  ::summon(c, creature, count, false, ttl.map([](int v) { return TimeInterval(v); }));
+bool Effects::Summon::applyToCreature(Creature* c, Creature* attacker) const {
+  return ::summon(c, creature, count, false, ttl.map([](int v) { return TimeInterval(v); }));
 }
 
 string Effects::Summon::getName(const ContentFactory* f) const {
@@ -358,7 +365,8 @@ string Effects::Summon::getDescription(const ContentFactory* f) const {
     return "Summons a " + getName(f);
 }
 
-void Effects::AssembledMinion::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::AssembledMinion::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::AssembledMinion::getName(const ContentFactory* f) const {
@@ -369,7 +377,8 @@ string Effects::AssembledMinion::getDescription(const ContentFactory* f) const {
   return "Can be assembled to a " + getName(f);
 }
 
-void Effects::SummonEnemy::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::SummonEnemy::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::SummonEnemy::getName(const ContentFactory* f) const {
@@ -383,13 +392,13 @@ string Effects::SummonEnemy::getDescription(const ContentFactory* f) const {
     return "Summons a hostile " + getName(f);
 }
 
-void Effects::SummonElement::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::SummonElement::applyToCreature(Creature* c, Creature* attacker) const {
   auto id = CreatureId("AIR_ELEMENTAL");
   for (Position p : c->getPosition().getRectangle(Rectangle::centered(3)))
     for (auto f : p.getFurniture())
       if (auto elem = f->getSummonedElement())
         id = *elem;
-  ::summon(c, id, Range(1, 2), false, 100_visible);
+  return ::summon(c, id, Range(1, 2), false, 100_visible);
 }
 
 string Effects::SummonElement::getName(const ContentFactory*) const {
@@ -400,11 +409,11 @@ string Effects::SummonElement::getDescription(const ContentFactory*) const {
   return "Summons an element or spirit from the surroundings.";
 }
 
-void Effects::Deception::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Deception::applyToCreature(Creature* c, Creature* attacker) const {
   vector<PCreature> creatures;
   for (int i : Range(Random.get(3, 7)))
     creatures.push_back(CreatureFactory::getIllusion(c));
-  Effect::summonCreatures(c->getPosition(), std::move(creatures));
+  return !Effect::summonCreatures(c->getPosition(), std::move(creatures)).empty();
 }
 
 string Effects::Deception::getName(const ContentFactory*) const {
@@ -455,10 +464,11 @@ static void airBlast(Creature* attacker, Position origin, Position position, Pos
       furniture->destroy(position, DestroyAction::Type::BASH);
 }
 
-void Effects::CircularBlast::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::CircularBlast::applyToCreature(Creature* c, Creature* attacker) const {
   for (Vec2 v : Vec2::directions8(Random))
     airBlast(attacker, c->getPosition(), c->getPosition().plus(v), c->getPosition().plus(v * 10));
   c->addFX({FXName::CIRCULAR_BLAST});
+  return true;
 }
 
 string Effects::CircularBlast::getName(const ContentFactory*) const {
@@ -482,14 +492,12 @@ const char* Effects::Enhance::amountAs(const char* positive, const char* negativ
   return amount > 0 ? positive : negative;
 }
 
-void Effects::Enhance::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Enhance::applyToCreature(Creature* c, Creature* attacker) const {
   switch (type) {
     case ItemUpgradeType::WEAPON:
-      enhanceWeapon(c, amount, amountAs("is improved", "degrades"));
-      break;
+      return enhanceWeapon(c, amount, amountAs("is improved", "degrades"));
     case ItemUpgradeType::ARMOR:
-      enhanceArmor(c, amount, amountAs("is improved", "degrades"));
-      break;
+      return enhanceArmor(c, amount, amountAs("is improved", "degrades"));
   }
 }
 
@@ -501,13 +509,15 @@ string Effects::Enhance::getDescription(const ContentFactory*) const {
   return amountAs("Increases", "Decreases") + " "_s + typeAsString() + " capability"_s;
 }
 
-void Effects::DestroyEquipment::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::DestroyEquipment::applyToCreature(Creature* c, Creature* attacker) const {
   auto equipped = c->getEquipment().getAllEquipped();
   if (!equipped.empty()) {
     Item* dest = Random.choose(equipped);
     c->you(MsgType::YOUR, dest->getName() + " crumbles to dust.");
     c->steal({dest});
+    return true;
   }
+  return false;
 }
 
 string Effects::DestroyEquipment::getName(const ContentFactory*) const {
@@ -518,7 +528,8 @@ string Effects::DestroyEquipment::getDescription(const ContentFactory*) const {
   return "Destroys a random piece of equipment.";
 }
 
-void Effects::DestroyWalls::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::DestroyWalls::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::DestroyWalls::getName(const ContentFactory*) const {
@@ -529,13 +540,17 @@ string Effects::DestroyWalls::getDescription(const ContentFactory*) const {
   return "Destroys terrain and objects.";
 }
 
-void Effects::Heal::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Heal::applyToCreature(Creature* c, Creature* attacker) const {
   if (c->getBody().canHeal(healthType)) {
-    c->heal(1);
-    c->removeEffect(LastingEffect::BLEEDING);
+    bool res = false;
+    res |= c->heal(1);
+    res |= c->removeEffect(LastingEffect::BLEEDING);
     c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN));
-  } else
+    return res;
+  } else {
     c->message("Nothing happens.");
+    return false;
+  }
 }
 
 string Effects::Heal::getName(const ContentFactory*) const {
@@ -552,7 +567,8 @@ string Effects::Heal::getDescription(const ContentFactory*) const {
   }
 }
 
-void Effects::Fire::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Fire::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::Fire::getName(const ContentFactory*) const {
@@ -563,7 +579,8 @@ string Effects::Fire::getDescription(const ContentFactory*) const {
   return "Burns!";
 }
 
-void Effects::Ice::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Ice::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::Ice::getName(const ContentFactory*) const {
@@ -574,7 +591,8 @@ string Effects::Ice::getDescription(const ContentFactory*) const {
   return "Freezes water and causes cold damage";
 }
 
-void Effects::ReviveCorpse::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::ReviveCorpse::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::ReviveCorpse::getName(const ContentFactory*) const {
@@ -595,7 +613,8 @@ static PCreature getBestSpirit(const Model* model, TribeId tribe) {
   return nullptr;
 }
 
-void Effects::EmitPoisonGas::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::EmitPoisonGas::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::EmitPoisonGas::getName(const ContentFactory*) const {
@@ -606,8 +625,9 @@ string Effects::EmitPoisonGas::getDescription(const ContentFactory*) const {
   return "Emits poison gas";
 }
 
-void Effects::SilverDamage::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::SilverDamage::applyToCreature(Creature* c, Creature* attacker) const {
   c->affectBySilver();
+  return c->getBody().isUndead();
 }
 
 string Effects::SilverDamage::getName(const ContentFactory*) const {
@@ -618,7 +638,8 @@ string Effects::SilverDamage::getDescription(const ContentFactory*) const {
   return "Hurts the undead.";
 }
 
-void Effects::PlaceFurniture::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::PlaceFurniture::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::PlaceFurniture::getName(const ContentFactory* c) const {
@@ -629,7 +650,8 @@ string Effects::PlaceFurniture::getDescription(const ContentFactory* c) const {
   return "Creates a " + getName(c);
 }
 
-void Effects::DropItems::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::DropItems::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::DropItems::getName(const ContentFactory* c) const {
@@ -640,11 +662,12 @@ string Effects::DropItems::getDescription(const ContentFactory* c) const {
   return "Creates items";
 }
 
-void Effects::Damage::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Damage::applyToCreature(Creature* c, Creature* attacker) const {
   CHECK(attacker) << "Unknown attacker";
-  c->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), attackType, attacker->getAttr(attr), attr), true);
+  bool result = c->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), attackType, attacker->getAttr(attr), attr), true);
   if (attr == AttrType::SPELL_DAMAGE)
     c->addFX({FXName::MAGIC_MISSILE_SPLASH});
+  return result;
 }
 
 string Effects::Damage::getName(const ContentFactory*) const {
@@ -655,11 +678,12 @@ string Effects::Damage::getDescription(const ContentFactory*) const {
   return "Causes " + ::getName(attr);
 }
 
-void Effects::InjureBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::InjureBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
   if (c->getBody().injureBodyPart(c, part, false)) {
     c->you(MsgType::DIE, "");
     c->dieWithAttacker(attacker);
   }
+  return false;
 }
 
 string Effects::InjureBodyPart::getName(const ContentFactory*) const {
@@ -670,11 +694,12 @@ string Effects::InjureBodyPart::getDescription(const ContentFactory*) const {
   return "Injures "_s + ::getName(part);
 }
 
-void Effects::LoseBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::LoseBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
   if (c->getBody().injureBodyPart(c, part, true)) {
     c->you(MsgType::DIE, "");
     c->dieWithAttacker(attacker);
   }
+  return false;
 }
 
 string Effects::LoseBodyPart::getName(const ContentFactory*) const {
@@ -685,12 +710,13 @@ string Effects::LoseBodyPart::getDescription(const ContentFactory*) const {
   return "Causes you to lose a "_s + ::getName(part);
 }
 
-void Effects::AddBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::AddBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
   c->getBody().addBodyPart(part, count);
   if (attack) {
     c->getBody().addIntrinsicAttack(part, IntrinsicAttack{*attack, true});
     c->getBody().initializeIntrinsicAttack(c->getGame()->getContentFactory());
   }
+  return true;
 }
 
 string Effects::AddBodyPart::getName(const ContentFactory*) const {
@@ -701,8 +727,10 @@ string Effects::AddBodyPart::getDescription(const ContentFactory*) const {
   return "Adds "_s + getPlural(::getName(part), count);
 }
 
-void Effects::MakeHumanoid::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::MakeHumanoid::applyToCreature(Creature* c, Creature* attacker) const {
+  bool ret = !c->getBody().isHumanoid();
   c->getBody().setHumanoid(true);
+  return ret;
 }
 
 string Effects::MakeHumanoid::getName(const ContentFactory*) const {
@@ -713,8 +741,8 @@ string Effects::MakeHumanoid::getDescription(const ContentFactory*) const {
   return "Turns creature into a humanoid";
 }
 
-void Effects::RegrowBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
-  c->getBody().healBodyParts(c, maxCount);
+bool Effects::RegrowBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
+  return c->getBody().healBodyParts(c, maxCount);
 }
 
 string Effects::RegrowBodyPart::getName(const ContentFactory*) const {
@@ -725,7 +753,8 @@ string Effects::RegrowBodyPart::getDescription(const ContentFactory*) const {
   return "Causes lost body parts to regrow.";
 }
 
-void Effects::Area::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Area::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::Area::getName(const ContentFactory* f) const {
@@ -737,7 +766,8 @@ string Effects::Area::getDescription(const ContentFactory* factory) const {
 }
 
 
-void Effects::CustomArea::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::CustomArea::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::CustomArea::getName(const ContentFactory* f) const {
@@ -762,9 +792,10 @@ vector<Position> Effects::CustomArea::getTargetPos(const Creature* attacker, Pos
   return ret;
 }
 
-void Effects::Suicide::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Suicide::applyToCreature(Creature* c, Creature* attacker) const {
   c->you(message, "");
   c->dieNoReason();
+  return true;
 }
 
 string Effects::Suicide::getName(const ContentFactory*) const {
@@ -775,9 +806,10 @@ string Effects::Suicide::getDescription(const ContentFactory*) const {
   return "Causes the *attacker* to die.";
 }
 
-void Effects::Wish::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Wish::applyToCreature(Creature* c, Creature* attacker) const {
   c->getController()->grantWish((attacker ? attacker->getName().the() + " grants you a wish." : "You are granted a wish.") +
       " What do you wish for?");
+  return true;
 }
 
 string Effects::Wish::getName(const ContentFactory*) const {
@@ -788,7 +820,8 @@ string Effects::Wish::getDescription(const ContentFactory*) const {
   return "Gives you one wish.";
 }
 
-void Effects::Chain::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Chain::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::Chain::getName(const ContentFactory* f) const {
@@ -809,7 +842,30 @@ string Effects::Chain::getDescription(const ContentFactory* f) const {
   return ret;
 }
 
-void Effects::ChooseRandom::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Try::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
+}
+
+string Effects::Try::getName(const ContentFactory* f) const {
+  string ret = "try: ";
+  for (auto& e : effects)
+    ret += e.getName(f) + ", ";
+  ret.pop_back();
+  ret.pop_back();
+  return ret;
+}
+
+string Effects::Try::getDescription(const ContentFactory* f) const {
+  string ret = "Try one of: ";
+  for (auto& e : effects)
+    ret += e.getDescription(f) + ", ";
+  ret.pop_back();
+  ret.pop_back();
+  return ret;
+}
+
+bool Effects::ChooseRandom::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::ChooseRandom::getName(const ContentFactory* f) const {
@@ -820,7 +876,8 @@ string Effects::ChooseRandom::getDescription(const ContentFactory* f) const {
   return effects[0].getDescription(f);
 }
 
-void Effects::Message::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Message::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::Message::getName(const ContentFactory*) const {
@@ -831,8 +888,9 @@ string Effects::Message::getDescription(const ContentFactory*) const {
   return text;
 }
 
-void Effects::CreatureMessage::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::CreatureMessage::applyToCreature(Creature* c, Creature* attacker) const {
   c->verb(secondPerson, thirdPerson);
+  return true;
 }
 
 string Effects::CreatureMessage::getName(const ContentFactory*) const {
@@ -843,8 +901,10 @@ string Effects::CreatureMessage::getDescription(const ContentFactory*) const {
   return "Custom message";
 }
 
-void Effects::GrantAbility::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::GrantAbility::applyToCreature(Creature* c, Creature* attacker) const {
+  bool ret = !c->getSpellMap().contains(id);
   c->getSpellMap().add(*c->getGame()->getContentFactory()->getCreatures().getSpell(id), ExperienceType::MELEE, 0);
+  return ret;
 }
 
 string Effects::GrantAbility::getName(const ContentFactory* f) const {
@@ -855,12 +915,14 @@ string Effects::GrantAbility::getDescription(const ContentFactory* f) const {
   return "Grants ability: " + getName(f);
 }
 
-void Effects::IncreaseMorale::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::IncreaseMorale::applyToCreature(Creature* c, Creature* attacker) const {
   if (amount > 0)
     c->you(MsgType::YOUR, "spirits are lifted");
   else
     c->you(MsgType::ARE, "disheartened");
+  double before = c->getMorale();
   c->addMorale(amount);
+  return c->getMorale() != before;
 }
 
 string Effects::IncreaseMorale::getName(const ContentFactory*) const {
@@ -871,7 +933,8 @@ string Effects::IncreaseMorale::getDescription(const ContentFactory*) const {
   return amount > 0 ? "Increases morale" : "Decreases morale";
 }
 
-void Effects::Caster::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Caster::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::Caster::getName(const ContentFactory* f) const {
@@ -882,7 +945,8 @@ string Effects::Caster::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f);
 }
 
-void Effects::Chance::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Chance::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::Chance::getName(const ContentFactory* f) const {
@@ -893,7 +957,7 @@ string Effects::Chance::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f) + " (" + toString(int(value * 100)) + "% chance)";
 }
 
-void Effects::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) const {
   PCreature copy = c->getGame()->getContentFactory()->getCreatures().makeCopy(c);
   auto ttl = 50_visible;
   for (auto& item : c->getEquipment().getItems())
@@ -906,8 +970,11 @@ void Effects::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) co
   if (!cRef.empty()) {
     cRef[0]->addEffect(LastingEffect::SUMMONED, ttl, false);
     c->message(PlayerMessage("Double trouble!", MessagePriority::HIGH));
-  } else
+    return true;
+  } else {
     c->message(PlayerMessage("The spell failed!", MessagePriority::HIGH));
+    return false;
+  }
 }
 
 string Effects::DoubleTrouble::getName(const ContentFactory*) const {
@@ -918,7 +985,8 @@ string Effects::DoubleTrouble::getDescription(const ContentFactory*) const {
   return "Creates a twin copy ally.";
 }
 
-void Effects::Blast::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Blast::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::Blast::getName(const ContentFactory*) const {
@@ -929,7 +997,7 @@ string Effects::Blast::getDescription(const ContentFactory*) const {
   return "Creates a directed blast of air that throws back creatures and items.";
 }
 
-static void pullCreature(Creature* victim, const vector<Position>& trajectory) {
+static bool pullCreature(Creature* victim, const vector<Position>& trajectory) {
   auto victimPos = victim->getPosition();
   optional<Position> target;
   for (auto& v : trajectory) {
@@ -944,10 +1012,13 @@ static void pullCreature(Creature* victim, const vector<Position>& trajectory) {
   if (target) {
     victim->addEffect(LastingEffect::COLLAPSED, 2_visible);
     victim->displace(victim->getPosition().getDir(*target));
+    return true;
   }
+  return false;
 }
 
-void Effects::Pull::applyToCreature(Creature* victim, Creature* attacker) const {
+bool Effects::Pull::applyToCreature(Creature* victim, Creature* attacker) const {
+  return false;
 }
 
 string Effects::Pull::getName(const ContentFactory*) const {
@@ -958,7 +1029,7 @@ string Effects::Pull::getDescription(const ContentFactory*) const {
   return "Pulls a creature towards the spellcaster.";
 }
 
-void Effects::Shove::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Shove::applyToCreature(Creature* c, Creature* attacker) const {
   CHECK(attacker);
   auto origin = attacker->getPosition();
   auto dir = origin.getDir(c->getPosition());
@@ -967,7 +1038,9 @@ void Effects::Shove::applyToCreature(Creature* c, Creature* attacker) const {
     c->displace(dir);
     c->you(MsgType::ARE, "thrown back");
     c->addEffect(LastingEffect::COLLAPSED, 2_visible);
+    return true;
   }
+  return false;
 }
 
 string Effects::Shove::getName(const ContentFactory*) const {
@@ -978,7 +1051,7 @@ string Effects::Shove::getDescription(const ContentFactory*) const {
   return "Push back a creature.";
 }
 
-void Effects::SwapPosition::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::SwapPosition::applyToCreature(Creature* c, Creature* attacker) const {
   CHECK(attacker);
   auto origin = attacker->getPosition();
   auto dir = origin.getDir(c->getPosition());
@@ -986,8 +1059,11 @@ void Effects::SwapPosition::applyToCreature(Creature* c, Creature* attacker) con
   if (attacker->canSwapPositionWithEnemy(c)) {
     attacker->swapPosition(dir, false);
     attacker->verb("swap", "swaps", "positions with " + c->getName().the());
-  } else
+    return true;
+  } else {
     attacker->privateMessage(c->getName().the() + " resists");
+    return false;
+  }
 }
 
 string Effects::SwapPosition::getName(const ContentFactory*) const {
@@ -998,7 +1074,8 @@ string Effects::SwapPosition::getDescription(const ContentFactory*) const {
   return "Swap positions with an enemy.";
 }
 
-void Effects::TriggerTrap::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::TriggerTrap::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::TriggerTrap::getName(const ContentFactory*) const {
@@ -1009,7 +1086,8 @@ string Effects::TriggerTrap::getDescription(const ContentFactory*) const {
   return "Triggers a trap if present.";
 }
 
-void Effects::AnimateItems::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::AnimateItems::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::AnimateItems::getName(const ContentFactory*) const {
@@ -1020,7 +1098,8 @@ string Effects::AnimateItems::getDescription(const ContentFactory*) const {
   return "Animates up to " + toString(maxCount) + " weapons from the surroundings";
 }
 
-void Effects::Audience::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::Audience::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::Audience::getName(const ContentFactory*) const {
@@ -1031,7 +1110,8 @@ string Effects::Audience::getDescription(const ContentFactory*) const {
   return "Summons all fighters defending the territory that the creature is in";
 }
 
-void Effects::SoundEffect::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::SoundEffect::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
 }
 
 string Effects::SoundEffect::getName(const ContentFactory*) const {
@@ -1051,9 +1131,8 @@ bool Effects::Filter::applies(bool isEnemy) const {
   }
 }
 
-void Effects::Filter::applyToCreature(Creature* c, Creature* attacker) const {
-  if (applies(c->isEnemy(attacker)))
-    effect->apply(c->getPosition(), attacker);
+bool Effects::Filter::applyToCreature(Creature* c, Creature* attacker) const {
+  return applies(c->isEnemy(attacker)) && effect->apply(c->getPosition(), attacker);
 }
 
 string Effects::Filter::getName(const ContentFactory* f) const {
@@ -1104,21 +1183,22 @@ Effect& Effect::operator =(Effect&&) = default;
 
 Effect& Effect::operator =(const Effect&) = default;
 
-void Effect::apply(Position pos, Creature* attacker) const {
+bool Effect::apply(Position pos, Creature* attacker) const {
   if (auto c = pos.getCreature()) {
-    FORWARD_CALL(void, effect, applyToCreature, c, attacker);
+    bool res = FORWARD_CALL(bool, effect, applyToCreature, c, attacker);
     if (isConsideredHostile() && attacker)
       c->onAttackedBy(attacker);
+    if (res)
+      return true;
   }
-  effect->visit<void>(
-      [&](const auto&) { },
+  return effect->visit<bool>(
+      [&](const auto&) { return false; },
       [&](const Effects::ReviveCorpse& effect) {
         for (auto& item : pos.getItems())
           if (auto info = item->getCorpseInfo())
             if (info->canBeRevived)
               for (auto& dead : pos.getModel()->getDeadCreatures())
                 if (dead->getUniqueId() == info->victim) {
-                  bool success = false;
                   for (auto id : effect.summoned) {
                     auto summoned = summon(attacker, id, 1, TimeInterval(effect.ttl));
                     if (!summoned.empty()) {
@@ -1127,62 +1207,78 @@ void Effect::apply(Position pos, Creature* attacker) const {
                         attacker->message("You have revived " + c->getName().a());
                       }
                       pos.removeItems({item});
-                      success = true;
-                      break;
+                      return true;
                     }
                   }
-                  if (!success)
-                    attacker->message("The spell failed");
-                  return;
+                  attacker->message("The spell failed");
+                  return false;
                 }
+        return false;
       },
       [&](Effects::Teleport) {
         if (attacker->getPosition().canMoveCreature(pos)) {
           attacker->you(MsgType::TELE_DISAPPEAR, "");
           attacker->getPosition().moveCreature(pos, true);
           attacker->you(MsgType::TELE_APPEAR, "");
+          return true;
         }
+        return false;
       },
       [&](Effects::Fire) {
         pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});
-        pos.fireDamage(1);
+        return pos.fireDamage(1);
       },
       [&](Effects::Ice) {
         //pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});
-        pos.iceDamage();
+        return pos.iceDamage();
       },
       [&](Effects::Acid) {
-        pos.acidDamage();
+        return pos.acidDamage();
       },
       [&](const Effects::Area& area) {
+        bool res = false;
         for (auto v : pos.getRectangle(Rectangle::centered(area.radius)))
-          area.effect->apply(v, attacker);
+          res |= area.effect->apply(v, attacker);
+        return res;
       },
       [&](const Effects::CustomArea& area) {
+        bool res = false;
         for (auto& v : area.getTargetPos(attacker, pos))
-          area.effect->apply(v, attacker);
+          res |= area.effect->apply(v, attacker);
+        return res;
       },
       [&](const Effects::Chain& chain) {
+        bool res = false;
         for (auto& e : chain.effects)
-          e.apply(pos, attacker);
+          res |= e.apply(pos, attacker);
+        return res;
+      },
+      [&](const Effects::Try& chain) {
+        for (auto& e : chain.effects)
+          if (e.apply(pos, attacker))
+            return true;
+        return false;
       },
       [&](const Effects::ChooseRandom& r) {
-        r.effects[Random.get(r.effects.size())].apply(pos, attacker);
+        return r.effects[Random.get(r.effects.size())].apply(pos, attacker);
       },
       [&](const Effects::Message& msg) {
         pos.globalMessage(msg.text);
+        return true;
       },
       [&](const Effects::Caster& e) {
         if (attacker)
-          e.effect->apply(attacker->getPosition(), attacker);
+          return e.effect->apply(attacker->getPosition(), attacker);
+        return false;
       },
       [&](const Effects::Chance& e) {
         if (Random.chance(e.value))
-          e.effect->apply(pos, attacker);
+          return e.effect->apply(pos, attacker);
+        return false;
       },
       [&](const Effects::SummonEnemy& summon) {
         CreatureGroup f = CreatureGroup::singleType(TribeId::getMonster(), summon.creature);
-        Effect::summon(pos, f, Random.get(summon.count), summon.ttl.map([](int v) { return TimeInterval(v); }), 1_visible);
+        return !Effect::summon(pos, f, Random.get(summon.count), summon.ttl.map([](int v) { return TimeInterval(v); }), 1_visible).empty();
       },
       [&](const Effects::PlaceFurniture& effect) {
         auto f = pos.getGame()->getContentFactory()->furniture.getFurniture(effect.furniture,
@@ -1191,9 +1287,11 @@ void Effect::apply(Position pos, Creature* attacker) const {
         pos.addFurniture(std::move(f));
         if (ref)
           ref->onConstructedBy(pos, attacker);
+        return true;
       },
       [&](const Effects::DropItems& effect) {
         pos.dropItems(effect.type.get(Random.get(effect.count), pos.getGame()->getContentFactory()));
+        return true;
       },
       [&](Effects::Blast) {
         constexpr int range = 4;
@@ -1208,13 +1306,15 @@ void Effect::apply(Position pos, Creature* attacker) const {
           }
         for (int i : All(trajectory).reverse())
           airBlast(attacker, attacker->getPosition(), trajectory[i], pos);
+        return true;
       },
       [&](Effects::Pull) {
         CHECK(attacker);
         vector<Position> trajectory = drawLine(attacker->getPosition(), pos);
         for (auto& pos : trajectory)
           if (auto c = pos.getCreature())
-            pullCreature(c, trajectory);
+            return pullCreature(c, trajectory);
+        return false;
       },
       [&](const Effects::AssembledMinion& m) {
         auto group = CreatureGroup::singleType(attacker->getTribeId(), m.creature);
@@ -1225,18 +1325,24 @@ void Effect::apply(Position pos, Creature* attacker) const {
               for (auto& elem : col->getImmigration().getImmigrants())
                 if (elem.getId(0) == m.creature) {
                   col->addCreature(c[0], elem.getTraits());
-                  break;
+                  return true;
                 }
             }
         }
+        return false;
       },
       [&](const Effects::DestroyWalls& m) {
+        bool res = false;
         for (auto furniture : pos.modFurniture())
-          if (furniture->canDestroy(m.action))
+          if (furniture->canDestroy(m.action)) {
             furniture->destroy(pos, m.action);
+            res = true;
+          }
+        return res;
       },
       [&](const Effects::EmitPoisonGas& m) {
         Effect::emitPoisonGas(pos, m.amount, true);
+        return true;
       },
       [&](const Effects::TriggerTrap&) {
         for (auto furniture : pos.getFurniture())
@@ -1245,8 +1351,9 @@ void Effect::apply(Position pos, Creature* attacker) const {
               pos.globalMessage("A " + trapInfo->effect.getName(pos.getGame()->getContentFactory()) + " trap is triggered");
               trapInfo->effect.apply(pos, attacker);
               pos.removeFurniture(furniture);
-              return;
+              return true;
             }
+        return false;
       },
       [&](const Effects::AnimateItems& m) {
         vector<pair<Position, Item*>> candidates;
@@ -1254,17 +1361,22 @@ void Effect::apply(Position pos, Creature* attacker) const {
           for (auto item : v.getItems(ItemIndex::WEAPON))
             candidates.push_back(make_pair(v, item));
         candidates = Random.permutation(candidates);
+        bool res = false;
         for (int i : Range(min(m.maxCount, candidates.size()))) {
           auto v = candidates[i].first;
           auto creature = pos.getGame()->getContentFactory()->getCreatures().
               getAnimatedItem(v.removeItem(candidates[i].second), attacker->getTribeId(),
                   attacker->getAttr(AttrType::SPELL_DAMAGE));
-          for (auto c : Effect::summonCreatures(v, makeVec(std::move(creature))))
+          for (auto c : Effect::summonCreatures(v, makeVec(std::move(creature)))) {
             c->addEffect(LastingEffect::SUMMONED, TimeInterval{Random.get(m.time)}, false);
+            res = true;
+          }
         }
+        return res;
       },
       [&](const Effects::SoundEffect& e) {
         pos.addSound(e.sound);
+        return true;
       },
       [&](const Effects::Audience& a) {
         auto collective = [&]() -> Collective* {
@@ -1302,9 +1414,10 @@ void Effect::apply(Position pos, Creature* attacker) const {
                 get(attacker->getAttributes().getGender(), ", Sire", ", Dame", ""), MessagePriority::HIGH));
           else
             pos.globalMessage(PlayerMessage("The audience has been summoned"_s, MessagePriority::HIGH));
-          return;
+          return true;
         }
         pos.globalMessage("Nothing happens");
+        return false;
       }
   );
 }

@@ -176,8 +176,6 @@ CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
   if (isAffected(LastingEffect::MAGIC_CANCELLATION))
     return CreatureAction("You can't cast spells while under the effect of "
         + LastingEffects::getName(LastingEffect::MAGIC_CANCELLATION) + ".");
-  if (!spellMap->contains(this, spell))
-    return CreatureAction("You don't know this spell.");
   if (!isReady(spell))
     return CreatureAction("You can't cast this spell yet.");
   if (target == position && !spell->canTargetSelf())
@@ -854,12 +852,13 @@ bool Creature::removeEffect(LastingEffect effect, bool msg) {
   if (was && !isAffected(effect)) {
     LastingEffects::onRemoved(this, effect, msg);
     updateViewObject();
+    addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE));
     return true;
   }
   return false;
 }
 
-void Creature::addPermanentEffect(LastingEffect effect, int count, bool msg) {
+bool Creature::addPermanentEffect(LastingEffect effect, int count, bool msg) {
   PROFILE;
   if (LastingEffects::affects(this, effect)) {
     bool was = attributes->isAffectedPermanently(effect);
@@ -869,18 +868,22 @@ void Creature::addPermanentEffect(LastingEffect effect, int count, bool msg) {
       if (msg)
         message(PlayerMessage("The effect is permanent", MessagePriority::HIGH));
       updateViewObject();
+      return true;
     }
   }
+  return false;
 }
 
-void Creature::removePermanentEffect(LastingEffect effect, int count, bool msg) {
+bool Creature::removePermanentEffect(LastingEffect effect, int count, bool msg) {
   PROFILE;
   bool was = isAffected(effect);
   attributes->removePermanentEffect(effect, count);
   if (was && !isAffected(effect)) {
     LastingEffects::onRemoved(this, effect, msg);
     updateViewObject();
+    return true;
   }
+  return false;
 }
 
 bool Creature::isAffected(LastingEffect effect) const {
@@ -1405,24 +1408,28 @@ string attrStr(bool strong, bool agile, bool fast) {
   return p1;
 }
 
-void Creature::heal(double amount) {
+bool Creature::heal(double amount) {
   PROFILE;
-  if (getBody().heal(this, amount))
+  if (getBody().heal(this, amount)) {
     lastAttacker = nullptr;
+    return true;
+  }
+  return false;
 }
 
-void Creature::affectByFire(double amount) {
+bool Creature::affectByFire(double amount) {
   PROFILE;
   if (!isAffected(LastingEffect::FIRE_RESISTANT) &&
       getBody().affectByFire(this, amount)) {
     verb("burn", "burns", "to death");
     dieWithReason("burnt to death");
+    return true;
   }
-  addEffect(LastingEffect::ON_FIRE, 100_visible);
+  return addEffect(LastingEffect::ON_FIRE, 100_visible);
 }
 
-void Creature::affectByIce(double amount) {
-  addEffect(LastingEffect::FROZEN, 5_visible);
+bool Creature::affectByIce(double amount) {
+  return addEffect(LastingEffect::FROZEN, 5_visible);
 }
 
 void Creature::affectBySilver() {
@@ -1432,10 +1439,11 @@ void Creature::affectBySilver() {
   }
 }
 
-void Creature::affectByAcid() {
+bool Creature::affectByAcid() {
   if (getBody().affectByAcid(this)) {
     you(MsgType::ARE, "dissolved by acid");
     dieWithReason("dissolved by acid");
+    return true;
   } else {
     auto& items = equipment->getAllEquipped();
     if (!items.empty()) {
@@ -1444,10 +1452,11 @@ void Creature::affectByAcid() {
         if (item->getModifier(mod) > 0) {
           you(MsgType::YOUR, item->getName() + " corrodes");
           item->addModifier(mod, -1);
-          break;
+          return true;
         }
     }
   }
+  return false;
 }
 
 void Creature::poisonWithGas(double amount) {

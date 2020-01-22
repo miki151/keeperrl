@@ -28,7 +28,7 @@ class SpellMap {
   GlobalTime getReadyTime(const Creature*, const Spell*) const;
   void setReadyTime(const Creature*, const Spell*, GlobalTime);
   vector<const Spell*> getAvailable(const Creature*) const;
-  bool contains(const Creature* c, const Spell*) const;
+  bool contains(const SpellId) const;
   void onExpLevelReached(Creature*, ExperienceType, int level);
   void setAllReady();
 

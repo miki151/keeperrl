@@ -764,42 +764,48 @@ void Position::updateMovementDueToFire() const {
     update(v);
 }
 
-void Position::fireDamage(double amount) {
+bool Position::fireDamage(double amount) const {
   PROFILE;
+  bool res = false;
   for (auto furniture : modFurniture())
     if (Random.chance(amount))
-      furniture->fireDamage(*this);
+      res |= furniture->fireDamage(*this);
   if (Creature* creature = getCreature())
-    creature->affectByFire(amount);
+    res |= creature->affectByFire(amount);
   for (Item* it : getItems())
     if (Random.chance(amount))
       it->fireDamage(*this);
+  return res;
 }
 
-void Position::iceDamage() {
+bool Position::iceDamage() const {
   PROFILE;
+  bool res = false;
   double amount = 1.0;
   for (auto furniture : modFurniture())
     if (Random.chance(amount))
-      furniture->iceDamage(*this);
+      res |= furniture->iceDamage(*this);
   if (Creature* creature = getCreature())
-    creature->affectByIce(amount);
+    res |= creature->affectByIce(amount);
   for (Item* it : getItems())
     if (Random.chance(amount))
       it->iceDamage(*this);
+  return res;
 }
 
-void Position::acidDamage() {
+bool Position::acidDamage() const {
   PROFILE;
+  bool res = false;
   double amount = 1.0;
   for (auto furniture : modFurniture())
     if (Random.chance(amount))
-      furniture->acidDamage(*this);
+      res |= furniture->acidDamage(*this);
   if (Creature* creature = getCreature())
-    creature->affectByAcid();
-  for (Item* it : getItems())
+    res |= creature->affectByAcid();
+  /*for (Item* it : getItems())
     if (Random.chance(amount))
-      it->iceDamage(*this);
+      it->acidDamage(*this);*/
+  return res;
 }
 
 bool Position::needsMemoryUpdate() const {

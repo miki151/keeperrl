@@ -497,23 +497,28 @@ bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& ac
        (!movement.isCompatible(getTribe()) || action.canDestroyFriendly());
 }
 
-void Furniture::acidDamage(Position pos) {
+bool Furniture::acidDamage(Position pos) {
   if (dissolveTo) {
     pos.globalMessage("The " + getName() + " is dissolved");
     PFurniture replace = pos.getGame()->getContentFactory()->furniture.getFurniture(*dissolveTo, getTribe());
     pos.removeFurniture(this, std::move(replace));
+    return true;
   } else
-  if (destroyedInfo[DestroyAction::Type::BASH])
+  if (destroyedInfo[DestroyAction::Type::BASH]) {
     destroy(pos, DestroyAction(DestroyAction::Type::BASH));
+    return true;
+  }
+  return false;
 }
 
-void Furniture::fireDamage(Position pos, bool withMessage) {
+bool Furniture::fireDamage(Position pos, bool withMessage) {
   if (meltInfo) {
     pos.globalMessage("The " + getName() + " melts");
     PFurniture replace;
     if (meltInfo->meltTo)
       replace = pos.getGame()->getContentFactory()->furniture.getFurniture(*meltInfo->meltTo, getTribe());
     pos.removeFurniture(this, std::move(replace));
+    return true;
   } else
   if (fire) {
     bool burning = fire->isBurning();
@@ -526,15 +531,19 @@ void Furniture::fireDamage(Position pos, bool withMessage) {
       pos.updateMovementDueToFire();
       pos.getLevel()->addTickingFurniture(pos.getCoord());
       pos.addCreatureLight(false);
+      return true;
     }
   }
+  return false;
 }
 
-void Furniture::iceDamage(Position pos) {
+bool Furniture::iceDamage(Position pos) {
   if (freezeTo) {
     pos.globalMessage("The " + getName() + " freezes");
     pos.removeFurniture(this, pos.getGame()->getContentFactory()->furniture.getFurniture(*freezeTo, getTribe()));
+    return true;
   }
+  return false;
 }
 
 Furniture& Furniture::setDestroyable(double s) {
