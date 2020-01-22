@@ -1132,17 +1132,19 @@ string Effects::SoundEffect::getDescription(const ContentFactory*) const {
   return "Makes a real sound";
 }
 
-bool Effects::Filter::applies(bool isEnemy) const {
+bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const {
   switch (filter) {
     case FilterType::ALLY:
-      return !isEnemy;
+      return !!c && !!attacker && !c->isEnemy(attacker);
     case FilterType::ENEMY:
-      return isEnemy;
+      return !!c && !!attacker && c->isEnemy(attacker);
+    case FilterType::AUTOMATON:
+      return !!c && !c->automatonParts.empty();
   }
 }
 
 bool Effects::Filter::applyToCreature(Creature* c, Creature* attacker) const {
-  return applies(c->isEnemy(attacker)) && effect->apply(c->getPosition(), attacker);
+  return applies(c, attacker) && effect->apply(c->getPosition(), attacker);
 }
 
 string Effects::Filter::getName(const ContentFactory* f) const {
@@ -1152,6 +1154,8 @@ string Effects::Filter::getName(const ContentFactory* f) const {
         return " (ally only)";
       case FilterType::ENEMY:
         return " (enemy only)";
+      case FilterType::AUTOMATON:
+        return " (automaton only)";
     }
   };
   return effect->getName(f) + suffix();
@@ -1164,6 +1168,8 @@ string Effects::Filter::getDescription(const ContentFactory* f) const {
         return " (applied only to allies)";
       case FilterType::ENEMY:
         return " (applied only to enemies)";
+      case FilterType::AUTOMATON:
+        return " (applied only to automatons)";
     }
   };
   return effect->getDescription(f) + suffix();
@@ -1515,6 +1521,12 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
         return victim->getGame()->getContentFactory()->furniture.getData(f.furniture).isHostileSpell() && isFighting
             ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
       },
+      [&] (const Effects::RegrowBodyPart&) {
+        for (auto part : ENUM_ALL(BodyPart))
+          if (victim->getBody().numLost(part) + victim->getBody().numInjured(part) > 0)
+            return EffectAIIntent::WANTED;
+        return EffectAIIntent::NONE;
+      },
       [&] (const auto&) {
         return EffectAIIntent::NONE;
       }
@@ -1574,7 +1586,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
         return considerArea(a.getTargetPos(caster, pos), *a.effect);
       },
       [&] (const Effects::Filter& e) {
-        if (victim && e.applies(isEnemy))
+        if (victim && e.applies(victim, caster))
           return e.effect->shouldAIApply(caster, pos);
         return EffectAIIntent::NONE;
       },

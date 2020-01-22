@@ -115,6 +115,13 @@
     automatonPart = ARMS
       Chain { IncreaseAttr DAMAGE 10 IncreaseAttr DEFENSE 2 AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING victimEffect = { 0.5 Lasting BLEEDING } } } }
   }
+"RepairAutomatonArmsIron" inherit "AutomatonArmsIron"
+  {
+    name = "pair of repair automaton arms"
+    shortName = "repair arms"
+    automatonPart = ARMS
+      Chain { GrantAbility "repair automaton" IncreaseAttr DEFENSE 2 AddBodyPart ARM 2 none }
+  }
 "Knife"
   {
     viewId = { "knife" }

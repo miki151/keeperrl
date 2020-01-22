@@ -466,3 +466,14 @@
   effect = Audience none
   cooldown = 100
 }
+"repair automaton"
+{
+  symbol = "🔧"
+  effect = Filter AUTOMATON RegrowBodyPart 10
+  range = 1
+  targetSelf = true
+  cooldown = 15
+  sound = TRAP_ARMING
+  castMessageType = ABILITY
+}
+

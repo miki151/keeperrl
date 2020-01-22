@@ -105,6 +105,7 @@ class Body {
   bool isCollapsed(const Creature*) const;
   int numGood(BodyPart) const;
   int numLost(BodyPart) const;
+  int numInjured(BodyPart) const;
   int numBodyParts(BodyPart) const;
   void getBadAdjectives(vector<AdjectiveInfo>&) const;
   optional<Sound> getDeathSound() const;
@@ -143,7 +144,6 @@ class Body {
   friend class Test;
   optional<BodyPart> getBodyPart(AttackLevel attack, bool flying, bool collapsed) const;
   BodyPart armOrWing() const;
-  int numInjured(BodyPart) const;
   void clearInjured(BodyPart);
   void clearLost(BodyPart);
   bool looseBodyPart(BodyPart);

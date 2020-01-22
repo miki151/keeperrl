@@ -9,7 +9,7 @@
 #include "spell_id.h"
 #include "sound.h"
 
-RICH_ENUM(FilterType, ALLY, ENEMY);
+RICH_ENUM(FilterType, ALLY, ENEMY, AUTOMATON);
 
 #define EFFECT_TYPE_INTERFACE \
   bool applyToCreature(Creature*, Creature* attacker = nullptr) const;\
@@ -179,7 +179,7 @@ struct ReviveCorpse {
 };
 struct Filter {
   EFFECT_TYPE_INTERFACE;
-  bool applies(bool isEnemy) const;
+  bool applies(const Creature* c, const Creature* attacker) const;
   FilterType SERIAL(filter);
   HeapAllocated<Effect> SERIAL(effect);
   SERIALIZE_ALL(filter, effect)
