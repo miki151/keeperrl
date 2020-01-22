@@ -367,6 +367,21 @@ ItemAttributes ItemTypes::Corpse::getAttributes(const ContentFactory*) const {
   return getCorpseAttr("corpse", ItemClass::CORPSE, 100);
 }
 
+ItemAttributes ItemTypes::AutomatonPaint::getAttributes(const ContentFactory*) const {
+  return ITATTR(
+      i.viewId = ViewId("potion2", color);
+      i.name = "automaton paint";
+      i.itemClass = ItemClass::TOOL;
+      i.weight = 0.1;
+      i.automatonPart = AutomatonPart LIST(
+          Effect(Effects::ColorVariant{color}),
+          *i.viewId,
+          "automaton paint",
+          false
+      );
+  );
+}
+
 ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("scroll");

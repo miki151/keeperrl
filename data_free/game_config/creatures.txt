@@ -2054,6 +2054,7 @@
     skills = {
       "WORKSHOP" 0.5
       "FORGE" 0.5
+      "LABORATORY" 0.5
     }
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""

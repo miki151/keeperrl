@@ -9,7 +9,6 @@
 #include "item_upgrade_info.h"
 #include "item_type.h"
 #include "effect_type.h"
-#include "automaton_slot.h"
 
 const char* getName(ItemIndex index, int count) {
   switch (index) {

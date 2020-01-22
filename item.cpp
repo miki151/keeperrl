@@ -89,7 +89,7 @@ ItemPredicate Item::namePredicate(const string& name) {
 
 vector<vector<Item*>> Item::stackItems(vector<Item*> items, function<string(const Item*)> suffix) {
   map<string, vector<Item*>> stacks = groupBy<Item*, string>(items, [suffix](const Item* item) {
-        return item->getNameAndModifiers() + suffix(item);
+        return item->getNameAndModifiers() + suffix(item) + toString(item->getViewObject().id().getColor());
       });
   vector<vector<Item*>> ret;
   for (auto& elem : stacks)

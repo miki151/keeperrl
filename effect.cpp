@@ -1132,6 +1132,20 @@ string Effects::SoundEffect::getDescription(const ContentFactory*) const {
   return "Makes a real sound";
 }
 
+bool Effects::ColorVariant::applyToCreature(Creature* c, Creature* attacker) const {
+  auto& obj = c->modViewObject();
+  obj.setId(obj.id().withColor(color));
+  return true;
+}
+
+string Effects::ColorVariant::getName(const ContentFactory*) const {
+  return "color change";
+}
+
+string Effects::ColorVariant::getDescription(const ContentFactory*) const {
+  return "Changes the color variant of a creature";
+}
+
 bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const {
   switch (filter) {
     case FilterType::ALLY:

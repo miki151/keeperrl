@@ -29,7 +29,6 @@
 #include "game_time.h"
 #include "creature_status.h"
 #include "view_id.h"
-#include "automaton_slot.h"
 
 class Skill;
 class Level;

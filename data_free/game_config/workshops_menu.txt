@@ -136,6 +136,17 @@
       {{Simple    "RepairAutomatonArmsIron"} 2       IRON 5    "advanced automatons"}
       {{Simple    "AutomatonLegsIron"}       2       IRON 5    "automatons"}
   } 
+  "LABORATORY"
+  {
+      {{AutomatonPaint Rgb 210 90 90 255} 2 GOLD 0 }
+      {{AutomatonPaint Rgb 90 210 90 255} 2 GOLD 0 }
+      {{AutomatonPaint Rgb 90 90 210 255} 2 GOLD 0 }
+      {{AutomatonPaint Rgb 210 210 90 255} 2 GOLD 0 }
+      {{AutomatonPaint Rgb 90 210 210 255} 2 GOLD 0 }
+      {{AutomatonPaint Rgb 210 90 210 255} 2 GOLD 0 }
+      {{AutomatonPaint Rgb 90 90 90 255} 2 GOLD 0 }
+      {{AutomatonPaint Rgb 210 210 210 255} 2 GOLD 0 }
+  }
 }
 
 # Add more groups here, remember that you need to add your new group to your keeper in player_creatures.txt

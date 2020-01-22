@@ -8,6 +8,7 @@
 #include "intrinsic_attack.h"
 #include "spell_id.h"
 #include "sound.h"
+#include "color.h"
 
 RICH_ENUM(FilterType, ALLY, ENEMY, AUTOMATON);
 
@@ -261,6 +262,11 @@ struct ChainFirstResult {
   vector<Effect> SERIAL(effects);
   SERIALIZE_ALL(effects)
 };
+struct ColorVariant {
+  EFFECT_TYPE_INTERFACE;
+  Color SERIAL(color);
+  SERIALIZE_ALL(color)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -319,6 +325,7 @@ struct ChainFirstResult {
   X(DropItems, 53)\
   X(FirstSuccessful, 54)\
   X(ChainFirstResult, 55)\
+  X(ColorVariant, 56)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

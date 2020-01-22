@@ -1,10 +1,9 @@
 #include "automaton_part.h"
-#include "automaton_slot.h"
 #include "creature.h"
 #include "creature_attributes.h"
 #include "item.h"
 
-SERIALIZE_DEF(AutomatonPart, slot, effect, viewId, name)
+SERIALIZE_DEF(AutomatonPart, effect, viewId, name, usesSlot)
 
 bool AutomatonPart::isAvailable(const Creature* c, int numAssigned) const {
   return c->automatonParts.size() + numAssigned < c->getAttributes().getAutomatonSlots();
@@ -12,12 +11,13 @@ bool AutomatonPart::isAvailable(const Creature* c, int numAssigned) const {
 
 void AutomatonPart::apply(Creature* c) const {
   effect.apply(c->getPosition());
-  c->automatonParts.push_back(*this);
+  if (usesSlot)
+    c->automatonParts.push_back(*this);
 }
 
 #include "pretty_archive.h"
 template <>
 void AutomatonPart::serialize(PrettyInputArchive& ar1, unsigned) {
-  ar1(slot, effect);
+  ar1(NAMED(effect), OPTION(usesSlot));
 }
 

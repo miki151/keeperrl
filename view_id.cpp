@@ -26,6 +26,12 @@ const Color& ViewId::getColor() const {
   return color;
 }
 
+ViewId ViewId::withColor(Color col) const {
+  auto ret = *this;
+  ret.color = col;
+  return ret;
+}
+
 std::ostream& operator <<(std::ostream& d, ViewId id) {
   return d << id.data();
 }

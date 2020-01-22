@@ -13,6 +13,7 @@ class ViewId : public ContentId<ViewId> {
   bool operator < (const ViewId&) const;
   int getHash() const;
   const Color& getColor() const;
+  ViewId withColor(Color) const;
   SERIALIZATION_DECL(ViewId)
 
   private:

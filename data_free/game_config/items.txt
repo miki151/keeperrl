@@ -19,16 +19,16 @@
     shortName = "humanoid head"
     weight = 4
     itemClass = TOOL
-    automatonPart = HEAD Chain { MakeHumanoid AddBodyPart HEAD 1 none }
+    automatonPart = { Chain { MakeHumanoid AddBodyPart HEAD 1 none }}
   }
 "ArcherHeadWood" inherit "HumanoidHeadWood"
   {
     name = "wooden arrow shooting head"
     shortName = "arrow shooting"
-    automatonPart = HEAD FirstSuccessful {
+    automatonPart = {FirstSuccessful {
       ChainFirstResult { GrantAbility "shoot arrow" IncreaseAttr RANGED_DAMAGE 25 AddBodyPart HEAD 1 none }
       Chain { IncreaseAttr RANGED_DAMAGE 10 AddBodyPart HEAD 1 none }
-    }
+    }}
   }
 "AutomatonLegsWood"
   {
@@ -37,10 +37,10 @@
     shortName = "wooden legs"
     weight = 8
     itemClass = TOOL
-    automatonPart = LEGS FirstSuccessful {
+    automatonPart = {FirstSuccessful {
       ChainFirstResult { RemovePermanent IMMOBILE AddBodyPart LEG 2 none  }
       Chain { Permanent SPEED AddBodyPart LEG 2 none  }
-    }
+    }}
   }
 "AutomatonArmsWood"
   {
@@ -49,8 +49,7 @@
     shortName = "wooden arms"
     weight = 6
     itemClass = TOOL
-    automatonPart = ARMS
-      Chain { IncreaseAttr DAMAGE 6 AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } } }
+    automatonPart = {Chain { IncreaseAttr DAMAGE 6 AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } } }}
   }
 "HumanoidHeadIron"
   {
@@ -59,32 +58,32 @@
     shortName = "humanoid head"
     weight = 4
     itemClass = TOOL
-    automatonPart = HEAD Chain { IncreaseAttr DEFENSE 2 MakeHumanoid AddBodyPart HEAD 1 none }
+    automatonPart = {Chain { IncreaseAttr DEFENSE 2 MakeHumanoid AddBodyPart HEAD 1 none }}
   }
 "ArcherHeadIron" inherit "HumanoidHeadIron"
   {
     name = "iron arrow shooting head"
     shortName = "arrow shooting"
-    automatonPart = HEAD FirstSuccessful {
+    automatonPart = {FirstSuccessful {
       ChainFirstResult { GrantAbility "shoot arrow" IncreaseAttr RANGED_DAMAGE 30 IncreaseAttr DEFENSE 2 AddBodyPart HEAD 1 none }
       Chain { IncreaseAttr RANGED_DAMAGE 15 IncreaseAttr DEFENSE 2 AddBodyPart HEAD 1 none }
-    }
+    }}
   }
 "FireHeadIron" inherit "HumanoidHeadIron"
   {
     name = "iron fire breathing head"
     shortName = "fire breathing"
-    automatonPart = HEAD FirstSuccessful {
+    automatonPart = {FirstSuccessful {
       ChainFirstResult { GrantAbility "fire breath" IncreaseAttr DEFENSE 2 AddBodyPart HEAD 1 none }
-    }
+    }}
   }
 "AcidHeadIron" inherit "HumanoidHeadIron"
   {
     name = "iron acid breathing head"
     shortName = "acid breathing"
-    automatonPart = HEAD FirstSuccessful {
+    automatonPart = {FirstSuccessful {
       ChainFirstResult { GrantAbility "acid stream" IncreaseAttr DEFENSE 2 AddBodyPart HEAD 1 none }
-    }
+    }}
   }
 "AutomatonLegsIron"
   {
@@ -93,10 +92,10 @@
     shortName = "iron legs"
     weight = 8
     itemClass = TOOL
-    automatonPart = LEGS FirstSuccessful {
+    automatonPart = {FirstSuccessful {
       ChainFirstResult { RemovePermanent IMMOBILE IncreaseAttr DEFENSE 2 AddBodyPart LEG 2 none  }
       Chain { Permanent SPEED IncreaseAttr DEFENSE 2 AddBodyPart LEG 2 none  }
-    }
+    }}
   }
 "AutomatonArmsIron"
   {
@@ -105,22 +104,28 @@
     shortName = "iron arms"
     weight = 6
     itemClass = TOOL
-    automatonPart = ARMS
-      Chain { IncreaseAttr DAMAGE 10 IncreaseAttr DEFENSE 2 AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } } }
+    automatonPart = {Chain {
+      IncreaseAttr DAMAGE 10
+      IncreaseAttr DEFENSE 2
+      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } }
+    }}
   }
 "SharpAutomatonArmsIron" inherit "AutomatonArmsIron"
   {
     name = "pair of sharp automaton arms"
     shortName = "sharp arms"
-    automatonPart = ARMS
-      Chain { IncreaseAttr DAMAGE 10 IncreaseAttr DEFENSE 2 AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING victimEffect = { 0.5 Lasting BLEEDING } } } }
+    automatonPart = {Chain {
+      IncreaseAttr DAMAGE 10
+      IncreaseAttr DEFENSE 2
+      AddBodyPart ARM 2
+      { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING victimEffect = { 0.5 Lasting BLEEDING } } }
+    }}
   }
 "RepairAutomatonArmsIron" inherit "AutomatonArmsIron"
   {
     name = "pair of repair automaton arms"
     shortName = "repair arms"
-    automatonPart = ARMS
-      Chain { GrantAbility "repair automaton" IncreaseAttr DEFENSE 2 AddBodyPart ARM 2 none }
+    automatonPart = { Chain { GrantAbility "repair automaton" IncreaseAttr DEFENSE 2 AddBodyPart ARM 2 none }}
   }
 "Knife"
   {

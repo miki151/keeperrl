@@ -6,10 +6,10 @@
 #include "view_id.h"
 
 struct AutomatonPart {
-  AutomatonSlot SERIAL(slot);
   Effect SERIAL(effect);
   ViewId SERIAL(viewId);
   string SERIAL(name);
+  bool SERIAL(usesSlot) = true;
   bool isAvailable(const Creature*, int numAssigned = 0) const;
   void apply(Creature*) const;
   template <class Archive>

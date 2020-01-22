@@ -82,6 +82,11 @@ struct Assembled {
   SERIALIZE_ALL(creature, viewId)
   ITEM_TYPE_INTERFACE;
 };
+struct AutomatonPaint {
+  Color SERIAL(color);
+  SERIALIZE_ALL(color)
+  ITEM_TYPE_INTERFACE;
+};
 using Simple = CustomItemId;
 
 
@@ -100,7 +105,8 @@ using Simple = CustomItemId;
   X(Poem, 11)\
   X(EventPoem, 12)\
   X(Assembled, 13) \
-  X(Corpse, 14)
+  X(Corpse, 14)\
+  X(AutomatonPaint, 15)\
 
 #define VARIANT_TYPES_LIST ITEM_TYPES_LIST
 #define VARIANT_NAME ItemTypeVariant

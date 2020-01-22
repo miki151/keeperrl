@@ -44,7 +44,7 @@
   workshopGroups = { "basic" }
   description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"
 }
-"4_gnomes"
+"0_gnomes"
 {
   creatureId = { "GNOME" }
   tribeAlignment = LAWFUL
@@ -52,13 +52,13 @@
   technology = {
       "traps"# "advanced traps" "master traps"
       "automatons" "advanced automatons" #"master automatons"
-      "pig breeding" "iron working"
+      "pig breeding" "iron working" "alchemy"
   }
   initialTech = { "automatons" }
   baseNameGen = "TOWN"
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "throne" "beds"
-      "pigsty" "crafting" "orders" "installations" "traps"
+      "pigsty" "crafting" "laboratory" "orders" "installations" "traps"
   }
   workshopGroups = { "traps" "gnomes" }
   description = "Seize the means of production and engineer traps, automatons and other contraptions."
