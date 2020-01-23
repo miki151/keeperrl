@@ -1,0 +1,3 @@
+EVIL_KEEPER modify append {
+  {{ "teuton_boss" } "TEUTONS" "Teutonic Knights" MAIN}
+}

@@ -1,0 +1,7 @@
+"my super item"
+{
+  "WORKSHOP"
+  {
+      {{Scroll IncreaseAttr DAMAGE 30}                   4        GOLD 1000}
+  }
+}

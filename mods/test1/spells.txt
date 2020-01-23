@@ -1,0 +1,13 @@
+"cut trees"
+{
+  symbol = "X"
+  effect = DestroyWalls CUT
+  range = 7
+  cooldown = 1
+  blockedByWall = false
+}
+
+"healing" modify
+{
+  cooldown = 1
+}

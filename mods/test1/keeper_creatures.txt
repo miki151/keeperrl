@@ -1,0 +1,4 @@
+"1_dark_mage" modify {
+  initialTech = append { "iron working" }
+  workshopGroups = append { "my super item" }
+}

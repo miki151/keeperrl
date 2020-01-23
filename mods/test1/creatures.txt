@@ -1,0 +1,7 @@
+
+"KEEPER_MAGE" modify
+{
+    viewId = { "keeper_alt" ColorId GREEN }
+    viewIdUpgrades = {  }
+    spells = append { "dig" "cut trees" "animate weapons" }
+}

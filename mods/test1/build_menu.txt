@@ -1,0 +1,6 @@
+
+"structure" modify append {
+    { PlaceMinion "Place minion" "Structure" "" }  #use for cheating or creative mode
+    { PlaceItem "Place item" "Structure" "" }  #use for cheating or creative mode
+    { ImmediateDig "Dig immediately" "Structure" } #use for cheating or creative mode
+}
