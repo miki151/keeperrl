@@ -35,7 +35,8 @@ const vector<string> TileSet::getSpriteMods() const {
 }
 
 const vector<TileCoord>& TileSet::byName(const string& s) {
-  USER_CHECK(tileCoords.count(s)) << "Couldn't load sprite: " << s;
+  if (!tileCoords.count(s))
+    return tileCoords.begin()->second;
   return tileCoords.at(s);
 }
 
@@ -148,7 +149,7 @@ void TileSet::loadModdedTiles(const vector<TileInfo>& tiles, bool useTiles) {
   for (auto& tile : tiles) {
     if (useTiles) {
       auto spriteName = tile.sprite.value_or(tile.viewId.data());
-      USER_CHECK(tileCoords.count(spriteName)) << "Sprite file not found: " << spriteName;
+      //USER_CHECK(tileCoords.count(spriteName)) << "Sprite file not found: " << spriteName;
       auto t = [&] {
         if (tile.wallConnections)
           return getWallTile(spriteName);
