@@ -46,6 +46,7 @@
 #include "creature_attributes.h"
 #include "map_layouts.h"
 #include "biome_info.h"
+#include "furniture_tick.h"
 
 namespace {
 
@@ -388,9 +389,12 @@ class Connector : public LevelMaker {
             builder->putFurniture(v, door->type, tribe);
           }
         }
-        if (!builder->canNavigate(v, {MovementTrait::WALK}))
-          if (builder->getFurniture(v, FurnitureLayer::GROUND)->canBuildBridgeOver())
-            builder->putFurniture(v, FurnitureType("BRIDGE"));
+        if (!builder->canNavigate(v, {MovementTrait::WALK})) {
+          auto under = builder->getFurniture(v, FurnitureLayer::GROUND);
+          if (under->canBuildBridgeOver())
+            builder->putFurniture(v, FurnitureType(under->getTickType() == FurnitureTickType::SET_FURNITURE_ON_FIRE
+                ? "STONE_BRIDGE" : "BRIDGE"));
+        }
         CHECK(builder->canNavigate(v, {MovementTrait::WALK}));
       }
       if (!path.isReachable(v))
