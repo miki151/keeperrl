@@ -24,6 +24,7 @@ struct FurnitureParams {
 class FurnitureFactory {
   public:
   FurnitureFactory(map<FurnitureType, OwnerPointer<Furniture>>, map<FurnitureListId, FurnitureList>);
+  void initializeInfos();
   void merge(FurnitureFactory);
   bool canBuild(FurnitureType, Position) const;
   bool isUpgrade(FurnitureType base, FurnitureType upgraded) const;
@@ -55,5 +56,4 @@ class FurnitureFactory {
   vector<FurnitureType> SERIAL(needingLight);
   EnumMap<BedType, vector<FurnitureType>> SERIAL(bedFurniture);
   unordered_map<FurnitureType, ViewObject, CustomHash<FurnitureType>> SERIAL(constructionObjects);
-  void initializeInfos();
 };

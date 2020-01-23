@@ -70,7 +70,6 @@ void FurnitureFactory::merge(FurnitureFactory f) {
 
 FurnitureFactory::FurnitureFactory(map<FurnitureType, OwnerPointer<Furniture>> f, map<FurnitureListId, FurnitureList> l)
     : furniture(std::move(f)), furnitureLists(std::move(l)) {
-  initializeInfos();
 }
 
 void FurnitureFactory::initializeInfos() {

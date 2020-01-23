@@ -377,6 +377,7 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   auto errors = keyVerifier.verify();
   if (!errors.empty())
     return errors.front();
+  furniture.initializeInfos();
   return none;
 }
 
