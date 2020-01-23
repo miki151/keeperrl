@@ -58,6 +58,8 @@ struct NumConquered {
 
 #include "gen_variant.h"
 #include "gen_variant_serialize.h"
+inline
+#include "gen_variant_serialize_pretty.h"
 #undef VARIANT_TYPES_LIST
 #undef VARIANT_NAME
 

@@ -17,19 +17,7 @@ struct VARIANT_NAME {
   }
 #define X(Type, Index) \
   VARIANT_NAME(Type&& t) : index(Index), elem##Index(std::move(t)) {}\
-  VARIANT_NAME(const Type& t) : index(Index), elem##Index(t) {}\
-  template<>\
-  optional<Type> getValueMaybe<Type>() const {\
-    if (index == Index)\
-      return elem##Index;\
-    return none;\
-  }\
-  template<>\
-  optional<const Type&> getReferenceMaybe() const {\
-    if (index == Index)\
-      return elem##Index;\
-    return none;\
-  }
+  VARIANT_NAME(const Type& t) : index(Index), elem##Index(t) {}
   VARIANT_TYPES_LIST
 #undef X
 
@@ -108,3 +96,18 @@ struct VARIANT_NAME {
 #undef X
   };
 };
+#define X(Type, Index) \
+  template<>\
+  inline optional<Type> VARIANT_NAME::getValueMaybe<Type>() const {\
+    if (index == Index)\
+      return elem##Index;\
+    return none;\
+  }\
+  template<>\
+  inline optional<const Type&> VARIANT_NAME::getReferenceMaybe() const {\
+    if (index == Index)\
+      return elem##Index;\
+    return none;\
+  }
+  VARIANT_TYPES_LIST
+#undef X

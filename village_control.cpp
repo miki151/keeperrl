@@ -300,10 +300,3 @@ void VillageControl::update(bool currentlyActive) {
     }
 }
 
-#define VARIANT_TYPES_LIST ATTACK_TRIGGERS_LIST
-#define VARIANT_NAME AttackTrigger
-
-template<>
-#include "gen_variant_serialize_pretty.h"
-#undef VARIANT_TYPES_LIST
-#undef VARIANT_NAME
