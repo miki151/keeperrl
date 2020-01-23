@@ -44,7 +44,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::RETIRED_VILLAINS, 1},
   {OptionId::LESSER_VILLAINS, 3},
   {OptionId::ALLIES, 2},
-  {OptionId::CURRENT_MOD2, string("vanilla")},
+  {OptionId::CURRENT_MOD2, vector<string>()},
   {OptionId::ENDLESS_ENEMIES, 2},
   {OptionId::ENEMY_AGGRESSION, 1},
 };
