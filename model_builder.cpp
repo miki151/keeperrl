@@ -169,7 +169,7 @@ PModel ModelBuilder::trySingleMapModel(TribeId keeperTribe, TribeAlignment align
   }
   for (int i : Range(1, random.get(4)))
     enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
-  return tryModel(304, enemyInfo, keeperTribe, BiomeId("GRASSLAND"), {}, true);
+  return tryModel(304, enemyInfo, keeperTribe, BiomeId("GRASSLAND"), {});
 }
 
 void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, const vector<BiomeEnemyInfo>& info) {
@@ -209,7 +209,7 @@ PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment al
     externalEnemies = ExternalEnemies(random, &contentFactory->getCreatures(), enemyFactory->getExternalEnemies(), *externalEnemiesType);
   for (int i : Range(random.get(3)))
     enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
-  return tryModel(174, enemyInfo, keeperTribe, biome, std::move(externalEnemies), true);
+  return tryModel(174, enemyInfo, keeperTribe, biome, std::move(externalEnemies));
 }
 
 PModel ModelBuilder::tryTutorialModel() {
@@ -222,7 +222,7 @@ PModel ModelBuilder::tryTutorialModel() {
   //enemyInfo.push_back(enemyFactory->get(EnemyId("ADA_GOLEMS")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("TEMPLE")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("LIZARDMEN")));
-  return tryModel(174, enemyInfo, TribeId::getDarkKeeper(), biome, {}, false);
+  return tryModel(174, enemyInfo, TribeId::getDarkKeeper(), biome, {});
 }
 
 static optional<BiomeId> getBiome(const EnemyInfo& enemy, RandomGen& random) {
@@ -269,7 +269,7 @@ PModel ModelBuilder::tryCampaignSiteModel(EnemyId enemyId, VillainType type, Tri
   addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL ? biomeInfo.darkKeeperEnemies : biomeInfo.whiteKeeperEnemies);
   for (int i : Range(random.get(3)))
     enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
-  return tryModel(114, enemyInfo, none, *biomeId, {}, true);
+  return tryModel(114, enemyInfo, none, *biomeId, {});
 }
 
 PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, const string& name) {
@@ -366,9 +366,9 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
   StairKey downLink = StairKey::getNew();
   for (int index : All(connection.levels)) {
     auto& level = connection.levels[index];
-    auto addLevel = [&] (SettlementInfo& settlement) {
+    auto addLevel = [&] (SettlementInfo& settlement, bool bottomLevel) {
       settlement.upStairs.push_back(upLink);
-      if (index < connection.levels.size() - 1)
+      if (!bottomLevel)
         settlement.downStairs.push_back(downLink);
       if (connection.direction == LevelConnectionDir::UP)
         swap(settlement.upStairs, settlement.downStairs);
@@ -380,19 +380,19 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
     };
     level.enemy.match(
         [&](LevelConnection::ExtraEnemy& e) {
-          for (auto& enemy : e.enemyInfo) {
-            auto set = processLevelConnection(model, enemy, extraEnemies);
-            addLevel(set);
+          for (int i : All(e.enemyInfo)) {
+            auto& set = processLevelConnection(model, e.enemyInfo[i], extraEnemies);
+            addLevel(set, index == connection.levels.size() - 1 && i == e.enemyInfo.size());
           }
         },
         [&](LevelConnection::MainEnemy&) {
-          addLevel(mainSettlement);
+          addLevel(mainSettlement, index == connection.levels.size() - 1);
         }
     );
   }
 }
 
-SettlementInfo ModelBuilder::processLevelConnection(Model* model, EnemyInfo& enemyInfo,
+SettlementInfo& ModelBuilder::processLevelConnection(Model* model, EnemyInfo& enemyInfo,
     vector<EnemyInfo>& extraEnemies) {
   if (!enemyInfo.levelConnection)
     return enemyInfo.settlement;
@@ -412,8 +412,10 @@ SettlementInfo ModelBuilder::processLevelConnection(Model* model, EnemyInfo& ene
   makeExtraLevel(model, *enemyInfo.levelConnection, enemyInfo.settlement, downLink, extraEnemies);
   SettlementInfo* ret = nullptr;
   if (auto extra = enemyInfo.levelConnection->topLevel.getReferenceMaybe<LevelConnection::ExtraEnemy>()) {
-    for (auto& enemy : extra->enemyInfo)
+    for (auto& enemy : extra->enemyInfo) {
+      CHECK(!ret);
       ret = &enemy.settlement;
+    }
   } else
     ret = &enemyInfo.settlement;
   (enemyInfo.levelConnection->direction == LevelConnectionDir::DOWN ? ret->downStairs : ret->upStairs).push_back(downLink);
@@ -421,7 +423,7 @@ SettlementInfo ModelBuilder::processLevelConnection(Model* model, EnemyInfo& ene
 }
 
 PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<TribeId> keeperTribe, BiomeId biomeId,
-    optional<ExternalEnemies> externalEnemies, bool hasWildlife) {
+    optional<ExternalEnemies> externalEnemies) {
   auto& biomeInfo = contentFactory->biomeInfo.at(biomeId);
   auto model = Model::create(contentFactory, biomeInfo.overrideMusic);
   vector<SettlementInfo> topLevelSettlements;
