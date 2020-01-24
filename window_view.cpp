@@ -366,9 +366,10 @@ void WindowView::rebuildGui() {
           break;
       case GameInfo::InfoType::PLAYER:
           right = guiBuilder.drawRightPlayerInfo(*gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>());
-          bottom = guiBuilder.drawBottomPlayerInfo(gameInfo);
           rightBarWidth = rightBarWidthPlayer;
           bottomBarHeight = bottomBarHeightPlayer;
+          bottomBarBounds = Rectangle(Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight), renderer.getSize());
+          bottom = guiBuilder.drawBottomPlayerInfo(gameInfo);
           break;
       case GameInfo::InfoType::BAND:
           right = guiBuilder.drawRightBandInfo(gameInfo);
