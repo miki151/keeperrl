@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <cassert>
 #include "content_id.h"
 #include "furniture_type.h"
 #include "furniture_list_id.h"
@@ -14,7 +15,7 @@
 #include "map_layout_id.h"
 #include "biome_id.h"
 #include "workshop_type.h"
-#include <cassert>
+#include "resource_id.h"
 
 static const char* staticsInitialized = nullptr;
 
@@ -205,4 +206,5 @@ INST(BuildingId)
 INST(NameGeneratorId)
 INST(MapLayoutId)
 INST(BiomeId)
+INST(CollectiveResourceId)
 INST(WorkshopType)

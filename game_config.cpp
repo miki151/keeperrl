@@ -54,6 +54,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "campaign_info";
     case GameConfigId::WORKSHOP_INFO:
       return "workshop_info";
+    case GameConfigId::RESOURCE_INFO:
+      return "resource_info";
   }
 }
 

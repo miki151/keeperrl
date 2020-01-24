@@ -93,11 +93,8 @@ class CollectiveConfig {
 
   static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, ContentFactory*);
 
-  map<CollectiveResourceId, int> getStartingResource() const;
-
   bool hasImmigrantion(bool currentlyActiveModel) const;
-  static const ResourceInfo& getResourceInfo(CollectiveResourceId);
-  const vector<ItemFetchInfo>& getFetchInfo() const;
+  vector<ItemFetchInfo> getFetchInfo(const ContentFactory*) const;
   static const MinionActivityInfo& getActivityInfo(MinionActivity);
 
   SERIALIZATION_DECL(CollectiveConfig)

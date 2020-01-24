@@ -11,13 +11,9 @@ class IndexedVector {
       indexes.emplace(elems[i]->getUniqueId(), i);
   }
 
-  IndexedVector(IndexedVector&& o) : elems(std::move(o.elems)), indexes(std::move(o.indexes)) {}
+  IndexedVector(IndexedVector&&) = default;
 
-  IndexedVector& operator = (IndexedVector&& o) {
-    elems = std::move(o.elems);
-    indexes = std::move(o.indexes);
-    return *this;
-  }
+  IndexedVector& operator = (IndexedVector&&) = default;
 
   IndexedVector(const vector<T>& e) : elems(e) {
     for (int i: All(elems))

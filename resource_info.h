@@ -2,22 +2,13 @@
 
 #include "util.h"
 #include "item_type.h"
-
-typedef function<bool(const Collective*, const Item*)> CollectiveItemPredicate;
-
-struct ItemFetchInfo {
-  ItemIndex index;
-  CollectiveItemPredicate predicate;
-  StorageId storageId;
-  CollectiveWarning warning;
-};
+#include "view_id.h"
 
 struct ResourceInfo {
-  optional<StorageId> storageId;
-  optional<ItemIndex> itemIndex;
-  ItemType itemId;
-  string name;
-  ViewId viewId;
-  bool dontDisplay;
-  optional<TutorialHighlight> tutorialHighlight;
+  optional<StorageId> SERIAL(storageId);
+  optional<ItemType> SERIAL(itemId);
+  string SERIAL(name);
+  optional<ViewId> SERIAL(viewId);
+  optional<TutorialHighlight> SERIAL(tutorialHighlight);
+  SERIALIZE_ALL(NAMED(storageId), SKIP(itemId), NAMED(name), NAMED(viewId), NAMED(tutorialHighlight))
 };

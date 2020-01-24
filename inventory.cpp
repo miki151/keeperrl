@@ -18,6 +18,7 @@
 #include "inventory.h"
 #include "item.h"
 #include "view_object.h"
+#include "resource_id.h"
 
 
 SERIALIZE_DEF(Inventory, items, itemsCache, weight, counts)
@@ -41,6 +42,11 @@ void Inventory::addItem(PItem item) {
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     if (indexes[ind] && hasIndex(ind, item.get()))
       indexes[ind]->insert(item.get());
+  if (auto id = item->getResourceId()) {
+    int index = id->getInternalId();
+    if (index < resourceIndexes.size() && resourceIndexes[index])
+      resourceIndexes[index]->insert(item.get());
+  }
   weight += item->getWeight();
   items.insert(std::move(item));
 }
@@ -58,6 +64,11 @@ PItem Inventory::removeItem(Item* itemRef) {
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     if (indexes[ind] && hasIndex(ind, item.get()))
       indexes[ind]->remove(itemRef->getUniqueId());
+  if (auto id = item->getResourceId()) {
+    int index = id->getInternalId();
+    if (index < resourceIndexes.size() && resourceIndexes[index])
+      resourceIndexes[index]->remove(item.get());
+  }
   return item;
 }
 
@@ -77,6 +88,8 @@ vector<PItem> Inventory::removeAllItems() {
   counts.clear();
   for (ItemIndex ind : ENUM_ALL(ItemIndex))
     indexes[ind] = none;
+  for (auto& ind : resourceIndexes)
+    ind = none;
   weight = 0;
   return items.removeAll();
 }
@@ -104,7 +117,25 @@ const vector<Item*>& Inventory::getItems(ItemIndex index) const {
   return elems->getElems();
 }
 
-const ItemCounts&Inventory::getCounts() const {
+const vector<Item*>& Inventory::getItems(CollectiveResourceId id) const {
+  static vector<Item*> empty;
+  int index = id.getInternalId();
+  if (isEmpty()) {
+    return empty;
+  }
+  if (index >= resourceIndexes.size())
+    resourceIndexes.resize(index + 1);
+  auto& elems = resourceIndexes[index];
+  if (!elems) {
+    elems.emplace();
+    for (auto& item : getItems())
+      if (item->getResourceId() == id)
+        elems->insert(item);
+  }
+  return elems->getElems();
+}
+
+const ItemCounts& Inventory::getCounts() const {
   return counts;
 }
 

@@ -256,5 +256,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void exitAction();
   void addBodyPart(Creature*);
   void handleBanishing(Creature*);
+  optional<pair<ViewId,int>> getCostObj(CostInfo) const;
+  optional<pair<ViewId,int>> getCostObj(const optional<CostInfo>&) const;
 };
 

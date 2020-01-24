@@ -45,6 +45,7 @@
 #include "name_generator_id.h"
 #include "campaign_builder.h"
 #include "content_factory.h"
+#include "storage_id.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const vector<string>& s, vector<string> filename, KeyVerifier* keyVerifier) {
@@ -90,6 +91,7 @@ ADD_IMP(map<PrimaryId<BiomeId>, BiomeInfo>)
 ADD_IMP(map<PrimaryId<WorkshopType>, WorkshopInfo>)
 ADD_IMP(map<string, CampaignInfo>)
 ADD_IMP(map<PrimaryId<NameGeneratorId>, vector<string>>)
+ADD_IMP(map<PrimaryId<CollectiveResourceId>, ResourceInfo>)
 ADD_IMP(map<string, TestStruct2>)
 ADD_IMP(map<string, TestStruct3>)
 ADD_IMP(map<string, TestStruct5>)

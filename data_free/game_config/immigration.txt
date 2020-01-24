@@ -9,7 +9,7 @@
       noAuto = true
       initialRecruitment = 4
       requirements = {
-        { 1 ExponentialCost GOLD 30 5 4 }
+        { 1 ExponentialCost "GOLD" 30 5 4 }
       }
     }
 }
@@ -35,7 +35,7 @@
       noAuto = true
       initialRecruitment = 4
       requirements = {
-        { 1 ExponentialCost GOLD 30 5 4 }
+        { 1 ExponentialCost "GOLD" 30 5 4 }
       }
     }
 }
@@ -184,7 +184,7 @@
       spawnLocation = FurnitureType "GRAVE"
       requirements = {
         { 0.0 MinTurnRequirement 1000 }
-        { 0.0 CostInfo CORPSE 1}
+        { 0.0 CostInfo "CORPSE" 1}
       }
       specialTraits = {
          { 0.2 { ExtraIntrinsicAttack
@@ -207,7 +207,7 @@
       requirements = {
         { 0.0 MinTurnRequirement 1000 }
         { 0.1 AttractionInfo 1 {FurnitureType "ARCHERY_RANGE"}}
-        { 0.0 CostInfo CORPSE 1}
+        { 0.0 CostInfo "CORPSE" 1}
       }
       specialTraits = {
          { 0.3 { LastingEffect SLOWED }}
@@ -221,7 +221,7 @@
       requirements = {
         { 0.0 MinTurnRequirement 1000 }
         { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_IRON"}}
-        { 0.0 CostInfo CORPSE 1}
+        { 0.0 CostInfo "CORPSE" 1}
       }
       specialTraits = {
          { 0.3 { LastingEffect TELEPATHY }}
@@ -239,7 +239,7 @@
       requirements = {
         { 0.0 MinTurnRequirement 1000 }
         { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_IRON"}}
-        { 0.0 CostInfo CORPSE 1}
+        { 0.0 CostInfo "CORPSE" 1}
       }
       specialTraits = {
          { 1.0 { LastingEffect BAD_BREATH }}
@@ -252,7 +252,7 @@
       spawnLocation = FurnitureType "DEMON_SHRINE"
       requirements = {
         { 0.3 AttractionInfo 1 {FurnitureType "DEMON_SHRINE"}}
-        { 0.0 CostInfo DEMON_PIETY 300 }
+        { 0.0 CostInfo "DEMON_PIETY" 300 }
       }
     }
     {
@@ -262,7 +262,7 @@
       spawnLocation = FurnitureType "DEMON_SHRINE"
       requirements = {
         { 0.3 AttractionInfo 2 {FurnitureType "DEMON_SHRINE"}}
-        { 0.0 CostInfo DEMON_PIETY 1000 }
+        { 0.0 CostInfo "DEMON_PIETY" 1000 }
       }
     }
     {
@@ -272,7 +272,7 @@
       spawnLocation = FurnitureType "DEMON_SHRINE"
       requirements = {
         { 0.3 AttractionInfo 3 {FurnitureType "DEMON_SHRINE"}}
-        { 0.0 CostInfo DEMON_PIETY 3000 }
+        { 0.0 CostInfo "DEMON_PIETY" 3000 }
       }
     }
     {
@@ -334,7 +334,7 @@
       traits = { FIGHTER }
       requirements = {
         { 0.0 RecruitmentInfo { "DARK_ELVES_ALLY" } 3 FIGHTER }
-        { 1.0 CostInfo GOLD 20 }
+        { 1.0 CostInfo "GOLD" 20 }
       }
     }
     {
@@ -342,7 +342,7 @@
       traits = { FIGHTER }
       requirements = {
         { 0.0 RecruitmentInfo { "ORC_VILLAGE" } 3 FIGHTER }
-        { 1.0 CostInfo GOLD 5 }
+        { 1.0 CostInfo "GOLD" 5 }
       }
     }
     {
@@ -350,7 +350,7 @@
       traits = { FIGHTER }
       requirements = {
         { 0.0 RecruitmentInfo { "HARPY_CAVE" } 3 FIGHTER }
-        { 1.0 CostInfo GOLD 12 }
+        { 1.0 CostInfo "GOLD" 12 }
       }
     }
     {
@@ -358,7 +358,7 @@
       traits = { FIGHTER }
       requirements = {
         { 0.0 RecruitmentInfo { "OGRE_CAVE" "ORC_VILLAGE" } 3 FIGHTER }
-        { 1.0 CostInfo GOLD 12 }
+        { 1.0 CostInfo "GOLD" 12 }
       }
     }
     {
@@ -369,7 +369,7 @@
       requirements = {
         { 0.0 TechId "humanoid mutation" }
         { 0.0 Pregnancy }
-        { 1.0 CostInfo GOLD 100 }
+        { 1.0 CostInfo "GOLD" 100 }
       }
       specialTraits = {
          { 0.1 { LastingEffect INSANITY}}
@@ -383,7 +383,7 @@
       requirements = {
         { 0.0 TechId "beast mutation" }
         { 0.0 Pregnancy }
-        { 1.0 CostInfo GOLD 100 }
+        { 1.0 CostInfo "GOLD" 100 }
       }
     }
 }
@@ -484,7 +484,7 @@
       traits = { FIGHTER }
       requirements = {
         { 0.0 RecruitmentInfo { "DWARVES" } 0 FIGHTER }
-        { 1.0 CostInfo GOLD 100 }
+        { 1.0 CostInfo "GOLD" 100 }
       }
       specialTraits = {
        { 1.0 { WorkshopType "FORGE" }}
@@ -497,7 +497,7 @@
       spawnLocation = FurnitureType "ANGEL_SHRINE"
       requirements = {
         { 0.3 AttractionInfo 1 {FurnitureType "ANGEL_SHRINE"}}
-        { 0.0 CostInfo DEMON_PIETY 300 }
+        { 0.0 CostInfo "DEMON_PIETY" 300 }
       }
     }
     {
@@ -507,7 +507,7 @@
       spawnLocation = FurnitureType "ANGEL_SHRINE"
       requirements = {
         { 0.3 AttractionInfo 2 {FurnitureType "ANGEL_SHRINE"}}
-        { 0.0 CostInfo DEMON_PIETY 1000 }
+        { 0.0 CostInfo "DEMON_PIETY" 1000 }
       }
     }
     {
@@ -517,7 +517,7 @@
       spawnLocation = FurnitureType "ANGEL_SHRINE"
       requirements = {
         { 0.3 AttractionInfo 2 {FurnitureType "ANGEL_SHRINE"}}
-        { 0.0 CostInfo DEMON_PIETY 3000 }
+        { 0.0 CostInfo "DEMON_PIETY" 3000 }
       }
     }
     {
@@ -525,7 +525,7 @@
       traits = { FIGHTER }
       requirements = {
         { 0.0 RecruitmentInfo { "TEUTONS" } 3 FIGHTER }
-        { 1.0 CostInfo GOLD 150 }
+        { 1.0 CostInfo "GOLD" 150 }
       }
     }
     {
@@ -537,7 +537,7 @@
       ids = { "DONKEY" "COW" "HORSE" "GOAT" }
       traits = { NO_LIMIT INCREASE_POPULATION }
       requirements = {
-        { 1.0 CostInfo GOLD 50 }
+        { 1.0 CostInfo "GOLD" 50 }
       }
     }
 
@@ -627,7 +627,7 @@
       sound = CREATE_IMP 2
       noAuto = true
       requirements = {
-        { 1 ExponentialCost GOLD 30 5 4 }
+        { 1 ExponentialCost "GOLD" 30 5 4 }
       }
     }
     {

@@ -40,6 +40,7 @@ class Inventory {
   const vector<Item*>& getItems() const;
   vector<Item*> getItems(function<bool (const Item*)> predicate) const;
   const vector<Item*>& getItems(ItemIndex) const;
+  const vector<Item*>& getItems(CollectiveResourceId) const;
   const ItemCounts& getCounts() const;
 
   bool hasItem(const Item*) const;
@@ -64,5 +65,6 @@ class Inventory {
   ItemVector SERIAL(itemsCache);
   double SERIAL(weight) = 0;
   mutable EnumMap<ItemIndex, optional<ItemVector>> indexes;
+  mutable vector<optional<ItemVector>> resourceIndexes;
   void addViewId(ViewId, int count);
 };

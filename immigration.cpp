@@ -134,13 +134,13 @@ optional<string> Immigration::getMissingRequirement(const ImmigrantRequirement& 
       },
       [&](const CostInfo& cost) -> optional<string> {
         if (!collective->hasResource(cost * group.count))
-          return "Not enough " + CollectiveConfig::getResourceInfo(cost.id).name;
+          return "Not enough " + collective->getResourceInfo(cost.id).name;
         else
           return none;
       },
       [&](const ExponentialCost& cost) -> optional<string> {
         if (!collective->hasResource(calculateCost(group.immigrantIndex, cost) * group.count))
-          return "Not enough " + CollectiveConfig::getResourceInfo(cost.base.id).name;
+          return "Not enough " + collective->getResourceInfo(cost.base.id).name;
         else
           return none;
       },

@@ -18,6 +18,7 @@
 #include "minion_equipment.h"
 #include "game.h"
 #include "content_factory.h"
+#include "item_fetch_info.h"
 
 SERIALIZE_DEF(MinionActivities, allFurniture, activities)
 SERIALIZATION_CONSTRUCTOR_IMPL(MinionActivities)
@@ -158,15 +159,14 @@ vector<pair<Position, FurnitureLayer>> MinionActivities::getAllPositions(const C
 
 static PTask getDropItemsTask(Collective* collective, const Creature* creature) {
   auto& config = collective->getConfig();
-  for (const ItemFetchInfo& elem : config.getFetchInfo()) {
-    vector<Item*> items = creature->getEquipment().getItems(elem.index).filter([&elem, &collective, &creature](const Item* item) {
-        return elem.predicate(collective, item) && !collective->getMinionEquipment().isOwner(item, creature); });
+  for (const ItemFetchInfo& elem : config.getFetchInfo(collective->getGame()->getContentFactory())) {
+    vector<Item*> items = creature->getEquipment().getItems().filter([&elem, &collective, &creature](const Item* item) {
+        return elem.applies(collective, item) && !collective->getMinionEquipment().isOwner(item, creature); });
     if (!items.empty() && !collective->getStoragePositions(elem.storageId).empty())
       return Task::dropItems(items, elem.storageId, collective);
   }
   return nullptr;
 };
-
 
 MinionActivities::MinionActivities(const ContentFactory* contentFactory) {
   for (auto minionTask : ENUM_ALL(MinionActivity)) {

@@ -85,6 +85,6 @@ class ConstructionMap {
   vector<pair<Position, FurnitureLayer>> SERIAL(allFurniture);
   PositionMap<TrapInfo> SERIAL(traps);
   vector<Position> SERIAL(allTraps);
-  EnumMap<CollectiveResourceId, int> SERIAL(debt);
+  unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> SERIAL(debt);
   void addDebt(const CostInfo&);
 };

@@ -106,8 +106,8 @@ void SimpleGame::update() {
   std::cout << "\n";
   std::cout << "Current z-level: " << zLevel << "\n";
   std::cout << "Resources: ";
-  for (auto res : ENUM_ALL(CollectiveResourceId))
-    std::cout << resources[res] << " " << CollectiveConfig::getResourceInfo(res).name << ", ";
+  for (auto& resource : factory->resourceInfo)
+    std::cout << resources[resource.first] << " " << resource.second.name << ", ";
   std::cout << "\n";
   std::cout << "Population: " << minions.size() << "/" << maxPopulation << "\n";
   std::cout << "Immigrants: ";

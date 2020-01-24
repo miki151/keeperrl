@@ -2,6 +2,7 @@
 
 #include "enums.h"
 #include "util.h"
+#include "resource_id.h"
 
 class CostInfo {
   public:

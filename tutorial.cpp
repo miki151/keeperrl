@@ -63,7 +63,7 @@ bool Tutorial::canContinue(WConstGame game) const {
     case State::CONTROLS2:
       return true;
     case State::GET_200_WOOD:
-      return collective->numResource(CollectiveResourceId::WOOD) >= 200;
+      return collective->numResource(CollectiveResourceId("WOOD")) >= 200;
     case State::DIG_ROOM:
       return getHighlightedSquaresHigh(game).empty();
     case State::BUILD_DOOR:
@@ -121,7 +121,7 @@ bool Tutorial::canContinue(WConstGame game) const {
       return villain->isConquered();
     case State::LOOT_VILLAGE:
       for (auto pos : villain->getTerritory().getAll())
-        if (!pos.getItems(ItemIndex::GOLD).empty())
+        if (!pos.getItems(CollectiveResourceId("GOLD")).empty())
           return false;
       return true;
     case State::LEAVE_CONTROL:

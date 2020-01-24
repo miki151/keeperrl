@@ -20,28 +20,12 @@ const char* getName(ItemIndex index, int count) {
 
 bool hasIndex(ItemIndex index, const Item* item) {
   switch (index) {
-    case ItemIndex::GOLD:
-      return item->getClass() == ItemClass::GOLD;
-    case ItemIndex::WOOD:
-      return item->getResourceId() == CollectiveResourceId::WOOD;
-    case ItemIndex::IRON:
-      return item->getResourceId() == CollectiveResourceId::IRON;
-    case ItemIndex::ADA:
-      return item->getResourceId() == CollectiveResourceId::ADA;
-    case ItemIndex::STONE:
-      return item->getResourceId() == CollectiveResourceId::STONE;
-    case ItemIndex::REVIVABLE_CORPSE: {
-      auto corpseInfo = item->getCorpseInfo();
-      return item->getClass() == ItemClass::CORPSE && corpseInfo && corpseInfo->canBeRevived;
-    }
     case ItemIndex::WEAPON:
       return item->getClass() == ItemClass::WEAPON;
     case ItemIndex::TRAP:
       if (auto& effect = item->getEffect())
         return !!effect->effect->getValueMaybe<Effects::PlaceFurniture>();
       return false;
-    case ItemIndex::CORPSE:
-      return item->getClass() == ItemClass::CORPSE;
     case ItemIndex::MINION_EQUIPMENT:
       return MinionEquipment::isItemUseful(item);
     case ItemIndex::RANGED_WEAPON:

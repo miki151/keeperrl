@@ -44,7 +44,7 @@ void Workshops::Type::addDebt(CostInfo cost) {
 }
 
 void Workshops::Type::checkDebtConsistency() const {
-  EnumMap<CollectiveResourceId, int> nowDebt;
+  unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> nowDebt;
   for (auto& elem : queued) {
     int count = elem.number;
     if (!!elem.state)
@@ -159,7 +159,7 @@ const vector<Workshops::QueuedItem>& Workshops::Type::getQueued() const {
 int Workshops::getDebt(CollectiveResourceId resource) const {
   int ret = 0;
   for (auto& elem : types)
-    ret += elem.second.debt[resource];
+    ret += getValueMaybe(elem.second.debt, resource).value_or(0);
   return ret;
 }
 

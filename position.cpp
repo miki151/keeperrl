@@ -415,14 +415,20 @@ const vector<Item*>& Position::getItems() const {
   }
 }
 
+static vector<Item*> emptyItems;
+
 const vector<Item*>& Position::getItems(ItemIndex index) const {
-  PROFILE;
   if (isValid())
     return getSquare()->getInventory().getItems(index);
-  else {
-    static vector<Item*> empty;
-    return empty;
-  }
+  else
+    return emptyItems;
+}
+
+const vector<Item*>& Position::getItems(CollectiveResourceId id) const {
+  if (isValid())
+    return getSquare()->getInventory().getItems(id);
+  else
+    return emptyItems;
 }
 
 PItem Position::removeItem(Item* it) const {

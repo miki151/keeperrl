@@ -3,97 +3,97 @@
 {
   "WORKSHOP"
   {
-      {item = {Simple "Club"}    work = 3 cost = WOOD 10    tech = none      batchSize = 1    tutorialHighlight = SCHEDULE_CLUB}
-      {{Simple "LeatherArmor"}          6        WOOD 20}
-      {{Simple "LeatherHelm"}           1        WOOD 6}
-      {{Simple "LeatherBoots"}          2        WOOD 10}
-      {{Simple "WoodenShield"}          2        WOOD 10}
-      {{Simple "LeatherGloves"}         1        WOOD 2}
-      {{Simple "HeavyClub"}             5        WOOD 20      "two-handed weapons"}
-      {{Simple "Cornuthaum1"}           5        GOLD 0       "sorcery"}
-      {{Simple "Cornuthaum2"}           8        GOLD 20      "advanced sorcery"}
-      {{Simple "Cornuthaum3"}           12       GOLD 40      "master sorcery"}
-      {{Simple "Bow"}                   13       WOOD 20      "archery"}
-      {{Simple "WoodenStaff"}           13       WOOD 20      "magical weapons"}
-      {{Simple "Torch"}                 2        WOOD 4}
+      {item = {Simple "Club"}    work = 3 cost = "WOOD" 10    tech = none      batchSize = 1    tutorialHighlight = SCHEDULE_CLUB}
+      {{Simple "LeatherArmor"}          6        "WOOD" 20}
+      {{Simple "LeatherHelm"}           1        "WOOD" 6}
+      {{Simple "LeatherBoots"}          2        "WOOD" 10}
+      {{Simple "WoodenShield"}          2        "WOOD" 10}
+      {{Simple "LeatherGloves"}         1        "WOOD" 2}
+      {{Simple "HeavyClub"}             5        "WOOD" 20      "two-handed weapons"}
+      {{Simple "Cornuthaum1"}           5        "GOLD" 0       "sorcery"}
+      {{Simple "Cornuthaum2"}           8        "GOLD" 20      "advanced sorcery"}
+      {{Simple "Cornuthaum3"}           12       "GOLD" 40      "master sorcery"}
+      {{Simple "Bow"}                   13       "WOOD" 20      "archery"}
+      {{Simple "WoodenStaff"}           13       "WOOD" 20      "magical weapons"}
+      {{Simple "Torch"}                 2        "WOOD" 4}
   }
   
   "FORGE"
   {
-      {{Simple "Sword"}                 10       IRON 20}
-      {{Simple "ChainArmor"}            30       IRON 40}
-      {item = {Simple "RedDragonArmor"}   work = 30 cost = IRON 40 requireIngredient = "red_scales" }
-      {item = {Simple "BlackDragonArmor"} work = 30 cost = IRON 40 requireIngredient = "black_scales" }
-      {item = {Simple "WhiteDragonArmor"} work = 30 cost = IRON 40 requireIngredient = "white_scales" }
-      {item = {Simple "GreenDragonArmor"} work = 30 cost = IRON 40 requireIngredient = "green_scales" }
-      {item = {Simple "YellowDragonArmor"}work = 30 cost = IRON 40 requireIngredient = "yellow_scales" }
-      {{Simple "IronHelm"}              8        IRON 16}
-      {{Simple "IronBoots"}             12       IRON 24}
+      {{Simple "Sword"}                 10       "IRON" 20}
+      {{Simple "ChainArmor"}            30       "IRON" 40}
+      {item = {Simple "RedDragonArmor"}   work = 30 cost = "IRON" 40 requireIngredient = "red_scales" }
+      {item = {Simple "BlackDragonArmor"} work = 30 cost = "IRON" 40 requireIngredient = "black_scales" }
+      {item = {Simple "WhiteDragonArmor"} work = 30 cost = "IRON" 40 requireIngredient = "white_scales" }
+      {item = {Simple "GreenDragonArmor"} work = 30 cost = "IRON" 40 requireIngredient = "green_scales" }
+      {item = {Simple "YellowDragonArmor"}work = 30 cost = "IRON" 40 requireIngredient = "yellow_scales" }
+      {{Simple "IronHelm"}              8        "IRON" 16}
+      {{Simple "IronBoots"}             12       "IRON" 24}
       {item = {Simple "CyclopsHelm"}
        work = 30 
-       cost = IRON 40
+       cost = "IRON" 40
        requireIngredient = "cyclops_testes"
       }
-      {{Simple "IronGloves"}            3        IRON 2}
-      {{Simple "IronShield"}            12       IRON 24}
-      {{Simple "WarHammer"}             16       IRON 40      "two-handed weapons"}
-      {{Simple "BattleAxe"}             22       IRON 50      "two-handed weapons"}
-      {{Simple "IronStaff"}             20       IRON 40      "magical weapons"}
-      {{Simple "GoldenStaff"}           20       GOLD 200     "magical weapons"}
-      {{Simple "AdaSword"}              20       ADA 20}
-      {{Simple "AdaArmor"}              30       ADA 40}
-      {{Simple "AdaHelm"}               15       ADA 16}
-      {{Simple "AdaBoots"}              15       ADA 24}
-      {{Simple "AdaGloves"}             6        ADA 2}
-      {{Simple "AdaShield"}             12       ADA 24}
-      {{Simple "AdaWarHammer"}          20       ADA 40       "two-handed weapons"}
-      {{Simple "AdaBattleAxe"}          22       ADA 50       "two-handed weapons"}
+      {{Simple "IronGloves"}            3        "IRON" 2}
+      {{Simple "IronShield"}            12       "IRON" 24}
+      {{Simple "WarHammer"}             16       "IRON" 40      "two-handed weapons"}
+      {{Simple "BattleAxe"}             22       "IRON" 50      "two-handed weapons"}
+      {{Simple "IronStaff"}             20       "IRON" 40      "magical weapons"}
+      {{Simple "GoldenStaff"}           20       "GOLD" 200     "magical weapons"}
+      {{Simple "AdaSword"}              20       "ADA" 20}
+      {{Simple "AdaArmor"}              30       "ADA" 40}
+      {{Simple "AdaHelm"}               15       "ADA" 16}
+      {{Simple "AdaBoots"}              15       "ADA" 24}
+      {{Simple "AdaGloves"}             6        "ADA" 2}
+      {{Simple "AdaShield"}             12       "ADA" 24}
+      {{Simple "AdaWarHammer"}          20       "ADA" 40       "two-handed weapons"}
+      {{Simple "AdaBattleAxe"}          22       "ADA" 50       "two-handed weapons"}
   }
   
   "LABORATORY"
   {
-      {{Potion Lasting SLOWED}               2        GOLD 2}
-      {{Potion Lasting SLEEP}                2        GOLD 2}
-      {{Potion Lasting POISON_RESISTANT}     4        GOLD 6}
-      {{Potion Lasting SPEED}                4        GOLD 6}
-      {{Potion Lasting TELEPATHY}            4        GOLD 6}
-      {{Potion Lasting REGENERATION}         4        GOLD 8}
-      {{Potion Lasting POISON}               4        GOLD 8}
-      {{Potion Lasting FLYING}               4        GOLD 8}
-      {{Potion Heal FLESH}                   4        GOLD 10      "advanced alchemy"}
-      {{Potion Lasting BLIND}                4        GOLD 15      "advanced alchemy"}
-      {{Potion Lasting MELEE_RESISTANCE}     6        GOLD 20      "advanced alchemy"}
-      {{Potion Lasting MELEE_VULNERABILITY}  6        GOLD 40      "advanced alchemy"}
-      {{Potion Lasting MAGIC_VULNERABILITY}  6        GOLD 40      "advanced alchemy"}
-      {{Potion Lasting INVISIBLE}            6        GOLD 20      "advanced alchemy"}
-      {{Potion Heal SPIRIT}                  4        GOLD 20      "advanced alchemy"}
-      {item = {Potion IncreaseAttr DEFENSE 5} work = 20 cost = GOLD 100 requireIngredient = "cyclops_brain" }
-      {item = {Potion Lasting PLAGUE} work = 5 cost = GOLD 10 requireIngredient = "zombie_brain" }
-      {item = {Potion Permanent POISON_RESISTANT} work = 20 cost = GOLD 80 requireIngredient = "hydra_tongue" }
-      {{Simple "GoldPiece"}                           5        IRON 30      "alchemical conversion"       10}
-      {{Simple "WoodPlank"}                           5        GOLD 10      "alchemical conversion"       10}
-      {{Simple "IronOre"}                             5        GOLD 10      "alchemical conversion"       10}
-      {{Simple "AdaOre"}                              5        GOLD 40      "alchemical conversion"       10}
-      {{Simple "Rock"}                                5        GOLD 10      "alchemical conversion"       10}
+      {{Potion Lasting SLOWED}               2        "GOLD" 2}
+      {{Potion Lasting SLEEP}                2        "GOLD" 2}
+      {{Potion Lasting POISON_RESISTANT}     4        "GOLD" 6}
+      {{Potion Lasting SPEED}                4        "GOLD" 6}
+      {{Potion Lasting TELEPATHY}            4        "GOLD" 6}
+      {{Potion Lasting REGENERATION}         4        "GOLD" 8}
+      {{Potion Lasting POISON}               4        "GOLD" 8}
+      {{Potion Lasting FLYING}               4        "GOLD" 8}
+      {{Potion Heal FLESH}                   4        "GOLD" 10      "advanced alchemy"}
+      {{Potion Lasting BLIND}                4        "GOLD" 15      "advanced alchemy"}
+      {{Potion Lasting MELEE_RESISTANCE}     6        "GOLD" 20      "advanced alchemy"}
+      {{Potion Lasting MELEE_VULNERABILITY}  6        "GOLD" 40      "advanced alchemy"}
+      {{Potion Lasting MAGIC_VULNERABILITY}  6        "GOLD" 40      "advanced alchemy"}
+      {{Potion Lasting INVISIBLE}            6        "GOLD" 20      "advanced alchemy"}
+      {{Potion Heal SPIRIT}                  4        "GOLD" 20      "advanced alchemy"}
+      {item = {Potion IncreaseAttr DEFENSE 5} work = 20 cost = "GOLD" 100 requireIngredient = "cyclops_brain" }
+      {item = {Potion Lasting PLAGUE} work = 5 cost = "GOLD" 10 requireIngredient = "zombie_brain" }
+      {item = {Potion Permanent POISON_RESISTANT} work = 20 cost = "GOLD" 80 requireIngredient = "hydra_tongue" }
+      {{Simple "GoldPiece"}                           5        "IRON" 30      "alchemical conversion"       10}
+      {{Simple "WoodPlank"}                           5        "GOLD" 10      "alchemical conversion"       10}
+      {{Simple "IronOre"}                             5        "GOLD" 10      "alchemical conversion"       10}
+      {{Simple "AdaOre"}                              5        "GOLD" 40      "alchemical conversion"       10}
+      {{Simple "Rock"}                                5        "GOLD" 10      "alchemical conversion"       10}
   }
   
   "JEWELER"
   {
-      {{Ring POISON_RESISTANT}               10       GOLD 20}
-      {{Ring COLD_RESISTANT}                 10       GOLD 20}
-      {{Ring FIRE_RESISTANT}                 10       GOLD 30}
-      {{Ring MAGIC_RESISTANCE}               10       GOLD 30}
-      {{Ring RESTED}                         10       GOLD 30}
-      {{Ring SATIATED}                       10       GOLD 30}
-      {{Ring FAST_CRAFTING}                  10       GOLD 40}
-      {{Ring FAST_TRAINING}                  10       GOLD 40}
-      {{Ring SPELL_DAMAGE}                   10       GOLD 40}
-      {{Ring SPYING}                         10       GOLD 40}
-      {{Amulet NIGHT_VISION}                 10       GOLD 20}
-      {{Amulet ELF_VISION}                   10       GOLD 20}
-      {{Amulet WARNING}                      10       GOLD 30}
-      {{Simple "DefenseAmulet"}                       10       GOLD 40}
-      {{Amulet REGENERATION}                 10       GOLD 60}
+      {{Ring POISON_RESISTANT}               10       "GOLD" 20}
+      {{Ring COLD_RESISTANT}                 10       "GOLD" 20}
+      {{Ring FIRE_RESISTANT}                 10       "GOLD" 30}
+      {{Ring MAGIC_RESISTANCE}               10       "GOLD" 30}
+      {{Ring RESTED}                         10       "GOLD" 30}
+      {{Ring SATIATED}                       10       "GOLD" 30}
+      {{Ring FAST_CRAFTING}                  10       "GOLD" 40}
+      {{Ring FAST_TRAINING}                  10       "GOLD" 40}
+      {{Ring SPELL_DAMAGE}                   10       "GOLD" 40}
+      {{Ring SPYING}                         10       "GOLD" 40}
+      {{Amulet NIGHT_VISION}                 10       "GOLD" 20}
+      {{Amulet ELF_VISION}                   10       "GOLD" 20}
+      {{Amulet WARNING}                      10       "GOLD" 30}
+      {{Simple "DefenseAmulet"}                       10       "GOLD" 40}
+      {{Amulet REGENERATION}                 10       "GOLD" 60}
   }
 }
 
@@ -101,57 +101,57 @@
 {
   "WORKSHOP"
   {
-      {{TrapItem "BOULDER_TRAP" "boulder"}      20       STONE 120    "traps"}
-      {{TrapItem "POISON_GAS_TRAP" "poison"}    10       WOOD 20      "traps"}
-      {{TrapItem "ALARM_TRAP" "alarm"}          8        WOOD 20      "traps"}
-      {{TrapItem "WEB_TRAP" "web"}              8        WOOD 20      "traps"}
-      {{TrapItem "SURPRISE_TRAP" "surprise"}    8        WOOD 20      "traps"}
-      {{TrapItem "TERROR_TRAP" "terror"}        8        WOOD 20      "traps"}
-      {{TrapItem "FIRE_TRAP" "fire"}            8        WOOD 20      "traps"}
+      {{TrapItem "BOULDER_TRAP" "boulder"}      20       "STONE" 120    "traps"}
+      {{TrapItem "POISON_GAS_TRAP" "poison"}    10       "WOOD" 20      "traps"}
+      {{TrapItem "ALARM_TRAP" "alarm"}          8        "WOOD" 20      "traps"}
+      {{TrapItem "WEB_TRAP" "web"}              8        "WOOD" 20      "traps"}
+      {{TrapItem "SURPRISE_TRAP" "surprise"}    8        "WOOD" 20      "traps"}
+      {{TrapItem "TERROR_TRAP" "terror"}        8        "WOOD" 20      "traps"}
+      {{TrapItem "FIRE_TRAP" "fire"}            8        "WOOD" 20      "traps"}
   }
 }
 "gnomes"
 {
   "WORKSHOP"
   {
-      {{Assembled "AUTOMATON_WORKER_WOOD" none}   6       WOOD 20    "automatons"}
+      {{Assembled "AUTOMATON_WORKER_WOOD" none}   6       "WOOD" 20    "automatons"}
       {{Assembled "AUTOMATON_CORPUS_WOOD" {"automaton_corpus" Rgb 180 140 55 255}}
-            8       WOOD 30    "automatons"}
+            8       "WOOD" 30    "automatons"}
       {{Assembled "LIGHT_AUTOMATON_CORPUS_WOOD" {"automaton_corpus" Rgb 180 140 55 255}}
-            8       WOOD 20    "advanced automatons"}
-      {{Simple    "HumanoidHeadWood"}        2       WOOD 5    "advanced automatons"}
-      {{Simple    "ArcherHeadWood"}          2       WOOD 5    "advanced automatons"}
-      {{Simple    "AutomatonLegsWood"}       2       WOOD 5    "automatons"}
-      {{Simple    "AutomatonArmsWood"}       2       WOOD 5    "automatons"}
+            8       "WOOD" 20    "advanced automatons"}
+      {{Simple    "HumanoidHeadWood"}        2       "WOOD" 5    "advanced automatons"}
+      {{Simple    "ArcherHeadWood"}          2       "WOOD" 5    "advanced automatons"}
+      {{Simple    "AutomatonLegsWood"}       2       "WOOD" 5    "automatons"}
+      {{Simple    "AutomatonArmsWood"}       2       "WOOD" 5    "automatons"}
   } 
   "FORGE"
   {
-      {{Assembled "AUTOMATON_WORKER_IRON" none}   6       IRON 20    "automatons"}
+      {{Assembled "AUTOMATON_WORKER_IRON" none}   6       "IRON" 20    "automatons"}
       {{Assembled "AUTOMATON_CORPUS_IRON" {"automaton_corpus" Rgb 140 148 148 255}}
-            8       IRON 30    "automatons"}
+            8       "IRON" 30    "automatons"}
       {{Assembled "LIGHT_AUTOMATON_CORPUS_IRON" {"automaton_corpus" Rgb 140 148 148 255}}
-            8       IRON 20    "advanced automatons"}
+            8       "IRON" 20    "advanced automatons"}
       {{Assembled "HEAVY_AUTOMATON_CORPUS_IRON" {"automaton_corpus" Rgb 140 148 148 255}}
-            8       IRON 40    "advanced automatons"}
-      {{Simple    "HumanoidHeadIron"}        2       IRON 5    "advanced automatons"}
-      {{Simple    "ArcherHeadIron"}          2       IRON 5    "advanced automatons"}
-      {{Simple    "FireHeadIron"}            2       IRON 5    "advanced automatons"}
-      {{Simple    "AcidHeadIron"}            2       IRON 5    "advanced automatons"}
-      {{Simple    "AutomatonArmsIron"}       2       IRON 5    "automatons"}
-      {{Simple    "SharpAutomatonArmsIron"}  2       IRON 5    "advanced automatons"}
-      {{Simple    "RepairAutomatonArmsIron"} 2       IRON 5    "advanced automatons"}
-      {{Simple    "AutomatonLegsIron"}       2       IRON 5    "automatons"}
+            8       "IRON" 40    "advanced automatons"}
+      {{Simple    "HumanoidHeadIron"}        2       "IRON" 5    "advanced automatons"}
+      {{Simple    "ArcherHeadIron"}          2       "IRON" 5    "advanced automatons"}
+      {{Simple    "FireHeadIron"}            2       "IRON" 5    "advanced automatons"}
+      {{Simple    "AcidHeadIron"}            2       "IRON" 5    "advanced automatons"}
+      {{Simple    "AutomatonArmsIron"}       2       "IRON" 5    "automatons"}
+      {{Simple    "SharpAutomatonArmsIron"}  2       "IRON" 5    "advanced automatons"}
+      {{Simple    "RepairAutomatonArmsIron"} 2       "IRON" 5    "advanced automatons"}
+      {{Simple    "AutomatonLegsIron"}       2       "IRON" 5    "automatons"}
   } 
   "LABORATORY"
   {
-      {{AutomatonPaint Rgb 210 90 90 255} 2 GOLD 0 }
-      {{AutomatonPaint Rgb 90 210 90 255} 2 GOLD 0 }
-      {{AutomatonPaint Rgb 90 90 210 255} 2 GOLD 0 }
-      {{AutomatonPaint Rgb 210 210 90 255} 2 GOLD 0 }
-      {{AutomatonPaint Rgb 90 210 210 255} 2 GOLD 0 }
-      {{AutomatonPaint Rgb 210 90 210 255} 2 GOLD 0 }
-      {{AutomatonPaint Rgb 90 90 90 255} 2 GOLD 0 }
-      {{AutomatonPaint Rgb 210 210 210 255} 2 GOLD 0 }
+      {{AutomatonPaint Rgb 210 90 90 255} 2 "GOLD" 0 }
+      {{AutomatonPaint Rgb 90 210 90 255} 2 "GOLD" 0 }
+      {{AutomatonPaint Rgb 90 90 210 255} 2 "GOLD" 0 }
+      {{AutomatonPaint Rgb 210 210 90 255} 2 "GOLD" 0 }
+      {{AutomatonPaint Rgb 90 210 210 255} 2 "GOLD" 0 }
+      {{AutomatonPaint Rgb 210 90 210 255} 2 "GOLD" 0 }
+      {{AutomatonPaint Rgb 90 90 90 255} 2 "GOLD" 0 }
+      {{AutomatonPaint Rgb 210 210 210 255} 2 "GOLD" 0 }
   }
 }
 

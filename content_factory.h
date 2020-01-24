@@ -13,6 +13,7 @@
 #include "biome_id.h"
 #include "campaign_info.h"
 #include "workshop_info.h"
+#include "resource_info.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -54,6 +55,7 @@ class ContentFactory {
   map<BiomeId, BiomeInfo> SERIAL(biomeInfo);
   CampaignInfo SERIAL(campaignInfo);
   map<WorkshopType, WorkshopInfo> SERIAL(workshopInfo);
+  unordered_map<CollectiveResourceId, ResourceInfo, CustomHash<CollectiveResourceId>> SERIAL(resourceInfo);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();
@@ -77,4 +79,5 @@ class ContentFactory {
   optional<string> readBuildingInfo(const GameConfig*, KeyVerifier*);
   optional<string> readWorkshopInfo(const GameConfig*, KeyVerifier*);
   optional<string> readCampaignInfo(const GameConfig*, KeyVerifier*);
+  optional<string> readResourceInfo(const GameConfig*, KeyVerifier*);
 };

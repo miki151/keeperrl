@@ -161,7 +161,7 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
 //      if (getCollective()->getGame()->canTransferCreature(c, enemy->getLevel()->getModel()))
         collective->getGame()->transferCreature(c, enemy->getModel());
     optional<int> ransom;
-    int hisGold = enemy->numResource(CollectiveResourceId::GOLD);
+    int hisGold = enemy->numResource(CollectiveResourceId("GOLD"));
     if (behaviour->ransom && hisGold >= behaviour->ransom->second)
       ransom = max<int>(behaviour->ransom->second,
           (Random.getDouble(behaviour->ransom->first * 0.6, behaviour->ransom->first * 1.5)) * hisGold);

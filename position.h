@@ -75,6 +75,7 @@ class Position {
   void getViewIndex(ViewIndex&, const Creature* viewer) const;
   const vector<Item*>& getItems() const;
   const vector<Item*>& getItems(ItemIndex) const;
+  const vector<Item*>& getItems(CollectiveResourceId) const;
   PItem removeItem(Item*) const;
   Inventory& modInventory() const;
   const Inventory& getInventory() const;

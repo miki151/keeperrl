@@ -30,6 +30,7 @@
 #include "item_prefix.h"
 #include "item_upgrade_info.h"
 #include "automaton_part.h"
+#include "resource_id.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 

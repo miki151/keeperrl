@@ -62,6 +62,7 @@
 #include "health_type.h"
 #include "village_control.h"
 #include "automaton_part.h"
+#include "item_fetch_info.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -96,7 +97,6 @@ PCollective Collective::create(WModel model, TribeId tribe, const optional<Colle
 
 void Collective::init(CollectiveConfig cfg) {
   config.reset(std::move(cfg));
-  credit = cfg.getStartingResource();
 }
 
 void Collective::setImmigration(PImmigration i) {
@@ -515,7 +515,7 @@ void Collective::tick() {
   if (config->getConstructions())
     updateConstructions();
   if (Random.roll(5)) {
-    auto& fetchInfo = getConfig().getFetchInfo();
+    auto fetchInfo = getConfig().getFetchInfo(getGame()->getContentFactory());
     if (!fetchInfo.empty()) {
       for (Position pos : territory->getAll())
         if (!isDelayed(pos) && pos.canEnterEmpty(MovementTrait::WALK) && !pos.getItems().empty())
@@ -710,7 +710,7 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
   string deathDescription = victim->getAttributes().getDeathDescription();
   control->onMemberKilled(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
-    returnResource({ResourceId::PRISONER_HEAD, 1});
+    returnResource({ResourceId("PRISONER_HEAD"), 1});
   if (!hasTrait(victim, MinionTrait::FARM_ANIMAL) && !hasTrait(victim, MinionTrait::SUMMONED)) {
     decreaseMoraleForKill(killer, victim);
     if (killer)
@@ -800,11 +800,10 @@ GlobalTime Collective::getGlobalTime() const {
 }
 
 int Collective::numResource(ResourceId id) const {
-  int ret = credit[id];
-  if (auto itemIndex = config->getResourceInfo(id).itemIndex)
-    if (auto storage = config->getResourceInfo(id).storageId)
-      for (auto& pos : getStoragePositions(*storage))
-        ret += pos.getItems(*itemIndex).size();
+  int ret = getValueMaybe(credit, id).value_or(0);
+  if (auto storage = getResourceInfo(id).storageId)
+    for (auto& pos : getStoragePositions(*storage))
+      ret += pos.getItems(id).size();
   return ret;
 }
 
@@ -825,6 +824,10 @@ bool Collective::hasResource(const CostInfo& cost) const {
   return numResource(cost.id) >= cost.value;
 }
 
+const ResourceInfo& Collective::getResourceInfo(ResourceId id) const {
+  return getGame()->getContentFactory()->resourceInfo.at(id);
+}
+
 void Collective::takeResource(const CostInfo& cost) {
   int num = cost.value;
   if (num == 0)
@@ -839,28 +842,28 @@ void Collective::takeResource(const CostInfo& cost) {
       credit[cost.id] = 0;
     }
   }
-  if (auto itemIndex = config->getResourceInfo(cost.id).itemIndex)
-    if (auto storage = config->getResourceInfo(cost.id).storageId)
-      for (auto& pos : getStoragePositions(*storage)) {
-        vector<Item*> goldHere = pos.getItems(*itemIndex);
-        for (Item* it : goldHere) {
-          pos.removeItem(it);
-          if (--num == 0)
-            return;
-        }
+  if (auto storage = getResourceInfo(cost.id).storageId)
+    for (auto& pos : getStoragePositions(*storage)) {
+      vector<Item*> goldHere = pos.getItems(cost.id);
+      for (Item* it : goldHere) {
+        pos.removeItem(it);
+        if (--num == 0)
+          return;
       }
-  FATAL << "Not enough " << config->getResourceInfo(cost.id).name << " missing " << num << " of " << cost.value;
+    }
+  FATAL << "Not enough " << getResourceInfo(cost.id).name << " missing " << num << " of " << cost.value;
 }
 
 void Collective::returnResource(const CostInfo& amount) {
   if (amount.value == 0)
     return;
   CHECK(amount.value > 0);
-  if (auto storage = config->getResourceInfo(amount.id).storageId) {
-    const auto& destination = getStoragePositions(*storage);
+  auto& info = getResourceInfo(amount.id);
+  if (info.storageId && info.itemId) {
+    const auto& destination = getStoragePositions(*info.storageId);
     if (!destination.empty()) {
-      Random.choose(destination).dropItems(config->getResourceInfo(amount.id)
-          .itemId.get(amount.value, getGame()->getContentFactory()));
+      Random.choose(destination).dropItems(
+          info.itemId->get(amount.value, getGame()->getContentFactory()));
       return;
     }
   }
@@ -928,8 +931,8 @@ int Collective::getNumItems(ItemIndex index, bool includeMinions) const {
 }
 
 const PositionSet& Collective::getStorageForPillagedItem(const Item* item) const {
-  for (auto& info : config->getFetchInfo())
-    if (hasIndex(info.index, item))
+  for (auto& info : config->getFetchInfo(getGame()->getContentFactory()))
+    if (info.applies(this, item))
       return getStoragePositions(info.storageId);
   return zones->getPositions(ZoneId::STORAGE_EQUIPMENT);
 }
@@ -1233,8 +1236,7 @@ void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
   const auto& destination = getStoragePositions(elem.storageId);
   if (destination.count(pos))
     return;
-  vector<Item*> equipment = pos.getItems(elem.index).filter(
-      [this, &elem] (const Item* item) { return elem.predicate(this, item); });
+  vector<Item*> equipment = elem.getItems(this, pos);
   if (!equipment.empty()) {
     if (!destination.empty()) {
       warnings->setWarning(elem.warning, false);
@@ -1348,7 +1350,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
               for (auto c : toHeal)
                 c->heal(double(efficiency) * 0.05 / toHeal.size());
             } else
-              returnResource(CostInfo(ResourceId::DEMON_PIETY, int(efficiency)));
+              returnResource(CostInfo(ResourceId("DEMON_PIETY"), int(efficiency)));
             break;
           }
           case BuiltinUsageId::TRAIN:

@@ -170,7 +170,7 @@ double VillageBehaviour::getTriggerValue(const AttackTrigger& trigger, const Vil
               enemy->getPopulationSize(), t.value);
         },
         [&](const Gold& t) {
-          return goldMaxProb * goldFun(enemy->numResource(Collective::ResourceId::GOLD), t.value);
+          return goldMaxProb * goldFun(enemy->numResource(CollectiveResourceId("GOLD")), t.value);
         },
         [&](const StolenItems&) {
           return stolenMaxProb * stolenItemsFun(self->stolenItemCount);

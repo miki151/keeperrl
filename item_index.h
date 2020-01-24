@@ -3,13 +3,6 @@
 #include "util.h"
 
 RICH_ENUM(ItemIndex,
-  GOLD,
-  WOOD,
-  IRON,
-  ADA,
-  STONE,
-  REVIVABLE_CORPSE,
-  CORPSE,
   WEAPON,
   TRAP,
   MINION_EQUIPMENT,

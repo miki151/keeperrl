@@ -40,6 +40,7 @@
 #include "content_factory.h"
 #include "bed_type.h"
 #include "item_types.h"
+#include "item_fetch_info.h"
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
@@ -197,58 +198,24 @@ CollectiveConfig& CollectiveConfig::setConquerCondition(ConquerCondition c) {
   return *this;
 }
 
-const ResourceInfo& CollectiveConfig::getResourceInfo(CollectiveResourceId id) {
-  static EnumMap<CollectiveResourceId, ResourceInfo> resourceInfo([](CollectiveResourceId id)->ResourceInfo {
-    switch (id) {
-      case CollectiveResourceId::PRISONER_HEAD:
-        return { none, none, ItemType(CustomItemId("GoldPiece")), "prisoner heads", ViewId("impaled_head"), true, none};
-      case CollectiveResourceId::DEMON_PIETY:
-        return { none, none, ItemType(CustomItemId("GoldPiece")), "rituals", ViewId("impaled_head"), true, none};
-      case CollectiveResourceId::GOLD:
-        return {StorageId::GOLD, ItemIndex::GOLD, ItemType(CustomItemId("GoldPiece")), "gold", ViewId("gold"), false, none};
-      case CollectiveResourceId::WOOD:
-        return { StorageId::RESOURCE, ItemIndex::WOOD, ItemType(CustomItemId("WoodPlank")), "wood", ViewId("wood_plank"),
-            false, TutorialHighlight::WOOD_RESOURCE};
-      case CollectiveResourceId::IRON:
-        return { StorageId::RESOURCE, ItemIndex::IRON, ItemType(CustomItemId("IronOre")), "iron", ViewId("iron_rock"), false, none};
-      case CollectiveResourceId::ADA:
-        return { StorageId::RESOURCE, ItemIndex::ADA, ItemType(CustomItemId("AdaOre")), "adamantium", ViewId("ada_ore"), false, none};
-      case CollectiveResourceId::STONE:
-        return { StorageId::RESOURCE, ItemIndex::STONE, ItemType(CustomItemId("Rock")), "granite", ViewId("rock"), false, none};
-      case CollectiveResourceId::CORPSE:
-        return { StorageId::CORPSES, ItemIndex::REVIVABLE_CORPSE, ItemType(CustomItemId("GoldPiece")), "corpses", ViewId("body_part"), true, none};
-    }
-  });
-  return resourceInfo[id];
-}
-
 static CollectiveItemPredicate unMarkedItems() {
   return [](const Collective* col, const Item* it) { return !col->getItemTask(it); };
 }
 
 
-const vector<ItemFetchInfo>& CollectiveConfig::getFetchInfo() const {
+vector<ItemFetchInfo> CollectiveConfig::getFetchInfo(const ContentFactory* factory) const {
   if (type == KEEPER) {
-    static vector<ItemFetchInfo> ret {
-        {ItemIndex::CORPSE, unMarkedItems(), StorageId::CORPSES, CollectiveWarning::GRAVES},
-        {ItemIndex::GOLD, unMarkedItems(), StorageId::GOLD, CollectiveWarning::CHESTS},
+    vector<ItemFetchInfo> ret {
         {ItemIndex::MINION_EQUIPMENT, [](const Collective* col, const Item* it)
             { return it->getClass() != ItemClass::GOLD && !col->getItemTask(it);},
             StorageId::EQUIPMENT, CollectiveWarning::EQUIPMENT_STORAGE},
-        {ItemIndex::WOOD, unMarkedItems(), StorageId::RESOURCE,
-            CollectiveWarning::RESOURCE_STORAGE},
-        {ItemIndex::IRON, unMarkedItems(), StorageId::RESOURCE,
-            CollectiveWarning::RESOURCE_STORAGE},
-        {ItemIndex::ADA, unMarkedItems(), StorageId::RESOURCE,
-            CollectiveWarning::RESOURCE_STORAGE},
-        {ItemIndex::STONE, unMarkedItems(), StorageId::RESOURCE,
-            CollectiveWarning::RESOURCE_STORAGE},
         {ItemIndex::ASSEMBLED_MINION, unMarkedItems(), StorageId::EQUIPMENT,
             CollectiveWarning::EQUIPMENT_STORAGE},
-        /*{ItemIndex::TRAP, unMarkedItems(), [](const Collective* col) -> const PositionSet& {
-                return col->getTerritory().getAllAsSet(); },
-            CollectiveWarning::RESOURCE_STORAGE},*/
     };
+    for (auto& res : factory->resourceInfo)
+      if (res.second.storageId)
+        ret.push_back(ItemFetchInfo {
+            res.first, unMarkedItems(), *res.second.storageId, CollectiveWarning::RESOURCE_STORAGE});
     return ret;
   } else {
     static vector<ItemFetchInfo> empty;
@@ -278,10 +245,6 @@ MinionActivityInfo::MinionActivityInfo(BuiltinUsageId usage, const string& desc)
 
 MinionActivityInfo::MinionActivityInfo(UsagePredicate pred, const string& desc)
     : type(FURNITURE), furniturePredicate(pred), description(desc) {
-}
-
-map<CollectiveResourceId, int> CollectiveConfig::getStartingResource() const {
-  return map<CollectiveResourceId, int>{};
 }
 
 CollectiveConfig::CollectiveConfig(const CollectiveConfig&) = default;

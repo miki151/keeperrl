@@ -201,11 +201,11 @@ void ConstructionMap::TrapInfo::setMarked() {
 }
 
 int ConstructionMap::getDebt(CollectiveResourceId id) const {
-  return debt[id];
+  return getValueMaybe(debt, id).value_or(0);
 }
 
 void ConstructionMap::checkDebtConsistency() {
-  EnumMap<CollectiveResourceId, int> nowDebt;
+  unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> nowDebt;
   for (auto& f : allFurniture) {
     auto& info = furniture[f.second].getOrFail(f.first);
     if (!info.isBuilt(f.first))

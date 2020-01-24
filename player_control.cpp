@@ -564,15 +564,15 @@ int PlayerControl::getNumMinions() const {
 
 typedef CollectiveInfo::Button Button;
 
-static optional<pair<ViewId, int>> getCostObj(CostInfo cost) {
-  auto& resourceInfo = CollectiveConfig::getResourceInfo(cost.id);
-  if (cost.value > 0 && !resourceInfo.dontDisplay)
-    return make_pair(resourceInfo.viewId, (int) cost.value);
+optional<pair<ViewId, int>> PlayerControl::getCostObj(CostInfo cost) const {
+  auto& resourceInfo = collective->getResourceInfo(cost.id);
+  if (cost.value > 0 && resourceInfo.viewId)
+    return make_pair(*resourceInfo.viewId, (int) cost.value);
   else
     return none;
 }
 
-static optional<pair<ViewId, int>> getCostObj(const optional<CostInfo>& cost) {
+optional<pair<ViewId, int>> PlayerControl::getCostObj(const optional<CostInfo>& cost) const {
   if (cost)
     return getCostObj(*cost);
   else
@@ -588,7 +588,6 @@ string PlayerControl::getMinionName(CreatureId id) const {
 
 vector<Button> PlayerControl::fillButtons() const {
   vector<Button> buttons;
-  EnumMap<ResourceId, int> numResource([this](ResourceId id) { return collective->numResource(id);});
   for (auto& button : buildInfo) {
     button.type.visit<void>(
         [&](const BuildInfoTypes::Furniture& elem) {
@@ -601,8 +600,8 @@ vector<Button> PlayerControl::fillButtons() const {
             if (num > 0)
               description = "[" + toString(num) + "]";
           }
-          int availableNow = !elem.cost.value ? 1 : numResource[elem.cost.id] / elem.cost.value;
-          if (CollectiveConfig::getResourceInfo(elem.cost.id).dontDisplay && availableNow)
+          int availableNow = !elem.cost.value ? 1 : collective->numResource(elem.cost.id) / elem.cost.value;
+          if (!collective->getResourceInfo(elem.cost.id).viewId && availableNow)
             description += " (" + toString(availableNow) + " available)";
           buttons.push_back({viewId, button.name,
               getCostObj(elem.cost),
@@ -761,16 +760,16 @@ void PlayerControl::handleTrading(Collective* ally) {
     vector<vector<Item*>> items = Item::stackItems(available);
     if (items.empty())
       break;
-    int budget = collective->numResource(ResourceId::GOLD);
+    int budget = collective->numResource(ResourceId("GOLD"));
     vector<ItemInfo> itemInfo = items.transform(
         [&] (const vector<Item*>& it) { return getTradeItemInfo(getGame()->getContentFactory(), it, budget); });
     auto index = getView()->chooseTradeItem("Trade with " + ally->getName()->full,
-        {ViewId("gold"), collective->numResource(ResourceId::GOLD)}, itemInfo, &scrollPos);
+        {ViewId("gold"), collective->numResource(ResourceId("GOLD"))}, itemInfo, &scrollPos);
     if (!index)
       break;
     for (Item* it : available)
       if (it->getUniqueId() == *index && it->getPrice() <= budget) {
-        collective->takeResource({ResourceId::GOLD, it->getPrice()});
+        collective->takeResource({ResourceId("GOLD"), it->getPrice()});
         Random.choose(storage).dropItem(ally->buyItem(it));
       }
     getView()->updateView(this, true);
@@ -852,8 +851,8 @@ void PlayerControl::handleRansom(bool pay) {
     return;
   auto& ransom = ransomAttacks.front();
   int amount = *ransom.getRansom();
-  if (pay && collective->hasResource({ResourceId::GOLD, amount})) {
-    collective->takeResource({ResourceId::GOLD, amount});
+  if (pay && collective->hasResource({ResourceId("GOLD"), amount})) {
+    collective->takeResource({ResourceId("GOLD"), amount});
     ransom.getAttacker()->onRansomPaid();
   }
   ransomAttacks.removeIndex(0);
@@ -1325,12 +1324,13 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         },
         [&](const CostInfo& cost) {
           costObj = getCostObj(cost);
-          if (!costObj && cost.id == CollectiveResourceId::DEMON_PIETY)
-            requirements.push_back("Requires " + collective->getConfig().getResourceInfo(cost.id).name);
+          if (!costObj && cost.id == ResourceId("DEMON_PIETY"))
+            requirements.push_back("Requires " + collective->getResourceInfo(cost.id).name);
         },
         [&](const ExponentialCost& cost) {
-          auto& resourceInfo = CollectiveConfig::getResourceInfo(cost.base.id);
-          costObj = make_pair(resourceInfo.viewId, (int) cost.base.value);
+          auto& resourceInfo = collective->getResourceInfo(cost.base.id);
+          if (resourceInfo.viewId)
+            costObj = make_pair(*resourceInfo.viewId, (int) cost.base.value);
           infoLines.push_back("Cost doubles for every " + toString(cost.numToDoubleCost) + " "
               + c->getName().plural());
           if (cost.numFree > 0)
@@ -1453,11 +1453,11 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.enemyGroups = getEnemyGroups();
   fillDungeonLevel(info.avatarLevelInfo);
   info.numResource.clear();
-  for (auto resourceId : ENUM_ALL(CollectiveResourceId)) {
-    auto& elem = CollectiveConfig::getResourceInfo(resourceId);
-    if (!elem.dontDisplay)
+  for (auto& resource : getGame()->getContentFactory()->resourceInfo) {
+    auto& elem = resource.second;
+    if (elem.viewId)
       info.numResource.push_back(
-          {elem.viewId, collective->numResourcePlusDebt(resourceId), elem.name, elem.tutorialHighlight});
+          {*elem.viewId, collective->numResourcePlusDebt(resource.first), elem.name, elem.tutorialHighlight});
   }
   info.warning = "";
   gameInfo.time = collective->getGame()->getGlobalTime();
@@ -1485,7 +1485,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   }
   for (auto& elem : ransomAttacks) {
     info.ransom = CollectiveInfo::Ransom {make_pair(ViewId("gold"), *elem.getRansom()), elem.getAttackerName(),
-        collective->hasResource({ResourceId::GOLD, *elem.getRansom()})};
+        collective->hasResource({ResourceId("GOLD"), *elem.getRansom()})};
     break;
   }
   for (auto& elem : notifiedAttacks)
@@ -2381,8 +2381,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
       PlayerMessage::presentMessages(getView(), messageHistory);
       break;
     case UserInputId::CHEAT_ATTRIBUTES:
-      for (auto resource : ENUM_ALL(CollectiveResourceId))
-        collective->returnResource(CostInfo(resource, 1000));
+      for (auto& resource : getGame()->getContentFactory()->resourceInfo)
+        collective->returnResource(CostInfo(resource.first, 1000));
       collective->getDungeonLevel().increaseLevel();
       break;
     case UserInputId::TUTORIAL_CONTINUE:

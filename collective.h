@@ -51,6 +51,7 @@ class Immigration;
 class Quarters;
 class PositionMatching;
 class MinionActivities;
+class ResourceInfo;
 
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
@@ -70,6 +71,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   Tribe* getTribe() const;
   WModel getModel() const;
   WGame getGame() const;
+  typedef CollectiveResourceId ResourceId;
+  const ResourceInfo& getResourceInfo(ResourceId) const;
   void addNewCreatureMessage(const vector<Creature*>&);
   void setTask(Creature*, PTask);
   bool hasTask(const Creature*) const;
@@ -87,7 +90,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   GlobalTime getGlobalTime() const;
   const PositionSet& getStoragePositions(StorageId) const;
 
-  typedef CollectiveResourceId ResourceId;
 
   SERIALIZATION_DECL(Collective)
 
@@ -264,7 +266,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   PPositionMatching SERIAL(positionMatching);
   HeapAllocated<MinionEquipment> SERIAL(minionEquipment);
-  EnumMap<ResourceId, int> SERIAL(credit);
+  unordered_map<ResourceId, int, CustomHash<ResourceId>> SERIAL(credit);
   HeapAllocated<TaskMap> SERIAL(taskMap);
   HeapAllocated<Technology> SERIAL(technology);
   void markItem(const Item*, WConstTask);

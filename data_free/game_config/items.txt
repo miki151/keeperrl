@@ -1059,7 +1059,7 @@
     name = "rock"
     itemClass = OTHER
     price = 0
-    resourceId = STONE
+    resourceId = "STONE"
     weight = 0.3
     wishedCount = { 5 10 }
   }
@@ -1069,7 +1069,7 @@
     name = "iron ore"
     itemClass = OTHER
     price = 0
-    resourceId = IRON
+    resourceId = "IRON"
     weight = 0.5
   }
 "AdaOre"
@@ -1078,7 +1078,7 @@
     name = "adamantine ore"
     itemClass = OTHER
     price = 0
-    resourceId = ADA
+    resourceId = "ADA"
     weight = 0.5
   }
 "WoodPlank"
@@ -1087,7 +1087,7 @@
     name = "wood plank"
     itemClass = OTHER
     price = 0
-    resourceId = WOOD
+    resourceId = "WOOD"
     weight = 5
   }
 "Bone"
@@ -1117,7 +1117,7 @@
     name = "gold piece"
     itemClass = GOLD
     price = 1
-    resourceId = GOLD
+    resourceId = "GOLD"
     weight = 0.01
     wishedCount = { 500 1000 }
   }

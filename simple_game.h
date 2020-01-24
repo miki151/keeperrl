@@ -19,7 +19,7 @@ class SimpleGame {
   int zLevel = 0;
   Technology technology;
   vector<PCreature> minions;
-  EnumMap<CollectiveResourceId, int> resources;
+  unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> resources;
   vector<ImmigrantInfo> immigrants;
   vector<ZLevelInfo> zLevels;
   DungeonLevel dungeonLevel;

@@ -24,11 +24,27 @@
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
-  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo);
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo);
   creatures.setContentFactory(this);
 }
 
 SERIALIZABLE(ContentFactory)
+
+template <typename Key, typename Value>
+map<Key, Value> convertKeys(const map<PrimaryId<Key>, Value>& m) {
+  map<Key, Value> ret;
+  for (auto& elem : m)
+    ret.insert(make_pair(std::move(Key(elem.first)), std::move(elem.second)));
+  return ret;
+}
+
+template <typename Key, typename Value>
+unordered_map<Key, Value, CustomHash<Key>> convertKeysHash(const map<PrimaryId<Key>, Value>& m) {
+  unordered_map<Key, Value, CustomHash<Key>> ret;
+  for (auto& elem : m)
+    ret.insert(make_pair(std::move(Key(elem.first)), std::move(elem.second)));
+  return ret;
+}
 
 static bool isZLevel(const vector<ZLevelInfo>& levels, int depth) {
   for (auto& l : levels)
@@ -285,6 +301,14 @@ optional<string> ContentFactory::readWorkshopInfo(const GameConfig* config, KeyV
   return none;
 }
 
+optional<string> ContentFactory::readResourceInfo(const GameConfig* config, KeyVerifier* keyVerifier) {
+  map<PrimaryId<CollectiveResourceId>, ResourceInfo> tmp;
+  if (auto error = config->readObject(tmp, GameConfigId::RESOURCE_INFO, keyVerifier))
+    return *error;
+  resourceInfo = convertKeysHash(tmp);
+  return none;
+}
+
 optional<string> ContentFactory::readCampaignInfo(const GameConfig* config, KeyVerifier* keyVerifier) {
   map<string, CampaignInfo> campaignTmp;
   if (auto res = config->readObject(campaignTmp, GameConfigId::CAMPAIGN_INFO, keyVerifier))
@@ -328,13 +352,15 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
     return *error;
   if (auto error = readWorkshopInfo(config, &keyVerifier))
     return *error;
+  if (auto res = readItems(config, &keyVerifier))
+    return *res;
+  if (auto error = readResourceInfo(config, &keyVerifier))
+    return *error;
   if (auto error = readCampaignInfo(config, &keyVerifier))
     return *error;
   if (auto res = config->readObject(zLevels, GameConfigId::Z_LEVELS, &keyVerifier))
     return *res;
   if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS, &keyVerifier))
-    return *res;
-  if (auto res = readItems(config, &keyVerifier))
     return *res;
   if (auto res = readBuildingInfo(config, &keyVerifier))
     return *res;
@@ -378,6 +404,9 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (!errors.empty())
     return errors.front();
   furniture.initializeInfos();
+  for (auto& elem : items)
+    if (auto id = elem.second.resourceId)
+      resourceInfo.at(*id).itemId = ItemType(elem.first);
   return none;
 }
 

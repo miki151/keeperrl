@@ -50,13 +50,5 @@ class PrimaryId {
   typename ContentId<T>::InternalId id;
 };
 
-template <typename Key, typename Value>
-map<Key, Value> convertKeys(map<PrimaryId<Key>, Value> m) {
-  map<Key, Value> ret;
-  for (auto& elem : m)
-    ret.insert(make_pair(std::move(Key(elem.first)), std::move(elem.second)));
-  return ret;
-}
-
 template <typename T>
 std::ostream& operator <<(std::ostream&, ContentId<T>);

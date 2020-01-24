@@ -24,7 +24,6 @@ using GenericId = long long;
 enum class MusicType;
 enum class SunlightState;
 enum class GameSaveType;
-enum class CollectiveResourceId : std::uint8_t;
 enum class CollectiveConfigId;
 enum class MsgType;
 enum class BodyPart;
@@ -123,5 +122,5 @@ class BuildingId;
 class NameGeneratorId;
 class BiomeId;
 class WorkshopType;
-
+class CollectiveResourceId;
 using SteamId = unsigned long long;
