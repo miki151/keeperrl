@@ -1,8 +1,14 @@
-"PRISONER_HEAD"  { none     "prisoner heads" }
-"DEMON_PIETY"    { none     "rituals" }
-"GOLD"           { GOLD     "gold"           { "gold" } }
-"WOOD"           { RESOURCE "wood"           { "wood_plank" } WOOD_RESOURCE }
-"IRON"           { RESOURCE "iron"           { "iron_rock" } }
-"ADA"            { RESOURCE "adamantium"     { "ada_ore" } }
-"STONE"          { RESOURCE "granite"        { "rock" } }
-"CORPSE"         { CORPSES  "corpses" }
+# Resource definitions
+# Make sure to add a new item and set resourceId = "X" in items.txt when adding a new physical resource.
+# If there is no item or storageId then this is a non-physical resource.
+
+# ResourceId       StorageId   name             viewId (if visible in UI)   tutorialHighlight
+
+"PRISONER_HEAD"  { none        "prisoner heads" }
+"DEMON_PIETY"    { none        "rituals" }
+"GOLD"           { GOLD        "gold"           { "gold" } }
+"WOOD"           { RESOURCE    "wood"           { "wood_plank" } WOOD_RESOURCE }
+"IRON"           { RESOURCE    "iron"           { "iron_rock" } }
+"ADA"            { RESOURCE    "adamantium"     { "ada_ore" } }
+"STONE"          { RESOURCE    "granite"        { "rock" } }
+"CORPSE"         { CORPSES     "corpses" }
