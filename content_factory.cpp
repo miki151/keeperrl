@@ -421,6 +421,7 @@ void ContentFactory::merge(ContentFactory f) {
   tilePaths.merge(std::move(f.tilePaths));
   mergeMap(std::move(f.items), items);
   mergeMap(std::move(f.workshopInfo), workshopInfo);
+  mergeMap(std::move(f.resourceInfo), resourceInfo);
 }
 
 CreatureFactory& ContentFactory::getCreatures() {
