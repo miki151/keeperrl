@@ -56,6 +56,7 @@ class ContentFactory {
   CampaignInfo SERIAL(campaignInfo);
   map<WorkshopType, WorkshopInfo> SERIAL(workshopInfo);
   unordered_map<CollectiveResourceId, ResourceInfo, CustomHash<CollectiveResourceId>> SERIAL(resourceInfo);
+  vector<CollectiveResourceId> SERIAL(resourceOrder);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

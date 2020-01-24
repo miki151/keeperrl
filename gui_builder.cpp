@@ -371,24 +371,50 @@ void GuiBuilder::addUpsCounterTick() {
 
 const int resourceSpace = 110;
 
-SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
+SGuiElem GuiBuilder::drawResources(const vector<CollectiveInfo::Resource>& numResource,
+    const optional<TutorialInfo>& tutorial, int width) {
+  auto line = gui.getListBuilder(resourceSpace);
+  auto moreResources = gui.getListBuilder(legendLineHeight);
+  int numResourcesShown = min(numResource.size(), (width - 250) / resourceSpace);
+  if (numResourcesShown < numResource.size())
+    --numResourcesShown;
+  int maxMoreName = 0;
+  for (int i : Range(numResourcesShown, numResource.size()))
+    maxMoreName = max(maxMoreName, renderer.getTextLength(numResource[i].name));
+  for (int i : All(numResource)) {
+    auto res = gui.getListBuilder();
+    if ( i >= numResourcesShown)
+      res.addElem(gui.label(numResource[i].name), maxMoreName + 20);
+    res.addElem(gui.viewObject(numResource[i].viewId), 30);
+    res.addElem(gui.labelFun([&numResource, i] { return toString<int>(numResource[i].count); },
+          [&numResource, i] { return numResource[i].count >= 0 ? Color::WHITE : Color::RED; }), 50);
+    auto tutorialHighlight = numResource[i].tutorialHighlight;
+    auto tutorialElem = gui.conditional(gui.tutorialHighlight(), [tutorialHighlight, tutorial] {
+        return tutorial && tutorialHighlight && tutorial->highlights.contains(*tutorialHighlight);
+    });
+    auto elem = gui.stack(
+          tutorialElem,
+          getHintCallback({numResource[i].name}),
+          res.buildHorizontalList());
+    if (i < numResourcesShown)
+      line.addElem(std::move(elem));
+    else
+      moreResources.addElem(std::move(elem));
+  }
+  if (!moreResources.isEmpty()) {
+    int height = moreResources.getSize();
+    line.addElem(gui.stack(
+          gui.label("[more]"),
+          gui.tooltip2(gui.miniWindow(gui.margins(moreResources.buildVerticalList(), 15)),
+              [=](const Rectangle& r) { return r.topLeft() - Vec2(0, height + 35);})
+    ));
+  }
+  return line.buildHorizontalList();
+}
+
+SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo, int width) {
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<CollectiveInfo>();
   GameSunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
-  auto topLine = gui.getListBuilder(resourceSpace);
-  for (int i : All(info.numResource)) {
-    auto res = gui.getListBuilder();
-    res.addElem(gui.viewObject(info.numResource[i].viewId), 30);
-    res.addElem(gui.labelFun([&info, i] { return toString<int>(info.numResource[i].count); },
-          [&info, i] { return info.numResource[i].count >= 0 ? Color::WHITE : Color::RED; }), 50);
-    auto tutorialHighlight = info.numResource[i].tutorialHighlight;
-    auto tutorialElem = gui.conditional(gui.tutorialHighlight(), [tutorialHighlight, &gameInfo] {
-        return gameInfo.tutorial && tutorialHighlight && gameInfo.tutorial->highlights.contains(*tutorialHighlight);
-    });
-    topLine.addElem(gui.stack(
-        tutorialElem,
-        getHintCallback({info.numResource[i].name}),
-        res.buildHorizontalList()));
-  }
   auto bottomLine = gui.getListBuilder();
   const int space = 55;
   bottomLine.addElemAuto(gui.standardButton(gui.stack(
@@ -414,7 +440,7 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo) {
   bottomLine.addSpace(space);
   bottomLine.addElem(getSunlightInfoGui(sunlightInfo), 80);
   return gui.getListBuilder(legendLineHeight)
-        .addElem(gui.centerHoriz(topLine.buildHorizontalList()))
+        .addElem(gui.centerHoriz(drawResources(info.numResource, gameInfo.tutorial, width)))
         .addElem(gui.centerHoriz(bottomLine.buildHorizontalList()))
         .buildVerticalList();
 }

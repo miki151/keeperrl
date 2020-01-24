@@ -1409,6 +1409,16 @@ void PlayerControl::fillDungeonLevel(AvatarLevelInfo& info) const {
   info.numAvailable = min(dungeonLevel.numResearchAvailable(), collective->getTechnology().getNextTechs().size());
 }
 
+void PlayerControl::fillResources(CollectiveInfo& info) const {
+  info.numResource.clear();
+  for (auto& resource : getGame()->getContentFactory()->resourceOrder) {
+    auto& elem = getGame()->getContentFactory()->resourceInfo.at(resource);
+    if (elem.viewId)
+      info.numResource.push_back(
+          {*elem.viewId, collective->numResourcePlusDebt(resource), elem.name, elem.tutorialHighlight});
+  }
+}
+
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.takingScreenshot = takingScreenshot;
   fillCurrentLevelInfo(gameInfo);
@@ -1452,13 +1462,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   info.enemyGroups = getEnemyGroups();
   fillDungeonLevel(info.avatarLevelInfo);
-  info.numResource.clear();
-  for (auto& resource : getGame()->getContentFactory()->resourceInfo) {
-    auto& elem = resource.second;
-    if (elem.viewId)
-      info.numResource.push_back(
-          {*elem.viewId, collective->numResourcePlusDebt(resource.first), elem.name, elem.tutorialHighlight});
-  }
+  fillResources(info);
   info.warning = "";
   gameInfo.time = collective->getGame()->getGlobalTime();
   gameInfo.modifiedSquares = gameInfo.totalSquares = 0;

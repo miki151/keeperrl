@@ -24,7 +24,7 @@
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
-  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo);
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder);
   creatures.setContentFactory(this);
 }
 
@@ -34,7 +34,7 @@ template <typename Key, typename Value>
 map<Key, Value> convertKeys(const map<PrimaryId<Key>, Value>& m) {
   map<Key, Value> ret;
   for (auto& elem : m)
-    ret.insert(make_pair(std::move(Key(elem.first)), std::move(elem.second)));
+    ret.insert(make_pair(Key(elem.first), std::move(elem.second)));
   return ret;
 }
 
@@ -42,7 +42,7 @@ template <typename Key, typename Value>
 unordered_map<Key, Value, CustomHash<Key>> convertKeysHash(const map<PrimaryId<Key>, Value>& m) {
   unordered_map<Key, Value, CustomHash<Key>> ret;
   for (auto& elem : m)
-    ret.insert(make_pair(std::move(Key(elem.first)), std::move(elem.second)));
+    ret.insert(make_pair(Key(elem.first), std::move(elem.second)));
   return ret;
 }
 
@@ -302,10 +302,13 @@ optional<string> ContentFactory::readWorkshopInfo(const GameConfig* config, KeyV
 }
 
 optional<string> ContentFactory::readResourceInfo(const GameConfig* config, KeyVerifier* keyVerifier) {
-  map<PrimaryId<CollectiveResourceId>, ResourceInfo> tmp;
+  vector<pair<PrimaryId<CollectiveResourceId>, ResourceInfo>> tmp;
   if (auto error = config->readObject(tmp, GameConfigId::RESOURCE_INFO, keyVerifier))
     return *error;
-  resourceInfo = convertKeysHash(tmp);
+  for (int i : All(tmp)) {
+    resourceOrder.push_back(tmp[i].first);
+    resourceInfo.insert(make_pair(CollectiveResourceId(tmp[i].first), std::move(tmp[i].second)));
+  }
   return none;
 }
 

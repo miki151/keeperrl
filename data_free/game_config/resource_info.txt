@@ -4,11 +4,22 @@
 
 # ResourceId       StorageId   name             viewId (if visible in UI)   tutorialHighlight
 
-"PRISONER_HEAD"  { none        "prisoner heads" }
-"DEMON_PIETY"    { none        "rituals" }
 "GOLD"           { GOLD        "gold"           { "gold" } }
 "WOOD"           { RESOURCE    "wood"           { "wood_plank" } WOOD_RESOURCE }
 "IRON"           { RESOURCE    "iron"           { "iron_rock" } }
 "ADA"            { RESOURCE    "adamantium"     { "ada_ore" } }
 "STONE"          { RESOURCE    "granite"        { "rock" } }
 "CORPSE"         { CORPSES     "corpses" }
+"PRISONER_HEAD"  { none        "prisoner heads" }
+"DEMON_PIETY"    { none        "rituals" }
+"BOGUS1"         { none        "bogus1"         { "rock" } }
+"BOGUS2"         { none        "bogus2"         { "rock" } }
+"BOGUS3"         { none        "bogus3"         { "rock" } }
+"BOGUS4"         { none        "bogus4"         { "rock" } }
+"BOGUS5"         { none        "bogus5"         { "rock" } }
+"BOGUS6"         { none        "bogus6"         { "rock" } }
+"BOGUS7"         { none        "bogus7"         { "rock" } }
+"BOGUS8"         { none        "bogus8"         { "rock" } }
+"BOGUS9"         { none        "bogus9"         { "rock" } }
+"BOGUS10"         { none       "bogus10"        { "rock" } }
+"BOGUS11"         { none       "bogus11"        { "rock" } }

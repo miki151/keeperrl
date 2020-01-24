@@ -331,6 +331,7 @@ void WindowView::rebuildGui() {
   int bottomBarHeight = 0;
   optional<int> topBarHeight;
   int rightBottomMargin = 30;
+  optional<Rectangle> bottomBarBounds;
   tempGuiElems.clear();
   if (!options->getIntValue(OptionId::DISABLE_MOUSE_WHEEL)) {
     tempGuiElems.push_back(gui.mouseWheel([this](bool up) { zoom(up ? -1 : 1); }));
@@ -371,10 +372,11 @@ void WindowView::rebuildGui() {
           break;
       case GameInfo::InfoType::BAND:
           right = guiBuilder.drawRightBandInfo(gameInfo);
-          bottom = guiBuilder.drawBottomBandInfo(gameInfo);
           rightBarWidth = rightBarWidthCollective;
           bottomBarHeight = bottomBarHeightCollective;
           topBarHeight = 85;
+          bottomBarBounds = Rectangle(Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight), renderer.getSize());
+          bottom = guiBuilder.drawBottomBandInfo(gameInfo, bottomBarBounds->width());
           break;
     }
   guiBuilder.drawOverlays(overlays, gameInfo);
@@ -400,8 +402,7 @@ void WindowView::rebuildGui() {
     tempGuiElems.back()->setBounds(Rectangle(Vec2(0, 0),
           Vec2(rightBarWidth, renderer.getSize().y - rightBottomMargin)));
     tempGuiElems.push_back(gui.margins(std::move(bottom), 105, 10, 105, 0));
-    tempGuiElems.back()->setBounds(Rectangle(
-          Vec2(rightBarWidth, renderer.getSize().y - bottomBarHeight), renderer.getSize()));
+    tempGuiElems.back()->setBounds(*bottomBarBounds);
     for (auto& overlay : overlays)
       if (overlay.alignment == GuiBuilder::OverlayInfo::GAME_SPEED) {
         Vec2 pos;

@@ -70,7 +70,7 @@ class GuiBuilder {
   SGuiElem drawRightBandInfo(GameInfo&);
   SGuiElem drawTechnology(CollectiveInfo&);
   SGuiElem drawMinions(CollectiveInfo&, const optional<TutorialInfo>&);
-  SGuiElem drawBottomBandInfo(GameInfo&);
+  SGuiElem drawBottomBandInfo(GameInfo&, int width);
   SGuiElem drawKeeperHelp();
   optional<string> getTextInput(const string& title, const string& value, int maxLength, const string& hint);
 
@@ -308,6 +308,7 @@ class GuiBuilder {
   SGuiElem drawKillsLabel(const PlayerInfo& minion);
   function<void(Rectangle)> getActivityButtonFun(const PlayerInfo&);
   SGuiElem drawSpellSchoolLabel(const PlayerInfo::SpellSchool&);
+  SGuiElem drawResources(const vector<CollectiveInfo::Resource>&, const optional<TutorialInfo>&, int width);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

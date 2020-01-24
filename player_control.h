@@ -252,6 +252,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<pair<vector<Item*>, Position>> getItemUpgradesFor(const WorkshopItem&) const;
   optional<pair<Item*, Position>> getIngredientFor(const WorkshopItem&) const;
   void fillDungeonLevel(AvatarLevelInfo&) const;
+  void fillResources(CollectiveInfo&) const;
   bool takingScreenshot = false;
   void exitAction();
   void addBodyPart(Creature*);
