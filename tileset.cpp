@@ -294,7 +294,7 @@ bool TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwr
       int posY = frameCount / rowLength;
       dest.x = size.x * posX;
       dest.y = size.y * posY;
-      CHECK(dest.x < textureWidth && dest.y < textureWidth);
+      USER_CHECK(dest.x < textureWidth && dest.y < textureWidth) << "Too many sprites!";
       SDL::SDL_Rect src;
       src.x = frame * size.x;
       src.y = 0;
