@@ -427,7 +427,6 @@ class GameInfo {
   int HASH(modifiedSquares);
   int HASH(totalSquares);
 
-  bool HASH(singleModel);
   GameInfo() {}
   GameInfo(const GameInfo&) = delete;
   GameInfo(GameInfo&&) = default;
@@ -442,7 +441,7 @@ class GameInfo {
 
   vector<PlayerMessage> HASH(messageBuffer);
   bool HASH(takingScreenshot) = false;
-  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, singleModel, modifiedSquares, totalSquares, tutorial, currentLevel, takingScreenshot)
+  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, modifiedSquares, totalSquares, tutorial, currentLevel, takingScreenshot)
 };
 
 struct AutomatonPart;

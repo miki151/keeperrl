@@ -1424,7 +1424,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   fillCurrentLevelInfo(gameInfo);
   if (tutorial)
     tutorial->refreshInfo(getGame(), gameInfo.tutorial);
-  gameInfo.singleModel = getGame()->isSingleModel();
   gameInfo.villageInfo.villages.clear();
   gameInfo.villageInfo.numMainVillains = gameInfo.villageInfo.numConqueredMainVillains = 0;
   for (auto& col : getGame()->getVillains(VillainType::MAIN)) {
