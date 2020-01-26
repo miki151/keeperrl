@@ -12,7 +12,8 @@ struct CreatureInventory {
     double SERIAL(chance) = 1;
     double SERIAL(prefixChance) = 0;
     optional<ItemTypeVariant> SERIAL(alternative);
-    SERIALIZE_ALL(NAMED(type), OPTION(countMin), OPTION(countMax), OPTION(chance), OPTION(prefixChance), NAMED(alternative))
+    template <class Archive>
+    void serialize(Archive& ar1, const unsigned int);
   };
   vector<Elem> SERIAL(elems);
   SERIALIZE_ALL(elems)

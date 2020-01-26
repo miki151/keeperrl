@@ -848,9 +848,11 @@ vector<ItemType> CreatureFactory::getDefaultInventory(CreatureId id) const {
       : empty;
   vector<ItemType> items;
   for (auto& elem : inventoryGen.elems)
-    if (Random.chance(elem.chance))
+    if (Random.chance(elem.chance)) {
+      CHECK(elem.countMin <= elem.countMax) << id.data();
       for (int i : Range(Random.get(elem.countMin, elem.countMax + 1)))
         items.push_back(ItemType(elem.type).setPrefixChance(elem.prefixChance));
+    }
   return items;
 }
 
