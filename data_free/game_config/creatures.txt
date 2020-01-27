@@ -30,7 +30,6 @@
     # skill.h
     skills = {
       "LABORATORY" 0.2
-      "MULTI_WEAPON" 1
     }
     # experience_type.h
     maxLevelIncrease = {
@@ -74,6 +73,7 @@
     viewIdUpgrades = { { "keeper_knight2" } { "keeper_knight3" } { "keeper_knight4" }}
     skills = {
       "FORGE" 0.2
+      "MULTI_WEAPON" 0.8
     }
     maxLevelIncrease = {
       MELEE 12
@@ -116,6 +116,7 @@
     viewIdUpgrades = { { "duke2" } { "duke3" } { "duke4" }}
     skills = {
       "FORGE" 0.2
+      "MULTI_WEAPON" 0.8
     }
     maxLevelIncrease = {
       MELEE 12
