@@ -55,7 +55,7 @@ optional<int> CollectiveAttack::getRansom() const {
 
 bool CollectiveAttack::isOngoing() const {
   for (auto& task : attackTasks)
-    if (!!task && attacker->getTaskMap().getOwner(task.get()))
+    if (!!task && (!attacker || attacker->getTaskMap().getOwner(task.get())))
       return true;
   return false;
 }
