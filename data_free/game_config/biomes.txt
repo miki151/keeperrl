@@ -93,11 +93,13 @@
     { id = "TUTORIAL_VILLAGE" }
     { id = "ELVEN_COTTAGE" count = {2 3} }
     { id = "COTTAGE_BANDITS" }
+    { id = "WITCH" probability = 0.2 }
   }
   whiteKeeperBaseEnemies = {
     { id = "DARK_ELF_CAVE" }
     { id = "COTTAGE_ORCS" count = { 2 3}}
     { id = "ANTS_CLOSED_SMALL" }
+    { id = "WITCH" probability = 0.2 }
   }
   keeperBiome = { "decid_tree" } "forest" 1
 }
@@ -227,10 +229,12 @@
   }
   darkKeeperBaseEnemies = {
     { id = "NOMAD_VILLAGE" }
+    { id = "LIZARDMEN_SMALL" }
     { id = "BANDITS" }
   }
   whiteKeeperBaseEnemies = {
     { id = "NOMAD_VILLAGE" }
+    { id = "LIZARDMEN_SMALL" }
     { id = "BANDITS" }
   }
   keeperBiome = { "cactus1" } "desert" 4
