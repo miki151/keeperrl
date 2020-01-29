@@ -117,6 +117,7 @@
 { "green_dragon" "D" ColorId GREEN }
 { "red_dragon" "D" ColorId RED }
 { "cyclops" "C" ColorId GREEN }
+{ "yeti" "Y" ColorId WHITE }
 { "minotaur" "M" ColorId PURPLE }
 { "soft_monster" "M" ColorId PINK }
 { "hydra" "H" ColorId PURPLE }

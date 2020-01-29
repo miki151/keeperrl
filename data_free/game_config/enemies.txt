@@ -925,6 +925,10 @@
     }
   }
 }
+"COTTAGE_ORCS" inherit "ORC_CAVE"
+{
+  createOnBones = 1.0 { "ELVEN_COTTAGE" }
+}
 "LIZARDMEN_SMALL"
 {
   settlement = {
@@ -1392,6 +1396,21 @@
     attackBehaviour = KillMembers 4
   }
 }
+"YETI"
+{
+  settlement = {
+    type = Builtin CAVE
+    inhabitants = {
+      leader = { { "YETI" } }
+    }
+    race = "yeti"
+    tribe = HOSTILE
+    buildingId = "DUNGEON"
+  }
+  config = {
+    leaderAsFighter = true
+  }
+}
 "HYDRA"
 {
   settlement = {
@@ -1679,6 +1698,28 @@
     outsideFeatures = "snowFurniture"
   }
 }
+"ESKIMO_VILLAGE" inherit "TUTORIAL_VILLAGE"
+{
+  settlement = append {
+    buildingId = "SNOW"
+    cropsDistance = none
+    inhabitants = {
+      fighters = {
+        count = {2 4}
+        all = { 1 "ESKIMO" }
+      }
+      civilians = {
+        count = {5 10},
+        all = {
+          3 "HUSKY"
+          1 "ESKIMO_CHILD"
+        }
+      }
+    }
+    furniture = { }
+    outsideFeatures = "snowFurniture"
+  }
+}
 "NOMAD_COTTAGE" inherit "HUMAN_COTTAGE"
 {
   settlement = append {
@@ -1699,6 +1740,29 @@
       }
     }
     furniture = { }
+  }
+}
+"NOMAD_VILLAGE" inherit "TUTORIAL_VILLAGE"
+{
+  settlement = append {
+    buildingId = "SANDSTONE_WALL"
+    cropsDistance = none
+    inhabitants = {
+      fighters = {
+        count = {2 4}
+        all = { 1 "NOMAD" }
+      }
+      civilians = {
+        count = {5 10},
+        all = {
+          3 "GOAT"
+          3 "CAMEL"
+          1 "NOMAD_CHILD"
+        }
+      }
+    }
+    furniture = { }
+    outsideFeatures = none
   }
 }
 "THIEVES"

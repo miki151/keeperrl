@@ -59,7 +59,9 @@ struct BiomeInfo {
   CreatureList SERIAL(wildlife);
   vector<BiomeEnemyInfo> SERIAL(darkKeeperEnemies);
   vector<BiomeEnemyInfo> SERIAL(whiteKeeperEnemies);
+  vector<BiomeEnemyInfo> SERIAL(darkKeeperBaseEnemies);
+  vector<BiomeEnemyInfo> SERIAL(whiteKeeperBaseEnemies);
   optional<MusicType> SERIAL(overrideMusic);
   optional<KeeperBiomeInfo> SERIAL(keeperBiome);
-  SERIALIZE_ALL(NAMED(overrideWaterType), NAMED(lakes), OPTION(items), OPTION(itemCount), NAMED(mountains), OPTION(forests), OPTION(wildlife), OPTION(darkKeeperEnemies), OPTION(whiteKeeperEnemies), NAMED(overrideMusic), NAMED(keeperBiome))
+  SERIALIZE_ALL(NAMED(overrideWaterType), NAMED(lakes), OPTION(items), OPTION(itemCount), NAMED(mountains), OPTION(forests), OPTION(wildlife), OPTION(darkKeeperEnemies), OPTION(whiteKeeperEnemies), OPTION(darkKeeperBaseEnemies), OPTION(whiteKeeperBaseEnemies), NAMED(overrideMusic), NAMED(keeperBiome))
 };

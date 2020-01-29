@@ -182,27 +182,9 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, const vector<Bio
 PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment alignment, BiomeId biome,
     optional<ExternalEnemiesType> externalEnemiesType) {
   vector<EnemyInfo> enemyInfo;
-  switch (alignment) {
-    case TribeAlignment::EVIL:
-      enemyInfo.push_back(enemyFactory->get(EnemyId("DWARF_CAVE")));
-      enemyInfo.push_back(enemyFactory->get(EnemyId("BANDITS")));
-      enemyInfo.push_back(enemyFactory->get(EnemyId("ANTS_CLOSED_SMALL")));
-      enemyInfo.push_back(enemyFactory->get(EnemyId("TUTORIAL_VILLAGE")));
-      /*if (random.chance(0.3))
-        enemyInfo.push_back(enemyFactory->get(EnemyId("TEMPLE")));*/
-      break;
-    case TribeAlignment::LAWFUL:
-      enemyInfo.push_back(enemyFactory->get(EnemyId("DARK_ELF_CAVE")));
-      enemyInfo.push_back(enemyFactory->get(EnemyId("ORC_CAVE")));
-      enemyInfo.push_back(enemyFactory->get(EnemyId("ANTS_CLOSED_SMALL")));
-      enemyInfo.push_back(enemyFactory->get(EnemyId("COTTAGE_BANDITS")));
-      /*if (random.chance(0.3))
-        enemyInfo.push_back(enemyFactory->get(EnemyId("EVIL_TEMPLE")));*/
-      break;
-  }
+  auto& biomeInfo = contentFactory->biomeInfo.at(biome);
+  addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL ? biomeInfo.darkKeeperBaseEnemies : biomeInfo.whiteKeeperBaseEnemies);
   append(enemyInfo, enemyFactory->getVaults(alignment, keeperTribe));
-  if (random.chance(0.3))
-    enemyInfo.push_back(enemyFactory->get(EnemyId("KRAKEN")));
   optional<ExternalEnemies> externalEnemies;
   if (externalEnemiesType)
     externalEnemies = ExternalEnemies(random, &contentFactory->getCreatures(), enemyFactory->getExternalEnemies(), *externalEnemiesType);

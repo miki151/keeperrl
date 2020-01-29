@@ -46,6 +46,20 @@
     { id = "COTTAGE_BANDITS" count = { 3 5 } }
     { id = "CORPSES" probability = 0.2 }
   }
+  darkKeeperBaseEnemies = {
+    { id = "TUTORIAL_VILLAGE" }
+    { id = "DWARF_CAVE" }
+    { id = "BANDITS" }
+    { id = "ANTS_CLOSED_SMALL" }
+    { id = "KRAKEN" probability = 0.3 }
+  }
+  whiteKeeperBaseEnemies = {
+    { id = "DARK_ELF_CAVE" }
+    { id = "ORC_CAVE" }
+    { id = "COTTAGE_BANDITS" }
+    { id = "ANTS_CLOSED_SMALL" }
+    { id = "KRAKEN" probability = 0.3 }
+  }
   keeperBiome = { "grass" } "grassland" 2
 }
 "FOREST" inherit "GRASSLAND"
@@ -74,6 +88,16 @@
   whiteKeeperEnemies = {
     { id = "LIZARDMEN_COTTAGE" count = { 3 5 } }
     { id = "CORPSES" probability = 0.2 }
+  }
+  darkKeeperBaseEnemies = {
+    { id = "TUTORIAL_VILLAGE" }
+    { id = "ELVEN_COTTAGE" count = {2 3} }
+    { id = "COTTAGE_BANDITS" }
+  }
+  whiteKeeperBaseEnemies = {
+    { id = "DARK_ELF_CAVE" }
+    { id = "COTTAGE_ORCS" count = { 2 3}}
+    { id = "ANTS_CLOSED_SMALL" }
   }
   keeperBiome = { "decid_tree" } "forest" 1
 }
@@ -149,6 +173,16 @@
   whiteKeeperEnemies = {
     { id = "ESKIMO_COTTAGE" count = { 3 5 } }
   }
+  darkKeeperBaseEnemies = {
+    { id = "ESKIMO_VILLAGE" }
+    { id = "BANDITS" }
+    { id = "YETI" }
+  }
+  whiteKeeperBaseEnemies = {
+    { id = "DARK_ELF_CAVE" }
+    { id = "BANDITS" }
+    { id = "YETI" }
+  }
   keeperBiome = { "snowman" } "winter" 3
 }
 "DESERT"
@@ -190,6 +224,14 @@
   }
   whiteKeeperEnemies = {
     { id = "NOMAD_COTTAGE" count = { 3 5 } }
+  }
+  darkKeeperBaseEnemies = {
+    { id = "NOMAD_VILLAGE" }
+    { id = "BANDITS" }
+  }
+  whiteKeeperBaseEnemies = {
+    { id = "NOMAD_VILLAGE" }
+    { id = "BANDITS" }
   }
   keeperBiome = { "cactus1" } "desert" 4
 }

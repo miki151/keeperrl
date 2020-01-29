@@ -615,6 +615,30 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
     }
   }
+"YETI"
+  {
+    viewId = { "yeti" }
+    attr = {
+      DAMAGE 27
+      DEFENSE 20 
+    }
+    body = {
+      type = Humanoid LARGE
+      weight = 400
+    }
+    permanentEffects = {
+      COLD_RESISTANT 1
+    }
+    name = {
+      name = "yeti"
+    }
+    maxLevelIncrease = {
+      MELEE 5
+    }
+    inventory = {
+      { Simple "HeavyClub"}
+    }
+  }
 "DEMON_DWELLER"
   {
     viewId = { "demon_dweller" }
