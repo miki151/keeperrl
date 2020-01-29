@@ -3689,6 +3689,22 @@ SGuiElem GuiBuilder::drawMenuWarning(View::CampaignOptions::WarningType type) {
   }
 }
 
+SGuiElem GuiBuilder::drawBiomeMenu(SyncQueue<CampaignAction>& queue,
+    const vector<View::CampaignOptions::BiomeInfo>& biomes, int chosen) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  lines.addElem(gui.label("base biome: " + biomes[chosen].name));
+  auto choices = gui.getListBuilder();
+  for (int i : All(biomes)) {
+    choices.addElemAuto(gui.stack(
+        i == chosen ? gui.standardButtonHighlight() : gui.standardButton(),
+        gui.margins(gui.viewObject(biomes[i].viewId), 5, 5, 5, 5),
+        gui.button([&queue, i] { queue.push({CampaignActionId::BIOME, i}); })
+    ));
+  }
+  lines.addElemAuto(choices.buildHorizontalList());
+  return lines.buildVerticalList();
+}
+
 SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::CampaignOptions campaignOptions,
     View::CampaignMenuState& menuState) {
   const auto& campaign = campaignOptions.campaign;
@@ -3751,7 +3767,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   if (!campaignOptions.options.empty()) {
     lines.addSpace(10);
     lines.addElem(gui.leftMargin(optionMargin,
-        gui.buttonLabel("Customize", [&menuState] { menuState.options = !menuState.options;})));
+        gui.buttonLabel("Difficulty", [&menuState] { menuState.options = !menuState.options;})));
     for (OptionId id : campaignOptions.options)
       optionsLines.addElem(
           drawOptionElem(id, [&queue, id] { queue.push({CampaignActionId::UPDATE_OPTION, id});}, none));
@@ -3772,6 +3788,8 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
         .buildHorizontalList()));
   if (campaignOptions.warning)
     rightLines.addElem(gui.leftMargin(-20, drawMenuWarning(*campaignOptions.warning)));
+  if (!campaignOptions.biomes.empty())
+    rightLines.addElemAuto(drawBiomeMenu(queue, campaignOptions.biomes, campaignOptions.chosenBiome));
   int retiredPosX = 640;
   vector<SGuiElem> interior;
   interior.push_back(lines.buildVerticalList());

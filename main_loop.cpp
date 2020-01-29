@@ -838,10 +838,14 @@ void MainLoop::doWithSplash(const string& text, function<void()> fun, function<v
 void MainLoop::modelGenTest(int numTries, const vector<string>& types, RandomGen& random, Options* options) {
   ProgressMeter meter(1);
   auto contentFactory = createContentFactory(false);
+  vector<BiomeId> biomes;
+  for (auto& elem : contentFactory.biomeInfo)
+    if (elem.second.keeperBiome)
+      biomes.push_back(elem.first);
   EnemyFactory enemyFactory(Random, contentFactory.getCreatures().getNameGenerator(), contentFactory.enemies,
       contentFactory.buildingInfo, contentFactory.externalEnemies);
   ModelBuilder(&meter, random, options, sokobanInput, &contentFactory, std::move(enemyFactory))
-      .measureSiteGen(numTries, types);
+      .measureSiteGen(numTries, types, std::move(biomes));
 }
 
 static CreatureList readAlly(ifstream& input) {
@@ -1060,7 +1064,7 @@ PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, 
         return modelBuilder.tutorialModel();
       default:
         return modelBuilder.campaignBaseModel(avatarInfo.playerCreature->getTribeId(),
-            avatarInfo.tribeAlignment, setup.externalEnemies);
+            avatarInfo.tribeAlignment, setup.startingBiome, setup.externalEnemies);
     }
   }();
   return ret;

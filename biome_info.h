@@ -7,6 +7,7 @@
 #include "furniture_list_id.h"
 #include "creature_list.h"
 #include "enemy_id.h"
+#include "view_id.h"
 
 struct MountainInfo {
   double SERIAL(lowlandRatio);
@@ -34,6 +35,13 @@ struct BiomeEnemyInfo {
   SERIALIZE_ALL(NAMED(id), OPTION(count), OPTION(probability))
 };
 
+struct KeeperBiomeInfo {
+  ViewId SERIAL(viewId);
+  string SERIAL(name);
+  int SERIAL(priority);
+  SERIALIZE_ALL(viewId, name, priority)
+};
+
 struct BiomeInfo {
   optional<FurnitureType> SERIAL(overrideWaterType);
   struct LakeInfo {
@@ -52,5 +60,6 @@ struct BiomeInfo {
   vector<BiomeEnemyInfo> SERIAL(darkKeeperEnemies);
   vector<BiomeEnemyInfo> SERIAL(whiteKeeperEnemies);
   optional<MusicType> SERIAL(overrideMusic);
-  SERIALIZE_ALL(NAMED(overrideWaterType), NAMED(lakes), OPTION(items), OPTION(itemCount), NAMED(mountains), OPTION(forests), OPTION(wildlife), OPTION(darkKeeperEnemies), OPTION(whiteKeeperEnemies), NAMED(overrideMusic))
+  optional<KeeperBiomeInfo> SERIAL(keeperBiome);
+  SERIALIZE_ALL(NAMED(overrideWaterType), NAMED(lakes), OPTION(items), OPTION(itemCount), NAMED(mountains), OPTION(forests), OPTION(wildlife), OPTION(darkKeeperEnemies), OPTION(whiteKeeperEnemies), NAMED(overrideMusic), NAMED(keeperBiome))
 };

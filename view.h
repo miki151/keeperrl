@@ -23,6 +23,7 @@
 #include "creature_experience_info.h"
 #include "enum_variant.h"
 #include "unique_entity.h"
+#include "view_id.h"
 
 class CreatureView;
 class Level;
@@ -110,7 +111,8 @@ enum class CampaignActionId {
   CONFIRM,
   UPDATE_OPTION,
   CHANGE_TYPE,
-  SEARCH_RETIRED
+  SEARCH_RETIRED,
+  BIOME
 };
 
 enum class PassableInfo {
@@ -120,9 +122,10 @@ enum class PassableInfo {
   UNKNOWN
 };
 
-class CampaignAction : public EnumVariant<CampaignActionId, TYPES(OptionId, CampaignType, string),
+class CampaignAction : public EnumVariant<CampaignActionId, TYPES(OptionId, CampaignType, string, int),
   ASSIGN(CampaignType, CampaignActionId::CHANGE_TYPE),
   ASSIGN(string, CampaignActionId::SEARCH_RETIRED),
+  ASSIGN(int, CampaignActionId::BIOME),
   ASSIGN(OptionId, CampaignActionId::UPDATE_OPTION)> {
     using EnumVariant::EnumVariant;
 };
@@ -256,6 +259,12 @@ class View {
     optional<RetiredGames&> retired;
     const Creature* player = nullptr;
     vector<OptionId> options;
+    struct BiomeInfo {
+      string name;
+      ViewId viewId;
+    };
+    vector<BiomeInfo> biomes;
+    int chosenBiome;
     string introText;
     struct CampaignTypeInfo {
       CampaignType type;

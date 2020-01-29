@@ -343,6 +343,18 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
   auto retired = genRetired(type);
   View::CampaignMenuState menuState { true, false, false};
   string searchString;
+  int chosenBiome = 0;
+  struct BiomeData {
+    BiomeId id;
+    int priority;
+    View::CampaignOptions::BiomeInfo info;
+  };
+  vector<BiomeData> biomes;
+  for (auto& elem : contentFactory->biomeInfo)
+    if (auto& info = elem.second.keeperBiome) {
+      biomes.push_back({elem.first, info->priority, {info->name, info->viewId}});
+    }
+  sort(biomes.begin(), biomes.end(), [](auto& b1, auto& b2) { return b1.priority < b2.priority; });
   const auto playerRole = getPlayerRole();
   options->setChoices(OptionId::ENDLESS_ENEMIES, {"none", "from the start", "after winning"});
   options->setChoices(OptionId::ENEMY_AGGRESSION, {"none", "moderate", "extreme"});
@@ -365,12 +377,18 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
               (retired && type == CampaignType::FREE_PLAY) ? optional<RetiredGames&>(*retired) : none,
               avatarInfo.playerCreature.get(),
               getCampaignOptions(type),
+              type == CampaignType::FREE_PLAY ? biomes.transform([](auto& e) { return e.info; })
+                  : vector<View::CampaignOptions::BiomeInfo>(),
+              chosenBiome,
               getIntroText(),
               getAvailableTypes().transform([](CampaignType t) -> View::CampaignOptions::CampaignTypeInfo {
                   return {t, getCampaignTypeDescription(t)};}),
               getMenuWarning(type),
               searchString}, menuState);
       switch (action.getId()) {
+        case CampaignActionId::BIOME:
+          chosenBiome = action.get<int>();
+          break;
         case CampaignActionId::SEARCH_RETIRED:
           searchString = action.get<string>();
           break;
@@ -415,7 +433,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
               gameDisplayName = name + " of " + campaign.worldName;
             }
             return CampaignSetup{campaign, gameIdentifier, gameDisplayName,
-                getIntroMessages(type), getExternalEnemies(options), getAggressionLevel(options)};
+                getIntroMessages(type), getExternalEnemies(options), getAggressionLevel(options), biomes[chosenBiome].id};
           }
       }
       if (updateMap)

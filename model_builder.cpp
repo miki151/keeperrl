@@ -179,10 +179,9 @@ void ModelBuilder::addMapVillains(vector<EnemyInfo>& enemyInfo, const vector<Bio
         enemyInfo.push_back(enemyFactory->get(enemy.id));
 }
 
-PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment alignment,
+PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment alignment, BiomeId biome,
     optional<ExternalEnemiesType> externalEnemiesType) {
   vector<EnemyInfo> enemyInfo;
-  BiomeId biome = BiomeId("MOUNTAIN");
   switch (alignment) {
     case TribeAlignment::EVIL:
       enemyInfo.push_back(enemyFactory->get(EnemyId("DWARF_CAVE")));
@@ -286,9 +285,9 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, cons
   return nullptr;
 }
 
-PModel ModelBuilder::campaignBaseModel(TribeId keeperTribe, TribeAlignment alignment,
+PModel ModelBuilder::campaignBaseModel(TribeId keeperTribe, TribeAlignment alignment, BiomeId biome,
     optional<ExternalEnemiesType> externalEnemies) {
-  return tryBuilding(20, [=] { return tryCampaignBaseModel(keeperTribe, alignment, externalEnemies); }, "campaign base");
+  return tryBuilding(20, [=] { return tryCampaignBaseModel(keeperTribe, alignment, biome, externalEnemies); }, "campaign base");
 }
 
 PModel ModelBuilder::tutorialModel() {
@@ -299,7 +298,7 @@ PModel ModelBuilder::campaignSiteModel(EnemyId enemyId, VillainType type, TribeA
   return tryBuilding(20, [&] { return tryCampaignSiteModel(enemyId, type, alignment); }, enemyId.data());
 }
 
-void ModelBuilder::measureSiteGen(int numTries, vector<string> types) {
+void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<BiomeId> biomes) {
   if (types.empty()) {
     types = {"single_map", "campaign_base", "tutorial"};
     for (auto id : enemyFactory->getAllIds()) {
@@ -316,8 +315,10 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types) {
         tasks.push_back([=] { measureModelGen(type, numTries, [&] { trySingleMapModel(tribe, alignment); }); });
     else if (type == "campaign_base")
       for (auto alignment : ENUM_ALL(TribeAlignment))
-        tasks.push_back([=] { measureModelGen(type, numTries,
-            [&] { tryCampaignBaseModel(tribe, alignment, none); }); });
+        for (auto biome : biomes)
+          tasks.push_back([=] { measureModelGen(type + " (" + EnumInfo<TribeAlignment>::getString(alignment) + ", "
+              + biome.data() + ")", numTries,
+              [&] { tryCampaignBaseModel(tribe, alignment, biome, none); }); });
     else if (type == "tutorial")
       tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryTutorialModel(); }); });
     else {

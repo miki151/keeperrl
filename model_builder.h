@@ -28,11 +28,11 @@ class ModelBuilder {
   public:
   ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*, ContentFactory*, EnemyFactory);
   PModel singleMapModel(TribeId keeperTribe, TribeAlignment);
-  PModel campaignBaseModel(TribeId keeperTribe, TribeAlignment, optional<ExternalEnemiesType>);
+  PModel campaignBaseModel(TribeId keeperTribe, TribeAlignment, BiomeId, optional<ExternalEnemiesType>);
   PModel campaignSiteModel(EnemyId, VillainType, TribeAlignment);
   PModel tutorialModel();
 
-  void measureSiteGen(int numTries, vector<string> types);
+  void measureSiteGen(int numTries, vector<string> types, vector<BiomeId> biomes);
 
   PModel splashModel(const FilePath& splashPath);
   PModel battleModel(const FilePath& levelPath, vector<PCreature> allies, vector<CreatureList> enemies);
@@ -44,7 +44,7 @@ class ModelBuilder {
   private:
   void measureModelGen(const std::string& name, int numTries, function<void()> genFun);
   PModel trySingleMapModel(TribeId keeperTribe, TribeAlignment);
-  PModel tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment, optional<ExternalEnemiesType>);
+  PModel tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment, BiomeId, optional<ExternalEnemiesType>);
   PModel tryTutorialModel();
   PModel tryCampaignSiteModel(EnemyId, VillainType, TribeAlignment);
   PModel tryModel(int width, vector<EnemyInfo>, optional<TribeId> keeperTribe, BiomeId, optional<ExternalEnemies>);

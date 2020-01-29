@@ -2,6 +2,7 @@
 
 #include "campaign.h"
 #include "avatar_info.h"
+#include "biome_id.h"
 
 struct CampaignSetup;
 struct VillainPlacement;
@@ -56,4 +57,5 @@ struct CampaignSetup {
   vector<string> introMessages;
   optional<ExternalEnemiesType> externalEnemies;
   EnemyAggressionLevel enemyAggressionLevel;
+  BiomeId startingBiome;
 };

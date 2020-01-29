@@ -309,6 +309,7 @@ class GuiBuilder {
   function<void(Rectangle)> getActivityButtonFun(const PlayerInfo&);
   SGuiElem drawSpellSchoolLabel(const PlayerInfo::SpellSchool&);
   SGuiElem drawResources(const vector<CollectiveInfo::Resource>&, const optional<TutorialInfo>&, int width);
+  SGuiElem drawBiomeMenu(SyncQueue<CampaignAction>&, const vector<View::CampaignOptions::BiomeInfo>&, int chosen);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

@@ -1152,17 +1152,21 @@ class RandomLocations : public LevelMaker {
   }
 
   void setMinDistanceLast(LevelMaker* m, double dist) {
-    minDistance[{m, insideMakers.back().get()}]  = dist;
-    minDistance[{insideMakers.back().get(), m}]  = dist;
+    minDistance[{m, getLast()}]  = dist;
+    minDistance[{getLast(), m}]  = dist;
   }
 
   void setMaxDistanceLast(LevelMaker* m, double dist) {
-    maxDistance[{m, insideMakers.back().get()}] = dist;
-    maxDistance[{insideMakers.back().get(), m}] = dist;
+    maxDistance[{m, getLast()}] = dist;
+    maxDistance[{getLast(), m}] = dist;
   }
 
   void setCanOverlap(LevelMaker* m) {
     overlapping.insert(m);
+  }
+
+  void setLastOptional() {
+    optionalMakers.insert(getLast());
   }
 
   LevelMaker* getLast() {
@@ -1204,19 +1208,20 @@ class RandomLocations : public LevelMaker {
     }
   }
 
-  bool checkDistances(int makerIndex, Rectangle area, const vector<Rectangle>& occupied,
+  bool checkDistances(int makerIndex, Rectangle area, const vector<optional<Rectangle>>& occupied,
       const vector<optional<double>>& minDist, const vector<optional<double>>& maxDist) {
-    for (int j : Range(makerIndex)) {
-      auto distance = area.getDistance(occupied[j]);
-      if ((maxDist[j] && *maxDist[j] < distance) || (minDist[j] && *minDist[j] > distance))
-        return false;
-    }
+    for (int j : Range(makerIndex))
+      if (auto bounds = occupied[j]) {
+        auto distance = area.getDistance(*bounds);
+        if ((maxDist[j] && *maxDist[j] < distance) || (minDist[j] && *minDist[j] > distance))
+          return false;
+      }
     return true;
   }
 
-  bool checkIntersections(Rectangle area, const vector<Rectangle>& occupied) {
-    for (Rectangle r : occupied)
-      if (r.intersects(area))
+  bool checkIntersections(Rectangle area, const vector<optional<Rectangle>>& occupied) {
+    for (auto& r : occupied)
+      if (r && r->intersects(area))
         return false;
     return true;
   }
@@ -1224,8 +1229,8 @@ class RandomLocations : public LevelMaker {
   bool tryMake(LevelBuilder* builder, const vector<vector<Vec2>>& allowedPositions,
       const vector<LevelBuilder::Rot>& rotations) {
     PROFILE;
-    vector<Rectangle> occupied;
-    vector<Rectangle> makerBounds;
+    vector<optional<Rectangle>> occupied;
+    vector<optional<Rectangle>> makerBounds;
     for (int makerIndex : All(insideMakers)) {
       PROFILE_BLOCK("maker");
       auto maker = insideMakers[makerIndex].get();
@@ -1255,15 +1260,20 @@ class RandomLocations : public LevelMaker {
         occupied.push_back(Rectangle(*pos, *pos + Vec2(width, height)));
         makerBounds.push_back(Rectangle(*pos, *pos + Vec2(sizes[makerIndex].first, sizes[makerIndex].second)));
       } else
+      if (optionalMakers.count(insideMakers[makerIndex].get())) {
+        occupied.push_back(none);
+        makerBounds.push_back(none);
+      } else
         return false;
     }
     CHECK(insideMakers.size() == occupied.size());
-    for (int i : All(insideMakers)) {
-      PROFILE_BLOCK("insider makers");
-      builder->pushMap(makerBounds[i], rotations[i]);
-      insideMakers[i]->make(builder, makerBounds[i]);
-      builder->popMap();
-    }
+    for (int i : All(insideMakers))
+      if (makerBounds[i]) {
+        PROFILE_BLOCK("insider makers");
+        builder->pushMap(*makerBounds[i], rotations[i]);
+        insideMakers[i]->make(builder, *makerBounds[i]);
+        builder->popMap();
+      }
     return true;
   }
 
@@ -1296,6 +1306,7 @@ class RandomLocations : public LevelMaker {
   map<pair<LevelMaker*, LevelMaker*>, double> minDistance;
   map<pair<LevelMaker*, LevelMaker*>, double> maxDistance;
   map<LevelMaker*, int> minMargin;
+  set<LevelMaker*> optionalMakers;
 };
 
 class Margin : public LevelMaker {
@@ -2533,11 +2544,12 @@ static void generateResources(RandomGen& random, ResourceCounts resourceCounts, 
       locations->add(std::move(queue), {random.get(size), random.get(size)},
           Predicate::type(FurnitureType("MOUNTAIN2")));
       locations->setMaxDistanceLast(center, maxDist);
+      locations->setLastOptional();
     }
   };
   const int closeDist = 0;
   for (auto& info : resourceCounts.elems)
-    addResources(info.countStartingPos, info.size, 20, info.type, startingPos, nullptr);
+    addResources(info.countStartingPos, info.size, 30, info.type, startingPos, nullptr);
   for (auto enemy : surroundWithResources)
     for (int i : Range(enemy.info.surroundWithResources))
       if (auto type = enemy.info.extraResources)
@@ -2551,7 +2563,7 @@ static void generateResources(RandomGen& random, ResourceCounts resourceCounts, 
     }
   for (auto& info : resourceCounts.elems)
     if (info.countFurther > 0)
-      addResources(info.countFurther, info.size, mapWidth / 3, info.type, startingPos, nullptr);
+      addResources(info.countFurther, info.size, mapWidth / 2, info.type, startingPos, nullptr);
 }
 
 

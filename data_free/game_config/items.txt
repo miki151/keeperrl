@@ -206,20 +206,14 @@
     }
     maxUpgrades = 1
   }
-"AdaSword"
+"AdaSword" inherit "Sword"
   {
     viewId = { "ada_sword" }
     name = "adamantine sword"
-    itemClass = WEAPON
-    equipmentSlot = WEAPON
-    weight = 1.2
     modifiers = {
       DAMAGE 11
     }
     price = 20
-    weaponInfo = {
-      attackType = CUT
-    }
     genPrefixes = {
       1 VictimEffect 0.2 Acid
       1 VictimEffect 0.3 Fire
@@ -266,22 +260,15 @@
     }
     maxUpgrades = 1
   }
-"AdaBattleAxe"
+"AdaBattleAxe" inherit "BattleAxe"
   {
     viewId = { "ada_battle_axe" }
     shortName = "adamantine"
     name = "adamantine battle axe"
-    itemClass = WEAPON
-    equipmentSlot = WEAPON
-    weight = 7
     modifiers = {
       DAMAGE 18
     }
     price = 150
-    weaponInfo = {
-      attackType = CUT
-      twoHanded = true
-    }
     genPrefixes = {
       1 VictimEffect 0.5 Lasting BLEEDING
     }
@@ -307,21 +294,14 @@
     }
     maxUpgrades = 1
   }
-"AdaWarHammer"
+"AdaWarHammer" inherit "WarHammer"
   {
     viewId = { "ada_war_hammer" }
     name = "adamantine war hammer"
-    itemClass = WEAPON
-    equipmentSlot = WEAPON
-    weight = 6
     modifiers = {
       DAMAGE 15
     }
     price = 100
-    weaponInfo = {
-      attackType = CRUSH
-      twoHanded = true
-    }
     genPrefixes = {
       1 VictimEffect 0.5 Lasting COLLAPSED
     }
@@ -381,22 +361,14 @@
     }
     maxUpgrades = 1
   }
-"IronStaff"
+"IronStaff" inherit "WoodenStaff"
   {
     viewId = { "iron_staff" }
     name = "iron staff"
-    itemClass = WEAPON
-    equipmentSlot = WEAPON
-    weight = 1.5
     modifiers = {
       SPELL_DAMAGE 8
     }
     price = 60
-    weaponInfo = {
-      attackType = SPELL
-      attackMsg = WAVE
-      meleeAttackAttr = SPELL_DAMAGE
-    }
     genPrefixes = {
       1 VictimEffect 1.0 Escape
       1 VictimEffect 0.4 DestroyEquipment
@@ -407,22 +379,14 @@
     }
     maxUpgrades = 2
   }
-"GoldenStaff"
+"GoldenStaff" inherit "IronStaff"
   {
     viewId = { "golden_staff" }
     name = "golden staff"
-    itemClass = WEAPON
-    equipmentSlot = WEAPON
-    weight = 2.5
     modifiers = {
       SPELL_DAMAGE 11
     }
     price = 180
-    weaponInfo = {
-      attackType = SPELL
-      attackMsg = WAVE
-      meleeAttackAttr = SPELL_DAMAGE
-    }
     genPrefixes = {
       1 VictimEffect 0.2 Lasting INSANITY
       1 VictimEffect 0.2 DestroyEquipment

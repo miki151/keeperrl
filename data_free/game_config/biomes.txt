@@ -46,6 +46,7 @@
     { id = "COTTAGE_BANDITS" count = { 3 5 } }
     { id = "CORPSES" probability = 0.2 }
   }
+  keeperBiome = { "grass" } "grassland" 2
 }
 "FOREST" inherit "GRASSLAND"
 {
@@ -74,6 +75,7 @@
     { id = "LIZARDMEN_COTTAGE" count = { 3 5 } }
     { id = "CORPSES" probability = 0.2 }
   }
+  keeperBiome = { "decid_tree" } "forest" 1
 }
 "MOUNTAIN" inherit "GRASSLAND"
 {
@@ -113,6 +115,7 @@
     { id = "BANDITS" }
     { id = "CORPSES" probability = 0.2 }
   }
+  keeperBiome = { "map_mountain1" } "mountains" 0
 }
 "SNOW"
 {
@@ -146,6 +149,7 @@
   whiteKeeperEnemies = {
     { id = "ESKIMO_COTTAGE" count = { 3 5 } }
   }
+  keeperBiome = { "snowman" } "winter" 3
 }
 "DESERT"
 {
@@ -187,5 +191,6 @@
   whiteKeeperEnemies = {
     { id = "NOMAD_COTTAGE" count = { 3 5 } }
   }
+  keeperBiome = { "cactus1" } "desert" 4
 }
 
