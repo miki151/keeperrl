@@ -114,7 +114,7 @@ class UGC {
   QueryId createFindQuery(const FindItemInfo&, int pageId);
 
   void updateQueries();
-  void waitForQueries(vector<QueryId>, milliseconds duration);
+  void waitForQueries(vector<QueryId>, milliseconds duration, const atomic<bool>& cancel);
 
   // TODO: how to report errors? use Expected<>
   bool isQueryValid(QueryId) const;

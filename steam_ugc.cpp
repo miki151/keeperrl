@@ -164,14 +164,14 @@ void UGC::updateQueries() {
       query.call.update();
 }
 
-void UGC::waitForQueries(vector<QueryId> ids, milliseconds duration) {
+void UGC::waitForQueries(vector<QueryId> ids, milliseconds duration, const atomic<bool>& cancel) {
   auto allFinished = [&]() {
     for (auto qid : ids)
       if (queryStatus(qid) == QStatus::pending)
         return false;
     return true;
   };
-  sleepUntil(allFinished, duration);
+  sleepUntil(allFinished, duration, cancel);
 }
 
 bool UGC::isQueryValid(QueryId qid) const {

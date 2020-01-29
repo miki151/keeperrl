@@ -658,7 +658,7 @@ vector<ModInfo> MainLoop::getOnlineMods() {
         else
           error = mods.error();
         sort(ret.begin(), ret.end(), [](const ModInfo& m1, const ModInfo& m2) { return m1.upvotes > m2.upvotes; });
-      });
+      }, [&]{fileSharing->cancel();  });
   if (error)
     view->presentText("", *error);
   return ret;

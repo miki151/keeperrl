@@ -453,7 +453,7 @@ static vector<T> removeDuplicates(vector<T> input) {
   return ret;
 }
 
-static optional<vector<SteamItemInfo>> getSteamItems() {
+static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
     return none;
@@ -468,12 +468,12 @@ static optional<vector<SteamItemInfo>> getSteamItems() {
 
   // TODO: Is this check necessary? Maybe we should try anyways?
   if (user.isLoggedOn()) {
-    auto getForPage = [&ugc](int page) {
+    auto getForPage = [&](int page) {
       vector<steam::ItemId> ret;
       steam::FindItemInfo qinfo;
       qinfo.order = SteamFindOrder::playtime;
       auto qid = ugc.createFindQuery(qinfo, page);
-      ugc.waitForQueries({qid}, milliseconds(2000));
+      ugc.waitForQueries({qid}, milliseconds(2000), cancel);
 
       if (ugc.queryStatus(qid) == QueryStatus::completed) {
         ret = ugc.finishFindQuery(qid);
@@ -504,13 +504,13 @@ static optional<vector<SteamItemInfo>> getSteamItems() {
     return {};
   }
 
-  auto getForPage = [&ugc](vector<steam::ItemId> items) {
+  auto getForPage = [&](vector<steam::ItemId> items) {
     steam::ItemDetailsInfo detailsInfo;
     detailsInfo.longDescription = true;
     detailsInfo.playtimeStatsDays = 9999;
     detailsInfo.metadata = true;
     auto qid = ugc.createDetailsQuery(detailsInfo, items);
-    ugc.waitForQueries({qid}, milliseconds(3000));
+    ugc.waitForQueries({qid}, milliseconds(3000), cancel);
 
     if (ugc.queryStatus(qid) != QueryStatus::completed) {
       INFO << "STEAM: DetailsQuery failed: " << ugc.queryError(qid, "timeout (3 sec)");
@@ -535,7 +535,7 @@ static optional<vector<SteamItemInfo>> getSteamItems() {
     }
     return done;
   };
-  steam::sleepUntil(retrieveUserNames, milliseconds(1500));
+  steam::sleepUntil(retrieveUserNames, milliseconds(1500), cancel);
   vector<SteamItemInfo> ret;
   for (int n = 0; n < infos.size(); n++)
     ret.push_back(SteamItemInfo{
@@ -552,8 +552,8 @@ static optional<vector<SteamItemInfo>> getSteamItems() {
 
 optional<vector<ModInfo>> FileSharing::getSteamMods() {
   vector<ModInfo> out;
-  auto infos1 = getSteamItems();
-  if (!infos1)
+  auto infos1 = getSteamItems(wasCancelled);
+  if (!infos1 || consumeCancelled())
     return none;
   auto& infos = *infos1;
   for (int n = 0; n < infos.size(); n++) {
@@ -581,8 +581,8 @@ optional<vector<ModInfo>> FileSharing::getSteamMods() {
 
 optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites() {
   vector<SiteInfo> out;
-  auto infos1 = getSteamItems();
-  if (!infos1)
+  auto infos1 = getSteamItems(wasCancelled);
+  if (!infos1 || consumeCancelled())
     return none;
   auto& infos = *infos1;
   for (int n = 0; n < infos.size(); n++) {
@@ -682,7 +682,8 @@ optional<string> FileSharing::uploadMod(ModInfo& modInfo, const DirectoryPath& m
   optional<steam::UpdateItemResult> result;
   steam::sleepUntil([&]() {
     return (bool)(result = ugc.tryUpdateItem(meter)); },
-    milliseconds(600 * 1000));
+    milliseconds(600 * 1000), wasCancelled);
+  consumeCancelled();
   if (!result) {
     ugc.cancelUpdateItem();
     return "Uploading mod has timed out"_s;
@@ -730,7 +731,8 @@ optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const stri
 
   // Item update may take some time; Should we loop indefinitely?
   optional<steam::UpdateItemResult> result;
-  steam::sleepUntil([&]() { return (bool)(result = ugc.tryUpdateItem(meter)); }, milliseconds(600 * 1000));
+  steam::sleepUntil([&]() { return (bool)(result = ugc.tryUpdateItem(meter)); }, milliseconds(600 * 1000), wasCancelled);
+  consumeCancelled();
   if (!result) {
     ugc.cancelUpdateItem();
     return "Uploading mod has timed out"_s;
@@ -793,6 +795,7 @@ void FileSharing::cancel() {
 }
 
 bool FileSharing::consumeCancelled() {
+  std::cout << "Checking cancelled" << std::endl;
   return wasCancelled.exchange(false);
 }
 
