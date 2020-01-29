@@ -176,6 +176,7 @@ static ItemAttributes getCorpseAttr(const string& name, ItemClass itemClass, dou
   return ITATTR(
     i.viewId = ViewId("body_part");
     i.name = name;
+    i.resourceId = CollectiveResourceId("CORPSE");
     i.shortName = name;
     i.itemClass = itemClass;
     i.weight = weight;);
