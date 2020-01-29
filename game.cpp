@@ -694,7 +694,7 @@ static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {
 
 string Game::getPlayerName() const {
   if (playerCollective) {
-    return *playerCollective->getName()->shortened;
+    return playerCollective->getName()->shortened.value_or("???"_s);
   } else // adventurer mode
     return players.getOnlyElement()->getName().firstOrBare();
 }
