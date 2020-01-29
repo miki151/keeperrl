@@ -51,7 +51,10 @@ void Workshops::Type::checkDebtConsistency() const {
       --count;
     nowDebt[options[elem.indexInWorkshop].cost.id] += options[elem.indexInWorkshop].cost.value * count;
   }
-  CHECK(nowDebt == debt);
+  for (auto& elem : nowDebt)
+    CHECK(getValueMaybe(debt, elem.first).value_or(0) == elem.second);
+  for (auto& elem : debt)
+    CHECK(getValueMaybe(nowDebt, elem.first).value_or(0) == elem.second);
 }
 
 void Workshops::Type::queue(int index, int count) {

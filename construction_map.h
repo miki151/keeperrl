@@ -73,12 +73,12 @@ class ConstructionMap {
   const vector<pair<Position, FurnitureLayer>>& getAllFurniture() const;
   const vector<Position>& getAllTraps() const;
   int getDebt(CollectiveResourceId) const;
-  void checkDebtConsistency();
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:
+  void checkDebtConsistency();
   EnumMap<FurnitureLayer, PositionMap<FurnitureInfo>> SERIAL(furniture);
   unordered_map<FurnitureType, PositionSet, CustomHash<FurnitureType>> SERIAL(furniturePositions);
   unordered_map<FurnitureType, int, CustomHash<FurnitureType>> SERIAL(unbuiltCounts);

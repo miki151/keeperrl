@@ -211,7 +211,10 @@ void ConstructionMap::checkDebtConsistency() {
     if (!info.isBuilt(f.first))
       nowDebt[info.getCost().id] += info.getCost().value;
   }
-  CHECK(nowDebt == debt);
+  for (auto& elem : nowDebt)
+    CHECK(getValueMaybe(debt, elem.first).value_or(0) == elem.second);
+  for (auto& elem : debt)
+    CHECK(getValueMaybe(nowDebt, elem.first).value_or(0) == elem.second);
 }
 
 template <class Archive>
