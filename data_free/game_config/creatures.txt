@@ -1130,6 +1130,18 @@
       firstNameGen = "FIRST_MALE"
     }
   }
+"ARTISAN_LEGEN" inherit "ARTISAN"
+  {
+    skills = {
+      "WORKSHOP" 1.0
+      "FORGE" 1.0
+      "JEWELER" 1.0
+    }
+    name = {
+      name = "master artisan"
+      firstNameGen = "FIRST_MALE"
+    }
+  }
 "PESEANT"
   {
     viewId = { "peasant" }

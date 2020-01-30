@@ -511,6 +511,26 @@
     }
   }
 }
+"BLACKSMITH"
+{
+  settlement = {
+    type = Builtin COTTAGE
+    tribe = HUMAN
+    inhabitants = {
+      leader = { { "ARTISAN_LEGEN" } }
+      civilians = {
+        count = {2 5}
+        all = {
+          1 "KNIGHT"
+          1 "ARCHER"
+        }
+      }
+    }
+    locationNameGen = "TOWN"
+    buildingId = "WOOD"
+    furniture = { "forge" }
+  }
+}
 "MINOTAUR"
 {
   settlement = {

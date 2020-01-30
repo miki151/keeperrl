@@ -97,6 +97,12 @@
     "GRAVE" 1
   }
 }
+"forge"
+{
+  {
+    "FORGE" 1
+  }
+}
 "templeInside"
 {
   {
