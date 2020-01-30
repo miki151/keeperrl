@@ -118,7 +118,12 @@ bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit)
     }
     return true;
   } else
-    return automatonNeedsPart(c, it, getItemsOwnedBy(c, [&](auto item) { return !!item->getAutomatonPart() && item != it; }).size());
+    return automatonNeedsPart(c, it, getItemsOwnedBy(c, [&](auto item) {
+      for (auto& d : c->drops)
+        if (d.get() == item)
+          return false;
+      return !!item->getAutomatonPart() && item != it;
+    }).size());
 }
 
 optional<Creature::Id> MinionEquipment::getOwner(const Item* it) const {

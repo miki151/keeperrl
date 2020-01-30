@@ -467,6 +467,12 @@ void PlayerControl::fillAutomatonParts(Creature* creature, PlayerInfo& info) con
   int index = 0;
   for (auto item : collective->getMinionEquipment().getItemsOwnedBy(creature))
     if (auto& part = item->getAutomatonPart()) {
+      if ([&] {
+        for (auto& d : creature->drops)
+          if (d.get() == item)
+            return true;
+        return false; }())
+        continue;
       info.bodyParts.push_back(getInstalledPartInfo(getGame()->getContentFactory(), *part, ++index));
       info.bodyParts.back().pending = true;
     }
