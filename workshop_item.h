@@ -17,7 +17,8 @@ struct WorkshopItemCfg {
   int SERIAL(batchSize) = 1;
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
   optional<string> SERIAL(requireIngredient);
-  SERIALIZE_ALL(NAMED(item), OPTION(work), OPTION(cost), NAMED(tech), OPTION(batchSize), NAMED(tutorialHighlight), OPTION(requireIngredient))
+  bool SERIAL(notArtifact) = false;
+  SERIALIZE_ALL(NAMED(item), OPTION(work), OPTION(cost), NAMED(tech), OPTION(batchSize), NAMED(tutorialHighlight), OPTION(requireIngredient), OPTION(notArtifact))
 };
 
 struct WorkshopItem {
@@ -34,7 +35,8 @@ struct WorkshopItem {
   optional<ItemUpgradeType> SERIAL(upgradeType);
   int SERIAL(maxUpgrades);
   optional<string> SERIAL(requireIngredient);
-  SERIALIZE_ALL(type, name, pluralName, viewId, cost, batchSize, workNeeded, techId, description, tutorialHighlight, upgradeType, maxUpgrades, requireIngredient)
+  bool SERIAL(notArtifact) = false;
+  SERIALIZE_ALL(type, name, pluralName, viewId, cost, batchSize, workNeeded, techId, description, tutorialHighlight, upgradeType, maxUpgrades, requireIngredient, notArtifact)
 };
 
 struct WorkshopQueuedItem {

@@ -92,14 +92,13 @@ double Workshops::getLegendarySkillThreshold() {
   return 0.9;
 }
 
-static bool allowUpgrades(double skillAmount, double morale) {
-  return skillAmount >= Workshops::getLegendarySkillThreshold() && morale >= 0;
+static bool allowUpgrades(const WorkshopQueuedItem& item, double skillAmount, double morale) {
+  return item.runes.empty() || item.item.notArtifact || (skillAmount >= Workshops::getLegendarySkillThreshold() && morale >= 0);
 }
 
 bool Workshops::Type::isIdle(const Collective* collective, double skillAmount, double morale) const {
   for (auto& product : queued)
-    if ((product.state || collective->hasResource(product.item.cost)) &&
-        (allowUpgrades(skillAmount, morale) || product.runes.empty()))
+    if ((product.state || collective->hasResource(product.item.cost)) && allowUpgrades(product, skillAmount, morale))
       return false;
   return true;
 }
@@ -125,8 +124,7 @@ PItem Workshops::Type::removeUpgrade(int itemIndex, int runeIndex) {
 auto Workshops::Type::addWork(Collective* collective, double amount, double skillAmount, double morale) -> WorkshopResult {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
-    if ((product.state || collective->hasResource(product.item.cost)) &&
-        (allowUpgrades(skillAmount, morale) || product.runes.empty())) {
+    if ((product.state || collective->hasResource(product.item.cost)) && allowUpgrades(product, skillAmount, morale)) {
       if (!product.state) {
         collective->takeResource(product.item.cost);
         addDebt(-product.item.cost);
@@ -141,7 +139,7 @@ auto Workshops::Type::addWork(Collective* collective, double amount, double skil
           if (auto& upgradeInfo = rune->getUpgradeInfo())
             for (auto& item : ret)
               item->applyPrefix(*upgradeInfo->prefix, collective->getGame()->getContentFactory());
-          wasUpgraded = true;
+          wasUpgraded = !product.item.notArtifact;
         }
         if (!--product.number)
           queued.removeIndexPreserveOrder(productIndex);

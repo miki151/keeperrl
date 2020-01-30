@@ -49,7 +49,7 @@ class MoveInfo;
 class UnknownLocations;
 class AttackTrigger;
 class ImmigrantInfo;
-
+struct WorkshopOptionInfo;
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
   static PPlayerControl create(Collective* col, vector<string> introText, TribeAlignment);
@@ -250,7 +250,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void scrollStairs(bool up);
   CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&) const;
   vector<pair<vector<Item*>, Position>> getItemUpgradesFor(const WorkshopItem&) const;
-  optional<pair<Item*, Position>> getIngredientFor(const WorkshopItem&) const;
   void fillDungeonLevel(AvatarLevelInfo&) const;
   void fillResources(CollectiveInfo&) const;
   bool takingScreenshot = false;
@@ -259,5 +258,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void handleBanishing(Creature*);
   optional<pair<ViewId,int>> getCostObj(CostInfo) const;
   optional<pair<ViewId,int>> getCostObj(const optional<CostInfo>&) const;
+  vector<WorkshopOptionInfo> getWorkshopOptions() const;
 };
 

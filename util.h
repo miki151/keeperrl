@@ -1537,6 +1537,12 @@ class heap_optional {
     return *this;
   }
 
+  int getHash() const {
+    if (!elem)
+      return 0;
+    return combineHash(*elem);
+  }
+
   SERIALIZE_ALL(elem)
 
   private:

@@ -2056,7 +2056,14 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
       continue;
     auto line = gui.getListBuilder();
     line.addElem(gui.viewObject(elem.viewId), 35);
-    line.addMiddleElem(gui.renderInBounds(gui.label(elem.name, elem.unavailable ? Color::GRAY : Color::WHITE)));
+    auto label = gui.label(elem.name, elem.unavailable ? Color::GRAY : Color::WHITE);
+    if (elem.ingredient)
+      label = gui.getListBuilder()
+          .addElemAuto(std::move(label))
+          .addElemAuto(gui.label(" from "))
+          .addElemAuto(getItemLine(*elem.ingredient, [](Rectangle){}))
+          .buildHorizontalList();
+    line.addMiddleElem(gui.renderInBounds(std::move(label)));
     if (elem.price)
       line.addBackElem(gui.alignment(GuiFactory::Alignment::RIGHT, drawCost(*elem.price)), 80);
     SGuiElem guiElem = line.buildHorizontalList();
@@ -2071,7 +2078,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
           gui.uiHighlightMouseOver(),
           std::move(guiElem),
           gui.button(getButtonCallback({UserInputId::WORKSHOP_ADD, itemIndex})),
-          getTooltip({elem.description}, THIS_LINE)
+          getTooltip({elem.description}, THIS_LINE + itemIndex)
       );
     lines.addElem(gui.rightMargin(rightElemMargin, std::move(guiElem)));
   }
@@ -2080,12 +2087,19 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
   for (int itemIndex : All(queued)) {
     auto& elem = queued[itemIndex];
     auto line = gui.getListBuilder();
+    auto label = gui.label(elem.itemInfo.name);
+    if (elem.itemInfo.ingredient)
+      label = gui.getListBuilder()
+          .addElemAuto(std::move(label))
+          .addElemAuto(gui.label(" from "))
+          .addElemAuto(getItemLine(*elem.itemInfo.ingredient, [](Rectangle){}))
+          .buildHorizontalList();
     line.addMiddleElem(gui.stack(
         drawWorkshopItemActionButton(elem, itemIndex),
         gui.uiHighlightMouseOver(),
         gui.getListBuilder()
             .addElem(gui.viewObject(elem.itemInfo.viewId), 35)
-            .addMiddleElem(gui.renderInBounds(gui.label(elem.itemInfo.name)))
+            .addMiddleElem(gui.renderInBounds(std::move(label)))
             .buildHorizontalList()
     ));
     if ((!elem.available.empty() || !elem.added.empty()) && elem.maxUpgrades > 0) {
@@ -2097,7 +2111,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
         gui.bottomMargin(5,
             gui.progressBar(Color::DARK_GREEN.transparency(128), elem.productionState)),
         gui.rightMargin(rightElemMargin, line.buildHorizontalList()),
-        getTooltip(elem.itemInfo.description, THIS_LINE)
+        getTooltip(elem.itemInfo.description, THIS_LINE + itemIndex)
     ));
   }
   return gui.preferredSize(860, 600,

@@ -22,5 +22,6 @@ WorkshopItem WorkshopItemCfg::get(const ContentFactory* factory) const {
     elem->getAppliedUpgradeType(),
     elem->getMaxUpgrades(),
     requireIngredient,
+    notArtifact
   };
 }
