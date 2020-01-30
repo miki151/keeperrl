@@ -230,11 +230,9 @@
   }
   darkKeeperBaseEnemies = {
     { id = "NOMAD_VILLAGE" }
-    { id = "LIZARDMEN_SMALL" }
     { id = "BANDITS" }
   }
   whiteKeeperBaseEnemies = {
-    { id = "NOMAD_VILLAGE" }
     { id = "LIZARDMEN_SMALL" }
     { id = "BANDITS" }
   }

@@ -562,9 +562,6 @@
       ids = { "GNOME" }
       traits = { LEADER }
       frequency = 0.1
-      requirements = {
-        { 0.0 AttractionInfo 1 { FurnitureType "BED1" } } 
-      }
     }
     {
       ids = { "AUTOMATON_WORKER_WOOD" }
