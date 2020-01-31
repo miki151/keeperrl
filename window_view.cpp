@@ -344,6 +344,7 @@ void WindowView::rebuildGui() {
     bottom = gui.empty();
     rightBarWidth = 0;
     bottomBarHeight = 0;
+    bottomBarBounds = Rectangle(Vec2(0, 0), renderer.getSize());
   } else
     switch (gameInfo.infoType) {
       case GameInfo::InfoType::SPECTATOR:
