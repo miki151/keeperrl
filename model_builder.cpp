@@ -365,7 +365,7 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
         [&](LevelConnection::ExtraEnemy& e) {
           for (int i : All(e.enemyInfo)) {
             auto& set = processLevelConnection(model, e.enemyInfo[i], extraEnemies);
-            addLevel(set, index == connection.levels.size() - 1 && i == e.enemyInfo.size());
+            addLevel(set, index == connection.levels.size() - 1 && i == e.enemyInfo.size() - 1);
           }
         },
         [&](LevelConnection::MainEnemy&) {
