@@ -46,8 +46,6 @@ struct LevelConnection {
   SERIALIZE_ALL(NAMED(topLevel), NAMED(levels), OPTION(direction))
 };
 
-CEREAL_CLASS_VERSION(LevelConnection::LevelInfo, 1)
-
 struct BonesInfo {
   double SERIAL(probability);
   vector<EnemyId> SERIAL(enemies);

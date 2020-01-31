@@ -144,5 +144,3 @@ class Game : public OwnedObject<Game> {
   void spawnKeeper(AvatarInfo, vector<string> introText);
   HeapAllocated<ContentFactory> SERIAL(contentFactory);
 };
-
-CEREAL_CLASS_VERSION(Game, 1);
