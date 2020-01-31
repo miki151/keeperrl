@@ -47,10 +47,21 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
-  ar(furniture, tickingFurniture, covered, roofSupport, portals, furnitureEffects);
-  if (Archive::is_loading::value) // some code requires these Sectors to be always initialized
+  ar(furniture, tickingFurniture, covered, roofSupport, portals);
+  if (Archive::is_loading::value) { // some code requires these Sectors to be always initialized
     getSectors({MovementTrait::WALK});
-}  
+    unordered_map<TribeId, unique_ptr<EffectsTable>, CustomHash<TribeId>> SERIAL(tmp);
+    ar(tmp);
+    for (auto t : ENUM_ALL(TribeId::KeyType))
+      furnitureEffects[t] = std::move(tmp[TribeId(t)]);
+  } else {
+    unordered_map<TribeId, unique_ptr<EffectsTable>, CustomHash<TribeId>> SERIAL(tmp);
+    for (auto t : ENUM_ALL(TribeId::KeyType))
+      tmp[TribeId(t)] = std::move(furnitureEffects[t]);
+    ar(tmp);
+  }
+  // ar(furnitureEffects)
+}
 
 SERIALIZABLE(Level);
 
@@ -618,12 +629,4 @@ void Level::setFurniture(Vec2 pos, PFurniture f) {
   if (f->isTicking())
     addTickingFurniture(pos);
   furniture->getBuilt(layer).putElem(pos, std::move(f));
-}
-
-void Level::fixRetiredKeeperEffectsTable() {
-  if (auto& e = furnitureEffects[TribeId::KeyType::ADVENTURER])
-    furnitureEffects[TribeId::KeyType::RETIRED_KEEPER] = std::move(e);
-  else
-  if (auto& e = furnitureEffects[TribeId::KeyType::DARK_KEEPER])
-    furnitureEffects[TribeId::KeyType::RETIRED_KEEPER] = std::move(e);
 }

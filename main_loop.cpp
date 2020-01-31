@@ -1108,8 +1108,6 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
           } else if (auto retired = sites[v].getRetired()) {
             if (auto info = loadFromFile<RetiredModelInfo>(userPath.file(retired->fileInfo.filename), !useSingleThread)) {
               models[v] = std::move(info->model);
-              for (auto l : models[v]->getMainLevels())
-                l->fixRetiredKeeperEffectsTable();
               factories.push_back(std::move(info->factory));
             } else {
               failedToLoad = retired->fileInfo.filename;
