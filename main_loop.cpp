@@ -1100,6 +1100,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
                     if (retiredInfo->enemyId == villain->enemyId)
                       if (auto model = loadFromFile<RetiredModelInfo>(userPath.file(info.filename), !useSingleThread)) {
                         models[v] = std::move(model->model);
+                        remove(userPath.file(info.filename).getPath());
                         break;
                       }
             if (!models[v])
