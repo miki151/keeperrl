@@ -2,7 +2,7 @@
 
 GCC = g++
 LD = g++
-CFLAGS = -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-strict-aliasing -Wl,--stack,16000000
+CFLAGS = -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-strict-aliasing -Wl,--stack,16000000 -Wl,--build-id
 
 ifdef DATA_DIR
 	CFLAGS += -DDATA_DIR=\"$(DATA_DIR)\"
@@ -66,7 +66,7 @@ RES_FILE=keeper32.res
 endif
 
 LIBS = -mwindows ${RES_FILE} -lvorbisfile -lvorbis -logg -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 \
-	   -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid $(STEAM_LIBS)
+	   -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid -ldbghelp $(STEAM_LIBS)
 
 ifdef AMD64
 LIBS += -lmingw32 -lSDL2main -lSDL2 -lfreeglut -lglu32 -lz -lglew32 -ljpeg -lopenal -lopengl32 -lcurl -limagehlp -lpthread

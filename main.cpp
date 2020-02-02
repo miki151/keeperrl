@@ -237,10 +237,8 @@ static po::parser getCommandLineFlags() {
 #include <SDL2/SDL.h>
 
 int main(int argc, char* argv[]) {
-#ifdef RELEASE
-  StackPrinter::initialize(argv[0], time(0));
-#endif
   std::set_terminate(fail);
+  initializeMiniDump();
   setInitializedStatics();
   po::parser flags = getCommandLineFlags();
   if (!flags.parseArgs(argc, argv))
