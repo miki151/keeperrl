@@ -690,6 +690,21 @@ string Effects::Damage::getDescription(const ContentFactory*) const {
   return "Causes " + ::getName(attr);
 }
 
+bool Effects::FixedDamage::applyToCreature(Creature* c, Creature*) const {
+  bool result = c->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), attackType, value, attr), true);
+  if (attr == AttrType::SPELL_DAMAGE)
+    c->addFX({FXName::MAGIC_MISSILE_SPLASH});
+  return result;
+}
+
+string Effects::FixedDamage::getName(const ContentFactory*) const {
+  return toString(value) + " " + ::getName(attr);
+}
+
+string Effects::FixedDamage::getDescription(const ContentFactory*) const {
+  return "Causes " + toString(value) + " " + ::getName(attr);
+}
+
 bool Effects::InjureBodyPart::applyToCreature(Creature* c, Creature* attacker) const {
   if (c->getBody().injureBodyPart(c, part, false)) {
     c->you(MsgType::DIE, "");
