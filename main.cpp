@@ -236,9 +236,24 @@ static po::parser getCommandLineFlags() {
 #ifndef VSTUDIO
 #include <SDL2/SDL.h>
 
+void onException() {
+  if (auto ex = std::current_exception()) {
+    try {
+      std::rethrow_exception(ex);
+    } catch (std::exception &ex) {
+      FATAL << "Uncaught exception: " << ex.what();
+    } catch (...) {
+      FATAL << "Uncaught exception (unknown)";
+    }
+  } else
+    FATAL << "Terminated due to unknown reason";
+  // just in case FATAL doesn't crash
+  abort();
+}
+
 int main(int argc, char* argv[]) {
-  std::set_terminate(fail);
   initializeMiniDump();
+  std::set_terminate(onException);
   setInitializedStatics();
   po::parser flags = getCommandLineFlags();
   if (!flags.parseArgs(argc, argv))

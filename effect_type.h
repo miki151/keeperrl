@@ -120,6 +120,13 @@ struct Damage {
   AttackType SERIAL(attackType);
   SERIALIZE_ALL(attr, attackType)
 };
+struct FixedDamage {
+  EFFECT_TYPE_INTERFACE;
+  AttrType SERIAL(attr);
+  int SERIAL(value);
+  AttackType SERIAL(attackType);
+  SERIALIZE_ALL(attr, value, attackType)
+};
 struct IncreaseAttr {
   EFFECT_TYPE_INTERFACE;
   AttrType SERIAL(attr);
@@ -327,7 +334,8 @@ struct ColorVariant {
   X(FirstSuccessful, 54)\
   X(ChainFirstResult, 55)\
   X(ColorVariant, 56)\
-  X(Jump, 57)
+  X(Jump, 57)\
+  X(FixedDamage, 58)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
