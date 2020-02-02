@@ -48,19 +48,15 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
   ar(furniture, tickingFurniture, covered, roofSupport, portals);
-  if (Archive::is_loading::value) { // some code requires these Sectors to be always initialized
-    getSectors({MovementTrait::WALK});
-    unordered_map<TribeId, unique_ptr<EffectsTable>, CustomHash<TribeId>> SERIAL(tmp);
-    ar(tmp);
-    for (auto t : ENUM_ALL(TribeId::KeyType))
-      furnitureEffects[t] = std::move(tmp[TribeId(t)]);
-  } else {
-    unordered_map<TribeId, unique_ptr<EffectsTable>, CustomHash<TribeId>> SERIAL(tmp);
-    for (auto t : ENUM_ALL(TribeId::KeyType))
-      tmp[TribeId(t)] = std::move(furnitureEffects[t]);
-    ar(tmp);
-  }
+  unordered_map<TribeId, unique_ptr<EffectsTable>, CustomHash<TribeId>> SERIAL(tmp);
+  for (auto t : ENUM_ALL(TribeId::KeyType))
+    tmp[TribeId(t)] = std::move(furnitureEffects[t]);
+  ar(tmp);
+  for (auto t : ENUM_ALL(TribeId::KeyType))
+    furnitureEffects[t] = std::move(tmp[TribeId(t)]);
   // ar(furnitureEffects)
+  if (Archive::is_loading::value) // some code requires these Sectors to be always initialized
+    getSectors({MovementTrait::WALK});
 }
 
 SERIALIZABLE(Level);
