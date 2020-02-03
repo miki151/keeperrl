@@ -13,7 +13,7 @@ template <typename T>
 class ContentId {
   public:
   explicit ContentId(const char*);
-  using InternalId = int;
+  using InternalId = short;
   explicit ContentId(InternalId);
   bool operator == (const ContentId&) const;
   bool operator == (const char*) const;

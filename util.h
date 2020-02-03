@@ -27,6 +27,7 @@
 #include "extern/variant.h"
 #include "extern/optional.h"
 #include "profiler.h"
+#include "mem_usage_counter.h"
 
 template <class T>
 string toString(const T& t) {
@@ -124,6 +125,12 @@ class RandomGen;
 
 string getCardinalName(Dir d);
 
+struct SVec2 {
+  short SERIAL(x);
+  short SERIAL(y);
+  SERIALIZE_ALL(x, y)
+};
+
 class Vec2 {
   public:
   int SERIAL(x); // HASH(x)
@@ -131,6 +138,7 @@ class Vec2 {
   Vec2() : x(0), y(0) {}
   Vec2(int x, int y);
   Vec2(Dir);
+  Vec2(SVec2);
   bool inRectangle(int px, int py, int kx, int ky) const;
   bool inRectangle(const Rectangle&) const;
   bool operator == (const Vec2& v) const;
@@ -492,6 +500,12 @@ void serialize(Archive& ar1, EnumMap<Enum, U>& m) {
     ar1(m[Enum(i)]);
 }
 
+
+template <class T, class U> inline
+void serialize(MemUsageArchive & ar1, EnumMap<T, U> & bd) {
+  ar1(bd.elems);
+}
+
 template<class T>
 class EnumSet {
   public:
@@ -646,6 +660,10 @@ class EnumSet {
         throw ::cereal::Exception("EnumSet element outside of legal enum range");
       insert(elem);
     }
+  }
+
+  template <>
+  void serialize(MemUsageArchive& ar, const unsigned int version) {
   }
 
   private:
@@ -937,6 +955,13 @@ class Table {
   template <class Archive>
   void save(Archive& ar, const unsigned int version) const {
     ar << bounds;
+    for (Vec2 v : bounds)
+      ar << (*this)[v];
+  }
+
+  template <>
+  void save(MemUsageArchive& ar, const unsigned int version) const {
+    ar.addUsage(bounds.width() * bounds.height() * sizeof(T));
     for (Vec2 v : bounds)
       ar << (*this)[v];
   }
@@ -1460,6 +1485,13 @@ class HeapAllocated {
     if (Archive::is_loading::value) {
       elem = unique<T>();
     }
+    CHECK(!!elem);
+    ar1(*elem);
+  }
+
+  template <>
+  void serialize(MemUsageArchive& ar1) {
+    ar1.addUsage(sizeof(T));
     CHECK(!!elem);
     ar1(*elem);
   }

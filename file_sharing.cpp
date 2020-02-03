@@ -795,7 +795,6 @@ void FileSharing::cancel() {
 }
 
 bool FileSharing::consumeCancelled() {
-  std::cout << "Checking cancelled" << std::endl;
   return wasCancelled.exchange(false);
 }
 

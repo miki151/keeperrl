@@ -94,11 +94,11 @@ optional<string> ContentFactory::readFurnitureFactory(const GameConfig* config, 
   map<PrimaryId<FurnitureType>, Furniture> elems;
   if (auto res = config->readObject(elems, GameConfigId::FURNITURE, keyVerifier))
     return *res;
-  map<FurnitureType, OwnerPointer<Furniture>> furnitureDefs;
+  map<FurnitureType, unique_ptr<Furniture>> furnitureDefs;
   map<PrimaryId<FurnitureListId>, FurnitureList> furnitureLists;
   for (auto& elem : elems) {
     elem.second.setType(elem.first);
-    furnitureDefs.insert(make_pair(elem.first, makeOwner<Furniture>(elem.second)));
+    furnitureDefs.insert(make_pair(elem.first, unique<Furniture>(elem.second)));
   }
   if (auto res = config->readObject(furnitureLists, GameConfigId::FURNITURE_LISTS, keyVerifier))
     return *res;

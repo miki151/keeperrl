@@ -11,7 +11,7 @@
 #include "collective.h"
 #include "view_object_action.h"
 
-void FurnitureClick::handle(FurnitureClickType type, Position pos, WConstFurniture furniture) {
+void FurnitureClick::handle(FurnitureClickType type, Position pos, const Furniture* furniture) {
   auto layer = furniture->getLayer();
   switch (type) {
     case FurnitureClickType::LOCK: {
@@ -33,7 +33,7 @@ void FurnitureClick::handle(FurnitureClickType type, Position pos, WConstFurnitu
   }
 }
 
-ViewObjectAction FurnitureClick::getClickAction(FurnitureClickType type, Position, WConstFurniture furniture) {
+ViewObjectAction FurnitureClick::getClickAction(FurnitureClickType type, Position, const Furniture* furniture) {
   switch (type) {
     case FurnitureClickType::LOCK: {
       if (furniture->getMovementSet().hasTrait(MovementTrait::WALK))

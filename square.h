@@ -29,7 +29,7 @@ class Position;
 class ViewIndex;
 class Attack;
 
-class Square : public OwnedObject<Square> {
+class Square {
   public:
   Square();
 

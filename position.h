@@ -83,7 +83,7 @@ class Position {
   bool canConstruct(FurnitureType) const;
   bool isWall() const;
   bool isBuildingSupport() const;
-  void removeFurniture(WConstFurniture, PFurniture replace = nullptr) const;
+  void removeFurniture(const Furniture*, PFurniture replace = nullptr) const;
   void removeFurniture(FurnitureLayer) const;
   void addFurniture(PFurniture) const;
   bool isUnavailable() const;
@@ -141,12 +141,12 @@ class Position {
   void swapCreatures(Creature*);
   double getLight() const;
   optional<Position> getStairsTo(Position) const;
-  WConstFurniture getFurniture(FurnitureLayer) const;
-  WConstFurniture getFurniture(FurnitureType) const;
-  vector<WConstFurniture> getFurniture() const;
-  WFurniture modFurniture(FurnitureLayer) const;
-  WFurniture modFurniture(FurnitureType) const;
-  vector<WFurniture> modFurniture() const;
+  const Furniture* getFurniture(FurnitureLayer) const;
+  const Furniture* getFurniture(FurnitureType) const;
+  vector<const Furniture*> getFurniture() const;
+  Furniture* modFurniture(FurnitureLayer) const;
+  Furniture* modFurniture(FurnitureType) const;
+  vector<Furniture*> modFurniture() const;
   optional<short> getDistanceToNearestPortal() const;
   optional<Position> getOtherPortal() const;
   void registerPortal();
@@ -162,8 +162,8 @@ class Position {
   int getHash() const;
 
   private:
-  WSquare modSquare() const;
-  WConstSquare getSquare() const;
+  Square* modSquare() const;
+  const Square* getSquare() const;
   Vec2 SERIAL(coord);
   Level* SERIAL(level) = nullptr;
   bool SERIAL(valid) = false;

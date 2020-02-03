@@ -63,11 +63,13 @@ namespace cereal {
 
 #define INST(...) \
   template void save(BinaryOutputArchive&, variant<__VA_ARGS__> const&); \
-  template void load(BinaryInputArchive&, variant<__VA_ARGS__>&);
+  template void load(BinaryInputArchive&, variant<__VA_ARGS__>&); \
+  template void save(MemUsageArchive&, variant<__VA_ARGS__> const&);
 
 #define INST2(V) \
   template void save(BinaryOutputArchive&, V const&); \
-  template void load(BinaryInputArchive&, V&);
+  template void load(BinaryInputArchive&, V&); \
+  template void save(MemUsageArchive&, variant<V> const&);
 
   INST(StorageInfo, vector<Position>)
   INST(EmptyThing, int, CreatureGroup)

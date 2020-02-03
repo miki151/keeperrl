@@ -4,9 +4,12 @@
 #include "serialization.h"
 #include "debug.h"
 #include "my_containers.h"
+#include "mem_usage_counter.h"
 
 template <typename T>
 class WeakPointer;
+
+class MemUsageArchive;
 
 template <typename T>
 class OwnerPointer {
@@ -71,6 +74,14 @@ class OwnerPointer {
   }*/
 
   SERIALIZE_ALL(elem)
+
+  template <>
+  void serialize(MemUsageArchive& ar1, const unsigned int) {
+    if (!!elem) {
+      ar1.addUsage(sizeof(T));
+      ar1(*elem);
+    }
+  }
 
   private:
   template <typename>
@@ -291,8 +302,8 @@ inline void CEREAL_SAVE_FUNCTION_NAME(Archive& ar1, T* m) {
 DEF_OWNER_PTR(Item);
 DEF_UNIQUE_PTR(LevelMaker);
 DEF_OWNER_PTR(Creature);
-DEF_OWNER_PTR(Square);
-DEF_OWNER_PTR(Furniture);
+DEF_UNIQUE_PTR(Square);
+DEF_UNIQUE_PTR(Furniture);
 DEF_UNIQUE_PTR(MonsterAI);
 DEF_UNIQUE_PTR(Behaviour);
 DEF_OWNER_PTR(Task);

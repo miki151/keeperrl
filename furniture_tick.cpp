@@ -31,7 +31,7 @@ static void handleBed(Position pos) {
       c->heal(0.005);
 }
 
-static void handlePigsty(Position pos, WFurniture furniture) {
+static void handlePigsty(Position pos, Furniture* furniture) {
   PROFILE;
   if (pos.getCreature() || !Random.roll(10) || pos.getPoisonGasAmount() > 0)
     return;
@@ -46,7 +46,7 @@ static void handlePigsty(Position pos, WFurniture furniture) {
   }
 }
 
-static void handleBoulder(Position pos, WFurniture furniture) {
+static void handleBoulder(Position pos, Furniture* furniture) {
   for (Vec2 direction : Vec2::directions4(Random)) {
     int radius = 4;
     for (int i = 1; i <= radius; ++i) {
@@ -72,7 +72,7 @@ static void handleBoulder(Position pos, WFurniture furniture) {
   }
 }
 
-static void meteorShower(Position position, WFurniture furniture) {
+static void meteorShower(Position position, Furniture* furniture) {
   auto creator = furniture->getCreator();
   const auto duration = 15_visible;
   if (!creator ||
@@ -102,7 +102,7 @@ static void meteorShower(Position position, WFurniture furniture) {
   }
 }
 
-static void pit(Position position, WFurniture self) {
+static void pit(Position position, Furniture* self) {
   if (!position.getCreature() && Random.roll(10))
     for (auto neighborPos : position.neighbors8(Random))
       if (auto water = neighborPos.getFurniture(FurnitureLayer::GROUND))
@@ -124,7 +124,7 @@ static Color getPortalColor(int index) {
   return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
 }
 
-void FurnitureTick::handle(FurnitureTickType type, Position pos, WFurniture furniture) {
+void FurnitureTick::handle(FurnitureTickType type, Position pos, Furniture* furniture) {
   switch (type) {
     case FurnitureTickType::BED:
       handleBed(pos);

@@ -52,7 +52,7 @@ void LevelBuilder::removeAttrib(Vec2 pos, SquareAttrib attr) {
   attrib[transform(pos)].erase(attr);
 }
 
-WSquare LevelBuilder::modSquare(Vec2 pos) {
+Square* LevelBuilder::modSquare(Vec2 pos) {
   return squares.getWritable(transform(pos));
 }
 
@@ -151,7 +151,7 @@ bool LevelBuilder::isFurnitureType(Vec2 pos, FurnitureType type) {
   return getFurnitureType(pos, contentFactory->furniture.getData(type).getLayer()) == type;
 }
 
-WConstFurniture LevelBuilder::getFurniture(Vec2 posT, FurnitureLayer layer) {
+const Furniture* LevelBuilder::getFurniture(Vec2 posT, FurnitureLayer layer) {
   return furniture.getBuilt(layer).getReadonly(transform(posT));
 }
 

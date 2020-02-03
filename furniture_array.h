@@ -23,12 +23,14 @@ class FurnitureArray {
     SERIALIZE_ALL(type, time)
   };
 
-  const optional<Construction>& getConstruction(Vec2, FurnitureLayer) const;
-  optional<Construction>& getConstruction(Vec2, FurnitureLayer);
+  optional<const Construction&> getConstruction(Vec2, FurnitureLayer) const;
+  optional<Construction&> getConstruction(Vec2, FurnitureLayer);
+  void eraseConstruction(Vec2, FurnitureLayer);
+  void setConstruction(Vec2, FurnitureLayer, Construction);
 
   SERIALIZATION_DECL(FurnitureArray)
 
   private:
   EnumMap<FurnitureLayer, Array> SERIAL(built);
-  EnumMap<FurnitureLayer, Table<optional<Construction>>> SERIAL(construction);
+  EnumMap<FurnitureLayer, unordered_map<Vec2, Construction, CustomHash<Vec2>>> SERIAL(construction);
 };

@@ -19,11 +19,11 @@ class PositionMap {
   void erase(Position);
   void limitToModel(const WModel);
 
-  SERIALIZATION_DECL(PositionMap);
+  SERIALIZATION_DECL(PositionMap)
 
   private:
-  Table<optional<T>>& getTable(Position);
-  map<LevelId, Table<optional<T>>> SERIAL(tables);
+  Table<heap_optional<T> >& getTable(Position);
+  map<LevelId, Table<heap_optional<T>>> SERIAL(tables);
   map<LevelId, map<Vec2, T>> SERIAL(outliers);
 };
 

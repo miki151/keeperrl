@@ -122,7 +122,7 @@ class Game : public OwnedObject<Game> {
   map<VillainType, vector<Collective*>> SERIAL(villainsByType);
   vector<Collective*> SERIAL(collectives);
   MusicType SERIAL(musicType);
-  unique_ptr<CreatureView> SERIAL(spectator);
+  unique_ptr<CreatureView> spectator;
   HeapAllocated<Statistics> SERIAL(statistics);
   Options* options = nullptr;
   Highscores* highscores = nullptr;

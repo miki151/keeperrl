@@ -58,7 +58,7 @@ RICH_ENUM(FurnitureEffectInfo::Target,
     ENEMY
 );
 
-class Furniture : public OwnedObject<Furniture> {
+class Furniture {
   public:
 
   Furniture(const Furniture&);

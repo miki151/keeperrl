@@ -14,7 +14,7 @@ class CostInfo {
 
   SERIALIZATION_DECL(CostInfo)
 
-  CollectiveResourceId SERIAL(id) = CollectiveResourceId(0);
+  CollectiveResourceId SERIAL(id) = CollectiveResourceId("GOLD");
   short SERIAL(value) = 0;
 };
 

@@ -18,5 +18,5 @@ RICH_ENUM(FurnitureTickType,
 
 class FurnitureTick {
   public:
-  static void handle(FurnitureTickType, Position, WFurniture);
+  static void handle(FurnitureTickType, Position, Furniture*);
 };

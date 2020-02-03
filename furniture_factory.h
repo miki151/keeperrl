@@ -23,7 +23,7 @@ struct FurnitureParams {
 
 class FurnitureFactory {
   public:
-  FurnitureFactory(map<FurnitureType, OwnerPointer<Furniture>>, map<FurnitureListId, FurnitureList>);
+  FurnitureFactory(map<FurnitureType, unique_ptr<Furniture>>, map<FurnitureListId, FurnitureList>);
   void initializeInfos();
   void merge(FurnitureFactory);
   bool canBuild(FurnitureType, Position) const;
@@ -49,7 +49,7 @@ class FurnitureFactory {
   SERIALIZATION_DECL(FurnitureFactory)
 
   private:
-  map<FurnitureType, OwnerPointer<Furniture>> SERIAL(furniture);
+  map<FurnitureType, unique_ptr<Furniture>> SERIAL(furniture);
   map<FurnitureListId, FurnitureList> SERIAL(furnitureLists);
   EnumMap<ExperienceType, vector<FurnitureType>> SERIAL(trainingFurniture);
   unordered_map<FurnitureType, vector<FurnitureType>, CustomHash<FurnitureType>> SERIAL(upgrades);

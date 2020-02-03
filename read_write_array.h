@@ -5,7 +5,7 @@
 template <typename Type, typename Param>
 class ReadWriteArray {
   public:
-  typedef OwnerPointer<Type> PType;
+  typedef unique_ptr<Type> PType;
   typedef Type* WType;
 
   ReadWriteArray(Rectangle bounds) : modified(bounds, -1), readonly(bounds, -1), types(bounds) {}
@@ -17,7 +17,7 @@ class ReadWriteArray {
   WType getWritable(Vec2 pos) {
     if (modified[pos] == -1)
       if (auto type = types[pos])
-        putElem(pos, makeOwner<Type>(*getReadonly(pos)));
+        putElem(pos, unique<Type>(*getReadonly(pos)));
     if (modified[pos] > -1)
       return allModified[modified[pos]].get();
     else
@@ -64,6 +64,11 @@ class ReadWriteArray {
 
   int getNumTotal() const {
     return 0;
+  }
+
+  void shrinkToFit() {
+    allModified.shrink_to_fit();
+    allReadonly.shrink_to_fit();
   }
 
   SERIALIZE_ALL(modified, allModified, allReadonly, readonly, types, readonlyMap, numTotal)

@@ -211,6 +211,9 @@ string toString(const Vec2& v) {
 Vec2::Vec2(int _x, int _y) : x(_x), y(_y) {
 }
 
+Vec2::Vec2(SVec2 v) : x(v.x), y(v.y) {
+}
+
 Vec2::Vec2(Dir dir) {
   switch (dir) {
     case Dir::N: x = 0; y = -1; break;

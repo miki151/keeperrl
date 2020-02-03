@@ -41,7 +41,7 @@
 #include "roof_support.h"
 #include "game_event.h"
 
-template <class Archive> 
+template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Level>);
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
@@ -91,10 +91,12 @@ PLevel Level::create(SquareArray s, FurnitureArray f, WModel m,
     square->onAddedToLevel(Position(pos, ret.get()));
     if (optional<StairKey> link = square->getLandingLink())
       ret->landingSquares[*link].push_back(Position(pos, ret.get()));
-    for (auto layer : ENUM_ALL(FurnitureLayer))
+    for (auto layer : ENUM_ALL(FurnitureLayer)) {
+      ret->furniture->getBuilt(layer).shrinkToFit();
       if (auto f = ret->furniture->getBuilt(layer).getReadonly(pos))
         if (f->isTicking())
           ret->addTickingFurniture(pos);
+    }
   }
   for (VisionId vision : ENUM_ALL(VisionId))
     (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision);
@@ -497,22 +499,23 @@ void Level::swapCreatures(Creature* c1, Creature* c2) {
   placeCreature(c2, pos1);
 }
 
-const vector<Vec2>& Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
+const vector<SVec2>& Level::getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const {
   PROFILE;
   return getFieldOfView(vision).getVisibleTiles(pos);
 }
 
 vector<Vec2> Level::getVisibleTiles(Vec2 pos, const Vision& vision) const {
-  return getFieldOfView(vision.getId()).getVisibleTiles(pos).filter(
-      [&](Vec2 v) { return isWithinVision(pos, v, vision); });
+  return getFieldOfView(vision.getId()).getVisibleTiles(pos)
+      .transform([](auto v) { return Vec2(v);})
+      .filter([&](Vec2 v) { return isWithinVision(pos, v, vision); });
 }
 
-WConstSquare Level::getSafeSquare(Vec2 pos) const {
+const Square* Level::getSafeSquare(Vec2 pos) const {
   CHECK(inBounds(pos)) << pos << " " << getBounds();
   return squares->getReadonly(pos);
 }
 
-WSquare Level::modSafeSquare(Vec2 pos) {
+Square* Level::modSafeSquare(Vec2 pos) {
   CHECK(inBounds(pos));
   return squares->getWritable(pos);
 }
@@ -621,7 +624,7 @@ bool Level::isUnavailable(Vec2 pos) const {
 
 void Level::setFurniture(Vec2 pos, PFurniture f) {
   auto layer = f->getLayer();
-  furniture->getConstruction(pos, layer).reset();
+  furniture->eraseConstruction(pos, layer);
   if (f->isTicking())
     addTickingFurniture(pos);
   furniture->getBuilt(layer).putElem(pos, std::move(f));

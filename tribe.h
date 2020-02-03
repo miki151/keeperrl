@@ -49,7 +49,7 @@ class TribeId {
   bool operator == (const TribeId&) const;
   bool operator != (const TribeId&) const;
 
-  enum class KeyType;
+  enum class KeyType : std::uint8_t;
   KeyType getKey() const;
 
   int getHash() const;
@@ -119,7 +119,7 @@ class Tribe {
   TribeId SERIAL(id);
 };
 
-RICH_ENUM(
+RICH_ENUM2(std::uint8_t,
     TribeId::KeyType,
     MONSTER,
     PEST,

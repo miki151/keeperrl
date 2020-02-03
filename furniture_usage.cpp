@@ -45,7 +45,7 @@ struct ChestInfo {
   optional<ItemInfo> itemInfo;
 };
 
-static void useChest(Position pos, WConstFurniture furniture, Creature* c, const ChestInfo& chestInfo) {
+static void useChest(Position pos, const Furniture* furniture, Creature* c, const ChestInfo& chestInfo) {
   c->secondPerson("You open the " + furniture->getName());
   c->thirdPerson(c->getName().the() + " opens the " + furniture->getName());
   pos.removeFurniture(furniture, pos.getGame()->getContentFactory()->furniture.getFurniture(
@@ -88,7 +88,7 @@ static void usePortal(Position pos, Creature* c) {
   c->privateMessage("The portal is inactive. Create another one to open a connection.");
 }
 
-void FurnitureUsage::handle(FurnitureUsageType type, Position pos, WConstFurniture furniture, Creature* c) {
+void FurnitureUsage::handle(FurnitureUsageType type, Position pos, const Furniture* furniture, Creature* c) {
   CHECK(c != nullptr);
   type.visit([&] (BuiltinUsageId id) {
     switch (id) {

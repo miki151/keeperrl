@@ -9,7 +9,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(CostInfo);
 SERIALIZE_DEF(CostInfo, id, value);
 
 CostInfo CostInfo::noCost() {
-  return CostInfo{CollectiveResourceId(0), 0};
+  return CostInfo{CollectiveResourceId("GOLD"), 0};
 }
 
 CostInfo CostInfo::operator - () const {

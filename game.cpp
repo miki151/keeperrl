@@ -46,7 +46,7 @@ template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Game>);
   ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
-  ar(musicType, statistics, spectator, tribes, gameIdentifier, players, contentFactory, sunlightTimeOffset);
+  ar(musicType, statistics, tribes, gameIdentifier, players, contentFactory, sunlightTimeOffset);
   ar(gameDisplayName, models, visited, baseModel, campaign, localTime, turnEvents);
   if (Archive::is_loading::value)
     sunlightInfo.update(getGlobalTime() + sunlightTimeOffset);

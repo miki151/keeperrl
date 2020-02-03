@@ -13,6 +13,6 @@ RICH_ENUM(
 
 class FurnitureClick {
   public:
-  static void handle(FurnitureClickType, Position, WConstFurniture);
-  static ViewObjectAction getClickAction(FurnitureClickType, Position, WConstFurniture);
+  static void handle(FurnitureClickType, Position, const Furniture*);
+  static ViewObjectAction getClickAction(FurnitureClickType, Position, const Furniture*);
 };

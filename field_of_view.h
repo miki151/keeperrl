@@ -24,7 +24,7 @@ class FieldOfView {
   public:
   FieldOfView(WLevel, VisionId);
   bool canSee(Vec2 from, Vec2 to);
-  const vector<Vec2>& getVisibleTiles(Vec2 from);
+  const vector<SVec2>& getVisibleTiles(Vec2 from);
   void squareChanged(Vec2 pos);
 
   SERIALIZATION_DECL(FieldOfView)
@@ -38,13 +38,15 @@ class FieldOfView {
     public:
 
     bool checkVisible(int x,int y) const;
-    const vector<Vec2>& getVisibleTiles() const;
+    const vector<SVec2>& getVisibleTiles() const;
 
     Visibility(Rectangle bounds, const Table<bool>& blocking, int x, int y);
 
+    SERIALIZATION_DECL(Visibility)
+
     private:
     array<bitset<sightRange * 2 + 1>, sightRange * 2 + 1> visible;
-    vector<Vec2> visibleTiles;
+    vector<SVec2> SERIAL(visibleTiles);
     void calculate(int,int,int,int, int, int, int, int,
         function<bool (int, int)> isBlocking,
         function<void (int, int)> setVisible);
@@ -53,7 +55,7 @@ class FieldOfView {
     int px;
     int py;
   };
-  
+
   WLevel SERIAL(level) = nullptr;
   Table<unique_ptr<Visibility>> visibility;
   VisionId SERIAL(vision);

@@ -626,6 +626,8 @@ SERIALIZE_DEF(ItemType, NAMED(type), OPTION(prefixChance))
 namespace ItemTypes {
 
 #include "gen_variant_serialize.h"
+
+template void serialize(MemUsageArchive&, ItemTypeVariant&);
 }
 
 #include "pretty_archive.h"

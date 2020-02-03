@@ -127,19 +127,19 @@ void Position::setLandingLink(StairKey key) const {
   }
 }
 
-WSquare Position::modSquare() const {
+Square* Position::modSquare() const {
   PROFILE;
   CHECK(isValid());
   return level->modSafeSquare(coord);
 }
 
-WConstSquare Position::getSquare() const {
+const Square* Position::getSquare() const {
   //PROFILE;
   CHECK(isValid());
   return level->getSafeSquare(coord);
 }
 
-WFurniture Position::modFurniture(FurnitureLayer layer) const {
+Furniture* Position::modFurniture(FurnitureLayer layer) const {
   PROFILE;
   if (isValid())
     return level->furniture->getBuilt(layer).getWritable(coord);
@@ -147,7 +147,7 @@ WFurniture Position::modFurniture(FurnitureLayer layer) const {
     return nullptr;
 }
 
-WFurniture Position::modFurniture(FurnitureType type) const {
+Furniture* Position::modFurniture(FurnitureType type) const {
   PROFILE;
   if (auto furniture = modFurniture(getGame()->getContentFactory()->furniture.getData(type).getLayer()))
     if (furniture->getType() == type)
@@ -155,7 +155,7 @@ WFurniture Position::modFurniture(FurnitureType type) const {
   return nullptr;
 }
 
-WConstFurniture Position::getFurniture(FurnitureLayer layer) const {
+const Furniture* Position::getFurniture(FurnitureLayer layer) const {
   PROFILE;
   if (isValid())
     return level->furniture->getBuilt(layer).getReadonly(coord);
@@ -163,7 +163,7 @@ WConstFurniture Position::getFurniture(FurnitureLayer layer) const {
     return nullptr;
 }
 
-WConstFurniture Position::getFurniture(FurnitureType type) const {
+const Furniture* Position::getFurniture(FurnitureType type) const {
   PROFILE;
   if (auto furniture = getFurniture(getGame()->getContentFactory()->furniture.getData(type).getLayer()))
     if (furniture->getType() == type)
@@ -171,18 +171,18 @@ WConstFurniture Position::getFurniture(FurnitureType type) const {
   return nullptr;
 }
 
-vector<WConstFurniture> Position::getFurniture() const {
+vector<const Furniture*> Position::getFurniture() const {
   PROFILE;
-  vector<WConstFurniture> ret;
+  vector<const Furniture*> ret;
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = getFurniture(layer))
       ret.push_back(f);
   return ret;
 }
 
-vector<WFurniture> Position::modFurniture() const {
+vector<Furniture*> Position::modFurniture() const {
   PROFILE;
-  vector<WFurniture> ret;
+  vector<Furniture*> ret;
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = modFurniture(layer))
       ret.push_back(f);
@@ -653,7 +653,7 @@ void Position::removeFurniture(FurnitureLayer layer) const {
     removeFurniture(f);
 }
 
-void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
+void Position::removeFurniture(const Furniture* f, PFurniture replace) const {
   PROFILE;
   bool visibilityChanged = (!!replace) ? (f->blocksAnyVision() != replace->blocksAnyVision()) : f->blocksAnyVision();
   level->removeLightSource(coord, f->getLightEmission());
@@ -670,7 +670,7 @@ void Position::removeFurniture(WConstFurniture f, PFurniture replace) const {
       addFurnitureEffect(replacePtr->getTribe(), *effect);
   } else {
     level->furniture->getBuilt(layer).clearElem(coord);
-    level->furniture->getConstruction(coord, layer).reset();
+    level->furniture->eraseConstruction(coord, layer);
   }
   updateMovementDueToFire();
   updateConnectivity();
@@ -718,14 +718,15 @@ bool Position::construct(FurnitureType type, TribeId tribe) {
   PROFILE;
   CHECK(!isUnavailable());
   CHECK(canConstruct(type));
-  auto& construction = level->furniture->getConstruction(coord, getGame()->getContentFactory()->furniture.getData(type).getLayer());
+  auto layer = getGame()->getContentFactory()->furniture.getData(type).getLayer();
+  auto construction = level->furniture->getConstruction(coord, layer);
   if (!construction || construction->type != type)
-    construction = FurnitureArray::Construction{type, 10};
-  if (--construction->time == 0) {
+    level->furniture->setConstruction(coord, layer, FurnitureArray::Construction{type, 10});
+  else if (--construction->time == 0) {
     addFurniture(getGame()->getContentFactory()->furniture.getFurniture(type, tribe));
     return true;
-  } else
-    return false;
+  }
+  return false;
 }
 
 bool Position::isActiveConstruction(FurnitureLayer layer) const {

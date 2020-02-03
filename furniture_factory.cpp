@@ -51,7 +51,7 @@ int FurnitureFactory::getPopulationIncrease(FurnitureType type, int numBuilt) co
 
 PFurniture FurnitureFactory::getFurniture(FurnitureType type, TribeId tribe) const {
   USER_CHECK(furniture.count(type)) << "Furniture type not found " << type.data();
-  auto ret = makeOwner<Furniture>(*furniture.at(type));
+  auto ret = unique<Furniture>(*furniture.at(type));
   ret->setTribe(tribe);
   return ret;
 }
@@ -68,7 +68,7 @@ void FurnitureFactory::merge(FurnitureFactory f) {
   mergeMap(std::move(f.furniture), furniture);
 }
 
-FurnitureFactory::FurnitureFactory(map<FurnitureType, OwnerPointer<Furniture>> f, map<FurnitureListId, FurnitureList> l)
+FurnitureFactory::FurnitureFactory(map<FurnitureType, unique_ptr<Furniture> > f, map<FurnitureListId, FurnitureList> l)
     : furniture(std::move(f)), furnitureLists(std::move(l)) {
 }
 

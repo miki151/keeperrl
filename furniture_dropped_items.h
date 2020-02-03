@@ -17,7 +17,7 @@ class FurnitureDroppedItems {
   template <typename T>
   FurnitureDroppedItems(const T& t) : FurnitureDroppedItems(DropData(t)) {}
   FurnitureDroppedItems(DropData);
-  vector<PItem> handle(Position, WConstFurniture, vector<PItem>) const;
+  vector<PItem> handle(Position, const Furniture*, vector<PItem>) const;
 
   SERIALIZATION_DECL(FurnitureDroppedItems)
 

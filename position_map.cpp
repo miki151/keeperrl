@@ -11,7 +11,7 @@
 #include "zones.h"
 
 template <typename T>
-static optional<T&> getReferenceOptional(optional<T>& t) {
+static optional<T&> getReferenceOptional(heap_optional<T>& t) {
   if (t)
     return *t;
   else
@@ -19,7 +19,7 @@ static optional<T&> getReferenceOptional(optional<T>& t) {
 }
 
 template <typename T>
-static optional<const T&> getReferenceOptional(const optional<T>& t) {
+static optional<const T&> getReferenceOptional(const heap_optional<T>& t) {
   if (t)
     return *t;
   else
@@ -68,12 +68,12 @@ bool PositionMap<T>::contains(Position pos) const {
 }
 
 template <class T>
-Table<optional<T>>& PositionMap<T>::getTable(Position pos) {
+Table<heap_optional<T>>& PositionMap<T>::getTable(Position pos) {
   LevelId levelId = pos.getLevel()->getUniqueId();
   try {
     return tables.at(levelId);
   } catch (std::out_of_range) {
-    auto it = tables.insert(make_pair(levelId, Table<optional<T>>(pos.getLevel()->getBounds().minusMargin(-2))));
+    auto it = tables.insert(make_pair(levelId, Table<heap_optional<T>>(pos.getLevel()->getBounds().minusMargin(-2))));
     return it.first->second;
   }
 }

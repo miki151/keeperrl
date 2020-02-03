@@ -28,9 +28,24 @@ void FieldOfView::serialize(Archive& ar, const unsigned int) {
     visibility = Table<unique_ptr<Visibility>>(level->getBounds());
 }
 
-SERIALIZABLE(FieldOfView)
+template <>
+void FieldOfView::serialize(MemUsageArchive& ar1, const unsigned int) {
+  ar1(level, vision, blocking, visibility);
+}
+
+template void FieldOfView::serialize(InputArchive&, unsigned);
+template void FieldOfView::serialize(OutputArchive&, unsigned);
 
 SERIALIZATION_CONSTRUCTOR_IMPL(FieldOfView)
+
+template <typename Archive>
+void FieldOfView::Visibility::serialize(Archive& ar, const unsigned int) {
+  ar(visibleTiles);
+}
+
+SERIALIZABLE(FieldOfView::Visibility)
+
+SERIALIZATION_CONSTRUCTOR_IMPL2(FieldOfView::Visibility, Visibility)
 
 FieldOfView::FieldOfView(WLevel l, VisionId v)
     : level(l), visibility(l->getBounds()), vision(v), blocking(l->getBounds().minusMargin(-1), true) {
@@ -46,7 +61,7 @@ bool FieldOfView::canSee(Vec2 from, Vec2 to) {
     visibility[from].reset(new Visibility(level->getBounds(), blocking, from.x, from.y));
   return visibility[from]->checkVisible(to.x - from.x, to.y - from.y);
 }
-  
+
 void FieldOfView::squareChanged(Vec2 pos) {
   PROFILE;
   blocking[pos] = !Position(pos, level).canSeeThru(vision);
@@ -63,7 +78,7 @@ void FieldOfView::Visibility::setVisible(Rectangle bounds, int x, int y) {
   if (Vec2(px + x, py + y).inRectangle(bounds) &&
       !visible[x + sightRange][y + sightRange] && x * x + y * y <= sightRange * sightRange) {
     visible[x + sightRange][y + sightRange] = 1;
-    visibleTiles.push_back(Vec2(px + x, py + y));
+    visibleTiles.push_back(SVec2{short(px + x), short(py + y)});
   }
 }
 
@@ -82,17 +97,18 @@ FieldOfView::Visibility::Visibility(Rectangle bounds, const Table<bool>& blockin
       [&](int px, int py) { return blocking[Vec2(x - py, y + px)]; },
       [&](int px, int py) { setVisible(bounds, -py, px); });
   setVisible(bounds, 0, 0);
+  visibleTiles.shrink_to_fit();
 /*  ++numSamples;
   totalIter += visibleTiles.size();
   if (numSamples%100 == 0)
     INFO << numSamples << " iterations " << totalIter / numSamples << " avg";*/
 }
 
-const vector<Vec2>& FieldOfView::Visibility::getVisibleTiles() const {
+const vector<SVec2>& FieldOfView::Visibility::getVisibleTiles() const {
   return visibleTiles;
 }
 
-const vector<Vec2>& FieldOfView::getVisibleTiles(Vec2 from) {
+const vector<SVec2>& FieldOfView::getVisibleTiles(Vec2 from) {
   if (!visibility[from]) {
     visibility[from].reset(new Visibility(level->getBounds(), blocking, from.x, from.y));
   }
@@ -105,7 +121,7 @@ void FieldOfView::Visibility::calculate(int left, int right, int up, int h, int 
   if (y2*x1>=y1*x2) return;
   if (h>up) return;
   int leftx=x1, lefty=y1, rightx=x2, righty=y2;
-  int left_v=(int)floor((double)x1/y1*(h)), 
+  int left_v=(int)floor((double)x1/y1*(h)),
       right_v=(int)ceil((double)x2/y2*(h)),
       left_b=(int)floor((double)x1/y1*(h-1)),
       right_b=(int)ceil((double)x2/y2*(h+1));
@@ -140,7 +156,7 @@ void FieldOfView::Visibility::calculate(int left, int right, int up, int h, int 
 }
 
 bool FieldOfView::Visibility::checkVisible(int x, int y) const {
-  return x >= -sightRange && y >= -sightRange && x <= sightRange && y <= sightRange && 
+  return x >= -sightRange && y >= -sightRange && x <= sightRange && y <= sightRange &&
     visible[sightRange + x][sightRange + y] == 1;
 }
 

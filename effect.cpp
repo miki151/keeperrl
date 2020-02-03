@@ -1360,9 +1360,10 @@ bool Effect::apply(Position pos, Creature* attacker) const {
       [&](const Effects::PlaceFurniture& effect) {
         auto f = pos.getGame()->getContentFactory()->furniture.getFurniture(effect.furniture,
             attacker ? attacker->getTribeId() : TribeId::getMonster());
-        auto ref = f.get()->getThis();
+        auto layer = f->getLayer();
+        auto ref = f.get();
         pos.addFurniture(std::move(f));
-        if (ref)
+        if (pos.getFurniture(layer) == ref)
           ref->onConstructedBy(pos, attacker);
         return true;
       },

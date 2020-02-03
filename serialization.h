@@ -36,6 +36,7 @@
 #include <cereal/types/memory.hpp>
 #include "extern/variant_serialize.h"
 #include "serialize_optional.h"
+#include "mem_usage_counter.h"
 
 #include "stdafx.h"
 #include "progress.h"
@@ -50,12 +51,14 @@ typedef cereal::BinaryOutputArchive OutputArchive;
 
 #define SERIALIZABLE(T) \
   template void T::serialize(InputArchive&, unsigned); \
-  template void T::serialize(OutputArchive&, unsigned);
+  template void T::serialize(OutputArchive&, unsigned); \
+  template void T::serialize(MemUsageArchive&, unsigned);
 
 #define SERIALIZABLE_TMPL(T, ...) \
   template class T<__VA_ARGS__>;\
   template void T<__VA_ARGS__>::serialize(InputArchive&, unsigned); \
-  template void T<__VA_ARGS__>::serialize(OutputArchive&, unsigned);
+  template void T<__VA_ARGS__>::serialize(OutputArchive&, unsigned); \
+  template void T<__VA_ARGS__>::serialize(MemUsageArchive&, unsigned);
 
 #define REGISTER_TYPE(M) CEREAL_REGISTER_TYPE(M)
 

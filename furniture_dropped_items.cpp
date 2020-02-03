@@ -12,7 +12,7 @@ FurnitureDroppedItems::FurnitureDroppedItems(FurnitureDroppedItems::DropData d) 
 
 }
 
-vector<PItem> FurnitureDroppedItems::handle(Position pos, WConstFurniture f, vector<PItem> items) const {
+vector<PItem> FurnitureDroppedItems::handle(Position pos, const Furniture* f, vector<PItem> items) const {
   for (auto& stack : Item::stackItems(getWeakPointers(items))) {
     PlayerMessage message(stack[0]->getPluralTheNameAndVerb(stack.size(),
         dropData.verbSingle, dropData.verbPlural) + " in the " + f->getName());

@@ -181,8 +181,8 @@ class Level : public OwnedObject<Level> {
 
   private:
   friend class Position;
-  WConstSquare getSafeSquare(Vec2) const;
-  WSquare modSafeSquare(Vec2);
+  const Square* getSafeSquare(Vec2) const;
+  Square* modSafeSquare(Vec2);
   HeapAllocated<SquareArray> SERIAL(squares);
   HeapAllocated<FurnitureArray> SERIAL(furniture);
   Table<bool> SERIAL(memoryUpdates);
@@ -222,7 +222,7 @@ class Level : public OwnedObject<Level> {
   void addLightSource(Vec2 pos, double radius, int numLight);
   void addDarknessSource(Vec2 pos, double radius, int numLight);
   FieldOfView& getFieldOfView(VisionId vision) const;
-  const vector<Vec2>& getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const;
+  const vector<SVec2>& getVisibleTilesNoDarkness(Vec2 pos, VisionId vision) const;
   bool isWithinVision(Vec2 from, Vec2 to, const Vision&) const;
   LevelId SERIAL(levelId) = 0;
   bool SERIAL(noDiagonalPassing) = false;

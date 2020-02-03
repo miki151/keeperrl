@@ -34,7 +34,6 @@
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
-  ar & SUBCLASS(OwnedObject<Square>);
   ar(inventory, onFire);
   ar(creature, landingLink, poisonGas);
   ar(lastViewer, viewIndex);

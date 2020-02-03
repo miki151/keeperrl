@@ -6,7 +6,7 @@
 
 class SquareArray {
   public:
-  SquareArray(Rectangle bounds) : modified(bounds), readOnly(makeOwner<Square>()) {}
+  SquareArray(Rectangle bounds) : modified(bounds), readOnly(unique<Square>()) {}
 
   Table<PSquare> SERIAL(modified);
   PSquare SERIAL(readOnly);
@@ -19,15 +19,15 @@ class SquareArray {
     return modified.getBounds();
   }
 
-  WSquare getWritable(Vec2 pos) {
+  Square* getWritable(Vec2 pos) {
     if (!modified[pos]) {
-      modified[pos] = makeOwner<Square>();
+      modified[pos] = unique<Square>();
       ++numModified;
     }
     return modified[pos].get();
   }
 
-  WConstSquare getReadonly(Vec2 pos) const {
+  const Square* getReadonly(Vec2 pos) const {
     if (modified[pos])
       return modified[pos].get();
     else

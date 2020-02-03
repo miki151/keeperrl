@@ -35,7 +35,15 @@ class vector {
   vector(int size) : impl(size) {}
 
   int size() const {
-    return (int) impl.size();
+    return int(impl.size());
+  }
+
+  int capacity() const {
+    return int(impl.capacity());
+  }
+
+  void shrink_to_fit() {
+    impl.shrink_to_fit();
   }
 
   bool empty() const {

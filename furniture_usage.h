@@ -32,7 +32,7 @@ MAKE_VARIANT2(FurnitureUsageType, BuiltinUsageId, UsageEffect);
 
 class FurnitureUsage {
   public:
-  static void handle(FurnitureUsageType, Position, WConstFurniture, Creature*);
+  static void handle(FurnitureUsageType, Position, const Furniture*, Creature*);
   static bool canHandle(FurnitureUsageType, const Creature*);
   static string getUsageQuestion(FurnitureUsageType, string furnitureName);
   static void beforeRemoved(FurnitureUsageType, Position);
