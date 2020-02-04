@@ -28,10 +28,12 @@ void FieldOfView::serialize(Archive& ar, const unsigned int) {
     visibility = Table<unique_ptr<Visibility>>(level->getBounds());
 }
 
+#ifdef MEM_USAGE_TEST
 template <>
 void FieldOfView::serialize(MemUsageArchive& ar1, const unsigned int) {
   ar1(level, vision, blocking, visibility);
 }
+#endif
 
 template void FieldOfView::serialize(InputArchive&, unsigned);
 template void FieldOfView::serialize(OutputArchive&, unsigned);

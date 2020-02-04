@@ -48,6 +48,7 @@
 #include "level.h"
 #include "simple_game.h"
 #include "monster_ai.h"
+#include "mem_usage_counter.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -258,6 +259,15 @@ void MainLoop::bugReportSave(PGame& game, FilePath path) {
   Square::progressMeter = nullptr;
 }
 
+template <class T>
+static void dumpMemUsage(const T& elem) {
+#ifdef MEM_USAGE_TEST
+  MemUsageArchive ar;
+  ar << elem;
+  ar.dumpUsage(std::cout);
+#endif
+}
+
 MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave, bool splashScreen,
     function<optional<ExitCondition>(WGame)> exitCondition, milliseconds stepTimeMilli, optional<int> maxTurns) {
   if (!splashScreen)
@@ -308,6 +318,9 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
       exitInfo->visit(
           [&](ExitAndQuit) {
             eraseAllSavesExcept(game, none);
+            if (!splashScreen) {
+              dumpMemUsage(game);
+            }
           },
           [&](GameSaveType type) {
             if (type == GameSaveType::RETIRED_SITE) {
@@ -782,6 +795,7 @@ void MainLoop::launchQuickGame(optional<int> maxTurns) {
         CampaignType::QUICK_MAP, "[world]");
     auto models = prepareCampaignModels(*result, std::move(avatar), Random, &contentFactory);
     game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), std::move(contentFactory));
+    dumpMemUsage(game);
   }
   playGame(std::move(game), true, false, false, nullptr, milliseconds{3}, maxTurns);
 }

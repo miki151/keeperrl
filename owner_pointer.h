@@ -9,8 +9,6 @@
 template <typename T>
 class WeakPointer;
 
-class MemUsageArchive;
-
 template <typename T>
 class OwnerPointer {
   public:
@@ -75,12 +73,14 @@ class OwnerPointer {
 
   SERIALIZE_ALL(elem)
 
+#ifdef MEM_USAGE_TEST
   void serialize(MemUsageArchive& ar1, const unsigned int) {
     if (!!elem) {
       ar1.addUsage(sizeof(T));
       ar1(*elem);
     }
   }
+#endif
 
   private:
   template <typename>

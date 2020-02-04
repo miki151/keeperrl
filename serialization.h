@@ -49,6 +49,7 @@ typedef cereal::BinaryOutputArchive OutputArchive;
 #define OPTION(T) make_optional_nvp(#T, T)
 #define SKIP(T) make_skip_value(T)
 
+#ifdef MEM_USAGE_TEST
 #define SERIALIZABLE(T) \
   template void T::serialize(InputArchive&, unsigned); \
   template void T::serialize(OutputArchive&, unsigned); \
@@ -59,6 +60,16 @@ typedef cereal::BinaryOutputArchive OutputArchive;
   template void T<__VA_ARGS__>::serialize(InputArchive&, unsigned); \
   template void T<__VA_ARGS__>::serialize(OutputArchive&, unsigned); \
   template void T<__VA_ARGS__>::serialize(MemUsageArchive&, unsigned);
+#else
+#define SERIALIZABLE(T) \
+  template void T::serialize(InputArchive&, unsigned); \
+  template void T::serialize(OutputArchive&, unsigned);
+
+#define SERIALIZABLE_TMPL(T, ...) \
+  template class T<__VA_ARGS__>;\
+  template void T<__VA_ARGS__>::serialize(InputArchive&, unsigned); \
+  template void T<__VA_ARGS__>::serialize(OutputArchive&, unsigned);
+#endif
 
 #define REGISTER_TYPE(M) CEREAL_REGISTER_TYPE(M)
 

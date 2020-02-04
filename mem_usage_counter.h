@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef MEM_USAGE_TEST
+
 #include <cereal/cereal.hpp>
 #include "my_containers.h"
 
@@ -134,15 +136,27 @@ void serialize(MemUsageArchive & ar1, pair<T, U> & bd) {
 }
 
 template <class T> inline
-void save(MemUsageArchive & ar1, optional<T>const& bd) {
+void save(MemUsageArchive & ar1, optional<T> const& bd) {
   if (!!bd)
     ar1(*bd);
 }
 
 template <class T> inline
-void save(MemUsageArchive & ar1, unique_ptr<T>const& bd) {
+void save(MemUsageArchive & ar1, unique_ptr<T> const& bd) {
   if (!!bd) {
     ar1.addUsage(sizeof(T));
     ar1(*bd);
   }
 }
+
+template <class T> inline
+void save(MemUsageArchive & ar1, shared_ptr<T> const& bd) {
+  if (!!bd) {
+    ar1.addUsage(sizeof(T));
+    ar1(*bd);
+  }
+}
+
+CEREAL_REGISTER_ARCHIVE(MemUsageArchive)
+
+#endif

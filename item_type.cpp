@@ -627,7 +627,9 @@ namespace ItemTypes {
 
 #include "gen_variant_serialize.h"
 
+#ifdef MEM_USAGE_TEST
 template void serialize(MemUsageArchive&, ItemTypeVariant&);
+#endif
 }
 
 #include "pretty_archive.h"

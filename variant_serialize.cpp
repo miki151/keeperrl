@@ -61,6 +61,7 @@ namespace cereal {
     variant_detail::load_variant<0, variant<VariantType1, VariantTypes...>, VariantType1, VariantTypes...>(ar1, which, v);
   }
 
+#ifdef MEM_USAGE_TEST
 #define INST(...) \
   template void save(BinaryOutputArchive&, variant<__VA_ARGS__> const&); \
   template void load(BinaryInputArchive&, variant<__VA_ARGS__>&); \
@@ -70,6 +71,14 @@ namespace cereal {
   template void save(BinaryOutputArchive&, V const&); \
   template void load(BinaryInputArchive&, V&); \
   template void save(MemUsageArchive&, V const&);
+#else
+#define INST(...) \
+  template void save(BinaryOutputArchive&, variant<__VA_ARGS__> const&); \
+  template void load(BinaryInputArchive&, variant<__VA_ARGS__>&);
+#define INST2(V) \
+  template void save(BinaryOutputArchive&, V const&); \
+  template void load(BinaryInputArchive&, V&);
+#endif
 
   INST(StorageInfo, vector<Position>)
   INST(EmptyThing, int, CreatureGroup)

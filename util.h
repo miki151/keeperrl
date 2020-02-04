@@ -500,11 +500,12 @@ void serialize(Archive& ar1, EnumMap<Enum, U>& m) {
     ar1(m[Enum(i)]);
 }
 
-
+#ifdef MEM_USAGE_TEST
 template <class T, class U> inline
 void serialize(MemUsageArchive & ar1, EnumMap<T, U> & bd) {
   ar1(bd.elems);
 }
+#endif
 
 template<class T>
 class EnumSet {
@@ -662,8 +663,10 @@ class EnumSet {
     }
   }
 
+#ifdef MEM_USAGE_TEST
   void serialize(MemUsageArchive& ar, const unsigned int version) {
   }
+#endif
 
   private:
   Bitset elems;
@@ -958,11 +961,13 @@ class Table {
       ar << (*this)[v];
   }
 
+#ifdef MEM_USAGE_TEST
   void save(MemUsageArchive& ar, const unsigned int version) const {
     ar.addUsage(bounds.width() * bounds.height() * sizeof(T));
     for (Vec2 v : bounds)
       ar << (*this)[v];
   }
+#endif
 
   template <class Archive>
   void load(Archive& ar, const unsigned int version) {
@@ -1487,11 +1492,13 @@ class HeapAllocated {
     ar1(*elem);
   }
 
+#ifdef MEM_USAGE_TEST
   void serialize(MemUsageArchive& ar1) {
     ar1.addUsage(sizeof(T));
     CHECK(!!elem);
     ar1(*elem);
   }
+#endif
 
   protected:
   unique_ptr<T> elem;

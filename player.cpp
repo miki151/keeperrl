@@ -726,7 +726,8 @@ void Player::makeMove() {
         if (auto error = PrettyPrinting::parseObject(item, action.get<string>()))
           getView()->presentText("Sorry", "Couldn't parse \"" + action.get<string>() + "\": " + *error);
         else
-          creature->take(item/*.setPrefixChance(1)*/.get(getGame()->getContentFactory()));
+          if (auto cnt = getView()->getNumber("Enter number of items", Range(1, 1000), 1))
+            creature->take(item/*.setPrefixChance(1)*/.get(*cnt, getGame()->getContentFactory()));
         break;
       }
       case UserInputId::SUMMON_ENEMY: {
@@ -1077,10 +1078,12 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
       index.mergeFromMemory(*memIndex);
   if (position.isTribeForbidden(creature->getTribeId()))
     index.setHighlight(HighlightType::FORBIDDEN_ZONE);
-  if (getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
+#ifndef RELEASE
+  /*if (getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
     for (auto col : getGame()->getCollectives())
       if (col->getTerritory().contains(position))
-        index.setHighlight(HighlightType::RECT_SELECTION);
+        index.setHighlight(HighlightType::RECT_SELECTION);*/
+#endif
   if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE)) {
     if (auto clickType = furniture->getClickType())
       if (furniture->getTribe() == creature->getTribeId())
