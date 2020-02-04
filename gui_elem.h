@@ -98,7 +98,6 @@ class GuiFactory {
   SGuiElem rectangle(Color color, optional<Color> borderColor = none);
   class ListBuilder {
     public:
-    ListBuilder(GuiFactory&, int defaultSize = 0);
     ListBuilder& addElem(SGuiElem, int size = 0);
     ListBuilder& addSpace(int size = 0);
     ListBuilder& addElemAuto(SGuiElem);
@@ -115,7 +114,10 @@ class GuiFactory {
     bool isEmpty() const;
     void clear();
 
+    friend class GuiFactory;
+
     private:
+    ListBuilder(GuiFactory&, int defaultSize = 0);
     GuiFactory& gui;
     vector<SGuiElem> elems;
     vector<int> sizes;

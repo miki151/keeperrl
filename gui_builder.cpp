@@ -159,7 +159,7 @@ bool GuiBuilder::clearActiveButton() {
 
 SGuiElem GuiBuilder::drawCost(pair<ViewId, int> cost, Color color) {
   string costText = toString(cost.second);
-  return GuiFactory::ListBuilder(gui)
+  return gui.getListBuilder()
       .addElemAuto(gui.rightMargin(5, gui.label(costText, color)))
       .addElem(gui.viewObject(cost.first), 25)
       .buildHorizontalList();
@@ -175,7 +175,7 @@ void GuiBuilder::onTutorialClicked(size_t hash, TutorialHighlight state) {
 
 SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, CollectiveTab tab,
     const optional<TutorialInfo>& tutorial) {
-  GuiFactory::ListBuilder line(gui);
+  auto line = gui.getListBuilder();
   line.addElem(gui.viewObject(button.viewId), 35);
   auto tutorialHighlight = button.tutorialHighlight;
   if (button.state != CollectiveInfo::Button::ACTIVE)
@@ -1090,7 +1090,7 @@ static string getWeightString(double weight) {
 
 SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)> onClick,
     function<void()> onMultiClick) {
-  GuiFactory::ListBuilder line(gui);
+  auto line = gui.getListBuilder();
   int leftMargin = -4;
   if (item.locked) {
     line.addElem(gui.viewObject(ViewId("key")), viewObjectWidth);
@@ -1491,7 +1491,7 @@ SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info,
 }
 
 SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
-  GuiFactory::ListBuilder list(gui, legendLineHeight);
+  auto list = gui.getListBuilder(legendLineHeight);
   list.addSpace();
   auto titleLine = gui.getListBuilder();
   list.addElem(gui.renderInBounds(drawTitleButton(info)));
@@ -1889,7 +1889,7 @@ SGuiElem GuiBuilder::drawTasksOverlay(const CollectiveInfo& info) {
 SGuiElem GuiBuilder::drawRansomOverlay(const optional<CollectiveInfo::Ransom>& ransom) {
   if (!ransom)
     return gui.empty();
-  GuiFactory::ListBuilder lines(gui, legendLineHeight);
+  auto lines = gui.getListBuilder(legendLineHeight);
   lines.addElem(gui.label(ransom->attacker + " demand " + toString(ransom->amount.second)
         + " gold for not attacking. Agree?"));
   if (ransom->canAfford)
@@ -1921,7 +1921,7 @@ SGuiElem GuiBuilder::drawWarningWindow(const optional<CollectiveInfo::RebellionC
     const optional<CollectiveInfo::NextWave>& wave) {
   SGuiElem window = gui.empty();
   if (rebellionChance) {
-    GuiFactory::ListBuilder lines(gui, legendLineHeight);
+    auto lines = gui.getListBuilder(legendLineHeight);
     lines.addElem(gui.getListBuilder()
         .addElemAuto(gui.label("Chance of prisoner escape: "))
         .addElemAuto(drawRebellionChanceText(*rebellionChance))
@@ -1942,7 +1942,7 @@ SGuiElem GuiBuilder::drawWarningWindow(const optional<CollectiveInfo::RebellionC
 SGuiElem GuiBuilder::drawNextWaveOverlay(const optional<CollectiveInfo::NextWave>& wave) {
   if (!wave)
     return gui.empty();
-  GuiFactory::ListBuilder lines(gui, legendLineHeight);
+  auto lines = gui.getListBuilder(legendLineHeight);
   lines.addElem(gui.label("Next enemy wave:"));
   lines.addElem(gui.getListBuilder()
         .addElem(gui.viewObject(wave->viewId), 30)
@@ -2558,7 +2558,7 @@ SGuiElem GuiBuilder::drawMessages(const vector<PlayerMessage>& messageBuffer, in
   int lineHeight = 20;
   vector<SGuiElem> lines;
   for (int i : All(messages)) {
-    GuiFactory::ListBuilder line(gui);
+    auto line = gui.getListBuilder();
     for (auto& message : messages[i]) {
       string text = (line.isEmpty() ? "" : " ") + message.getText();
       cutToFit(renderer, text, maxMessageLength - 2 * hMargin);
@@ -2794,7 +2794,7 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
     list.addElem(gui.topMargin(5, gui.viewObject(elem.first)), legendLineHeight + 5);
     for (auto& minion : elem.second) {
       auto minionId = minion.creatureId;
-      GuiFactory::ListBuilder line(gui);
+      auto line = gui.getListBuilder();
       if (teamId)
         line.addElem(gui.leftMargin(-16, gui.stack(
             gui.button(getButtonCallback({UserInputId::REMOVE_FROM_TEAM, TeamCreatureInfo{*teamId, minionId}})),
@@ -2932,7 +2932,7 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
                  gui.labelUnicodeHighlight(u8"✘", Color::LIGHT_GRAY), [&retAction, task] {
                       return retAction.lockGroup.contains(task.task) ^ task.lockedForGroup;}))
             : gui.empty();
-      tasks.addElem(GuiFactory::ListBuilder(gui)
+      tasks.addElem(gui.getListBuilder()
           .addMiddleElem(gui.stack(
               gui.button(buttonFun),
               gui.label(getTaskText(task.task), getTaskColor(task))))
@@ -3168,8 +3168,8 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const CollectiveIn
 SGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id>>& queue, const string& title,
     pair<ViewId, int> budget, const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
   int titleExtraSpace = 10;
-  GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
-  lines.addElem(GuiFactory::ListBuilder(gui)
+  auto lines = gui.getListBuilder(getStandardLineHeight());
+  lines.addElem(gui.getListBuilder()
       .addElemAuto(gui.label(title))
       .addBackElemAuto(drawCost(budget)).buildHorizontalList(),
      getStandardLineHeight() + titleExtraSpace);
@@ -3184,7 +3184,7 @@ SGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id
 SGuiElem GuiBuilder::drawPillageItemMenu(SyncQueue<optional<int>>& queue, const string& title,
     const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
   int titleExtraSpace = 10;
-  GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
+  auto lines = gui.getListBuilder(getStandardLineHeight());
   lines.addElem(gui.label(title), getStandardLineHeight() + titleExtraSpace);
   for (SGuiElem& elem : drawItemMenu(items,
         [&queue, &items] (Rectangle, optional<int> index) {
@@ -3355,7 +3355,7 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
 }
 
 SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
-  GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
+  auto lines = gui.getListBuilder(getStandardLineHeight());
   lines.addElem(gui.centerHoriz(gui.label("Map of " + campaign.getWorldName())));
   lines.addElem(gui.centerHoriz(gui.label("Use the travel command while controlling a minion or team "
           "to travel to another site.", Renderer::smallTextSize, Color::LIGHT_GRAY)));
@@ -3370,7 +3370,7 @@ SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
 
 SGuiElem GuiBuilder::drawChooseSiteMenu(SyncQueue<optional<Vec2>>& queue, const string& message,
     const Campaign& campaign, optional<Vec2>& sitePos) {
-  GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
+  auto lines = gui.getListBuilder(getStandardLineHeight());
   lines.addElem(gui.centerHoriz(gui.label(message)));
   lines.addElemAuto(gui.centerHoriz(drawCampaignGrid(campaign, &sitePos,
       [&campaign](Vec2 pos) { return campaign.canTravelTo(pos); },
@@ -3723,9 +3723,9 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
     View::CampaignMenuState& menuState) {
   const auto& campaign = campaignOptions.campaign;
   auto& retiredGames = campaignOptions.retired;
-  GuiFactory::ListBuilder lines(gui, getStandardLineHeight());
-  GuiFactory::ListBuilder centerLines(gui, getStandardLineHeight());
-  GuiFactory::ListBuilder rightLines(gui, getStandardLineHeight());
+  auto lines = gui.getListBuilder(getStandardLineHeight());
+  auto centerLines = gui.getListBuilder(getStandardLineHeight());
+  auto rightLines = gui.getListBuilder(getStandardLineHeight());
   int optionMargin = 50;
   centerLines.addElem(gui.centerHoriz(
        gui.label("Game mode: "_s + getGameTypeName(campaign.getType()))));
@@ -3749,7 +3749,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
             gui.buttonLabel("Help", [&] { menuState.helpText = !menuState.helpText; })));
   lines.addElem(gui.leftMargin(optionMargin, gui.label("World name: " + campaign.getWorldName())));
   lines.addSpace(10);
-  GuiFactory::ListBuilder retiredMenuLines(gui, getStandardLineHeight());
+  auto retiredMenuLines = gui.getListBuilder(getStandardLineHeight());
   if (retiredGames) {
     retiredMenuLines.addElem(gui.getListBuilder()
         .addElemAuto(gui.label("Search: "))
@@ -3777,7 +3777,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
     lines.addElem(gui.leftMargin(optionMargin,
         gui.buttonLabel("Add retired dungeons", [&menuState] { menuState.retiredWindow = !menuState.retiredWindow;})));
   }
-  GuiFactory::ListBuilder optionsLines(gui, getStandardLineHeight());
+  auto optionsLines = gui.getListBuilder(getStandardLineHeight());
   if (!campaignOptions.options.empty()) {
     lines.addSpace(10);
     lines.addElem(gui.leftMargin(optionMargin,
@@ -3978,9 +3978,9 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
 }
 
 SGuiElem GuiBuilder::drawHighscorePage(const HighscoreList& page, ScrollPosition *scrollPos) {
-  GuiFactory::ListBuilder lines(gui, legendLineHeight);
+  auto lines = gui.getListBuilder(legendLineHeight);
   for (auto& elem : page.scores) {
-    GuiFactory::ListBuilder line(gui);
+    auto line = gui.getListBuilder();
     Color color = elem.highlight ? Color::GREEN : Color::WHITE;
     line.addElemAuto(gui.label(elem.text, color));
     line.addBackElem(gui.label(elem.score, color), 130);
@@ -3993,7 +3993,7 @@ SGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
     vector<ScrollPosition>& scrollPos, bool& online) {
   vector<SGuiElem> pages;
   int numTabs = list.size() / 2;
-  GuiFactory::ListBuilder topLine(gui, 200);
+  auto topLine = gui.getListBuilder(200);
   for (int i : All(list)) {
     for (int j : All(list[i].scores))
       if (list[i].scores[j].highlight) {
