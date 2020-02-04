@@ -69,7 +69,7 @@ namespace cereal {
 #define INST2(V) \
   template void save(BinaryOutputArchive&, V const&); \
   template void load(BinaryInputArchive&, V&); \
-  template void save(MemUsageArchive&, variant<V> const&);
+  template void save(MemUsageArchive&, V const&);
 
   INST(StorageInfo, vector<Position>)
   INST(EmptyThing, int, CreatureGroup)

@@ -75,7 +75,6 @@ class OwnerPointer {
 
   SERIALIZE_ALL(elem)
 
-  template <>
   void serialize(MemUsageArchive& ar1, const unsigned int) {
     if (!!elem) {
       ar1.addUsage(sizeof(T));

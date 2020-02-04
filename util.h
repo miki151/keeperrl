@@ -662,7 +662,6 @@ class EnumSet {
     }
   }
 
-  template <>
   void serialize(MemUsageArchive& ar, const unsigned int version) {
   }
 
@@ -959,7 +958,6 @@ class Table {
       ar << (*this)[v];
   }
 
-  template <>
   void save(MemUsageArchive& ar, const unsigned int version) const {
     ar.addUsage(bounds.width() * bounds.height() * sizeof(T));
     for (Vec2 v : bounds)
@@ -1489,7 +1487,6 @@ class HeapAllocated {
     ar1(*elem);
   }
 
-  template <>
   void serialize(MemUsageArchive& ar1) {
     ar1.addUsage(sizeof(T));
     CHECK(!!elem);
