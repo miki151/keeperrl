@@ -704,7 +704,7 @@ void Collective::onEvent(const GameEvent& event) {
 
 void Collective::onMinionKilled(Creature* victim, Creature* killer) {
   if (killer)
-    addRecordedEvent("the slaying of " + victim->getName().title() + " by " + killer->getName().title());
+    addRecordedEvent("the slaying of " + victim->getName().title() + " by " + killer->getName().a());
   else
     addRecordedEvent("the death of " + victim->getName().title());
   string deathDescription = victim->getAttributes().getDeathDescription();
