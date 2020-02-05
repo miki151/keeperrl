@@ -2031,6 +2031,35 @@
     ransom = 0.5 80
   }
 }
+"WIZARD_TOWER_ENTRY" inherit "ELEMENTALIST_ENTRY"
+{
+  settlement = append {
+    buildingId = "WIZARD_TOWER_FLOOR"
+  }
+}
+"WIZARD_TOWER"
+{
+  settlement = {
+    type = MapLayoutId "wizard_tower"
+    inhabitants = {
+      leader = { { "WHITE_WIZARD" } }
+      civilians = {
+        count = {5 7}
+        all = { 1 "SUCCUBUS" }
+      }
+    }
+    tribe = BANDIT
+    buildingId = "FOREST"
+    furniture = {"trees"}
+  }
+  levelConnection = {
+    direction = UP
+    topLevel = ExtraEnemy { "WIZARD_TOWER_ENTRY" }
+    levels = {
+      { MainEnemy 20 20 BASIC true }
+    }
+  }
+}
 "DARK_MAGE"
 {
   settlement = {

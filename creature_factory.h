@@ -31,7 +31,8 @@ class CreatureAttributes;
 class ControllerFactory;
 class NameGenerator;
 class GameConfig;
-struct CreatureInventory;
+struct CreatureInventoryElem;
+using CreatureInventory = vector<CreatureInventoryElem>;
 class SpellMap;
 class ContentFactory;
 

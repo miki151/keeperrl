@@ -23,7 +23,7 @@ class FurnitureEntry {
   using Water = EmptyStruct<struct WaterTag>;
   using Magma = EmptyStruct<struct MagmaTag>;
 
-  MAKE_VARIANT(EntryData, Sokoban, Trap, Water, Magma);
+  MAKE_VARIANT(EntryData, Sokoban, Trap, Water, Magma, Effect);
   template <typename T>
   FurnitureEntry(const T& t) : FurnitureEntry(EntryData(t)) {}
   FurnitureEntry(EntryData);

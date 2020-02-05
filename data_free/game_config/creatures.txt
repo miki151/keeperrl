@@ -187,6 +187,28 @@
       fullTitle = true
      }
   }
+"WHITE_WIZARD" inherit "KEEPER_MAGE"
+  {
+    viewId = { "keeper4" ColorId PURPLE }
+    name = append {
+      fullTitle = false
+    }
+    attr = {
+      DAMAGE 12
+      DEFENSE 25
+      SPELL_DAMAGE 25
+    }
+    maxLevelIncrease = {
+      SPELL 7
+    }
+    inventory = append {
+      { Simple "IronStaff" }
+      { type = Glyph ARMOR LastingEffect MAGIC_RESISTANCE chance = 0.3 }
+      { type = Glyph ARMOR LastingEffect SPEED chance = 0.3 }
+      { type = Glyph ARMOR LastingEffect NO_CARRY_LIMIT chance = 0.3 }
+      { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 20 AttackerEffect Suicide DIE} chance = 0.3 }
+    }
+  }
 "UNICORN"
   {
     viewId = { "unicorn" }

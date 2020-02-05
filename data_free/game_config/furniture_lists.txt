@@ -118,6 +118,13 @@
     "LABORATORY" 1
   }
 }
+"trees"
+{
+  {
+    "CANIF_TREE" 1
+    "DECID_TREE" 1
+  }
+}
 "adoxie" inherit "roomFurniture"
 {
   unique = { "ADOXIE_STATUE" }

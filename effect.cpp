@@ -1173,6 +1173,18 @@ string Effects::ColorVariant::getDescription(const ContentFactory*) const {
   return "Changes the color variant of a creature";
 }
 
+bool Effects::Fx::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
+}
+
+string Effects::Fx::getName(const ContentFactory*) const {
+  return "visual effect";
+}
+
+string Effects::Fx::getDescription(const ContentFactory*) const {
+  return "Just a visual effect";
+}
+
 bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const {
   switch (filter) {
     case FilterType::ALLY:
@@ -1420,6 +1432,11 @@ bool Effect::apply(Position pos, Creature* attacker) const {
       },
       [&](const Effects::EmitPoisonGas& m) {
         Effect::emitPoisonGas(pos, m.amount, true);
+        return true;
+      },
+      [&](const Effects::Fx& fx) {
+        if (auto game = pos.getGame())
+          game->addEvent(EventInfo::FX{pos, fx.info});
         return true;
       },
       [&](const Effects::TriggerTrap&) {

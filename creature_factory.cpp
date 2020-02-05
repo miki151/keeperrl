@@ -847,7 +847,7 @@ vector<ItemType> CreatureFactory::getDefaultInventory(CreatureId id) const {
       : attributes.count(id) ? attributes.at(id).inventory
       : empty;
   vector<ItemType> items;
-  for (auto& elem : inventoryGen.elems)
+  for (auto& elem : inventoryGen)
     if (Random.chance(elem.chance)) {
       CHECK(elem.countMin <= elem.countMax) << id.data();
       for (int i : Range(Random.get(elem.countMin, elem.countMax + 1)))

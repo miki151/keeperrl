@@ -9,6 +9,7 @@
 #include "spell_id.h"
 #include "sound.h"
 #include "color.h"
+#include "fx_info.h"
 
 RICH_ENUM(FilterType, ALLY, ENEMY, AUTOMATON);
 
@@ -275,6 +276,11 @@ struct ColorVariant {
   Color SERIAL(color);
   SERIALIZE_ALL(color)
 };
+struct Fx {
+  EFFECT_TYPE_INTERFACE;
+  FXInfo SERIAL(info);
+  SERIALIZE_ALL(info)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -335,7 +341,8 @@ struct ColorVariant {
   X(ChainFirstResult, 55)\
   X(ColorVariant, 56)\
   X(Jump, 57)\
-  X(FixedDamage, 58)
+  X(FixedDamage, 58)\
+  X(Fx, 59)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

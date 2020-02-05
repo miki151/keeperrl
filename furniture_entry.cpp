@@ -67,6 +67,9 @@ void FurnitureEntry::handle(Furniture* f, Creature* c) {
           c->you(MsgType::BURN, f->getName());
           c->dieWithReason("burned to death", Creature::DropType::ONLY_INVENTORY);
         }
+      },
+      [&](const Effect& effect) {
+        effect.apply(c->getPosition(), f->getCreator());
       }
   );
 }

@@ -821,14 +821,10 @@
 {
   visibleWhileBlind = true
 }
-"DOWN_STAIRS"
+"DOWN_STAIRS" inherit "UP_STAIRS"
 {
-  name = "stairs"
   viewId = { "down_staircase" }
-  canHideHere = true
   onBuilt = DOWN_STAIRS
-  xForgetAfterBuilding = true
-  usageType = BuiltinUsageId STAIRS
 }
 "UP_STAIRS_ROCK" inherit "UP_STAIRS"
 {
@@ -837,6 +833,11 @@
 "DOWN_STAIRS_ROCK" inherit "DOWN_STAIRS"
 {
   viewId = { "down_staircase_rock" }
+}
+"PORTAL_STAIRS" inherit "UP_STAIRS"
+{
+  viewId = { "portal" ColorId PURPLE }
+  name = "portal"
 }
 "SOKOBAN_HOLE"
 {
@@ -1044,6 +1045,18 @@
     2000 HOSTILE_DIG_NO_SKILL
   }
   canBuildOutsideOfTerritory = true
+}
+"HIDDEN_CASTLE_DOOR"
+{
+  name = "wall"
+  viewId = { "castle_wall" }
+  blockVision = { NORMAL ELF }
+  strength = 1
+  entryType = Effect Chain {
+      Message "It was just an illusion!"
+      Fx { TELEPORT_OUT }
+      DestroyWalls BASH
+  }
 }
 "SNOW_WALL" inherit "CASTLE_WALL"
 {

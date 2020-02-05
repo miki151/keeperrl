@@ -2,12 +2,12 @@
 #include "creature_inventory.h"
 
 
-SERIALIZE_DEF(CreatureInventory::Elem, type, countMin, countMax, chance, prefixChance, alternative)
+SERIALIZE_DEF(CreatureInventoryElem, type, countMin, countMax, chance, prefixChance, alternative)
 
 #include "pretty_archive.h"
 
 template <>
-void CreatureInventory::Elem::serialize(PrettyInputArchive& ar1, const unsigned int) {
+void CreatureInventoryElem::serialize(PrettyInputArchive& ar1, const unsigned int) {
   ar1(NAMED(type), OPTION(countMin), OPTION(countMax), OPTION(chance), OPTION(prefixChance), NAMED(alternative));
   ar1(endInput());
   if (countMin > countMax)
