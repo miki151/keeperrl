@@ -47,7 +47,32 @@ void GuiElem::setPreferredBounds(Vec2 origin) {
   setBounds(Rectangle(origin, origin + Vec2(*getPreferredWidth(), *getPreferredHeight())));
 }
 
+static map<int, int> lineNumbers;
+static int totalGuiElems = 0;
+
+void dumpGuiLineNumbers(ostream& o) {
+  o << "Total elems " << totalGuiElems << "\n";
+  vector<pair<int, int>> v;
+  for (auto& l : lineNumbers)
+    v.push_back(l);
+  sort(v.begin(), v.end(), [](auto& p1, auto& p2) { return p1.second > p2.second; });
+  for (auto& l : v)
+    std::cout << "Line " << l.first << ": " << l.second << "\n";
+}
+
 GuiElem::~GuiElem() {
+  if (lineNumber)
+    --lineNumbers[*lineNumber];
+  --totalGuiElems;
+}
+
+GuiElem::GuiElem() {
+  ++totalGuiElems;
+}
+
+void GuiElem::setLineNumber(int l) {
+  lineNumber = l;
+  ++lineNumbers[*lineNumber];
 }
 
 class ButtonElem : public GuiElem {
@@ -1479,7 +1504,10 @@ SGuiElem GuiFactory::ListBuilder::buildVerticalList() {
         sizes[i] = *elems[i]->getPreferredHeight();
     }
   }
-  return SGuiElem(new VerticalList(std::move(elems), sizes, backElems, middleElem));
+  auto ret = SGuiElem(new VerticalList(std::move(elems), sizes, backElems, middleElem));
+  if (lineNumber)
+    ret->setLineNumber(*lineNumber);
+  return ret;
 }
 
 SGuiElem GuiFactory::ListBuilder::buildHorizontalList() {
@@ -1490,16 +1518,23 @@ SGuiElem GuiFactory::ListBuilder::buildHorizontalList() {
       else
         sizes[i] = *elems[i]->getPreferredWidth();
     }
-  return SGuiElem(new HorizontalList(std::move(elems), sizes, backElems, middleElem));
+  auto ret = SGuiElem(new HorizontalList(std::move(elems), sizes, backElems, middleElem));
+  if (lineNumber)
+    ret->setLineNumber(*lineNumber);
+  return ret;
 }
 
 SGuiElem GuiFactory::ListBuilder::buildHorizontalListFit(double spacing) {
   SGuiElem ret = gui.horizontalListFit(std::move(elems), spacing);
+  if (lineNumber)
+    ret->setLineNumber(*lineNumber);
   return ret;
 }
 
 SGuiElem GuiFactory::ListBuilder::buildVerticalListFit() {
   SGuiElem ret = gui.verticalListFit(std::move(elems), 0);
+  if (lineNumber)
+    ret->setLineNumber(*lineNumber);
   return ret;
 }
 

@@ -28,6 +28,8 @@ class Options;
 class ScrollPosition;
 class KeybindingMap;
 
+void dumpGuiLineNumbers(ostream&);
+
 class GuiElem {
   public:
   virtual void render(Renderer&) {}
@@ -50,9 +52,13 @@ class GuiElem {
   Rectangle getBounds();
 
   virtual ~GuiElem();
+  GuiElem();
+
+  void setLineNumber(int);
 
   private:
   Rectangle bounds;
+  optional<int> lineNumber;
 };
 
 class GuiFactory {
@@ -113,6 +119,7 @@ class GuiFactory {
     int getLength() const;
     bool isEmpty() const;
     void clear();
+    optional<int> lineNumber;
 
     friend class GuiFactory;
 

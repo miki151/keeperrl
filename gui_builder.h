@@ -82,7 +82,7 @@ class GuiBuilder {
   void drawOverlays(vector<OverlayInfo>&, GameInfo&);
   SGuiElem drawMessages(const vector<PlayerMessage>&, int guiLength);
   SGuiElem drawGameSpeedDialog();
-  SGuiElem drawImmigrationOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawImmigrationOverlay(const vector<ImmigrantDataInfo>&, const optional<TutorialInfo>&);
   SGuiElem drawImmigrationHelp(const CollectiveInfo&);
   typedef function<void(Rectangle, optional<int>)> ItemMenuCallback;
   vector<SGuiElem> drawItemMenu(const vector<ItemInfo>&, ItemMenuCallback, bool doneBut = false);
@@ -147,6 +147,8 @@ class GuiBuilder {
   bool disableClickActions = false;
 
   private:
+  SGuiElem withLine(int, SGuiElem);
+  GuiFactory::ListBuilder withLine(int, GuiFactory::ListBuilder);
   SGuiElem getImmigrationHelpText();
   SGuiElem drawCampaignGrid(const Campaign&, optional<Vec2>* markedPos, function<bool(Vec2)> activeFun,
       function<void(Vec2)> clickFun);
@@ -163,12 +165,12 @@ class GuiBuilder {
   SGuiElem drawTrainingInfo(const CreatureExperienceInfo&,
       function<void(optional<ExperienceType>)> increaseCallback = nullptr);
   //SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
-  SGuiElem drawBuildings(const CollectiveInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawBuildings(const vector<CollectiveInfo::Button>&, const optional<TutorialInfo>&);
   SGuiElem bottomBandCache;
   SGuiElem drawMinionButtons(const vector<PlayerInfo>&, UniqueEntity<Creature>::Id current, optional<TeamId> teamId);
   SGuiElem minionButtonsCache;
   int minionButtonsHash = 0;
-  SGuiElem drawMinionPage(const PlayerInfo&, const CollectiveInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawMinionPage(const PlayerInfo&, const vector<ViewId>& allQuarters, const optional<TutorialInfo>&);
   SGuiElem drawActivityButton(const PlayerInfo&);
   SGuiElem drawAttributesOnPage(vector<SGuiElem>);
   SGuiElem drawEquipmentAndConsumables(const PlayerInfo&);
@@ -242,7 +244,8 @@ class GuiBuilder {
   CounterMode counterMode = CounterMode::FPS;
 
   SGuiElem getButtonLine(CollectiveInfo::Button, int num, CollectiveTab, const optional<TutorialInfo>&);
-  SGuiElem drawMinionsOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawMinionsOverlay(const optional<CollectiveInfo::ChosenCreatureInfo>&, const vector<ViewId>& allQuarters,
+      const optional<TutorialInfo>&);
   SGuiElem minionsOverlayCache;
   int minionsOverlayHash = 0;
   SGuiElem drawWorkshopsOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
@@ -251,7 +254,8 @@ class GuiBuilder {
   SGuiElem drawTasksOverlay(const CollectiveInfo&);
   SGuiElem drawRansomOverlay(const optional<CollectiveInfo::Ransom>&);
   SGuiElem drawNextWaveOverlay(const optional<CollectiveInfo::NextWave>&);
-  SGuiElem drawBuildingsOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawBuildingsOverlay(const vector<CollectiveInfo::Button>&, bool ransom,
+      const optional<TutorialInfo>&);
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
   SGuiElem getItemLine(const ItemInfo&, function<void(Rectangle)> onClick,
@@ -280,7 +284,7 @@ class GuiBuilder {
   SGuiElem getExpIncreaseLine(const CreatureExperienceInfo&, ExperienceType,
       function<void()> increaseCallback = nullptr);
   optional<int> highlightedTeamMember;
-  SGuiElem drawQuartersButton(const PlayerInfo&, const CollectiveInfo&);
+  SGuiElem drawQuartersButton(const PlayerInfo&, const vector<ViewId>& allQuarters);
   SGuiElem drawWarningWindow(const optional<CollectiveInfo::RebellionChance>&,
       const optional<CollectiveInfo::NextWave>&);
   SGuiElem drawRebellionChanceText(CollectiveInfo::RebellionChance);

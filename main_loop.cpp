@@ -49,6 +49,7 @@
 #include "simple_game.h"
 #include "monster_ai.h"
 #include "mem_usage_counter.h"
+#include "gui_elem.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -262,6 +263,7 @@ void MainLoop::bugReportSave(PGame& game, FilePath path) {
 template <class T>
 static void dumpMemUsage(const T& elem) {
 #ifdef MEM_USAGE_TEST
+  dumpGuiLineNumbers(std::cout);
   MemUsageArchive ar;
   ar << elem;
   ar.dumpUsage(std::cout);
