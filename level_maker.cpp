@@ -2594,7 +2594,7 @@ namespace {
       for (auto v : layout.getBounds()) {
         if (layout[v] == LayoutPiece::DOOR)
           for (auto w : v.neighbors4())
-            if (layout[w] == LayoutPiece::DOOR)
+            if (w.inRectangle(layout.getBounds()) && layout[w] == LayoutPiece::DOOR)
               isGate.insert(v);
         auto handleStairs = [&] (LayoutPiece stairsPiece, vector<Vec2>& positions) {
           if (layout[v] == stairsPiece) {
