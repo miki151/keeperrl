@@ -257,6 +257,7 @@ static optional<string> readMapLayouts(MapLayouts& layouts, KeyVerifier& keyVeri
     for (auto subdir : path.getSubDirs()) {
       for (auto file : path.subdirectory(subdir).getFiles()) {
         SDL::SDL_Surface* im = SDL::IMG_Load(file.getPath());
+        USER_CHECK(!!im) << "Error loading " << file.getPath() << ": " << SDL::IMG_GetError();
         MapLayouts::Layout layout(im->w, im->h - 1);
         for (auto v : layout.getBounds()) {
           auto color = getpixel(im, v.x, v.y);
