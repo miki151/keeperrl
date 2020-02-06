@@ -2828,7 +2828,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
   queue->addMaker(unique<Margin>(mapBorder, unique<DestroyRandomly>(FurnitureType("RUIN_WALL"), 0.3)));
   queue->addMaker(unique<Margin>(mapBorder, unique<Connector>(none, TribeId::getMonster(), 5,
           Predicate::canEnter({MovementTrait::WALK}) &&
-          Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR),
+          Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR) &&
+          !Predicate::attrib(SquareAttrib::NO_DIG),
       SquareAttrib::CONNECTOR)));
   queue->addMaker(unique<Margin>(mapBorder + locationMargin, std::move(locations2)));
   queue->addMaker(unique<Items>(biomeInfo.items, biomeInfo.itemCount));
