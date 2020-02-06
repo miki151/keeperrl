@@ -2353,6 +2353,17 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
   } else {
     auto& highlighted = mapGui->getLastHighlighted();
     auto& index = highlighted.viewIndex;
+    auto tryHighlight = [&] (HighlightType type, const char* text, Color color) {
+      if (index.isHighlight(type)) {
+        lines.addElem(WL(getListBuilder)
+              .addElem(WL(viewObject, ViewId("magic_field", color)), 30)
+              .addElemAuto(WL(label, text))
+              .buildHorizontalList());
+        lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);
+      }
+    };
+    tryHighlight(HighlightType::ALLIED_TOTEM, "Allied magical field", Color::GREEN);
+    tryHighlight(HighlightType::HOSTILE_TOTEM, "Hostile magical field", Color::RED);
     for (auto layer : ENUM_ALL_REVERSE(ViewLayer))
       if (index.hasObject(layer)) {
         auto& viewObject = index.getObject(layer);

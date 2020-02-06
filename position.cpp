@@ -402,6 +402,16 @@ void Position::getViewIndex(ViewIndex& index, const Creature* viewer) const {
       }
     if (index.noObjects())
       index.insert(ViewObject(ViewId("empty"), ViewLayer::FLOOR_BACKGROUND));
+    if (viewer) {
+      if (auto& effects = level->furnitureEffects[viewer->getTribeId().getKey()])
+        if (!effects->operator[](coord).friendly.empty())
+          index.setHighlight(HighlightType::ALLIED_TOTEM);
+      for (auto tribeKey : ENUM_ALL(TribeId::KeyType))
+        if (tribeKey != viewer->getTribeId().getKey())
+          if (auto& effects = level->furnitureEffects[tribeKey])
+            if (!effects->operator[](coord).hostile.empty())
+              index.setHighlight(HighlightType::HOSTILE_TOTEM);
+    }
   }
 }
 

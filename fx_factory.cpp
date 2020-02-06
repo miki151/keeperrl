@@ -1564,13 +1564,13 @@ static void addDebuffEffect(FXManager& mgr) {
   mgr.genSnapshots(FXName::DEBUFF, {1.0f, 1.4f, 1.8f}, {}, 1);
 }
 
-static void addGlitteringEffect(FXManager& mgr) {
+static void addGlitteringEffect(FXManager& mgr, FXName name, double life, double animLength, double size) {
   EmitterDef edef;
   edef.source = FRect(-10, -10, 10, 10);
 
   ParticleDef pdef;
-  pdef.life = 0.5f;
-  pdef.size = 3.5f;
+  pdef.life = life;
+  pdef.size = size;
   pdef.alpha = {{0.0f, 0.3f, 0.8f, 1.0f}, {0.0f, 1.0, 0.7, 0.0}, InterpType::cosine};
   pdef.textureName = TextureName::SPARKS_LIGHT;
 
@@ -1615,9 +1615,9 @@ static void addGlitteringEffect(FXManager& mgr) {
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
   psdef.isLooped = true;
-  psdef.animLength = 1.0f;
+  psdef.animLength = animLength;
 
-  mgr.addDef(FXName::GLITTERING, psdef);
+  mgr.addDef(name, psdef);
 }
 
 static void addTeleportEffects(FXManager& mgr) {
@@ -1730,7 +1730,8 @@ void FXManager::initializeDefs() {
   addSleepEffect(*this);
   addLoveEffect(*this);
   addBlindEffect(*this);
-  addGlitteringEffect(*this);
+  addGlitteringEffect(*this, FXName::GLITTERING, 0.5, 1.0, 3.5);
+  addGlitteringEffect(*this, FXName::MAGIC_FIELD, 1.0, 1.0, 2.5);
   addTeleportEffects(*this);
 
   addLaboratoryEffect(*this);

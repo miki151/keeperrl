@@ -887,13 +887,25 @@ void MapGui::renderTexturedHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Co
     renderer.addQuad(Rectangle(pos, pos + size), color);
 }
 
-void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight) {
+void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight, Vec2 tilePos) {
   auto color = blendNightColor(getHighlightColor(index, highlight), index);
+  auto fxHighlight = [&] (FXInfo info) {
+    GenericId posId = tilePos.x * 1000 + tilePos.y;
+    fxViewManager->addEntity(posId, tilePos.x, tilePos.y);
+    fxViewManager->addFX(posId, info);
+    fxViewManager->drawFX(renderer, posId, blendNightColor(Color::WHITE, index));
+  };
   switch (highlight) {
     case HighlightType::MEMORY:
       break;
     case HighlightType::INDOORS:
       renderer.addQuad(Rectangle(pos, pos + size), color);
+      break;
+    case HighlightType::HOSTILE_TOTEM:
+      fxHighlight(FXInfo{FXName::MAGIC_FIELD, Color(255, 100, 100)});
+      break;
+    case HighlightType::ALLIED_TOTEM:
+      fxHighlight(FXInfo{FXName::MAGIC_FIELD, Color(100, 255, 100)});
       break;
     case HighlightType::QUARTERS1:
     case HighlightType::QUARTERS2:
@@ -929,7 +941,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
         Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
         for (HighlightType highlight : ENUM_ALL_REVERSE(HighlightType))
           if (isRenderedHighlight(*index, highlight) && isRenderedHighlightLow(*index, highlight) == lowHighlights)
-            renderHighlight(renderer, pos, size, *index, highlight);
+            renderHighlight(renderer, pos, size, *index, highlight, wpos);
         if (!lowHighlights)
           for (GradientType gradient : ENUM_ALL_REVERSE(GradientType))
             renderGradient(renderer, pos, size, *index, gradient);
@@ -1087,12 +1099,12 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
       }
     }
 
+  renderHighlights(renderer, size, currentTimeReal, false);
   if (fxViewManager) {
     fxViewManager->finishFrame();
     fxViewManager->drawUnorderedFrontFX(renderer);
   }
 
-  renderHighlights(renderer, size, currentTimeReal, false);
 }
 
 void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color, const ViewIndex& index) {
