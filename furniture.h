@@ -16,6 +16,7 @@
 #include "creature_id.h"
 #include "fx_variant_name.h"
 #include "furniture_usage.h"
+#include "furniture_tick.h"
 
 class TribeId;
 class Creature;

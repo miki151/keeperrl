@@ -49,7 +49,6 @@ enum class WorshipType;
 
 enum class BuiltinUsageId;
 enum class FurnitureClickType;
-enum class FurnitureTickType;
 
 enum class MinionActivity;
 enum class MinionTrait;

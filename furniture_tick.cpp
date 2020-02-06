@@ -125,50 +125,57 @@ static Color getPortalColor(int index) {
 }
 
 void FurnitureTick::handle(FurnitureTickType type, Position pos, Furniture* furniture) {
-  switch (type) {
-    case FurnitureTickType::BED:
-      handleBed(pos);
-      break;
-    case FurnitureTickType::PIGSTY:
-      handlePigsty(pos, furniture);
-      break;
-    case FurnitureTickType::BOULDER_TRAP:
-      handleBoulder(pos, furniture);
-      break;
-    case FurnitureTickType::PORTAL:
-      pos.registerPortal();
-      furniture->getViewObject()->setColorVariant(Color::WHITE);
-      if (auto otherPos = pos.getOtherPortal())
-        for (auto f : otherPos->modFurniture())
-          if (f->hasUsageType(BuiltinUsageId::PORTAL)) {
-            auto color = getPortalColor(*pos.getPortalIndex());
-            furniture->getViewObject()->setColorVariant(color);
-            f->getViewObject()->setColorVariant(color);
-            pos.setNeedsRenderAndMemoryUpdate(true);
-            otherPos->setNeedsRenderAndMemoryUpdate(true);
+  type.visit(
+      [&](BuiltinTickType t) {
+        switch (t) {
+          case BuiltinTickType::BED:
+            handleBed(pos);
+            break;
+          case BuiltinTickType::PIGSTY:
+            handlePigsty(pos, furniture);
+            break;
+          case BuiltinTickType::BOULDER_TRAP:
+            handleBoulder(pos, furniture);
+            break;
+          case BuiltinTickType::PORTAL:
+            pos.registerPortal();
+            furniture->getViewObject()->setColorVariant(Color::WHITE);
+            if (auto otherPos = pos.getOtherPortal())
+              for (auto f : otherPos->modFurniture())
+                if (f->hasUsageType(BuiltinUsageId::PORTAL)) {
+                  auto color = getPortalColor(*pos.getPortalIndex());
+                  furniture->getViewObject()->setColorVariant(color);
+                  f->getViewObject()->setColorVariant(color);
+                  pos.setNeedsRenderAndMemoryUpdate(true);
+                  otherPos->setNeedsRenderAndMemoryUpdate(true);
+                }
+            break;
+          case BuiltinTickType::METEOR_SHOWER:
+            meteorShower(pos, furniture);
+            break;
+          case BuiltinTickType::PIT:
+            pit(pos, furniture);
+            break;
+          case BuiltinTickType::EXTINGUISH_FIRE:
+            if (auto c = pos.getCreature())
+              c->removeEffect(LastingEffect::ON_FIRE);
+            break;
+          case BuiltinTickType::SET_FURNITURE_ON_FIRE: {
+            auto handle = [] (const Position& pos) {
+              for (auto& f : pos.getFurniture())
+                if (f->getFire())
+                  pos.modFurniture(f->getLayer())->fireDamage(pos, true);
+            };
+            for (auto& v : pos.neighbors8())
+              if (Random.roll(30))
+                handle(v);
+            if (Random.roll(10))
+              handle(pos);
           }
-      break;
-    case FurnitureTickType::METEOR_SHOWER:
-      meteorShower(pos, furniture);
-      break;
-    case FurnitureTickType::PIT:
-      pit(pos, furniture);
-      break;
-    case FurnitureTickType::EXTINGUISH_FIRE:
-      if (auto c = pos.getCreature())
-        c->removeEffect(LastingEffect::ON_FIRE);
-      break;
-    case FurnitureTickType::SET_FURNITURE_ON_FIRE: {
-      auto handle = [] (const Position& pos) {
-        for (auto& f : pos.getFurniture())
-          if (f->getFire())
-            pos.modFurniture(f->getLayer())->fireDamage(pos, true);
-      };
-      for (auto& v : pos.neighbors8())
-        if (Random.roll(30))
-          handle(v);
-      if (Random.roll(10))
-        handle(pos);
-    }
-  }
+        }
+      },
+      [&](const Effect& e) {
+        e.apply(pos, furniture->getCreator());
+      }
+  );
 }

@@ -198,7 +198,7 @@
   name = "beast cage"
   viewId = { "beast_cage" }
   usageType = UsageEffect "sleep in" Lasting SLEEP
-  tickType = BED
+  tickType = Builtin BED
   canHideHere = true
   fire = 50
   strength = 40
@@ -210,7 +210,7 @@
   name = "basic bed"
   viewId = { "bed1" }
   usageType = UsageEffect "sleep in" Lasting SLEEP
-  tickType = BED
+  tickType = Builtin BED
   canHideHere = true
   fire = 50
   strength = 40
@@ -222,7 +222,7 @@
   name = "fine bed"
   viewId = { "bed2" }
   usageType = UsageEffect "sleep in" Lasting SLEEP
-  tickType = BED
+  tickType = Builtin BED
   canHideHere = true
   fire = 50
   luxury = 0.3
@@ -236,7 +236,7 @@
   name = "luxurious bed"
   viewId = { "bed3" }
   usageType = UsageEffect "sleep in" Lasting SLEEP
-  tickType = BED
+  tickType = Builtin BED
   canHideHere = true
   luxury = 0.7
   fire = 50
@@ -250,7 +250,7 @@
   name = "grave"
   viewId = { "grave" }
   canHideHere = true
-  tickType = BED
+  tickType = Builtin BED
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
@@ -275,7 +275,7 @@
 {
   name = "prison"
   viewId = { "prison" }
-  tickType = BED
+  tickType = Builtin BED
   usageType = UsageEffect "sleep in" Lasting SLEEP
   bedType = PRISON
   layer = FLOOR
@@ -445,7 +445,7 @@
 {
   name = "pigsty"
   viewId = { "mud" }
-  tickType = PIGSTY
+  tickType = Builtin PIGSTY
   populationIncrease = 0.25 4
 }
 "GROUND_TORCH"
@@ -1027,7 +1027,7 @@
     traits = { FLY }
   }
   xForgetAfterBuilding = true
-  tickType = PIT
+  tickType = Builtin PIT
   canBuildOutsideOfTerritory = true
 }
 "CASTLE_WALL"
@@ -1285,7 +1285,7 @@
   viewId = { "boulder" }
   blockMovement = true
   canHideHere = true
-  tickType = BOULDER_TRAP
+  tickType = Builtin BOULDER_TRAP
   strength = 40
   warning = true
   constructMessage = SET_UP
@@ -1297,7 +1297,7 @@
   viewId = { "portal" }
   strength = 40
   usageType = BuiltinUsageId PORTAL
-  tickType = PORTAL
+  tickType = Builtin PORTAL
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
 "METEOR_SHOWER"
@@ -1305,7 +1305,7 @@
   name = "meteor shower"
   layer = CEILING
   constructMessage = none
-  tickType = METEOR_SHOWER
+  tickType = Builtin METEOR_SHOWER
 }
 "FIRE_WALL"
 {
@@ -1362,7 +1362,7 @@
   summonedElement = "FIRE_ELEMENTAL"
   freezeTo = "FLOOR"
   canSilentlyReplace = true
-  tickType = SET_FURNITURE_ON_FIRE
+  tickType = Builtin SET_FURNITURE_ON_FIRE
   movementSet = {
     traits = { FLY }
     forcibleTraits = { WALK }

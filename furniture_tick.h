@@ -1,11 +1,12 @@
 #pragma once
 
 #include "util.h"
+#include "effect.h"
 
 class Position;
 class Furniture;
 
-RICH_ENUM(FurnitureTickType,
+RICH_ENUM(BuiltinTickType,
   BED,
   PIGSTY,
   BOULDER_TRAP,
@@ -15,6 +16,16 @@ RICH_ENUM(FurnitureTickType,
   EXTINGUISH_FIRE,
   SET_FURNITURE_ON_FIRE
 );
+
+namespace TickDetail {
+
+using Builtin = BuiltinTickType;
+
+MAKE_VARIANT2(FurnitureTickType, Effect, Builtin);
+}
+
+using TickDetail::FurnitureTickType;
+
 
 class FurnitureTick {
   public:

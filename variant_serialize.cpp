@@ -21,6 +21,7 @@
 #include "effect_type.h"
 #include "item_types.h"
 #include "furniture_usage.h"
+#include "furniture_tick.h"
 
 namespace cereal {
   namespace variant_detail {
@@ -88,6 +89,7 @@ namespace cereal {
   INST2(Campaign::SiteInfo::Dweller)
   INST2(ZLevelType_impl)
   INST2(SettlementDetail::LayoutType_impl)
+  INST2(TickDetail::FurnitureTickType_impl)
   INST2(LevelConnection::EnemyLevelInfo_impl)
   INST2(FurnitureUsageType_impl)
 } // namespace cereal
