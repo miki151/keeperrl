@@ -180,7 +180,7 @@ static void addPoisonCloud(FXManager& mgr) {
   ssdef1.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
     if (!defaultDrawParticle(ctx, pinst, out))
       return false;
-    float mod = 0.3f + ctx.ps.params.scalar[0] * 0.3f;
+    float mod = 0.0f + ctx.ps.params.scalar[0] * 0.3f;
     out.color.a = (out.color.a) * mod;
     return true;
   };

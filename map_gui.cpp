@@ -174,14 +174,6 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
   }
 }
 
-Color MapGui::getGradientColor(const ViewIndex& index, GradientType type) {
-  double amount = index.getGradient(type);
-  switch (type) {
-    case GradientType::POISON_GAS: return Color(0, min<Uint8>(255., Uint8(amount * 500)), 0, (Uint8)(amount * 140));
-    case GradientType::NIGHT: return Color::TRANSPARENT;
-  }
-}
-
 static ViewId getConnectionId(const ViewId& id, const Tile& tile) {
   return tile.getConnectionId().value_or(id);
 }
@@ -887,14 +879,17 @@ void MapGui::renderTexturedHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Co
     renderer.addQuad(Rectangle(pos, pos + size), color);
 }
 
-void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight, Vec2 tilePos) {
-  auto color = blendNightColor(getHighlightColor(index, highlight), index);
-  auto fxHighlight = [&] (FXInfo info) {
+void MapGui::fxHighlight(Renderer& renderer, const FXInfo& info, Vec2 tilePos, const ViewIndex& index) {
+  if (fxViewManager) {
     GenericId posId = tilePos.x * 1000 + tilePos.y;
     fxViewManager->addEntity(posId, tilePos.x, tilePos.y);
     fxViewManager->addFX(posId, info);
     fxViewManager->drawFX(renderer, posId, blendNightColor(Color::WHITE, index));
-  };
+  }
+};
+
+void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight, Vec2 tilePos) {
+  auto color = blendNightColor(getHighlightColor(index, highlight), index);
   switch (highlight) {
     case HighlightType::MEMORY:
       break;
@@ -902,10 +897,10 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
       renderer.addQuad(Rectangle(pos, pos + size), color);
       break;
     case HighlightType::HOSTILE_TOTEM:
-      fxHighlight(FXInfo{FXName::MAGIC_FIELD, Color(255, 100, 100)});
+      fxHighlight(renderer, FXInfo{FXName::MAGIC_FIELD, Color(255, 100, 100)}, tilePos, index);
       break;
     case HighlightType::ALLIED_TOTEM:
-      fxHighlight(FXInfo{FXName::MAGIC_FIELD, Color(100, 255, 100)});
+      fxHighlight(renderer, FXInfo{FXName::MAGIC_FIELD, Color(100, 255, 100)}, tilePos, index);
       break;
     case HighlightType::QUARTERS1:
     case HighlightType::QUARTERS2:
@@ -920,11 +915,11 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
   }
 }
 
-void MapGui::renderGradient(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, GradientType gradient) {
-  auto color = getGradientColor(index, gradient);
+void MapGui::renderGradient(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, GradientType gradient, Vec2 tilePos) {
   switch (gradient) {
     case GradientType::POISON_GAS:
-      renderer.addQuad(Rectangle(pos, pos + size), color);
+      if (index.getGradient(gradient) > 0)
+        fxHighlight(renderer, FXInfo{FXName::POISON_CLOUD, Color::GREEN, float(index.getGradient(gradient))}, tilePos, index);
       break;
     case GradientType::NIGHT:
       break;
@@ -944,7 +939,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
             renderHighlight(renderer, pos, size, *index, highlight, wpos);
         if (!lowHighlights)
           for (GradientType gradient : ENUM_ALL_REVERSE(GradientType))
-            renderGradient(renderer, pos, size, *index, gradient);
+            renderGradient(renderer, pos, size, *index, gradient, wpos);
       }
   for (Vec2 wpos : lowHighlights ? tutorialHighlightLow : tutorialHighlightHigh) {
     Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);

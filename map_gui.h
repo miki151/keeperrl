@@ -177,9 +177,8 @@ class MapGui : public GuiElem {
   bool isRenderedHighlightLow(const ViewIndex&, HighlightType);
   optional<ViewId> getHighlightedFurniture();
   Color getHighlightColor(const ViewIndex&, HighlightType);
-  Color getGradientColor(const ViewIndex&, GradientType);
   void renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight, Vec2 tilePos);
-  void renderGradient(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, GradientType highlight);
+  void renderGradient(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, GradientType highlight, Vec2 tilePos);
   void renderTexturedHighlight(Renderer&, Vec2 pos, Vec2 size, Color, ViewId viewId);
   void processScrolling(milliseconds);
   void considerScrollingToCreature();
@@ -210,4 +209,5 @@ class MapGui : public GuiElem {
   void updateFX(milliseconds currentTimeReal);
   void drawFurnitureCracks(Renderer&, Vec2 tilePos, float state, Vec2 pos, Vec2 size, const ViewIndex& index);
   optional<Vec2> selectionSize;
+  void fxHighlight(Renderer&, const FXInfo&, Vec2 tilePos, const ViewIndex&);
 };
