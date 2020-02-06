@@ -43,11 +43,13 @@
     { id = "CORPSES" probability = 0.2 }
     { id = "BLACKSMITH" probability = 0.2 }
     { id = "WIZARD_TOWER" probability = 0.1 }
+    { id = "RUINS" probability = 0.5 }
   }
   whiteKeeperEnemies = {
     { id = "COTTAGE_BANDITS" count = { 3 5 } }
     { id = "CORPSES" probability = 0.2 }
     { id = "WIZARD_TOWER" probability = 0.1 }
+    { id = "RUINS" probability = 0.5 }
   }
   darkKeeperBaseEnemies = {
     { id = "TUTORIAL_VILLAGE" }
@@ -88,11 +90,13 @@
     { id = "ELVEN_COTTAGE" count = { 3 5 } }
     { id = "CORPSES" probability = 0.2 }
     { id = "WIZARD_TOWER" probability = 0.1 }
+    { id = "RUINS" probability = 0.5 }
   }
   whiteKeeperEnemies = {
     { id = "LIZARDMEN_COTTAGE" count = { 3 5 } }
     { id = "CORPSES" probability = 0.2 }
     { id = "WIZARD_TOWER" probability = 0.1 }
+    { id = "RUINS" probability = 0.5 }
   }
   darkKeeperBaseEnemies = {
     { id = "TUTORIAL_VILLAGE" }

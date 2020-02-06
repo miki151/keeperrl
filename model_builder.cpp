@@ -188,8 +188,6 @@ PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment al
   optional<ExternalEnemies> externalEnemies;
   if (externalEnemiesType)
     externalEnemies = ExternalEnemies(random, &contentFactory->getCreatures(), enemyFactory->getExternalEnemies(), *externalEnemiesType);
-  for (int i : Range(random.get(3)))
-    enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
   return tryModel(174, enemyInfo, keeperTribe, biome, std::move(externalEnemies));
 }
 
@@ -248,8 +246,6 @@ PModel ModelBuilder::tryCampaignSiteModel(EnemyId enemyId, VillainType type, Tri
   CHECK(biomeId) << "Unimplemented enemy in campaign " << enemyId.data();
   auto& biomeInfo = contentFactory->biomeInfo.at(*biomeId);
   addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL ? biomeInfo.darkKeeperEnemies : biomeInfo.whiteKeeperEnemies);
-  for (int i : Range(random.get(3)))
-    enemyInfo.push_back(enemyFactory->get(EnemyId("RUINS")));
   return tryModel(114, enemyInfo, none, *biomeId, {});
 }
 
