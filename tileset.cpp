@@ -179,6 +179,8 @@ void TileSet::loadModdedTiles(const vector<TileInfo>& tiles, bool useTiles) {
         t.setMoveUp();
       if (tile.southSide)
         t.addOption(Dir::S, byName(*tile.southSide));
+      if (tile.connectionId)
+        t.setConnectionId(*tile.connectionId);
       t.animated = tile.animated;
       t.canMirror = tile.canMirror;
       addTile(tile.viewId.data(), std::move(t));
