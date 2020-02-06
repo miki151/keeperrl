@@ -988,11 +988,11 @@ void Collective::removeUnbuiltFurniture(Position pos, FurnitureLayer layer) {
 void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
   auto furniture = pos.modFurniture(layer);
   if (!furniture || furniture->canRemoveWithCreaturePresent() || !pos.getCreature()) {
-    if (furniture && !furniture->isWall() && !furniture->forgetAfterBuilding() &&
+    if (furniture && !furniture->canDestroy(DestroyAction::Type::DIG) && !furniture->forgetAfterBuilding() &&
         (furniture->getTribe() == getTribeId() || furniture->canRemoveNonFriendly())) {
       furniture->destroy(pos, DestroyAction::Type::BASH);
     }
-    if (!furniture || (!furniture->isWall() && !furniture->forgetAfterBuilding()))
+    if (!furniture || (!furniture->canDestroy(DestroyAction::Type::DIG) && !furniture->forgetAfterBuilding()))
       removeUnbuiltFurniture(pos, layer);
   }
   if (layer == FurnitureLayer::MIDDLE) {
