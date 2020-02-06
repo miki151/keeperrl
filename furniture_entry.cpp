@@ -36,13 +36,15 @@ void FurnitureEntry::handle(Furniture* f, Creature* c) {
         auto position = c->getPosition();
         if (auto game = c->getGame()) // check in case the creature is placed here during level generation
           if (game->getTribe(f->getTribe())->isEnemy(c) && !c->hasAlternativeViewId()) {
+            auto layer = f->getLayer();
             if (type.invisible || !c->isAffected(LastingEffect::DISARM_TRAPS_SKILL)) {
               if (!type.invisible)
                 c->you(MsgType::TRIGGER_TRAP, "");
               type.effect.apply(position, f->getCreator());
             } else
               c->you(MsgType::DISARM_TRAP, type.effect.getName(c->getGame()->getContentFactory()) + " trap");
-            position.removeFurniture(f);
+            if (position.getFurniture(layer) == f) // f might have been removed by the TrapTrigger effect or something else
+              position.removeFurniture(f);
           }
       },
       [&](Water) {

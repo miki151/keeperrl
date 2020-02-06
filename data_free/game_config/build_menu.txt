@@ -312,7 +312,13 @@
 
     { Trap "SURPRISE_TRAP" { "surprise_trap" }                             "Surprise trap"     "Traps"
         "Teleports nearby minions to deal with the trespasser." 0 { TechId "traps" }}
-    { Trap "FIRE_TRAP" { "fire_trap" }                                     "Fire trap"        "Traps"
+    { Trap "FIRE_TRAP" { "fire_trap" }                                     "Fire trap"         "Traps"
         "Causes a tower of flame to errupt under the trespasser." 0 { TechId "traps" }}
   }
-   
+
+  "gnome_traps"
+  {
+    { Trap "TRAP_TRIGGER" { "terror_trap" }                                 "Trap trigger"     "Traps"
+        "Triggers all other traps around it." 0                   { TechId "traps" }}
+  }
+ 

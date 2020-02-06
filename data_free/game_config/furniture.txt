@@ -1279,6 +1279,14 @@
   warning = true
   constructMessage = SET_UP
 }
+"TRAP_TRIGGER"
+{
+  name = "trap trigger"
+  viewId = { "fire_trap" }
+  entryType = Trap { Area 1 TriggerTrap }
+  warning = true
+  constructMessage = SET_UP
+}
 "BOULDER_TRAP"
 {
   name = "boulder trap"

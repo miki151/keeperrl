@@ -1444,8 +1444,9 @@ bool Effect::apply(Position pos, Creature* attacker) const {
           if (auto& entry = furniture->getEntryType())
             if (auto trapInfo = entry->entryData.getReferenceMaybe<FurnitureEntry::Trap>()) {
               pos.globalMessage("A " + trapInfo->effect.getName(pos.getGame()->getContentFactory()) + " trap is triggered");
-              trapInfo->effect.apply(pos, attacker);
+              auto effect = trapInfo->effect;
               pos.removeFurniture(furniture);
+              effect.apply(pos, attacker);
               return true;
             }
         return false;
