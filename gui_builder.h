@@ -178,7 +178,7 @@ class GuiBuilder {
   SGuiElem drawSpellsList(const vector<PlayerInfo::Spell>&, GenericId creatureId, bool active);
   SGuiElem getSpellIcon(const PlayerInfo::Spell&, int index, bool active, GenericId creatureId);
   vector<SGuiElem> drawEffectsList(const PlayerInfo&);
-  vector<SGuiElem> drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&);
   function<void()> getButtonCallback(UserInput);
   void drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width, bool darkBg);
   void showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>&, Vec2 pos);

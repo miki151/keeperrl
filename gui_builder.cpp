@@ -3056,41 +3056,43 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion) {
   return lines.buildVerticalList();
 }
 
-vector<SGuiElem> GuiBuilder::drawMinionActions(const PlayerInfo& minion, const optional<TutorialInfo>& tutorial) {
-  vector<SGuiElem> line;
+SGuiElem GuiBuilder::drawMinionActions(const PlayerInfo& minion, const optional<TutorialInfo>& tutorial) {
+  auto line = WL(getListBuilder);
   const bool tutorialHighlight = tutorial && tutorial->highlights.contains(TutorialHighlight::CONTROL_TEAM);
-  for (auto action : minion.actions)
+  for (auto action : minion.actions) {
     switch (action) {
       case PlayerInfo::CONTROL: {
         auto callback = getButtonCallback({UserInputId::CREATURE_CONTROL, minion.creatureId});
-        line.push_back(tutorialHighlight
+        line.addElemAuto(tutorialHighlight
             ? WL(buttonLabelBlink, "Control", callback)
             : WL(buttonLabel, "Control", callback));
         break;
       }
       case PlayerInfo::RENAME:
-        line.push_back(WL(buttonLabel, "Rename", [=] {
+        line.addElemAuto(WL(buttonLabel, "Rename", [=] {
             if (auto name = getTextInput("Rename minion", minion.firstName, maxFirstNameLength, "Press escape to cancel."))
               callbacks.input({UserInputId::CREATURE_RENAME, RenameActionInfo{minion.creatureId, *name}}); }));
         break;
       case PlayerInfo::BANISH:
-        line.push_back(WL(buttonLabel, "Banish",
+        line.addElemAuto(WL(buttonLabel, "Banish",
             getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId})));
         break;
       case PlayerInfo::DISASSEMBLE:
-        line.push_back(WL(buttonLabel, "Disassemble",
+        line.addElemAuto(WL(buttonLabel, "Disassemble",
             getButtonCallback({UserInputId::CREATURE_BANISH, minion.creatureId})));
         break;
       case PlayerInfo::CONSUME:
-        line.push_back(WL(buttonLabel, "Absorb",
+        line.addElemAuto(WL(buttonLabel, "Absorb",
             getButtonCallback({UserInputId::CREATURE_CONSUME, minion.creatureId})));
         break;
       case PlayerInfo::LOCATE:
-        line.push_back(WL(buttonLabel, "Locate",
+        line.addElemAuto(WL(buttonLabel, "Locate",
             getButtonCallback({UserInputId::CREATURE_LOCATE, minion.creatureId})));
         break;
     }
-  return line;
+    line.addSpace(50);
+  }
+  return line.buildHorizontalList();
 }
 
 SGuiElem GuiBuilder::drawKillsLabel(const PlayerInfo& minion) {
@@ -3163,7 +3165,7 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewI
   list.addElem(titleLine.buildHorizontalList());
   if (!minion.description.empty())
     list.addElem(WL(label, minion.description, Renderer::smallTextSize, Color::LIGHT_GRAY));
-  list.addElem(WL(horizontalList, drawMinionActions(minion, tutorial), 140));
+  list.addElem(drawMinionActions(minion, tutorial));
   auto leftLines = WL(getListBuilder, legendLineHeight);
   leftLines.addElem(WL(label, "Attributes", Color::YELLOW));
   leftLines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(minion.attributes)));
