@@ -21,6 +21,9 @@ struct WorkshopItemCfg {
   SERIALIZE_ALL(NAMED(item), OPTION(work), OPTION(cost), NAMED(tech), OPTION(batchSize), NAMED(tutorialHighlight), OPTION(requireIngredient), OPTION(notArtifact))
 };
 
+static_assert(std::is_nothrow_move_constructible<WorkshopItemCfg>::value, "T should be noexcept MoveConstructible");
+
+
 struct WorkshopItem {
   ItemType SERIAL(type);
   string SERIAL(name);

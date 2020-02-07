@@ -36,6 +36,7 @@ struct CreatureInfo {
   HASH_ALL(viewId, uniqueId, name, stackName, bestAttack, morale)
 };
 
+static_assert(std::is_nothrow_move_constructible<CreatureInfo>::value, "T should be noexcept MoveConstructible");
 
 struct ItemInfo {
   static ItemInfo get(const Creature*, const vector<Item*>&);
@@ -65,6 +66,8 @@ struct ItemInfo {
   heap_optional<ItemInfo> HASH(ingredient);
   HASH_ALL(name, fullName, description, number, viewId, ids, actions, equiped, locked, pending, unavailable, slot, owner, type, price, unavailableReason, weight, tutorialHighlight, intrinsicAttackState, intrinsicExtraAttack, viewIdModifiers, hidden, ingredient)
 };
+
+static_assert(std::is_nothrow_move_constructible<ItemInfo>::value, "T should be noexcept MoveConstructible");
 
 struct AttributeInfo {
   static vector<AttributeInfo> fromCreature(const Creature*);
@@ -208,6 +211,7 @@ struct ImmigrantDataInfo {
   optional<TutorialHighlight> HASH(tutorialHighlight);
   size_t getHash() const;
 };
+static_assert(std::is_nothrow_move_constructible<ImmigrantDataInfo>::value, "T should be noexcept MoveConstructible");
 
 class CollectiveInfo {
   public:

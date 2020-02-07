@@ -30,10 +30,10 @@ class ContentFactory;
 class Effect {
   public:
 
-  Effect(const EffectType&);
-  Effect(const Effect&);
-  Effect(Effect&&);
-  Effect();
+  Effect(const EffectType&) noexcept;
+  Effect(const Effect&) noexcept;
+  Effect(Effect&&) noexcept;
+  Effect() noexcept;
   Effect& operator = (const Effect&);
   Effect& operator = (Effect&&);
   ~Effect();
@@ -65,3 +65,5 @@ class Effect {
   private:
   EffectAIIntent shouldAIApply(const Creature* victim, bool isEnemy) const;
 };
+
+static_assert(std::is_nothrow_move_constructible<Effect>::value, "T should be noexcept MoveConstructible");

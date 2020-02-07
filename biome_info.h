@@ -65,3 +65,5 @@ struct BiomeInfo {
   optional<KeeperBiomeInfo> SERIAL(keeperBiome);
   SERIALIZE_ALL(NAMED(overrideWaterType), NAMED(lakes), OPTION(items), OPTION(itemCount), NAMED(mountains), OPTION(forests), OPTION(wildlife), OPTION(darkKeeperEnemies), OPTION(whiteKeeperEnemies), OPTION(darkKeeperBaseEnemies), OPTION(whiteKeeperBaseEnemies), NAMED(overrideMusic), NAMED(keeperBiome))
 };
+
+static_assert(std::is_nothrow_move_constructible<BiomeInfo>::value, "T should be noexcept MoveConstructible");

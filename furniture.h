@@ -63,6 +63,7 @@ class Furniture {
   public:
 
   Furniture(const Furniture&);
+  Furniture(Furniture&&) noexcept;
   const heap_optional<ViewObject>& getViewObject() const;
   heap_optional<ViewObject>& getViewObject();
   const string& getName(int count = 1) const;
@@ -235,3 +236,5 @@ class Furniture {
   optional<Effect> SERIAL(destroyedEffect);
   bool SERIAL(visibleWhileBlind) = false;
 };
+
+static_assert(std::is_nothrow_move_constructible<Furniture>::value, "T should be noexcept MoveConstructible");

@@ -105,7 +105,8 @@ static vector<ItemInfo> fillIntrinsicAttacks(const Creature* c) {
   auto& intrinsicAttacks = c->getBody().getIntrinsicAttacks();
   for (auto part : ENUM_ALL(BodyPart))
     for (auto& attack : intrinsicAttacks[part]) {
-      CHECK(!!attack.item) << "Intrinsic attacks not initialized for " << c->getName().bare();
+      CHECK(!!attack.item) << "Intrinsic attacks not initialized for " << c->getName().bare() << " "
+          << EnumInfo<BodyPart>::getString(part);
       ret.push_back(ItemInfo::get(c, {attack.item.get()}));
       auto& item = ret.back();
       item.weight.reset();

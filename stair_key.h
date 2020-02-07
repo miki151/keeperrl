@@ -11,7 +11,7 @@ class StairKey {
 
   bool operator == (const StairKey&) const;
 
-  SERIALIZATION_DECL(StairKey);
+  SERIALIZATION_DECL(StairKey)
 
   long long getInternalKey() const;
 

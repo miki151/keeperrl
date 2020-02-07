@@ -28,3 +28,5 @@ struct BuildingInfo {
   vector<WaterType> SERIAL(water) = {WaterType::LAVA, WaterType::WATER};
   SERIALIZE_ALL(NAMED(wall), NAMED(floorInside), NAMED(floorOutside), NAMED(door), NAMED(prettyFloor), NAMED(gate), NAMED(upStairs), NAMED(downStairs), OPTION(water), OPTION(bridge))
 };
+
+static_assert(std::is_nothrow_move_constructible<BuildingInfo>::value, "T should be noexcept MoveConstructible");

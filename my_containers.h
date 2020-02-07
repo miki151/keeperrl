@@ -28,7 +28,7 @@ class vector {
   template <typename InputIter, typename = RequireInputIter<InputIter>>
   vector(InputIter begin, InputIter end) : impl(begin, end) {}
 
-  vector(const std::vector<T>& v) : impl(v) {}
+  vector(const std::vector<T>& v) noexcept : impl(v) {}
   vector(std::vector<T>&& v) noexcept : impl(std::move(v)) {}
 
   vector(int size, const T& elem) : impl(size, elem) {}
@@ -51,6 +51,7 @@ class vector {
   }
 
   void push_back(T t) {
+    static_assert(std::is_nothrow_move_constructible<T>::value, "T should be noexcept MoveConstructible");
     impl.push_back(std::move(t));
     ++modCounter;
   }

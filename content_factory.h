@@ -65,7 +65,7 @@ class ContentFactory {
 
   ContentFactory();
   ~ContentFactory();
-  ContentFactory(ContentFactory&&);
+  ContentFactory(ContentFactory&&) noexcept;
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);
@@ -82,3 +82,5 @@ class ContentFactory {
   optional<string> readCampaignInfo(const GameConfig*, KeyVerifier*);
   optional<string> readResourceInfo(const GameConfig*, KeyVerifier*);
 };
+
+static_assert(std::is_nothrow_move_constructible<ContentFactory>::value, "T should be noexcept MoveConstructible");

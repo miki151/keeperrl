@@ -43,7 +43,7 @@ class FurnitureFactory {
 
   ~FurnitureFactory();
   FurnitureFactory(const FurnitureFactory&) = delete;
-  FurnitureFactory(FurnitureFactory&&);
+  FurnitureFactory(FurnitureFactory&&) noexcept;
   FurnitureFactory& operator = (FurnitureFactory&&);
 
   SERIALIZATION_DECL(FurnitureFactory)
@@ -57,3 +57,5 @@ class FurnitureFactory {
   EnumMap<BedType, vector<FurnitureType>> SERIAL(bedFurniture);
   unordered_map<FurnitureType, ViewObject, CustomHash<FurnitureType>> SERIAL(constructionObjects);
 };
+
+static_assert(std::is_nothrow_move_constructible<FurnitureFactory>::value, "T should be noexcept MoveConstructible");

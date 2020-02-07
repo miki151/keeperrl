@@ -23,3 +23,5 @@ struct KeeperCreatureInfo {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);
 };
+
+static_assert(std::is_nothrow_move_constructible<KeeperCreatureInfo>::value, "T should be noexcept MoveConstructible");

@@ -78,3 +78,5 @@ struct BuildInfo {
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
   SERIALIZE_ALL(NAMED(type), NAMED(name), OPTION(groupName), OPTION(help), OPTION(hotkey), OPTION(requirements), OPTION(hotkeyOpensGroup), NAMED(tutorialHighlight))
 };
+
+static_assert(std::is_nothrow_move_constructible<BuildInfo>::value, "T should be noexcept MoveConstructible");

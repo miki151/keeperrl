@@ -424,7 +424,7 @@ class EnumMap {
   }
 
   EnumMap(const EnumMap& o) = default;
-  EnumMap(EnumMap&& o) = default;
+  EnumMap(EnumMap&& o) noexcept = default;
 
   template <typename Fun>
   explicit EnumMap(Fun f) {
@@ -860,7 +860,7 @@ inline std::ostream& operator <<(std::ostream& d, Rectangle rect) {
 template <class T>
 class Table {
   public:
-  Table(Table&& t) = default;
+  Table(Table&& t) noexcept = default;
 
   Table(const Table& t) : Table(t.bounds) {
     for (int i : Range(bounds.w * bounds.h))
@@ -1204,15 +1204,24 @@ bool contains(const deque<T>& v, const V& elem) {
 template <class T>
 class MustInitialize {
   public:
-  MustInitialize(const MustInitialize& o) : elem(o.elem) {
+  MustInitialize(const MustInitialize& o) noexcept : elem(o.elem) {
     CHECK(!!elem) << "Element not initialized";
   }
 
+  MustInitialize(MustInitialize&& o) noexcept = default;
+
   MustInitialize() {}
 
-  T& operator = (const T& t) {
+  MustInitialize& operator = (MustInitialize&& t) noexcept = default;
+
+  MustInitialize& operator = (const T& t) {
     elem = t;
-    return *elem;
+    return *this;
+  }
+
+  MustInitialize& operator = (T&& t) noexcept {
+    elem = std::move(t);
+    return *this;
   }
 
   T& operator += (const T& t) {
@@ -1438,8 +1447,8 @@ class HeapAllocated {
 
   HeapAllocated(T&& o) : elem(new T(std::move(o))) {}
 
-  HeapAllocated(const HeapAllocated& o) : elem(new T(*o)) {}
-  HeapAllocated(HeapAllocated&& o) : elem(std::move(o.elem)) {}
+  HeapAllocated(const HeapAllocated& o) noexcept : elem(new T(*o)) {}
+  HeapAllocated(HeapAllocated&& o) noexcept : elem(std::move(o.elem)) {}
 
   T* operator -> () {
     return elem.get();
@@ -1509,13 +1518,13 @@ class heap_optional {
   public:
   heap_optional() {}
 
-  heap_optional(T&& o) : elem(new T(std::move(o))) {}
+  heap_optional(T&& o) noexcept : elem(new T(std::move(o))) {}
 
-  heap_optional(optional<T>&& o) : elem(o ? new T(std::move(*o)) : nullptr) {}
-  heap_optional(const optional<T>& o) : elem(o ? new T(*o) : nullptr) {}
+  heap_optional(optional<T>&& o) noexcept : elem(o ? new T(std::move(*o)) : nullptr) {}
+  heap_optional(const optional<T>& o) noexcept : elem(o ? new T(*o) : nullptr) {}
 
-  heap_optional(const heap_optional& o) : elem(o.elem ? new T(*o.elem) : nullptr) {}
-  heap_optional(heap_optional&& o) : elem(std::move(o.elem)) {}
+  heap_optional(const heap_optional& o) noexcept : elem(o.elem ? new T(*o.elem) : nullptr) {}
+  heap_optional(heap_optional&& o) noexcept : elem(std::move(o.elem)) {}
 
   T* operator -> () {
     return elem.get();
@@ -1550,12 +1559,12 @@ class heap_optional {
     return *this;
   }
 
-  heap_optional& operator = (T&& t) {
+  heap_optional& operator = (T&& t) noexcept {
     elem = unique<T>(std::move(t));
     return *this;
   }
 
-  heap_optional& operator = (const heap_optional& t) {
+  heap_optional& operator = (const heap_optional& t) noexcept {
     if (t.elem)
       elem = unique<T>(*t.elem);
     else
@@ -1563,12 +1572,12 @@ class heap_optional {
     return *this;
   }
 
-  heap_optional& operator = (heap_optional&& t) {
+  heap_optional& operator = (heap_optional&& t) noexcept {
     elem = std::move(t.elem);
     return *this;
   }
 
-  heap_optional& operator = (none_t) {
+  heap_optional& operator = (none_t) noexcept {
     clear();
     return *this;
   }
@@ -1804,14 +1813,14 @@ template <class T, int size> constexpr int arraySize(T (&)[size]) {
 
 #define STRUCT_DECLARATIONS(TYPE) \
   ~TYPE(); \
-  TYPE(TYPE&&); \
+  TYPE(TYPE&&) noexcept;  \
   TYPE& operator = (TYPE&&); \
   TYPE(const TYPE&); \
   TYPE& operator = (const TYPE&);
 
 #define STRUCT_IMPL(TYPE) \
   TYPE::~TYPE() {} \
-  TYPE::TYPE(TYPE&&) = default; \
+  TYPE::TYPE(TYPE&&) noexcept = default; \
   TYPE::TYPE(const TYPE&) = default; \
   TYPE& TYPE::operator =(TYPE&&) = default; \
   TYPE& TYPE::operator = (const TYPE&) = default;

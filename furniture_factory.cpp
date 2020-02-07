@@ -139,7 +139,7 @@ FurnitureType FurnitureFactory::getWaterType(double depth) const {
 FurnitureFactory::~FurnitureFactory() {
 }
 
-FurnitureFactory::FurnitureFactory(FurnitureFactory&&) = default;
+FurnitureFactory::FurnitureFactory(FurnitureFactory&&) noexcept = default;
 FurnitureFactory& FurnitureFactory::operator =(FurnitureFactory&&) = default;
 
 const vector<FurnitureType>& FurnitureFactory::getTrainingFurniture(ExperienceType type) const {

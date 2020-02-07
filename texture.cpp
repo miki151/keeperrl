@@ -72,7 +72,7 @@ Texture::Texture(SDL::SDL_Surface* surface) {
   CHECK(!loadFromMaybe(surface));
 }
 
-Texture::Texture(Texture&& tex) {
+Texture::Texture(Texture&& tex) noexcept {
   *this = std::move(tex);
 }
 

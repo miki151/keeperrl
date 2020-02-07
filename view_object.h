@@ -120,3 +120,4 @@ class ViewObject {
   heap_optional<MovementQueue> movementQueue;
 };
 
+static_assert(std::is_nothrow_move_constructible<ViewObject>::value, "T should be noexcept MoveConstructible");

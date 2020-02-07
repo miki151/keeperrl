@@ -24,7 +24,6 @@ class EntitySet {
   EntitySet() {}
   template <class Container>
   EntitySet(const Container&);
-  EntitySet& operator = (const EntitySet&) = default;
   void insert(const T*);
   void erase(const T*);
   bool contains(const T*) const;

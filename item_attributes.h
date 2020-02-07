@@ -94,3 +94,5 @@ class ItemAttributes {
   optional<SpellId> SERIAL(equipedAbility);
   optional<AutomatonPart> SERIAL(automatonPart);
 };
+
+static_assert(std::is_nothrow_move_constructible<ItemAttributes>::value, "T should be noexcept MoveConstructible");

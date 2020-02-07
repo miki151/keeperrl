@@ -17,7 +17,7 @@ CreatureList::~CreatureList() {}
 
 CreatureList& CreatureList::operator =(CreatureList&&) =default;
 CreatureList& CreatureList::operator =(const CreatureList&) = default;
-CreatureList::CreatureList(CreatureList&&) = default;
+CreatureList::CreatureList(CreatureList&&) noexcept = default;
 CreatureList::CreatureList(const CreatureList&) = default;
 
 CreatureList::CreatureList(int c, CreatureId id) : count(c, c + 1), all(1, make_pair(1, id)) {

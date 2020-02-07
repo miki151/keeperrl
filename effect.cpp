@@ -1235,14 +1235,14 @@ string Effect::getName(const ContentFactory* f) const {
   return FORWARD_CALL(string, effect, getName, f);
 }
 
-Effect::Effect(const EffectType& t) : effect(t) {
+Effect::Effect(const EffectType& t) noexcept : effect(t) {
 }
 
-Effect::Effect(Effect&&) = default;
+Effect::Effect(Effect&&) noexcept = default;
 
-Effect::Effect(const Effect&) = default;
+Effect::Effect(const Effect&) noexcept = default;
 
-Effect::Effect() {
+Effect::Effect() noexcept {
 }
 
 Effect::~Effect() {

@@ -31,3 +31,5 @@ class MapLayouts {
   private:
   map<MapLayoutId, vector<Layout>> SERIAL(layouts);
 };
+
+static_assert(std::is_nothrow_move_constructible<MapLayouts>::value, "T should be noexcept MoveConstructible");

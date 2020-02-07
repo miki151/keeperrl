@@ -40,3 +40,5 @@ class ItemType {
   ItemAttributes getAttributes(const ContentFactory*) const;
   double SERIAL(prefixChance) = 0.0;
 };
+
+static_assert(std::is_nothrow_move_constructible<ItemType>::value, "T should be noexcept MoveConstructible");

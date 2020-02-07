@@ -196,3 +196,5 @@ class ImmigrantInfo {
   bool SERIAL(hiddenInHelp) = false;
   vector<SpecialTraitInfo> SERIAL(specialTraits);
 };
+
+static_assert(std::is_nothrow_move_constructible<ImmigrantInfo>::value, "T should be noexcept MoveConstructible");

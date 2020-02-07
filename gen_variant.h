@@ -16,8 +16,8 @@ struct VARIANT_NAME {
     return !!getReferenceMaybe<T>();
   }
 #define X(Type, Index) \
-  VARIANT_NAME(Type&& t) : index(Index), elem##Index(std::move(t)) {}\
-  VARIANT_NAME(const Type& t) : index(Index), elem##Index(t) {}
+  VARIANT_NAME(Type&& t) noexcept : index(Index), elem##Index(std::move(t)) {}\
+  VARIANT_NAME(const Type& t) noexcept : index(Index), elem##Index(t) {}
   VARIANT_TYPES_LIST
 #undef X
 
@@ -32,7 +32,7 @@ struct VARIANT_NAME {
       default: fail();
     }
   }
-  VARIANT_NAME(const VARIANT_NAME& t) : index(t.index) {
+  VARIANT_NAME(const VARIANT_NAME& t) noexcept : index(t.index) {
     switch (index) {
 #define X(Type, Index)\
       case Index: new(&elem##Index) Type(t.elem##Index); break;
@@ -41,7 +41,7 @@ struct VARIANT_NAME {
       default: fail();
     }
   }
-  VARIANT_NAME(VARIANT_NAME&& t) : index(t.index) {
+  VARIANT_NAME(VARIANT_NAME&& t) noexcept : index(t.index) {
     switch (index) {
 #define X(Type, Index)\
       case Index: new(&elem##Index) Type(std::move(t.elem##Index)); break;
@@ -50,7 +50,7 @@ struct VARIANT_NAME {
       default: fail();
     }
   }
-  VARIANT_NAME& operator = (const VARIANT_NAME& t) {
+  VARIANT_NAME& operator = (const VARIANT_NAME& t) noexcept {
     if (index == t.index)
       switch (index) {
   #define X(Type, Index)\
@@ -65,7 +65,7 @@ struct VARIANT_NAME {
     }
     return *this;
   }
-  VARIANT_NAME& operator = (VARIANT_NAME&& t) {
+  VARIANT_NAME& operator = (VARIANT_NAME&& t) noexcept {
     if (index == t.index)
       switch (index) {
   #define X(Type, Index)\

@@ -11,7 +11,7 @@ struct CreatureList {
   CreatureList();
   ~CreatureList();
   CreatureList(const CreatureList&);
-  CreatureList(CreatureList&&);
+  CreatureList(CreatureList&&) noexcept;
   CreatureList& operator = (const CreatureList&);
   CreatureList& operator = (CreatureList&&);
   CreatureList(int count, CreatureId);
