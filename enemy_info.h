@@ -75,5 +75,3 @@ struct EnemyInfo {
   optional<BonesInfo> SERIAL(createOnBones);
   optional<EnemyId> SERIAL(otherEnemy);
 };
-
-static_assert(std::is_nothrow_move_constructible<CollectiveConfig>::value, "T should be noexcept MoveConstructible");

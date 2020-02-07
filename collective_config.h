@@ -100,6 +100,8 @@ class CollectiveConfig {
   SERIALIZATION_DECL(CollectiveConfig)
   CollectiveConfig(const CollectiveConfig&);
   CollectiveConfig(CollectiveConfig&&) noexcept;
+  CollectiveConfig& operator = (CollectiveConfig&&) noexcept = default;
+  CollectiveConfig& operator = (const CollectiveConfig&) = default;
   ~CollectiveConfig();
 
   private:
