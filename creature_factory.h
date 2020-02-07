@@ -65,7 +65,7 @@ class CreatureFactory {
       map<SpellSchoolId, SpellSchool>, vector<Spell>);
   ~CreatureFactory();
   CreatureFactory(const CreatureFactory&) = delete;
-  CreatureFactory(CreatureFactory&&);
+  CreatureFactory(CreatureFactory&&) noexcept;
   CreatureFactory& operator = (CreatureFactory&&);
 
   void merge(CreatureFactory);
@@ -99,3 +99,5 @@ class CreatureFactory {
   mutable const ContentFactory* contentFactory = nullptr;
   SpellMap getSpellMap(const CreatureAttributes&);
 };
+
+static_assert(std::is_nothrow_move_constructible<CreatureFactory>::value, "T should be noexcept MoveConstructible");

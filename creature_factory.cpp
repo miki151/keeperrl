@@ -244,7 +244,7 @@ void CreatureFactory::setContentFactory(const ContentFactory* f) const {
   contentFactory = f;
 }
 
-CreatureFactory::CreatureFactory(CreatureFactory&&) = default;
+CreatureFactory::CreatureFactory(CreatureFactory&&) noexcept = default;
 CreatureFactory& CreatureFactory::operator =(CreatureFactory&&) = default;
 
 constexpr int maxKrakenLength = 15;
