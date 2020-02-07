@@ -248,6 +248,7 @@ MinionActivityInfo::MinionActivityInfo(UsagePredicate pred, const string& desc)
 }
 
 CollectiveConfig::CollectiveConfig(const CollectiveConfig&) = default;
+CollectiveConfig::CollectiveConfig(CollectiveConfig&&) noexcept = default;
 
 CollectiveConfig::~CollectiveConfig() {
 }

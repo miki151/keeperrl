@@ -99,6 +99,7 @@ class CollectiveConfig {
 
   SERIALIZATION_DECL(CollectiveConfig)
   CollectiveConfig(const CollectiveConfig&);
+  CollectiveConfig(CollectiveConfig&&) noexcept;
   ~CollectiveConfig();
 
   private:
