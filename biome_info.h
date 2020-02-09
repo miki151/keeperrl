@@ -44,6 +44,7 @@ struct KeeperBiomeInfo {
 
 struct BiomeInfo {
   optional<FurnitureType> SERIAL(overrideWaterType);
+  FurnitureType SERIAL(sandType) = FurnitureType("SAND");
   struct LakeInfo {
     Range SERIAL(size);
     Range SERIAL(count);
@@ -63,7 +64,7 @@ struct BiomeInfo {
   vector<BiomeEnemyInfo> SERIAL(whiteKeeperBaseEnemies);
   optional<MusicType> SERIAL(overrideMusic);
   optional<KeeperBiomeInfo> SERIAL(keeperBiome);
-  SERIALIZE_ALL(NAMED(overrideWaterType), NAMED(lakes), OPTION(items), OPTION(itemCount), NAMED(mountains), OPTION(forests), OPTION(wildlife), OPTION(darkKeeperEnemies), OPTION(whiteKeeperEnemies), OPTION(darkKeeperBaseEnemies), OPTION(whiteKeeperBaseEnemies), NAMED(overrideMusic), NAMED(keeperBiome))
+  SERIALIZE_ALL(NAMED(overrideWaterType), OPTION(sandType), NAMED(lakes), OPTION(items), OPTION(itemCount), NAMED(mountains), OPTION(forests), OPTION(wildlife), OPTION(darkKeeperEnemies), OPTION(whiteKeeperEnemies), OPTION(darkKeeperBaseEnemies), OPTION(whiteKeeperBaseEnemies), NAMED(overrideMusic), NAMED(keeperBiome))
 };
 
 static_assert(std::is_nothrow_move_constructible<BiomeInfo>::value, "T should be noexcept MoveConstructible");
