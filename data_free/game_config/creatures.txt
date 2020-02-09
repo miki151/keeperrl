@@ -1275,6 +1275,13 @@
       name = "friar"
     }
   }
+"FATHER_OBLIVION" inherit "FRIAR"
+  {
+    name = {
+      name = "Father O'Blivion"
+      fullTitle = true
+    }
+  }
 "JESTER"
   {
     viewId = { "jester" }
