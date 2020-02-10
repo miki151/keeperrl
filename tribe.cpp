@@ -46,9 +46,10 @@ void Tribe::initStanding(const Creature* c) {
 }
 
 void Tribe::addEnemy(Tribe* t) {
-  friendlyTribes.erase(t->id);
-  if (t != this)
+  if (t != this) {
+    friendlyTribes.erase(t->id);
     t->friendlyTribes.erase(id);
+  }
 }
 
 static const double killPenalty = 0.5;
@@ -79,10 +80,11 @@ const TribeSet& Tribe::getFriendlyTribes() const {
   return friendlyTribes;
 }
 
-void Tribe::onItemsStolen(const Creature* attacker) {
+void Tribe::onItemsStolen(Creature* attacker) {
   if (diplomatic) {
     initStanding(attacker);
     standing.getOrFail(attacker) -= thiefPenalty;
+    addEnemy(attacker->getTribe());
   }
 }
 
