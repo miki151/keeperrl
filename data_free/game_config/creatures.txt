@@ -3538,6 +3538,7 @@
       DEFENSE 50 
       SPELL_DAMAGE 60
     }
+    courage = 100
     body = {
       type = NonHumanoid HUGE
       bodyParts = {
