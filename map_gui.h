@@ -76,6 +76,7 @@ class MapGui : public GuiElem {
   void highlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void setButtonViewId(ViewId);
+  void setDraggedCreature(UniqueEntity<Creature>::Id, ViewId, Vec2 origin, DragContentId);
   static Color getHealthBarColor(double health, bool sprit);
   void clearButtonViewId();
   bool highlightMorale = true;
@@ -184,7 +185,6 @@ class MapGui : public GuiElem {
   void considerScrollingToCreature();
   GuiFactory* guiFactory;
   optional<UniqueEntity<Creature>::Id> getDraggedCreature() const;
-  void setDraggedCreature(UniqueEntity<Creature>::Id, ViewId, Vec2 origin);
   vector<Vec2> tutorialHighlightLow;
   vector<Vec2> tutorialHighlightHigh;
   void drawHealthBar(Renderer&, Vec2 tilePos, Vec2 pos, Vec2 size, const ViewObject&, const ViewIndex& index);

@@ -1754,9 +1754,11 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
                 UserInputId id;
                 switch (content.getId()) {
                   case DragContentId::CREATURE:
-                    id = UserInputId::ADD_TO_TEAM; break;
+                    id = UserInputId::ADD_TO_TEAM;
+                    break;
                   case DragContentId::CREATURE_GROUP:
-                    id = UserInputId::ADD_GROUP_TO_TEAM; break;
+                    id = UserInputId::ADD_GROUP_TO_TEAM;
+                    break;
                   default:
                     return;
                 }
@@ -1823,15 +1825,18 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialIn
       line.addElem(WL(viewObject, elem.viewId), 40);
       SGuiElem tmp = WL(label, toString(elem.count) + "   " + elem.name, Color::WHITE);
       line.addElem(std::move(tmp), 200);
-      list.addElem(WL(stack,
+      list.addElem(WL(stack, makeVec(
           cache->get(selectButton, THIS_LINE, elem.creatureId),
           WL(dragSource, {DragContentId::CREATURE_GROUP, elem.creatureId},
               [=]{ return WL(getListBuilder, 10)
                   .addElemAuto(WL(label, toString(elem.count) + " "))
                   .addElem(WL(viewObject, elem.viewId)).buildHorizontalList();}),
+          WL(button, [this, id = elem.creatureId, viewId = elem.viewId] {
+              callbacks.input(UserInput(UserInputId::CREATURE_DRAG, id));
+              mapGui->setDraggedCreature(id, viewId, Vec2(-100, -100), DragContentId::CREATURE_GROUP); }, false),
           WL(uiHighlightConditional, [highlight = elem.highlight]{return highlight;}),
           line.buildHorizontalList()
-       ));
+       )));
     }
     list.addElem(WL(label, "Teams: ", Color::WHITE));
     list.addElemAuto(drawTeams(info, tutorial));
@@ -2841,6 +2846,9 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
                  WL(uiHighlightConditional, [=] { return current == minionId;}))),
             WL(dragSource, {DragContentId::CREATURE, minionId},
               [=]{ return WL(viewObject, minion.viewId);}),
+            WL(button, [this, minionId, viewId = minion.viewId] {
+                callbacks.input(UserInput(UserInputId::CREATURE_DRAG, minionId));
+                mapGui->setDraggedCreature(minionId, viewId, Vec2(-100, -100), DragContentId::CREATURE_GROUP); }, false),
             line.buildHorizontalList())));
     }
   }

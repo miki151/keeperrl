@@ -319,7 +319,7 @@ bool MapGui::onMouseMove(Vec2 v) {
     considerContinuousLeftClick(v);
   if (!draggedCreature && draggedCandidate && mouseHeldPos && mouseHeldPos->distD(v) > 30) {
     inputQueue.push(UserInput(UserInputId::CREATURE_DRAG, draggedCandidate->id));
-    setDraggedCreature(draggedCandidate->id, draggedCandidate->viewId, v);
+    setDraggedCreature(draggedCandidate->id, draggedCandidate->viewId, v, DragContentId::CREATURE);
   }
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->getSquareSize().x;
@@ -356,6 +356,11 @@ void MapGui::onMouseRelease(Vec2 v) {
   if (auto& draggedElem = guiFactory->getDragContainer().getElement())
     if (v.inRectangle(getBounds()) && guiFactory->getDragContainer().getOrigin().distD(v) > 10) {
       switch (draggedElem->getId()) {
+        case DragContentId::CREATURE_GROUP:
+          inputQueue.push(UserInput(UserInputId::CREATURE_GROUP_DRAG_ON_MAP,
+             CreatureDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v),
+                 draggedElem->get<UniqueEntity<Creature>::Id>()}));
+          break;
         case DragContentId::CREATURE:
           inputQueue.push(UserInput(UserInputId::CREATURE_DRAG_DROP,
              CreatureDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v),
@@ -1157,6 +1162,7 @@ void MapGui::processScrolling(milliseconds time) {
 optional<UniqueEntity<Creature>::Id> MapGui::getDraggedCreature() const {
   if (auto draggedContent = guiFactory->getDragContainer().getElement())
     switch (draggedContent->getId()) {
+      case DragContentId::CREATURE_GROUP:
       case DragContentId::CREATURE:
         return draggedContent->get<UniqueEntity<Creature>::Id>();
       default:
@@ -1165,8 +1171,8 @@ optional<UniqueEntity<Creature>::Id> MapGui::getDraggedCreature() const {
   return none;
 }
 
-void MapGui::setDraggedCreature(UniqueEntity<Creature>::Id id, ViewId viewId, Vec2 origin) {
-  guiFactory->getDragContainer().put({DragContentId::CREATURE, id}, guiFactory->viewObject(viewId), origin);
+void MapGui::setDraggedCreature(UniqueEntity<Creature>::Id id, ViewId viewId, Vec2 origin, DragContentId dragId) {
+  guiFactory->getDragContainer().put({dragId, id}, guiFactory->viewObject(viewId), origin);
 }
 
 void MapGui::considerScrollingToCreature() {

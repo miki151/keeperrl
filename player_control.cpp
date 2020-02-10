@@ -1950,23 +1950,30 @@ void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
   refreshHighlights();
 }
 
-void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
+void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info, bool creatureGroup) {
   PROFILE;
   Position pos(info.pos, getCurrentLevel());
-  if (Creature* c = getCreature(info.creatureId)) {
-    c->removeEffect(LastingEffect::TIED_UP);
-    c->removeEffect(LastingEffect::SLEEP);
-    if (auto furniture = collective->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
-      if (auto task = collective->getMinionActivities().getActivityFor(collective, c, furniture->getFurnitureType())) {
-        if (collective->isActivityGood(c, *task, true)) {
-          collective->setMinionActivity(c, *task);
-          collective->setTask(c, Task::goTo(pos));
-          return;
+  if (Creature* dropped = getCreature(info.creatureId)) {
+    auto handle = [&] (Creature* c) {
+      c->removeEffect(LastingEffect::TIED_UP);
+      c->removeEffect(LastingEffect::SLEEP);
+      if (auto furniture = collective->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
+        if (auto task = collective->getMinionActivities().getActivityFor(collective, c, furniture->getFurnitureType())) {
+          if (collective->isActivityGood(c, *task, true)) {
+            collective->setMinionActivity(c, *task);
+            collective->setTask(c, Task::goTo(pos));
+            return;
+          }
         }
-      }
-    PTask task = Task::goToAndWait(pos, 15_visible);
-    task->setViewId(ViewId("guard_post"));
-    collective->setTask(c, std::move(task));
+      PTask task = Task::goToAndWait(pos, 15_visible);
+      task->setViewId(ViewId("guard_post"));
+      collective->setTask(c, std::move(task));
+    };
+    if (creatureGroup)
+      for (auto c : getMinionsLike(dropped))
+        handle(c);
+    else
+      handle(dropped);
     pos.setNeedsRenderUpdate(true);
   }
 }
@@ -2066,7 +2073,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
           pos.first.setNeedsRenderUpdate(true);
       break;
     case UserInputId::CREATURE_DRAG_DROP:
-      minionDragAndDrop(input.get<CreatureDropInfo>());
+      minionDragAndDrop(input.get<CreatureDropInfo>(), false);
+      draggedCreature = none;
+      break;
+    case UserInputId::CREATURE_GROUP_DRAG_ON_MAP:
+      minionDragAndDrop(input.get<CreatureDropInfo>(), true);
       draggedCreature = none;
       break;
     case UserInputId::TEAM_DRAG_DROP: {

@@ -164,7 +164,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   int getNumMinions() const;
   void minionTaskAction(const TaskActionInfo&);
-  void minionDragAndDrop(const CreatureDropInfo&);
+  void minionDragAndDrop(const CreatureDropInfo&, bool creatureGroup);
   void fillMinions(CollectiveInfo&) const;
   vector<Creature*> getMinionsLike(Creature*) const;
   vector<PlayerInfo> getPlayerInfos(vector<Creature*>, UniqueEntity<Creature>::Id chosenId) const;
