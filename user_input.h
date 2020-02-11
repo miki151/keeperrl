@@ -81,14 +81,12 @@ enum class UserInputId {
     CANCEL_TEAM,
     SELECT_TEAM,
     ACTIVATE_TEAM,
-    TECHNOLOGY,
     KEEPEROPEDIA,
     WORKSHOP,
     WORKSHOP_ADD,
     WORKSHOP_ITEM_ACTION,
     WORKSHOP_UPGRADE,
     LIBRARY_ADD,
-    LIBRARY_CLOSE,
     VILLAGE_ACTION,
     DISMISS_VILLAGE_INFO,
     PAY_RANSOM,
@@ -114,7 +112,8 @@ enum class UserInputId {
     PAY_DEBT,
     APPLY_EFFECT,
     CREATE_ITEM,
-    SUMMON_ENEMY
+    SUMMON_ENEMY,
+    LEVEL_UP
 };
 
 struct CreatureDropInfo {

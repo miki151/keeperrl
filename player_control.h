@@ -210,7 +210,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void setChosenTeam(optional<TeamId>, optional<UniqueEntity<Creature>::Id> = none);
   optional<TeamId> chosenTeam;
   void clearChosenInfo();
-  bool chosenLibrary = false;
   string getMinionName(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
   vector<PlayerMessage> SERIAL(messageHistory);
@@ -227,7 +226,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<UniqueEntity<Creature>::Id> draggedCreature;
   void updateMinionVisibility(const Creature*);
   STutorial SERIAL(tutorial);
-  void setChosenLibrary(bool);
   void acquireTech(TechId);
   SMessageBuffer SERIAL(controlModeMessages);
   unordered_set<int> dismissedNextWaves;

@@ -762,7 +762,7 @@ void Player::makeMove() {
         if (tutorial)
           tutorial->goBack();
         break;
-      case UserInputId::TECHNOLOGY: {
+      case UserInputId::LEVEL_UP: {
         while (1) {
           auto info = getCreatureExperienceInfo(creature);
           info.numAvailableUpgrades = avatarLevel->numResearchAvailable();

@@ -231,7 +231,8 @@ class GuiBuilder {
   enum BottomWindowId {
     IMMIGRATION_HELP,
     ALL_VILLAINS,
-    TASKS
+    TASKS,
+    LIBRARY
   };
   optional<BottomWindowId> bottomWindow;
   void toggleBottomWindow(BottomWindowId);

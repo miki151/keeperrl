@@ -1009,30 +1009,27 @@ void PlayerControl::acquireTech(TechId tech) {
 }
 
 void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
-  if (chosenLibrary) {
-    collectiveInfo.libraryInfo.emplace();
-    auto& info = *collectiveInfo.libraryInfo;
-    auto& dungeonLevel = collective->getDungeonLevel();
-    if (dungeonLevel.numResearchAvailable() == 0)
-      info.warning = "Conquer some villains to advance your level."_s;
-    info.totalProgress = 100 * dungeonLevel.getNecessaryProgress(dungeonLevel.level);
-    info.currentProgress = int(100 * dungeonLevel.progress * dungeonLevel.getNecessaryProgress(dungeonLevel.level));
-    auto& technology = collective->getTechnology();
-    auto techs = technology.getNextTechs();
-    for (auto& tech : techs) {
-      info.available.emplace_back();
-      auto& techInfo = info.available.back();
-      techInfo.id = tech;
-      //techInfo.tutorialHighlight = tech->getTutorialHighlight();
-      techInfo.active = !info.warning && dungeonLevel.numResearchAvailable() > 0;
-      techInfo.description = technology.techs.at(tech).description;
-    }
-    for (auto& tech : collective->getTechnology().researched) {
-      info.researched.emplace_back();
-      auto& techInfo = info.researched.back();
-      techInfo.id = tech;
-      techInfo.description = technology.techs.at(tech).description;
-    }
+  auto& info = collectiveInfo.libraryInfo;
+  auto& dungeonLevel = collective->getDungeonLevel();
+  if (dungeonLevel.numResearchAvailable() == 0)
+    info.warning = "Conquer some villains to advance your level."_s;
+  info.totalProgress = 100 * dungeonLevel.getNecessaryProgress(dungeonLevel.level);
+  info.currentProgress = int(100 * dungeonLevel.progress * dungeonLevel.getNecessaryProgress(dungeonLevel.level));
+  auto& technology = collective->getTechnology();
+  auto techs = technology.getNextTechs();
+  for (auto& tech : techs) {
+    info.available.emplace_back();
+    auto& techInfo = info.available.back();
+    techInfo.id = tech;
+    //techInfo.tutorialHighlight = tech->getTutorialHighlight();
+    techInfo.active = !info.warning && dungeonLevel.numResearchAvailable() > 0;
+    techInfo.description = technology.techs.at(tech).description;
+  }
+  for (auto& tech : collective->getTechnology().researched) {
+    info.researched.emplace_back();
+    auto& techInfo = info.researched.back();
+    techInfo.id = tech;
+    techInfo.description = technology.techs.at(tech).description;
   }
 }
 
@@ -1742,8 +1739,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType());
       if (furniture->hasUsageType(BuiltinUsageId::STUDY) || !!workshopType)
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
-      if ((chosenWorkshop && chosenWorkshop == workshopType) ||
-          (chosenLibrary && furniture->hasUsageType(BuiltinUsageId::STUDY)))
+      if (chosenWorkshop && chosenWorkshop == workshopType)
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (Creature* c = getCreature(*draggedCreature))
@@ -1926,15 +1922,8 @@ void PlayerControl::setChosenTeam(optional<TeamId> team, optional<UniqueEntity<C
 
 void PlayerControl::clearChosenInfo() {
   setChosenWorkshop(none);
-  setChosenLibrary(false);
   chosenCreature = none;
   chosenTeam = none;
-}
-
-void PlayerControl::setChosenLibrary(bool state) {
-  if (state)
-    clearChosenInfo();
-  chosenLibrary = state;
 }
 
 void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
@@ -2125,7 +2114,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DRAW_WORLD_MAP: getGame()->presentWorldmap(); break;
-    case UserInputId::TECHNOLOGY: setChosenLibrary(!chosenLibrary); break;
     case UserInputId::KEEPEROPEDIA: Encyclopedia(buildInfo, getGame()->getContentFactory()->getCreatures().getSpellSchools(),
           getGame()->getContentFactory()->getCreatures().getSpells(), collective->getTechnology()).present(view);
       break;
@@ -2207,9 +2195,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::LIBRARY_ADD:
       acquireTech(input.get<TechId>());
-      break;
-    case UserInputId::LIBRARY_CLOSE:
-      setChosenLibrary(false);
       break;
     case UserInputId::CREATURE_GROUP_BUTTON:
       if (Creature* c = getCreature(input.get<Creature::Id>()))
@@ -2681,12 +2666,9 @@ void PlayerControl::onSquareClick(Position pos) {
       if (furniture->getClickType()) {
         furniture->click(pos); // this can remove the furniture
         updateSquareMemory(pos);
-      } else {
-        if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType()))
-          setChosenWorkshop(*workshopType);
-        if (furniture->hasUsageType(BuiltinUsageId::STUDY))
-          setChosenLibrary(!chosenLibrary);
-      }
+      } else
+      if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType()))
+        setChosenWorkshop(*workshopType);
     }
   }
 }

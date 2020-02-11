@@ -99,7 +99,6 @@ void GuiBuilder::setCollectiveTab(CollectiveTab t) {
     if (t != CollectiveTab::MINIONS)
       callbacks.input({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()});
     callbacks.input({UserInputId::WORKSHOP, -1});
-    callbacks.input({UserInputId::LIBRARY_CLOSE});
     bottomWindow = none;
   }
 }
@@ -112,7 +111,6 @@ void GuiBuilder::closeOverlayWindows() {
   // send a random id which wont be found
   callbacks.input({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()});
   callbacks.input({UserInputId::WORKSHOP, -1});
-  callbacks.input({UserInputId::LIBRARY_CLOSE});
   bottomWindow = none;
 }
 
@@ -434,7 +432,7 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo, int width) {
           .addElemAuto(WL(topMargin, -2, WL(viewObject, info.avatarLevelInfo.viewId)))
           .addElemAuto(WL(label, "Level: " + toString(info.avatarLevelInfo.level)))
           .buildHorizontalList()),
-      WL(button, [this]() { closeOverlayWindowsAndClearButton(); callbacks.input(UserInputId::TECHNOLOGY);})
+      WL(button, [this]() { toggleBottomWindow(LIBRARY); })
   ));
   bottomLine.addSpace(space);
   bottomLine.addElem(WL(labelFun, [&info] {
@@ -1036,7 +1034,7 @@ SGuiElem GuiBuilder::drawBottomPlayerInfo(const GameInfo& gameInfo) {
                    .addElemAuto(WL(topMargin, -2, WL(viewObject, info.avatarLevelInfo->viewId)))
                    .addElemAuto(WL(label, "Level: " + toString(info.avatarLevelInfo->level)))
                    .buildHorizontalList()),
-               WL(button, [this]() { closeOverlayWindowsAndClearButton(); callbacks.input(UserInputId::TECHNOLOGY);})
+               WL(button, [this]() { closeOverlayWindowsAndClearButton(); callbacks.input(UserInputId::LEVEL_UP);})
            ) : WL(empty))
           .addSpace(20)
           .addElem(getTurnInfoGui(gameInfo.time), 90)
@@ -2166,9 +2164,7 @@ static string getName(TechId id) {
 }
 
 SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, const optional<TutorialInfo>& tutorial) {
-  if (!collectiveInfo.libraryInfo)
-    return WL(empty);
-  auto& info = *collectiveInfo.libraryInfo;
+  auto& info = collectiveInfo.libraryInfo;
   const int margin = 20;
   const int rightElemMargin = 10;
   auto lines = WL(getListBuilder, legendLineHeight);
@@ -2217,8 +2213,9 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
   int height = lines.getSize();
   return WL(preferredSize, 500, height + 2 * margin + 2,
       WL(miniWindow, WL(stack,
-          WL(keyHandler, getButtonCallback(UserInputId::LIBRARY_CLOSE), {gui.getKey(SDL::SDLK_ESCAPE)}, true),
-          WL(margins, WL(scrollable, lines.buildVerticalList(), &libraryScroll, &scrollbarsHeld), margin))));
+          WL(keyHandler, [this] { bottomWindow = none; }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
+          WL(margins, WL(scrollable, lines.buildVerticalList(), &libraryScroll, &scrollbarsHeld), margin)),
+              [this] { bottomWindow = none; }, true));
 }
 
 SGuiElem GuiBuilder::drawMinionsOverlay(const optional<CollectiveInfo::ChosenCreatureInfo>& chosenCreature,
@@ -2485,8 +2482,6 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
            collectiveInfo.chosenCreature, collectiveInfo.allQuarters, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
            collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawLibraryOverlay, this), THIS_LINE,
-           collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
            collectiveInfo), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
@@ -2497,6 +2492,9 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
       if (bottomWindow == ALL_VILLAINS)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawAllVillainsOverlay, this), THIS_LINE,
             info.villageInfo), OverlayInfo::BOTTOM_LEFT});
+      if (bottomWindow == LIBRARY)
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawLibraryOverlay, this), THIS_LINE,
+             collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawGameSpeedDialog, this), THIS_LINE),
            OverlayInfo::GAME_SPEED});
       break;
