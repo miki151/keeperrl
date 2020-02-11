@@ -77,14 +77,14 @@ void GuiElem::setLineNumber(int l) {
 
 class ButtonElem : public GuiElem {
   public:
-  ButtonElem(function<void(Rectangle, Vec2)> f) : fun(f) {}
+  ButtonElem(function<void(Rectangle, Vec2)> f, bool capture) : fun(f), capture(capture) {}
 
   virtual bool onClick(ClickButton b, Vec2 pos) override {
     if (b == LEFT) {
       auto bounds = getBounds();
       if (pos.inRectangle(bounds)) {
         fun(bounds, pos - bounds.topLeft());
-        return true;
+        return capture;
       }
     }
     return false;
@@ -92,6 +92,7 @@ class ButtonElem : public GuiElem {
 
   protected:
   function<void(Rectangle, Vec2)> fun;
+  bool capture;
 };
 
 class ReleaseButton : public GuiElem {
@@ -164,7 +165,7 @@ SDL_Keysym GuiFactory::getKey(SDL_Keycode code) {
 
 class ButtonKey : public ButtonElem {
   public:
-  ButtonKey(function<void(Rectangle)> f, SDL_Keysym key, bool cap) : ButtonElem([f](Rectangle b, Vec2) { f(b);}),
+  ButtonKey(function<void(Rectangle)> f, SDL_Keysym key, bool cap) : ButtonElem([f](Rectangle b, Vec2) { f(b);}, cap),
       hotkey(key), capture(cap) {}
 
   virtual bool onKeyPressed2(SDL_Keysym key) override {
@@ -233,11 +234,11 @@ SGuiElem GuiFactory::button(function<void()> fun, SDL_Keysym hotkey, bool captur
 }
 
 SGuiElem GuiFactory::buttonRect(function<void(Rectangle)> fun) {
-  return SGuiElem(new ButtonElem([=](Rectangle b, Vec2) {fun(b);}));
+  return SGuiElem(new ButtonElem([=](Rectangle b, Vec2) {fun(b);}, false));
 }
 
-SGuiElem GuiFactory::button(function<void()> fun) {
-  return SGuiElem(new ButtonElem([=](Rectangle, Vec2) { fun(); }));
+SGuiElem GuiFactory::button(function<void()> fun, bool capture) {
+  return SGuiElem(new ButtonElem([=](Rectangle, Vec2) { fun(); }, capture));
 }
 
 namespace  {
@@ -338,7 +339,7 @@ SGuiElem GuiFactory::textField(int maxLength, function<string()> text, function<
 }
 
 SGuiElem GuiFactory::buttonPos(function<void (Rectangle, Vec2)> fun) {
-  return make_shared<ButtonElem>(fun);
+  return make_shared<ButtonElem>(fun, false);
 }
 
 namespace {
@@ -1286,7 +1287,7 @@ SGuiElem GuiFactory::keyHandlerChar(function<void ()> fun, char hotkey, bool cap
 
 SGuiElem GuiFactory::buttonChar(function<void()> fun, char hotkey, bool capture, bool useAltIfWasdOn) {
   return stack(
-      SGuiElem(new ButtonElem([=](Rectangle, Vec2) { fun(); })),
+      SGuiElem(new ButtonElem([=](Rectangle, Vec2) { fun(); }, capture)),
       SGuiElem(keyHandlerChar(fun, hotkey, capture, useAltIfWasdOn)));
 }
 

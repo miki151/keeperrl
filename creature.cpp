@@ -591,7 +591,7 @@ int Creature::canCarry(const vector<Item*>& items) const {
 CreatureAction Creature::pickUp(const vector<Item*>& itemsAll) const {
   if (!getBody().isHumanoid())
     return CreatureAction("You can't pick up anything!");
-  auto items = getPrefix(itemsAll, canCarry(itemsAll));
+  auto items = itemsAll.getPrefix(canCarry(itemsAll));
   if (items.empty())
     return CreatureAction("You are carrying too much to pick this up.");
   return CreatureAction(this, [=](Creature* self) {
@@ -2038,6 +2038,12 @@ CreatureAction Creature::stayIn(WLevel level, Rectangle area) {
     return moveTowards(Position(area.middle(), getLevel()));
   }
   return CreatureAction();
+}
+
+vector<Position> Creature::getCurrentPath() const {
+  if (shortestPath)
+    return shortestPath->getPath();
+  return {};
 }
 
 CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {

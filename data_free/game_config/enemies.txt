@@ -395,6 +395,7 @@
       }
       civilians = {
         count = {6 9}
+        uniques = { "FATHER_OBLIVION" }
         all = {
           1 "PESEANT"
           1 "CHILD"

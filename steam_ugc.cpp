@@ -9,6 +9,8 @@
 
 namespace steam {
 
+constexpr int UGC::maxItemsPerPage;
+
 static_assert(sizeof(ItemId) == sizeof(PublishedFileId_t), "ItemId should be size-compatible");
 
 using QStatus = QueryStatus;

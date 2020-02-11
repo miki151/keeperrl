@@ -228,7 +228,7 @@ vector<Creature*> RecruitmentInfo::getAllRecruits(WGame game, CreatureId id) con
 
 vector<Creature*> RecruitmentInfo::getAvailableRecruits(WGame game, CreatureId id) const {
   auto ret = getAllRecruits(game, id);
-  return getPrefix(ret, max(0, (int)ret.size() - minPopulation));
+  return ret.getPrefix(max(0, (int)ret.size() - minPopulation));
 }
 
 vector<Collective*> RecruitmentInfo::findEnemy(WGame game) const {

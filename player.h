@@ -63,6 +63,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual double getAnimationTime() const override;
   virtual CenterType getCenterType() const override;
   virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const override;
+  virtual vector<Vec2> getHighlightedPathTo(Vec2) const override;
 
   // from Controller
   virtual void onKilled(const Creature* attacker) override;

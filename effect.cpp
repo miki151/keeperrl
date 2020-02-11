@@ -445,7 +445,7 @@ static void airBlast(Creature* attacker, Position origin, Position position, Pos
   auto trajectory = drawLine(Vec2(0, 0), direction);
   for (int i : All(trajectory))
     if (trajectory[i] == origin.getDir(position)) {
-      trajectory = getSubsequence(trajectory, i + 1, maxDistance);
+      trajectory = trajectory.getSubsequence(i + 1, maxDistance);
       for (auto& v : trajectory)
         v = v - origin.getDir(position);
       break;

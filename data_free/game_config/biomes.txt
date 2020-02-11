@@ -162,6 +162,7 @@
     count = {2 6}
   }
   overrideWaterType = "ICE"
+  sandType = "ICE"
   items = "snowItems"
   itemCount = {7 12}
   mountains = {

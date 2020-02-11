@@ -35,7 +35,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::GAME_EVENTS, 1},
   {OptionId::AUTOSAVE, 1},
   {OptionId::WASD_SCROLLING, 0},
-  {OptionId::FAST_IMMIGRATION, 0},
+  {OptionId::SUGGEST_TUTORIAL, 1},
   {OptionId::STARTING_RESOURCE, 0},
   {OptionId::START_WITH_NIGHT, 0},
   {OptionId::PLAYER_NAME, string("")},
@@ -66,7 +66,7 @@ const map<OptionId, string> names {
   {OptionId::GAME_EVENTS, "Anonymous statistics"},
   {OptionId::AUTOSAVE, "Autosave"},
   {OptionId::WASD_SCROLLING, "WASD scrolling"},
-  {OptionId::FAST_IMMIGRATION, "Fast immigration"},
+  {OptionId::SUGGEST_TUTORIAL, ""},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
   {OptionId::START_WITH_NIGHT, "Start with night"},
   {OptionId::PLAYER_NAME, "Name"},
@@ -120,7 +120,6 @@ const map<OptionSet, vector<OptionId>> optionSets {
 #ifndef RELEASE
       OptionId::KEEP_SAVEFILES,
       OptionId::SHOW_MAP,
-      OptionId::FAST_IMMIGRATION,
 #endif
   }},
   {OptionSet::KEEPER, {
@@ -128,7 +127,6 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::START_WITH_NIGHT,
       OptionId::SHOW_MAP,
       OptionId::STARTING_RESOURCE,
-      OptionId::FAST_IMMIGRATION,
 #endif
       OptionId::PLAYER_NAME,
       OptionId::SETTLEMENT_NAME,
@@ -235,7 +233,7 @@ string Options::getValueString(OptionId id) {
       return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:
-    case OptionId::FAST_IMMIGRATION:
+    case OptionId::SUGGEST_TUTORIAL:
     case OptionId::STARTING_RESOURCE:
     case OptionId::ONLINE:
     case OptionId::GAME_EVENTS:
@@ -389,7 +387,7 @@ void Options::readValues() {
         optionId = *id;
       else
         continue;
-      if (auto val = readValue(optionId, getSuffix(p, p.size() - 1))) {
+      if (auto val = readValue(optionId, p.getSuffix(p.size() - 1))) {
         if ((optionId == OptionId::SOUND || optionId == OptionId::MUSIC) && *val == 1)
           *val = 100;
         (*values)[optionId] = *val;

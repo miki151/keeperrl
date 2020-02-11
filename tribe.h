@@ -96,7 +96,7 @@ class Tribe {
   const TribeSet& getFriendlyTribes() const;
 
   void onMemberKilled(Creature* member, Creature* killer);
-  void onItemsStolen(const Creature* thief);
+  void onItemsStolen(Creature* thief);
 
   SERIALIZATION_DECL(Tribe)
 

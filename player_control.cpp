@@ -96,6 +96,7 @@
 #include "special_trait.h"
 #include "user_input.h"
 #include "automaton_part.h"
+#include "shortest_path.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -1008,30 +1009,27 @@ void PlayerControl::acquireTech(TechId tech) {
 }
 
 void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
-  if (chosenLibrary) {
-    collectiveInfo.libraryInfo.emplace();
-    auto& info = *collectiveInfo.libraryInfo;
-    auto& dungeonLevel = collective->getDungeonLevel();
-    if (dungeonLevel.numResearchAvailable() == 0)
-      info.warning = "Conquer some villains to advance your level."_s;
-    info.totalProgress = 100 * dungeonLevel.getNecessaryProgress(dungeonLevel.level);
-    info.currentProgress = int(100 * dungeonLevel.progress * dungeonLevel.getNecessaryProgress(dungeonLevel.level));
-    auto& technology = collective->getTechnology();
-    auto techs = technology.getNextTechs();
-    for (auto& tech : techs) {
-      info.available.emplace_back();
-      auto& techInfo = info.available.back();
-      techInfo.id = tech;
-      //techInfo.tutorialHighlight = tech->getTutorialHighlight();
-      techInfo.active = !info.warning && dungeonLevel.numResearchAvailable() > 0;
-      techInfo.description = technology.techs.at(tech).description;
-    }
-    for (auto& tech : collective->getTechnology().researched) {
-      info.researched.emplace_back();
-      auto& techInfo = info.researched.back();
-      techInfo.id = tech;
-      techInfo.description = technology.techs.at(tech).description;
-    }
+  auto& info = collectiveInfo.libraryInfo;
+  auto& dungeonLevel = collective->getDungeonLevel();
+  if (dungeonLevel.numResearchAvailable() == 0)
+    info.warning = "Conquer some villains to advance your level."_s;
+  info.totalProgress = 100 * dungeonLevel.getNecessaryProgress(dungeonLevel.level);
+  info.currentProgress = int(100 * dungeonLevel.progress * dungeonLevel.getNecessaryProgress(dungeonLevel.level));
+  auto& technology = collective->getTechnology();
+  auto techs = technology.getNextTechs();
+  for (auto& tech : techs) {
+    info.available.emplace_back();
+    auto& techInfo = info.available.back();
+    techInfo.id = tech;
+    //techInfo.tutorialHighlight = tech->getTutorialHighlight();
+    techInfo.active = !info.warning && dungeonLevel.numResearchAvailable() > 0;
+    techInfo.description = technology.techs.at(tech).description;
+  }
+  for (auto& tech : collective->getTechnology().researched) {
+    info.researched.emplace_back();
+    auto& techInfo = info.researched.back();
+    techInfo.id = tech;
+    techInfo.description = technology.techs.at(tech).description;
   }
 }
 
@@ -1741,8 +1739,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType());
       if (furniture->hasUsageType(BuiltinUsageId::STUDY) || !!workshopType)
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
-      if ((chosenWorkshop && chosenWorkshop == workshopType) ||
-          (chosenLibrary && furniture->hasUsageType(BuiltinUsageId::STUDY)))
+      if (chosenWorkshop && chosenWorkshop == workshopType)
         index.setHighlight(HighlightType::CLICKED_FURNITURE);
       if (draggedCreature)
         if (Creature* c = getCreature(*draggedCreature))
@@ -1925,15 +1922,8 @@ void PlayerControl::setChosenTeam(optional<TeamId> team, optional<UniqueEntity<C
 
 void PlayerControl::clearChosenInfo() {
   setChosenWorkshop(none);
-  setChosenLibrary(false);
   chosenCreature = none;
   chosenTeam = none;
-}
-
-void PlayerControl::setChosenLibrary(bool state) {
-  if (state)
-    clearChosenInfo();
-  chosenLibrary = state;
 }
 
 void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
@@ -1950,23 +1940,30 @@ void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
   refreshHighlights();
 }
 
-void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info) {
+void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info, bool creatureGroup) {
   PROFILE;
   Position pos(info.pos, getCurrentLevel());
-  if (Creature* c = getCreature(info.creatureId)) {
-    c->removeEffect(LastingEffect::TIED_UP);
-    c->removeEffect(LastingEffect::SLEEP);
-    if (auto furniture = collective->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
-      if (auto task = collective->getMinionActivities().getActivityFor(collective, c, furniture->getFurnitureType())) {
-        if (collective->isActivityGood(c, *task, true)) {
-          collective->setMinionActivity(c, *task);
-          collective->setTask(c, Task::goTo(pos));
-          return;
+  if (Creature* dropped = getCreature(info.creatureId)) {
+    auto handle = [&] (Creature* c) {
+      c->removeEffect(LastingEffect::TIED_UP);
+      c->removeEffect(LastingEffect::SLEEP);
+      if (auto furniture = collective->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
+        if (auto task = collective->getMinionActivities().getActivityFor(collective, c, furniture->getFurnitureType())) {
+          if (collective->isActivityGood(c, *task, true)) {
+            collective->setMinionActivity(c, *task);
+            collective->setTask(c, Task::goTo(pos));
+            return;
+          }
         }
-      }
-    PTask task = Task::goToAndWait(pos, 15_visible);
-    task->setViewId(ViewId("guard_post"));
-    collective->setTask(c, std::move(task));
+      PTask task = Task::goToAndWait(pos, 15_visible);
+      task->setViewId(ViewId("guard_post"));
+      collective->setTask(c, std::move(task));
+    };
+    if (creatureGroup)
+      for (auto c : getMinionsLike(dropped))
+        handle(c);
+    else
+      handle(dropped);
     pos.setNeedsRenderUpdate(true);
   }
 }
@@ -2066,7 +2063,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
           pos.first.setNeedsRenderUpdate(true);
       break;
     case UserInputId::CREATURE_DRAG_DROP:
-      minionDragAndDrop(input.get<CreatureDropInfo>());
+      minionDragAndDrop(input.get<CreatureDropInfo>(), false);
+      draggedCreature = none;
+      break;
+    case UserInputId::CREATURE_GROUP_DRAG_ON_MAP:
+      minionDragAndDrop(input.get<CreatureDropInfo>(), true);
       draggedCreature = none;
       break;
     case UserInputId::TEAM_DRAG_DROP: {
@@ -2113,7 +2114,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DRAW_WORLD_MAP: getGame()->presentWorldmap(); break;
-    case UserInputId::TECHNOLOGY: setChosenLibrary(!chosenLibrary); break;
     case UserInputId::KEEPEROPEDIA: Encyclopedia(buildInfo, getGame()->getContentFactory()->getCreatures().getSpellSchools(),
           getGame()->getContentFactory()->getCreatures().getSpells(), collective->getTechnology()).present(view);
       break;
@@ -2195,9 +2195,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::LIBRARY_ADD:
       acquireTech(input.get<TechId>());
-      break;
-    case UserInputId::LIBRARY_CLOSE:
-      setChosenLibrary(false);
       break;
     case UserInputId::CREATURE_GROUP_BUTTON:
       if (Creature* c = getCreature(input.get<Creature::Id>()))
@@ -2669,12 +2666,9 @@ void PlayerControl::onSquareClick(Position pos) {
       if (furniture->getClickType()) {
         furniture->click(pos); // this can remove the furniture
         updateSquareMemory(pos);
-      } else {
-        if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType()))
-          setChosenWorkshop(*workshopType);
-        if (furniture->hasUsageType(BuiltinUsageId::STUDY))
-          setChosenLibrary(!chosenLibrary);
-      }
+      } else
+      if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType()))
+        setChosenWorkshop(*workshopType);
     }
   }
 }
@@ -2700,6 +2694,59 @@ const vector<Vec2>& PlayerControl::getUnknownLocations(WConstLevel) const {
 
 optional<Vec2> PlayerControl::getSelectionSize() const {
   return rectSelection.map([](const SelectionInfo& s) { return s.corner1 - s.corner2; });
+}
+
+static optional<vector<Vec2>> getCreaturePath(Creature* c, Vec2 target, Level* level) {
+  auto movement = c->getMovementType();
+  auto from = c->getPosition();
+  auto to = Position(target, level);
+  if (from.getLevel() != level) {
+    if (auto stairs = to.getStairsTo(from))
+      from = *stairs;
+    else
+      return none;
+  }
+  LevelShortestPath path(from, movement, to, 0);
+  return path.getPath().transform([](auto& pos) { return pos.getCoord(); });
+};
+
+vector<vector<Vec2>> PlayerControl::getPathTo(UniqueEntity<Creature>::Id id, Vec2 v, bool group) const {
+  vector<vector<Vec2>> ret;
+  auto level = getCurrentLevel();
+  if (auto creature = getCreature(id)) {
+    if (group) {
+      for (auto c : getMinionsLike(creature))
+        if (auto path = getCreaturePath(c, v, level))
+          ret.push_back(*path);
+    } else
+    if (auto path = getCreaturePath(creature, v, level))
+      ret.push_back(*path);
+  }
+  return ret;
+}
+
+vector<vector<Vec2>> PlayerControl::getTeamPathTo(TeamId teamId, Vec2 v) const {
+  auto teams = getTeams();
+  auto level = getCurrentLevel();
+  vector<vector<Vec2>> ret;
+  if (teams.exists(teamId))
+    for (auto c : getTeams().getMembers(teamId))
+      if (auto path = getCreaturePath(c, v, level))
+        ret.push_back(*path);
+  return ret;
+}
+
+vector<Vec2> PlayerControl::getHighlightedPathTo(Vec2 v) const {
+  auto level = getCurrentLevel();
+  if (auto c = Position(v, level).getCreature()) {
+    auto res = c->getCurrentPath()
+        .filter([&](auto& pos) { return pos.getLevel() == level; } )
+        .transform([&](auto& pos) { return pos.getCoord(); } );
+    if (res.size() > 1)
+      res.pop_back();
+    return res;
+  }
+  return {};
 }
 
 void PlayerControl::addToMemory(Position pos) {

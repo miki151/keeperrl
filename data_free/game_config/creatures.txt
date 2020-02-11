@@ -1275,6 +1275,13 @@
       name = "friar"
     }
   }
+"FATHER_OBLIVION" inherit "FRIAR"
+  {
+    name = {
+      name = "Father O'Blivion"
+      fullTitle = true
+    }
+  }
 "JESTER"
   {
     viewId = { "jester" }
@@ -3531,6 +3538,7 @@
       DEFENSE 50 
       SPELL_DAMAGE 60
     }
+    courage = 100
     body = {
       type = NonHumanoid HUGE
       bodyParts = {

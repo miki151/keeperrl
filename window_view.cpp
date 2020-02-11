@@ -477,7 +477,9 @@ vector<SGuiElem> WindowView::getClickableGuiElems() {
   CHECK(currentThreadId() == renderThreadId);
   if (gameInfo.infoType == GameInfo::InfoType::SPECTATOR)
     return {mapGui};
-  vector<SGuiElem> ret = concat(tempGuiElems, blockingElems);
+  if (!blockingElems.empty())
+    return blockingElems.reverse();
+  vector<SGuiElem> ret = tempGuiElems;
   std::reverse(ret.begin(), ret.end());
   if (gameReady) {
     ret.push_back(minimapDecoration);
@@ -592,7 +594,7 @@ void WindowView::drawMap() {
   Vec2 mousePos = renderer.getMousePos();
   if (GuiElem* dragged = gui.getDragContainer().getGui())
     if (gui.getDragContainer().getOrigin().dist8(mousePos) > 30) {
-      dragged->setBounds(Rectangle(mousePos + Vec2(15, 15), mousePos + Vec2(35, 35)));
+      dragged->setBounds(Rectangle(mousePos + Vec2(15, 25), mousePos + Vec2(35, 45)));
       dragged->render(renderer);
     }
   guiBuilder.addFpsCounterTick();
@@ -1082,7 +1084,7 @@ optional<int> WindowView::chooseFromListInternal(const string& title, const vect
     renderer.drawAndClearBuffer();
     Event event;
     while (renderer.pollEvent(event)) {
-      propagateEvent(event, concat({stuff}, getClickableGuiElems()));
+      propagateEvent(event, {stuff});
       if (choice > -1) {
         CHECK(choice < indexes.size()) << choice;
         return indexes[choice];
@@ -1275,6 +1277,10 @@ void WindowView::processEvents() {
       case SDL::SDL_KEYDOWN:
         if (gameInfo.infoType == GameInfo::InfoType::PLAYER)
           renderer.flushEvents(SDL::SDL_KEYDOWN);
+        break;
+      case SDL::SDL_MOUSEBUTTONDOWN:
+        if (event.button.button == SDL_BUTTON_RIGHT)
+          gui.getDragContainer().pop();
         break;
       case SDL::SDL_MOUSEBUTTONUP:
         if (event.button.button == SDL_BUTTON_LEFT) {

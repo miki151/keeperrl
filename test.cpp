@@ -213,7 +213,7 @@ class Test {
     a.clear();
     for (int x : Range(2, 6))
       a.push_back(x);
-    CHECKEQ(getSubsequence(b, 2, 4), a);
+    CHECKEQ(b.getSubsequence(2, 4), a);
     a.clear();
     for (int x : All(b))
       a.push_back(x);
@@ -229,7 +229,7 @@ class Test {
     a.clear();
     for (int x : Range(1, 5).reverse())
       a.push_back(x);
-    CHECKEQ(getSubsequence(b, 2, 4), a);
+    CHECKEQ(b.getSubsequence(2, 4), a);
     a.clear();
     for (int x : All(b)) {
       a.push_back(b[x]);

@@ -440,6 +440,18 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     auto contentFactory = createContentFactory(false);
     if (tileSet)
       tileSet->setTilePaths(contentFactory.tilePaths);
+    if (options->getIntValue(OptionId::SUGGEST_TUTORIAL) == 1) {
+      auto tutorialIndex = view->chooseFromList("", {ListElem("Would you like to start with the tutorial?", ListElem::TITLE),
+          ListElem("Yes"), ListElem("No"), ListElem("No, and don't ask me again")}, 0, MenuType::YES_NO);
+      if (tutorialIndex == 0) {
+        auto contentFactory2 = createContentFactory(true);
+        if (auto ret = prepareTutorial(&contentFactory2))
+          return ret;
+      } else
+      if (tutorialIndex == 2) {
+        options->setValue(OptionId::SUGGEST_TUTORIAL, 0);
+      }
+    }
     auto avatarChoice = getAvatarInfo(view, contentFactory.keeperCreatures, contentFactory.adventurerCreatures,
         &contentFactory);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {

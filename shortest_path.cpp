@@ -253,13 +253,12 @@ Vec2 ShortestPath::getTarget() const {
   return target;
 }
 
-ShortestPath LevelShortestPath::makeShortestPath(const Creature* creature, Position to, double mult, vector<Vec2>* visited) {
+ShortestPath LevelShortestPath::makeShortestPath(Position from, MovementType movementType, Position to, double mult,
+    vector<Vec2>* visited) {
   PROFILE;
-  auto from = creature->getPosition();
   WLevel level = from.getLevel();
   Rectangle bounds = level->getBounds();
   CHECK(to.isSameLevel(from));
-  auto movementType = creature->getMovementType();
   auto& sectors = level->getSectors(movementType);
   auto& movementSectors = level->getSectors(copyOf(movementType).setCanBuildBridge(false).setDestroyActions({}));
   auto entryFun = [=, &sectors, &movementSectors, fromCoord = from.getCoord()](Vec2 v) {
@@ -308,8 +307,11 @@ SERIALIZE_DEF(LevelShortestPath, path, level)
 SERIALIZATION_CONSTRUCTOR_IMPL(LevelShortestPath);
 
 
-LevelShortestPath::LevelShortestPath(const Creature* creature, Position to, double mult, vector<Vec2>* visited)
-    : path(makeShortestPath(creature, to, mult, visited)), level(to.getLevel()) {
+LevelShortestPath::LevelShortestPath(const Creature* creature, Position target, double mult, vector<Vec2>* visited)
+    : LevelShortestPath(creature->getPosition(), creature->getMovementType(), target, mult, visited) {}
+
+LevelShortestPath::LevelShortestPath(Position from, MovementType type, Position to, double mult, vector<Vec2>* visited)
+    : path(makeShortestPath(from, type, to, mult, visited)), level(to.getLevel()) {
 }
 
 WLevel LevelShortestPath::getLevel() const {

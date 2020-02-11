@@ -822,7 +822,7 @@ class RandomGen {
   vector<T> chooseN(int n, vector<T> v) {
     CHECK(n <= v.size());
     std::random_shuffle(v.begin(), v.end(), [this](int a) { return get(a);});
-    return getPrefix(v, n);
+    return v.getPrefix(n);
   }
 
   template <typename T>
@@ -1061,32 +1061,6 @@ map<V, vector<T> > groupBy(const vector<T>& values, function<V (const T&)> getKe
   for (const T& elem : values)
     ret[getKey(elem)].push_back(elem);
   return ret;
-}
-
-template <typename T>
-vector<T> getSubsequence(const vector<T>& v, int start, int length) {
-  CHECK(start >= 0 && length >= 0);
-  length = min(length, v.size() - start);
-  vector<T> ret;
-  ret.reserve(length);
-  for (int i : Range(start, start + length))
-    ret.push_back(v[i]);
-  return ret;
-}
-
-template <typename T>
-vector<T> getPrefix(const vector<T>& v, int num) {
-  return getSubsequence(v, 0, num);
-}
-
-template <typename T>
-vector<T> getPrefixOrAll(const vector<T>& v, int num) {
-  return getSubsequence(v, 0, min((int)v.size(), num));
-}
-
-template <typename T>
-vector<T> getSuffix(const vector<T>& v, int num) {
-  return getSubsequence(v, v.size() - num, num);
 }
 
 template <typename Fun>

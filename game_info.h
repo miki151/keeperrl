@@ -303,7 +303,7 @@ class CollectiveInfo {
     vector<TechInfo> HASH(researched);
     HASH_ALL(currentProgress, totalProgress, warning, available, researched)
   };
-  optional<LibraryInfo> HASH(libraryInfo);
+  LibraryInfo HASH(libraryInfo);
   struct Resource {
     ViewId HASH(viewId);
     int HASH(count);

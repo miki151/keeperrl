@@ -241,6 +241,23 @@ void Renderer::drawFilledRectangle(const Rectangle& t, Color color, optional<Col
   SDL::glEnd();
 }
 
+void Renderer::drawLine(Vec2 from, Vec2 to, Color color, double width) {
+  renderDeferredSprites();
+  SDL::glBegin(GL_QUADS);
+  double dx = to.x - from.x;
+  double dy = to.y - from.y;
+  double length = sqrt(dx * dx + dy * dy);
+  dx /= length;
+  dy /= length;
+  glColor(color);
+  width /= 2;
+  SDL::glVertex2d(from.x + dy * width, from.y - dx * width);
+  SDL::glVertex2d(to.x + dy * width, to.y - dx * width);
+  SDL::glVertex2d(to.x - dy * width, to.y + dx * width);
+  SDL::glVertex2d(from.x - dy * width, from.y + dx * width);
+  SDL::glEnd();
+}
+
 void Renderer::drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline) {
   drawFilledRectangle(Rectangle(px, py, kx, ky), color, outline);
 }

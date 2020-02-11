@@ -294,7 +294,7 @@ void VillageControl::update(bool currentlyActive) {
             << (!collective->getTeams().getAll().empty() ? " attacking " : "");*/
         if (fighters.size() >= behaviour->minTeamSize &&
             allMembers.size() >= behaviour->minPopulation + behaviour->minTeamSize)
-        launchAttack(getPrefix(Random.permutation(fighters),
+        launchAttack(Random.permutation(fighters).getPrefix(
           Random.get(behaviour->minTeamSize, min(fighters.size(), allMembers.size() - behaviour->minPopulation) + 1)));
       }
     }

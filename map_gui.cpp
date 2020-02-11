@@ -319,7 +319,7 @@ bool MapGui::onMouseMove(Vec2 v) {
     considerContinuousLeftClick(v);
   if (!draggedCreature && draggedCandidate && mouseHeldPos && mouseHeldPos->distD(v) > 30) {
     inputQueue.push(UserInput(UserInputId::CREATURE_DRAG, draggedCandidate->id));
-    setDraggedCreature(draggedCandidate->id, draggedCandidate->viewId, v);
+    setDraggedCreature(draggedCandidate->id, draggedCandidate->viewId, v, DragContentId::CREATURE);
   }
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->getSquareSize().x;
@@ -356,6 +356,11 @@ void MapGui::onMouseRelease(Vec2 v) {
   if (auto& draggedElem = guiFactory->getDragContainer().getElement())
     if (v.inRectangle(getBounds()) && guiFactory->getDragContainer().getOrigin().distD(v) > 10) {
       switch (draggedElem->getId()) {
+        case DragContentId::CREATURE_GROUP:
+          inputQueue.push(UserInput(UserInputId::CREATURE_GROUP_DRAG_ON_MAP,
+             CreatureDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v),
+                 draggedElem->get<UniqueEntity<Creature>::Id>()}));
+          break;
         case DragContentId::CREATURE:
           inputQueue.push(UserInput(UserInputId::CREATURE_DRAG_DROP,
              CreatureDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v),
@@ -613,7 +618,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   else if (tile.translucent > 0)
     color = color.transparency(255 * (1 - tile.translucent));
   else if (object.hasModifier(ViewObject::Modifier::ILLUSION))
-      color = color.transparency(150);
+    color = color.transparency(150);
   if (object.hasModifier(ViewObject::Modifier::PLANNED))
     color = color.transparency(100);
   if (object.hasModifier(ViewObject::Modifier::BLOODY))
@@ -1065,12 +1070,13 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
         renderExtraBorders(renderer, currentTimeReal);
       if (layer == ViewLayer::FLOOR_BACKGROUND)
         renderHighlights(renderer, size, currentTimeReal, true);
+      if (layer == ViewLayer::FLOOR)
+        renderShortestPaths(renderer, size);
       if (layer == ViewLayer::FLOOR && fxViewManager)
         fxViewManager->drawUnorderedBackFX(renderer);
       if (!spriteMode)
         break;
     }
-
   for (ViewLayer layer : layout->getLayers())
     if ((int)layer >= (int)ViewLayer::CREATURE) {
       for (Vec2 wpos : allTiles) {
@@ -1099,7 +1105,22 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
     fxViewManager->finishFrame();
     fxViewManager->drawUnorderedFrontFX(renderer);
   }
+}
 
+void MapGui::renderShortestPaths(Renderer& renderer, Vec2 tileSize) {
+  for (auto& path : shortestPath)
+    for (int i : All(path)) {
+      auto handle = [&] (Vec2 coord) {
+        auto color = Color::WHITE.transparency(100);
+        if (path[i].inRectangle(objects.getBounds()))
+          if (auto index = objects[path[i]])
+            color = blendNightColor(color, *index);
+        renderer.drawFilledRectangle(Rectangle::centered(coord, tileSize.x / Renderer::nominalSize), color);
+      };
+      handle(projectOnScreen(path[i]) + tileSize / 2);
+      if (i > 0)
+        handle((projectOnScreen(path[i]) + projectOnScreen(path[i - 1]) + tileSize) / 2);
+    }
 }
 
 void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color, const ViewIndex& index) {
@@ -1157,6 +1178,7 @@ void MapGui::processScrolling(milliseconds time) {
 optional<UniqueEntity<Creature>::Id> MapGui::getDraggedCreature() const {
   if (auto draggedContent = guiFactory->getDragContainer().getElement())
     switch (draggedContent->getId()) {
+      case DragContentId::CREATURE_GROUP:
       case DragContentId::CREATURE:
         return draggedContent->get<UniqueEntity<Creature>::Id>();
       default:
@@ -1165,8 +1187,8 @@ optional<UniqueEntity<Creature>::Id> MapGui::getDraggedCreature() const {
   return none;
 }
 
-void MapGui::setDraggedCreature(UniqueEntity<Creature>::Id id, ViewId viewId, Vec2 origin) {
-  guiFactory->getDragContainer().put({DragContentId::CREATURE, id}, guiFactory->viewObject(viewId), origin);
+void MapGui::setDraggedCreature(UniqueEntity<Creature>::Id id, ViewId viewId, Vec2 origin, DragContentId dragId) {
+  guiFactory->getDragContainer().put({dragId, id}, guiFactory->viewObject(viewId), origin);
 }
 
 void MapGui::considerScrollingToCreature() {
@@ -1292,6 +1314,29 @@ double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
   return ret;
 }
 
+void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer, Vec2 tileSize, milliseconds curTimeReal) {
+  shortestPath.clear();
+  if (auto pos = projectOnMap(renderer.getMousePos())) {
+    auto highlightedInfo = getHighlightedInfo(tileSize, curTimeReal);
+    if (highlightedInfo.tilePos) {
+      auto highlightedPath = view->getHighlightedPathTo(*highlightedInfo.tilePos);
+        if (!highlightedPath.empty())
+          shortestPath.push_back(highlightedPath);
+    }
+    if (auto draggedContent = guiFactory->getDragContainer().getElement())
+      switch (draggedContent->getId()) {
+        case DragContentId::CREATURE_GROUP:
+        case DragContentId::CREATURE:
+          shortestPath = view->getPathTo(draggedContent->get<UniqueEntity<Creature>::Id>(), *pos,
+              guiFactory->getDragContainer().getElement()->getId() == DragContentId::CREATURE_GROUP);
+          break;
+        case DragContentId::TEAM:
+          shortestPath = view->getTeamPathTo(draggedContent->get<TeamId>(), *pos);
+          break;
+      }
+  }
+}
+
 void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* mapLayout, bool smoothMovement, bool ui,
     const optional<TutorialInfo>& tutorial) {
   selectionSize = view->getSelectionSize();
@@ -1307,6 +1352,7 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
   mouseUI = ui;
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
+  updateShortestPaths(view, renderer, layout->getSquareSize(), currentTimeReal);
   // hacky way to detect that we're switching between real-time and turn-based and not between
   // team members in turn-based mode.
   bool newView = (view->getCenterType() != previousView);

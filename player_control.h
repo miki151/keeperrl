@@ -108,6 +108,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual CenterType getCenterType() const override;
   virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const override;
   virtual optional<Vec2> getSelectionSize() const override;
+  virtual vector<vector<Vec2>> getPathTo(UniqueEntity<Creature>::Id, Vec2, bool group) const override;
+  virtual vector<vector<Vec2>> getTeamPathTo(TeamId, Vec2) const override;
+  virtual vector<Vec2> getHighlightedPathTo(Vec2) const override;
 
   // from CollectiveControl
   virtual void addAttack(const CollectiveAttack&) override;
@@ -164,7 +167,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   int getNumMinions() const;
   void minionTaskAction(const TaskActionInfo&);
-  void minionDragAndDrop(const CreatureDropInfo&);
+  void minionDragAndDrop(const CreatureDropInfo&, bool creatureGroup);
   void fillMinions(CollectiveInfo&) const;
   vector<Creature*> getMinionsLike(Creature*) const;
   vector<PlayerInfo> getPlayerInfos(vector<Creature*>, UniqueEntity<Creature>::Id chosenId) const;
@@ -207,7 +210,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void setChosenTeam(optional<TeamId>, optional<UniqueEntity<Creature>::Id> = none);
   optional<TeamId> chosenTeam;
   void clearChosenInfo();
-  bool chosenLibrary = false;
   string getMinionName(CreatureId) const;
   vector<PlayerMessage> SERIAL(messages);
   vector<PlayerMessage> SERIAL(messageHistory);
@@ -224,7 +226,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<UniqueEntity<Creature>::Id> draggedCreature;
   void updateMinionVisibility(const Creature*);
   STutorial SERIAL(tutorial);
-  void setChosenLibrary(bool);
   void acquireTech(TechId);
   SMessageBuffer SERIAL(controlModeMessages);
   unordered_set<int> dismissedNextWaves;

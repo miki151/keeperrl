@@ -692,8 +692,8 @@ class River : public LevelMaker {
 
 class MountainRiver : public LevelMaker {
   public:
-  MountainRiver(int num, Predicate startPred, optional<FurnitureType> waterType)
-    : number(num), startPredicate(startPred), waterType(waterType) {}
+  MountainRiver(int num, Predicate startPred, optional<FurnitureType> waterType, FurnitureType sandType)
+    : number(num), startPredicate(startPred), waterType(waterType), sandType(sandType) {}
 
   optional<Vec2> fillLake(LevelBuilder* builder, set<Vec2>& waterTiles, Rectangle area, Vec2 pos) {
     vector<Vec2> ret;
@@ -763,20 +763,19 @@ class MountainRiver : public LevelMaker {
   }
 
   FurnitureType getWaterType(LevelBuilder* builder, Vec2 pos, int numLayer) {
-    if (waterType)
-      return *waterType;
     if (builder->hasAttrib(pos, SquareAttrib::MOUNTAIN))
-      return builder->getContentFactory()->furniture.getWaterType(100);
+      return waterType.value_or(builder->getContentFactory()->furniture.getWaterType(100));
     else if (numLayer == 0)
-      return FurnitureType("SAND");
+      return sandType;
     else
-      return builder->getContentFactory()->furniture.getWaterType(1.1 * (numLayer - 1));
+      return waterType.value_or(builder->getContentFactory()->furniture.getWaterType(1.1 * (numLayer - 1)));
   }
 
   private:
   int number;
   Predicate startPredicate;
   optional<FurnitureType> waterType;
+  FurnitureType sandType;
 };
 
 class Blob : public LevelMaker {
@@ -2818,7 +2817,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
   int mapBorder = 2;
   queue->addMaker(unique<Empty>(FurnitureType("WATER")));
   queue->addMaker(getMountains(biomeInfo.mountains, keeperTribe.value_or(TribeId::getHostile())));
-  queue->addMaker(unique<MountainRiver>(1, Predicate::attrib(SquareAttrib::MOUNTAIN), biomeInfo.overrideWaterType));
+  queue->addMaker(unique<MountainRiver>(1, Predicate::attrib(SquareAttrib::MOUNTAIN), biomeInfo.overrideWaterType,
+      biomeInfo.sandType));
   queue->addMaker(unique<AddAttrib>(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::LOWLAND)));
   queue->addMaker(unique<AddAttrib>(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::HILL)));
   queue->addMaker(getForrest(biomeInfo));
