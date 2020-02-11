@@ -138,6 +138,7 @@ class MapGui : public GuiElem {
   optional<Vec2> mouseHeldPos;
   optional<CreatureInfo> draggedCandidate;
   optional<Vec2> lastMapLeftClick;
+  vector<vector<Vec2>> shortestPath;
   struct AnimationInfo {
     PAnimation animation;
     Vec2 position;
@@ -210,4 +211,6 @@ class MapGui : public GuiElem {
   void drawFurnitureCracks(Renderer&, Vec2 tilePos, float state, Vec2 pos, Vec2 size, const ViewIndex& index);
   optional<Vec2> selectionSize;
   void fxHighlight(Renderer&, const FXInfo&, Vec2 tilePos, const ViewIndex&);
+  void renderShortestPaths(Renderer&, Vec2 tileSize);
+  void updateShortestPaths(CreatureView*, Renderer&);
 };

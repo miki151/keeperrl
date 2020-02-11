@@ -96,6 +96,7 @@
 #include "special_trait.h"
 #include "user_input.h"
 #include "automaton_part.h"
+#include "shortest_path.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -2711,6 +2712,32 @@ const vector<Vec2>& PlayerControl::getUnknownLocations(WConstLevel) const {
 
 optional<Vec2> PlayerControl::getSelectionSize() const {
   return rectSelection.map([](const SelectionInfo& s) { return s.corner1 - s.corner2; });
+}
+
+vector<vector<Vec2>> PlayerControl::getPathTo(UniqueEntity<Creature>::Id id, Vec2 v, bool group) const {
+  vector<vector<Vec2>> ret;
+  auto handleCreature = [&](Creature* c) {
+    auto movement = c->getMovementType();
+    auto from = c->getPosition();
+    auto level = getCurrentLevel();
+    auto to = Position(v, level);
+    if (from.getLevel() != level) {
+      if (auto stairs = to.getStairsTo(from))
+        from = *stairs;
+      else
+        return;
+    }
+    LevelShortestPath path(from, movement, to, 0);
+    ret.push_back(path.getPath().transform([](auto& pos) { return pos.getCoord(); }));
+  };
+  if (auto creature = getCreature(id)) {
+    if (group)
+      for (auto c : getMinionsLike(creature))
+        handleCreature(c);
+    else
+      handleCreature(creature);
+  }
+  return ret;
 }
 
 void PlayerControl::addToMemory(Position pos) {

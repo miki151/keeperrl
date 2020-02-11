@@ -618,7 +618,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
   else if (tile.translucent > 0)
     color = color.transparency(255 * (1 - tile.translucent));
   else if (object.hasModifier(ViewObject::Modifier::ILLUSION))
-      color = color.transparency(150);
+    color = color.transparency(150);
   if (object.hasModifier(ViewObject::Modifier::PLANNED))
     color = color.transparency(100);
   if (object.hasModifier(ViewObject::Modifier::BLOODY))
@@ -1070,12 +1070,13 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
         renderExtraBorders(renderer, currentTimeReal);
       if (layer == ViewLayer::FLOOR_BACKGROUND)
         renderHighlights(renderer, size, currentTimeReal, true);
+      if (layer == ViewLayer::FLOOR)
+        renderShortestPaths(renderer, size);
       if (layer == ViewLayer::FLOOR && fxViewManager)
         fxViewManager->drawUnorderedBackFX(renderer);
       if (!spriteMode)
         break;
     }
-
   for (ViewLayer layer : layout->getLayers())
     if ((int)layer >= (int)ViewLayer::CREATURE) {
       for (Vec2 wpos : allTiles) {
@@ -1104,7 +1105,22 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
     fxViewManager->finishFrame();
     fxViewManager->drawUnorderedFrontFX(renderer);
   }
+}
 
+void MapGui::renderShortestPaths(Renderer& renderer, Vec2 tileSize) {
+  for (auto& path : shortestPath)
+    for (int i : All(path)) {
+      auto handle = [&] (Vec2 coord) {
+        auto color = Color::WHITE;
+        if (path[i].inRectangle(objects.getBounds()))
+          if (auto index = objects[path[i]])
+            color = blendNightColor(Color::WHITE, *index);
+        renderer.drawFilledRectangle(Rectangle::centered(coord, 2), color);
+      };
+      handle(projectOnScreen(path[i]) + tileSize / 2);
+      if (i > 0)
+        handle((projectOnScreen(path[i]) + projectOnScreen(path[i - 1]) + tileSize) / 2);
+    }
 }
 
 void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color, const ViewIndex& index) {
@@ -1298,8 +1314,17 @@ double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
   return ret;
 }
 
+void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer) {
+  shortestPath.clear();
+  if (auto id = getDraggedCreature())
+    if (auto pos = projectOnMap(renderer.getMousePos()))
+      shortestPath = view->getPathTo(*id, *pos,
+          guiFactory->getDragContainer().getElement()->getId() == DragContentId::CREATURE_GROUP);
+}
+
 void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* mapLayout, bool smoothMovement, bool ui,
     const optional<TutorialInfo>& tutorial) {
+  updateShortestPaths(view, renderer);
   selectionSize = view->getSelectionSize();
   if (tutorial) {
     tutorialHighlightLow = tutorial->highlightedSquaresLow;
