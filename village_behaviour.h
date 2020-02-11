@@ -12,6 +12,8 @@ class VillageBehaviour {
   VillageBehaviour();
   VillageBehaviour(const VillageBehaviour&);
   VillageBehaviour& operator = (const VillageBehaviour&);
+  VillageBehaviour(VillageBehaviour&&) noexcept;
+  VillageBehaviour& operator = (VillageBehaviour&&) noexcept;
 
   enum class WelcomeMessage;
 

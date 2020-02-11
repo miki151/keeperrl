@@ -18,6 +18,8 @@ VillageBehaviour::VillageBehaviour() {}
 
 VillageBehaviour::VillageBehaviour(const VillageBehaviour&) = default;
 VillageBehaviour& VillageBehaviour::operator =(const VillageBehaviour&) = default;
+VillageBehaviour::VillageBehaviour(VillageBehaviour&&) noexcept = default;
+VillageBehaviour& VillageBehaviour::operator =(VillageBehaviour&&) noexcept = default;
 
 VillageBehaviour::~VillageBehaviour() {}
 

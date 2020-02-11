@@ -1483,7 +1483,7 @@ class HeapAllocated {
     return *this;
   }
 
-  HeapAllocated& operator = (HeapAllocated&& t) {
+  HeapAllocated& operator = (HeapAllocated&& t) noexcept {
     elem = std::move(t.elem);
     return *this;
   }
