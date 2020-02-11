@@ -1111,11 +1111,11 @@ void MapGui::renderShortestPaths(Renderer& renderer, Vec2 tileSize) {
   for (auto& path : shortestPath)
     for (int i : All(path)) {
       auto handle = [&] (Vec2 coord) {
-        auto color = Color::WHITE;
+        auto color = Color::WHITE.transparency(100);
         if (path[i].inRectangle(objects.getBounds()))
           if (auto index = objects[path[i]])
-            color = blendNightColor(Color::WHITE, *index);
-        renderer.drawFilledRectangle(Rectangle::centered(coord, 2), color);
+            color = blendNightColor(color, *index);
+        renderer.drawFilledRectangle(Rectangle::centered(coord, tileSize.x / Renderer::nominalSize), color);
       };
       handle(projectOnScreen(path[i]) + tileSize / 2);
       if (i > 0)
@@ -1314,9 +1314,15 @@ double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
   return ret;
 }
 
-void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer) {
+void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer, Vec2 tileSize, milliseconds curTimeReal) {
   shortestPath.clear();
-  if (auto pos = projectOnMap(renderer.getMousePos()))
+  if (auto pos = projectOnMap(renderer.getMousePos())) {
+    auto highlightedInfo = getHighlightedInfo(tileSize, curTimeReal);
+    if (highlightedInfo.tilePos) {
+      auto highlightedPath = view->getHighlightedPathTo(*highlightedInfo.tilePos);
+        if (!highlightedPath.empty())
+          shortestPath.push_back(highlightedPath);
+    }
     if (auto draggedContent = guiFactory->getDragContainer().getElement())
       switch (draggedContent->getId()) {
         case DragContentId::CREATURE_GROUP:
@@ -1328,11 +1334,11 @@ void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer) {
           shortestPath = view->getTeamPathTo(draggedContent->get<TeamId>(), *pos);
           break;
       }
+  }
 }
 
 void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* mapLayout, bool smoothMovement, bool ui,
     const optional<TutorialInfo>& tutorial) {
-  updateShortestPaths(view, renderer);
   selectionSize = view->getSelectionSize();
   if (tutorial) {
     tutorialHighlightLow = tutorial->highlightedSquaresLow;
@@ -1346,6 +1352,7 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
   mouseUI = ui;
   layout = mapLayout;
   auto currentTimeReal = clock->getRealMillis();
+  updateShortestPaths(view, renderer, layout->getSquareSize(), currentTimeReal);
   // hacky way to detect that we're switching between real-time and turn-based and not between
   // team members in turn-based mode.
   bool newView = (view->getCenterType() != previousView);

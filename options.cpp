@@ -389,7 +389,7 @@ void Options::readValues() {
         optionId = *id;
       else
         continue;
-      if (auto val = readValue(optionId, getSuffix(p, p.size() - 1))) {
+      if (auto val = readValue(optionId, p.getSuffix(p.size() - 1))) {
         if ((optionId == OptionId::SOUND || optionId == OptionId::MUSIC) && *val == 1)
           *val = 100;
         (*values)[optionId] = *val;

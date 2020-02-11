@@ -521,7 +521,7 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel)
   };
   vector<steam::ItemInfo> infos;
   for (int i = 0; i < items.size(); i += steam::UGC::maxItemsPerPage)
-    infos.append(getForPage(getSubsequence(items, i, steam::UGC::maxItemsPerPage)));
+    infos.append(getForPage(items.getSubsequence(i, steam::UGC::maxItemsPerPage)));
   for (auto& info : infos)
     friends.requestUserInfo(info.ownerId, true);
   vector<optional<string>> ownerNames(infos.size());

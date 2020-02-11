@@ -127,7 +127,7 @@ class MapGui : public GuiElem {
   };
   optional<CreatureInfo> getCreature(Vec2 mousePos);
   void considerContinuousLeftClick(Vec2 mousePos);
-  MapLayout* layout;
+  MapLayout* layout = nullptr;
   Table<optional<ViewIndex>> objects;
   bool spriteMode;
   Rectangle levelBounds = Rectangle(1, 1);
@@ -212,5 +212,5 @@ class MapGui : public GuiElem {
   optional<Vec2> selectionSize;
   void fxHighlight(Renderer&, const FXInfo&, Vec2 tilePos, const ViewIndex&);
   void renderShortestPaths(Renderer&, Vec2 tileSize);
-  void updateShortestPaths(CreatureView*, Renderer&);
+  void updateShortestPaths(CreatureView*, Renderer&, Vec2 tileSize, milliseconds curTimeReal);
 };

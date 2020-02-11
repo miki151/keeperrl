@@ -46,6 +46,7 @@ class CreatureView {
   virtual optional<Vec2> getSelectionSize() const { return none; }
   virtual vector<vector<Vec2>> getPathTo(UniqueEntity<Creature>::Id, Vec2, bool group) const { return {}; }
   virtual vector<vector<Vec2>> getTeamPathTo(TeamId, Vec2) const { return {}; }
+  virtual vector<Vec2> getHighlightedPathTo(Vec2) const { return {}; }
   virtual ~CreatureView() {}
 };
 

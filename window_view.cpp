@@ -592,7 +592,7 @@ void WindowView::drawMap() {
   Vec2 mousePos = renderer.getMousePos();
   if (GuiElem* dragged = gui.getDragContainer().getGui())
     if (gui.getDragContainer().getOrigin().dist8(mousePos) > 30) {
-      dragged->setBounds(Rectangle(mousePos + Vec2(15, 15), mousePos + Vec2(35, 35)));
+      dragged->setBounds(Rectangle(mousePos + Vec2(15, 25), mousePos + Vec2(35, 45)));
       dragged->render(renderer);
     }
   guiBuilder.addFpsCounterTick();

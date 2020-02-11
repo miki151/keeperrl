@@ -173,7 +173,7 @@ void Player::pickUpItemAction(int numStack, bool multi) {
           Range(1, items.size()), 1);
       if (!num)
         return;
-      items = getPrefix(items, *num);
+      items = items.getPrefix(*num);
     }
     tryToPerform(creature->pickUp(items));
   }
@@ -272,7 +272,7 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
     case ItemAction::DROP_MULTI:
       if (auto num = getView()->getNumber("Drop how many " + items[0]->getName(true) + "?",
           Range(1, items.size()), 1))
-        tryToPerform(creature->drop(getPrefix(items, *num)));
+        tryToPerform(creature->drop(items.getPrefix(*num)));
       break;
     case ItemAction::THROW: throwItem(items[0]); break;
     case ItemAction::APPLY: applyItem(items); break;
@@ -360,7 +360,7 @@ void Player::payForItemAction(const vector<Item*>& items) {
     privateMessage("You don't have enough gold to pay.");
   else if (canPayFor == items.size() || getView()->yesOrNoPrompt("You only have enough gold for " +
       toString(canPayFor) + " " + items[0]->getName(canPayFor > 1, creature) + ". Still pay?"))
-    tryToPerform(creature->payFor(getPrefix(items, canPayFor)));
+    tryToPerform(creature->payFor(items.getPrefix(canPayFor)));
 }
 
 void Player::payForAllItemsAction() {
@@ -385,7 +385,7 @@ void Player::giveAction(vector<Item*> items) {
   PROFILE;
   if (items.size() > 1) {
     if (auto num = getView()->getNumber("Give how many " + items[0]->getName(true) + "?", Range(1, items.size()), 1))
-      items = getPrefix(items, *num);
+      items = items.getPrefix(*num);
     else
       return;
   }
@@ -1270,6 +1270,11 @@ Player::CenterType Player::getCenterType() const {
 
 const vector<Vec2>& Player::getUnknownLocations(WConstLevel level) const {
   return unknownLocations->getOnLevel(level);
+}
+
+vector<Vec2> Player::getHighlightedPathTo(Vec2 v) const {
+  LevelShortestPath path(creature, Position(v, getLevel()), 0);
+  return path.getPath().transform([](auto& pos) { return pos.getCoord(); });
 }
 
 void Player::considerKeeperModeTravelMusic() {

@@ -110,6 +110,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual optional<Vec2> getSelectionSize() const override;
   virtual vector<vector<Vec2>> getPathTo(UniqueEntity<Creature>::Id, Vec2, bool group) const override;
   virtual vector<vector<Vec2>> getTeamPathTo(TeamId, Vec2) const override;
+  virtual vector<Vec2> getHighlightedPathTo(Vec2) const override;
 
   // from CollectiveControl
   virtual void addAttack(const CollectiveAttack&) override;

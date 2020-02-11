@@ -214,6 +214,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction moveAway(Position, bool pathfinding = true);
   CreatureAction continueMoving();
   CreatureAction stayIn(WLevel, Rectangle);
+  vector<Position> getCurrentPath() const;
   bool canNavigateToOrNeighbor(Position) const;
   bool canNavigateTo(Position pos) const;
 
