@@ -1276,6 +1276,10 @@ void WindowView::processEvents() {
         if (gameInfo.infoType == GameInfo::InfoType::PLAYER)
           renderer.flushEvents(SDL::SDL_KEYDOWN);
         break;
+      case SDL::SDL_MOUSEBUTTONDOWN:
+        if (event.button.button == SDL_BUTTON_RIGHT)
+          gui.getDragContainer().pop();
+        break;
       case SDL::SDL_MOUSEBUTTONUP:
         if (event.button.button == SDL_BUTTON_LEFT) {
           if (auto building = guiBuilder.getActiveButton(CollectiveTab::BUILDINGS))
