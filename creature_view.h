@@ -45,6 +45,7 @@ class CreatureView {
   virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const = 0;
   virtual optional<Vec2> getSelectionSize() const { return none; }
   virtual vector<vector<Vec2>> getPathTo(UniqueEntity<Creature>::Id, Vec2, bool group) const { return {}; }
+  virtual vector<vector<Vec2>> getTeamPathTo(TeamId, Vec2) const { return {}; }
   virtual ~CreatureView() {}
 };
 

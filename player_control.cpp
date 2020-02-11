@@ -2714,29 +2714,43 @@ optional<Vec2> PlayerControl::getSelectionSize() const {
   return rectSelection.map([](const SelectionInfo& s) { return s.corner1 - s.corner2; });
 }
 
+static optional<vector<Vec2>> getCreaturePath(Creature* c, Vec2 target, Level* level) {
+  auto movement = c->getMovementType();
+  auto from = c->getPosition();
+  auto to = Position(target, level);
+  if (from.getLevel() != level) {
+    if (auto stairs = to.getStairsTo(from))
+      from = *stairs;
+    else
+      return none;
+  }
+  LevelShortestPath path(from, movement, to, 0);
+  return path.getPath().transform([](auto& pos) { return pos.getCoord(); });
+};
+
 vector<vector<Vec2>> PlayerControl::getPathTo(UniqueEntity<Creature>::Id id, Vec2 v, bool group) const {
   vector<vector<Vec2>> ret;
-  auto handleCreature = [&](Creature* c) {
-    auto movement = c->getMovementType();
-    auto from = c->getPosition();
-    auto level = getCurrentLevel();
-    auto to = Position(v, level);
-    if (from.getLevel() != level) {
-      if (auto stairs = to.getStairsTo(from))
-        from = *stairs;
-      else
-        return;
-    }
-    LevelShortestPath path(from, movement, to, 0);
-    ret.push_back(path.getPath().transform([](auto& pos) { return pos.getCoord(); }));
-  };
+  auto level = getCurrentLevel();
   if (auto creature = getCreature(id)) {
-    if (group)
+    if (group) {
       for (auto c : getMinionsLike(creature))
-        handleCreature(c);
-    else
-      handleCreature(creature);
+        if (auto path = getCreaturePath(c, v, level))
+          ret.push_back(*path);
+    } else
+    if (auto path = getCreaturePath(creature, v, level))
+      ret.push_back(*path);
   }
+  return ret;
+}
+
+vector<vector<Vec2>> PlayerControl::getTeamPathTo(TeamId teamId, Vec2 v) const {
+  auto teams = getTeams();
+  auto level = getCurrentLevel();
+  vector<vector<Vec2>> ret;
+  if (teams.exists(teamId))
+    for (auto c : getTeams().getMembers(teamId))
+      if (auto path = getCreaturePath(c, v, level))
+        ret.push_back(*path);
   return ret;
 }
 

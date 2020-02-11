@@ -1316,10 +1316,18 @@ double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
 
 void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer) {
   shortestPath.clear();
-  if (auto id = getDraggedCreature())
-    if (auto pos = projectOnMap(renderer.getMousePos()))
-      shortestPath = view->getPathTo(*id, *pos,
-          guiFactory->getDragContainer().getElement()->getId() == DragContentId::CREATURE_GROUP);
+  if (auto pos = projectOnMap(renderer.getMousePos()))
+    if (auto draggedContent = guiFactory->getDragContainer().getElement())
+      switch (draggedContent->getId()) {
+        case DragContentId::CREATURE_GROUP:
+        case DragContentId::CREATURE:
+          shortestPath = view->getPathTo(draggedContent->get<UniqueEntity<Creature>::Id>(), *pos,
+              guiFactory->getDragContainer().getElement()->getId() == DragContentId::CREATURE_GROUP);
+          break;
+        case DragContentId::TEAM:
+          shortestPath = view->getTeamPathTo(draggedContent->get<TeamId>(), *pos);
+          break;
+      }
 }
 
 void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* mapLayout, bool smoothMovement, bool ui,
