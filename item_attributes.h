@@ -91,7 +91,7 @@ class ItemAttributes {
   int SERIAL(maxUpgrades) = 3;
   optional<string> SERIAL(ingredientType);
   Range SERIAL(wishedCount) = Range(1, 2);
-  optional<SpellId> SERIAL(equipedAbility);
+  vector<SpellId> SERIAL(equipedAbility);
   optional<AutomatonPart> SERIAL(automatonPart);
 };
 

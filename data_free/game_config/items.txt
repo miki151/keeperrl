@@ -735,7 +735,7 @@
       DEFENSE 7
       SPELL_DAMAGE 4
     }
-    equipedAbility = "acid stream"
+    equipedAbility = {"acid stream"}
     maxUpgrades = 2
   }
 "GreenDragonScales"

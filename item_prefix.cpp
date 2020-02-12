@@ -24,7 +24,7 @@ void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAt
           applyPrefix(factory, elem, attr);
       },
       [&](const SpellId& spell) {
-        attr.equipedAbility = spell;
+        attr.equipedAbility.push_back(spell);
       }
   );
 }

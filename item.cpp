@@ -58,8 +58,8 @@ Item::Item(const ItemAttributes& attr, const ContentFactory* factory)
 }
 
 void Item::updateAbility(const ContentFactory* factory) {
-  if (auto id = attributes->equipedAbility)
-    abilityInfo = ItemAbility { *factory->getCreatures().getSpell(*id), none };
+  for (auto id : attributes->equipedAbility)
+    abilityInfo = ItemAbility { *factory->getCreatures().getSpell(id), none };
 }
 
 Item::~Item() {
