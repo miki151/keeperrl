@@ -1273,8 +1273,12 @@ const vector<Vec2>& Player::getUnknownLocations(WConstLevel level) const {
 }
 
 vector<Vec2> Player::getHighlightedPathTo(Vec2 v) const {
-  LevelShortestPath path(creature, Position(v, getLevel()), 0);
-  return path.getPath().transform([](auto& pos) { return pos.getCoord(); });
+  Position target(v, getLevel());
+  if (target.isSameLevel(creature->getPosition())) {
+    LevelShortestPath path(creature, target, 0);
+    return path.getPath().transform([](auto& pos) { return pos.getCoord(); });
+  } else
+    return {};
 }
 
 void Player::considerKeeperModeTravelMusic() {
