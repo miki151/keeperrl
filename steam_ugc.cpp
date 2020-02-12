@@ -140,12 +140,12 @@ UGC::QueryId UGC::createDetailsQuery(const ItemDetailsInfo& info, vector<ItemId>
   return qid;
 }
 
-UGC::QueryId UGC::createFindQuery(const FindItemInfo& info, int pageId) {
+UGC::QueryId UGC::createFindQuery(const FindItemInfo& info, int pageId, vector<string> tags) {
   CHECK(pageId >= 1);
   auto appId = Utils::instance().appId();
 
   //auto match = k_EUGCMatchingUGCType_Items;
-  auto match = k_EUGCMatchingUGCType_All;
+  auto match = k_EUGCMatchingUGCType_Items;
   auto handle = FUNC(CreateQueryAllUGCRequest)(ptr, findOrderMap[info.order], match, appId, appId, pageId);
   CHECK(handle != k_UGCQueryHandleInvalid);
   // TODO: properly handle errors
@@ -153,7 +153,8 @@ UGC::QueryId UGC::createFindQuery(const FindItemInfo& info, int pageId) {
   FUNC(SetReturnOnlyIDs)(ptr, handle, true);
   if (!info.searchText.empty())
     FUNC(SetSearchText)(ptr, handle, info.searchText.c_str());
-
+  for (auto& tag : tags)
+    FUNC(AddRequiredTag)(ptr, handle, tag.data());
   auto callId = FUNC(SendQueryUGCRequest)(ptr, handle);
   auto qid = impl->allocQuery(handle, callId);
   impl->queries[qid].findInfo = info;

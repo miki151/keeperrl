@@ -453,7 +453,7 @@ static vector<T> removeDuplicates(vector<T> input) {
   return ret;
 }
 
-static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel) {
+static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel, vector<string> tags) {
 #ifdef USE_STEAMWORKS
   if (!steam::Client::isAvailable())
     return none;
@@ -472,7 +472,7 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel)
       vector<steam::ItemId> ret;
       steam::FindItemInfo qinfo;
       qinfo.order = SteamFindOrder::playtime;
-      auto qid = ugc.createFindQuery(qinfo, page);
+      auto qid = ugc.createFindQuery(qinfo, page, tags);
       ugc.waitForQueries({qid}, milliseconds(2000), cancel);
 
       if (ugc.queryStatus(qid) == QueryStatus::completed) {
@@ -552,15 +552,12 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel)
 
 optional<vector<ModInfo>> FileSharing::getSteamMods() {
   vector<ModInfo> out;
-  auto infos1 = getSteamItems(wasCancelled);
+  auto infos1 = getSteamItems(wasCancelled, {"Mod"_s, modVersion});
   if (!infos1 || consumeCancelled())
     return none;
   auto& infos = *infos1;
   for (int n = 0; n < infos.size(); n++) {
     auto& info = infos[n].info;
-    if (!info.tags.contains("Mod") || !info.tags.contains(modVersion))
-      continue;
-
     ModInfo mod;
     mod.details.author = infos[n].owner.value_or("unknown");
     mod.details.description = firstLines(info.description);
@@ -581,14 +578,12 @@ optional<vector<ModInfo>> FileSharing::getSteamMods() {
 
 optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites() {
   vector<SiteInfo> out;
-  auto infos1 = getSteamItems(wasCancelled);
+  auto infos1 = getSteamItems(wasCancelled, {"Dungeon"_s, toString(saveVersion)});
   if (!infos1 || consumeCancelled())
     return none;
   auto& infos = *infos1;
   for (int n = 0; n < infos.size(); n++) {
     auto& info = infos[n].info;
-    if (!info.tags.contains("Dungeon") || !info.tags.contains(toString(saveVersion)))
-      continue;
     SiteInfo site {};
     site.version = saveVersion;
     site.fileInfo.date = info.updateTime;

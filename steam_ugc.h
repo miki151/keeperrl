@@ -111,7 +111,7 @@ class UGC {
   static constexpr int maxItemsPerPage = 50;
 
   QueryId createDetailsQuery(const ItemDetailsInfo&, vector<ItemId>);
-  QueryId createFindQuery(const FindItemInfo&, int pageId);
+  QueryId createFindQuery(const FindItemInfo&, int pageId, vector<string> tags);
 
   void updateQueries();
   void waitForQueries(vector<QueryId>, milliseconds duration, const atomic<bool>& cancel);
