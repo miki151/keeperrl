@@ -33,6 +33,7 @@ class Game : public OwnedObject<Game> {
   void setExitInfo(ExitInfo);
   Options* getOptions();
   void initialize(Options*, Highscores*, View*, FileSharing*);
+  void initializeModels();
   View* getView() const;
   ContentFactory* getContentFactory();
   ContentFactory removeContentFactory();
@@ -139,7 +140,6 @@ class Game : public OwnedObject<Game> {
   void considerRealTimeRender();
   void considerRetiredLoadedEvent(Vec2 coord);
   optional<ExitInfo> updateInput();
-  void initializeModels();
   void increaseTime(double diff);
   void spawnKeeper(AvatarInfo, vector<string> introText);
   HeapAllocated<ContentFactory> SERIAL(contentFactory);

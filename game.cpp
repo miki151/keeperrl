@@ -313,7 +313,6 @@ optional<ExitInfo> Game::update(double timeDiff) {
   if (auto exitInfo = updateInput())
     return exitInfo;
   considerRealTimeRender();
-  initializeModels();
   WModel currentModel = getCurrentModel();
   auto currentId = currentModel->getTopLevel()->getUniqueId();
   while (!lastTick || currentTime >= *lastTick + 1) {

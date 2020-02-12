@@ -285,6 +285,10 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
   game->initialize(options, highscores, view, fileSharing);
+  doWithSplash("Initializing game...", 0,
+      [&] (ProgressMeter& meter) {
+        game->initializeModels();
+      });
   Intervalometer meter(stepTimeMilli);
   Intervalometer pausingMeter(stepTimeMilli);
   auto lastMusicUpdate = GlobalTime(-1000);
