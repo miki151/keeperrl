@@ -3620,7 +3620,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
         WL(labelMultiLineWidth, avatar.description, legendLineHeight, 530, Renderer::textSize, Color::LIGHT_GRAY),
         [avatarIndex, chosenAvatar] { return avatarIndex == *chosenAvatar; }));
   }
-  lines.addBackElem(WL(stack, descriptions), 2 * legendLineHeight);
+  lines.addBackElem(WL(stack, descriptions), 2.5 * legendLineHeight);
   lines.addBackElem(WL(centerHoriz, WL(buttonLabel, "Start new game",
       [&queue, chosenAvatar, chosenName, gender, &avatars, this] {
         auto chosenGender = getChosenGender(gender, chosenAvatar, avatars);
