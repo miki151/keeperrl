@@ -153,7 +153,7 @@ void SoundSource::destroy() {
   id.reset();
 }
 
-const int streamingBufferSize = 1 * 2 * 2 * 44100;
+const int streamingBufferSize = 1 * 2 * 2 * 441000;
 
 SoundStream::SoundStream(const FilePath& path, double volume) : startedPlaying(false),
       streamer([path, this]{ init(path);}, [this]{loop();}), volume((float) volume) {
