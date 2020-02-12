@@ -463,8 +463,8 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel,
   auto& user = steam::User::instance();
   auto& friends = steam::Friends::instance();
 
-  vector<steam::ItemId> items, subscribedItems;
-  subscribedItems = ugc.subscribedItems();
+  vector<steam::ItemId> items;
+  auto subscribedItems = ugc.subscribedItems();
 
   // TODO: Is this check necessary? Maybe we should try anyways?
   if (user.isLoggedOn()) {
@@ -537,13 +537,14 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel,
   };
   steam::sleepUntil(retrieveUserNames, milliseconds(1500), cancel);
   vector<SteamItemInfo> ret;
-  for (int n = 0; n < infos.size(); n++)
-    ret.push_back(SteamItemInfo{
-        infos[n],
-        ownerNames[n],
-        subscribedItems.contains(infos[n].id),
-        infos[n].ownerId == user.id()
-    });
+  for (int i : All(infos))
+    if ([&] { for (auto& tag : tags) if (!infos[i].tags.contains(tag)) return false; return true; }())
+      ret.push_back(SteamItemInfo{
+          infos[i],
+          ownerNames[i],
+          subscribedItems.contains(infos[i].id),
+          infos[i].ownerId == user.id()
+      });
   return ret;
 #else
   return none;
@@ -560,7 +561,7 @@ optional<vector<ModInfo>> FileSharing::getSteamMods() {
     auto& info = infos[n].info;
     ModInfo mod;
     mod.details.author = infos[n].owner.value_or("unknown");
-    mod.details.description = firstLines(info.description);
+    mod.details.description = info.description;
     mod.name = info.title;
     // TODO: playtimeSessions is not exactly the same as numGames
     //mod.numGames = info.stats->playtimeSessions;
