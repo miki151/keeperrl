@@ -259,7 +259,7 @@ PModel ModelBuilder::tryBuilding(int numTries, function<PModel()> buildFun, cons
       INFO << "Retrying level gen";
     }
   }
-  FATAL << "Couldn't generate a level: " << name;
+  USER_FATAL << "Couldn't generate a level: " << name;
   return nullptr;
 }
 
