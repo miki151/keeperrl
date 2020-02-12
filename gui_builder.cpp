@@ -3945,7 +3945,7 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
     auto name = mods[i].name;
     auto itemLabel =
     WL(stack,
-        WL(label, name),
+        WL(renderInBounds, WL(label, name)),
         WL(uiHighlightConditional, [chosenMod, i] { return *chosenMod == i; }),
         WL(button, [chosenMod, i] { *chosenMod = i; })
     );
@@ -4012,7 +4012,7 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
   const int windowWidth = 2 * margin + pageWidth + listWidth;
   return WL(preferredSize, windowWidth, 400,
       WL(window, WL(margins, WL(getListBuilder)
-          .addElem(WL(scrollable, allItems.buildVerticalList()), listWidth)
+          .addElem(WL(scrollable, WL(rightMargin, 10, allItems.buildVerticalList())), listWidth)
           .addSpace(25)
           .addMiddleElem(WL(stack, std::move(modPages)))
           .buildHorizontalList(), margin), [&queue] { queue.push(none); }));
