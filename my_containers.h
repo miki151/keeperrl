@@ -279,7 +279,7 @@ class vector {
   }
 
   vector<T> getSubsequence(int start, optional<int> lengthOption = none) const {
-    auto length = lengthOption.value_or(size() - start);
+    auto length = min(size() - start, lengthOption.value_or(size() - start));
     CHECK(start >= 0 && length >= 0 && start + length <= size());
     vector<T> ret;
     ret.reserve(length);
@@ -290,10 +290,6 @@ class vector {
 
   vector<T> getPrefix(int num) const {
     return getSubsequence(0, num);
-  }
-
-  vector<T> getPrefixOrAll(int num) const {
-    return getSubsequence(0, min(size(), num));
   }
 
   vector<T> getSuffix(int num) const {
