@@ -331,6 +331,7 @@ void Renderer::putPixel(SDL::SDL_Surface* surface, Vec2 pos, Color color) {
 void Renderer::setFullscreen(bool v) {
   fullscreen = v;
   CHECK(SDL::SDL_SetWindowFullscreen(window, v ? SDL::SDL_WINDOW_FULLSCREEN_DESKTOP : 0) == 0) << SDL::SDL_GetError();
+  SDL_GetWindowSize(window, &width, &height);
   initOpenGL();
 }
 
