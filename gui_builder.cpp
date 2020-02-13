@@ -3148,6 +3148,11 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
       if (items[i].type == items[i].OTHER)
         lines.addElem(WL(leftMargin, 3, std::move(itemElems[i])));
   }
+  if (!minion.intrinsicAttacks.empty()) {
+    lines.addElem(WL(label, "Intrinsic attacks", Color::YELLOW));
+    for (auto& item : minion.intrinsicAttacks)
+      lines.addElem(getItemLine(item, [=](Rectangle) {}));
+  }
   return lines.buildVerticalList();
 }
 

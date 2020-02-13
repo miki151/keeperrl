@@ -206,10 +206,7 @@ optional<SoundId> CreatureAttributes::getAttackSound(AttackType type, bool damag
 }
 
 string CreatureAttributes::getDescription() const {
-  if (!isSpecial)
-    return "";
-  string attack;
-  return body->getDescription() + ". " + attack;
+  return body->getDescription();
 }
 
 void CreatureAttributes::add(BodyPart p, int count) {
