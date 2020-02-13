@@ -39,7 +39,7 @@ string PlayerInfo::getFirstName() const {
     return capitalFirst(name);
 }
 
-vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
+static vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c, const ContentFactory* factory) {
   vector<PlayerInfo::SkillInfo> ret;
   auto& skills = c->getAttributes().getSkills();
   for (SkillId id : ENUM_ALL(SkillId))
@@ -47,8 +47,8 @@ vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c) {
       ret.push_back(PlayerInfo::SkillInfo{Skill::get(id)->getNameForCreature(c), Skill::get(id)->getHelpText()});
   for (auto& elem : skills.getWorkshopValues())
     if (elem.second > 0)
-      ret.push_back(PlayerInfo::SkillInfo{skills.getNameForCreature(c->getGame()->getContentFactory(), elem.first),
-          skills.getHelpText(c->getGame()->getContentFactory(), elem.first)});
+      ret.push_back(PlayerInfo::SkillInfo{skills.getNameForCreature(factory, elem.first),
+          skills.getHelpText(factory, elem.first)});
   return ret;
 }
 
@@ -80,13 +80,13 @@ vector<ItemAction> getItemActions(const Creature* c, const vector<Item*>& item) 
   return actions;
 }
 
-ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack) {
+ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack, const ContentFactory* factory) {
   PROFILE;
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(creature, stack.size() > 1);
     c.fullName = stack[0]->getNameAndModifiers(false, creature);
     c.description = creature->isAffected(LastingEffect::BLIND)
-        ? vector<string>() : stack[0]->getDescription(creature->getGame()->getContentFactory());
+        ? vector<string>() : stack[0]->getDescription(factory);
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().id();
     c.viewIdModifiers = stack[0]->getViewObject().getAllModifiers();
@@ -100,14 +100,14 @@ ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack) {
   );
 }
 
-static vector<ItemInfo> fillIntrinsicAttacks(const Creature* c) {
+static vector<ItemInfo> fillIntrinsicAttacks(const Creature* c, const ContentFactory* factory) {
   vector<ItemInfo> ret;
   auto& intrinsicAttacks = c->getBody().getIntrinsicAttacks();
   for (auto part : ENUM_ALL(BodyPart))
     for (auto& attack : intrinsicAttacks[part]) {
       CHECK(!!attack.item) << "Intrinsic attacks not initialized for " << c->getName().bare() << " "
           << EnumInfo<BodyPart>::getString(part);
-      ret.push_back(ItemInfo::get(c, {attack.item.get()}));
+      ret.push_back(ItemInfo::get(c, {attack.item.get()}, factory));
       auto& item = ret.back();
       item.weight.reset();
       if (!c->getBody().numGood(part)) {
@@ -123,13 +123,13 @@ static vector<ItemInfo> fillIntrinsicAttacks(const Creature* c) {
   return ret;
 }
 
-static vector<ItemInfo> getItemInfos(const Creature* c, const vector<Item*>& items) {
+static vector<ItemInfo> getItemInfos(const Creature* c, const vector<Item*>& items, const ContentFactory* factory) {
   map<string, vector<Item*> > stacks = groupBy<Item*, string>(items,
       [&] (Item* const& item) {
           return item->getNameAndModifiers(false, c) + (c->getEquipment().isEquipped(item) ? "(e)" : ""); });
   vector<ItemInfo> ret;
   for (auto elem : stacks)
-    ret.push_back(ItemInfo::get(c, elem.second));
+    ret.push_back(ItemInfo::get(c, elem.second, factory));
   return ret;
 }
 
@@ -176,7 +176,7 @@ ItemInfo getInstalledPartInfo(const ContentFactory* factory, const AutomatonPart
   return ret;
 }
 
-PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
+PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory) : bestAttack(c) {
   firstName = c->getName().firstOrBare();
   name = c->getName().bare();
   title = c->getName().title();
@@ -187,11 +187,10 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   creatureId = c->getUniqueId();
   attributes = AttributeInfo::fromCreature(c);
   experienceInfo = getCreatureExperienceInfo(c);
-  auto contentFactory = c->getGame()->getContentFactory();
   for (auto& id : c->getAttributes().getSpellSchools())
     spellSchools.push_back(fillSpellSchool(c, id, contentFactory));
-  intrinsicAttacks = fillIntrinsicAttacks(c);
-  skills = getSkillNames(c);
+  intrinsicAttacks = fillIntrinsicAttacks(c, contentFactory);
+  skills = getSkillNames(c, contentFactory);
   kills = c->getKills().transform([&](auto& info){ return info.viewId; });
   killTitles = c->getKillTitles();
   effects.clear();
@@ -219,7 +218,7 @@ PlayerInfo::PlayerInfo(const Creature* c) : bestAttack(c) {
   debt = c->getDebt().getTotal();
   for (auto elem : ENUM_ALL(ItemClass))
     if (typeGroups[elem].size() > 0)
-      append(inventory, getItemInfos(c, typeGroups[elem]));
+      append(inventory, getItemInfos(c, typeGroups[elem], contentFactory));
   if (c->getPosition().isValid())
     moveCounter = c->getPosition().getModel()->getMoveCounter();
   isPlayerControlled = c->isPlayer();

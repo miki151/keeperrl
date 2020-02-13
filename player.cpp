@@ -1206,7 +1206,8 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.sunlightInfo.description = sunlightInfo.getText();
   gameInfo.sunlightInfo.timeRemaining = sunlightInfo.getTimeRemaining();
   gameInfo.time = creature->getGame()->getGlobalTime();
-  gameInfo.playerInfo = PlayerInfo(creature);
+  auto contentFactory = getGame()->getContentFactory();
+  gameInfo.playerInfo = PlayerInfo(creature, contentFactory);
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
   fillDungeonLevel(info);
   info.controlMode = getGame()->getPlayerCreatures().size() == 1 ? PlayerInfo::LEADER : PlayerInfo::FULL;
@@ -1227,7 +1228,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
     sort(team.begin(), team.end(), timeCmp);
   }
   for (const Creature* c : team) {
-    info.teamInfos.emplace_back(c);
+    info.teamInfos.emplace_back(c, contentFactory);
     info.teamInfos.back().teamMemberActions = getTeamMemberActions(c);
   }
   info.lyingItems.clear();
@@ -1240,7 +1241,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
     info.lyingItems.push_back(getFurnitureUsageInfo(question, questionViewId));
   }
   for (auto stack : creature->stackItems(creature->getPickUpOptions()))
-    info.lyingItems.push_back(ItemInfo::get(creature, stack));
+    info.lyingItems.push_back(ItemInfo::get(creature, stack, contentFactory));
   info.commands = getCommands().transform([](const CommandInfo& info) -> PlayerInfo::CommandInfo { return info.commandInfo;});
   if (tutorial)
     tutorial->refreshInfo(getGame(), gameInfo.tutorial);

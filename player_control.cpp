@@ -899,7 +899,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, Un
   sortMinionsForUI(creatures);
   vector<PlayerInfo> minions;
   for (Creature* c : creatures) {
-    minions.emplace_back(c);
+    minions.emplace_back(c, getGame()->getContentFactory());
     auto& minionInfo = minions.back();
     minionInfo.groupName = collective->getMinionGroupName(c);
     // only fill equipment for the chosen minion to avoid lag
@@ -1441,6 +1441,8 @@ void PlayerControl::fillResources(CollectiveInfo& info) const {
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
+  getGame()->getEncyclopedia()->technology = &collective->getTechnology();
+  gameInfo.encyclopedia = getGame()->getEncyclopedia();
   gameInfo.takingScreenshot = takingScreenshot;
   fillCurrentLevelInfo(gameInfo);
   if (tutorial)
@@ -2114,9 +2116,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DRAW_WORLD_MAP: getGame()->presentWorldmap(); break;
-    case UserInputId::KEEPEROPEDIA: Encyclopedia(buildInfo, getGame()->getContentFactory()->getCreatures().getSpellSchools(),
-          getGame()->getContentFactory()->getCreatures().getSpells(), collective->getTechnology()).present(view);
-      break;
     case UserInputId::WORKSHOP: {
       auto types = collective->getWorkshops().getWorkshopsTypes();
       int index = input.get<int>();

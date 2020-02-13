@@ -44,6 +44,7 @@
 #include "view_object_action.h"
 #include "mod_info.h"
 #include "special_trait.h"
+#include "encyclopedia.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -304,13 +305,6 @@ SGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
     technologyHash = hash;
     auto lines = WL(getListBuilder, legendLineHeight);
     lines.addSpace(legendLineHeight / 2);
-    lines.addElem(WL(stack,
-        WL(getListBuilder)
-            .addElem(WL(viewObject, ViewId("book")), 35)
-            .addElemAuto(WL(label, "Keeperopedia", Color::WHITE))
-            .buildHorizontalList(),
-        WL(button, getButtonCallback(UserInputId::KEEPEROPEDIA))
-    ));
     lines.addSpace(legendLineHeight / 2);
     lines.addSpace(legendLineHeight / 2);
     for (int i : All(info.workshopButtons)) {
@@ -337,31 +331,35 @@ SGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
   return WL(external, technologyCache.get());
 }
 
-SGuiElem GuiBuilder::drawKeeperHelp() {
-  if (!keeperHelp) {
-    vector<string> helpText {
-      "use mouse to dig and build",
-        "shift selects rectangles",
-        "control deselects",
-        "",
-        "scroll with arrows",
-        "or right mouse button",
-        "shift with arrows scrolls faster",
-        "",
-        "right click on minion",
-        "to control or show information",
-        "",
-        "[space] pause",
-        "[a] and [z] or mouse wheel: zoom",
-        "press mouse wheel: level map",
-        "",
-        "follow the orange hints :-)"};
-    auto lines = WL(getListBuilder, legendLineHeight);
-    for (string line : helpText)
-      lines.addElem(WL(label, line, Color::LIGHT_BLUE));
-    keeperHelp = lines.buildVerticalList();
-  }
-  return WL(external, keeperHelp.get());
+SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo&) {
+  auto lines = WL(getListBuilder, legendLineHeight);
+  lines.addElem(WL(standardButton,
+      WL(getListBuilder)
+          .addElemAuto(WL(topMargin, -2, WL(viewObject, ViewId("special_bmbw"))))
+          .addElemAuto(WL(label, "Bestiary"))
+          .buildHorizontalList(),
+      WL(button, [this]() { toggleBottomWindow(BESTIARY); })
+  ));
+  vector<string> helpText {
+    "use mouse to dig and build",
+      "shift selects rectangles",
+      "control deselects",
+      "",
+      "scroll with arrows",
+      "or right mouse button",
+      "shift with arrows scrolls faster",
+      "",
+      "right click on minion",
+      "to control or show information",
+      "",
+      "[space] pause",
+      "[a] and [z] or mouse wheel: zoom",
+      "press mouse wheel: level map",
+      "",
+      "follow the orange hints :-)"};
+  for (string line : helpText)
+    lines.addElem(WL(label, line, Color::LIGHT_BLUE));
+  return lines.buildVerticalList();
 }
 
 void GuiBuilder::addFpsCounterTick() {
@@ -505,7 +503,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
         make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo, info.tutorial)),
         make_pair(CollectiveTab::BUILDINGS, cache->get(bindMethod(
             &GuiBuilder::drawBuildings, this), THIS_LINE, collectiveInfo.buildings, info.tutorial)),
-        make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp()),
+        make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp(info)),
         make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(collectiveInfo))
     );
     vector<SGuiElem> tabs;
@@ -1443,7 +1441,7 @@ static string toStringRounded(double value, double precision) {
 }
 
 SGuiElem GuiBuilder::getExpIncreaseLine(const CreatureExperienceInfo& info, ExperienceType type,
-    function<void()> increaseCallback) {
+    function<void()> increaseCallback, bool infoOnly) {
   if (info.limit[type] == 0)
     return nullptr;
   auto line = WL(getListBuilder);
@@ -1455,8 +1453,9 @@ SGuiElem GuiBuilder::getExpIncreaseLine(const CreatureExperienceInfo& info, Expe
     attrNames.push_back(getName(attr));
   }
   line.addElem(attrIcons.buildHorizontalList(), 80);
-  line.addElem(WL(label, "+" + toStringRounded(info.level[type], 0.01),
-      info.warning[type] ? Color::RED : Color::WHITE), 50);
+  if (!infoOnly)
+    line.addElem(WL(label, "+" + toStringRounded(info.level[type], 0.01),
+        info.warning[type] ? Color::RED : Color::WHITE), 50);
   if (increaseCallback && info.numAvailableUpgrades > 0) {
     line.addElemAuto(info.level[type] < info.limit[type]
         ? WL(buttonLabel, "+", increaseCallback)
@@ -1477,7 +1476,7 @@ SGuiElem GuiBuilder::getExpIncreaseLine(const CreatureExperienceInfo& info, Expe
 }
 
 SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info,
-    function<void(optional<ExperienceType>)> increaseCallback) {
+    function<void(optional<ExperienceType>)> increaseCallback, bool infoOnly) {
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(label, "Training", Color::YELLOW));
   if (increaseCallback) {
@@ -1486,11 +1485,12 @@ SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info,
   bool empty = true;
   for (auto expType : ENUM_ALL(ExperienceType)) {
     if (auto elem = getExpIncreaseLine(info, expType,
-        [increaseCallback, expType] { increaseCallback(expType); })) {
+        [increaseCallback, expType] { increaseCallback(expType); }, infoOnly)) {
       lines.addElem(std::move(elem));
       empty = false;
     }
   }
+  if (!infoOnly)
   lines.addElem(WL(getListBuilder)
       .addElemAuto(WL(label, "Combat experience: ", Color::YELLOW))
       .addElemAuto(WL(label, toStringRounded(info.combatExperience, 0.01)))
@@ -2259,6 +2259,83 @@ SGuiElem GuiBuilder::drawMinionsOverlay(const optional<CollectiveInfo::ChosenCre
       WL(margins, std::move(menu), margin))));
 }
 
+SGuiElem GuiBuilder::drawBestiaryPage(const PlayerInfo& minion) {
+  auto list = WL(getListBuilder, legendLineHeight);
+  list.addElem(WL(getListBuilder)
+      .addElemAuto(WL(viewObject, minion.viewId))
+      .addSpace(5)
+      .addElemAuto(WL(label, minion.name))
+      .buildHorizontalList());
+  if (!minion.description.empty())
+    list.addElem(WL(label, minion.description, Renderer::smallTextSize, Color::LIGHT_GRAY));
+  auto leftLines = WL(getListBuilder, legendLineHeight);
+  leftLines.addElem(WL(label, "Attributes", Color::YELLOW));
+  leftLines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(minion.attributes)));
+  for (auto& elem : drawEffectsList(minion))
+    leftLines.addElem(std::move(elem));
+  leftLines.addSpace();
+  if (auto elem = drawTrainingInfo(minion.experienceInfo, nullptr, true))
+    leftLines.addElemAuto(std::move(elem));
+  if (!minion.spellSchools.empty()) {
+    auto line = WL(getListBuilder)
+        .addElemAuto(WL(label, "Spell schools: ", Color::YELLOW));
+    for (auto& school : minion.spellSchools)
+      line.addElemAuto(drawSpellSchoolLabel(school));
+    leftLines.addElem(line.buildHorizontalList());
+  }
+  leftLines.addSpace();
+  for (auto& elem : drawSkillsList(minion))
+    leftLines.addElem(std::move(elem));
+  if (auto spells = drawSpellsList(minion.spells, minion.creatureId.getGenericId(), false))
+    leftLines.addElemAuto(std::move(spells));
+  int topMargin = list.getSize() + 20;
+  return WL(margin, list.buildVerticalList(),
+      WL(scrollable, WL(horizontalListFit, makeVec(
+          WL(rightMargin, 15, leftLines.buildVerticalList()),
+          drawEquipmentAndConsumables(minion, true))), &minionPageScroll, &scrollbarsHeld),
+      topMargin, GuiFactory::TOP);
+}
+
+SGuiElem GuiBuilder::drawBestiaryButtons(const vector<PlayerInfo>& minions) {
+  CHECK(!minions.empty());
+  auto list = WL(getListBuilder, legendLineHeight);
+  for (int index : All(minions)) {
+    auto& minion = minions[index];
+    auto viewId = minion.viewId;
+    auto line = WL(getListBuilder);
+    line.addElemAuto(WL(viewObject, viewId));
+    line.addSpace(5);
+    line.addMiddleElem(WL(rightMargin, 5, WL(renderInBounds, WL(label, minion.name))));
+    line.addBackElem(drawBestAttack(minion.bestAttack), 60);
+    list.addElem(WL(stack,
+          WL(button, [this, index] { bestiaryIndex = index; }),
+          WL(uiHighlightConditional, [index, this] { return index == bestiaryIndex;}),
+          line.buildHorizontalList()));
+  }
+  return WL(scrollable, gui.margins(list.buildVerticalList(), 0, 5, 10, 0), &minionButtonsScroll, &scrollbarsHeld);
+}
+
+SGuiElem GuiBuilder::drawBestiaryOverlay(const vector<PlayerInfo>& creatures) {
+  int margin = 20;
+  int minionListWidth = 330;
+  vector<SGuiElem> minionPages;
+  for (int i : All(creatures))
+    minionPages.push_back(WL(margins, drawBestiaryPage(creatures[i]), 10, 15, 10, 10));
+  SGuiElem menu;
+  SGuiElem leftSide = drawBestiaryButtons(creatures);
+  menu = WL(stack,
+      WL(horizontalList, makeVec(
+          WL(margins, std::move(leftSide), 8, 15, 5, 0),
+          WL(margins, WL(sprite, GuiFactory::TexId::VERT_BAR_MINI, GuiFactory::Alignment::LEFT),
+            0, -15, 0, -15)), minionListWidth),
+      WL(leftMargin, minionListWidth + 20, WL(conditional, [this] { return bestiaryIndex;  }, std::move(minionPages))));
+  return WL(preferredSize, 640 + minionListWidth, 600,
+      WL(miniWindow, WL(stack,
+      WL(keyHandler, getButtonCallback({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}),
+        {gui.getKey(SDL::SDLK_ESCAPE)}, true),
+      WL(margins, std::move(menu), margin))));
+}
+
 SGuiElem GuiBuilder::drawBuildingsOverlay(const vector<CollectiveInfo::Button>& buildings,
     bool ransom, const optional<TutorialInfo>& tutorial) {
   vector<SGuiElem> elems;
@@ -2508,6 +2585,9 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
     default:
       break;
   }
+  if (bottomWindow == BESTIARY)
+    ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBestiaryOverlay, this), THIS_LINE,
+         info.encyclopedia->bestiary), OverlayInfo::TOP_LEFT});
   ret.push_back({drawMapHintOverlay(), OverlayInfo::MAP_HINT});
 }
 
@@ -3020,7 +3100,7 @@ SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem> attrs) {
       WL(horizontalList, std::move(lines[1]), elemWidth)), legendLineHeight);
 }
 
-SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion) {
+SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool infoOnly) {
   const vector<ItemInfo>& items = minion.inventory;
   auto lines = WL(getListBuilder, legendLineHeight);
   if (!minion.bodyParts.empty() || minion.canAddBodyPart) {
@@ -3033,23 +3113,32 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion) {
   }
   if (!items.empty()) {
     lines.addElem(WL(label, "Equipment", Color::YELLOW));
-    vector<SGuiElem> itemElems = drawItemMenu(items,
-        [=](Rectangle butBounds, optional<int> index) {
-          const ItemInfo& item = items[*index];
-          if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), true))
-            callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
-                EquipmentActionInfo{minion.creatureId, item.ids, item.slot, *choice}});
-        });
+    vector<SGuiElem> itemElems;
+    if (!infoOnly)
+      itemElems = drawItemMenu(items, [=](Rectangle butBounds, optional<int> index) {
+        const ItemInfo& item = items[*index];
+        if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), true))
+          callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
+              EquipmentActionInfo{minion.creatureId, item.ids, item.slot, *choice}});
+      });
+    else
+      for (int i : All(items))
+        itemElems.push_back(getItemLine(items[i], [](Rectangle) {} ));
     for (int i : All(itemElems))
       if (items[i].type == items[i].EQUIPMENT)
-        lines.addElem(WL(leftMargin, 3, std::move(itemElems[i])));
-    lines.addElem(WL(label, "Consumables", Color::YELLOW));
+        lines.addElem(WL(leftMargin, 3, std::move(itemElems[i])));    
+    for (int i : All(itemElems))
+      if (!infoOnly || items[i].type == items[i].CONSUMABLE) {
+        lines.addElem(WL(label, "Consumables", Color::YELLOW));
+        break;
+      }
     for (int i : All(itemElems))
       if (items[i].type == items[i].CONSUMABLE)
         lines.addElem(WL(leftMargin, 3, std::move(itemElems[i])));
-    lines.addElem(WL(buttonLabel, "Add consumable",
-        getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
-            EquipmentActionInfo{minion.creatureId, {}, none, ItemAction::REPLACE}})));
+    if (!infoOnly)
+      lines.addElem(WL(buttonLabel, "Add consumable",
+          getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
+              EquipmentActionInfo{minion.creatureId, {}, none, ItemAction::REPLACE}})));
     for (int i : All(itemElems))
       if (items[i].type == items[i].OTHER) {
         lines.addElem(WL(label, "Other", Color::YELLOW));

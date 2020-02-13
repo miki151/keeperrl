@@ -71,7 +71,7 @@ class GuiBuilder {
   SGuiElem drawTechnology(CollectiveInfo&);
   SGuiElem drawMinions(CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawBottomBandInfo(GameInfo&, int width);
-  SGuiElem drawKeeperHelp();
+  SGuiElem drawKeeperHelp(const GameInfo&);
   optional<string> getTextInput(const string& title, const string& value, int maxLength, const string& hint);
 
   struct OverlayInfo {
@@ -163,7 +163,7 @@ class GuiBuilder {
   vector<SGuiElem> drawPlayerAttributes(const ViewObject::CreatureAttributes&);
   SGuiElem drawBestAttack(const BestAttack&);
   SGuiElem drawTrainingInfo(const CreatureExperienceInfo&,
-      function<void(optional<ExperienceType>)> increaseCallback = nullptr);
+      function<void(optional<ExperienceType>)> increaseCallback = nullptr, bool infoOnly = false);
   //SGuiElem getExpIncreaseLine(const PlayerInfo::LevelInfo&, ExperienceType);
   SGuiElem drawBuildings(const vector<CollectiveInfo::Button>&, const optional<TutorialInfo>&);
   SGuiElem bottomBandCache;
@@ -173,7 +173,7 @@ class GuiBuilder {
   SGuiElem drawMinionPage(const PlayerInfo&, const vector<ViewId>& allQuarters, const optional<TutorialInfo>&);
   SGuiElem drawActivityButton(const PlayerInfo&);
   SGuiElem drawAttributesOnPage(vector<SGuiElem>);
-  SGuiElem drawEquipmentAndConsumables(const PlayerInfo&);
+  SGuiElem drawEquipmentAndConsumables(const PlayerInfo&, bool infoOnly = false);
   vector<SGuiElem> drawSkillsList(const PlayerInfo&);
   SGuiElem drawSpellsList(const vector<PlayerInfo::Spell>&, GenericId creatureId, bool active);
   SGuiElem getSpellIcon(const PlayerInfo::Spell&, int index, bool active, GenericId creatureId);
@@ -195,7 +195,7 @@ class GuiBuilder {
   int minionsHash = 0;
   SGuiElem technologyCache;
   int technologyHash = 0;
-  SGuiElem keeperHelp;
+  int bestiaryIndex = 0;
   optional<OverlayInfo> speedDialog;
   int rightBandInfoHash = 0;
   SGuiElem rightBandInfoCache;
@@ -232,7 +232,8 @@ class GuiBuilder {
     IMMIGRATION_HELP,
     ALL_VILLAINS,
     TASKS,
-    LIBRARY
+    LIBRARY,
+    BESTIARY
   };
   optional<BottomWindowId> bottomWindow;
   void toggleBottomWindow(BottomWindowId);
@@ -283,7 +284,7 @@ class GuiBuilder {
   SGuiElem getClickActions(const ViewObject&);
   vector<string> hint;
   SGuiElem getExpIncreaseLine(const CreatureExperienceInfo&, ExperienceType,
-      function<void()> increaseCallback = nullptr);
+      function<void()> increaseCallback = nullptr, bool infoOnly = false);
   optional<int> highlightedTeamMember;
   SGuiElem drawQuartersButton(const PlayerInfo&, const vector<ViewId>& allQuarters);
   SGuiElem drawWarningWindow(const optional<CollectiveInfo::RebellionChance>&,
@@ -315,6 +316,9 @@ class GuiBuilder {
   SGuiElem drawSpellSchoolLabel(const PlayerInfo::SpellSchool&);
   SGuiElem drawResources(const vector<CollectiveInfo::Resource>&, const optional<TutorialInfo>&, int width);
   SGuiElem drawBiomeMenu(SyncQueue<CampaignAction>&, const vector<View::CampaignOptions::BiomeInfo>&, int chosen);
+  SGuiElem drawBestiaryOverlay(const vector<PlayerInfo>&);
+  SGuiElem drawBestiaryButtons(const vector<PlayerInfo>&);
+  SGuiElem drawBestiaryPage(const PlayerInfo&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

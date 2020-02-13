@@ -23,6 +23,7 @@ struct CampaignSetup;
 class AvatarInfo;
 class ContentFactory;
 class NameGenerator;
+class Encyclopedia;
 
 class Game : public OwnedObject<Game> {
   public:
@@ -32,7 +33,8 @@ class Game : public OwnedObject<Game> {
   optional<ExitInfo> update(double timeDiff);
   void setExitInfo(ExitInfo);
   Options* getOptions();
-  void initialize(Options*, Highscores*, View*, FileSharing*);
+  Encyclopedia* getEncyclopedia();
+  void initialize(Options*, Highscores*, View*, FileSharing*, Encyclopedia*);
   void initializeModels();
   View* getView() const;
   ContentFactory* getContentFactory();
@@ -127,6 +129,7 @@ class Game : public OwnedObject<Game> {
   HeapAllocated<Statistics> SERIAL(statistics);
   Options* options = nullptr;
   Highscores* highscores = nullptr;
+  Encyclopedia* encyclopedia = nullptr;
   optional<milliseconds> lastUpdate;
   WPlayerControl SERIAL(playerControl) = nullptr;
   Collective* SERIAL(playerCollective) = nullptr;

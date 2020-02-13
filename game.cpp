@@ -656,11 +656,16 @@ Options* Game::getOptions() {
   return options;
 }
 
-void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f) {
+Encyclopedia* Game::getEncyclopedia() {
+  return encyclopedia;
+}
+
+void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f, Encyclopedia* e) {
   options = o;
   highscores = h;
   view = v;
   fileSharing = f;
+  encyclopedia = e;
 }
 
 const string& Game::getWorldName() const {

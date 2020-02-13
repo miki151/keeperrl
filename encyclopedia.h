@@ -24,19 +24,17 @@ class GameConfig;
 class BuildInfo;
 class SpellSchool;
 class Spell;
+struct PlayerInfo;
+class ContentFactory;
 
 class Encyclopedia {
   public:
-  Encyclopedia(vector<BuildInfo>, map<SpellSchoolId, SpellSchool>, vector<Spell>, const Technology&);
-  void present(View*, int lastInd = 0);
+  Encyclopedia(ContentFactory*);
+  ~Encyclopedia();
 
-  private:
-  vector<BuildInfo> buildInfo;
+  const Technology* technology;
   map<SpellSchoolId, SpellSchool> schools;
   vector<Spell> spells;
-  const Technology& technology;
-  void advance(View*, TechId) const;
-  void advances(View*, int lastInd = 0) const;
-  void spellSchools(View*, int lastInd = 0) const;
+  vector<PlayerInfo> bestiary;
 };
 

@@ -24,6 +24,7 @@
 
 class PlayerMessage;
 class SpecialTrait;
+class Encyclopedia;
 
 struct CreatureInfo {
   CreatureInfo(const Creature*);
@@ -39,7 +40,7 @@ struct CreatureInfo {
 static_assert(std::is_nothrow_move_constructible<CreatureInfo>::value, "T should be noexcept MoveConstructible");
 
 struct ItemInfo {
-  static ItemInfo get(const Creature*, const vector<Item*>&);
+  static ItemInfo get(const Creature*, const vector<Item*>&, const ContentFactory*);
   string HASH(name);
   string HASH(fullName);
   vector<string> HASH(description);
@@ -90,7 +91,7 @@ struct AvatarLevelInfo {
 
 class PlayerInfo {
   public:
-  PlayerInfo(const Creature*);
+  PlayerInfo(const Creature*, const ContentFactory*);
   string getFirstName() const;
   vector<AttributeInfo> HASH(attributes);
   optional<AvatarLevelInfo> HASH(avatarLevelInfo);
@@ -443,6 +444,7 @@ class GameInfo {
   GameSunlightInfo HASH(sunlightInfo);
   optional<TutorialInfo> HASH(tutorial);
   optional<CurrentLevelInfo> HASH(currentLevel);
+  const Encyclopedia* encyclopedia;
 
   vector<PlayerMessage> HASH(messageBuffer);
   bool HASH(takingScreenshot) = false;

@@ -50,6 +50,7 @@
 #include "monster_ai.h"
 #include "mem_usage_counter.h"
 #include "gui_elem.h"
+#include "encyclopedia.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -284,7 +285,8 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
   if (!noAutoSave)
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
-  game->initialize(options, highscores, view, fileSharing);
+  Encyclopedia encyclopedia(game->getContentFactory());
+  game->initialize(options, highscores, view, fileSharing, &encyclopedia);
   doWithSplash("Initializing game...", 0,
       [&] (ProgressMeter& meter) {
         game->initializeModels();
