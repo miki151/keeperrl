@@ -1252,6 +1252,18 @@ string Effects::Name::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f);
 }
 
+bool Effects::AIBelowHealth::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
+}
+
+string Effects::AIBelowHealth::getName(const ContentFactory* f) const {
+  return effect->getName(f);
+}
+
+string Effects::AIBelowHealth::getDescription(const ContentFactory* f) const {
+  return effect->getDescription(f);
+}
+
 #define FORWARD_CALL(RetType, Var, Name, ...)\
 Var->visit<RetType>([&](const auto& e) { return e.Name(__VA_ARGS__); })
 
@@ -1393,6 +1405,9 @@ bool Effect::apply(Position pos, Creature* attacker) const {
         return e.effect->apply(pos, attacker);
       },
       [&](const Effects::Name& e) {
+        return e.effect->apply(pos, attacker);
+      },
+      [&](const Effects::AIBelowHealth& e) {
         return e.effect->apply(pos, attacker);
       },
       [&](const Effects::SummonEnemy& summon) {
@@ -1594,6 +1609,9 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
           return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
         return EffectAIIntent::NONE;
       },
+      [&] (const Effects::Suicide&) {
+        return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+      },
       [&] (const Effects::Damage&) {
         return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
       },
@@ -1700,6 +1718,11 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
       [&] (const Effects::Name& e) {
         return e.effect->shouldAIApply(caster, pos);
       },
+      [&] (const Effects::AIBelowHealth& e) {
+        if (caster->getBody().getHealth() <= e.value)
+          return e.effect->shouldAIApply(caster, pos);
+        return EffectAIIntent::UNWANTED;
+      },
       [&](const Effects::AnimateItems& m) {
         if (caster && isConsideredInDanger(caster)) {
           int totalWeapons = 0;
@@ -1737,7 +1760,8 @@ optional<FXInfo> Effect::getProjectileFX() const {
       [&](const Effects::Pull&) -> optional<FXInfo> { return FXInfo{FXName::AIR_BLAST}.setReversed(); },
       [&](const Effects::Chance& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
       [&](const Effects::Description& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::Name& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); }
+      [&](const Effects::Name& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
+      [&](const Effects::AIBelowHealth& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); }
   );
 }
 
@@ -1750,7 +1774,8 @@ optional<ViewId> Effect::getProjectile() const {
       [&](const Effects::Blast&) -> optional<ViewId> { return ViewId("air_blast"); },
       [&](const Effects::Chance& e) -> optional<ViewId> { return e.effect->getProjectile(); },
       [&](const Effects::Description& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::Name& e) -> optional<ViewId> { return e.effect->getProjectile(); }
+      [&](const Effects::Name& e) -> optional<ViewId> { return e.effect->getProjectile(); },
+      [&](const Effects::AIBelowHealth& e) -> optional<ViewId> { return e.effect->getProjectile(); }
   );
 }
 
@@ -1790,6 +1815,7 @@ optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
       [&](const Effects::Chance& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
       [&](const Effects::Description& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
       [&](const Effects::Name& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
+      [&](const Effects::AIBelowHealth& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
       [&](const Effects::Area& a) -> optional<MinionEquipmentType> { return a.effect->getMinionEquipmentType(); },
       [&](const Effects::Filter& f) -> optional<MinionEquipmentType> { return f.effect->getMinionEquipmentType(); },
       [&](const Effects::Escape&) -> optional<MinionEquipmentType> { return MinionEquipmentType::COMBAT_ITEM; },
@@ -1818,6 +1844,7 @@ bool Effect::canAutoAssignMinionEquipment() const {
       [&](const Effects::Chance& e) { return e.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Description& e) { return e.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Name& e) { return e.effect->canAutoAssignMinionEquipment(); },
+      [&](const Effects::AIBelowHealth& e) { return e.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Area& a) { return a.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Filter& f) { return f.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Chain& c) {
