@@ -1228,6 +1228,18 @@ string Effects::Filter::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f) + suffix();
 }
 
+bool Effects::Description::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
+}
+
+string Effects::Description::getName(const ContentFactory* f) const {
+  return effect->getName(f);
+}
+
+string Effects::Description::getDescription(const ContentFactory* f) const {
+  return text;
+}
+
 #define FORWARD_CALL(RetType, Var, Name, ...)\
 Var->visit<RetType>([&](const auto& e) { return e.Name(__VA_ARGS__); })
 
@@ -1364,6 +1376,9 @@ bool Effect::apply(Position pos, Creature* attacker) const {
         if (Random.chance(e.value))
           return e.effect->apply(pos, attacker);
         return false;
+      },
+      [&](const Effects::Description& e) {
+        return e.effect->apply(pos, attacker);
       },
       [&](const Effects::SummonEnemy& summon) {
         CreatureGroup f = CreatureGroup::singleType(TribeId::getMonster(), summon.creature);
@@ -1664,6 +1679,9 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
       [&] (const Effects::Chance& e) {
         return e.effect->shouldAIApply(caster, pos);
       },
+      [&] (const Effects::Description& e) {
+        return e.effect->shouldAIApply(caster, pos);
+      },
       [&](const Effects::AnimateItems& m) {
         if (caster && isConsideredInDanger(caster)) {
           int totalWeapons = 0;
@@ -1699,7 +1717,8 @@ optional<FXInfo> Effect::getProjectileFX() const {
       [&](const Effects::Damage&) -> optional<FXInfo> { return {FXName::MAGIC_MISSILE}; },
       [&](const Effects::Blast&) -> optional<FXInfo> { return {FXName::AIR_BLAST}; },
       [&](const Effects::Pull&) -> optional<FXInfo> { return FXInfo{FXName::AIR_BLAST}.setReversed(); },
-      [&](const Effects::Chance& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); }
+      [&](const Effects::Chance& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
+      [&](const Effects::Description& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); }
   );
 }
 
@@ -1710,7 +1729,8 @@ optional<ViewId> Effect::getProjectile() const {
       [&](const Effects::Damage&) -> optional<ViewId> { return ViewId("force_bolt"); },
       [&](const Effects::Fire&) -> optional<ViewId> { return ViewId("fireball"); },
       [&](const Effects::Blast&) -> optional<ViewId> { return ViewId("air_blast"); },
-      [&](const Effects::Chance& e) -> optional<ViewId> { return e.effect->getProjectile(); }
+      [&](const Effects::Chance& e) -> optional<ViewId> { return e.effect->getProjectile(); },
+      [&](const Effects::Description& e) -> optional<ViewId> { return e.effect->getProjectile(); }
   );
 }
 
@@ -1748,6 +1768,7 @@ optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
   return effect->visit<optional<MinionEquipmentType>>(
       [&](const Effects::IncreaseMorale&) -> optional<MinionEquipmentType> { return MinionEquipmentType::COMBAT_ITEM; },
       [&](const Effects::Chance& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
+      [&](const Effects::Description& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
       [&](const Effects::Area& a) -> optional<MinionEquipmentType> { return a.effect->getMinionEquipmentType(); },
       [&](const Effects::Filter& f) -> optional<MinionEquipmentType> { return f.effect->getMinionEquipmentType(); },
       [&](const Effects::Escape&) -> optional<MinionEquipmentType> { return MinionEquipmentType::COMBAT_ITEM; },
@@ -1774,6 +1795,7 @@ bool Effect::canAutoAssignMinionEquipment() const {
   return effect->visit<bool>(
       [&](const Effects::Suicide&) { return false; },
       [&](const Effects::Chance& e) { return e.effect->canAutoAssignMinionEquipment(); },
+      [&](const Effects::Description& e) { return e.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Area& a) { return a.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Filter& f) { return f.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Chain& c) {

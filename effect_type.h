@@ -281,6 +281,12 @@ struct Fx {
   FXInfo SERIAL(info);
   SERIALIZE_ALL(info)
 };
+struct Description {
+  EFFECT_TYPE_INTERFACE;
+  string SERIAL(text);
+  HeapAllocated<Effect> SERIAL(effect);
+  SERIALIZE_ALL(text, effect)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -342,7 +348,8 @@ struct Fx {
   X(ColorVariant, 56)\
   X(Jump, 57)\
   X(FixedDamage, 58)\
-  X(Fx, 59)
+  X(Fx, 59)\
+  X(Description, 60)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
