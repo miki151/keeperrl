@@ -337,27 +337,6 @@
       { type = Simple "Bow" chance = 0.05 }
     }
   }
-"GHOST"
-  {
-    viewId = { "ghost" }
-    attr = {
-      DEFENSE 35
-      SPELL_DAMAGE 30 
-    }
-    body = {
-      type = NonHumanoid LARGE
-      material = SPIRIT
-    }
-    permanentEffects = {
-      FLYING 1
-      MAGIC_VULNERABILITY 1
-    }
-    chatReactionFriendly = "\"Wouuuouuu!!!\""
-    chatReactionHostile = "\"Wouuuouuu!!!\""
-    name = {
-      name = "ghost"
-    }
-  }
 "SPIRIT"
   {
     viewId = { "spirit" }

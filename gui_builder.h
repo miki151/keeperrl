@@ -316,8 +316,8 @@ class GuiBuilder {
   SGuiElem drawSpellSchoolLabel(const PlayerInfo::SpellSchool&);
   SGuiElem drawResources(const vector<CollectiveInfo::Resource>&, const optional<TutorialInfo>&, int width);
   SGuiElem drawBiomeMenu(SyncQueue<CampaignAction>&, const vector<View::CampaignOptions::BiomeInfo>&, int chosen);
-  SGuiElem drawBestiaryOverlay(const vector<PlayerInfo>&);
-  SGuiElem drawBestiaryButtons(const vector<PlayerInfo>&);
+  SGuiElem drawBestiaryOverlay(const vector<PlayerInfo>&, int index);
+  SGuiElem drawBestiaryButtons(const vector<PlayerInfo>&, int index);
   SGuiElem drawBestiaryPage(const PlayerInfo&);
 };
 

@@ -2296,11 +2296,11 @@ SGuiElem GuiBuilder::drawBestiaryPage(const PlayerInfo& minion) {
       topMargin, GuiFactory::TOP);
 }
 
-SGuiElem GuiBuilder::drawBestiaryButtons(const vector<PlayerInfo>& minions) {
+SGuiElem GuiBuilder::drawBestiaryButtons(const vector<PlayerInfo>& minions, int index) {
   CHECK(!minions.empty());
   auto list = WL(getListBuilder, legendLineHeight);
-  for (int index : All(minions)) {
-    auto& minion = minions[index];
+  for (int i : All(minions)) {
+    auto& minion = minions[i];
     auto viewId = minion.viewId;
     auto line = WL(getListBuilder);
     line.addElemAuto(WL(viewObject, viewId));
@@ -2308,27 +2308,24 @@ SGuiElem GuiBuilder::drawBestiaryButtons(const vector<PlayerInfo>& minions) {
     line.addMiddleElem(WL(rightMargin, 5, WL(renderInBounds, WL(label, minion.name))));
     line.addBackElem(drawBestAttack(minion.bestAttack), 60);
     list.addElem(WL(stack,
-          WL(button, [this, index] { bestiaryIndex = index; }),
-          WL(uiHighlightConditional, [index, this] { return index == bestiaryIndex;}),
+          WL(button, [this, i] { bestiaryIndex = i; }),
+          (i == index ? WL(uiHighlightLine) : WL(empty)),
           line.buildHorizontalList()));
   }
   return WL(scrollable, gui.margins(list.buildVerticalList(), 0, 5, 10, 0), &minionButtonsScroll, &scrollbarsHeld);
 }
 
-SGuiElem GuiBuilder::drawBestiaryOverlay(const vector<PlayerInfo>& creatures) {
+SGuiElem GuiBuilder::drawBestiaryOverlay(const vector<PlayerInfo>& creatures, int index) {
   int margin = 20;
   int minionListWidth = 330;
-  vector<SGuiElem> minionPages;
-  for (int i : All(creatures))
-    minionPages.push_back(WL(margins, drawBestiaryPage(creatures[i]), 10, 15, 10, 10));
   SGuiElem menu;
-  SGuiElem leftSide = drawBestiaryButtons(creatures);
+  SGuiElem leftSide = drawBestiaryButtons(creatures, index);
   menu = WL(stack,
       WL(horizontalList, makeVec(
           WL(margins, std::move(leftSide), 8, 15, 5, 0),
           WL(margins, WL(sprite, GuiFactory::TexId::VERT_BAR_MINI, GuiFactory::Alignment::LEFT),
             0, -15, 0, -15)), minionListWidth),
-      WL(leftMargin, minionListWidth + 20, WL(conditional, [this] { return bestiaryIndex;  }, std::move(minionPages))));
+      WL(leftMargin, minionListWidth + 20, WL(margins, drawBestiaryPage(creatures[index]), 10, 15, 10, 10)));
   return WL(preferredSize, 640 + minionListWidth, 600,
       WL(miniWindow, WL(stack,
       WL(keyHandler, getButtonCallback({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}),
@@ -2587,7 +2584,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
   }
   if (bottomWindow == BESTIARY)
     ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBestiaryOverlay, this), THIS_LINE,
-         info.encyclopedia->bestiary), OverlayInfo::TOP_LEFT});
+         info.encyclopedia->bestiary, bestiaryIndex), OverlayInfo::TOP_LEFT});
   ret.push_back({drawMapHintOverlay(), OverlayInfo::MAP_HINT});
 }
 
