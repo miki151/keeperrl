@@ -287,6 +287,12 @@ struct Description {
   HeapAllocated<Effect> SERIAL(effect);
   SERIALIZE_ALL(text, effect)
 };
+struct Name {
+  EFFECT_TYPE_INTERFACE;
+  string SERIAL(text);
+  HeapAllocated<Effect> SERIAL(effect);
+  SERIALIZE_ALL(text, effect)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -349,7 +355,8 @@ struct Description {
   X(Jump, 57)\
   X(FixedDamage, 58)\
   X(Fx, 59)\
-  X(Description, 60)
+  X(Description, 60)\
+  X(Name, 61)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
