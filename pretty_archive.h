@@ -8,24 +8,6 @@ struct PrettyException {
   string text;
 };
 
-class PrettyOutputArchive : public cereal::OutputArchive<PrettyOutputArchive> {
-  public:
-    PrettyOutputArchive(std::ostream& stream)
-          : OutputArchive<PrettyOutputArchive>(this), os(stream) {}
-
-    using base = cereal::OutputArchive<PrettyOutputArchive>;
-
-    template<class... Types>
-    PrettyOutputArchive& operator() (Types&&...args) {
-      base::operator()(std::forward<Types>(args)...);
-      return *this;
-    }
-
-    ~PrettyOutputArchive() CEREAL_NOEXCEPT = default;
-
-    std::ostream& os;
-};
-
 struct StreamPos {
   optional<string> filename;
   int line;
@@ -72,10 +54,10 @@ static pair<string, vector<StreamPos>> removeFormatting(string contents, optiona
   return {ret, pos};
 }
 
-class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
+class PrettyInputArchive {
   public:
     PrettyInputArchive(const vector<string>& inputs, const vector<string>& filenames, KeyVerifier* v)
-          : InputArchive<PrettyInputArchive>(this), keyVerifier(v ? *v : dummyKeyVerifier) {
+          : keyVerifier(v ? *v : dummyKeyVerifier) {
       string allInput;
       if (!filenames.empty())
         allInput = "{\n";
@@ -88,8 +70,6 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
         allInput.append("\n}");
       is.str(allInput);
     }
-
-    ~PrettyInputArchive() CEREAL_NOEXCEPT = default;
 
     string eat(const char* expected = nullptr) {
       string s;
@@ -162,6 +142,18 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
       this->operator()(elem);
     }
 
+    PrettyInputArchive& operator()() {
+      return *this;
+    }
+
+    template <typename T, typename... Types>
+    PrettyInputArchive& operator()(T&& arg1, Types&& ... args) {
+      prologue(*this, arg1);
+      load(*this, arg1);
+      epilogue(*this, arg1);
+      return this->operator()(args...);
+    }
+
     void seek(long p) {
       is.seekg(p);
     }
@@ -180,6 +172,8 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
     KeyVerifier& keyVerifier;
     bool inheritingKey = false;
 
+    using is_loading = std::true_type;
+
     private:
     vector<NodeData> nodeData;
     bool nextElemInherited = false;
@@ -188,95 +182,75 @@ class PrettyInputArchive : public cereal::InputArchive<PrettyInputArchive> {
     KeyVerifier dummyKeyVerifier;
 };
 
-namespace cereal {
-  namespace variant_detail {
-    template<int N, class Variant, class ... Args>
-    typename std::enable_if<N == Variant::num_types>::type
-    load_variant(PrettyInputArchive & ar, const string& target, Variant & /*variant*/) {
-      ar.error("Element \"" + target + "\" not part of type " + Variant::getVariantName());
-    }
+template<typename T, typename int_<decltype(serialize(std::declval<PrettyInputArchive&>(), std::declval<T&>()))>::type = 0>
+void load(PrettyInputArchive& ar1, T& obj) {
+  serialize(ar1, obj);
+}
 
-    template<int N, class Variant, class H, class ... T>
-    typename std::enable_if<N < Variant::num_types, void>::type
-    load_variant(PrettyInputArchive & ar1, const string& target, Variant & variant) {
-      if (variant.getName(N) == target) {
-        H value;
-        ar1(value);
-        variant = Variant(value);
-      } else
-        load_variant<N+1, Variant, T...>(ar1, target, variant);
-    }
+template<typename T, typename int_<decltype(serialize(std::declval<PrettyInputArchive&>(), std::declval<T&>(), std::declval<unsigned>()))>::type = 0>
+void load(PrettyInputArchive& ar1, T& obj) {
+  serialize(ar1, obj, unsigned(1000));
+}
+
+template<typename T, typename int_<decltype(std::declval<T&>().serialize(std::declval<PrettyInputArchive&>(), std::declval<unsigned>()))>::type = 0>
+void load(PrettyInputArchive& ar1, T& obj) {
+  obj.serialize(ar1, unsigned(1000));
+}
+
+template<typename T, typename int_<decltype(std::declval<T&>().serialize(std::declval<PrettyInputArchive&>()))>::type = 0>
+void load(PrettyInputArchive& ar1, T& obj) {
+  obj.serialize(ar1);
+}
+
+namespace variant_detail {
+  template<int N, class Variant, class ... Args>
+  typename std::enable_if<N == Variant::num_types>::type
+  load_variant(PrettyInputArchive & ar, const string& target, Variant & /*variant*/) {
+    ar.error("Element \"" + target + "\" not part of type " + Variant::getVariantName());
   }
 
-  //! Saving for boost::variant
-  template <typename VariantType1, const char* Str(bool), typename... VariantTypes> inline
-  void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, NamedVariant<Str, VariantType1, VariantTypes...> const & v ) {
-    v.visit([&](const auto& elem) {
-        ar1.os << v.getName(v.index());
-        ar1.os << ' ';
-        ar1(elem);
-    });
+  template<int N, class Variant, class H, class ... T>
+  typename std::enable_if<N < Variant::num_types, void>::type
+  load_variant(PrettyInputArchive & ar1, const string& target, Variant & variant) {
+    if (variant.getName(N) == target) {
+      H value;
+      ar1(value);
+      variant = Variant(value);
+    } else
+      load_variant<N+1, Variant, T...>(ar1, target, variant);
   }
+}
 
-  //! Loading for boost::variant
-  template <typename VariantType1, const char* Str(bool), typename... VariantTypes> inline
-  void CEREAL_LOAD_FUNCTION_NAME( PrettyInputArchive & ar, NamedVariant<Str, VariantType1, VariantTypes...> & v )
-  {
-    string name;
-    ar.readText(name);
-    variant_detail::load_variant<0, NamedVariant<Str, VariantType1, VariantTypes...>, VariantType1, VariantTypes...>(
-        ar, name, v);
-  }
-} // namespace cereal
+//! Loading for NamedVariant
+template <typename VariantType1, const char* Str(bool), typename... VariantTypes> inline
+void serialize( PrettyInputArchive & ar, NamedVariant<Str, VariantType1, VariantTypes...> & v )
+{
+  string name;
+  ar.readText(name);
+  variant_detail::load_variant<0, NamedVariant<Str, VariantType1, VariantTypes...>, VariantType1, VariantTypes...>(
+      ar, name, v);
+}
 
-namespace cereal {
-
-  //! Saving for enum types
-  template <class T> inline
-  typename std::enable_if<std::is_enum<T>::value,void>::type
-  CEREAL_SAVE_FUNCTION_NAME( PrettyOutputArchive & ar, T const & t)
-  {
-    ar.os << EnumInfo<T>::getString(t) << " ";
-  }
-
-  //! Loading for enum types
-  template <class T> inline
-  typename std::enable_if<std::is_enum<T>::value, void>::type
-  CEREAL_LOAD_FUNCTION_NAME( PrettyInputArchive & ar, T & t)
-  {
-    string s;
-    ar.readText(s);
-    if (auto res = EnumInfo<T>::fromStringSafe(s))
-      t = *res;
-    else
-      ar.error("Error reading "_s + EnumInfo<T>::getName() + " value \"" + s + "\"");
-  }
-
-  template<class T>
-  struct specialize<typename std::enable_if<std::is_enum<T>::value, PrettyInputArchive>::type, T, cereal::specialization::non_member_load_save> {};
-
-  template<class T>
-  struct specialize<typename std::enable_if<std::is_enum<T>::value, PrettyOutputArchive>::type, T, cereal::specialization::non_member_load_save> {};
-
+//! Loading for enum types
+template <class T> inline
+typename std::enable_if<std::is_enum<T>::value, void>::type
+serialize( PrettyInputArchive & ar, T & t)
+{
+  string s;
+  ar.readText(s);
+  if (auto res = EnumInfo<T>::fromStringSafe(s))
+    t = *res;
+  else
+    ar.error("Error reading "_s + EnumInfo<T>::getName() + " value \"" + s + "\"");
 }
 
 template<class T> inline
 typename std::enable_if<std::is_arithmetic<T>::value && !std::is_enum<T>::value, void>::type
-CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, T const& t) {
-  ar.os << t << " ";
-}
-
-template<class T> inline
-typename std::enable_if<std::is_arithmetic<T>::value && !std::is_enum<T>::value, void>::type
-CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, T& t) {
+serialize(PrettyInputArchive& ar, T& t) {
   ar.readText(t);
 }
 
-inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, std::string const& t) {
-  ar.os << std::quoted(t) << " ";
-}
-
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, std::string& t) {
+inline void serialize(PrettyInputArchive& ar, std::string& t) {
   auto bookmark = ar.bookmark();
   string tmp;
   ar.readText(tmp);
@@ -286,7 +260,7 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, std::string& t) {
   ar.readText(std::quoted(t));
 }
 
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, char& c) {
+inline void serialize(PrettyInputArchive& ar, char& c) {
   string s;
   ar.readText(std::quoted(s));
   if (s[0] == '0')
@@ -295,12 +269,7 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, char& c) {
     c = s.at(0);
 }
 
-inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, char c) {
-  string s {c};
-  ar.os << std::quoted(s);
-}
-
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, bool& c) {
+inline void serialize(PrettyInputArchive& ar, bool& c) {
   string s;
   ar.readText(s);
   if (s == "false")
@@ -311,16 +280,12 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, bool& c) {
     ar.error("Unrecognized bool value: \"" + s + "\"");
 }
 
-inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar, bool c) {
-  ar.os << (c ? "true" : "fasle");
-}
-
 struct PrettyFlag {
   bool value = false;
 };
 
 
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, PrettyFlag& c) {
+inline void serialize(PrettyInputArchive& ar, PrettyFlag& c) {
   string s;
   ar.readText(s);
   if (s == "true")
@@ -329,11 +294,8 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar, PrettyFlag& c) {
     ar.error("This value can only be set to \"true\" or not set at all");
 }
 
-typedef StreamCombiner<ostringstream, PrettyOutputArchive> PrettyOutput;
-//typedef StreamCombiner<istringstream, PrettyInputArchive> PrettyInput;
-
 template <typename T>
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, vector<T>& v) {
+inline void serialize(PrettyInputArchive& ar1, vector<T>& v) {
   if (!ar1.eatMaybe("append"))
     v.clear();
   string s;
@@ -351,7 +313,7 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, vector<T>& v) {
 }
 
 template <typename T, typename U>
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, map<T, U>& m) {
+inline void serialize(PrettyInputArchive& ar1, map<T, U>& m) {
   map<T, vector<long>> bookmarks;
   auto getBookmarkFor = [&bookmarks] (const T& key, long location) -> optional<long> {
     auto& all = bookmarks[key];
@@ -437,7 +399,7 @@ inline void serialize(PrettyInputArchive& ar1, EnumMap<T, U>& m) {
 }
 
 template <typename T>
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, optional<T>& v) {
+inline void serialize(PrettyInputArchive& ar1, optional<T>& v) {
   if (ar1.eatMaybe("append")) {
     if (!v)
       ar1.error("Appending to an optional value that was not initialized");
@@ -461,7 +423,7 @@ class optional_no_none : public optional<T> {
 
 
 template <typename T>
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, optional_no_none<T>& v) {
+inline void serialize(PrettyInputArchive& ar1, optional_no_none<T>& v) {
   v.reset();
   if (ar1.eatMaybe("none"))
     ar1.error("This value can't be reset");
@@ -471,44 +433,13 @@ inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, optional_no_none<
 }
 
 template <typename T>
-inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, optional<T> const& v) {
-  if (!v)
-    ar1.os << "none";
-  else
-    ar1 << *v;
-}
-
-template <typename T>
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, unique_ptr<T>& v) {
+inline void serialize(PrettyInputArchive& ar1, unique_ptr<T>& v) {
   v.reset();
   if (ar1.eatMaybe("none"))
     return;
   T* t = new T();
   ar1(*t);
   v.reset(t);
-}
-
-template <typename T>
-inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, unique_ptr<T> const& v) {
-  if (!v)
-    ar1.os << "none";
-  else
-    ar1 << *v;
-}
-
-template <class T>
-inline void CEREAL_SAVE_FUNCTION_NAME(PrettyOutputArchive& ar1, cereal::NameValuePair<T> const& t) {
-  if (strcmp(t.name, "cereal_class_version"))
-    ar1(t.value);
-}
-
-template <class T>
-inline void setVersion1000(T&) {
-}
-
-template <>
-inline void setVersion1000(unsigned int& a) {
-  a = 1000;
 }
 
 struct EndPrettyInput {
@@ -521,11 +452,8 @@ inline EndPrettyInput& endInput() {
 
 template <class T>
 inline void handleNamePair(PrettyInputArchive& ar1, const string& name, T& value, bool optional) {
-  if (name != "cereal_class_version")
-    ar1.getNode().loaders.push_back(PrettyInputArchive::LoaderInfo{name,
-        [&ar1, &value](bool init){ if (init) value = T{}; ar1(value); }, optional});
-  else
-    setVersion1000(value);
+  ar1.getNode().loaders.push_back(PrettyInputArchive::LoaderInfo{name,
+      [&ar1, &value](bool init){ if (init) value = T{}; ar1(value); }, optional});
 }
 
 template <class T>
@@ -538,22 +466,22 @@ inline void serialize(PrettyInputArchive& ar1, SkipPrettyValue<T>& t) {
 }
 
 template <class T>
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<T>& t) {
+inline void serialize(PrettyInputArchive& ar1, cereal::NameValuePair<T>& t) {
   handleNamePair(ar1, t.name, t.value, false);
 }
 
 template <class T>
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<optional<T>&>& t) {
+inline void serialize(PrettyInputArchive& ar1, cereal::NameValuePair<optional<T>&>& t) {
   handleNamePair(ar1, t.name, t.value, true);
 }
 
 template <class T>
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<heap_optional<T>&>& t) {
+inline void serialize(PrettyInputArchive& ar1, cereal::NameValuePair<heap_optional<T>&>& t) {
   handleNamePair(ar1, t.name, t.value, true);
 }
 
 template <class T>
-inline void CEREAL_LOAD_FUNCTION_NAME(PrettyInputArchive& ar1, cereal::NameValuePair<optional_no_none<T>&>& t) {
+inline void serialize(PrettyInputArchive& ar1, cereal::NameValuePair<optional_no_none<T>&>& t) {
   handleNamePair(ar1, t.name, t.value, true);
 }
 
@@ -582,6 +510,10 @@ namespace pretty_tuple_detail {
 template <class ... Types> inline
 void serialize(PrettyInputArchive& ar, std::tuple<Types...>& tuple) {
   pretty_tuple_detail::serialize<std::tuple_size<std::tuple<Types...>>::value>::template apply( ar, tuple );
+}
+
+template <class T, cereal::traits::EnableIf<std::is_arithmetic<T>::value> = cereal::traits::sfinae>
+inline void prologue(PrettyInputArchive&, T const & ) {
 }
 
 template <class T, cereal::traits::EnableIf<!std::is_arithmetic<T>::value> = cereal::traits::sfinae>
@@ -647,6 +579,10 @@ inline void serialize(PrettyInputArchive& ar1, EndPrettyInput&) {
   prettyEpilogue(ar1);
 }
 
+template <class T, cereal::traits::EnableIf<std::is_arithmetic<T>::value> = cereal::traits::sfinae>
+inline void epilogue(PrettyInputArchive& ar1, T const &) {
+}
+
 template <class T, cereal::traits::EnableIf<!std::is_arithmetic<T>::value> = cereal::traits::sfinae>
 inline void epilogue(PrettyInputArchive& ar1, T const &) {
   prettyEpilogue(ar1);
@@ -683,17 +619,7 @@ inline void prologue(PrettyInputArchive&, EndPrettyInput const & ) { }
 
 inline void epilogue(PrettyInputArchive&, EndPrettyInput const & ) { }
 
-//! Serializing SizeTags to binary
-template <class Archive, class T> inline
-CEREAL_ARCHIVE_RESTRICT(PrettyInputArchive, PrettyOutputArchive)
-CEREAL_SERIALIZE_FUNCTION_NAME(Archive& ar1, cereal::SizeTag<T> & t) {
+template <class T> inline
+void serialize(PrettyInputArchive& ar1, cereal::SizeTag<T> & t) {
   ar1(t.size);
 }
-
-// register archives for polymorphic support
-// Commented out because it causes linker errors in item_type.cpp
-//CEREAL_REGISTER_ARCHIVE(PrettyOutputArchive)
-//CEREAL_REGISTER_ARCHIVE(PrettyInputArchive)
-
-// tie input and output archives together
-CEREAL_SETUP_ARCHIVE_TRAITS(PrettyInputArchive, PrettyOutputArchive)

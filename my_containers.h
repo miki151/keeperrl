@@ -420,13 +420,8 @@ class vector {
   int modCounter = 0;
 };
 
-template <typename Archive, typename T>
-inline void save(Archive& ar1, const vector<T>& v) {
-  ar1(v.impl);
-}
-
 template <class Archive, typename T>
-inline void load(Archive& ar1, vector<T>& v) {
+inline void serialize(Archive& ar1, vector<T>& v) {
   ar1(v.impl);
 }
 

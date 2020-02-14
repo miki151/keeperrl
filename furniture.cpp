@@ -585,35 +585,35 @@ static ViewLayer getViewLayer(FurnitureLayer layer) {
 
 #include "pretty_archive.h"
 template <>
-void Furniture::serialize(PrettyInputArchive& ar, unsigned int v) {
+void Furniture::serialize(PrettyInputArchive& ar1, unsigned int v) {
   optional<ViewId> viewId;
   if (viewObject)
     viewId = viewObject->id();
-  ar >> NAMED(viewId);
+  ar1(NAMED(viewId));
   optional<ViewLayer> viewLayer;
   if (viewObject)
     viewLayer = viewObject->layer();
-  ar >> NAMED(viewLayer);
+  ar1(NAMED(viewLayer));
   PrettyFlag blockMovement;
-  ar >> OPTION(blockMovement);
+  ar1(OPTION(blockMovement));
   optional_no_none<int> strength;
-  ar >> NAMED(strength);
+  ar1(NAMED(strength));
   optional_no_none<vector<pair<int, DestroyAction::Type>>> strength2;
-  ar >> NAMED(strength2);
+  ar1(NAMED(strength2));
   optional_no_none<Dir> attachmentDir;
   if (viewObject)
     if (auto dir = viewObject->getAttachmentDir())
       attachmentDir = *dir;
-  ar >> NAMED(attachmentDir);
+  ar1(NAMED(attachmentDir));
   PrettyFlag blockingEnemies;
-  ar >> OPTION(blockingEnemies);
+  ar1(OPTION(blockingEnemies));
   optional_no_none<double> waterDepth;
   if (viewObject)
     if (auto depth = viewObject->getAttribute(ViewObjectAttribute::WATER_DEPTH))
       waterDepth = *depth;
-  ar >> NAMED(waterDepth);
-  serializeImpl(ar, v);
-  ar >> endInput();
+  ar1(NAMED(waterDepth));
+  serializeImpl(ar1, v);
+  ar1(endInput());
   if (blockMovement.value)
     setBlocking();
   if (strength)

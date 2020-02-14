@@ -69,6 +69,6 @@ SERIALIZATION_CONSTRUCTOR_IMPL(ItemList)
 template<> void ItemList::serialize(PrettyInputArchive& ar1, unsigned) {
   double prefixChance = 0;
   ar1(OPTION(items), OPTION(unique), OPTION(multiItems), OPTION(prefixChance));
-  ar1 >> endInput();
+  ar1(endInput());
   setRandomPrefixes(prefixChance);
 }

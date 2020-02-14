@@ -84,7 +84,7 @@ SERIALIZE_DEF(Skillset, values, workshopValues)
 template<>
 void Skillset::serialize(PrettyInputArchive& ar1, unsigned) {
   map<string, double> input;
-  ar1 >> input;
+  ar1(input);
   for (auto& elem : input) {
     if (elem.second < 0 || elem.second > 1)
       ar1.error("Skill value for "_s + elem.first + " must be between 0 and one, inclusive.");
