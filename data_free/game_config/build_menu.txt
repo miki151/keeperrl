@@ -320,5 +320,7 @@
   {
     { Trap "TRAP_TRIGGER" { "terror_trap" }                                 "Trap trigger"     "Traps"
         "Triggers all other traps around it." 0                   { TechId "traps" }}
+    { Trap "DESTROY_WALLS_TRAP" { "terror_trap" }                           "Crumble trap"     "Traps"
+        "All walls up to two tiles away are destroyed." 0         { TechId "traps" }}
   }
  

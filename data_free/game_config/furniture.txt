@@ -1289,6 +1289,14 @@
   warning = true
   constructMessage = SET_UP
 }
+"DESTROY_WALLS_TRAP"
+{
+  name = "crumble trap"
+  viewId = { "fire_trap" }
+  entryType = Trap { Area 2 DestroyWalls DIG }
+  warning = true
+  constructMessage = SET_UP
+}
 "BOULDER_TRAP"
 {
   name = "boulder trap"

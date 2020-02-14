@@ -114,6 +114,8 @@
 {
   "WORKSHOP"
   {
+      {{TrapItem "TRAP_TRIGGER" "trigger"}   8       "WOOD" 20   "traps"}
+      {{TrapItem "DESTROY_WALLS_TRAP" "crumble"}8    "WOOD" 20   "traps"}
       {{Assembled "AUTOMATON_WORKER_WOOD" none}   6       "WOOD" 20    "automatons"}
       {{Assembled "AUTOMATON_CORPUS_WOOD" {"automaton_corpus" Rgb 180 140 55 255}}
             8       "WOOD" 30    "automatons"}
@@ -123,7 +125,6 @@
       {{Simple    "ArcherHeadWood"}          2       "WOOD" 5    "advanced automatons"}
       {{Simple    "AutomatonLegsWood"}       2       "WOOD" 5    "automatons"}
       {{Simple    "AutomatonArmsWood"}       2       "WOOD" 5    "automatons"}
-      {{TrapItem "TRAP_TRIGGER" "fire"}      8        "WOOD" 20      "traps"}
   } 
   "FORGE"
   {
