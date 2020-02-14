@@ -299,6 +299,11 @@ struct AIBelowHealth {
   HeapAllocated<Effect> SERIAL(effect);
   SERIALIZE_ALL(value, effect)
 };
+struct AITargetEnemy {
+  EFFECT_TYPE_INTERFACE;
+  HeapAllocated<Effect> SERIAL(effect);
+  SERIALIZE_ALL(effect)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -363,7 +368,8 @@ struct AIBelowHealth {
   X(Fx, 59)\
   X(Description, 60)\
   X(Name, 61)\
-  X(AIBelowHealth, 62)
+  X(AIBelowHealth, 62)\
+  X(AITargetEnemy, 63)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

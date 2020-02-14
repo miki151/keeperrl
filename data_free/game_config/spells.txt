@@ -354,6 +354,15 @@
   cooldown = 30
   sound = SPELL_BLAST
 }
+"fire trap"
+{
+  symbol = "◌"
+  effect =  AITargetEnemy CustomArea PlaceFurniture "FIRE_WALL" { 0 -2 1 -2 2 -1 2 0 2 1 1 2 0 2 -1 2 -2 1 -2 0 -2 -1 -1 -2 }
+  endOnly = true
+  range = 8
+  cooldown = 30
+  sound = SPELL_BLAST
+}
 "fireball"
 {
   symbol = "🔥"

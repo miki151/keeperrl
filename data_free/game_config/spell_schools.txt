@@ -35,6 +35,7 @@
   "advanced fire elemental" 2
   "fireball" 3
   "firewall" 5
+  "fire trap" 7
 }
 "illusion" SPELL
 {

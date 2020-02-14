@@ -892,7 +892,7 @@
       firstNameGen = "DRAGON"
       stackName = "dragon"
     }
-    spells = { "healing" "deception" "haste" "cure poison" "fire breath"}
+    spells = { "healing" "deception" "haste" "cure poison" "fire breath" "fire trap" }
     inventory = {
       { Simple "GoldPiece" 120 200 }
       { type = Glyph WEAPON VictimEffect 0.3 Fire chance = 0.3 }
@@ -3238,6 +3238,7 @@
     maxLevelIncrease = {
       SPELL 9
     }
+    spells = { "fire trap" }
     gender = FEMALE
     permanentEffects = {
       FIRE_RESISTANT 1
@@ -3279,6 +3280,7 @@
     name = {
       name = "fire elemental"
     }
+    gender = IT
   }
 "AIR_ELEMENTAL"
   {
@@ -3303,6 +3305,7 @@
     name = {
       name = "air elemental"
     }
+    gender = IT
   }
 "EARTH_ELEMENTAL"
   {
@@ -3323,6 +3326,7 @@
     name = {
       name = "earth elemental"
     }
+    gender = IT
   }
 "WATER_ELEMENTAL"
   {
@@ -3344,6 +3348,7 @@
     name = {
       name = "water elemental"
     }
+    gender = IT
   }
 "ENT"
   {
@@ -3366,6 +3371,7 @@
     name = {
       name = "tree spirit"
     }
+    gender = IT
   }
 "ANGEL"
   {
@@ -3509,6 +3515,7 @@
     chatReactionFriendly = "\"Gaze upon my magnificence and tremble, mortal!\""
     chatReactionHostile = "\"How dare you defy a GOD!\""
     deathDescription = "vanquished. May he never rise again"
+    gender = IT
   }
 "ADOXIE_FOOT_LEFT"
   {
@@ -3517,6 +3524,7 @@
       DEFENSE 50 
       SPELL_DAMAGE 60
     }
+    gender = IT
     courage = 100
     body = {
       type = NonHumanoid HUGE
@@ -3620,4 +3628,5 @@
     name = {
       name = "abomination"
     }
+    gender = IT
   }
