@@ -1,4 +1,5 @@
 "alchemy"                  { "Build a laboratory and produce basic potions." }
+"incendiary alchemy"       { "Produce incendiary potions." { "alchemy"} }
 "advanced alchemy"         { "Produce more powerful potions."                               {"alchemy"} }
 "alchemical conversion"    { "Convert resources to and from gold."                          {"alchemy"} }
 "humanoid mutation"        { "Breed new, very powerful humanoid species."                   {"alchemy"} }
@@ -8,6 +9,7 @@
 "jewellery"                { "Build a jeweler room and produce magical rings and amulets."  {"iron working" }}
 "two-handed weapons"       { "Produce war hammers and battle axes."                         {"iron working" }}
 "traps"                    { "Produce traps in the workshop." }
+"advanced traps"           { "Produce more advanced traps and mechanisms." { "traps"} }
 "archery"                  { "Produce bows and arrows." }
 "sorcery"                  { "Learn basic spells." }
 "advanced sorcery"         { "Learn more advanced spells."                                  {"sorcery"}}

@@ -951,7 +951,7 @@ void Position::throwItem(vector<PItem> item, const Attack& attack, int maxDist, 
     Position prev = *this;
     for (auto& pos : trajectory) {
       if (pos.stopsProjectiles(vision)) {
-        item[0]->onHitSquareMessage(pos, item.size());
+        item[0]->onHitSquareMessage(pos, attack, item.size());
         trajectory.pop_back();
         getGame()->addEvent(
             EventInfo::Projectile{none, item[0]->getViewObject().id(), *this, prev, SoundId::SHOOT_BOW});

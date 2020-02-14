@@ -102,7 +102,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   virtual void iceDamage(Position);
   const Fire& getFire() const;
 
-  void onHitSquareMessage(Position, int numItems);
+  void onHitSquareMessage(Position, const Attack& attack, int numItems);
   void onHitCreature(Creature* c, const Attack& attack, int numItems);
 
   TimeInterval getApplyTime() const;

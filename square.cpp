@@ -117,7 +117,7 @@ void Square::onItemLands(Position pos, vector<PItem> item, const Attack& attack)
       dropItems(pos, std::move(item));
     return;
   }
-  item[0]->onHitSquareMessage(pos, item.size());
+  item[0]->onHitSquareMessage(pos, attack, item.size());
   if (!item[0]->isDiscarded())
     pos.dropItems(std::move(item));
 }

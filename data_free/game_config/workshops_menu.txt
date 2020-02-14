@@ -114,8 +114,8 @@
 {
   "WORKSHOP"
   {
-      {{TrapItem "TRAP_TRIGGER" "trigger"}   8       "WOOD" 20   "traps"}
-      {{TrapItem "DESTROY_WALLS_TRAP" "crumble"}8    "WOOD" 20   "traps"}
+      {{TrapItem "TRAP_TRIGGER" "trigger"}   8       "WOOD" 20   "advanced traps"}
+      {{TrapItem "DESTROY_WALLS_TRAP" "crumble"}8    "WOOD" 20   "advanced traps"}
       {{Assembled "AUTOMATON_WORKER_WOOD" none}   6       "WOOD" 20    "automatons"}
       {{Assembled "AUTOMATON_CORPUS_WOOD" {"automaton_corpus" Rgb 180 140 55 255}}
             8       "WOOD" 30    "automatons"}
@@ -146,14 +146,17 @@
   } 
   "LABORATORY"
   {
-      {{AutomatonPaint Rgb 210 90 90 255} 2 "GOLD" 0 }
-      {{AutomatonPaint Rgb 90 210 90 255} 2 "GOLD" 0 }
-      {{AutomatonPaint Rgb 90 90 210 255} 2 "GOLD" 0 }
-      {{AutomatonPaint Rgb 210 210 90 255} 2 "GOLD" 0 }
-      {{AutomatonPaint Rgb 90 210 210 255} 2 "GOLD" 0 }
-      {{AutomatonPaint Rgb 210 90 210 255} 2 "GOLD" 0 }
-      {{AutomatonPaint Rgb 90 90 90 255} 2 "GOLD" 0 }
-      {{AutomatonPaint Rgb 210 210 210 255} 2 "GOLD" 0 }
+      {{Potion Fire} 4 "GOLD" 5}
+      {{Potion Name "more fire" Area 1 Fire} 8 "GOLD" 10}
+      {{Potion Lasting OIL} 4 "GOLD" 15}
+      {{AutomatonPaint Rgb 210 90 90 255} 2 }
+      {{AutomatonPaint Rgb 90 210 90 255} 2 }
+      {{AutomatonPaint Rgb 90 90 210 255} 2 }
+      {{AutomatonPaint Rgb 210 210 90 255} 2 }
+      {{AutomatonPaint Rgb 90 210 210 255} 2 }
+      {{AutomatonPaint Rgb 210 90 210 255} 2 }
+      {{AutomatonPaint Rgb 90 90 90 255} 2 }
+      {{AutomatonPaint Rgb 210 210 210 255} 2 }
   }
 }
 
