@@ -15,6 +15,7 @@
 #include "collective.h"
 #include "territory.h"
 #include "health_type.h"
+#include "attack_trigger.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
@@ -810,18 +811,32 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
   PROFILE_BLOCK("LastingEffects::tick");
   switch (effect) {
     case LastingEffect::SPYING: {
-      auto enemyId = [&] ()->optional<ViewId> {
-        for (Collective* col : c->getPosition().getModel()->getCollectives())
-          if ((col->getTerritory().contains(c->getPosition()) ||
-                 col->getTerritory().getStandardExtended().contains(c->getPosition())) &&
-              col->getTribe()->isEnemy(c) && !col->getCreatures().empty())
-            return Random.choose(col->getCreatures())->getViewObject().id();
-        return none;
-      }();
-      if (enemyId && !c->hasAlternativeViewId())
-        c->setAlternativeViewId(*enemyId);
-      if (!enemyId && c->hasAlternativeViewId())
-        c->setAlternativeViewId(none);
+      Collective* enemy = nullptr;
+      optional<ViewId> enemyId;
+      for (Collective* col : c->getPosition().getModel()->getCollectives())
+        if ((col->getTerritory().contains(c->getPosition()) ||
+               col->getTerritory().getStandardExtended().contains(c->getPosition())) &&
+            col->getTribe()->isEnemy(c) && !col->getCreatures().empty()) {
+          enemyId = Random.choose(col->getCreatures())->getViewObject().id();
+          enemy = col;
+        }
+      auto playerCollective = c->getGame()->getPlayerCollective();
+      auto isTriggered = [&] {
+        for (auto& t : enemy->getTriggers(playerCollective))
+          if (t.trigger.contains<StolenItems>())
+            return true;
+        return false;
+      };
+      if (enemy && playerCollective->getCreatures().contains(c) && isTriggered()) {
+        c->you(MsgType::YOUR, "identity is uncovered!");
+        if (c->hasAlternativeViewId())
+          c->setAlternativeViewId(none);
+      } else {
+        if (enemyId && !c->hasAlternativeViewId())
+          c->setAlternativeViewId(*enemyId);
+        if (!enemyId && c->hasAlternativeViewId())
+          c->setAlternativeViewId(none);
+      }
       break;
     }
     case LastingEffect::BLEEDING:
@@ -1141,8 +1156,10 @@ bool LastingEffects::canSee(const Creature* c1, const Creature* c2) {
 
 bool LastingEffects::modifyIsEnemyResult(const Creature* c, const Creature* other, GlobalTime time, bool result) {
   PROFILE;
-  if (c->isAffected(LastingEffect::PEACEFULNESS, time) ||
-      other->isAffected(LastingEffect::SPYING, time) || (c->isAffected(LastingEffect::SPYING, time) && c->hasAlternativeViewId()))
+  auto isSpy = [&] (const Creature* c) {
+    return c->isAffected(LastingEffect::SPYING, time) && c->hasAlternativeViewId();
+  };
+  if (c->isAffected(LastingEffect::PEACEFULNESS, time) || isSpy(c) || isSpy(other))
     return false;
   if (c->isAffected(LastingEffect::INSANITY, time) && !other->getStatus().contains(CreatureStatus::LEADER))
     return true;
