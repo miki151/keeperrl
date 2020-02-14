@@ -1224,7 +1224,7 @@ CreatureAction Creature::attack(Creature* other) const {
       wasDamaged |= other->takeDamage(attack, true);
       for (auto& e : weaponInfo.attackerEffect)
         e.apply(position);
-      if (other->isDead())
+      if (other->isDead() || other->isAffected(LastingEffect::STUNNED))
         break;
     }
     auto movementInfo = (*self->spendTime())
