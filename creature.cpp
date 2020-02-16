@@ -1532,7 +1532,7 @@ bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
   if (drops != DropType::NOTHING && isAffected(LastingEffect::LIFE_SAVED)) {
     message("But wait!");
     you(MsgType::YOUR, "life has been saved!");
-    if (attacker->getName().bare() == "Death") {
+    if (attacker && attacker->getName().bare() == "Death") {
       privateMessage(PlayerMessage("You have escaped death!", MessagePriority::HIGH));
       if (auto target = findInaccessiblePos(position))
         position.moveCreature(*target, true);
