@@ -2699,6 +2699,8 @@ static optional<vector<Vec2>> getCreaturePath(Creature* c, Vec2 target, Level* l
   auto movement = c->getMovementType();
   auto from = c->getPosition();
   auto to = Position(target, level);
+  if (!to.isValid())
+    return none;
   if (from.getLevel() != level) {
     if (auto stairs = to.getStairsTo(from))
       from = *stairs;
