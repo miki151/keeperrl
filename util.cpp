@@ -1146,6 +1146,8 @@ void Range::serialize(PrettyInputArchive& ar1, unsigned) {
   ar1(NAMED(start), OPTION(finish), OPTION(increment));
   ar1(endInput());
   this->finish = finish.value_or(start + 1);
+  if (this->start >= this->finish)
+    ar1.error("Range is empty: (" + toString(start) + ", " + toString(this->finish) + ")");
 }
 
 string toString(const Range& r) {
