@@ -726,8 +726,8 @@ optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, TargetType targetType, T
         return none;
       }
       if (pos && event.type == SDL::SDL_MOUSEBUTTONDOWN) {
-        if (event.button.button == SDL_BUTTON_LEFT &&
-            (targetType != TargetType::POSITION || passable[*pos] == PassableInfo::PASSABLE))
+        if (event.button.button == SDL_BUTTON_LEFT && (targetType != TargetType::POSITION ||
+            (pos->inRectangle(passable.getBounds()) && passable[*pos] == PassableInfo::PASSABLE)))
           return *pos;
         else
           return none;
