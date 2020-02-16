@@ -898,8 +898,10 @@ static string toText(int num) {
     case 7: return "seven";
     case 8: return "eight";
     case 9: return "nine";
-    default: FATAL << "Unsupported number " << num;
-             return "";
+    case 10: return "ten";
+    case 11: return "eleven";
+    case 12: return "twelve";
+    default: return toString(num);
   }
 }
 
