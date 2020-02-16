@@ -288,7 +288,7 @@ static const TimeInterval initialModelUpdate = 2_visible;
 void Game::initializeModels() {
   // Give every model a couple of turns so that things like shopkeepers can initialize.
   for (Vec2 v : models.getBounds())
-    if (models[v]) {
+    if (models[v] && getCurrentModel() != models[v].get()) {
       // Use top level's id as unique id of the model.
       auto id = models[v]->getTopLevel()->getUniqueId();
       if (!localTime.count(id)) {
