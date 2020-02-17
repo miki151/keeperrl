@@ -1547,24 +1547,26 @@ bool Effect::apply(Position pos, Creature* attacker) const {
         }();
         bool wasTeleported = false;
         auto tryTeleporting = [&] (Creature* enemy) {
-          auto distance = enemy->getPosition().dist8(pos);
-          if ((!a.maxDistance || *a.maxDistance >= distance.value_or(10000)) &&
-              (distance.value_or(4) > 3 || !pos.canSee(enemy->getPosition(), Vision())))
-            if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
-              enemy->getPosition().moveCreature(*landing, true);
-              wasTeleported = true;
-              enemy->removeEffect(LastingEffect::SLEEP);
-            }
+          if (!enemy->getStatus().contains(CreatureStatus::CIVILIAN) && !enemy->getStatus().contains(CreatureStatus::PRISONER)) {
+            auto distance = enemy->getPosition().dist8(pos);
+            if ((!a.maxDistance || *a.maxDistance >= distance.value_or(10000)) &&
+                (distance.value_or(4) > 3 || !pos.canSee(enemy->getPosition(), Vision())))
+              if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
+                enemy->getPosition().moveCreature(*landing, true);
+                wasTeleported = true;
+                enemy->removeEffect(LastingEffect::SLEEP);
+              }
+          }
         };
         if (collective) {
           for (auto enemy : collective->getCreatures(MinionTrait::FIGHTER))
             tryTeleporting(enemy);
-          for (auto l : collective->getLeaders())
-            tryTeleporting(l);
-        }
-        for (auto enemy : pos.getLevel()->getAllCreatures())
-          if (!collective || !collective->getCreatures().contains(enemy))
-          tryTeleporting(enemy);
+          if (collective != collective->getGame()->getPlayerCollective())
+            for (auto l : collective->getLeaders())
+              tryTeleporting(l);
+        } else
+          for (auto enemy : pos.getLevel()->getAllCreatures())
+            tryTeleporting(enemy);
         if (wasTeleported) {
           if (attacker)
             attacker->privateMessage(PlayerMessage("Thy audience hath been summoned"_s +
