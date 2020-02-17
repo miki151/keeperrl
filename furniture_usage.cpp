@@ -134,7 +134,10 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, const Furnitu
         c->getGame()->handleMessageBoard(pos, c);
         break;
       case BuiltinUsageId::STAIRS:
-        c->getLevel()->changeLevel(*pos.getLandingLink(), c);
+        if (auto link = pos.getLandingLink())
+          c->getLevel()->changeLevel(*link, c);
+        else
+          c->message("These stairs don't lead anywhere.");
         break;
       case BuiltinUsageId::TIE_UP:
         c->addEffect(LastingEffect::TIED_UP, 100_visible);
