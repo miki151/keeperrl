@@ -228,8 +228,10 @@ vector<string> Item::getDescription(const ContentFactory* factory) const {
     ret.push_back("Victim affected by: " + effect.effect.getName(factory) + " (" + toPercentage(effect.chance) + " chance)");
   for (auto& effect : getWeaponInfo().attackerEffect)
     ret.push_back("Attacker affected by: " + effect.getName(factory));
-  for (auto& effect : attributes->equipedEffect)
+  for (auto& effect : attributes->equipedEffect) {
     ret.push_back("Effect when equipped: " + LastingEffects::getName(effect));
+    ret.push_back(LastingEffects::getDescription(effect));
+  }
   if (auto& info = attributes->upgradeInfo)
     ret.append(info->getDescription(factory));
   if (abilityInfo)
