@@ -319,6 +319,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         c->verb("feel", "feels", "like swarming someone");
         c->getPosition().addSwarmer();
         break;
+      case LastingEffect::PSYCHIATRY:
+        c->you(MsgType::BECOME, "more understanding");
+        break;
     }
 }
 
@@ -567,6 +570,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         c->verb("no longer feel", "no longer feels", "like swarming someone");
         c->getPosition().removeSwarmer();
         break;
+      case LastingEffect::PSYCHIATRY:
+        c->you(MsgType::BECOME, "less understanding");
+        break;
       default:
         break;
     }
@@ -702,6 +708,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::SPYING: return "Spy"_good;
     case LastingEffect::LIFE_SAVED: return "Life will be saved"_good;
     case LastingEffect::SWARMER: return "Swarmer"_good;
+    case LastingEffect::PSYCHIATRY: return "Psychiatrist"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::PLAGUE: return "Infected with plague"_bad;
@@ -1061,6 +1068,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::UNSTABLE: return "mental instability";
     case LastingEffect::OIL: return "oil";
     case LastingEffect::SWARMER: return "swarming";
+    case LastingEffect::PSYCHIATRY: return "psychiatry";
   }
 }
 
@@ -1145,6 +1153,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::UNSTABLE: return "Creature may become insane when having witnessed the death of an ally.";
     case LastingEffect::OIL: return "Creature may be set on fire.";
     case LastingEffect::SWARMER: return "Grants damage and defense bonus for every other swarmer in vicinity.";
+    case LastingEffect::PSYCHIATRY: return "Creature won't be attacked by insane creatures.";
   }
 }
 
@@ -1161,7 +1170,8 @@ bool LastingEffects::modifyIsEnemyResult(const Creature* c, const Creature* othe
   };
   if (c->isAffected(LastingEffect::PEACEFULNESS, time) || isSpy(c) || isSpy(other))
     return false;
-  if (c->isAffected(LastingEffect::INSANITY, time) && !other->getStatus().contains(CreatureStatus::LEADER))
+  if (c->isAffected(LastingEffect::INSANITY, time) && !other->getStatus().contains(CreatureStatus::LEADER)
+      && !other->isAffected(LastingEffect::PSYCHIATRY))
     return true;
   if (auto effect = other->getAttributes().getHatedByEffect())
     if (c->isAffected(*effect, time))

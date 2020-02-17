@@ -82,7 +82,8 @@ RICH_ENUM(LastingEffect,
     LIFE_SAVED,
     UNSTABLE,
     OIL,
-    SWARMER
+    SWARMER,
+    PSYCHIATRY
 );
 
 RICH_ENUM(CreatureCondition,
