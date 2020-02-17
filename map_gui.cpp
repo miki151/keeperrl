@@ -509,9 +509,6 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
   }
   if (object.getCreatureStatus().isEmpty() && object.hasModifier(ViewObject::Modifier::HOSTILE))
     drawCreatureHighlight(renderer, pos, sz, Color::ORANGE.transparency(200), index);
-  /*if (object.hasModifier(ViewObject::Modifier::DRAW_MORALE) && highlightMorale)
-    if (auto morale = object.getAttribute(ViewObject::Attribute::MORALE))
-      drawCreatureHighlight(renderer, pos, sz, getMoraleColor(*morale));*/
   if (object.hasModifier(ViewObject::Modifier::PLAYER)) {
       drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200), index);
   } else
@@ -570,7 +567,7 @@ void MapGui::drawHealthBar(Renderer& renderer, Vec2 tilePos, Vec2 pos, Vec2 size
   bool capture = object.hasModifier(ViewObject::Modifier::CAPTURE_BAR);
   if (!capture && !object.hasModifier(ViewObject::Modifier::HEALTH_BAR))
     return;
-  if (hideFullHealthBars && !capture && *health == 1)
+  if (!capture && *health == 1)
     return;
   pos.y -= size.y * 0.2;
   double barWidth = 0.12;

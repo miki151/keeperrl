@@ -1557,8 +1557,6 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
                     WL(label, (command.keybinding ? getKeybindingDesc(*command.keybinding) + " " : ""_s) +
                         command.name, labelColor)));
               }
-              for (auto& button : getSettingsButtons())
-                lines.addElem(std::move(button));
               drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 260, false);
          }))));
   for (auto& elem : drawEffectsList(info))
@@ -1800,22 +1798,6 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
   return lines.buildVerticalList();
 }
 
-vector<SGuiElem> GuiBuilder::getSettingsButtons() {
-  auto makeSetting = [&](bool& setting, const char* name, const char* hint) {
-    return WL(stack, makeVec(
-          getHintCallback({hint}),
-          WL(label, name, [&setting]{ return setting ? Color::GREEN : Color::WHITE;}),
-          WL(button, [&setting] { setting = !setting; })));
-  };
-
-  return makeVec(
-      makeSetting(mapGui->highlightMorale, "Highlight morale",
-          "Morale affects minion's productivity and chances of fleeing from battle."),
-      makeSetting(mapGui->highlightEnemies, "Highlight enemies", ""),
-      makeSetting(mapGui->hideFullHealthBars, "Hide full health bars", "")
-    );
-}
-
 SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
   int newHash = info.getHash();
   if (newHash != minionsHash) {
@@ -1850,8 +1832,6 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialIn
     list.addElem(WL(stack,
               WL(label, "Show tasks", [=]{ return bottomWindow == TASKS ? Color::GREEN : Color::WHITE;}),
               WL(button, [this] { toggleBottomWindow(TASKS); })));
-    for (auto& button : getSettingsButtons())
-      list.addElem(std::move(button));
     list.addElem(WL(stack,
               WL(label, "Show message history"),
               WL(button, getButtonCallback(UserInputId::SHOW_HISTORY))));

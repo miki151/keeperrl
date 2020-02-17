@@ -79,9 +79,6 @@ class MapGui : public GuiElem {
   void setDraggedCreature(UniqueEntity<Creature>::Id, ViewId, Vec2 origin, DragContentId);
   static Color getHealthBarColor(double health, bool sprit);
   void clearButtonViewId();
-  bool highlightMorale = true;
-  bool highlightEnemies = true;
-  bool hideFullHealthBars = true;
   struct HighlightedInfo {
     optional<Vec2> creaturePos;
     optional<Vec2> tilePos;

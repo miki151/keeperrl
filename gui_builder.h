@@ -273,7 +273,6 @@ class GuiBuilder {
   string getPlayerTitle(PlayerInfo&);
   SDL::SDL_KeyboardEvent getHotkeyEvent(char);
   shared_ptr<MapGui> mapGui;
-  vector<SGuiElem> getSettingsButtons();
   int getImmigrantAnimationOffset(milliseconds initTime);
   HeapAllocated<CallCache<SGuiElem>> cache;
   SGuiElem drawMenuWarning(View::CampaignOptions::WarningType);
