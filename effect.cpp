@@ -372,9 +372,10 @@ string Effects::Summon::getName(const ContentFactory* f) const {
 
 string Effects::Summon::getDescription(const ContentFactory* f) const {
   if (count.getEnd() > 2)
-    return "Summons " + toString(count.getStart()) + " to " + toString(count.getEnd() - 1) + " " + getName(f);
+    return "Summons " + toString(count.getStart()) + " to " + toString(count.getEnd() - 1) + " "
+        + f->getCreatures().getNamePlural(creature);
   else
-    return "Summons a " + getName(f);
+    return "Summons a " + f->getCreatures().getName(creature);
 }
 
 bool Effects::AssembledMinion::applyToCreature(Creature* c, Creature* attacker) const {
