@@ -2667,7 +2667,8 @@ void PlayerControl::onSquareClick(Position pos) {
         updateSquareMemory(pos);
       } else
       if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType()))
-        setChosenWorkshop(*workshopType);
+        if (collective->getWorkshops().getWorkshopsTypes().contains(*workshopType))
+          setChosenWorkshop(*workshopType);
     }
   }
 }
