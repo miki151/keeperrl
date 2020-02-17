@@ -348,6 +348,14 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo&) {
           .buildHorizontalList(),
       WL(button, [this]() { toggleBottomWindow(SPELL_SCHOOLS); })
   ));
+  lines.addSpace(5);
+  lines.addElem(WL(standardButton,
+      WL(getListBuilder)
+          .addElemAuto(WL(topMargin, -2, WL(viewObject, ViewId("scroll"))))
+          .addElemAuto(WL(label, "Items"))
+          .buildHorizontalList(),
+      WL(button, [this]() { toggleBottomWindow(ITEMS_HELP); })
+  ));
   vector<string> helpText {
     "use mouse to dig and build",
       "shift selects rectangles",
@@ -2349,6 +2357,29 @@ SGuiElem GuiBuilder::drawSpellSchoolsOverlay(const vector<SpellSchoolInfo>& scho
           WL(margins, std::move(menu), margin))));
 }
 
+SGuiElem GuiBuilder::drawItemsHelpButtons(const vector<ItemInfo>& items) {
+  CHECK(!items.empty());
+  auto list = WL(getListBuilder, legendLineHeight);
+  for (int i : All(items)) {
+    auto& item = items[i];
+    auto line = WL(getListBuilder);
+    line.addMiddleElem(WL(rightMargin, 5, WL(renderInBounds, getItemLine(item, [](Rectangle){}))));
+    list.addElem(line.buildHorizontalList());
+  }
+  return WL(scrollable, gui.margins(list.buildVerticalList(), 0, 5, 10, 0), &minionButtonsScroll, &scrollbarsHeld);
+}
+
+SGuiElem GuiBuilder::drawItemsHelpOverlay(const vector<ItemInfo>& items) {
+  int margin = 20;
+  int itemsListWidth = 430;
+  SGuiElem menu;
+  SGuiElem leftSide = drawItemsHelpButtons(items);
+  return WL(preferredSize, itemsListWidth, 600,
+      WL(miniWindow, WL(stack,
+          WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::ITEMS_HELP); }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
+          WL(margins, std::move(leftSide), margin))));
+}
+
 SGuiElem GuiBuilder::drawBuildingsOverlay(const vector<CollectiveInfo::Button>& buildings,
     bool ransom, const optional<TutorialInfo>& tutorial) {
   vector<SGuiElem> elems;
@@ -2604,6 +2635,9 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
   if (bottomWindow == SPELL_SCHOOLS)
     ret.push_back({cache->get(bindMethod(&GuiBuilder::drawSpellSchoolsOverlay, this), THIS_LINE,
          info.encyclopedia->spellSchools, spellSchoolIndex), OverlayInfo::TOP_LEFT});
+  if (bottomWindow == ITEMS_HELP)
+    ret.push_back({cache->get(bindMethod(&GuiBuilder::drawItemsHelpOverlay, this), THIS_LINE,
+         info.encyclopedia->items), OverlayInfo::TOP_LEFT});
   ret.push_back({drawMapHintOverlay(), OverlayInfo::MAP_HINT});
 }
 

@@ -36,6 +36,5 @@ class ItemFactory {
   ItemList get(ItemListId);
 
   SERIALIZATION_DECL(ItemFactory)
-  private:
   map<ItemListId, ItemList> SERIAL(lists);
 };

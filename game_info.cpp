@@ -85,17 +85,18 @@ ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack, con
   return CONSTRUCT(ItemInfo,
     c.name = stack[0]->getShortName(creature, stack.size() > 1);
     c.fullName = stack[0]->getNameAndModifiers(false, creature);
-    c.description = creature->isAffected(LastingEffect::BLIND)
+    c.description = (creature && creature->isAffected(LastingEffect::BLIND))
         ? vector<string>() : stack[0]->getDescription(factory);
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().id();
     c.viewIdModifiers = stack[0]->getViewObject().getAllModifiers();
     for (auto it : stack)
       c.ids.insert(it->getUniqueId());
-    c.actions = getItemActions(creature, stack);
-    c.equiped = creature->getEquipment().isEquipped(stack[0]);
+    if (creature)
+      c.actions = getItemActions(creature, stack);
+    c.equiped = creature && creature->getEquipment().isEquipped(stack[0]);
     c.weight = stack[0]->getWeight();
-    if (stack[0]->getShopkeeper(creature))
+    if (creature && stack[0]->getShopkeeper(creature))
       c.price = make_pair(ViewId("gold"), stack[0]->getPrice());
   );
 }

@@ -30,6 +30,8 @@
 #include "creature_factory.h"
 #include "game_info.h"
 #include "creature_name.h"
+#include "item_attributes.h"
+#include "workshops.h"
 
 template<class T>
 string combine(const vector<T*>& v) {
@@ -104,11 +106,35 @@ static vector<SpellSchoolInfo> getSpellSchools(ContentFactory* f) {
   return ret;
 }
 
+static vector<ItemInfo> getItems(const ContentFactory *f, const Workshops* workshops) {
+  vector<ItemInfo> ret;
+  auto getItemInfo = [&] (const ItemType type) {
+    return ItemInfo::get(nullptr, {type.get(f).get()}, f);
+  };
+  for (auto& elem : f->items)
+    ret.push_back(getItemInfo(ItemType(elem.first)));
+  for (auto type : workshops->getWorkshopsTypes())
+    for (auto& option : workshops->types.at(type).getOptions())
+      if (!option.type.type->contains<CustomItemId>())
+        ret.push_back(getItemInfo(option.type));
+  for (auto& elem : f->itemFactory.lists)
+    for (auto& item : elem.second.getAllItems())
+      if (!item.type->contains<CustomItemId>())
+        ret.push_back(getItemInfo(item));
+  return ret;
+}
+
 Encyclopedia::Encyclopedia(ContentFactory* f)
     : spellSchools(getSpellSchools(f)), bestiary(getBestiary(f)) {
 }
 
 Encyclopedia::~Encyclopedia() {
+}
+
+void Encyclopedia::setKeeperThings(ContentFactory* f, const Technology* t, const Workshops* workshops) {
+  technology = t;
+  if (items.empty())
+    items = getItems(f, workshops);
 }
 
 

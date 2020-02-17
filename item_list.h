@@ -8,6 +8,7 @@ class ItemList {
   ItemList(const ItemList&);
   ItemList& operator = (const ItemList&);
   ItemList(vector<ItemType>);
+  vector<ItemType> getAllItems() const;
 
   vector<PItem> random(const ContentFactory*) &;
 

@@ -1433,7 +1433,8 @@ void PlayerControl::fillResources(CollectiveInfo& info) const {
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
-  getGame()->getEncyclopedia()->technology = &collective->getTechnology();
+  getGame()->getEncyclopedia()->setKeeperThings(getGame()->getContentFactory(),
+      &collective->getTechnology(), &collective->getWorkshops());
   gameInfo.encyclopedia = getGame()->getEncyclopedia();
   gameInfo.takingScreenshot = takingScreenshot;
   fillCurrentLevelInfo(gameInfo);

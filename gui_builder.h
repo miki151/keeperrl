@@ -235,7 +235,8 @@ class GuiBuilder {
     TASKS,
     LIBRARY,
     BESTIARY,
-    SPELL_SCHOOLS
+    SPELL_SCHOOLS,
+    ITEMS_HELP
   };
   optional<BottomWindowId> bottomWindow;
   void toggleBottomWindow(BottomWindowId);
@@ -324,6 +325,8 @@ class GuiBuilder {
   SGuiElem drawSpellSchoolButtons(const vector<SpellSchoolInfo>&, int index);
   SGuiElem drawSpellSchoolPage(const SpellSchoolInfo&);
   SGuiElem drawSpellLabel(const SpellInfo&);
+  SGuiElem drawItemsHelpOverlay(const vector<ItemInfo>&);
+  SGuiElem drawItemsHelpButtons(const vector<ItemInfo>&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

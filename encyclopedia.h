@@ -26,15 +26,19 @@ class SpellSchool;
 class Spell;
 struct PlayerInfo;
 struct SpellSchoolInfo;
+struct ItemInfo;
 class ContentFactory;
+class Workshops;
 
 class Encyclopedia {
   public:
   Encyclopedia(ContentFactory*);
   ~Encyclopedia();
 
+  void setKeeperThings(ContentFactory*, const Technology*, const Workshops*);
   const Technology* technology;
   vector<SpellSchoolInfo> spellSchools;
   vector<PlayerInfo> bestiary;
+  vector<ItemInfo> items;
 };
 

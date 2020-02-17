@@ -34,6 +34,18 @@ ItemList& ItemList::setRandomPrefixes(double chance) {
 ItemList::ItemList(vector<ItemInfo> t) : items(std::move(t)) {}
 ItemList::ItemList(vector<ItemType> t) : ItemList(t.transform([](const auto& t) { return ItemInfo(t, 1); })) {}
 
+vector<ItemType> ItemList::getAllItems() const {
+  vector<ItemType> ret;
+  for (auto& item : items)
+    ret.push_back(item.id);
+  for (auto& elem : unique)
+    ret.push_back(elem.first);
+  for (auto& elem : multiItems)
+    for (auto& item : elem.items)
+      ret.push_back(item.first);
+  return ret;
+}
+
 vector<PItem> ItemList::random(const ContentFactory* factory) & {
   while (!multiItems.empty() && multiItems.back().count == Range::singleElem(0))
     multiItems.pop_back();
