@@ -173,7 +173,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<PlayerInfo> getPlayerInfos(vector<Creature*>, UniqueEntity<Creature>::Id chosenId) const;
   void sortMinionsForUI(vector<Creature*>&) const;
   vector<CollectiveInfo::CreatureGroup> getCreatureGroups(vector<Creature*>) const;
-  vector<CollectiveInfo::CreatureGroup> getEnemyGroups() const;
   void minionEquipmentAction(const EquipmentActionInfo&);
   void addEquipment(Creature*, EquipmentSlot);
   void addConsumableItem(Creature*);
@@ -218,8 +217,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<CollectiveAttack> SERIAL(ransomAttacks);
   vector<string> SERIAL(hints);
   optional<PlayerMessage&> findMessage(PlayerMessage::Id);
-  void updateVisibleCreatures();
-  vector<Vec2> SERIAL(visibleEnemies);
   SVisibilityMap SERIAL(visibilityMap);
   bool firstRender = true;
   bool isNight = true;

@@ -1847,18 +1847,6 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialIn
                 .addElemAuto(WL(label, elem.attacker))
                 .buildHorizontalList()));
     }
-    if (!info.enemyGroups.empty()) {
-      list.addElem(WL(label, "Enemies:", Color::WHITE));
-      for (auto& elem : info.enemyGroups){
-        vector<SGuiElem> line;
-        line.push_back(WL(viewObject, elem.viewId));
-        line.push_back(WL(label, toString(elem.count) + "   " + elem.name, Color::WHITE));
-        list.addElem(WL(stack,
-            WL(button, getButtonCallback({UserInputId::GO_TO_ENEMY, elem.creatureId})),
-            WL(uiHighlightMouseOver),
-            WL(horizontalList, std::move(line), 20)));
-      }
-    }
     minionsCache = WL(scrollable, list.buildVerticalList(), &minionsScroll, &scrollbarsHeld);
   }
   return WL(external, minionsCache.get());

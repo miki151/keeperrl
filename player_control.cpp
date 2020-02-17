@@ -102,7 +102,7 @@ template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
   ar(memory, introText, lastControlKeeperQuestion, tribeAlignment);
-  ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints, visibleEnemies);
+  ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints);
   ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures);
 }
@@ -963,14 +963,6 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<Cr
   return getValues(groups);
 }
 
-vector<CollectiveInfo::CreatureGroup> PlayerControl::getEnemyGroups() const {
-  vector<Creature*> enemies;
-  for (Vec2 v : getVisibleEnemies())
-    if (Creature* c = Position(v, getCurrentLevel()).getCreature())
-      enemies.push_back(c);
-  return getCreatureGroups(enemies);
-}
-
 void PlayerControl::fillMinions(CollectiveInfo& info) const {
   vector<Creature*> minions;
   for (auto trait : {MinionTrait::FIGHTER, MinionTrait::PRISONER, MinionTrait::WORKER, MinionTrait::INCREASE_POPULATION, MinionTrait::LEADER})
@@ -1482,7 +1474,6 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   fillWorkshopInfo(info);
   fillLibraryInfo(info);
   info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
-  info.enemyGroups = getEnemyGroups();
   fillDungeonLevel(info.avatarLevelInfo);
   fillResources(info);
   info.warning = "";
@@ -2808,7 +2799,6 @@ void PlayerControl::considerNightfallMessage() {
 }
 
 void PlayerControl::update(bool currentlyActive) {
-  updateVisibleCreatures();
   vector<Creature*> addedCreatures;
   vector<WLevel> currentLevels {getCurrentLevel()};
   for (auto c : getControlled())
@@ -3020,15 +3010,8 @@ void PlayerControl::onDestructed(Position pos, FurnitureType type, const Destroy
   }
 }
 
-void PlayerControl::updateVisibleCreatures() {
-  visibleEnemies.clear();
-  for (const Creature* c : getCurrentLevel()->getAllCreatures())
-    if (canSee(c) && isEnemy(c))
-      visibleEnemies.push_back(c->getPosition().getCoord());
-}
-
 vector<Vec2> PlayerControl::getVisibleEnemies() const {
-  return visibleEnemies;
+  return {};
 }
 
 TribeAlignment PlayerControl::getTribeAlignment() const {
