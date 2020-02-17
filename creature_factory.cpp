@@ -210,6 +210,10 @@ string CreatureFactory::getName(CreatureId id) const {
   return attributes.at(id).name.bare();
 }
 
+string CreatureFactory::getNamePlural(CreatureId id) const {
+  return attributes.at(id).name.plural();
+}
+
 vector<CreatureId> CreatureFactory::getAllCreatures() const {
   return getKeys(attributes);
 }

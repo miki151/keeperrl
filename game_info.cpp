@@ -133,19 +133,19 @@ static vector<ItemInfo> getItemInfos(const Creature* c, const vector<Item*>& ite
   return ret;
 }
 
-static PlayerInfo::SpellSchool fillSpellSchool(const Creature* c, SpellSchoolId id, const ContentFactory* factory) {
-  PlayerInfo::SpellSchool ret;
+SpellSchoolInfo fillSpellSchool(const Creature* c, SpellSchoolId id, const ContentFactory* factory) {
+  SpellSchoolInfo ret;
   auto& spellSchool = factory->getCreatures().getSpellSchools().at(id);
   ret.name = id.data();
   ret.experienceType = spellSchool.expType;
   for (auto& id : spellSchool.spells) {
     auto spell = factory->getCreatures().getSpell(id.first);
     ret.spells.push_back(
-        PlayerInfo::Spell {
+        SpellInfo {
           spell->getName(),
           spell->getSymbol(),
           id.second,
-          c->getAttributes().getExpLevel(spellSchool.expType) >= id.second,
+          !c || c->getAttributes().getExpLevel(spellSchool.expType) >= id.second,
           {spell->getDescription(factory)},
           none
         });
@@ -199,19 +199,15 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory) 
   for (auto& adj : c->getGoodAdjectives())
     effects.push_back({adj.name, adj.help, false});
   spells.clear();
-  for (auto spell : c->getSpellMap().getAvailable(c)) {
-    vector<string> description = {spell->getDescription(contentFactory), "Cooldown: " + toString(spell->getCooldown())};
-    if (spell->getRange() > 0)
-      description.push_back("Range: " + toString(spell->getRange()));
+  for (auto spell : c->getSpellMap().getAvailable(c))
     spells.push_back({
         spell->getName(),
         spell->getSymbol(),
         none,
         true,
-        std::move(description),
+        spell->getDescription(contentFactory),
         c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell))
     });
-  }
   carryLimit = c->getBody().getCarryLimit();
   map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
       c->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});

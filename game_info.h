@@ -89,6 +89,23 @@ struct AvatarLevelInfo {
   HASH_ALL(level, progress, viewId, title, numAvailable)
 };
 
+struct SpellInfo {
+  string HASH(name);
+  string HASH(symbol);
+  optional<int> HASH(level);
+  bool HASH(available) = true;
+  vector<string> HASH(help);
+  optional<TimeInterval> HASH(timeout);
+  HASH_ALL(name, symbol, help, timeout, available, level)
+};
+
+struct SpellSchoolInfo {
+  string HASH(name);
+  ExperienceType HASH(experienceType);
+  vector<SpellInfo> HASH(spells);
+  HASH_ALL(name, experienceType, spells)
+};
+
 class PlayerInfo {
   public:
   PlayerInfo(const Creature*, const ContentFactory*);
@@ -116,23 +133,8 @@ class PlayerInfo {
     HASH_ALL(name, help, bad)
   };
   vector<Effect> HASH(effects);
-  struct Spell {
-    string HASH(name);
-    string HASH(symbol);
-    optional<int> HASH(level);
-    bool HASH(available) = true;
-    vector<string> HASH(help);
-    optional<TimeInterval> HASH(timeout);
-    HASH_ALL(name, symbol, help, timeout, available, level)
-  };
-  vector<Spell> HASH(spells);
-  struct SpellSchool {
-    string HASH(name);
-    ExperienceType HASH(experienceType);
-    vector<Spell> HASH(spells);
-    HASH_ALL(name, experienceType, spells)
-  };
-  vector<SpellSchool> HASH(spellSchools);
+  vector<SpellInfo> HASH(spells);
+  vector<SpellSchoolInfo> HASH(spellSchools);
   vector<ItemInfo> HASH(lyingItems);
   vector<ItemInfo> HASH(inventory);
   vector<ItemInfo> HASH(intrinsicAttacks);
@@ -454,3 +456,5 @@ class GameInfo {
 struct AutomatonPart;
 ItemInfo getInstalledPartInfo(const ContentFactory*, const AutomatonPart&, int index);
 void fillInstalledPartDescription(const ContentFactory*, ItemInfo&, const AutomatonPart&);
+class SpellSchoolId;
+SpellSchoolInfo fillSpellSchool(const Creature*, SpellSchoolId, const ContentFactory*);

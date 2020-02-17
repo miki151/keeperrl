@@ -175,8 +175,8 @@ class GuiBuilder {
   SGuiElem drawAttributesOnPage(vector<SGuiElem>);
   SGuiElem drawEquipmentAndConsumables(const PlayerInfo&, bool infoOnly = false);
   vector<SGuiElem> drawSkillsList(const PlayerInfo&);
-  SGuiElem drawSpellsList(const vector<PlayerInfo::Spell>&, GenericId creatureId, bool active);
-  SGuiElem getSpellIcon(const PlayerInfo::Spell&, int index, bool active, GenericId creatureId);
+  SGuiElem drawSpellsList(const vector<SpellInfo>&, GenericId creatureId, bool active);
+  SGuiElem getSpellIcon(const SpellInfo&, int index, bool active, GenericId creatureId);
   vector<SGuiElem> drawEffectsList(const PlayerInfo&);
   SGuiElem drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&);
   function<void()> getButtonCallback(UserInput);
@@ -196,6 +196,7 @@ class GuiBuilder {
   SGuiElem technologyCache;
   int technologyHash = 0;
   int bestiaryIndex = 0;
+  int spellSchoolIndex = 0;
   optional<OverlayInfo> speedDialog;
   int rightBandInfoHash = 0;
   SGuiElem rightBandInfoCache;
@@ -233,7 +234,8 @@ class GuiBuilder {
     ALL_VILLAINS,
     TASKS,
     LIBRARY,
-    BESTIARY
+    BESTIARY,
+    SPELL_SCHOOLS
   };
   optional<BottomWindowId> bottomWindow;
   void toggleBottomWindow(BottomWindowId);
@@ -313,12 +315,16 @@ class GuiBuilder {
   SGuiElem drawTitleButton(const PlayerInfo& minion);
   SGuiElem drawKillsLabel(const PlayerInfo& minion);
   function<void(Rectangle)> getActivityButtonFun(const PlayerInfo&);
-  SGuiElem drawSpellSchoolLabel(const PlayerInfo::SpellSchool&);
+  SGuiElem drawSpellSchoolLabel(const SpellSchoolInfo&);
   SGuiElem drawResources(const vector<CollectiveInfo::Resource>&, const optional<TutorialInfo>&, int width);
   SGuiElem drawBiomeMenu(SyncQueue<CampaignAction>&, const vector<View::CampaignOptions::BiomeInfo>&, int chosen);
   SGuiElem drawBestiaryOverlay(const vector<PlayerInfo>&, int index);
   SGuiElem drawBestiaryButtons(const vector<PlayerInfo>&, int index);
   SGuiElem drawBestiaryPage(const PlayerInfo&);
+  SGuiElem drawSpellSchoolsOverlay(const vector<SpellSchoolInfo>&, int index);
+  SGuiElem drawSpellSchoolButtons(const vector<SpellSchoolInfo>&, int index);
+  SGuiElem drawSpellSchoolPage(const SpellSchoolInfo&);
+  SGuiElem drawSpellLabel(const SpellInfo&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

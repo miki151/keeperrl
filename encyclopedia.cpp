@@ -97,8 +97,15 @@ static vector<PlayerInfo> getBestiary(ContentFactory* f) {
   return ret;
 }
 
+static vector<SpellSchoolInfo> getSpellSchools(ContentFactory* f) {
+  vector<SpellSchoolInfo> ret;
+  for (auto& id : f->getCreatures().getSpellSchools())
+    ret.push_back(fillSpellSchool(nullptr, id.first, f));
+  return ret;
+}
+
 Encyclopedia::Encyclopedia(ContentFactory* f)
-    : schools(f->getCreatures().getSpellSchools()), spells(f->getCreatures().getSpells()), bestiary(getBestiary(f)) {
+    : spellSchools(getSpellSchools(f)), bestiary(getBestiary(f)) {
 }
 
 Encyclopedia::~Encyclopedia() {

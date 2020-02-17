@@ -54,8 +54,11 @@ bool Spell::canTargetSelf() const {
   return targetSelf || range == 0;
 }
 
-string Spell::getDescription(const ContentFactory* f) const {
-  return effect->getDescription(f);
+vector<string> Spell::getDescription(const ContentFactory* f) const {
+  vector<string> description = {effect->getDescription(f), "Cooldown: " + toString(getCooldown())};
+  if (getRange() > 0)
+    description.push_back("Range: " + toString(getRange()));
+  return description;
 }
 
 void Spell::addMessage(Creature* c) const {

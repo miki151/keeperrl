@@ -25,6 +25,7 @@ class BuildInfo;
 class SpellSchool;
 class Spell;
 struct PlayerInfo;
+struct SpellSchoolInfo;
 class ContentFactory;
 
 class Encyclopedia {
@@ -33,8 +34,7 @@ class Encyclopedia {
   ~Encyclopedia();
 
   const Technology* technology;
-  map<SpellSchoolId, SpellSchool> schools;
-  vector<Spell> spells;
+  vector<SpellSchoolInfo> spellSchools;
   vector<PlayerInfo> bestiary;
 };
 

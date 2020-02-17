@@ -340,6 +340,14 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo&) {
           .buildHorizontalList(),
       WL(button, [this]() { toggleBottomWindow(BESTIARY); })
   ));
+  lines.addSpace(5);
+  lines.addElem(WL(standardButton,
+      WL(getListBuilder)
+          .addElemAuto(WL(topMargin, -2, WL(viewObject, ViewId("book"))))
+          .addElemAuto(WL(label, "Spell schools"))
+          .buildHorizontalList(),
+      WL(button, [this]() { toggleBottomWindow(SPELL_SCHOOLS); })
+  ));
   vector<string> helpText {
     "use mouse to dig and build",
       "shift selects rectangles",
@@ -1380,7 +1388,7 @@ vector<SGuiElem> GuiBuilder::drawSkillsList(const PlayerInfo& info) {
 
 const Vec2 spellIconSize = Vec2(47, 47);
 
-SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, int index, bool active, GenericId creatureId) {
+SGuiElem GuiBuilder::getSpellIcon(const SpellInfo& spell, int index, bool active, GenericId creatureId) {
   vector<SGuiElem> ret;
   if (!spell.timeout) {
     ret.push_back(WL(mouseHighlight2, WL(standardButtonHighlight), WL(standardButton)));
@@ -1397,7 +1405,7 @@ SGuiElem GuiBuilder::getSpellIcon(const PlayerInfo::Spell& spell, int index, boo
   return WL(preferredSize, spellIconSize, WL(stack, std::move(ret)));
 }
 
-SGuiElem GuiBuilder::drawSpellsList(const vector<PlayerInfo::Spell>& spells, GenericId creatureId, bool active) {
+SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId creatureId, bool active) {
   constexpr int spellsPerRow = 5;
   if (!spells.empty()) {
     auto list = WL(getListBuilder, spellIconSize.y);
@@ -2328,9 +2336,49 @@ SGuiElem GuiBuilder::drawBestiaryOverlay(const vector<PlayerInfo>& creatures, in
       WL(leftMargin, minionListWidth + 20, WL(margins, drawBestiaryPage(creatures[index]), 10, 15, 10, 10)));
   return WL(preferredSize, 640 + minionListWidth, 600,
       WL(miniWindow, WL(stack,
-      WL(keyHandler, getButtonCallback({UserInputId::CREATURE_BUTTON, UniqueEntity<Creature>::Id()}),
-        {gui.getKey(SDL::SDLK_ESCAPE)}, true),
-      WL(margins, std::move(menu), margin))));
+          WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::BESTIARY); }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
+          WL(margins, std::move(menu), margin))));
+}
+
+SGuiElem GuiBuilder::drawSpellSchoolPage(const SpellSchoolInfo& school) {
+  auto list = WL(getListBuilder, legendLineHeight);
+  list.addElem(WL(label, capitalFirst(school.name)));
+  list.addSpace(legendLineHeight / 2);
+  for (auto& spell : school.spells)
+    list.addElem(drawSpellLabel(spell));
+  return WL(scrollable, gui.margins(list.buildVerticalList(), 0, 5, 10, 0), &minionButtonsScroll, &scrollbarsHeld);
+}
+
+SGuiElem GuiBuilder::drawSpellSchoolButtons(const vector<SpellSchoolInfo>& schools, int index) {
+  CHECK(!schools.empty());
+  auto list = WL(getListBuilder, legendLineHeight);
+  for (int i : All(schools)) {
+    auto& school = schools[i];
+    auto line = WL(getListBuilder);
+    line.addMiddleElem(WL(rightMargin, 5, WL(renderInBounds, WL(label, capitalFirst(school.name)))));
+    list.addElem(WL(stack,
+          WL(button, [this, i] { spellSchoolIndex = i; }),
+          (i == index ? WL(uiHighlightLine) : WL(empty)),
+          line.buildHorizontalList()));
+  }
+  return WL(scrollable, gui.margins(list.buildVerticalList(), 0, 5, 10, 0), &minionButtonsScroll, &scrollbarsHeld);
+}
+
+SGuiElem GuiBuilder::drawSpellSchoolsOverlay(const vector<SpellSchoolInfo>& schools, int index) {
+  int margin = 20;
+  int minionListWidth = 330;
+  SGuiElem menu;
+  SGuiElem leftSide = drawSpellSchoolButtons(schools, index);
+  menu = WL(stack,
+      WL(horizontalList, makeVec(
+          WL(margins, std::move(leftSide), 8, 15, 5, 0),
+          WL(margins, WL(sprite, GuiFactory::TexId::VERT_BAR_MINI, GuiFactory::Alignment::LEFT),
+            0, -15, 0, -15)), minionListWidth),
+      WL(leftMargin, minionListWidth + 20, WL(margins, drawSpellSchoolPage(schools[index]), 10, 15, 10, 10)));
+  return WL(preferredSize, 640 + minionListWidth, 600,
+      WL(miniWindow, WL(stack,
+          WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::SPELL_SCHOOLS); }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
+          WL(margins, std::move(menu), margin))));
 }
 
 SGuiElem GuiBuilder::drawBuildingsOverlay(const vector<CollectiveInfo::Button>& buildings,
@@ -2585,6 +2633,9 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
   if (bottomWindow == BESTIARY)
     ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBestiaryOverlay, this), THIS_LINE,
          info.encyclopedia->bestiary, bestiaryIndex), OverlayInfo::TOP_LEFT});
+  if (bottomWindow == SPELL_SCHOOLS)
+    ret.push_back({cache->get(bindMethod(&GuiBuilder::drawSpellSchoolsOverlay, this), THIS_LINE,
+         info.encyclopedia->spellSchools, spellSchoolIndex), OverlayInfo::TOP_LEFT});
   ret.push_back({drawMapHintOverlay(), OverlayInfo::MAP_HINT});
 }
 
@@ -3235,16 +3286,20 @@ SGuiElem GuiBuilder::drawTitleButton(const PlayerInfo& minion) {
     return WL(label, minion.title);
 }
 
-SGuiElem GuiBuilder::drawSpellSchoolLabel(const PlayerInfo::SpellSchool& school) {
+SGuiElem GuiBuilder::drawSpellLabel(const SpellInfo& spell) {
+  auto color = spell.available ? Color::WHITE : Color::LIGHT_GRAY;
+  return WL(getListBuilder)
+      .addElemAuto(getSpellIcon(spell, 0, false, 0))
+      .addElemAuto(WL(label, spell.name, color))
+      .addBackElemAuto(WL(label, "Level " + toString(*spell.level), color))
+      .buildHorizontalList();
+}
+
+SGuiElem GuiBuilder::drawSpellSchoolLabel(const SpellSchoolInfo& school) {
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(label, "Experience type: "_s + getName(school.experienceType)));
   for (auto& spell : school.spells) {
-    auto color = spell.available ? Color::WHITE : Color::LIGHT_GRAY;
-    lines.addElem(WL(getListBuilder)
-        .addElemAuto(getSpellIcon(spell, 0, false, 0))
-        .addElemAuto(WL(label, spell.name, color))
-        .addBackElemAuto(WL(label, "Level " + toString(*spell.level), color))
-        .buildHorizontalList());
+    lines.addElem(drawSpellLabel(spell));
   }
   return WL(stack,
       WL(label, school.name),
