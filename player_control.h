@@ -156,6 +156,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void fillImmigration(CollectiveInfo&) const;
   void fillImmigrationHelp(CollectiveInfo&) const;
   void fillLibraryInfo(CollectiveInfo&) const;
+  void fillTechUnlocks(CollectiveInfo::LibraryInfo::TechInfo&) const;
   void fillCurrentLevelInfo(GameInfo&) const;
 
   void getEquipmentItem(View* view, ItemPredicate predicate);
@@ -257,5 +258,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<pair<ViewId,int>> getCostObj(CostInfo) const;
   optional<pair<ViewId,int>> getCostObj(const optional<CostInfo>&) const;
   vector<WorkshopOptionInfo> getWorkshopOptions() const;
+  ViewId getViewId(const BuildInfo&) const;
 };
 

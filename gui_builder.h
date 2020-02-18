@@ -327,6 +327,7 @@ class GuiBuilder {
   SGuiElem drawSpellLabel(const SpellInfo&);
   SGuiElem drawItemsHelpOverlay(const vector<ItemInfo>&);
   SGuiElem drawItemsHelpButtons(const vector<ItemInfo>&);
+  SGuiElem drawTechUnlocks(const CollectiveInfo::LibraryInfo::TechInfo&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

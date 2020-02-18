@@ -2147,6 +2147,24 @@ static string getName(TechId id) {
   return id.data();
 }
 
+SGuiElem GuiBuilder::drawTechUnlocks(const CollectiveInfo::LibraryInfo::TechInfo& tech) {
+  auto lines = WL(getListBuilder, legendLineHeight);
+  for (int i : All(tech.unlocks)) {
+    auto& info = tech.unlocks[i];
+    if (i == 0 || info.type != tech.unlocks[i - 1].type) {
+      if (i > 0)
+        lines.addSpace(legendLineHeight / 2);
+      lines.addElem(WL(label, "Unlocks " + info.type + ":"));
+    }
+    lines.addElem(WL(getListBuilder)
+        .addElemAuto(WL(viewObject, info.viewId))
+        .addSpace(5)
+        .addElemAuto(WL(label, info.name))
+        .buildHorizontalList());
+  }
+  return WL(setWidth, 350, WL(miniWindow, WL(margins, lines.buildVerticalList(), 15)));
+}
+
 SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, const optional<TutorialInfo>& tutorial) {
   auto& info = collectiveInfo.libraryInfo;
   const int margin = 20;
@@ -2172,7 +2190,8 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
       auto line = WL(getListBuilder)
           .addElem(WL(label, getName(elem.id), elem.active ? Color::WHITE : Color::GRAY), 10)
           .buildHorizontalList();
-      line = WL(stack, std::move(line), getTooltip({elem.description}, THIS_LINE));
+      line = WL(stack, std::move(line),
+          WL(tooltip2, drawTechUnlocks(elem), [](const Rectangle& r) { return r.bottomLeft(); }));
       if (elem.tutorialHighlight && tutorial && tutorial->highlights.contains(*elem.tutorialHighlight))
         line = WL(stack, WL(tutorialHighlight), std::move(line));
       if (elem.active)
@@ -2191,7 +2210,8 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
     auto line = WL(getListBuilder)
         .addElem(WL(label, getName(elem.id), Color::GRAY), 10)
         .buildHorizontalList();
-    line = WL(stack, std::move(line), getTooltip({elem.description}, THIS_LINE));
+    line = WL(stack, std::move(line),
+        WL(tooltip2, drawTechUnlocks(elem), [](const Rectangle& r) { return r.bottomLeft(); }));
     lines.addElem(WL(rightMargin, rightElemMargin, std::move(line)));
   }
   int height = lines.getSize();

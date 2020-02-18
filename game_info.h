@@ -293,10 +293,16 @@ class CollectiveInfo {
   struct LibraryInfo {
     struct TechInfo {
       TechId HASH(id);
-      string HASH(description);
+      struct UnlockInfo {
+        ViewId HASH(viewId);
+        string HASH(name);
+        string HASH(type);
+        HASH_ALL(viewId, name, type)
+      };
+      vector<UnlockInfo> HASH(unlocks);
       bool HASH(active);
       optional<TutorialHighlight> HASH(tutorialHighlight);
-      HASH_ALL(id, active, description, tutorialHighlight)
+      HASH_ALL(id, active, unlocks, tutorialHighlight)
     };
     int HASH(currentProgress);
     int HASH(totalProgress);

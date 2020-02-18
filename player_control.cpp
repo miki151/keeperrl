@@ -593,12 +593,49 @@ string PlayerControl::getMinionName(CreatureId id) const {
   return names.at(id);
 }
 
+ViewId PlayerControl::getViewId(const BuildInfo& info) const {
+  return info.type.visit<ViewId>(
+      [&](const BuildInfoTypes::Furniture& elem) {
+        return getGame()->getContentFactory()->furniture.getData(elem.types[0]).getViewObject()->id();
+      },
+      [&](const BuildInfoTypes::Dig&) {
+        return ViewId("dig_icon");
+      },
+      [&](const BuildInfoTypes::ImmediateDig&) {
+        return ViewId("dig_icon");
+      },
+      [&](ZoneId zone) {
+        return ::getViewId(zone);
+      },
+      [&](BuildInfoTypes::ClaimTile) {
+        return ViewId("keeper_floor");
+      },
+      [&](BuildInfoTypes::Dispatch) {
+        return ViewId("imp");
+      },
+      [&](const BuildInfoTypes::Trap& elem) {
+        return elem.viewId;
+      },
+      [&](const BuildInfoTypes::DestroyLayers&) {
+         return ViewId("destroy_button");
+      },
+      [&](BuildInfoTypes::ForbidZone) {
+        return ViewId("forbid_zone");
+      },
+      [&](BuildInfoTypes::PlaceMinion) {
+        return ViewId("special_blbn");
+      },
+      [&](BuildInfoTypes::PlaceItem) {
+        return ViewId("potion1");
+      }
+  );
+}
+
 vector<Button> PlayerControl::fillButtons() const {
   vector<Button> buttons;
   for (auto& button : buildInfo) {
     button.type.visit<void>(
         [&](const BuildInfoTypes::Furniture& elem) {
-          ViewId viewId = getGame()->getContentFactory()->furniture.getData(elem.types[0]).getViewObject()->id();
           string description;
           if (elem.cost.value > 0) {
             int num = 0;
@@ -610,42 +647,41 @@ vector<Button> PlayerControl::fillButtons() const {
           int availableNow = !elem.cost.value ? 1 : collective->numResource(elem.cost.id) / elem.cost.value;
           if (!collective->getResourceInfo(elem.cost.id).viewId && availableNow)
             description += " (" + toString(availableNow) + " available)";
-          buttons.push_back({viewId, button.name,
+          buttons.push_back({getViewId(button), button.name,
               getCostObj(elem.cost),
               description,
               (elem.noCredit && !availableNow) ?
                  CollectiveInfo::Button::GRAY_CLICKABLE : CollectiveInfo::Button::ACTIVE });
           },
         [&](const BuildInfoTypes::Dig&) {
-          buttons.push_back({ViewId("dig_icon"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](const BuildInfoTypes::ImmediateDig&) {
-          buttons.push_back({ViewId("dig_icon"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
-        [&](ZoneId zone) {
-          buttons.push_back({getViewId(zone), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+        [&](ZoneId) {
+          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](BuildInfoTypes::ClaimTile) {
-          buttons.push_back({ViewId("keeper_floor"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](BuildInfoTypes::Dispatch) {
-          buttons.push_back({ViewId("imp"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](const BuildInfoTypes::Trap& elem) {
           buttons.push_back({elem.viewId, button.name, none});
         },
         [&](const BuildInfoTypes::DestroyLayers&) {
-           buttons.push_back({ViewId("destroy_button"), button.name, none, "",
-               CollectiveInfo::Button::ACTIVE});
+           buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](BuildInfoTypes::ForbidZone) {
-          buttons.push_back({ViewId("forbid_zone"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](BuildInfoTypes::PlaceMinion) {
-          buttons.push_back({ViewId("special_blbn"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](BuildInfoTypes::PlaceItem) {
-          buttons.push_back({ViewId("potion1"), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         }
     );
     vector<string> unmetReqText;
@@ -1000,6 +1036,27 @@ void PlayerControl::acquireTech(TechId tech) {
   }
 }
 
+void PlayerControl::fillTechUnlocks(CollectiveInfo::LibraryInfo::TechInfo& techInfo) const {
+  auto tech = techInfo.id;
+  for (auto& t2 : collective->getTechnology().getAllowed(tech))
+    techInfo.unlocks.push_back({ViewId("book"), t2.data(), "technology"});
+  for (auto& elem : buildInfo)
+    for (auto& r : elem.requirements)
+      if (r == tech)
+        techInfo.unlocks.push_back({getViewId(elem), elem.name, "constructions"});
+  for (auto& workshop : collective->getWorkshops().types)
+    for (auto& option : workshop.second.getOptions())
+      if (option.techId == tech)
+        techInfo.unlocks.push_back({option.viewId, option.name, "workshop items"});
+  auto& creatureFactory = getGame()->getContentFactory()->getCreatures();
+  for (auto& immigrant : collective->getImmigration().getImmigrants())
+    for (auto& req : immigrant.requirements)
+      if (req.type.getValueMaybe<TechId>() == tech) {
+        techInfo.unlocks.push_back({creatureFactory.getViewId(immigrant.getId(0)),
+            creatureFactory.getName(immigrant.getId(0)), "immigrants"});
+      }
+}
+
 void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
   auto& info = collectiveInfo.libraryInfo;
   auto& dungeonLevel = collective->getDungeonLevel();
@@ -1013,15 +1070,14 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
     info.available.emplace_back();
     auto& techInfo = info.available.back();
     techInfo.id = tech;
-    //techInfo.tutorialHighlight = tech->getTutorialHighlight();
     techInfo.active = !info.warning && dungeonLevel.numResearchAvailable() > 0;
-    techInfo.description = technology.techs.at(tech).description;
+    fillTechUnlocks(techInfo);
   }
   for (auto& tech : collective->getTechnology().researched) {
     info.researched.emplace_back();
     auto& techInfo = info.researched.back();
     techInfo.id = tech;
-    techInfo.description = technology.techs.at(tech).description;
+    fillTechUnlocks(techInfo);
   }
 }
 

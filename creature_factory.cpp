@@ -202,12 +202,64 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* n
       c.name = name;);
 }
 
+static string getSpeciesName(bool humanoid, bool large, bool living, bool wings) {
+  static vector<string> names {
+    "devitablex",
+    "owlbeast",
+    "hellar dra",
+    "marilisk",
+    "gelaticorn",
+    "mant eatur",
+    "phanticore",
+    "yeth horro",
+    "yeth amon",
+    "mantic dra",
+    "unic cread",
+    "under hulk",
+    "nightshasa",
+    "manananggal",
+    "dire spawn",
+    "shamander",
+  };
+  return names[humanoid * 8 + (!large) * 4 + (!living) * 2 + wings];
+}
+
+static ViewId getSpecialViewId(bool humanoid, bool large, bool body, bool wings) {
+  static vector<ViewId> specialViewIds {
+    ViewId("special_blbn"),
+    ViewId("special_blbw"),
+    ViewId("special_blgn"),
+    ViewId("special_blgw"),
+    ViewId("special_bmbn"),
+    ViewId("special_bmbw"),
+    ViewId("special_bmgn"),
+    ViewId("special_bmgw"),
+    ViewId("special_hlbn"),
+    ViewId("special_hlbw"),
+    ViewId("special_hlgn"),
+    ViewId("special_hlgw"),
+    ViewId("special_hmbn"),
+    ViewId("special_hmbw"),
+    ViewId("special_hmgn"),
+    ViewId("special_hmgw"),
+  };
+  return specialViewIds[humanoid * 8 + (!large) * 4 + (!body) * 2 + wings];
+}
+
 ViewId CreatureFactory::getViewId(CreatureId id) const {
-  return attributes.at(id).viewId;
+  if (auto a = getReferenceMaybe(attributes, id))
+    return a->viewId;
+  if (auto p = getReferenceMaybe(getSpecialParams(), id))
+    return getSpecialViewId(p->humanoid, p->large, p->living, p->wings);
+  return ViewId("knight");
 }
 
 string CreatureFactory::getName(CreatureId id) const {
-  return attributes.at(id).name.bare();
+  if (auto a = getReferenceMaybe(attributes, id))
+    return a->name.bare();
+  if (auto p = getReferenceMaybe(getSpecialParams(), id))
+    return getSpeciesName(p->humanoid, p->large, p->living, p->wings);
+  return "knight";
 }
 
 string CreatureFactory::getNamePlural(CreatureId id) const {
@@ -580,50 +632,6 @@ PCreature CreatureFactory::get(CreatureAttributes attr, TribeId tribe, const Con
   auto ret = makeOwner<Creature>(tribe, std::move(attr), std::move(spells));
   ret->setController(factory.get(ret.get()));
   return ret;
-}
-
-static ViewId getSpecialViewId(bool humanoid, bool large, bool body, bool wings) {
-  static vector<ViewId> specialViewIds {
-    ViewId("special_blbn"),
-    ViewId("special_blbw"),
-    ViewId("special_blgn"),
-    ViewId("special_blgw"),
-    ViewId("special_bmbn"),
-    ViewId("special_bmbw"),
-    ViewId("special_bmgn"),
-    ViewId("special_bmgw"),
-    ViewId("special_hlbn"),
-    ViewId("special_hlbw"),
-    ViewId("special_hlgn"),
-    ViewId("special_hlgw"),
-    ViewId("special_hmbn"),
-    ViewId("special_hmbw"),
-    ViewId("special_hmgn"),
-    ViewId("special_hmgw"),
-  };
-  return specialViewIds[humanoid * 8 + (!large) * 4 + (!body) * 2 + wings];
-}
-
-static string getSpeciesName(bool humanoid, bool large, bool living, bool wings) {
-  static vector<string> names {
-    "devitablex",
-    "owlbeast",
-    "hellar dra",
-    "marilisk",
-    "gelaticorn",
-    "mant eatur",
-    "phanticore",
-    "yeth horro",
-    "yeth amon",
-    "mantic dra",
-    "unic cread",
-    "under hulk",
-    "nightshasa",
-    "manananggal",
-    "dire spawn",
-    "shamander",
-  };
-  return names[humanoid * 8 + (!large) * 4 + (!living) * 2 + wings];
 }
 
 static optional<ItemType> getSpecialBeastAttack(bool large, bool living, bool wings) {
