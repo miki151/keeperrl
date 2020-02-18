@@ -1269,6 +1269,7 @@ void Collective::retire() {
   knownVillainLocations.clear();
   knownVillains.clear();
   discoverable = true;
+  config->setConquerCondition(ConquerCondition::KILL_FIGHTERS_AND_LEADER);
 }
 
 CollectiveWarnings& Collective::getWarnings() {
