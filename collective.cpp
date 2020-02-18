@@ -63,6 +63,7 @@
 #include "village_control.h"
 #include "automaton_part.h"
 #include "item_fetch_info.h"
+#include "enemy_aggression_level.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -393,7 +394,9 @@ void Collective::setControl(PCollectiveControl c) {
 }
 
 void Collective::makeConqueredRetired(Collective* conqueror) {
-  setControl(VillageControl::copyOf(this, dynamic_cast<VillageControl*>(conqueror->control.get())));
+  auto control = VillageControl::copyOf(this, dynamic_cast<VillageControl*>(conqueror->control.get()));
+  control->updateAggression(EnemyAggressionLevel::NONE);
+  setControl(std::move(control));
   name = conqueror->name;
   config = conqueror->config;
   discoverable = conqueror->discoverable;
