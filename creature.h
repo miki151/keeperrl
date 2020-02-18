@@ -186,7 +186,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction payFor(const vector<Item*>&) const;
   CreatureAction fire(Position target) const;
   CreatureAction construct(Vec2 direction, FurnitureType) const;
-  CreatureAction whip(const Position&) const;
+  CreatureAction whip(const Position&, double animChance) const;
   CreatureAction eat(Item*) const;
   CreatureAction destroy(Vec2 direction, const DestroyAction&) const;
   void destroyImpl(Vec2 direction, const DestroyAction& action);

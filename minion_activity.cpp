@@ -71,15 +71,23 @@ static optional<Position> getTileToExplore(Collective* collective, const Creatur
   }
 }
 
-static Creature* getMinionToAbuse(Collective* collective, const Creature* c) {
-  auto minions = collective->getCreatures(MinionTrait::FIGHTER);
-  if (minions.empty() || (minions.size() == 1 && minions[0] == c))
-    return nullptr;
-  do {
-    auto ret = Random.choose(minions);
-    if (ret != c)
-      return ret;
-  } while (true);
+static Creature* getMinionToAbuse(Collective* collective, const Creature* abuser) {
+  auto& minions = collective->getCreatures(MinionTrait::FIGHTER);
+  Creature* target = nullptr;
+  auto abuserPos = abuser->getPosition();
+  for (auto c : minions) {
+    if (c == abuser || c->isAffected(LastingEffect::SPEED))
+      continue;
+    if (!target) {
+      target = c;
+      continue;
+    }
+    auto distTarget = target->getPosition().dist8(abuserPos).value_or(1000);
+    auto dist = c->getPosition().dist8(abuserPos).value_or(1000);
+    if (dist < distTarget)
+      target = c;
+  }
+  return target;
 }
 
 static Creature* getCopulationTarget(const Collective* collective, const Creature* succubus) {
@@ -323,7 +331,10 @@ optional<TimeInterval> MinionActivities::getDuration(const Creature* c, MinionAc
     case MinionActivity::BE_TORTURED:
     case MinionActivity::SLEEP: return none;
     case MinionActivity::EAT:
+    case MinionActivity::MINION_ABUSE:
       return TimeInterval((int) 30 + Random.get(-10, 10));
+    case MinionActivity::RITUAL:
+      return 150_visible;
     default:
       return TimeInterval((int) 500 + 250 * c->getMorale());
   }

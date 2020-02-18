@@ -1726,14 +1726,14 @@ void Creature::addMovementInfo(MovementInfo info) {
       ground->onCreatureWalkedInto(position, info.getDir());
 }
 
-CreatureAction Creature::whip(const Position& pos) const {
+CreatureAction Creature::whip(const Position& pos, double animChance) const {
   Creature* whipped = pos.getCreature();
   if (pos.dist8(position).value_or(2) > 1 || !whipped)
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
     thirdPerson(PlayerMessage(getName().the() + " whips " + whipped->getName().the()));
     auto moveInfo = *self->spendTime();
-    if (Random.roll(3)) {
+    if (Random.chance(animChance)) {
       addSound(SoundId::WHIP);
       self->addMovementInfo(moveInfo
           .setDirection(position.getDir(pos))

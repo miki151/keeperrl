@@ -773,7 +773,7 @@ class AbuseMinion : public Task {
     if (c->getPosition().dist8(target->getPosition()).value_or(2) > 1)
       return c->moveTowards(target->getPosition());
     else {
-      return c->whip(target->getPosition()).append([this](Creature*) {
+      return c->whip(target->getPosition(), 1.0).append([this](Creature*) {
         target->addEffect(LastingEffect::SPEED, 10_visible); setDone();
       });
     }
@@ -1480,7 +1480,7 @@ class Whipping : public Task {
     if (c->getPosition().dist8(position).value_or(2) > 1)
       return c->moveTowards(position);
     else
-      return c->whip(whipped->getPosition());
+      return c->whip(whipped->getPosition(), 0.3);
   }
 
   virtual string getDescription() const override {
