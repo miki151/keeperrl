@@ -2159,7 +2159,7 @@ SGuiElem GuiBuilder::drawTechUnlocks(const CollectiveInfo::LibraryInfo::TechInfo
     lines.addElem(WL(getListBuilder)
         .addElemAuto(WL(viewObject, info.viewId))
         .addSpace(5)
-        .addElemAuto(WL(label, info.name))
+        .addElemAuto(WL(label, capitalFirst(info.name)))
         .buildHorizontalList());
   }
   return WL(setWidth, 350, WL(miniWindow, WL(margins, lines.buildVerticalList(), 15)));
@@ -2182,18 +2182,24 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
   //lines.addElem(WL(rightMargin, rightElemMargin, WL(alignment, GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
   if (info.warning)
     lines.addElem(WL(label, *info.warning, Color::RED));
+  auto emptyElem = WL(empty);
+  auto getUnlocksTooltip = [&] (auto& elem) {
+    return WL(tooltip2, drawTechUnlocks(elem),
+        [=](const Rectangle&) { return emptyElem->getBounds().topLeft() + Vec2(200, 0); });
+  };
   if (!info.available.empty()) {
     lines.addElem(WL(label, "Research:", Color::YELLOW));
     lines.addElem(WL(label, "(" + getPlural("item", collectiveInfo.avatarLevelInfo.numAvailable) + " available)", Color::YELLOW));
     for (int i : All(info.available)) {
       auto& elem = info.available[i];
       auto line = WL(getListBuilder)
-          .addElem(WL(label, getName(elem.id), elem.active ? Color::WHITE : Color::GRAY), 10)
+          .addElem(WL(label, capitalFirst(getName(elem.id)), elem.active ? Color::WHITE : Color::GRAY), 10)
           .buildHorizontalList();
-      line = WL(stack, std::move(line),
-          WL(tooltip2, drawTechUnlocks(elem), [](const Rectangle& r) { return r.bottomLeft(); }));
+      line = WL(stack, std::move(line), getUnlocksTooltip(elem));
       if (elem.tutorialHighlight && tutorial && tutorial->highlights.contains(*elem.tutorialHighlight))
         line = WL(stack, WL(tutorialHighlight), std::move(line));
+      if (i == 0)
+        line = WL(stack, std::move(line), emptyElem);
       if (elem.active)
         line = WL(stack,
             WL(uiHighlightMouseOver, Color::GREEN),
@@ -2210,8 +2216,7 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
     auto line = WL(getListBuilder)
         .addElem(WL(label, getName(elem.id), Color::GRAY), 10)
         .buildHorizontalList();
-    line = WL(stack, std::move(line),
-        WL(tooltip2, drawTechUnlocks(elem), [](const Rectangle& r) { return r.bottomLeft(); }));
+    line = WL(stack, std::move(line), getUnlocksTooltip(elem));
     lines.addElem(WL(rightMargin, rightElemMargin, std::move(line)));
   }
   int height = lines.getSize();
