@@ -233,7 +233,6 @@ class GuiBuilder {
     IMMIGRATION_HELP,
     ALL_VILLAINS,
     TASKS,
-    LIBRARY,
     BESTIARY,
     SPELL_SCHOOLS,
     ITEMS_HELP
@@ -281,7 +280,7 @@ class GuiBuilder {
   unordered_set<pair<int, TutorialHighlight>, CustomHash<pair<int, TutorialHighlight>>> tutorialClicks;
   bool wasTutorialClicked(size_t hash, TutorialHighlight);
   void onTutorialClicked(size_t hash, TutorialHighlight);
-  SGuiElem drawLibraryOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawLibraryContent(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawMapHintOverlay();
   SGuiElem getClickActions(const ViewObject&);
   vector<string> hint;

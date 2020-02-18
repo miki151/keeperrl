@@ -434,20 +434,6 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo, int width) {
   GameSunlightInfo& sunlightInfo = gameInfo.sunlightInfo;
   auto bottomLine = WL(getListBuilder);
   const int space = 55;
-  bottomLine.addElemAuto(WL(standardButton, WL(stack,
-      WL(margins, WL(progressBar, Color::DARK_GREEN.transparency(128), info.avatarLevelInfo.progress), -3, -1, 0, 7),
-      WL(margins, WL(stack,
-          gameInfo.tutorial && gameInfo.tutorial->highlights.contains(TutorialHighlight::RESEARCH) ?
-              WL(tutorialHighlight) : WL(empty),
-          WL(uiHighlightConditional, [&]{ return info.avatarLevelInfo.numAvailable > 0; })),
-          3, -2, -3, 2),
-      WL(getListBuilder)
-          //.addSpace(10)
-          .addElemAuto(WL(topMargin, -2, WL(viewObject, info.avatarLevelInfo.viewId)))
-          .addElemAuto(WL(label, "Level: " + toString(info.avatarLevelInfo.level)))
-          .buildHorizontalList()),
-      WL(button, [this]() { toggleBottomWindow(LIBRARY); })
-  ));
   bottomLine.addSpace(space);
   bottomLine.addElem(WL(labelFun, [&info] {
         return "population: " + toString(info.minionCount) + " / " +
@@ -497,6 +483,11 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
           WL(button, [this, i]() { setCollectiveTab(CollectiveTab(i)); }));
     }
     if (info.tutorial) {
+      if (info.tutorial->highlights.contains(TutorialHighlight::RESEARCH))
+        buttons[2] = WL(stack, WL(conditional,
+            WL(blink, getIconHighlight(Color::YELLOW)),
+            [this] { return collectiveTab != CollectiveTab::TECHNOLOGY;}),
+            buttons[2]);
       for (auto& building : collectiveInfo.buildings)
         if (auto& highlight = building.tutorialHighlight)
           if (info.tutorial->highlights.contains(*highlight)) {
@@ -515,12 +506,18 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
                 [this] { return collectiveTab != CollectiveTab::MINIONS;}),
             buttons[1]);
     }
+    if ((!info.tutorial || !info.tutorial->highlights.contains(TutorialHighlight::RESEARCH)) &&
+        collectiveInfo.avatarLevelInfo.numAvailable > 0)
+      buttons[2] = WL(stack, WL(conditional,
+          getIconHighlight(Color::YELLOW),
+          [this] { return collectiveTab != CollectiveTab::TECHNOLOGY;}),
+          buttons[2]);
     vector<pair<CollectiveTab, SGuiElem>> elems = makeVec(
         make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo, info.tutorial)),
         make_pair(CollectiveTab::BUILDINGS, cache->get(bindMethod(
             &GuiBuilder::drawBuildings, this), THIS_LINE, collectiveInfo.buildings, info.tutorial)),
         make_pair(CollectiveTab::KEY_MAPPING, drawKeeperHelp(info)),
-        make_pair(CollectiveTab::TECHNOLOGY, drawTechnology(collectiveInfo))
+        make_pair(CollectiveTab::TECHNOLOGY, drawLibraryContent(collectiveInfo, info.tutorial))
     );
     vector<SGuiElem> tabs;
     for (auto& elem : elems) {
@@ -2165,9 +2162,8 @@ SGuiElem GuiBuilder::drawTechUnlocks(const CollectiveInfo::LibraryInfo::TechInfo
   return WL(setWidth, 350, WL(miniWindow, WL(margins, lines.buildVerticalList(), 15)));
 }
 
-SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, const optional<TutorialInfo>& tutorial) {
+SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, const optional<TutorialInfo>& tutorial) {
   auto& info = collectiveInfo.libraryInfo;
-  const int margin = 20;
   const int rightElemMargin = 10;
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addSpace(5);
@@ -2177,15 +2173,17 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
       .addElemAuto(WL(label, toString(collectiveInfo.avatarLevelInfo.title)))
       .buildHorizontalList());
   lines.addElem(WL(label, "Level " + toString(collectiveInfo.avatarLevelInfo.level)));
-  lines.addElem(WL(label, "Next level progress: " +
-      toString(info.currentProgress) + "/" + toString(info.totalProgress)));
+  lines.addElem(WL(stack,
+      WL(margins, WL(progressBar, Color::DARK_GREEN.transparency(128), collectiveInfo.avatarLevelInfo.progress), -4, 0, -1, 6),
+      WL(label, "Next level progress: " + toString(info.currentProgress) + "/" + toString(info.totalProgress))
+  ));
   //lines.addElem(WL(rightMargin, rightElemMargin, WL(alignment, GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
   if (info.warning)
-    lines.addElem(WL(label, *info.warning, Color::RED));
+    lines.addElem(WL(label, *info.warning, Renderer::smallTextSize, Color::RED));
   auto emptyElem = WL(empty);
   auto getUnlocksTooltip = [&] (auto& elem) {
     return WL(tooltip2, drawTechUnlocks(elem),
-        [=](const Rectangle&) { return emptyElem->getBounds().topLeft() + Vec2(200, 0); });
+        [=](const Rectangle&) { return emptyElem->getBounds().topRight() + Vec2(35, 0); });
   };
   if (!info.available.empty()) {
     lines.addElem(WL(label, "Research:", Color::YELLOW));
@@ -2219,12 +2217,8 @@ SGuiElem GuiBuilder::drawLibraryOverlay(const CollectiveInfo& collectiveInfo, co
     line = WL(stack, std::move(line), getUnlocksTooltip(elem));
     lines.addElem(WL(rightMargin, rightElemMargin, std::move(line)));
   }
-  int height = lines.getSize();
-  return WL(preferredSize, 500, height + 2 * margin + 2,
-      WL(miniWindow, WL(stack,
-          WL(keyHandler, [this] { bottomWindow = none; }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
-          WL(margins, WL(scrollable, lines.buildVerticalList(), &libraryScroll, &scrollbarsHeld), margin)),
-              [this] { bottomWindow = none; }, true));
+  const int margin = 0;
+  return WL(margins, WL(scrollable, lines.buildVerticalList(), &libraryScroll, &scrollbarsHeld), margin);
 }
 
 SGuiElem GuiBuilder::drawMinionsOverlay(const optional<CollectiveInfo::ChosenCreatureInfo>& chosenCreature,
@@ -2638,9 +2632,6 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
       if (bottomWindow == ALL_VILLAINS)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawAllVillainsOverlay, this), THIS_LINE,
             info.villageInfo), OverlayInfo::BOTTOM_LEFT});
-      if (bottomWindow == LIBRARY)
-        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawLibraryOverlay, this), THIS_LINE,
-             collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawGameSpeedDialog, this), THIS_LINE),
            OverlayInfo::GAME_SPEED});
       break;
