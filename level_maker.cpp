@@ -1622,7 +1622,7 @@ class Forrest : public LevelMaker {
     auto furnitureList = builder->getContentFactory()->furniture.getFurnitureList(info.trees);
     Table<double> wys = genNoiseMap(builder->getRandom(), area, {0, 0, 0, 0, 0}, 0.65);
     vector<double> values = sortedValues(wys);
-    double cutoff = values[values.size() * info.ratio];
+    double cutoff = values[min(values.size() - 1, int(values.size() * info.ratio))];
     auto pred = Predicate::type(info.onType);
     for (Vec2 v : area)
       if (pred.apply(builder, v) && builder->canNavigate(v, {MovementTrait::WALK}) && wys[v] < cutoff) {
