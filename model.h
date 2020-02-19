@@ -77,10 +77,11 @@ class Model : public OwnedObject<Model> {
   const vector<PCreature>& getDeadCreatures() const;
   vector<WLevel> getLevels() const;
   const vector<WLevel>& getMainLevels() const;
-  void addCollective(PCollective);
-
+  optional<int> getDepth(Level*) const;
   WLevel getTopLevel() const;
   LevelId getUniqueId() const;
+
+  void addCollective(PCollective);
 
   void addWoodCount(int);
   int getWoodCount() const;
@@ -102,7 +103,7 @@ class Model : public OwnedObject<Model> {
 
   void addEvent(const GameEvent&);
 
-  WLevel buildLevel(LevelBuilder, PLevelMaker);
+  WLevel buildLevel(LevelBuilder, PLevelMaker, int depth);
   WLevel buildMainLevel(LevelBuilder, PLevelMaker);
   void calculateStairNavigation();
 
@@ -121,6 +122,7 @@ class Model : public OwnedObject<Model> {
 
   vector<PLevel> SERIAL(levels);
   vector<WLevel> SERIAL(mainLevels);
+  map<Level*, int> SERIAL(depths);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
   WGame SERIAL(game) = nullptr;

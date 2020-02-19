@@ -1199,7 +1199,17 @@ void Player::fillDungeonLevel(PlayerInfo& info) const {
   info.avatarLevelInfo->numAvailable = avatarLevel->numResearchAvailable();
 }
 
+void Player::fillCurrentLevelInfo(GameInfo& gameInfo) const {
+  if (auto index = getModel()->getDepth(getLevel()))
+    gameInfo.currentLevel = CurrentLevelInfo {
+      *index,
+      100000,
+      false
+    };
+}
+
 void Player::refreshGameInfo(GameInfo& gameInfo) const {
+  fillCurrentLevelInfo(gameInfo);
   gameInfo.messageBuffer = messageBuffer->current;
   gameInfo.infoType = GameInfo::InfoType::PLAYER;
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();

@@ -157,5 +157,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   vector<unordered_set<ViewId, CustomHash<ViewId>>> halluIds;
   void generateHalluIds();
   ViewId shuffleViewId(const ViewId&) const;
+  void fillCurrentLevelInfo(GameInfo&) const;
 };
 
