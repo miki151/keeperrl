@@ -426,10 +426,11 @@ class TutorialInfo {
 };
 
 struct CurrentLevelInfo {
+  optional<string> HASH(name);
   int HASH(levelDepth);
   int HASH(numLevels);
   bool HASH(canScroll);
-  HASH_ALL(levelDepth, numLevels, canScroll)
+  HASH_ALL(name, levelDepth, numLevels, canScroll)
 };
 
 /** Represents all the game information displayed around the map window.*/

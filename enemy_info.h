@@ -38,6 +38,7 @@ struct LevelConnection {
     LevelType SERIAL(levelType);
     EnemyLevelInfo SERIAL(enemy);
     bool SERIAL(isLit) = false;
+    optional<string> SERIAL(name);
     template <class Archive>
     void serialize(Archive& ar, unsigned int v);
   };

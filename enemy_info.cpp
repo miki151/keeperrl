@@ -33,16 +33,13 @@ EnemyInfo& EnemyInfo::setNonDiscoverable() {
 }
 
 template <class Archive>
-void LevelConnection::LevelInfo::serialize(Archive& ar1, unsigned int v) {
-  ar1(NAMED(enemy), NAMED(levelSize), NAMED(levelType));
+void LevelConnection::LevelInfo::serialize(Archive& ar, unsigned int v) {
+  ar(NAMED(enemy), NAMED(levelSize), NAMED(levelType), NAMED(name), OPTION(isLit));
 }
 
 #include "pretty_archive.h"
 template
 void EnemyInfo::serialize(PrettyInputArchive& ar1, unsigned);
 
-// Merge with the template function after alpha 29
-template<>
-void LevelConnection::LevelInfo::serialize(PrettyInputArchive& ar, unsigned int v) {
-  ar(NAMED(enemy), NAMED(levelSize), NAMED(levelType), OPTION(isLit));
-}
+template
+void LevelConnection::LevelInfo::serialize(PrettyInputArchive& ar, unsigned int v);

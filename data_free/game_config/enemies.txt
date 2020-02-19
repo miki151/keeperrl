@@ -837,9 +837,9 @@
       { ExtraEnemy { "BLACK_MARKET_ENTRY" { 1 } } 40 30 DUNGEON }
       { ExtraEnemy { "DUNGEON2" { 1 } } 40 30 DUNGEON }
       { ExtraEnemy { "DUNGEON3" { 1 } } 40 30 DUNGEON }
-      { MainEnemy 60 40 BASIC }
-      { ExtraEnemy { "DEATH" { 1 } } 40 30 BASIC true }
-      { ExtraEnemy { "DUNGEON1" { 1 } } 40 30 DUNGEON }
+      { MainEnemy 60 40 BASIC "Adoxie's Temple" }
+      { ExtraEnemy { "DEATH" { 1 } } 40 30 BASIC none true }
+      { ExtraEnemy { "DUNGEON1" { 1 } } 40 30 DUNGEON "Hell" }
     }
   }
 }
@@ -1221,7 +1221,7 @@
     topLevel = MainEnemy
     direction = UP
     levels = {
-      { ExtraEnemy {"BLACK_MARKET"} 30 20 BLACK_MARKET }
+      { ExtraEnemy {"BLACK_MARKET"} 30 20 BLACK_MARKET "Black market" }
     }
   }
 }
@@ -2057,7 +2057,7 @@
     direction = UP
     topLevel = ExtraEnemy { "WIZARD_TOWER_ENTRY" }
     levels = {
-      { MainEnemy 20 20 BASIC true }
+      { MainEnemy 20 20 BASIC "A wizard's tower" true }
     }
   }
 }

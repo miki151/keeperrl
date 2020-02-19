@@ -4231,8 +4231,9 @@ SGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
 }
 
 SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textColor) {
+  auto name = info.name.value_or("Z-Level " + toString(info.levelDepth));
   return WL(stack,
-      WL(centerHoriz, WL(labelHighlight, "Z-Level " + toString(info.levelDepth), textColor)),
+      WL(centerHoriz, WL(labelHighlight, name, textColor)),
       !info.canScroll ? WL(empty) : WL(buttonRect, [this, info] (Rectangle bounds) {
           auto tasks = WL(getListBuilder, legendLineHeight);
           bool exit = false;

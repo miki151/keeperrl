@@ -1200,12 +1200,13 @@ void Player::fillDungeonLevel(PlayerInfo& info) const {
 }
 
 void Player::fillCurrentLevelInfo(GameInfo& gameInfo) const {
-  if (auto index = getModel()->getDepth(getLevel()))
+  auto level = getLevel();
     gameInfo.currentLevel = CurrentLevelInfo {
-      *index,
-      100000,
-      false
-    };
+    level->name,
+    level->depth,
+    100000,
+    false
+  };
 }
 
 void Player::refreshGameInfo(GameInfo& gameInfo) const {

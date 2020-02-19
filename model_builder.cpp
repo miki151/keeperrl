@@ -354,7 +354,7 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
         swap(settlement.upStairs, settlement.downStairs);
       model->buildLevel(
           LevelBuilder(meter, random, contentFactory, level.levelSize.x, level.levelSize.y, true, level.isLit ? 1.0 : 0.0),
-          getMaker(level.levelType)(random, settlement, level.levelSize), depth);
+          getMaker(level.levelType)(random, settlement, level.levelSize), depth, level.name);
       upLink = downLink;
       downLink = StairKey::getNew();
     };

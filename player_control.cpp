@@ -1458,11 +1458,11 @@ static optional<CollectiveInfo::RebellionChance> getRebellionChance(double prob)
 }
 
 void PlayerControl::fillCurrentLevelInfo(GameInfo& gameInfo) const {
-  auto& levels = getModel()->getMainLevels();
-  int index = *levels.findElement(getCurrentLevel());
-  gameInfo.currentLevel = CurrentLevelInfo {
-    index,
-    levels.size(),
+  auto level = getCurrentLevel();
+    gameInfo.currentLevel = CurrentLevelInfo {
+    level->name,
+    level->depth,
+    getModel()->getMainLevels().size(),
     true
   };
 }

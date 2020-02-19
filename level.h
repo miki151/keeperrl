@@ -179,6 +179,9 @@ class Level : public OwnedObject<Level> {
 
   SERIALIZATION_DECL(Level)
 
+  optional<string> name;
+  int depth = 0;
+
   private:
   friend class Position;
   const Square* getSafeSquare(Vec2) const;

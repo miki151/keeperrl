@@ -61,7 +61,7 @@ void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   ar & SUBCLASS(OwnedObject<Model>);
   ar(levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
-  ar(stairNavigation, cemetery, mainLevels, eventGenerator, externalEnemies, defaultMusic, depths);
+  ar(stairNavigation, cemetery, mainLevels, eventGenerator, externalEnemies, defaultMusic);
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Model)
@@ -167,15 +167,17 @@ void Model::addCreature(PCreature c, TimeInterval delay) {
   timeQueue->addCreature(std::move(c), getLocalTime() + delay);
 }
 
-WLevel Model::buildLevel(LevelBuilder b, PLevelMaker maker, int depth) {
+WLevel Model::buildLevel(LevelBuilder b, PLevelMaker maker, int depth, optional<string> name) {
   LevelBuilder builder(std::move(b));
   levels.push_back(builder.build(this, maker.get(), Random.getLL()));
-  depths[levels.back().get()] = depth;
+  levels.back()->depth = depth;
+  levels.back()->name = name;
   return levels.back().get();
 }
 
 WLevel Model::buildMainLevel(LevelBuilder b, PLevelMaker maker) {
-  auto ret = buildLevel(std::move(b), std::move(maker), mainLevels.size());
+  int depth = mainLevels.size();
+  auto ret = buildLevel(std::move(b), std::move(maker), depth, depth == 0 ? optional<string>("Ground") : none);
   mainLevels.push_back(ret);
   return ret;
 }
@@ -209,10 +211,6 @@ TimeQueue& Model::getTimeQueue() {
 
 int Model::getMoveCounter() const {
   return moveCounter;
-}
-
-optional<int> Model::getDepth(Level* l) const {
-  return getValueMaybe(depths, l);
 }
 
 void Model::increaseMoveCounter() {
