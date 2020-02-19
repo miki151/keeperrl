@@ -2167,11 +2167,11 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
   const int rightElemMargin = 10;
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addSpace(5);
-  lines.addElem(WL(getListBuilder)
+  lines.addElem(WL(renderInBounds, WL(getListBuilder)
       .addElemAuto(WL(topMargin, -2, WL(viewObject, collectiveInfo.avatarLevelInfo.viewId)))
       .addSpace(4)
       .addElemAuto(WL(label, toString(collectiveInfo.avatarLevelInfo.title)))
-      .buildHorizontalList());
+      .buildHorizontalList()));
   lines.addElem(WL(label, "Level " + toString(collectiveInfo.avatarLevelInfo.level)));
   lines.addElem(WL(stack,
       WL(margins, WL(progressBar, Color::DARK_GREEN.transparency(128), collectiveInfo.avatarLevelInfo.progress), -4, 0, -1, 6),
