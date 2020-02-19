@@ -179,8 +179,8 @@ class Level : public OwnedObject<Level> {
 
   SERIALIZATION_DECL(Level)
 
-  optional<string> name;
-  int depth = 0;
+  optional<string> SERIAL(name);
+  int SERIAL(depth) = 0;
 
   private:
   friend class Position;

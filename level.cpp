@@ -47,7 +47,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
-  ar(furniture, tickingFurniture, covered, roofSupport, portals);
+  ar(furniture, tickingFurniture, covered, roofSupport, portals, name, depth);
   unordered_map<TribeId, unique_ptr<EffectsTable>, CustomHash<TribeId>> SERIAL(tmp);
   for (auto t : ENUM_ALL(TribeId::KeyType))
     tmp[TribeId(t)] = std::move(furnitureEffects[t]);

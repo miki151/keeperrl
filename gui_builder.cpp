@@ -4234,18 +4234,18 @@ SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textCo
   auto name = info.name.value_or("Z-Level " + toString(info.levelDepth));
   return WL(stack,
       WL(centerHoriz, WL(labelHighlight, name, textColor)),
-      !info.canScroll ? WL(empty) : WL(buttonRect, [this, info] (Rectangle bounds) {
+      info.zLevels.empty() ? WL(empty) : WL(buttonRect, [this, info] (Rectangle bounds) {
           auto tasks = WL(getListBuilder, legendLineHeight);
           bool exit = false;
           auto retAction = [&] (optional<int> index) {
             if (index)
               callbacks.input(UserInput{UserInputId::SCROLL_STAIRS, *index - info.levelDepth});
           };
-          for (int i : Range(info.numLevels)) {
+          for (int i : All(info.zLevels)) {
             tasks.addElem(WL(stack,
                 WL(button, [i, &retAction, &exit] { retAction(i); exit = true; }),
                 WL(getListBuilder, 32)
-                    .addElem(WL(labelHighlight, "Z-Level " + toString(i)))
+                    .addElem(WL(labelHighlight, info.zLevels[i].value_or("Z-Level " + toString(i))))
                     .buildHorizontalList()));
           }
           drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), bounds.width() - 30, false);
@@ -4273,11 +4273,11 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
       return ret;
     };
     auto line = WL(getListBuilder);
-    if (info->canScroll)
+    if (!info->zLevels.empty())
       line.addElemAuto(getButton(info->levelDepth > 0, "<", UserInput{UserInputId::SCROLL_STAIRS, -1 }));
     line.addMiddleElem(WL(topMargin, 3, drawZLevelButton(*info, textColor)));
-    if (info->canScroll)
-      line.addBackElemAuto(getButton(info->levelDepth < info->numLevels - 1, ">", UserInput{UserInputId::SCROLL_STAIRS, 1}));
+    if (!info->zLevels.empty())
+      line.addBackElemAuto(getButton(info->levelDepth < info->zLevels.size() - 1, ">", UserInput{UserInputId::SCROLL_STAIRS, 1}));
     lines.addElem(WL(stack,
         WL(stopMouseMovement),
         WL(rectangle, Color(47, 31, 0), Color::BLACK),

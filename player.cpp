@@ -1204,8 +1204,7 @@ void Player::fillCurrentLevelInfo(GameInfo& gameInfo) const {
     gameInfo.currentLevel = CurrentLevelInfo {
     level->name,
     level->depth,
-    100000,
-    false
+    {}
   };
 }
 

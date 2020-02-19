@@ -1462,8 +1462,7 @@ void PlayerControl::fillCurrentLevelInfo(GameInfo& gameInfo) const {
     gameInfo.currentLevel = CurrentLevelInfo {
     level->name,
     level->depth,
-    getModel()->getMainLevels().size(),
-    true
+    getModel()->getMainLevels().transform([](auto level) { return level->name; }),
   };
 }
 
