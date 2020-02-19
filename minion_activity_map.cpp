@@ -21,6 +21,7 @@
 #include "body.h"
 #include "collective.h"
 #include "equipment.h"
+#include "game.h"
 
 bool MinionActivityMap::canChooseRandomly(const Creature* c, MinionActivity t) const {
   PROFILE;
@@ -67,7 +68,6 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
       return !c->getBody().isImmuneTo(LastingEffect::ENTANGLED) &&
           !c->getBody().isMinionFood() &&
           c->getBody().isHumanoid();
-    case MinionActivity::MINION_ABUSE:
     case MinionActivity::POETRY:
       return col->hasTrait(c, MinionTrait::LEADER);
     case MinionActivity::BE_EXECUTED:
@@ -101,6 +101,8 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
       return c->getBody().isHumanoid() && col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::DIGGING:
       return c->getAttributes().getSkills().getValue(SkillId::DIGGING) > 0 && col->hasTrait(c, MinionTrait::WORKER);
+    case MinionActivity::MINION_ABUSE:
+      return col->hasTrait(c, MinionTrait::LEADER) && col == col->getGame()->getPlayerCollective();
   }
 }
 
