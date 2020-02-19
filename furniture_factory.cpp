@@ -57,7 +57,10 @@ PFurniture FurnitureFactory::getFurniture(FurnitureType type, TribeId tribe) con
 }
 
 const Furniture& FurnitureFactory::getData(FurnitureType type) const {
-  return *furniture.at(type);
+  if (auto ret = getReferenceMaybe(furniture, type))
+    return **ret;
+  FATAL << "Furniture not found " << type.data();
+  fail();
 }
 
 const ViewObject& FurnitureFactory::getConstructionObject(FurnitureType type) const {
