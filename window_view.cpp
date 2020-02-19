@@ -1357,11 +1357,11 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       break;
     case SDL::SDLK_z: zoom(0); break;
     case SDL::SDLK_COMMA:
-      inputQueue.push(UserInputId::SCROLL_UP_STAIRS);
-       break;
+      inputQueue.push(UserInput{UserInputId::SCROLL_STAIRS, -1});
+      break;
     case SDL::SDLK_PERIOD:
-      inputQueue.push(UserInputId::SCROLL_DOWN_STAIRS);
-       break;
+      inputQueue.push(UserInput{UserInputId::SCROLL_STAIRS, 1});
+      break;
     case SDL::SDLK_F2:
       if (!renderer.isMonkey()) {
         options->handle(this, OptionSet::GENERAL);

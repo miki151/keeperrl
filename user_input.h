@@ -93,8 +93,7 @@ enum class UserInputId {
     SHOW_HISTORY,
     DISMISS_NEXT_WAVE,
     DISMISS_WARNING_WINDOW,
-    SCROLL_DOWN_STAIRS,
-    SCROLL_UP_STAIRS,
+    SCROLL_STAIRS,
 // turn-based actions
     MOVE,
     TRAVEL,
@@ -241,7 +240,8 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
             UserInputId::IMMIGRANT_REJECT,
             UserInputId::IMMIGRANT_AUTO_ACCEPT,
             UserInputId::IMMIGRANT_AUTO_REJECT,
-            UserInputId::CAST_SPELL
+            UserInputId::CAST_SPELL,
+            UserInputId::SCROLL_STAIRS
         ),
         ASSIGN(InventoryItemInfo,
             UserInputId::INVENTORY_ITEM,

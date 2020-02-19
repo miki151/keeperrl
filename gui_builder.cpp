@@ -4230,6 +4230,27 @@ SGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
 
 }
 
+SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textColor) {
+  return WL(stack,
+      WL(centerHoriz, WL(labelHighlight, "Z-Level " + toString(info.levelDepth), textColor)),
+      !info.canScroll ? WL(empty) : WL(buttonRect, [this, info] (Rectangle bounds) {
+          auto tasks = WL(getListBuilder, legendLineHeight);
+          bool exit = false;
+          auto retAction = [&] (optional<int> index) {
+            if (index)
+              callbacks.input(UserInput{UserInputId::SCROLL_STAIRS, *index - info.levelDepth});
+          };
+          for (int i : Range(info.numLevels)) {
+            tasks.addElem(WL(stack,
+                WL(button, [i, &retAction, &exit] { retAction(i); exit = true; }),
+                WL(getListBuilder, 32)
+                    .addElem(WL(labelHighlight, "Z-Level " + toString(i)))
+                    .buildHorizontalList()));
+          }
+          drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), bounds.width() - 30, false);
+        }));
+}
+
 SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
   auto tutorialPredicate = [&gameInfo] {
     return gameInfo.tutorial && gameInfo.tutorial->highlights.contains(TutorialHighlight::MINIMAP_BUTTONS);
@@ -4237,7 +4258,7 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
   Color textColor(209, 181, 130);
   auto lines = WL(getListBuilder, legendLineHeight);
   if (auto& info = gameInfo.currentLevel) {
-    auto getButton = [&](bool enabled, string label, UserInputId inputId) {
+    auto getButton = [&](bool enabled, string label, UserInput inputId) {
       auto ret = WL(preferredSize, legendLineHeight, legendLineHeight, WL(stack,
           WL(margins, WL(rectangle, Color(56, 36, 0), Color(57, 41, 0)), 2),
           WL(centerHoriz, WL(topMargin, -2, WL(mouseHighlight2,
@@ -4250,14 +4271,16 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
             WL(button, getButtonCallback(inputId)));
       return ret;
     };
+    auto line = WL(getListBuilder);
+    if (info->canScroll)
+      line.addElemAuto(getButton(info->levelDepth > 0, "<", UserInput{UserInputId::SCROLL_STAIRS, -1 }));
+    line.addMiddleElem(WL(topMargin, 3, drawZLevelButton(*info, textColor)));
+    if (info->canScroll)
+      line.addBackElemAuto(getButton(info->levelDepth < info->numLevels - 1, ">", UserInput{UserInputId::SCROLL_STAIRS, 1}));
     lines.addElem(WL(stack,
         WL(stopMouseMovement),
         WL(rectangle, Color(47, 31, 0), Color::BLACK),
-        WL(getListBuilder)
-          .addElemAuto(getButton(info->canScrollUp, "<", UserInputId::SCROLL_UP_STAIRS))
-          .addMiddleElem(WL(topMargin, 3, WL(centerHoriz, WL(label, info->levelName, textColor))))
-          .addBackElemAuto(getButton(info->canScrollDown, ">", UserInputId::SCROLL_DOWN_STAIRS))
-          .buildHorizontalList()
+        line.buildHorizontalList()
     ));
   }
   return lines.addElemAuto(

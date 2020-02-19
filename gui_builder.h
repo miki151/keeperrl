@@ -327,6 +327,7 @@ class GuiBuilder {
   SGuiElem drawItemsHelpOverlay(const vector<ItemInfo>&);
   SGuiElem drawItemsHelpButtons(const vector<ItemInfo>&);
   SGuiElem drawTechUnlocks(const CollectiveInfo::LibraryInfo::TechInfo&);
+  SGuiElem drawZLevelButton(const CurrentLevelInfo&, Color textColor);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

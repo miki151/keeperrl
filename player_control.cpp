@@ -1461,9 +1461,9 @@ void PlayerControl::fillCurrentLevelInfo(GameInfo& gameInfo) const {
   auto& levels = getModel()->getMainLevels();
   int index = *levels.findElement(getCurrentLevel());
   gameInfo.currentLevel = CurrentLevelInfo {
-    "Z-Level " + toString(index),
-    index > 0,
-    index < levels.size() - 1
+    index,
+    levels.size(),
+    true
   };
 }
 
@@ -2488,11 +2488,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::SCROLL_TO_HOME:
       setScrollPos(collective->getLeaders()[0]->getPosition());
       break;
-    case UserInputId::SCROLL_DOWN_STAIRS:
-      scrollStairs(false);
-      break;
-    case UserInputId::SCROLL_UP_STAIRS:
-      scrollStairs(true);
+    case UserInputId::SCROLL_STAIRS:
+      scrollStairs(input.get<int>());
       break;
     case UserInputId::TAKE_SCREENSHOT:
       getView()->dungeonScreenshot(input.get<Vec2>());
@@ -2507,14 +2504,13 @@ void PlayerControl::processInput(View* view, UserInput input) {
   }
 }
 
-void PlayerControl::scrollStairs(bool up) {
+void PlayerControl::scrollStairs(int dir) {
   if (!currentLevel)
     currentLevel = getModel()->getTopLevel();
   auto& levels = getModel()->getMainLevels();
   int index = *levels.findElement(currentLevel);
-  index += up ? -1 : 1;
-  if (index < 0 || index >= levels.size())
-    return;
+  index += dir;
+  index = max(min(index, levels.size() - 1), 0);
   currentLevel = levels[index];
   getView()->updateView(this, false);
   CHECK(currentLevel);
