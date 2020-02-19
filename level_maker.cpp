@@ -389,14 +389,9 @@ class Connector : public LevelMaker {
             builder->putFurniture(v, door->type, tribe);
           }
         }
-        if (!builder->canNavigate(v, {MovementTrait::WALK})) {
-          auto under = builder->getFurniture(v, FurnitureLayer::GROUND);
-          if (under->canBuildBridgeOver()) {
-            bool stoneBridge = (under->getTickType() &&
-                under->getTickType()->getValueMaybe<BuiltinTickType>() == BuiltinTickType::SET_FURNITURE_ON_FIRE);
-            builder->putFurniture(v, FurnitureType(stoneBridge ? "STONE_BRIDGE" : "BRIDGE"));
-          }
-        }
+        if (!builder->canNavigate(v, {MovementTrait::WALK}))
+          if (auto bridge = builder->getFurniture(v, FurnitureLayer::GROUND)->getDefaultBridge())
+            builder->putFurniture(v, *bridge);
         CHECK(builder->canNavigate(v, {MovementTrait::WALK}));
       }
       if (!path.isReachable(v))

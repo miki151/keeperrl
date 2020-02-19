@@ -46,11 +46,11 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(blockVision), NAMED(usageType), NAMED(clickType), NAMED(tickType), OPTION(usageTime), OPTION(overrideMovement));
   ar(NAMED(constructMessage), OPTION(layer), OPTION(entryType), OPTION(lightEmission), OPTION(canHideHere), OPTION(warning));
   ar(NAMED(summonedElement), OPTION(droppedItems), OPTION(xForgetAfterBuilding), OPTION(requiredSupport), OPTION(builtOver));
-  ar(OPTION(canBuildBridge), OPTION(noProjectiles), OPTION(clearFogOfWar), OPTION(removeWithCreaturePresent), OPTION(upgrade));
+  ar(OPTION(defaultBridge), OPTION(noProjectiles), OPTION(clearFogOfWar), OPTION(removeWithCreaturePresent), OPTION(upgrade));
   ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
   ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(dissolveTo));
-  ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), OPTION(visibleWhileBlind), NAMED(freezeTo));
+  ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), OPTION(visibleWhileBlind), NAMED(freezeTo), NAMED(fillPit));
 }
 
 template <class Archive>
@@ -425,8 +425,12 @@ vector<PItem> Furniture::dropItems(Position pos, vector<PItem> v) const {
     return v;
 }
 
-bool Furniture::canBuildBridgeOver() const {
-  return canBuildBridge;
+optional<FurnitureType> Furniture::getDefaultBridge() const {
+  return defaultBridge;
+}
+
+optional<FurnitureType> Furniture::getFillPit() const {
+  return fillPit;
 }
 
 const LuxuryInfo&Furniture::getLuxuryInfo() const {

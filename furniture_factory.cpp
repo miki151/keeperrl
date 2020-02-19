@@ -102,7 +102,7 @@ bool FurnitureFactory::canBuild(FurnitureType type, Position pos) const {
   auto groundF = pos.getFurniture(FurnitureLayer::GROUND);
   CHECK(groundF);
   if (data.isBridge())
-    return groundF->canBuildBridgeOver();
+    return !!groundF->getDefaultBridge();
   if (auto over = data.getBuiltOver())
     return !!pos.getFurniture(*over);
   auto original = pos.getFurniture(getData(type).getLayer());

@@ -1345,9 +1345,10 @@
   waterDepth = 100
   entryType = Water
   droppedItems = { "sinks" "sink" "You hear a splash." }
-  canBuildBridge = true
+  defaultBridge = "BRIDGE"
   summonedElement = "WATER_ELEMENTAL"
   freezeTo = "ICE"
+  fillPit = "WATER"
   canSilentlyReplace = true
   movementSet = {
     traits = { FLY SWIM }
@@ -1376,9 +1377,10 @@
   entryType = Magma
   droppedItems = { "burns" "burn" }
   lightEmission = 8.2
-  canBuildBridge = true
+  defaultBridge = "STONE_BRIDGE"
   summonedElement = "FIRE_ELEMENTAL"
   freezeTo = "FLOOR"
+  fillPit = "MAGMA"
   canSilentlyReplace = true
   tickType = Builtin SET_FURNITURE_ON_FIRE
   movementSet = {

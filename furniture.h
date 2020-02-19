@@ -126,7 +126,8 @@ class Furniture {
    * @return possibly empty subset of the items that weren't consumned and can be dropped normally.
    */
   vector<PItem> dropItems(Position, vector<PItem>) const;
-  bool canBuildBridgeOver() const;
+  optional<FurnitureType> getDefaultBridge() const;
+  optional<FurnitureType> getFillPit() const;
   const LuxuryInfo& getLuxuryInfo() const;
   struct PopulationInfo {
     double SERIAL(increase);
@@ -192,7 +193,8 @@ class Furniture {
   WeakPointer<Creature> SERIAL(creator);
   optional<LocalTime> SERIAL(createdTime);
   optional<CreatureId> SERIAL(summonedElement);
-  bool SERIAL(canBuildBridge) = false;
+  optional<FurnitureType> SERIAL(defaultBridge);
+  optional<FurnitureType> SERIAL(fillPit);
   bool SERIAL(noProjectiles) = false;
   bool SERIAL(clearFogOfWar) = false;
   bool SERIAL(xForgetAfterBuilding) = false;

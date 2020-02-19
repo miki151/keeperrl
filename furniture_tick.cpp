@@ -106,10 +106,8 @@ static void pit(Position position, Furniture* self) {
   if (!position.getCreature() && Random.roll(10))
     for (auto neighborPos : position.neighbors8(Random))
       if (auto water = neighborPos.getFurniture(FurnitureLayer::GROUND))
-        if (water->canBuildBridgeOver()) {
-          auto waterType = water->getType() == FurnitureType("MAGMA") ?
-                FurnitureType("MAGMA") : FurnitureType("WATER");
-          auto toAdd = position.getGame()->getContentFactory()->furniture.getFurniture(waterType, water->getTribe());
+        if (auto fillType = water->getFillPit()) {
+          auto toAdd = position.getGame()->getContentFactory()->furniture.getFurniture(*fillType, water->getTribe());
           if (water->getViewObject()->hasModifier(ViewObjectModifier::BLOODY))
             toAdd->spreadBlood(position);
           position.removeFurniture(position.getFurniture(FurnitureLayer::GROUND), std::move(toAdd));
