@@ -235,7 +235,7 @@ vector<AttributeInfo> AttributeInfo::fromCreature(const Creature* c) {
   PROFILE;
   auto genInfo = [c](AttrType type, const char* help) {
     return AttributeInfo {
-        getName(type),
+        capitalFirst(getName(type)),
         type,
         c->getAttributes().getRawAttr(type),
         c->getAttrBonus(type, true),
