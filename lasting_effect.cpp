@@ -827,14 +827,15 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
           enemyId = Random.choose(col->getCreatures())->getViewObject().id();
           enemy = col;
         }
-      auto playerCollective = c->getGame()->getPlayerCollective();
       auto isTriggered = [&] {
-        for (auto& t : enemy->getTriggers(playerCollective))
-          if (t.trigger.contains<StolenItems>())
-            return true;
+        if (auto playerCollective = c->getGame()->getPlayerCollective())
+          if (playerCollective->getCreatures().contains(c))
+            for (auto& t : enemy->getTriggers(playerCollective))
+              if (t.trigger.contains<StolenItems>())
+                return true;
         return false;
       };
-      if (enemy && playerCollective->getCreatures().contains(c) && isTriggered()) {
+      if (enemy && isTriggered()) {
         c->you(MsgType::YOUR, "identity is uncovered!");
         if (c->hasAlternativeViewId())
           c->setAlternativeViewId(none);
