@@ -1479,9 +1479,9 @@ class Mountains : public LevelMaker {
     Table<double> wys = genNoiseMap(builder->getRandom(), area, noiseInit, varianceMult);
     raiseLocalMinima(wys);
     vector<double> values = sortedValues(wys);
-    double cutOffLowland = values[(int)(info.lowlandRatio * double(values.size() - 1))];
-    double cutOffHill = values[(int)((info.hillRatio + info.lowlandRatio) * double(values.size() - 1))];
-    double cutOffDarkness = values[(int)((info.hillRatio + info.lowlandRatio + 1.0) * 0.5 * double(values.size() - 1))];
+    double cutOffLowland = values[min(values.size() - 1, (int)(info.lowlandRatio * double(values.size() - 1)))];
+    double cutOffHill = values[min(values.size() - 1, (int)((info.hillRatio + info.lowlandRatio) * double(values.size() - 1)))];
+    double cutOffDarkness = values[min(values.size() - 1, (int)((info.hillRatio + info.lowlandRatio + 1.0) * 0.5 * double(values.size() - 1)))];
     int dCnt = 0, mCnt = 0, hCnt = 0, lCnt = 0;
     Table<bool> isMountain(area, false);
     for (Vec2 v : area) {
