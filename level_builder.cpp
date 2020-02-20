@@ -115,14 +115,15 @@ void LevelBuilder::putFurniture(Vec2 pos, FurnitureType type, TribeId tribe, opt
 }
 
 void LevelBuilder::resetFurniture(Vec2 posT, FurnitureType type, optional<SquareAttrib> attrib) {
-  CHECK(contentFactory->furniture.getData(type).getLayer() == FurnitureLayer::GROUND);
+  USER_CHECK(contentFactory->furniture.getData(type).getLayer() == FurnitureLayer::GROUND)
+      << type.data() << " must have layer set to GROUND ";
   removeAllFurniture(posT);
   putFurniture(posT, type, attrib);
 }
 
 void LevelBuilder::resetFurniture(Vec2 posT, FurnitureParams params, optional<SquareAttrib> attrib) {
-  CHECK(contentFactory->furniture.getData(params.type).getLayer() == FurnitureLayer::GROUND);
-  removeAllFurniture(posT);
+  USER_CHECK(contentFactory->furniture.getData(params.type).getLayer() == FurnitureLayer::GROUND)
+      << params.type.data() << " must have layer set to GROUND ";  removeAllFurniture(posT);
   putFurniture(posT, params, attrib);
 }
 
