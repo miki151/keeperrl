@@ -23,7 +23,6 @@
 #include "enum_variant.h"
 #include "event_generator.h"
 #include "game_time.h"
-#include "biome_id.h"
 
 class Level;
 class ProgressMeter;
