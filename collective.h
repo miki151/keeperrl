@@ -325,6 +325,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   HeapAllocated<MinionActivities> SERIAL(minionActivities);
   set<string> SERIAL(recordedEvents);
   map<string, GroupLockedActivities> SERIAL(groupLockedAcitivities);
+  bool SERIAL(attackedByPlayer) = false;
   void updateGuardTasks();
   void updateAutomatonPartsTasks();
+  bool creatureConsideredPlayer(Creature*) const;
 };

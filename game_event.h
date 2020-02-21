@@ -47,6 +47,7 @@ namespace EventInfo {
 
   struct ConqueredEnemy {
     Collective* collective = nullptr;
+    bool byPlayer;
   };
 
   struct WonGame {};

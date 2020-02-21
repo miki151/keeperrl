@@ -71,7 +71,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment, groupLockedAcitivities);
   ar(delayedPos, knownTiles, technology, kills, points, currentActivity, recordedEvents);
-  ar(credit, model, immigration, teams, name, minionActivities);
+  ar(credit, model, immigration, teams, name, minionActivities, attackedByPlayer);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
   ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease, dungeonLevel);
 }
@@ -615,6 +615,11 @@ bool Collective::needsToBeKilledToConquer(const Creature* c) const {
   return hasTrait(c, MinionTrait::FIGHTER) || hasTrait(c, MinionTrait::LEADER);
 }
 
+bool Collective::creatureConsideredPlayer(Creature* c) const {
+  return c->isPlayer() ||
+    (getGame()->getPlayerCollective() && getGame()->getPlayerCollective()->getCreatures().contains(c));
+}
+
 void Collective::onEvent(const GameEvent& event) {
   PROFILE;
   using namespace EventInfo;
@@ -659,13 +664,15 @@ void Collective::onEvent(const GameEvent& event) {
         auto victim = info.victim;
         addRecordedEvent("the capturing of " + victim->getName().title());
         if (getCreatures().contains(victim)) {
+          if (info.attacker && creatureConsideredPlayer(info.attacker))
+            attackedByPlayer = true;
           bool fighterStunned = needsToBeKilledToConquer(victim);
           removeTrait(victim, MinionTrait::FIGHTER);
           removeTrait(victim, MinionTrait::LEADER);
           control->addMessage(PlayerMessage(victim->getName().a() + " is unconsious.")
               .setPosition(victim->getPosition()));
           if (isConquered() && fighterStunned)
-            getGame()->addEvent(EventInfo::ConqueredEnemy{this});
+            getGame()->addEvent(EventInfo::ConqueredEnemy{this, attackedByPlayer});
           freeFromTask(victim);
         }
       },
@@ -691,7 +698,7 @@ void Collective::onEvent(const GameEvent& event) {
       },
       [&](const ConqueredEnemy& info) {
         auto col = info.collective;
-        if (col->isDiscoverable()) {
+        if (col->isDiscoverable() && info.byPlayer) {
           if (auto& name = col->getName()) {
             addRecordedEvent("the conquering of " + name->full);
             control->addMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
@@ -710,6 +717,8 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
     addRecordedEvent("the slaying of " + victim->getName().title() + " by " + killer->getName().a());
   else
     addRecordedEvent("the death of " + victim->getName().title());
+  if (killer && creatureConsideredPlayer(killer))
+    attackedByPlayer = true;
   string deathDescription = victim->getAttributes().getDeathDescription();
   control->onMemberKilled(victim, killer);
   if (hasTrait(victim, MinionTrait::PRISONER) && killer && getCreatures().contains(killer))
@@ -731,7 +740,7 @@ void Collective::onMinionKilled(Creature* victim, Creature* killer) {
   removeCreature(victim);
   if (isConquered() && fighterKilled) {
     control->onConquered(victim, killer);
-    getGame()->addEvent(EventInfo::ConqueredEnemy{this});
+    getGame()->addEvent(EventInfo::ConqueredEnemy{this, attackedByPlayer});
   }
   if (auto& guardianInfo = getConfig().getGuardianInfo())
     if (Random.chance(guardianInfo->probability)) {
