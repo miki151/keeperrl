@@ -19,7 +19,7 @@
 #include "external_enemies_type.h"
 #include "collective_control.h"
 
-SERIALIZE_DEF(ExternalEnemies, currentWaves, waves, nextWave)
+SERIALIZE_DEF(ExternalEnemies, currentWaves, waves, nextWave, startTime)
 SERIALIZATION_CONSTRUCTOR_IMPL(ExternalEnemies)
 
 ExternalEnemies::ExternalEnemies(RandomGen& random, CreatureFactory* factory, vector<ExternalEnemy> enemies, ExternalEnemiesType type) {
