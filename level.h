@@ -90,55 +90,38 @@ class Level : public OwnedObject<Level> {
 
   optional<Position> getStairsTo(WConstLevel);
 
-  /** Removes the creature from \paramname{position} from the level and model. The creature object is retained.*/
   void killCreature(Creature* victim);
 
   void removeCreature(Creature*);
 
-  /** Recalculates visibility data assuming that \paramname{changedSquare} has changed
-      its obstructing/non-obstructing attribute. */
   void updateVisibility(Vec2 changedSquare);
 
-  /** Checks \paramname{pos} lies within the level's boundaries.*/
   bool inBounds(Vec2 pos) const;
 
-  /** Returns the level's boundaries.*/
   const Rectangle& getBounds() const;
 
-  //@{
-  /** Returns the given square. \paramname{pos} must lie within the boundaries. */
   vector<Position> getAllPositions() const;
-  //@}
+  vector<Position> getAllLandingPositions() const;
 
-  /** The given square's method Square::tick() will be called every turn. */
   void addTickingSquare(Vec2 pos);
   void addTickingFurniture(Vec2 pos);
 
-  /** Ticks all squares that must be ticked. */
   void tick();
 
-  /** Moves the creature to a different level according to \paramname{direction}. */
   void changeLevel(StairKey key, Creature* c);
 
-  /** Moves the creature to a given level. */
   void changeLevel(Position destination, Creature* c);
 
-  //@{
-  /** Returns all creatures on this level. */
   const vector<Creature*>& getAllCreatures() const;
   vector<Creature*>& getAllCreatures();
   vector<Creature*> getAllCreatures(Rectangle bounds) const;
-  //@}
 
   bool containsCreature(UniqueEntity<Creature>::Id) const;
 
-  /** Returns if it's possible to see the given square.*/
   bool canSee(Vec2 from, Vec2 to, const Vision&) const;
 
-  /** Returns all tiles visible by a creature.*/
   vector<Vec2> getVisibleTiles(Vec2 pos, const Vision&) const;
 
-  /** Returns the player creature.*/
   vector<Creature*> getPlayers() const;
 
   WModel getModel() const;

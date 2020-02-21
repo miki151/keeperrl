@@ -337,9 +337,8 @@ void Model::landHeroPlayer(PCreature player) {
   Creature* ref = player.get();
   WLevel target = getTopLevel();
   vector<Position> landing = target->getLandingSquares(StairKey::heroSpawn());
-  if (!target->landCreature(landing, ref)) {
-    CHECK(target->landCreature(target->getAllPositions(), ref)) << "No place to spawn player";
-  }
+  if (!target->landCreature(landing, ref))
+    CHECK(target->landCreature(target->getAllLandingPositions(), ref)) << "No place to spawn player";
   addCreature(std::move(player));
   ref->setController(makeOwner<Player>(ref, true, make_shared<MapMemory>(), make_shared<MessageBuffer>(),
       make_shared<VisibilityMap>(), make_shared<UnknownLocations>()));

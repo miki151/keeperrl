@@ -173,6 +173,18 @@ const Sectors::ExtraConnections Sectors::getExtraConnections() const {
   return extraConnections;
 }
 
+Sectors::SectorId Sectors::getLargest() const {
+  int ret = 0;
+  for (int i : All(sizes))
+    if (sizes[i] > sizes[ret])
+      ret = i;
+  return SectorId(ret);
+}
+
+bool Sectors::isSector(Vec2 v, Sectors::SectorId id) const {
+  return sectors[v] == id;
+}
+
 bool Sectors::remove(Vec2 pos) {
   if (!contains(pos))
     return false;

@@ -310,7 +310,7 @@ bool Level::landCreature(StairKey key, Creature* creature, Vec2 travelDir) {
   return landCreature({bestLanding}, creature) ||
       landCreature(bestLanding.getRectangle(Rectangle::centered(Vec2(0, 0), 10)), creature) ||
       landCreature(landingSquares.at(key), creature) ||
-      landCreature(getAllPositions(), creature);
+      landCreature(getAllLandingPositions(), creature);
 }
 
 bool Level::landCreature(vector<Position> landing, PCreature creature) {
@@ -525,6 +525,13 @@ vector<Position> Level::getAllPositions() const {
   for (Vec2 v : getBounds())
     ret.emplace_back(v, getThis().removeConst().get());
   return ret;
+}
+
+vector<Position> Level::getAllLandingPositions() const {
+  auto largestSector = getSectors({MovementTrait::WALK}).getLargest();
+  return getAllPositions().filter([&](Position pos) {
+    return getSectors({MovementTrait::WALK}).isSector(pos.getCoord(), largestSector);
+  });
 }
 
 void Level::addTickingSquare(Vec2 pos) {

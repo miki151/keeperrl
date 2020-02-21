@@ -33,8 +33,11 @@ class Sectors {
   void removeExtraConnection(Vec2, Vec2);
   const ExtraConnections getExtraConnections() const;
 
-  private:
   using SectorId = short;
+  SectorId getLargest() const;
+  bool isSector(Vec2, SectorId) const;
+
+  private:
   vector<Vec2> getNeighbors(Vec2) const;
   void setSector(Vec2, SectorId);
   SectorId getNewSector();
