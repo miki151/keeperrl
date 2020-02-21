@@ -266,7 +266,7 @@ void VillageControl::update(bool currentlyActive) {
   for (auto& c : collective->getCreatures(MinionTrait::FIGHTER))
     if (c->getBody().isHumanoid())
       if (!c->isAffected(LastingEffect::BRIDGE_BUILDING_SKILL))
-        c->addPermanentEffect(LastingEffect::BRIDGE_BUILDING_SKILL);
+        c->addPermanentEffect(LastingEffect::BRIDGE_BUILDING_SKILL, 1, false);
   vector<Creature*> allMembers = collective->getCreatures();
   for (auto team : collective->getTeams().getAll()) {
     for (const Creature* c : collective->getTeams().getMembers(team))
