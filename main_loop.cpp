@@ -630,6 +630,7 @@ void MainLoop::downloadMod(ModInfo& mod) {
   optional<string> error;
   doWithSplash("Downloading mod \"" + mod.name + "\"...", 1,
       [&] (ProgressMeter& meter) {
+        modsDir.createIfDoesntExist();
         error = fileSharing->downloadMod(mod.name, mod.versionInfo.steamId, modsDir, meter);
         if (!error) {
           updateLocalModVersion(mod.name, mod.versionInfo);
