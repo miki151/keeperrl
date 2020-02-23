@@ -1171,6 +1171,7 @@ void Creature::dropWeapon() {
   for (auto weapon : equipment->getSlotItems(EquipmentSlot::WEAPON)) {
     verb("drop your", "drops "_s + his(attributes->getGender()), weapon->getName());
     position.dropItem(equipment->removeItem(weapon, this));
+    break;
   }
 }
 
