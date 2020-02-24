@@ -210,7 +210,7 @@ class GuiFactory {
   SGuiElem onMouseLeftButtonHeld(SGuiElem);
   SGuiElem onMouseRightButtonHeld(SGuiElem);
   SGuiElem mouseHighlight(SGuiElem highlight, int myIndex, optional<int>* highlighted);
-  SGuiElem mouseHighlight2(SGuiElem highlight, SGuiElem noHighlight = nullptr);
+  SGuiElem mouseHighlight2(SGuiElem highlight, SGuiElem noHighlight = nullptr, bool capture = true);
   static int getHeldInitValue();
   SGuiElem scrollArea(SGuiElem);
   SGuiElem scrollable(SGuiElem content, ScrollPosition* scrollPos = nullptr, int* held = nullptr);

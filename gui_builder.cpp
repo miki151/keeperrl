@@ -1107,7 +1107,7 @@ static string getWeightString(double weight) {
 SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)> onClick,
     function<void()> onMultiClick) {
   auto line = WL(getListBuilder);
-  int leftMargin = -4;
+  int leftMargin = 0;
   auto viewId = WL(viewObject, item.viewId);
   if (item.viewIdModifiers.contains(ViewObjectModifier::AURA))
     viewId = WL(stack, std::move(viewId), WL(viewObject, ViewId("item_aura")));
@@ -3175,21 +3175,31 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
     lines.addElem(WL(label, "Equipment", Color::YELLOW));
     vector<SGuiElem> itemElems;
     if (!infoOnly)
-      for (int i : All(items))
-        itemElems.push_back(WL(getListBuilder)
-            .addElemAuto(WL(stack,
-                WL(button,
-                getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
-                    EquipmentActionInfo{minion.creatureId, items[i].ids, items[i].slot, ItemAction::LOCK}})),
-                items[i].locked ? WL(viewObject, ViewId("key")) : WL(mouseHighlight2, WL(viewObject, ViewId("key_highlight"))),
-                getTooltip({"Locked slots won't be automatically equiped by minion."}, THIS_LINE + i)
-            ))
-            .addMiddleElem(getItemLine(items[i], [this, creatureId = minion.creatureId, item = items[i]] (Rectangle bounds) {
-                if (auto choice = getItemChoice(item, bounds.bottomLeft() + Vec2(50, 0), true))
-                  callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
-                      EquipmentActionInfo{creatureId, item.ids, item.slot, *choice}});
-            }))
-            .buildHorizontalList());
+      for (int i : All(items)) {
+        auto keyElem = WL(stack,
+            WL(button,
+            getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
+                EquipmentActionInfo{minion.creatureId, items[i].ids, items[i].slot, ItemAction::LOCK}})),
+            items[i].locked ? WL(viewObject, ViewId("key")) : WL(mouseHighlight2, WL(viewObject, ViewId("key_highlight"))),
+            getTooltip({"Locked slots won't be automatically equiped by minion."}, THIS_LINE + i)
+        );
+        auto labelElem = getItemLine(items[i], [this, creatureId = minion.creatureId, item = items[i]] (Rectangle bounds) {
+            if (auto choice = getItemChoice(item, bounds.bottomLeft() + Vec2(50, 0), true))
+              callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
+                  EquipmentActionInfo{creatureId, item.ids, item.slot, *choice}});
+        });
+        if (!items[i].ids.empty()) {
+        int offset = *labelElem->getPreferredWidth();
+        labelElem = WL(stack, std::move(labelElem),
+                    WL(mouseHighlight2, WL(leftMargin, offset,
+                        items[i].ids.empty() ?  WL(label, "+", Color::YELLOW) : WL(labelUnicode, u8"✘", Color::RED)), nullptr, false));
+        }
+        itemElems.push_back(
+            WL(getListBuilder)
+                .addElemAuto(std::move(keyElem))
+                .addMiddleElem(std::move(labelElem))
+                .buildHorizontalList());
+      }
     else
       for (int i : All(items))
         itemElems.push_back(getItemLine(items[i], [](Rectangle) {} ));

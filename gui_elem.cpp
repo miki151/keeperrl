@@ -2265,8 +2265,8 @@ class MouseHighlight : public MouseHighlightBase {
 
 class MouseHighlight2 : public GuiStack {
   public:
-  MouseHighlight2(SGuiElem h, SGuiElem h2 = nullptr)
-      : GuiStack(h2 ? makeVec(std::move(h), std::move(h2)) : makeVec(std::move(h))) {}
+  MouseHighlight2(SGuiElem h, SGuiElem h2, bool capture)
+      : GuiStack(h2 ? makeVec(std::move(h), std::move(h2)) : makeVec(std::move(h))), capture(capture) {}
 
   virtual void render(Renderer& r) override {
     if (over)
@@ -2281,18 +2281,19 @@ class MouseHighlight2 : public GuiStack {
 
   virtual bool onMouseMove(Vec2 pos) override {
     over = pos.inRectangle(getBounds());
-    return over;
+    return over && capture;
   }
 
   bool over = false;
+  bool capture;
 };
 
 SGuiElem GuiFactory::mouseHighlight(SGuiElem elem, int myIndex, optional<int>* highlighted) {
   return SGuiElem(new MouseHighlight(std::move(elem), myIndex, highlighted));
 }
 
-SGuiElem GuiFactory::mouseHighlight2(SGuiElem elem, SGuiElem noHighlight) {
-  return SGuiElem(new MouseHighlight2(std::move(elem), std::move(noHighlight)));
+SGuiElem GuiFactory::mouseHighlight2(SGuiElem elem, SGuiElem noHighlight, bool capture) {
+  return SGuiElem(new MouseHighlight2(std::move(elem), std::move(noHighlight), capture));
 }
 
 class RenderLayer : public GuiStack {
