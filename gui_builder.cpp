@@ -45,6 +45,7 @@
 #include "mod_info.h"
 #include "special_trait.h"
 #include "encyclopedia.h"
+#include "item_action.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -1085,8 +1086,6 @@ vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
     out.push_back("Equipped.");
   if (item.pending)
     out.push_back("Not equipped yet.");
-  if (item.locked)
-    out.push_back("Locked: minion won't change to another item.");
   if (auto text = getIntrinsicStateText(item))
     out.push_back(text);
   if (!item.unavailableReason.empty())
@@ -1109,10 +1108,6 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
     function<void()> onMultiClick) {
   auto line = WL(getListBuilder);
   int leftMargin = -4;
-  if (item.locked) {
-    line.addElem(WL(viewObject, ViewId("key")), viewObjectWidth);
-    leftMargin -= viewObjectWidth - 3;
-  }
   auto viewId = WL(viewObject, item.viewId);
   if (item.viewIdModifiers.contains(ViewObjectModifier::AURA))
     viewId = WL(stack, std::move(viewId), WL(viewObject, ViewId("item_aura")));
@@ -3181,12 +3176,22 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
     lines.addElem(WL(label, "Equipment", Color::YELLOW));
     vector<SGuiElem> itemElems;
     if (!infoOnly)
-      itemElems = drawItemMenu(items, [=](Rectangle butBounds, optional<int> index) {
-        const ItemInfo& item = items[*index];
-        if (auto choice = getItemChoice(item, butBounds.bottomLeft() + Vec2(50, 0), true))
-          callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
-              EquipmentActionInfo{minion.creatureId, item.ids, item.slot, *choice}});
-      });
+      for (int i : All(items))
+        itemElems.push_back(WL(getListBuilder)
+            .addElemAuto(WL(stack,
+                WL(button,
+                getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
+                    EquipmentActionInfo{minion.creatureId, items[i].ids, items[i].slot,
+                        items[i].locked ? ItemAction::UNLOCK : ItemAction::LOCK}})),
+                items[i].locked ? WL(viewObject, ViewId("key")) : WL(mouseHighlight2, WL(viewObject, ViewId("key_highlight"))),
+                getTooltip({"Locked slots won't be automatically equiped by minion."}, THIS_LINE + i)
+            ))
+            .addMiddleElem(getItemLine(items[i], [this, creatureId = minion.creatureId, item = items[i]] (Rectangle bounds) {
+                if (auto choice = getItemChoice(item, bounds.bottomLeft() + Vec2(50, 0), true))
+                  callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
+                      EquipmentActionInfo{creatureId, item.ids, item.slot, *choice}});
+            }))
+            .buildHorizontalList());
     else
       for (int i : All(items))
         itemElems.push_back(getItemLine(items[i], [](Rectangle) {} ));

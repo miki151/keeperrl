@@ -271,6 +271,7 @@
 { "brain" "⚭" ColorId PINK true }
 { "tongue" "~" ColorId RED true }
 { "key" "*" ColorId YELLOW }
+{ "key_highlight" "*" ColorId ALMOST_WHITE }
 { "gold" "$" ColorId YELLOW }
 { "treasure_chest" "=" ColorId BROWN }
 { "coffin1" "⚰" ColorId BROWN true }
