@@ -32,7 +32,7 @@
 
 template <class Archive>
 void MinionEquipment::serialize(Archive& ar, const unsigned int) {
-  ar(owners, locked, myItems);
+  ar(owners, locked, myItems, lockedSlots);
 }
 
 SERIALIZABLE(MinionEquipment);
@@ -105,6 +105,8 @@ bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit)
       }
       if (it->canEquip()) {
         auto slot = it->getEquipmentSlot();
+        if (isLocked(c, slot) && !isOwner(it, c))
+          return false;
         int limit = c->getEquipment().getMaxItems(slot, c);
         auto pred = [=](const Item* ownedItem) {
           return ownedItem->canEquip() &&
@@ -273,17 +275,18 @@ void MinionEquipment::autoAssign(const Creature* creature, vector<Item*> possibl
         CHECK(tryToOwn(creature, it));
         continue;
       }
-      Item* replacedItem = getWorstItem(creature, slots[it->getEquipmentSlot()]);
-      int slotSize = creature->getEquipment().getMaxItems(it->getEquipmentSlot(), creature);
-      int numInSlot = slots[it->getEquipmentSlot()].size();
+      auto slot = it->getEquipmentSlot();
+      Item* replacedItem = getWorstItem(creature, slots[slot]);
+      int slotSize = creature->getEquipment().getMaxItems(slot, creature);
+      int numInSlot = slots[slot].size();
       if (numInSlot < slotSize ||
           (replacedItem && getItemValue(creature, replacedItem) < getItemValue(creature, it))) {
         if (numInSlot == slotSize) {
           discard(replacedItem);
-          slots[it->getEquipmentSlot()].removeElement(replacedItem);
+          slots[slot].removeElement(replacedItem);
         }
         CHECK(tryToOwn(creature, it));
-        slots[it->getEquipmentSlot()].push_back(it);
+        slots[slot].push_back(it);
         break;
       }
   }
@@ -306,14 +309,23 @@ int MinionEquipment::getItemValue(const Creature* c, const Item* it) const {
   return sum;
 }
 
-void MinionEquipment::setLocked(const Creature* c, UniqueEntity<Item>::Id it, bool lock) {
-  if (lock)
-    locked.insert(make_pair(c->getUniqueId(), it));
+void MinionEquipment::toggleLocked(const Creature* c, UniqueEntity<Item>::Id it) {
+  auto elem = make_pair(c->getUniqueId(), it);
+  if (!locked.count(elem))
+    locked.insert(elem);
   else
-    locked.erase(make_pair(c->getUniqueId(), it));
+    locked.erase(elem);
+}
+
+void MinionEquipment::toggleLocked(const Creature* c, EquipmentSlot slot) {
+  lockedSlots.getOrInit(c).toggle(slot);
 }
 
 bool MinionEquipment::isLocked(const Creature* c, UniqueEntity<Item>::Id it) const {
   return locked.count(make_pair(c->getUniqueId(), it));
 }
 
+bool MinionEquipment::isLocked(const Creature* c, EquipmentSlot slot) const {
+  static EnumSet<EquipmentSlot> empty;
+  return lockedSlots.getOrElse(c, empty).contains(slot);
+}

@@ -379,12 +379,11 @@ void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
           addConsumableItem(creature);
         break;
       case ItemAction::LOCK:
-        for (auto id : action.ids)
-          collective->getMinionEquipment().setLocked(creature, id, true);
-        break;
-      case ItemAction::UNLOCK:
-        for (auto id : action.ids)
-          collective->getMinionEquipment().setLocked(creature, id, false);
+        if (action.ids.empty() && action.slot)
+          collective->getMinionEquipment().toggleLocked(creature, *action.slot);
+        else
+          for (auto id : action.ids)
+            collective->getMinionEquipment().toggleLocked(creature, id);
         break;
       default:
         break;
@@ -439,7 +438,7 @@ static ViewId getSlotViewId(EquipmentSlot slot) {
   }
 }
 
-static ItemInfo getEmptySlotItem(EquipmentSlot slot) {
+static ItemInfo getEmptySlotItem(EquipmentSlot slot, bool locked) {
   return CONSTRUCT(ItemInfo,
     c.name = "";
     c.fullName = "";
@@ -447,6 +446,7 @@ static ItemInfo getEmptySlotItem(EquipmentSlot slot) {
     c.number = 1;
     c.viewId = getSlotViewId(slot);
     c.actions = {ItemAction::REPLACE};
+    c.locked = locked;
     c.equiped = false;
     c.pending = false;);
 }
@@ -505,7 +505,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
       info.inventory.push_back(getItemInfo(getGame()->getContentFactory(), {item}, equiped, !equiped, locked, ItemInfo::EQUIPMENT));
     }
     for (int i : Range(creature->getEquipment().getMaxItems(slot, creature) - items.size()))
-      info.inventory.push_back(getEmptySlotItem(slot));
+      info.inventory.push_back(getEmptySlotItem(slot, collective->getMinionEquipment().isLocked(creature, slot)));
     if (slot == EquipmentSlot::WEAPON && tutorial &&
         tutorial->getHighlights(getGame()).contains(TutorialHighlight::EQUIPMENT_SLOT_WEAPON))
       info.inventory.back().tutorialHighlight = true;

@@ -1246,7 +1246,6 @@ static string getActionText(ItemAction a) {
     case ItemAction::APPLY: return "apply";
     case ItemAction::REPLACE: return "replace";
     case ItemAction::LOCK: return "lock";
-    case ItemAction::UNLOCK: return "unlock";
     case ItemAction::REMOVE: return "remove item";
     case ItemAction::CHANGE_NUMBER: return "change number";
     case ItemAction::NAME: return "name";
@@ -3181,8 +3180,7 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
             .addElemAuto(WL(stack,
                 WL(button,
                 getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
-                    EquipmentActionInfo{minion.creatureId, items[i].ids, items[i].slot,
-                        items[i].locked ? ItemAction::UNLOCK : ItemAction::LOCK}})),
+                    EquipmentActionInfo{minion.creatureId, items[i].ids, items[i].slot, ItemAction::LOCK}})),
                 items[i].locked ? WL(viewObject, ViewId("key")) : WL(mouseHighlight2, WL(viewObject, ViewId("key_highlight"))),
                 getTooltip({"Locked slots won't be automatically equiped by minion."}, THIS_LINE + i)
             ))

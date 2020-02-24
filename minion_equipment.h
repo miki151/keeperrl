@@ -18,6 +18,7 @@
 #include "util.h"
 #include "unique_entity.h"
 #include "entity_map.h"
+#include "equipment_slot.h"
 
 class Creature;
 class Item;
@@ -38,8 +39,10 @@ class MinionEquipment {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
-  void setLocked(const Creature*, UniqueEntity<Item>::Id, bool locked);
+  void toggleLocked(const Creature*, UniqueEntity<Item>::Id);
+  void toggleLocked(const Creature*, EquipmentSlot);
   bool isLocked(const Creature*, UniqueEntity<Item>::Id) const;
+  bool isLocked(const Creature* c, EquipmentSlot) const;
   void sortByEquipmentValue(const Creature*, vector<Item*>& items) const;
   void autoAssign(const Creature*, vector<Item*> possibleItems);
   void updateItems(const vector<Item*>& items);
@@ -53,6 +56,8 @@ class MinionEquipment {
 
   EntityMap<Item, UniqueEntity<Creature>::Id> SERIAL(owners);
   EntityMap<Creature, vector<WeakPointer<Item>>> SERIAL(myItems);
-  set<pair<UniqueEntity<Creature>::Id, UniqueEntity<Item>::Id>> SERIAL(locked);
+  unordered_set<pair<UniqueEntity<Creature>::Id, UniqueEntity<Item>::Id>,
+      CustomHash<pair<UniqueEntity<Creature>::Id, UniqueEntity<Item>::Id>>> SERIAL(locked);
+  EntityMap<Creature, EnumSet<EquipmentSlot>> SERIAL(lockedSlots);
 };
 

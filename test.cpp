@@ -46,6 +46,7 @@
 #include "test_struct.h"
 #include "biome_id.h"
 #include "item_types.h"
+#include "creature_attributes.h"
 
 class Test {
   public:
@@ -622,7 +623,7 @@ class Test {
     CHECK(equipment.isOwner(bow1.get(), human.get()));
     CHECK(equipment.getItemsOwnedBy(human.get()).contains(bow1.get()));
     CHECK(equipment.getOwner(bow2.get()) == none);
-    equipment.setLocked(human.get(), bow1->getUniqueId(), true);
+    equipment.toggleLocked(human.get(), bow1->getUniqueId());
     CHECK(!equipment.tryToOwn(human.get(), bow3.get()));
     CHECK(equipment.isOwner(bow1.get(), human.get()));
     CHECK(equipment.getItemsOwnedBy(human.get()).contains(bow1.get()));
@@ -739,7 +740,7 @@ class Test {
     CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec(sword1.get()));
     equipment.discard(sword1.get());
     equipment.autoAssign(human1.get(), {sword2.get()});
-    equipment.setLocked(human1.get(), sword2->getUniqueId(), true);
+    equipment.toggleLocked(human1.get(), sword2->getUniqueId());
     CHECK(equipment.isOwner(sword2.get(), human1.get()));
     CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec(sword2.get()));
     equipment.autoAssign(human1.get(), {sword2.get(), sword1.get()});
@@ -751,6 +752,26 @@ class Test {
     equipment.autoAssign(human1.get(), {sword1.get()});
     CHECK(equipment.isOwner(sword1.get(), human1.get()));
     CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec(sword1.get()));
+  }
+
+  void testEquipmentSlotLocking() {
+    auto contentFactory = getContentFactory();
+    PItem sword1 = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
+    sword1->addModifier(AttrType::DAMAGE, 12);
+    PCreature human1 = CreatureFactory::getHumanForTests();
+    human1->getAttributes().getSkills().increaseValue(SkillId::MULTI_WEAPON, 1);
+    MinionEquipment equipment;
+    equipment.autoAssign(human1.get(), {sword2.get(), sword1.get()});
+    equipment.autoAssign(human1.get(), {sword2.get(), sword1.get()});
+    CHECK(equipment.isOwner(sword1.get(), human1.get()));
+    CHECK(equipment.isOwner(sword2.get(), human1.get()));
+    CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec(sword1.get(), sword2.get()));
+    equipment.discard(sword1.get());
+    equipment.toggleLocked(human1.get(), EquipmentSlot::WEAPON);
+    equipment.autoAssign(human1.get(), {sword1.get(), sword2.get()});
+    CHECK(equipment.isOwner(sword2.get(), human1.get()));
+    CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec(sword2.get()));
   }
 
   void testMinionEquipment123() {
@@ -767,7 +788,7 @@ class Test {
     for (auto item : items) {
       CHECK(equipment.isOwner(item, human.get()));
       CHECK(equipment.needsItem(human.get(), item));
-      equipment.setLocked(human.get(), item->getUniqueId(), true);
+      equipment.toggleLocked(human.get(), item->getUniqueId());
     }
     equipment.updateOwners({human.get()});
     for (auto item : items) {
@@ -1339,6 +1360,7 @@ void testAll() {
   Test().testMinionEquipmentUpdateOwners();
   Test().testMinionEquipmentAutoAssign();
   Test().testMinionEquipmentLocking();
+  Test().testEquipmentSlotLocking();
   Test().testMinionEquipment123();
   Test().testContainerRange();
   Test().testContainerRangeMap();

@@ -15,20 +15,9 @@
 
 #pragma once
 
+#include "stdafx.h"
 #include "inventory.h"
-#include "enums.h"
-
-RICH_ENUM(EquipmentSlot,
-  WEAPON,
-  RANGED_WEAPON,
-  SHIELD,
-  HELMET,
-  GLOVES,
-  BODY_ARMOR,
-  BOOTS,
-  AMULET,
-  RINGS
-);
+#include "equipment_slot.h"
 
 class Body;
 

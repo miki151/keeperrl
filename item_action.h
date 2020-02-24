@@ -9,7 +9,6 @@ enum class ItemAction {
   UNEQUIP,
   THROW,
   LOCK,
-  UNLOCK,
   REPLACE,
   GIVE,
   REMOVE,
