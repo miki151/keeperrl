@@ -850,9 +850,16 @@ vector<PItem> PlayerControl::retrievePillageItems(Collective* col, vector<Item*>
 
 vector<Item*> PlayerControl::getPillagedItems(Collective* col) const {
   vector<Item*> ret;
-  for (Position v : col->getTerritory().getAll())
-    if (!collective->getTerritory().contains(v))
+  for (Position v : col->getTerritory().getAll()) {
+    auto inStorage = [&] {
+      for (auto storage : ENUM_ALL(StorageId))
+        if (collective->getStoragePositions(storage).count(v))
+          return true;
+      return false;
+    };
+    if (!collective->getTerritory().contains(v) && !inStorage())
       append(ret, v.getItems());
+  }
   return ret;
 }
 
