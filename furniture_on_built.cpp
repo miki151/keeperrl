@@ -51,7 +51,7 @@ static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCount
         if (level.enemy) {
           enemy = getEnemy(*level.enemy, contentFactory);
           settlement = enemy->settlement;
-          USER_CHECK(level.attackChance < 0.0001 || !!enemy->behaviour)
+          CHECK(level.attackChance < 0.0001 || !!enemy->behaviour)
               << "Z-level enemy " << level.enemy->data() << " has positive attack chance, but no attack behaviour defined";
           if (Random.chance(level.attackChance)) {
             enemy->behaviour->triggers.push_back(Immediate{});

@@ -407,6 +407,14 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   auto errors = keyVerifier.verify();
   if (!errors.empty())
     return errors.front();
+  for (auto& group : zLevels)
+    for (int i : All(group.second)) {
+      auto& level = group.second[i];
+      if (auto fullLevel = level.type.getReferenceMaybe<FullZLevel>())
+        if (fullLevel->attackChance > 0.0 && (!fullLevel->enemy || !enemies.at(*fullLevel->enemy).behaviour))
+            return "Z-level enemy " + EnumInfo<ZLevelGroup>::getString(group.first) + " no. " + toString(i)
+                + " has positive attack chance, but no attack behaviour defined"_s;
+    }
   furniture.initializeInfos();
   for (auto& elem : items)
     if (auto id = elem.second.resourceId)
