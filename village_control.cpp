@@ -103,6 +103,7 @@ void VillageControl::onEvent(const GameEvent& event) {
       [&](const ItemStolen& info) {
         if (!collective->isConquered() && collective->getTerritory().contains(info.shopPosition)
             && behaviour && contains<StolenItems>(behaviour->triggers)
+            && getEnemyCollective()
             && getEnemyCollective()->getCreatures().contains(info.creature)) {
           if (stolenItemCount == 0)
             info.creature->privateMessage(PlayerMessage("You are going to regret this", MessagePriority::HIGH));
@@ -113,6 +114,7 @@ void VillageControl::onEvent(const GameEvent& event) {
         if (!collective->isConquered() && collective->getTerritory().contains(info.creature->getPosition())
             && isEnemy(info.creature) && behaviour
             && contains<StolenItems>(behaviour->triggers)
+            && getEnemyCollective()
             && getEnemyCollective()->getCreatures().contains(info.creature)) {
           bool wasTheft = false;
           for (const Item* it : info.items)
