@@ -315,4 +315,6 @@ class View {
   virtual void addSound(const Sound&) = 0;
 
   virtual void logMessage(const string&) = 0;
+
+  virtual bool zoomUIAvailable() const = 0;
 };

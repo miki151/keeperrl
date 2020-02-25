@@ -99,6 +99,8 @@ class Renderer {
   void addQuad(const Rectangle&, Color);
   void drawAnimation(AnimationId, Vec2, double state, Vec2 squareSize, Dir orientation, Color);
   Vec2 getSize();
+  Vec2 getWindowSize(); // size = window size / zoom
+  Vec2 getMinResolution();
 
   void drawAndClearBuffer();
   void resize(int width, int height);

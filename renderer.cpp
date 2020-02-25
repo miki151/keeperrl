@@ -319,6 +319,10 @@ Vec2 Renderer::getSize() {
   return Vec2(width / getZoom(), height / getZoom());
 }
 
+Vec2 Renderer::getWindowSize() {
+  return Vec2(width, height);
+}
+
 bool Renderer::isFullscreen() {
   return fullscreen;
 }
@@ -340,6 +344,10 @@ void Renderer::setFullscreenMode(int v) {
 }
 
 static const Vec2 minResolution = Vec2(800, 600);
+
+Vec2 Renderer::getMinResolution() {
+  return minResolution;
+}
 
 int Renderer::getZoom() {
   if (zoom == 1 || (width / zoom >= minResolution.x && height / zoom >= minResolution.y))

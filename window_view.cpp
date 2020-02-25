@@ -1193,7 +1193,12 @@ void WindowView::dungeonScreenshot(Vec2 size) {
   mapGui->render(renderer);
   renderer.drawAndClearBuffer();
   renderer.makeScreenshot(DirectoryPath::current().file(retiredScreenshotFilename),
-      Rectangle((renderer.getSize() - size) / 2, (renderer.getSize() + size) / 2));
+                          Rectangle((renderer.getSize() - size) / 2, (renderer.getSize() + size) / 2));
+}
+
+bool WindowView::zoomUIAvailable() const {
+  return renderer.getWindowSize().x >= 2 * renderer.getMinResolution().x
+      && renderer.getWindowSize().y >= 2 * renderer.getMinResolution().y;
 }
 
 bool WindowView::considerBugReportEvent(Event& event) {

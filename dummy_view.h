@@ -100,4 +100,7 @@ class DummyView : public View {
   }
   virtual void dungeonScreenshot(Vec2 size) override {
   }
+  virtual bool zoomUIAvailable() const override {
+    return false;
+  }
 };

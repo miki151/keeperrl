@@ -108,6 +108,7 @@ class WindowView: public View {
   virtual void logMessage(const string&) override;
   virtual void setBugReportSaveCallback(BugReportSaveCallback) override;
   virtual void dungeonScreenshot(Vec2 size) override;
+  virtual bool zoomUIAvailable() const override;
 
   private:
 
