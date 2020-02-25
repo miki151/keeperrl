@@ -1615,6 +1615,8 @@ static const char* getControlModeName(PlayerInfo::ControlMode m) {
 
 
 SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
+  if (!info.controlMode)
+    return WL(margins, WL(scrollable, drawPlayerInventory(info), &inventoryScroll, &scrollbarsHeld), 6, 0, 15, 5);
   if (highlightedTeamMember && *highlightedTeamMember >= info.teamInfos.size())
     highlightedTeamMember = none;
   auto getIconHighlight = [&] (Color c) { return WL(topMargin, -1, WL(uiHighlight, c)); };
@@ -1673,23 +1675,23 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
   if (!teamList.isEmpty())
     vList.addElemAuto(WL(margins, teamList.buildHorizontalList(), 0, 25, 0, 3));
   vList.addSpace(22);
-  if (info.teamOrders) {
-    auto orderList = WL(getListBuilder);
-    for (auto order : ENUM_ALL(TeamOrder)) {
-      auto switchFun = getButtonCallback({UserInputId::TOGGLE_TEAM_ORDER, order});
-      orderList.addElemAuto(WL(stack,
-          info.teamOrders->contains(order)
-              ? WL(buttonLabelSelected, getName(order), switchFun)
-              : WL(buttonLabel, getName(order), switchFun),
-          getTooltip({getDescription(order)}, THIS_LINE)
-      ));
-      orderList.addSpace(15);
-    }
-    vList.addElem(orderList.buildHorizontalList());
-    vList.addSpace(legendLineHeight / 2);
-  }
   if (info.teamInfos.size() > 1) {
-    vList.addElem(WL(buttonLabel, "Control mode: "_s + getControlModeName(info.controlMode) + "",
+    if (info.teamOrders) {
+      auto orderList = WL(getListBuilder);
+      for (auto order : ENUM_ALL(TeamOrder)) {
+        auto switchFun = getButtonCallback({UserInputId::TOGGLE_TEAM_ORDER, order});
+        orderList.addElemAuto(WL(stack,
+            info.teamOrders->contains(order)
+                ? WL(buttonLabelSelected, getName(order), switchFun)
+                : WL(buttonLabel, getName(order), switchFun),
+            getTooltip({getDescription(order)}, THIS_LINE)
+        ));
+        orderList.addSpace(15);
+      }
+      vList.addElem(orderList.buildHorizontalList());
+      vList.addSpace(legendLineHeight / 2);
+    }
+    vList.addElem(WL(buttonLabel, "Control mode: "_s + getControlModeName(*info.controlMode) + "",
         WL(button, getButtonCallback(UserInputId::TOGGLE_CONTROL_MODE), gui.getKey(SDL::SDLK_g))));
     vList.addSpace(legendLineHeight / 2);
   }

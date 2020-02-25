@@ -1220,7 +1220,8 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.playerInfo = PlayerInfo(creature, contentFactory);
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
   fillDungeonLevel(info);
-  info.controlMode = getGame()->getPlayerCreatures().size() == 1 ? PlayerInfo::LEADER : PlayerInfo::FULL;
+  if (getGame()->getPlayerCollective())
+    info.controlMode = getGame()->getPlayerCreatures().size() == 1 ? PlayerInfo::LEADER : PlayerInfo::FULL;
   auto team = getTeam();
   if (team.size() > 1) {
     auto& timeQueue = getModel()->getTimeQueue();

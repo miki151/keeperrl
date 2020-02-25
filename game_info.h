@@ -169,7 +169,7 @@ class PlayerInfo {
     FULL,
     LEADER
   };
-  ControlMode HASH(controlMode);
+  optional<ControlMode> HASH(controlMode);
   enum Action {
     CONTROL,
     RENAME,
