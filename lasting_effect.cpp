@@ -1451,8 +1451,9 @@ static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect effect
     case LastingEffect::ELF_VISION:
     case LastingEffect::REGENERATION:
     case LastingEffect::WARNING:
-    case LastingEffect::TELEPATHY:
       return true;
+    case LastingEffect::TELEPATHY:
+      return victim->isAffected(LastingEffect::BLIND);
     case LastingEffect::NIGHT_VISION:
       return victim->getPosition().getLight() < Vision::getDarknessVisionThreshold();
     default:
