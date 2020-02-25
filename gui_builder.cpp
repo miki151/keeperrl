@@ -1116,9 +1116,12 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
       Color::GRAY : Color::WHITE;
   if (auto col = getIntrinsicStateColor(item))
     color = *col;
+  auto name = item.name;
   if (item.number > 1)
     line.addElemAuto(WL(rightMargin, 0, WL(label, toString(item.number) + " ", color)));
-  line.addMiddleElem(WL(label, item.name, color));
+  else
+    name = capitalFirst(name);
+  line.addMiddleElem(WL(label, name, color));
   auto mainLine = WL(stack,
       WL(buttonRect, onClick),
       WL(renderInBounds, line.buildHorizontalList()),
