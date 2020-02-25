@@ -3176,27 +3176,28 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
     vector<SGuiElem> itemElems;
     if (!infoOnly)
       for (int i : All(items)) {
-        auto keyElem = WL(stack,
-            WL(button,
-            getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
-                EquipmentActionInfo{minion.creatureId, items[i].ids, items[i].slot, ItemAction::LOCK}})),
-            items[i].locked ? WL(viewObject, ViewId("key")) : WL(mouseHighlight2, WL(viewObject, ViewId("key_highlight"))),
-            getTooltip({"Locked slots won't be automatically equiped by minion."}, THIS_LINE + i)
-        );
+        SGuiElem keyElem = WL(empty);
         auto labelElem = getItemLine(items[i], [this, creatureId = minion.creatureId, item = items[i]] (Rectangle bounds) {
             if (auto choice = getItemChoice(item, bounds.bottomLeft() + Vec2(50, 0), true))
               callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
                   EquipmentActionInfo{creatureId, item.ids, item.slot, *choice}});
         });
         if (!items[i].ids.empty()) {
-        int offset = *labelElem->getPreferredWidth();
-        labelElem = WL(stack, std::move(labelElem),
-                    WL(mouseHighlight2, WL(leftMargin, offset,
-                        items[i].ids.empty() ?  WL(label, "+", Color::YELLOW) : WL(labelUnicode, u8"✘", Color::RED)), nullptr, false));
+          int offset = *labelElem->getPreferredWidth();
+          labelElem = WL(stack, std::move(labelElem),
+                      WL(mouseHighlight2, WL(leftMargin, offset,
+                          items[i].ids.empty() ?  WL(label, "+", Color::YELLOW) : WL(labelUnicode, u8"✘", Color::RED)), nullptr, false));
+          keyElem = WL(stack,
+              WL(button,
+              getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
+                  EquipmentActionInfo{minion.creatureId, items[i].ids, items[i].slot, ItemAction::LOCK}})),
+              items[i].locked ? WL(viewObject, ViewId("key")) : WL(mouseHighlight2, WL(viewObject, ViewId("key_highlight"))),
+              getTooltip({"Locked items won't be automatically swapped by minion."}, THIS_LINE + i)
+          );
         }
         itemElems.push_back(
             WL(getListBuilder)
-                .addElemAuto(std::move(keyElem))
+                .addElem(std::move(keyElem), 20)
                 .addMiddleElem(std::move(labelElem))
                 .buildHorizontalList());
       }

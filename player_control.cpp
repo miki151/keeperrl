@@ -379,9 +379,9 @@ void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
           addConsumableItem(creature);
         break;
       case ItemAction::LOCK:
-        if (action.ids.empty() && action.slot)
+        /*if (action.ids.empty() && action.slot)
           collective->getMinionEquipment().toggleLocked(creature, *action.slot);
-        else
+        else*/
           for (auto id : action.ids)
             collective->getMinionEquipment().toggleLocked(creature, id);
         break;
