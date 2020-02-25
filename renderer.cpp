@@ -623,10 +623,6 @@ void Renderer::zoomMousePos(Event& ev) {
       ev.motion.x /= zoom;
       ev.motion.y /= zoom;
       break;
-    case SDL::SDL_MOUSEWHEEL:
-      ev.wheel.x /= zoom;
-      ev.wheel.y /= zoom;
-      break;
     default:
       break;
   }
