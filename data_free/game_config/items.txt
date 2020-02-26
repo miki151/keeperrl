@@ -19,23 +19,29 @@
     shortName = "humanoid head"
     weight = 4
     itemClass = TOOL
-    automatonPart = {Chain {
-      MakeHumanoid
-      AddBodyPart HEAD 1 none
-    }}
+    automatonPart = {
+      Description "Allows using equipment."
+      Chain {
+        MakeHumanoid
+        AddBodyPart HEAD 1 none
+      }
+    }
   }
 "ArcherHeadWood" inherit "HumanoidHeadWood"
   {
     name = "wooden arrow shooting head"
     shortName = "arrow shooting"
-    automatonPart = {Chain {
-      IncreaseAttr RANGED_DAMAGE 15
-      AddBodyPart HEAD 1 none
-      FirstSuccessful {
-        GrantAbility "shoot arrow"
-        IncreaseAttr RANGED_DAMAGE 10
+    automatonPart = {
+      Description "Allows shooting arrows. Second head adds additional +10 ranged damage."
+      Chain {
+        IncreaseAttr RANGED_DAMAGE 25
+        AddBodyPart HEAD 1 none
+        FirstSuccessful {
+          GrantAbility "shoot arrow"
+          IncreaseAttr RANGED_DAMAGE -15
+        }
       }
-    }}
+    }
   }
 "AutomatonLegsWood"
   {
@@ -44,13 +50,16 @@
     shortName = "wooden legs"
     weight = 8
     itemClass = TOOL
-    automatonPart = {Chain{
-      AddBodyPart LEG 2 none
-      FirstSuccessful {
-        RemovePermanent IMMOBILE
-        GrantAbility "jump"
+    automatonPart = {
+      Description "Adds mobility. Second pair grants the \"jump\" ability."
+      Chain{
+        AddBodyPart LEG 2 none
+        FirstSuccessful {
+          RemovePermanent IMMOBILE
+          GrantAbility "jump"
+        }
       }
-    }}
+    }
   }
 "AutomatonArmsWood"
   {
@@ -59,10 +68,13 @@
     shortName = "wooden arms"
     weight = 6
     itemClass = TOOL
-    automatonPart = {Chain {
-      IncreaseAttr DAMAGE 6
-      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } }
-    }}
+    automatonPart = {
+      Description "Grants a melee attack and +6 damage bonus."
+      Chain {
+        IncreaseAttr DAMAGE 6
+        AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } }
+      }
+    }
   }
 "HumanoidHeadIron"
   {
@@ -71,45 +83,57 @@
     shortName = "humanoid head"
     weight = 4
     itemClass = TOOL
-    automatonPart = {Chain {
-      IncreaseAttr DEFENSE 2
-      MakeHumanoid
-      AddBodyPart HEAD 1 none
-    }}
+    automatonPart = {
+      Description "Allows using equipment. Adds +2 defense bonus."
+      Chain {
+        IncreaseAttr DEFENSE 2
+        MakeHumanoid
+        AddBodyPart HEAD 1 none
+      }
+    }
   }
 "ArcherHeadIron" inherit "HumanoidHeadIron"
   {
     name = "iron arrow shooting head"
     shortName = "arrow shooting"
-    automatonPart = {Chain {
-      IncreaseAttr RANGED_DAMAGE 30
-      IncreaseAttr DEFENSE 2
-      AddBodyPart HEAD 1 none
-      FirstSuccessful {
-        GrantAbility "shoot arrow"
-        IncreaseAttr RANGED_DAMAGE 15
+    automatonPart = {
+      Description "Allows shooting arrows. Adds +2 defense. Second head adds additional +15 ranged damage."
+      Chain {
+        IncreaseAttr RANGED_DAMAGE 30
+        IncreaseAttr DEFENSE 2
+        AddBodyPart HEAD 1 none
+        FirstSuccessful {
+          GrantAbility "shoot arrow"
+          IncreaseAttr RANGED_DAMAGE -15
+        }
       }
-    }}
+    }
   }
 "FireHeadIron" inherit "HumanoidHeadIron"
   {
     name = "iron fire breathing head"
     shortName = "fire breathing"
-    automatonPart = {Chain {
-      GrantAbility "fire breath"
-      IncreaseAttr DEFENSE 2
-      AddBodyPart HEAD 1 none
-    }}
+    automatonPart = {
+      Description "Grants the \"fire breath\" ability. Adds +2 defense."
+      Chain {
+        GrantAbility "fire breath"
+        IncreaseAttr DEFENSE 2
+        AddBodyPart HEAD 1 none
+      }
+    }
   }
 "AcidHeadIron" inherit "HumanoidHeadIron"
   {
     name = "iron acid spitting head"
     shortName = "acid spitting"
-    automatonPart = {Chain {
-      GrantAbility "acid stream"
-      IncreaseAttr DEFENSE 2
-      AddBodyPart HEAD 1 none
-    }}
+    automatonPart = {
+      Description "Grants the \"acid stream\" ability. Adds +2 defense."
+      Chain {
+        GrantAbility "acid stream"
+        IncreaseAttr DEFENSE 2
+        AddBodyPart HEAD 1 none
+      }
+    }
   }
 "AutomatonLegsIron"
   {
@@ -118,14 +142,17 @@
     shortName = "iron legs"
     weight = 8
     itemClass = TOOL
-    automatonPart = {Chain{
-      IncreaseAttr DEFENSE 2
-      AddBodyPart LEG 2 none
-      FirstSuccessful {
-          RemovePermanent IMMOBILE
-          GrantAbility "jump"
+    automatonPart = {
+      Description "Adds mobility. Adds +2 defense. Second pair grants the \"jump\" ability."
+      Chain{
+        IncreaseAttr DEFENSE 2
+        AddBodyPart LEG 2 none
+        FirstSuccessful {
+            RemovePermanent IMMOBILE
+            GrantAbility "jump"
+        }
       }
-    }}
+    }
   }
 "AutomatonArmsIron"
   {
@@ -134,32 +161,41 @@
     shortName = "iron arms"
     weight = 6
     itemClass = TOOL
-    automatonPart = {Chain {
-      IncreaseAttr DAMAGE 10
-      IncreaseAttr DEFENSE 2
-      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } }
-    }}
+    automatonPart = {
+      Description "Grants a melee attack and +10 damage bonus. Adds +2 defense."
+      Chain {
+        IncreaseAttr DAMAGE 10
+        IncreaseAttr DEFENSE 2
+        AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } }
+      }
+    }
   }
 "SharpAutomatonArmsIron" inherit "AutomatonArmsIron"
   {
     name = "pair of sharp automaton arms"
     shortName = "sharp arms"
-    automatonPart = {Chain {
-      IncreaseAttr DAMAGE 10
-      IncreaseAttr DEFENSE 2
-      AddBodyPart ARM 2
-      { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING victimEffect = { 0.5 Lasting BLEEDING } } }
-    }}
+    automatonPart = {
+      Description "Grants a melee attack with a chance to cause bleeding. Adds +10 damage and +2 defense bonus."
+      Chain {
+        IncreaseAttr DAMAGE 10
+        IncreaseAttr DEFENSE 2
+        AddBodyPart ARM 2
+        { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING victimEffect = { 0.5 Lasting BLEEDING } } }
+      }
+    }
   }
 "RepairAutomatonArmsIron" inherit "AutomatonArmsIron"
   {
     name = "pair of repair automaton arms"
     shortName = "repair arms"
-    automatonPart = {Chain {
-      GrantAbility "repair automaton"
-      IncreaseAttr DEFENSE 2
-      AddBodyPart ARM 2 none
-    }}
+    automatonPart = {
+      Description "Grants the ability to repair other automatons. Adds +2 defense."
+      Chain {
+        GrantAbility "repair automaton"
+        IncreaseAttr DEFENSE 2
+        AddBodyPart ARM 2 none
+      }
+    }
   }
 "Knife"
   {

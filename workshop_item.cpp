@@ -8,13 +8,17 @@ WorkshopItem WorkshopItemCfg::get(const ContentFactory* factory) const {
   // for some reason removing this line causes a linker error, probably a compiler bug
   auto t = tech;
   PItem elem = item.get(factory);
-  return {
+  vector<string> description;
+  if (elem->getNameAndModifiers() != elem->getName())
+    description.push_back(elem->getNameAndModifiers());
+  description.append(elem->getDescription(factory));
+  return WorkshopItem {
     item,
     elem->getName(),
     elem->getName(true),
     elem->getViewObject().id(),
     cost,
-    concat(elem->getDescription(factory), {elem->getNameAndModifiers()}),
+    std::move(description),
     batchSize,
     work,
     tech,

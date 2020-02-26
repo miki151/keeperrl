@@ -236,6 +236,9 @@ vector<string> Item::getDescription(const ContentFactory* factory) const {
     ret.append(info->getDescription(factory));
   if (abilityInfo)
     ret.push_back("Grants ability: "_s + abilityInfo->spell.getName());
+  if (auto& part = attributes->automatonPart) {
+    ret.push_back(part->effect.getDescription(factory));
+  }
   return ret;
 }
 
