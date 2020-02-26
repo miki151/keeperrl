@@ -19,15 +19,22 @@
     shortName = "humanoid head"
     weight = 4
     itemClass = TOOL
-    automatonPart = { Chain { MakeHumanoid AddBodyPart HEAD 1 none }}
+    automatonPart = {Chain {
+      MakeHumanoid
+      AddBodyPart HEAD 1 none
+    }}
   }
 "ArcherHeadWood" inherit "HumanoidHeadWood"
   {
     name = "wooden arrow shooting head"
     shortName = "arrow shooting"
-    automatonPart = {FirstSuccessful {
-      ChainFirstResult { GrantAbility "shoot arrow" IncreaseAttr RANGED_DAMAGE 25 AddBodyPart HEAD 1 none }
-      Chain { IncreaseAttr RANGED_DAMAGE 10 AddBodyPart HEAD 1 none }
+    automatonPart = {Chain {
+      IncreaseAttr RANGED_DAMAGE 15
+      AddBodyPart HEAD 1 none
+      FirstSuccessful {
+        GrantAbility "shoot arrow"
+        IncreaseAttr RANGED_DAMAGE 10
+      }
     }}
   }
 "AutomatonLegsWood"
@@ -37,9 +44,12 @@
     shortName = "wooden legs"
     weight = 8
     itemClass = TOOL
-    automatonPart = {FirstSuccessful {
-      ChainFirstResult { RemovePermanent IMMOBILE AddBodyPart LEG 2 none  }
-      Chain { GrantAbility "jump" AddBodyPart LEG 2 none  }
+    automatonPart = {Chain{
+      AddBodyPart LEG 2 none
+      FirstSuccessful {
+        RemovePermanent IMMOBILE
+        GrantAbility "jump"
+      }
     }}
   }
 "AutomatonArmsWood"
@@ -49,7 +59,10 @@
     shortName = "wooden arms"
     weight = 6
     itemClass = TOOL
-    automatonPart = {Chain { IncreaseAttr DAMAGE 6 AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } } }}
+    automatonPart = {Chain {
+      IncreaseAttr DAMAGE 6
+      AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } }
+    }}
   }
 "HumanoidHeadIron"
   {
@@ -58,31 +71,44 @@
     shortName = "humanoid head"
     weight = 4
     itemClass = TOOL
-    automatonPart = {Chain { IncreaseAttr DEFENSE 2 MakeHumanoid AddBodyPart HEAD 1 none }}
+    automatonPart = {Chain {
+      IncreaseAttr DEFENSE 2
+      MakeHumanoid
+      AddBodyPart HEAD 1 none
+    }}
   }
 "ArcherHeadIron" inherit "HumanoidHeadIron"
   {
     name = "iron arrow shooting head"
     shortName = "arrow shooting"
-    automatonPart = {FirstSuccessful {
-      ChainFirstResult { GrantAbility "shoot arrow" IncreaseAttr RANGED_DAMAGE 30 IncreaseAttr DEFENSE 2 AddBodyPart HEAD 1 none }
-      Chain { IncreaseAttr RANGED_DAMAGE 15 IncreaseAttr DEFENSE 2 AddBodyPart HEAD 1 none }
+    automatonPart = {Chain {
+      IncreaseAttr RANGED_DAMAGE 30
+      IncreaseAttr DEFENSE 2
+      AddBodyPart HEAD 1 none
+      FirstSuccessful {
+        GrantAbility "shoot arrow"
+        IncreaseAttr RANGED_DAMAGE 15
+      }
     }}
   }
 "FireHeadIron" inherit "HumanoidHeadIron"
   {
     name = "iron fire breathing head"
     shortName = "fire breathing"
-    automatonPart = {FirstSuccessful {
-      ChainFirstResult { GrantAbility "fire breath" IncreaseAttr DEFENSE 2 AddBodyPart HEAD 1 none }
+    automatonPart = {Chain {
+      GrantAbility "fire breath"
+      IncreaseAttr DEFENSE 2
+      AddBodyPart HEAD 1 none
     }}
   }
 "AcidHeadIron" inherit "HumanoidHeadIron"
   {
     name = "iron acid spitting head"
     shortName = "acid spitting"
-    automatonPart = {FirstSuccessful {
-      ChainFirstResult { GrantAbility "acid stream" IncreaseAttr DEFENSE 2 AddBodyPart HEAD 1 none }
+    automatonPart = {Chain {
+      GrantAbility "acid stream"
+      IncreaseAttr DEFENSE 2
+      AddBodyPart HEAD 1 none
     }}
   }
 "AutomatonLegsIron"
@@ -92,9 +118,13 @@
     shortName = "iron legs"
     weight = 8
     itemClass = TOOL
-    automatonPart = {FirstSuccessful {
-      ChainFirstResult { RemovePermanent IMMOBILE IncreaseAttr DEFENSE 2 AddBodyPart LEG 2 none  }
-      Chain { GrantAbility "jump" IncreaseAttr DEFENSE 2 AddBodyPart LEG 2 none  }
+    automatonPart = {Chain{
+      IncreaseAttr DEFENSE 2
+      AddBodyPart LEG 2 none
+      FirstSuccessful {
+          RemovePermanent IMMOBILE
+          GrantAbility "jump"
+      }
     }}
   }
 "AutomatonArmsIron"
@@ -125,7 +155,11 @@
   {
     name = "pair of repair automaton arms"
     shortName = "repair arms"
-    automatonPart = { Chain { GrantAbility "repair automaton" IncreaseAttr DEFENSE 2 AddBodyPart ARM 2 none }}
+    automatonPart = {Chain {
+      GrantAbility "repair automaton"
+      IncreaseAttr DEFENSE 2
+      AddBodyPart ARM 2 none
+    }}
   }
 "Knife"
   {
