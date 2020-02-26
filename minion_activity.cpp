@@ -19,6 +19,7 @@
 #include "game.h"
 #include "content_factory.h"
 #include "item_fetch_info.h"
+#include "body.h"
 
 SERIALIZE_DEF(MinionActivities, allFurniture, activities)
 SERIALIZATION_CONSTRUCTOR_IMPL(MinionActivities)
@@ -76,7 +77,8 @@ static Creature* getMinionToAbuse(Collective* collective, const Creature* abuser
   Creature* target = nullptr;
   auto abuserPos = abuser->getPosition();
   for (auto c : minions) {
-    if (c == abuser || c->isAffected(LastingEffect::SPEED) || !collective->getTerritory().contains(c->getPosition()))
+    if (c == abuser || c->isAffected(LastingEffect::SPEED) || !collective->getTerritory().contains(c->getPosition())
+        || !c->getBody().isHumanoid())
       continue;
     if (!target) {
       target = c;
