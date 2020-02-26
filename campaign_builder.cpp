@@ -268,8 +268,13 @@ vector<Dweller> shuffle(RandomGen& random, vector<Campaign::VillainInfo> v) {
 
 void CampaignBuilder::placeVillains(Campaign& campaign, const VillainCounts& counts,
     const optional<RetiredGames>& retired, TribeAlignment tribeAlignment) {
-  int numRetired = retired ? min(retired->getNumActive(), min(counts.numMain, counts.maxRetired)) : 0;
-  placeVillains(campaign, shuffle(random, getVillains(tribeAlignment, VillainType::MAIN)),
+  int retiredLimit = counts.numMain;
+  auto mainVillains = getVillains(tribeAlignment, VillainType::MAIN);
+  for (auto& v : mainVillains)
+    if (v.alwaysPresent && retiredLimit > 0)
+      --retiredLimit;
+  int numRetired = retired ? min(retired->getNumActive(), min(retiredLimit, counts.maxRetired)) : 0;
+  placeVillains(campaign, shuffle(random, mainVillains),
       getVillainPlacement(campaign, VillainType::MAIN), counts.numMain - numRetired);
   placeVillains(campaign, shuffle(random, getVillains(tribeAlignment, VillainType::LESSER)),
       getVillainPlacement(campaign, VillainType::LESSER), counts.numLesser);
