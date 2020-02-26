@@ -822,18 +822,16 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
 
 bool Body::isImmuneTo(LastingEffect effect) const {
   switch (effect) {
+    case LastingEffect::RESTED:
+    case LastingEffect::SATIATED:
     case LastingEffect::SLEEP:
       switch (material) {
-        case Material::WATER:
-        case Material::FIRE:
-        case Material::SPIRIT:
-        case Material::CLAY:
-        case Material::ROCK:
-        case Material::IRON:
-        case Material::LAVA:
-          return true;
-        default:
+        case Material::BONE:
+        case Material::FLESH:
+        case Material::UNDEAD_FLESH:
           return false;
+        default:
+          return true;
       }
     case LastingEffect::RAGE:
     case LastingEffect::PANIC:
