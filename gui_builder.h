@@ -145,6 +145,7 @@ class GuiBuilder {
   optional<int> chooseAtMouse(const vector<string>& elems);
 
   bool disableClickActions = false;
+  bool disableTooltip = false;
 
   private:
   SGuiElem withLine(int, SGuiElem);
@@ -159,6 +160,7 @@ class GuiBuilder {
   Callbacks callbacks;
   SGuiElem getHintCallback(const vector<string>&);
   SGuiElem getTooltip(const vector<string>&, int id);
+  SGuiElem getTooltip2(SGuiElem, GuiFactory::PositionFun);
   vector<SGuiElem> drawPlayerAttributes(const vector<AttributeInfo>&);
   vector<SGuiElem> drawPlayerAttributes(const ViewObject::CreatureAttributes&);
   SGuiElem drawBestAttack(const BestAttack&);
@@ -225,7 +227,6 @@ class GuiBuilder {
   optional<int> lastPlayerPositionHash;
   int scrollbarsHeld = GuiFactory::getHeldInitValue();
   int scrollbarsHeld2 = GuiFactory::getHeldInitValue();
-  bool disableTooltip = false;
   CollectiveTab collectiveTab = CollectiveTab::BUILDINGS;
   MinionTab minionTab = MinionTab::INVENTORY;
   bool gameSpeedDialogOpen = false;

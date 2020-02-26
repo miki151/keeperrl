@@ -823,7 +823,7 @@ SGuiElem GuiBuilder::drawVillainsOverlay(const VillageInfo& info) {
                      WL(viewObject, elem.viewId)))))))
             .addElemAuto(WL(rightMargin, 5, WL(translate, std::move(label), Vec2(-2, 0))))
             .buildHorizontalList(),
-        WL(conditional, WL(tooltip2, std::move(infoOverlay), [=](const Rectangle& r) { return r.topLeft() - Vec2(0, 0 + infoOverlayHeight);}),
+        WL(conditional, getTooltip2(std::move(infoOverlay), [=](const Rectangle& r) { return r.topLeft() - Vec2(0, 0 + infoOverlayHeight);}),
             [this]{return !bottomWindow;})
     )));
   }
@@ -1154,6 +1154,10 @@ SGuiElem GuiBuilder::getTooltip(const vector<string>& text, int id) {
       [this](const vector<string>& text) {
         return WL(conditional, WL(tooltip, text), [this] { return !disableTooltip;}); },
       id, text);
+}
+
+SGuiElem GuiBuilder::getTooltip2(SGuiElem elem, GuiFactory::PositionFun fun) {
+  return WL(conditional, WL(tooltip2, std::move(elem), std::move(fun)), [this] { return !disableTooltip;});
 }
 
 const int listLineHeight = 30;
@@ -3211,7 +3215,7 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
         itemElems.push_back(getItemLine(items[i], [](Rectangle) {} ));
     for (int i : All(itemElems))
       if (items[i].type == items[i].EQUIPMENT)
-        lines.addElem(WL(leftMargin, 3, std::move(itemElems[i])));    
+        lines.addElem(WL(leftMargin, 3, std::move(itemElems[i])));
     for (int i : All(itemElems))
       if (!infoOnly || items[i].type == items[i].CONSUMABLE) {
         lines.addElem(WL(label, "Consumables", Color::YELLOW));

@@ -889,7 +889,7 @@ optional<int> WindowView::choosePillageItem(const string& title, const vector<It
   int width = *menu->getPreferredWidth();
   int height = *menu->getPreferredHeight();
   return getBlockingGui(returnQueue, std::move(menu),
-                        getOverlayPosition(GuiBuilder::OverlayInfo::BOTTOM_LEFT, height, width, rightBarWidthCollective, bottomBarHeightCollective));
+      getOverlayPosition(GuiBuilder::OverlayInfo::BOTTOM_LEFT, height, width, rightBarWidthCollective, bottomBarHeightCollective));
 }
 
 optional<ExperienceType> WindowView::getCreatureUpgrade(const CreatureExperienceInfo& info) {
@@ -1258,6 +1258,7 @@ bool WindowView::considerBugReportEvent(Event& event) {
 }
 
 void WindowView::processEvents() {
+  guiBuilder.disableTooltip = !blockingElems.empty();
   Event event;
   while (renderer.pollEvent(event)) {
     considerResizeEvent(event);
