@@ -23,7 +23,7 @@ class PrettyPrinting {
     vector<string> allContent;
     vector<string> pathStrings;
     for (auto& path : paths) {
-      pathStrings.push_back(path.getFileName());
+      pathStrings.push_back(path.getPath());
       if (auto contents = path.readContents())
         allContent.push_back(*contents);
       else
