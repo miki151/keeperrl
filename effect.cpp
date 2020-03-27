@@ -56,6 +56,7 @@
 #include "furniture_entry.h"
 #include "territory.h"
 #include "vision.h"
+#include "workshop_type.h"
 
 
 static void summonFX(Position pos) {
@@ -305,6 +306,48 @@ string Effects::IncreaseAttr::getDescription(const ContentFactory*) const {
 }
 
 const char* Effects::IncreaseAttr::get(const char* ifIncrease, const char* ifDecrease) const {
+  if (amount > 0)
+    return ifIncrease;
+  else
+    return ifDecrease;
+}
+
+bool Effects::IncreaseSkill::applyToCreature(Creature* c, Creature*) const {
+  c->you(MsgType::YOUR, ::getName(skillid) + get(" improves", " wanes"));
+  c->getAttributes().getSkills().increaseValue(skillid, amount);
+  return true;
+}
+
+string Effects::IncreaseSkill::getName(const ContentFactory*) const {
+  return ::getName(skillid) + get(" proficency boost", " proficency loss");
+}
+
+string Effects::IncreaseSkill::getDescription(const ContentFactory*) const {
+  return get("Increases", "Decreases") + " "_s + ::getName(skillid) + " by " + toString(abs(amount));
+}
+
+const char* Effects::IncreaseSkill::get(const char* ifIncrease, const char* ifDecrease) const {
+  if (amount > 0)
+    return ifIncrease;
+  else
+    return ifDecrease;
+}
+
+bool Effects::IncreaseWorkshopSkill::applyToCreature(Creature* c, Creature*) const {
+  c->you(MsgType::YOUR, c->getGame()->getContentFactory()->workshopInfo.at(workshoptype).name + get(" improves", " wanes"));
+  c->getAttributes().getSkills().increaseValue(workshoptype, amount);
+  return true;
+}
+
+string Effects::IncreaseWorkshopSkill::getName(const ContentFactory* content_factory) const {
+  return content_factory->workshopInfo.at(workshoptype).name + get(" proficency boost", " proficency loss");
+}
+
+string Effects::IncreaseWorkshopSkill::getDescription(const ContentFactory* content_factory) const {
+  return get("Increases", "Decreases") + " "_s + content_factory->workshopInfo.at(workshoptype).name + " by " + toString(abs(amount));
+}
+
+const char* Effects::IncreaseWorkshopSkill::get(const char* ifIncrease, const char* ifDecrease) const {
   if (amount > 0)
     return ifIncrease;
   else
@@ -1670,7 +1713,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
   );
 }
 
-/* Unimplemented: Teleport, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr,
+/* Unimplemented: Teleport, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr, IncreaseSkill, IncreaseWorkshopSkill
       EmitPoisonGas, CircularBlast, Alarm, SilverDamage, DoubleTrouble,
       PlaceFurniture, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
       ReviveCorpse, Blast, Shove, SwapPosition*/

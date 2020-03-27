@@ -10,6 +10,7 @@
 #include "sound.h"
 #include "color.h"
 #include "fx_info.h"
+#include "workshop_type.h"
 
 RICH_ENUM(FilterType, ALLY, ENEMY, AUTOMATON);
 
@@ -134,6 +135,20 @@ struct IncreaseAttr {
   int SERIAL(amount);
   const char* get(const char* ifIncrease, const char* ifDecrease) const;
   SERIALIZE_ALL(attr, amount)
+};
+struct IncreaseSkill {
+  EFFECT_TYPE_INTERFACE;
+  SkillId SERIAL(skillid);
+  double SERIAL(amount);
+  const char* get(const char* ifIncrease, const char* ifDecrease) const;
+  SERIALIZE_ALL(skillid, amount)
+};
+struct IncreaseWorkshopSkill {
+  EFFECT_TYPE_INTERFACE;
+  WorkshopType SERIAL(workshoptype);
+  double SERIAL(amount);
+  const char* get(const char* ifIncrease, const char* ifDecrease) const;
+  SERIALIZE_ALL(workshoptype, amount)
 };
 struct InjureBodyPart {
   EFFECT_TYPE_INTERFACE;
@@ -369,7 +384,9 @@ struct AITargetEnemy {
   X(Description, 60)\
   X(Name, 61)\
   X(AIBelowHealth, 62)\
-  X(AITargetEnemy, 63)
+  X(AITargetEnemy, 63)\
+  X(IncreaseSkill, 64)\
+  X(IncreaseWorkshopSkill, 65)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
