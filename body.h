@@ -26,7 +26,8 @@ RICH_ENUM(BodyMaterial,
   WOOD,
   IRON,
   LAVA,
-  ADA
+  ADA,
+  GOLD,
 );
 
 RICH_ENUM(BodySize,
