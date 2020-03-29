@@ -213,6 +213,7 @@ const char* Body::getDeathDescription() const {
     case Body::Material::CLAY:
     case Body::Material::IRON:
     case Body::Material::ADA:
+    case Body::Material::GOLD:
       return "destroyed";
   }
 }
@@ -491,6 +492,7 @@ static string getMaterialName(Body::Material material) {
     case Body::Material::CLAY: return "clay";
     case Body::Material::IRON: return "iron";
     case Body::Material::ADA: return "adamantium";
+    case Body::Material::GOLD: return "gold";
   }
 }
 
@@ -570,6 +572,8 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part, const ContentFact
       return ItemType(CustomItemId("WoodPlank")).get(factory);
     case Material::ADA:
       return ItemType(CustomItemId("AdaOre")).get(factory);
+    case Material::GOLD:
+      return ItemType(CustomItemId("GoldPiece").get(factory));
     default: return nullptr;
   }
 }
@@ -594,6 +598,8 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
         return ItemType(CustomItemId("WoodPlank")).get(numCorpseItems(size), factory);
       case Material::ADA:
         return ItemType(CustomItemId("AdaOre")).get(numCorpseItems(size), factory);
+      case Material::GOLD:
+        return ItemType(CustomItemId("GoldPiece")).get(numCorpseItems(size), factory);
       default: return vector<PItem>();
     }
   }();

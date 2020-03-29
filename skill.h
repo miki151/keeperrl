@@ -30,6 +30,8 @@ RICH_ENUM(SkillId,
 class Creature;
 class ContentFactory;
 
+extern string getName(SkillId);
+
 class Skill : public Singleton<Skill, SkillId> {
   public:
   string getName() const;
@@ -56,6 +58,7 @@ class Skillset {
   void setValue(SkillId, double);
   void setValue(WorkshopType, double);
   void increaseValue(SkillId, double);
+  void increaseValue(WorkshopType, double);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);

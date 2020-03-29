@@ -22,6 +22,10 @@
 #include "creature_attributes.h"
 #include "content_factory.h"
 
+string getName(SkillId skillid) {
+  return Skill::get(skillid)->getName();
+}
+
 string Skill::getName() const {
   return name;
 }
@@ -76,6 +80,10 @@ void Skillset::setValue(WorkshopType s, double v) {
 
 void Skillset::increaseValue(SkillId s, double v) {
   values[s] = max(0.0, min(1.0, values[s] + v));
+}
+
+void Skillset::increaseValue(WorkshopType type, double v) {
+  workshopValues[type] = max(0.0, min(1.0, workshopValues[type] + v));
 }
 
 SERIALIZE_DEF(Skillset, values, workshopValues)
