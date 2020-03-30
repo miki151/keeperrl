@@ -280,7 +280,7 @@ bool TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwr
   for (int i : All(files)) {
     SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath());
     SDL::SDL_SetSurfaceBlendMode(im, SDL::SDL_BLENDMODE_NONE);
-    CHECK(im) << files[i] << ": "<< SDL::IMG_GetError();
+    USER_CHECK(im) << files[i] << ": "<< SDL::IMG_GetError();
     USER_CHECK((im->w % size.x == 0) && im->h == size.y) << files[i] << " has wrong size " << im->w << " " << im->h;
     string fileName = files[i].getFileName();
     string spriteName = fileName.substr(0, fileName.size() - imageSuf.size());
