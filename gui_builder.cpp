@@ -2560,6 +2560,8 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
           lines.addElem(WL(stack,
                 WL(margins, WL(progressBar, Color::GREEN.transparency(70), fabs(*luxury)), -2, 0, 0, 3),
                 WL(label, "Luxury: " + getMoraleNumber(*luxury))));
+        if (viewObject.hasModifier(ViewObjectModifier::UNPAID))
+          lines.addElem(WL(label, "Cannot afford item", Color::RED));
         if (viewObject.hasModifier(ViewObjectModifier::PLANNED))
           lines.addElem(WL(label, "Planned"));
         lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);

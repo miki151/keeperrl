@@ -616,10 +616,10 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     color = color.transparency(255 * (1 - tile.translucent));
   else if (object.hasModifier(ViewObject::Modifier::ILLUSION))
     color = color.transparency(150);
-  if (object.hasModifier(ViewObject::Modifier::PLANNED))
-    color = color.transparency(100);
-  if (object.hasModifier(ViewObject::Modifier::BLOODY))
+  if (object.hasModifier(ViewObject::Modifier::BLOODY) || object.hasModifier(ViewObject::Modifier::UNPAID))
     color = Color(160, 0, 0);
+  else if (object.hasModifier(ViewObject::Modifier::PLANNED))
+    color = color.transparency(100);
   if (auto waterDepth = object.getAttribute(ViewObject::Attribute::WATER_DEPTH))
     if (*waterDepth > 0) {
       Uint8 val = max(0.0, 255.0 - min(2.0f, *waterDepth) * 40);

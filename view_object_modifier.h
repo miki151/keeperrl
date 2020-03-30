@@ -28,5 +28,6 @@ RICH_ENUM(ViewObjectModifier,
     PLAYER_BLINK,
     BURNING,
     FROZEN,
-    BLOODY
+    BLOODY,
+    UNPAID
 );
