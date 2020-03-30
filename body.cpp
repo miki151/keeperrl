@@ -573,7 +573,7 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part, const ContentFact
     case Material::ADA:
       return ItemType(CustomItemId("AdaOre")).get(factory);
     case Material::GOLD:
-      return ItemType(CustomItemId("GoldPiece").get(factory));
+      return ItemType(CustomItemId("GoldPiece")).get(factory);
     default: return nullptr;
   }
 }

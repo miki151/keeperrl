@@ -159,7 +159,6 @@ class ImmigrantInfo {
   ImmigrantInfo& setHiddenInHelp();
   ImmigrantInfo& addSpecialTrait(double chance, SpecialTrait);
   ImmigrantInfo& addSpecialTrait(double chance, vector<SpecialTrait>);
-  ImmigrantInfo& addOneOrMoreTraits(double chance, vector<LastingEffect>);
 
   template <typename Visitor>
   void visitRequirements(const Visitor& visitor) const {

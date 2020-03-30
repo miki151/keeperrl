@@ -1656,7 +1656,7 @@
       ids = {"LOST_SOUL"}
       traits = {FIGHTER}
       specialTraits = {
-        {1.0 {LastingEffect DISAPPEAR_DURING_DAY}}
+        {1.0 {Lasting { DISAPPEAR_DURING_DAY }}}
       }
       frequency = 1
       requirements = {

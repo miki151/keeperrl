@@ -416,6 +416,7 @@ Immigration::Available::Available(WImmigration im, vector<PCreature> c, int ind,
 void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositions) {
   const ImmigrantInfo& info = immigration->immigrants[immigrantIndex];
   bool addedRecruits = false;
+  vector<Creature*> immigrants;
   info.visitRequirements(makeVisitor(
       [&](const RecruitmentInfo& recruitmentInfo) {
         auto recruits = recruitmentInfo.getAllRecruits(immigration->collective->getGame(), info.getId(0));
@@ -425,6 +426,7 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
           WModel target = immigration->collective->getModel();
           if (c->getPosition().getModel() != target)
             c->getGame()->transferCreature(c, target);
+          immigrants.push_back(c);
           addedRecruits = true;
         }
       },
@@ -443,12 +445,20 @@ void Immigration::Available::addAllCreatures(const vector<Position>& spawnPositi
   if (!addedRecruits) {
     auto creatureRefs = getWeakPointers(creatures);
     for (auto creature : Iter(creatures)) {
-      immigration->collective->addCreature(std::move(*creature), spawnPositions[creature.index()],
-          getInfo().getTraits());
+      if (auto c = immigration->collective->addCreature(std::move(*creature), spawnPositions[creature.index()],
+          getInfo().getTraits()))
+        immigrants.push_back(c);
       creature.markToErase();
     }
     if (!getInfo().getTraits().contains(MinionTrait::NO_LIMIT))
       immigration->collective->setPopulationGroup(creatureRefs);
+  }
+  for (auto& trait : specialTraits) {
+/*  if (specialTrait.colorVariant)
+      for (auto& c : immigrants)
+        c->modViewObject().setColorVariant(*specialTrait.colorVariant);*/
+    applySpecialTrait(immigration->collective->getGame()->getGlobalTime(), trait, immigrants.back(),
+         immigration->collective->getGame()->getContentFactory());
   }
 }
 
@@ -524,15 +534,9 @@ Immigration::Available Immigration::Available::generate(WImmigration immigration
       immigrants.back()->getEquipment().removeAllItems(immigrants.back().get());
     for (auto& specialTrait : info.getSpecialTraits())
       if (Random.chance(specialTrait.prob)) {
-        if (specialTrait.colorVariant)
-          for (auto& c : immigrants)
-            c->modViewObject().setColorVariant(*specialTrait.colorVariant);
         for (auto& trait1 : specialTrait.traits) {
           auto trait = transformBeforeApplying(trait1);
-          //if (!specialTraits.contains(trait)) {
-            applySpecialTrait(trait, immigrants.back().get(), contentFactory);
-            specialTraits.push_back(trait);
-          //}
+          specialTraits.push_back(trait);
         }
       }
   }

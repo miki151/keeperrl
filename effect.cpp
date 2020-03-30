@@ -323,7 +323,7 @@ string Effects::IncreaseSkill::getName(const ContentFactory*) const {
 }
 
 string Effects::IncreaseSkill::getDescription(const ContentFactory*) const {
-  return get("Increases", "Decreases") + " "_s + ::getName(skillid) + " by " + toString(abs(amount));
+  return get("Increases", "Decreases") + " "_s + ::getName(skillid) + " by " + toString(fabs(amount));
 }
 
 const char* Effects::IncreaseSkill::get(const char* ifIncrease, const char* ifDecrease) const {
@@ -344,7 +344,8 @@ string Effects::IncreaseWorkshopSkill::getName(const ContentFactory* content_fac
 }
 
 string Effects::IncreaseWorkshopSkill::getDescription(const ContentFactory* content_factory) const {
-  return get("Increases", "Decreases") + " "_s + content_factory->workshopInfo.at(workshoptype).name + " by " + toString(abs(amount));
+  return get("Increases", "Decreases") + " "_s + content_factory->workshopInfo.at(workshoptype).name + " by " +
+      toString(fabs(amount));
 }
 
 const char* Effects::IncreaseWorkshopSkill::get(const char* ifIncrease, const char* ifDecrease) const {

@@ -21,7 +21,7 @@ optional<string> getExtraBodyPartPrefix(const ExtraBodyPart& part) {
   }
 }
 
-void applySpecialTrait(SpecialTrait trait, Creature* c, const ContentFactory* factory) {
+void applySpecialTrait(GlobalTime globalTime, SpecialTrait trait, Creature* c, const ContentFactory* factory) {
   trait.visit<void>(
       [&] (const ExtraTraining& t) {
         c->getAttributes().increaseMaxExpLevel(t.type, t.increase);
@@ -29,8 +29,11 @@ void applySpecialTrait(SpecialTrait trait, Creature* c, const ContentFactory* fa
       [&] (const AttrBonus& t) {
         c->getAttributes().increaseBaseAttr(t.attr, t.increase);
       },
-      [&] (LastingEffect effect) {
-        c->addPermanentEffect(effect);
+      [&] (const Lasting& effect) {
+        if (effect.time)
+          c->addEffect(effect.effect, *effect.time, globalTime, false);
+        else
+          c->addPermanentEffect(effect.effect);
       },
       [&] (ExtraBodyPart part) {
         c->getAttributes().add(part.part, part.count);

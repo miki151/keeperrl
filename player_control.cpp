@@ -1267,12 +1267,19 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
       [&] (const AttrBonus& t) {
         return TraitInfo{toStringWithSign(t.increase) + " " + getName(t.attr), t.increase <= 0};
       },
-      [&] (LastingEffect effect) {
-        if (auto adj = LastingEffects::getGoodAdjective(effect))
-          return TraitInfo{"Permanent trait: "_s + *adj, false};
-        if (auto adj = LastingEffects::getBadAdjective(effect))
-          return TraitInfo{"Permanent trait: "_s + *adj, true};
-        FATAL << "No adjective found: "_s + LastingEffects::getName(effect);
+      [&] (const Lasting& effect) {
+        if (effect.time) {
+          if (auto adj = LastingEffects::getGoodAdjective(effect.effect))
+            return TraitInfo{"Temporary trait: "_s + *adj + " (" + toString(*effect.time) + " turns)", false};
+          if (auto adj = LastingEffects::getBadAdjective(effect.effect))
+            return TraitInfo{"Temporary trait: "_s + *adj + " (" + toString(*effect.time) + " turns)", true};
+        } else {
+          if (auto adj = LastingEffects::getGoodAdjective(effect.effect))
+            return TraitInfo{"Permanent trait: "_s + *adj, false};
+          if (auto adj = LastingEffects::getBadAdjective(effect.effect))
+            return TraitInfo{"Permanent trait: "_s + *adj, true};
+        }
+        FATAL << "No adjective found: "_s + LastingEffects::getName(effect.effect);
         fail();
       },
       [&] (WorkshopType type) {

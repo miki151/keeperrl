@@ -40,7 +40,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const vector<Kee
     return elem.creatureId.transform([&](auto& id) {
       auto ret = creatureFactory.fromId(id, getPlayerTribeId(elem.tribeAlignment));
       for (auto& trait : elem.specialTraits)
-        applySpecialTrait(trait, ret.get(), contentFactory);
+        applySpecialTrait(0_global, trait, ret.get(), contentFactory);
       return ret;
     });
   });

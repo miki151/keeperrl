@@ -537,7 +537,8 @@ void Creature::privateMessage(const PlayerMessage& msg) const {
 }
 
 void Creature::addFX(const FXInfo& fx) const {
-  getGame()->addEvent(EventInfo::FX{position, fx});
+  if (auto game = getGame())
+    game->addEvent(EventInfo::FX{position, fx});
 }
 
 void Creature::thirdPerson(const PlayerMessage& playerCanSee) const {
@@ -829,12 +830,16 @@ bool Creature::knowsHiding(const Creature* c) const {
 }
 
 bool Creature::addEffect(LastingEffect effect, TimeInterval time, bool msg) {
+  return addEffect(effect, time, *getGlobalTime(), msg);
+}
+
+bool Creature::addEffect(LastingEffect effect, TimeInterval time, GlobalTime globalTime, bool msg) {
   PROFILE;
   if (LastingEffects::affects(this, effect)) {
-    bool was = isAffected(effect);
+    bool was = isAffected(effect, globalTime);
     if (!was || LastingEffects::canProlong(effect))
-      attributes->addLastingEffect(effect, *getGlobalTime() + time);
-    if (!was && isAffected(effect)) {
+      attributes->addLastingEffect(effect, globalTime + time);
+    if (!was && isAffected(effect, globalTime)) {
       LastingEffects::onAffected(this, effect, msg);
       updateViewObject();
       if (auto fx = LastingEffects::getApplicationFX(effect))

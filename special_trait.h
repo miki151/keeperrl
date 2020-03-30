@@ -40,9 +40,15 @@ struct OneOfTraits {
   SERIALIZE_ALL(traits)
 };
 
+struct Lasting {
+  LastingEffect SERIAL(effect);
+  optional<TimeInterval> SERIAL(time);
+  SERIALIZE_ALL(NAMED(effect), NAMED(time))
+};
+
 #define VARIANT_TYPES_LIST\
   X(ExtraTraining, 0)\
-  X(LastingEffect, 1)\
+  X(Lasting, 1)\
   X(WorkshopType, 2)\
   X(AttrBonus, 3)\
   X(OneOfTraits, 4)\
@@ -60,7 +66,7 @@ inline
 #undef VARIANT_NAME
 
 
-extern void applySpecialTrait(SpecialTrait, Creature*, const ContentFactory*);
+extern void applySpecialTrait(GlobalTime, SpecialTrait, Creature*, const ContentFactory*);
 extern SpecialTrait transformBeforeApplying(SpecialTrait);
 
 struct SpecialTraitInfo {

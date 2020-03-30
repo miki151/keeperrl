@@ -213,12 +213,6 @@ ImmigrantInfo& ImmigrantInfo::addSpecialTrait(double chance, vector<SpecialTrait
   return *this;
 }
 
-ImmigrantInfo& ImmigrantInfo::addOneOrMoreTraits(double chance, vector<LastingEffect> effects) {
-  for (auto& effect : effects)
-    addSpecialTrait(chance / effects.size(), effect);
-  return *this;
-}
-
 vector<Creature*> RecruitmentInfo::getAllRecruits(WGame game, CreatureId id) const {
   vector<Creature*> ret;
   for (auto col : findEnemy(game))

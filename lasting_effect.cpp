@@ -874,9 +874,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         for (auto pos : c->getPosition().neighbors8())
           if (auto other = pos.getCreature())
             if (Random.roll(10)) {
-              if (c->addEffect(LastingEffect::PLAGUE, getDuration(c, LastingEffect::PLAGUE)))
-                if (auto fx = LastingEffects::getApplicationFX(LastingEffect::PLAGUE))
-                  c->addFX(*fx);
+              other->addEffect(LastingEffect::PLAGUE, getDuration(c, LastingEffect::PLAGUE));
             }
         if (suffers) {
           if (c->getBody().getHealth() > 0.5 || canDie) {

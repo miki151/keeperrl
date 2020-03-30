@@ -61,7 +61,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void setWorkshops(unique_ptr<Workshops>);
   void setImmigration(PImmigration);
   void addCreature(Creature*, EnumSet<MinionTrait>);
-  void addCreature(PCreature, Position, EnumSet<MinionTrait>);
+  Creature* addCreature(PCreature, Position, EnumSet<MinionTrait>);
   void setPopulationGroup(const vector<Creature*>&);
   void setControl(PCollectiveControl);
   void makeConqueredRetired(Collective* conqueror);

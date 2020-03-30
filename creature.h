@@ -261,6 +261,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   SERIALIZATION_DECL(Creature)
 
   bool addEffect(LastingEffect, TimeInterval time, bool msg = true);
+  bool addEffect(LastingEffect, TimeInterval time, GlobalTime, bool msg = true);
   bool removeEffect(LastingEffect, bool msg = true);
   bool addPermanentEffect(LastingEffect, int count = 1, bool msg = true);
   bool removePermanentEffect(LastingEffect, int count = 1, bool msg = true);
