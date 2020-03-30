@@ -1549,7 +1549,9 @@ bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
         if (e == LastingEffect::LIFE_SAVED) {
           you(MsgType::YOUR, item->getName() + " crumbles to dust");
           equipment->removeItem(item, this);
+          goto foundItem;
         }
+    foundItem:
     if (attributes->isAffectedPermanently(LastingEffect::LIFE_SAVED))
       attributes->removePermanentEffect(LastingEffect::LIFE_SAVED, 1);
     heal();
