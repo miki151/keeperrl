@@ -1495,6 +1495,7 @@ void PlayerControl::fillResources(CollectiveInfo& info) const {
 }
 
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
+  gameInfo.isSingleMap = getGame()->isSingleModel();
   getGame()->getEncyclopedia()->setKeeperThings(getGame()->getContentFactory(),
       &collective->getTechnology(), &collective->getWorkshops());
   gameInfo.encyclopedia = getGame()->getEncyclopedia();

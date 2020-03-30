@@ -189,7 +189,7 @@ vector<WModel> Game::getAllModels() const {
 }
 
 bool Game::isSingleModel() const {
-  return models.getBounds().getSize() == Vec2(1, 1);
+  return getAllModels().size() == 1;
 }
 
 int Game::getSaveProgressCount() const {

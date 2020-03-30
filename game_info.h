@@ -452,10 +452,11 @@ class GameInfo {
   optional<TutorialInfo> HASH(tutorial);
   optional<CurrentLevelInfo> HASH(currentLevel);
   const Encyclopedia* encyclopedia;
+  bool HASH(isSingleMap) = false;
 
   vector<PlayerMessage> HASH(messageBuffer);
   bool HASH(takingScreenshot) = false;
-  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, modifiedSquares, totalSquares, tutorial, currentLevel, takingScreenshot)
+  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, modifiedSquares, totalSquares, tutorial, currentLevel, takingScreenshot, isSingleMap)
 };
 
 struct AutomatonPart;

@@ -4307,14 +4307,19 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
         line.buildHorizontalList()
     ));
   }
+  auto travelButton = [&] {
+    if (gameInfo.tutorial || !gameInfo.isSingleMap)
+      return WL(stack,
+          getHintCallback({"Open world map. You can also press 't'."}),
+          WL(mouseHighlight2, WL(icon, GuiFactory::IconId::MINIMAP_WORLD2), WL(icon, GuiFactory::IconId::MINIMAP_WORLD1)),
+          WL(conditional, WL(blink, WL(icon, GuiFactory::IconId::MINIMAP_WORLD2)), tutorialPredicate),
+          WL(button, getButtonCallback(UserInputId::DRAW_WORLD_MAP), gui.getKey(SDL::SDLK_t)));
+    else
+      return WL(icon, GuiFactory::IconId::MINIMAP_WORLD1);
+  }();
   return lines.addElemAuto(
       WL(centerHoriz, WL(minimapBar,
-        WL(preferredSize, 48, 48, WL(stack,
-            getHintCallback({"Open world map. You can also press 't'."}),
-            WL(mouseHighlight2, WL(icon, GuiFactory::IconId::MINIMAP_WORLD2), WL(icon, GuiFactory::IconId::MINIMAP_WORLD1)),
-            WL(conditional, WL(blink, WL(icon, GuiFactory::IconId::MINIMAP_WORLD2)), tutorialPredicate),
-            WL(button, getButtonCallback(UserInputId::DRAW_WORLD_MAP), gui.getKey(SDL::SDLK_t))
-        )),
+        WL(preferredSize, 48, 48, std::move(travelButton)),
         WL(preferredSize, 48, 48, WL(stack,
             getHintCallback({"Scroll to your character. You can also press 'k'."}),
             WL(mouseHighlight2, WL(icon, GuiFactory::IconId::MINIMAP_CENTER2), WL(icon, GuiFactory::IconId::MINIMAP_CENTER1)),

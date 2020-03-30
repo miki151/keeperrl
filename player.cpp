@@ -881,7 +881,7 @@ void Player::moveAction(Vec2 dir) {
   }
   if (!dirPos.canEnterEmpty(creature))
     tryToPerform(creature->destroy(dir, DestroyAction::Type::BASH));
-  if (dirPos.isUnavailable() && canTravel())
+  if (dirPos.isUnavailable() && canTravel() && !getGame()->isSingleModel())
     getGame()->transferAction(getTeam());
 }
 
@@ -1211,6 +1211,7 @@ void Player::fillCurrentLevelInfo(GameInfo& gameInfo) const {
 void Player::refreshGameInfo(GameInfo& gameInfo) const {
   fillCurrentLevelInfo(gameInfo);
   gameInfo.messageBuffer = messageBuffer->current;
+  gameInfo.isSingleMap = getGame()->isSingleModel();
   gameInfo.infoType = GameInfo::InfoType::PLAYER;
   SunlightInfo sunlightInfo = getGame()->getSunlightInfo();
   gameInfo.sunlightInfo.description = sunlightInfo.getText();
