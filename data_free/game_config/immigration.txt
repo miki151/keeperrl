@@ -268,7 +268,7 @@
     {
       ids = { "ICE_DEMON" }
       traits = { FIGHTER NO_EQUIPMENT }
-      frequency = 100.3
+      frequency = 0.3
       spawnLocation = FurnitureType "DEMON_SHRINE"
       requirements = {
         { 0.3 AttractionInfo 2 {FurnitureType "DEMON_SHRINE"}}
