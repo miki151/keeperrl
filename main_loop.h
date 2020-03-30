@@ -50,8 +50,6 @@ class MainLoop {
   void launchQuickGame(optional<int> maxTurns);
   void playSimpleGame();
 
-  static TimeInterval getAutosaveFreq();
-
   private:
 
   optional<RetiredGames> getRetiredGames(CampaignType);

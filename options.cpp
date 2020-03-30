@@ -33,7 +33,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::DISABLE_CURSOR, 0},
   {OptionId::ONLINE, 1},
   {OptionId::GAME_EVENTS, 1},
-  {OptionId::AUTOSAVE, 1},
+  {OptionId::AUTOSAVE2, 1500},
   {OptionId::WASD_SCROLLING, 0},
   {OptionId::SUGGEST_TUTORIAL, 1},
   {OptionId::STARTING_RESOURCE, 0},
@@ -64,7 +64,7 @@ const map<OptionId, string> names {
   {OptionId::DISABLE_CURSOR, "Disable pretty mouse cursor"},
   {OptionId::ONLINE, "Online features"},
   {OptionId::GAME_EVENTS, "Anonymous statistics"},
-  {OptionId::AUTOSAVE, "Autosave"},
+  {OptionId::AUTOSAVE2, "Number of turns between autosaves"},
   {OptionId::WASD_SCROLLING, "WASD scrolling"},
   {OptionId::SUGGEST_TUTORIAL, ""},
   {OptionId::STARTING_RESOURCE, "Resource bonus"},
@@ -91,7 +91,7 @@ const map<OptionId, string> hints {
       "Use you have a large resolution screen and things appear too small."},
   {OptionId::ONLINE, "Enable online features, like dungeon sharing and highscores."},
   {OptionId::GAME_EVENTS, "Enable sending anonymous statistics to the developer."},
-  {OptionId::AUTOSAVE, "Autosave the game every " + toString(MainLoop::getAutosaveFreq()) + " turns. "
+  {OptionId::AUTOSAVE2, "Autosave the game every X number turns. "
     "The save file will be used to recover in case of a crash."},
   {OptionId::WASD_SCROLLING, "Scroll the map using W-A-S-D keys. In this mode building shortcuts are accessed "
     "using alt + letter."},
@@ -115,7 +115,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::DISABLE_CURSOR,
       OptionId::ONLINE,
       OptionId::GAME_EVENTS,
-      OptionId::AUTOSAVE,
+      OptionId::AUTOSAVE2,
       OptionId::WASD_SCROLLING,
 #ifndef RELEASE
       OptionId::KEEP_SAVEFILES,
@@ -228,7 +228,6 @@ string Options::getValueString(OptionId id) {
     case OptionId::ASCII:
     case OptionId::FULLSCREEN:
     case OptionId::VSYNC:
-    case OptionId::AUTOSAVE:
     case OptionId::WASD_SCROLLING:
       return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
@@ -265,6 +264,8 @@ string Options::getValueString(OptionId id) {
     case OptionId::SOUND:
     case OptionId::MUSIC:
       return toString(getIntValue(id)) + "%";
+    case OptionId::AUTOSAVE2:
+      return toString(getIntValue(id));
   }
 }
 
@@ -296,6 +297,10 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
     case OptionId::PLAYER_NAME:
       if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
             "Leave blank to use a random name."))
+        setValue(id, *val);
+      break;
+    case OptionId::AUTOSAVE2:
+      if (auto val = view->getNumber("Change " + lowercase(getName(id)), Range(0, 5000), *value.getValueMaybe<int>(), 500))
         setValue(id, *val);
       break;
     case OptionId::MUSIC:

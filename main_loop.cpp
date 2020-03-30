@@ -241,10 +241,6 @@ optional<SaveFileInfo> MainLoop::chooseSaveFile(const vector<ListElem>& options,
     return none;
 }
 
-TimeInterval MainLoop::getAutosaveFreq() {
-  return 1500_visible;
-}
-
 enum class MainLoop::ExitCondition {
   ALLIES_WON,
   ENEMIES_WON,
@@ -350,8 +346,8 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
       jukebox->setType(game->getCurrentMusic(), true);
       lastMusicUpdate = gameTime;
     }
-    if (lastAutoSave < gameTime - getAutosaveFreq() && !noAutoSave) {
-      if (options->getBoolValue(OptionId::AUTOSAVE)) {
+    if (lastAutoSave < gameTime - TimeInterval(options->getIntValue(OptionId::AUTOSAVE2)) && !noAutoSave) {
+      if (options->getBoolValue(OptionId::AUTOSAVE2)) {
         saveUI(game, GameSaveType::AUTOSAVE);
         eraseAllSavesExcept(game, GameSaveType::AUTOSAVE);
       }
