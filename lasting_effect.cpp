@@ -322,6 +322,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::PSYCHIATRY:
         c->you(MsgType::BECOME, "more understanding");
         break;
+      case LastingEffect::INVULNERABLE:
+        c->you(MsgType::ARE, "invulnerable!");
+        break;
     }
 }
 
@@ -573,6 +576,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::PSYCHIATRY:
         c->you(MsgType::BECOME, "less understanding");
         break;
+      case LastingEffect::INVULNERABLE:
+        c->you(MsgType::ARE, "no longer invulnerable");
+        break;
       default:
         break;
     }
@@ -709,6 +715,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::LIFE_SAVED: return "Life will be saved"_good;
     case LastingEffect::SWARMER: return "Swarmer"_good;
     case LastingEffect::PSYCHIATRY: return "Psychiatrist"_good;
+    case LastingEffect::INVULNERABLE: return "Invulnerable"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::PLAGUE: return "Infected with plague"_bad;
@@ -793,6 +800,8 @@ double LastingEffects::modifyCreatureDefense(LastingEffect e, double defense, At
       return multiplyFor(AttrType::DAMAGE, 1.0 / baseMultiplier);
     case LastingEffect::RANGED_VULNERABILITY:
       return multiplyFor(AttrType::RANGED_DAMAGE, 1.0 / baseMultiplier);
+    case LastingEffect::INVULNERABLE:
+      return 1000000;
     default:
       return defense;
   }
@@ -1068,6 +1077,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::OIL: return "oil";
     case LastingEffect::SWARMER: return "swarming";
     case LastingEffect::PSYCHIATRY: return "psychiatry";
+    case LastingEffect::INVULNERABLE: return "invulnerability";
   }
 }
 
@@ -1153,6 +1163,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::OIL: return "Creature may be set on fire.";
     case LastingEffect::SWARMER: return "Grants damage and defense bonus for every other swarmer in vicinity.";
     case LastingEffect::PSYCHIATRY: return "Creature won't be attacked by insane creatures.";
+    case LastingEffect::INVULNERABLE: return "Creature can't be harmed in combat.";
   }
 }
 
@@ -1297,6 +1308,7 @@ bool LastingEffects::canConsume(LastingEffect effect) {
     case LastingEffect::PLAGUE_RESISTANT:
     case LastingEffect::SPYING:
     case LastingEffect::LIFE_SAVED:
+    case LastingEffect::INVULNERABLE:
       return false;
     default:
       return true;
@@ -1307,6 +1319,7 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::SLEEP:
       return FXVariantName::SLEEP;
+    case LastingEffect::INVULNERABLE:
     case LastingEffect::LIFE_SAVED:
       return FXVariantName::BUFF_WHITE;
     case LastingEffect::SPEED:
@@ -1377,6 +1390,7 @@ optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::OIL:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::BLACK);
+    case LastingEffect::INVULNERABLE:
     case LastingEffect::LIFE_SAVED:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE);
     case LastingEffect::SPEED:
@@ -1434,6 +1448,7 @@ bool LastingEffects::obeysFormation(const Creature* c, const Creature* against) 
 
 static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect effect) {
   switch (effect) {
+    case LastingEffect::INVULNERABLE:
     case LastingEffect::LIFE_SAVED:
     case LastingEffect::INVISIBLE:
     case LastingEffect::DAM_BONUS:
@@ -1556,6 +1571,7 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
       return 40_visible;
     case LastingEffect::BLIND:
       return 15_visible;
+    case LastingEffect::INVULNERABLE:
     case LastingEffect::INVISIBLE:
       return 15_visible;
     case LastingEffect::LIFE_SAVED:
