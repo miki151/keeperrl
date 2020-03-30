@@ -1137,9 +1137,10 @@ bool Effects::SwapPosition::applyToCreature(Creature* c, Creature* attacker) con
   CHECK(attacker);
   auto origin = attacker->getPosition();
   auto dir = origin.getDir(c->getPosition());
-  if (dir.length8() != 1)
+  if (dir.length8() != 1) {
     attacker->privateMessage("You can't swap position with " + c->getName().the());
-  else if (attacker->canSwapPositionWithEnemy(c)) {
+    return false;
+  } else if (attacker->canSwapPositionWithEnemy(c)) {
     attacker->swapPosition(dir, false);
     attacker->verb("swap", "swaps", "positions with " + c->getName().the());
     return true;
