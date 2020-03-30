@@ -108,6 +108,7 @@
 { "harpy" "R" ColorId YELLOW }
 { "bandit" "@" ColorId DARK_BLUE }
 { "doppleganger" "&" ColorId YELLOW }
+{ "ice_demon" "&" ColorId LIGHT_BLUE }
 { "succubus" "&" ColorId RED }
 { "ghost" "&" ColorId WHITE }
 { "spirit" "&" ColorId YELLOW }

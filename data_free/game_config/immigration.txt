@@ -64,7 +64,6 @@
         { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_WOOD"}}
       }
       specialTraits = {
-         { 1.0 { Lasting { SUMMONED 100 }}}
          { 0.01 { ExtraIntrinsicAttack
             HEAD
             { Intrinsic { "bite_attack" } "fangs" 5 {
@@ -264,6 +263,19 @@
       requirements = {
         { 0.3 AttractionInfo 2 {FurnitureType "DEMON_SHRINE"}}
         { 0.0 CostInfo "DEMON_PIETY" 1000 }
+      }
+    }
+    {
+      ids = { "ICE_DEMON" }
+      traits = { FIGHTER NO_EQUIPMENT }
+      frequency = 100.3
+      spawnLocation = FurnitureType "DEMON_SHRINE"
+      requirements = {
+        { 0.3 AttractionInfo 2 {FurnitureType "DEMON_SHRINE"}}
+        { 0.0 CostInfo "DEMON_PIETY" 1000 }
+      }
+      specialTraits = {
+         { 1.0 { Lasting { SUMMONED 500 } }}
       }
     }
     {

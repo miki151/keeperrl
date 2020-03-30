@@ -213,6 +213,7 @@ const char* Body::getDeathDescription() const {
     case Body::Material::CLAY:
     case Body::Material::IRON:
     case Body::Material::ADA:
+    case Body::Material::ICE:
     case Body::Material::GOLD:
       return "destroyed";
   }
@@ -493,6 +494,7 @@ static string getMaterialName(Body::Material material) {
     case Body::Material::IRON: return "iron";
     case Body::Material::ADA: return "adamantium";
     case Body::Material::GOLD: return "gold";
+    case Body::Material::ICE: return "ice";
   }
 }
 
@@ -809,13 +811,23 @@ bool Body::heal(Creature* c, double amount) {
 
 bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
   switch (effect) {
+    case LastingEffect::COLD_RESISTANT:
+      switch (material) {
+        case Material::ICE:
+          return true;
+        default:
+          return false;
+      }
     case LastingEffect::FIRE_RESISTANT:
       switch (material) {
         case Material::FLESH:
         case Material::SPIRIT:
         case Material::UNDEAD_FLESH:
-        case Material::WOOD: return false;
-        default: return true;
+        case Material::ICE:
+        case Material::WOOD:
+          return false;
+        default:
+          return true;
       }
     case LastingEffect::SUNLIGHT_VULNERABLE:
       return material == Material::UNDEAD_FLESH;

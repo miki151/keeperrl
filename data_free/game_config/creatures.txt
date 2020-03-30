@@ -448,46 +448,67 @@
   }
 "GALEAM"
   {
-  attr = {
-    DEFENSE 30
-  }
-  viewId = { "galeam" }
-  body = {
-    type = NonHumanoid SMALL
-    material = SPIRIT
-    addBodyPart = {
-      WING 2
+    attr = {
+      DEFENSE 30
     }
-  }
-  courage = -1
-  spells = { "bolster" "rally" }
-  name = {
-    name = "galeam"
-    pluralName = "galea"
-  }
+    viewId = { "galeam" }
+    body = {
+      type = NonHumanoid SMALL
+        material = SPIRIT
+        addBodyPart = {
+          WING 2
+        }
+    }
+    courage = -1
+      spells = { "bolster" "rally" }
+    name = {
+      name = "galeam"
+        pluralName = "galea"
+    }
   }
 "CHERUB"
   {
-  attr = {
-    DEFENSE 5
-    RANGED_DAMAGE 20
-  }
-  viewId = { "cherub" }
-  body = {
-    type = Humanoid MEDIUM
-    material = SPIRIT
-    addBodyPart = {
-      WING 2
+    attr = {
+      DEFENSE 5
+      RANGED_DAMAGE 20
+    }
+    viewId = { "cherub" }
+    body = {
+      type = Humanoid MEDIUM
+      material = SPIRIT
+      addBodyPart = {
+        WING 2
+      }
+    }
+    permanentEffects = { SPEED 1 }
+    courage = -1
+    name = {
+      name = "cherub"
+    }
+    inventory = {
+      { Simple "Bow"}
     }
   }
-  permanentEffects = { SPEED 1 }
-  courage = -1
-  name = {
-    name = "cherub"
-  }
-  inventory = {
-    { Simple "Bow"}
-  }
+"ICE_DEMON"
+  {
+    viewId = { "ice_demon" }
+    attr = {
+      DEFENSE 30
+      DAMAGE 30
+    }
+    body = {
+      type = HumanoidLike LARGE
+      material = ICE
+      intrinsicAttacks = {
+        ARM {{{ Intrinsic { "fist_attack" } "fists" 10 {
+            attackType = HIT
+            attackMsg = SWING
+            victimEffect = {0.3 Lasting FROZEN} } }}}
+      }
+    }
+    name = {
+      name = "ice demon"
+    }
   }
 "DOPPLEGANGER"
   {
