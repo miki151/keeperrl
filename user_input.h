@@ -83,7 +83,7 @@ enum class UserInputId {
     ACTIVATE_TEAM,
     WORKSHOP,
     WORKSHOP_ADD,
-    WORKSHOP_ITEM_ACTION,
+    REMOVE_WORKSHOP_ITEM,
     WORKSHOP_UPGRADE,
     LIBRARY_ADD,
     VILLAGE_ACTION,
@@ -166,12 +166,6 @@ struct EquipmentActionInfo {
   SERIALIZE_ALL(creature, ids, slot, action)
 };
 
-struct WorkshopQueuedActionInfo {
-  int SERIAL(itemIndex);
-  ItemAction SERIAL(action);
-  SERIALIZE_ALL(itemIndex, action)
-};
-
 struct RenameActionInfo {
   UniqueEntity<Creature>::Id SERIAL(creature);
   string SERIAL(name);
@@ -205,7 +199,7 @@ struct WorkshopUpgradeInfo {
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, VillageActionInfo,
-    TaskActionInfo, EquipmentActionInfo, RenameActionInfo, WorkshopQueuedActionInfo, CreatureDropInfo, TeamDropInfo,
+    TaskActionInfo, EquipmentActionInfo, RenameActionInfo, CreatureDropInfo, TeamDropInfo,
     string, TechId, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo),
         ASSIGN(BuildingClickInfo,
             UserInputId::BUILD,
@@ -241,7 +235,8 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
             UserInputId::IMMIGRANT_AUTO_ACCEPT,
             UserInputId::IMMIGRANT_AUTO_REJECT,
             UserInputId::CAST_SPELL,
-            UserInputId::SCROLL_STAIRS
+            UserInputId::SCROLL_STAIRS,
+            UserInputId::REMOVE_WORKSHOP_ITEM
         ),
         ASSIGN(InventoryItemInfo,
             UserInputId::INVENTORY_ITEM,
@@ -265,8 +260,6 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
             UserInputId::CREATURE_TASK_ACTION),
         ASSIGN(EquipmentActionInfo,
             UserInputId::CREATURE_EQUIPMENT_ACTION),
-        ASSIGN(WorkshopQueuedActionInfo,
-            UserInputId::WORKSHOP_ITEM_ACTION),
         ASSIGN(RenameActionInfo,
             UserInputId::CREATURE_RENAME),
         ASSIGN(CreatureDropInfo,

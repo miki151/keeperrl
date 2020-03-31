@@ -153,6 +153,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   VillageInfo::Village getVillageInfo(const Collective* enemy) const;
   string getTriggerLabel(const AttackTrigger&) const;
   void fillWorkshopInfo(CollectiveInfo&) const;
+  vector<CollectiveInfo::QueuedItemInfo> getQueuedWorkshopItems() const;
   void fillImmigration(CollectiveInfo&) const;
   void fillImmigrationHelp(CollectiveInfo&) const;
   void fillLibraryInfo(CollectiveInfo&) const;
@@ -247,7 +248,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void loadBuildingMenu(const ContentFactory*, const KeeperCreatureInfo&);
   WLevel currentLevel = nullptr;
   void scrollStairs(int dir);
-  CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&) const;
+  CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&, int cnt, int itemIndex) const;
   vector<pair<vector<Item*>, Position>> getItemUpgradesFor(const WorkshopItem&) const;
   void fillDungeonLevel(AvatarLevelInfo&) const;
   void fillResources(CollectiveInfo&) const;

@@ -44,15 +44,15 @@ struct WorkshopItem {
 
 struct WorkshopQueuedItem {
   SERIALIZATION_CONSTRUCTOR(WorkshopQueuedItem)
-  WorkshopQueuedItem(WorkshopItem item, int index, int number)
-      : item(std::move(item)), indexInWorkshop(index), number(number) {}
+  WorkshopQueuedItem(WorkshopItem item, int index, bool paid)
+      : item(std::move(item)), indexInWorkshop(index), paid(paid) {}
   WorkshopQueuedItem(const WorkshopQueuedItem&) = delete;
   WorkshopQueuedItem(WorkshopQueuedItem&& o) = default;
   WorkshopQueuedItem& operator = (WorkshopQueuedItem&& o) = default;
   WorkshopItem SERIAL(item);
   int SERIAL(indexInWorkshop);
-  int SERIAL(number);
-  optional<double> SERIAL(state);
+  double SERIAL(state) = 0;
+  bool SERIAL(paid);
   vector<PItem> SERIAL(runes);
-  SERIALIZE_ALL(item, runes, state, indexInWorkshop, number)
+  SERIALIZE_ALL(item, runes, state, paid, indexInWorkshop)
 };

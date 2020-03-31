@@ -270,6 +270,7 @@ class CollectiveInfo {
   vector<WorkshopButton> HASH(workshopButtons);
   struct QueuedItemInfo {
     double HASH(productionState);
+    bool HASH(paid);
     ItemInfo HASH(itemInfo);
     struct UpgradeInfo {
       ViewId HASH(viewId);
@@ -281,7 +282,8 @@ class CollectiveInfo {
     vector<UpgradeInfo> HASH(available);
     vector<UpgradeInfo> HASH(added);
     int HASH(maxUpgrades);
-    HASH_ALL(productionState, itemInfo, available, added, maxUpgrades)
+    int HASH(itemIndex);
+    HASH_ALL(productionState, paid, itemInfo, available, added, maxUpgrades, itemIndex)
   };
   struct ChosenWorkshopInfo {
     vector<ItemInfo> HASH(options);

@@ -520,6 +520,8 @@ void Collective::tick() {
   }
   if (config->getConstructions())
     updateConstructions();
+  for (auto& workshop : workshops->types)
+    workshop.second.updateState(this);
   if (Random.roll(5)) {
     auto fetchInfo = getConfig().getFetchInfo(getGame()->getContentFactory());
     if (!fetchInfo.empty()) {
@@ -1156,13 +1158,14 @@ void Collective::scheduleAutoProduction(function<bool(const Item*)> itemPredicat
     for (auto& workshop : workshops->types)
       for (auto& item : workshop.second.getQueued())
         if (itemPredicate(item.item.type.get(getGame()->getContentFactory()).get()))
-          count -= item.number * item.item.batchSize;
+          count -= item.item.batchSize;
   if (count > 0)
     for (auto& workshop : workshops->types) {
       auto& options = workshop.second.getOptions();
       for (int index : All(options))
         if (itemPredicate(options[index].type.get(getGame()->getContentFactory()).get())) {
-          workshop.second.queue(index, (count + options[index].batchSize - 1) / options[index].batchSize);
+          for (int i : Range((count + options[index].batchSize - 1) / options[index].batchSize))
+            workshop.second.queue(this, index);
           return;
         }
     }

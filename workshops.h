@@ -4,8 +4,8 @@
 #include "workshop_type.h"
 #include "workshop_array.h"
 
-class WorkshopItem;
-class WorkshopQueuedItem;
+struct WorkshopItem;
+struct WorkshopQueuedItem;
 struct WorkshopItemCfg;
 class Collective;
 class CostInfo;
@@ -28,18 +28,18 @@ class Workshops {
       bool wasUpgraded;
     };
     WorkshopResult addWork(Collective*, double workAmount, double skillAmount, double morale);
-    void queue(int index, int count = 1);
-    vector<PItem> unqueue(int index);
+    void queue(Collective*, int index);
+    vector<PItem> unqueue(Collective*, int index);
     void changeNumber(int index, int number);
     bool isIdle(const Collective*, double skillAmount, double morale) const;
     void addUpgrade(int index, PItem);
     PItem removeUpgrade(int itemIndex, int runeIndex);
+    void updateState(Collective*);
 
     SERIALIZATION_DECL(Type)
 
     private:
     friend class Workshops;
-    void stackQueue();
     void addDebt(CostInfo);
     void checkDebtConsistency() const;
     vector<Item> SERIAL(options);

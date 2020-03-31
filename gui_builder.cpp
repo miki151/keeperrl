@@ -1962,31 +1962,7 @@ SGuiElem GuiBuilder::drawNextWaveOverlay(const optional<CollectiveInfo::NextWave
       )));
 }
 
-SGuiElem GuiBuilder::drawWorkshopItemActionButton(const CollectiveInfo::QueuedItemInfo& elem, int itemIndex) {
-  return WL(buttonRect, [=] (Rectangle bounds) {
-      auto lines = WL(getListBuilder, legendLineHeight);
-      disableTooltip = true;
-      DestructorFunction dFun([this] { disableTooltip = false; });
-      bool exit = false;
-      optional<ItemAction> ret;
-      for (auto action : elem.itemInfo.actions) {
-        auto buttonFun = [&exit, &ret, action] {
-            ret = action;
-            exit = true;
-        };
-        lines.addElem(WL(stack,
-              WL(button, buttonFun),
-              WL(uiHighlightMouseOver),
-              WL(label, getActionText(action))));
-      }
-      drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 200, false);
-      if (ret)
-        callbacks.input({UserInputId::WORKSHOP_ITEM_ACTION,
-            WorkshopQueuedActionInfo{itemIndex, *ret}});
-  });
-}
-
-SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo& elem, int itemIndex) {
+SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo& elem) {
   auto buttonHandler = WL(buttonRect, [=] (Rectangle bounds) {
       auto lines = WL(getListBuilder, legendLineHeight);
       disableTooltip = true;
@@ -1994,7 +1970,7 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
       bool exit = false;
       optional<WorkshopUpgradeInfo> ret;
       for (int i : All(elem.added)) {
-        auto buttonFun = [&exit, &ret, i, itemIndex] {
+        auto buttonFun = [&exit, &ret, i, itemIndex = elem.itemIndex] {
             ret = WorkshopUpgradeInfo{ itemIndex,  i, true};
             exit = true;
         };
@@ -2012,7 +1988,7 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
       }
       if (elem.added.size() < elem.maxUpgrades)
         for (int i : All(elem.available)) {
-          auto buttonFun = [&exit, &ret, i, itemIndex] {
+          auto buttonFun = [&exit, &ret, i, itemIndex = elem.itemIndex] {
               ret = WorkshopUpgradeInfo{ itemIndex,  i, false};
               exit = true;
           };
@@ -2089,10 +2065,10 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
   }
   auto lines2 = WL(getListBuilder, legendLineHeight);
   lines2.addElem(WL(label, "In production:", Color::YELLOW));
-  for (int itemIndex : All(queued)) {
-    auto& elem = queued[itemIndex];
+  for (int i : All(queued)) {
+    auto& elem = queued[i];
     auto line = WL(getListBuilder);
-    auto label = WL(label, elem.itemInfo.name);
+    auto label = WL(label, elem.itemInfo.name, elem.paid ? Color::WHITE : Color::RED);
     if (elem.itemInfo.ingredient)
       label = WL(getListBuilder)
           .addElemAuto(std::move(label))
@@ -2100,7 +2076,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
           .addElemAuto(getItemLine(*elem.itemInfo.ingredient, [](Rectangle){}))
           .buildHorizontalList();
     line.addMiddleElem(WL(stack,
-        drawWorkshopItemActionButton(elem, itemIndex),
+        WL(button, getButtonCallback({UserInputId::REMOVE_WORKSHOP_ITEM, elem.itemIndex})),
         WL(uiHighlightMouseOver),
         WL(getListBuilder)
             .addElem(WL(viewObject, elem.itemInfo.viewId), 35)
@@ -2108,7 +2084,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
             .buildHorizontalList()
     ));
     if ((!elem.available.empty() || !elem.added.empty()) && elem.maxUpgrades > 0) {
-      line.addBackElemAuto(WL(leftMargin, 7, drawItemUpgradeButton(elem, itemIndex)));
+      line.addBackElemAuto(WL(leftMargin, 7, drawItemUpgradeButton(elem)));
     }
     if (elem.itemInfo.price)
       line.addBackElem(WL(alignment, GuiFactory::Alignment::RIGHT, drawCost(*elem.itemInfo.price)), 80);
@@ -2116,14 +2092,14 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
         WL(bottomMargin, 5,
             WL(progressBar, Color::DARK_GREEN.transparency(128), elem.productionState)),
         WL(rightMargin, rightElemMargin, line.buildHorizontalList()),
-        getTooltip(elem.itemInfo.description, THIS_LINE + itemIndex)
+        getTooltip(elem.itemInfo.description, THIS_LINE + i)
     ));
   }
-  return WL(preferredSize, 860, 600,
+  return WL(preferredSize, 940, 600,
     WL(miniWindow, WL(stack,
       WL(keyHandler, getButtonCallback({UserInputId::WORKSHOP, info.chosenWorkshop->index}),
         {gui.getKey(SDL::SDLK_ESCAPE)}, true),
-      WL(getListBuilder, 430)
+      WL(getListBuilder, 470)
             .addElem(WL(margins, WL(scrollable,
                   lines.buildVerticalList(), &workshopsScroll, &scrollbarsHeld), margin))
             .addElem(WL(margins,

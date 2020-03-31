@@ -298,8 +298,7 @@ class GuiBuilder {
   SGuiElem drawVillainType(VillainType);
   SGuiElem drawLyingItemsList(const string& title, const ItemCounts&, int maxWidth);
   SGuiElem drawTickBox(shared_ptr<bool> value, const string& title);
-  SGuiElem drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&, int itemIndex);
-  SGuiElem drawWorkshopItemActionButton(const CollectiveInfo::QueuedItemInfo&, int itemIndex);
+  SGuiElem drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&);
   SGuiElem drawGenderButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar);
   SGuiElem drawFirstNameButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar,
       shared_ptr<int> chosenName);

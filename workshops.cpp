@@ -25,19 +25,6 @@ const vector<Workshops::Item>& Workshops::Type::getOptions() const {
   return options;
 }
 
-void Workshops::Type::stackQueue() {
-  checkDebtConsistency();
-  vector<QueuedItem> tmp;
-  for (auto& elem : queued)
-    if (!tmp.empty() && elem.indexInWorkshop == tmp.back().indexInWorkshop &&
-        elem.runes.empty() && tmp.back().runes.empty() && !elem.state && !tmp.back().state)
-      tmp.back().number += elem.number;
-    else
-      tmp.push_back(std::move(elem));
-  queued = std::move(tmp);
-  checkDebtConsistency();
-}
-
 void Workshops::Type::addDebt(CostInfo cost) {
   debt[cost.id] += cost.value;
   CHECK(debt[cost.id] >= 0);
@@ -46,10 +33,8 @@ void Workshops::Type::addDebt(CostInfo cost) {
 void Workshops::Type::checkDebtConsistency() const {
   unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> nowDebt;
   for (auto& elem : queued) {
-    int count = elem.number;
-    if (!!elem.state)
-      --count;
-    nowDebt[options[elem.indexInWorkshop].cost.id] += options[elem.indexInWorkshop].cost.value * count;
+    if (!elem.paid)
+      nowDebt[options[elem.indexInWorkshop].cost.id] += options[elem.indexInWorkshop].cost.value;
   }
   for (auto& elem : nowDebt)
     CHECK(getValueMaybe(debt, elem.first).value_or(0) == elem.second);
@@ -57,33 +42,34 @@ void Workshops::Type::checkDebtConsistency() const {
     CHECK(getValueMaybe(nowDebt, elem.first).value_or(0) == elem.second);
 }
 
-void Workshops::Type::queue(int index, int count) {
-  CHECK(count > 0);
-  addDebt(options[index].cost * count);
-  queued.push_back(QueuedItem { options[index], index, count });
-  stackQueue();
+void Workshops::Type::queue(Collective* collective, int index) {
+  addDebt(options[index].cost);
+  queued.push_back(QueuedItem { options[index], index, false});
+  updateState(collective);
 }
 
-vector<PItem> Workshops::Type::unqueue(int index) {
-  if (index >= 0 && index < queued.size()) {
-    if (queued[index].state.value_or(0) == 0)
-      addDebt(-queued[index].item.cost * queued[index].number);
-    else
-      addDebt(-queued[index].item.cost * (queued[index].number - 1));
-    return queued.removeIndexPreserveOrder(index).runes;
-  }
-  stackQueue();
-  return {};
+void Workshops::Type::updateState(Collective* collective) {
+  for (auto& elem : queued)
+    if (!elem.paid && collective->hasResource(elem.item.cost)) {
+      elem.paid = true;
+      collective->takeResource(elem.item.cost);
+      addDebt(-elem.item.cost);
+    }
 }
 
-void Workshops::Type::changeNumber(int index, int number) {
-  CHECK(number > 0);
+vector<PItem> Workshops::Type::unqueue(Collective* collective, int index) {
   if (index >= 0 && index < queued.size()) {
     auto& elem = queued[index];
-    addDebt(CostInfo(elem.item.cost.id, elem.item.cost.value) * (number - elem.number));
-    elem.number = number;
-    checkDebtConsistency();
+    if (elem.paid) {
+      if (elem.state == 0)
+        collective->returnResource(elem.item.cost);
+    } else
+      addDebt(-elem.item.cost);
+    auto ret = queued.removeIndexPreserveOrder(index).runes;
+    updateState(collective);
+    return ret;
   }
+  return {};
 }
 
 static const double prodMult = 0.1;
@@ -98,42 +84,33 @@ static bool allowUpgrades(const WorkshopQueuedItem& item, double skillAmount, do
 
 bool Workshops::Type::isIdle(const Collective* collective, double skillAmount, double morale) const {
   for (auto& product : queued)
-    if ((product.state || collective->hasResource(product.item.cost)) && allowUpgrades(product, skillAmount, morale))
+    if ((product.paid || collective->hasResource(product.item.cost)) && allowUpgrades(product, skillAmount, morale))
       return false;
   return true;
 }
 
 void Workshops::Type::addUpgrade(int index, PItem rune) {
-  if (queued[index].number > 1) {
-    CHECK(queued[index].runes.empty());
-    WorkshopQueuedItem item(queued[index].item, queued[index].indexInWorkshop, 1);
-    item.runes.push_back(std::move(rune));
-    --queued[index].number;
-    queued.insert(index, std::move(item));
-  } else
-    queued[index].runes.push_back(std::move(rune));
+  queued[index].runes.push_back(std::move(rune));
   checkDebtConsistency();
 }
 
 PItem Workshops::Type::removeUpgrade(int itemIndex, int runeIndex) {
   auto ret = queued[itemIndex].runes.removeIndexPreserveOrder(runeIndex);
-  stackQueue();
   return ret;
 }
 
 auto Workshops::Type::addWork(Collective* collective, double amount, double skillAmount, double morale) -> WorkshopResult {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
-    if ((product.state || collective->hasResource(product.item.cost)) && allowUpgrades(product, skillAmount, morale)) {
-      if (!product.state) {
+    if ((product.paid || collective->hasResource(product.item.cost)) && allowUpgrades(product, skillAmount, morale)) {
+      if (!product.paid) {
         collective->takeResource(product.item.cost);
         addDebt(-product.item.cost);
-        product.state = 0;
+        product.paid = true;
       }
-      *product.state += amount * prodMult / product.item.workNeeded;
-      if (*product.state >= 1) {
+      product.state += amount * prodMult / product.item.workNeeded;
+      if (product.state >= 1) {
         vector<PItem> ret = product.item.type.get(product.item.batchSize, collective->getGame()->getContentFactory());
-        product.state = none;
         bool wasUpgraded = false;
         for (auto& rune : product.runes) {
           if (auto& upgradeInfo = rune->getUpgradeInfo())
@@ -141,8 +118,7 @@ auto Workshops::Type::addWork(Collective* collective, double amount, double skil
               item->applyPrefix(*upgradeInfo->prefix, collective->getGame()->getContentFactory());
           wasUpgraded = !product.item.notArtifact;
         }
-        if (!--product.number)
-          queued.removeIndexPreserveOrder(productIndex);
+        queued.removeIndexPreserveOrder(productIndex);
         checkDebtConsistency();
         return {std::move(ret), wasUpgraded};
       }

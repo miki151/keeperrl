@@ -1126,8 +1126,11 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions() const {
   return ret;
 }
 
-CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQueuedItem& item) const {
-  CollectiveInfo::QueuedItemInfo ret {item.state.value_or(0), getWorkshopItem(item.item, item.number), {}, {}, 0};
+CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQueuedItem& item, int cnt,
+    int itemIndex) const {
+  CollectiveInfo::QueuedItemInfo ret {item.state, item.paid, getWorkshopItem(item.item, cnt), {}, {}, 0, itemIndex};
+  if (!item.paid)
+    ret.itemInfo.description.push_back("Cannot afford item");
   for (auto& it : getItemUpgradesFor(item.item)) {
     ret.available.push_back({it.first[0]->getViewObject().id(), it.first[0]->getName(), it.first.size(),
         it.first[0]->getUpgradeInfo()->getDescription(getGame()->getContentFactory())});
@@ -1144,13 +1147,22 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
   if (!item.runes.empty() && !item.item.notArtifact)
     ret.itemInfo.description.push_back("Requires a craftsman of legendary skills.");
   ret.itemInfo.actions = {ItemAction::REMOVE};
-  if (item.runes.empty())
-    ret.itemInfo.actions.push_back(ItemAction::CHANGE_NUMBER);
   ret.maxUpgrades = item.item.maxUpgrades;
   return ret;
 }
 
-
+vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() const {
+  vector<CollectiveInfo::QueuedItemInfo> ret;
+  auto& queued = collective->getWorkshops().types.at(*chosenWorkshop).getQueued();
+  for (int i : All(queued)) {
+    if (i > 0 && queued[i - 1].indexInWorkshop == queued[i].indexInWorkshop && queued[i - 1].paid == queued[i].paid &&
+        queued[i].runes.empty() && queued[i - 1].runes.empty() && queued[i].state == 0 && queued[i - 1].state == 0)
+      ret.back() = getQueuedItemInfo(queued[i], ret.back().itemInfo.number + 1, ret.back().itemIndex);
+    else
+      ret.push_back(getQueuedItemInfo(queued[i], 1, i));
+  }
+  return ret;
+}
 
 void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   info.workshopButtons.clear();
@@ -1167,14 +1179,12 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
     }
     ++i;
   }
-  if (chosenWorkshop) {
-    auto queuedFun = [this](const WorkshopQueuedItem& item) { return getQueuedItemInfo(item); };
+  if (chosenWorkshop)
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
         getWorkshopOptions().transform([](auto& option) { return option.itemInfo; }),
-        collective->getWorkshops().types.at(*chosenWorkshop).getQueued().transform(queuedFun),
+        getQueuedWorkshopItems(),
         index
     };
-  }
 }
 
 void PlayerControl::acceptPrisoner(int index) {
@@ -2192,7 +2202,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         int index = input.get<int>();
         auto options = getWorkshopOptions();
         auto& item = options[index];
-        workshop.queue(item.optionIndex);
+        workshop.queue(collective, item.optionIndex);
         if (item.ingredient) {
           workshop.addUpgrade(workshop.getQueued().size() - 1, item.ingredient->second.removeItem(item.ingredient->first));
         }
@@ -2219,31 +2229,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
       }
       break;
     }
-    case UserInputId::WORKSHOP_ITEM_ACTION: {
-      auto& info = input.get<WorkshopQueuedActionInfo>();
+    case UserInputId::REMOVE_WORKSHOP_ITEM: {
+      int itemIndex = input.get<int>();
       if (chosenWorkshop) {
         auto& workshop = collective->getWorkshops().types.at(*chosenWorkshop);
-        if (info.itemIndex < workshop.getQueued().size()) {
-          switch (info.action) {
-            case ItemAction::REMOVE:
-              for (auto& upgrade : workshop.unqueue(info.itemIndex))
-                Random.choose(collective->getStoragePositions(StorageId::EQUIPMENT))
-                    .dropItem(std::move(upgrade));
-              break;
-            case ItemAction::CHANGE_NUMBER: {
-              int batchSize = workshop.getQueued()[info.itemIndex].item.batchSize;
-              if (auto number = getView()->getNumber("Change the number of items:",
-                  Range(0, 50 * batchSize), batchSize, batchSize)) {
-                if (*number > 0)
-                  workshop.changeNumber(info.itemIndex, *number / batchSize);
-                else
-                  workshop.unqueue(info.itemIndex);
-              }
-              break;
-            }
-            default:
-              break;
-          }
+        if (itemIndex < workshop.getQueued().size()) {
+          for (auto& upgrade : workshop.unqueue(collective, itemIndex))
+            Random.choose(collective->getStoragePositions(StorageId::EQUIPMENT))
+                .dropItem(std::move(upgrade));
         }
       }
       break;
