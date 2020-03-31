@@ -1827,10 +1827,9 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       && pos.inRectangle(Rectangle::boundingBox({rectSelection->corner1, rectSelection->corner2})))
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
 #ifndef RELEASE
-  /*if (getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
-    for (auto col : getGame()->getCollectives())
-      if (col->getTerritory().contains(position))
-        index.setHighlight(HighlightType::RECT_SELECTION);*/
+  if (getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
+    if (collective->getKnownTiles().isKnown(position))
+      index.setHighlight(HighlightType::RECT_SELECTION);
 #endif
   const ConstructionMap& constructions = collective->getConstructions();
   if (auto trap = constructions.getTrap(position))

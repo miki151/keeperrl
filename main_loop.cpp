@@ -462,9 +462,6 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
       if (auto setup = builder.prepareCampaign(&contentFactory, bindMethod(&MainLoop::getRetiredGames, this),
           CampaignType::FREE_PLAY,
           contentFactory.getCreatures().getNameGenerator()->getNext(NameGeneratorId("WORLD")))) {
-        auto name = options->getStringValue(OptionId::PLAYER_NAME);
-        if (!name.empty())
-          avatar->playerCreature->getName().setFirst(name);
         avatar->playerCreature->getName().useFullTitle();
         auto models = prepareCampaignModels(*setup, *avatar, random, &contentFactory);
         for (auto& f : models.factories)
