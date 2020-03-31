@@ -618,7 +618,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     color = color.transparency(150);
   if (object.hasModifier(ViewObject::Modifier::BLOODY) || object.hasModifier(ViewObject::Modifier::UNPAID))
     color = Color(160, 0, 0);
-  else if (object.hasModifier(ViewObject::Modifier::PLANNED))
+  if (object.hasModifier(ViewObject::Modifier::PLANNED))
     color = color.transparency(100);
   if (auto waterDepth = object.getAttribute(ViewObject::Attribute::WATER_DEPTH))
     if (*waterDepth > 0) {
