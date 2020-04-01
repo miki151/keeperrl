@@ -209,6 +209,13 @@ struct Filter {
   HeapAllocated<Effect> SERIAL(effect);
   SERIALIZE_ALL(filter, effect)
 };
+struct FilterLasting {
+  EFFECT_TYPE_INTERFACE;
+  bool applies(const Creature* c, const Creature* attacker) const;
+  LastingEffect SERIAL(filter_effect);
+  HeapAllocated<Effect> SERIAL(effect);
+  SERIALIZE_ALL(filter_effect, effect)
+};
 SIMPLE_EFFECT(Wish);
 struct Caster {
   EFFECT_TYPE_INTERFACE;
@@ -387,6 +394,7 @@ struct AITargetEnemy {
   X(AITargetEnemy, 63)\
   X(IncreaseSkill, 64)\
   X(IncreaseWorkshopSkill, 65)\
+  X(FilterLasting, 66)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
