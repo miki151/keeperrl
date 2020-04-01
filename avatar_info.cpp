@@ -108,6 +108,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const vector<Kee
     if (!keeperCreatureInfos[result->creatureIndex].noLeader) {
       ret->getName().setBare("Keeper");
       ret->getName().setFirst(result->name);
+      ret->getName().useFullTitle();
     } else
       chosenBaseName = result->name;
   } else {
