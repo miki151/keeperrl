@@ -1519,11 +1519,8 @@ bool Effect::apply(Position pos, Creature* attacker) const {
         if (!c.empty()) {
           for (auto col : pos.getGame()->getCollectives())
             if (col->getCreatures().contains(attacker)) {
-              for (auto& elem : col->getImmigration().getImmigrants())
-                if (elem.getId(0) == m.creature) {
-                  col->addCreature(c[0], elem.getTraits());
-                  return true;
-                }
+              col->addCreature(c[0], {MinionTrait::WORKER, MinionTrait::FIGHTER, MinionTrait::NO_LIMIT});
+              return true;
             }
         }
         return false;

@@ -2152,6 +2152,7 @@
       "WORKSHOP" 0.5
       "FORGE" 0.5
       "LABORATORY" 0.5
+      "DIGGING" 0.2
     }
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""

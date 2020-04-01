@@ -1403,7 +1403,11 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
             c->addMorale(-2);
             addRecordedEvent("the crafting of " + result.items[0]->getTheName(result.items.size() > 1));
           }
-          c->getPosition().dropItems(std::move(result.items));
+          if (result.applyImmediately)
+            for (auto& item : result.items)
+              item->getEffect()->apply(pos.first, c);
+          else
+            c->getPosition().dropItems(std::move(result.items));
         }
     }
   }

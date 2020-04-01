@@ -116,11 +116,12 @@
   {
       {{TrapItem "TRAP_TRIGGER" "trigger"}   8       "WOOD" 20   "advanced traps"}
       {{TrapItem "DESTROY_WALLS_TRAP" "crumble"}8    "WOOD" 20   "advanced traps"}
-      {{Assembled "AUTOMATON_WORKER_WOOD" none}   6       "WOOD" 20    "automatons"}
-      {{Assembled "AUTOMATON_CORPUS_WOOD" {"automaton_corpus" Rgb 180 140 55 255}}
-            8       "WOOD" 30    "automatons"}
-      {{Assembled "LIGHT_AUTOMATON_CORPUS_WOOD" {"automaton_corpus" Rgb 180 140 55 255}}
-            8       "WOOD" 20    "advanced automatons"}
+      { item = {Assembled "AUTOMATON_WORKER_WOOD" none} work = 6 cost = "WOOD" 20 tech = "automatons"
+        applyImmediately = true}
+      { item = {Assembled "AUTOMATON_CORPUS_WOOD" {"automaton_corpus" Rgb 180 140 55 255}}
+        work = 8 cost = "WOOD" 30 tech = "automatons" applyImmediately = true}
+      { item = {Assembled "LIGHT_AUTOMATON_CORPUS_WOOD" {"automaton_corpus" Rgb 180 140 55 255}}
+        work = 8 cost = "WOOD" 20 tech = "advanced automatons"}
       {{Simple    "HumanoidHeadWood"}        2       "WOOD" 5    "advanced automatons"}
       {{Simple    "ArcherHeadWood"}          2       "WOOD" 5    "advanced automatons"}
       {{Simple    "AutomatonLegsWood"}       2       "WOOD" 5    "automatons"}
@@ -128,13 +129,13 @@
   } 
   "FORGE"
   {
-      {{Assembled "AUTOMATON_WORKER_IRON" none}   6       "IRON" 20    "automatons"}
-      {{Assembled "AUTOMATON_CORPUS_IRON" {"automaton_corpus" Rgb 140 148 148 255}}
-            8       "IRON" 30    "automatons"}
-      {{Assembled "LIGHT_AUTOMATON_CORPUS_IRON" {"automaton_corpus" Rgb 140 148 148 255}}
-            8       "IRON" 20    "advanced automatons"}
-      {{Assembled "HEAVY_AUTOMATON_CORPUS_IRON" {"automaton_corpus" Rgb 140 148 148 255}}
-            8       "IRON" 40    "advanced automatons"}
+      { item = {Assembled "AUTOMATON_WORKER_IRON" none} work = 6 cost = "IRON" 20 tech = "automatons"}
+      { item = {Assembled "AUTOMATON_CORPUS_IRON" {"automaton_corpus" Rgb 140 148 148 255}}
+        work = 8 cost = "IRON" 30 tech = "automatons"}
+      { item = {Assembled "LIGHT_AUTOMATON_CORPUS_IRON" {"automaton_corpus" Rgb 140 148 148 255}}
+        work = 8 cost = "IRON" 20 tech = "advanced automatons"}
+      { item = {Assembled "HEAVY_AUTOMATON_CORPUS_IRON" {"automaton_corpus" Rgb 140 148 148 255}}
+        work = 8 cost = "IRON" 40 tech = "advanced automatons"}
       {{Simple    "HumanoidHeadIron"}        2       "IRON" 5    "advanced automatons"}
       {{Simple    "ArcherHeadIron"}          2       "IRON" 5    "advanced automatons"}
       {{Simple    "FireHeadIron"}            2       "IRON" 5    "advanced automatons"}

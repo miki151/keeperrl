@@ -26,6 +26,7 @@ class Workshops {
     struct WorkshopResult {
       vector<PItem> items;
       bool wasUpgraded;
+      bool applyImmediately;
     };
     WorkshopResult addWork(Collective*, double workAmount, double skillAmount, double morale);
     void queue(Collective*, int index);

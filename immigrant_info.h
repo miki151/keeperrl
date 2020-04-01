@@ -69,8 +69,6 @@ struct NegateRequirement {
   SERIALIZE_ALL(r)
 };
 
-struct AssembledRequirement { SERIALIZE_EMPTY() };
-
 #define IMMIGRANT_REQUIREMENT_LIST\
   X(AttractionInfo, 0)\
   X(TechId, 1)\
@@ -82,8 +80,7 @@ struct AssembledRequirement { SERIALIZE_EMPTY() };
   X(RecruitmentInfo, 7)\
   X(TutorialRequirement, 8)\
   X(MinTurnRequirement, 9)\
-  X(AssembledRequirement, 10)\
-  X(NegateRequirement, 11)
+  X(NegateRequirement, 10)
 
 #define VARIANT_TYPES_LIST IMMIGRANT_REQUIREMENT_LIST
 #define VARIANT_NAME ImmigrantRequirement

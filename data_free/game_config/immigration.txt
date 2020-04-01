@@ -559,71 +559,15 @@
 {
     {
       ids = { "GNOME" }
-      traits = { LEADER }
-      invisible = true
-      initialRecruitment = 0
-      spawnLocation = NearLeader
-    }
-    {
-      ids = { "AUTOMATON_WORKER_WOOD" }
-      traits = { WORKER NO_LIMIT }
+      traits = { LEADER WORKER }
       invisible = true
       initialRecruitment = 3
       spawnLocation = NearLeader
     }
     {
       ids = { "GNOME" }
-      traits = { LEADER }
+      traits = { LEADER WORKER }
       frequency = 0.1
-    }
-    {
-      ids = { "AUTOMATON_WORKER_WOOD" }
-      traits = { WORKER NO_LIMIT }
-      requirements = {
-        { 0.0 AssembledRequirement }
-      }
-    }
-    {
-      ids = { "AUTOMATON_WORKER_IRON" }
-      traits = { WORKER NO_LIMIT }
-      requirements = {
-        { 0.0 AssembledRequirement }
-      }
-    }
-    {
-      ids = { "AUTOMATON_CORPUS_WOOD" }
-      traits = { FIGHTER }
-      requirements = {
-        { 0.0 AssembledRequirement }
-      }
-    }
-    {
-      ids = { "LIGHT_AUTOMATON_CORPUS_WOOD" }
-      traits = { FIGHTER }
-      requirements = {
-        { 0.0 AssembledRequirement }
-      }
-    }
-    {
-      ids = { "AUTOMATON_CORPUS_IRON" }
-      traits = { FIGHTER }
-      requirements = {
-        { 0.0 AssembledRequirement }
-      }
-    }
-    {
-      ids = { "LIGHT_AUTOMATON_CORPUS_IRON" }
-      traits = { FIGHTER }
-      requirements = {
-        { 0.0 AssembledRequirement }
-      }
-    }
-    {
-      ids = { "HEAVY_AUTOMATON_CORPUS_IRON" }
-      traits = { FIGHTER }
-      requirements = {
-        { 0.0 AssembledRequirement }
-      }
     }
 }
 "tutorial"

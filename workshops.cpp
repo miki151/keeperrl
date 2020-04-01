@@ -118,9 +118,10 @@ auto Workshops::Type::addWork(Collective* collective, double amount, double skil
               item->applyPrefix(*upgradeInfo->prefix, collective->getGame()->getContentFactory());
           wasUpgraded = !product.item.notArtifact;
         }
+        bool applyImmediately = product.item.applyImmediately;
         queued.removeIndexPreserveOrder(productIndex);
         checkDebtConsistency();
-        return {std::move(ret), wasUpgraded};
+        return {std::move(ret), wasUpgraded, applyImmediately};
       }
       break;
     }
