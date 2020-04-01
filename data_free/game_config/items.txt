@@ -76,6 +76,18 @@
       }
     }
   }
+"AutomatonDrillWood"
+  {
+    viewId = { "automaton_arms" Rgb 180 140 55 255 }
+    name = "wooden automaton drill"
+    shortName = "wooden drill"
+    weight = 6
+    itemClass = TOOL
+    automatonPart = {
+      Description "Increases the digging skill by 20."
+      IncreaseSkill DIGGING 0.2
+    }
+  }
 "HumanoidHeadIron"
   {
     viewId = { "automaton_head" Rgb 140 148 148 255 }
@@ -168,6 +180,18 @@
         IncreaseAttr DEFENSE 2
         AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } }
       }
+    }
+  }
+"AutomatonDrillIron"
+  {
+    viewId = { "automaton_arms" Rgb 140 148 148 255 }
+    name = "iron automaton drill"
+    shortName = "iron drill"
+    weight = 6
+    itemClass = TOOL
+    automatonPart = {
+      Description "Increases the digging skill by 30."
+      IncreaseSkill DIGGING 0.3
     }
   }
 "SharpAutomatonArmsIron" inherit "AutomatonArmsIron"
