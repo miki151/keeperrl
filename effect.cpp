@@ -1233,6 +1233,28 @@ string Effects::Fx::getDescription(const ContentFactory*) const {
   return "Just a visual effect";
 }
 
+bool Effects::FilterLasting::applies(const Creature* c, const Creature* attacker) const {
+  return !!c && c->isAffected(filter_effect);
+}
+
+bool Effects::FilterLasting::applyToCreature(Creature* c, Creature* attacker) const {
+  return applies(c, attacker) && effect->apply(c->getPosition(), attacker);
+}
+
+string Effects::FilterLasting::getName(const ContentFactory* f) const {
+  auto suffix = [&] {
+    return " (" + LastingEffects::getName(filter_effect) + " creatures only)";
+  };
+  return effect->getName(f) + suffix();
+}
+
+string Effects::FilterLasting::getDescription(const ContentFactory* f) const {
+  auto suffix = [&] {
+    return " (applied only to creatures with " + LastingEffects::getName(filter_effect) + " effect)";
+  };
+  return effect->getDescription(f) + suffix();
+}
+
 bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const {
   switch (filter) {
     case FilterType::ALLY:
@@ -1774,6 +1796,11 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
           return e.effect->shouldAIApply(caster, pos);
         return EffectAIIntent::NONE;
       },
+      [&] (const Effects::FilterLasting& e) {
+        if (victim && e.applies(victim, caster))
+          return e.effect->shouldAIApply(caster, pos);
+        return EffectAIIntent::NONE;
+      },
       [&] (const Effects::Chance& e) {
         return e.effect->shouldAIApply(caster, pos);
       },
@@ -1893,6 +1920,7 @@ optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
       [&](const Effects::AITargetEnemy& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
       [&](const Effects::Area& a) -> optional<MinionEquipmentType> { return a.effect->getMinionEquipmentType(); },
       [&](const Effects::Filter& f) -> optional<MinionEquipmentType> { return f.effect->getMinionEquipmentType(); },
+      [&](const Effects::FilterLasting& f) -> optional<MinionEquipmentType> { return f.effect->getMinionEquipmentType(); },
       [&](const Effects::Escape&) -> optional<MinionEquipmentType> { return MinionEquipmentType::COMBAT_ITEM; },
       [&](const Effects::Chain& c) -> optional<MinionEquipmentType> {
         for (auto& e : c.effects)
@@ -1923,6 +1951,7 @@ bool Effect::canAutoAssignMinionEquipment() const {
       [&](const Effects::AITargetEnemy& e) { return e.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Area& a) { return a.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Filter& f) { return f.effect->canAutoAssignMinionEquipment(); },
+      [&](const Effects::FilterLasting& f) { return f.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Chain& c) {
         for (auto& e : c.effects)
           if (!e.canAutoAssignMinionEquipment())
