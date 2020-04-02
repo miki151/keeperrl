@@ -1401,6 +1401,7 @@ string Effects::StealSlots::getSlotsDesc() const {
 }
 
 bool Effects::StealSlots::applyToCreature(Creature* c, Creature* attacker) const {
+  CHECK(attacker);
   bool ret = false;
   for(EquipmentSlot slot : slots)
   {
