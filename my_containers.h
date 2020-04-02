@@ -202,6 +202,14 @@ class vector {
     return false;
   }
 
+  bool removeElementMaybePreserveOrder(const T& element) {
+    if (auto ind = findElement(element)) {
+      removeIndexPreserveOrder(*ind);
+      return true;
+    }
+    return false;
+  }
+
   void removeElement(const T& element) {
     removeIndex(*findElement(element));
   }

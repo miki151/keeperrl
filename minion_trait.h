@@ -13,7 +13,8 @@ RICH_ENUM(MinionTrait,
   SUMMONED,
   NO_AUTO_EQUIPMENT,
   DOESNT_TRIGGER,
-  INCREASE_POPULATION
+  INCREASE_POPULATION,
+  AUTOMATON
 );
 
 extern const char* /*can be null*/ getImmigrantDescription(MinionTrait);

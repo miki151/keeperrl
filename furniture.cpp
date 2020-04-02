@@ -51,6 +51,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
   ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(dissolveTo));
   ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), OPTION(visibleWhileBlind), NAMED(freezeTo), NAMED(fillPit));
+  ar(OPTION(automatonPopIncrease));
 }
 
 template <class Archive>
@@ -114,6 +115,10 @@ void Furniture::onEnter(Creature* c) const {
 
 const heap_optional<ItemList>& Furniture::getItemDrop() const {
   return itemDrop;
+}
+
+int Furniture::getAutomatonPopIncrease() const {
+  return automatonPopIncrease;
 }
 
 void Furniture::destroy(Position pos, const DestroyAction& action) {

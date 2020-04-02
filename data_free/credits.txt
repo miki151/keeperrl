@@ -21,6 +21,7 @@ DarkGod, @darkgodone
 Extra content:
 SoftMonster
 RighteousSinner
+Archdiggle
 
 Font:
 Lato by Łukasz Dziedzic

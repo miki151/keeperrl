@@ -199,7 +199,11 @@
     { Furniture {{ "POETRY_TABLE" } "WOOD" 12 }                    "Poetry table"       "Crafting"
         "Allows writing poems."}
   }
-
+  "automatons"
+  {
+    { Furniture {{ "AUTOMATON_ENGINE" } "IRON" 50 }                "Automaton engine"   ""
+        "Propels up to 3 automatons."            0 { TechId "automatons" }}
+  }
   "demon_shrine"
   {
     { Furniture {{ "DEMON_SHRINE" } "GOLD" 30 }                    "Demon shrine"      ""

@@ -53,6 +53,10 @@ FurnitureType ConstructionMap::FurnitureInfo::getFurnitureType() const {
   return type;
 }
 
+const Furniture* ConstructionMap::FurnitureInfo::getBuilt(Position pos) const {
+  return pos.getFurniture(type);
+}
+
 optional<const ConstructionMap::FurnitureInfo&> ConstructionMap::getFurniture(Position pos, FurnitureLayer layer) const {
   return furniture[layer].getReferenceMaybe(pos);
 }

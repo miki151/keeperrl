@@ -25,6 +25,7 @@ class ConstructionMap {
     UniqueEntity<Task>::Id getTask() const;
     bool hasTask() const;
     FurnitureType getFurnitureType() const;
+    const Furniture* getBuilt(Position) const;
 
     SERIALIZATION_DECL(FurnitureInfo)
 
@@ -69,7 +70,6 @@ class ConstructionMap {
   void removeTrap(Position);
   void addTrap(Position, const TrapInfo&);
 
-  const vector<Position>& getSquares() const;
   const vector<pair<Position, FurnitureLayer>>& getAllFurniture() const;
   const vector<Position>& getAllTraps() const;
   int getDebt(CollectiveResourceId) const;

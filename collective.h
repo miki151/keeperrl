@@ -328,5 +328,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool SERIAL(attackedByPlayer) = false;
   void updateGuardTasks();
   void updateAutomatonPartsTasks();
+  void updateAutomatonEngines();
   bool creatureConsideredPlayer(Creature*) const;
 };

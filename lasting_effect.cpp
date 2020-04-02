@@ -325,6 +325,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::INVULNERABLE:
         c->you(MsgType::ARE, "invulnerable!");
         break;
+      case LastingEffect::TURNED_OFF:
+        c->you(MsgType::ARE, "turned off");
+        break;
     }
 }
 
@@ -579,6 +582,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::INVULNERABLE:
         c->you(MsgType::ARE, "no longer invulnerable");
         break;
+      case LastingEffect::TURNED_OFF:
+        c->you(MsgType::ARE, "turned on");
+        break;
       default:
         break;
     }
@@ -748,6 +754,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::DISAPPEAR_DURING_DAY: return "Disappears at dawn"_bad;
     case LastingEffect::UNSTABLE: return "Mentally unstable"_bad;
     case LastingEffect::OIL: return "Covered in oil"_bad;
+    case LastingEffect::TURNED_OFF: return "Turned off"_bad;
   }
 }
 
@@ -773,7 +780,8 @@ const vector<LastingEffect>& LastingEffects::getCausingCondition(CreatureConditi
       return ret;
     }
     case CreatureCondition::SLEEPING: {
-      static vector<LastingEffect> ret { LastingEffect::SLEEP, LastingEffect::STUNNED, LastingEffect::FROZEN};
+      static vector<LastingEffect> ret { LastingEffect::SLEEP, LastingEffect::STUNNED, LastingEffect::FROZEN,
+          LastingEffect::TURNED_OFF};
       return ret;
     }
   }
@@ -1078,6 +1086,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::SWARMER: return "swarming";
     case LastingEffect::PSYCHIATRY: return "psychiatry";
     case LastingEffect::INVULNERABLE: return "invulnerability";
+    case LastingEffect::TURNED_OFF: return "power off";
   }
 }
 
@@ -1164,6 +1173,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::SWARMER: return "Grants damage and defense bonus for every other swarmer in vicinity.";
     case LastingEffect::PSYCHIATRY: return "Creature won't be attacked by insane creatures.";
     case LastingEffect::INVULNERABLE: return "Creature can't be harmed in combat.";
+    case LastingEffect::TURNED_OFF: return "Creature requires more automaton engines built.";
   }
 }
 
@@ -1309,6 +1319,7 @@ bool LastingEffects::canConsume(LastingEffect effect) {
     case LastingEffect::SPYING:
     case LastingEffect::LIFE_SAVED:
     case LastingEffect::INVULNERABLE:
+    case LastingEffect::TURNED_OFF:
       return false;
     default:
       return true;

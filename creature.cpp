@@ -1369,6 +1369,7 @@ void Creature::updateViewObject() {
   object.setModifier(ViewObject::Modifier::FLYING, isAffected(LastingEffect::FLYING));
   object.setModifier(ViewObject::Modifier::INVISIBLE, isAffected(LastingEffect::INVISIBLE));
   object.setModifier(ViewObject::Modifier::FROZEN, isAffected(LastingEffect::FROZEN));
+  object.setModifier(ViewObject::Modifier::TURNED_OFF, isAffected(LastingEffect::TURNED_OFF));
   object.setModifier(ViewObject::Modifier::HIDDEN, hidden);
   object.getCreatureStatus() = getStatus();
   object.setGoodAdjectives(combine(extractNames(getGoodAdjectives()), true));

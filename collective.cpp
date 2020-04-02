@@ -211,8 +211,7 @@ void Collective::removeCreature(Creature* c) {
   for (auto team : teams->getContaining(c))
     teams->remove(team, c);
   for (MinionTrait t : ENUM_ALL(MinionTrait))
-    if (byTrait[t].contains(c))
-      byTrait[t].removeElement(c);
+    byTrait[t].removeElementMaybePreserveOrder(c);
   updateCreatureStatus(c);
 }
 
@@ -499,6 +498,22 @@ void Collective::updateGuardTasks() {
         taskMap->removeTask(task);
 }
 
+void Collective::updateAutomatonEngines() {
+  int totalPop = 0;
+  for (auto& pos : constructions->getAllFurniture())
+    if (auto f = constructions->getFurniture(pos.first, pos.second)->getBuilt(pos.first))
+      totalPop += f->getAutomatonPopIncrease();
+  for (auto c : getCreatures(MinionTrait::AUTOMATON)) {
+    bool off = c->getAttributes().isAffectedPermanently(LastingEffect::TURNED_OFF);
+    if (totalPop > 0) {
+      if (off)
+        c->removePermanentEffect(LastingEffect::TURNED_OFF);
+    } else
+      if (!off)
+        c->addPermanentEffect(LastingEffect::TURNED_OFF);
+  }
+}
+
 void Collective::tick() {
   PROFILE_BLOCK("Collective::tick");
   updateBorderTiles();
@@ -549,6 +564,7 @@ void Collective::tick() {
       for (auto it : minionEquipment->getItemsOwnedBy(c))
         minionEquipment->discard(it);
   updateAutomatonPartsTasks();
+  updateAutomatonEngines();
 }
 
 void Collective::updateAutomatonPartsTasks() {
@@ -589,7 +605,7 @@ void Collective::setTrait(Creature* c, MinionTrait t) {
 }
 
 void Collective::removeTrait(Creature* c, MinionTrait t) {
-  if (byTrait[t].removeElementMaybe(c))
+  if (byTrait[t].removeElementMaybePreserveOrder(c))
     updateCreatureStatus(c);
 }
 

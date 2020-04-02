@@ -256,6 +256,15 @@
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
+"AUTOMATON_ENGINE"
+{
+  name = "automaton engine"
+  viewId = { "automaton_engine" }
+  canHideHere = true
+  strength = 100
+  automatonPopIncrease = 3
+  destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
 "DEMON_SHRINE"
 {
   name = "demon shrine"
