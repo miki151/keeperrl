@@ -1239,10 +1239,7 @@ bool Effects::FilterLasting::applyToCreature(Creature* c, Creature* attacker) co
 }
 
 string Effects::FilterLasting::getName(const ContentFactory* f) const {
-  auto suffix = [&] {
-    return " (" + LastingEffects::getName(filter_effect) + " creatures only)";
-  };
-  return effect->getName(f) + suffix();
+  return effect->getName(f) + " (" + LastingEffects::getName(filter_effect) + " creatures only)";
 }
 
 string Effects::FilterLasting::getDescription(const ContentFactory* f) const {
@@ -1858,10 +1855,11 @@ optional<FXInfo> Effect::getProjectileFX() const {
       [&](const Effects::Description& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
       [&](const Effects::Name& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
       [&](const Effects::AIBelowHealth& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::AITargetEnemy& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); }
+      [&](const Effects::AITargetEnemy& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
+      [&](const Effects::Filter& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
+      [&](const Effects::FilterLasting& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); }
   );
 }
-
 optional<ViewId> Effect::getProjectile() const {
   return effect->visit<optional<ViewId>>(
       [&](const auto&) -> optional<ViewId> { return none; },
@@ -1873,7 +1871,9 @@ optional<ViewId> Effect::getProjectile() const {
       [&](const Effects::Description& e) -> optional<ViewId> { return e.effect->getProjectile(); },
       [&](const Effects::Name& e) -> optional<ViewId> { return e.effect->getProjectile(); },
       [&](const Effects::AIBelowHealth& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::AITargetEnemy& e) -> optional<ViewId> { return e.effect->getProjectile(); }
+      [&](const Effects::AITargetEnemy& e) -> optional<ViewId> { return e.effect->getProjectile(); },
+      [&](const Effects::Filter& e) -> optional<ViewId> { return e.effect->getProjectile(); },
+      [&](const Effects::FilterLasting& e) -> optional<ViewId> { return e.effect->getProjectile(); }
   );
 }
 
