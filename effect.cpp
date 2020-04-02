@@ -1814,6 +1814,28 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
             return EffectAIIntent::WANTED;
         return EffectAIIntent::NONE;
       },
+      [&] (const Effects::TakeOffSlots& e) {
+        if (!isEnemy) {
+          return EffectAIIntent::UNWANTED;
+        }
+        for(EquipmentSlot slot : e.slots) {
+          if (victim->getEquipment().getSlotItems(slot).size()) {
+            return EffectAIIntent::WANTED;
+          }
+        }
+        return EffectAIIntent::NONE;
+      },
+      [&] (const Effects::StealSlots& e) {
+        if (!isEnemy) {
+          return EffectAIIntent::UNWANTED;
+        }
+        for(EquipmentSlot slot : e.slots) {
+          if (victim->getEquipment().getSlotItems(slot).size()) {
+            return EffectAIIntent::WANTED;
+          }
+        }
+        return EffectAIIntent::NONE;
+      },
       [&] (const auto&) {
         return EffectAIIntent::NONE;
       }
