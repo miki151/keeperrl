@@ -326,6 +326,18 @@ struct AITargetEnemy {
   HeapAllocated<Effect> SERIAL(effect);
   SERIALIZE_ALL(effect)
 };
+struct TakeOffSlots {
+  EFFECT_TYPE_INTERFACE;
+  vector<EquipmentSlot> SERIAL(slots);
+  SERIALIZE_ALL(slots);
+  string getSlotsDesc() const;
+};
+struct StealSlots {
+  EFFECT_TYPE_INTERFACE;
+  vector<EquipmentSlot> SERIAL(slots);
+  SERIALIZE_ALL(slots);
+  string getSlotsDesc() const;
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -395,6 +407,8 @@ struct AITargetEnemy {
   X(IncreaseSkill, 64)\
   X(IncreaseWorkshopSkill, 65)\
   X(FilterLasting, 66)\
+  X(TakeOffSlots, 67)\
+  X(StealSlots, 68)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

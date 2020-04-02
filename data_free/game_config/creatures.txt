@@ -266,6 +266,7 @@
       { type = Simple "Torch" chance = 0.3 }
       { type = Simple "Bow" chance = 0.05 }
     }
+    spells = { "rob" }
   }
 "RAT_SOLDIER"
   {
@@ -2124,6 +2125,7 @@
     inventory = {
       { Simple "Spear"}
     }
+    spells = { "rob" }
   }
 "GNOME"
   {
