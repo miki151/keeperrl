@@ -42,6 +42,7 @@ class Effect {
   void serialize(Archive&, const unsigned int);
 
   bool apply(Position, Creature* attacker = nullptr) const;
+  bool applyToCreature(Creature*, Creature* attacker = nullptr) const;
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;
   bool isConsideredHostile() const;

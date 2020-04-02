@@ -57,6 +57,7 @@
 #include "territory.h"
 #include "vision.h"
 #include "workshop_type.h"
+#include "automaton_part.h"
 
 
 static void summonFX(Position pos) {
@@ -1515,12 +1516,14 @@ bool Effect::apply(Position pos, Creature* attacker) const {
       },
       [&](const Effects::AssembledMinion& m) {
         auto group = CreatureGroup::singleType(attacker->getTribeId(), m.creature);
-        auto c = Effect::summon(pos, group, 1, none);
-        if (!c.empty()) {
+        auto c = Effect::summon(pos, group, 1, none).getFirstElement();
+        if (c) {
           for (auto col : pos.getGame()->getCollectives())
             if (col->getCreatures().contains(attacker)) {
-              col->addCreature(c[0], {MinionTrait::WORKER, MinionTrait::FIGHTER, MinionTrait::NO_LIMIT,
+              col->addCreature(*c, {MinionTrait::WORKER, MinionTrait::FIGHTER, MinionTrait::NO_LIMIT,
                   MinionTrait::AUTOMATON});
+              for (auto& part : (*c)->getAttributes().automatonParts)
+                part.get((*c)->getGame()->getContentFactory())->getAutomatonPart()->apply(*c);
               return true;
             }
         }

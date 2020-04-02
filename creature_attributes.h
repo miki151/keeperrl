@@ -46,6 +46,7 @@ class MinionActivityMap;
 class Body;
 class Effect;
 struct AdjectiveInfo;
+class ItemType;
 
 class CreatureAttributes {
   public:
@@ -122,6 +123,7 @@ class CreatureAttributes {
   friend class CreatureFactory;
 
   vector<ViewId> SERIAL(viewIdUpgrades);
+  vector<ItemType> SERIAL(automatonParts);
 
   private:
   void consumeEffects(const EnumMap<LastingEffect, int>&);

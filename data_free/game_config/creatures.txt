@@ -1737,43 +1737,6 @@
       name = "automaton"
     }
   }
-"AUTOMATON_WORKER_WOOD"
-  {
-    viewId = { "automaton_worker" }
-    attr = {
-      DAMAGE 5
-      DEFENSE 10
-    }
-    permanentEffects = {
-      MELEE_RESISTANCE 1
-    }
-    body = {
-      type = Humanoid MEDIUM
-      material = WOOD
-    }
-    cantEquip = true
-    skills = {
-      "DIGGING" 1.0
-    }
-    name = {
-      name = "automaton worker"
-    }
-  }
-"AUTOMATON_WORKER_IRON" inherit "AUTOMATON_WORKER_WOOD"
-  {
-    viewId = { "automaton_worker" Rgb 140 148 148 255 }
-    permanentEffects = append {
-      SPEED 1
-    }
-    attr = {
-      DAMAGE 10
-      DEFENSE 15
-    }
-    body = {
-      type = Humanoid MEDIUM
-      material = IRON
-    }
-  }
 "AUTOMATON_CORPUS_WOOD"
   {
     viewId = { "automaton" Rgb 180 140 55 255 }
@@ -1795,6 +1758,18 @@
     }
     name = {
       name = "wooden automaton"
+    }
+  }
+"AUTOMATON_WORKER_WOOD" inherit "AUTOMATON_CORPUS_WOOD"
+  {
+    automatonParts = {
+      {Simple "AutomatonLegsWood" }
+      {Simple "AutomatonDrillWood" }
+      {Simple "HumanoidHeadWood" }
+    }
+    permanentEffects = {}
+    name = {
+      name = "wooden automaton worker"
     }
   }
 "LIGHT_AUTOMATON_CORPUS_WOOD" inherit "AUTOMATON_CORPUS_WOOD"
@@ -1820,6 +1795,18 @@
     }
     name = {
       name = "iron automaton"
+    }
+  }
+"AUTOMATON_WORKER_IRON" inherit "AUTOMATON_CORPUS_IRON"
+  {
+    automatonParts = {
+      {Simple "AutomatonLegsIron" }
+      {Simple "AutomatonDrillIron" }
+      {Simple "HumanoidHeadIron" }
+    }
+    permanentEffects = {}
+    name = {
+      name = "iron automaton worker"
     }
   }
 "HEAVY_AUTOMATON_CORPUS_IRON" inherit "AUTOMATON_CORPUS_IRON"
