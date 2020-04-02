@@ -335,7 +335,7 @@ const char* Effects::IncreaseSkill::get(const char* ifIncrease, const char* ifDe
 }
 
 bool Effects::IncreaseWorkshopSkill::applyToCreature(Creature* c, Creature*) const {
-  c->you(MsgType::YOUR, c->getGame()->getContentFactory()->workshopInfo.at(workshoptype).name + get(" improves", " wanes"));
+  c->you(MsgType::YOUR, c->getGame()->getContentFactory()->workshopInfo.at(workshoptype).name + get(" proficiency improves", " proficiency wanes"));
   c->getAttributes().getSkills().increaseValue(workshoptype, amount);
   return true;
 }
@@ -345,8 +345,8 @@ string Effects::IncreaseWorkshopSkill::getName(const ContentFactory* content_fac
 }
 
 string Effects::IncreaseWorkshopSkill::getDescription(const ContentFactory* content_factory) const {
-  return get("Increases", "Decreases") + " "_s + content_factory->workshopInfo.at(workshoptype).name + " by " +
-      toString(fabs(amount));
+  return get("Increases", "Decreases") + " "_s + content_factory->workshopInfo.at(workshoptype).name +
+      " proficiency by " + toString(fabs(amount));
 }
 
 const char* Effects::IncreaseWorkshopSkill::get(const char* ifIncrease, const char* ifDecrease) const {
