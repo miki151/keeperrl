@@ -32,10 +32,19 @@
 
 void CreatureAttributes::initializeLastingEffects() {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
+  {
     lastingEffects[effect] = GlobalTime(-500);
-  for (auto effect : ENUM_ALL(LastingEffect))
-    if (body->isIntrinsicallyAffected(effect))
+
+    if (body->isIntrinsicallyAffected(effect)) {
       ++permanentEffects[effect];
+    }
+
+    resistantEffects[effect] = GlobalTime(-500);
+
+    if (body->isImmuneTo(effect)) {
+      ++immunityEffects[effect];
+    }
+  }
 }
 
 void CreatureAttributes::randomize() {
@@ -68,9 +77,9 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(NAMED(body), OPTION(deathDescription), NAMED(hatedByEffect), OPTION(instantPrisoner), OPTION(automatonSlots));
   ar(OPTION(cantEquip), OPTION(courage), OPTION(canJoinCollective), OPTION(genderAlternatives));
   ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(skills), OPTION(spellSchools), OPTION(spells));
-  ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel), OPTION(inventory));
-  ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience));
-  ar(OPTION(automatonParts));
+  ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(immunityEffects), OPTION(resistantEffects));
+  ar(OPTION(minionActivities), OPTION(expLevel), OPTION(inventory), OPTION(noAttackSound), OPTION(maxLevelIncrease));
+  ar(NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience), OPTION(automatonParts));
 }
 
 template <class Archive>
@@ -246,6 +255,8 @@ void CreatureAttributes::chatReaction(Creature* me, Creature* other) {
 
 bool CreatureAttributes::isAffected(LastingEffect effect, GlobalTime time) const {
   //PROFILE;
+  if (isResistant(effect, time) || isImmune(effect))
+    return false;
   if (auto suppressor = LastingEffects::getSuppressor(effect))
     if (isAffected(*suppressor, time))
       return false;
@@ -260,6 +271,15 @@ bool CreatureAttributes::considerTimeout(LastingEffect effect, GlobalTime curren
   if (lastingEffects[effect] > GlobalTime(0) && lastingEffects[effect] <= current) {
     clearLastingEffect(effect);
     if (!isAffected(effect, current))
+      return true;
+  }
+  return false;
+}
+
+bool CreatureAttributes::considerResistanceTimeout(LastingEffect effect, GlobalTime current) {
+  if (resistantEffects[effect] > GlobalTime(0) && resistantEffects[effect] <= current) {
+    clearResistantEffect(effect);
+    if (!isResistant(effect, current))
       return true;
   }
   return false;
@@ -337,6 +357,14 @@ void consumeAttr(Skillset& mine, const Skillset& his, vector<string>& adjectives
     adjectives.push_back("more skillfull");
 }
 
+void CreatureAttributes::consumeImmunities(const EnumMap<LastingEffect, int>& immunityEffects) {
+  for (LastingEffect effect : ENUM_ALL(LastingEffect))
+    if (immunityEffects[effect] > 0 && !isImmune(effect) && consumeProb() &&
+        LastingEffects::canConsumeImmunity(effect)) {
+      addImmunityEffect(effect, 1);
+    }
+}
+
 void CreatureAttributes::consumeEffects(const EnumMap<LastingEffect, int>& permanentEffects) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (permanentEffects[effect] > 0 && !isAffectedPermanently(effect) && consumeProb() &&
@@ -361,11 +389,16 @@ void CreatureAttributes::consume(Creature* self, CreatureAttributes& other) {
     self->you(MsgType::BECOME, combine(adjectives));
     self->addPersonalEvent(getName().the() + " becomes " + combine(adjectives));
   }
+  consumeImmunities(other.immunityEffects);
   consumeEffects(other.permanentEffects);
 }
 
 string CreatureAttributes::getRemainingString(LastingEffect effect, GlobalTime time) const {
   return "[" + toString(lastingEffects[effect] - time) + "]";
+}
+
+string CreatureAttributes::getResistanceTimeString(LastingEffect effect, GlobalTime time) const {
+  return "[" + toString(resistantEffects[effect] - time) + "]";
 }
 
 bool CreatureAttributes::isBoulder() const {
@@ -410,6 +443,28 @@ void CreatureAttributes::addPermanentEffect(LastingEffect effect, int count) {
 
 void CreatureAttributes::removePermanentEffect(LastingEffect effect, int count) {
   permanentEffects[effect] -= count;
+}
+
+void CreatureAttributes::clearResistantEffect(LastingEffect effect) {
+  resistantEffects[effect] = GlobalTime(0);
+}
+void CreatureAttributes::addResistantEffect(LastingEffect effect, GlobalTime endTime) {
+  if (resistantEffects[effect] < endTime)
+    resistantEffects[effect] = endTime;
+}
+bool CreatureAttributes::isResistant(LastingEffect effect, GlobalTime time) const {
+  return resistantEffects[effect] > time;
+}
+void CreatureAttributes::addImmunityEffect(LastingEffect effect, int count) {
+  immunityEffects[effect] += count;
+}
+void CreatureAttributes::removeImmunityEffect(LastingEffect effect, int count) {
+  immunityEffects[effect] -= count;
+  if (immunityEffects[effect] < 0)
+    immunityEffects[effect] = 0;
+}
+bool CreatureAttributes::isImmune(LastingEffect effect) const {
+  return immunityEffects[effect] > 0;
 }
 
 const MinionActivityMap& CreatureAttributes::getMinionActivities() const {

@@ -275,7 +275,11 @@ const EnumSet<CreatureStatus>& Creature::getStatus() const {
 
 bool Creature::canBeCaptured() const {
   PROFILE;
-  return getBody().canBeCaptured() && !isAffected(LastingEffect::STUNNED);
+  return !isImmuneTo(LastingEffect::TIED_UP) && getBody().canBeCaptured() && !isAffected(LastingEffect::STUNNED);
+}
+
+bool Creature::canPerformRituals() const {
+  return !isImmuneTo(LastingEffect::TIED_UP) && getBody().canPerformRituals();
 }
 
 void Creature::toggleCaptureOrder() {
@@ -835,6 +839,9 @@ bool Creature::addEffect(LastingEffect effect, TimeInterval time, bool msg) {
 
 bool Creature::addEffect(LastingEffect effect, TimeInterval time, GlobalTime globalTime, bool msg) {
   PROFILE;
+  if(isResistantTo(effect, globalTime) || isImmuneTo(effect)) {
+    return false;
+  }
   if (LastingEffects::affects(this, effect)) {
     bool was = isAffected(effect, globalTime);
     if (!was || LastingEffects::canProlong(effect))
@@ -865,6 +872,10 @@ bool Creature::removeEffect(LastingEffect effect, bool msg) {
 
 bool Creature::addPermanentEffect(LastingEffect effect, int count, bool msg) {
   PROFILE;
+  // If the creature is immune, but we are powerful enough we could maybe bypass the immunity?
+  if (isImmuneTo(effect) && !removeImmunityEffect(effect, count)) {
+    return false;
+  }
   if (LastingEffects::affects(this, effect)) {
     bool was = attributes->isAffectedPermanently(effect);
     attributes->addPermanentEffect(effect, count);
@@ -910,6 +921,92 @@ bool Creature::isAffected(LastingEffect effect, optional<GlobalTime> time) const
 bool Creature::isAffected(LastingEffect effect, GlobalTime time) const {
   //PROFILE;
   return attributes->isAffected(effect, time);
+}
+
+bool Creature::addResistanceEffect(LastingEffect effect, TimeInterval time, bool msg) {
+  return addResistanceEffect(effect, time, *getGlobalTime(), msg);
+}
+
+bool Creature::addResistanceEffect(LastingEffect effect, TimeInterval time, GlobalTime globalTime, bool msg) {
+  PROFILE;
+  if(!isAffected(effect, globalTime + time)) {
+    removeEffect(effect);
+  }
+  bool was = isResistantTo(effect, globalTime);
+  if (!was) {
+    attributes->addResistantEffect(effect, globalTime + time);
+    if (isResistantTo(effect, globalTime)) {
+      LastingEffects::onResisted(this, effect, msg); 
+      if (auto fx = LastingEffects::getResistantFX(effect))
+        addFX(*fx);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Creature::removeResistanceEffect(LastingEffect effect, bool msg) {
+  bool was = isResistantTo(effect);
+  attributes->clearResistantEffect(effect);
+  if (was && !isResistantTo(effect)) {
+    LastingEffects::onSusceptible(this, effect, msg);
+    // addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE));
+    return true;
+  }
+  return false;
+}
+
+bool Creature::addImmunityEffect(LastingEffect effect, int count, bool msg) {
+  removeEffect(effect);
+  removePermanentEffect(effect, count);
+
+  if(attributes->isAffectedPermanently(effect)) {
+    // The permanent effect was too stronk.
+    return false;
+  }
+
+  bool was = isImmuneTo(effect);
+  attributes->addImmunityEffect(effect, count);
+  if(!was && isImmuneTo(effect)) {
+    LastingEffects::onResisted(this, effect, msg);
+    if (msg)
+      message(PlayerMessage("The immunity is permanent", MessagePriority::HIGH));
+    return true;
+  }
+  return false;
+}
+
+bool Creature::removeImmunityEffect(LastingEffect effect, int count, bool msg) {
+  bool was = isImmuneTo(effect);
+  attributes->removeImmunityEffect(effect, count);
+  if (was && !isImmuneTo(effect)) {
+    LastingEffects::onSusceptible(this, effect, msg);
+    return true;
+  }
+  return false;
+}
+
+bool Creature::isResistantTo(LastingEffect effect) const {
+  PROFILE;
+  if (auto time = getGlobalTime())
+    return attributes->isResistant(effect, *time);
+  else
+    return attributes->isImmune(effect);
+}
+
+bool Creature::isResistantTo(LastingEffect effect, GlobalTime time) const {
+  return attributes->isResistant(effect, time);
+}
+
+bool Creature::isResistantTo(LastingEffect effect, optional<GlobalTime> time) const {
+  if (time)
+    return attributes->isResistant(effect, *time);
+  else
+    return attributes->isImmune(effect);
+}
+
+bool Creature::isImmuneTo(LastingEffect effect) const {
+  return attributes->isImmune(effect);
 }
 
 optional<TimeInterval> Creature::getTimeRemaining(LastingEffect effect) const {
@@ -1085,6 +1182,8 @@ void Creature::tick() {
     return;
   tickShamanSummons();
   for (LastingEffect effect : ENUM_ALL(LastingEffect)) {
+    if (attributes->considerResistanceTimeout(effect, time))
+      LastingEffects::onResistanceTimedOut(this, effect, true);
     if (attributes->considerTimeout(effect, time))
       LastingEffects::onTimedOut(this, effect, true);
     if (isDead())
@@ -2259,12 +2358,29 @@ const char* getMoraleText(double morale) {
   return nullptr;
 }
 
+AdjectiveInfo Creature::resistanceInfo(string name, LastingEffect effect) const {
+  string desc = LastingEffects::getDescription(effect);
+  desc[0] = tolower(desc[0]);
+  if (!isImmuneTo(effect)) {
+    name += getAttributes().getResistanceTimeString(effect, *getGlobalTime());
+  }
+  else {
+    name += " immunity";
+  }
+  return { name, "Immune to anything that " + desc };
+}
+
 vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
   PROFILE;
   vector<AdjectiveInfo> ret;
   if (auto time = getGlobalTime()) {
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
-      if (attributes->isAffected(effect, *time))
+      if (isResistantTo(effect, *time) || isImmuneTo(effect)) {
+        if (auto name = LastingEffects::getGoodAdjective(effect, true)) {
+          ret.push_back(resistanceInfo(*name, effect));
+        }
+      }
+      else if (attributes->isAffected(effect, *time))
         if (auto name = LastingEffects::getGoodAdjective(effect)) {
           ret.push_back({ *name, LastingEffects::getDescription(effect) });
           if (!attributes->isAffectedPermanently(effect))
@@ -2272,7 +2388,11 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
         }
   } else
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
-      if (attributes->isAffectedPermanently(effect))
+      if (isImmuneTo(effect)) {
+        if (auto name = LastingEffects::getGoodAdjective(effect, true))
+          ret.push_back(resistanceInfo(*name, effect));
+      }
+      else if (attributes->isAffectedPermanently(effect))
         if (auto name = LastingEffects::getGoodAdjective(effect))
           ret.push_back({ *name, LastingEffects::getDescription(effect) });
   if (getBody().isUndead())
@@ -2291,7 +2411,13 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
   getBody().getBadAdjectives(ret);
   if (auto time = getGlobalTime()) {
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
-      if (attributes->isAffected(effect, *time))
+      if (isResistantTo(effect, *time) || isImmuneTo(effect)) {
+        if (auto name = LastingEffects::getGoodAdjective(effect, true)) {
+          ret.push_back(resistanceInfo(*name, effect));
+        }
+      }
+
+      else if (attributes->isAffected(effect, *time))
         if (auto name = LastingEffects::getBadAdjective(effect)) {
           ret.push_back({ *name, LastingEffects::getDescription(effect) });
           if (!attributes->isAffectedPermanently(effect))
@@ -2299,7 +2425,11 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
         }
   } else
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
-      if (attributes->isAffectedPermanently(effect))
+      if (isImmuneTo(effect)) {
+        if (auto name = LastingEffects::getBadAdjective(effect, true))
+          ret.push_back(resistanceInfo(*name, effect));
+      }
+      else if (attributes->isAffectedPermanently(effect))
         if (auto name = LastingEffects::getBadAdjective(effect))
           ret.push_back({ *name, LastingEffects::getDescription(effect) });
   auto morale = getMorale();

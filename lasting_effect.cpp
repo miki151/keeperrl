@@ -332,7 +332,7 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
 }
 
 bool LastingEffects::affects(const Creature* c, LastingEffect effect) {
-  if (c->getBody().isImmuneTo(effect))
+  if (c->isImmuneTo(effect))
     return false;
   if (auto preventing = getPreventing(effect))
     if (c->isAffected(*preventing))
@@ -379,6 +379,18 @@ void LastingEffects::onRemoved(Creature* c, LastingEffect effect, bool msg) {
     default:
       onTimedOut(c, effect, msg); break;
   }
+}
+
+void LastingEffects::onResisted(Creature* c, LastingEffect effect, bool msg) {
+  onResistanceTimedOut(c, effect, msg);
+}
+
+void LastingEffects::onResistanceTimedOut(Creature* c, LastingEffect effect, bool msg) {
+  return;
+}
+
+void LastingEffects::onSusceptible(Creature* c, LastingEffect effect, bool msg) {
+  return;
 }
 
 void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
@@ -758,15 +770,19 @@ static Adjective getAdjective(LastingEffect effect) {
   }
 }
 
-optional<string> LastingEffects::getGoodAdjective(LastingEffect effect) {
+optional<string> LastingEffects::getGoodAdjective(LastingEffect effect, bool inv) {
   auto adjective = getAdjective(effect);
+  if (inv)
+    adjective.bad = !adjective.bad;
   if (!adjective.bad)
     return adjective.name;
   return none;
 }
 
-optional<std::string> LastingEffects::getBadAdjective(LastingEffect effect) {
+optional<std::string> LastingEffects::getBadAdjective(LastingEffect effect, bool inv) {
   auto adjective = getAdjective(effect);
+  if (inv)
+    adjective.bad = !adjective.bad;
   if (adjective.bad)
     return adjective.name;
   return none;
@@ -1326,6 +1342,10 @@ bool LastingEffects::canConsume(LastingEffect effect) {
   }
 }
 
+bool LastingEffects::canConsumeImmunity(LastingEffect effect) {
+  return true;
+}
+
 optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::SLEEP:
@@ -1436,6 +1456,10 @@ optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
     default:
       return none;
   }
+}
+
+optional<FXInfo> LastingEffects::getResistantFX(LastingEffect effect) {
+  return none;
 }
 
 bool LastingEffects::canProlong(LastingEffect effect) {

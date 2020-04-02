@@ -268,10 +268,20 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool isAffected(LastingEffect, optional<GlobalTime>) const;
   bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffected(LastingEffect) const;
+  bool addResistanceEffect(LastingEffect, TimeInterval, bool msg = true);
+  bool addResistanceEffect(LastingEffect, TimeInterval, GlobalTime, bool msg = true);
+  bool removeResistanceEffect(LastingEffect, bool msg = true);
+  bool addImmunityEffect(LastingEffect, int count = 1, bool msg = true);
+  bool removeImmunityEffect(LastingEffect, int count = 1, bool msg = true);
+  bool isResistantTo(LastingEffect) const;
+  bool isResistantTo(LastingEffect, GlobalTime) const;
+  bool isResistantTo(LastingEffect, optional<GlobalTime>) const;
+  bool isImmuneTo(LastingEffect) const;
   optional<TimeInterval> getTimeRemaining(LastingEffect) const;
   bool hasCondition(CreatureCondition) const;
 
   bool isUnknownAttacker(const Creature*) const;
+  AdjectiveInfo resistanceInfo(string, LastingEffect) const;
   vector<AdjectiveInfo> getGoodAdjectives() const;
   vector<AdjectiveInfo> getBadAdjectives() const;
 
@@ -304,6 +314,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canBeCaptured() const;
   void removePrivateEnemy(const Creature*); 
   void cheatAllSpells();
+
+  bool canPerformRituals() const;
 
   vector<AutomatonPart> SERIAL(automatonParts);
   vector<PItem> SERIAL(drops);

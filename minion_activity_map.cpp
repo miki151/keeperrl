@@ -82,7 +82,7 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
     case MinionActivity::COPULATE:
       return c->isAffected(LastingEffect::COPULATION_SKILL);
     case MinionActivity::RITUAL:
-      return c->getBody().canPerformRituals() && !col->hasTrait(c, MinionTrait::WORKER);
+      return c->canPerformRituals() && !col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::GUARDING:
       return col->hasTrait(c, MinionTrait::FIGHTER);
     case MinionActivity::CROPS:

@@ -1016,13 +1016,13 @@ bool Body::canPush(const Body& other) {
 }
 
 bool Body::canPerformRituals() const {
-  return xhumanoid && !isImmuneTo(LastingEffect::TIED_UP);
+  return xhumanoid;
 }
 
 bool Body::canBeCaptured() const {
   if (canCapture)
     return *canCapture;
-  return xhumanoid && !isImmuneTo(LastingEffect::TIED_UP);
+  return xhumanoid;
 }
 
 bool Body::isUndead() const {

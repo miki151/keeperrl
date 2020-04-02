@@ -99,12 +99,15 @@ class LastingEffects {
   static bool affects(const Creature*, LastingEffect);
   static optional<LastingEffect> getSuppressor(LastingEffect);
   static void onRemoved(Creature*, LastingEffect, bool msg);
+  static void onResisted(Creature*, LastingEffect, bool msg);
+  static void onSusceptible(Creature*, LastingEffect, bool msg);
   static void onTimedOut(Creature*, LastingEffect, bool msg);
+  static void onResistanceTimedOut(Creature*, LastingEffect, bool msg);
   static int getAttrBonus(const Creature*, AttrType);
   static void afterCreatureDamage(Creature*, LastingEffect);
   static bool tick(Creature*, LastingEffect);
-  static optional<string> getGoodAdjective(LastingEffect);
-  static optional<string> getBadAdjective(LastingEffect);
+  static optional<string> getGoodAdjective(LastingEffect, bool inv = false);
+  static optional<string> getBadAdjective(LastingEffect, bool inv = false);
   static const vector<LastingEffect>& getCausingCondition(CreatureCondition);
   static double modifyCreatureDefense(LastingEffect, double damage, AttrType damageAttr);
   static void onAllyKilled(Creature*);
@@ -117,8 +120,10 @@ class LastingEffects {
   static double getCraftingSpeed(const Creature*);
   static double getTrainingSpeed(const Creature*);
   static bool canConsume(LastingEffect);
+  static bool canConsumeImmunity(LastingEffect);
   static optional<FXVariantName> getFX(LastingEffect);
   static optional<FXInfo> getApplicationFX(LastingEffect);
+  static optional<FXInfo> getResistantFX(LastingEffect);
   static bool canProlong(LastingEffect);
   static bool obeysFormation(const Creature*, const Creature* against);
   static EffectAIIntent shouldAIApply(const Creature* victim, LastingEffect, bool isEnemy);

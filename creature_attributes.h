@@ -99,12 +99,20 @@ class CreatureAttributes {
   bool isAffectedPermanently(LastingEffect) const;
   GlobalTime getTimeOut(LastingEffect) const;
   string getRemainingString(LastingEffect, GlobalTime) const;
+  string getResistanceTimeString(LastingEffect, GlobalTime) const;
   void clearLastingEffect(LastingEffect);
   void addPermanentEffect(LastingEffect, int count);
   void removePermanentEffect(LastingEffect, int count);
   bool considerTimeout(LastingEffect, GlobalTime current);
+  bool considerResistanceTimeout(LastingEffect, GlobalTime);
   void addLastingEffect(LastingEffect, GlobalTime endtime);
   optional<GlobalTime> getLastAffected(LastingEffect, GlobalTime currentGlobalTime) const;
+  void clearResistantEffect(LastingEffect);
+  void addResistantEffect(LastingEffect, GlobalTime);
+  void addImmunityEffect(LastingEffect, int);
+  void removeImmunityEffect(LastingEffect, int);
+  bool isResistant(LastingEffect, GlobalTime) const;
+  bool isImmune(LastingEffect) const;
   bool canSleep() const;
   bool isInnocent() const;
   void consume(Creature* self, CreatureAttributes& other);
@@ -126,6 +134,7 @@ class CreatureAttributes {
   vector<ItemType> SERIAL(automatonParts);
 
   private:
+  void consumeImmunities(const EnumMap<LastingEffect, int>&);
   void consumeEffects(const EnumMap<LastingEffect, int>&);
   ViewId SERIAL(viewId);
   heap_optional<ViewObject> SERIAL(illusionViewObject);
@@ -147,6 +156,8 @@ class CreatureAttributes {
   vector<SpellId> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);
   EnumMap<LastingEffect, GlobalTime> SERIAL(lastingEffects);
+  EnumMap<LastingEffect, int> SERIAL(immunityEffects);
+  EnumMap<LastingEffect, GlobalTime> SERIAL(resistantEffects);
   MinionActivityMap SERIAL(minionActivities);
   EnumMap<ExperienceType, double> SERIAL(expLevel);
   EnumMap<ExperienceType, int> SERIAL(maxLevelIncrease);
