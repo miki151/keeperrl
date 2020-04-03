@@ -101,7 +101,7 @@
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
-  ar(memory, introText, lastControlKeeperQuestion, tribeAlignment);
+  ar(memory, introText, nextKeeperWarning, tribeAlignment);
   ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints);
   ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures);
@@ -294,7 +294,7 @@ void PlayerControl::leaveControl() {
   set<TeamId> allTeams;
   for (auto controlled : copyOf(getControlled())) {
     if (collective->hasTrait(controlled, MinionTrait::LEADER))
-      lastControlKeeperQuestion = collective->getGlobalTime();
+      nextKeeperWarning = collective->getGlobalTime();
     auto controlledLevel = controlled->getPosition().getLevel();
     if (getModel()->getMainLevels().contains(controlledLevel))
       setScrollPos(controlled->getPosition());
@@ -1501,7 +1501,15 @@ void PlayerControl::fillResources(CollectiveInfo& info) const {
   }
 }
 
+struct PlayerControl::KeeperDangerInfo {
+  Creature* c;
+  string warning;
+};
+
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
+  if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING))
+    if (auto info = checkKeeperDanger())
+      gameInfo.keeperInDanger = info->warning;
   gameInfo.isSingleMap = getGame()->isSingleModel();
   getGame()->getEncyclopedia()->setKeeperThings(getGame()->getContentFactory(),
       &collective->getTechnology(), &collective->getWorkshops());
@@ -2489,6 +2497,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::SCROLL_STAIRS:
       scrollStairs(input.get<int>());
       break;
+    case UserInputId::CONTROL_KEEPER:
+      if (auto info = checkKeeperDanger())
+        controlSingle(info->c);
+      break;
+    case UserInputId::DISMISS_KEEPER_DANGER:
+      nextKeeperWarning = getGame()->getGlobalTime() +
+          TimeInterval(getGame()->getOptions()->getIntValue(OptionId::KEEPER_WARNING_TIMEOUT));
+      break;
     case UserInputId::TAKE_SCREENSHOT:
       getView()->dungeonScreenshot(input.get<Vec2>());
       getGame()->addEvent(EventInfo::RetiredGame{});
@@ -2802,40 +2818,28 @@ void PlayerControl::addToMemory(Position pos) {
   memory->update(pos, index);
 }
 
-void PlayerControl::checkKeeperDanger() {
+optional<PlayerControl::KeeperDangerInfo> PlayerControl::checkKeeperDanger() const {
   PROFILE;
   auto controlled = getControlled();
   for (auto keeper : collective->getLeaders()) {
     auto prompt = [&] (const string& reason) {
-      auto prefix = collective->getLeaders().size() > 1 ? "A Keeper " : "The Keeper ";
-      return getView()->yesOrNoPrompt(prefix + reason + ". Do you want to control " +
-          him(keeper->getAttributes().getGender()) + "?");
+      return KeeperDangerInfo{keeper,
+          (collective->getLeaders().size() > 1 ? capitalFirst(keeper->getName().a()) : "The Keeper ") + reason + "."};
     };
     if (!keeper->isDead() && !controlled.contains(keeper) &&
-        lastControlKeeperQuestion < collective->getGlobalTime() - 50_visible) {
+        nextKeeperWarning < collective->getGlobalTime()) {
       if (auto lastCombatIntent = keeper->getLastCombatIntent())
-        if (lastCombatIntent->isHostile() && lastCombatIntent->time > getGame()->getGlobalTime() - 5_visible) {
-          lastControlKeeperQuestion = collective->getGlobalTime();
-          if (prompt("is engaged in a fight with " + lastCombatIntent->attacker->getName().a())) {
-            controlSingle(keeper);
-            return;
-          }
-        }
-      auto prompt2 = [&](const string& reason) {
-        lastControlKeeperQuestion = collective->getGlobalTime();
-        if (prompt(reason)) {
-          controlSingle(keeper);
-          return;
-        }
-      };
+        if (lastCombatIntent->isHostile() && lastCombatIntent->time > getGame()->getGlobalTime() - 5_visible)
+          return prompt("is engaged in a fight with " + lastCombatIntent->attacker->getName().a());
       if (keeper->isAffected(LastingEffect::POISON))
-        prompt2("is suffering from poisoning");
+        return prompt("is suffering from poisoning");
       else if (keeper->isAffected(LastingEffect::BLEEDING))
-        prompt2("is bleeding");
+        return prompt("is bleeding");
       else if (keeper->getBody().isWounded())
-        prompt2("is wounded");
+        return prompt("is wounded");
     }
   }
+  return none;
 }
 
 void PlayerControl::considerNightfallMessage() {
@@ -2922,9 +2926,18 @@ void PlayerControl::tick() {
   messages = messages.filter([&] (const PlayerMessage& msg) {
       return msg.getFreshness() > 0; });
   considerNightfallMessage();
+  if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING)) {
+    if (checkKeeperDanger()) {
+      if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING_PAUSE) &&
+        !wasPausedForWarning) {
+        getView()->stopClock();
+        wasPausedForWarning = true;
+      }
+    } else
+      wasPausedForWarning = false;
+  }
   if (auto msg = collective->getWarnings().getNextWarning(getModel()->getLocalTime()))
     addMessage(PlayerMessage(*msg, MessagePriority::HIGH));
-  checkKeeperDanger();
   for (auto attack : copyOf(ransomAttacks))
     for (const Creature* c : attack.getCreatures())
       if (collective->getTerritory().contains(c->getPosition())) {

@@ -135,7 +135,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool canSee(Position) const;
   bool isConsideredAttacking(const Creature*, const Collective* enemy);
 
-  void checkKeeperDanger();
+  struct KeeperDangerInfo;
+  optional<KeeperDangerInfo> checkKeeperDanger() const;
   static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Position);
   void updateKnownLocations(const Position&);
@@ -202,7 +203,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   };
   optional<SelectionInfo> rectSelection;
   void updateSelectionSquares();
-  GlobalTime SERIAL(lastControlKeeperQuestion) = GlobalTime(-1000);
+  GlobalTime SERIAL(nextKeeperWarning) = GlobalTime(-1000);
+  bool wasPausedForWarning = false;
   optional<UniqueEntity<Creature>::Id> chosenCreature;
   void setChosenCreature(optional<UniqueEntity<Creature>::Id>);
   optional<WorkshopType> chosenWorkshop;

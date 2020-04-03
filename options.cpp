@@ -26,7 +26,6 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::KEEP_SAVEFILES, 0},
   {OptionId::SHOW_MAP, 0},
   {OptionId::FULLSCREEN, 0},
-  {OptionId::FULLSCREEN_RESOLUTION, 0},
   {OptionId::VSYNC, 1},
   {OptionId::ZOOM_UI, 0},
   {OptionId::DISABLE_MOUSE_WHEEL, 0},
@@ -47,6 +46,9 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::CURRENT_MOD2, vector<string>()},
   {OptionId::ENDLESS_ENEMIES, 2},
   {OptionId::ENEMY_AGGRESSION, 1},
+  {OptionId::KEEPER_WARNING, 1},
+  {OptionId::KEEPER_WARNING_PAUSE, 1},
+  {OptionId::KEEPER_WARNING_TIMEOUT, 200},
 };
 
 const map<OptionId, string> names {
@@ -57,7 +59,6 @@ const map<OptionId, string> names {
   {OptionId::KEEP_SAVEFILES, "Keep save files"},
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::FULLSCREEN, "Fullscreen"},
-  {OptionId::FULLSCREEN_RESOLUTION, "Fullscreen resolution"},
   {OptionId::VSYNC, "Vertical Sync"},
   {OptionId::ZOOM_UI, "Zoom in UI"},
   {OptionId::DISABLE_MOUSE_WHEEL, "Disable mouse wheel scrolling"},
@@ -78,6 +79,9 @@ const map<OptionId, string> names {
   {OptionId::CURRENT_MOD2, "Current mod"},
   {OptionId::ENDLESS_ENEMIES, "Start endless enemy waves"},
   {OptionId::ENEMY_AGGRESSION, "Enemy aggression"},
+  {OptionId::KEEPER_WARNING, "Keeper danger warning"},
+  {OptionId::KEEPER_WARNING_PAUSE, "Keeper danger auto-pause"},
+  {OptionId::KEEPER_WARNING_TIMEOUT, "Keeper danger timeout"},
 };
 
 const map<OptionId, string> hints {
@@ -85,7 +89,6 @@ const map<OptionId, string> hints {
   {OptionId::ASCII, "Switch to old school roguelike graphics."},
   {OptionId::KEEP_SAVEFILES, "Don't remove the save file when a game is loaded."},
   {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
-  {OptionId::FULLSCREEN_RESOLUTION, "Choose resolution for fullscreen mode."},
   {OptionId::VSYNC, "Limits frame rate to your monitor's refresh rate. Turning off may fix frame rate issues."},
   {OptionId::ZOOM_UI, "All UI and graphics are zoomed in 2x. "
       "Use you have a large resolution screen and things appear too small."},
@@ -97,6 +100,9 @@ const map<OptionId, string> hints {
     "using alt + letter."},
   {OptionId::ENDLESS_ENEMIES, "Turn on recurrent enemy waves that attack your dungeon."},
   {OptionId::ENEMY_AGGRESSION, "The chance of your dungeon being attacked by enemies"},
+  {OptionId::KEEPER_WARNING, "Display a pop up window whenever your Keeper is in danger"},
+  {OptionId::KEEPER_WARNING_PAUSE, "Pause the game whenever your Keeper is in danger"},
+  {OptionId::KEEPER_WARNING_TIMEOUT, "Timeout before a new Keeper danger warning is shown"},
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -109,7 +115,6 @@ const map<OptionSet, vector<OptionId>> optionSets {
 #endif
       OptionId::FULLSCREEN,
       OptionId::VSYNC,
-  //    OptionId::FULLSCREEN_RESOLUTION,
       OptionId::ZOOM_UI,
       OptionId::DISABLE_MOUSE_WHEEL,
       OptionId::DISABLE_CURSOR,
@@ -117,6 +122,9 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::GAME_EVENTS,
       OptionId::AUTOSAVE2,
       OptionId::WASD_SCROLLING,
+      OptionId::KEEPER_WARNING,
+      OptionId::KEEPER_WARNING_PAUSE,
+      OptionId::KEEPER_WARNING_TIMEOUT,
 #ifndef RELEASE
       OptionId::KEEP_SAVEFILES,
       OptionId::SHOW_MAP,
@@ -229,6 +237,8 @@ string Options::getValueString(OptionId id) {
     case OptionId::FULLSCREEN:
     case OptionId::VSYNC:
     case OptionId::WASD_SCROLLING:
+    case OptionId::KEEPER_WARNING:
+    case OptionId::KEEPER_WARNING_PAUSE:
       return getOnOff(value);
     case OptionId::KEEP_SAVEFILES:
     case OptionId::SHOW_MAP:
@@ -249,13 +259,6 @@ string Options::getValueString(OptionId id) {
     case OptionId::ENDLESS_ENEMIES:
     case OptionId::ENEMY_AGGRESSION:
       return choices[id][(*value.getValueMaybe<int>() + choices[id].size()) % choices[id].size()];
-    case OptionId::FULLSCREEN_RESOLUTION: {
-      int val = *value.getValueMaybe<int>();
-      if (val >= 0 && val < choices[id].size())
-        return choices[id][val];
-      else
-        return "";
-    }
     case OptionId::MAIN_VILLAINS:
     case OptionId::LESSER_VILLAINS:
     case OptionId::RETIRED_VILLAINS:
@@ -265,6 +268,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::MUSIC:
       return toString(getIntValue(id)) + "%";
     case OptionId::AUTOSAVE2:
+    case OptionId::KEEPER_WARNING_TIMEOUT:
       return toString(getIntValue(id));
   }
 }
@@ -307,10 +311,6 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
     case OptionId::SOUND:
       if (auto val = view->getNumber("Change " + getName(id), Range(0, 100), *value.getValueMaybe<int>(), 5))
         setValue(id, *val);
-      break;
-    case OptionId::FULLSCREEN_RESOLUTION:
-      if (auto index = view->chooseFromList("Choose resolution.", ListElem::convert(choices[id])))
-        setValue(id, *index);
       break;
     default:
       if (!choices[id].empty())

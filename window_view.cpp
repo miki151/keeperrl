@@ -106,7 +106,6 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
   renderer.setFullscreen(options->getBoolValue(OptionId::FULLSCREEN));
   renderer.setVsync(options->getBoolValue(OptionId::VSYNC));
   renderer.enableCustomCursor(!options->getBoolValue(OptionId::DISABLE_CURSOR));
-//  renderer.setFullscreenMode(options->getChoiceValue(OptionId::FULLSCREEN_RESOLUTION));
   renderer.initialize();
   renderer.setZoom(options->getBoolValue(OptionId::ZOOM_UI) ? 2 : 1);
   options->addTrigger(OptionId::FULLSCREEN, [this] (int on) {
@@ -117,7 +116,6 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
     renderer.setVsync(on);
   });
   options->addTrigger(OptionId::DISABLE_CURSOR, [this] (int on) { renderer.enableCustomCursor(!on); });
-  //options->addTrigger(OptionId::FULLSCREEN_RESOLUTION, [this] (int index) { fullScreenResolution = index; });
   options->addTrigger(OptionId::ZOOM_UI, [this] (int on) { zoomUI = on; });
   renderThreadId = currentThreadId();
   vector<ViewLayer> allLayers;

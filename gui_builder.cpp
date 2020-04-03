@@ -1911,6 +1911,27 @@ SGuiElem GuiBuilder::drawRansomOverlay(const optional<CollectiveInfo::Ransom>& r
   return WL(setWidth, 600, WL(miniWindow, WL(margins, lines.buildVerticalList(), 20)));
 }
 
+SGuiElem GuiBuilder::drawKeeperDangerOverlay(const string& message) {
+  auto lines = WL(getListBuilder, legendLineHeight);
+  int width = 600;
+  lines.addElemAuto(gui.labelMultiLineWidth(message, legendLineHeight, width));
+  lines.addSpace(legendLineHeight / 2);
+  lines.addElem(WL(getListBuilder)
+      .addElemAuto(WL(buttonLabel, "Control Keeper", getButtonCallback(UserInputId::CONTROL_KEEPER)))
+      .addSpace(20)
+      .addElemAuto(WL(buttonLabel, "Dismiss for 200 turns", getButtonCallback(UserInputId::DISMISS_KEEPER_DANGER)))
+      .buildHorizontalList()
+  );
+  lines.addSpace(legendLineHeight / 2);
+  lines.addElem(WL(getListBuilder)
+        .addElemAuto(WL(label, "When the Keeper is in danger: "))
+        .addElemAuto(drawBoolOptionElem(OptionId::KEEPER_WARNING, "show this pop-up, "))
+        .addElemAuto(drawBoolOptionElem(OptionId::KEEPER_WARNING_PAUSE, "pause the game"))
+        .buildHorizontalList());
+  int margins = 20;
+  return WL(setWidth, width + margins, WL(miniWindow, WL(margins, lines.buildVerticalList(), margins)));
+}
+
 SGuiElem GuiBuilder::drawRebellionChanceText(CollectiveInfo::RebellionChance chance) {
   switch (chance) {
     case CollectiveInfo::RebellionChance::HIGH:
@@ -2595,18 +2616,23 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
            info.villageInfo), OverlayInfo::VILLAINS});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
            collectiveInfo.immigration, info.tutorial), OverlayInfo::IMMIGRATION});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
-           collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWarningWindow, this), THIS_LINE,
-           collectiveInfo.rebellionChance, collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
-           collectiveInfo.chosenCreature, collectiveInfo.allQuarters, info.tutorial), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
-           collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
-           collectiveInfo), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
-           collectiveInfo.buildings, !!collectiveInfo.ransom, info.tutorial), OverlayInfo::TOP_LEFT});
+      if (info.keeperInDanger)
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawKeeperDangerOverlay, this), THIS_LINE,
+             *info.keeperInDanger), OverlayInfo::TOP_LEFT});
+      else {
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
+             collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWarningWindow, this), THIS_LINE,
+             collectiveInfo.rebellionChance, collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
+             collectiveInfo.chosenCreature, collectiveInfo.allQuarters, info.tutorial), OverlayInfo::TOP_LEFT});
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
+             collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
+             collectiveInfo), OverlayInfo::TOP_LEFT});
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
+             collectiveInfo.buildings, !!collectiveInfo.ransom, info.tutorial), OverlayInfo::TOP_LEFT});
+      }
       if (bottomWindow == IMMIGRATION_HELP)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationHelp, this), THIS_LINE,
             collectiveInfo), OverlayInfo::BOTTOM_LEFT});
@@ -3808,7 +3834,6 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   }
   menuLines.addElem(WL(margins, othersLine.buildHorizontalListFit(), 40, 0, 40, 0), 30);
   return menuLines.buildVerticalList();
-
 }
 
 SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight) {
@@ -3823,6 +3848,20 @@ SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncreas
           ? WL(buttonLabel, minus, [callback] { callback(-1); }, false)
           : WL(buttonLabelInactive, minus, false), 10)
       .buildHorizontalList(), 0, 2, 0, 2);
+}
+
+SGuiElem GuiBuilder::drawBoolOptionElem(OptionId id, string name) {
+  auto line = WL(getListBuilder);
+  line.addElemAuto(WL(conditional,
+      WL(labelUnicode, u8"✓", Color::GREEN),
+      WL(labelUnicode, u8"✘", Color::RED),
+      [this, id]{ return options->getBoolValue(id); })
+  );
+  line.addElemAuto(WL(label, name));
+  return WL(stack,
+      WL(button, [this, id] { options->setValue(id, int(!options->getBoolValue(id))); }),
+      line.buildHorizontalList()
+  );
 }
 
 SGuiElem GuiBuilder::drawOptionElem(OptionId id, function<void()> onChanged, optional<string> defaultString) {
