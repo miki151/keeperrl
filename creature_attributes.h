@@ -116,6 +116,7 @@ class CreatureAttributes {
   void increaseExpFromCombat(double attackDiff);
   optional<LastingEffect> getHatedByEffect() const;
   int getAutomatonSlots() const;
+  void setAutomatonSlots(int);
   void randomize();
   bool isInstantPrisoner() const;
 
