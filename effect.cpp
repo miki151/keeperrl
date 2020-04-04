@@ -435,6 +435,41 @@ string Effects::AssembledMinion::getDescription(const ContentFactory* f) const {
   return "Can be assembled to a " + getName(f);
 }
 
+string Effects::AddAutomatonParts::getPartsNames(const ContentFactory* f) const {
+  string ret = "";
+  bool first = true;
+
+  for(ItemType part_type : part_types) {
+    if(!first) {
+      ret += ", ";
+    }
+    ret += part_type.get(f)->getName();
+    first = false;
+  }
+  return ret;
+}
+
+bool Effects::AddAutomatonParts::applyToCreature(Creature* c, Creature* attacker) const {
+  CHECK(part_types.size() > 0);
+
+  if(c->getSpareAutomatonSlots() < part_types.size()) {
+    return false;
+  }
+
+  for(ItemType part_type : part_types) {
+    part_type.get(c->getGame()->getContentFactory())->getAutomatonPart()->apply(c);
+  }
+  return true;
+}
+
+string Effects::AddAutomatonParts::getName(const ContentFactory* f) const {
+  return "attach " + getPartsNames(f);
+}
+
+string Effects::AddAutomatonParts::getDescription(const ContentFactory* f) const {
+  return "Attaches " + getPartsNames(f) + " to the creature.";
+}
+
 bool Effects::SummonEnemy::applyToCreature(Creature* c, Creature* attacker) const {
   return false;
 }
@@ -1259,7 +1294,7 @@ bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const
     case FilterType::ENEMY:
       return !!c && !!attacker && c->isEnemy(attacker);
     case FilterType::AUTOMATON:
-      return !!c && !c->automatonParts.empty();
+      return !!c && (c->getAttributes().getAutomatonSlots() > 0);
   }
 }
 
@@ -1730,6 +1765,36 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
             return EffectAIIntent::WANTED;
         return EffectAIIntent::NONE;
       },
+      [&](const Effects::AddAutomatonParts& e) {
+        if(isEnemy) {
+          return EffectAIIntent::NONE;
+        }
+
+        if(victim->getSpareAutomatonSlots() < e.part_types.size()) {
+          return EffectAIIntent::NONE;
+        }
+
+        PCreature test_dummy = CreatureFactory::getHumanForTests();
+        test_dummy->getAttributes().setAutomatonSlots(e.part_types.size());
+        test_dummy->addPermanentEffect(LastingEffect::IMMOBILE, 1);
+
+        for(ItemType part_type : e.part_types) {
+          part_type.get(test_dummy->getGame()->getContentFactory())->getAutomatonPart()->apply(test_dummy.get());
+        }
+
+        bool adds_legs = !test_dummy->isAffected(LastingEffect::IMMOBILE);
+        bool makes_human = test_dummy->getBody().isHumanoid();
+
+        if(victim->isAffected(LastingEffect::IMMOBILE)) {
+          return adds_legs ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+        }
+
+        if(victim->getBody().isHumanoid() && makes_human) {
+          return EffectAIIntent::UNWANTED;
+        }
+
+        return EffectAIIntent::WANTED;
+      },
       [&] (const auto&) {
         return EffectAIIntent::NONE;
       }
@@ -1739,7 +1804,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
 /* Unimplemented: Teleport, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr, IncreaseSkill, IncreaseWorkshopSkill
       EmitPoisonGas, CircularBlast, Alarm, SilverDamage, DoubleTrouble,
       PlaceFurniture, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-      ReviveCorpse, Blast, Shove, SwapPosition*/
+      ReviveCorpse, Blast, Shove, SwapPosition, AddAutomatonParts, AddBodyPart, MakeHumanoid */
 
 EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const {
   PROFILE_BLOCK("Effect::shouldAIApply");
