@@ -111,6 +111,29 @@ struct RemovePermanent {
   LastingEffect SERIAL(lastingEffect);
   SERIALIZE_ALL(lastingEffect)
 };
+struct Resistant {
+  EFFECT_TYPE_INTERFACE;
+  LastingEffect SERIAL(lastingEffect);
+  int SERIAL(time) = 100;
+  SERIALIZE_ALL(lastingEffect, time);
+};
+struct RemoveResistant {
+  EFFECT_TYPE_INTERFACE;
+  LastingEffect SERIAL(lastingEffect);
+  SERIALIZE_ALL(lastingEffect);
+};
+struct Immunity {
+  EFFECT_TYPE_INTERFACE;
+  LastingEffect SERIAL(lastingEffect);
+  SERIALIZE_ALL(lastingEffect);
+  int SERIAL(count) = 1;
+};
+struct RemoveImmunity {
+  EFFECT_TYPE_INTERFACE;
+  LastingEffect SERIAL(lastingEffect);
+  SERIALIZE_ALL(lastingEffect);
+  int SERIAL(count) = 1;
+};
 struct PlaceFurniture {
   EFFECT_TYPE_INTERFACE;
   FurnitureType SERIAL(furniture);

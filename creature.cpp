@@ -2359,15 +2359,15 @@ const char* getMoraleText(double morale) {
 }
 
 AdjectiveInfo Creature::resistanceInfo(string name, LastingEffect effect) const {
-  string desc = LastingEffects::getDescription(effect);
-  desc[0] = tolower(desc[0]);
+  string desc = "Resistant to " + name;
   if (!isImmuneTo(effect)) {
     name += getAttributes().getResistanceTimeString(effect, *getGlobalTime());
   }
   else {
-    name += " immunity";
+    name += " permanently";
+    desc += " permanently";
   }
-  return { name, "Immune to anything that " + desc };
+  return { name, desc };
 }
 
 vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
