@@ -122,11 +122,11 @@
         work = 8 cost = "WOOD" 30 tech = "automatons" applyImmediately = true}
       { item = {Assembled "LIGHT_AUTOMATON_CORPUS_WOOD" {"automaton_corpus" Rgb 180 140 55 255}}
         work = 8 cost = "WOOD" 20 tech = "advanced automatons"}
-      {{Simple    "HumanoidHeadWood"}        2       "WOOD" 5    "advanced automatons"}
-      {{Simple    "ArcherHeadWood"}          2       "WOOD" 5    "advanced automatons"}
+      {{Simple    "HumanoidHeadWood"}        2       "WOOD" 5    "automatons"}
       {{Simple    "AutomatonLegsWood"}       2       "WOOD" 5    "automatons"}
       {{Simple    "AutomatonArmsWood"}       2       "WOOD" 5    "automatons"}
       {{Simple    "AutomatonDrillWood"}      2       "WOOD" 5    "automatons"}
+      {{Simple    "ArcherHeadWood"}          2       "WOOD" 5    "advanced automatons"}
   } 
   "FORGE"
   {
