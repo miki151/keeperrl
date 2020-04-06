@@ -1767,7 +1767,6 @@
       {Simple "AutomatonDrillWood" }
       {Simple "HumanoidHeadWood" }
     }
-    permanentEffects = {}
     name = {
       name = "wooden automaton worker"
     }
@@ -1804,7 +1803,6 @@
       {Simple "AutomatonDrillIron" }
       {Simple "HumanoidHeadIron" }
     }
-    permanentEffects = {}
     name = {
       name = "iron automaton worker"
     }
