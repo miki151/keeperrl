@@ -440,10 +440,6 @@ int CreatureAttributes::getAutomatonSlots() const {
   return automatonSlots;
 }
 
-void CreatureAttributes::setAutomatonSlots(int value) {
-  automatonSlots = value;
-}
-
 #include "pretty_archive.h"
 template<> void CreatureAttributes::serialize(PrettyInputArchive& ar1, unsigned version) {
   serializeImpl(ar1, version);
