@@ -916,14 +916,3 @@ PCreature CreatureFactory::getHumanForTests() {
   );
   return get(std::move(attributes), TribeId::getMonster(), Monster::getFactory(MonsterAIFactory::idle()), SpellMap{});
 }
-
-PCreature CreatureFactory::getAutomatonForTests() {
-  auto attributes = CATTR(
-      c.viewId = ViewId("automaton");
-      c.attr[AttrType::DAMAGE] = 40;
-      c.attr[AttrType::DEFENSE] = 40;
-      c.body = Body::nonHumanoid(Body::Material::IRON, Body::Size::LARGE);
-      c.name = "iron automaton";
-  );
-  return get(std::move(attributes), TribeId::getMonster(), Monster::getFactory(MonsterAIFactory::idle()), SpellMap{});
-}

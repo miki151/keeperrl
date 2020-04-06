@@ -75,8 +75,8 @@ struct AssembledMinion {
 struct AddAutomatonParts {
   EFFECT_TYPE_INTERFACE;
   string getPartsNames(const ContentFactory*) const;
-  vector<ItemType> SERIAL(part_types);
-  SERIALIZE_ALL(part_types);
+  vector<ItemType> SERIAL(partTypes);
+  SERIALIZE_ALL(partTypes);
 };
 struct SummonEnemy {
   EFFECT_TYPE_INTERFACE;

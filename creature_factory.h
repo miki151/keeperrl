@@ -47,7 +47,6 @@ class CreatureFactory {
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
   PCreature getAnimatedItem(PItem, TribeId, int attrBonus);
   static PCreature getHumanForTests();
-  static PCreature getAutomatonForTests();
   PCreature getGhost(Creature*);
   static PCreature getIllusion(Creature*);
 
