@@ -27,10 +27,11 @@ bool FurnitureParams::operator == (const FurnitureParams& p) const {
   return type == p.type && tribe == p.tribe;
 }
 
-optional<string> FurnitureFactory::getPopulationIncreaseDescription(FurnitureType type) const {
+optional<string> FurnitureFactory::getPopulationIncreaseDescription(FurnitureType type,
+    const string& populationString) const {
   auto info = getData(type).getPopulationIncrease();
   if (info.increase > 0) {
-    auto ret = "Increases population limit by " + toString(info.increase);
+    auto ret = "Increases " + populationString + " limit by " + toString(info.increase);
     if (auto limit = info.limit)
       ret += ", up to " + toString(*limit);
     ret += ".";

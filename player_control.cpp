@@ -157,7 +157,8 @@ void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const
           break;
         }
       }
-      if (auto increase = getGame()->getContentFactory()->furniture.getPopulationIncreaseDescription(furniture->types[0]))
+      if (auto increase = getGame()->getContentFactory()->furniture
+          .getPopulationIncreaseDescription(furniture->types[0], keeperCreatureInfo.populationString))
         info.help += " " + *increase;
       for (auto expType : ENUM_ALL(ExperienceType))
         if (auto increase = getGame()->getContentFactory()->furniture.getData(furniture->types[0]).getMaxTraining(expType))
@@ -1009,6 +1010,7 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
   info.minions = minions.transform([](const Creature* c) { return CreatureInfo(c) ;});
   info.minionCount = collective->getPopulationSize();
   info.minionLimit = collective->getMaxPopulation();
+  info.populationString = collective->getConfig().getPopulationString();
 }
 
 ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option, int queuedCount) const {
@@ -1552,7 +1554,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     }
   fillWorkshopInfo(info);
   fillLibraryInfo(info);
-  info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
+  info.monsterHeader = info.populationString + ": " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   fillDungeonLevel(info.avatarLevelInfo);
   fillResources(info);
   info.warning = "";
@@ -2824,7 +2826,8 @@ optional<PlayerControl::KeeperDangerInfo> PlayerControl::checkKeeperDanger() con
   for (auto keeper : collective->getLeaders()) {
     auto prompt = [&] (const string& reason) {
       return KeeperDangerInfo{keeper,
-          (collective->getLeaders().size() > 1 ? capitalFirst(keeper->getName().a()) : "The Keeper ") + reason + "."};
+          (collective->getLeaders().size() > 1 ? capitalFirst(keeper->getName().a()) : "The Keeper")
+              + " " + reason + "."};
     };
     if (!keeper->isDead() && !controlled.contains(keeper) &&
         nextKeeperWarning < collective->getGlobalTime()) {

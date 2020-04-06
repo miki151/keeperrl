@@ -62,6 +62,9 @@
   }
   workshopGroups = { "traps" "gnomes" }
   description = "Seize the means of production and engineer traps, automatons and other contraptions."
+  minionTraits = { LEADER WORKER NO_LIMIT }
+  maxPopulation = 0
+  populationString = "automatons"
   noLeader = true
 }
 

@@ -437,7 +437,7 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo, int width) {
   const int space = 55;
   bottomLine.addSpace(space);
   bottomLine.addElem(WL(labelFun, [&info] {
-        return "population: " + toString(info.minionCount) + " / " +
+      return capitalFirst(info.populationString) + ": " + toString(info.minionCount) + " / " +
         toString(info.minionLimit); }), 150);
   bottomLine.addSpace(space);
   bottomLine.addElem(getTurnInfoGui(gameInfo.time), 50);
@@ -1917,7 +1917,7 @@ SGuiElem GuiBuilder::drawKeeperDangerOverlay(const string& message) {
   lines.addElemAuto(gui.labelMultiLineWidth(message, legendLineHeight, width));
   lines.addSpace(legendLineHeight / 2);
   lines.addElem(WL(getListBuilder)
-      .addElemAuto(WL(buttonLabel, "Control Keeper", getButtonCallback(UserInputId::CONTROL_KEEPER)))
+      .addElemAuto(WL(buttonLabel, "Take control", getButtonCallback(UserInputId::CONTROL_KEEPER)))
       .addSpace(20)
       .addElemAuto(WL(buttonLabel, "Dismiss for 200 turns", getButtonCallback(UserInputId::DISMISS_KEEPER_DANGER)))
       .buildHorizontalList()

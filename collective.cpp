@@ -499,10 +499,7 @@ void Collective::updateGuardTasks() {
 }
 
 void Collective::updateAutomatonEngines() {
-  int totalPop = 0;
-  for (auto& pos : constructions->getAllFurniture())
-    if (auto f = constructions->getFurniture(pos.first, pos.second)->getBuilt(pos.first))
-      totalPop += f->getAutomatonPopIncrease();
+  auto totalPop = getMaxPopulation();
   for (auto c : getCreatures(MinionTrait::AUTOMATON)) {
     bool off = c->getAttributes().isAffectedPermanently(LastingEffect::TURNED_OFF);
     if (totalPop > 0) {
@@ -511,6 +508,7 @@ void Collective::updateAutomatonEngines() {
     } else
       if (!off)
         c->addPermanentEffect(LastingEffect::TURNED_OFF);
+    --totalPop;
   }
 }
 

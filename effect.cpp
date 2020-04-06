@@ -1520,8 +1520,7 @@ bool Effect::apply(Position pos, Creature* attacker) const {
         if (c) {
           for (auto col : pos.getGame()->getCollectives())
             if (col->getCreatures().contains(attacker)) {
-              col->addCreature(*c, {MinionTrait::WORKER, MinionTrait::FIGHTER, MinionTrait::NO_LIMIT,
-                  MinionTrait::AUTOMATON});
+              col->addCreature(*c, {MinionTrait::WORKER, MinionTrait::FIGHTER, MinionTrait::AUTOMATON});
               for (auto& part : (*c)->getAttributes().automatonParts)
                 part.get((*c)->getGame()->getContentFactory())->getAutomatonPart()->apply(*c);
               return true;

@@ -3,6 +3,7 @@
 #include "util.h"
 #include "tech_id.h"
 #include "name_generator_id.h"
+#include "minion_trait.h"
 
 class SpecialTrait;
 
@@ -19,6 +20,10 @@ struct KeeperCreatureInfo {
   string SERIAL(description);
   vector<SpecialTrait> SERIAL(specialTraits);
   optional<NameGeneratorId> SERIAL(baseNameGen);
+  EnumSet<MinionTrait> SERIAL(minionTraits) = {MinionTrait::LEADER};
+  int SERIAL(maxPopulation) = 10;
+  int SERIAL(immigrantInterval) = 140;
+  string SERIAL(populationString) = "population";
   bool SERIAL(noLeader) = false;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);

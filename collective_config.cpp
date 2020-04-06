@@ -46,6 +46,7 @@ template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
   ar(OPTION(immigrantInterval), OPTION(maxPopulation), OPTION(conquerCondition), OPTION(canEnemyRetire));
   ar(SKIP(type), OPTION(leaderAsFighter), OPTION(spawnGhosts), OPTION(ghostProb), OPTION(guardianInfo));
+  ar(SKIP(populationString));
 }
 
 SERIALIZABLE(CollectiveConfig);
@@ -98,8 +99,11 @@ CollectiveConfig::CollectiveConfig(TimeInterval interval, CollectiveType t, int 
       conquerCondition(conquerCondition) {
 }
 
-CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation, ConquerCondition conquerCondition) {
-  return CollectiveConfig(immigrantInterval, KEEPER, maxPopulation, conquerCondition);
+CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation,
+    string populationString, ConquerCondition conquerCondition) {
+  auto ret = CollectiveConfig(immigrantInterval, KEEPER, maxPopulation, conquerCondition);
+  ret.populationString = populationString;
+  return ret;
 }
 
 CollectiveConfig CollectiveConfig::noImmigrants() {
@@ -168,6 +172,10 @@ bool CollectiveConfig::getConstructions() const {
 
 int CollectiveConfig::getMaxPopulation() const {
   return maxPopulation;
+}
+
+const string& CollectiveConfig::getPopulationString() const {
+  return populationString;
 }
 
 const optional<GuardianInfo>& CollectiveConfig::getGuardianInfo() const {

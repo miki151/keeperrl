@@ -238,6 +238,7 @@ class CollectiveInfo {
     HASH_ALL(viewId, name, cost, count, state, help, hotkey, groupName, hotkeyOpensGroup, tutorialHighlight)
   };
   vector<Button> HASH(buildings);
+  string HASH(populationString);
   int HASH(minionCount);
   int HASH(minionLimit);
   string HASH(monsterHeader);
@@ -372,7 +373,7 @@ class CollectiveInfo {
   };
   optional<RebellionChance> HASH(rebellionChance);
   vector<ViewId> HASH(allQuarters);
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, ransom, onGoingAttacks, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, allQuarters, rebellionChance, avatarLevelInfo)
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, ransom, onGoingAttacks, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, allQuarters, rebellionChance, avatarLevelInfo, populationString)
 };
 
 class VillageInfo {

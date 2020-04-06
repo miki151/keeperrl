@@ -68,7 +68,8 @@ struct FloorInfo {
 
 class CollectiveConfig {
   public:
-  static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, ConquerCondition);
+  static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, string populationString,
+      ConquerCondition);
   static CollectiveConfig noImmigrants();
 
   bool isLeaderFighter() const;
@@ -81,6 +82,7 @@ class CollectiveConfig {
   bool getWarnings() const;
   bool getConstructions() const;
   int getMaxPopulation() const;
+  const string& getPopulationString() const;
   int getNumGhostSpawns() const;
   TimeInterval getImmigrantTimeout() const;
   double getGhostProb() const;
@@ -117,4 +119,5 @@ class CollectiveConfig {
   optional<GuardianInfo> SERIAL(guardianInfo);
   bool SERIAL(canEnemyRetire) = true;
   ConquerCondition SERIAL(conquerCondition) = ConquerCondition::KILL_FIGHTERS_AND_LEADER;
+  string SERIAL(populationString);
 };
