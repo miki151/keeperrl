@@ -636,6 +636,7 @@ bool Collective::needsToBeKilledToConquer(const Creature* c) const {
 
 bool Collective::creatureConsideredPlayer(Creature* c) const {
   return c->isPlayer() ||
+    (!getGame()->getPlayerCreatures().empty() && getGame()->getPlayerCreatures()[0]->getTribe() == c->getTribe()) ||
     (getGame()->getPlayerCollective() && getGame()->getPlayerCollective()->getCreatures().contains(c));
 }
 
