@@ -803,27 +803,24 @@ class AttackCreatures : public Task {
   AttackCreatures(vector<Creature*> v) : creatures(v) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (auto target = getNextCreature())
+    if (auto target = getNextCreature(c))
       return c->moveTowards(target->getPosition());
     return NoMove;
   }
 
-  Creature* getNextCreature() const {
+  Creature* getNextCreature(Creature* attacker) const {
     for (auto c : creatures)
-      if (c && !c->isDead())
+      if (c && !c->isDead() && attacker->canSeeInPosition(c, attacker->getGame()->getGlobalTime()))
         return c;
     return nullptr;
   }
 
   virtual string getDescription() const override {
-    if (auto target = getNextCreature())
-      return "Attack " + target->getName().bare();
-    else
-      return "Attack someone, but everyone is dead";
+    return "Attack someone";
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), creatures);
-  SERIALIZATION_CONSTRUCTOR(AttackCreatures);
+  SERIALIZE_ALL(SUBCLASS(Task), creatures)
+  SERIALIZATION_CONSTRUCTOR(AttackCreatures)
 
   private:
   vector<Creature*> SERIAL(creatures);
@@ -939,14 +936,15 @@ class KillFighters : public Task {
 
   virtual MoveInfo getMove(Creature* c) override {
     optional<Position> moveTarget;
-    for (const Creature* target : collective->getCreatures(MinionTrait::FIGHTER)) {
-      targets.insert(target);
-      moveTarget = target->getPosition();
-    }
-    for (const Creature* target : collective->getCreatures(MinionTrait::LEADER)) {
-      targets.insert(target);
-      moveTarget = target->getPosition();
-    }
+    auto process = [&] (const vector<Creature*>& creatures) {
+      for (const Creature* target : creatures)
+        if (c->canSeeInPosition(target, c->getGame()->getGlobalTime())) {
+          targets.insert(target);
+          moveTarget = target->getPosition();
+        }
+    };
+    process(collective->getCreatures(MinionTrait::FIGHTER));
+    process(collective->getCreatures(MinionTrait::LEADER));
     int numKilled = 0;
     for (auto& info : c->getKills())
       if (targets.contains(info.creature))
