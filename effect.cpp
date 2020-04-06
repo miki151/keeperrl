@@ -439,25 +439,25 @@ string Effects::AddAutomatonParts::getPartsNames(const ContentFactory* f) const 
   string ret = "";
   bool first = true;
 
-  for(ItemType part_type : part_types) {
+  for (auto& item : partTypes) {
     if(!first) {
       ret += ", ";
     }
-    ret += part_type.get(f)->getName();
+    ret += item.get(f)->getName();
     first = false;
   }
   return ret;
 }
 
 bool Effects::AddAutomatonParts::applyToCreature(Creature* c, Creature* attacker) const {
-  CHECK(part_types.size() > 0);
+  CHECK(partTypes.size() > 0);
 
-  if(c->getSpareAutomatonSlots() < part_types.size()) {
+  if(c->getSpareAutomatonSlots() < partTypes.size()) {
     return false;
   }
 
-  for(ItemType part_type : part_types) {
-    part_type.get(c->getGame()->getContentFactory())->getAutomatonPart()->apply(c);
+  for (auto& item : partTypes) {
+    item.get(c->getGame()->getContentFactory())->getAutomatonPart()->apply(c);
   }
   return true;
 }
@@ -1764,36 +1764,6 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
           if (victim->getBody().numLost(part) + victim->getBody().numInjured(part) > 0)
             return EffectAIIntent::WANTED;
         return EffectAIIntent::NONE;
-      },
-      [&](const Effects::AddAutomatonParts& e) {
-        if(isEnemy) {
-          return EffectAIIntent::NONE;
-        }
-
-        if(victim->getSpareAutomatonSlots() < e.part_types.size()) {
-          return EffectAIIntent::NONE;
-        }
-
-        PCreature test_dummy = CreatureFactory::getHumanForTests();
-        test_dummy->getAttributes().setAutomatonSlots(e.part_types.size());
-        test_dummy->addPermanentEffect(LastingEffect::IMMOBILE, 1);
-
-        for(ItemType part_type : e.part_types) {
-          part_type.get(test_dummy->getGame()->getContentFactory())->getAutomatonPart()->apply(test_dummy.get());
-        }
-
-        bool adds_legs = !test_dummy->isAffected(LastingEffect::IMMOBILE);
-        bool makes_human = test_dummy->getBody().isHumanoid();
-
-        if(victim->isAffected(LastingEffect::IMMOBILE)) {
-          return adds_legs ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
-        }
-
-        if(victim->getBody().isHumanoid() && makes_human) {
-          return EffectAIIntent::UNWANTED;
-        }
-
-        return EffectAIIntent::WANTED;
       },
       [&] (const auto&) {
         return EffectAIIntent::NONE;
