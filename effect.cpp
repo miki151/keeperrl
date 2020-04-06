@@ -1707,7 +1707,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
       [&] (const Effects::RegrowBodyPart&) {
         for (auto part : ENUM_ALL(BodyPart))
           if (victim->getBody().numLost(part) + victim->getBody().numInjured(part) > 0)
-            return EffectAIIntent::WANTED;
+            return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
         return EffectAIIntent::NONE;
       },
       [&] (const auto&) {
