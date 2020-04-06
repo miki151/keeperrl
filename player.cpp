@@ -617,7 +617,7 @@ bool Player::canTravel() const {
       return false;
     }
     if (auto intent = c->getLastCombatIntent())
-      if (intent->time > *creature->getGlobalTime() - 7_visible) {
+      if (intent->time > *creature->getGlobalTime() - 7_visible && intent->isHostile()) {
         getView()->presentText("Sorry", "You can't travel while being attacked by " + intent->attacker->getName().a());
         return false;
       }
