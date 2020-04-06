@@ -2361,7 +2361,7 @@ SGuiElem GuiBuilder::drawSpellSchoolButtons(const vector<SpellSchoolInfo>& schoo
 
 SGuiElem GuiBuilder::drawSpellSchoolsOverlay(const vector<SpellSchoolInfo>& schools, int index) {
   int margin = 20;
-  int minionListWidth = 330;
+  int minionListWidth = 230;
   SGuiElem menu;
   SGuiElem leftSide = drawSpellSchoolButtons(schools, index);
   menu = WL(stack,
@@ -2370,7 +2370,7 @@ SGuiElem GuiBuilder::drawSpellSchoolsOverlay(const vector<SpellSchoolInfo>& scho
           WL(margins, WL(sprite, GuiFactory::TexId::VERT_BAR_MINI, GuiFactory::Alignment::LEFT),
             0, -15, 0, -15)), minionListWidth),
       WL(leftMargin, minionListWidth + 20, WL(margins, drawSpellSchoolPage(schools[index]), 10, 15, 10, 10)));
-  return WL(preferredSize, 640 + minionListWidth, 600,
+  return WL(preferredSize, 440 + minionListWidth, 600,
       WL(miniWindow, WL(stack,
           WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::SPELL_SCHOOLS); }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
           WL(margins, std::move(menu), margin))));
