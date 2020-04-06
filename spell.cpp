@@ -115,8 +115,8 @@ SpellId Spell::getId() const {
   return id;
 }
 
-const char* Spell::getName() const {
-  return id.data();
+string Spell::getName(const ContentFactory* f) const {
+  return effect->getName(f);
 }
 
 optional<SpellId> Spell::getUpgrade() const {

@@ -106,17 +106,20 @@ bool SpellMap::contains(const SpellId id) const {
 
 void SpellMap::onExpLevelReached(Creature* c, ExperienceType type, int level) {
   string spellType = type == ExperienceType::SPELL ? "spell"_s : "ability"_s;
-  for (auto& elem : elems) {
-    if (level == elem.level && elem.expType == type) {
-      string spellName = elem.spell.getName();
-      auto upgrade = elem.spell.getUpgrade();
-      if (upgrade && !!getInfo(*upgrade)) {
-        string his = ::his(c->getAttributes().getGender());
-        c->addPersonalEvent(c->getName().a() + " improves " + his + " " + spellType + " of " + upgrade->data());
-        c->verb("improve", "improves", his + " " + spellType + " of " + upgrade->data());
-      } else {
-        c->addPersonalEvent(c->getName().a() + " learns the " + spellType + " of " + spellName);
-        c->verb("learn", "learns", "the " + spellType + " of " + spellName);
+  if (auto game = c->getGame()) {
+    auto factory = game->getContentFactory();
+    for (auto& elem : elems) {
+      if (level == elem.level && elem.expType == type) {
+        string spellName = elem.spell.getName(factory);
+        auto upgrade = elem.spell.getUpgrade();
+        if (upgrade && !!getInfo(*upgrade)) {
+          string his = ::his(c->getAttributes().getGender());
+          c->addPersonalEvent(c->getName().a() + " improves " + his + " " + spellType + " of " + upgrade->data());
+          c->verb("improve", "improves", his + " " + spellType + " of " + upgrade->data());
+        } else {
+          c->addPersonalEvent(c->getName().a() + " learns the " + spellType + " of " + spellName);
+          c->verb("learn", "learns", "the " + spellType + " of " + spellName);
+        }
       }
     }
   }

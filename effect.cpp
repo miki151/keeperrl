@@ -991,11 +991,11 @@ bool Effects::GrantAbility::applyToCreature(Creature* c, Creature* attacker) con
 }
 
 string Effects::GrantAbility::getName(const ContentFactory* f) const {
-  return "grant "_s + f->getCreatures().getSpell(id)->getName();
+  return "grant "_s + f->getCreatures().getSpell(id)->getName(f);
 }
 
 string Effects::GrantAbility::getDescription(const ContentFactory* f) const {
-  return "Grants ability: "_s + f->getCreatures().getSpell(id)->getName();
+  return "Grants ability: "_s + f->getCreatures().getSpell(id)->getName(f);
 }
 
 bool Effects::IncreaseMorale::applyToCreature(Creature* c, Creature* attacker) const {
