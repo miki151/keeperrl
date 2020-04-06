@@ -440,7 +440,7 @@ string Effects::AddAutomatonParts::getPartsNames(const ContentFactory* f) const 
   bool first = true;
 
   for (auto& item : partTypes) {
-    if(!first) {
+    if (!first) {
       ret += ", ";
     }
     ret += item.get(f)->getName();
@@ -452,7 +452,7 @@ string Effects::AddAutomatonParts::getPartsNames(const ContentFactory* f) const 
 bool Effects::AddAutomatonParts::applyToCreature(Creature* c, Creature* attacker) const {
   CHECK(partTypes.size() > 0);
 
-  if(c->getSpareAutomatonSlots() < partTypes.size()) {
+  if (c->getSpareAutomatonSlots() < partTypes.size()) {
     return false;
   }
 
