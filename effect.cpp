@@ -176,6 +176,12 @@ bool Effect::isConsideredHostile() const {
       [&](const Effects::Damage&) {
         return true;
       },
+      [&](const Effects::TakeOffSlots&) {
+        return true;
+      },
+      [&](const Effects::StealSlots&) {
+        return true;
+      },
       [&](const auto&) {
         return false;
       }
