@@ -2315,10 +2315,12 @@ bool Creature::CombatIntentInfo::isHostile() const {
 }
 
 void Creature::addCombatIntent(Creature* attacker, CombatIntentInfo::Type type) {
-  lastCombatIntent = CombatIntentInfo{type, attacker, *getGlobalTime()};
-  if (type == CombatIntentInfo::Type::ATTACK && (!attacker->isAffected(LastingEffect::INSANITY) ||
-      attacker->getAttributes().isAffectedPermanently(LastingEffect::INSANITY)))
-    privateEnemies.insert(attacker);
+  if (attacker != this) {
+    lastCombatIntent = CombatIntentInfo{type, attacker, *getGlobalTime()};
+    if (type == CombatIntentInfo::Type::ATTACK && (!attacker->isAffected(LastingEffect::INSANITY) ||
+        attacker->getAttributes().isAffectedPermanently(LastingEffect::INSANITY)))
+      privateEnemies.insert(attacker);
+  }
 }
 
 optional<Creature::CombatIntentInfo> Creature::getLastCombatIntent() const {

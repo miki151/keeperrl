@@ -1738,6 +1738,9 @@ void PlayerControl::onEvent(const GameEvent& event) {
         if (getControlled().empty() && canSee(info.position) && info.position.isSameLevel(getCurrentLevel()))
           getView()->animation(FXSpawnInfo(info.fx, info.position.getCoord(), info.direction.value_or(Vec2(0, 0))));
       },
+      [&](const LeaderWounded& info) {
+        leaderWoundedTime.set(info.c, getModel()->getLocalTime());
+      },
       [&](const auto&) {}
   );
 }
@@ -2846,7 +2849,8 @@ optional<PlayerControl::KeeperDangerInfo> PlayerControl::checkKeeperDanger() con
         return prompt("is suffering from poisoning");
       else if (keeper->isAffected(LastingEffect::BLEEDING))
         return prompt("is bleeding");
-      else if (keeper->getBody().isWounded())
+      else if (keeper->getBody().isWounded() &&
+          leaderWoundedTime.getOrElse(keeper, -100_local) > getModel()->getLocalTime() - 10_visible)
         return prompt("is wounded");
     }
   }

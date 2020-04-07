@@ -262,5 +262,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<pair<ViewId,int>> getCostObj(const optional<CostInfo>&) const;
   vector<WorkshopOptionInfo> getWorkshopOptions() const;
   ViewId getViewId(const BuildInfo&) const;
+  EntityMap<Creature, LocalTime> leaderWoundedTime;
 };
 

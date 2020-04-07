@@ -19,6 +19,7 @@
 #include "animation_id.h"
 #include "item_types.h"
 #include "health_type.h"
+#include "game_event.h"
 
 static double getDefaultWeight(Body::Size size) {
   switch (size) {
@@ -923,6 +924,9 @@ void Body::bleed(Creature* c, double amount) {
   if (hasAnyHealth()) {
     health -= amount;
     c->updateViewObject();
+    if (c->getStatus().contains(CreatureStatus::LEADER))
+      if (auto game = c->getGame())
+        game->addEvent(EventInfo::LeaderWounded{c});
   }
 }
 
