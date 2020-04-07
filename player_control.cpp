@@ -1129,8 +1129,10 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions() const {
 }
 
 CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQueuedItem& item, int cnt,
-    int itemIndex) const {
-  CollectiveInfo::QueuedItemInfo ret {item.state, item.paid, getWorkshopItem(item.item, cnt), {}, {}, 0, itemIndex};
+    int itemIndex, bool hasLegendarySkill) const {
+  CollectiveInfo::QueuedItemInfo ret {item.state,
+        item.paid && (item.runes.empty() || item.item.notArtifact || hasLegendarySkill),
+        getWorkshopItem(item.item, cnt), {}, {}, 0, itemIndex};
   if (!item.paid)
     ret.itemInfo.description.push_back("Cannot afford item");
   for (auto& it : getItemUpgradesFor(item.item)) {
@@ -1155,13 +1157,19 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
 
 vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() const {
   vector<CollectiveInfo::QueuedItemInfo> ret;
+  bool hasLegendarySkill = [&] {
+    for (auto c : getCreatures())
+      if (c->getAttributes().getSkills().getValue(*chosenWorkshop) >= Workshops::getLegendarySkillThreshold())
+        return true;
+    return false;
+  }();
   auto& queued = collective->getWorkshops().types.at(*chosenWorkshop).getQueued();
   for (int i : All(queued)) {
     if (i > 0 && queued[i - 1].indexInWorkshop == queued[i].indexInWorkshop && queued[i - 1].paid == queued[i].paid &&
         queued[i].runes.empty() && queued[i - 1].runes.empty() && queued[i].state == 0 && queued[i - 1].state == 0)
-      ret.back() = getQueuedItemInfo(queued[i], ret.back().itemInfo.number + 1, ret.back().itemIndex);
+      ret.back() = getQueuedItemInfo(queued[i], ret.back().itemInfo.number + 1, ret.back().itemIndex, hasLegendarySkill);
     else
-      ret.push_back(getQueuedItemInfo(queued[i], 1, i));
+      ret.push_back(getQueuedItemInfo(queued[i], 1, i, hasLegendarySkill));
   }
   return ret;
 }
@@ -1358,7 +1366,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     info.immigration.back().requirements = immigration.getMissingRequirements(candidate);
     info.immigration.back().info = infoLines;
     info.immigration.back().specialTraits = candidate.getSpecialTraits().transform(
-        [&](const auto& trait){ return getSpecialTraitInfo(trait, getGame()->getContentFactory()); });
+        [&](const auto& trait){ return getSpecialTraitInfo(trait, this->getGame()->getContentFactory()); });
     info.immigration.back().cost = getCostObj(candidate.getCost());
     info.immigration.back().name = name;
     info.immigration.back().viewId = c->getViewObject().id();

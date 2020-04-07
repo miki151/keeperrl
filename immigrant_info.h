@@ -160,7 +160,7 @@ class ImmigrantInfo {
   template <typename Visitor>
   void visitRequirements(const Visitor& visitor) const {
     for (auto& requirement : requirements) {
-      requirement.type.visit<void>(visitor);
+      requirement.type.template visit<void>(visitor);
     }
   }
 

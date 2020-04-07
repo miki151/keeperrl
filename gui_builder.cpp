@@ -2089,12 +2089,13 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
   for (int i : All(queued)) {
     auto& elem = queued[i];
     auto line = WL(getListBuilder);
-    auto label = WL(label, elem.itemInfo.name, elem.paid ? Color::WHITE : Color::RED);
+    auto color = elem.paid ? Color::WHITE : Color::RED;
+    auto label = WL(label, elem.itemInfo.name, color);
     if (elem.itemInfo.ingredient)
       label = WL(getListBuilder)
           .addElemAuto(std::move(label))
-          .addElemAuto(WL(label, " from "))
-          .addElemAuto(getItemLine(*elem.itemInfo.ingredient, [](Rectangle){}))
+          .addElemAuto(WL(label, " from ", color))
+          .addElemAuto(WL(viewObject, elem.itemInfo.ingredient->viewId))
           .buildHorizontalList();
     line.addMiddleElem(WL(stack,
         WL(button, getButtonCallback({UserInputId::REMOVE_WORKSHOP_ITEM, elem.itemIndex})),
