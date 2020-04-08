@@ -72,6 +72,12 @@ struct AssembledMinion {
   CreatureId SERIAL(creature);
   SERIALIZE_ALL(creature)
 };
+struct AddAutomatonParts {
+  EFFECT_TYPE_INTERFACE;
+  string getPartsNames(const ContentFactory*) const;
+  vector<ItemType> SERIAL(partTypes);
+  SERIALIZE_ALL(partTypes);
+};
 struct SummonEnemy {
   EFFECT_TYPE_INTERFACE;
   SummonEnemy(CreatureId id, Range c) : creature(id), count(c) {}
@@ -395,6 +401,7 @@ struct AITargetEnemy {
   X(IncreaseSkill, 64)\
   X(IncreaseWorkshopSkill, 65)\
   X(FilterLasting, 66)\
+  X(AddAutomatonParts, 67)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

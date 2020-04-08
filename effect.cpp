@@ -435,6 +435,41 @@ string Effects::AssembledMinion::getDescription(const ContentFactory* f) const {
   return "Can be assembled to a " + getName(f);
 }
 
+string Effects::AddAutomatonParts::getPartsNames(const ContentFactory* f) const {
+  string ret = "";
+  bool first = true;
+
+  for (auto& item : partTypes) {
+    if (!first) {
+      ret += ", ";
+    }
+    ret += item.get(f)->getName();
+    first = false;
+  }
+  return ret;
+}
+
+bool Effects::AddAutomatonParts::applyToCreature(Creature* c, Creature* attacker) const {
+  CHECK(partTypes.size() > 0);
+
+  if (c->getSpareAutomatonSlots() < partTypes.size()) {
+    return false;
+  }
+
+  for (auto& item : partTypes) {
+    item.get(c->getGame()->getContentFactory())->getAutomatonPart()->apply(c);
+  }
+  return true;
+}
+
+string Effects::AddAutomatonParts::getName(const ContentFactory* f) const {
+  return "attach " + getPartsNames(f);
+}
+
+string Effects::AddAutomatonParts::getDescription(const ContentFactory* f) const {
+  return "Attaches " + getPartsNames(f) + " to the creature.";
+}
+
 bool Effects::SummonEnemy::applyToCreature(Creature* c, Creature* attacker) const {
   return false;
 }
@@ -1259,7 +1294,7 @@ bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const
     case FilterType::ENEMY:
       return !!c && !!attacker && c->isEnemy(attacker);
     case FilterType::AUTOMATON:
-      return !!c && !c->automatonParts.empty();
+      return !!c && (c->getAttributes().getAutomatonSlots() > 0);
   }
 }
 
@@ -1738,7 +1773,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
 /* Unimplemented: Teleport, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr, IncreaseSkill, IncreaseWorkshopSkill
       EmitPoisonGas, CircularBlast, Alarm, SilverDamage, DoubleTrouble,
       PlaceFurniture, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-      ReviveCorpse, Blast, Shove, SwapPosition*/
+      ReviveCorpse, Blast, Shove, SwapPosition, AddAutomatonParts, AddBodyPart, MakeHumanoid */
 
 EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const {
   PROFILE_BLOCK("Effect::shouldAIApply");

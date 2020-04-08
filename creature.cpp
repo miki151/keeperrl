@@ -2348,3 +2348,7 @@ Creature* Creature::getClosestEnemy() const {
   }
   return result;
 }
+
+int Creature::getSpareAutomatonSlots() const {
+  return getAttributes().getAutomatonSlots() - automatonParts.size();
+}
