@@ -202,6 +202,11 @@ void load(PrettyInputArchive& ar1, T& obj) {
   obj.serialize(ar1);
 }
 
+template<typename T>
+void load(PrettyInputArchive& ar1, cereal::base_class<T>& obj) {
+  load(ar1, *obj.base_ptr);
+}
+
 namespace variant_detail {
   template<int N, class Variant, class ... Args>
   typename std::enable_if<N == Variant::num_types>::type
