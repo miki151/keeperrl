@@ -1761,9 +1761,11 @@ CreatureAction Creature::whip(const Position& pos, double animChance) const {
 }
 
 void Creature::addSound(const Sound& sound1) const {
-  Sound sound(sound1);
-  sound.setPosition(getPosition());
-  getGame()->getView()->addSound(sound);
+  if (auto game = getGame()) {
+    Sound sound(sound1);
+    sound.setPosition(getPosition());
+    game->getView()->addSound(sound);
+  }
 }
 
 CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {

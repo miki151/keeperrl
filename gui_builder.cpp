@@ -1820,7 +1820,7 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialIn
       auto line = WL(getListBuilder);
       line.addElem(WL(viewObject, elem.viewId), 40);
       SGuiElem tmp = WL(label, toString(elem.count) + "   " + elem.name, Color::WHITE);
-      line.addElem(std::move(tmp), 200);
+      line.addElem(WL(renderInBounds, std::move(tmp)), 200);
       list.addElem(WL(stack, makeVec(
           cache->get(selectButton, THIS_LINE, elem.creatureId),
           WL(dragSource, {DragContentId::CREATURE_GROUP, elem.creatureId},
