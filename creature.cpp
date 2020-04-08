@@ -1446,7 +1446,8 @@ void Creature::affectBySilver() {
 }
 
 bool Creature::affectByAcid() {
-  if (getBody().affectByAcid(this)) {
+  if (!isAffected(LastingEffect::ACID_RESISTANT) &&
+      getBody().affectByAcid(this)) {
     you(MsgType::ARE, "dissolved by acid");
     dieWithReason("dissolved by acid");
     return true;

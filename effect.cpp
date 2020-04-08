@@ -153,13 +153,13 @@ static bool isConsideredHostile(LastingEffect effect) {
   }
 }
 
-bool Effect::isConsideredHostile() const {
+bool Effect::isConsideredHostile(const Creature* victim) const {
   return effect->visit<bool>(
       [&](const Effects::Lasting& e) {
-        return ::isConsideredHostile(e.lastingEffect);
+        return LastingEffects::affects(victim, e.lastingEffect) && ::isConsideredHostile(e.lastingEffect);
       },
       [&](const Effects::Acid&) {
-        return true;
+        return !victim->isAffected(LastingEffect::ACID_RESISTANT);
       },
       [&](const Effects::DestroyEquipment&) {
         return true;
@@ -168,10 +168,10 @@ bool Effect::isConsideredHostile() const {
         return true;
       },
       [&](const Effects::Fire&) {
-        return true;
+        return !victim->isAffected(LastingEffect::FIRE_RESISTANT);
       },
       [&](const Effects::Ice&) {
-        return true;
+        return !victim->isAffected(LastingEffect::COLD_RESISTANT);
       },
       [&](const Effects::Damage&) {
         return true;
@@ -1370,7 +1370,7 @@ Effect& Effect::operator =(const Effect&) = default;
 bool Effect::apply(Position pos, Creature* attacker) const {
   if (auto c = pos.getCreature()) {
     bool res = FORWARD_CALL(bool, effect, applyToCreature, c, attacker);
-    if (isConsideredHostile() && attacker)
+    if (isConsideredHostile(c) && attacker)
       c->onAttackedBy(attacker);
     if (res)
       return true;

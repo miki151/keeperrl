@@ -819,6 +819,14 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
         default:
           return false;
       }
+    case LastingEffect::ACID_RESISTANT:
+      switch (material) {
+        case Material::FIRE:
+        case Material::SPIRIT:
+          return true;
+        default:
+          return false;
+      }
     case LastingEffect::FIRE_RESISTANT:
       switch (material) {
         case Material::FLESH:
@@ -903,12 +911,6 @@ bool Body::affectBySilver(Creature* c) {
 }
 
 bool Body::affectByAcid(Creature* c) {
-  switch (material) {
-    case Material::FIRE:
-    case Material::SPIRIT:
-      return false;
-    default: break;
-  }
   c->you(MsgType::ARE, "hurt by the acid");
   bleed(c, 0.2);
   return health <= 0;
