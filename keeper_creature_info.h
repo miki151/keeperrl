@@ -25,6 +25,7 @@ struct KeeperCreatureInfo {
   int SERIAL(immigrantInterval) = 140;
   string SERIAL(populationString) = "population";
   bool SERIAL(noLeader) = false;
+  bool SERIAL(prisoners) = true;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);
 };

@@ -98,7 +98,7 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
   auto keeperInfo = *avatarInfo.creatureInfo.getReferenceMaybe<KeeperCreatureInfo>();
   auto builder = CollectiveBuilder(CollectiveConfig::keeper(
           TimeInterval(keeperInfo.immigrantInterval), keeperInfo.maxPopulation, keeperInfo.populationString,
-          ConquerCondition::KILL_LEADER),
+          keeperInfo.prisoners, ConquerCondition::KILL_LEADER),
       keeperRef->getTribeId())
       .setModel(model)
       .addCreature(keeperRef, keeperInfo.minionTraits);

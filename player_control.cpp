@@ -1796,7 +1796,7 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
       auto& object = index.getObject(ViewLayer::CREATURE);
       if (isEnemy(c)) {
         object.setModifier(ViewObject::Modifier::HOSTILE);
-        if (c->canBeCaptured())
+        if (c->canBeCaptured() && collective->getConfig().canCapturePrisoners())
           object.setClickAction(c->isCaptureOrdered() ?
               ViewObjectAction::CANCEL_CAPTURE_ORDER : ViewObjectAction::ORDER_CAPTURE);
       } else
@@ -2281,6 +2281,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           else
             setChosenTeam(*chosenTeam, c->getUniqueId());
         } else
+        if (collective->getConfig().canCapturePrisoners())
           c->toggleCaptureOrder();
       }
       break;

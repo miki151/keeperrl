@@ -69,7 +69,7 @@ struct FloorInfo {
 class CollectiveConfig {
   public:
   static CollectiveConfig keeper(TimeInterval immigrantInterval, int maxPopulation, string populationString,
-      ConquerCondition);
+      bool prisoners, ConquerCondition);
   static CollectiveConfig noImmigrants();
 
   bool isLeaderFighter() const;
@@ -92,6 +92,7 @@ class CollectiveConfig {
   bool isConquered(const Collective*) const;
   bool xCanEnemyRetire() const;
   CollectiveConfig& setConquerCondition(ConquerCondition);
+  bool canCapturePrisoners() const;
 
   static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, ContentFactory*);
 
@@ -120,4 +121,5 @@ class CollectiveConfig {
   bool SERIAL(canEnemyRetire) = true;
   ConquerCondition SERIAL(conquerCondition) = ConquerCondition::KILL_FIGHTERS_AND_LEADER;
   string SERIAL(populationString);
+  bool SERIAL(prisoners) = true;
 };

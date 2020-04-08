@@ -66,5 +66,6 @@
   maxPopulation = 0
   populationString = "automatons"
   noLeader = true
+  prisoners = false
 }
 
