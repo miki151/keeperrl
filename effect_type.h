@@ -237,6 +237,8 @@ struct FilterLasting : GenericFilterEffect {
   LastingEffect SERIAL(filter);
   SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
 };
+// FilterSpell is an effect that applies an effect only if
+// target has an ability SpellId(filter).
 struct FilterSpell : GenericFilterEffect {
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;
@@ -244,7 +246,9 @@ struct FilterSpell : GenericFilterEffect {
   SpellId SERIAL(filter);
   SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
 };
-// FilterTech is highly CPU unfriendly.
+// FilterHasIngr is an effect that applies an effect only if
+// target's tribe has unlocked TechId(filter).
+// !!!! FilterTech is highly CPU unfriendly. !!!
 struct FilterTech : GenericFilterEffect {
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;
@@ -252,14 +256,18 @@ struct FilterTech : GenericFilterEffect {
   TechId SERIAL(filter);
   SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
 };
-// FilterTrait is highly CPU unfriendly.
+// FilterTrait is an effect that applies an effect only if
+// target has a MinionTrait(filter).
+// !!! FilterTrait is highly CPU unfriendly. !!!
 struct FilterTrait : GenericFilterEffect {
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;
   bool applies(const Creature* c, const Creature* attacker) const;
-  string SERIAL(filter);
+  MinionTrait SERIAL(filter);
   SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
 };
+// FilterHasIngr is an effect that applies an effect only if
+// target has an item with ingredientType(filter) in their inventory.
 struct FilterHasIngr : GenericFilterEffect {
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;
@@ -267,6 +275,8 @@ struct FilterHasIngr : GenericFilterEffect {
   string SERIAL(filter);
   SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
 };
+// FilterEquippedIngr is an effect that applies an effect only if
+// target has an item with ingredientType(filter) equipped.
 struct FilterEquippedIngr : GenericFilterEffect {
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;

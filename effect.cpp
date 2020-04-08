@@ -1343,7 +1343,7 @@ string Effects::FilterSpell::getName(const ContentFactory* f) const {
 string Effects::FilterSpell::getDescription(const ContentFactory* f) const {
   auto suffix = [&] {
     return " (applied only to creatures with " + f->getCreatures().getSpell(filter)->getName(f) + " ability)";
-  }
+  };
   return effect->getDescription(f) + suffix();
 }
 
@@ -1378,13 +1378,13 @@ bool Effects::FilterTrait::applies(const Creature* c, const Creature* attacker) 
 }
 
 string Effects::FilterTrait::getName(const ContentFactory* f) const {
-  return effect->getName(f) + " (" + filter + " carrying creatures only)";
+  return effect->getName(f) + " (" + getTraitName(filter) + " carrying creatures only)";
 }
 
 string Effects::FilterTrait::getDescription(const ContentFactory* f) const {
   auto suffix = [&] {
-    return " (applied only to creatures that have " + filter + " ingredient in their inventory)";
-  }
+    return " (applied only to creatures that have " + getTraitName(filter) + " ingredient in their inventory)";
+  };
   return effect->getDescription(f) + suffix();
 }
 
@@ -1399,7 +1399,7 @@ string Effects::FilterHasIngr::getName(const ContentFactory* f) const {
 string Effects::FilterHasIngr::getDescription(const ContentFactory* f) const {
   auto suffix = [&] {
     return " (applied only to creatures that have " + filter + " ingredient equipped)";
-  }
+  };
   return effect->getDescription(f) + suffix();
 }
 
@@ -1415,7 +1415,6 @@ bool Effects::FilterEquippedIngr::applies(const Creature* c, const Creature* att
   return false;
 }
 
-
 string Effects::FilterEquippedIngr::getName(const ContentFactory* f) const {
   return effect->getName(f) + " (equipped with " + filter + " creatures only)";
 }
@@ -1423,7 +1422,7 @@ string Effects::FilterEquippedIngr::getName(const ContentFactory* f) const {
 string Effects::FilterEquippedIngr::getDescription(const ContentFactory* f) const {
   auto suffix = [&] {
     return " (applied only to creatures that have " + filter + " ingredient equipped)";
-  }
+  };
   return effect->getDescription(f) + suffix();
 }
 
