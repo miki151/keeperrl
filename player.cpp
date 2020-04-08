@@ -475,6 +475,7 @@ void Player::sleeping() {
   MEASURE(
       getView()->updateView(this, false),
       "level render time");
+  onFellAsleep();
 }
 
 vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(Creature* c) const {
@@ -818,7 +819,7 @@ void Player::makeMove() {
   #endif
       default: break;
     }
-  if (creature->isAffected(LastingEffect::SLEEP)) {
+  if (creature->hasCondition(CreatureCondition::SLEEPING)) {
     onFellAsleep();
     return;
   }

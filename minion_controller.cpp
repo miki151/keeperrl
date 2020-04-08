@@ -142,7 +142,7 @@ class MinionController : public Player {
   }
 
   virtual void onFellAsleep() override {
-    getGame()->getView()->presentText("Important!", "You fall asleep. You lose control of your minion.");
+    getGame()->getView()->presentText("Important!", "You lose control of your minion.");
     unpossess();
   }
 
