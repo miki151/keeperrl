@@ -47,6 +47,17 @@ void Inventory::addItem(PItem item) {
     if (index < resourceIndexes.size() && resourceIndexes[index])
       resourceIndexes[index]->insert(item.get());
   }
+  if (auto ingredientType = item->getIngredientType()) {
+    auto p = ingredientTypes.find(*ingredientType);
+    if(p == ingredientTypes.end()) {
+      ItemVector iv;
+      iv.insert(item.get());
+      ingredientTypes.insert(pair<string, ItemVector&>(*ingredientType, iv));
+    }
+    else {
+      p->second.insert(item.get());
+    }
+  }
   weight += item->getWeight();
   items.insert(std::move(item));
 }
@@ -68,6 +79,14 @@ PItem Inventory::removeItem(Item* itemRef) {
     int index = id->getInternalId();
     if (index < resourceIndexes.size() && resourceIndexes[index])
       resourceIndexes[index]->remove(item.get());
+  }
+  if (auto ingredientType = item->getIngredientType()) {
+    auto p = ingredientTypes.find(*ingredientType);
+    if(p != ingredientTypes.end()) {
+      if(p->second.getElems().empty()) {
+        ingredientTypes.erase(*ingredientType);
+      }
+    }
   }
   return item;
 }
@@ -135,6 +154,19 @@ const vector<Item*>& Inventory::getItems(CollectiveResourceId id) const {
   return elems->getElems();
 }
 
+const vector<Item*>& Inventory::getItems(string ingredientType) const {
+  static vector<Item*> empty;;
+  if (isEmpty()) {
+    return empty;
+  }
+  auto elems = ingredientTypes.find(ingredientType);
+  if (elems != ingredientTypes.end()) {
+    return elems->second.getElems();
+  }
+  return empty;
+}
+
+
 const ItemCounts& Inventory::getCounts() const {
   return counts;
 }
@@ -145,6 +177,10 @@ const vector<Item*>& Inventory::getItems() const {
 
 bool Inventory::hasItem(const Item* itemRef) const {
   return !!itemsCache.fetch(itemRef->getUniqueId());
+}
+
+bool Inventory::hasItem(string ingredientType) const {
+  return ingredientTypes.count(ingredientType) > 0;
 }
 
 int Inventory::size() const {

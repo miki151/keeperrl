@@ -2141,10 +2141,6 @@ SGuiElem GuiBuilder::drawCreatureUpgradeMenu(SyncQueue<optional<ExperienceType>>
       WL(window, WL(margins, lines.buildVerticalList(), margin), [&queue] { queue.push(none); }));
 }
 
-static string getName(TechId id) {
-  return id.data();
-}
-
 SGuiElem GuiBuilder::drawTechUnlocks(const CollectiveInfo::LibraryInfo::TechInfo& tech) {
   auto lines = WL(getListBuilder, legendLineHeight);
   for (int i : All(tech.unlocks)) {

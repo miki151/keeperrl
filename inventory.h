@@ -41,9 +41,11 @@ class Inventory {
   vector<Item*> getItems(function<bool (const Item*)> predicate) const;
   const vector<Item*>& getItems(ItemIndex) const;
   const vector<Item*>& getItems(CollectiveResourceId) const;
+  const vector<Item*>& getItems(string ingredientType) const;
   const ItemCounts& getCounts() const;
 
   bool hasItem(const Item*) const;
+  bool hasItem(string ingredientType) const;
   Item* getItemById(UniqueEntity<Item>::Id) const;
   int size() const;
   double getTotalWeight() const;
@@ -66,5 +68,6 @@ class Inventory {
   double SERIAL(weight) = 0;
   mutable EnumMap<ItemIndex, optional<ItemVector>> indexes;
   mutable vector<optional<ItemVector>> resourceIndexes;
+  map<string, ItemVector&> ingredientTypes;
   void addViewId(ViewId, int count);
 };

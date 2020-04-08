@@ -52,6 +52,10 @@ bool Equipment::hasItem(const Item* it) const {
   return inventory.hasItem(it);
 }
 
+bool Equipment::hasItem(string ingredientType) const {
+  return inventory.hasItem(ingredientType);
+}
+
 const vector<Item*>& Equipment::getAllEquipped() const {
   return equipped;
 }
@@ -66,6 +70,10 @@ const vector<Item*>& Equipment::getItems(ItemIndex index) const {
 
 Item* Equipment::getItemById(UniqueEntity<Item>::Id id) const {
   return inventory.getItemById(id);
+}
+
+const vector<Item*>& Equipment::getItemsByIngredientType(string ingredientType) const {
+  return inventory.getItems(ingredientType);
 }
 
 bool Equipment::isEquipped(const Item* item) const {

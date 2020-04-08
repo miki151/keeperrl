@@ -17,4 +17,7 @@ RICH_ENUM(MinionTrait,
   AUTOMATON
 );
 
+const string getName(const MinionTrait);
+const string getTraitName(const MinionTrait);
+
 extern const char* /*can be null*/ getImmigrantDescription(MinionTrait);

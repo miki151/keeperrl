@@ -11,6 +11,8 @@
 #include "color.h"
 #include "fx_info.h"
 #include "workshop_type.h"
+#include "enums.h"
+#include "tech_id.h"
 
 RICH_ENUM(FilterType, ALLY, ENEMY, AUTOMATON);
 
@@ -28,6 +30,17 @@ RICH_ENUM(FilterType, ALLY, ENEMY, AUTOMATON);
 
 namespace Effects {
 struct DefaultEffect {};
+
+struct GenericModifierEffect {
+  EFFECT_TYPE_INTERFACE;
+  HeapAllocated<Effect> SERIAL(effect);
+  SERIALIZE_ALL(effect)
+};
+struct GenericFilterEffect : GenericModifierEffect {
+  bool applyToCreature(Creature*, Creature* attacker = nullptr) const;
+  bool applies(const Creature* c, const Creature* attacker) const;
+};
+
 SIMPLE_EFFECT(Escape);
 SIMPLE_EFFECT(Teleport);
 SIMPLE_EFFECT(Jump);
@@ -209,19 +222,57 @@ struct ReviveCorpse {
   int SERIAL(ttl);
   SERIALIZE_ALL(summoned, ttl)
 };
-struct Filter {
-  EFFECT_TYPE_INTERFACE;
+// Filter effects filters by FilterTypes.
+struct Filter : GenericFilterEffect {
+  string getName(const ContentFactory*) const;
+  string getDescription(const ContentFactory*) const;
   bool applies(const Creature* c, const Creature* attacker) const;
   FilterType SERIAL(filter);
-  HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(filter, effect)
+  SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
 };
-struct FilterLasting {
-  EFFECT_TYPE_INTERFACE;
+struct FilterLasting : GenericFilterEffect {
+  string getName(const ContentFactory*) const;
+  string getDescription(const ContentFactory*) const;
   bool applies(const Creature* c, const Creature* attacker) const;
-  LastingEffect SERIAL(filter_effect);
-  HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(filter_effect, effect)
+  LastingEffect SERIAL(filter);
+  SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
+};
+struct FilterSpell : GenericFilterEffect {
+  string getName(const ContentFactory*) const;
+  string getDescription(const ContentFactory*) const;
+  bool applies(const Creature* c, const Creature* attacker) const;
+  SpellId SERIAL(filter);
+  SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
+};
+// FilterTech is highly CPU unfriendly.
+struct FilterTech : GenericFilterEffect {
+  string getName(const ContentFactory*) const;
+  string getDescription(const ContentFactory*) const;
+  bool applies(const Creature* c, const Creature* attacker) const;
+  TechId SERIAL(filter);
+  SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
+};
+// FilterTrait is highly CPU unfriendly.
+struct FilterTrait : GenericFilterEffect {
+  string getName(const ContentFactory*) const;
+  string getDescription(const ContentFactory*) const;
+  bool applies(const Creature* c, const Creature* attacker) const;
+  string SERIAL(filter);
+  SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
+};
+struct FilterHasIngr : GenericFilterEffect {
+  string getName(const ContentFactory*) const;
+  string getDescription(const ContentFactory*) const;
+  bool applies(const Creature* c, const Creature* attacker) const;
+  string SERIAL(filter);
+  SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
+};
+struct FilterEquippedIngr : GenericFilterEffect {
+  string getName(const ContentFactory*) const;
+  string getDescription(const ContentFactory*) const;
+  bool applies(const Creature* c, const Creature* attacker) const;
+  string SERIAL(filter);
+  SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
 };
 SIMPLE_EFFECT(Wish);
 struct Caster {
@@ -259,11 +310,6 @@ struct IncreaseMorale {
   EFFECT_TYPE_INTERFACE;
   double SERIAL(amount);
   SERIALIZE_ALL(amount)
-};
-struct GenericModifierEffect {
-  EFFECT_TYPE_INTERFACE;
-  HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(effect)
 };
 struct Chance : GenericModifierEffect {
   string getDescription(const ContentFactory*) const;
@@ -400,6 +446,11 @@ struct AITargetEnemy : GenericModifierEffect {
   X(IncreaseWorkshopSkill, 65)\
   X(FilterLasting, 66)\
   X(AddAutomatonParts, 67)\
+  X(FilterSpell, 68)\
+  X(FilterTech, 69)\
+  X(FilterTrait, 70)\
+  X(FilterHasIngr, 71)\
+  X(FilterEquippedIngr, 72)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

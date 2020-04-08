@@ -58,7 +58,24 @@
 #include "vision.h"
 #include "workshop_type.h"
 #include "automaton_part.h"
+#include "minion_trait.h"
+#include "tech_id.h"
 
+bool Effects::GenericModifierEffect::applyToCreature(Creature* c, Creature* attacker) const {
+  return false;
+}
+
+string Effects::GenericModifierEffect::getName(const ContentFactory* f) const {
+  return effect->getName(f);
+}
+
+string Effects::GenericModifierEffect::getDescription(const ContentFactory* f) const {
+  return effect->getDescription(f);
+}
+
+bool Effects::GenericFilterEffect::applyToCreature(Creature *c, Creature* attacker) const {
+  return applies(c, attacker) && effect->apply(c->getPosition(), attacker);
+}
 
 static void summonFX(Position pos) {
   auto color = Color(240, 146, 184);
@@ -1063,18 +1080,6 @@ string Effects::Caster::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f);
 }
 
-bool Effects::GenericModifierEffect::applyToCreature(Creature* c, Creature* attacker) const {
-  return false;
-}
-
-string Effects::GenericModifierEffect::getName(const ContentFactory* f) const {
-  return effect->getName(f);
-}
-
-string Effects::GenericModifierEffect::getDescription(const ContentFactory* f) const {
-  return effect->getDescription(f);
-}
-
 string Effects::Chance::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f) + " (" + toString(int(value * 100)) + "% chance)";
 }
@@ -1273,20 +1278,16 @@ string Effects::Fx::getDescription(const ContentFactory*) const {
 }
 
 bool Effects::FilterLasting::applies(const Creature* c, const Creature* attacker) const {
-  return !!c && c->isAffected(filter_effect);
-}
-
-bool Effects::FilterLasting::applyToCreature(Creature* c, Creature* attacker) const {
-  return applies(c, attacker) && effect->apply(c->getPosition(), attacker);
+  return !!c && c->isAffected(filter);
 }
 
 string Effects::FilterLasting::getName(const ContentFactory* f) const {
-  return effect->getName(f) + " (" + LastingEffects::getName(filter_effect) + " creatures only)";
+  return effect->getName(f) + " (" + LastingEffects::getName(filter) + " creatures only)";
 }
 
 string Effects::FilterLasting::getDescription(const ContentFactory* f) const {
   auto suffix = [&] {
-    return " (applied only to creatures with " + LastingEffects::getName(filter_effect) + " effect)";
+    return " (applied only to creatures with " + LastingEffects::getName(filter) + " effect)";
   };
   return effect->getDescription(f) + suffix();
 }
@@ -1300,10 +1301,7 @@ bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const
     case FilterType::AUTOMATON:
       return !!c && (c->getAttributes().getAutomatonSlots() > 0);
   }
-}
-
-bool Effects::Filter::applyToCreature(Creature* c, Creature* attacker) const {
-  return applies(c, attacker) && effect->apply(c->getPosition(), attacker);
+  return false;
 }
 
 string Effects::Filter::getName(const ContentFactory* f) const {
@@ -1331,6 +1329,101 @@ string Effects::Filter::getDescription(const ContentFactory* f) const {
         return " (applied only to automatons)";
     }
   };
+  return effect->getDescription(f) + suffix();
+}
+
+bool Effects::FilterSpell::applies(const Creature* c, const Creature* attacker) const {
+  return !!c && c->getSpellMap().contains(filter);
+}
+
+string Effects::FilterSpell::getName(const ContentFactory* f) const {
+  return effect->getName(f) + " (" + f->getCreatures().getSpell(filter)->getName(f) + " able creatures only)";
+}
+
+string Effects::FilterSpell::getDescription(const ContentFactory* f) const {
+  auto suffix = [&] {
+    return " (applied only to creatures with " + f->getCreatures().getSpell(filter)->getName(f) + " ability)";
+  }
+  return effect->getDescription(f) + suffix();
+}
+
+bool Effects::FilterTech::applies(const Creature* c, const Creature* attacker) const {
+  if(!c) {
+    return false;
+  }
+  for (Collective* col : c->getGame()->getCollectives())
+      if (col->getCreatures().contains(c))
+        return col->getTechnology().researched.count(filter) > 0;
+  return false;
+}
+string Effects::FilterTech::getName(const ContentFactory* f) const {
+  return effect->getName(f) + " (" + getTechIdName(filter) + " capable only)";
+}
+
+string Effects::FilterTech::getDescription(const ContentFactory* f) const {
+  auto suffix = [&] {
+    return " (applied only to creatures from collectives that are " + getTechIdName(filter) + " capable)";
+  };
+  return effect->getDescription(f) + suffix();
+}
+
+bool Effects::FilterTrait::applies(const Creature* c, const Creature* attacker) const {
+  if(!c) {
+    return false;
+  }
+  for (Collective* col : c->getGame()->getCollectives())
+      if (col->hasTrait(c, filter))
+        return true;
+  return false;
+}
+
+string Effects::FilterTrait::getName(const ContentFactory* f) const {
+  return effect->getName(f) + " (" + filter + " carrying creatures only)";
+}
+
+string Effects::FilterTrait::getDescription(const ContentFactory* f) const {
+  auto suffix = [&] {
+    return " (applied only to creatures that have " + filter + " ingredient in their inventory)";
+  }
+  return effect->getDescription(f) + suffix();
+}
+
+bool Effects::FilterHasIngr::applies(const Creature* c, const Creature* attacker) const {
+  return !!c && c->getEquipment().hasItem(filter);
+}
+
+string Effects::FilterHasIngr::getName(const ContentFactory* f) const {
+  return effect->getName(f) + " (equipped with " + filter + " creatures only)";
+}
+
+string Effects::FilterHasIngr::getDescription(const ContentFactory* f) const {
+  auto suffix = [&] {
+    return " (applied only to creatures that have " + filter + " ingredient equipped)";
+  }
+  return effect->getDescription(f) + suffix();
+}
+
+bool Effects::FilterEquippedIngr::applies(const Creature* c, const Creature* attacker) const {
+  if(!c) {
+    return false;
+  }
+  for(Item* item : c->getEquipment().getItemsByIngredientType(filter)) {
+    if (c->getEquipment().isEquipped(item)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+string Effects::FilterEquippedIngr::getName(const ContentFactory* f) const {
+  return effect->getName(f) + " (equipped with " + filter + " creatures only)";
+}
+
+string Effects::FilterEquippedIngr::getDescription(const ContentFactory* f) const {
+  auto suffix = [&] {
+    return " (applied only to creatures that have " + filter + " ingredient equipped)";
+  }
   return effect->getDescription(f) + suffix();
 }
 
@@ -1777,12 +1870,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
       [&] (const Effects::CustomArea& a) {
         return considerArea(a.getTargetPos(caster, pos), *a.effect);
       },
-      [&] (const Effects::Filter& e) {
-        if (victim && e.applies(victim, caster))
-          return e.effect->shouldAIApply(caster, pos);
-        return EffectAIIntent::NONE;
-      },
-      [&] (const Effects::FilterLasting& e) {
+      [&] (const Effects::GenericFilterEffect& e) {
         if (victim && e.applies(victim, caster))
           return e.effect->shouldAIApply(caster, pos);
         return EffectAIIntent::NONE;
@@ -1837,9 +1925,7 @@ optional<FXInfo> Effect::getProjectileFX() const {
       [&](const Effects::Damage&) -> optional<FXInfo> { return {FXName::MAGIC_MISSILE}; },
       [&](const Effects::Blast&) -> optional<FXInfo> { return {FXName::AIR_BLAST}; },
       [&](const Effects::Pull&) -> optional<FXInfo> { return FXInfo{FXName::AIR_BLAST}.setReversed(); },
-      [&](const Effects::GenericModifierEffect& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::Filter& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::FilterLasting& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); }
+      [&](const Effects::GenericModifierEffect& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); }
   );
 }
 optional<ViewId> Effect::getProjectile() const {
@@ -1849,9 +1935,7 @@ optional<ViewId> Effect::getProjectile() const {
       [&](const Effects::Damage&) -> optional<ViewId> { return ViewId("force_bolt"); },
       [&](const Effects::Fire&) -> optional<ViewId> { return ViewId("fireball"); },
       [&](const Effects::Blast&) -> optional<ViewId> { return ViewId("air_blast"); },
-      [&](const Effects::GenericModifierEffect& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::Filter& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::FilterLasting& e) -> optional<ViewId> { return e.effect->getProjectile(); }
+      [&](const Effects::GenericModifierEffect& e) -> optional<ViewId> { return e.effect->getProjectile(); }
   );
 }
 
@@ -1890,8 +1974,6 @@ optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
       [&](const Effects::IncreaseMorale&) -> optional<MinionEquipmentType> { return MinionEquipmentType::COMBAT_ITEM; },
       [&](const Effects::GenericModifierEffect& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
       [&](const Effects::Area& a) -> optional<MinionEquipmentType> { return a.effect->getMinionEquipmentType(); },
-      [&](const Effects::Filter& f) -> optional<MinionEquipmentType> { return f.effect->getMinionEquipmentType(); },
-      [&](const Effects::FilterLasting& f) -> optional<MinionEquipmentType> { return f.effect->getMinionEquipmentType(); },
       [&](const Effects::Escape&) -> optional<MinionEquipmentType> { return MinionEquipmentType::COMBAT_ITEM; },
       [&](const Effects::Chain& c) -> optional<MinionEquipmentType> {
         for (auto& e : c.effects)
@@ -1917,8 +1999,6 @@ bool Effect::canAutoAssignMinionEquipment() const {
       [&](const Effects::Suicide&) { return false; },
       [&](const Effects::GenericModifierEffect& e) { return e.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Area& a) { return a.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::Filter& f) { return f.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::FilterLasting& f) { return f.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Chain& c) {
         for (auto& e : c.effects)
           if (!e.canAutoAssignMinionEquipment())
