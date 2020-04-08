@@ -2,6 +2,7 @@
 #include "creature.h"
 #include "creature_attributes.h"
 #include "item.h"
+#include "sound.h"
 
 SERIALIZE_DEF(AutomatonPart, effect, viewId, name, usesSlot)
 
@@ -13,6 +14,7 @@ void AutomatonPart::apply(Creature* c) const {
   effect.apply(c->getPosition());
   if (usesSlot)
     c->automatonParts.push_back(*this);
+  c->addSound(SoundId::TRAP_ARMING);
 }
 
 #include "pretty_archive.h"

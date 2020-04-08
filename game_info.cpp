@@ -143,7 +143,7 @@ SpellSchoolInfo fillSpellSchool(const Creature* c, SpellSchoolId id, const Conte
     auto spell = factory->getCreatures().getSpell(id.first);
     ret.spells.push_back(
         SpellInfo {
-          spell->getName(),
+          spell->getName(factory),
           spell->getSymbol(),
           id.second,
           !c || c->getAttributes().getExpLevel(spellSchool.expType) >= id.second,
@@ -202,7 +202,7 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory) 
   spells.clear();
   for (auto spell : c->getSpellMap().getAvailable(c))
     spells.push_back({
-        spell->getName(),
+        spell->getName(contentFactory),
         spell->getSymbol(),
         none,
         true,

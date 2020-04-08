@@ -101,7 +101,7 @@
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar& SUBCLASS(CollectiveControl) & SUBCLASS(EventListener);
-  ar(memory, introText, lastControlKeeperQuestion, tribeAlignment);
+  ar(memory, introText, nextKeeperWarning, tribeAlignment);
   ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints);
   ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo);
   ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures);
@@ -157,7 +157,8 @@ void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const
           break;
         }
       }
-      if (auto increase = getGame()->getContentFactory()->furniture.getPopulationIncreaseDescription(furniture->types[0]))
+      if (auto increase = getGame()->getContentFactory()->furniture
+          .getPopulationIncreaseDescription(furniture->types[0], keeperCreatureInfo.populationString))
         info.help += " " + *increase;
       for (auto expType : ENUM_ALL(ExperienceType))
         if (auto increase = getGame()->getContentFactory()->furniture.getData(furniture->types[0]).getMaxTraining(expType))
@@ -240,7 +241,7 @@ STutorial PlayerControl::getTutorial() const {
 }
 
 bool PlayerControl::canControlSingle(const Creature* c) const {
-  return !collective->hasTrait(c, MinionTrait::PRISONER);
+  return !collective->hasTrait(c, MinionTrait::PRISONER) && !c->isAffected(LastingEffect::TURNED_OFF);
 }
 
 bool PlayerControl::canControlInTeam(const Creature* c) const {
@@ -294,7 +295,7 @@ void PlayerControl::leaveControl() {
   set<TeamId> allTeams;
   for (auto controlled : copyOf(getControlled())) {
     if (collective->hasTrait(controlled, MinionTrait::LEADER))
-      lastControlKeeperQuestion = collective->getGlobalTime();
+      nextKeeperWarning = collective->getGlobalTime();
     auto controlledLevel = controlled->getPosition().getLevel();
     if (getModel()->getMainLevels().contains(controlledLevel))
       setScrollPos(controlled->getPosition());
@@ -1009,6 +1010,7 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
   info.minions = minions.transform([](const Creature* c) { return CreatureInfo(c) ;});
   info.minionCount = collective->getPopulationSize();
   info.minionLimit = collective->getMaxPopulation();
+  info.populationString = collective->getConfig().getPopulationString();
 }
 
 ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option, int queuedCount) const {
@@ -1127,8 +1129,10 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions() const {
 }
 
 CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQueuedItem& item, int cnt,
-    int itemIndex) const {
-  CollectiveInfo::QueuedItemInfo ret {item.state, item.paid, getWorkshopItem(item.item, cnt), {}, {}, 0, itemIndex};
+    int itemIndex, bool hasLegendarySkill) const {
+  CollectiveInfo::QueuedItemInfo ret {item.state,
+        item.paid && (item.runes.empty() || item.item.notArtifact || hasLegendarySkill),
+        getWorkshopItem(item.item, cnt), {}, {}, 0, itemIndex};
   if (!item.paid)
     ret.itemInfo.description.push_back("Cannot afford item");
   for (auto& it : getItemUpgradesFor(item.item)) {
@@ -1153,13 +1157,19 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
 
 vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() const {
   vector<CollectiveInfo::QueuedItemInfo> ret;
+  bool hasLegendarySkill = [&] {
+    for (auto c : getCreatures())
+      if (c->getAttributes().getSkills().getValue(*chosenWorkshop) >= Workshops::getLegendarySkillThreshold())
+        return true;
+    return false;
+  }();
   auto& queued = collective->getWorkshops().types.at(*chosenWorkshop).getQueued();
   for (int i : All(queued)) {
     if (i > 0 && queued[i - 1].indexInWorkshop == queued[i].indexInWorkshop && queued[i - 1].paid == queued[i].paid &&
         queued[i].runes.empty() && queued[i - 1].runes.empty() && queued[i].state == 0 && queued[i - 1].state == 0)
-      ret.back() = getQueuedItemInfo(queued[i], ret.back().itemInfo.number + 1, ret.back().itemIndex);
+      ret.back() = getQueuedItemInfo(queued[i], ret.back().itemInfo.number + 1, ret.back().itemIndex, hasLegendarySkill);
     else
-      ret.push_back(getQueuedItemInfo(queued[i], 1, i));
+      ret.push_back(getQueuedItemInfo(queued[i], 1, i, hasLegendarySkill));
   }
   return ret;
 }
@@ -1356,7 +1366,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     info.immigration.back().requirements = immigration.getMissingRequirements(candidate);
     info.immigration.back().info = infoLines;
     info.immigration.back().specialTraits = candidate.getSpecialTraits().transform(
-        [&](const auto& trait){ return getSpecialTraitInfo(trait, getGame()->getContentFactory()); });
+        [&](const auto& trait){ return getSpecialTraitInfo(trait, this->getGame()->getContentFactory()); });
     info.immigration.back().cost = getCostObj(candidate.getCost());
     info.immigration.back().name = name;
     info.immigration.back().viewId = c->getViewObject().id();
@@ -1501,7 +1511,15 @@ void PlayerControl::fillResources(CollectiveInfo& info) const {
   }
 }
 
+struct PlayerControl::KeeperDangerInfo {
+  Creature* c;
+  string warning;
+};
+
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
+  if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING))
+    if (auto info = checkKeeperDanger())
+      gameInfo.keeperInDanger = info->warning;
   gameInfo.isSingleMap = getGame()->isSingleModel();
   getGame()->getEncyclopedia()->setKeeperThings(getGame()->getContentFactory(),
       &collective->getTechnology(), &collective->getWorkshops());
@@ -1544,7 +1562,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     }
   fillWorkshopInfo(info);
   fillLibraryInfo(info);
-  info.monsterHeader = "Minions: " + toString(info.minionCount) + " / " + toString(info.minionLimit);
+  info.monsterHeader = info.populationString + ": " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   fillDungeonLevel(info.avatarLevelInfo);
   fillResources(info);
   info.warning = "";
@@ -1720,6 +1738,9 @@ void PlayerControl::onEvent(const GameEvent& event) {
         if (getControlled().empty() && canSee(info.position) && info.position.isSameLevel(getCurrentLevel()))
           getView()->animation(FXSpawnInfo(info.fx, info.position.getCoord(), info.direction.value_or(Vec2(0, 0))));
       },
+      [&](const LeaderWounded& info) {
+        leaderWoundedTime.set(info.c, getModel()->getLocalTime());
+      },
       [&](const auto&) {}
   );
 }
@@ -1775,7 +1796,7 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
       auto& object = index.getObject(ViewLayer::CREATURE);
       if (isEnemy(c)) {
         object.setModifier(ViewObject::Modifier::HOSTILE);
-        if (c->canBeCaptured())
+        if (c->canBeCaptured() && collective->getConfig().canCapturePrisoners())
           object.setClickAction(c->isCaptureOrdered() ?
               ViewObjectAction::CANCEL_CAPTURE_ORDER : ViewObjectAction::ORDER_CAPTURE);
       } else
@@ -2260,6 +2281,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           else
             setChosenTeam(*chosenTeam, c->getUniqueId());
         } else
+        if (collective->getConfig().canCapturePrisoners())
           c->toggleCaptureOrder();
       }
       break;
@@ -2488,6 +2510,14 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::SCROLL_STAIRS:
       scrollStairs(input.get<int>());
+      break;
+    case UserInputId::CONTROL_KEEPER:
+      if (auto info = checkKeeperDanger())
+        controlSingle(info->c);
+      break;
+    case UserInputId::DISMISS_KEEPER_DANGER:
+      nextKeeperWarning = getGame()->getGlobalTime() +
+          TimeInterval(getGame()->getOptions()->getIntValue(OptionId::KEEPER_WARNING_TIMEOUT));
       break;
     case UserInputId::TAKE_SCREENSHOT:
       getView()->dungeonScreenshot(input.get<Vec2>());
@@ -2802,40 +2832,30 @@ void PlayerControl::addToMemory(Position pos) {
   memory->update(pos, index);
 }
 
-void PlayerControl::checkKeeperDanger() {
+optional<PlayerControl::KeeperDangerInfo> PlayerControl::checkKeeperDanger() const {
   PROFILE;
   auto controlled = getControlled();
   for (auto keeper : collective->getLeaders()) {
     auto prompt = [&] (const string& reason) {
-      auto prefix = collective->getLeaders().size() > 1 ? "A Keeper " : "The Keeper ";
-      return getView()->yesOrNoPrompt(prefix + reason + ". Do you want to control " +
-          him(keeper->getAttributes().getGender()) + "?");
+      return KeeperDangerInfo{keeper,
+          (collective->getLeaders().size() > 1 ? capitalFirst(keeper->getName().a()) : "The Keeper")
+              + " " + reason + "."};
     };
     if (!keeper->isDead() && !controlled.contains(keeper) &&
-        lastControlKeeperQuestion < collective->getGlobalTime() - 50_visible) {
+        nextKeeperWarning < collective->getGlobalTime()) {
       if (auto lastCombatIntent = keeper->getLastCombatIntent())
-        if (lastCombatIntent->isHostile() && lastCombatIntent->time > getGame()->getGlobalTime() - 5_visible) {
-          lastControlKeeperQuestion = collective->getGlobalTime();
-          if (prompt("is engaged in a fight with " + lastCombatIntent->attacker->getName().a())) {
-            controlSingle(keeper);
-            return;
-          }
-        }
-      auto prompt2 = [&](const string& reason) {
-        lastControlKeeperQuestion = collective->getGlobalTime();
-        if (prompt(reason)) {
-          controlSingle(keeper);
-          return;
-        }
-      };
+        if (lastCombatIntent->isHostile() && lastCombatIntent->time > getGame()->getGlobalTime() - 5_visible)
+          return prompt("is engaged in a fight with " + lastCombatIntent->attacker->getName().a());
       if (keeper->isAffected(LastingEffect::POISON))
-        prompt2("is suffering from poisoning");
+        return prompt("is suffering from poisoning");
       else if (keeper->isAffected(LastingEffect::BLEEDING))
-        prompt2("is bleeding");
-      else if (keeper->getBody().isWounded())
-        prompt2("is wounded");
+        return prompt("is bleeding");
+      else if (keeper->getBody().isWounded() &&
+          leaderWoundedTime.getOrElse(keeper, -100_local) > getModel()->getLocalTime() - 10_visible)
+        return prompt("is wounded");
     }
   }
+  return none;
 }
 
 void PlayerControl::considerNightfallMessage() {
@@ -2860,7 +2880,7 @@ void PlayerControl::update(bool currentlyActive) {
       if (!getCreatures().contains(c) && c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
         if (!collective->wasBanished(c) && !c->getBody().isMinionFood() && c->getAttributes().getCanJoinCollective()) {
           addedCreatures.push_back(c);
-          collective->addCreature(c, {MinionTrait::FIGHTER});
+          collective->addCreature(c, {MinionTrait::FIGHTER, MinionTrait::NO_LIMIT});
           for (auto controlled : getControlled())
             if (canControlInTeam(c)
                 && c->getPosition().isSameLevel(controlled->getPosition())
@@ -2922,9 +2942,18 @@ void PlayerControl::tick() {
   messages = messages.filter([&] (const PlayerMessage& msg) {
       return msg.getFreshness() > 0; });
   considerNightfallMessage();
+  if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING)) {
+    if (checkKeeperDanger()) {
+      if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING_PAUSE) &&
+        !wasPausedForWarning) {
+        getView()->stopClock();
+        wasPausedForWarning = true;
+      }
+    } else
+      wasPausedForWarning = false;
+  }
   if (auto msg = collective->getWarnings().getNextWarning(getModel()->getLocalTime()))
     addMessage(PlayerMessage(*msg, MessagePriority::HIGH));
-  checkKeeperDanger();
   for (auto attack : copyOf(ransomAttacks))
     for (const Creature* c : attack.getCreatures())
       if (collective->getTerritory().contains(c->getPosition())) {

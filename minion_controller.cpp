@@ -14,6 +14,7 @@
 #include "team_order.h"
 #include "collective_teams.h"
 #include "view_object_action.h"
+#include "collective_config.h"
 
 class MinionController : public Player {
   public:
@@ -61,7 +62,7 @@ class MinionController : public Player {
 
   virtual vector<OtherCreatureCommand> getOtherCreatureCommands(Creature* c) const override {
     vector<OtherCreatureCommand> ret = Player::getOtherCreatureCommands(c);
-    if (control->isEnemy(c) && c->canBeCaptured())
+    if (control->isEnemy(c) && c->canBeCaptured() && control->collective->getConfig().canCapturePrisoners())
       ret.push_back({2, c->isCaptureOrdered() ?
           ViewObjectAction::CANCEL_CAPTURE_ORDER : ViewObjectAction::ORDER_CAPTURE, true,
           [c](Player*) { c->toggleCaptureOrder();}});
@@ -141,7 +142,7 @@ class MinionController : public Player {
   }
 
   virtual void onFellAsleep() override {
-    getGame()->getView()->presentText("Important!", "You fall asleep. You lose control of your minion.");
+    getGame()->getView()->presentText("Important!", "You lose control of your minion.");
     unpossess();
   }
 

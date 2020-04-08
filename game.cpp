@@ -89,11 +89,6 @@ void Game::addCollective(Collective* col) {
   }
 }
 
-static CollectiveConfig getKeeperConfig(bool fastImmigration, bool noLeader) {
-  return CollectiveConfig::keeper(
-      TimeInterval(fastImmigration ? 10 : 140), 10, ConquerCondition::KILL_LEADER);
-}
-
 void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
   auto model = getMainModel().get();
   WLevel level = model->getTopLevel();
@@ -101,9 +96,12 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   model->addCreature(std::move(avatarInfo.playerCreature));
   auto keeperInfo = *avatarInfo.creatureInfo.getReferenceMaybe<KeeperCreatureInfo>();
-  auto builder = CollectiveBuilder(getKeeperConfig(false, keeperInfo.noLeader), keeperRef->getTribeId())
+  auto builder = CollectiveBuilder(CollectiveConfig::keeper(
+          TimeInterval(keeperInfo.immigrantInterval), keeperInfo.maxPopulation, keeperInfo.populationString,
+          keeperInfo.prisoners, ConquerCondition::KILL_LEADER),
+      keeperRef->getTribeId())
       .setModel(model)
-      .addCreature(keeperRef, {MinionTrait::LEADER});
+      .addCreature(keeperRef, keeperInfo.minionTraits);
   if (avatarInfo.chosenBaseName)
     builder.setLocationName(*avatarInfo.chosenBaseName);
   model->addCollective(builder.build(contentFactory.get()));

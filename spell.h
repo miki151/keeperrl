@@ -41,7 +41,7 @@ class Spell {
   bool isEndOnly() const;
   void setSpellId(SpellId);
   SpellId getId() const;
-  const char* getName() const;
+  string getName(const ContentFactory*) const;
   optional<SpellId> getUpgrade() const;
   MoveInfo getAIMove(const Creature*) const;
   bool isBlockedBy(Position pos) const;

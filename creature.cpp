@@ -1496,7 +1496,8 @@ void Creature::affectBySilver() {
 }
 
 bool Creature::affectByAcid() {
-  if (getBody().affectByAcid(this)) {
+  if (!isAffected(LastingEffect::ACID_RESISTANT) &&
+      getBody().affectByAcid(this)) {
     you(MsgType::ARE, "dissolved by acid");
     dieWithReason("dissolved by acid");
     return true;
@@ -1811,9 +1812,11 @@ CreatureAction Creature::whip(const Position& pos, double animChance) const {
 }
 
 void Creature::addSound(const Sound& sound1) const {
-  Sound sound(sound1);
-  sound.setPosition(getPosition());
-  getGame()->getView()->addSound(sound);
+  if (auto game = getGame()) {
+    Sound sound(sound1);
+    sound.setPosition(getPosition());
+    game->getView()->addSound(sound);
+  }
 }
 
 CreatureAction Creature::construct(Vec2 direction, FurnitureType type) const {
@@ -2365,10 +2368,12 @@ bool Creature::CombatIntentInfo::isHostile() const {
 }
 
 void Creature::addCombatIntent(Creature* attacker, CombatIntentInfo::Type type) {
-  lastCombatIntent = CombatIntentInfo{type, attacker, *getGlobalTime()};
-  if (type == CombatIntentInfo::Type::ATTACK && (!attacker->isAffected(LastingEffect::INSANITY) ||
-      attacker->getAttributes().isAffectedPermanently(LastingEffect::INSANITY)))
-    privateEnemies.insert(attacker);
+  if (attacker != this) {
+    lastCombatIntent = CombatIntentInfo{type, attacker, *getGlobalTime()};
+    if (type == CombatIntentInfo::Type::ATTACK && (!attacker->isAffected(LastingEffect::INSANITY) ||
+        attacker->getAttributes().isAffectedPermanently(LastingEffect::INSANITY)))
+      privateEnemies.insert(attacker);
+  }
 }
 
 optional<Creature::CombatIntentInfo> Creature::getLastCombatIntent() const {
@@ -2392,4 +2397,8 @@ Creature* Creature::getClosestEnemy() const {
     }
   }
   return result;
+}
+
+int Creature::getSpareAutomatonSlots() const {
+  return getAttributes().getAutomatonSlots() - automatonParts.size();
 }

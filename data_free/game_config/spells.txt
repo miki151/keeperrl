@@ -9,7 +9,7 @@
 {
   upgrade = "healing"
   symbol = "❤️"
-  effect = Heal FLESH
+  effect = Name "advanced healing" Heal FLESH
   range = 1
   targetSelf = true
   cooldown = 15
@@ -19,7 +19,7 @@
 {
   upgrade = "advanced healing"
   symbol = "❤️"
-  effect = Heal FLESH
+  effect = Name "expert healing" Heal FLESH
   targetSelf = true
   range = 4
   cooldown = 10
@@ -28,14 +28,14 @@
 "group healing"
 {
   symbol = "💕"
-  effect = Area 2 Filter ALLY Heal FLESH
+  effect = Name "group healing" Area 2 Filter ALLY Heal FLESH
   cooldown = 50
   sound = SPELL_HEALING
 }
 "heal spirit"
 {
   symbol = "✴"
-  effect = Heal SPIRIT
+  effect = Name "heal spirit" Heal SPIRIT
   range = 1
   targetSelf = true
   cooldown = 15
@@ -45,7 +45,7 @@
 {
   upgrade = "heal spirit"
   symbol = "✴"
-  effect = Heal SPIRIT
+  effect = Name "advanced heal spirit" Heal SPIRIT
   targetSelf = true
   range = 4
   cooldown = 10
@@ -54,14 +54,14 @@
 "heal spirit group"
 {
   symbol = "✴✴"
-  effect = Area 2 Filter ALLY Heal SPIRIT
+  effect = Name "heal spirit group" Area 2 Filter ALLY Heal SPIRIT
   cooldown = 50
   sound = SPELL_HEALING
 }
 "cure poison"
 {
   symbol = "⚕"
-  effect = RemoveLasting POISON
+  effect = Name "cure poison" RemoveLasting POISON
   cooldown = 50
   sound = SPELL_CURE_POISON
 }
@@ -69,7 +69,7 @@
 {
   upgrade = "cure poison"
   symbol = "⚕"
-  effect = RemoveLasting POISON
+  effect = Name "advanced cure poison" RemoveLasting POISON
   cooldown = 50
   targetSelf = true
   range = 1
@@ -78,7 +78,7 @@
 "cure blindness"
 {
   symbol = "👁"
-  effect = RemoveLasting BLIND
+  effect = Name "cure blindness" RemoveLasting BLIND
   cooldown = 50
   targetSelf = true
   range = 1
@@ -103,7 +103,7 @@
 "magic missile"
 {
   symbol = "⥇"
-  effect = Damage SPELL_DAMAGE SPELL
+  effect = Name "magic missile" Damage SPELL_DAMAGE SPELL
   range = 4
   cooldown = 20
   sound = SPELL_BLAST
@@ -112,7 +112,7 @@
 {
   upgrade = "magic missile"
   symbol = "⥇"
-  effect = Damage SPELL_DAMAGE SPELL
+  effect = Name "advanced magic missile" Damage SPELL_DAMAGE SPELL
   range = 8
   cooldown = 10
   sound = SPELL_BLAST
@@ -121,7 +121,7 @@
 {
   upgrade = "advanced magic missile"
   symbol = "⥇"
-  effect = Damage SPELL_DAMAGE SPELL
+  effect = Name "expert magic missile" Damage SPELL_DAMAGE SPELL
   range = 12
   cooldown = 5
   sound = SPELL_BLAST
@@ -144,7 +144,7 @@
 {
   upgrade = "invisibility"
   symbol = "🕵️"
-  effect = Lasting INVISIBLE
+  effect = Name "advanced invisibility" Lasting INVISIBLE
   cooldown = 150
   sound = SPELL_INVISIBILITY
 }
@@ -168,7 +168,7 @@
 {
   upgrade = "teleport"
   symbol = "🌀"
-  effect = Teleport
+  effect = Name "advanced teleport" Teleport
   range = 8
   cooldown = 160
   endOnly = true
@@ -193,7 +193,7 @@
 "pacify"
 {
   symbol = "☮"
-  effect = Lasting PEACEFULNESS
+  effect = Name "pacify" Lasting PEACEFULNESS
   range = 2
   cooldown = 150
   endOnly = true
@@ -210,7 +210,7 @@
 {
   upgrade = "haste"
   symbol = "🏃"
-  effect = Lasting SPEED
+  effect = Name "advanced haste" Lasting SPEED
   targetSelf = true
   range = 1
   cooldown = 120
@@ -261,7 +261,7 @@
 "defense bonus"
 {
   symbol = "🛡"
-  effect = Lasting DEF_BONUS
+  effect = Name "defense bonus" Lasting DEF_BONUS
   cooldown = 80
   sound = SPELL_DEX_BONUS
 }
@@ -269,7 +269,7 @@
 {
   upgrade = "defense bonus"
   symbol = "🛡"
-  effect = Lasting DEF_BONUS
+  effect = Name "advanced defense bonus" Lasting DEF_BONUS
   targetSelf = true
   range = 1
   cooldown = 80
@@ -278,7 +278,7 @@
 "damage bonus"
 {
   symbol = "💪"
-  effect = Lasting DAM_BONUS
+  effect = Name "damage bonus" Lasting DAM_BONUS
   cooldown = 80
   sound = SPELL_STR_BONUS
 }
@@ -286,7 +286,7 @@
 {
   upgrade = "damage bonus"
   symbol = "💪"
-  effect = Lasting DAM_BONUS
+  effect = Name "advanced damage bonus" Lasting DAM_BONUS
   targetSelf = true
   range = 1
   cooldown = 80
@@ -295,14 +295,14 @@
 "bolster"
 {
   symbol = "🛡"
-  effect = Area 1 Filter ALLY Lasting DEF_BONUS 
+  effect = Name "bolster" Area 1 Filter ALLY Lasting DEF_BONUS 
   cooldown = 70
   sound = SPELL_DEX_BONUS
 }
 "rally"
 {
   symbol = "💪"
-  effect = Area 1 Filter ALLY Lasting DAM_BONUS 
+  effect = Name "rally" Area 1 Filter ALLY Lasting DAM_BONUS 
   cooldown = 70
   sound = SPELL_DEX_BONUS
 }
@@ -316,14 +316,14 @@
 "meteor shower"
 {
   symbol = "☄"
-  effect = PlaceFurniture "METEOR_SHOWER"
+  effect = Name "meteor shower" PlaceFurniture "METEOR_SHOWER"
   cooldown = 150
   sound = SPELL_METEOR_SHOWER
 }
 "fire elemental"
 {
   symbol = "👾"
-  effect = Summon "FIRE_ELEMENTAL" { 1 2 } 100
+  effect = Name "fire elemental" Summon "FIRE_ELEMENTAL" { 1 2 } 100
   cooldown = 100
   sound = SPELL_FIRE_SPHERE_PET
 }
@@ -331,14 +331,14 @@
 {
   upgrade = "fire elemental"
   symbol = "👾"
-  effect = Summon "FIRE_ELEMENTAL" { 2 4 } 100
+  effect = Name "advanced fire elemental" Summon "FIRE_ELEMENTAL" { 2 4 } 100
   cooldown = 100
   sound = SPELL_FIRE_SPHERE_PET
 }
 "fire breath"
 {
   symbol = "🐲"
-  effect = Fire
+  effect = Name "fire breath" Fire
   fx = FLAMETHROWER
   range = 4
   cooldown = 30
@@ -348,7 +348,7 @@
 "firewall"
 {
   symbol = "𝍔"
-  effect =  CustomArea PlaceFurniture "FIRE_WALL" { 0 -2 0 -1 0 0 0 1 0 2 }
+  effect =  Name "firewall" CustomArea PlaceFurniture "FIRE_WALL" { 0 -2 0 -1 0 0 0 1 0 2 }
   endOnly = true
   range = 2
   cooldown = 30
@@ -357,7 +357,7 @@
 "fire trap"
 {
   symbol = "◌"
-  effect =  AITargetEnemy CustomArea PlaceFurniture "FIRE_WALL" { 0 -2 1 -2 2 -1 2 0 2 1 1 2 0 2 -1 2 -2 1 -2 0 -2 -1 -1 -2 }
+  effect =  Name "fire trap" AITargetEnemy CustomArea PlaceFurniture "FIRE_WALL" { 0 -2 1 -2 2 -1 2 0 2 1 1 2 0 2 -1 2 -2 1 -2 0 -2 -1 -1 -2 }
   endOnly = true
   range = 8
   cooldown = 30
@@ -366,7 +366,7 @@
 "fireball"
 {
   symbol = "🔥"
-  effect = Fire
+  effect = Name "fireball" Fire
   fx = FIREBALL
   range = 4
   cooldown = 30
@@ -375,7 +375,7 @@
 "ice cone"
 {
   symbol = "❄"
-  effect = Ice
+  effect = Name "ice cone" Ice
   fx = ICE
   range = 4
   cooldown = 5
@@ -384,7 +384,7 @@
 "acid stream"
 {
   symbol = "🜅"
-  effect = Acid
+  effect = Name "acid stream" Acid
   fx = ACID
   range = 4
   cooldown = 5
@@ -409,13 +409,13 @@
 "black dragon blindness"
 {
   symbol = "🙈"
-  effect = Area 30 Filter ENEMY Lasting BLIND
+  effect = Name "black dragon blindness" Area 30 Filter ENEMY Lasting BLIND
   cooldown = 3
 }
 "grant wish"
 {
   symbol = "$"
-  effect = Chain { Wish Caster Suicide TURN_INVISIBLE }
+  effect = Name "grant wish" Chain { Wish Caster Suicide TURN_INVISIBLE }
   range = 1
   targetSelf = false
   cooldown = 150
@@ -429,41 +429,41 @@
 "animate weapons"
 {
   symbol = "⚔️"
-  effect = AnimateItems 5 5 {30 50}
+  effect = Name "animate weapons" AnimateItems 5 5 {30 50}
   cooldown = 200
 }
 "adoxie right hand"
 {
   symbol = "-."
-  effect = Summon "ADOXIE_HAND_RIGHT" { 1 } 50
+  effect = Name "adoxie right hand" Summon "ADOXIE_HAND_RIGHT" { 1 } 50
   cooldown = 50
   sound = SPELL_SUMMON_SPIRIT
 }
 "adoxie left hand"
 {
   symbol = ".-"
-  effect = Summon "ADOXIE_LEFT_HAND" { 1 } 50
+  effect = Name "adoxie left hand" Summon "ADOXIE_LEFT_HAND" { 1 } 50
   cooldown = 50
   sound = SPELL_SUMMON_SPIRIT
 }
 "adoxie left foot"
 {
   symbol = "_|"
-  effect = Summon "ADOXIE_FOOT_LEFT" { 1 } 50
+  effect = Name "adoxie left foot" Summon "ADOXIE_FOOT_LEFT" { 1 } 50
   cooldown = 50
   sound = SPELL_SUMMON_SPIRIT
 }
 "adoxie right foot"
 {
   symbol = "|_"
-  effect = Summon "ADOXIE_FOOT_RIGHT" { 1 } 50
+  effect = Name "adoxie right foot" Summon "ADOXIE_FOOT_RIGHT" { 1 } 50
   cooldown = 50
   sound = SPELL_SUMMON_SPIRIT
 }
 "dig"
 {
   symbol = "X"
-  effect = DestroyWalls DIG
+  effect = Name "dig" DestroyWalls DIG
   range = 7
   cooldown = 10
   blockedByWall = false
@@ -471,7 +471,7 @@
 "shoot arrow"
 {
   symbol = "↣"
-  effect = Damage RANGED_DAMAGE SHOOT
+  effect = Name "shoot arrow" Damage RANGED_DAMAGE SHOOT
   range = 7
   cooldown = 1
   projectileViewId = {"arrow"}
@@ -486,7 +486,7 @@
 "repair automaton"
 {
   symbol = "🔧"
-  effect = Filter AUTOMATON RegrowBodyPart 10
+  effect = Name "repair automaton" Filter AUTOMATON RegrowBodyPart 10
   range = 1
   targetSelf = true
   cooldown = 15

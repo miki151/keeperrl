@@ -437,7 +437,7 @@ SGuiElem GuiBuilder::drawBottomBandInfo(GameInfo& gameInfo, int width) {
   const int space = 55;
   bottomLine.addSpace(space);
   bottomLine.addElem(WL(labelFun, [&info] {
-        return "population: " + toString(info.minionCount) + " / " +
+      return capitalFirst(info.populationString) + ": " + toString(info.minionCount) + " / " +
         toString(info.minionLimit); }), 150);
   bottomLine.addSpace(space);
   bottomLine.addElem(getTurnInfoGui(gameInfo.time), 50);
@@ -1820,7 +1820,7 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialIn
       auto line = WL(getListBuilder);
       line.addElem(WL(viewObject, elem.viewId), 40);
       SGuiElem tmp = WL(label, toString(elem.count) + "   " + elem.name, Color::WHITE);
-      line.addElem(std::move(tmp), 200);
+      line.addElem(WL(renderInBounds, std::move(tmp)), 200);
       list.addElem(WL(stack, makeVec(
           cache->get(selectButton, THIS_LINE, elem.creatureId),
           WL(dragSource, {DragContentId::CREATURE_GROUP, elem.creatureId},
@@ -1909,6 +1909,27 @@ SGuiElem GuiBuilder::drawRansomOverlay(const optional<CollectiveInfo::Ransom>& r
         WL(button, getButtonCallback(UserInputId::IGNORE_RANSOM)),
         WL(label, "No"))));
   return WL(setWidth, 600, WL(miniWindow, WL(margins, lines.buildVerticalList(), 20)));
+}
+
+SGuiElem GuiBuilder::drawKeeperDangerOverlay(const string& message) {
+  auto lines = WL(getListBuilder, legendLineHeight);
+  int width = 600;
+  lines.addElemAuto(gui.labelMultiLineWidth(message, legendLineHeight, width));
+  lines.addSpace(legendLineHeight / 2);
+  lines.addElem(WL(getListBuilder)
+      .addElemAuto(WL(buttonLabel, "Take control", getButtonCallback(UserInputId::CONTROL_KEEPER)))
+      .addSpace(20)
+      .addElemAuto(WL(buttonLabel, "Dismiss for 200 turns", getButtonCallback(UserInputId::DISMISS_KEEPER_DANGER)))
+      .buildHorizontalList()
+  );
+  lines.addSpace(legendLineHeight / 2);
+  lines.addElem(WL(getListBuilder)
+        .addElemAuto(WL(label, "When the Keeper is in danger: "))
+        .addElemAuto(drawBoolOptionElem(OptionId::KEEPER_WARNING, "show this pop-up, "))
+        .addElemAuto(drawBoolOptionElem(OptionId::KEEPER_WARNING_PAUSE, "pause the game"))
+        .buildHorizontalList());
+  int margins = 20;
+  return WL(setWidth, width + margins, WL(miniWindow, WL(margins, lines.buildVerticalList(), margins)));
 }
 
 SGuiElem GuiBuilder::drawRebellionChanceText(CollectiveInfo::RebellionChance chance) {
@@ -2068,12 +2089,13 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
   for (int i : All(queued)) {
     auto& elem = queued[i];
     auto line = WL(getListBuilder);
-    auto label = WL(label, elem.itemInfo.name, elem.paid ? Color::WHITE : Color::RED);
+    auto color = elem.paid ? Color::WHITE : Color::RED;
+    auto label = WL(label, elem.itemInfo.name, color);
     if (elem.itemInfo.ingredient)
       label = WL(getListBuilder)
           .addElemAuto(std::move(label))
-          .addElemAuto(WL(label, " from "))
-          .addElemAuto(getItemLine(*elem.itemInfo.ingredient, [](Rectangle){}))
+          .addElemAuto(WL(label, " from ", color))
+          .addElemAuto(WL(viewObject, elem.itemInfo.ingredient->viewId))
           .buildHorizontalList();
     line.addMiddleElem(WL(stack,
         WL(button, getButtonCallback({UserInputId::REMOVE_WORKSHOP_ITEM, elem.itemIndex})),
@@ -2340,7 +2362,7 @@ SGuiElem GuiBuilder::drawSpellSchoolButtons(const vector<SpellSchoolInfo>& schoo
 
 SGuiElem GuiBuilder::drawSpellSchoolsOverlay(const vector<SpellSchoolInfo>& schools, int index) {
   int margin = 20;
-  int minionListWidth = 330;
+  int minionListWidth = 230;
   SGuiElem menu;
   SGuiElem leftSide = drawSpellSchoolButtons(schools, index);
   menu = WL(stack,
@@ -2349,7 +2371,7 @@ SGuiElem GuiBuilder::drawSpellSchoolsOverlay(const vector<SpellSchoolInfo>& scho
           WL(margins, WL(sprite, GuiFactory::TexId::VERT_BAR_MINI, GuiFactory::Alignment::LEFT),
             0, -15, 0, -15)), minionListWidth),
       WL(leftMargin, minionListWidth + 20, WL(margins, drawSpellSchoolPage(schools[index]), 10, 15, 10, 10)));
-  return WL(preferredSize, 640 + minionListWidth, 600,
+  return WL(preferredSize, 440 + minionListWidth, 600,
       WL(miniWindow, WL(stack,
           WL(keyHandler, [=] { toggleBottomWindow(BottomWindowId::SPELL_SCHOOLS); }, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
           WL(margins, std::move(menu), margin))));
@@ -2595,18 +2617,23 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
            info.villageInfo), OverlayInfo::VILLAINS});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
            collectiveInfo.immigration, info.tutorial), OverlayInfo::IMMIGRATION});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
-           collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWarningWindow, this), THIS_LINE,
-           collectiveInfo.rebellionChance, collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
-           collectiveInfo.chosenCreature, collectiveInfo.allQuarters, info.tutorial), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
-           collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
-           collectiveInfo), OverlayInfo::TOP_LEFT});
-      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
-           collectiveInfo.buildings, !!collectiveInfo.ransom, info.tutorial), OverlayInfo::TOP_LEFT});
+      if (info.keeperInDanger)
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawKeeperDangerOverlay, this), THIS_LINE,
+             *info.keeperInDanger), OverlayInfo::TOP_LEFT});
+      else {
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
+             collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWarningWindow, this), THIS_LINE,
+             collectiveInfo.rebellionChance, collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
+             collectiveInfo.chosenCreature, collectiveInfo.allQuarters, info.tutorial), OverlayInfo::TOP_LEFT});
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
+             collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
+             collectiveInfo), OverlayInfo::TOP_LEFT});
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
+             collectiveInfo.buildings, !!collectiveInfo.ransom, info.tutorial), OverlayInfo::TOP_LEFT});
+      }
       if (bottomWindow == IMMIGRATION_HELP)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationHelp, this), THIS_LINE,
             collectiveInfo), OverlayInfo::BOTTOM_LEFT});
@@ -3808,7 +3835,6 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   }
   menuLines.addElem(WL(margins, othersLine.buildHorizontalListFit(), 40, 0, 40, 0), 30);
   return menuLines.buildVerticalList();
-
 }
 
 SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight) {
@@ -3823,6 +3849,20 @@ SGuiElem GuiBuilder::drawPlusMinus(function<void(int)> callback, bool canIncreas
           ? WL(buttonLabel, minus, [callback] { callback(-1); }, false)
           : WL(buttonLabelInactive, minus, false), 10)
       .buildHorizontalList(), 0, 2, 0, 2);
+}
+
+SGuiElem GuiBuilder::drawBoolOptionElem(OptionId id, string name) {
+  auto line = WL(getListBuilder);
+  line.addElemAuto(WL(conditional,
+      WL(labelUnicode, u8"✓", Color::GREEN),
+      WL(labelUnicode, u8"✘", Color::RED),
+      [this, id]{ return options->getBoolValue(id); })
+  );
+  line.addElemAuto(WL(label, name));
+  return WL(stack,
+      WL(button, [this, id] { options->setValue(id, int(!options->getBoolValue(id))); }),
+      line.buildHorizontalList()
+  );
 }
 
 SGuiElem GuiBuilder::drawOptionElem(OptionId id, function<void()> onChanged, optional<string> defaultString) {

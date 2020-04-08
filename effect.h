@@ -45,7 +45,7 @@ class Effect {
   bool applyToCreature(Creature*, Creature* attacker = nullptr) const;
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;
-  bool isConsideredHostile() const;
+  bool isConsideredHostile(const Creature* victim) const;
   optional<MinionEquipmentType> getMinionEquipmentType() const;
   bool canAutoAssignMinionEquipment() const;
   optional<FXInfo> getProjectileFX() const;

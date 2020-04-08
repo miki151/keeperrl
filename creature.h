@@ -312,6 +312,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void cheatAllSpells();
 
   vector<AutomatonPart> SERIAL(automatonParts);
+  int getSpareAutomatonSlots() const;
   vector<PItem> SERIAL(drops);
   private:
 

@@ -475,6 +475,7 @@ void Player::sleeping() {
   MEASURE(
       getView()->updateView(this, false),
       "level render time");
+  onFellAsleep();
 }
 
 vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(Creature* c) const {
@@ -617,7 +618,7 @@ bool Player::canTravel() const {
       return false;
     }
     if (auto intent = c->getLastCombatIntent())
-      if (intent->time > *creature->getGlobalTime() - 7_visible) {
+      if (intent->time > *creature->getGlobalTime() - 7_visible && intent->isHostile()) {
         getView()->presentText("Sorry", "You can't travel while being attacked by " + intent->attacker->getName().a());
         return false;
       }
@@ -818,7 +819,7 @@ void Player::makeMove() {
   #endif
       default: break;
     }
-  if (creature->isAffected(LastingEffect::SLEEP)) {
+  if (creature->hasCondition(CreatureCondition::SLEEPING)) {
     onFellAsleep();
     return;
   }

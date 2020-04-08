@@ -19,6 +19,7 @@
 #include "animation_id.h"
 #include "item_types.h"
 #include "health_type.h"
+#include "game_event.h"
 
 static double getDefaultWeight(Body::Size size) {
   switch (size) {
@@ -818,6 +819,14 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
         default:
           return false;
       }
+    case LastingEffect::ACID_RESISTANT:
+      switch (material) {
+        case Material::FIRE:
+        case Material::SPIRIT:
+          return true;
+        default:
+          return false;
+      }
     case LastingEffect::FIRE_RESISTANT:
       switch (material) {
         case Material::FLESH:
@@ -902,12 +911,6 @@ bool Body::affectBySilver(Creature* c) {
 }
 
 bool Body::affectByAcid(Creature* c) {
-  switch (material) {
-    case Material::FIRE:
-    case Material::SPIRIT:
-      return false;
-    default: break;
-  }
   c->you(MsgType::ARE, "hurt by the acid");
   bleed(c, 0.2);
   return health <= 0;
@@ -923,6 +926,9 @@ void Body::bleed(Creature* c, double amount) {
   if (hasAnyHealth()) {
     health -= amount;
     c->updateViewObject();
+    if (c->getStatus().contains(CreatureStatus::LEADER))
+      if (auto game = c->getGame())
+        game->addEvent(EventInfo::LeaderWounded{c});
   }
 }
 

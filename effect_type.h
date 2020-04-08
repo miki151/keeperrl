@@ -17,6 +17,7 @@ RICH_ENUM(FilterType, ALLY, ENEMY, AUTOMATON);
 #define EFFECT_TYPE_INTERFACE \
   bool applyToCreature(Creature*, Creature* attacker = nullptr) const;\
   string getName(const ContentFactory*) const;\
+  operator DefaultEffect() const { return DefaultEffect {}; }\
   string getDescription(const ContentFactory*) const
 
 
@@ -26,7 +27,7 @@ RICH_ENUM(FilterType, ALLY, ENEMY, AUTOMATON);
   }
 
 namespace Effects {
-
+struct DefaultEffect {};
 SIMPLE_EFFECT(Escape);
 SIMPLE_EFFECT(Teleport);
 SIMPLE_EFFECT(Jump);
@@ -71,6 +72,12 @@ struct AssembledMinion {
   EFFECT_TYPE_INTERFACE;
   CreatureId SERIAL(creature);
   SERIALIZE_ALL(creature)
+};
+struct AddAutomatonParts {
+  EFFECT_TYPE_INTERFACE;
+  string getPartsNames(const ContentFactory*) const;
+  vector<ItemType> SERIAL(partTypes);
+  SERIALIZE_ALL(partTypes);
 };
 struct SummonEnemy {
   EFFECT_TYPE_INTERFACE;
@@ -253,11 +260,15 @@ struct IncreaseMorale {
   double SERIAL(amount);
   SERIALIZE_ALL(amount)
 };
-struct Chance {
+struct GenericModifierEffect {
   EFFECT_TYPE_INTERFACE;
-  double SERIAL(value);
   HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(value, effect)
+  SERIALIZE_ALL(effect)
+};
+struct Chance : GenericModifierEffect {
+  string getDescription(const ContentFactory*) const;
+  double SERIAL(value);
+  SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
 };
 SIMPLE_EFFECT(TriggerTrap);
 struct AnimateItems {
@@ -303,28 +314,21 @@ struct Fx {
   FXInfo SERIAL(info);
   SERIALIZE_ALL(info)
 };
-struct Description {
-  EFFECT_TYPE_INTERFACE;
+struct Description : GenericModifierEffect {
+  string getDescription(const ContentFactory*) const;
   string SERIAL(text);
-  HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(text, effect)
+  SERIALIZE_ALL(text, SUBCLASS(GenericModifierEffect))
 };
-struct Name {
-  EFFECT_TYPE_INTERFACE;
+struct Name : GenericModifierEffect {
+  string getName(const ContentFactory*) const;
   string SERIAL(text);
-  HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(text, effect)
+  SERIALIZE_ALL(text, SUBCLASS(GenericModifierEffect))
 };
-struct AIBelowHealth {
-  EFFECT_TYPE_INTERFACE;
+struct AIBelowHealth : GenericModifierEffect {
   double SERIAL(value);
-  HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(value, effect)
+  SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
 };
-struct AITargetEnemy {
-  EFFECT_TYPE_INTERFACE;
-  HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(effect)
+struct AITargetEnemy : GenericModifierEffect {
 };
 struct TakeOffSlots {
   EFFECT_TYPE_INTERFACE;
@@ -407,8 +411,9 @@ struct StealSlots {
   X(IncreaseSkill, 64)\
   X(IncreaseWorkshopSkill, 65)\
   X(FilterLasting, 66)\
-  X(TakeOffSlots, 67)\
-  X(StealSlots, 68)\
+  X(AddAutomatonParts, 67)\
+  X(TakeOffSlots, 68)\
+  X(StealSlots, 69)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

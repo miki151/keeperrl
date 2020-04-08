@@ -135,7 +135,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool canSee(Position) const;
   bool isConsideredAttacking(const Creature*, const Collective* enemy);
 
-  void checkKeeperDanger();
+  struct KeeperDangerInfo;
+  optional<KeeperDangerInfo> checkKeeperDanger() const;
   static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Position);
   void updateKnownLocations(const Position&);
@@ -202,7 +203,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   };
   optional<SelectionInfo> rectSelection;
   void updateSelectionSquares();
-  GlobalTime SERIAL(lastControlKeeperQuestion) = GlobalTime(-1000);
+  GlobalTime SERIAL(nextKeeperWarning) = GlobalTime(-1000);
+  bool wasPausedForWarning = false;
   optional<UniqueEntity<Creature>::Id> chosenCreature;
   void setChosenCreature(optional<UniqueEntity<Creature>::Id>);
   optional<WorkshopType> chosenWorkshop;
@@ -248,7 +250,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void loadBuildingMenu(const ContentFactory*, const KeeperCreatureInfo&);
   WLevel currentLevel = nullptr;
   void scrollStairs(int dir);
-  CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&, int cnt, int itemIndex) const;
+  CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&, int cnt, int itemIndex, bool hasLegendarySkill) const;
   vector<pair<vector<Item*>, Position>> getItemUpgradesFor(const WorkshopItem&) const;
   void fillDungeonLevel(AvatarLevelInfo&) const;
   void fillResources(CollectiveInfo&) const;
@@ -260,5 +262,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<pair<ViewId,int>> getCostObj(const optional<CostInfo>&) const;
   vector<WorkshopOptionInfo> getWorkshopOptions() const;
   ViewId getViewId(const BuildInfo&) const;
+  EntityMap<Creature, LocalTime> leaderWoundedTime;
 };
 

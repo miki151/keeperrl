@@ -153,13 +153,13 @@ static bool isConsideredHostile(LastingEffect effect) {
   }
 }
 
-bool Effect::isConsideredHostile() const {
+bool Effect::isConsideredHostile(const Creature* victim) const {
   return effect->visit<bool>(
       [&](const Effects::Lasting& e) {
-        return ::isConsideredHostile(e.lastingEffect);
+        return LastingEffects::affects(victim, e.lastingEffect) && ::isConsideredHostile(e.lastingEffect);
       },
       [&](const Effects::Acid&) {
-        return true;
+        return !victim->isAffected(LastingEffect::ACID_RESISTANT);
       },
       [&](const Effects::DestroyEquipment&) {
         return true;
@@ -168,10 +168,10 @@ bool Effect::isConsideredHostile() const {
         return true;
       },
       [&](const Effects::Fire&) {
-        return true;
+        return !victim->isAffected(LastingEffect::FIRE_RESISTANT);
       },
       [&](const Effects::Ice&) {
-        return true;
+        return !victim->isAffected(LastingEffect::COLD_RESISTANT);
       },
       [&](const Effects::Damage&) {
         return true;
@@ -439,6 +439,41 @@ string Effects::AssembledMinion::getName(const ContentFactory* f) const {
 
 string Effects::AssembledMinion::getDescription(const ContentFactory* f) const {
   return "Can be assembled to a " + getName(f);
+}
+
+string Effects::AddAutomatonParts::getPartsNames(const ContentFactory* f) const {
+  string ret = "";
+  bool first = true;
+
+  for (auto& item : partTypes) {
+    if (!first) {
+      ret += ", ";
+    }
+    ret += item.get(f)->getName();
+    first = false;
+  }
+  return ret;
+}
+
+bool Effects::AddAutomatonParts::applyToCreature(Creature* c, Creature* attacker) const {
+  CHECK(partTypes.size() > 0);
+
+  if (c->getSpareAutomatonSlots() < partTypes.size()) {
+    return false;
+  }
+
+  for (auto& item : partTypes) {
+    item.get(c->getGame()->getContentFactory())->getAutomatonPart()->apply(c);
+  }
+  return true;
+}
+
+string Effects::AddAutomatonParts::getName(const ContentFactory* f) const {
+  return "attach " + getPartsNames(f);
+}
+
+string Effects::AddAutomatonParts::getDescription(const ContentFactory* f) const {
+  return "Attaches " + getPartsNames(f) + " to the creature.";
 }
 
 bool Effects::SummonEnemy::applyToCreature(Creature* c, Creature* attacker) const {
@@ -997,11 +1032,11 @@ bool Effects::GrantAbility::applyToCreature(Creature* c, Creature* attacker) con
 }
 
 string Effects::GrantAbility::getName(const ContentFactory* f) const {
-  return "grant "_s + f->getCreatures().getSpell(id)->getName();
+  return "grant "_s + f->getCreatures().getSpell(id)->getName(f);
 }
 
 string Effects::GrantAbility::getDescription(const ContentFactory* f) const {
-  return "Grants ability: "_s + f->getCreatures().getSpell(id)->getName();
+  return "Grants ability: "_s + f->getCreatures().getSpell(id)->getName(f);
 }
 
 bool Effects::IncreaseMorale::applyToCreature(Creature* c, Creature* attacker) const {
@@ -1034,12 +1069,16 @@ string Effects::Caster::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f);
 }
 
-bool Effects::Chance::applyToCreature(Creature* c, Creature* attacker) const {
+bool Effects::GenericModifierEffect::applyToCreature(Creature* c, Creature* attacker) const {
   return false;
 }
 
-string Effects::Chance::getName(const ContentFactory* f) const {
+string Effects::GenericModifierEffect::getName(const ContentFactory* f) const {
   return effect->getName(f);
+}
+
+string Effects::GenericModifierEffect::getDescription(const ContentFactory* f) const {
+  return effect->getDescription(f);
 }
 
 string Effects::Chance::getDescription(const ContentFactory* f) const {
@@ -1265,7 +1304,7 @@ bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const
     case FilterType::ENEMY:
       return !!c && !!attacker && c->isEnemy(attacker);
     case FilterType::AUTOMATON:
-      return !!c && !c->automatonParts.empty();
+      return !!c && (c->getAttributes().getAutomatonSlots() > 0);
   }
 }
 
@@ -1301,69 +1340,12 @@ string Effects::Filter::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f) + suffix();
 }
 
-bool Effects::Description::applyToCreature(Creature* c, Creature* attacker) const {
-  return false;
-}
-
-string Effects::Description::getName(const ContentFactory* f) const {
-  return effect->getName(f);
-}
-
 string Effects::Description::getDescription(const ContentFactory* f) const {
   return text;
 }
 
-bool Effects::Name::applyToCreature(Creature* c, Creature* attacker) const {
-  return false;
-}
-
 string Effects::Name::getName(const ContentFactory* f) const {
   return text;
-}
-
-string Effects::Name::getDescription(const ContentFactory* f) const {
-  return effect->getDescription(f);
-}
-
-bool Effects::AIBelowHealth::applyToCreature(Creature* c, Creature* attacker) const {
-  return false;
-}
-
-string Effects::AIBelowHealth::getName(const ContentFactory* f) const {
-  return effect->getName(f);
-}
-
-string Effects::AIBelowHealth::getDescription(const ContentFactory* f) const {
-  return effect->getDescription(f);
-}
-
-bool Effects::AITargetEnemy::applyToCreature(Creature* c, Creature* attacker) const {
-  return false;
-}
-
-string Effects::AITargetEnemy::getName(const ContentFactory* f) const {
-  return effect->getName(f);
-}
-
-string Effects::AITargetEnemy::getDescription(const ContentFactory* f) const {
-  return effect->getDescription(f);
-}
-
-string Effects::TakeOffSlots::getSlotsDesc() const {
-  bool first = false;
-  string ret = "";
-
-  for(EquipmentSlot slot : slots)
-  {
-    if(first) {
-      ret += Equipment::slotTitles[slot];
-    }
-    else {
-      ret += ", " + Equipment::slotTitles[slot];
-    }
-  }
-
-  return ret;
 }
 
 bool Effects::TakeOffSlots::applyToCreature(Creature* c, Creature* attacker) const {
@@ -1461,13 +1443,13 @@ Effect& Effect::operator =(const Effect&) = default;
 bool Effect::apply(Position pos, Creature* attacker) const {
   if (auto c = pos.getCreature()) {
     bool res = FORWARD_CALL(bool, effect, applyToCreature, c, attacker);
-    if (isConsideredHostile() && attacker)
+    if (isConsideredHostile(c) && attacker)
       c->onAttackedBy(attacker);
     if (res)
       return true;
   }
   return effect->visit<bool>(
-      [&](const auto&) { return false; },
+      [&](const Effects::DefaultEffect&) { return false; },
       [&](const Effects::ReviveCorpse& effect) {
         for (auto& item : pos.getItems())
           if (auto info = item->getCorpseInfo())
@@ -1571,16 +1553,7 @@ bool Effect::apply(Position pos, Creature* attacker) const {
           return e.effect->apply(pos, attacker);
         return false;
       },
-      [&](const Effects::Description& e) {
-        return e.effect->apply(pos, attacker);
-      },
-      [&](const Effects::Name& e) {
-        return e.effect->apply(pos, attacker);
-      },
-      [&](const Effects::AIBelowHealth& e) {
-        return e.effect->apply(pos, attacker);
-      },
-      [&](const Effects::AITargetEnemy& e) {
+      [&](const Effects::GenericModifierEffect& e) {
         return e.effect->apply(pos, attacker);
       },
       [&](const Effects::SummonEnemy& summon) {
@@ -1630,8 +1603,7 @@ bool Effect::apply(Position pos, Creature* attacker) const {
         if (c) {
           for (auto col : pos.getGame()->getCollectives())
             if (col->getCreatures().contains(attacker)) {
-              col->addCreature(*c, {MinionTrait::WORKER, MinionTrait::FIGHTER, MinionTrait::NO_LIMIT,
-                  MinionTrait::AUTOMATON});
+              col->addCreature(*c, {MinionTrait::WORKER, MinionTrait::FIGHTER, MinionTrait::AUTOMATON});
               for (auto& part : (*c)->getAttributes().automatonParts)
                 part.get((*c)->getGame()->getContentFactory())->getAutomatonPart()->apply(*c);
               return true;
@@ -1818,7 +1790,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
       [&] (const Effects::RegrowBodyPart&) {
         for (auto part : ENUM_ALL(BodyPart))
           if (victim->getBody().numLost(part) + victim->getBody().numInjured(part) > 0)
-            return EffectAIIntent::WANTED;
+            return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
         return EffectAIIntent::NONE;
       },
       [&] (const Effects::TakeOffSlots& e) {
@@ -1852,7 +1824,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
 /* Unimplemented: Teleport, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr, IncreaseSkill, IncreaseWorkshopSkill
       EmitPoisonGas, CircularBlast, Alarm, SilverDamage, DoubleTrouble,
       PlaceFurniture, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-      ReviveCorpse, Blast, Shove, SwapPosition, TakeOffSlots, StealSlots */
+      ReviveCorpse, Blast, Shove, SwapPosition, AddAutomatonParts, AddBodyPart, MakeHumanoid, TakeOffSlots, StealSlots */
 
 EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const {
   PROFILE_BLOCK("Effect::shouldAIApply");
@@ -1911,13 +1883,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
           return e.effect->shouldAIApply(caster, pos);
         return EffectAIIntent::NONE;
       },
-      [&] (const Effects::Chance& e) {
-        return e.effect->shouldAIApply(caster, pos);
-      },
-      [&] (const Effects::Description& e) {
-        return e.effect->shouldAIApply(caster, pos);
-      },
-      [&] (const Effects::Name& e) {
+      [&] (const Effects::GenericModifierEffect& e) {
         return e.effect->shouldAIApply(caster, pos);
       },
       [&] (const Effects::AIBelowHealth& e) {
@@ -1943,7 +1909,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
         }
         return EffectAIIntent::NONE;
       },
-      [&] (const auto&) { return EffectAIIntent::NONE; }
+      [&] (const Effects::DefaultEffect&) { return EffectAIIntent::NONE; }
   );
 }
 
@@ -1962,32 +1928,24 @@ static optional<ViewId> getProjectile(LastingEffect effect) {
 }
 optional<FXInfo> Effect::getProjectileFX() const {
   return effect->visit<optional<FXInfo>>(
-      [&](const auto&) { return none; },
+      [&](const Effects::DefaultEffect&) { return none; },
       [&](const Effects::Lasting& e) -> optional<FXInfo> { return ::getProjectileFX(e.lastingEffect); },
       [&](const Effects::Damage&) -> optional<FXInfo> { return {FXName::MAGIC_MISSILE}; },
       [&](const Effects::Blast&) -> optional<FXInfo> { return {FXName::AIR_BLAST}; },
       [&](const Effects::Pull&) -> optional<FXInfo> { return FXInfo{FXName::AIR_BLAST}.setReversed(); },
-      [&](const Effects::Chance& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::Description& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::Name& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::AIBelowHealth& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::AITargetEnemy& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
+      [&](const Effects::GenericModifierEffect& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
       [&](const Effects::Filter& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
       [&](const Effects::FilterLasting& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); }
   );
 }
 optional<ViewId> Effect::getProjectile() const {
   return effect->visit<optional<ViewId>>(
-      [&](const auto&) -> optional<ViewId> { return none; },
+      [&](const Effects::DefaultEffect&) -> optional<ViewId> { return none; },
       [&](const Effects::Lasting& e) -> optional<ViewId> { return ::getProjectile(e.lastingEffect); },
       [&](const Effects::Damage&) -> optional<ViewId> { return ViewId("force_bolt"); },
       [&](const Effects::Fire&) -> optional<ViewId> { return ViewId("fireball"); },
       [&](const Effects::Blast&) -> optional<ViewId> { return ViewId("air_blast"); },
-      [&](const Effects::Chance& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::Description& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::Name& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::AIBelowHealth& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::AITargetEnemy& e) -> optional<ViewId> { return e.effect->getProjectile(); },
+      [&](const Effects::GenericModifierEffect& e) -> optional<ViewId> { return e.effect->getProjectile(); },
       [&](const Effects::Filter& e) -> optional<ViewId> { return e.effect->getProjectile(); },
       [&](const Effects::FilterLasting& e) -> optional<ViewId> { return e.effect->getProjectile(); }
   );
@@ -2026,11 +1984,7 @@ vector<Effect> Effect::getWishedForEffects() {
 optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
   return effect->visit<optional<MinionEquipmentType>>(
       [&](const Effects::IncreaseMorale&) -> optional<MinionEquipmentType> { return MinionEquipmentType::COMBAT_ITEM; },
-      [&](const Effects::Chance& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
-      [&](const Effects::Description& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
-      [&](const Effects::Name& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
-      [&](const Effects::AIBelowHealth& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
-      [&](const Effects::AITargetEnemy& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
+      [&](const Effects::GenericModifierEffect& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
       [&](const Effects::Area& a) -> optional<MinionEquipmentType> { return a.effect->getMinionEquipmentType(); },
       [&](const Effects::Filter& f) -> optional<MinionEquipmentType> { return f.effect->getMinionEquipmentType(); },
       [&](const Effects::FilterLasting& f) -> optional<MinionEquipmentType> { return f.effect->getMinionEquipmentType(); },
@@ -2050,18 +2004,14 @@ optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
       [&](const Effects::Lasting& e) -> optional<MinionEquipmentType> {
         return MinionEquipmentType::COMBAT_ITEM;
       },
-      [&](const auto&) -> optional<MinionEquipmentType> { return none; }
+      [&](const Effects::DefaultEffect&) -> optional<MinionEquipmentType> { return none; }
   );
 }
 
 bool Effect::canAutoAssignMinionEquipment() const {
   return effect->visit<bool>(
       [&](const Effects::Suicide&) { return false; },
-      [&](const Effects::Chance& e) { return e.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::Description& e) { return e.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::Name& e) { return e.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::AIBelowHealth& e) { return e.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::AITargetEnemy& e) { return e.effect->canAutoAssignMinionEquipment(); },
+      [&](const Effects::GenericModifierEffect& e) { return e.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Area& a) { return a.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::Filter& f) { return f.effect->canAutoAssignMinionEquipment(); },
       [&](const Effects::FilterLasting& f) { return f.effect->canAutoAssignMinionEquipment(); },
@@ -2071,7 +2021,7 @@ bool Effect::canAutoAssignMinionEquipment() const {
             return false;
         return true;
       },
-      [&](const auto&) { return true; }
+      [&](const Effects::DefaultEffect&) { return true; }
   );
 }
 

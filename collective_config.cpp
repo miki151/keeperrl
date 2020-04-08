@@ -46,6 +46,7 @@ template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
   ar(OPTION(immigrantInterval), OPTION(maxPopulation), OPTION(conquerCondition), OPTION(canEnemyRetire));
   ar(SKIP(type), OPTION(leaderAsFighter), OPTION(spawnGhosts), OPTION(ghostProb), OPTION(guardianInfo));
+  ar(SKIP(populationString), SKIP(prisoners));
 }
 
 SERIALIZABLE(CollectiveConfig);
@@ -98,8 +99,12 @@ CollectiveConfig::CollectiveConfig(TimeInterval interval, CollectiveType t, int 
       conquerCondition(conquerCondition) {
 }
 
-CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation, ConquerCondition conquerCondition) {
-  return CollectiveConfig(immigrantInterval, KEEPER, maxPopulation, conquerCondition);
+CollectiveConfig CollectiveConfig::keeper(TimeInterval immigrantInterval, int maxPopulation,
+    string populationString, bool prisoners, ConquerCondition conquerCondition) {
+  auto ret = CollectiveConfig(immigrantInterval, KEEPER, maxPopulation, conquerCondition);
+  ret.populationString = populationString;
+  ret.prisoners = prisoners;
+  return ret;
 }
 
 CollectiveConfig CollectiveConfig::noImmigrants() {
@@ -170,6 +175,10 @@ int CollectiveConfig::getMaxPopulation() const {
   return maxPopulation;
 }
 
+const string& CollectiveConfig::getPopulationString() const {
+  return populationString;
+}
+
 const optional<GuardianInfo>& CollectiveConfig::getGuardianInfo() const {
   return guardianInfo;
 }
@@ -196,6 +205,10 @@ bool CollectiveConfig::xCanEnemyRetire() const {
 CollectiveConfig& CollectiveConfig::setConquerCondition(ConquerCondition c) {
   conquerCondition = c;
   return *this;
+}
+
+bool CollectiveConfig::canCapturePrisoners() const {
+  return prisoners;
 }
 
 static CollectiveItemPredicate unMarkedItems() {

@@ -18,8 +18,8 @@ template <typename T>
 class vector {
   public:
   using value_type = T;
-  using reference = value_type&;
-  using const_reference = const value_type&;
+  using reference = T&;
+  using const_reference = const T&;
   using size_type = int;
 
   vector() {}

@@ -119,6 +119,10 @@ namespace EventInfo {
     Position pos;
   };
 
+  struct LeaderWounded {
+    Creature* c = nullptr;
+  };
+
 #define VARIANT_TYPES_LIST\
   X(CreatureMoved, 0)\
   X(CreatureKilled, 1)\
@@ -141,7 +145,8 @@ namespace EventInfo {
   X(RetiredGame, 18)\
   X(CreatureAttacked, 19)\
   X(FX, 20)\
-  X(ItemStolen, 21)
+  X(ItemStolen, 21)\
+  X(LeaderWounded, 22)
 
 #define VARIANT_NAME GameEvent
 

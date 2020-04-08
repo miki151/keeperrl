@@ -559,15 +559,10 @@
 {
     {
       ids = { "GNOME" }
-      traits = { LEADER WORKER }
+      traits = { LEADER WORKER NO_LIMIT }
       invisible = true
-      initialRecruitment = 3
+      initialRecruitment = 4
       spawnLocation = NearLeader
-    }
-    {
-      ids = { "GNOME" }
-      traits = { LEADER WORKER }
-      frequency = 0.1
     }
 }
 "tutorial"
