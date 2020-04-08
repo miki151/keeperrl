@@ -292,6 +292,54 @@ string Effects::RemoveLasting::getDescription(const ContentFactory*) const {
   return "Removes/cures from effect: " + LastingEffects::getName(lastingEffect);
 }
 
+bool Effects::Resistant::applyToCreature(Creature* c, Creature* attacker) const {
+  return c->addResistanceEffect(lastingEffect, TimeInterval(time));
+}
+
+string Effects::Resistant::getName(const ContentFactory*) const {
+  return LastingEffects::getName(lastingEffect) + " resistance";
+}
+
+string Effects::Resistant::getDescription(const ContentFactory*) const {
+  return "Makes resistant to " + LastingEffects::getName(lastingEffect) + " for some turns.";
+}
+
+bool Effects::RemoveResistant::applyToCreature(Creature* c, Creature* attacker) const {
+  return c->removeResistanceEffect(lastingEffect);
+}
+
+string Effects::RemoveResistant::getName(const ContentFactory*) const {
+  return "remove " + LastingEffects::getName(lastingEffect) + " resistance";
+}
+
+string Effects::RemoveResistant::getDescription(const ContentFactory*) const {
+  return "Removes resistance to " + LastingEffects::getName(lastingEffect);
+}
+
+bool Effects::Immunity::applyToCreature(Creature* c, Creature* attacker) const {
+  return c->addImmunityEffect(lastingEffect, count);
+}
+
+string Effects::Immunity::getName(const ContentFactory*) const {
+  return "permanent " + LastingEffects::getName(lastingEffect) + " resistance";
+}
+
+string Effects::Immunity::getDescription(const ContentFactory*) const {
+  return "Makes resistant to " + LastingEffects::getName(lastingEffect) + " permanently.";
+}
+
+bool Effects::RemoveImmunity::applyToCreature(Creature* c, Creature* attacker) const {
+  return c->removeImmunityEffect(lastingEffect, count);
+}
+
+string Effects::RemoveImmunity::getName(const ContentFactory*) const {
+  return "remove permanent " + LastingEffects::getName(lastingEffect) + " resistance";
+}
+
+string Effects::RemoveImmunity::getDescription(const ContentFactory*) const {
+  return "Removes permanent resistance to " + LastingEffects::getName(lastingEffect);
+}
+
 bool Effects::IncreaseAttr::applyToCreature(Creature* c, Creature*) const {
   c->you(MsgType::YOUR, ::getName(attr) + get(" improves", " wanes"));
   c->getAttributes().increaseBaseAttr(attr, amount);
