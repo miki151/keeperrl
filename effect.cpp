@@ -453,6 +453,9 @@ bool Effects::AddAutomatonParts::applyToCreature(Creature* c, Creature* attacker
   CHECK(partTypes.size() > 0);
 
   if (c->getSpareAutomatonSlots() < partTypes.size()) {
+    if (attacker) {
+      attacker->message(c->getName().bare() + " does not have enough slots to attach all parts.");
+    }
     return false;
   }
 
