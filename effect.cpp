@@ -59,6 +59,33 @@
 #include "workshop_type.h"
 #include "automaton_part.h"
 
+#define MODIFIER_EFFECT_BODY(Name, name_suffix, desc_suffic) \
+bool Effects::Name::applyToCreature(Creature* c, Creature* attacker) const { \
+  return false; \
+} \
+\
+string Effects::Name::getName(const ContentFactory* f) const { \
+  return effect->getName(f) + name_suffix; \
+} \
+\
+string Effects::Name::getDescription(const ContentFactory* f) const { \
+  return effect->getDescription(f) + desc_suffic; \
+}
+
+#define FILTER_EFFECT_BODY(Name, NameSuffix, DescSuffix) \
+bool Effects::Name::applyToCreature(Creature* c, Creature* attacker) const { \
+  return applies(c, attacker) && effect->apply(c->getPosition(), attacker); \
+} \
+\
+string Effects::Name::getName(const ContentFactory* f) const { \
+  auto suffix = NameSuffix; \
+  return effect->getName(f) + suffix(); \
+} \
+\
+string Effects::Name::getDescription(const ContentFactory* f) const { \
+  auto suffix = DescSuffix; \
+  return effect->getDescription(f) + suffix(); \
+}
 
 static void summonFX(Position pos) {
   auto color = Color(240, 146, 184);
@@ -1063,17 +1090,7 @@ string Effects::Caster::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f);
 }
 
-bool Effects::Chance::applyToCreature(Creature* c, Creature* attacker) const {
-  return false;
-}
-
-string Effects::Chance::getName(const ContentFactory* f) const {
-  return effect->getName(f);
-}
-
-string Effects::Chance::getDescription(const ContentFactory* f) const {
-  return effect->getDescription(f) + " (" + toString(int(value * 100)) + "% chance)";
-}
+MODIFIER_EFFECT_BODY(Chance, "", " (" + toString(int(value * 100)) + "% chance)");
 
 bool Effects::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) const {
   PCreature copy = c->getGame()->getContentFactory()->getCreatures().makeCopy(c);
@@ -1268,24 +1285,41 @@ string Effects::Fx::getDescription(const ContentFactory*) const {
   return "Just a visual effect";
 }
 
+FILTER_EFFECT_BODY(FilterLasting, [&]() -> string {
+    return " (" + LastingEffects::getName(filter) + " creatures only)";
+  },
+  [&]() -> string {
+    return " (applied only to creatures with " + LastingEffects::getName(filter) + " effect)";
+  }
+)
+
 bool Effects::FilterLasting::applies(const Creature* c, const Creature* attacker) const {
-  return !!c && c->isAffected(filter_effect);
+  return !!c && c->isAffected(filter);
 }
 
-bool Effects::FilterLasting::applyToCreature(Creature* c, Creature* attacker) const {
-  return applies(c, attacker) && effect->apply(c->getPosition(), attacker);
-}
-
-string Effects::FilterLasting::getName(const ContentFactory* f) const {
-  return effect->getName(f) + " (" + LastingEffects::getName(filter_effect) + " creatures only)";
-}
-
-string Effects::FilterLasting::getDescription(const ContentFactory* f) const {
-  auto suffix = [&] {
-    return " (applied only to creatures with " + LastingEffects::getName(filter_effect) + " effect)";
-  };
-  return effect->getDescription(f) + suffix();
-}
+FILTER_EFFECT_BODY(Filter, [&]() -> string {
+  switch (filter) {
+    case FilterType::ALLY:
+      return " (ally only)";
+    case FilterType::ENEMY:
+      return " (enemy only)";
+    case FilterType::AUTOMATON:
+      return " (automaton only)";
+    }
+    return "";
+  },
+  [&]() -> string {
+    switch (filter) {
+      case FilterType::ALLY:
+        return " (applied only to allies)";
+      case FilterType::ENEMY:
+        return " (applied only to enemies)";
+      case FilterType::AUTOMATON:
+        return " (applied only to automatons)";
+    }
+    return "";
+  }
+)
 
 bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const {
   switch (filter) {
@@ -1296,38 +1330,7 @@ bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const
     case FilterType::AUTOMATON:
       return !!c && (c->getAttributes().getAutomatonSlots() > 0);
   }
-}
-
-bool Effects::Filter::applyToCreature(Creature* c, Creature* attacker) const {
-  return applies(c, attacker) && effect->apply(c->getPosition(), attacker);
-}
-
-string Effects::Filter::getName(const ContentFactory* f) const {
-  auto suffix = [&] {
-    switch (filter) {
-      case FilterType::ALLY:
-        return " (ally only)";
-      case FilterType::ENEMY:
-        return " (enemy only)";
-      case FilterType::AUTOMATON:
-        return " (automaton only)";
-    }
-  };
-  return effect->getName(f) + suffix();
-}
-
-string Effects::Filter::getDescription(const ContentFactory* f) const {
-  auto suffix = [&] {
-    switch (filter) {
-      case FilterType::ALLY:
-        return " (applied only to allies)";
-      case FilterType::ENEMY:
-        return " (applied only to enemies)";
-      case FilterType::AUTOMATON:
-        return " (applied only to automatons)";
-    }
-  };
-  return effect->getDescription(f) + suffix();
+  return false;
 }
 
 bool Effects::Description::applyToCreature(Creature* c, Creature* attacker) const {
@@ -1354,29 +1357,8 @@ string Effects::Name::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f);
 }
 
-bool Effects::AIBelowHealth::applyToCreature(Creature* c, Creature* attacker) const {
-  return false;
-}
-
-string Effects::AIBelowHealth::getName(const ContentFactory* f) const {
-  return effect->getName(f);
-}
-
-string Effects::AIBelowHealth::getDescription(const ContentFactory* f) const {
-  return effect->getDescription(f);
-}
-
-bool Effects::AITargetEnemy::applyToCreature(Creature* c, Creature* attacker) const {
-  return false;
-}
-
-string Effects::AITargetEnemy::getName(const ContentFactory* f) const {
-  return effect->getName(f);
-}
-
-string Effects::AITargetEnemy::getDescription(const ContentFactory* f) const {
-  return effect->getDescription(f);
-}
+MODIFIER_EFFECT_BODY(AIBelowHealth, "", "");
+MODIFIER_EFFECT_BODY(AITargetEnemy, "", "");
 
 #define FORWARD_CALL(RetType, Var, Name, ...)\
 Var->visit<RetType>([&](const auto& e) { return e.Name(__VA_ARGS__); })
@@ -1401,6 +1383,11 @@ Effect::~Effect() {
 Effect& Effect::operator =(Effect&&) = default;
 
 Effect& Effect::operator =(const Effect&) = default;
+
+#define MODIFIER_EFFECT_APPLY(Name) \
+(const Effects::Name& e) { \
+  return e.effect->apply(pos, attacker); \
+}
 
 bool Effect::apply(Position pos, Creature* attacker) const {
   if (auto c = pos.getCreature()) {
@@ -1515,18 +1502,10 @@ bool Effect::apply(Position pos, Creature* attacker) const {
           return e.effect->apply(pos, attacker);
         return false;
       },
-      [&](const Effects::Description& e) {
-        return e.effect->apply(pos, attacker);
-      },
-      [&](const Effects::Name& e) {
-        return e.effect->apply(pos, attacker);
-      },
-      [&](const Effects::AIBelowHealth& e) {
-        return e.effect->apply(pos, attacker);
-      },
-      [&](const Effects::AITargetEnemy& e) {
-        return e.effect->apply(pos, attacker);
-      },
+      [&]MODIFIER_EFFECT_APPLY(Description),
+      [&]MODIFIER_EFFECT_APPLY(Name),
+      [&]MODIFIER_EFFECT_APPLY(AIBelowHealth),
+      [&]MODIFIER_EFFECT_APPLY(AITargetEnemy),
       [&](const Effects::SummonEnemy& summon) {
         CreatureGroup f = CreatureGroup::singleType(TribeId::getMonster(), summon.creature);
         return !Effect::summon(pos, f, Random.get(summon.count), summon.ttl.map([](int v) { return TimeInterval(v); }), 1_visible).empty();
@@ -1775,6 +1754,17 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
       PlaceFurniture, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
       ReviveCorpse, Blast, Shove, SwapPosition, AddAutomatonParts, AddBodyPart, MakeHumanoid */
 
+#define MODIFIER_EFFECT_SHOULDAIAPPLY(Name) \
+(const Effects::Name& e) { \
+  return e.effect->shouldAIApply(caster, pos); \
+}
+#define FILTER_EFFECT_SHOULDAIAPPLY(Name) \
+(const Effects::Name& e) { \
+  if (victim && e.applies(victim, caster)) \
+    return e.effect->shouldAIApply(caster, pos); \
+  return EffectAIIntent::NONE; \
+}
+
 EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const {
   PROFILE_BLOCK("Effect::shouldAIApply");
   auto victim = pos.getCreature();
@@ -1822,25 +1812,11 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
       [&] (const Effects::CustomArea& a) {
         return considerArea(a.getTargetPos(caster, pos), *a.effect);
       },
-      [&] (const Effects::Filter& e) {
-        if (victim && e.applies(victim, caster))
-          return e.effect->shouldAIApply(caster, pos);
-        return EffectAIIntent::NONE;
-      },
-      [&] (const Effects::FilterLasting& e) {
-        if (victim && e.applies(victim, caster))
-          return e.effect->shouldAIApply(caster, pos);
-        return EffectAIIntent::NONE;
-      },
-      [&] (const Effects::Chance& e) {
-        return e.effect->shouldAIApply(caster, pos);
-      },
-      [&] (const Effects::Description& e) {
-        return e.effect->shouldAIApply(caster, pos);
-      },
-      [&] (const Effects::Name& e) {
-        return e.effect->shouldAIApply(caster, pos);
-      },
+      [&] FILTER_EFFECT_SHOULDAIAPPLY(Filter),
+      [&] FILTER_EFFECT_SHOULDAIAPPLY(FilterLasting),
+      [&] MODIFIER_EFFECT_SHOULDAIAPPLY(Chance),
+      [&] MODIFIER_EFFECT_SHOULDAIAPPLY(Description),
+      [&] MODIFIER_EFFECT_SHOULDAIAPPLY(Name),
       [&] (const Effects::AIBelowHealth& e) {
         if (caster->getBody().getHealth() <= e.value)
           return e.effect->shouldAIApply(caster, pos);
@@ -1875,6 +1851,9 @@ static optional<FXInfo> getProjectileFX(LastingEffect effect) {
   }
 }
 
+#define MODIFIER_EFFECT_GETPROJECTILEFX(Name) (const Effects::Name& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); }
+#define FILTER_EFFECT_GETPROJECTILEFX(Name) MODIFIER_EFFECT_GETPROJECTILEFX(Name)
+
 static optional<ViewId> getProjectile(LastingEffect effect) {
   switch (effect) {
     default:
@@ -1888,15 +1867,19 @@ optional<FXInfo> Effect::getProjectileFX() const {
       [&](const Effects::Damage&) -> optional<FXInfo> { return {FXName::MAGIC_MISSILE}; },
       [&](const Effects::Blast&) -> optional<FXInfo> { return {FXName::AIR_BLAST}; },
       [&](const Effects::Pull&) -> optional<FXInfo> { return FXInfo{FXName::AIR_BLAST}.setReversed(); },
-      [&](const Effects::Chance& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::Description& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::Name& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::AIBelowHealth& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::AITargetEnemy& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::Filter& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::FilterLasting& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); }
+      [&]MODIFIER_EFFECT_GETPROJECTILEFX(Chance),
+      [&]MODIFIER_EFFECT_GETPROJECTILEFX(Description),
+      [&]MODIFIER_EFFECT_GETPROJECTILEFX(Name),
+      [&]MODIFIER_EFFECT_GETPROJECTILEFX(AIBelowHealth),
+      [&]MODIFIER_EFFECT_GETPROJECTILEFX(AITargetEnemy),
+      [&]FILTER_EFFECT_GETPROJECTILEFX(Filter),
+      [&]FILTER_EFFECT_GETPROJECTILEFX(FilterLasting)
   );
 }
+
+#define MODIFIER_EFFECT_GETPROJECTILE(Name) (const Effects::Name& e) -> optional<ViewId> { return e.effect->getProjectile(); }
+#define FILTER_EFFECT_GETPROJECTILE(Name) MODIFIER_EFFECT_GETPROJECTILE(Name)
+
 optional<ViewId> Effect::getProjectile() const {
   return effect->visit<optional<ViewId>>(
       [&](const auto&) -> optional<ViewId> { return none; },
@@ -1904,13 +1887,13 @@ optional<ViewId> Effect::getProjectile() const {
       [&](const Effects::Damage&) -> optional<ViewId> { return ViewId("force_bolt"); },
       [&](const Effects::Fire&) -> optional<ViewId> { return ViewId("fireball"); },
       [&](const Effects::Blast&) -> optional<ViewId> { return ViewId("air_blast"); },
-      [&](const Effects::Chance& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::Description& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::Name& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::AIBelowHealth& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::AITargetEnemy& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::Filter& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::FilterLasting& e) -> optional<ViewId> { return e.effect->getProjectile(); }
+      [&]MODIFIER_EFFECT_GETPROJECTILE(Chance),
+      [&]MODIFIER_EFFECT_GETPROJECTILE(Description),
+      [&]MODIFIER_EFFECT_GETPROJECTILE(Name),
+      [&]MODIFIER_EFFECT_GETPROJECTILE(AIBelowHealth),
+      [&]MODIFIER_EFFECT_GETPROJECTILE(AITargetEnemy),
+      [&]FILTER_EFFECT_GETPROJECTILE(Filter),
+      [&]FILTER_EFFECT_GETPROJECTILE(FilterLasting)
   );
 }
 
@@ -1944,17 +1927,20 @@ vector<Effect> Effect::getWishedForEffects() {
   return allEffects;
 }
 
+#define MODIFIER_EFFECT_GETMINIONEQUTYPE(Name) (const Effects::Name& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); }
+#define FILTER_EFFECT_GETMINIONEQUTYPE(Name) MODIFIER_EFFECT_GETMINIONEQUTYPE(Name)
+
 optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
   return effect->visit<optional<MinionEquipmentType>>(
       [&](const Effects::IncreaseMorale&) -> optional<MinionEquipmentType> { return MinionEquipmentType::COMBAT_ITEM; },
-      [&](const Effects::Chance& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
-      [&](const Effects::Description& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
-      [&](const Effects::Name& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
-      [&](const Effects::AIBelowHealth& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
-      [&](const Effects::AITargetEnemy& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
-      [&](const Effects::Area& a) -> optional<MinionEquipmentType> { return a.effect->getMinionEquipmentType(); },
-      [&](const Effects::Filter& f) -> optional<MinionEquipmentType> { return f.effect->getMinionEquipmentType(); },
-      [&](const Effects::FilterLasting& f) -> optional<MinionEquipmentType> { return f.effect->getMinionEquipmentType(); },
+      [&]MODIFIER_EFFECT_GETMINIONEQUTYPE(Chance),
+      [&]MODIFIER_EFFECT_GETMINIONEQUTYPE(Description),
+      [&]MODIFIER_EFFECT_GETMINIONEQUTYPE(Name),
+      [&]MODIFIER_EFFECT_GETMINIONEQUTYPE(AIBelowHealth),
+      [&]MODIFIER_EFFECT_GETMINIONEQUTYPE(AITargetEnemy),
+      [&]MODIFIER_EFFECT_GETMINIONEQUTYPE(Area),
+      [&]FILTER_EFFECT_GETMINIONEQUTYPE(Filter),
+      [&]FILTER_EFFECT_GETMINIONEQUTYPE(FilterLasting),
       [&](const Effects::Escape&) -> optional<MinionEquipmentType> { return MinionEquipmentType::COMBAT_ITEM; },
       [&](const Effects::Chain& c) -> optional<MinionEquipmentType> {
         for (auto& e : c.effects)
@@ -1975,17 +1961,20 @@ optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
   );
 }
 
+#define MODIFIER_EFFECT_CANAUTOASSIGNEQUI(Name) (const Effects::Name& e) { return e.effect->canAutoAssignMinionEquipment(); }
+#define FILTER_EFFECT_CANAUTOASSIGNEQUI(Name) MODIFIER_EFFECT_CANAUTOASSIGNEQUI(Name)
+
 bool Effect::canAutoAssignMinionEquipment() const {
   return effect->visit<bool>(
       [&](const Effects::Suicide&) { return false; },
-      [&](const Effects::Chance& e) { return e.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::Description& e) { return e.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::Name& e) { return e.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::AIBelowHealth& e) { return e.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::AITargetEnemy& e) { return e.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::Area& a) { return a.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::Filter& f) { return f.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::FilterLasting& f) { return f.effect->canAutoAssignMinionEquipment(); },
+      [&]MODIFIER_EFFECT_CANAUTOASSIGNEQUI(Chance),
+      [&]MODIFIER_EFFECT_CANAUTOASSIGNEQUI(Description),
+      [&]MODIFIER_EFFECT_CANAUTOASSIGNEQUI(Name),
+      [&]MODIFIER_EFFECT_CANAUTOASSIGNEQUI(AIBelowHealth),
+      [&]MODIFIER_EFFECT_CANAUTOASSIGNEQUI(AITargetEnemy),
+      [&]MODIFIER_EFFECT_CANAUTOASSIGNEQUI(Area),
+      [&]FILTER_EFFECT_CANAUTOASSIGNEQUI(Filter),
+      [&]FILTER_EFFECT_CANAUTOASSIGNEQUI(FilterLasting),
       [&](const Effects::Chain& c) {
         for (auto& e : c.effects)
           if (!e.canAutoAssignMinionEquipment())
@@ -2013,3 +2002,17 @@ template<>
 }
 #undef VARIANT_TYPES_LIST
 #undef VARIANT_NAME
+
+#undef MODIFIER_EFFECT_BODY
+#undef FILTER_EFFECT_BODY
+#undef MODIFIER_EFFECT_APPLY
+#undef MODIFIER_EFFECT_SHOULDAIAPPLY
+#undef FILTER_EFFECT_SHOULDAIAPPLY
+#undef MODIFIER_EFFECT_GETPROJECTILEFX
+#undef FILTER_EFFECT_GETPROJECTILEFX
+#undef MODIFIER_EFFECT_GETPROJECTILE
+#undef FILTER_EFFECT_GETPROJECTILE
+#undef MODIFIER_EFFECT_GETMINIONEQUTYPE
+#undef FILTER_EFFECT_GETMINIONEQUTYPE
+#undef MODIFIER_EFFECT_CANAUTOASSIGNEQUI
+#undef FILTER_EFFECT_CANAUTOASSIGNEQUI

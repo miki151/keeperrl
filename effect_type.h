@@ -19,6 +19,28 @@ RICH_ENUM(FilterType, ALLY, ENEMY, AUTOMATON);
   string getName(const ContentFactory*) const;\
   string getDescription(const ContentFactory*) const
 
+#define MODIFIER_EFFECTS(Name) \
+  struct Name { \
+    EFFECT_TYPE_INTERFACE; \
+    vector<Effect> SERIAL(effects); \
+    SERIALIZE_ALL(effects); \
+  };
+
+#define MODIFIER_EFFECT(Name) \
+  struct Name { \
+    EFFECT_TYPE_INTERFACE; \
+    HeapAllocated<Effect> SERIAL(effect); \
+    SERIALIZE_ALL(effect); \
+  };
+
+#define FILTER_EFFECT(Name, Type) \
+  struct Name { \
+    EFFECT_TYPE_INTERFACE; \
+    bool applies(const Creature* c, const Creature* attacker) const; \
+    Type SERIAL(filter); \
+    HeapAllocated<Effect> SERIAL(effect); \
+    SERIALIZE_ALL(filter, effect); \
+    }
 
 #define SIMPLE_EFFECT(Name) \
   struct Name : public EmptyStruct<Name> { \
@@ -208,36 +230,12 @@ struct ReviveCorpse {
   int SERIAL(ttl);
   SERIALIZE_ALL(summoned, ttl)
 };
-struct Filter {
-  EFFECT_TYPE_INTERFACE;
-  bool applies(const Creature* c, const Creature* attacker) const;
-  FilterType SERIAL(filter);
-  HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(filter, effect)
-};
-struct FilterLasting {
-  EFFECT_TYPE_INTERFACE;
-  bool applies(const Creature* c, const Creature* attacker) const;
-  LastingEffect SERIAL(filter_effect);
-  HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(filter_effect, effect)
-};
+FILTER_EFFECT(Filter, FilterType);
+FILTER_EFFECT(FilterLasting, LastingEffect);
 SIMPLE_EFFECT(Wish);
-struct Caster {
-  EFFECT_TYPE_INTERFACE;
-  HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(effect)
-};
-struct Chain {
-  EFFECT_TYPE_INTERFACE;
-  vector<Effect> SERIAL(effects);
-  SERIALIZE_ALL(effects)
-};
-struct ChooseRandom {
-  EFFECT_TYPE_INTERFACE;
-  vector<Effect> SERIAL(effects);
-  SERIALIZE_ALL(effects)
-};
+MODIFIER_EFFECT(Caster);
+MODIFIER_EFFECTS(Chain);
+MODIFIER_EFFECTS(ChooseRandom);
 struct Message {
   EFFECT_TYPE_INTERFACE;
   string SERIAL(text);
@@ -289,16 +287,8 @@ struct Audience {
   optional<int> SERIAL(maxDistance);
   SERIALIZE_ALL(maxDistance)
 };
-struct FirstSuccessful {
-  EFFECT_TYPE_INTERFACE;
-  vector<Effect> SERIAL(effects);
-  SERIALIZE_ALL(effects)
-};
-struct ChainFirstResult {
-  EFFECT_TYPE_INTERFACE;
-  vector<Effect> SERIAL(effects);
-  SERIALIZE_ALL(effects)
-};
+MODIFIER_EFFECTS(FirstSuccessful);
+MODIFIER_EFFECTS(ChainFirstResult);
 struct ColorVariant {
   EFFECT_TYPE_INTERFACE;
   Color SERIAL(color);
@@ -327,11 +317,7 @@ struct AIBelowHealth {
   HeapAllocated<Effect> SERIAL(effect);
   SERIALIZE_ALL(value, effect)
 };
-struct AITargetEnemy {
-  EFFECT_TYPE_INTERFACE;
-  HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(effect)
-};
+MODIFIER_EFFECT(AITargetEnemy);
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -420,3 +406,8 @@ class EffectType : public Effects::EffectType {
   public:
   using Effects::EffectType::EffectType;
 };
+
+#undef EFFECT_TYPE_INTERFACE
+#undef MODIFIER_EFFECT
+#undef MODIFIER_EFFECTS
+#undef SIMPLE_EFFECT
