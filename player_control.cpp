@@ -2880,7 +2880,7 @@ void PlayerControl::update(bool currentlyActive) {
       if (!getCreatures().contains(c) && c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
         if (!collective->wasBanished(c) && !c->getBody().isMinionFood() && c->getAttributes().getCanJoinCollective()) {
           addedCreatures.push_back(c);
-          collective->addCreature(c, {MinionTrait::FIGHTER});
+          collective->addCreature(c, {MinionTrait::FIGHTER, MinionTrait::NO_LIMIT});
           for (auto controlled : getControlled())
             if (canControlInTeam(c)
                 && c->getPosition().isSameLevel(controlled->getPosition())
