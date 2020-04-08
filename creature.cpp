@@ -967,7 +967,7 @@ void Creature::onKilledOrCaptured(Creature* victim) {
     CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
     points += difficulty;
     kills.push_back(KillInfo{victim->getUniqueId(), victim->getViewObject().id()});
-    if (victim->getStatus().contains(CreatureStatus::LEADER)) {
+    if (getBody().hasBrain() && victim->getStatus().contains(CreatureStatus::LEADER)) {
       auto title = capitalFirst(victim->getName().bare()) + " Slayer";
       if (!killTitles.contains(title)) {
         attributes->getName().setKillTitle(title);
