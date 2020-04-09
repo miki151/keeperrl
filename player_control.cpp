@@ -337,11 +337,12 @@ void PlayerControl::render(View* view) {
   }
 }
 
-void PlayerControl::addConsumableItem(Creature* creature) {
+void PlayerControl::addConsumableItem(Creature* creature, bool automatonPart) {
   ScrollPosition scrollPos;
   while (1) {
     Item* chosenItem = chooseEquipmentItem(creature, {}, [&](const Item* it) {
         return !collective->getMinionEquipment().isOwner(it, creature)
+            && (!!it->getAutomatonPart() == automatonPart)
             && !it->canEquip()
             && collective->getMinionEquipment().needsItem(creature, it, true); }, &scrollPos);
     if (chosenItem) {
@@ -377,7 +378,7 @@ void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
         if (action.slot)
           addEquipment(creature, *action.slot);
         else
-          addConsumableItem(creature);
+          addConsumableItem(creature, false);
         break;
       case ItemAction::LOCK:
         /*if (action.ids.empty() && action.slot)
@@ -2308,7 +2309,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::CREATURE_ADD_BODY_PART:
       if (Creature* c = getCreature(input.get<Creature::Id>()))
-        addConsumableItem(c);
+        addConsumableItem(c, true);
       break;
     case UserInputId::CREATURE_CONTROL:
       if (Creature* c = getCreature(input.get<Creature::Id>())) {

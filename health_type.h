@@ -3,7 +3,7 @@
 #include "util.h"
 
 RICH_ENUM(
-    HealthType,
-    FLESH,
-    SPIRIT
+  HealthType,
+  FLESH,
+  SPIRIT
 );
