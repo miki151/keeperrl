@@ -170,6 +170,9 @@ clean:
 	$(RM) $(OBJDIR)/*.o
 	$(RM) $(OBJDIR)/*.d
 	$(RM) $(OBJDIR)/*.gch
+	$(RM) $(OBJDIR)/extern/*.o
+	$(RM) $(OBJDIR)/extern/*.d
+	$(RM) $(OBJDIR)/extern/*.gch
 	$(RM) log.out
 	$(RM) $(OBJDIR)/test
 	$(RM) $(OBJDIR)-opt/*.o
