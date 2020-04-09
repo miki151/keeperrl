@@ -27,7 +27,7 @@ class Equipment {
   void addItems(vector<PItem>, Creature*);
   const vector<Item*>& getSlotItems(EquipmentSlot slot) const;
   bool hasItem(const Item*) const;
-  bool hasItem(string ingredientType) const;
+  bool hasIngredient(string ingredientType) const;
   bool isEquipped(const Item*) const;
   bool canEquip(const Item*, const Creature*) const;
   void equip(Item*, EquipmentSlot, Creature*);
@@ -38,7 +38,7 @@ class Equipment {
   const vector<Item*>& getItems() const;
   const vector<Item*>& getItems(ItemIndex) const;
   Item* getItemById(UniqueEntity<Item>::Id) const;
-  const vector<Item*>& getItemsByIngredientType(string ingredientType) const;
+  const vector<Item*>& getItemsByIngrType(string ingredientType) const;
   vector<PItem> removeItems(const vector<Item*>&, Creature*);
   vector<PItem> removeAllItems(Creature*);
   double getTotalWeight() const;

@@ -90,6 +90,14 @@ class IndexedVector {
     return std::move(elems);
   }
 
+  int size() {
+    return elems.size();
+  }
+
+  bool isEmpty() {
+    return size() == 0;
+  }
+
   SERIALIZE_ALL(elems, indexes)
 
   private:

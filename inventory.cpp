@@ -48,15 +48,10 @@ void Inventory::addItem(PItem item) {
       resourceIndexes[index]->insert(item.get());
   }
   if (auto ingredientType = item->getIngredientType()) {
-    auto p = ingredientTypes.find(*ingredientType);
-    if(p == ingredientTypes.end()) {
-      ItemVector iv;
-      iv.insert(item.get());
-      ingredientTypes.insert(pair<string, ItemVector&>(*ingredientType, iv));
+    if (!ingredientTypes[*ingredientType]) {
+      ingredientTypes[*ingredientType].emplace();
     }
-    else {
-      p->second.insert(item.get());
-    }
+    ingredientTypes[*ingredientType]->insert(item.get());
   }
   weight += item->getWeight();
   items.insert(std::move(item));
@@ -81,11 +76,9 @@ PItem Inventory::removeItem(Item* itemRef) {
       resourceIndexes[index]->remove(item.get());
   }
   if (auto ingredientType = item->getIngredientType()) {
-    auto p = ingredientTypes.find(*ingredientType);
-    if(p != ingredientTypes.end()) {
-      if(p->second.getElems().empty()) {
-        ingredientTypes.erase(*ingredientType);
-      }
+    ingredientTypes[*ingredientType]->remove(itemRef->getUniqueId());
+    if (ingredientTypes[*ingredientType]->isEmpty()) {
+      ingredientTypes.erase(*ingredientType);
     }
   }
   return item;
@@ -154,19 +147,6 @@ const vector<Item*>& Inventory::getItems(CollectiveResourceId id) const {
   return elems->getElems();
 }
 
-const vector<Item*>& Inventory::getItems(string ingredientType) const {
-  static vector<Item*> empty;;
-  if (isEmpty()) {
-    return empty;
-  }
-  auto elems = ingredientTypes.find(ingredientType);
-  if (elems != ingredientTypes.end()) {
-    return elems->second.getElems();
-  }
-  return empty;
-}
-
-
 const ItemCounts& Inventory::getCounts() const {
   return counts;
 }
@@ -175,11 +155,23 @@ const vector<Item*>& Inventory::getItems() const {
   return itemsCache.getElems();
 }
 
+const vector<Item*>& Inventory::getItemsByIngrType(string ingredientType) const {
+  static vector<Item*> empty;;
+  if (isEmpty()) {
+    return empty;
+  }
+  auto elems = ingredientTypes.find(ingredientType);
+  if (elems != ingredientTypes.end()) {
+    return elems->second->getElems();
+  }
+  return empty;
+}
+
 bool Inventory::hasItem(const Item* itemRef) const {
   return !!itemsCache.fetch(itemRef->getUniqueId());
 }
 
-bool Inventory::hasItem(string ingredientType) const {
+bool Inventory::hasIngredient(string ingredientType) const {
   return ingredientTypes.count(ingredientType) > 0;
 }
 

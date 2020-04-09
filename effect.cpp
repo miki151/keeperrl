@@ -73,8 +73,16 @@ string Effects::GenericModifierEffect::getDescription(const ContentFactory* f) c
   return effect->getDescription(f);
 }
 
-bool Effects::GenericFilterEffect::applyToCreature(Creature *c, Creature* attacker) const {
-  return applies(c, attacker) && effect->apply(c->getPosition(), attacker);
+const Creature* Effects::GenericFilterEffect::chooseVictim(const Creature* c, const Creature* attacker) const {
+  return onVictim ? c : attacker;
+}
+
+bool Effects::GenericFilterEffect::applies(const Creature* victim, const Creature* attacker) const {
+  return false;
+}
+
+bool Effects::GenericFilterEffect::applyToCreature(Creature* c, Creature* attacker) const {
+  return applies(chooseVictim(c, attacker), attacker) && effect->apply(c->getPosition(), attacker);
 }
 
 static void summonFX(Position pos) {
@@ -1277,8 +1285,8 @@ string Effects::Fx::getDescription(const ContentFactory*) const {
   return "Just a visual effect";
 }
 
-bool Effects::FilterLasting::applies(const Creature* c, const Creature* attacker) const {
-  return !!c && c->isAffected(filter);
+bool Effects::FilterLasting::applies(const Creature* victim, const Creature* attacker) const {
+  return !!victim && victim->isAffected(filter);
 }
 
 string Effects::FilterLasting::getName(const ContentFactory* f) const {
@@ -1292,14 +1300,14 @@ string Effects::FilterLasting::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f) + suffix();
 }
 
-bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const {
+bool Effects::Filter::applies(const Creature* victim, const Creature* attacker) const {
   switch (filter) {
     case FilterType::ALLY:
-      return !!c && !!attacker && !c->isEnemy(attacker);
+      return !!victim && !!attacker && !victim->isEnemy(attacker);
     case FilterType::ENEMY:
-      return !!c && !!attacker && c->isEnemy(attacker);
+      return !!victim && !!attacker && victim->isEnemy(attacker);
     case FilterType::AUTOMATON:
-      return !!c && (c->getAttributes().getAutomatonSlots() > 0);
+      return !!victim && (victim->getAttributes().getAutomatonSlots() > 0);
   }
   return false;
 }
@@ -1332,8 +1340,8 @@ string Effects::Filter::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f) + suffix();
 }
 
-bool Effects::FilterSpell::applies(const Creature* c, const Creature* attacker) const {
-  return !!c && c->getSpellMap().contains(filter);
+bool Effects::FilterSpell::applies(const Creature* victim, const Creature* attacker) const {
+  return !!victim && victim->getSpellMap().contains(filter);
 }
 
 string Effects::FilterSpell::getName(const ContentFactory* f) const {
@@ -1347,12 +1355,12 @@ string Effects::FilterSpell::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f) + suffix();
 }
 
-bool Effects::FilterTech::applies(const Creature* c, const Creature* attacker) const {
-  if(!c) {
+bool Effects::FilterTech::applies(const Creature* victim, const Creature* attacker) const {
+  if (!victim) {
     return false;
   }
-  for (Collective* col : c->getGame()->getCollectives())
-      if (col->getCreatures().contains(c))
+  for (Collective* col : victim->getGame()->getCollectives())
+      if (col->getCreatures().contains(victim))
         return col->getTechnology().researched.count(filter) > 0;
   return false;
 }
@@ -1367,48 +1375,48 @@ string Effects::FilterTech::getDescription(const ContentFactory* f) const {
   return effect->getDescription(f) + suffix();
 }
 
-bool Effects::FilterTrait::applies(const Creature* c, const Creature* attacker) const {
-  if(!c) {
+bool Effects::FilterTrait::applies(const Creature* victim, const Creature* attacker) const {
+  if (!victim) {
     return false;
   }
-  for (Collective* col : c->getGame()->getCollectives())
-      if (col->hasTrait(c, filter))
+  for (Collective* col : victim->getGame()->getCollectives())
+      if (col->hasTrait(victim, filter))
         return true;
   return false;
 }
 
 string Effects::FilterTrait::getName(const ContentFactory* f) const {
-  return effect->getName(f) + " (" + getTraitName(filter) + " carrying creatures only)";
+  return effect->getName(f) + " (" + getTraitName(filter) + " only)";
 }
 
 string Effects::FilterTrait::getDescription(const ContentFactory* f) const {
   auto suffix = [&] {
-    return " (applied only to creatures that have " + getTraitName(filter) + " ingredient in their inventory)";
+    return " (applied only to creatures that are " + getTraitName(filter) + ")";
   };
   return effect->getDescription(f) + suffix();
 }
 
-bool Effects::FilterHasIngr::applies(const Creature* c, const Creature* attacker) const {
-  return !!c && c->getEquipment().hasItem(filter);
+bool Effects::FilterHasIngr::applies(const Creature* victim, const Creature* attacker) const {
+  return !!victim && victim->getEquipment().hasIngredient(filter);
 }
 
 string Effects::FilterHasIngr::getName(const ContentFactory* f) const {
-  return effect->getName(f) + " (equipped with " + filter + " creatures only)";
+  return effect->getName(f) + " (" + filter + " carrying creatures only)";
 }
 
 string Effects::FilterHasIngr::getDescription(const ContentFactory* f) const {
   auto suffix = [&] {
-    return " (applied only to creatures that have " + filter + " ingredient equipped)";
+    return " (applied only to creatures that have " + filter + " ingredient on them)";
   };
   return effect->getDescription(f) + suffix();
 }
 
-bool Effects::FilterEquippedIngr::applies(const Creature* c, const Creature* attacker) const {
-  if(!c) {
+bool Effects::FilterEquippedIngr::applies(const Creature* victim, const Creature* attacker) const {
+  if (!victim) {
     return false;
   }
-  for(Item* item : c->getEquipment().getItemsByIngredientType(filter)) {
-    if (c->getEquipment().isEquipped(item)) {
+  for (Item* item : victim->getEquipment().getItemsByIngrType(filter)) {
+    if (victim->getEquipment().isEquipped(item)) {
       return true;
     }
   }
@@ -1416,7 +1424,7 @@ bool Effects::FilterEquippedIngr::applies(const Creature* c, const Creature* att
 }
 
 string Effects::FilterEquippedIngr::getName(const ContentFactory* f) const {
-  return effect->getName(f) + " (equipped with " + filter + " creatures only)";
+  return effect->getName(f) + " (creatures with " + filter + " equipped only)";
 }
 
 string Effects::FilterEquippedIngr::getDescription(const ContentFactory* f) const {
@@ -1573,6 +1581,9 @@ bool Effect::apply(Position pos, Creature* attacker) const {
       },
       [&](const Effects::GenericModifierEffect& e) {
         return e.effect->apply(pos, attacker);
+      },
+      [&](const Effects::GenericFilterEffect& e) {
+        return false;
       },
       [&](const Effects::SummonEnemy& summon) {
         CreatureGroup f = CreatureGroup::singleType(TribeId::getMonster(), summon.creature);
@@ -1870,7 +1881,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
         return considerArea(a.getTargetPos(caster, pos), *a.effect);
       },
       [&] (const Effects::GenericFilterEffect& e) {
-        if (victim && e.applies(victim, caster))
+        if (victim && e.applies(e.chooseVictim(victim, caster), caster))
           return e.effect->shouldAIApply(caster, pos);
         return EffectAIIntent::NONE;
       },

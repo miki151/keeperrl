@@ -38,7 +38,10 @@ struct GenericModifierEffect {
 };
 struct GenericFilterEffect : GenericModifierEffect {
   bool applyToCreature(Creature*, Creature* attacker = nullptr) const;
-  bool applies(const Creature* c, const Creature* attacker) const;
+  const Creature* chooseVictim(const Creature* c, const Creature* attacker) const;
+  virtual bool applies(const Creature* victim, const Creature* attacker) const;
+  bool SERIAL(onVictim) = true;
+  SERIALIZE_ALL(onVictim, SUBCLASS(GenericModifierEffect));
 };
 
 SIMPLE_EFFECT(Escape);
@@ -226,14 +229,15 @@ struct ReviveCorpse {
 struct Filter : GenericFilterEffect {
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;
-  bool applies(const Creature* c, const Creature* attacker) const;
+  bool applies(const Creature* victim, const Creature* attacker) const override;
   FilterType SERIAL(filter);
   SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
 };
+// FilterLasting applies an effect only if target has a LastingEffect(filter) on them.
 struct FilterLasting : GenericFilterEffect {
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;
-  bool applies(const Creature* c, const Creature* attacker) const;
+  bool applies(const Creature* victim, const Creature* attacker) const override;
   LastingEffect SERIAL(filter);
   SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
 };
@@ -242,17 +246,17 @@ struct FilterLasting : GenericFilterEffect {
 struct FilterSpell : GenericFilterEffect {
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;
-  bool applies(const Creature* c, const Creature* attacker) const;
+  bool applies(const Creature* victim, const Creature* attacker) const override;
   SpellId SERIAL(filter);
   SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
 };
-// FilterHasIngr is an effect that applies an effect only if
+// FilterTech is an effect that applies an effect only if
 // target's tribe has unlocked TechId(filter).
 // !!!! FilterTech is highly CPU unfriendly. !!!
 struct FilterTech : GenericFilterEffect {
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;
-  bool applies(const Creature* c, const Creature* attacker) const;
+  bool applies(const Creature* victim, const Creature* attacker) const override;
   TechId SERIAL(filter);
   SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
 };
@@ -262,7 +266,7 @@ struct FilterTech : GenericFilterEffect {
 struct FilterTrait : GenericFilterEffect {
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;
-  bool applies(const Creature* c, const Creature* attacker) const;
+  bool applies(const Creature* victim, const Creature* attacker) const override;
   MinionTrait SERIAL(filter);
   SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
 };
@@ -271,7 +275,7 @@ struct FilterTrait : GenericFilterEffect {
 struct FilterHasIngr : GenericFilterEffect {
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;
-  bool applies(const Creature* c, const Creature* attacker) const;
+  bool applies(const Creature* victim, const Creature* attacker) const override;
   string SERIAL(filter);
   SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
 };
@@ -280,7 +284,7 @@ struct FilterHasIngr : GenericFilterEffect {
 struct FilterEquippedIngr : GenericFilterEffect {
   string getName(const ContentFactory*) const;
   string getDescription(const ContentFactory*) const;
-  bool applies(const Creature* c, const Creature* attacker) const;
+  bool applies(const Creature* victim, const Creature* attacker) const override;
   string SERIAL(filter);
   SERIALIZE_ALL(filter, SUBCLASS(GenericFilterEffect));
 };
