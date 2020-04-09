@@ -3180,11 +3180,12 @@ SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem> attrs) {
 SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool infoOnly) {
   const vector<ItemInfo>& items = minion.inventory;
   auto lines = WL(getListBuilder, legendLineHeight);
-  if (!minion.bodyParts.empty() || minion.canAddBodyPart) {
-    lines.addElem(WL(label, "Body parts", Color::YELLOW));
+  if (minion.bodyPartLimit > 0) {
+    lines.addElem(WL(label, "Body parts (" + toString(minion.bodyParts.size()) + "/"
+        + toString(minion.bodyPartLimit) + ")", Color::YELLOW));
     for (auto& part : minion.bodyParts)
       lines.addElem(getItemLine(part, [](Rectangle) {}));
-    if (minion.canAddBodyPart)
+    if (minion.bodyParts.size() < minion.bodyPartLimit)
       lines.addElem(WL(buttonLabel, "Install body part",
           getButtonCallback({UserInputId::CREATURE_ADD_BODY_PART, minion.creatureId})));
   }
