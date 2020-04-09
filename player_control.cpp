@@ -2579,9 +2579,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         // Does this mean I can remove the order if the trap physically exists?
       } else
       if (position.canEnterEmpty({MovementTrait::WALK}) &&
-          collective->getTerritory().contains(position) &&
-          !collective->getConstructions().getTrap(position) &&
-          !collective->getConstructions().getFurniture(position, FurnitureLayer::MIDDLE) &&
+          collective->canAddFurniture(position, trap.type) &&
           selection != DESELECT) {
         collective->addTrap(position, trap.type);
         getView()->addSound(SoundId::ADD_CONSTRUCTION);
