@@ -82,7 +82,7 @@ class GuiBuilder {
   void drawOverlays(vector<OverlayInfo>&, GameInfo&);
   SGuiElem drawMessages(const vector<PlayerMessage>&, int guiLength);
   SGuiElem drawGameSpeedDialog();
-  SGuiElem drawImmigrationOverlay(const vector<ImmigrantDataInfo>&, const optional<TutorialInfo>&);
+  SGuiElem drawImmigrationOverlay(const vector<ImmigrantDataInfo>&, const optional<TutorialInfo>&, bool drawHelp);
   SGuiElem drawImmigrationHelp(const CollectiveInfo&);
   typedef function<void(Rectangle, optional<int>)> ItemMenuCallback;
   vector<SGuiElem> drawItemMenu(const vector<ItemInfo>&, ItemMenuCallback, bool doneBut = false);

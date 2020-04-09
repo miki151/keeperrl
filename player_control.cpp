@@ -1395,7 +1395,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     return creatureStats[id].get();
   };
   for (auto elem : Iter(collective->getImmigration().getImmigrants())) {
-    if (elem->isHiddenInHelp())
+    if (elem->isHiddenInHelp() || elem->isInvisible())
       continue;
     auto creatureId = elem->getNonRandomId(0);
     Creature* c = getStats(creatureId);
@@ -1463,12 +1463,14 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     info.allImmigration.back().id = elem.index();
     info.allImmigration.back().autoState = collective->getImmigration().getAutoState(elem.index());
   }
-  info.allImmigration.push_back(ImmigrantDataInfo());
-  info.allImmigration.back().requirements = {"Requires 2 prison tiles", "Requires knocking out a hostile creature"};
-  info.allImmigration.back().info = {"Supplies your imp force", "Can be converted to your side using torture"};
-  info.allImmigration.back().name = "prisoner";
-  info.allImmigration.back().viewId = ViewId("prisoner");
-  info.allImmigration.back().id =-1;
+  if (collective->getConfig().canCapturePrisoners()) {
+    info.allImmigration.push_back(ImmigrantDataInfo());
+    info.allImmigration.back().requirements = {"Requires 2 prison tiles", "Requires knocking out a hostile creature"};
+    info.allImmigration.back().info = {"Supplies your imp force", "Can be converted to your side using torture"};
+    info.allImmigration.back().name = "prisoner";
+    info.allImmigration.back().viewId = ViewId("prisoner");
+    info.allImmigration.back().id =-1;
+  }
 }
 
 static optional<CollectiveInfo::RebellionChance> getRebellionChance(double prob) {

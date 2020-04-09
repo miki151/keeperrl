@@ -882,7 +882,8 @@ SGuiElem GuiBuilder::drawAllVillainsOverlay(const VillageInfo& info) {
         WL(scrollable, lines.buildVerticalList(), &tasksScroll, &scrollbarsHeld)), 15), [this] { bottomWindow = none; }, true));
 }
 
-SGuiElem GuiBuilder::drawImmigrationOverlay(const vector<ImmigrantDataInfo>& immigrants, const optional<TutorialInfo>& tutorial) {
+SGuiElem GuiBuilder::drawImmigrationOverlay(const vector<ImmigrantDataInfo>& immigrants,
+    const optional<TutorialInfo>& tutorial, bool drawHelp) {
   const int elemWidth = getImmigrationBarWidth();
   auto makeHighlight = [=] (Color c) { return WL(margins, WL(rectangle, c), 4); };
   auto lines = WL(getListBuilder, elemWidth);
@@ -928,12 +929,13 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const vector<ImmigrantDataInfo>& imm
                 elem.count ? drawMinionAndLevel(elem.viewId, *elem.count, 1) : WL(viewObject, elem.viewId)))))
     )));
   }
-  lines.addElem(WL(stack, makeVec(
-      WL(sprite, GuiFactory::TexId::IMMIGRANT_BG, GuiFactory::Alignment::CENTER),
-      WL(conditional, makeHighlight(Color(0, 255, 0, 100)), [this] { return bottomWindow == IMMIGRATION_HELP; }),
-      WL(button, [this] { toggleBottomWindow(IMMIGRATION_HELP); }),
-      WL(setWidth, elemWidth, WL(topMargin, -2, WL(centerHoriz, WL(label, "?", 32, Color::GREEN))))
-  )));
+  if (drawHelp)
+    lines.addElem(WL(stack, makeVec(
+        WL(sprite, GuiFactory::TexId::IMMIGRANT_BG, GuiFactory::Alignment::CENTER),
+        WL(conditional, makeHighlight(Color(0, 255, 0, 100)), [this] { return bottomWindow == IMMIGRATION_HELP; }),
+        WL(button, [this] { toggleBottomWindow(IMMIGRATION_HELP); }),
+        WL(setWidth, elemWidth, WL(topMargin, -2, WL(centerHoriz, WL(label, "?", 32, Color::GREEN))))
+    )));
   return WL(setWidth, elemWidth, WL(stack,
         WL(stopMouseMovement),
         lines.buildVerticalList()));
@@ -2614,25 +2616,26 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
     case GameInfo::InfoType::BAND: {
       auto& collectiveInfo = *info.playerInfo.getReferenceMaybe<CollectiveInfo>();
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawVillainsOverlay, this), THIS_LINE,
-           info.villageInfo), OverlayInfo::VILLAINS});
+          info.villageInfo), OverlayInfo::VILLAINS});
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationOverlay, this), THIS_LINE,
-           collectiveInfo.immigration, info.tutorial), OverlayInfo::IMMIGRATION});
+          collectiveInfo.immigration, info.tutorial, !collectiveInfo.allImmigration.empty()),
+          OverlayInfo::IMMIGRATION});
       if (info.keeperInDanger)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawKeeperDangerOverlay, this), THIS_LINE,
              *info.keeperInDanger), OverlayInfo::TOP_LEFT});
       else {
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
-             collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
+            collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWarningWindow, this), THIS_LINE,
-             collectiveInfo.rebellionChance, collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
+            collectiveInfo.rebellionChance, collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
-             collectiveInfo.chosenCreature, collectiveInfo.allQuarters, info.tutorial), OverlayInfo::TOP_LEFT});
+            collectiveInfo.chosenCreature, collectiveInfo.allQuarters, info.tutorial), OverlayInfo::TOP_LEFT});
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
-             collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
+            collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
-             collectiveInfo), OverlayInfo::TOP_LEFT});
+            collectiveInfo), OverlayInfo::TOP_LEFT});
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
-             collectiveInfo.buildings, !!collectiveInfo.ransom, info.tutorial), OverlayInfo::TOP_LEFT});
+            collectiveInfo.buildings, !!collectiveInfo.ransom, info.tutorial), OverlayInfo::TOP_LEFT});
       }
       if (bottomWindow == IMMIGRATION_HELP)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationHelp, this), THIS_LINE,
@@ -2647,7 +2650,7 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
     case GameInfo::InfoType::PLAYER: {
       auto& playerInfo = *info.playerInfo.getReferenceMaybe<PlayerInfo>();
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawPlayerOverlay, this), THIS_LINE,
-           playerInfo), OverlayInfo::TOP_LEFT});
+          playerInfo), OverlayInfo::TOP_LEFT});
       break;
     }
     default:
