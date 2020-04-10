@@ -330,6 +330,18 @@ struct AIBelowHealth : GenericModifierEffect {
 };
 struct AITargetEnemy : GenericModifierEffect {
 };
+struct TakeOffSlots {
+  EFFECT_TYPE_INTERFACE;
+  vector<EquipmentSlot> SERIAL(slots);
+  SERIALIZE_ALL(slots);
+  string getSlotsDesc() const;
+};
+struct StealSlots {
+  EFFECT_TYPE_INTERFACE;
+  vector<EquipmentSlot> SERIAL(slots);
+  SERIALIZE_ALL(slots);
+  string getSlotsDesc() const;
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -400,6 +412,8 @@ struct AITargetEnemy : GenericModifierEffect {
   X(IncreaseWorkshopSkill, 65)\
   X(FilterLasting, 66)\
   X(AddAutomatonParts, 67)\
+  X(TakeOffSlots, 68)\
+  X(StealSlots, 69)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

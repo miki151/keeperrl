@@ -493,4 +493,57 @@
   sound = TRAP_ARMING
   message = "repair the automaton" "repairs the automaton"
 }
-
+"rob"
+{
+  symbol = "💰"
+  effect = FirstSuccessful {
+    FilterLasting STUNNED FirstSuccessful {
+      StealSlots { AMULET }
+      StealSlots { RINGS }
+      StealSlots { HELMET }
+      StealSlots { BOOTS }
+      StealSlots { WEAPON }
+      StealSlots { RANGED_WEAPON }
+      StealSlots { SHIELD }
+      StealSlots { GLOVES }
+      StealSlots { BODY_ARMOR }
+    }
+    FilterLasting SLEEP FirstSuccessful {
+      StealSlots { AMULET }
+      StealSlots { RINGS }
+      StealSlots { HELMET }
+      StealSlots { BOOTS }
+      StealSlots { WEAPON }
+      StealSlots { RANGED_WEAPON }
+      StealSlots { SHIELD }
+      StealSlots { GLOVES }
+      StealSlots { BODY_ARMOR }
+    }
+    FilterLasting COLLAPSED FirstSuccessful {
+      StealSlots { AMULET }
+      StealSlots { RINGS }
+      StealSlots { HELMET }
+      StealSlots { BOOTS }
+      StealSlots { WEAPON }
+      StealSlots { RANGED_WEAPON }
+      StealSlots { SHIELD }
+      StealSlots { GLOVES }
+      StealSlots { BODY_ARMOR }
+    }
+  }
+  range = 1
+  cooldown = 100
+  message = "stealthily steal" "stealthily steals"
+}
+"disarm"
+{
+  symbol = "🛡️"
+  effect = FirstSuccessful {
+    TakeOffSlots { WEAPON }
+    TakeOffSlots { RANGED_WEAPON }
+    TakeOffSlots { SHIELD }
+  }
+  range = 1
+  cooldown = 50
+  message = "disarm" "disarms"
+}

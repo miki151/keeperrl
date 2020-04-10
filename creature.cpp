@@ -589,25 +589,53 @@ int Creature::canCarry(const vector<Item*>& items) const {
     return items.size();
 }
 
-CreatureAction Creature::pickUp(const vector<Item*>& itemsAll) const {
-  if (!getBody().isHumanoid())
-    return CreatureAction("You can't pick up anything!");
+bool Creature::canPickUp(const vector<Item*>& itemsAll, string* reason) const {
+  auto setReason = [reason] (string s) {
+    if (reason)
+      *reason = std::move(s);
+  };
+  if (!getBody().isHumanoid()) {
+    setReason("You can't pick up anything!");
+    return false;
+  }
   auto items = itemsAll.getPrefix(canCarry(itemsAll));
-  if (items.empty())
-    return CreatureAction("You are carrying too much to pick this up.");
+  if (items.empty()) {
+    setReason("You can't pick up anything!");
+    return false;
+  }
+  return true;
+}
+
+void Creature::forcePickUp(const vector<Item*>& items) {
+  INFO << getName().the() << " pickup ";
+  for (auto stack : stackItems(items)) {
+    thirdPerson(getName().the() + " picks up " + getPluralAName(stack[0], stack.size()));
+    secondPerson("You pick up " + getPluralTheName(stack[0], stack.size()));
+  }
+  equipment->addItems(getPosition().removeItems(items), this);
+  if (!isAffected(LastingEffect::NO_CARRY_LIMIT) &&
+      equipment->getTotalWeight() > getBody().getCarryLimit())
+    you(MsgType::ARE, "overloaded");
+  getGame()->addEvent(EventInfo::ItemsPickedUp{this, items});
+  //spendTime();
+}
+
+CreatureAction Creature::pickUp(const vector<Item*>& itemsAll) const {
+  string reason;
+  if (!canPickUp(itemsAll, &reason)) {
+    return CreatureAction(reason);
+  }
   return CreatureAction(this, [=](Creature* self) {
-    INFO << getName().the() << " pickup ";
-    for (auto stack : stackItems(items)) {
-      thirdPerson(getName().the() + " picks up " + getPluralAName(stack[0], stack.size()));
-      secondPerson("You pick up " + getPluralTheName(stack[0], stack.size()));
-    }
-    self->equipment->addItems(self->getPosition().removeItems(items), self);
-    if (!isAffected(LastingEffect::NO_CARRY_LIMIT) &&
-        equipment->getTotalWeight() > getBody().getCarryLimit())
-      you(MsgType::ARE, "overloaded");
-    getGame()->addEvent(EventInfo::ItemsPickedUp{self, items});
-    //self->spendTime();
+    self->forcePickUp(itemsAll);
   });
+}
+
+bool Creature::instaPickUp(vector<Item*> items) {
+  if (!canPickUp(items, nullptr)) {
+    return false;
+  }
+  forcePickUp(items);
+  return true;
 }
 
 vector<vector<Item*>> Creature::stackItems(vector<Item*> items) const {
@@ -631,6 +659,12 @@ CreatureAction Creature::drop(const vector<Item*>& items) const {
 
 void Creature::drop(vector<PItem> items) {
   getPosition().dropItems(std::move(items));
+}
+
+vector<Item*> Creature::dropRet(vector<PItem> items) {
+  vector<Item*> ret = getWeakPointers(items);
+  getPosition().dropItems(std::move(items));
+  return ret;
 }
 
 bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
@@ -680,30 +714,46 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
   return true;
 }
 
-bool Creature::canEquip(const Item* item) const {
-  return canEquipIfEmptySlot(item, nullptr) && equipment->canEquip(item, this);
+bool Creature::canEquip(const Item* item, string* reason) const {
+  return canEquipIfEmptySlot(item, reason) && equipment->canEquip(item, this);
+}
+
+void Creature::forceEquip(Item* item) {
+  INFO << getName().the() << " equip " << item->getName();
+  EquipmentSlot slot = item->getEquipmentSlot();
+  if (equipment->getSlotItems(slot).size() >= equipment->getMaxItems(slot, this)) {
+    Item* previousItem = equipment->getSlotItems(slot)[0];
+    equipment->unequip(previousItem, this);
+  }
+  secondPerson("You equip " + item->getTheName(false, this));
+  thirdPerson(getName().the() + " equips " + item->getAName());
+  equipment->equip(item, slot, this);
+  if (auto game = getGame())
+    game->addEvent(EventInfo::ItemsEquipped{this, {item}});
+  //spendTime();
 }
 
 CreatureAction Creature::equip(Item* item) const {
   string reason;
-  if (!canEquipIfEmptySlot(item, &reason))
+  if (!canEquip(item, &reason)) {
     return CreatureAction(reason);
-  if (equipment->getSlotItems(item->getEquipmentSlot()).contains(item))
-    return CreatureAction();
+  }
   return CreatureAction(this, [=](Creature* self) {
-    INFO << getName().the() << " equip " << item->getName();
-    EquipmentSlot slot = item->getEquipmentSlot();
-    if (self->equipment->getSlotItems(slot).size() >= self->equipment->getMaxItems(slot, this)) {
-      Item* previousItem = self->equipment->getSlotItems(slot)[0];
-      self->equipment->unequip(previousItem, self);
-    }
-    secondPerson("You equip " + item->getTheName(false, self));
-    thirdPerson(getName().the() + " equips " + item->getAName());
-    self->equipment->equip(item, slot, self);
-    if (auto game = getGame())
-      game->addEvent(EventInfo::ItemsEquipped{self, {item}});
-    //self->spendTime();
+    self->forceEquip(item);
   });
+}
+
+bool Creature::instaEquip(vector<Item*> items) {
+  bool ret = false;
+  for(Item* item : items)
+  {
+    if (!canEquip(item, nullptr)) {
+      continue;
+    }
+    forceEquip(item);
+    ret = true;
+  }
+  return ret;
 }
 
 CreatureAction Creature::unequip(Item* item) const {

@@ -176,6 +176,12 @@ bool Effect::isConsideredHostile(const Creature* victim) const {
       [&](const Effects::Damage&) {
         return true;
       },
+      [&](const Effects::TakeOffSlots&) {
+        return true;
+      },
+      [&](const Effects::StealSlots&) {
+        return true;
+      },
       [&](const auto&) {
         return false;
       }
@@ -1342,6 +1348,74 @@ string Effects::Name::getName(const ContentFactory* f) const {
   return text;
 }
 
+bool Effects::TakeOffSlots::applyToCreature(Creature* c, Creature* attacker) const {
+  bool ret = false;
+  for(EquipmentSlot slot : slots)
+  {
+    vector<Item*> items = c->getEquipment().getSlotItems(slot);
+    vector<PItem> removed_items = c->getEquipment().removeItems(items, c);
+    if(!removed_items.empty())
+    {
+      c->dropRet(std::move(removed_items));
+      ret = true;
+    }
+  }
+  return ret;
+}
+
+string Effects::TakeOffSlots::getName(const ContentFactory* f) const {
+  return "take off " + getSlotsDesc();
+}
+
+string Effects::TakeOffSlots::getDescription(const ContentFactory* f) const {
+  return "Take victim's " + getSlotsDesc() + " off, and drop it to the ground.";
+}
+
+string Effects::StealSlots::getSlotsDesc() const {
+  bool first = false;
+  string ret = "";
+
+  for(EquipmentSlot slot : slots)
+  {
+    if(first) {
+      ret += Equipment::slotTitles[slot];
+    }
+    else {
+      ret += ", " + Equipment::slotTitles[slot];
+    }
+  }
+
+  return ret;
+}
+
+bool Effects::StealSlots::applyToCreature(Creature* c, Creature* attacker) const {
+  CHECK(attacker);
+  bool ret = false;
+  for(EquipmentSlot slot : slots)
+  {
+    vector<Item*> items = c->getEquipment().getSlotItems(slot);
+    vector<PItem> removed_items = c->getEquipment().removeItems(items, c);
+    if(!removed_items.empty())
+    {
+      // Stealing items drops them under the stealer if they are not picked up.
+      vector<Item*> dropped_items = attacker->dropRet(std::move(removed_items));
+      if(attacker->instaPickUp(dropped_items)) {
+        attacker->instaEquip(dropped_items);
+      }
+      ret = true;
+    }
+  }
+  return ret;
+}
+
+string Effects::StealSlots::getName(const ContentFactory* f) const {
+  return "steal " + getSlotsDesc();
+}
+
+string Effects::StealSlots::getDescription(const ContentFactory* f) const {
+  return "Steal victim's " + getSlotsDesc() + ", and put them on yourself, or drop to the ground if that's impossible.";
+}
+
 #define FORWARD_CALL(RetType, Var, Name, ...)\
 Var->visit<RetType>([&](const auto& e) { return e.Name(__VA_ARGS__); })
 
@@ -1719,6 +1793,28 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
             return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
         return EffectAIIntent::NONE;
       },
+      [&] (const Effects::TakeOffSlots& e) {
+        if (!isEnemy) {
+          return EffectAIIntent::UNWANTED;
+        }
+        for(EquipmentSlot slot : e.slots) {
+          if (victim->getEquipment().getSlotItems(slot).size()) {
+            return EffectAIIntent::WANTED;
+          }
+        }
+        return EffectAIIntent::NONE;
+      },
+      [&] (const Effects::StealSlots& e) {
+        if (!isEnemy) {
+          return EffectAIIntent::UNWANTED;
+        }
+        for(EquipmentSlot slot : e.slots) {
+          if (victim->getEquipment().getSlotItems(slot).size()) {
+            return EffectAIIntent::WANTED;
+          }
+        }
+        return EffectAIIntent::NONE;
+      },
       [&] (const auto&) {
         return EffectAIIntent::NONE;
       }
@@ -1728,7 +1824,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
 /* Unimplemented: Teleport, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr, IncreaseSkill, IncreaseWorkshopSkill
       EmitPoisonGas, CircularBlast, Alarm, SilverDamage, DoubleTrouble,
       PlaceFurniture, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
-      ReviveCorpse, Blast, Shove, SwapPosition, AddAutomatonParts, AddBodyPart, MakeHumanoid */
+      ReviveCorpse, Blast, Shove, SwapPosition, AddAutomatonParts, AddBodyPart, MakeHumanoid, TakeOffSlots, StealSlots */
 
 EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const {
   PROFILE_BLOCK("Effect::shouldAIApply");
