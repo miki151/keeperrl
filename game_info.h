@@ -139,7 +139,7 @@ class PlayerInfo {
   vector<ItemInfo> HASH(inventory);
   vector<ItemInfo> HASH(intrinsicAttacks);
   vector<ItemInfo> HASH(bodyParts);
-  int HASH(bodyPartLimit);
+  int HASH(bodyPartLimit) = 0;
   int HASH(debt);
   vector<PlayerInfo> HASH(teamInfos);
   struct CommandInfo {
