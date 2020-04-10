@@ -750,8 +750,8 @@ class Explore : public Task {
     return "Explore " + toString(position);
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), position);
-  SERIALIZATION_CONSTRUCTOR(Explore);
+  SERIALIZE_ALL(SUBCLASS(Task), position)
+  SERIALIZATION_CONSTRUCTOR(Explore)
 
   private:
   Position SERIAL(position);
@@ -770,9 +770,12 @@ class AbuseMinion : public Task {
   AbuseMinion(Creature* target) : target(target) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (c->getPosition().dist8(target->getPosition()).value_or(2) > 1)
-      return c->moveTowards(target->getPosition());
-    else {
+    if (c->getPosition().dist8(target->getPosition()).value_or(2) > 1) {
+      if (auto action = c->moveTowards(target->getPosition()))
+        return action;
+      setDone();
+      return NoMove;
+    } else {
       return c->whip(target->getPosition(), 1.0).append([this](Creature*) {
         target->addEffect(LastingEffect::SPEED, 10_visible); setDone();
       });
