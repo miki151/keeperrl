@@ -115,7 +115,8 @@
   name = "dining table"
   usageFX = none
   usageType = UsageEffect "eat from" Chain {
-    CreatureMessage "eat a steaming pig" "eats a steaming pig" Lasting SATIATED
+    CreatureMessage "eat a steaming pig" "eats a steaming pig"
+    Lasting SATIATED
   }
 }
 "FURNACE"
@@ -848,7 +849,7 @@
 }
 "HIDDEN_UP_STAIRS" inherit "UP_STAIRS"
 {
-  visibleWhileBlind = true
+  tickType = Effect Area 5 PlayerMessage "you feel a draft" HIGH
 }
 "DOWN_STAIRS" inherit "UP_STAIRS"
 {

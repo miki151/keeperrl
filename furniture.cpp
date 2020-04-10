@@ -50,7 +50,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
   ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(dissolveTo));
-  ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), OPTION(visibleWhileBlind), NAMED(freezeTo), NAMED(fillPit));
+  ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), NAMED(freezeTo), NAMED(fillPit));
 }
 
 template <class Archive>
@@ -467,10 +467,6 @@ bool Furniture::isRequiresLight() const {
 
 bool Furniture::isHostileSpell() const {
   return hostileSpell;
-}
-
-bool Furniture::isVisibleWhileBlind() const {
-  return visibleWhileBlind;
 }
 
 optional<BedType> Furniture::getBedType() const {

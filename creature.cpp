@@ -1541,9 +1541,9 @@ static optional<Position> findInaccessiblePos(Position startingPos) {
 bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
   if (drops != DropType::NOTHING && isAffected(LastingEffect::LIFE_SAVED)) {
     message("But wait!");
-    you(MsgType::YOUR, "life has been saved!");
+    secondPerson(PlayerMessage("You have escaped death!", MessagePriority::HIGH));
+    thirdPerson(PlayerMessage(getName().the() + " has escaped death!", MessagePriority::HIGH));
     if (attacker && attacker->getName().bare() == "Death") {
-      privateMessage(PlayerMessage("You have escaped death!", MessagePriority::HIGH));
       if (auto target = findInaccessiblePos(position))
         position.moveCreature(*target, true);
     }

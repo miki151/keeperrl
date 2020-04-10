@@ -1019,6 +1019,19 @@ string Effects::CreatureMessage::getDescription(const ContentFactory*) const {
   return "Custom message";
 }
 
+bool Effects::PlayerMessage::applyToCreature(Creature* c, Creature* attacker) const {
+  c->privateMessage(::PlayerMessage(text, priority));
+  return true;
+}
+
+string Effects::PlayerMessage::getName(const ContentFactory*) const {
+  return "message";
+}
+
+string Effects::PlayerMessage::getDescription(const ContentFactory*) const {
+  return "Custom message";
+}
+
 bool Effects::GrantAbility::applyToCreature(Creature* c, Creature* attacker) const {
   bool ret = !c->getSpellMap().contains(id);
   c->getSpellMap().add(*c->getGame()->getContentFactory()->getCreatures().getSpell(id), ExperienceType::MELEE, 0);
@@ -1091,10 +1104,10 @@ bool Effects::DoubleTrouble::applyToCreature(Creature* c, Creature* attacker) co
   auto cRef = Effect::summonCreatures(c->getPosition(), makeVec(std::move(copy)));
   if (!cRef.empty()) {
     cRef[0]->addEffect(LastingEffect::SUMMONED, ttl, false);
-    c->message(PlayerMessage("Double trouble!", MessagePriority::HIGH));
+    c->message(::PlayerMessage("Double trouble!", MessagePriority::HIGH));
     return true;
   } else {
-    c->message(PlayerMessage("The spell failed!", MessagePriority::HIGH));
+    c->message(::PlayerMessage("The spell failed!", MessagePriority::HIGH));
     return false;
   }
 }

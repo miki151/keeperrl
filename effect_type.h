@@ -250,6 +250,12 @@ struct CreatureMessage {
   string SERIAL(thirdPerson);
   SERIALIZE_ALL(secondPerson, thirdPerson)
 };
+struct PlayerMessage {
+  EFFECT_TYPE_INTERFACE;
+  string SERIAL(text);
+  MessagePriority SERIAL(priority);
+  SERIALIZE_ALL(text, priority)
+};
 struct GrantAbility {
   EFFECT_TYPE_INTERFACE;
   SpellId SERIAL(id);
@@ -400,6 +406,7 @@ struct AITargetEnemy : GenericModifierEffect {
   X(IncreaseWorkshopSkill, 65)\
   X(FilterLasting, 66)\
   X(AddAutomatonParts, 67)\
+  X(PlayerMessage, 68)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

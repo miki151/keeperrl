@@ -6,7 +6,7 @@
 
 class View;
 
-enum class MessagePriority { NORMAL, HIGH, CRITICAL };
+RICH_ENUM(MessagePriority, NORMAL, HIGH, CRITICAL);
 
 class PlayerMessage : public UniqueEntity<PlayerMessage> {
   public:

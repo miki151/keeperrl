@@ -142,7 +142,6 @@ class Furniture {
   bool buildOutsideOfTerritory() const;
   bool isRequiresLight() const;
   bool isHostileSpell() const;
-  bool isVisibleWhileBlind() const;
   optional<BedType> getBedType() const;
   const optional<FurnitureEffectInfo>& getLastingEffectInfo() const;
   const heap_optional<ItemList>& getItemDrop() const;
@@ -236,7 +235,6 @@ class Furniture {
   optional<int> SERIAL(bloodCountdown);
   optional<LocalTime> SERIAL(bloodTime);
   optional<Effect> SERIAL(destroyedEffect);
-  bool SERIAL(visibleWhileBlind) = false;
 };
 
 static_assert(std::is_nothrow_move_constructible<Furniture>::value, "T should be noexcept MoveConstructible");
