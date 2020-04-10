@@ -48,7 +48,7 @@
 "AutomatonLegsWood"
   {
     viewId = { "automaton_legs" Rgb 180 140 55 255 }
-    name = "pair of wooden automaton legs"
+    name = "pair of wooden legs"
     shortName = "wooden legs"
     weight = 8
     itemClass = TOOL
@@ -66,7 +66,7 @@
 "AutomatonArmsWood"
   {
     viewId = { "automaton_arms" Rgb 180 140 55 255 }
-    name = "pair of wooden automaton arms"
+    name = "pair of wooden arms"
     shortName = "wooden arms"
     weight = 6
     itemClass = TOOL
@@ -82,14 +82,30 @@
 "AutomatonDrillWood"
   {
     viewId = { "automaton_arms" Rgb 180 140 55 255 }
-    name = "wooden automaton drill"
-    shortName = "wooden drill"
+    name = "wooden drill"
     weight = 6
     itemClass = TOOL
     automatonPart = {
       Description "Increases the digging skill by 20."
       IncreaseSkill DIGGING 0.2
       "drill"
+    }
+  }
+"AutomatonCraftingWood"
+  {
+    viewId = { "automaton_arms" Rgb 180 140 55 255 }
+    name = "wooden crafting arms"
+    weight = 6
+    itemClass = TOOL
+    automatonPart = {
+      Description "Increases all crafting skills by 20."
+      Chain {
+        IncreaseWorkshopSkill "WORKSHOP" 0.3
+        IncreaseWorkshopSkill "FORGE" 0.3
+        IncreaseWorkshopSkill "LABORATORY" 0.3
+        IncreaseWorkshopSkill "JEWELER" 0.3
+      }
+      "crafting"
     }
   }
 "HumanoidHeadIron"
@@ -158,7 +174,7 @@
 "AutomatonLegsIron"
   {
     viewId = { "automaton_legs" Rgb 140 148 148 255 }
-    name = "pair of iron automaton legs"
+    name = "pair of iron legs"
     shortName = "iron legs"
     weight = 8
     itemClass = TOOL
@@ -177,7 +193,7 @@
 "AutomatonArmsIron"
   {
     viewId = { "automaton_arms" Rgb 140 148 148 255 }
-    name = "pair of iron automaton arms"
+    name = "pair of iron arms"
     shortName = "iron arms"
     weight = 6
     itemClass = TOOL
@@ -194,7 +210,7 @@
 "AutomatonDrillIron"
   {
     viewId = { "automaton_arms" Rgb 140 148 148 255 }
-    name = "iron automaton drill"
+    name = "iron drill"
     shortName = "iron drill"
     weight = 6
     itemClass = TOOL
@@ -204,9 +220,26 @@
       "drill"
     }
   }
+"AutomatonCraftingIron"
+  {
+    viewId = { "automaton_arms" Rgb 140 148 148 255 }
+    name = "iron crafting arms"
+    weight = 6
+    itemClass = TOOL
+    automatonPart = {
+      Description "Increases all crafting skills by 30."
+      Chain {
+        IncreaseWorkshopSkill "WORKSHOP" 0.3
+        IncreaseWorkshopSkill "FORGE" 0.3
+        IncreaseWorkshopSkill "LABORATORY" 0.3
+        IncreaseWorkshopSkill "JEWELER" 0.3
+      }
+      "crafting"
+    }
+  }
 "SharpAutomatonArmsIron" inherit "AutomatonArmsIron"
   {
-    name = "pair of sharp automaton arms"
+    name = "pair of sharp arms"
     shortName = "sharp arms"
     automatonPart = {
       Description "Grants a melee attack with a chance to cause bleeding. Adds +10 damage and +2 defense bonus."
@@ -221,7 +254,7 @@
   }
 "RepairAutomatonArmsIron" inherit "AutomatonArmsIron"
   {
-    name = "pair of repair automaton arms"
+    name = "pair of iron repair arms"
     shortName = "repair arms"
     automatonPart = {
       Description "Grants the ability to repair other automatons. Adds +2 defense."

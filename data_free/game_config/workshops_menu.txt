@@ -127,6 +127,7 @@
       {{Simple    "AutomatonArmsWood"}       2       "WOOD" 5    "automatons"}
       {{Simple    "AutomatonDrillWood"}      2       "WOOD" 5    "automatons"}
       {{Simple    "ArcherHeadWood"}          2       "WOOD" 5    "advanced automatons"}
+      {{Simple    "AutomatonCraftingWood"}   2       "WOOD" 5    "advanced automatons"}
   } 
   "FORGE"
   {
@@ -147,6 +148,7 @@
       {{Simple    "RepairAutomatonArmsIron"} 2       "IRON" 5    "advanced automatons"}
       {{Simple    "AutomatonLegsIron"}       2       "IRON" 5    "automatons"}
       {{Simple    "AutomatonDrillIron"}      2       "IRON" 5    "automatons"}
+      {{Simple    "AutomatonCraftingIron"}   2       "IRON" 5    "advanced automatons"}
   } 
   "LABORATORY"
   {
