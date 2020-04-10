@@ -1425,10 +1425,11 @@ bool Creature::heal(double amount) {
 
 bool Creature::affectByFire(double amount) {
   PROFILE;
-  if (!isAffected(LastingEffect::FIRE_RESISTANT) &&
-      getBody().affectByFire(this, amount)) {
-    verb("burn", "burns", "to death");
-    dieWithReason("burnt to death");
+  if (!isAffected(LastingEffect::FIRE_RESISTANT)) {
+    if (getBody().affectByFire(this, amount)) {
+      verb("burn", "burns", "to death");
+      dieWithReason("burnt to death");
+    }
     return true;
   }
   return addEffect(LastingEffect::ON_FIRE, 100_visible);
@@ -1446,10 +1447,11 @@ void Creature::affectBySilver() {
 }
 
 bool Creature::affectByAcid() {
-  if (!isAffected(LastingEffect::ACID_RESISTANT) &&
-      getBody().affectByAcid(this)) {
-    you(MsgType::ARE, "dissolved by acid");
-    dieWithReason("dissolved by acid");
+  if (!isAffected(LastingEffect::ACID_RESISTANT)) {
+    if (getBody().affectByAcid(this)) {
+      you(MsgType::ARE, "dissolved by acid");
+      dieWithReason("dissolved by acid");
+    }
     return true;
   } else {
     auto& items = equipment->getAllEquipped();
