@@ -206,7 +206,7 @@ void VillageControl::onRansomPaid() {
 
 vector<TriggerInfo> VillageControl::getTriggers(const Collective* against) const {
   vector<TriggerInfo> ret;
-  if (collective->getVillainType() != VillainType::ALLY && behaviour && against == getEnemyCollective())
+  if (isEnemy() && behaviour && against == getEnemyCollective())
     for (auto& elem : behaviour->triggers) {
       auto value = behaviour->getTriggerValue(elem, this);
       if (value > 0)
@@ -260,6 +260,10 @@ void VillageControl::healAllCreatures() {
       c->heal(0.002 / freq);
 }
 
+bool VillageControl::isEnemy() const {
+  return getEnemyCollective()->getTribe()->isEnemy(collective->getTribe());
+}
+
 void VillageControl::update(bool currentlyActive) {
   considerWelcomeMessage();
   considerCancellingAttack();
@@ -279,26 +283,25 @@ void VillageControl::update(bool currentlyActive) {
     return;
   }
   double updateFreq = 0.1;
-  if (collective->getVillainType() != VillainType::ALLY && canPerformAttack(currentlyActive) && Random.chance(updateFreq))
-    if (behaviour) {
-      if (Collective* enemy = getEnemyCollective())
-        maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
-      double prob = behaviour->getAttackProbability(this) / updateFreq;
-      if (Random.chance(prob)) {
-        vector<Creature*> fighters = collective->getCreatures(MinionTrait::FIGHTER).filter([&](auto c) {
-          return collective->getTeams().getContaining(c).empty() && !c->isAffected(LastingEffect::INSANITY);
-        });
-        /*if (getCollective()->getGame()->isSingleModel())
-          fighters = filter(fighters, [this] (const Creature* c) {
-              return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });*/
-        /*if (auto& name = collective->getName())
-          INFO << name->shortened << " fighters: " << int(fighters.size())
-            << (!collective->getTeams().getAll().empty() ? " attacking " : "");*/
-        if (fighters.size() >= behaviour->minTeamSize &&
-            allMembers.size() >= behaviour->minPopulation + behaviour->minTeamSize)
-        launchAttack(Random.permutation(fighters).getPrefix(
-          Random.get(behaviour->minTeamSize, min(fighters.size(), allMembers.size() - behaviour->minPopulation) + 1)));
-      }
+  if (isEnemy() && canPerformAttack(currentlyActive) && Random.chance(updateFreq) && behaviour) {
+    if (Collective* enemy = getEnemyCollective())
+      maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
+    double prob = behaviour->getAttackProbability(this) / updateFreq;
+    if (Random.chance(prob)) {
+      vector<Creature*> fighters = collective->getCreatures(MinionTrait::FIGHTER).filter([&](auto c) {
+        return collective->getTeams().getContaining(c).empty() && !c->isAffected(LastingEffect::INSANITY);
+      });
+      /*if (getCollective()->getGame()->isSingleModel())
+        fighters = filter(fighters, [this] (const Creature* c) {
+            return contains(getCollective()->getTerritory().getAll(), c->getPosition()); });*/
+      /*if (auto& name = collective->getName())
+        INFO << name->shortened << " fighters: " << int(fighters.size())
+          << (!collective->getTeams().getAll().empty() ? " attacking " : "");*/
+      if (fighters.size() >= behaviour->minTeamSize &&
+          allMembers.size() >= behaviour->minPopulation + behaviour->minTeamSize)
+      launchAttack(Random.permutation(fighters).getPrefix(
+        Random.get(behaviour->minTeamSize, min(fighters.size(), allMembers.size() - behaviour->minPopulation) + 1)));
     }
+  }
 }
 

@@ -66,5 +66,6 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   bool SERIAL(entries) = false;
   double SERIAL(maxEnemyPower) = 0;
   void healAllCreatures();
+  bool isEnemy() const;
 };
 
