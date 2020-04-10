@@ -916,12 +916,10 @@ ViewId PlayerControl::getMinionGroupViewId(Creature* c) const {
     return c->getViewObject().id();
 }
 
-vector<Creature*> PlayerControl::getMinionsLike(Creature* like) const {
-  vector<Creature*> minions;
-  for (Creature* c : getCreatures())
-    if (collective->getMinionGroupName(c) == collective->getMinionGroupName(like))
-      minions.push_back(c);
-  return minions;
+vector<Creature*> PlayerControl::getMinionGroup(const string& groupName) const {
+  return getCreatures().filter([&](auto c) {
+    return collective->getMinionGroupName(c) == groupName || collective->getAutomatonGroupNames(c).contains(groupName);
+  });
 }
 
 void PlayerControl::sortMinionsForUI(vector<Creature*>& minions) const {
@@ -932,16 +930,16 @@ void PlayerControl::sortMinionsForUI(vector<Creature*>& minions) const {
       });
 }
 
-vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures, UniqueEntity<Creature>::Id chosenId) const {
+vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) const {
   PROFILE;
   sortMinionsForUI(creatures);
   vector<PlayerInfo> minions;
   for (Creature* c : creatures) {
     minions.emplace_back(c, getGame()->getContentFactory());
     auto& minionInfo = minions.back();
-    minionInfo.groupName = collective->getMinionGroupName(c);
+    minionInfo.groupName = chosenCreature->group;
     // only fill equipment for the chosen minion to avoid lag
-    if (c->getUniqueId() == chosenId) {
+    if (c->getUniqueId() == chosenCreature->id) {
       for (auto expType : ENUM_ALL(ExperienceType))
         if (auto requiredDummy = collective->getMissingTrainingFurniture(c, expType))
           minionInfo.experienceInfo.warning[expType] =
@@ -993,11 +991,26 @@ vector<CollectiveInfo::CreatureGroup> PlayerControl::getCreatureGroups(vector<Cr
     auto groupName = collective->getMinionGroupName(c);
     auto viewId = getMinionGroupViewId(c);
     if (!groups.count(groupName))
-      groups[groupName] = { c->getUniqueId(), groupName, viewId, 0};
+      groups[groupName] = { c->getUniqueId(), groupName, viewId, 0, false};
     ++groups[groupName].count;
-    if (chosenCreature == c->getUniqueId() && !getChosenTeam())
+    if (chosenCreature && chosenCreature->group == groupName)
       groups[groupName].highlight = true;
   }
+  return getValues(groups);
+}
+
+vector<CollectiveInfo::CreatureGroup> PlayerControl::getAutomatonGroups(vector<Creature*> v) const {
+  sortMinionsForUI(v);
+  map<string, CollectiveInfo::CreatureGroup> groups;
+  for (Creature* c : v)
+    for (auto& groupName : collective->getAutomatonGroupNames(c)) {
+      auto viewId = getMinionGroupViewId(c);
+      if (!groups.count(groupName))
+        groups[groupName] = { c->getUniqueId(), groupName, viewId, 0, false};
+      ++groups[groupName].count;
+      if (chosenCreature && chosenCreature->group == groupName)
+        groups[groupName].highlight = true;
+    }
   return getValues(groups);
 }
 
@@ -1008,6 +1021,7 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
       if (!minions.contains(c))
         minions.push_back(c);
   info.minionGroups = getCreatureGroups(minions);
+  info.automatonGroups = getAutomatonGroups(minions);
   info.minions = minions.transform([](const Creature* c) { return CreatureInfo(c) ;});
   info.minionCount = collective->getPopulationSize();
   info.minionLimit = collective->getMaxPopulation();
@@ -1555,13 +1569,13 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   fillImmigrationHelp(info);
   info.chosenCreature.reset();
   if (chosenCreature)
-    if (Creature* c = getCreature(*chosenCreature)) {
+    if (Creature* c = getCreature(chosenCreature->id)) {
       if (!getChosenTeam())
         info.chosenCreature = CollectiveInfo::ChosenCreatureInfo {
-            *chosenCreature, getPlayerInfos(getMinionsLike(c), *chosenCreature)};
+            chosenCreature->id, getPlayerInfos(getMinionGroup(chosenCreature->group)), none};
       else
         info.chosenCreature = CollectiveInfo::ChosenCreatureInfo {
-            *chosenCreature, getPlayerInfos(getTeams().getMembers(*getChosenTeam()), *chosenCreature), *getChosenTeam()};
+            chosenCreature->id, getPlayerInfos(getTeams().getMembers(*getChosenTeam())), *getChosenTeam()};
     }
   fillWorkshopInfo(info);
   fillLibraryInfo(info);
@@ -1998,15 +2012,21 @@ optional<TeamId> PlayerControl::getChosenTeam() const {
     return none;
 }
 
-void PlayerControl::setChosenCreature(optional<UniqueEntity<Creature>::Id> id) {
+void PlayerControl::setChosenCreature(optional<UniqueEntity<Creature>::Id> id, string group) {
   clearChosenInfo();
-  chosenCreature = id;
+  if (id)
+    chosenCreature = ChosenCreatureInfo{*id, group};
+  else
+    chosenCreature = none;
 }
 
 void PlayerControl::setChosenTeam(optional<TeamId> team, optional<UniqueEntity<Creature>::Id> creature) {
   clearChosenInfo();
   chosenTeam = team;
-  chosenCreature = creature;
+  if (creature)
+    chosenCreature = ChosenCreatureInfo{ *creature, ""};
+  else
+    chosenCreature = none;
 }
 
 void PlayerControl::clearChosenInfo() {
@@ -2029,32 +2049,35 @@ void PlayerControl::setChosenWorkshop(optional<WorkshopType> type) {
   refreshHighlights();
 }
 
-void PlayerControl::minionDragAndDrop(const CreatureDropInfo& info, bool creatureGroup) {
+void PlayerControl::minionDragAndDrop(Vec2 v, variant<string, UniqueEntity<Creature>::Id> who) {
   PROFILE;
-  Position pos(info.pos, getCurrentLevel());
-  if (Creature* dropped = getCreature(info.creatureId)) {
-    auto handle = [&] (Creature* c) {
-      c->removeEffect(LastingEffect::TIED_UP);
-      c->removeEffect(LastingEffect::SLEEP);
-      if (auto furniture = collective->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
-        if (auto task = collective->getMinionActivities().getActivityFor(collective, c, furniture->getFurnitureType())) {
-          if (collective->isActivityGood(c, *task, true)) {
-            collective->setMinionActivity(c, *task);
-            collective->setTask(c, Task::goTo(pos));
-            return;
-          }
+  Position pos(v, getCurrentLevel());
+  auto handle = [&] (Creature* c) {
+    c->removeEffect(LastingEffect::TIED_UP);
+    c->removeEffect(LastingEffect::SLEEP);
+    if (auto furniture = collective->getConstructions().getFurniture(pos, FurnitureLayer::MIDDLE))
+      if (auto task = collective->getMinionActivities().getActivityFor(collective, c, furniture->getFurnitureType())) {
+        if (collective->isActivityGood(c, *task, true)) {
+          collective->setMinionActivity(c, *task);
+          collective->setTask(c, Task::goTo(pos));
+          return;
         }
-      PTask task = Task::goToAndWait(pos, 15_visible);
-      task->setViewId(ViewId("guard_post"));
-      collective->setTask(c, std::move(task));
-    };
-    if (creatureGroup)
-      for (auto c : getMinionsLike(dropped))
-        handle(c);
-    else
-      handle(dropped);
-    pos.setNeedsRenderUpdate(true);
-  }
+      }
+    PTask task = Task::goToAndWait(pos, 15_visible);
+    task->setViewId(ViewId("guard_post"));
+    collective->setTask(c, std::move(task));
+  };
+  who.visit(
+      [&](const string& group) {
+        for (auto c : getMinionGroup(group))
+          handle(c);
+      },
+      [&](UniqueEntity<Creature>::Id id) {
+        if (auto c = getCreature(id))
+          handle(c);
+      }
+  );
+  pos.setNeedsRenderUpdate(true);
 }
 
 void PlayerControl::exitAction() {
@@ -2095,15 +2118,15 @@ void PlayerControl::handleBanishing(Creature* c) {
       : "Do you want to banish " + c->getName().the() + " forever? "
           "Banishing has a negative impact on morale of other minions.";
   if (getView()->yesOrNoPrompt(message)) {
-    vector<Creature*> like = getMinionsLike(c);
+    vector<Creature*> like = getMinionGroup(chosenCreature->group);
     sortMinionsForUI(like);
     if (like.size() > 1)
       for (int i : All(like))
         if (like[i] == c) {
           if (i < like.size() - 1)
-            setChosenCreature(like[i + 1]->getUniqueId());
+            setChosenCreature(like[i + 1]->getUniqueId(), chosenCreature->group);
           else
-            setChosenCreature(like[like.size() - 2]->getUniqueId());
+            setChosenCreature(like[like.size() - 2]->getUniqueId(), chosenCreature->group);
           break;
         }
     collective->banishCreature(c);
@@ -2132,33 +2155,35 @@ void PlayerControl::processInput(View* view, UserInput input) {
         if (canControlInTeam(c))
           getTeams().create({c});
       break;
-    case UserInputId::CREATE_TEAM_FROM_GROUP:
-      if (Creature* creature = getCreature(input.get<Creature::Id>())) {
-        vector<Creature*> group = getMinionsLike(creature);
-        optional<TeamId> team;
-        for (Creature* c : group)
-          if (canControlInTeam(c)) {
-            if (!team)
-              team = getTeams().create({c});
-            else
-              getTeams().add(*team, c);
-          }
-      }
+    case UserInputId::CREATE_TEAM_FROM_GROUP: {
+      optional<TeamId> team;
+      for (Creature* c : getMinionGroup(input.get<string>()))
+        if (canControlInTeam(c)) {
+          if (!team)
+            team = getTeams().create({c});
+          else
+            getTeams().add(*team, c);
+        }
       break;
+    }
     case UserInputId::CREATURE_DRAG:
       draggedCreature = input.get<Creature::Id>();
       for (auto task : ENUM_ALL(MinionActivity))
         for (auto& pos : collective->getMinionActivities().getAllPositions(collective, nullptr, task))
           pos.first.setNeedsRenderUpdate(true);
       break;
-    case UserInputId::CREATURE_DRAG_DROP:
-      minionDragAndDrop(input.get<CreatureDropInfo>(), false);
+    case UserInputId::CREATURE_DRAG_DROP: {
+      auto info = input.get<CreatureDropInfo>();
+      minionDragAndDrop(info.pos, info.creatureId);
       draggedCreature = none;
       break;
-    case UserInputId::CREATURE_GROUP_DRAG_ON_MAP:
-      minionDragAndDrop(input.get<CreatureDropInfo>(), true);
+    }
+    case UserInputId::CREATURE_GROUP_DRAG_ON_MAP: {
+      auto info = input.get<CreatureGroupDropInfo>();
+      minionDragAndDrop(info.pos, info.group);
       draggedCreature = none;
       break;
+    }
     case UserInputId::TEAM_DRAG_DROP: {
       auto& info = input.get<TeamDropInfo>();
       Position pos = Position(info.pos, getCurrentLevel());
@@ -2265,22 +2290,22 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::LIBRARY_ADD:
       acquireTech(input.get<TechId>());
       break;
-    case UserInputId::CREATURE_GROUP_BUTTON:
-      if (Creature* c = getCreature(input.get<Creature::Id>()))
-        if (!chosenCreature || getChosenTeam() || !getCreature(*chosenCreature) ||
-            getCreature(*chosenCreature)->getName().stack() != c->getName().stack()) {
-          setChosenTeam(none);
-          setChosenCreature(input.get<Creature::Id>());
-          break;
-        }
-      setChosenTeam(none);
-      chosenCreature = none;
+    case UserInputId::CREATURE_GROUP_BUTTON: {
+      auto group = input.get<string>();
+      if (!chosenCreature || getChosenTeam() || !getCreature(chosenCreature->id) || chosenCreature->group != group) {
+        setChosenTeam(none);
+        setChosenCreature(getMinionGroup(group)[0]->getUniqueId(), group);
+      } else {
+        setChosenTeam(none);
+        chosenCreature = none;
+      }
       break;
+    }
     case UserInputId::CREATURE_MAP_CLICK: {
       if (Creature* c = Position(input.get<Vec2>(), getCurrentLevel()).getCreature()) {
         if (getCreatures().contains(c)) {
           if (!getChosenTeam() || !getTeams().contains(*getChosenTeam(), c))
-            setChosenCreature(c->getUniqueId());
+            setChosenCreature(c->getUniqueId(), collective->getMinionGroupName(c));
           else
             setChosenTeam(*chosenTeam, c->getUniqueId());
         } else
@@ -2293,7 +2318,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       auto chosenId = input.get<Creature::Id>();
       if (Creature* c = getCreature(chosenId)) {
         if (!getChosenTeam() || !getTeams().contains(*getChosenTeam(), c))
-          setChosenCreature(chosenId);
+          setChosenCreature(chosenId, chosenCreature->group);
         else
           setChosenTeam(*chosenTeam, chosenId);
       }
@@ -2349,13 +2374,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
           setScrollPos(c->getPosition());
       break;
     case UserInputId::ADD_GROUP_TO_TEAM: {
-      auto info = input.get<TeamCreatureInfo>();
-      if (Creature* creature = getCreature(info.creatureId)) {
-        vector<Creature*> group = getMinionsLike(creature);
-        for (Creature* c : group)
-          if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) && canControlInTeam(c))
-            getTeams().add(info.team, c);
-      }
+      auto info = input.get<TeamGroupInfo>();
+      for (Creature* c : getMinionGroup(info.group))
+        if (getTeams().exists(info.team) && !getTeams().contains(info.team, c) && canControlInTeam(c))
+          getTeams().add(info.team, c);
       break;
     }
     case UserInputId::ADD_TO_TEAM: {
@@ -2371,7 +2393,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         if (getTeams().exists(info.team) && getTeams().contains(info.team, c)) {
           getTeams().remove(info.team, c);
           if (getTeams().exists(info.team)) {
-            if (chosenCreature == info.creatureId)
+            if (chosenCreature && chosenCreature->id == info.creatureId)
               setChosenTeam(info.team, getTeams().getLeader(info.team)->getUniqueId());
           } else
             chosenCreature = none;
@@ -2785,18 +2807,19 @@ static optional<vector<Vec2>> getCreaturePath(Creature* c, Vec2 target, Level* l
   return path.getPath().transform([](auto& pos) { return pos.getCoord(); });
 };
 
-vector<vector<Vec2>> PlayerControl::getPathTo(UniqueEntity<Creature>::Id id, Vec2 v, bool group) const {
+vector<vector<Vec2>> PlayerControl::getPathTo(UniqueEntity<Creature>::Id id, Vec2 v) const {
+  if (auto creature = getCreature(id))
+    if (auto path = getCreaturePath(creature, v, getCurrentLevel()))
+      return {*path};
+  return {};
+}
+
+vector<vector<Vec2>> PlayerControl::getGroupPathTo(const string& group, Vec2 v) const {
   vector<vector<Vec2>> ret;
   auto level = getCurrentLevel();
-  if (auto creature = getCreature(id)) {
-    if (group) {
-      for (auto c : getMinionsLike(creature))
-        if (auto path = getCreaturePath(c, v, level))
-          ret.push_back(*path);
-    } else
-    if (auto path = getCreaturePath(creature, v, level))
+  for (auto c : getMinionGroup(group))
+    if (auto path = getCreaturePath(c, v, level))
       ret.push_back(*path);
-  }
   return ret;
 }
 

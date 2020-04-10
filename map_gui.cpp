@@ -314,12 +314,12 @@ void MapGui::considerContinuousLeftClick(Vec2 mousePos) {
 
 bool MapGui::onMouseMove(Vec2 v) {
   lastMouseMove = v;
-  auto draggedCreature = getDraggedCreature();
+  auto draggedCreature = isDraggedCreature();
   if (v.inRectangle(getBounds()) && mouseHeldPos && !draggedCreature)
     considerContinuousLeftClick(v);
   if (!draggedCreature && draggedCandidate && mouseHeldPos && mouseHeldPos->distD(v) > 30) {
     inputQueue.push(UserInput(UserInputId::CREATURE_DRAG, draggedCandidate->id));
-    setDraggedCreature(draggedCandidate->id, draggedCandidate->viewId, v, DragContentId::CREATURE);
+    guiFactory->getDragContainer().put(draggedCandidate->id, guiFactory->viewObject(draggedCandidate->viewId), v);
   }
   if (isScrollingNow) {
     mouseOffset.x = double(v.x - lastMousePos.x) / layout->getSquareSize().x;
@@ -352,31 +352,25 @@ void MapGui::onMouseRelease(Vec2 v) {
     callbacks.refreshFun();
     mouseOffset.x = mouseOffset.y = 0;
   }
-  auto draggedCreature = getDraggedCreature();
   if (auto& draggedElem = guiFactory->getDragContainer().getElement())
-    if (v.inRectangle(getBounds()) && guiFactory->getDragContainer().getOrigin().distD(v) > 10) {
-      switch (draggedElem->getId()) {
-        case DragContentId::CREATURE_GROUP:
-          inputQueue.push(UserInput(UserInputId::CREATURE_GROUP_DRAG_ON_MAP,
-             CreatureDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v),
-                 draggedElem->get<UniqueEntity<Creature>::Id>()}));
-          break;
-        case DragContentId::CREATURE:
-          inputQueue.push(UserInput(UserInputId::CREATURE_DRAG_DROP,
-             CreatureDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v),
-                 draggedElem->get<UniqueEntity<Creature>::Id>()}));
-          break;
-        case DragContentId::TEAM:
-          inputQueue.push(UserInput(UserInputId::TEAM_DRAG_DROP,
-              TeamDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v), draggedElem->get<TeamId>()}));
-          break;
-        default:
-          break;
-      }
-    }
+    if (v.inRectangle(getBounds()) && guiFactory->getDragContainer().getOrigin().distD(v) > 10)
+      draggedElem->visit<void>(
+          [&](UniqueEntity<Creature>::Id id) {
+            inputQueue.push(UserInput(UserInputId::CREATURE_DRAG_DROP,
+               CreatureDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v), id}));
+          },
+          [&](const string& group) {
+            inputQueue.push(UserInput(UserInputId::CREATURE_GROUP_DRAG_ON_MAP,
+               CreatureGroupDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v), group}));
+          },
+          [&](TeamId team) {
+            inputQueue.push(UserInput(UserInputId::TEAM_DRAG_DROP,
+                TeamDropInfo{layout->projectOnMap(getBounds(), getScreenPos(), v), team}));
+          }
+      );
   if (mouseHeldPos) {
     if (mouseHeldPos->distD(v) > 10) {
-      if (!draggedCreature)
+      if (!isDraggedCreature())
         considerContinuousLeftClick(v);
     } else {
       if (auto c = getCreature(*mouseHeldPos))
@@ -831,7 +825,7 @@ optional<ViewId> MapGui::getHighlightedFurniture() {
         objects[curPos] &&
         objects[curPos]->hasObject(ViewLayer::FLOOR) &&
         (objects[curPos]->isHighlight(HighlightType::CLICKABLE_FURNITURE) ||
-         (objects[curPos]->isHighlight(HighlightType::CREATURE_DROP) && !!getDraggedCreature())))
+         (objects[curPos]->isHighlight(HighlightType::CREATURE_DROP) && isDraggedCreature())))
       return objects[curPos]->getObject(ViewLayer::FLOOR).id();
   }
   return none;
@@ -844,10 +838,10 @@ bool MapGui::isRenderedHighlight(const ViewIndex& index, HighlightType type) {
         return
             index.hasObject(ViewLayer::FLOOR) &&
             getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id() &&
-            !getDraggedCreature() &&
+            !isDraggedCreature() &&
             !buttonViewId;
       case HighlightType::CREATURE_DROP:
-        return !!getDraggedCreature();
+        return isDraggedCreature();
       default: return true;
     }
   else
@@ -1175,20 +1169,13 @@ void MapGui::processScrolling(milliseconds time) {
   }
 }
 
-optional<UniqueEntity<Creature>::Id> MapGui::getDraggedCreature() const {
+bool MapGui::isDraggedCreature() const {
   if (auto draggedContent = guiFactory->getDragContainer().getElement())
-    switch (draggedContent->getId()) {
-      case DragContentId::CREATURE_GROUP:
-      case DragContentId::CREATURE:
-        return draggedContent->get<UniqueEntity<Creature>::Id>();
-      default:
-        break;
-    }
-  return none;
-}
-
-void MapGui::setDraggedCreature(UniqueEntity<Creature>::Id id, ViewId viewId, Vec2 origin, DragContentId dragId) {
-  guiFactory->getDragContainer().put({dragId, id}, guiFactory->viewObject(viewId), origin);
+    return draggedContent->visit<bool>(
+        [] (UniqueEntity<Creature>::Id) { return true; },
+        [] (const string& group) { return true; },
+        [] (auto&) { return false; });
+  return false;
 }
 
 void MapGui::considerScrollingToCreature() {
@@ -1324,16 +1311,11 @@ void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer, Vec2 ti
           shortestPath.push_back(highlightedPath);
     }
     if (auto draggedContent = guiFactory->getDragContainer().getElement())
-      switch (draggedContent->getId()) {
-        case DragContentId::CREATURE_GROUP:
-        case DragContentId::CREATURE:
-          shortestPath = view->getPathTo(draggedContent->get<UniqueEntity<Creature>::Id>(), *pos,
-              guiFactory->getDragContainer().getElement()->getId() == DragContentId::CREATURE_GROUP);
-          break;
-        case DragContentId::TEAM:
-          shortestPath = view->getTeamPathTo(draggedContent->get<TeamId>(), *pos);
-          break;
-      }
+      draggedContent->visit<void>(
+          [&](UniqueEntity<Creature>::Id id) { shortestPath = view->getPathTo(id, *pos); },
+          [&](const string& group) { shortestPath = view->getGroupPathTo(group, *pos); },
+          [&](TeamId team) { shortestPath = view->getTeamPathTo(team, *pos); }
+      );
   }
 }
 

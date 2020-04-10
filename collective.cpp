@@ -333,6 +333,14 @@ string Collective::getMinionGroupName(const Creature* c) const {
     return c->getName().stack();
 }
 
+vector<string> Collective::getAutomatonGroupNames(const Creature* c) const {
+  vector<string> ret;
+  for (auto& part : c->automatonParts)
+    if (!part.minionGroup.empty() && !ret.contains(part.minionGroup))
+      ret.push_back(part.minionGroup);
+  return ret;
+}
+
 bool Collective::isActivityGoodAssumingHaveTasks(Creature* c, MinionActivity activity, bool ignoreTaskLock) {
   PROFILE;
   if (!c->getAttributes().getMinionActivities().isAvailable(this, c, activity, ignoreTaskLock))

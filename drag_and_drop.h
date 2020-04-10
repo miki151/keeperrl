@@ -4,17 +4,20 @@
 #include "enum_variant.h"
 #include "unique_entity.h"
 
-enum class DragContentId {
-  CREATURE,
-  CREATURE_GROUP,
-  TEAM
-};
+using CreatureUniqueId = UniqueEntity<Creature>::Id;
 
-class DragContent : public EnumVariant<DragContentId, TYPES(UniqueEntity<Creature>::Id, TeamId),
-    ASSIGN(UniqueEntity<Creature>::Id, DragContentId::CREATURE, DragContentId::CREATURE_GROUP),
-    ASSIGN(TeamId, DragContentId::TEAM)> {
-  using EnumVariant::EnumVariant;
-};
+#define VARIANT_TYPES_LIST\
+  X(CreatureUniqueId, 0)\
+  X(TeamId, 1)\
+  X(string, 2)
+
+#define VARIANT_NAME DragContent
+
+#include "gen_variant.h"
+
+#undef VARIANT_TYPES_LIST
+#undef VARIANT_NAME
+
 
 class DragContainer {
   public:

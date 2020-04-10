@@ -1767,9 +1767,6 @@
       {Simple "AutomatonDrillWood" }
       {Simple "HumanoidHeadWood" }
     }
-    name = {
-      name = "wooden automaton worker"
-    }
   }
 "LIGHT_AUTOMATON_CORPUS_WOOD" inherit "AUTOMATON_CORPUS_WOOD"
   {
@@ -1802,9 +1799,6 @@
       {Simple "AutomatonLegsIron" }
       {Simple "AutomatonDrillIron" }
       {Simple "HumanoidHeadIron" }
-    }
-    name = {
-      name = "iron automaton worker"
     }
   }
 "HEAVY_AUTOMATON_CORPUS_IRON" inherit "AUTOMATON_CORPUS_IRON"

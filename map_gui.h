@@ -76,7 +76,6 @@ class MapGui : public GuiElem {
   void highlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void setButtonViewId(ViewId);
-  void setDraggedCreature(UniqueEntity<Creature>::Id, ViewId, Vec2 origin, DragContentId);
   static Color getHealthBarColor(double health, bool sprit);
   void clearButtonViewId();
   struct HighlightedInfo {
@@ -182,7 +181,6 @@ class MapGui : public GuiElem {
   void processScrolling(milliseconds);
   void considerScrollingToCreature();
   GuiFactory* guiFactory;
-  optional<UniqueEntity<Creature>::Id> getDraggedCreature() const;
   vector<Vec2> tutorialHighlightLow;
   vector<Vec2> tutorialHighlightHigh;
   void drawHealthBar(Renderer&, Vec2 tilePos, Vec2 pos, Vec2 size, const ViewObject&, const ViewIndex& index);
@@ -210,4 +208,5 @@ class MapGui : public GuiElem {
   void fxHighlight(Renderer&, const FXInfo&, Vec2 tilePos, const ViewIndex&);
   void renderShortestPaths(Renderer&, Vec2 tileSize);
   void updateShortestPaths(CreatureView*, Renderer&, Vec2 tileSize, milliseconds curTimeReal);
+  bool isDraggedCreature() const;
 };

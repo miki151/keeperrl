@@ -1765,20 +1765,17 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
                 [team, this] { mapGui->unhighlightTeam(team.members); }),
             cache->get(selectButton, THIS_LINE, team.id),
             WL(dragListener, [this, team](DragContent content) {
-                UserInputId id;
-                switch (content.getId()) {
-                  case DragContentId::CREATURE:
-                    id = UserInputId::ADD_TO_TEAM;
-                    break;
-                  case DragContentId::CREATURE_GROUP:
-                    id = UserInputId::ADD_GROUP_TO_TEAM;
-                    break;
-                  default:
-                    return;
-                }
-                callbacks.input({id, TeamCreatureInfo{team.id, content.get<UniqueEntity<Creature>::Id>()}});}),
-            WL(dragSource, {DragContentId::TEAM, team.id},
-                           [=] { return WL(viewObject, leaderViewId);}),
+                content.visit<void>(
+                    [&](UniqueEntity<Creature>::Id id) {
+                      callbacks.input({UserInputId::ADD_TO_TEAM, TeamCreatureInfo{team.id, id}});
+                    },
+                    [&](const string& group) {
+                      callbacks.input({UserInputId::ADD_GROUP_TO_TEAM, TeamGroupInfo{team.id, group}});
+                    },
+                    [&](TeamId) { }
+                );
+            }),
+            WL(dragSource, team.id, [=] { return WL(viewObject, leaderViewId);}),
             WL(getListBuilder, 22)
               .addElem(WL(topMargin, 8, WL(icon, GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
               .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
@@ -1789,16 +1786,16 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
     const bool isTutorialHighlight = tutorial && tutorial->highlights.contains(TutorialHighlight::NEW_TEAM);
     lines.addElem(WL(stack, makeVec(
           WL(dragListener, [this](DragContent content) {
-              UserInputId id;
-              switch (content.getId()) {
-                case DragContentId::CREATURE:
-                  id = UserInputId::CREATE_TEAM; break;
-                case DragContentId::CREATURE_GROUP:
-                  id = UserInputId::CREATE_TEAM_FROM_GROUP; break;
-                default:
-                  return;
-              }
-              callbacks.input({id, content.get<UniqueEntity<Creature>::Id>() });}),
+              content.visit<void>(
+                  [&](UniqueEntity<Creature>::Id id) {
+                    callbacks.input({UserInputId::CREATE_TEAM, id});
+                  },
+                  [&](const string& group) {
+                    callbacks.input({UserInputId::CREATE_TEAM_FROM_GROUP, group});
+                  },
+                  [&](TeamId) { }
+              );
+          ;}),
           WL(conditional, WL(uiHighlightMouseOver), [&]{return gui.getDragContainer().hasElement();} ),
           WL(conditional, WL(tutorialHighlight), [yes = isTutorialHighlight && info.teams.empty()]{ return yes; }),
           getHintCallback({hint}),
@@ -1814,27 +1811,34 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialIn
     minionsHash = newHash;
     auto list = WL(getListBuilder, legendLineHeight);
     list.addElem(WL(label, info.monsterHeader, Color::WHITE));
-    auto selectButton = [this](UniqueEntity<Creature>::Id creatureId) {
-      return WL(releaseLeftButton, getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, creatureId}));
+    auto selectButton = [this](const string& group) {
+      return WL(releaseLeftButton, getButtonCallback({UserInputId::CREATURE_GROUP_BUTTON, group}));
     };
-    for (int i : All(info.minionGroups)) {
-      auto& elem = info.minionGroups[i];
+    auto addGroup = [&] (const CollectiveInfo::CreatureGroup& elem) {
       auto line = WL(getListBuilder);
       line.addElem(WL(viewObject, elem.viewId), 40);
       SGuiElem tmp = WL(label, toString(elem.count) + "   " + elem.name, Color::WHITE);
       line.addElem(WL(renderInBounds, std::move(tmp)), 200);
       list.addElem(WL(stack, makeVec(
-          cache->get(selectButton, THIS_LINE, elem.creatureId),
-          WL(dragSource, {DragContentId::CREATURE_GROUP, elem.creatureId},
+          cache->get(selectButton, THIS_LINE, elem.name),
+          WL(dragSource, elem.name,
               [=]{ return WL(getListBuilder, 10)
                   .addElemAuto(WL(label, toString(elem.count) + " "))
                   .addElem(WL(viewObject, elem.viewId)).buildHorizontalList();}),
-          WL(button, [this, id = elem.creatureId, viewId = elem.viewId] {
+          WL(button, [this, group = elem.name, viewId = elem.viewId, id = elem.creatureId] {
               callbacks.input(UserInput(UserInputId::CREATURE_DRAG, id));
-              mapGui->setDraggedCreature(id, viewId, Vec2(-100, -100), DragContentId::CREATURE_GROUP); }, false),
+              gui.getDragContainer().put(group, WL(viewObject, viewId), Vec2(-100, -100));
+          }),
           WL(uiHighlightConditional, [highlight = elem.highlight]{return highlight;}),
           line.buildHorizontalList()
        )));
+    };
+    for (auto& group : info.minionGroups)
+      addGroup(group);
+    if (!info.automatonGroups.empty()) {
+      list.addElem(WL(label, "Automatons by ability: ", Color::WHITE));
+      for (auto& group : info.automatonGroups)
+        addGroup(group);
     }
     list.addElem(WL(label, "Teams: ", Color::WHITE));
     list.addElemAuto(drawTeams(info, tutorial));
@@ -2999,11 +3003,12 @@ SGuiElem GuiBuilder::drawMinionButtons(const vector<PlayerInfo>& minions, Unique
             WL(leftMargin, teamId ? -10 : 0, WL(stack,
                  WL(uiHighlightConditional, [=] { return !teamId && mapGui->isCreatureHighlighted(minionId);}, Color::YELLOW),
                  WL(uiHighlightConditional, [=] { return current == minionId;}))),
-            WL(dragSource, {DragContentId::CREATURE, minionId},
-              [=]{ return WL(viewObject, minion.viewId);}),
-            WL(button, [this, minionId, viewId = minion.viewId] {
+            WL(dragSource, minionId, [=]{ return WL(viewObject, minion.viewId);}),
+            // not sure if this did anything...
+            /*WL(button, [this, minionId, viewId = minion.viewId] {
                 callbacks.input(UserInput(UserInputId::CREATURE_DRAG, minionId));
-                mapGui->setDraggedCreature(minionId, viewId, Vec2(-100, -100), DragContentId::CREATURE_GROUP); }, false),
+                gui.getDragContainer().put()
+                mapGui->setDraggedCreature(minionId, viewId, Vec2(-100, -100), DragContentId::CREATURE_GROUP); }, false),*/
             line.buildHorizontalList())));
     }
   }

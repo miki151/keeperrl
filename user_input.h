@@ -122,6 +122,12 @@ struct CreatureDropInfo {
   SERIALIZE_ALL(pos, creatureId)
 };
 
+struct CreatureGroupDropInfo {
+  Vec2 SERIAL(pos);
+  string SERIAL(group);
+  SERIALIZE_ALL(pos, group)
+};
+
 struct TeamDropInfo {
   Vec2 SERIAL(pos);
   TeamId SERIAL(teamId);
@@ -138,6 +144,12 @@ struct TeamCreatureInfo {
   TeamId SERIAL(team);
   UniqueEntity<Creature>::Id SERIAL(creatureId);
   SERIALIZE_ALL(team, creatureId)
+};
+
+struct TeamGroupInfo {
+  TeamId SERIAL(team);
+  string SERIAL(group);
+  SERIALIZE_ALL(team, group)
 };
 
 struct InventoryItemInfo {
@@ -200,8 +212,8 @@ struct WorkshopUpgradeInfo {
 };
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, UniqueEntity<Creature>::Id,
-    UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, VillageActionInfo,
-    TaskActionInfo, EquipmentActionInfo, RenameActionInfo, CreatureDropInfo, TeamDropInfo,
+    UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, TeamGroupInfo, VillageActionInfo,
+    TaskActionInfo, EquipmentActionInfo, RenameActionInfo, CreatureDropInfo, CreatureGroupDropInfo, TeamDropInfo,
     string, TechId, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo),
         ASSIGN(BuildingClickInfo,
             UserInputId::BUILD,
@@ -210,9 +222,7 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
         ASSIGN(UniqueEntity<Creature>::Id,
             UserInputId::CREATURE_BUTTON,
             UserInputId::CREATE_TEAM,
-            UserInputId::CREATE_TEAM_FROM_GROUP,
             UserInputId::CREATURE_ADD_BODY_PART,
-            UserInputId::CREATURE_GROUP_BUTTON,
             UserInputId::CREATURE_CONTROL,
             UserInputId::CREATURE_BANISH,
             UserInputId::CREATURE_CONSUME,
@@ -254,8 +264,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
             UserInputId::RECT_DESELECTION),
         ASSIGN(TeamCreatureInfo,
             UserInputId::ADD_TO_TEAM,
-            UserInputId::ADD_GROUP_TO_TEAM,
             UserInputId::REMOVE_FROM_TEAM),
+        ASSIGN(TeamGroupInfo,
+            UserInputId::ADD_GROUP_TO_TEAM),
         ASSIGN(VillageActionInfo,
             UserInputId::VILLAGE_ACTION),
         ASSIGN(TaskActionInfo,
@@ -264,8 +275,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
             UserInputId::CREATURE_EQUIPMENT_ACTION),
         ASSIGN(RenameActionInfo,
             UserInputId::CREATURE_RENAME),
+        ASSIGN(CreatureGroupDropInfo,
+            UserInputId::CREATURE_GROUP_DRAG_ON_MAP),
         ASSIGN(CreatureDropInfo,
-            UserInputId::CREATURE_GROUP_DRAG_ON_MAP,
             UserInputId::CREATURE_DRAG_DROP),
         ASSIGN(TeamDropInfo,
             UserInputId::TEAM_DRAG_DROP),
@@ -278,6 +290,8 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
         ASSIGN(string,
             UserInputId::CREATE_ITEM,
             UserInputId::APPLY_EFFECT,
+            UserInputId::CREATE_TEAM_FROM_GROUP,
+            UserInputId::CREATURE_GROUP_BUTTON,
             UserInputId::SUMMON_ENEMY
         ),
         ASSIGN(TechId,

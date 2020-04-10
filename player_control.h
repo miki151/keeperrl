@@ -108,7 +108,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual CenterType getCenterType() const override;
   virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const override;
   virtual optional<Vec2> getSelectionSize() const override;
-  virtual vector<vector<Vec2>> getPathTo(UniqueEntity<Creature>::Id, Vec2, bool group) const override;
+  virtual vector<vector<Vec2>> getPathTo(UniqueEntity<Creature>::Id, Vec2) const override;
+  virtual vector<vector<Vec2>> getGroupPathTo(const string&, Vec2) const override;
   virtual vector<vector<Vec2>> getTeamPathTo(TeamId, Vec2) const override;
   virtual vector<Vec2> getHighlightedPathTo(Vec2) const override;
 
@@ -170,12 +171,13 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   int getNumMinions() const;
   void minionTaskAction(const TaskActionInfo&);
-  void minionDragAndDrop(const CreatureDropInfo&, bool creatureGroup);
+  void minionDragAndDrop(Vec2 pos, variant<string, UniqueEntity<Creature>::Id>);
   void fillMinions(CollectiveInfo&) const;
-  vector<Creature*> getMinionsLike(Creature*) const;
-  vector<PlayerInfo> getPlayerInfos(vector<Creature*>, UniqueEntity<Creature>::Id chosenId) const;
+  vector<Creature*> getMinionGroup(const string& groupName) const;
+  vector<PlayerInfo> getPlayerInfos(vector<Creature*>) const;
   void sortMinionsForUI(vector<Creature*>&) const;
   vector<CollectiveInfo::CreatureGroup> getCreatureGroups(vector<Creature*>) const;
+  vector<CollectiveInfo::CreatureGroup> getAutomatonGroups(vector<Creature*>) const;
   void minionEquipmentAction(const EquipmentActionInfo&);
   void addEquipment(Creature*, EquipmentSlot);
   void addConsumableItem(Creature*, bool automatonPart);
@@ -205,8 +207,12 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void updateSelectionSquares();
   GlobalTime SERIAL(nextKeeperWarning) = GlobalTime(-1000);
   bool wasPausedForWarning = false;
-  optional<UniqueEntity<Creature>::Id> chosenCreature;
-  void setChosenCreature(optional<UniqueEntity<Creature>::Id>);
+  struct ChosenCreatureInfo {
+    UniqueEntity<Creature>::Id id;
+    string group;
+  };
+  optional<ChosenCreatureInfo> chosenCreature;
+  void setChosenCreature(optional<UniqueEntity<Creature>::Id>, string group);
   optional<WorkshopType> chosenWorkshop;
   void setChosenWorkshop(optional<WorkshopType>);
   optional<TeamId> getChosenTeam() const;

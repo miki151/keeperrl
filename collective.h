@@ -229,6 +229,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
     SERIALIZE_ALL(finishTime, position)
   };
   string getMinionGroupName(const Creature*) const;
+  vector<string> getAutomatonGroupNames(const Creature*) const;
   const optional<AlarmInfo>& getAlarmInfo() const;
 
   double getRebellionProbability() const;

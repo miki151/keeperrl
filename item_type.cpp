@@ -375,6 +375,7 @@ ItemAttributes ItemTypes::AutomatonPaint::getAttributes(const ContentFactory*) c
       i.itemClass = ItemClass::TOOL;
       i.weight = 0.1;
       i.automatonPart = AutomatonPart LIST(
+          ""_s,
           Effect(Effects::ColorVariant{color}),
           *i.viewId,
           "automaton paint",

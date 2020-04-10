@@ -25,6 +25,7 @@
         MakeHumanoid
         AddBodyPart HEAD 1 none
       }
+      "humanoid"
     }
   }
 "ArcherHeadWood" inherit "HumanoidHeadWood"
@@ -41,6 +42,7 @@
           IncreaseAttr RANGED_DAMAGE -15
         }
       }
+      "archer"
     }
   }
 "AutomatonLegsWood"
@@ -74,6 +76,7 @@
         IncreaseAttr DAMAGE 6
         AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } }
       }
+      "melee"
     }
   }
 "AutomatonDrillWood"
@@ -86,6 +89,7 @@
     automatonPart = {
       Description "Increases the digging skill by 20."
       IncreaseSkill DIGGING 0.2
+      "drill"
     }
   }
 "HumanoidHeadIron"
@@ -102,6 +106,7 @@
         MakeHumanoid
         AddBodyPart HEAD 1 none
       }
+      "humanoid"
     }
   }
 "ArcherHeadIron" inherit "HumanoidHeadIron"
@@ -119,6 +124,7 @@
           IncreaseAttr RANGED_DAMAGE -15
         }
       }
+      "archer"
     }
   }
 "FireHeadIron" inherit "HumanoidHeadIron"
@@ -132,6 +138,7 @@
         IncreaseAttr DEFENSE 2
         AddBodyPart HEAD 1 none
       }
+      "fire"
     }
   }
 "AcidHeadIron" inherit "HumanoidHeadIron"
@@ -145,6 +152,7 @@
         IncreaseAttr DEFENSE 2
         AddBodyPart HEAD 1 none
       }
+      "acid"
     }
   }
 "AutomatonLegsIron"
@@ -180,6 +188,7 @@
         IncreaseAttr DEFENSE 2
         AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } }
       }
+      "melee"
     }
   }
 "AutomatonDrillIron"
@@ -192,6 +201,7 @@
     automatonPart = {
       Description "Increases the digging skill by 30."
       IncreaseSkill DIGGING 0.3
+      "drill"
     }
   }
 "SharpAutomatonArmsIron" inherit "AutomatonArmsIron"
@@ -206,6 +216,7 @@
         AddBodyPart ARM 2
         { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING victimEffect = { 0.5 Lasting BLEEDING } } }
       }
+      "melee"
     }
   }
 "RepairAutomatonArmsIron" inherit "AutomatonArmsIron"
@@ -219,6 +230,7 @@
         IncreaseAttr DEFENSE 2
         AddBodyPart ARM 2 none
       }
+      "repair"
     }
   }
 "Knife"

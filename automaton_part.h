@@ -6,6 +6,7 @@
 #include "view_id.h"
 
 struct AutomatonPart {
+  string SERIAL(minionGroup);
   Effect SERIAL(effect);
   ViewId SERIAL(viewId);
   string SERIAL(name);

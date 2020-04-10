@@ -4,7 +4,7 @@
 #include "item.h"
 #include "sound.h"
 
-SERIALIZE_DEF(AutomatonPart, effect, viewId, name, usesSlot)
+SERIALIZE_DEF(AutomatonPart, effect, viewId, name, usesSlot, minionGroup)
 
 bool AutomatonPart::isAvailable(const Creature* c, int numAssigned) const {
   return c->automatonParts.size() + numAssigned < c->getAttributes().getAutomatonSlots();
@@ -20,6 +20,6 @@ void AutomatonPart::apply(Creature* c) const {
 #include "pretty_archive.h"
 template <>
 void AutomatonPart::serialize(PrettyInputArchive& ar1, unsigned) {
-  ar1(NAMED(effect), OPTION(usesSlot));
+  ar1(NAMED(effect), OPTION(minionGroup), OPTION(usesSlot));
 }
 
