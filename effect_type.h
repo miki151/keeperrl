@@ -15,7 +15,6 @@
 RICH_ENUM(FilterType, ALLY, ENEMY, AUTOMATON);
 
 #define EFFECT_TYPE_INTERFACE \
-  bool applyToCreature(Creature*, Creature* attacker = nullptr) const;\
   string getName(const ContentFactory*) const;\
   operator DefaultEffect() const { return DefaultEffect {}; }\
   string getDescription(const ContentFactory*) const
