@@ -283,6 +283,28 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::Lasting& e, const C
   return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
 }
 
+static optional<FXInfo> getProjectileFX(LastingEffect effect) {
+  switch (effect) {
+    default:
+      return none;
+  }
+}
+
+static optional<FXInfo> getProjectileFX(const Effects::Lasting& e) {
+  return ::getProjectileFX(e.lastingEffect);
+}
+
+static optional<ViewId> getProjectile(LastingEffect effect) {
+  switch (effect) {
+    default:
+      return none;
+  }
+}
+
+static optional<ViewId> getProjectile(const Effects::Lasting& e) {
+  return ::getProjectile(e.lastingEffect);
+}
+
 static string getName(const Effects::Lasting& e, const ContentFactory*) {
   return LastingEffects::getName(e.lastingEffect);
 }
@@ -744,6 +766,10 @@ static bool apply(const Effects::Fire&, Position pos, Creature*) {
   return pos.fireDamage(1);
 }
 
+static optional<ViewId> getProjectile(const Effects::Fire&) {
+  return ViewId("fireball");
+}
+
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Fire&, const Creature* victim, bool isEnemy) {
   if (!victim->isAffected(LastingEffect::FIRE_RESISTANT))
     return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
@@ -895,6 +921,14 @@ static bool applyToCreature(const Effects::Damage& e, Creature* c, Creature* att
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Damage&, const Creature* victim, bool isEnemy) {
   return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+}
+
+static optional<FXInfo> getProjectileFX(const Effects::Damage&) {
+  return {FXName::MAGIC_MISSILE};
+}
+
+static optional<ViewId> getProjectile(const Effects::Damage&) {
+  return ViewId("force_bolt");
 }
 
 static bool isConsideredHostile(const Effects::Damage&, const Creature*) {
@@ -1307,6 +1341,14 @@ static EffectAIIntent shouldAIApply(const Effects::GenericModifierEffect& e, con
   return e.effect->shouldAIApply(caster, pos);
 }
 
+static optional<FXInfo> getProjectileFX(const Effects::GenericModifierEffect& e) {
+  return e.effect->getProjectileFX();
+}
+
+static optional<ViewId> getProjectile(const Effects::GenericModifierEffect& e) {
+  return e.effect->getProjectile();
+}
+
 static string getDescription(const Effects::Chance& e, const ContentFactory* f) {
   return e.effect->getDescription(f) + " (" + toString(int(e.value * 100)) + "% chance)";
 }
@@ -1355,6 +1397,14 @@ static string getName(const Effects::Blast&, const ContentFactory*) {
 
 static string getDescription(const Effects::Blast&, const ContentFactory*) {
   return "Creates a directed blast of air that throws back creatures and items.";
+}
+
+static optional<FXInfo> getProjectileFX(const Effects::Blast&) {
+  return {FXName::AIR_BLAST};
+}
+
+static optional<ViewId> getProjectile(const Effects::Blast&) {
+  return ViewId("air_blast");
 }
 
 static bool apply(const Effects::Blast&, Position pos, Creature* attacker) {
@@ -1408,6 +1458,10 @@ static bool apply(const Effects::Pull&, Position pos, Creature* attacker) {
     if (auto c = pos.getCreature())
       return pullCreature(c, trajectory);
   return false;
+}
+
+static optional<FXInfo> getProjectileFX(const Effects::Pull&) {
+  return FXInfo{FXName::AIR_BLAST}.setReversed();
 }
 
 static bool applyToCreature(const Effects::Shove&, Creature* c, Creature* attacker) {
@@ -1623,6 +1677,14 @@ static bool applyToCreature(const Effects::FilterLasting& e, Creature* c, Creatu
   return e.applies(c, attacker) && e.effect->apply(c->getPosition(), attacker);
 }
 
+static optional<FXInfo> getProjectileFX(const Effects::FilterLasting& e) {
+  return e.effect->getProjectileFX();
+}
+
+static optional<ViewId> getProjectile(const Effects::FilterLasting& e) {
+  return e.effect->getProjectile();
+}
+
 static EffectAIIntent shouldAIApply(const Effects::FilterLasting& e, const Creature* caster, Position pos) {
   auto victim = pos.getCreature();
   if (victim && e.applies(victim, caster))
@@ -1654,6 +1716,14 @@ bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const
 
 static bool applyToCreature(const Effects::Filter& e, Creature* c, Creature* attacker) {
   return e.applies(c, attacker) && e.effect->apply(c->getPosition(), attacker);
+}
+
+static optional<FXInfo> getProjectileFX(const Effects::Filter& e) {
+  return e.effect->getProjectileFX();
+}
+
+static optional<ViewId> getProjectile(const Effects::Filter& e) {
+  return e.effect->getProjectile();
 }
 
 static EffectAIIntent shouldAIApply(const Effects::Filter& e, const Creature* caster, Position pos) {
@@ -1791,42 +1861,20 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
   return effect->visit<EffectAIIntent>([&](const auto& e) { return ::shouldAIApply(e, caster, pos); });
 }
 
-static optional<FXInfo> getProjectileFX(LastingEffect effect) {
-  switch (effect) {
-    default:
-      return none;
-  }
+static optional<FXInfo> getProjectileFX(const DefaultType&) {
+  return none;
 }
 
-static optional<ViewId> getProjectile(LastingEffect effect) {
-  switch (effect) {
-    default:
-      return none;
-  }
-}
 optional<FXInfo> Effect::getProjectileFX() const {
-  return effect->visit<optional<FXInfo>>(
-      [&](const DefaultType&) { return none; },
-      [&](const Effects::Lasting& e) -> optional<FXInfo> { return ::getProjectileFX(e.lastingEffect); },
-      [&](const Effects::Damage&) -> optional<FXInfo> { return {FXName::MAGIC_MISSILE}; },
-      [&](const Effects::Blast&) -> optional<FXInfo> { return {FXName::AIR_BLAST}; },
-      [&](const Effects::Pull&) -> optional<FXInfo> { return FXInfo{FXName::AIR_BLAST}.setReversed(); },
-      [&](const Effects::GenericModifierEffect& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::Filter& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); },
-      [&](const Effects::FilterLasting& e) -> optional<FXInfo> { return e.effect->getProjectileFX(); }
-  );
+  return effect->visit<optional<FXInfo>>([&](const auto& e) { return ::getProjectileFX(e); });
 }
+
+static optional<ViewId> getProjectile(const DefaultType&) {
+  return none;
+}
+
 optional<ViewId> Effect::getProjectile() const {
-  return effect->visit<optional<ViewId>>(
-      [&](const DefaultType&) -> optional<ViewId> { return none; },
-      [&](const Effects::Lasting& e) -> optional<ViewId> { return ::getProjectile(e.lastingEffect); },
-      [&](const Effects::Damage&) -> optional<ViewId> { return ViewId("force_bolt"); },
-      [&](const Effects::Fire&) -> optional<ViewId> { return ViewId("fireball"); },
-      [&](const Effects::Blast&) -> optional<ViewId> { return ViewId("air_blast"); },
-      [&](const Effects::GenericModifierEffect& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::Filter& e) -> optional<ViewId> { return e.effect->getProjectile(); },
-      [&](const Effects::FilterLasting& e) -> optional<ViewId> { return e.effect->getProjectile(); }
-  );
+  return effect->visit<optional<ViewId>>([&](const auto& elem) { return ::getProjectile(elem); } );
 }
 
 vector<Effect> Effect::getWishedForEffects() {
