@@ -59,6 +59,11 @@
 #include "workshop_type.h"
 #include "automaton_part.h"
 
+
+#define REQUIRE(...) \
+    typename int_<decltype(__VA_ARGS__)>::type = 0
+#define TVALUE(NAME) std::declval<NAME>()
+
 struct DefaultType {
   template <typename T>
   DefaultType(const T&) {}
@@ -272,7 +277,7 @@ static bool isConsideredHostile(const Effects::Lasting& e, const Creature* victi
   return LastingEffects::affects(victim, e.lastingEffect) && ::isConsideredHostile(e.lastingEffect);
 }
 
-static EffectAIIntent shouldAIApply(const Effects::Lasting& e, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::Lasting& e, const Creature* victim, bool isEnemy) {
   if (victim->isAffected(e.lastingEffect))
     return EffectAIIntent::NONE;
   return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
@@ -300,7 +305,7 @@ static string getDescription(const Effects::RemoveLasting& e, const ContentFacto
   return "Removes/cures from effect: " + LastingEffects::getName(e.lastingEffect);
 }
 
-static EffectAIIntent shouldAIApply(const Effects::RemoveLasting& e, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::RemoveLasting& e, const Creature* victim, bool isEnemy) {
   if (!victim->isAffected(e.lastingEffect))
     return EffectAIIntent::NONE;
   return reverse(LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy));
@@ -375,7 +380,7 @@ static bool applyToCreature(const Effects::Permanent& e, Creature* c, Creature*)
   return c->addPermanentEffect(e.lastingEffect);
 }
 
-static EffectAIIntent shouldAIApply(const Effects::Permanent& e, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::Permanent& e, const Creature* victim, bool isEnemy) {
   if (victim->getAttributes().isAffectedPermanently(e.lastingEffect))
     return EffectAIIntent::NONE;
   return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
@@ -428,7 +433,7 @@ static bool apply(const Effects::Acid&, Position pos, Creature*) {
   return pos.acidDamage();
 }
 
-static EffectAIIntent shouldAIApply(const Effects::Acid&, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::Acid&, const Creature* victim, bool isEnemy) {
   return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
 }
 
@@ -440,7 +445,7 @@ static bool applyToCreature(const Effects::Summon& e, Creature* c, Creature*) {
   return ::summon(c, e.creature, e.count, false, e.ttl.map([](int v) { return TimeInterval(v); }));
 }
 
-static EffectAIIntent shouldAIApply(const Effects::Summon&, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::Summon&, const Creature* victim, bool isEnemy) {
   return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
 }
 
@@ -540,7 +545,7 @@ static string getDescription(const Effects::SummonElement&, const ContentFactory
   return "Summons an element or spirit from the surroundings.";
 }
 
-static EffectAIIntent shouldAIApply(const Effects::SummonElement&, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::SummonElement&, const Creature* victim, bool isEnemy) {
   return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
 }
 
@@ -559,7 +564,7 @@ static string getDescription(const Effects::Deception&, const ContentFactory*) {
   return "Creates multiple illusions of the spellcaster to confuse the enemy.";
 }
 
-static EffectAIIntent shouldAIApply(const Effects::Deception&, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::Deception&, const Creature* victim, bool isEnemy) {
   return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
 }
 
@@ -659,7 +664,7 @@ static bool applyToCreature(const Effects::DestroyEquipment&, Creature* c, Creat
   return false;
 }
 
-static EffectAIIntent shouldAIApply(const Effects::DestroyEquipment&, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::DestroyEquipment&, const Creature* victim, bool isEnemy) {
   return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
 }
 
@@ -706,7 +711,7 @@ static bool applyToCreature(const Effects::Heal& e, Creature* c, Creature*) {
   }
 }
 
-static EffectAIIntent shouldAIApply(const Effects::Heal& e, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::Heal& e, const Creature* victim, bool isEnemy) {
   if (victim->getBody().canHeal(e.healthType))
     return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
   return EffectAIIntent::NONE;
@@ -739,7 +744,7 @@ static bool apply(const Effects::Fire&, Position pos, Creature*) {
   return pos.fireDamage(1);
 }
 
-static EffectAIIntent shouldAIApply(const Effects::Fire&, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::Fire&, const Creature* victim, bool isEnemy) {
   if (!victim->isAffected(LastingEffect::FIRE_RESISTANT))
     return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
   return EffectAIIntent::NONE;
@@ -761,7 +766,7 @@ static bool apply(const Effects::Ice&, Position pos, Creature*) {
   return pos.iceDamage();
 }
 
-static EffectAIIntent shouldAIApply(const Effects::Ice&, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::Ice&, const Creature* victim, bool isEnemy) {
   if (!victim->isAffected(LastingEffect::COLD_RESISTANT))
     return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
   return EffectAIIntent::NONE;
@@ -861,7 +866,7 @@ static bool apply(const Effects::PlaceFurniture& summon, Position pos, Creature*
   return true;
 }
 
-static EffectAIIntent shouldAIApply(const Effects::PlaceFurniture& f, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::PlaceFurniture& f, const Creature* victim, bool isEnemy) {
   return victim->getGame()->getContentFactory()->furniture.getData(f.furniture).isHostileSpell() &&
       isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
 }
@@ -888,7 +893,7 @@ static bool applyToCreature(const Effects::Damage& e, Creature* c, Creature* att
   return result;
 }
 
-static EffectAIIntent shouldAIApply(const Effects::Damage&, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::Damage&, const Creature* victim, bool isEnemy) {
   return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
 }
 
@@ -994,7 +999,7 @@ static string getDescription(const Effects::RegrowBodyPart&, const ContentFactor
   return "Causes lost body parts to regrow.";
 }
 
-static EffectAIIntent shouldAIApply(const Effects::RegrowBodyPart&, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::RegrowBodyPart&, const Creature* victim, bool isEnemy) {
   for (auto part : ENUM_ALL(BodyPart))
     if (victim->getBody().numLost(part) + victim->getBody().numInjured(part) > 0)
       return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
@@ -1014,6 +1019,23 @@ static bool apply(const Effects::Area& area, Position pos, Creature* attacker) {
   for (auto v : pos.getRectangle(Rectangle::centered(area.radius)))
     res |= area.effect->apply(v, attacker);
   return res;
+}
+
+template <typename Range>
+EffectAIIntent considerArea(const Creature* caster, const Range& range, const Effect& effect) {
+  auto allRes = EffectAIIntent::UNWANTED;
+  for (auto v : range) {
+    auto res = effect.shouldAIApply(caster, v);
+    if (res == EffectAIIntent::UNWANTED)
+      return EffectAIIntent::UNWANTED;
+    if (res == EffectAIIntent::WANTED)
+      allRes = res;
+  }
+  return allRes;
+};
+
+static EffectAIIntent shouldAIApply(const Effects::Area& a, const Creature* caster, Position pos) {
+  return considerArea(caster, pos.getRectangle(Rectangle::centered(a.radius)), *a.effect);
 }
 
 static string getName(const Effects::CustomArea& e, const ContentFactory* f) {
@@ -1038,6 +1060,10 @@ vector<Position> Effects::CustomArea::getTargetPos(const Creature* attacker, Pos
   return ret;
 }
 
+static EffectAIIntent shouldAIApply(const Effects::CustomArea& a, const Creature* caster, Position pos) {
+  return considerArea(caster, a.getTargetPos(caster, pos), *a.effect);
+}
+
 static bool apply(const Effects::CustomArea& area, Position pos, Creature* attacker) {
   bool res = false;
   for (auto& v : area.getTargetPos(attacker, pos))
@@ -1051,7 +1077,7 @@ static bool applyToCreature(const Effects::Suicide& e, Creature* c, Creature*) {
   return true;
 }
 
-static EffectAIIntent shouldAIApply(const Effects::Suicide&, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::Suicide&, const Creature* victim, bool isEnemy) {
   return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
 }
 
@@ -1068,6 +1094,14 @@ static bool applyToCreature(const Effects::Wish&, Creature* c, Creature* attacke
       (attacker ? attacker->getName().the() + " grants you a wish." : "You are granted a wish.") +
       " What do you wish for?");
   return true;
+}
+
+static EffectAIIntent shouldAIApply(const Effects::Wish&, const Creature* caster, Position pos) {
+  auto victim = pos.getCreature();
+  if (victim && victim->isPlayer() && !caster->isEnemy(victim))
+    return EffectAIIntent::WANTED;
+  else
+    return EffectAIIntent::UNWANTED;
 }
 
 static string getName(const Effects::Wish&, const ContentFactory*) {
@@ -1109,6 +1143,18 @@ static bool apply(const Effects::Chain& chain, Position pos, Creature* attacker)
   for (auto& e : chain.effects)
     res |= e.apply(pos, attacker);
   return res;
+}
+
+static EffectAIIntent shouldAIApply(const Effects::Chain& chain, const Creature* caster, Position pos) {
+  auto allRes = EffectAIIntent::UNWANTED;
+  for (auto& e : chain.effects) {
+    auto res = e.shouldAIApply(caster, pos);
+    if (res == EffectAIIntent::UNWANTED)
+      return EffectAIIntent::UNWANTED;
+    if (res == EffectAIIntent::WANTED)
+      allRes = res;
+  }
+  return allRes;
 }
 
 static string getName(const Effects::ChainFirstResult& e, const ContentFactory* f) {
@@ -1219,7 +1265,7 @@ static bool applyToCreature(const Effects::IncreaseMorale& e, Creature* c, Creat
   return c->getMorale() != before;
 }
 
-static EffectAIIntent shouldAIApply(const Effects::IncreaseMorale& e, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::IncreaseMorale& e, const Creature* victim, bool isEnemy) {
   return isEnemy == (e.amount < 0) ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
 }
 
@@ -1255,6 +1301,10 @@ static string getDescription(const Effects::GenericModifierEffect& e, const Cont
 
 static bool apply(const Effects::GenericModifierEffect& e, Position pos, Creature* attacker) {
   return e.effect->apply(pos, attacker);
+}
+
+static EffectAIIntent shouldAIApply(const Effects::GenericModifierEffect& e, const Creature* caster, Position pos) {
+  return e.effect->shouldAIApply(caster, pos);
 }
 
 static string getDescription(const Effects::Chance& e, const ContentFactory* f) {
@@ -1295,7 +1345,7 @@ static string getDescription(const Effects::DoubleTrouble&, const ContentFactory
   return "Creates a twin copy ally.";
 }
 
-static EffectAIIntent shouldAIApply(const Effects::DoubleTrouble&, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::DoubleTrouble&, const Creature* victim, bool isEnemy) {
   return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
 }
 
@@ -1456,6 +1506,18 @@ static bool apply(const Effects::AnimateItems& m, Position pos, Creature* attack
   return res;
 }
 
+static EffectAIIntent shouldAIApply(const Effects::AnimateItems& m, const Creature* caster, Position pos) {
+  if (caster && isConsideredInDanger(caster)) {
+    int totalWeapons = 0;
+    for (auto v : pos.getRectangle(Rectangle::centered(m.radius))) {
+      totalWeapons += v.getItems(ItemIndex::WEAPON).size();
+      if (totalWeapons >= m.maxCount / 2)
+        return EffectAIIntent::WANTED;
+    }
+  }
+  return EffectAIIntent::NONE;
+}
+
 static string getName(const Effects::Audience&, const ContentFactory*) {
   return "audience";
 }
@@ -1464,7 +1526,7 @@ static string getDescription(const Effects::Audience&, const ContentFactory*) {
   return "Summons all fighters defending the territory that the creature is in";
 }
 
-static EffectAIIntent shouldAIApply(const Effects::Audience&, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::Audience&, const Creature* victim, bool isEnemy) {
   return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
 }
 
@@ -1561,6 +1623,13 @@ static bool applyToCreature(const Effects::FilterLasting& e, Creature* c, Creatu
   return e.applies(c, attacker) && e.effect->apply(c->getPosition(), attacker);
 }
 
+static EffectAIIntent shouldAIApply(const Effects::FilterLasting& e, const Creature* caster, Position pos) {
+  auto victim = pos.getCreature();
+  if (victim && e.applies(victim, caster))
+    return e.effect->shouldAIApply(caster, pos);
+  return EffectAIIntent::NONE;
+}
+
 static string getName(const Effects::FilterLasting& e, const ContentFactory* f) {
   return e.effect->getName(f) + " (" + LastingEffects::getName(e.filter_effect) + " creatures only)";
 }
@@ -1585,6 +1654,13 @@ bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const
 
 static bool applyToCreature(const Effects::Filter& e, Creature* c, Creature* attacker) {
   return e.applies(c, attacker) && e.effect->apply(c->getPosition(), attacker);
+}
+
+static EffectAIIntent shouldAIApply(const Effects::Filter& e, const Creature* caster, Position pos) {
+  auto victim = pos.getCreature();
+  if (victim && e.applies(victim, caster))
+    return e.effect->shouldAIApply(caster, pos);
+  return EffectAIIntent::NONE;
 }
 
 static string getName(const Effects::Filter& e, const ContentFactory* f) {
@@ -1623,6 +1699,21 @@ static string getName(const Effects::Name& e, const ContentFactory*) {
   return e.text;
 }
 
+static EffectAIIntent shouldAIApply(const Effects::AIBelowHealth& e, const Creature* caster, Position pos) {
+  if (caster->getBody().getHealth() <= e.value)
+    return e.effect->shouldAIApply(caster, pos);
+  return EffectAIIntent::UNWANTED;
+}
+
+static EffectAIIntent shouldAIApply(const Effects::AITargetEnemy& e, const Creature* caster, Position pos) {
+  if (e.effect->shouldAIApply(caster, pos) == EffectAIIntent::UNWANTED)
+    return EffectAIIntent::UNWANTED;
+  auto victim = pos.getCreature();
+  if (victim && caster->isEnemy(victim))
+    return EffectAIIntent::WANTED;
+  return EffectAIIntent::NONE;
+}
+
 Effect::Effect(const EffectType& t) noexcept : effect(t) {
 }
 
@@ -1645,9 +1736,7 @@ static bool isConsideredHostile(const T&, const Creature*) {
   return false;
 }
 
-template <typename T,
-    typename int_<decltype(applyToCreature(
-        std::declval<const T&>(), std::declval<Creature*>(), std::declval<Creature*>()))>::type = 0>
+template <typename T, REQUIRE(applyToCreature(TVALUE(const T&), TVALUE(Creature*), TVALUE(Creature*)))>
 bool apply(const T& t, Position pos, Creature* attacker) {
   if (auto c = pos.getCreature()) {
     bool res = applyToCreature(t, c, attacker);
@@ -1670,12 +1759,8 @@ string Effect::getDescription(const ContentFactory* f) const {
   return effect->visit<string>([&](const auto& elem) { return ::getDescription(elem, f); });
 }
 
-static EffectAIIntent shouldAIApply(const DefaultType&, const Creature*, bool) {
+static EffectAIIntent shouldAIApplyToCreature(const DefaultType&, const Creature*, bool) {
   return EffectAIIntent::NONE;
-}
-
-EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const {
-  return effect->visit<EffectAIIntent>([&](const auto& e) { return ::shouldAIApply(e, victim, isEnemy); });
 }
 
 /* Unimplemented: Teleport, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr, IncreaseSkill, IncreaseWorkshopSkill
@@ -1683,91 +1768,27 @@ EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const
       PlaceFurniture, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
       ReviveCorpse, Blast, Shove, SwapPosition, AddAutomatonParts, AddBodyPart, MakeHumanoid */
 
-EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const {
-  PROFILE_BLOCK("Effect::shouldAIApply");
+static EffectAIIntent shouldAIApply(const DefaultType& m, const Creature* caster, Position pos) {
+  return EffectAIIntent::NONE;
+}
+
+template <typename T, REQUIRE(shouldAIApplyToCreature(TVALUE(const T&), TVALUE(const Creature*), TVALUE(bool)))>
+static EffectAIIntent shouldAIApply(const T& elem, const Creature* caster, Position pos) {
   auto victim = pos.getCreature();
   if (victim && !caster->canSee(victim))
     victim = nullptr;
-  bool isEnemy = false;
   if (victim && !victim->isAffected(LastingEffect::STUNNED)) {
-    isEnemy = caster->isEnemy(victim);
-    auto res = shouldAIApply(victim, isEnemy);
+    bool isEnemy = caster->isEnemy(victim);
+    auto res = shouldAIApplyToCreature(elem, victim, isEnemy);
     if (res != EffectAIIntent::NONE)
       return res;
   }
-  auto considerArea = [&](const auto& range, const Effect& effect) {
-    auto allRes = EffectAIIntent::UNWANTED;
-    for (auto v : range) {
-      auto res = effect.shouldAIApply(caster, v);
-      if (res == EffectAIIntent::UNWANTED)
-        return EffectAIIntent::UNWANTED;
-      if (res == EffectAIIntent::WANTED)
-        allRes = res;
-    }
-    return allRes;
-  };
-  return effect->visit<EffectAIIntent>(
-      [&] (const Effects::Wish&){
-        if (victim && victim->isPlayer() && !isEnemy)
-          return EffectAIIntent::WANTED;
-        else
-          return EffectAIIntent::UNWANTED;
-      },
-      [&] (const Effects::Chain& chain){
-        auto allRes = EffectAIIntent::UNWANTED;
-        for (auto& e : chain.effects) {
-          auto res = e.shouldAIApply(caster, pos);
-          if (res == EffectAIIntent::UNWANTED)
-            return EffectAIIntent::UNWANTED;
-          if (res == EffectAIIntent::WANTED)
-            allRes = res;
-        }
-        return allRes;
-      },
-      [&] (const Effects::Area& a) {
-        return considerArea(pos.getRectangle(Rectangle::centered(a.radius)), *a.effect);
-      },
-      [&] (const Effects::CustomArea& a) {
-        return considerArea(a.getTargetPos(caster, pos), *a.effect);
-      },
-      [&] (const Effects::Filter& e) {
-        if (victim && e.applies(victim, caster))
-          return e.effect->shouldAIApply(caster, pos);
-        return EffectAIIntent::NONE;
-      },
-      [&] (const Effects::FilterLasting& e) {
-        if (victim && e.applies(victim, caster))
-          return e.effect->shouldAIApply(caster, pos);
-        return EffectAIIntent::NONE;
-      },
-      [&] (const Effects::GenericModifierEffect& e) {
-        return e.effect->shouldAIApply(caster, pos);
-      },
-      [&] (const Effects::AIBelowHealth& e) {
-        if (caster->getBody().getHealth() <= e.value)
-          return e.effect->shouldAIApply(caster, pos);
-        return EffectAIIntent::UNWANTED;
-      },
-      [&] (const Effects::AITargetEnemy& e) {
-        if (e.effect->shouldAIApply(caster, pos) == EffectAIIntent::UNWANTED)
-          return EffectAIIntent::UNWANTED;
-        if (isEnemy)
-          return EffectAIIntent::WANTED;
-        return EffectAIIntent::NONE;
-      },
-      [&](const Effects::AnimateItems& m) {
-        if (caster && isConsideredInDanger(caster)) {
-          int totalWeapons = 0;
-          for (auto v : pos.getRectangle(Rectangle::centered(m.radius))) {
-            totalWeapons += v.getItems(ItemIndex::WEAPON).size();
-            if (totalWeapons >= m.maxCount / 2)
-              return EffectAIIntent::WANTED;
-          }
-        }
-        return EffectAIIntent::NONE;
-      },
-      [&] (const DefaultType&) { return EffectAIIntent::NONE; }
-  );
+  return EffectAIIntent::NONE;
+}
+
+EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const {
+  PROFILE_BLOCK("Effect::shouldAIApply");
+  return effect->visit<EffectAIIntent>([&](const auto& e) { return ::shouldAIApply(e, caster, pos); });
 }
 
 static optional<FXInfo> getProjectileFX(LastingEffect effect) {

@@ -61,9 +61,6 @@ class Effect {
   static void enhanceArmor(Creature*, int mod, const string& msg);
 
   HeapAllocated<EffectType> SERIAL(effect);
-
-  private:
-  EffectAIIntent shouldAIApply(const Creature* victim, bool isEnemy) const;
 };
 
 static_assert(std::is_nothrow_move_constructible<Effect>::value, "T should be noexcept MoveConstructible");
