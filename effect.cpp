@@ -207,6 +207,10 @@ static bool applyToCreature(const Effects::Escape&, Creature* c, Creature*) {
   return true;
 }
 
+static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Escape&) {
+  return MinionEquipmentType::COMBAT_ITEM;
+}
+
 static string getName(const Effects::Escape&, const ContentFactory*) {
   return "escape";
 }
@@ -275,6 +279,10 @@ static bool isConsideredHostile(LastingEffect effect) {
 
 static bool isConsideredHostile(const Effects::Lasting& e, const Creature* victim) {
   return LastingEffects::affects(victim, e.lastingEffect) && ::isConsideredHostile(e.lastingEffect);
+}
+
+static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Lasting& e) {
+  return MinionEquipmentType::COMBAT_ITEM;
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Lasting& e, const Creature* victim, bool isEnemy) {
@@ -733,6 +741,13 @@ static bool applyToCreature(const Effects::Heal& e, Creature* c, Creature*) {
   }
 }
 
+static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Heal& e) {
+  if (e.healthType == HealthType::FLESH)
+    return MinionEquipmentType::HEALING;
+  else
+    return MinionEquipmentType::MATERIALIZATION;
+}
+
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Heal& e, const Creature* victim, bool isEnemy) {
   if (victim->getBody().canHeal(e.healthType))
     return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
@@ -1048,6 +1063,14 @@ static string getDescription(const Effects::Area& e, const ContentFactory* facto
   return "Area effect of radius " + toString(e.radius) + ": " + noCapitalFirst(e.effect->getDescription(factory));
 }
 
+static bool canAutoAssignMinionEquipment(const Effects::Area& a) {
+  return a.effect->canAutoAssignMinionEquipment();
+}
+
+static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Area& a) {
+  return a.effect->getMinionEquipmentType();
+}
+
 static bool apply(const Effects::Area& area, Position pos, Creature* attacker) {
   bool res = false;
   for (auto v : pos.getRectangle(Rectangle::centered(area.radius)))
@@ -1109,6 +1132,10 @@ static bool applyToCreature(const Effects::Suicide& e, Creature* c, Creature*) {
   c->you(e.message, "");
   c->dieNoReason();
   return true;
+}
+
+static bool canAutoAssignMinionEquipment(const Effects::Suicide&) {
+  return false;
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Suicide&, const Creature* victim, bool isEnemy) {
@@ -1177,6 +1204,20 @@ static bool apply(const Effects::Chain& chain, Position pos, Creature* attacker)
   for (auto& e : chain.effects)
     res |= e.apply(pos, attacker);
   return res;
+}
+
+static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Chain& c) {
+  for (auto& e : c.effects)
+    if (auto t = e.getMinionEquipmentType())
+      return t;
+  return none;
+}
+
+static bool canAutoAssignMinionEquipment(const Effects::Chain& c) {
+  for (auto& e : c.effects)
+    if (!e.canAutoAssignMinionEquipment())
+      return false;
+  return true;
 }
 
 static EffectAIIntent shouldAIApply(const Effects::Chain& chain, const Creature* caster, Position pos) {
@@ -1299,6 +1340,10 @@ static bool applyToCreature(const Effects::IncreaseMorale& e, Creature* c, Creat
   return c->getMorale() != before;
 }
 
+static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::IncreaseMorale&) {
+  return MinionEquipmentType::COMBAT_ITEM;
+}
+
 static EffectAIIntent shouldAIApplyToCreature(const Effects::IncreaseMorale& e, const Creature* victim, bool isEnemy) {
   return isEnemy == (e.amount < 0) ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
 }
@@ -1347,6 +1392,14 @@ static optional<FXInfo> getProjectileFX(const Effects::GenericModifierEffect& e)
 
 static optional<ViewId> getProjectile(const Effects::GenericModifierEffect& e) {
   return e.effect->getProjectile();
+}
+
+static bool canAutoAssignMinionEquipment(const Effects::GenericModifierEffect& e) {
+  return e.effect->canAutoAssignMinionEquipment();
+}
+
+static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::GenericModifierEffect& e) {
+  return e.effect->getMinionEquipmentType();
 }
 
 static string getDescription(const Effects::Chance& e, const ContentFactory* f) {
@@ -1677,6 +1730,14 @@ static bool applyToCreature(const Effects::FilterLasting& e, Creature* c, Creatu
   return e.applies(c, attacker) && e.effect->apply(c->getPosition(), attacker);
 }
 
+static bool canAutoAssignMinionEquipment(const Effects::FilterLasting& f) {
+  return f.effect->canAutoAssignMinionEquipment();
+}
+
+static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::FilterLasting& f) {
+  return f.effect->getMinionEquipmentType();
+}
+
 static optional<FXInfo> getProjectileFX(const Effects::FilterLasting& e) {
   return e.effect->getProjectileFX();
 }
@@ -1712,6 +1773,14 @@ bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const
     case FilterType::AUTOMATON:
       return !!c && (c->getAttributes().getAutomatonSlots() > 0);
   }
+}
+
+static bool canAutoAssignMinionEquipment(const Effects::Filter& f) {
+  return f.effect->canAutoAssignMinionEquipment();
+}
+
+static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Filter& f) {
+  return f.effect->getMinionEquipmentType();
 }
 
 static bool applyToCreature(const Effects::Filter& e, Creature* c, Creature* attacker) {
@@ -1829,10 +1898,6 @@ string Effect::getDescription(const ContentFactory* f) const {
   return effect->visit<string>([&](const auto& elem) { return ::getDescription(elem, f); });
 }
 
-static EffectAIIntent shouldAIApplyToCreature(const DefaultType&, const Creature*, bool) {
-  return EffectAIIntent::NONE;
-}
-
 /* Unimplemented: Teleport, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr, IncreaseSkill, IncreaseWorkshopSkill
       EmitPoisonGas, CircularBlast, Alarm, SilverDamage, DoubleTrouble,
       PlaceFurniture, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
@@ -1907,48 +1972,20 @@ vector<Effect> Effect::getWishedForEffects() {
   return allEffects;
 }
 
-optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
-  return effect->visit<optional<MinionEquipmentType>>(
-      [&](const Effects::IncreaseMorale&) -> optional<MinionEquipmentType> { return MinionEquipmentType::COMBAT_ITEM; },
-      [&](const Effects::GenericModifierEffect& e) -> optional<MinionEquipmentType> { return e.effect->getMinionEquipmentType(); },
-      [&](const Effects::Area& a) -> optional<MinionEquipmentType> { return a.effect->getMinionEquipmentType(); },
-      [&](const Effects::Filter& f) -> optional<MinionEquipmentType> { return f.effect->getMinionEquipmentType(); },
-      [&](const Effects::FilterLasting& f) -> optional<MinionEquipmentType> { return f.effect->getMinionEquipmentType(); },
-      [&](const Effects::Escape&) -> optional<MinionEquipmentType> { return MinionEquipmentType::COMBAT_ITEM; },
-      [&](const Effects::Chain& c) -> optional<MinionEquipmentType> {
-        for (auto& e : c.effects)
-          if (auto t = e.getMinionEquipmentType())
-            return t;
-        return none;
-      },
-      [&](const Effects::Heal& e) -> optional<MinionEquipmentType> {
-        if (e.healthType == HealthType::FLESH)
-          return MinionEquipmentType::HEALING;
-        else
-          return MinionEquipmentType::MATERIALIZATION;
-      },
-      [&](const Effects::Lasting& e) -> optional<MinionEquipmentType> {
-        return MinionEquipmentType::COMBAT_ITEM;
-      },
-      [&](const DefaultType&) -> optional<MinionEquipmentType> { return none; }
-  );
+static optional<MinionEquipmentType> getMinionEquipmentType(const DefaultType&) {
+  return none;
 }
 
+optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
+  return effect->visit<optional<MinionEquipmentType>>([](const auto& elem) { return ::getMinionEquipmentType(elem); } );
+}
+
+
+
+static bool canAutoAssignMinionEquipment(const DefaultType&) { return true; }
+
 bool Effect::canAutoAssignMinionEquipment() const {
-  return effect->visit<bool>(
-      [&](const Effects::Suicide&) { return false; },
-      [&](const Effects::GenericModifierEffect& e) { return e.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::Area& a) { return a.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::Filter& f) { return f.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::FilterLasting& f) { return f.effect->canAutoAssignMinionEquipment(); },
-      [&](const Effects::Chain& c) {
-        for (auto& e : c.effects)
-          if (!e.canAutoAssignMinionEquipment())
-            return false;
-        return true;
-      },
-      [&](const DefaultType&) { return true; }
-  );
+  return effect->visit<bool>([](const auto& elem) { return ::canAutoAssignMinionEquipment(elem); });
 }
 
 SERIALIZE_DEF(Effect, effect)
