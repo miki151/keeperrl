@@ -89,7 +89,8 @@ void Effect::emitPoisonGas(Position pos, double amount, bool msg) {
 vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<TimeInterval> ttl, TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
-    creatures.push_back(c->getGame()->getContentFactory()->getCreatures().fromId(id, c->getTribeId(), MonsterAIFactory::summoned(c)));
+    creatures.push_back(c->getGame()->getContentFactory()->getCreatures().fromId(id, c->getTribeId(),
+        MonsterAIFactory::summoned(c)));
   auto ret = summonCreatures(c->getPosition(), std::move(creatures), delay);
   for (auto c : ret)
     if (ttl)
@@ -97,7 +98,8 @@ vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<T
   return ret;
 }
 
-vector<Creature*> Effect::summon(Position pos, CreatureGroup& factory, int num, optional<TimeInterval> ttl, TimeInterval delay) {
+vector<Creature*> Effect::summon(Position pos, CreatureGroup& factory, int num, optional<TimeInterval> ttl,
+    TimeInterval delay) {
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(factory.random(&pos.getGame()->getContentFactory()->getCreatures(), MonsterAIFactory::monster()));
@@ -1379,6 +1381,295 @@ Effect& Effect::operator =(Effect&&) = default;
 
 Effect& Effect::operator =(const Effect&) = default;
 
+static bool apply(const Effects::DefaultEffect&, Position, Creature*) {
+  return false;
+}
+
+static bool apply(const Effects::ReviveCorpse& effect, Position pos, Creature* attacker) {
+  for (auto& item : pos.getItems())
+    if (auto info = item->getCorpseInfo())
+      if (info->canBeRevived)
+        for (auto& dead : pos.getModel()->getDeadCreatures())
+          if (dead->getUniqueId() == info->victim) {
+            for (auto id : effect.summoned) {
+              auto summoned = Effect::summon(attacker, id, 1, TimeInterval(effect.ttl));
+              if (!summoned.empty()) {
+                for (auto& c : summoned) {
+                  c->getName().addBarePrefix(dead->getName().bare());
+                  attacker->message("You have revived " + c->getName().a());
+                }
+                pos.removeItems({item});
+                return true;
+              }
+            }
+            attacker->message("The spell failed");
+            return false;
+          }
+  return false;
+}
+
+static bool apply(const Effects::Teleport&, Position pos, Creature* attacker) {
+  if (attacker->getPosition().canMoveCreature(pos)) {
+    attacker->you(MsgType::TELE_DISAPPEAR, "");
+    attacker->getPosition().moveCreature(pos, true);
+    attacker->you(MsgType::TELE_APPEAR, "");
+    return true;
+  }
+  return false;
+}
+
+static bool apply(const Effects::Jump&, Position pos, Creature* attacker) {
+  auto from = attacker->getPosition();
+  if (pos.canEnter(attacker)) {
+    for (auto v : drawLine(from, pos))
+      if (v != from && !v.canEnter(MovementType({MovementTrait::WALK, MovementTrait::FLY})))
+        return false;
+    attacker->displace(attacker->getPosition().getDir(pos));
+    return true;
+  }
+  return false;
+}
+
+static bool apply(const Effects::Fire&, Position pos, Creature*) {
+  pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});
+  return pos.fireDamage(1);
+}
+
+static bool apply(const Effects::Ice&, Position pos, Creature*) {
+  return pos.iceDamage();
+}
+
+static bool apply(const Effects::Acid&, Position pos, Creature*) {
+  return pos.acidDamage();
+}
+
+static bool apply(const Effects::Area& area, Position pos, Creature* attacker) {
+  bool res = false;
+  for (auto v : pos.getRectangle(Rectangle::centered(area.radius)))
+    res |= area.effect->apply(v, attacker);
+  return res;
+}
+
+static bool apply(const Effects::CustomArea& area, Position pos, Creature* attacker) {
+  bool res = false;
+  for (auto& v : area.getTargetPos(attacker, pos))
+    res |= area.effect->apply(v, attacker);
+  return res;
+}
+
+static bool apply(const Effects::Chain& chain, Position pos, Creature* attacker) {
+  bool res = false;
+  for (auto& e : chain.effects)
+    res |= e.apply(pos, attacker);
+  return res;
+}
+
+static bool apply(const Effects::ChainFirstResult& chain, Position pos, Creature* attacker) {
+  bool res = false;
+  for (int i : All(chain.effects)) {
+    auto value = chain.effects[i].apply(pos, attacker);
+    if (i == 0)
+      res = value;
+  }
+  return res;
+}
+
+static bool apply(const Effects::FirstSuccessful& chain, Position pos, Creature* attacker) {
+  for (auto& e : chain.effects)
+    if (e.apply(pos, attacker))
+      return true;
+  return false;
+}
+
+static bool apply(const Effects::ChooseRandom& r, Position pos, Creature* attacker) {
+  return r.effects[Random.get(r.effects.size())].apply(pos, attacker);
+}
+
+static bool apply(const Effects::Message& msg, Position pos, Creature*) {
+  pos.globalMessage(msg.text);
+  return true;
+}
+
+static bool apply(const Effects::Caster& e, Position, Creature* attacker) {
+  if (attacker)
+    return e.effect->apply(attacker->getPosition(), attacker);
+  return false;
+}
+
+static bool apply(const Effects::Chance& e, Position pos, Creature* attacker) {
+  if (Random.chance(e.value))
+    return e.effect->apply(pos, attacker);
+  return false;
+}
+
+static bool apply(const Effects::GenericModifierEffect& e, Position pos, Creature* attacker) {
+  return e.effect->apply(pos, attacker);
+}
+
+static bool apply(const Effects::SummonEnemy& summon, Position pos, Creature*) {
+  CreatureGroup f = CreatureGroup::singleType(TribeId::getMonster(), summon.creature);
+  return !Effect::summon(pos, f, Random.get(summon.count), summon.ttl.map([](int v) { return TimeInterval(v); }), 1_visible).empty();
+}
+
+static bool apply(const Effects::PlaceFurniture& summon, Position pos, Creature* attacker) {
+  auto f = pos.getGame()->getContentFactory()->furniture.getFurniture(summon.furniture,
+      attacker ? attacker->getTribeId() : TribeId::getMonster());
+  auto layer = f->getLayer();
+  auto ref = f.get();
+  pos.addFurniture(std::move(f));
+  if (pos.getFurniture(layer) == ref)
+    ref->onConstructedBy(pos, attacker);
+  return true;
+}
+
+static bool apply(const Effects::DropItems& effect, Position pos, Creature*) {
+  pos.dropItems(effect.type.get(Random.get(effect.count), pos.getGame()->getContentFactory()));
+  return true;
+}
+
+static bool apply(const Effects::Blast&, Position pos, Creature* attacker) {
+  constexpr int range = 4;
+  CHECK(attacker);
+  vector<Position> trajectory;
+  auto origin = attacker->getPosition().getCoord();
+  for (auto& v : drawLine(origin, pos.getCoord()))
+    if (v != origin && v.dist8(origin) <= range) {
+      trajectory.push_back(Position(v, pos.getLevel()));
+      if (trajectory.back().isDirEffectBlocked())
+        break;
+    }
+  for (int i : All(trajectory).reverse())
+    airBlast(attacker, attacker->getPosition(), trajectory[i], pos);
+  return true;
+}
+
+static bool apply(const Effects::Pull&, Position pos, Creature* attacker) {
+  CHECK(attacker);
+  vector<Position> trajectory = drawLine(attacker->getPosition(), pos);
+  for (auto& pos : trajectory)
+    if (auto c = pos.getCreature())
+      return pullCreature(c, trajectory);
+  return false;
+}
+
+static bool apply(const Effects::AssembledMinion& m, Position pos, Creature* attacker) {
+  auto group = CreatureGroup::singleType(attacker->getTribeId(), m.creature);
+  auto c = Effect::summon(pos, group, 1, none).getFirstElement();
+  if (c) {
+    for (auto col : pos.getGame()->getCollectives())
+      if (col->getCreatures().contains(attacker)) {
+        col->addCreature(*c, {MinionTrait::WORKER, MinionTrait::FIGHTER, MinionTrait::AUTOMATON});
+        for (auto& part : (*c)->getAttributes().automatonParts)
+          part.get((*c)->getGame()->getContentFactory())->getAutomatonPart()->apply(*c);
+        return true;
+      }
+  }
+  return false;
+}
+
+static bool apply(const Effects::DestroyWalls& m, Position pos, Creature*) {
+  bool res = false;
+  for (auto furniture : pos.modFurniture())
+    if (furniture->canDestroy(m.action)) {
+      furniture->destroy(pos, m.action);
+      res = true;
+    }
+  return res;
+}
+
+static bool apply(const Effects::EmitPoisonGas& m, Position pos, Creature*) {
+  Effect::emitPoisonGas(pos, m.amount, true);
+  return true;
+}
+
+static bool apply(const Effects::Fx& fx, Position pos, Creature*) {
+  if (auto game = pos.getGame())
+    game->addEvent(EventInfo::FX{pos, fx.info});
+  return true;
+}
+
+static bool apply(const Effects::TriggerTrap&, Position pos, Creature* attacker) {
+  for (auto furniture : pos.getFurniture())
+    if (auto& entry = furniture->getEntryType())
+      if (auto trapInfo = entry->entryData.getReferenceMaybe<FurnitureEntry::Trap>()) {
+        pos.globalMessage("A " + trapInfo->effect.getName(pos.getGame()->getContentFactory()) + " trap is triggered");
+        auto effect = trapInfo->effect;
+        pos.removeFurniture(furniture);
+        effect.apply(pos, attacker);
+        return true;
+      }
+  return false;
+}
+
+static bool apply(const Effects::AnimateItems& m, Position pos, Creature* attacker) {
+  vector<pair<Position, Item*>> candidates;
+  for (auto v : pos.getRectangle(Rectangle::centered(m.radius)))
+    for (auto item : v.getItems(ItemIndex::WEAPON))
+      candidates.push_back(make_pair(v, item));
+  candidates = Random.permutation(candidates);
+  bool res = false;
+  for (int i : Range(min(m.maxCount, candidates.size()))) {
+    auto v = candidates[i].first;
+    auto creature = pos.getGame()->getContentFactory()->getCreatures().
+        getAnimatedItem(v.removeItem(candidates[i].second), attacker->getTribeId(),
+            attacker->getAttr(AttrType::SPELL_DAMAGE));
+    for (auto c : Effect::summonCreatures(v, makeVec(std::move(creature)))) {
+      c->addEffect(LastingEffect::SUMMONED, TimeInterval{Random.get(m.time)}, false);
+      res = true;
+    }
+  }
+  return res;
+}
+
+static bool apply(const Effects::SoundEffect& e, Position pos, Creature*) {
+  pos.addSound(e.sound);
+  return true;
+}
+
+static bool apply(const Effects::Audience& a, Position pos, Creature* attacker) {
+  auto collective = [&]() -> Collective* {
+    for (auto col : pos.getGame()->getCollectives())
+      if (col->getTerritory().contains(pos))
+        return col;
+    for (auto col : pos.getGame()->getCollectives())
+      if (col->getTerritory().getStandardExtended().contains(pos))
+        return col;
+    return nullptr;
+  }();
+  bool wasTeleported = false;
+  auto tryTeleporting = [&] (Creature* enemy) {
+    if (!enemy->getStatus().contains(CreatureStatus::CIVILIAN) && !enemy->getStatus().contains(CreatureStatus::PRISONER)) {
+      auto distance = enemy->getPosition().dist8(pos);
+      if ((!a.maxDistance || *a.maxDistance >= distance.value_or(10000)) &&
+          (distance.value_or(4) > 3 || !pos.canSee(enemy->getPosition(), Vision())))
+        if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
+          enemy->getPosition().moveCreature(*landing, true);
+          wasTeleported = true;
+          enemy->removeEffect(LastingEffect::SLEEP);
+        }
+    }
+  };
+  if (collective) {
+    for (auto enemy : collective->getCreatures(MinionTrait::FIGHTER))
+      tryTeleporting(enemy);
+    if (collective != collective->getGame()->getPlayerCollective())
+      for (auto l : collective->getLeaders())
+        tryTeleporting(l);
+  } else
+    for (auto enemy : pos.getLevel()->getAllCreatures())
+      tryTeleporting(enemy);
+  if (wasTeleported) {
+    if (attacker)
+      attacker->privateMessage(PlayerMessage("Thy audience hath been summoned"_s +
+          get(attacker->getAttributes().getGender(), ", Sire", ", Dame", ""), MessagePriority::HIGH));
+    else
+      pos.globalMessage(PlayerMessage("The audience has been summoned"_s, MessagePriority::HIGH));
+    return true;
+  }
+  pos.globalMessage("Nothing happens");
+  return false;
+}
+
 bool Effect::apply(Position pos, Creature* attacker) const {
   if (auto c = pos.getCreature()) {
     bool res = FORWARD_CALL(bool, effect, applyToCreature, c, attacker);
@@ -1387,266 +1678,7 @@ bool Effect::apply(Position pos, Creature* attacker) const {
     if (res)
       return true;
   }
-  return effect->visit<bool>(
-      [&](const Effects::DefaultEffect&) { return false; },
-      [&](const Effects::ReviveCorpse& effect) {
-        for (auto& item : pos.getItems())
-          if (auto info = item->getCorpseInfo())
-            if (info->canBeRevived)
-              for (auto& dead : pos.getModel()->getDeadCreatures())
-                if (dead->getUniqueId() == info->victim) {
-                  for (auto id : effect.summoned) {
-                    auto summoned = summon(attacker, id, 1, TimeInterval(effect.ttl));
-                    if (!summoned.empty()) {
-                      for (auto& c : summoned) {
-                        c->getName().addBarePrefix(dead->getName().bare());
-                        attacker->message("You have revived " + c->getName().a());
-                      }
-                      pos.removeItems({item});
-                      return true;
-                    }
-                  }
-                  attacker->message("The spell failed");
-                  return false;
-                }
-        return false;
-      },
-      [&](Effects::Teleport) {
-        if (attacker->getPosition().canMoveCreature(pos)) {
-          attacker->you(MsgType::TELE_DISAPPEAR, "");
-          attacker->getPosition().moveCreature(pos, true);
-          attacker->you(MsgType::TELE_APPEAR, "");
-          return true;
-        }
-        return false;
-      },
-      [&](Effects::Jump) {
-        auto from = attacker->getPosition();
-        if (pos.canEnter(attacker)) {
-          for (auto v : drawLine(from, pos))
-            if (v != from && !v.canEnter(MovementType({MovementTrait::WALK, MovementTrait::FLY})))
-              return false;
-          attacker->displace(attacker->getPosition().getDir(pos));
-          return true;
-        }
-        return false;
-      },
-      [&](Effects::Fire) {
-        pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});
-        return pos.fireDamage(1);
-      },
-      [&](Effects::Ice) {
-        //pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::FIREBALL_SPLASH}});
-        return pos.iceDamage();
-      },
-      [&](Effects::Acid) {
-        return pos.acidDamage();
-      },
-      [&](const Effects::Area& area) {
-        bool res = false;
-        for (auto v : pos.getRectangle(Rectangle::centered(area.radius)))
-          res |= area.effect->apply(v, attacker);
-        return res;
-      },
-      [&](const Effects::CustomArea& area) {
-        bool res = false;
-        for (auto& v : area.getTargetPos(attacker, pos))
-          res |= area.effect->apply(v, attacker);
-        return res;
-      },
-      [&](const Effects::Chain& chain) {
-        bool res = false;
-        for (auto& e : chain.effects)
-          res |= e.apply(pos, attacker);
-        return res;
-      },
-      [&](const Effects::ChainFirstResult& chain) {
-        bool res = false;
-        for (int i : All(chain.effects)) {
-          auto value = chain.effects[i].apply(pos, attacker);
-          if (i == 0)
-            res = value;
-        }
-        return res;
-      },
-      [&](const Effects::FirstSuccessful& chain) {
-        for (auto& e : chain.effects)
-          if (e.apply(pos, attacker))
-            return true;
-        return false;
-      },
-      [&](const Effects::ChooseRandom& r) {
-        return r.effects[Random.get(r.effects.size())].apply(pos, attacker);
-      },
-      [&](const Effects::Message& msg) {
-        pos.globalMessage(msg.text);
-        return true;
-      },
-      [&](const Effects::Caster& e) {
-        if (attacker)
-          return e.effect->apply(attacker->getPosition(), attacker);
-        return false;
-      },
-      [&](const Effects::Chance& e) {
-        if (Random.chance(e.value))
-          return e.effect->apply(pos, attacker);
-        return false;
-      },
-      [&](const Effects::GenericModifierEffect& e) {
-        return e.effect->apply(pos, attacker);
-      },
-      [&](const Effects::SummonEnemy& summon) {
-        CreatureGroup f = CreatureGroup::singleType(TribeId::getMonster(), summon.creature);
-        return !Effect::summon(pos, f, Random.get(summon.count), summon.ttl.map([](int v) { return TimeInterval(v); }), 1_visible).empty();
-      },
-      [&](const Effects::PlaceFurniture& effect) {
-        auto f = pos.getGame()->getContentFactory()->furniture.getFurniture(effect.furniture,
-            attacker ? attacker->getTribeId() : TribeId::getMonster());
-        auto layer = f->getLayer();
-        auto ref = f.get();
-        pos.addFurniture(std::move(f));
-        if (pos.getFurniture(layer) == ref)
-          ref->onConstructedBy(pos, attacker);
-        return true;
-      },
-      [&](const Effects::DropItems& effect) {
-        pos.dropItems(effect.type.get(Random.get(effect.count), pos.getGame()->getContentFactory()));
-        return true;
-      },
-      [&](Effects::Blast) {
-        constexpr int range = 4;
-        CHECK(attacker);
-        vector<Position> trajectory;
-        auto origin = attacker->getPosition().getCoord();
-        for (auto& v : drawLine(origin, pos.getCoord()))
-          if (v != origin && v.dist8(origin) <= range) {
-            trajectory.push_back(Position(v, pos.getLevel()));
-            if (trajectory.back().isDirEffectBlocked())
-              break;
-          }
-        for (int i : All(trajectory).reverse())
-          airBlast(attacker, attacker->getPosition(), trajectory[i], pos);
-        return true;
-      },
-      [&](Effects::Pull) {
-        CHECK(attacker);
-        vector<Position> trajectory = drawLine(attacker->getPosition(), pos);
-        for (auto& pos : trajectory)
-          if (auto c = pos.getCreature())
-            return pullCreature(c, trajectory);
-        return false;
-      },
-      [&](const Effects::AssembledMinion& m) {
-        auto group = CreatureGroup::singleType(attacker->getTribeId(), m.creature);
-        auto c = Effect::summon(pos, group, 1, none).getFirstElement();
-        if (c) {
-          for (auto col : pos.getGame()->getCollectives())
-            if (col->getCreatures().contains(attacker)) {
-              col->addCreature(*c, {MinionTrait::WORKER, MinionTrait::FIGHTER, MinionTrait::AUTOMATON});
-              for (auto& part : (*c)->getAttributes().automatonParts)
-                part.get((*c)->getGame()->getContentFactory())->getAutomatonPart()->apply(*c);
-              return true;
-            }
-        }
-        return false;
-      },
-      [&](const Effects::DestroyWalls& m) {
-        bool res = false;
-        for (auto furniture : pos.modFurniture())
-          if (furniture->canDestroy(m.action)) {
-            furniture->destroy(pos, m.action);
-            res = true;
-          }
-        return res;
-      },
-      [&](const Effects::EmitPoisonGas& m) {
-        Effect::emitPoisonGas(pos, m.amount, true);
-        return true;
-      },
-      [&](const Effects::Fx& fx) {
-        if (auto game = pos.getGame())
-          game->addEvent(EventInfo::FX{pos, fx.info});
-        return true;
-      },
-      [&](const Effects::TriggerTrap&) {
-        for (auto furniture : pos.getFurniture())
-          if (auto& entry = furniture->getEntryType())
-            if (auto trapInfo = entry->entryData.getReferenceMaybe<FurnitureEntry::Trap>()) {
-              pos.globalMessage("A " + trapInfo->effect.getName(pos.getGame()->getContentFactory()) + " trap is triggered");
-              auto effect = trapInfo->effect;
-              pos.removeFurniture(furniture);
-              effect.apply(pos, attacker);
-              return true;
-            }
-        return false;
-      },
-      [&](const Effects::AnimateItems& m) {
-        vector<pair<Position, Item*>> candidates;
-        for (auto v : pos.getRectangle(Rectangle::centered(m.radius)))
-          for (auto item : v.getItems(ItemIndex::WEAPON))
-            candidates.push_back(make_pair(v, item));
-        candidates = Random.permutation(candidates);
-        bool res = false;
-        for (int i : Range(min(m.maxCount, candidates.size()))) {
-          auto v = candidates[i].first;
-          auto creature = pos.getGame()->getContentFactory()->getCreatures().
-              getAnimatedItem(v.removeItem(candidates[i].second), attacker->getTribeId(),
-                  attacker->getAttr(AttrType::SPELL_DAMAGE));
-          for (auto c : Effect::summonCreatures(v, makeVec(std::move(creature)))) {
-            c->addEffect(LastingEffect::SUMMONED, TimeInterval{Random.get(m.time)}, false);
-            res = true;
-          }
-        }
-        return res;
-      },
-      [&](const Effects::SoundEffect& e) {
-        pos.addSound(e.sound);
-        return true;
-      },
-      [&](const Effects::Audience& a) {
-        auto collective = [&]() -> Collective* {
-          for (auto col : pos.getGame()->getCollectives())
-            if (col->getTerritory().contains(pos))
-              return col;
-          for (auto col : pos.getGame()->getCollectives())
-            if (col->getTerritory().getStandardExtended().contains(pos))
-              return col;
-          return nullptr;
-        }();
-        bool wasTeleported = false;
-        auto tryTeleporting = [&] (Creature* enemy) {
-          if (!enemy->getStatus().contains(CreatureStatus::CIVILIAN) && !enemy->getStatus().contains(CreatureStatus::PRISONER)) {
-            auto distance = enemy->getPosition().dist8(pos);
-            if ((!a.maxDistance || *a.maxDistance >= distance.value_or(10000)) &&
-                (distance.value_or(4) > 3 || !pos.canSee(enemy->getPosition(), Vision())))
-              if (auto landing = pos.getLevel()->getClosestLanding({pos}, enemy)) {
-                enemy->getPosition().moveCreature(*landing, true);
-                wasTeleported = true;
-                enemy->removeEffect(LastingEffect::SLEEP);
-              }
-          }
-        };
-        if (collective) {
-          for (auto enemy : collective->getCreatures(MinionTrait::FIGHTER))
-            tryTeleporting(enemy);
-          if (collective != collective->getGame()->getPlayerCollective())
-            for (auto l : collective->getLeaders())
-              tryTeleporting(l);
-        } else
-          for (auto enemy : pos.getLevel()->getAllCreatures())
-            tryTeleporting(enemy);
-        if (wasTeleported) {
-          if (attacker)
-            attacker->privateMessage(PlayerMessage("Thy audience hath been summoned"_s +
-                get(attacker->getAttributes().getGender(), ", Sire", ", Dame", ""), MessagePriority::HIGH));
-          else
-            pos.globalMessage(PlayerMessage("The audience has been summoned"_s, MessagePriority::HIGH));
-          return true;
-        }
-        pos.globalMessage("Nothing happens");
-        return false;
-      }
-  );
+  return effect->visit<bool>([&](const auto& e) { return ::apply(e, pos, attacker); });
 }
 
 string Effect::getDescription(const ContentFactory* f) const {
