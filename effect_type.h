@@ -15,9 +15,7 @@
 RICH_ENUM(FilterType, ALLY, ENEMY, AUTOMATON);
 
 #define EFFECT_TYPE_INTERFACE \
-  string getName(const ContentFactory*) const;\
-  operator DefaultEffect() const { return DefaultEffect {}; }\
-  string getDescription(const ContentFactory*) const
+  operator DefaultEffect() const { return DefaultEffect {}; }
 
 
 #define SIMPLE_EFFECT(Name) \
