@@ -195,9 +195,7 @@ struct Chain {
   vector<Effect> SERIAL(effects);
   SERIALIZE_ALL(effects)
 };
-struct ChooseRandom {
-  vector<Effect> SERIAL(effects);
-  SERIALIZE_ALL(effects)
+struct ChooseRandom : Chain {
 };
 struct Message {
   string SERIAL(text);
@@ -226,7 +224,6 @@ struct GenericModifierEffect {
   SERIALIZE_ALL(effect)
 };
 struct Chance : GenericModifierEffect {
-  string getDescription(const ContentFactory*) const;
   double SERIAL(value);
   SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
 };
@@ -250,9 +247,7 @@ struct Audience {
   optional<int> SERIAL(maxDistance);
   SERIALIZE_ALL(maxDistance)
 };
-struct FirstSuccessful {
-  vector<Effect> SERIAL(effects);
-  SERIALIZE_ALL(effects)
+struct FirstSuccessful : Chain {
 };
 struct ColorVariant {
   Color SERIAL(color);
@@ -263,12 +258,10 @@ struct Fx {
   SERIALIZE_ALL(info)
 };
 struct Description : GenericModifierEffect {
-  string getDescription(const ContentFactory*) const;
   string SERIAL(text);
   SERIALIZE_ALL(text, SUBCLASS(GenericModifierEffect))
 };
 struct Name : GenericModifierEffect {
-  string getName(const ContentFactory*) const;
   string SERIAL(text);
   SERIALIZE_ALL(text, SUBCLASS(GenericModifierEffect))
 };
