@@ -254,10 +254,6 @@ struct FirstSuccessful {
   vector<Effect> SERIAL(effects);
   SERIALIZE_ALL(effects)
 };
-struct ChainFirstResult {
-  vector<Effect> SERIAL(effects);
-  SERIALIZE_ALL(effects)
-};
 struct ColorVariant {
   Color SERIAL(color);
   SERIALIZE_ALL(color)
@@ -339,7 +335,7 @@ struct AITargetEnemy : GenericModifierEffect {
   X(SoundEffect, 52)\
   X(DropItems, 53)\
   X(FirstSuccessful, 54)\
-  X(ChainFirstResult, 55)\
+  X(PlayerMessage, 55)\
   X(ColorVariant, 56)\
   X(Jump, 57)\
   X(FixedDamage, 58)\
@@ -351,8 +347,7 @@ struct AITargetEnemy : GenericModifierEffect {
   X(IncreaseSkill, 64)\
   X(IncreaseWorkshopSkill, 65)\
   X(FilterLasting, 66)\
-  X(AddAutomatonParts, 67)\
-  X(PlayerMessage, 68)
+  X(AddAutomatonParts, 67)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

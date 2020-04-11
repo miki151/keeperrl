@@ -1232,24 +1232,6 @@ static EffectAIIntent shouldAIApply(const Effects::Chain& chain, const Creature*
   return allRes;
 }
 
-static string getName(const Effects::ChainFirstResult& e, const ContentFactory* f) {
-  return combineNames(f, e.effects);
-}
-
-static string getDescription(const Effects::ChainFirstResult& e, const ContentFactory* f) {
-  return combineDescriptions(f, e.effects);
-}
-
-static bool apply(const Effects::ChainFirstResult& chain, Position pos, Creature* attacker) {
-  bool res = false;
-  for (int i : All(chain.effects)) {
-    auto value = chain.effects[i].apply(pos, attacker);
-    if (i == 0)
-      res = value;
-  }
-  return res;
-}
-
 static string getName(const Effects::FirstSuccessful& e, const ContentFactory* f) {
   return "try: " + combineNames(f, e.effects);
 }
