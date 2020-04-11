@@ -59,11 +59,22 @@
 #include "workshop_type.h"
 #include "automaton_part.h"
 
+struct DefaultType {
+  template <typename T>
+  DefaultType(const T&) {}
+};
+
+static bool isConsideredInDanger(const Creature* c) {
+  if (auto intent = c->getLastCombatIntent())
+    return (intent->time > *c->getGlobalTime() - 5_visible);
+  return false;
+}
 
 static void summonFX(Position pos) {
   auto color = Color(240, 146, 184);
   pos.getGame()->addEvent(EventInfo::FX{pos, {FXName::SPAWN, color}});
 }
+
 vector<Creature*> Effect::summonCreatures(Position pos, vector<PCreature> creatures, TimeInterval delay) {
   vector<Creature*> ret;
   for (int i : All(creatures))
@@ -137,55 +148,6 @@ static bool summon(Creature* summoner, CreatureId id, Range count, bool hostile,
     return !Effect::summon(summoner->getPosition(), f, Random.get(count), ttl, 1_visible).empty();
   } else
     return !Effect::summon(summoner, id, Random.get(count), ttl, 1_visible).empty();
-}
-
-static bool isConsideredHostile(LastingEffect effect) {
-  switch (effect) {
-    case LastingEffect::BLIND:
-    case LastingEffect::ENTANGLED:
-    case LastingEffect::HALLU:
-    case LastingEffect::INSANITY:
-    case LastingEffect::PANIC:
-    case LastingEffect::POISON:
-    case LastingEffect::SLOWED:
-    case LastingEffect::STUNNED:
-      return true;
-    default:
-      return false;
-  }
-}
-
-static bool isConsideredHostile(const Effects::Lasting& e, const Creature* victim) {
-  return LastingEffects::affects(victim, e.lastingEffect) && ::isConsideredHostile(e.lastingEffect);
-}
-
-static bool isConsideredHostile(const Effects::Acid&, const Creature* victim) {
-  return !victim->isAffected(LastingEffect::ACID_RESISTANT);
-}
-
-static bool isConsideredHostile(const Effects::DestroyEquipment&, const Creature*) {
-  return true;
-}
-
-static bool isConsideredHostile(const Effects::SilverDamage&, const Creature*) {
-  return true;
-}
-
-static bool isConsideredHostile(const Effects::Fire&, const Creature* victim) {
-  return !victim->isAffected(LastingEffect::FIRE_RESISTANT);
-}
-
-static bool isConsideredHostile(const Effects::Ice&, const Creature* victim) {
-  return !victim->isAffected(LastingEffect::COLD_RESISTANT);
-}
-
-static bool isConsideredHostile(const Effects::Damage&, const Creature*) {
-  return true;
-}
-
-template <typename T>
-static bool isConsideredHostile(const T&, const Creature*) {
-  return false;
 }
 
 static bool applyToCreature(const Effects::Escape&, Creature* c, Creature*) {
@@ -290,6 +252,32 @@ static bool applyToCreature(const Effects::Lasting& e, Creature* c, Creature*) {
   return c->addEffect(e.lastingEffect, LastingEffects::getDuration(c, e.lastingEffect));
 }
 
+static bool isConsideredHostile(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::BLIND:
+    case LastingEffect::ENTANGLED:
+    case LastingEffect::HALLU:
+    case LastingEffect::INSANITY:
+    case LastingEffect::PANIC:
+    case LastingEffect::POISON:
+    case LastingEffect::SLOWED:
+    case LastingEffect::STUNNED:
+      return true;
+    default:
+      return false;
+  }
+}
+
+static bool isConsideredHostile(const Effects::Lasting& e, const Creature* victim) {
+  return LastingEffects::affects(victim, e.lastingEffect) && ::isConsideredHostile(e.lastingEffect);
+}
+
+static EffectAIIntent shouldAIApply(const Effects::Lasting& e, const Creature* victim, bool isEnemy) {
+  if (victim->isAffected(e.lastingEffect))
+    return EffectAIIntent::NONE;
+  return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
+}
+
 static string getName(const Effects::Lasting& e, const ContentFactory*) {
   return LastingEffects::getName(e.lastingEffect);
 }
@@ -310,6 +298,12 @@ static string getName(const Effects::RemoveLasting& e, const ContentFactory*) {
 
 static string getDescription(const Effects::RemoveLasting& e, const ContentFactory*) {
   return "Removes/cures from effect: " + LastingEffects::getName(e.lastingEffect);
+}
+
+static EffectAIIntent shouldAIApply(const Effects::RemoveLasting& e, const Creature* victim, bool isEnemy) {
+  if (!victim->isAffected(e.lastingEffect))
+    return EffectAIIntent::NONE;
+  return reverse(LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy));
 }
 
 static bool applyToCreature(const Effects::IncreaseAttr& e, Creature* c, Creature*) {
@@ -381,6 +375,12 @@ static bool applyToCreature(const Effects::Permanent& e, Creature* c, Creature*)
   return c->addPermanentEffect(e.lastingEffect);
 }
 
+static EffectAIIntent shouldAIApply(const Effects::Permanent& e, const Creature* victim, bool isEnemy) {
+  if (victim->getAttributes().isAffectedPermanently(e.lastingEffect))
+    return EffectAIIntent::NONE;
+  return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
+}
+
 static string getName(const Effects::Permanent& e, const ContentFactory*) {
   return "permanent " + LastingEffects::getName(e.lastingEffect);
 }
@@ -428,8 +428,20 @@ static bool apply(const Effects::Acid&, Position pos, Creature*) {
   return pos.acidDamage();
 }
 
+static EffectAIIntent shouldAIApply(const Effects::Acid&, const Creature* victim, bool isEnemy) {
+  return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+}
+
+static bool isConsideredHostile(const Effects::Acid&, const Creature* victim) {
+  return !victim->isAffected(LastingEffect::ACID_RESISTANT);
+}
+
 static bool applyToCreature(const Effects::Summon& e, Creature* c, Creature*) {
   return ::summon(c, e.creature, e.count, false, e.ttl.map([](int v) { return TimeInterval(v); }));
+}
+
+static EffectAIIntent shouldAIApply(const Effects::Summon&, const Creature* victim, bool isEnemy) {
+  return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
 }
 
 static string getName(const Effects::Summon& e, const ContentFactory* f) {
@@ -528,6 +540,10 @@ static string getDescription(const Effects::SummonElement&, const ContentFactory
   return "Summons an element or spirit from the surroundings.";
 }
 
+static EffectAIIntent shouldAIApply(const Effects::SummonElement&, const Creature* victim, bool isEnemy) {
+  return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+}
+
 static bool applyToCreature(const Effects::Deception&, Creature* c, Creature*) {
   vector<PCreature> creatures;
   for (int i : Range(Random.get(3, 7)))
@@ -541,6 +557,10 @@ static string getName(const Effects::Deception&, const ContentFactory*) {
 
 static string getDescription(const Effects::Deception&, const ContentFactory*) {
   return "Creates multiple illusions of the spellcaster to confuse the enemy.";
+}
+
+static EffectAIIntent shouldAIApply(const Effects::Deception&, const Creature* victim, bool isEnemy) {
+  return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
 }
 
 static void airBlast(Creature* attacker, Position origin, Position position, Position target) {
@@ -639,6 +659,14 @@ static bool applyToCreature(const Effects::DestroyEquipment&, Creature* c, Creat
   return false;
 }
 
+static EffectAIIntent shouldAIApply(const Effects::DestroyEquipment&, const Creature* victim, bool isEnemy) {
+  return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+}
+
+static bool isConsideredHostile(const Effects::DestroyEquipment&, const Creature*) {
+  return true;
+}
+
 static string getName(const Effects::DestroyEquipment&, const ContentFactory*) {
   return "equipment destruction";
 }
@@ -678,6 +706,12 @@ static bool applyToCreature(const Effects::Heal& e, Creature* c, Creature*) {
   }
 }
 
+static EffectAIIntent shouldAIApply(const Effects::Heal& e, const Creature* victim, bool isEnemy) {
+  if (victim->getBody().canHeal(e.healthType))
+    return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
+  return EffectAIIntent::NONE;
+}
+
 static string getName(const Effects::Heal& e, const ContentFactory*) {
   switch (e.healthType) {
     case HealthType::FLESH: return "healing";
@@ -705,6 +739,16 @@ static bool apply(const Effects::Fire&, Position pos, Creature*) {
   return pos.fireDamage(1);
 }
 
+static EffectAIIntent shouldAIApply(const Effects::Fire&, const Creature* victim, bool isEnemy) {
+  if (!victim->isAffected(LastingEffect::FIRE_RESISTANT))
+    return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+  return EffectAIIntent::NONE;
+}
+
+static bool isConsideredHostile(const Effects::Fire&, const Creature* victim) {
+  return !victim->isAffected(LastingEffect::FIRE_RESISTANT);
+}
+
 static string getName(const Effects::Ice&, const ContentFactory*) {
   return "ice";
 }
@@ -715,6 +759,16 @@ static string getDescription(const Effects::Ice&, const ContentFactory*) {
 
 static bool apply(const Effects::Ice&, Position pos, Creature*) {
   return pos.iceDamage();
+}
+
+static EffectAIIntent shouldAIApply(const Effects::Ice&, const Creature* victim, bool isEnemy) {
+  if (!victim->isAffected(LastingEffect::COLD_RESISTANT))
+    return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+  return EffectAIIntent::NONE;
+}
+
+static bool isConsideredHostile(const Effects::Ice&, const Creature* victim) {
+  return !victim->isAffected(LastingEffect::COLD_RESISTANT);
 }
 
 static string getName(const Effects::ReviveCorpse&, const ContentFactory*) {
@@ -776,6 +830,10 @@ static bool applyToCreature(const Effects::SilverDamage&, Creature* c, Creature*
   return c->getBody().isUndead();
 }
 
+static bool isConsideredHostile(const Effects::SilverDamage&, const Creature*) {
+  return true;
+}
+
 static string getName(const Effects::SilverDamage&, const ContentFactory*) {
   return "silver";
 }
@@ -803,6 +861,11 @@ static bool apply(const Effects::PlaceFurniture& summon, Position pos, Creature*
   return true;
 }
 
+static EffectAIIntent shouldAIApply(const Effects::PlaceFurniture& f, const Creature* victim, bool isEnemy) {
+  return victim->getGame()->getContentFactory()->furniture.getData(f.furniture).isHostileSpell() &&
+      isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+}
+
 static string getName(const Effects::DropItems&, const ContentFactory* c) {
   return "create items";
 }
@@ -823,6 +886,14 @@ static bool applyToCreature(const Effects::Damage& e, Creature* c, Creature* att
   if (e.attr == AttrType::SPELL_DAMAGE)
     c->addFX({FXName::MAGIC_MISSILE_SPLASH});
   return result;
+}
+
+static EffectAIIntent shouldAIApply(const Effects::Damage&, const Creature* victim, bool isEnemy) {
+  return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+}
+
+static bool isConsideredHostile(const Effects::Damage&, const Creature*) {
+  return true;
 }
 
 static string getName(const Effects::Damage& e, const ContentFactory*) {
@@ -923,6 +994,13 @@ static string getDescription(const Effects::RegrowBodyPart&, const ContentFactor
   return "Causes lost body parts to regrow.";
 }
 
+static EffectAIIntent shouldAIApply(const Effects::RegrowBodyPart&, const Creature* victim, bool isEnemy) {
+  for (auto part : ENUM_ALL(BodyPart))
+    if (victim->getBody().numLost(part) + victim->getBody().numInjured(part) > 0)
+      return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
+  return EffectAIIntent::NONE;
+}
+
 static string getName(const Effects::Area& e, const ContentFactory* f) {
   return e.effect->getName(f);
 }
@@ -971,6 +1049,10 @@ static bool applyToCreature(const Effects::Suicide& e, Creature* c, Creature*) {
   c->you(e.message, "");
   c->dieNoReason();
   return true;
+}
+
+static EffectAIIntent shouldAIApply(const Effects::Suicide&, const Creature* victim, bool isEnemy) {
+  return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
 }
 
 static string getName(const Effects::Suicide&, const ContentFactory*) {
@@ -1137,6 +1219,10 @@ static bool applyToCreature(const Effects::IncreaseMorale& e, Creature* c, Creat
   return c->getMorale() != before;
 }
 
+static EffectAIIntent shouldAIApply(const Effects::IncreaseMorale& e, const Creature* victim, bool isEnemy) {
+  return isEnemy == (e.amount < 0) ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+}
+
 static string getName(const Effects::IncreaseMorale& e, const ContentFactory*) {
   return e.amount > 0 ? "morale increase" : "morale decrease";
 }
@@ -1207,6 +1293,10 @@ static string getName(const Effects::DoubleTrouble&, const ContentFactory*) {
 
 static string getDescription(const Effects::DoubleTrouble&, const ContentFactory*) {
   return "Creates a twin copy ally.";
+}
+
+static EffectAIIntent shouldAIApply(const Effects::DoubleTrouble&, const Creature* victim, bool isEnemy) {
+  return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
 }
 
 static string getName(const Effects::Blast&, const ContentFactory*) {
@@ -1372,6 +1462,10 @@ static string getName(const Effects::Audience&, const ContentFactory*) {
 
 static string getDescription(const Effects::Audience&, const ContentFactory*) {
   return "Summons all fighters defending the territory that the creature is in";
+}
+
+static EffectAIIntent shouldAIApply(const Effects::Audience&, const Creature* victim, bool isEnemy) {
+  return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
 }
 
 static bool apply(const Effects::Audience& a, Position pos, Creature* attacker) {
@@ -1546,6 +1640,11 @@ Effect& Effect::operator =(Effect&&) = default;
 
 Effect& Effect::operator =(const Effect&) = default;
 
+template <typename T>
+static bool isConsideredHostile(const T&, const Creature*) {
+  return false;
+}
+
 template <typename T,
     typename int_<decltype(applyToCreature(
         std::declval<const T&>(), std::declval<Creature*>(), std::declval<Creature*>()))>::type = 0>
@@ -1571,89 +1670,12 @@ string Effect::getDescription(const ContentFactory* f) const {
   return effect->visit<string>([&](const auto& elem) { return ::getDescription(elem, f); });
 }
 
-static bool isConsideredInDanger(const Creature* c) {
-  if (auto intent = c->getLastCombatIntent())
-    return (intent->time > *c->getGlobalTime() - 5_visible);
-  return false;
+static EffectAIIntent shouldAIApply(const DefaultType&, const Creature*, bool) {
+  return EffectAIIntent::NONE;
 }
 
 EffectAIIntent Effect::shouldAIApply(const Creature* victim, bool isEnemy) const {
-  bool isFighting = isConsideredInDanger(victim);
-  return effect->visit<EffectAIIntent>(
-      [&] (const Effects::Permanent& e) {
-        if (victim->getAttributes().isAffectedPermanently(e.lastingEffect))
-          return EffectAIIntent::NONE;
-        return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
-      },
-      [&] (const Effects::Lasting& e) {
-        if (victim->isAffected(e.lastingEffect))
-          return EffectAIIntent::NONE;
-        return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
-      },
-      [&] (const Effects::RemoveLasting& e) {
-        if (!victim->isAffected(e.lastingEffect))
-          return EffectAIIntent::NONE;
-        return reverse(LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy));
-      },
-      [&] (const Effects::Heal& e) {
-        if (victim->getBody().canHeal(e.healthType))
-          return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
-        return EffectAIIntent::NONE;
-      },
-      [&] (const Effects::IncreaseMorale& e) {
-        return isEnemy == (e.amount < 0) ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
-      },
-      [&] (const Effects::Fire&) {
-        if (!victim->isAffected(LastingEffect::FIRE_RESISTANT))
-          return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
-        return EffectAIIntent::NONE;
-      },
-      [&] (const Effects::Ice&) {
-        if (!victim->isAffected(LastingEffect::COLD_RESISTANT))
-          return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
-        return EffectAIIntent::NONE;
-      },
-      [&] (const Effects::Suicide&) {
-        return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
-      },
-      [&] (const Effects::Damage&) {
-        return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
-      },
-      [&] (const Effects::DestroyEquipment&) {
-        return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
-      },
-      [&] (const Effects::Acid&) {
-        return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
-      },
-      [&] (const Effects::Deception&) {
-        return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
-      },
-      [&] (const Effects::Summon&) {
-        return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
-      },
-      [&] (const Effects::Audience&) {
-        return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
-      },
-      [&] (const Effects::DoubleTrouble&) {
-        return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
-      },
-      [&] (const Effects::SummonElement&) {
-        return isFighting ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
-      },
-      [&] (const Effects::PlaceFurniture& f) {
-        return victim->getGame()->getContentFactory()->furniture.getData(f.furniture).isHostileSpell() && isFighting
-            ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
-      },
-      [&] (const Effects::RegrowBodyPart&) {
-        for (auto part : ENUM_ALL(BodyPart))
-          if (victim->getBody().numLost(part) + victim->getBody().numInjured(part) > 0)
-            return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
-        return EffectAIIntent::NONE;
-      },
-      [&] (const auto&) {
-        return EffectAIIntent::NONE;
-      }
-  );
+  return effect->visit<EffectAIIntent>([&](const auto& e) { return ::shouldAIApply(e, victim, isEnemy); });
 }
 
 /* Unimplemented: Teleport, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr, IncreaseSkill, IncreaseWorkshopSkill
