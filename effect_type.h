@@ -14,22 +14,16 @@
 
 RICH_ENUM(FilterType, ALLY, ENEMY, AUTOMATON);
 
-#define EFFECT_TYPE_INTERFACE \
-  operator DefaultEffect() const { return DefaultEffect {}; }
-
-
 #define SIMPLE_EFFECT(Name) \
-  struct Name : public EmptyStruct<Name> { \
-    EFFECT_TYPE_INTERFACE;\
+  struct Name { \
+    SERIALIZE_EMPTY()\
   }
 
 namespace Effects {
-struct DefaultEffect {};
 SIMPLE_EFFECT(Escape);
 SIMPLE_EFFECT(Teleport);
 SIMPLE_EFFECT(Jump);
 struct Heal {
-  EFFECT_TYPE_INTERFACE;
   HealthType SERIAL(healthType);
   SERIALIZE_ALL(healthType)
 };
@@ -37,12 +31,10 @@ SIMPLE_EFFECT(Fire);
 SIMPLE_EFFECT(Ice);
 SIMPLE_EFFECT(DestroyEquipment);
 struct DestroyWalls {
-  EFFECT_TYPE_INTERFACE;
   DestroyAction::Type SERIAL(action);
   SERIALIZE_ALL(action)
 };
 struct Enhance {
-  EFFECT_TYPE_INTERFACE;
   ItemUpgradeType SERIAL(type);
   int SERIAL(amount);
   const char* typeAsString() const;
@@ -50,14 +42,12 @@ struct Enhance {
   SERIALIZE_ALL(type, amount)
 };
 struct EmitPoisonGas {
-  EFFECT_TYPE_INTERFACE;
   double SERIAL(amount) = 0.8;
   SERIALIZE_ALL(amount)
 };
 SIMPLE_EFFECT(CircularBlast);
 SIMPLE_EFFECT(Deception);
 struct Summon {
-  EFFECT_TYPE_INTERFACE;
   Summon(CreatureId id, Range c) : creature(id), count(c) {}
   Summon() {}
   CreatureId SERIAL(creature);
@@ -66,18 +56,15 @@ struct Summon {
   SERIALIZE_ALL(creature, count, ttl)
 };
 struct AssembledMinion {
-  EFFECT_TYPE_INTERFACE;
   CreatureId SERIAL(creature);
   SERIALIZE_ALL(creature)
 };
 struct AddAutomatonParts {
-  EFFECT_TYPE_INTERFACE;
   string getPartsNames(const ContentFactory*) const;
   vector<ItemType> SERIAL(partTypes);
   SERIALIZE_ALL(partTypes)
 };
 struct SummonEnemy {
-  EFFECT_TYPE_INTERFACE;
   SummonEnemy(CreatureId id, Range c) : creature(id), count(c) {}
   SummonEnemy() {}
   CreatureId SERIAL(creature);
@@ -88,84 +75,70 @@ struct SummonEnemy {
 SIMPLE_EFFECT(SummonElement);
 SIMPLE_EFFECT(Acid);
 struct Alarm {
-  EFFECT_TYPE_INTERFACE;
   bool SERIAL(silent) = false;
   SERIALIZE_ALL(silent)
 };
 SIMPLE_EFFECT(SilverDamage);
 
 struct Lasting {
-  EFFECT_TYPE_INTERFACE;
   LastingEffect SERIAL(lastingEffect);
   SERIALIZE_ALL(lastingEffect)
 };
 
 struct RemoveLasting {
-  EFFECT_TYPE_INTERFACE;
   LastingEffect SERIAL(lastingEffect);
   SERIALIZE_ALL(lastingEffect)
 };
 struct Permanent {
-  EFFECT_TYPE_INTERFACE;
   LastingEffect SERIAL(lastingEffect);
   SERIALIZE_ALL(lastingEffect)
 };
 struct RemovePermanent {
-  EFFECT_TYPE_INTERFACE;
   LastingEffect SERIAL(lastingEffect);
   SERIALIZE_ALL(lastingEffect)
 };
 struct PlaceFurniture {
-  EFFECT_TYPE_INTERFACE;
   FurnitureType SERIAL(furniture);
   SERIALIZE_ALL(furniture)
 };
 struct Damage {
-  EFFECT_TYPE_INTERFACE;
   AttrType SERIAL(attr);
   AttackType SERIAL(attackType);
   SERIALIZE_ALL(attr, attackType)
 };
 struct FixedDamage {
-  EFFECT_TYPE_INTERFACE;
   AttrType SERIAL(attr);
   int SERIAL(value);
   AttackType SERIAL(attackType);
   SERIALIZE_ALL(attr, value, attackType)
 };
 struct IncreaseAttr {
-  EFFECT_TYPE_INTERFACE;
   AttrType SERIAL(attr);
   int SERIAL(amount);
   const char* get(const char* ifIncrease, const char* ifDecrease) const;
   SERIALIZE_ALL(attr, amount)
 };
 struct IncreaseSkill {
-  EFFECT_TYPE_INTERFACE;
   SkillId SERIAL(skillid);
   double SERIAL(amount);
   const char* get(const char* ifIncrease, const char* ifDecrease) const;
   SERIALIZE_ALL(skillid, amount)
 };
 struct IncreaseWorkshopSkill {
-  EFFECT_TYPE_INTERFACE;
   WorkshopType SERIAL(workshoptype);
   double SERIAL(amount);
   const char* get(const char* ifIncrease, const char* ifDecrease) const;
   SERIALIZE_ALL(workshoptype, amount)
 };
 struct InjureBodyPart {
-  EFFECT_TYPE_INTERFACE;
   BodyPart SERIAL(part);
   SERIALIZE_ALL(part)
 };
 struct LoseBodyPart {
-  EFFECT_TYPE_INTERFACE;
   BodyPart SERIAL(part);
   SERIALIZE_ALL(part)
 };
 struct AddBodyPart {
-  EFFECT_TYPE_INTERFACE;
   BodyPart SERIAL(part);
   int SERIAL(count);
   optional<ItemType> SERIAL(attack);
@@ -173,25 +146,21 @@ struct AddBodyPart {
 };
 SIMPLE_EFFECT(MakeHumanoid);
 struct Area {
-  EFFECT_TYPE_INTERFACE;
   int SERIAL(radius);
   HeapAllocated<Effect> SERIAL(effect);
   SERIALIZE_ALL(radius, effect)
 };
 struct CustomArea {
-  EFFECT_TYPE_INTERFACE;
   HeapAllocated<Effect> SERIAL(effect);
   vector<Vec2> SERIAL(positions);
   vector<Position> getTargetPos(const Creature* attacker, Position targetPos) const;
   SERIALIZE_ALL(effect, positions)
 };
 struct RegrowBodyPart {
-  EFFECT_TYPE_INTERFACE;
   int SERIAL(maxCount);
   SERIALIZE_ALL(maxCount)
 };
 struct Suicide {
-  EFFECT_TYPE_INTERFACE;
   MsgType SERIAL(message);
   SERIALIZE_ALL(message)
 };
@@ -201,20 +170,17 @@ SIMPLE_EFFECT(Pull);
 SIMPLE_EFFECT(Shove);
 SIMPLE_EFFECT(SwapPosition);
 struct ReviveCorpse {
-  EFFECT_TYPE_INTERFACE;
   vector<CreatureId> SERIAL(summoned);
   int SERIAL(ttl);
   SERIALIZE_ALL(summoned, ttl)
 };
 struct Filter {
-  EFFECT_TYPE_INTERFACE;
   bool applies(const Creature* c, const Creature* attacker) const;
   FilterType SERIAL(filter);
   HeapAllocated<Effect> SERIAL(effect);
   SERIALIZE_ALL(filter, effect)
 };
 struct FilterLasting {
-  EFFECT_TYPE_INTERFACE;
   bool applies(const Creature* c, const Creature* attacker) const;
   LastingEffect SERIAL(filter_effect);
   HeapAllocated<Effect> SERIAL(effect);
@@ -222,49 +188,40 @@ struct FilterLasting {
 };
 SIMPLE_EFFECT(Wish);
 struct Caster {
-  EFFECT_TYPE_INTERFACE;
   HeapAllocated<Effect> SERIAL(effect);
   SERIALIZE_ALL(effect)
 };
 struct Chain {
-  EFFECT_TYPE_INTERFACE;
   vector<Effect> SERIAL(effects);
   SERIALIZE_ALL(effects)
 };
 struct ChooseRandom {
-  EFFECT_TYPE_INTERFACE;
   vector<Effect> SERIAL(effects);
   SERIALIZE_ALL(effects)
 };
 struct Message {
-  EFFECT_TYPE_INTERFACE;
   string SERIAL(text);
   SERIALIZE_ALL(text)
 };
 struct CreatureMessage {
-  EFFECT_TYPE_INTERFACE;
   string SERIAL(secondPerson);
   string SERIAL(thirdPerson);
   SERIALIZE_ALL(secondPerson, thirdPerson)
 };
 struct PlayerMessage {
-  EFFECT_TYPE_INTERFACE;
   string SERIAL(text);
   MessagePriority SERIAL(priority);
   SERIALIZE_ALL(text, priority)
 };
 struct GrantAbility {
-  EFFECT_TYPE_INTERFACE;
   SpellId SERIAL(id);
   SERIALIZE_ALL(id)
 };
 struct IncreaseMorale {
-  EFFECT_TYPE_INTERFACE;
   double SERIAL(amount);
   SERIALIZE_ALL(amount)
 };
 struct GenericModifierEffect {
-  EFFECT_TYPE_INTERFACE;
   HeapAllocated<Effect> SERIAL(effect);
   SERIALIZE_ALL(effect)
 };
@@ -275,45 +232,37 @@ struct Chance : GenericModifierEffect {
 };
 SIMPLE_EFFECT(TriggerTrap);
 struct AnimateItems {
-  EFFECT_TYPE_INTERFACE;
   int SERIAL(maxCount);
   int SERIAL(radius);
   Range SERIAL(time);
   SERIALIZE_ALL(maxCount, radius, time)
 };
 struct DropItems {
-  EFFECT_TYPE_INTERFACE;
   ItemType SERIAL(type);
   Range SERIAL(count);
   SERIALIZE_ALL(type, count)
 };
 struct SoundEffect {
-  EFFECT_TYPE_INTERFACE;
   Sound SERIAL(sound);
   SERIALIZE_ALL(sound)
 };
 struct Audience {
-  EFFECT_TYPE_INTERFACE;
   optional<int> SERIAL(maxDistance);
   SERIALIZE_ALL(maxDistance)
 };
 struct FirstSuccessful {
-  EFFECT_TYPE_INTERFACE;
   vector<Effect> SERIAL(effects);
   SERIALIZE_ALL(effects)
 };
 struct ChainFirstResult {
-  EFFECT_TYPE_INTERFACE;
   vector<Effect> SERIAL(effects);
   SERIALIZE_ALL(effects)
 };
 struct ColorVariant {
-  EFFECT_TYPE_INTERFACE;
   Color SERIAL(color);
   SERIALIZE_ALL(color)
 };
 struct Fx {
-  EFFECT_TYPE_INTERFACE;
   FXInfo SERIAL(info);
   SERIALIZE_ALL(info)
 };

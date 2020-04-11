@@ -1766,7 +1766,7 @@ EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const
         }
         return EffectAIIntent::NONE;
       },
-      [&] (const Effects::DefaultEffect&) { return EffectAIIntent::NONE; }
+      [&] (const DefaultType&) { return EffectAIIntent::NONE; }
   );
 }
 
@@ -1785,7 +1785,7 @@ static optional<ViewId> getProjectile(LastingEffect effect) {
 }
 optional<FXInfo> Effect::getProjectileFX() const {
   return effect->visit<optional<FXInfo>>(
-      [&](const Effects::DefaultEffect&) { return none; },
+      [&](const DefaultType&) { return none; },
       [&](const Effects::Lasting& e) -> optional<FXInfo> { return ::getProjectileFX(e.lastingEffect); },
       [&](const Effects::Damage&) -> optional<FXInfo> { return {FXName::MAGIC_MISSILE}; },
       [&](const Effects::Blast&) -> optional<FXInfo> { return {FXName::AIR_BLAST}; },
@@ -1797,7 +1797,7 @@ optional<FXInfo> Effect::getProjectileFX() const {
 }
 optional<ViewId> Effect::getProjectile() const {
   return effect->visit<optional<ViewId>>(
-      [&](const Effects::DefaultEffect&) -> optional<ViewId> { return none; },
+      [&](const DefaultType&) -> optional<ViewId> { return none; },
       [&](const Effects::Lasting& e) -> optional<ViewId> { return ::getProjectile(e.lastingEffect); },
       [&](const Effects::Damage&) -> optional<ViewId> { return ViewId("force_bolt"); },
       [&](const Effects::Fire&) -> optional<ViewId> { return ViewId("fireball"); },
@@ -1861,7 +1861,7 @@ optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
       [&](const Effects::Lasting& e) -> optional<MinionEquipmentType> {
         return MinionEquipmentType::COMBAT_ITEM;
       },
-      [&](const Effects::DefaultEffect&) -> optional<MinionEquipmentType> { return none; }
+      [&](const DefaultType&) -> optional<MinionEquipmentType> { return none; }
   );
 }
 
@@ -1878,7 +1878,7 @@ bool Effect::canAutoAssignMinionEquipment() const {
             return false;
         return true;
       },
-      [&](const Effects::DefaultEffect&) { return true; }
+      [&](const DefaultType&) { return true; }
   );
 }
 
