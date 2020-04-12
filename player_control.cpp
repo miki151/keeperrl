@@ -654,35 +654,11 @@ vector<Button> PlayerControl::fillButtons() const {
               (elem.noCredit && !availableNow) ?
                  CollectiveInfo::Button::GRAY_CLICKABLE : CollectiveInfo::Button::ACTIVE });
           },
-        [&](const BuildInfoTypes::Dig&) {
-          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
-        },
-        [&](const BuildInfoTypes::ImmediateDig&) {
-          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
-        },
-        [&](ZoneId) {
-          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
-        },
-        [&](BuildInfoTypes::ClaimTile) {
-          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
-        },
-        [&](BuildInfoTypes::Dispatch) {
+        [&](const auto&) {
           buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](const BuildInfoTypes::Trap& elem) {
           buttons.push_back({elem.viewId, button.name, none});
-        },
-        [&](const BuildInfoTypes::DestroyLayers&) {
-           buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
-        },
-        [&](BuildInfoTypes::ForbidZone) {
-          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
-        },
-        [&](BuildInfoTypes::PlaceMinion) {
-          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
-        },
-        [&](BuildInfoTypes::PlaceItem) {
-          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         }
     );
     vector<string> unmetReqText;
