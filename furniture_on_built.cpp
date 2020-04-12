@@ -82,15 +82,6 @@ static LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* content
   return getLevelMaker(zLevel, res, tribe, stairKey, contentFactory);
 }
 
-static void removeOldStairs(Level* level, StairKey stairKey) {
-  for (auto pos : level->getAllPositions())
-    if (pos.getLandingLink() == stairKey) {
-      pos.removeLandingLink();
-      pos.removeFurniture(FurnitureLayer::MIDDLE);
-      pos.getGame()->getPlayerControl()->addToMemory(pos);
-    }
-}
-
 struct ZLevelResult {
   WLevel level;
   PCollective collective;

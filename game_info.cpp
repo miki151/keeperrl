@@ -154,16 +154,6 @@ SpellSchoolInfo fillSpellSchool(const Creature* c, SpellSchoolId id, const Conte
   return ret;
 }
 
-static string getOrdinal(int index) {
-  switch (index) {
-    case 1: return "first";
-    case 2: return "second";
-    case 3: return "third";
-    default:
-      return toString(index) + "th";
-  }
-}
-
 void fillInstalledPartDescription(const ContentFactory* factory, ItemInfo& info, const AutomatonPart& part) {
   info.description.push_back(part.effect.getDescription(factory));
 }

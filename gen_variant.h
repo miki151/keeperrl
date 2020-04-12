@@ -21,7 +21,7 @@ struct VARIANT_NAME {
   VARIANT_TYPES_LIST
 #undef X
 
-  template<typename RetType, typename... Fs>
+  template<typename RetType = void, typename... Fs>
   RetType visit(Fs... fs) const {
     auto f = variant_helpers::LambdaVisitor<Fs...>(fs...);
     switch (index) {

@@ -848,16 +848,6 @@ static bool apply(const Effects::ReviveCorpse& effect, Position pos, Creature* a
   return false;
 }
 
-static PCreature getBestSpirit(const Model* model, TribeId tribe) {
-  auto& factory = model->getGame()->getContentFactory()->getCreatures();
-  for (auto id : Random.permutation(factory.getAllCreatures())) {
-    auto orig = factory.fromId(id, tribe);
-    if (orig->getBody().hasBrain())
-      return orig;
-  }
-  return nullptr;
-}
-
 static string getName(const Effects::EmitPoisonGas&, const ContentFactory*) {
   return "poison gas";
 }
@@ -1055,20 +1045,8 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::RegrowBodyPart&, co
   return EffectAIIntent::NONE;
 }
 
-static string getName(const Effects::Area& e, const ContentFactory* f) {
-  return e.effect->getName(f);
-}
-
 static string getDescription(const Effects::Area& e, const ContentFactory* factory) {
   return "Area effect of radius " + toString(e.radius) + ": " + noCapitalFirst(e.effect->getDescription(factory));
-}
-
-static bool canAutoAssignMinionEquipment(const Effects::Area& a) {
-  return a.effect->canAutoAssignMinionEquipment();
-}
-
-static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Area& a) {
-  return a.effect->getMinionEquipmentType();
 }
 
 static bool apply(const Effects::Area& area, Position pos, Creature* attacker) {
@@ -1859,16 +1837,19 @@ static bool isConsideredHostile(const T&, const Creature*) {
 
 template <typename T, REQUIRE(applyToCreature(TVALUE(const T&), TVALUE(Creature*), TVALUE(Creature*)))>
 bool apply(const T& t, Position pos, Creature* attacker) {
-  if (auto c = pos.getCreature()) {
-    bool res = applyToCreature(t, c, attacker);
-    if (isConsideredHostile(t, c) && attacker)
-      c->onAttackedBy(attacker);
-    return res;
-  }
+  if (auto c = pos.getCreature())
+    return applyToCreature(t, c, attacker);
   return false;
 }
 
 bool Effect::apply(Position pos, Creature* attacker) const {
+  if (auto c = pos.getCreature()) {
+    if (attacker)
+      effect->visit([&](const auto& e) {
+        if (isConsideredHostile(e, c))
+          c->onAttackedBy(attacker);
+      });
+  }
   return effect->visit<bool>([&](const auto& e) { return ::apply(e, pos, attacker); });
 }
 
@@ -1932,7 +1913,7 @@ vector<Effect> Effect::getWishedForEffects() {
        Effect(Effects::Ice{}),
        Effect(Effects::Fire{}),
        Effect(Effects::DestroyEquipment{}),
-       Effect(Effects::Area{2,  Effects::DestroyWalls{DestroyAction::Type::BOULDER}}),
+       Effect(Effects::Area{2, Effect(Effects::DestroyWalls{DestroyAction::Type::BOULDER})}),
        Effect(Effects::Enhance{ItemUpgradeType::WEAPON, 2}),
        Effect(Effects::Enhance{ItemUpgradeType::ARMOR, 2}),
        Effect(Effects::Enhance{ItemUpgradeType::WEAPON, -2}),

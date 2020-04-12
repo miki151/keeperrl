@@ -145,16 +145,20 @@ struct AddBodyPart {
   SERIALIZE_ALL(part, count, attack)
 };
 SIMPLE_EFFECT(MakeHumanoid);
-struct Area {
-  int SERIAL(radius);
+struct GenericModifierEffect {
   HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(radius, effect)
+  SERIALIZE_ALL(effect)
 };
-struct CustomArea {
-  HeapAllocated<Effect> SERIAL(effect);
+struct Area : GenericModifierEffect {
+  Area() {}
+  Area(int r, Effect e) : GenericModifierEffect{std::move(e)}, radius(r) {}
+  int SERIAL(radius);
+  SERIALIZE_ALL(radius, SUBCLASS(GenericModifierEffect))
+};
+struct CustomArea : GenericModifierEffect {
   vector<Vec2> SERIAL(positions);
   vector<Position> getTargetPos(const Creature* attacker, Position targetPos) const;
-  SERIALIZE_ALL(effect, positions)
+  SERIALIZE_ALL(SUBCLASS(GenericModifierEffect), positions)
 };
 struct RegrowBodyPart {
   int SERIAL(maxCount);
@@ -218,10 +222,6 @@ struct GrantAbility {
 struct IncreaseMorale {
   double SERIAL(amount);
   SERIALIZE_ALL(amount)
-};
-struct GenericModifierEffect {
-  HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(effect)
 };
 struct Chance : GenericModifierEffect {
   double SERIAL(value);
