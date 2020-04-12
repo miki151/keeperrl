@@ -4,8 +4,11 @@
 
   "structure"
   {
-    { Dig                                                      "Dig or cut tree"   "Structure"  
+    { Chain { Dig CutTree }                                        "Dig or cut tree"   "Structure"  
       "" d {} true DIG_OR_CUT_TREES}
+# If you want you can use "just dig" or "just cut tree" in your mod
+#    { Dig                                                          "Dig"   "Structure" }
+#    { CutTree                                                      "Cut tree"   "Structure" }
     { Furniture {{ "MOUNTAIN" }                   "STONE" 5 }      "Soft rock"         "Structure" }
     { Furniture {{ "MOUNTAIN2" }                  "STONE" 10 }     "Hard rock"         "Structure" }
 

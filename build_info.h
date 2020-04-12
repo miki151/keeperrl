@@ -29,24 +29,29 @@ namespace BuildInfoTypes {
   using DestroyLayers = vector<FurnitureLayer>;
   using ImmediateDig = EmptyStruct<struct ImmediateDigTag>;
   using Dig = EmptyStruct<struct DigTag>;
+  using CutTree = EmptyStruct<struct CutTreeTag>;
   using ClaimTile = EmptyStruct<struct ClaimTileTag>;
   using Dispatch = EmptyStruct<struct DispatchTag>;
   using ForbidZone = EmptyStruct<struct ForbidZoneTag>;
   using Zone = ZoneId;
   using PlaceMinion = EmptyStruct<struct PlaceMinionTag>;
   using PlaceItem = EmptyStruct<struct PlaceItemTag>;
+  struct BuildType;
+  using Chain = vector<BuildType>;
   #define VARIANT_TYPES_LIST\
     X(Furniture, 0)\
     X(Trap, 1)\
     X(Zone, 2)\
     X(DestroyLayers, 3)\
     X(Dig, 4)\
-    X(ClaimTile, 5)\
+    X(CutTree, 5)\
     X(Dispatch, 6)\
     X(ForbidZone, 7)\
     X(PlaceMinion, 8)\
     X(ImmediateDig, 9)\
-    X(PlaceItem, 10)
+    X(PlaceItem, 10)\
+    X(ClaimTile, 11)\
+    X(Chain, 12)
 
   #define VARIANT_NAME BuildType
 

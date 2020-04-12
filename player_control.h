@@ -50,6 +50,9 @@ class UnknownLocations;
 class AttackTrigger;
 class ImmigrantInfo;
 struct WorkshopOptionInfo;
+namespace BuildInfoTypes {
+  struct BuildType;
+}
 class PlayerControl : public CreatureView, public CollectiveControl, public EventListener<PlayerControl> {
   public:
   static PPlayerControl create(Collective* col, vector<string> introText, TribeAlignment);
@@ -151,6 +154,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void setScrollPos(Position);
 
   void handleSelection(Vec2 pos, const BuildInfo&, bool rectangle, bool deselectOnly = false);
+  void handleSelection(Position, const BuildInfoTypes::BuildType&);
   vector<CollectiveInfo::Button> fillButtons() const;
   VillageInfo::Village getVillageInfo(const Collective* enemy) const;
   string getTriggerLabel(const AttackTrigger&) const;
@@ -267,7 +271,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   optional<pair<ViewId,int>> getCostObj(CostInfo) const;
   optional<pair<ViewId,int>> getCostObj(const optional<CostInfo>&) const;
   vector<WorkshopOptionInfo> getWorkshopOptions() const;
-  ViewId getViewId(const BuildInfo&) const;
+  ViewId getViewId(const BuildInfoTypes::BuildType&) const;
   EntityMap<Creature, LocalTime> leaderWoundedTime;
+  void handleDestructionOrder(Position position, HighlightType, DestroyAction);
 };
 

@@ -594,13 +594,19 @@ string PlayerControl::getMinionName(CreatureId id) const {
   return names.at(id);
 }
 
-ViewId PlayerControl::getViewId(const BuildInfo& info) const {
-  return info.type.visit<ViewId>(
+ViewId PlayerControl::getViewId(const BuildInfoTypes::BuildType& info) const {
+  return info.visit<ViewId>(
       [&](const BuildInfoTypes::Furniture& elem) {
         return getGame()->getContentFactory()->furniture.getData(elem.types[0]).getViewObject()->id();
       },
       [&](const BuildInfoTypes::Dig&) {
         return ViewId("dig_icon");
+      },
+      [&](const BuildInfoTypes::CutTree&) {
+        return ViewId("dig_icon");
+      },
+      [&](const BuildInfoTypes::Chain& c) {
+        return getViewId(c[0]);
       },
       [&](const BuildInfoTypes::ImmediateDig&) {
         return ViewId("dig_icon");
@@ -648,14 +654,14 @@ vector<Button> PlayerControl::fillButtons() const {
           int availableNow = !elem.cost.value ? 1 : collective->numResource(elem.cost.id) / elem.cost.value;
           if (!collective->getResourceInfo(elem.cost.id).viewId && availableNow)
             description += " (" + toString(availableNow) + " available)";
-          buttons.push_back({getViewId(button), button.name,
+          buttons.push_back({getViewId(button.type), button.name,
               getCostObj(elem.cost),
               description,
               (elem.noCredit && !availableNow) ?
                  CollectiveInfo::Button::GRAY_CLICKABLE : CollectiveInfo::Button::ACTIVE });
           },
         [&](const auto&) {
-          buttons.push_back({getViewId(button), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({getViewId(button.type), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](const BuildInfoTypes::Trap& elem) {
           buttons.push_back({elem.viewId, button.name, none});
@@ -1036,7 +1042,7 @@ void PlayerControl::fillTechUnlocks(CollectiveInfo::LibraryInfo::TechInfo& techI
   for (auto& elem : buildInfo)
     for (auto& r : elem.requirements)
       if (r == tech)
-        techInfo.unlocks.push_back({getViewId(elem), elem.name, "constructions"});
+        techInfo.unlocks.push_back({getViewId(elem.type), elem.name, "constructions"});
   for (auto& workshop : collective->getWorkshops().types)
     for (auto& option : workshop.second.getOptions())
       if (option.techId == tech)
@@ -2559,6 +2565,24 @@ void PlayerControl::updateSelectionSquares() {
       Position(v, getCurrentLevel()).setNeedsRenderUpdate(true);
 }
 
+void PlayerControl::handleDestructionOrder(Position position, HighlightType highlightType,
+    DestroyAction destructionType) {
+  bool markedToDig = collective->isMarked(position) && collective->getMarkHighlight(position) == highlightType;
+  if (markedToDig && selection != SELECT) {
+    collective->cancelMarkedTask(position);
+    getView()->addSound(SoundId::DIG_UNMARK);
+    selection = DESELECT;
+  } else
+  if (!markedToDig && selection != DESELECT) {
+    if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE))
+      if (furniture->canDestroy(destructionType)) {
+        collective->orderDestruction(position, destructionType);
+        getView()->addSound(SoundId::DIG_MARK);
+        selection = SELECT;
+      }
+  }
+}
+
 void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool rectangle, bool deselectOnly) {
   PROFILE;
   Position position(pos, getCurrentLevel());
@@ -2569,7 +2593,11 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
     return;
   if (!deselectOnly && rectangle && !building.canSelectRectangle())
     return;
-  building.type.visit<void>(
+  handleSelection(position, building.type);
+}
+
+void PlayerControl::handleSelection(Position position, const BuildInfoTypes::BuildType& building) {
+  building.visit<void>(
     [&](const BuildInfoTypes::Trap& trap) {
       if (collective->getConstructions().getTrap(position) && selection != SELECT) {
         collective->removeTrap(position);
@@ -2601,7 +2629,7 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
           if (auto error = PrettyPrinting::parseObject(item, *input))
             getView()->presentText("Sorry", "Couldn't parse \"" + *input + "\": " + *error);
           else {
-              position.dropItems(item.get(*num, getGame()->getContentFactory()));
+            position.dropItems(item.get(*num, getGame()->getContentFactory()));
           }
         }
     },
@@ -2637,25 +2665,15 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
         selection = SELECT;
       }
     },
+    [&](const BuildInfoTypes::CutTree&) {
+      handleDestructionOrder(position, HighlightType::CUT_TREE, DestroyAction::Type::CUT);
+    },
     [&](const BuildInfoTypes::Dig&) {
-      bool markedToDig = collective->isMarked(position) &&
-          (collective->getMarkHighlight(position) == HighlightType::DIG ||
-           collective->getMarkHighlight(position) == HighlightType::CUT_TREE);
-      if (markedToDig && selection != SELECT) {
-        collective->cancelMarkedTask(position);
-        getView()->addSound(SoundId::DIG_UNMARK);
-        selection = DESELECT;
-      } else
-      if (!markedToDig && selection != DESELECT) {
-        if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE))
-          for (auto type : {DestroyAction::Type::CUT, DestroyAction::Type::DIG})
-            if (furniture->canDestroy(type)) {
-              collective->orderDestruction(position, type);
-              getView()->addSound(SoundId::DIG_MARK);
-              selection = SELECT;
-              break;
-            }
-      }
+      handleDestructionOrder(position, HighlightType::DIG, DestroyAction::Type::DIG);
+    },
+    [&](const BuildInfoTypes::Chain& c) {
+      for (auto& elem : c)
+        handleSelection(position, elem);
     },
     [&](ZoneId zone) {
       auto& zones = collective->getZones();
