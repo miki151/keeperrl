@@ -44,6 +44,8 @@ class Inventory {
   const vector<Item*>& getItemsByIngrType(string ingredientType) const;
   const ItemCounts& getCounts() const;
 
+  void updateIngrTypes() const;
+
   bool hasItem(const Item*) const;
   bool hasIngredient(string ingredientType) const;
   Item* getItemById(UniqueEntity<Item>::Id) const;

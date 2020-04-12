@@ -77,9 +77,6 @@ PItem Inventory::removeItem(Item* itemRef) {
   }
   if (auto ingredientType = item->getIngredientType()) {
     ingredientTypes[*ingredientType]->remove(itemRef->getUniqueId());
-    if (ingredientTypes[*ingredientType]->isEmpty()) {
-      ingredientTypes.erase(*ingredientType);
-    }
   }
   return item;
 }
@@ -155,6 +152,18 @@ const vector<Item*>& Inventory::getItems() const {
   return itemsCache.getElems();
 }
 
+// Should be called only if ingredientTypes haven't been loaded(perhaps due to deserialization)
+void Inventory::updateIngrTypes() const {
+  for (auto& item : getItems()) {
+    if (auto ingredientType = item->getIngredientType()) {
+      if (!ingredientTypes[*ingredientType]) {
+        ingredientTypes[*ingredientType].emplace();
+      }
+      ingredientTypes[*ingredientType]->insert(item);
+    }
+  }
+}
+
 const vector<Item*>& Inventory::getItemsByIngrType(string ingredientType) const {
   static vector<Item*> empty;;
   if (isEmpty()) {
@@ -164,6 +173,12 @@ const vector<Item*>& Inventory::getItemsByIngrType(string ingredientType) const 
   if (elems != ingredientTypes.end()) {
     return elems->second->getElems();
   }
+  else {
+    // Instantinates an empty vector, this is how we know that we already checked for this
+    // ingr type, and it is (currently) absent.
+    ingredientTypes[ingredientType].emplace();
+    updateIngrTypes();
+  }
   return empty;
 }
 
@@ -172,6 +187,10 @@ bool Inventory::hasItem(const Item* itemRef) const {
 }
 
 bool Inventory::hasIngredient(string ingredientType) const {
+  if (ingredientTypes.find(ingredientType) == ingredientTypes.end()) {
+    ingredientTypes[ingredientType].emplace();
+    updateIngrTypes();
+  }
   return ingredientTypes.count(ingredientType) > 0;
 }
 
