@@ -6,7 +6,7 @@
 #include "item.h"
 
 static bool apply(const CreaturePredicates::Enemy&, const Creature* victim, const Creature* attacker) {
-  return victim->isEnemy(attacker);
+  return !!attacker && victim->isEnemy(attacker);
 }
 
 static string getName(const CreaturePredicates::Enemy&) {
@@ -35,6 +35,14 @@ static bool apply(const CreaturePredicates::HatedBy& p, const Creature* victim, 
 
 static string getName(const CreaturePredicates::HatedBy& p) {
   return LastingEffects::getHatedGroupName(p.effect);
+}
+
+static bool apply(const CreaturePredicates::Attacker& p, const Creature* victim, const Creature* attacker) {
+  return !!attacker && p.pred->apply(attacker, attacker);
+}
+
+static string getName(const CreaturePredicates::Attacker& p) {
+  return p.pred->getName();
 }
 
 static bool apply(const CreaturePredicates::Not& p, const Creature* victim, const Creature* attacker) {
