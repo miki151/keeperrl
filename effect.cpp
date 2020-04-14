@@ -1684,48 +1684,6 @@ static bool apply(const Effects::Fx& fx, Position pos, Creature*) {
   return true;
 }
 
-bool Effects::FilterLasting::applies(const Creature* c, const Creature*) const {
-  return !!c && c->isAffected(filter_effect);
-}
-
-static bool applyToCreature(const Effects::FilterLasting& e, Creature* c, Creature* attacker) {
-  return e.applies(c, attacker) && e.effect->apply(c->getPosition(), attacker);
-}
-
-static bool canAutoAssignMinionEquipment(const Effects::FilterLasting& f) {
-  return f.effect->canAutoAssignMinionEquipment();
-}
-
-static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::FilterLasting& f) {
-  return f.effect->getMinionEquipmentType();
-}
-
-static optional<FXInfo> getProjectileFX(const Effects::FilterLasting& e) {
-  return e.effect->getProjectileFX();
-}
-
-static optional<ViewId> getProjectile(const Effects::FilterLasting& e) {
-  return e.effect->getProjectile();
-}
-
-static EffectAIIntent shouldAIApply(const Effects::FilterLasting& e, const Creature* caster, Position pos) {
-  auto victim = pos.getCreature();
-  if (victim && e.applies(victim, caster))
-    return e.effect->shouldAIApply(caster, pos);
-  return EffectAIIntent::NONE;
-}
-
-static string getName(const Effects::FilterLasting& e, const ContentFactory* f) {
-  return e.effect->getName(f) + " (" + LastingEffects::getName(e.filter_effect) + " creatures only)";
-}
-
-static string getDescription(const Effects::FilterLasting& e, const ContentFactory* f) {
-  auto suffix = [&] {
-    return " (applied only to creatures with " + LastingEffects::getName(e.filter_effect) + " effect)";
-  };
-  return e.effect->getDescription(f) + suffix();
-}
-
 static bool canAutoAssignMinionEquipment(const Effects::Filter& f) {
   return f.effect->canAutoAssignMinionEquipment();
 }

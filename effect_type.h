@@ -183,12 +183,6 @@ struct Filter : GenericModifierEffect {
   CreaturePredicate SERIAL(predicate);
   SERIALIZE_ALL(predicate, SUBCLASS(GenericModifierEffect))
 };
-struct FilterLasting {
-  bool applies(const Creature* c, const Creature* attacker) const;
-  LastingEffect SERIAL(filter_effect);
-  HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(filter_effect, effect)
-};
 SIMPLE_EFFECT(Wish);
 struct Caster {
   HeapAllocated<Effect> SERIAL(effect);
@@ -338,8 +332,7 @@ struct AITargetEnemy : GenericModifierEffect {
   X(AITargetEnemy, 63)\
   X(IncreaseSkill, 64)\
   X(IncreaseWorkshopSkill, 65)\
-  X(FilterLasting, 66)\
-  X(AddAutomatonParts, 67)
+  X(AddAutomatonParts, 66)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
