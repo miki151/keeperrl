@@ -1430,6 +1430,7 @@ bool Creature::affectByFire(double amount) {
       verb("burn", "burns", "to death");
       dieWithReason("burnt to death");
     }
+    addEffect(LastingEffect::ON_FIRE, 100_visible);
     return true;
   }
   return addEffect(LastingEffect::ON_FIRE, 100_visible);
