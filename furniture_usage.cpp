@@ -133,12 +133,6 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, const Furnitu
       case BuiltinUsageId::KEEPER_BOARD:
         c->getGame()->handleMessageBoard(pos, c);
         break;
-      case BuiltinUsageId::STAIRS:
-        if (auto link = pos.getLandingLink())
-          c->getLevel()->changeLevel(*link, c);
-        else
-          c->message("These stairs don't lead anywhere.");
-        break;
       case BuiltinUsageId::TIE_UP:
         c->addEffect(LastingEffect::TIED_UP, 100_visible);
         break;
@@ -177,7 +171,6 @@ string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitur
   return type.visit(
       [&] (BuiltinUsageId id) {
         switch (id) {
-          case BuiltinUsageId::STAIRS: return "use " + furnitureName;
           case BuiltinUsageId::COFFIN:
           case BuiltinUsageId::VAMPIRE_COFFIN:
           case BuiltinUsageId::CHEST: return "open " + furnitureName;

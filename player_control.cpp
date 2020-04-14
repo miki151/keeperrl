@@ -2743,8 +2743,8 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
 
 void PlayerControl::onSquareClick(Position pos) {
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
-    if (furniture->hasUsageType(BuiltinUsageId::STAIRS)) {
-      auto otherLevel = getModel()->getLinkedLevel(pos.getLevel(), *pos.getLandingLink());
+    if (auto link = pos.getLandingLink()) {
+      auto otherLevel = getModel()->getLinkedLevel(pos.getLevel(), *link);
       if (getModel()->getMainLevels().contains(otherLevel)) {
         currentLevel = otherLevel;
         getView()->updateView(this, false);

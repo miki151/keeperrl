@@ -172,6 +172,7 @@ SIMPLE_EFFECT(Blast);
 SIMPLE_EFFECT(Pull);
 SIMPLE_EFFECT(Shove);
 SIMPLE_EFFECT(SwapPosition);
+SIMPLE_EFFECT(Stairs);
 struct ReviveCorpse {
   vector<CreatureId> SERIAL(summoned);
   int SERIAL(ttl);
@@ -332,7 +333,8 @@ struct AITargetEnemy : GenericModifierEffect {
   X(AITargetEnemy, 63)\
   X(IncreaseSkill, 64)\
   X(IncreaseWorkshopSkill, 65)\
-  X(AddAutomatonParts, 66)
+  X(AddAutomatonParts, 66)\
+  X(Stairs, 67)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

@@ -1166,6 +1166,10 @@
     weight = 0.3
     wishedCount = { 5 10 }
   }
+"Key" inherit "Rock"
+  {
+    ingredientType = "key"
+  }
 "IronOre"
   {
     viewId = { "iron_rock" }

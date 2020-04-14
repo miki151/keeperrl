@@ -845,7 +845,7 @@
   viewId = { "up_staircase" }
   canHideHere = true
   xForgetAfterBuilding = true
-  usageType = BuiltinUsageId STAIRS
+  usageType = UsageEffect "use" Filter Ingredient "key" Stairs
 }
 "HIDDEN_UP_STAIRS" inherit "UP_STAIRS"
 {

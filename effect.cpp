@@ -1684,6 +1684,24 @@ static bool apply(const Effects::Fx& fx, Position pos, Creature*) {
   return true;
 }
 
+static string getName(const Effects::Stairs&, const ContentFactory*) {
+  return "stairs";
+}
+
+static string getDescription(const Effects::Stairs&, const ContentFactory*) {
+  return "Use the stairs";
+}
+
+static bool applyToCreature(const Effects::Stairs&, Creature* c, Creature* attacker) {
+  if (auto link = c->getPosition().getLandingLink()) {
+    c->getLevel()->changeLevel(*link, c);
+    return true;
+  } else {
+    c->message("These stairs don't lead anywhere.");
+    return false;
+  }
+}
+
 static bool canAutoAssignMinionEquipment(const Effects::Filter& f) {
   return f.effect->canAutoAssignMinionEquipment();
 }
