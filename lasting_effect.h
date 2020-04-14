@@ -126,4 +126,5 @@ class LastingEffects {
   static AttrType modifyMeleeDamageAttr(const Creature* attacker, AttrType);
   static TimeInterval getDuration(const Creature* c, LastingEffect);
   static void runTests();
+  static const char* getHatedGroupName(LastingEffect);
 };

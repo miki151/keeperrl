@@ -654,7 +654,7 @@ namespace {
   }
 }
 
-static const char* getHatedGroupName(LastingEffect effect) {
+const char* LastingEffects::getHatedGroupName(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::HATE_UNDEAD: return "undead";
     case LastingEffect::HATE_DWARVES: return "dwarves";
@@ -662,7 +662,8 @@ static const char* getHatedGroupName(LastingEffect effect) {
     case LastingEffect::HATE_ELVES: return "elves";
     case LastingEffect::HATE_GREENSKINS: return "greenskins";
     default:
-      return nullptr;
+      FATAL << "Bad hated group name " << EnumInfo<LastingEffect>::getString(effect);
+      fail();
   }
 }
 
@@ -670,7 +671,7 @@ static const vector<LastingEffect>& getHateEffects() {
   static vector<LastingEffect> ret = [] {
     vector<LastingEffect> ret;
     for (auto effect : ENUM_ALL(LastingEffect))
-      if (getHatedGroupName(effect))
+      if (LastingEffects::getHatedGroupName(effect))
         ret.push_back(effect);
     return ret;
   }();
@@ -751,7 +752,8 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::HATE_DWARVES:
     case LastingEffect::HATE_HUMANS:
     case LastingEffect::HATE_ELVES:
-    case LastingEffect::HATE_GREENSKINS: return Adjective{"Hates all "_s + getHatedGroupName(effect), true};
+    case LastingEffect::HATE_GREENSKINS:
+      return Adjective{"Hates all "_s + LastingEffects::getHatedGroupName(effect), true};
     case LastingEffect::SLOW_CRAFTING: return "Slow craftsman"_bad;
     case LastingEffect::SLOW_TRAINING: return "Slow trainee"_bad;
     case LastingEffect::BAD_BREATH: return "Smelly breath"_bad;
@@ -982,7 +984,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
             break;
           }
         if (hatedGroup)
-          jokeText.append(" about "_s + getHatedGroupName(*hatedGroup));
+          jokeText.append(" about "_s + LastingEffects::getHatedGroupName(*hatedGroup));
         c->verb("crack", "cracks", jokeText);
         for (auto other : others)
           if (other != c && !other->isAffected(LastingEffect::SLEEP)) {
@@ -1062,7 +1064,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::HATE_DWARVES:
     case LastingEffect::HATE_HUMANS:
     case LastingEffect::HATE_GREENSKINS:
-    case LastingEffect::HATE_ELVES: return "hate of "_s + getHatedGroupName(type);
+    case LastingEffect::HATE_ELVES: return "hate of "_s + LastingEffects::getHatedGroupName(type);
     case LastingEffect::FAST_CRAFTING: return "fast crafting";
     case LastingEffect::FAST_TRAINING: return "fast training";
     case LastingEffect::SLOW_CRAFTING: return "slow crafting";
@@ -1150,7 +1152,8 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::HATE_DWARVES:
     case LastingEffect::HATE_HUMANS:
     case LastingEffect::HATE_GREENSKINS:
-    case LastingEffect::HATE_ELVES: return "Makes the target hostile to all "_s + getHatedGroupName(type);
+    case LastingEffect::HATE_ELVES:
+      return "Makes the target hostile to all "_s + LastingEffects::getHatedGroupName(type);
     case LastingEffect::FAST_CRAFTING: return "Increases crafting speed.";
     case LastingEffect::FAST_TRAINING: return "Increases training and studying speed.";
     case LastingEffect::SLOW_CRAFTING: return "Decreases crafting speed.";

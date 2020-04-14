@@ -14,6 +14,10 @@ namespace CreaturePredicates {
 SIMPLE_PREDICATE(Enemy);
 SIMPLE_PREDICATE(Automaton);
 
+struct HatedBy {
+  LastingEffect SERIAL(effect);
+  SERIALIZE_ALL(effect)
+};
 
 struct Not {
   HeapAllocated<CreaturePredicate> SERIAL(pred);
@@ -34,9 +38,10 @@ struct Or {
   X(Enemy, 0)\
   X(Automaton, 1)\
   X(LastingEffect, 2)\
-  X(Not, 3)\
-  X(And, 4)\
-  X(Or, 5)
+  X(HatedBy, 3)\
+  X(Not, 4)\
+  X(And, 5)\
+  X(Or, 6)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

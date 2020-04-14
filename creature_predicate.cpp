@@ -27,6 +27,14 @@ static string getNameNegated(const CreaturePredicates::Automaton&) {
   return "non-automatons";
 }
 
+static bool apply(const CreaturePredicates::HatedBy& p, const Creature* victim, const Creature* attacker) {
+  return victim->getAttributes().getHatedByEffect() == p.effect;
+}
+
+static string getName(const CreaturePredicates::HatedBy& p) {
+  return LastingEffects::getHatedGroupName(p.effect);
+}
+
 static bool apply(const CreaturePredicates::Not& p, const Creature* victim, const Creature* attacker) {
   return !p.pred->apply(victim, attacker);
 }
