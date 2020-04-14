@@ -19,6 +19,11 @@ struct HatedBy {
   SERIALIZE_ALL(effect)
 };
 
+struct Ingredient {
+  string SERIAL(name);
+  SERIALIZE_ALL(name)
+};
+
 struct Not {
   HeapAllocated<CreaturePredicate> SERIAL(pred);
   SERIALIZE_ALL(pred)
@@ -39,9 +44,10 @@ struct Or {
   X(Automaton, 1)\
   X(LastingEffect, 2)\
   X(HatedBy, 3)\
-  X(Not, 4)\
-  X(And, 5)\
-  X(Or, 6)
+  X(Ingredient, 4)\
+  X(Not, 5)\
+  X(And, 6)\
+  X(Or, 7)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

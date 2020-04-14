@@ -2,6 +2,8 @@
 #include "pretty_archive.h"
 #include "creature.h"
 #include "creature_attributes.h"
+#include "equipment.h"
+#include "item.h"
 
 static bool apply(const CreaturePredicates::Enemy&, const Creature* victim, const Creature* attacker) {
   return victim->isEnemy(attacker);
@@ -45,6 +47,17 @@ static string getName(const CreaturePredicates::Not& p) {
 
 static string getNameNegated(const CreaturePredicates::Not& p) {
   return p.pred->getName();
+}
+
+static bool apply(const CreaturePredicates::Ingredient& e, const Creature* victim, const Creature* attacker) {
+  for (auto& item : victim->getEquipment().getItems(ItemIndex::RUNE))
+    if (item->getIngredientType() == e.name)
+      return true;
+  return false;
+}
+
+static string getName(const CreaturePredicates::Ingredient& e) {
+  return "holding " + e.name;
 }
 
 static bool apply(const LastingEffect& e, const Creature* victim, const Creature* attacker) {
