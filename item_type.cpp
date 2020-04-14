@@ -392,7 +392,8 @@ ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory*) const {
       i.itemClass = ItemClass::SCROLL;
       i.weight = 0.1;
       i.modifiers[AttrType::DAMAGE] = -10;
-      i.effect = Effect(Effects::Area{10, Effect(Effects::Filter{FilterType::ENEMY, Effects::IncreaseMorale{-0.1}})});
+      i.effect = Effect(Effects::Area{10,
+          Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::IncreaseMorale{-0.1})))});
       i.price = getEffectPrice(*i.effect);
       i.burnTime = 5;
       i.uses = 1;
@@ -408,7 +409,8 @@ ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory*) const 
       i.itemClass = ItemClass::SCROLL;
       i.weight = 0.1;
       i.modifiers[AttrType::DAMAGE] = -10;
-      i.effect = Effect(Effects::Area{10, Effect(Effects::Filter{FilterType::ENEMY, Effects::IncreaseMorale{-0.1}})});
+      i.effect = Effect(Effects::Area{10,
+          Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::IncreaseMorale{-0.1})))});
       i.price = getEffectPrice(*i.effect);
       i.burnTime = 5;
       i.uses = 1;

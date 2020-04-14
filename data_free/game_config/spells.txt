@@ -28,7 +28,7 @@
 "group healing"
 {
   symbol = "💕"
-  effect = Name "group healing" Area 2 Filter ALLY Heal FLESH
+  effect = Name "group healing" Area 2 Filter Not Enemy Heal FLESH
   cooldown = 50
   sound = SPELL_HEALING
 }
@@ -54,7 +54,7 @@
 "heal spirit group"
 {
   symbol = "✴✴"
-  effect = Name "heal spirit group" Area 2 Filter ALLY Heal SPIRIT
+  effect = Name "heal spirit group" Area 2 Filter Not Enemy Heal SPIRIT
   cooldown = 50
   sound = SPELL_HEALING
 }
@@ -295,14 +295,14 @@
 "bolster"
 {
   symbol = "🛡"
-  effect = Name "bolster" Area 1 Filter ALLY Lasting DEF_BONUS 
+  effect = Name "bolster" Area 1 Filter Not Enemy Lasting DEF_BONUS 
   cooldown = 70
   sound = SPELL_DEX_BONUS
 }
 "rally"
 {
   symbol = "💪"
-  effect = Name "rally" Area 1 Filter ALLY Lasting DAM_BONUS 
+  effect = Name "rally" Area 1 Filter Not Enemy Lasting DAM_BONUS 
   cooldown = 70
   sound = SPELL_DEX_BONUS
 }
@@ -409,7 +409,7 @@
 "black dragon blindness"
 {
   symbol = "🙈"
-  effect = Name "black dragon blindness" Area 30 Filter ENEMY Lasting BLIND
+  effect = Name "black dragon blindness" Area 30 Filter Enemy Lasting BLIND
   cooldown = 3
 }
 "grant wish"
@@ -486,7 +486,7 @@
 "repair automaton"
 {
   symbol = "🔧"
-  effect = Name "repair automaton" Filter AUTOMATON RegrowBodyPart 10
+  effect = Name "repair automaton" Filter Automaton RegrowBodyPart 10
   range = 1
   targetSelf = true
   cooldown = 15

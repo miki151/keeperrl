@@ -789,6 +789,16 @@ string combine(const vector<string>& adj, bool commasOnly) {
   return res;
 }
 
+string combine(const vector<string>& adj, const string& delimiter) {
+  string res;
+  for (auto& elem : adj) {
+    if (!res.empty())
+      res += delimiter;
+    res += elem;
+  }
+  return res;
+}
+
 bool hasSentenceEnding(const string& s) {
   return s.back() == '.' || s.back() == '?' || s.back() == '!' || s.back() == '\"';
 }

@@ -64,10 +64,12 @@
     typename int_<decltype(__VA_ARGS__)>::type = 0
 #define TVALUE(NAME) std::declval<NAME>()
 
+namespace {
 struct DefaultType {
   template <typename T>
   DefaultType(const T&) {}
 };
+}
 
 static bool isConsideredInDanger(const Creature* c) {
   if (auto intent = c->getLastCombatIntent())
@@ -1724,17 +1726,6 @@ static string getDescription(const Effects::FilterLasting& e, const ContentFacto
   return e.effect->getDescription(f) + suffix();
 }
 
-bool Effects::Filter::applies(const Creature* c, const Creature* attacker) const {
-  switch (filter) {
-    case FilterType::ALLY:
-      return !!c && !!attacker && !c->isEnemy(attacker);
-    case FilterType::ENEMY:
-      return !!c && !!attacker && c->isEnemy(attacker);
-    case FilterType::AUTOMATON:
-      return !!c && (c->getAttributes().getAutomatonSlots() > 0);
-  }
-}
-
 static bool canAutoAssignMinionEquipment(const Effects::Filter& f) {
   return f.effect->canAutoAssignMinionEquipment();
 }
@@ -1744,7 +1735,7 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Filte
 }
 
 static bool applyToCreature(const Effects::Filter& e, Creature* c, Creature* attacker) {
-  return e.applies(c, attacker) && e.effect->apply(c->getPosition(), attacker);
+  return e.predicate.apply(c, attacker) && e.effect->apply(c->getPosition(), attacker);
 }
 
 static optional<FXInfo> getProjectileFX(const Effects::Filter& e) {
@@ -1757,37 +1748,17 @@ static optional<ViewId> getProjectile(const Effects::Filter& e) {
 
 static EffectAIIntent shouldAIApply(const Effects::Filter& e, const Creature* caster, Position pos) {
   auto victim = pos.getCreature();
-  if (victim && e.applies(victim, caster))
+  if (victim && e.predicate.apply(victim, caster))
     return e.effect->shouldAIApply(caster, pos);
   return EffectAIIntent::NONE;
 }
 
 static string getName(const Effects::Filter& e, const ContentFactory* f) {
-  auto suffix = [&] {
-    switch (e.filter) {
-      case FilterType::ALLY:
-        return " (ally only)";
-      case FilterType::ENEMY:
-        return " (enemy only)";
-      case FilterType::AUTOMATON:
-        return " (automaton only)";
-    }
-  };
-  return e.effect->getName(f) + suffix();
+  return e.effect->getName(f) + " (" + e.predicate.getName() + ")";
 }
 
 static string getDescription(const Effects::Filter& e, const ContentFactory* f) {
-  auto suffix = [&] {
-    switch (e.filter) {
-      case FilterType::ALLY:
-        return " (applied only to allies)";
-      case FilterType::ENEMY:
-        return " (applied only to enemies)";
-      case FilterType::AUTOMATON:
-        return " (applied only to automatons)";
-    }
-  };
-  return e.effect->getDescription(f) + suffix();
+  return e.effect->getDescription(f) + " (applied only to " + e.predicate.getName() + ")";
 }
 
 static string getDescription(const Effects::Description& e, const ContentFactory*) {

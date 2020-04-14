@@ -1283,6 +1283,7 @@ string combineSentences(const vector<string>&);
 string lowercase(string s);
 
 string combine(const vector<string>& adj, bool commasOnly = false);
+string combine(const vector<string>& adj, const string& delimiter);
 
 string getPlural(const string& singular, const string& plural, int num);
 string getPlural(const string&, int num);

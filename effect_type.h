@@ -11,8 +11,7 @@
 #include "color.h"
 #include "fx_info.h"
 #include "workshop_type.h"
-
-RICH_ENUM(FilterType, ALLY, ENEMY, AUTOMATON);
+#include "creature_predicate.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -178,11 +177,11 @@ struct ReviveCorpse {
   int SERIAL(ttl);
   SERIALIZE_ALL(summoned, ttl)
 };
-struct Filter {
-  bool applies(const Creature* c, const Creature* attacker) const;
-  FilterType SERIAL(filter);
-  HeapAllocated<Effect> SERIAL(effect);
-  SERIALIZE_ALL(filter, effect)
+struct Filter : GenericModifierEffect {
+  Filter() {}
+  Filter(CreaturePredicate p, Effect e) : GenericModifierEffect{std::move(e)}, predicate(std::move(p)) {}
+  CreaturePredicate SERIAL(predicate);
+  SERIALIZE_ALL(predicate, SUBCLASS(GenericModifierEffect))
 };
 struct FilterLasting {
   bool applies(const Creature* c, const Creature* attacker) const;
