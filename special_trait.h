@@ -8,6 +8,8 @@
 #include "pretty_archive.h"
 #include "lasting_effect.h"
 #include "skill.h"
+#include "creature_predicate.h"
+#include "item_prefix.h"
 
 struct ExtraTraining {
   ExperienceType SERIAL(type);
@@ -51,9 +53,10 @@ struct Lasting {
   X(Lasting, 1)\
   X(WorkshopType, 2)\
   X(AttrBonus, 3)\
-  X(OneOfTraits, 4)\
-  X(ExtraBodyPart, 5)\
-  X(ExtraIntrinsicAttack, 6)
+  X(SpecialAttr, 4)\
+  X(OneOfTraits, 5)\
+  X(ExtraBodyPart, 6)\
+  X(ExtraIntrinsicAttack, 7)
 
 #define VARIANT_NAME SpecialTrait
 

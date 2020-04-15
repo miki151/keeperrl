@@ -1284,6 +1284,10 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
       [&] (const AttrBonus& t) {
         return TraitInfo{toStringWithSign(t.increase) + " " + getName(t.attr), t.increase <= 0};
       },
+      [&] (const SpecialAttr& t) {
+        return TraitInfo{toStringWithSign(t.value) + " " + ::getName(t.attr) + " against " + t.predicate.getName(),
+            t.value < 0};
+      },
       [&] (const Lasting& effect) {
         if (effect.time) {
           if (auto adj = LastingEffects::getGoodAdjective(effect.effect))

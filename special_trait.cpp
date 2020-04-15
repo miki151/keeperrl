@@ -29,6 +29,9 @@ void applySpecialTrait(GlobalTime globalTime, SpecialTrait trait, Creature* c, c
       [&] (const AttrBonus& t) {
         c->getAttributes().increaseBaseAttr(t.attr, t.increase);
       },
+      [&] (const SpecialAttr& t) {
+        c->getAttributes().specialAttr[t.attr] = make_pair(t.value, t.predicate);
+      },
       [&] (const Lasting& effect) {
         if (effect.time)
           c->addEffect(effect.effect, *effect.time, globalTime, false);
