@@ -661,7 +661,7 @@ vector<Button> PlayerControl::fillButtons() const {
                  CollectiveInfo::Button::GRAY_CLICKABLE : CollectiveInfo::Button::ACTIVE });
           },
         [&](const auto&) {
-          buttons.push_back({getViewId(button.type), button.name, none, "", CollectiveInfo::Button::ACTIVE});
+          buttons.push_back({this->getViewId(button.type), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](const BuildInfoTypes::Trap& elem) {
           buttons.push_back({elem.viewId, button.name, none});
