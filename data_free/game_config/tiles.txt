@@ -168,6 +168,9 @@
 { "automaton_head" ")" ColorId LIGHT_BROWN }
 { "automaton_legs" ")" ColorId LIGHT_BROWN }
 { "automaton_arms" ")" ColorId LIGHT_BROWN }
+{ "installed_head" ")" ColorId LIGHT_BROWN }
+{ "installed_legs" ")" ColorId LIGHT_BROWN }
+{ "installed_arms" ")" ColorId LIGHT_BROWN }
 { "elementalist" "@" ColorId YELLOW }
 { "air_elemental" "E" ColorId LIGHT_BLUE }
 { "fire_elemental" "E" ColorId RED }

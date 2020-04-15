@@ -1396,6 +1396,12 @@ void Creature::updateViewObject() {
   object.setDescription(getName().title());
   getPosition().setNeedsRenderUpdate(true);
   updateLastingFX(object);
+  object.partIds.clear();
+  for (auto& part : automatonParts)
+    if (part.installedId)
+      object.partIds.push_back(*part.installedId);
+  object.setModifier(ViewObject::Modifier::IMMOBILE,
+      attributes->getAutomatonSlots() > 0 && isAffected(LastingEffect::IMMOBILE));
 }
 
 double Creature::getMorale() const {

@@ -636,6 +636,8 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     move += movement;
     if (object.hasModifier(ViewObject::Modifier::FLYING))
       move.y += getFlyingMovement(size, curTimeReal);
+    if (object.hasModifier(ViewObject::Modifier::IMMOBILE))
+      move.y += 11;
     const auto& coord = tile.getSpriteCoord(dirs);
     if (!fxesAvailable() || !tile.getFX()) {
       if (tile.canMirror)
@@ -646,6 +648,11 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
         if (!tile.animated)
           colorVariant = object.id().getColor();
         renderer.drawTile(pos + move, coord, size, color, {}, colorVariant);
+        for (auto& id : object.partIds) {
+          auto& partTile = renderer.getTileSet().getTile(id, true);
+          const auto& partCoord = partTile.getSpriteCoord(dirs);
+          renderer.drawTile(pos + move, partCoord, size, color, {}, id.getColor());
+        }
       }
     }
     if (tile.hasAnyCorners()) {

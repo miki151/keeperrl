@@ -8,6 +8,7 @@
 struct AutomatonPart {
   string SERIAL(minionGroup);
   Effect SERIAL(effect);
+  optional<ViewId> SERIAL(installedId);
   ViewId SERIAL(viewId);
   string SERIAL(name);
   bool SERIAL(usesSlot) = true;

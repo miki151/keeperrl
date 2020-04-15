@@ -87,6 +87,7 @@ class ViewObject {
   SERIALIZATION_DECL(ViewObject)
 
   EnumSet<FXVariantName> particleEffects;
+  vector<ViewId> partIds;
 
   private:
   EnumSet<Modifier> SERIAL(modifiers);
