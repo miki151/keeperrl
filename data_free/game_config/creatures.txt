@@ -509,6 +509,7 @@
     name = {
       name = "ice demon"
     }
+    hatedByEffect = HATE_DEMONS
   }
 "DOPPLEGANGER"
   {
@@ -875,6 +876,7 @@
       firstNameGen = "DRAGON"
     }
     spells = { "healing" "deception" "haste" "cure poison" }
+    hatedByEffect = HATE_DRAGONS
     inventory = {
       { Simple "GoldPiece" 60 100 }
       { type = Glyph WEAPON VictimEffect 0.3 Lasting POISON chance = 0.3 }
@@ -914,6 +916,7 @@
       stackName = "dragon"
     }
     spells = { "healing" "deception" "haste" "cure poison" "fire breath" "fire trap" }
+    hatedByEffect = HATE_DRAGONS
     inventory = {
       { Simple "GoldPiece" 120 200 }
       { type = Glyph WEAPON VictimEffect 0.3 Fire chance = 0.3 }
@@ -953,6 +956,7 @@
       stackName = "dragon"
     }
     spells = { "healing" "haste" "cure poison" "black dragon blindness"}
+    hatedByEffect = HATE_DRAGONS
     inventory = {
       { Simple "GoldPiece" 120 200 }
       { type = Glyph WEAPON VictimEffect 0.3 Lasting BLIND chance = 1.0 }
@@ -987,6 +991,7 @@
       stackName = "dragon"
     }
     spells = { "healing" "haste" "cure poison" "ice cone"}
+    hatedByEffect = HATE_DRAGONS
     inventory = {
       { Simple "GoldPiece" 120 200 }
       { type = Glyph WEAPON VictimEffect 0.3 Lasting FROZEN chance = 1.0 }
@@ -1020,6 +1025,7 @@
       stackName = "dragon"
     }
     spells = { "healing" "haste" "cure poison" "acid stream"}
+    hatedByEffect = HATE_DRAGONS
     inventory = {
       { Simple "GoldPiece" 120 200 }
       { type = Glyph WEAPON VictimEffect 0.3 Acid chance = 0.1 }
