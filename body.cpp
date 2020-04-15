@@ -983,7 +983,7 @@ double Body::getHealth() const {
 }
 
 bool Body::hasBrain() const {
-  return material == Material::FLESH;
+  return material == Material::FLESH || material == Material::UNDEAD_FLESH;
 }
 
 bool Body::needsToEat() const {
