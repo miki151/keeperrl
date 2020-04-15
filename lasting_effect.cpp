@@ -665,8 +665,8 @@ const char* LastingEffects::getHatedGroupName(LastingEffect effect) {
     case LastingEffect::HATE_HUMANS: return "humans";
     case LastingEffect::HATE_ELVES: return "elves";
     case LastingEffect::HATE_GREENSKINS: return "greenskins";
-    case LastingEffect::HATE_DRAGONS: return "demons";
-    case LastingEffect::HATE_DEMONS: return "dragons";
+    case LastingEffect::HATE_DRAGONS: return "dragons";
+    case LastingEffect::HATE_DEMONS: return "demons";
     default:
       FATAL << "Bad hated group name " << EnumInfo<LastingEffect>::getString(effect);
       fail();
