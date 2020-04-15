@@ -902,14 +902,6 @@ bool Body::affectByPoisonGas(Creature* c, double amount) {
   return false;
 }
 
-bool Body::affectBySilver(Creature* c) {
-  if (isUndead()) {
-    c->you(MsgType::ARE, "hurt by the silver");
-    bleed(c, Random.getDouble(0.0, 0.15));
-  }
-  return health <= 0;
-}
-
 bool Body::affectByAcid(Creature* c) {
   c->you(MsgType::ARE, "hurt by the acid");
   bleed(c, 0.2);

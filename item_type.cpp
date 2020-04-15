@@ -304,9 +304,6 @@ static int getEffectPrice(Effect type) {
       [&](const Effects::Alarm&) {
         return 12;
       },
-      [&](const Effects::SilverDamage&) {
-        return 12;
-      },
       [&](const Effects::DestroyEquipment&) {
         return 12;
       },

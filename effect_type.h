@@ -77,7 +77,6 @@ struct Alarm {
   bool SERIAL(silent) = false;
   SERIALIZE_ALL(silent)
 };
-SIMPLE_EFFECT(SilverDamage);
 
 struct Lasting {
   LastingEffect SERIAL(lastingEffect);
@@ -283,7 +282,7 @@ struct AITargetEnemy : GenericModifierEffect {
   X(SummonElement, 13)\
   X(Acid, 14)\
   X(Alarm, 15)\
-  X(SilverDamage, 16)\
+  X(Stairs, 16)\
   X(DoubleTrouble, 17)\
   X(Lasting, 18)\
   X(RemoveLasting, 19)\
@@ -334,7 +333,6 @@ struct AITargetEnemy : GenericModifierEffect {
   X(IncreaseSkill, 64)\
   X(IncreaseWorkshopSkill, 65)\
   X(AddAutomatonParts, 66)\
-  X(Stairs, 67)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

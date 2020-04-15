@@ -81,7 +81,6 @@ class Body {
   bool affectByFire(Creature*, double amount);
   bool isIntrinsicallyAffected(LastingEffect) const;
   bool affectByPoisonGas(Creature*, double amount);
-  bool affectBySilver(Creature*);
   bool affectByAcid(Creature*);
   bool isKilledByBoulder() const;
   bool canWade() const;

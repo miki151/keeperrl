@@ -1455,13 +1455,6 @@ bool Creature::affectByIce(double amount) {
   return addEffect(LastingEffect::FROZEN, 5_visible);
 }
 
-void Creature::affectBySilver() {
-  if (getBody().affectBySilver(this)) {
-    you(MsgType::DIE_OF, "silver damage");
-    dieWithAttacker(lastAttacker);
-  }
-}
-
 bool Creature::affectByAcid() {
   if (!isAffected(LastingEffect::ACID_RESISTANT)) {
     if (getBody().affectByAcid(this)) {

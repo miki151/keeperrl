@@ -863,23 +863,6 @@ static bool apply(const Effects::EmitPoisonGas& m, Position pos, Creature*) {
   return true;
 }
 
-static bool applyToCreature(const Effects::SilverDamage&, Creature* c, Creature*) {
-  c->affectBySilver();
-  return c->getBody().isUndead();
-}
-
-static bool isConsideredHostile(const Effects::SilverDamage&, const Creature*) {
-  return true;
-}
-
-static string getName(const Effects::SilverDamage&, const ContentFactory*) {
-  return "silver";
-}
-
-static string getDescription(const Effects::SilverDamage&, const ContentFactory*) {
-  return "Hurts the undead.";
-}
-
 static string getName(const Effects::PlaceFurniture& e, const ContentFactory* c) {
   return c->furniture.getData(e.furniture).getName();
 }
@@ -1809,7 +1792,7 @@ string Effect::getDescription(const ContentFactory* f) const {
 }
 
 /* Unimplemented: Teleport, EnhanceArmor, EnhanceWeapon, Suicide, IncreaseAttr, IncreaseSkill, IncreaseWorkshopSkill
-      EmitPoisonGas, CircularBlast, Alarm, SilverDamage, DoubleTrouble,
+      EmitPoisonGas, CircularBlast, Alarm, DoubleTrouble,
       PlaceFurniture, InjureBodyPart, LooseBodyPart, RegrowBodyPart, DestroyWalls,
       ReviveCorpse, Blast, Shove, SwapPosition, AddAutomatonParts, AddBodyPart, MakeHumanoid */
 

@@ -230,7 +230,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool affectByFire(double amount);
   bool affectByIce(double amount);
   void poisonWithGas(double amount);
-  void affectBySilver();
   bool affectByAcid();
   void setHeld(Creature* holding);
   Creature* getHoldingCreature() const;

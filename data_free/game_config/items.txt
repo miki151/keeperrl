@@ -375,7 +375,7 @@
       attackType = CUT
     }
     genPrefixes = {
-      1 VictimEffect 1.0 SilverDamage
+      1 SpecialAttr DAMAGE 10 HatedBy HATE_UNDEAD
     }
   }
 "BattleAxe"
