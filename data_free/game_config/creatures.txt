@@ -509,7 +509,6 @@
     name = {
       name = "ice demon"
     }
-    hatedByEffect = HATE_DEMONS
   }
 "DOPPLEGANGER"
   {

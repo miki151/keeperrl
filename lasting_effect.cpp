@@ -243,7 +243,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::HATE_ELVES:
       case LastingEffect::HATE_UNDEAD:
       case LastingEffect::HATE_DWARVES:
-      case LastingEffect::HATE_DEMONS:
       case LastingEffect::HATE_DRAGONS:
         c->you(MsgType::FEEL, "full of hatred");
         break;
@@ -521,7 +520,6 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::HATE_ELVES:
       case LastingEffect::HATE_UNDEAD:
       case LastingEffect::HATE_DWARVES:
-      case LastingEffect::HATE_DEMONS:
       case LastingEffect::HATE_DRAGONS:
         c->you(MsgType::YOUR, "hatred is gone");
         break;
@@ -666,7 +664,6 @@ const char* LastingEffects::getHatedGroupName(LastingEffect effect) {
     case LastingEffect::HATE_ELVES: return "elves";
     case LastingEffect::HATE_GREENSKINS: return "greenskins";
     case LastingEffect::HATE_DRAGONS: return "dragons";
-    case LastingEffect::HATE_DEMONS: return "demons";
     default:
       FATAL << "Bad hated group name " << EnumInfo<LastingEffect>::getString(effect);
       fail();
@@ -759,7 +756,6 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::HATE_HUMANS:
     case LastingEffect::HATE_ELVES:
     case LastingEffect::HATE_GREENSKINS:
-    case LastingEffect::HATE_DEMONS:
     case LastingEffect::HATE_DRAGONS:
       return Adjective{"Hates all "_s + LastingEffects::getHatedGroupName(effect), true};
     case LastingEffect::SLOW_CRAFTING: return "Slow craftsman"_bad;
@@ -1072,7 +1068,6 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::HATE_DWARVES:
     case LastingEffect::HATE_HUMANS:
     case LastingEffect::HATE_GREENSKINS:
-    case LastingEffect::HATE_DEMONS:
     case LastingEffect::HATE_DRAGONS:
     case LastingEffect::HATE_ELVES: return "hate of "_s + LastingEffects::getHatedGroupName(type);
     case LastingEffect::FAST_CRAFTING: return "fast crafting";
@@ -1163,7 +1158,6 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::HATE_HUMANS:
     case LastingEffect::HATE_GREENSKINS:
     case LastingEffect::HATE_ELVES:
-    case LastingEffect::HATE_DEMONS:
     case LastingEffect::HATE_DRAGONS:
       return "Makes the target hostile to all "_s + LastingEffects::getHatedGroupName(type);
     case LastingEffect::FAST_CRAFTING: return "Increases crafting speed.";
@@ -1231,7 +1225,6 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::HATE_HUMANS:
     case LastingEffect::HATE_GREENSKINS:
     case LastingEffect::HATE_ELVES:
-    case LastingEffect::HATE_DEMONS:
     case LastingEffect::HATE_DRAGONS:
     case LastingEffect::PEACEFULNESS:
     case LastingEffect::HALLU:
