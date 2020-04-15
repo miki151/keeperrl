@@ -48,12 +48,13 @@ struct Or {
   X(Enemy, 0)\
   X(Automaton, 1)\
   X(LastingEffect, 2)\
-  X(HatedBy, 3)\
-  X(Ingredient, 4)\
-  X(Attacker, 5)\
-  X(Not, 6)\
-  X(And, 7)\
-  X(Or, 8)
+  X(CreatureStatus, 3)\
+  X(HatedBy, 4)\
+  X(Ingredient, 5)\
+  X(Attacker, 6)\
+  X(Not, 7)\
+  X(And, 8)\
+  X(Or, 9)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

@@ -5,6 +5,7 @@
 #include "equipment.h"
 #include "item.h"
 
+namespace Impl {
 static bool apply(const CreaturePredicates::Enemy&, const Creature* victim, const Creature* attacker) {
   return !!attacker && victim->isEnemy(attacker);
 }
@@ -68,12 +69,20 @@ static string getName(const CreaturePredicates::Ingredient& e) {
   return "holding " + e.name;
 }
 
-static bool apply(const LastingEffect& e, const Creature* victim, const Creature* attacker) {
+static bool apply(LastingEffect e, const Creature* victim, const Creature* attacker) {
   return victim->isAffected(e);
 }
 
 static string getName(LastingEffect e) {
   return "affected by " + LastingEffects::getName(e);
+}
+
+static bool apply(CreatureStatus s, const Creature* victim, const Creature* attacker) {
+  return victim->getStatus().contains(s);
+}
+
+static string getName(CreatureStatus s) {
+  return toLower(::getName(s)) + "s";
 }
 
 static bool apply(const CreaturePredicates::And& p, const Creature* victim, const Creature* attacker) {
@@ -98,20 +107,22 @@ static string getName(const CreaturePredicates::Or& p) {
   return combine(p.pred.transform([] (const auto& pred) { return pred.getName(); }), " or "_s);
 }
 
-bool CreaturePredicate::apply(const Creature* victim, const Creature* attacker) const {
-  return visit<bool>([&](const auto& p) { return ::apply(p, victim, attacker); });
-}
-
 template <typename T>
 static string getNameNegated(const T& p) {
-  return "not " + getName(p);
+  return "not " + Impl::getName(p);
+}
+
+}
+
+bool CreaturePredicate::apply(const Creature* victim, const Creature* attacker) const {
+  return visit<bool>([&](const auto& p) { return Impl::apply(p, victim, attacker); });
 }
 
 string CreaturePredicate::getName(bool negated) const {
   if (negated)
-    return visit<string>([&](const auto& p) { return ::getNameNegated(p); });
+    return visit<string>([&](const auto& p) { return Impl::getNameNegated(p); });
   else
-    return visit<string>([&](const auto& p) { return ::getName(p); });
+    return visit<string>([&](const auto& p) { return Impl::getName(p); });
 }
 
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST
