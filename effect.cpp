@@ -919,8 +919,8 @@ static bool apply(const Effects::DropItems& effect, Position pos, Creature*) {
 
 static bool applyToCreature(const Effects::Damage& e, Creature* c, Creature* attacker) {
   CHECK(attacker) << "Unknown attacker";
-  bool result = c->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), e.attackType,
-      attacker->getAttr(e.attr), e.attr), true);
+  int value = attacker->getAttr(e.attr) + attacker->getSpecialAttr(e.attr, c);
+  bool result = c->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), e.attackType, value, e.attr), true);
   if (e.attr == AttrType::SPELL_DAMAGE)
     c->addFX({FXName::MAGIC_MISSILE_SPLASH});
   return result;

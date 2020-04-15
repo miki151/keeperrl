@@ -943,6 +943,18 @@ int Creature::getAttr(AttrType type, bool includeWeapon) const {
   return max(0, attributes->getRawAttr(type) + getAttrBonus(type, includeWeapon));
 }
 
+int Creature::getSpecialAttr(AttrType type, const Creature* against) const {
+  int ret = 0;
+  if (auto& elem = attributes->specialAttr[type])
+    if (elem->second.apply(against, this))
+      ret += elem->first;
+  for (auto& item : equipment->getAllEquipped())
+    if (auto& elem = item->getSpecialModifier(type))
+      if (elem->second.apply(against, this))
+        ret += elem->first;
+  return ret;
+}
+
 int Creature::getPoints() const {
   return points;
 }
@@ -1214,7 +1226,8 @@ CreatureAction Creature::attack(Creature* other) const {
     for (auto weapon : weapons) {
       auto& weaponInfo = weapon.first->getWeaponInfo();
       auto damageAttr = weaponInfo.meleeAttackAttr;
-      const int damage = max(1, int(weapon.second * (getAttr(damageAttr, false) + weapon.first->getModifier(damageAttr))));
+      const int damage = max(1, int(weapon.second * (getAttr(damageAttr, false) +
+          getSpecialAttr(damageAttr, other) + weapon.first->getModifier(damageAttr))));
       AttackLevel attackLevel = Random.choose(getBody().getAttackLevels());
       damageAttr = LastingEffects::modifyMeleeDamageAttr(this, damageAttr);
       vector<Effect> victimEffects;
@@ -1309,15 +1322,17 @@ int Creature::getHitCount() const {
 
 bool Creature::takeDamage(const Attack& attack, bool noIncreaseHitCount) {
   PROFILE;
+  const double hitPenalty = 0.95;
+  int hitCount = getHitCount();
+  double defense = getAttr(AttrType::DEFENSE);
   if (Creature* attacker = attack.attacker) {
     onAttackedBy(attacker);
     for (auto c : getVisibleCreatures())
       if (*c->getPosition().dist8(position) < 10)
         c->removeEffect(LastingEffect::SLEEP);
+    defense += getSpecialAttr(AttrType::DEFENSE, attacker);
   }
-  const double hitPenalty = 0.95;
-  int hitCount = getHitCount();
-  double defense = getAttr(AttrType::DEFENSE) * pow(hitPenalty, hitCount);
+  defense *= pow(hitPenalty, hitCount);
   if (!noIncreaseHitCount)
     increaseHitCount();
   if (hitCount > 0)
@@ -2265,6 +2280,25 @@ const char* getMoraleText(double morale) {
   return nullptr;
 }
 
+vector<AdjectiveInfo> Creature::getSpecialAttrAdjectives(bool good) const {
+  vector<AdjectiveInfo> ret;
+  for (auto attr : ENUM_ALL(AttrType)) {
+    auto withTip = [](string s) {
+      return AdjectiveInfo{s, s};
+    };
+    if (auto& elem = attributes->specialAttr[attr])
+      if (elem->first > 0 == good)
+        ret.push_back(withTip(
+            toStringWithSign(elem->first) + " " + ::getName(attr) + " against " + elem->second.getName()));
+    for (auto& item : equipment->getAllEquipped())
+      if (auto& elem = item->getSpecialModifier(attr))
+        if (elem->first > 0 == good)
+          ret.push_back(withTip(
+              toStringWithSign(elem->first) + " " + ::getName(attr) + " against " + elem->second.getName()));
+  }
+  return ret;
+}
+
 vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
   PROFILE;
   vector<AdjectiveInfo> ret;
@@ -2288,6 +2322,7 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
   if (morale > 0)
     if (auto text = getMoraleText(morale))
       ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
+  append(ret, getSpecialAttrAdjectives(true));
   return ret;
 }
 
@@ -2312,6 +2347,7 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
   if (morale < 0)
     if (auto text = getMoraleText(morale))
       ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
+  append(ret, getSpecialAttrAdjectives(false));
   return ret;
 }
 

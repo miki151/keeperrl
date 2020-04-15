@@ -3,6 +3,8 @@
 #include "item_attributes.h"
 #include "lasting_effect.h"
 #include "effect.h"
+#include "creature_factory.h"
+#include "content_factory.h"
 
 void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAttributes& attr) {
   attr.prefixes.push_back(getItemName(factory, prefix));
@@ -25,6 +27,9 @@ void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAt
       },
       [&](const SpellId& spell) {
         attr.equipedAbility.push_back(spell);
+      },
+      [&](const SpecialAttr& a) {
+        attr.specialAttr[a.attr] = make_pair(a.value, a.predicate);
       }
   );
 }
@@ -51,6 +56,9 @@ vector<string> getEffectDescription(const ContentFactory* factory, const ItemPre
       },
       [&](const SpellId& id) -> vector<string> {
         return {"grants "_s + id.data() + " ability"};
+      },
+      [&](const SpecialAttr& a) -> vector<string> {
+        return {toStringWithSign(a.value) + " " + ::getName(a.attr) + " against " + a.predicate.getName()};
       }
   );
 }
@@ -58,22 +66,25 @@ vector<string> getEffectDescription(const ContentFactory* factory, const ItemPre
 string getItemName(const ContentFactory* factory, const ItemPrefix& prefix) {
   return prefix.visit<string>(
       [&](LastingEffect effect) {
-        return LastingEffects::getName(effect);
+        return "of " + LastingEffects::getName(effect);
       },
       [&](const AttackerEffect& e) {
-        return e.effect.getName(factory);
+        return "of " + e.effect.getName(factory);
       },
       [&](const VictimEffect& e) {
-        return e.effect.getName(factory);
+        return "of " + e.effect.getName(factory);
       },
       [&](ItemAttrBonus bonus) {
-        return getName(bonus.attr);
+        return "of " + getName(bonus.attr);
       },
       [&](const JoinPrefixes& join) {
         return getItemName(factory, join.prefixes.back());
       },
       [&](const SpellId& id) -> string {
-        return id.data();
+        return "of "_s + factory->getCreatures().getSpell(id)->getName(factory);
+      },
+      [&](const SpecialAttr& a) -> string {
+        return "against " + a.predicate.getName();
       }
   );
 }
@@ -84,7 +95,7 @@ string getGlyphName(const ContentFactory* factory, const ItemPrefix& prefix) {
         return ::getItemName(factory, prefix);
       },
       [&](ItemAttrBonus bonus) {
-        return "+"_s + toString(bonus.value) + " " + getName(bonus.attr);
+        return "of +"_s + toString(bonus.value) + " " + getName(bonus.attr);
       },
       [&](const JoinPrefixes& join) {
         return getGlyphName(factory, join.prefixes.back());

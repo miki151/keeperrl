@@ -1440,7 +1440,7 @@ vector<SGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info) {
     auto& effect = info.effects[i];
     lines.push_back(WL(stack,
           getTooltip({effect.help}, THIS_LINE + i),
-          WL(label, effect.name, effect.bad ? Color::RED : Color::WHITE)));
+          WL(renderInBounds, WL(label, effect.name, effect.bad ? Color::RED : Color::WHITE))));
   }
   return lines;
 }

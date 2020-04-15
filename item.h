@@ -37,6 +37,7 @@ class ItemPrefix;
 class ItemType;
 class ContentFactory;
 struct AutomatonPart;
+struct CreaturePredicate;
 
 class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
@@ -83,6 +84,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   EquipmentSlot getEquipmentSlot() const;
   void addModifier(AttrType, int value);
   int getModifier(AttrType) const;
+  const optional<pair<int, CreaturePredicate>>& getSpecialModifier(AttrType) const;
   const optional<RangedWeapon>& getRangedWeapon() const;
   void tick(Position);
   void applyPrefix(const ItemPrefix&, const ContentFactory*);

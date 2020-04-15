@@ -32,6 +32,7 @@
 #include "creature_id.h"
 #include "spell_school_id.h"
 #include "creature_inventory.h"
+#include "creature_predicate.h"
 
 inline bool isLarger(CreatureSize s1, CreatureSize s2) {
   return int(s1) > int(s2);
@@ -124,6 +125,7 @@ class CreatureAttributes {
 
   vector<ViewId> SERIAL(viewIdUpgrades);
   vector<ItemType> SERIAL(automatonParts);
+  EnumMap<AttrType, optional<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
 
   private:
   void consumeEffects(const EnumMap<LastingEffect, int>&);

@@ -113,6 +113,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureName& getName();
   const char* identify() const;
   int getAttr(AttrType, bool includeWeapon = true) const;
+  int getSpecialAttr(AttrType, const Creature* against) const;
   int getAttrBonus(AttrType, bool includeWeapon) const;
 
   int getPoints() const;
@@ -367,6 +368,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<Creature*> SERIAL(shamanSummons);
   void tickShamanSummons();
   bool considerSavingLife(DropType, const Creature* attacker);
+  vector<AdjectiveInfo> getSpecialAttrAdjectives(bool good) const;
 };
 
 struct AdjectiveInfo {

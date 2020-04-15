@@ -239,6 +239,9 @@ vector<string> Item::getDescription(const ContentFactory* factory) const {
   if (auto& part = attributes->automatonPart) {
     ret.push_back(part->effect.getDescription(factory));
   }
+  for (auto attr : ENUM_ALL(AttrType))
+    if (auto& elem = attributes->specialAttr[attr])
+      ret.push_back(toStringWithSign(elem->first) + " " + ::getName(attr) + " against " + elem->second.getName());
   return ret;
 }
 
@@ -459,7 +462,7 @@ void Item::setArtifactName(const string& s) {
 string Item::getSuffix() const {
   string artStr;
   if (!attributes->prefixes.empty())
-    artStr += "of " + attributes->prefixes.back();
+    artStr += attributes->prefixes.back();
   if (attributes->artifactName)
     appendWithSpace(artStr, "named " + *attributes->artifactName);
   if (fire->isBurning())
@@ -555,6 +558,10 @@ int Item::getModifier(AttrType type) const {
   CHECK(abs(attributes->modifiers[type]) < 10000) << EnumInfo<AttrType>::getString(type) << " "
       << attributes->modifiers[type] << " " << getName();
   return attributes->modifiers[type];
+}
+
+const optional<pair<int, CreaturePredicate>>& Item::getSpecialModifier(AttrType attr) const {
+  return attributes->specialAttr[attr];
 }
 
 const optional<RangedWeapon>& Item::getRangedWeapon() const {

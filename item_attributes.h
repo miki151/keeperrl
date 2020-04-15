@@ -31,6 +31,7 @@
 #include "item_upgrade_info.h"
 #include "automaton_part.h"
 #include "resource_id.h"
+#include "creature_predicate.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
@@ -93,6 +94,7 @@ class ItemAttributes {
   Range SERIAL(wishedCount) = Range(1, 2);
   vector<SpellId> SERIAL(equipedAbility);
   optional<AutomatonPart> SERIAL(automatonPart);
+  EnumMap<AttrType, optional<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
 };
 
 static_assert(std::is_nothrow_move_constructible<ItemAttributes>::value, "T should be noexcept MoveConstructible");

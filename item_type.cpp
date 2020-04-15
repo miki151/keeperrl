@@ -562,8 +562,8 @@ ItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory* factory) co
       i.shortName = getGlyphName(factory, *rune.prefix);
       i.viewId = getRuneViewId(*i.shortName);
       i.upgradeInfo = rune;
-      i.name = "glyph of " + *i.shortName;
-      i.plural= "glyph of "  + *i.shortName;
+      i.name = "glyph " + *i.shortName;
+      i.plural= "glyph "  + *i.shortName;
       i.blindName = "glyph"_s;
       i.itemClass = ItemClass::SCROLL;
       i.weight = 0.1;
