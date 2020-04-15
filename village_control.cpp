@@ -261,7 +261,9 @@ void VillageControl::healAllCreatures() {
 }
 
 bool VillageControl::isEnemy() const {
-  return getEnemyCollective()->getTribe()->isEnemy(collective->getTribe());
+  if (auto enemy = getEnemyCollective())
+    return enemy->getTribe()->isEnemy(collective->getTribe());
+  return false;
 }
 
 void VillageControl::update(bool currentlyActive) {
