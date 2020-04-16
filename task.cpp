@@ -1831,7 +1831,7 @@ class InstallBodyPart : public Task {
     if (creature->getPosition().dist8(c->getPosition()).value_or(2) == 1)
       return c->wait().append([=](Creature* c) {
         c->verb("install", "installs", item->getAName() + " on " + creature->getName().the());
-        item->getAutomatonPart()->apply(creature.get());
+        creature->addAutomatonPart(*item->getAutomatonPart());
         creature->drops.push_back(c->getEquipment().removeItem(item, c));
       });
     else

@@ -335,7 +335,7 @@ string Collective::getMinionGroupName(const Creature* c) const {
 
 vector<string> Collective::getAutomatonGroupNames(const Creature* c) const {
   vector<string> ret;
-  for (auto& part : c->automatonParts)
+  for (auto& part : c->getAutomatonParts())
     if (!part.minionGroup.empty() && !ret.contains(part.minionGroup))
       ret.push_back(part.minionGroup);
   return ret;

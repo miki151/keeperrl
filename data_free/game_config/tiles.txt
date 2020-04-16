@@ -172,6 +172,8 @@
 { "automaton_legs" ")" ColorId LIGHT_BROWN }
 { "automaton_arms" ")" ColorId LIGHT_BROWN }
 { "automaton_repair" ")" ColorId LIGHT_BROWN }
+{ "automaton_drill" ")" ColorId LIGHT_BROWN }
+{ "automaton_crafting" ")" ColorId LIGHT_BROWN }
 { "installed_head" ")" ColorId LIGHT_BROWN }
 { "installed_fire" ")" ColorId LIGHT_BROWN }
 { "installed_acid" ")" ColorId LIGHT_BROWN }
@@ -179,6 +181,8 @@
 { "installed_legs" ")" ColorId LIGHT_BROWN }
 { "installed_arms" ")" ColorId LIGHT_BROWN }
 { "installed_repair" ")" ColorId LIGHT_BROWN }
+{ "installed_drill" ")" ColorId LIGHT_BROWN }
+{ "installed_crafting" ")" ColorId LIGHT_BROWN }
 { "elementalist" "@" ColorId YELLOW }
 { "air_elemental" "E" ColorId LIGHT_BLUE }
 { "fire_elemental" "E" ColorId RED }

@@ -209,8 +209,8 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory) 
   if (c->getPosition().isValid())
     moveCounter = c->getPosition().getModel()->getMoveCounter();
   isPlayerControlled = c->isPlayer();
-  for (int i : All(c->automatonParts))
-    bodyParts.push_back(getInstalledPartInfo(contentFactory, c->automatonParts[i], i));
+  for (int i : All(c->getAutomatonParts()))
+    bodyParts.push_back(getInstalledPartInfo(contentFactory, c->getAutomatonParts()[i], i));
 }
 
 const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) const {

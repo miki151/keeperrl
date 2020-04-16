@@ -160,6 +160,24 @@ void Creature::cheatAllSpells() {
   spellMap->setAllReady();
 }
 
+int Creature::getSpareAutomatonSlots() const {
+  return getAttributes().getAutomatonSlots() - automatonParts.size();
+}
+
+const vector<AutomatonPart>& Creature::getAutomatonParts() const {
+  return automatonParts;
+}
+
+void Creature::addAutomatonPart(AutomatonPart p) {
+  p.effect.apply(position);
+  addSound(SoundId::TRAP_ARMING);
+  if (p.layer) {
+    automatonParts.push_back(std::move(p));
+    sort(automatonParts.begin(), automatonParts.end(),
+         [](const auto& p1, const auto& p2) { return *p1.layer < *p2.layer; });
+  }
+}
+
 const CreatureAttributes& Creature::getAttributes() const {
   return *attributes;
 }
@@ -1397,9 +1415,13 @@ void Creature::updateViewObject() {
   getPosition().setNeedsRenderUpdate(true);
   updateLastingFX(object);
   object.partIds.clear();
-  for (auto& part : automatonParts)
-    if (part.installedId)
-      object.partIds.push_back(*part.installedId);
+  for (int i : All(automatonParts))
+    if (auto& id = automatonParts[i].installedId) {
+      if (i == 0 || automatonParts[i].layer != automatonParts[i - 1].layer)
+        object.partIds.push_back(*id);
+      else
+        object.partIds.back() = *id;
+    }
   object.setModifier(ViewObject::Modifier::IMMOBILE,
       attributes->getAutomatonSlots() > 0 && isAffected(LastingEffect::IMMOBILE));
 }
@@ -2385,8 +2407,4 @@ Creature* Creature::getClosestEnemy() const {
     }
   }
   return result;
-}
-
-int Creature::getSpareAutomatonSlots() const {
-  return getAttributes().getAutomatonSlots() - automatonParts.size();
 }

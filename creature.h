@@ -304,8 +304,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canBeCaptured() const;
   void removePrivateEnemy(const Creature*); 
   void cheatAllSpells();
-
-  vector<AutomatonPart> SERIAL(automatonParts);
+  const vector<AutomatonPart>& getAutomatonParts() const;
+  void addAutomatonPart(AutomatonPart);
   int getSpareAutomatonSlots() const;
   vector<PItem> SERIAL(drops);
   private:
@@ -368,6 +368,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void tickShamanSummons();
   bool considerSavingLife(DropType, const Creature* attacker);
   vector<AdjectiveInfo> getSpecialAttrAdjectives(bool good) const;
+  vector<AutomatonPart> SERIAL(automatonParts);
 };
 
 struct AdjectiveInfo {

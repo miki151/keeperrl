@@ -144,7 +144,7 @@
       {{Simple    "FireHeadIron"}            2       "IRON" 5    "advanced automatons"}
       {{Simple    "AcidHeadIron"}            2       "IRON" 5    "advanced automatons"}
       {{Simple    "AutomatonArmsIron"}       2       "IRON" 5    "automatons"}
-      {{Simple    "SharpAutomatonArmsIron"}  2       "IRON" 5    "advanced automatons"}
+#      {{Simple    "SharpAutomatonArmsIron"}  2       "IRON" 5    "advanced automatons"}
       {{Simple    "RepairAutomatonArmsIron"} 2       "IRON" 5    "advanced automatons"}
       {{Simple    "AutomatonLegsIron"}       2       "IRON" 5    "automatons"}
       {{Simple    "AutomatonDrillIron"}      2       "IRON" 5    "automatons"}

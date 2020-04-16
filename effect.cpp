@@ -509,7 +509,7 @@ static bool apply(const Effects::AssembledMinion& m, Position pos, Creature* att
       if (col->getCreatures().contains(attacker)) {
         col->addCreature(*c, {MinionTrait::WORKER, MinionTrait::FIGHTER, MinionTrait::AUTOMATON});
         for (auto& part : (*c)->getAttributes().automatonParts)
-          part.get((*c)->getGame()->getContentFactory())->getAutomatonPart()->apply(*c);
+          (*c)->addAutomatonPart(*part.get((*c)->getGame()->getContentFactory())->getAutomatonPart());
         return true;
       }
   }
@@ -531,7 +531,7 @@ static bool applyToCreature(const Effects::AddAutomatonParts& e, Creature* c, Cr
   if (c->getSpareAutomatonSlots() < e.partTypes.size())
     return false;
   for (auto& item : e.partTypes)
-    item.get(c->getGame()->getContentFactory())->getAutomatonPart()->apply(c);
+    c->addAutomatonPart(*item.get(c->getGame()->getContentFactory())->getAutomatonPart());
   return true;
 }
 

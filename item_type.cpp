@@ -377,7 +377,7 @@ ItemAttributes ItemTypes::AutomatonPaint::getAttributes(const ContentFactory*) c
           none,
           *i.viewId,
           "automaton paint",
-          false
+          none
       );
   );
 }
