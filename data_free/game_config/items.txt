@@ -31,10 +31,11 @@
   }
 "ArcherHeadWood" inherit "HumanoidHeadWood"
   {
+    viewId = { "automaton_arrow" Rgb 180 140 55 255 }
     name = "wooden arrow shooting head"
     shortName = "arrow shooting"
     automatonPart = {
-      { "installed_head" Rgb 180 140 55 255 }
+      { "installed_arrow" Rgb 180 140 55 255 }
       Description "Allows shooting arrows. Second head adds additional +10 ranged damage."
       Chain {
         IncreaseAttr RANGED_DAMAGE 25
@@ -134,10 +135,11 @@
   }
 "ArcherHeadIron" inherit "HumanoidHeadIron"
   {
+    viewId = { "automaton_arrow" Rgb 140 148 148 255 }
     name = "iron arrow shooting head"
     shortName = "arrow shooting"
     automatonPart = {
-      { "installed_head" Rgb 140 148 148 255 }
+      { "installed_arrow" Rgb 140 148 148 255 }
       Description "Allows shooting arrows. Adds +2 defense. Second head adds additional +15 ranged damage."
       Chain {
         IncreaseAttr RANGED_DAMAGE 30
@@ -153,10 +155,11 @@
   }
 "FireHeadIron" inherit "HumanoidHeadIron"
   {
+    viewId = { "automaton_fire" Rgb 140 148 148 255 }
     name = "iron fire breathing head"
     shortName = "fire breathing"
     automatonPart = {
-      { "installed_head" Rgb 140 148 148 255 }
+      { "installed_fire" Rgb 140 148 148 255 }
       Description "Grants the \"fire breath\" ability. Adds +2 defense."
       Chain {
         GrantAbility "fire breath"
@@ -168,10 +171,11 @@
   }
 "AcidHeadIron" inherit "HumanoidHeadIron"
   {
+    viewId = { "automaton_acid" Rgb 140 148 148 255 }
     name = "iron acid spitting head"
     shortName = "acid spitting"
     automatonPart = {
-      { "installed_head" Rgb 140 148 148 255 }
+      { "installed_acid" Rgb 140 148 148 255 }
       Description "Grants the \"acid stream\" ability. Adds +2 defense."
       Chain {
         GrantAbility "acid stream"
@@ -269,10 +273,11 @@
   }
 "RepairAutomatonArmsIron" inherit "AutomatonArmsIron"
   {
+    viewId = { "automaton_repair" Rgb 140 148 148 255 }
     name = "pair of iron repair arms"
     shortName = "repair arms"
     automatonPart = {
-      { "installed_arms" Rgb 140 148 148 255 }
+      { "installed_repair" Rgb 140 148 148 255 }
       Description "Grants the ability to repair other automatons. Adds +2 defense."
       Chain {
         GrantAbility "repair automaton"
