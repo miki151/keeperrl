@@ -436,7 +436,7 @@ optional<LastingEffect> CreatureAttributes::getHatedByEffect() const {
   return hatedByEffect;
 }
 
-int CreatureAttributes::getAutomatonSlots() const {
+const pair<int, vector<string>>& CreatureAttributes::getAutomatonSlots() const {
   return automatonSlots;
 }
 

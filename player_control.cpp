@@ -479,7 +479,7 @@ void PlayerControl::fillAutomatonParts(Creature* creature, PlayerInfo& info) con
       info.bodyParts.push_back(getInstalledPartInfo(getGame()->getContentFactory(), *part, ++index));
       info.bodyParts.back().pending = true;
     }
-  info.bodyPartLimit = creature->getAttributes().getAutomatonSlots();
+  info.bodyPartLimit = creature->getAttributes().getAutomatonSlots().first;
 }
 
 void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
@@ -936,7 +936,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
         }
       if (collective->usesEquipment(c))
         fillEquipment(c, minionInfo);
-      if (c->getAttributes().getAutomatonSlots() > 0)
+      if (c->getAttributes().getAutomatonSlots().first > 0)
         fillAutomatonParts(c, minionInfo);
       if (canControlSingle(c))
         minionInfo.actions.push_back(PlayerInfo::CONTROL);
@@ -945,7 +945,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
       } else
         minionInfo.experienceInfo.limit.clear();
       auto& leaders = collective->getLeaders();
-      if (c->getAttributes().getAutomatonSlots() > 0)
+      if (c->getAttributes().getAutomatonSlots().first > 0)
         minionInfo.actions.push_back(PlayerInfo::DISASSEMBLE);
       else if (leaders.size() > 1 || !collective->hasTrait(c, MinionTrait::LEADER))
         minionInfo.actions.push_back(PlayerInfo::BANISH);
@@ -2099,7 +2099,7 @@ void PlayerControl::exitAction() {
 }
 
 void PlayerControl::handleBanishing(Creature* c) {
-  auto message = c->getAttributes().getAutomatonSlots()
+  auto message = c->getAttributes().getAutomatonSlots().first > 0
       ? "Do you want to disassemble " + c->getName().the() + "?"
       : "Do you want to banish " + c->getName().the() + " forever? "
           "Banishing has a negative impact on morale of other minions.";

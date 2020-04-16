@@ -19,7 +19,7 @@ static string getNameNegated(const CreaturePredicates::Enemy&) {
 }
 
 static bool apply(const CreaturePredicates::Automaton&, const Creature* victim, const Creature* attacker) {
-  return victim->getAttributes().getAutomatonSlots() > 0;
+  return victim->getAttributes().getAutomatonSlots().first > 0;
 }
 
 static string getName(const CreaturePredicates::Automaton&) {

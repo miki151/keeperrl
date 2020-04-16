@@ -217,7 +217,7 @@ void Collective::removeCreature(Creature* c) {
 
 void Collective::banishCreature(Creature* c) {
   removeCreature(c);
-  if (c->getAttributes().getAutomatonSlots()) {
+  if (c->getAttributes().getAutomatonSlots().first) {
     taskMap->addTask(Task::disassemble(c), c->getPosition(), MinionActivity::CRAFT);
   } else {
     decreaseMoraleForBanishing(c);
@@ -566,7 +566,7 @@ void Collective::tick() {
     minionEquipment->updateItems(getAllItems(ItemIndex::MINION_EQUIPMENT, true));
   }
   for (auto c : getCreatures())
-    if (!usesEquipment(c) && c->getAttributes().getAutomatonSlots() == 0)
+    if (!usesEquipment(c) && c->getAttributes().getAutomatonSlots().first == 0)
       for (auto it : minionEquipment->getItemsOwnedBy(c))
         minionEquipment->discard(it);
   updateAutomatonPartsTasks();
@@ -575,7 +575,7 @@ void Collective::tick() {
 
 void Collective::updateAutomatonPartsTasks() {
   for (auto c : getCreatures())
-    if (c->getAttributes().getAutomatonSlots() > 0)
+    if (c->getAttributes().getAutomatonSlots().first > 0)
       for (auto items : getStoredItems(ItemIndex::MINION_EQUIPMENT, StorageId::EQUIPMENT))
         for (auto item : items.second)
           if (item->getAutomatonPart() && minionEquipment->isOwner(item, c) && !getItemTask(item)) {

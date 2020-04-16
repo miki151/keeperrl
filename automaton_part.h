@@ -12,6 +12,7 @@ struct AutomatonPart {
   ViewId SERIAL(viewId);
   string SERIAL(name);
   optional<int> SERIAL(layer);
+  string SERIAL(automatonType);
   bool isAvailable(const Creature*, int numAssigned = 0) const;
   template <class Archive>
   void serialize(Archive& ar1, const unsigned int);

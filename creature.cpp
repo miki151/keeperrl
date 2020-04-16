@@ -161,7 +161,7 @@ void Creature::cheatAllSpells() {
 }
 
 int Creature::getSpareAutomatonSlots() const {
-  return getAttributes().getAutomatonSlots() - automatonParts.size();
+  return getAttributes().getAutomatonSlots().first - automatonParts.size();
 }
 
 const vector<AutomatonPart>& Creature::getAutomatonParts() const {
@@ -1423,7 +1423,7 @@ void Creature::updateViewObject() {
         object.partIds.back() = *id;
     }
   object.setModifier(ViewObject::Modifier::IMMOBILE,
-      attributes->getAutomatonSlots() > 0 && isAffected(LastingEffect::IMMOBILE));
+      attributes->getAutomatonSlots().first > 0 && isAffected(LastingEffect::IMMOBILE));
 }
 
 double Creature::getMorale() const {

@@ -20,6 +20,7 @@
     weight = 4
     itemClass = TOOL
     automatonPart = {
+      "automatons"
       2
       { "installed_head" Rgb 180 140 55 255 }
       Description "Allows using equipment."
@@ -33,6 +34,7 @@
     name = "wooden arrow shooting head"
     shortName = "arrow shooting"
     automatonPart = {
+      "automatons"
       2
       { "installed_arrow" Rgb 180 140 55 255 }
       Description "Allows shooting arrows. Second head adds additional +10 ranged damage."
@@ -55,6 +57,7 @@
     weight = 8
     itemClass = TOOL
     automatonPart = {
+      "automatons"
       0
       { "installed_legs" Rgb 180 140 55 255 }
       Description "Adds mobility. Second pair grants the \"jump\" ability."
@@ -75,6 +78,7 @@
     weight = 6
     itemClass = TOOL
     automatonPart = {
+      "automatons"
       1
       { "installed_arms" Rgb 180 140 55 255 }
       Description "Grants a melee attack and +6 damage bonus."
@@ -92,6 +96,7 @@
     weight = 6
     itemClass = TOOL
     automatonPart = {
+      "automatons"
       1
       { "installed_drill" Rgb 180 140 55 255 }
       Description "Increases the digging skill by 20."
@@ -106,6 +111,7 @@
     weight = 6
     itemClass = TOOL
     automatonPart = {
+      "automatons"
       1
       { "installed_crafting" Rgb 180 140 55 255 }
       Description "Increases all crafting skills by 20."
@@ -126,6 +132,7 @@
     weight = 4
     itemClass = TOOL
     automatonPart = {
+      "automatons"
       2
       { "installed_head" Rgb 140 148 148 255 }
       Description "Allows using equipment. Adds +2 defense bonus."
@@ -143,6 +150,7 @@
     name = "iron arrow shooting head"
     shortName = "arrow shooting"
     automatonPart = {
+      "automatons"
       2
       { "installed_arrow" Rgb 140 148 148 255 }
       Description "Allows shooting arrows. Adds +2 defense. Second head adds additional +15 ranged damage."
@@ -164,6 +172,7 @@
     name = "iron fire breathing head"
     shortName = "fire breathing"
     automatonPart = {
+      "automatons"
       2
       { "installed_fire" Rgb 140 148 148 255 }
       Description "Grants the \"fire breath\" ability. Adds +2 defense."
@@ -181,6 +190,7 @@
     name = "iron acid spitting head"
     shortName = "acid spitting"
     automatonPart = {
+      "automatons"
       2
       { "installed_acid" Rgb 140 148 148 255 }
       Description "Grants the \"acid stream\" ability. Adds +2 defense."
@@ -200,6 +210,7 @@
     weight = 8
     itemClass = TOOL
     automatonPart = {
+      "automatons"
       0
       { "installed_legs" Rgb 140 148 148 255 }
       Description "Adds mobility. Adds +2 defense. Second pair grants the \"jump\" ability."
@@ -221,6 +232,7 @@
     weight = 6
     itemClass = TOOL
     automatonPart = {
+      "automatons"
       1
       { "installed_arms" Rgb 140 148 148 255 }
       Description "Grants a melee attack and +10 damage bonus. Adds +2 defense."
@@ -240,6 +252,7 @@
     weight = 6
     itemClass = TOOL
     automatonPart = {
+      "automatons"
       1
       { "installed_drill" Rgb 140 148 148 255 }
       Description "Increases the digging skill by 30."
@@ -254,6 +267,7 @@
     weight = 6
     itemClass = TOOL
     automatonPart = {
+      "automatons"
       1
       { "installed_crafting" Rgb 140 148 148 255 }
       Description "Increases all crafting skills by 30."
@@ -271,6 +285,7 @@
     name = "pair of sharp arms"
     shortName = "sharp arms"
     automatonPart = {
+      "automatons"
       1
       { "installed_arms" Rgb 140 148 148 255 }
       Description "Grants a melee attack with a chance to cause bleeding. Adds +10 damage and +2 defense bonus."
@@ -289,6 +304,7 @@
     name = "pair of iron repair arms"
     shortName = "repair arms"
     automatonPart = {
+      "automatons"
       1
       { "installed_repair" Rgb 140 148 148 255 }
       Description "Grants the ability to repair other automatons. Adds +2 defense."

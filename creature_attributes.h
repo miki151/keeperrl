@@ -116,7 +116,7 @@ class CreatureAttributes {
   void setCanJoinCollective(bool);
   void increaseExpFromCombat(double attackDiff);
   optional<LastingEffect> getHatedByEffect() const;
-  int getAutomatonSlots() const;
+  const pair<int, vector<string>>& getAutomatonSlots() const;
   void randomize();
   bool isInstantPrisoner() const;
 
@@ -162,5 +162,5 @@ class CreatureAttributes {
   bool SERIAL(instantPrisoner) = false;
   void initializeLastingEffects();
   CreatureInventory SERIAL(inventory);
-  int SERIAL(automatonSlots) = 0;
+  pair<int, vector<string>> SERIAL(automatonSlots) = {0, {}};
 };

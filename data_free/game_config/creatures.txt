@@ -1744,7 +1744,7 @@
 "AUTOMATON_CORPUS_WOOD"
   {
     viewId = { "automaton_corpus" Rgb 180 140 55 255 }
-    automatonSlots = 3
+    automatonSlots = 3 { "automatons" "paint" }
     attr = {
       DAMAGE 15
       DEFENSE 24
