@@ -194,6 +194,9 @@ struct Chain {
 };
 struct ChooseRandom : Chain {
 };
+struct ChainUntilFail : Chain {
+};
+
 struct Message {
   string SERIAL(text);
   SERIALIZE_ALL(text)
@@ -311,8 +314,8 @@ struct AddMinionTrait {
   X(Audience, 38)\
   X(Wish, 39)\
   X(Chain, 40)\
-  X(ChooseRandom, 41)\
-  X(Caster, 42)\
+  X(ChainUntilFail, 41)\
+  X(ChooseRandom, 42)\
   X(IncreaseMorale, 43)\
   X(Message, 44)\
   X(Chance, 45)\
@@ -338,6 +341,7 @@ struct AddMinionTrait {
   X(IncreaseWorkshopSkill, 65)\
   X(AddAutomatonParts, 66)\
   X(AddMinionTrait, 67)\
+  X(Caster, 68)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
