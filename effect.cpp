@@ -58,6 +58,7 @@
 #include "vision.h"
 #include "workshop_type.h"
 #include "automaton_part.h"
+#include "minion_trait.h"
 
 
 #define REQUIRE(...) \
@@ -507,7 +508,7 @@ static bool apply(const Effects::AssembledMinion& m, Position pos, Creature* att
   if (c) {
     for (auto col : pos.getGame()->getCollectives())
       if (col->getCreatures().contains(attacker)) {
-        col->addCreature(*c, {MinionTrait::WORKER, MinionTrait::FIGHTER, MinionTrait::AUTOMATON});
+        col->addCreature(*c, {MinionTrait::FIGHTER, MinionTrait::AUTOMATON});
         for (auto& part : (*c)->getAttributes().automatonParts)
           (*c)->addAutomatonPart(*part.get((*c)->getGame()->getContentFactory())->getAutomatonPart());
         return true;
@@ -1683,6 +1684,25 @@ static bool applyToCreature(const Effects::Stairs&, Creature* c, Creature* attac
     c->message("These stairs don't lead anywhere.");
     return false;
   }
+}
+
+static string getName(const Effects::AddMinionTrait& e, const ContentFactory*) {
+  return "make " + toLower(EnumInfo<MinionTrait>::getString(e.trait));
+}
+
+static string getDescription(const Effects::AddMinionTrait& e, const ContentFactory*) {
+  return "Makes the creature a " + toLower(EnumInfo<MinionTrait>::getString(e.trait));
+}
+
+static bool applyToCreature(const Effects::AddMinionTrait& e, Creature* c, Creature* attacker) {
+  CHECK(c->getGame());
+  for (auto col : c->getGame()->getCollectives())
+    if (col->getCreatures().contains(c)) {
+      col->setTrait(c, e.trait);
+      return true;
+    }
+  FATAL << "Couldn't find collective for " << c->identify();
+  fail();
 }
 
 static bool canAutoAssignMinionEquipment(const Effects::Filter& f) {

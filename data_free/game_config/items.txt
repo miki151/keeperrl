@@ -100,7 +100,10 @@
       1
       { "installed_drill" Rgb 180 140 55 255 }
       Description "Increases the digging skill by 20."
-      IncreaseSkill DIGGING 0.2
+      Chain {
+        IncreaseSkill DIGGING 0.2
+        AddMinionTrait WORKER
+      }
       "drill"
     }
   }
@@ -256,7 +259,10 @@
       1
       { "installed_drill" Rgb 140 148 148 255 }
       Description "Increases the digging skill by 30."
-      IncreaseSkill DIGGING 0.3
+      Chain {
+        IncreaseSkill DIGGING 0.3
+        AddMinionTrait WORKER
+      }
       "drill"
     }
   }

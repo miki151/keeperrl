@@ -34,7 +34,7 @@ template <class Archive>
 void Body::serializeImpl(Archive& ar, const unsigned int) {
   ar(OPTION(xhumanoid), OPTION(size), OPTION(weight), OPTION(bodyParts), OPTION(injuredBodyParts), OPTION(lostBodyParts));
   ar(OPTION(material), OPTION(health), OPTION(minionFood), NAMED(deathSound), OPTION(intrinsicAttacks), OPTION(minPushSize));
-  ar(OPTION(noHealth), OPTION(fallsApart), OPTION(drops), OPTION(canCapture));
+  ar(OPTION(noHealth), OPTION(fallsApart), OPTION(drops), OPTION(canCapture), OPTION(xCanPickUpItems));
 }
 
 template <class Archive>
@@ -540,6 +540,10 @@ string Body::getDescription() const {
 
 bool Body::isHumanoid() const {
   return xhumanoid;
+}
+
+bool Body::canPickUpItems() const {
+  return xCanPickUpItems || isHumanoid();
 }
 
 static string getBodyPartBone(BodyPart part) {

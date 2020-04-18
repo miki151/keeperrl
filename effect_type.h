@@ -264,6 +264,10 @@ struct AIBelowHealth : GenericModifierEffect {
 };
 struct AITargetEnemy : GenericModifierEffect {
 };
+struct AddMinionTrait {
+  MinionTrait SERIAL(trait);
+  SERIALIZE_ALL(trait)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -333,6 +337,7 @@ struct AITargetEnemy : GenericModifierEffect {
   X(IncreaseSkill, 64)\
   X(IncreaseWorkshopSkill, 65)\
   X(AddAutomatonParts, 66)\
+  X(AddMinionTrait, 67)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

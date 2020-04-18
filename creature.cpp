@@ -564,7 +564,7 @@ void Creature::thirdPerson(const PlayerMessage& playerCanSee) const {
 }
 
 vector<Item*> Creature::getPickUpOptions() const {
-  if (!getBody().isHumanoid())
+  if (!getBody().canPickUpItems())
     return vector<Item*>();
   else
     return getPosition().getItems();
@@ -608,7 +608,7 @@ int Creature::canCarry(const vector<Item*>& items) const {
 }
 
 CreatureAction Creature::pickUp(const vector<Item*>& itemsAll) const {
-  if (!getBody().isHumanoid())
+  if (!getBody().canPickUpItems())
     return CreatureAction("You can't pick up anything!");
   auto items = itemsAll.getPrefix(canCarry(itemsAll));
   if (items.empty())

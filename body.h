@@ -125,6 +125,7 @@ class Body {
   void consumeBodyParts(Creature*, Body& other, vector<string>& adjectives);
 
   bool isHumanoid() const;
+  bool canPickUpItems() const;
   string getDescription() const;
   void updateViewObject(ViewObject&) const;
   int getCarryLimit() const;
@@ -155,6 +156,7 @@ class Body {
   PItem getBodyPartItem(const string& creatureName, BodyPart, const ContentFactory*);
   string getMaterialAndSizeAdjectives() const;
   bool SERIAL(xhumanoid) = false;
+  bool SERIAL(xCanPickUpItems) = false;
   Size SERIAL(size) = Size::LARGE;
   double SERIAL(weight) = 90;
   EnumMap<BodyPart, int> SERIAL(bodyParts) = {{BodyPart::TORSO, 1}, {BodyPart::BACK, 1}};

@@ -1752,6 +1752,7 @@
     body = {
       type = NonHumanoid LARGE
       material = WOOD
+      xCanPickUpItems = true
       bodyParts = {
         BACK 1
         TORSO 1
@@ -1769,7 +1770,6 @@
     automatonParts = {
       {Simple "AutomatonLegsWood" }
       {Simple "AutomatonDrillWood" }
-      {Simple "HumanoidHeadWood" }
     }
   }
 "LIGHT_AUTOMATON_CORPUS_WOOD" inherit "AUTOMATON_CORPUS_WOOD"
@@ -1802,7 +1802,6 @@
     automatonParts = {
       {Simple "AutomatonLegsIron" }
       {Simple "AutomatonDrillIron" }
-      {Simple "HumanoidHeadIron" }
     }
   }
 "HEAVY_AUTOMATON_CORPUS_IRON" inherit "AUTOMATON_CORPUS_IRON"
