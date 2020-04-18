@@ -1469,7 +1469,7 @@ class HeapAllocated {
 
   template <class Archive>
   void serialize(Archive& ar1) {
-    if (Archive::is_loading::value) {
+    if (!elem && Archive::is_loading::value) {
       elem = unique<T>();
     }
     CHECK(!!elem);
