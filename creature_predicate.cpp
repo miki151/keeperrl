@@ -30,6 +30,26 @@ static string getNameNegated(const CreaturePredicates::Automaton&) {
   return "non-automatons";
 }
 
+static bool apply(const CreaturePredicates::Hidden&, const Creature* victim, const Creature*) {
+  return victim->isHidden();
+}
+
+static string getName(const CreaturePredicates::Hidden&) {
+  return "hidden";
+}
+
+static bool apply(const CreaturePredicates::Name& e, const Creature* victim, const Creature* attacker) {
+  return e.pred->apply(victim, attacker);
+}
+
+static string getNameTopLevel(const CreaturePredicates::Name& e) {
+  return e.name;
+}
+
+static string getName(const CreaturePredicates::Name& e) {
+  return e.name;
+}
+
 static bool apply(const CreaturePredicates::HatedBy& p, const Creature* victim, const Creature* attacker) {
   return victim->getAttributes().getHatedByEffect() == p.effect;
 }
@@ -43,7 +63,7 @@ static bool apply(const CreaturePredicates::Attacker& p, const Creature* victim,
 }
 
 static string getName(const CreaturePredicates::Attacker& p) {
-  return p.pred->getName();
+  return p.pred->getNameInternal();
 }
 
 static bool apply(const CreaturePredicates::Not& p, const Creature* victim, const Creature* attacker) {
@@ -51,11 +71,11 @@ static bool apply(const CreaturePredicates::Not& p, const Creature* victim, cons
 }
 
 static string getName(const CreaturePredicates::Not& p) {
-  return p.pred->getName(true);
+  return p.pred->getNameInternal(true);
 }
 
 static string getNameNegated(const CreaturePredicates::Not& p) {
-  return p.pred->getName();
+  return p.pred->getNameInternal();
 }
 
 static bool apply(const CreaturePredicates::Ingredient& e, const Creature* victim, const Creature* attacker) {
@@ -93,7 +113,7 @@ static bool apply(const CreaturePredicates::And& p, const Creature* victim, cons
 }
 
 static string getName(const CreaturePredicates::And& p) {
-  return combine(p.pred.transform([] (const auto& pred) { return pred.getName(); }));
+  return combine(p.pred.transform([] (const auto& pred) { return pred.getNameInternal(); }));
 }
 
 static bool apply(const CreaturePredicates::Or& p, const Creature* victim, const Creature* attacker) {
@@ -104,12 +124,17 @@ static bool apply(const CreaturePredicates::Or& p, const Creature* victim, const
 }
 
 static string getName(const CreaturePredicates::Or& p) {
-  return combine(p.pred.transform([] (const auto& pred) { return pred.getName(); }), " or "_s);
+  return combine(p.pred.transform([] (const auto& pred) { return pred.getNameInternal(); }), " or "_s);
 }
 
 template <typename T>
 static string getNameNegated(const T& p) {
   return "not " + Impl::getName(p);
+}
+
+template <typename T>
+static string getNameTopLevel(const T& p) {
+  return "against " + Impl::getName(p);
 }
 
 }
@@ -118,7 +143,11 @@ bool CreaturePredicate::apply(const Creature* victim, const Creature* attacker) 
   return visit<bool>([&](const auto& p) { return Impl::apply(p, victim, attacker); });
 }
 
-string CreaturePredicate::getName(bool negated) const {
+string CreaturePredicate::getName() const {
+  return visit<string>([&](const auto& p) { return Impl::getNameTopLevel(p); });
+}
+
+string CreaturePredicate::getNameInternal(bool negated) const {
   if (negated)
     return visit<string>([&](const auto& p) { return Impl::getNameNegated(p); });
   else

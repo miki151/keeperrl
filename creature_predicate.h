@@ -13,6 +13,7 @@ struct CreaturePredicate;
 namespace CreaturePredicates {
 SIMPLE_PREDICATE(Enemy);
 SIMPLE_PREDICATE(Automaton);
+SIMPLE_PREDICATE(Hidden);
 
 struct HatedBy {
   LastingEffect SERIAL(effect);
@@ -27,6 +28,12 @@ struct Ingredient {
 struct Attacker {
   HeapAllocated<CreaturePredicate> SERIAL(pred);
   SERIALIZE_ALL(pred)
+};
+
+struct Name {
+  string SERIAL(name);
+  HeapAllocated<CreaturePredicate> SERIAL(pred);
+  SERIALIZE_ALL(name, pred)
 };
 
 struct Not {
@@ -51,10 +58,12 @@ struct Or {
   X(CreatureStatus, 3)\
   X(HatedBy, 4)\
   X(Ingredient, 5)\
-  X(Attacker, 6)\
-  X(Not, 7)\
-  X(And, 8)\
-  X(Or, 9)
+  X(Hidden, 6)\
+  X(Name, 7)\
+  X(Attacker, 8)\
+  X(Not, 9)\
+  X(And, 10)\
+  X(Or, 11)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST
@@ -72,5 +81,6 @@ void serialize(Archive& ar1, CreaturePredicate&);
 struct CreaturePredicate : CreaturePredicates::CreaturePredicate {
   using CreaturePredicates::CreaturePredicate::CreaturePredicate;
   bool apply(const Creature* victim, const Creature* attacker) const;
-  string getName(bool negated = false) const;
+  string getName() const;
+  string getNameInternal(bool negated = false) const;
 };

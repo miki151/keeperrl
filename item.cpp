@@ -241,7 +241,7 @@ vector<string> Item::getDescription(const ContentFactory* factory) const {
   }
   for (auto attr : ENUM_ALL(AttrType))
     if (auto& elem = attributes->specialAttr[attr])
-      ret.push_back(toStringWithSign(elem->first) + " " + ::getName(attr) + " against " + elem->second.getName());
+      ret.push_back(toStringWithSign(elem->first) + " " + ::getName(attr) + " " + elem->second.getName());
   return ret;
 }
 

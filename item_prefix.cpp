@@ -58,7 +58,7 @@ vector<string> getEffectDescription(const ContentFactory* factory, const ItemPre
         return {"grants "_s + id.data() + " ability"};
       },
       [&](const SpecialAttr& a) -> vector<string> {
-        return {toStringWithSign(a.value) + " " + ::getName(a.attr) + " against " + a.predicate.getName()};
+        return {toStringWithSign(a.value) + " " + ::getName(a.attr) + " " + a.predicate.getName()};
       }
   );
 }
@@ -84,7 +84,7 @@ string getItemName(const ContentFactory* factory, const ItemPrefix& prefix) {
         return "of "_s + factory->getCreatures().getSpell(id)->getName(factory);
       },
       [&](const SpecialAttr& a) -> string {
-        return "against " + a.predicate.getName();
+        return " " + a.predicate.getName();
       }
   );
 }

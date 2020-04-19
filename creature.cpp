@@ -2310,12 +2310,12 @@ vector<AdjectiveInfo> Creature::getSpecialAttrAdjectives(bool good) const {
     if (auto& elem = attributes->specialAttr[attr])
       if (elem->first > 0 == good)
         ret.push_back(withTip(
-            toStringWithSign(elem->first) + " " + ::getName(attr) + " against " + elem->second.getName()));
+            toStringWithSign(elem->first) + " " + ::getName(attr) + " " + elem->second.getName()));
     for (auto& item : equipment->getAllEquipped())
       if (auto& elem = item->getSpecialModifier(attr))
         if (elem->first > 0 == good)
           ret.push_back(withTip(
-              toStringWithSign(elem->first) + " " + ::getName(attr) + " against " + elem->second.getName()));
+              toStringWithSign(elem->first) + " " + ::getName(attr) + " " + elem->second.getName()));
   }
   return ret;
 }
