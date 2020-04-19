@@ -30,8 +30,8 @@ static string getNameNegated(const CreaturePredicates::Automaton&) {
   return "non-automatons";
 }
 
-static bool apply(const CreaturePredicates::Hidden&, const Creature* victim, const Creature*) {
-  return victim->isHidden();
+static bool apply(const CreaturePredicates::Hidden&, const Creature* victim, const Creature* attacker) {
+  return victim->isHidden() && !victim->knowsHiding(attacker);
 }
 
 static string getName(const CreaturePredicates::Hidden&) {
@@ -59,7 +59,7 @@ static string getName(const CreaturePredicates::HatedBy& p) {
 }
 
 static bool apply(const CreaturePredicates::Attacker& p, const Creature* victim, const Creature* attacker) {
-  return !!attacker && p.pred->apply(attacker, attacker);
+  return !!attacker && p.pred->apply(attacker, victim);
 }
 
 static string getName(const CreaturePredicates::Attacker& p) {
