@@ -55,6 +55,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
 
 template <class Archive>
 void Furniture::serialize(Archive& ar1, const unsigned int v) {
+  movementSet->clearTraits();
   serializeImpl(ar1, v);
 }
 
