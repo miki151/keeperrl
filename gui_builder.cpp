@@ -1735,6 +1735,28 @@ SGuiElem GuiBuilder::drawMinionAndLevel(ViewId viewId, int level, int iconMult) 
 SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
   const int elemWidth = 30;
   auto lines = WL(getListBuilder, legendLineHeight);
+  const char* hint = "Drag and drop minions onto the [new team] button to create a new team. "
+    "You can drag them both from the map and the menus.";
+  if (!tutorial || info.teams.empty()) {
+    const bool isTutorialHighlight = tutorial && tutorial->highlights.contains(TutorialHighlight::NEW_TEAM);
+    lines.addElem(WL(stack, makeVec(
+          WL(dragListener, [this](DragContent content) {
+              content.visit<void>(
+                  [&](UniqueEntity<Creature>::Id id) {
+                    callbacks.input({UserInputId::CREATE_TEAM, id});
+                  },
+                  [&](const string& group) {
+                    callbacks.input({UserInputId::CREATE_TEAM_FROM_GROUP, group});
+                  },
+                  [&](TeamId) { }
+              );
+          ;}),
+          WL(conditional, WL(uiHighlightMouseOver), [&]{return gui.getDragContainer().hasElement();} ),
+          WL(conditional, WL(tutorialHighlight), [yes = isTutorialHighlight && info.teams.empty()]{ return yes; }),
+          getHintCallback({hint}),
+          WL(button, [this, hint] { callbacks.info(hint); }),
+          WL(label, "[new team]", Color::WHITE))));
+  }
   for (int i : All(info.teams)) {
     auto& team = info.teams[i];
     const int numPerLine = 7;
@@ -1779,28 +1801,6 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
             WL(getListBuilder, 22)
               .addElem(WL(topMargin, 8, WL(icon, GuiFactory::TEAM_BUTTON, GuiFactory::Alignment::TOP_CENTER)))
               .addElemAuto(teamLine.buildVerticalList()).buildHorizontalList())));
-  }
-  const char* hint = "Drag and drop minions onto the [new team] button to create a new team. "
-    "You can drag them both from the map and the menus.";
-  if (!tutorial || info.teams.empty()) {
-    const bool isTutorialHighlight = tutorial && tutorial->highlights.contains(TutorialHighlight::NEW_TEAM);
-    lines.addElem(WL(stack, makeVec(
-          WL(dragListener, [this](DragContent content) {
-              content.visit<void>(
-                  [&](UniqueEntity<Creature>::Id id) {
-                    callbacks.input({UserInputId::CREATE_TEAM, id});
-                  },
-                  [&](const string& group) {
-                    callbacks.input({UserInputId::CREATE_TEAM_FROM_GROUP, group});
-                  },
-                  [&](TeamId) { }
-              );
-          ;}),
-          WL(conditional, WL(uiHighlightMouseOver), [&]{return gui.getDragContainer().hasElement();} ),
-          WL(conditional, WL(tutorialHighlight), [yes = isTutorialHighlight && info.teams.empty()]{ return yes; }),
-          getHintCallback({hint}),
-          WL(button, [this, hint] { callbacks.info(hint); }),
-          WL(label, "[new team]", Color::WHITE))));
   }
   return lines.buildVerticalList();
 }
