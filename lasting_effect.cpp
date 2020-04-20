@@ -1195,10 +1195,10 @@ string LastingEffects::getDescription(LastingEffect type) {
   }
 }
 
-bool LastingEffects::canSee(const Creature* c1, const Creature* c2) {
+bool LastingEffects::canSee(const Creature* c1, const Creature* c2, GlobalTime time) {
   PROFILE_BLOCK("LastingEffects::canSee");
   return c1->getPosition().dist8(c2->getPosition()).value_or(5) < 5 && c2->getBody().hasBrain() &&
-      c1->isAffected(LastingEffect::TELEPATHY);
+      c1->isAffected(LastingEffect::TELEPATHY, time);
 }
 
 bool LastingEffects::modifyIsEnemyResult(const Creature* c, const Creature* other, GlobalTime time, bool result) {

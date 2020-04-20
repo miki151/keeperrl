@@ -1988,8 +1988,8 @@ CreatureAction Creature::throwItem(Item* item, Position target, bool isFriendlyA
   });
 }
 
-bool Creature::canSeeOutsidePosition(const Creature* c) const {
-  return LastingEffects::canSee(this, c);
+bool Creature::canSeeOutsidePosition(const Creature* c, GlobalTime time) const {
+  return LastingEffects::canSee(this, c, time);
 }
 
 bool Creature::canSeeInPositionIfNotBlind(const Creature* c, GlobalTime time) const {
@@ -2006,13 +2006,14 @@ bool Creature::canSeeIfNotBlind(const Creature* c, GlobalTime time) const {
   PROFILE;
   return (canSeeInPositionIfNotBlind(c, time) &&
           getLevel()->canSee(position.getCoord(), c->position.getCoord(), getVision())) ||
-      canSeeOutsidePosition(c);
+      canSeeOutsidePosition(c, time);
 }
 
 bool Creature::canSee(const Creature* c) const {
   PROFILE;
   auto time = getGlobalTime();
-  return time && ((canSeeInPosition(c, *time) && c->getPosition().isVisibleBy(this)) || canSeeOutsidePosition(c));
+  return time &&
+      ((canSeeInPosition(c, *time) && c->getPosition().isVisibleBy(this)) || canSeeOutsidePosition(c, *time));
 }
 
 bool Creature::canSee(Position pos) const {
@@ -2242,7 +2243,7 @@ const vector<Creature*>& Creature::getVisibleCreatures() const {
     auto globalTime = *getGlobalTime();
     if (isAffected(LastingEffect::BLIND)) {
       for (Creature* c : position.getAllCreatures(FieldOfView::sightRange))
-        if (canSeeOutsidePosition(c) || isUnknownAttacker(c))
+        if (canSeeOutsidePosition(c, globalTime) || isUnknownAttacker(c))
           ret.push_back(c);
     } else
       for (Creature* c : position.getAllCreatures(FieldOfView::sightRange))

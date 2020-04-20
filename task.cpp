@@ -813,7 +813,8 @@ class AttackCreatures : public Task {
 
   Creature* getNextCreature(Creature* attacker) const {
     for (auto c : creatures)
-      if (c && !c->isDead() && attacker->canSeeInPosition(c, attacker->getGame()->getGlobalTime()))
+      if (c && !c->isDead() && (attacker->canSeeInPosition(c, attacker->getGame()->getGlobalTime()) ||
+          attacker->isAffected(LastingEffect::TELEPATHY)))
         return c;
     return nullptr;
   }
@@ -938,10 +939,10 @@ class KillFighters : public Task {
   KillFighters(Collective* col, int numC) : collective(col), numCreatures(numC) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    optional<Position> moveTarget;
+     optional<Position> moveTarget;
     auto process = [&] (const vector<Creature*>& creatures) {
       for (const Creature* target : creatures)
-        if (c->canSeeInPosition(target, c->getGame()->getGlobalTime())) {
+        if (c->canSeeInPosition(target, c->getGame()->getGlobalTime()) || c->isAffected(LastingEffect::TELEPATHY)) {
           targets.insert(target);
           moveTarget = target->getPosition();
         }

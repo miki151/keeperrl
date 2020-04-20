@@ -1093,8 +1093,9 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
             index.getObject(obj->layer()).setExtendedActions({FurnitureClick::getClickAction(*clickType, position, furniture)});
   }
   if (Creature* c = position.getCreature()) {
-    if ((canSee && creature->canSeeInPosition(c, *c->getGlobalTime())) || c == creature ||
-        creature->canSeeOutsidePosition(c)) {
+    auto globalTime = *c->getGlobalTime();
+    if ((canSee && creature->canSeeInPosition(c, globalTime)) || c == creature ||
+        creature->canSeeOutsidePosition(c, globalTime)) {
       index.insert(c->getViewObjectFor(creature->getTribe()));
       index.modEquipmentCounts() = c->getEquipment().getCounts();
       auto& object = index.getObject(ViewLayer::CREATURE);

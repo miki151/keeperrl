@@ -113,7 +113,7 @@ class LastingEffects {
   static void onAllyKilled(Creature*);
   static string getName(LastingEffect);
   static string getDescription(LastingEffect);
-  static bool canSee(const Creature*, const Creature*);
+  static bool canSee(const Creature*, const Creature*, GlobalTime);
   static bool modifyIsEnemyResult(const Creature*, const Creature*, GlobalTime, bool);
   static int getPrice(LastingEffect);
   static double getMoraleIncrease(const Creature*, optional<GlobalTime>);

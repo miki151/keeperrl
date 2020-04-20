@@ -99,7 +99,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<PItem> steal(const vector<Item*> items);
   bool canSeeInPosition(const Creature*, GlobalTime) const;
   bool canSeeInPositionIfNotBlind(const Creature*, GlobalTime) const;
-  bool canSeeOutsidePosition(const Creature*) const;
+  bool canSeeOutsidePosition(const Creature*, GlobalTime) const;
   bool canSee(const Creature*) const;
   bool canSeeIfNotBlind(const Creature*, GlobalTime) const;
   bool canSee(Position) const;
