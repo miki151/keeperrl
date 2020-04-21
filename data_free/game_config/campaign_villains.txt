@@ -50,7 +50,7 @@ LAWFUL_KEEPER {
     {{ "ogre" } "OGRE_CAVE" "Ogres" LESSER}
     {{ "harpy" } "HARPY_CAVE" "Harpies" LESSER}
     {{ "ant_queen" } "ANTS_OPEN" "Ants" LESSER}
-    {{ "unknown_monster" ColorId RED } "MAIN_DUNGEON" "Unknown" MAIN}
+    {{ "dungeon_entrance" ColorId RED } "MAIN_DUNGEON" "Unremarkable dungeon" MAIN true}
 
     {{ "dwarf_baron" } "DWARVES" "Dwarves" ALLY}
     {{ "teuton_boss" } "TEUTONS" "Teutonic Knights" ALLY}
@@ -81,7 +81,7 @@ LAWFUL_ADVENTURER {
     {{ "ogre" } "OGRE_CAVE" "Ogres" LESSER}
     {{ "harpy" } "HARPY_CAVE" "Harpies" LESSER}
     {{ "ant_queen" } "ANTS_OPEN" "Ants" LESSER}
-    {{ "unknown_monster" ColorId RED } "MAIN_DUNGEON" "Unknown" MAIN}
+    {{ "dungeon_entrance" ColorId RED } "MAIN_DUNGEON" "Unremarkable dungeon" MAIN true}
 
     {{ "duke4" } "KNIGHTS" "Knights" ALLY}
     {{ "elf_lord" } "ELVES" "Elves" ALLY}
