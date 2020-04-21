@@ -163,7 +163,7 @@ void LevelBuilder::setLandingLink(Vec2 posT, StairKey key) {
 
 bool LevelBuilder::canPutCreature(Vec2 posT, Creature* c) {
   Vec2 pos = transform(posT);
-  if (!canNavigate(posT, c->getMovementType().setForced(false)))
+  if (!canNavigate(posT, c->getMovementType().setForced(false)) || hasAttrib(posT, SquareAttrib::NO_CREATURES))
     return false;
   for (pair<PCreature, Vec2>& c : creatures) {
     if (c.second == pos)

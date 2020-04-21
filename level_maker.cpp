@@ -484,8 +484,8 @@ class Inhabitants : public LevelMaker {
     if (!actorFactory)
       actorFactory = MonsterAIFactory::stayInLocation(builder->toGlobalCoordinates(area));
     Table<char> taken(area.right(), area.bottom());
-    auto creatures = inhabitants.generateCreatures(builder->getRandom(), &builder->getContentFactory()->getCreatures(), collective->getTribe(),
-        *actorFactory);
+    auto creatures = inhabitants.generateCreatures(builder->getRandom(), &builder->getContentFactory()->getCreatures(),
+        collective->getTribe(), *actorFactory);
     for (auto& minion : creatures) {
       PCreature& creature = minion.first;
       vector<Vec2> positions;
@@ -3018,7 +3018,8 @@ PLevelMaker LevelMaker::roomLevel(RandomGen& random, SettlementInfo info, Vec2 s
             RandomLocations::LocationPredicate(Predicate::type(building.wall), Predicate::canEnter({MovementTrait::WALK}), 1, 2),
             unique<Margin>(2, unique<MakerQueue>(
                 unique<Empty>(SquareChange::remove(FurnitureLayer::MIDDLE)),
-                unique<Stairs>(key, FurnitureType("HIDDEN_UP_STAIRS"), Predicate::alwaysTrue())))));
+                unique<Stairs>(key, FurnitureType("HIDDEN_UP_STAIRS"), Predicate::alwaysTrue()),
+                unique<AddAttrib>(SquareAttrib::NO_CREATURES)))));
     else
       queue->addMaker(unique<Stairs>(StairDirection::UP, key, building, Predicate::type(FurnitureType("FLOOR"))));
   }

@@ -4,6 +4,7 @@
 
 RICH_ENUM(SquareAttrib,
   NO_DIG,
+  NO_CREATURES,
   MOUNTAIN,
   HILL,
   LOWLAND,
