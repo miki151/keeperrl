@@ -104,7 +104,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar(memory, introText, nextKeeperWarning, tribeAlignment);
   ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints);
   ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo);
-  ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures);
+  ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures, usedResources);
 }
 
 SERIALIZABLE(PlayerControl)
@@ -150,6 +150,7 @@ void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const
     buildInfo.append(contentFactory->buildInfo.at(group));
   for (auto& info : buildInfo)
     if (auto furniture = info.type.getReferenceMaybe<BuildInfoTypes::Furniture>()) {
+      usedResources.insert(furniture->cost.id);
       for (auto type : furniture->types) {
         double luxury = getGame()->getContentFactory()->furniture.getData(type).getLuxuryInfo().luxury;
         if (luxury > 0) {
@@ -177,9 +178,16 @@ void PlayerControl::loadImmigrationAndWorkshops(ContentFactory* contentFactory,
     for (auto& elem : contentFactory->workshopGroups.at(group))
       merged[elem.first].append(elem.second);
   collective->setWorkshops(unique<Workshops>(std::move(merged), contentFactory));
+  for (auto& workshop : collective->getWorkshops().types)
+    for (auto& option : workshop.second.getOptions())
+      usedResources.insert(option.cost.id);
   vector<ImmigrantInfo> immigrants;
   for (auto elem : keeperCreatureInfo.immigrantGroups)
     append(immigrants, contentFactory->immigrantsData.at(elem));
+  for (auto& elem : immigrants)
+    for (auto& req : elem.requirements)
+      if (auto cost = req.type.getReferenceMaybe<CostInfo>())
+        usedResources.insert(cost->id);
   CollectiveConfig::addBedRequirementToImmigrants(immigrants, contentFactory);
   collective->setImmigration(makeOwner<Immigration>(collective, std::move(immigrants)));
   collective->setTechnology(std::move(technology));
@@ -1506,12 +1514,13 @@ void PlayerControl::fillDungeonLevel(AvatarLevelInfo& info) const {
 
 void PlayerControl::fillResources(CollectiveInfo& info) const {
   info.numResource.clear();
-  for (auto& resource : getGame()->getContentFactory()->resourceOrder) {
-    auto& elem = getGame()->getContentFactory()->resourceInfo.at(resource);
-    if (elem.viewId)
-      info.numResource.push_back(
-          {*elem.viewId, collective->numResourcePlusDebt(resource), elem.name, elem.tutorialHighlight});
-  }
+  for (auto& resource : getGame()->getContentFactory()->resourceOrder)
+    if (usedResources.count(resource)) {
+      auto& elem = getGame()->getContentFactory()->resourceInfo.at(resource);
+      if (elem.viewId)
+        info.numResource.push_back(
+            {*elem.viewId, collective->numResourcePlusDebt(resource), elem.name, elem.tutorialHighlight});
+    }
 }
 
 struct PlayerControl::KeeperDangerInfo {

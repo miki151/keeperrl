@@ -24,6 +24,7 @@
 #include "event_listener.h"
 #include "keeper_creature_info.h"
 #include "workshop_type.h"
+#include "resource_id.h"
 
 class Model;
 class Technology;
@@ -274,5 +275,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   ViewId getViewId(const BuildInfoTypes::BuildType&) const;
   EntityMap<Creature, LocalTime> leaderWoundedTime;
   void handleDestructionOrder(Position position, HighlightType, DestroyAction);
+  unordered_set<CollectiveResourceId, CustomHash<CollectiveResourceId>> SERIAL(usedResources);
 };
 
