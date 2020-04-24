@@ -731,6 +731,22 @@ static bool apply(const Effects::DestroyWalls& m, Position pos, Creature*) {
   return res;
 }
 
+static string getName(const Effects::RemoveFurniture& e, const ContentFactory* c) {
+  return "remove " + c->furniture.getData(e.type).getName();
+}
+
+static string getDescription(const Effects::RemoveFurniture& e, const ContentFactory* c) {
+  return "Removes " + c->furniture.getData(e.type).getName();
+}
+
+static bool apply(const Effects::RemoveFurniture& e, Position pos, Creature*) {
+  if (auto f = pos.getFurniture(e.type)) {
+    pos.removeFurniture(f->getLayer());
+    return true;
+  }
+  return false;
+}
+
 static bool applyToCreature(const Effects::Heal& e, Creature* c, Creature*) {
   if (c->getBody().canHeal(e.healthType)) {
     bool res = false;

@@ -271,6 +271,10 @@ struct AddMinionTrait {
   MinionTrait SERIAL(trait);
   SERIALIZE_ALL(trait)
 };
+struct RemoveFurniture {
+  FurnitureType SERIAL(type);
+  SERIALIZE_ALL(type)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -342,6 +346,7 @@ struct AddMinionTrait {
   X(AddAutomatonParts, 66)\
   X(AddMinionTrait, 67)\
   X(Caster, 68)\
+  X(RemoveFurniture, 69)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
