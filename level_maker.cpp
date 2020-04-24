@@ -400,13 +400,13 @@ class Connector : public LevelMaker {
   }
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
-    Vec2 p1, p2;
+    Vec2 p1;
     vector<Vec2> points = area.getAllSquares().filter([&] (Vec2 v) { return connectPred.apply(builder, v);});
     if (points.size() < 2)
       return;
     for (int i : Range(30)) {
       p1 = builder->getRandom().choose(points);
-      p2 = builder->getRandom().choose(points);
+      auto p2 = builder->getRandom().choose(points);
       if (p1 != p2)
         connect(builder, p1, p2, area);
     }
