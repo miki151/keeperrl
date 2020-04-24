@@ -2219,7 +2219,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
   for (int i : All(info.researched)) {
     auto& elem = info.researched[i];
     auto line = WL(getListBuilder)
-        .addElem(WL(label, getName(elem.id), Color::GRAY), 10)
+        .addElem(WL(label, capitalFirst(getName(elem.id)), Color::GRAY), 10)
         .buildHorizontalList();
     line = WL(stack, std::move(line), getUnlocksTooltip(elem));
     lines.addElem(WL(rightMargin, rightElemMargin, std::move(line)));
@@ -2322,7 +2322,7 @@ SGuiElem GuiBuilder::drawBestiaryButtons(const vector<PlayerInfo>& minions, int 
           (i == index ? WL(uiHighlightLine) : WL(empty)),
           line.buildHorizontalList()));
   }
-  return WL(scrollable, gui.margins(list.buildVerticalList(), 0, 5, 10, 0), &minionButtonsScroll, &scrollbarsHeld);
+  return WL(scrollable, gui.margins(list.buildVerticalList(), 0, 5, 10, 0), &minionButtonsScroll, &scrollbarsHeld2);
 }
 
 SGuiElem GuiBuilder::drawBestiaryOverlay(const vector<PlayerInfo>& creatures, int index) {
@@ -2348,7 +2348,7 @@ SGuiElem GuiBuilder::drawSpellSchoolPage(const SpellSchoolInfo& school) {
   list.addSpace(legendLineHeight / 2);
   for (auto& spell : school.spells)
     list.addElem(drawSpellLabel(spell));
-  return WL(scrollable, gui.margins(list.buildVerticalList(), 0, 5, 10, 0), &minionButtonsScroll, &scrollbarsHeld);
+  return WL(scrollable, gui.margins(list.buildVerticalList(), 0, 5, 10, 0), &minionButtonsScroll, &scrollbarsHeld2);
 }
 
 SGuiElem GuiBuilder::drawSpellSchoolButtons(const vector<SpellSchoolInfo>& schools, int index) {
@@ -3402,7 +3402,7 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewI
   return WL(margin, list.buildVerticalList(),
       WL(scrollable, WL(horizontalListFit, makeVec(
           WL(rightMargin, 15, leftLines.buildVerticalList()),
-          drawEquipmentAndConsumables(minion))), &minionPageScroll, &scrollbarsHeld),
+          drawEquipmentAndConsumables(minion))), &minionPageScroll, &scrollbarsHeld2),
       topMargin, GuiFactory::TOP);
 }
 
