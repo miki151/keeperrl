@@ -1269,7 +1269,7 @@
       fullTitle = true
       firstNameGen = "GERMANIC"
     }
-    inventory = {
+    inventory = append {
       { type = Glyph WEAPON SpellId "audience" }
     }
   }
