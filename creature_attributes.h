@@ -126,6 +126,7 @@ class CreatureAttributes {
   vector<ViewId> SERIAL(viewIdUpgrades);
   vector<ItemType> SERIAL(automatonParts);
   EnumMap<AttrType, optional<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
+  heap_optional<Effect> SERIAL(deathEffect);
 
   private:
   void consumeEffects(const EnumMap<LastingEffect, int>&);

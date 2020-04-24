@@ -1609,6 +1609,7 @@ bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
 }
 
 void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
+  auto oldPos = position;
   CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
   if (considerSavingLife(drops, attacker))
     return;
@@ -1649,6 +1650,8 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   getTribe()->onMemberKilled(this, attacker);
   getLevel()->killCreature(this);
   setController(makeOwner<DoNothingController>(this));
+  if (attributes->deathEffect)
+    attributes->deathEffect->apply(oldPos, this);
 }
 
 void Creature::dieNoReason(DropType drops) {
