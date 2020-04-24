@@ -3,7 +3,7 @@
 #include "text_serialization.h"
 #include "parse_game.h"
 
-ViewId SavedGameInfo::getViewId() const {
+ViewIdList SavedGameInfo::getViewId() const {
   return minions[0].viewId;
 }
 

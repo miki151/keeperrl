@@ -6,11 +6,11 @@
 
 struct SavedGameInfo {
   struct MinionInfo {
-    ViewId SERIAL(viewId);
+    ViewIdList SERIAL(viewId);
     int SERIAL(level);
     SERIALIZE_ALL(viewId, level)
   };
-  ViewId getViewId() const;
+  ViewIdList getViewId() const;
   vector<MinionInfo> SERIAL(minions);
   struct RetiredEnemyInfo {
     EnemyId SERIAL(enemyId);
@@ -25,7 +25,7 @@ struct SavedGameInfo {
 };
 
 struct OldSavedGameInfo {
-  ViewId getViewId() const;
+  ViewIdList getViewId() const;
   vector<SavedGameInfo::MinionInfo> SERIAL(minions);
   double SERIAL(dangerLevel);
   string SERIAL(name);

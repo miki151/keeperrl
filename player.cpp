@@ -1125,10 +1125,10 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.insert(ViewObject(ViewId("unknown_monster"), ViewLayer::TORCH2, "Surprise"));
   if (position != creature->getPosition() && creature->isAffected(LastingEffect::HALLU))
     for (auto& object : index.getAllObjects())
-      object.setId(shuffleViewId(object.id()));
+      object.setId(shuffleViewId(object.getViewIdList()));
 }
 
-ViewId Player::shuffleViewId(const ViewId& id) const {
+ViewIdList Player::shuffleViewId(const ViewIdList& id) const {
   for (auto& ids : halluIds)
     if (ids.count(id))
       return Random.choose(ids);
@@ -1190,7 +1190,7 @@ vector<TeamMemberAction> Player::getTeamMemberActions(const Creature* member) co
 void Player::fillDungeonLevel(PlayerInfo& info) const {
   info.avatarLevelInfo.emplace();
   info.avatarLevelInfo->level = avatarLevel->level + 1;
-  info.avatarLevelInfo->viewId = creature->getViewObject().id();
+  info.avatarLevelInfo->viewId = creature->getViewObject().getViewIdList();
   info.avatarLevelInfo->title = creature->getName().title();
   info.avatarLevelInfo->progress = avatarLevel->progress;
   info.avatarLevelInfo->numAvailable = avatarLevel->numResearchAvailable();

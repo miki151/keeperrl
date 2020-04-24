@@ -1990,7 +1990,7 @@ SGuiElem GuiFactory::empty() {
 class ViewObjectGui : public GuiElem {
   public:
   ViewObjectGui(const ViewObject& obj, Vec2 sz, double sc, Color c) : object(obj), size(sz), scale(sc), color(c) {}
-  ViewObjectGui(ViewId id, Vec2 sz, double sc, Color c) : object(id), size(sz), scale(sc), color(c) {
+  ViewObjectGui(vector<ViewId> id, Vec2 sz, double sc, Color c) : object(id), size(sz), scale(sc), color(c) {
     //CHECK(int(id) >= 0 && int(id) < EnumInfo<ViewId>::size);
   }
   ViewObjectGui(function<ViewId()> id, Vec2 sz, double sc, Color c)
@@ -2001,8 +2001,9 @@ class ViewObjectGui : public GuiElem {
           [&](const ViewObject& obj) {
             renderer.drawViewObject(getBounds().topLeft(), obj, true, scale, color);
           },
-          [&](ViewId viewId) {
-            renderer.drawViewObject(getBounds().topLeft(), viewId, true, scale, color);
+          [&](const vector<ViewId>& viewId) {
+            for (auto& id : viewId)
+              renderer.drawViewObject(getBounds().topLeft(), id, true, scale, color);
           },
           [&](function<ViewId()> viewId) {
             renderer.drawViewObject(getBounds().topLeft(), viewId(), true, scale, color);
@@ -2019,7 +2020,7 @@ class ViewObjectGui : public GuiElem {
   }
 
   private:
-  variant<ViewObject, ViewId, function<ViewId()>> object;
+  variant<ViewObject, vector<ViewId>, function<ViewId()>> object;
   Vec2 size;
   double scale;
   Color color;
@@ -2030,7 +2031,11 @@ SGuiElem GuiFactory::viewObject(const ViewObject& object, double scale, Color co
 }
 
 SGuiElem GuiFactory::viewObject(ViewId id, double scale, Color color) {
-  return SGuiElem(new ViewObjectGui(id, Vec2(1, 1) * Renderer::nominalSize * scale, scale, color));
+  return SGuiElem(new ViewObjectGui({id}, Vec2(1, 1) * Renderer::nominalSize * scale, scale, color));
+}
+
+SGuiElem GuiFactory::viewObject(ViewIdList list, double scale, Color color) {
+  return SGuiElem(new ViewObjectGui(list, Vec2(1, 1) * Renderer::nominalSize * scale, scale, color));
 }
 
 SGuiElem GuiFactory::viewObject(function<ViewId()> id, double scale, Color color) {

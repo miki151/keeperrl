@@ -25,7 +25,7 @@ class Campaign {
     SERIALIZE_ALL(NAMED(viewId), NAMED(enemyId), NAMED(name), NAMED(type), OPTION(alwaysPresent))
   };
   struct KeeperInfo {
-    ViewId SERIAL(viewId);
+    ViewIdList SERIAL(viewId);
     SERIALIZE_ALL(viewId)
   };
   struct RetiredInfo {
@@ -44,7 +44,7 @@ class Campaign {
     bool isEmpty() const;
     bool SERIAL(blocked) = false;
     void setBlocked();
-    optional<ViewId> getDwellerViewId() const;
+    optional<ViewIdList> getDwellerViewId() const;
     optional<string> getDwellerDescription() const;
     optional<VillainType> getVillainType() const;
     SERIALIZE_ALL(viewId, dweller, blocked)

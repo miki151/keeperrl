@@ -17,10 +17,10 @@ static string generateAttackerName(const Collective* attacker) {
     return "an unnamed attacker";
 }
 
-static ViewId getAttackViewId(const Collective* col, const vector<Creature*>& attackers) {
+static ViewIdList getAttackViewId(const Collective* col, const vector<Creature*>& attackers) {
   if (auto leader = col->getLeaders().getFirstElement())
-    return (*leader)->getViewObject().id();
-  return attackers[0]->getViewObject().id();
+    return (*leader)->getViewObject().getViewIdList();
+  return attackers[0]->getViewObject().getViewIdList();
 }
 
 CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, Collective* att, const vector<Creature*>& c, optional<int> r)
@@ -28,7 +28,7 @@ CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, Collective* a
       attackerViewId(getAttackViewId(att, c)),
       attackTasks(attackTasks.transform([](auto elem) { return elem->getThis(); })) {}
 
-CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, const string& name, ViewId id, const vector<Creature*>& c)
+CollectiveAttack::CollectiveAttack(vector<WConstTask> attackTasks, const string& name, ViewIdList id, const vector<Creature*>& c)
     : creatures(c), attackerName(name), attackerViewId(id),
       attackTasks(attackTasks.transform([](auto elem) { return elem->getThis(); })) {}
 
@@ -41,7 +41,7 @@ const string& CollectiveAttack::getAttackerName() const {
   return attackerName;
 }
 
-ViewId CollectiveAttack::getAttackerViewId() const {
+ViewIdList CollectiveAttack::getAttackerViewId() const {
   return attackerViewId;
 }
 

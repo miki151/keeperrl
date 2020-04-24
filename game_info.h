@@ -28,7 +28,7 @@ class Encyclopedia;
 
 struct CreatureInfo {
   CreatureInfo(const Creature*);
-  ViewId HASH(viewId);
+  ViewIdList HASH(viewId);
   UniqueEntity<Creature>::Id HASH(uniqueId);
   string HASH(name);
   string HASH(stackName);
@@ -83,7 +83,7 @@ struct AttributeInfo {
 struct AvatarLevelInfo {
   int HASH(level);
   double HASH(progress);
-  ViewId HASH(viewId);
+  ViewIdList HASH(viewId);
   string HASH(title);
   int HASH(numAvailable);
   HASH_ALL(level, progress, viewId, title, numAvailable)
@@ -163,7 +163,7 @@ class PlayerInfo {
   UniqueEntity<Creature>::Id HASH(creatureId);
   int HASH(moveCounter);
   double HASH(morale);
-  ViewId HASH(viewId);
+  ViewIdList HASH(viewId);
   bool HASH(isPlayerControlled);
   enum ControlMode {
     FULL,
@@ -184,7 +184,7 @@ class PlayerInfo {
   optional<double> HASH(carryLimit);
   optional<ViewId> HASH(quarters);
   bool HASH(canAssignQuarters);
-  vector<ViewId> HASH(kills);
+  vector<ViewIdList> HASH(kills);
   vector<string> HASH(killTitles);
   HASH_ALL(attributes, skills, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles, bodyParts, bodyPartLimit)
 };
@@ -202,7 +202,7 @@ struct ImmigrantDataInfo {
   vector<SpecialTraitInfo> HASH(specialTraits);
   optional<pair<ViewId, int>> HASH(cost);
   string HASH(name);
-  ViewId HASH(viewId);
+  ViewIdList HASH(viewId);
   vector<AttributeInfo> HASH(attributes);
   optional<int> HASH(count);
   optional<TimeInterval> HASH(timeLeft);
@@ -246,7 +246,7 @@ class CollectiveInfo {
   struct CreatureGroup {
     UniqueEntity<Creature>::Id HASH(creatureId);
     string HASH(name);
-    ViewId HASH(viewId);
+    ViewIdList HASH(viewId);
     int HASH(count);
     bool HASH(highlight);
     HASH_ALL(creatureId, name, viewId, count, highlight)
@@ -298,7 +298,7 @@ class CollectiveInfo {
     struct TechInfo {
       TechId HASH(id);
       struct UnlockInfo {
-        ViewId HASH(viewId);
+        ViewIdList HASH(viewId);
         string HASH(name);
         string HASH(type);
         HASH_ALL(viewId, name, type)
@@ -354,14 +354,14 @@ class CollectiveInfo {
   };
   optional<Ransom> HASH(ransom);
   struct OnGoingAttack {
-    ViewId HASH(viewId);
+    ViewIdList HASH(viewId);
     string HASH(attacker);
     UniqueEntity<Creature>::Id HASH(creatureId);
     HASH_ALL(viewId, attacker, creatureId)
   };
   vector<OnGoingAttack> HASH(onGoingAttacks);
   struct NextWave {
-    ViewId HASH(viewId);
+    ViewIdList HASH(viewId);
     string HASH(attacker);
     TimeInterval HASH(numTurns);
     HASH_ALL(viewId, attacker, numTurns)

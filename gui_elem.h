@@ -21,6 +21,7 @@
 #include "drag_and_drop.h"
 #include "texture_id.h"
 #include "attr_type.h"
+#include "view_id.h"
 
 class ViewObject;
 class Clock;
@@ -193,6 +194,7 @@ class GuiFactory {
   SGuiElem crossOutText(Color);
   SGuiElem viewObject(const ViewObject&, double scale = 1, Color = Color::WHITE);
   SGuiElem viewObject(ViewId, double scale = 1, Color = Color::WHITE);
+  SGuiElem viewObject(ViewIdList, double scale = 1, Color = Color::WHITE);
   SGuiElem viewObject(function<ViewId()>, double scale = 1, Color = Color::WHITE);
   SGuiElem asciiBackground(ViewId);
   enum class TranslateCorner {

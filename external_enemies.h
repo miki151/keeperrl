@@ -22,7 +22,7 @@ static_assert(std::is_nothrow_move_constructible<ExternalEnemy>::value, "T shoul
 struct EnemyEvent {
   ExternalEnemy SERIAL(enemy);
   LocalTime SERIAL(attackTime);
-  ViewId SERIAL(viewId);
+  ViewIdList SERIAL(viewId);
   SERIALIZE_ALL(enemy, attackTime, viewId)
 };
 

@@ -266,7 +266,7 @@ class GuiBuilder {
   SGuiElem getItemLine(const ItemInfo&, function<void(Rectangle)> onClick,
       function<void()> onMultiClick = nullptr);
   vector<string> getItemHint(const ItemInfo&);
-  SGuiElem drawMinionAndLevel(ViewId viewId, int level, int iconMult);
+  SGuiElem drawMinionAndLevel(ViewIdList, int level, int iconMult);
   vector<SDL::SDL_Keysym> getConfirmationKeys();
   optional<ItemAction> getItemChoice(const ItemInfo& itemInfo, Vec2 menuPos, bool autoDefault);
   vector<SGuiElem> getMultiLine(const string& text, Color, MenuType, int maxWidth, int fontSize);

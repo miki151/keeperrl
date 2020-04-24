@@ -79,7 +79,7 @@ CreatureList& CreatureList::addUnique(CreatureId id) {
   return *this;
 }
 
-ViewId CreatureList::getViewId(CreatureFactory* factory) const {
+ViewIdList CreatureList::getViewId(CreatureFactory* factory) const {
   if (!uniques.empty())
     return factory->getViewId(uniques[0]);
   else

@@ -72,6 +72,10 @@ const EnumSet<ViewObjectAction>& ViewObject::getExtendedActions() const {
   return extendedActions;
 }
 
+ViewIdList ViewObject::getViewIdList() const {
+  return concat({id()}, partIds);
+}
+
 void ViewObject::addMovementInfo(MovementInfo info, GenericId id) {
   CHECK(id);
   genericId = id;
@@ -209,6 +213,12 @@ ViewLayer ViewObject::layer() const {
 
 void ViewObject::setId(ViewId id) {
   resource_id = id;
+}
+
+void ViewObject::setId(ViewIdList id) {
+  resource_id = id.front();
+  if (id.size() > 1)
+    partIds = id.getSubsequence(1);
 }
 
 void ViewObject::setColorVariant(Color color) {

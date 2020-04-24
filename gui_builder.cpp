@@ -1726,7 +1726,7 @@ struct CreatureMapElem {
   CreatureInfo any;
 };
 
-SGuiElem GuiBuilder::drawMinionAndLevel(ViewId viewId, int level, int iconMult) {
+SGuiElem GuiBuilder::drawMinionAndLevel(ViewIdList viewId, int level, int iconMult) {
   return WL(stack, makeVec(
         WL(viewObject, viewId, iconMult),
         WL(label, toString(level), 12 * iconMult)));
@@ -1770,7 +1770,7 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
     }
     if (!currentLine.empty())
       teamLine.addElem(WL(horizontalList, std::move(currentLine), elemWidth));
-    ViewId leaderViewId = info.getMinion(team.members[0])->viewId;
+    auto leaderViewId = info.getMinion(team.members[0])->viewId;
     auto selectButton = [this](int teamId) {
       return WL(releaseLeftButton, [=]() {
           onTutorialClicked(0, TutorialHighlight::CONTROL_TEAM);
@@ -2465,7 +2465,7 @@ SGuiElem GuiBuilder::drawLyingItemsList(const string& title, const ItemCounts& i
       currentWidth = line.getSize();
     }
     auto elem = cnt > 1
-        ? drawMinionAndLevel(id, cnt, 1)
+        ? drawMinionAndLevel({id}, cnt, 1)
         : WL(viewObject, id);
     if (currentWidth + *elem->getPreferredWidth() > maxWidth) {
       lines.addElem(line.buildHorizontalList());
@@ -2517,7 +2517,7 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
       if (index.hasObject(layer)) {
         auto& viewObject = index.getObject(layer);
         lines.addElem(WL(getListBuilder)
-              .addElem(WL(viewObject, viewObject.id()), 30)
+              .addElem(WL(viewObject, viewObject.getViewIdList()), 30)
               .addElemAuto(WL(label, viewObject.getDescription()))
               .buildHorizontalList());
         if (layer == ViewLayer::CREATURE)
@@ -2970,8 +2970,9 @@ static optional<GuiFactory::IconId> getMoraleIcon(double morale) {
     return none;
 }
 
-static map<ViewId, vector<PlayerInfo>> groupByViewId(const vector<PlayerInfo>& minions) {
-  map<ViewId, vector<PlayerInfo>> ret;
+using MinionGroupMap = unordered_map<ViewIdList, vector<PlayerInfo>, CustomHash<ViewIdList>>;
+static MinionGroupMap groupByViewId(const vector<PlayerInfo>& minions) {
+  MinionGroupMap ret;
   for (auto& elem : minions)
     ret[elem.viewId].push_back(elem);
   return ret;
@@ -3551,7 +3552,7 @@ SGuiElem GuiBuilder::drawCampaignGrid(const Campaign& c, optional<Vec2>* marked,
       Vec2 pos(x, y);
       vector<SGuiElem> elem;
       if (auto id = sites[x][y].getDwellerViewId()) {
-        elem.push_back(WL(asciiBackground, *id));
+        elem.push_back(WL(asciiBackground, id->front()));
         if (c.getPlayerPos() && c.isInInfluence(pos))
           elem.push_back(WL(viewObject, ViewId("square_highlight"), iconScale,
               getHighlightColor(*sites[pos].getVillainType())));

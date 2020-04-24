@@ -51,7 +51,7 @@ class CreatureFactory {
   static PCreature getIllusion(Creature*);
 
   static CreatureAttributes getKrakenAttributes(ViewId, const char* name);
-  ViewId getViewId(CreatureId) const;
+  ViewIdList getViewId(CreatureId) const;
   string getName(CreatureId) const;
   string getNamePlural(CreatureId) const;
   const Gender& getGender(CreatureId);

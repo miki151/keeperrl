@@ -24,7 +24,7 @@
 #include "container_range.h"
 
 CreatureInfo::CreatureInfo(const Creature* c)
-    : viewId(c->getViewObject().id()),
+    : viewId(c->getViewObject().getViewIdList()),
       uniqueId(c->getUniqueId()),
       name(c->getName().bare()),
       stackName(c->getName().stack()),
@@ -172,7 +172,7 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory) 
   name = c->getName().bare();
   title = c->getName().title();
   description = capitalFirst(c->getAttributes().getDescription());
-  viewId = c->getViewObject().id();
+  viewId = c->getViewObject().getViewIdList();
   morale = c->getMorale();
   positionHash = c->getPosition().getHash();
   creatureId = c->getUniqueId();

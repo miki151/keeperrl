@@ -690,7 +690,7 @@ const vector<Creature*>& Game::getPlayerCreatures() const {
 static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {
   SavedGameInfo::MinionInfo ret;
   ret.level = (int)c->getBestAttack().value;
-  ret.viewId = c->getViewObject().id();
+  ret.viewId = c->getViewObject().getViewIdList();
   return ret;
 }
 

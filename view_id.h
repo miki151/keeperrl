@@ -20,4 +20,6 @@ class ViewId : public ContentId<ViewId> {
   Color color = Color::WHITE;
 };
 
+using ViewIdList = vector<ViewId>;
+
 std::ostream& operator <<(std::ostream&, ViewId);

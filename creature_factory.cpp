@@ -246,12 +246,12 @@ static ViewId getSpecialViewId(bool humanoid, bool large, bool body, bool wings)
   return specialViewIds[humanoid * 8 + (!large) * 4 + (!body) * 2 + wings];
 }
 
-ViewId CreatureFactory::getViewId(CreatureId id) const {
+ViewIdList CreatureFactory::getViewId(CreatureId id) const {
   if (auto a = getReferenceMaybe(attributes, id))
-    return a->viewId;
+    return {a->viewId};
   if (auto p = getReferenceMaybe(getSpecialParams(), id))
-    return getSpecialViewId(p->humanoid, p->large, p->living, p->wings);
-  return ViewId("knight");
+    return {getSpecialViewId(p->humanoid, p->large, p->living, p->wings)};
+  return {ViewId("knight")};
 }
 
 string CreatureFactory::getName(CreatureId id) const {

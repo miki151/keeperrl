@@ -891,11 +891,11 @@ vector<Collective*> PlayerControl::getKnownVillains() const {
       return showAll || collective->isKnownVillain(c) || !c->getTriggers(collective).empty();});
 }
 
-ViewId PlayerControl::getMinionGroupViewId(Creature* c) const {
+ViewIdList PlayerControl::getMinionGroupViewId(Creature* c) const {
   if (collective->hasTrait(c, MinionTrait::PRISONER)) {
-    return ViewId("prisoner");
+    return {ViewId("prisoner")};
   } else
-    return c->getViewObject().id();
+    return c->getViewObject().getViewIdList();
 }
 
 vector<Creature*> PlayerControl::getMinionGroup(const string& groupName) const {
@@ -1038,15 +1038,15 @@ void PlayerControl::acquireTech(TechId tech) {
 void PlayerControl::fillTechUnlocks(CollectiveInfo::LibraryInfo::TechInfo& techInfo) const {
   auto tech = techInfo.id;
   for (auto& t2 : collective->getTechnology().getAllowed(tech))
-    techInfo.unlocks.push_back({ViewId("book"), t2.data(), "technology"});
+    techInfo.unlocks.push_back({{ViewId("book")}, t2.data(), "technology"});
   for (auto& elem : buildInfo)
     for (auto& r : elem.requirements)
       if (r == tech)
-        techInfo.unlocks.push_back({getViewId(elem.type), elem.name, "constructions"});
+        techInfo.unlocks.push_back({{getViewId(elem.type)}, elem.name, "constructions"});
   for (auto& workshop : collective->getWorkshops().types)
     for (auto& option : workshop.second.getOptions())
       if (option.techId == tech)
-        techInfo.unlocks.push_back({option.viewId, option.name, "workshop items"});
+        techInfo.unlocks.push_back({{option.viewId}, option.name, "workshop items"});
   auto& creatureFactory = getGame()->getContentFactory()->getCreatures();
   for (auto& immigrant : collective->getImmigration().getImmigrants())
     for (auto& req : immigrant.requirements)
@@ -1265,7 +1265,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
     ret.push_back(ImmigrantDataInfo());
     ret.back().requirements = requirements;
     ret.back().name = c->getName().bare() + " (prisoner)";
-    ret.back().viewId = c->getViewObject().id();
+    ret.back().viewId = c->getViewObject().getViewIdList();
     ret.back().attributes = AttributeInfo::fromCreature(c);
     ret.back().count = stack.creatures.size() == 1 ? none : optional<int>(stack.creatures.size());
     ret.back().timeLeft = c->getTimeRemaining(LastingEffect::STUNNED);
@@ -1370,7 +1370,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
         [&](const auto& trait){ return getSpecialTraitInfo(trait, this->getGame()->getContentFactory()); });
     info.immigration.back().cost = getCostObj(candidate.getCost());
     info.immigration.back().name = name;
-    info.immigration.back().viewId = c->getViewObject().id();
+    info.immigration.back().viewId = c->getViewObject().getViewIdList();
     info.immigration.back().attributes = AttributeInfo::fromCreature(c);
     info.immigration.back().count = count == 1 ? none : optional<int>(count);
     info.immigration.back().timeLeft = timeRemaining;
@@ -1459,7 +1459,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     info.allImmigration.back().info = infoLines;
     info.allImmigration.back().cost = costObj;
     info.allImmigration.back().name = c->getName().stack();
-    info.allImmigration.back().viewId = c->getViewObject().id();
+    info.allImmigration.back().viewId = c->getViewObject().getViewIdList();
     info.allImmigration.back().attributes = AttributeInfo::fromCreature(c);
     info.allImmigration.back().id = elem.index();
     info.allImmigration.back().autoState = collective->getImmigration().getAutoState(elem.index());
@@ -1469,7 +1469,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     info.allImmigration.back().requirements = {"Requires 2 prison tiles", "Requires knocking out a hostile creature"};
     info.allImmigration.back().info = {"Supplies your imp force", "Can be converted to your side using torture"};
     info.allImmigration.back().name = "prisoner";
-    info.allImmigration.back().viewId = ViewId("prisoner");
+    info.allImmigration.back().viewId = {ViewId("prisoner")};
     info.allImmigration.back().id =-1;
   }
 }
@@ -1497,7 +1497,7 @@ void PlayerControl::fillDungeonLevel(AvatarLevelInfo& info) const {
   const auto& dungeonLevel = collective->getDungeonLevel();
   info.level = dungeonLevel.level + 1;
   if (auto leader = collective->getLeaders().getFirstElement()) {
-    info.viewId = leader[0]->getViewObject().id();
+    info.viewId = leader[0]->getViewObject().getViewIdList();
     info.title = leader[0]->getName().title();
   }
   info.progress = dungeonLevel.progress;
@@ -1611,7 +1611,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
         auto viewId = nextWave->viewId;
         if (index % 6 == 5) {
           name = "Unknown";
-          viewId = ViewId("unknown_monster");
+          viewId = {ViewId("unknown_monster")};
         }
         if (!dismissedNextWaves.count(index) && countDown < maxEnemyCountdown)
           info.nextWave = CollectiveInfo::NextWave {

@@ -40,7 +40,7 @@ class CampaignBuilder {
   vector<OptionId> getPrimaryOptions() const;
   vector<Campaign::VillainInfo> getVillains(TribeAlignment, VillainType);
   const char* getIntroText() const;
-  void setPlayerPos(Campaign&, Vec2, ViewId playerViewId);
+  void setPlayerPos(Campaign&, Vec2, ViewIdList);
   vector<CampaignType> getAvailableTypes() const;
   VillainPlacement getVillainPlacement(const Campaign&, VillainType);
   void placeVillains(Campaign&, vector<Campaign::SiteInfo::Dweller>, const VillainPlacement&, int count);

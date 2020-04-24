@@ -136,7 +136,7 @@ const char* CampaignBuilder::getIntroText() const {
    }
 }
 
-void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewId playerViewId) {
+void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewIdList playerViewId) {
   switch (getPlayerRole()) {
     case PlayerRole::KEEPER:
       if (campaign.playerPos)

@@ -996,7 +996,7 @@ void Creature::onKilledOrCaptured(Creature* victim) {
     int difficulty = victim->getDifficultyPoints();
     CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
     points += difficulty;
-    kills.push_back(KillInfo{victim->getUniqueId(), victim->getViewObject().id()});
+    kills.push_back(KillInfo{victim->getUniqueId(), victim->getViewObject().getViewIdList()});
     if (getBody().hasBrain() && victim->getStatus().contains(CreatureStatus::LEADER)) {
       auto title = capitalFirst(victim->getName().bare()) + " Slayer";
       if (!killTitles.contains(title)) {
@@ -1185,11 +1185,12 @@ void Creature::upgradeViewId(int level) {
   }
 }
 
-ViewId Creature::getMaxViewIdUpgrade() const {
-  if (!attributes->viewIdUpgrades.empty())
-    return attributes->viewIdUpgrades.back();
-  else
-    return getViewObject().id();
+ViewIdList Creature::getMaxViewIdUpgrade() const {
+  ViewIdList ret = {!attributes->viewIdUpgrades.empty()
+    ? attributes->viewIdUpgrades.back()
+    : getViewObject().id()};
+  ret.append(getViewObject().partIds);
+  return ret;
 }
 
 void Creature::dropUnsupportedEquipment() {

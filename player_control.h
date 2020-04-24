@@ -249,7 +249,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   };
   vector<StunnedInfo> getPrisonerImmigrantStack() const;
   vector<pair<Creature*, Collective*>> SERIAL(stunnedCreatures);
-  ViewId getMinionGroupViewId(Creature*) const;
+  ViewIdList getMinionGroupViewId(Creature*) const;
   SUnknownLocations SERIAL(unknownLocations);
   optional<LocalTime> lastWarningDismiss;
   set<pair<UniqueEntity<Collective>::Id, string>> SERIAL(dismissedVillageInfos);

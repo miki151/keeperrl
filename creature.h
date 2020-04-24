@@ -107,7 +107,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool isEnemy(const Creature*) const;
   void tick();
   void upgradeViewId(int level);
-  ViewId getMaxViewIdUpgrade() const;
+  ViewIdList getMaxViewIdUpgrade() const;
 
   const CreatureName& getName() const;
   CreatureName& getName();
@@ -141,7 +141,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   GlobalTime getDeathTime() const;
   struct KillInfo {
     Creature::Id SERIAL(creature);
-    ViewId SERIAL(viewId);
+    ViewIdList SERIAL(viewId);
     SERIALIZE_ALL(creature, viewId)
   };
   const vector<KillInfo>& getKills() const;

@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "experience_type.h"
+#include "view_id.h"
 
 class TribeId;
 class MonsterAIFactory;
@@ -27,7 +28,7 @@ struct CreatureList {
 
   string getSummary(CreatureFactory* factory) const;
 
-  ViewId getViewId(CreatureFactory*) const;
+  ViewIdList getViewId(CreatureFactory*) const;
   vector<PCreature> generate(RandomGen&, CreatureFactory*, TribeId, MonsterAIFactory, bool nonUnique = false) const;
 
   template<typename Archive>

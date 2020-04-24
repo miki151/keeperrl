@@ -61,6 +61,7 @@ class ViewObject {
   ViewLayer layer() const;
   ViewId id() const;
   void setId(ViewId);
+  void setId(ViewIdList);
   void setColorVariant(Color);
 
   void setGoodAdjectives(const string&);
@@ -83,6 +84,7 @@ class ViewObject {
   optional<ViewObjectAction> getClickAction() const;
   void setExtendedActions(EnumSet<ViewObjectAction>);
   const EnumSet<ViewObjectAction>& getExtendedActions() const;
+  ViewIdList getViewIdList() const;
 
   SERIALIZATION_DECL(ViewObject)
 
