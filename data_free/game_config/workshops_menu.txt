@@ -114,20 +114,20 @@
 {
   "WORKSHOP"
   {
-      {{TrapItem "TRAP_TRIGGER" "trigger"}   8       "WOOD" 20   "advanced traps"}
-      {{TrapItem "DESTROY_WALLS_TRAP" "crumble"}8    "WOOD" 20   "advanced traps"}
       { item = {Assembled "AUTOMATON_WORKER_WOOD" {"automaton" Rgb 180 140 55 255}}
         work = 8 cost = "WOOD" 45 tech = "automatons" applyImmediately = true}
       { item = {Assembled "AUTOMATON_CORPUS_WOOD" {"automaton_corpus" Rgb 180 140 55 255}}
         work = 8 cost = "WOOD" 30 tech = "automatons" applyImmediately = true}
       { item = {Assembled "LIGHT_AUTOMATON_CORPUS_WOOD" {"automaton_corpus" Rgb 180 140 55 255}}
         work = 8 cost = "WOOD" 20 tech = "advanced automatons" applyImmediately = true}
-      {{Simple    "HumanoidHeadWood"}        2       "WOOD" 5    "automatons"}
       {{Simple    "AutomatonLegsWood"}       2       "WOOD" 5    "automatons"}
       {{Simple    "AutomatonArmsWood"}       2       "WOOD" 5    "automatons"}
       {{Simple    "AutomatonDrillWood"}      2       "WOOD" 5    "automatons"}
-      {{Simple    "ArcherHeadWood"}          2       "WOOD" 5    "advanced automatons"}
       {{Simple    "AutomatonCraftingWood"}   2       "WOOD" 5    "advanced automatons"}
+      {{Simple    "ArcherHeadWood"}          2       "WOOD" 5    "advanced automatons"}
+      {{Simple    "HumanoidHeadWood"}        2       "WOOD" 5    "automaton brains"}
+      {{TrapItem "TRAP_TRIGGER" "trigger"}   8       "WOOD" 20   "advanced traps"}
+      {{TrapItem "DESTROY_WALLS_TRAP" "crumble"}8    "WOOD" 20   "advanced traps"}
   } 
   "FORGE"
   {
@@ -139,16 +139,16 @@
         work = 8 cost = "IRON" 20 tech = "advanced automatons" applyImmediately = true}
       { item = {Assembled "HEAVY_AUTOMATON_CORPUS_IRON" {"automaton_corpus" Rgb 140 148 148 255}}
         work = 8 cost = "IRON" 40 tech = "advanced automatons" applyImmediately = true}
-      {{Simple    "HumanoidHeadIron"}        2       "IRON" 5    "advanced automatons"}
-      {{Simple    "ArcherHeadIron"}          2       "IRON" 5    "advanced automatons"}
-      {{Simple    "FireHeadIron"}            2       "IRON" 5    "advanced automatons"}
-      {{Simple    "AcidHeadIron"}            2       "IRON" 5    "advanced automatons"}
+      {{Simple    "AutomatonLegsIron"}       2       "IRON" 5    "automatons"}
       {{Simple    "AutomatonArmsIron"}       2       "IRON" 5    "automatons"}
 #      {{Simple    "SharpAutomatonArmsIron"}  2       "IRON" 5    "advanced automatons"}
       {{Simple    "RepairAutomatonArmsIron"} 2       "IRON" 5    "advanced automatons"}
-      {{Simple    "AutomatonLegsIron"}       2       "IRON" 5    "automatons"}
       {{Simple    "AutomatonDrillIron"}      2       "IRON" 5    "automatons"}
       {{Simple    "AutomatonCraftingIron"}   2       "IRON" 5    "advanced automatons"}
+      {{Simple    "ArcherHeadIron"}          2       "IRON" 5    "advanced automatons"}
+      {{Simple    "FireHeadIron"}            2       "IRON" 5    "advanced automatons"}
+      {{Simple    "AcidHeadIron"}            2       "IRON" 5    "advanced automatons"}
+      {{Simple    "HumanoidHeadIron"}        2       "IRON" 5    "automaton brains"}
   } 
   "LABORATORY"
   {

@@ -51,7 +51,7 @@
   immigrantGroups = {"gnomes"}
   technology = {
       "traps" "advanced traps"# "master traps"
-      "automatons" "advanced automatons" #"master automatons"
+      "automatons" "advanced automatons" "automaton brains"
       "pig breeding" "iron working" "alchemy" "incendiary alchemy"
   }
   initialTech = { "automatons" }
@@ -60,7 +60,7 @@
       "structure" "doors" "floors" "storage" "zones" "throne" "beds"
       "pigsty" "crafting" "laboratory" "automatons" "orders" "installations" "traps" "gnome_traps"
   }
-  workshopGroups = { "traps" "gnomes" }
+  workshopGroups = { "gnomes" "traps" "basic" }
   description = "Seize the means of production and engineer traps, automatons and other contraptions."
   minionTraits = { LEADER WORKER NO_LIMIT }
   maxPopulation = 0
