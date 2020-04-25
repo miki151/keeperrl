@@ -47,6 +47,7 @@ class ItemAttributes {
   SERIALIZATION_DECL(ItemAttributes)
 
   MustInitialize<ViewId> SERIAL(viewId);
+  vector<ViewId> SERIAL(partIds);
   MustInitialize<string> SERIAL(name);
   string SERIAL(description);
   optional<string> SERIAL(shortName);

@@ -54,6 +54,7 @@ Item::Item(const ItemAttributes& attr, const ContentFactory* factory)
   if (!attributes->prefixes.empty())
     modViewObject().setModifier(ViewObject::Modifier::AURA);
   modViewObject().setGenericId(getUniqueId().getGenericId());
+  modViewObject().partIds = attr.partIds;
   updateAbility(factory);
 }
 

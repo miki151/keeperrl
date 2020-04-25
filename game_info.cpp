@@ -88,7 +88,7 @@ ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack, con
     c.description = (creature && creature->isAffected(LastingEffect::BLIND))
         ? vector<string>() : stack[0]->getDescription(factory);
     c.number = stack.size();
-    c.viewId = stack[0]->getViewObject().id();
+    c.viewId = stack[0]->getViewObject().getViewIdList();
     c.viewIdModifiers = stack[0]->getViewObject().getAllModifiers();
     for (auto it : stack)
       c.ids.insert(it->getUniqueId());
@@ -162,7 +162,7 @@ ItemInfo getInstalledPartInfo(const ContentFactory* factory, const AutomatonPart
   ItemInfo ret {};
   ret.ids.insert(Item::Id(index));
   ret.fullName = ret.name = part.name;
-  ret.viewId = part.viewId;
+  ret.viewId = {part.viewId};
   fillInstalledPartDescription(factory, ret, part);
   return ret;
 }

@@ -53,6 +53,7 @@
 #include "effect_type.h"
 #include "item_types.h"
 #include "content_factory.h"
+#include "automaton_part.h"
 
 SERIALIZE_DEF(CreatureFactory, nameGenerator, attributes, spellSchools, spells)
 SERIALIZATION_CONSTRUCTOR_IMPL(CreatureFactory)
@@ -247,8 +248,13 @@ static ViewId getSpecialViewId(bool humanoid, bool large, bool body, bool wings)
 }
 
 ViewIdList CreatureFactory::getViewId(CreatureId id) const {
-  if (auto a = getReferenceMaybe(attributes, id))
-    return {a->viewId};
+  if (auto a = getReferenceMaybe(attributes, id)) {
+    ViewIdList ret = {a->viewId};
+    for (auto& part : a->automatonParts)
+      if (auto& id = part.get(contentFactory)->getAutomatonPart()->installedId)
+        ret.push_back(*id);
+    return ret;
+  }
   if (auto p = getReferenceMaybe(getSpecialParams(), id))
     return {getSpecialViewId(p->humanoid, p->large, p->living, p->wings)};
   return {ViewId("knight")};

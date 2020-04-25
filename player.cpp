@@ -1262,7 +1262,7 @@ ItemInfo Player::getFurnitureUsageInfo(const string& question, ViewId viewId) co
     c.fullName = c.name;
     c.description = {"Click to " + c.name};
     c.number = 1;
-    c.viewId = viewId;);
+    c.viewId = {viewId};);
 }
 
 vector<Vec2> Player::getVisibleEnemies() const {

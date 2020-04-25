@@ -45,7 +45,7 @@ struct ItemInfo {
   string HASH(fullName);
   vector<string> HASH(description);
   int HASH(number);
-  ViewId HASH(viewId);
+  ViewIdList HASH(viewId);
   EnumSet<ViewObjectModifier> HASH(viewIdModifiers);
   EntitySet<Item> HASH(ids);
   vector<ItemAction> HASH(actions);

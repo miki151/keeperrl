@@ -29,7 +29,7 @@ struct WorkshopItem {
   ItemType SERIAL(type);
   string SERIAL(name);
   string SERIAL(pluralName);
-  ViewId SERIAL(viewId);
+  ViewIdList SERIAL(viewId);
   CostInfo SERIAL(cost);
   vector<string> SERIAL(description);
   int SERIAL(batchSize);

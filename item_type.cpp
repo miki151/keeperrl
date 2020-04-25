@@ -418,9 +418,11 @@ ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory*) const 
 
 ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
-      i.viewId = viewId.value_or(factory->getCreatures().getViewId(creature).front());
+      auto allIds = factory->getCreatures().getViewId(creature);
+      i.viewId = allIds.front();
+      i.partIds = allIds.getSubsequence(1);
       i.effect = Effect(Effects::AssembledMinion{creature});
-      i.name = i.effect->getName(factory);
+      i.name = itemName;
       i.itemClass = ItemClass::TOOL;
       i.weight = 1;
       i.price = getEffectPrice(*i.effect);

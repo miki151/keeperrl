@@ -420,7 +420,7 @@ static ItemInfo getItemInfo(const ContentFactory* factory, const vector<Item*>& 
     c.number = stack.size();
     if (stack[0]->canEquip())
       c.slot = stack[0]->getEquipmentSlot();
-    c.viewId = stack[0]->getViewObject().id();
+    c.viewId = stack[0]->getViewObject().getViewIdList();
     for (auto it : stack)
       c.ids.insert(it->getUniqueId());
     c.actions = {ItemAction::DROP};
@@ -454,7 +454,7 @@ static ItemInfo getEmptySlotItem(EquipmentSlot slot, bool locked) {
     c.fullName = "";
     c.slot = slot;
     c.number = 1;
-    c.viewId = getSlotViewId(slot);
+    c.viewId = {getSlotViewId(slot)};
     c.actions = {ItemAction::REPLACE};
     c.locked = locked;
     c.equiped = false;
@@ -468,7 +468,7 @@ static ItemInfo getTradeItemInfo(const ContentFactory* factory, const vector<Ite
     c.fullName = stack[0]->getNameAndModifiers(false);
     c.description = stack[0]->getDescription(factory);
     c.number = stack.size();
-    c.viewId = stack[0]->getViewObject().id();
+    c.viewId = stack[0]->getViewObject().getViewIdList();
     for (auto it : stack)
       c.ids.insert(it->getUniqueId());
     c.unavailable = c.price->second > budget;);
@@ -816,7 +816,7 @@ static ItemInfo getPillageItemInfo(const ContentFactory* factory, const vector<I
     c.fullName = stack[0]->getNameAndModifiers(false);
     c.description = stack[0]->getDescription(factory);
     c.number = stack.size();
-    c.viewId = stack[0]->getViewObject().id();
+    c.viewId = stack[0]->getViewObject().getViewIdList();
     for (auto it : stack)
       c.ids.insert(it->getUniqueId());
     c.unavailable = noStorage;

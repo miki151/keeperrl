@@ -78,8 +78,8 @@ struct EventPoem {
 };
 struct Assembled {
   CreatureId SERIAL(creature);
-  optional<ViewId> SERIAL(viewId);
-  SERIALIZE_ALL(creature, viewId)
+  string SERIAL(itemName);
+  SERIALIZE_ALL(creature, itemName)
   ITEM_TYPE_INTERFACE;
 };
 struct AutomatonPaint {
