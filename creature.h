@@ -330,7 +330,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<string> SERIAL(deathReason);
   optional<Position> SERIAL(nextPosIntent);
   EntitySet<Creature> SERIAL(unknownAttackers);
-  EntitySet<Creature> SERIAL(privateEnemies);
+  EntityMap<Creature, GlobalTime> SERIAL(privateEnemies);
   optional<Creature::Id> SERIAL(holding);
   vector<PController> SERIAL(controllerStack);
   vector<string> SERIAL(killTitles);

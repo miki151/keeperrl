@@ -1032,7 +1032,7 @@ bool Creature::isEnemy(const Creature* c) const {
   if (c == this)
     return false;
   auto result = getTribe()->isEnemy(c) || c->getTribe()->isEnemy(this) ||
-    privateEnemies.contains(c) || c->privateEnemies.contains(this);
+    privateEnemies.hasKey(c) || c->privateEnemies.hasKey(this);
   auto time = getGlobalTime();
   return (!time && result) || LastingEffects::modifyIsEnemyResult(this, c, *time, result);
 }
@@ -1086,6 +1086,10 @@ void Creature::considerMovingFromInaccessibleSquare() {
 
 void Creature::tick() {
   PROFILE_BLOCK("Creature::tick");
+  const auto privateEnemyTimeout = 50_visible;
+  for (auto c : privateEnemies.getKeys())
+    if (privateEnemies.getOrFail(c) < *globalTime - privateEnemyTimeout)
+      privateEnemies.erase(c);
   addMorale(-morale * 0.0008);
   auto updateMorale = [this](Position pos, double mult) {
     for (auto& f : pos.getFurniture()) {
@@ -1279,10 +1283,10 @@ CreatureAction Creature::attack(Creature* other) const {
 void Creature::onAttackedBy(Creature* attacker) {
   if (!canSee(attacker))
     unknownAttackers.insert(attacker);
-  if (attacker->tribe != tribe)
+  if (attacker->tribe != tribe && globalTime)
     // This attack may be accidental, so only do this for creatures from another tribe.
     // To handle intended attacks within one tribe, private enemy will be added in addCombatIntent
-    privateEnemies.insert(attacker);
+    privateEnemies.set(attacker, *globalTime);
   lastAttacker = attacker;
   addCombatIntent(attacker, CombatIntentInfo::Type::ATTACK);
 }
@@ -2385,9 +2389,9 @@ bool Creature::CombatIntentInfo::isHostile() const {
 void Creature::addCombatIntent(Creature* attacker, CombatIntentInfo::Type type) {
   if (attacker != this) {
     lastCombatIntent = CombatIntentInfo{type, attacker, *getGlobalTime()};
-    if (type == CombatIntentInfo::Type::ATTACK && (!attacker->isAffected(LastingEffect::INSANITY) ||
+    if (globalTime && type == CombatIntentInfo::Type::ATTACK && (!attacker->isAffected(LastingEffect::INSANITY) ||
         attacker->getAttributes().isAffectedPermanently(LastingEffect::INSANITY)))
-      privateEnemies.insert(attacker);
+      privateEnemies.set(attacker, *globalTime);
   }
 }
 
