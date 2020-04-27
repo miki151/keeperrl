@@ -500,7 +500,7 @@ void Creature::makeMove() {
     MEASURE(controllerTmp->makeMove(), "creature move time");
   }
   updateViewObject();
-  INFO << getName().bare() << " morale " << getMorale();
+  //INFO << getName().bare() << " morale " << getMorale();
   unknownAttackers.clear();
   getBody().affectPosition(position);
   highestAttackValueEver = max(highestAttackValueEver, getBestAttack().value);
@@ -1401,7 +1401,8 @@ void Creature::updateViewObject() {
   PROFILE;
   auto& object = modViewObject();
   object.setCreatureAttributes(ViewObject::CreatureAttributes([this](AttrType t) { return getAttr(t);}));
-  object.setAttribute(ViewObject::Attribute::MORALE, getMorale());
+  if (auto morale = getMorale())
+    object.setAttribute(ViewObject::Attribute::MORALE, *morale);
   object.setModifier(ViewObject::Modifier::DRAW_MORALE);
   object.setModifier(ViewObject::Modifier::STUNNED, isAffected(LastingEffect::STUNNED));
   object.setModifier(ViewObject::Modifier::FLYING, isAffected(LastingEffect::FLYING));
@@ -1431,8 +1432,10 @@ void Creature::updateViewObject() {
       attributes->getAutomatonSlots().first > 0 && isAffected(LastingEffect::IMMOBILE));
 }
 
-double Creature::getMorale() const {
-  return min(1.0, max(-1.0, morale + LastingEffects::getMoraleIncrease(this, getGlobalTime())));
+optional<double> Creature::getMorale() const {
+  if (getBody().hasBrain())
+    return min(1.0, max(-1.0, morale + LastingEffects::getMoraleIncrease(this, getGlobalTime())));
+  return none;
 }
 
 void Creature::addMorale(double val) {
@@ -2277,7 +2280,7 @@ bool Creature::shouldAIAttack(const Creature* other) const {
   if (powerRatio < 0.6)
     panicWeight += 2 - powerRatio * 2;
   panicWeight -= getAttributes().getCourage();
-  panicWeight -= getMorale() * 0.3;
+  panicWeight -= getMorale().value_or(0) * 0.3;
   panicWeight = min(1.0, max(0.0, panicWeight));
   return panicWeight <= 0.5;
 }
@@ -2348,10 +2351,10 @@ vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
   if (getBody().isUndead())
     ret.push_back({"Undead",
         "Undead creatures don't take regular damage and need to be killed by chopping up or using fire."});
-  auto morale = getMorale();
-  if (morale > 0)
-    if (auto text = getMoraleText(morale))
-      ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
+  if (auto morale = getMorale())
+    if (*morale > 0)
+      if (auto text = getMoraleText(*morale))
+        ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
   append(ret, getSpecialAttrAdjectives(true));
   return ret;
 }
@@ -2373,10 +2376,10 @@ vector<AdjectiveInfo> Creature::getBadAdjectives() const {
       if (attributes->isAffectedPermanently(effect))
         if (auto name = LastingEffects::getBadAdjective(effect))
           ret.push_back({ *name, LastingEffects::getDescription(effect) });
-  auto morale = getMorale();
-  if (morale < 0)
-    if (auto text = getMoraleText(morale))
-      ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
+  if (auto morale = getMorale())
+    if (*morale < 0)
+      if (auto text = getMoraleText(*morale))
+        ret.push_back({text, "Morale affects minion's productivity and chances of fleeing from battle."});
   append(ret, getSpecialAttrAdjectives(false));
   return ret;
 }

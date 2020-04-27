@@ -90,7 +90,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void onAttackedBy(Creature*);
   bool heal(double amount = 1000);
   /** Morale is in the range [-1:1] **/
-  double getMorale() const;
+  optional<double> getMorale() const;
   void addMorale(double);
   void take(PItem item);
   void take(vector<PItem> item);

@@ -33,7 +33,7 @@ struct CreatureInfo {
   string HASH(name);
   string HASH(stackName);
   BestAttack HASH(bestAttack);
-  double HASH(morale);
+  optional<double> HASH(morale);
   HASH_ALL(viewId, uniqueId, name, stackName, bestAttack, morale)
 };
 
@@ -162,7 +162,7 @@ class PlayerInfo {
   vector<MinionActivityInfo> HASH(minionTasks);
   UniqueEntity<Creature>::Id HASH(creatureId);
   int HASH(moveCounter);
-  double HASH(morale);
+  optional<double> HASH(morale);
   ViewIdList HASH(viewId);
   bool HASH(isPlayerControlled);
   enum ControlMode {

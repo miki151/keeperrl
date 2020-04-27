@@ -347,7 +347,7 @@ bool Collective::isActivityGoodAssumingHaveTasks(Creature* c, MinionActivity act
     return false;
   switch (activity) {
     case MinionActivity::BE_WHIPPED:
-      return c->getMorale() < 0.95;
+      return c->getMorale().value_or(1) < 0.95;
     case MinionActivity::CROPS:
     case MinionActivity::EXPLORE:
       return getGame()->getSunlightInfo().getState() == SunlightState::DAY;
@@ -795,7 +795,7 @@ void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
 }
 
 double Collective::getEfficiency(const Creature* c) const {
-  return pow(2.0, c->getMorale());
+  return pow(2.0, c->getMorale().value_or(0));
 }
 
 const Territory& Collective::getTerritory() const {
@@ -1412,7 +1412,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
       if (auto workshop = getReferenceMaybe(workshops->types, *workshopType)) {
         auto craftingSkill = c->getAttributes().getSkills().getValue(*workshopType);
         auto result = workshop->addWork(this, efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c),
-            craftingSkill, c->getMorale());
+            craftingSkill, c->getMorale().value_or(0));
         if (!result.items.empty()) {
           if (result.items[0]->getClass() == ItemClass::WEAPON)
             getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);

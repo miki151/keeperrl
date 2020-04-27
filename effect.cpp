@@ -1308,9 +1308,11 @@ static bool applyToCreature(const Effects::IncreaseMorale& e, Creature* c, Creat
     c->you(MsgType::YOUR, "spirits are lifted");
   else
     c->you(MsgType::ARE, "disheartened");
-  double before = c->getMorale();
-  c->addMorale(e.amount);
-  return c->getMorale() != before;
+  if (auto before = c->getMorale()) {
+    c->addMorale(e.amount);
+    return c->getMorale() != *before;
+  }
+  return false;
 }
 
 static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::IncreaseMorale&) {

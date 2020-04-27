@@ -339,7 +339,7 @@ optional<TimeInterval> MinionActivities::getDuration(const Creature* c, MinionAc
     case MinionActivity::RITUAL:
       return 150_visible;
     default:
-      return TimeInterval((int) 500 + 250 * c->getMorale());
+      return TimeInterval((int) 500 + 250 * c->getMorale().value_or(0));
   }
 }
 

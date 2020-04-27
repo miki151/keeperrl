@@ -53,7 +53,7 @@ void CollectiveWarnings::considerWeaponWarning(Collective* col) {
 void CollectiveWarnings::considerMoraleWarning(Collective* col) {
   vector<Creature*> minions = col->getCreatures(MinionTrait::FIGHTER);
   setWarning(Warning::LOW_MORALE,
-      minions.filter([] (const Creature* c) { return c->getMorale() < -0.2; }).size() > minions.size() / 2);
+      minions.filter([] (const Creature* c) { return c->getMorale().value_or(0) < -0.2; }).size() > minions.size() / 2);
 }
 
 void CollectiveWarnings::considerTorchesWarning(Collective* col) {
