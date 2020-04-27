@@ -284,7 +284,7 @@ static int getEffectPrice(Effect type) {
       },
       [&](const Effects::Permanent& e) {
         //Permanent effects will probably be from consumable artifacts.
-        return LastingEffects::getPrice(e.lastingEffect) * 100;
+        return LastingEffects::getPrice(e.lastingEffect) * 30;
       },
       [&](const Effects::Acid&) {
         return 8;
