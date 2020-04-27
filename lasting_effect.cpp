@@ -1266,7 +1266,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::TELEPATHY:
       return 20;
     case LastingEffect::LIFE_SAVED:
-      return 1000;
+      return 400;
     case LastingEffect::INVISIBLE:
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
