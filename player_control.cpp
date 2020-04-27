@@ -1852,8 +1852,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
           if (index.hasObject(obj->layer()))
             index.getObject(obj->layer()).setAttribute(ViewObject::Attribute::LUXURY, furniture->getLuxuryInfo().luxury);
   }
-  if (collective->isMarked(position))
-    index.setHighlight(collective->getMarkHighlight(position));
+  if (auto highlight = collective->getTaskMap().getHighlightType(position))
+    index.setHighlight(*highlight);
   if (collective->hasPriorityTasks(position))
     index.setHighlight(HighlightType::PRIORITY_TASK);
   if (!index.hasObject(ViewLayer::CREATURE))
@@ -2580,7 +2580,7 @@ void PlayerControl::updateSelectionSquares() {
 
 void PlayerControl::handleDestructionOrder(Position position, HighlightType highlightType,
     DestroyAction destructionType) {
-  bool markedToDig = collective->isMarked(position) && collective->getMarkHighlight(position) == highlightType;
+  bool markedToDig = collective->getTaskMap().getHighlightType(position) == highlightType;
   if (markedToDig && selection != SELECT) {
     collective->cancelMarkedTask(position);
     getView()->addSound(SoundId::DIG_UNMARK);
@@ -2672,8 +2672,8 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
       if (position.isTribeForbidden(getTribeId()) && selection != SELECT) {
         position.allowMovementForTribe(getTribeId());
         selection = DESELECT;
-      }
-      else if (!position.isTribeForbidden(getTribeId()) && selection != DESELECT) {
+      } else
+      if (!position.isTribeForbidden(getTribeId()) && selection != DESELECT) {
         position.forbidMovementForTribe(getTribeId());
         selection = SELECT;
       }

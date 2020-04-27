@@ -31,7 +31,7 @@ class TaskMap {
   WTask addTaskCost(PTask, Position, CostInfo, MinionActivity);
   void markSquare(Position, HighlightType, PTask, MinionActivity);
   WTask getMarked(Position) const;
-  HighlightType getHighlightType(Position) const;
+  optional<HighlightType> getHighlightType(Position) const;
   CostInfo removeTask(WTask);
   CostInfo removeTask(UniqueEntity<Task>::Id);
   CostInfo freeFromTask(const Creature*);

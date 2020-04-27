@@ -855,13 +855,18 @@ bool MapGui::isRenderedHighlight(const ViewIndex& index, HighlightType type) {
     return false;
 }
 
-bool MapGui::isRenderedHighlightLow(const ViewIndex& index, HighlightType type) {
+bool MapGui::isRenderedHighlightLow(Renderer& renderer, const ViewIndex& index, HighlightType type) {
   switch (type) {
     case HighlightType::PRIORITY_TASK:
       return !index.isHighlight(HighlightType::DIG);
+    case HighlightType::FORBIDDEN_ZONE:
+      if (spriteMode && index.hasObject(ViewLayer::FLOOR)) {
+        auto tile = renderer.getTileSet().getTile(index.getObject(ViewLayer::FLOOR).id(), spriteMode);
+        return !tile.highlightAbove && !tile.wallShadow;
+      }
+      return !index.noObjects();
     case HighlightType::CLICKABLE_FURNITURE:
     case HighlightType::CREATURE_DROP:
-    case HighlightType::FORBIDDEN_ZONE:
     case HighlightType::FETCH_ITEMS:
     case HighlightType::PERMANENT_FETCH_ITEMS:
     case HighlightType::STORAGE_EQUIPMENT:
@@ -941,7 +946,8 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
       if (index->hasAnyHighlight()) {
         Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
         for (HighlightType highlight : ENUM_ALL_REVERSE(HighlightType))
-          if (isRenderedHighlight(*index, highlight) && isRenderedHighlightLow(*index, highlight) == lowHighlights)
+          if (isRenderedHighlight(*index, highlight) &&
+              isRenderedHighlightLow(renderer, *index, highlight) == lowHighlights)
             renderHighlight(renderer, pos, size, *index, highlight, wpos);
         if (!lowHighlights)
           for (GradientType gradient : ENUM_ALL_REVERSE(GradientType))

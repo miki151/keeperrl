@@ -202,8 +202,10 @@ void TaskMap::markSquare(Position pos, HighlightType h, PTask task, MinionActivi
   addTask(std::move(task), pos, activity);
 }
 
-HighlightType TaskMap::getHighlightType(Position pos) const {
-  return highlight.at(pos);
+optional<HighlightType> TaskMap::getHighlightType(Position pos) const {
+  if (!!getMarked(pos))
+    return getValueMaybe(highlight, pos);
+  return none;
 }
 
 bool TaskMap::hasTask(const Creature* c) const {

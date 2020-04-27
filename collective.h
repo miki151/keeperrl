@@ -165,8 +165,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void orderDestruction(Position pos, const DestroyAction&);
   void installBodyPart(Item*, Creature* target);
   double getDangerLevel() const;
-  bool isMarked(Position) const;
-  HighlightType getMarkHighlight(Position) const;
   void setPriorityTasks(Position);
   bool hasPriorityTasks(Position) const;
 

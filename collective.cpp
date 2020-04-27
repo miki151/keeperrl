@@ -1062,14 +1062,6 @@ void Collective::cancelMarkedTask(Position pos) {
   taskMap->removeTask(taskMap->getMarked(pos));
 }
 
-bool Collective::isMarked(Position pos) const {
-  return !!taskMap->getMarked(pos);
-}
-
-HighlightType Collective::getMarkHighlight(Position pos) const {
-  return taskMap->getHighlightType(pos);
-}
-
 void Collective::setPriorityTasks(Position pos) {
   taskMap->setPriorityTasks(pos);
 }

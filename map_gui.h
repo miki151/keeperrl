@@ -172,7 +172,7 @@ class MapGui : public GuiElem {
   optional<ViewId> buttonViewId;
   set<Vec2> shadowed;
   bool isRenderedHighlight(const ViewIndex&, HighlightType);
-  bool isRenderedHighlightLow(const ViewIndex&, HighlightType);
+  bool isRenderedHighlightLow(Renderer&, const ViewIndex&, HighlightType);
   optional<ViewId> getHighlightedFurniture();
   Color getHighlightColor(const ViewIndex&, HighlightType);
   void renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight, Vec2 tilePos);
