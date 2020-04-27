@@ -89,6 +89,7 @@
 { "stones" "." ColorId GRAY }
 { "down_staircase" "➘" ColorId ALMOST_WHITE true }
 { "up_staircase" "➚" ColorId ALMOST_WHITE true }
+{ "up_staircase" "➚" ColorId ALMOST_WHITE true }
 { "down_staircase_rock" "➘" ColorId YELLOW true }
 { "up_staircase_rock" "➚" ColorId YELLOW true }
 { "map_mountain1" "^" ColorId DARK_GRAY }
@@ -287,6 +288,7 @@
 { "brain" "⚭" ColorId PINK true }
 { "tongue" "~" ColorId RED true }
 { "key" "*" ColorId YELLOW }
+{ "black_market_key" "*" ColorId RED }
 { "key_highlight" "*" ColorId ALMOST_WHITE }
 { "gold" "$" ColorId YELLOW }
 { "treasure_chest" "=" ColorId BROWN }
@@ -419,6 +421,8 @@
 { viewId = "boulder" symbol = "●" color = ColorId LIGHT_GRAY
   isSymbolFont = true roundShadow = true }
 { viewId = "portal" symbol = "𝚯" color = ColorId WHITE
+  isSymbolFont = true roundShadow = true }
+{ viewId = "inactive_portal" symbol = "𝚯" color = ColorId GRAY
   isSymbolFont = true roundShadow = true }
 { viewId = "bed1" symbol = "=" color = ColorId WHITE
   roundShadow = true }

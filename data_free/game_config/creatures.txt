@@ -267,6 +267,12 @@
       { type = Simple "Bow" chance = 0.05 }
     }
   }
+"BANDIT_WITH_KEY" inherit "BANDIT"
+  {
+    inventory = append {
+      { Simple "BlackMarketKey" }
+    }
+  }
 "RAT_SOLDIER"
   {
     viewId = { "rat_soldier" }

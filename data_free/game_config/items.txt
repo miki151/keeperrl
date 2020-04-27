@@ -1222,9 +1222,26 @@
     weight = 0.3
     wishedCount = { 5 10 }
   }
-"Key" inherit "Rock"
+"BlackMarketKey"
   {
-    ingredientType = "key"
+    name = "key"
+    viewId = { "black_market_key" }
+    itemClass = TOOL
+    applyMsgFirstPerson = "try to use the key"
+    applyMsgThirdPerson = "tries to use the key"
+    weight = 0.1
+    description = "A key with a strange crystal."
+    effect = Name "Unknown" Description "" FirstSuccessful { 
+      Area 2 ChainUntilFail {
+        RemoveFurniture "INACTIVE_PORTAL"
+        Chain {
+          Fx { TELEPORT_OUT }
+          Message "The portal is activated!"
+          PlaceFurniture "PORTAL_STAIRS"
+        }
+      }
+      Message "Nothing happens."
+    }
   }
 "IronOre"
   {
@@ -1284,3 +1301,4 @@
     weight = 0.01
     wishedCount = { 500 1000 }
   }
+

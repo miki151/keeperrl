@@ -23,13 +23,13 @@
     door = { "WOOD_DOOR" 1.0 }
     gate = { "WOOD_GATE" 1.0 }
     water = {WATER}
-    downStairs = "PORTAL_STAIRS"
-    upStairs = "PORTAL_STAIRS"
+    downStairs = {"PORTAL_STAIRS"}
+    upStairs = {"PORTAL_STAIRS"}
   }
 "WIZARD_TOWER_FLOOR" inherit "BRICK"
   {
-    downStairs = "PORTAL_STAIRS"
-    upStairs = "PORTAL_STAIRS" 
+    downStairs = {"PORTAL_STAIRS"}
+    upStairs = {"PORTAL_STAIRS"}
     door = { "HIDDEN_CASTLE_DOOR" 1.0 }
   }
 "BLACK"
@@ -62,6 +62,14 @@
     door = { "WOOD_DOOR" 1.0 }
     gate = { "WOOD_GATE" 1.0 }
   }
+"BLACK_MARKET_ENTRY" inherit "DUNGEON"
+  {
+    upStairs = { "INACTIVE_PORTAL" "UP_STAIRS" }
+  }
+"BLACK_MARKET" inherit "DUNGEON"
+  {
+    downStairs = { "PORTAL_STAIRS" }
+  }
 "DUNGEON_SURFACE"
   {
     wall = "MOUNTAIN"
@@ -75,8 +83,8 @@
     wall = "SANDSTONE_WALL"
     door = { "WOOD_DOOR" 1.0 }
     gate = { "WOOD_GATE" 1.0 }
-    downStairs = "DOWN_STAIRS_ROCK"
-    upStairs = "UP_STAIRS_ROCK"
+    downStairs = {"DOWN_STAIRS_ROCK"}
+    upStairs = {"UP_STAIRS_ROCK"}
     water = {WATER}
   }
 "SANDSTONE"
@@ -84,8 +92,8 @@
     wall = "SANDSTONE"
     floorInside = "SAND"
     floorOutside = "SAND"
-    downStairs = "DOWN_STAIRS_ROCK"
-    upStairs = "UP_STAIRS_ROCK"
+    downStairs = {"DOWN_STAIRS_ROCK"}
+    upStairs = {"UP_STAIRS_ROCK"}
     water = {WATER}
   }
 "RUINS"
@@ -105,7 +113,7 @@
   }
 "ADOXIE_TEMPLE" inherit "BRICK"
   {
-    downStairs = "ADOXIE_STATUE"
+    downStairs = {"ADOXIE_STATUE"}
     water = {LAVA}
     bridge = "STONE_BRIDGE"
   }

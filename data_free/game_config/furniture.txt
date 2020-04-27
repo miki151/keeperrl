@@ -847,10 +847,6 @@
   xForgetAfterBuilding = true
   usageType = UsageEffect "use" Stairs
 }
-"HIDDEN_UP_STAIRS" inherit "UP_STAIRS"
-{
-  tickType = Effect Area 5 PlayerMessage "you feel a draft" HIGH
-}
 "DOWN_STAIRS" inherit "UP_STAIRS"
 {
   viewId = { "down_staircase" }
@@ -868,6 +864,14 @@
 {
   viewId = { "portal" ColorId PURPLE }
   name = "portal"
+  constructMessage = none
+  usageType = UsageEffect "use" Chain {Stairs Fx { TELEPORT_OUT }}
+}
+"INACTIVE_PORTAL"
+{
+  name = "portal"
+  viewId = { "inactive_portal" }
+  usageType = UsageEffect "use" Message "The portal is inactive."
 }
 "SOKOBAN_HOLE"
 {

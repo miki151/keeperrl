@@ -908,9 +908,25 @@
     ransom = 0.5 80
   }
 }
+"BANDITS_WITH_KEY" inherit "BANDITS"
+{
+  settlement = append {
+    inhabitants = append {
+      leader = { { "BANDIT_WITH_KEY" } }
+    }
+  }
+}
 "COTTAGE_BANDITS" inherit "NO_AGGRO_BANDITS"
 {
   createOnBones = 1.0 { "HUMAN_COTTAGE" }
+}
+"COTTAGE_BANDITS_WITH_KEY" inherit "COTTAGE_BANDITS"
+{
+  settlement = append {
+    inhabitants = append {
+      leader = { { "BANDIT_WITH_KEY" } }
+    }
+  }
 }
 "ORC_CAVE"
 {
@@ -1184,7 +1200,7 @@
     type = Builtin TOWER
     tribe = GNOME
     race = "the Black Market"
-    buildingId = "DUNGEON"
+    buildingId = "BLACK_MARKET"
     furniture = { "dungeonOutside" }
     shopItems = { "blackMarketAmulet" "blackMarketScrolls" "blackMarketPotions"  }
     inhabitants = {
@@ -1210,6 +1226,7 @@
 "BLACK_MARKET_ENTRY" inherit "DUNGEON1"
 {
   settlement = append {
+    buildingId = "BLACK_MARKET_ENTRY"
     shopItems = append { "diggingScroll" }
     inhabitants = append {
       fighters = append {

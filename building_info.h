@@ -22,11 +22,11 @@ struct BuildingInfo {
   optional<DoorInfo> SERIAL(door);
   optional<FurnitureType> SERIAL(prettyFloor);
   optional<DoorInfo> SERIAL(gate);
-  optional<FurnitureType> SERIAL(upStairs);
-  optional<FurnitureType> SERIAL(downStairs);
+  vector<FurnitureType> SERIAL(upStairs) = {FurnitureType("UP_STAIRS")};
+  vector<FurnitureType> SERIAL(downStairs) = {FurnitureType("DOWN_STAIRS")};
   FurnitureType SERIAL(bridge) = FurnitureType("BRIDGE");
   vector<WaterType> SERIAL(water) = {WaterType::LAVA, WaterType::WATER};
-  SERIALIZE_ALL(NAMED(wall), NAMED(floorInside), NAMED(floorOutside), NAMED(door), NAMED(prettyFloor), NAMED(gate), NAMED(upStairs), NAMED(downStairs), OPTION(water), OPTION(bridge))
+  SERIALIZE_ALL(NAMED(wall), NAMED(floorInside), NAMED(floorOutside), NAMED(door), NAMED(prettyFloor), NAMED(gate), OPTION(upStairs), OPTION(downStairs), OPTION(water), OPTION(bridge))
 };
 
 static_assert(std::is_nothrow_move_constructible<BuildingInfo>::value, "T should be noexcept MoveConstructible");
