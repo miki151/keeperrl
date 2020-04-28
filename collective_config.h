@@ -50,13 +50,13 @@ struct GuardianInfo {
 struct MinionActivityInfo {
   enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE, MINION_ABUSE, GUARD } type;
   MinionActivityInfo();
-  MinionActivityInfo(FurnitureType, const string& description);
-  MinionActivityInfo(BuiltinUsageId, const string& description);
+  MinionActivityInfo(FurnitureType);
+  MinionActivityInfo(BuiltinUsageId);
   typedef function<bool(const ContentFactory*, const Collective*, const Creature*, FurnitureType)> UsagePredicate;
-  MinionActivityInfo(UsagePredicate, const string& description);
-  MinionActivityInfo(Type, const string& description);
-  UsagePredicate furniturePredicate = [](const ContentFactory*, const Collective*, const Creature*, FurnitureType) { return true; };
-  string description;
+  MinionActivityInfo(UsagePredicate);
+  MinionActivityInfo(Type);
+  UsagePredicate furniturePredicate =
+      [](const ContentFactory*, const Collective*, const Creature*, FurnitureType) { return true; };
 };
 
 struct FloorInfo {

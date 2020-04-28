@@ -314,6 +314,10 @@
 { "painting_e" "*" ColorId LIGHT_BLUE }
 { "painting_s" "*" ColorId LIGHT_BLUE }
 { "painting_w" "*" ColorId LIGHT_BLUE }
+{ "canvas_n" "*" ColorId WHITE }
+{ "canvas_e" "*" ColorId WHITE }
+{ "canvas_s" "*" ColorId WHITE }
+{ "canvas_w" "*" ColorId WHITE }
 { "prison" "." ColorId BLUE }
 { "magic_field" "*" ColorId BLUE }
 { viewId = "torch" symbol = "*" color = ColorId YELLOW animated = true }

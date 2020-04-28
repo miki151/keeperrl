@@ -91,6 +91,11 @@ const string& Furniture::getName(int count) const {
     return name;
 }
 
+void Furniture::setName(const string& n) {
+  name = n;
+  viewObject->setDescription(capitalFirst(name));
+}
+
 FurnitureType Furniture::getType() const {
   return type;
 }

@@ -67,6 +67,7 @@ class Furniture {
   const heap_optional<ViewObject>& getViewObject() const;
   heap_optional<ViewObject>& getViewObject();
   const string& getName(int count = 1) const;
+  void setName(const string&);
   FurnitureType getType() const;
   bool isVisibleTo(const Creature*) const;
   const MovementSet& getMovementSet() const;

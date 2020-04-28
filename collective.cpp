@@ -1333,6 +1333,14 @@ void Collective::addProducesMessage(const Creature* c, const vector<PItem>& item
     control->addMessage(c->getName().a() + " " + verb + " " + items[0]->getAName());
 }
 
+void Collective::summonDemon(Creature* c) {
+  auto id = Random.choose(CreatureId("SPECIAL_BLGN"), CreatureId("SPECIAL_BLGW"), CreatureId("SPECIAL_HLGN"), CreatureId("SPECIAL_HLGW"));
+  Effect::summon(c, id, 1, 500_visible);
+  auto message = PlayerMessage(c->getName().the() + " has summoned a friendly demon!", MessagePriority::CRITICAL);
+  c->thirdPerson(message);
+  control->addMessage(message);
+}
+
 void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos) {
   if (auto furniture = pos.first.getFurniture(pos.second)) {
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
@@ -1347,21 +1355,44 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
       taskMap->addTask(Task::torture(c), pos.first, MinionActivity::WORKING);
     if (furniture->getType() == FurnitureType("POETRY_TABLE") && Random.chance(0.01 * efficiency)) {
       auto poem = ItemType(ItemTypes::Poem{}).get(1, getGame()->getContentFactory());
-      bool summonDemon = Random.roll(500);
+      bool demon = Random.roll(500);
       if (!recordedEvents.empty() && Random.roll(3)) {
         auto event = Random.choose(recordedEvents);
         recordedEvents.erase(event);
         poem = ItemType(ItemTypes::EventPoem{event}).get(1, getGame()->getContentFactory());
-        summonDemon = false;
+        demon = false;
       }
       addProducesMessage(c, poem, "writes");
       c->getPosition().dropItems(std::move(poem));
-      if (summonDemon) {
-        auto id = Random.choose(CreatureId("SPECIAL_BLGN"), CreatureId("SPECIAL_BLGW"), CreatureId("SPECIAL_HLGN"), CreatureId("SPECIAL_HLGW"));
-        Effect::summon(c, id, 1, 500_visible);
-        auto message = PlayerMessage(c->getName().the() + " has summoned a friendly demon!", MessagePriority::CRITICAL);
-        c->thirdPerson(message);
-        control->addMessage(message);
+      if (demon)
+        summonDemon(c);
+    }
+    if (Random.chance(0.01 * efficiency) &&
+        (furniture->getType() == FurnitureType("PAINTING_N") ||
+         furniture->getType() == FurnitureType("PAINTING_S") ||
+         furniture->getType() == FurnitureType("PAINTING_E") ||
+         furniture->getType() == FurnitureType("PAINTING_W"))) {
+      bool demon = Random.roll(500);
+      if (!recordedEvents.empty()|| demon) {
+        string name = "painting depicting " + [&] {
+          if (demon) {
+            summonDemon(c);
+            return "a demon"_s;
+          } else {
+            auto event = Random.choose(recordedEvents);
+            recordedEvents.erase(event);
+            return event;
+          }
+        }();
+        auto viewId = string(furniture->getViewObject()->id().data());
+        auto f = pos.first.modFurniture(furniture->getLayer());
+        f->getViewObject()->setId(ViewId(("painting" + viewId.substr(viewId.size() - 2)).data()));
+        f->setName(name);
+        if (!demon) {
+          c->thirdPerson("makes a " + name);
+          control->addMessage(c->getName().a() + " makes a " + name);
+        }
+        return;
       }
     }
     if (auto usage = furniture->getUsageType()) {

@@ -236,28 +236,28 @@ vector<ItemFetchInfo> CollectiveConfig::getFetchInfo(const ContentFactory* facto
   }
 }
 
-MinionActivityInfo::MinionActivityInfo(Type t, const string& desc) : type(t), description(desc) {
+MinionActivityInfo::MinionActivityInfo(Type t) : type(t) {
   CHECK(type != FURNITURE);
 }
 
 MinionActivityInfo::MinionActivityInfo() {}
 
-MinionActivityInfo::MinionActivityInfo(FurnitureType type, const string& desc)
+MinionActivityInfo::MinionActivityInfo(FurnitureType type)
     : type(FURNITURE), furniturePredicate(
-        [type](const ContentFactory*, const Collective*, const Creature*, FurnitureType t) { return t == type;}),
-      description(desc) {
+        [type](const ContentFactory*, const Collective*, const Creature*, FurnitureType t) { return t == type;})
+       {
 }
 
-MinionActivityInfo::MinionActivityInfo(BuiltinUsageId usage, const string& desc)
+MinionActivityInfo::MinionActivityInfo(BuiltinUsageId usage)
   : type(FURNITURE), furniturePredicate(
       [usage](const ContentFactory* f, const Collective*, const Creature*, FurnitureType t) {
         return f->furniture.getData(t).hasUsageType(usage);
-      }),
-    description(desc) {
+      })
+     {
 }
 
-MinionActivityInfo::MinionActivityInfo(UsagePredicate pred, const string& desc)
-    : type(FURNITURE), furniturePredicate(pred), description(desc) {
+MinionActivityInfo::MinionActivityInfo(UsagePredicate pred)
+    : type(FURNITURE), furniturePredicate(pred) {
 }
 
 CollectiveConfig::CollectiveConfig(const CollectiveConfig&) = default;
@@ -279,34 +279,43 @@ static auto getTrainingPredicate(ExperienceType experienceType) {
 const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task) {
   static EnumMap<MinionActivity, MinionActivityInfo> map([](MinionActivity task) -> MinionActivityInfo {
     switch (task) {
-      case MinionActivity::IDLE: return {MinionActivityInfo::IDLE, "idle"};
-      case MinionActivity::CONSTRUCTION: return {MinionActivityInfo::WORKER, "construction"};
-      case MinionActivity::HAULING: return {MinionActivityInfo::WORKER, "hauling"};
-      case MinionActivity::WORKING: return {MinionActivityInfo::WORKER, "labour"};
-      case MinionActivity::DIGGING: return {MinionActivityInfo::WORKER, "digging"};
-      case MinionActivity::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE), "training"};
-      case MinionActivity::SLEEP: return {[](const ContentFactory* f, const Collective*, const Creature* c, FurnitureType t) {
+      case MinionActivity::IDLE: return {MinionActivityInfo::IDLE};
+      case MinionActivity::CONSTRUCTION: return {MinionActivityInfo::WORKER};
+      case MinionActivity::HAULING: return {MinionActivityInfo::WORKER};
+      case MinionActivity::WORKING: return {MinionActivityInfo::WORKER};
+      case MinionActivity::DIGGING: return {MinionActivityInfo::WORKER};
+      case MinionActivity::TRAIN: return {getTrainingPredicate(ExperienceType::MELEE)};
+      case MinionActivity::SLEEP:
+        return {[](const ContentFactory* f, const Collective*, const Creature* c, FurnitureType t) {
             if (!c)
               return !!f->furniture.getData(t).getBedType();
             return getBedType(c) == f->furniture.getData(t).getBedType();
-          }, "sleeping"};
-      case MinionActivity::EAT: return {FurnitureType("DINING_TABLE"), "eating"};
-      case MinionActivity::GUARDING: return {MinionActivityInfo::GUARD, "guarding"};
-      case MinionActivity::POETRY: return {FurnitureType("POETRY_TABLE"), "poetry"};
-      case MinionActivity::STUDY: return {getTrainingPredicate(ExperienceType::SPELL), "studying"};
-      case MinionActivity::CROPS: return {FurnitureType("CROPS"), "crops"};
-      case MinionActivity::RITUAL: return {BuiltinUsageId::DEMON_RITUAL, "rituals"};
-      case MinionActivity::ARCHERY: return {MinionActivityInfo::ARCHERY, "archery range"};
-      case MinionActivity::COPULATE: return {MinionActivityInfo::COPULATE, "copulation"};
-      case MinionActivity::EXPLORE: return {MinionActivityInfo::EXPLORE, "spying"};
-      case MinionActivity::SPIDER: return {MinionActivityInfo::SPIDER, "spider"};
-      case MinionActivity::MINION_ABUSE: return {MinionActivityInfo::MINION_ABUSE, "minion abuse"};
-      case MinionActivity::EXPLORE_NOCTURNAL: return {MinionActivityInfo::EXPLORE, "spying"};
-      case MinionActivity::EXPLORE_CAVES: return {MinionActivityInfo::EXPLORE, "spying"};
-      case MinionActivity::BE_WHIPPED: return {FurnitureType("WHIPPING_POST"), "being whipped"};
-      case MinionActivity::BE_TORTURED: return {FurnitureType("TORTURE_TABLE"), "being tortured"};
-      case MinionActivity::BE_EXECUTED: return {FurnitureType("GALLOWS"), "being executed"};
-      case MinionActivity::CRAFT: return {[](const ContentFactory* f, const Collective* col, const Creature* c, FurnitureType t) {
+          }};
+      case MinionActivity::EAT: return {FurnitureType("DINING_TABLE")};
+      case MinionActivity::GUARDING: return {MinionActivityInfo::GUARD};
+      case MinionActivity::POETRY:
+        return {[](const ContentFactory* f, const Collective*, const Creature* c, FurnitureType t) {
+          return t == FurnitureType("POETRY_TABLE")
+              || t == FurnitureType("PAINTING_N")
+              || t == FurnitureType("PAINTING_S")
+              || t == FurnitureType("PAINTING_E")
+              || t == FurnitureType("PAINTING_W");
+          }};
+      case MinionActivity::STUDY: return {getTrainingPredicate(ExperienceType::SPELL)};
+      case MinionActivity::CROPS: return {FurnitureType("CROPS")};
+      case MinionActivity::RITUAL: return {BuiltinUsageId::DEMON_RITUAL};
+      case MinionActivity::ARCHERY: return {MinionActivityInfo::ARCHERY};
+      case MinionActivity::COPULATE: return {MinionActivityInfo::COPULATE};
+      case MinionActivity::EXPLORE: return {MinionActivityInfo::EXPLORE};
+      case MinionActivity::SPIDER: return {MinionActivityInfo::SPIDER};
+      case MinionActivity::MINION_ABUSE: return {MinionActivityInfo::MINION_ABUSE};
+      case MinionActivity::EXPLORE_NOCTURNAL: return {MinionActivityInfo::EXPLORE};
+      case MinionActivity::EXPLORE_CAVES: return {MinionActivityInfo::EXPLORE};
+      case MinionActivity::BE_WHIPPED: return {FurnitureType("WHIPPING_POST")};
+      case MinionActivity::BE_TORTURED: return {FurnitureType("TORTURE_TABLE")};
+      case MinionActivity::BE_EXECUTED: return {FurnitureType("GALLOWS")};
+      case MinionActivity::CRAFT:
+        return {[](const ContentFactory* f, const Collective* col, const Creature* c, FurnitureType t) {
             if (auto type = f->getWorkshopType(t)) {
               if (!c || !col)
                 return true;
@@ -315,8 +324,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
               return skill > 0 && !!workshop && !workshop->isIdle(col, skill, c->getMorale().value_or(0));
             } else
               return false;
-          },
-          "crafting"};
+          }};
     }
   });
   return map[task];

@@ -329,4 +329,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void updateAutomatonPartsTasks();
   void updateAutomatonEngines();
   bool creatureConsideredPlayer(Creature*) const;
+  void summonDemon(Creature* summoner);
 };

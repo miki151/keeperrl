@@ -567,8 +567,8 @@
 }
 "PAINTING_N"
 {
-  name = "painting"
-  viewId = { "painting_n" }
+  name = "painting canvas"
+  viewId = { "canvas_n" }
   layer = CEILING
   viewLayer = TORCH1
   attachmentDir = N
@@ -576,20 +576,20 @@
 }
 "PAINTING_S" inherit "PAINTING_N"
 {
-  viewId = { "painting_s" }
+  viewId = { "canvas_s" }
   viewLayer = TORCH2
   attachmentDir = S
   requiredSupport = { { { S } } }
 }
 "PAINTING_E" inherit "PAINTING_S"
 {
-  viewId = { "painting_e" }
+  viewId = { "canvas_e" }
   attachmentDir = E
   requiredSupport = { { { E } } }
 }
 "PAINTING_W" inherit "PAINTING_S"
 {
-  viewId = { "painting_w" }
+  viewId = { "canvas_w" }
   attachmentDir = W
   requiredSupport = { { { W } } }
 }

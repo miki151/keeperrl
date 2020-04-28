@@ -268,7 +268,7 @@
     { Furniture {{ "GROUND_TORCH" }  "WOOD" 10  }                  "Standing torch"    "Installations"
         "" 0 {} false BUILD_TORCH }
 
-    { Furniture {{ "PAINTING_N" "PAINTING_E" "PAINTING_S" "PAINTING_W" }} "Painting"   "Installations"
+    { Furniture {{ "PAINTING_N" "PAINTING_E" "PAINTING_S" "PAINTING_W" }} "Painting canvas"   "Installations"
         "Place it on tiles next to a wall."}
 
     { Furniture {{ "KEEPER_BOARD" }  "WOOD" 15 }                   "Message board"     "Installations"
