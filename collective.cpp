@@ -673,7 +673,7 @@ void Collective::onEvent(const GameEvent& event) {
         auto victim = info.victim;
         if (getCreatures().contains(victim)) {
           if (Random.roll(30)) {
-            addRecordedEvent("the torturing of " + victim->getName().title());
+            addRecordedEvent("the torturing of " + victim->getName().aOrTitle());
             if (Random.roll(2)) {
               victim->dieWithReason("killed by torture");
             } else {
@@ -690,7 +690,7 @@ void Collective::onEvent(const GameEvent& event) {
       },
       [&](const CreatureStunned& info) {
         auto victim = info.victim;
-        addRecordedEvent("the capturing of " + victim->getName().title());
+        addRecordedEvent("the capturing of " + victim->getName().aOrTitle());
         if (getCreatures().contains(victim)) {
           if (info.attacker && creatureConsideredPlayer(info.attacker))
             attackedByPlayer = true;
@@ -742,9 +742,9 @@ void Collective::onEvent(const GameEvent& event) {
 
 void Collective::onMinionKilled(Creature* victim, Creature* killer) {
   if (killer)
-    addRecordedEvent("the slaying of " + victim->getName().title() + " by " + killer->getName().a());
+    addRecordedEvent("the slaying of " + victim->getName().aOrTitle() + " by " + killer->getName().a());
   else
-    addRecordedEvent("the death of " + victim->getName().title());
+    addRecordedEvent("the death of " + victim->getName().aOrTitle());
   if (killer && creatureConsideredPlayer(killer))
     attackedByPlayer = true;
   string deathDescription = victim->getAttributes().getDeathDescription();
@@ -783,7 +783,7 @@ void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
   string deathDescription = victim->getAttributes().getDeathDescription();
   if (victim->getTribe() != getTribe()) {
     if (victim->getStatus().contains(CreatureStatus::LEADER))
-      addRecordedEvent("the slaying of " + victim->getName().title());
+      addRecordedEvent("the slaying of " + victim->getName().aOrTitle());
     addMoraleForKill(killer, victim);
     kills.insert(victim);
     int difficulty = victim->getDifficultyPoints();
