@@ -66,6 +66,14 @@ ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
       return &LevelMaker::mineTownLevel;
     case LevelType::BLACK_MARKET:
       return &LevelMaker::blackMarket;
+    case LevelType::OUTBACK:
+      return [this] (RandomGen& random, SettlementInfo info, Vec2) {
+        auto& biomeInfo = contentFactory->biomeInfo.at(BiomeId("OUTBACK"));
+        auto natives = enemyFactory->get(EnemyId("NATIVE_VILLAGE"));
+        natives.settlement.collective = new CollectiveBuilder(natives.config, natives.settlement.tribe);
+        return LevelMaker::topLevel(random, {info, natives.settlement}, 100, none, biomeInfo, ResourceCounts{},
+            &contentFactory->mapLayouts);
+      };
     case LevelType::SOKOBAN: {
       Table<char> sokoLevel = sokobanInput->getNext();
       return [sokoLevel](RandomGen& random, SettlementInfo info, Vec2) {

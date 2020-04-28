@@ -268,6 +268,9 @@
     { Furniture {{ "GROUND_TORCH" }  "WOOD" 10  }                  "Standing torch"    "Installations"
         "" 0 {} false BUILD_TORCH }
 
+    { Furniture {{ "PAINTING_N" "PAINTING_E" "PAINTING_S" "PAINTING_W" }} "Painting"   "Installations"
+        "Place it on tiles next to a wall."}
+
     { Furniture {{ "KEEPER_BOARD" }  "WOOD" 15 }                   "Message board"     "Installations"
         "A board where you can leave a message for other players." }
 
@@ -306,32 +309,32 @@
 
   "traps"
   {
-    { Trap "TERROR_TRAP" { "terror_trap" }                                 "Terror trap"       "Traps"
+    { Trap "TERROR_TRAP"          "Terror trap"       "Traps"
         "Causes the trespasser to panic." 0                   { TechId "traps" }}
 
-    { Trap "POISON_GAS_TRAP" { "gas_trap" }                                "Gas trap"          "Traps"
+    { Trap "POISON_GAS_TRAP"      "Gas trap"          "Traps"
         "Releases a cloud of poisonous gas." 0                { TechId "traps" }}
 
-    { Trap "ALARM_TRAP" { "alarm_trap" }                                   "Alarm trap"        "Traps"
+    { Trap "ALARM_TRAP"           "Alarm trap"        "Traps"
         "Summons all minions" 0                               { TechId "traps" }}
 
-    { Trap "WEB_TRAP" { "web_trap" }                                       "Web trap"          "Traps"
+    { Trap "WEB_TRAP"             "Web trap"          "Traps"
         "Immobilises the trespasser for some time." 0         { TechId "traps" }}
 
-    { Trap "BOULDER_TRAP" { "boulder" }                                    "Boulder trap"      "Traps"
+    { Trap "BOULDER_TRAP"         "Boulder trap"      "Traps"
         "Causes a huge boulder to roll towards the enemy." 0  { TechId "traps" }}
 
-    { Trap "SURPRISE_TRAP" { "surprise_trap" }                             "Surprise trap"     "Traps"
+    { Trap "SURPRISE_TRAP"        "Surprise trap"     "Traps"
         "Teleports nearby minions to deal with the trespasser." 0 { TechId "traps" }}
-    { Trap "FIRE_TRAP" { "fire_trap" }                                     "Fire trap"         "Traps"
+    { Trap "FIRE_TRAP"            "Fire trap"         "Traps"
         "Causes a tower of flame to errupt under the trespasser." 0 { TechId "traps" }}
   }
 
   "gnome_traps"
   {
-    { Trap "TRAP_TRIGGER" { "terror_trap" }                                 "Trap trigger"     "Traps"
+    { Trap "TRAP_TRIGGER"          "Trap trigger"     "Traps"
         "Triggers all other traps around it." 0                   { TechId "traps" }}
-    { Trap "DESTROY_WALLS_TRAP" { "terror_trap" }                           "Crumble trap"     "Traps"
+    { Trap "DESTROY_WALLS_TRAP"    "Crumble trap"     "Traps"
         "All walls up to two tiles away are destroyed." 0         { TechId "traps" }}
   }
  

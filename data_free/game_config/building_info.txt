@@ -6,6 +6,15 @@
     gate = { "WOOD_GATE" 1.0 }
     water = {WATER}
   }
+"NATIVE"
+  {
+    wall = "WOOD_WALL"
+    floorInside = "RED_SAND"
+    floorOutside = "RED_SAND"
+    water = {WATER}
+    downStairs = {"UP_STAIRS"}
+    upStairs = {"DOWN_STAIRS"}
+  }
 "BRICK"
   {
     wall = "CASTLE_WALL"

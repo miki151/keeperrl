@@ -20,12 +20,6 @@ namespace BuildInfoTypes {
     optional<int> SERIAL(limit);
     SERIALIZE_ALL(NAMED(types), OPTION(cost), OPTION(noCredit), NAMED(limit))
   };
-
-  struct Trap {
-    FurnitureType SERIAL(type);
-    ViewId SERIAL(viewId);
-    SERIALIZE_ALL(type, viewId)
-  };
   using DestroyLayers = vector<FurnitureLayer>;
   using ImmediateDig = EmptyStruct<struct ImmediateDigTag>;
   using Dig = EmptyStruct<struct DigTag>;
@@ -36,6 +30,7 @@ namespace BuildInfoTypes {
   using Zone = ZoneId;
   using PlaceMinion = EmptyStruct<struct PlaceMinionTag>;
   using PlaceItem = EmptyStruct<struct PlaceItemTag>;
+  using Trap = FurnitureType;
   struct BuildType;
   using Chain = vector<BuildType>;
   #define VARIANT_TYPES_LIST\

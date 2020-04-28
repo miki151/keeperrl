@@ -1227,6 +1227,17 @@
       name = "eskimo"
     }
   }
+"NATIVE" inherit "PESEANT"
+  {
+    viewId = { "native1" }
+    genderAlternatives = {
+      FEMALE { "native2" }
+    }
+    permanentEffects = {}
+    name = {
+      name = "native"
+    }
+  }
 "KNIGHT"
   {
     viewId = { "knight" }
@@ -1566,6 +1577,11 @@
 "ESKIMO_CHILD" inherit "CHILD"
   {
     viewId = { "eskimo_child" }
+    permanentEffects = {}
+  }
+"NATIVE_CHILD" inherit "CHILD"
+  {
+    viewId = { "native3" }
     permanentEffects = {}
   }
 "NOMAD_CHILD" inherit "CHILD"
@@ -2892,6 +2908,22 @@
 "POLAR_FOX" inherit "FOX"
   {
     viewId = { "polar_fox" }
+  }
+"KANGAROO"
+  {
+    viewId = { "kangaroo" }
+    attr = {
+      DAMAGE 30
+      DEFENSE 15 
+    }
+    body = {
+      type = FourLegged LARGE
+      weight = 80
+    }
+    noChase = true
+    name = {
+      name = "kangaroo"
+    }
   }
 "CAVE_BEAR"
   {

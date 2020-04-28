@@ -57,6 +57,14 @@
     "BUSH" 1
   }
 }
+"flowers"
+{
+  {
+    "FLOWER1" 1
+    "FLOWER2" 1
+    "FLOWER3" 1
+  }
+}
 "vegetationHigh"
 {
   {
@@ -64,10 +72,28 @@
     "BUSH" 1
   }
 }
+"vegetationSnow"
+{
+  {
+    "TREE_SNOW" 1
+  }
+}
 "vegetationDesert"
 {
   {
     "CACTUS1" 2
+  }
+}
+"vegetationOutback"
+{
+  {
+    "GUM_TREE" 2
+  }
+}
+"randomOutback"
+{
+  {
+    "TERMITE_MOUND" 2
   }
 }
 "randomTerrain"

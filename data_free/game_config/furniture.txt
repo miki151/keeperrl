@@ -112,6 +112,7 @@
 }
 "DINING_TABLE" inherit "JEWELLER"
 {
+  viewId = { "dining_table" }
   name = "dining table"
   usageFX = none
   usageType = UsageEffect "eat from" Chain {
@@ -260,7 +261,7 @@
 "AUTOMATON_ENGINE_WOOD"
 {
   name = "wooden automaton engine"
-  viewId = { "automaton_engine" }
+  viewId = { "automaton_engine" Rgb 180 140 55 255 }
   canHideHere = true
   strength = 50
   populationIncrease = 1 4
@@ -269,7 +270,7 @@
 "AUTOMATON_ENGINE_IRON"
 {
   name = "iron automaton engine"
-  viewId = { "automaton_engine" }
+  viewId = { "automaton_engine" Rgb 140 148 148 255 }
   canHideHere = true
   strength = 50
   populationIncrease = 1 16
@@ -278,7 +279,7 @@
 "AUTOMATON_ENGINE_ADA"
 {
   name = "adamantine automaton engine"
-  viewId = { "automaton_engine" }
+  viewId = { "automaton_engine" Rgb 148 189 189 255 }
   canHideHere = true
   strength = 50
   populationIncrease = 1 none
@@ -414,6 +415,10 @@
 {
   viewId = { "decid_tree" }
 }
+"TREE_SNOW" inherit "CANIF_TREE"
+{
+  viewId = { "tree_snow" }
+}
 "CACTUS1" inherit "CANIF_TREE"
 {
   viewId = { "cactus1" }
@@ -424,6 +429,10 @@
 "PALM_TREE" inherit "CANIF_TREE"
 {
   viewId = { "palm_tree" }
+}
+"GUM_TREE" inherit "CANIF_TREE"
+{
+  viewId = { "tree_gum" }
 }
 "GIANT_MUSHROOM" inherit "CANIF_TREE"
 {
@@ -463,6 +472,26 @@
   name = "rocks"
   viewId = { "stones" }
   canSilentlyReplace = true
+}
+"TERMITE_MOUND"
+{
+  name = "termite mound"
+  viewId = { "termite_mound" }
+  canSilentlyReplace = true
+}
+"FLOWER1"
+{
+  name = "flower"
+  viewId = { "flower1" }
+  canSilentlyReplace = true
+}
+"FLOWER2" inherit "FLOWER1"
+{
+  viewId = { "flower2" }
+}
+"FLOWER3" inherit "FLOWER1"
+{
+  viewId = { "flower3" }
 }
 "CROPS"
 {
@@ -535,6 +564,34 @@
   name = "candelabrum"
   viewId = { "candelabrum_w" }
   luxury = 0.3
+}
+"PAINTING_N"
+{
+  name = "painting"
+  viewId = { "painting_n" }
+  layer = CEILING
+  viewLayer = TORCH1
+  attachmentDir = N
+  requiredSupport = { { { N } } }
+}
+"PAINTING_S" inherit "PAINTING_N"
+{
+  viewId = { "painting_s" }
+  viewLayer = TORCH2
+  attachmentDir = S
+  requiredSupport = { { { S } } }
+}
+"PAINTING_E" inherit "PAINTING_S"
+{
+  viewId = { "painting_e" }
+  attachmentDir = E
+  requiredSupport = { { { E } } }
+}
+"PAINTING_W" inherit "PAINTING_S"
+{
+  viewId = { "painting_w" }
+  attachmentDir = W
+  requiredSupport = { { { W } } }
 }
 "TORTURE_TABLE"
 {
@@ -925,6 +982,10 @@
   name = "sandstone"
   viewId = { "mountain_sand" }
 }
+"RED_SANDSTONE" inherit "SANDSTONE"
+{
+  viewId = { "red_sandstone" }
+}
 "GLACIER" inherit "MOUNTAIN"
 {
   name = "glacier"
@@ -1256,7 +1317,7 @@
 "ALARM_TRAP"
 {
   name = "alarm trap"
-  viewId = { "alarm_trap" }
+  viewId = { "trap"  Rgb 186 58 68 255 }
   entryType = Trap { Alarm false }
   warning = true
   constructMessage = SET_UP
@@ -1270,7 +1331,7 @@
 "POISON_GAS_TRAP"
 {
   name = "poison gas trap"
-  viewId = { "gas_trap" }
+  viewId = { "trap"  Rgb 58 156 68 255 }
   entryType = Trap { EmitPoisonGas 0.8 }
   warning = true
   constructMessage = SET_UP
@@ -1300,7 +1361,7 @@
 "TERROR_TRAP"
 {
   name = "panic trap"
-  viewId = { "terror_trap" }
+  viewId = { "trap" Rgb 156 50 156 255 }
   entryType = Trap { Lasting PANIC }
   warning = true
   constructMessage = SET_UP
@@ -1308,7 +1369,7 @@
 "FIRE_TRAP"
 {
   name = "fire trap"
-  viewId = { "fire_trap" }
+  viewId = { "trap" ColorId ORANGE }
   entryType = Trap { PlaceFurniture "FIRE_WALL" }
   warning = true
   constructMessage = SET_UP
@@ -1316,7 +1377,7 @@
 "TRAP_TRIGGER"
 {
   name = "trap trigger"
-  viewId = { "fire_trap" }
+  viewId = { "trap"  Rgb 58 58 156 255 }
   entryType = Trap { Area 1 TriggerTrap }
   warning = true
   constructMessage = SET_UP
@@ -1324,11 +1385,11 @@
 "DESTROY_WALLS_TRAP"
 {
   name = "crumble trap"
-  viewId = { "fire_trap" }
+  viewId = { "trap" ColorId GRAY }
   entryType = Trap { Area 2 DestroyWalls DIG }
   warning = true
   constructMessage = SET_UP
-}
+}   
 "BOULDER_TRAP"
 {
   name = "boulder trap"
@@ -1426,6 +1487,13 @@
   viewId = { "sand" }
   layer = GROUND
   walkOverFX = { SAND_DUST Rgb 255 229 178 255 }
+}
+"RED_SAND"
+{
+  name = "sand"
+  viewId = { "red_sand" }
+  layer = GROUND
+  walkOverFX = { SAND_DUST Rgb 255 159 128 255 }
 }
 "GRASS"
 {

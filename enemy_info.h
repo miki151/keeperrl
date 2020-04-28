@@ -20,7 +20,8 @@ RICH_ENUM(
     MINETOWN,
     MAZE,
     SOKOBAN,
-    BLACK_MARKET
+    BLACK_MARKET,
+    OUTBACK
 );
 
 struct LevelConnection {

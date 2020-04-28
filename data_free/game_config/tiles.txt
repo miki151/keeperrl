@@ -87,6 +87,11 @@
 { "crops" "𝃰" ColorId YELLOW }
 { "crops2" "𝃰" ColorId YELLOW }
 { "stones" "." ColorId GRAY }
+{ viewId = "termite_mound" symbol = "^" color = ColorId LIGHT_BROWN
+  roundShadow = true }
+{ "flower1" "." ColorId RED }
+{ "flower2" "." ColorId YELLOW }
+{ "flower3" "." ColorId LIGHT_BLUE }
 { viewId = "down_staircase" symbol = "➘" color = ColorId ALMOST_WHITE isSymbolFont = true highlightAbove = true }
 { viewId = "up_staircase" symbol = "➚" color = ColorId ALMOST_WHITE isSymbolFont = true highlightAbove = true }
 { viewId = "down_staircase_rock" symbol = "➘" color = ColorId YELLOW isSymbolFont = true highlightAbove = true }
@@ -154,6 +159,9 @@
 { "eskimo" "@" ColorId LIGHT_GRAY }
 { "eskimo_woman" "@" ColorId LIGHT_GRAY }
 { "eskimo_child" "@" ColorId GRAY }
+{ "native1" "@" ColorId BROWN }
+{ "native2" "@" ColorId BROWN }
+{ "native3" "@" ColorId LIGHT_BROWN }
 { "nomad" "@" ColorId LIGHT_BROWN }
 { "nomad_woman" "@" ColorId LIGHT_BROWN }
 { "nomad_child" "@" ColorId BROWN }
@@ -204,6 +212,7 @@
 { "boar" "b" ColorId LIGHT_BROWN }
 { "fox" "d" ColorId ORANGE_BROWN }
 { "polar_fox" "d" ColorId LIGHT_GRAY }
+{ "kangaroo" "K" ColorId BROWN }
 { "wolf" "d" ColorId DARK_BLUE }
 { "werewolf" "d" ColorId WHITE }
 { "dog" "d" ColorId BROWN }
@@ -278,10 +287,7 @@
 { "potion4" "!" ColorId VIOLET }
 { "potion5" "!" ColorId DARK_BROWN }
 { "potion6" "!" ColorId LIGHT_GRAY }
-{ "rune1" "~" ColorId GREEN }
-{ "rune2" "~" ColorId PURPLE }
-{ "rune3" "~" ColorId RED }
-{ "rune4" "~" ColorId BLUE }
+{ "glyph" "~" ColorId GREEN }
 { "dragon_scales" "~" ColorId GREEN }
 { "nuts" "⠤" ColorId ORANGE true }
 { "brain" "⚭" ColorId PINK true }
@@ -296,16 +302,18 @@
 { "coffin3" "⚰" ColorId YELLOW true }
 { "loot_coffin" "⚰" ColorId BROWN true "coffin1" }
 { "opened_coffin" "⚰" ColorId BROWN true }
-{ "gas_trap" "☠" ColorId GREEN true }
-{ "alarm_trap" "^" ColorId RED true }
+{ "trap" "^" ColorId GREEN }
 { "web_trap" "#" ColorId WHITE true }
 { "surprise_trap" "^" ColorId BLUE true }
 { "terror_trap" "^" ColorId WHITE true }
-{ "fire_trap" "^" ColorId RED true }
 { "rock" "✱" ColorId LIGHT_GRAY true "stonepile" }
 { "iron_rock" "✱" ColorId ORANGE true "ironpile" }
 { "ada_ore" "✱" ColorId LIGHT_BLUE true "steelpile" }
 { "wood_plank" "/" ColorId BROWN }
+{ "painting_n" "*" ColorId LIGHT_BLUE }
+{ "painting_e" "*" ColorId LIGHT_BLUE }
+{ "painting_s" "*" ColorId LIGHT_BLUE }
+{ "painting_w" "*" ColorId LIGHT_BLUE }
 { "prison" "." ColorId BLUE }
 { "magic_field" "*" ColorId BLUE }
 { viewId = "torch" symbol = "*" color = ColorId YELLOW animated = true }
@@ -385,6 +393,10 @@
 { viewId = "decid_tree" symbol = "🜍" color = ColorId DARK_GREEN
   isSymbolFont = true roundShadow = true }
 { viewId = "canif_tree" symbol = "♣" color = ColorId DARK_GREEN
+  isSymbolFont = true roundShadow = true }
+{ viewId = "tree_snow" symbol = "🜍" color = ColorId LIGHT_GRAY
+  isSymbolFont = true roundShadow = true }
+{ viewId = "tree_gum" symbol = "♣" color = ColorId LIGHT_GREEN
   isSymbolFont = true roundShadow = true }
 { viewId = "palm_tree" symbol = "⥾" color = ColorId LIGHT_GREEN
   isSymbolFont = true roundShadow = true }
@@ -479,6 +491,8 @@
   roundShadow = true }
 { viewId = "jeweller" symbol = "&" color = ColorId YELLOW
   roundShadow = true }
+{ viewId = "dining_table" symbol = "&" color = ColorId LIGHT_BLUE
+  roundShadow = true }
 { viewId = "poetry_table" symbol = "&" color = ColorId DARK_BROWN
   roundShadow = true }
 { viewId = "furnace" symbol = "&" color = ColorId PINK
@@ -532,6 +546,8 @@
   roadConnections = true }
 { viewId = "sand" symbol = "." color = ColorId YELLOW canMirror = true
   extraBorders = { "water" } }
+{ viewId = "red_sand" symbol = "." color = ColorId ORANGE canMirror = true
+  extraBorders = { "water" } }
 { viewId = "mud" symbol = "." color = ColorId BROWN
   extraBorders = { "water" "hill" "sand" } }
 { viewId = "snow" symbol = "." color = ColorId WHITE }
@@ -551,6 +567,8 @@
 { viewId = "mountain" symbol = "#" color = ColorId GRAY
   wallShadow = true mountainSides = "mountain" }
 { viewId = "mountain_sand" symbol = "#" color = ColorId LIGHT_BROWN
+  wallShadow = true mountainSides = "mountain" }
+{ viewId = "red_sandstone" symbol = "#" color = ColorId BROWN
   wallShadow = true mountainSides = "mountain" }
 { viewId = "glacier" symbol = "#" color = ColorId SKY_BLUE
   wallShadow = true mountainSides = "mountain" }

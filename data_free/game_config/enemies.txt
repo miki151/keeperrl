@@ -840,6 +840,7 @@
       { MainEnemy 60 40 BASIC "Adoxie's Temple" }
       { ExtraEnemy { "DEATH" { 1 } } 40 30 BASIC none true }
       { ExtraEnemy { "DUNGEON1" { 1 } } 40 30 DUNGEON "Hell" }
+      { ExtraEnemy { "OUTBACK_ENTRY" { 1 } } 100 100 OUTBACK "Down Under" true }
     }
   }
 }
@@ -849,12 +850,14 @@
     type = Builtin CAVE
     tribe = BANDIT
     buildingId = "DUNGEON"
-    inhabitants = {
-      fighters = {
-        count = {2 4}
-        all = { 1 "RAT" }
-      }
-    }
+  }
+}
+"OUTBACK_ENTRY"
+{
+  settlement = {
+    type = Builtin CAVE
+    tribe = BANDIT
+    buildingId = "NATIVE"
   }
 }
 "DEATH"
@@ -1801,6 +1804,29 @@
     }
     furniture = { }
     outsideFeatures = none
+  }
+}
+"NATIVE_VILLAGE"
+{
+  settlement = {
+    type = Builtin SMALL_VILLAGE
+    tribe = HUMAN
+    inhabitants = {
+      fighters = {
+        count = {4 6}
+        all = {
+          1 "NATIVE"
+        }
+      }
+      civilians = {
+        count = {3 7}
+        all = {
+          1 "NATIVE_CHILD"
+        }
+      }
+    }
+    race = "humans"
+    buildingId = "NATIVE"
   }
 }
 "THIEVES"

@@ -554,8 +554,9 @@ ItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory* factory)
 
 static ViewId getRuneViewId(const string& name) {
   int h = int(combineHash(name));
-  const static vector<ViewId> ids = {ViewId("rune1"), ViewId("rune2"), ViewId("rune3"), ViewId("rune4")};
-  return ids[(h % ids.size() + ids.size()) % ids.size()];
+  const static vector<Color> colors = {Color::RED, Color::YELLOW, Color::ORANGE, Color::BLUE, Color::LIGHT_BLUE,
+      Color::PURPLE, Color::PINK, Color::RED, Color::ORANGE, Color::GREEN, Color::LIGHT_GREEN};
+  return ViewId("glyph", colors[(h % colors.size() + colors.size()) % colors.size()]);
 }
 
 ItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory* factory) const {

@@ -629,7 +629,7 @@ ViewId PlayerControl::getViewId(const BuildInfoTypes::BuildType& info) const {
         return ViewId("imp");
       },
       [&](const BuildInfoTypes::Trap& elem) {
-        return elem.viewId;
+        return getGame()->getContentFactory()->furniture.getData(elem).getViewObject()->id();
       },
       [&](const BuildInfoTypes::DestroyLayers&) {
          return ViewId("destroy_button");
@@ -672,7 +672,7 @@ vector<Button> PlayerControl::fillButtons() const {
           buttons.push_back({this->getViewId(button.type), button.name, none, "", CollectiveInfo::Button::ACTIVE});
         },
         [&](const BuildInfoTypes::Trap& elem) {
-          buttons.push_back({elem.viewId, button.name, none});
+          buttons.push_back({getViewId(elem), button.name, none});
         }
     );
     vector<string> unmetReqText;
@@ -2619,9 +2619,9 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
         // Does this mean I can remove the order if the trap physically exists?
       } else
       if (position.canEnterEmpty({MovementTrait::WALK}) &&
-          collective->canAddFurniture(position, trap.type) &&
+          collective->canAddFurniture(position, trap) &&
           selection != DESELECT) {
-        collective->addTrap(position, trap.type);
+        collective->addTrap(position, trap);
         getView()->addSound(SoundId::ADD_CONSTRUCTION);
         selection = SELECT;
       }
