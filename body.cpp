@@ -846,6 +846,8 @@ bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
       return material == Material::UNDEAD_FLESH;
     case LastingEffect::FLYING:
       return numGood(BodyPart::WING) >= 2;
+    case LastingEffect::LIGHT_SOURCE:
+      return material == Material::FIRE;
     default:
       return false;
   }
