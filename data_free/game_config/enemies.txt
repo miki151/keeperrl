@@ -839,7 +839,8 @@
       { ExtraEnemy { "DUNGEON3" { 1 } } 40 30 DUNGEON }
       { MainEnemy 60 40 BASIC "Adoxie's Temple" }
       { ExtraEnemy { "DEATH" { 1 } } 40 30 BASIC none true }
-      { ExtraEnemy { "DUNGEON1" { 1 } } 40 30 DUNGEON "Hell" }
+      { ExtraEnemy { "HELL" { 1 } } 40 30 DUNGEON "A Very Hot Place" true }
+      { ExtraEnemy { "SATAN" { 1 } } 40 30 BASIC "A Very Hot Place" true }
       { ExtraEnemy { "OUTBACK_ENTRY" { 1 } } 100 100 OUTBACK "Down Under" true }
     }
   }
@@ -852,8 +853,44 @@
     buildingId = "DUNGEON"
   }
 }
+"HELL"
+{
+  discoverable = false
+  settlement = {
+    type = Builtin MINETOWN
+    tribe = MONSTER
+    buildingId = "HELL"
+    furniture = { "hellFurniture" }
+    inhabitants = {
+      fighters = {
+        count = {10 15}
+        all = {
+          10 "DEVIL"
+          20 "SPIRIT"
+        }
+      }
+    }
+  }
+}
+"SATAN"
+{
+  discoverable = false
+  settlement = {
+    type = MapLayoutId "satan"
+    tribe = MONSTER
+    inhabitants = {
+      leader = { { "SATAN" } }
+      fighters = {
+        count = {4 5}
+        all = { 1 "DEVIL" }
+      }
+    }
+    buildingId = "SATAN"
+  }
+}
 "OUTBACK_ENTRY"
 {
+  discoverable = false
   settlement = {
     type = Builtin CAVE
     tribe = BANDIT
@@ -1138,6 +1175,7 @@
 }
 "DUNGEON1"
 {
+  discoverable = false
   settlement = {
     type = Builtin MINETOWN
     tribe = MONSTER

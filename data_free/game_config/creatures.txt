@@ -347,8 +347,8 @@
   {
     viewId = { "spirit" }
     attr = {
-      DEFENSE 35
-      SPELL_DAMAGE 30 
+      DEFENSE 50
+      SPELL_DAMAGE 50
     }
     body = {
       type = NonHumanoid LARGE
@@ -392,6 +392,36 @@
     }
     spells = { "grant wish" }
     instantPrisoner = true
+  }
+"DEVIL"
+  {
+    viewId = { "devil" }
+    attr = {
+      DEFENSE 50
+      SPELL_DAMAGE 60
+    }
+    body = {
+      type = Humanoid LARGE
+      material = SPIRIT
+      intrinsicAttacks = {
+        TORSO {{{ Intrinsic { "fist_attack" } "spell" 1 {
+            attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
+      }
+    }
+    name = {
+      name = "devil"
+    }
+  }
+"SATAN" inherit "DEVIL"
+  {
+    viewId = { "satan" }
+    attr = {
+      DEFENSE 65
+      SPELL_DAMAGE 65
+    }
+    name = {
+      name = "big, bad devil"
+    }
   }
 "LOST_SOUL"
   {
@@ -3571,6 +3601,7 @@
     courage = 100
     body = {
       type = NonHumanoid HUGE
+      material = SPIRIT
       bodyParts = {
         BACK 1
         TORSO 1

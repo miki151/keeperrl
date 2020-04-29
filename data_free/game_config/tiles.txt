@@ -20,6 +20,8 @@
 { "demon_lord" "U" ColorId YELLOW }
 { "vampire" "V" ColorId DARK_GRAY }
 { "vampire_lord" "V" ColorId PURPLE }
+{ "devil" "&" ColorId ORANGE }
+{ "satan" "&" ColorId RED }
 { "adoxie_foot_left" "u" ColorId PURPLE }
 { "adoxie_foot_right" "u" ColorId PURPLE }
 { "adoxie_hand_right" "u" ColorId PURPLE }
@@ -57,6 +59,7 @@
 { "dwarf_female" "h" ColorId LIGHT_BLUE }
 { "shopkeeper" "@" ColorId LIGHT_BLUE }
 { "floor" "." ColorId LIGHT_GRAY }
+{ "floor_red" "." ColorId LIGHT_RED }
 { viewId = "bridge" symbol = "_" color = ColorId BROWN
   southSide = "bridge2" }
 { "keeper_floor" "." ColorId WHITE }
@@ -327,6 +330,8 @@
 { "sokoban_hole" "0" ColorId DARK_BLUE }
 { viewId = "cauldron" symbol = "ω" color = ColorId PURPLE
   isSymbolFont = true roundShadow = true }
+{ viewId = "cauldron_tar" symbol = "ω" color = ColorId GRAY
+  isSymbolFont = true roundShadow = true }
 { "robe" "[" ColorId LIGHT_BROWN }
 { "leather_gloves" "[" ColorId BROWN }
 { "iron_gloves" "[" ColorId LIGHT_GRAY }
@@ -564,6 +569,8 @@
   extraBorders = { "water" "sand" "floor" "keeper_floor" } }
 { viewId = "water" symbol = "~" color = ColorId LIGHT_BLUE
   waterSides = "water" animated = true spriteColor = Rgb 100 130 220 255 }
+{ viewId = "tar" symbol = "~" color = ColorId DARK_GRAY
+  waterSides = "water" spriteColor = Rgb 50 50 50 255 }
 { viewId = "magma" symbol = "~" color = ColorId RED
   waterSides = "magma" animated = true }
 { viewId = "fog_of_war" symbol = " " color = ColorId WHITE sprite = "empty"
@@ -572,6 +579,10 @@
   wallShadow = true mountainSides = "mountain" }
 { viewId = "mountain_sand" symbol = "#" color = ColorId LIGHT_BROWN
   wallShadow = true mountainSides = "mountain" }
+{ viewId = "mountain_skulls" symbol = "#" color = ColorId LIGHT_RED
+  wallShadow = true mountainSides = "mountain" }
+{ viewId = "wall_skulls" sprite = "mountain_skulls" symbol = "#" color = ColorId RED
+  wallShadow = true mountainSides = "dungeonwall" }
 { viewId = "red_sandstone" symbol = "#" color = ColorId BROWN
   wallShadow = true mountainSides = "mountain" }
 { viewId = "glacier" symbol = "#" color = ColorId SKY_BLUE

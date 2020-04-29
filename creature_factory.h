@@ -99,6 +99,7 @@ class CreatureFactory {
   void addInventory(Creature*, const vector<ItemType>& items);
   mutable const ContentFactory* contentFactory = nullptr;
   SpellMap getSpellMap(const CreatureAttributes&);
+  PCreature getSpirit(TribeId, MonsterAIFactory);
 };
 
 static_assert(std::is_nothrow_move_constructible<CreatureFactory>::value, "T should be noexcept MoveConstructible");

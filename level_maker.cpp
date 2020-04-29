@@ -2546,6 +2546,8 @@ static FurnitureType getWaterFurniture(WaterType waterType) {
       return FurnitureType("WATER");
     case WaterType::LAVA:
       return FurnitureType("MAGMA");
+    case WaterType::TAR:
+      return FurnitureType("TAR");
   }
 }
 
@@ -2809,7 +2811,8 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
   return std::move(queue);
 }
 
-static PLevelMaker underground(RandomGen& random, Vec2 size, vector<WaterType> waterTypes = { WaterType::LAVA, WaterType::WATER }) {
+static PLevelMaker underground(RandomGen& random, Vec2 size, FurnitureType floor = FurnitureType("FLOOR"),
+    vector<WaterType> waterTypes = { WaterType::LAVA, WaterType::WATER }) {
   auto waterType = random.choose(waterTypes);
   auto creatureGroup = [&] {
     switch (waterType) {
@@ -2817,6 +2820,7 @@ static PLevelMaker underground(RandomGen& random, Vec2 size, vector<WaterType> w
         return CreatureGroup::iceCreatures(TribeId::getMonster());
       case WaterType::WATER:
         return CreatureGroup::waterCreatures(TribeId::getMonster());
+      case WaterType::TAR:
       case WaterType::LAVA:
         return CreatureGroup::lavaCreatures(TribeId::getMonster());
     }
@@ -2829,7 +2833,7 @@ static PLevelMaker underground(RandomGen& random, Vec2 size, vector<WaterType> w
     int maxSize = minSize + random.get(3, 10);
     for (int i : Range(sqrt(random.get(4, 100)))) {
       int size = random.get(minSize, maxSize);
-      caverns->add(unique<UniformBlob>(SquareChange::reset(FurnitureType("FLOOR"))), Vec2(size, size), Predicate::alwaysTrue());
+      caverns->add(unique<UniformBlob>(SquareChange::reset(floor)), Vec2(size, size), Predicate::alwaysTrue());
       caverns->setCanOverlap(caverns->getLast());
     }
     queue->addMaker(std::move(caverns));
@@ -2977,10 +2981,12 @@ PLevelMaker LevelMaker::splashLevel(CreatureGroup heroLeader, CreatureGroup hero
 PLevelMaker LevelMaker::roomLevel(RandomGen& random, SettlementInfo info, Vec2 size) {
   auto queue = unique<MakerQueue>();
   auto& building = info.buildingInfo;
-  SquareChange wall(FurnitureType("FLOOR"), building.wall);
+  auto floorOutside = building.floorOutside.value_or(FurnitureType("FLOOR"));
+  auto floorInside = building.floorInside.value_or(FurnitureType("FLOOR"));
+  SquareChange wall(floorInside, building.wall);
   queue->addMaker(unique<Empty>(wall));
-  queue->addMaker(underground(random, size, building.water));
-  queue->addMaker(unique<RoomMaker>(random.get(8, 15), 4, 7));
+  queue->addMaker(underground(random, size, floorOutside, building.water));
+  queue->addMaker(unique<RoomMaker>(random.get(8, 15), 4, 7, SquareChange::none(), none, unique<Empty>(floorInside)));
   queue->addMaker(unique<Connector>(building.door, info.tribe));
   for (auto& furniture : info.furniture)
     queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.05, furniture, info.tribe));

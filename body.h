@@ -31,6 +31,8 @@ RICH_ENUM(BodyMaterial,
   ICE
 );
 
+const char* getMaterialName(BodyMaterial material);
+
 RICH_ENUM(BodySize,
   SMALL,
   MEDIUM,
@@ -124,6 +126,7 @@ class Body {
 
   void consumeBodyParts(Creature*, Body& other, vector<string>& adjectives);
 
+  Material getMaterial() const;
   bool isHumanoid() const;
   bool canPickUpItems() const;
   string getDescription() const;

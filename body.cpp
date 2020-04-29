@@ -454,6 +454,9 @@ void Body::consumeBodyParts(Creature* c, Body& other, vector<string>& adjectives
   consumeBodyAttr(size, other.size, adjectives, "larger");
 }
 
+Body::Material Body::getMaterial() const {
+  return material;
+}
 
 bool Body::looseBodyPart(BodyPart part) {
   if (bodyParts[part] > 0) {
@@ -480,7 +483,7 @@ string sizeStr(Body::Size s) {
   }
 }
 
-static string getMaterialName(Body::Material material) {
+const char* getMaterialName(Body::Material material) {
   switch (material) {
     case Body::Material::FLESH: return "flesh";
     case Body::Material::BONE: return "bone";
@@ -504,7 +507,7 @@ string Body::getMaterialAndSizeAdjectives() const {
   switch (material) {
     case Material::FLESH: break;
     case Material::UNDEAD_FLESH: ret.push_back("undead"); break;
-    default: ret.push_back("made of " + getMaterialName(material));
+    default: ret.push_back("made of "_s + getMaterialName(material));
   }
   return combine(ret);
 }

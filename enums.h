@@ -27,6 +27,7 @@ enum class GameSaveType;
 enum class CollectiveConfigId;
 enum class MsgType;
 enum class BodyPart;
+enum class BodyMaterial;
 enum class AttackType;
 enum class AttackLevel;
 enum class AttrType;

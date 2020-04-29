@@ -1133,16 +1133,6 @@ void Creature::tick() {
   }
 }
 
-static PCreature getBestSpirit(const Model* model, TribeId tribe) {
-  auto& factory = model->getGame()->getContentFactory()->getCreatures();
-  for (auto id : Random.permutation(factory.getAllCreatures())) {
-    auto orig = factory.fromId(id, tribe);
-    if (orig->getBody().hasBrain())
-      return orig;
-  }
-  return nullptr;
-}
-
 static vector<Creature*> summonGhosts(Creature* c, Range count, int strength, optional<TimeInterval> ttl) {
   auto spirits = Effect::summon(c, CreatureId("SPIRIT"), Random.get(count), ttl);
   for (auto spirit : spirits) {
@@ -1150,15 +1140,7 @@ static vector<Creature*> summonGhosts(Creature* c, Range count, int strength, op
     spirit->getAttributes().setBaseAttr(AttrType::RANGED_DAMAGE, 0);
     spirit->getAttributes().setBaseAttr(AttrType::DEFENSE, strength);
     spirit->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, strength);
-    spirit->modViewObject().setModifier(ViewObject::Modifier::ILLUSION);
-    auto orig = getBestSpirit(c->getPosition().getModel(), c->getTribeId());
-    spirit->getAttributes().getName() = orig->getAttributes().getName();
-    spirit->getAttributes().getName().setFirst(none);
-    spirit->getAttributes().getName().useFullTitle(false);
     spirit->getAttributes().setCanJoinCollective(false);
-    spirit->modViewObject().setId(orig->getViewObject().id());
-    spirit->getName().addBareSuffix("spirit");
-    spirit->updateViewObject();
     c->verb("have", "has", "summoned " + spirit->getName().a());
   }
   return spirits;

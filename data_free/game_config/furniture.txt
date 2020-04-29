@@ -91,6 +91,15 @@
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   usageFX = LABORATORY
 }
+"CAULDRON_TAR"
+{
+  name = "cauldron with tar"
+  viewId = { "cauldron_tar" }
+  blockMovement = true
+  canHideHere = true
+  strength = 80
+  destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
 "JEWELLER"
 {
   name = "jeweller"
@@ -371,7 +380,7 @@
   populationIncrease = 1 4
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
-"ADOXIE_STATUE"
+"ADOXIE_STATUE_TEMPLE"
 {
   name = "statue of Evil God Adoxie"
   viewId = { "adoxie_statue" }
@@ -381,8 +390,11 @@
   strength = 250
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
 # if there is a destroyedEffect then the standard "is destroyed" text is not displayed, you need to add your own
-  destroyedEffect = Chain { Message "The statue comes to life!" SummonEnemy "ADOXIE_HEAD" {1} none }
   destroyedRemains = "DOWN_STAIRS"
+}
+"ADOXIE_STATUE" inherit "ADOXIE_STATUE_TEMPLE"
+{
+  destroyedEffect = Chain { Message "The statue comes to life!" SummonEnemy "ADOXIE_HEAD" {1} none }
 }
 "BARRICADE"
 {
@@ -991,6 +1003,16 @@
   name = "glacier"
   viewId = { "glacier" }
 }
+"MOUNTAIN_SKULLS" inherit "MOUNTAIN"
+{
+  name = "mountain"
+  viewId = { "mountain_skulls" }
+}
+"WALL_SKULLS" inherit "MOUNTAIN"
+{
+  name = "wall"
+  viewId = { "wall_skulls" }
+}
 "MOUNTAIN2"
 {
   name = "hard rock"
@@ -1253,6 +1275,10 @@
 {
   viewId = { "carpet_floor4" }
 }
+"CARPET2_GROUND" inherit "FLOOR_CARPET2"
+{
+  layer = GROUND
+}
 "FLOOR_SPEED"
 {
   name = "floor of speed"
@@ -1481,6 +1507,23 @@
     forcibleTraits = { WALK }
   }
 }
+"TAR" {
+  name = "tar"
+  viewId = { "tar" }
+  layer = GROUND
+  defaultBridge = "STONE_BRIDGE"
+  tickType = Effect
+    Filter And { Not LastingEffect FLYING Not BodyMaterial SPIRIT Not LastingEffect IMMOBILE} Chain {
+      Chance 0.1 Chain {
+        CreatureMessage "are stuck in the tar!" "is stuck in the tar!"
+        Lasting IMMOBILE
+      }
+      Filter Not LastingEffect IMMOBILE Chance 0.5 Chain {
+        CreatureMessage "are slowed down by the tar!" "is slowed down by the tar!"
+        Lasting SLOWED
+      }
+    }
+}
 "SAND"
 {
   name = "sand"
@@ -1533,6 +1576,11 @@
   layer = GROUND
   canBuildOutsideOfTerritory = true
   xForgetAfterBuilding = true
+}
+"FLOOR_RED" inherit "FLOOR"
+{
+  name = "good intentions"
+  viewId = { "floor_red" }
 }
 "TUTORIAL_ENTRANCE"
 {

@@ -1611,6 +1611,7 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
     case LastingEffect::LIFE_SAVED:
     case LastingEffect::FROZEN:
     case LastingEffect::STUNNED:
+    case LastingEffect::IMMOBILE:
       return 7_visible;
     case LastingEffect::SLEEP_RESISTANT:
     case LastingEffect::ACID_RESISTANT:

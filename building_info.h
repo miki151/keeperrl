@@ -7,7 +7,8 @@ RICH_ENUM(
   WaterType,
   LAVA,
   WATER,
-  ICE
+  ICE,
+  TAR
 );
 
 struct BuildingInfo {

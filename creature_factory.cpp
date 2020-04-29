@@ -829,6 +829,28 @@ SpellMap CreatureFactory::getSpellMap(const CreatureAttributes& attr) {
   return spellMap;
 }
 
+PCreature CreatureFactory::getSpirit(TribeId tribe, MonsterAIFactory aiFactory) {
+  auto orig = [&] {
+    for (auto id : Random.permutation(getAllCreatures())) {
+      auto orig = fromId(id, tribe);
+      if (orig->getBody().hasBrain())
+        return orig;
+    }
+    fail();
+  }();
+  auto id = CreatureId("SPIRIT");
+  auto attr = getAttributesFromId(id);
+  auto spells = getSpellMap(attr);
+  auto ret = get(std::move(attr), tribe, getController(id, aiFactory), std::move(spells));
+  ret->modViewObject().setModifier(ViewObject::Modifier::ILLUSION);
+  ret->getAttributes().getName() = orig->getAttributes().getName();
+  ret->getAttributes().getName().setFirst(none);
+  ret->getAttributes().getName().useFullTitle(false);
+  ret->modViewObject().setId(orig->getViewObject().id());
+  ret->getName().addBareSuffix("spirit");
+  return ret;
+}
+
 PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory aiFactory) {
   ControllerFactory factory = Monster::getFactory(aiFactory);
   auto& special = getSpecialParams();
@@ -836,6 +858,8 @@ PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory ai
     return getSpecial(id, tribe, special.at(id), factory);
   else if (id == "SOKOBAN_BOULDER")
     return getSokobanBoulder(tribe);
+  else if (id == "SPIRIT")
+    return getSpirit(tribe, aiFactory);
   else {
     auto attr = getAttributesFromId(id);
     auto spells = getSpellMap(attr);

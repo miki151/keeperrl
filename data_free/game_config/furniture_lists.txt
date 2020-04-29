@@ -6,6 +6,13 @@
     "CHEST" 2
   }
 }
+"hellFurniture"
+{
+  {
+    "TORTURE_TABLE" 1
+    "CAULDRON_TAR" 2
+  }
+}
 "snowFurniture"
 {
   {

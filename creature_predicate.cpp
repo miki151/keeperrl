@@ -4,6 +4,7 @@
 #include "creature_attributes.h"
 #include "equipment.h"
 #include "item.h"
+#include "body.h"
 
 namespace Impl {
 static bool apply(const CreaturePredicates::Enemy&, const Creature* victim, const Creature* attacker) {
@@ -103,6 +104,14 @@ static bool apply(CreatureStatus s, const Creature* victim, const Creature* atta
 
 static string getName(CreatureStatus s) {
   return toLower(::getName(s)) + "s";
+}
+
+static bool apply(BodyMaterial m, const Creature* victim, const Creature* attacker) {
+  return victim->getBody().getMaterial() == m;
+}
+
+static string getName(BodyMaterial m) {
+  return "made of "_s + getMaterialName(m);
 }
 
 static bool apply(const CreaturePredicates::And& p, const Creature* victim, const Creature* attacker) {

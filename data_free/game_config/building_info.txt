@@ -122,7 +122,25 @@
   }
 "ADOXIE_TEMPLE" inherit "BRICK"
   {
-    downStairs = {"ADOXIE_STATUE"}
+    downStairs = {"ADOXIE_STATUE_TEMPLE"}
     water = {LAVA}
     bridge = "STONE_BRIDGE"
+  }
+"HELL"
+  {
+    wall = "MOUNTAIN_SKULLS"
+    floorInside = "FLOOR_RED"
+    floorOutside = "TAR"
+    water = {TAR}
+    door = { "IRON_DOOR" 1.0 }
+    gate = { "IRON_GATE" 1.0 }
+  }
+"SATAN" inherit "HELL"
+  {
+    downStairs = {"ADOXIE_STATUE"}
+    door = { "IRON_DOOR" 1.0 }
+    gate = { "IRON_GATE" 1.0 }
+    wall = "WALL_SKULLS"
+    floorInside = "CARPET2_GROUND"
+    floorOutside = "CARPET2_GROUND"
   }
