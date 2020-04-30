@@ -40,6 +40,7 @@ struct LevelConnection {
     EnemyLevelInfo SERIAL(enemy);
     bool SERIAL(isLit) = false;
     optional<string> SERIAL(name);
+    bool SERIAL(canTransfer) = true;
     template <class Archive>
     void serialize(Archive& ar, unsigned int v);
   };

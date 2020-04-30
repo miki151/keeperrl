@@ -360,9 +360,10 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
         settlement.downStairs.push_back(downLink);
       if (direction == -1)
         swap(settlement.upStairs, settlement.downStairs);
-      model->buildLevel(
+      auto res = model->buildLevel(
           LevelBuilder(meter, random, contentFactory, level.levelSize.x, level.levelSize.y, true, level.isLit ? 1.0 : 0.0),
           getMaker(level.levelType)(random, settlement, level.levelSize), depth, level.name);
+      res->canTranfer = level.canTransfer;
       upLink = downLink;
       downLink = StairKey::getNew();
     };

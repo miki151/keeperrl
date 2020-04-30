@@ -838,9 +838,9 @@
       { ExtraEnemy { "DUNGEON2" { 1 } } 40 30 DUNGEON }
       { ExtraEnemy { "DUNGEON3" { 1 } } 40 30 DUNGEON }
       { MainEnemy 60 40 BASIC "Adoxie's Temple" }
-      { ExtraEnemy { "DEATH" { 1 } } 40 30 BASIC none true }
-      { ExtraEnemy { "HELL" { 1 } } 40 30 DUNGEON "A Very Hot Place" true }
-      { ExtraEnemy { "SATAN" { 1 } } 40 30 BASIC "A Very Hot Place" true }
+      { ExtraEnemy { "DEATH" { 1 } } 40 30 BASIC none true false }
+      { ExtraEnemy { "HELL" { 1 } } 40 30 DUNGEON "A Very Hot Place" true false }
+      { ExtraEnemy { "SATAN" { 1 } } 40 30 BASIC "A Very Hot Place" true false }
       { ExtraEnemy { "OUTBACK_ENTRY" { 1 } } 100 100 OUTBACK "Down Under" true }
     }
   }

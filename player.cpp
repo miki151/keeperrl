@@ -608,23 +608,28 @@ void Player::updateSquareMemory(Position pos) {
 }
 
 bool Player::canTravel() const {
+  if (!creature->getPosition().getLevel()->canTranfer) {
+    getView()->presentText("Sorry", "You don't know how to leave this area.");
+    return false;
+  }
   auto team = getTeam();
   for (auto& c : team) {
     if (c->isAffected(LastingEffect::POISON)) {
       if (team.size() == 1)
-        getView()->presentText("Sorry", "You can't travel while being poisoned");
+        getView()->presentText("Sorry", "You can't travel while being poisoned.");
       else
-        getView()->presentText("Sorry", c->getName().the() + " can't travel while being poisoned");
+        getView()->presentText("Sorry", c->getName().the() + " can't travel while being poisoned.");
       return false;
     }
     if (auto intent = c->getLastCombatIntent())
       if (intent->time > *creature->getGlobalTime() - 7_visible && intent->isHostile()) {
-        getView()->presentText("Sorry", "You can't travel while being attacked by " + intent->attacker->getName().a());
+        getView()->presentText("Sorry", "You can't travel while being attacked by " +
+            intent->attacker->getName().a() + ".");
         return false;
       }
     for (auto item : c->getEquipment().getItems())
       if (item->getShopkeeper(c)) {
-        getView()->presentText("Sorry", "You can't travel while carrying unpaid items");
+        getView()->presentText("Sorry", "You can't travel while carrying unpaid items.");
         return false;
       }
   }

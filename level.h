@@ -164,6 +164,7 @@ class Level : public OwnedObject<Level> {
 
   optional<string> SERIAL(name);
   int SERIAL(depth) = 0;
+  bool canTranfer = true;
 
   private:
   friend class Position;
