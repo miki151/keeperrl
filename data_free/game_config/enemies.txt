@@ -948,25 +948,9 @@
     ransom = 0.5 80
   }
 }
-"BANDITS_WITH_KEY" inherit "BANDITS"
-{
-  settlement = append {
-    inhabitants = append {
-      leader = { { "BANDIT_WITH_KEY" } }
-    }
-  }
-}
 "COTTAGE_BANDITS" inherit "NO_AGGRO_BANDITS"
 {
   createOnBones = 1.0 { "HUMAN_COTTAGE" }
-}
-"COTTAGE_BANDITS_WITH_KEY" inherit "COTTAGE_BANDITS"
-{
-  settlement = append {
-    inhabitants = append {
-      leader = { { "BANDIT_WITH_KEY" } }
-    }
-  }
 }
 "ORC_CAVE"
 {

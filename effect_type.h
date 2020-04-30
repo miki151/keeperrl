@@ -275,6 +275,11 @@ struct RemoveFurniture {
   FurnitureType SERIAL(type);
   SERIALIZE_ALL(type)
 };
+struct SetFlag {
+  string SERIAL(name);
+  bool SERIAL(value) = true;
+  SERIALIZE_ALL(name, value)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -347,6 +352,7 @@ struct RemoveFurniture {
   X(AddMinionTrait, 67)\
   X(Caster, 68)\
   X(RemoveFurniture, 69)\
+  X(SetFlag, 70)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

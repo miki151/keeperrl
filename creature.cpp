@@ -964,11 +964,11 @@ int Creature::getAttr(AttrType type, bool includeWeapon) const {
 int Creature::getSpecialAttr(AttrType type, const Creature* against) const {
   int ret = 0;
   if (auto& elem = attributes->specialAttr[type])
-    if (elem->second.apply(against, this))
+    if (elem->second.apply(against->getPosition(), this))
       ret += elem->first;
   for (auto& item : equipment->getAllEquipped())
     if (auto& elem = item->getSpecialModifier(type))
-      if (elem->second.apply(against, this))
+      if (elem->second.apply(against->getPosition(), this))
         ret += elem->first;
   return ret;
 }

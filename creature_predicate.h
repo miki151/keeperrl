@@ -36,6 +36,11 @@ struct Name {
   SERIALIZE_ALL(name, pred)
 };
 
+struct Flag {
+  string SERIAL(name);
+  SERIALIZE_ALL(name)
+};
+
 struct Not {
   HeapAllocated<CreaturePredicate> SERIAL(pred);
   SERIALIZE_ALL(pred)
@@ -60,11 +65,12 @@ struct Or {
   X(HatedBy, 5)\
   X(Ingredient, 6)\
   X(Hidden, 7)\
-  X(Name, 8)\
-  X(Attacker, 9)\
-  X(Not, 10)\
-  X(And, 11)\
-  X(Or, 12)
+  X(Flag, 8)\
+  X(Name, 9)\
+  X(Attacker, 10)\
+  X(Not, 11)\
+  X(And, 12)\
+  X(Or, 13)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST
@@ -78,10 +84,10 @@ template <class Archive>
 void serialize(Archive& ar1, CreaturePredicate&);
 
 }
-
+class Position;
 struct CreaturePredicate : CreaturePredicates::CreaturePredicate {
   using CreaturePredicates::CreaturePredicate::CreaturePredicate;
-  bool apply(const Creature* victim, const Creature* attacker) const;
+  bool apply(Position, const Creature* attacker) const;
   string getName() const;
   string getNameInternal(bool negated = false) const;
 };

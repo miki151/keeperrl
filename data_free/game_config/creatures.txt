@@ -259,18 +259,16 @@
     name = {
       name = "bandit"
     }
+    deathEffect = Filter Not Flag "key_dropped" Chain {
+      SetFlag "key_dropped" true
+      DropItems { Simple "BlackMarketKey"} {1}
+    }
     hatedByEffect = HATE_HUMANS
     inventory = {
       { Simple "Sword"}
       { type = Potion Heal FLESH chance = 0.7 }
       { type = Simple "Torch" chance = 0.3 }
       { type = Simple "Bow" chance = 0.05 }
-    }
-  }
-"BANDIT_WITH_KEY" inherit "BANDIT"
-  {
-    inventory = append {
-      { Simple "BlackMarketKey" }
     }
   }
 "RAT_SOLDIER"

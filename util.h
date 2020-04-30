@@ -78,6 +78,10 @@ T lambdaConstruct(Fun fun) {
 
 #define LIST(...) {__VA_ARGS__}
 
+#define REQUIRE(...) \
+    typename int_<decltype(__VA_ARGS__)>::type = 0
+#define TVALUE(NAME) std::declval<NAME>()
+
 typedef function<bool(const Item*)> ItemPredicate;
 
 template<class T>

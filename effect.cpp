@@ -61,10 +61,6 @@
 #include "minion_trait.h"
 
 
-#define REQUIRE(...) \
-    typename int_<decltype(__VA_ARGS__)>::type = 0
-#define TVALUE(NAME) std::declval<NAME>()
-
 namespace {
 struct DefaultType {
   template <typename T>
@@ -1702,6 +1698,30 @@ static bool apply(const Effects::Fx& fx, Position pos, Creature*) {
   return true;
 }
 
+static string getName(const Effects::SetFlag& e, const ContentFactory*) {
+  return e.name;
+}
+
+static string getDescription(const Effects::SetFlag& e, const ContentFactory*) {
+  return "Sets " + e.name + " to " + (e.value ? "true" : "false");
+}
+
+static bool apply(const Effects::SetFlag& e, Position pos, Creature*) {
+  if (auto game = pos.getGame()) {
+    if (e.value) {
+      if (!game->effectFlags.count(e.name)) {
+        game->effectFlags.insert(e.name);
+        return true;
+      }
+    } else
+    if (game->effectFlags.count(e.name)) {
+      game->effectFlags.erase(e.name);
+      return true;
+    }
+  }
+  return false;
+}
+
 static string getName(const Effects::Stairs&, const ContentFactory*) {
   return "stairs";
 }
@@ -1747,8 +1767,8 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Filte
   return f.effect->getMinionEquipmentType();
 }
 
-static bool applyToCreature(const Effects::Filter& e, Creature* c, Creature* attacker) {
-  return e.predicate.apply(c, attacker) && e.effect->apply(c->getPosition(), attacker);
+static bool apply(const Effects::Filter& e, Position pos, Creature* attacker) {
+  return e.predicate.apply(pos, attacker) && e.effect->apply(pos, attacker);
 }
 
 static optional<FXInfo> getProjectileFX(const Effects::Filter& e) {
@@ -1760,8 +1780,7 @@ static optional<ViewId> getProjectile(const Effects::Filter& e) {
 }
 
 static EffectAIIntent shouldAIApply(const Effects::Filter& e, const Creature* caster, Position pos) {
-  auto victim = pos.getCreature();
-  if (victim && e.predicate.apply(victim, caster))
+  if (e.predicate.apply(pos, caster))
     return e.effect->shouldAIApply(caster, pos);
   return EffectAIIntent::NONE;
 }
