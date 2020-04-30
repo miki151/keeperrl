@@ -1164,8 +1164,13 @@ static string combineNames(const ContentFactory* f, const vector<Effect>& effect
 
 static string combineDescriptions(const ContentFactory* f, const vector<Effect>& effects) {
   string ret;
-  for (auto& e : effects)
-    ret += e.getDescription(f) + ", ";
+  for (auto& e : effects) {
+    auto desc = e.getDescription(f);
+    if (!ret.empty())
+      desc = noCapitalFirst(std::move(desc));
+    ret += std::move(desc);
+    ret += ", ";
+  }
   ret.pop_back();
   ret.pop_back();
   return ret;
@@ -1201,7 +1206,7 @@ static bool canAutoAssignMinionEquipment(const Effects::Chain& c) {
 }
 
 static EffectAIIntent shouldAIApply(const Effects::Chain& chain, const Creature* caster, Position pos) {
-  auto allRes = EffectAIIntent::UNWANTED;
+  auto allRes = EffectAIIntent::NONE;
   for (auto& e : chain.effects) {
     auto res = e.shouldAIApply(caster, pos);
     if (res == EffectAIIntent::UNWANTED)

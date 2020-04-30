@@ -1166,6 +1166,9 @@
   {
     viewId = { "cleric" }
     spellSchools = { "healer" }
+    permanentEffects = append {
+      DISTILLATION_SKILL 1
+    }
     name = {
       name = "cleric"
       firstNameGen = "FIRST_MALE"
@@ -1222,6 +1225,7 @@
     chatReactionHostile = "\"Heeelp!\""
     permanentEffects = {
       CROPS_SKILL 1
+      DISTILLATION_SKILL 1
     }
     skills = {
       "DIGGING" 0.1
@@ -1953,7 +1957,8 @@
     permanentEffects = {
       NIGHT_VISION 1
       RANGED_RESISTANCE 1
-    }
+      DISTILLATION_SKILL 1
+   }
     maxLevelIncrease = {
       MELEE 7
       SPELL 7
@@ -2101,6 +2106,9 @@
     skills = {
       "SHAMANISM" 0.4
     }
+    permanentEffects = append {
+      DISTILLATION_SKILL 1
+    }
     name = {
       name = "orc shaman"
       firstNameGen = "ORC"
@@ -2187,6 +2195,9 @@
       "FORGE" 0.5
       "LABORATORY" 0.5
       "DIGGING" 0.2
+    }
+    permanentEffects = {
+      DISTILLATION_SKILL 1
     }
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""
@@ -2642,6 +2653,7 @@
       MAGIC_RESISTANCE 1
       SWIMMING_SKILL 1
       NIGHT_VISION 1
+      DISTILLATION_SKILL 1
     }
     spells = { "healing" }
     name = {
@@ -2666,6 +2678,7 @@
     permanentEffects = {
       MAGIC_RESISTANCE 1
       NIGHT_VISION 1
+      DISTILLATION_SKILL 1
     }
     spells = { "healing" }
     maxLevelIncrease = {
@@ -2721,6 +2734,7 @@
     permanentEffects = {
       MAGIC_RESISTANCE 1
       NIGHT_VISION 1
+      DISTILLATION_SKILL 1
     }
     spells = { "advanced healing" "haste" "defense bonus" "damage bonus" "directed blast" }
     name = {
@@ -3258,6 +3272,7 @@
       EXPLORE_NOCTURNAL_SKILL 1
       MAGIC_RESISTANCE 1
       REGENERATION 1
+      DISTILLATION_SKILL 1
     }
     maxLevelIncrease = {
       MELEE 12

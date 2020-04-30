@@ -504,6 +504,8 @@
   roundShadow = true }
 { viewId = "poetry_table" symbol = "&" color = ColorId DARK_BROWN
   roundShadow = true }
+{ viewId = "distillery" symbol = "&" color = ColorId LIGHT_GRAY
+  roundShadow = true }
 { viewId = "furnace" symbol = "&" color = ColorId PINK
   roundShadow = true }
 { viewId = "grave" symbol = "☗" color = ColorId GRAY

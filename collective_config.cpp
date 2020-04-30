@@ -302,6 +302,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
               || t == FurnitureType("PAINTING_W");
           }};
       case MinionActivity::STUDY: return {getTrainingPredicate(ExperienceType::SPELL)};
+      case MinionActivity::DISTILLATION: return {FurnitureType("DISTILLERY")};
       case MinionActivity::CROPS: return {FurnitureType("CROPS")};
       case MinionActivity::RITUAL: return {BuiltinUsageId::DEMON_RITUAL};
       case MinionActivity::ARCHERY: return {MinionActivityInfo::ARCHERY};

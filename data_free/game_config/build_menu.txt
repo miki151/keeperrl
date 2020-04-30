@@ -202,6 +202,11 @@
     { Furniture {{ "POETRY_TABLE" } "WOOD" 12 }                    "Poetry table"       "Crafting"
         "Allows writing poems."}
   }
+  "distillery"
+  {
+    { Furniture {{ "DISTILLERY" }   "IRON" 30 }                    "Distillery"       "Crafting"
+        "Allows making moonshine." 0 { TechId "distillation" }}
+  }
   "automatons"
   {
     { Furniture {{ "AUTOMATON_ENGINE_WOOD" } "WOOD" 50 }                "Wooden engine"   "Automaton engines"

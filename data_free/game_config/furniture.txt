@@ -129,6 +129,19 @@
     Lasting SATIATED
   }
 }
+"DISTILLERY"
+{
+  name = "distillery"
+  viewId = { "distillery" }
+  blockMovement = true
+  usageTime = 5
+  canHideHere = true
+  strength = 100
+  usageType = UsageEffect "use" Chain {
+    Chance 0.02 DropItems {Potion Name "moonshine" Chain { IncreaseMorale 0.3 Lasting DRUNK} } {1}
+    Chance 0.005 SummonEnemy "RAT" {1 4} none
+  }
+}
 "FURNACE"
 {
   name = "furnace"

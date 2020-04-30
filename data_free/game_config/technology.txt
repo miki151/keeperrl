@@ -7,6 +7,7 @@
 "pig breeding"             { "Build a pigsty to feed your minions." }
 "iron working"             { "Build a forge and produce metal weapons and armor." }
 "jewellery"                { "Build a jeweler room and produce magical rings and amulets."  {"iron working" }}
+"distillation"             { "Beer is for dwarves. Build a distillery and make rat moonshine for your minions."}
 "two-handed weapons"       { "Produce war hammers and battle axes."                         {"iron working" }}
 "traps"                    { "Produce traps in the workshop." }
 "advanced traps"           { "Produce more advanced traps and mechanisms." { "traps"} }

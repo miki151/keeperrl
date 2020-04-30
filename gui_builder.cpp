@@ -3040,6 +3040,7 @@ static string getTaskText(MinionActivity option) {
     case MinionActivity::COPULATE: return "Copulating";
     case MinionActivity::SPIDER: return "Spinning webs";
     case MinionActivity::GUARDING: return "Guarding";
+    case MinionActivity::DISTILLATION: return "Distilling";
     case MinionActivity::BE_WHIPPED: return "Being whipped";
     case MinionActivity::BE_TORTURED: return "Being tortured";
     case MinionActivity::BE_EXECUTED: return "Being executed";

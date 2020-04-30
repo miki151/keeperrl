@@ -103,6 +103,8 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
       return c->getAttributes().getSkills().getValue(SkillId::DIGGING) > 0 && col->hasTrait(c, MinionTrait::WORKER);
     case MinionActivity::MINION_ABUSE:
       return col->hasTrait(c, MinionTrait::LEADER) && col == col->getGame()->getPlayerCollective();
+    case MinionActivity::DISTILLATION:
+      return c->isAffected(LastingEffect::DISTILLATION_SKILL);
   }
 }
 

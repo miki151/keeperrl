@@ -294,6 +294,7 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::EXPLORE_CAVES_SKILL:
       case LastingEffect::EXPLORE_NOCTURNAL_SKILL:
       case LastingEffect::BRIDGE_BUILDING_SKILL:
+      case LastingEffect::DISTILLATION_SKILL:
       case LastingEffect::NAVIGATION_DIGGING_SKILL:
         c->verb("acquire", "acquires", "the skill of "_s + getName(effect));
         break;
@@ -331,6 +332,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::TURNED_OFF:
         c->you(MsgType::ARE, "turned off");
+        break;
+      case LastingEffect::DRUNK:
+        c->you(MsgType::ARE, "drunk!");
         break;
     }
 }
@@ -554,6 +558,7 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::CROPS_SKILL:
       case LastingEffect::SPIDER_SKILL:
       case LastingEffect::EXPLORE_SKILL:
+      case LastingEffect::DISTILLATION_SKILL:
       case LastingEffect::EXPLORE_CAVES_SKILL:
       case LastingEffect::EXPLORE_NOCTURNAL_SKILL:
       case LastingEffect::BRIDGE_BUILDING_SKILL:
@@ -593,6 +598,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::TURNED_OFF:
         c->you(MsgType::ARE, "turned on");
         break;
+      case LastingEffect::DRUNK:
+        c->verb("sober", "sobers", "up");
+        break;
       default:
         break;
     }
@@ -605,6 +613,8 @@ int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
   auto time = c->getGlobalTime();
   switch (type) {
     case AttrType::DAMAGE:
+      if (c->isAffected(LastingEffect::DRUNK, time))
+        value -= attrBonus;
       if (c->isAffected(LastingEffect::PANIC, time))
         value -= attrBonus;
       if (c->isAffected(LastingEffect::RAGE, time))
@@ -618,10 +628,14 @@ int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
       break;
     case AttrType::RANGED_DAMAGE:
     case AttrType::SPELL_DAMAGE:
+      if (c->isAffected(LastingEffect::DRUNK, time))
+        value -= attrBonus;
       if (c->hasAlternativeViewId() && c->isAffected(LastingEffect::SPYING, time))
         value -= 99;
       break;
     case AttrType::DEFENSE:
+      if (c->isAffected(LastingEffect::DRUNK, time))
+        value -= attrBonus;
       if (c->isAffected(LastingEffect::PANIC, time))
         value += attrBonus;
       if (c->isAffected(LastingEffect::RAGE, time))
@@ -726,12 +740,14 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::EXPLORE_CAVES_SKILL: return "Explores caves"_good;
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "Builds bridges"_good;
     case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Digs"_good;
+    case LastingEffect::DISTILLATION_SKILL: return "Distiller"_good;
     case LastingEffect::NO_CARRY_LIMIT: return "Infinite carrying capacity"_good;
     case LastingEffect::SPYING: return "Spy"_good;
     case LastingEffect::LIFE_SAVED: return "Life will be saved"_good;
     case LastingEffect::SWARMER: return "Swarmer"_good;
     case LastingEffect::PSYCHIATRY: return "Psychiatrist"_good;
     case LastingEffect::INVULNERABLE: return "Invulnerable"_good;
+    case LastingEffect::DRUNK: return "Drunk"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::PLAGUE: return "Infected with plague"_bad;
@@ -1081,6 +1097,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::CONSUMPTION_SKILL: return "absorbtion";
     case LastingEffect::COPULATION_SKILL: return "copulatation";
     case LastingEffect::CROPS_SKILL: return "farming";
+    case LastingEffect::DISTILLATION_SKILL: return "distillation";
     case LastingEffect::SPIDER_SKILL: return "spider web weaving";
     case LastingEffect::EXPLORE_SKILL: return "exploring";
     case LastingEffect::EXPLORE_CAVES_SKILL: return "exploring caves";
@@ -1101,6 +1118,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::PSYCHIATRY: return "psychiatry";
     case LastingEffect::INVULNERABLE: return "invulnerability";
     case LastingEffect::TURNED_OFF: return "power off";
+    case LastingEffect::DRUNK: return "booze";
   }
 }
 
@@ -1173,6 +1191,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::CROPS_SKILL: return "Can farm crops.";
     case LastingEffect::SPIDER_SKILL: return "Can weave spider webs.";
     case LastingEffect::EXPLORE_SKILL: return "Can explore surroundings.";
+    case LastingEffect::DISTILLATION_SKILL: return "Can distill alcohol.";
     case LastingEffect::EXPLORE_CAVES_SKILL: return "Can explore caves.";
     case LastingEffect::EXPLORE_NOCTURNAL_SKILL: return "Can explore surroundings at night.";
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "Creature will try to build bridges when travelling somewhere.";
@@ -1191,6 +1210,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::PSYCHIATRY: return "Creature won't be attacked by insane creatures.";
     case LastingEffect::INVULNERABLE: return "Creature can't be harmed in combat.";
     case LastingEffect::TURNED_OFF: return "Creature requires more automaton engines built.";
+    case LastingEffect::DRUNK: return "Compromises fighting abilities.";
   }
 }
 
@@ -1339,6 +1359,7 @@ bool LastingEffects::canConsume(LastingEffect effect) {
     case LastingEffect::LIFE_SAVED:
     case LastingEffect::INVULNERABLE:
     case LastingEffect::TURNED_OFF:
+    case LastingEffect::DRUNK:
       return false;
     default:
       return true;
@@ -1377,10 +1398,9 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
       return FXVariantName::BUFF_SKY_BLUE;
     case LastingEffect::FAST_CRAFTING:
       return FXVariantName::BUFF_BROWN;
-    case LastingEffect::SLOW_CRAFTING:
-      return FXVariantName::DEBUFF_BROWN;
     case LastingEffect::FAST_TRAINING:
       return FXVariantName::BUFF_BROWN;
+    case LastingEffect::SLOW_CRAFTING:
     case LastingEffect::SLOW_TRAINING:
     case LastingEffect::MAGIC_CANCELLATION:
       return FXVariantName::DEBUFF_BROWN;
@@ -1413,6 +1433,8 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
       return FXVariantName::DEBUFF_GREEN1;
     case LastingEffect::ON_FIRE:
       return FXVariantName::FIRE;
+    case LastingEffect::DRUNK:
+      return FXVariantName::DEBUFF_YELLOW;
     default:
       return none;
   }
@@ -1456,6 +1478,8 @@ optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
       return FXInfo(FXName::CIRCULAR_SPELL, Color::PURPLE);
     case LastingEffect::FROZEN:
       return FXInfo(FXName::CIRCULAR_SPELL, Color::BLUE);
+    case LastingEffect::DRUNK:
+      return FXInfo(FXName::CIRCULAR_SPELL, Color::YELLOW);
     default:
       return none;
   }
@@ -1508,6 +1532,15 @@ static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect effect
   }
 }
 
+static bool shouldAllyApplyInNoDanger(const Creature* victim, LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::DRUNK:
+      return true;
+    default:
+      return false;
+  }
+}
+
 static bool shouldAllyApply(const Creature* victim, LastingEffect effect) {
   if (auto cancelled = getCancelledOneWay(effect))
     if (victim->isAffected(*cancelled) && getAdjective(*cancelled).bad)
@@ -1554,10 +1587,17 @@ EffectAIIntent LastingEffects::shouldAIApply(const Creature* victim, LastingEffe
     return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
   if (isEnemy)
     return EffectAIIntent::UNWANTED;
-  if (auto intent = victim->getLastCombatIntent())
-    if (intent->time > *victim->getGlobalTime() - 5_visible)
-      if (shouldAllyApplyInDanger(victim, effect))
-        return EffectAIIntent::WANTED;
+  bool isDanger = [&] {
+    if (auto intent = victim->getLastCombatIntent())
+      return intent->time > *victim->getGlobalTime() - 5_visible;
+    return false;
+  }();
+  if (isDanger) {
+    if (shouldAllyApplyInDanger(victim, effect))
+      return EffectAIIntent::WANTED;
+  } else
+    if (shouldAllyApplyInNoDanger(victim, effect))
+      return EffectAIIntent::WANTED;
   return shouldAllyApply(victim, effect) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
 }
 
@@ -1641,6 +1681,8 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
     case LastingEffect::SUNLIGHT_VULNERABLE:
     case LastingEffect::OIL:
       return  25_visible;
+    case LastingEffect::DRUNK:
+      return  300_visible;
     case LastingEffect::SATIATED:
       return  500_visible;
     default:

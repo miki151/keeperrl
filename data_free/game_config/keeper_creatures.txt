@@ -9,12 +9,13 @@
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion" "humanoid mutation" "beast mutation"
       "pig breeding" "iron working" "jewellery" "two-handed weapons" "traps" "archery" "sorcery"
-      "advanced sorcery" "magical weapons" "master sorcery" "demonology"
+      "advanced sorcery" "magical weapons" "master sorcery" "demonology" "distillation"
   }
   initialTech = { "sorcery" }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
-      "training" "crafting" "laboratory" "jeweller" "poetry" "demon_shrine" "prison" "orders" "installations" "magical_installations" "traps"
+      "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "demon_shrine" "prison" "orders"
+      "installations" "magical_installations" "traps"
   }
   workshopGroups = { "basic" "traps" }
   description = "Build and manage your dream dungeon, defend against raids, and attack your enemies!"
@@ -34,12 +35,12 @@
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion"
       "pig breeding" "iron working" "jewellery" "two-handed weapons" "archery" "sorcery"
-      "advanced sorcery" "magical weapons" "master sorcery" "worship"
+      "advanced sorcery" "magical weapons" "master sorcery" "worship" "distillation"
   }
   initialTech = { "archery" }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage"
-      "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "angel_shrine" "prison" "orders" "installations"
+      "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "angel_shrine" "prison" "orders" "installations"
   }
   workshopGroups = { "basic" }
   description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"
@@ -52,13 +53,13 @@
   technology = {
       "traps" "advanced traps"# "master traps"
       "automatons" "advanced automatons" "automaton brains"
-      "pig breeding" "iron working" "alchemy" "incendiary alchemy"
+      "pig breeding" "iron working" "alchemy" "incendiary alchemy" "distillation" 
   }
   initialTech = { "automatons" }
   baseNameGen = "TOWN"
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "throne" "beds"
-      "pigsty" "crafting" "laboratory" "automatons" "orders" "installations" "traps" "gnome_traps"
+      "pigsty" "crafting" "laboratory" "distillery" "automatons" "orders" "installations" "traps" "gnome_traps"
   }
   workshopGroups = { "gnomes" "traps" "basic" }
   description = "Seize the means of production and engineer traps, automatons and other contraptions."
