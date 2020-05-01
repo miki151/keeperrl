@@ -1889,21 +1889,19 @@ SGuiElem GuiBuilder::drawTasksOverlay(const CollectiveInfo& info) {
   int margin = 20;
   append(lines, std::move(freeLines));
   int numLines = lines.size();
-  return WL(preferredSize, taskMapWindowWidth, numLines * lineHeight + 2 * margin,
-      WL(conditionalStopKeys, WL(stack,
+  return WL(preferredSize, taskMapWindowWidth, numLines * lineHeight + 2 * margin + 10,
+      WL(stack,
           WL(keyHandler, [this]{bottomWindow = none;}, {gui.getKey(SDL::SDLK_ESCAPE)}, true),
           WL(miniWindow,
         WL(margins, WL(scrollable, WL(verticalList, std::move(lines), lineHeight), &tasksScroll, &scrollbarsHeld),
-          margin))), [this] { return bottomWindow == TASKS; }));
+          margin))));
 }
 
-SGuiElem GuiBuilder::drawRansomOverlay(const optional<CollectiveInfo::Ransom>& ransom) {
-  if (!ransom)
-    return WL(empty);
+SGuiElem GuiBuilder::drawRansomOverlay(const CollectiveInfo::Ransom& ransom) {
   auto lines = WL(getListBuilder, legendLineHeight);
-  lines.addElem(WL(label, ransom->attacker + " demand " + toString(ransom->amount.second)
+  lines.addElem(WL(label, ransom.attacker + " demand " + toString(ransom.amount.second)
         + " gold for not attacking. Agree?"));
-  if (ransom->canAfford)
+  if (ransom.canAfford)
     lines.addElem(WL(leftMargin, 25, WL(stack,
           WL(mouseHighlight2, WL(highlight, legendLineHeight)),
           WL(button, getButtonCallback(UserInputId::PAY_RANSOM)),
@@ -1949,38 +1947,29 @@ SGuiElem GuiBuilder::drawRebellionChanceText(CollectiveInfo::RebellionChance cha
   }
 }
 
-SGuiElem GuiBuilder::drawWarningWindow(const optional<CollectiveInfo::RebellionChance>& rebellionChance,
-    const optional<CollectiveInfo::NextWave>& wave) {
-  SGuiElem window = WL(empty);
-  if (rebellionChance) {
-    auto lines = WL(getListBuilder, legendLineHeight);
-    lines.addElem(WL(getListBuilder)
-        .addElemAuto(WL(label, "Chance of prisoner escape: "))
-        .addElemAuto(drawRebellionChanceText(*rebellionChance))
-        .buildHorizontalList());
-    lines.addElem(WL(label, "Remove prisoners or increase armed forces."));
-    window = WL(setWidth, 400, WL(translucentBackgroundWithBorder, WL(stack,
-        WL(margins, lines.buildVerticalList(), 10),
-        WL(alignment, GuiFactory::Alignment::TOP_RIGHT, WL(preferredSize, 40, 40, WL(stack,
-            WL(leftMargin, 22, WL(label, "x")),
-            WL(button, getButtonCallback(UserInputId::DISMISS_WARNING_WINDOW)))))
-      )));
-  }
-  return WL(getListBuilder).addElemAuto(std::move(window))
-      .addSpace(10)
-      .addElemAuto(drawNextWaveOverlay(wave)).buildVerticalList();
+SGuiElem GuiBuilder::drawWarningWindow(const CollectiveInfo::RebellionChance& rebellionChance) {
+  auto lines = WL(getListBuilder, legendLineHeight);
+  lines.addElem(WL(getListBuilder)
+      .addElemAuto(WL(label, "Chance of prisoner escape: "))
+      .addElemAuto(drawRebellionChanceText(rebellionChance))
+      .buildHorizontalList());
+  lines.addElem(WL(label, "Remove prisoners or increase armed forces."));
+  return WL(setWidth, 400, WL(translucentBackgroundWithBorder, WL(stack,
+      WL(margins, lines.buildVerticalList(), 10),
+      WL(alignment, GuiFactory::Alignment::TOP_RIGHT, WL(preferredSize, 40, 40, WL(stack,
+          WL(leftMargin, 22, WL(label, "x")),
+          WL(button, getButtonCallback(UserInputId::DISMISS_WARNING_WINDOW)))))
+    )));
 }
 
-SGuiElem GuiBuilder::drawNextWaveOverlay(const optional<CollectiveInfo::NextWave>& wave) {
-  if (!wave)
-    return WL(empty);
+SGuiElem GuiBuilder::drawNextWaveOverlay(const CollectiveInfo::NextWave& wave) {
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(label, "Next enemy wave:"));
   lines.addElem(WL(getListBuilder)
-        .addElem(WL(viewObject, wave->viewId), 30)
-        .addElemAuto(WL(label, wave->attacker))// + " (" + toString(wave->count) + ")"))
+        .addElem(WL(viewObject, wave.viewId), 30)
+        .addElemAuto(WL(label, wave.attacker))// + " (" + toString(wave->count) + ")"))
         .buildHorizontalList());
-  lines.addElem(WL(label, "Attacking in " + toString(wave->numTurns) + " turns."));
+  lines.addElem(WL(label, "Attacking in " + toString(wave.numTurns) + " turns."));
   return WL(setWidth, 300, WL(translucentBackgroundWithBorder, WL(stack,
         WL(margins, lines.buildVerticalList(), 10),
         WL(alignment, GuiFactory::Alignment::TOP_RIGHT, WL(preferredSize, 40, 40, WL(stack,
@@ -2049,13 +2038,12 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
     return WL(buttonLabel, "upgrade", std::move(buttonHandler));
 }
 
-SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
-  if (!info.chosenWorkshop)
-    return WL(empty);
+SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopInfo& info,
+    const optional<TutorialInfo>& tutorial) {
   int margin = 20;
   int rightElemMargin = 10;
-  auto& options = info.chosenWorkshop->options;
-  auto& queued = info.chosenWorkshop->queued;
+  auto& options = info.options;
+  auto& queued = info.queued;
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(label, "Available:", Color::YELLOW));
   for (int itemIndex : All(options)) {
@@ -2125,7 +2113,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo& info, const opti
   }
   return WL(preferredSize, 940, 600,
     WL(miniWindow, WL(stack,
-      WL(keyHandler, getButtonCallback({UserInputId::WORKSHOP, info.chosenWorkshop->index}),
+      WL(keyHandler, getButtonCallback({UserInputId::WORKSHOP, info.index}),
         {gui.getKey(SDL::SDLK_ESCAPE)}, true),
       WL(getListBuilder, 470)
             .addElem(WL(margins, WL(scrollable,
@@ -2232,27 +2220,25 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
   return WL(margins, WL(scrollable, lines.buildVerticalList(), &libraryScroll, &scrollbarsHeld), margin);
 }
 
-SGuiElem GuiBuilder::drawMinionsOverlay(const optional<CollectiveInfo::ChosenCreatureInfo>& chosenCreature,
+SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo& chosenCreature,
     const vector<ViewId>& allQuarters, const optional<TutorialInfo>& tutorial) {
   int margin = 20;
   int minionListWidth = 220;
-  if (!chosenCreature)
-    return WL(empty);
   setCollectiveTab(CollectiveTab::MINIONS);
   SGuiElem minionPage;
-  auto& minions = chosenCreature->creatures;
-  auto current = chosenCreature->chosenId;
+  auto& minions = chosenCreature.creatures;
+  auto current = chosenCreature.chosenId;
   for (int i : All(minions))
     if (minions[i].creatureId == current)
       minionPage = WL(margins, drawMinionPage(minions[i], allQuarters, tutorial), 10, 15, 10, 10);
   if (!minionPage)
     return WL(empty);
   SGuiElem menu;
-  SGuiElem leftSide = drawMinionButtons(minions, current, chosenCreature->teamId);
-  if (chosenCreature->teamId) {
+  SGuiElem leftSide = drawMinionButtons(minions, current, chosenCreature.teamId);
+  if (chosenCreature.teamId) {
     auto list = WL(getListBuilder, legendLineHeight);
     list.addElem(
-        WL(buttonLabel, "Disband team", getButtonCallback({UserInputId::CANCEL_TEAM, *chosenCreature->teamId})));
+        WL(buttonLabel, "Disband team", getButtonCallback({UserInputId::CANCEL_TEAM, *chosenCreature.teamId})));
     list.addElem(WL(label, "Control a chosen minion to", Renderer::smallTextSize,
           Color::LIGHT_GRAY), Renderer::smallTextSize + 2);
     list.addElem(WL(label, "command the team.", Renderer::smallTextSize,
@@ -2631,20 +2617,26 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
       if (info.keeperInDanger)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawKeeperDangerOverlay, this), THIS_LINE,
              *info.keeperInDanger), OverlayInfo::TOP_LEFT});
-      else {
+      else if (collectiveInfo.ransom)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawRansomOverlay, this), THIS_LINE,
-            collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
-        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWarningWindow, this), THIS_LINE,
-            collectiveInfo.rebellionChance, collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
+            *collectiveInfo.ransom), OverlayInfo::TOP_LEFT});
+      else if (collectiveInfo.chosenCreature)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawMinionsOverlay, this), THIS_LINE,
-            collectiveInfo.chosenCreature, collectiveInfo.allQuarters, info.tutorial), OverlayInfo::TOP_LEFT});
+            *collectiveInfo.chosenCreature, collectiveInfo.allQuarters, info.tutorial), OverlayInfo::TOP_LEFT});
+      else if (collectiveInfo.chosenWorkshop)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWorkshopsOverlay, this), THIS_LINE,
-            collectiveInfo, info.tutorial), OverlayInfo::TOP_LEFT});
+            *collectiveInfo.chosenWorkshop, info.tutorial), OverlayInfo::TOP_LEFT});
+      else if (bottomWindow == TASKS)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawTasksOverlay, this), THIS_LINE,
             collectiveInfo), OverlayInfo::TOP_LEFT});
-        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
-            collectiveInfo.buildings, !!collectiveInfo.ransom, info.tutorial), OverlayInfo::TOP_LEFT});
-      }
+      else if (collectiveInfo.nextWave)
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawNextWaveOverlay, this), THIS_LINE,
+            *collectiveInfo.nextWave), OverlayInfo::TOP_LEFT});
+      else if (collectiveInfo.rebellionChance)
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawWarningWindow, this), THIS_LINE,
+            *collectiveInfo.rebellionChance), OverlayInfo::TOP_LEFT});
+      ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBuildingsOverlay, this), THIS_LINE,
+          collectiveInfo.buildings, !!collectiveInfo.ransom, info.tutorial), OverlayInfo::TOP_LEFT});
       if (bottomWindow == IMMIGRATION_HELP)
         ret.push_back({cache->get(bindMethod(&GuiBuilder::drawImmigrationHelp, this), THIS_LINE,
             collectiveInfo), OverlayInfo::BOTTOM_LEFT});

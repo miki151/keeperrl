@@ -249,16 +249,16 @@ class GuiBuilder {
   CounterMode counterMode = CounterMode::FPS;
 
   SGuiElem getButtonLine(CollectiveInfo::Button, int num, CollectiveTab, const optional<TutorialInfo>&);
-  SGuiElem drawMinionsOverlay(const optional<CollectiveInfo::ChosenCreatureInfo>&, const vector<ViewId>& allQuarters,
+  SGuiElem drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo&, const vector<ViewId>& allQuarters,
       const optional<TutorialInfo>&);
   SGuiElem minionsOverlayCache;
   int minionsOverlayHash = 0;
-  SGuiElem drawWorkshopsOverlay(const CollectiveInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopInfo&, const optional<TutorialInfo>&);
   SGuiElem workshopsOverlayCache;
   int workshopsOverlayHash = 0;
   SGuiElem drawTasksOverlay(const CollectiveInfo&);
-  SGuiElem drawRansomOverlay(const optional<CollectiveInfo::Ransom>&);
-  SGuiElem drawNextWaveOverlay(const optional<CollectiveInfo::NextWave>&);
+  SGuiElem drawRansomOverlay(const CollectiveInfo::Ransom&);
+  SGuiElem drawNextWaveOverlay(const CollectiveInfo::NextWave&);
   SGuiElem drawBuildingsOverlay(const vector<CollectiveInfo::Button>&, bool ransom,
       const optional<TutorialInfo>&);
   void renderMessages(const vector<PlayerMessage>&);
@@ -289,8 +289,7 @@ class GuiBuilder {
       function<void()> increaseCallback = nullptr, bool infoOnly = false);
   optional<int> highlightedTeamMember;
   SGuiElem drawQuartersButton(const PlayerInfo&, const vector<ViewId>& allQuarters);
-  SGuiElem drawWarningWindow(const optional<CollectiveInfo::RebellionChance>&,
-      const optional<CollectiveInfo::NextWave>&);
+  SGuiElem drawWarningWindow(const CollectiveInfo::RebellionChance&);
   SGuiElem drawRebellionChanceText(CollectiveInfo::RebellionChance);
   SGuiElem drawVillainsOverlay(const VillageInfo&);
   SGuiElem drawAllVillainsOverlay(const VillageInfo&);
