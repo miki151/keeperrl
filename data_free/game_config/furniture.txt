@@ -673,7 +673,7 @@
           Permanent SLOWED
           Permanent INSANITY
           Permanent COLLAPSED
-          Permanent INVISIBLE
+#          Permanent INVISIBLE
           Permanent TELEPATHY
           Permanent MELEE_RESISTANCE
           Permanent MELEE_VULNERABILITY
@@ -683,7 +683,6 @@
           Permanent RANGED_VULNERABILITY
           Permanent BAD_BREATH
           Permanent NIGHT_VISION
-          Permanent PEACEFULNESS
         }
       }
       Chain {
