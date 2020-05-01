@@ -66,8 +66,6 @@ class EnumVariant {
     return !(*this == other);
   }
 
-  SERIALIZE_ALL(id, values)
-
   private:
   template<typename T>
   struct CheckId : public Assigns... {
@@ -85,8 +83,8 @@ class EnumVariant {
     Id id;
   };
 
-  Id SERIAL(id);
-  Variant SERIAL(values);
+  Id id;
+  Variant values;
 };
 
 #define FIRST(first, ...) first

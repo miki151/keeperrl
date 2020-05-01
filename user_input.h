@@ -117,99 +117,84 @@ enum class UserInputId {
 };
 
 struct CreatureDropInfo {
-  Vec2 SERIAL(pos);
-  UniqueEntity<Creature>::Id SERIAL(creatureId);
-  SERIALIZE_ALL(pos, creatureId)
+  Vec2 pos;
+  UniqueEntity<Creature>::Id creatureId;
 };
 
 struct CreatureGroupDropInfo {
-  Vec2 SERIAL(pos);
-  string SERIAL(group);
-  SERIALIZE_ALL(pos, group)
+  Vec2 pos;
+  string group;
 };
 
 struct TeamDropInfo {
-  Vec2 SERIAL(pos);
-  TeamId SERIAL(teamId);
-  SERIALIZE_ALL(pos, teamId)
+  Vec2 pos;
+  TeamId teamId;
 };
 
 struct BuildingClickInfo {
-  Vec2 SERIAL(pos);
-  int SERIAL(building);
-  SERIALIZE_ALL(pos, building)
+  Vec2 pos;
+  int building;
 };
 
 struct TeamCreatureInfo {
-  TeamId SERIAL(team);
-  UniqueEntity<Creature>::Id SERIAL(creatureId);
-  SERIALIZE_ALL(team, creatureId)
+  TeamId team;
+  UniqueEntity<Creature>::Id creatureId;
 };
 
 struct TeamGroupInfo {
-  TeamId SERIAL(team);
-  string SERIAL(group);
-  SERIALIZE_ALL(team, group)
+  TeamId team;
+  string group;
 };
 
 struct InventoryItemInfo {
-  EntitySet<Item> SERIAL(items);
-  ItemAction SERIAL(action);
-  SERIALIZE_ALL(items, action)
+  EntitySet<Item> items;
+  ItemAction action;
 };
 
 struct VillageActionInfo {
-  UniqueEntity<Collective>::Id SERIAL(id);
-  VillageAction SERIAL(action);
-  SERIALIZE_ALL(id, action)
+  UniqueEntity<Collective>::Id id;
+  VillageAction action;
 };
 
 struct TaskActionInfo {
-  UniqueEntity<Creature>::Id SERIAL(creature);
-  optional<MinionActivity> SERIAL(switchTo);
-  EnumSet<MinionActivity> SERIAL(lock);
-  EnumSet<MinionActivity> SERIAL(lockGroup);
-  string SERIAL(groupName);
-  SERIALIZE_ALL(creature, switchTo, lock, lockGroup, groupName)
+  UniqueEntity<Creature>::Id creature;
+  optional<MinionActivity> switchTo;
+  EnumSet<MinionActivity> lock;
+  EnumSet<MinionActivity> lockGroup;
+  string groupName;
 };
 
 struct EquipmentActionInfo {
-  UniqueEntity<Creature>::Id SERIAL(creature);
-  EntitySet<Item> SERIAL(ids);
-  optional<EquipmentSlot> SERIAL(slot);
-  ItemAction SERIAL(action);
-  SERIALIZE_ALL(creature, ids, slot, action)
+  UniqueEntity<Creature>::Id creature;
+  EntitySet<Item> ids;
+  optional<EquipmentSlot> slot;
+  ItemAction action;
 };
 
 struct RenameActionInfo {
-  UniqueEntity<Creature>::Id SERIAL(creature);
-  string SERIAL(name);
-  SERIALIZE_ALL(creature, name)
+  UniqueEntity<Creature>::Id creature;
+  string name;
 };
 
 struct TeamMemberActionInfo {
-  TeamMemberAction SERIAL(action);
-  UniqueEntity<Creature>::Id SERIAL(memberId);
-  SERIALIZE_ALL(action, memberId)
+  TeamMemberAction action;
+  UniqueEntity<Creature>::Id memberId;
 };
 
 struct AssignQuartersInfo {
-  optional<int> SERIAL(index);
-  UniqueEntity<Creature>::Id SERIAL(minionId);
-  SERIALIZE_ALL(index, minionId)
+  optional<int> index;
+  UniqueEntity<Creature>::Id minionId;
 };
 
 struct DismissVillageInfo {
-  UniqueEntity<Collective>::Id SERIAL(collectiveId);
-  string SERIAL(infoText);
-  SERIALIZE_ALL(collectiveId, infoText)
+  UniqueEntity<Collective>::Id collectiveId;
+  string infoText;
 };
 
 struct WorkshopUpgradeInfo {
-  int SERIAL(itemIndex);
-  int SERIAL(upgradeIndex);
-  bool SERIAL(remove);
-  SERIALIZE_ALL(itemIndex, upgradeIndex, remove)
+  int itemIndex;
+  int upgradeIndex;
+  bool remove;
 };
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, UniqueEntity<Creature>::Id,
