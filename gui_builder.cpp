@@ -4290,14 +4290,16 @@ SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textCo
             if (index)
               callbacks.input(UserInput{UserInputId::SCROLL_STAIRS, *index - info.levelDepth});
           };
+          int maxWidth = 0;
           for (int i : All(info.zLevels)) {
-            tasks.addElem(WL(stack,
+            auto elem = WL(stack,
                 WL(button, [i, &retAction, &exit] { retAction(i); exit = true; }),
-                WL(getListBuilder, 32)
-                    .addElem(WL(labelHighlight, info.zLevels[i].value_or("Z-Level " + toString(i))))
-                    .buildHorizontalList()));
+                WL(labelHighlight, info.zLevels[i].value_or("Z-Level " + toString(i))));
+            maxWidth = max(maxWidth, *elem->getPreferredWidth());
+            tasks.addElem(WL(centerHoriz, std::move(elem)));
           }
-          drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), bounds.width() - 30, false);
+          drawMiniMenu(std::move(tasks), exit, Vec2(bounds.middle().x - maxWidth / 2 - 15, bounds.bottom()),
+              maxWidth, false);
         }));
 }
 
@@ -4326,7 +4328,8 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
       line.addElemAuto(getButton(info->levelDepth > 0, "<", UserInput{UserInputId::SCROLL_STAIRS, -1 }));
     line.addMiddleElem(WL(topMargin, 3, drawZLevelButton(*info, textColor)));
     if (!info->zLevels.empty())
-      line.addBackElemAuto(getButton(info->levelDepth < info->zLevels.size() - 1, ">", UserInput{UserInputId::SCROLL_STAIRS, 1}));
+      line.addBackElemAuto(getButton(info->levelDepth < info->zLevels.size() - 1, ">",
+          UserInput{UserInputId::SCROLL_STAIRS, 1}));
     lines.addElem(WL(stack,
         WL(stopMouseMovement),
         WL(rectangle, Color(47, 31, 0), Color::BLACK),
@@ -4337,7 +4340,8 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
     if (gameInfo.tutorial || !gameInfo.isSingleMap)
       return WL(stack,
           getHintCallback({"Open world map. You can also press 't'."}),
-          WL(mouseHighlight2, WL(icon, GuiFactory::IconId::MINIMAP_WORLD2), WL(icon, GuiFactory::IconId::MINIMAP_WORLD1)),
+          WL(mouseHighlight2, WL(icon, GuiFactory::IconId::MINIMAP_WORLD2),
+             WL(icon, GuiFactory::IconId::MINIMAP_WORLD1)),
           WL(conditional, WL(blink, WL(icon, GuiFactory::IconId::MINIMAP_WORLD2)), tutorialPredicate),
           WL(button, getButtonCallback(UserInputId::DRAW_WORLD_MAP), gui.getKey(SDL::SDLK_t)));
     else
@@ -4348,7 +4352,8 @@ SGuiElem GuiBuilder::drawMinimapIcons(const GameInfo& gameInfo) {
         WL(preferredSize, 48, 48, std::move(travelButton)),
         WL(preferredSize, 48, 48, WL(stack,
             getHintCallback({"Scroll to your character. You can also press 'k'."}),
-            WL(mouseHighlight2, WL(icon, GuiFactory::IconId::MINIMAP_CENTER2), WL(icon, GuiFactory::IconId::MINIMAP_CENTER1)),
+            WL(mouseHighlight2, WL(icon, GuiFactory::IconId::MINIMAP_CENTER2),
+               WL(icon, GuiFactory::IconId::MINIMAP_CENTER1)),
             WL(conditional, WL(blink, WL(icon, GuiFactory::IconId::MINIMAP_CENTER2)), tutorialPredicate),
             WL(button, getButtonCallback(UserInputId::SCROLL_TO_HOME), gui.getKey(SDL::SDLK_k))
             ))
