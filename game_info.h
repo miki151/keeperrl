@@ -296,6 +296,7 @@ class CollectiveInfo {
   optional<ChosenWorkshopInfo> HASH(chosenWorkshop);
   struct LibraryInfo {
     struct TechInfo {
+      string HASH(description);
       TechId HASH(id);
       struct UnlockInfo {
         ViewIdList HASH(viewId);
@@ -306,7 +307,7 @@ class CollectiveInfo {
       vector<UnlockInfo> HASH(unlocks);
       bool HASH(active);
       optional<TutorialHighlight> HASH(tutorialHighlight);
-      HASH_ALL(id, active, unlocks, tutorialHighlight)
+      HASH_ALL(description, id, active, unlocks, tutorialHighlight)
     };
     int HASH(currentProgress);
     int HASH(totalProgress);

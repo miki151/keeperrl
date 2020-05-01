@@ -1077,12 +1077,14 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
     info.available.emplace_back();
     auto& techInfo = info.available.back();
     techInfo.id = tech;
+    techInfo.description = technology.techs.at(tech).description;
     techInfo.active = !info.warning && dungeonLevel.numResearchAvailable() > 0;
     fillTechUnlocks(techInfo);
   }
   for (auto& tech : collective->getTechnology().researched) {
     info.researched.emplace_back();
     auto& techInfo = info.researched.back();
+    techInfo.description = technology.techs.at(tech).description;
     techInfo.id = tech;
     fillTechUnlocks(techInfo);
   }

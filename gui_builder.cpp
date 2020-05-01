@@ -2153,6 +2153,10 @@ static string getName(TechId id) {
 
 SGuiElem GuiBuilder::drawTechUnlocks(const CollectiveInfo::LibraryInfo::TechInfo& tech) {
   auto lines = WL(getListBuilder, legendLineHeight);
+  const int width = 450;
+  const int margin = 15;
+  lines.addElemAuto(WL(labelMultiLineWidth, tech.description, legendLineHeight * 2 / 3, width - 2 * margin));
+  lines.addSpace(legendLineHeight);
   for (int i : All(tech.unlocks)) {
     auto& info = tech.unlocks[i];
     if (i == 0 || info.type != tech.unlocks[i - 1].type) {
@@ -2166,7 +2170,7 @@ SGuiElem GuiBuilder::drawTechUnlocks(const CollectiveInfo::LibraryInfo::TechInfo
         .addElemAuto(WL(label, capitalFirst(info.name)))
         .buildHorizontalList());
   }
-  return WL(setWidth, 350, WL(miniWindow, WL(margins, lines.buildVerticalList(), 15)));
+  return WL(setWidth, width, WL(miniWindow, WL(margins, lines.buildVerticalList(), margin)));
 }
 
 SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, const optional<TutorialInfo>& tutorial) {
