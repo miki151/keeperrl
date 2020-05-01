@@ -3106,6 +3106,7 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
     bool exit = false;
     TaskActionInfo retAction;
     retAction.creature = minion.creatureId;
+    retAction.groupName = minion.groupName;
     for (int i : All(minion.minionTasks)) {
       auto& task = minion.minionTasks[i];
       function<void()> buttonFun = [] {};

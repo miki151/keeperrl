@@ -363,13 +363,19 @@ bool Collective::isActivityGoodAssumingHaveTasks(Creature* c, MinionActivity act
   }
 }
 
-Collective::GroupLockedActivities& Collective::getGroupLockedActivities(const Creature* c) {
-  return groupLockedAcitivities[getMinionGroupName(c)];
+Collective::GroupLockedActivities& Collective::getGroupLockedActivities(const string& group) {
+  return groupLockedAcitivities[group];
 }
 
-const Collective::GroupLockedActivities& Collective::getGroupLockedActivities(const Creature* c) const {
+Collective::GroupLockedActivities Collective::getGroupLockedActivities(const Creature* c) const {
+  auto ret = getGroupLockedActivities(getMinionGroupName(c));
+  for (auto& group : getAutomatonGroupNames(c))
+    ret.sumWith(getGroupLockedActivities(group));
+  return ret;
+}
+
+const Collective::GroupLockedActivities& Collective::getGroupLockedActivities(const string& group) const {
   static GroupLockedActivities empty;
-  auto group = getMinionGroupName(c);
   if (groupLockedAcitivities.count(group))
     return groupLockedAcitivities.at(group);
   else

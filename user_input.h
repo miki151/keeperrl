@@ -169,7 +169,8 @@ struct TaskActionInfo {
   optional<MinionActivity> SERIAL(switchTo);
   EnumSet<MinionActivity> SERIAL(lock);
   EnumSet<MinionActivity> SERIAL(lockGroup);
-  SERIALIZE_ALL(creature, switchTo, lock, lockGroup)
+  string SERIAL(groupName);
+  SERIALIZE_ALL(creature, switchTo, lock, lockGroup, groupName)
 };
 
 struct EquipmentActionInfo {

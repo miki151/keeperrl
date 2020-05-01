@@ -138,8 +138,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool isActivityGoodAssumingHaveTasks(Creature*, MinionActivity, bool ignoreTaskLock = false);
 
   using GroupLockedActivities = EnumSet<MinionActivity>;
-  GroupLockedActivities& getGroupLockedActivities(const Creature*);
-  const GroupLockedActivities& getGroupLockedActivities(const Creature*) const;
+  GroupLockedActivities& getGroupLockedActivities(const string& group);
+  const GroupLockedActivities& getGroupLockedActivities(const string& group) const;
+  GroupLockedActivities getGroupLockedActivities(const Creature*) const;
 
   vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
