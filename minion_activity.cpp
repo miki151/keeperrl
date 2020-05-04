@@ -149,8 +149,8 @@ static vector<Position> tryInQuarters(vector<Position> pos, const Collective* co
   return tryInQuarters(std::move(pos), collective, c, [](const Position& pos) -> const Position& { return pos; });
 }
 
-vector<pair<Position, FurnitureLayer>> MinionActivities::getAllPositions(const Collective* collective, const Creature* c,
-    MinionActivity activity) const {
+vector<pair<Position, FurnitureLayer>> MinionActivities::getAllPositions(const Collective* collective,
+    const Creature* c, MinionActivity activity) const {
   PROFILE;
   vector<pair<Position, FurnitureLayer>> ret;
   auto& info = CollectiveConfig::getActivityInfo(activity);
@@ -160,6 +160,10 @@ vector<pair<Position, FurnitureLayer>> MinionActivities::getAllPositions(const C
           (Position p) { return make_pair(p, layer); };
       append(ret, collective->getConstructions().getBuiltPositions(furnitureType).transform(toPair));
     }
+  if (info.secondaryPredicate)
+    ret = ret.filter([&](const auto& elem) {
+      return info.secondaryPredicate(elem.first.getFurniture(elem.second), collective);
+    });
   if (c) {
     auto movement = c->getMovementType();
     ret = ret.filter([&](auto& pos) { return pos.first.canNavigateToOrNeighbor(c->getPosition(), movement); });

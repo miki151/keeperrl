@@ -196,6 +196,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void onRansomPaid();
   void onExternalEnemyKilled(const string& name);
   void addRecordedEvent(string);
+  const unordered_set<string>& getRecordedEvents() const;
 
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
@@ -323,7 +324,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void updateBorderTiles();
   bool updatedBorderTiles = false;
   HeapAllocated<MinionActivities> SERIAL(minionActivities);
-  set<string> SERIAL(recordedEvents);
+  unordered_set<string> SERIAL(recordedEvents);
   map<string, GroupLockedActivities> SERIAL(groupLockedAcitivities);
   bool SERIAL(attackedByPlayer) = false;
   void updateGuardTasks();

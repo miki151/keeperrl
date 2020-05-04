@@ -256,8 +256,8 @@ MinionActivityInfo::MinionActivityInfo(BuiltinUsageId usage)
      {
 }
 
-MinionActivityInfo::MinionActivityInfo(UsagePredicate pred)
-    : type(FURNITURE), furniturePredicate(pred) {
+MinionActivityInfo::MinionActivityInfo(UsagePredicate pred, SecondaryPredicate pred2)
+    : type(FURNITURE), furniturePredicate(std::move(pred)), secondaryPredicate(std::move(pred2)) {
 }
 
 CollectiveConfig::CollectiveConfig(const CollectiveConfig&) = default;
@@ -300,6 +300,9 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
               || t == FurnitureType("PAINTING_S")
               || t == FurnitureType("PAINTING_E")
               || t == FurnitureType("PAINTING_W");
+          }, [](const Furniture* f, const Collective* col) {
+            auto id = f->getViewObject()->id().data();
+            return !startsWith(id, "painting") && (!startsWith(id, "canvas") || !col->getRecordedEvents().empty());
           }};
       case MinionActivity::STUDY: return {getTrainingPredicate(ExperienceType::SPELL)};
       case MinionActivity::DISTILLATION: return {FurnitureType("DISTILLERY")};

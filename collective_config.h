@@ -52,11 +52,13 @@ struct MinionActivityInfo {
   MinionActivityInfo();
   MinionActivityInfo(FurnitureType);
   MinionActivityInfo(BuiltinUsageId);
-  typedef function<bool(const ContentFactory*, const Collective*, const Creature*, FurnitureType)> UsagePredicate;
-  MinionActivityInfo(UsagePredicate);
+  using UsagePredicate = function<bool(const ContentFactory*, const Collective*, const Creature*, FurnitureType)>;
+  using SecondaryPredicate = function<bool(const Furniture*, const Collective*)>;
+  MinionActivityInfo(UsagePredicate, SecondaryPredicate = nullptr);
   MinionActivityInfo(Type);
   UsagePredicate furniturePredicate =
       [](const ContentFactory*, const Collective*, const Creature*, FurnitureType) { return true; };
+  SecondaryPredicate secondaryPredicate;
 };
 
 struct FloorInfo {

@@ -1524,6 +1524,10 @@ void Collective::onExternalEnemyKilled(const std::string& name) {
   dungeonLevel.onKilledWave();
 }
 
+const unordered_set<string>& Collective::getRecordedEvents() const {
+  return recordedEvents;
+}
+
 void Collective::addRecordedEvent(string s) {
   recordedEvents.insert(std::move(s));
 }
