@@ -2506,10 +2506,11 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
     for (auto layer : ENUM_ALL_REVERSE(ViewLayer))
       if (index.hasObject(layer)) {
         auto& viewObject = index.getObject(layer);
-        lines.addElem(WL(getListBuilder)
+        lines.addElemAuto(WL(getListBuilder)
               .addElem(WL(viewObject, viewObject.getViewIdList()), 30)
-              .addElemAuto(WL(label, viewObject.getDescription()))
+              .addElemAuto(WL(labelMultiLineWidth, viewObject.getDescription(), legendLineHeight * 2 / 3, 300))
               .buildHorizontalList());
+        lines.addSpace(legendLineHeight / 3);
         if (layer == ViewLayer::CREATURE)
           lines.addElemAuto(drawLyingItemsList("Inventory: ", highlighted.viewIndex.getEquipmentCounts(), 250));
         if (viewObject.hasModifier(ViewObject::Modifier::HOSTILE))
