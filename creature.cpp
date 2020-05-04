@@ -2268,7 +2268,7 @@ bool Creature::shouldAIAttack(const Creature* other) const {
 }
 
 bool Creature::shouldAIChase(const Creature* enemy) const {
-  return getDefaultWeaponDamage() < 5 * enemy->getDefaultWeaponDamage();
+  return !!getFirstWeapon() && getDefaultWeaponDamage() < 5 * enemy->getDefaultWeaponDamage();
 }
 
 vector<Position> Creature::getVisibleTiles() const {
