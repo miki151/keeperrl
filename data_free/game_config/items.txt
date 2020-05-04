@@ -119,10 +119,10 @@
       { "installed_crafting" Rgb 180 140 55 255 }
       Description "Increases all crafting skills by 20."
       Chain {
-        IncreaseWorkshopSkill "WORKSHOP" 0.3
-        IncreaseWorkshopSkill "FORGE" 0.3
-        IncreaseWorkshopSkill "LABORATORY" 0.3
-        IncreaseWorkshopSkill "JEWELER" 0.3
+        IncreaseWorkshopSkill "WORKSHOP" 0.2
+        IncreaseWorkshopSkill "FORGE" 0.2
+        IncreaseWorkshopSkill "LABORATORY" 0.2
+        IncreaseWorkshopSkill "JEWELER" 0.2
       }
       "crafting"
     }
