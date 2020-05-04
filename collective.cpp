@@ -1529,7 +1529,10 @@ const unordered_set<string>& Collective::getRecordedEvents() const {
 }
 
 void Collective::addRecordedEvent(string s) {
-  recordedEvents.insert(std::move(s));
+  if (!allRecordedEvents.count(s)) {
+    allRecordedEvents.insert(s);
+    recordedEvents.insert(std::move(s));
+  }
 }
 
 void Collective::onCopulated(Creature* who, Creature* with) {

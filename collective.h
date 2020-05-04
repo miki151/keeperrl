@@ -325,6 +325,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool updatedBorderTiles = false;
   HeapAllocated<MinionActivities> SERIAL(minionActivities);
   unordered_set<string> SERIAL(recordedEvents);
+  unordered_set<string> SERIAL(allRecordedEvents);
   map<string, GroupLockedActivities> SERIAL(groupLockedAcitivities);
   bool SERIAL(attackedByPlayer) = false;
   void updateGuardTasks();
