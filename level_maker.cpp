@@ -1997,6 +1997,7 @@ PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info, Vec2 s
   for (auto& furniture : info.furniture)
     queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, furniture, info.tribe));
   addStairs(*queue, info, Predicate::type(floor));
+  queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
   for (auto& items : info.shopItems)
     queue->addMaker(unique<Items>(items, Range(5, 10)));
   return unique<BorderGuard>(std::move(queue), SquareChange(floor, building.wall));
