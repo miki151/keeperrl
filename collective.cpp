@@ -1548,6 +1548,7 @@ void Collective::onCopulated(Creature* who, Creature* with) {
     who->addEffect(LastingEffect::PREGNANT, getConfig().getImmigrantTimeout());
     control->addMessage(who->getName().a() + " becomes pregnant.");
   }
+  addRecordedEvent("a sex act between " + who->getName().a() + " and " + with->getName().a());
 }
 
 MinionEquipment& Collective::getMinionEquipment() {
