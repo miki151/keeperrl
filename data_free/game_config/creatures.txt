@@ -997,6 +997,7 @@
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      { type = Glyph WEAPON SpecialAttr DAMAGE 5 Name "at night" Night chance = 0.3 }
     }
   }
 "WHITE_DRAGON" inherit "BLACK_DRAGON"

@@ -84,7 +84,7 @@ string getItemName(const ContentFactory* factory, const ItemPrefix& prefix) {
         return "of "_s + factory->getCreatures().getSpell(id)->getName(factory);
       },
       [&](const SpecialAttr& a) -> string {
-        return " " + a.predicate.getName();
+        return a.predicate.getName();
       }
   );
 }
