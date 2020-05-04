@@ -2,7 +2,7 @@
 {
     {
       ids = { "IMP" }
-      traits = { WORKER NO_LIMIT NO_EQUIPMENT }
+      traits = { WORKER NO_LIMIT NO_EQUIPMENT NO_LEISURE_ZONE }
       spawnLocation = NearLeader
       keybinding = CREATE_IMP
       sound = CREATE_IMP 2
@@ -18,7 +18,7 @@
 {
     {
       ids = { "PESEANT_PRISONER" }
-      traits = { WORKER NO_LIMIT NO_EQUIPMENT }
+      traits = { WORKER NO_LIMIT NO_EQUIPMENT NO_LEISURE_ZONE }
       spawnLocation = NearLeader
       noAuto = true
       invisible = true
@@ -30,7 +30,7 @@
 {
     {
       ids = { "PESEANT_PLAYER" }
-      traits = { WORKER NO_LIMIT NO_EQUIPMENT }
+      traits = { WORKER NO_LIMIT NO_EQUIPMENT NO_LEISURE_ZONE }
       keybinding = CREATE_IMP
       noAuto = true
       initialRecruitment = 4
@@ -583,7 +583,7 @@
 {
     {
       ids = { "IMP" }
-      traits = { WORKER NO_LIMIT NO_EQUIPMENT }
+      traits = { WORKER NO_LIMIT NO_EQUIPMENT NO_LEISURE_ZONE }
       spawnLocation = NearLeader
       keybinding = CREATE_IMP
       sound = CREATE_IMP 2

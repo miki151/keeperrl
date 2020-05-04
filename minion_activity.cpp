@@ -232,8 +232,10 @@ static vector<Position> limitToIndoors(const PositionSet& v) {
 const PositionSet& getIdlePositions(const Collective* collective, const Creature* c) {
   if (auto q = collective->getQuarters().getAssigned(c->getUniqueId()))
     return collective->getZones().getPositions(Quarters::getAllQuarters()[*q].zone);
+  if (collective->hasTrait(c, MinionTrait::PRISONER))
+    return collective->getConstructions().getBuiltPositions(FurnitureType("PRISON"));
   if (!collective->getZones().getPositions(ZoneId::LEISURE).empty() &&
-      !collective->hasTrait(c, MinionTrait::WORKER))
+      !collective->hasTrait(c, MinionTrait::NO_LEISURE_ZONE))
     return collective->getZones().getPositions(ZoneId::LEISURE);
   else
     return collective->getTerritory().getAllAsSet();

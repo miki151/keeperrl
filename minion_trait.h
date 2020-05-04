@@ -2,7 +2,8 @@
 
 #include "util.h"
 
-RICH_ENUM(MinionTrait,
+RICH_ENUM(
+  MinionTrait,
   LEADER,
   FIGHTER,
   WORKER,
@@ -14,7 +15,8 @@ RICH_ENUM(MinionTrait,
   NO_AUTO_EQUIPMENT,
   DOESNT_TRIGGER,
   INCREASE_POPULATION,
-  AUTOMATON
+  AUTOMATON,
+  NO_LEISURE_ZONE
 );
 
 extern const char* /*can be null*/ getImmigrantDescription(MinionTrait);
