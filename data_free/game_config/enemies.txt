@@ -840,7 +840,7 @@
       { MainEnemy 60 40 BASIC "Adoxie's Temple" }
       { ExtraEnemy { "DEATH" { 1 } } 40 30 BASIC none true false }
       { ExtraEnemy { "HELL" { 1 } } 40 30 DUNGEON "A Very Hot Place" true false }
-      { ExtraEnemy { "SATAN" { 1 } } 40 30 BASIC "A Very Hot Place" true false }
+      { ExtraEnemy { "SATAN" { 1 } } 32 22 BASIC "A Very Hot Place" true false }
       { ExtraEnemy { "OUTBACK_ENTRY" { 1 } } 100 100 OUTBACK "Down Under" true }
     }
   }

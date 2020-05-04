@@ -1075,7 +1075,7 @@ class PredicatePrecalc {
 
 class RandomLocations : public LevelMaker {
   public:
-  RandomLocations(vector<PLevelMaker> _insideMakers, const vector<pair<int, int>>& _sizes, Predicate pred)
+  RandomLocations(vector<PLevelMaker> _insideMakers, const vector<Vec2>& _sizes, Predicate pred)
       : insideMakers(std::move(_insideMakers)), sizes(_sizes), predicate(sizes.size(), pred) {
     CHECK(insideMakers.size() == sizes.size());
     CHECK(predicate.size() == sizes.size());
@@ -1112,7 +1112,7 @@ class RandomLocations : public LevelMaker {
       int maxSecond;
     };
 
-    Precomputed precompute(LevelBuilder* builder, Rectangle area) {
+    Precomputed precompute(LevelBuilder* builder, Rectangle area) const {
       return Precomputed(builder, area, predicate, second, minSecond, maxSecond);
     }
 
@@ -1124,7 +1124,7 @@ class RandomLocations : public LevelMaker {
   };
 
   RandomLocations(Vec2 size, LocationPredicate pred, PLevelMaker _insideMaker)
-      : insideMakers(makeVec(std::move(_insideMaker))), sizes({make_pair(size.x, size.y)}), predicate(1, pred) {
+      : insideMakers(makeVec(std::move(_insideMaker))), sizes(1, size), predicate(1, pred) {
   }
 
   void add(PLevelMaker maker, Vec2 size, LocationPredicate pred) {
@@ -1169,6 +1169,21 @@ class RandomLocations : public LevelMaker {
     return insideMakers.back().get();
   }
 
+  pair<vector<Vec2>, LevelBuilder::Rot> getAllowedPositions(LevelBuilder* builder, Rectangle area, LevelMaker* maker,
+      const LocationPredicate& predicate, Vec2 size) {
+    auto rotation = builder->getRandom().choose(
+          LevelBuilder::CW0, LevelBuilder::CW1, LevelBuilder::CW2, LevelBuilder::CW3);
+    auto precomputed = predicate.precompute(builder, area);
+    vector<Vec2> pos;
+    const int margin = getValueMaybe(minMargin, maker).value_or(0);
+    if (contains({LevelBuilder::CW1, LevelBuilder::CW3}, rotation))
+      std::swap(size.x, size.y);
+    for (auto v : Rectangle(area.left() + margin, area.top() + margin,
+        area.right() - margin - size.x, area.bottom() - margin - size.y))
+      if (precomputed.apply(Rectangle(v, v + size)))
+        pos.push_back(v);
+    return make_pair(pos, rotation);
+  }
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     PROFILE;
@@ -1178,21 +1193,15 @@ class RandomLocations : public LevelMaker {
     {
       PROFILE_BLOCK("precomputing");
       for (int i : All(insideMakers)) {
-        rotations.push_back(builder->getRandom().choose(
-              LevelBuilder::CW0, LevelBuilder::CW1, LevelBuilder::CW2, LevelBuilder::CW3));
-        auto maker = insideMakers[i].get();
-        auto precomputed = predicate[i].precompute(builder, area);
-        vector<Vec2> pos;
-        const int margin = getValueMaybe(minMargin, maker).value_or(0);
-        int width = sizes[i].first;
-        int height = sizes[i].second;
-        if (contains({LevelBuilder::CW1, LevelBuilder::CW3}, rotations[i]))
-          std::swap(width, height);
-        for (int x : Range(area.left() + margin, area.right() - margin - width))
-          for (int y : Range(area.top() + margin, area.bottom() - margin - height))
-            if (precomputed.apply(Rectangle(x, y, x + width, y + height)))
-              pos.push_back(Vec2(x, y));
-        allowedPositions.push_back(pos);
+        pair<vector<Vec2>, LevelBuilder::Rot> res;
+        for (auto iter : Range(100)) {
+          res = getAllowedPositions(builder, area, insideMakers[i].get(), predicate[i], sizes[i]);
+          if (!res.first.empty())
+            break;
+        }
+        checkGen(!res.first.empty());
+        allowedPositions.push_back(res.first);
+        rotations.push_back(res.second);
       }
     }
     {
@@ -1231,10 +1240,9 @@ class RandomLocations : public LevelMaker {
       PROFILE_BLOCK("maker");
       auto maker = insideMakers[makerIndex].get();
       bool canOverlap = overlapping.count(maker);
-      int width = sizes[makerIndex].first;
-      int height = sizes[makerIndex].second;
+      auto size = sizes[makerIndex];
       if (contains({LevelBuilder::CW1, LevelBuilder::CW3}, rotations[makerIndex]))
-        std::swap(width, height);
+        std::swap(size.x, size.y);
       vector<optional<double>> maxDist(makerIndex);
       vector<optional<double>> minDist(makerIndex);
       for (int j : Range(makerIndex)) {
@@ -1244,7 +1252,7 @@ class RandomLocations : public LevelMaker {
       auto findGoodPosition = [&] () -> optional<Vec2> {
         for (auto& pos : builder->getRandom().permutation(allowedPositions[makerIndex])) {
           Progress::checkIfInterrupted();
-          Rectangle area(pos, pos + Vec2(width, height));
+          Rectangle area(pos, pos + size);
           if ((canOverlap || checkIntersections(area, occupied)) &&
               checkDistances(makerIndex, area, occupied, minDist, maxDist)) {
             return pos;
@@ -1253,8 +1261,8 @@ class RandomLocations : public LevelMaker {
         return none;
       };
       if (auto pos = findGoodPosition()) {
-        occupied.push_back(Rectangle(*pos, *pos + Vec2(width, height)));
-        makerBounds.push_back(Rectangle(*pos, *pos + Vec2(sizes[makerIndex].first, sizes[makerIndex].second)));
+        occupied.push_back(Rectangle(*pos, *pos + size));
+        makerBounds.push_back(Rectangle(*pos, *pos + sizes[makerIndex]));
       } else
       if (optionalMakers.count(insideMakers[makerIndex].get())) {
         occupied.push_back(none);
@@ -1296,7 +1304,7 @@ class RandomLocations : public LevelMaker {
 
   private:
   vector<PLevelMaker> insideMakers;
-  vector<pair<int, int>> sizes;
+  vector<Vec2> sizes;
   vector<LocationPredicate> predicate;
   set<LevelMaker*> overlapping;
   map<pair<LevelMaker*, LevelMaker*>, double> minDistance;
@@ -2887,7 +2895,7 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
   vector<SurroundWithResourcesInfo> surroundWithResources;
   if (settlement) {
     auto maker = getSettlementMaker(mapLayouts, random, *settlement);
-    maker->addMaker(unique<RandomLocations>(makeVec<PLevelMaker>(std::move(startingPosMaker)), makeVec<pair<int, int>>({1, 1}),
+    maker->addMaker(unique<RandomLocations>(makeVec<PLevelMaker>(std::move(startingPosMaker)), makeVec(Vec2(1, 1)),
         Predicate::canEnter(MovementTrait::WALK)));
     if (settlement->corpses)
       queue->addMaker(unique<Corpses>(*settlement->corpses));
