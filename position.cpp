@@ -392,7 +392,7 @@ void Position::getViewIndex(ViewIndex& index, const Creature* viewer) const {
     getSquare()->getViewIndex(index, viewer);
     if (isUnavailable())
       index.setHighlight(HighlightType::UNAVAILABLE);
-    if (isCovered() > 0)
+    if (isCovered())
       index.setHighlight(HighlightType::INDOORS);
     for (auto furniture : getFurniture())
       if (furniture->isVisibleTo(viewer) && furniture->getViewObject()) {

@@ -2340,6 +2340,9 @@
       DAMAGE 21
       DEFENSE 25 
     }
+    specialAttr = {
+      DEFENSE -7 Name "when outdoors" Not Indoors
+    }
     body = {
       type = Humanoid MEDIUM
       weight = 90
@@ -2379,6 +2382,9 @@
       DAMAGE 21
       DEFENSE 25 
     }
+    specialAttr = {
+      DEFENSE -7 Name "when outdoors" Not Indoors
+    }
     body = {
       type = Humanoid MEDIUM
       weight = 90
@@ -2400,23 +2406,12 @@
     gender = FEMALE
     hatedByEffect = HATE_DWARVES
   }
-"DWARF_BARON"
+"DWARF_BARON" inherit "DWARF"
   {
     viewId = { "dwarf_baron" }
     attr = {
       DAMAGE 28
       DEFENSE 32 
-    }
-    body = {
-      type = Humanoid MEDIUM
-      weight = 120
-    }
-    chatReactionFriendly = "curses all orcs"
-    chatReactionHostile = "\"Die!\""
-    permanentEffects = {
-      NAVIGATION_DIGGING_SKILL 1
-      MAGIC_VULNERABILITY 1
-      UNSTABLE 1
     }
     maxLevelIncrease = {
       MELEE 10
@@ -2426,7 +2421,6 @@
       name = "dwarf baron"
       firstNameGen = "DWARF"
     }
-    hatedByEffect = HATE_DWARVES
     inventory = {
       { type = Simple "BattleAxe", alternative = Simple "WarHammer" prefixChance = 1 }
       { Potion Heal FLESH 2 3 }

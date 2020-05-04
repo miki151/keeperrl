@@ -14,6 +14,8 @@ namespace CreaturePredicates {
 SIMPLE_PREDICATE(Enemy);
 SIMPLE_PREDICATE(Automaton);
 SIMPLE_PREDICATE(Hidden);
+SIMPLE_PREDICATE(Indoors);
+SIMPLE_PREDICATE(Night);
 
 struct HatedBy {
   LastingEffect SERIAL(effect);
@@ -67,10 +69,12 @@ struct Or {
   X(Hidden, 7)\
   X(Flag, 8)\
   X(Name, 9)\
-  X(Attacker, 10)\
-  X(Not, 11)\
-  X(And, 12)\
-  X(Or, 13)
+  X(Night, 10)\
+  X(Indoors, 11)\
+  X(Attacker, 12)\
+  X(Not, 13)\
+  X(And, 14)\
+  X(Or, 15)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

@@ -123,6 +123,30 @@ static string getName(BodyMaterial m) {
   return "made of "_s + getMaterialName(m);
 }
 
+static bool apply(CreaturePredicates::Night m, Position pos, const Creature*) {
+  return pos.getGame()->getSunlightInfo().getState() == SunlightState::NIGHT;
+}
+
+static string getName(CreaturePredicates::Night m) {
+  return "at night";
+}
+
+static string getNameNegated(CreaturePredicates::Night m) {
+  return "during the day";
+}
+
+static bool apply(CreaturePredicates::Indoors m, Position pos, const Creature*) {
+  return pos.isCovered();
+}
+
+static string getName(CreaturePredicates::Indoors m) {
+  return "when indoors";
+}
+
+static string getNameNegated(CreaturePredicates::Indoors m) {
+  return "when outdoors";
+}
+
 static bool apply(const CreaturePredicates::And& p, Position pos, const Creature* attacker) {
   for (auto& pred : p.pred)
     if (!pred.apply(pos, attacker))

@@ -343,6 +343,7 @@
         { 0.3 AttractionInfo 2 {FurnitureType "TRAINING_IRON"}}
       }
       specialTraits = {
+         { 1.0 { SpecialAttr DAMAGE 7 Name "at night" Night }}
          { 0.1 { SpecialAttr DAMAGE 5 HatedBy HATE_HUMANS }}
          { 0.1 { AttrBonus DAMAGE 13 Lasting { INSANITY }}}
          { 0.03 { Lasting { INSANITY }}}
