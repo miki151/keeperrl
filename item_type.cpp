@@ -390,7 +390,6 @@ ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory*) const {
       i.blindName = "scroll"_s;
       i.itemClass = ItemClass::SCROLL;
       i.weight = 0.1;
-      i.modifiers[AttrType::DAMAGE] = -10;
       i.effect = Effect(Effects::Area{10,
           Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::IncreaseMorale{-0.1})))});
       i.price = getEffectPrice(*i.effect);
@@ -407,7 +406,6 @@ ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory*) const 
       i.blindName = "scroll"_s;
       i.itemClass = ItemClass::SCROLL;
       i.weight = 0.1;
-      i.modifiers[AttrType::DAMAGE] = -10;
       i.effect = Effect(Effects::Area{10,
           Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::IncreaseMorale{-0.1})))});
       i.price = getEffectPrice(*i.effect);
@@ -569,7 +567,6 @@ ItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory* factory) co
       i.blindName = "glyph"_s;
       i.itemClass = ItemClass::SCROLL;
       i.weight = 0.1;
-      i.modifiers[AttrType::DAMAGE] = -10;
       i.price = 100;
       i.uses = 1;
   );
@@ -584,7 +581,6 @@ ItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) c
       i.blindName = "scroll"_s;
       i.itemClass = ItemClass::SCROLL;
       i.weight = 0.1;
-      i.modifiers[AttrType::DAMAGE] = -10;
       i.effect = effect;
       i.price = getEffectPrice(effect);
       i.burnTime = 5;
@@ -602,7 +598,6 @@ ItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) const
       i.blindName = "scroll"_s;
       i.itemClass= ItemClass::SCROLL;
       i.weight = 0.1;
-      i.modifiers[AttrType::DAMAGE] = -10;
       i.price = 15;
       i.burnTime = 10;
       i.uses = 1;
