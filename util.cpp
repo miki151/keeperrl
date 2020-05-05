@@ -1165,7 +1165,7 @@ string toString(const Range& r) {
 }
 
 string toPercentage(double v) {
-  return toString<int>(v * 100) + "%";
+  return toString<int>(round(v * 100)) + "%";
 }
 
 void openUrl(const string& url) {

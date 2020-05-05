@@ -75,7 +75,7 @@ vector<PItem> Workshops::Type::unqueue(Collective* collective, int index) {
 static const double prodMult = 0.1;
 
 double Workshops::getLegendarySkillThreshold() {
-  return 0.9;
+  return 0.89;
 }
 
 static bool allowUpgrades(const WorkshopQueuedItem& item, double skillAmount, double morale) {
