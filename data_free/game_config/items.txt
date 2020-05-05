@@ -81,10 +81,10 @@
       "automatons"
       1
       { "installed_arms" Rgb 180 140 55 255 }
-      Description "Grants a melee attack and +6 damage bonus."
+      Description "Grants a melee attack and +8 damage bonus."
       Chain {
-        IncreaseAttr DAMAGE 6
-        AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 5 { attackMsg = SWING } }
+        IncreaseAttr DAMAGE 8
+        AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
       }
       "melee"
     }
@@ -216,9 +216,8 @@
       "automatons"
       0
       { "installed_legs" Rgb 140 148 148 255 }
-      Description "Adds mobility. Adds +2 defense. Second pair grants the \"jump\" ability."
+      Description "Adds mobility. Second pair grants the \"jump\" ability."
       Chain{
-        IncreaseAttr DEFENSE 2
         AddBodyPart LEG 2 none
         FirstSuccessful {
             RemovePermanent IMMOBILE
@@ -238,11 +237,10 @@
       "automatons"
       1
       { "installed_arms" Rgb 140 148 148 255 }
-      Description "Grants a melee attack and +10 damage bonus. Adds +2 defense."
+      Description "Grants a melee attack and +12 damage bonus."
       Chain {
-        IncreaseAttr DAMAGE 10
-        IncreaseAttr DEFENSE 2
-        AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING } }
+        IncreaseAttr DAMAGE 12
+        AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
       }
       "melee"
     }

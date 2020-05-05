@@ -1801,7 +1801,6 @@
     viewId = { "automaton_corpus" Rgb 180 140 55 255 }
     automatonSlots = 3 { "automatons" "paint" }
     attr = {
-      DAMAGE 15
       DEFENSE 24
     }
     body = {
@@ -1842,8 +1841,7 @@
   {
     viewId = { "automaton_corpus" Rgb 140 148 148 255 }
     attr = {
-      DAMAGE 25
-      DEFENSE 29
+      DEFENSE 35
     }
     body = append {
       material = IRON
