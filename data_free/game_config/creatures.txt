@@ -1877,6 +1877,46 @@
       name = "light iron automaton"
     }
   }
+"AUTOMATON_CORPUS_ADA" inherit "AUTOMATON_CORPUS_WOOD"
+  {
+    viewId = { "automaton_corpus" Rgb 148 189 189 255 }
+    attr = {
+      DEFENSE 50
+    }
+    body = append {
+      material = ADA
+    }
+    name = {
+      name = "adamantine automaton"
+    }
+  }
+"AUTOMATON_WORKER_ADA" inherit "AUTOMATON_CORPUS_ADA"
+  {
+    automatonParts = {
+      {Simple "AutomatonLegsAda" }
+      {Simple "AutomatonDrillAda" }
+    }
+  }
+"HEAVY_AUTOMATON_CORPUS_ADA" inherit "AUTOMATON_CORPUS_ADA"
+  {
+    attr = append {
+      DEFENSE 60
+    }
+    permanentEffects = append { SLOWED 1 }
+    name = {
+      name = "heavy adamantine automaton"
+    }
+  }
+"LIGHT_AUTOMATON_CORPUS_ADA" inherit "AUTOMATON_CORPUS_ADA"
+  {
+    attr = append {
+      DEFENSE 30
+    }
+    permanentEffects = append { SPEED 1 }
+    name = {
+      name = "light adamantine automaton"
+    }
+  }
 "ZOMBIE"
   {
     viewId = { "zombie" }

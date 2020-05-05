@@ -149,6 +149,24 @@
       {{Simple    "FireHeadIron"}            2       "IRON" 5    "advanced automatons"}
       {{Simple    "AcidHeadIron"}            2       "IRON" 5    "advanced automatons"}
       {{Simple    "HumanoidHeadIron"}        2       "IRON" 5    "automaton brains"}
+      { item = {Assembled "AUTOMATON_WORKER_ADA" "drilling automaton" }
+        work = 8 cost = "ADA" 30 tech = "automatons" applyImmediately = true}
+      { item = {Assembled "AUTOMATON_CORPUS_ADA" "automaton corpus" }
+        work = 8 cost = "ADA" 45 tech = "automatons" applyImmediately = true}
+      { item = {Assembled "LIGHT_AUTOMATON_CORPUS_ADA" "light automaton corpus" }
+        work = 8 cost = "ADA" 20 tech = "advanced automatons" applyImmediately = true}
+      { item = {Assembled "HEAVY_AUTOMATON_CORPUS_ADA" "heavy automaton corpus"}
+        work = 8 cost = "ADA" 40 tech = "advanced automatons" applyImmediately = true}
+      {{Simple    "AutomatonLegsAda"}       2       "ADA" 5    "automatons"}
+      {{Simple    "AutomatonArmsAda"}       2       "ADA" 5    "automatons"}
+#      {{Simple    "SharpAutomatonArmsAda"}  2       "ADA" 5    "advanced automatons"}
+      {{Simple    "RepairAutomatonArmsAda"} 2       "ADA" 5    "advanced automatons"}
+      {{Simple    "AutomatonDrillAda"}      2       "ADA" 5    "automatons"}
+      {{Simple    "AutomatonCraftingAda"}   2       "ADA" 5    "advanced automatons"}
+      {{Simple    "ArcherHeadAda"}          2       "ADA" 5    "advanced automatons"}
+      {{Simple    "FireHeadAda"}            2       "ADA" 5    "advanced automatons"}
+      {{Simple    "AcidHeadAda"}            2       "ADA" 5    "advanced automatons"}
+      {{Simple    "HumanoidHeadAda"}        2       "ADA" 5    "automaton brains"}
   } 
   "LABORATORY"
   {

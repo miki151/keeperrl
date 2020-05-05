@@ -320,6 +320,181 @@
       "repair"
     }
   }
+"HumanoidHeadAda"
+  {
+    viewId = { "automaton_head" Rgb 148 189 189 255 }
+    name = "adamantine humanoid head"
+    shortName = "humanoid head"
+    weight = 4
+    itemClass = TOOL
+    automatonPart = {
+      "automatons"
+      2
+      { "installed_head" Rgb 140 148 148 255 }
+      Description "Allows using equipment. Adds +2 defense bonus."
+      Chain {
+        IncreaseAttr DEFENSE 4
+        MakeHumanoid
+        AddBodyPart HEAD 1 none
+      }
+      "humanoid"
+    }
+  }
+"ArcherHeadAda" inherit "HumanoidHeadAda"
+  {
+    viewId = { "automaton_arrow" Rgb 148 189 189 255 }
+    name = "adamantine arrow shooting head"
+    shortName = "arrow shooting"
+    automatonPart = {
+      "automatons"
+      2
+      { "installed_arrow" Rgb 148 189 189 255 }
+      Description "Allows shooting arrows. Adds +4 defense. Second head adds additional +20 ranged damage."
+      Chain {
+        IncreaseAttr RANGED_DAMAGE 40
+        IncreaseAttr DEFENSE 4
+        AddBodyPart HEAD 1 none
+        FirstSuccessful {
+          GrantAbility "shoot arrow"
+          IncreaseAttr RANGED_DAMAGE -20
+        }
+      }
+      "archer"
+    }
+  }
+"FireHeadAda" inherit "HumanoidHeadAda"
+  {
+    viewId = { "automaton_fire" Rgb 148 189 189 255 }
+    name = "adamantine fire breathing head"
+    shortName = "fire breathing"
+    automatonPart = {
+      "automatons"
+      2
+      { "installed_fire" Rgb 148 189 189 255 }
+      Description "Grants the \"fire breath\" ability. Adds +4 defense."
+      Chain {
+        GrantAbility "fire breath"
+        IncreaseAttr DEFENSE 4
+        AddBodyPart HEAD 1 none
+      }
+      "fire"
+    }
+  }
+"AcidHeadAda" inherit "HumanoidHeadAda"
+  {
+    viewId = { "automaton_acid" Rgb 148 189 189 255 }
+    name = "adamantine acid spitting head"
+    shortName = "acid spitting"
+    automatonPart = {
+      "automatons"
+      2
+      { "installed_acid" Rgb 148 189 189 255 }
+      Description "Grants the \"acid stream\" ability. Adds +4 defense."
+      Chain {
+        GrantAbility "acid stream"
+        IncreaseAttr DEFENSE 4
+        AddBodyPart HEAD 1 none
+      }
+      "acid"
+    }
+  }
+"AutomatonLegsAda"
+  {
+    viewId = { "automaton_legs" Rgb 148 189 189 255 }
+    name = "pair of adamantine legs"
+    shortName = "adamantine legs"
+    weight = 8
+    itemClass = TOOL
+    automatonPart = {
+      "automatons"
+      0
+      { "installed_legs" Rgb 148 189 189 255 }
+      Description "Adds mobility. Second pair grants the \"jump\" ability."
+      Chain{
+        AddBodyPart LEG 2 none
+        FirstSuccessful {
+            RemovePermanent IMMOBILE
+            GrantAbility "jump"
+        }
+      }
+    }
+  }
+"AutomatonArmsAda"
+  {
+    viewId = { "automaton_arms" Rgb 148 189 189 255 }
+    name = "pair of adamantine arms"
+    shortName = "adamantine arms"
+    weight = 6
+    itemClass = TOOL
+    automatonPart = {
+      "automatons"
+      1
+      { "installed_arms" Rgb 148 189 189 255 }
+      Description "Grants a melee attack and +18 damage bonus."
+      Chain {
+        IncreaseAttr DAMAGE 18
+        AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
+      }
+      "melee"
+    }
+  }
+"AutomatonDrillAda"
+  {
+    viewId = { "automaton_drill" Rgb 148 189 189 255 }
+    name = "adamantine drill"
+    shortName = "adamantine drill"
+    weight = 6
+    itemClass = TOOL
+    automatonPart = {
+      "automatons"
+      1
+      { "installed_drill" Rgb 148 189 189 255 }
+      Description "Increases the digging skill by 50."
+      Chain {
+        IncreaseSkill DIGGING 0.5
+        AddMinionTrait WORKER
+      }
+      "drill"
+    }
+  }
+"AutomatonCraftingAda"
+  {
+    viewId = { "automaton_crafting" Rgb 148 189 189 255 }
+    name = "adamantine crafting arms"
+    weight = 6
+    itemClass = TOOL
+    automatonPart = {
+      "automatons"
+      1
+      { "installed_crafting" Rgb 148 189 189 255 }
+      Description "Increases all crafting skills by 50."
+      Chain {
+        IncreaseWorkshopSkill "WORKSHOP" 0.5
+        IncreaseWorkshopSkill "FORGE" 0.5
+        IncreaseWorkshopSkill "LABORATORY" 0.5
+        IncreaseWorkshopSkill "JEWELER" 0.5
+      }
+      "crafting"
+    }
+  }
+"RepairAutomatonArmsAda" inherit "AutomatonArmsAda"
+  {
+    viewId = { "automaton_repair" Rgb 148 189 189 255 }
+    name = "pair of adamantine repair arms"
+    shortName = "repair arms"
+    automatonPart = {
+      "automatons"
+      1
+      { "installed_repair" Rgb 148 189 189 255 }
+      Description "Grants the ability to repair other automatons. Adds +4 defense."
+      Chain {
+        GrantAbility "repair automaton"
+        IncreaseAttr DEFENSE 4
+        AddBodyPart ARM 2 none
+      }
+      "repair"
+    }
+  }
 "Knife"
   {
     viewId = { "knife" }
