@@ -3385,8 +3385,11 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewI
   if (!minion.spellSchools.empty()) {
     auto line = WL(getListBuilder)
         .addElemAuto(WL(label, "Spell schools: ", Color::YELLOW));
-    for (auto& school : minion.spellSchools)
-      line.addElemAuto(drawSpellSchoolLabel(school));
+    for (int i : All(minion.spellSchools)) {
+      if (i > 0)
+        line.addElemAuto(WL(label, ", "));
+      line.addElemAuto(drawSpellSchoolLabel(minion.spellSchools[i]));
+    }
     leftLines.addElem(line.buildHorizontalList());
   }
   leftLines.addSpace();
