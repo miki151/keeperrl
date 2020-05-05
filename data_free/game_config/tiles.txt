@@ -175,7 +175,9 @@
 { "ada_golem" "Y" ColorId LIGHT_BLUE }
 { "automaton" "A" ColorId LIGHT_GRAY }
 { "automaton_worker" "a" ColorId LIGHT_BROWN }
-{ "automaton_corpus" "a" ColorId LIGHT_GRAY }
+{ "automaton_corpus" "A" ColorId LIGHT_GRAY }
+{ "automaton_light" "A" ColorId YELLOW }
+{ "automaton_heavy" "A" ColorId DARK_BLUE }
 { "automaton_head" ")" ColorId LIGHT_BROWN }
 { "automaton_fire" ")" ColorId LIGHT_BROWN }
 { "automaton_acid" ")" ColorId LIGHT_BROWN }
