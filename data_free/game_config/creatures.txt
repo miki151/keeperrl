@@ -925,6 +925,35 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
     }
   }
+"RED_NAGA"
+  {
+    viewId = { "naga" Rgb 200 58 58 255 }
+    attr = {
+      DAMAGE 25
+      DEFENSE 27
+    }
+    body = {
+      type = NonHumanoid HUGE
+      addBodyPart = {
+        HEAD 1
+        ARM 2
+      }
+      intrinsicAttacks = {
+        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 7 {
+            attackType = BITE
+            attackMsg = BITE
+            victimEffect = {0.5 Fire} } }}}
+      }
+    }
+    permanentEffects = {
+      FIRE_RESISTANT 1
+      RANGED_VULNERABILITY 1
+    }
+    name = {
+      name = "red naga"
+    }
+    hatedByEffect = HATE_DRAGONS
+  }
 "RED_DRAGON"
   {
     viewId = { "red_dragon" }
@@ -964,6 +993,35 @@
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
     }
+  }
+"BLACK_NAGA"
+  {
+    viewId = { "naga" Rgb 80 80 80 255 }
+    attr = {
+      DAMAGE 27
+      DEFENSE 30
+    }
+    body = {
+      type = NonHumanoid HUGE
+      addBodyPart = {
+        HEAD 1
+        ARM 2
+      }
+      intrinsicAttacks = {
+        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 7 {
+            attackType = BITE
+            attackMsg = BITE
+            victimEffect = {0.5 Lasting BLIND} } }}}
+      }
+    }
+    permanentEffects = {
+      RANGED_VULNERABILITY 1
+      TELEPATHY 1
+    }
+    name = {
+      name = "black naga"
+    }
+    hatedByEffect = HATE_DRAGONS
   }
 "BLACK_DRAGON"
   {
@@ -1006,6 +1064,35 @@
       { type = Glyph WEAPON SpecialAttr DAMAGE 5 Name "at night" Night chance = 0.3 }
     }
   }
+"WHITE_NAGA"
+  {
+    viewId = { "naga" Rgb 220 220 220 255 }
+    attr = {
+      DAMAGE 25
+      DEFENSE 27
+    }
+    body = {
+      type = NonHumanoid HUGE
+      addBodyPart = {
+        HEAD 1
+        ARM 2
+      }
+      intrinsicAttacks = {
+        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 7 {
+            attackType = BITE
+            attackMsg = BITE
+            victimEffect = {0.5 Ice} } }}}
+      }
+    }
+    permanentEffects = {
+      COLD_RESISTANT 1
+      RANGED_VULNERABILITY 1
+    }
+    name = {
+      name = "white naga"
+    }
+    hatedByEffect = HATE_DRAGONS
+  }
 "WHITE_DRAGON" inherit "BLACK_DRAGON"
   {
     viewId = { "red_dragon" Rgb 240 240 240 255 }
@@ -1041,6 +1128,35 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
     }
   }
+"YELLOW_NAGA"
+  {
+    viewId = { "naga" Rgb 220 220 20 255 }
+    attr = {
+      DAMAGE 25
+      DEFENSE 27
+    }
+    body = {
+      type = NonHumanoid HUGE
+      addBodyPart = {
+        HEAD 1
+        ARM 2
+      }
+      intrinsicAttacks = {
+        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 7 {
+            attackType = BITE
+            attackMsg = BITE
+            victimEffect = {0.5 Acid} } }}}
+      }
+    }
+    permanentEffects = {
+      ACID_RESISTANT 1
+      RANGED_VULNERABILITY 1
+    }
+    name = {
+      name = "yellow naga"
+    }
+    hatedByEffect = HATE_DRAGONS
+  }
 "YELLOW_DRAGON" inherit "BLACK_DRAGON"
   {
     viewId = { "red_dragon" Rgb 240 240 10 255 }
@@ -1057,6 +1173,7 @@
       drops = {{ Simple "YellowDragonScales" } 1}
     }
     permanentEffects = {
+      ACID_RESISTANT 1
       RANGED_VULNERABILITY 1
     }
     name = {

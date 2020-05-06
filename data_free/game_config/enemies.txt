@@ -1211,6 +1211,11 @@
           80 "EARTH_ELEMENTAL"
           80 "AIR_ELEMENTAL"
         }
+        uniques = {
+          "BLACK_NAGA"
+          "BLACK_NAGA"
+          "BLACK_NAGA"
+        }
       }
     }
   }
@@ -1273,8 +1278,10 @@
       fighters = append {
         all = append {
           150 "RED_DRAGON"
-          150 "BLACK_DRAGON"
           150 "YELLOW_DRAGON"
+        }
+        uniques = {
+          "BLACK_DRAGON"
         }
       }
     }
@@ -1336,6 +1343,13 @@
 {
   settlement = append {
     buildingId = "GLACIER"
+    inhabitants = append {
+      fighters = append {
+        all = append {
+          150 "WHITE_NAGA"
+        }
+      }
+    }
   }
 }
 "WHITE_DRAGON" inherit "RED_DRAGON"
