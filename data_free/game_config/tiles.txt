@@ -294,6 +294,8 @@
 { "potion6" "!" ColorId LIGHT_GRAY }
 { "glyph" "~" ColorId GREEN }
 { "dragon_scales" "~" ColorId GREEN }
+{ "devil_hooves" "~" ColorId RED }
+{ "devil_horns" "~" ColorId LIGHT_GRAY }
 { "nuts" "⠤" ColorId ORANGE true }
 { "brain" "⚭" ColorId PINK true }
 { "tongue" "~" ColorId RED true }

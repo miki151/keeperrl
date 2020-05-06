@@ -1341,6 +1341,40 @@
     }
     maxUpgrades = 2
   }
+"DevilHooves"
+  {
+    viewId = { "devil_hooves" }
+    name = "devil's hooves"
+    itemClass = OTHER
+    weight = 5
+    price = 100
+    ingredientType = "devil_hooves"
+  }
+"DevilBoots"
+  {
+    viewId = { "iron_boots" Rgb 206 58 68 255 }
+    shortName = "devil"
+    name = "pair of devil boots"
+    plural = "pairs of devil boots"
+    itemClass = ARMOR
+    equipmentSlot = BOOTS
+    weight = 4
+    price = 800
+    modifiers = {
+      DEFENSE 5
+    }
+    equipedEffect = {FLYING SPELL_DAMAGE}
+    maxUpgrades = 1
+  }
+"DevilHorns"
+  {
+    viewId = { "devil_horns" }
+    name = "devil's horns"
+    itemClass = OTHER
+    weight = 5
+    price = 100
+    ingredientType = "devil_horns"
+  }
 "DefenseAmulet"
   {
     viewId = { "amulet3" }

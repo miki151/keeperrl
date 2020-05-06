@@ -13,6 +13,7 @@
       {{Simple "Cornuthaum1"}           5        "GOLD" 0       "sorcery"}
       {{Simple "Cornuthaum2"}           8        "GOLD" 20      "advanced sorcery"}
       {{Simple "Cornuthaum3"}           12       "GOLD" 40      "master sorcery"}
+      {item = {Simple "DevilBoots"}       work = 30 cost = "WOOD" 0 requireIngredient = "devil_hooves" }
       {{Simple "Bow"}                   13       "WOOD" 20      "archery"}
       {{Simple "WoodenStaff"}           13       "WOOD" 20      "magical weapons"}
       {{Simple "Torch"}                 2        "WOOD" 4}
@@ -70,6 +71,8 @@
       {item = {Potion IncreaseAttr DEFENSE 5} work = 20 cost = "GOLD" 100 requireIngredient = "cyclops_brain" }
       {item = {Potion Lasting PLAGUE} work = 5 cost = "GOLD" 10 requireIngredient = "zombie_brain" }
       {item = {Potion Permanent POISON_RESISTANT} work = 20 cost = "GOLD" 80 requireIngredient = "hydra_tongue" }
+      {item = {Potion Name "calamity" Area 20 Lasting INSANITY}
+          work = 50 cost = "GOLD" 666 requireIngredient = "devil_horns" }
       {{Simple "GoldPiece"}                           5        "IRON" 30      "alchemical conversion"       10}
       {{Simple "WoodPlank"}                           5        "GOLD" 10      "alchemical conversion"       10}
       {{Simple "IronOre"}                             5        "GOLD" 10      "alchemical conversion"       10}

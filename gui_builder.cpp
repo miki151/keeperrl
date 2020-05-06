@@ -2057,7 +2057,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
       label = WL(getListBuilder)
           .addElemAuto(std::move(label))
           .addElemAuto(WL(label, " from "))
-          .addElemAuto(getItemLine(*elem.ingredient, [](Rectangle){}))
+          .addElemAuto(WL(viewObject, elem.ingredient->viewId))
           .buildHorizontalList();
     line.addMiddleElem(WL(renderInBounds, std::move(label)));
     if (elem.price)

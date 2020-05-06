@@ -417,6 +417,12 @@
       DEFENSE 65
       SPELL_DAMAGE 65
     }
+    body = append {
+      drops = {
+        { Simple "DevilHooves" } 1
+        { Simple "DevilHorns" } 1
+      }
+    }
     name = {
       name = "big, bad devil"
     }
