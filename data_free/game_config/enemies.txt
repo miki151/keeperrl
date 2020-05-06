@@ -634,10 +634,7 @@
       fighters = {
         count = {6 9}
         all = {
-          1 "DWARF"
-        }
-        baseLevelIncrease = {
-          MELEE 10
+          1 "DWARF_FIGHTER"
         }
       }
       civilians = {

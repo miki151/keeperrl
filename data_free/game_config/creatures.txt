@@ -2403,7 +2403,7 @@
       firstNameGen = "DWARF"
     }
     skills = {
-      "FORGE" 0.8
+      "FORGE" 0.4
     }
     maxLevelIncrease = {
       MELEE 2
@@ -2416,6 +2416,21 @@
     chatReactionFriendly = "curses all orcs"
     chatReactionHostile = "\"Die!\""
     hatedByEffect = HATE_DWARVES
+    inventory = {
+      { type = Simple "Sword" }
+      { Simple "LeatherArmor"}
+      { type = Simple "LeatherHelm" chance = 0.5 }
+      { type = Simple "LeatherBoots" chance = 0.3 }
+      { type = Simple "Torch" chance = 0.3 }
+    }
+  }
+"DWARF_FIGHTER" inherit "DWARF"
+  {
+    viewId = { "dwarf_fighter" }
+    attr = {
+      DAMAGE 31
+      DEFENSE 35
+    }
     inventory = {
       { type = Simple "BattleAxe", alternative = Simple "WarHammer" }
       { Simple "ChainArmor"}
@@ -2460,8 +2475,8 @@
   {
     viewId = { "dwarf_baron" }
     attr = {
-      DAMAGE 28
-      DEFENSE 32 
+      DAMAGE 35
+      DEFENSE 35
     }
     maxLevelIncrease = {
       MELEE 10
