@@ -58,7 +58,7 @@
   initialTech = { "automatons" }
   baseNameGen = "TOWN"
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "throne" "beds"
+      "structure" "doors" "floors" "storage" "zones" "beds"
       "pigsty" "crafting" "laboratory" "distillery" "automatons" "orders" "installations" "traps" "gnome_traps"
   }
   workshopGroups = { "gnomes" "traps" "basic" }
