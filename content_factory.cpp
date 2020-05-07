@@ -204,6 +204,9 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
         hotkeys[int(info.hotkey)] = true;
       }
     }
+    for (auto elem : keeperInfo.endlessEnemyGroups)
+      if (!externalEnemies.count(elem))
+        return "Undefined endless enemy group: \"" + elem + "\"";
   }
   return none;
 }
@@ -352,6 +355,8 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
     return *error;
   if (auto error = config->readObject(gameIntros, GameConfigId::GAME_INTRO_TEXT, &keyVerifier))
     return *error;
+  if (auto res = config->readObject(externalEnemies, GameConfigId::EXTERNAL_ENEMIES, &keyVerifier))
+    return *res;
   if (auto error = readPlayerCreatures(config, &keyVerifier))
     return *error;
   if (auto error = readWorkshopInfo(config, &keyVerifier))
@@ -375,8 +380,6 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   for (auto& enemy : enemies)
     if (auto res = getReferenceMaybe(buildingInfo, enemy.second.settlement.buildingId))
       enemy.second.settlement.buildingInfo = *res;
-  if (auto res = config->readObject(externalEnemies, GameConfigId::EXTERNAL_ENEMIES, &keyVerifier))
-    return *res;
   if (auto res = readCreatureFactory(config, &keyVerifier))
     return *res;
   if (auto res = readFurnitureFactory(config, &keyVerifier))

@@ -39,7 +39,7 @@ class ContentFactory {
   vector<ResourceDistribution> SERIAL(resources);
   TilePaths SERIAL(tilePaths);
   map<EnemyId, EnemyInfo> SERIAL(enemies);
-  vector<ExternalEnemy> SERIAL(externalEnemies);
+  map<string, vector<ExternalEnemy>> SERIAL(externalEnemies);
   ItemFactory SERIAL(itemFactory);
   Technology SERIAL(technology);
   map<string, WorkshopArray> SERIAL(workshopGroups);

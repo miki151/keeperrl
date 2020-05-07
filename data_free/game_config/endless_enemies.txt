@@ -1,325 +1,328 @@
+"basic"
 {
   {
-    all = { 1 "BANDIT" }
-    count = { 1 }
-    baseLevelIncrease = { MELEE -2 }
-  }
-  KillLeader
-  "a curious bandit"
-  { 1000 10000 }
-  1
-}
-{
-  {
-    all = { 1 "LIZARDMAN" }
-    count = { 1 }
-    baseLevelIncrease = { MELEE 1 }
-  }
-  KillLeader
-  "a lizardman scout"
-  { 1000 10000 }
-  1
-}
-{
-  {
-    all = { 1 "ANT_WORKER" }
-    count = { 3 5 }
-    baseLevelIncrease = { MELEE -2 }
-  }
-  KillLeader
-  "an ant patrol"
-  { 1000 5000 }
-  2
-}
-{
-  {
-    all = { 1 "LIZARDMAN" }
-    count = { 4 8 }
-    baseLevelIncrease = { MELEE 2 }
-  }
-  KillLeader
-  "a nest of lizardmen"
-  { 6000 15000 }
-  5
-}
-{
-  {
-    all = { 1 "BANDIT" }
-    count = { 3 5 }
-    baseLevelIncrease = { MELEE 9 }
-  }
-  KillLeader
-  "a gang of bandits"
-  { 8000 20000 }
-  10
-}
-{
-  {
-    all = { 1 "ANT_SOLDIER" }
-    count = { 3 5 }
-  }
-  KillLeader
-  "an ant soldier patrol"
-  { 5000 10000 }
-  1
-}
-{
-  {
-    all = { 1 "CLAY_GOLEM" }
-    count = { 3 5 }
-    baseLevelIncrease = { MELEE 3 }
-  }
-  KillLeader
-  "an alchemist's clay golems"
-  { 3000 10000 }
-  1
-}
-{
-  {
-    all = { 1 "STONE_GOLEM" }
-    count = { 3 5 }
-    baseLevelIncrease = { MELEE 3 }
-  }
-  KillLeader
-  "an alchemist's stone golems"
-  { 5000 12000 }
-  2
-}
-{
-  {
-    all = { 1 "ANT_SOLDIER" }
-    count = { 5 8 }
-    baseLevelIncrease = { MELEE 5 }
-  }
-  KillLeader
-  "an ant soldier patrol"
-  { 6000 12000 }
-  2
-}
-{
-  {
-    all = { 1 "ANT_SOLDIER" }
-    uniques = { "ANT_QUEEN" }
-    count = { 10 15 }
-    baseLevelIncrease = { MELEE 6 }
-  }
-  KillLeader
-  "an army of ants"
-  { 10000 15000 }
-  3
-}
-{
-  {
-    all = { 1 "ENT" }
-    count = { 4 8 }
-    baseLevelIncrease = { MELEE 3 }
-  }
-  KillLeader
-  "a group of ents"
-  { 7000 12000 }
-  2
-}
-{
-  {
-    all = { 1 "DWARF" }
-    count = { 4 8 }
-  }
-  KillLeader
-  "a band of dwarves"
-  { 7000 15000 }
-  3
-}
-{
-  {
-    all = { 1 "IRON_GOLEM" }
-    count = { 3 5 }
-    baseLevelIncrease = { MELEE 2 }
-  }
-  KillLeader
-  "an alchemist's iron golems"
-  { 9000 15000 }
-  3
-}
-{
-  {
-    all = { 1 "DWARF" }
-    uniques = { "DWARF_BARON" }
-    count = { 10 13 }
-    baseLevelIncrease = { MELEE 12 }
-    inventory = { { Scroll Area 1 DestroyWalls DIG } }
-  }
-  KillLeader
-  "a dwarf tribe"
-  { 12000 25000 }
-  10
-}
-{
-  {
-    all = { 1 "ARCHER" }
-    count = { 4 8 }
-  }
-  KillLeader
-  "a patrol of archers"
-  { 6000 12000 }
-  3
-}
-{
-  {
-    all = { 1 "KNIGHT" }
-    count = { 1 }
-  }
-  KillLeader
-  "a lonely knight"
-  { 10000 16000 }
-  3
-}
-{
-  {
-    all = { 1 "WARRIOR" }
-    count = { 4 8 }
-    baseLevelIncrease = { MELEE 6 }
-  }
-  KillLeader
-  "a group of warriors"
-  { 6000 12000 }
-  3
-}
-{
-  {
-    all = { 1 "WARRIOR" }
-    uniques = { "SHAMAN" }
-    count = { 12 16 }
-    baseLevelIncrease = { MELEE 14 }
-    inventory = { { Scroll Area 1 DestroyWalls DIG } }
-  }
-  KillLeader
-  "an army of warriors"
-  { 18000 100000 }
-  100
-}
-{
-  {
-    all = {
-      4 "KNIGHT"
-      2 "ARCHER"
-      1 "PRIEST"
+    {
+      all = { 1 "BANDIT" }
+      count = { 1 }
+      baseLevelIncrease = { MELEE -2 }
     }
-    uniques = { "DUKE" }
-    count = { 12 16 }
-#     baseLevelIncrease = { MELEE, 4}
-    inventory = { { Scroll Area 1 DestroyWalls DIG } }
+    KillLeader
+    "a curious bandit"
+    { 1 10000 }
+    1
   }
-  KillLeader
-  "an army of knights"
-  { 20000 100000 }
-  100
-}
-{
   {
-    all = { 1 "CYCLOPS" }
-    count = { 1 }
-  }
-  KillLeader
-  "a cyclops"
-  { 6000 20000 }
-  4
-}
-{
-  {
-    all = { 1 "WITCHMAN" }
-    count = { 1 }
-    baseLevelIncrease = { MELEE 20 }
-  }
-  KillLeader
-  "a witchman"
-  { 15000 40000 }
-  5
-}
-{
-  {
-    all = { 1 "MINOTAUR" }
-    count = { 1 }
-    baseLevelIncrease = { MELEE 20 }
-  }
-  KillLeader
-  "a minotaur"
-  { 15000 100000 }
-  100
-}
-{
-  {
-    all = { 1 "ELEMENTALIST" }
-    count = { 1 }
-  }
-  CampAndSpawn {
-    all = {
-      1 "WATER_ELEMENTAL"
-      1 "FIRE_ELEMENTAL"
-      1 "EARTH_ELEMENTAL"
-      1 "AIR_ELEMENTAL"
+    {
+      all = { 1 "LIZARDMAN" }
+      count = { 1 }
+      baseLevelIncrease = { MELEE 1 }
     }
-    count = { 5 }
+    KillLeader
+    "a lizardman scout"
+    { 1 10000 }
+    1
   }
-  "an elementalist"
-  { 8000 14000 }
-  1
-}
-{
   {
-    all = { 1 "GREEN_DRAGON" }
-    count = { 1 }
-    baseLevelIncrease = { MELEE 10 }
-  }
-  KillLeader
-  "a green dragon"
-  { 15000 40000 }
-  100
-}
-{
-  {
-    all = { 1 "RED_DRAGON" }
-    count = { 1 }
-    baseLevelIncrease = { MELEE 18 }
-  }
-  KillLeader
-  "a red dragon"
-  { 19000 100000 }
-  100
-}
-{
-  {
-    all = { 1 "BLACK_DRAGON" }
-    count = { 1 }
-    baseLevelIncrease = { MELEE 28 }
-  }
-  KillLeader
-  "a black dragon"
-  { 30000 100000 }
-  100
-}
-{
-  {
-    all = {
-      1 "ADVENTURER"
-      1 "ADVENTURER_F"
+    {
+      all = { 1 "ANT_WORKER" }
+      count = { 3 5 }
+      baseLevelIncrease = { MELEE -2 }
     }
-    count = { 3 6 }
-    inventory = {{Scroll Area 1 DestroyWalls DIG}}
-    baseLevelIncrease = { MELEE 20 }
+    KillLeader
+    "an ant patrol"
+    { 1 5000 }
+    2
   }
-  KillLeader
-  "a group of adventurers"
-  { 10000 25000 }
-  100
-}
-{
   {
-    all = { 1 "OGRE" }
-    count = { 3 6 }
-    baseLevelIncrease = { MELEE 25 }
+    {
+      all = { 1 "LIZARDMAN" }
+      count = { 4 8 }
+      baseLevelIncrease = { MELEE 2 }
+    }
+    KillLeader
+    "a nest of lizardmen"
+    { 6000 15000 }
+    5
   }
-  KillLeader
-  "a pack of ogres"
-  { 15000 50000 }
-  100
+  {
+    {
+      all = { 1 "BANDIT" }
+      count = { 3 5 }
+      baseLevelIncrease = { MELEE 9 }
+    }
+    KillLeader
+    "a gang of bandits"
+    { 8000 20000 }
+    10
+  }
+  {
+    {
+      all = { 1 "ANT_SOLDIER" }
+      count = { 3 5 }
+    }
+    KillLeader
+    "an ant soldier patrol"
+    { 5000 10000 }
+    1
+  }
+  {
+    {
+      all = { 1 "CLAY_GOLEM" }
+      count = { 3 5 }
+      baseLevelIncrease = { MELEE 3 }
+    }
+    KillLeader
+    "an alchemist's clay golems"
+    { 3000 10000 }
+    1
+  }
+  {
+    {
+      all = { 1 "STONE_GOLEM" }
+      count = { 3 5 }
+      baseLevelIncrease = { MELEE 3 }
+    }
+    KillLeader
+    "an alchemist's stone golems"
+    { 5000 12000 }
+    2
+  }
+  {
+    {
+      all = { 1 "ANT_SOLDIER" }
+      count = { 5 8 }
+      baseLevelIncrease = { MELEE 5 }
+    }
+    KillLeader
+    "an ant soldier patrol"
+    { 6000 12000 }
+    2
+  }
+  {
+    {
+      all = { 1 "ANT_SOLDIER" }
+      uniques = { "ANT_QUEEN" }
+      count = { 10 15 }
+      baseLevelIncrease = { MELEE 6 }
+    }
+    KillLeader
+    "an army of ants"
+    { 10000 15000 }
+    3
+  }
+  {
+    {
+      all = { 1 "ENT" }
+      count = { 4 8 }
+      baseLevelIncrease = { MELEE 3 }
+    }
+    KillLeader
+    "a group of ents"
+    { 7000 12000 }
+    2
+  }
+  {
+    {
+      all = { 1 "DWARF" }
+      count = { 4 8 }
+    }
+    KillLeader
+    "a band of dwarves"
+    { 7000 15000 }
+    3
+  }
+  {
+    {
+      all = { 1 "IRON_GOLEM" }
+      count = { 3 5 }
+      baseLevelIncrease = { MELEE 2 }
+    }
+    KillLeader
+    "an alchemist's iron golems"
+    { 9000 15000 }
+    3
+  }
+  {
+    {
+      all = { 1 "DWARF" }
+      uniques = { "DWARF_BARON" }
+      count = { 10 13 }
+      baseLevelIncrease = { MELEE 12 }
+      inventory = { { Scroll Area 1 DestroyWalls DIG } }
+    }
+    KillLeader
+    "a dwarf tribe"
+    { 12000 25000 }
+    10
+  }
+  {
+    {
+      all = { 1 "ARCHER" }
+      count = { 4 8 }
+    }
+    KillLeader
+    "a patrol of archers"
+    { 6000 12000 }
+    3
+  }
+  {
+    {
+      all = { 1 "KNIGHT" }
+      count = { 1 }
+    }
+    KillLeader
+    "a lonely knight"
+    { 10000 16000 }
+    3
+  }
+  {
+    {
+      all = { 1 "WARRIOR" }
+      count = { 4 8 }
+      baseLevelIncrease = { MELEE 6 }
+    }
+    KillLeader
+    "a group of warriors"
+    { 6000 12000 }
+    3
+  }
+  {
+    {
+      all = { 1 "WARRIOR" }
+      uniques = { "SHAMAN" }
+      count = { 12 16 }
+      baseLevelIncrease = { MELEE 14 }
+      inventory = { { Scroll Area 1 DestroyWalls DIG } }
+    }
+    KillLeader
+    "an army of warriors"
+    { 18000 100000 }
+    100
+  }
+  {
+    {
+      all = {
+        4 "KNIGHT"
+        2 "ARCHER"
+        1 "PRIEST"
+      }
+      uniques = { "DUKE" }
+      count = { 12 16 }
+  #     baseLevelIncrease = { MELEE, 4}
+      inventory = { { Scroll Area 1 DestroyWalls DIG } }
+    }
+    KillLeader
+    "an army of knights"
+    { 20000 100000 }
+    100
+  }
+  {
+    {
+      all = { 1 "CYCLOPS" }
+      count = { 1 }
+    }
+    KillLeader
+    "a cyclops"
+    { 6000 20000 }
+    4
+  }
+  {
+    {
+      all = { 1 "WITCHMAN" }
+      count = { 1 }
+      baseLevelIncrease = { MELEE 20 }
+    }
+    KillLeader
+    "a witchman"
+    { 15000 40000 }
+    5
+  }
+  {
+    {
+      all = { 1 "MINOTAUR" }
+      count = { 1 }
+      baseLevelIncrease = { MELEE 20 }
+    }
+    KillLeader
+    "a minotaur"
+    { 15000 100000 }
+    100
+  }
+  {
+    {
+      all = { 1 "ELEMENTALIST" }
+      count = { 1 }
+    }
+    CampAndSpawn {
+      all = {
+        1 "WATER_ELEMENTAL"
+        1 "FIRE_ELEMENTAL"
+        1 "EARTH_ELEMENTAL"
+        1 "AIR_ELEMENTAL"
+      }
+      count = { 5 }
+    }
+    "an elementalist"
+    { 8000 14000 }
+    1
+  }
+  {
+    {
+      all = { 1 "GREEN_DRAGON" }
+      count = { 1 }
+      baseLevelIncrease = { MELEE 10 }
+    }
+    KillLeader
+    "a green dragon"
+    { 15000 40000 }
+    100
+  }
+  {
+    {
+      all = { 1 "RED_DRAGON" }
+      count = { 1 }
+      baseLevelIncrease = { MELEE 18 }
+    }
+    KillLeader
+    "a red dragon"
+    { 19000 100000 }
+    100
+  }
+  {
+    {
+      all = { 1 "BLACK_DRAGON" }
+      count = { 1 }
+      baseLevelIncrease = { MELEE 28 }
+    }
+    KillLeader
+    "a black dragon"
+    { 30000 100000 }
+    100
+  }
+  {
+    {
+      all = {
+        1 "ADVENTURER"
+        1 "ADVENTURER_F"
+      }
+      count = { 3 6 }
+      inventory = {{Scroll Area 1 DestroyWalls DIG}}
+      baseLevelIncrease = { MELEE 20 }
+    }
+    KillLeader
+    "a group of adventurers"
+    { 10000 25000 }
+    100
+  }
+  {
+    {
+      all = { 1 "OGRE" }
+      count = { 3 6 }
+      baseLevelIncrease = { MELEE 25 }
+    }
+    KillLeader
+    "a pack of ogres"
+    { 15000 50000 }
+    100
+  }
 }

@@ -26,6 +26,7 @@ struct KeeperCreatureInfo {
   string SERIAL(populationString) = "population";
   bool SERIAL(noLeader) = false;
   bool SERIAL(prisoners) = true;
+  vector<string> SERIAL(endlessEnemyGroups) = {"basic"};
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);
 };
