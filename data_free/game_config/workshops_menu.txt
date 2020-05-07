@@ -71,7 +71,7 @@
       {item = {Potion IncreaseAttr DEFENSE 5} work = 20 cost = "GOLD" 100 requireIngredient = "cyclops_brain" }
       {item = {Potion Lasting PLAGUE} work = 5 cost = "GOLD" 10 requireIngredient = "zombie_brain" }
       {item = {Potion Permanent POISON_RESISTANT} work = 20 cost = "GOLD" 80 requireIngredient = "hydra_tongue" }
-      {item = {Potion Name "calamity" Area 20 Lasting INSANITY}
+      {item = {Potion Name "mass insanity" Area 20 Lasting INSANITY}
           work = 50 cost = "GOLD" 666 requireIngredient = "devil_horns" }
       {{Simple "GoldPiece"}                           5        "IRON" 30      "alchemical conversion"       10}
       {{Simple "WoodPlank"}                           5        "GOLD" 10      "alchemical conversion"       10}
