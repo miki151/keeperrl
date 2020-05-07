@@ -283,10 +283,13 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
   Encyclopedia encyclopedia(game->getContentFactory());
   game->initialize(options, highscores, view, fileSharing, &encyclopedia);
-  doWithSplash("Initializing game...", 0,
-      [&] (ProgressMeter& meter) {
-        game->initializeModels();
-      });
+  if (splashScreen)
+    game->initializeModels();
+  else
+    doWithSplash("Initializing game...", 0,
+        [&] (ProgressMeter& meter) {
+          game->initializeModels();
+        });
   Intervalometer meter(stepTimeMilli);
   Intervalometer pausingMeter(stepTimeMilli);
   auto lastMusicUpdate = GlobalTime(-1000);

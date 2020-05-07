@@ -457,7 +457,8 @@ static int keeperMain(po::parser& commandLineFlags) {
       "KeeperRL",
       contribDataPath,
       freeDataPath.file("images/mouse_cursor.png"),
-      freeDataPath.file("images/mouse_cursor2.png"));
+      freeDataPath.file("images/mouse_cursor2.png"),
+      freeDataPath.file("images/succubi.png"));
   initializeGLExtensions();
 #ifndef RELEASE
   installOpenglDebugHandler();

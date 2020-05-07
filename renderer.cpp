@@ -449,7 +449,7 @@ void Renderer::setVsync(bool on) {
 }
 
 Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontPath,
-    const FilePath& cursorP, const FilePath& clickedCursorP)
+    const FilePath& cursorP, const FilePath& clickedCursorP, const FilePath& logoPath)
     : cursorPath(cursorP), clickedCursorPath(clickedCursorP), clock(clock) {
   CHECK(SDL::SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS) >= 0) << SDL::SDL_GetError();
   SDL::SDL_GL_SetAttribute(SDL::SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
@@ -458,11 +458,19 @@ Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontP
     SDL::SDL_WINDOW_RESIZABLE | SDL::SDL_WINDOW_SHOWN | SDL::SDL_WINDOW_MAXIMIZED | SDL::SDL_WINDOW_OPENGL)) << SDL::SDL_GetError();
   CHECK(SDL::SDL_GL_CreateContext(window)) << SDL::SDL_GetError();
   SDL_SetWindowMinimumSize(window, minResolution.x, minResolution.y);
+  SDL::SDL_Event ev;
+  while(SDL_PollEvent(&ev)){}
   SDL_GetWindowSize(window, &width, &height);
   setVsync(true);
   originalCursor = SDL::SDL_GetCursor();
   initOpenGL();
   loadFonts(fontPath, fonts);
+  logoTexture = Texture::loadMaybe(logoPath);
+  if (logoTexture) {
+    auto pos = (getSize() - logoTexture->getSize()) / 2;
+    drawImage(pos.x, pos.y, *logoTexture);
+  }
+  drawAndClearBuffer();
 }
 
 Vec2 getOffset(Vec2 sizeDiff, double scale) {

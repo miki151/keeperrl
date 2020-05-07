@@ -44,7 +44,7 @@ class Renderer {
   static constexpr int nominalSize = 24;
 
   Renderer(Clock*, const string& windowTile, const DirectoryPath& fontPath, const FilePath& cursorPath,
-      const FilePath& clickedCursorPath);
+      const FilePath& clickedCursorPath, const FilePath& logoPath);
   void setFullscreen(bool);
   void setFullscreenMode(int);
   void setVsync(bool);
@@ -128,6 +128,7 @@ class Renderer {
   private:
   friend class Texture;
   optional<Texture> textTexture;
+  optional<Texture> logoTexture;
   Renderer(const Renderer&);
   struct AnimationInfo {
     Texture tex;
