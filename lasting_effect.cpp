@@ -1440,49 +1440,51 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
   }
 }
 
-optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
+Color LastingEffects::getColor(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::OIL:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::BLACK);
+      return Color::BLACK;
     case LastingEffect::INVULNERABLE:
     case LastingEffect::LIFE_SAVED:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE);
+      return Color::WHITE;
     case LastingEffect::SPEED:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_BLUE);
+      return Color::LIGHT_BLUE;
     case LastingEffect::DAM_BONUS:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::YELLOW);
     case LastingEffect::DEF_BONUS:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::YELLOW);
+    case LastingEffect::DRUNK:
+      return Color::YELLOW;
     case LastingEffect::INVISIBLE:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::WHITE);
+      return Color::WHITE;
     case LastingEffect::PLAGUE:
     case LastingEffect::POISON:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::GREEN);
+      return Color::GREEN;
     case LastingEffect::POISON_RESISTANT:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::YELLOW);
+      return Color::YELLOW;
     case LastingEffect::ACID_RESISTANT:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::ORANGE);
+      return Color::ORANGE;
     case LastingEffect::INSANITY:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::PINK);
+      return Color::PINK;
     case LastingEffect::FIRE_RESISTANT:
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::SKY_BLUE);
+      return Color::SKY_BLUE;
     case LastingEffect::COLD_RESISTANT:
     case LastingEffect::REGENERATION:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::RED);
+      return Color::RED;
     case LastingEffect::MAGIC_CANCELLATION:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::BROWN);
+      return Color::BROWN;
     case LastingEffect::SPELL_DAMAGE:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::PURPLE);
+      return Color::PURPLE;
     case LastingEffect::FROZEN:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::BLUE);
-    case LastingEffect::DRUNK:
-      return FXInfo(FXName::CIRCULAR_SPELL, Color::YELLOW);
+      return Color::BLUE;
     default:
-      return none;
+      return Color::LIGHT_BLUE;
   }
+}
+
+optional<FXInfo> LastingEffects::getApplicationFX(LastingEffect effect) {
+  return FXInfo(FXName::CIRCULAR_SPELL, getColor(effect));
 }
 
 bool LastingEffects::canProlong(LastingEffect effect) {

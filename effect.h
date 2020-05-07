@@ -26,6 +26,7 @@ class CreatureGroup;
 
 class EffectType;
 class ContentFactory;
+struct Color;
 
 class Effect {
   public:
@@ -48,6 +49,7 @@ class Effect {
   bool canAutoAssignMinionEquipment() const;
   optional<FXInfo> getProjectileFX() const;
   optional<ViewId> getProjectile() const;
+  Color getColor(const ContentFactory*) const;
 
   EffectAIIntent shouldAIApply(const Creature* caster, Position) const;
 

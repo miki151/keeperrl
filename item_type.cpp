@@ -500,7 +500,7 @@ ItemAttributes CustomItemId::getAttributes(const ContentFactory* factory) const 
 
 ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
-      i.viewId = ViewId("potion1");
+      i.viewId = ViewId("potion1", effect.getColor(factory));
       i.shortName = effect.getName(factory);
       i.name = "potion of " + *i.shortName;
       i.plural = "potions of " + *i.shortName;

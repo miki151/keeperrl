@@ -312,6 +312,10 @@ static optional<ViewId> getProjectile(const Effects::Lasting& e) {
   return ::getProjectile(e.lastingEffect);
 }
 
+static Color getColor(const Effects::Lasting& e, const ContentFactory* f) {
+  return LastingEffects::getColor(e.lastingEffect);
+}
+
 static string getName(const Effects::Lasting& e, const ContentFactory*) {
   return LastingEffects::getName(e.lastingEffect);
 }
@@ -424,6 +428,10 @@ static string getDescription(const Effects::Permanent& e, const ContentFactory*)
   return desc.substr(0, desc.size() - 1) + " permanently.";
 }
 
+static Color getColor(const Effects::Permanent& e, const ContentFactory* f) {
+  return LastingEffects::getColor(e.lastingEffect);
+}
+
 static bool applyToCreature(const Effects::RemovePermanent& e, Creature* c, Creature*) {
   return c->removePermanentEffect(e.lastingEffect);
 }
@@ -456,6 +464,10 @@ static string getName(const Effects::Acid&, const ContentFactory*) {
 
 static string getDescription(const Effects::Acid&, const ContentFactory*) {
   return "Causes acid damage to skin and equipment.";
+}
+
+static Color getColor(const Effects::Acid&, const ContentFactory* f) {
+  return Color::YELLOW;
 }
 
 static bool apply(const Effects::Acid&, Position pos, Creature*) {
@@ -780,6 +792,13 @@ static string getDescription(const Effects::Heal& e, const ContentFactory*) {
   switch (e.healthType) {
     case HealthType::FLESH: return "Fully restores health.";
     case HealthType::SPIRIT: return "Fully re-materializes a spirit.";
+  }
+}
+
+static Color getColor(const Effects::Heal& e, const ContentFactory* f) {
+  switch (e.healthType) {
+    case HealthType::FLESH: return Color::RED;
+    case HealthType::SPIRIT: return Color::PURPLE;
   }
 }
 
@@ -1378,6 +1397,10 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Gener
   return e.effect->getMinionEquipmentType();
 }
 
+static Color getColor(const Effects::GenericModifierEffect& e, const ContentFactory* f) {
+  return e.effect->getColor(f);
+}
+
 static string getDescription(const Effects::Chance& e, const ContentFactory* f) {
   return e.effect->getDescription(f) + " (" + toString(int(e.value * 100)) + "% chance)";
 }
@@ -1839,7 +1862,7 @@ static bool isConsideredHostile(const T&, const Creature*) {
 }
 
 template <typename T, REQUIRE(applyToCreature(TVALUE(const T&), TVALUE(Creature*), TVALUE(Creature*)))>
-bool apply(const T& t, Position pos, Creature* attacker) {
+static bool apply(const T& t, Position pos, Creature* attacker) {
   if (auto c = pos.getCreature())
     return applyToCreature(t, c, attacker);
   return false;
@@ -1946,12 +1969,24 @@ optional<MinionEquipmentType> Effect::getMinionEquipmentType() const {
   return effect->visit<optional<MinionEquipmentType>>([](const auto& elem) { return ::getMinionEquipmentType(elem); } );
 }
 
-
-
 static bool canAutoAssignMinionEquipment(const DefaultType&) { return true; }
 
 bool Effect::canAutoAssignMinionEquipment() const {
   return effect->visit<bool>([](const auto& elem) { return ::canAutoAssignMinionEquipment(elem); });
+}
+
+template <typename T, REQUIRE(getColor(TVALUE(const T&), TVALUE(const ContentFactory*)))>
+static Color getColor(const T& t, const Effect& effect, const ContentFactory* f) {
+  return getColor(t, f);
+}
+
+static Color getColor(const DefaultType& e, const Effect& effect, const ContentFactory* f) {
+  int h = int(combineHash(effect.getName(f)));
+  return Color(h % 256, ((h / 256) % 256), ((h / 256 / 256) % 256));
+}
+
+Color Effect::getColor(const ContentFactory* f) const {
+  return effect->visit<Color>([f, this](const auto& elem) { return ::getColor(elem, *this, f); });
 }
 
 SERIALIZE_DEF(Effect, effect)

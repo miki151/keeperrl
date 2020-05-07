@@ -98,6 +98,8 @@ RICH_ENUM(CreatureCondition,
     RESTRICTED_MOVEMENT
 );
 
+struct Color;
+
 class LastingEffects {
   public:
   static void onAffected(Creature*, LastingEffect, bool msg);
@@ -131,4 +133,5 @@ class LastingEffects {
   static TimeInterval getDuration(const Creature* c, LastingEffect);
   static void runTests();
   static const char* getHatedGroupName(LastingEffect);
+  static Color getColor(LastingEffect);
 };
