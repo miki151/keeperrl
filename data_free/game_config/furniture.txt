@@ -602,7 +602,6 @@
 "PAINTING_S" inherit "PAINTING_N"
 {
   viewId = { "canvas_s" }
-  viewLayer = TORCH2
   attachmentDir = S
   requiredSupport = { { { S } } }
 }
