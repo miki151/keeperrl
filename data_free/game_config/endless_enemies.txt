@@ -144,10 +144,9 @@
   }
   {
     {
-      all = { 1 "DWARF" }
+      all = { 1 "DWARF_FIGHTER" }
       uniques = { "DWARF_BARON" }
       count = { 10 13 }
-      baseLevelIncrease = { MELEE 12 }
       inventory = { { Scroll Area 1 DestroyWalls DIG } }
     }
     KillLeader
