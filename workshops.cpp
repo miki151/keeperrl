@@ -75,11 +75,12 @@ vector<PItem> Workshops::Type::unqueue(Collective* collective, int index) {
 static const double prodMult = 0.1;
 
 double Workshops::getLegendarySkillThreshold() {
-  return 0.89;
+  return 0.90;
 }
 
 static bool allowUpgrades(const WorkshopQueuedItem& item, double skillAmount, double morale) {
-  return item.runes.empty() || item.item.notArtifact || (skillAmount >= Workshops::getLegendarySkillThreshold() && morale >= 0);
+  return item.runes.empty() || item.item.notArtifact ||
+      (skillAmount >= Workshops::getLegendarySkillThreshold() - 0.01 && morale >= 0);
 }
 
 bool Workshops::Type::isIdle(const Collective* collective, double skillAmount, double morale) const {

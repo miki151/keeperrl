@@ -926,7 +926,7 @@
   levelConnection = {
     topLevel = MainEnemy
     levels = {
-      { ExtraEnemy { "ADOXIE_VAULT_UNDER" {1} } 20 20 DUNGEON }
+      { ExtraEnemy { "ADOXIE_VAULT_UNDER" {1} } 20 20 DUNGEON "Adoxie's Vault" }
     }
   }
 }
