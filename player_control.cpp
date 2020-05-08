@@ -1174,7 +1174,8 @@ vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() c
   for (int i : All(queued)) {
     if (i > 0 && queued[i - 1].indexInWorkshop == queued[i].indexInWorkshop && queued[i - 1].paid == queued[i].paid &&
         queued[i].runes.empty() && queued[i - 1].runes.empty() && queued[i].state == 0 && queued[i - 1].state == 0)
-      ret.back() = getQueuedItemInfo(queued[i], ret.back().itemInfo.number + 1, ret.back().itemIndex, hasLegendarySkill);
+      ret.back() = getQueuedItemInfo(queued[i],
+          ret.back().itemInfo.number / queued[i].item.batchSize + 1, ret.back().itemIndex, hasLegendarySkill);
     else
       ret.push_back(getQueuedItemInfo(queued[i], 1, i, hasLegendarySkill));
   }
