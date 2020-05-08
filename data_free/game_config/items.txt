@@ -1447,6 +1447,7 @@
           PlaceFurniture "PORTAL_STAIRS"
         }
       }
+      Area 2 Filter FurnitureType "ADOXIE_STATUE_TEMPLE" Message "The statue blinks!"
       Message "Nothing happens."
     }
   }

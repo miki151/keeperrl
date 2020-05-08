@@ -126,6 +126,11 @@
     water = {LAVA}
     bridge = "STONE_BRIDGE"
   }
+"ADOXIE_VAULT" inherit "DUNGEON"
+  {
+    downStairs = {"ADOXIE_STATUE_TEMPLE"}
+    water = {WATER}
+  }
 "HELL"
   {
     wall = "MOUNTAIN_SKULLS"

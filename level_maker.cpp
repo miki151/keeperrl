@@ -2294,8 +2294,8 @@ static Vec2 getSize(const MapLayouts* layouts, RandomGen& random, LayoutType typ
           case BuiltinLayoutId::ISLAND_VAULT: return {6, 6};
         }
       },
-      [&](MapLayoutId id) {
-        return layouts->getSize(id);
+      [&](SettlementDetail::MapLayout info) {
+        return layouts->getSize(info.id);
       }
     );
 }
@@ -2331,8 +2331,13 @@ RandomLocations::LocationPredicate getSettlementPredicate(const SettlementInfo& 
             return Predicate::canEnter({MovementTrait::WALK});
         }
       },
-      [&](MapLayoutId id) -> RandomLocations::LocationPredicate {
-        return Predicate::canEnter({MovementTrait::WALK});
+      [&](SettlementDetail::MapLayout info) -> RandomLocations::LocationPredicate {
+        switch (info.predicate) {
+          case MapLayoutPredicate::MOUNTAIN:
+            return Predicate::attrib(SquareAttrib::MOUNTAIN);
+          case MapLayoutPredicate::OUTDOOR:
+            return Predicate::canEnter({MovementTrait::WALK});
+        }
       });
 }
 
@@ -2619,10 +2624,9 @@ namespace {
                 builder->resetFurniture(targetV, {*buildingInfo.floorOutside, tribe}, SquareAttrib::FLOOR_OUTSIDE);
               break;
             case LayoutPiece::PRETTY_FLOOR:
-              if (buildingInfo.prettyFloor) {
-                builder->resetFurniture(targetV, {*buildingInfo.floorInside, tribe}, SquareAttrib::EMPTY_ROOM);
+              builder->resetFurniture(targetV, {*buildingInfo.floorInside, tribe}, SquareAttrib::EMPTY_ROOM);
+              if (buildingInfo.prettyFloor)
                 builder->putFurniture(targetV, *buildingInfo.prettyFloor, tribe);
-              }
               break;
             case LayoutPiece::BRIDGE:
               builder->resetFurniture(targetV, {waterType, tribe});
@@ -2677,8 +2681,8 @@ static PMakerQueue makeMapLayout(const MapLayouts::Layout& layout, const Settlem
 
 static PMakerQueue getSettlementMaker(const MapLayouts* layouts, RandomGen& random, const SettlementInfo& settlement) {
   return settlement.type.visit(
-      [&] (MapLayoutId id) {
-        return makeMapLayout(layouts->getRandomLayout(id, random), settlement);
+      [&] (SettlementDetail::MapLayout info) {
+        return makeMapLayout(layouts->getRandomLayout(info.id, random), settlement);
       },
       [&] (BuiltinLayoutId id) {
         switch (id) {

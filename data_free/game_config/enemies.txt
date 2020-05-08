@@ -458,7 +458,7 @@
 "TEUTONS"
 {
   settlement = {
-    type = MapLayoutId "castle1"
+    type = MapLayout { "castle1" }
     tribe = HUMAN
     inhabitants = {
       leader = { { "TEUTON_BOSS" } }
@@ -807,7 +807,7 @@
 "MAIN_DUNGEON"
 {
   settlement = {
-    type = MapLayoutId "adoxie_temple"
+    type = MapLayout { "adoxie_temple" }
     tribe = MONSTER
     inhabitants = {
       leader = { { "ADOXIE_PRIEST" } }
@@ -849,6 +849,9 @@
     tribe = BANDIT
     buildingId = "DUNGEON"
   }
+  config = {
+    conquerCondition = NEVER
+  }
 }
 "HELL"
 {
@@ -873,7 +876,7 @@
 {
   discoverable = false
   settlement = {
-    type = MapLayoutId "satan"
+    type = MapLayout { "satan" }
     tribe = MONSTER
     inhabitants = {
       leader = { { "SATAN" } }
@@ -897,13 +900,50 @@
 "DEATH"
 {
   settlement = {
-    type = MapLayoutId "death"
+    type = MapLayout { "death" }
     tribe = MONSTER
     buildingId = "BLACK"
     inhabitants = {
       fighters = {
         count = {1}
         all = { 1 "DEATH" }
+      }
+    }
+  }
+}
+"ADOXIE_VAULT"
+{
+  settlement = {
+    type = MapLayout { "adoxie_vault" MOUNTAIN }
+    buildingId = "ADOXIE_VAULT"
+    closeToPlayer = true
+    dontConnectCave = true
+    tribe = MONSTER
+  }
+  config = {
+    conquerCondition = NEVER
+  }
+  levelConnection = {
+    topLevel = MainEnemy
+    levels = {
+      { ExtraEnemy { "ADOXIE_VAULT_UNDER" {1} } 20 20 DUNGEON }
+    }
+  }
+}
+"ADOXIE_VAULT_UNDER"
+{
+  discoverable = false
+  settlement = {
+    type = Builtin MINETOWN
+    tribe = MONSTER
+    buildingId = "HELL"
+    furniture = { "hellFurniture" }
+    inhabitants = {
+      fighters = {
+        count = {1}
+        all = {
+          10 "DEVIL_VAULT"
+        }
       }
     }
   }
@@ -2117,7 +2157,7 @@
 "WIZARD_TOWER"
 {
   settlement = {
-    type = MapLayoutId "wizard_tower"
+    type = MapLayout { "wizard_tower" }
     inhabitants = {
       leader = { { "WHITE_WIZARD" } }
       civilians = {

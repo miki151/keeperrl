@@ -240,7 +240,7 @@ static optional<BiomeId> getBiome(const EnemyInfo& enemy, RandomGen& random) {
           default: return none;
         }
       },
-      [&](MapLayoutId id) -> optional<BiomeId> {
+      [&](SettlementDetail::MapLayout info) -> optional<BiomeId> {
         return BiomeId("GRASSLAND");
       }
     );

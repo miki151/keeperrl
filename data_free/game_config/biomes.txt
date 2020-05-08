@@ -68,6 +68,7 @@
     { id = "DWARF_CAVE" }
     { id = "BANDITS" }
     { id = "ANTS_CLOSED_SMALL" }
+    { id = "ADOXIE_VAULT" }
     { id = "KRAKEN" probability = 0.3 }
   }
   whiteKeeperBaseEnemies = {
@@ -75,6 +76,7 @@
     { id = "ORC_CAVE" }
     { id = "COTTAGE_BANDITS" }
     { id = "ANTS_CLOSED_SMALL" }
+    { id = "ADOXIE_VAULT" }
     { id = "KRAKEN" probability = 0.3 }
   }
   keeperBiome = { "grass" } "grassland" 2
@@ -120,12 +122,14 @@
     { id = "TUTORIAL_VILLAGE" }
     { id = "ELVEN_COTTAGE" count = {2 3} }
     { id = "COTTAGE_BANDITS" }
+    { id = "ADOXIE_VAULT" }
     { id = "WITCH" probability = 0.2 }
   }
   whiteKeeperBaseEnemies = {
     { id = "DARK_ELF_CAVE" }
     { id = "COTTAGE_ORCS" count = { 2 3}}
     { id = "ANTS_CLOSED_SMALL" }
+    { id = "ADOXIE_VAULT" }
     { id = "WITCH" probability = 0.2 }
   }
   keeperBiome = { "decid_tree" } "forest" 1
@@ -224,11 +228,13 @@
   darkKeeperBaseEnemies = {
     { id = "ESKIMO_VILLAGE" }
     { id = "BANDITS" }
+    { id = "ADOXIE_VAULT" }
     { id = "YETI" }
   }
   whiteKeeperBaseEnemies = {
     { id = "DARK_ELF_CAVE" }
     { id = "BANDITS" }
+    { id = "ADOXIE_VAULT" }
     { id = "YETI" }
   }
   keeperBiome = { "snowman" } "winter" 3
@@ -277,10 +283,12 @@
   }
   darkKeeperBaseEnemies = {
     { id = "NOMAD_VILLAGE" }
+    { id = "ADOXIE_VAULT" }
     { id = "BANDITS" }
   }
   whiteKeeperBaseEnemies = {
     { id = "LIZARDMEN_SMALL" }
+    { id = "ADOXIE_VAULT" }
     { id = "BANDITS" }
   }
   keeperBiome = { "cactus1" } "desert" 4

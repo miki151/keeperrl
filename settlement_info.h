@@ -45,12 +45,23 @@ RICH_ENUM(
   MOUNTAIN_LAKE
 );
 
+RICH_ENUM(
+  MapLayoutPredicate,
+  OUTDOOR,
+  MOUNTAIN
+);
 
 namespace SettlementDetail {
 
 using Builtin = BuiltinLayoutId;
 
-MAKE_VARIANT2(LayoutType, MapLayoutId, Builtin);
+struct MapLayout {
+  MapLayoutId SERIAL(id);
+  MapLayoutPredicate SERIAL(predicate) = MapLayoutPredicate::OUTDOOR;
+  SERIALIZE_ALL(NAMED(id), OPTION(predicate))
+};
+
+MAKE_VARIANT2(LayoutType, MapLayout, Builtin);
 }
 
 using SettlementDetail::LayoutType;

@@ -195,6 +195,8 @@ bool CollectiveConfig::isConquered(const Collective* collective) const {
           if (f->isWall())
             return false;
       return true;
+    case ConquerCondition::NEVER:
+      return false;
   }
 }
 

@@ -410,6 +410,16 @@
       name = "devil"
     }
   }
+"DEVIL_VAULT" inherit "DEVIL"
+  {
+    attr = {
+      DEFENSE 35
+      SPELL_DAMAGE 35
+    }
+    inventory = {
+      { Potion Name "amok" Area 20 Chain { IncreaseAttr DEFENSE -20 IncreaseAttr DAMAGE 20 }}
+    }
+  }
 "SATAN" inherit "DEVIL"
   {
     viewId = { "satan" }

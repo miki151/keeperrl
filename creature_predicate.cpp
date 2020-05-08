@@ -7,6 +7,7 @@
 #include "body.h"
 #include "game.h"
 
+
 namespace Impl {
 static bool applyToCreature(const CreaturePredicates::Enemy&, const Creature* victim, const Creature* attacker) {
   return !!attacker && victim->isEnemy(attacker);
@@ -113,6 +114,14 @@ static bool apply(const CreaturePredicates::Flag& s, Position pos, const Creatur
 
 static string getName(const CreaturePredicates::Flag& s) {
   return s.name;
+}
+
+static bool apply(FurnitureType type, Position pos, const Creature* attacker) {
+  return !!pos.getFurniture(type);
+}
+
+static string getName(FurnitureType) {
+  return "furniture";
 }
 
 static bool applyToCreature(BodyMaterial m, const Creature* victim, const Creature* attacker) {

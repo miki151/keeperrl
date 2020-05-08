@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "lasting_effect.h"
+#include "furniture_type.h"
 
 #define SIMPLE_PREDICATE(Name) \
   struct Name { \
@@ -72,9 +73,10 @@ struct Or {
   X(Night, 10)\
   X(Indoors, 11)\
   X(Attacker, 12)\
-  X(Not, 13)\
-  X(And, 14)\
-  X(Or, 15)
+  X(FurnitureType, 13)\
+  X(Not, 14)\
+  X(And, 15)\
+  X(Or, 16)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST
