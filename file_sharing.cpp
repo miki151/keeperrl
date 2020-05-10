@@ -700,11 +700,13 @@ optional<string> FileSharing::uploadMod(ModInfo& modInfo, const DirectoryPath& m
 #endif
 }
 
+#ifdef USE_STEAMWORKS
 static string serializeInfo(const string& fileName, const OldSavedGameInfo& savedInfo) {
   TextOutput output;
   output.getArchive() << fileName << savedInfo;
   return output.getStream().str();
 }
+#endif
 
 optional<string> FileSharing::uploadSiteToSteam(const FilePath& path, const string& title, const OldSavedGameInfo& savedInfo,
     ProgressMeter& meter, optional<string>& url) {
