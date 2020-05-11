@@ -1156,7 +1156,9 @@ void Collective::handleTrapPlacementAndProduction() {
       if (!items.empty()) {
         Position pos = items.back().pos;
         auto item = items.back().item;
-        auto task = taskMap->addTask(Task::chain(Task::pickUpItem(pos, {item}), Task::applyItem(this, trapPos, item)), pos,
+        auto task = taskMap->addTask(Task::chain(
+                Task::pickUpItem(pos, {item}),
+                Task::applyItem(this, trapPos, item)), pos,
             MinionActivity::CONSTRUCTION);
         markItem(items.back().item, task);
         items.pop_back();

@@ -362,12 +362,17 @@ class ApplyItem : public Task {
   }
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (auto item = c->getEquipment().getItemById(itemId))
+    if (auto item = c->getEquipment().getItemById(itemId)) {
       if (auto action = c->applyItem(item))
         return action.prepend([=](Creature* c) {
           callback->onAppliedItem(c->getPosition(), item);
           setDone();
         });
+      else
+        return c->drop({item}).prepend([=](Creature*) {
+           setDone();
+        });
+    }
     return c->wait().prepend([=](Creature*) {
        setDone();
     });

@@ -1935,7 +1935,7 @@ Item* Creature::getFirstWeapon() const {
 
 CreatureAction Creature::applyItem(Item* item) const {
   if (!contains({ItemClass::TOOL, ItemClass::POTION, ItemClass::FOOD, ItemClass::BOOK, ItemClass::SCROLL},
-      item->getClass()) || !getBody().isHumanoid())
+       item->getClass()) || !getBody().canPickUpItems())
     return CreatureAction("You can't apply this item");
   if (getBody().numGood(BodyPart::ARM) == 0)
     return CreatureAction("You have no healthy arms!");

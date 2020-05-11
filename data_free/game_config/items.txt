@@ -103,6 +103,7 @@
       Chain {
         IncreaseSkill DIGGING 0.2
         AddMinionTrait WORKER
+        AddBodyPart ARM 2 none
       }
       "drill"
     }
@@ -260,6 +261,7 @@
       Chain {
         IncreaseSkill DIGGING 0.3
         AddMinionTrait WORKER
+        AddBodyPart ARM 2 none
       }
       "drill"
     }
@@ -453,6 +455,7 @@
       Chain {
         IncreaseSkill DIGGING 0.5
         AddMinionTrait WORKER
+        AddBodyPart ARM 2 none
       }
       "drill"
     }
