@@ -456,3 +456,4 @@ optional<WorkshopType> ContentFactory::getWorkshopType(FurnitureType type) const
 ContentFactory::ContentFactory() {}
 ContentFactory::~ContentFactory() {}
 ContentFactory::ContentFactory(ContentFactory&&) noexcept = default;
+ContentFactory& ContentFactory::operator = (ContentFactory&&) = default;

@@ -276,7 +276,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
       registerModPlaytime(false);
   });
   if (tileSet)
-    tileSet->setTilePaths(game->getContentFactory()->tilePaths);
+    tileSet->setTilePathsAndReload(game->getContentFactory()->tilePaths);
   view->reset();
   if (!noAutoSave)
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
@@ -442,9 +442,14 @@ TilePaths MainLoop::getTilePathsForAllMods() const {
 
 PGame MainLoop::prepareCampaign(RandomGen& random) {
   while (1) {
-    auto contentFactory = createContentFactory(false);
-    if (tileSet)
-      tileSet->setTilePaths(contentFactory.tilePaths);
+    ContentFactory contentFactory;
+    tileSet->clear();
+    doWithSplash("Loading gameplay data", [&] {
+      contentFactory = createContentFactory(false);
+      if (tileSet)
+        tileSet->setTilePaths(contentFactory.tilePaths);
+    });
+    tileSet->loadTextures();
     if (options->getIntValue(OptionId::SUGGEST_TUTORIAL) == 1) {
       auto tutorialIndex = view->chooseFromList("", {ListElem("Would you like to start with the tutorial?", ListElem::TITLE),
           ListElem("Yes"), ListElem("No"), ListElem("No, and don't ask me again")}, 0, MenuType::YES_NO);
@@ -461,7 +466,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
         &contentFactory);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, contentFactory.villains, contentFactory.gameIntros, *avatar);
-      tileSet->setTilePaths(getTilePathsForAllMods());
+      tileSet->setTilePathsAndReload(getTilePathsForAllMods());
       if (auto setup = builder.prepareCampaign(&contentFactory, bindMethod(&MainLoop::getRetiredGames, this),
           CampaignType::FREE_PLAY,
           contentFactory.getCreatures().getNameGenerator()->getNext(NameGeneratorId("WORLD")))) {
@@ -502,7 +507,7 @@ void MainLoop::splashScreen() {
   auto gameConfig = getVanillaConfig();
   auto contentFactory = createContentFactory(true);
   if (tileSet)
-    tileSet->setTilePaths(contentFactory.tilePaths);
+    tileSet->setTilePathsAndReload(contentFactory.tilePaths);
   EnemyFactory enemyFactory(Random, contentFactory.getCreatures().getNameGenerator(), contentFactory.enemies,
       contentFactory.buildingInfo, {});
   auto model = ModelBuilder(&meter, Random, options, sokobanInput, &contentFactory, std::move(enemyFactory))

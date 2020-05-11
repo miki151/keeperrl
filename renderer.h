@@ -116,8 +116,6 @@ class Renderer {
   void startMonkey();
   bool isMonkey();
 
-  void printSystemInfo(ostream&);
-
   static void putPixel(SDL::SDL_Surface*, Vec2, Color);
   void addTilesDirectory(const DirectoryPath&, Vec2 size);
   void setAnimationsDirectory(const DirectoryPath&);

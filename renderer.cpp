@@ -419,9 +419,6 @@ vector<string> Renderer::getFullscreenResolutions() {
   return {};
 }
 
-void Renderer::printSystemInfo(ostream& out) {
-}
-
 void Renderer::loadFonts(const DirectoryPath& fontPath, FontSet& fonts) {
   CHECK(fontStash = sth_create(512, 512)) << "Error initializing fonts";
   auto textFont = fontPath.file("Lato-Bol.ttf");
@@ -465,12 +462,6 @@ Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontP
   originalCursor = SDL::SDL_GetCursor();
   initOpenGL();
   loadFonts(fontPath, fonts);
-  logoTexture = Texture::loadMaybe(logoPath);
-  if (logoTexture) {
-    auto pos = (getSize() - logoTexture->getSize()) / 2;
-    drawImage(pos.x, pos.y, *logoTexture);
-  }
-  drawAndClearBuffer();
 }
 
 Vec2 getOffset(Vec2 sizeDiff, double scale) {

@@ -219,14 +219,23 @@ Tile TileSet::symbol(const string& s, Color id, bool symbol) {
 TileSet::TileSet(const DirectoryPath& defaultDir, const DirectoryPath& modsDir) : defaultDir(defaultDir), modsDir(modsDir) {
 }
 
+void TileSet::clear() {
+  textures.clear();
+}
+
 void TileSet::setTilePaths(const TilePaths& p) {
   tilePaths = p;
   reload();
 }
 
+void TileSet::setTilePathsAndReload(const TilePaths &)& p) {
+  clear();
+  setTilePaths(p);
+  loadTextures();
+}
+
 void TileSet::reload() {
   tiles.clear();
-  textures.clear();
   symbols.clear();
   tileCoords.clear();
   spriteMods.clear();
@@ -238,7 +247,6 @@ void TileSet::reload() {
     return hadTiles;
   };
   reloadDir(defaultDir, true);
-  bool useTiles = !tileCoords.empty();
   for (auto& mod : tilePaths->mainMods)
     if (reloadDir(modsDir.subdirectory(mod), true))
       spriteMods.push_back(mod);
@@ -246,9 +254,6 @@ void TileSet::reload() {
     if (reloadDir(modsDir.subdirectory(subdir), false) && !spriteMods.contains(subdir))
       spriteMods.push_back(subdir);
   loadUnicode();
-  if (useTiles)
-    loadTiles();
-  loadModdedTiles(tilePaths->definitions, useTiles);
 }
 
 const Tile& TileSet::getTile(ViewId viewId, bool sprite) const {
@@ -310,9 +315,26 @@ bool TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwr
     }
     SDL::SDL_FreeSurface(im);
   }
-  textures.push_back(unique<Texture>(image));
+  texturesTmp.push_back({image, addedPositions});
   for (auto& pos : addedPositions)
-    tileCoords[pos.first].push_back({size, pos.second, textures.back().get()});
-  SDL::SDL_FreeSurface(image);
+    tileCoords[pos.first].push_back({size, pos.second, nullptr});
   return true;
+}
+
+void TileSet::loadTextures() {
+  for (auto& elem : texturesTmp) {
+    textures.push_back(unique<Texture>(elem.image));
+    SDL::SDL_FreeSurface(elem.image);
+    for (auto& pos : elem.addedPositions)
+      for (auto& coord : tileCoords[pos.first])
+        coord.texture = textures.back().get();
+  }
+  for (auto& elem : tileCoords)
+    for (auto& coord : elem.second)
+      CHECK(!!coord.texture);
+  texturesTmp.clear();
+  bool useTiles = !tileCoords.empty();
+  if (useTiles)
+    loadTiles();
+  loadModdedTiles(tilePaths->definitions, useTiles);
 }

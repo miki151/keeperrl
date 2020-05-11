@@ -20,8 +20,11 @@ class TileSet {
   public:
   TileSet(const DirectoryPath& defaultDir, const DirectoryPath& modsDir);
   void setTilePaths(const TilePaths&);
+  void setTilePathsAndReload(const TilePaths&);
   const TilePaths& getTilePaths() const;
   void reload();
+  void clear();
+  void loadTextures();
   const Tile& getTile(ViewId id, bool sprite = true) const;
   Color getColor(const ViewObject&) const;
   const vector<TileCoord>& getTileCoord(const string&) const;
@@ -37,6 +40,11 @@ class TileSet {
   unordered_map<ViewId::InternalId, Tile> tiles;
   unordered_map<ViewId::InternalId, Tile> symbols;
   vector<unique_ptr<Texture>> textures;
+  struct TmpInfo {
+    SDL::SDL_Surface* image;
+    vector<pair<string, Vec2>> addedPositions;
+  };
+  vector<TmpInfo> texturesTmp;
   map<string, vector<TileCoord>> tileCoords;
   vector<string> spriteMods;
   bool loadTilesFromDir(const DirectoryPath&, Vec2 size, bool overwrite);

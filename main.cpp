@@ -306,6 +306,18 @@ struct AppConfig {
   map<string, string> values;
 };
 
+static void showLogoSplash(Renderer& renderer, FilePath logoPath, atomic<bool>& splashDone) {
+  auto logoTexture = Texture::loadMaybe(logoPath);
+  while (!splashDone) {
+    renderer.drawAndClearBuffer();
+    sleep_for(milliseconds(30));
+    if (logoTexture) {
+      auto pos = (renderer.getSize() - logoTexture->getSize()) / 2;
+      renderer.drawImage(pos.x, pos.y, *logoTexture);
+    }
+  }
+}
+
 static int keeperMain(po::parser& commandLineFlags) {
   ENABLE_PROFILER;
   if (commandLineFlags["help"].was_set()) {
@@ -385,20 +397,14 @@ static int keeperMain(po::parser& commandLineFlags) {
   AudioDevice audioDevice;
   optional<string> audioError = audioDevice.initialize();
   KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
-  Jukebox jukebox(
-      audioDevice,
-      getMusicTracks(paidDataPath.subdirectory("music"), tilesPresent && !audioError),
-      getMaxVolume());
-  options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
-  jukebox.setCurrentVolume(options.getIntValue(OptionId::MUSIC));
   auto modsDir = userPath.subdirectory(gameConfigSubdir);
   if (commandLineFlags["simple_game"].was_set()) {
-    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, &jukebox, nullptr, nullptr,
+    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr,
         useSingleThread, 0, "");
     loop.playSimpleGame();
   }
   if (commandLineFlags["verify_mod"].was_set()) {
-    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, &jukebox, nullptr, nullptr,
+    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr,
         useSingleThread, 0, "");
     if (auto err = loop.verifyMod(commandLineFlags["verify_mod"].get().string)) {
       std::cout << *err << std::endl;
@@ -418,7 +424,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   FileSharing fileSharing(uploadUrl, modVersion, saveVersion, options, installId);
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   if (commandLineFlags["worldgen_test"].was_set()) {
-    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, &jukebox, &sokobanInput, nullptr,
+    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, nullptr,
         useSingleThread, 0, "");
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
@@ -427,7 +433,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     return 0;
   }
   auto battleTest = [&] (View* view, TileSet* tileSet) {
-    MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, &jukebox, &sokobanInput, tileSet,
+    MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, tileSet,
         useSingleThread, 0, "");
     auto level = commandLineFlags["battle_level"].get().string;
     auto info = commandLineFlags["battle_info"].get().string;
@@ -452,6 +458,19 @@ static int keeperMain(po::parser& commandLineFlags) {
     battleTest(new DummyView(&clock), nullptr);
     return 0;
   }
+#ifdef USE_STEAMWORKS
+  optional<steam::Client> steamClient;
+  if (appConfig.get<int>("steamworks") > 0) {
+    if (steam::initAPI()) {
+      steamClient.emplace();
+      INFO << "\n" << steamClient->info();
+    }
+#ifdef RELEASE
+    else
+      USER_INFO << "Unable to connect with the Steam client.";
+#endif
+  }
+#endif
   Renderer renderer(
       &clock,
       "KeeperRL",
@@ -466,47 +485,17 @@ static int keeperMain(po::parser& commandLineFlags) {
   FatalLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserErrorLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
-#ifdef USE_STEAMWORKS
-  optional<steam::Client> steamClient;
-  if (appConfig.get<int>("steamworks") > 0) {
-    if (steam::initAPI()) {
-      steamClient.emplace();
-      INFO << "\n" << steamClient->info();
-    }
-#ifdef RELEASE
-    else
-      USER_INFO << "Unable to connect with the Steam client.";
-#endif
-  }
-#endif
+  atomic<bool> splashDone { false };
   GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap, freeDataPath.subdirectory("images"),
       tilesPresent ? optional<DirectoryPath>(paidDataPath.subdirectory("images")) : none);
-  guiFactory.loadImages();
-  if (tilesPresent) {
-    if (!audioError) {
-      soundLibrary = new SoundLibrary(audioDevice, paidDataPath.subdirectory("sound"));
-      options.addTrigger(OptionId::SOUND, [soundLibrary](int volume) {
-        soundLibrary->setVolume(volume);
-        soundLibrary->playSound(SoundId::SPELL_DECEPTION);
-      });
-      soundLibrary->setVolume(options.getIntValue(OptionId::SOUND));
-    }
-  }
-  if (tilesPresent)
-    initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
   TileSet tileSet(paidDataPath.subdirectory("images"), modsDir);
   renderer.setTileSet(&tileSet);
-  FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", modVersion, saveVersion, options, installId);
-  bugreportSharing.downloadPersonalMessage();
-  unique_ptr<View> view;
-  view.reset(WindowView::createDefaultView(
-      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary, &bugreportSharing, userPath, installId}));
-#ifndef RELEASE
-  InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
-#endif
   unique_ptr<fx::FXManager> fxManager;
   unique_ptr<fx::FXRenderer> fxRenderer;
   unique_ptr<FXViewManager> fxViewManager;
+  guiFactory.loadImages();
+  if (tilesPresent)
+    initializeRendererTiles(renderer, paidDataPath.subdirectory("images"));
   if (paidDataPath.exists()) {
     auto particlesPath = paidDataPath.subdirectory("images").subdirectory("particles");
     if (particlesPath.exists()) {
@@ -517,19 +506,45 @@ static int keeperMain(po::parser& commandLineFlags) {
       fxViewManager = unique<FXViewManager>(fxManager.get(), fxRenderer.get());
     }
   }
+  auto loadThread = makeThread([&] {
+    if (tilesPresent) {
+      if (!audioError) {
+        soundLibrary = new SoundLibrary(audioDevice, paidDataPath.subdirectory("sound"));
+        options.addTrigger(OptionId::SOUND, [soundLibrary](int volume) {
+          soundLibrary->setVolume(volume);
+          soundLibrary->playSound(SoundId::SPELL_DECEPTION);
+        });
+        soundLibrary->setVolume(options.getIntValue(OptionId::SOUND));
+      }
+    }
+    splashDone = true;
+  });
+  showLogoSplash(renderer, freeDataPath.file("images/succubi.png"), splashDone);
+  loadThread.join();
+  FileSharing bugreportSharing("http://retired.keeperrl.com/~bugreports", modVersion, saveVersion, options, installId);
+  bugreportSharing.downloadPersonalMessage();
+  unique_ptr<View> view;
+  view.reset(WindowView::createDefaultView(
+      {renderer, guiFactory, tilesPresent, &options, &clock, soundLibrary, &bugreportSharing, userPath, installId}));
+#ifndef RELEASE
+  InfoLog.addOutput(DebugOutput::toString([&view](const string& s) { view->logMessage(s);}));
+#endif
   view->initialize(std::move(fxRenderer), std::move(fxViewManager));
   if (commandLineFlags["battle_level"].was_set() && commandLineFlags["battle_view"].was_set()) {
     battleTest(view.get(), &tileSet);
     return 0;
   }
+  Jukebox jukebox(
+      audioDevice,
+      getMusicTracks(paidDataPath.subdirectory("music"), tilesPresent && !audioError),
+      getMaxVolume());
+  options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
+  jukebox.setCurrentVolume(options.getIntValue(OptionId::MUSIC));
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, &jukebox, &sokobanInput, &tileSet,
       useSingleThread, saveVersion, modVersion);
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
-    ofstream systemInfo(userPath.file("system_info.txt").getPath());
-    systemInfo << "KeeperRL version " << BUILD_VERSION << " " << BUILD_DATE << std::endl;
-    renderer.printSystemInfo(systemInfo);
     if (commandLineFlags["quick_game"].was_set())
       loop.launchQuickGame(maxTurns);
     loop.start(tilesPresent);
