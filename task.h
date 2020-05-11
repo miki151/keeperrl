@@ -31,7 +31,7 @@ using WTaskCallback = WeakPointer<TaskCallback>;
 class TaskPredicate : public OwnedObject<TaskPredicate> {
   public:
   virtual bool apply() const = 0;
-  virtual ~TaskPredicate() {}
+  virtual ~TaskPredicate();
 
   static PTaskPredicate outsidePositions(Creature*, PositionSet);
   static PTaskPredicate always();
@@ -39,6 +39,8 @@ class TaskPredicate : public OwnedObject<TaskPredicate> {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 };
+
+enum class TaskPerformResult { NEVER, YES, NOT_NOW };
 
 class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   public:
@@ -51,9 +53,10 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   virtual bool canTransfer();
   virtual void cancel() {}
   virtual string getDescription() const = 0;
-  virtual bool canPerform(const Creature* c, const MovementType&) const;
+  bool canPerform(const Creature* c, const MovementType&) const;
   bool canPerform(const Creature* c) const;
   virtual bool canPerformByAnyone() const;
+  virtual TaskPerformResult canPerformImpl(const Creature* c, const MovementType&) const;
   virtual optional<Position> getPosition() const;
   virtual optional<StorageId> getStorageId(bool dropOnly) const;
   optional<ViewId> getViewId() const;
