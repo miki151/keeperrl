@@ -113,7 +113,6 @@
         { 0.0 MinTurnRequirement 500 }
       }
       specialTraits = {
-         { 0.03 { AttrBonus SPELL_DAMAGE 13 Lasting { INSANITY }}}
          { 0.10 { ExtraTraining SPELL 4}}
          { 0.05 { WorkshopType "LABORATORY" }}
          { 0.10 { Lasting { MAGIC_RESISTANCE } }}
