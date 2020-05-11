@@ -2624,7 +2624,8 @@ namespace {
                 builder->resetFurniture(targetV, {*buildingInfo.floorOutside, tribe}, SquareAttrib::FLOOR_OUTSIDE);
               break;
             case LayoutPiece::PRETTY_FLOOR:
-              builder->resetFurniture(targetV, {*buildingInfo.floorInside, tribe}, SquareAttrib::EMPTY_ROOM);
+              if (buildingInfo.floorInside)
+                builder->resetFurniture(targetV, {*buildingInfo.floorInside, tribe}, SquareAttrib::EMPTY_ROOM);
               if (buildingInfo.prettyFloor)
                 builder->putFurniture(targetV, *buildingInfo.prettyFloor, tribe);
               break;
