@@ -1,4 +1,4 @@
 "upload_url"     "http://keeperrl.com/~retired/30"
-"save_version"   "4500"
+"save_version"   "4700"
 "mod_version"    "Alpha30"
 "steamworks"     "1"
