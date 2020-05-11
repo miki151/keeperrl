@@ -228,7 +228,7 @@ void TileSet::setTilePaths(const TilePaths& p) {
   reload();
 }
 
-void TileSet::setTilePathsAndReload(const TilePaths &)& p) {
+void TileSet::setTilePathsAndReload(const TilePaths& p) {
   clear();
   setTilePaths(p);
   loadTextures();
