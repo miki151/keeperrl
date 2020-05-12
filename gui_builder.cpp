@@ -2189,9 +2189,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
     lines.addElem(WL(label, "(" + getPlural("item", collectiveInfo.avatarLevelInfo.numAvailable) + " available)", Color::YELLOW));
     for (int i : All(info.available)) {
       auto& elem = info.available[i];
-      auto line = WL(getListBuilder)
-          .addElem(WL(label, capitalFirst(getName(elem.id)), elem.active ? Color::WHITE : Color::GRAY), 10)
-          .buildHorizontalList();
+      auto line = WL(renderInBounds, WL(label, capitalFirst(getName(elem.id)), elem.active ? Color::WHITE : Color::GRAY));
       line = WL(stack, std::move(line), getUnlocksTooltip(elem));
       if (elem.tutorialHighlight && tutorial && tutorial->highlights.contains(*elem.tutorialHighlight))
         line = WL(stack, WL(tutorialHighlight), std::move(line));
@@ -2210,9 +2208,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
   lines.addElem(WL(label, "Already researched:", Color::YELLOW));
   for (int i : All(info.researched)) {
     auto& elem = info.researched[i];
-    auto line = WL(getListBuilder)
-        .addElem(WL(label, capitalFirst(getName(elem.id)), Color::GRAY), 10)
-        .buildHorizontalList();
+    auto line = WL(renderInBounds, WL(label, capitalFirst(getName(elem.id)), Color::GRAY));
     line = WL(stack, std::move(line), getUnlocksTooltip(elem));
     lines.addElem(WL(rightMargin, rightElemMargin, std::move(line)));
   }

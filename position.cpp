@@ -616,7 +616,7 @@ void Position::removeFurnitureEffect(TribeId tribe, const FurnitureEffectInfo& e
   CHECK(!!effectsTable);
   handleEffect(tribe, *effectsTable, getRectangle(Rectangle::centered(effect.radius)), effect,
       [&](vector<LastingEffect>& effects) { effects.removeElement(effect.effect); },
-  [&](Creature* c) { c->removePermanentEffect(effect.effect, 1, false); });
+      [&](Creature* c) { c->removePermanentEffect(effect.effect, 1, false); });
 }
 
 int Position::countSwarmers() const {
