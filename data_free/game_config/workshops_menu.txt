@@ -135,9 +135,9 @@
   "FORGE"
   {
       { item = {Assembled "AUTOMATON_WORKER_IRON" "drilling automaton" }
-        work = 8 cost = "IRON" 30 tech = "automatons" applyImmediately = true}
-      { item = {Assembled "AUTOMATON_CORPUS_IRON" "automaton corpus" }
         work = 8 cost = "IRON" 45 tech = "automatons" applyImmediately = true}
+      { item = {Assembled "AUTOMATON_CORPUS_IRON" "automaton corpus" }
+        work = 8 cost = "IRON" 30 tech = "automatons" applyImmediately = true}
       { item = {Assembled "LIGHT_AUTOMATON_CORPUS_IRON" "light automaton corpus" }
         work = 8 cost = "IRON" 20 tech = "advanced automatons" applyImmediately = true}
       { item = {Assembled "HEAVY_AUTOMATON_CORPUS_IRON" "heavy automaton corpus"}
