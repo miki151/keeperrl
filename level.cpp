@@ -49,9 +49,18 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
   ar(furniture, tickingFurniture, covered, roofSupport, portals, name, depth);
   unordered_map<TribeId, unique_ptr<EffectsTable>, CustomHash<TribeId>> SERIAL(tmp);
-  for (auto t : ENUM_ALL(TribeId::KeyType))
+  int cnt = 0;
+  for (auto t : ENUM_ALL(TribeId::KeyType)) {
+    if (!!furnitureEffects[t])
+      ++cnt;
     tmp[TribeId(t)] = std::move(furnitureEffects[t]);
+  }
   ar(tmp);
+  for (auto& elem : tmp)
+    if (!!elem.second)
+      --cnt;
+  if (Archive::is_saving::value)
+    CHECK(cnt == 0);
   for (auto t : ENUM_ALL(TribeId::KeyType))
     furnitureEffects[t] = std::move(tmp[TribeId(t)]);
   // ar(furnitureEffects)
