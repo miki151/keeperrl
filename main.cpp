@@ -424,6 +424,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   FileSharing fileSharing(uploadUrl, modVersion, saveVersion, options, installId);
   Highscores highscores(userPath.file("highscores.dat"), fileSharing, &options);
   if (commandLineFlags["worldgen_test"].was_set()) {
+    ofstream output("worldgen_out.txt");
+    UserInfoLog.addOutput(DebugOutput::toStream(output));
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, nullptr,
         useSingleThread, 0, "");
     vector<string> types;

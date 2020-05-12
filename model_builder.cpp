@@ -308,16 +308,16 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<Bio
               [&] { tryCampaignBaseModel(tribe, alignment, biome, none); }); });
     else if (type == "zlevels")
       for (auto alignment : ENUM_ALL(TribeAlignment))
-          tasks.push_back([=] { measureModelGen(type + " (" + EnumInfo<TribeAlignment>::getString(alignment) + ", ",
+        for (int i : Range(1, 30))
+          tasks.push_back([=] { measureModelGen(type + " " + toString(i) +
+              " (" + EnumInfo<TribeAlignment>::getString(alignment) + ")",
               numTries,
               [&] {
                 auto model = tryCampaignBaseModel(tribe, alignment, BiomeId("GRASSLAND"), none);
-                for (int i : Range(1, 30)) {
-                  auto maker = getLevelMaker(Random, contentFactory, alignment,
-                      i, TribeId::getDarkKeeper(), StairKey::getNew());
-                  LevelBuilder(Random, contentFactory, maker.levelWidth, maker.levelWidth, true)
-                      .build(model.get(), maker.maker.get(), 123);
-                }
+                auto maker = getLevelMaker(Random, contentFactory, alignment,
+                    i, TribeId::getDarkKeeper(), StairKey::getNew());
+                LevelBuilder(Random, contentFactory, maker.levelWidth, maker.levelWidth, true)
+                    .build(model.get(), maker.maker.get(), 123);
               }); });
     else if (type == "tutorial")
       tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryTutorialModel(); }); });
@@ -337,7 +337,7 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
   int maxT = 0;
   int minT = 1000000;
   double sumT = 0;
-  std::cout << name;
+  USER_INFO << "Testing " << name;
   for (int i : Range(numTries)) {
 #ifndef OSX // this triggers some compiler errors OSX, I don't need it there anyway.
     auto time = steady_clock::now();
@@ -345,11 +345,11 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
     try {
       genFun();
       ++numSuccess;
-      std::cout << ".";
-      std::cout.flush();
+      //std::cout << ".";
+      //std::cout.flush();
     } catch (LevelGenException) {
-      std::cout << "x";
-      std::cout.flush();
+      //std::cout << "x";
+      //std::cout.flush();
     }
 #ifndef OSX
     int millis = duration_cast<milliseconds>(steady_clock::now() - time).count();
@@ -358,8 +358,8 @@ void ModelBuilder::measureModelGen(const string& name, int numTries, function<vo
     minT = min(minT, millis);
 #endif
   }
-  std::cout << std::endl << numSuccess << " / " << numTries << ". MinT: " <<
-    minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numTries << std::endl;
+  USER_INFO << numSuccess << " / " << numTries << ". MinT: " <<
+    minT << ". MaxT: " << maxT << ". AvgT: " << sumT / numTries;
 }
 
 void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, SettlementInfo& mainSettlement,
