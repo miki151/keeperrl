@@ -1079,6 +1079,8 @@ class RandomLocations : public LevelMaker {
       : insideMakers(std::move(_insideMakers)), sizes(_sizes), predicate(sizes.size(), pred) {
     CHECK(insideMakers.size() == sizes.size());
     CHECK(predicate.size() == sizes.size());
+    for (auto& size : sizes)
+      CHECK(size.x > 0 && size.y > 0);
   }
 
   RandomLocations() {}
@@ -1125,10 +1127,12 @@ class RandomLocations : public LevelMaker {
 
   RandomLocations(Vec2 size, LocationPredicate pred, PLevelMaker _insideMaker)
       : insideMakers(makeVec(std::move(_insideMaker))), sizes(1, size), predicate(1, pred) {
+    CHECK(size.x > 0 && size.y > 0);
   }
 
   void add(PLevelMaker maker, Vec2 size, LocationPredicate pred) {
     insideMakers.push_back(std::move(maker));
+    CHECK(size.x > 0 && size.y > 0);
     sizes.push_back({size.x, size.y});
     predicate.push_back(pred);
   }

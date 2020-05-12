@@ -371,6 +371,10 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
     return *res;
   if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS, &keyVerifier))
     return *res;
+  for (auto& elem : resources)
+    for (auto& count : elem.counts.elems)
+      if (count.size.isEmpty() || count.size.getStart() < 1)
+        return "Invalid resource count "_s + count.type.data() + ": " + toString(count.size);
   if (auto res = readBuildingInfo(config, &keyVerifier))
     return *res;
   map<PrimaryId<EnemyId>, EnemyInfo> enemiesTmp;
