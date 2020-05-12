@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util.h"
+#include "enemy_info.h"
 
 class Position;
 

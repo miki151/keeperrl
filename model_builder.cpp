@@ -39,6 +39,7 @@
 #include "content_factory.h"
 #include "enemy_id.h"
 #include "biome_id.h"
+#include "zlevel.h"
 
 using namespace std::chrono;
 
@@ -286,7 +287,7 @@ PModel ModelBuilder::campaignSiteModel(EnemyId enemyId, VillainType type, TribeA
 
 void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<BiomeId> biomes) {
   if (types.empty()) {
-    types = {"single_map", "campaign_base", "tutorial"};
+    types = {"single_map", "campaign_base", "tutorial", "zlevels"};
     for (auto id : enemyFactory->getAllIds()) {
       auto enemy = enemyFactory->get(id);
       if (!!getBiome(enemy, random))
@@ -305,6 +306,19 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<Bio
           tasks.push_back([=] { measureModelGen(type + " (" + EnumInfo<TribeAlignment>::getString(alignment) + ", "
               + biome.data() + ")", numTries,
               [&] { tryCampaignBaseModel(tribe, alignment, biome, none); }); });
+    else if (type == "zlevels")
+      for (auto alignment : ENUM_ALL(TribeAlignment))
+          tasks.push_back([=] { measureModelGen(type + " (" + EnumInfo<TribeAlignment>::getString(alignment) + ", ",
+              numTries,
+              [&] {
+                auto model = tryCampaignBaseModel(tribe, alignment, BiomeId("GRASSLAND"), none);
+                for (int i : Range(1, 30)) {
+                  auto maker = getLevelMaker(Random, contentFactory, alignment,
+                      i, TribeId::getDarkKeeper(), StairKey::getNew());
+                  LevelBuilder(Random, contentFactory, maker.levelWidth, maker.levelWidth, true)
+                      .build(model.get(), maker.maker.get(), 123);
+                }
+              }); });
     else if (type == "tutorial")
       tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryTutorialModel(); }); });
     else {
