@@ -78,7 +78,9 @@ namespace EventInfo {
     Creature* attacker = nullptr;
     AttrType damageAttr;
   };
-
+  struct TrapTriggered {
+    Position pos;
+  };
   struct TrapDisarmed {
     Position pos;
     Creature* creature = nullptr;
@@ -137,16 +139,17 @@ namespace EventInfo {
   X(CreatureTortured, 10)\
   X(CreatureStunned, 11)\
   X(MovementChanged, 12)\
-  X(TrapDisarmed, 13)\
-  X(FurnitureDestroyed, 14)\
-  X(ItemsEquipped, 15)\
-  X(CreatureEvent, 16)\
-  X(VisibilityChanged, 17)\
-  X(RetiredGame, 18)\
-  X(CreatureAttacked, 19)\
-  X(FX, 20)\
-  X(ItemStolen, 21)\
-  X(LeaderWounded, 22)
+  X(TrapTriggered, 13)\
+  X(TrapDisarmed, 14)\
+  X(FurnitureDestroyed, 15)\
+  X(ItemsEquipped, 16)\
+  X(CreatureEvent, 17)\
+  X(VisibilityChanged, 18)\
+  X(RetiredGame, 19)\
+  X(CreatureAttacked, 20)\
+  X(FX, 21)\
+  X(ItemStolen, 22)\
+  X(LeaderWounded, 23)
 
 #define VARIANT_NAME GameEvent
 

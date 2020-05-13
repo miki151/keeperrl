@@ -710,6 +710,10 @@ void Collective::onEvent(const GameEvent& event) {
           freeFromTask(victim);
         }
       },
+      [&](const TrapTriggered& info) {
+        if (auto trap = constructions->getTrap(info.pos))
+          trap->reset();
+      },
       [&](const TrapDisarmed& info) {
         if (auto trap = constructions->getTrap(info.pos)) {
           control->addMessage(PlayerMessage(info.creature->getName().a() +

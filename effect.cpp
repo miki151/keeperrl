@@ -1579,6 +1579,7 @@ static bool apply(const Effects::TriggerTrap&, Position pos, Creature* attacker)
         auto effect = trapInfo->effect;
         pos.removeFurniture(furniture);
         effect.apply(pos, attacker);
+        pos.getGame()->addEvent(EventInfo::TrapTriggered{pos});
         return true;
       }
   return false;
