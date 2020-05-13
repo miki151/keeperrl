@@ -1962,6 +1962,7 @@
 "LIGHT_AUTOMATON_CORPUS_WOOD" inherit "AUTOMATON_CORPUS_WOOD"
   {
     viewId = { "automaton_light" Rgb 180 140 55 255 }
+    automatonSlots = 2 { "automatons" "paint" }
     attr = append {
       DEFENSE 16
     }
@@ -2005,6 +2006,7 @@
 "LIGHT_AUTOMATON_CORPUS_IRON" inherit "AUTOMATON_CORPUS_IRON"
   {
     viewId = { "automaton_light" Rgb 140 148 148 255 }
+    automatonSlots = 2 { "automatons" "paint" }
     attr = append {
       DEFENSE 19
     }
@@ -2047,6 +2049,7 @@
 "LIGHT_AUTOMATON_CORPUS_ADA" inherit "AUTOMATON_CORPUS_ADA"
   {
     viewId = { "automaton_light" Rgb 148 189 189 255 }
+    automatonSlots = 2 { "automatons" "paint" }
     attr = append {
       DEFENSE 30
     }
