@@ -70,7 +70,7 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(skills), OPTION(spellSchools), OPTION(spells));
   ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel), OPTION(inventory));
   ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience));
-  ar(OPTION(automatonParts), OPTION(specialAttr), NAMED(deathEffect));
+  ar(OPTION(automatonParts), OPTION(specialAttr), NAMED(deathEffect), NAMED(chatEffect));
 }
 
 template <class Archive>
@@ -242,6 +242,8 @@ void CreatureAttributes::chatReaction(Creature* me, Creature* other) {
     else
       other->privateMessage(me->getName().the() + " " + *chatReactionFriendly);
   }
+  if (chatEffect)
+    chatEffect->apply(other->getPosition(), me);
 }
 
 bool CreatureAttributes::isAffected(LastingEffect effect, GlobalTime time) const {

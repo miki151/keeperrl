@@ -2219,6 +2219,7 @@
     }
     chatReactionFriendly = "curses all elves"
     chatReactionHostile = "\"Die!\""
+    chatEffect = Filter Enemy Fire
     skills = {
       "WORKSHOP" 0.3
       "FORGE" 0.3

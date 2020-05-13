@@ -137,6 +137,7 @@ class CreatureAttributes {
   HeapAllocated<Body> SERIAL(body);
   optional<string> SERIAL(chatReactionFriendly);
   optional<string> SERIAL(chatReactionHostile);
+  heap_optional<Effect> SERIAL(chatEffect);
   heap_optional<Effect> SERIAL(passiveAttack);
   Gender SERIAL(gender) = Gender::MALE;
   vector<pair<Gender, ViewId>> SERIAL(genderAlternatives);
