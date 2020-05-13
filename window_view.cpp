@@ -685,11 +685,8 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
       Vec2 wpos = mapLayout->projectOnScreen(getMapGuiBounds(), mapGui->getScreenPos(),
           playerPos.x + dir.x, playerPos.y + dir.y);
       if (currentTileLayout.sprites) {
-        static vector<TileCoord> coords;
-        if (coords.empty())
-          for (int i = 0; i < 8; ++i)
-            coords.push_back(renderer.getTileSet().getTileCoord("arrow" + toString(i)).getOnlyElement());
-        renderer.drawTile(wpos, {coords[int(dir.getCardinalDir())]}, mapLayout->getSquareSize());
+        auto coord = renderer.getTileSet().getTileCoord("arrow" + toString(int(dir.getCardinalDir()))).getOnlyElement();
+        renderer.drawTile(wpos, {coord}, mapLayout->getSquareSize());
       } else {
         int numArrow = int(dir.getCardinalDir());
         static string arrows[] = { u8"⇑", u8"⇓", u8"⇒", u8"⇐", u8"⇗", u8"⇖", u8"⇘", u8"⇙"};
