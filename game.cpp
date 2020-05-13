@@ -735,7 +735,7 @@ void Game::uploadEvent(const string& name, const map<string, string>& m) {
 }
 
 void Game::handleMessageBoard(Position pos, Creature* c) {
-  int boardId = pos.getHash();
+  auto boardId = int(combineHash(pos, getGameIdentifier()));
   vector<ListElem> options;
   atomic<bool> cancelled(false);
   view->displaySplash(nullptr, "Fetching board contents...", [&] {
@@ -768,7 +768,7 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
   if (auto index = view->chooseFromList("", options))
     if (auto text = view->getText("Enter message", "", 80)) {
       if (text->size() >= 2) {
-        if (!fileSharing->uploadBoardMessage(getGameIdentifier(), int(combineHash(pos, getGameIdentifier())), c->getName().title(), *text))
+        if (!fileSharing->uploadBoardMessage(getGameIdentifier(), boardId, c->getName().title(), *text))
           view->presentText("", "Please enable online features in the settings.");
       } else
         view->presentText("", "The message was too short.");
