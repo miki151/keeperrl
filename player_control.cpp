@@ -957,7 +957,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
         minionInfo.actions.push_back(PlayerInfo::DISASSEMBLE);
       else if (leaders.size() > 1 || !collective->hasTrait(c, MinionTrait::LEADER))
         minionInfo.actions.push_back(PlayerInfo::BANISH);
-      if (!collective->hasTrait(c, MinionTrait::WORKER)) {
+      if (!collective->hasTrait(c, MinionTrait::PRISONER)) {
         minionInfo.canAssignQuarters = true;
         auto& quarters = collective->getQuarters();
         if (auto index = quarters.getAssigned(c->getUniqueId()))
