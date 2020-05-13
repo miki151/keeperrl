@@ -4,13 +4,13 @@
 #include "attr_type.h"
 
 BestAttack::BestAttack(const Creature* c) {
-  auto damage = c->getAttr(AttrType::DAMAGE);
-  auto spellDamage = c->getAttr(AttrType::SPELL_DAMAGE);
-  if (damage > spellDamage) {
-    attr = AttrType::DAMAGE;
-    value = damage;
-  } else {
-    attr = AttrType::SPELL_DAMAGE;
-    value = spellDamage;
+  attr = AttrType::DAMAGE;
+  value = 0;
+  for (auto a : {AttrType::DAMAGE, AttrType::SPELL_DAMAGE, AttrType::RANGED_DAMAGE}) {
+    auto damage = c->getAttr(a);
+    if (damage > value) {
+      value = damage;
+      attr = a;
+    }
   }
 }
