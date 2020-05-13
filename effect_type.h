@@ -280,6 +280,10 @@ struct SetFlag {
   bool SERIAL(value) = true;
   SERIALIZE_ALL(name, value)
 };
+struct TakeItems {
+  string SERIAL(ingredient);
+  SERIALIZE_ALL(ingredient)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -353,6 +357,7 @@ struct SetFlag {
   X(Caster, 68)\
   X(RemoveFurniture, 69)\
   X(SetFlag, 70)\
+  X(TakeItems, 71)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

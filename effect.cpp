@@ -1782,6 +1782,26 @@ static bool applyToCreature(const Effects::AddMinionTrait& e, Creature* c, Creat
   fail();
 }
 
+static string getName(const Effects::TakeItems& e, const ContentFactory*) {
+  return "take " + e.ingredient;
+}
+
+static string getDescription(const Effects::TakeItems& e, const ContentFactory*) {
+  return "Takes " + e.ingredient;
+}
+
+static bool applyToCreature(const Effects::TakeItems& e, Creature* c, Creature* attacker) {
+  auto items = c->getEquipment().removeItems(
+      c->getEquipment().getItems(ItemIndex::RUNE).filter(
+      [&] (auto& it){ return it->getIngredientType() == e.ingredient; }),
+      c);
+  if (items.empty())
+    return false;
+  if (attacker)
+    attacker->takeItems(std::move(items), c);
+  return true;
+}
+
 static bool canAutoAssignMinionEquipment(const Effects::Filter& f) {
   return f.effect->canAutoAssignMinionEquipment();
 }
