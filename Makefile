@@ -1,13 +1,11 @@
 
 
-ifndef RPATH
-RPATH = .
-endif
-
-CFLAGS = -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512 -Wno-implicit-conversion-floating-point-to-bool -Wno-string-conversion -Wno-bool-conversion -ftemplate-backtrace-limit=0 -Wunused-function
+CFLAGS += -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512 -Wno-implicit-conversion-floating-point-to-bool -Wno-string-conversion -Wno-bool-conversion -ftemplate-backtrace-limit=0 -Wunused-function
 
 # Remove if you wish to build KeeperRL without steamworks integration.
+ifndef NO_STEAMWORKS
 STEAMWORKS = true
+endif
 
 ifndef GCC
 GCC = g++
@@ -26,7 +24,9 @@ LDFLAGS += -Wl -L/usr/local/opt/openal-soft/lib
 CFLAGS += -stdlib=libc++ -DOSX -mmacosx-version-min=10.7
 CFLAGS += -I/usr/local/opt/openal-soft/include
 else
-LDFLAGS += -Wl,-rpath=$(RPATH)
+ifndef NO_RPATH
+LDFLAGS += -Wl,-rpath=$(or $(RPATH),.)
+endif
 endif
 
 ifndef RELEASE

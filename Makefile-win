@@ -3,7 +3,7 @@ GCC = $(PREFIX)g++
 PKG_CONFIG = $(PREFIX)pkg-config
 
 LD = $(GCC)
-CFLAGS = -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-strict-aliasing -Wl,--build-id -Wl,--large-address-aware
+CFLAGS += -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-strict-aliasing -Wl,--build-id -Wl,--large-address-aware
 
 ifdef DATA_DIR
 	CFLAGS += -DDATA_DIR=\"$(DATA_DIR)\"
