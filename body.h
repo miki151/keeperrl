@@ -92,6 +92,7 @@ class Body {
   bool isWounded() const;
   bool isSeriouslyWounded() const;
   double getHealth() const;
+  double getBodyPartHealth() const;
   bool hasBrain() const;
   bool needsToEat() const;
   bool needsToSleep() const;
@@ -174,7 +175,6 @@ class Body {
   bool SERIAL(noHealth) = false;
   bool SERIAL(fallsApart) = true;
   optional<BodyPart> getAnyGoodBodyPart() const;
-  double getBodyPartHealth() const;
   void dropUnsupportedEquipment(const Creature*) const;
   vector<pair<optional<ItemType>, double>> SERIAL(drops);
   optional<bool> SERIAL(canCapture);

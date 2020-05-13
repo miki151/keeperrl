@@ -44,6 +44,12 @@ struct Flag {
   SERIALIZE_ALL(name)
 };
 
+struct Health {
+  double SERIAL(from);
+  double SERIAL(to);
+  SERIALIZE_ALL(from, to)
+};
+
 struct Not {
   HeapAllocated<CreaturePredicate> SERIAL(pred);
   SERIALIZE_ALL(pred)
@@ -76,7 +82,8 @@ struct Or {
   X(FurnitureType, 13)\
   X(Not, 14)\
   X(And, 15)\
-  X(Or, 16)
+  X(Or, 16)\
+  X(Health, 17)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

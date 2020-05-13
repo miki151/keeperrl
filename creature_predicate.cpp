@@ -132,6 +132,17 @@ static string getName(BodyMaterial m) {
   return "made of "_s + getMaterialName(m);
 }
 
+static bool applyToCreature(const CreaturePredicates::Health& p, const Creature* victim, const Creature* attacker) {
+  auto health = victim->getBody().hasAnyHealth()
+      ? victim->getBody().getHealth()
+      : victim->getBody().getBodyPartHealth();
+  return health >= p.from && health <= p.to;
+}
+
+static string getName(const CreaturePredicates::Health& p) {
+  return "with health between "_s + toString(p.from) + " and " + toString(p.to);
+}
+
 static bool apply(CreaturePredicates::Night m, Position pos, const Creature*) {
   return pos.getGame()->getSunlightInfo().getState() == SunlightState::NIGHT;
 }
