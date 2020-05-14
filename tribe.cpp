@@ -293,6 +293,10 @@ bool TribeSet::contains(TribeId id) const {
   return elems.test(key);
 }
 
+int TribeSet::getHash() const {
+  return int(elems.to_ulong());
+}
+
 
 bool TribeSet::operator==(const TribeSet& o) const {
   return elems == o.elems;

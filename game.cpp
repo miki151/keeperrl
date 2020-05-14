@@ -284,16 +284,28 @@ optional<ExitInfo> Game::updateInput() {
 static const TimeInterval initialModelUpdate = 2_visible;
 
 void Game::initializeModels() {
+  for (auto col : getCollectives())
+    col->update(col->getModel() == getCurrentModel());
   // Give every model a couple of turns so that things like shopkeepers can initialize.
   for (Vec2 v : models.getBounds())
-    if (models[v] && getCurrentModel() != models[v].get()) {
-      // Use top level's id as unique id of the model.
-      auto id = models[v]->getTopLevel()->getUniqueId();
-      if (!localTime.count(id)) {
-        localTime[id] = (models[v]->getLocalTime() + initialModelUpdate).getDouble();
-        updateModel(models[v].get(), localTime[id]);
+    if (auto model = models[v].get()) {
+      for (auto c : model->getAllCreatures()) {
+        c->tick();
+        auto level = c->getPosition().getLevel();
+        level->getSectors(c->getMovementType());
+        level->getSectors(c->getMovementType().setForced());
+        level->getSectors(MovementType(MovementTrait::WALK).setForced());
+        level->getSectors(MovementType(MovementTrait::FLY));
       }
-  }
+      if (getCurrentModel() != model) {
+        // Use top level's id as unique id of the model.
+        auto id = model->getTopLevel()->getUniqueId();
+        if (!localTime.count(id)) {
+          localTime[id] = (model->getLocalTime() + initialModelUpdate).getDouble();
+          updateModel(model, localTime[id]);
+        }
+     }
+    }
 }
 
 void Game::increaseTime(double diff) {
@@ -361,6 +373,18 @@ bool Game::isVillainActive(const Collective* col) {
   return m == getMainModel().get() || campaign->isInInfluence(getModelCoords(m));
 }
 
+void Game::updateSunlightMovement() {
+  auto previous = sunlightInfo.getState();
+  sunlightInfo.update(getGlobalTime() + sunlightTimeOffset);
+  if (previous != sunlightInfo.getState())
+    for (Vec2 v : models.getBounds())
+      if (WModel m = models[v].get()) {
+        m->updateSunlightMovement();
+        if (playerControl)
+          playerControl->onSunlightVisibilityChanged();
+      }
+}
+
 void Game::tick(GlobalTime time) {
   PROFILE_BLOCK("Game::tick");
   if (!turnEvents.empty() && time.getVisibleInt() > *turnEvents.begin()) {
@@ -374,15 +398,7 @@ void Game::tick(GlobalTime time) {
       uploadEvent("turn", {{"turn", toString(turn)}});
     turnEvents.erase(turn);
   }
-  auto previous = sunlightInfo.getState();
-  sunlightInfo.update(getGlobalTime() + sunlightTimeOffset);
-  if (previous != sunlightInfo.getState())
-    for (Vec2 v : models.getBounds())
-      if (WModel m = models[v].get()) {
-        m->updateSunlightMovement();
-        if (playerControl)
-          playerControl->onSunlightVisibilityChanged();
-      }
+  updateSunlightMovement();
   INFO << "Global time " << time;
   for (Collective* col : collectives) {
     if (isVillainActive(col))

@@ -75,6 +75,7 @@ class TribeSet {
   TribeSet& insert(TribeId);
   TribeSet& erase(TribeId);
   bool contains(TribeId) const;
+  int getHash() const;
 
   bool operator==(const TribeSet&) const;
 

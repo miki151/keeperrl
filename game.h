@@ -148,4 +148,5 @@ class Game : public OwnedObject<Game> {
   void increaseTime(double diff);
   void spawnKeeper(AvatarInfo, vector<string> introText);
   HeapAllocated<ContentFactory> SERIAL(contentFactory);
+  void updateSunlightMovement();
 };
