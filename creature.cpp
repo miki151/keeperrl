@@ -415,7 +415,7 @@ bool Creature::canSwapPositionInMovement(Creature* other, optional<Position> nex
 
 bool Creature::canSwapPositionWithEnemy(Creature* other) const {
   PROFILE;
-  return !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT)
+  return !LastingEffects::restrictedMovement(other)
       && !other->getAttributes().isBoulder()
       && other->getPosition().canEnterEmpty(this)
       && getPosition().canEnterEmpty(other);
@@ -461,14 +461,6 @@ WController Creature::getController() const {
     return nullptr;
 }
 
-bool Creature::hasCondition(CreatureCondition condition) const {
-  PROFILE;
-  for (auto effect : LastingEffects::getCausingCondition(condition))
-    if (isAffected(effect))
-      return true;
-  return false;
-}
-
 void Creature::swapPosition(Vec2 direction, bool withExcuseMe) {
   CHECK(direction.length8() == 1);
   Creature* other = NOTNULL(getPosition().plus(direction).getCreature());
@@ -487,7 +479,7 @@ void Creature::makeMove() {
   auto time = *getGlobalTime();
   vision->update(this, time);
   CHECK(!isDead());
-  if (hasCondition(CreatureCondition::SLEEPING)) {
+  if (LastingEffects::doesntMove(this)) {
     getController()->sleeping();
     spendTime();
     return;
@@ -1667,7 +1659,7 @@ CreatureAction Creature::disappear() const {
 }
 
 CreatureAction Creature::torture(Creature* other) const {
-  if (!other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT) || other->getPosition().dist8(getPosition()) != 1)
+  if (!LastingEffects::restrictedMovement(other) || other->getPosition().dist8(getPosition()) != 1)
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
     thirdPerson(getName().the() + " tortures " + other->getName().the());
@@ -2254,7 +2246,7 @@ const vector<Creature*>& Creature::getVisibleCreatures() const {
 bool Creature::shouldAIAttack(const Creature* other) const {
   if (isAffected(LastingEffect::PANIC) || getStatus().contains(CreatureStatus::CIVILIAN))
     return false;
-  if (other->hasCondition(CreatureCondition::SLEEPING))
+  if (LastingEffects::doesntMove(other))
     return true;
   double myDamage = getDefaultWeaponDamage();
   double powerRatio = myDamage / (other->getDefaultWeaponDamage() + 1);

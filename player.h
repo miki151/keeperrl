@@ -81,7 +81,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
     bool actionKillsController;
   };
   virtual vector<CommandInfo> getCommands() const;
-  virtual void onFellAsleep();
+  virtual void onLostControl();
   virtual vector<Creature*> getTeam() const;
   virtual bool isTravelEnabled() const;
   virtual bool handleUserInput(UserInput);

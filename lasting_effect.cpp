@@ -800,19 +800,22 @@ optional<std::string> LastingEffects::getBadAdjective(LastingEffect effect) {
   return none;
 }
 
-const vector<LastingEffect>& LastingEffects::getCausingCondition(CreatureCondition condition) {
-  switch (condition) {
-    case CreatureCondition::RESTRICTED_MOVEMENT: {
-      static vector<LastingEffect> ret {LastingEffect::ENTANGLED, LastingEffect::TIED_UP, LastingEffect::IMMOBILE,
-          LastingEffect::SLEEP};
-      return ret;
-    }
-    case CreatureCondition::SLEEPING: {
-      static vector<LastingEffect> ret { LastingEffect::SLEEP, LastingEffect::STUNNED, LastingEffect::FROZEN,
-          LastingEffect::TURNED_OFF};
-      return ret;
-    }
-  }
+bool LastingEffects::losesControl(const Creature* c) {
+  return c->isAffected(LastingEffect::SLEEP)
+      || c->isAffected(LastingEffect::TURNED_OFF)
+      || c->isAffected(LastingEffect::STUNNED);
+}
+
+bool LastingEffects::doesntMove(const Creature* c) {
+  return losesControl(c)
+      || c->isAffected(LastingEffect::FROZEN);
+}
+
+bool LastingEffects::restrictedMovement(const Creature* c) {
+  return doesntMove(c)
+      || c->isAffected(LastingEffect::ENTANGLED)
+      || c->isAffected(LastingEffect::TIED_UP)
+      || c->isAffected(LastingEffect::IMMOBILE);
 }
 
 double LastingEffects::modifyCreatureDefense(LastingEffect e, double defense, AttrType damageAttr) {
@@ -991,8 +994,10 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
       }
       break;
     case LastingEffect::ENTERTAINER:
-      if (!c->hasCondition(CreatureCondition::SLEEPING) && Random.roll(50)) {
-        auto others = c->getVisibleCreatures().filter([](const Creature* c) { return c->getBody().hasBrain() && c->getBody().isHumanoid(); });
+      if (!doesntMove(c) && Random.roll(50)) {
+        auto others = c->getVisibleCreatures().filter([](const Creature* c) {
+          return c->getBody().isHumanoid();
+        });
         if (others.empty())
           break;
         string jokeText = "a joke";
@@ -1010,10 +1015,11 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
             if (hatedGroup && hatedGroup == other->getAttributes().getHatedByEffect()) {
               other->addMorale(-0.05);
               other->you(MsgType::ARE, "offended");
-            } else {
+            } else if (other->getBody().hasBrain()) {
               other->verb("laugh", "laughs");
               other->addMorale(0.01);
-            }
+            } else
+              other->verb("don't", "doesn't", "laugh");
           }
       }
       break;

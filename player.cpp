@@ -475,7 +475,8 @@ void Player::sleeping() {
   MEASURE(
       getView()->updateView(this, false),
       "level render time");
-  onFellAsleep();
+  if (LastingEffects::losesControl(creature))
+    onLostControl();
 }
 
 vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(Creature* c) const {
@@ -824,8 +825,8 @@ void Player::makeMove() {
   #endif
       default: break;
     }
-  if (creature->hasCondition(CreatureCondition::SLEEPING)) {
-    onFellAsleep();
+  if (LastingEffects::losesControl(creature)) {
+    onLostControl();
     return;
   }
   for (Vec2 dir : direction)
@@ -1164,7 +1165,7 @@ void Player::onKilled(const Creature* attacker) {
     getGame()->gameOver(creature, creature->getKills().size(), "monsters", creature->getPoints());
 }
 
-void Player::onFellAsleep() {
+void Player::onLostControl() {
 }
 
 vector<Creature*> Player::getTeam() const {

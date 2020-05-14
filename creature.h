@@ -269,7 +269,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffected(LastingEffect) const;
   optional<TimeInterval> getTimeRemaining(LastingEffect) const;
-  bool hasCondition(CreatureCondition) const;
 
   bool isUnknownAttacker(const Creature*) const;
   vector<AdjectiveInfo> getGoodAdjectives() const;

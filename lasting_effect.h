@@ -93,11 +93,6 @@ RICH_ENUM(
   DRUNK
 );
 
-RICH_ENUM(CreatureCondition,
-    SLEEPING,
-    RESTRICTED_MOVEMENT
-);
-
 struct Color;
 
 class LastingEffects {
@@ -112,7 +107,6 @@ class LastingEffects {
   static bool tick(Creature*, LastingEffect);
   static optional<string> getGoodAdjective(LastingEffect);
   static optional<string> getBadAdjective(LastingEffect);
-  static const vector<LastingEffect>& getCausingCondition(CreatureCondition);
   static double modifyCreatureDefense(LastingEffect, double damage, AttrType damageAttr);
   static void onAllyKilled(Creature*);
   static string getName(LastingEffect);
@@ -134,4 +128,7 @@ class LastingEffects {
   static void runTests();
   static const char* getHatedGroupName(LastingEffect);
   static Color getColor(LastingEffect);
+  static bool losesControl(const Creature*);
+  static bool doesntMove(const Creature*);
+  static bool restrictedMovement(const Creature*);
 };

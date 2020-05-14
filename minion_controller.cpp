@@ -85,7 +85,7 @@ class MinionController : public Player {
         return true;
       case UserInputId::EXIT_CONTROL_MODE:
         if (creature->getPosition().getModel() == control->getModel() || canTravel()) {
-          unpossess();
+          control->leaveControl();
           return true;
         } else
           return false;
@@ -126,10 +126,6 @@ class MinionController : public Player {
     }
   }
 
-  void unpossess() {
-    control->leaveControl();
-  }
-
   virtual bool isTravelEnabled() const override {
     return control->getControlled().size() == 1;
   }
@@ -141,9 +137,9 @@ class MinionController : public Player {
       return CenterType::STAY_ON_SCREEN;
   }
 
-  virtual void onFellAsleep() override {
+  virtual void onLostControl() override {
     getGame()->getView()->presentText("Important!", "You lose control of your minion.");
-    unpossess();
+    control->leaveControl();
   }
 
   virtual vector<Creature*> getTeam() const override {

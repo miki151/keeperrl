@@ -289,7 +289,7 @@ static optional<Position> chooseRandomClose(const Creature* c, const PositionCon
     bool stepOn) {
   auto canNavigate = [&] (const Position& pos) {
     auto other = pos.getCreature();
-    return (!other || !other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
+    return (!other || !LastingEffects::restrictedMovement(other))
         && (stepOn ? c->canNavigateTo(pos) : c->canNavigateToOrNeighbor(pos));
   };
   int minD = 10000000;
@@ -408,7 +408,7 @@ class ApplySquare : public Task {
   void changePosIfOccupied() {
     if (position)
       if (Creature* c = position->first.getCreature())
-        if (c->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
+        if (LastingEffects::restrictedMovement(c))
           position = none;
   }
 
@@ -416,7 +416,7 @@ class ApplySquare : public Task {
     vector<Position> candidates;
     for (auto& pos : positions) {
       if (Creature* other = pos.first.getCreature())
-        if (other->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))
+        if (LastingEffects::restrictedMovement(other))
           continue;
       if (!rejectedPosition.count(pos.first))
         candidates.push_back(pos.first);
@@ -452,7 +452,7 @@ class ApplySquare : public Task {
     } else {
       MoveInfo move(c->moveTowards(position->first));
       if (!move || (position->first.dist8(c->getPosition()) == 1 && position->first.getCreature() &&
-          position->first.getCreature()->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT))) {
+          LastingEffects::restrictedMovement(position->first.getCreature()))) {
         rejectedPosition.insert(position->first);
         position = none;
         if (--invalidCount == 0) {
@@ -1579,7 +1579,7 @@ class DropItems : public Task {
 
   bool isBlocked(Position pos) const {
     auto c = pos.getCreature();
-    return c && c->hasCondition(CreatureCondition::RESTRICTED_MOVEMENT);
+    return c && LastingEffects::restrictedMovement(c);
   }
 
   virtual MoveInfo getMove(Creature* c) override {
