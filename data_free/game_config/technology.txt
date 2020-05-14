@@ -21,3 +21,4 @@
 "automatons"               { "Build mechanical creatures that work and fight for you."}
 "advanced automatons"      { "Build advanced mechanical creatures that work and fight for you." {"automatons"}}
 "automaton brains"         { "Build automatons that behave like humanoids."                 {"advanced automatons"}}
+"aerodynamics"             { "Build flying automatons."                                     {"advanced automatons"}}

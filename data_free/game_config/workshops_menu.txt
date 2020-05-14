@@ -123,6 +123,8 @@
         work = 8 cost = "WOOD" 30 tech = "automatons" applyImmediately = true}
       { item = {Assembled "LIGHT_AUTOMATON_CORPUS_WOOD" "light automaton corpus" }
         work = 8 cost = "WOOD" 20 tech = "advanced automatons" applyImmediately = true}
+      { item = {Assembled "HELICOPTER" "helicopterum" }
+        work = 8 cost = "WOOD" 10 tech = "aerodynamics" applyImmediately = true}
       {{Simple    "AutomatonLegsWood"}       2       "WOOD" 5    "automatons"}
       {{Simple    "AutomatonArmsWood"}       2       "WOOD" 5    "automatons"}
       {{Simple    "AutomatonDrillWood"}      2       "WOOD" 5    "automatons"}

@@ -52,7 +52,7 @@
   immigrantGroups = {"gnomes"}
   technology = {
       "traps" "advanced traps"# "master traps"
-      "automatons" "advanced automatons" "automaton brains"
+      "automatons" "advanced automatons" "automaton brains" "aerodynamics"
       "pig breeding" "iron working" "alchemy" "incendiary alchemy" "distillation" 
   }
   initialTech = { "automatons" }

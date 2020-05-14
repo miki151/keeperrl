@@ -178,6 +178,7 @@
 { "automaton" "A" ColorId LIGHT_GRAY }
 { "automaton_worker" "a" ColorId LIGHT_BROWN }
 { "automaton_corpus" "A" ColorId LIGHT_GRAY }
+{ "helicopter" "H" ColorId LIGHT_GRAY }
 { "automaton_light" "A" ColorId YELLOW }
 { "automaton_heavy" "A" ColorId DARK_BLUE }
 { "automaton_head" ")" ColorId LIGHT_BROWN }

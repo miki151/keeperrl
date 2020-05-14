@@ -634,7 +634,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       move.y = -4 * size.y / Renderer::nominalSize;
     renderer.drawTile(pos, tile.getBackgroundCoord(), size, color);
     move += movement;
-    if (object.hasModifier(ViewObject::Modifier::FLYING))
+    if (object.hasModifier(ViewObject::Modifier::FLYING) && !object.hasModifier(ViewObject::Modifier::TURNED_OFF))
       move.y += getFlyingMovement(size, curTimeReal);
     if (object.hasModifier(ViewObject::Modifier::IMMOBILE))
       move.y += 11;

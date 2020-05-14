@@ -1403,7 +1403,8 @@ void Creature::updateViewObject() {
         object.partIds.back() = *id;
     }
   object.setModifier(ViewObject::Modifier::IMMOBILE,
-      attributes->getAutomatonSlots().first > 0 && isAffected(LastingEffect::IMMOBILE));
+      (attributes->getAutomatonSlots().first > 0 && isAffected(LastingEffect::IMMOBILE))
+      || (isAffected(LastingEffect::TURNED_OFF) && isAffected(LastingEffect::FLYING)));
 }
 
 optional<double> Creature::getMorale() const {
