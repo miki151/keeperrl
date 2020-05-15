@@ -24,7 +24,10 @@
       2
       { "installed_head" Rgb 180 140 55 255 }
       Description "Allows using equipment."
-      MakeHumanoid
+      Chain {
+        MakeHumanoid
+        AddBodyPart HEAD 1 none
+      }
       "humanoid"
     }
   }
