@@ -158,8 +158,9 @@ run_gdb: $(NAME)
 info:
 	@$(GCC) -v 2>&1 | head -n 2
 
-ifdef RELEASE
+.PHONY:gen_version
 gen_version:
+ifdef RELEASE
 	bash ./gen_version.sh
 endif
 
