@@ -2248,7 +2248,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
         auto& item = options[index];
         workshop.queue(collective, item.optionIndex);
         if (item.ingredient) {
-          workshop.addUpgrade(workshop.getQueued().size() - 1, item.ingredient->second.removeItem(item.ingredient->first));
+          workshop.addUpgrade(workshop.getQueued().size() - 1,
+              item.ingredient->second.removeItem(item.ingredient->first));
         }
       }
       break;

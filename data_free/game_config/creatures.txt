@@ -2545,7 +2545,7 @@
       DEFENSE 25 
     }
     specialAttr = {
-      DEFENSE -7 Name "when outdoors" Not Indoors
+      DEFENSE { -7 Name "when outdoors" Not Indoors }
     }
     body = {
       type = Humanoid MEDIUM
@@ -2602,7 +2602,7 @@
       DEFENSE 25 
     }
     specialAttr = {
-      DEFENSE -7 Name "when outdoors" Not Indoors
+      DEFENSE { -7 Name "when outdoors" Not Indoors }
     }
     body = {
       type = Humanoid MEDIUM

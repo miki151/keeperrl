@@ -29,6 +29,7 @@
         AddBodyPart HEAD 1 none
       }
       "humanoid"
+      ARMOR
     }
   }
 "ArcherHeadWood" inherit "HumanoidHeadWood"
@@ -50,6 +51,7 @@
         }
       }
       "archer"
+      ARMOR
     }
   }
 "AutomatonLegsWood"
@@ -71,6 +73,8 @@
           GrantAbility "jump"
         }
       }
+      ""
+      ARMOR
     }
   }
 "AutomatonArmsWood"
@@ -90,6 +94,7 @@
         AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
       }
       "melee"
+      WEAPON
     }
   }
 "AutomatonDrillWood"
@@ -149,6 +154,7 @@
         AddBodyPart HEAD 1 none
       }
       "humanoid"
+      ARMOR
     }
   }
 "ArcherHeadIron" inherit "HumanoidHeadIron"
@@ -171,6 +177,7 @@
         }
       }
       "archer"
+      ARMOR
     }
   }
 "FireHeadIron" inherit "HumanoidHeadIron"
@@ -189,6 +196,7 @@
         AddBodyPart HEAD 1 none
       }
       "fire"
+      ARMOR
     }
   }
 "AcidHeadIron" inherit "HumanoidHeadIron"
@@ -207,6 +215,7 @@
         AddBodyPart HEAD 1 none
       }
       "acid"
+      ARMOR
     }
   }
 "AutomatonLegsIron"
@@ -228,6 +237,8 @@
             GrantAbility "jump"
         }
       }
+      ""
+      ARMOR
     }
   }
 "AutomatonArmsIron"
@@ -247,6 +258,7 @@
         AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
       }
       "melee"
+      WEAPON
     }
   }
 "AutomatonDrillIron"
@@ -343,6 +355,7 @@
         AddBodyPart HEAD 1 none
       }
       "humanoid"
+      ARMOR
     }
   }
 "ArcherHeadAda" inherit "HumanoidHeadAda"
@@ -365,6 +378,7 @@
         }
       }
       "archer"
+      ARMOR
     }
   }
 "FireHeadAda" inherit "HumanoidHeadAda"
@@ -383,6 +397,7 @@
         AddBodyPart HEAD 1 none
       }
       "fire"
+      ARMOR
     }
   }
 "AcidHeadAda" inherit "HumanoidHeadAda"
@@ -401,6 +416,7 @@
         AddBodyPart HEAD 1 none
       }
       "acid"
+      ARMOR
     }
   }
 "AutomatonLegsAda"
@@ -422,6 +438,8 @@
             GrantAbility "jump"
         }
       }
+      ""
+      ARMOR
     }
   }
 "AutomatonArmsAda"
@@ -441,6 +459,7 @@
         AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
       }
       "melee"
+      WEAPON
     }
   }
 "AutomatonDrillAda"

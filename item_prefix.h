@@ -59,6 +59,7 @@ inline
 
 class ItemAttributes;
 extern void applyPrefix(const ContentFactory*, const ItemPrefix&, ItemAttributes&);
+extern void applyPrefixToCreature(const ItemPrefix&, Creature*);
 extern string getItemName(const ContentFactory*, const ItemPrefix&);
 extern string getGlyphName(const ContentFactory*, const ItemPrefix&);
 extern vector<string> getEffectDescription(const ContentFactory*, const ItemPrefix&);

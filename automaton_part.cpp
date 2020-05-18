@@ -4,7 +4,7 @@
 #include "item.h"
 #include "sound.h"
 
-SERIALIZE_DEF(AutomatonPart, effect, viewId, name, minionGroup, installedId, layer, automatonType)
+SERIALIZE_DEF(AutomatonPart, effect, viewId, name, minionGroup, installedId, layer, automatonType, prefixes, prefixType)
 
 bool AutomatonPart::isAvailable(const Creature* c, int numAssigned) const {
   return c->getSpareAutomatonSlots() > numAssigned &&
@@ -14,6 +14,6 @@ bool AutomatonPart::isAvailable(const Creature* c, int numAssigned) const {
 #include "pretty_archive.h"
 template <>
 void AutomatonPart::serialize(PrettyInputArchive& ar1, unsigned) {
-  ar1(NAMED(automatonType), NAMED(layer), NAMED(installedId), NAMED(effect), OPTION(minionGroup));
+  ar1(NAMED(automatonType), NAMED(layer), NAMED(installedId), NAMED(effect), OPTION(minionGroup), NAMED(prefixType));
 }
 

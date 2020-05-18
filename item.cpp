@@ -286,7 +286,10 @@ const optional<ItemUpgradeInfo>& Item::getUpgradeInfo() const {
 }
 
 optional<ItemUpgradeType> Item::getAppliedUpgradeType() const {
-  switch (getClass()) {
+  auto c = getClass();
+  if (attributes->automatonPart && attributes->automatonPart->prefixType)
+    c = *attributes->automatonPart->prefixType;
+  switch (c) {
     case ItemClass::ARMOR:
       return ItemUpgradeType::ARMOR;
     case ItemClass::WEAPON:
@@ -464,6 +467,9 @@ string Item::getSuffix() const {
   string artStr;
   if (!attributes->prefixes.empty())
     artStr += attributes->prefixes.back();
+  if (auto& part = attributes->automatonPart)
+    if (!part->prefixes.empty())
+      artStr += part->prefixes.back().name;
   if (attributes->artifactName)
     appendWithSpace(artStr, "named " + *attributes->artifactName);
   if (fire->isBurning())

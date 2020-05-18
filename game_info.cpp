@@ -161,7 +161,10 @@ void fillInstalledPartDescription(const ContentFactory* factory, ItemInfo& info,
 ItemInfo getInstalledPartInfo(const ContentFactory* factory, const AutomatonPart& part, int index) {
   ItemInfo ret {};
   ret.ids.insert(Item::Id(index));
-  ret.fullName = ret.name = part.name;
+  ret.name = part.name;
+  if (!part.prefixes.empty())
+    ret.name += " " + part.prefixes.back().name;
+  ret.fullName = ret.name;
   ret.viewId = {part.viewId};
   fillInstalledPartDescription(factory, ret, part);
   return ret;

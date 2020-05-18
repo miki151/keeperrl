@@ -170,6 +170,8 @@ const vector<AutomatonPart>& Creature::getAutomatonParts() const {
 
 void Creature::addAutomatonPart(AutomatonPart p) {
   p.effect.apply(position);
+  for (auto& prefix : p.prefixes)
+    applyPrefixToCreature(prefix.prefix, this);
   addSound(SoundId::TRAP_ARMING);
   if (p.layer) {
     automatonParts.push_back(std::move(p));
@@ -955,9 +957,9 @@ int Creature::getAttr(AttrType type, bool includeWeapon) const {
 
 int Creature::getSpecialAttr(AttrType type, const Creature* against) const {
   int ret = 0;
-  if (auto& elem = attributes->specialAttr[type])
-    if (elem->second.apply(against->getPosition(), this))
-      ret += elem->first;
+  for (auto& elem : attributes->specialAttr[type])
+    if (elem.second.apply(against->getPosition(), this))
+      ret += elem.first;
   for (auto& item : equipment->getAllEquipped())
     if (auto& elem = item->getSpecialModifier(type))
       if (elem->second.apply(against->getPosition(), this))
@@ -2294,10 +2296,10 @@ vector<AdjectiveInfo> Creature::getSpecialAttrAdjectives(bool good) const {
     auto withTip = [](string s) {
       return AdjectiveInfo{s, s};
     };
-    if (auto& elem = attributes->specialAttr[attr])
-      if (elem->first > 0 == good)
+    for (auto& elem : attributes->specialAttr[attr])
+      if (elem.first > 0 == good)
         ret.push_back(withTip(
-            toStringWithSign(elem->first) + " " + ::getName(attr) + " " + elem->second.getName()));
+            toStringWithSign(elem.first) + " " + ::getName(attr) + " " + elem.second.getName()));
     for (auto& item : equipment->getAllEquipped())
       if (auto& elem = item->getSpecialModifier(attr))
         if (elem->first > 0 == good)

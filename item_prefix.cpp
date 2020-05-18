@@ -5,31 +5,77 @@
 #include "effect.h"
 #include "creature_factory.h"
 #include "content_factory.h"
+#include "creature.h"
+#include "creature_attributes.h"
+#include "spell_map.h"
+#include "game.h"
+#include "content_factory.h"
+#include "body.h"
 
 void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAttributes& attr) {
-  attr.prefixes.push_back(getItemName(factory, prefix));
+  if (attr.automatonPart) {
+    attr.automatonPart->prefixes.push_back({prefix, getItemName(factory, prefix)});
+  } else {
+    attr.prefixes.push_back(getItemName(factory, prefix));
+    prefix.visit<void>(
+        [&](LastingEffect effect) {
+          attr.equipedEffect.push_back(effect);
+        },
+        [&](const AttackerEffect& e) {
+          attr.weaponInfo.attackerEffect.push_back(e.effect);
+        },
+        [&](const VictimEffect& e) {
+          attr.weaponInfo.victimEffect.push_back(e);
+        },
+        [&](ItemAttrBonus bonus) {
+          attr.modifiers[bonus.attr] += bonus.value;
+        },
+        [&](const JoinPrefixes& join) {
+          for (auto& elem : join.prefixes)
+            applyPrefix(factory, elem, attr);
+        },
+        [&](const SpellId& spell) {
+          attr.equipedAbility.push_back(spell);
+        },
+        [&](const SpecialAttr& a) {
+          attr.specialAttr[a.attr] = make_pair(a.value, a.predicate);
+        }
+    );
+  }
+}
+
+void applyPrefixToCreature(const ItemPrefix& prefix, Creature* c) {
+  auto applyToIntrinsicAttack = [&] {
+    auto& attacks = c->getBody().getIntrinsicAttacks();
+    for (auto part : ENUM_ALL(BodyPart))
+      if (!attacks[part].empty()) {
+        attacks[part].back().item->applyPrefix(prefix, c->getGame()->getContentFactory());
+        break;
+      }
+  };
   prefix.visit<void>(
       [&](LastingEffect effect) {
-        attr.equipedEffect.push_back(effect);
+        c->addPermanentEffect(effect);
       },
       [&](const AttackerEffect& e) {
-        attr.weaponInfo.attackerEffect.push_back(e.effect);
+        applyToIntrinsicAttack();
       },
       [&](const VictimEffect& e) {
-        attr.weaponInfo.victimEffect.push_back(e);
+        applyToIntrinsicAttack();
       },
-      [&](ItemAttrBonus bonus) {
-        attr.modifiers[bonus.attr] += bonus.value;
+      [&](ItemAttrBonus e) {
+        c->getAttributes().increaseBaseAttr(e.attr, e.value);
       },
       [&](const JoinPrefixes& join) {
         for (auto& elem : join.prefixes)
-          applyPrefix(factory, elem, attr);
+          applyPrefixToCreature(elem, c);
       },
       [&](const SpellId& spell) {
-        attr.equipedAbility.push_back(spell);
+        c->getSpellMap().add(*c->getGame()->getContentFactory()->getCreatures().getSpell(spell),
+            ExperienceType::MELEE, 0);
       },
       [&](const SpecialAttr& a) {
-        attr.specialAttr[a.attr] = make_pair(a.value, a.predicate);
+        c->getAttributes().specialAttr[a.attr].push_back(make_pair(a.value, a.predicate));
       }
   );
 }
