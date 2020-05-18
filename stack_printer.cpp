@@ -3,10 +3,11 @@
 #include <windows.h>
 #include <dbghelp.h>
 #include <cstdio>
+#include "version.h"
 
 int printStacktraceWithGdb() {
   char gdbcmd[512] = {0};
-  sprintf(gdbcmd, "rungdb.bat %d", GetCurrentProcessId());
+  sprintf(gdbcmd, "rungdb.bat \"" BUILD_VERSION " " BUILD_DATE "\"");
   fputs(gdbcmd, stderr);
   fflush(stderr);
   return system(gdbcmd);

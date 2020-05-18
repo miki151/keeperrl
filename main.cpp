@@ -37,7 +37,6 @@
 #include "clock.h"
 #include "skill.h"
 #include "parse_game.h"
-#include "version.h"
 #include "vision.h"
 #include "model_builder.h"
 #include "sound_library.h"
