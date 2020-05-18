@@ -1372,6 +1372,18 @@ bool LastingEffects::canConsume(LastingEffect effect) {
   }
 }
 
+bool LastingEffects::canWishFor(LastingEffect effect) {
+  switch (effect) {
+    case LastingEffect::STUNNED:
+    case LastingEffect::SUMMONED:
+    case LastingEffect::INVULNERABLE:
+    case LastingEffect::TURNED_OFF:
+      return false;
+    default:
+      return true;
+  }
+}
+
 optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::SLEEP:

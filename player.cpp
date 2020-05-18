@@ -1009,18 +1009,19 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
       elem.second.wishedCount
     });
   }
-  for (auto effect : ENUM_ALL(LastingEffect)) {
-    ret.push_back(WishedItemInfo {
-      ItemType(ItemTypes::Ring{effect}),
-      "ring of " + LastingEffects::getName(effect),
-      Range(1, 2)
-    });
-    ret.push_back(WishedItemInfo {
-      ItemType(ItemTypes::Amulet{effect}),
-      "amulet of " + LastingEffects::getName(effect),
-      Range(1, 2)
-    });
-  }
+  for (auto effect : ENUM_ALL(LastingEffect))
+    if (LastingEffects::canWishFor(effect)) {
+      ret.push_back(WishedItemInfo {
+        ItemType(ItemTypes::Ring{effect}),
+        "ring of " + LastingEffects::getName(effect),
+        Range(1, 2)
+      });
+      ret.push_back(WishedItemInfo {
+        ItemType(ItemTypes::Amulet{effect}),
+        "amulet of " + LastingEffects::getName(effect),
+        Range(1, 2)
+      });
+    }
   vector<Effect> allEffects = Effect::getWishedForEffects();
   for (auto& effect : allEffects) {
     ret.push_back(WishedItemInfo {

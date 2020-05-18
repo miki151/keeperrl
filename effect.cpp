@@ -1969,14 +1969,14 @@ vector<Effect> Effect::getWishedForEffects() {
        Effect(Effects::Deception{}),
        Effect(Effects::SummonElement{}),
        Effect(Effects::Acid{}),
-       Effect(Effects::Suicide{MsgType::DIE}),
        Effect(Effects::DoubleTrouble{})
   };
-  for (auto effect : ENUM_ALL(LastingEffect)) {
-    allEffects.push_back(EffectType(Effects::Lasting{effect}));
-    allEffects.push_back(EffectType(Effects::Permanent{effect}));
-    allEffects.push_back(EffectType(Effects::RemoveLasting{effect}));
-  }
+  for (auto effect : ENUM_ALL(LastingEffect))
+    if (LastingEffects::canWishFor(effect)) {
+      allEffects.push_back(EffectType(Effects::Lasting{effect}));
+      allEffects.push_back(EffectType(Effects::Permanent{effect}));
+      allEffects.push_back(EffectType(Effects::RemoveLasting{effect}));
+    }
   for (auto attr : ENUM_ALL(AttrType))
     allEffects.push_back(EffectType(Effects::IncreaseAttr{attr, (attr == AttrType::PARRY ? 2 : 5)}));
   return allEffects;

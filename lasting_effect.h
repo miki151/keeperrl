@@ -118,6 +118,7 @@ class LastingEffects {
   static double getCraftingSpeed(const Creature*);
   static double getTrainingSpeed(const Creature*);
   static bool canConsume(LastingEffect);
+  static bool canWishFor(LastingEffect);
   static optional<FXVariantName> getFX(LastingEffect);
   static optional<FXInfo> getApplicationFX(LastingEffect);
   static bool canProlong(LastingEffect);
