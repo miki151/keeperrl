@@ -201,7 +201,7 @@ bool CollectiveConfig::isConquered(const Collective* collective) const {
 }
 
 bool CollectiveConfig::xCanEnemyRetire() const {
-  return canEnemyRetire;
+  return canEnemyRetire && type != KEEPER;
 }
 
 CollectiveConfig& CollectiveConfig::setConquerCondition(ConquerCondition c) {
