@@ -33,7 +33,7 @@ Framebuffer::Framebuffer(int width, int height)
   SDL::glDrawBuffers(1, drawTargets);
 
   auto ret = SDL::glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  CHECK(ret == GL_FRAMEBUFFER_COMPLETE);
+  CHECK(ret == GL_FRAMEBUFFER_COMPLETE) << ret;
   unbind();
 }
 
