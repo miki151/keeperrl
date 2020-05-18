@@ -980,7 +980,7 @@
   behaviour = {
     minPopulation = 0
     minTeamSize = 3
-    triggers = {Gold 100}
+    triggers = {Gold 500}
     attackBehaviour = StealGold
     ransom = 0.5 80
   }
@@ -1010,7 +1010,7 @@
   behaviour = {
     minPopulation = 0
     minTeamSize = 3
-    triggers = {Gold 100}
+    triggers = {Gold 500}
     attackBehaviour = StealGold
     ransom = 0.5 80
   }
