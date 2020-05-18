@@ -378,7 +378,7 @@
   effect = Name "ice cone" Ice
   fx = ICE
   range = 4
-  cooldown = 5
+  cooldown = 15
   #sound = SPELL_FIRE_SPHERE_PET
 }
 "acid stream"
