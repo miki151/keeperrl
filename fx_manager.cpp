@@ -38,6 +38,8 @@ SubSystemContext FXManager::ssctx(ParticleSystem &ps, int ssid) {
 
 void FXManager::simulateStableTime(double time, int visibleFps, int simulateFps) {
   double diff = oldTime < 0 ? 1.0 / 60.0 : time - oldTime;
+  if (diff < 0)
+    diff = 1.0 / 60.0;
   simulateStable(diff, visibleFps, simulateFps);
   oldTime = time;
 }
