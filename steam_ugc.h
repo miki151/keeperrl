@@ -35,7 +35,7 @@ struct ItemDetailsInfo {
 struct FindItemInfo {
   FindOrder order = FindOrder::playtime;
   string searchText;
-  string tags;
+  vector<string> tags;
   bool anyTag = false;
 
   optional<int> maxItemCount;
@@ -111,7 +111,7 @@ class UGC {
   static constexpr int maxItemsPerPage = 50;
 
   QueryId createDetailsQuery(const ItemDetailsInfo&, vector<ItemId>);
-  QueryId createFindQuery(const FindItemInfo&, int pageId, vector<string> tags);
+  QueryId createFindQuery(const FindItemInfo&, int pageId);
 
   void updateQueries();
   void waitForQueries(vector<QueryId>, milliseconds duration, const atomic<bool>& cancel);

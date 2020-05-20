@@ -140,7 +140,7 @@ UGC::QueryId UGC::createDetailsQuery(const ItemDetailsInfo& info, vector<ItemId>
   return qid;
 }
 
-UGC::QueryId UGC::createFindQuery(const FindItemInfo& info, int pageId, vector<string> tags) {
+UGC::QueryId UGC::createFindQuery(const FindItemInfo& info, int pageId) {
   CHECK(pageId >= 1);
   auto appId = Utils::instance().appId();
 
@@ -153,7 +153,7 @@ UGC::QueryId UGC::createFindQuery(const FindItemInfo& info, int pageId, vector<s
   FUNC(SetReturnOnlyIDs)(ptr, handle, true);
   if (!info.searchText.empty())
     FUNC(SetSearchText)(ptr, handle, info.searchText.c_str());
-  for (auto& tag : tags)
+  for (auto& tag : info.tags)
     FUNC(AddRequiredTag)(ptr, handle, tag.data());
   auto callId = FUNC(SendQueryUGCRequest)(ptr, handle);
   auto qid = impl->allocQuery(handle, callId);

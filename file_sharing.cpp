@@ -472,7 +472,8 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel,
       vector<steam::ItemId> ret;
       steam::FindItemInfo qinfo;
       qinfo.order = SteamFindOrder::playtime;
-      auto qid = ugc.createFindQuery(qinfo, page, tags);
+      qinfo.tags = tags;
+      auto qid = ugc.createFindQuery(qinfo, page);
       ugc.waitForQueries({qid}, milliseconds(2000), cancel);
 
       if (ugc.queryStatus(qid) == QueryStatus::completed) {
