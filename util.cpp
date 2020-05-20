@@ -966,7 +966,7 @@ AsyncLoop::~AsyncLoop() {
 }
 
 
-#ifdef OSX // see thread comment in stdafx.h
+/*#ifdef OSX // see thread comment in stdafx.h
 static thread::attributes getAttributes() {
   thread::attributes attr;
   attr.set_stack_size(4096 * 4000);
@@ -977,13 +977,13 @@ thread makeThread(function<void()> fun) {
   return thread(getAttributes(), fun);
 }
 
-#else
+#else*/
 
 thread makeThread(function<void()> fun) {
   return thread(fun);
 }
 
-#endif
+//#endif
 
 ConstructorFunction::ConstructorFunction(function<void()> fun) {
   fun();

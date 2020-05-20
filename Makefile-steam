@@ -32,7 +32,7 @@ else ifeq ($(MACHINE), x86_64-w64-mingw32)
 else ifeq ($(findstring i686-w64-mingw32, $(MACHINE)), i686-w64-mingw32)
 	STEAM_LIB_DIR=extern/steamworks/redistributable_bin/
 	STEAM_LIB_NAME=steam_api
-else ifeq ($(MACHINE), x86_64-apple-darwin14.0.0)
+else ifeq ($(findstring x86_64-apple-darwin, $(MACHINE)), x86_64-apple-darwin)
 	STEAM_LIB_DIR=extern/steamworks/redistributable_bin/osx/
 	STEAM_LIB_NAME=steam_api
 #TODO: else handle error

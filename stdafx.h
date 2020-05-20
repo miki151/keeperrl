@@ -67,11 +67,11 @@
 
 // Use boost threads on OSX to use the main thread for rendering
 // and set a large stack size for the model thread.
-#ifdef OSX
-#include <boost/thread.hpp>
-#else
+//#ifdef OSX
+//#include <boost/thread.hpp>
+//#else
 #include <thread>
-#endif
+//#endif
 
 #include <typeinfo>
 #include <tuple>
@@ -129,7 +129,7 @@ using std::uint8_t;
 using std::recursive_mutex;
 typedef std::unique_lock<recursive_mutex> RecursiveLock;
 
-#ifdef OSX
+/*#ifdef OSX
 using boost::thread;
 using boost::this_thread::sleep_for;
 using boost::chrono::duration;
@@ -139,7 +139,7 @@ using boost::chrono::steady_clock;
 using boost::chrono::high_resolution_clock;
 using boost::chrono::duration_cast;
 inline thread::id currentThreadId() { return boost::this_thread::get_id(); }
-#else
+#else*/
 using std::thread;
 using std::this_thread::sleep_for;
 using std::chrono::duration;
@@ -149,7 +149,7 @@ using std::chrono::steady_clock;
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
 inline thread::id currentThreadId() { return std::this_thread::get_id(); }
-#endif
+//#endif
 using std::atomic;
 using std::swap;
 using std::remove_if;

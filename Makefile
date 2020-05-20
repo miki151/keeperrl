@@ -20,9 +20,9 @@ LDFLAGS += -fuse-ld=$(DEBUG_LD)
 endif
 
 ifdef OSX
-LDFLAGS += -Wl -L/usr/local/opt/openal-soft/lib
+LDFLAGS += -Wl -L/home/michal/Downloads/osxcross/libs/lib -Wl,-rpath .
 CFLAGS += -stdlib=libc++ -DOSX -mmacosx-version-min=10.7
-CFLAGS += -I/usr/local/opt/openal-soft/include
+CFLAGS += -I/home/michal/Downloads/osxcross/libs/include
 else
 ifndef NO_RPATH
 LDFLAGS += -Wl,-rpath=$(or $(RPATH),.)
@@ -94,14 +94,13 @@ IPATH = -I. -I./extern
 CFLAGS += $(IPATH)
 
 ifdef OSX
-BOOST_LIBS = -lboost_system -lboost_thread -lboost_chrono
-OPENGL_LIBS = -framework OpenGL
+#BOOST_LIBS = -lboost_system -lboost_thread -lboost_chrono
+OPENGL_LIBS = -framework OpenGL -framework SDL2 -framework OpenAL -framework SDL2_image -F/home/michal/Downloads/osxcross/libs
 else
-BOOST_LIBS =
-OPENGL_LIBS = -lGL
+OPENGL_LIBS = -lGL -lSDL2 -lopenal -lSDL2_image
+LDFLAGS += -L/usr/local/lib -L/usr/lib/x86_64-linux-gnu -lopenal
 endif
 
-LDFLAGS += -L/usr/local/lib
 
 ifdef STEAMWORKS
 SRCS = $(shell ls -t *.cpp)
@@ -110,7 +109,7 @@ SRCS = $(shell ls -t *.cpp | grep -v steam_.*.cpp)
 endif
 SRCS += $(shell ls -t extern/*.cpp)
 
-LIBS = -L/usr/lib/x86_64-linux-gnu $(OPENGL_LIBS) -lSDL2 -lopenal -lvorbis -lvorbisfile -lSDL2_image \
+LIBS +=  -lvorbis -lvorbisfile  $(OPENGL_LIBS) \
 	   $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS} $(STEAM_LIBS)
 
 ifdef EASY_PROFILER
