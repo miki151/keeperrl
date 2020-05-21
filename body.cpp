@@ -438,6 +438,8 @@ void Body::consumeBodyParts(Creature* c, Body& other, vector<string>& adjectives
       c->addPersonalEvent(c->getName().the() + " grows "_s + what);
       bodyParts[part] = other.bodyParts[part];
     }
+    if (!other.intrinsicAttacks[part].empty())
+      intrinsicAttacks[part].clear();
     for (auto& attack : other.intrinsicAttacks[part]) {
       c->verb("develop", "develops",  "a " + attack.item->getNameAndModifiers() + " attack");
       c->addPersonalEvent(c->getName().the() + " develops a " + attack.item->getNameAndModifiers() + " attack");
