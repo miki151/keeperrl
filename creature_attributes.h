@@ -129,7 +129,7 @@ class CreatureAttributes {
   heap_optional<Effect> SERIAL(deathEffect);
 
   private:
-  void consumeEffects(const EnumMap<LastingEffect, int>&);
+  void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);
   ViewId SERIAL(viewId);
   heap_optional<ViewObject> SERIAL(illusionViewObject);
   CreatureName SERIAL(name);

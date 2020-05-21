@@ -339,11 +339,11 @@ void consumeAttr(Skillset& mine, const Skillset& his, vector<string>& adjectives
     adjectives.push_back("more skillfull");
 }
 
-void CreatureAttributes::consumeEffects(const EnumMap<LastingEffect, int>& permanentEffects) {
+void CreatureAttributes::consumeEffects(Creature* self, const EnumMap<LastingEffect, int>& permanentEffects) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (permanentEffects[effect] > 0 && !isAffectedPermanently(effect) && consumeProb() &&
         LastingEffects::canConsume(effect)) {
-      addPermanentEffect(effect, 1);
+      self->addPermanentEffect(effect);
     }
 }
 
@@ -363,7 +363,7 @@ void CreatureAttributes::consume(Creature* self, CreatureAttributes& other) {
     self->you(MsgType::BECOME, combine(adjectives));
     self->addPersonalEvent(getName().the() + " becomes " + combine(adjectives));
   }
-  consumeEffects(other.permanentEffects);
+  consumeEffects(self, other.permanentEffects);
 }
 
 string CreatureAttributes::getRemainingString(LastingEffect effect, GlobalTime time) const {
