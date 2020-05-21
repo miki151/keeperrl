@@ -426,6 +426,15 @@ void Collective::makeConqueredRetired(Collective* conqueror) {
     getGame()->transferCreature(c, getModel(), territory->getAll());
   for (auto c : oldCreatures)
     c->dieNoReason();
+  if (getLeaders().empty()) {
+    auto fighters = getCreatures(MinionTrait::FIGHTER);
+    if (!fighters.empty())
+      setTrait(Random.choose(fighters), MinionTrait::LEADER);
+    else {
+      CHECK(!getCreatures().empty());
+      setTrait(Random.choose(getCreatures()), MinionTrait::LEADER);
+    }
+  }
 }
 
 vector<Position> Collective::getEnemyPositions() const {
