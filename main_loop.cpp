@@ -191,7 +191,8 @@ void MainLoop::saveUI(PGame& game, GameSaveType type) {
           Square::progressMeter = &meter;
           if (!game->getSavedGameInfo(tileSet->getSpriteMods()).retiredEnemyInfo)
             // only upload if it's not a retired enemy
-            uploadFun = [this, path, name = game->getGameDisplayName(), savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods())] {
+            uploadFun = [this, path, name = game->getGameDisplayName(),
+                savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods())] {
               uploadFile(path, name, savedInfo);
             };
           saveMainModel(game, path);

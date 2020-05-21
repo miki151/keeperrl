@@ -146,8 +146,8 @@ void CreatureName::useFullTitle(bool b) {
   fullTitle = b;
 }
 
-void CreatureName::setKillTitle(const string& t) {
-  killTitle = t;
+void CreatureName::setKillTitle(optional<string> t) {
+  killTitle = std::move(t);
 }
 
 template <class Archive>

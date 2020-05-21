@@ -36,7 +36,7 @@ class CreatureName {
   void addBarePrefix(const string&);
   void addBareSuffix(const string&);
   void useFullTitle(bool = true);
-  void setKillTitle(const string&);
+  void setKillTitle(optional<string>);
   const string& stack() const;
   const char* identify() const;
   const optional<string>& stackOnly() const;
