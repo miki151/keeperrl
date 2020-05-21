@@ -787,6 +787,10 @@ class AbuseMinion : public Task {
   AbuseMinion(Creature* target) : target(target) {}
 
   virtual MoveInfo getMove(Creature* c) override {
+    if (!target) {
+      setDone();
+      return NoMove;
+    }
     if (c->getPosition().dist8(target->getPosition()).value_or(2) > 1) {
       if (auto action = c->moveTowards(target->getPosition()))
         return action;
@@ -807,7 +811,7 @@ class AbuseMinion : public Task {
   SERIALIZATION_CONSTRUCTOR(AbuseMinion)
 
   private:
-  Creature* SERIAL(target);
+  WeakPointer<Creature> SERIAL(target);
 };
 
 }
@@ -820,7 +824,7 @@ namespace {
 
 class AttackCreatures : public Task {
   public:
-  AttackCreatures(vector<Creature*> v) : creatures(v) {}
+  AttackCreatures(vector<Creature*> v) : creatures(v.transform([](auto c) { return c->getThis(); })) {}
 
   virtual MoveInfo getMove(Creature* c) override {
     if (auto target = getNextCreature(c))
@@ -830,9 +834,9 @@ class AttackCreatures : public Task {
 
   Creature* getNextCreature(Creature* attacker) const {
     for (auto c : creatures)
-      if (c && !c->isDead() && (attacker->canSeeInPosition(c, attacker->getGame()->getGlobalTime()) ||
+      if (c && !c->isDead() && (attacker->canSeeInPosition(c.get(), attacker->getGame()->getGlobalTime()) ||
           attacker->isAffected(LastingEffect::TELEPATHY)))
-        return c;
+        return c.get();
     return nullptr;
   }
 
@@ -844,7 +848,7 @@ class AttackCreatures : public Task {
   SERIALIZATION_CONSTRUCTOR(AttackCreatures)
 
   private:
-  vector<Creature*> SERIAL(creatures);
+  vector<WeakPointer<Creature>> SERIAL(creatures);
 };
 
 }
@@ -1094,8 +1098,8 @@ class Consume : public Task {
     return "Absorb " + target->getName().bare();
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), target);
-  SERIALIZATION_CONSTRUCTOR(Consume);
+  SERIALIZE_ALL(SUBCLASS(Task), target)
+  SERIALIZATION_CONSTRUCTOR(Consume)
 
   protected:
   WeakPointer<Creature> SERIAL(target);
