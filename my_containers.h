@@ -51,7 +51,9 @@ class vector {
   }
 
   void push_back(T t) {
+#ifndef RELEASE // due to compile errors on older clang
     static_assert(std::is_nothrow_move_constructible<T>::value, "T should be noexcept MoveConstructible");
+#endif
     impl.push_back(std::move(t));
     ++modCounter;
   }

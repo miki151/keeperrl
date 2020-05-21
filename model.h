@@ -16,7 +16,6 @@
 #pragma once
 
 #include "util.h"
-#include "map_memory.h"
 #include "stair_key.h"
 #include "position.h"
 #include "tribe.h"

@@ -16,7 +16,6 @@
 #include "stdafx.h"
 
 #include "util.h"
-#include "position.h"
 #include <time.h>
 
 RandomGen::RandomGen() {

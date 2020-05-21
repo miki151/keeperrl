@@ -663,6 +663,10 @@ void Position::removeFurniture(FurnitureLayer layer) const {
     removeFurniture(f);
 }
 
+void Position::removeFurniture(const Furniture* f) const {
+  removeFurniture(f, nullptr);
+}
+
 void Position::removeFurniture(const Furniture* f, PFurniture replace) const {
   PROFILE;
   bool visibilityChanged = (!!replace) ? (f->blocksAnyVision() != replace->blocksAnyVision()) : f->blocksAnyVision();

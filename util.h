@@ -428,7 +428,7 @@ class EnumMap {
   }
 
   EnumMap(const EnumMap& o) = default;
-  EnumMap(EnumMap&& o) noexcept = default;
+  EnumMap(EnumMap&& o) = default;
 
   template <typename Fun>
   explicit EnumMap(Fun f) {
@@ -1190,7 +1190,7 @@ class MustInitialize {
 
   MustInitialize() {}
 
-  MustInitialize& operator = (MustInitialize&& t) noexcept = default;
+  MustInitialize& operator = (MustInitialize&& t) = default;
 
   MustInitialize& operator = (const T& t) {
     elem = t;

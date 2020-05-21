@@ -2505,7 +2505,7 @@ static PLevelMaker getMountains(const MountainInfo& info, TribeId tribe) {
   return unique<Mountains>(info, NoiseInit{0, 1, 0, 0, 0}, tribe);
 }
 
-static PLevelMaker getForrest(const BiomeInfo& info) {
+static PMakerQueue getForrest(const BiomeInfo& info) {
   auto ret = unique<MakerQueue>();
   for (auto& f : info.forests)
     ret->addMaker(unique<Forrest>(f, TribeId::getHostile()));
