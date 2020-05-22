@@ -1123,6 +1123,10 @@ bool Collective::isConstructionReachable(Position pos) {
   return knownTiles->getKnownTilesWithMargin().count(pos);
 }
 
+bool Collective::containsCreature(Creature* c) {
+  return creatures.contains(c);
+}
+
 void Collective::onConstructed(Position pos, FurnitureType type) {
   if (pos.getFurniture(type)->forgetAfterBuilding()) {
     constructions->removeFurniturePlan(pos, getGame()->getContentFactory()->furniture.getData(type).getLayer());

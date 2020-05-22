@@ -250,6 +250,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   virtual void onAppliedSquare(Creature*, pair<Position, FurnitureLayer>) override;
   virtual void onCopulated(Creature* who, Creature* with) override;
   virtual bool isConstructionReachable(Position) override;
+  virtual bool containsCreature(Creature*) override;
 
   private:
   void onMinionKilled(Creature* victim, Creature* killer);

@@ -13,6 +13,8 @@ class TaskCallback : public OwnedObject<TaskCallback> {
   virtual void onAppliedItem(Position, Item* item) {}
   virtual void onAppliedSquare(Creature*, pair<Position, FurnitureLayer>) {}
   virtual void onCopulated(Creature* who, Creature* with) {}
+  // Remove after A30
+  virtual bool containsCreature(Creature*) { return false; }
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int) {

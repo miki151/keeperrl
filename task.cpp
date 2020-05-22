@@ -1850,7 +1850,7 @@ class InstallBodyPart : public Task {
       return NoMove;
     }
     CHECK(creature != c);
-    if (!creature || creature->isDead()) {
+    if (!creature || creature->isDead() || !callback->containsCreature(creature.get())) {
       setDone();
       return NoMove;
     }
