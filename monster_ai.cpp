@@ -757,8 +757,8 @@ class GuardArea : public Behaviour {
       return NoMove;
   }
 
-  SERIALIZATION_CONSTRUCTOR(GuardArea);
-  SERIALIZE_ALL(SUBCLASS(Behaviour), myLevel, area);
+  SERIALIZATION_CONSTRUCTOR(GuardArea)
+  SERIALIZE_ALL(SUBCLASS(Behaviour), myLevel, area)
 
   private:
   WLevel SERIAL(myLevel) = nullptr;

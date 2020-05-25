@@ -960,7 +960,7 @@ class KillFighters : public Task {
   KillFighters(Collective* col, int numC) : collective(col), numCreatures(numC) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-     optional<Position> moveTarget;
+    optional<Position> moveTarget;
     auto process = [&] (const vector<Creature*>& creatures) {
       for (const Creature* target : creatures)
         if (c->canSeeInPosition(target, c->getGame()->getGlobalTime()) || c->isAffected(LastingEffect::TELEPATHY)) {
@@ -974,7 +974,7 @@ class KillFighters : public Task {
     for (auto& info : c->getKills())
       if (targets.contains(info.creature))
         ++numKilled;
-    if (numKilled >= numCreatures || targets.empty()) {
+    if (numKilled >= numCreatures || !moveTarget) {
       setDone();
       return NoMove;
     }
@@ -1014,8 +1014,8 @@ class ConsumeItem : public Task {
     return "Consume item";
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), items, callback);
-  SERIALIZATION_CONSTRUCTOR(ConsumeItem);
+  SERIALIZE_ALL(SUBCLASS(Task), items, callback)
+  SERIALIZATION_CONSTRUCTOR(ConsumeItem)
 
   protected:
   EntitySet<Item> SERIAL(items);
