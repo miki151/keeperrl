@@ -834,8 +834,9 @@ class AttackCreatures : public Task {
 
   Creature* getNextCreature(Creature* attacker) const {
     for (auto c : creatures)
-      if (c && !c->isDead() && (attacker->canSeeInPosition(c.get(), attacker->getGame()->getGlobalTime()) ||
-          attacker->isAffected(LastingEffect::TELEPATHY)))
+      // Temporarily disabled. Make the attackers search territory if no visible target exists
+      if (c && !c->isDead() /*&& (attacker->canSeeInPosition(c.get(), attacker->getGame()->getGlobalTime()) ||
+          attacker->isAffected(LastingEffect::TELEPATHY))*/)
         return c.get();
     return nullptr;
   }
@@ -963,7 +964,9 @@ class KillFighters : public Task {
     optional<Position> moveTarget;
     auto process = [&] (const vector<Creature*>& creatures) {
       for (const Creature* target : creatures)
-        if (c->canSeeInPosition(target, c->getGame()->getGlobalTime()) || c->isAffected(LastingEffect::TELEPATHY)) {
+        // Temporarily disabled. Make the attackers search territory if no visible target exists
+        /*if (c->canSeeInPosition(target, c->getGame()->getGlobalTime()) || c->isAffected(LastingEffect::TELEPATHY))*/
+        {
           targets.insert(target);
           moveTarget = target->getPosition();
         }
