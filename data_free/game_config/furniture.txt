@@ -286,6 +286,7 @@
   viewId = { "automaton_engine" Rgb 180 140 55 255 }
   canHideHere = true
   strength = 50
+  blockMovement = true
   populationIncrease = 1 4
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
@@ -295,6 +296,7 @@
   viewId = { "automaton_engine" Rgb 140 148 148 255 }
   canHideHere = true
   strength = 50
+  blockMovement = true
   populationIncrease = 1 16
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
@@ -304,6 +306,7 @@
   viewId = { "automaton_engine" Rgb 148 189 189 255 }
   canHideHere = true
   strength = 50
+  blockMovement = true
   populationIncrease = 1 none
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
