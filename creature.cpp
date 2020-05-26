@@ -417,7 +417,7 @@ bool Creature::canSwapPositionInMovement(Creature* other, optional<Position> nex
 
 bool Creature::canSwapPositionWithEnemy(Creature* other) const {
   PROFILE;
-  return !LastingEffects::restrictedMovement(other)
+  return ((!isPlayer() && LastingEffects::canSwapPosition(other)) || !LastingEffects::restrictedMovement(other))
       && !other->getAttributes().isBoulder()
       && other->getPosition().canEnterEmpty(this)
       && getPosition().canEnterEmpty(other);
@@ -743,7 +743,9 @@ CreatureAction Creature::push(Creature* other) {
   if (!goDir.isCardinal8() || !other->position.plus(goDir).canEnter(
       other->getMovementType()))
     return CreatureAction("You can't push " + other->getName().the());
-  if (!getBody().canPush(other->getBody()) && (!other->isAffected(LastingEffect::IMMOBILE) || isEnemy(other)))
+  if (!getBody().canPush(other->getBody()) &&
+      !other->isAffected(LastingEffect::IMMOBILE) &&
+      !other->isAffected(LastingEffect::TURNED_OFF)) // everyone can push immobile and turned off creatures
     return CreatureAction("You are too small to push " + other->getName().the());
   return CreatureAction(this, [=](Creature* self) {
     self->verb("push", "pushes", other->getName().the());

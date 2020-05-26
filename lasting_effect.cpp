@@ -818,6 +818,13 @@ bool LastingEffects::restrictedMovement(const Creature* c) {
       || c->isAffected(LastingEffect::IMMOBILE);
 }
 
+bool LastingEffects::canSwapPosition(const Creature* c) {
+  return !c->isAffected(LastingEffect::SLEEP)
+      && !c->isAffected(LastingEffect::FROZEN)
+      && !c->isAffected(LastingEffect::ENTANGLED)
+      && !c->isAffected(LastingEffect::TIED_UP);
+}
+
 double LastingEffects::modifyCreatureDefense(LastingEffect e, double defense, AttrType damageAttr) {
   auto multiplyFor = [&](AttrType attr, double m) {
     if (damageAttr == attr)

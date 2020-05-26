@@ -132,4 +132,5 @@ class LastingEffects {
   static bool losesControl(const Creature*);
   static bool doesntMove(const Creature*);
   static bool restrictedMovement(const Creature*);
+  static bool canSwapPosition(const Creature*);
 };
