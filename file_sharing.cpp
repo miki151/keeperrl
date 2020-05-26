@@ -288,7 +288,7 @@ static vector<Elem> parseLines(const string& s, function<optional<Elem>(const ve
     iss.getline(buf, 10000);
     if (!iss)
       break;
-    INFO << "Parsing " << string(buf);
+    //INFO << "Parsing " << string(buf);
     if (auto elem = parseLine(split(buf, {','})))
       ret.push_back(*elem);
   }
@@ -318,7 +318,7 @@ optional<string> FileSharing::downloadContent(const string& url) {
 static optional<FileSharing::SiteInfo> parseSite(const vector<string>& fields) {
   if (fields.size() < 3)
     return none;
-  INFO << "Parsed " << fields;
+  //INFO << "Parsed " << fields;
   FileSharing::SiteInfo elem {};
   TextInput input(unescapeEverything(fields[0]));
   input.getArchive() >> elem.fileInfo.filename >> elem.gameInfo;
