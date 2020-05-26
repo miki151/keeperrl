@@ -1834,7 +1834,7 @@ namespace {
 class InstallBodyPart : public Task {
   public:
   InstallBodyPart(WTaskCallback call, Creature* c, Item* it)
-      : Task(true), creature(c), callback(call), itemId(it->getUniqueId()) {}
+      : Task(false), creature(c), callback(call), itemId(it->getUniqueId()) {}
 
   virtual string getDescription() const override {
     return "Install automaton part";
