@@ -613,8 +613,7 @@ class Kill : public Task {
   }
 
   virtual TaskPerformResult canPerformImpl(const Creature* c, const MovementType&) const override {
-    return creature == c ? TaskPerformResult::NEVER : TaskPerformResult::YES;
-
+    return (creature == c || LastingEffects::restrictedMovement(c)) ? TaskPerformResult::NEVER : TaskPerformResult::YES;
   }
 
   virtual MoveInfo getMove(Creature* c) override {
@@ -1198,6 +1197,10 @@ class GoTo : public Task {
   public:
   GoTo(Position pos, bool forever) : target(pos), tryForever(forever) {}
 
+  virtual TaskPerformResult canPerformImpl(const Creature* c, const MovementType&) const override {
+    return LastingEffects::restrictedMovement(c) ? TaskPerformResult::NEVER : TaskPerformResult::YES;
+  }
+
   virtual MoveInfo getMove(Creature* c) override {
     if (c->getPosition() == target ||
         (c->getPosition().dist8(target) == 1 && !target.canEnter(c)) ||
@@ -1213,7 +1216,7 @@ class GoTo : public Task {
   }
 
   SERIALIZE_ALL(SUBCLASS(Task), target, tryForever)
-  SERIALIZATION_CONSTRUCTOR(GoTo);
+  SERIALIZATION_CONSTRUCTOR(GoTo)
 
   protected:
   Position SERIAL(target);
@@ -1441,6 +1444,10 @@ class GoToAndWait : public Task {
         (c->getPosition().dist8(position) == 1 && !position.canEnterEmpty(c));
   }
 
+  virtual TaskPerformResult canPerformImpl(const Creature* c, const MovementType&) const override {
+    return LastingEffects::restrictedMovement(c) ? TaskPerformResult::NEVER : TaskPerformResult::YES;
+  }
+
   virtual optional<Position> getPosition() const override {
     return position;
   }
@@ -1474,8 +1481,8 @@ class GoToAndWait : public Task {
     return "Go to and wait " + toString(position);
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), position, waitTime, maxTime, timeout);
-  SERIALIZATION_CONSTRUCTOR(GoToAndWait);
+  SERIALIZE_ALL(SUBCLASS(Task), position, waitTime, maxTime, timeout)
+  SERIALIZATION_CONSTRUCTOR(GoToAndWait)
 
   private:
   Position SERIAL(position);
@@ -1712,6 +1719,8 @@ class PickUpItem : public Task {
 
   virtual TaskPerformResult canPerformImpl(const Creature* c, const MovementType& movement) const override {
     PROFILE_BLOCK("PickUpItem::canPerform");
+    if (LastingEffects::restrictedMovement(c))
+      return TaskPerformResult::NEVER;
     return c->canCarryMoreWeight(lightestItem) && position.canNavigateTo(c->getPosition(), movement)
         ? TaskPerformResult::YES : TaskPerformResult::NOT_NOW;
   }
