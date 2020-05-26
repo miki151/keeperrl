@@ -532,6 +532,8 @@ void Collective::updateAutomatonEngines() {
       if (!off)
         c->addPermanentEffect(LastingEffect::TURNED_OFF);
     --totalPop;
+    if (c->getAttributes().isAffectedPermanently(LastingEffect::TURNED_OFF))
+      taskMap->freeFromTask(c);
   }
 }
 
