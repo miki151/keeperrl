@@ -394,6 +394,8 @@ SGuiElem GuiBuilder::drawResources(const vector<CollectiveInfo::Resource>& numRe
   auto line = WL(getListBuilder, resourceSpace);
   auto moreResources = WL(getListBuilder, legendLineHeight);
   int numResourcesShown = min(numResource.size(), (width - 250) / resourceSpace);
+  if (numResourcesShown < 1)
+    return gui.empty();
   if (numResourcesShown < numResource.size())
     --numResourcesShown;
   int maxMoreName = 0;
