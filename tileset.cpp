@@ -270,6 +270,16 @@ const Tile& TileSet::getTile(ViewId viewId, bool sprite) const {
 
 constexpr int textureWidth = 720;
 
+static int getNumFrames(const vector<FilePath>& files, int tileWidth) {
+  int ret = 0;
+  for (int i : All(files)) {
+    SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath());
+    auto dest = OnExit([&] { SDL::SDL_FreeSurface(im); });
+    ret += im->w / tileWidth;
+  }
+  return ret;
+}
+
 bool TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwrite) {
   if (!path.exists())
     return false;
@@ -278,13 +288,15 @@ bool TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwr
   if (files.empty())
     return false;
   int rowLength = textureWidth / size.x;
-  SDL::SDL_Surface* image = Texture::createSurface(textureWidth, textureWidth);
+  const auto numFrames = getNumFrames(files, size.x);
+  SDL::SDL_Surface* image = Texture::createSurface(textureWidth, (numFrames / rowLength + 1) * size.y);
   SDL::SDL_SetSurfaceBlendMode(image, SDL::SDL_BLENDMODE_NONE);
   CHECK(image) << SDL::SDL_GetError();
   int frameCount = 0;
   vector<pair<string, Vec2>> addedPositions;
   for (int i : All(files)) {
     SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath());
+    auto dest = OnExit([&] { SDL::SDL_FreeSurface(im); });
     SDL::SDL_SetSurfaceBlendMode(im, SDL::SDL_BLENDMODE_NONE);
     USER_CHECK(im) << files[i] << ": "<< SDL::IMG_GetError();
     USER_CHECK((im->w % size.x == 0) && im->h == size.y) << files[i] << " has wrong size " << im->w << " " << im->h;
@@ -313,7 +325,6 @@ bool TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwr
       INFO << "Loading tile sprite " << fileName << " at " << posX << "," << posY;
       ++frameCount;
     }
-    SDL::SDL_FreeSurface(im);
   }
   texturesTmp.push_back({image, addedPositions});
   for (auto& pos : addedPositions)
