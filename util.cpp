@@ -982,6 +982,10 @@ thread makeThread(function<void()> fun) {
   return thread(fun);
 }
 
+scoped_thread makeScopedThread(function<void()> fun) {
+  return scoped_thread(makeThread(std::move(fun)));
+}
+
 //#endif
 
 ConstructorFunction::ConstructorFunction(function<void()> fun) {

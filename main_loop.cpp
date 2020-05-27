@@ -865,9 +865,8 @@ void MainLoop::doWithSplash(const string& text, function<void()> fun, function<v
     fun();
   else {
     view->displaySplash(nullptr, text, cancelFun);
-    thread t = makeThread([fun, this] { fun(); view->clearSplash(); });
+    auto t = makeScopedThread([fun, this] { fun(); view->clearSplash(); });
     view->refreshView();
-    t.join();
   }
 }
 

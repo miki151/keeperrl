@@ -1642,6 +1642,24 @@ class AsyncLoop {
 
 thread makeThread(function<void()> fun);
 
+class scoped_thread {
+  public:
+  scoped_thread(thread t_): t(std::move(t_)) {
+    CHECK(t.joinable());
+  }
+  ~scoped_thread(){
+    t.join();
+  }
+  scoped_thread(scoped_thread&&) = default;
+  scoped_thread& operator = (scoped_thread&&) = default;
+  scoped_thread(const scoped_thread&) = delete;
+  scoped_thread& operator = (scoped_thread const &) = delete;
+  private:
+  std::thread t;
+};
+
+scoped_thread makeScopedThread(function<void()> fun);
+
 void openUrl(const string& url);
 
 template <typename T, typename... Args>
