@@ -69,7 +69,8 @@ void Texture::setParams(Filter filter, Wrapping wrap) {
 }
 
 Texture::Texture(SDL::SDL_Surface* surface) {
-  CHECK(!loadFromMaybe(surface));
+  if (auto error = loadFromMaybe(surface))
+    FATAL << "Error loading texture " << openglErrorCode(*error);
 }
 
 Texture::Texture(Texture&& tex) noexcept {

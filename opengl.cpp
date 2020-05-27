@@ -6,8 +6,7 @@
 using SDL::GLenum;
 using SDL::GLuint;
 
-const char* openglErrorCode(int code) {
-  const char* err_code = "unknown";
+const char* openglErrorCode(GLenum code) {
   switch (code) {
 #define CASE(e)                                                                                                        \
   case GL_##e:                                                                                                         \

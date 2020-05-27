@@ -14,7 +14,7 @@
 struct Color;
 
 // TODO: consistent naming
-
+const char* openglErrorCode(SDL::GLenum code);
 void checkOpenglError(const char* file, int line);
 #define CHECK_OPENGL_ERROR() checkOpenglError(__FILE__, __LINE__)
 
