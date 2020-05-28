@@ -417,7 +417,8 @@ bool Creature::canSwapPositionInMovement(Creature* other, optional<Position> nex
 
 bool Creature::canSwapPositionWithEnemy(Creature* other) const {
   PROFILE;
-  return ((!isPlayer() && LastingEffects::canSwapPosition(other)) || !LastingEffects::restrictedMovement(other))
+  return ((!isPlayer() && LastingEffects::canSwapPosition(other)) || !LastingEffects::restrictedMovement(other)
+          || other->isAffected(LastingEffect::STUNNED))
       && !other->getAttributes().isBoulder()
       && other->getPosition().canEnterEmpty(this)
       && getPosition().canEnterEmpty(other);
