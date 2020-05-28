@@ -497,7 +497,8 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   vector<EquipmentSlot> slots;
   for (auto slot : Equipment::slotTitles)
     slots.push_back(slot.first);
-  vector<Item*> ownedItems = collective->getMinionEquipment().getItemsOwnedBy(creature);
+  vector<Item*> ownedItems = collective->getMinionEquipment().getItemsOwnedBy(creature)
+      .filter([](auto item) { return !item->getAutomatonPart(); });
   for (auto slot : slots) {
     vector<Item*> items;
     for (Item* it : ownedItems)
