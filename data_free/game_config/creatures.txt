@@ -3723,8 +3723,8 @@
   {
     viewId = { "special_hlgn" }
     attr = {
-      SPELL_DAMAGE 100
-      DEFENSE 100
+      SPELL_DAMAGE 999
+      DEFENSE 999
     }
     body = {
       type = NonHumanoid LARGE
