@@ -3931,9 +3931,10 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
           WL(label, "Conquer rate: " + toString(allGames[i].numWon) + "/" + toString(allGames[i].numTotal),
               Renderer::smallTextSize, gui.inactiveText)), legendLineHeight * 2 / 3);
       if (!allGames[i].gameInfo.spriteMods.empty()) {
+        auto modsList = combine(allGames[i].gameInfo.spriteMods, true);
         lines.addElem(WL(stack,
-            WL(tooltip, {"These mods may be required to successfully load this dungeon."}),
-            WL(label, "Requires mods:" + combine(allGames[i].gameInfo.spriteMods, true), Renderer::smallTextSize, gui.inactiveText)),
+            WL(tooltip, {"These mods may be required to successfully load this dungeon:", modsList}),
+            WL(renderInBounds, WL(label, "Requires mods:" + modsList, Renderer::smallTextSize, gui.inactiveText))),
             legendLineHeight * 2 / 3);
       }
       lines.addSpace(legendLineHeight / 3);
