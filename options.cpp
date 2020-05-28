@@ -303,6 +303,10 @@ void Options::changeValue(OptionId id, const Options::Value& value, View* view) 
             "Leave blank to use a random name."))
         setValue(id, *val);
       break;
+    case OptionId::KEEPER_WARNING_TIMEOUT:
+      if (auto val = view->getNumber("Change " + lowercase(getName(id)), Range(0, 500), *value.getValueMaybe<int>(), 50))
+        setValue(id, *val);
+      break;
     case OptionId::AUTOSAVE2:
       if (auto val = view->getNumber("Change " + lowercase(getName(id)), Range(0, 5000), *value.getValueMaybe<int>(), 500))
         setValue(id, *val);
