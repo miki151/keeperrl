@@ -1301,6 +1301,9 @@
     permanentEffects = append {
       DISTILLATION_SKILL 1
     }
+    skills = {
+      "LABORATORY" 0.4
+    }
     name = {
       name = "cleric"
       firstNameGen = "FIRST_MALE"
