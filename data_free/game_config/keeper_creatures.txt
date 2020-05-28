@@ -51,9 +51,9 @@
   tribeAlignment = LAWFUL
   immigrantGroups = {"gnomes"}
   technology = {
-      "traps" "advanced traps"# "master traps"
+      "traps" "advanced traps"
       "automatons" "advanced automatons" "automaton brains" "aerodynamics"
-      "iron working" "alchemy" "incendiary alchemy" "distillation" 
+      "iron working" "alchemy" "incendiary alchemy" "distillation" "two-handed weapons"
   }
   initialTech = { "automatons" }
   baseNameGen = "TOWN"
