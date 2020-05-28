@@ -127,4 +127,6 @@ class MainLoop {
   GameConfig getVanillaConfig() const;
   GameConfig getGameConfig(const vector<string>& modNames) const;
   DirectoryPath getVanillaDir() const;
+  template<typename T>
+  optional<T> loadFromFile(const FilePath&);
 };

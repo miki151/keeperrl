@@ -97,8 +97,8 @@ static string getSaveSuffix(GameSaveType t) {
 }
 
 template <typename T>
-static optional<T> loadFromFile(const FilePath& filename, bool failSilently) {
-  try {
+optional<T> MainLoop::loadFromFile(const FilePath& filename) {
+  auto f = [&] {
     T obj;
     CompressedInput input(filename.getPath());
     string discard;
@@ -107,11 +107,13 @@ static optional<T> loadFromFile(const FilePath& filename, bool failSilently) {
     input.getArchive() >> version >> discard >> discard2;
     input.getArchive() >> obj;
     return std::move(obj);
-  } catch (std::exception& ex) {
-    if (failSilently)
-      return none;
-    else
-      throw ex;
+  };
+  if (useSingleThread)
+    return f();
+  else
+    try { return f(); }
+  catch (...) {
+    return none;
   }
 }
 
@@ -1146,7 +1148,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
                 if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
                   if (auto& retiredInfo = saved->retiredEnemyInfo)
                     if (retiredInfo->enemyId == villain->enemyId)
-                      if (auto model = loadFromFile<RetiredModelInfo>(userPath.file(info.filename), !useSingleThread)) {
+                      if (auto model = loadFromFile<RetiredModelInfo>(userPath.file(info.filename))) {
                         models[v] = std::move(model->model);
                         remove(userPath.file(info.filename).getPath());
                         break;
@@ -1154,7 +1156,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
             if (!models[v])
               models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, avatarInfo.tribeAlignment);
           } else if (auto retired = sites[v].getRetired()) {
-            if (auto info = loadFromFile<RetiredModelInfo>(userPath.file(retired->fileInfo.filename), !useSingleThread)) {
+            if (auto info = loadFromFile<RetiredModelInfo>(userPath.file(retired->fileInfo.filename))) {
               models[v] = std::move(info->model);
               factories.push_back(std::move(info->factory));
             } else {
@@ -1176,7 +1178,7 @@ PGame MainLoop::loadGame(const FilePath& file) {
         [&] (ProgressMeter& meter) {
           Square::progressMeter = &meter;
           INFO << "Loading from " << file;
-          MEASURE(game = loadFromFile<PGame>(file, !useSingleThread), "Loading game");
+          MEASURE(game = loadFromFile<PGame>(file), "Loading game");
     });
   Square::progressMeter = nullptr;
   return game ? std::move(*game) : nullptr;
