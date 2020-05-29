@@ -198,6 +198,8 @@ void FXRenderer::prepareOrdered() {
     auto fboSize = allocateFboSpace();
     if (!orderedBlendFBO || orderedBlendFBO->width != fboSize.x || orderedBlendFBO->height != fboSize.y) {
       INFO << "FX: creating FBO for ordered rendering (" << fboSize.x << ", " << fboSize.y << ")";
+      orderedBlendFBO.reset();
+      orderedAddFBO.reset();
       orderedBlendFBO = unique<Framebuffer>(fboSize.x, fboSize.y);
       orderedAddFBO = unique<Framebuffer>(fboSize.x, fboSize.y);
     }
@@ -244,6 +246,8 @@ void FXRenderer::setView(float zoom, float offsetX, float offsetY, int w, int h)
   if (useFramebuffer) {
     if (!blendFBO || blendFBO->width != size.x || blendFBO->height != size.y) {
       INFO << "FX: creating FBO (" << size.x << ", " << size.y << ")";
+      orderedBlendFBO.reset();
+      orderedAddFBO.reset();
       blendFBO = unique<Framebuffer>(size.x, size.y);
       addFBO = unique<Framebuffer>(size.x, size.y);
     }
