@@ -108,6 +108,14 @@ static string getName(CreatureStatus s) {
   return toLower(::getName(s)) + "s";
 }
 
+static bool applyToCreature(CreatureId id, const Creature* victim, const Creature* attacker) {
+  return victim->getAttributes().getCreatureId() == id;
+}
+
+static string getName(CreatureId s) {
+  return toLower(s.data());
+}
+
 static bool apply(const CreaturePredicates::Flag& s, Position pos, const Creature* attacker) {
   return pos.getGame()->effectFlags.count(s.name);
 }

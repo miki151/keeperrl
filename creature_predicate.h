@@ -3,6 +3,7 @@
 #include "util.h"
 #include "lasting_effect.h"
 #include "furniture_type.h"
+#include "creature_id.h"
 
 #define SIMPLE_PREDICATE(Name) \
   struct Name { \
@@ -83,7 +84,8 @@ struct Or {
   X(Not, 14)\
   X(And, 15)\
   X(Or, 16)\
-  X(Health, 17)
+  X(Health, 17)\
+  X(CreatureId, 18)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST
