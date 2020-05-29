@@ -1107,8 +1107,8 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::AMBUSH_SKILL: return "ambush";
     case LastingEffect::SWIMMING_SKILL: return "swimming";
     case LastingEffect::DISARM_TRAPS_SKILL: return "trap disarming";
-    case LastingEffect::CONSUMPTION_SKILL: return "absorbtion";
-    case LastingEffect::COPULATION_SKILL: return "copulatation";
+    case LastingEffect::CONSUMPTION_SKILL: return "absorption";
+    case LastingEffect::COPULATION_SKILL: return "copulation";
     case LastingEffect::CROPS_SKILL: return "farming";
     case LastingEffect::DISTILLATION_SKILL: return "distillation";
     case LastingEffect::SPIDER_SKILL: return "spider web weaving";
