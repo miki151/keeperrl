@@ -434,7 +434,7 @@
       }
     }
     name = {
-      name = "big, bad devil"
+      name = "Big, Bad Devil"
     }
   }
 "LOST_SOUL"
