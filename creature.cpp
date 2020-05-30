@@ -1860,7 +1860,7 @@ bool Creature::canConsume(const Creature* c) const {
   return c != this &&
       c->getBody().canConsume() &&
       isAffected(LastingEffect::CONSUMPTION_SKILL) &&
-      isFriend(c);
+      c->getTribeId() == tribe;
 }
 
 CreatureAction Creature::copulate(Vec2 direction) const {
