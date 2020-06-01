@@ -434,7 +434,8 @@
       }
     }
     name = {
-      name = "Big, Bad Devil"
+      name = "Diabolo"
+      fullTitle = true
     }
   }
 "LOST_SOUL"
