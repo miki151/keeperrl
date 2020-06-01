@@ -804,6 +804,15 @@
     ransom = 0.5 80
   }
 }
+"HELL_ESCAPE_FLOOR"
+{
+  settlement = {
+    type = Builtin TOWER
+    tribe = HUMAN
+    buildingId = "HELL_ESCAPE"
+  }
+  discoverable = false
+}
 "MAIN_DUNGEON"
 {
   settlement = {
@@ -838,6 +847,7 @@
       { ExtraEnemy { "DEATH" { 1 } } 40 30 BASIC none true false }
       { ExtraEnemy { "HELL" { 1 } } 40 30 DUNGEON "A Very Hot Place" true false }
       { ExtraEnemy { "SATAN" { 1 } } 32 22 BASIC "A Very Hot Place" true false }
+      { ExtraEnemy { "HELL_ESCAPE_FLOOR" { 3 6 }} 4 4 TOWER }
       { ExtraEnemy { "OUTBACK_ENTRY" { 1 } } 100 100 OUTBACK "Down Under" true }
     }
   }

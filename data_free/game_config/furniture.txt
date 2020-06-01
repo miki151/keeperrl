@@ -411,6 +411,7 @@
 "ADOXIE_STATUE" inherit "ADOXIE_STATUE_TEMPLE"
 {
   destroyedEffect = Chain { Message "The statue comes to life!" SummonEnemy "ADOXIE_HEAD" {1} none }
+  destroyedRemains = "DOWN_STAIRS_ADOXIE"
 }
 "BARRICADE"
 {
@@ -949,6 +950,12 @@
   name = "portal"
   constructMessage = none
   usageType = UsageEffect "use" Chain {Stairs Fx { TELEPORT_OUT }}
+}
+"DOWN_STAIRS_ADOXIE" inherit "UP_STAIRS"
+{
+  viewId = { "down_staircase" }
+  usageType = UsageEffect "use" Chain { Message "You lose your sense of direction" Stairs }
+  onBuilt = DOWN_STAIRS
 }
 "INACTIVE_PORTAL"
 {

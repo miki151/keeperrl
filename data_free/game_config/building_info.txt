@@ -71,6 +71,11 @@
     door = { "WOOD_DOOR" 1.0 }
     gate = { "WOOD_GATE" 1.0 }
   }
+"HELL_ESCAPE" inherit "DUNGEON"
+  {
+    downStairs = {"UP_STAIRS"}
+    upStairs = {"DOWN_STAIRS"}
+  }
 "BLACK_MARKET_ENTRY" inherit "DUNGEON"
   {
     upStairs = { "INACTIVE_PORTAL" "UP_STAIRS" }
