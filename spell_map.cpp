@@ -77,8 +77,8 @@ void SpellMap::setReadyTime(const Creature* c, const Spell* spell, GlobalTime ti
     info->timeout = time;
   else if (auto& a = getItemAbility(c, spell))
     a->timeout = time;
-  else
-    FATAL << "spell not found";
+  /*else  this causes a crash if it's a suicide spell granted by equipment
+    FATAL << "spell not found";*/
 }
 
 vector<const Spell*> SpellMap::getAvailable(const Creature* c) const {
