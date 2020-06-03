@@ -1,13 +1,12 @@
-"Welcome to KeeperRL Alpha 29.1! This patch was released on October 22nd, 2019.
+"Welcome to KeeperRL Alpha 30! This patch was released on June 3rd, 2020.
 
 A lot of changes have arrived with this update. Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
 
-* Steam Workshop integration for sharing mods and retired dungeons.
-* Two new biomes with dedicated content.
-* Special item ingredients dropped by major enemies.
-* Shields and parry mechanic.
-* Enemy aggression setting.
-* Improved mod support.
+* A new, playable Gnomes faction.
+* Support for loading multiple mods at once.
+* Expansion of the White Knight Keeper.
+* A hidden dungeon and two new secret levels.
+* The option to build your base in 5 different biomes.
 
 If this is your first time playing KeeperRL, remember to start with the tutorial!"
 
