@@ -1654,13 +1654,13 @@ void PlayerControl::addMessage(const PlayerMessage& msg) {
 }
 
 void PlayerControl::updateMinionVisibility(const Creature* c) {
-  PROFILE;
   auto visibleTiles = c->getVisibleTiles();
-  for (Position pos : visibilityMap->update(c, visibleTiles))
+  visibilityMap->update(c, visibleTiles);
+  for (Position pos : visibleTiles) {
     if (collective->addKnownTile(pos))
       updateKnownLocations(pos);
-  for (Position pos : visibleTiles)
     addToMemory(pos);
+  }
 }
 
 void PlayerControl::onEvent(const GameEvent& event) {
