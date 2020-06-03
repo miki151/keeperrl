@@ -262,7 +262,7 @@ string Tutorial::getMessage() const {
     case State::RESEARCH:
       return "You have increased your malevolence level. This is the main meter of your progress in the game and allows "
           "you to research new technologies.\n \n"
-          "Click on the level button and research something.";
+          "Click on the technology tab and research something.";
     case State::MINIMAP_BUTTONS:
       return "As the last objective, familiarize yourself with the two buttons under the minimap in the top-right corner. "
           "The first one opens the world map window, which you can use to travel to other sites when in control mode.\n \n"
