@@ -18,7 +18,7 @@
       "installations" "magical_installations" "traps"
   }
   workshopGroups = { "basic" "traps" }
-  description = "Build and manage your dream dungeon, defend against raids, and attack your enemies!"
+  description = "Build and manage your dream dungeon, defend against raids, and attack your enemies. Be about as evil as a boogieman can be!"
 # Special traits example, all traits are added
 #   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
 }
@@ -62,7 +62,7 @@
       "crafting" "laboratory" "distillery" "automatons" "orders" "installations" "traps" "gnome_traps"
   }
   workshopGroups = { "gnomes" "traps" "basic" }
-  description = "Seize the means of production and engineer traps, automatons and other contraptions."
+  description = "Seize the means of production and engineer traps, automatons and other contraptions. Recommended for advanced players."
   minionTraits = { LEADER WORKER NO_LIMIT }
   maxPopulation = 0
   populationString = "automatons"
