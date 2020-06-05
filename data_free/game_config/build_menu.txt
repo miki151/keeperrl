@@ -34,7 +34,7 @@
       "Build to pass over water or lava." }
 
     { Furniture {{ "DOWN_STAIRS" }                }              "Down stairs"       "Structure"
-      "Build to pass over water of lava." }
+      "Build to reach deeper z-levels." }
   }
 
   "doors"
