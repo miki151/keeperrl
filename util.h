@@ -1308,7 +1308,7 @@ class DirSet {
   DirSet();
   DirSet(const vector<Dir>&);
   DirSet(const initializer_list<Dir>&);
-  DirSet(bool n, bool s, bool e, bool w, bool ne, bool nw, bool se, bool sw);
+  DirSet(bool n, bool s, bool e, bool w, bool ne, bool nw, bool se, bool sw, bool ew, bool ns);
   typedef unsigned char ContentType;
   DirSet(ContentType);
   static DirSet fullSet();
