@@ -3816,8 +3816,11 @@
     }
     chatReactionFriendly = "\"Gaze upon my magnificence and tremble, mortal!\""
     chatReactionHostile = "\"How dare you defy a GOD!\""
-    deathDescription = "vanquished. May he never rise again"
+    deathDescription = "put into slumber"
     gender = IT
+    deathEffect = Chain {
+      SetFlag "EvilGodAdoxieIsKilled" true
+      Message "\"Evil God Adoxie has been vanquished. May he never rise again.\""
   }
 "ADOXIE_FOOT_LEFT"
   {
