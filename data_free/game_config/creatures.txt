@@ -3821,6 +3821,7 @@
     deathEffect = Chain {
       SetFlag "EvilGodAdoxieIsKilled" true
       Message "\"Evil God Adoxie has been vanquished. May he never rise again.\""
+    }
   }
 "ADOXIE_FOOT_LEFT"
   {
