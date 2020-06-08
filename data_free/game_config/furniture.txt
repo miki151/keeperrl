@@ -1195,6 +1195,19 @@
       Fx { TELEPORT_OUT }
       DestroyWalls BASH
   }
+  overrideMovement = true
+  movementSet = {
+    forcibleTraits = { FLY SWIM WADE WALK }
+  }
+  itemDrop = {{{{Simple "Rock"} 1 { 3 }}}}
+  strength2 = {
+    300 BOULDER
+    100 DIG
+    1900 HOSTILE_DIG
+    2000 HOSTILE_DIG_NO_SKILL
+  }
+  #destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
+  #tryDestroyFX = { DESTROY_FURNITURE Rgb 200 200 200 255 }
 }
 "SNOW_WALL" inherit "CASTLE_WALL"
 {

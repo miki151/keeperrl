@@ -3213,8 +3213,15 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
               WL(button,
               getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
                   EquipmentActionInfo{minion.creatureId, items[i].ids, items[i].slot, ItemAction::LOCK}})),
-              items[i].locked ? WL(viewObject, ViewId("key")) : WL(mouseHighlight2, WL(viewObject, ViewId("key_highlight"))),
-              getTooltip({"Locked items won't be automatically swapped by minion."}, THIS_LINE + i)
+              items[i].locked ? 
+                WL(viewObject, ViewId("gui_inventory_locked")) :
+                WL(mouseHighlight2, WL(viewObject, ViewId("gui_inventory_locked_highlighted")):
+              !items[i].locked ?
+                WL(viewObject, ViewId("gui_inventory_unlocked")) : 
+                WL(mouseHighlight2, WL(viewObject, ViewId("gui_inventory_unlocked_highlighted"))),
+              items[i].locked ?
+                getTooltip({"Item Locked. Locked items won't be automatically swapped by minion."}, THIS_LINE + i):
+                getTooltip({"Item Not Locked. Allows minions to automatically swap it."}, THIS_LINE + i)
           );
         }
         itemElems.push_back(

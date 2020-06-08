@@ -617,3 +617,8 @@
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
   background = "mountain2" }
 
+#added for gui purposes - DeliveryService
+{ "gui_equipment_locked" "*" ColorId YELLOW }
+{ "gui_equipment_locked_highlighted" "*" ColorId WHITE }
+{ "gui_equipment_unlocked" "*" ColorId DARK_GRAY }
+{ "gui_equipment_unlocked_highlighted" "*" ColorId ALMOST_WHITE }
