@@ -64,8 +64,14 @@ static void addThird(const Creature* c, MsgType type, const string& param) {
     case MsgType::BURN: msg = c->getName().the() + " burns in the " + param; unseenMsg = "You hear a horrible scream"; break;
     case MsgType::DROWN: msg = c->getName().the() + " drowns in the " + param; unseenMsg = "You hear a loud splash" ;break;
     case MsgType::SET_UP_TRAP: msg = c->getName().the() + " sets up the trap"; break;
-    case MsgType::KILLED_BY: msg = c->getName().the() + " is "+
-        c->getAttributes().getDeathDescription() + " by " + param; break;
+    case MsgType::KILLED_BY: 
+        if ((c->getName().the())compare(param) = 0)
+        // If creature name compared to what killed it,
+        // has zero difference, perform the code below.
+          msg = c->getName().the() + " has committed suicide.";
+        else
+          msg = c->getName().the() + " is "+
+          c->getAttributes().getDeathDescription() + " by " + param; break;
     case MsgType::TURN: msg = c->getName().the() + " turns " + param; break;
     case MsgType::BECOME: msg = c->getName().the() + " becomes " + param; break;
     case MsgType::COPULATE: msg = c->getName().the() + " copulates " + param; break;
