@@ -3215,11 +3215,13 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
                   EquipmentActionInfo{minion.creatureId, items[i].ids, items[i].slot, ItemAction::LOCK}})),
               items[i].locked ? 
                 WL(viewObject, ViewId("gui_inventory_locked")) :
-                WL(mouseHighlight2, WL(viewObject, ViewId("gui_inventory_locked_highlighted")) :
+                WL(mouseHighlight2, WL(viewObject, ViewId("gui_inventory_locked_highlighted")):
               !items[i].locked ?
-                WL(viewObject, ViewId("gui_inventory_unlocked")) : //if not locked and hovered show this ViewId instead. Else, perform code below.
+                WL(viewObject, ViewId("gui_inventory_unlocked")) : 
                 WL(mouseHighlight2, WL(viewObject, ViewId("gui_inventory_unlocked_highlighted"))),
-              getTooltip({"Locked items won't be automatically swapped by minion."}, THIS_LINE + i)
+              items[i].locked ?
+                getTooltip({"Item Locked. Locked items won't be automatically swapped by minion."}, THIS_LINE + i):
+                getTooltip({"Item Not Locked. Allows minions to automatically swap it."}, THIS_LINE + i)
           );
         }
         itemElems.push_back(
