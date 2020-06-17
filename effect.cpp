@@ -1661,7 +1661,7 @@ static bool apply(const Effects::Audience& a, Position pos, Creature* attacker) 
     }
   };
   if (collective) {
-    for (auto enemy : collective->getCreatures(MinionTrait::FIGHTER))
+    for (auto enemy : copyOf(collective->getCreatures(MinionTrait::FIGHTER)))
       tryTeleporting(enemy);
     if (collective != collective->getGame()->getPlayerCollective())
       for (auto l : collective->getLeaders())
