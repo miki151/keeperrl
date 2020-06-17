@@ -349,13 +349,22 @@ void Player::targetAction() {
 }
 
 void Player::payForItemAction(const vector<Item*>& items) {
-  int totalPrice = (int) items.size() * items[0]->getPrice();
-  for (auto item : items) {
+  int totalPrice = std::accumulate(items.begin(), items.end(), 0,
+      [](int sum, const Item* it) { return sum + it->getPrice(); });
+  for (auto item : items)
     CHECK(item->getShopkeeper(creature));
-    CHECK(item->getPrice() == items[0]->getPrice());
-  }
   vector<Item*> gold = creature->getGold(totalPrice);
-  int canPayFor = (int) gold.size() / items[0]->getPrice();
+  int canPayFor = [&] {
+    int res = 0;
+    int remaining = gold.size();
+    for (auto it : items)
+      if (it->getPrice() <= remaining) {
+        ++res;
+        remaining -= it->getPrice();
+      } else
+        break;
+    return res;
+  }();
   if (canPayFor == 0)
     privateMessage("You don't have enough gold to pay.");
   else if (canPayFor == items.size() || getView()->yesOrNoPrompt("You only have enough gold for " +
