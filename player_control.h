@@ -88,6 +88,13 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   void onEvent(const GameEvent&);
   const vector<Creature*>& getControlled() const;
+  void controlSingle(Creature*);
+  struct KeeperDangerInfo {
+    Creature* c;
+    string warning;
+  };
+  optional<KeeperDangerInfo> checkKeeperDanger() const;
+  void dismissKeeperWarning();
 
   optional<TeamId> getCurrentTeam() const;
   CollectiveTeams& getTeams();
@@ -140,8 +147,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool canSee(Position) const;
   bool isConsideredAttacking(const Creature*, const Collective* enemy);
 
-  struct KeeperDangerInfo;
-  optional<KeeperDangerInfo> checkKeeperDanger() const;
   static string getWarningText(CollectiveWarning);
   void updateSquareMemory(Position);
   void updateKnownLocations(const Position&);
@@ -150,7 +155,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   Creature* getConsumptionTarget(View*, Creature* consumer);
   Creature* getCreature(UniqueEntity<Creature>::Id id) const;
-  void controlSingle(Creature*);
   void commandTeam(TeamId);
   void setScrollPos(Position);
 

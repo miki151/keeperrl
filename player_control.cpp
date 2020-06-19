@@ -1527,11 +1527,6 @@ void PlayerControl::fillResources(CollectiveInfo& info) const {
     }
 }
 
-struct PlayerControl::KeeperDangerInfo {
-  Creature* c;
-  string warning;
-};
-
 void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING))
     if (auto info = checkKeeperDanger())
@@ -2541,8 +2536,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         controlSingle(info->c);
       break;
     case UserInputId::DISMISS_KEEPER_DANGER:
-      nextKeeperWarning = getGame()->getGlobalTime() +
-          TimeInterval(getGame()->getOptions()->getIntValue(OptionId::KEEPER_WARNING_TIMEOUT));
+      dismissKeeperWarning();
       break;
     case UserInputId::TAKE_SCREENSHOT:
       getView()->dungeonScreenshot(input.get<Vec2>());
@@ -2892,6 +2886,11 @@ optional<PlayerControl::KeeperDangerInfo> PlayerControl::checkKeeperDanger() con
     }
   }
   return none;
+}
+
+void PlayerControl::dismissKeeperWarning() {
+  nextKeeperWarning = getGame()->getGlobalTime() +
+      TimeInterval(getGame()->getOptions()->getIntValue(OptionId::KEEPER_WARNING_TIMEOUT));
 }
 
 void PlayerControl::considerNightfallMessage() {

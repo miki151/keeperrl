@@ -2650,6 +2650,9 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
       auto& playerInfo = *info.playerInfo.getReferenceMaybe<PlayerInfo>();
       ret.push_back({cache->get(bindMethod(&GuiBuilder::drawPlayerOverlay, this), THIS_LINE,
           playerInfo), OverlayInfo::TOP_LEFT});
+      if (info.keeperInDanger)
+        ret.push_back({cache->get(bindMethod(&GuiBuilder::drawKeeperDangerOverlay, this), THIS_LINE,
+             *info.keeperInDanger), OverlayInfo::TOP_LEFT});
       break;
     }
     default:
