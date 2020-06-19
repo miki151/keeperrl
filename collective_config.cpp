@@ -303,8 +303,9 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
               || t == FurnitureType("PAINTING_E")
               || t == FurnitureType("PAINTING_W");
           }, [](const Furniture* f, const Collective* col) {
+            CHECK(f);
             auto id = f->getViewObject()->id().data();
-            return !startsWith(id, "painting") && (!startsWith(id, "canvas") || !col->getRecordedEvents().empty());
+            return !startsWith(id, "painting") && (!startsWith(id, "canvas") || !NOTNULL(col)->getRecordedEvents().empty());
           }};
       case MinionActivity::STUDY: return {getTrainingPredicate(ExperienceType::SPELL)};
       case MinionActivity::DISTILLATION: return {FurnitureType("DISTILLERY")};
