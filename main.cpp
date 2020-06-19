@@ -202,7 +202,6 @@ static po::parser getCommandLineFlags() {
   flags["help"].description("Print help");
   flags["steam"].description("Run with Steam");
   flags["no_minidump"].description("Don't write minidumps when crashed.");
-  flags["single_thread"].description("Do operations like loading, saving and level generation without starting an extra thread.");
   flags["user_dir"].type(po::string).description("Directory for options and save files");
   flags["data_dir"].type(po::string).description("Directory containing the game data");
   flags["restore_settings"].description("Restore settings to default values.");
@@ -323,12 +322,6 @@ static int keeperMain(po::parser& commandLineFlags) {
     std::cout << commandLineFlags << endl;
     return 0;
   }
-  bool useSingleThread =
-#ifndef RELEASE
-      false;
-#else
-      commandLineFlags["single_thread"].was_set();
-#endif
   FatalLog.addOutput(DebugOutput::crash());
   FatalLog.addOutput(DebugOutput::toStream(std::cerr));
   UserErrorLog.addOutput(DebugOutput::exitProgram());
@@ -398,13 +391,11 @@ static int keeperMain(po::parser& commandLineFlags) {
   KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
   auto modsDir = userPath.subdirectory(gameConfigSubdir);
   if (commandLineFlags["simple_game"].was_set()) {
-    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr,
-        useSingleThread, 0, "");
+    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, 0, "");
     loop.playSimpleGame();
   }
   if (commandLineFlags["verify_mod"].was_set()) {
-    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr,
-        useSingleThread, 0, "");
+    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, 0, "");
     if (auto err = loop.verifyMod(commandLineFlags["verify_mod"].get().string)) {
       std::cout << *err << std::endl;
       return -1;
@@ -425,8 +416,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   if (commandLineFlags["worldgen_test"].was_set()) {
     ofstream output("worldgen_out.txt");
     UserInfoLog.addOutput(DebugOutput::toStream(output));
-    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, nullptr,
-        useSingleThread, 0, "");
+    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, nullptr, 0, "");
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
       types = split(commandLineFlags["worldgen_maps"].get().string, {','});
@@ -434,8 +424,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     return 0;
   }
   auto battleTest = [&] (View* view, TileSet* tileSet) {
-    MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, tileSet,
-        useSingleThread, 0, "");
+    MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, tileSet, 0, "");
     auto level = commandLineFlags["battle_level"].get().string;
     auto info = commandLineFlags["battle_info"].get().string;
     auto numRounds = commandLineFlags["battle_rounds"].get().i32;
@@ -542,7 +531,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
   jukebox.setCurrentVolume(options.getIntValue(OptionId::MUSIC));
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, &jukebox, &sokobanInput, &tileSet,
-      useSingleThread, saveVersion, modVersion);
+      saveVersion, modVersion);
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);

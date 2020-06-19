@@ -49,6 +49,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::KEEPER_WARNING, 1},
   {OptionId::KEEPER_WARNING_PAUSE, 1},
   {OptionId::KEEPER_WARNING_TIMEOUT, 200},
+  {OptionId::SINGLE_THREAD, 0},
 };
 
 const map<OptionId, string> names {
@@ -82,6 +83,7 @@ const map<OptionId, string> names {
   {OptionId::KEEPER_WARNING, "Keeper danger warning"},
   {OptionId::KEEPER_WARNING_PAUSE, "Keeper danger auto-pause"},
   {OptionId::KEEPER_WARNING_TIMEOUT, "Keeper danger timeout"},
+  {OptionId::SINGLE_THREAD, "Use a single thread for loading operations"},
 };
 
 const map<OptionId, string> hints {
@@ -103,6 +105,8 @@ const map<OptionId, string> hints {
   {OptionId::KEEPER_WARNING, "Display a pop up window whenever your Keeper is in danger"},
   {OptionId::KEEPER_WARNING_PAUSE, "Pause the game whenever your Keeper is in danger"},
   {OptionId::KEEPER_WARNING_TIMEOUT, "Timeout before a new Keeper danger warning is shown"},
+  {OptionId::SINGLE_THREAD, "Please try this option if you're experiencing slow saving, loading, or map generation. "
+        "Note: this will make the game unresponsive during the operation."},
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -125,6 +129,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::KEEPER_WARNING,
       OptionId::KEEPER_WARNING_PAUSE,
       OptionId::KEEPER_WARNING_TIMEOUT,
+      OptionId::SINGLE_THREAD,
 #ifndef RELEASE
       OptionId::KEEP_SAVEFILES,
       OptionId::SHOW_MAP,
@@ -250,6 +255,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::DISABLE_MOUSE_WHEEL:
     case OptionId::DISABLE_CURSOR:
     case OptionId::START_WITH_NIGHT:
+    case OptionId::SINGLE_THREAD:
       return getYesNo(value);
     case OptionId::SETTLEMENT_NAME:
     case OptionId::PLAYER_NAME:

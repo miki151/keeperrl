@@ -59,9 +59,9 @@
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, const DirectoryPath& modsDir, Options* o, Jukebox* j, SokobanInput* soko,
-    TileSet* tileSet, bool singleThread, int sv, string modVersion)
+    TileSet* tileSet, int sv, string modVersion)
       : view(v), dataFreePath(freePath), userPath(uPath), modsDir(modsDir), options(o), jukebox(j), highscores(h), fileSharing(fSharing),
-        useSingleThread(singleThread), sokobanInput(soko), tileSet(tileSet), saveVersion(sv), modVersion(modVersion) {
+        sokobanInput(soko), tileSet(tileSet), saveVersion(sv), modVersion(modVersion) {
 }
 
 vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const string& suffix) {
@@ -96,6 +96,10 @@ static string getSaveSuffix(GameSaveType t) {
   }
 }
 
+bool MainLoop::useSingleThread() {
+  return options->getBoolValue(OptionId::SINGLE_THREAD);
+}
+
 template <typename T>
 optional<T> MainLoop::loadFromFile(const FilePath& filename) {
   auto f = [&] {
@@ -108,7 +112,7 @@ optional<T> MainLoop::loadFromFile(const FilePath& filename) {
     input.getArchive() >> obj;
     return std::move(obj);
   };
-  if (useSingleThread)
+  if (useSingleThread())
     return f();
   else
     try { return f(); }
@@ -855,7 +859,7 @@ void MainLoop::start(bool tilesPresent) {
 
 void MainLoop::doWithSplash(const string& text, int totalProgress,
     function<void(ProgressMeter&)> fun, function<void()> cancelFun) {
-  if (useSingleThread) {
+  if (useSingleThread()) {
     ProgressMeter meter(1.0 / totalProgress);
     fun(meter);
   } else
@@ -863,7 +867,7 @@ void MainLoop::doWithSplash(const string& text, int totalProgress,
 }
 
 void MainLoop::doWithSplash(const string& text, function<void()> fun, function<void()> cancelFun) {
-  if (useSingleThread)
+  if (useSingleThread())
     fun();
   else {
     view->displaySplash(nullptr, text, cancelFun);

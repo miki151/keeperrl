@@ -35,7 +35,7 @@ struct ModDetails;
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      const DirectoryPath& modsDir, Options*, Jukebox*, SokobanInput*, TileSet*, bool useSingleThread, int saveVersion,
+      const DirectoryPath& modsDir, Options*, Jukebox*, SokobanInput*, TileSet*, int saveVersion,
       string modVersion);
 
   void start(bool tilesPresent);
@@ -95,7 +95,6 @@ class MainLoop {
   Jukebox* jukebox = nullptr;
   Highscores* highscores = nullptr;
   FileSharing* fileSharing = nullptr;
-  bool useSingleThread;
   SokobanInput* sokobanInput;
   TileSet* tileSet;
   int saveVersion;
@@ -129,4 +128,5 @@ class MainLoop {
   DirectoryPath getVanillaDir() const;
   template<typename T>
   optional<T> loadFromFile(const FilePath&);
+  bool useSingleThread();
 };
