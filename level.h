@@ -150,7 +150,7 @@ class Level : public OwnedObject<Level> {
   void setNeedsRenderUpdate(Vec2, bool);
 
   LevelId getUniqueId() const;
-  void setFurniture(Vec2, PFurniture);
+  Furniture* setFurniture(Vec2, Furniture);
 
   Sectors& getSectors(const MovementType&) const;
   struct EffectSet {

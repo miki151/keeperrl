@@ -110,7 +110,7 @@ static void pit(Position position, Furniture* self) {
         if (auto fillType = water->getFillPit()) {
           auto toAdd = position.getGame()->getContentFactory()->furniture.getFurniture(*fillType, water->getTribe());
           if (water->getViewObject()->hasModifier(ViewObjectModifier::BLOODY))
-            toAdd->spreadBlood(position);
+            toAdd.spreadBlood(position);
           position.removeFurniture(position.getFurniture(FurnitureLayer::GROUND), std::move(toAdd));
           self->destroy(position, DestroyAction::Type::BOULDER);
           return;
@@ -140,11 +140,11 @@ void FurnitureTick::handle(FurnitureTickType type, Position pos, Furniture* furn
             pos.registerPortal();
             furniture->getViewObject()->setColorVariant(Color::WHITE);
             if (auto otherPos = pos.getOtherPortal())
-              for (auto f : otherPos->modFurniture())
+              for (auto f : otherPos->getFurniture())
                 if (f->hasUsageType(BuiltinUsageId::PORTAL)) {
                   auto color = getPortalColor(*pos.getPortalIndex());
                   furniture->getViewObject()->setColorVariant(color);
-                  f->getViewObject()->setColorVariant(color);
+                  otherPos->modFurniture(f)->getViewObject()->setColorVariant(color);
                   pos.setNeedsRenderAndMemoryUpdate(true);
                   otherPos->setNeedsRenderAndMemoryUpdate(true);
                 }

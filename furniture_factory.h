@@ -29,7 +29,7 @@ class FurnitureFactory {
   bool canBuild(FurnitureType, Position) const;
   bool isUpgrade(FurnitureType base, FurnitureType upgraded) const;
   const vector<FurnitureType>& getUpgrades(FurnitureType base) const;
-  PFurniture getFurniture(FurnitureType, TribeId) const;
+  Furniture getFurniture(FurnitureType, TribeId) const;
   const Furniture& getData(FurnitureType) const;
   const ViewObject& getConstructionObject(FurnitureType) const;
   int getPopulationIncrease(FurnitureType, int numBuilt) const;

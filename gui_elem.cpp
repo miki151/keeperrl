@@ -728,10 +728,11 @@ SGuiElem GuiFactory::buttonLabelSelected(const string& s, function<void()> f, bo
   return ret;
 }
 
-SGuiElem GuiFactory::buttonLabelInactive(const string& s, bool matchTextWidth) {
-  auto ret = stack(
-      margins(standardButton(), -7, -5, -7, 3),
-      label(s, Color::GRAY));
+SGuiElem GuiFactory::buttonLabelInactive(const string& s, bool matchTextWidth, bool centerHorizontally) {
+  auto text = label(s, Color::GRAY);
+  if (centerHorizontally)
+    text = centerHoriz(text);
+  auto ret = stack(margins(standardButton(), -7, -5, -7, 3), text);
   if (matchTextWidth)
     ret = setWidth(renderer.getTextLength(s) + 1, std::move(ret));
   return ret;

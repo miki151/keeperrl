@@ -1617,10 +1617,13 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
       addSound(*sound);
     if (getBody().hasHealth(HealthType::FLESH)) {
       auto addBlood = [](Position v) {
-        for (auto f : v.modFurniture())
-          if (f->onBloodNear(v)) {
-            f->spreadBlood(v);
-            return true;
+        for (auto f : v.getFurniture())
+          if (f->reactsToBlood()) {
+            auto fmod = v.modFurniture(f);
+            if (fmod->onBloodNear(v)) {
+              fmod->spreadBlood(v);
+              return true;
+            }
           }
         return false;
       };

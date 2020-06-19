@@ -644,9 +644,9 @@ static void airBlast(Creature* attacker, Position origin, Position position, Pos
           stack[0]->getWeaponInfo().attackType, 15, AttrType::DAMAGE), maxDistance,
           position.plus(trajectory.back()), VisionId::NORMAL);
   }
-  for (auto furniture : position.modFurniture())
+  for (auto furniture : position.getFurniture())
     if (furniture->canDestroy(DestroyAction::Type::BASH))
-      furniture->destroy(position, DestroyAction::Type::BASH);
+      position.modFurniture(furniture)->destroy(position, DestroyAction::Type::BASH);
 }
 
 static bool applyToCreature(const Effects::CircularBlast&, Creature* c, Creature* attacker) {
@@ -731,9 +731,9 @@ static string getDescription(const Effects::DestroyWalls&, const ContentFactory*
 
 static bool apply(const Effects::DestroyWalls& m, Position pos, Creature*) {
   bool res = false;
-  for (auto furniture : pos.modFurniture())
+  for (auto furniture : pos.getFurniture())
     if (furniture->canDestroy(m.action)) {
-      furniture->destroy(pos, m.action);
+      pos.modFurniture(furniture)->destroy(pos, m.action);
       res = true;
     }
   return res;
@@ -906,10 +906,7 @@ static string getDescription(const Effects::PlaceFurniture& e, const ContentFact
 static bool apply(const Effects::PlaceFurniture& summon, Position pos, Creature* attacker) {
   auto f = pos.getGame()->getContentFactory()->furniture.getFurniture(summon.furniture,
       attacker ? attacker->getTribeId() : TribeId::getMonster());
-  auto layer = f->getLayer();
-  auto ref = f.get();
-  pos.addFurniture(std::move(f));
-  if (pos.getFurniture(layer) == ref)
+  if (auto ref = pos.addFurniture(std::move(f)))
     ref->onConstructedBy(pos, attacker);
   return true;
 }

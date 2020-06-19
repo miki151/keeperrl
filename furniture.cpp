@@ -31,6 +31,7 @@
 
 Furniture::Furniture(const Furniture&) = default;
 Furniture::Furniture(Furniture&&) noexcept = default;
+Furniture& Furniture::operator=(Furniture&&) noexcept = default;
 
 Furniture::Furniture() {
   movementSet->addTrait(MovementTrait::WALK);
@@ -135,8 +136,8 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
   if (destroyFX)
     pos.getGame()->addEvent(EventInfo::FX{pos, *destroyFX});
   auto effect = destroyedEffect;
-  pos.removeFurniture(this, destroyedRemains
-      ? pos.getGame()->getContentFactory()->furniture.getFurniture(*destroyedRemains, getTribe()) : nullptr);
+  pos.removeFurniture(this, destroyedRemains.map([&](FurnitureType f) {
+      return pos.getGame()->getContentFactory()->furniture.getFurniture(f, getTribe()); }));
   pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
   if (effect)
     effect->apply(pos);
@@ -223,8 +224,8 @@ void Furniture::tick(Position pos, FurnitureLayer supposedLayer) {
       pos.removeCreatureLight(false);
       auto myLayer = layer;
       auto myType = type;
-      pos.removeFurniture(this, burntRemains ?
-          pos.getGame()->getContentFactory()->furniture.getFurniture(*burntRemains, getTribe()) : nullptr);
+      pos.removeFurniture(this, burntRemains.map([&](FurnitureType f) {
+          return pos.getGame()->getContentFactory()->furniture.getFurniture(f, getTribe()); }));
       pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
       return;
     }
@@ -391,6 +392,10 @@ void Furniture::onCreatureWalkedInto(Position pos, Vec2 direction) const {
     pos.getGame()->addEvent((EventInfo::FX{pos, *walkIntoFX, direction}));
 }
 
+bool Furniture::reactsToBlood() const {
+  return !!bloodCountdown;
+}
+
 bool Furniture::onBloodNear(Position pos) {
   if (bloodCountdown)
     if (--*bloodCountdown == 0)
@@ -505,10 +510,14 @@ bool Furniture::canDestroy(const MovementType& movement, const DestroyAction& ac
        (!movement.isCompatible(getTribe()) || action.canDestroyFriendly());
 }
 
+bool Furniture::canAcidDamage() const {
+  return !!dissolveTo || !!destroyedInfo[DestroyAction::Type::BASH];
+}
+
 bool Furniture::acidDamage(Position pos) {
   if (dissolveTo) {
     pos.globalMessage("The " + getName() + " is dissolved");
-    PFurniture replace = pos.getGame()->getContentFactory()->furniture.getFurniture(*dissolveTo, getTribe());
+    Furniture replace = pos.getGame()->getContentFactory()->furniture.getFurniture(*dissolveTo, getTribe());
     pos.removeFurniture(this, std::move(replace));
     return true;
   } else
@@ -519,10 +528,14 @@ bool Furniture::acidDamage(Position pos) {
   return false;
 }
 
+bool Furniture::canFireDamage() const {
+  return !!meltInfo || !!fire;
+}
+
 bool Furniture::fireDamage(Position pos, bool withMessage) {
   if (meltInfo) {
     pos.globalMessage("The " + getName() + " melts");
-    PFurniture replace;
+    optional<Furniture> replace;
     if (meltInfo->meltTo)
       replace = pos.getGame()->getContentFactory()->furniture.getFurniture(*meltInfo->meltTo, getTribe());
     pos.removeFurniture(this, std::move(replace));
@@ -543,6 +556,10 @@ bool Furniture::fireDamage(Position pos, bool withMessage) {
     }
   }
   return false;
+}
+
+bool Furniture::canIceDamage() const {
+  return !!freezeTo;
 }
 
 bool Furniture::iceDamage(Position pos) {
