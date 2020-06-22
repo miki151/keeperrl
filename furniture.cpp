@@ -31,7 +31,7 @@
 
 Furniture::Furniture(const Furniture&) = default;
 Furniture::Furniture(Furniture&&) noexcept = default;
-Furniture& Furniture::operator=(Furniture&&) noexcept = default;
+Furniture& Furniture::operator=(Furniture&&) = default;
 
 Furniture::Furniture() {
   movementSet->addTrait(MovementTrait::WALK);

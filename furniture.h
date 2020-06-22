@@ -64,7 +64,7 @@ class Furniture {
 
   Furniture(const Furniture&);
   Furniture(Furniture&&) noexcept;
-  Furniture& operator =(Furniture&&) noexcept;
+  Furniture& operator =(Furniture&&);
   const heap_optional<ViewObject>& getViewObject() const;
   heap_optional<ViewObject>& getViewObject();
   const string& getName(int count = 1) const;
