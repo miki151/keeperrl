@@ -4,9 +4,17 @@
 
 struct SaveFileInfo {
   string SERIAL(filename);
-  time_t SERIAL(date);
+  time_t date;
   bool SERIAL(download);
   optional<SteamId> SERIAL(steamId);
-  SERIALIZE_ALL(filename, date, download, steamId)
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int) {
+#ifdef WINDOWS
+    int SERIAL(dateTmp) = 0;
+#else
+    time_t dateTmp = 0;
+#endif
+    ar(filename, dateTmp, download, steamId);
+  }
 };
 
