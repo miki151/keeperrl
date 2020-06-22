@@ -26,7 +26,7 @@ else ifeq ($(MACHINE), x86_64-unknown-linux-gnu)
 else ifeq ($(MACHINE), i386-pc-linux-gnu)
 	STEAM_LIB_DIR=extern/steamworks/redistributable_bin/linux32/
 	STEAM_LIB_NAME=steam_api
-else ifeq ($(MACHINE), x86_64-w64-mingw32)
+else ifeq ($(findstring x86_64-w64-mingw32, $(MACHINE)), x86_64-w64-mingw32)
 	STEAM_LIB_DIR=extern/steamworks/redistributable_bin/win64/
 	STEAM_LIB_NAME=steam_api64
 else ifeq ($(findstring i686-w64-mingw32, $(MACHINE)), i686-w64-mingw32)

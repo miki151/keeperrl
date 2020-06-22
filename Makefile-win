@@ -3,7 +3,7 @@ GCC = $(PREFIX)g++
 PKG_CONFIG = $(PREFIX)pkg-config
 
 LD = $(GCC)
-CFLAGS += -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-strict-aliasing -Wl,--build-id -Wl,--large-address-aware
+CFLAGS += -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-strict-aliasing -Wl,--build-id
 
 ifdef DATA_DIR
 	CFLAGS += -DDATA_DIR=\"$(DATA_DIR)\"
@@ -27,8 +27,8 @@ ifdef RELEASE
 GFLAG += -DRELEASE
 endif
 
-ifdef AMD64
-GFLAG += -DAMD64
+ifndef AMD64
+GFLAG += -Wl,--large-address-aware
 endif
 
 ifdef STEAMWORKS
@@ -69,13 +69,8 @@ endif
 OPENAL = $(shell $(PKG_CONFIG) --libs openal)
 
 LIBS = -mwindows ${RES_FILE} -lvorbisfile -lvorbis -logg -lSDL2_image -lkernel32 -luser32 -lgdi32 -lcomdlg32 \
-	   -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid -ldbghelp $(STEAM_LIBS)
-
-ifdef AMD64
-LIBS += -lmingw32 -lSDL2main -lSDL2 -lfreeglut -lglu32 -lz -lglew32 -ljpeg -lopenal -lopengl32 -lcurl -limagehlp -lpthread
-else
-LIBS += -lSDL2 -lSDL2main  -lglut -lglu32 -lz -ljpeg $(OPENAL) -lopengl32 -lcurl -limagehlp -lpthread
-endif
+	   -lole32 -ldinput -lddraw -ldxguid -lwinmm -ldsound -lpsapi -lgdiplus -lshlwapi -luuid -ldbghelp $(STEAM_LIBS) \
+	-lSDL2 -lSDL2main -lglu32 -lz -ljpeg $(OPENAL) -lopengl32 -lcurl -limagehlp -lpthread
 
 ifdef debug
 	CFLAGS += -g
