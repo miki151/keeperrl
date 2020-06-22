@@ -147,10 +147,6 @@ Furniture* Position::modFurniture(FurnitureLayer layer) const {
     return nullptr;
 }
 
-Furniture* Position::modFurniture(const Furniture* f) const {
-  return modFurniture(f->getLayer());
-}
-
 Furniture* Position::modFurniture(FurnitureType type) const {
   PROFILE;
   if (auto furniture = modFurniture(getGame()->getContentFactory()->furniture.getData(type).getLayer()))
@@ -180,6 +176,15 @@ vector<const Furniture*> Position::getFurniture() const {
   vector<const Furniture*> ret;
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = getFurniture(layer))
+      ret.push_back(f);
+  return ret;
+}
+
+vector<Furniture*> Position::modFurniture() const {
+  PROFILE;
+  vector<Furniture*> ret;
+  for (auto layer : ENUM_ALL(FurnitureLayer))
+    if (auto f = modFurniture(layer))
       ret.push_back(f);
   return ret;
 }
@@ -554,18 +559,19 @@ void Position::updateBuildingSupport() const {
   }
 }
 
-Furniture* Position::addFurniture(Furniture f) const {
-  if (auto prev = getFurniture(f.getLayer()))
-    return removeFurniture(prev, std::move(f));
+void Position::addFurniture(PFurniture f) const {
+  if (auto prev = getFurniture(f->getLayer()))
+    removeFurniture(prev, std::move(f));
   else
-    return addFurnitureImpl(std::move(f));
+    addFurnitureImpl(std::move(f));
 }
 
-Furniture* Position::addFurnitureImpl(Furniture f) const {
+void Position::addFurnitureImpl(PFurniture f) const {
   PROFILE;
   if (isValid()) {
-    CHECK(!getFurniture(f.getLayer()));
-    auto furniture = level->setFurniture(coord, std::move(f));
+    CHECK(!getFurniture(f->getLayer()));
+    auto furniture = f.get();
+    level->setFurniture(coord, std::move(f));
     updateConnectivity();
     if (furniture->blocksAnyVision())
       updateVisibility();
@@ -575,9 +581,7 @@ Furniture* Position::addFurnitureImpl(Furniture f) const {
     setNeedsRenderAndMemoryUpdate(true);
     if (auto& effect = furniture->getLastingEffectInfo())
       addFurnitureEffect(furniture->getTribe(), *effect);
-    return furniture;
   }
-  return nullptr;
 }
 
 template <typename Fun1, typename Fun2>
@@ -660,21 +664,21 @@ void Position::removeFurniture(FurnitureLayer layer) const {
 }
 
 void Position::removeFurniture(const Furniture* f) const {
-  removeFurniture(f, none);
+  removeFurniture(f, nullptr);
 }
 
-Furniture* Position::removeFurniture(const Furniture* f, optional<Furniture> replace) const {
+void Position::removeFurniture(const Furniture* f, PFurniture replace) const {
   PROFILE;
   bool visibilityChanged = (!!replace) ? (f->blocksAnyVision() != replace->blocksAnyVision()) : f->blocksAnyVision();
   level->removeLightSource(coord, f->getLightEmission());
+  auto replacePtr = replace.get();
   auto layer = f->getLayer();
   CHECK(layer != FurnitureLayer::GROUND || !!replace);
   CHECK(getFurniture(layer) == f);
   if (auto& effect = f->getLastingEffectInfo())
     removeFurnitureEffect(f->getTribe(), *effect);
-  Furniture* replacePtr = nullptr;
   if (replace) {
-    replacePtr = level->setFurniture(coord, *std::move(replace));
+    level->setFurniture(coord, std::move(replace));
     updateSupportViewId(replacePtr);
     if (auto& effect = replacePtr->getLastingEffectInfo())
       addFurnitureEffect(replacePtr->getTribe(), *effect);
@@ -694,7 +698,6 @@ Furniture* Position::removeFurniture(const Furniture* f, optional<Furniture> rep
       replacePtr->onEnter(c);
   }
   setNeedsRenderAndMemoryUpdate(true);
-  return replacePtr;
 }
 
 bool Position::canConstruct(FurnitureType type) const {
@@ -785,9 +788,9 @@ void Position::updateMovementDueToFire() const {
 bool Position::fireDamage(double amount) const {
   PROFILE;
   bool res = false;
-  for (auto furniture : getFurniture())
-    if (furniture->canFireDamage() && Random.chance(amount))
-      res |= modFurniture(furniture)->fireDamage(*this);
+  for (auto furniture : modFurniture())
+    if (Random.chance(amount))
+      res |= furniture->fireDamage(*this);
   if (Creature* creature = getCreature())
     res |= creature->affectByFire(amount);
   for (Item* it : getItems())
@@ -800,9 +803,9 @@ bool Position::iceDamage() const {
   PROFILE;
   bool res = false;
   double amount = 1.0;
-  for (auto furniture : getFurniture())
-    if (furniture->canIceDamage() && Random.chance(amount))
-      res |= modFurniture(furniture)->iceDamage(*this);
+  for (auto furniture : modFurniture())
+    if (Random.chance(amount))
+      res |= furniture->iceDamage(*this);
   if (Creature* creature = getCreature())
     res |= creature->affectByIce(amount);
   for (Item* it : getItems())
@@ -815,9 +818,9 @@ bool Position::acidDamage() const {
   PROFILE;
   bool res = false;
   double amount = 1.0;
-  for (auto furniture : getFurniture())
-    if (furniture->canAcidDamage() && Random.chance(amount))
-      res |= modFurniture(furniture)->acidDamage(*this);
+  for (auto furniture : modFurniture())
+    if (Random.chance(amount))
+      res |= furniture->acidDamage(*this);
   if (Creature* creature = getCreature())
     res |= creature->affectByAcid();
   /*for (Item* it : getItems())
@@ -997,9 +1000,9 @@ void Position::updateVisibility() const {
 void Position::updateSupport() const {
   PROFILE;
   for (auto pos : neighbors8())
-    for (auto f : pos.getFurniture())
+    for (auto f : pos.modFurniture())
       if (!getGame()->getContentFactory()->furniture.getData(f->getType()).hasRequiredSupport(pos))
-        pos.modFurniture(f)->destroy(pos, DestroyAction::Type::BASH);
+        f->destroy(pos, DestroyAction::Type::BASH);
 }
 
 void Position::updateSupportViewId(Furniture* furniture) const {

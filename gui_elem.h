@@ -170,7 +170,7 @@ class GuiFactory {
   SGuiElem buttonLabelWithMargin(const string&, bool matchTextWidth = true);
   SGuiElem buttonLabelSelected(const string&, function<void()> button, bool matchTextWidth = true,
       bool centerHorizontally = false);
-  SGuiElem buttonLabelInactive(const string&, bool matchTextWidth = true, bool centerHorizontally = false);
+  SGuiElem buttonLabelInactive(const string&, bool matchTextWidth = true);
   SGuiElem labelHighlight(const string&, Color = Color::WHITE, char hotkey = 0);
   SGuiElem labelHighlightBlink(const string& s, Color, Color, char hotkey = 0);
   SGuiElem label(const string&, int size, Color = Color::WHITE);

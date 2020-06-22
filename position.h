@@ -84,9 +84,9 @@ class Position {
   bool isWall() const;
   bool isBuildingSupport() const;
   void removeFurniture(const Furniture*) const;
-  Furniture* removeFurniture(const Furniture*, optional<Furniture> replace) const;
+  void removeFurniture(const Furniture*, PFurniture replace) const;
   void removeFurniture(FurnitureLayer) const;
-  Furniture* addFurniture(Furniture) const;
+  void addFurniture(PFurniture) const;
   bool isUnavailable() const;
   void dropItem(PItem);
   void dropItems(vector<PItem>);
@@ -147,7 +147,7 @@ class Position {
   vector<const Furniture*> getFurniture() const;
   Furniture* modFurniture(FurnitureLayer) const;
   Furniture* modFurniture(FurnitureType) const;
-  Furniture* modFurniture(const Furniture*) const;
+  vector<Furniture*> modFurniture() const;
   optional<short> getDistanceToNearestPortal() const;
   optional<Position> getOtherPortal() const;
   void registerPortal();
@@ -170,7 +170,7 @@ class Position {
   bool SERIAL(valid) = false;
   void updateSupport() const;
   void updateBuildingSupport() const;
-  Furniture* addFurnitureImpl(Furniture) const;
+  void addFurnitureImpl(PFurniture) const;
   void updateSupportViewId(Furniture*) const;
 };
 

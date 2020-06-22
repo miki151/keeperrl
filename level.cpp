@@ -634,10 +634,10 @@ bool Level::isUnavailable(Vec2 pos) const {
   return unavailable[pos];
 }
 
-Furniture* Level::setFurniture(Vec2 pos, Furniture f) {
-  auto layer = f.getLayer();
+void Level::setFurniture(Vec2 pos, PFurniture f) {
+  auto layer = f->getLayer();
   furniture->eraseConstruction(pos, layer);
-  if (f.isTicking())
+  if (f->isTicking())
     addTickingFurniture(pos);
-  return furniture->getBuilt(layer).putElem(pos, std::move(f));
+  furniture->getBuilt(layer).putElem(pos, std::move(f));
 }

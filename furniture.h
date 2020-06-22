@@ -82,11 +82,8 @@ class Furniture {
   void setTribe(TribeId);
   const heap_optional<Fire>& getFire() const;
   bool fireDamage(Position, bool withMessage = true);
-  bool canFireDamage() const;
   bool acidDamage(Position);
-  bool canAcidDamage() const;
   bool iceDamage(Position);
-  bool canIceDamage() const;
   void tick(Position, FurnitureLayer supposedLayer);
   bool canSeeThru(VisionId) const;
   bool blocksAnyVision() const;
@@ -119,7 +116,6 @@ class Furniture {
   bool forgetAfterBuilding() const;
   void onCreatureWalkedOver(Position, Vec2 direction) const;
   void onCreatureWalkedInto(Position, Vec2 direction) const;
-  bool reactsToBlood() const;
   bool onBloodNear(Position);
   void spreadBlood(Position);
   int getMaxTraining(ExperienceType) const;
