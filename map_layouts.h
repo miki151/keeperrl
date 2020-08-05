@@ -2,6 +2,7 @@
 
 #include "util.h"
 #include "map_layout_id.h"
+#include "random_layout_id.h"
 
 enum class LayoutPiece {
   CORRIDOR,
@@ -22,6 +23,7 @@ class MapLayouts {
   using Layout = Table<optional<LayoutPiece>>;
 
   Vec2 getSize(MapLayoutId) const;
+  Vec2 getSize(RandomLayoutId) const;
   Layout getRandomLayout(MapLayoutId, RandomGen&) const;
   optional<string> addLayout(MapLayoutId, Layout);
 

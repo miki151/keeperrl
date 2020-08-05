@@ -217,8 +217,8 @@ static optional<BiomeId> getBiome(const EnemyInfo& enemy, RandomGen& random) {
   if (!enemy.biomes.empty())
     return random.choose(enemy.biomes);
   return enemy.settlement.type.visit(
-      [&](BuiltinLayoutId id) -> optional<BiomeId> {
-        switch (id) {
+      [&](const MapLayoutTypes::Builtin& type) -> optional<BiomeId> {
+        switch (type.id) {
           case BuiltinLayoutId::CASTLE:
           case BuiltinLayoutId::CASTLE2:
           case BuiltinLayoutId::TOWER:
@@ -241,7 +241,7 @@ static optional<BiomeId> getBiome(const EnemyInfo& enemy, RandomGen& random) {
           default: return none;
         }
       },
-      [&](SettlementDetail::MapLayout info) -> optional<BiomeId> {
+      [&](const auto&) -> optional<BiomeId> {
         return BiomeId("GRASSLAND");
       }
     );
@@ -385,7 +385,8 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
         [&](LevelConnection::ExtraEnemy& e) {
           for (int i : All(e.enemyInfo)) {
             auto& set = processLevelConnection(model, e.enemyInfo[i], extraEnemies, depth + direction * (index + i));
-            addLevel(set, index == connection.levels.size() - 1 && i == e.enemyInfo.size() - 1, depth + direction * (index + i));
+            addLevel(set, index == connection.levels.size() - 1 && i == e.enemyInfo.size() - 1,
+                depth + direction * (index + i));
           }
         },
         [&](LevelConnection::MainEnemy&) {

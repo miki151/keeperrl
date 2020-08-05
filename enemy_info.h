@@ -58,6 +58,7 @@ struct BonesInfo {
 struct EnemyInfo {
   EnemyInfo(SettlementInfo s, CollectiveConfig c, optional<VillageBehaviour> v = none,
       optional<LevelConnection> = none);
+  void updateBuildingInfo(const map<BuildingId, BuildingInfo>&);
   STRUCT_DECLARATIONS(EnemyInfo)
   SERIALIZATION_DECL(EnemyInfo)
   EnemyInfo& setVillainType(VillainType type);

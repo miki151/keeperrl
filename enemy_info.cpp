@@ -10,6 +10,15 @@ EnemyInfo::EnemyInfo(SettlementInfo s, CollectiveConfig c, optional<VillageBehav
   : settlement(s), config(c), behaviour(v), levelConnection(l) {
 }
 
+void EnemyInfo::updateBuildingInfo(const map<BuildingId, BuildingInfo>& info) {
+  using namespace MapLayoutTypes;
+  settlement.type.visit(
+        [&](const Builtin& elem) { const_cast<Builtin&>(elem).buildingInfo = info.at(elem.buildingId); },
+        [&](const Predefined& elem) { const_cast<Predefined&>(elem).buildingInfo = info.at(elem.buildingId); },
+        [&](const RandomLayout&) {}
+  );
+}
+
 STRUCT_IMPL(EnemyInfo)
 
 EnemyInfo& EnemyInfo::setVillainType(VillainType type) {

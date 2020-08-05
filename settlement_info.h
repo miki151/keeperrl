@@ -11,6 +11,8 @@
 #include "name_generator_id.h"
 #include "stair_key.h"
 #include "map_layout_id.h"
+#include "random_layout_id.h"
+#include "layout_mapping_id.h"
 
 struct StockpileInfo {
   ItemListId SERIAL(items);
@@ -51,20 +53,32 @@ RICH_ENUM(
   MOUNTAIN
 );
 
-namespace SettlementDetail {
-
-using Builtin = BuiltinLayoutId;
-
-struct MapLayout {
-  MapLayoutId SERIAL(id);
-  MapLayoutPredicate SERIAL(predicate) = MapLayoutPredicate::OUTDOOR;
-  SERIALIZE_ALL(NAMED(id), OPTION(predicate))
+namespace MapLayoutTypes {
+struct Builtin {
+  BuiltinLayoutId SERIAL(id);
+  BuildingId SERIAL(buildingId);
+  BuildingInfo buildingInfo;
+  SERIALIZE_ALL(id, buildingId)
 };
 
-MAKE_VARIANT2(LayoutType, MapLayout, Builtin);
-}
+struct Predefined {
+  MapLayoutId SERIAL(id);
+  MapLayoutPredicate SERIAL(predicate) = MapLayoutPredicate::OUTDOOR;
+  BuildingId SERIAL(buildingId);
+  BuildingInfo buildingInfo;
+  SERIALIZE_ALL(NAMED(id), OPTION(buildingId), OPTION(predicate))
+};
 
-using SettlementDetail::LayoutType;
+struct RandomLayout {
+  RandomLayoutId SERIAL(id);
+  MapLayoutPredicate SERIAL(predicate) = MapLayoutPredicate::OUTDOOR;
+  LayoutMappingId SERIAL(mapping);
+  SERIALIZE_ALL(NAMED(id), OPTION(predicate), NAMED(mapping))
+};
+
+MAKE_VARIANT2(LayoutType, Predefined, RandomLayout, Builtin);
+}
+using MapLayoutTypes::LayoutType;
 
 class CollectiveBuilder;
 
@@ -76,8 +90,6 @@ struct SettlementInfo {
   optional<NameGeneratorId> SERIAL(locationNameGen);
   TribeId SERIAL(tribe);
   optional<string> SERIAL(race);
-  BuildingId SERIAL(buildingId);
-  BuildingInfo buildingInfo;
   vector<StairKey> downStairs;
   vector<StairKey> upStairs;
   vector<StockpileInfo> SERIAL(stockpiles);
@@ -94,7 +106,7 @@ struct SettlementInfo {
   int SERIAL(surroundWithResources) = 0;
   optional<FurnitureType> SERIAL(extraResources);
   optional<int> SERIAL(cropsDistance);
-  SERIALIZE_ALL(NAMED(type), OPTION(inhabitants), NAMED(corpses), NAMED(locationName), NAMED(locationNameGen), NAMED(tribe), NAMED(race), NAMED(buildingId), OPTION(stockpiles), NAMED(lootItem), OPTION(shopItems), OPTION(shopkeeperDead), OPTION(furniture), NAMED(outsideFeatures), OPTION(closeToPlayer), OPTION(dontConnectCave), OPTION(dontBuildRoad), OPTION(anyPlayerDistance), OPTION(surroundWithResources), NAMED(extraResources), NAMED(cropsDistance))
+  SERIALIZE_ALL(NAMED(type), OPTION(inhabitants), NAMED(corpses), NAMED(locationName), NAMED(locationNameGen), NAMED(tribe), NAMED(race), OPTION(stockpiles), NAMED(lootItem), OPTION(shopItems), OPTION(shopkeeperDead), OPTION(furniture), NAMED(outsideFeatures), OPTION(closeToPlayer), OPTION(dontConnectCave), OPTION(dontBuildRoad), OPTION(anyPlayerDistance), OPTION(surroundWithResources), NAMED(extraResources), NAMED(cropsDistance))
 };
 
 static_assert(std::is_nothrow_move_constructible<SettlementInfo>::value, "T should be noexcept MoveConstructible");

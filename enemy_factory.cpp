@@ -45,15 +45,14 @@ PCollective EnemyInfo::buildCollective(ContentFactory* contentFactory) const {
   return collective;
 }
 
-static EnemyInfo getVault(LayoutType type, CreatureId creature, TribeId tribe, int num,
+static EnemyInfo getVault(BuiltinLayoutId id, CreatureId creature, TribeId tribe, int num,
     optional<ItemListId> itemFactory = none) {
   return EnemyInfo(CONSTRUCT(SettlementInfo,
-      c.type = type;
+      c.type = MapLayoutTypes::Builtin LIST(id, BuildingId("DUNGEON"), {});
       c.inhabitants.fighters = CreatureList(num, creature);
       c.tribe = tribe;
       c.closeToPlayer = true;
       c.dontConnectCave = true;
-      c.buildingId = BuildingId("DUNGEON");
       if (itemFactory)
         c.shopItems = {*itemFactory};
     ), CollectiveConfig::noImmigrants())
@@ -124,7 +123,7 @@ EnemyInfo EnemyFactory::get(EnemyId id) const {
       extra->enemyInfo = vector<EnemyInfo>(random.get(extra->numLevels), get(extra->enemy));
   }
   updateCreateOnBones(ret);
-  ret.settlement.buildingInfo = buildingInfo.at(ret.settlement.buildingId);
+  ret.updateBuildingInfo(buildingInfo);
   if (ret.settlement.locationNameGen)
     ret.settlement.locationName = nameGenerator->getNext(*ret.settlement.locationNameGen);
   return ret;
@@ -136,10 +135,10 @@ void EnemyFactory::updateCreateOnBones(EnemyInfo& info) const {
     info.levelConnection = enemy.levelConnection;
     info.biomes = enemy.biomes;
     bool makeRuins = Random.roll(2);
-    if (makeRuins)
-      info.settlement.buildingId = BuildingId("RUINS");
-    else {
-      info.settlement.buildingId = enemy.settlement.buildingId;
+    if (makeRuins) {
+      if (auto builtin = info.settlement.type.getReferenceMaybe<MapLayoutTypes::Builtin>())
+        builtin->buildingId = BuildingId("RUINS");
+    } else {
       info.settlement.furniture = enemy.settlement.furniture;
       info.settlement.outsideFeatures = enemy.settlement.outsideFeatures;
       info.settlement.shopItems = enemy.settlement.shopItems;
@@ -149,7 +148,8 @@ void EnemyFactory::updateCreateOnBones(EnemyInfo& info) const {
         if (auto extra = enemy.getReferenceMaybe<LevelConnection::ExtraEnemy>())
           for (auto& enemy : extra->enemyInfo) {
             if (makeRuins) {
-              enemy.settlement.buildingId = BuildingId("RUINS");
+              if (auto builtin = enemy.settlement.type.getReferenceMaybe<MapLayoutTypes::Builtin>())
+                builtin->buildingId = BuildingId("RUINS");
               enemy.settlement.furniture.clear();
               enemy.settlement.outsideFeatures.reset();
             }

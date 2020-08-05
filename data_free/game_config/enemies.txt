@@ -1,7 +1,7 @@
 "TUTORIAL_VILLAGE"
 {
   settlement = {
-    type = Builtin SMALL_VILLAGE
+    type = Builtin SMALL_VILLAGE "WOOD"
     tribe = HUMAN
     inhabitants = {
       fighters = {
@@ -23,10 +23,9 @@
       }
     }
     race = "humans"
-      buildingId = "WOOD"
-      stockpiles = {
-        { "gold" 50 "TREASURE_CHEST" }
-      }
+    stockpiles = {
+      { "gold" 50 "TREASURE_CHEST" }
+    }
     cropsDistance = 16
       furniture = { "roomFurniture" }
   }
@@ -34,7 +33,7 @@
 "UNICORN_HERD"
 {
   settlement = {
-    type = Builtin FOREST
+    type = Builtin FOREST "WOOD"
     inhabitants = {
       fighters = {
         count = {5 8}
@@ -45,7 +44,6 @@
     }
     tribe = MONSTER
     race = "unicorns"
-    buildingId = "WOOD"
   }
   config = {
     immigrantInterval = 200
@@ -62,7 +60,7 @@
 "ANTS_CLOSED"
 {
   settlement = {
-    type = Builtin ANT_NEST
+    type = Builtin ANT_NEST "DUNGEON"
     inhabitants = {
       leader = { { "ANT_QUEEN" } }
       civilians = {
@@ -78,7 +76,6 @@
     surroundWithResources = 5
     tribe = ANT
     race = "ants"
-    buildingId = "DUNGEON"
   }
   config = {
     immigrantInterval = 500
@@ -105,7 +102,7 @@
 "ANTS_CLOSED_SMALL"
 {
   settlement = {
-    type = Builtin SMALL_MINETOWN
+    type = Builtin SMALL_MINETOWN "DUNGEON"
     inhabitants = {
       civilians = {
         count = {2 5}
@@ -121,13 +118,12 @@
     dontConnectCave = true
     closeToPlayer = true
     surroundWithResources = 6
-    buildingId = "DUNGEON"
   }
 }
 "BLACK_RATS" 
 {
   settlement = {
-    type = Builtin ANT_NEST
+    type = Builtin ANT_NEST "DUNGEON"
     inhabitants = {
       fighters = {
         count = {12 20}
@@ -136,7 +132,6 @@
     }
     tribe = ANT
     race = "black rats"
-    buildingId = "DUNGEON"
   }
   discoverable = false
   createOnBones = 1.0 { "DWARVES" }
@@ -144,7 +139,7 @@
 "ANTS_OPEN" inherit "ANTS_CLOSED"
 {
   settlement = {
-    type = Builtin ANT_NEST
+    type = Builtin ANT_NEST "DUNGEON"
     inhabitants = {
       leader = { { "ANT_QUEEN" } }
       civilians = {
@@ -159,14 +154,13 @@
     surroundWithResources = 5
     tribe = ANT
     race = "ants"
-    buildingId = "DUNGEON"
   }
   createOnBones = 0.1 { "DWARVES" }
 }
 "ADA_GOLEMS"
 {
   settlement = {
-    type = Builtin VAULT
+    type = Builtin VAULT "DUNGEON"
     inhabitants = {
       fighters = {
         count = {8 9}
@@ -178,23 +172,21 @@
     dontConnectCave = true
     surroundWithResources = 3
     extraResources = "ADAMANTIUM_ORE"
-    buildingId = "DUNGEON"
   }
 }
 "CORPSES"
 {
   settlement = {
-    type = Builtin EMPTY
+    type = Builtin EMPTY "BRICK"
     tribe = MONSTER
     dontBuildRoad = true
-    buildingId = "BRICK"
     shopItems = { "corpse" }
   }
 }
 "ORC_VILLAGE"
 {
   settlement = {
-    type = Builtin VILLAGE
+    type = Builtin VILLAGE "BRICK"
     tribe = GREENSKIN
     inhabitants = {
       fighters = {
@@ -207,7 +199,6 @@
     }
     locationNameGen = "TOWN"
     race = "greenskins"
-    buildingId = "BRICK"
     furniture = { "roomFurniture" }
     outsideFeatures = "villageOutside"
   }
@@ -232,7 +223,7 @@
 "DEMON_DEN_ABOVE"
 {
   settlement = {
-    type = Builtin VILLAGE
+    type = Builtin VILLAGE "DUNGEON_SURFACE"
     tribe = MONSTER
     inhabitants = {
       fighters = {
@@ -240,7 +231,6 @@
         all = { 1 "LOST_SOUL" }
       }
     }
-    buildingId = "DUNGEON_SURFACE"
     locationName = "Darkshrine Town"
     race = "ghosts"
     furniture = { "dungeonOutside" }
@@ -251,8 +241,7 @@
 "DEMON_DEN"
 {
   settlement = {
-    type = Builtin VILLAGE
-    buildingId = "DUNGEON"
+    type = Builtin VILLAGE "DUNGEON"
     tribe = MONSTER
     inhabitants = {
       leader = { { "DEMON_LORD" } }
@@ -294,7 +283,7 @@
 "VILLAGE"
 {
   settlement = {
-    type = Builtin VILLAGE
+    type = Builtin VILLAGE "WOOD"
     tribe = HUMAN
     inhabitants = {
       leader = { { "KNIGHT" } }
@@ -320,7 +309,6 @@
     }
     locationNameGen = "TOWN"
     race = "humans"
-    buildingId = "WOOD"
     shopItems = { "armory" }
     furniture = { "roomFurniture" }
   }
@@ -332,7 +320,7 @@
 "WARRIORS"
 {
   settlement = {
-    type = Builtin CASTLE2
+    type = Builtin CASTLE2 "WOOD_CASTLE"
     tribe = HUMAN
     inhabitants = {
       leader = { { "SHAMAN" } }
@@ -343,7 +331,6 @@
     }
     locationNameGen = "TOWN"
     race = "humans"
-    buildingId = "WOOD_CASTLE"
     stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
     lootItem = {TechBook "beast mutation"}
     furniture = { "roomFurniture" }
@@ -381,7 +368,7 @@
 "KNIGHTS"
 {
   settlement = {
-    type = Builtin CASTLE
+    type = Builtin CASTLE "BRICK"
     tribe = HUMAN
     inhabitants = {
       leader = { { "DUKE" } }
@@ -410,7 +397,6 @@
     locationNameGen = "TOWN"
     race = "humans"
     stockpiles = {{ "gold" 140 "TREASURE_CHEST" }}
-    buildingId = "BRICK"
     shopItems = { "villageShop" }
     furniture = { "castleFurniture" }
     outsideFeatures = "castleOutside"
@@ -458,7 +444,7 @@
 "TEUTONS"
 {
   settlement = {
-    type = MapLayout { "castle1" }
+    type = Predefined { "castle1" "BRICK" } 
     tribe = HUMAN
     inhabitants = {
       leader = { { "TEUTON_BOSS" } }
@@ -478,7 +464,6 @@
     locationNameGen = "TOWN"
     race = "Teutonic Knights"
     stockpiles = {{ "gold" 140 "TREASURE_CHEST" }}
-    buildingId = "BRICK"
     furniture = { "castleFurniture" }
     outsideFeatures = "castleOutside"
   }
@@ -515,7 +500,7 @@
 "BLACKSMITH"
 {
   settlement = {
-    type = Builtin COTTAGE
+    type = Builtin COTTAGE "WOOD"
     tribe = HUMAN
     inhabitants = {
       leader = { { "ARTISAN_LEGEN" } }
@@ -528,14 +513,13 @@
       }
     }
     locationNameGen = "TOWN"
-    buildingId = "WOOD"
     furniture = { "forge" }
   }
 }
 "MINOTAUR"
 {
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "BRICK"
     tribe = MONSTER
     inhabitants = {
       leader = { { "MINOTAUR" } }
@@ -543,19 +527,17 @@
     locationName = "maze"
     race = "monsters"
     furniture = { "roomFurniture" }
-    buildingId = "BRICK"
   }
 }
 "RED_DRAGON"
 {
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "DUNGEON"
     inhabitants = {
       leader = { { "RED_DRAGON" } }
     }
     race = "dragon"
     tribe = MONSTER
-    buildingId = "DUNGEON"
     shopItems = { "dragonCave" }
   }
   config = {
@@ -581,13 +563,12 @@
 "BLACK_DRAGON" inherit "RED_DRAGON"
 {
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "DUNGEON"
     inhabitants = {
       leader = { { "BLACK_DRAGON" } }
     }
     race = "dragon"
     tribe = MONSTER
-    buildingId = "DUNGEON"
     shopItems = { "dragonCave" }
   }
   createOnBones = 1.0 { "KNIGHTS" "DWARVES" "GREEN_DRAGON" "WARRIORS" }
@@ -595,13 +576,12 @@
 "GREEN_DRAGON"
 {
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "DUNGEON"
     inhabitants = {
       leader = { { "GREEN_DRAGON" } }
     }
     tribe = MONSTER
     race = "dragon"
-    buildingId = "DUNGEON"
     shopItems = { "dragonCave" }
   }
   config = {
@@ -627,7 +607,7 @@
 "DWARVES"
 {
   settlement = {
-    type = Builtin MINETOWN
+    type = Builtin MINETOWN "DUNGEON"
     tribe = DWARF
     inhabitants = {
       leader = { { "DWARF_BARON" } }
@@ -648,7 +628,6 @@
     }
     locationNameGen = "TOWN"
     race = "dwarves"
-    buildingId = "DUNGEON"
     stockpiles = {{ "gold" 200 "TREASURE_CHEST"} {"minerals" 120 }}
     shopItems = { "dwarfShop" }
     outsideFeatures = "dungeonOutside"
@@ -687,7 +666,7 @@
 "ELVES"
 {
   settlement = {
-    type = Builtin FORREST_VILLAGE
+    type = Builtin FORREST_VILLAGE "WOOD"
     inhabitants = {
       leader = { { "ELF_LORD" } }
       fighters = {
@@ -707,7 +686,6 @@
     tribe = ELF
     race = "elves"
     stockpiles = {{ "gold" 100 "TREASURE_CHEST"}}
-    buildingId = "WOOD"
     lootItem = {TechBook "master sorcery"}
     furniture = { "roomFurniture" }
   }
@@ -734,9 +712,8 @@
 "ELEMENTALIST_ENTRY"
 {
   settlement = {
-    type = Builtin TOWER
+    type = Builtin TOWER "BRICK"
     tribe = HUMAN
-    buildingId = "BRICK"
   }
   discoverable = false
 }
@@ -754,21 +731,19 @@
         }
       }
     }
-    type = Builtin TOWER
+    type = Builtin TOWER "BRICK"
     tribe = HUMAN
-    buildingId = "BRICK"
   }
   discoverable = false
 }
 "ELEMENTALIST"
 {
   settlement = {
-    type = Builtin TOWER
+    type = Builtin TOWER "BRICK"
     inhabitants = {
       leader = { { "ELEMENTALIST" } }
     }
     tribe = HUMAN
-    buildingId = "BRICK"
     furniture = { "roomFurniture" }
   }
   config = {
@@ -807,16 +782,15 @@
 "HELL_ESCAPE_FLOOR"
 {
   settlement = {
-    type = Builtin TOWER
+    type = Builtin TOWER "HELL_ESCAPE"
     tribe = HUMAN
-    buildingId = "HELL_ESCAPE"
   }
   discoverable = false
 }
 "MAIN_DUNGEON"
 {
   settlement = {
-    type = MapLayout { "adoxie_temple" }
+    type = Predefined { "adoxie_temple" "ADOXIE_TEMPLE" } 
     tribe = MONSTER
     inhabitants = {
       leader = { { "ADOXIE_PRIEST" } }
@@ -829,7 +803,6 @@
         all = { 1 "SPIDER_FOOD" }
       }
     }
-    buildingId = "ADOXIE_TEMPLE"
   }
   config = {
     immigrantInterval = 500
@@ -855,9 +828,8 @@
 "MAIN_DUNGEON_ENTRY"
 {
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "DUNGEON"
     tribe = BANDIT
-    buildingId = "DUNGEON"
   }
   config = {
     conquerCondition = NEVER
@@ -867,9 +839,8 @@
 {
   discoverable = false
   settlement = {
-    type = Builtin MINETOWN
+    type = Builtin MINETOWN "HELL"
     tribe = MONSTER
-    buildingId = "HELL"
     furniture = { "hellFurniture" }
     inhabitants = {
       fighters = {
@@ -886,7 +857,7 @@
 {
   discoverable = false
   settlement = {
-    type = MapLayout { "satan" }
+    type = Predefined { "satan" "SATAN" } 
     tribe = MONSTER
     inhabitants = {
       leader = { { "SATAN" } }
@@ -895,24 +866,21 @@
         all = { 1 "DEVIL" }
       }
     }
-    buildingId = "SATAN"
   }
 }
 "OUTBACK_ENTRY"
 {
   discoverable = false
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "NATIVE"
     tribe = BANDIT
-    buildingId = "NATIVE"
   }
 }
 "DEATH"
 {
   settlement = {
-    type = MapLayout { "death" }
+    type = Predefined { "death" "BLACK" } 
     tribe = MONSTER
-    buildingId = "BLACK"
     inhabitants = {
       fighters = {
         count = {1}
@@ -924,8 +892,7 @@
 "ADOXIE_VAULT"
 {
   settlement = {
-    type = MapLayout { "adoxie_vault" MOUNTAIN }
-    buildingId = "ADOXIE_VAULT"
+    type = Predefined { "adoxie_vault" "ADOXIE_VAULT" MOUNTAIN } 
     closeToPlayer = true
     dontConnectCave = true
     tribe = MONSTER
@@ -944,9 +911,8 @@
 {
   discoverable = false
   settlement = {
-    type = Builtin MINETOWN
+    type = Builtin MINETOWN "HELL"
     tribe = MONSTER
-    buildingId = "HELL"
     furniture = { "hellFurniture" }
     inhabitants = {
       fighters = {
@@ -961,7 +927,7 @@
 "NO_AGGRO_BANDITS"
 {
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "DUNGEON"
     inhabitants = {
       fighters = {
         count = {4 9}
@@ -970,7 +936,6 @@
     }
     tribe = BANDIT
     race = "bandits"
-    buildingId = "DUNGEON"
   }
   config = {
     immigrantInterval = 1000
@@ -1002,7 +967,7 @@
 "ORC_CAVE"
 {
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "DUNGEON"
     inhabitants = {
       fighters = {
         count = {4 9}
@@ -1011,7 +976,6 @@
     }
     tribe = BANDIT
     race = "orcs"
-    buildingId = "DUNGEON"
   }
   config = {
     immigrantInterval = 1000
@@ -1040,7 +1004,7 @@
 "LIZARDMEN_SMALL"
 {
   settlement = {
-    type = Builtin COTTAGE
+    type = Builtin COTTAGE "MUD"
     tribe = LIZARD
     inhabitants = {
       fighters = {
@@ -1049,7 +1013,6 @@
       }
     }
     race = "lizardmen"
-    buildingId = "MUD"
     furniture = { "roomFurniture" }
     outsideFeatures = "villageOutside"
   }
@@ -1058,7 +1021,7 @@
 {
   biomes = { "DESERT" }
   settlement = {
-    type = Builtin VILLAGE
+    type = Builtin VILLAGE "MUD"
     tribe = LIZARD
     inhabitants = {
       leader = { { "LIZARDLORD" } }
@@ -1069,7 +1032,6 @@
     }
     locationNameGen = "TOWN"
     race = "lizardmen"
-    buildingId = "MUD"
     lootItem = {TechBook "humanoid mutation"}
     shopItems = { "goodMushrooms" }
     furniture = { "roomFurniture" }
@@ -1107,7 +1069,7 @@
 "DARK_ELVES_ALLY"
 {
   settlement = {
-    type = Builtin MINETOWN
+    type = Builtin MINETOWN "DUNGEON"
     tribe = DARK_ELF
     inhabitants = {
       leader = { { "DARK_ELF_LORD" } }
@@ -1126,7 +1088,6 @@
     }
     locationNameGen = "TOWN"
     race = "dark elves"
-    buildingId = "DUNGEON"
     outsideFeatures = "dungeonOutside"
     furniture = { "roomFurniture" }
   }
@@ -1153,7 +1114,7 @@
 "DARK_ELVES_ENEMY" inherit "DARK_ELVES_ALLY"
 {
   settlement = {
-    type = Builtin MINETOWN
+    type = Builtin MINETOWN "DUNGEON"
     tribe = DARK_ELF
     inhabitants = {
       leader = {
@@ -1181,7 +1142,6 @@
     }
     locationNameGen = "TOWN"
     race = "dark elves"
-    buildingId = "DUNGEON"
     outsideFeatures = "dungeonOutside"
     furniture = { "roomFurniture" }
   }
@@ -1189,7 +1149,7 @@
 "DARK_ELVES_ENTRY"
 {
   settlement = {
-    type = Builtin SMALL_MINETOWN
+    type = Builtin SMALL_MINETOWN "DUNGEON"
     tribe = DARK_ELF
     inhabitants = {
       fighters = {
@@ -1198,7 +1158,6 @@
       }
     }
     race = "dark elves"
-    buildingId = "DUNGEON"
     outsideFeatures = "dungeonOutside"
     furniture = { "roomFurniture" }
   }
@@ -1208,9 +1167,8 @@
 {
   discoverable = false
   settlement = {
-    type = Builtin MINETOWN
+    type = Builtin MINETOWN "DUNGEON"
     tribe = MONSTER
-    buildingId = "DUNGEON"
     furniture = { "roomFurniture" }
     shopItems = { "dungeon" }
     inhabitants = {
@@ -1274,10 +1232,9 @@
 "BLACK_MARKET"
 {
   settlement = {
-    type = Builtin TOWER
+    type = Builtin TOWER "BLACK_MARKET"
     tribe = GNOME
     race = "the Black Market"
-    buildingId = "BLACK_MARKET"
     furniture = { "dungeonOutside" }
     shopItems = { "blackMarketAmulet" "blackMarketScrolls" "blackMarketPotions"  }
     inhabitants = {
@@ -1303,7 +1260,7 @@
 "BLACK_MARKET_ENTRY" inherit "DUNGEON1"
 {
   settlement = append {
-    buildingId = "BLACK_MARKET_ENTRY"
+    type = Builtin MINETOWN "BLACK_MARKET_ENTRY"
     shopItems = append { "diggingScroll" }
     inhabitants = append {
       fighters = append {
@@ -1340,7 +1297,7 @@
 "GNOMES"
 {
   settlement = {
-    type = Builtin MINETOWN
+    type = Builtin MINETOWN "DUNGEON"
     tribe = GNOME
     inhabitants = {
       leader = { { "GNOME_CHIEF" } }
@@ -1351,7 +1308,6 @@
     }
     locationNameGen = "TOWN"
     race = "gnomes"
-    buildingId = "DUNGEON"
     shopItems = { "gnomeShop" }
     outsideFeatures = "dungeonOutside"
     furniture = { "roomFurniture" }
@@ -1368,7 +1324,7 @@
 "GNOMES_ENTRY"
 {
   settlement = {
-    type = Builtin SMALL_MINETOWN
+    type = Builtin SMALL_MINETOWN "DUNGEON"
     tribe = GNOME
     inhabitants = {
       fighters = {
@@ -1377,7 +1333,6 @@
       }
     }
     race = "gnomes"
-    buildingId = "DUNGEON"
     outsideFeatures = "dungeonOutside"
     furniture = { "roomFurniture" }
   }
@@ -1386,13 +1341,13 @@
 "WHITE_DRAGON_ENTRY" inherit "MAIN_DUNGEON_ENTRY"
 {
   settlement = append {
-    buildingId = "GLACIER"
+    type = Builtin CAVE "GLACIER"
   }
 }
 "WHITE_DRAGON_FLOOR" inherit "DUNGEON1"
 {
   settlement = append {
-    buildingId = "GLACIER"
+    type = Builtin MINETOWN "GLACIER"
     inhabitants = append {
       fighters = append {
         all = append {
@@ -1406,7 +1361,7 @@
 {
   biomes = { "SNOW" }
   settlement = append {
-    buildingId = "GLACIER"
+    type = Builtin CAVE "GLACIER"
     inhabitants = {
       leader = { { "WHITE_DRAGON" } }
     }
@@ -1424,7 +1379,7 @@
 "ENTS"
 {
   settlement = {
-    type = Builtin FOREST
+    type = Builtin FOREST "WOOD"
     inhabitants = {
       fighters = {
         count = {7 10}
@@ -1433,7 +1388,6 @@
     }
     tribe = MONSTER
     race = "tree spirits"
-    buildingId = "WOOD"
   }
   config = {
     immigrantInterval = 300
@@ -1450,7 +1404,7 @@
 "DRIADS"
 {
   settlement = {
-    type = Builtin FOREST
+    type = Builtin FOREST "WOOD"
     inhabitants = {
       fighters = {
         count = {7 10}
@@ -1459,7 +1413,6 @@
     }
     tribe = MONSTER
     race = "dryads"
-    buildingId = "WOOD"
   }
   config = {
     immigrantInterval = 300
@@ -1476,7 +1429,7 @@
 "SHELOB"
 {
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "DUNGEON"
     tribe = SHELOB
     inhabitants = {
       leader = { { "SHELOB" } }
@@ -1489,7 +1442,6 @@
       }
     }
     race = "giant spider"
-    buildingId = "DUNGEON"
   }
   config = {
    leaderAsFighter = true
@@ -1499,13 +1451,12 @@
 "CYCLOPS"
 {
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "DUNGEON"
     inhabitants = {
       leader = { { "CYCLOPS" } }
     }
     race = "cyclops"
     tribe = HOSTILE
-    buildingId = "DUNGEON"
     shopItems = { "goodMushrooms" }
   }
   config = {
@@ -1523,13 +1474,12 @@
 "YETI"
 {
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "DUNGEON"
     inhabitants = {
       leader = { { "YETI" } }
     }
     race = "yeti"
     tribe = HOSTILE
-    buildingId = "DUNGEON"
   }
   config = {
     leaderAsFighter = true
@@ -1538,13 +1488,12 @@
 "HYDRA"
 {
   settlement = {
-    type = Builtin SWAMP
+    type = Builtin SWAMP "DUNGEON"
     inhabitants = {
       leader = { { "HYDRA" } }
     }
     race = "hydra"
     tribe = HOSTILE
-    buildingId = "DUNGEON"
   }
   config = {
     leaderAsFighter = true
@@ -1555,13 +1504,12 @@
 "KRAKEN"
 {
   settlement = {
-    type = Builtin MOUNTAIN_LAKE
+    type = Builtin MOUNTAIN_LAKE "DUNGEON"
     inhabitants = {
       leader = { { "KRAKEN" } }
     }
     race = "kraken"
     tribe = MONSTER
-    buildingId = "DUNGEON"
   }
   config = {
     leaderAsFighter = true
@@ -1571,7 +1519,7 @@
 "CEMETERY"
 {
   settlement = {
-    type = Builtin CEMETERY
+    type = Builtin CEMETERY "BRICK"
     inhabitants = {
       fighters = {
         count = {8 12}
@@ -1582,7 +1530,6 @@
     tribe = MONSTER
     race = "undead"
     furniture = { "cryptCoffins" }
-    buildingId = "BRICK"
   }
   levelConnection = {
     topLevel = ExtraEnemy { "CEMETERY_ENTRY" }
@@ -1594,7 +1541,7 @@
 "CEMETERY_ENTRY"
 {
   settlement = {
-    type = Builtin CEMETERY
+    type = Builtin CEMETERY "BRICK"
     inhabitants = {
       fighters = {
         count = {1 2}
@@ -1607,14 +1554,13 @@
     race = "undead"
     tribe = MONSTER
     furniture = { "graves" }
-    buildingId = "BRICK"
   }
   discoverable = false
 }
 "OGRE_CAVE"
 {
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "DUNGEON"
     tribe = GREENSKIN
     inhabitants = {
       fighters = {
@@ -1622,7 +1568,6 @@
         all = { 1 "OGRE" }
       }
     }
-    buildingId = "DUNGEON"
     closeToPlayer = true
     furniture = { "roomFurniture" }
     outsideFeatures = "villageOutside"
@@ -1642,7 +1587,7 @@
 "HARPY_CAVE"
 {
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "DUNGEON"
     tribe = GREENSKIN
     inhabitants = {
       fighters = {
@@ -1650,7 +1595,6 @@
         all = { 1 "HARPY" }
       }
     }
-    buildingId = "DUNGEON"
     closeToPlayer = true
     furniture = { "roomFurniture" }
     outsideFeatures = "villageOutside"
@@ -1670,20 +1614,18 @@
 "SOKOBAN_ENTRY"
 {
   settlement = {
-    type = Builtin ISLAND_VAULT_DOOR
-    buildingId = "DUNGEON"
+    type = Builtin ISLAND_VAULT_DOOR "DUNGEON"
     tribe = MONSTER
   }
 }
 "SOKOBAN"
 {
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "DUNGEON"
     inhabitants = {
       leader = {{ "SPECIAL_HLBN" "SPECIAL_HLBW" "SPECIAL_HLGN" "SPECIAL_HLGW" }}
     }
     tribe = DARK_KEEPER
-    buildingId = "DUNGEON"
   }
   levelConnection = {
     direction = UP
@@ -1697,13 +1639,12 @@
 "WITCH"
 {
   settlement = {
-    type = Builtin COTTAGE
+    type = Builtin COTTAGE "WOOD"
     tribe = MONSTER
     inhabitants = {
       leader = { { "WITCH" } }
     }
     race = "witch"
-    buildingId = "WOOD"
     lootItem = {TechBook "advanced alchemy"}
     furniture = { "witchInside" }
   }
@@ -1711,13 +1652,12 @@
 "TEMPLE"
 {
   settlement = {
-    type = Builtin TEMPLE
+    type = Builtin TEMPLE "BRICK"
     tribe = HUMAN
     race = "altar"
     inhabitants = {
       leader = { { "PRIEST" } }
     }
-    buildingId = "BRICK"
     furniture = { "templeInside"    }
   }
   discoverable = false
@@ -1725,7 +1665,7 @@
 "EVIL_TEMPLE"
 {
   settlement = {
-    type = Builtin TEMPLE
+    type = Builtin TEMPLE "WOOD"
     tribe = DARK_KEEPER
     race = "altar"
     inhabitants = {
@@ -1734,7 +1674,6 @@
         expLevelIncrease = { SPELL 7 }
       }
     }
-    buildingId = "WOOD"
     furniture = { "templeInside" }
   }
   discoverable = false
@@ -1742,12 +1681,11 @@
 "RUINS"
 {
   settlement = {
-    type = Builtin COTTAGE
+    type = Builtin COTTAGE "RUINS"
     tribe = MONSTER
     race = "ruins"
     dontBuildRoad = true
     closeToPlayer = true
-    buildingId = "RUINS"
   }
   config = {
     immigrantInterval = 700
@@ -1772,7 +1710,7 @@
 "HUMAN_COTTAGE"
 {
   settlement = {
-    type = Builtin COTTAGE
+    type = Builtin COTTAGE "WOOD"
     tribe = HUMAN
     cropsDistance = 13
     inhabitants = {
@@ -1793,7 +1731,6 @@
       }
     }
     race = "humans"
-    buildingId = "WOOD"
     furniture = { "roomFurniture" }
   }
   config = {
@@ -1803,7 +1740,7 @@
 "ESKIMO_COTTAGE" inherit "HUMAN_COTTAGE"
 {
   settlement = append {
-    buildingId = "SNOW"
+    type = Builtin COTTAGE "SNOW"
     cropsDistance = none
     inhabitants = {
       fighters = {
@@ -1825,7 +1762,7 @@
 "ESKIMO_VILLAGE" inherit "TUTORIAL_VILLAGE"
 {
   settlement = append {
-    buildingId = "SNOW"
+    type = Builtin SMALL_VILLAGE "SNOW"
     cropsDistance = none
     inhabitants = {
       fighters = {
@@ -1847,7 +1784,7 @@
 "NOMAD_COTTAGE" inherit "HUMAN_COTTAGE"
 {
   settlement = append {
-    buildingId = "SANDSTONE_WALL"
+    type = Builtin COTTAGE "SANDSTONE_WALL"
     cropsDistance = none
     inhabitants = {
       fighters = {
@@ -1869,7 +1806,7 @@
 "NOMAD_VILLAGE" inherit "TUTORIAL_VILLAGE"
 {
   settlement = append {
-    buildingId = "SANDSTONE_WALL"
+    type = Builtin SMALL_VILLAGE "SANDSTONE_WALL"
     cropsDistance = none
     inhabitants = {
       fighters = {
@@ -1892,7 +1829,7 @@
 "NATIVE_VILLAGE"
 {
   settlement = {
-    type = Builtin SMALL_VILLAGE
+    type = Builtin SMALL_VILLAGE "NATIVE"
     tribe = HUMAN
     inhabitants = {
       fighters = {
@@ -1909,16 +1846,14 @@
       }
     }
     race = "humans"
-    buildingId = "NATIVE"
   }
 }
 "THIEVES"
 {
   biomes = { "DESERT" }
   settlement = {
-    type = Builtin CASTLE2
+    type = Builtin CASTLE2 "SANDSTONE_WALL"
     tribe = HUMAN
-    buildingId = "SANDSTONE_WALL"
     inhabitants = {
       leader = { { "THIEF_LEADER" } }
       fighters = {
@@ -1966,11 +1901,10 @@
 "DJINN_EMPTY"
 {
   settlement = {
-    type = Builtin CAVE
+    type = Builtin CAVE "SANDSTONE"
     tribe = MONSTER
     locationName = "maze"
     race = "monsters"
-    buildingId = "SANDSTONE"
   }
 }
 "DJINN_ENTRANCE" inherit "DJINN_EMPTY"
@@ -1992,7 +1926,7 @@
 "ELVEN_COTTAGE"
 {
   settlement = {
-    type = Builtin FORREST_COTTAGE
+    type = Builtin FORREST_COTTAGE "WOOD"
     tribe = ELF
     inhabitants = {
       leader = { { "ELF_ARCHER" } }
@@ -2011,14 +1945,13 @@
       }
     }
     race = "elves"
-    buildingId = "WOOD"
     furniture = { "roomFurniture" }
   }
 }
 "LIZARDMEN_COTTAGE"
 {
   settlement = {
-    type = Builtin FORREST_COTTAGE
+    type = Builtin FORREST_COTTAGE "WOOD"
     tribe = LIZARD
     inhabitants = {
       fighters = {
@@ -2027,7 +1960,6 @@
       }
     }
     race = "lizardmen"
-    buildingId = "WOOD"
     furniture = { "roomFurniture" }
   }
   createOnBones = 1.0 { "ELVEN_COTTAGE" }
@@ -2035,7 +1967,7 @@
 "KOBOLD_CAVE"
 {
   settlement = {
-    type = Builtin SMALL_MINETOWN
+    type = Builtin SMALL_MINETOWN "DUNGEON"
     tribe = DWARF
     inhabitants = {
       fighters = {
@@ -2044,14 +1976,13 @@
       }
     }
     race = "kobolds"
-    buildingId = "DUNGEON"
     stockpiles = {{ "minerals" 60 }}
   }
 }
 "DWARF_CAVE"
 {
   settlement = {
-    type = Builtin SMALL_MINETOWN
+    type = Builtin SMALL_MINETOWN "DUNGEON"
     tribe = DWARF
     inhabitants = {
       fighters = {
@@ -2064,7 +1995,6 @@
       }
     }
     race = "dwarves"
-    buildingId = "DUNGEON"
     stockpiles = {{ "minerals" 60}}
     outsideFeatures = "dungeonOutside"
     furniture = { "roomFurniture" }
@@ -2081,7 +2011,7 @@
 "RAT_CAVE"
 {
   settlement = {
-    type = Builtin VAULT
+    type = Builtin VAULT "DUNGEON"
     inhabitants = {
       fighters = {
         count = {10 11} 
@@ -2093,15 +2023,13 @@
     closeToPlayer = true
     dontConnectCave = true
     tribe = MONSTER
-    buildingId = "DUNGEON"
   }
   discoverable = false
 }
 "RAT_PEOPLE_CAVE"
 {
   settlement = {
-    type = Builtin VAULT
-    buildingId = "DUNGEON"
+    type = Builtin VAULT "DUNGEON"
     tribe = MONSTER
     inhabitants = {
       leader = { { "RAT_KING" } }
@@ -2130,7 +2058,7 @@
 "DARK_ELF_CAVE"
 {
   settlement = {
-    type = Builtin SMALL_MINETOWN
+    type = Builtin SMALL_MINETOWN "DUNGEON"
     tribe = DARK_ELF
     inhabitants = {
       fighters = {
@@ -2144,7 +2072,6 @@
       }
     }
     race = "dark elves"
-    buildingId = "DUNGEON"
     stockpiles = {{ "minerals" 60 }}
     outsideFeatures = "dungeonOutside"
     furniture = { "roomFurniture" }
@@ -2161,13 +2088,13 @@
 "WIZARD_TOWER_ENTRY" inherit "ELEMENTALIST_ENTRY"
 {
   settlement = append {
-    buildingId = "WIZARD_TOWER_FLOOR"
+    type = Builtin TOWER "WIZARD_TOWER_FLOOR"
   }
 }
 "WIZARD_TOWER"
 {
   settlement = {
-    type = MapLayout { "wizard_tower" }
+    type = Predefined { "wizard_tower" "FOREST" } 
     inhabitants = {
       leader = { { "WHITE_WIZARD" } }
       civilians = {
@@ -2176,7 +2103,6 @@
       }
     }
     tribe = BANDIT
-    buildingId = "FOREST"
     furniture = {"trees"}
   }
   levelConnection = {
@@ -2190,7 +2116,7 @@
 "DARK_MAGE"
 {
   settlement = {
-    type = Builtin MINETOWN
+    type = Builtin MINETOWN "DUNGEON"
     tribe = DARK_ELF
     inhabitants = {
       leader = {
@@ -2226,7 +2152,6 @@
     }
     locationNameGen = "TOWN"
     race = "dark mage"
-    buildingId = "DUNGEON"
     stockpiles = {{ "gold" 200 "TREASURE_CHEST"} {"minerals" 120 }}
     outsideFeatures = "dungeonOutside"
     furniture = { "roomFurniture" }

@@ -13,6 +13,8 @@
 #include "building_id.h"
 #include "name_generator_id.h"
 #include "map_layout_id.h"
+#include "random_layout_id.h"
+#include "layout_mapping_id.h"
 #include "biome_id.h"
 #include "workshop_type.h"
 #include "resource_id.h"
@@ -205,6 +207,8 @@ INST(CustomItemId)
 INST(BuildingId)
 INST(NameGeneratorId)
 INST(MapLayoutId)
+INST(RandomLayoutId)
+INST(LayoutMappingId)
 INST(BiomeId)
 INST(CollectiveResourceId)
 INST(WorkshopType)

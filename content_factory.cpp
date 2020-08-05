@@ -382,8 +382,7 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
     return *res;
   enemies = convertKeys(enemiesTmp);
   for (auto& enemy : enemies)
-    if (auto res = getReferenceMaybe(buildingInfo, enemy.second.settlement.buildingId))
-      enemy.second.settlement.buildingInfo = *res;
+    enemy.second.updateBuildingInfo(buildingInfo);
   if (auto res = readCreatureFactory(config, &keyVerifier))
     return *res;
   if (auto res = readFurnitureFactory(config, &keyVerifier))
