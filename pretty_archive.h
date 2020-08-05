@@ -26,14 +26,14 @@ static pair<string, vector<StreamPos>> removeFormatting(string contents, optiona
       if (inQuote) {
         ret += " ";
         pos.push_back(cur);
-      }
-      else addSpace = true;
+      } else
+        addSpace = true;
     }
     if (contents[i] == '#' && !inQuote) {
       while (contents[i] != '\n' && i < contents.size())
         ++i;
     }
-    else if (isOneOf(contents[i], '{', '}', ',') && !inQuote) {
+    else if (isOneOf(contents[i], '{', '}', ',', ')', '(') && !inQuote) {
       ret += " " + string(1, contents[i]) + " ";
       pos.append({cur, cur, cur});
     } else {
@@ -57,7 +57,7 @@ static pair<string, vector<StreamPos>> removeFormatting(string contents, optiona
 class PrettyInputArchive {
   public:
     PrettyInputArchive(const vector<string>& inputs, const vector<string>& filenames, KeyVerifier* v)
-          : keyVerifier(v ? *v : dummyKeyVerifier) {
+        : keyVerifier(v ? *v : dummyKeyVerifier) {
       string allInput;
       if (!filenames.empty())
         allInput = "{\n";
@@ -74,6 +74,8 @@ class PrettyInputArchive {
     string eat(const char* expected = nullptr) {
       string s;
       is >> s;
+      if (!is)
+        error("Unexpected end of file");
       if (expected != nullptr && s != expected)
         error("Expected \""_s + expected + "\", got \"" + s + "\"");
       return s;
@@ -142,15 +144,106 @@ class PrettyInputArchive {
       this->operator()(elem);
     }
 
+    struct DefInfo {
+      long position;
+      vector<string> params;
+    };
+
+    map<string, DefInfo> defs;
+    vector<long> callStack;
+
+    vector<string> parseParams() {
+      vector<string> ret;
+      if (eatMaybe("(")) {
+        while (1) {
+          if (eatMaybe(")"))
+            break;
+          if (!ret.empty())
+            eat(",");
+          string s = eat();
+          if (s == ")")
+            break;
+          ret.push_back(s);
+        }
+      }
+      return ret;
+    }
+
+    void eatArgument() {
+      while (1) {
+        auto token = peek();
+        if (token == ")")
+          return;
+        if (token == "(")
+          parseArgs();
+        eat();
+        if (token == ",")
+          return;
+      }
+    }
+
+    vector<long> parseArgs() {
+      vector<long> ret;
+      if (eatMaybe("(")) {
+        while (1) {
+          if (peek() != ")")
+            ret.push_back(bookmark());
+          eatArgument();
+          if (eatMaybe(")"))
+            break;
+        }
+      }
+      return ret;
+    }
+
+    template <typename T>
+    void readWithDefinitions(T& arg) {
+      while (eatMaybe("Def")) {
+        string name = eat();
+        DefInfo info;
+        info.params = parseParams();
+        info.position = bookmark();
+        defs.insert(make_pair(std::move(name), std::move(info)));
+        while (1)
+          if (eat() == "End")
+            break;
+      }
+      this->operator()(arg);
+    }
+
     PrettyInputArchive& operator()() {
       return *this;
+    }
+    function<void()> seekDefinition() {
+      string name = peek();
+      if (defs.count(name)) {
+        auto& info = defs.at(name);
+        eat();
+        auto argLocs = parseArgs();
+        if (argLocs.size() != info.params.size())
+          error("Wrong number of arguments to macro " + name + ". Expected " +
+              toString(info.params.size()) + ", got " + toString(argLocs.size()));
+        auto saveDefs = defs;
+        for (int i = 0; i < info.params.size(); ++i)
+          defs[info.params[i]] = {argLocs[i], {}};
+        auto cont = bookmark();
+        if (callStack.contains(cont))
+          error("Recursive calls are not supported.");
+        callStack.push_back(cont);
+        seek(info.position);
+        return [this, cont, saveDefs] { seek(cont); defs = saveDefs; callStack.pop_back(); };
+      }
+      return nullptr;
     }
 
     template <typename T, typename... Types>
     PrettyInputArchive& operator()(T&& arg1, Types&& ... args) {
+      auto restoreFunc = seekDefinition();
       prologue(*this, arg1);
       load(*this, arg1);
       epilogue(*this, arg1);
+      if (restoreFunc)
+        restoreFunc();
       return this->operator()(args...);
     }
 
@@ -517,12 +610,14 @@ void serialize(PrettyInputArchive& ar, std::tuple<Types...>& tuple) {
   pretty_tuple_detail::serialize<std::tuple_size<std::tuple<Types...>>::value>::template apply( ar, tuple );
 }
 
-template <class T, cereal::traits::EnableIf<std::is_arithmetic<T>::value> = cereal::traits::sfinae>
-inline void prologue(PrettyInputArchive&, T const & ) {
+template <class T>
+typename std::enable_if<std::is_arithmetic<T>::value, void>::type
+prologue(PrettyInputArchive&, T const & ) {
 }
 
-template <class T, cereal::traits::EnableIf<!std::is_arithmetic<T>::value> = cereal::traits::sfinae>
-inline void prologue(PrettyInputArchive& ar1, T const & ) {
+template <class T>
+typename std::enable_if<!std::is_arithmetic<T>::value, void>::type
+prologue(PrettyInputArchive& ar1, T const & ) {
   ar1.startNode();
 }
 
@@ -584,12 +679,14 @@ inline void serialize(PrettyInputArchive& ar1, EndPrettyInput&) {
   prettyEpilogue(ar1);
 }
 
-template <class T, cereal::traits::EnableIf<std::is_arithmetic<T>::value> = cereal::traits::sfinae>
-inline void epilogue(PrettyInputArchive& ar1, T const &) {
+template <class T>
+typename std::enable_if<std::is_arithmetic<T>::value, void>::type
+epilogue(PrettyInputArchive& ar1, T const &) {
 }
 
-template <class T, cereal::traits::EnableIf<!std::is_arithmetic<T>::value> = cereal::traits::sfinae>
-inline void epilogue(PrettyInputArchive& ar1, T const &) {
+template <class T>
+typename std::enable_if<!std::is_arithmetic<T>::value, void>::type
+epilogue(PrettyInputArchive& ar1, T const &) {
   prettyEpilogue(ar1);
   ar1.endNode();
 }
@@ -628,3 +725,4 @@ template <class T> inline
 void serialize(PrettyInputArchive& ar1, cereal::SizeTag<T> & t) {
   ar1(t.size);
 }
+
