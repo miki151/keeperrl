@@ -1,0 +1,17 @@
+Def Building()
+  Chain {
+    Margins { 1 Set {"wall" } Reset { "floor" } }
+  }
+End
+
+Def Village()
+  Place {
+    {
+      size = 4 4
+      generator = Building()
+      count = 3
+    }
+  }
+End
+
+"village1" Village()

@@ -6,10 +6,6 @@ Vec2 MapLayouts::getSize(MapLayoutId id) const {
   return layouts.at(id)[0].getBounds().getSize();
 }
 
-Vec2 MapLayouts::getSize(RandomLayoutId) const {
-  return Vec2(0, 0);
-}
-
 MapLayouts::Layout MapLayouts::getRandomLayout(MapLayoutId id, RandomGen& random) const {
   return random.choose(layouts.at(id));
 }

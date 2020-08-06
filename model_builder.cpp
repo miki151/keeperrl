@@ -54,8 +54,8 @@ ModelBuilder::~ModelBuilder() {
 ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
   switch (type) {
     case LevelType::BASIC:
-      return [layouts = &contentFactory->mapLayouts](RandomGen& random, SettlementInfo info, Vec2 size) {
-        return LevelMaker::settlementLevel(layouts, random, info, size);
+      return [this](RandomGen& random, SettlementInfo info, Vec2 size) {
+        return LevelMaker::settlementLevel(*contentFactory, random, info, size);
       };
     case LevelType::TOWER:
       return &LevelMaker::towerLevel;
@@ -73,7 +73,7 @@ ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
         auto natives = enemyFactory->get(EnemyId("NATIVE_VILLAGE"));
         natives.settlement.collective = new CollectiveBuilder(natives.config, natives.settlement.tribe);
         return LevelMaker::topLevel(random, {info, natives.settlement}, 100, none, biomeInfo, ResourceCounts{},
-            &contentFactory->mapLayouts);
+            *contentFactory);
       };
     case LevelType::SOKOBAN: {
       Table<char> sokoLevel = sokobanInput->getNext();
@@ -441,7 +441,7 @@ PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<T
   model->buildMainLevel(
       LevelBuilder(meter, random, contentFactory, width, width, false),
       LevelMaker::topLevel(random, topLevelSettlements, width, keeperTribe, biomeInfo,
-          *chooseResourceCounts(random, contentFactory->resources, 0), &contentFactory->mapLayouts));
+          *chooseResourceCounts(random, contentFactory->resources, 0), *contentFactory));
   model->calculateStairNavigation();
   for (auto& enemy : enemyInfo)
     model->addCollective(enemy.buildCollective(contentFactory));

@@ -1,0 +1,12 @@
+"dungeon" {
+  furniture = {
+    "floor" "FLOOR"
+    "rock" "MOUNTAIN"
+    "water" "WATER" 
+    "wall" "WOOD_WALL"
+  }
+  flags = {
+    "floor" EMPTY_ROOM
+  }
+}
+    

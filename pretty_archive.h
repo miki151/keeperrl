@@ -436,7 +436,7 @@ inline void serialize(PrettyInputArchive& ar1, map<T, U>& m) {
     if (ar1.peek() == "}")
       break;
     T key;
-    ar1(key);
+    ar1.readWithDefinitions(key);
     auto thisKeyBookmark = ar1.bookmark();
     auto searchedBookmark = thisKeyBookmark;
     auto searchedKey = key;

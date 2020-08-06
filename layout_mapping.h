@@ -5,5 +5,8 @@
 
 struct LayoutMapping {
   map<string, FurnitureType> SERIAL(furniture);
-  SERIALIZE_ALL(NAMED(furniture))
+  map<string, SquareAttrib> SERIAL(flags);
+  optional<string> SERIAL(downStairs);
+  optional<string> SERIAL(upStairs);
+  SERIALIZE_ALL(NAMED(downStairs), NAMED(flags), NAMED(upStairs), NAMED(furniture))
 };

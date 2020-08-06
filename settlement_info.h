@@ -73,7 +73,8 @@ struct RandomLayout {
   RandomLayoutId SERIAL(id);
   MapLayoutPredicate SERIAL(predicate) = MapLayoutPredicate::OUTDOOR;
   LayoutMappingId SERIAL(mapping);
-  SERIALIZE_ALL(NAMED(id), OPTION(predicate), NAMED(mapping))
+  Vec2 SERIAL(size);
+  SERIALIZE_ALL(NAMED(id), NAMED(size), NAMED(mapping), OPTION(predicate))
 };
 
 MAKE_VARIANT2(LayoutType, Predefined, RandomLayout, Builtin);

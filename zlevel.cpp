@@ -38,7 +38,7 @@ static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCount
           }
         }
         return LevelMakerResult{
-            LevelMaker::getFullZLevel(Random, settlement, resources, levelInfo.width, tribe, stairKey, &contentFactory->mapLayouts),
+            LevelMaker::getFullZLevel(Random, settlement, resources, levelInfo.width, tribe, stairKey, *contentFactory),
             std::move(enemy), levelInfo.width
         };
       });

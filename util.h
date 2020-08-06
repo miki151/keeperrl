@@ -286,8 +286,9 @@ class Rectangle {
   Rectangle translate(Vec2 v) const;
   Rectangle apply(Vec2::LinearMap) const;
 
-  Vec2 randomVec2() const;
+  Vec2 random(RandomGen&) const;
   Vec2 middle() const;
+  bool empty() const;
 
   vector<Vec2> getAllSquares() const;
 

@@ -474,12 +474,12 @@ class Test {
     Rectangle bounds2(15, 15);
     Rectangle bounds3(3, 3);
     for (int i : Range(40)) {
-      Vec2 pos(bounds.randomVec2());
+      Vec2 pos(bounds.random(Random));
       for (Vec2 v : bounds2.translate(pos).intersection(bounds))
         t[v] = false;
     }
     for (int i : Range(100)) {
-      Vec2 pos(bounds.randomVec2());
+      Vec2 pos(bounds.random(Random));
       for (Vec2 v : bounds3.translate(pos).intersection(bounds))
         t[v] = true;
     }
@@ -487,7 +487,7 @@ class Test {
       if (t[v])
         s.add(v);
     for (int i : Range(100000)) {
-      Vec2 v = bounds.randomVec2();
+      Vec2 v = bounds.random(Random);
       if (Random.roll(3)) {
         s.remove(v);
         t[v] = false;

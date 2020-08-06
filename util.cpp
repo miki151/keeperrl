@@ -554,12 +554,16 @@ Rectangle::Rectangle(Range xRange, Range yRange)
 
 Rectangle::Iter::Iter(int x1, int y1, int px1, int py1, int kx1, int ky1) : pos(x1, y1), py(py1), ky(ky1) {}
 
-Vec2 Rectangle::randomVec2() const {
-  return Vec2(Random.get(px, kx), Random.get(py, ky));
+Vec2 Rectangle::random(RandomGen& r) const {
+  return Vec2(r.get(px, kx), r.get(py, ky));
 }
 
 Vec2 Rectangle::middle() const {
   return Vec2((px + kx) / 2, (py + ky) / 2);
+}
+
+bool Rectangle::empty() const {
+  return area() <= 0;
 }
 
 int Rectangle::left() const {

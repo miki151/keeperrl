@@ -16,6 +16,7 @@
 #include "resource_info.h"
 #include "layout_mapping_id.h"
 #include "layout_mapping.h"
+#include "layout_generator.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -60,6 +61,7 @@ class ContentFactory {
   unordered_map<CollectiveResourceId, ResourceInfo, CustomHash<CollectiveResourceId>> SERIAL(resourceInfo);
   vector<CollectiveResourceId> SERIAL(resourceOrder);
   map<LayoutMappingId, LayoutMapping> SERIAL(layoutMapping);
+  map<RandomLayoutId, LayoutGenerator> SERIAL(randomLayouts);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();
