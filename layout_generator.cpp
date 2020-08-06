@@ -270,12 +270,13 @@ bool make(const LayoutGenerators::Connect& g, LayoutCanvas c, RandomGen& r) {
   vector<Vec2> points = c.area.getAllSquares().filter(
       [&](Vec2 v) { return g.toConnect.apply(c.map, v, r); });
   Vec2 p1;
-  for (int i : Range(30)) {
-    p1 = r.choose(points);
-    auto p2 = r.choose(points);
-    if (p1 != p2 && !connect(g, c, r, p1, p2))
-      return false;
-  }
+  if (!points.empty())
+    for (int i : Range(30)) {
+      p1 = r.choose(points);
+      auto p2 = r.choose(points);
+      if (p1 != p2 && !connect(g, c, r, p1, p2))
+        return false;
+    }
   return true;
 }
 
