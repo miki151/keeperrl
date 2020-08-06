@@ -348,7 +348,7 @@
 "firewall"
 {
   symbol = "𝍔"
-  effect =  Name "firewall" CustomArea PlaceFurniture "FIRE_WALL" { 0 -2 0 -1 0 0 0 1 0 2 }
+  effect =  Name "firewall" CustomArea PlaceFurniture "FIRE_WALL" { {0 -2} {0 -1} {0 0} {0 1} {0 2} }
   endOnly = true
   range = 2
   cooldown = 30
@@ -357,7 +357,8 @@
 "fire trap"
 {
   symbol = "◌"
-  effect =  Name "fire trap" AITargetEnemy CustomArea PlaceFurniture "FIRE_WALL" { 0 -2 1 -2 2 -1 2 0 2 1 1 2 0 2 -1 2 -2 1 -2 0 -2 -1 -1 -2 }
+  effect =  Name "fire trap" AITargetEnemy CustomArea PlaceFurniture "FIRE_WALL"
+      { {0 -2} {1 -2} {2 -1} {2 0} {2 1} {1 2} {0 2} {-1 2} {-2 1} {-2 0} {-2 -1} {-1 -2} }
   endOnly = true
   range = 8
   cooldown = 30

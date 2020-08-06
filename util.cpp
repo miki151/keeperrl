@@ -384,7 +384,7 @@ bool Rectangle::operator != (const Rectangle& r) const {
 
 template <class Archive>
 void Vec2::serialize(Archive& ar, const unsigned int) {
-  ar(x, y);
+  ar(NAMED(x), NAMED(y));
 }
 
 SERIALIZABLE(Vec2);

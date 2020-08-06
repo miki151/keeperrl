@@ -4,6 +4,7 @@
     "rock" "MOUNTAIN"
     "water" "WATER" 
     "wall" "WOOD_WALL"
+    "door" "WOOD_DOOR"
   }
   flags = {
     "floor" EMPTY_ROOM

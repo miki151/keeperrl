@@ -815,7 +815,7 @@ void MainLoop::launchQuickGame(optional<int> maxTurns) {
   PGame game;
   if (toLoad != files.end())
     game = loadGame(userPath.file((*toLoad).filename));
-  auto contentFactory = createContentFactory(false);
+  auto contentFactory = createContentFactory(true);
   if (!game) {
     AvatarInfo avatar = getQuickGameAvatar(view, contentFactory.keeperCreatures, &contentFactory.getCreatures());
     CampaignBuilder builder(view, Random, options, contentFactory.villains, contentFactory.gameIntros, avatar);

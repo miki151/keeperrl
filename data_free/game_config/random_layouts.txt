@@ -1,15 +1,26 @@
 Def Building()
   Chain {
-    Margins { 1 Set {"wall" } Reset { "floor" } }
+    Margins { 1
+      None
+      Margins { 1
+        Set {"wall" }
+        Reset { "floor" }
+      }
+    }
   }
 End
 
 Def Village()
-  Place {
-    {
-      size = 4 4
-      generator = Building()
-      count = 3
+  Chain {
+    Place {
+      {
+        size = {6 6}
+        generator = Building()
+        count = 3
+      }
+    }
+    Connect On "floor" {
+      10 On "wall" Reset { "door" }
     }
   }
 End

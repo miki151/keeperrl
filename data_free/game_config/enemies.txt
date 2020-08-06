@@ -269,7 +269,7 @@
   levelConnection = {
     topLevel = ExtraEnemy { "DEMON_DEN_ABOVE" }
     levels = {
-      {MainEnemy 30 30 MAZE }
+      {MainEnemy {30 30} MAZE }
     }
   }
   immigrants = {
@@ -437,7 +437,7 @@
   levelConnection = {
     topLevel = MainEnemy
     levels = {
-      { ExtraEnemy { "MINOTAUR" { 1 2 } } 40 40 MAZE }
+      { ExtraEnemy { "MINOTAUR" { 1 2 } } {40 40} MAZE }
     }
   }
 }
@@ -753,8 +753,8 @@
     direction = UP
     topLevel = ExtraEnemy { "ELEMENTALIST_ENTRY" }
     levels = {
-      { ExtraEnemy { "ELEMENTALIST_FLOOR" { 3 6 }} 4 4 TOWER }
-      { MainEnemy 5 5 TOWER }
+      { ExtraEnemy { "ELEMENTALIST_FLOOR" { 3 6 }} {4 4} TOWER }
+      { MainEnemy {5 5} TOWER }
     }
   }
   behaviour = {
@@ -812,16 +812,16 @@
   levelConnection = {
     topLevel = ExtraEnemy {"MAIN_DUNGEON_ENTRY"}
     levels = {
-      { ExtraEnemy { "DUNGEON1" { 1 } } 40 30 DUNGEON }
-      { ExtraEnemy { "BLACK_MARKET_ENTRY" { 1 } } 40 30 DUNGEON }
-      { ExtraEnemy { "DUNGEON2" { 1 } } 40 30 DUNGEON }
-      { ExtraEnemy { "DUNGEON3" { 1 } } 40 30 DUNGEON }
-      { MainEnemy 60 40 BASIC "Adoxie's Temple" }
-      { ExtraEnemy { "DEATH" { 1 } } 40 30 BASIC none true false }
-      { ExtraEnemy { "HELL" { 1 } } 40 30 DUNGEON "A Very Hot Place" true false }
-      { ExtraEnemy { "SATAN" { 1 } } 32 22 BASIC "A Very Hot Place" true false }
-      { ExtraEnemy { "HELL_ESCAPE_FLOOR" { 3 6 }} 4 4 TOWER }
-      { ExtraEnemy { "OUTBACK_ENTRY" { 1 } } 100 100 OUTBACK "Down Under" true }
+      { ExtraEnemy { "DUNGEON1" { 1 } } {40 30} DUNGEON }
+      { ExtraEnemy { "BLACK_MARKET_ENTRY" { 1 } } {40 30} DUNGEON }
+      { ExtraEnemy { "DUNGEON2" { 1 } } {40 30} DUNGEON }
+      { ExtraEnemy { "DUNGEON3" { 1 } } {40 30} DUNGEON }
+      { MainEnemy {60 40} BASIC "Adoxie's Temple" }
+      { ExtraEnemy { "DEATH" { 1 } } {40 30} BASIC none true false }
+      { ExtraEnemy { "HELL" { 1 } } {40 30} DUNGEON "A Very Hot Place" true false }
+      { ExtraEnemy { "SATAN" { 1 } } {32 22} BASIC "A Very Hot Place" true false }
+      { ExtraEnemy { "HELL_ESCAPE_FLOOR" { 3 6 }} {4 4} TOWER }
+      { ExtraEnemy { "OUTBACK_ENTRY" { 1 } } {100 100} OUTBACK "Down Under" true }
     }
   }
 }
@@ -903,7 +903,7 @@
   levelConnection = {
     topLevel = MainEnemy
     levels = {
-      { ExtraEnemy { "ADOXIE_VAULT_UNDER" {1} } 20 20 DUNGEON "Adoxie's Vault" }
+      { ExtraEnemy { "ADOXIE_VAULT_UNDER" {1} } {20 20} DUNGEON "Adoxie's Vault" }
     }
   }
 }
@@ -1098,9 +1098,9 @@
   levelConnection = {
     topLevel = ExtraEnemy {"DARK_ELVES_ENTRY"}
     levels = {
-      { ExtraEnemy { "DUNGEON1" { 2 4 } } 60 40 DUNGEON }
-      { ExtraEnemy { "DUNGEON2" { 1 2 } } 60 40 DUNGEON }
-      { MainEnemy 60 40 MINETOWN }
+      { ExtraEnemy { "DUNGEON1" { 2 4 } } {60 40} DUNGEON }
+      { ExtraEnemy { "DUNGEON2" { 1 2 } } {60 40} DUNGEON }
+      { MainEnemy {60 40} MINETOWN }
     }
   }
   immigrants = { 
@@ -1272,7 +1272,7 @@
     topLevel = MainEnemy
     direction = UP
     levels = {
-      { ExtraEnemy {"BLACK_MARKET"} 30 20 BLACK_MARKET "Black market" }
+      { ExtraEnemy {"BLACK_MARKET"} {30 20} BLACK_MARKET "Black market" }
     }
   }
 }
@@ -1315,9 +1315,9 @@
   levelConnection = {
     topLevel = ExtraEnemy {"GNOMES_ENTRY"}
     levels = {
-      { ExtraEnemy { "DUNGEON1" { 2 4 } } 60 40 DUNGEON }
-      { ExtraEnemy { "DUNGEON2" { 1 2 } } 60 40 DUNGEON }
-      { MainEnemy 60 40 MINETOWN }
+      { ExtraEnemy { "DUNGEON1" { 2 4 } } {60 40} DUNGEON }
+      { ExtraEnemy { "DUNGEON2" { 1 2 } } {60 40} DUNGEON }
+      { MainEnemy {60 40} MINETOWN }
     }
   }
 }
@@ -1371,8 +1371,8 @@
     direction = UP
     topLevel = ExtraEnemy { "WHITE_DRAGON_ENTRY" }
     levels = {
-      { ExtraEnemy { "WHITE_DRAGON_FLOOR" { 2 4 }} 30 20 DUNGEON }
-      { MainEnemy 30 20 DUNGEON }
+      { ExtraEnemy { "WHITE_DRAGON_FLOOR" { 2 4 }} {30 20} DUNGEON }
+      { MainEnemy {30 20} DUNGEON }
     }
   }
 }
@@ -1534,7 +1534,7 @@
   levelConnection = {
     topLevel = ExtraEnemy { "CEMETERY_ENTRY" }
     levels = {
-      {MainEnemy 40 40 MAZE }
+      {MainEnemy {40 40} MAZE }
     }
   }
 }
@@ -1631,7 +1631,7 @@
     direction = UP
     topLevel = ExtraEnemy { "SOKOBAN_ENTRY" }
     levels = {
-      {MainEnemy 28 16 SOKOBAN }
+      {MainEnemy {28 16} SOKOBAN }
     }
   }
   discoverable = false
@@ -1912,8 +1912,8 @@
   levelConnection = {
     topLevel = MainEnemy
     levels = {
-      { ExtraEnemy { "DJINN_EMPTY" { 2 } } 20 20 MAZE }
-      { ExtraEnemy { "DJINN" { 1 } } 20 20 MAZE }
+      { ExtraEnemy { "DJINN_EMPTY" { 2 } } {20 20} MAZE }
+      { ExtraEnemy { "DJINN" { 1 } } {20 20} MAZE }
     }
   }
 }
@@ -2109,7 +2109,7 @@
     direction = UP
     topLevel = ExtraEnemy { "WIZARD_TOWER_ENTRY" }
     levels = {
-      { MainEnemy 20 20 BASIC "A wizard's tower" true }
+      { MainEnemy {20 20} BASIC "A wizard's tower" true }
     }
   }
 }
