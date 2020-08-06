@@ -14,6 +14,8 @@
 #include "campaign_info.h"
 #include "workshop_info.h"
 #include "resource_info.h"
+#include "layout_mapping_id.h"
+#include "layout_mapping.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -57,6 +59,7 @@ class ContentFactory {
   map<WorkshopType, WorkshopInfo> SERIAL(workshopInfo);
   unordered_map<CollectiveResourceId, ResourceInfo, CustomHash<CollectiveResourceId>> SERIAL(resourceInfo);
   vector<CollectiveResourceId> SERIAL(resourceOrder);
+  map<LayoutMappingId, LayoutMapping> SERIAL(layoutMapping);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

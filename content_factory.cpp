@@ -24,7 +24,7 @@
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
-  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder);
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping);
   creatures.setContentFactory(this);
 }
 
@@ -410,6 +410,10 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
         return "No resource distribution found for depth " + toString(depth) + ". Please fix resources config.";
     }
   }
+  map<PrimaryId<LayoutMappingId>, LayoutMapping> layoutTmp;
+  if (auto res = config->readObject(layoutTmp, GameConfigId::LAYOUT_MAPPING, &keyVerifier))
+    return *res;
+  layoutMapping = convertKeys(layoutTmp);
   auto errors = keyVerifier.verify();
   if (!errors.empty())
     return errors.front();

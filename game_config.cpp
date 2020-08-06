@@ -56,6 +56,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "workshop_info";
     case GameConfigId::RESOURCE_INFO:
       return "resource_info";
+    case GameConfigId::LAYOUT_MAPPING:
+      return "layout_mapping";
   }
 }
 

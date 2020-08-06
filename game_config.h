@@ -33,7 +33,8 @@ enum class GameConfigId {
   BIOMES,
   CAMPAIGN_INFO,
   WORKSHOP_INFO,
-  RESOURCE_INFO
+  RESOURCE_INFO,
+  LAYOUT_MAPPING,
 };
 
 class GameConfig {
