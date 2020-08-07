@@ -92,7 +92,7 @@ void generateMapLayout(const MainLoop& mainLoop, const string& layoutName, const
   auto factory = mainLoop.createContentFactory(false);
   CHECK(factory.randomLayouts.count(RandomLayoutId(layoutName.data()))) << "Layout not found: " << layoutName;
   auto generator = factory.randomLayouts.at(RandomLayoutId(layoutName.data()));
-  LayoutCanvas::Map map{ Table<unordered_set<Token>>(layoutSize) };
+  LayoutCanvas::Map map{ Table<vector<Token>>(layoutSize) };
   CHECK(!!generator.make(LayoutCanvas{map.elems.getBounds(), &map}, Random)) << "Generation failed";
   renderAscii(map, glyphFile);
 }

@@ -3,7 +3,7 @@
 
 
 static bool apply(const TilePredicates::On& p, LayoutCanvas::Map* map, Vec2 v, RandomGen& r) {
-  return map->elems[v].count(p.token);
+  return map->elems[v].contains(p.token);
 }
 
 static bool apply(const TilePredicates::Not& p, LayoutCanvas::Map* map, Vec2 v, RandomGen& r) {

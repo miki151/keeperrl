@@ -26,3 +26,35 @@ Def Village()
 End
 
 "village1" Village()
+
+
+
+Def Dungeon()
+  Chain {
+    Set { "rock" }
+    Margins { 1 None Chain {
+      Place {
+        {
+          size = {4 4}
+          generator = Reset {"floor" "room_floor"}
+          count = 6
+        }
+      }
+      Connect On "floor" {
+        5 On "rock" Reset {"floor"}
+      }
+    }}
+    Place {
+      {
+        size = {1 1}
+        generator = Set {"monster"}
+        count = 4
+        predicate = On "room_floor"
+      }
+      {{1 1} Set {"up_stairs"} 1 On "room_floor"}
+      {{1 1} Set {"down_stairs"} 1 On "room_floor"}
+    }
+  }
+End
+
+"dungeon1" Dungeon()

@@ -9,7 +9,7 @@ bool make(const LayoutGenerators::None&, LayoutCanvas c, RandomGen&) {
 bool make(const LayoutGenerators::Set& g, LayoutCanvas c, RandomGen&) {
   for (auto v : c.area)
     for (auto& token : g.tokens)
-      c.map->elems[v].insert(token);
+      c.map->elems[v].push_back(token);
   return true;
 }
 
@@ -17,7 +17,7 @@ bool make(const LayoutGenerators::Reset& g, LayoutCanvas c, RandomGen&) {
   for (auto v : c.area) {
     c.map->elems[v].clear();
     for (auto& token : g.tokens)
-      c.map->elems[v].insert(token);
+      c.map->elems[v].push_back(token);
   }
   return true;
 }
@@ -26,14 +26,14 @@ bool make(const LayoutGenerators::SetMaybe& g, LayoutCanvas c, RandomGen& r) {
   for (auto v : c.area)
     if (g.predicate.apply(c.map, v, r))
       for (auto& token : g.tokens)
-        c.map->elems[v].insert(token);
+        c.map->elems[v].push_back(token);
   return true;
 }
 
 bool make(const LayoutGenerators::Remove& g, LayoutCanvas c, RandomGen&) {
   for (auto v : c.area)
     for (auto& token : g.tokens)
-      c.map->elems[v].erase(token);
+      c.map->elems[v].removeElementMaybePreserveOrder(token);
   return true;
 }
 

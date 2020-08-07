@@ -2691,13 +2691,35 @@ namespace {
   class RandomLayoutMaker : public LevelMaker {
     public:
     RandomLayoutMaker(const LayoutGenerator& generator, const LayoutMapping& mapping, vector<StairKey> downStairs,
-        vector<StairKey> upStairs, TribeId tribe) : mapping(mapping), generator(generator), tribe(tribe) {
+        vector<StairKey> upStairs, TribeId tribe)
+      : mapping(mapping), generator(generator), downStairs(std::move(downStairs)),
+        upStairs(std::move(upStairs)), tribe(tribe) {
+    }
+
+    void visit(LevelBuilder* builder, Vec2 pos, const LayoutAction& action) {
+      action.visit(
+          [&](const LayoutActions::Chain& c) {
+            for (auto& a : c)
+              visit(builder, pos, a);
+          },
+          [&](FurnitureType type) { builder->putFurniture(pos, type, tribe); },
+          [&](SquareAttrib attrib) { builder->addAttrib(pos, attrib); },
+          [&](LayoutActions::ClearFurniture) { builder->removeAllFurniture(pos); },
+          [&](LayoutActions::Stairs s) {
+            auto& keys = (s.dir == LayoutActions::StairDirection::UP ? upStairs : downStairs);
+            if (!keys.empty()) {
+              builder->putFurniture(pos, s.type, tribe);
+              builder->setLandingLink(pos, keys.back());
+              keys.pop_back();
+            }
+          }
+      );
     }
 
     virtual void make(LevelBuilder* builder, Rectangle area) override {
-      auto tryGenerate = [&] (int count) -> optional<Table<unordered_set<Token>>> {
+      auto tryGenerate = [&] (int count) -> optional<Table<vector<Token>>> {
         for (int it : Range(count)) {
-          LayoutCanvas::Map map{Table<unordered_set<Token>>(area)};
+          LayoutCanvas::Map map{Table<vector<Token>>(area)};
           LayoutCanvas canvas{map.elems.getBounds(), &map};
           if (generator.make(canvas, builder->getRandom()))
             return map.elems;
@@ -2706,14 +2728,12 @@ namespace {
       };
       if (auto map1 = tryGenerate(10)) {
         auto& map = *map1;
-        for (auto pos : area) {
-          for (auto& token : map[pos]) {
-            if (auto f = getReferenceMaybe(mapping.furniture, token))
-              builder->putFurniture(pos, *f, tribe);
-            if (auto a = getReferenceMaybe(mapping.flags, token))
-              builder->addAttrib(pos, *a);
-          }
-        }
+        for (auto pos : area)
+          for (auto& token : map[pos])
+            if (auto a = getReferenceMaybe(mapping.actions, token))
+              visit(builder, pos, *a);
+        CHECK(downStairs.empty()) << "Custom map doesn't contain required down stairs";
+        CHECK(upStairs.empty()) << "Custom map doesn't contain required up stairs";
       } else
         failGen();
     }
@@ -2721,6 +2741,8 @@ namespace {
     private:
     const LayoutMapping& mapping;
     const LayoutGenerator& generator;
+    vector<StairKey> downStairs;
+    vector<StairKey> upStairs;
     TribeId tribe;
   };
 }

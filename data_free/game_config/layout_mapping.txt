@@ -1,13 +1,10 @@
 "dungeon" {
-  furniture = {
-    "floor" "FLOOR"
-    "rock" "MOUNTAIN"
-    "water" "WATER" 
-    "wall" "WOOD_WALL"
-    "door" "WOOD_DOOR"
-  }
-  flags = {
-    "floor" EMPTY_ROOM
-  }
+  "floor" Chain { ClearFurniture Place "FLOOR" Flag EMPTY_ROOM }
+  "rock" Place "MOUNTAIN"
+  "water" Place "WATER"
+  "wall" Place "WOOD_WALL"
+  "door" Place "WOOD_DOOR"
+  "down_stairs" Stairs DOWN "DOWN_STAIRS"
+  "up_stairs" Stairs UP "UP_STAIRS"
 }
     

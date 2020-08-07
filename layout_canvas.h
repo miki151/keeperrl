@@ -7,7 +7,7 @@ using Token = string;
 
 struct LayoutCanvas {
   struct Map {
-    Table<unordered_set<Token>> elems;
+    Table<vector<Token>> elems;
   };
   LayoutCanvas with(Rectangle area) const { return LayoutCanvas{area, map}; }
   Rectangle area;
