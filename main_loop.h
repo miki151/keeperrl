@@ -49,6 +49,7 @@ class MainLoop {
   optional<string> verifyMod(const string& path);
   void launchQuickGame(optional<int> maxTurns);
   void playSimpleGame();
+  ContentFactory createContentFactory(bool vanillaOnly) const;
 
   private:
 
@@ -107,7 +108,6 @@ class MainLoop {
   void bugReportSave(PGame&, FilePath);
   void saveGame(PGame&, const FilePath&);
   void saveMainModel(PGame&, const FilePath&);
-  ContentFactory createContentFactory(bool vanillaOnly) const;
   TilePaths getTilePathsForAllMods() const;
 
   optional<ModVersionInfo> getLocalModVersionInfo(const string& mod);

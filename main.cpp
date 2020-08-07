@@ -56,6 +56,7 @@
 #include "fx_manager.h"
 #include "fx_renderer.h"
 #include "fx_view_manager.h"
+#include "layout_renderer.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -215,6 +216,9 @@ static po::parser getCommandLineFlags() {
   flags["verify_mod"].type(po::string).description("Verify mod. Requires path to zip file.");
   flags["battle_view"].description("Open game window and display battle");
   flags["battle_rounds"].type(po::i32).description("Number of battle rounds");
+  flags["layout_size"].type(po::string).description("Size of the generated map layout");
+  flags["layout_glyphs"].type(po::string).description("Path to file with layout glyphs");
+  flags["layout_name"].type(po::string).description("Name of layout to generate");
   flags["stderr"].description("Log to stderr");
   flags["nolog"].description("No logging");
   flags["free_mode"].description("Run in free ascii mode");
@@ -393,6 +397,15 @@ static int keeperMain(po::parser& commandLineFlags) {
   if (commandLineFlags["simple_game"].was_set()) {
     MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, 0, "");
     loop.playSimpleGame();
+  }
+  if (commandLineFlags["layout_name"].was_set()) {
+    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, 0, "");
+    generateMapLayout(loop,
+        commandLineFlags["layout_name"].get().string,
+        commandLineFlags["layout_glyphs"].get().string,
+        commandLineFlags["layout_size"].get().string
+    );
+    exit(0);
   }
   if (commandLineFlags["verify_mod"].was_set()) {
     MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, 0, "");
