@@ -510,6 +510,14 @@ public:
       return none;
   }
 
+  template <typename Fun>
+  auto value_or_f(const Fun& f) const {
+    if (!initialized())
+      return f();
+    else
+      return value();
+  }
+
 # if OPTIONAL_HAS_MOVE_ACCESSORS == 1
 
   OPTIONAL_MUTABLE_CONSTEXPR T* operator ->() {

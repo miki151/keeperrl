@@ -12,7 +12,8 @@ End
 Def Village() {
   Place {
     {
-      size = {6 6}
+      minSize = {6 6}
+      maxSize = {8 8}
       generator = Building()
       count = 3
     }

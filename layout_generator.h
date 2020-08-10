@@ -71,12 +71,14 @@ struct VRatio {
 
 struct Place {
   struct Elem {
-    Vec2 SERIAL(size);
+    optional<Vec2> SERIAL(size);
+    optional<Vec2> SERIAL(minSize);
+    optional<Vec2> SERIAL(maxSize);
     HeapAllocated<LayoutGenerator> SERIAL(generator);
     Range SERIAL(count) = Range(1, 2);
     TilePredicate SERIAL(predicate) = TilePredicates::True{};
     optional<PlacementPos> SERIAL(position);
-    SERIALIZE_ALL(NAMED(size), NAMED(generator), OPTION(count), OPTION(predicate), OPTION(position))
+    SERIALIZE_ALL(NAMED(size), NAMED(generator), OPTION(count), OPTION(predicate), OPTION(position), NAMED(minSize), NAMED(maxSize))
   };
   vector<Elem> SERIAL(generators);
   SERIALIZE_ALL(generators)

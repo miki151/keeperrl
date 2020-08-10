@@ -113,11 +113,11 @@ bool make(const LayoutGenerators::Place& g, LayoutCanvas c, RandomGen& r) {
     return true;
   };
   for (int i : All(g.generators)) {
-    auto size = g.generators[i].size;
     auto& generator = g.generators[i].generator;
-    if (size.x > c.area.width() || size.y > c.area.height())
-      return false;
     auto generate = [&] {
+      auto size = g.generators[i].size.value_or_f(
+          [&]{return Vec2(r.get(g.generators[i].minSize->x, g.generators[i].maxSize->x),
+                          r.get(g.generators[i].minSize->y, g.generators[i].maxSize->y)); });
       const int numTries = g.generators[i].position ? 1 : 100000;
       for (int iter : Range(numTries)) {
         auto pos = g.generators[i].position
