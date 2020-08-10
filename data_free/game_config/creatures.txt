@@ -259,7 +259,7 @@
     name = {
       name = "bandit"
     }
-    deathEffect = Filter Not Flag "key_dropped" Chain {
+    deathEffect = Filter Not Flag "key_dropped" {
       SetFlag "key_dropped" true
       DropItems { Simple "BlackMarketKey"} {1}
     }

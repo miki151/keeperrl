@@ -24,7 +24,7 @@
       2
       { "installed_head" Rgb 180 140 55 255 }
       Description "Allows using equipment."
-      Chain {
+      {
         MakeHumanoid
         AddBodyPart HEAD 1 none
       }
@@ -42,7 +42,7 @@
       2
       { "installed_arrow" Rgb 180 140 55 255 }
       Description "Allows shooting arrows. Second head adds additional +10 ranged damage."
-      Chain {
+      {
         IncreaseAttr RANGED_DAMAGE 25
         AddBodyPart HEAD 1 none
         FirstSuccessful {
@@ -66,7 +66,7 @@
       0
       { "installed_legs" Rgb 180 140 55 255 }
       Description "Adds mobility. Second pair grants the \"jump\" ability."
-      Chain{
+      {
         AddBodyPart LEG 2 none
         FirstSuccessful {
           RemovePermanent IMMOBILE
@@ -89,7 +89,7 @@
       1
       { "installed_arms" Rgb 180 140 55 255 }
       Description "Grants a melee attack and +8 damage bonus."
-      Chain {
+      {
         IncreaseAttr DAMAGE 8
         AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
       }
@@ -108,7 +108,7 @@
       1
       { "installed_drill" Rgb 180 140 55 255 }
       Description "Increases the digging skill by 20."
-      Chain {
+      {
         IncreaseSkill DIGGING 0.2
         AddMinionTrait WORKER
         AddBodyPart ARM 2 none
@@ -127,7 +127,7 @@
       1
       { "installed_crafting" Rgb 180 140 55 255 }
       Description "Increases all crafting skills by 20."
-      Chain {
+      {
         IncreaseWorkshopSkill "WORKSHOP" 0.2
         IncreaseWorkshopSkill "FORGE" 0.2
         IncreaseWorkshopSkill "LABORATORY" 0.2
@@ -148,7 +148,7 @@
       2
       { "installed_head" Rgb 140 148 148 255 }
       Description "Allows using equipment. Adds +2 defense bonus."
-      Chain {
+      {
         IncreaseAttr DEFENSE 2
         MakeHumanoid
         AddBodyPart HEAD 1 none
@@ -167,7 +167,7 @@
       2
       { "installed_arrow" Rgb 140 148 148 255 }
       Description "Allows shooting arrows. Adds +2 defense. Second head adds additional +15 ranged damage."
-      Chain {
+      {
         IncreaseAttr RANGED_DAMAGE 30
         IncreaseAttr DEFENSE 2
         AddBodyPart HEAD 1 none
@@ -190,7 +190,7 @@
       2
       { "installed_fire" Rgb 140 148 148 255 }
       Description "Grants the \"fire breath\" ability. Adds +2 defense."
-      Chain {
+      {
         GrantAbility "fire breath"
         IncreaseAttr DEFENSE 2
         AddBodyPart HEAD 1 none
@@ -209,7 +209,7 @@
       2
       { "installed_acid" Rgb 140 148 148 255 }
       Description "Grants the \"acid stream\" ability. Adds +2 defense."
-      Chain {
+      {
         GrantAbility "acid stream"
         IncreaseAttr DEFENSE 2
         AddBodyPart HEAD 1 none
@@ -230,7 +230,7 @@
       0
       { "installed_legs" Rgb 140 148 148 255 }
       Description "Adds mobility. Second pair grants the \"jump\" ability."
-      Chain{
+      {
         AddBodyPart LEG 2 none
         FirstSuccessful {
             RemovePermanent IMMOBILE
@@ -253,7 +253,7 @@
       1
       { "installed_arms" Rgb 140 148 148 255 }
       Description "Grants a melee attack and +12 damage bonus."
-      Chain {
+      {
         IncreaseAttr DAMAGE 12
         AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
       }
@@ -273,7 +273,7 @@
       1
       { "installed_drill" Rgb 140 148 148 255 }
       Description "Increases the digging skill by 30."
-      Chain {
+      {
         IncreaseSkill DIGGING 0.3
         AddMinionTrait WORKER
         AddBodyPart ARM 2 none
@@ -292,7 +292,7 @@
       1
       { "installed_crafting" Rgb 140 148 148 255 }
       Description "Increases all crafting skills by 30."
-      Chain {
+      {
         IncreaseWorkshopSkill "WORKSHOP" 0.3
         IncreaseWorkshopSkill "FORGE" 0.3
         IncreaseWorkshopSkill "LABORATORY" 0.3
@@ -310,7 +310,7 @@
       1
       { "installed_arms" Rgb 140 148 148 255 }
       Description "Grants a melee attack with a chance to cause bleeding. Adds +10 damage and +2 defense bonus."
-      Chain {
+      {
         IncreaseAttr DAMAGE 10
         IncreaseAttr DEFENSE 2
         AddBodyPart ARM 2
@@ -329,7 +329,7 @@
       1
       { "installed_repair" Rgb 140 148 148 255 }
       Description "Grants the ability to repair other automatons. Adds +2 defense."
-      Chain {
+      {
         GrantAbility "repair automaton"
         IncreaseAttr DEFENSE 2
         AddBodyPart ARM 2 none
@@ -349,7 +349,7 @@
       2
       { "installed_head" Rgb 140 148 148 255 }
       Description "Allows using equipment. Adds +2 defense bonus."
-      Chain {
+      {
         IncreaseAttr DEFENSE 4
         MakeHumanoid
         AddBodyPart HEAD 1 none
@@ -368,7 +368,7 @@
       2
       { "installed_arrow" Rgb 148 189 189 255 }
       Description "Allows shooting arrows. Adds +4 defense. Second head adds additional +20 ranged damage."
-      Chain {
+      {
         IncreaseAttr RANGED_DAMAGE 40
         IncreaseAttr DEFENSE 4
         AddBodyPart HEAD 1 none
@@ -391,7 +391,7 @@
       2
       { "installed_fire" Rgb 148 189 189 255 }
       Description "Grants the \"fire breath\" ability. Adds +4 defense."
-      Chain {
+      {
         GrantAbility "fire breath"
         IncreaseAttr DEFENSE 4
         AddBodyPart HEAD 1 none
@@ -410,7 +410,7 @@
       2
       { "installed_acid" Rgb 148 189 189 255 }
       Description "Grants the \"acid stream\" ability. Adds +4 defense."
-      Chain {
+      {
         GrantAbility "acid stream"
         IncreaseAttr DEFENSE 4
         AddBodyPart HEAD 1 none
@@ -431,7 +431,7 @@
       0
       { "installed_legs" Rgb 148 189 189 255 }
       Description "Adds mobility. Second pair grants the \"jump\" ability."
-      Chain{
+      {
         AddBodyPart LEG 2 none
         FirstSuccessful {
             RemovePermanent IMMOBILE
@@ -454,7 +454,7 @@
       1
       { "installed_arms" Rgb 148 189 189 255 }
       Description "Grants a melee attack and +18 damage bonus."
-      Chain {
+      {
         IncreaseAttr DAMAGE 18
         AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
       }
@@ -474,7 +474,7 @@
       1
       { "installed_drill" Rgb 148 189 189 255 }
       Description "Increases the digging skill by 50."
-      Chain {
+      {
         IncreaseSkill DIGGING 0.5
         AddMinionTrait WORKER
         AddBodyPart ARM 2 none
@@ -493,7 +493,7 @@
       1
       { "installed_crafting" Rgb 148 189 189 255 }
       Description "Increases all crafting skills by 50."
-      Chain {
+      {
         IncreaseWorkshopSkill "WORKSHOP" 0.5
         IncreaseWorkshopSkill "FORGE" 0.5
         IncreaseWorkshopSkill "LABORATORY" 0.5
@@ -512,7 +512,7 @@
       1
       { "installed_repair" Rgb 148 189 189 255 }
       Description "Grants the ability to repair other automatons. Adds +4 defense."
-      Chain {
+      {
         GrantAbility "repair automaton"
         IncreaseAttr DEFENSE 4
         AddBodyPart ARM 2 none
@@ -1466,7 +1466,7 @@
     effect = Name "Unknown" Description "" FirstSuccessful { 
       Area 2 ChainUntilFail {
         RemoveFurniture "INACTIVE_PORTAL"
-        Chain {
+        {
           Fx { TELEPORT_OUT }
           Message "The portal is activated!"
           PlaceFurniture "PORTAL_STAIRS"

@@ -124,7 +124,7 @@
   viewId = { "dining_table" }
   name = "dining table"
   usageFX = none
-  usageType = UsageEffect "eat from" Chain {
+  usageType = UsageEffect "eat from" {
     CreatureMessage "eat a steaming pig" "eats a steaming pig"
     Lasting SATIATED
   }
@@ -137,8 +137,8 @@
   usageTime = 5
   canHideHere = true
   strength = 100
-  usageType = UsageEffect "use" Chain {
-    Chance 0.02 DropItems {Potion Name "moonshine" Chain { IncreaseMorale 0.3 Lasting DRUNK} } {1}
+  usageType = UsageEffect "use" {
+    Chance 0.02 DropItems {Potion Name "moonshine" { IncreaseMorale 0.3 Lasting DRUNK} } {1}
     Chance 0.005 SummonEnemy "RAT" {1 4} none
   }
 }
@@ -206,7 +206,7 @@
   name = "throne"
   viewId = { "throne" }
   canHideHere = true
-  usageType = UsageEffect "sit on" Chain { CreatureMessage "sit on the throne" "sits on the throne" Audience none }
+  usageType = UsageEffect "sit on" { CreatureMessage "sit on the throne" "sits on the throne" Audience none }
   luxury = 1.0
   strength = 80
   populationIncrease = 10 none
@@ -410,7 +410,7 @@
 }
 "ADOXIE_STATUE" inherit "ADOXIE_STATUE_TEMPLE"
 {
-  destroyedEffect = Chain { Message "The statue comes to life!" SummonEnemy "ADOXIE_HEAD" {1} none }
+  destroyedEffect = { Message "The statue comes to life!" SummonEnemy "ADOXIE_HEAD" {1} none }
   destroyedRemains = "DOWN_STAIRS_ADOXIE"
 }
 "BARRICADE"
@@ -637,7 +637,7 @@
   canHideHere = true
   luxury = 0.7
   usageType = UsageEffect "drink from"
-      Chain {
+      {
         CreatureMessage "take a sip" "takes a sip"
         ChooseRandom {
           Heal FLESH
@@ -661,11 +661,11 @@
   viewId = { "altar" }
   canHideHere = true
   strength = 80
-  usageType = UsageEffect "desecrate" Chain {
+  usageType = UsageEffect "desecrate" {
     CreatureMessage "desecrate the altar" "desecrates the altar"
     DestroyWalls BASH
     ChooseRandom {
-      Chain {
+      {
         Message "A streak of magical energy is released"
         ChooseRandom {
           Permanent RAGE
@@ -688,7 +688,7 @@
           Permanent NIGHT_VISION
         }
       }
-      Chain {
+      {
         Message "A streak of magical energy is released"
         ChooseRandom {
           IncreaseAttr DAMAGE -3
@@ -708,15 +708,15 @@
           Lasting HALLU
         }
       }
-      Chain {
+      {
         Message "Wrath upon you!"
         SummonEnemy "ANGEL" {3 6} none
       }
-      Chain {
+      {
         CreatureMessage "find some gold coins in the cracks" "finds some gold coins in the cracks"
         DropItems {Simple "GoldPiece"} {50 100}
       }
-      Chain {
+      {
         CreatureMessage "find a glyph in the cracks!" "finds a glyph in the cracks!"
         ChooseRandom {
           DropItems {Glyph ARMOR ItemAttrBonus DAMAGE 2} {1}
@@ -949,12 +949,12 @@
   viewId = { "portal" ColorId PURPLE }
   name = "portal"
   constructMessage = none
-  usageType = UsageEffect "use" Chain {Stairs Fx { TELEPORT_OUT }}
+  usageType = UsageEffect "use" {Stairs Fx { TELEPORT_OUT }}
 }
 "DOWN_STAIRS_ADOXIE" inherit "UP_STAIRS"
 {
   viewId = { "down_staircase" }
-  usageType = UsageEffect "use" Chain { Message "You lose your sense of direction" Stairs }
+  usageType = UsageEffect "use" { Message "You lose your sense of direction" Stairs }
   onBuilt = DOWN_STAIRS
 }
 "INACTIVE_PORTAL"
@@ -1190,7 +1190,7 @@
   viewId = { "castle_wall" }
   blockVision = { NORMAL ELF }
   strength = 1
-  entryType = Effect Chain {
+  entryType = Effect {
       Message "It was just an illusion!"
       Fx { TELEPORT_OUT }
       DestroyWalls BASH
@@ -1534,12 +1534,12 @@
   layer = GROUND
   defaultBridge = "STONE_BRIDGE"
   tickType = Effect
-    Filter And { Not LastingEffect FLYING Not BodyMaterial SPIRIT Not LastingEffect IMMOBILE} Chain {
-      Chance 0.1 Chain {
+    Filter And { Not LastingEffect FLYING Not BodyMaterial SPIRIT Not LastingEffect IMMOBILE} {
+      Chance 0.1 {
         CreatureMessage "are stuck in the tar!" "is stuck in the tar!"
         Lasting IMMOBILE
       }
-      Filter Not LastingEffect IMMOBILE Chance 0.5 Chain {
+      Filter Not LastingEffect IMMOBILE Chance 0.5 {
         CreatureMessage "are slowed down by the tar!" "is slowed down by the tar!"
         Lasting SLOWED
       }

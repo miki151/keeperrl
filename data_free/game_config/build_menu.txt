@@ -4,7 +4,7 @@
 
   "structure"
   {
-    { Chain { Dig CutTree }                                        "Dig or cut tree"   "Structure"  
+    { { Dig CutTree }                                        "Dig or cut tree"   "Structure"  
       "" d {} true DIG_OR_CUT_TREES}
 # If you want you can use "just dig" or "just cut tree" in your mod
 #    { Dig                                                          "Dig"   "Structure" }

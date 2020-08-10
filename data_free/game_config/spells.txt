@@ -416,7 +416,7 @@
 "grant wish"
 {
   symbol = "$"
-  effect = Name "grant wish" Chain { Wish Caster Suicide TURN_INVISIBLE }
+  effect = Name "grant wish" { Wish Caster Suicide TURN_INVISIBLE }
   range = 1
   targetSelf = false
   cooldown = 150

@@ -412,9 +412,7 @@ inline void serialize(PrettyInputArchive& ar1, vector<T>& v) {
   ar1.readText(s);
   if (s != "{")
     ar1.error("Expected list of items surrounded by { and }");
-  while (1) {
-    if (ar1.peek() == "}")
-      break;
+  while (ar1.peek() != "}") {
     T t;
     ar1(t);
     v.push_back(std::move(t));
