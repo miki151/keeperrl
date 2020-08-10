@@ -27,7 +27,7 @@
       { "gold" 50 "TREASURE_CHEST" }
     }
     cropsDistance = 16
-      furniture = { "roomFurniture" }
+      furniture = "roomFurniture"
   }
 }
 "UNICORN_HERD"
@@ -199,7 +199,7 @@
     }
     locationNameGen = "TOWN"
     race = "greenskins"
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
     outsideFeatures = "villageOutside"
   }
   config = {
@@ -233,7 +233,7 @@
     }
     locationName = "Darkshrine Town"
     race = "ghosts"
-    furniture = { "dungeonOutside" }
+    furniture = "dungeonOutside"
   }
   discoverable = false
   createOnBones = 1.0 { "KNIGHTS" }
@@ -252,7 +252,7 @@
     }
     locationName = "Darkshrine"
     race = "demons"
-    furniture = { "dungeonOutside" }
+    furniture = "dungeonOutside"
     outsideFeatures = "dungeonOutside"
   }
   config = {
@@ -310,7 +310,7 @@
     locationNameGen = "TOWN"
     race = "humans"
     shopItems = { "armory" }
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
   }
   config = {
     spawnGhosts = 4
@@ -333,7 +333,7 @@
     race = "humans"
     stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
     lootItem = {TechBook "beast mutation"}
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
     outsideFeatures = "castleOutside"
   }
   config = {
@@ -398,7 +398,7 @@
     race = "humans"
     stockpiles = {{ "gold" 140 "TREASURE_CHEST" }}
     shopItems = { "villageShop" }
-    furniture = { "castleFurniture" }
+    furniture = "castleFurniture"
     outsideFeatures = "castleOutside"
   }
   config = {
@@ -464,7 +464,7 @@
     locationNameGen = "TOWN"
     race = "Teutonic Knights"
     stockpiles = {{ "gold" 140 "TREASURE_CHEST" }}
-    furniture = { "castleFurniture" }
+    furniture = "castleFurniture"
     outsideFeatures = "castleOutside"
   }
   config = {
@@ -513,7 +513,7 @@
       }
     }
     locationNameGen = "TOWN"
-    furniture = { "forge" }
+    furniture = "forge"
   }
 }
 "MINOTAUR"
@@ -526,7 +526,7 @@
     }
     locationName = "maze"
     race = "monsters"
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
   }
 }
 "RED_DRAGON"
@@ -632,7 +632,7 @@
     shopItems = { "dwarfShop" }
     outsideFeatures = "dungeonOutside"
     surroundWithResources = 5
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
   }
   config = {
     immigrantInterval = 500
@@ -687,7 +687,7 @@
     race = "elves"
     stockpiles = {{ "gold" 100 "TREASURE_CHEST"}}
     lootItem = {TechBook "master sorcery"}
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
   }
   config = {
     immigrantInterval = 500
@@ -744,7 +744,7 @@
       leader = { { "ELEMENTALIST" } }
     }
     tribe = HUMAN
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
   }
   config = {
     leaderAsFighter = true
@@ -841,7 +841,7 @@
   settlement = {
     type = Builtin MINETOWN "HELL"
     tribe = MONSTER
-    furniture = { "hellFurniture" }
+    furniture = "hellFurniture"
     inhabitants = {
       fighters = {
         count = {10 15}
@@ -913,7 +913,7 @@
   settlement = {
     type = Builtin MINETOWN "HELL"
     tribe = MONSTER
-    furniture = { "hellFurniture" }
+    furniture = "hellFurniture"
     inhabitants = {
       fighters = {
         count = {1}
@@ -1013,7 +1013,7 @@
       }
     }
     race = "lizardmen"
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
     outsideFeatures = "villageOutside"
   }
 }
@@ -1034,7 +1034,7 @@
     race = "lizardmen"
     lootItem = {TechBook "humanoid mutation"}
     shopItems = { "goodMushrooms" }
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
     outsideFeatures = "villageOutside"
   }
   config = {
@@ -1089,7 +1089,7 @@
     locationNameGen = "TOWN"
     race = "dark elves"
     outsideFeatures = "dungeonOutside"
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
   }
   config = {
     immigrantInterval = 500
@@ -1143,7 +1143,7 @@
     locationNameGen = "TOWN"
     race = "dark elves"
     outsideFeatures = "dungeonOutside"
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
   }
 }
 "DARK_ELVES_ENTRY"
@@ -1159,7 +1159,7 @@
     }
     race = "dark elves"
     outsideFeatures = "dungeonOutside"
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
   }
   discoverable = false
 }
@@ -1169,7 +1169,7 @@
   settlement = {
     type = Builtin MINETOWN "DUNGEON"
     tribe = MONSTER
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
     shopItems = { "dungeon" }
     inhabitants = {
       fighters = {
@@ -1235,7 +1235,7 @@
     type = Builtin TOWER "BLACK_MARKET"
     tribe = GNOME
     race = "the Black Market"
-    furniture = { "dungeonOutside" }
+    furniture = "dungeonOutside"
     shopItems = { "blackMarketAmulet" "blackMarketScrolls" "blackMarketPotions"  }
     inhabitants = {
       fighters = {
@@ -1280,7 +1280,7 @@
 "DUNGEON3" inherit "DUNGEON2"
 {
   settlement = append {
-    furniture = append { "bleedingTotem" }
+    furniture = "roomFurnitureAndBleedingTotem"
     inhabitants = append {
       fighters = append {
         all = append {
@@ -1310,7 +1310,7 @@
     race = "gnomes"
     shopItems = { "gnomeShop" }
     outsideFeatures = "dungeonOutside"
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
   }
   levelConnection = {
     topLevel = ExtraEnemy {"GNOMES_ENTRY"}
@@ -1334,7 +1334,7 @@
     }
     race = "gnomes"
     outsideFeatures = "dungeonOutside"
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
   }
   discoverable = false
 }
@@ -1529,7 +1529,7 @@
     locationName = "cemetery"
     tribe = MONSTER
     race = "undead"
-    furniture = { "cryptCoffins" }
+    furniture = "cryptCoffins"
   }
   levelConnection = {
     topLevel = ExtraEnemy { "CEMETERY_ENTRY" }
@@ -1553,7 +1553,7 @@
     locationName = "cemetery"
     race = "undead"
     tribe = MONSTER
-    furniture = { "graves" }
+    furniture = "graves"
   }
   discoverable = false
 }
@@ -1569,7 +1569,7 @@
       }
     }
     closeToPlayer = true
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
     outsideFeatures = "villageOutside"
   }
   config = {
@@ -1596,7 +1596,7 @@
       }
     }
     closeToPlayer = true
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
     outsideFeatures = "villageOutside"
   }
   config = {
@@ -1646,7 +1646,7 @@
     }
     race = "witch"
     lootItem = {TechBook "advanced alchemy"}
-    furniture = { "witchInside" }
+    furniture = "witchInside"
   }
 }
 "TEMPLE"
@@ -1658,7 +1658,7 @@
     inhabitants = {
       leader = { { "PRIEST" } }
     }
-    furniture = { "templeInside"    }
+    furniture = "templeInside"
   }
   discoverable = false
 }
@@ -1674,7 +1674,7 @@
         expLevelIncrease = { SPELL 7 }
       }
     }
-    furniture = { "templeInside" }
+    furniture = "templeInside"
   }
   discoverable = false
 }
@@ -1731,7 +1731,7 @@
       }
     }
     race = "humans"
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
   }
   config = {
     guardianInfo = "WITCHMAN" 0.003 1 2
@@ -1755,7 +1755,7 @@
         }
       }
     }
-    furniture = { }
+    furniture = none
     outsideFeatures = "snowFurniture"
   }
 }
@@ -1777,7 +1777,7 @@
         }
       }
     }
-    furniture = { }
+    furniture = none
     outsideFeatures = "snowFurniture"
   }
 }
@@ -1800,7 +1800,7 @@
         }
       }
     }
-    furniture = { }
+    furniture = none
   }
 }
 "NOMAD_VILLAGE" inherit "TUTORIAL_VILLAGE"
@@ -1822,7 +1822,7 @@
         }
       }
     }
-    furniture = { }
+    furniture = none
     outsideFeatures = none
   }
 }
@@ -1865,7 +1865,7 @@
     locationNameGen = "TOWN"
     race = "thieves"
     stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
     outsideFeatures = "bleedingTotem"
   }
   config = {
@@ -1945,7 +1945,7 @@
       }
     }
     race = "elves"
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
   }
 }
 "LIZARDMEN_COTTAGE"
@@ -1960,7 +1960,7 @@
       }
     }
     race = "lizardmen"
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
   }
   createOnBones = 1.0 { "ELVEN_COTTAGE" }
 }
@@ -1997,7 +1997,7 @@
     race = "dwarves"
     stockpiles = {{ "minerals" 60}}
     outsideFeatures = "dungeonOutside"
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
     surroundWithResources = 6     
   }
   behaviour = {
@@ -2074,7 +2074,7 @@
     race = "dark elves"
     stockpiles = {{ "minerals" 60 }}
     outsideFeatures = "dungeonOutside"
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
     surroundWithResources = 6    
   }
   behaviour = {
@@ -2103,7 +2103,7 @@
       }
     }
     tribe = BANDIT
-    furniture = {"trees"}
+    furniture = "trees"
   }
   levelConnection = {
     direction = UP
@@ -2154,7 +2154,7 @@
     race = "dark mage"
     stockpiles = {{ "gold" 200 "TREASURE_CHEST"} {"minerals" 120 }}
     outsideFeatures = "dungeonOutside"
-    furniture = { "roomFurniture" }
+    furniture = "roomFurniture"
   }
   config = {
     immigrantInterval = 500

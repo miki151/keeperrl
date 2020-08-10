@@ -150,7 +150,7 @@ void EnemyFactory::updateCreateOnBones(EnemyInfo& info) const {
             if (makeRuins) {
               if (auto builtin = enemy.settlement.type.getReferenceMaybe<MapLayoutTypes::Builtin>())
                 builtin->buildingId = BuildingId("RUINS");
-              enemy.settlement.furniture.clear();
+              enemy.settlement.furniture.reset();
               enemy.settlement.outsideFeatures.reset();
             }
             enemy.settlement.corpses = enemy.settlement.inhabitants;

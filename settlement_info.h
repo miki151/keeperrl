@@ -98,7 +98,7 @@ struct SettlementInfo {
   vector<ItemListId> SERIAL(shopItems);
   bool SERIAL(shopkeeperDead) = false;
   CollectiveBuilder* collective;
-  vector<FurnitureListId> SERIAL(furniture);
+  optional<FurnitureListId> SERIAL(furniture);
   optional<FurnitureListId> SERIAL(outsideFeatures);
   bool SERIAL(closeToPlayer) = false;
   bool SERIAL(dontConnectCave) = false;

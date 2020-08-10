@@ -2007,8 +2007,8 @@ PLevelMaker LevelMaker::mazeLevel(RandomGen& random, SettlementInfo info, Vec2 s
   queue->addMaker(unique<PlaceCollective>(info.collective));
   queue->addMaker(unique<RoomMaker>(random.get(8, 15), 3, 5, SquareChange::none(), none, unique<Empty>(floor)));
   queue->addMaker(unique<Connector>(building.door, info.tribe));
-  for (auto& furniture : info.furniture)
-    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, furniture, info.tribe));
+  if (info.furniture)
+    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, *info.furniture, info.tribe));
   addStairs(*queue, info, building, Predicate::type(floor));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
   for (auto& items : info.shopItems)
@@ -2032,8 +2032,8 @@ static PMakerQueue village2(RandomGen& random, SettlementInfo info, const Buildi
   for (auto& items : info.shopItems)
     insideMakers.push_back(unique<ShopMaker>(items, info, random.get(8, 16)));
   queue->addMaker(unique<Buildings>(6, 10, 3, 4, building, info.tribe, false, std::move(insideMakers)));
-  for (auto& furniture : info.furniture)
-    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, furniture, info.tribe));
+  if (info.furniture)
+    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, *info.furniture, info.tribe));
   if (info.outsideFeatures)
     queue->addMaker(unique<Furnitures>(!Predicate::attrib(SquareAttrib::FLOOR_OUTSIDE), 0.01, *info.outsideFeatures, info.tribe));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
@@ -2053,8 +2053,8 @@ static PMakerQueue village(RandomGen& random, SettlementInfo info, int minRooms,
   for (auto& elem : info.stockpiles)
     insideMakers.push_back(stockpileMaker(elem));
   queue->addMaker(unique<Buildings>(minRooms, maxRooms, 3, 7, building, info.tribe, true, std::move(insideMakers), !info.dontBuildRoad));
-  for (auto& furniture : info.furniture)
-    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, furniture, info.tribe));
+  if (info.furniture)
+    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, *info.furniture, info.tribe));
   if (info.outsideFeatures)
     queue->addMaker(unique<Furnitures>(
         !Predicate::attrib(SquareAttrib::ROOM) &&
@@ -2070,8 +2070,8 @@ static PMakerQueue cottage(SettlementInfo info, const BuildingInfo& building) {
     queue->addMaker(unique<Empty>(*building.floorOutside));
   auto room = getElderRoom(info);
   addStairs(*queue, info, building, Predicate::attrib(SquareAttrib::ROOM));
-  for (auto& furniture : info.furniture)
-    room->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.3, furniture, info.tribe));
+  if (info.furniture)
+    room->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.3, *info.furniture, info.tribe));
   if (building.prettyFloor)
     room->addMaker(unique<Empty>(SquareChange(*building.prettyFloor)));
   queue->addMaker(unique<Buildings>(1, 2, 5, 7, building, info.tribe, false, std::move(room), false));
@@ -2086,8 +2086,9 @@ static PMakerQueue temple(RandomGen& random, SettlementInfo info, const Building
   auto queue = unique<MakerQueue>();
   auto room = getElderRoom(info);
   addStairs(*queue, info, building, Predicate::attrib(SquareAttrib::ROOM));
-  for (auto& furniture : info.furniture)
-    room->addMaker(unique<Margin>(1, unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.3, furniture, info.tribe)));
+  if (info.furniture)
+    room->addMaker(unique<Margin>(1, unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.3,
+        *info.furniture, info.tribe)));
   auto torchPred = Predicate::attrib(SquareAttrib::ROOM) && random.choose(
       Predicate::near8AtLeast(building.wall, 4),
       Predicate::near8AtLeast(building.wall, 5),
@@ -2109,8 +2110,8 @@ static PMakerQueue forrestCottage(SettlementInfo info, const BuildingInfo& build
   auto queue = unique<MakerQueue>();
   auto room = getElderRoom(info);
   addStairs(*queue, info, building, Predicate::attrib(SquareAttrib::ROOM));
-  for (auto& furniture : info.furniture)
-    room->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.3, furniture, info.tribe));
+  if (info.furniture)
+    room->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.3, *info.furniture, info.tribe));
   if (info.outsideFeatures)
     room->addMaker(unique<Furnitures>(!Predicate::attrib(SquareAttrib::ROOM), 0.1, *info.outsideFeatures, info.tribe));
   queue->addMaker(unique<Buildings>(1, 3, 3, 4, building, info.tribe, false, std::move(room), false));
@@ -2136,8 +2137,8 @@ static PMakerQueue castle(RandomGen& random, SettlementInfo info, const Building
   auto insidePlusWall = unique<MakerQueue>();
   if (info.outsideFeatures)
     inside->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::FLOOR_OUTSIDE), 0.18, *info.outsideFeatures, info.tribe));
-  for (auto& furniture : info.furniture)
-    inside->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.35, furniture, info.tribe));
+  if (info.furniture)
+    inside->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.35, *info.furniture, info.tribe));
   insidePlusWall->addMaker(unique<Empty>(SquareChange::resetOrRemove(building.floorOutside, FurnitureLayer::MIDDLE, SquareAttrib::FLOOR_OUTSIDE)));
   insidePlusWall->addMaker(unique<BorderGuard>(std::move(inside), building.wall));
   auto queue = unique<MakerQueue>();
@@ -2212,8 +2213,8 @@ static PMakerQueue tower(RandomGen& random, SettlementInfo info, bool withExit, 
         Predicate::attrib(SquareAttrib::ROOM));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, Predicate::attrib(SquareAttrib::ROOM)));
   queue->addMaker(unique<Division>(0.5, 0.5, std::move(upStairs), nullptr, nullptr, std::move(downStairs)));
-  for (auto& furniture : info.furniture)
-    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.5, furniture, info.tribe));
+  if (info.furniture)
+    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.5, *info.furniture, info.tribe));
   if (info.corpses)
     queue->addMaker(unique<Corpses>(*info.corpses));
   return queue;
@@ -2235,8 +2236,8 @@ PLevelMaker LevelMaker::blackMarket(RandomGen& random, SettlementInfo info, Vec2
   if (info.collective)
     marketArea->addMaker(unique<PlaceCollective>(info.collective));
   marketArea->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, Predicate::attrib(SquareAttrib::ROOM)));
-  for (auto& furniture : info.furniture)
-    marketArea->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.05, furniture, info.tribe));
+  if (info.furniture)
+    marketArea->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.05, *info.furniture, info.tribe));
   if (info.corpses)
     marketArea->addMaker(unique<Corpses>(*info.corpses));
   auto leftSide = unique<RandomLocations>();
@@ -2375,8 +2376,8 @@ static PMakerQueue genericMineTownMaker(RandomGen& random, SettlementInfo info, 
   queue->addMaker(unique<Connector>(none, info.tribe));
   Predicate featurePred = Predicate::attrib(SquareAttrib::EMPTY_ROOM);
   addStairs(*queue, info, building, featurePred);
-  for (auto& furniture : info.furniture)
-    queue->addMaker(unique<Furnitures>(featurePred, 0.3, furniture, info.tribe));
+  if (info.furniture)
+    queue->addMaker(unique<Furnitures>(featurePred, 0.3, *info.furniture, info.tribe));
   if (info.outsideFeatures)
     queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.09, *info.outsideFeatures, info.tribe));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
@@ -2469,8 +2470,8 @@ static PMakerQueue cemetery(SettlementInfo info, const BuildingInfo& building) {
           unique<PlaceCollective>(info.collective),
           unique<Margin>(1, unique<Buildings>(1, 2, 2, 3, building, info.tribe, false, nullptr, false))
   );
-  for (auto& furniture : info.furniture)
-    queue->addMaker(unique<Furnitures>(Predicate::type(FurnitureType("GRASS")), 0.15, furniture, info.tribe));
+  if (info.furniture)
+    queue->addMaker(unique<Furnitures>(Predicate::type(FurnitureType("GRASS")), 0.15, *info.furniture, info.tribe));
   addStairs(*queue, info, building, Predicate::attrib(SquareAttrib::ROOM));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
   return queue;
@@ -2679,8 +2680,8 @@ static PMakerQueue makeMapLayout(const MapLayouts::Layout& layout, const Settlem
       unique<AddAttrib>(SquareAttrib::NO_DIG),
       unique<MapLayoutMaker>(layout, buildingInfo, info.downStairs, info.upStairs, info.tribe)));
   queue->addMaker(unique<PlaceCollective>(info.collective, Predicate::attrib(SquareAttrib::EMPTY_ROOM)));
-  for (auto& furniture : info.furniture)
-    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, furniture, info.tribe));
+  if (info.furniture)
+    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, *info.furniture, info.tribe));
   if (info.outsideFeatures)
     queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::FLOOR_OUTSIDE), 0.01, *info.outsideFeatures, info.tribe));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, Predicate::attrib(SquareAttrib::EMPTY_ROOM)));
@@ -2754,8 +2755,8 @@ static PMakerQueue makeRandomLayout(const LayoutGenerator& generator, const Layo
       unique<AddAttrib>(SquareAttrib::NO_DIG),
       unique<RandomLayoutMaker>(generator, mapping, info.downStairs, info.upStairs, info.tribe)));
   queue->addMaker(unique<PlaceCollective>(info.collective, Predicate::attrib(SquareAttrib::EMPTY_ROOM)));
-  for (auto& furniture : info.furniture)
-    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, furniture, info.tribe));
+  if (info.furniture)
+    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, *info.furniture, info.tribe));
   if (info.outsideFeatures)
     queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::FLOOR_OUTSIDE), 0.01,
         *info.outsideFeatures, info.tribe));
@@ -3087,8 +3088,8 @@ PLevelMaker LevelMaker::roomLevel(RandomGen& random, SettlementInfo info, Vec2 s
   queue->addMaker(underground(random, size, floorOutside, building.water));
   queue->addMaker(unique<RoomMaker>(random.get(8, 15), 4, 7, SquareChange::none(), none, unique<Empty>(floorInside)));
   queue->addMaker(unique<Connector>(building.door, info.tribe));
-  for (auto& furniture : info.furniture)
-    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.05, furniture, info.tribe));
+  if (info.furniture)
+    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.05, *info.furniture, info.tribe));
   addStairs(*queue, info, building, Predicate::attrib(SquareAttrib::EMPTY_ROOM));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
   queue->addMaker(unique<PlaceCollective>(info.collective));
