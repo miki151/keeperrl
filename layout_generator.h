@@ -73,7 +73,7 @@ struct Place {
   struct Elem {
     Vec2 SERIAL(size);
     HeapAllocated<LayoutGenerator> SERIAL(generator);
-    int SERIAL(count) = 1;
+    Range SERIAL(count) = Range(1, 2);
     TilePredicate SERIAL(predicate) = TilePredicates::True{};
     optional<PlacementPos> SERIAL(position);
     SERIALIZE_ALL(NAMED(size), NAMED(generator), OPTION(count), OPTION(predicate), OPTION(position))

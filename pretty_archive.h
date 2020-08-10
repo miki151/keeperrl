@@ -105,6 +105,18 @@ class PrettyInputArchive {
       throw PrettyException{msg + "line: " + toString(pos.line) + " column: " + toString(pos.column) + ": " + s};
     }
 
+    template <typename T>
+    bool readMaybe(T& elem) {
+      auto b = bookmark();
+      is >> elem;
+      if (!is) {
+        is.clear();
+        seek(b);
+        return false;
+      }
+      return true;
+    }
+
     bool eatMaybe(const string& s) {
       if (peek() == s) {
         eat();
@@ -633,7 +645,8 @@ inline void prettyEpilogue(PrettyInputArchive& ar1) {
         ar1.eat();
       auto bookmark = ar1.bookmark();
       string name, equals;
-      ar1.readText(name).readText(equals);
+      ar1.readText(name);
+      ar1.readText(equals);
       if (equals != "=") {
         if (keysAndValues)
           ar1.error("Expected a \"key = value\" pair");

@@ -1159,6 +1159,11 @@ Dir rotate(Dir dir) {
 template void Vec2::serialize(PrettyInputArchive&, unsigned);
 template<>
 void Range::serialize(PrettyInputArchive& ar1, unsigned) {
+  if (ar1.readMaybe(start)) {
+    finish = start + 1;
+    increment = 1;
+    return;
+  }
   optional_no_none<int> finish;
   ar1(NAMED(start), OPTION(finish), OPTION(increment));
   ar1(endInput());

@@ -130,7 +130,7 @@ bool make(const LayoutGenerators::Place& g, LayoutCanvas c, RandomGen& r) {
       }
       return false;
     };
-    for (int j : Range(g.generators[i].count))
+    for (int j : Range(r.get(g.generators[i].count)))
       if (!generate())
         return false;
   }
