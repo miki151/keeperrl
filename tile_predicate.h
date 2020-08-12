@@ -40,6 +40,11 @@ struct Chance {
   SERIALIZE_ALL(value)
 };
 
+struct Area {
+  int SERIAL(radius);
+  HeapAllocated<TilePredicate> SERIAL(predicate);
+  SERIALIZE_ALL(radius, predicate)
+};
 
 #define VARIANT_TYPES_LIST\
   X(On, 0)\
@@ -47,7 +52,8 @@ struct Chance {
   X(True, 2)\
   X(And, 3)\
   X(Or, 4)\
-  X(Chance, 5)
+  X(Chance, 5)\
+  X(Area, 6)
 
 #define VARIANT_NAME PredicateImpl
 

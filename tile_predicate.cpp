@@ -28,6 +28,13 @@ static bool apply(const TilePredicates::Or& p, LayoutCanvas::Map* map, Vec2 v, R
   return false;
 }
 
+static bool apply(const TilePredicates::Area& p, LayoutCanvas::Map* map, Vec2 v, RandomGen& r) {
+  for (auto pos : Rectangle::centered(v, p.radius))
+    if (pos.inRectangle(map->elems.getBounds()) && !p.predicate->apply(map, pos, r))
+      return false;
+  return true;
+}
+
 static bool apply(const TilePredicates::Chance& p, LayoutCanvas::Map* map, Vec2 v, RandomGen& r) {
   return r.chance(p.value);
 }
