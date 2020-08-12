@@ -700,13 +700,13 @@ class RandomGen {
   bool chance(double chance);
   bool chance(float chance);
   template <typename T>
-  T choose(const vector<T>& v, const vector<double>& p) {
+  const T& choose(const vector<T>& v, const vector<double>& p) {
     CHECK(v.size() == p.size());
     return v[get(p)];
   }
 
   template <typename T>
-  T choose(const vector<T>& v) {
+  const T& choose(const vector<T>& v) {
     vector<double> pi(v.size(), 1);
     return choose(v, pi);
   }

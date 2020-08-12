@@ -331,7 +331,7 @@ vector<Position> Position::getRectangle(Rectangle rect) const {
   return ret;
 }
 
-void Position::addCreature(PCreature c) {
+void Position::addCreature(PCreature c) const {
   PROFILE;
   if (isValid()) {
     Creature* ref = c.get();
@@ -340,11 +340,11 @@ void Position::addCreature(PCreature c) {
   }
 }
 
-bool Position::landCreature(PCreature c) {
+bool Position::landCreature(PCreature c) const {
   return isValid() && level->landCreature({*this}, std::move(c));
 }
 
-void Position::addCreature(PCreature c, TimeInterval delay) {
+void Position::addCreature(PCreature c, TimeInterval delay) const {
   PROFILE;
   if (isValid()) {
     Creature* ref = c.get();

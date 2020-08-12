@@ -241,6 +241,10 @@ bool make(const LayoutGenerators::Chain& g, LayoutCanvas c, RandomGen& r) {
   return true;
 }
 
+bool make(const LayoutGenerators::Choose& g, LayoutCanvas c, RandomGen& r) {
+  return r.choose(g.generators).make(c, r);
+}
+
 const LayoutGenerators::Connect::Elem* getConnectorElem(const LayoutGenerators::Connect& g, LayoutCanvas c, RandomGen& r, Vec2 p1) {
   const LayoutGenerators::Connect::Elem* ret = nullptr;
   for (auto& elem : g.elems)

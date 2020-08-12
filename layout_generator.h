@@ -52,7 +52,7 @@ struct Margins {
   int SERIAL(width);
   HeapAllocated<LayoutGenerator> SERIAL(border);
   HeapAllocated<LayoutGenerator> SERIAL(inside);
-  SERIALIZE_ALL(NAMED(width), NAMED(border), NAMED(inside))
+  SERIALIZE_ALL(width, border, inside)
 };
 
 struct HRatio {
@@ -101,6 +101,11 @@ struct Chain {
   SERIALIZE_ALL(generators)
 };
 
+struct Choose {
+  vector<LayoutGenerator> SERIAL(generators);
+  SERIALIZE_ALL(generators)
+};
+
 struct Call {
   string SERIAL(name);
   SERIALIZE_ALL(name)
@@ -131,7 +136,8 @@ struct Connect {
   X(Place, 9)\
   X(NoiseMap, 10)\
   X(Chain, 11)\
-  X(Connect, 12)
+  X(Connect, 12)\
+  X(Choose, 13)
 
 #define VARIANT_NAME GeneratorImpl
 

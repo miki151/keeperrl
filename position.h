@@ -59,11 +59,11 @@ class Position {
   vector<Position> neighbors8(RandomGen&) const;
   vector<Position> neighbors4(RandomGen&) const;
   vector<Position> getRectangle(Rectangle) const;
-  void addCreature(PCreature, TimeInterval delay);
+  void addCreature(PCreature, TimeInterval delay) const;
   // will crash if it's not possible to place creature here
-  void addCreature(PCreature);
+  void addCreature(PCreature) const;
   // will try to place creature somewhere else close on the level if it's not possible
-  bool landCreature(PCreature);
+  bool landCreature(PCreature) const;
   bool canEnter(const Creature*) const;
   bool canEnter(const MovementType&) const;
   bool canEnterEmpty(const Creature*) const;
