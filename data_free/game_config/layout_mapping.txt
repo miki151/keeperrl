@@ -10,6 +10,7 @@
   "wood_wall" Place "WOOD_WALL"
   "castle_wall" Place "CASTLE_WALL"
   "wood_door" Place "WOOD_DOOR"
+  "treasure_chest" Place "TREASURE_CHEST"
   "iron_door" Place "IRON_DOOR"
   "down_stairs" Stairs DOWN "DOWN_STAIRS"
   "up_stairs" Stairs UP "UP_STAIRS"

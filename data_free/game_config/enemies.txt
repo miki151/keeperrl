@@ -1,7 +1,7 @@
 "TUTORIAL_VILLAGE"
 {
   settlement = {
-    type = Builtin SMALL_VILLAGE "WOOD"
+    type = RandomLayout { "village" { 20 15 } "dungeon"}
     tribe = HUMAN
     inhabitants = {
       fighters = {
@@ -1201,6 +1201,7 @@
     }
   }
 }
+
 "DUNGEON2" inherit "DUNGEON1"
 {
   settlement = append {
