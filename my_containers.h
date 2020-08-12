@@ -182,6 +182,14 @@ class vector {
     ++modCounter;
   }
 
+  void erase(int index, int count) {
+    impl.erase(impl.begin() + index, impl.begin() + index + count);
+  }
+
+  void insert(int index, const vector<T>& v) {
+    impl.insert(impl.begin() + index, v.begin(), v.end());
+  }
+
   optional<int> findAddress(const T* ptr) const {
     for (int i = 0; i < size(); ++i)
       if (&impl.at(i) == ptr)
