@@ -1,26 +1,46 @@
-Def Building() {
+Def AnyWall() Or { On "wood_wall" On "castle_wall" } End
+Def AnyFloor() And {Not AnyWall() Or { On "stone_floor" On "wood_floor" On "floor" }} End
+Def AnyDoor() Or { On "wood_door" On "iron_door" } End
+
+Def Building(WallType, FloorType) {
   Margins { 1
-    None
-      Margins { 1
-        Set {"wall" }
-        Reset { "floor" }
-      }
+    Set { FloorType WallType }
+    Reset { FloorType }
   }
 }
+End
+
+Def NextTo(Pred)
+  Not Area 1 Not Pred
 End
 
 Def Village() {
   Place {
     {
-      minSize = {6 6}
-      maxSize = {8 8}
-      generator = Building()
+      size = {5 9}
+      generator = {
+        Building("castle_wall", "stone_floor")
+        SetMaybe AnyFloor() { "main_building" }
+      }
+      position = MIDDLE
+      minSpacing = 1
+    }
+    {
+      minSize = {3 3}
+      maxSize = {6 6}
+      predicate = Not On "floor"
+      generator = Building("wood_wall", "floor")
       count = 3
+      minSpacing = 1
     }
   }
-  Connect On "floor" {
-    10 On "wall" Reset { "door" }
+  Connect AnyFloor()
+  {
+    10 On "wood_wall" Reset { "wood_door" }
+    10 On "castle_wall" Reset { "iron_door" }
   }
+  Place { { {1 1} Set { "bed" } 4 And {On "main_building" NextTo(AnyWall()) Not NextTo(AnyDoor()) } } }
+  Place { { {1 1} Set { "dining_table" } 1 And {On "main_building" Not NextTo(AnyWall()) } } }
 }
 End
 
@@ -36,7 +56,8 @@ Def Dungeon() {
         count = {3 6}
       }
     }
-    Connect On "floor" {
+    Connect On "floor"
+    {
       5 On "rock" Reset {"floor"}
     }
   }}

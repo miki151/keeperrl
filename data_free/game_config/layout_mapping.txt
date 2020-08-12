@@ -1,9 +1,16 @@
 "dungeon" {
   "floor" Chain { ClearFurniture Place "FLOOR" Flag EMPTY_ROOM }
+  "wood_floor" Chain { ClearFurniture Place "FLOOR" Place "FLOOR_WOOD1" Flag EMPTY_ROOM }
+  "stone_floor" Chain { ClearFurniture Place "FLOOR" Place "FLOOR_STONE1" Flag EMPTY_ROOM }
+  "dining_table" Place "DINING_TABLE"
   "rock" Place "MOUNTAIN"
   "water" Place "WATER"
+  "bed" Place "BED1"
   "wall" Place "WOOD_WALL"
-  "door" Place "WOOD_DOOR"
+  "wood_wall" Place "WOOD_WALL"
+  "castle_wall" Place "CASTLE_WALL"
+  "wood_door" Place "WOOD_DOOR"
+  "iron_door" Place "IRON_DOOR"
   "down_stairs" Stairs DOWN "DOWN_STAIRS"
   "up_stairs" Stairs UP "UP_STAIRS"
 }

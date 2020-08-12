@@ -117,6 +117,8 @@ string toLower(const string& s);
 
 bool endsWith(const string&, const string& suffix);
 bool startsWith(const string&, const string& prefix);
+bool contains(const string&, const string& substring, unsigned long index);
+
 
 vector<string> split(const string& s, const std::initializer_list<char>& delim);
 vector<string> splitIncludeDelim(const string& s, const std::initializer_list<char>& delim);

@@ -14,72 +14,11 @@ struct StreamPos {
   int column;
 };
 
-static pair<string, vector<StreamPos>> removeFormatting(string contents, optional<string> filename) {
-  string ret;
-  vector<StreamPos> pos;
-  StreamPos cur {filename, 1, 1};
-  bool inQuote = false;
-  for (int i = 0; i < contents.size(); ++i) {
-    bool addSpace = false;
-    if (contents[i] == '"' && (i == 0 || contents[i - 1] != '\\')) {
-      inQuote = !inQuote;
-      if (inQuote) {
-        ret += " ";
-        pos.push_back(cur);
-      } else
-        addSpace = true;
-    }
-    if (contents[i] == '#' && !inQuote) {
-      while (contents[i] != '\n' && i < contents.size())
-        ++i;
-    }
-    else if (isOneOf(contents[i], '{', '}', ',', ')', '(') && !inQuote) {
-      ret += " " + string(1, contents[i]) + " ";
-      pos.append({cur, cur, cur});
-    } else {
-      ret += contents[i];
-      pos.push_back(cur);
-    }
-    if (addSpace) {
-      ret += " ";
-      pos.push_back(cur);
-    }
-    addSpace = false;
-    if (contents[i] == '\n') {
-      ++cur.line;
-      cur.column = 1;
-    } else
-      ++cur.column;
-  }
-  return {ret, pos};
-}
-
 class PrettyInputArchive {
   public:
-    PrettyInputArchive(const vector<string>& inputs, const vector<string>& filenames, KeyVerifier* v)
-        : keyVerifier(v ? *v : dummyKeyVerifier) {
-      string allInput;
-      if (!filenames.empty())
-        allInput = "{\n";
-      for (int i = 0; i < inputs.size(); ++i) {
-        auto p = removeFormatting(inputs[i], i < filenames.size() ? filenames[i] : optional<string>());
-        allInput.append(p.first);
-        streamPos.append(p.second);
-      }
-      if (!filenames.empty())
-        allInput.append("\n}");
-      is.str(allInput);
-    }
+    PrettyInputArchive(const vector<string>& inputs, const vector<string>& filenames, KeyVerifier* v);
 
-    string eat(const char* expected = nullptr) {
-      string s;
-      is >> s;
-      if (!is)
-        error("Unexpected end of file");
-      if (expected != nullptr && s != expected)
-        error("Expected \""_s + expected + "\", got \"" + s + "\"");
-      return s;
-    }
+    string eat(const char* expected = nullptr);
 
     struct LoaderInfo {
       string name;
@@ -96,14 +35,7 @@ class PrettyInputArchive {
       return nodeData.back();
     }
 
-    void error(const string& s) {
-      int n = (int) is.tellg();
-      auto pos = streamPos.empty() ? StreamPos{} : streamPos[max(0, min<int>(n, streamPos.size() - 1))];
-      string msg;
-      if (auto& filename = pos.filename)
-        msg = *filename + ": ";
-      throw PrettyException{msg + "line: " + toString(pos.line) + " column: " + toString(pos.column) + ": " + s};
-    }
+    void error(const string& s);
 
     template <typename T>
     bool readMaybe(T& elem) {
@@ -117,22 +49,9 @@ class PrettyInputArchive {
       return true;
     }
 
-    bool eatMaybe(const string& s) {
-      if (peek() == s) {
-        eat();
-        return true;
-      } else
-        return false;
-    }
+    bool eatMaybe(const string& s);
 
-    string peek(int cnt = 1) {
-      string s;
-      auto bookmark = is.tellg();
-      for (int i : Range(cnt))
-        is >> s;
-      is.seekg(bookmark);
-      return s;
-    }
+    string peek(int cnt = 1);
 
     template <typename T>
     PrettyInputArchive& readText(T&& elem) {
@@ -146,9 +65,7 @@ class PrettyInputArchive {
       return *this;
     }
 
-    long bookmark() {
-      return is.tellg();
-    }
+    long bookmark();
 
     template <typename T>
     void loadInherited(T& elem) {
@@ -164,115 +81,23 @@ class PrettyInputArchive {
     map<string, DefInfo> defs;
     vector<long> callStack;
 
-    vector<string> parseParams() {
-      vector<string> ret;
-      if (eatMaybe("(")) {
-        while (1) {
-          if (eatMaybe(")"))
-            break;
-          if (!ret.empty())
-            eat(",");
-          string s = eat();
-          if (s == ")")
-            break;
-          ret.push_back(s);
-        }
-      }
-      return ret;
-    }
-
-    void eatArgument() {
-      while (1) {
-        auto token = peek();
-        if (token == ")")
-          return;
-        if (token == "(")
-          parseArgs();
-        eat();
-        if (token == ",")
-          return;
-      }
-    }
-
-    vector<long> parseArgs() {
-      vector<long> ret;
-      if (eatMaybe("(")) {
-        while (1) {
-          if (peek() != ")")
-            ret.push_back(bookmark());
-          eatArgument();
-          if (eatMaybe(")"))
-            break;
-        }
-      }
-      return ret;
-    }
-
-    template <typename T>
-    void readWithDefinitions(T& arg) {
-      while (eatMaybe("Def")) {
-        string name = eat();
-        DefInfo info;
-        info.params = parseParams();
-        info.position = bookmark();
-        defs.insert(make_pair(std::move(name), std::move(info)));
-        while (1)
-          if (eat() == "End")
-            break;
-      }
-      this->operator()(arg);
-    }
-
     PrettyInputArchive& operator()() {
       return *this;
-    }
-    function<void()> seekDefinition() {
-      string name = peek();
-      if (defs.count(name)) {
-        auto& info = defs.at(name);
-        eat();
-        auto argLocs = parseArgs();
-        if (argLocs.size() != info.params.size())
-          error("Wrong number of arguments to macro " + name + ". Expected " +
-              toString(info.params.size()) + ", got " + toString(argLocs.size()));
-        auto saveDefs = defs;
-        for (int i = 0; i < info.params.size(); ++i)
-          defs[info.params[i]] = {argLocs[i], {}};
-        auto cont = bookmark();
-        if (callStack.contains(cont))
-          error("Recursive calls are not supported.");
-        callStack.push_back(cont);
-        seek(info.position);
-        return [this, cont, saveDefs] { seek(cont); defs = saveDefs; callStack.pop_back(); };
-      }
-      return nullptr;
     }
 
     template <typename T, typename... Types>
     PrettyInputArchive& operator()(T&& arg1, Types&& ... args) {
-      auto restoreFunc = seekDefinition();
       prologue(*this, arg1);
       load(*this, arg1);
       epilogue(*this, arg1);
-      if (restoreFunc)
-        restoreFunc();
       return this->operator()(args...);
     }
 
-    void seek(long p) {
-      is.seekg(p);
-    }
+    void seek(long p);
 
-    void startNode() {
-      nodeData.emplace_back();
-      if (nextElemInherited)
-        nodeData.back().inherited = true;
-      nextElemInherited = false;
-    }
+    void startNode();
 
-    void endNode() {
-      nodeData.pop_back();
-    }
+    void endNode();
 
     KeyVerifier& keyVerifier;
     bool inheritingKey = false;
@@ -360,49 +185,15 @@ serialize(PrettyInputArchive& ar, T& t) {
   ar.readText(t);
 }
 
-inline void serialize(PrettyInputArchive& ar, std::string& t) {
-  auto bookmark = ar.bookmark();
-  string tmp;
-  ar.readText(tmp);
-  if (tmp[0] != '\"')
-    ar.error("Expected quoted string, got: " + tmp);
-  ar.seek(bookmark);
-  ar.readText(std::quoted(t));
-}
-
-inline void serialize(PrettyInputArchive& ar, char& c) {
-  string s;
-  ar.readText(std::quoted(s));
-  if (s[0] == '0')
-    c = '\0';
-  else
-    c = s.at(0);
-}
-
-inline void serialize(PrettyInputArchive& ar, bool& c) {
-  string s;
-  ar.readText(s);
-  if (s == "false")
-    c = false;
-  else if (s == "true")
-    c = true;
-  else
-    ar.error("Unrecognized bool value: \"" + s + "\"");
-}
+void serialize(PrettyInputArchive& ar, std::string& t);
+void serialize(PrettyInputArchive& ar, char& c);
+void serialize(PrettyInputArchive& ar, bool& c);
 
 struct PrettyFlag {
   bool value = false;
 };
 
-
-inline void serialize(PrettyInputArchive& ar, PrettyFlag& c) {
-  string s;
-  ar.readText(s);
-  if (s == "true")
-    c.value = true;
-  else
-    ar.error("This value can only be set to \"true\" or not set at all");
-}
+void serialize(PrettyInputArchive& ar, PrettyFlag& c);
 
 template <typename T>
 inline void serialize(PrettyInputArchive& ar1, vector<T>& v) {
@@ -446,7 +237,7 @@ inline void serialize(PrettyInputArchive& ar1, map<T, U>& m) {
     if (ar1.peek() == "}")
       break;
     T key;
-    ar1.readWithDefinitions(key);
+    ar1(key);
     auto thisKeyBookmark = ar1.bookmark();
     auto searchedBookmark = thisKeyBookmark;
     auto searchedKey = key;
@@ -631,64 +422,9 @@ prologue(PrettyInputArchive& ar1, T const & ) {
   ar1.startNode();
 }
 
-inline void prettyEpilogue(PrettyInputArchive& ar1) {
-  auto loaders = ar1.getNode().loaders;
-  if (!loaders.empty()) {
-    bool appending = ar1.eatMaybe("append") || ar1.getNode().inherited;
-    ar1.eat("{");
-    bool keysAndValues = false;
-    set<string> processed;
-    while (ar1.peek() != "}") {
-      if (ar1.peek() == ",")
-        ar1.eat();
-      auto bookmark = ar1.bookmark();
-      string name, equals;
-      ar1.readText(name);
-      ar1.readText(equals);
-      if (equals != "=") {
-        if (keysAndValues)
-          ar1.error("Expected a \"key = value\" pair");
-        ar1.seek(bookmark);
-        for (auto& loader : loaders) {
-          if (ar1.peek() == "}")
-            break;
-          processed.insert(loader.name);
-          loader.load(true);
-        }
-        break;
-      } else
-        keysAndValues = true;
-      bool found = false;
-      for (auto& loader : loaders)
-        if (loader.name == name) {
-          if (processed.count(name))
-            ar1.error("Value defined twice: \"" + name + "\"");
-          processed.insert(name);
-          bool initialize = true;
-          if (ar1.peek() == "append") {
-            if (!appending)
-              ar1.error("Can't append to value that wasn't inherited");
-            initialize = false;
-          }
-          loader.load(initialize);
-          found = true;
-          break;
-        }
-      if (!found)
-        ar1.error("No member named \"" + name + "\" in structure");
-    }
-    if (!appending)
-      for (auto& loader : loaders)
-        if (!processed.count(loader.name) && !loader.optional)
-          ar1.error("Field \"" + loader.name + "\" not present");
-    ar1.eat("}");
-    ar1.getNode().loaders.clear();
-  }
-}
+void prettyEpilogue(PrettyInputArchive& ar1);
 
-inline void serialize(PrettyInputArchive& ar1, EndPrettyInput&) {
-  prettyEpilogue(ar1);
-}
+void serialize(PrettyInputArchive& ar1, EndPrettyInput&);
 
 template <class T>
 typename std::enable_if<std::is_arithmetic<T>::value, void>::type
