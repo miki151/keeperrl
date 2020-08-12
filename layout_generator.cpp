@@ -104,11 +104,11 @@ bool make(const LayoutGenerators::VRatio& g, LayoutCanvas c, RandomGen& r) {
 
 bool make(const LayoutGenerators::Place& g, LayoutCanvas c, RandomGen& r) {
   vector<char> occupied(c.area.width() * c.area.height(), 0);
-  auto check = [&] (Rectangle rect, const TilePredicate& p) {
+  auto check = [&] (Rectangle rect, int spacing, const TilePredicate& p) {
     for (auto v : rect)
       if (!p.apply(c.map, v, r) || occupied[(v.x - c.area.left()) + (v.y - c.area.top()) * c.area.width()] != 0)
         return false;
-    for (auto v : rect)
+    for (auto v : rect.minusMargin(-spacing).intersection(c.area))
       occupied[(v.x - c.area.left()) + (v.y - c.area.top()) * c.area.width()] = 1;
     return true;
   };
@@ -124,7 +124,7 @@ bool make(const LayoutGenerators::Place& g, LayoutCanvas c, RandomGen& r) {
             ? c.area.middle() - size / 2
             : Rectangle(c.area.topLeft(), c.area.bottomRight() - size).random(r);
         auto genArea = Rectangle(pos, pos + size);
-        if (!check(genArea, g.generators[i].predicate))
+        if (!check(genArea, g.generators[i].minSpacing, g.generators[i].predicate))
           continue;
         return generator->make(c.with(genArea), r);
       }
@@ -271,7 +271,7 @@ bool make(const LayoutGenerators::Connect& g, LayoutCanvas c, RandomGen& r) {
       [&](Vec2 v) { return g.toConnect.apply(c.map, v, r); });
   Vec2 p1;
   if (!points.empty())
-    for (int i : Range(30)) {
+    for (int i : Range(300)) {
       p1 = r.choose(points);
       auto p2 = r.choose(points);
       if (p1 != p2 && !connect(g, c, r, p1, p2))

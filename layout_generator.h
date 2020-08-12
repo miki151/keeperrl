@@ -78,7 +78,8 @@ struct Place {
     Range SERIAL(count) = Range(1, 2);
     TilePredicate SERIAL(predicate) = TilePredicates::True{};
     optional<PlacementPos> SERIAL(position);
-    SERIALIZE_ALL(NAMED(size), NAMED(generator), OPTION(count), OPTION(predicate), OPTION(position), NAMED(minSize), NAMED(maxSize))
+    int SERIAL(minSpacing) = 0;
+    SERIALIZE_ALL(NAMED(size), NAMED(generator), OPTION(count), OPTION(predicate), OPTION(position), NAMED(minSize), NAMED(maxSize), OPTION(minSpacing))
   };
   vector<Elem> SERIAL(generators);
   SERIALIZE_ALL(generators)
