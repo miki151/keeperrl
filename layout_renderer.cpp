@@ -86,13 +86,13 @@ void generateMapLayout(const MainLoop& mainLoop, const string& layoutName, const
     const string& layoutSizeString) {
   auto layoutSizeSplit = split(layoutSizeString, {':'});
   auto layoutSize = Vec2(fromString<int>(layoutSizeSplit[0]), fromString<int>(layoutSizeSplit[1]));
-  CHECK(layoutSize.x >= 1 && layoutSize.y >= 1) << "Bad layout size " << layoutSize;
+  USER_CHECK(layoutSize.x >= 1 && layoutSize.y >= 1) << "Bad layout size " << layoutSize;
   auto glyphFile = ifstream(glyphPath);
-  CHECK(!!glyphFile) << "Failed to open glyph file, check the layout_glyphs flag";
+  USER_CHECK(!!glyphFile) << "Failed to open glyph file, check the layout_glyphs flag";
   auto factory = mainLoop.createContentFactory(false);
-  CHECK(factory.randomLayouts.count(RandomLayoutId(layoutName.data()))) << "Layout not found: " << layoutName;
+  USER_CHECK(factory.randomLayouts.count(RandomLayoutId(layoutName.data()))) << "Layout not found: " << layoutName;
   auto generator = factory.randomLayouts.at(RandomLayoutId(layoutName.data()));
   LayoutCanvas::Map map{ Table<vector<Token>>(layoutSize) };
-  CHECK(!!generator.make(LayoutCanvas{map.elems.getBounds(), &map}, Random)) << "Generation failed";
+  USER_CHECK(!!generator.make(LayoutCanvas{map.elems.getBounds(), &map}, Random)) << "Generation failed";
   renderAscii(map, glyphFile);
 }
