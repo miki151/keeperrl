@@ -2763,8 +2763,8 @@ namespace {
           for (auto& token : map[pos])
             if (auto a = getReferenceMaybe(mapping.actions, token))
               visit(builder, inside, outside, pos, stockpileData, *a);
-        CHECK(downStairs.empty()) << "Custom map doesn't contain required down stairs";
-        CHECK(upStairs.empty()) << "Custom map doesn't contain required up stairs";
+        USER_CHECK(downStairs.empty()) << "Custom map doesn't contain required down stairs";
+        USER_CHECK(upStairs.empty()) << "Custom map doesn't contain required up stairs";
       } else
         failGen();
     }
