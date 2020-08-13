@@ -2691,21 +2691,29 @@ static PMakerQueue makeMapLayout(const MapLayouts::Layout& layout, const Settlem
 namespace {
   class RandomLayoutMaker : public LevelMaker {
     public:
-    RandomLayoutMaker(const LayoutGenerator& generator, const LayoutMapping& mapping, vector<StairKey> downStairs,
-        vector<StairKey> upStairs, TribeId tribe)
-      : mapping(mapping), generator(generator), downStairs(std::move(downStairs)),
-        upStairs(std::move(upStairs)), tribe(tribe) {
+    RandomLayoutMaker(const LayoutGenerator& generator, const LayoutMapping& mapping, const SettlementInfo& info)
+      : mapping(mapping), generator(generator), downStairs(info.downStairs), upStairs(info.upStairs),
+        tribe(info.tribe), outsideFurniture(info.outsideFeatures), furniture(info.furniture) {
     }
 
-    void visit(LevelBuilder* builder, Vec2 pos, const LayoutAction& action) {
+    void visit(LevelBuilder* builder, optional<FurnitureList>& inside, optional<FurnitureList>& outside, Vec2 pos,
+        const LayoutAction& action) {
       action.visit(
           [&](const LayoutActions::Chain& c) {
             for (auto& a : c)
-              visit(builder, pos, a);
+              visit(builder, inside, outside, pos, a);
           },
           [&](FurnitureType type) { builder->putFurniture(pos, type, tribe); },
           [&](SquareAttrib attrib) { builder->addAttrib(pos, attrib); },
           [&](LayoutActions::ClearFurniture) { builder->removeAllFurniture(pos); },
+          [&](LayoutActions::OutsideFurniture) {
+            if (outside)
+              builder->putFurniture(pos, *outside, tribe);
+          },
+          [&](LayoutActions::InsideFurniture) {
+            if (inside)
+              builder->putFurniture(pos, *inside, tribe);
+          },
           [&](LayoutActions::Stairs s) {
             auto& keys = (s.dir == LayoutActions::StairDirection::UP ? upStairs : downStairs);
             if (!keys.empty()) {
@@ -2718,6 +2726,10 @@ namespace {
     }
 
     virtual void make(LevelBuilder* builder, Rectangle area) override {
+      auto inside = furniture.map([&](auto elem) {
+          return builder->getContentFactory()->furniture.getFurnitureList(elem); });
+      auto outside = outsideFurniture.map([&](auto elem) {
+          return builder->getContentFactory()->furniture.getFurnitureList(elem); });
       auto tryGenerate = [&] (int count) -> optional<Table<vector<Token>>> {
         for (int it : Range(count)) {
           LayoutCanvas::Map map{Table<vector<Token>>(area)};
@@ -2732,7 +2744,7 @@ namespace {
         for (auto pos : area)
           for (auto& token : map[pos])
             if (auto a = getReferenceMaybe(mapping.actions, token))
-              visit(builder, pos, *a);
+              visit(builder, inside, outside, pos, *a);
         CHECK(downStairs.empty()) << "Custom map doesn't contain required down stairs";
         CHECK(upStairs.empty()) << "Custom map doesn't contain required up stairs";
       } else
@@ -2745,6 +2757,8 @@ namespace {
     vector<StairKey> downStairs;
     vector<StairKey> upStairs;
     TribeId tribe;
+    optional<FurnitureListId> outsideFurniture;
+    optional<FurnitureListId> furniture;
   };
 }
 
@@ -2753,13 +2767,8 @@ static PMakerQueue makeRandomLayout(const LayoutGenerator& generator, const Layo
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<MakerQueue>(
       unique<AddAttrib>(SquareAttrib::NO_DIG),
-      unique<RandomLayoutMaker>(generator, mapping, info.downStairs, info.upStairs, info.tribe)));
+      unique<RandomLayoutMaker>(generator, mapping, info)));
   queue->addMaker(unique<PlaceCollective>(info.collective, Predicate::attrib(SquareAttrib::EMPTY_ROOM)));
-  if (info.furniture)
-    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.3, *info.furniture, info.tribe));
-  if (info.outsideFeatures)
-    queue->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::FLOOR_OUTSIDE), 0.01,
-        *info.outsideFeatures, info.tribe));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, Predicate::attrib(SquareAttrib::EMPTY_ROOM)));
   return queue;
 }

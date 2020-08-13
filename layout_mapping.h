@@ -16,6 +16,8 @@ struct Stairs {
 struct LayoutAction;
 using Chain = vector<LayoutAction>;
 using ClearFurniture = EmptyStruct<struct ClearFurniturTag>;
+using InsideFurniture = EmptyStruct<struct InsideFurnitureTag>;
+using OutsideFurniture = EmptyStruct<struct OutsideFurnitureTag>;
 #define VARIANT_TYPES_LIST\
   X(Place, 0)\
   X(Flag, 1)\

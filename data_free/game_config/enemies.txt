@@ -27,7 +27,7 @@
       { "gold" 50 "TREASURE_CHEST" }
     }
     cropsDistance = 16
-      furniture = "roomFurniture"
+    furniture = "roomFurniture"
   }
 }
 "UNICORN_HERD"
