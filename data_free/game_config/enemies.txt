@@ -1,7 +1,7 @@
 "TUTORIAL_VILLAGE"
 {
   settlement = {
-    type = RandomLayout { "village" { 20 15 } "dungeon"}
+    type = RandomLayout { "village" { 20 15 } "village"}
     tribe = HUMAN
     inhabitants = {
       fighters = {

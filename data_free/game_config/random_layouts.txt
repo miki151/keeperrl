@@ -13,6 +13,14 @@ Def NextTo(Pred)
   Not Area 1 Not Pred
 End
 
+Def Connector()
+  Connect AnyFloor()
+  {
+    10 On "wood_wall" { Remove { "wood_wall" } Set { "clear_middle" "wood_door" }}
+    10 On "castle_wall" { Remove { "castle_wall" } Set { "clear_middle" "iron_door" }}
+  }
+End
+
 Def Village1() {
   Place {
     {
@@ -28,18 +36,16 @@ Def Village1() {
     {
       minSize = {3 3}
       maxSize = {6 6}
-      predicate = Not On "floor"
       generator = Building("wood_wall", "floor")
       count = 3
       minSpacing = 1
     }
   }
-  Connect AnyFloor()
-  {
-    10 On "wood_wall" Reset { "wood_door" }
-    10 On "castle_wall" Reset { "iron_door" }
+  Connector()
+  Place {
+    { {1 1} Set { "bed" } {2 4} And {On "main_building" NextTo(AnyWall()) Not NextTo(AnyDoor()) } }
+    { {1 1} Set { "stockpile" } {1 3} And {On "main_building" NextTo(AnyWall()) Not NextTo(AnyDoor()) } }
   }
-  Place { { {1 1} Set { "bed" } 4 And {On "main_building" NextTo(AnyWall()) Not NextTo(AnyDoor()) } } }
   Place { { {1 1} Set { "dining_table" } 1 And {On "main_building" Not NextTo(AnyWall()) } } }
 }
 End
@@ -60,17 +66,12 @@ Def Village2() {
     {
       minSize = {4 4}
       maxSize = {6 6}
-      predicate = Not On "floor"
       generator = Building("wood_wall", "floor")
       count = 1
       minSpacing = 1
     }
   }
-  Connect AnyFloor()
-  {
-    10 On "wood_wall" { Remove { "wood_wall" } Set { "wood_door" }}
-    10 On "castle_wall" { Remove { "castle_wall" } Set { "iron_door" }}
-  }
+  Connector()
   Place {
     { {1 1} Set { "bed" } {2 4} And {On "first_room" NextTo(AnyWall()) Not NextTo(AnyDoor()) } }
     { {1 1} Set { "stockpile" } {1 3} And {On "first_room" NextTo(AnyWall()) Not NextTo(AnyDoor()) } }

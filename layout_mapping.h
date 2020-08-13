@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 #include "furniture_type.h"
-
+#include "furniture_layer.h"
 
 namespace LayoutActions {
 using Place = FurnitureType;
@@ -16,6 +16,7 @@ struct Stairs {
 struct LayoutAction;
 using Chain = vector<LayoutAction>;
 using ClearFurniture = EmptyStruct<struct ClearFurniturTag>;
+using ClearLayer = FurnitureLayer;
 using InsideFurniture = EmptyStruct<struct InsideFurnitureTag>;
 using OutsideFurniture = EmptyStruct<struct OutsideFurnitureTag>;
 struct Stockpile {
@@ -28,7 +29,8 @@ struct Stockpile {
   X(Stairs, 2)\
   X(Chain, 3)\
   X(ClearFurniture, 4)\
-  X(Stockpile, 5)
+  X(Stockpile, 5)\
+  X(ClearLayer, 6)
 
 #define VARIANT_NAME LayoutAction
 

@@ -2713,6 +2713,7 @@ namespace {
           [&](FurnitureType type) { builder->putFurniture(pos, type, tribe); },
           [&](SquareAttrib attrib) { builder->addAttrib(pos, attrib); },
           [&](LayoutActions::ClearFurniture) { builder->removeAllFurniture(pos); },
+          [&](LayoutActions::ClearLayer l) { builder->removeFurniture(pos, l); },
           [&](LayoutActions::OutsideFurniture) {
             if (outside)
               builder->putFurniture(pos, *outside, tribe);

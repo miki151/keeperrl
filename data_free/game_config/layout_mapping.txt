@@ -1,4 +1,4 @@
-"dungeon" {
+"default" {
   "floor" Chain { ClearFurniture Place "FLOOR" Flag EMPTY_ROOM }
   "wood_floor" Chain { ClearFurniture Place "FLOOR" Place "FLOOR_WOOD1" Flag EMPTY_ROOM }
   "stone_floor" Chain { ClearFurniture Place "FLOOR" Place "FLOOR_STONE1" Flag EMPTY_ROOM }
@@ -15,5 +15,10 @@
   "iron_door" Place "IRON_DOOR"
   "down_stairs" Stairs DOWN "DOWN_STAIRS"
   "up_stairs" Stairs UP "UP_STAIRS"
+  "clear_middle" ClearLayer MIDDLE
 }
-    
+
+"village" inherit "default" append {
+  "stone_floor" Chain { ClearFurniture Place "FLOOR" Place "FLOOR_WOOD1" Flag EMPTY_ROOM }
+  "castle_wall" Place "WOOD_WALL"
+}
