@@ -73,7 +73,7 @@ Def Village2() {
   }
   Place {
     { {1 1} Set { "bed" } {2 4} And {On "first_room" NextTo(AnyWall()) Not NextTo(AnyDoor()) } }
-    { {1 1} Set { "treasure_chest" } {1 3} And {On "first_room" NextTo(AnyWall()) Not NextTo(AnyDoor()) } }
+    { {1 1} Set { "stockpile" } {1 3} And {On "first_room" NextTo(AnyWall()) Not NextTo(AnyDoor()) } }
   }
   Place { { {1 1} Set { "dining_table" } 1 And {On "second_room" Not NextTo(AnyWall()) } } }
 }

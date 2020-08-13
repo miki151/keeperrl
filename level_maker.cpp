@@ -2693,15 +2693,22 @@ namespace {
     public:
     RandomLayoutMaker(const LayoutGenerator& generator, const LayoutMapping& mapping, const SettlementInfo& info)
       : mapping(mapping), generator(generator), downStairs(info.downStairs), upStairs(info.upStairs),
-        tribe(info.tribe), outsideFurniture(info.outsideFeatures), furniture(info.furniture) {
+        tribe(info.tribe), outsideFurniture(info.outsideFeatures), furniture(info.furniture),
+        stockpile(info.stockpiles) {
     }
 
+    struct StockpileData {
+      ItemList items;
+      int count;
+      optional<FurnitureType> furniture;
+    };
+
     void visit(LevelBuilder* builder, optional<FurnitureList>& inside, optional<FurnitureList>& outside, Vec2 pos,
-        const LayoutAction& action) {
+        vector<StockpileData>& stockpile, const LayoutAction& action) {
       action.visit(
           [&](const LayoutActions::Chain& c) {
             for (auto& a : c)
-              visit(builder, inside, outside, pos, a);
+              visit(builder, inside, outside, pos, stockpile, a);
           },
           [&](FurnitureType type) { builder->putFurniture(pos, type, tribe); },
           [&](SquareAttrib attrib) { builder->addAttrib(pos, attrib); },
@@ -2713,6 +2720,13 @@ namespace {
           [&](LayoutActions::InsideFurniture) {
             if (inside)
               builder->putFurniture(pos, *inside, tribe);
+          },
+          [&](LayoutActions::Stockpile s) {
+            if (s.index < stockpile.size()) {
+              if (stockpile[s.index].furniture)
+                builder->putFurniture(pos, *stockpile[s.index].furniture, tribe);
+              builder->putItems(pos, stockpile[s.index].items.random(builder->getContentFactory()));
+            }
           },
           [&](LayoutActions::Stairs s) {
             auto& keys = (s.dir == LayoutActions::StairDirection::UP ? upStairs : downStairs);
@@ -2739,12 +2753,15 @@ namespace {
         }
         return none;
       };
+      auto stockpileData = stockpile.transform([&](const auto& stockpile) {
+        return StockpileData{builder->getContentFactory()->itemFactory.get(stockpile.items), stockpile.count, stockpile.furniture};
+      });
       if (auto map1 = tryGenerate(10)) {
         auto& map = *map1;
         for (auto pos : area)
           for (auto& token : map[pos])
             if (auto a = getReferenceMaybe(mapping.actions, token))
-              visit(builder, inside, outside, pos, *a);
+              visit(builder, inside, outside, pos, stockpileData, *a);
         CHECK(downStairs.empty()) << "Custom map doesn't contain required down stairs";
         CHECK(upStairs.empty()) << "Custom map doesn't contain required up stairs";
       } else
@@ -2759,6 +2776,7 @@ namespace {
     TribeId tribe;
     optional<FurnitureListId> outsideFurniture;
     optional<FurnitureListId> furniture;
+    vector<StockpileInfo> stockpile;
   };
 }
 

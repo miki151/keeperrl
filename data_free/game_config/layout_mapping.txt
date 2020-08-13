@@ -5,6 +5,7 @@
   "dining_table" Place "DINING_TABLE"
   "rock" Place "MOUNTAIN"
   "water" Place "WATER"
+  "stockpile" Stockpile 0
   "bed" Place "BED1"
   "wall" Place "WOOD_WALL"
   "wood_wall" Place "WOOD_WALL"

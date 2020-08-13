@@ -6,6 +6,7 @@
 class ItemList {
   public:
   ItemList(const ItemList&);
+  ItemList(ItemList&&) noexcept;
   ItemList& operator = (const ItemList&);
   ItemList(vector<ItemType>);
   vector<ItemType> getAllItems() const;
@@ -26,3 +27,5 @@ class ItemList {
   vector<MultiItemInfo> SERIAL(multiItems);
   vector<pair<ItemType, Range>> SERIAL(unique);
 };
+
+static_assert(std::is_nothrow_move_constructible<ItemList>::value, "T should be noexcept MoveConstructible");

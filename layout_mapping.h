@@ -18,12 +18,17 @@ using Chain = vector<LayoutAction>;
 using ClearFurniture = EmptyStruct<struct ClearFurniturTag>;
 using InsideFurniture = EmptyStruct<struct InsideFurnitureTag>;
 using OutsideFurniture = EmptyStruct<struct OutsideFurnitureTag>;
+struct Stockpile {
+  int SERIAL(index);
+  SERIALIZE_ALL(index)
+};
 #define VARIANT_TYPES_LIST\
   X(Place, 0)\
   X(Flag, 1)\
   X(Stairs, 2)\
   X(Chain, 3)\
-  X(ClearFurniture, 4)
+  X(ClearFurniture, 4)\
+  X(Stockpile, 5)
 
 #define VARIANT_NAME LayoutAction
 

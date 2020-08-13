@@ -5,6 +5,7 @@
 ItemList& ItemList::operator = (const ItemList&) = default;
 
 ItemList::ItemList(const ItemList&) = default;
+ItemList::ItemList(ItemList&&) noexcept = default;
 
 ItemList::~ItemList() {}
 
