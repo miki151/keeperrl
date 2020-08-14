@@ -118,14 +118,18 @@ bool make(const LayoutGenerators::Place& g, LayoutCanvas c, RandomGen& r) {
   for (int i : All(g.generators)) {
     auto& generator = g.generators[i].generator;
     auto generate = [&] {
+      USER_CHECK(g.generators[i].size || (g.generators[i].minSize && g.generators[i].maxSize));
       auto size = g.generators[i].size.value_or_f(
-          [&]{return Vec2(r.get(g.generators[i].minSize->x, g.generators[i].maxSize->x),
+          [&]{
+            USER_CHECK(g.generators[i].minSize->x < g.generators[i].maxSize->x);
+            USER_CHECK(g.generators[i].minSize->y < g.generators[i].maxSize->y);
+            return Vec2(r.get(g.generators[i].minSize->x, g.generators[i].maxSize->x),
                           r.get(g.generators[i].minSize->y, g.generators[i].maxSize->y)); });
       const int numTries = g.generators[i].position ? 1 : 100000;
       for (int iter : Range(numTries)) {
         auto pos = g.generators[i].position
             ? c.area.middle() - size / 2
-            : Rectangle(c.area.topLeft(), c.area.bottomRight() - size).random(r);
+            : Rectangle(c.area.topLeft(), c.area.bottomRight() - size + Vec2(1, 1)).random(r);
         auto genArea = Rectangle(pos, pos + size);
         if (!check(genArea, g.generators[i].minSpacing, g.generators[i].predicate))
           continue;
