@@ -149,10 +149,10 @@ Def DungeonRooms()
   Margins 1 None {
     Place {
       {
-        minSize = {4 4}
-        maxSize = {9 9}
+        minSize = {2 2}
+        maxSize = {6 6}
         generator = Room()
-        count = {6 9}
+        count = {7 11}
         minSpacing = 1
       }
     }
