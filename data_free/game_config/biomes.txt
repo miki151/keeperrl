@@ -50,6 +50,7 @@
     }
   }
   darkKeeperEnemies = {
+    { id = "GUARD_POST" }
     { id = "HUMAN_COTTAGE" count = { 3 5 } }
     { id = "COTTAGE_BANDITS" probability = 0.5 }
     { id = "CORPSES" probability = 0.2 }

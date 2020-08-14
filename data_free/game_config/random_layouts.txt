@@ -17,8 +17,14 @@ End
 Def Connector()
   Connect AnyFloor()
   {
-    10 On "wood_wall" { Remove { "wood_wall" } Set { "clear_middle" "wood_door" }}
-    10 On "castle_wall" { Remove { "castle_wall" } Set { "clear_middle" "iron_door" }}
+    1000 And { Not AnyWater() Not AnyFloor() On "no_dig" } None
+    10 And {On "wood_wall" Not On "no_dig"} { Remove { "wood_wall" } Set { "clear_middle" "wood_door" }}
+    10 And {On "castle_wall" Not On "no_dig"} { Remove { "castle_wall" } Set { "clear_middle" "iron_door" }}
+    8 On "lava" Set { "stone_bridge" }
+    8 On "water" Set { "wood_bridge" }
+    4 And { Not AnyWall() Not AnyWater() Not AnyFloor() Not On "no_dig" On "room_wall" }
+        Filter { And { Chance 0.4 Not NextTo(On "wood_door")} Reset {"wood_door"} Reset {"floor"} }
+    2 And { Not AnyWall() Not AnyFloor() On "rock" Not On "no_dig" Not On "room_wall" } Reset {"floor"}
   }
 End
 
@@ -101,6 +107,68 @@ End
 "village1" Village1()
 "village2" Village2()
 
+Def GuardPost() {
+  Place {
+    {
+      size = {5 7}
+      generator = {
+        Building("castle_wall", "wood_floor")
+        Margins 1 None VRatio 0.6
+          Margin BOTTOM 1 {
+            Set { "castle_wall" }
+            Place { { {1 1} Set { "wood_door" } 1  } }
+          }
+          {
+            Set { "first_room" }
+            Margins -1 Set { "no_dig" } None
+          }
+          Set { "second_room" }
+      }
+      position = MIDDLE
+      minSpacing = 1
+    }
+    {
+      minSize = {4 4}
+      maxSize = {6 6}
+      generator = Building("wood_wall", "floor")
+      count = 1
+      minSpacing = 1
+    }
+  }
+  Place {
+    {{1 1} Set {"up_stairs0"} 1 And { On "first_room" AnyFloor() }}
+    {{1 1} Set {"dining_table"} 1 And { On "first_room" AnyFloor() }}
+    {{1 1} Set {"torch"} 1 And { On "first_room" AnyFloor() }}
+  }
+  Connector()
+}
+End
+
+Def GuardPostFloor2() {
+  Building("castle_wall", "wood_floor")
+  Place {
+    {{1 1} Set {"down_stairs0"} 1 And { AnyFloor() NextTo(AnyWall())} }
+    {{1 1} Set {"up_stairs0"} 1 And { AnyFloor() NextTo(AnyWall())} }
+    {{1 1} Set {"armor_chest"} {3 6} And { AnyFloor() NextTo(AnyWall())} }
+    {{1 1} Set {"bed"} 2 And { AnyFloor() NextTo(AnyWall())} }
+    {{1 1} Set {"torch"} 1 And { AnyFloor() NextTo(AnyWall())} }
+  }
+}
+End
+
+Def GuardPostFloor3() {
+  Building("wood_wall", "wood_floor")
+  Place {
+    {{1 1} Set {"down_stairs0"} 1 And { AnyFloor() NextTo(AnyWall())} }
+    {{1 1} Set {"pamphlet_chest"} {2 4} And { AnyFloor() NextTo(AnyWall())} }
+  }
+}
+End
+
+"guard_post" GuardPost()
+"guard_post_floor2" GuardPostFloor2()
+"guard_post_floor3" GuardPostFloor3()
+
 Def DungeonContent()
   Place {
     {
@@ -111,6 +179,8 @@ Def DungeonContent()
     }
     {{1 1} Set {"up_stairs0"} 1 On "room_floor"}
     {{1 1} Set {"down_stairs0"} 1 On "room_floor"}
+    {{1 1} Set {"up_stairs1"} 1 On "room_floor"}
+    {{1 1} Set {"down_stairs1"} 1 On "room_floor"}
     {{1 1} Set {"inside_furniture"} 10 On "room_floor"}
   }
 End
@@ -129,20 +199,8 @@ Def Room() {
   Reset {"floor" "room_floor"}
   Margins -1
     Set { "room_wall" }
-    Corners(Set {"room_corner"})
+    Corners(Set {"no_dig"})
 }
-End
-
-Def RoomConnector()
-  Connect On "floor"
-  {
-    1000 And { Not AnyWater() Not AnyFloor() On "room_corner" } None
-    8 On "lava" Set { "stone_bridge" }
-    8 On "water" Set { "wood_bridge" }
-    4 And { Not AnyWater() Not AnyFloor() Not On "room_corner" On "room_wall" }
-        Filter { And { Chance 0.4 Not NextTo(On "wood_door")} Reset {"wood_door"} Reset {"floor"} }
-    2 And { Not AnyFloor() On "rock" Not On "room_corner" Not On "room_wall" } Reset {"floor"}
-  }
 End
 
 Def DungeonRooms()
@@ -162,7 +220,7 @@ End
 Def Dungeon1() {
   Set { "rock" }
   DungeonRooms()
-  RoomConnector()
+  Connector()
   DungeonContent()
 }
 End
@@ -195,7 +253,7 @@ Def Dungeon3() {
   Set { "rock" }
   Caverns(Reset{"floor"})
   DungeonRooms()
-  RoomConnector()
+  Connector()
   DungeonContent()
 }
 End
@@ -205,7 +263,7 @@ Def Dungeon4(WaterType) {
   Caverns(Reset{"floor"})
   DungeonRooms()
   Caverns(Reset{WaterType})
-  RoomConnector()
+  Connector()
   DungeonContent()
 }
 End

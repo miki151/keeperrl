@@ -23,6 +23,9 @@
   "clear_middle" ClearLayer MIDDLE
   "outside_furniture" OutsideFurniture
   "inside_furniture" InsideFurniture
+  "armor_chest" Place "ARMOR_CHEST"
+  "pamphlet_chest" Place "PAMPHLET_CHEST"
+  "torch" Place "GROUND_TORCH"
 }
 
 "village" inherit "default" append {
@@ -32,4 +35,8 @@
 
 "black_market_entry" inherit "default" append {
   "up_stairs1" Stairs UP "INACTIVE_PORTAL" 1
+}
+
+"guard_post_floor2" inherit "default" append {
+  "up_stairs0" Stairs UP "BOOKCASE_STAIRS" 0
 }

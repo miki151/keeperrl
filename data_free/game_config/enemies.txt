@@ -516,6 +516,52 @@
     furniture = "forge"
   }
 }
+"GUARD_POST"
+{
+  settlement = {
+    type = RandomLayout { "guard_post" { 14 14 } "default"}
+    tribe = HUMAN
+    inhabitants = {
+      fighters = {
+        count = {2 5}
+        all = {
+          1 "KNIGHT"
+          1 "ARCHER"
+        }
+      }
+      civilians = {
+        count = {1 4}
+        all = {
+          1 "COW"
+          1 "DONKEY"
+          1 "DOG"
+        }
+      }
+    }
+  }
+  levelConnection = {
+    topLevel = MainEnemy
+    direction = UP
+    levels = {
+      { ExtraEnemy { "GUARD_POST2" {1} } {10 10} BASIC }
+      { ExtraEnemy { "GUARD_POST3" {1} } {10 10} BASIC }
+    }
+  }
+}
+"GUARD_POST2"
+{
+  settlement = {
+    type = RandomLayout { "guard_post_floor2" { 5 7 } "guard_post_floor2"}
+    tribe = HUMAN
+  }
+}
+"GUARD_POST3"
+{
+  settlement = {
+    type = RandomLayout { "guard_post_floor3" { 4 4 } "default"}
+    tribe = HUMAN
+  }
+}
 "MINOTAUR"
 {
   settlement = {

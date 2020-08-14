@@ -744,6 +744,47 @@
   fire = 50
   strength = 30
 }
+"BOOKCASE_STAIRS" inherit "BOOKCASE_WOOD"
+{
+  destroyedRemains = "UP_STAIRS"
+}
+"ARMOR_CHEST"
+{
+  name = "chest"
+  viewId = { "chest" }
+  canHideHere = true
+  usageType = UsageEffect "open" {
+    CreatureMessage "open the chest" "opens the chest"
+    CreatureMessage "find some equipment inside" "finds some equipment inside"
+    ChooseRandom {
+      DropItems {Simple "ChainArmor"} 1
+      DropItems {Simple "IronBoots"} 1
+      DropItems {Simple "IronHelm"} 1
+      DropItems {Simple "LeatherArmor"} 1
+      DropItems {Simple "LeatherBoots"} 1
+      DropItems {Simple "LeatherGloves"} 1
+    }
+    RemoveFurniture "ARMOR_CHEST"
+  }
+  fire = 50
+  strength = 30
+  destroyedRemains = "OPENED_CHEST"
+}
+"PAMPHLET_CHEST"
+{
+  name = "chest"
+  viewId = { "chest" }
+  canHideHere = true
+  usageType = UsageEffect "open" {
+    CreatureMessage "open the chest" "opens the chest"
+    CreatureMessage "find some pamphlets inside" "finds some pamphlets inside"
+    DropItems {Simple "AdoxieScroll"} {10 20}
+    RemoveFurniture "PAMPHLET_CHEST"
+  }
+  fire = 50
+  strength = 30
+  destroyedRemains = "OPENED_CHEST"
+}
 "OPENED_CHEST"
 {
   name = "opened chest"
