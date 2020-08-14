@@ -1502,8 +1502,10 @@ class heap_optional {
 
   heap_optional(T&& o) noexcept : elem(new T(std::move(o))) {}
 
-  heap_optional(optional<T>&& o) noexcept : elem(o ? new T(std::move(*o)) : nullptr) {}
-  heap_optional(const optional<T>& o) noexcept : elem(o ? new T(*o) : nullptr) {}
+  template <typename O>
+  heap_optional(O&& o) noexcept : elem(o ? new T(std::move(*o)) : nullptr) {}
+  template <typename O>
+  heap_optional(const O& o) noexcept : elem(o ? new T(*o) : nullptr) {}
 
   heap_optional(const heap_optional& o) noexcept : elem(o.elem ? new T(*o.elem) : nullptr) {}
   heap_optional(heap_optional&& o) noexcept : elem(std::move(o.elem)) {}
