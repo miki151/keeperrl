@@ -2691,10 +2691,15 @@ static PMakerQueue makeMapLayout(const MapLayouts::Layout& layout, const Settlem
 namespace {
   class RandomLayoutMaker : public LevelMaker {
     public:
-    RandomLayoutMaker(const LayoutGenerator& generator, const LayoutMapping& mapping, const SettlementInfo& info)
-      : mapping(mapping), generator(generator), downStairs(info.downStairs), upStairs(info.upStairs),
+    RandomLayoutMaker(const LayoutGenerator& generator, const RandomLayoutId& id, const LayoutMapping& mapping,
+        const SettlementInfo& info)
+      : id(id), mapping(mapping), generator(generator),
         tribe(info.tribe), outsideFurniture(info.outsideFeatures), furniture(info.furniture),
         stockpile(info.stockpiles) {
+      for (int i : All(info.downStairs).reverse())
+        downStairs.push_back(info.downStairs[i]);
+      for (int i : All(info.upStairs).reverse())
+        upStairs.push_back(info.upStairs[i]);
     }
 
     struct StockpileData {
@@ -2731,10 +2736,10 @@ namespace {
           },
           [&](LayoutActions::Stairs s) {
             auto& keys = (s.dir == LayoutActions::StairDirection::UP ? upStairs : downStairs);
-            if (!keys.empty()) {
+            if (keys.size() > s.index && !!keys[s.index]) {
               builder->putFurniture(pos, s.type, tribe);
-              builder->setLandingLink(pos, keys.back());
-              keys.pop_back();
+              builder->setLandingLink(pos, *keys[s.index]);
+              keys[s.index] = none;
             }
           }
       );
@@ -2763,17 +2768,20 @@ namespace {
           for (auto& token : map[pos])
             if (auto a = getReferenceMaybe(mapping.actions, token))
               visit(builder, inside, outside, pos, stockpileData, *a);
-        USER_CHECK(downStairs.empty()) << "Custom map doesn't contain required down stairs";
-        USER_CHECK(upStairs.empty()) << "Custom map doesn't contain required up stairs";
+        for (auto& elem : downStairs)
+          USER_CHECK(!elem) << "Custom map " << id.data() << " doesn't contain required down stairs";
+        for (auto& elem : upStairs)
+          USER_CHECK(!elem) << "Custom map " << id.data() << " doesn't contain required up stairs";
       } else
         failGen();
     }
 
     private:
+    const RandomLayoutId id;
     const LayoutMapping& mapping;
     const LayoutGenerator& generator;
-    vector<StairKey> downStairs;
-    vector<StairKey> upStairs;
+    vector<optional<StairKey>> downStairs;
+    vector<optional<StairKey>> upStairs;
     TribeId tribe;
     optional<FurnitureListId> outsideFurniture;
     optional<FurnitureListId> furniture;
@@ -2781,12 +2789,12 @@ namespace {
   };
 }
 
-static PMakerQueue makeRandomLayout(const LayoutGenerator& generator, const LayoutMapping& mapping,
-    const SettlementInfo& info) {
+static PMakerQueue makeRandomLayout(const LayoutGenerator& generator, const RandomLayoutId& id,
+    const LayoutMapping& mapping, const SettlementInfo& info) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<MakerQueue>(
       unique<AddAttrib>(SquareAttrib::NO_DIG),
-      unique<RandomLayoutMaker>(generator, mapping, info)));
+      unique<RandomLayoutMaker>(generator, id, mapping, info)));
   queue->addMaker(unique<PlaceCollective>(info.collective, Predicate::attrib(SquareAttrib::EMPTY_ROOM)));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective, Predicate::attrib(SquareAttrib::EMPTY_ROOM)));
   return queue;
@@ -2796,7 +2804,7 @@ static PMakerQueue getSettlementMaker(const ContentFactory& contentFactory, Rand
     const SettlementInfo& settlement) {
   return settlement.type.visit(
       [&] (const MapLayoutTypes::RandomLayout& info) {
-        return makeRandomLayout(contentFactory.randomLayouts.at(info.id),
+        return makeRandomLayout(contentFactory.randomLayouts.at(info.id), info.id,
             contentFactory.layoutMapping.at(info.mapping), settlement);
       },
       [&] (const MapLayoutTypes::Predefined& info) {

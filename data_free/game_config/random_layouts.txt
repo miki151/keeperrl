@@ -109,8 +109,8 @@ Def DungeonContent()
       count = 4
         predicate = On "room_floor"
     }
-    {{1 1} Set {"up_stairs"} 2 On "room_floor"}
-    {{1 1} Set {"down_stairs"} 2 On "room_floor"}
+    {{1 1} Set {"up_stairs0"} 1 On "room_floor"}
+    {{1 1} Set {"down_stairs0"} 1 On "room_floor"}
     {{1 1} Set {"inside_furniture"} 10 On "room_floor"}
   }
 End

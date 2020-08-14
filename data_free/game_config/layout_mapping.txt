@@ -16,8 +16,10 @@
   "wood_bridge" Place "BRIDGE"
   "treasure_chest" Place "TREASURE_CHEST"
   "iron_door" Place "IRON_DOOR"
-  "down_stairs" Stairs DOWN "DOWN_STAIRS"
-  "up_stairs" Stairs UP "UP_STAIRS"
+  "down_stairs0" Stairs DOWN "DOWN_STAIRS" 0
+  "up_stairs0" Stairs UP "UP_STAIRS" 0
+  "down_stairs1" Stairs DOWN "DOWN_STAIRS" 1
+  "up_stairs1" Stairs UP "UP_STAIRS" 1
   "clear_middle" ClearLayer MIDDLE
   "outside_furniture" OutsideFurniture
   "inside_furniture" InsideFurniture
@@ -26,4 +28,8 @@
 "village" inherit "default" append {
   "stone_floor" Chain { ClearFurniture Place "FLOOR" Place "FLOOR_WOOD1" Flag EMPTY_ROOM }
   "castle_wall" Place "WOOD_WALL"
+}
+
+"black_market_entry" inherit "default" append {
+  "up_stairs1" Stairs UP "INACTIVE_PORTAL" 1
 }

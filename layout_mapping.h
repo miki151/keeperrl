@@ -11,7 +11,8 @@ enum class StairDirection;
 struct Stairs {
   StairDirection SERIAL(dir);
   FurnitureType SERIAL(type);
-  SERIALIZE_ALL(dir, type)
+  int SERIAL(index);
+  SERIALIZE_ALL(dir, type, index)
 };
 struct LayoutAction;
 using Chain = vector<LayoutAction>;

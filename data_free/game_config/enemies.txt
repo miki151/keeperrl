@@ -1260,6 +1260,9 @@
 
 "BLACK_MARKET_ENTRY" inherit "DUNGEON1"
 {
+  settlement = append {
+    type = RandomLayout { "dungeon" { 38 28 } "black_market_entry"}
+  }
   levelConnection = {
     topLevel = MainEnemy
     direction = UP
