@@ -1248,6 +1248,15 @@
     weight = 2
     price = 500
   }
+"AdoxieScroll"
+  {
+    name = "religious pamphlet"
+    viewId = { "scroll" }
+    itemClass = SCROLL
+    weight = 1
+    price = 1
+    effect = Description "Just a cheap pamphlet" Message "It predicts the coming of the Evil God Adoxie"
+  }
 "AdaHelm"
   {
     viewId = { "ada_helm" }

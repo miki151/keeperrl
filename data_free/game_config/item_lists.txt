@@ -11,6 +11,7 @@
     {{Scroll Deception} 2 }
     {{Scroll Audience none} 2 }
     {{Scroll Summon "FLY" {3 6} 100} 5 }
+    {{Simple "AdoxieScroll"} 1}
     {{Potion Heal FLESH} 7 }
     {{Potion Lasting SLEEP} 5 }
     {{Potion Lasting SLOWED} 5 }
@@ -104,6 +105,7 @@
     {{Scroll Deception} 1 }
     {{Scroll Audience none} 1 }
     {{Scroll Summon "FLY" {3 6} 100} 1 }
+    {{Simple "AdoxieScroll"} 1}
   }
 }
 
@@ -157,6 +159,7 @@
       {Simple "IronHelm"} 0.5
       {Simple "Sword"} 0.5
       {Corpse} 1
+      {Simple "AdoxieScroll"} 0.01
     }
   }
 }
@@ -199,6 +202,7 @@
     {{Simple "IronBoots"} 7 }
     {{Simple "Torch"} 7 }
     {{Simple "LeatherGloves"} 30 }
+    {{Simple "AdoxieScroll"} 1}
     {{Scroll Escape} 30 }
     {{Scroll Enhance ARMOR 1} 30 }
     {{Scroll Enhance WEAPON 1} 30 }
