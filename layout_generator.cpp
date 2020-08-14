@@ -22,11 +22,14 @@ bool make(const LayoutGenerators::Reset& g, LayoutCanvas c, RandomGen&) {
   return true;
 }
 
-bool make(const LayoutGenerators::SetMaybe& g, LayoutCanvas c, RandomGen& r) {
+bool make(const LayoutGenerators::Filter& g, LayoutCanvas c, RandomGen& r) {
   for (auto v : c.area)
-    if (g.predicate.apply(c.map, v, r))
-      for (auto& token : g.tokens)
-        c.map->elems[v].push_back(token);
+    if (g.predicate.apply(c.map, v, r)) {
+      if (!g.generator->make(c.with(Rectangle(v, v + Vec2(1, 1))), r))
+        return false;
+    } else
+    if (g.alt && !g.alt->make(c.with(Rectangle(v, v + Vec2(1, 1))), r))
+      return false;
   return true;
 }
 
@@ -237,6 +240,14 @@ bool make(const LayoutGenerators::NoiseMap& g, LayoutCanvas c, RandomGen& r) {
 bool make(const LayoutGenerators::Chain& g, LayoutCanvas c, RandomGen& r) {
   for (auto& gen : g.generators)
     if (!gen.make(c, r))
+      return false;
+  return true;
+}
+
+
+bool make(const LayoutGenerators::Repeat& g, LayoutCanvas c, RandomGen& r) {
+  for (int i : Range(r.get(g.count)))
+    if (!g.generator->make(c, r))
       return false;
   return true;
 }

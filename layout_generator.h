@@ -29,10 +29,11 @@ struct Reset {
   SERIALIZE_ALL(tokens)
 };
 
-struct SetMaybe {
+struct Filter {
   TilePredicate SERIAL(predicate);
-  vector<Token> SERIAL(tokens);
-  SERIALIZE_ALL(predicate, tokens)
+  HeapAllocated<LayoutGenerator> SERIAL(generator);
+  heap_optional<LayoutGenerator> SERIAL(alt);
+  SERIALIZE_ALL(NAMED(predicate), NAMED(generator), NAMED(alt))
 };
 
 struct Remove {
@@ -106,11 +107,6 @@ struct Choose {
   SERIALIZE_ALL(generators)
 };
 
-struct Call {
-  string SERIAL(name);
-  SERIALIZE_ALL(name)
-};
-
 struct Connect {
   struct Elem {
     optional<double> SERIAL(cost);
@@ -123,11 +119,17 @@ struct Connect {
   SERIALIZE_ALL(toConnect, elems)
 };
 
+struct Repeat {
+  Range SERIAL(count);
+  HeapAllocated<LayoutGenerator> SERIAL(generator);
+  SERIALIZE_ALL(count, generator)
+};
+
 #define VARIANT_TYPES_LIST\
   X(None, 0)\
   X(Set, 1)\
   X(Reset, 2)\
-  X(SetMaybe, 3)\
+  X(Filter, 3)\
   X(Remove, 4)\
   X(Margin, 5)\
   X(Margins, 6)\
@@ -137,7 +139,8 @@ struct Connect {
   X(NoiseMap, 10)\
   X(Chain, 11)\
   X(Connect, 12)\
-  X(Choose, 13)
+  X(Choose, 13)\
+  X(Repeat, 14)
 
 #define VARIANT_NAME GeneratorImpl
 
