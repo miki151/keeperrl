@@ -30,7 +30,9 @@ struct Stockpile {
   X(Chain, 3)\
   X(ClearFurniture, 4)\
   X(Stockpile, 5)\
-  X(ClearLayer, 6)
+  X(ClearLayer, 6)\
+  X(OutsideFurniture, 7)\
+  X(InsideFurniture, 8)
 
 #define VARIANT_NAME LayoutAction
 

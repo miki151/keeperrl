@@ -812,10 +812,10 @@
   levelConnection = {
     topLevel = ExtraEnemy {"MAIN_DUNGEON_ENTRY"}
     levels = {
-      { ExtraEnemy { "DUNGEON1" { 1 } } {40 30} DUNGEON }
-      { ExtraEnemy { "BLACK_MARKET_ENTRY" { 1 } } {40 30} DUNGEON }
-      { ExtraEnemy { "DUNGEON2" { 1 } } {40 30} DUNGEON }
-      { ExtraEnemy { "DUNGEON3" { 1 } } {40 30} DUNGEON }
+      { ExtraEnemy { "DUNGEON1" { 1 } } {40 30} BASIC }
+      { ExtraEnemy { "BLACK_MARKET_ENTRY" { 1 } } {40 30} BASIC }
+      { ExtraEnemy { "DUNGEON2" { 1 } } {40 30} BASIC }
+      { ExtraEnemy { "DUNGEON3" { 1 } } {40 30} BASIC }
       { MainEnemy {60 40} BASIC "Adoxie's Temple" }
       { ExtraEnemy { "DEATH" { 1 } } {40 30} BASIC none true false }
       { ExtraEnemy { "HELL" { 1 } } {40 30} DUNGEON "A Very Hot Place" true false }
@@ -1098,8 +1098,8 @@
   levelConnection = {
     topLevel = ExtraEnemy {"DARK_ELVES_ENTRY"}
     levels = {
-      { ExtraEnemy { "DUNGEON1" { 2 4 } } {60 40} DUNGEON }
-      { ExtraEnemy { "DUNGEON2" { 1 2 } } {60 40} DUNGEON }
+      { ExtraEnemy { "DUNGEON1" { 2 4 } } {60 40} BASIC }
+      { ExtraEnemy { "DUNGEON2" { 1 2 } } {60 40} BASIC }
       { MainEnemy {60 40} MINETOWN }
     }
   }
@@ -1167,7 +1167,7 @@
 {
   discoverable = false
   settlement = {
-    type = Builtin MINETOWN "DUNGEON"
+    type = RandomLayout { "dungeon" { 38 28 } "default"}
     tribe = MONSTER
     furniture = "roomFurniture"
     shopItems = { "dungeon" }
@@ -1260,15 +1260,6 @@
 
 "BLACK_MARKET_ENTRY" inherit "DUNGEON1"
 {
-  settlement = append {
-    type = Builtin MINETOWN "BLACK_MARKET_ENTRY"
-    shopItems = append { "diggingScroll" }
-    inhabitants = append {
-      fighters = append {
-        uniques = append { "WITCH" }
-      }
-    }
-  }
   levelConnection = {
     topLevel = MainEnemy
     direction = UP

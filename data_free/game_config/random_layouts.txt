@@ -1,6 +1,7 @@
 Def AnyWall() Or { On "wood_wall" On "castle_wall" } End
 Def AnyFloor() And {Not AnyWall() Or { On "stone_floor" On "wood_floor" On "floor" }} End
 Def AnyDoor() Or { On "wood_door" On "iron_door" } End
+Def AnyWater() Or { On "lava" On "water" } End
 
 Def Building(WallType, FloorType) {
   Margins 1
@@ -10,7 +11,7 @@ Def Building(WallType, FloorType) {
 End
 
 Def NextTo(Pred)
-  Not Area 1 Not Pred
+  Area { 1 Pred }
 End
 
 Def Connector()
@@ -21,6 +22,18 @@ Def Connector()
   }
 End
 
+Def CellularAutomaton(Generator, BeginProb) Margins 1 None {
+  Filter { Chance BeginProb Set { "cell_added" } }
+  Repeat 4 {
+    Filter { Area { 1 On "cell_added" 5 } Set { "cell_added2" }}
+    Filter { On "cell_added2" Set { "cell_added" } Remove { "cell_added" }}
+    Remove { "cell_added2" }
+  }
+  Filter { On "cell_added" Generator}
+  Remove { "cell_added" }
+}
+End
+
 Def Village1() {
   Place {
     {
@@ -28,7 +41,7 @@ Def Village1() {
       maxSize = { 8 9 }
       generator = {
         Building("castle_wall", "stone_floor")
-        SetMaybe AnyFloor() { "main_building" }
+        Filter { AnyFloor() Set { "main_building" } }
       }
       position = MIDDLE
       minSpacing = 1
@@ -88,21 +101,7 @@ End
 "village1" Village1()
 "village2" Village2()
 
-Def Dungeon() {
-  Set { "rock" }
-  Margins 1 None {
-    Place {
-      {
-        size = {4 4}
-        generator = Reset {"floor" "room_floor"}
-        count = {3 6}
-      }
-    }
-    Connect On "floor"
-    {
-      5 On "rock" Reset {"floor"}
-    }
-  }
+Def DungeonContent()
   Place {
     {
       size = {1 1}
@@ -110,10 +109,115 @@ Def Dungeon() {
       count = 4
         predicate = On "room_floor"
     }
-    {{1 1} Set {"up_stairs"} 1 On "room_floor"}
-    {{1 1} Set {"down_stairs"} 1 On "room_floor"}
+    {{1 1} Set {"up_stairs"} 2 On "room_floor"}
+    {{1 1} Set {"down_stairs"} 2 On "room_floor"}
+    {{1 1} Set {"inside_furniture"} 10 On "room_floor"}
   }
+End
+
+Def Corners(Generator) {
+  Margin BOTTOM 1 Set { "h_margin" } None
+  Margin TOP 1 Set { "h_margin" } None
+  Margin RIGHT 1 Set { "v_margin" } None
+  Margin LEFT 1 Set { "v_margin" } None
+  Filter { And { On "h_margin" On "v_margin" } Generator }
+  Remove { "h_margin" "v_margin" }
 }
 End
 
-"dungeon1" Dungeon()
+Def Room() {
+  Reset {"floor" "room_floor"}
+  Margins -1
+    Set { "room_wall" }
+    Corners(Set {"room_corner"})
+}
+End
+
+Def RoomConnector()
+  Connect On "floor"
+  {
+    1000 And { Not AnyWater() Not AnyFloor() On "room_corner" } None
+    8 On "lava" Set { "stone_bridge" }
+    8 On "water" Set { "wood_bridge" }
+    4 And { Not AnyWater() Not AnyFloor() Not On "room_corner" On "room_wall" }
+        Filter { And { Chance 0.4 Not NextTo(On "wood_door")} Reset {"wood_door"} Reset {"floor"} }
+    2 And { Not AnyFloor() On "rock" Not On "room_corner" Not On "room_wall" } Reset {"floor"}
+  }
+End
+
+Def DungeonRooms()
+  Margins 1 None {
+    Place {
+      {
+        minSize = {4 4}
+        maxSize = {9 9}
+        generator = Room()
+        count = {6 9}
+        minSpacing = 1
+      }
+    }
+  }
+End
+
+Def Dungeon1() {
+  Set { "rock" }
+  DungeonRooms()
+  RoomConnector()
+  DungeonContent()
+}
+End
+
+Def Dungeon2() {
+  Set { "rock" }
+  CellularAutomaton(Reset { "floor" "room_floor" }, 0.55)
+  Connect On "floor"
+  {
+    5 On "rock" Reset {"floor"}
+  }
+  DungeonContent()
+}
+End
+
+Def Caverns(Generator)
+  Place {
+    {
+      generator = {
+        CellularAutomaton(Generator, 0.55)
+      }
+      count = {2 6}
+      minSize = {10 10}
+      maxSize = {14 14}
+    }
+  }
+End
+
+Def Dungeon3() {
+  Set { "rock" }
+  Caverns(Reset{"floor"})
+  DungeonRooms()
+  RoomConnector()
+  DungeonContent()
+}
+End
+
+Def Dungeon4(WaterType) {
+  Set { "rock" }
+  Caverns(Reset{"floor"})
+  DungeonRooms()
+  Caverns(Reset{WaterType})
+  RoomConnector()
+  DungeonContent()
+}
+End
+
+"dungeon1" Dungeon1()
+"dungeon2" Dungeon2()
+"dungeon3" Dungeon3()
+"dungeon4" Dungeon4("water")
+"dungeon" Choose {
+  Dungeon1()
+  Dungeon2()
+  Dungeon3()
+  Dungeon4("lava")
+  Dungeon4("water")
+}
