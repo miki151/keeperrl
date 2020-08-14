@@ -43,7 +43,8 @@ struct Chance {
 struct Area {
   int SERIAL(radius);
   HeapAllocated<TilePredicate> SERIAL(predicate);
-  SERIALIZE_ALL(radius, predicate)
+  int SERIAL(minCount) = 1;
+  SERIALIZE_ALL(NAMED(radius), NAMED(predicate), OPTION(minCount))
 };
 
 #define VARIANT_TYPES_LIST\
