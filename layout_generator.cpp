@@ -13,6 +13,12 @@ bool make(const LayoutGenerators::Set& g, LayoutCanvas c, RandomGen&) {
   return true;
 }
 
+bool make(const LayoutGenerators::SetFront& g, LayoutCanvas c, RandomGen&) {
+  for (auto v : c.area)
+    c.map->elems[v].push_front(g.token);
+  return true;
+}
+
 bool make(const LayoutGenerators::Reset& g, LayoutCanvas c, RandomGen&) {
   for (auto v : c.area) {
     c.map->elems[v].clear();
@@ -105,6 +111,21 @@ bool make(const LayoutGenerators::VRatio& g, LayoutCanvas c, RandomGen& r) {
       c.area.bottomRight())), r);
 }
 
+static Rectangle getPosition(optional<PlacementPos> pos, Rectangle area, Vec2 size, RandomGen& r) {
+  if (pos)
+    switch (*pos) {
+      case PlacementPos::MIDDLE:
+        // - size / 2 + size is required due to integer rounding
+        return Rectangle(area.middle() - size / 2, area.middle() - size / 2 + size);
+      case PlacementPos::MIDDLE_V:
+        return Rectangle(area.middle().x - size.x / 2, area.top(), area.middle().x - size.x / 2 + size.x, area.bottom());
+    }
+  else {
+    auto origin = Rectangle(area.topLeft(), area.bottomRight() - size + Vec2(1, 1)).random(r);
+    return Rectangle(origin, origin + size);
+  }
+}
+
 bool make(const LayoutGenerators::Place& g, LayoutCanvas c, RandomGen& r) {
   vector<char> occupied(c.area.width() * c.area.height(), 0);
   auto check = [&] (Rectangle rect, int spacing, const TilePredicate& p) {
@@ -127,10 +148,8 @@ bool make(const LayoutGenerators::Place& g, LayoutCanvas c, RandomGen& r) {
                           r.get(g.generators[i].minSize->y, g.generators[i].maxSize->y)); });
       const int numTries = g.generators[i].position ? 1 : 100000;
       for (int iter : Range(numTries)) {
-        auto pos = g.generators[i].position
-            ? c.area.middle() - size / 2
-            : Rectangle(c.area.topLeft(), c.area.bottomRight() - size + Vec2(1, 1)).random(r);
-        auto genArea = Rectangle(pos, pos + size);
+        auto genArea = getPosition(g.generators[i].position, c.area, size, r);
+        USER_CHECK(c.area.contains(genArea)) << "Generator does not fit in area ";
         if (!check(genArea, g.generators[i].minSpacing, g.generators[i].predicate))
           continue;
         return generator->make(c.with(genArea), r);
@@ -257,7 +276,20 @@ bool make(const LayoutGenerators::Repeat& g, LayoutCanvas c, RandomGen& r) {
 }
 
 bool make(const LayoutGenerators::Choose& g, LayoutCanvas c, RandomGen& r) {
-  return r.choose(g.generators).make(c, r);
+  vector<const LayoutGenerator*> generators;
+  double sumDefined = 0;
+  int numUndefined = 0;
+  for (auto& elem : g.generators) {
+    generators.push_back(&*elem.generator);
+    if (elem.chance)
+      sumDefined += *elem.chance;
+    else
+      ++numUndefined;
+  }
+  vector<double> chances;
+  for (auto& elem : g.generators)
+    chances.push_back(elem.chance.value_or((1.0 - sumDefined) / numUndefined));
+  return r.choose(generators, chances)->make(c, r);
 }
 
 const LayoutGenerators::Connect::Elem* getConnectorElem(const LayoutGenerators::Connect& g, LayoutCanvas c, RandomGen& r, Vec2 p1) {
@@ -299,6 +331,38 @@ bool make(const LayoutGenerators::Connect& g, LayoutCanvas c, RandomGen& r) {
   return true;
 }
 
+bool make(const LayoutGenerators::FloodFill& g, LayoutCanvas c, RandomGen& r) {
+  queue<Vec2> q;
+  auto wholeArea = c.map->elems.getBounds();
+  Table<bool> visited(wholeArea, false);
+  auto visit = [&](Vec2 v) {
+    if (v.inRectangle(wholeArea) && !visited[v] && g.predicate.apply(c.map, v, r)) {
+      visited[v] = true;
+      q.push(v);
+      return g.generator->make(c.with(Rectangle(v, v + Vec2(1, 1))), r);
+    }
+    return true;
+  };
+  for (auto v : c.area)
+    if (!visit(v))
+      return false;
+  while (!q.empty()) {
+    auto v = q.front();
+    q.pop();
+    for (auto neighbor : v.neighbors4())
+      if (!visit(neighbor))
+        return false;
+  }
+  return true;
+}
+
 bool LayoutGenerator::make(LayoutCanvas c, RandomGen& r) const {
   return visit<bool>([&c, &r] (const auto& g) { return ::make(g, c, r); } );
+}
+
+void LayoutGenerators::Choose::Elem::serialize(PrettyInputArchive& ar1, const unsigned int version) {
+  double value;
+  if (ar1.readMaybe(value))
+    chance = value;
+  ar1(generator);
 }

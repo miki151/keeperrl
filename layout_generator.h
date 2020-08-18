@@ -11,7 +11,7 @@ struct LayoutCanvas;
 using Token = string;
 
 RICH_ENUM(MarginType, TOP, BOTTOM, LEFT, RIGHT);
-RICH_ENUM(PlacementPos, MIDDLE);
+RICH_ENUM(PlacementPos, MIDDLE, MIDDLE_V);
 
 namespace LayoutGenerators {
 
@@ -22,6 +22,11 @@ struct None {
 struct Set {
   vector<Token> SERIAL(tokens);
   SERIALIZE_ALL(tokens)
+};
+
+struct SetFront {
+  Token SERIAL(token);
+  SERIALIZE_ALL(token)
 };
 
 struct Reset {
@@ -103,7 +108,14 @@ struct Chain {
 };
 
 struct Choose {
-  vector<LayoutGenerator> SERIAL(generators);
+  struct Elem {
+    optional<double> SERIAL(chance);
+    HeapAllocated<LayoutGenerator> SERIAL(generator);
+    SERIALIZE_ALL(chance, generator)
+    void serialize(PrettyInputArchive& ar, const unsigned int version);
+  };
+
+  vector<Elem> SERIAL(generators);
   SERIALIZE_ALL(generators)
 };
 
@@ -125,22 +137,30 @@ struct Repeat {
   SERIALIZE_ALL(count, generator)
 };
 
+struct FloodFill {
+  TilePredicate SERIAL(predicate);
+  HeapAllocated<LayoutGenerator> SERIAL(generator);
+  SERIALIZE_ALL(predicate, generator)
+};
+
 #define VARIANT_TYPES_LIST\
   X(None, 0)\
   X(Set, 1)\
-  X(Reset, 2)\
-  X(Filter, 3)\
+  X(SetFront, 2)\
+  X(Reset, 3)\
   X(Remove, 4)\
-  X(Margin, 5)\
-  X(Margins, 6)\
-  X(HRatio, 7)\
-  X(VRatio, 8)\
-  X(Place, 9)\
-  X(NoiseMap, 10)\
-  X(Chain, 11)\
-  X(Connect, 12)\
-  X(Choose, 13)\
-  X(Repeat, 14)
+  X(Filter, 5)\
+  X(Margin, 6)\
+  X(Margins, 7)\
+  X(HRatio, 8)\
+  X(VRatio, 9)\
+  X(Place, 10)\
+  X(NoiseMap, 11)\
+  X(Chain, 12)\
+  X(Connect, 13)\
+  X(Choose, 14)\
+  X(Repeat, 15)\
+  X(FloodFill, 16)
 
 #define VARIANT_NAME GeneratorImpl
 
