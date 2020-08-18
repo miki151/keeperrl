@@ -1,6 +1,6 @@
 Def AnyWall() Or { On "wood_wall" On "castle_wall" } End
-Def AnyFloor() And {Not AnyWall() Or { On "stone_floor" On "wood_floor" On "floor" }} End
-Def AnyDoor() Or { On "wood_door" On "iron_door" } End
+Def AnyFloor() And { Not AnyWall() Or { On "stone_floor" On "wood_floor" On "floor" }} End
+Def AnyDoor() Or { On "wood_door" On "iron_door" On "iron_gate" On "wood_gate" } End
 Def AnyWater() Or { On "lava" On "water" } End
 
 Def Building(WallType, FloorType) {
@@ -107,6 +107,130 @@ End
 "village1" Village1()
 "village2" Village2()
 
+Def CastleGate1() 
+  Margin TOP 1 Place {{ {2 1} Reset { "floor" "iron_gate" } 1 True MIDDLE }} None
+End
+
+Def GatePlusWall(WallLength)
+  Margin LEFT WallLength
+    Set {"castle_wall"}
+    Margin RIGHT WallLength
+      Set {"castle_wall"}
+      Reset { "floor" "iron_gate" }
+End
+
+Def CastleGate2() {
+  Margin TOP -1 None Margin TOP 1 Place {{ {4 1} GatePlusWall(1) 1 True MIDDLE }} None
+  Margin TOP 1 Place {{ {2 1} Reset { "floor" } 1 True MIDDLE }} None
+}
+End
+
+Def CastleGate3() {
+  Margin TOP -1 None Margin TOP 1 Place {{ {6 1} GatePlusWall(2) 1 True MIDDLE }} None
+  Margin TOP 1 Place {{ {4 1} Reset { "floor" } 1 True MIDDLE }} None
+}
+End
+
+Def CastleCornersClosed(CornerSize) {
+  Corners(Margins -1 Set {"castle_wall"} None, CornerSize)
+  Corners(Reset { "floor" "castle_corner" }, CornerSize)
+  Margins 1 None Corners(Choose { None Reset { "floor" }}, CornerSize)
+}
+End
+
+Def CastlePart1(Width) {
+  VRatio 0.6 Margin TOP 1 None Margin BOTTOM -1 None {
+    Margin BOTTOM 1 Set { "castle_wall" } None
+    Place {{
+        {Width 1}
+        Margin LEFT 1
+          Reset { "castle_wall" }
+          Margin RIGHT 1
+            Reset { "castle_wall" }
+            Reset { "floor" }
+        1 True MIDDLE_V }
+    }
+  }None
+}
+End
+
+Def CastlePart2(Width) {
+  VRatio 0.6 None {
+    Margin TOP 1 Set { "castle_wall" } None
+    Margin TOP 2
+      Margin BOTTOM -1 None
+      Place {{
+        {Width 1}
+        Margin LEFT 1
+          Reset { "castle_wall" }
+          Margin RIGHT 1
+            Reset { "castle_wall" }
+            Reset { "floor" }
+        1 True MIDDLE_V }}
+      Place {{
+        {Width 1}
+          Margin LEFT 1 None Margin RIGHT 1 None
+        Margin LEFT 1
+          Reset { "castle_wall" }
+          Margin RIGHT 1
+            Reset { "castle_wall" }
+            None
+        1 True MIDDLE_V }}
+  }
+}
+End
+
+Def CastlePart3(Width) {
+  VRatio 0.6 None
+    Margin TOP 2 None
+      Place {{
+        {Width 1}
+        Margin TOP 1 {
+          Set { "castle_wall" }
+          Place {{ {2 1} Reset { "floor" "iron_gate" } 1 True MIDDLE }}
+        }
+        Margin LEFT 1
+          Reset { "castle_wall" }
+          Margin RIGHT 1
+            Reset { "castle_wall" }
+            None
+        1 True MIDDLE_V }}
+}
+End
+
+Def Maybe(Chance, Gen)
+  Choose { Chance Gen None }
+End
+
+Def CastleMaybe(Gen) 
+  Maybe(0.5, Gen)
+End
+
+Def Castle(CornerSize) {
+  Margins 1 None {
+    Building("castle_wall", "floor")
+    Choose { CastleGate3() CastleGate2() CastleGate1() }
+    CastleCornersClosed(CornerSize)
+    Choose {
+      { CastleMaybe(CastlePart1(8)) CastleMaybe(CastlePart2(8)) CastleMaybe(CastlePart3(6)) }
+      { CastleMaybe(CastlePart1(6)) CastleMaybe(CastlePart2(6)) CastleMaybe(CastlePart3(4)) }
+    }
+    Connector()
+    Place {{ {1 1} FloodFill And { AnyFloor() Not AnyDoor() } Set { "castle_outside" } 1 True MIDDLE }}
+    Filter { And { Or { AnyFloor() AnyDoor() } Not On "castle_outside"} Set { "castle_inside" "stone_floor" }}
+    Place { {{1 1} Set {"inside_furniture"} 8 And { Not AnyDoor() On "castle_inside"} }}
+    Place { {{1 1} Set {"outside_furniture"} 8 On "castle_outside"} }
+    Margin BOTTOM 2 Margin BOTTOM 1 None Place {{ {1 1} Set { "up_stairs0" } 1 True MIDDLE }} None
+    Place {{ {1 1} Set { "down_stairs0" } 1 On "castle_corner" }}
+  }
+}
+End
+
+"castle" {
+  Choose { Castle(2) Castle(3) }
+  Filter { AnyFloor() SetFront "clear_furniture" }
+}
+
 Def GuardPost() {
   Place {
     {
@@ -185,13 +309,15 @@ Def DungeonContent()
   }
 End
 
-Def Corners(Generator) {
-  Margin BOTTOM 1 Set { "h_margin" } None
-  Margin TOP 1 Set { "h_margin" } None
-  Margin RIGHT 1 Set { "v_margin" } None
-  Margin LEFT 1 Set { "v_margin" } None
-  Filter { And { On "h_margin" On "v_margin" } Generator }
-  Remove { "h_margin" "v_margin" }
+Def Corners(Generator, Size) {
+  Margin TOP Size {
+    Margin LEFT Size Generator None
+    Margin RIGHT Size Generator None
+  } None
+  Margin BOTTOM Size {
+    Margin LEFT Size Generator None
+    Margin RIGHT Size Generator None
+  } None
 }
 End
 
@@ -199,7 +325,7 @@ Def Room() {
   Reset {"floor" "room_floor"}
   Margins -1
     Set { "room_wall" }
-    Corners(Set {"no_dig"})
+    Corners(Set {"no_dig"}, 1)
 }
 End
 
@@ -272,10 +398,14 @@ End
 "dungeon2" Dungeon2()
 "dungeon3" Dungeon3()
 "dungeon4" Dungeon4("water")
-"dungeon" Choose {
-  Dungeon1()
-  Dungeon2()
-  Dungeon3()
-  Dungeon4("lava")
-  Dungeon4("water")
+"dungeon" {
+  Choose {
+    Dungeon1()
+    Dungeon2()
+    Dungeon3()
+    Dungeon4("lava")
+    Dungeon4("water")
+  }
+# Clear the rock tiles from where floor was placed
+  Filter { AnyFloor() SetFront "clear_furniture" }
 }

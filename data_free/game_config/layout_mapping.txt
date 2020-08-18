@@ -1,7 +1,8 @@
 "default" {
-  "floor" { ClearFurniture Place "FLOOR" Flag EMPTY_ROOM }
-  "wood_floor" { ClearFurniture Place "FLOOR" Place "FLOOR_WOOD1" Flag EMPTY_ROOM }
-  "stone_floor" { ClearFurniture Place "FLOOR" Place "FLOOR_STONE1" Flag EMPTY_ROOM }
+  "floor" { Place "FLOOR" Flag EMPTY_ROOM }
+  "wood_floor" { Place "FLOOR" Place "FLOOR_WOOD1" Flag EMPTY_ROOM }
+  "stone_floor" { Place "FLOOR" Place "FLOOR_STONE1" Flag EMPTY_ROOM }
+  "clear_furniture" ClearFurniture
   "dining_table" Place "DINING_TABLE"
   "rock" Place "MOUNTAIN"
   "water" { ClearFurniture Place "WATER"}
@@ -12,10 +13,12 @@
   "wood_wall" Place "WOOD_WALL"
   "castle_wall" Place "CASTLE_WALL"
   "wood_door" Place "WOOD_DOOR"
+  "wood_gate" Place "WOOD_GATE"
   "stone_bridge" Place "STONE_BRIDGE"
   "wood_bridge" Place "BRIDGE"
   "treasure_chest" Place "TREASURE_CHEST"
   "iron_door" Place "IRON_DOOR"
+  "iron_gate" Place "IRON_GATE"
   "down_stairs0" Stairs DOWN "DOWN_STAIRS" 0
   "up_stairs0" Stairs UP "UP_STAIRS" 0
   "down_stairs1" Stairs DOWN "DOWN_STAIRS" 1
