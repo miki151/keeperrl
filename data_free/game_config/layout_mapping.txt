@@ -29,6 +29,7 @@
   "armor_chest" Place "ARMOR_CHEST"
   "pamphlet_chest" Place "PAMPHLET_CHEST"
   "torch" Place "GROUND_TORCH"
+  "shop0" Shop 0
 }
 
 "village" inherit "default" append {

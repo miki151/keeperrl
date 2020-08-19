@@ -78,7 +78,7 @@ class LevelBuilder {
   double getHeightMap(Vec2 pos);
 
   Rectangle toGlobalCoordinates(Rectangle);
-  vector<Vec2> toGlobalCoordinates(vector<Vec2>);
+  vector<Vec2> toGlobalCoordinates(const vector<Vec2>&);
 
   /** Adds a collective to the level and initializes it.*/
   void addCollective(CollectiveBuilder*);

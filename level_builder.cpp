@@ -60,7 +60,7 @@ Rectangle LevelBuilder::toGlobalCoordinates(Rectangle area) {
   return area.apply([this](Vec2 v) { return transform(v); });
 }
 
-vector<Vec2> LevelBuilder::toGlobalCoordinates(vector<Vec2> v) {
+vector<Vec2> LevelBuilder::toGlobalCoordinates(const vector<Vec2>& v) {
   return v.transform([this](Vec2 v) { return transform(v); });
 }
 

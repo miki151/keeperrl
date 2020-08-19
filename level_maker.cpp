@@ -2696,7 +2696,7 @@ namespace {
         const SettlementInfo& info)
       : id(id), mapping(mapping), generator(generator),
         tribe(info.tribe), outsideFurniture(info.outsideFeatures), furniture(info.furniture),
-        stockpile(info.stockpiles) {
+        stockpile(info.stockpiles), shopInfo(info.shopItems) {
       for (int i : All(info.downStairs).reverse())
         downStairs.push_back(info.downStairs[i]);
       for (int i : All(info.upStairs).reverse())
@@ -2751,6 +2751,27 @@ namespace {
       );
     }
 
+    void placeShop(LevelBuilder* builder, const vector<Vec2> area, const SettlementInfo::ShopInfo& shopInfo) {
+      PCreature shopkeeper = builder->getContentFactory()->getCreatures().fromId(CreatureId("SHOPKEEPER"), tribe,
+          MonsterAIFactory::idle());
+      shopkeeper->setController(CreatureFactory::getShopkeeper(builder->toGlobalCoordinates(area),
+          shopkeeper.get()));
+      vector<Vec2> pos;
+      for (Vec2 v : area)
+        if (builder->canNavigate(v, MovementTrait::WALK))
+          pos.push_back(v);
+      USER_CHECK(!pos.empty()) << "No empty tiles to place shop";
+      Vec2 shopkeeperPos = pos[builder->getRandom().get(pos.size())];
+      builder->putCreature(shopkeeperPos, std::move(shopkeeper));
+      builder->putFurniture(pos[builder->getRandom().get(pos.size())], FurnitureParams{FurnitureType("GROUND_TORCH"),
+          tribe});
+      auto itemList = builder->getContentFactory()->itemFactory.get(shopInfo.items);
+      for (int i : Range(builder->getRandom().get(shopInfo.count))) {
+        Vec2 v = pos[builder->getRandom().get(pos.size())];
+        builder->putItems(v, itemList.random(builder->getContentFactory()));
+      }
+    }
+
     virtual void make(LevelBuilder* builder, Rectangle area) override {
       auto inside = furniture.map([&](auto elem) {
           return builder->getContentFactory()->furniture.getFurnitureList(elem); });
@@ -2770,12 +2791,14 @@ namespace {
       });
       if (auto map1 = tryGenerate(10)) {
         auto& map = *map1;
-        vector<vector<Vec2>> shops;
+        vector<vector<Vec2>> shopPositions;
         for (auto pos : area)
           for (auto& token : map[pos])
             if (auto a = getReferenceMaybe(mapping.actions, token))
-              visit(builder, inside, outside, pos, stockpileData, *a, shops);
-        for (auto& shop : shops)
+              visit(builder, inside, outside, pos, stockpileData, *a, shopPositions);
+        for (int i : All(shopPositions))
+          if (i < shopInfo.size())
+            placeShop(builder, shopPositions[i], shopInfo[i]);
         for (auto& elem : downStairs)
           USER_CHECK(!elem) << "Custom map " << id.data() << " doesn't contain required down stairs";
         for (auto& elem : upStairs)
@@ -2794,6 +2817,7 @@ namespace {
     optional<FurnitureListId> outsideFurniture;
     optional<FurnitureListId> furniture;
     vector<StockpileInfo> stockpile;
+    vector<SettlementInfo::ShopInfo> shopInfo;
   };
 }
 

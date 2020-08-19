@@ -219,6 +219,7 @@ Def Castle(CornerSize) {
     Place {{ {1 1} FloodFill And { AnyFloor() Not AnyDoor() } Set { "castle_outside" } 1 True MIDDLE }}
     Filter { And { Or { AnyFloor() AnyDoor() } Not On "castle_outside"} Set { "castle_inside" "stone_floor" }}
     Place { {{1 1} Set {"inside_furniture"} 8 And { Not AnyDoor() On "castle_inside"} }}
+    Place { {{2 2} Set {"shop0"} 1 On "castle_inside"} }
     Place { {{1 1} Set {"outside_furniture"} 8 On "castle_outside"} }
     Margin BOTTOM 2 Margin BOTTOM 1 None Place {{ {1 1} Set { "up_stairs0" } 1 True MIDDLE }} None
     Place {{ {1 1} Set { "down_stairs0" } 1 On "castle_corner" }}
