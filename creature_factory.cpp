@@ -436,8 +436,8 @@ class KrakenController : public Monster {
     creature->wait().perform(creature);
   }
 
-  SERIALIZE_ALL(SUBCLASS(Monster), ready, spawns, father, length);
-  SERIALIZATION_CONSTRUCTOR(KrakenController);
+  SERIALIZE_ALL(SUBCLASS(Monster), ready, spawns, father, length)
+  SERIALIZATION_CONSTRUCTOR(KrakenController)
 
   private:
   int SERIAL(length) = 0;
@@ -449,16 +449,17 @@ class KrakenController : public Monster {
 namespace {
 class ShopkeeperController : public Monster, public EventListener<ShopkeeperController> {
   public:
-  ShopkeeperController(Creature* c, Rectangle area)
+  ShopkeeperController(Creature* c, vector<Vec2> area)
       : Monster(c, MonsterAIFactory::stayInLocation(area)), shopArea(area) {
+    CHECK(!area.empty());
   }
 
   vector<Position> getAllShopPositions() const {
-    return shopArea.getAllSquares().transform([this](Vec2 v){ return Position(v, myLevel); });
+    return shopArea.transform([this](Vec2 v){ return Position(v, myLevel); });
   }
 
   bool isShopPosition(const Position& pos) {
-    return pos.isSameLevel(myLevel) && pos.getCoord().inRectangle(shopArea);
+    return pos.isSameLevel(myLevel) && shopArea.contains(pos.getCoord());
   }
 
   virtual void makeMove() override {
@@ -499,7 +500,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
               if (++thiefCount.getOrInit(debtor) == 4) {
                 debtor->privateMessage("\"Thief! Thief!\"");
                 creature->getTribe()->onItemsStolen(debtor);
-                creature->getGame()->addEvent(EventInfo::ItemStolen{debtor, Position(shopArea.middle(), myLevel)});
+                creature->getGame()->addEvent(EventInfo::ItemStolen{debtor, Position(shopArea.front(), myLevel)});
                 thiefCount.erase(debtor);
                 debtors.erase(debtor);
                 thieves.insert(debtor);
@@ -568,7 +569,7 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
   EntitySet<Creature> SERIAL(debtors);
   EntityMap<Creature, int> SERIAL(thiefCount);
   EntitySet<Creature> SERIAL(thieves);
-  Rectangle SERIAL(shopArea);
+  vector<Vec2> SERIAL(shopArea);
   WLevel SERIAL(myLevel) = nullptr;
   bool SERIAL(firstMove) = true;
 };
@@ -579,8 +580,8 @@ void CreatureFactory::addInventory(Creature* c, const vector<ItemType>& items) {
     c->take(item.get(contentFactory));
 }
 
-PController CreatureFactory::getShopkeeper(Rectangle shopArea, Creature* c) {
-  return makeOwner<ShopkeeperController>(c, shopArea);
+PController CreatureFactory::getShopkeeper(vector<Vec2> shopArea, Creature* c) {
+  return makeOwner<ShopkeeperController>(c, std::move(shopArea));
 }
 
 class IllusionController : public DoNothingController {

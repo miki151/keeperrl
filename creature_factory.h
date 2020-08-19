@@ -43,7 +43,7 @@ class CreatureFactory {
   PCreature fromId(CreatureId, TribeId);
   PCreature makeCopy(Creature*, const MonsterAIFactory&);
   PCreature makeCopy(Creature*);
-  static PController getShopkeeper(Rectangle shopArea, Creature*);
+  static PController getShopkeeper(vector<Vec2> shopArea, Creature*);
   static PCreature getRollingBoulder(TribeId, Vec2 direction);
   PCreature getAnimatedItem(PItem, TribeId, int attrBonus);
   static PCreature getHumanForTests();

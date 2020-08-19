@@ -483,7 +483,7 @@ class Inhabitants : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     if (!actorFactory)
-      actorFactory = MonsterAIFactory::stayInLocation(builder->toGlobalCoordinates(area));
+      actorFactory = MonsterAIFactory::stayInLocation(builder->toGlobalCoordinates(area).getAllSquares());
     Table<char> taken(area.right(), area.bottom());
     auto creatures = inhabitants.generateCreatures(builder->getRandom(), &builder->getContentFactory()->getCreatures(),
         collective->getTribe(), *actorFactory);
@@ -551,7 +551,7 @@ class Creatures : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     if (!actorFactory)
-      actorFactory = MonsterAIFactory::stayInLocation(builder->toGlobalCoordinates(area));
+      actorFactory = MonsterAIFactory::stayInLocation(builder->toGlobalCoordinates(area).getAllSquares());
     Table<char> taken(area.right(), area.bottom());
     vector<PCreature> c = creatures.visit(
         [&](CreatureGroup c){
@@ -1736,7 +1736,8 @@ class ShopMaker : public LevelMaker {
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     PCreature shopkeeper = builder->getContentFactory()->getCreatures().fromId(CreatureId("SHOPKEEPER"), tribe, MonsterAIFactory::idle());
-    shopkeeper->setController(CreatureFactory::getShopkeeper(builder->toGlobalCoordinates(area), shopkeeper.get()));
+    shopkeeper->setController(CreatureFactory::getShopkeeper(builder->toGlobalCoordinates(area).getAllSquares(),
+        shopkeeper.get()));
     vector<Vec2> pos;
     for (Vec2 v : area)
       if (builder->canNavigate(v, MovementTrait::WALK) && builder->hasAttrib(v, SquareAttrib::ROOM))
@@ -1916,7 +1917,7 @@ class CastleExit : public LevelMaker {
     for (Vec2 pos : guardPos) {
       auto fighters = settlement.inhabitants.fighters.generate(builder->getRandom(), &builder->getContentFactory()->getCreatures(),
           settlement.tribe, MonsterAIFactory::stayInLocation(
-              builder->toGlobalCoordinates(Rectangle(loc + pos, loc + pos + Vec2(1, 1))), false), true);
+              builder->toGlobalCoordinates(Rectangle(loc + pos, loc + pos + Vec2(1, 1))).getAllSquares(), false), true);
       if (!fighters.empty())
         builder->putCreature(loc + pos, std::move(fighters[0]));
     }

@@ -746,12 +746,25 @@ class GuardTarget : public Behaviour {
 
 class GuardArea : public Behaviour {
   public:
-  GuardArea(Creature* c, Rectangle a) : Behaviour(c), area(a) {}
+  GuardArea(Creature* c, vector<Vec2> a) : Behaviour(c), area(a.begin(), a.end()) {}
+
+  CreatureAction stayIn() {
+    PROFILE;
+    if (myLevel != creature->getLevel() || !area.count(creature->getPosition().getCoord())) {
+      if (myLevel == creature->getLevel())
+        for (auto v : creature->getPosition().neighbors8(Random))
+          if (area.count(v.getCoord()))
+            if (auto action = creature->move(v))
+              return action;
+      return creature->moveTowards(Position(Random.choose(area), myLevel));
+    }
+    return CreatureAction();
+  }
 
   virtual MoveInfo getMove() override {
     if (!myLevel)
       myLevel = creature->getLevel();
-    if (auto action = creature->stayIn(myLevel, area))
+    if (auto action = stayIn())
       return {1.0, action};
     else
       return NoMove;
@@ -762,7 +775,7 @@ class GuardArea : public Behaviour {
 
   private:
   WLevel SERIAL(myLevel) = nullptr;
-  Rectangle SERIAL(area);
+  unordered_set<Vec2, CustomHash<Vec2>> SERIAL(area);
 };
 
 class Wait : public Behaviour {
@@ -1404,7 +1417,18 @@ MonsterAIFactory MonsterAIFactory::guard() {
 }
 
 MonsterAIFactory MonsterAIFactory::monster() {
-  return stayInLocation(Level::getMaxBounds());
+  return MonsterAIFactory([=](Creature* c) {
+      vector<Behaviour*> actors {
+          new AvoidFire(c),
+          new EffectsAI(c),
+          new Fighter(c),
+          new GoldLust(c)
+      };
+      vector<int> weights { 10, 5, 3, 1};
+      actors.push_back(new MoveRandomly(c));
+      weights.push_back(1);
+      return new MonsterAI(c, actors, weights);
+  });
 }
 
 MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
@@ -1419,14 +1443,14 @@ MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
       });
 }
 
-MonsterAIFactory MonsterAIFactory::stayInLocation(Rectangle rect, bool moveRandomly) {
+MonsterAIFactory MonsterAIFactory::stayInLocation(vector<Vec2> area, bool moveRandomly) {
   return MonsterAIFactory([=](Creature* c) {
       vector<Behaviour*> actors {
           new AvoidFire(c),
           new EffectsAI(c),
           new Fighter(c),
           new GoldLust(c),
-          new GuardArea(c, rect)
+          new GuardArea(c, area)
       };
       vector<int> weights { 10, 5, 3, 1, 1 };
       if (moveRandomly) {

@@ -2072,19 +2072,6 @@ CreatureAction Creature::continueMoving() {
     return CreatureAction();
 }
 
-CreatureAction Creature::stayIn(WLevel level, Rectangle area) {
-  PROFILE;
-  if (level != getLevel() || !getPosition().getCoord().inRectangle(area)) {
-    if (level == getLevel())
-      for (Position v : getPosition().neighbors8(Random))
-        if (v.getCoord().inRectangle(area))
-          if (auto action = move(v))
-            return action;
-    return moveTowards(Position(area.middle(), getLevel()));
-  }
-  return CreatureAction();
-}
-
 vector<Position> Creature::getCurrentPath() const {
   if (shortestPath)
     return shortestPath->getPath();
