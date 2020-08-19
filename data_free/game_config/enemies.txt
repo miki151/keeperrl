@@ -180,7 +180,7 @@
     type = Builtin EMPTY "BRICK"
     tribe = MONSTER
     dontBuildRoad = true
-    shopItems = { "corpse" }
+    shopItems = {{10 15} "corpse" }
   }
 }
 "ORC_VILLAGE"
@@ -309,7 +309,7 @@
     }
     locationNameGen = "TOWN"
     race = "humans"
-    shopItems = { "armory" }
+    shopItems = {{8 16} "armory" }
     furniture = "roomFurniture"
   }
   config = {
@@ -397,7 +397,7 @@
     locationNameGen = "TOWN"
     race = "humans"
     stockpiles = {{ "gold" 140 "TREASURE_CHEST" }}
-    shopItems = { "villageShop" }
+    shopItems = {{8 16} "villageShop" }
     furniture = "castleFurniture"
     outsideFeatures = "castleOutside"
   }
@@ -584,7 +584,7 @@
     }
     race = "dragon"
     tribe = MONSTER
-    shopItems = { "dragonCave" }
+    shopItems = {{16 20} "dragonCave" }
   }
   config = {
     leaderAsFighter = true
@@ -615,7 +615,7 @@
     }
     race = "dragon"
     tribe = MONSTER
-    shopItems = { "dragonCave" }
+    shopItems = {{16 20} "dragonCave" }
   }
   createOnBones = 1.0 { "KNIGHTS" "DWARVES" "GREEN_DRAGON" "WARRIORS" }
 }
@@ -628,7 +628,7 @@
     }
     tribe = MONSTER
     race = "dragon"
-    shopItems = { "dragonCave" }
+    shopItems = {{16 20} "dragonCave" }
   }
   config = {
     leaderAsFighter = true
@@ -675,7 +675,7 @@
     locationNameGen = "TOWN"
     race = "dwarves"
     stockpiles = {{ "gold" 200 "TREASURE_CHEST"} {"minerals" 120 }}
-    shopItems = { "dwarfShop" }
+    shopItems = {{8 16} "dwarfShop" }
     outsideFeatures = "dungeonOutside"
     surroundWithResources = 5
     furniture = "roomFurniture"
@@ -1079,7 +1079,7 @@
     locationNameGen = "TOWN"
     race = "lizardmen"
     lootItem = {TechBook "humanoid mutation"}
-    shopItems = { "goodMushrooms" }
+    shopItems = {{8 16} "goodMushrooms" }
     furniture = "roomFurniture"
     outsideFeatures = "villageOutside"
   }
@@ -1216,7 +1216,7 @@
     type = RandomLayout { "dungeon" { 38 28 } "default"}
     tribe = MONSTER
     furniture = "roomFurniture"
-    shopItems = { "dungeon" }
+    shopItems = {{5 10} "dungeon" }
     inhabitants = {
       fighters = {
         count = {10 15}
@@ -1283,7 +1283,7 @@
     tribe = GNOME
     race = "the Black Market"
     furniture = "dungeonOutside"
-    shopItems = { "blackMarketAmulet" "blackMarketScrolls" "blackMarketPotions"  }
+    shopItems = { {10 15} "blackMarketAmulet" {10 15} "blackMarketScrolls" {10 15} "blackMarketPotions"  }
     inhabitants = {
       fighters = {
         count = {8 10}
@@ -1349,15 +1349,15 @@
     }
     locationNameGen = "TOWN"
     race = "gnomes"
-    shopItems = { "gnomeShop" }
+    shopItems = {{10 18} "gnomeShop" }
     outsideFeatures = "dungeonOutside"
     furniture = "roomFurniture"
   }
   levelConnection = {
     topLevel = ExtraEnemy {"GNOMES_ENTRY"}
     levels = {
-      { ExtraEnemy { "DUNGEON1" { 2 4 } } {60 40} DUNGEON }
-      { ExtraEnemy { "DUNGEON2" { 1 2 } } {60 40} DUNGEON }
+      { ExtraEnemy { "DUNGEON1" { 2 4 } } {40 30} BASIC }
+      { ExtraEnemy { "DUNGEON2" 1 } {40 30} BASIC }
       { MainEnemy {60 40} MINETOWN }
     }
   }
@@ -1498,7 +1498,7 @@
     }
     race = "cyclops"
     tribe = HOSTILE
-    shopItems = { "goodMushrooms" }
+    shopItems = {{16 20} "goodMushrooms" }
   }
   config = {
     leaderAsFighter = true
@@ -1961,7 +1961,7 @@
 "DJINN" inherit "DJINN_EMPTY"
 {
   settlement = append {
-    shopItems = { "magicLamp" }
+    shopItems = { 1 "magicLamp" }
   }
 }
 "ELVEN_COTTAGE"

@@ -54,7 +54,7 @@ static EnemyInfo getVault(BuiltinLayoutId id, CreatureId creature, TribeId tribe
       c.closeToPlayer = true;
       c.dontConnectCave = true;
       if (itemFactory)
-        c.shopItems = {*itemFactory};
+        c.shopItems = {SettlementInfo::ShopInfo LIST(Range(16, 20), *itemFactory)};
     ), CollectiveConfig::noImmigrants())
     .setNonDiscoverable();
 }

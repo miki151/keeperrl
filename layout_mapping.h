@@ -14,6 +14,10 @@ struct Stairs {
   int SERIAL(index);
   SERIALIZE_ALL(dir, type, index)
 };
+struct Shop {
+  int SERIAL(index);
+  SERIALIZE_ALL(index)
+};
 struct LayoutAction;
 using Chain = vector<LayoutAction>;
 using ClearFurniture = EmptyStruct<struct ClearFurniturTag>;
@@ -33,7 +37,8 @@ struct Stockpile {
   X(Stockpile, 5)\
   X(ClearLayer, 6)\
   X(OutsideFurniture, 7)\
-  X(InsideFurniture, 8)
+  X(InsideFurniture, 8)\
+  X(Shop, 9)
 
 #define VARIANT_NAME LayoutAction
 

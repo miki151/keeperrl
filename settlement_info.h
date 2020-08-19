@@ -95,7 +95,12 @@ struct SettlementInfo {
   vector<StairKey> upStairs;
   vector<StockpileInfo> SERIAL(stockpiles);
   optional<ItemType> SERIAL(lootItem);
-  vector<ItemListId> SERIAL(shopItems);
+  struct ShopInfo {
+    Range SERIAL(count);
+    ItemListId SERIAL(items);
+    SERIALIZE_ALL(count, items)
+  };
+  vector<ShopInfo> SERIAL(shopItems);
   bool SERIAL(shopkeeperDead) = false;
   CollectiveBuilder* collective;
   optional<FurnitureListId> SERIAL(furniture);
