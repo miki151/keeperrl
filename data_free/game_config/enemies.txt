@@ -368,7 +368,7 @@
 "KNIGHTS"
 {
   settlement = {
-    type = RandomLayout { "castle" { 20 15 } "default"}
+    type = RandomLayout { "castle" { 15 15 20 20 } "default"}
     tribe = HUMAN
     inhabitants = {
       leader = { { "DUKE" } }

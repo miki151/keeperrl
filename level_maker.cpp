@@ -2298,7 +2298,7 @@ static Vec2 getSize(const MapLayouts& layouts, RandomGen& random, LayoutType typ
         return layouts.getSize(info.id);
       },
       [&](const MapLayoutTypes::RandomLayout& info) {
-        return info.size;
+        return info.size.get(random);
       }
     );
 }

@@ -484,6 +484,8 @@ Vec2 Vec2::shorten() const {
   return Vec2(x / d, y / d);
 }
 
+SERIALIZE_DEF(Vec2Range, begin, end)
+
 static int sgn(int a) {
   if (a == 0)
     return 0;
@@ -1179,6 +1181,20 @@ void Range::serialize(PrettyInputArchive& ar1, unsigned) {
   this->finish = finish.value_or(start + 1);
   if (this->start >= this->finish)
     ar1.error("Range is empty: (" + toString(start) + ", " + toString(this->finish) + ")");
+}
+
+Vec2 Vec2Range::get(RandomGen& r) const {
+  return Vec2(r.get(begin.x, end.x), r.get(begin.y, end.y));
+}
+
+void Vec2Range::serialize(PrettyInputArchive& ar1, const unsigned int) {
+  pair<int, int> b;
+  optional<pair<int, int>> e;
+  ar1(NAMED(b), NAMED(e), endInput());
+  begin = Vec2(b.first, b.second);
+  if (!e)
+    e = make_pair(b.first + 1, b.second + 1);
+  end = Vec2(e->first, e->second);
 }
 
 string toString(const Range& r) {

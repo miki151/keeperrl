@@ -191,10 +191,21 @@ class Vec2 {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
-  HASH_ALL(x, y);
+  HASH_ALL(x, y)
 };
 
 extern string toString(const Vec2&);
+
+class PrettyInputArchive;
+
+struct Vec2Range {
+  Vec2 SERIAL(begin);
+  Vec2 SERIAL(end);
+  Vec2 get(RandomGen&) const;
+  template <class Archive>
+  void serialize(Archive&, const unsigned int version);
+  void serialize(PrettyInputArchive&, const unsigned int version);
+};
 
 class Range {
   public:
