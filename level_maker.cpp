@@ -2678,6 +2678,7 @@ namespace {
 static PMakerQueue makeMapLayout(const MapLayouts::Layout& layout, const SettlementInfo& info,
     const BuildingInfo& buildingInfo) {
   auto queue = unique<MakerQueue>();
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("MOUNTAIN2"))));
   queue->addMaker(unique<MakerQueue>(
       unique<AddAttrib>(SquareAttrib::NO_DIG),
       unique<MapLayoutMaker>(layout, buildingInfo, info.downStairs, info.upStairs, info.tribe)));
@@ -2719,6 +2720,7 @@ namespace {
           },
           [&](FurnitureType type) { builder->putFurniture(pos, type, tribe); },
           [&](SquareAttrib attrib) { builder->addAttrib(pos, attrib); },
+          [&](LayoutActions::RemoveFlag f) { builder->removeAttrib(pos, f.flag); },
           [&](LayoutActions::ClearFurniture) { builder->removeAllFurniture(pos); },
           [&](LayoutActions::ClearLayer l) { builder->removeFurniture(pos, l); },
           [&](LayoutActions::OutsideFurniture) {
@@ -3031,9 +3033,10 @@ static PLevelMaker underground(RandomGen& random, Vec2 size, FurnitureType floor
 PLevelMaker LevelMaker::settlementLevel(const ContentFactory& factory, RandomGen& random, SettlementInfo settlement,
     Vec2 size) {
   auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"))));
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR")).add(FurnitureType("MOUNTAIN2"))));
   auto locations = unique<RandomLocations>();
   auto maker = getSettlementMaker(factory, random, settlement);
+  maker = unique<MakerQueue>(unique<Empty>(SquareChange::reset(FurnitureType("FLOOR"))), std::move(maker));
   if (settlement.corpses)
     maker->addMaker(unique<Corpses>(*settlement.corpses));
   locations->add(std::move(maker), getSize(factory.mapLayouts, random, settlement.type), Predicate::alwaysTrue());

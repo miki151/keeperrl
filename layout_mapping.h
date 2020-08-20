@@ -7,6 +7,10 @@
 namespace LayoutActions {
 using Place = FurnitureType;
 using Flag = SquareAttrib;
+struct RemoveFlag {
+  SquareAttrib SERIAL(flag);
+  SERIALIZE_ALL(flag)
+};
 enum class StairDirection;
 struct Stairs {
   StairDirection SERIAL(dir);
@@ -31,14 +35,15 @@ struct Stockpile {
 #define VARIANT_TYPES_LIST\
   X(Place, 0)\
   X(Flag, 1)\
-  X(Stairs, 2)\
-  X(Chain, 3)\
-  X(ClearFurniture, 4)\
-  X(Stockpile, 5)\
-  X(ClearLayer, 6)\
-  X(OutsideFurniture, 7)\
-  X(InsideFurniture, 8)\
-  X(Shop, 9)
+  X(RemoveFlag, 2)\
+  X(Stairs, 3)\
+  X(Chain, 4)\
+  X(ClearFurniture, 5)\
+  X(Stockpile, 6)\
+  X(ClearLayer, 7)\
+  X(OutsideFurniture, 8)\
+  X(InsideFurniture, 9)\
+  X(Shop, 10)
 
 #define VARIANT_NAME LayoutAction
 
