@@ -836,7 +836,7 @@
 "MAIN_DUNGEON"
 {
   settlement = {
-    type = Predefined { "adoxie_temple" "ADOXIE_TEMPLE" } 
+    type = RandomLayout { "adoxie_temple" { 30 20 } "adoxie_temple"}
     tribe = MONSTER
     inhabitants = {
       leader = { { "ADOXIE_PRIEST" } }
@@ -862,7 +862,7 @@
       { ExtraEnemy { "BLACK_MARKET_ENTRY" { 1 } } {40 30} BASIC }
       { ExtraEnemy { "DUNGEON2" { 1 } } {40 30} BASIC }
       { ExtraEnemy { "DUNGEON3" { 1 } } {40 30} BASIC }
-      { MainEnemy {60 40} BASIC "Adoxie's Temple" }
+      { MainEnemy {32 22} BASIC "Adoxie's Temple" }
       { ExtraEnemy { "DEATH" { 1 } } {40 30} BASIC none true false }
       { ExtraEnemy { "HELL" { 1 } } {40 30} DUNGEON "A Very Hot Place" true false }
       { ExtraEnemy { "SATAN" { 1 } } {32 22} BASIC "A Very Hot Place" true false }

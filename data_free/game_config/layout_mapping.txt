@@ -2,6 +2,7 @@
   "floor" { Place "FLOOR" Flag EMPTY_ROOM }
   "wood_floor" { Place "FLOOR" Place "FLOOR_WOOD1" Flag EMPTY_ROOM }
   "stone_floor" { Place "FLOOR" Place "FLOOR_STONE1" Flag EMPTY_ROOM }
+  "no_territory" RemoveFlag EMPTY_ROOM
   "clear_furniture" ClearFurniture
   "dining_table" Place "DINING_TABLE"
   "rock" Place "MOUNTAIN"
@@ -43,4 +44,8 @@
 
 "guard_post_floor2" inherit "default" append {
   "up_stairs0" Stairs UP "BOOKCASE_STAIRS" 0
+}
+
+"adoxie_temple" inherit "default" append {
+  "down_stairs0" Stairs DOWN "ADOXIE_STATUE_TEMPLE" 0
 }

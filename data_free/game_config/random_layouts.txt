@@ -17,7 +17,7 @@ End
 Def Connector()
   Connect AnyFloor()
   {
-    1000 And { Not AnyWater() Not AnyFloor() On "no_dig" } None
+    1000 And { On "no_dig" } None
     10 And {On "wood_wall" Not On "no_dig"} { Remove { "wood_wall" } Set { "clear_middle" "wood_door" }}
     10 And {On "castle_wall" Not On "no_dig"} { Remove { "castle_wall" } Set { "clear_middle" "iron_door" }}
     8 On "lava" Set { "stone_bridge" }
@@ -396,11 +396,52 @@ Def Dungeon4(WaterType) {
 }
 End
 
+Def AdoxieTemple() {
+  Set { "rock" }
+  HRatio 0.5 
+    Margins 1 None
+      Place {
+        {
+          minSize = {2 2}
+          maxSize = {6 6}
+          generator = {
+            Room()
+            Place {{ {1 1} Set { "clear_middle" "up_stairs0" } 1 True MIDDLE }}
+          }
+          count = 1
+          minSpacing = 1
+        }
+      }
+    {
+      CellularAutomaton(Set { "lava" }, 0.55)
+      Place {{ 
+        {7 7}
+        {
+          Margins 1 None
+            {
+              Reset { "floor" "temple" }
+              Corners(Set { "castle_wall" }, 1)
+              Place {{ {1 1} Set { "clear_middle" "down_stairs0" } 1 True MIDDLE }}
+           }
+          Set { "no_dig" }
+          Place {{ {1 1} Remove { "no_dig" } 1 True MIDDLE_V }}
+          Place {{ {1 1} Remove { "no_dig" } 1 True MIDDLE_H }}
+        }
+        1
+        On "lava"
+        }}
+    }
+  Connector()
+  Filter { Not On "temple" Set { "no_territory" }}
+}
+End
+
+"adoxie_temple" AdoxieTemple()
 "dungeon1" Dungeon1()
 "dungeon2" Dungeon2()
 "dungeon3" Dungeon3()
 "dungeon4" Dungeon4("water")
-"dungeon" {
+"dungeon"
   Choose {
     Dungeon1()
     Dungeon2()
@@ -408,6 +449,3 @@ End
     Dungeon4("lava")
     Dungeon4("water")
   }
-# Clear the rock tiles from where floor was placed
-  Filter { AnyFloor() SetFront "clear_furniture" }
-}
