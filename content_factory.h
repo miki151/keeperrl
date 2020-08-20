@@ -16,7 +16,6 @@
 #include "resource_info.h"
 #include "layout_mapping_id.h"
 #include "layout_mapping.h"
-#include "layout_generator.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -26,6 +25,7 @@ class EnemyInfo;
 class ImmigrantInfo;
 class ZLevelInfo;
 class BuildingInfo;
+struct LayoutGenerator;
 
 RICH_ENUM(
   ZLevelGroup,

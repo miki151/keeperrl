@@ -21,6 +21,7 @@
 #include "z_level_info.h"
 #include "equipment.h"
 #include "sdl.h"
+#include "layout_generator.h"
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {

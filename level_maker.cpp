@@ -48,6 +48,7 @@
 #include "biome_info.h"
 #include "furniture_tick.h"
 #include "layout_canvas.h"
+#include "layout_generator.h"
 
 namespace {
 
@@ -3030,7 +3031,7 @@ static PLevelMaker underground(RandomGen& random, Vec2 size, FurnitureType floor
 PLevelMaker LevelMaker::settlementLevel(const ContentFactory& factory, RandomGen& random, SettlementInfo settlement,
     Vec2 size) {
   auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR")).add(FurnitureType("MOUNTAIN2"))));
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"))));
   auto locations = unique<RandomLocations>();
   auto maker = getSettlementMaker(factory, random, settlement);
   if (settlement.corpses)

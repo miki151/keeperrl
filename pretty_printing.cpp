@@ -46,6 +46,7 @@
 #include "campaign_builder.h"
 #include "content_factory.h"
 #include "storage_id.h"
+#include "layout_generator.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const vector<string>& s, vector<string> filename, KeyVerifier* keyVerifier) {
