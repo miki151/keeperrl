@@ -9,13 +9,15 @@ bool make(const LayoutGenerators::None&, LayoutCanvas c, RandomGen&) {
 bool make(const LayoutGenerators::Set& g, LayoutCanvas c, RandomGen&) {
   for (auto v : c.area)
     for (auto& token : g.tokens)
-      c.map->elems[v].push_back(token);
+      if (!c.map->elems[v].contains(token))
+        c.map->elems[v].push_back(token);
   return true;
 }
 
 bool make(const LayoutGenerators::SetFront& g, LayoutCanvas c, RandomGen&) {
   for (auto v : c.area)
-    c.map->elems[v].push_front(g.token);
+    if (!c.map->elems[v].contains(g.token))
+      c.map->elems[v].push_front(g.token);
   return true;
 }
 
