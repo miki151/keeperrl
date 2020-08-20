@@ -11,7 +11,7 @@ struct LayoutCanvas;
 using Token = string;
 
 RICH_ENUM(MarginType, TOP, BOTTOM, LEFT, RIGHT);
-RICH_ENUM(PlacementPos, MIDDLE, MIDDLE_V);
+RICH_ENUM(PlacementPos, MIDDLE, MIDDLE_V, MIDDLE_H);
 
 namespace LayoutGenerators {
 

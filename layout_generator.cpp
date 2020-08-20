@@ -121,6 +121,8 @@ static Rectangle getPosition(optional<PlacementPos> pos, Rectangle area, Vec2 si
         return Rectangle(area.middle() - size / 2, area.middle() - size / 2 + size);
       case PlacementPos::MIDDLE_V:
         return Rectangle(area.middle().x - size.x / 2, area.top(), area.middle().x - size.x / 2 + size.x, area.bottom());
+      case PlacementPos::MIDDLE_H:
+        return Rectangle(area.left(), area.middle().y - size.y / 2, area.right(), area.middle().y - size.y / 2 + size.y);
     }
   else {
     auto origin = Rectangle(area.topLeft(), area.bottomRight() - size + Vec2(1, 1)).random(r);
