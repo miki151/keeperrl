@@ -120,9 +120,23 @@ static Rectangle getPosition(optional<PlacementPos> pos, Rectangle area, Vec2 si
         // - size / 2 + size is required due to integer rounding
         return Rectangle(area.middle() - size / 2, area.middle() - size / 2 + size);
       case PlacementPos::MIDDLE_V:
-        return Rectangle(area.middle().x - size.x / 2, area.top(), area.middle().x - size.x / 2 + size.x, area.bottom());
+        return Rectangle(area.middle().x - size.x / 2, area.top(),
+                         area.middle().x - size.x / 2 + size.x, area.bottom());
       case PlacementPos::MIDDLE_H:
-        return Rectangle(area.left(), area.middle().y - size.y / 2, area.right(), area.middle().y - size.y / 2 + size.y);
+        return Rectangle(area.left(), area.middle().y - size.y / 2,
+                         area.right(), area.middle().y - size.y / 2 + size.y);
+      case PlacementPos::LEFT_CENTER:
+        return Rectangle(area.left(), area.middle().y - size.y / 2,
+                         area.left() + size.x, area.middle().y - size.y / 2 + size.y);
+      case PlacementPos::RIGHT_CENTER:
+        return Rectangle(area.right() - size.x, area.middle().y - size.y / 2,
+                         area.right(), area.middle().y - size.y / 2 + size.y);
+      case PlacementPos::TOP_CENTER:
+        return Rectangle(area.middle().x - size.x / 2, area.top(),
+                         area.middle().x - size.x / 2 + size.x, area.top() + size.y);
+      case PlacementPos::BOTTOM_CENTER:
+        return Rectangle(area.middle().x - size.x / 2, area.bottom() - size.y,
+                         area.middle().x - size.x / 2 + size.x, area.bottom());
     }
   else {
     auto origin = Rectangle(area.topLeft(), area.bottomRight() - size + Vec2(1, 1)).random(r);
