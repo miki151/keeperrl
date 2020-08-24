@@ -2721,6 +2721,11 @@ namespace {
           [&](FurnitureType type) { builder->putFurniture(pos, type, tribe); },
           [&](SquareAttrib attrib) { builder->addAttrib(pos, attrib); },
           [&](LayoutActions::RemoveFlag f) { builder->removeAttrib(pos, f.flag); },
+          [&](LayoutActions::Items items) {
+            auto f = builder->getContentFactory();
+            auto list = f->itemFactory.get(items.id);
+            builder->putItems(pos, list.random(f));
+          },
           [&](LayoutActions::ClearFurniture) { builder->removeAllFurniture(pos); },
           [&](LayoutActions::ClearLayer l) { builder->removeFurniture(pos, l); },
           [&](LayoutActions::OutsideFurniture) {

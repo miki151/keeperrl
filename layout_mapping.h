@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "furniture_type.h"
 #include "furniture_layer.h"
+#include "item_list_id.h"
 
 namespace LayoutActions {
 using Place = FurnitureType;
@@ -21,6 +22,11 @@ struct Stairs {
 struct Shop {
   int SERIAL(index);
   SERIALIZE_ALL(index)
+};
+struct Items {
+  Range SERIAL(count);
+  ItemListId SERIAL(id);
+  SERIALIZE_ALL(count, id)
 };
 struct LayoutAction;
 using Chain = vector<LayoutAction>;
@@ -43,7 +49,8 @@ struct Stockpile {
   X(ClearLayer, 7)\
   X(OutsideFurniture, 8)\
   X(InsideFurniture, 9)\
-  X(Shop, 10)
+  X(Items, 10)\
+  X(Shop, 11)
 
 #define VARIANT_NAME LayoutAction
 
