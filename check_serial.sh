@@ -9,7 +9,7 @@ grep -E "(SERIALIZE_DEF\(|SERIALIZE_TMPL\()" *.cpp | grep -v define | eval $GET_
 sed -i "s/NAMED(\(.*\))/\1/" /tmp/def1
 sed -i "s/SKIP(\(.*\))/\1/" /tmp/def1
 sed -i "s/OPTION(\(.*\))/\1/" /tmp/def1
-grep -v SUBCLASS < /tmp/def1 | grep -v __VA_ARGS__ | sort > /tmp/def
+grep -v SUBCLASS < /tmp/def1 | grep -v __VA_ARGS__ | grep -v 'roundBracket()' | sort > /tmp/def
 
 diff /tmp/decl /tmp/def
 if [ "$?" != "0" ]; then

@@ -14,6 +14,11 @@ struct StreamPos {
   int column;
 };
 
+enum class BracketType {
+  ROUND,
+  CURLY
+};
+
 class PrettyInputArchive {
   public:
     PrettyInputArchive(const vector<string>& inputs, const vector<string>& filenames, KeyVerifier* v);
@@ -29,6 +34,7 @@ class PrettyInputArchive {
     struct NodeData {
       deque<LoaderInfo> loaders;
       bool inherited = false;
+      BracketType bracket = BracketType::CURLY;
     };
 
     NodeData& getNode() {
@@ -50,7 +56,9 @@ class PrettyInputArchive {
     }
 
     bool eatMaybe(const string& s);
-
+    void openBracket(BracketType);
+    void closeBracket(BracketType);
+    bool isClosedBracket(BracketType);
     string peek(int cnt = 1);
 
     template <typename T>
@@ -104,7 +112,7 @@ class PrettyInputArchive {
 
     using is_loading = std::true_type;
 
-    private:
+    //private:
     vector<NodeData> nodeData;
     bool nextElemInherited = false;
     std::istringstream is;
@@ -341,13 +349,13 @@ inline void serialize(PrettyInputArchive& ar1, unique_ptr<T>& v) {
   v.reset(t);
 }
 
-struct EndPrettyInput {
-};
+struct EndPrettyInput {};
 
-inline EndPrettyInput& endInput() {
-  static EndPrettyInput ret;
-  return ret;
-}
+EndPrettyInput& endInput();
+
+struct SetRoundBracket {};
+
+SetRoundBracket& roundBracket();
 
 template <class T>
 inline void handleNamePair(PrettyInputArchive& ar1, const string& name, T& value, bool optional) {
@@ -359,6 +367,8 @@ template <class T>
 inline void serialize(PrettyInputArchive& ar1, OptionalNameValuePair<T>& t) {
   handleNamePair(ar1, t.name, t.value, true);
 }
+
+void serialize(PrettyInputArchive& ar1, SetRoundBracket&);
 
 template <class T>
 inline void serialize(PrettyInputArchive& ar1, SkipPrettyValue<T>& t) {

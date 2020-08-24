@@ -157,6 +157,8 @@ static vector<StreamChar> preprocess(const vector<StreamChar>& content) {
           if (args.size() != def->args.size())
             throwException(ret[argsPos].pos, "Wrong number of arguments to macro " + *name);
           auto body = subStream(content, def->begin, def->end - def->begin);
+          /*for (auto& elem : body)
+            elem.pos = ret[i].pos;*/
           for (int argNum : All(args)) {
             bool bodyInQuote = false;
             for (int bodyIndex = 0; bodyIndex < body.size(); ++bodyIndex) {
@@ -182,6 +184,9 @@ static vector<StreamChar> preprocess(const vector<StreamChar>& content) {
 
 vector<StreamChar> removeFormatting(string contents, optional<string> filename) {
   vector<StreamChar> ret;
+  auto addChar = [&ret] (StreamPos pos, char c) {
+    ret.push_back(StreamChar{std::move(pos), c});
+  };
   StreamPos cur {filename, 1, 1};
   bool inQuote = false;
   for (unsigned i = 0; i < contents.size(); ++i) {
@@ -189,7 +194,7 @@ vector<StreamChar> removeFormatting(string contents, optional<string> filename) 
     if (contents[i] == '"' && (i == 0 || contents[i - 1] != '\\')) {
       inQuote = !inQuote;
       if (inQuote) {
-        ret.push_back(StreamChar{cur, ' '});
+        addChar(cur, ' ');
       } else
         addSpace = true;
     }
@@ -198,14 +203,14 @@ vector<StreamChar> removeFormatting(string contents, optional<string> filename) 
         ++i;
     }
     else if (isOneOf(contents[i], '{', '}', ',', ')', '(') && !inQuote) {
-      ret.push_back(StreamChar{cur, ' '});
-      ret.push_back(StreamChar{cur, contents[i]});
-      ret.push_back(StreamChar{cur, ' '});
+      addChar(cur, ' ');
+      addChar(cur, contents[i]);
+      addChar(cur, ' ');
     } else {
-      ret.push_back(StreamChar{cur, contents[i]});
+      addChar(cur, contents[i]);
     }
     if (addSpace)
-      ret.push_back(StreamChar{cur, ' '});
+      addChar(cur, ' ');
     addSpace = false;
     if (contents[i] == '\n') {
       ++cur.line;
@@ -232,6 +237,32 @@ PrettyInputArchive::PrettyInputArchive(const vector<string>& inputs, const vecto
   auto res = preprocess(allInput);
   streamPos = res.transform([](auto& elem) { return elem.pos; });
   is.str(getString(res));
+}
+
+static auto getOpenBracket(BracketType type) {
+  switch (type) {
+    case BracketType::CURLY: return "{";
+    case BracketType::ROUND: return "(";
+  }
+}
+
+static auto getCloseBracket(BracketType type) {
+  switch (type) {
+    case BracketType::CURLY: return "}";
+    case BracketType::ROUND: return ")";
+  }
+}
+
+void PrettyInputArchive::openBracket(BracketType type) {
+  eat(getOpenBracket(type));
+}
+
+void PrettyInputArchive::closeBracket(BracketType type) {
+  eat(getCloseBracket(type));
+}
+
+bool PrettyInputArchive::isClosedBracket(BracketType type) {
+  return peek() == getCloseBracket(type);
 }
 
 string PrettyInputArchive::eat(const char* expected) {
@@ -295,11 +326,12 @@ void PrettyInputArchive::endNode() {
 void prettyEpilogue(PrettyInputArchive& ar1) {
   auto loaders = ar1.getNode().loaders;
   if (!loaders.empty()) {
+    auto bracket = ar1.getNode().bracket;
     bool appending = ar1.eatMaybe("append") || ar1.getNode().inherited;
-    ar1.eat("{");
+    ar1.openBracket(bracket);
     bool keysAndValues = false;
     set<string> processed;
-    while (ar1.peek() != "}") {
+    while (!ar1.isClosedBracket(bracket)) {
       if (ar1.peek() == ",")
         ar1.eat();
       auto bookmark = ar1.bookmark();
@@ -311,10 +343,11 @@ void prettyEpilogue(PrettyInputArchive& ar1) {
           ar1.error("Expected a \"key = value\" pair");
         ar1.seek(bookmark);
         for (auto& loader : loaders) {
-          if (ar1.peek() == "}")
+          if (ar1.isClosedBracket(bracket))
             break;
           processed.insert(loader.name);
           loader.load(true);
+          ar1.eatMaybe(",");
         }
         break;
       } else
@@ -342,7 +375,7 @@ void prettyEpilogue(PrettyInputArchive& ar1) {
       for (auto& loader : loaders)
         if (!processed.count(loader.name) && !loader.optional)
           ar1.error("Field \"" + loader.name + "\" not present");
-    ar1.eat("}");
+    ar1.closeBracket(bracket);
     ar1.getNode().loaders.clear();
   }
 }
@@ -388,4 +421,18 @@ void serialize(PrettyInputArchive& ar, PrettyFlag& c) {
 
 void serialize(PrettyInputArchive& ar1, EndPrettyInput&) {
   prettyEpilogue(ar1);
+}
+
+void serialize(PrettyInputArchive& ar1, SetRoundBracket&) {
+  ar1.nodeData[ar1.nodeData.size() - 2].bracket = BracketType::ROUND;
+}
+
+EndPrettyInput& endInput() {
+  static EndPrettyInput ret;
+  return ret;
+}
+
+SetRoundBracket& roundBracket() {
+  static SetRoundBracket ret;
+  return ret;
 }
