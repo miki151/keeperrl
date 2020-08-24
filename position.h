@@ -77,7 +77,6 @@ class Position {
   const vector<Item*>& getItems(ItemIndex) const;
   const vector<Item*>& getItems(CollectiveResourceId) const;
   PItem removeItem(Item*) const;
-  Inventory& modInventory() const;
   const Inventory& getInventory() const;
   vector<PItem> removeItems(vector<Item*>);
   bool canConstruct(FurnitureType) const;

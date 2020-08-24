@@ -446,15 +446,6 @@ PItem Position::removeItem(Item* it) const {
   return modSquare()->removeItem(*this, it);
 }
 
-Inventory& Position::modInventory() const {
-  PROFILE;
-  if (!isValid()) {
-    static Inventory empty;
-    return empty;
-  } else
-    return modSquare()->getInventory();
-}
-
 const Inventory& Position::getInventory() const {
   PROFILE;
   if (!isValid()) {

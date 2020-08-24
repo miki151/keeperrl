@@ -51,7 +51,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
   ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(dissolveTo));
-  ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), NAMED(freezeTo), NAMED(fillPit));
+  ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), NAMED(freezeTo), NAMED(fillPit), NAMED(itemsRemovedEffect));
 }
 
 template <class Archive>
@@ -118,6 +118,11 @@ void Furniture::onEnter(Creature* c) const {
     auto f = c->getPosition().modFurniture(layer);
     f->entryType->handle(f, c);
   }
+}
+
+void Furniture::onItemsRemoved(Position pos) const {
+  if (itemsRemovedEffect)
+    itemsRemovedEffect->apply(pos);
 }
 
 const heap_optional<ItemList>& Furniture::getItemDrop() const {

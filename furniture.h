@@ -73,6 +73,7 @@ class Furniture {
   bool isVisibleTo(const Creature*) const;
   const MovementSet& getMovementSet() const;
   void onEnter(Creature*) const;
+  void onItemsRemoved(Position) const;
   bool canDestroy(const MovementType&, const DestroyAction&) const;
   bool canDestroy(const DestroyAction&) const;
   optional<double> getStrength(const DestroyAction&) const;
@@ -237,6 +238,7 @@ class Furniture {
   optional<int> SERIAL(bloodCountdown);
   optional<LocalTime> SERIAL(bloodTime);
   optional<Effect> SERIAL(destroyedEffect);
+  optional<Effect> SERIAL(itemsRemovedEffect);
 };
 
 static_assert(std::is_nothrow_move_constructible<Furniture>::value, "T should be noexcept MoveConstructible");

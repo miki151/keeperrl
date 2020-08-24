@@ -96,7 +96,6 @@ class Square {
   void clearItemIndex(ItemIndex);
   void setDirty(Position);
 
-  Inventory& getInventory();
   const Inventory& getInventory() const;
 
   template <class Archive>

@@ -31,6 +31,7 @@
 #include "game_event.h"
 #include "fire.h"
 #include "lasting_effect.h"
+#include "furniture.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -161,7 +162,7 @@ void Square::dropItem(Position pos, PItem item) {
 }
 
 void Square::dropItemsLevelGen(vector<PItem> items) {
-  getInventory().addItems(std::move(items));
+  inventory->addItems(std::move(items));
 }
 
 void Square::dropItems(Position pos, vector<PItem> items) {
@@ -191,12 +192,16 @@ Item* Square::getTopItem() const {
 
 PItem Square::removeItem(Position pos, Item* it) {
   setDirty(pos);
-  return getInventory().removeItem(it);
+  for (auto f : pos.getFurniture())
+    f->onItemsRemoved(pos);
+  return inventory->removeItem(it);
 }
 
 vector<PItem> Square::removeItems(Position pos, vector<Item*> it) {
   setDirty(pos);
-  return getInventory().removeItems(it);
+  for (auto f : pos.getFurniture())
+    f->onItemsRemoved(pos);
+  return inventory->removeItems(it);
 }
 
 void Square::setDirty(Position pos) {
@@ -224,10 +229,6 @@ bool Square::isTribeForbidden(TribeId tribe) const {
 
 optional<TribeId> Square::getForbiddenTribe() const {
   return forbiddenTribe;
-}
-
-Inventory& Square::getInventory() {
-  return *inventory;
 }
 
 const Inventory& Square::getInventory() const {
