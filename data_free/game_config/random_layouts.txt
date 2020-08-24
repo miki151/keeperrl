@@ -6,7 +6,7 @@ Def AnyWater() Or { On "lava" On "water" } End
 Def Building(WallType, FloorType) {
   Margins 1
     Set { FloorType WallType }
-    Reset { FloorType }
+    Reset { FloorType "clear_middle" }
 }
 End
 
@@ -131,10 +131,17 @@ Def CastleGate3() {
 }
 End
 
-Def CastleCornersClosed(CornerSize) {
+Def CastleCorners(CornerSize) {
   Corners(Margins -1 Set {"castle_wall"} None, CornerSize)
   Corners(Reset { "floor" "castle_corner" }, CornerSize)
   Margins 1 None Corners(Choose { None Reset { "floor" }}, CornerSize)
+}
+End
+
+Def CastleCornersOpen(CornerSize) {
+  Corners(Margins -1 Set {"castle_wall"} None, CornerSize)
+  Corners(Reset { "floor" "castle_corner" }, CornerSize)
+  Margins 1 None Corners(Reset { "floor" }, CornerSize)
 }
 End
 
@@ -210,7 +217,7 @@ Def Castle(CornerSize) {
   Margins 1 None {
     Building("castle_wall", "floor")
     Choose { CastleGate3() CastleGate2() CastleGate1() }
-    CastleCornersClosed(CornerSize)
+    CastleCorners(CornerSize)
     Choose {
       { CastleMaybe(CastlePart1(8)) CastleMaybe(CastlePart2(8)) CastleMaybe(CastlePart3(6)) }
       { CastleMaybe(CastlePart1(6)) CastleMaybe(CastlePart2(6)) CastleMaybe(CastlePart3(4)) }
@@ -232,6 +239,45 @@ End
   Choose { Castle(2) Castle(3) }
   Filter { AnyFloor() SetFront "clear_furniture" }
 }
+
+Def CastleEmpty(CornerSize) {
+  Margins 1 None {
+    Building("castle_wall", "floor")
+    Choose { CastleGate3() CastleGate2() CastleGate1() }
+    CastleCornersOpen(CornerSize)
+    Place {{ {1 1} FloodFill And { AnyFloor() Not AnyDoor() } Set { "stone_floor" } 1 True MIDDLE }}
+    Margin BOTTOM 2 Margin BOTTOM 1 None
+        Place {{ {1 1} Set { "clear_middle" "up_stairs0" "stairs" } 1 True MIDDLE }} None
+    Place {{ {1 1} Set { "clear_middle" "down_stairs0" "stairs" } 1 On "castle_corner" }}
+    SetFront "clear_furniture"
+  }
+}
+End
+
+"castle_empty" Choose { CastleEmpty(2) CastleEmpty(3) }
+
+Def CastleUpStairs() {
+  Set { "floor" }
+  Place {{
+    {9 1}
+    {
+      Building("castle_wall", "stone_floor")
+      Margins 1 None Set { "no_territory" }
+      Margin TOP 4 None Margin LEFT 3 Margin RIGHT 1 Filter { YMod 2 0 Set { "castle_wall" }} None None
+      Margin TOP 4 None Margin RIGHT 3 Margin LEFT 1 Filter { YMod 2 0 Set { "castle_wall" }} None None
+#      Margin TOP 1 None Margin TOP 2 Margin LEFT 2 None Margin RIGHT 2 None Set { "stockpile" } None
+#      Margin TOP 3 None Margin TOP 1 Margin LEFT 1 None Margin RIGHT 1 None Set { "demon_den_trigger" } None
+#      Margin BOTTOM 2 None Margin BOTTOM 1 Margin LEFT 1 None Margin RIGHT 1 None Set { "demon_den_trap" } None
+    } 
+    1 True MIDDLE_V }}
+  Margin BOTTOM 2 Margin BOTTOM 1 None
+     Place {{ {1 1} Set { "clear_middle" "down_stairs0" } 1 True MIDDLE }} None
+  Margin TOP 3 Margin TOP 2 None
+     Place {{ {1 1} Set { "clear_middle" "throne" } 1 True MIDDLE }} None
+}
+End
+
+"castle_up_stairs" CastleUpStairs()
 
 Def GuardPost() {
   Place {

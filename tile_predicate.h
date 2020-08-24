@@ -47,6 +47,18 @@ struct Area {
   SERIALIZE_ALL(NAMED(radius), NAMED(predicate), OPTION(minCount))
 };
 
+struct XMod {
+  int SERIAL(div);
+  int SERIAL(mod);
+  SERIALIZE_ALL(div, mod)
+};
+
+struct YMod {
+  int SERIAL(div);
+  int SERIAL(mod);
+  SERIALIZE_ALL(div, mod)
+};
+
 #define VARIANT_TYPES_LIST\
   X(On, 0)\
   X(Not, 1)\
@@ -54,7 +66,9 @@ struct Area {
   X(And, 3)\
   X(Or, 4)\
   X(Chance, 5)\
-  X(Area, 6)
+  X(Area, 6)\
+  X(XMod, 7)\
+  X(YMod, 8)
 
 #define VARIANT_NAME PredicateImpl
 

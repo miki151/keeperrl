@@ -401,7 +401,6 @@
   name = "statue of Evil God Adoxie"
   viewId = { "adoxie_statue" }
   blockMovement = true
-  canHideHere = true
   luxury = 0.7
   strength = 250
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
@@ -1236,6 +1235,16 @@
       Fx { TELEPORT_OUT }
       DestroyWalls BASH
   }
+}
+"DEMON_DEN_TRAP"
+{
+  name = "floor"
+  entryType = Effect Filter And { Enemy Flag "demon_treasure" } Audience none
+}
+"DEMON_DEN_TRIGGER"
+{
+  name = "floor"
+  entryType = Effect Filter Enemy SetFlag "demon_treasure" true
 }
 "SNOW_WALL" inherit "CASTLE_WALL"
 {

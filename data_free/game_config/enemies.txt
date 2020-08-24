@@ -220,33 +220,28 @@
     }
   }
 }
-"DEMON_DEN_ABOVE"
+"DEMON_DEN_ENTRY"
 {
   settlement = {
-    type = Builtin VILLAGE "DUNGEON_SURFACE"
+    type = RandomLayout { "castle_empty" { 16 16 } "default"}
     tribe = MONSTER
-    inhabitants = {
-      fighters = {
-        count = {2 3}
-        all = { 1 "LOST_SOUL" }
-      }
-    }
     locationName = "Darkshrine Town"
     race = "ghosts"
     furniture = "dungeonOutside"
   }
-  discoverable = false
-  createOnBones = 1.0 { "KNIGHTS" }
+  config = {
+    conquerCondition = NEVER
+  }
 }
 "DEMON_DEN"
 {
   settlement = {
-    type = Builtin VILLAGE "DUNGEON"
+    type = RandomLayout { "castle_up_stairs" { 16 15 } "default"}
     tribe = MONSTER
     inhabitants = {
       leader = { { "DEMON_LORD" } }
       fighters = {
-        count = {5 10}
+        count = {15 20}
         all = { 1 "DEMON_DWELLER" }
       }
     }
@@ -254,6 +249,7 @@
     race = "demons"
     furniture = "dungeonOutside"
     outsideFeatures = "dungeonOutside"
+#    stockpiles = {{ "gold" 400 "TREASURE_CHEST" }}
   }
   config = {
     immigrantInterval = 300
@@ -267,9 +263,10 @@
     ransom = 0.5 100
   }
   levelConnection = {
-    topLevel = ExtraEnemy { "DEMON_DEN_ABOVE" }
+    direction = UP
+    topLevel = ExtraEnemy { "DEMON_DEN_ENTRY" }
     levels = {
-      {MainEnemy {30 30} MAZE }
+      {MainEnemy {17 22} BASIC none true }
     }
   }
   immigrants = {

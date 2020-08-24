@@ -40,6 +40,14 @@ static bool apply(const TilePredicates::Chance& p, LayoutCanvas::Map* map, Vec2 
   return r.chance(p.value);
 }
 
+static bool apply(const TilePredicates::XMod& p, LayoutCanvas::Map* map, Vec2 v, RandomGen& r) {
+  return v.x % p.div == p.mod;
+}
+
+static bool apply(const TilePredicates::YMod& p, LayoutCanvas::Map* map, Vec2 v, RandomGen& r) {
+  return v.y % p.div == p.mod;
+}
+
 bool TilePredicate::apply(LayoutCanvas::Map* map, Vec2 v, RandomGen& r) const {
   return visit<bool>([&](const auto& p) { return ::apply(p, map, v, r); });
 }

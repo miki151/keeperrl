@@ -744,9 +744,6 @@
       MELEE 4
       SPELL 4
     }
-    inventory = {
-      { Simple "GoldPiece" 5 10 }
-    }
   }
 "DEMON_LORD"
   {
@@ -780,7 +777,6 @@
       SPELL 7
     }
     inventory = {
-      { type = Simple "Sword" prefixChance = 0.1 }
       { type = Glyph ARMOR LastingEffect MAGIC_RESISTANCE chance = 0.3 }
       { type = Glyph ARMOR LastingEffect SPEED chance = 0.3 }
       { type = Glyph ARMOR LastingEffect NO_CARRY_LIMIT chance = 0.3 }

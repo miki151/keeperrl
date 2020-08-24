@@ -30,6 +30,9 @@
   "armor_chest" Place "ARMOR_CHEST"
   "pamphlet_chest" Place "PAMPHLET_CHEST"
   "torch" Place "GROUND_TORCH"
+  "throne" Place "THRONE"
+  "demon_den_trigger" Place "DEMON_DEN_TRIGGER"
+  "demon_den_trap" Place "DEMON_DEN_TRAP"
   "shop0" Shop 0
 }
 
