@@ -32,6 +32,10 @@
 { "abomination" "z" ColorId PURPLE }
 { viewId = "adoxie_statue" symbol = "U" color = ColorId LIGHT_GRAY
   roundShadow = true }
+{ viewId = "adoxie_foot_statue_left" symbol = "L" color = ColorId LIGHT_GRAY
+  roundShadow = true }
+{ viewId = "adoxie_foot_statue_right" symbol = "R" color = ColorId LIGHT_GRAY
+  roundShadow = true }
 { "unicorn" "h" ColorId WHITE }
 { "elf" "@" ColorId LIGHT_GREEN }
 { "elf_woman" "@" ColorId LIGHT_GREEN }

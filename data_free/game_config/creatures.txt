@@ -3865,6 +3865,26 @@
       fullTitle = true
     }
   }
+"ADOXIE_FOOT_LEFT_TRAP" inherit "ADOXIE_FOOT_LEFT"
+  {
+    attr = {
+      DEFENSE 30 
+      SPELL_DAMAGE 30
+    }
+    permanentEffects = append {
+      IMMOBILE 1
+    }
+  }
+"ADOXIE_FOOT_RIGHT_TRAP" inherit "ADOXIE_FOOT_RIGHT"
+  {
+    attr = {
+      DEFENSE 30 
+      SPELL_DAMAGE 30
+    }
+    permanentEffects = append {
+      IMMOBILE 1
+    }
+  }
 "ADOXIE_LEFT_HAND" inherit "ADOXIE_FOOT_LEFT"
   {
     viewId = { "adoxie_hand_left" }

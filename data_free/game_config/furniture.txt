@@ -412,6 +412,48 @@
   destroyedEffect = { Message "The statue comes to life!" SummonEnemy "ADOXIE_HEAD" {1} none }
   destroyedRemains = "DOWN_STAIRS_ADOXIE"
 }
+"ADOXIE_LEFT_FOOT"
+{
+  name = "statue of Evil God Adoxie's Left Foot"
+  viewId = { "adoxie_foot_statue_left" }
+  blockMovement = true
+  tickType = Effect
+    Filter Flag "adoxie_left_foot_trigger" {
+      RemoveFurniture "ADOXIE_LEFT_FOOT"
+      SummonEnemy "ADOXIE_FOOT_LEFT_TRAP" {1} none
+      SetFlag "adoxie_left_foot_trigger" false
+    }
+}
+"ADOXIE_RIGHT_FOOT" inherit "ADOXIE_LEFT_FOOT"
+{
+  name = "statue of Evil God Adoxie's Right Foot"
+  viewId = { "adoxie_foot_statue_right" }
+  tickType = Effect
+    Filter Flag "adoxie_right_foot_trigger" {
+      RemoveFurniture "ADOXIE_RIGHT_FOOT"
+      SummonEnemy "ADOXIE_FOOT_RIGHT_TRAP" {1} none
+      SetFlag "adoxie_right_foot_trigger" false
+    }
+}
+"ADOXIE_FEET_TRIGGER"
+{
+  name = "floor"
+  layer = CEILING
+  itemsRemovedEffect = {
+    SetFlag "adoxie_left_foot_trigger" true
+    SetFlag "adoxie_right_foot_trigger" true
+  }
+}
+"ADOXIE_FEET_ALTAR"
+{
+  name = "altar"
+  viewId = { "altar" }
+  blockMovement = true
+  luxury = 0.7
+  strength = 250
+  destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+  destroyedRemains = "DOWN_STAIRS"
+}
 "BARRICADE"
 {
   name = "barricade"
@@ -1235,16 +1277,6 @@
       Fx { TELEPORT_OUT }
       DestroyWalls BASH
   }
-}
-"DEMON_DEN_TRAP"
-{
-  name = "floor"
-  entryType = Effect Filter And { Enemy Flag "demon_treasure" } Audience none
-}
-"DEMON_DEN_TRIGGER"
-{
-  name = "floor"
-  entryType = Effect Filter Enemy SetFlag "demon_treasure" true
 }
 "SNOW_WALL" inherit "CASTLE_WALL"
 {

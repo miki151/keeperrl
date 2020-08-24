@@ -50,7 +50,7 @@
     }
   }
   darkKeeperEnemies = {
-    { id = "GUARD_POST" }
+    { id = "GUARD_POST" probability = 0.5 }
     { id = "HUMAN_COTTAGE" count = { 3 5 } }
     { id = "COTTAGE_BANDITS" probability = 0.5 }
     { id = "CORPSES" probability = 0.2 }
@@ -59,6 +59,7 @@
     { id = "RUINS" probability = 0.5 }
   }
   whiteKeeperEnemies = {
+    { id = "ADOXIE_FEET" probability = 0.5 }
     { id = "COTTAGE_BANDITS" count = { 3 5 } }
     { id = "CORPSES" probability = 0.2 }
     { id = "WIZARD_TOWER" probability = 0.1 }

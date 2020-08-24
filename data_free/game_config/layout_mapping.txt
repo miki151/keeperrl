@@ -31,9 +31,15 @@
   "pamphlet_chest" Place "PAMPHLET_CHEST"
   "torch" Place "GROUND_TORCH"
   "throne" Place "THRONE"
-  "demon_den_trigger" Place "DEMON_DEN_TRIGGER"
-  "demon_den_trap" Place "DEMON_DEN_TRAP"
+  "corpse" Items 1 "corpse"
   "shop0" Shop 0
+}
+
+"adoxie_feet" inherit "default" append {
+  "adoxie_left_foot" Place "ADOXIE_LEFT_FOOT"
+  "adoxie_right_foot" Place "ADOXIE_RIGHT_FOOT"
+  "adoxie_feet_trigger" Place "ADOXIE_FEET_TRIGGER"
+  "down_stairs0" Stairs DOWN "ADOXIE_FEET_ALTAR" 0
 }
 
 "village" inherit "default" append {

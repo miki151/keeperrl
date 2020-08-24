@@ -22,9 +22,9 @@ Def Connector()
     10 And {On "castle_wall" Not On "no_dig"} { Remove { "castle_wall" } Set { "clear_middle" "iron_door" }}
     8 On "lava" Set { "stone_bridge" }
     8 On "water" Set { "wood_bridge" }
-    4 And { Not AnyWall() Not AnyWater() Not AnyFloor() Not On "no_dig" On "room_wall" }
+    6 And { Not AnyWall() Not AnyWater() Not AnyFloor() Not On "no_dig" On "room_wall" }
         Filter { And { Chance 0.4 Not NextTo(On "wood_door")} Reset {"wood_door"} Reset {"floor"} }
-    2 And { Not AnyWall() Not AnyFloor() On "rock" Not On "no_dig" Not On "room_wall" } Reset {"floor"}
+    4 And { Not AnyWall() Not AnyFloor() On "rock" Not On "no_dig" Not On "room_wall" } Reset {"floor"}
   }
 End
 
@@ -255,6 +255,82 @@ Def CastleEmpty(CornerSize) {
 End
 
 "castle_empty" Choose { CastleEmpty(2) CastleEmpty(3) }
+
+Def PlaceGen(Gen, Size, Placement)
+  Place {{Size Gen 1 True Placement }}
+End
+
+
+Def AdoxieFeetEntry() {
+  Building("castle_wall", "stone_floor")
+  Margin BOTTOM 2
+    Margin TOP 1
+    Place {{
+      {3 1}
+      { Reset { "stone_floor" }
+      Margin LEFT 1
+        Set { "adoxie_right_foot" "no_corpse" }
+        Margin RIGHT 1 
+          Set { "adoxie_left_foot" "no_corpse"}
+          None
+      }
+      1 True MIDDLE }} None None
+    {
+      Margin BOTTOM 1
+        PlaceGen(Reset { "stone_floor" "iron_door" }, {1 1}, MIDDLE)
+        None
+      Margin TOP 1
+        None
+        Margin TOP 1
+        PlaceGen(Set { "down_stairs0" "no_corpse"}, {1 1}, MIDDLE)
+        None
+    }
+  Margins 1 None
+  Place {{{1 1} Set { "corpse" } {2 4} Not On "no_corpse"}}
+}
+End
+
+"adoxie_feet_entry" AdoxieFeetEntry()
+
+Def AdoxieFeetUnderRoom(EntrancePos)
+{
+  Reset { "floor" "stockpile" "adoxie_feet_trigger" }
+  Margins -1 Set { "no_dig" } None
+    Margins -1 None
+    PlaceGen(Remove { "no_dig" "rock" }, {1 1}, EntrancePos)
+}
+End
+
+Def AdoxieFeetUnder() {
+  Set { "rock" }
+  Margins 1 None
+    Place {
+      {
+        {3 3}
+        AdoxieFeetUnderRoom(BOTTOM_CENTER)
+        1 True TOP_CENTER
+      }
+      {
+        {3 3}
+        AdoxieFeetUnderRoom(LEFT_CENTER)
+        1 True RIGHT_CENTER
+      }
+      {
+        {3 3}
+        AdoxieFeetUnderRoom(RIGHT_CENTER)
+        1 True LEFT_CENTER
+      }
+      {
+        {1 1}
+        Reset { "floor" "up_stairs0" }
+        1 True BOTTOM_CENTER
+      }
+    }
+  Connector()
+}
+End
+
+"adoxie_feet_under" AdoxieFeetUnder()
 
 Def CastleUpStairs() {
   Set { "floor" }

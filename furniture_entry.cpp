@@ -74,7 +74,16 @@ void FurnitureEntry::handle(Furniture* f, Creature* c) {
         }
       },
       [&](const Effect& effect) {
-        effect.apply(c->getPosition(), f->getCreator());
+        auto attacker = [&] {
+          if (auto c = f->getCreator())
+            return c;
+          for (auto pos : c->getPosition().getRectangle(Rectangle::centered(30)))
+            if (auto c = pos.getCreature())
+              if (c->getTribeId() == f->getTribe())
+                return c;
+          return (Creature*)nullptr;
+        };
+        effect.apply(c->getPosition(), attacker());
       }
   );
 }
