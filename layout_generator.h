@@ -128,7 +128,7 @@ struct Connect {
   };
   TilePredicate SERIAL(toConnect);
   vector<Elem> SERIAL(elems);
-  SERIALIZE_ALL(toConnect, elems)
+  SERIALIZE_ALL(roundBracket(), NAMED(toConnect), NAMED(elems))
 };
 
 struct Repeat {
