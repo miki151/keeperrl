@@ -244,7 +244,7 @@ Def Castle(CornerSize) {
       { CastleMaybe(CastlePart1(6)) CastleMaybe(CastlePart2(6)) CastleMaybe(CastlePart3(4)) }
     }
     Connector()
-    Place {{ {1 1} FloodFill And { AnyFloor() Not AnyDoor() } Set { "castle_outside" } 1 True MIDDLE }}
+    Place {{ {1 1} FloodFill(And { AnyFloor() Not AnyDoor() }, Set { "castle_outside" }) 1 True MIDDLE }}
     Filter(And { Or { AnyFloor() AnyDoor() } Not On "castle_outside"}, Set { "castle_inside" "stone_floor" })
     Place { {{1 1} Set {"inside_furniture"} 8 And { Not AnyDoor() On "castle_inside"} }}
     Place { {{1 1} Set {"outside_furniture"} 8 On "castle_outside"} }
@@ -266,7 +266,7 @@ Def CastleEmpty(CornerSize) {
     Building("castle_wall", "floor")
     Choose { CastleGate3() CastleGate2() CastleGate1() }
     CastleCornersOpen(CornerSize)
-    Place {{ {1 1} FloodFill And { AnyFloor() Not AnyDoor() } Set { "stone_floor" } 1 True MIDDLE }}
+    Place {{ {1 1} FloodFill(And { AnyFloor() Not AnyDoor() }, Set { "stone_floor" }) 1 True MIDDLE }}
     Margin(BOTTOM, 2, Margin(BOTTOM, 1, None,
         Place {{ {1 1} Set { "clear_middle" "up_stairs0" "stairs" } 1 True MIDDLE }}), None)
     Place {{ {1 1} Set { "clear_middle" "down_stairs0" "stairs" } 1 On "castle_corner" }}

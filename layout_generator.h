@@ -140,7 +140,7 @@ struct Repeat {
 struct FloodFill {
   TilePredicate SERIAL(predicate);
   HeapAllocated<LayoutGenerator> SERIAL(generator);
-  SERIALIZE_ALL(predicate, generator)
+  SERIALIZE_ALL(roundBracket(), NAMED(predicate), NAMED(generator))
 };
 
 #define VARIANT_TYPES_LIST\
