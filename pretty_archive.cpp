@@ -1,16 +1,16 @@
 #include "stdafx.h"
 #include "pretty_archive.h"
 
-struct StreamChar {
-  StreamPos pos;
-  char c;
-};
-
-static void throwException(const StreamPos& pos, const string& message) {
-  string f;
-  if (auto& filename = pos.filename)
-    f = *filename + ": ";
-  throw PrettyException{f + "line: " + toString(pos.line) + " column: " + toString(pos.column) + ": " + message};
+void PrettyInputArchive::throwException(const StreamPosStack& positions, const string& message) {
+  string allPos;
+  for (auto& pos : positions)
+    if (pos.line > -1) {
+      string f;
+      if (pos.filename > -1)
+        f = filenames[pos.filename] + ": "_s;
+      allPos += f + "line: "_s + toString(pos.line) + " column: " + toString<int>(pos.column) + ":\n";
+    }
+  throw PrettyException{allPos + message};
 }
 
 static bool contains(const vector<StreamChar>& a, const string& substring, int index) {
@@ -109,16 +109,11 @@ static void replaceInStream(vector<StreamChar>& s, int index, int length, const 
   s.insert(index, content);
 }
 
-static vector<StreamChar> preprocess(const vector<StreamChar>& content) {
+pair<PrettyInputArchive::DefsMap, vector<StreamChar>> PrettyInputArchive::parseDefs(const vector<StreamChar>& content) {
   vector<StreamChar> ret;
   bool inQuote = false;
-  struct DefInfo {
-    int begin;
-    int end;
-    vector<string> args;
-  };
-  map<pair<string, int>, DefInfo> defs;
   optional<pair<pair<string, int>, DefInfo>> currentDef;
+  DefsMap defs;
   for (int i = 0; i < content.size(); ++i) {
     if (content[i].c == '"' && (i == 0 || content[i - 1].c != '\\'))
       inQuote = !inQuote;
@@ -145,7 +140,25 @@ static vector<StreamChar> preprocess(const vector<StreamChar>& content) {
     } else if (i < content.size())
       ret.push_back(content[i]);
   }
-  inQuote = false;
+  return make_pair(std::move(defs), std::move(ret));
+}
+
+static void append(StreamPosStack& to, const StreamPosStack& from) {
+  for (int i : All(to))
+    if (to[i].line == -1)
+      for (int j : All(from)) {
+        to[i + j] = from[j];
+        CHECK(i + j < to.size());
+        if (from[j].line == -1 || j + i >= to.size() - 1)
+          return;
+      }
+}
+
+vector<StreamChar> PrettyInputArchive::preprocess(const vector<StreamChar>& content) {
+  bool inQuote = false;
+  auto parseRes = parseDefs(content);
+  auto& ret = parseRes.second;
+  auto& defs = parseRes.first;
   for (int i = 0; i < ret.size(); ++i) {
     if (ret[i].c == '"' && (i == 0 || ret[i - 1].c != '\\'))
       inQuote = !inQuote;
@@ -158,8 +171,8 @@ static vector<StreamChar> preprocess(const vector<StreamChar>& content) {
           if (args.size() != def->args.size())
             throwException(ret[argsPos].pos, "Wrong number of arguments to macro " + *name);
           auto body = subStream(content, def->begin, def->end - def->begin);
-          /*for (auto& elem : body)
-            elem.pos = ret[i].pos;*/
+          for (auto& elem : body)
+            append(elem.pos, ret[i].pos);
           for (int argNum : All(args)) {
             bool bodyInQuote = false;
             for (int bodyIndex = 0; bodyIndex < body.size(); ++bodyIndex) {
@@ -183,10 +196,10 @@ static vector<StreamChar> preprocess(const vector<StreamChar>& content) {
   return ret;
 }
 
-vector<StreamChar> removeFormatting(string contents, optional<string> filename) {
+vector<StreamChar> removeFormatting(string contents, signed char filename) {
   vector<StreamChar> ret;
   auto addChar = [&ret] (StreamPos pos, char c) {
-    ret.push_back(StreamChar{std::move(pos), c});
+    ret.push_back(StreamChar{{std::move(pos)}, c});
   };
   StreamPos cur {filename, 1, 1};
   bool inQuote = false;
@@ -223,17 +236,17 @@ vector<StreamChar> removeFormatting(string contents, optional<string> filename) 
 }
 
 PrettyInputArchive::PrettyInputArchive(const vector<string>& inputs, const vector<string>& filenames, KeyVerifier* v)
-  : keyVerifier(v ? *v : dummyKeyVerifier) {
+  : keyVerifier(v ? *v : dummyKeyVerifier), filenames(filenames) {
   vector<StreamChar> allInput;
   if (!filenames.empty()) {
-    allInput.push_back(StreamChar{StreamPos{none, 0, 0}, '{'});
-    allInput.push_back(StreamChar{StreamPos{none, 0, 0}, '\n'});
+    allInput.push_back(StreamChar{{}, '{'});
+    allInput.push_back(StreamChar{{}, '\n'});
   }
   for (int i = 0; i < inputs.size(); ++i)
-    allInput.append(removeFormatting(inputs[i], i < filenames.size() ? filenames[i] : optional<string>()));
+    allInput.append(removeFormatting(inputs[i], i < filenames.size() ? i : -1));
   if (!filenames.empty()) {
-    allInput.push_back(StreamChar{StreamPos{none, 0, 0}, '\n'});
-    allInput.push_back(StreamChar{StreamPos{none, 0, 0}, '}'});
+    allInput.push_back(StreamChar{{}, '\n'});
+    allInput.push_back(StreamChar{{}, '}'});
   }
   auto res = preprocess(allInput);
   streamPos = res.transform([](auto& elem) { return elem.pos; });
@@ -284,7 +297,7 @@ string PrettyInputArchive::eat(const char* expected) {
 
 void PrettyInputArchive::error(const string& s) {
   int n = (int) is.tellg();
-  auto pos = streamPos.empty() ? StreamPos{} : streamPos[max(0, min<int>(n, streamPos.size() - 1))];
+  auto pos = streamPos.empty() ? StreamPosStack() : streamPos[max(0, min<int>(n, streamPos.size() - 1))];
   throwException(pos, s);
 }
 

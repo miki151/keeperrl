@@ -9,9 +9,16 @@ struct PrettyException {
 };
 
 struct StreamPos {
-  optional<string> filename;
-  int line;
-  int column;
+  signed char filename;
+  short line = -1;
+  signed char column;
+};
+
+using StreamPosStack = std::array<StreamPos, 4>;
+
+struct StreamChar {
+  StreamPosStack pos;
+  char c;
 };
 
 enum class BracketType {
@@ -82,12 +89,10 @@ class PrettyInputArchive {
     }
 
     struct DefInfo {
-      long position;
-      vector<string> params;
+      int begin;
+      int end;
+      vector<string> args;
     };
-
-    map<string, DefInfo> defs;
-    vector<long> callStack;
 
     PrettyInputArchive& operator()() {
       return *this;
@@ -116,8 +121,13 @@ class PrettyInputArchive {
     vector<NodeData> nodeData;
     bool nextElemInherited = false;
     std::istringstream is;
-    vector<StreamPos> streamPos;
+    vector<StreamPosStack> streamPos;
     KeyVerifier dummyKeyVerifier;
+    vector<string> filenames;
+    void throwException(const StreamPosStack&, const string&);
+    using DefsMap = map<pair<string, int>, DefInfo>;
+    pair<DefsMap, vector<StreamChar>> parseDefs(const vector<StreamChar>& content);
+    vector<StreamChar> preprocess(const vector<StreamChar>& content);
 };
 
 template<typename T, typename int_<decltype(serialize(std::declval<PrettyInputArchive&>(), std::declval<T&>()))>::type = 0>
