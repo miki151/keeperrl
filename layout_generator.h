@@ -51,7 +51,7 @@ struct Margin {
   int SERIAL(width);
   HeapAllocated<LayoutGenerator> SERIAL(border);
   HeapAllocated<LayoutGenerator> SERIAL(inside);
-  SERIALIZE_ALL(type, width, border, inside)
+  SERIALIZE_ALL(roundBracket(), NAMED(type), NAMED(width), NAMED(border), NAMED(inside))
 };
 
 struct Margins {
