@@ -65,14 +65,14 @@ struct HRatio {
   double SERIAL(r);
   HeapAllocated<LayoutGenerator> SERIAL(left);
   HeapAllocated<LayoutGenerator> SERIAL(right);
-  SERIALIZE_ALL(r, left, right)
+  SERIALIZE_ALL(roundBracket(), NAMED(r), NAMED(left), NAMED(right))
 };
 
 struct VRatio {
   double SERIAL(r);
   HeapAllocated<LayoutGenerator> SERIAL(top);
   HeapAllocated<LayoutGenerator> SERIAL(bottom);
-  SERIALIZE_ALL(r, top, bottom)
+  SERIALIZE_ALL(roundBracket(), NAMED(r), NAMED(top), NAMED(bottom))
 };
 
 struct Place {

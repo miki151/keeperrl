@@ -85,9 +85,9 @@ Def Village2() {
       size = {6 9}
       generator = {
         Building("castle_wall", "stone_floor")
-        Inside(1, VRatio 0.6
-          Margin(BOTTOM, 1, Set { "castle_wall" }, Set { "first_room" })
-          Set { "second_room" })
+        Inside(1, VRatio(0.6,
+          Margin(BOTTOM, 1, Set { "castle_wall" }, Set { "first_room" }),
+          Set { "second_room" }))
       }
       position = MIDDLE
       minSpacing = 1
@@ -158,7 +158,7 @@ Def CastleCornersOpen(CornerSize) {
 End
 
 Def CastlePart1(Width) {
-  VRatio 0.6 Margin(TOP, 1, None, Margin(BOTTOM, -1, None, {
+  VRatio(0.6, Margin(TOP, 1, None, Margin(BOTTOM, -1, None, {
     Margin(BOTTOM, 1, Set { "castle_wall" }, None)
     Place {{
         {Width 1}
@@ -170,12 +170,12 @@ Def CastlePart1(Width) {
         )
         1 True MIDDLE_V }
     }
-  })) None
+  })), None)
 }
 End
 
 Def CastlePart2(Width) {
-  VRatio 0.6 None {
+  VRatio(0.6, None, {
     Margin(TOP, 1, Set { "castle_wall" }, None)
     Margin(TOP, 2,
       Margin(BOTTOM, -1, None,
@@ -201,12 +201,12 @@ Def CastlePart2(Width) {
         1 True MIDDLE_V }
       }
     )
-  }
+  })
 }
 End
 
 Def CastlePart3(Width) {
-  VRatio 0.6 None
+  VRatio(0.6, None,
     Margin(TOP, 2, None,
       Place {{
         {Width 1}
@@ -222,6 +222,7 @@ Def CastlePart3(Width) {
         1 True MIDDLE_V }
       }
     )
+  )
 }
 End
 
@@ -381,17 +382,19 @@ Def GuardPost() {
       size = {5 7}
       generator = {
         Building("castle_wall", "wood_floor")
-        Inside(1, VRatio 0.6
-          Margin(BOTTOM, 1, {
-            Set { "castle_wall" }
-            Place { { {1 1} Set { "wood_door" } 1  } }
-          },
-          {
-            Set { "first_room" }
-            Border(-1, Set { "no_dig" })
-          })
+        Inside(1, VRatio(0.6,
+          Margin(BOTTOM, 1,
+            {
+              Set { "castle_wall" }
+              Place { { {1 1} Set { "wood_door" } 1  } }
+            },
+            {
+              Set { "first_room" }
+              Border(-1, Set { "no_dig" })
+            }
+          ),
           Set { "second_room" }
-        )
+        ))
       }
       position = MIDDLE
       minSpacing = 1
@@ -542,7 +545,7 @@ End
 
 Def AdoxieTemple() {
   Set { "rock" }
-  HRatio 0.5 
+  HRatio(0.5,
     Inside(1,
       Place {
         {
@@ -556,7 +559,7 @@ Def AdoxieTemple() {
           minSpacing = 1
         }
       }
-    )  
+    ),
     {
       CellularAutomaton(Set { "lava" }, 0.55)
       Place {{ 
@@ -575,6 +578,7 @@ Def AdoxieTemple() {
         On "lava"
         }}
     }
+  )
   Connector()
   Filter(Not On "temple", Set { "no_territory" })
 }
