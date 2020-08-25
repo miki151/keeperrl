@@ -40,11 +40,11 @@ End
 Def CellularAutomaton(Generator, BeginProb)
   Inside(1, {
     Filter(Chance BeginProb, Set { "cell_added" })
-    Repeat 4 {
+    Repeat(4, {
       Filter(Area { 1 On "cell_added" 5 }, Set { "cell_added2" })
       Filter(On "cell_added2", Set { "cell_added" }, Remove { "cell_added" })
       Remove { "cell_added2" }
-    }
+    })
     Filter(On "cell_added", Generator)
     Remove { "cell_added" }
   })

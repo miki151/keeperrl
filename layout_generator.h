@@ -134,7 +134,7 @@ struct Connect {
 struct Repeat {
   Range SERIAL(count);
   HeapAllocated<LayoutGenerator> SERIAL(generator);
-  SERIALIZE_ALL(count, generator)
+  SERIALIZE_ALL(roundBracket(), NAMED(count), NAMED(generator))
 };
 
 struct FloodFill {
