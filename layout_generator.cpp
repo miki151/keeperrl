@@ -66,7 +66,7 @@ bool make(const LayoutGenerators::Margins& g, LayoutCanvas c, RandomGen& r) {
       Vec2(c.area.left() + g.width, c.area.bottom() - g.width))), r);
 }
 
-bool make(const LayoutGenerators::Margin& g, LayoutCanvas c, RandomGen& r) {
+bool make(const LayoutGenerators::MarginImpl& g, LayoutCanvas c, RandomGen& r) {
   auto rect = [&]() -> pair<Rectangle, Rectangle> {
     switch (g.type) {
       case MarginType::TOP: return {

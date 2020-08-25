@@ -46,7 +46,7 @@ struct Remove {
   SERIALIZE_ALL(tokens)
 };
 
-struct Margin {
+struct MarginImpl {
   MarginType SERIAL(type);
   int SERIAL(width);
   HeapAllocated<LayoutGenerator> SERIAL(border);
@@ -150,7 +150,7 @@ struct FloodFill {
   X(Reset, 3)\
   X(Remove, 4)\
   X(Filter, 5)\
-  X(Margin, 6)\
+  X(MarginImpl, 6)\
   X(Margins, 7)\
   X(HRatio, 8)\
   X(VRatio, 9)\

@@ -3,14 +3,6 @@ Def AnyFloor() And { Not AnyWall() Or { On "stone_floor" On "wood_floor" On "flo
 Def AnyDoor() Or { On "wood_door" On "iron_door" On "iron_gate" On "wood_gate" } End
 Def AnyWater() Or { On "lava" On "water" } End
 
-Def Building(WallType, FloorType) {
-  Margins(1,
-    Set { FloorType WallType },
-    Reset { FloorType "clear_middle" }
-  )
-}
-End
-
 Def NextTo(Pred)
   Area { 1 Pred }
 End
@@ -28,12 +20,36 @@ Def Connector()
   })
 End
 
-Def Inside(Margin, Gen)
-  Margins(Margin, None, Gen)
+Def Margin(Size, Gen1, Gen2)
+  Margins(Size, Gen1, Gen2)
 End
 
-Def Border(Margin, Gen)
-  Margins(Margin, Gen, None)
+Def Margin(Position, Size, Gen1, Gen2)
+  MarginImpl(Position, Size, Gen1, Gen2)
+End
+
+Def Inside(Size, Gen)
+  Margin(Size, None, Gen)
+End
+
+Def Inside(Pos, Size, Gen)
+  Margin(Pos, Size, None, Gen)
+End
+
+Def Border(Size, Gen)
+  Margin(Size, Gen, None)
+End
+
+Def Border(Pos, Size, Gen)
+  Margin(Pos, Size, Gen, None)
+End
+
+Def Building(WallType, FloorType) {
+  Margin(1,
+    Set { FloorType WallType },
+    Reset { FloorType "clear_middle" }
+  )
+}
 End
 
 Def CellularAutomaton(Generator, BeginProb)
@@ -132,7 +148,7 @@ End
 
 Def CastleGate2() {
   Margin(TOP, -1, None, Margin(TOP, 1, Place {{ {4 1} GatePlusWall(1) 1 True MIDDLE }}, None))
-  Margin(TOP, 1 Place {{ {2 1} Reset { "floor" } 1 True MIDDLE }}, None)
+  Margin(TOP, 1, Place {{ {2 1} Reset { "floor" } 1 True MIDDLE }}, None)
 }
 End
 
@@ -180,18 +196,18 @@ Def CastlePart2(Width) {
       Margin(BOTTOM, -1, None,
         Place {{
           {Width 1}
-          Margin(LEFT, 1
-            Reset { "castle_wall" }
+          Margin(LEFT, 1,
+            Reset { "castle_wall" },
             Margin(RIGHT, 1,
               Reset { "castle_wall" },
               Reset { "floor" })
           )
-        1 True MIDDLE_V }})
+        1 True MIDDLE_V }}),
       Place {{
         {Width 1}
-        Margin(LEFT, 1, None, Margin(RIGHT, 1, None
+        Margin(LEFT, 1, None, Margin(RIGHT, 1, None,
           Margin(LEFT, 1,
-            Reset { "castle_wall" }
+            Reset { "castle_wall" },
             Margin(RIGHT, 1,
               Reset { "castle_wall" },
               None)
@@ -290,9 +306,9 @@ Def AdoxieFeetEntry() {
         {
           Reset { "stone_floor" }
           Margin(LEFT, 1,
-            Set { "adoxie_right_foot" "no_corpse" }
+            Set { "adoxie_right_foot" "no_corpse" },
             Margin(RIGHT, 1,
-              Set { "adoxie_left_foot" "no_corpse"}
+              Set { "adoxie_left_foot" "no_corpse"},
               None)
           )
         }
@@ -362,13 +378,13 @@ Def CastleUpStairs() {
       Building("castle_wall", "stone_floor")
       Inside(1, Set { "no_territory" })
       Margin(TOP, 4, None, Margin(LEFT, 3, Margin(RIGHT, 1, Filter(YMod 2 0, Set { "castle_wall" }), None), None))
-      Margin(TOP, 4, None, Margin(RIGHT, 3, Margin(LEFT, 1, Filter(YMod 2 0, Set { "castle_wall" }) None), None))
+      Margin(TOP, 4, None, Margin(RIGHT, 3, Margin(LEFT, 1, Filter(YMod 2 0, Set { "castle_wall" }), None), None))
     } 
     1 True MIDDLE_V }
   }
   Margin(BOTTOM, 2, Margin(BOTTOM, 1, None,
      Place {{ {1 1} Set { "clear_middle" "down_stairs0" } 1 True MIDDLE }}), None)
-  Margin(TOP, 3, Margin(TOP, 2, None
+  Margin(TOP, 3, Margin(TOP, 2, None,
      Place {{ {1 1} Set { "clear_middle" "throne" } 1 True MIDDLE }}), None)
 }
 End
@@ -470,7 +486,7 @@ End
 
 Def Room() {
   Reset {"floor" "room_floor"}
-  Margins(-1,
+  Margin(-1,
     Set { "room_wall" },
     Corners(Set {"no_dig"}, 1)
   )

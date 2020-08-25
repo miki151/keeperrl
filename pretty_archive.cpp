@@ -117,8 +117,8 @@ static vector<StreamChar> preprocess(const vector<StreamChar>& content) {
     int end;
     vector<string> args;
   };
-  map<string, DefInfo> defs;
-  optional<pair<string, DefInfo>> currentDef;
+  map<pair<string, int>, DefInfo> defs;
+  optional<pair<pair<string, int>, DefInfo>> currentDef;
   for (int i = 0; i < content.size(); ++i) {
     if (content[i].c == '"' && (i == 0 || content[i - 1].c != '\\'))
       inQuote = !inQuote;
@@ -128,8 +128,9 @@ static vector<StreamChar> preprocess(const vector<StreamChar>& content) {
       i += strlen("Def");
       if (auto name = scanWord(content, i)) {
         auto args = parseArgs(content, i);
-        currentDef = make_pair(*name, DefInfo{ i, 0, args.transform([](auto& arg) { return getString(arg); } ) });
-        if (defs.count(*name))
+        currentDef = make_pair(make_pair(*name, args.size()),
+            DefInfo{ i, 0, args.transform([](auto& arg) { return getString(arg); } ) });
+        if (defs.count({*name, args.size()}))
           throwException(content[i].pos, *name + " defined more than once");
       } else
         throwException(content[i].pos, "Definition name expected");
@@ -150,10 +151,10 @@ static vector<StreamChar> preprocess(const vector<StreamChar>& content) {
       inQuote = !inQuote;
     if (!inQuote) {
       auto beginCall = i;
-      if (auto name = scanWord(ret, i))
-        if (auto def = getReferenceMaybe(defs, *name)) {
-          int argsPos = i;
-          auto args = parseArgs(ret, argsPos);
+      if (auto name = scanWord(ret, i)) {
+        int argsPos = i;
+        auto args = parseArgs(ret, argsPos);
+        if (auto def = getReferenceMaybe(defs, make_pair(*name, args.size()))) {
           if (args.size() != def->args.size())
             throwException(ret[argsPos].pos, "Wrong number of arguments to macro " + *name);
           auto body = subStream(content, def->begin, def->end - def->begin);
@@ -174,7 +175,7 @@ static vector<StreamChar> preprocess(const vector<StreamChar>& content) {
           replaceInStream(ret, beginCall, argsPos - beginCall, body);
           i = beginCall;
         }
-
+      }
     }
   }
   /*if (!defs.empty())
