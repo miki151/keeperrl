@@ -418,3 +418,4 @@ void UGC::stopPlaytimeTracking(const vector<ItemId>& ids) {
   FUNC(StopPlaytimeTracking)(ptr, (PublishedFileId_t*)ids.data(), (unsigned)ids.size());
 }
 }
+#undef FUNC

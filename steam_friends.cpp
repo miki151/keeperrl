@@ -65,3 +65,4 @@ optional<int> Friends::retrieveUserAvatar(UserId userId, AvatarSize size) {
   return value ? value : optional<int>();
 }
 }
+#undef FUNC

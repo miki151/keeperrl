@@ -93,3 +93,5 @@ namespace cereal {
   INST2(LevelConnection::EnemyLevelInfo_impl)
   INST2(FurnitureUsageType_impl)
 } // namespace cereal
+#undef INST
+#undef INST2
