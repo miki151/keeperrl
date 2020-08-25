@@ -38,7 +38,7 @@ struct Filter {
   TilePredicate SERIAL(predicate);
   HeapAllocated<LayoutGenerator> SERIAL(generator);
   heap_optional<LayoutGenerator> SERIAL(alt);
-  SERIALIZE_ALL(NAMED(predicate), NAMED(generator), NAMED(alt))
+  SERIALIZE_ALL(roundBracket(), NAMED(predicate), NAMED(generator), NAMED(alt))
 };
 
 struct Remove {

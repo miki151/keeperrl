@@ -24,7 +24,7 @@ Def Connector()
     8 On "lava" Set { "stone_bridge" }
     8 On "water" Set { "wood_bridge" }
     6 And { Not AnyWall() Not AnyWater() Not AnyFloor() Not On "no_dig" On "room_wall" }
-        Filter { And { Chance 0.4 Not NextTo(On "wood_door")} Reset {"wood_door"} Reset {"floor"} }
+        Filter(And { Chance 0.4 Not NextTo(On "wood_door")}, Reset {"wood_door"}, Reset {"floor"})
     4 And { Not AnyWall() Not AnyFloor() On "rock" Not On "no_dig" Not On "room_wall" } Reset {"floor"}
   }
 End
@@ -39,13 +39,13 @@ End
 
 Def CellularAutomaton(Generator, BeginProb)
   Inside(1, {
-    Filter { Chance BeginProb Set { "cell_added" } }
+    Filter(Chance BeginProb, Set { "cell_added" })
     Repeat 4 {
-      Filter { Area { 1 On "cell_added" 5 } Set { "cell_added2" }}
-      Filter { On "cell_added2" Set { "cell_added" } Remove { "cell_added" }}
+      Filter(Area { 1 On "cell_added" 5 }, Set { "cell_added2" })
+      Filter(On "cell_added2", Set { "cell_added" }, Remove { "cell_added" })
       Remove { "cell_added2" }
     }
-    Filter { On "cell_added" Generator}
+    Filter(On "cell_added", Generator)
     Remove { "cell_added" }
   })
 End
@@ -57,7 +57,7 @@ Def Village1() {
       maxSize = { 8 9 }
       generator = {
         Building("castle_wall", "stone_floor")
-        Filter { AnyFloor() Set { "main_building" } }
+        Filter(AnyFloor(), Set { "main_building" })
       }
       position = MIDDLE
       minSpacing = 1
@@ -244,7 +244,7 @@ Def Castle(CornerSize) {
     }
     Connector()
     Place {{ {1 1} FloodFill And { AnyFloor() Not AnyDoor() } Set { "castle_outside" } 1 True MIDDLE }}
-    Filter { And { Or { AnyFloor() AnyDoor() } Not On "castle_outside"} Set { "castle_inside" "stone_floor" }}
+    Filter(And { Or { AnyFloor() AnyDoor() } Not On "castle_outside"}, Set { "castle_inside" "stone_floor" })
     Place { {{1 1} Set {"inside_furniture"} 8 And { Not AnyDoor() On "castle_inside"} }}
     Place { {{1 1} Set {"outside_furniture"} 8 On "castle_outside"} }
     Margin(BOTTOM, 2, Margin(BOTTOM, 1, None,
@@ -257,7 +257,7 @@ End
 
 "castle" {
   Choose { Castle(2) Castle(3) }
-  Filter { AnyFloor() SetFront "clear_furniture" }
+  Filter(AnyFloor(), SetFront "clear_furniture")
 }
 
 Def CastleEmpty(CornerSize) {
@@ -361,8 +361,8 @@ Def CastleUpStairs() {
     {
       Building("castle_wall", "stone_floor")
       Inside(1, Set { "no_territory" })
-      Margin(TOP, 4, None, Margin(LEFT, 3, Margin(RIGHT, 1, Filter { YMod 2 0 Set { "castle_wall" }}, None), None))
-      Margin(TOP, 4, None, Margin(RIGHT, 3, Margin(LEFT, 1, Filter { YMod 2 0 Set { "castle_wall" }} None), None))
+      Margin(TOP, 4, None, Margin(LEFT, 3, Margin(RIGHT, 1, Filter(YMod 2 0, Set { "castle_wall" }), None), None))
+      Margin(TOP, 4, None, Margin(RIGHT, 3, Margin(LEFT, 1, Filter(YMod 2 0, Set { "castle_wall" }) None), None))
     } 
     1 True MIDDLE_V }
   }
@@ -576,7 +576,7 @@ Def AdoxieTemple() {
         }}
     }
   Connector()
-  Filter { Not On "temple" Set { "no_territory" }}
+  Filter(Not On "temple", Set { "no_territory" })
 }
 End
 
