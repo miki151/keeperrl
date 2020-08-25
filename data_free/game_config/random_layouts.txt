@@ -133,7 +133,7 @@ End
 "village2" Village2()
 
 Def CastleGate1() 
-  Margin(TOP, 1, Place {{ {2 1} Reset { "floor" "iron_gate" } 1 True MIDDLE }}, None)
+  Border(TOP, 1, Place {{ {2 1} Reset { "floor" "iron_gate" } 1 True MIDDLE }})
 End
 
 Def GatePlusWall(WallLength)
@@ -147,14 +147,14 @@ Def GatePlusWall(WallLength)
 End
 
 Def CastleGate2() {
-  Margin(TOP, -1, None, Margin(TOP, 1, Place {{ {4 1} GatePlusWall(1) 1 True MIDDLE }}, None))
-  Margin(TOP, 1, Place {{ {2 1} Reset { "floor" } 1 True MIDDLE }}, None)
+  Inside(TOP, -1, Border(TOP, 1, Place {{ {4 1} GatePlusWall(1) 1 True MIDDLE }}))
+  Border(TOP, 1, Place {{ {2 1} Reset { "floor" } 1 True MIDDLE }})
 }
 End
 
 Def CastleGate3() {
-  Margin(TOP, -1, None, Margin(TOP, 1, Place {{ {6 1} GatePlusWall(2) 1 True MIDDLE }}, None))
-  Margin(TOP, 1, Place {{ {4 1} Reset { "floor" } 1 True MIDDLE }}, None)
+  Inside(TOP, -1, Border(TOP, 1, Place {{ {6 1} GatePlusWall(2) 1 True MIDDLE }}))
+  Border(TOP, 1, Place {{ {4 1} Reset { "floor" } 1 True MIDDLE }})
 }
 End
 
@@ -173,8 +173,8 @@ Def CastleCornersOpen(CornerSize) {
 End
 
 Def CastlePart1(Width) {
-  VRatio(0.6, Margin(TOP, 1, None, Margin(BOTTOM, -1, None, {
-    Margin(BOTTOM, 1, Set { "castle_wall" }, None)
+  VRatio(0.6, Inside(TOP, 1, Inside(BOTTOM, -1, {
+    Border(BOTTOM, 1, Set { "castle_wall" })
     Place {{
         {Width 1}
         Margin(LEFT, 1,
@@ -191,9 +191,9 @@ End
 
 Def CastlePart2(Width) {
   VRatio(0.6, None, {
-    Margin(TOP, 1, Set { "castle_wall" }, None)
+    Border(TOP, 1, Set { "castle_wall" })
     Margin(TOP, 2,
-      Margin(BOTTOM, -1, None,
+      Inside(BOTTOM, -1,
         Place {{
           {Width 1}
           Margin(LEFT, 1,
@@ -205,12 +205,11 @@ Def CastlePart2(Width) {
         1 True MIDDLE_V }}),
       Place {{
         {Width 1}
-        Margin(LEFT, 1, None, Margin(RIGHT, 1, None,
+        Inside(LEFT, 1, Inside(RIGHT, 1,
           Margin(LEFT, 1,
             Reset { "castle_wall" },
-            Margin(RIGHT, 1,
-              Reset { "castle_wall" },
-              None)
+            Border(RIGHT, 1,
+              Reset { "castle_wall" })
           )
         ))
         1 True MIDDLE_V }
@@ -222,7 +221,7 @@ End
 
 Def CastlePart3(Width) {
   VRatio(0.6, None,
-    Margin(TOP, 2, None,
+    Inside(TOP, 2,
       Place {{
         {Width 1}
         Margin(TOP, 1, {
@@ -231,9 +230,8 @@ Def CastlePart3(Width) {
           },
           Margin(LEFT, 1,
             Reset { "castle_wall" },
-            Margin(RIGHT, 1,
-              Reset { "castle_wall" },
-              None)))
+            Border(RIGHT, 1,
+              Reset { "castle_wall" })))
         1 True MIDDLE_V }
       }
     )
@@ -263,8 +261,8 @@ Def Castle(CornerSize) {
     Filter(And { Or { AnyFloor() AnyDoor() } Not On "castle_outside"}, Set { "castle_inside" "stone_floor" })
     Place { {{1 1} Set {"inside_furniture"} 8 And { Not AnyDoor() On "castle_inside"} }}
     Place { {{1 1} Set {"outside_furniture"} 8 On "castle_outside"} }
-    Margin(BOTTOM, 2, Margin(BOTTOM, 1, None,
-        Place {{ {1 1} Set { "clear_middle" "up_stairs0" "stairs" } 1 True MIDDLE }}), None)
+    Border(BOTTOM, 2, Inside(BOTTOM, 1,
+        Place {{ {1 1} Set { "clear_middle" "up_stairs0" "stairs" } 1 True MIDDLE }}))
     Place {{ {1 1} Set { "clear_middle" "down_stairs0" "stairs" } 1 On "castle_corner" }}
     Place { {{2 2} Set {"shop0"} 1 And { On "castle_inside" Not On "stairs"} }}
   })
@@ -282,8 +280,8 @@ Def CastleEmpty(CornerSize) {
     Choose { CastleGate3() CastleGate2() CastleGate1() }
     CastleCornersOpen(CornerSize)
     Place {{ {1 1} FloodFill(And { AnyFloor() Not AnyDoor() }, Set { "stone_floor" }) 1 True MIDDLE }}
-    Margin(BOTTOM, 2, Margin(BOTTOM, 1, None,
-        Place {{ {1 1} Set { "clear_middle" "up_stairs0" "stairs" } 1 True MIDDLE }}), None)
+    Border(BOTTOM, 2, Inside(BOTTOM, 1,
+        Place {{ {1 1} Set { "clear_middle" "up_stairs0" "stairs" } 1 True MIDDLE }}))
     Place {{ {1 1} Set { "clear_middle" "down_stairs0" "stairs" } 1 On "castle_corner" }}
     SetFront "clear_furniture"
   })
@@ -299,31 +297,26 @@ End
 
 Def AdoxieFeetEntry() {
   Building("castle_wall", "stone_floor")
-  Margin(BOTTOM, 2,
-    Margin(TOP, 1,
+  Border(BOTTOM, 2,
+    Border(TOP, 1,
       Place {{
         {3 1}
         {
           Reset { "stone_floor" }
           Margin(LEFT, 1,
             Set { "adoxie_right_foot" "no_corpse" },
-            Margin(RIGHT, 1,
-              Set { "adoxie_left_foot" "no_corpse"},
-              None)
+            Border(RIGHT, 1,
+              Set { "adoxie_left_foot" "no_corpse"})
           )
         }
         1 True MIDDLE }
-      }, None), None)
+      }))
     {
-      Margin(BOTTOM, 1,
-        PlaceGen(Reset { "stone_floor" "iron_door" }, {1 1}, MIDDLE),
-        None)
-      Margin(TOP, 1,
-        None,
-        Margin(TOP, 1,
-          PlaceGen(Set { "down_stairs0" "no_corpse"}, {1 1}, MIDDLE),
-          None
-        )
+      Border(BOTTOM, 1,
+        PlaceGen(Reset { "stone_floor" "iron_door" }, {1 1}, MIDDLE))
+      Inside(TOP, 1,
+        Border(TOP, 1,
+          PlaceGen(Set { "down_stairs0" "no_corpse"}, {1 1}, MIDDLE))
       )
     }
   Inside(1, Place {{{1 1} Set { "corpse" } {2 4} Not On "no_corpse"}})
@@ -377,15 +370,15 @@ Def CastleUpStairs() {
     {
       Building("castle_wall", "stone_floor")
       Inside(1, Set { "no_territory" })
-      Margin(TOP, 4, None, Margin(LEFT, 3, Margin(RIGHT, 1, Filter(YMod 2 0, Set { "castle_wall" }), None), None))
-      Margin(TOP, 4, None, Margin(RIGHT, 3, Margin(LEFT, 1, Filter(YMod 2 0, Set { "castle_wall" }), None), None))
+      Inside(TOP, 4, Border(LEFT, 3, Border(RIGHT, 1, Filter(YMod 2 0, Set { "castle_wall" }))))
+      Inside(TOP, 4, Border(RIGHT, 3, Border(LEFT, 1, Filter(YMod 2 0, Set { "castle_wall" }))))
     } 
     1 True MIDDLE_V }
   }
-  Margin(BOTTOM, 2, Margin(BOTTOM, 1, None,
-     Place {{ {1 1} Set { "clear_middle" "down_stairs0" } 1 True MIDDLE }}), None)
-  Margin(TOP, 3, Margin(TOP, 2, None,
-     Place {{ {1 1} Set { "clear_middle" "throne" } 1 True MIDDLE }}), None)
+  Border(BOTTOM, 2, Inside(BOTTOM, 1,
+     Place {{ {1 1} Set { "clear_middle" "down_stairs0" } 1 True MIDDLE }}))
+  Border(TOP, 3, Inside(TOP, 2,
+     Place {{ {1 1} Set { "clear_middle" "throne" } 1 True MIDDLE }}))
 }
 End
 
@@ -473,14 +466,14 @@ Def DungeonContent()
 End
 
 Def Corners(Generator, Size) {
-  Margin(TOP, Size, {
-    Margin(LEFT, Size, Generator, None)
-    Margin(RIGHT, Size, Generator, None)
-  }, None)
-  Margin(BOTTOM, Size, {
-    Margin(LEFT, Size, Generator, None)
-    Margin(RIGHT, Size, Generator, None)
-  }, None)
+  Border(TOP, Size, {
+    Border(LEFT, Size, Generator)
+    Border(RIGHT, Size, Generator)
+  })
+  Border(BOTTOM, Size, {
+    Border(LEFT, Size, Generator)
+    Border(RIGHT, Size, Generator)
+  })
 }
 End
 
