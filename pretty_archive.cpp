@@ -40,6 +40,8 @@ static vector<StreamChar> subStream(const vector<StreamChar>& s, int index, int 
 static vector<vector<StreamChar>> parseArgs(const vector<StreamChar>& s, int& index) {
   vector<vector<StreamChar>> ret;
   eatWhitespace(s, index);
+  if (index >= s.size())
+    return ret;
   if (s[index].c == '(') {
     ++index;
     while (1) {
