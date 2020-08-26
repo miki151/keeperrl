@@ -1,4 +1,5 @@
 #include "util.h"
+#include "perlin_noise.h"
 
 void addAvg(int x, int y, const Table<double>& wys, double& avg, int& num) {
   Vec2 pos(x, y);
