@@ -231,69 +231,43 @@ inline void serialize(PrettyInputArchive& ar1, vector<T>& v) {
 
 template <typename T, typename U>
 inline void serialize(PrettyInputArchive& ar1, map<T, U>& m) {
-  map<T, vector<long>> bookmarks;
-  auto getBookmarkFor = [&bookmarks] (const T& key, long location) -> optional<long> {
-    auto& all = bookmarks[key];
-    for (int i : All(all))
-      if (all[i] == location) {
-        if (i == 0)
-          return none;
-        return all[i - 1];
-      }
-    if (!all.empty())
-      return all.back();
-    return none;
-  };
-  set<T> keys;
   if (!ar1.eatMaybe("append"))
     m.clear();
   string s;
   ar1.readText(s);
   if (s != "{")
     ar1.error("Expected list of items surrounded by { and }");
+  set<T> keys;
   while (1) {
     if (ar1.peek() == "}")
       break;
     T key;
     ar1(key);
-    auto thisKeyBookmark = ar1.bookmark();
-    auto searchedBookmark = thisKeyBookmark;
-    auto searchedKey = key;
     if (ar1.peek() != "modify" && keys.count(key))
       ar1.error("Duplicate key");
     keys.insert(key);
     U value;
     vector<long> toRead;
-    while (true) {
-      bool modifying = false;
-      if (ar1.eatMaybe("inherit") || (modifying = ar1.eatMaybe("modify"))) {
-        T inheritKey;
-        ar1.inheritingKey = true;
-        if (!modifying)
-          ar1(inheritKey);
-        else
-          inheritKey = searchedKey;
-        ar1.inheritingKey = false;
-        toRead.push_back(ar1.bookmark());
-        if (auto bookmark = getBookmarkFor(inheritKey, searchedBookmark)) {
-          searchedBookmark = *bookmark;
-          searchedKey = inheritKey;
-          ar1.seek(*bookmark);
-        } else
-          ar1.error(modifying ? "Key to modify not found" : "Key to inherit not found");
-      } else {
-        toRead.push_back(ar1.bookmark());
-        break;
-      }
-    }
-    for (int i : All(toRead).reverse()) {
-      ar1.seek(toRead[i]);
-      if (i == toRead.size() - 1)
-        ar1(value);
+    bool wasInherited = false;
+    bool modifying = false;
+    if (ar1.eatMaybe("inherit") || (modifying = ar1.eatMaybe("modify"))) {
+      T inheritKey;
+      ar1.inheritingKey = true;
+      if (!modifying)
+        ar1(inheritKey);
       else
-        ar1.loadInherited(value);
+        inheritKey = key;
+      ar1.inheritingKey = false;
+      wasInherited = true;
+      if (auto v = getReferenceMaybe(m, inheritKey))
+        value = *v;
+      else
+        ar1.error(modifying ? "Key to modify not found" : "Key to inherit not found");
     }
-    bookmarks[key].push_back(thisKeyBookmark);
+    if (wasInherited)
+      ar1.loadInherited(value);
+    else
+      ar1(value);
     m.erase(key);
     m.insert(make_pair(std::move(key), std::move(value)));
   }

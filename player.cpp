@@ -1015,7 +1015,7 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
   for (auto& elem : factory->items) {
     ret.push_back(WishedItemInfo {
       ItemType(elem.first),
-      *elem.second.name,
+      elem.second.name,
       elem.second.wishedCount
     });
   }

@@ -375,7 +375,7 @@ ItemAttributes ItemTypes::AutomatonPaint::getAttributes(const ContentFactory*) c
           ""_s,
           Effect(Effects::ColorVariant{color}),
           none,
-          *i.viewId,
+          i.viewId,
           "automaton paint",
           none,
           "paint"

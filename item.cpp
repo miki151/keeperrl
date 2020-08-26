@@ -48,9 +48,9 @@ SERIALIZABLE(Item)
 SERIALIZATION_CONSTRUCTOR_IMPL(Item)
 
 Item::Item(const ItemAttributes& attr, const ContentFactory* factory)
-    : Renderable(ViewObject(*attr.viewId, ViewLayer::ITEM, capitalFirst(*attr.name))),
+    : Renderable(ViewObject(attr.viewId, ViewLayer::ITEM, capitalFirst(attr.name))),
       attributes(attr), fire(attr.burnTime), canEquipCache(!!attributes->equipmentSlot),
-      classCache(*attributes->itemClass) {
+      classCache(attributes->itemClass) {
   if (!attributes->prefixes.empty())
     modViewObject().setModifier(ViewObject::Modifier::AURA);
   modViewObject().setGenericId(getUniqueId().getGenericId());
@@ -213,7 +213,7 @@ TimeInterval Item::getApplyTime() const {
 }
 
 double Item::getWeight() const {
-  return *attributes->weight;
+  return attributes->weight;
 }
 
 vector<string> Item::getDescription(const ContentFactory* factory) const {
@@ -435,14 +435,14 @@ static void appendWithSpace(string& s, const string& suf) {
 string Item::getVisibleName(bool getPlural) const {
   string ret;
   if (!getPlural)
-    ret = *attributes->name;
+    ret = attributes->name;
   else {
     if (attributes->plural)
       ret = *attributes->plural;
-    else if (attributes->name->back() != 's')
-      ret = *attributes->name + "s";
+    else if (attributes->name.back() != 's')
+      ret = attributes->name + "s";
     else
-      ret = *attributes->name;
+      ret = attributes->name;
   }
   appendWithSpace(ret, getSuffix());
   return ret;

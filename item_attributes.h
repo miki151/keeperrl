@@ -46,13 +46,13 @@ class ItemAttributes {
   void serializeImpl(Archive& ar, const unsigned int);
   SERIALIZATION_DECL(ItemAttributes)
 
-  MustInitialize<ViewId> SERIAL(viewId);
+  ViewId SERIAL(viewId);
   vector<ViewId> SERIAL(partIds);
-  MustInitialize<string> SERIAL(name);
+  string SERIAL(name);
   string SERIAL(description);
   optional<string> SERIAL(shortName);
-  MustInitialize<double> SERIAL(weight);
-  MustInitialize<ItemClass> SERIAL(itemClass);
+  double SERIAL(weight);
+  ItemClass SERIAL(itemClass);
   optional<string> SERIAL(plural);
   optional<string> SERIAL(blindName);
   optional<string> SERIAL(artifactName);

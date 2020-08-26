@@ -54,6 +54,7 @@ class CreatureAttributes {
   CreatureAttributes(function<void(CreatureAttributes&)>);
   ~CreatureAttributes();
   CreatureAttributes(const CreatureAttributes&);
+  CreatureAttributes& operator =(const CreatureAttributes&);
   CreatureAttributes(CreatureAttributes&&);
   SERIALIZATION_DECL(CreatureAttributes)
   template <class Archive>

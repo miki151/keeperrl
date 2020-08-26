@@ -47,7 +47,7 @@ void ItemAttributes::serialize(PrettyInputArchive& ar1, unsigned version) {
   serializeImpl(ar1, version);
   ar1(endInput());
   if (automatonPart) {
-    automatonPart->viewId = *viewId;
-    automatonPart->name = shortName.value_or(*name);
+    automatonPart->viewId = viewId;
+    automatonPart->name = shortName.value_or(name);
   }
 }
