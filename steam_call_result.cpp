@@ -40,3 +40,5 @@ string CallResultBase::failText() const {
   return errorText(failure);
 }
 }
+
+#undef FUNC

@@ -3104,14 +3104,14 @@ namespace {
 
 constexpr int lineHeight = 20;
 
-class TextInput : public GuiElem {
+class TextInputElem : public GuiElem {
   public:
-  TextInput(int width, int maxLines, shared_ptr<string> text)
+  TextInputElem(int width, int maxLines, shared_ptr<string> text)
       : width(width), maxLines(maxLines), text(std::move(text)) {
     SDL::SDL_StartTextInput();
   }
 
-  ~TextInput() {
+  ~TextInputElem() {
     SDL::SDL_StopTextInput();
   }
 
@@ -3162,7 +3162,7 @@ class TextInput : public GuiElem {
 }
 
 SGuiElem GuiFactory::textInput(int width, int maxLines, shared_ptr<string> text) {
-  return make_shared<TextInput>(width, maxLines, text);
+  return make_shared<TextInputElem>(width, maxLines, text);
 }
 
 SGuiElem GuiFactory::minimapBar(SGuiElem icon1, SGuiElem icon2) {

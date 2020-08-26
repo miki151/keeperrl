@@ -212,3 +212,4 @@ INST(LayoutMappingId)
 INST(BiomeId)
 INST(CollectiveResourceId)
 INST(WorkshopType)
+#undef INST

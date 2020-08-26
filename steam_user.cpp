@@ -18,3 +18,4 @@ bool User::isLoggedOn() const {
   return FUNC(BLoggedOn)(ptr);
 }
 }
+#undef FUNC

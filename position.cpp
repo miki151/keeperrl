@@ -425,9 +425,8 @@ const vector<Item*>& Position::getItems() const {
   }
 }
 
-static vector<Item*> emptyItems;
-
 const vector<Item*>& Position::getItems(ItemIndex index) const {
+  static vector<Item*> emptyItems;
   if (isValid())
     return getSquare()->getInventory().getItems(index);
   else
@@ -435,6 +434,7 @@ const vector<Item*>& Position::getItems(ItemIndex index) const {
 }
 
 const vector<Item*>& Position::getItems(CollectiveResourceId id) const {
+  static vector<Item*> emptyItems;
   if (isValid())
     return getSquare()->getInventory().getItems(id);
   else

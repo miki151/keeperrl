@@ -123,3 +123,4 @@ string Client::info() {
   return buffer;
 }
 }
+#undef FUNC

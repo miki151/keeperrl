@@ -104,10 +104,7 @@ endif
 $(OBJDIR)/%.o: %.cpp ${PCH}
 	$(GCC) -MMD $(CFLAGS) $(PCHINC) -c $< -o $@
 
-$(NAME): $(OBJS) $(OBJDIR)/main.o
-	$(LD) $(CFLAGS) -o $@ $^ $(LIBS)
-
-test: $(OBJS) $(OBJDIR)/test.o
+$(NAME): $(OBJS)
 	$(LD) $(CFLAGS) -o $@ $^ $(LIBS)
 
 gen_version:
