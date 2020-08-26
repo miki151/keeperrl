@@ -236,7 +236,6 @@ static po::parser getCommandLineFlags() {
 #undef main
 
 #ifndef VSTUDIO
-#include <SDL2/SDL.h>
 
 void onException() {
   if (auto ex = std::current_exception()) {

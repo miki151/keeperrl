@@ -1,5 +1,15 @@
 #pragma once
 
+#ifdef WINDOWS
+#ifndef _WINDOWS_
+#define _WINDOWS_
+#define APIENTRY __attribute__((__stdcall__))
+#define WINGDIAPI __attribute__((dllimport))
+#endif
+#else
+#define GL_GLEXT_PROTOTYPES 1
+#endif
+
 namespace SDL {
 #ifdef VSTUDIO
 #include <SDL.h>

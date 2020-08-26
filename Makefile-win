@@ -58,6 +58,12 @@ SRCS = $(shell ls -t *.cpp)
 else
 SRCS = $(shell ls -t *.cpp | grep -v steam_.*.cpp)
 endif
+
+ifdef UNITY
+$(shell rm unity.cpp; for I in *.cpp; do echo \#include \"$$I\" | grep -v stack_printer | grep -v fontstash | grep -v file_sharing >> unity.cpp; done )
+SRCS = unity.cpp file_sharing.cpp fontstash.cpp stack_printer.cpp
+endif
+
 SRCS += $(shell ls -t extern/*.cpp)
 
 ifdef AMD64
