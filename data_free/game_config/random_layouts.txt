@@ -304,14 +304,12 @@ Def AdoxieFeetEntry() {
       )
     )
   )
-    {
-      Border(BOTTOM, 1,
-        Position(MIDDLE, {1 1}, Reset("stone_floor", "iron_door")))
-      Inside(TOP, 1,
-        Border(TOP, 1,
-          Position(MIDDLE, {1 1}, Set("down_stairs0", "no_corpse")))
-      )
-    }
+  Border(BOTTOM, 1,
+    Position(MIDDLE, {1 1}, Reset("stone_floor", "iron_door")))
+  Inside(TOP, 1,
+    Border(TOP, 1,
+      Position(MIDDLE, {1 1}, Set("down_stairs0", "no_corpse")))
+  )
   Inside(1, Place({1 1}, Set("corpse"), {2 4}, Not On "no_corpse"))
 }
 End
