@@ -75,6 +75,15 @@ struct VRatio {
   SERIALIZE_ALL(roundBracket(), NAMED(r), NAMED(top), NAMED(bottom))
 };
 
+struct Position {
+  optional<Vec2> SERIAL(size);
+  optional<Vec2> SERIAL(minSize);
+  optional<Vec2> SERIAL(maxSize);
+  HeapAllocated<LayoutGenerator> SERIAL(generator);
+  PlacementPos SERIAL(position);
+  SERIALIZE_ALL(roundBracket(), NAMED(position), NAMED(size), NAMED(generator), NAMED(minSize), NAMED(maxSize))
+};
+
 struct Place {
   struct Elem {
     optional<Vec2> SERIAL(size);
@@ -83,12 +92,12 @@ struct Place {
     HeapAllocated<LayoutGenerator> SERIAL(generator);
     Range SERIAL(count) = Range(1, 2);
     TilePredicate SERIAL(predicate) = TilePredicates::True{};
-    optional<PlacementPos> SERIAL(position);
     int SERIAL(minSpacing) = 0;
-    SERIALIZE_ALL(NAMED(size), NAMED(generator), OPTION(count), OPTION(predicate), OPTION(position), NAMED(minSize), NAMED(maxSize), OPTION(minSpacing))
+    SERIALIZE_ALL(roundBracket(), NAMED(size), NAMED(generator), OPTION(count), OPTION(predicate), NAMED(minSize), NAMED(maxSize), OPTION(minSpacing))
   };
   vector<Elem> SERIAL(generators);
   SERIALIZE_ALL(withRoundBrackets(generators))
+  void serialize(PrettyInputArchive&, const unsigned int version);
 };
 
 struct NoiseMap {
@@ -112,7 +121,7 @@ struct Choose {
     optional<double> SERIAL(chance);
     HeapAllocated<LayoutGenerator> SERIAL(generator);
     SERIALIZE_ALL(chance, generator)
-    void serialize(PrettyInputArchive& ar, const unsigned int version);
+    void serialize(PrettyInputArchive&, const unsigned int version);
   };
 
   vector<Elem> SERIAL(generators);
@@ -154,13 +163,14 @@ struct FloodFill {
   X(Margins, 7)\
   X(HRatio, 8)\
   X(VRatio, 9)\
-  X(Place, 10)\
-  X(NoiseMap, 11)\
-  X(Chain, 12)\
-  X(Connect, 13)\
-  X(Choose, 14)\
-  X(Repeat, 15)\
-  X(FloodFill, 16)
+  X(Position, 10)\
+  X(Place, 11)\
+  X(NoiseMap, 12)\
+  X(Chain, 13)\
+  X(Connect, 14)\
+  X(Choose, 15)\
+  X(Repeat, 16)\
+  X(FloodFill, 17)
 
 #define VARIANT_NAME GeneratorImpl
 
