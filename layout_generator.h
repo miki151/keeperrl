@@ -26,12 +26,12 @@ struct Set {
 
 struct SetFront {
   Token SERIAL(token);
-  SERIALIZE_ALL(token)
+  SERIALIZE_ALL(roundBracket(), NAMED(token))
 };
 
 struct Reset {
   vector<Token> SERIAL(tokens);
-  SERIALIZE_ALL(tokens)
+  SERIALIZE_ALL(withRoundBrackets(tokens))
 };
 
 struct Filter {

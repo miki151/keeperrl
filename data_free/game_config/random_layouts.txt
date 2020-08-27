@@ -15,8 +15,8 @@ Def Connector()
     8 On "lava" Set("stone_bridge")
     8 On "water" Set("wood_bridge")
     6 And { Not AnyWall() Not AnyWater() Not AnyFloor() Not On "no_dig" On "room_wall" }
-        Filter(And { Chance 0.4 Not NextTo(On "wood_door")}, Reset {"wood_door"}, Reset {"floor"})
-    4 And { Not AnyWall() Not AnyFloor() On "rock" Not On "no_dig" Not On "room_wall" } Reset {"floor"}
+        Filter(And { Chance 0.4 Not NextTo(On "wood_door")}, Reset("wood_door"), Reset("floor"))
+    4 And { Not AnyWall() Not AnyFloor() On "rock" Not On "no_dig" Not On "room_wall" } Reset("floor")
   })
 End
 
@@ -47,7 +47,7 @@ End
 Def Building(WallType, FloorType) {
   Margin(1,
     Set(FloorType, WallType),
-    Reset { FloorType "clear_middle" }
+    Reset(FloorType, "clear_middle")
   )
 }
 End
@@ -133,7 +133,7 @@ End
 "village2" Village2()
 
 Def CastleGate1() 
-  Border(TOP, 1, Place {{ {2 1} Reset { "floor" "iron_gate" } 1 True MIDDLE }})
+  Border(TOP, 1, Place {{ {2 1} Reset("floor", "iron_gate") 1 True MIDDLE }})
 End
 
 Def GatePlusWall(WallLength)
@@ -141,34 +141,34 @@ Def GatePlusWall(WallLength)
     Set("castle_wall"),
     Margin(RIGHT, WallLength,
       Set("castle_wall"),
-      Reset { "floor" "iron_gate" }
+      Reset("floor", "iron_gate")
     )
   )
 End
 
 Def CastleGate2() {
   Inside(TOP, -1, Border(TOP, 1, Place {{ {4 1} GatePlusWall(1) 1 True MIDDLE }}))
-  Border(TOP, 1, Place {{ {2 1} Reset { "floor" } 1 True MIDDLE }})
+  Border(TOP, 1, Place {{ {2 1} Reset("floor") 1 True MIDDLE }})
 }
 End
 
 Def CastleGate3() {
   Inside(TOP, -1, Border(TOP, 1, Place {{ {6 1} GatePlusWall(2) 1 True MIDDLE }}))
-  Border(TOP, 1, Place {{ {4 1} Reset { "floor" } 1 True MIDDLE }})
+  Border(TOP, 1, Place {{ {4 1} Reset("floor") 1 True MIDDLE }})
 }
 End
 
 Def CastleCorners(CornerSize) {
   Corners(Border(-1, Set("castle_wall")), CornerSize)
-  Corners(Reset { "floor" "castle_corner" }, CornerSize)
-  Inside(1, Corners(Choose { None Reset { "floor" }}, CornerSize))
+  Corners(Reset("floor", "castle_corner"), CornerSize)
+  Inside(1, Corners(Choose { None Reset("floor")}, CornerSize))
 }
 End
 
 Def CastleCornersOpen(CornerSize) {
   Corners(Border(-1, Set("castle_wall")), CornerSize)
-  Corners(Reset { "floor" "castle_corner" }, CornerSize)
-  Inside(1, Corners(Reset { "floor" }, CornerSize))
+  Corners(Reset("floor", "castle_corner"), CornerSize)
+  Inside(1, Corners(Reset("floor"), CornerSize))
 }
 End
 
@@ -178,10 +178,10 @@ Def CastlePart1(Width) {
     Place {{
         {Width 1}
         Margin(LEFT, 1,
-          Reset { "castle_wall" },
+          Reset("castle_wall"),
           Margin(RIGHT, 1,
-            Reset { "castle_wall" },
-            Reset { "floor" })
+            Reset("castle_wall"),
+            Reset("floor"))
         )
         1 True MIDDLE_V }
     }
@@ -197,19 +197,19 @@ Def CastlePart2(Width) {
         Place {{
           {Width 1}
           Margin(LEFT, 1,
-            Reset { "castle_wall" },
+            Reset("castle_wall"),
             Margin(RIGHT, 1,
-              Reset { "castle_wall" },
-              Reset { "floor" })
+              Reset("castle_wall"),
+              Reset("floor"))
           )
         1 True MIDDLE_V }}),
       Place {{
         {Width 1}
         Inside(LEFT, 1, Inside(RIGHT, 1,
           Margin(LEFT, 1,
-            Reset { "castle_wall" },
+            Reset("castle_wall"),
             Border(RIGHT, 1,
-              Reset { "castle_wall" })
+              Reset("castle_wall"))
           )
         ))
         1 True MIDDLE_V }
@@ -226,12 +226,12 @@ Def CastlePart3(Width) {
         {Width 1}
         Margin(TOP, 1, {
             Set("castle_wall")
-            Place {{ {2 1} Reset { "floor" "iron_gate" } 1 True MIDDLE }}
+            Place {{ {2 1} Reset("floor", "iron_gate") 1 True MIDDLE }}
           },
           Margin(LEFT, 1,
-            Reset { "castle_wall" },
+            Reset("castle_wall"),
             Border(RIGHT, 1,
-              Reset { "castle_wall" })))
+              Reset("castle_wall"))))
         1 True MIDDLE_V }
       }
     )
@@ -271,7 +271,7 @@ End
 
 "castle" {
   Choose { Castle(2) Castle(3) }
-  Filter(AnyFloor(), SetFront "clear_furniture")
+  Filter(AnyFloor(), SetFront("clear_furniture"))
 }
 
 Def CastleEmpty(CornerSize) {
@@ -283,7 +283,7 @@ Def CastleEmpty(CornerSize) {
     Border(BOTTOM, 2, Inside(BOTTOM, 1,
         Place {{ {1 1} Set("clear_middle", "up_stairs0", "stairs") 1 True MIDDLE }}))
     Place {{ {1 1} Set("clear_middle", "down_stairs0", "stairs") 1 On "castle_corner" }}
-    SetFront "clear_furniture"
+    SetFront("clear_furniture")
   })
 }
 End
@@ -302,7 +302,7 @@ Def AdoxieFeetEntry() {
       Place {{
         {3 1}
         {
-          Reset { "stone_floor" }
+          Reset("stone_floor")
           Margin(LEFT, 1,
             Set("adoxie_right_foot", "no_corpse"),
             Border(RIGHT, 1,
@@ -313,7 +313,7 @@ Def AdoxieFeetEntry() {
       }))
     {
       Border(BOTTOM, 1,
-        PlaceGen(Reset { "stone_floor" "iron_door" }, {1 1}, MIDDLE))
+        PlaceGen(Reset("stone_floor", "iron_door"), {1 1}, MIDDLE))
       Inside(TOP, 1,
         Border(TOP, 1,
           PlaceGen(Set("down_stairs0", "no_corpse"), {1 1}, MIDDLE))
@@ -327,7 +327,7 @@ End
 
 Def AdoxieFeetUnderRoom(EntrancePos)
 {
-  Reset { "floor" "stockpile" "adoxie_feet_trigger" }
+  Reset("floor", "stockpile", "adoxie_feet_trigger")
   Border(-1, Set("no_dig"))
   Inside(-1, PlaceGen(Remove { "no_dig" "rock" }, {1 1}, EntrancePos))
 }
@@ -353,7 +353,7 @@ Def AdoxieFeetUnder() {
     }
     {
       {1 1}
-      Reset { "floor" "up_stairs0" }
+      Reset("floor", "up_stairs0")
       1 True BOTTOM_CENTER
     }
   })
@@ -478,7 +478,7 @@ Def Corners(Generator, Size) {
 End
 
 Def Room() {
-  Reset {"floor" "room_floor"}
+  Reset("floor", "room_floor")
   Margin(-1,
     Set("room_wall"),
     Corners(Set("no_dig"), 1)
@@ -510,9 +510,9 @@ End
 
 Def Dungeon2() {
   Set("rock")
-  CellularAutomaton(Reset { "floor" "room_floor" }, 0.55)
+  CellularAutomaton(Reset("floor", "room_floor"), 0.55)
   Connect(On "floor", {
-    5 On "rock" Reset {"floor"}
+    5 On "rock" Reset("floor")
   })
   DungeonContent()
 }
@@ -533,7 +533,7 @@ End
 
 Def Dungeon3() {
   Set("rock")
-  Caverns(Reset{"floor"})
+  Caverns(Reset("floor"))
   DungeonRooms()
   Connector()
   DungeonContent()
@@ -542,9 +542,9 @@ End
 
 Def Dungeon4(WaterType) {
   Set("rock")
-  Caverns(Reset{"floor"})
+  Caverns(Reset("floor"))
   DungeonRooms()
-  Caverns(Reset{WaterType})
+  Caverns(Reset(WaterType))
   Connector()
   DungeonContent()
 }
@@ -573,7 +573,7 @@ Def AdoxieTemple() {
         {7 7}
         {
           Inside(1, {
-            Reset { "floor" "temple" }
+            Reset("floor", "temple")
             Corners(Set("castle_wall"), 1)
             Place {{ {1 1} Set("clear_middle", "down_stairs0") 1 True MIDDLE }}
           })
