@@ -88,7 +88,7 @@ struct Place {
     SERIALIZE_ALL(NAMED(size), NAMED(generator), OPTION(count), OPTION(predicate), OPTION(position), NAMED(minSize), NAMED(maxSize), OPTION(minSpacing))
   };
   vector<Elem> SERIAL(generators);
-  SERIALIZE_ALL(generators)
+  SERIALIZE_ALL(withRoundBrackets(generators))
 };
 
 struct NoiseMap {

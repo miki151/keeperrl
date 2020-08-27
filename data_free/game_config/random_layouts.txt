@@ -66,7 +66,7 @@ Def CellularAutomaton(Generator, BeginProb)
 End
 
 Def Village1() {
-  Place {
+  Place(
     {
       minSize = { 5 6 }
       maxSize = { 8 9 }
@@ -76,7 +76,7 @@ Def Village1() {
       }
       position = MIDDLE
       minSpacing = 1
-    }
+    },
     {
       minSize = {3 3}
       maxSize = {6 6}
@@ -84,18 +84,18 @@ Def Village1() {
       count = 3
       minSpacing = 1
     }
-  }
+    )
   Connector()
-  Place {
-    { {1 1} Set("bed") {2 4} And {On "main_building" NextTo(AnyWall()) Not NextTo(AnyDoor()) } }
+  Place(
+    { {1 1} Set("bed") {2 4} And {On "main_building" NextTo(AnyWall()) Not NextTo(AnyDoor()) } },
     { {1 1} Set("stockpile") {1 3} And {On "main_building" NextTo(AnyWall()) Not NextTo(AnyDoor()) } }
-  }
-  Place { { {1 1} Set("dining_table") 1 And {On "main_building" Not NextTo(AnyWall()) } } }
+  )
+  Place({ {1 1} Set("dining_table") 1 And {On "main_building" Not NextTo(AnyWall()) } })
 }
 End
 
 Def Village2() {
-  Place {
+  Place(
     {
       size = {6 9}
       generator = {
@@ -106,7 +106,7 @@ Def Village2() {
       }
       position = MIDDLE
       minSpacing = 1
-    }
+    },
     {
       minSize = {4 4}
       maxSize = {6 6}
@@ -114,13 +114,13 @@ Def Village2() {
       count = 1
       minSpacing = 1
     }
-  }
+  )
   Connector()
-  Place {
-    { {1 1} Set("bed") {2 4} And {On "first_room" NextTo(AnyWall()) Not NextTo(AnyDoor()) } }
+  Place(
+    { {1 1} Set("bed") {2 4} And {On "first_room" NextTo(AnyWall()) Not NextTo(AnyDoor()) } },
     { {1 1} Set("stockpile") {1 3} And {On "first_room" NextTo(AnyWall()) Not NextTo(AnyDoor()) } }
-  }
-  Place { { {1 1} Set("dining_table") 1 And {On "second_room" Not NextTo(AnyWall()) } } }
+  )
+  Place({ {1 1} Set("dining_table") 1 And {On "second_room" Not NextTo(AnyWall()) } })
 }
 End
 
@@ -133,7 +133,7 @@ End
 "village2" Village2()
 
 Def CastleGate1() 
-  Border(TOP, 1, Place {{ {2 1} Reset("floor", "iron_gate") 1 True MIDDLE }})
+  Border(TOP, 1, PlaceGen(Reset("floor", "iron_gate"), {2 1}, MIDDLE))
 End
 
 Def GatePlusWall(WallLength)
@@ -147,14 +147,14 @@ Def GatePlusWall(WallLength)
 End
 
 Def CastleGate2() {
-  Inside(TOP, -1, Border(TOP, 1, Place {{ {4 1} GatePlusWall(1) 1 True MIDDLE }}))
-  Border(TOP, 1, Place {{ {2 1} Reset("floor") 1 True MIDDLE }})
+  Inside(TOP, -1, Border(TOP, 1, PlaceGen(GatePlusWall(1), {4 1}, MIDDLE)))
+  Border(TOP, 1, PlaceGen(Reset("floor"), {2 1}, MIDDLE))
 }
 End
 
 Def CastleGate3() {
-  Inside(TOP, -1, Border(TOP, 1, Place {{ {6 1} GatePlusWall(2) 1 True MIDDLE }}))
-  Border(TOP, 1, Place {{ {4 1} Reset("floor") 1 True MIDDLE }})
+  Inside(TOP, -1, Border(TOP, 1, PlaceGen(GatePlusWall(2), {6 1}, MIDDLE)))
+  Border(TOP, 1, PlaceGen(Reset("floor"), {4 1}, MIDDLE))
 }
 End
 
@@ -175,16 +175,16 @@ End
 Def CastlePart1(Width) {
   VRatio(0.6, Inside(TOP, 1, Inside(BOTTOM, -1, {
     Border(BOTTOM, 1, Set("castle_wall"))
-    Place {{
-        {Width 1}
-        Margin(LEFT, 1,
+    PlaceGen(
+      Margin(LEFT, 1,
+        Reset("castle_wall"),
+        Margin(RIGHT, 1,
           Reset("castle_wall"),
-          Margin(RIGHT, 1,
-            Reset("castle_wall"),
-            Reset("floor"))
-        )
-        1 True MIDDLE_V }
-    }
+          Reset("floor"))
+      ),
+      {Width 1},
+      MIDDLE_V
+    )
   })), None)
 }
 End
@@ -194,7 +194,7 @@ Def CastlePart2(Width) {
     Border(TOP, 1, Set("castle_wall"))
     Margin(TOP, 2,
       Inside(BOTTOM, -1,
-        Place {{
+        Place({
           {Width 1}
           Margin(LEFT, 1,
             Reset("castle_wall"),
@@ -202,8 +202,8 @@ Def CastlePart2(Width) {
               Reset("castle_wall"),
               Reset("floor"))
           )
-        1 True MIDDLE_V }}),
-      Place {{
+        1 True MIDDLE_V })),
+      Place({
         {Width 1}
         Inside(LEFT, 1, Inside(RIGHT, 1,
           Margin(LEFT, 1,
@@ -213,7 +213,7 @@ Def CastlePart2(Width) {
           )
         ))
         1 True MIDDLE_V }
-      }
+      )
     )
   })
 }
@@ -222,18 +222,18 @@ End
 Def CastlePart3(Width) {
   VRatio(0.6, None,
     Inside(TOP, 2,
-      Place {{
+      Place({
         {Width 1}
         Margin(TOP, 1, {
             Set("castle_wall")
-            Place {{ {2 1} Reset("floor", "iron_gate") 1 True MIDDLE }}
+            Place({ {2 1} Reset("floor", "iron_gate") 1 True MIDDLE })
           },
           Margin(LEFT, 1,
             Reset("castle_wall"),
             Border(RIGHT, 1,
               Reset("castle_wall"))))
         1 True MIDDLE_V }
-      }
+      )
     )
   )
 }
@@ -257,14 +257,14 @@ Def Castle(CornerSize) {
       { CastleMaybe(CastlePart1(6)) CastleMaybe(CastlePart2(6)) CastleMaybe(CastlePart3(4)) }
     }
     Connector()
-    Place {{ {1 1} FloodFill(And { AnyFloor() Not AnyDoor() }, Set("castle_outside")) 1 True MIDDLE }}
+    Place({ {1 1} FloodFill(And { AnyFloor() Not AnyDoor() }, Set("castle_outside")) 1 True MIDDLE })
     Filter(And { Or { AnyFloor() AnyDoor() } Not On "castle_outside"}, Set("castle_inside", "stone_floor"))
-    Place { {{1 1} Set("inside_furniture") 8 And { Not AnyDoor() On "castle_inside"} }}
-    Place { {{1 1} Set("outside_furniture") 8 On "castle_outside"} }
+    Place({{1 1} Set("inside_furniture") 8 And { Not AnyDoor() On "castle_inside"} })
+    Place({{1 1} Set("outside_furniture") 8 On "castle_outside"})
     Border(BOTTOM, 2, Inside(BOTTOM, 1,
-        Place {{ {1 1} Set("clear_middle", "up_stairs0", "stairs") 1 True MIDDLE }}))
-    Place {{ {1 1} Set("clear_middle", "down_stairs0", "stairs") 1 On "castle_corner" }}
-    Place { {{2 2} Set("shop0") 1 And { On "castle_inside" Not On "stairs"} }}
+        Place({ {1 1} Set("clear_middle", "up_stairs0", "stairs") 1 True MIDDLE })))
+    Place({ {1 1} Set("clear_middle", "down_stairs0", "stairs") 1 On "castle_corner" })
+    Place({{2 2} Set("shop0") 1 And { On "castle_inside" Not On "stairs"} })
   })
 }
 End
@@ -279,10 +279,10 @@ Def CastleEmpty(CornerSize) {
     Building("castle_wall", "floor")
     Choose { CastleGate3() CastleGate2() CastleGate1() }
     CastleCornersOpen(CornerSize)
-    Place {{ {1 1} FloodFill(And { AnyFloor() Not AnyDoor() }, Set("stone_floor")) 1 True MIDDLE }}
+    PlaceGen(FloodFill(And { AnyFloor() Not AnyDoor() }, Set("stone_floor")), {1 1}, MIDDLE)
     Border(BOTTOM, 2, Inside(BOTTOM, 1,
-        Place {{ {1 1} Set("clear_middle", "up_stairs0", "stairs") 1 True MIDDLE }}))
-    Place {{ {1 1} Set("clear_middle", "down_stairs0", "stairs") 1 On "castle_corner" }}
+        PlaceGen(Set("clear_middle", "up_stairs0", "stairs"), {1 1}, MIDDLE)))
+    Place({{1 1} Set("clear_middle", "down_stairs0", "stairs") 1 On "castle_corner" })
     SetFront("clear_furniture")
   })
 }
@@ -291,7 +291,7 @@ End
 "castle_empty" Choose { CastleEmpty(2) CastleEmpty(3) }
 
 Def PlaceGen(Gen, Size, Placement)
-  Place {{Size Gen 1 True Placement }}
+  Place({Size Gen 1 True Placement })
 End
 
 
@@ -299,7 +299,7 @@ Def AdoxieFeetEntry() {
   Building("castle_wall", "stone_floor")
   Border(BOTTOM, 2,
     Border(TOP, 1,
-      Place {{
+      Place({
         {3 1}
         {
           Reset("stone_floor")
@@ -310,7 +310,7 @@ Def AdoxieFeetEntry() {
           )
         }
         1 True MIDDLE }
-      }))
+      )))
     {
       Border(BOTTOM, 1,
         PlaceGen(Reset("stone_floor", "iron_door"), {1 1}, MIDDLE))
@@ -319,7 +319,7 @@ Def AdoxieFeetEntry() {
           PlaceGen(Set("down_stairs0", "no_corpse"), {1 1}, MIDDLE))
       )
     }
-  Inside(1, Place {{{1 1} Set("corpse") {2 4} Not On "no_corpse"}})
+  Inside(1, Place({{1 1} Set("corpse") {2 4} Not On "no_corpse"}))
 }
 End
 
@@ -335,28 +335,28 @@ End
 
 Def AdoxieFeetUnder() {
   Set("rock")
-  Inside(1, Place {
+  Inside(1, Place(
     {
       {3 3}
       AdoxieFeetUnderRoom(BOTTOM_CENTER)
       1 True TOP_CENTER
-    }
+    },
     {
       {3 3}
       AdoxieFeetUnderRoom(LEFT_CENTER)
       1 True RIGHT_CENTER
-    }
+    },
     {
       {3 3}
       AdoxieFeetUnderRoom(RIGHT_CENTER)
       1 True LEFT_CENTER
-    }
+    },
     {
       {1 1}
       Reset("floor", "up_stairs0")
       1 True BOTTOM_CENTER
     }
-  })
+  ))
   Connector()
 }
 End
@@ -365,7 +365,7 @@ End
 
 Def CastleUpStairs() {
   Set("floor")
-  Place {{
+  Place ({
     {9 1}
     {
       Building("castle_wall", "stone_floor")
@@ -374,18 +374,18 @@ Def CastleUpStairs() {
       Inside(TOP, 4, Border(RIGHT, 3, Border(LEFT, 1, Filter(YMod 2 0, Set("castle_wall")))))
     } 
     1 True MIDDLE_V }
-  }
+  )
   Border(BOTTOM, 2, Inside(BOTTOM, 1,
-     Place {{ {1 1} Set("clear_middle", "down_stairs0") 1 True MIDDLE }}))
+     PlaceGen(Set("clear_middle", "down_stairs0"), {1 1}, MIDDLE)))
   Border(TOP, 3, Inside(TOP, 2,
-     Place {{ {1 1} Set("clear_middle", "throne") 1 True MIDDLE }}))
+     PlaceGen(Set("clear_middle", "throne"), {1 1}, MIDDLE)))
 }
 End
 
 "castle_up_stairs" CastleUpStairs()
 
 Def GuardPost() {
-  Place {
+  Place(
     {
       size = {5 7}
       generator = {
@@ -394,7 +394,7 @@ Def GuardPost() {
           Margin(BOTTOM, 1,
             {
               Set("castle_wall")
-              Place { { {1 1} Set("wood_door") 1  } }
+              PlaceGen(Set("wood_door"), {1 1}, none)
             },
             {
               Set("first_room")
@@ -406,7 +406,7 @@ Def GuardPost() {
       }
       position = MIDDLE
       minSpacing = 1
-    }
+    },
     {
       minSize = {4 4}
       maxSize = {6 6}
@@ -414,34 +414,34 @@ Def GuardPost() {
       count = 1
       minSpacing = 1
     }
-  }
-  Place {
-    {{1 1} Set("up_stairs0") 1 And { On "first_room" AnyFloor() }}
-    {{1 1} Set("dining_table") 1 And { On "first_room" AnyFloor() }}
+  )
+  Place (
+    {{1 1} Set("up_stairs0") 1 And { On "first_room" AnyFloor() }},
+    {{1 1} Set("dining_table") 1 And { On "first_room" AnyFloor() }},
     {{1 1} Set("torch") 1 And { On "first_room" AnyFloor() }}
-  }
+  )
   Connector()
 }
 End
 
 Def GuardPostFloor2() {
   Building("castle_wall", "wood_floor")
-  Place {
-    {{1 1} Set("down_stairs0") 1 And { AnyFloor() NextTo(AnyWall())} }
-    {{1 1} Set("up_stairs0") 1 And { AnyFloor() NextTo(AnyWall())} }
-    {{1 1} Set("armor_chest") {3 6} And { AnyFloor() NextTo(AnyWall())} }
-    {{1 1} Set("bed") 2 And { AnyFloor() NextTo(AnyWall())} }
+  Place (
+    {{1 1} Set("down_stairs0") 1 And { AnyFloor() NextTo(AnyWall())} },
+    {{1 1} Set("up_stairs0") 1 And { AnyFloor() NextTo(AnyWall())} },
+    {{1 1} Set("armor_chest") {3 6} And { AnyFloor() NextTo(AnyWall())} },
+    {{1 1} Set("bed") 2 And { AnyFloor() NextTo(AnyWall())} },
     {{1 1} Set("torch") 1 And { AnyFloor() NextTo(AnyWall())} }
-  }
+  )
 }
 End
 
 Def GuardPostFloor3() {
   Building("wood_wall", "wood_floor")
-  Place {
-    {{1 1} Set("down_stairs0") 1 And { AnyFloor() NextTo(AnyWall())} }
+  Place (
+    {{1 1} Set("down_stairs0") 1 And { AnyFloor() NextTo(AnyWall())} },
     {{1 1} Set("pamphlet_chest") {2 4} And { AnyFloor() NextTo(AnyWall())} }
-  }
+  )
 }
 End
 
@@ -450,19 +450,19 @@ End
 "guard_post_floor3" GuardPostFloor3()
 
 Def DungeonContent()
-  Place {
+  Place (
     {
       size = {1 1}
       generator = Set("monster")
       count = 4
         predicate = On "room_floor"
-    }
-    {{1 1} Set("up_stairs0") 1 On "room_floor"}
-    {{1 1} Set("down_stairs0") 1 On "room_floor"}
-    {{1 1} Set("up_stairs1") 1 On "room_floor"}
-    {{1 1} Set("down_stairs1") 1 On "room_floor"}
+    },
+    {{1 1} Set("up_stairs0") 1 On "room_floor"},
+    {{1 1} Set("down_stairs0") 1 On "room_floor"},
+    {{1 1} Set("up_stairs1") 1 On "room_floor"},
+    {{1 1} Set("down_stairs1") 1 On "room_floor"},
     {{1 1} Set("inside_furniture") 10 On "room_floor"}
-  }
+  )
 End
 
 Def Corners(Generator, Size) {
@@ -487,8 +487,8 @@ Def Room() {
 End
 
 Def DungeonRooms()
-  Inside(1, {
-    Place {
+  Inside(1,
+    Place (
       {
         minSize = {2 2}
         maxSize = {6 6}
@@ -496,8 +496,8 @@ Def DungeonRooms()
         count = {7 11}
         minSpacing = 1
       }
-    }
-  })
+    )
+  )
 End
 
 Def Dungeon1() {
@@ -519,7 +519,7 @@ Def Dungeon2() {
 End
 
 Def Caverns(Generator)
-  Place {
+  Place(
     {
       generator = {
         CellularAutomaton(Generator, 0.55)
@@ -528,7 +528,7 @@ Def Caverns(Generator)
       minSize = {10 10}
       maxSize = {14 14}
     }
-  }
+  )
 End
 
 Def Dungeon3() {
@@ -554,36 +554,36 @@ Def AdoxieTemple() {
   Set("rock")
   HRatio(0.5,
     Inside(1,
-      Place {
+      Place(
         {
           minSize = {2 2}
           maxSize = {6 6}
           generator = {
             Room()
-            Place {{ {1 1} Set("clear_middle", "up_stairs0") 1 True MIDDLE }}
+            PlaceGen(Set("clear_middle", "up_stairs0"), {1 1}, MIDDLE)
           }
           count = 1
           minSpacing = 1
         }
-      }
+      )
     ),
     {
       CellularAutomaton(Set("lava"), 0.55)
-      Place {{ 
+      Place({ 
         {7 7}
         {
           Inside(1, {
             Reset("floor", "temple")
             Corners(Set("castle_wall"), 1)
-            Place {{ {1 1} Set("clear_middle", "down_stairs0") 1 True MIDDLE }}
+            PlaceGen(Set("clear_middle", "down_stairs0"), {1 1}, MIDDLE)
           })
           Set("no_dig")
-          Place {{ {1 1} Remove("no_dig") 1 True MIDDLE_V }}
-          Place {{ {1 1} Remove("no_dig") 1 True MIDDLE_H }}
+          PlaceGen(Remove("no_dig"), {1 1}, MIDDLE_V)
+          PlaceGen(Remove("no_dig"), {1 1}, MIDDLE_H)
         }
         1
         On "lava"
-        }}
+      })
     }
   )
   Connector()
