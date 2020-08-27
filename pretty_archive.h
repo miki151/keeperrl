@@ -214,19 +214,43 @@ struct PrettyFlag {
 void serialize(PrettyInputArchive& ar, PrettyFlag& c);
 
 template <typename T>
-inline void serialize(PrettyInputArchive& ar1, vector<T>& v) {
+inline void serializeVecImpl(PrettyInputArchive& ar1, vector<T>& v, BracketType bracketType) {
   if (!ar1.eatMaybe("append"))
     v.clear();
-  string s;
-  ar1.readText(s);
-  if (s != "{")
-    ar1.error("Expected list of items surrounded by { and }");
-  while (ar1.peek() != "}") {
+  ar1.openBracket(bracketType);
+  while (!ar1.isClosedBracket(bracketType)) {
     T t;
     ar1(t);
     v.push_back(std::move(t));
+    if (bracketType == BracketType::ROUND && !ar1.isClosedBracket(bracketType))
+      ar1.eat(",");
   }
-  ar1.eat("}");
+  ar1.closeBracket(bracketType);
+}
+
+template <typename T>
+inline void serialize(PrettyInputArchive& ar1, vector<T>& v) {
+  serializeVecImpl(ar1, v, BracketType::CURLY);
+}
+
+template <typename T>
+struct VectorWithRoundBrackets {
+  vector<T>& v;
+};
+
+template <typename T>
+VectorWithRoundBrackets<T> withRoundBrackets(vector<T>& v) {
+  return VectorWithRoundBrackets<T>{v};
+}
+
+template <typename T>
+inline void serialize(PrettyInputArchive& ar1, VectorWithRoundBrackets<T>& v) {
+  serializeVecImpl(ar1, v.v, BracketType::ROUND);
+}
+
+template <typename Archive, typename T>
+inline void serialize(Archive& ar1, VectorWithRoundBrackets<T>& v) {
+  ar1(v.v);
 }
 
 template <typename T, typename U>

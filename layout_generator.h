@@ -21,7 +21,7 @@ struct None {
 
 struct Set {
   vector<Token> SERIAL(tokens);
-  SERIALIZE_ALL(tokens)
+  SERIALIZE_ALL(withRoundBrackets(tokens))
 };
 
 struct SetFront {
