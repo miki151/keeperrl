@@ -56,6 +56,8 @@ static vector<vector<StreamChar>> parseArgs(const vector<StreamChar>& s, int& in
         while (isspace(ret.back().back().c))
           ret.back().pop_back();
       }
+      if (index >= s.size())
+        return ret;
       if (s[index].c == ',')
         ++index;
       eatWhitespace(s, index);
@@ -63,6 +65,8 @@ static vector<vector<StreamChar>> parseArgs(const vector<StreamChar>& s, int& in
         ++index;
         break;
       }
+      if (index >= s.size())
+        return ret;
     }
   }
   return ret;
@@ -85,7 +89,7 @@ void eatArgument(const vector<StreamChar>& s, int& index) {
       parseArgs(s, index);
     ++index;
     eatWhitespace(s, index);
-    if (s[index].c == ',') {
+    if (index >= s.size() || s[index].c == ',') {
       return;
     }
   }
