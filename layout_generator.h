@@ -43,7 +43,7 @@ struct Filter {
 
 struct Remove {
   vector<Token> SERIAL(tokens);
-  SERIALIZE_ALL(tokens)
+  SERIALIZE_ALL(withRoundBrackets(tokens))
 };
 
 struct MarginImpl {

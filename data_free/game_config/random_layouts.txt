@@ -10,8 +10,8 @@ End
 Def Connector()
   Connect(AnyFloor(), {
     1000 And { On "no_dig" } None
-    10 And {On "wood_wall" Not On "no_dig"} { Remove { "wood_wall" } Set("clear_middle", "wood_door")}
-    10 And {On "castle_wall" Not On "no_dig"} { Remove { "castle_wall" } Set("clear_middle", "iron_door")}
+    10 And {On "wood_wall" Not On "no_dig"} { Remove("wood_wall") Set("clear_middle", "wood_door")}
+    10 And {On "castle_wall" Not On "no_dig"} { Remove("castle_wall") Set("clear_middle", "iron_door")}
     8 On "lava" Set("stone_bridge")
     8 On "water" Set("wood_bridge")
     6 And { Not AnyWall() Not AnyWater() Not AnyFloor() Not On "no_dig" On "room_wall" }
@@ -57,11 +57,11 @@ Def CellularAutomaton(Generator, BeginProb)
     Filter(Chance BeginProb, Set("cell_added"))
     Repeat(4, {
       Filter(Area { 1 On "cell_added" 5 }, Set("cell_added2"))
-      Filter(On "cell_added2", Set("cell_added"), Remove { "cell_added" })
-      Remove { "cell_added2" }
+      Filter(On "cell_added2", Set("cell_added"), Remove("cell_added"))
+      Remove("cell_added2")
     })
     Filter(On "cell_added", Generator)
-    Remove { "cell_added" }
+    Remove("cell_added")
   })
 End
 
@@ -329,7 +329,7 @@ Def AdoxieFeetUnderRoom(EntrancePos)
 {
   Reset("floor", "stockpile", "adoxie_feet_trigger")
   Border(-1, Set("no_dig"))
-  Inside(-1, PlaceGen(Remove { "no_dig" "rock" }, {1 1}, EntrancePos))
+  Inside(-1, PlaceGen(Remove("no_dig", "rock"), {1 1}, EntrancePos))
 }
 End
 
@@ -578,8 +578,8 @@ Def AdoxieTemple() {
             Place {{ {1 1} Set("clear_middle", "down_stairs0") 1 True MIDDLE }}
           })
           Set("no_dig")
-          Place {{ {1 1} Remove { "no_dig" } 1 True MIDDLE_V }}
-          Place {{ {1 1} Remove { "no_dig" } 1 True MIDDLE_H }}
+          Place {{ {1 1} Remove("no_dig") 1 True MIDDLE_V }}
+          Place {{ {1 1} Remove("no_dig") 1 True MIDDLE_H }}
         }
         1
         On "lava"
