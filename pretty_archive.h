@@ -65,7 +65,8 @@ class PrettyInputArchive {
     bool eatMaybe(const string& s);
     void openBracket(BracketType);
     void closeBracket(BracketType);
-    bool isClosedBracket(BracketType);
+    bool isOpenBracket(BracketType);
+    bool isCloseBracket(BracketType);
     string peek(int cnt = 1);
 
     template <typename T>
@@ -218,11 +219,11 @@ inline void serializeVecImpl(PrettyInputArchive& ar1, vector<T>& v, BracketType 
   if (!ar1.eatMaybe("append"))
     v.clear();
   ar1.openBracket(bracketType);
-  while (!ar1.isClosedBracket(bracketType)) {
+  while (!ar1.isCloseBracket(bracketType)) {
     T t;
     ar1(t);
     v.push_back(std::move(t));
-    if (bracketType == BracketType::ROUND && !ar1.isClosedBracket(bracketType))
+    if (bracketType == BracketType::ROUND && !ar1.isCloseBracket(bracketType))
       ar1.eat(",");
   }
   ar1.closeBracket(bracketType);

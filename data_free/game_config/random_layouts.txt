@@ -8,16 +8,16 @@ Def NextTo(Pred)
 End
 
 Def Connector()
-  Connect(AnyFloor(), {
-    1000 And { On "no_dig" } None
-    10 And {On "wood_wall" Not On "no_dig"} { Remove("wood_wall") Set("clear_middle", "wood_door")}
-    10 And {On "castle_wall" Not On "no_dig"} { Remove("castle_wall") Set("clear_middle", "iron_door")}
-    8 On "lava" Set("stone_bridge")
-    8 On "water" Set("wood_bridge")
-    6 And { Not AnyWall() Not AnyWater() Not AnyFloor() Not On "no_dig" On "room_wall" }
-        Filter(And { Chance 0.4 Not NextTo(On "wood_door")}, Reset("wood_door"), Reset("floor"))
-    4 And { Not AnyWall() Not AnyFloor() On "rock" Not On "no_dig" Not On "room_wall" } Reset("floor")
-  })
+  Connect(AnyFloor(),
+    (1000, And { On "no_dig" }, None),
+    (10, And {On "wood_wall" Not On "no_dig"}, { Remove("wood_wall") Set("clear_middle", "wood_door")}),
+    (10, And {On "castle_wall" Not On "no_dig"}, { Remove("castle_wall") Set("clear_middle", "iron_door")}),
+    (8, On "lava", Set("stone_bridge")),
+    (8, On "water", Set("wood_bridge")),
+    (6, And { Not AnyWall() Not AnyWater() Not AnyFloor() Not On "no_dig" On "room_wall" },
+        Filter(And { Chance 0.4 Not NextTo(On "wood_door")}, Reset("wood_door"), Reset("floor"))),
+    (4, And { Not AnyWall() Not AnyFloor() On "rock" Not On "no_dig" Not On "room_wall" }, Reset("floor"))
+  )
 End
 
 Def Margin(Size, Gen1, Gen2)
@@ -483,9 +483,9 @@ End
 Def Dungeon2() {
   Set("rock")
   CellularAutomaton(Reset("floor", "room_floor"), 0.55)
-  Connect(On "floor", {
-    5 On "rock" Reset("floor")
-  })
+  Connect(On "floor",
+    5, On "rock", Reset("floor")
+  )
   DungeonContent()
 }
 End

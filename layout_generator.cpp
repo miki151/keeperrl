@@ -254,6 +254,33 @@ bool make(const LayoutGenerators::Choose& g, LayoutCanvas c, RandomGen& r) {
   return r.choose(generators, chances)->make(c, r);
 }
 
+void LayoutGenerators::Connect::serialize(PrettyInputArchive& ar1, const unsigned int version) {
+  auto bracketType = BracketType::ROUND;
+  ar1.openBracket(bracketType);
+  ar1(toConnect);
+  ar1.eat(",");
+  auto readElem = [&] {
+    Elem t;
+    ar1(t.cost);
+    ar1.eat(",");
+    ar1(t.predicate);
+    ar1.eat(",");
+    ar1(t.generator);
+    return t;
+  };
+  if (!ar1.isOpenBracket(bracketType))
+    elems.push_back(readElem());
+  else
+    while (!ar1.isCloseBracket(bracketType)) {
+      ar1.openBracket(bracketType);
+      elems.push_back(readElem());
+      ar1.closeBracket(bracketType);
+      if (!ar1.isCloseBracket(bracketType))
+        ar1.eat(",");
+    }
+  ar1.closeBracket(bracketType);
+}
+
 const LayoutGenerators::Connect::Elem* getConnectorElem(const LayoutGenerators::Connect& g, LayoutCanvas c, RandomGen& r, Vec2 p1) {
   const LayoutGenerators::Connect::Elem* ret = nullptr;
   for (auto& elem : g.elems)

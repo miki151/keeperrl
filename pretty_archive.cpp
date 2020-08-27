@@ -281,7 +281,11 @@ void PrettyInputArchive::closeBracket(BracketType type) {
   eat(getCloseBracket(type));
 }
 
-bool PrettyInputArchive::isClosedBracket(BracketType type) {
+bool PrettyInputArchive::isOpenBracket(BracketType type) {
+  return peek() == getOpenBracket(type);
+}
+
+bool PrettyInputArchive::isCloseBracket(BracketType type) {
   return peek() == getCloseBracket(type);
 }
 
@@ -351,7 +355,7 @@ void prettyEpilogue(PrettyInputArchive& ar1) {
     ar1.openBracket(bracket);
     bool keysAndValues = false;
     set<string> processed;
-    while (!ar1.isClosedBracket(bracket)) {
+    while (!ar1.isCloseBracket(bracket)) {
       if (ar1.peek() == ",")
         ar1.eat();
       auto bookmark = ar1.bookmark();
@@ -363,7 +367,7 @@ void prettyEpilogue(PrettyInputArchive& ar1) {
           ar1.error("Expected a \"key = value\" pair");
         ar1.seek(bookmark);
         for (auto& loader : loaders) {
-          if (ar1.isClosedBracket(bracket))
+          if (ar1.isCloseBracket(bracket))
             break;
           processed.insert(loader.name);
           loader.load(true);

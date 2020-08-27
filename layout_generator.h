@@ -138,6 +138,7 @@ struct Connect {
   TilePredicate SERIAL(toConnect);
   vector<Elem> SERIAL(elems);
   SERIALIZE_ALL(roundBracket(), NAMED(toConnect), NAMED(elems))
+  void serialize(PrettyInputArchive&, const unsigned int version);
 };
 
 struct Repeat {
