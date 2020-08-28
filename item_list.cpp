@@ -28,7 +28,7 @@ struct ItemList::MultiItemInfo {
 
 ItemList& ItemList::setRandomPrefixes(double chance) {
   for (auto& item : items)
-    item.id.setPrefixChance(chance);
+    item.id = std::move(item.id).setPrefixChance(chance);
   return *this;
 }
 

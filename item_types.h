@@ -18,6 +18,8 @@
     ITEM_TYPE_INTERFACE;\
   }
 
+class ItemType;
+
 namespace ItemTypes {
 struct Intrinsic {
   ViewId SERIAL(viewId);
@@ -88,7 +90,12 @@ struct AutomatonPaint {
   ITEM_TYPE_INTERFACE;
 };
 using Simple = CustomItemId;
-
+struct PrefixChance {
+  double SERIAL(chance);
+  HeapAllocated<ItemType> SERIAL(type);
+  SERIALIZE_ALL(chance, type)
+  ITEM_TYPE_INTERFACE;
+};
 
 #define ITEM_TYPES_LIST\
   X(Scroll, 0)\
@@ -107,6 +114,7 @@ using Simple = CustomItemId;
   X(Assembled, 13) \
   X(Corpse, 14)\
   X(AutomatonPaint, 15)\
+  X(PrefixChance, 16)
 
 #define VARIANT_TYPES_LIST ITEM_TYPES_LIST
 #define VARIANT_NAME ItemTypeVariant

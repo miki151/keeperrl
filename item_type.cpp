@@ -73,11 +73,9 @@ ItemType::ItemType(const ItemTypeVariant& v) : type(v) {
 
 ItemType::ItemType() {}
 
-ItemType& ItemType::setPrefixChance(double chance) {
-  prefixChance = chance;
-  return *this;
+ItemType ItemType::setPrefixChance(double chance)&& {
+  return ItemType(ItemTypes::PrefixChance{chance, *this});
 }
-
 
 class FireScrollItem : public Item {
   public:
@@ -255,8 +253,6 @@ PItem ItemType::get(const ContentFactory* factory) const {
   }
   if (attributes.ingredientType)
     attributes.description = "Special crafting ingredient";
-  if (!attributes.genPrefixes.empty() && Random.chance(prefixChance))
-    applyPrefix(factory, Random.choose(attributes.genPrefixes), attributes);
   return type->visit<PItem>(
       [&](const ItemTypes::FireScroll&) {
         return makeOwner<FireScrollItem>(std::move(attributes), factory);
@@ -515,6 +511,13 @@ ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) c
   );
 }
 
+ItemAttributes ItemTypes::PrefixChance::getAttributes(const ContentFactory* factory) const {
+  auto attributes = type->getAttributes(factory);
+  if (!attributes.genPrefixes.empty() && Random.chance(chance))
+    applyPrefix(factory, Random.choose(attributes.genPrefixes), attributes);
+  return attributes;
+}
+
 static ViewId getMushroomViewId(Effect e) {
   return e.effect->visit<ViewId>(
       [&](const Effects::Lasting& e) {
@@ -617,7 +620,7 @@ ItemAttributes ItemTypes::TechBook::getAttributes(const ContentFactory*) const {
   );
 }
 
-SERIALIZE_DEF(ItemType, NAMED(type), OPTION(prefixChance))
+SERIALIZE_DEF(ItemType, NAMED(type))
 
 
 #define VARIANT_TYPES_LIST ITEM_TYPES_LIST

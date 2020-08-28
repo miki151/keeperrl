@@ -26,19 +26,15 @@ class ItemType {
   ItemType();
   STRUCT_DECLARATIONS(ItemType)
 
-  ItemType& setPrefixChance(double chance);
-
   template <class Archive>
   void serialize(Archive&, const unsigned int);
 
   PItem get(const ContentFactory*) const;
   vector<PItem> get(int, const ContentFactory*) const;
+  ItemAttributes getAttributes(const ContentFactory*) const;
+  ItemType setPrefixChance(double chance)&&;
 
   HeapAllocated<ItemTypeVariant> SERIAL(type);
-
-  private:
-  ItemAttributes getAttributes(const ContentFactory*) const;
-  double SERIAL(prefixChance) = 0.0;
 };
 
 static_assert(std::is_nothrow_move_constructible<ItemType>::value, "T should be noexcept MoveConstructible");
