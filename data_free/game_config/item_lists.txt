@@ -4,8 +4,8 @@
     {{Scroll Escape} 5 }
     {{Scroll Enhance ARMOR 1} 5 }
     {{Scroll Enhance WEAPON 1} 5 }
-    {{FireScroll 5 }}
-    {{"Torch" 10 }}
+    {{FireScroll} 5}
+    {{"Torch"} 10}
     {{Scroll Summon "FIRE_ELEMENTAL" {1 2} 100} 5 }
     {{Scroll CircularBlast} 1 }
     {{Scroll Deception} 2 }
