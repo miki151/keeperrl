@@ -1,22 +1,22 @@
-Def AnyWall() Or { On "wood_wall" On "castle_wall" } End
-Def AnyFloor() And { Not AnyWall() Or { On "stone_floor" On "wood_floor" On "floor" }} End
-Def AnyDoor() Or { On "wood_door" On "iron_door" On "iron_gate" On "wood_gate" } End
-Def AnyWater() Or { On "lava" On "water" } End
+Def AnyWall() Or(On("wood_wall"), On("castle_wall")) End
+Def AnyFloor() And(Not AnyWall(), Or(On("stone_floor"), On("wood_floor"), On("floor"))) End
+Def AnyDoor() Or(On("wood_door"), On("iron_door"), On("iron_gate"), On("wood_gate")) End
+Def AnyWater() Or(On("lava"), On("water")) End
 
 Def NextTo(Pred)
-  Area { 1 Pred }
+  Area(1, Pred)
 End
 
 Def Connector()
   Connect(AnyFloor(),
-    (1000, And { On "no_dig" }, None),
-    (10, And {On "wood_wall" Not On "no_dig"}, { Remove("wood_wall") Set("clear_middle", "wood_door")}),
-    (10, And {On "castle_wall" Not On "no_dig"}, { Remove("castle_wall") Set("clear_middle", "iron_door")}),
-    (8, On "lava", Set("stone_bridge")),
-    (8, On "water", Set("wood_bridge")),
-    (6, And { Not AnyWall() Not AnyWater() Not AnyFloor() Not On "no_dig" On "room_wall" },
-        Filter(And { Chance 0.4 Not NextTo(On "wood_door")}, Reset("wood_door"), Reset("floor"))),
-    (4, And { Not AnyWall() Not AnyFloor() On "rock" Not On "no_dig" Not On "room_wall" }, Reset("floor"))
+    (1000, On("no_dig"), None),
+    (10, And(On("wood_wall"), Not On("no_dig")), { Remove("wood_wall") Set("clear_middle", "wood_door")}),
+    (10, And(On("castle_wall"), Not On("no_dig")), { Remove("castle_wall") Set("clear_middle", "iron_door")}),
+    (8, On("lava"), Set("stone_bridge")),
+    (8, On("water"), Set("wood_bridge")),
+    (6, And(Not AnyWall(), Not AnyWater(), Not AnyFloor(), Not On("no_dig"), On("room_wall")),
+        Filter(And(Chance(0.4), Not NextTo(On("wood_door"))), Reset("wood_door"), Reset("floor"))),
+    (4, And(Not AnyWall(), Not AnyFloor(), On("rock"), Not On("no_dig"), Not On("room_wall")), Reset("floor"))
   )
 End
 
@@ -54,13 +54,13 @@ End
 
 Def CellularAutomaton(Generator, BeginProb)
   Inside(1, {
-    Filter(Chance BeginProb, Set("cell_added"))
+    Filter(Chance(BeginProb), Set("cell_added"))
     Repeat(4, {
-      Filter(Area { 1 On "cell_added" 5 }, Set("cell_added2"))
-      Filter(On "cell_added2", Set("cell_added"), Remove("cell_added"))
+      Filter(Area(1, On("cell_added"), 5), Set("cell_added2"))
+      Filter(On("cell_added2"), Set("cell_added"), Remove("cell_added"))
       Remove("cell_added2")
     })
-    Filter(On "cell_added", Generator)
+    Filter(On("cell_added"), Generator)
     Remove("cell_added")
   })
 End
@@ -82,14 +82,14 @@ Def Village1() {
     generator = Building("wood_wall", "floor")
     count = 3
     minSpacing = 1
-    predicate = Not On "main_building"
+    predicate = Not On("main_building")
   )
   Connector()
   Place(
-    ({1 1} Set("bed") {2 4} And {On "main_building" NextTo(AnyWall()) Not NextTo(AnyDoor()) }),
-    ({1 1} Set("stockpile") {1 3} And {On "main_building" NextTo(AnyWall()) Not NextTo(AnyDoor())})
+    ({1 1} Set("bed") {2 4} And(On("main_building"), NextTo(AnyWall()), Not NextTo(AnyDoor()))),
+    ({1 1} Set("stockpile") {1 3} And(On("main_building"), NextTo(AnyWall()), Not NextTo(AnyDoor())))
   )
-  Place({1 1} Set("dining_table") 1 And {On "main_building" Not NextTo(AnyWall()) })
+  Place({1 1} Set("dining_table") 1 And(On("main_building"), Not NextTo(AnyWall())))
 }
 End
 
@@ -111,14 +111,14 @@ Def Village2() {
     generator = Building("wood_wall", "floor")
     count = 1
     minSpacing = 1
-    predicate = Not On "main_building"
+    predicate = Not On("main_building")
   )
   Connector()
   Place(
-    ({1 1} Set("bed") {2 4} And {On "first_room" NextTo(AnyWall()) Not NextTo(AnyDoor()) }),
-    ({1 1} Set("stockpile") {1 3} And {On "first_room" NextTo(AnyWall()) Not NextTo(AnyDoor()) })
+    ({1 1} Set("bed") {2 4} And(On("first_room"), NextTo(AnyWall()), Not NextTo(AnyDoor()))),
+    ({1 1} Set("stockpile") {1 3} And(On("first_room"), NextTo(AnyWall()), Not NextTo(AnyDoor())))
   )
-  Place({1 1}, Set("dining_table"), 1, And {On "second_room" Not NextTo(AnyWall()) })
+  Place({1 1}, Set("dining_table"), 1, And(On("second_room"), Not NextTo(AnyWall())))
 }
 End
 
@@ -253,14 +253,14 @@ Def Castle(CornerSize) {
       { CastleMaybe(CastlePart1(6)) CastleMaybe(CastlePart2(6)) CastleMaybe(CastlePart3(4)) }
     }
     Connector()
-    Position(MIDDLE, {1 1}, FloodFill(And { AnyFloor() Not AnyDoor() }, Set("castle_outside")))
-    Filter(And { Or { AnyFloor() AnyDoor() } Not On "castle_outside"}, Set("castle_inside", "stone_floor"))
-    Place({1 1}, Set("inside_furniture"), 8, And { Not AnyDoor() On "castle_inside"})
-    Place({1 1}, Set("outside_furniture"), 8, On "castle_outside")
+    Position(MIDDLE, {1 1}, FloodFill(And(AnyFloor(), Not AnyDoor()), Set("castle_outside")))
+    Filter(And(Or(AnyFloor(), AnyDoor()), Not On("castle_outside")), Set("castle_inside", "stone_floor"))
+    Place({1 1}, Set("inside_furniture"), 8, And(Not AnyDoor(), On("castle_inside")))
+    Place({1 1}, Set("outside_furniture"), 8, On("castle_outside"))
     Border(BOTTOM, 2, Inside(BOTTOM, 1,
         Position(MIDDLE, {1 1}, Set("clear_middle", "up_stairs0", "stairs"))))
-    Place({1 1}, Set("clear_middle", "down_stairs0", "stairs"), 1, On "castle_corner")
-    Place({2 2}, Set("shop0"), 1, And { On "castle_inside" Not On "stairs"})
+    Place({1 1}, Set("clear_middle", "down_stairs0", "stairs"), 1, On("castle_corner"))
+    Place({2 2}, Set("shop0"), 1, And(On("castle_inside"), Not On("stairs")))
   })
 }
 End
@@ -275,10 +275,10 @@ Def CastleEmpty(CornerSize) {
     Building("castle_wall", "floor")
     Choose { CastleGate3() CastleGate2() CastleGate1() }
     CastleCornersOpen(CornerSize)
-    Position(MIDDLE, {1 1}, FloodFill(And { AnyFloor() Not AnyDoor() }, Set("stone_floor")))
+    Position(MIDDLE, {1 1}, FloodFill(And(AnyFloor(), Not AnyDoor()), Set("stone_floor")))
     Border(BOTTOM, 2, Inside(BOTTOM, 1,
         Position(MIDDLE, {1 1}, Set("clear_middle", "up_stairs0", "stairs"))))
-    Place({1 1} Set("clear_middle", "down_stairs0", "stairs") 1 On "castle_corner")
+    Place({1 1} Set("clear_middle", "down_stairs0", "stairs") 1 On("castle_corner"))
     SetFront("clear_furniture")
   })
 }
@@ -310,7 +310,7 @@ Def AdoxieFeetEntry() {
     Border(TOP, 1,
       Position(MIDDLE, {1 1}, Set("down_stairs0", "no_corpse")))
   )
-  Inside(1, Place({1 1}, Set("corpse"), {2 4}, Not On "no_corpse"))
+  Inside(1, Place({1 1}, Set("corpse"), {2 4}, Not On("no_corpse")))
 }
 End
 
@@ -346,8 +346,8 @@ Def CastleUpStairs() {
     {
       Building("castle_wall", "stone_floor")
       Inside(1, Set("no_territory"))
-      Inside(TOP, 4, Border(LEFT, 3, Border(RIGHT, 1, Filter(YMod 2 0, Set("castle_wall")))))
-      Inside(TOP, 4, Border(RIGHT, 3, Border(LEFT, 1, Filter(YMod 2 0, Set("castle_wall")))))
+      Inside(TOP, 4, Border(LEFT, 3, Border(RIGHT, 1, Filter(YMod(2, 0), Set("castle_wall")))))
+      Inside(TOP, 4, Border(RIGHT, 3, Border(LEFT, 1, Filter(YMod(2, 0), Set("castle_wall")))))
     } 
   )
   Border(BOTTOM, 2, Inside(BOTTOM, 1,
@@ -387,12 +387,12 @@ Def GuardPost() {
     generator = Building("wood_wall", "floor")
     count = 1
     minSpacing = 1
-    predicate = Not On "main_building"
+    predicate = Not On("main_building")
   )
   Place (
-    ({1 1} Set("up_stairs0") 1 And { On "first_room" AnyFloor() }),
-    ({1 1} Set("dining_table") 1 And { On "first_room" AnyFloor() }),
-    ({1 1} Set("torch") 1 And { On "first_room" AnyFloor() })
+    ({1 1} Set("up_stairs0") 1 And(On("first_room"), AnyFloor())),
+    ({1 1} Set("dining_table") 1 And(On("first_room"), AnyFloor())),
+    ({1 1} Set("torch") 1 And(On("first_room"), AnyFloor()))
   )
   Connector()
 }
@@ -401,11 +401,11 @@ End
 Def GuardPostFloor2() {
   Building("castle_wall", "wood_floor")
   Place (
-    ({1 1} Set("down_stairs0") 1 And { AnyFloor() NextTo(AnyWall())}),
-    ({1 1} Set("up_stairs0") 1 And { AnyFloor() NextTo(AnyWall())}),
-    ({1 1} Set("armor_chest") {3 6} And { AnyFloor() NextTo(AnyWall())}),
-    ({1 1} Set("bed") 2 And { AnyFloor() NextTo(AnyWall())}),
-    ({1 1} Set("torch") 1 And { AnyFloor() NextTo(AnyWall())})
+    ({1 1} Set("down_stairs0") 1 And(AnyFloor(), NextTo(AnyWall()))),
+    ({1 1} Set("up_stairs0") 1 And(AnyFloor(), NextTo(AnyWall()))),
+    ({1 1} Set("armor_chest") {3 6} And(AnyFloor(), NextTo(AnyWall()))),
+    ({1 1} Set("bed") 2 And(AnyFloor(), NextTo(AnyWall()))),
+    ({1 1} Set("torch") 1 And(AnyFloor(), NextTo(AnyWall())))
   )
 }
 End
@@ -413,8 +413,8 @@ End
 Def GuardPostFloor3() {
   Building("wood_wall", "wood_floor")
   Place (
-    ({1 1} Set("down_stairs0") 1 And { AnyFloor() NextTo(AnyWall())}),
-    ({1 1} Set("pamphlet_chest") {2 4} And { AnyFloor() NextTo(AnyWall())})
+    ({1 1} Set("down_stairs0") 1 And(AnyFloor(), NextTo(AnyWall()))),
+    ({1 1} Set("pamphlet_chest") {2 4} And(AnyFloor(), NextTo(AnyWall())))
   )
 }
 End
@@ -429,13 +429,13 @@ Def DungeonContent()
       size = {1 1}
       generator = Set("monster")
       count = 4
-      predicate = On "room_floor"
+      predicate = On("room_floor")
     ),
-    ({1 1} Set("up_stairs0") 1 On "room_floor"),
-    ({1 1} Set("down_stairs0") 1 On "room_floor"),
-    ({1 1} Set("up_stairs1") 1 On "room_floor"),
-    ({1 1} Set("down_stairs1") 1 On "room_floor"),
-    ({1 1} Set("inside_furniture") 10 On "room_floor")
+    ({1 1} Set("up_stairs0") 1 On("room_floor")),
+    ({1 1} Set("down_stairs0") 1 On("room_floor")),
+    ({1 1} Set("up_stairs1") 1 On("room_floor")),
+    ({1 1} Set("down_stairs1") 1 On("room_floor")),
+    ({1 1} Set("inside_furniture") 10 On("room_floor"))
   )
 End
 
@@ -483,8 +483,8 @@ End
 Def Dungeon2() {
   Set("rock")
   CellularAutomaton(Reset("floor", "room_floor"), 0.55)
-  Connect(On "floor",
-    5, On "rock", Reset("floor")
+  Connect(On("floor"),
+    5, On("rock"), Reset("floor")
   )
   DungeonContent()
 }
@@ -546,12 +546,12 @@ Def AdoxieTemple() {
           Position(MIDDLE_H, {1 1}, Remove("no_dig"))
         }
         1
-        On "lava"
+        On("lava")
       )
     }
   )
   Connector()
-  Filter(Not On "temple", Set("no_territory"))
+  Filter(Not On("temple"), Set("no_territory"))
 }
 End
 

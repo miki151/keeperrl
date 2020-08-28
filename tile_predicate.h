@@ -13,7 +13,7 @@ namespace TilePredicates {
 
 struct On {
   Token SERIAL(token);
-  SERIALIZE_ALL(token)
+  SERIALIZE_ALL(roundBracket(), NAMED(token))
 };
 
 struct Not {
@@ -27,36 +27,36 @@ struct True {
 
 struct And {
   vector<TilePredicate> SERIAL(predicates);
-  SERIALIZE_ALL(predicates)
+  SERIALIZE_ALL(withRoundBrackets(predicates))
 };
 
 struct Or {
   vector<TilePredicate> SERIAL(predicates);
-  SERIALIZE_ALL(predicates)
+  SERIALIZE_ALL(withRoundBrackets(predicates))
 };
 
 struct Chance {
   double SERIAL(value);
-  SERIALIZE_ALL(value)
+  SERIALIZE_ALL(roundBracket(), NAMED(value))
 };
 
 struct Area {
   int SERIAL(radius);
   HeapAllocated<TilePredicate> SERIAL(predicate);
   int SERIAL(minCount) = 1;
-  SERIALIZE_ALL(NAMED(radius), NAMED(predicate), OPTION(minCount))
+  SERIALIZE_ALL(roundBracket(), NAMED(radius), NAMED(predicate), OPTION(minCount))
 };
 
 struct XMod {
   int SERIAL(div);
   int SERIAL(mod);
-  SERIALIZE_ALL(div, mod)
+  SERIALIZE_ALL(roundBracket(), NAMED(div), NAMED(mod))
 };
 
 struct YMod {
   int SERIAL(div);
   int SERIAL(mod);
-  SERIALIZE_ALL(div, mod)
+  SERIALIZE_ALL(roundBracket(), NAMED(div), NAMED(mod))
 };
 
 #define VARIANT_TYPES_LIST\
