@@ -99,7 +99,7 @@ Def Village2() {
     size = {6 9}
     generator = {
       Building("castle_wall", "stone_floor")
-      Inside(1, VRatio(0.6,
+      Inside(1, SplitV(0.6,
         Margin(BOTTOM, 1, Set("castle_wall"), Set("first_room")),
         Set("second_room")))
       Inside(-1, Set("main_building"))
@@ -171,7 +171,7 @@ Def CastleCornersOpen(CornerSize) {
 End
 
 Def CastlePart1(Width) {
-  VRatio(0.6, Inside(TOP, 1, Inside(BOTTOM, -1, {
+  SplitV(0.6, Inside(TOP, 1, Inside(BOTTOM, -1, {
     Border(BOTTOM, 1, Set("castle_wall"))
     Position(MIDDLE_V, {Width 1},
       Margin(LEFT, 1,
@@ -186,7 +186,7 @@ Def CastlePart1(Width) {
 End
 
 Def CastlePart2(Width) {
-  VRatio(0.6, None, {
+  SplitV(0.6, None, {
     Border(TOP, 1, Set("castle_wall"))
     Margin(TOP, 2,
       Inside(BOTTOM, -1,
@@ -217,7 +217,7 @@ Def CastlePart2(Width) {
 End
 
 Def CastlePart3(Width) {
-  VRatio(0.6, None,
+  SplitV(0.6, None,
     Inside(TOP, 2,
       Position(
         MIDDLE_V,
@@ -366,7 +366,7 @@ Def GuardPost() {
     generator = {
       Building("castle_wall", "wood_floor")
       Inside(-1, Set("main_building"))
-      Inside(1, VRatio(0.6,
+      Inside(1, SplitV(0.6,
         Margin(BOTTOM, 1,
           {
             Set("castle_wall")
@@ -520,7 +520,7 @@ End
 
 Def AdoxieTemple() {
   Set("rock")
-  HRatio(0.5,
+  SplitH(0.5,
     Inside(1, Place(
       minSize = {2 2}
       maxSize = {6 6}

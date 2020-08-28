@@ -94,7 +94,7 @@ bool make(const LayoutGenerators::MarginImpl& g, LayoutCanvas c, RandomGen& r) {
   return g.inside->make(c.with(rect.second), r);
 }
 
-bool make(const LayoutGenerators::HRatio& g, LayoutCanvas c, RandomGen& r) {
+bool make(const LayoutGenerators::SplitH& g, LayoutCanvas c, RandomGen& r) {
   if (!g.left->make(c.with(Rectangle(
       c.area.topLeft(),
       Vec2(int(c.area.left() + c.area.width() * g.r), c.area.bottom()))), r))
@@ -104,7 +104,7 @@ bool make(const LayoutGenerators::HRatio& g, LayoutCanvas c, RandomGen& r) {
       c.area.bottomRight())), r);
 }
 
-bool make(const LayoutGenerators::VRatio& g, LayoutCanvas c, RandomGen& r) {
+bool make(const LayoutGenerators::SplitV& g, LayoutCanvas c, RandomGen& r) {
   if (!g.top->make(c.with(Rectangle(
       c.area.topLeft(),
       Vec2(c.area.right(), int(c.area.top() + c.area.height() * g.r)))), r))

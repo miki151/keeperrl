@@ -61,14 +61,14 @@ struct Margins {
   SERIALIZE_ALL(roundBracket(), NAMED(width), NAMED(border), NAMED(inside))
 };
 
-struct HRatio {
+struct SplitH {
   double SERIAL(r);
   HeapAllocated<LayoutGenerator> SERIAL(left);
   HeapAllocated<LayoutGenerator> SERIAL(right);
   SERIALIZE_ALL(roundBracket(), NAMED(r), NAMED(left), NAMED(right))
 };
 
-struct VRatio {
+struct SplitV {
   double SERIAL(r);
   HeapAllocated<LayoutGenerator> SERIAL(top);
   HeapAllocated<LayoutGenerator> SERIAL(bottom);
@@ -162,8 +162,8 @@ struct FloodFill {
   X(Filter, 5)\
   X(MarginImpl, 6)\
   X(Margins, 7)\
-  X(HRatio, 8)\
-  X(VRatio, 9)\
+  X(SplitH, 8)\
+  X(SplitV, 9)\
   X(Position, 10)\
   X(Place, 11)\
   X(NoiseMap, 12)\
