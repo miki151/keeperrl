@@ -3,52 +3,52 @@
 {
   "WORKSHOP"
   {
-      {item = {Simple "Club"}    work = 3 cost = "WOOD" 10    tech = none      batchSize = 1    tutorialHighlight = SCHEDULE_CLUB}
-      {{Simple "LeatherArmor"}          6        "WOOD" 20}
-      {{Simple "LeatherHelm"}           1        "WOOD" 6}
-      {{Simple "LeatherBoots"}          2        "WOOD" 10}
-      {{Simple "WoodenShield"}          2        "WOOD" 10}
-      {{Simple "LeatherGloves"}         1        "WOOD" 2}
-      {{Simple "HeavyClub"}             5        "WOOD" 20      "two-handed weapons"}
-      {{Simple "Cornuthaum1"}           5        "GOLD" 0       "sorcery"}
-      {{Simple "Cornuthaum2"}           8        "GOLD" 20      "advanced sorcery"}
-      {{Simple "Cornuthaum3"}           12       "GOLD" 40      "master sorcery"}
-      {item = {Simple "DevilBoots"}       work = 30 cost = "WOOD" 0 requireIngredient = "devil_hooves" }
-      {{Simple "Bow"}                   13       "WOOD" 20      "archery"}
-      {{Simple "WoodenStaff"}           13       "WOOD" 20      "magical weapons"}
-      {{Simple "Torch"}                 2        "WOOD" 4}
+      {item = {"Club"}    work = 3 cost = "WOOD" 10    tech = none      batchSize = 1    tutorialHighlight = SCHEDULE_CLUB}
+      {{"LeatherArmor"}          6        "WOOD" 20}
+      {{"LeatherHelm"}           1        "WOOD" 6}
+      {{"LeatherBoots"}          2        "WOOD" 10}
+      {{"WoodenShield"}          2        "WOOD" 10}
+      {{"LeatherGloves"}         1        "WOOD" 2}
+      {{"HeavyClub"}             5        "WOOD" 20      "two-handed weapons"}
+      {{"Cornuthaum1"}           5        "GOLD" 0       "sorcery"}
+      {{"Cornuthaum2"}           8        "GOLD" 20      "advanced sorcery"}
+      {{"Cornuthaum3"}           12       "GOLD" 40      "master sorcery"}
+      {item = {"DevilBoots"}       work = 30 cost = "WOOD" 0 requireIngredient = "devil_hooves" }
+      {{"Bow"}                   13       "WOOD" 20      "archery"}
+      {{"WoodenStaff"}           13       "WOOD" 20      "magical weapons"}
+      {{"Torch"}                 2        "WOOD" 4}
   }
   
   "FORGE"
   {
-      {{Simple "Sword"}                 10       "IRON" 20}
-      {{Simple "ChainArmor"}            30       "IRON" 40}
-      {item = {Simple "RedDragonArmor"}   work = 30 cost = "IRON" 40 requireIngredient = "red_scales" }
-      {item = {Simple "BlackDragonArmor"} work = 30 cost = "IRON" 40 requireIngredient = "black_scales" }
-      {item = {Simple "WhiteDragonArmor"} work = 30 cost = "IRON" 40 requireIngredient = "white_scales" }
-      {item = {Simple "GreenDragonArmor"} work = 30 cost = "IRON" 40 requireIngredient = "green_scales" }
-      {item = {Simple "YellowDragonArmor"}work = 30 cost = "IRON" 40 requireIngredient = "yellow_scales" }
-      {{Simple "IronHelm"}              8        "IRON" 16}
-      {{Simple "IronBoots"}             12       "IRON" 24}
-      {item = {Simple "CyclopsHelm"}
+      {{"Sword"}                 10       "IRON" 20}
+      {{"ChainArmor"}            30       "IRON" 40}
+      {item = {"RedDragonArmor"}   work = 30 cost = "IRON" 40 requireIngredient = "red_scales" }
+      {item = {"BlackDragonArmor"} work = 30 cost = "IRON" 40 requireIngredient = "black_scales" }
+      {item = {"WhiteDragonArmor"} work = 30 cost = "IRON" 40 requireIngredient = "white_scales" }
+      {item = {"GreenDragonArmor"} work = 30 cost = "IRON" 40 requireIngredient = "green_scales" }
+      {item = {"YellowDragonArmor"}work = 30 cost = "IRON" 40 requireIngredient = "yellow_scales" }
+      {{"IronHelm"}              8        "IRON" 16}
+      {{"IronBoots"}             12       "IRON" 24}
+      {item = {"CyclopsHelm"}
        work = 30 
        cost = "IRON" 40
        requireIngredient = "cyclops_testes"
       }
-      {{Simple "IronGloves"}            3        "IRON" 2}
-      {{Simple "IronShield"}            12       "IRON" 24}
-      {{Simple "WarHammer"}             16       "IRON" 40      "two-handed weapons"}
-      {{Simple "BattleAxe"}             22       "IRON" 50      "two-handed weapons"}
-      {{Simple "IronStaff"}             20       "IRON" 40      "magical weapons"}
-      {{Simple "GoldenStaff"}           20       "GOLD" 200     "magical weapons"}
-      {{Simple "AdaSword"}              20       "ADA" 20}
-      {{Simple "AdaArmor"}              30       "ADA" 40}
-      {{Simple "AdaHelm"}               15       "ADA" 16}
-      {{Simple "AdaBoots"}              15       "ADA" 24}
-      {{Simple "AdaGloves"}             6        "ADA" 2}
-      {{Simple "AdaShield"}             12       "ADA" 24}
-      {{Simple "AdaWarHammer"}          20       "ADA" 40       "two-handed weapons"}
-      {{Simple "AdaBattleAxe"}          22       "ADA" 50       "two-handed weapons"}
+      {{"IronGloves"}            3        "IRON" 2}
+      {{"IronShield"}            12       "IRON" 24}
+      {{"WarHammer"}             16       "IRON" 40      "two-handed weapons"}
+      {{"BattleAxe"}             22       "IRON" 50      "two-handed weapons"}
+      {{"IronStaff"}             20       "IRON" 40      "magical weapons"}
+      {{"GoldenStaff"}           20       "GOLD" 200     "magical weapons"}
+      {{"AdaSword"}              20       "ADA" 20}
+      {{"AdaArmor"}              30       "ADA" 40}
+      {{"AdaHelm"}               15       "ADA" 16}
+      {{"AdaBoots"}              15       "ADA" 24}
+      {{"AdaGloves"}             6        "ADA" 2}
+      {{"AdaShield"}             12       "ADA" 24}
+      {{"AdaWarHammer"}          20       "ADA" 40       "two-handed weapons"}
+      {{"AdaBattleAxe"}          22       "ADA" 50       "two-handed weapons"}
   }
   
   "LABORATORY"
@@ -73,11 +73,11 @@
       {item = {Potion Permanent POISON_RESISTANT} work = 20 cost = "GOLD" 80 requireIngredient = "hydra_tongue" }
       {item = {Potion Name "mass insanity" Area 20 Lasting INSANITY}
           work = 50 cost = "GOLD" 666 requireIngredient = "devil_horns" }
-      {{Simple "GoldPiece"}                           5        "IRON" 30      "alchemical conversion"       10}
-      {{Simple "WoodPlank"}                           5        "GOLD" 10      "alchemical conversion"       10}
-      {{Simple "IronOre"}                             5        "GOLD" 10      "alchemical conversion"       10}
-      {{Simple "AdaOre"}                              5        "GOLD" 40      "alchemical conversion"       10}
-      {{Simple "Rock"}                                5        "GOLD" 10      "alchemical conversion"       10}
+      {{"GoldPiece"}                           5        "IRON" 30      "alchemical conversion"       10}
+      {{"WoodPlank"}                           5        "GOLD" 10      "alchemical conversion"       10}
+      {{"IronOre"}                             5        "GOLD" 10      "alchemical conversion"       10}
+      {{"AdaOre"}                              5        "GOLD" 40      "alchemical conversion"       10}
+      {{"Rock"}                                5        "GOLD" 10      "alchemical conversion"       10}
   }
   
   "JEWELER"
@@ -95,7 +95,7 @@
       {{Amulet NIGHT_VISION}                 10       "GOLD" 20}
       {{Amulet ELF_VISION}                   10       "GOLD" 20}
       {{Amulet WARNING}                      10       "GOLD" 30}
-      {{Simple "DefenseAmulet"}                       10       "GOLD" 40}
+      {{"DefenseAmulet"}                       10       "GOLD" 40}
       {{Amulet REGENERATION}                 10       "GOLD" 60}
   }
 }
@@ -125,12 +125,12 @@
         work = 8 cost = "WOOD" 20 tech = "advanced automatons" applyImmediately = true}
       { item = {Assembled "HELICOPTER" "helicopterum" }
         work = 8 cost = "WOOD" 10 tech = "aerodynamics" applyImmediately = true}
-      {{Simple    "AutomatonLegsWood"}       2       "WOOD" 5    "automatons"}
-      {{Simple    "AutomatonArmsWood"}       2       "WOOD" 5    "automatons"}
-      {{Simple    "AutomatonDrillWood"}      2       "WOOD" 5    "automatons"}
-      {{Simple    "AutomatonCraftingWood"}   2       "WOOD" 5    "advanced automatons"}
-      {{Simple    "ArcherHeadWood"}          2       "WOOD" 5    "advanced automatons"}
-      {{Simple    "HumanoidHeadWood"}        2       "WOOD" 5    "automaton brains"}
+      {{"AutomatonLegsWood"}       2       "WOOD" 5    "automatons"}
+      {{"AutomatonArmsWood"}       2       "WOOD" 5    "automatons"}
+      {{"AutomatonDrillWood"}      2       "WOOD" 5    "automatons"}
+      {{"AutomatonCraftingWood"}   2       "WOOD" 5    "advanced automatons"}
+      {{"ArcherHeadWood"}          2       "WOOD" 5    "advanced automatons"}
+      {{"HumanoidHeadWood"}        2       "WOOD" 5    "automaton brains"}
       {{TrapItem "TRAP_TRIGGER" "trigger"}   8       "WOOD" 20   "advanced traps"}
       {{TrapItem "DESTROY_WALLS_TRAP" "crumble"}8    "WOOD" 20   "advanced traps"}
   } 
@@ -144,16 +144,16 @@
         work = 8 cost = "IRON" 20 tech = "advanced automatons" applyImmediately = true}
       { item = {Assembled "HEAVY_AUTOMATON_CORPUS_IRON" "heavy automaton corpus"}
         work = 8 cost = "IRON" 40 tech = "advanced automatons" applyImmediately = true}
-      {{Simple    "AutomatonLegsIron"}       2       "IRON" 5    "automatons"}
-      {{Simple    "AutomatonArmsIron"}       2       "IRON" 5    "automatons"}
-#      {{Simple    "SharpAutomatonArmsIron"}  2       "IRON" 5    "advanced automatons"}
-      {{Simple    "RepairAutomatonArmsIron"} 2       "IRON" 5    "advanced automatons"}
-      {{Simple    "AutomatonDrillIron"}      2       "IRON" 5    "automatons"}
-      {{Simple    "AutomatonCraftingIron"}   2       "IRON" 5    "advanced automatons"}
-      {{Simple    "ArcherHeadIron"}          2       "IRON" 5    "advanced automatons"}
-      {{Simple    "FireHeadIron"}            2       "IRON" 5    "advanced automatons"}
-      {{Simple    "AcidHeadIron"}            2       "IRON" 5    "advanced automatons"}
-      {{Simple    "HumanoidHeadIron"}        2       "IRON" 5    "automaton brains"}
+      {{"AutomatonLegsIron"}       2       "IRON" 5    "automatons"}
+      {{"AutomatonArmsIron"}       2       "IRON" 5    "automatons"}
+#      {{"SharpAutomatonArmsIron"}  2       "IRON" 5    "advanced automatons"}
+      {{"RepairAutomatonArmsIron"} 2       "IRON" 5    "advanced automatons"}
+      {{"AutomatonDrillIron"}      2       "IRON" 5    "automatons"}
+      {{"AutomatonCraftingIron"}   2       "IRON" 5    "advanced automatons"}
+      {{"ArcherHeadIron"}          2       "IRON" 5    "advanced automatons"}
+      {{"FireHeadIron"}            2       "IRON" 5    "advanced automatons"}
+      {{"AcidHeadIron"}            2       "IRON" 5    "advanced automatons"}
+      {{"HumanoidHeadIron"}        2       "IRON" 5    "automaton brains"}
       { item = {Assembled "AUTOMATON_WORKER_ADA" "drilling automaton" }
         work = 8 cost = "ADA" 30 tech = "automatons" applyImmediately = true}
       { item = {Assembled "AUTOMATON_CORPUS_ADA" "automaton corpus" }
@@ -162,16 +162,16 @@
         work = 8 cost = "ADA" 20 tech = "advanced automatons" applyImmediately = true}
       { item = {Assembled "HEAVY_AUTOMATON_CORPUS_ADA" "heavy automaton corpus"}
         work = 8 cost = "ADA" 40 tech = "advanced automatons" applyImmediately = true}
-      {{Simple    "AutomatonLegsAda"}       2       "ADA" 5    "automatons"}
-      {{Simple    "AutomatonArmsAda"}       2       "ADA" 5    "automatons"}
-#      {{Simple    "SharpAutomatonArmsAda"}  2       "ADA" 5    "advanced automatons"}
-      {{Simple    "RepairAutomatonArmsAda"} 2       "ADA" 5    "advanced automatons"}
-      {{Simple    "AutomatonDrillAda"}      2       "ADA" 5    "automatons"}
-      {{Simple    "AutomatonCraftingAda"}   2       "ADA" 5    "advanced automatons"}
-      {{Simple    "ArcherHeadAda"}          2       "ADA" 5    "advanced automatons"}
-      {{Simple    "FireHeadAda"}            2       "ADA" 5    "advanced automatons"}
-      {{Simple    "AcidHeadAda"}            2       "ADA" 5    "advanced automatons"}
-      {{Simple    "HumanoidHeadAda"}        2       "ADA" 5    "automaton brains"}
+      {{"AutomatonLegsAda"}       2       "ADA" 5    "automatons"}
+      {{"AutomatonArmsAda"}       2       "ADA" 5    "automatons"}
+#      {{"SharpAutomatonArmsAda"}  2       "ADA" 5    "advanced automatons"}
+      {{"RepairAutomatonArmsAda"} 2       "ADA" 5    "advanced automatons"}
+      {{"AutomatonDrillAda"}      2       "ADA" 5    "automatons"}
+      {{"AutomatonCraftingAda"}   2       "ADA" 5    "advanced automatons"}
+      {{"ArcherHeadAda"}          2       "ADA" 5    "advanced automatons"}
+      {{"FireHeadAda"}            2       "ADA" 5    "advanced automatons"}
+      {{"AcidHeadAda"}            2       "ADA" 5    "advanced automatons"}
+      {{"HumanoidHeadAda"}        2       "ADA" 5    "automaton brains"}
   } 
   "LABORATORY"
   {

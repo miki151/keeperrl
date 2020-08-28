@@ -2022,8 +2022,10 @@ namespace Effects {
 template void Effect::serialize(PrettyInputArchive&, unsigned);
 
 namespace Effects {
+#define DEFAULT_ELEM "Chain"
 template<>
 #include "gen_variant_serialize_pretty.h"
 }
+#undef DEFAULT_ELEM
 #undef VARIANT_TYPES_LIST
 #undef VARIANT_NAME

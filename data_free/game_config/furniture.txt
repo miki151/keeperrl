@@ -477,7 +477,7 @@
     70 CUT
   }
   fire = 100
-  itemDrop = {{{{Simple "WoodPlank"} 1 { 8 14 }}}}
+  itemDrop = {{{{"WoodPlank"} 1 { 8 14 }}}}
   summonedElement = "ENT"
   tryDestroyFX = { WOOD_SPLINTERS }
 }
@@ -534,7 +534,7 @@
   }
   canHideHere = true
   fire = 30
-  itemDrop = {{{{Simple "WoodPlank"} 1 { 2 4 }}}}
+  itemDrop = {{{{"WoodPlank"} 1 { 2 4 }}}}
   tryDestroyFX = { WOOD_SPLINTERS }
 }
 "STONES"
@@ -755,7 +755,7 @@
       }
       {
         CreatureMessage "find some gold coins in the cracks" "finds some gold coins in the cracks"
-        DropItems {Simple "GoldPiece"} {50 100}
+        DropItems {"GoldPiece"} {50 100}
       }
       {
         CreatureMessage "find a glyph in the cracks!" "finds a glyph in the cracks!"
@@ -798,12 +798,12 @@
     CreatureMessage "open the chest" "opens the chest"
     CreatureMessage "find some equipment inside" "finds some equipment inside"
     ChooseRandom {
-      DropItems {Simple "ChainArmor"} 1
-      DropItems {Simple "IronBoots"} 1
-      DropItems {Simple "IronHelm"} 1
-      DropItems {Simple "LeatherArmor"} 1
-      DropItems {Simple "LeatherBoots"} 1
-      DropItems {Simple "LeatherGloves"} 1
+      DropItems {"ChainArmor"} 1
+      DropItems {"IronBoots"} 1
+      DropItems {"IronHelm"} 1
+      DropItems {"LeatherArmor"} 1
+      DropItems {"LeatherBoots"} 1
+      DropItems {"LeatherGloves"} 1
     }
     RemoveFurniture "ARMOR_CHEST"
   }
@@ -819,7 +819,7 @@
   usageType = UsageEffect "open" {
     CreatureMessage "open the chest" "opens the chest"
     CreatureMessage "find some pamphlets inside" "finds some pamphlets inside"
-    DropItems {Simple "AdoxieScroll"} {10 20}
+    DropItems {"AdoxieScroll"} {10 20}
     RemoveFurniture "PAMPHLET_CHEST"
   }
   fire = 50
@@ -1143,7 +1143,7 @@
   blockVision = { NORMAL ELF }
   wall = true
   clearFogOfWar = true
-  itemDrop = {{{{Simple "AdaOre"} 1 { 16 28 }}}}
+  itemDrop = {{{{"AdaOre"} 1 { 16 28 }}}}
   strength2 = {
     500 BOULDER
     500 DIG
@@ -1161,7 +1161,7 @@
   blockVision = { NORMAL ELF }
   wall = true
   clearFogOfWar = true
-  itemDrop = {{{{Simple "IronOre"} 1 { 16 28 }}}}
+  itemDrop = {{{{"IronOre"} 1 { 16 28 }}}}
   strength2 = {
     200 BOULDER
     220 DIG
@@ -1179,7 +1179,7 @@
   blockVision = { NORMAL ELF }
   wall = true
   clearFogOfWar = true
-  itemDrop = {{{{Simple "Rock"} 1 { 16 28 }}}}
+  itemDrop = {{{{"Rock"} 1 { 16 28 }}}}
   strength2 = {
     200 BOULDER
     250 DIG
@@ -1197,7 +1197,7 @@
   blockVision = { NORMAL ELF }
   wall = true
   clearFogOfWar = true
-  itemDrop = {{{{Simple "GoldPiece"} 1 { 16 28 }}}}
+  itemDrop = {{{{"GoldPiece"} 1 { 16 28 }}}}
   strength2 = {
     200 BOULDER
     220 DIG

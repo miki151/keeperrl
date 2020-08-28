@@ -56,9 +56,10 @@ struct Stockpile {
 
 #include "gen_variant.h"
 #include "gen_variant_serialize.h"
+#define DEFAULT_ELEM "Chain"
 inline
 #include "gen_variant_serialize_pretty.h"
-
+#undef DEFAULT_ELEM
 #undef VARIANT_TYPES_LIST
 #undef VARIANT_NAME
 

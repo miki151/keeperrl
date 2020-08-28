@@ -625,8 +625,8 @@ SERIALIZE_DEF(ItemType, NAMED(type), OPTION(prefixChance))
 
 namespace ItemTypes {
 
-#include "gen_variant_serialize.h"
 
+#include "gen_variant_serialize.h"
 #ifdef MEM_USAGE_TEST
 template void serialize(MemUsageArchive&, ItemTypeVariant&);
 #endif
@@ -636,7 +636,9 @@ template void serialize(MemUsageArchive&, ItemTypeVariant&);
 template void ItemType::serialize(PrettyInputArchive&, unsigned);
 
 namespace ItemTypes {
+#define DEFAULT_ELEM "Simple"
 
 template<>
 #include "gen_variant_serialize_pretty.h"
+#undef DEFAULT_ELEM
 }

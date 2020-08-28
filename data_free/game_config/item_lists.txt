@@ -5,13 +5,13 @@
     {{Scroll Enhance ARMOR 1} 5 }
     {{Scroll Enhance WEAPON 1} 5 }
     {{FireScroll 5 }}
-    {{Simple "Torch" 10 }}
+    {{"Torch" 10 }}
     {{Scroll Summon "FIRE_ELEMENTAL" {1 2} 100} 5 }
     {{Scroll CircularBlast} 1 }
     {{Scroll Deception} 2 }
     {{Scroll Audience none} 2 }
     {{Scroll Summon "FLY" {3 6} 100} 5 }
-    {{Simple "AdoxieScroll"} 1}
+    {{"AdoxieScroll"} 1}
     {{Potion Heal FLESH} 7 }
     {{Potion Lasting SLEEP} 5 }
     {{Potion Lasting SLOWED} 5 }
@@ -20,7 +20,7 @@
     {{Potion Lasting INVISIBLE} 2 }
     {{Amulet WARNING} 0.5 }
     {{Amulet REGENERATION} 0.5 }
-    {{Simple "DefenseAmulet"} 0.5 }
+    {{"DefenseAmulet"} 0.5 }
     {{Ring POISON_RESISTANT} 0.5}
     {{Ring FIRE_RESISTANT} 0.5}
   }
@@ -29,21 +29,21 @@
 "armory"
 {
   items = {
-    {{Simple "Knife"} 5}
-    {{Simple "Sword"} 2}
-    {{Simple "BattleAxe"} 2}
-    {{Simple "WarHammer"} 2}
-    {{Simple "Bow"} 4}
-    {{Simple "LeatherArmor"} 2}
-    {{Simple "ChainArmor"} 1}
-    {{Simple "LeatherHelm"} 2}
-    {{Simple "IronHelm"} 1}
-    {{Simple "LeatherBoots"} 2}
-    {{Simple "LeatherGloves"} 2}
-    {{Simple "IronBoots"} 1}
+    {{"Knife"} 5}
+    {{"Sword"} 2}
+    {{"BattleAxe"} 2}
+    {{"WarHammer"} 2}
+    {{"Bow"} 4}
+    {{"LeatherArmor"} 2}
+    {{"ChainArmor"} 1}
+    {{"LeatherHelm"} 2}
+    {{"IronHelm"} 1}
+    {{"LeatherBoots"} 2}
+    {{"LeatherGloves"} 2}
+    {{"IronBoots"} 1}
   }
   unique = {
-    {Simple "Bow"} {1 2}
+    {"Bow"} {1 2}
   }
   prefixChance = 0.03
 }
@@ -51,7 +51,7 @@
 "gnomeShop" inherit "armory"
 {
   unique = {
-    {Simple "AutomatonItem"} { 1 2 }
+    {"AutomatonItem"} { 1 2 }
   }
 }
 
@@ -62,10 +62,10 @@
 "dragonCave"
 {
   items = {
-    {{Simple "GoldPiece"} 10 {30 100} }
-    {{Simple "Sword"} 1 }
-    {{Simple "BattleAxe"} 1 }
-    {{Simple "WarHammer"} 1 }
+    {{"GoldPiece"} 10 {30 100} }
+    {{"Sword"} 1 }
+    {{"BattleAxe"} 1 }
+    {{"WarHammer"} 1 }
   }
   prefixChance = 1
 }
@@ -73,8 +73,8 @@
 "minerals"
 {
   items = {
-    {{Simple "IronOre"} 1 }
-    {{Simple "Rock"} 1 }
+    {{"IronOre"} 1 }
+    {{"Rock"} 1 }
   }
 }
 
@@ -105,7 +105,7 @@
     {{Scroll Deception} 1 }
     {{Scroll Audience none} 1 }
     {{Scroll Summon "FLY" {3 6} 100} 1 }
-    {{Simple "AdoxieScroll"} 1}
+    {{"AdoxieScroll"} 1}
   }
 }
 
@@ -131,11 +131,11 @@
 # and probabilities that each item is included.
   multiItems = {
     {0 2} {
-      {Simple "BattleAxe"} 0.1
+      {"BattleAxe"} 0.1
       {Potion Heal FLESH} 0.3
-      {Simple "IronHelm"} 0.5
-      {Simple "Sword"} 0.5
-      {Simple "Skeleton"} 1
+      {"IronHelm"} 0.5
+      {"Sword"} 0.5
+      {"Skeleton"} 1
     }
     {0 2} {
       {Mushroom Lasting HALLU} 0.5
@@ -145,7 +145,7 @@
       {Mushroom Lasting REGENERATION} 0.5
       {Mushroom Lasting RAGE} 0.5
       {Mushroom Lasting PANIC} 0.5
-      {Simple "Skeleton"} 1
+      {"Skeleton"} 1
     }
   }
 }
@@ -154,12 +154,12 @@
 {
   multiItems = {
     {10000} {
-      {Simple "BattleAxe"} 0.1
+      {"BattleAxe"} 0.1
       {Potion Heal FLESH} 0.3
-      {Simple "IronHelm"} 0.5
-      {Simple "Sword"} 0.5
+      {"IronHelm"} 0.5
+      {"Sword"} 0.5
       {Corpse} 1
-      {Simple "AdoxieScroll"} 0.01
+      {"AdoxieScroll"} 0.01
     }
   }
 }
@@ -167,14 +167,14 @@
 "desertItems"
 {
   items = {
-    {{Simple "Skeleton"} 1}
+    {{"Skeleton"} 1}
   }
 }
 
 "snowItems"
 {
   items = {
-    {{Simple "FrozenRemains"} 1}
+    {{"FrozenRemains"} 1}
   }
 }
 
@@ -183,26 +183,26 @@
   items = { 
     {{Amulet REGENERATION} 1}
     {{Amulet WARNING} 1}
-    {{Simple "DefenseAmulet"} 1}
+    {{"DefenseAmulet"} 1}
   }
 }
 
 "dungeon"
 {
   items = {
-    {{Simple "Knife"} 50 }
-    {{Simple "Sword"} 50 }
-    {{Simple "BattleAxe"} 10 }
-    {{Simple "WarHammer"} 20 }
-    {{Simple "LeatherArmor"} 20 }
-    {{Simple "ChainArmor"} 1 }
-    {{Simple "LeatherHelm"} 20 }
-    {{Simple "IronHelm"} 5 }
-    {{Simple "LeatherBoots"} 20 }
-    {{Simple "IronBoots"} 7 }
-    {{Simple "Torch"} 7 }
-    {{Simple "LeatherGloves"} 30 }
-    {{Simple "AdoxieScroll"} 1}
+    {{"Knife"} 50 }
+    {{"Sword"} 50 }
+    {{"BattleAxe"} 10 }
+    {{"WarHammer"} 20 }
+    {{"LeatherArmor"} 20 }
+    {{"ChainArmor"} 1 }
+    {{"LeatherHelm"} 20 }
+    {{"IronHelm"} 5 }
+    {{"LeatherBoots"} 20 }
+    {{"IronBoots"} 7 }
+    {{"Torch"} 7 }
+    {{"LeatherGloves"} 30 }
+    {{"AdoxieScroll"} 1}
     {{Scroll Escape} 30 }
     {{Scroll Enhance ARMOR 1} 30 }
     {{Scroll Enhance WEAPON 1} 30 }
@@ -223,7 +223,7 @@
     {{Potion Lasting SPEED} 50 }
     {{Amulet WARNING} 3 }
     {{Amulet REGENERATION} 3 }
-    {{Simple "DefenseAmulet"} 3 }
+    {{"DefenseAmulet"} 3 }
     {{Ring POISON_RESISTANT} 3}
     {{Ring FIRE_RESISTANT} 3}
   }
@@ -233,7 +233,7 @@
 "chest" inherit "dungeon"
 {
   items = append {
-    {{Simple "GoldPiece"} 300 {4 9}}
+    {{"GoldPiece"} 300 {4 9}}
   }
   prefixChance = 0
 }
@@ -241,13 +241,13 @@
 "gold"
 {
   items = {
-    {{Simple "GoldPiece"} 300 {4 9}}
+    {{"GoldPiece"} 300 {4 9}}
   }
 }
 "magicLamp"
 {
   unique = {
-    {Simple "MagicLamp"} {1}
+    {"MagicLamp"} {1}
   }
 }
 
