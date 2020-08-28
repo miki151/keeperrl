@@ -182,6 +182,7 @@ clean:
 	$(RM) $(OBJDIR)-opt/extern/*.d
 	$(RM) $(OBJDIR)-opt/extern/*.gch
 	$(RM) $(NAME)
+	$(RM) unity.cpp
 	$(RM) $(OBJDIR)/stdafx.h.*
 
 # Recreates dependency files, in case they got outdated
