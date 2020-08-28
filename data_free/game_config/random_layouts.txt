@@ -122,10 +122,10 @@ Def Village2() {
 }
 End
 
-"village" Choose {
-  Village1()
+"village" Choose(
+  Village1(),
   Village2()
-}
+)
 
 "village1" Village1()
 "village2" Village2()
@@ -159,7 +159,7 @@ End
 Def CastleCorners(CornerSize) {
   Corners(Border(-1, Set("castle_wall")), CornerSize)
   Corners(Reset("floor", "castle_corner"), CornerSize)
-  Inside(1, Corners(Choose { None Reset("floor")}, CornerSize))
+  Inside(1, Corners(Choose(None, Reset("floor")), CornerSize))
 }
 End
 
@@ -236,7 +236,7 @@ Def CastlePart3(Width) {
 End
 
 Def Maybe(Chance, Gen)
-  Choose { Chance Gen None }
+  Choose(Chance Gen, None)
 End
 
 Def CastleMaybe(Gen) 
@@ -246,12 +246,12 @@ End
 Def Castle(CornerSize) {
   Inside(1, {
     Building("castle_wall", "floor")
-    Choose { CastleGate3() CastleGate2() CastleGate1() }
+    Choose(CastleGate3(), CastleGate2(), CastleGate1())
     CastleCorners(CornerSize)
-    Choose {
-      { CastleMaybe(CastlePart1(8)) CastleMaybe(CastlePart2(8)) CastleMaybe(CastlePart3(6)) }
+    Choose(
+      { CastleMaybe(CastlePart1(8)) CastleMaybe(CastlePart2(8)) CastleMaybe(CastlePart3(6)) },
       { CastleMaybe(CastlePart1(6)) CastleMaybe(CastlePart2(6)) CastleMaybe(CastlePart3(4)) }
-    }
+    )
     Connector()
     Position(MIDDLE, {1 1}, FloodFill(And(AnyFloor(), Not AnyDoor()), Set("castle_outside")))
     Filter(And(Or(AnyFloor(), AnyDoor()), Not On("castle_outside")), Set("castle_inside", "stone_floor"))
@@ -266,14 +266,14 @@ Def Castle(CornerSize) {
 End
 
 "castle" {
-  Choose { Castle(2) Castle(3) }
+  Choose(Castle(2), Castle(3))
   Filter(AnyFloor(), SetFront("clear_furniture"))
 }
 
 Def CastleEmpty(CornerSize) {
   Inside(1, {
     Building("castle_wall", "floor")
-    Choose { CastleGate3() CastleGate2() CastleGate1() }
+    Choose(CastleGate3(), CastleGate2(), CastleGate1())
     CastleCornersOpen(CornerSize)
     Position(MIDDLE, {1 1}, FloodFill(And(AnyFloor(), Not AnyDoor()), Set("stone_floor")))
     Border(BOTTOM, 2, Inside(BOTTOM, 1,
@@ -284,7 +284,7 @@ Def CastleEmpty(CornerSize) {
 }
 End
 
-"castle_empty" Choose { CastleEmpty(2) CastleEmpty(3) }
+"castle_empty" Choose(CastleEmpty(2), CastleEmpty(3))
 
 Def AdoxieFeetEntry() {
   Building("castle_wall", "stone_floor")
@@ -561,10 +561,10 @@ End
 "dungeon3" Dungeon3()
 "dungeon4" Dungeon4("water")
 "dungeon"
-  Choose {
-    Dungeon1()
-    Dungeon2()
-    Dungeon3()
-    Dungeon4("lava")
+  Choose(
+    Dungeon1(),
+    Dungeon2(),
+    Dungeon3(),
+    Dungeon4("lava"),
     Dungeon4("water")
-  }
+  )

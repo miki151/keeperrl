@@ -105,10 +105,10 @@ struct NoiseMap {
     double SERIAL(lower);
     double SERIAL(upper);
     HeapAllocated<LayoutGenerator> SERIAL(generator);
-    SERIALIZE_ALL(lower, upper, generator)
+    SERIALIZE_ALL(roundBracket(), NAMED(lower), NAMED(upper), NAMED(generator))
   };
   vector<Elem> SERIAL(generators);
-  SERIALIZE_ALL(generators)
+  SERIALIZE_ALL(withRoundBrackets(generators))
 };
 
 struct Chain {
@@ -125,7 +125,7 @@ struct Choose {
   };
 
   vector<Elem> SERIAL(generators);
-  SERIALIZE_ALL(generators)
+  SERIALIZE_ALL(withRoundBrackets(generators))
 };
 
 struct Connect {
