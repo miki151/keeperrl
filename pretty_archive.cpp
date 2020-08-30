@@ -128,7 +128,10 @@ pair<PrettyInputArchive::DefsMap, vector<StreamChar>> PrettyInputArchive::parseD
         throwException(content[i].pos, "Definition inside another definition is not allowed");
       i += strlen("Def");
       if (auto name = scanWord(content, i)) {
+        auto beforeArgs = i;
         auto args = parseArgs(content, i);
+        if (i >= content.size())
+          throwException(content[beforeArgs].pos, "Couldn't parse macro arguments");
         currentDef = make_pair(make_pair(*name, args.size()),
             DefInfo{ i, 0, args.transform([](auto& arg) { return getString(arg); } ) });
         if (defs.count({*name, args.size()}))

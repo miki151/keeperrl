@@ -161,7 +161,7 @@ string toLower(const string& s) {
 }
 
 bool endsWith(const string& s, const string& suffix) {
-  return contains(s, suffix, s.size() - suffix.size());
+  return s.size() >= suffix.size() && contains(s, suffix, s.size() - suffix.size());
 }
 
 bool startsWith(const string& s, const string& prefix) {
