@@ -92,6 +92,7 @@ static string getSaveSuffix(GameSaveType t) {
     case GameSaveType::ADVENTURER: return ".adv";
     case GameSaveType::RETIRED_SITE: return ".sit";
     case GameSaveType::RETIRED_CAMPAIGN: return ".cam";
+    case GameSaveType::WARLORD: return ".war";
     case GameSaveType::AUTOSAVE: return ".aut";
   }
 }
@@ -144,16 +145,32 @@ struct RetiredModelInfo {
   SERIALIZE_ALL(model, factory)
 };
 
-void MainLoop::saveMainModel(PGame& game, const FilePath& path) {
-  CompressedOutput out(path.getPath());
+struct WarlordInfo {
+  vector<PCreature> SERIAL(creatures);
+  ContentFactory SERIAL(factory);
+  SERIALIZE_ALL(creatures, factory)
+};
+
+#include "collective.h"
+
+void MainLoop::saveMainModel(PGame& game, const FilePath& modelPath, const FilePath& warlordPath) {
+  CompressedOutput modelOut(modelPath.getPath());
   string name = game->getGameDisplayName();
   SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
-  out.getArchive() << saveVersion << name << savedInfo;
+  modelOut.getArchive() << saveVersion << name << savedInfo;
   RetiredModelInfo info {
     std::move(game->getMainModel()),
     game->removeContentFactory()
   };
-  out.getArchive() << info;
+  modelOut.getArchive() << info;
+  CompressedOutput warlordOut(warlordPath.getPath());
+  warlordOut.getArchive() << saveVersion << name << savedInfo;
+  WarlordInfo warlordInfo {
+    game->getPlayerCollective()->getCreatures(MinionTrait::FIGHTER).transform(
+          [&](auto c) { auto ret = info.model->extractCreature(c); ret->removeGameReferences(); return ret; }),
+    std::move(info.factory)
+  };
+  warlordOut.getArchive() << warlordInfo;
 }
 
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
@@ -201,7 +218,8 @@ void MainLoop::saveUI(PGame& game, GameSaveType type) {
                 savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods())] {
               uploadFile(path, name, savedInfo);
             };
-          saveMainModel(game, path);
+          auto warlordPath = getSavePath(game, GameSaveType::WARLORD);
+          saveMainModel(game, path, warlordPath);
         });
   } else {
     int saveTime = game->getSaveProgressCount();
@@ -446,6 +464,8 @@ TilePaths MainLoop::getTilePathsForAllMods() const {
   USER_CHECK(ret) << "No available tile paths found";
   return *ret;
 }
+
+
 
 PGame MainLoop::prepareCampaign(RandomGen& random) {
   while (1) {

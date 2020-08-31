@@ -1694,6 +1694,20 @@ void Creature::retire() {
   spellMap->setAllReady();
 }
 
+void Creature::removeGameReferences() {
+  position = Position();
+  shortestPath.clear();
+  lastAttacker = nullptr;
+  nextPosIntent.reset();
+  while (!controllerStack.empty())
+    popController();
+  visibleEnemies.reset();
+  visibleCreatures.reset();
+  lastCombatIntent.reset();
+  gameCache = nullptr;
+  shamanSummons.clear();
+}
+
 void Creature::increaseExpLevel(ExperienceType type, double increase) {
   int curLevel = (int)getAttributes().getExpLevel(type);
   getAttributes().increaseExpLevel(type, increase);

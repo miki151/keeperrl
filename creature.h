@@ -199,6 +199,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void displace(Vec2);
   void retire();
+  void removeGameReferences();
   
   void increaseExpLevel(ExperienceType, double increase);
 
