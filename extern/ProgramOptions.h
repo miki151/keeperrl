@@ -1806,6 +1806,9 @@ namespace po {
 		}
 
 	public:
+    int count() const {
+      return m_options.size();
+    }
 		option& operator[]( std::string const& designator ) {
 			return operator_brackets_helper( std::string{ designator } );
 		}

@@ -43,10 +43,34 @@ LONG WINAPI miniDumpFunction2(EXCEPTION_POINTERS *ExceptionInfo) {
 void initializeMiniDump() {
   SetUnhandledExceptionFilter(miniDumpFunction2);
 }
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+
+void attachConsole() {
+  if(AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()){
+      freopen("CONOUT$", "w", stdout);
+      freopen("CONOUT$", "w", stderr);
+      HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+      if (handle != INVALID_HANDLE_VALUE) {
+        DWORD mode = 0;
+          if (GetConsoleMode(handle, &mode)) {
+            mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+            SetConsoleMode(handle, mode);
+          }
+      }
+  }
+}
+void setConsoleColor(int col) {
+  auto handle = GetStdHandle(STD_OUTPUT_HANDLE);
+  FlushConsoleInputBuffer(handle);
+  SetConsoleTextAttribute(handle, col);
+}
 
 #else
-
+void attachConsole() {
+}
 void initializeMiniDump() {
+}
+void setConsoleColor(int) {
 }
 
 #endif

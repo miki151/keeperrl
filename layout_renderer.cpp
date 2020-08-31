@@ -7,7 +7,7 @@
 #include "random_layout_id.h"
 #include "content_factory.h"
 
-string getColorCode(const string& color) {
+string getColorCode(const string& color, const string& c) {
   auto number = [&] {
     if (color == "black")
       return 30;
@@ -29,10 +29,10 @@ string getColorCode(const string& color) {
       return 37;
     if (color == "gray")
       return 90;
-    std::cout << "Unknown color: " << color << "\n";
+    std::cerr << "Unknown color: " << color << "\n";
     return 37;
   }();
-  return "\033[" + toString(number) + "m";
+  return "\e[" + toString(number) + "m" + c + "\e[0m";
 }
 
 template <typename Container, typename Fun>
@@ -58,9 +58,10 @@ void renderAscii(const LayoutCanvas::Map& map1, istream& file) {
     file >> std::quoted(token) >> character >> color;
     if (!file)
       break;
-    tokens[token] = getColorCode(color) + character + "\033[0m";
+    tokens[token] = getColorCode(color, character);
     priority[token] = cnt++;
   }
+  std::cerr << std::endl;
   for (auto y : map1.elems.getBounds().getYRange()) {
     for (auto x : map1.elems.getBounds().getXRange()) {
       auto& elems = map1.elems[x][y];
@@ -72,13 +73,13 @@ void renderAscii(const LayoutCanvas::Map& map1, istream& file) {
             return 10000;
         });
         if (tokens.count(glyph)) {
-          std::cout << tokens.at(glyph);
+          std::cerr << tokens.at(glyph);
           continue;
         }
       }
-      std::cout << " ";
+      std::cerr << " ";
     }
-    std::cout << "\n";
+    std::cerr << std::endl;
   }
 }
 

@@ -256,6 +256,8 @@ int main(int argc, char* argv[]) {
   initializeMiniDump();
   std::set_terminate(onException);
   setInitializedStatics();
+  if (argc > 1)
+    attachConsole();
   po::parser flags = getCommandLineFlags();
   if (!flags.parseArgs(argc, argv))
     return -1;
