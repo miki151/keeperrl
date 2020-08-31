@@ -257,7 +257,6 @@ class View {
   struct CampaignOptions {
     const Campaign& campaign;
     optional<RetiredGames&> retired;
-    const Creature* player = nullptr;
     vector<OptionId> options;
     struct BiomeInfo {
       string name;

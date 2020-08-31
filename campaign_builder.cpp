@@ -380,7 +380,6 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
           : view->prepareCampaign({
               campaign,
               (retired && type == CampaignType::FREE_PLAY) ? optional<RetiredGames&>(*retired) : none,
-              avatarInfo.playerCreature.get(),
               getCampaignOptions(type),
               type == CampaignType::FREE_PLAY ? biomes.transform([](auto& e) { return e.info; })
                   : vector<View::CampaignOptions::BiomeInfo>(),
