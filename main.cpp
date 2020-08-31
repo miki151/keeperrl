@@ -217,7 +217,6 @@ static po::parser getCommandLineFlags() {
   flags["battle_view"].description("Open game window and display battle");
   flags["battle_rounds"].type(po::i32).description("Number of battle rounds");
   flags["layout_size"].type(po::string).description("Size of the generated map layout");
-  flags["layout_glyphs"].type(po::string).description("Path to file with layout glyphs");
   flags["layout_name"].type(po::string).description("Name of layout to generate");
   flags["stderr"].description("Log to stderr");
   flags["nolog"].description("No logging");
@@ -403,7 +402,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, 0, "");
     generateMapLayout(loop,
         commandLineFlags["layout_name"].get().string,
-        commandLineFlags["layout_glyphs"].get().string,
+        freeDataPath.file("glyphs.txt"),
         commandLineFlags["layout_size"].get().string
     );
     exit(0);

@@ -83,12 +83,12 @@ void renderAscii(const LayoutCanvas::Map& map1, istream& file) {
   }
 }
 
-void generateMapLayout(const MainLoop& mainLoop, const string& layoutName, const string& glyphPath,
+void generateMapLayout(const MainLoop& mainLoop, const string& layoutName, FilePath glyphPath,
     const string& layoutSizeString) {
   auto layoutSizeSplit = split(layoutSizeString, {':'});
   auto layoutSize = Vec2(fromString<int>(layoutSizeSplit[0]), fromString<int>(layoutSizeSplit[1]));
   USER_CHECK(layoutSize.x >= 1 && layoutSize.y >= 1) << "Bad layout size " << layoutSize;
-  auto glyphFile = ifstream(glyphPath);
+  auto glyphFile = ifstream(glyphPath.getPath());
   USER_CHECK(!!glyphFile) << "Failed to open glyph file, check the layout_glyphs flag";
   auto factory = mainLoop.createContentFactory(false);
   USER_CHECK(factory.randomLayouts.count(RandomLayoutId(layoutName.data()))) << "Layout not found: " << layoutName;
