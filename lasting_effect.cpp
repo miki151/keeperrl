@@ -1385,6 +1385,7 @@ bool LastingEffects::canWishFor(LastingEffect effect) {
     case LastingEffect::SUMMONED:
     case LastingEffect::INVULNERABLE:
     case LastingEffect::TURNED_OFF:
+    case LastingEffect::DISAPPEAR_DURING_DAY:
       return false;
     default:
       return true;
