@@ -52,7 +52,6 @@ class ModelBuilder {
   void addMapVillains(vector<EnemyInfo>&, const vector<BiomeEnemyInfo>&);
   RandomGen& random;
   ProgressMeter* meter = nullptr;
-  Options* options = nullptr;
   HeapAllocated<EnemyFactory> enemyFactory;
   SokobanInput* sokobanInput = nullptr;
   vector<EnemyInfo> getSingleMapEnemiesForEvilKeeper(TribeId keeperTribe);

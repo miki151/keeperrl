@@ -45,7 +45,7 @@ using namespace std::chrono;
 
 ModelBuilder::ModelBuilder(ProgressMeter* m, RandomGen& r, Options* o,
     SokobanInput* sok, ContentFactory* contentFactory, EnemyFactory enemyFactory)
-    : random(r), meter(m), options(o), enemyFactory(std::move(enemyFactory)), sokobanInput(sok), contentFactory(contentFactory) {
+    : random(r), meter(m), enemyFactory(std::move(enemyFactory)), sokobanInput(sok), contentFactory(contentFactory) {
 }
 
 ModelBuilder::~ModelBuilder() {

@@ -26,11 +26,10 @@ static TribeId getPlayerTribeId(TribeAlignment variant) {
   }
 }
 
-static vector<ViewId> getUpgradedViewId(const Creature* c) {
-  vector<ViewId> ret {c->getViewObject().id() };
-  for (auto& u : c->getAttributes().viewIdUpgrades)
-    ret.push_back(u);
-  return ret;
+static ViewId getUpgradedViewId(const Creature* c) {
+  if (!c->getAttributes().viewIdUpgrades.empty())
+    return c->getAttributes().viewIdUpgrades.back();
+  return c->getViewObject().id();
 }
 
 variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const vector<KeeperCreatureInfo>& keeperCreatureInfos,

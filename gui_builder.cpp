@@ -3733,7 +3733,7 @@ SGuiElem GuiBuilder::drawChosenCreatureButtons(PlayerRole role, shared_ptr<int> 
   int processed = 0;
   for (int i : All(avatars)) {
     auto& elem = avatars[i];
-    auto viewIdFun = [gender, id = elem.viewId] { return id[min(*gender, id.size() - 1)].back(); };
+    auto viewIdFun = [gender, id = elem.viewId] { return id[min(*gender, id.size() - 1)]; };
     if (elem.role == role) {
       if (processed >= start && processed < end)
         line.addElemAuto(WL(stack,
