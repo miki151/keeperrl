@@ -17,6 +17,7 @@
 #include "enemy_aggression_level.h"
 #include "campaign_info.h"
 #include "content_factory.h"
+#include "avatar_info.h"
 
 optional<Vec2> CampaignBuilder::considerStaticPlayerPos(const Campaign& campaign) {
   if (campaign.getPlayerRole() == PlayerRole::ADVENTURER && options->getIntValue(OptionId::ALLIES) == 0)

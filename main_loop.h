@@ -31,6 +31,7 @@ class ContentFactory;
 class TilePaths;
 struct ModVersionInfo;
 struct ModDetails;
+struct WarlordInfo;
 
 class MainLoop {
   public:
@@ -129,4 +130,5 @@ class MainLoop {
   template<typename T>
   optional<T> loadFromFile(const FilePath&);
   bool useSingleThread();
+  vector<WarlordInfo> readWarlordInfos();
 };

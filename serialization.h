@@ -106,9 +106,15 @@ void CLASS::serialize(Archive& ar1, const unsigned int) { \
     ar1(__VA_ARGS__); \
   }
 
+#define SERIALIZE_ALL_NO_VERSION(...) \
+  template <class Archive> \
+  void serialize(Archive& ar1) { \
+    ar1(__VA_ARGS__); \
+  }
+
 #define SERIALIZE_EMPTY() \
   template <class Archive> \
-  void serialize(Archive&, const unsigned int) { \
+  void serialize(Archive&) { \
   }
 
 template <class T, class U>
@@ -155,3 +161,17 @@ void load(Archive& ar1, optional<T>& elem) {
     elem = none;
   }
 } // namespace cereal
+
+template <typename T>
+struct SerializeAsValue {
+  T* elem;
+  template <class Archive>
+  void save(Archive& ar1) const {
+    ar1(*elem);
+  }
+};
+
+template <typename T>
+SerializeAsValue<T> serializeAsValue(T* ptr) {
+  return SerializeAsValue<T>{ptr};
+}

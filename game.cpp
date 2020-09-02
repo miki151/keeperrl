@@ -41,8 +41,9 @@
 #include "version.h"
 #include "content_factory.h"
 #include "collective_name.h"
+#include "avatar_info.h"
 
-template <class Archive> 
+template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Game>);
   ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
@@ -476,7 +477,7 @@ bool Game::canTransferCreature(Creature* c, WModel to) {
 int Game::getModelDistance(const Collective* c1, const Collective* c2) const {
   return getModelCoords(c1->getModel()).dist8(getModelCoords(c2->getModel()));
 }
- 
+
 Vec2 Game::getModelCoords(const WModel m) const {
   for (Vec2 v : models.getBounds())
     if (models[v].get() == m)
@@ -575,8 +576,15 @@ ContentFactory* Game::getContentFactory() {
   return &*contentFactory;
 }
 
-ContentFactory Game::removeContentFactory() {
-  return std::move(*contentFactory);
+WarlordInfoWithReference Game::getWarlordInfo() {
+  auto creatures = playerCollective->getLeaders();
+  for (auto c : playerCollective->getCreatures(MinionTrait::FIGHTER))
+    if (!creatures.contains(c))
+      creatures.push_back(c);
+  return WarlordInfoWithReference {
+    creatures.transform([&](auto c) { return c->getThis().giveMeSharedPointer(); }),
+    getContentFactory()
+  };
 }
 
 void Game::conquered(const string& title, int numKills, int points) {

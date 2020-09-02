@@ -16,6 +16,8 @@
 #include "resource_info.h"
 #include "layout_mapping_id.h"
 #include "layout_mapping.h"
+#include "keeper_creature_info.h"
+#include "adventurer_creature_info.h"
 
 class KeyVerifier;
 class BuildInfo;

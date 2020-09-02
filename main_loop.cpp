@@ -142,34 +142,28 @@ void MainLoop::saveGame(PGame& game, const FilePath& path) {
 struct RetiredModelInfo {
   PModel SERIAL(model);
   ContentFactory SERIAL(factory);
-  SERIALIZE_ALL(model, factory)
+  SERIALIZE_ALL_NO_VERSION(model, factory)
 };
 
-struct WarlordInfo {
-  vector<PCreature> SERIAL(creatures);
-  ContentFactory SERIAL(factory);
-  SERIALIZE_ALL(creatures, factory)
+struct RetiredModelInfoWithReference {
+  shared_ptr<Model> SERIAL(model);
+  ContentFactory* SERIAL(factory);
+  SERIALIZE_ALL_NO_VERSION(model, serializeAsValue(factory))
 };
-
-#include "collective.h"
 
 void MainLoop::saveMainModel(PGame& game, const FilePath& modelPath, const FilePath& warlordPath) {
   CompressedOutput modelOut(modelPath.getPath());
   string name = game->getGameDisplayName();
   SavedGameInfo savedInfo = game->getSavedGameInfo(tileSet->getSpriteMods());
   modelOut.getArchive() << saveVersion << name << savedInfo;
-  RetiredModelInfo info {
-    std::move(game->getMainModel()),
-    game->removeContentFactory()
+  RetiredModelInfoWithReference info {
+    game->getMainModel().giveMeSharedPointer(),
+    game->getContentFactory()
   };
   modelOut.getArchive() << info;
   CompressedOutput warlordOut(warlordPath.getPath());
   warlordOut.getArchive() << saveVersion << name << savedInfo;
-  WarlordInfo warlordInfo {
-    game->getPlayerCollective()->getCreatures(MinionTrait::FIGHTER).transform(
-          [&](auto c) { auto ret = info.model->extractCreature(c); ret->removeGameReferences(); return ret; }),
-    std::move(info.factory)
-  };
+  auto warlordInfo = game->getWarlordInfo();
   warlordOut.getArchive() << warlordInfo;
 }
 
@@ -387,7 +381,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
 
 void MainLoop::eraseAllSavesExcept(const PGame& game, optional<GameSaveType> except) {
   for (auto erasedType : ENUM_ALL(GameSaveType))
-    if (erasedType != except)
+    if (erasedType != GameSaveType::WARLORD && erasedType != except)
       eraseSaveFile(game, erasedType);
 }
 
@@ -465,7 +459,16 @@ TilePaths MainLoop::getTilePathsForAllMods() const {
   return *ret;
 }
 
-
+vector<WarlordInfo> MainLoop::readWarlordInfos() {
+  vector<ListElem> optionsUnused;
+  vector<SaveFileInfo> files;
+  getSaveOptions({{GameSaveType::WARLORD, ""}}, optionsUnused, files);
+  vector<WarlordInfo> ret;
+  for (auto& f : files)
+    if (auto res = loadFromFile<WarlordInfo>(userPath.file(f.filename)))
+      ret.push_back(std::move(*res));
+  return ret;
+};
 
 PGame MainLoop::prepareCampaign(RandomGen& random) {
   while (1) {
@@ -490,7 +493,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
       }
     }
     auto avatarChoice = getAvatarInfo(view, contentFactory.keeperCreatures, contentFactory.adventurerCreatures,
-        &contentFactory);
+        readWarlordInfos(), &contentFactory);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, contentFactory.villains, contentFactory.gameIntros, *avatar);
       tileSet->setTilePathsAndReload(getTilePathsForAllMods());

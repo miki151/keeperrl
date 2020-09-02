@@ -240,7 +240,7 @@ class View {
     vector<string> genderNames;
     vector<ViewId> viewId;
     vector<vector<string>> firstNames;
-    TribeAlignment alignment;
+    optional<TribeAlignment> alignment;
     string name;
     PlayerRole role;
     string description;

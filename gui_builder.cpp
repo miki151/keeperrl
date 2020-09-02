@@ -3810,9 +3810,11 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   leftLines.addElem(drawFirstNameButtons(avatars, gender, chosenAvatar, chosenName));
   leftLines.addSpace(15);
   rightLines.addElemAuto(drawAvatarsForRole(avatars, avatarPage, chosenAvatar, gender, chosenRole));
-  rightLines.addSpace(12);
-  rightLines.addElem(WL(labelFun, [&avatars, chosenAvatar] {
-      return capitalFirst(avatars[*chosenAvatar].name) + ", " + getName(avatars[*chosenAvatar].alignment);}));
+  if (auto alignment = avatars[*chosenAvatar].alignment) {
+    rightLines.addSpace(12);
+    rightLines.addElem(WL(labelFun, [&avatars, chosenAvatar, alignment] {
+        return capitalFirst(avatars[*chosenAvatar].name) + ", " + getName(*alignment);}));
+  }
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElemAuto(WL(getListBuilder)
       .addElemAuto(WL(rightMargin, 30, leftLines.buildVerticalList()))

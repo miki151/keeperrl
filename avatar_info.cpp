@@ -33,7 +33,8 @@ static ViewId getUpgradedViewId(const Creature* c) {
 }
 
 variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const vector<KeeperCreatureInfo>& keeperCreatureInfos,
-    const vector<AdventurerCreatureInfo>& adventurerCreatureInfos, ContentFactory* contentFactory) {
+    const vector<AdventurerCreatureInfo>& adventurerCreatureInfos, const vector<WarlordInfo>& warlordInfos,
+    ContentFactory* contentFactory) {
   auto& creatureFactory = contentFactory->getCreatures();
   auto keeperCreatures = keeperCreatureInfos.transform([&](auto& elem) {
     return elem.creatureId.transform([&](auto& id) {
@@ -91,6 +92,18 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const vector<Kee
       adventurerCreatures[i][0]->getName().identify(),
       PlayerRole::ADVENTURER,
       adventurerCreatureInfos[i].description,
+      false,
+      OptionId::PLAYER_NAME
+    });
+  for (auto& info : warlordInfos)
+    adventurerAvatarData.push_back(View::AvatarData {
+      {"Warlord"},
+      {getUpgradedViewId(info.creatures[0].get())},
+      {{info.creatures[0]->getName().firstOrBare()}},
+      none,
+      info.creatures[0]->getName().identify(),
+      PlayerRole::ADVENTURER,
+      "Play as a warlord",
       false,
       OptionId::PLAYER_NAME
     });

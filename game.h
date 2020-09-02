@@ -24,7 +24,7 @@ class AvatarInfo;
 class ContentFactory;
 class NameGenerator;
 class Encyclopedia;
-
+struct WarlordInfoWithReference;
 class Game : public OwnedObject<Game> {
   public:
   static PGame campaignGame(Table<PModel>&&, CampaignSetup&, AvatarInfo, ContentFactory);
@@ -38,7 +38,7 @@ class Game : public OwnedObject<Game> {
   void initializeModels();
   View* getView() const;
   ContentFactory* getContentFactory();
-  ContentFactory removeContentFactory();
+  WarlordInfoWithReference getWarlordInfo();
   void exitAction();
   void transferAction(vector<Creature*>);
   void presentWorldmap();

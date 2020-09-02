@@ -71,7 +71,10 @@ class OwnerPointer {
     return weak_ptr<T>(elem);
   }*/
 
-  SERIALIZE_ALL(elem)
+  template <class Archive>
+  void serialize(Archive& ar) {
+    ar(elem);
+  }
 
 #ifdef MEM_USAGE_TEST
   void serialize(MemUsageArchive& ar1, const unsigned int) {
@@ -136,6 +139,10 @@ class WeakPointer {
 
   WeakPointer<NoConst> removeConst() {
     return WeakPointer<NoConst>(std::const_pointer_cast<NoConst>(elem.lock()));
+  }
+
+  shared_ptr<T> giveMeSharedPointer() {
+    return elem.lock();
   }
 
   void clear() {

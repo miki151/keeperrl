@@ -3,13 +3,14 @@
 GET_ARGUMENTS='cut -d"(" -f 2- | rev | cut -d ")" -f 2- | rev'
 
 grep -o "SERIAL(.*)" *.{h,cpp} | grep -v "serialization\." | cut -d"(" -f 2 | cut -d")" -f 1 | cut -d" " -f 1 | cut -d"," -f 1 | sort > /tmp/decl
-grep "SERIALIZE_ALL(" *.{h,cpp} | grep -v define | eval $GET_ARGUMENTS | sed "s/, /\n/g" > /tmp/def1
+grep -E "(SERIALIZE_ALL\(|SERIALIZE_ALL_NO_VERSION\()" *.{h,cpp} | grep -v define | eval $GET_ARGUMENTS | sed "s/, /\n/g" > /tmp/def1
 grep " ar(" *.{cpp,h} | grep -v define | eval $GET_ARGUMENTS | sed "s/, /\n/g" >> /tmp/def1
 grep -E "(SERIALIZE_DEF\(|SERIALIZE_TMPL\()" *.cpp | grep -v define | eval $GET_ARGUMENTS | grep , | cut -d" " -f 2- | sed "s/, /\n/g" >> /tmp/def1
 sed -i "s/NAMED(\(.*\))/\1/" /tmp/def1
 sed -i "s/SKIP(\(.*\))/\1/" /tmp/def1
 sed -i "s/OPTION(\(.*\))/\1/" /tmp/def1
 sed -i "s/withRoundBrackets(\(.*\))/\1/" /tmp/def1
+sed -i "s/serializeAsValue(\(.*\))/\1/" /tmp/def1
 grep -v SUBCLASS < /tmp/def1 | grep -v __VA_ARGS__ | grep -v 'roundBracket()' | sort > /tmp/def
 
 diff /tmp/decl /tmp/def

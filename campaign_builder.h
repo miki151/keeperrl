@@ -1,7 +1,6 @@
 #pragma once
 
 #include "campaign.h"
-#include "avatar_info.h"
 #include "biome_id.h"
 
 struct CampaignSetup;
@@ -9,6 +8,8 @@ struct VillainPlacement;
 struct VillainCounts;
 struct CampaignInfo;
 class GameConfig;
+struct AvatarInfo;
+class ContentFactory;
 
 RICH_ENUM(
   VillainGroup,
