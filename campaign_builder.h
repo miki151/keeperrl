@@ -28,6 +28,7 @@ class CampaignBuilder {
   optional<CampaignSetup> prepareCampaign(const ContentFactory*, function<optional<RetiredGames>(CampaignType)>,
       CampaignType defaultType, string worldName);
   static CampaignSetup getEmptyCampaign();
+  static CampaignSetup getWarlordCampaign(SavedGameInfo, SaveFileInfo);
 
   private:
   optional<Vec2> considerStaticPlayerPos(const Campaign&);

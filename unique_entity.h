@@ -41,6 +41,7 @@ class UniqueEntity {
     int SERIAL(hash);
   };
   Id getUniqueId() const;
+  void setUniqueId(Id);
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);

@@ -55,6 +55,8 @@
 #include "unknown_locations.h"
 #include "avatar_info.h"
 #include "collective_config.h"
+#include "monster.h"
+#include "monster_ai.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {
@@ -331,6 +333,21 @@ vector<Creature*> Model::getAllCreatures() const {
 
 const vector<PCreature>& Model::getDeadCreatures() const {
   return deadCreatures;
+}
+
+void Model::landWarlord(vector<PCreature> player) {
+  auto ref = getWeakPointers(player);
+  for (auto& c : player) {
+    c->setUniqueId(UniqueEntity<Creature>::Id());
+    c->setTribe(TribeId::getAdventurer());
+    transferCreature(std::move(c), Vec2(1, 0));
+  }
+  for (int i : All(ref))
+    if (i == 0)
+      ref[i]->setController(makeOwner<Player>(ref[i], true, make_shared<MapMemory>(), make_shared<MessageBuffer>(),
+        make_shared<VisibilityMap>(), make_shared<UnknownLocations>()));
+    else
+      ref[i]->setController(Monster::getFactory(MonsterAIFactory::summoned(ref[0])).get(ref[i]));
 }
 
 void Model::landHeroPlayer(PCreature player) {

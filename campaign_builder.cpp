@@ -451,3 +451,15 @@ CampaignSetup CampaignBuilder::getEmptyCampaign() {
   Campaign ret(Table<Campaign::SiteInfo>(1, 1), CampaignType::SINGLE_KEEPER, PlayerRole::KEEPER, "");
   return CampaignSetup{ret, "", "", {}, none, EnemyAggressionLevel::MODERATE};
 }
+
+CampaignSetup CampaignBuilder::getWarlordCampaign(SavedGameInfo info, SaveFileInfo file) {
+  auto site = Campaign::SiteInfo {
+    info.getViewId(),
+    Campaign::SiteInfo::Dweller(Campaign::RetiredInfo { info, file }),
+    false
+  };
+  Campaign ret(Table<Campaign::SiteInfo>(1, 1, site), CampaignType::SINGLE_KEEPER, PlayerRole::ADVENTURER, "");
+  ret.playerPos = Vec2(0, 0);
+  return CampaignSetup{std::move(ret), "Warlord" + getNewIdSuffix(), info.name + " incursion", {}, none,
+      EnemyAggressionLevel::MODERATE};
+}

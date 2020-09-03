@@ -916,6 +916,18 @@ CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, CampaignMen
   return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, state));
 }
 
+bool WindowView::chooseRetiredDungeon(RetiredGames& games) {
+  string searchString;
+  while (1) {
+    SyncQueue<variant<bool, string, none_t>> queue;
+    auto res = getBlockingGui(queue, guiBuilder.drawRetiredDungeonMenu(queue, games, searchString));
+    if (auto value = res.getValueMaybe<bool>())
+      return *value;
+    if (auto value = res.getValueMaybe<string>())
+      searchString = *value;
+  }
+}
+
 optional<UniqueEntity<Creature>::Id> WindowView::chooseCreature(const string& title,
     const vector<CreatureInfo>& creatures, const string& cancelText) {
   SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;

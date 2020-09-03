@@ -92,6 +92,7 @@ class GuiBuilder {
   SGuiElem drawPillageItemMenu(SyncQueue<optional<int>>&, const string& title, const vector<ItemInfo>&,
       ScrollPosition* scrollPos);
   SGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState&);
+  SGuiElem drawRetiredDungeonMenu(SyncQueue<variant<bool, string, none_t> >&, RetiredGames&, string searchString);
   SGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
   SGuiElem drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>&, const vector<View::AvatarData>&);
@@ -190,7 +191,8 @@ class GuiBuilder {
   SGuiElem drawTeams(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawPlusMinus(function<void(int)> callback, bool canIncrease, bool canDecrease, bool leftRight);
   SGuiElem drawOptionElem(OptionId, function<void()> onChanged, optional<string> defaultString);
-  GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, optional<int> maxActive, string searchString);
+  GuiFactory::ListBuilder drawRetiredGames(RetiredGames&, function<void()> reloadCampaign, optional<int> maxActive,
+      string searchString);
   SGuiElem drawImmigrantInfo(const ImmigrantDataInfo&);
   SGuiElem drawSpecialTrait(const ImmigrantDataInfo::SpecialTraitInfo&);
   SGuiElem minionsCache;

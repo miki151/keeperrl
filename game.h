@@ -25,10 +25,13 @@ class ContentFactory;
 class NameGenerator;
 class Encyclopedia;
 struct WarlordInfoWithReference;
+struct WarlordInfo;
+
 class Game : public OwnedObject<Game> {
   public:
-  static PGame campaignGame(Table<PModel>&&, CampaignSetup&, AvatarInfo, ContentFactory);
+  static PGame campaignGame(Table<PModel>&&, CampaignSetup, AvatarInfo, ContentFactory);
   static PGame splashScreen(PModel&&, const CampaignSetup&, ContentFactory);
+  static PGame warlordGame(PModel model, CampaignSetup, WarlordInfo);
 
   optional<ExitInfo> update(double timeDiff);
   void setExitInfo(ExitInfo);

@@ -506,6 +506,19 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
         return Game::campaignGame(std::move(models.models), *setup, std::move(*avatar), std::move(contentFactory));
       } else
         continue;
+    } else
+    if (auto warlordInfo = avatarChoice.getReferenceMaybe<WarlordInfo>()) {
+      auto retiredGames = *getRetiredGames(CampaignType::FREE_PLAY);
+      if (view->chooseRetiredDungeon(retiredGames)) {
+        auto game = retiredGames.getActiveGames().getOnlyElement();
+        auto setup = CampaignBuilder::getWarlordCampaign(game.gameInfo, game.fileInfo);
+        if (auto info = loadFromFile<RetiredModelInfo>(userPath.file(game.fileInfo.filename))) {
+          auto model = std::move(info->model);
+          warlordInfo->contentFactory.merge(std::move(info->factory));
+          return Game::warlordGame(std::move(model), setup, std::move(*warlordInfo));
+        } else
+          view->presentText("Sorry", "Error reading retired dungeon.");
+      }
     } else {
       auto option = *avatarChoice.getValueMaybe<AvatarMenuOption>();
       switch (option) {

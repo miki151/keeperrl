@@ -32,8 +32,10 @@ static ViewId getUpgradedViewId(const Creature* c) {
   return c->getViewObject().id();
 }
 
-variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const vector<KeeperCreatureInfo>& keeperCreatureInfos,
-    const vector<AdventurerCreatureInfo>& adventurerCreatureInfos, const vector<WarlordInfo>& warlordInfos,
+variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View* view,
+    const vector<KeeperCreatureInfo>& keeperCreatureInfos,
+    const vector<AdventurerCreatureInfo>& adventurerCreatureInfos,
+    vector<WarlordInfo> warlordInfos,
     ContentFactory* contentFactory) {
   auto& creatureFactory = contentFactory->getCreatures();
   auto keeperCreatures = keeperCreatureInfos.transform([&](auto& elem) {
@@ -123,11 +125,15 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view, const vector<Kee
       ret->getName().useFullTitle();
     } else
       chosenBaseName = result->name;
-  } else {
+  } else
+  if (result->creatureIndex - keeperCreatures.size() < adventurerCreatures.size()) {
     creatureInfo = adventurerCreatureInfos[result->creatureIndex - keeperCreatures.size()];
     ret = std::move(adventurerCreatures[result->creatureIndex - keeperCreatures.size()][result->genderIndex]);
     ret->getName().setBare("Adventurer");
     ret->getName().setFirst(result->name);
+  } else {
+    int warlordIndex = result->creatureIndex - keeperCreatures.size() - adventurerCreatures.size();
+    return std::move(warlordInfos[warlordIndex]);
   }
   auto villains = creatureInfo.visit([](const auto& elem) { return elem.tribeAlignment;});
   return AvatarInfo{std::move(ret), std::move(creatureInfo), villains, chosenBaseName };

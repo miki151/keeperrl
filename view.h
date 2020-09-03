@@ -130,6 +130,15 @@ class CampaignAction : public EnumVariant<CampaignActionId, TYPES(OptionId, Camp
     using EnumVariant::EnumVariant;
 };
 
+namespace RetiredChoices {
+using Confirm = EmptyStruct<struct ConfirmTag>;
+using Cancel = EmptyStruct<struct CancelTag>;
+using Search = string;
+using RetiredChoice = variant<Confirm, Cancel, Search>;
+}
+
+using RetiredChoices::RetiredChoice;
+
 struct ModAction {
   int index;
   int actionId;
@@ -276,6 +285,7 @@ class View {
   };
 
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) = 0;
+  virtual bool chooseRetiredDungeon(RetiredGames&) = 0;
 
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) = 0;

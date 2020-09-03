@@ -87,6 +87,11 @@ auto UniqueEntity<T>::getUniqueId() const -> Id {
 }
 
 template<typename T>
+void UniqueEntity<T>::setUniqueId(UniqueEntity::Id i) {
+  id = i;
+}
+
+template<typename T>
 GenericId UniqueEntity<T>::Id::getGenericId() const {
   return key;
 }

@@ -120,7 +120,7 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
 
 Game::~Game() {}
 
-PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInfo avatar,
+PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup setup, AvatarInfo avatar,
     ContentFactory contentFactory) {
   auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup, std::move(contentFactory));
   for (auto model : ret->getAllModels())
@@ -137,6 +137,27 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup& setup, AvatarInf
     ret->spawnKeeper(std::move(avatar), setup.introMessages);
   // Restore vulnerability. If the effect wasn't present in the first place then it will zero-out.
   avatarCreature->getAttributes().addPermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
+  return ret;
+}
+
+PGame Game::warlordGame(PModel model, CampaignSetup setup, WarlordInfo warlordInfo) {
+  Table<PModel> t(1, 1);
+  t[0][0] = std::move(model);
+  auto ret = makeOwner<Game>(std::move(t), *setup.campaign.getPlayerPos(), setup, std::move(warlordInfo.contentFactory));
+  for (auto model : ret->getAllModels())
+    model->setGame(ret.get());
+  for (auto& c : warlordInfo.creatures)
+    if (c->getAttributes().isAffectedPermanently(LastingEffect::SUNLIGHT_VULNERABLE))
+      ret->sunlightTimeOffset = 1501_visible;
+  // Remove sunlight vulnerability temporarily otherwise placing the creature anywhere without cover will fail.
+  for (auto& c : warlordInfo.creatures)
+    c->getAttributes().removePermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
+  ret->sunlightInfo.update(ret->getGlobalTime() + ret->sunlightTimeOffset);
+  auto ref = getWeakPointers(warlordInfo.creatures);
+  ret->getMainModel()->landWarlord(std::move(warlordInfo.creatures));
+  // Restore vulnerability. If the effect wasn't present in the first place then it will zero-out.
+  for (auto& c : ref)
+    c->getAttributes().addPermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
   return ret;
 }
 

@@ -4091,7 +4091,44 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   addOverlay(std::move(optionsLines), menuState.options);
   return
       WL(preferredSize, 1000, 705,
-      WL(window, WL(margins, WL(stack, std::move(interior)), 5), [&queue] { queue.push(CampaignActionId::CANCEL); }));
+         WL(window, WL(margins, WL(stack, std::move(interior)), 5), [&queue] { queue.push(CampaignActionId::CANCEL); }));
+}
+
+SGuiElem GuiBuilder::drawRetiredDungeonMenu(SyncQueue<variant<bool, string, none_t>>& queue, RetiredGames& retired,
+    string searchString) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  lines.addElem(WL(getListBuilder)
+      .addElemAuto(WL(label, "Search: "))
+      .addElem(WL(textField, 10, [ret = searchString] { return ret; },
+          [&queue](string s){ queue.push(std::move(s));}), 200)
+      .addSpace(10)
+      .addElemAuto(WL(buttonLabel, "X",
+          [&queue]{ queue.push(string());}))
+      .buildHorizontalList()
+  );
+  auto addedDungeons = drawRetiredGames(retired, [&queue] { queue.push(none);}, none, "");
+  int addedHeight = addedDungeons.getSize();
+  if (!addedDungeons.isEmpty()) {
+    lines.addElem(WL(label, "Added:", Color::YELLOW));
+    lines.addElem(addedDungeons.buildVerticalList(), addedHeight);
+  }
+  GuiFactory::ListBuilder retiredList = drawRetiredGames(retired,
+      [&queue] { queue.push(none);}, options->getIntValue(OptionId::MAIN_VILLAINS), searchString);
+  if (retiredList.isEmpty() && addedDungeons.isEmpty())
+    retiredList.addElem(WL(label, "No retired dungeons found :("));
+  if (!retiredList.isEmpty())
+    lines.addElem(WL(label, "Local:", Color::YELLOW));
+  lines.addElemAuto(retiredList.buildVerticalList());
+  lines.addBackElem(WL(centerHoriz, WL(getListBuilder)
+        .addElemAuto(WL(conditional,
+            WL(buttonLabel, "Confirm", [&] { queue.push(true); }),
+            WL(buttonLabelInactive, "Confirm"),
+            [&retired] { return retired.getNumActive() == 1; }))
+        .addSpace(20)
+        .addElemAuto(WL(buttonLabel, "Go back",
+            WL(button, [&queue] { queue.push(false); }, gui.getKey(SDL::SDLK_ESCAPE))))
+        .buildHorizontalList()));
+  return WL(window, WL(margins, lines.buildVerticalList(), 20), [&queue] { queue.push(false); });
 }
 
 SGuiElem GuiBuilder::drawCreatureList(const vector<CreatureInfo>& creatures, function<void(UniqueEntity<Creature>::Id)> button) {
