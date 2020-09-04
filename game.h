@@ -31,7 +31,7 @@ class Game : public OwnedObject<Game> {
   public:
   static PGame campaignGame(Table<PModel>&&, CampaignSetup, AvatarInfo, ContentFactory);
   static PGame splashScreen(PModel&&, const CampaignSetup&, ContentFactory);
-  static PGame warlordGame(PModel model, CampaignSetup, WarlordInfo);
+  static PGame warlordGame(PModel model, CampaignSetup, vector<PCreature>, ContentFactory);
 
   optional<ExitInfo> update(double timeDiff);
   void setExitInfo(ExitInfo);

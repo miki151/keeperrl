@@ -140,21 +140,21 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup setup, AvatarInfo
   return ret;
 }
 
-PGame Game::warlordGame(PModel model, CampaignSetup setup, WarlordInfo warlordInfo) {
+PGame Game::warlordGame(PModel model, CampaignSetup setup, vector<PCreature> creatures, ContentFactory contentFactory) {
   Table<PModel> t(1, 1);
   t[0][0] = std::move(model);
-  auto ret = makeOwner<Game>(std::move(t), *setup.campaign.getPlayerPos(), setup, std::move(warlordInfo.contentFactory));
+  auto ret = makeOwner<Game>(std::move(t), *setup.campaign.getPlayerPos(), setup, std::move(contentFactory));
   for (auto model : ret->getAllModels())
     model->setGame(ret.get());
-  for (auto& c : warlordInfo.creatures)
+  for (auto& c : creatures)
     if (c->getAttributes().isAffectedPermanently(LastingEffect::SUNLIGHT_VULNERABLE))
       ret->sunlightTimeOffset = 1501_visible;
   // Remove sunlight vulnerability temporarily otherwise placing the creature anywhere without cover will fail.
-  for (auto& c : warlordInfo.creatures)
+  for (auto& c : creatures)
     c->getAttributes().removePermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
   ret->sunlightInfo.update(ret->getGlobalTime() + ret->sunlightTimeOffset);
-  auto ref = getWeakPointers(warlordInfo.creatures);
-  ret->getMainModel()->landWarlord(std::move(warlordInfo.creatures));
+  auto ref = getWeakPointers(creatures);
+  ret->getMainModel()->landWarlord(std::move(creatures));
   // Restore vulnerability. If the effect wasn't present in the first place then it will zero-out.
   for (auto& c : ref)
     c->getAttributes().addPermanentEffect(LastingEffect::SUNLIGHT_VULNERABLE, 1);
@@ -603,7 +603,10 @@ WarlordInfoWithReference Game::getWarlordInfo() {
     if (!creatures.contains(c))
       creatures.push_back(c);
   return WarlordInfoWithReference {
-    creatures.transform([&](auto c) { return c->getThis().giveMeSharedPointer(); }),
+    creatures.transform([&](auto c) {
+      c->removeGameReferences();
+      return c->getThis().giveMeSharedPointer();
+    }),
     getContentFactory()
   };
 }

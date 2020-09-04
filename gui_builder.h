@@ -92,7 +92,9 @@ class GuiBuilder {
   SGuiElem drawPillageItemMenu(SyncQueue<optional<int>>&, const string& title, const vector<ItemInfo>&,
       ScrollPosition* scrollPos);
   SGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState&);
-  SGuiElem drawRetiredDungeonMenu(SyncQueue<variant<bool, string, none_t> >&, RetiredGames&, string searchString);
+  SGuiElem drawRetiredDungeonMenu(SyncQueue<variant<string, bool, none_t> >&, RetiredGames&, string searchString);
+  SGuiElem drawWarlordMinionsMenu(SyncQueue<variant<int, bool>>& queue, const vector<CreatureInfo>&,
+      vector<int>& chosen, int maxCount);
   SGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
   SGuiElem drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>&, const vector<View::AvatarData>&);
@@ -307,7 +309,7 @@ class GuiBuilder {
       const vector<View::AvatarData>&);
   SGuiElem drawChosenCreatureButtons(PlayerRole, shared_ptr<int> chosenAvatar, shared_ptr<int> gender, int page,
       const vector<View::AvatarData>&);
-  SGuiElem drawCreatureList(const vector<CreatureInfo>&, function<void(UniqueEntity<Creature>::Id)> button);
+  SGuiElem drawCreatureList(const vector<CreatureInfo>&, function<void(UniqueEntity<Creature>::Id)> button, int zoom = 2);
   Color getElemColor(ListElem::ElemMod);
   SGuiElem drawAvatarsForRole(const vector<View::AvatarData>&, shared_ptr<int> avatarPage, shared_ptr<int> chosenAvatar,
                               shared_ptr<int> gender, shared_ptr<PlayerRole> chosenRole);

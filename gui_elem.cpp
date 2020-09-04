@@ -920,8 +920,13 @@ class GuiLayout : public GuiElem {
 
   virtual bool onClick(ClickButton b, Vec2 pos) override {
     bool gone = false;
-    for (int i : AllReverse(elems)) {
-      if (!gone && isVisible(i) && elems[i]->onClick(b, pos)) {
+    // Check visibility in advance, as it can potentially change in onClick
+    vector<int> visible;
+    for (int i : AllReverse(elems))
+      if (isVisible(i))
+        visible.push_back(i);
+    for (int i : visible) {
+      if (!gone && elems[i]->onClick(b, pos)) {
         gone = true;
         continue;
       }

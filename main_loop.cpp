@@ -51,6 +51,7 @@
 #include "mem_usage_counter.h"
 #include "gui_elem.h"
 #include "encyclopedia.h"
+#include "game_info.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -164,6 +165,7 @@ void MainLoop::saveMainModel(PGame& game, const FilePath& modelPath, const FileP
   CompressedOutput warlordOut(warlordPath.getPath());
   warlordOut.getArchive() << saveVersion << name << savedInfo;
   auto warlordInfo = game->getWarlordInfo();
+  game->getMainModel()->discardForRetirement();
   warlordOut.getArchive() << warlordInfo;
 }
 
@@ -509,13 +511,28 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     } else
     if (auto warlordInfo = avatarChoice.getReferenceMaybe<WarlordInfo>()) {
       auto retiredGames = *getRetiredGames(CampaignType::FREE_PLAY);
-      if (view->chooseRetiredDungeon(retiredGames)) {
+      auto creatureInfos = warlordInfo->creatures.transform([](auto& c) { return CreatureInfo(c.get()); });
+      sort(++creatureInfos.begin(), creatureInfos.end(),
+           [](auto c1, auto c2) { return c1.bestAttack.value > c2.bestAttack.value; });
+      auto chosen = view->prepareWarlordGame(retiredGames, creatureInfos, 12);
+      if (!chosen.empty()) {
         auto game = retiredGames.getActiveGames().getOnlyElement();
         auto setup = CampaignBuilder::getWarlordCampaign(game.gameInfo, game.fileInfo);
         if (auto info = loadFromFile<RetiredModelInfo>(userPath.file(game.fileInfo.filename))) {
           auto model = std::move(info->model);
           warlordInfo->contentFactory.merge(std::move(info->factory));
-          return Game::warlordGame(std::move(model), setup, std::move(*warlordInfo));
+          vector<PCreature> creatures;
+          for (int index : chosen)
+            creatures.push_back(
+                [&]{
+                  for (auto& c : warlordInfo->creatures)
+                    if (c && c->getUniqueId() == creatureInfos[index].uniqueId)
+                      return std::move(c);
+                  fail();
+                }()
+            );
+          return Game::warlordGame(std::move(model), setup, std::move(creatures),
+              std::move(warlordInfo->contentFactory));
         } else
           view->presentText("Sorry", "Error reading retired dungeon.");
       }

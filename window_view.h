@@ -101,7 +101,7 @@ class WindowView: public View {
   virtual void presentWorldmap(const Campaign&) override;
   virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&) override;
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) override;
-  virtual bool chooseRetiredDungeon(RetiredGames&) override;
+  virtual vector<int> prepareWarlordGame(RetiredGames&, const vector<CreatureInfo>&, int maxCount) override;
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<CreatureInfo>&,
       const string& cancelText) override;
   virtual bool creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>&) override;

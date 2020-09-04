@@ -2034,7 +2034,9 @@ bool Creature::canSee(Vec2 pos) const {
 }
 
 bool Creature::isPlayer() const {
-  return getController()->isPlayer();
+  if (auto ctrl = getController())
+    return ctrl->isPlayer();
+  return false;
 }
 
 const CreatureName& Creature::getName() const {

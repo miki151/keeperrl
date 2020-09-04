@@ -1720,8 +1720,6 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
   return WL(margins, WL(scrollable, vList.buildVerticalList(), &inventoryScroll, &scrollbarsHeld), 6, 0, 15, 5);
 }
 
-typedef CreatureInfo CreatureInfo;
-
 struct CreatureMapElem {
   ViewId viewId;
   int count;
@@ -4091,12 +4089,58 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   addOverlay(std::move(optionsLines), menuState.options);
   return
       WL(preferredSize, 1000, 705,
-         WL(window, WL(margins, WL(stack, std::move(interior)), 5), [&queue] { queue.push(CampaignActionId::CANCEL); }));
+         WL(window, WL(margins, WL(stack, std::move(interior)), 5),
+            [&queue] { queue.push(CampaignActionId::CANCEL); }));
 }
 
-SGuiElem GuiBuilder::drawRetiredDungeonMenu(SyncQueue<variant<bool, string, none_t>>& queue, RetiredGames& retired,
-    string searchString) {
+const Vec2 warlordMenuSize(550, 550);
+
+SGuiElem GuiBuilder::drawWarlordMinionsMenu(SyncQueue<variant<int, bool>>& queue,
+    const vector<CreatureInfo>& minions, vector<int>& chosen, int maxCount) {
   auto lines = gui.getListBuilder(legendLineHeight);
+  vector<CreatureInfo> chosenInfos;
+  for (auto index : chosen)
+    chosenInfos.push_back(minions[index]);
+  auto minionFun = [minions, &queue](UniqueEntity<Creature>::Id id) {
+    for (int i : All(minions))
+      if (minions[i].uniqueId == id) {
+        queue.push(i);
+        return;
+      }
+    fail();
+  };
+  if (!chosenInfos.empty()) {
+    lines.addElem(WL(label, "Team:"));
+    lines.addElem(WL(label, "Max team size: " + toString(maxCount), Renderer::smallTextSize, Color::GRAY),
+        legendLineHeight * 2 / 3);
+    lines.addElemAuto(drawCreatureList(chosenInfos, minionFun, 1));
+  }
+  vector<CreatureInfo> availableInfos;
+  for (int i : All(minions))
+    if (!chosen.contains(i))
+      availableInfos.push_back(minions[i]);
+  if (!availableInfos.empty()) {
+    lines.addElem(WL(label, "Select a team from your minions:"));
+    lines.addMiddleElem(WL(scrollable, drawCreatureList(availableInfos, minionFun, 1)));
+  }
+  lines.addSpace();
+  lines.addBackElem(WL(centerHoriz, WL(getListBuilder)
+        .addElemAuto(WL(buttonLabel, "Go back",
+            WL(button, [&queue] { queue.push(false); })))
+        .addSpace(20)
+        .addElemAuto(chosen.empty()
+            ? WL(buttonLabelInactive, "Next")
+            : WL(buttonLabel, "Next", [&queue] { queue.push(true); }))
+        .buildHorizontalList()));
+  return WL(preferredSize, warlordMenuSize,
+      WL(window, WL(margins, lines.buildVerticalList(), 20), [&queue] { queue.push(false); }));
+}
+
+SGuiElem GuiBuilder::drawRetiredDungeonMenu(SyncQueue<variant<string, bool, none_t>>& queue,
+    RetiredGames& retired, string searchString) {
+  auto lines = gui.getListBuilder(legendLineHeight);
+  lines.addElem(WL(label, "Choose retired dungeons to attack:"));
+  lines.addSpace(legendLineHeight / 2);
   lines.addElem(WL(getListBuilder)
       .addElemAuto(WL(label, "Search: "))
       .addElem(WL(textField, 10, [ret = searchString] { return ret; },
@@ -4106,37 +4150,42 @@ SGuiElem GuiBuilder::drawRetiredDungeonMenu(SyncQueue<variant<bool, string, none
           [&queue]{ queue.push(string());}))
       .buildHorizontalList()
   );
+  auto dungeonLines = gui.getListBuilder(legendLineHeight);
   auto addedDungeons = drawRetiredGames(retired, [&queue] { queue.push(none);}, none, "");
   int addedHeight = addedDungeons.getSize();
   if (!addedDungeons.isEmpty()) {
-    lines.addElem(WL(label, "Added:", Color::YELLOW));
-    lines.addElem(addedDungeons.buildVerticalList(), addedHeight);
+    dungeonLines.addElem(WL(label, "Added:", Color::YELLOW));
+    dungeonLines.addElem(addedDungeons.buildVerticalList(), addedHeight);
   }
   GuiFactory::ListBuilder retiredList = drawRetiredGames(retired,
       [&queue] { queue.push(none);}, options->getIntValue(OptionId::MAIN_VILLAINS), searchString);
   if (retiredList.isEmpty() && addedDungeons.isEmpty())
     retiredList.addElem(WL(label, "No retired dungeons found :("));
   if (!retiredList.isEmpty())
-    lines.addElem(WL(label, "Local:", Color::YELLOW));
-  lines.addElemAuto(retiredList.buildVerticalList());
+    dungeonLines.addElem(WL(label, "Local:", Color::YELLOW));
+  dungeonLines.addElemAuto(retiredList.buildVerticalList());
+  lines.addMiddleElem(WL(scrollable, dungeonLines.buildVerticalList()));
+  lines.addSpace();
   lines.addBackElem(WL(centerHoriz, WL(getListBuilder)
+        .addElemAuto(WL(buttonLabel, "Go back",
+            WL(button, [&] { queue.push(false); })))
+        .addSpace(20)
         .addElemAuto(WL(conditional,
             WL(buttonLabel, "Confirm", [&] { queue.push(true); }),
             WL(buttonLabelInactive, "Confirm"),
-            [&retired] { return retired.getNumActive() == 1; }))
-        .addSpace(20)
-        .addElemAuto(WL(buttonLabel, "Go back",
-            WL(button, [&queue] { queue.push(false); }, gui.getKey(SDL::SDLK_ESCAPE))))
+            [&retired] { return retired.getNumActive() >= 1; }))
         .buildHorizontalList()));
-  return WL(window, WL(margins, lines.buildVerticalList(), 20), [&queue] { queue.push(false); });
+  return WL(preferredSize, warlordMenuSize,
+      WL(window, WL(margins, lines.buildVerticalList(), 20), [&queue] { queue.push(false); }));
 }
 
-SGuiElem GuiBuilder::drawCreatureList(const vector<CreatureInfo>& creatures, function<void(UniqueEntity<Creature>::Id)> button) {
-  auto minionLines = WL(getListBuilder, getStandardLineHeight() + 10);
-  auto line = WL(getListBuilder, 60);
+SGuiElem GuiBuilder::drawCreatureList(const vector<CreatureInfo>& creatures,
+    function<void(UniqueEntity<Creature>::Id)> button, int zoom) {
+  auto minionLines = WL(getListBuilder, 20 * zoom);
+  auto line = WL(getListBuilder, 30 * zoom);
   for (auto& elem : creatures) {
-    auto icon = WL(margins, WL(stack, WL(viewObject, elem.viewId, 2),
-        WL(label, toString((int) elem.bestAttack.value), 20)), 5, 5, 5, 5);
+    auto icon = WL(margins, WL(stack, WL(viewObject, elem.viewId, zoom),
+        WL(label, toString((int) elem.bestAttack.value), 10 * zoom)), 5, 5, 5, 5);
     if (button)
       line.addElemAuto(WL(stack,
             WL(mouseHighlight2, WL(uiHighlight)),
@@ -4144,15 +4193,16 @@ SGuiElem GuiBuilder::drawCreatureList(const vector<CreatureInfo>& creatures, fun
             std::move(icon)));
     else
       line.addElemAuto(std::move(icon));
-    if (line.getLength() > 6) {
+    if (line.getLength() > 12 / zoom) {
+      CHECK(line.getLength() > 12);
       minionLines.addElemAuto(WL(centerHoriz, line.buildHorizontalList()));
-      minionLines.addSpace(20);
+      minionLines.addSpace(10 * zoom);
       line.clear();
     }
   }
   if (!line.isEmpty()) {
     minionLines.addElemAuto(WL(centerHoriz, line.buildHorizontalList()));
-    minionLines.addSpace(20);
+    minionLines.addSpace(10 * zoom);
   }
   return minionLines.buildVerticalList();
 }

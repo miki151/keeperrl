@@ -916,15 +916,46 @@ CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, CampaignMen
   return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, state));
 }
 
-bool WindowView::chooseRetiredDungeon(RetiredGames& games) {
+vector<int> WindowView::prepareWarlordGame(RetiredGames& games, const vector<CreatureInfo>& minions, int maxCount) {
   string searchString;
+  vector<int> chosen;
+  /*for (int i : Range(maxCount))
+    chosen.push_back(i);*/
+  int page = 0;
   while (1) {
-    SyncQueue<variant<bool, string, none_t>> queue;
-    auto res = getBlockingGui(queue, guiBuilder.drawRetiredDungeonMenu(queue, games, searchString));
-    if (auto value = res.getValueMaybe<bool>())
-      return *value;
-    if (auto value = res.getValueMaybe<string>())
-      searchString = *value;
+    if (page == 0) {
+      SyncQueue<variant<int, bool>> queue;
+      sort(chosen.begin(), chosen.end());
+      auto res = getBlockingGui(queue,
+          guiBuilder.drawWarlordMinionsMenu(queue, minions, chosen, maxCount));
+      if (auto value = res.getValueMaybe<bool>()) {
+        if (*value) {
+          ++page;
+          continue;
+        } else
+          return vector<int>();
+      } else
+      if (auto value = res.getValueMaybe<int>()) {
+        if (chosen.contains(*value))
+          chosen.removeElement(*value);
+        else if (chosen.size() < maxCount)
+          chosen.push_back(*value);
+      }
+    } else {
+      SyncQueue<variant<string, bool, none_t>> queue;
+      auto res = getBlockingGui(queue,
+          guiBuilder.drawRetiredDungeonMenu(queue, games, searchString));
+      if (auto value = res.getValueMaybe<bool>()) {
+        if (*value)
+          return chosen;
+        else {
+          --page;
+          continue;
+        }
+      } else
+      if (auto value = res.getValueMaybe<string>())
+        searchString = *value;
+    }
   }
 }
 
