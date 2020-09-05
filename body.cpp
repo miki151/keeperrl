@@ -666,7 +666,7 @@ static void youHit(const Creature* c, BodyPart part, AttackType type) {
         break;
     case BodyPart::ARM:
         switch (type) {
-          case AttackType::SHOOT: c->you(MsgType::YOUR, "shot in the arm!"); break;
+          case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the arm!"); break;
           case AttackType::BITE: c->you(MsgType::YOUR, "arm is bitten off!"); break;
           case AttackType::CUT: c->you(MsgType::YOUR, "arm is chopped off!"); break;
           case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the arm!"); break;
@@ -677,7 +677,7 @@ static void youHit(const Creature* c, BodyPart part, AttackType type) {
         break;
     case BodyPart::WING:
         switch (type) {
-          case AttackType::SHOOT: c->you(MsgType::YOUR, "shot in the wing!"); break;
+          case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the wing!"); break;
           case AttackType::BITE: c->you(MsgType::YOUR, "wing is bitten off!"); break;
           case AttackType::CUT: c->you(MsgType::YOUR, "wing is chopped off!"); break;
           case AttackType::STAB: c->you(MsgType::ARE, "stabbed in the wing!"); break;
@@ -688,7 +688,7 @@ static void youHit(const Creature* c, BodyPart part, AttackType type) {
         break;
     case BodyPart::LEG:
         switch (type) {
-          case AttackType::SHOOT: c->you(MsgType::YOUR, "shot in the leg!"); break;
+          case AttackType::SHOOT: c->you(MsgType::ARE, "shot in the leg!"); break;
           case AttackType::BITE: c->you(MsgType::YOUR, "leg is bitten off!"); break;
           case AttackType::CUT: c->you(MsgType::YOUR, "leg is cut off!"); break;
           case AttackType::STAB: c->you(MsgType::YOUR, "stabbed in the leg!"); break;
