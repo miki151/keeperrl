@@ -212,15 +212,15 @@ optional<TeamId> PlayerControl::getCurrentTeam() const {
 void PlayerControl::onControlledKilled(const Creature* victim) {
   TeamId currentTeam = *getCurrentTeam();
   if (getTeams().getLeader(currentTeam) == victim && getGame()->getPlayerCreatures().size() == 1) {
-    vector<CreatureInfo> team;
+    vector<PlayerInfo> team;
     for (auto c : getTeams().getMembers(currentTeam))
       if (c != victim)
-        team.push_back(CreatureInfo(c));
+        team.push_back(PlayerInfo(c, getGame()->getContentFactory()));
     if (team.empty())
       return;
     optional<Creature::Id> newLeader;
     if (team.size() == 1)
-      newLeader = team[0].uniqueId;
+      newLeader = team[0].creatureId;
     else
       newLeader = getView()->chooseCreature("Choose new team leader:", team, "Order team back to base");
     if (newLeader) {
@@ -2350,7 +2350,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       if (Creature* c = getCreature(input.get<Creature::Id>())) {
         if (auto creatureId = getView()->chooseCreature("Choose minion to absorb",
             getConsumptionTargets(c).transform(
-                [] (const Creature* c) { return CreatureInfo(c);}), "cancel"))
+                [&] (const Creature* c) { return PlayerInfo(c, getGame()->getContentFactory());}), "cancel"))
           if (Creature* consumed = getCreature(*creatureId))
             collective->setTask(c, Task::consume(consumed));
       }
@@ -2711,7 +2711,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
       vector<PCreature> allCreatures = factory.getAllCreatures().transform(
           [this, &factory](CreatureId id){ return factory.fromId(id, getTribeId()); });
       if (auto id = getView()->chooseCreature("Choose creature to place",
-          allCreatures.transform([](auto& c) { return CreatureInfo(c.get()); }), "cancel")) {
+          allCreatures.transform([&](auto& c) { return PlayerInfo(c.get(), getGame()->getContentFactory()); }), "cancel")) {
         for (auto& c : allCreatures)
           if (c->getUniqueId() == *id) {
             collective->addCreature(std::move(c), position, {MinionTrait::FIGHTER});

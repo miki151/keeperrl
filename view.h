@@ -31,7 +31,7 @@ class Jukebox;
 class ProgressMeter;
 class PlayerInfo;
 struct ItemInfo;
-struct CreatureInfo;
+struct PlayerInfo;
 class Sound;
 class Campaign;
 class Options;
@@ -285,14 +285,14 @@ class View {
   };
 
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) = 0;
-  virtual vector<int> prepareWarlordGame(RetiredGames&, const vector<CreatureInfo>&, int maxCount) = 0;
+  virtual vector<int> prepareWarlordGame(RetiredGames&, const vector<PlayerInfo>&, int maxCount) = 0;
 
-  virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<CreatureInfo>&,
+  virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<PlayerInfo>&,
       const string& cancelText) = 0;
 
   //virtual vector<UniqueEntity<Creature>::Id> chooseTeamLeader(const string& title, const vector<CreatureInfo>&) = 0;
 
-  virtual bool creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>&) = 0;
+  virtual bool creatureInfo(const string& title, bool prompt, const vector<PlayerInfo>&) = 0;
 
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current = none) = 0;
 

@@ -64,14 +64,14 @@ class DummyView : public View {
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) override {
     return CampaignActionId::CANCEL;
   }
-  virtual vector<int> prepareWarlordGame(RetiredGames&, const vector<CreatureInfo>&, int maxCount) override {
+  virtual vector<int> prepareWarlordGame(RetiredGames&, const vector<PlayerInfo>&, int maxCount) override {
     return vector<int>();
   }
-  virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string&, const vector<CreatureInfo>&,
+  virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string&, const vector<PlayerInfo>&,
       const string& cancelText) override {
     return none;
   }
-  virtual bool creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>&) override {
+  virtual bool creatureInfo(const string& title, bool prompt, const vector<PlayerInfo>&) override {
     return false;
   }
   virtual optional<Vec2> chooseSite(const string& message, const Campaign&, optional<Vec2> current = none) override {
@@ -89,7 +89,7 @@ class DummyView : public View {
   virtual void presentWorldmap(const Campaign&) override {}
   virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId>, optional<FXInfo>) override {}
   virtual void animation(Vec2 pos, AnimationId, Dir) override {}
-  virtual void animation(const FXSpawnInfo&) override{};
+  virtual void animation(const FXSpawnInfo&) override{}
   virtual milliseconds getTimeMilli() override { return clock->getMillis();}
   virtual milliseconds getTimeMilliAbsolute() override { return clock->getRealMillis();}
   virtual void stopClock() override {}

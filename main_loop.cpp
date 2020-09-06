@@ -511,10 +511,11 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     } else
     if (auto warlordInfo = avatarChoice.getReferenceMaybe<WarlordInfo>()) {
       auto retiredGames = *getRetiredGames(CampaignType::FREE_PLAY);
-      auto creatureInfos = warlordInfo->creatures.transform([](auto& c) { return CreatureInfo(c.get()); });
-      sort(++creatureInfos.begin(), creatureInfos.end(),
+      auto playerInfos = warlordInfo->creatures.transform(
+          [&](auto& c) { return PlayerInfo(c.get(), &warlordInfo->contentFactory); });
+      sort(++playerInfos.begin(), playerInfos.end(),
            [](auto c1, auto c2) { return c1.bestAttack.value > c2.bestAttack.value; });
-      auto chosen = view->prepareWarlordGame(retiredGames, creatureInfos, 12);
+      auto chosen = view->prepareWarlordGame(retiredGames, playerInfos, 12);
       if (!chosen.empty()) {
         auto game = retiredGames.getActiveGames().getOnlyElement();
         auto setup = CampaignBuilder::getWarlordCampaign(game.gameInfo, game.fileInfo);
@@ -526,7 +527,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
             creatures.push_back(
                 [&]{
                   for (auto& c : warlordInfo->creatures)
-                    if (c && c->getUniqueId() == creatureInfos[index].uniqueId)
+                    if (c && c->getUniqueId() == playerInfos[index].creatureId)
                       return std::move(c);
                   fail();
                 }()

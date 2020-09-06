@@ -916,7 +916,7 @@ CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, CampaignMen
   return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, state));
 }
 
-vector<int> WindowView::prepareWarlordGame(RetiredGames& games, const vector<CreatureInfo>& minions, int maxCount) {
+vector<int> WindowView::prepareWarlordGame(RetiredGames& games, const vector<PlayerInfo>& minions, int maxCount) {
   string searchString;
   vector<int> chosen;
   /*for (int i : Range(maxCount))
@@ -960,12 +960,12 @@ vector<int> WindowView::prepareWarlordGame(RetiredGames& games, const vector<Cre
 }
 
 optional<UniqueEntity<Creature>::Id> WindowView::chooseCreature(const string& title,
-    const vector<CreatureInfo>& creatures, const string& cancelText) {
+    const vector<PlayerInfo>& creatures, const string& cancelText) {
   SyncQueue<optional<UniqueEntity<Creature>::Id>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawChooseCreatureMenu(returnQueue, title, creatures, cancelText));
 }
 
-bool WindowView::creatureInfo(const string& title, bool prompt, const vector<CreatureInfo>& creatures) {
+bool WindowView::creatureInfo(const string& title, bool prompt, const vector<PlayerInfo>& creatures) {
   SyncQueue<bool> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawCreatureInfo(returnQueue, title, prompt, creatures));
 }

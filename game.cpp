@@ -516,10 +516,10 @@ void Game::transferAction(vector<Creature*> creatures) {
         getModelCoords(creatures[0]->getLevel()->getModel()))) {
     WModel to = NOTNULL(models[*dest].get());
     creatures = creatures.filter([&](const Creature* c) { return c->getPosition().getModel() != to; });
-    vector<CreatureInfo> cant;
+    vector<PlayerInfo> cant;
     for (Creature* c : copyOf(creatures))
       if (!canTransferCreature(c, to)) {
-        cant.push_back(CreatureInfo(c));
+        cant.push_back(PlayerInfo(c, &*contentFactory));
         creatures.removeElement(c);
       }
     if (!cant.empty() && !view->creatureInfo("These minions will be left behind due to sunlight. Continue?", true, cant))

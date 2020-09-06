@@ -93,7 +93,7 @@ class GuiBuilder {
       ScrollPosition* scrollPos);
   SGuiElem drawCampaignMenu(SyncQueue<CampaignAction>&, View::CampaignOptions, View::CampaignMenuState&);
   SGuiElem drawRetiredDungeonMenu(SyncQueue<variant<string, bool, none_t> >&, RetiredGames&, string searchString);
-  SGuiElem drawWarlordMinionsMenu(SyncQueue<variant<int, bool>>& queue, const vector<CreatureInfo>&,
+  SGuiElem drawWarlordMinionsMenu(SyncQueue<variant<int, bool>>& queue, const vector<PlayerInfo>&,
       vector<int>& chosen, int maxCount);
   SGuiElem drawChooseSiteMenu(SyncQueue<optional<Vec2>>&, const string& message, const Campaign&,
       optional<Vec2>& sitePos);
@@ -101,8 +101,8 @@ class GuiBuilder {
   SGuiElem drawWorldmap(Semaphore&, const Campaign&);
   SGuiElem drawLevelMap(Semaphore&, const CreatureView*);
   SGuiElem drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
-      const vector<CreatureInfo>&, const string& cancelText);
-  SGuiElem drawCreatureInfo(SyncQueue<bool>&, const string& title, bool prompt, const vector<CreatureInfo>& creatures);
+      const vector<PlayerInfo>&, const string& cancelText);
+  SGuiElem drawCreatureInfo(SyncQueue<bool>&, const string& title, bool prompt, const vector<PlayerInfo>& creatures);
   SGuiElem drawModMenu(SyncQueue<optional<ModAction>>&, int highlighted, const vector<ModInfo>&);
   SGuiElem drawCost(pair<ViewId, int>, Color = Color::WHITE);
   SGuiElem drawHighscores(const vector<HighscoreList>&, Semaphore&, int& tabNum, vector<ScrollPosition>& scrollPos,
@@ -182,7 +182,7 @@ class GuiBuilder {
   vector<SGuiElem> drawSkillsList(const PlayerInfo&);
   SGuiElem drawSpellsList(const vector<SpellInfo>&, GenericId creatureId, bool active);
   SGuiElem getSpellIcon(const SpellInfo&, int index, bool active, GenericId creatureId);
-  vector<SGuiElem> drawEffectsList(const PlayerInfo&);
+  vector<SGuiElem> drawEffectsList(const PlayerInfo&, bool withTooltip = true);
   SGuiElem drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&);
   function<void()> getButtonCallback(UserInput);
   void drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width, bool darkBg);
@@ -309,7 +309,7 @@ class GuiBuilder {
       const vector<View::AvatarData>&);
   SGuiElem drawChosenCreatureButtons(PlayerRole, shared_ptr<int> chosenAvatar, shared_ptr<int> gender, int page,
       const vector<View::AvatarData>&);
-  SGuiElem drawCreatureList(const vector<CreatureInfo>&, function<void(UniqueEntity<Creature>::Id)> button, int zoom = 2);
+  SGuiElem drawCreatureList(const vector<PlayerInfo>&, function<void(UniqueEntity<Creature>::Id)> button, int zoom = 2);
   Color getElemColor(ListElem::ElemMod);
   SGuiElem drawAvatarsForRole(const vector<View::AvatarData>&, shared_ptr<int> avatarPage, shared_ptr<int> chosenAvatar,
                               shared_ptr<int> gender, shared_ptr<PlayerRole> chosenRole);
@@ -333,6 +333,7 @@ class GuiBuilder {
   SGuiElem drawZLevelButton(const CurrentLevelInfo&, Color textColor);
   SGuiElem drawKeeperDangerOverlay(const string&);
   SGuiElem drawBoolOptionElem(OptionId, string name);
+  SGuiElem drawCreatureTooltip(const PlayerInfo&);
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

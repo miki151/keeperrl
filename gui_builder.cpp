@@ -1436,13 +1436,16 @@ SGuiElem GuiBuilder::drawSpellsList(const vector<SpellInfo>& spells, GenericId c
     return nullptr;
 }
 
-vector<SGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info) {
+vector<SGuiElem> GuiBuilder::drawEffectsList(const PlayerInfo& info, bool tooltip) {
   vector<SGuiElem> lines;
   for (int i : All(info.effects)) {
     auto& effect = info.effects[i];
+    auto label = WL(label, effect.name, effect.bad ? Color::RED : Color::WHITE);
+    if (tooltip)
+      label = WL(renderInBounds, std::move(label));
     lines.push_back(WL(stack,
-          getTooltip({effect.help}, THIS_LINE + i),
-          WL(renderInBounds, WL(label, effect.name, effect.bad ? Color::RED : Color::WHITE))));
+          tooltip ? getTooltip({effect.help}, THIS_LINE + i) : WL(empty),
+          std::move(label)));
   }
   return lines;
 }
@@ -4096,14 +4099,14 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
 const Vec2 warlordMenuSize(550, 550);
 
 SGuiElem GuiBuilder::drawWarlordMinionsMenu(SyncQueue<variant<int, bool>>& queue,
-    const vector<CreatureInfo>& minions, vector<int>& chosen, int maxCount) {
+    const vector<PlayerInfo>& minions, vector<int>& chosen, int maxCount) {
   auto lines = gui.getListBuilder(legendLineHeight);
-  vector<CreatureInfo> chosenInfos;
+  vector<PlayerInfo> chosenInfos;
   for (auto index : chosen)
     chosenInfos.push_back(minions[index]);
   auto minionFun = [minions, &queue](UniqueEntity<Creature>::Id id) {
     for (int i : All(minions))
-      if (minions[i].uniqueId == id) {
+      if (minions[i].creatureId == id) {
         queue.push(i);
         return;
       }
@@ -4115,7 +4118,7 @@ SGuiElem GuiBuilder::drawWarlordMinionsMenu(SyncQueue<variant<int, bool>>& queue
         legendLineHeight * 2 / 3);
     lines.addElemAuto(drawCreatureList(chosenInfos, minionFun, 1));
   }
-  vector<CreatureInfo> availableInfos;
+  vector<PlayerInfo> availableInfos;
   for (int i : All(minions))
     if (!chosen.contains(i))
       availableInfos.push_back(minions[i]);
@@ -4179,17 +4182,32 @@ SGuiElem GuiBuilder::drawRetiredDungeonMenu(SyncQueue<variant<string, bool, none
       WL(window, WL(margins, lines.buildVerticalList(), 20), [&queue] { queue.push(false); }));
 }
 
-SGuiElem GuiBuilder::drawCreatureList(const vector<CreatureInfo>& creatures,
+SGuiElem GuiBuilder::drawCreatureTooltip(const PlayerInfo& info) {
+  auto lines = WL(getListBuilder, legendLineHeight);
+  lines.addElem(WL(label, info.title));
+    lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(info.attributes)));
+  for (auto& elem : drawEffectsList(info, false))
+    lines.addElem(std::move(elem));
+  ItemCounts counts;
+  for (auto& item : info.inventory)
+    counts[item.viewId[0]] += item.number;
+  lines.addElemAuto(drawLyingItemsList("Inventory:", counts, 200));
+  return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
+}
+
+SGuiElem GuiBuilder::drawCreatureList(const vector<PlayerInfo>& creatures,
     function<void(UniqueEntity<Creature>::Id)> button, int zoom) {
   auto minionLines = WL(getListBuilder, 20 * zoom);
   auto line = WL(getListBuilder, 30 * zoom);
   for (auto& elem : creatures) {
-    auto icon = WL(margins, WL(stack, WL(viewObject, elem.viewId, zoom),
-        WL(label, toString((int) elem.bestAttack.value), 10 * zoom)), 5, 5, 5, 5);
+    auto icon = WL(stack,
+        WL(tooltip2, drawCreatureTooltip(elem), [](auto& r) { return r.bottomLeft(); }),
+        WL(margins, WL(stack, WL(viewObject, elem.viewId, zoom),
+          WL(label, toString((int) elem.bestAttack.value), 10 * zoom)), 5, 5, 5, 5));
     if (button)
       line.addElemAuto(WL(stack,
             WL(mouseHighlight2, WL(uiHighlight)),
-            WL(button, [id = elem.uniqueId, button] { button(id); }),
+            WL(button, [id = elem.creatureId, button] { button(id); }),
             std::move(icon)));
     else
       line.addElemAuto(std::move(icon));
@@ -4208,7 +4226,7 @@ SGuiElem GuiBuilder::drawCreatureList(const vector<CreatureInfo>& creatures,
 }
 
 SGuiElem GuiBuilder::drawCreatureInfo(SyncQueue<bool>& queue, const string& title, bool prompt,
-    const vector<CreatureInfo>& creatures) {
+    const vector<PlayerInfo>& creatures) {
   auto lines = WL(getListBuilder, getStandardLineHeight());
   lines.addElem(WL(centerHoriz, WL(label, title)));
   const int windowWidth = 540;
@@ -4227,7 +4245,7 @@ SGuiElem GuiBuilder::drawCreatureInfo(SyncQueue<bool>& queue, const string& titl
 }
 
 SGuiElem GuiBuilder::drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>& queue, const string& title,
-      const vector<CreatureInfo>& team, const string& cancelText) {
+      const vector<PlayerInfo>& team, const string& cancelText) {
   auto lines = WL(getListBuilder, getStandardLineHeight());
   lines.addElem(WL(centerHoriz, WL(label, title)));
   const int windowWidth = 480;
