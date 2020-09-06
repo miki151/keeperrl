@@ -2,6 +2,7 @@ extern/steamworks/
 mods/
 build/
 html/
+.cache/
 .vscode/
 .kdev4/
 tmp/
