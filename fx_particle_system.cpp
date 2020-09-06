@@ -162,7 +162,7 @@ void defaultEmitParticle(AnimationContext &ctx, EmissionState &em, Particle &new
 }
 
 array<FVec2, 4> DrawContext::quadCorners(FVec2 pos, FVec2 size, float rotation) const {
-  PASSERT(size.x >= 0 && size.y >= 0);// << size.x << " " << size.y;
+  PASSERT(size.x >= 0 && size.y >= 0) << size.x << " " << size.y;
   auto corners = FRect(pos - size * 0.5f, pos + size * 0.5f).corners();
   if (rotation != 0.0f) {
     auto sc = sincos(rotation);
