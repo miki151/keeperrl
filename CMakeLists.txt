@@ -13,9 +13,9 @@ set(STDAFX_H_GCH "${CMAKE_CURRENT_BINARY_DIR}/stdagx.h.gch")
 
 # set debug cxxflags
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wimplicit-fallthrough -Wno-unused-function")
-if ((${CMAKE_BUILD_TYPE} MATCHES "Debug") AND (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gdb-index")
-endif()
+#if ((${CMAKE_BUILD_TYPE} MATCHES "Debug") AND (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L ${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/linux64/ -lsteam_api -Wl,-rpath=.")
+  #endif()
 
 # additional cmake modules directory
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
@@ -44,7 +44,7 @@ add_custom_command(
 
 
 # rules to create `keeper` binary
-file(GLOB SOURCES "*.cpp")
+file(GLOB SOURCES "*.cpp" "extern/*.cpp")
 add_executable(keeper ${SOURCES} ${KEEPER_VERSION_H})
 target_include_directories(keeper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(keeper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern)
