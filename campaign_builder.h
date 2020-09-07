@@ -2,6 +2,7 @@
 
 #include "campaign.h"
 #include "biome_id.h"
+#include "retired_games.h"
 
 struct CampaignSetup;
 struct VillainPlacement;
@@ -28,7 +29,8 @@ class CampaignBuilder {
   optional<CampaignSetup> prepareCampaign(const ContentFactory*, function<optional<RetiredGames>(CampaignType)>,
       CampaignType defaultType, string worldName);
   static CampaignSetup getEmptyCampaign();
-  static CampaignSetup getWarlordCampaign(SavedGameInfo, SaveFileInfo);
+  static CampaignSetup getWarlordCampaign(const vector<RetiredGames::RetiredGame>&,
+      const string& gameName);
 
   private:
   optional<Vec2> considerStaticPlayerPos(const Campaign&);

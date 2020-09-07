@@ -32,6 +32,7 @@ class TilePaths;
 struct ModVersionInfo;
 struct ModDetails;
 struct WarlordInfo;
+class TribeId;
 
 class MainLoop {
   public:
@@ -77,8 +78,8 @@ class MainLoop {
   void showCredits(const FilePath& path);
   void showMods();
   void playMenuMusic();
-
-  ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen& random, ContentFactory*);
+  ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen&, ContentFactory*);
+  ModelTable prepareCampaignModels(CampaignSetup& campaign, TribeAlignment, ModelBuilder);
   PGame loadGame(const FilePath&);
   PGame loadPrevious();
   FilePath getSavePath(const PGame&, GameSaveType);
@@ -101,7 +102,7 @@ class MainLoop {
   TileSet* tileSet;
   int saveVersion;
   string modVersion;
-  PModel getBaseModel(ModelBuilder&, CampaignSetup&, const AvatarInfo&);
+  PModel getBaseModel(ModelBuilder&, CampaignSetup&, TribeId, TribeAlignment);
   void considerGameEventsPrompt();
   void considerFreeVersionText(bool tilesPresent);
   void eraseAllSavesExcept(const PGame&, optional<GameSaveType>);

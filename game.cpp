@@ -140,10 +140,8 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup setup, AvatarInfo
   return ret;
 }
 
-PGame Game::warlordGame(PModel model, CampaignSetup setup, vector<PCreature> creatures, ContentFactory contentFactory) {
-  Table<PModel> t(1, 1);
-  t[0][0] = std::move(model);
-  auto ret = makeOwner<Game>(std::move(t), *setup.campaign.getPlayerPos(), setup, std::move(contentFactory));
+PGame Game::warlordGame(Table<PModel> models, CampaignSetup setup, vector<PCreature> creatures, ContentFactory contentFactory) {
+  auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup, std::move(contentFactory));
   for (auto model : ret->getAllModels())
     model->setGame(ret.get());
   for (auto& c : creatures)
@@ -845,7 +843,7 @@ void Game::addEvent(const GameEvent& event) {
               uploadEvent("retiredConquered", {
                   {"retiredId", getGameId(retired->fileInfo)},
                   {"playerName", getPlayerName()}});
-            if (coords != campaign->getPlayerPos())
+            if (coords != campaign->getPlayerPos() || campaign->getPlayerRole() == PlayerRole::ADVENTURER)
               campaign->setDefeated(coords);
           }
         }

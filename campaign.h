@@ -4,6 +4,7 @@
 #include "saved_game_info.h"
 #include "save_file_info.h"
 #include "enemy_id.h"
+#include "tribe.h"
 
 class View;
 class ProgressMeter;
@@ -26,7 +27,8 @@ class Campaign {
   };
   struct KeeperInfo {
     ViewIdList SERIAL(viewId);
-    SERIALIZE_ALL(viewId)
+    TribeId SERIAL(tribe);
+    SERIALIZE_ALL(viewId, tribe)
   };
   struct RetiredInfo {
     SavedGameInfo SERIAL(gameInfo);

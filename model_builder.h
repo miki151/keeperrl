@@ -27,6 +27,8 @@ struct BiomeEnemyInfo;
 class ModelBuilder {
   public:
   ModelBuilder(ProgressMeter*, RandomGen&, Options*, SokobanInput*, ContentFactory*, EnemyFactory);
+  ModelBuilder(ModelBuilder&&) = default;
+  ModelBuilder(const ModelBuilder&) = delete;
   PModel singleMapModel(TribeId keeperTribe, TribeAlignment);
   PModel campaignBaseModel(TribeId keeperTribe, TribeAlignment, BiomeId, optional<ExternalEnemiesType>);
   PModel campaignSiteModel(EnemyId, VillainType, TribeAlignment);

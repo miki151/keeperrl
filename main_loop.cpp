@@ -52,6 +52,7 @@
 #include "gui_elem.h"
 #include "encyclopedia.h"
 #include "game_info.h"
+#include "tribe_alignment.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -517,25 +518,26 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
            [](auto c1, auto c2) { return c1.bestAttack.value > c2.bestAttack.value; });
       auto chosen = view->prepareWarlordGame(retiredGames, playerInfos, 12);
       if (!chosen.empty()) {
-        auto game = retiredGames.getActiveGames().getOnlyElement();
-        auto setup = CampaignBuilder::getWarlordCampaign(game.gameInfo, game.fileInfo);
-        if (auto info = loadFromFile<RetiredModelInfo>(userPath.file(game.fileInfo.filename))) {
-          auto model = std::move(info->model);
-          warlordInfo->contentFactory.merge(std::move(info->factory));
-          vector<PCreature> creatures;
-          for (int index : chosen)
-            creatures.push_back(
-                [&]{
-                  for (auto& c : warlordInfo->creatures)
-                    if (c && c->getUniqueId() == playerInfos[index].creatureId)
-                      return std::move(c);
-                  fail();
-                }()
-            );
-          return Game::warlordGame(std::move(model), setup, std::move(creatures),
-              std::move(warlordInfo->contentFactory));
-        } else
-          view->presentText("Sorry", "Error reading retired dungeon.");
+        auto setup = CampaignBuilder::getWarlordCampaign(retiredGames.getActiveGames(),
+            warlordInfo->creatures[0]->getName().firstOrBare());
+        EnemyFactory enemyFactory(Random, contentFactory.getCreatures().getNameGenerator(), contentFactory.enemies,
+            contentFactory.buildingInfo, {});
+        ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, &contentFactory, std::move(enemyFactory));
+        auto models = prepareCampaignModels(setup, TribeAlignment::LAWFUL, std::move(modelBuilder));
+        for (auto& f : models.factories)
+          warlordInfo->contentFactory.merge(std::move(f));
+        vector<PCreature> creatures;
+        for (int index : chosen)
+          creatures.push_back(
+              [&]{
+                for (auto& c : warlordInfo->creatures)
+                  if (c && c->getUniqueId() == playerInfos[index].creatureId)
+                    return std::move(c);
+                fail();
+              }()
+          );
+        return Game::warlordGame(std::move(models.models), setup, std::move(creatures),
+            std::move(warlordInfo->contentFactory));
       }
     } else {
       auto option = *avatarChoice.getValueMaybe<AvatarMenuOption>();
@@ -1150,16 +1152,16 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, vector<Creatur
   return numAllies;
 }
 
-PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, const AvatarInfo& avatarInfo) {
+PModel MainLoop::getBaseModel(ModelBuilder& modelBuilder, CampaignSetup& setup, TribeId tribe,
+    TribeAlignment alignment) {
   auto ret = [&] {
     switch (setup.campaign.getType()) {
       case CampaignType::SINGLE_KEEPER:
-        return modelBuilder.singleMapModel(avatarInfo.playerCreature->getTribeId(), avatarInfo.tribeAlignment);
+        return modelBuilder.singleMapModel(tribe, alignment);
       case CampaignType::QUICK_MAP:
         return modelBuilder.tutorialModel();
       default:
-        return modelBuilder.campaignBaseModel(avatarInfo.playerCreature->getTribeId(),
-            avatarInfo.tribeAlignment, setup.startingBiome, setup.externalEnemies);
+        return modelBuilder.campaignBaseModel(tribe, alignment, setup.startingBiome, setup.externalEnemies);
     }
   }();
   return ret;
@@ -1180,6 +1182,14 @@ vector<ExternalEnemy> getExternalEnemiesFor(const AvatarInfo& info, const Conten
 
 ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInfo& avatarInfo, RandomGen& random,
     ContentFactory* contentFactory) {
+  EnemyFactory enemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
+      contentFactory->buildingInfo, getExternalEnemiesFor(avatarInfo, contentFactory));
+  ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, contentFactory, std::move(enemyFactory));
+  return prepareCampaignModels(setup, avatarInfo.tribeAlignment, std::move(modelBuilder));
+}
+
+ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment tribeAlignment,
+    ModelBuilder modelBuilder) {
   Table<PModel> models(setup.campaign.getSites().getBounds());
   auto& sites = setup.campaign.getSites();
   for (Vec2 v : sites.getBounds())
@@ -1192,14 +1202,11 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
   vector<ContentFactory> factories;
   doWithSplash("Generating map...", numSites,
       [&] (ProgressMeter& meter) {
-        EnemyFactory enemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
-            contentFactory->buildingInfo, getExternalEnemiesFor(avatarInfo, contentFactory));
-        ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, contentFactory, std::move(enemyFactory));
         for (Vec2 v : sites.getBounds()) {
           if (!sites[v].isEmpty())
             meter.addProgress();
-          if (sites[v].getKeeper()) {
-            models[v] = getBaseModel(modelBuilder, setup, avatarInfo);
+          if (auto info = sites[v].getKeeper()) {
+            models[v] = getBaseModel(modelBuilder, setup, info->tribe, tribeAlignment);
           } else if (auto villain = sites[v].getVillain()) {
             for (auto& info : getSaveFiles(userPath, getSaveSuffix(GameSaveType::RETIRED_SITE)))
               if (isCompatible(getSaveVersion(info)))
@@ -1212,7 +1219,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, const AvatarInf
                         break;
                       }
             if (!models[v])
-              models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, avatarInfo.tribeAlignment);
+              models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, tribeAlignment);
           } else if (auto retired = sites[v].getRetired()) {
             if (auto info = loadFromFile<RetiredModelInfo>(userPath.file(retired->fileInfo.filename))) {
               models[v] = std::move(info->model);

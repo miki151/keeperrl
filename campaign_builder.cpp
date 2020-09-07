@@ -144,7 +144,8 @@ void CampaignBuilder::setPlayerPos(Campaign& campaign, Vec2 pos, ViewIdList play
         campaign.clearSite(*campaign.playerPos);
       campaign.playerPos = pos;
       campaign.sites[*campaign.playerPos].dweller =
-          Campaign::SiteInfo::Dweller(Campaign::KeeperInfo{playerViewId});
+          Campaign::SiteInfo::Dweller(Campaign::KeeperInfo{playerViewId,
+              avatarInfo.playerCreature->getTribeId()});
       break;
     case PlayerRole:: ADVENTURER:
       campaign.playerPos = pos;
@@ -452,14 +453,20 @@ CampaignSetup CampaignBuilder::getEmptyCampaign() {
   return CampaignSetup{ret, "", "", {}, none, EnemyAggressionLevel::MODERATE};
 }
 
-CampaignSetup CampaignBuilder::getWarlordCampaign(SavedGameInfo info, SaveFileInfo file) {
-  auto site = Campaign::SiteInfo {
-    info.getViewId(),
-    Campaign::SiteInfo::Dweller(Campaign::RetiredInfo { info, file }),
-    false
-  };
-  Campaign ret(Table<Campaign::SiteInfo>(1, 1, site), CampaignType::SINGLE_KEEPER, PlayerRole::ADVENTURER, "");
+CampaignSetup CampaignBuilder::getWarlordCampaign(const vector<RetiredGames::RetiredGame>& games,
+    const string& gameName) {
+  Campaign ret(Table<Campaign::SiteInfo>(games.size(), 1), CampaignType::SINGLE_KEEPER, PlayerRole::ADVENTURER, "");
+  for (int i : All(games)) {
+    auto site = Campaign::SiteInfo {
+      games[i].gameInfo.getViewId(),
+      Campaign::SiteInfo::Dweller(Campaign::RetiredInfo { games[i].gameInfo, games[i].fileInfo }),
+      false
+    };
+    ret.sites[i][0] = std::move(site);
+  }
+  ret.mapZoom = 2;
+  ret.influenceSize = 1;
   ret.playerPos = Vec2(0, 0);
-  return CampaignSetup{std::move(ret), "Warlord" + getNewIdSuffix(), info.name + " incursion", {}, none,
+  return CampaignSetup{std::move(ret), gameName + getNewIdSuffix(), gameName, {}, none,
       EnemyAggressionLevel::MODERATE};
 }
