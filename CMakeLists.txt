@@ -77,7 +77,7 @@ add_custom_command(
     COMMENT "Generating ${STDAFX_H_GCH}"
 )
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include-pch ${STDAFX_H_GCH}")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 endif()
 target_sources(keeper PRIVATE ${STDAFX_H_GCH})
 endif()
