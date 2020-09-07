@@ -1,10 +1,13 @@
 extern/steamworks/
 mods/
 build/
+build_kde/
 html/
 .cache/
 .vscode/
 .kdev4/
+*.kdev4
+*.png
 tmp/
 find
 gameplay.txt
