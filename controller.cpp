@@ -33,6 +33,7 @@ Controller::Controller(Creature* c) : creature(c) {
 ControllerFactory::ControllerFactory(function<PController(Creature*)> f) : fun(f) {}
 
 PController ControllerFactory::get(Creature* c) const {
+  CHECK(!!c);
   return fun(c);
 }
 
