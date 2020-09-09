@@ -748,14 +748,17 @@ string Game::getPlayerName() const {
 }
 
 SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
+  auto sortMinions = [&](vector<Creature*> minions, Creature* leader) {
+    sort(minions.begin(), minions.end(), [leader] (const Creature* c1, const Creature* c2) {
+        return c1 == leader || (c2 != leader && c1->getBestAttack().value > c2->getBestAttack().value);});
+    CHECK(minions[0] == leader);
+  };
   if (Collective* col = getPlayerCollective()) {
     vector<Creature*> creatures = col->getCreatures();
     CHECK(!creatures.empty());
     Creature* leader = col->getLeaders()[0];
     CHECK(leader);
-    sort(creatures.begin(), creatures.end(), [leader] (const Creature* c1, const Creature* c2) {
-        return c1 == leader || (c2 != leader && c1->getBestAttack().value > c2->getBestAttack().value);});
-    CHECK(creatures[0] == leader);
+    sortMinions(creatures, leader);
     creatures.resize(min<int>(creatures.size(), 4));
     vector<SavedGameInfo::MinionInfo> minions;
     for (Creature* c : creatures)
@@ -768,8 +771,18 @@ SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
     }
     return SavedGameInfo{minions, retiredInfo, getPlayerName(), getSaveProgressCount(), std::move(spriteMods)};
   } else {
-    auto player = players.getOnlyElement(); // adventurer mode
-    return SavedGameInfo{{getMinionInfo(player)}, none, player->getName().bare(), getSaveProgressCount(), std::move(spriteMods)};
+    vector<Creature*> allCreatures;
+    for (auto player : players)
+      for (auto c : dynamic_cast<Player*>(player->getController())->getTeam())
+        if (!allCreatures.contains(c))
+          allCreatures.push_back(c);
+    sortMinions(allCreatures, players[0]);
+    return SavedGameInfo{
+        allCreatures.transform([](auto c) { return getMinionInfo(c); }),
+        none,
+        players[0]->getName().bare(),
+        getSaveProgressCount(),
+        std::move(spriteMods)};
   }
 }
 
