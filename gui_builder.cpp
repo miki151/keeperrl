@@ -1512,10 +1512,10 @@ SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info,
     }
   }
   if (!infoOnly)
-  lines.addElem(WL(getListBuilder)
-      .addElemAuto(WL(label, "Combat experience: ", Color::YELLOW))
-      .addElemAuto(WL(label, toStringRounded(info.combatExperience, 0.01)))
-      .buildHorizontalList());
+    lines.addElem(WL(getListBuilder)
+       .addElemAuto(WL(label, "Combat experience: ", Color::YELLOW))
+       .addElemAuto(WL(label, toStringRounded(info.combatExperience, 0.01)))
+       .buildHorizontalList());
   if (increaseCallback) {
     lines.addSpace(15);
     lines.addElem(WL(centerHoriz,
@@ -1706,7 +1706,8 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
         WL(button, getButtonCallback(UserInputId::TOGGLE_CONTROL_MODE), gui.getKey(SDL::SDLK_g))));
     vList.addSpace(legendLineHeight / 2);
   }
-  vList.addElem(WL(buttonLabel, "Exit control mode",
+  if (info.canExitControlMode)
+    vList.addElem(WL(buttonLabel, "Exit control mode",
         WL(button, getButtonCallback(UserInputId::EXIT_CONTROL_MODE), gui.getKey(SDL::SDLK_u))));
   vList.addSpace(10);
   vList.addElem(WL(margins, WL(sprite, GuiFactory::TexId::HORI_LINE, GuiFactory::Alignment::TOP), -6, 0, -6, 0), 10);
@@ -2208,7 +2209,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
     lines.addSpace(legendLineHeight * 2 / 3);
   }
   if (!info.researched.empty())
-  lines.addElem(WL(label, "Already researched:", Color::YELLOW));
+    lines.addElem(WL(label, "Already researched:", Color::YELLOW));
   for (int i : All(info.researched)) {
     auto& elem = info.researched[i];
     auto line = WL(renderInBounds, WL(label, capitalFirst(getName(elem.id)), Color::GRAY));
