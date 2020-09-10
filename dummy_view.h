@@ -64,7 +64,7 @@ class DummyView : public View {
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) override {
     return CampaignActionId::CANCEL;
   }
-  virtual vector<int> prepareWarlordGame(RetiredGames&, const vector<PlayerInfo>&, int maxCount) override {
+  virtual vector<int> prepareWarlordGame(RetiredGames&, const vector<PlayerInfo>&, int maxTeam, int maxDungeons) override {
     return vector<int>();
   }
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string&, const vector<PlayerInfo>&,

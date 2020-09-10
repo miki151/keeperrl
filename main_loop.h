@@ -33,6 +33,7 @@ struct ModVersionInfo;
 struct ModDetails;
 struct WarlordInfo;
 class TribeId;
+struct RetiredModelInfo;
 
 class MainLoop {
   public:
@@ -130,6 +131,7 @@ class MainLoop {
   DirectoryPath getVanillaDir() const;
   template<typename T>
   optional<T> loadFromFile(const FilePath&);
+  optional<RetiredModelInfo> loadRetiredModelFromFile(const FilePath&);
   bool useSingleThread();
   vector<WarlordInfo> readWarlordInfos();
 };

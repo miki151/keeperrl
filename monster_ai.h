@@ -67,7 +67,7 @@ class MonsterAIFactory {
   static MonsterAIFactory splashHeroes(bool leader);
   static MonsterAIFactory splashMonsters();
   static MonsterAIFactory splashImps(const FilePath& splashPath);
-
+  static MonsterAIFactory warlord(shared_ptr<vector<Creature*>> team, shared_ptr<EnumSet<TeamOrder>> orders);
   private:
   typedef function<MonsterAI*(Creature*)> MakerFun;
   MonsterAIFactory(MakerFun);

@@ -17,7 +17,7 @@
 #include "content_factory.h"
 #include "options.h"
 
-static TribeId getPlayerTribeId(TribeAlignment variant) {
+TribeId getPlayerTribeId(TribeAlignment variant) {
   switch (variant) {
     case TribeAlignment::EVIL:
       return TribeId::getDarkKeeper();

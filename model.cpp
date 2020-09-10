@@ -57,6 +57,7 @@
 #include "collective_config.h"
 #include "monster.h"
 #include "monster_ai.h"
+#include "warlord_controller.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {
@@ -339,15 +340,13 @@ void Model::landWarlord(vector<PCreature> player) {
   auto ref = getWeakPointers(player);
   for (auto& c : player) {
     c->setUniqueId(UniqueEntity<Creature>::Id());
-    c->setTribe(TribeId::getAdventurer());
     transferCreature(std::move(c), Vec2(1, 0));
   }
+  auto team = make_shared<vector<Creature*>>(ref);
+  auto teamOrders = make_shared<EnumSet<TeamOrder>>();
   for (int i : All(ref))
-    if (i == 0)
-      ref[i]->setController(makeOwner<Player>(ref[i], true, make_shared<MapMemory>(), make_shared<MessageBuffer>(),
-        make_shared<VisibilityMap>(), make_shared<UnknownLocations>()));
-    else
-      ref[i]->setController(Monster::getFactory(MonsterAIFactory::summoned(ref[0])).get(ref[i]));
+    ref[i]->setController(Monster::getFactory(MonsterAIFactory::warlord(team, teamOrders)).get(ref[i]));
+  ref[0]->pushController(getWarlordController(team, teamOrders));
 }
 
 void Model::landHeroPlayer(PCreature player) {

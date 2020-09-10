@@ -285,7 +285,7 @@ class View {
   };
 
   virtual CampaignAction prepareCampaign(CampaignOptions, CampaignMenuState&) = 0;
-  virtual vector<int> prepareWarlordGame(RetiredGames&, const vector<PlayerInfo>&, int maxCount) = 0;
+  virtual vector<int> prepareWarlordGame(RetiredGames&, const vector<PlayerInfo>&, int maxTeam, int maxDungeons) = 0;
 
   virtual optional<UniqueEntity<Creature>::Id> chooseCreature(const string& title, const vector<PlayerInfo>&,
       const string& cancelText) = 0;

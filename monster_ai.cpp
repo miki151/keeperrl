@@ -82,7 +82,7 @@ MonsterAI::~MonsterAI() {}
 SERIALIZE_DEF(MonsterAI, behaviours, weights, creature, pickItems)
 SERIALIZATION_CONSTRUCTOR_IMPL(MonsterAI);
 
-Behaviour::Behaviour(Creature* c) : creature(c) {
+Behaviour::Behaviour(Creature* c) : creature(NOTNULL(c)) {
 }
 
 Creature* Behaviour::getClosestCreature() {
@@ -1052,6 +1052,29 @@ class ByCollective : public Behaviour {
   unique_ptr<Fighter> SERIAL(fighter);
 };
 
+class WarlordBehaviour : public Behaviour {
+  public:
+  WarlordBehaviour(Creature*c, unique_ptr<Fighter> fighter, shared_ptr<vector<Creature*>> team,
+      shared_ptr<EnumSet<TeamOrder>> orders)
+      : Behaviour(c), fighter(std::move(fighter)), team(std::move(team)), orders(std::move(orders)) {}
+  virtual MoveInfo getMove() override {
+    auto fighterMove = fighter->getMove(orders->isEmpty());
+    if (orders->contains(TeamOrder::STAND_GROUND) || fighterMove.getValue() > 0.1)
+      return fighterMove;
+    auto target = (*team)[0];
+    CHECK(target != creature);
+    return creature->moveTowards(target->getPosition());
+  }
+
+  SERIALIZATION_CONSTRUCTOR(WarlordBehaviour)
+  SERIALIZE_ALL(SUBCLASS(Behaviour), orders, team, fighter)
+
+  private:
+  unique_ptr<Fighter> SERIAL(fighter);
+  shared_ptr<vector<Creature*>> SERIAL(team);
+  shared_ptr<EnumSet<TeamOrder>> SERIAL(orders);
+};
+
 class ChooseRandom : public Behaviour {
   public:
   ChooseRandom(Creature* c, vector<PBehaviour>&& beh, vector<double> w)
@@ -1344,6 +1367,7 @@ REGISTER_TYPE(SingleTask);
 REGISTER_TYPE(AvoidFire);
 REGISTER_TYPE(StayOnFurniture);
 REGISTER_TYPE(AdoxieSacrifice);
+REGISTER_TYPE(WarlordBehaviour);
 
 MonsterAI::MonsterAI(Creature* c, const vector<Behaviour*>& beh, const vector<int>& w, bool pick) :
     weights(w), creature(c), pickItems(pick) {
@@ -1537,6 +1561,18 @@ MonsterAIFactory MonsterAIFactory::summoned(Creature* leader) {
           new GoldLust(c)},
           { 6, 5, 4, 3, 1, 1 });
       });
+}
+
+MonsterAIFactory MonsterAIFactory::warlord(shared_ptr<vector<Creature*>> team, shared_ptr<EnumSet<TeamOrder>> orders) {
+  return MonsterAIFactory([=](Creature* c) {
+      return new MonsterAI(c, {
+          new WarlordBehaviour(c, unique<Fighter>(c), std::move(team), std::move(orders)),
+          new AvoidFire(c),
+          new EffectsAI(c),
+          new MoveRandomly(c),
+          new GoldLust(c)},
+          { 6, 5, 4, 1, 1 });
+  });
 }
 
 MonsterAIFactory MonsterAIFactory::splashHeroes(bool leader) {

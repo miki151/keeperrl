@@ -46,6 +46,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
       STutorial = nullptr);
 
   void onEvent(const GameEvent&);
+  virtual vector<Creature*> getTeam() const;
 
   SERIALIZATION_DECL(Player)
 
@@ -82,7 +83,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   };
   virtual vector<CommandInfo> getCommands() const;
   virtual void onLostControl();
-  virtual vector<Creature*> getTeam() const;
   virtual bool isTravelEnabled() const;
   virtual bool handleUserInput(UserInput);
   virtual void updateUnknownLocations();
@@ -99,6 +99,9 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   optional<Position> chooseTarget(Table<PassableInfo>, TargetType, const string& question);
 
   SMapMemory SERIAL(levelMemory);
+  SMessageBuffer SERIAL(messageBuffer);
+  SVisibilityMap SERIAL(visibilityMap);
+  SUnknownLocations SERIAL(unknownLocations);
   void showHistory();
   Game* getGame() const;
   WModel getModel() const;
@@ -107,8 +110,8 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   bool tryToPerform(CreatureAction);
 
   bool canTravel() const;
-  private:
 
+  private:
   WLevel getLevel() const;
   void considerAdventurerMusic();
   void considerKeeperModeTravelMusic();
@@ -142,15 +145,12 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   bool SERIAL(displayGreeting);
   bool updateView = true;
   void retireMessages();
-  SMessageBuffer SERIAL(messageBuffer);
   string getRemainingString(LastingEffect) const;
   ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
   optional<FurnitureUsageType> getUsableUsageType() const;
-  SVisibilityMap SERIAL(visibilityMap);
   STutorial SERIAL(tutorial);
   vector<TeamMemberAction> getTeamMemberActions(const Creature*) const;
   optional<GlobalTime> lastEnemyInterruption;
-  SUnknownLocations SERIAL(unknownLocations);
   void updateSquareMemory(Position);
   HeapAllocated<DungeonLevel> SERIAL(avatarLevel);
   void fillDungeonLevel(PlayerInfo&) const;

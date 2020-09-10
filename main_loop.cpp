@@ -1,3 +1,5 @@
+#include "avatar_info.h"
+#include "file_path.h"
 #include "stdafx.h"
 #include "main_loop.h"
 #include "view.h"
@@ -152,6 +154,13 @@ struct RetiredModelInfoWithReference {
   ContentFactory* SERIAL(factory);
   SERIALIZE_ALL_NO_VERSION(model, serializeAsValue(factory))
 };
+
+optional<RetiredModelInfo> MainLoop::loadRetiredModelFromFile(const FilePath& path) {
+  for (auto alignment : ENUM_ALL(TribeAlignment))
+    TribeId::switchForSerialization(getPlayerTribeId(alignment), TribeId::getRetiredKeeper());
+  auto _ = OnExit([]{TribeId::clearSwitch();});
+  return loadFromFile<RetiredModelInfo>(path);
+}
 
 void MainLoop::saveMainModel(PGame& game, const FilePath& modelPath, const FilePath& warlordPath) {
   CompressedOutput modelOut(modelPath.getPath());
@@ -516,7 +525,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
           [&](auto& c) { return PlayerInfo(c.get(), &warlordInfo->contentFactory); });
       sort(++playerInfos.begin(), playerInfos.end(),
            [](auto c1, auto c2) { return c1.bestAttack.value > c2.bestAttack.value; });
-      auto chosen = view->prepareWarlordGame(retiredGames, playerInfos, 12);
+      auto chosen = view->prepareWarlordGame(retiredGames, playerInfos, 12, 10);
       if (!chosen.empty()) {
         auto setup = CampaignBuilder::getWarlordCampaign(retiredGames.getActiveGames(),
             warlordInfo->creatures[0]->getName().firstOrBare());
@@ -1213,7 +1222,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
                 if (auto saved = loadSavedGameInfo(userPath.file(info.filename)))
                   if (auto& retiredInfo = saved->retiredEnemyInfo)
                     if (retiredInfo->enemyId == villain->enemyId)
-                      if (auto model = loadFromFile<RetiredModelInfo>(userPath.file(info.filename))) {
+                      if (auto model = loadRetiredModelFromFile(userPath.file(info.filename))) {
                         models[v] = std::move(model->model);
                         remove(userPath.file(info.filename).getPath());
                         break;
@@ -1221,7 +1230,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
             if (!models[v])
               models[v] = modelBuilder.campaignSiteModel(villain->enemyId, villain->type, tribeAlignment);
           } else if (auto retired = sites[v].getRetired()) {
-            if (auto info = loadFromFile<RetiredModelInfo>(userPath.file(retired->fileInfo.filename))) {
+            if (auto info = loadRetiredModelFromFile(userPath.file(retired->fileInfo.filename))) {
               models[v] = std::move(info->model);
               factories.push_back(std::move(info->factory));
             } else {

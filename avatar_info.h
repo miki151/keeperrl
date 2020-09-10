@@ -31,3 +31,4 @@ struct WarlordInfoWithReference {
 extern variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View*, const vector<KeeperCreatureInfo>&,
     const vector<AdventurerCreatureInfo>&, vector<WarlordInfo>, ContentFactory*);
 extern AvatarInfo getQuickGameAvatar(View*, const vector<KeeperCreatureInfo>&, CreatureFactory*);
+extern TribeId getPlayerTribeId(TribeAlignment);

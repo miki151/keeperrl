@@ -266,13 +266,11 @@ void Game::prepareSiteRetirement() {
           if (c->getPosition().getModel() == mainModel)
             transferCreature(c, models[v].get());
   mainModel->prepareForRetirement();
-  TribeId::switchForSerialization(playerCollective->getTribeId(), TribeId::getRetiredKeeper());
   UniqueEntity<Item>::offsetForSerialization(Random.getLL());
   UniqueEntity<Creature>::offsetForSerialization(Random.getLL());
 }
 
 void Game::doneRetirement() {
-  TribeId::clearSwitch();
   UniqueEntity<Item>::clearOffset();
   UniqueEntity<Creature>::clearOffset();
 }

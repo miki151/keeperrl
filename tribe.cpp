@@ -236,11 +236,9 @@ void TribeId::clearSwitch() {
 
 template <class Archive> 
 void TribeId::serialize(Archive& ar, const unsigned int version) {
+  ar(key);
   if (serialSwitch && *this == serialSwitch->first)
     *this = serialSwitch->second;
-  ar(key);
-  if (serialSwitch && *this == serialSwitch->second)
-    *this = serialSwitch->first;
 }
 
 SERIALIZABLE(TribeId);

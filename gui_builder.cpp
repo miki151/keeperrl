@@ -4141,7 +4141,7 @@ SGuiElem GuiBuilder::drawWarlordMinionsMenu(SyncQueue<variant<int, bool>>& queue
 }
 
 SGuiElem GuiBuilder::drawRetiredDungeonMenu(SyncQueue<variant<string, bool, none_t>>& queue,
-    RetiredGames& retired, string searchString) {
+    RetiredGames& retired, string searchString, int maxGames) {
   auto lines = gui.getListBuilder(legendLineHeight);
   lines.addElem(WL(label, "Choose retired dungeons to attack:"));
   lines.addSpace(legendLineHeight / 2);

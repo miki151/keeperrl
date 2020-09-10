@@ -916,7 +916,8 @@ CampaignAction WindowView::prepareCampaign(CampaignOptions campaign, CampaignMen
   return getBlockingGui(returnQueue, guiBuilder.drawCampaignMenu(returnQueue, campaign, state));
 }
 
-vector<int> WindowView::prepareWarlordGame(RetiredGames& games, const vector<PlayerInfo>& minions, int maxCount) {
+vector<int> WindowView::prepareWarlordGame(RetiredGames& games, const vector<PlayerInfo>& minions,
+    int maxTeam, int maxDungeons) {
   string searchString;
   vector<int> chosen;
   /*for (int i : Range(maxCount))
@@ -927,7 +928,7 @@ vector<int> WindowView::prepareWarlordGame(RetiredGames& games, const vector<Pla
       SyncQueue<variant<int, bool>> queue;
       sort(chosen.begin(), chosen.end());
       auto res = getBlockingGui(queue,
-          guiBuilder.drawWarlordMinionsMenu(queue, minions, chosen, maxCount));
+          guiBuilder.drawWarlordMinionsMenu(queue, minions, chosen, maxTeam));
       if (auto value = res.getValueMaybe<bool>()) {
         if (*value) {
           ++page;
@@ -938,13 +939,13 @@ vector<int> WindowView::prepareWarlordGame(RetiredGames& games, const vector<Pla
       if (auto value = res.getValueMaybe<int>()) {
         if (chosen.contains(*value))
           chosen.removeElement(*value);
-        else if (chosen.size() < maxCount)
+        else if (chosen.size() < maxTeam)
           chosen.push_back(*value);
       }
     } else {
       SyncQueue<variant<string, bool, none_t>> queue;
       auto res = getBlockingGui(queue,
-          guiBuilder.drawRetiredDungeonMenu(queue, games, searchString));
+          guiBuilder.drawRetiredDungeonMenu(queue, games, searchString, maxDungeons));
       if (auto value = res.getValueMaybe<bool>()) {
         if (*value)
           return chosen;
