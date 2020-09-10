@@ -746,7 +746,7 @@ string Game::getPlayerName() const {
 }
 
 SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
-  auto sortMinions = [&](vector<Creature*> minions, Creature* leader) {
+  auto sortMinions = [&](vector<Creature*>& minions, Creature* leader) {
     sort(minions.begin(), minions.end(), [leader] (const Creature* c1, const Creature* c2) {
         return c1 == leader || (c2 != leader && c1->getBestAttack().value > c2->getBestAttack().value);});
     CHECK(minions[0] == leader);
