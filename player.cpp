@@ -81,10 +81,9 @@ SERIALIZABLE(Player)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Player)
 
-Player::Player(Creature* c, bool adv, SMapMemory memory, SMessageBuffer buf, SVisibilityMap v, SUnknownLocations loc,
-      STutorial t) :
-    Controller(c), levelMemory(memory), adventurer(adv), displayGreeting(adventurer), messageBuffer(buf),
-    visibilityMap(v), tutorial(t), unknownLocations(loc) {
+Player::Player(Creature* c, bool adv, SMapMemory memory, SMessageBuffer buf, SVisibilityMap v, SUnknownLocations loc, STutorial t)
+    : Controller(c), levelMemory(memory), messageBuffer(buf), visibilityMap(v), unknownLocations(loc),
+      adventurer(adv), displayGreeting(adventurer), tutorial(t) {
   visibilityMap->update(c, c->getVisibleTiles());
 }
 
