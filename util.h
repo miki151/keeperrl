@@ -115,6 +115,8 @@ void trim(string& s);
 string toUpper(const string& s);
 string toLower(const string& s);
 
+string stripFilename(string);
+
 bool endsWith(const string&, const string& suffix);
 bool startsWith(const string&, const string& prefix);
 bool contains(const string&, const string& substring, unsigned long index);

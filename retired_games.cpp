@@ -55,3 +55,9 @@ void RetiredGames::sort() {
 int RetiredGames::getNumLocal() const {
   return numLocal;
 }
+
+void RetiredGames::erase(int num) {
+  games.removeIndexPreserveOrder(num);
+  if (num < numLocal)
+    --numLocal;
+}

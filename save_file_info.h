@@ -16,5 +16,8 @@ struct SaveFileInfo {
 #endif
     ar(filename, dateTmp, download, steamId);
   }
+  string getGameId() const {
+    return filename.substr(0, filename.size() - 4);
+  }
 };
 

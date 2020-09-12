@@ -56,10 +56,6 @@ void Game::serialize(Archive& ar, const unsigned int version) {
 SERIALIZABLE(Game);
 SERIALIZATION_CONSTRUCTOR_IMPL(Game);
 
-static string getGameId(SaveFileInfo info) {
-  return info.filename.substr(0, info.filename.size() - 4);
-}
-
 Game::Game(Table<PModel>&& m, Vec2 basePos, const CampaignSetup& c, ContentFactory f)
     : models(std::move(m)), visited(models.getBounds(), false), baseModel(basePos),
       tribes(Tribe::generateTribes()), musicType(MusicType::PEACEFUL), campaign(c.campaign),
@@ -533,7 +529,7 @@ void Game::considerRetiredLoadedEvent(Vec2 coord) {
     visited[coord] = true;
     if (auto retired = campaign->getSites()[coord].getRetired())
         uploadEvent("retiredLoaded", {
-            {"retiredId", getGameId(retired->fileInfo)},
+            {"retiredId", retired->fileInfo.getGameId()},
             {"playerName", getPlayerName()}});
   }
 }
@@ -603,7 +599,8 @@ WarlordInfoWithReference Game::getWarlordInfo() {
       c->removeGameReferences();
       return c->getThis().giveMeSharedPointer();
     }),
-    getContentFactory()
+    getContentFactory(),
+    getGameIdentifier()
   };
 }
 
@@ -852,7 +849,7 @@ void Game::addEvent(const GameEvent& event) {
           if (!campaign->isDefeated(coords)) {
             if (auto retired = campaign->getSites()[coords].getRetired())
               uploadEvent("retiredConquered", {
-                  {"retiredId", getGameId(retired->fileInfo)},
+                  {"retiredId", retired->fileInfo.getGameId()},
                   {"playerName", getPlayerName()}});
             if (coords != campaign->getPlayerPos() || campaign->getPlayerRole() == PlayerRole::ADVENTURER)
               campaign->setDefeated(coords);

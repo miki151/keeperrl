@@ -28,6 +28,7 @@ class RetiredGames {
 
   void setActive(int num, bool);
   bool isActive(int num) const;
+  void erase(int num);
 
   private:
   vector<RetiredGame> games;

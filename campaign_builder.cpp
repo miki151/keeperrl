@@ -3,6 +3,7 @@
 #include "options.h"
 #include "campaign_type.h"
 #include "player_role.h"
+#include "util.h"
 #include "view.h"
 #include "enemy_factory.h"
 #include "villain_type.h"
@@ -438,6 +439,7 @@ optional<CampaignSetup> CampaignBuilder::prepareCampaign(const ContentFactory* c
               gameIdentifier = name + "_" + campaign.worldName + getNewIdSuffix();
               gameDisplayName = name + " of " + campaign.worldName;
             }
+            gameIdentifier = stripFilename(std::move(gameIdentifier));
             return CampaignSetup{campaign, gameIdentifier, gameDisplayName,
                 getIntroMessages(type), getExternalEnemies(options), getAggressionLevel(options), biomes[chosenBiome].id};
           }

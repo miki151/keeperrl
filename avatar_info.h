@@ -19,13 +19,15 @@ class Options;
 struct WarlordInfo {
   vector<PCreature> SERIAL(creatures);
   ContentFactory SERIAL(contentFactory);
-  SERIALIZE_ALL_NO_VERSION(creatures, contentFactory)
+  string SERIAL(gameIdentifier);
+  SERIALIZE_ALL_NO_VERSION(creatures, contentFactory, gameIdentifier)
 };
 
 struct WarlordInfoWithReference {
   vector<shared_ptr<Creature>> SERIAL(creatures);
   ContentFactory* SERIAL(contentFactory);
-  SERIALIZE_ALL_NO_VERSION(creatures, serializeAsValue(contentFactory))
+  string SERIAL(gameIdentifier);
+  SERIALIZE_ALL_NO_VERSION(creatures, serializeAsValue(contentFactory), gameIdentifier)
 };
 
 extern variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View*, const vector<KeeperCreatureInfo>&,

@@ -160,6 +160,15 @@ string toLower(const string& s) {
   return ret;
 }
 
+static bool isNotFilename(char c) {
+  return !(tolower(c) >= 'a' && tolower(c) <= 'z') && !isdigit(c) && c != '_';
+}
+
+string stripFilename(string s) {
+  s.erase(remove_if(s.begin(),s.end(), isNotFilename), s.end());
+  return s;
+}
+
 bool endsWith(const string& s, const string& suffix) {
   return s.size() >= suffix.size() && contains(s, suffix, s.size() - suffix.size());
 }

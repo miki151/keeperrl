@@ -126,15 +126,6 @@ optional<T> MainLoop::loadFromFile(const FilePath& filename) {
   }
 }
 
-static bool isNotFilename(char c) {
-  return !(tolower(c) >= 'a' && tolower(c) <= 'z') && !isdigit(c) && c != '_';
-}
-
-static string stripFilename(string s) {
-  s.erase(remove_if(s.begin(),s.end(), isNotFilename), s.end());
-  return s;
-}
-
 void MainLoop::saveGame(PGame& game, const FilePath& path) {
   CompressedOutput out(path.getPath());
   string name = game->getGameDisplayName();
@@ -173,10 +164,9 @@ void MainLoop::saveMainModel(PGame& game, const FilePath& modelPath, const FileP
   };
   modelOut.getArchive() << info;
   CompressedOutput warlordOut(warlordPath.getPath());
-  warlordOut.getArchive() << saveVersion << name << savedInfo;
   auto warlordInfo = game->getWarlordInfo();
   game->getMainModel()->discardForRetirement();
-  warlordOut.getArchive() << warlordInfo;
+  warlordOut.getArchive() << saveVersion << name << savedInfo << warlordInfo;
 }
 
 int MainLoop::getSaveVersion(const SaveFileInfo& save) {
@@ -207,7 +197,9 @@ void MainLoop::uploadFile(const FilePath& path, const string& title, const Saved
 }
 
 FilePath MainLoop::getSavePath(const PGame& game, GameSaveType gameType) {
-  return userPath.file(stripFilename(game->getGameIdentifier()) + getSaveSuffix(gameType));
+  auto id = game->getGameIdentifier();
+  CHECK(stripFilename(id) == id);
+  return userPath.file(id + getSaveSuffix(gameType));
 }
 
 void MainLoop::saveUI(PGame& game, GameSaveType type) {
@@ -521,6 +513,11 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
     } else
     if (auto warlordInfo = avatarChoice.getReferenceMaybe<WarlordInfo>()) {
       auto retiredGames = *getRetiredGames(CampaignType::FREE_PLAY);
+      for (int i : All(retiredGames.getAllGames()))
+        if (retiredGames.getAllGames()[i].fileInfo.getGameId() == warlordInfo->gameIdentifier) {
+          retiredGames.erase(i);
+          break;
+        }
       auto playerInfos = warlordInfo->creatures.transform(
           [&](auto& c) { return PlayerInfo(c.get(), &warlordInfo->contentFactory); });
       sort(++playerInfos.begin(), playerInfos.end(),
