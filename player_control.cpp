@@ -2711,7 +2711,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
       vector<PCreature> allCreatures = factory.getAllCreatures().transform(
           [this, &factory](CreatureId id){ return factory.fromId(id, getTribeId()); });
       if (auto id = getView()->chooseCreature("Choose creature to place",
-          allCreatures.transform([&](auto& c) { return PlayerInfo(c.get(), getGame()->getContentFactory()); }), "cancel")) {
+          allCreatures.transform([&](auto& c) { return PlayerInfo(c.get(), this->getGame()->getContentFactory()); }), "cancel")) {
         for (auto& c : allCreatures)
           if (c->getUniqueId() == *id) {
             collective->addCreature(std::move(c), position, {MinionTrait::FIGHTER});
