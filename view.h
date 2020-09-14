@@ -245,13 +245,14 @@ class View {
     int genderIndex;
     string name;
   };
+  enum class AvatarRole;
   struct AvatarData {
     vector<string> genderNames;
     vector<ViewId> viewId;
     vector<vector<string>> firstNames;
     optional<TribeAlignment> alignment;
     string name;
-    PlayerRole role;
+    AvatarRole role;
     string description;
     bool settlementNames;
     OptionId nameOption;
@@ -327,3 +328,10 @@ class View {
 
   virtual bool zoomUIAvailable() const = 0;
 };
+
+RICH_ENUM(
+  View::AvatarRole,
+  KEEPER,
+  ADVENTURER,
+  WARLORD
+);

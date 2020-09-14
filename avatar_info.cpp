@@ -79,7 +79,7 @@ variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View* view,
       getKeeperFirstNames(i),
       keeperCreatureInfos[i].tribeAlignment,
       getKeeperName(i),
-      PlayerRole::KEEPER,
+      View::AvatarRole::KEEPER,
       keeperCreatureInfos[i].description,
       !!keeperCreatureInfos[i].baseNameGen,
       !!keeperCreatureInfos[i].baseNameGen ? OptionId::SETTLEMENT_NAME : OptionId::PLAYER_NAME
@@ -92,19 +92,19 @@ variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View* view,
       adventurerCreatures[i].transform(getAllNames),
       adventurerCreatureInfos[i].tribeAlignment,
       adventurerCreatures[i][0]->getName().identify(),
-      PlayerRole::ADVENTURER,
+      View::AvatarRole::ADVENTURER,
       adventurerCreatureInfos[i].description,
       false,
       OptionId::PLAYER_NAME
     });
   for (auto& info : warlordInfos)
     adventurerAvatarData.push_back(View::AvatarData {
-      {"Warlord"},
+      {},
       {getUpgradedViewId(info.creatures[0].get())},
-      {{info.creatures[0]->getName().firstOrBare()}},
+      {},
       none,
-      info.creatures[0]->getName().identify(),
-      PlayerRole::ADVENTURER,
+      info.creatures[0]->getName().firstOrBare(),
+      View::AvatarRole::WARLORD,
       "Play as a warlord",
       false,
       OptionId::PLAYER_NAME

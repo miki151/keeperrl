@@ -3652,20 +3652,21 @@ static const char* getText(AvatarMenuOption option) {
 SGuiElem GuiBuilder::drawGenderButtons(const vector<View::AvatarData>& avatars,
     shared_ptr<int> gender, shared_ptr<int> chosenAvatar) {
   vector<SGuiElem> genderOptions;
-  for (int avatarIndex : All(avatars)) {
-    auto& avatar = avatars[avatarIndex];
-    auto genderList = WL(getListBuilder);
-    if (avatar.viewId.size() > 1 || !avatar.settlementNames)
-      for (int i : All(avatar.viewId)) {
-        auto selectFun = [i, gender] { *gender = i; };
-        genderList.addElemAuto(WL(conditional,
-            WL(conditional, WL(buttonLabelSelected, capitalFirst(avatar.genderNames[i]), selectFun, false, true),
-                WL(buttonLabel, capitalFirst(capitalFirst(avatar.genderNames[i])), selectFun, false, true),
-               [gender, i] { return *gender == i; }),
-            [=] { return avatarIndex == *chosenAvatar; }));
-      }
-    genderOptions.push_back(genderList.buildHorizontalListFit(0.2));
-  }
+  for (int avatarIndex : All(avatars))
+    if (!avatars[avatarIndex].genderNames.empty()) {
+      auto& avatar = avatars[avatarIndex];
+      auto genderList = WL(getListBuilder);
+      if (avatar.viewId.size() > 1 || !avatar.settlementNames)
+        for (int i : All(avatar.viewId)) {
+          auto selectFun = [i, gender] { *gender = i; };
+          genderList.addElemAuto(WL(conditional,
+              WL(conditional, WL(buttonLabelSelected, capitalFirst(avatar.genderNames[i]), selectFun, false, true),
+                  WL(buttonLabel, capitalFirst(capitalFirst(avatar.genderNames[i])), selectFun, false, true),
+                [gender, i] { return *gender == i; }),
+              [=] { return avatarIndex == *chosenAvatar; }));
+        }
+      genderOptions.push_back(genderList.buildHorizontalListFit(0.2));
+    }
   return WL(stack, std::move(genderOptions));
 }
 
@@ -3679,33 +3680,45 @@ SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatar
   vector<SGuiElem> firstNameOptions = {};
   for (int avatarIndex : All(avatars)) {
     auto& avatar = avatars[avatarIndex];
-    for (int genderIndex : All(avatar.viewId)) {
-      auto elem = WL(getListBuilder)
-          .addElemAuto(WL(label, avatar.settlementNames ? "Settlement: " : "First name: "))
-          .addMiddleElem(WL(textField, maxFirstNameLength,
-              [=] {
-                auto entered = options->getValueString(avatar.nameOption);
-                return entered.empty() ?
-                    avatar.firstNames[genderIndex][*chosenName % avatar.firstNames[genderIndex].size()] :
-                    entered;
-              },
-              [=] (string s) {
-                options->setValue(avatar.nameOption, s);
-              }))
-          .addSpace(10)
-          .addBackElemAuto(WL(buttonLabel, "🔄", [=] { options->setValue(avatar.nameOption, ""_s); ++*chosenName; }, true, false, true))
-          .buildHorizontalList();
-      firstNameOptions.push_back(WL(conditional, std::move(elem),
-          [=]{ return getChosenGender(gender, chosenAvatar, avatars) == genderIndex && avatarIndex == *chosenAvatar; }));
-    }
+    for (int genderIndex : All(avatar.viewId)) 
+      if (avatar.firstNames.size() > genderIndex) {
+        auto elem = WL(getListBuilder)
+            .addElemAuto(WL(label, avatar.settlementNames ? "Settlement: " : "First name: "))
+            .addMiddleElem(WL(textField, maxFirstNameLength,
+                [=] {
+                  auto entered = options->getValueString(avatar.nameOption);
+                  return entered.empty() ?
+                      avatar.firstNames[genderIndex][*chosenName % avatar.firstNames[genderIndex].size()] :
+                      entered;
+                },
+                [=] (string s) {
+                  options->setValue(avatar.nameOption, s);
+                }))
+            .addSpace(10)
+            .addBackElemAuto(WL(buttonLabel, "🔄", [=] { options->setValue(avatar.nameOption, ""_s); ++*chosenName; }, true, false, true))
+            .buildHorizontalList();
+        firstNameOptions.push_back(WL(conditional, std::move(elem),
+            [=]{ return getChosenGender(gender, chosenAvatar, avatars) == genderIndex && avatarIndex == *chosenAvatar; }));
+      }
   }
   return WL(stack, std::move(firstNameOptions));
 }
 
-SGuiElem GuiBuilder::drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_ptr<int> chosenAvatar, shared_ptr<int> avatarPage,
-    const vector<View::AvatarData>& avatars) {
+static const char* getName(View::AvatarRole role) {
+  switch (role) {
+    case View::AvatarRole::KEEPER:
+      return "Keeper";
+    case View::AvatarRole::ADVENTURER:
+      return "Adventurer";
+    case View::AvatarRole::WARLORD:
+      return "Warlord";
+  }
+}
+
+SGuiElem GuiBuilder::drawRoleButtons(shared_ptr<View::AvatarRole> chosenRole, shared_ptr<int> chosenAvatar,
+    shared_ptr<int> avatarPage, const vector<View::AvatarData>& avatars) {
   auto roleList = WL(getListBuilder);
-  for (auto role : ENUM_ALL(PlayerRole)) {
+  for (auto role : ENUM_ALL(View::AvatarRole)) {
     auto chooseFun = [chosenRole, chosenAvatar, &avatars, role, avatarPage] {
       *chosenRole = role;
       *avatarPage = 0;
@@ -3715,19 +3728,26 @@ SGuiElem GuiBuilder::drawRoleButtons(shared_ptr<PlayerRole> chosenRole, shared_p
           break;
         }
     };
-    roleList.addElemAuto(
-        WL(conditional, WL(buttonLabelSelected, capitalFirst(getName(role)), chooseFun, false, true),
-            WL(buttonLabel, capitalFirst(getName(role)), chooseFun, false, true),
-            [chosenRole, role] { return *chosenRole == role; })
-    );
+    bool hasAvatars = [&] {
+      for (auto& a : avatars)
+        if (a.role == role)
+          return true;
+      return false;
+    }();
+    if (hasAvatars)
+      roleList.addElemAuto(
+          WL(conditional, WL(buttonLabelSelected, capitalFirst(getName(role)), chooseFun, false, true),
+              WL(buttonLabel, capitalFirst(getName(role)), chooseFun, false, true),
+              [chosenRole, role] { return *chosenRole == role; })
+      );
   }
   return roleList.buildHorizontalListFit(0.2);
 }
 
 constexpr int avatarsPerPage = 10;
 
-SGuiElem GuiBuilder::drawChosenCreatureButtons(PlayerRole role, shared_ptr<int> chosenAvatar, shared_ptr<int> gender, int page,
-    const vector<View::AvatarData>& avatars) {
+SGuiElem GuiBuilder::drawChosenCreatureButtons(View::AvatarRole role, shared_ptr<int> chosenAvatar, shared_ptr<int> gender,
+    int page, const vector<View::AvatarData>& avatars) {
   auto allLines = WL(getListBuilder, legendLineHeight);
   auto line = WL(getListBuilder);
   const int start = page * avatarsPerPage;
@@ -3759,10 +3779,10 @@ SGuiElem GuiBuilder::drawChosenCreatureButtons(PlayerRole role, shared_ptr<int> 
 };
 
 SGuiElem GuiBuilder::drawAvatarsForRole(const vector<View::AvatarData>& avatars, shared_ptr<int> avatarPage,
-    shared_ptr<int> chosenAvatar, shared_ptr<int> gender, shared_ptr<PlayerRole> chosenRole) {
+    shared_ptr<int> chosenAvatar, shared_ptr<int> gender, shared_ptr<View::AvatarRole> chosenRole) {
   vector<SGuiElem> avatarsForRole;
   int maxAvatarPagesHeight = 0;
-  for (auto role : ENUM_ALL(PlayerRole)) {
+  for (auto role : ENUM_ALL(View::AvatarRole)) {
     int numAvatars = 0;
     for (auto& a : avatars)
       if (a.role == role)
@@ -3802,7 +3822,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   auto chosenAvatar = make_shared<int>(0);
   auto chosenName = make_shared<int>(0);
   auto avatarPage = make_shared<int>(0);
-  auto chosenRole = make_shared<PlayerRole>(PlayerRole::KEEPER);
+  auto chosenRole = make_shared<View::AvatarRole>(View::AvatarRole::KEEPER);
   auto leftLines = WL(getListBuilder, legendLineHeight);
   auto rightLines = WL(getListBuilder, legendLineHeight);
   leftLines.addElem(drawRoleButtons(chosenRole, chosenAvatar, avatarPage, avatars));
@@ -3812,11 +3832,14 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   leftLines.addElem(drawFirstNameButtons(avatars, gender, chosenAvatar, chosenName));
   leftLines.addSpace(15);
   rightLines.addElemAuto(drawAvatarsForRole(avatars, avatarPage, chosenAvatar, gender, chosenRole));
-  if (auto alignment = avatars[*chosenAvatar].alignment) {
-    rightLines.addSpace(12);
-    rightLines.addElem(WL(labelFun, [&avatars, chosenAvatar, alignment] {
-        return capitalFirst(avatars[*chosenAvatar].name) + ", " + getName(*alignment);}));
-  }
+  rightLines.addSpace(12);
+  rightLines.addElem(WL(labelFun, [&avatars, chosenAvatar] {
+        if (auto alignment = avatars[*chosenAvatar].alignment)
+          return capitalFirst(avatars[*chosenAvatar].name) + 
+            ", " + getName(*alignment);
+        else
+          return capitalFirst(avatars[*chosenAvatar].name);
+      }));
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElemAuto(WL(getListBuilder)
       .addElemAuto(WL(rightMargin, 30, leftLines.buildVerticalList()))
@@ -3835,14 +3858,15 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
       [&queue, chosenAvatar, chosenName, gender, &avatars, this] {
         auto chosenGender = getChosenGender(gender, chosenAvatar, avatars);
         auto enteredName = options->getValueString(avatars[*chosenAvatar].nameOption);
-        auto& firstNames = avatars[*chosenAvatar].firstNames[chosenGender];
-        queue.push(View::AvatarChoice{*chosenAvatar, chosenGender, enteredName.empty() ?
-            firstNames[*chosenName % firstNames.size()] :
-            enteredName});
+        if (enteredName.empty() && !avatars[*chosenAvatar].firstNames.empty()) {
+          auto& firstNames = avatars[*chosenAvatar].firstNames[chosenGender];
+          enteredName = firstNames[*chosenName % firstNames.size()];
+        }
+        queue.push(View::AvatarChoice{*chosenAvatar, chosenGender, enteredName});
       })));
   auto menuLines = WL(getListBuilder, legendLineHeight)
       .addElemAuto(
-          WL(preferredSize, 600, 350, WL(window, WL(margins,
+          WL(preferredSize, 800, 350, WL(window, WL(margins,
               lines.buildVerticalList(), 15), [&queue]{ queue.push(AvatarMenuOption::GO_BACK); })));
   auto othersLine = WL(getListBuilder);
   for (auto option : ENUM_ALL(AvatarMenuOption)) {
