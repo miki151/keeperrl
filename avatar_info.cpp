@@ -16,6 +16,7 @@
 #include "special_trait.h"
 #include "content_factory.h"
 #include "options.h"
+#include "game_info.h"
 
 TribeId getPlayerTribeId(TribeAlignment variant) {
   switch (variant) {
@@ -82,7 +83,8 @@ variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View* view,
       View::AvatarRole::KEEPER,
       keeperCreatureInfos[i].description,
       !!keeperCreatureInfos[i].baseNameGen,
-      !!keeperCreatureInfos[i].baseNameGen ? OptionId::SETTLEMENT_NAME : OptionId::PLAYER_NAME
+      !!keeperCreatureInfos[i].baseNameGen ? OptionId::SETTLEMENT_NAME : OptionId::PLAYER_NAME,
+      {}
     });
   vector<View::AvatarData> adventurerAvatarData;
   for (int i : All(adventurerCreatures))
@@ -95,7 +97,8 @@ variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View* view,
       View::AvatarRole::ADVENTURER,
       adventurerCreatureInfos[i].description,
       false,
-      OptionId::PLAYER_NAME
+      OptionId::PLAYER_NAME,
+      {}
     });
   for (auto& info : warlordInfos)
     adventurerAvatarData.push_back(View::AvatarData {
@@ -107,7 +110,8 @@ variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View* view,
       View::AvatarRole::WARLORD,
       "Play as a warlord",
       false,
-      OptionId::PLAYER_NAME
+      OptionId::PLAYER_NAME,
+      info.creatures.transform([&](const auto& c) { return PlayerInfo(c.get(), contentFactory); } )
     });
   auto result1 = view->chooseAvatar(concat(keeperAvatarData, adventurerAvatarData));
   if (auto option = result1.getValueMaybe<AvatarMenuOption>())

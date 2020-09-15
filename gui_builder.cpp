@@ -3849,8 +3849,12 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   vector<SGuiElem> descriptions;
   for (int avatarIndex : All(avatars)) {
     auto& avatar = avatars[avatarIndex];
+    const auto maxWidth = 650;
+    auto description = avatar.teamMembers.empty()
+        ? WL(labelMultiLineWidth, avatar.description, legendLineHeight, maxWidth, Renderer::textSize, Color::LIGHT_GRAY)
+        : drawCreatureList(avatar.teamMembers, [](auto){}, 1, 5, 2);
     descriptions.push_back(WL(conditional,
-        WL(labelMultiLineWidth, avatar.description, legendLineHeight, 530, Renderer::textSize, Color::LIGHT_GRAY),
+        std::move(description),
         [avatarIndex, chosenAvatar] { return avatarIndex == *chosenAvatar; }));
   }
   lines.addBackElem(WL(stack, descriptions), 2.5 * legendLineHeight);
@@ -4186,7 +4190,7 @@ SGuiElem GuiBuilder::drawRetiredDungeonMenu(SyncQueue<variant<string, bool, none
     dungeonLines.addElem(addedDungeons.buildVerticalList(), addedHeight);
   }
   GuiFactory::ListBuilder retiredList = drawRetiredGames(retired,
-      [&queue] { queue.push(none);}, options->getIntValue(OptionId::MAIN_VILLAINS), searchString);
+      [&queue] { queue.push(none);}, maxGames, searchString);
   if (retiredList.isEmpty() && addedDungeons.isEmpty())
     retiredList.addElem(WL(label, "No retired dungeons found :("));
   if (!retiredList.isEmpty())
@@ -4221,7 +4225,7 @@ SGuiElem GuiBuilder::drawCreatureTooltip(const PlayerInfo& info) {
 }
 
 SGuiElem GuiBuilder::drawCreatureList(const vector<PlayerInfo>& creatures,
-    function<void(UniqueEntity<Creature>::Id)> button, int zoom) {
+    function<void(UniqueEntity<Creature>::Id)> button, int zoom, int lessSpace, optional<int> maxRows) {
   auto minionLines = WL(getListBuilder, 20 * zoom);
   auto line = WL(getListBuilder, 30 * zoom);
   for (auto& elem : creatures) {
@@ -4239,13 +4243,15 @@ SGuiElem GuiBuilder::drawCreatureList(const vector<PlayerInfo>& creatures,
     if (line.getLength() > 12 / zoom) {
       CHECK(line.getLength() > 12);
       minionLines.addElemAuto(WL(centerHoriz, line.buildHorizontalList()));
-      minionLines.addSpace(10 * zoom);
+      minionLines.addSpace(10 * zoom - lessSpace);
       line.clear();
+      if (maxRows && minionLines.getLength() / 2 >= *maxRows)
+        break;
     }
   }
-  if (!line.isEmpty()) {
+  if (!line.isEmpty() && (!maxRows || minionLines.getLength() < *maxRows)) {
     minionLines.addElemAuto(WL(centerHoriz, line.buildHorizontalList()));
-    minionLines.addSpace(10 * zoom);
+    minionLines.addSpace(10 * zoom - lessSpace);
   }
   return minionLines.buildVerticalList();
 }
