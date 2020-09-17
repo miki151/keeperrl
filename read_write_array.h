@@ -70,20 +70,7 @@ class ReadWriteArray {
     allReadonly.shrink_to_fit();
   }
 
-  template <class Archive>
-  void serialize(Archive& ar, const unsigned int version) {
-    if (version < 1) {
-      CHECK(Archive::is_loading::value);
-      Table<short> SERIAL(modifiedTmp);
-      ar(modifiedTmp);
-      modified = Table<int>(modifiedTmp.getBounds());
-      for (auto v : modifiedTmp.getBounds())
-        modified[v] = modifiedTmp[v];
-    } else
-      ar(modified);
-    ar(allModified, allReadonly, readonly, types, readonlyMap, numTotal);
-  }
-  SERIALIZATION_CONSTRUCTOR(ReadWriteArray)
+  SERIALIZE_ALL(allModified, allReadonly, readonly, types, readonlyMap, numTotal)
 
   private:
   vector<PType> SERIAL(allModified);
@@ -94,19 +81,3 @@ class ReadWriteArray {
   unordered_map<Param, short, CustomHash<Param>> SERIAL(readonlyMap);
   int SERIAL(numTotal) = 0;
 };
-
-namespace cereal { namespace detail {
-  template <typename T, typename U> struct Version<ReadWriteArray<T, U>>
-  {
-    static const std::uint32_t version;
-    static std::uint32_t registerVersion()
-    {
-      ::cereal::detail::StaticObject<Versions>::getInstance().mapping.emplace(
-           std::type_index(typeid(ReadWriteArray<T, U>)).hash_code(), 1);
-      return 1;
-    }
-    static void unused() { (void)version; }
-  }; /* end Version */
-  template <typename T, typename U> const std::uint32_t Version<ReadWriteArray<T, U>>::version =
-    Version<ReadWriteArray<T, U>>::registerVersion();
-} } // end namespaces
