@@ -1268,6 +1268,7 @@ static string getActionText(ItemAction a) {
 void GuiBuilder::drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width, bool darkBg) {
   if (elems.isEmpty())
     return;
+  disableTooltip = true;
   int contentHeight = elems.getSize();
   int margin = 15;
   SGuiElem menu = WL(miniWindow, WL(margins, elems.buildVerticalList(), 5 + margin, margin, margin, margin),
@@ -1657,6 +1658,9 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
         );
     }
     if (!member.teamMemberActions.empty()) {
+      auto lines = WL(getListBuilder, legendLineHeight);
+      for (auto action : member.teamMemberActions)
+        lines.addElem(WL(label, getText(getText(action))));
       icon = WL(stack, std::move(icon),
         WL(buttonRect, [memberId = member.creatureId, actions = member.teamMemberActions, this] (Rectangle bounds) {
               auto lines = WL(getListBuilder, legendLineHeight);
@@ -1675,7 +1679,10 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
               drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 200, false);
               if (ret)
                 callbacks.input({UserInputId::TEAM_MEMBER_ACTION, TeamMemberActionInfo{*ret, memberId}});
-        }));
+        }),
+        getTooltip2(WL(translucentBackgroundWithBorderPassMouse, WL(margins, lines.buildVerticalList(), 15)),
+            [](const Rectangle& r){ return r.bottomLeft(); })
+      );
     }
     teamList.addElemAuto(std::move(icon));
     if (teamList.getLength() >= 5) {

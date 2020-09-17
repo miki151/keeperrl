@@ -149,7 +149,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   ItemInfo getFurnitureUsageInfo(const string& question, ViewId viewId) const;
   optional<FurnitureUsageType> getUsableUsageType() const;
   STutorial SERIAL(tutorial);
-  vector<TeamMemberAction> getTeamMemberActions(const Creature*) const;
+  virtual vector<TeamMemberAction> getTeamMemberActions(const Creature*) const;
   optional<GlobalTime> lastEnemyInterruption;
   void updateSquareMemory(Position);
   HeapAllocated<DungeonLevel> SERIAL(avatarLevel);
