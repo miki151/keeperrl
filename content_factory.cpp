@@ -382,8 +382,6 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (auto res = config->readObject(enemiesTmp, GameConfigId::ENEMIES, &keyVerifier))
     return *res;
   enemies = convertKeys(enemiesTmp);
-  for (auto& enemy : enemies)
-    enemy.second.updateBuildingInfo(buildingInfo);
   if (auto res = readCreatureFactory(config, &keyVerifier))
     return *res;
   if (auto res = readFurnitureFactory(config, &keyVerifier))
@@ -434,6 +432,8 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   for (auto& elem : items)
     if (auto id = elem.second.resourceId)
       resourceInfo.at(*id).itemId = ItemType(elem.first);
+  for (auto& enemy : enemies)
+    enemy.second.updateBuildingInfo(buildingInfo);
   return none;
 }
 
