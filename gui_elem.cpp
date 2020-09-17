@@ -249,77 +249,67 @@ class TextFieldElem : public GuiElem {
 
   virtual bool onClick(ClickButton b, Vec2 pos) override {
     if (b == LEFT) {
-      if (pos.inRectangle(getBounds())) {
-        if (!current)
-          current = getText();
-      } else
-      if (current)
-        confirmCurrent();
-      return !!current;
-    } else
-      return false;
+      focused = pos.inRectangle(getBounds());
+      return focused;
+    }
+    return false;
   }
 
   virtual void onClickElsewhere() override {
-    if (!!current)
-      confirmCurrent();
+    focused = false;
   }
 
   virtual void render(Renderer& r) override {
     auto bounds = getBounds();
     auto rectBounds = bounds;
-    auto toDraw = current.value_or(getText());
-    if (!!current)
+    auto toDraw = getText();
+    if (focused)
       rectBounds = Rectangle(rectBounds.topLeft(),
           Vec2(max(rectBounds.right(), rectBounds.left() + r.getTextLength(toDraw) + 10), rectBounds.bottom()));
-    if (!!current && (clock->getRealMillis().count() / 400) % 2 == 0)
+    if (focused && (clock->getRealMillis().count() / 400) % 2 == 0)
       toDraw += "|";
-    if (!!current)
+    if (focused)
       r.setTopLayer();
-    r.drawFilledRectangle(rectBounds, Color::BLACK, !!current ? Color::WHITE : Color::GRAY);
-    if (!current)
+    r.drawFilledRectangle(rectBounds, Color::BLACK, focused ? Color::WHITE : Color::GRAY);
+    if (!focused)
       r.setScissor(bounds.minusMargin(1));
     r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(6, 6), toDraw);
     r.drawText(Color::WHITE, bounds.topLeft() + Vec2(5, 4), toDraw);
-    if (!current)
+    if (!focused)
       r.setScissor(none);
     else
       r.popLayer();
   }
 
-  void confirmCurrent() {
-    callback(*current);
-    current = none;
-  }
-
   virtual bool onKeyPressed2(SDL::SDL_Keysym sym) override {
-    if (!!current) {
+    if (focused) {
+      auto current = getText();
       switch (sym.sym) {
         case SDL::SDLK_BACKSPACE: {
-          if (!current->empty())
-            current->pop_back();
+          if (!current.empty())
+            current.pop_back();
           break;
         }
         case SDL::SDLK_ESCAPE:
-          current = none;
-          callback("");
-          break;
         case SDL::SDLK_KP_ENTER:
         case SDL::SDLK_RETURN:
-          confirmCurrent();
+          focused = false;
           break;
         default:
           break;
       }
+      callback(current);
       return true;
     }
     return false;
   }
 
   virtual bool onTextInput(const char* s) override {
-    if (current) {
-      *current += s;
-      *current = current->substr(0, maxLength);
+    if (focused) {
+      auto current = getText();
+      current += s;
+      current = current.substr(0, maxLength);
+      callback(current);
       return true;
     }
     return false;
@@ -330,7 +320,7 @@ class TextFieldElem : public GuiElem {
   function<string()> getText;
   Clock* clock;
   int maxLength;
-  optional<string> current;
+  bool focused = false;
 };
 }
 

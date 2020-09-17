@@ -3675,6 +3675,8 @@ static int getChosenGender(shared_ptr<int> gender, shared_ptr<int> chosenAvatar,
   return min(*gender, avatars[*chosenAvatar].viewId.size() - 1);
 }
 
+const auto randomFirstNameTag = "<random>"_s;
+
 SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatars,
     shared_ptr<int> gender, shared_ptr<int> chosenAvatar, shared_ptr<int> chosenName) {
   vector<SGuiElem> firstNameOptions = {};
@@ -3687,7 +3689,7 @@ SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatar
             .addMiddleElem(WL(textField, maxFirstNameLength,
                 [=] {
                   auto entered = options->getValueString(avatar.nameOption);
-                  return entered.empty() ?
+                  return entered == randomFirstNameTag ?
                       avatar.firstNames[genderIndex][*chosenName % avatar.firstNames[genderIndex].size()] :
                       entered;
                 },
@@ -3695,7 +3697,7 @@ SGuiElem GuiBuilder::drawFirstNameButtons(const vector<View::AvatarData>& avatar
                   options->setValue(avatar.nameOption, s);
                 }))
             .addSpace(10)
-            .addBackElemAuto(WL(buttonLabel, "🔄", [=] { options->setValue(avatar.nameOption, ""_s); ++*chosenName; }, true, false, true))
+            .addBackElemAuto(WL(buttonLabel, "🔄", [=] { options->setValue(avatar.nameOption, randomFirstNameTag); ++*chosenName; }, true, false, true))
             .buildHorizontalList();
         firstNameOptions.push_back(WL(conditional, std::move(elem),
             [=]{ return getChosenGender(gender, chosenAvatar, avatars) == genderIndex && avatarIndex == *chosenAvatar; }));
@@ -3818,6 +3820,9 @@ SGuiElem GuiBuilder::drawAvatarsForRole(const vector<View::AvatarData>& avatars,
 
 SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>& queue,
     const vector<View::AvatarData>& avatars) {
+  for (auto& avatar : avatars)
+    if (options->getValueString(avatar.nameOption).empty())
+      options->setValue(avatar.nameOption, randomFirstNameTag);
   auto gender = make_shared<int>(0);
   auto chosenAvatar = make_shared<int>(0);
   auto chosenName = make_shared<int>(0);
@@ -3861,8 +3866,11 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   lines.addBackElem(WL(centerHoriz, WL(buttonLabel, "Start new game",
       [&queue, chosenAvatar, chosenName, gender, &avatars, this] {
         auto chosenGender = getChosenGender(gender, chosenAvatar, avatars);
-        auto enteredName = options->getValueString(avatars[*chosenAvatar].nameOption);
-        if (enteredName.empty() && !avatars[*chosenAvatar].firstNames.empty()) {
+        auto& avatar = avatars[*chosenAvatar];
+        if (options->getValueString(avatar.nameOption).empty())
+          options->setValue(avatar.nameOption, randomFirstNameTag);
+        auto enteredName = options->getValueString(avatar.nameOption);
+        if (enteredName == randomFirstNameTag && !avatars[*chosenAvatar].firstNames.empty()) {
           auto& firstNames = avatars[*chosenAvatar].firstNames[chosenGender];
           enteredName = firstNames[*chosenName % firstNames.size()];
         }
