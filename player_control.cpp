@@ -1715,7 +1715,8 @@ void PlayerControl::onEvent(const GameEvent& event) {
       [&](const CreatureStunned& info) {
         for (auto villain : getGame()->getCollectives())
           if (villain->getCreatures().contains(info.victim)) {
-            stunnedCreatures.push_back({info.victim, villain});
+            if (villain != collective)
+              stunnedCreatures.push_back({info.victim, villain});
             return;
           }
         stunnedCreatures.push_back({info.victim, nullptr});
