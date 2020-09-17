@@ -2660,12 +2660,18 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
     default:
       break;
   }
-  if (bottomWindow == BESTIARY)
+  if (bottomWindow == BESTIARY) {
+    if (bestiaryIndex >= info.encyclopedia->bestiary.size())
+      bestiaryIndex = 0;
     ret.push_back({cache->get(bindMethod(&GuiBuilder::drawBestiaryOverlay, this), THIS_LINE,
          info.encyclopedia->bestiary, bestiaryIndex), OverlayInfo::TOP_LEFT});
-  if (bottomWindow == SPELL_SCHOOLS)
+  }
+  if (bottomWindow == SPELL_SCHOOLS) {
+    if (spellSchoolIndex >= info.encyclopedia->spellSchools.size())
+      spellSchoolIndex = 0;
     ret.push_back({cache->get(bindMethod(&GuiBuilder::drawSpellSchoolsOverlay, this), THIS_LINE,
          info.encyclopedia->spellSchools, spellSchoolIndex), OverlayInfo::TOP_LEFT});
+  }
   if (bottomWindow == ITEMS_HELP)
     ret.push_back({cache->get(bindMethod(&GuiBuilder::drawItemsHelpOverlay, this), THIS_LINE,
          info.encyclopedia->items), OverlayInfo::TOP_LEFT});
