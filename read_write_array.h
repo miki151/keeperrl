@@ -71,7 +71,7 @@ class ReadWriteArray {
     allReadonly.shrink_to_fit();
   }
 
-  SERIALIZE_ALL(allModified, allReadonly, readonly, types, readonlyMap, numTotal)
+  SERIALIZE_ALL(allModified, modified, allReadonly, readonly, types, readonlyMap, numTotal)
   SERIALIZATION_CONSTRUCTOR(ReadWriteArray)
 
   private:
