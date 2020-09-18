@@ -3224,9 +3224,11 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
         });
         if (!items[i].ids.empty()) {
           int offset = *labelElem->getPreferredWidth();
+          auto highlight = WL(leftMargin, offset, WL(labelUnicode, u8"✘", Color::RED));
+          if (!items[i].locked)
+            highlight = WL(stack, std::move(highlight), WL(leftMargin, -20, WL(viewObject, ViewId("key_highlight"))));
           labelElem = WL(stack, std::move(labelElem),
-                      WL(mouseHighlight2, WL(leftMargin, offset,
-                          items[i].ids.empty() ?  WL(label, "+", Color::YELLOW) : WL(labelUnicode, u8"✘", Color::RED)), nullptr, false));
+                      WL(mouseHighlight2, std::move(highlight), nullptr, false));
           keyElem = WL(stack,
               WL(button,
               getButtonCallback({UserInputId::CREATURE_EQUIPMENT_ACTION,
