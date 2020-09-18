@@ -1,5 +1,6 @@
 #pragma once
 
+#include "serialization.h"
 #include "util.h"
 
 template <typename Type, typename Param>
@@ -71,6 +72,7 @@ class ReadWriteArray {
   }
 
   SERIALIZE_ALL(allModified, allReadonly, readonly, types, readonlyMap, numTotal)
+  SERIALIZATION_CONSTRUCTOR(ReadWriteArray)
 
   private:
   vector<PType> SERIAL(allModified);
