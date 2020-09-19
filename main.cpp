@@ -399,6 +399,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     loop.playSimpleGame();
   }
   if (commandLineFlags["layout_name"].was_set()) {
+    USER_CHECK(commandLineFlags["layout_size"].was_set()) << "Need to specify layout_size option";
     MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, 0, "");
     generateMapLayout(loop,
         commandLineFlags["layout_name"].get().string,

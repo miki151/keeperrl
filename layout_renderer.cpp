@@ -86,6 +86,7 @@ void renderAscii(const LayoutCanvas::Map& map1, istream& file) {
 void generateMapLayout(const MainLoop& mainLoop, const string& layoutName, FilePath glyphPath,
     const string& layoutSizeString) {
   auto layoutSizeSplit = split(layoutSizeString, {':'});
+  USER_CHECK(layoutSizeSplit.size() == 2) << "Bad layout size " << layoutSizeString;
   auto layoutSize = Vec2(fromString<int>(layoutSizeSplit[0]), fromString<int>(layoutSizeSplit[1]));
   USER_CHECK(layoutSize.x >= 1 && layoutSize.y >= 1) << "Bad layout size " << layoutSize;
   auto glyphFile = ifstream(glyphPath.getPath());
