@@ -3816,6 +3816,31 @@
     deathDescription = "vanquished. May he never rise again"
     gender = IT
   }
+"ADOXIE_ADVENTURER" inherit "ADOXIE_HEAD"
+  {
+    permanentEffects = append {
+      IMMOBILE 0
+    }
+    attr = append {
+      SPELL_DAMAGE 60
+    }
+    body = {
+      type = NonHumanoid HUGE
+      bodyParts = {
+        BACK 1
+        HEAD 1
+        TORSO 1
+      }
+      intrinsicAttacks = {
+        TORSO {{{ Intrinsic { "fist_attack" } "spell" 1 {
+            attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
+      }
+      material = SPIRIT
+      drops = {
+        { "AdoxieEye" } 1
+      }
+    }
+  }
 "ADOXIE_FOOT_LEFT"
   {
     viewId = { "adoxie_foot_left" }

@@ -58,8 +58,28 @@ LAWFUL_KEEPER {
 
 EVIL_ADVENTURER {
     {{ "duke4" } "KNIGHTS" "Knights" MAIN}
+    {{ "elf_lord" } "ELVES" "Elves" MAIN}
+    {{ "dwarf_baron" } "DWARVES" "Dwarves" MAIN}
+    {{ "red_dragon" } "RED_DRAGON" "Red dragon" MAIN}
+    {{ "red_dragon" Rgb 80 80 80 255 } "BLACK_DRAGON" "Black dragon" MAIN}
+    {{ "red_dragon" Rgb 240 240 240 255 } "WHITE_DRAGON" "White dragon" MAIN}
+    {{ "elementalist" } "ELEMENTALIST" "Elementalist" MAIN}
+    {{ "green_dragon" } "GREEN_DRAGON" "Green dragon" MAIN}
+    {{ "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN}
+    {{ "shaman" } "WARRIORS" "Warriors" MAIN}
+    {{ "thief_leader" } "THIEVES" "Thieves" MAIN}
+    {{ "demon_lord" } "DEMON_DEN" "Demon den" MAIN}
+
+    {{ "ent" } "ENTS" "Tree spirits" LESSER}
+    {{ "driad" } "DRIADS" "Driads" LESSER}
+    {{ "cyclops" } "CYCLOPS" "Cyclops" LESSER}
+    {{ "shelob" } "SHELOB" "Giant spider" LESSER}
+    {{ "hydra" } "HYDRA" "Hydra" LESSER}
+    {{ "unicorn" } "UNICORN_HERD" "Unicorn herd" LESSER}
+    {{ "ant_queen" } "ANTS_OPEN" "Ants" LESSER}
     {{ "zombie" } "CEMETERY" "Zombies" LESSER}
-    {{ "orc_captain" } "ORC_VILLAGE" "Greenskins village" ALLY}
+
+    {{ "dark_elf_lord" } "DARK_ELVES_ALLY" "Dark elves" ALLY}
 }
 
 LAWFUL_ADVENTURER {
