@@ -35,7 +35,7 @@ class MinionController : public Player {
     });
   }
 
-  virtual vector<TeamMemberAction> getTeamMemberActions(const Creature* member) const {
+  virtual vector<TeamMemberAction> getTeamMemberActions(const Creature* member) const override {
     vector<TeamMemberAction> ret;
     if (getGame()->getPlayerCreatures().size() == 1 && member != creature)
       ret.push_back(TeamMemberAction::CHANGE_LEADER);

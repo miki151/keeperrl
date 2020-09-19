@@ -26,7 +26,7 @@ class WarlordController : public Player {
     : Player(c, false, memory, messages, visibility, locations), team(team), teamOrders(orders) {}
 
 
-  virtual vector<TeamMemberAction> getTeamMemberActions(const Creature* member) const {
+  virtual vector<TeamMemberAction> getTeamMemberActions(const Creature* member) const override {
     vector<TeamMemberAction> ret;
     ret.push_back(TeamMemberAction::CHANGE_LEADER);
     if (member->isPlayer() && member != creature && getModel()->getTimeQueue().willMoveThisTurn(member))
