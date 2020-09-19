@@ -143,6 +143,8 @@ static Rectangle getPosition(PlacementPos pos, Rectangle area, Vec2 size, Random
 static Vec2 chooseSize(optional<Vec2> size, optional<Vec2> minSize, optional<Vec2> maxSize, RandomGen& r) {
   return size.value_or_f(
       [&]{
+        USER_CHECK(!!minSize) << "minSize is missing";
+        USER_CHECK(!!maxSize) << "maxSize is missing";
         USER_CHECK(minSize->x < maxSize->x);
         USER_CHECK(minSize->y < maxSize->y);
         return Vec2(r.get(minSize->x, maxSize->x), r.get(minSize->y, maxSize->y)); });
