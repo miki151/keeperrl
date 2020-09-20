@@ -3051,6 +3051,7 @@ void PlayerControl::onConquered(Creature* victim, Creature* killer) {
       if (col != collective && col->getCreatures().contains(killer) && col->getConfig().xCanEnemyRetire() &&
           isOneOf(col->getVillainType(), VillainType::MAIN, VillainType::LESSER)) {
         getGame()->setExitInfo(GameSaveType::RETIRED_SITE);
+        leaveControl();
         collective->makeConqueredRetired(col); // this call invalidates this
         return;
       }
