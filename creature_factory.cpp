@@ -251,7 +251,7 @@ ViewIdList CreatureFactory::getViewId(CreatureId id) const {
   if (auto a = getReferenceMaybe(attributes, id)) {
     ViewIdList ret = {a->viewId};
     for (auto& part : a->automatonParts)
-      if (auto& id = part.get(contentFactory)->getAutomatonPart()->installedId)
+      if (auto id = part.get(contentFactory)->getAutomatonPart()->installedId)
         ret.push_back(*id);
     return ret;
   }
