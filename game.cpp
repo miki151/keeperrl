@@ -46,7 +46,7 @@
 template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Game>);
-  ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime);
+  ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime, avatarId);
   ar(musicType, statistics, tribes, gameIdentifier, players, contentFactory, sunlightTimeOffset);
   ar(gameDisplayName, models, visited, baseModel, campaign, localTime, turnEvents, effectFlags);
   if (Archive::is_loading::value)
@@ -119,6 +119,7 @@ Game::~Game() {}
 PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup setup, AvatarInfo avatar,
     ContentFactory contentFactory) {
   auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup, std::move(contentFactory));
+  ret->avatarId = avatar.avatarId;
   for (auto model : ret->getAllModels())
     model->setGame(ret.get());
   auto avatarCreature = avatar.playerCreature.get();
@@ -136,8 +137,10 @@ PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup setup, AvatarInfo
   return ret;
 }
 
-PGame Game::warlordGame(Table<PModel> models, CampaignSetup setup, vector<PCreature> creatures, ContentFactory contentFactory) {
+PGame Game::warlordGame(Table<PModel> models, CampaignSetup setup, vector<PCreature> creatures,
+    ContentFactory contentFactory, string avatarId) {
   auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup, std::move(contentFactory));
+  ret->avatarId = std::move(avatarId);
   for (auto model : ret->getAllModels())
     model->setGame(ret.get());
   for (auto& c : creatures)
@@ -407,6 +410,7 @@ void Game::tick(GlobalTime time) {
       auto values = campaign->getParameters();
       values["current_mod"] = getOptions()->getStringValue(OptionId::CURRENT_MOD2);
       values["version"] = string(BUILD_DATE) + " " + string(BUILD_VERSION);
+      values["avatar_id"] = avatarId;
       uploadEvent("campaignStarted", values);
     } else
       uploadEvent("turn", {{"turn", toString(turn)}});
@@ -845,6 +849,11 @@ void Game::addEvent(const GameEvent& event) {
       [&](const ConqueredEnemy& info) {
         Collective* col = info.collective;
         if (col->getVillainType() != VillainType::NONE) {
+          if (auto id = col->getEnemyId())
+            uploadEvent("customEvent", {
+              {"name", "villainConquered"},
+              {"value", id->data()}
+            });
           Vec2 coords = getModelCoords(col->getModel());
           if (!campaign->isDefeated(coords)) {
             if (auto retired = campaign->getSites()[coords].getRetired())

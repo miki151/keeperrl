@@ -543,7 +543,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
               }()
           );
         return Game::warlordGame(std::move(models.models), setup, std::move(creatures),
-            std::move(warlordInfo->contentFactory));
+            std::move(warlordInfo->contentFactory), warlordInfo->gameIdentifier);
       }
     } else {
       auto option = *avatarChoice.getValueMaybe<AvatarMenuOption>();

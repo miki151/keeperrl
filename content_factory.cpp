@@ -157,8 +157,8 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
     return "Error reading player creature definitions: "_s + *error;
   if (auto error = config->readObject(keeperCreaturesTmp, GameConfigId::KEEPER_CREATURES, keyVerifier))
     return "Error reading player creature definitions: "_s + *error;
-  keeperCreatures = getValues(keeperCreaturesTmp);
-  adventurerCreatures = getValues(adventurerCreaturesTmp);
+  keeperCreatures = vector<pair<string, KeeperCreatureInfo>>(keeperCreaturesTmp.begin(), keeperCreaturesTmp.end());
+  adventurerCreatures = vector<pair<string, AdventurerCreatureInfo>>(adventurerCreaturesTmp.begin(), adventurerCreaturesTmp.end());
   if (keeperCreatures.empty() || adventurerCreatures.empty())
     return "Keeper and adventurer lists must each contain at least 1 entry."_s;
   for (auto& keeperInfo : keeperCreatures) {
@@ -167,23 +167,23 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
     set<string> allDataGroups;
     for (auto& group : buildInfo) {
       allDataGroups.insert(group.first);
-      if (keeperInfo.buildingGroups.contains(group.first))
+      if (keeperInfo.second.buildingGroups.contains(group.first))
         buildInfoTmp.append(group.second);
     }
-    for (auto& tech : keeperInfo.initialTech)
-      if (!keeperInfo.technology.contains(tech))
+    for (auto& tech : keeperInfo.second.initialTech)
+      if (!keeperInfo.second.technology.contains(tech))
         return "Technology not found: "_s + tech.data();
     for (auto& info : buildInfoTmp)
       for (auto& requirement : info.requirements)
         if (auto tech = requirement.getReferenceMaybe<TechId>())
-          if (!keeperInfo.technology.contains(*tech))
+          if (!keeperInfo.second.technology.contains(*tech))
             return "Technology prerequisite \""_s + tech->data() + "\" of build item \"" + info.name + "\" is not available";
     WorkshopArray merged;
-    for (auto& group : keeperInfo.workshopGroups)
+    for (auto& group : keeperInfo.second.workshopGroups)
       if (!workshopGroups.count(group))
         return "Undefined workshop group \"" + group + "\"";
     for (auto& group : workshopGroups) {
-      if (keeperInfo.workshopGroups.contains(group.first))
+      if (keeperInfo.second.workshopGroups.contains(group.first))
         for (auto elem : group.second)
           merged[elem.first].append(elem.second);
     }
@@ -192,10 +192,10 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
         if (item.tech && !technology.techs.count(*item.tech))
           return "Technology prerequisite \""_s + item.tech->data() + "\" of workshop item \"" + item.item.get(this)->getName()
               + "\" is not available";
-    for (auto elem : keeperInfo.immigrantGroups)
+    for (auto elem : keeperInfo.second.immigrantGroups)
       if (!immigrantsData.count(elem))
         return "Undefined immigrant group: \"" + elem + "\"";
-    for (auto& group : keeperInfo.buildingGroups)
+    for (auto& group : keeperInfo.second.buildingGroups)
       if (!allDataGroups.count(group))
         return "Building menu group \"" + group + "\" not found";
     for (auto& info : buildInfoTmp) {
@@ -205,7 +205,7 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
         hotkeys[int(info.hotkey)] = true;
       }
     }
-    for (auto elem : keeperInfo.endlessEnemyGroups)
+    for (auto elem : keeperInfo.second.endlessEnemyGroups)
       if (!externalEnemies.count(elem))
         return "Undefined endless enemy group: \"" + elem + "\"";
   }

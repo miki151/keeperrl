@@ -27,7 +27,7 @@ void SimpleGame::addResourcesForLevel(int level) {
 }
 
 SimpleGame::SimpleGame(ContentFactory* factory, MainLoop* mainLoop) : factory(factory), mainLoop(mainLoop) {
-  auto& info = factory->keeperCreatures[0];
+  auto& info = factory->keeperCreatures[0].second;
   for (auto elem : info.immigrantGroups)
     append(immigrants, factory->immigrantsData.at(elem));
   minions.push_back(getCreature(factory, info.creatureId[0]));

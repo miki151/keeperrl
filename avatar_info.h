@@ -8,6 +8,7 @@
 struct AvatarInfo {
   PCreature playerCreature;
   variant<KeeperCreatureInfo, AdventurerCreatureInfo> creatureInfo;
+  string avatarId;
   TribeAlignment tribeAlignment;
   optional<string> chosenBaseName;
 };
@@ -30,7 +31,7 @@ struct WarlordInfoWithReference {
   SERIALIZE_ALL_NO_VERSION(creatures, serializeAsValue(contentFactory), gameIdentifier)
 };
 
-extern variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View*, const vector<KeeperCreatureInfo>&,
-    const vector<AdventurerCreatureInfo>&, vector<WarlordInfo>, ContentFactory*);
-extern AvatarInfo getQuickGameAvatar(View*, const vector<KeeperCreatureInfo>&, CreatureFactory*);
+extern variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View*, const vector<pair<string, KeeperCreatureInfo>>&,
+    const vector<pair<string, AdventurerCreatureInfo>>&, vector<WarlordInfo>, ContentFactory*);
+extern AvatarInfo getQuickGameAvatar(View*, const vector<pair<string, KeeperCreatureInfo>>&, CreatureFactory*);
 extern TribeId getPlayerTribeId(TribeAlignment);

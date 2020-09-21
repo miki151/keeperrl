@@ -52,8 +52,8 @@ class ContentFactory {
   map<string, vector<BuildInfo>> SERIAL(buildInfo);
   VillainsTuple SERIAL(villains);
   GameIntros SERIAL(gameIntros);
-  vector<KeeperCreatureInfo> SERIAL(keeperCreatures);
-  vector<AdventurerCreatureInfo> SERIAL(adventurerCreatures);
+  vector<pair<string, KeeperCreatureInfo>> SERIAL(keeperCreatures);
+  vector<pair<string, AdventurerCreatureInfo>> SERIAL(adventurerCreatures);
   map<CustomItemId, ItemAttributes> SERIAL(items);
   map<BuildingId, BuildingInfo> SERIAL(buildingInfo);
   MapLayouts SERIAL(mapLayouts);

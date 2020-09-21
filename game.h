@@ -31,7 +31,7 @@ class Game : public OwnedObject<Game> {
   public:
   static PGame campaignGame(Table<PModel>&&, CampaignSetup, AvatarInfo, ContentFactory);
   static PGame splashScreen(PModel&&, const CampaignSetup&, ContentFactory);
-  static PGame warlordGame(Table<PModel>, CampaignSetup, vector<PCreature>, ContentFactory);
+  static PGame warlordGame(Table<PModel>, CampaignSetup, vector<PCreature>, ContentFactory, string avatarId);
 
   optional<ExitInfo> update(double timeDiff);
   void setExitInfo(ExitInfo);
@@ -152,4 +152,5 @@ class Game : public OwnedObject<Game> {
   void spawnKeeper(AvatarInfo, vector<string> introText);
   HeapAllocated<ContentFactory> SERIAL(contentFactory);
   void updateSunlightMovement();
+  string SERIAL(avatarId);
 };
