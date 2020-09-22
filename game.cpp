@@ -117,9 +117,10 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
 Game::~Game() {}
 
 PGame Game::campaignGame(Table<PModel>&& models, CampaignSetup setup, AvatarInfo avatar,
-    ContentFactory contentFactory) {
+    ContentFactory contentFactory, map<string, string> analytics) {
   auto ret = makeOwner<Game>(std::move(models), *setup.campaign.getPlayerPos(), setup, std::move(contentFactory));
   ret->avatarId = avatar.avatarId;
+  ret->analytics = analytics;
   for (auto model : ret->getAllModels())
     model->setGame(ret.get());
   auto avatarCreature = avatar.playerCreature.get();
@@ -411,6 +412,8 @@ void Game::tick(GlobalTime time) {
       values["current_mod"] = getOptions()->getStringValue(OptionId::CURRENT_MOD2);
       values["version"] = string(BUILD_DATE) + " " + string(BUILD_VERSION);
       values["avatar_id"] = avatarId;
+      for (auto& elem : analytics)
+        values.insert(elem);
       uploadEvent("campaignStarted", values);
     } else
       uploadEvent("turn", {{"turn", toString(turn)}});

@@ -29,7 +29,7 @@ struct WarlordInfo;
 
 class Game : public OwnedObject<Game> {
   public:
-  static PGame campaignGame(Table<PModel>&&, CampaignSetup, AvatarInfo, ContentFactory);
+  static PGame campaignGame(Table<PModel>&&, CampaignSetup, AvatarInfo, ContentFactory, map<string, string> analytics);
   static PGame splashScreen(PModel&&, const CampaignSetup&, ContentFactory);
   static PGame warlordGame(Table<PModel>, CampaignSetup, vector<PCreature>, ContentFactory, string avatarId);
 
@@ -153,4 +153,5 @@ class Game : public OwnedObject<Game> {
   HeapAllocated<ContentFactory> SERIAL(contentFactory);
   void updateSunlightMovement();
   string SERIAL(avatarId);
+  map<string, string> analytics;
 };

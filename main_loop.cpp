@@ -438,6 +438,7 @@ PGame MainLoop::prepareTutorial(const ContentFactory* contentFactory) {
 struct ModelTable {
   Table<PModel> models;
   vector<ContentFactory> factories;
+  int numRetiredVillains;
 };
 
 TilePaths MainLoop::getTilePathsForAllMods() const {
@@ -507,7 +508,12 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
         auto models = prepareCampaignModels(*setup, *avatar, random, &contentFactory);
         for (auto& f : models.factories)
           contentFactory.merge(std::move(f));
-        return Game::campaignGame(std::move(models.models), *setup, std::move(*avatar), std::move(contentFactory));
+        map<string, string> analytics {
+          {"retired_villains", toString(models.numRetiredVillains)},
+          {"biome", setup->startingBiome.data()}
+        };
+        return Game::campaignGame(std::move(models.models), *setup, std::move(*avatar), std::move(contentFactory),
+            std::move(analytics));
       } else
         continue;
     } else
@@ -884,7 +890,7 @@ void MainLoop::launchQuickGame(optional<int> maxTurns) {
     auto result = builder.prepareCampaign(&contentFactory, bindMethod(&MainLoop::getRetiredGames, this),
         CampaignType::QUICK_MAP, "[world]");
     auto models = prepareCampaignModels(*result, std::move(avatar), Random, &contentFactory);
-    game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), std::move(contentFactory));
+    game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), std::move(contentFactory), {});
     dumpMemUsage(game);
   }
   playGame(std::move(game), true, false, false, nullptr, milliseconds{3}, maxTurns);
@@ -1206,6 +1212,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
   optional<string> failedToLoad;
   int numSites = setup.campaign.getNumNonEmpty();
   vector<ContentFactory> factories;
+  int numRetiredVillains = 0;
   doWithSplash("Generating map...", numSites,
       [&] (ProgressMeter& meter) {
         for (Vec2 v : sites.getBounds()) {
@@ -1221,6 +1228,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
                     if (retiredInfo->enemyId == villain->enemyId)
                       if (auto model = loadRetiredModelFromFile(userPath.file(info.filename))) {
                         models[v] = std::move(model->model);
+                        ++numRetiredVillains;
                         remove(userPath.file(info.filename).getPath());
                         break;
                       }
@@ -1239,7 +1247,7 @@ ModelTable MainLoop::prepareCampaignModels(CampaignSetup& setup, TribeAlignment 
       });
   if (failedToLoad)
     view->presentText("Sorry", "Error reading " + *failedToLoad + ". Leaving blank site.");
-  return ModelTable{std::move(models), std::move(factories)};
+  return ModelTable{std::move(models), std::move(factories), numRetiredVillains};
 }
 
 PGame MainLoop::loadGame(const FilePath& file) {
