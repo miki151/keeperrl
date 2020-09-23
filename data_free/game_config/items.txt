@@ -1489,7 +1489,7 @@
           Analytics "milestone" "blackMarketPortal"
         }
       }
-      Area 2 Filter FurnitureType "ADOXIE_STATUE_TEMPLE" {
+      Area 2 Filter Or { FurnitureType "ADOXIE_STATUE_VAULT" FurnitureType "ADOXIE_STATUE_TEMPLE" } {
         Message "The statue blinks!"
         Analytics "milestone" "adoxieStatueBlink"
       }

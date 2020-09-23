@@ -1070,13 +1070,17 @@ void Player::grantWish(const string& message) {
     wishType->visit(
         [&](ItemType itemType) {
           auto items = itemType.get(count, getGame()->getContentFactory());
-          creature->verb("receive", "receives", items[0]->getPluralAName(items.size()));
+          auto name = items[0]->getPluralAName(items.size());
+          getGame()->addAnalytics("wishItem", *text + ":" + name);
+          creature->verb("receive", "receives", name);
           creature->getEquipment().addItems(std::move(items), creature);
         },
         [&](CreatureId id) {
           auto res = Effect::summon(creature, id, 1, 100_visible);
-          if (!res.empty())
+          if (!res.empty()) {
+            getGame()->addAnalytics("wishCreature", *text + ":" + res[0]->identify());
             res[0]->message(res[0]->getName().a() + " is summoned"_s);
+          }
         }
     );
   }
