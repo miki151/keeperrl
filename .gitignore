@@ -8,6 +8,7 @@ html/
 .kdev4/
 *.kdev4
 *.png
+unlocks.txt
 tmp/
 find
 gameplay.txt
