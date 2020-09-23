@@ -800,6 +800,13 @@ void Game::uploadEvent(const string& name, const map<string, string>& m) {
   fileSharing->uploadGameEvent(values);
 }
 
+void Game::addAnalytics(const string& name, const string& value) {
+  uploadEvent("customEvent", {
+    {"name", name},
+    {"value", value}
+  });
+}
+
 void Game::handleMessageBoard(Position pos, Creature* c) {
   auto boardId = int(combineHash(pos, getGameIdentifier()));
   vector<ListElem> options;

@@ -1761,6 +1761,20 @@ static bool apply(const Effects::Unlock& e, Position pos, Creature*) {
   return false;
 }
 
+static string getName(const Effects::Analytics& e, const ContentFactory*) {
+  return "";
+}
+
+static string getDescription(const Effects::Analytics& e, const ContentFactory*) {
+  return "";
+}
+
+static bool apply(const Effects::Analytics& e, Position pos, Creature*) {
+  if (auto game = pos.getGame())
+    game->addAnalytics(e.name, e.value);
+  return false;
+}
+
 static string getName(const Effects::Stairs&, const ContentFactory*) {
   return "stairs";
 }

@@ -288,6 +288,11 @@ struct Unlock {
   UnlockId SERIAL(id);
   SERIALIZE_ALL(id)
 };
+struct Analytics {
+  string SERIAL(name);
+  string SERIAL(value);
+  SERIALIZE_ALL(name, value)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -362,7 +367,8 @@ struct Unlock {
   X(RemoveFurniture, 69)\
   X(SetFlag, 70)\
   X(TakeItems, 71)\
-  X(Unlock, 72)
+  X(Unlock, 72)\
+  X(Analytics, 73)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
