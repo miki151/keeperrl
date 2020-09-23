@@ -45,6 +45,11 @@ struct Flag {
   SERIALIZE_ALL(name)
 };
 
+struct Unlock {
+  UnlockId SERIAL(id);
+  SERIALIZE_ALL(id)
+};
+
 struct Health {
   double SERIAL(from);
   double SERIAL(to);
@@ -76,16 +81,17 @@ struct Or {
   X(Ingredient, 6)\
   X(Hidden, 7)\
   X(Flag, 8)\
-  X(Name, 9)\
-  X(Night, 10)\
-  X(Indoors, 11)\
-  X(Attacker, 12)\
-  X(FurnitureType, 13)\
-  X(Not, 14)\
-  X(And, 15)\
-  X(Or, 16)\
-  X(Health, 17)\
-  X(CreatureId, 18)
+  X(Unlock, 9)\
+  X(Name, 10)\
+  X(Night, 11)\
+  X(Indoors, 12)\
+  X(Attacker, 13)\
+  X(FurnitureType, 14)\
+  X(Not, 15)\
+  X(And, 16)\
+  X(Or, 17)\
+  X(Health, 18)\
+  X(CreatureId, 19)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

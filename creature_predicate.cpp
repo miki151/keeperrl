@@ -6,6 +6,7 @@
 #include "item.h"
 #include "body.h"
 #include "game.h"
+#include "unlocks.h"
 
 
 namespace Impl {
@@ -122,6 +123,14 @@ static bool apply(const CreaturePredicates::Flag& s, Position pos, const Creatur
 
 static string getName(const CreaturePredicates::Flag& s) {
   return s.name;
+}
+
+static bool apply(const CreaturePredicates::Unlock& s, Position pos, const Creature* attacker) {
+  return pos.getGame()->getUnlocks()->isUnlocked(s.id);
+}
+
+static string getName(const CreaturePredicates::Unlock& s) {
+  return s.id;
 }
 
 static bool apply(FurnitureType type, Position pos, const Creature* attacker) {
