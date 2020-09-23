@@ -1,5 +1,5 @@
 # CreatureId                     TribeAlignment 
 "1_lawful_adventurer"
-{ "ADVENTURER" "ADVENTURER_F" }      LAWFUL             "Roam the land in search of adventures and loot!"
+{{ "ADVENTURER" "ADVENTURER_F" }      LAWFUL             "Roam the land in search of adventures and loot!" }
 "2_adoxie"
-{ "ADOXIE_ADVENTURER" }      EVIL             "Play as the Evil God Adoxie, and wipe the floor with silly mortals."
+{{ "ADOXIE_ADVENTURER" }      EVIL             "Play as the Evil God Adoxie, and wipe the floor with silly mortals." "adoxie"}

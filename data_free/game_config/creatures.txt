@@ -419,6 +419,9 @@
     inventory = {
       { Potion Name "amok" Area 20 Chain { IncreaseAttr DEFENSE -20 IncreaseAttr DAMAGE 20 }}
     }
+    deathEffect = Filter Not Unlock "adoxie" {
+      DropItems { "AdoxieScrollVault" } {1}
+    }
   }
 "SATAN" inherit "DEVIL"
   {

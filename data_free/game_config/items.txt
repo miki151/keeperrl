@@ -1257,6 +1257,13 @@
     price = 1
     effect = Description "Just a cheap pamphlet" Message "It predicts the coming of the Evil God Adoxie"
   }
+"AdoxieScrollVault" inherit "AdoxieScroll"
+  {
+    effect = Description "Just a cheap pamphlet" Name "message" {
+      Message "It predicts the coming of the Evil God Adoxie. You feel like this time it is real."
+      Unlock "adoxie"
+    }
+  }
 "AdaHelm"
   {
     viewId = { "ada_helm" }
