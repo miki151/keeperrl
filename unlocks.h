@@ -1,3 +1,5 @@
+#pragma once
+
 #include "file_path.h"
 #include "stdafx.h"
 #include "util.h"
