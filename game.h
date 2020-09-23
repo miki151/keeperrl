@@ -26,6 +26,7 @@ class NameGenerator;
 class Encyclopedia;
 struct WarlordInfoWithReference;
 struct WarlordInfo;
+class Unlocks;
 
 class Game : public OwnedObject<Game> {
   public:
@@ -37,7 +38,8 @@ class Game : public OwnedObject<Game> {
   void setExitInfo(ExitInfo);
   Options* getOptions();
   Encyclopedia* getEncyclopedia();
-  void initialize(Options*, Highscores*, View*, FileSharing*, Encyclopedia*);
+  Unlocks* getUnlocks() const;
+  void initialize(Options*, Highscores*, View*, FileSharing*, Encyclopedia*, Unlocks*);
   void initializeModels();
   View* getView() const;
   ContentFactory* getContentFactory();
@@ -154,4 +156,5 @@ class Game : public OwnedObject<Game> {
   void updateSunlightMovement();
   string SERIAL(avatarId);
   map<string, string> analytics;
+  Unlocks* unlocks = nullptr;
 };

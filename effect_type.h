@@ -284,6 +284,10 @@ struct TakeItems {
   string SERIAL(ingredient);
   SERIALIZE_ALL(ingredient)
 };
+struct Unlock {
+  UnlockId SERIAL(id);
+  SERIALIZE_ALL(id)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -358,6 +362,7 @@ struct TakeItems {
   X(RemoveFurniture, 69)\
   X(SetFlag, 70)\
   X(TakeItems, 71)\
+  X(Unlock, 72)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

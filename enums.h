@@ -123,3 +123,4 @@ class BiomeId;
 class WorkshopType;
 class CollectiveResourceId;
 using SteamId = unsigned long long;
+using UnlockId = string;

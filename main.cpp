@@ -57,6 +57,7 @@
 #include "fx_renderer.h"
 #include "fx_view_manager.h"
 #include "layout_renderer.h"
+#include "unlocks.h"
 
 #ifndef VSTUDIO
 #include "stack_printer.h"
@@ -383,6 +384,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   Clock clock(!!maxTurns);
   userPath.createIfDoesntExist();
   auto settingsPath = userPath.file("options.txt");
+  Unlocks unlocks(userPath.file("unlocks.txt"));
   if (commandLineFlags["restore_settings"].was_set())
     remove(settingsPath.getPath());
   Options options(settingsPath);
@@ -395,12 +397,14 @@ static int keeperMain(po::parser& commandLineFlags) {
   KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
   auto modsDir = userPath.subdirectory(gameConfigSubdir);
   if (commandLineFlags["simple_game"].was_set()) {
-    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, 0, "");
+    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, nullptr,
+        0, "");
     loop.playSimpleGame();
   }
   if (commandLineFlags["layout_name"].was_set()) {
     USER_CHECK(commandLineFlags["layout_size"].was_set()) << "Need to specify layout_size option";
-    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, 0, "");
+    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, nullptr,
+        0, "");
     generateMapLayout(loop,
         commandLineFlags["layout_name"].get().string,
         freeDataPath.file("glyphs.txt"),
@@ -409,7 +413,8 @@ static int keeperMain(po::parser& commandLineFlags) {
     exit(0);
   }
   if (commandLineFlags["verify_mod"].was_set()) {
-    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, 0, "");
+    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, nullptr,
+        0, "");
     if (auto err = loop.verifyMod(commandLineFlags["verify_mod"].get().string)) {
       std::cout << *err << std::endl;
       return -1;
@@ -430,7 +435,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   if (commandLineFlags["worldgen_test"].was_set()) {
     ofstream output("worldgen_out.txt");
     UserInfoLog.addOutput(DebugOutput::toStream(output));
-    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, nullptr, 0, "");
+    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, nullptr,
+        &unlocks, 0, "");
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
       types = split(commandLineFlags["worldgen_maps"].get().string, {','});
@@ -438,7 +444,8 @@ static int keeperMain(po::parser& commandLineFlags) {
     return 0;
   }
   auto battleTest = [&] (View* view, TileSet* tileSet) {
-    MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, tileSet, 0, "");
+    MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, tileSet,
+      &unlocks, 0, "");
     auto level = commandLineFlags["battle_level"].get().string;
     auto info = commandLineFlags["battle_info"].get().string;
     auto numRounds = commandLineFlags["battle_rounds"].get().i32;
@@ -544,8 +551,8 @@ static int keeperMain(po::parser& commandLineFlags) {
       getMaxVolume());
   options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
   jukebox.setCurrentVolume(options.getIntValue(OptionId::MUSIC));
-  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, &jukebox, &sokobanInput, &tileSet,
-      saveVersion, modVersion);
+  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, &jukebox, &sokobanInput,
+      &tileSet, &unlocks, saveVersion, modVersion);
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);

@@ -55,6 +55,7 @@
 #include "encyclopedia.h"
 #include "game_info.h"
 #include "tribe_alignment.h"
+#include "unlocks.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -63,9 +64,9 @@
 
 MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
     const DirectoryPath& uPath, const DirectoryPath& modsDir, Options* o, Jukebox* j, SokobanInput* soko,
-    TileSet* tileSet, int sv, string modVersion)
+    TileSet* tileSet, Unlocks* unlocks, int sv, string modVersion)
       : view(v), dataFreePath(freePath), userPath(uPath), modsDir(modsDir), options(o), jukebox(j), highscores(h), fileSharing(fSharing),
-        sokobanInput(soko), tileSet(tileSet), saveVersion(sv), modVersion(modVersion) {
+        sokobanInput(soko), tileSet(tileSet), saveVersion(sv), modVersion(modVersion), unlocks(unlocks) {
 }
 
 vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const string& suffix) {
@@ -305,7 +306,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
     view->setBugReportSaveCallback([&] (FilePath path) { bugReportSave(game, path); });
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
   Encyclopedia encyclopedia(game->getContentFactory());
-  game->initialize(options, highscores, view, fileSharing, &encyclopedia);
+  game->initialize(options, highscores, view, fileSharing, &encyclopedia, unlocks);
   if (splashScreen)
     game->initializeModels();
   else
@@ -724,7 +725,7 @@ void MainLoop::downloadMod(ModInfo& mod) {
 void MainLoop::uploadMod(ModInfo& mod) {
   auto config = getGameConfig({mod.name});
   ContentFactory f;
-  if (auto err = f.readData(&config, {mod.name})) {
+  if (auto err = f.readData(&config, {mod.name}, *unlocks)) {
     view->presentText("Mod \"" + mod.name + "\" has errors: ", *err);
     return;
   }
@@ -847,7 +848,7 @@ ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
   ContentFactory ret;
   auto tryConfig = [&](const vector<string>& modNames) {
     auto config = getGameConfig(modNames);
-    return ret.readData(&config, modNames);
+    return ret.readData(&config, modNames, *unlocks);
   };
   if (vanillaOnly) {
 #ifdef RELEASE

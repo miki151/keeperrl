@@ -34,11 +34,12 @@ struct ModDetails;
 struct WarlordInfo;
 class TribeId;
 struct RetiredModelInfo;
+class Unlocks;
 
 class MainLoop {
   public:
   MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      const DirectoryPath& modsDir, Options*, Jukebox*, SokobanInput*, TileSet*, int saveVersion,
+      const DirectoryPath& modsDir, Options*, Jukebox*, SokobanInput*, TileSet*, Unlocks*, int saveVersion,
       string modVersion);
 
   void start(bool tilesPresent);
@@ -134,4 +135,5 @@ class MainLoop {
   optional<RetiredModelInfo> loadRetiredModelFromFile(const FilePath&);
   bool useSingleThread();
   vector<WarlordInfo> readWarlordInfos();
+  Unlocks* unlocks;
 };

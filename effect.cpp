@@ -59,6 +59,7 @@
 #include "workshop_type.h"
 #include "automaton_part.h"
 #include "minion_trait.h"
+#include "unlocks.h"
 
 
 namespace {
@@ -1743,6 +1744,20 @@ static bool apply(const Effects::SetFlag& e, Position pos, Creature*) {
       return true;
     }
   }
+  return false;
+}
+
+static string getName(const Effects::Unlock& e, const ContentFactory*) {
+  return e.id;
+}
+
+static string getDescription(const Effects::Unlock& e, const ContentFactory*) {
+  return "Unlocks " + e.id;
+}
+
+static bool apply(const Effects::Unlock& e, Position pos, Creature*) {
+  if (auto game = pos.getGame())
+    game->getUnlocks()->unlock(e.id);
   return false;
 }
 

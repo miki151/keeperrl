@@ -706,12 +706,17 @@ Encyclopedia* Game::getEncyclopedia() {
   return encyclopedia;
 }
 
-void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f, Encyclopedia* e) {
+Unlocks* Game::getUnlocks() const {
+  return unlocks;
+}
+
+void Game::initialize(Options* o, Highscores* h, View* v, FileSharing* f, Encyclopedia* e, Unlocks* u) {
   options = o;
   highscores = h;
   view = v;
   fileSharing = f;
   encyclopedia = e;
+  unlocks = u;
 }
 
 const string& Game::getWorldName() const {
