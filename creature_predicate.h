@@ -45,7 +45,7 @@ struct Flag {
   SERIALIZE_ALL(name)
 };
 
-struct Unlock {
+struct Unlocked {
   UnlockId SERIAL(id);
   SERIALIZE_ALL(id)
 };
@@ -81,7 +81,7 @@ struct Or {
   X(Ingredient, 6)\
   X(Hidden, 7)\
   X(Flag, 8)\
-  X(Unlock, 9)\
+  X(Unlocked, 9)\
   X(Name, 10)\
   X(Night, 11)\
   X(Indoors, 12)\

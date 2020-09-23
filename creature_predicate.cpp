@@ -125,11 +125,11 @@ static string getName(const CreaturePredicates::Flag& s) {
   return s.name;
 }
 
-static bool apply(const CreaturePredicates::Unlock& s, Position pos, const Creature* attacker) {
+static bool apply(const CreaturePredicates::Unlocked& s, Position pos, const Creature* attacker) {
   return pos.getGame()->getUnlocks()->isUnlocked(s.id);
 }
 
-static string getName(const CreaturePredicates::Unlock& s) {
+static string getName(const CreaturePredicates::Unlocked& s) {
   return s.id;
 }
 

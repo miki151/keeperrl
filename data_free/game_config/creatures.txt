@@ -419,7 +419,7 @@
     inventory = {
       { Potion Name "amok" Area 20 Chain { IncreaseAttr DEFENSE -20 IncreaseAttr DAMAGE 20 }}
     }
-    deathEffect = Filter Not Unlock "adoxie" {
+    deathEffect = Filter Not Unlocked "adoxie" {
       DropItems { "AdoxieScrollVault" } {1}
     }
   }
