@@ -133,7 +133,7 @@
   }
 "ADOXIE_VAULT" inherit "DUNGEON"
   {
-    downStairs = {"ADOXIE_STATUE_TEMPLE"}
+    downStairs = {"ADOXIE_STATUE_VAULT"}
     water = {WATER}
   }
 "HELL"

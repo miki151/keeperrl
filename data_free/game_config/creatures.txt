@@ -3750,6 +3750,7 @@
       name = "Death"
       fullTitle = true
     }
+    deathEffect = Analytics "creatureKilled" "death"
     gender = IT
   }
 "SHOPKEEPER"
@@ -3818,6 +3819,7 @@
     chatReactionHostile = "\"How dare you defy a GOD!\""
     deathDescription = "vanquished. May he never rise again"
     gender = IT
+    deathEffect = Analytics "creatureKilled" "adoxie"
   }
 "ADOXIE_ADVENTURER" inherit "ADOXIE_HEAD"
   {

@@ -1486,9 +1486,13 @@
           Fx { TELEPORT_OUT }
           Message "The portal is activated!"
           PlaceFurniture "PORTAL_STAIRS"
+          Analytics "milestone" "blackMarketPortal"
         }
       }
-      Area 2 Filter FurnitureType "ADOXIE_STATUE_TEMPLE" Message "The statue blinks!"
+      Area 2 Filter FurnitureType "ADOXIE_STATUE_TEMPLE" {
+        Message "The statue blinks!"
+        Analytics "milestone" "adoxieStatueBlink"
+      }
       Message "Nothing happens."
     }
   }

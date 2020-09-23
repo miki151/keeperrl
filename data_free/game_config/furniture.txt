@@ -406,10 +406,25 @@
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
 # if there is a destroyedEffect then the standard "is destroyed" text is not displayed, you need to add your own
   destroyedRemains = "DOWN_STAIRS"
+  destroyedEffect = {
+    Message "The statue is destroyed!"
+    Analytics "milestone" "adoxieTempleStatue"
+  }
+}
+"ADOXIE_STATUE_VAULT" inherit "ADOXIE_STATUE_TEMPLE"
+{
+  destroyedEffect = {
+    Message "The statue is destroyed!"
+    Analytics "milestone" "adoxieVaultStatue"
+  }
 }
 "ADOXIE_STATUE" inherit "ADOXIE_STATUE_TEMPLE"
 {
-  destroyedEffect = { Message "The statue comes to life!" SummonEnemy "ADOXIE_HEAD" {1} none }
+  destroyedEffect = {
+    Message "The statue comes to life!"
+    SummonEnemy "ADOXIE_HEAD" {1} none
+    Analytics "milestone" "adoxieComesToLife"
+  }
   destroyedRemains = "DOWN_STAIRS_ADOXIE"
 }
 "ADOXIE_LEFT_FOOT"
@@ -442,6 +457,7 @@
   itemsRemovedEffect = {
     SetFlag "adoxie_left_foot_trigger" true
     SetFlag "adoxie_right_foot_trigger" true
+    Analytics "milestone" "adoxieFeetTriggered"
   }
 }
 "ADOXIE_FEET_ALTAR"
@@ -788,6 +804,10 @@
 "BOOKCASE_STAIRS" inherit "BOOKCASE_WOOD"
 {
   destroyedRemains = "UP_STAIRS"
+  destroyedEffect = {
+    Message "The bookcase is destroyed!"
+    Analytics "milestone" "bookcaseStairs"
+  }
 }
 "ARMOR_CHEST"
 {
