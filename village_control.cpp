@@ -229,6 +229,7 @@ void VillageControl::considerWelcomeMessage() {
                   c->privateMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
                         "I hear your breath. Come along!\"", MessagePriority::CRITICAL));
                   behaviour->welcomeMessage.reset();
+                  pos.getGame()->addAnalytics("milestone", "dragonGreeting");
                 }
           break;
       }
