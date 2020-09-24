@@ -1366,6 +1366,7 @@ void Collective::summonDemon(Creature* c) {
   auto message = PlayerMessage(c->getName().the() + " has summoned a friendly demon!", MessagePriority::CRITICAL);
   c->thirdPerson(message);
   control->addMessage(message);
+  getGame()->addAnalytics("milestone", "poetryDemon");
 }
 
 void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos) {
