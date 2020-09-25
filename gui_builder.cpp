@@ -3878,6 +3878,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
         [avatarIndex, chosenAvatar] { return avatarIndex == *chosenAvatar; }));
   }
   lines.addBackElem(WL(stack, descriptions), 2.5 * legendLineHeight);
+  lines.addBackSpace(10);
   lines.addBackElem(WL(centerHoriz, WL(buttonLabel, "Start new game",
       [&queue, chosenAvatar, chosenName, gender, &avatars, this] {
         auto chosenGender = getChosenGender(gender, chosenAvatar, avatars);
@@ -3893,7 +3894,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
       })));
   auto menuLines = WL(getListBuilder, legendLineHeight)
       .addElemAuto(
-          WL(preferredSize, 800, 350, WL(window, WL(margins,
+          WL(preferredSize, 800, 370, WL(window, WL(margins,
               lines.buildVerticalList(), 15), [&queue]{ queue.push(AvatarMenuOption::GO_BACK); })));
   auto othersLine = WL(getListBuilder);
   for (auto option : ENUM_ALL(AvatarMenuOption)) {
@@ -4164,12 +4165,6 @@ SGuiElem GuiBuilder::drawWarlordMinionsMenu(SyncQueue<variant<int, bool>>& queue
       }
     fail();
   };
-  if (!chosenInfos.empty()) {
-    lines.addElem(WL(label, "Team:"));
-    lines.addElem(WL(label, "Max team size: " + toString(maxCount), Renderer::smallTextSize, Color::GRAY),
-        legendLineHeight * 2 / 3);
-    lines.addElemAuto(drawCreatureList(chosenInfos, minionFun, 1));
-  }
   vector<PlayerInfo> availableInfos;
   for (int i : All(minions))
     if (!chosen.contains(i))
@@ -4177,6 +4172,12 @@ SGuiElem GuiBuilder::drawWarlordMinionsMenu(SyncQueue<variant<int, bool>>& queue
   if (!availableInfos.empty()) {
     lines.addElem(WL(label, "Select a team from your minions:"));
     lines.addMiddleElem(WL(scrollable, drawCreatureList(availableInfos, minionFun, 1)));
+  }
+  if (!chosenInfos.empty()) {
+    lines.addBackElem(WL(label, "Team:"));
+    lines.addBackElem(WL(label, "Max team size: " + toString(maxCount), Renderer::smallTextSize, Color::GRAY),
+        legendLineHeight * 2 / 3);
+    lines.addBackElemAuto(drawCreatureList(chosenInfos, minionFun, 1));
   }
   lines.addSpace();
   lines.addBackElem(WL(centerHoriz, WL(getListBuilder)
