@@ -1515,11 +1515,6 @@ class heap_optional {
 
   heap_optional(T&& o) noexcept : elem(new T(std::move(o))) {}
 
-  template <typename O>
-  heap_optional(O&& o) noexcept : elem(o ? new T(std::move(*o)) : nullptr) {}
-  template <typename O>
-  heap_optional(const O& o) noexcept : elem(o ? new T(*o) : nullptr) {}
-
   heap_optional(const heap_optional& o) noexcept : elem(o.elem ? new T(*o.elem) : nullptr) {}
   heap_optional(heap_optional&& o) noexcept : elem(std::move(o.elem)) {}
 
@@ -1590,6 +1585,22 @@ class heap_optional {
   private:
   unique_ptr<T> SERIAL(elem);
 };
+
+template <typename T>
+auto to_heap_optional(const optional<T>& o) {
+  if (o)
+    return heap_optional<T>(*o);
+  else
+    return heap_optional<T>();
+}
+
+template <typename T>
+auto to_heap_optional(optional<T>&& o) {
+  if (o)
+    return heap_optional<T>(*std::move(o));
+  else
+    return heap_optional<T>();
+}
 
 class Semaphore {
   public:

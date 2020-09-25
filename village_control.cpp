@@ -46,7 +46,7 @@ SERIALIZE_DEF(VillageControl, SUBCLASS(CollectiveControl), SUBCLASS(EventListene
 REGISTER_TYPE(ListenerTemplate<VillageControl>)
 
 VillageControl::VillageControl(Private, Collective* col, optional<VillageBehaviour> v) : CollectiveControl(col),
-    behaviour(v) {
+    behaviour(to_heap_optional(v)) {
   for (Position v : col->getTerritory().getAll())
     for (Item* it : v.getItems())
       myItems.insert(it);

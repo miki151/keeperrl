@@ -82,7 +82,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL(Collective)
 
 Collective::Collective(Private, WModel model, TribeId t, const optional<CollectiveName>& n,
     const ContentFactory* contentFactory)
-    : positionMatching(makeOwner<PositionMatching>()), tribe(t), model(NOTNULL(model)), name(n),
+    : positionMatching(makeOwner<PositionMatching>()), tribe(t), model(NOTNULL(model)), name(to_heap_optional(n)),
       villainType(VillainType::NONE), minionActivities(contentFactory) {
 }
 
