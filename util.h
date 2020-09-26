@@ -1514,6 +1514,7 @@ class heap_optional {
   heap_optional() {}
 
   heap_optional(T&& o) noexcept : elem(new T(std::move(o))) {}
+  heap_optional(const T& o) noexcept : elem(new T(std::move(o))) {}
 
   heap_optional(const heap_optional& o) noexcept : elem(o.elem ? new T(*o.elem) : nullptr) {}
   heap_optional(heap_optional&& o) noexcept : elem(std::move(o.elem)) {}
