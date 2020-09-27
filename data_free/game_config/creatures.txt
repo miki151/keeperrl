@@ -3685,7 +3685,10 @@
     body = {
       type = Humanoid LARGE
       material = SPIRIT
-    }
+      addBodyPart = {
+        WING 2
+      }
+   }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     name = {
