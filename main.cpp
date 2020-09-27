@@ -396,14 +396,15 @@ static int keeperMain(po::parser& commandLineFlags) {
   optional<string> audioError = audioDevice.initialize();
   KeybindingMap keybindingMap(userPath.file("keybindings.txt"));
   auto modsDir = userPath.subdirectory(gameConfigSubdir);
+  auto allUnlocked = Unlocks::allUnlocked();
   if (commandLineFlags["simple_game"].was_set()) {
-    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, nullptr,
+    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, &allUnlocked,
         0, "");
     loop.playSimpleGame();
   }
   if (commandLineFlags["layout_name"].was_set()) {
     USER_CHECK(commandLineFlags["layout_size"].was_set()) << "Need to specify layout_size option";
-    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, nullptr,
+    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, &allUnlocked,
         0, "");
     generateMapLayout(loop,
         commandLineFlags["layout_name"].get().string,
@@ -413,7 +414,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     exit(0);
   }
   if (commandLineFlags["verify_mod"].was_set()) {
-    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, nullptr,
+    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, &allUnlocked,
         0, "");
     if (auto err = loop.verifyMod(commandLineFlags["verify_mod"].get().string)) {
       std::cout << *err << std::endl;
@@ -436,7 +437,7 @@ static int keeperMain(po::parser& commandLineFlags) {
     ofstream output("worldgen_out.txt");
     UserInfoLog.addOutput(DebugOutput::toStream(output));
     MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, nullptr,
-        &unlocks, 0, "");
+        &allUnlocked, 0, "");
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
       types = split(commandLineFlags["worldgen_maps"].get().string, {','});
@@ -445,7 +446,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   }
   auto battleTest = [&] (View* view, TileSet* tileSet) {
     MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, tileSet,
-      &unlocks, 0, "");
+        &allUnlocked, 0, "");
     auto level = commandLineFlags["battle_level"].get().string;
     auto info = commandLineFlags["battle_info"].get().string;
     auto numRounds = commandLineFlags["battle_rounds"].get().i32;

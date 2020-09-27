@@ -3,6 +3,11 @@
 #include "parse_game.h"
 
 Unlocks::Unlocks(FilePath p) : path(p) {}
+Unlocks Unlocks::allUnlocked() {
+  return Unlocks();
+}
+
+Unlocks::Unlocks() {}
 
 using UnlocksSet = set<string>;
 
@@ -21,11 +26,13 @@ static void write(FilePath path, const UnlocksSet& s) {
 }
 
 bool Unlocks::isUnlocked(UnlockId id) const {
-  return read(path).count(id);
+  return !!path ? read(*path).count(id) : true;
 }
 
 void Unlocks::unlock(UnlockId id) {
-  auto s = read(path);
-  s.insert(id);
-  write(path, s);
+  if (path) {
+    auto s = read(*path);
+    s.insert(id);
+    write(*path, s);
+  }
 }

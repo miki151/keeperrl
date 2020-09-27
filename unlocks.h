@@ -7,9 +7,11 @@
 class Unlocks {
   public:
   Unlocks(FilePath);
+  static Unlocks allUnlocked();
   bool isUnlocked(UnlockId) const;
   void unlock(UnlockId);
 
   private:
-  FilePath path;
+  Unlocks();
+  optional<FilePath> path;
 };

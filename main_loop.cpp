@@ -67,6 +67,7 @@ MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const Director
     TileSet* tileSet, Unlocks* unlocks, int sv, string modVersion)
       : view(v), dataFreePath(freePath), userPath(uPath), modsDir(modsDir), options(o), jukebox(j), highscores(h), fileSharing(fSharing),
         sokobanInput(soko), tileSet(tileSet), saveVersion(sv), modVersion(modVersion), unlocks(unlocks) {
+  CHECK(!!unlocks);
 }
 
 vector<SaveFileInfo> MainLoop::getSaveFiles(const DirectoryPath& path, const string& suffix) {
