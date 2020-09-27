@@ -4265,7 +4265,6 @@ SGuiElem GuiBuilder::drawCreatureList(const vector<PlayerInfo>& creatures,
     else
       line.addElemAuto(std::move(icon));
     if (line.getLength() > 12 / zoom) {
-      CHECK(line.getLength() > 12);
       minionLines.addElemAuto(WL(centerHoriz, line.buildHorizontalList()));
       minionLines.addSpace(10 * zoom - lessSpace);
       line.clear();
