@@ -72,7 +72,7 @@ Def Village1() {
     maxSize = { 8 9 }
     generator = {
       Building("castle_wall", "stone_floor")
-      Filter(AnyFloor(), Set("main_building"))
+      Filter(AnyFloor(), Set("main_building_inside"))
       Inside(-1, Set("main_building"))
     }
   )
@@ -86,10 +86,10 @@ Def Village1() {
   )
   Connector()
   Place(
-    ({1 1} Set("bed") {2 4} And(On("main_building"), NextTo(AnyWall()), Not NextTo(AnyDoor()))),
-    ({1 1} Set("stockpile") {1 3} And(On("main_building"), NextTo(AnyWall()), Not NextTo(AnyDoor())))
+    ({1 1} Set("bed") {2 4} And(On("main_building_inside"), NextTo(AnyWall()), Not NextTo(AnyDoor()))),
+    ({1 1} Set("stockpile") {1 3} And(On("main_building_inside"), NextTo(AnyWall()), Not NextTo(AnyDoor())))
   )
-  Place({1 1} Set("dining_table") 1 And(On("main_building"), Not NextTo(AnyWall())))
+  Place({1 1} Set("dining_table") 1 And(On("main_building_inside"), Not NextTo(AnyWall())))
 }
 End
 
