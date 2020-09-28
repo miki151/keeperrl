@@ -2211,7 +2211,9 @@ CreatureDebt& Creature::getDebt() {
 }
 
 Creature::MoveId Creature::getCurrentMoveId() const {
-  return {position.getModel()->getMoveCounter(), position.getModel()->getUniqueId()};
+  if (auto model = position.getModel())
+    return {model->getMoveCounter(), model->getUniqueId()};
+  return {0, 0};
 }
 
 const vector<Creature*>& Creature::getVisibleEnemies() const {
