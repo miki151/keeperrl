@@ -1262,6 +1262,7 @@
     effect = Description "Just a cheap pamphlet" Name "message" {
       Message "It predicts the coming of the Evil God Adoxie. You feel like this time it is real."
       Unlock "adoxie"
+      Analytics "milestone" "adoxieUnlocked"
     }
   }
 "AdaHelm"
