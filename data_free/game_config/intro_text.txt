@@ -1,12 +1,5 @@
-"Welcome to KeeperRL Alpha 30! This patch was released on June 3rd, 2020.
+"Welcome to the KeeperRL Alpha 31 testing build!
 
-A lot of changes have arrived with this update. Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
+This is a pre-release build for experienced players and modders that want to have a glimpse at the new stuff.
 
-* A new, playable Gnomes faction.
-* Support for loading multiple mods at once.
-* Expansion of the White Knight Keeper.
-* A hidden dungeon and two new secret levels.
-* The option to build your base in 5 different biomes.
-
-If this is your first time playing KeeperRL, remember to start with the tutorial!"
-
+If you are new to the game, it is strongly recommended to play the official Alpha 30 build for now!"
