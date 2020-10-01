@@ -331,7 +331,7 @@ class KrakenController : public Monster {
       return 7;
   }
 
-  virtual void onKilled(const Creature* attacker) override {
+  virtual void onKilled(Creature* attacker) override {
     if (attacker) {
       if (father)
         attacker->secondPerson("You cut the kraken's tentacle");
@@ -588,7 +588,7 @@ class IllusionController : public DoNothingController {
   public:
   IllusionController(Creature* c, GlobalTime deathT) : DoNothingController(c), deathTime(deathT) {}
 
-  virtual void onKilled(const Creature* attacker) override {
+  virtual void onKilled(Creature* attacker) override {
     if (attacker)
       attacker->message("It was just an illusion!");
   }

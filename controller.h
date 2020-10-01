@@ -37,7 +37,7 @@ class Controller : public OwnedObject<Controller> {
 
   virtual void privateMessage(const PlayerMessage& message) {}
 
-  virtual void onKilled(const Creature* attacker) {}
+  virtual void onKilled(Creature* attacker) {}
   virtual void onItemsGiven(vector<Item*> items, Creature* from) { }
 
   virtual bool dontReplaceInCollective() { return false; }

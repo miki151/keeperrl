@@ -67,7 +67,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual vector<Vec2> getHighlightedPathTo(Vec2) const override;
 
   // from Controller
-  virtual void onKilled(const Creature* attacker) override;
+  virtual void onKilled(Creature* attacker) override;
   virtual void makeMove() override;
   virtual void sleeping() override;
   virtual bool isPlayer() const override;

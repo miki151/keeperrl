@@ -1,4 +1,5 @@
 #include "enums.h"
+#include "event_listener.h"
 #include "stdafx.h"
 #include "warlord_controller.h"
 #include "player.h"
@@ -11,20 +12,40 @@
 #include "message_buffer.h"
 #include "visibility_map.h"
 #include "unknown_locations.h"
+#include "view.h"
+#include "game_event.h"
 
-class WarlordController : public Player {
+class WarlordController : public Player, public EventListener<WarlordController> {
   public:
   using TeamOrders = EnumSet<TeamOrder>;
   using Team = vector<Creature*>;
   WarlordController(shared_ptr<vector<Creature*>> team, shared_ptr<TeamOrders> teamOrders)
       : WarlordController((*team)[0], team, make_shared<MapMemory>(),
         make_shared<MessageBuffer>(), make_shared<VisibilityMap>(), make_shared<UnknownLocations>(),
-        teamOrders) {}
+        teamOrders) {
+  }
 
   WarlordController(Creature* c, shared_ptr<Team> team, shared_ptr<MapMemory> memory, shared_ptr<MessageBuffer> messages,
-      shared_ptr<VisibilityMap> visibility, shared_ptr<UnknownLocations> locations, shared_ptr<TeamOrders> orders)
-    : Player(c, false, memory, messages, visibility, locations), team(team), teamOrders(orders) {}
+        shared_ptr<VisibilityMap> visibility, shared_ptr<UnknownLocations> locations, shared_ptr<TeamOrders> orders)
+      : Player(c, false, memory, messages, visibility, locations), team(team), teamOrders(orders) {
+  }
 
+  void onEvent(const GameEvent& event) {
+    using namespace EventInfo;
+    event.visit<void>(
+        [&](const CreatureKilled& info) {
+          if (!info.victim->isPlayer()) // only use this event to remove non-controlled team members
+            team->removeElementMaybe(info.victim);
+        },
+        [](auto&) {}
+    );
+  }
+
+  virtual void makeMove() override {
+    if (!EventListener<WarlordController>::isSubscribed())
+      EventListener<WarlordController>::subscribeTo(creature->getPosition().getModel());
+    Player::makeMove();
+  }
 
   virtual vector<TeamMemberAction> getTeamMemberActions(const Creature* member) const override {
     vector<TeamMemberAction> ret;
@@ -32,6 +53,31 @@ class WarlordController : public Player {
     if (member->isPlayer() && member != creature && getModel()->getTimeQueue().willMoveThisTurn(member))
       ret.push_back(TeamMemberAction::MOVE_NOW);
     return ret;
+  }
+
+  virtual void onKilled(Creature* attacker) override {
+    Player::onKilled(attacker);
+    team->removeElement(creature);
+    if (!team->empty() && !isFullControl()) {
+      vector<PlayerInfo> teamInfos;
+      for (auto c : *team)
+        teamInfos.push_back(PlayerInfo(c, getGame()->getContentFactory()));
+      if (teamInfos.empty()) {
+        getGame()->gameOver(creature, creature->getKills().size(), "monsters", creature->getPoints());
+        return;
+      }
+      optional<Creature::Id> newLeader;
+      if (teamInfos.size() == 1)
+        newLeader = teamInfos[0].creatureId;
+      else
+        newLeader = getView()->chooseCreature("Choose new team leader:", teamInfos, "Order team back to base");
+      if (newLeader)
+        for (auto c : *team)
+          if (c->getUniqueId() == *newLeader) {
+            setLeader(c);
+            break;
+          }
+    }
   }
 
   virtual void refreshGameInfo(GameInfo& gameInfo) const override {
@@ -47,17 +93,23 @@ class WarlordController : public Player {
         unknownLocations, teamOrders));
   }
 
+  void setLeader(Creature* c) {
+    if (c != creature) {
+      swap((*team)[0], (*team)[*team->findElement(c)]);
+      if (!isFullControl()) {
+        control(c);
+        creature->popController();
+      }
+    }
+  }
+
   void teamMemberAction(TeamMemberAction action, Creature* c) {
     switch (action) {
       case TeamMemberAction::MOVE_NOW:
         c->getPosition().getModel()->getTimeQueue().moveNow(c);
         break;
       case TeamMemberAction::CHANGE_LEADER:
-        swap((*team)[0], (*team)[*team->findElement(c)]);
-        if (!isFullControl()) {
-          control(c);
-          creature->popController();
-        }
+        setLeader(c);
         break;
       case TeamMemberAction::REMOVE_MEMBER:
         FATAL;

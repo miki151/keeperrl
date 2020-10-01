@@ -1170,7 +1170,7 @@ void Player::generateHalluIds() {
   }
 }
 
-void Player::onKilled(const Creature* attacker) {
+void Player::onKilled(Creature* attacker) {
   unsubscribe();
   getView()->updateView(this, false);
   if (getGame()->getPlayerCreatures().size() == 1 && getView()->yesOrNoPromptBelow("Display message history?"))
