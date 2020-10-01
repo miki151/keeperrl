@@ -186,13 +186,13 @@ class WarlordController : public Player, public EventListener<WarlordController>
   virtual void updateUnknownLocations() override {
   }
 
-  SERIALIZE_ALL(SUBCLASS(Player), team, teamOrders)
+  SERIALIZE_ALL(SUBCLASS(Player), SUBCLASS(EventListener<WarlordController>), team, teamOrders)
   SERIALIZATION_CONSTRUCTOR(WarlordController)
 
   shared_ptr<Team> SERIAL(team);
   shared_ptr<TeamOrders> SERIAL(teamOrders);
 };
-
+REGISTER_TYPE(ListenerTemplate<WarlordController>)
 REGISTER_TYPE(WarlordController)
 PController getWarlordController(shared_ptr<vector<Creature*>> team, shared_ptr<EnumSet<TeamOrder>> teamOrders) {
   return makeOwner<WarlordController>(std::move(team), std::move(teamOrders));
