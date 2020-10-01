@@ -315,14 +315,12 @@ void Game::initializeModels() {
         level->getSectors(MovementType(MovementTrait::WALK).setForced());
         level->getSectors(MovementType(MovementTrait::FLY));
       }
-      if (getCurrentModel() != model) {
-        // Use top level's id as unique id of the model.
-        auto id = model->getTopLevel()->getUniqueId();
-        if (!localTime.count(id)) {
-          localTime[id] = (model->getLocalTime() + initialModelUpdate).getDouble();
-          updateModel(model, localTime[id]);
-        }
-     }
+      // Use top level's id as unique id of the model.
+      auto id = model->getTopLevel()->getUniqueId();
+      if (!localTime.count(id))
+        localTime[id] = (model->getLocalTime() + initialModelUpdate).getDouble();
+      if (getCurrentModel() != model)
+        updateModel(model, localTime[id]);
     }
 }
 
