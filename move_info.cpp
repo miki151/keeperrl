@@ -21,7 +21,7 @@ MoveInfo MoveInfo::withValue(double v) const {
 
 MoveInfo MoveInfo::orWait() const {
   if (!move)
-    return MoveInfo(value, Creature::wait());
+    return MoveInfo(1.0, Creature::wait());
   else
     return *this;
 }

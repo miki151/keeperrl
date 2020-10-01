@@ -1060,7 +1060,7 @@ class WarlordBehaviour : public Behaviour {
   virtual MoveInfo getMove() override {
     auto fighterMove = fighter->getMove(orders->isEmpty());
     if (orders->contains(TeamOrder::STAND_GROUND) || fighterMove.getValue() > 0.1)
-      return fighterMove;
+      return fighterMove.orWait();
     auto target = (*team)[0];
     CHECK(target != creature);
     return creature->moveTowards(target->getPosition());
