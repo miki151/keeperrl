@@ -18,7 +18,13 @@ struct WaterZLevel {
   SERIALIZE_ALL(NAMED(waterType), NAMED(creatures))
 };
 
-MAKE_VARIANT2(ZLevelType, FullZLevel, WaterZLevel);
+struct EnemyZLevel {
+  EnemyId SERIAL(enemy);
+  double SERIAL(attackChance) = 0;
+  SERIALIZE_ALL(NAMED(enemy), OPTION(attackChance))
+};
+
+MAKE_VARIANT2(ZLevelType, FullZLevel, WaterZLevel, EnemyZLevel);
 
 struct ZLevelInfo {
   ZLevelType SERIAL(type);

@@ -25,6 +25,19 @@ static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCount
             none, levelInfo.width
         };
       },
+      [&](const EnemyZLevel& level) {
+        auto enemy = getEnemy(level.enemy, contentFactory);
+        enemy.settlement.upStairs.push_back(stairKey);
+        CHECK(level.attackChance < 0.0001 || !!enemy.behaviour)
+            << "Z-level enemy " << level.enemy.data() << " has positive attack chance, but no attack behaviour defined";
+        if (Random.chance(level.attackChance)) {
+          enemy.behaviour->triggers.push_back(Immediate{});
+        }
+        return LevelMakerResult{
+            LevelMaker::settlementLevel(*contentFactory, Random, enemy.settlement, Vec2(levelInfo.width, levelInfo.width)),
+            none, levelInfo.width
+        };
+      },
       [&](const FullZLevel& level) {
         optional<SettlementInfo> settlement;
         optional<EnemyInfo> enemy;
