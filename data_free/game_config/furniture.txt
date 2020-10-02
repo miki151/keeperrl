@@ -809,6 +809,14 @@
     Analytics "milestone" "bookcaseStairs"
   }
 }
+"DINING_TABLE_STAIRS" inherit "DINING_TABLE"
+{
+  destroyedRemains = "DOWN_STAIRS"
+  destroyedEffect = {
+    Message "The table is destroyed!"
+    Analytics "milestone" "diningTableStairs"
+  }
+}
 "ARMOR_CHEST"
 {
   name = "chest"
@@ -841,6 +849,21 @@
     CreatureMessage "find some pamphlets inside" "finds some pamphlets inside"
     DropItems {"AdoxieScroll"} {10 20}
     RemoveFurniture "PAMPHLET_CHEST"
+  }
+  fire = 50
+  strength = 30
+  destroyedRemains = "OPENED_CHEST"
+}
+"KNIFE_CHEST"
+{
+  name = "chest"
+  viewId = { "chest" }
+  canHideHere = true
+  usageType = UsageEffect "open" {
+    CreatureMessage "open the chest" "opens the chest"
+    CreatureMessage "find an item inside" "finds an item inside"
+    DropItems {"AssassinsKnife"} 1
+    RemoveFurniture "KNIFE_CHEST"
   }
   fire = 50
   strength = 30

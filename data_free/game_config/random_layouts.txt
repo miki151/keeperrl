@@ -423,6 +423,18 @@ End
 "guard_post_floor2" GuardPostFloor2()
 "guard_post_floor3" GuardPostFloor3()
 
+Def CottageCellar() {
+  Building("wood_wall", "wood_floor")
+  Place (
+    ({1 1} Set("up_stairs0") 1 And(AnyFloor(), NextTo(AnyWall()))),
+    ({1 1} Set("knife_chest") 1 And(AnyFloor(), NextTo(AnyWall()))),
+    ({1 1} Set("pamphlet_chest") {2 4} And(AnyFloor(), NextTo(AnyWall())))
+  )
+}
+End
+
+"cottage_cellar" CottageCellar()
+
 Def DungeonContent()
   Place (
     (

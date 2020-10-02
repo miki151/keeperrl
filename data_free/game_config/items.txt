@@ -540,6 +540,16 @@
       1 VictimEffect 0.1 Lasting POISON
     }
   }
+"AssassinsKnife" inherit "Knife"
+  {
+    name = "assassin's knife"
+    plural = "assassin's knives"
+    price = 500
+    equipedEffect = {AMBUSH_SKILL}
+    specialAttr = {
+      DAMAGE 30 Name "against tribe leaders when hidden" And { CreatureStatus LEADER Attacker Hidden }
+    }
+  }
 "UnicornHorn"
   {
     viewId = { "knife" }

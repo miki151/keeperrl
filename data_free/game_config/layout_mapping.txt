@@ -29,6 +29,7 @@
   "inside_furniture" InsideFurniture
   "armor_chest" Place "ARMOR_CHEST"
   "pamphlet_chest" Place "PAMPHLET_CHEST"
+  "knife_chest" Place "KNIFE_CHEST"
   "torch" Place "GROUND_TORCH"
   "throne" Place "THRONE"
   "corpse" Items 1 "corpse"

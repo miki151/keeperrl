@@ -6,6 +6,10 @@
     gate = { "WOOD_GATE" 1.0 }
     water = {WATER}
   }
+"WOOD_HIDDEN_STAIRS" inherit "WOOD"
+  {
+    downStairs = {"DINING_TABLE_STAIRS"}
+  }
 "NATIVE"
   {
     wall = "WOOD_WALL"

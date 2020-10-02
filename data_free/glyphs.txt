@@ -30,6 +30,7 @@
 "armor_chest" = brown
 "treasure_chest" = yellow
 "pamphlet_chest" = brown
+"knife_chest" = green
 "torch" * yellow
 "lava" ~ red
 "shop0" ~ blue

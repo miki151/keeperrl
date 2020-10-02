@@ -398,6 +398,7 @@
     furniture = "castleFurniture"
     outsideFeatures = "castleOutside"
   }
+  otherEnemy = "KNIFE_COTTAGE"
   config = {
     immigrantInterval = 300
     maxPopulation = 26
@@ -556,6 +557,13 @@
 {
   settlement = {
     type = RandomLayout { "guard_post_floor3" { 4 4 } "default"}
+    tribe = HUMAN
+  }
+}
+"COTTAGE_CELLAR"
+{
+  settlement = {
+    type = RandomLayout { "cottage_cellar" { 4 4 } "default"}
     tribe = HUMAN
   }
 }
@@ -1799,6 +1807,20 @@
   config = {
     guardianInfo = "WITCHMAN" 0.003 1 2
   }
+}
+"KNIFE_COTTAGE" inherit "HUMAN_COTTAGE"
+{
+  settlement = append {
+    type = Builtin COTTAGE "WOOD_HIDDEN_STAIRS"
+  }
+  levelConnection = {
+    topLevel = MainEnemy
+    direction = DOWN
+    levels = {
+      { ExtraEnemy { "COTTAGE_CELLAR" {1} } {10 10} BASIC }
+    }
+  }
+ 
 }
 "ESKIMO_COTTAGE" inherit "HUMAN_COTTAGE"
 {
