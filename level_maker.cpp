@@ -2000,7 +2000,6 @@ static PMakerQueue cottage(SettlementInfo info, const BuildingInfo& building) {
   if (building.floorOutside)
     queue->addMaker(unique<Empty>(*building.floorOutside));
   auto room = getElderRoom(info);
-  addStairs(*queue, info, building, Predicate::attrib(SquareAttrib::ROOM));
   if (info.furniture)
     room->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::ROOM), 0.3, *info.furniture, info.tribe));
   if (building.prettyFloor)
@@ -2010,6 +2009,7 @@ static PMakerQueue cottage(SettlementInfo info, const BuildingInfo& building) {
     queue->addMaker(unique<Furnitures>(!Predicate::attrib(SquareAttrib::ROOM), 0.1, *info.outsideFeatures, info.tribe));
   queue->addMaker(unique<PlaceCollective>(info.collective));
   queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
+  addStairs(*queue, info, building, Predicate::attrib(SquareAttrib::ROOM));
   return queue;
 }
 
