@@ -2,10 +2,12 @@
   "floor" { Place "FLOOR" Flag EMPTY_ROOM }
   "wood_floor" { Place "FLOOR" Place "FLOOR_WOOD1" Flag EMPTY_ROOM }
   "stone_floor" { Place "FLOOR" Place "FLOOR_STONE1" Flag EMPTY_ROOM }
+  "set_territory" Flag EMPTY_ROOM
   "no_territory" RemoveFlag EMPTY_ROOM
   "clear_furniture" ClearFurniture
   "dining_table" Place "DINING_TABLE"
   "rock" Place "MOUNTAIN"
+  "hard_rock" Place "MOUNTAIN2"
   "water" { ClearFurniture Place "WATER"}
   "lava" { ClearFurniture Place "MAGMA"}
   "stockpile" Stockpile 0

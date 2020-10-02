@@ -838,6 +838,20 @@
   }
   discoverable = false
 }
+"Z_LEVEL_LAVA"
+{
+  settlement = {
+    type = RandomLayout { "z_level_lava" { 55 55 } "default" }
+    tribe = MONSTER
+    inhabitants = {
+      leader = { { "RED_DRAGON" } }
+      fighters = {
+        count = {4 5}
+        all = { 1 "FIRE_ELEMENTAL" }
+      }
+    }
+  }
+}
 "MAIN_DUNGEON"
 {
   settlement = {

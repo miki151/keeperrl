@@ -580,3 +580,14 @@ End
     Dungeon4("lava"),
     Dungeon4("water")
   )
+
+Def ZLevelLakes(Type) {
+  Set("hard_rock")
+  CellularAutomaton(Reset(Type), 0.55)
+  Inside(15, Place({1 1} Reset("floor", "up_stairs0") 1 On("hard_rock")))
+  Filter(On(Type), Set("set_territory"))
+}
+End
+
+"z_level_lava" ZLevelLakes("lava")
+"z_level_water" ZLevelLakes("water")

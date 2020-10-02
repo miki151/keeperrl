@@ -65,15 +65,8 @@ ALL
     width = 60
   }
   {
-    type = WaterZLevel {
-      waterType = "MAGMA"
-      creatures = {
-        count = {10 11}
-        all = {
-          10 "FIRE_ELEMENTAL"
-          1 "RED_DRAGON"
-        }
-      }
+    type = EnemyZLevel {
+      enemy = "Z_LEVEL_LAVA"
     }
     minDepth = 10
     width = 60
