@@ -4,6 +4,7 @@
   "stone_floor" { Place "FLOOR" Place "FLOOR_STONE1" Flag EMPTY_ROOM }
   "set_territory" Flag EMPTY_ROOM
   "no_territory" RemoveFlag EMPTY_ROOM
+  "resources" RemoveFlag NO_RESOURCES
   "clear_furniture" ClearFurniture
   "dining_table" Place "DINING_TABLE"
   "rock" Place "MOUNTAIN"
@@ -32,6 +33,7 @@
   "armor_chest" Place "ARMOR_CHEST"
   "pamphlet_chest" Place "PAMPHLET_CHEST"
   "knife_chest" Place "KNIFE_CHEST"
+  "ada_chest" Place "ADA_CHEST"
   "torch" Place "GROUND_TORCH"
   "throne" Place "THRONE"
   "corpse" Items 1 "corpse"

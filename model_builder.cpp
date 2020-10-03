@@ -55,7 +55,7 @@ ModelBuilder::LevelMakerMethod ModelBuilder::getMaker(LevelType type) {
   switch (type) {
     case LevelType::BASIC:
       return [this](RandomGen& random, SettlementInfo info, Vec2 size) {
-        return LevelMaker::settlementLevel(*contentFactory, random, info, size);
+        return LevelMaker::settlementLevel(*contentFactory, random, info, size, none, none);
       };
     case LevelType::TOWER:
       return &LevelMaker::towerLevel;

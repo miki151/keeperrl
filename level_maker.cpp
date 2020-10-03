@@ -2465,8 +2465,9 @@ static void generateResources(RandomGen& random, ResourceCounts resourceCounts, 
         change.add(SquareChange::addTerritory(collective));
       auto queue = unique<MakerQueue>(unique<FurnitureBlob>(std::move(change)));
       locations->add(std::move(queue), {random.get(size), random.get(size)},
-          Predicate::type(FurnitureType("MOUNTAIN2")));
-      locations->setMaxDistanceLast(center, maxDist);
+          Predicate::type(FurnitureType("MOUNTAIN2")) && !Predicate::attrib(SquareAttrib::NO_RESOURCES));
+      if (center)
+        locations->setMaxDistanceLast(center, maxDist);
       locations->setLastOptional();
     }
   };
@@ -2965,9 +2966,9 @@ static PLevelMaker underground(RandomGen& random, Vec2 size, FurnitureType floor
 }
 
 PLevelMaker LevelMaker::settlementLevel(const ContentFactory& factory, RandomGen& random, SettlementInfo settlement,
-    Vec2 size) {
+    Vec2 size, optional<ResourceCounts> resources, optional<TribeId> resourceTribe) {
   auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR")).add(FurnitureType("MOUNTAIN2"))));
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR")).add(FurnitureType("MOUNTAIN2")).add(SquareAttrib::NO_RESOURCES)));
   auto locations = unique<RandomLocations>();
   auto maker = getSettlementMaker(factory, random, settlement);
   maker = unique<MakerQueue>(unique<Empty>(SquareChange::reset(FurnitureType("FLOOR"))), std::move(maker));
@@ -2975,6 +2976,11 @@ PLevelMaker LevelMaker::settlementLevel(const ContentFactory& factory, RandomGen
     maker->addMaker(unique<Corpses>(*settlement.corpses));
   locations->add(std::move(maker), getSize(factory.mapLayouts, random, settlement.type), Predicate::alwaysTrue());
   queue->addMaker(std::move(locations));
+  if (resources) {
+    auto resLocations = unique<RandomLocations>();
+    generateResources(random, *resources, nullptr, resLocations.get(), {}, 0, *resourceTribe);
+    queue->addMaker(std::move(resLocations));
+  }
   return std::move(queue);
 }
 

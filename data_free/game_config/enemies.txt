@@ -852,6 +852,13 @@
     }
   }
 }
+"Z_LEVEL_FULL"
+{
+  settlement = {
+    type = RandomLayout { "z_level_full" { 80 80 } "default" }
+    tribe = MONSTER
+  }
+}
 "MAIN_DUNGEON"
 {
   settlement = {

@@ -57,6 +57,7 @@ class LevelMaker {
   static PLevelMaker getFullZLevel(RandomGen&, optional<SettlementInfo>, ResourceCounts, int mapWidth, TribeId keeperTribe,
       StairKey, const ContentFactory&);
   static PLevelMaker getWaterZLevel(RandomGen&, FurnitureType waterType, int mapWidth, CreatureList, StairKey);
-  static PLevelMaker settlementLevel(const ContentFactory&, RandomGen&, SettlementInfo, Vec2 size);
+  static PLevelMaker settlementLevel(const ContentFactory&, RandomGen&, SettlementInfo, Vec2 size,
+      optional<ResourceCounts> resources, optional<TribeId> resourceTribe);
 };
 

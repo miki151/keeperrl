@@ -5,7 +5,8 @@ ALL
 {
   # This is a filled level that can appear at all depths
   {
-    type = FullZLevel {
+    type = EnemyZLevel {
+      enemy = "Z_LEVEL_FULL"
     }
   }
   {

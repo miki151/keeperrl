@@ -34,7 +34,8 @@ static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCount
           enemy.behaviour->triggers.push_back(Immediate{});
         }
         return LevelMakerResult{
-            LevelMaker::settlementLevel(*contentFactory, Random, enemy.settlement, Vec2(levelInfo.width, levelInfo.width)),
+            LevelMaker::settlementLevel(*contentFactory, Random, enemy.settlement, Vec2(levelInfo.width, levelInfo.width),
+                resources, tribe),
             none, levelInfo.width
         };
       },

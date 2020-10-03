@@ -16,7 +16,8 @@ Def Connector()
     (8, On("water"), Set("wood_bridge")),
     (6, And(Not AnyWall(), Not AnyWater(), Not AnyFloor(), Not On("no_dig"), On("room_wall")),
         Filter(And(Chance(0.4), Not NextTo(On("wood_door"))), Reset("wood_door"), Reset("floor"))),
-    (4, And(Not AnyWall(), Not AnyFloor(), On("rock"), Not On("no_dig"), Not On("room_wall")), Reset("floor"))
+    (4, And(Not AnyWall(), Not AnyFloor(), Or(On("rock"), On("hard_rock")),
+            Not On("no_dig"), Not On("room_wall")), Reset("floor"))
   )
 End
 
@@ -591,3 +592,25 @@ End
 
 "z_level_lava" ZLevelLakes("lava")
 "z_level_water" ZLevelLakes("water")
+
+Def ZLevelFull(Type) {
+  Set("hard_rock")
+  Position(MIDDLE, {1, 1}, {
+    Border(-35, Set("resources"))
+    Reset("floor", "up_stairs0")
+  })
+  Place(
+     (none, CellularAutomaton(Reset(Type), 0.55), {0 10}, Not On("up_stairs0"), {5 5}, {20 20}),
+     (none, CellularAutomaton(Reset("floor"), 0.55), {2 5}, Not On("up_stairs0"), {5 5}, {20 20})
+  )
+  Maybe(0.25, Place({6 6},
+    Margin(1, Set(Type), { Reset("hard_rock") Inside(1, Set("ada_chest"))}), 1, On(Type)))
+  Maybe(0.15, Place({20 15}, {
+    Place(none, Reset("floor"), {2 5}, True, {2 2}, {5 5}, 1)
+    Place({1 1}, Set("corpse"), {1 4}, On("floor"))
+    Connector()
+  }, 1, On("hard_rock")))
+}
+End
+
+"z_level_full" Choose(ZLevelFull("water"), ZLevelFull("lava"))

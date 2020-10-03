@@ -869,6 +869,31 @@
   strength = 30
   destroyedRemains = "OPENED_CHEST"
 }
+"ADA_CHEST"
+{
+  name = "chest"
+  viewId = { "chest" }
+  canHideHere = true
+  usageType = UsageEffect "open" {
+    CreatureMessage "open the chest" "opens the chest"
+    CreatureMessage "find an item inside" "finds an item inside"
+    ChooseRandom {
+      DropItems {"AdaSword"} 1
+      DropItems {"AdaBattleAxe"} 1
+      DropItems {"AdaWarHammer"} 1
+      DropItems {"AdaGloves"} 1
+      DropItems {"AdaShield"} 1
+      DropItems {"AdaArmor"} 1
+      DropItems {"AdaHelm"} 1
+      DropItems {"AdaBoots"} 1
+    }
+    Analytics "milestone" "adaChest"
+    RemoveFurniture "ADA_CHEST"
+  }
+  fire = 50
+  strength = 30
+  destroyedRemains = "OPENED_CHEST"
+}
 "OPENED_CHEST"
 {
   name = "opened chest"
