@@ -1,7 +1,8 @@
 "floor" . white
 "wood_floor" . brown
 "stone_floor" . gray
-"rock" # gray
+"rock" # brown
+"hard_rock" # gray
 "water" ~ blue
 "grass" = green
 "sand" = yellow
