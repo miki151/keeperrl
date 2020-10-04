@@ -859,6 +859,19 @@
     tribe = MONSTER
   }
 }
+"Z_LEVEL_ZOMBIE"
+{
+  settlement = {
+    type = RandomLayout { "z_level_castle" { 80 80 } "default" }
+    tribe = MONSTER
+    inhabitants = {
+      fighters = {
+        count = {50}
+        all = { 1 "SWARMER_ZOMBIE" }
+      }
+    }
+  }
+}
 "MAIN_DUNGEON"
 {
   settlement = {

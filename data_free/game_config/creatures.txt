@@ -2112,6 +2112,12 @@
     }
     hatedByEffect = HATE_UNDEAD
   }
+"SWARMER_ZOMBIE" inherit "ZOMBIE"
+  {
+    permanentEffects = append {
+      SWARMER 1
+    }
+  }
 "SKELETON"
   {
     viewId = { "skeleton" }

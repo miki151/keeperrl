@@ -593,7 +593,7 @@ End
 "z_level_lava" ZLevelLakes("lava")
 "z_level_water" ZLevelLakes("water")
 
-Def ZLevelFull(Type) {
+Def ZLevelBase(Type) {
   Set("hard_rock")
   Position(MIDDLE, {1, 1}, {
     Border(-35, Set("resources"))
@@ -603,6 +603,10 @@ Def ZLevelFull(Type) {
      (none, CellularAutomaton(Reset(Type), 0.55), {0 10}, Not On("up_stairs0"), {5 5}, {20 20}),
      (none, CellularAutomaton(Reset("floor"), 0.55), {2 5}, Not On("up_stairs0"), {5 5}, {20 20})
   )
+}
+End
+Def ZLevelFull(Type) {
+  ZLevelBase(Type)
   Maybe(0.25, Place({6 6},
     Margin(1, Set(Type), { Reset("hard_rock") Inside(1, Set("ada_chest"))}), 1, On(Type)))
   Maybe(0.15, Place({20 15}, {
@@ -614,3 +618,34 @@ Def ZLevelFull(Type) {
 End
 
 "z_level_full" Choose(ZLevelFull("water"), ZLevelFull("lava"))
+
+Def MoveDown(Cnt, Generator)
+  Inside(BOTTOM, -Cnt, Inside(TOP, Cnt, Generator))
+End
+
+Def ZLevelCastleLeft(Type) {
+  Reset("hard_rock")
+  Margin(LEFT, 6,
+      CellularAutomaton(Reset(Type, "castle_moat"), 0.85),
+      {
+        Position(LEFT_CENTER, {1 2}, MoveDown(20, {
+            Border(LEFT, -5, Set(Type))
+            Set("iron_gate_blocking")
+            Border(RIGHT, -10, Inside(LEFT, 2, Inside(-2, {
+                Reset("floor", "castle_inside")
+                Position(RIGHT_CENTER, {1 1}, Set("swarmer_chest"))
+            })))
+        }))
+      }
+  )
+}
+End
+
+Def ZLevelCastle(Type) {
+  ZLevelBase(Type)
+  SplitH(0.6, {}, ZLevelCastleLeft(Type))
+  Filter(Not On("castle_inside"), Set("no_territory"))
+}
+End
+
+"z_level_castle" ZLevelCastle("lava")

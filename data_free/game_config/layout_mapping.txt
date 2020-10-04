@@ -23,6 +23,7 @@
   "treasure_chest" Place "TREASURE_CHEST"
   "iron_door" Place "IRON_DOOR"
   "iron_gate" Place "IRON_GATE"
+  "iron_gate_blocking" Place "IRON_GATE_BLOCKING"
   "down_stairs0" Stairs DOWN "DOWN_STAIRS" 0
   "up_stairs0" Stairs UP "UP_STAIRS" 0
   "down_stairs1" Stairs DOWN "DOWN_STAIRS" 1
@@ -34,6 +35,7 @@
   "pamphlet_chest" Place "PAMPHLET_CHEST"
   "knife_chest" Place "KNIFE_CHEST"
   "ada_chest" Place "ADA_CHEST"
+  "swarmer_chest" Place "SWARMER_CHEST"
   "torch" Place "GROUND_TORCH"
   "throne" Place "THRONE"
   "corpse" Items 1 "corpse"

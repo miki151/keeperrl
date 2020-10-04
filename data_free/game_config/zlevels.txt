@@ -40,12 +40,24 @@ ALL
     }
     # Possible depths for this level, inclusive. The first level when you dig down is 1.
     minDepth = 5
+    maxDepth = 5
+    guarantee = true
+  }
+  {
+    type = EnemyZLevel {
+      enemy = "Z_LEVEL_ZOMBIE"
+    }
+    minDepth = 8
+    maxDepth = 8
+    guarantee = true
   }
   { # adamantium, the ores are added automatically around the golems
     type = FullZLevel {
       enemy = "ADA_GOLEMS"
     }
     minDepth = 10
+    maxDepth = 10
+    guarantee = true
   }
   {
     # A level full of water with some islands

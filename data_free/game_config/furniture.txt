@@ -839,41 +839,26 @@
   strength = 30
   destroyedRemains = "OPENED_CHEST"
 }
-"PAMPHLET_CHEST"
+"PAMPHLET_CHEST" inherit "ARMOR_CHEST"
 {
-  name = "chest"
-  viewId = { "chest" }
-  canHideHere = true
   usageType = UsageEffect "open" {
     CreatureMessage "open the chest" "opens the chest"
     CreatureMessage "find some pamphlets inside" "finds some pamphlets inside"
     DropItems {"AdoxieScroll"} {10 20}
     RemoveFurniture "PAMPHLET_CHEST"
   }
-  fire = 50
-  strength = 30
-  destroyedRemains = "OPENED_CHEST"
 }
-"KNIFE_CHEST"
+"KNIFE_CHEST" inherit "ARMOR_CHEST"
 {
-  name = "chest"
-  viewId = { "chest" }
-  canHideHere = true
   usageType = UsageEffect "open" {
     CreatureMessage "open the chest" "opens the chest"
     CreatureMessage "find an item inside" "finds an item inside"
     DropItems {"AssassinsKnife"} 1
     RemoveFurniture "KNIFE_CHEST"
   }
-  fire = 50
-  strength = 30
-  destroyedRemains = "OPENED_CHEST"
 }
-"ADA_CHEST"
+"ADA_CHEST" inherit "ARMOR_CHEST"
 {
-  name = "chest"
-  viewId = { "chest" }
-  canHideHere = true
   usageType = UsageEffect "open" {
     CreatureMessage "open the chest" "opens the chest"
     CreatureMessage "find an item inside" "finds an item inside"
@@ -890,9 +875,16 @@
     Analytics "milestone" "adaChest"
     RemoveFurniture "ADA_CHEST"
   }
-  fire = 50
-  strength = 30
-  destroyedRemains = "OPENED_CHEST"
+}
+"SWARMER_CHEST" inherit "ARMOR_CHEST"
+{
+  usageType = UsageEffect "open" {
+    CreatureMessage "open the chest" "opens the chest"
+    CreatureMessage "find an item inside" "finds an item inside"
+    DropItems {Potion Permanent SWARMER} 1
+    Analytics "milestone" "swarmerChest"
+    RemoveFurniture "SWARMER_CHEST"
+  }
 }
 "OPENED_CHEST"
 {
@@ -1018,6 +1010,10 @@
   clickType = LOCK
   requiredSupport = { { { W } } { { N } {"iron_gate_n"} } { { E } {"iron_gate_e"} } { { S } {"iron_gate_s"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
+"IRON_GATE_BLOCKING" inherit "IRON_GATE"
+{
+  blockMovement = true
 }
 "ADA_DOOR"
 {

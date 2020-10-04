@@ -12,6 +12,7 @@
 "wood_door" + brown
 "iron_door" + gray
 "iron_gate" ⩲ gray
+"iron_gate_blocking" ⩲ gray
 "bed" = white
 "dining_table" = brown
 "stockpile" $ yellow
@@ -33,6 +34,7 @@
 "ada_chest" = blue
 "pamphlet_chest" = brown
 "knife_chest" = green
+"swarmer_chest" = red
 "torch" * yellow
 "lava" ~ red
 "shop0" ~ blue
