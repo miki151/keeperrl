@@ -191,6 +191,7 @@ vector<StreamChar> PrettyInputArchive::preprocess(const vector<StreamChar>& cont
               auto beginOccurrence = bodyIndex;
               if (!bodyInQuote && scanWord(body, bodyIndex) == def->args[argNum]) {
                 replaceInStream(body, beginOccurrence, bodyIndex - beginOccurrence, args[argNum]);
+                bodyIndex = beginOccurrence + args[argNum].size();
               }
             }
           }
