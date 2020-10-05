@@ -1144,7 +1144,7 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
   if (WTask task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
   //if (canClaimSquare(pos))
-    claimSquare(pos);
+  claimSquare(pos);
 }
 
 void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAction& action) {

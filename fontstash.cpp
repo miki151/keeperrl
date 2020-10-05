@@ -334,12 +334,12 @@ int sth_add_glyph_for_codepoint(struct sth_stash* stash,
                                 int x, int y, int w, int h,
                                 float xoffset, float yoffset, float xadvance)
 {
-    struct sth_texture* texture = nullptr;
+  struct sth_texture* texture = nullptr;
   struct sth_font* fnt = nullptr;
   struct sth_glyph* glyph = nullptr;
 
   if (stash == nullptr)
-        return STH_EINVAL;
+    return STH_EINVAL;
 	texture = stash->bm_textures;
   while (texture != nullptr && texture->id != id) texture = texture->next;
   if (texture == nullptr)
@@ -357,9 +357,9 @@ int sth_add_glyph_for_codepoint(struct sth_stash* stash,
 	fnt = stash->fonts;
   while (fnt != nullptr && fnt->idx != idx) fnt = fnt->next;
   if (fnt == nullptr)
-        return STH_EINVAL;
+    return STH_EINVAL;
 	if (fnt->type != BMFONT)
-        return STH_EINVAL;
+    return STH_EINVAL;
 	
 	// Alloc space for new glyph.
 	fnt->nglyphs++;
@@ -622,7 +622,7 @@ static void flush_draw(struct sth_stash* stash)
 void sth_begin_draw(struct sth_stash* stash)
 {
   if (stash == nullptr)
-        return;
+    return;
 	if (stash->drawing)
 		flush_draw(stash);
 	stash->drawing = 1;
@@ -631,9 +631,9 @@ void sth_begin_draw(struct sth_stash* stash)
 void sth_end_draw(struct sth_stash* stash)
 {
   if (stash == nullptr)
-        return;
+    return;
 	if (!stash->drawing)
-        return;
+    return;
 
 /*
 	// Debug dump.
@@ -673,12 +673,11 @@ void sth_draw_text(struct sth_stash* stash,
   struct sth_font* fnt = nullptr;
 	
   if (stash == nullptr)
-        return;
-
+    return;
 	fnt = stash->fonts;
   while(fnt != nullptr && fnt->idx != idx) fnt = fnt->next;
   if (fnt == nullptr)
-        return;
+    return;
 	if (fnt->type != BMFONT && !fnt->data)
         return;
 	
@@ -725,14 +724,14 @@ void sth_dim_text(struct sth_stash* stash,
 	*minx = *maxx = *miny = *maxy = 0;	/* @rlyeh: reset vars before failing */
 
   if (stash == nullptr)
-        return;
+    return;
 	fnt = stash->fonts;
   while(fnt != nullptr && fnt->idx != idx)
-        fnt = fnt->next;
+    fnt = fnt->next;
   if (fnt == nullptr)
-        return;
+    return;
 	if (fnt->type != BMFONT && !fnt->data)
-        return;	
+    return;	
 	for (; *s; ++s)
 	{
 		if (decutf8(&state, &codepoint, *(unsigned char*)s))
@@ -757,13 +756,13 @@ void sth_vmetrics(struct sth_stash* stash,
   struct sth_font* fnt = nullptr;
 
   if (stash == nullptr)
-        return;
+    return;
 	fnt = stash->fonts;
   while(fnt != nullptr && fnt->idx != idx) fnt = fnt->next;
   if (fnt == nullptr)
-        return;
+    return;
 	if (fnt->type != BMFONT && !fnt->data)
-        return;
+    return;
 	if (ascender)
 		*ascender = fnt->ascender*size;
 	if (descender)

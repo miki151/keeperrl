@@ -1,6 +1,6 @@
 
 
-CFLAGS += -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512 -Wno-implicit-conversion-floating-point-to-bool -Wno-string-conversion -Wno-bool-conversion -ftemplate-backtrace-limit=0 -Wunused-function
+CFLAGS += -Wall -std=c++1y -Wno-sign-compare -Wno-unused-variable -Wno-shift-count-overflow -Wno-tautological-constant-out-of-range-compare -Wno-mismatched-tags -ftemplate-depth=512 -Wno-implicit-conversion-floating-point-to-bool -Wno-string-conversion -Wno-bool-conversion -ftemplate-backtrace-limit=0 -Wunused-function -I/usr/include/SDL2
 
 # Remove if you wish to build KeeperRL without steamworks integration.
 ifndef NO_STEAMWORKS
@@ -8,7 +8,7 @@ STEAMWORKS = true
 endif
 
 ifndef GCC
-GCC = g++
+GCC = clang++
 endif
 LD = $(GCC)
 

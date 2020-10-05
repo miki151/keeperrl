@@ -657,12 +657,12 @@ void Player::makeMove() {
   else
     considerKeeperModeTravelMusic();
   //if (updateView) { Check disabled so that we update in every frame to avoid some square refreshing issues.
-    updateView = false;
-    for (Position pos : creature->getVisibleTiles())
-      updateSquareMemory(pos);
-    MEASURE(
-        getView()->updateView(this, false),
-        "level render time");
+  updateView = false;
+  for (Position pos : creature->getVisibleTiles())
+    updateSquareMemory(pos);
+  MEASURE(
+      getView()->updateView(this, false),
+      "level render time");
   //}
   getView()->refreshView();
   /*if (displayTravelInfo && creature->getPosition().getName() == "road"
