@@ -308,7 +308,7 @@ void Game::initializeModels() {
   for (Vec2 v : models.getBounds())
     if (auto model = models[v].get()) {
       for (auto c : model->getAllCreatures()) {
-        c->tick();
+        //c->tick(); Ticking crashes if it's a player and it dies. It was most likely only an optimization
         auto level = c->getPosition().getLevel();
         level->getSectors(c->getMovementType());
         level->getSectors(c->getMovementType().setForced());
