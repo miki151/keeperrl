@@ -224,21 +224,21 @@ TribeId TribeId::getShelob() {
   return TribeId(KeyType::SHELOB);
 }
 
-optional<pair<TribeId, TribeId>> TribeId::serialSwitch;
+static unordered_map<TribeId, TribeId, CustomHash<TribeId>> serialSwitch;
 
 void TribeId::switchForSerialization(TribeId from, TribeId to) {
-  serialSwitch = make_pair(from, to);
+  serialSwitch[from] = to;
 }
 
 void TribeId::clearSwitch() {
-  serialSwitch = none;
+  serialSwitch.clear();
 }
 
 template <class Archive> 
 void TribeId::serialize(Archive& ar, const unsigned int version) {
   ar(key);
-  if (serialSwitch && *this == serialSwitch->first)
-    *this = serialSwitch->second;
+  if (serialSwitch.count(*this))
+    *this = serialSwitch.at(*this);
 }
 
 SERIALIZABLE(TribeId);

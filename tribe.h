@@ -65,7 +65,6 @@ class TribeId {
   private:
   friend class TribeSet;
   KeyType SERIAL(key);
-  static optional<pair<TribeId, TribeId>> serialSwitch;
 };
 
 class TribeSet {
