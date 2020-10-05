@@ -36,8 +36,10 @@
   "knife_chest" Place "KNIFE_CHEST"
   "ada_chest" Place "ADA_CHEST"
   "swarmer_chest" Place "SWARMER_CHEST"
+  "blacksmith_chest" Place "BLACKSMITH_CHEST"
   "torch" Place "GROUND_TORCH"
   "throne" Place "THRONE"
+  "forge" Place "FORGE"
   "corpse" Items 1 "corpse"
   "shop0" Shop 0
 }
@@ -64,4 +66,8 @@
 
 "adoxie_temple" inherit "default" append {
   "down_stairs0" Stairs DOWN "ADOXIE_STATUE_TEMPLE" 0
+}
+
+"blacksmith" inherit "default" append {
+  "down_stairs0" Stairs DOWN "FORGE_STAIRS" 0
 }

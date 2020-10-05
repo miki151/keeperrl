@@ -35,6 +35,8 @@
 "pamphlet_chest" = brown
 "knife_chest" = green
 "swarmer_chest" = red
+"blacksmith_chest" = gray
+"forge" & gray
 "torch" * yellow
 "lava" ~ red
 "shop0" ~ blue

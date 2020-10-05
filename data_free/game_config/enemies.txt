@@ -498,7 +498,7 @@
 "BLACKSMITH"
 {
   settlement = {
-    type = Builtin COTTAGE "WOOD"
+    type = RandomLayout { "blacksmith" { 8 12 } "blacksmith"}
     tribe = HUMAN
     inhabitants = {
       leader = { { "ARTISAN_LEGEN" } }
@@ -512,6 +512,20 @@
     }
     locationNameGen = "TOWN"
     furniture = "forge"
+  }
+  levelConnection = {
+    topLevel = MainEnemy
+    direction = DOWN
+    levels = {
+      { ExtraEnemy { "BLACKSMITH_CELLAR" {1} } {10 10} BASIC }
+    }
+  }
+}
+"BLACKSMITH_CELLAR"
+{
+  settlement = {
+    type = RandomLayout { "blacksmith_cellar" { 4 4 } "default"}
+    tribe = HUMAN
   }
 }
 "GUARD_POST"

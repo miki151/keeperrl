@@ -7,6 +7,11 @@ Def NextTo(Pred)
   Area(1, Pred)
 End
 
+Def FurnitureLoc()
+ And(Not NextTo(AnyDoor()), AnyFloor())
+End
+
+
 Def Connector()
   Connect(AnyFloor(),
     (1000, On("no_dig"), None),
@@ -360,26 +365,31 @@ End
 
 "castle_up_stairs" CastleUpStairs()
 
-Def GuardPost() {
+Def DoubleRoom() {
+  Building("castle_wall", "wood_floor")
+  Inside(1, SplitV(0.6,
+    Margin(BOTTOM, 1,
+      {
+        Set("castle_wall")
+        Place({1 1} Set("wood_door"))
+      },
+      {
+        Set("first_room")
+        Border(-1, Set("no_dig"))
+      }
+    ),
+    Set("second_room")
+  ))
+}
+End
+
+Def GuardPostBase() {
   Position(
     position = MIDDLE,
     size = {5 7},
     generator = {
-      Building("castle_wall", "wood_floor")
       Inside(-1, Set("main_building"))
-      Inside(1, SplitV(0.6,
-        Margin(BOTTOM, 1,
-          {
-            Set("castle_wall")
-            Place({1 1} Set("wood_door"))
-          },
-          {
-            Set("first_room")
-            Border(-1, Set("no_dig"))
-          }
-        ),
-        Set("second_room")
-      ))
+      DoubleRoom()
     }
   )
   Place(
@@ -390,6 +400,11 @@ Def GuardPost() {
     minSpacing = 1
     predicate = Not On("main_building")
   )
+}
+End
+
+Def GuardPost() {
+  GuardPostBase()
   Place (
     ({1 1} Set("up_stairs0") 1 And(On("first_room"), AnyFloor())),
     ({1 1} Set("dining_table") 1 And(On("first_room"), AnyFloor())),
@@ -402,11 +417,11 @@ End
 Def GuardPostFloor2() {
   Building("castle_wall", "wood_floor")
   Place (
-    ({1 1} Set("down_stairs0") 1 And(AnyFloor(), NextTo(AnyWall()))),
-    ({1 1} Set("up_stairs0") 1 And(AnyFloor(), NextTo(AnyWall()))),
-    ({1 1} Set("armor_chest") {3 6} And(AnyFloor(), NextTo(AnyWall()))),
-    ({1 1} Set("bed") 2 And(AnyFloor(), NextTo(AnyWall()))),
-    ({1 1} Set("torch") 1 And(AnyFloor(), NextTo(AnyWall())))
+    ({1 1} Set("down_stairs0") 1 FurnitureLoc()),
+    ({1 1} Set("up_stairs0") 1 FurnitureLoc()),
+    ({1 1} Set("armor_chest") {3 6} FurnitureLoc()),
+    ({1 1} Set("bed") 2 FurnitureLoc()),
+    ({1 1} Set("torch") 1 FurnitureLoc())
   )
 }
 End
@@ -414,8 +429,8 @@ End
 Def GuardPostFloor3() {
   Building("wood_wall", "wood_floor")
   Place (
-    ({1 1} Set("down_stairs0") 1 And(AnyFloor(), NextTo(AnyWall()))),
-    ({1 1} Set("pamphlet_chest") {2 4} And(AnyFloor(), NextTo(AnyWall())))
+    ({1 1} Set("down_stairs0") 1 FurnitureLoc()),
+    ({1 1} Set("pamphlet_chest") {2 4} FurnitureLoc())
   )
 }
 End
@@ -424,12 +439,38 @@ End
 "guard_post_floor2" GuardPostFloor2()
 "guard_post_floor3" GuardPostFloor3()
 
+Def Blacksmith() {
+  Margin(1, Set("clear_middle", "floor"), DoubleRoom())
+  Connector()
+  Place (
+    ({1 1} Set("forge") 3 And(On("second_room"), FurnitureLoc())),
+    ({1 1} Set("down_stairs0") 1 And(On("second_room"), FurnitureLoc())),
+    ({1 1} Set("dining_table") 2 And(On("first_room"), FurnitureLoc())),
+    ({1 1} Set("bed") 3 And(On("first_room"), FurnitureLoc())),
+    ({1 1} Set("torch") 1 And(On("first_room"), FurnitureLoc()))
+  )
+}
+End
+
+"blacksmith" Blacksmith()
+
+Def BlacksmithCellar() {
+  Building("wood_wall", "wood_floor")
+  Place (
+    ({1 1} Set("up_stairs0") 1 FurnitureLoc()),
+    ({1 1} Set("blacksmith_chest") 3 FurnitureLoc()),
+  )
+}
+End
+
+"blacksmith_cellar" BlacksmithCellar()
+
 Def CottageCellar() {
   Building("wood_wall", "wood_floor")
   Place (
-    ({1 1} Set("up_stairs0") 1 And(AnyFloor(), NextTo(AnyWall()))),
-    ({1 1} Set("knife_chest") 1 And(AnyFloor(), NextTo(AnyWall()))),
-    ({1 1} Set("pamphlet_chest") {2 4} And(AnyFloor(), NextTo(AnyWall())))
+    ({1 1} Set("up_stairs0") 1 FurnitureLoc()),
+    ({1 1} Set("knife_chest") 1 FurnitureLoc()),
+    ({1 1} Set("pamphlet_chest") {2 4} FurnitureLoc())
   )
 }
 End

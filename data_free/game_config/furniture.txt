@@ -817,6 +817,14 @@
     Analytics "milestone" "diningTableStairs"
   }
 }
+"FORGE_STAIRS" inherit "FORGE"
+{
+  destroyedRemains = "DOWN_STAIRS"
+  destroyedEffect = {
+    Message "The forge is destroyed!"
+    Analytics "milestone" "forgeStairs"
+  }
+}
 "ARMOR_CHEST"
 {
   name = "chest"
@@ -884,6 +892,22 @@
     DropItems {Potion Permanent SWARMER} 1
     Analytics "milestone" "swarmerChest"
     RemoveFurniture "SWARMER_CHEST"
+  }
+}
+"BLACKSMITH_CHEST" inherit "ARMOR_CHEST"
+{
+  usageType = UsageEffect "open" {
+    CreatureMessage "open the chest" "opens the chest"
+    CreatureMessage "find an item inside" "finds an item inside"
+    ChooseRandom {
+      DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 3} 1
+      DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 2} 1
+      DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 4} 1
+      DropItems {Glyph WEAPON ItemAttrBonus DAMAGE 3} 1
+      DropItems {Glyph WEAPON ItemAttrBonus DAMAGE 2} 1
+      DropItems {Glyph WEAPON ItemAttrBonus DAMAGE 4} 1
+    }
+    RemoveFurniture "BLACKSMITH_CHEST"
   }
 }
 "OPENED_CHEST"
