@@ -58,7 +58,7 @@ class WarlordController : public Player, public EventListener<WarlordController>
   virtual void onKilled(Creature* attacker) override {
     Player::onKilled(attacker);
     team->removeElement(creature);
-    if (!team->empty() && !isFullControl()) {
+    if (!isFullControl()) {
       vector<PlayerInfo> teamInfos;
       for (auto c : *team)
         teamInfos.push_back(PlayerInfo(c, getGame()->getContentFactory()));
@@ -69,14 +69,13 @@ class WarlordController : public Player, public EventListener<WarlordController>
       optional<Creature::Id> newLeader;
       if (teamInfos.size() == 1)
         newLeader = teamInfos[0].creatureId;
-      else
-        newLeader = getView()->chooseCreature("Choose new team leader:", teamInfos, "Order team back to base");
-      if (newLeader)
-        for (auto c : *team)
-          if (c->getUniqueId() == *newLeader) {
-            setLeader(c);
-            break;
-          }
+      else while (!newLeader) // none is returned if player pressed ESC, so just ask repeatedly
+        newLeader = getView()->chooseCreature("Choose new team leader:", teamInfos, "");
+      for (auto c : *team)
+        if (c->getUniqueId() == *newLeader) {
+          setLeader(c);
+          break;
+        }
     }
   }
 
