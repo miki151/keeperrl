@@ -469,6 +469,6 @@ CampaignSetup CampaignBuilder::getWarlordCampaign(const vector<RetiredGames::Ret
   ret.mapZoom = 2;
   ret.influenceSize = 1;
   ret.playerPos = Vec2(0, 0);
-  return CampaignSetup{std::move(ret), gameName + getNewIdSuffix(), gameName, {}, none,
+  return CampaignSetup{std::move(ret), stripFilename(gameName + getNewIdSuffix()), gameName, {}, none,
       EnemyAggressionLevel::MODERATE};
 }
