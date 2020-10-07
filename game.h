@@ -115,7 +115,6 @@ class Game : public OwnedObject<Game> {
   void tick(GlobalTime);
   Vec2 getModelCoords(const WModel) const;
   bool updateModel(WModel, double timeDiff);
-  string getPlayerName() const;
   void uploadEvent(const string& name, const map<string, string>&);
 
   SunlightInfo sunlightInfo;

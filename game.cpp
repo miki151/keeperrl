@@ -533,9 +533,7 @@ void Game::considerRetiredLoadedEvent(Vec2 coord) {
   if (!visited[coord]) {
     visited[coord] = true;
     if (auto retired = campaign->getSites()[coord].getRetired())
-        uploadEvent("retiredLoaded", {
-            {"retiredId", retired->fileInfo.getGameId()},
-            {"playerName", getPlayerName()}});
+        uploadEvent("retiredLoaded", {{"retiredId", retired->fileInfo.getGameId()}});
   }
 }
 
@@ -745,13 +743,6 @@ static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {
   return ret;
 }
 
-string Game::getPlayerName() const {
-  if (playerCollective) {
-    return playerCollective->getName()->shortened.value_or("???"_s);
-  } else // adventurer mode
-    return players.getOnlyElement()->getName().firstOrBare();
-}
-
 SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
   auto sortMinions = [&](vector<Creature*>& minions, Creature* leader) {
     sort(minions.begin(), minions.end(), [leader] (const Creature* c1, const Creature* c2) {
@@ -774,7 +765,8 @@ SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
       CHECK(retiredInfo->villainType == VillainType::LESSER || retiredInfo->villainType == VillainType::MAIN)
           << EnumInfo<VillainType>::getString(retiredInfo->villainType);
     }
-    return SavedGameInfo{minions, retiredInfo, getPlayerName(), getSaveProgressCount(), std::move(spriteMods)};
+    auto name = col->getName()->shortened.value_or("???"_s);
+    return SavedGameInfo{minions, retiredInfo, std::move(name), getSaveProgressCount(), std::move(spriteMods)};
   } else {
     vector<Creature*> allCreatures;
     for (auto player : players)
@@ -870,9 +862,7 @@ void Game::addEvent(const GameEvent& event) {
           Vec2 coords = getModelCoords(col->getModel());
           if (!campaign->isDefeated(coords)) {
             if (auto retired = campaign->getSites()[coords].getRetired())
-              uploadEvent("retiredConquered", {
-                  {"retiredId", retired->fileInfo.getGameId()},
-                  {"playerName", getPlayerName()}});
+              uploadEvent("retiredConquered", {{"retiredId", retired->fileInfo.getGameId()}});
             if (coords != campaign->getPlayerPos() || campaign->getPlayerRole() == PlayerRole::ADVENTURER)
               campaign->setDefeated(coords);
           }
