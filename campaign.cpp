@@ -182,13 +182,19 @@ map<string, string> Campaign::getParameters() const {
         case VillainType::LESSER: ++numLesser; break;
         default: break;
       }
+  auto role = EnumInfo<PlayerRole>::getString(playerRole);
+  auto gameType = EnumInfo<CampaignType>::getString(type);
+  if (playerRole == PlayerRole::ADVENTURER && type == CampaignType::SINGLE_KEEPER) {
+    role = "WARLORD";
+    gameType = "WARLORD";
+  }
   return {
     {"main", toString(numMain)},
     {"lesser", toString(numLesser)},
     {"allies", toString(numAlly)},
     {"retired", toString(numRetired)},
-    {"player_role", EnumInfo<PlayerRole>::getString(playerRole)},
-    {"game_type", EnumInfo<CampaignType>::getString(type)},
+    {"player_role", role},
+    {"game_type", gameType},
   };
 }
 
