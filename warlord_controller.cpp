@@ -14,20 +14,22 @@
 #include "unknown_locations.h"
 #include "view.h"
 #include "game_event.h"
+#include "creature_name.h"
 
 class WarlordController : public Player, public EventListener<WarlordController> {
   public:
   using TeamOrders = EnumSet<TeamOrder>;
   using Team = vector<Creature*>;
   WarlordController(shared_ptr<vector<Creature*>> team, shared_ptr<TeamOrders> teamOrders)
-      : WarlordController((*team)[0], team, make_shared<MapMemory>(),
+      : WarlordController((*team)[0], team, *team, make_shared<MapMemory>(),
         make_shared<MessageBuffer>(), make_shared<VisibilityMap>(), make_shared<UnknownLocations>(),
         teamOrders) {
   }
 
-  WarlordController(Creature* c, shared_ptr<Team> team, shared_ptr<MapMemory> memory, shared_ptr<MessageBuffer> messages,
-        shared_ptr<VisibilityMap> visibility, shared_ptr<UnknownLocations> locations, shared_ptr<TeamOrders> orders)
-      : Player(c, false, memory, messages, visibility, locations), team(team), teamOrders(orders) {
+  WarlordController(Creature* c, shared_ptr<Team> team, Team originalTeam, shared_ptr<MapMemory> memory,
+        shared_ptr<MessageBuffer> messages, shared_ptr<VisibilityMap> visibility, shared_ptr<UnknownLocations> locations,
+        shared_ptr<TeamOrders> orders)
+      : Player(c, false, memory, messages, visibility, locations), team(team), originalTeam(originalTeam), teamOrders(orders) {
   }
 
   void onEvent(const GameEvent& event) {
@@ -36,6 +38,17 @@ class WarlordController : public Player, public EventListener<WarlordController>
         [&](const CreatureKilled& info) {
           if (!info.victim->isPlayer()) // only use this event to remove non-controlled team members
             team->removeElementMaybe(info.victim);
+        },
+        [&](const WonGame&) {
+          if (creature == creature->getGame()->getPlayerCreatures()[0]) {
+            int points = 0;
+            int kills = 0;
+            for (auto c : originalTeam) {
+              points += c->getPoints();
+              kills += c->getKills().size();
+            }
+            getGame()->conquered(creature->getName().firstOrBare(), kills, points);
+          }
         },
         [](auto&) {}
     );
@@ -88,7 +101,7 @@ class WarlordController : public Player, public EventListener<WarlordController>
   }
 
   void control(Creature* member) {
-    member->pushController(makeOwner<WarlordController>(member, team, levelMemory, messageBuffer, visibilityMap,
+    member->pushController(makeOwner<WarlordController>(member, team, originalTeam, levelMemory, messageBuffer, visibilityMap,
         unknownLocations, teamOrders));
   }
 
@@ -185,10 +198,11 @@ class WarlordController : public Player, public EventListener<WarlordController>
   virtual void updateUnknownLocations() override {
   }
 
-  SERIALIZE_ALL(SUBCLASS(Player), SUBCLASS(EventListener<WarlordController>), team, teamOrders)
+  SERIALIZE_ALL(SUBCLASS(Player), SUBCLASS(EventListener<WarlordController>), team, originalTeam, teamOrders)
   SERIALIZATION_CONSTRUCTOR(WarlordController)
 
   shared_ptr<Team> SERIAL(team);
+  Team SERIAL(originalTeam);
   shared_ptr<TeamOrders> SERIAL(teamOrders);
 };
 REGISTER_TYPE(ListenerTemplate<WarlordController>)
