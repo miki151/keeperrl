@@ -18,9 +18,13 @@ static unsigned allocTexture(int width, int height) {
   // TODO: something better than 8bits per component for blending ?
   // TODO: power of 2 textures
   SDL::glBindTexture(GL_TEXTURE_2D, id);
+  CHECK_OPENGL_ERROR();
   SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  CHECK_OPENGL_ERROR();
   SDL::glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  CHECK_OPENGL_ERROR();
   SDL::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+  CHECK_OPENGL_ERROR();
   SDL::glBindTexture(GL_TEXTURE_2D, 0);
   CHECK_OPENGL_ERROR();
   return id;
