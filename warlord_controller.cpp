@@ -195,9 +195,6 @@ class WarlordController : public Player, public EventListener<WarlordController>
       return messageGeneratorThird;
   }
 
-  virtual void updateUnknownLocations() override {
-  }
-
   SERIALIZE_ALL(SUBCLASS(Player), SUBCLASS(EventListener<WarlordController>), team, originalTeam, teamOrders)
   SERIALIZATION_CONSTRUCTOR(WarlordController)
 
