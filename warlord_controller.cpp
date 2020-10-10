@@ -15,6 +15,8 @@
 #include "view.h"
 #include "game_event.h"
 #include "creature_name.h"
+#include "collective.h"
+#include "collective_name.h"
 
 class WarlordController : public Player, public EventListener<WarlordController> {
   public:
@@ -38,6 +40,13 @@ class WarlordController : public Player, public EventListener<WarlordController>
         [&](const CreatureKilled& info) {
           if (!info.victim->isPlayer()) // only use this event to remove non-controlled team members
             team->removeElementMaybe(info.victim);
+        },
+        [&](const ConqueredEnemy& info) {
+          if (info.collective->getVillainType() == VillainType::MAIN) {
+            if (auto& name = info.collective->getName())
+              privateMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
+                    MessagePriority::CRITICAL));
+          }
         },
         [&](const WonGame&) {
           if (creature == creature->getGame()->getPlayerCreatures()[0]) {
