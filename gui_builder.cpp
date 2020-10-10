@@ -3869,7 +3869,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   vector<SGuiElem> descriptions;
   for (int avatarIndex : All(avatars)) {
     auto& avatar = avatars[avatarIndex];
-    const auto maxWidth = 650;
+    const auto maxWidth = 750;
     auto description = 
         WL(labelMultiLineWidth, avatar.description, legendLineHeight, maxWidth, Renderer::textSize, Color::LIGHT_GRAY);
     if (!avatar.teamMembers.empty()) {
