@@ -108,7 +108,7 @@ variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View* view,
       none,
       info.creatures[0]->getName().firstOrBare(),
       View::AvatarRole::WARLORD,
-      "Play as a warlord",
+      "Take your retired keeper for an excursion and conquer some player made dungeons!",
       false,
       OptionId::PLAYER_NAME,
       info.creatures.transform([&](const auto& c) { return PlayerInfo(c.get(), contentFactory); } )

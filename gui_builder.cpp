@@ -3870,9 +3870,17 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
   for (int avatarIndex : All(avatars)) {
     auto& avatar = avatars[avatarIndex];
     const auto maxWidth = 650;
-    auto description = avatar.teamMembers.empty()
-        ? WL(labelMultiLineWidth, avatar.description, legendLineHeight, maxWidth, Renderer::textSize, Color::LIGHT_GRAY)
-        : drawCreatureList(avatar.teamMembers, [](auto){}, 1, 5, 2);
+    auto description = 
+        WL(labelMultiLineWidth, avatar.description, legendLineHeight, maxWidth, Renderer::textSize, Color::LIGHT_GRAY);
+    if (!avatar.teamMembers.empty()) {
+      auto members = avatar.teamMembers;
+      sort(members.begin(), members.end(),
+          [](auto& e1, auto& e2) { return e1.bestAttack.value > e2.bestAttack.value; });
+      description = WL(getListBuilder)
+          .addElemAuto(std::move(description))
+          .addElemAuto(drawCreatureList(members, [](auto){}, 1, 5, 1))
+          .buildVerticalList();
+    }
     descriptions.push_back(WL(conditional,
         std::move(description),
         [avatarIndex, chosenAvatar] { return avatarIndex == *chosenAvatar; }));
