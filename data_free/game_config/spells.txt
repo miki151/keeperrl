@@ -469,12 +469,21 @@
   cooldown = 10
   blockedByWall = false
 }
+
+Def AnyCreature() Health 0 1 End
+Def NoEffect() Unlock "nothing" End
+
 "shoot arrow"
 {
   symbol = "↣"
-  effect = Name "shoot arrow" Damage RANGED_DAMAGE SHOOT
+  effect = Name "shoot arrow" {
+    Damage RANGED_DAMAGE SHOOT
+# This makes the effect return true if there was any creature even if it wasn't injured.
+    Filter AnyCreature() NoEffect()
+  }
   range = 7
   cooldown = 1
+  maxHits = 1
   projectileViewId = {"arrow"}
   message = "shoot an arrow" "shoots an arrow"
 }

@@ -21,7 +21,7 @@
 
 template <class Archive>
 void Spell::serializeImpl(Archive& ar, const unsigned int) {
-  ar(NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(message), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf), OPTION(blockedByWall), NAMED(projectileViewId));
+  ar(NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(message), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf), OPTION(blockedByWall), NAMED(projectileViewId), NAMED(maxHits));
 }
 
 template <class Archive>
@@ -95,8 +95,13 @@ void Spell::apply(Creature* c, Position target) const {
     }
   c->getGame()->addEvent(
       EventInfo::Projectile{std::move(thisFx), thisProjectile, c->getPosition(), trajectory.back(), none});
-  for (auto& pos : trajectory)
-    effect->apply(pos, c);
+  int remainingHits = maxHits.value_or(10000);
+  for (auto& pos : trajectory) {
+    if (effect->apply(pos, c))
+      --remainingHits;
+    if (remainingHits <= 0)
+      break;
+  }
 }
 
 int Spell::getRange() const {

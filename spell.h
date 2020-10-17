@@ -64,6 +64,7 @@ class Spell {
   bool SERIAL(endOnly) = false;
   bool SERIAL(targetSelf) = false;
   bool SERIAL(blockedByWall) = true;
+  optional<int> SERIAL(maxHits);
   bool checkTrajectory(const Creature* caster, Position to) const;
 };
 
