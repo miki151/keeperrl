@@ -6,6 +6,7 @@
 
 static unsigned allocFramebuffer() {
   SDL::GLuint id = 0;
+  CHECK_OPENGL_ERROR();
   SDL::glGenFramebuffers(1, &id);
   CHECK_OPENGL_ERROR();
   return id;

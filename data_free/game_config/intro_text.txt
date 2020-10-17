@@ -1,5 +1,14 @@
-"Welcome to the KeeperRL Alpha 31 testing build!
+"Welcome to KeeperRL Alpha 31! This patch was released on October 12, 2020.
 
-This is a pre-release build for experienced players and modders that want to have a glimpse at the new stuff.
+Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
 
-If you are new to the game, it is strongly recommended to play the official Alpha 30 build for now!"
+* The new Warlord mode, unlocked when you retire your first dungeon.
+* A lot of new hidden content on Z-levels and on the ground level.
+* A new system for modding randomly generated maps.
+
+If this is your first time playing KeeperRL, remember to start with the tutorial!
+
+
+########
+
+This patch is dedicated to the memory of RightousSinner, who sadly left our community forever in early September."
