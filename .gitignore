@@ -46,3 +46,4 @@ steam_api64.dll
 gen_version
 log.gz
 libsteam_api.so
+worldgen_out.txt
