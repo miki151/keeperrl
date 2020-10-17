@@ -336,6 +336,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::DRUNK:
         c->you(MsgType::ARE, "drunk!");
         break;
+      case LastingEffect::NO_FRIENDLY_FIRE:
+        c->you(MsgType::YOUR, "projectiles won't hit allies");
+        break;
     }
 }
 
@@ -601,6 +604,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::DRUNK:
         c->verb("sober", "sobers", "up");
         break;
+      case LastingEffect::NO_FRIENDLY_FIRE:
+        c->you(MsgType::YOUR, "projectiles will hit allies");
+        break;
       default:
         break;
     }
@@ -748,6 +754,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::PSYCHIATRY: return "Psychiatrist"_good;
     case LastingEffect::INVULNERABLE: return "Invulnerable"_good;
     case LastingEffect::DRUNK: return "Drunk"_good;
+    case LastingEffect::NO_FRIENDLY_FIRE: return "Arrows bypass allies"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::PLAGUE: return "Infected with plague"_bad;
@@ -985,8 +992,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
       }
       if (isBigDanger)
         c->privateMessage(PlayerMessage("You sense big danger!", MessagePriority::HIGH));
-      else
-      if (isDanger)
+      else if (isDanger)
         c->privateMessage(PlayerMessage("You sense danger!", MessagePriority::HIGH));
       break;
     }
@@ -1132,6 +1138,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::INVULNERABLE: return "invulnerability";
     case LastingEffect::TURNED_OFF: return "power off";
     case LastingEffect::DRUNK: return "booze";
+    case LastingEffect::NO_FRIENDLY_FIRE: return "no friendly fire";
   }
 }
 
@@ -1224,6 +1231,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::INVULNERABLE: return "Creature can't be harmed in combat.";
     case LastingEffect::TURNED_OFF: return "Creature requires more automaton engines built.";
     case LastingEffect::DRUNK: return "Compromises fighting abilities.";
+    case LastingEffect::NO_FRIENDLY_FIRE: return "Arrows and other projectiles bypass allies and only hit enemies.";
   }
 }
 
