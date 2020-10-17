@@ -1758,7 +1758,7 @@ static string getDescription(const Effects::Unlock& e, const ContentFactory*) {
 static bool apply(const Effects::Unlock& e, Position pos, Creature*) {
   if (auto game = pos.getGame())
     game->getUnlocks()->unlock(e.id);
-  return false;
+  return true;
 }
 
 static string getName(const Effects::Analytics& e, const ContentFactory*) {
