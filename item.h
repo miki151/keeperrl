@@ -30,7 +30,6 @@ class Fire;
 class ItemAttributes;
 class Effect;
 struct CorpseInfo;
-class RangedWeapon;
 class WeaponInfo;
 struct ItemUpgradeInfo;
 class ItemPrefix;
@@ -85,7 +84,6 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   void addModifier(AttrType, int value);
   int getModifier(AttrType) const;
   const optional<pair<int, CreaturePredicate>>& getSpecialModifier(AttrType) const;
-  const optional<RangedWeapon>& getRangedWeapon() const;
   void tick(Position);
   void applyPrefix(const ItemPrefix&, const ContentFactory*);
   void setTimeout(GlobalTime);

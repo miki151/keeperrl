@@ -222,9 +222,6 @@ optional<string> ContentFactory::readItems(const GameConfig* config, KeyVerifier
   map<PrimaryId<CustomItemId>, ItemAttributes> itemsTmp;
   if (auto res = config->readObject(itemsTmp, GameConfigId::ITEMS, keyVerifier))
     return *res;
-  for (auto& elem : itemsTmp)
-    if (elem.second.equipmentSlot == EquipmentSlot::RANGED_WEAPON && !elem.second.rangedWeapon)
-      return "Item "_s + elem.first.data() + " has RANGED_WEAPON slot, but no rangedWeapon entry.";
   items = convertKeys(itemsTmp);
   return none;
 }

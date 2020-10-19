@@ -18,7 +18,7 @@
 #include "creature.h"
 #include "creature_factory.h"
 #include "level.h"
-#include "ranged_weapon.h"
+#include "item.h"
 #include "statistics.h"
 #include "options.h"
 #include "game.h"
@@ -193,19 +193,21 @@ CreatureAction Creature::castSpell(const Spell* spell) const {
 }
 
 CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
-  if (isAffected(LastingEffect::MAGIC_CANCELLATION))
+  if (spell->getType() == SpellType::SPELL && isAffected(LastingEffect::MAGIC_CANCELLATION))
     return CreatureAction("You can't cast spells while under the effect of "
         + LastingEffects::getName(LastingEffect::MAGIC_CANCELLATION) + ".");
+  auto verb = spell->getType() == SpellType::SPELL ? "cast this spell" : "use this ability";
   if (!isReady(spell))
-    return CreatureAction("You can't cast this spell yet.");
+    return CreatureAction("You can't "_s + verb + " yet.");
   if (target == position && !spell->canTargetSelf())
-    return CreatureAction("You can't cast this spell at yourself.");
+    return CreatureAction("You can't "_s + verb + " at yourself.");
   return CreatureAction(this, [=] (Creature* c) {
     if (auto sound = spell->getSound())
       c->addSound(*sound);
     spell->addMessage(c);
     spell->apply(c, target);
-    getGame()->getStatistics().add(StatId::SPELL_CAST);
+    if (spell->getType() == SpellType::SPELL)
+      getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->spellMap->setReadyTime(c, spell, *getGlobalTime() + TimeInterval(spell->getCooldown()));
     c->spendTime();
   });
@@ -1744,23 +1746,6 @@ CreatureAction Creature::payFor(const vector<Item*>& items) const {
       [](int sum, const Item* it) { return sum + it->getPrice(); });
   return give(items[0]->getShopkeeper(this), getGold(totalPrice))
       .append([=](Creature*) { for (auto it : items) it->setShopkeeper(nullptr); });
-}
-
-CreatureAction Creature::fire(Position target) const {
-  if (target == position)
-    return CreatureAction();
-  if (getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty())
-    return CreatureAction("You need a ranged weapon.");
-  if (getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).empty())
-    return CreatureAction("You need to equip your ranged weapon.");
-  if (getBody().numGood(BodyPart::ARM) < 2)
-    return CreatureAction("You need two hands to shoot a bow.");
-  return CreatureAction(this, [=](Creature* self) {
-    auto& weapon = *self->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).getOnlyElement()
-        ->getRangedWeapon();
-    weapon.fire(self, target);
-    self->spendTime();
-  });
 }
 
 void Creature::addMovementInfo(MovementInfo info) {

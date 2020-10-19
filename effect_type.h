@@ -267,6 +267,12 @@ struct AIBelowHealth : GenericModifierEffect {
 };
 struct AITargetEnemy : GenericModifierEffect {
 };
+struct AIMinDistance : GenericModifierEffect {
+  int SERIAL(value);
+  SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
+};
+struct ReturnFalse : GenericModifierEffect {
+};
 struct AddMinionTrait {
   MinionTrait SERIAL(trait);
   SERIALIZE_ALL(trait)
@@ -359,16 +365,18 @@ struct Analytics {
   X(Name, 61)\
   X(AIBelowHealth, 62)\
   X(AITargetEnemy, 63)\
-  X(IncreaseSkill, 64)\
-  X(IncreaseWorkshopSkill, 65)\
-  X(AddAutomatonParts, 66)\
-  X(AddMinionTrait, 67)\
-  X(Caster, 68)\
-  X(RemoveFurniture, 69)\
-  X(SetFlag, 70)\
-  X(TakeItems, 71)\
-  X(Unlock, 72)\
-  X(Analytics, 73)
+  X(AIMinDistance, 64)\
+  X(IncreaseSkill, 65)\
+  X(IncreaseWorkshopSkill, 66)\
+  X(AddAutomatonParts, 67)\
+  X(AddMinionTrait, 68)\
+  X(Caster, 69)\
+  X(RemoveFurniture, 70)\
+  X(SetFlag, 71)\
+  X(TakeItems, 72)\
+  X(Unlock, 73)\
+  X(Analytics, 74)\
+  X(ReturnFalse, 75)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

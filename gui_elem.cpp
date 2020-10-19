@@ -217,7 +217,7 @@ static optional<SDL_Keycode> getKey(char c) {
 
 GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, KeybindingMap* k,
     const DirectoryPath& freeImages, const optional<DirectoryPath>& nonFreeImages)
-    : clock(c), renderer(r), options(o), keybindingMap(k), freeImagesPath(freeImages),
+    : keybindingMap(k), clock(c), renderer(r), options(o), freeImagesPath(freeImages),
       nonFreeImagesPath(nonFreeImages) {
 }
 

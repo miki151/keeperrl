@@ -23,7 +23,6 @@
 #include "effect.h"
 #include "attack_type.h"
 #include "attr_type.h"
-#include "ranged_weapon.h"
 #include "item_type.h"
 #include "game_time.h"
 #include "weapon_info.h"
@@ -85,7 +84,6 @@ class ItemAttributes {
   optional<string> SERIAL(applyMsgFirstPerson);
   optional<string> SERIAL(applyMsgThirdPerson);
   optional<SoundId> SERIAL(applySound);
-  optional<RangedWeapon> SERIAL(rangedWeapon);
   WeaponInfo SERIAL(weaponInfo);
   vector<pair<int, ItemPrefix>> SERIAL(genPrefixes);
   vector<string> SERIAL(prefixes);

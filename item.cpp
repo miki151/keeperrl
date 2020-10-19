@@ -486,7 +486,9 @@ string Item::getModifiers(bool shorten) const {
   } else
     switch (getClass()) {
       case ItemClass::RANGED_WEAPON:
-        printAttr.insert(getRangedWeapon()->getDamageAttr());
+        for (auto attr : {AttrType::RANGED_DAMAGE, AttrType::SPELL_DAMAGE})
+          if (attributes->modifiers[attr] > 0)
+            printAttr.insert(attr);
         break;
       case ItemClass::WEAPON:
         printAttr.insert(getWeaponInfo().meleeAttackAttr);
@@ -569,10 +571,6 @@ int Item::getModifier(AttrType type) const {
 
 const optional<pair<int, CreaturePredicate>>& Item::getSpecialModifier(AttrType attr) const {
   return attributes->specialAttr[attr];
-}
-
-const optional<RangedWeapon>& Item::getRangedWeapon() const {
-  return attributes->rangedWeapon;
 }
 
 optional<CorpseInfo> Item::getCorpseInfo() const {

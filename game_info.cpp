@@ -200,7 +200,8 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory) 
         none,
         true,
         spell->getDescription(contentFactory),
-        c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell))
+        c->isReady(spell) ? none : optional<TimeInterval>(c->getSpellDelay(spell)),
+        false
     });
   carryLimit = c->getBody().getCarryLimit();
   map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(

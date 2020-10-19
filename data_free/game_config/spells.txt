@@ -181,6 +181,7 @@
   range = 3
   cooldown = 10
   message = "jump" "jumps"
+  type = ABILITY
 }
 "panic"
 {
@@ -398,6 +399,7 @@
   range = 1
   cooldown = 30
   message = "use an ability" "uses an ability"
+  type = ABILITY
 }
 "swap positions"
 {
@@ -476,16 +478,29 @@ Def NoEffect() Unlock "nothing" End
 "shoot arrow"
 {
   symbol = "↣"
-  effect = Name "shoot arrow" {
-    Damage RANGED_DAMAGE SHOOT
+  effect = AIMinDistance 4 Name "shoot arrow" Description "Shoots an arrow" {
+    Filter Attacker Not LastingEffect NO_FRIENDLY_FIRE {
+      CreatureMessage "are hit by the arrow" "is hit by the arrow"
+      Damage RANGED_DAMAGE SHOOT
 # This makes the effect return true if there was any creature even if it wasn't injured.
-    Filter AnyCreature() NoEffect()
+      Filter AnyCreature() NoEffect()
+    }
+    ReturnFalse Filter Attacker LastingEffect NO_FRIENDLY_FIRE Filter Not Enemy
+      CreatureMessage "are spared by the arrow" "is spared by the arrow"
+    Filter Attacker LastingEffect NO_FRIENDLY_FIRE Filter Enemy {
+      CreatureMessage "are hit by the arrow" "is hit by the arrow"
+      Damage RANGED_DAMAGE SHOOT
+# This makes the effect return true if there was any creature even if it wasn't injured.
+      Filter AnyCreature() NoEffect()
+    }
   }
   range = 7
   cooldown = 1
   maxHits = 1
   projectileViewId = {"arrow"}
+  keybinding = FIRE_PROJECTILE
   message = "shoot an arrow" "shoots an arrow"
+  type = ABILITY
 }
 "audience"
 {
@@ -502,5 +517,6 @@ Def NoEffect() Unlock "nothing" End
   cooldown = 15
   sound = TRAP_ARMING
   message = "repair the automaton" "repairs the automaton"
+  type = ABILITY
 }
 

@@ -17,11 +17,11 @@
 #include "view_id.h"
 #include "move_info.h"
 #include "fx_name.h"
-
+#include "keybinding.h"
 
 template <class Archive>
 void Spell::serializeImpl(Archive& ar, const unsigned int) {
-  ar(NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(message), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf), OPTION(blockedByWall), NAMED(projectileViewId), NAMED(maxHits));
+  ar(NAMED(upgrade), NAMED(symbol), NAMED(effect), NAMED(cooldown), OPTION(message), NAMED(sound), OPTION(range), NAMED(fx), OPTION(endOnly), OPTION(targetSelf), OPTION(blockedByWall), NAMED(projectileViewId), NAMED(maxHits), NAMED(keybinding), OPTION(type));
 }
 
 template <class Archive>
@@ -93,15 +93,17 @@ void Spell::apply(Creature* c, Position target) const {
       if (isBlockedBy(trajectory.back()))
         break;
     }
-  c->getGame()->addEvent(
-      EventInfo::Projectile{std::move(thisFx), thisProjectile, c->getPosition(), trajectory.back(), none});
   int remainingHits = maxHits.value_or(10000);
+  auto lastPos = trajectory.front();
   for (auto& pos : trajectory) {
+    lastPos = pos;
     if (effect->apply(pos, c))
       --remainingHits;
     if (remainingHits <= 0)
       break;
   }
+  c->getGame()->addEvent(
+      EventInfo::Projectile{std::move(thisFx), thisProjectile, c->getPosition(), lastPos, none});
 }
 
 int Spell::getRange() const {
@@ -151,6 +153,13 @@ bool Spell::isBlockedBy(Position pos) const {
   return blockedByWall && pos.isDirEffectBlocked();
 }
 
+optional<Keybinding> Spell::getKeybinding() const {
+  return keybinding;
+}
+
+SpellType Spell::getType() const {
+  return type;
+}
 
 #include "pretty_archive.h"
 template <>

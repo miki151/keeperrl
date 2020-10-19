@@ -1413,6 +1413,8 @@ SGuiElem GuiBuilder::getSpellIcon(const SpellInfo& spell, int index, bool active
     ret.push_back(WL(centeredLabel, Renderer::HOR_VER, toString(*spell.timeout)));
   }
   ret.push_back(getTooltip(concat({capitalFirst(spell.name)}, spell.help), THIS_LINE + index + creatureId));
+  if (spell.highlighted)
+    ret.push_back(WL(uiHighlight));
   return WL(preferredSize, spellIconSize, WL(stack, std::move(ret)));
 }
 

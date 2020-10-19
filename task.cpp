@@ -13,6 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
+#include "enums.h"
 #include "stdafx.h"
 
 #include "task.h"
@@ -48,6 +49,8 @@
 #include "content_factory.h"
 #include "creature_list.h"
 #include "automaton_part.h"
+#include "spell_map.h"
+#include "keybinding.h"
 
 template <class Archive>
 void Task::serialize(Archive& ar, const unsigned int version) {
@@ -530,12 +533,14 @@ class ArcheryRange : public Task {
         if (other->isFriend(c))
           return c->wait();
     }
-    if (auto move = c->fire(shootInfo->target))
-      return move.append(
-          [this, target = shootInfo->target](Creature* c) {
-            callback->onAppliedSquare(c, make_pair(target, FurnitureLayer::MIDDLE));
-            setDone();
-          });
+    for (auto spell : c->getSpellMap().getAvailable(c))
+      if (spell->getKeybinding() == Keybinding::FIRE_PROJECTILE)
+        if (auto move = c->castSpell(spell, shootInfo->target))
+          return move.append(
+              [this, target = shootInfo->target](Creature* c) {
+                callback->onAppliedSquare(c, make_pair(target, FurnitureLayer::MIDDLE));
+                setDone();
+              });
     return NoMove;
   }
 

@@ -23,7 +23,6 @@
 #include "tribe.h"
 #include "player.h"
 #include "monster.h"
-#include "ranged_weapon.h"
 #include "square.h"
 #include "village_control.h"
 #include "task.h"

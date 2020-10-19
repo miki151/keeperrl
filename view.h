@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "enums.h"
 #include "util.h"
 #include "debug.h"
 #include "animation_id.h"
@@ -199,8 +200,10 @@ class View {
   /** Lets the player choose a direction from the main 8. Returns none if the player cancelled the choice.*/
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) = 0;
 
+  using TargetResult = variant<none_t, Vec2, Keybinding>;
   /** Lets the player choose a target position. Returns none if the player cancelled the choice.*/
-  virtual optional<Vec2> chooseTarget(Vec2 playerPos, TargetType, Table<PassableInfo> passable, const string& message) = 0;
+  virtual TargetResult chooseTarget(Vec2 playerPos, TargetType, Table<PassableInfo> passable,
+      const string& message, optional<Keybinding> cycleKey) = 0;
 
   /** Asks the player a yer-or-no question.*/
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) = 0;

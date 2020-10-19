@@ -41,6 +41,7 @@
 #include "draw_line.h"
 #include "tileset.h"
 #include "target_type.h"
+#include "keybinding_map.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -703,11 +704,12 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
   return returnQueue.pop();
 }
 
-optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, TargetType targetType, Table<PassableInfo> passable, const string& message) {
+View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetType, Table<PassableInfo> passable,
+      const string& message, optional<Keybinding> cycleKey) {
   TempClockPause pause(clock);
   gameInfo.messageBuffer = makeVec(PlayerMessage(message));
-  SyncQueue<optional<Vec2>> returnQueue;
-  addReturnDialog<optional<Vec2>>(returnQueue, [=] ()-> optional<Vec2> {
+  SyncQueue<TargetResult> returnQueue;
+  addReturnDialog<TargetResult>(returnQueue, [=] ()-> TargetResult {
   rebuildGui();
   refreshScreen();
   guiBuilder.disableClickActions = true;
@@ -716,9 +718,13 @@ optional<Vec2> WindowView::chooseTarget(Vec2 playerPos, TargetType targetType, T
     Event event;
     if (renderer.pollEvent(event)) {
       considerResizeEvent(event);
-      if (event.type == SDL::SDL_KEYDOWN && event.key.keysym.sym == SDL::SDLK_ESCAPE) {
-        refreshScreen();
-        return none;
+      if (event.type == SDL::SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDL::SDLK_ESCAPE) {
+          refreshScreen();
+          return none;
+        }
+        if (cycleKey && gui.keybindingMap->matches(*cycleKey, event.key.keysym))
+          return *cycleKey;
       }
       if (pos && event.type == SDL::SDL_MOUSEBUTTONDOWN) {
         if (event.button.button == SDL_BUTTON_LEFT && (targetType != TargetType::POSITION ||

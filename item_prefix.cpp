@@ -11,6 +11,7 @@
 #include "game.h"
 #include "content_factory.h"
 #include "body.h"
+#include "item.h"
 
 void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAttributes& attr) {
   if (attr.automatonPart) {

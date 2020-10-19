@@ -96,7 +96,8 @@ struct SpellInfo {
   bool HASH(available) = true;
   vector<string> HASH(help);
   optional<TimeInterval> HASH(timeout);
-  HASH_ALL(name, symbol, help, timeout, available, level)
+  bool HASH(highlighted);
+  HASH_ALL(name, symbol, help, timeout, available, level, highlighted)
 };
 
 struct SpellSchoolInfo {

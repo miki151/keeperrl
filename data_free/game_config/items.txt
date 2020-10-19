@@ -819,7 +819,7 @@
     viewId = { "elven_bow" }
     itemClass = RANGED_WEAPON
     equipmentSlot = RANGED_WEAPON
-    rangedWeapon = RANGED_DAMAGE "arrow" {"arrow"} 12
+    equipedAbility = {"shoot arrow"}
     weaponInfo = {
       twoHanded = true
     }
@@ -836,7 +836,7 @@
     name = "short bow"
     itemClass = RANGED_WEAPON
     equipmentSlot = RANGED_WEAPON
-    rangedWeapon = RANGED_DAMAGE "arrow" {"arrow"} 10
+    equipedAbility = {"shoot arrow"}
     weaponInfo = {
       twoHanded = true
     }

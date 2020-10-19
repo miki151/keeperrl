@@ -185,7 +185,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction stealFrom(Vec2 direction, const vector<Item*>&) const;
   CreatureAction give(Creature* whom, vector<Item*> items) const;
   CreatureAction payFor(const vector<Item*>&) const;
-  CreatureAction fire(Position target) const;
   CreatureAction construct(Vec2 direction, FurnitureType) const;
   CreatureAction whip(const Position&, double animChance) const;
   CreatureAction eat(Item*) const;

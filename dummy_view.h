@@ -30,7 +30,8 @@ class DummyView : public View {
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override {
     return none;
   }
-  virtual optional<Vec2> chooseTarget(Vec2 playerPos, TargetType, Table<PassableInfo>, const string& message) override {
+  virtual TargetResult chooseTarget(Vec2 playerPos, TargetType, Table<PassableInfo> passable,
+      const string& message, optional<Keybinding> cycleKey) override {
     return none;
   }
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) override {

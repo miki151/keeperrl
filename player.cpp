@@ -16,7 +16,7 @@
 
 #include "player.h"
 #include "level.h"
-#include "ranged_weapon.h"
+#include "item.h"
 #include "name_generator.h"
 #include "game.h"
 #include "options.h"
@@ -69,6 +69,7 @@
 #include "shortest_path.h"
 #include "item_types.h"
 #include "item_attributes.h"
+#include "keybinding.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -210,11 +211,11 @@ optional<Vec2> Player::chooseDirection(const string& s) {
   return getView()->chooseDirection(creature->getPosition().getCoord(), s);
 }
 
-optional<Position> Player::chooseTarget(Table<PassableInfo> passable, TargetType type, const string& s) {
-  if (auto v = getView()->chooseTarget(creature->getPosition().getCoord(), type, std::move(passable), s))
-    return Position(*v, getLevel());
-  else
-    return none;
+Player::TargetResult Player::chooseTarget(Table<PassableInfo> passable, TargetType type, const string& s,
+    optional<Keybinding> keybinding) {
+  return getView()->chooseTarget(creature->getPosition().getCoord(), type, std::move(passable), s, keybinding).visit(
+      [&](auto e) -> TargetResult { return e; },
+      [&](Vec2 v) -> TargetResult { return Position(v, getLevel()); });
 }
 
 void Player::throwItem(Item* item, optional<Position> target) {
@@ -232,7 +233,8 @@ void Player::throwItem(Item* item, optional<Position> target) {
         else if (pos.getCreature())
           passable[v] = PassableInfo::STOPS_HERE;
       }
-      target = chooseTarget(std::move(passable), TargetType::TRAJECTORY, "Which direction do you want to throw?");
+      target = chooseTarget(std::move(passable), TargetType::TRAJECTORY, "Which direction do you want to throw?", none)
+          .getValueMaybe<Position>();
     } else
       privateMessage(testAction.getFailedReason());
     if (!target)
@@ -429,25 +431,31 @@ void Player::chatAction(optional<Vec2> dir) {
 }
 
 void Player::fireAction() {
-  if (auto testAction = creature->fire(creature->getPosition().plus(Vec2(1, 0)))) {
-    Vec2 origin = creature->getPosition().getCoord();
-    auto weapon = *creature->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON)
-        .getOnlyElement()->getRangedWeapon();
-    Table<PassableInfo> passable(Rectangle::centered(origin, weapon.getMaxDistance()),
-        PassableInfo::PASSABLE);
-    for (auto v : passable.getBounds()) {
-      Position pos(v, getLevel());
-      if (!creature->canSee(pos) && !getMemory().getViewIndex(pos))
-        passable[v] = PassableInfo::UNKNOWN;
-      else if (pos.stopsProjectiles(creature->getVision().getId()))
-        passable[v] = PassableInfo::NON_PASSABLE;
-      else if (pos.getCreature())
-        passable[v] = PassableInfo::STOPS_HERE;
+  for (auto spell : creature->getSpellMap().getAvailable(creature))
+    if (creature->isReady(spell) && spell->getKeybinding() == Keybinding::FIRE_PROJECTILE) {
+      highlightedSpell = spell->getId();
+      getView()->updateView(this, false);
+      Vec2 origin = creature->getPosition().getCoord();
+      Table<PassableInfo> passable(Rectangle::centered(origin, spell->getRange()), PassableInfo::PASSABLE);
+      for (auto v : passable.getBounds()) {
+        Position pos(v, getLevel());
+        if (!creature->canSee(pos) && !getMemory().getViewIndex(pos))
+          passable[v] = PassableInfo::UNKNOWN;
+        if (spell->isBlockedBy(pos))
+          passable[v] = PassableInfo::STOPS_HERE;
+      }
+      auto res = chooseTarget(std::move(passable), spell->isEndOnly() ? TargetType::POSITION : TargetType::TRAJECTORY,
+          "Which direction?", *spell->getKeybinding());
+      if (res.contains<none_t>())
+        break;
+      if (auto pos = res.getValueMaybe<Position>()) {
+        tryToPerform(creature->castSpell(spell, *pos));
+        break;
+      }
+      if (res.getValueMaybe<Keybinding>())
+        continue;
     }
-    if (auto target = chooseTarget(std::move(passable), TargetType::TRAJECTORY, "Fire which direction?"))
-      tryToPerform(creature->fire(*target));
-  } else
-    privateMessage(testAction.getFailedReason());
+  highlightedSpell = none;
 }
 
 void Player::spellAction(int id) {
@@ -468,7 +476,7 @@ void Player::spellAction(int id) {
           passable[v] = PassableInfo::STOPS_HERE;
       }
       if (auto target = chooseTarget(std::move(passable), spell->isEndOnly() ? TargetType::POSITION : TargetType::TRAJECTORY,
-          "Which direction?"))
+          "Which direction?", none).getValueMaybe<Position>())
         tryToPerform(creature->castSpell(spell, *target));
     }
   }
@@ -566,7 +574,7 @@ vector<Player::CommandInfo> Player::getCommands() const {
     {PlayerInfo::CommandInfo{"Test path-finding", 'C', "Displays calculated path and processed tiles.", true},
       [] (Player* player) {
         auto pos = player->getView()->chooseTarget(player->creature->getPosition().getCoord(),
-            TargetType::POSITION, Table<PassableInfo>(), "Choose destination");
+            TargetType::POSITION, Table<PassableInfo>(), "Choose destination", none).getValueMaybe<Vec2>();
         if (pos) {
           Position position(*pos, player->getLevel());
           vector<Vec2> visited;
@@ -577,7 +585,7 @@ vector<Player::CommandInfo> Player::getCommands() const {
           for (auto& v : path.getPath())
             result[v.getCoord()] = PassableInfo::NON_PASSABLE;
           player->getView()->chooseTarget(player->creature->getPosition().getCoord(), TargetType::SHOW_ALL, result,
-              "Displaying calculated path and processed tiles");
+              "Displaying calculated path and processed tiles", none);
         }
       }, false},
     {PlayerInfo::CommandInfo{"Hide", 'h', "Hide behind or under a terrain feature or piece of furniture.",
@@ -1272,6 +1280,11 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   for (auto stack : creature->stackItems(creature->getPickUpOptions()))
     info.lyingItems.push_back(ItemInfo::get(creature, stack, contentFactory));
   info.commands = getCommands().transform([](const CommandInfo& info) -> PlayerInfo::CommandInfo { return info.commandInfo;});
+  if (highlightedSpell) {
+    auto availableSpells = creature->getSpellMap().getAvailable(creature);
+    for (int i : All(availableSpells))
+      info.spells[i].highlighted = (highlightedSpell == availableSpells[i]->getId());
+  }
   if (tutorial)
     tutorial->refreshInfo(getGame(), gameInfo.tutorial);
 }

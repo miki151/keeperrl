@@ -26,6 +26,12 @@ class Position;
 class MoveInfo;
 class ContentFactory;
 
+RICH_ENUM(
+  SpellType,
+  SPELL,
+  ABILITY
+);
+
 class Spell {
   public:
   STRUCT_DECLARATIONS(Spell)
@@ -45,6 +51,8 @@ class Spell {
   optional<SpellId> getUpgrade() const;
   MoveInfo getAIMove(const Creature*) const;
   bool isBlockedBy(Position pos) const;
+  optional<Keybinding> getKeybinding() const;
+  SpellType getType() const;
 
   SERIALIZATION_DECL(Spell)
   template <class Archive>
@@ -65,6 +73,8 @@ class Spell {
   bool SERIAL(targetSelf) = false;
   bool SERIAL(blockedByWall) = true;
   optional<int> SERIAL(maxHits);
+  optional<Keybinding> SERIAL(keybinding);
+  SpellType SERIAL(type) = SpellType::SPELL;
   bool checkTrajectory(const Creature* caster, Position to) const;
 };
 

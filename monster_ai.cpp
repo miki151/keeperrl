@@ -37,7 +37,6 @@
 #include "furniture.h"
 #include "furniture_factory.h"
 #include "file_path.h"
-#include "ranged_weapon.h"
 #include "task_map.h"
 #include "collective_teams.h"
 #include "collective_config.h"
@@ -392,13 +391,9 @@ class Fighter : public Behaviour {
       bool chaseThisEnemy = chase && creature->shouldAIChase(other);
       if (!creature->shouldAIAttack(other)) {
         double dist = creature->getPosition().dist8(other->getPosition()).value_or(100000);
-        if (dist < 7) {
-          if (dist > 3)
-            if (auto move = getFireMove(other))
-              return move;
-          if (chase)
-            if (MoveInfo move = getPanicMove(other))
-              return move;
+        if (dist < 7 && chase) {
+          if (MoveInfo move = getPanicMove(other))
+            return move;
           return getAttackMove(other, chaseThisEnemy);
         }
         return NoMove;
@@ -420,21 +415,6 @@ class Fighter : public Behaviour {
       })};
     else
       return NoMove;
-  }
-
-  MoveInfo getFireMove(Creature* enemy) {
-    auto target = enemy->getPosition();
-    auto trajectory = drawLine(creature->getPosition().getCoord(), target.getCoord())
-        .transform([&](Vec2 v) { return Position(v, target.getLevel()); });
-    if (isObstructed(creature, trajectory))
-      return NoMove;
-    int dist = *trajectory.back().dist8(creature->getPosition());
-    if (dist <= getFiringRange(creature))
-      if (auto action = creature->fire(target))
-        return {1.0, action.append([=](Creature*) {
-            addCombatIntent(enemy, Creature::CombatIntentInfo::Type::ATTACK);
-        })};
-    return NoMove;
   }
 
   MoveInfo getLastSeenMove() {
@@ -510,13 +490,6 @@ class Fighter : public Behaviour {
       return destroyMove;
     } else
       return NoMove;
-  }
-
-  int getFiringRange(const Creature* c) {
-    auto weapon = c->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON);
-    if (weapon.empty())
-      return 0;
-    return weapon.getOnlyElement()->getRangedWeapon()->getMaxDistance();
   }
 
   bool isChokePoint1(Position pos) {
@@ -641,10 +614,6 @@ class Fighter : public Behaviour {
     if (distance == 1)
       if (auto move = considerCircularBlast())
         return move;
-    if (distance > 1) {
-      if (MoveInfo move = getFireMove(other))
-        return move;
-    }
     if (distance > 1) {
       if (chase && !other->getAttributes().dontChase() && !isChaseFrozen(other)) {
         lastSeen = none;

@@ -23,6 +23,7 @@
 #include "position.h"
 #include "event_listener.h"
 #include "game_info.h"
+#include "spell_id.h"
 
 class View;
 class Model;
@@ -96,7 +97,9 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual vector<OtherCreatureCommand> getOtherCreatureCommands(Creature*) const;
 
   optional<Vec2> chooseDirection(const string& question);
-  optional<Position> chooseTarget(Table<PassableInfo>, TargetType, const string& question);
+  using TargetResult = variant<none_t, Position, Keybinding>;
+  TargetResult chooseTarget(Table<PassableInfo> passable, TargetType, const string& message,
+    optional<Keybinding>);
 
   SMapMemory SERIAL(levelMemory);
   SMessageBuffer SERIAL(messageBuffer);
@@ -158,5 +161,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void generateHalluIds();
   ViewIdList shuffleViewId(const ViewIdList&) const;
   void fillCurrentLevelInfo(GameInfo&) const;
+  optional<SpellId> highlightedSpell;
 };
 

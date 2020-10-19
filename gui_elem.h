@@ -309,6 +309,8 @@ class GuiFactory {
   SGuiElem rectangleBorder(Color);
   SGuiElem renderTopLayer(SGuiElem content);
 
+  KeybindingMap* keybindingMap;
+
   private:
 
   SGuiElem sprite(Texture&, Alignment, bool vFlip = false, bool hFlip = false,
@@ -326,7 +328,6 @@ class GuiFactory {
   Renderer& renderer;
   Options* options;
   DragContainer dragContainer;
-  KeybindingMap* keybindingMap;
   DirectoryPath freeImagesPath;
   optional<DirectoryPath> nonFreeImagesPath;
   void loadNonFreeImages(const DirectoryPath&);

@@ -1866,6 +1866,11 @@ static string getDescription(const Effects::Filter& e, const ContentFactory* f) 
   return e.effect->getDescription(f) + " (applied only to " + e.predicate.getName() + ")";
 }
 
+static bool apply(const Effects::ReturnFalse& e, Position pos, Creature* attacker) {
+  e.effect->apply(pos, attacker);
+  return false;
+}
+
 static string getDescription(const Effects::Description& e, const ContentFactory*) {
   return e.text;
 }
@@ -1887,6 +1892,14 @@ static EffectAIIntent shouldAIApply(const Effects::AITargetEnemy& e, const Creat
   if (victim && caster->isEnemy(victim))
     return EffectAIIntent::WANTED;
   return EffectAIIntent::NONE;
+}
+
+static EffectAIIntent shouldAIApply(const Effects::AIMinDistance& e, const Creature* caster, Position pos) {
+  if (caster->getPosition().dist8(pos).value_or(10000) < e.value)
+    if (auto c = pos.getCreature())
+      if (!caster->shouldAIAttack(c))
+        return EffectAIIntent::UNWANTED;
+  return e.effect->shouldAIApply(caster, pos);
 }
 
 Effect::Effect(const EffectType& t) noexcept : effect(t) {

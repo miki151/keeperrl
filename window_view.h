@@ -67,7 +67,8 @@ class WindowView: public View {
       MenuType = MenuType::NORMAL, ScrollPosition* scrollPos = nullptr,
       optional<UserInputId> exitAction = none) override;
   virtual optional<Vec2> chooseDirection(Vec2 playerPos, const string& message) override;
-  virtual optional<Vec2> chooseTarget(Vec2 playerPos, TargetType, Table<PassableInfo> passable, const string& message) override;
+  virtual TargetResult chooseTarget(Vec2 playerPos, TargetType, Table<PassableInfo> passable,
+      const string& message, optional<Keybinding> cycleKey) override;
   virtual bool yesOrNoPrompt(const string& message, bool defaultNo) override;
   virtual bool yesOrNoPromptBelow(const string& message, bool defaultNo) override;
   virtual void animateObject(Vec2 begin, Vec2 end, optional<ViewId> object, optional<FXInfo> fx) override;

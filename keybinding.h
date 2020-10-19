@@ -3,5 +3,6 @@
 #include "util.h"
 
 RICH_ENUM(Keybinding,
-  CREATE_IMP
+  CREATE_IMP,
+  FIRE_PROJECTILE
 );
