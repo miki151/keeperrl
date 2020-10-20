@@ -583,10 +583,11 @@
 {
     {
       ids = { "ZOMBIE_PLAYER" }
-      traits = { FIGHTER WORKER }
+      traits = { FIGHTER WORKER LEADER }
       frequency = 0.5
 #      spawnLocation = FurnitureType "GRAVE"
       requirements = {
+        { 0.0 SunlightState NIGHT }
         { 0.0 AttractionInfo 0 {FurnitureType "COFFIN1"}}
       }
       specialTraits = {

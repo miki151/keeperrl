@@ -83,7 +83,7 @@
       "orders" "installations"
   }
   workshopGroups = { }
-  description = "Brains."
+  description = "Enjoy some brains for Halloween!"
   minionTraits = { LEADER WORKER NO_LIMIT }
   maxPopulation = 1000
   populationString = "zombies"
