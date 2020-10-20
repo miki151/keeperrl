@@ -310,7 +310,7 @@ class GuiBuilder {
   SGuiElem drawChosenCreatureButtons(View::AvatarRole, shared_ptr<int> chosenAvatar, shared_ptr<int> gender, int page,
       const vector<View::AvatarData>&);
   SGuiElem drawCreatureList(const vector<PlayerInfo>&, function<void(UniqueEntity<Creature>::Id)> button,
-      int zoom = 2, int lessSpace = 0, optional<int> maxRows = none);
+      int zoom = 2);
   Color getElemColor(ListElem::ElemMod);
   SGuiElem drawAvatarsForRole(const vector<View::AvatarData>&, shared_ptr<int> avatarPage, shared_ptr<int> chosenAvatar,
       shared_ptr<int> gender, shared_ptr<View::AvatarRole> chosenRole);

@@ -3874,11 +3874,17 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
         WL(labelMultiLineWidth, avatar.description, legendLineHeight, maxWidth, Renderer::textSize, Color::LIGHT_GRAY);
     if (!avatar.teamMembers.empty()) {
       auto members = avatar.teamMembers;
-      sort(members.begin(), members.end(),
+      sort(members.begin() + 1, members.end(),
           [](auto& e1, auto& e2) { return e1.bestAttack.value > e2.bestAttack.value; });
+      auto memberList = WL(getListBuilder);
+      for (auto& member : members) {
+        memberList.addElem(drawMinionAndLevel(member.viewId, member.bestAttack.value, 1), 30);
+        if (memberList.getLength() >= 12)
+          break;
+      }
       description = WL(getListBuilder)
           .addElemAuto(std::move(description))
-          .addElemAuto(drawCreatureList(members, [](auto){}, 1, 5, 1))
+          .addElemAuto(WL(centerHoriz, memberList.buildHorizontalList()))
           .buildVerticalList();
     }
     descriptions.push_back(WL(conditional,
@@ -4257,7 +4263,7 @@ SGuiElem GuiBuilder::drawCreatureTooltip(const PlayerInfo& info) {
 }
 
 SGuiElem GuiBuilder::drawCreatureList(const vector<PlayerInfo>& creatures,
-    function<void(UniqueEntity<Creature>::Id)> button, int zoom, int lessSpace, optional<int> maxRows) {
+    function<void(UniqueEntity<Creature>::Id)> button, int zoom) {
   auto minionLines = WL(getListBuilder, 20 * zoom);
   auto line = WL(getListBuilder, 30 * zoom);
   for (auto& elem : creatures) {
@@ -4274,15 +4280,13 @@ SGuiElem GuiBuilder::drawCreatureList(const vector<PlayerInfo>& creatures,
       line.addElemAuto(std::move(icon));
     if (line.getLength() > 12 / zoom) {
       minionLines.addElemAuto(WL(centerHoriz, line.buildHorizontalList()));
-      minionLines.addSpace(10 * zoom - lessSpace);
+      minionLines.addSpace(10 * zoom);
       line.clear();
-      if (maxRows && minionLines.getLength() / 2 >= *maxRows)
-        break;
     }
   }
-  if (!line.isEmpty() && (!maxRows || minionLines.getLength() < *maxRows)) {
+  if (!line.isEmpty()) {
     minionLines.addElemAuto(WL(centerHoriz, line.buildHorizontalList()));
-    minionLines.addSpace(10 * zoom - lessSpace);
+    minionLines.addSpace(10 * zoom);
   }
   return minionLines.buildVerticalList();
 }
