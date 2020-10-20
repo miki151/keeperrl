@@ -35,6 +35,14 @@ void SpellMap::add(Spell spell, ExperienceType expType, int level) {
     return origLevel(&e1) < origLevel(&e2) || (origLevel(&e1) == origLevel(&e2) && e1.spell.getId() < e2.spell.getId()); });
 }
 
+void SpellMap::remove(SpellId id) {
+  for (int i = 0; i < elems.size(); ++i)
+    if (elems[i].spell.getId() == id) {
+      elems.removeIndexPreserveOrder(i);
+      elems.shrink_to_fit();
+    }
+}
+
 void SpellMap::setAllReady() {
   for (auto& elem : elems)
     elem.timeout = none;

@@ -358,7 +358,7 @@
 "fire trap"
 {
   symbol = "◌"
-  effect =  Name "fire trap" AITargetEnemy CustomArea PlaceFurniture "FIRE_WALL"
+  effect =  Name "fire trap" AITarget Enemy CustomArea PlaceFurniture "FIRE_WALL"
       { {0 -2} {1 -2} {2 -1} {2 0} {2 1} {1 2} {0 2} {-1 2} {-2 1} {-2 0} {-2 -1} {-1 -2} }
   endOnly = true
   range = 8
@@ -471,6 +471,22 @@
   cooldown = 10
   blockedByWall = false
 }
+
+Def TruePredicate() Or { Indoors Not Indoors } End
+
+Def OneTimeAbility(SpellName, SpellEffect, SpellSymbol)
+SpellName
+{
+  effect = AITarget TruePredicate() Name SpellName Description SpellName {
+    SpellEffect
+    RemoveAbility SpellName
+  }
+  symbol = SpellSymbol
+  cooldown = 1
+}
+End
+
+OneTimeAbility("bypass allies", Lasting NO_FRIENDLY_FIRE, "🎯")
 
 Def AnyCreature() Health 0 1 End
 Def NoEffect() Unlock "nothing" End

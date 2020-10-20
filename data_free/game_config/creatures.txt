@@ -1261,6 +1261,7 @@
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
+    spellSchools = { "archer" }
     maxLevelIncrease = {
       MELEE 4
       ARCHERY 7
@@ -2355,6 +2356,7 @@
       "LABORATORY" 0.3
     }
     gender = FEMALE
+    spellSchools = { "archer" }
     maxLevelIncrease = {
       MELEE 4
       ARCHERY 7

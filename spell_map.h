@@ -25,6 +25,7 @@ struct ItemAbility;
 class SpellMap {
   public:
   void add(Spell, ExperienceType, int level);
+  void remove(SpellId);
   GlobalTime getReadyTime(const Creature*, const Spell*) const;
   void setReadyTime(const Creature*, const Spell*, GlobalTime);
   vector<const Spell*> getAvailable(const Creature*) const;

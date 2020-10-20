@@ -50,3 +50,7 @@
   "shove" 4
   "swap positions" 7
 }
+"archer" ARCHERY
+{
+  "bypass allies" 7
+}

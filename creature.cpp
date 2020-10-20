@@ -205,11 +205,11 @@ CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
     if (auto sound = spell->getSound())
       c->addSound(*sound);
     spell->addMessage(c);
-    spell->apply(c, target);
     if (spell->getType() == SpellType::SPELL)
       getGame()->getStatistics().add(StatId::SPELL_CAST);
     c->spellMap->setReadyTime(c, spell, *getGlobalTime() + TimeInterval(spell->getCooldown()));
     c->spendTime();
+    spell->apply(c, target);
   });
 }
 

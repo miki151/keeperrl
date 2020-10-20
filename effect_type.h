@@ -215,6 +215,10 @@ struct GrantAbility {
   SpellId SERIAL(id);
   SERIALIZE_ALL(id)
 };
+struct RemoveAbility {
+  SpellId SERIAL(id);
+  SERIALIZE_ALL(id)
+};
 struct IncreaseMorale {
   double SERIAL(amount);
   SERIALIZE_ALL(amount)
@@ -265,7 +269,9 @@ struct AIBelowHealth : GenericModifierEffect {
   double SERIAL(value);
   SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
 };
-struct AITargetEnemy : GenericModifierEffect {
+struct AITarget : GenericModifierEffect {
+  CreaturePredicate SERIAL(predicate);
+  SERIALIZE_ALL(predicate, SUBCLASS(GenericModifierEffect))
 };
 struct AIMinDistance : GenericModifierEffect {
   int SERIAL(value);
@@ -352,31 +358,32 @@ struct Analytics {
   X(AnimateItems, 48)\
   X(MakeHumanoid, 49)\
   X(GrantAbility, 50)\
-  X(CreatureMessage, 51)\
-  X(SoundEffect, 52)\
-  X(DropItems, 53)\
-  X(FirstSuccessful, 54)\
-  X(PlayerMessage, 55)\
-  X(ColorVariant, 56)\
-  X(Jump, 57)\
-  X(FixedDamage, 58)\
-  X(Fx, 59)\
-  X(Description, 60)\
-  X(Name, 61)\
-  X(AIBelowHealth, 62)\
-  X(AITargetEnemy, 63)\
-  X(AIMinDistance, 64)\
-  X(IncreaseSkill, 65)\
-  X(IncreaseWorkshopSkill, 66)\
-  X(AddAutomatonParts, 67)\
-  X(AddMinionTrait, 68)\
-  X(Caster, 69)\
-  X(RemoveFurniture, 70)\
-  X(SetFlag, 71)\
-  X(TakeItems, 72)\
-  X(Unlock, 73)\
-  X(Analytics, 74)\
-  X(ReturnFalse, 75)\
+  X(RemoveAbility, 51)\
+  X(CreatureMessage, 52)\
+  X(SoundEffect, 53)\
+  X(DropItems, 54)\
+  X(FirstSuccessful, 55)\
+  X(PlayerMessage, 56)\
+  X(ColorVariant, 57)\
+  X(Jump, 58)\
+  X(FixedDamage, 59)\
+  X(Fx, 60)\
+  X(Description, 61)\
+  X(Name, 62)\
+  X(AIBelowHealth, 63)\
+  X(AITarget, 64)\
+  X(AIMinDistance, 65)\
+  X(IncreaseSkill, 66)\
+  X(IncreaseWorkshopSkill, 67)\
+  X(AddAutomatonParts, 68)\
+  X(AddMinionTrait, 69)\
+  X(Caster, 70)\
+  X(RemoveFurniture, 71)\
+  X(SetFlag, 72)\
+  X(TakeItems, 73)\
+  X(Unlock, 74)\
+  X(Analytics, 75)\
+  X(ReturnFalse, 76)\
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

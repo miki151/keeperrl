@@ -1324,6 +1324,20 @@ static string getDescription(const Effects::GrantAbility& e, const ContentFactor
   return "Grants ability: "_s + f->getCreatures().getSpell(e.id)->getName(f);
 }
 
+static bool applyToCreature(const Effects::RemoveAbility& e, Creature* c, Creature*) {
+  bool ret = c->getSpellMap().contains(e.id);
+  c->getSpellMap().remove(e.id);
+  return ret;
+}
+
+static string getName(const Effects::RemoveAbility& e, const ContentFactory* f) {
+  return "remove "_s + f->getCreatures().getSpell(e.id)->getName(f);
+}
+
+static string getDescription(const Effects::RemoveAbility& e, const ContentFactory* f) {
+  return "Removes ability: "_s + f->getCreatures().getSpell(e.id)->getName(f);
+}
+
 static bool applyToCreature(const Effects::IncreaseMorale& e, Creature* c, Creature*) {
   if (e.amount > 0)
     c->you(MsgType::YOUR, "spirits are lifted");
@@ -1885,11 +1899,10 @@ static EffectAIIntent shouldAIApply(const Effects::AIBelowHealth& e, const Creat
   return EffectAIIntent::UNWANTED;
 }
 
-static EffectAIIntent shouldAIApply(const Effects::AITargetEnemy& e, const Creature* caster, Position pos) {
+static EffectAIIntent shouldAIApply(const Effects::AITarget& e, const Creature* caster, Position pos) {
   if (e.effect->shouldAIApply(caster, pos) == EffectAIIntent::UNWANTED)
     return EffectAIIntent::UNWANTED;
-  auto victim = pos.getCreature();
-  if (victim && caster->isEnemy(victim))
+  if (e.predicate.apply(pos, caster))
     return EffectAIIntent::WANTED;
   return EffectAIIntent::NONE;
 }
