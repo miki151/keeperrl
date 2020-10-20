@@ -2059,6 +2059,10 @@ TribeSet Creature::getFriendlyTribes() const {
 }
 
 MovementType Creature::getMovementType() const {
+  return getMovementType(getGame());
+}
+
+MovementType Creature::getMovementType(Game* game) const {
   PROFILE;
   auto time = getGlobalTime();
   return MovementType(hasAlternativeViewId() ? TribeSet::getFull() : getFriendlyTribes(), {
@@ -2069,8 +2073,9 @@ MovementType Creature::getMovementType() const {
     .setDestroyActions(EnumSet<DestroyAction::Type>([this](auto t) { return DestroyAction(t).canNavigate(this); }))
     .setForced(isAffected(LastingEffect::BLIND, time) || getHoldingCreature() || forceMovement)
     .setFireResistant(isAffected(LastingEffect::FIRE_RESISTANT, time))
-    .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE, time) && !isAffected(LastingEffect::DARKNESS_SOURCE, time)
-        && (!getGame() || getGame()->getSunlightInfo().getState() == SunlightState::DAY))
+    .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE, time)
+        && !isAffected(LastingEffect::DARKNESS_SOURCE, time)
+        && (!game || game->getSunlightInfo().getState() == SunlightState::DAY))
     .setCanBuildBridge(isAffected(LastingEffect::BRIDGE_BUILDING_SKILL, time));
 }
 

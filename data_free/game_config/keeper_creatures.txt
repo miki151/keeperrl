@@ -69,4 +69,26 @@
   noLeader = true
   prisoners = false
 }
-
+"5_zombies"
+{
+  creatureId = { "ZOMBIE_PLAYER" }
+  specialTraits = { Lasting {SWARMER} }
+  tribeAlignment = EVIL
+  immigrantGroups = {"zombies"}
+  technology = {}
+  initialTech = { }
+  baseNameGen = "TOWN"
+  buildingGroups = {
+      "structure" "doors" "floors" "storage" "zones" "training_zombies"
+      "orders" "installations"
+  }
+  workshopGroups = { }
+  description = "Brains."
+  minionTraits = { LEADER WORKER NO_LIMIT }
+  maxPopulation = 1000
+  populationString = "zombies"
+  noLeader = true
+  prisoners = false
+  immigrantInterval = 40
+#  unlock = "zombies"
+}

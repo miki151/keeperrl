@@ -579,8 +579,32 @@
       spawnLocation = NearLeader
     }
 }
-"tutorial"
+"zombies"
+{
+    {
+      ids = { "ZOMBIE_PLAYER" }
+      traits = { FIGHTER WORKER }
+      frequency = 0.5
+#      spawnLocation = FurnitureType "GRAVE"
+      requirements = {
+        { 0.0 AttractionInfo 0 {FurnitureType "COFFIN1"}}
+      }
+      specialTraits = {
+         { 0.2 { ExtraIntrinsicAttack
+            HEAD
+            { Intrinsic { "bite_attack" } "fangs" 5 {
+                attackType = BITE
+                attackMsg = BITE
+                victimEffect = {0.1 Lasting POISON} } } } }
+         { 0.1 { ExtraBodyPart HEAD 1}}
+         { 0.3 { Lasting { BLIND } }}
+         { 1.0 { Lasting { SWARMER } }}
+         { 0.3 { Lasting { COLLAPSED } }}
+      }
+    }
 
+}
+"tutorial"
 {
     {
       ids = { "IMP" }

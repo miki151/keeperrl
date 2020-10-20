@@ -177,6 +177,12 @@
         "Train your minions' archery skills here." 0 { TechId "archery" }}
   }
 
+  "training_zombies"
+  {
+    { Furniture {{ "TRAINING_WOOD" } "WOOD" 12 }                   "Wooden dummy"      "Training room"
+        "Train your minions' melee skills here." r {} true  TRAINING_ROOM}
+  }
+
   "crafting"
   {
     { Furniture {{ "WORKSHOP" }   "WOOD" 15 }                      "Workshop"          "Crafting"
