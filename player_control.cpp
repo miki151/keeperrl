@@ -1418,9 +1418,10 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     elem->visitRequirements(makeVisitor(
         [&](const AttractionInfo& attraction) {
           int required = attraction.amountClaimed;
-          requirements.push_back("Requires " + toString(required) + " " +
-              combineWithOr(attraction.types.transform([&](const AttractionType& type) {
-                return AttractionInfo::getAttractionName(collective->getGame()->getContentFactory(), type, required); })));
+          if (required > 0)
+            requirements.push_back("Requires " + toString(required) + " " +
+                combineWithOr(attraction.types.transform([&](const AttractionType& type) {
+                  return AttractionInfo::getAttractionName(collective->getGame()->getContentFactory(), type, required); })));
         },
         [&](const TechId& techId) {
           requirements.push_back("Requires technology: "_s + techId.data());

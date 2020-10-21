@@ -2119,6 +2119,12 @@
       SWARMER 1
     }
   }
+"ZOMBIE_PLAYER" inherit "ZOMBIE"
+{
+  skills = {
+    "DIGGING" 0.2
+  }
+}
 "SKELETON"
   {
     viewId = { "skeleton" }

@@ -35,7 +35,7 @@ void CreatureAttributes::initializeLastingEffects() {
     lastingEffects[effect] = GlobalTime(-500);
   for (auto effect : ENUM_ALL(LastingEffect))
     if (body->isIntrinsicallyAffected(effect))
-      ++permanentEffects[effect];
+      permanentEffects[effect] = 1;
 }
 
 void CreatureAttributes::randomize() {

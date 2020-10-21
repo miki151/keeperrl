@@ -111,7 +111,7 @@ variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View* view,
       "Take your retired keeper for an excursion and conquer some player made dungeons!",
       false,
       OptionId::PLAYER_NAME,
-      info.creatures.transform([&](const auto& c) { return PlayerInfo(c.get(), contentFactory); } )
+      info.creatures.transform([&](const auto& c) { return CreatureInfo(c.get()); } )
     });
   auto result1 = view->chooseAvatar(concat(keeperAvatarData, adventurerAvatarData));
   if (auto option = result1.getValueMaybe<AvatarMenuOption>())

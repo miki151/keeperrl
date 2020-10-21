@@ -468,7 +468,7 @@ bool Position::isUnavailable() const {
 
 bool Position::canEnter(const Creature* c) const {
   PROFILE;
-  return !isUnavailable() && !getCreature() && canEnterEmpty(c->getMovementType());
+  return !isUnavailable() && !getCreature() && canEnterEmpty(c->getMovementType(getGame()));
 }
 
 bool Position::canEnter(const MovementType& t) const {
@@ -478,7 +478,7 @@ bool Position::canEnter(const MovementType& t) const {
 
 bool Position::canEnterEmpty(const Creature* c) const {
   PROFILE;
-  return canEnterEmpty(c->getMovementType());
+  return canEnterEmpty(c->getMovementType(getGame()));
 }
 
 bool Position::canEnterEmpty(const MovementType& movement) const {

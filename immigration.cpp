@@ -288,9 +288,10 @@ static vector<Position> pickSpawnPositions(const vector<Creature*>& creatures, c
   if (allPositions.empty() || creatures.empty())
     return {};
   vector<Position> spawnPos;
+  auto game = allPositions.front().getGame();
   for (auto c : creatures) {
     PROFILE_BLOCK("Best for creature");
-    auto movementType = c->getMovementType();
+    auto movementType = c->getMovementType(game);
     auto goodPos = [&] (const Position& pos) -> optional<Position> {
       if (pos.canEnter(movementType) && !spawnPos.contains(pos))
         return pos;

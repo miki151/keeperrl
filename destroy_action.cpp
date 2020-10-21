@@ -82,8 +82,10 @@ bool DestroyAction::canDestroyFriendly() const {
 bool DestroyAction::canNavigate(const Creature* c) const {
   switch (type) {
     case Type::HOSTILE_DIG:
-      return c->isAffected(LastingEffect::NAVIGATION_DIGGING_SKILL);
+      return c->isAffected(LastingEffect::NAVIGATION_DIGGING_SKILL)
+          && !isOneOf(c->getTribeId(), TribeId::getDarkKeeper(), TribeId::getAdventurer());
     case Type::HOSTILE_DIG_NO_SKILL:
+      return !isOneOf(c->getTribeId(), TribeId::getDarkKeeper(), TribeId::getAdventurer());
     case Type::BASH:
       return true;
     default:

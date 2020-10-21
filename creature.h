@@ -148,6 +148,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const vector<string>& getKillTitles() const;
 
   MovementType getMovementType() const;
+  MovementType getMovementType(Game*) const;
 
   int getDifficultyPoints() const;
 
