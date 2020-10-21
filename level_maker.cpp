@@ -2192,7 +2192,12 @@ PLevelMaker LevelMaker::blackMarket(RandomGen& random, SettlementInfo info, Vec2
 }
 
 PLevelMaker LevelMaker::towerLevel(RandomGen& random, SettlementInfo info, Vec2 size) {
-  auto& building = info.type.getReferenceMaybe<MapLayoutTypes::Builtin>()->buildingInfo;
+  const auto& building = info.type.visit(
+      [&](const MapLayoutTypes::Builtin& b) -> const BuildingInfo& { return b.buildingInfo; },
+      [&](const MapLayoutTypes::Predefined& p) -> const BuildingInfo& { return p.buildingInfo; },
+      [&](const MapLayoutTypes::RandomLayout& b) -> const BuildingInfo& {
+          FATAL << "Random layout not supported for tower level"; fail(); }
+  );
   return PLevelMaker(tower(random, info, false, building));
 }
 
