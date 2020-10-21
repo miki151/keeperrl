@@ -2163,8 +2163,9 @@ CreatureAction Creature::moveTowards(Position pos, bool away, NavigationFlags fl
               return action.append([path = *currentPath](Creature* c) { c->shortestPath = path; });
             }
           if (auto bridge = pos2.getFurniture(FurnitureLayer::GROUND)->getDefaultBridge())
-            if (auto bridgeAction = construct(getPosition().getDir(pos2), *bridge))
-              return bridgeAction.append([path = *currentPath](Creature* c) { c->shortestPath = path; });
+            if (isAffected(LastingEffect::BRIDGE_BUILDING_SKILL))
+              if (auto bridgeAction = construct(getPosition().getDir(pos2), *bridge))
+                return bridgeAction.append([path = *currentPath](Creature* c) { c->shortestPath = path; });
         }
       }
     } else
