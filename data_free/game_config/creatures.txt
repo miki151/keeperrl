@@ -3893,7 +3893,7 @@
       FLYING 1
     }
     name = {
-      name = "Adoxie's left foot"
+      name = "Adoxie's Left Foot"
       pluralName = "Feet"
       fullTitle = true
     }

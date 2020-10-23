@@ -1776,7 +1776,7 @@
 {
   settlement = {
     type = RandomLayout { "adoxie_feet_entry" { 5 5 } "adoxie_feet"}
-    tribe = HUMAN
+    tribe = MONSTER
     race = "altar of Evil God Adoxie"
   }
 }
