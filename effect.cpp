@@ -367,7 +367,7 @@ const char* Effects::IncreaseAttr::get(const char* ifIncrease, const char* ifDec
 }
 
 static bool applyToCreature(const Effects::IncreaseSkill& e, Creature* c, Creature*) {
-  c->you(MsgType::YOUR, ::getName(e.skillid) + e.get(" improves", " wanes"));
+  c->you(MsgType::YOUR, ::getName(e.skillid) + e.get(" skill improves", " skill wanes"));
   c->getAttributes().getSkills().increaseValue(e.skillid, e.amount);
   return true;
 }
