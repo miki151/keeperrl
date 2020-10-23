@@ -39,7 +39,9 @@ class MinionController : public Player {
     vector<TeamMemberAction> ret;
     if (getGame()->getPlayerCreatures().size() == 1 && member != creature)
       ret.push_back(TeamMemberAction::CHANGE_LEADER);
-    if (member->isPlayer() && member != creature && getModel()->getTimeQueue().willMoveThisTurn(member))
+    if (member->isPlayer() && member != creature
+        && member->getPosition().isSameModel(creature->getPosition())
+        && getModel()->getTimeQueue().willMoveThisTurn(member))
       ret.push_back(TeamMemberAction::MOVE_NOW);
     if (getTeam().size() >= 2)
       ret.push_back(TeamMemberAction::REMOVE_MEMBER);
