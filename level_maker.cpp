@@ -2613,7 +2613,6 @@ namespace {
 static PMakerQueue makeMapLayout(const MapLayouts::Layout& layout, const SettlementInfo& info,
     const BuildingInfo& buildingInfo) {
   auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("MOUNTAIN2"))));
   queue->addMaker(unique<MakerQueue>(
       unique<AddAttrib>(SquareAttrib::NO_DIG),
       unique<MapLayoutMaker>(layout, buildingInfo, info.downStairs, info.upStairs, info.tribe)));
@@ -2976,7 +2975,9 @@ PLevelMaker LevelMaker::settlementLevel(const ContentFactory& factory, RandomGen
   queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR")).add(FurnitureType("MOUNTAIN2")).add(SquareAttrib::NO_RESOURCES)));
   auto locations = unique<RandomLocations>();
   auto maker = getSettlementMaker(factory, random, settlement);
-  maker = unique<MakerQueue>(unique<Empty>(SquareChange::reset(FurnitureType("FLOOR"))), std::move(maker));
+  // Due to backward compatibility with mods, don't clear the mountain under a predefined layout
+  if (!settlement.type.contains<MapLayoutTypes::Predefined>())
+    maker = unique<MakerQueue>(unique<Empty>(SquareChange::reset(FurnitureType("FLOOR"))), std::move(maker));
   if (settlement.corpses)
     maker->addMaker(unique<Corpses>(*settlement.corpses));
   locations->add(std::move(maker), getSize(factory.mapLayouts, random, settlement.type), Predicate::alwaysTrue());
