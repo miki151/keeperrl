@@ -2903,6 +2903,8 @@ SGuiElem GuiBuilder::getMainMenuLinks(const string& personalMessage, SGuiElem el
       .addElemAuto(getButton("elementalist", "Wiki", "http://keeperrl.com/wiki/index.php?title=Main_Page"))
       .addSpace(100)
       .addElemAuto(getButton("jester", "Discord", "https://discordapp.com/invite/XZfCCs5"))
+      .addSpace(100)
+      .addElemAuto(getButton("gnome", "Github", "https://github.com/miki151/keeperrl"))
       .buildHorizontalList());
   if (!personalMessage.empty())
     buttonsLine = WL(getListBuilder, legendLineHeight)
