@@ -161,8 +161,13 @@
         "Undead creatures sleep here."}
   }
 
+  "training_zombies"
+  {
+    { Furniture {{ "TRAINING_WOOD" } "WOOD" 12 }                   "Wooden dummy"      "Training room"
+        "Train your minions' melee skills here." r {} true  TRAINING_ROOM}
+  }
 
-  "training"
+  "training_dummies"
   {
     { Furniture {{ "TRAINING_WOOD" } "WOOD" 12 }                   "Wooden dummy"      "Training room"
         "Train your minions' melee skills here." r {} true  TRAINING_ROOM}
@@ -172,15 +177,12 @@
 
     { Furniture {{ "TRAINING_ADA" }  "ADA"  12 }                   "Adamantine dummy"  "Training room"
         "Train your minions' melee skills here."   0 { TechId "iron working" }}
-
-    { Furniture {{ "ARCHERY_RANGE" } "WOOD" 12 }                   "Archery target"    "Training room"
-        "Train your minions' archery skills here." 0 { TechId "archery" }}
   }
 
-  "training_zombies"
+  "training" inherit "training_dummies" append
   {
-    { Furniture {{ "TRAINING_WOOD" } "WOOD" 12 }                   "Wooden dummy"      "Training room"
-        "Train your minions' melee skills here." r {} true  TRAINING_ROOM}
+    { Furniture {{ "ARCHERY_RANGE" } "WOOD" 12 }                   "Archery target"    "Training room"
+        "Train your minions' archery skills here." 0 { TechId "archery" }}
   }
 
   "crafting"
