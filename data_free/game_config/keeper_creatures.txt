@@ -92,3 +92,25 @@
   immigrantInterval = 40
 #  unlock = "zombies"
 }
+"6_cyclops"
+{
+  creatureId = { "CYCLOPS_PLAYER" }
+  tribeAlignment = EVIL
+  immigrantGroups = {}
+  technology = {
+      "alchemy" "advanced alchemy" "alchemical conversion" "iron working" "jewellery"
+      "two-handed weapons" "traps" "distillation"
+  }
+  initialTech = { }
+  buildingGroups = {
+      "structure" "doors" "floors" "storage" "zones" "throne" "beds"
+      "training_dummies" "crafting" "laboratory" "jeweller" "poetry" "distillery" "orders"
+      "installations" "traps"
+  }
+  workshopGroups = { "basic" "traps" }
+  description = ""
+  minionTraits = { LEADER WORKER FIGHTER }
+  maxPopulation = 1
+  prisoners = false
+  unlock = "cyclops_keeper"
+}

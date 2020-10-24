@@ -691,6 +691,33 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
     }
   }
+"CYCLOPS_PLAYER"
+  {
+    viewId = { "cyclops" }
+    attr = {
+      DAMAGE 28
+      DEFENSE 28
+    }
+    body = {
+      type = Humanoid LARGE
+      weight = 400
+    }
+    skills = {
+      "DIGGING" 0.5
+      "WORKSHOP" 0.2
+      "FORGE" 0.2
+      "LABORATORY" 0.2
+      "JEWELER" 0.2
+    }
+    name = {
+      name = "cyclops"
+      pluralName = "cyclopes"
+      firstNameGen = "CYCLOPS"
+    }
+    maxLevelIncrease = {
+      MELEE 16
+    }
+  }
 "YETI"
   {
     viewId = { "yeti" }
