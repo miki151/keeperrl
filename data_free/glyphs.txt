@@ -31,6 +31,7 @@
 "demon_den_trigger" ^ blue
 "armor_chest" = brown
 "treasure_chest" = yellow
+"chest" = yellow
 "ada_chest" = blue
 "pamphlet_chest" = brown
 "knife_chest" = green

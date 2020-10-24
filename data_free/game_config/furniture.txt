@@ -910,6 +910,22 @@
     RemoveFurniture "BLACKSMITH_CHEST"
   }
 }
+"DRAGON_CHEST" inherit "ARMOR_CHEST"
+{
+  fire = 0
+  usageType = UsageEffect "open" {
+    CreatureMessage "open the chest" "opens the chest"
+    CreatureMessage "find an item inside" "finds an item inside"
+    ChooseRandom {
+      DropItems {"GoldPiece"} {30 100} 
+      DropItems {PrefixChance 1 {"Sword"}} 1
+      DropItems {PrefixChance 1 {"BattleAxe"}} 1
+      DropItems {PrefixChance 1 {"WarHammer"}} 1
+      DropItems {PrefixChance 1 {"GoldenStaff"}} 1
+    }
+    RemoveFurniture "DRAGON_CHEST"
+  }
+}
 "OPENED_CHEST"
 {
   name = "opened chest"

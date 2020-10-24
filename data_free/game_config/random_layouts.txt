@@ -690,3 +690,19 @@ Def ZLevelCastle(Type) {
 End
 
 "z_level_castle" ZLevelCastle("lava")
+
+Def LavaCave() {
+  Set("hard_rock")
+  CellularAutomaton(Reset("lava"), 0.55)
+  CellularAutomaton(Reset("floor"), 0.45)
+  Inside(2, SplitH(0.3, SplitV(0.3, 
+      Place({4 4}, {Reset("stone_floor") Inside(1, Set("chest"))}, 1),
+      {}), {}))
+  Inside(2, SplitH(0.7, {}, SplitV(0.7, {},
+    Place({1 1}, {Inside(-1, {Remove("hard_rock", "lava") Set("floor")}) Set("up_stairs0")}, 1, On("hard_rock")))))
+  Connect(Or(On("up_stairs0"), On("chest")), 30, Not On("floor"), {Set("floor") Remove("lava", "hard_rock")})
+  Filter(Not On("stone_floor"), Set("no_territory"))
+}
+End
+
+"lava_cave" LavaCave()

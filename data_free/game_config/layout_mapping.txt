@@ -71,3 +71,7 @@
 "blacksmith" inherit "default" append {
   "down_stairs0" Stairs DOWN "FORGE_STAIRS" 0
 }
+
+"dragon" inherit "default" append {
+  "chest" Place "DRAGON_CHEST"
+}

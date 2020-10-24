@@ -597,13 +597,16 @@
 "RED_DRAGON"
 {
   settlement = {
-    type = Builtin CAVE "DUNGEON"
+    type = RandomLayout { "lava_cave" { 30 30 } "dragon" }
     inhabitants = {
       leader = { { "RED_DRAGON" } }
+      fighters = {
+        count = {4 5}
+        all = { 1 "FIRE_ELEMENTAL" }
+      }
     }
     race = "dragon"
     tribe = MONSTER
-    shopItems = {{16 20} "dragonCave" }
   }
   config = {
     leaderAsFighter = true
@@ -624,6 +627,12 @@
     welcomeMessage = DRAGON_WELCOME
   }
   createOnBones = 0.1 { "KNIGHTS" "DWARVES" "GREEN_DRAGON" "ELEMENTALIST" }
+  levelConnection = {
+    topLevel = ExtraEnemy {"MAIN_DUNGEON_ENTRY"}
+    levels = {
+      { MainEnemy {32 32} BASIC }
+    }
+  }
 }
 "BLACK_DRAGON" inherit "RED_DRAGON"
 {
