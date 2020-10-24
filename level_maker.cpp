@@ -3007,7 +3007,7 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
     maker->addMaker(unique<RandomLocations>(makeVec<PLevelMaker>(std::move(startingPosMaker)), makeVec(Vec2(1, 1)),
         Predicate::canEnter(MovementTrait::WALK)));
     if (settlement->corpses)
-      queue->addMaker(unique<Corpses>(*settlement->corpses));
+      maker->addMaker(unique<Corpses>(*settlement->corpses));
     if (settlement->surroundWithResources > 0)
       surroundWithResources.push_back({maker.get(), *settlement});
     // assign the whole settlement maker to startingPos, otherwise resource distance constraint doesn't work

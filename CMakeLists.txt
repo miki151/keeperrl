@@ -14,7 +14,7 @@ set(STDAFX_H_GCH "${CMAKE_CURRENT_BINARY_DIR}/stdagx.h.gch")
 # set debug cxxflags
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wimplicit-fallthrough -Wno-unused-function")
 #if ((${CMAKE_BUILD_TYPE} MATCHES "Debug") AND (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L ${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/linux64/ -lsteam_api -Wl,-rpath=.")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld -L ${CMAKE_CURRENT_SOURCE_DIR}/extern/steamworks/redistributable_bin/linux64/ -lsteam_api -Wl,-rpath=.")
   #endif()
 
 # additional cmake modules directory
@@ -77,23 +77,11 @@ add_custom_command(
     COMMENT "Generating ${STDAFX_H_GCH}"
 )
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include-pch ${STDAFX_H_GCH}")
 endif()
 target_sources(keeper PRIVATE ${STDAFX_H_GCH})
 endif()
 
-if(DATA_DIR)
-    target_compile_definitions(keeper PRIVATE DATA_DIR=${DATA_DIR})
-endif()
-if(USER_DIR)
-    target_compile_definitions(keeper PRIVATE USER_DIR=${USER_DIR})
-endif()
-if(DEBUG_STL)
-    target_compile_definitions(keeper PRIVATE DEBUG_STL=1)
-endif()
-if(TEXT_SERIALIZATION)
-    target_compile_definitions(keeper PRIVATE TEXT_SERIALIZATION=1)
-endif()
 if(ENABLE_LOCAL_USER_DIR)
     target_compile_definitions(keeper PRIVATE ENABLE_LOCAL_USER_DIR=1)
 endif()

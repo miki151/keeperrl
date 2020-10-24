@@ -274,6 +274,7 @@ static int getNumFrames(const vector<FilePath>& files, int tileWidth) {
   int ret = 0;
   for (int i : All(files)) {
     SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath());
+    CHECK(im) << SDL::IMG_GetError();
     auto dest = OnExit([&] { SDL::SDL_FreeSurface(im); });
     ret += im->w / tileWidth;
   }
