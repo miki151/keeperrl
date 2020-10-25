@@ -53,6 +53,7 @@ class Spell {
   bool isBlockedBy(Position pos) const;
   optional<Keybinding> getKeybinding() const;
   SpellType getType() const;
+  bool isFriendlyFire(const Creature* caster, Position to) const;
 
   SERIALIZATION_DECL(Spell)
   template <class Archive>

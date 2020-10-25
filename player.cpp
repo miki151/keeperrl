@@ -12,6 +12,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
+#include "enums.h"
 #include "stdafx.h"
 
 #include "player.h"
@@ -449,13 +450,33 @@ void Player::fireAction() {
       if (res.contains<none_t>())
         break;
       if (auto pos = res.getValueMaybe<Position>()) {
-        tryToPerform(creature->castSpell(spell, *pos));
+        tryToCast(spell, *pos);
         break;
       }
       if (res.getValueMaybe<Keybinding>())
         continue;
     }
   highlightedSpell = none;
+}
+
+void Player::tryToCast(const Spell* spell, Position target) {
+  if (spell->isFriendlyFire(creature, target)) {
+    if (creature->isAffected(LastingEffect::PEACEFULNESS)) {
+      creature->privateMessage("You feel that doing this goes against your beliefs.");
+      return;
+    }
+    optional<int> res = 0;
+    if (friendlyFireWarningCooldown.value_or(-10000_global) < getGame()->getGlobalTime())
+      res = getView()->chooseFromList("", {
+          ListElem("This move might harm your allies and make them hostile. Continue?", ListElem::TITLE),
+          ListElem("Yes"), ListElem("No"), ListElem("Yes, and don't ask for another 50 turns")
+      }, 0, MenuType::YES_NO);
+    if (res == 2)
+      friendlyFireWarningCooldown = getGame()->getGlobalTime() + 50_visible;
+    if (!res || res == 1)
+      return;
+  }
+  tryToPerform(creature->castSpell(spell, target));
 }
 
 void Player::spellAction(int id) {
@@ -477,7 +498,7 @@ void Player::spellAction(int id) {
       }
       if (auto target = chooseTarget(std::move(passable), spell->isEndOnly() ? TargetType::POSITION : TargetType::TRAJECTORY,
           "Which direction?", none).getValueMaybe<Position>())
-        tryToPerform(creature->castSpell(spell, *target));
+        tryToCast(spell, *target);
     }
   }
 }
@@ -508,7 +529,8 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(Creature* 
   if (creature->isEnemy(c)) {
     genAction(1, ViewObjectAction::ATTACK, true, creature->attack(c));
   } else {
-    genAction(1, ViewObjectAction::ATTACK, false, creature->attack(c));
+    if (!creature->isAffected(LastingEffect::PEACEFULNESS))
+      genAction(1, ViewObjectAction::ATTACK, false, creature->attack(c));
     genAction(1, ViewObjectAction::PET, false, creature->pet(c));
   }
   if (creature == c)

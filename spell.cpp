@@ -130,6 +130,17 @@ optional<SpellId> Spell::getUpgrade() const {
   return upgrade;
 }
 
+bool Spell::isFriendlyFire(const Creature* c, Position to) const {
+  PROFILE;
+  if (endOnly)
+    return effect->shouldAIApply(c, to) == EffectAIIntent::UNWANTED;
+  Position from = c->getPosition();
+  for (auto& v : drawLine(from, to))
+    if (v != from && effect->shouldAIApply(c, v) == EffectAIIntent::UNWANTED)
+      return true;
+  return false;
+}
+
 bool Spell::checkTrajectory(const Creature* c, Position to) const {
   PROFILE;
   Position from = c->getPosition();

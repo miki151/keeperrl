@@ -38,6 +38,7 @@ class MessageBuffer;
 class UnknownLocations;
 class DungeonLevel;
 class FurnitureUsageType;
+class Spell;
 
 class Player : public Controller, public CreatureView, public EventListener<Player> {
   public:
@@ -137,6 +138,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void giveAction(vector<Item*>);
   void spellAction(int);
   void fireAction();
+  void tryToCast(const Spell*, Position target);
   void getItemNames(vector<Item*> it, vector<ListElem>& names, vector<vector<Item*> >& groups,
       ItemPredicate = alwaysTrue<const Item*>());
   string getInventoryItemName(const Item*, bool plural) const;
@@ -162,5 +164,6 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   ViewIdList shuffleViewId(const ViewIdList&) const;
   void fillCurrentLevelInfo(GameInfo&) const;
   optional<SpellId> highlightedSpell;
+  optional<GlobalTime> friendlyFireWarningCooldown;
 };
 
