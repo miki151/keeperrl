@@ -201,7 +201,9 @@ void Creature::pushAttributes(CreatureAttributes attr, SpellMap spells) {
 }
 
 void Creature::setAttributes(CreatureAttributes attr, SpellMap spells) {
+  auto stunnedTimeout = attributes->getTimeOut(LastingEffect::STUNNED);
   attributes = std::move(attr);
+  attributes->addLastingEffect(LastingEffect::STUNNED, stunnedTimeout);
   modViewObject() = attributes->createViewObject();
   modViewObject().setGenericId(getUniqueId().getGenericId());
   modViewObject().setModifier(ViewObject::Modifier::CREATURE);
