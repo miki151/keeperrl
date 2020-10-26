@@ -613,6 +613,7 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::POLYMORPHED:
         c->popAttributes();
         c->verb("return to your", "returns to "_s + his(c->getAttributes().getGender()), "previous form");
+        c->addFX({FXName::SPAWN});
         break;
       default:
         break;
