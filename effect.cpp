@@ -1942,26 +1942,11 @@ static string getName(const Effects::Name& e, const ContentFactory*) {
   return e.text;
 }
 
-static EffectAIIntent shouldAIApply(const Effects::AIBelowHealth& e, const Creature* caster, Position pos) {
-  if (caster->getBody().getHealth() <= e.value)
-    return e.effect->shouldAIApply(caster, pos);
-  return EffectAIIntent::UNWANTED;
-}
-
-static EffectAIIntent shouldAIApply(const Effects::AITarget& e, const Creature* caster, Position pos) {
-  if (e.effect->shouldAIApply(caster, pos) == EffectAIIntent::UNWANTED)
-    return EffectAIIntent::UNWANTED;
-  if (e.predicate.apply(pos, caster))
-    return EffectAIIntent::WANTED;
-  return EffectAIIntent::NONE;
-}
-
-static EffectAIIntent shouldAIApply(const Effects::AIMinDistance& e, const Creature* caster, Position pos) {
-  if (caster->getPosition().dist8(pos).value_or(10000) < e.value)
-    if (auto c = pos.getCreature())
-      if (!caster->shouldAIAttack(c))
-        return EffectAIIntent::UNWANTED;
-  return e.effect->shouldAIApply(caster, pos);
+static EffectAIIntent shouldAIApply(const Effects::AI& e, const Creature* caster, Position pos) {
+  auto origRes = e.effect->shouldAIApply(caster, pos);
+  if (origRes == e.from && e.predicate.apply(pos, caster))
+    return e.to;
+  return origRes;
 }
 
 Effect::Effect(const EffectType& t) noexcept : effect(t) {

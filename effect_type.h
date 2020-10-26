@@ -1,5 +1,6 @@
 #pragma once
 
+#include "enums.h"
 #include "util.h"
 #include "effect.h"
 #include "creature_id.h"
@@ -266,17 +267,11 @@ struct Name : GenericModifierEffect {
   string SERIAL(text);
   SERIALIZE_ALL(text, SUBCLASS(GenericModifierEffect))
 };
-struct AIBelowHealth : GenericModifierEffect {
-  double SERIAL(value);
-  SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
-};
-struct AITarget : GenericModifierEffect {
+struct AI : GenericModifierEffect {
   CreaturePredicate SERIAL(predicate);
-  SERIALIZE_ALL(predicate, SUBCLASS(GenericModifierEffect))
-};
-struct AIMinDistance : GenericModifierEffect {
-  int SERIAL(value);
-  SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
+  EffectAIIntent SERIAL(from);
+  EffectAIIntent SERIAL(to);
+  SERIALIZE_ALL(predicate, from, to, SUBCLASS(GenericModifierEffect))
 };
 struct ReturnFalse : GenericModifierEffect {
 };
@@ -384,23 +379,21 @@ struct SetViewId {
   X(Fx, 60)\
   X(Description, 61)\
   X(Name, 62)\
-  X(AIBelowHealth, 63)\
-  X(AITarget, 64)\
-  X(AIMinDistance, 65)\
-  X(IncreaseSkill, 66)\
-  X(IncreaseWorkshopSkill, 67)\
-  X(AddAutomatonParts, 68)\
-  X(AddMinionTrait, 69)\
-  X(Caster, 70)\
-  X(RemoveFurniture, 71)\
-  X(SetFlag, 72)\
-  X(TakeItems, 73)\
-  X(Unlock, 74)\
-  X(Analytics, 75)\
-  X(ReturnFalse, 76)\
-  X(Polymorph, 77)\
-  X(SetCreatureName, 78)\
-  X(SetViewId, 79)
+  X(AI, 63)\
+  X(IncreaseSkill, 64)\
+  X(IncreaseWorkshopSkill, 65)\
+  X(AddAutomatonParts, 66)\
+  X(AddMinionTrait, 67)\
+  X(Caster, 68)\
+  X(RemoveFurniture, 69)\
+  X(SetFlag, 70)\
+  X(TakeItems, 71)\
+  X(Unlock, 72)\
+  X(Analytics, 73)\
+  X(ReturnFalse, 74)\
+  X(Polymorph, 75)\
+  X(SetCreatureName, 76)\
+  X(SetViewId, 77)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

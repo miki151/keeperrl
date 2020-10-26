@@ -172,6 +172,28 @@ static string getNameNegated(CreaturePredicates::Night m) {
   return "during the day";
 }
 
+static string getName(const CreaturePredicates::Distance& p) {
+  auto ret = "distance"_s;
+  if (p.min)
+    ret += " from " + toString(*p.min);
+  if (p.max)
+    ret += " up to " + toString(*p.max);
+  return ret;
+}
+
+static bool apply(const CreaturePredicates::Distance& e, Position pos, const Creature* attacker) {
+  auto dist = attacker->getPosition().dist8(pos).value_or(10000);
+  return dist >= e.min.value_or(-1) && dist <= e.max.value_or(10000);
+}
+
+static string getName(const CreaturePredicates::AIAfraidOf&) {
+  return "AI afraid of";
+}
+
+static bool applyToCreature(const CreaturePredicates::AIAfraidOf& e, const Creature* victim, const Creature* attacker) {
+  return !!attacker && !attacker->shouldAIAttack(victim);
+}
+
 static bool apply(CreaturePredicates::Indoors m, Position pos, const Creature*) {
   return pos.isCovered();
 }

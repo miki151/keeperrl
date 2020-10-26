@@ -18,6 +18,7 @@ SIMPLE_PREDICATE(Automaton);
 SIMPLE_PREDICATE(Hidden);
 SIMPLE_PREDICATE(Indoors);
 SIMPLE_PREDICATE(Night);
+SIMPLE_PREDICATE(AIAfraidOf);
 
 struct HatedBy {
   LastingEffect SERIAL(effect);
@@ -71,6 +72,12 @@ struct Or {
   SERIALIZE_ALL(pred)
 };
 
+struct Distance {
+  optional<int> SERIAL(min);
+  optional<int> SERIAL(max);
+  SERIALIZE_ALL(min, max)
+};
+
 #define CREATURE_PREDICATE_LIST\
   X(Enemy, 0)\
   X(Automaton, 1)\
@@ -91,7 +98,9 @@ struct Or {
   X(And, 16)\
   X(Or, 17)\
   X(Health, 18)\
-  X(CreatureId, 19)
+  X(CreatureId, 19)\
+  X(Distance, 20)\
+  X(AIAfraidOf, 21)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

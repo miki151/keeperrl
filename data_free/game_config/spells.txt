@@ -358,7 +358,7 @@
 "fire trap"
 {
   symbol = "◌"
-  effect =  Name "fire trap" AITarget Enemy CustomArea PlaceFurniture "FIRE_WALL"
+  effect =  Name "fire trap" AI Enemy NONE WANTED AI Not Enemy WANTED NONE CustomArea PlaceFurniture "FIRE_WALL"
       { {0 -2} {1 -2} {2 -1} {2 0} {2 1} {1 2} {0 2} {-1 2} {-2 1} {-2 0} {-2 -1} {-1 -2} }
   endOnly = true
   range = 8
@@ -472,12 +472,10 @@
   blockedByWall = false
 }
 
-Def TruePredicate() Or { Indoors Not Indoors } End
-
 Def OneTimeAbility(SpellName, SpellEffect, SpellSymbol)
 SpellName
 {
-  effect = AITarget TruePredicate() Name SpellName Description SpellName {
+  effect = AI And{} NONE WANTED Name SpellName Description SpellName {
     SpellEffect
     RemoveAbility SpellName
   }
@@ -487,7 +485,7 @@ SpellName
 End
 
 OneTimeAbility("ennoblement", { SetViewId {"vampire_lord"} SetCreatureName "vampire lord" }, "X")
-OneTimeAbility("bypass allies", Lasting NO_FRIENDLY_FIRE, "🎯")
+OneTimeAbility("bypass allies", Permanent NO_FRIENDLY_FIRE, "🎯")
 
 
 Def AnyCreature() Health 0 1 End
@@ -496,7 +494,7 @@ Def NoEffect() Unlock "nothing" End
 "shoot arrow"
 {
   symbol = "↣"
-  effect = AIMinDistance 4 Name "shoot arrow" Description "Shoots an arrow" {
+  effect = AI And{Distance none 4 AIAfraidOf} WANTED UNWANTED Name "shoot arrow" Description "Shoots an arrow" {
     Filter Attacker Not LastingEffect NO_FRIENDLY_FIRE {
       CreatureMessage "are hit by the arrow" "is hit by the arrow"
       Damage RANGED_DAMAGE SHOOT
