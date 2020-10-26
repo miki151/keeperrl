@@ -54,3 +54,7 @@
 {
   "bypass allies" 7
 }
+"vampire" SPELL
+{
+  "ennoblement" 1
+}

@@ -1340,6 +1340,32 @@ static string getDescription(const Effects::Polymorph& e, const ContentFactory* 
   return "Polymorphs into a " + f->getCreatures().getName(e.into);
 }
 
+static bool applyToCreature(const Effects::SetCreatureName& e, Creature* c, Creature*) {
+  c->getName().setBare(e.value);
+  return true;
+}
+
+static string getName(const Effects::SetCreatureName& e, const ContentFactory* f) {
+  return "change name";
+}
+
+static string getDescription(const Effects::SetCreatureName& e, const ContentFactory* f) {
+  return "Changes creature's name to \"" + e.value + "\"";
+}
+
+static bool applyToCreature(const Effects::SetViewId& e, Creature* c, Creature*) {
+  c->modViewObject().setId(e.value);
+  return true;
+}
+
+static string getName(const Effects::SetViewId& e, const ContentFactory* f) {
+  return "set sprite";
+}
+
+static string getDescription(const Effects::SetViewId& e, const ContentFactory* f) {
+  return "Changes creature's sprite";
+}
+
 static bool applyToCreature(const Effects::RemoveAbility& e, Creature* c, Creature*) {
   bool ret = c->getSpellMap().contains(e.id);
   c->getSpellMap().remove(e.id);

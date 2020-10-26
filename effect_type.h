@@ -309,6 +309,14 @@ struct Polymorph {
   CreatureId SERIAL(into);
   SERIALIZE_ALL(into)
 };
+struct SetCreatureName {
+  string SERIAL(value);
+  SERIALIZE_ALL(value)
+};
+struct SetViewId {
+  ViewId SERIAL(value);
+  SERIALIZE_ALL(value)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -388,7 +396,9 @@ struct Polymorph {
   X(Unlock, 74)\
   X(Analytics, 75)\
   X(ReturnFalse, 76)\
-  X(Polymorph, 77)
+  X(Polymorph, 77)\
+  X(SetCreatureName, 78)\
+  X(SetViewId, 79)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
