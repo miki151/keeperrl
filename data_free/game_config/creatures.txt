@@ -1670,6 +1670,7 @@
     name = {
       name = "warrior"
     }
+    spells = { "berserker" }
     hatedByEffect = HATE_HUMANS
     inventory = {
       { "LeatherArmor"}

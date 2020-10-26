@@ -557,3 +557,13 @@ Def NoEffect() Unlock "nothing" End
   message = "" ""
   cooldown = 1
 }
+"berserker"
+{
+  symbol = "🐻"
+  effect = Name "berskerker" Description "Change into a bear!" AI Health 0 0.4 NONE WANTED {
+    Polymorph "CAVE_BEAR" 30
+    IncreaseAttr DAMAGE 20
+  }
+  message = "" ""
+  cooldown = 100
+}
