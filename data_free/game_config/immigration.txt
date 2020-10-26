@@ -495,7 +495,7 @@
       }
     }
     {
-      ids = { "JESTER_PLAYER" }
+      ids = { "JESTER" }
       traits = { FIGHTER }
       frequency = 0.1
       requirements = {

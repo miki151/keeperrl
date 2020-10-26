@@ -1270,7 +1270,7 @@
     }
     hatedByEffect = HATE_HUMANS
   }
-"JESTER_PLAYER"
+"JESTER"
   {
     viewId = { "jester" }
     attr = {
@@ -1283,6 +1283,7 @@
     permanentEffects = {
       MAGIC_RESISTANCE 1
     }
+    spells = { "chicken" }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     name = {
@@ -1516,26 +1517,6 @@
       name = "Father O'Blivion"
       fullTitle = true
     }
-  }
-"JESTER"
-  {
-    viewId = { "jester" }
-    attr = {
-      DAMAGE 8
-      DEFENSE 8 
-    }
-    body = {
-      type = Humanoid LARGE
-    }
-    permanentEffects = {
-      MAGIC_RESISTANCE 1
-    }
-    chatReactionFriendly = "curses all dungeons"
-    chatReactionHostile = "\"Die!\""
-    name = {
-      name = "jester"
-    }
-    hatedByEffect = HATE_HUMANS
   }
 "DUKE"
   {

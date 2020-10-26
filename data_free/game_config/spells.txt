@@ -538,14 +538,16 @@ Def NoEffect() Unlock "nothing" End
 "chicken"
 {
   symbol = "🐔"
-  effect = Name "chicken" Filter Not CreatureId "CHICKEN" AI Enemy UNWANTED WANTED {
+  effect = Name "chicken" Description "Turn an enemy into a chicken!"
+      Filter Not CreatureId "CHICKEN" AI Enemy UNWANTED WANTED {
     Polymorph "CHICKEN" 30
     Permanent INVULNERABLE
   }
   range = 5
   endOnly = true
   targetSelf = true
-  cooldown = 200
+  cooldown = 50
+  message = "play a trick!" "plays a trick!"
 }
 "shapeshift"
 {
