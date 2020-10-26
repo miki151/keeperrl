@@ -896,6 +896,10 @@ static bool apply(const Effects::EmitPoisonGas& m, Position pos, Creature*) {
   return true;
 }
 
+static EffectAIIntent shouldAIApplyToCreature(const Effects::EmitPoisonGas&, const Creature* victim, bool isEnemy) {
+  return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+}
+
 static string getName(const Effects::PlaceFurniture& e, const ContentFactory* c) {
   return c->furniture.getData(e.furniture).getName();
 }
@@ -1326,7 +1330,16 @@ static string getDescription(const Effects::GrantAbility& e, const ContentFactor
 
 static bool applyToCreature(const Effects::Polymorph& e, Creature* c, Creature*) {
   auto& factory = c->getGame()->getContentFactory()->getCreatures();
-  auto attributes = factory.getAttributesFromId(e.into);
+  auto attributes = [&] {
+    if (e.into)
+      return factory.getAttributesFromId(*e.into);
+    for (auto id : Random.permutation(factory.getAllCreatures())) {
+      auto attr = factory.getAttributesFromId(id);
+      if (attr.getBody().getMaterial() == BodyMaterial::FLESH && !attr.isAffectedPermanently(LastingEffect::PLAGUE))
+        return attr;
+    }
+    fail();
+  }();
   auto spells = factory.getSpellMap(attributes);
   auto origName = c->getName().the();
   if (e.timeout) {
@@ -1336,6 +1349,7 @@ static bool applyToCreature(const Effects::Polymorph& e, Creature* c, Creature*)
     c->setAttributes(std::move(attributes), std::move(spells));
   c->secondPerson("You polymorph into " + c->getName().a() + "!");
   c->thirdPerson(origName + " polymorphs into " + c->getName().a() + "!");
+  summonFX(c->getPosition());
   return true;
 }
 
@@ -1344,7 +1358,7 @@ static string getName(const Effects::Polymorph& e, const ContentFactory* f) {
 }
 
 static string getDescription(const Effects::Polymorph& e, const ContentFactory* f) {
-  return "Polymorphs into a " + f->getCreatures().getName(e.into);
+  return "Polymorphs into a " + (e.into ? f->getCreatures().getName(*e.into) : "random creature"_s);
 }
 
 static bool applyToCreature(const Effects::SetCreatureName& e, Creature* c, Creature*) {

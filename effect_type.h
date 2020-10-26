@@ -302,7 +302,7 @@ struct Analytics {
   SERIALIZE_ALL(name, value)
 };
 struct Polymorph {
-  CreatureId SERIAL(into);
+  optional<CreatureId> SERIAL(into);
   optional<TimeInterval> SERIAL(timeout);
   SERIALIZE_ALL(into, timeout)
 };
