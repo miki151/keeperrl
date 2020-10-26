@@ -62,7 +62,8 @@ vector<string> Spell::getDescription(const ContentFactory* f) const {
 }
 
 void Spell::addMessage(Creature* c) const {
-  c->verb(message.first, message.second);
+  if (!message.first.empty())
+    c->verb(message.first, message.second);
 }
 
 void Spell::apply(Creature* c, Position target) const {

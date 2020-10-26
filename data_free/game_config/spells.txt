@@ -535,4 +535,25 @@ Def NoEffect() Unlock "nothing" End
   message = "repair the automaton" "repairs the automaton"
   type = ABILITY
 }
-
+"chicken"
+{
+  symbol = "🐔"
+  effect = Name "chicken" Filter Not CreatureId "CHICKEN" AI Enemy UNWANTED WANTED {
+    Polymorph "CHICKEN" 30
+    Permanent INVULNERABLE
+  }
+  range = 5
+  endOnly = true
+  targetSelf = true
+  cooldown = 200
+}
+"shapeshift"
+{
+  symbol = "⇝"
+  effect = Name "shapeshift" Description "Change into a random monster" AI And {} NONE WANTED {
+    Polymorph none 100
+    SetCreatureName "shapeshifter"
+  }
+  message = "" ""
+  cooldown = 1
+}
