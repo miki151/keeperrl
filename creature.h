@@ -134,6 +134,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const CreatureAttributes& getAttributes() const;
   CreatureAttributes& getAttributes();
   void setAttributes(CreatureAttributes, SpellMap);
+  void pushAttributes(CreatureAttributes, SpellMap);
+  void popAttributes();
   const Body& getBody() const;
   Body& getBody();
   bool isDead() const;
@@ -369,6 +371,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool considerSavingLife(DropType, const Creature* attacker);
   vector<AdjectiveInfo> getSpecialAttrAdjectives(bool good) const;
   vector<AutomatonPart> SERIAL(automatonParts);
+  vector<pair<CreatureAttributes, SpellMap>> SERIAL(attributesStack);
 };
 
 struct AdjectiveInfo {

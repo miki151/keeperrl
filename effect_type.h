@@ -12,6 +12,7 @@
 #include "fx_info.h"
 #include "workshop_type.h"
 #include "creature_predicate.h"
+#include "view_id.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -307,7 +308,8 @@ struct Analytics {
 };
 struct Polymorph {
   CreatureId SERIAL(into);
-  SERIALIZE_ALL(into)
+  optional<TimeInterval> SERIAL(timeout);
+  SERIALIZE_ALL(into, timeout)
 };
 struct SetCreatureName {
   string SERIAL(value);

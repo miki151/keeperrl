@@ -68,7 +68,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
   ar(deathTime, hidden, lastMoveCounter, captureHealth);
   ar(deathReason, nextPosIntent, globalTime, drops);
-  ar(unknownAttackers, privateEnemies, holding);
+  ar(unknownAttackers, privateEnemies, holding, attributesStack);
   ar(controllerStack, kills, statuses, automatonParts);
   ar(difficultyPoints, points, capture, spellMap, killTitles, shamanSummons);
   ar(vision, debt, highestAttackValueEver, lastCombatIntent, hitsInfo, primaryViewId);
@@ -188,9 +188,23 @@ CreatureAttributes& Creature::getAttributes() {
   return *attributes;
 }
 
+void Creature::popAttributes() {
+  if (!attributesStack.empty()) {
+    setAttributes(std::move(attributesStack.back().first), std::move(attributesStack.back().second));
+    attributesStack.pop_back();
+  }
+}
+
+void Creature::pushAttributes(CreatureAttributes attr, SpellMap spells) {
+  attributesStack.push_back(make_pair(std::move(*attributes), std::move(*spellMap)));
+  setAttributes(std::move(attr), std::move(spells));
+}
+
 void Creature::setAttributes(CreatureAttributes attr, SpellMap spells) {
   attributes = std::move(attr);
   modViewObject() = attributes->createViewObject();
+  modViewObject().setGenericId(getUniqueId().getGenericId());
+  modViewObject().setModifier(ViewObject::Modifier::CREATURE);
   spellMap = std::move(spells);
 }
 

@@ -1328,7 +1328,12 @@ static bool applyToCreature(const Effects::Polymorph& e, Creature* c, Creature*)
   auto& factory = c->getGame()->getContentFactory()->getCreatures();
   auto attributes = factory.getAttributesFromId(e.into);
   auto spells = factory.getSpellMap(attributes);
-  c->setAttributes(std::move(attributes), std::move(spells));
+  if (e.timeout) {
+    c->pushAttributes(std::move(attributes), std::move(spells));
+    c->addEffect(LastingEffect::POLYMORPHED, *e.timeout);
+  } else
+    c->setAttributes(std::move(attributes), std::move(spells));
+  c->verb("polymorph", "polymorphs", "into " + c->getName().a() + "!");
   return true;
 }
 

@@ -16,6 +16,7 @@
 #include "territory.h"
 #include "health_type.h"
 #include "attack_trigger.h"
+#include "gender.h"
 
 static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
   switch (effect) {
@@ -339,6 +340,8 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::NO_FRIENDLY_FIRE:
         c->you(MsgType::YOUR, "projectiles won't hit allies");
         break;
+      case LastingEffect::POLYMORPHED:
+        break;
     }
 }
 
@@ -607,6 +610,10 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::NO_FRIENDLY_FIRE:
         c->you(MsgType::YOUR, "projectiles will hit allies");
         break;
+      case LastingEffect::POLYMORPHED:
+        c->popAttributes();
+        c->verb("return to your", "returns to "_s + his(c->getAttributes().getGender()), "previous form");
+        break;
       default:
         break;
     }
@@ -755,6 +762,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::INVULNERABLE: return "Invulnerable"_good;
     case LastingEffect::DRUNK: return "Drunk"_good;
     case LastingEffect::NO_FRIENDLY_FIRE: return "Arrows bypass allies"_good;
+    case LastingEffect::POLYMORPHED: return "Polymorphed"_good;
 
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::PLAGUE: return "Infected with plague"_bad;
@@ -1139,6 +1147,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::TURNED_OFF: return "power off";
     case LastingEffect::DRUNK: return "booze";
     case LastingEffect::NO_FRIENDLY_FIRE: return "no friendly fire";
+    case LastingEffect::POLYMORPHED: return "polymorphed";
   }
 }
 
@@ -1232,6 +1241,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::TURNED_OFF: return "Creature requires more automaton engines built.";
     case LastingEffect::DRUNK: return "Compromises fighting abilities.";
     case LastingEffect::NO_FRIENDLY_FIRE: return "Arrows and other projectiles bypass allies and only hit enemies.";
+    case LastingEffect::POLYMORPHED: return "Creature will revert to original form.";
   }
 }
 

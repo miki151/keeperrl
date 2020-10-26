@@ -58,7 +58,7 @@ CreatureAttributes::CreatureAttributes(function<void(CreatureAttributes&)> fun) 
 CreatureAttributes::~CreatureAttributes() {}
 
 CreatureAttributes::CreatureAttributes(const CreatureAttributes&) = default;
-CreatureAttributes::CreatureAttributes(CreatureAttributes&&) = default;
+CreatureAttributes::CreatureAttributes(CreatureAttributes&&) noexcept = default;
 CreatureAttributes& CreatureAttributes::operator =(const CreatureAttributes&) = default;
 CreatureAttributes& CreatureAttributes::operator =(CreatureAttributes&&) = default;
 
