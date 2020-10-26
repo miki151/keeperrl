@@ -133,6 +133,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   const CreatureAttributes& getAttributes() const;
   CreatureAttributes& getAttributes();
+  void setAttributes(CreatureAttributes, SpellMap);
   const Body& getBody() const;
   Body& getBody();
   bool isDead() const;

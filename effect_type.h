@@ -305,6 +305,10 @@ struct Analytics {
   string SERIAL(value);
   SERIALIZE_ALL(name, value)
 };
+struct Polymorph {
+  CreatureId SERIAL(into);
+  SERIALIZE_ALL(into)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -384,6 +388,7 @@ struct Analytics {
   X(Unlock, 74)\
   X(Analytics, 75)\
   X(ReturnFalse, 76)\
+  X(Polymorph, 77)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

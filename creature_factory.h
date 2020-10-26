@@ -83,6 +83,8 @@ class CreatureFactory {
   };
   static const map<CreatureId, SpecialParams>& getSpecialParams();
   void initializeAttributes(optional<CreatureId>, CreatureAttributes&);
+  SpellMap getSpellMap(const CreatureAttributes&);
+  CreatureAttributes getAttributesFromId(CreatureId);
 
   private:
   void initSplash(TribeId);
@@ -90,7 +92,6 @@ class CreatureFactory {
   PCreature getSpecial(CreatureId, TribeId, SpecialParams, const ControllerFactory&);
   PCreature get(CreatureId, TribeId, MonsterAIFactory);
   static PCreature get(CreatureAttributes, TribeId, const ControllerFactory&, SpellMap);
-  CreatureAttributes getAttributesFromId(CreatureId);
   HeapAllocated<NameGenerator> SERIAL(nameGenerator);
   map<CreatureId, CreatureAttributes> SERIAL(attributes);
   vector<ItemType> getDefaultInventory(CreatureId) const;
@@ -98,7 +99,6 @@ class CreatureFactory {
   vector<Spell> SERIAL(spells);
   void addInventory(Creature*, const vector<ItemType>& items);
   mutable const ContentFactory* contentFactory = nullptr;
-  SpellMap getSpellMap(const CreatureAttributes&);
   PCreature getSpirit(TribeId, MonsterAIFactory);
 };
 

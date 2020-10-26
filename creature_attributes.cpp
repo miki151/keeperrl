@@ -60,6 +60,7 @@ CreatureAttributes::~CreatureAttributes() {}
 CreatureAttributes::CreatureAttributes(const CreatureAttributes&) = default;
 CreatureAttributes::CreatureAttributes(CreatureAttributes&&) = default;
 CreatureAttributes& CreatureAttributes::operator =(const CreatureAttributes&) = default;
+CreatureAttributes& CreatureAttributes::operator =(CreatureAttributes&&) = default;
 
 template <class Archive> 
 void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) {

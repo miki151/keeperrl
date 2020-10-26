@@ -56,6 +56,7 @@ class CreatureAttributes {
   CreatureAttributes(const CreatureAttributes&);
   CreatureAttributes& operator =(const CreatureAttributes&);
   CreatureAttributes(CreatureAttributes&&);
+  CreatureAttributes& operator =(CreatureAttributes&&);
   SERIALIZATION_DECL(CreatureAttributes)
   template <class Archive>
   void serializeImpl(Archive& ar, const unsigned int);

@@ -188,6 +188,12 @@ CreatureAttributes& Creature::getAttributes() {
   return *attributes;
 }
 
+void Creature::setAttributes(CreatureAttributes attr, SpellMap spells) {
+  attributes = std::move(attr);
+  modViewObject() = attributes->createViewObject();
+  spellMap = std::move(spells);
+}
+
 CreatureAction Creature::castSpell(const Spell* spell) const {
   return castSpell(spell, position);
 }

@@ -1324,6 +1324,22 @@ static string getDescription(const Effects::GrantAbility& e, const ContentFactor
   return "Grants ability: "_s + f->getCreatures().getSpell(e.id)->getName(f);
 }
 
+static bool applyToCreature(const Effects::Polymorph& e, Creature* c, Creature*) {
+  auto& factory = c->getGame()->getContentFactory()->getCreatures();
+  auto attributes = factory.getAttributesFromId(e.into);
+  auto spells = factory.getSpellMap(attributes);
+  c->setAttributes(std::move(attributes), std::move(spells));
+  return true;
+}
+
+static string getName(const Effects::Polymorph& e, const ContentFactory* f) {
+  return "polymorph";
+}
+
+static string getDescription(const Effects::Polymorph& e, const ContentFactory* f) {
+  return "Polymorphs into a " + f->getCreatures().getName(e.into);
+}
+
 static bool applyToCreature(const Effects::RemoveAbility& e, Creature* c, Creature*) {
   bool ret = c->getSpellMap().contains(e.id);
   c->getSpellMap().remove(e.id);
