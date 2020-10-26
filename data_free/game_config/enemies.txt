@@ -924,6 +924,7 @@
       { ExtraEnemy { "BLACK_MARKET_ENTRY" { 1 } } {40 30} BASIC }
       { ExtraEnemy { "DUNGEON2" { 1 } } {40 30} BASIC }
       { ExtraEnemy { "DUNGEON3" { 1 } } {40 30} BASIC }
+      { ExtraEnemy { "DUNGEON4" { 1 } } {40 30} BASIC }
       { MainEnemy {32 22} BASIC "Adoxie's Temple" }
       { ExtraEnemy { "DEATH" { 1 } } {40 30} BASIC none true false }
       { ExtraEnemy { "HELL" { 1 } } {40 30} DUNGEON "A Very Hot Place" true false }
@@ -1379,8 +1380,19 @@
     }
   }
 }
-
 "DUNGEON3" inherit "DUNGEON2"
+{
+  settlement = append {
+    inhabitants = append {
+      fighters = append {
+        uniques = {
+          "SHAPESHIFTER"
+        }
+      }
+    }
+  }
+}
+"DUNGEON4" inherit "DUNGEON2"
 {
   settlement = append {
     furniture = "roomFurnitureAndBleedingTotem"

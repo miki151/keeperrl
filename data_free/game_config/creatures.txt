@@ -582,6 +582,22 @@
       name = "doppelganger"
     }
   }
+"SHAPESHIFTER"
+  {
+    viewId = { "shapeshifter" }
+    attr = {
+      DEFENSE 25
+      SPELL_DAMAGE 5 
+    }
+    body = {
+      type = NonHumanoid LARGE
+      material = SPIRIT
+    }
+    spells = { "shapeshift" }
+    name = {
+      name = "shapeshifter"
+    }
+  }
 "WITCH"
   {
     viewId = { "witch" }
@@ -2575,11 +2591,12 @@
       weight = 3
     }
     permanentEffects = {
-      SLOWED 1
+      SPEED 1
     }
     name = {
       name = "chicken"
     }
+    courage = -1
   }
 "DWARF"
   {

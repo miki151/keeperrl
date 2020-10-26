@@ -124,6 +124,7 @@
 { "ice_demon" "&" ColorId LIGHT_BLUE }
 { "succubus" "&" ColorId RED }
 { "ghost" "&" ColorId WHITE }
+{ "shapeshifter" "&" ColorId PINK }
 { "spirit" "&" ColorId YELLOW }
 { "galeam" "c" ColorId LIGHT_BROWN }
 { "cherub" "c" ColorId YELLOW }
