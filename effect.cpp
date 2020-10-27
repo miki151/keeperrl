@@ -1347,14 +1347,14 @@ static bool applyToCreature(const Effects::Polymorph& e, Creature* c, Creature*)
     c->addEffect(LastingEffect::POLYMORPHED, *e.timeout);
   } else
     c->setAttributes(std::move(attributes), std::move(spells));
-  c->secondPerson("You polymorph into " + c->getName().a() + "!");
-  c->thirdPerson(origName + " polymorphs into " + c->getName().a() + "!");
+  c->secondPerson("You turn into " + c->getName().a() + "!");
+  c->thirdPerson(origName + " turns into " + c->getName().a() + "!");
   summonFX(c->getPosition());
   return true;
 }
 
 static string getName(const Effects::Polymorph& e, const ContentFactory* f) {
-  return "polymorph";
+  return !!e.timeout ? "temporary polymorph" : "permanent polymorph";
 }
 
 static string getDescription(const Effects::Polymorph& e, const ContentFactory* f) {
