@@ -1472,7 +1472,8 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::PLAGUE:
     case LastingEffect::POISON:
       return FXVariantName::DEBUFF_GREEN2;
-
+    case LastingEffect::PEACEFULNESS:
+      return FXVariantName::PEACEFULNESS;
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED:
       return FXVariantName::DEBUFF_GREEN1;

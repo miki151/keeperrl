@@ -1142,6 +1142,36 @@ static void addLoveEffect(FXManager& mgr) {
   mgr.addDef(FXName::LOVE, psdef);
 }
 
+static void addLoopedLoveEffect(FXManager& mgr) {
+  EmitterDef edef;
+  edef.strength = 10.0f;
+  edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.2f);
+  edef.frequency = 1.2f;
+  edef.source = FRect(-6, 2, 6, 6);
+
+  ParticleDef pdef;
+  pdef.life = 2.0f;
+  pdef.size = 10.0f;
+  pdef.alpha = {{0.0f, 0.2f, 1.0f}, {0.0, 1.0, 0.0}, InterpType::linear};
+
+  pdef.color = FVec3(1.0f);
+  pdef.textureName = TextureName::SPECIAL;
+
+  SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
+    defaultEmitParticle(ctx, em, pinst);
+    pinst.texTile = {2, 1};
+    pinst.rot = ctx.rand.getDouble(-0.2f, 0.2f);
+  };
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+  psdef.isLooped = true;
+  psdef.animLength = 3.0f;
+
+  mgr.addDef(FXName::LOVE_LOOPED, psdef);
+}
+
 static void addBlindEffect(FXManager &mgr) {
   EmitterDef edef;
   edef.strength = 0.0f;
@@ -1729,6 +1759,7 @@ void FXManager::initializeDefs() {
 
   addSleepEffect(*this);
   addLoveEffect(*this);
+  addLoopedLoveEffect(*this);
   addBlindEffect(*this);
   addGlitteringEffect(*this, FXName::GLITTERING, 0.5, 1.0, 3.5);
   addGlitteringEffect(*this, FXName::MAGIC_FIELD, 1.0, 1.0, 2.5);
