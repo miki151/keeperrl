@@ -460,6 +460,7 @@ void Game::exitAction() {
       }
     case ABANDON:
       if (view->yesOrNoPrompt("Do you want to abandon your game? This is permanent and the save file will be removed!")) {
+        addAnalytics("gameAbandoned", "");
         exitInfo = ExitInfo(ExitAndQuit());
         return;
       }

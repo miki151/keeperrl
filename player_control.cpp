@@ -2098,6 +2098,7 @@ void PlayerControl::exitAction() {
       break;
     case ABANDON:
       if (getView()->yesOrNoPrompt("Do you want to abandon your game? This is permanent and the save file will be removed!")) {
+        getGame()->addAnalytics("gameAbandoned", "");
         getGame()->setExitInfo(ExitAndQuit());
         return;
       }
