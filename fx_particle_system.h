@@ -155,7 +155,6 @@ struct AnimationContext : public SubSystemContext {
   uint randomSeed();
   SVec2 randomTexTile();
 
-  RandomGen rand;
   const double globalTime;
   const float animTime;
   const float timeDelta, invTimeDelta;

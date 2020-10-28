@@ -116,15 +116,15 @@ float defaultPrepareEmission(AnimationContext &ctx, EmissionState &em) {
   return edef.frequency.sample(em.time) * ctx.timeDelta;
 }
 
-float AnimationContext::uniformSpread(float spread) { return rand.getFloatFast(-spread, spread); }
-float AnimationContext::uniform(float min, float max) { return rand.getFloatFast(min, max); }
+float AnimationContext::uniformSpread(float spread) { return Random.getFloatFast(-spread, spread); }
+float AnimationContext::uniform(float min, float max) { return Random.getFloatFast(min, max); }
 uint AnimationContext::randomSeed() {
-  return rand.get(INT_MAX);
+  return Random.get(INT_MAX);
 }
 
 SVec2 AnimationContext::randomTexTile() {
   if (!(tdef.tiles == IVec2(1, 1))) {
-    int pos = rand.get(tdef.tiles.x * tdef.tiles.y);
+    int pos = Random.get(tdef.tiles.x * tdef.tiles.y);
     int y = pos / tdef.tiles.x;
     int x = pos - y * tdef.tiles.x;
     return SVec2(x, y);
@@ -134,7 +134,7 @@ SVec2 AnimationContext::randomTexTile() {
 }
 
 void defaultEmitParticle(AnimationContext &ctx, EmissionState &em, Particle &newInst) {
-  newInst.pos = ctx.edef.source.sample(ctx.rand);
+  newInst.pos = ctx.edef.source.sample(Random);
   float pangle;
   if (em.directionSpread < fconstant::pi)
     pangle = em.direction + ctx.uniformSpread(em.directionSpread);
@@ -149,7 +149,7 @@ void defaultEmitParticle(AnimationContext &ctx, EmissionState &em, Particle &new
     strength += ctx.uniformSpread(em.strengthSpread);
   if (em.rotSpeedSpread > 0.0f)
     rotSpeed += ctx.uniformSpread(em.rotSpeedSpread);
-  if (rotSpeed > 0.0f && ctx.rand.get(10000) < 5000)
+  if (rotSpeed > 0.0f && Random.get(10000) < 5000)
     rotSpeed = -rotSpeed;
 
   newInst.movement = pdir * strength;

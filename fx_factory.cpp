@@ -528,7 +528,7 @@ static void addOldMagicMissileEffect(FXManager& mgr) {
 
     ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
       defaultEmitParticle(ctx, em, pinst);
-      em.animationVars[1] = (em.strength + ctx.uniformSpread(em.strengthSpread)) * (ctx.rand.get(2) * 2 - 1);
+      em.animationVars[1] = (em.strength + ctx.uniformSpread(em.strengthSpread)) * (Random.get(2) * 2 - 1);
     };
 
     ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
@@ -1099,7 +1099,7 @@ static void addSleepEffect(FXManager& mgr) {
   ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
     defaultEmitParticle(ctx, em, pinst);
     pinst.texTile = {0, 0};
-    pinst.rot = ctx.rand.getDouble(-0.2f, 0.2f);
+    pinst.rot = Random.getDouble(-0.2f, 0.2f);
   };
 
   ParticleSystemDef psdef;
@@ -1131,7 +1131,7 @@ static void addLoveEffect(FXManager& mgr) {
     defaultEmitParticle(ctx, em, pinst);
     pinst.pos += ctx.ps.targetDir * Renderer::nominalSize / 2;
     pinst.texTile = {2, 1};
-    pinst.rot = ctx.rand.getDouble(-0.2f, 0.2f);
+    pinst.rot = Random.getDouble(-0.2f, 0.2f);
   };
 
   ParticleSystemDef psdef;
@@ -1161,7 +1161,7 @@ static void addLoopedLoveEffect(FXManager& mgr) {
   ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
     defaultEmitParticle(ctx, em, pinst);
     pinst.texTile = {2, 1};
-    pinst.rot = ctx.rand.getDouble(-0.2f, 0.2f);
+    pinst.rot = Random.getDouble(-0.2f, 0.2f);
   };
 
   ParticleSystemDef psdef;
@@ -1193,7 +1193,7 @@ static void addBlindEffect(FXManager &mgr) {
   ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
     defaultEmitParticle(ctx, em, pinst);
     pinst.texTile = {1, 0};
-    pinst.rot = ctx.rand.getDouble(-0.2f, 0.2f);
+    pinst.rot = Random.getDouble(-0.2f, 0.2f);
 
     auto distFunc = [&](FVec2 pos) {
       float dist = fconstant::inf;
@@ -1206,7 +1206,7 @@ static void addBlindEffect(FXManager &mgr) {
 
     // We're trying to make sure that particles are far away from each other
     for (int n = 0; n < 10; n++) {
-      FVec2 newPos = ctx.edef.source.sample(ctx.rand);
+      FVec2 newPos = ctx.edef.source.sample(Random);
       float dist = distFunc(newPos);
       if (dist > bestDist) {
         bestDist = dist;

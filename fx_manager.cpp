@@ -77,7 +77,6 @@ void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
       auto &ss = ps[ssid];
       auto &ssdef = psdef[ssid];
       AnimationContext ctx(ssctx(ps, ssid), globalSimTime, ps.animTime, timeDelta);
-      ctx.rand.init(ss.randomSeed);
 
       for (auto &pinst : ss.particles)
         ssdef.animateFunc(ctx, pinst);
@@ -109,7 +108,6 @@ void FXManager::simulate(ParticleSystem &ps, float timeDelta) {
       continue;
 
     AnimationContext ctx(ssctx(ps, ssid), globalSimTime, ps.animTime, timeDelta);
-    ctx.rand.init(ss.randomSeed);
     EmissionState em{emissionTime};
     memcpy(em.animationVars, ss.animationVars, sizeof(em.animationVars));
 
