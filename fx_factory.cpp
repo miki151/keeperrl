@@ -1752,10 +1752,8 @@ void FXManager::initializeDefs() {
   addMagicMissileEffect(*this);
   addMagicMissileSplashEffect(*this);
   addFireballEffect(*this);
-  addFlamethrowerEffect(*this, FXName::ICE, Color(30, 85, 155), Color(30, 35, 45), Color(100, 155, 185));
-  addFlamethrowerEffect(*this, FXName::ACID, Color(155, 155, 30), Color(45, 45, 30), Color(185, 155, 50));
   addFireballSplashEffect(*this);
-  addFlamethrowerEffect(*this, FXName::FLAMETHROWER, Color(155, 85, 30), Color(45, 35, 30), Color(185, 155, 100));
+  addFlamethrowerEffect(*this, FXName::FLAMETHROWER, Color(85, 85, 85), Color(35, 35, 35), Color(155, 155, 155));
 
   addSleepEffect(*this);
   addLoveEffect(*this);

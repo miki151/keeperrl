@@ -93,6 +93,16 @@
   range = 1
   sound = SPELL_CURE_POISON
 }
+"poison breath"
+{
+  symbol = "☠"
+  effect = Name "poison breath" EmitPoisonGas 1
+  fx = {FLAMETHROWER ColorId GREEN}
+  range = 4
+  cooldown = 30
+  sound = SPELL_BLAST
+  message = "breathe poison!" "breathes poison!"
+}
 "summon flies"
 {
   symbol = "🐝"
@@ -340,7 +350,7 @@
 {
   symbol = "🐲"
   effect = Name "fire breath" Fire
-  fx = FLAMETHROWER
+  fx = {FLAMETHROWER ColorId LIGHT_RED}
   range = 4
   cooldown = 30
   sound = SPELL_BLAST
@@ -369,7 +379,7 @@
 {
   symbol = "🔥"
   effect = Name "fireball" Fire
-  fx = FIREBALL
+  fx = {FIREBALL}
   range = 4
   cooldown = 30
   sound = SPELL_FIRE_SPHERE_PET
@@ -378,7 +388,7 @@
 {
   symbol = "❄"
   effect = Name "ice cone" Ice
-  fx = ICE
+  fx = {FLAMETHROWER ColorId LIGHT_BLUE}
   range = 4
   cooldown = 15
   #sound = SPELL_FIRE_SPHERE_PET
@@ -387,7 +397,7 @@
 {
   symbol = "🜅"
   effect = Name "acid stream" Acid
-  fx = ACID
+  fx = {FLAMETHROWER ColorId YELLOW}
   range = 4
   cooldown = 5
   message = "spit acid!" "spits acid!"

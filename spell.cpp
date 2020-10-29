@@ -74,7 +74,7 @@ void Spell::apply(Creature* c, Position target) const {
   }
   auto thisFx = effect->getProjectileFX();
   if (fx)
-    thisFx = FXInfo{*fx};
+    thisFx = *fx;
   auto thisProjectile = effect->getProjectile();
   if (projectileViewId) {
     thisProjectile = projectileViewId;

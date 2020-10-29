@@ -967,7 +967,7 @@
       stackName = "dragon"
       firstNameGen = "DRAGON"
     }
-    spells = { "healing" "deception" "haste" "cure poison" }
+    spells = { "healing" "deception" "haste" "cure poison" "poison breath" }
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 60 100 }

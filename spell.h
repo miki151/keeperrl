@@ -19,7 +19,7 @@
 #include "util.h"
 #include "spell_id.h"
 #include "view_id.h"
-
+#include "fx_info.h"
 
 class Effect;
 class Position;
@@ -68,7 +68,7 @@ class Spell {
   pair<string, string> SERIAL(message) = {"cast a spell"_s, "casts a spell"_s};
   optional<SoundId> SERIAL(sound);
   int SERIAL(range) = 0;
-  optional<FXName> SERIAL(fx);
+  optional<FXInfo> SERIAL(fx);
   optional<ViewId> SERIAL(projectileViewId);
   bool SERIAL(endOnly) = false;
   bool SERIAL(targetSelf) = false;
