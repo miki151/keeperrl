@@ -97,12 +97,15 @@ void eatArgument(const vector<StreamChar>& s, int& index) {
 
 optional<string> scanWord(const vector<StreamChar>& s, int& index) {
   string ret;
+  int origIndex = index;
   while (index < s.size() && isspace(s[index].c))
     ++index;
   while (index < s.size() && isalnum(s[index].c))
     ret += s[index++].c;
-  if (ret.empty())
+  if (ret.empty()) {
+    index = origIndex;
     return none;
+  }
   return ret;
 }
 
