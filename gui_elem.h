@@ -177,19 +177,19 @@ class GuiFactory {
   SGuiElem label(const string&, function<Color()>, char hotkey = 0);
   SGuiElem labelFun(function<string()>, function<Color()>);
   SGuiElem labelFun(function<string()>, Color = Color::WHITE);
-  SGuiElem labelMultiLine(const string&, int lineHeight, int size = Renderer::textSize,
+  SGuiElem labelMultiLine(const string&, int lineHeight, int size = Renderer::textSize(),
       Color = Color::WHITE);
-  SGuiElem labelMultiLineWidth(const string&, int lineHeight, int width, int size = Renderer::textSize,
+  SGuiElem labelMultiLineWidth(const string&, int lineHeight, int width, int size = Renderer::textSize(),
       Color = Color::WHITE, char delim = ' ');
   SGuiElem centeredLabel(Renderer::CenterType, const string&, int size, Color = Color::WHITE);
   SGuiElem centeredLabel(Renderer::CenterType, const string&, Color = Color::WHITE);
-  SGuiElem variableLabel(function<string()>, int lineHeight, int size = Renderer::textSize,
+  SGuiElem variableLabel(function<string()>, int lineHeight, int size = Renderer::textSize(),
       Color = Color::WHITE);
   SGuiElem mainMenuLabel(const string&, double vPadding, Color = Color::MAIN_MENU_ON);
   SGuiElem mainMenuLabelBg(const string&, double vPadding, Color = Color::MAIN_MENU_OFF);
-  SGuiElem labelUnicode(const string&, Color = Color::WHITE, int size = Renderer::textSize,
+  SGuiElem labelUnicode(const string&, Color = Color::WHITE, int size = Renderer::textSize(),
       Renderer::FontId = Renderer::SYMBOL_FONT);
-  SGuiElem labelUnicodeHighlight(const string&, Color color = Color::WHITE, int size = Renderer::textSize,
+  SGuiElem labelUnicodeHighlight(const string&, Color color = Color::WHITE, int size = Renderer::textSize(),
       Renderer::FontId = Renderer::SYMBOL_FONT);
   SGuiElem crossOutText(Color);
   SGuiElem viewObject(const ViewObject&, double scale = 1, Color = Color::WHITE);

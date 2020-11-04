@@ -582,7 +582,7 @@ static vector<string> breakWord(Renderer& renderer, string word, int maxWidth, i
   return ret;
 }
 
-static vector<string> breakText(Renderer& renderer, const string& text, int maxWidth, int size = Renderer::textSize,
+static vector<string> breakText(Renderer& renderer, const string& text, int maxWidth, int size = Renderer::textSize(),
     char delim = ' ') {
   if (text.empty())
     return {""};
@@ -835,7 +835,7 @@ SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s,
 }
 
 SGuiElem GuiFactory::centeredLabel(Renderer::CenterType center, const string& s, Color c) {
-  return centeredLabel(center, s, Renderer::textSize, c);
+  return centeredLabel(center, s, Renderer::textSize(), c);
 }
 
 SGuiElem GuiFactory::variableLabel(function<string()> fun, int lineHeight, int size, Color color) {

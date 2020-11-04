@@ -57,16 +57,16 @@ class Renderer {
   TileSet& getTileSet();
   void setTileSet(TileSet*);
   static vector<string> getFullscreenResolutions();
-  const static int textSize = 19;
-  const static int smallTextSize = 14;
+  static int textSize() { return 19; }
+  static int smallTextSize() { return 14; }
   enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
-  int getTextLength(const string& s, int size = textSize, FontId = TEXT_FONT);
-  Vec2 getTextSize(const string& s, int size = textSize, FontId = TEXT_FONT);
+  int getTextLength(const string& s, int size = textSize(), FontId = TEXT_FONT);
+  Vec2 getTextSize(const string& s, int size = textSize(), FontId = TEXT_FONT);
   enum CenterType { NONE, HOR, VER, HOR_VER };
   void drawText(FontId, int size, Color, Vec2 pos, const string&, CenterType center = NONE);
   void drawTextWithHotkey(Color, Vec2 pos, const string&, char key);
-  void drawText(Color, Vec2 pos, const string&, CenterType center = NONE, int size = textSize);
-  void drawText(Color, Vec2 pos, const char* c, CenterType center = NONE, int size = textSize);
+  void drawText(Color, Vec2 pos, const string&, CenterType center = NONE, int size = textSize());
+  void drawText(Color, Vec2 pos, const char* c, CenterType center = NONE, int size = textSize());
   void drawImage(int px, int py, const Texture&, double scale = 1, optional<Color> = none);
   void drawImage(int px, int py, int kx, int ky, const Texture&, double scale = 1);
   void drawImage(Rectangle target, Rectangle source, const Texture&);

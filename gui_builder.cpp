@@ -758,7 +758,7 @@ SGuiElem GuiBuilder::drawVillainInfoOverlay(const VillageInfo::Village& info, bo
     if (action.disabledReason)
       lines.addElem(WL(label, *action.disabledReason, Color::ORANGE));
   if (showDismissHint)
-    lines.addElem(WL(label, "Right click to dismiss", Renderer::smallTextSize, Color::WHITE), legendLineHeight * 2 / 3);
+    lines.addElem(WL(label, "Right click to dismiss", Renderer::smallTextSize(), Color::WHITE), legendLineHeight * 2 / 3);
   return WL(miniWindow, WL(margins, lines.buildVerticalList(), 15));
 }
 
@@ -1586,7 +1586,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   }
   if (info.debt > 0) {
     list.addElem(WL(label, "Debt", Color::YELLOW));
-    list.addElem(WL(label, "Click on debt or on individual items to pay.", Renderer::smallTextSize,
+    list.addElem(WL(label, "Click on debt or on individual items to pay.", Renderer::smallTextSize(),
         Color::LIGHT_GRAY), legendLineHeight * 2 / 3);
     list.addElem(WL(stack,
         drawCost({ViewId("gold"), info.debt}),
@@ -2035,7 +2035,7 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
         }
       lines.addElem(WL(label, "Available slots: " + toString(elem.maxUpgrades - elem.added.size())));
       lines.addElem(WL(label, "Upgraded items can only be crafted by a craftsman of legendary skills.",
-          Renderer::smallTextSize, Color::LIGHT_GRAY));
+          Renderer::smallTextSize(), Color::LIGHT_GRAY));
       drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 450, false);
       if (ret)
         callbacks.input({UserInputId::WORKSHOP_UPGRADE, *ret});
@@ -2191,7 +2191,7 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
   ));
   //lines.addElem(WL(rightMargin, rightElemMargin, WL(alignment, GuiFactory::Alignment::RIGHT, drawCost(info.resource))));
   if (info.warning)
-    lines.addElem(WL(label, *info.warning, Renderer::smallTextSize, Color::RED));
+    lines.addElem(WL(label, *info.warning, Renderer::smallTextSize(), Color::RED));
   auto emptyElem = WL(empty);
   auto getUnlocksTooltip = [&] (auto& elem) {
     return WL(tooltip2, drawTechUnlocks(elem),
@@ -2248,9 +2248,9 @@ SGuiElem GuiBuilder::drawMinionsOverlay(const CollectiveInfo::ChosenCreatureInfo
     auto list = WL(getListBuilder, legendLineHeight);
     list.addElem(
         WL(buttonLabel, "Disband team", getButtonCallback({UserInputId::CANCEL_TEAM, *chosenCreature.teamId})));
-    list.addElem(WL(label, "Control a chosen minion to", Renderer::smallTextSize,
-          Color::LIGHT_GRAY), Renderer::smallTextSize + 2);
-    list.addElem(WL(label, "command the team.", Renderer::smallTextSize,
+    list.addElem(WL(label, "Control a chosen minion to", Renderer::smallTextSize(),
+          Color::LIGHT_GRAY), Renderer::smallTextSize() + 2);
+    list.addElem(WL(label, "command the team.", Renderer::smallTextSize(),
           Color::LIGHT_GRAY));
     list.addElem(WL(empty), legendLineHeight);
     leftSide = WL(marginAuto, list.buildVerticalList(), std::move(leftSide), GuiFactory::TOP);
@@ -2276,7 +2276,7 @@ SGuiElem GuiBuilder::drawBestiaryPage(const PlayerInfo& minion) {
       .addElemAuto(WL(label, minion.name))
       .buildHorizontalList());
   if (!minion.description.empty())
-    list.addElem(WL(label, minion.description, Renderer::smallTextSize, Color::LIGHT_GRAY));
+    list.addElem(WL(label, minion.description, Renderer::smallTextSize(), Color::LIGHT_GRAY));
   auto leftLines = WL(getListBuilder, legendLineHeight);
   leftLines.addElem(WL(label, "Attributes", Color::YELLOW));
   leftLines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(minion.attributes)));
@@ -2538,12 +2538,12 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
                   highlighted.creaturePos.value_or(*highlighted.tileScreenPos) + Vec2(60, 60)));
         if (!viewObject.getBadAdjectives().empty()) {
           lines.addElemAuto(WL(labelMultiLineWidth, viewObject.getBadAdjectives(), legendLineHeight * 2 / 3, 300,
-              Renderer::textSize, Color::RED, ','));
+              Renderer::textSize(), Color::RED, ','));
           lines.addSpace(legendLineHeight / 3);
         }
         if (!viewObject.getGoodAdjectives().empty()) {
           lines.addElemAuto(WL(labelMultiLineWidth, viewObject.getGoodAdjectives(), legendLineHeight * 2 / 3, 300,
-              Renderer::textSize, Color::GREEN, ','));
+              Renderer::textSize(), Color::GREEN, ','));
           lines.addSpace(legendLineHeight / 3);
         }
         if (viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE))
@@ -2846,9 +2846,9 @@ vector<SGuiElem> GuiBuilder::getMultiLine(const string& text, Color color, MenuT
 static int getFontSize(ListElem::ElemMod mod) {
   switch (mod) {
     case ListElem::HELP_TEXT:
-      return Renderer::smallTextSize;
+      return Renderer::smallTextSize();
     default:
-      return Renderer::textSize;
+      return Renderer::textSize();
   }
 }
 
@@ -3120,9 +3120,9 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
   return [=] (Rectangle bounds) {
     auto tasks = WL(getListBuilder, legendLineHeight);
     tasks.addElem(WL(getListBuilder)
-        .addBackElemAuto(WL(label, "Enable", Renderer::smallTextSize))
+        .addBackElemAuto(WL(label, "Enable", Renderer::smallTextSize()))
         .addBackSpace(40)
-        .addBackElem(WL(renderInBounds, WL(label, "Disable for all " + makePlural(minion.groupName), Renderer::smallTextSize)), 134)
+        .addBackElem(WL(renderInBounds, WL(label, "Disable for all " + makePlural(minion.groupName), Renderer::smallTextSize())), 134)
         .buildHorizontalList());
     bool exit = false;
     TaskActionInfo retAction;
@@ -3351,7 +3351,7 @@ SGuiElem GuiBuilder::drawTitleButton(const PlayerInfo& minion) {
     for (auto& title : minion.killTitles)
       lines.addElem(WL(label, title));
     auto addLegend = [&] (const char* text) {
-      lines.addElem(WL(label, text, Renderer::smallTextSize, Color::LIGHT_GRAY), legendLineHeight * 2 / 3);
+      lines.addElem(WL(label, text, Renderer::smallTextSize(), Color::LIGHT_GRAY), legendLineHeight * 2 / 3);
     };
     addLegend("Titles are awarded for killing tribe leaders, and increase");
     addLegend("each attribute up to a maximum of the attribute's base value.");
@@ -3394,7 +3394,7 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewI
     titleLine.addBackElemAuto(std::move(killsLabel));
   list.addElem(titleLine.buildHorizontalList());
   if (!minion.description.empty())
-    list.addElem(WL(label, minion.description, Renderer::smallTextSize, Color::LIGHT_GRAY));
+    list.addElem(WL(label, minion.description, Renderer::smallTextSize(), Color::LIGHT_GRAY));
   list.addElem(drawMinionActions(minion, tutorial));
   auto leftLines = WL(getListBuilder, legendLineHeight);
   leftLines.addElem(WL(label, "Attributes", Color::YELLOW));
@@ -3624,7 +3624,7 @@ SGuiElem GuiBuilder::drawWorldmap(Semaphore& sem, const Campaign& campaign) {
   auto lines = WL(getListBuilder, getStandardLineHeight());
   lines.addElem(WL(centerHoriz, WL(label, "Map of " + campaign.getWorldName())));
   lines.addElem(WL(centerHoriz, WL(label, "Use the travel command while controlling a minion or team "
-          "to travel to another site.", Renderer::smallTextSize, Color::LIGHT_GRAY)));
+          "to travel to another site.", Renderer::smallTextSize(), Color::LIGHT_GRAY)));
   lines.addElemAuto(WL(centerHoriz, drawCampaignGrid(campaign, nullptr,
       [](Vec2) { return false; },
       [](Vec2) { })));
@@ -3875,7 +3875,7 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
     auto& avatar = avatars[avatarIndex];
     const auto maxWidth = 750;
     auto description = 
-        WL(labelMultiLineWidth, avatar.description, legendLineHeight, maxWidth, Renderer::textSize, Color::LIGHT_GRAY);
+        WL(labelMultiLineWidth, avatar.description, legendLineHeight, maxWidth, Renderer::textSize(), Color::LIGHT_GRAY);
     if (!avatar.teamMembers.empty()) {
       auto members = avatar.teamMembers;
       sort(members.begin() + 1, members.end(),
@@ -4006,12 +4006,12 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
         lines.addElem(WL(stack,
           WL(tooltip, {"Number of times this dungeon has been conquered over how many times it has been loaded."}),
           WL(label, "Conquer rate: " + toString(allGames[i].numWon) + "/" + toString(allGames[i].numTotal),
-              Renderer::smallTextSize, gui.inactiveText)), legendLineHeight * 2 / 3);
+              Renderer::smallTextSize(), gui.inactiveText)), legendLineHeight * 2 / 3);
       if (!allGames[i].gameInfo.spriteMods.empty()) {
         auto modsList = combine(allGames[i].gameInfo.spriteMods, true);
         lines.addElem(WL(stack,
             WL(tooltip, {"These mods may be required to successfully load this dungeon:", modsList}),
-            WL(renderInBounds, WL(label, "Requires mods:" + modsList, Renderer::smallTextSize, gui.inactiveText))),
+            WL(renderInBounds, WL(label, "Requires mods:" + modsList, Renderer::smallTextSize(), gui.inactiveText))),
             legendLineHeight * 2 / 3);
       }
       lines.addSpace(legendLineHeight / 3);
@@ -4032,7 +4032,7 @@ SGuiElem GuiBuilder::drawMenuWarning(View::CampaignOptions::WarningType type) {
   switch (type) {
     case View::CampaignOptions::NO_RETIRE:
       return WL(labelMultiLine, "Warning: you won't be able to retire your dungeon in this mode.",
-              legendLineHeight, Renderer::textSize, Color::RED);
+              legendLineHeight, Renderer::textSize(), Color::RED);
   }
 }
 
@@ -4071,7 +4071,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
             lines.addElem(WL(buttonLabel, getGameTypeName(info.type),
                 [&, info] { queue.push({CampaignActionId::CHANGE_TYPE, info.type}); exit = true; }));
             for (auto& desc : info.description)
-              lines.addElem(WL(leftMargin, 0, WL(label, "- " + desc, Color::LIGHT_GRAY, Renderer::smallTextSize)),
+              lines.addElem(WL(leftMargin, 0, WL(label, "- " + desc, Color::LIGHT_GRAY, Renderer::smallTextSize())),
                   legendLineHeight * 2 / 3);
             lines.addSpace(legendLineHeight / 3);
           }
@@ -4193,7 +4193,7 @@ SGuiElem GuiBuilder::drawWarlordMinionsMenu(SyncQueue<variant<int, bool>>& queue
   }
   if (!chosenInfos.empty()) {
     lines.addBackElem(WL(label, "Team:"));
-    lines.addBackElem(WL(label, "Max team size: " + toString(maxCount), Renderer::smallTextSize, Color::GRAY),
+    lines.addBackElem(WL(label, "Max team size: " + toString(maxCount), Renderer::smallTextSize(), Color::GRAY),
         legendLineHeight * 2 / 3);
     lines.addBackElemAuto(drawCreatureList(chosenInfos, minionFun, 1));
   }
@@ -4367,7 +4367,7 @@ SGuiElem GuiBuilder::drawModMenu(SyncQueue<optional<ModAction>>& queue, int high
         .addBackElemAuto(stars.buildHorizontalList())
         .buildHorizontalList());
     lines.addElem(WL(label, !mods[i].details.author.empty() ? ("by " + mods[i].details.author) : "",
-        Renderer::smallTextSize, Color::LIGHT_GRAY));
+        Renderer::smallTextSize(), Color::LIGHT_GRAY));
     lines.addMiddleElem(WL(scrollable, WL(labelMultiLineWidth, mods[i].details.description, legendLineHeight,
         pageWidth - 2 * margin - 60)));
     lines.addSpace(10);
