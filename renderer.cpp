@@ -207,11 +207,11 @@ void Renderer::drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture& t,
     swap(c, d);
   }
   if (orientation.x != 1 || orientation.y != 0) {
-    Vec2 mid = (a + c) / 2;
-    a = rotate(a, mid, orientation.x, orientation.y);
-    b = rotate(b, mid, orientation.x, orientation.y);
-    c = rotate(c, mid, orientation.x, orientation.y);
-    d = rotate(d, mid, orientation.x, orientation.y);
+    Vec2 mid = a + c;
+    a = rotate(a * 2, mid, orientation.x, orientation.y) / 2;
+    b = rotate(b * 2, mid, orientation.x, orientation.y) / 2;
+    c = rotate(c * 2, mid, orientation.x, orientation.y) / 2;
+    d = rotate(d * 2, mid, orientation.x, orientation.y) / 2;
   }
   drawSprite(t, a, b, c, d, source, source + size, color);
 }
