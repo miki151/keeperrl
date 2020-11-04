@@ -494,7 +494,7 @@ SpellName
 }
 End
 
-OneTimeAbility("ennoblement", { SetViewId {"vampire_lord"} SetCreatureName "vampire lord" }, "X")
+OneTimeAbility("ennoblement", { SetViewId {"vampire_lord"} SetCreatureName "vampire lord" }, "🧛")
 OneTimeAbility("bypass allies", Permanent NO_FRIENDLY_FIRE, "🎯")
 
 
