@@ -96,7 +96,6 @@ Vec2 WindowView::getMinimapOrigin() const {
 WindowView::WindowView(ViewParams params) : renderer(params.renderer), gui(params.gui), useTiles(params.useTiles),
     options(params.options), clock(params.clock), guiBuilder(renderer, gui, clock, params.options, {
         [this](UserInput input) { inputQueue.push(input);},
-        [this](SDL_Keysym ev) { keyboardAction(ev);},
         [this]() { refreshScreen(false);},
         [this](const string& s) { presentText("", s); },
         }), zoomUI(-1),

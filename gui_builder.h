@@ -52,7 +52,6 @@ class GuiBuilder {
   enum class GameSpeed;
   struct Callbacks {
     function<void(UserInput)> input;
-    function<void(SDL::SDL_Keysym)> keyboard;
     function<void()> refreshScreen;
     function<void(const string&)> info;
   };
