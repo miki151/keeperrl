@@ -46,9 +46,9 @@ static Vec2 getSize(const ScriptedUIElems::ViewId& t, const ScriptedUIData&, Scr
   return Vec2(1, 1) * context.renderer->nominalSize * t.zoom;
 }
 
-static bool onClick(const ScriptedUIElems::Exit&, const ScriptedUIData&, ScriptedContext context, MouseButtonId,
+static bool onClick(const ScriptedUIElems::Exit&, const ScriptedUIData&, ScriptedContext context, MouseButtonId id,
     Rectangle bounds, Vec2 pos) {
-  if (pos.inRectangle(bounds))
+  if (id == MouseButtonId::LEFT && pos.inRectangle(bounds))
     context.endSemaphore->v();
   return false;
 }
@@ -56,9 +56,9 @@ static bool onClick(const ScriptedUIElems::Exit&, const ScriptedUIData&, Scripte
 static void render(const ScriptedUIElems::Button&, const ScriptedUIData&, ScriptedContext context, Rectangle area) {
 //  context.renderer->drawFilledRectangle(area, Color::RED);
 }
-static bool onClick(const ScriptedUIElems::Button&, const ScriptedUIData& data, ScriptedContext context, MouseButtonId,
+static bool onClick(const ScriptedUIElems::Button&, const ScriptedUIData& data, ScriptedContext context, MouseButtonId id,
     Rectangle bounds, Vec2 pos) {
-  if (pos.inRectangle(bounds)) {
+  if (id == MouseButtonId::LEFT && pos.inRectangle(bounds)) {
     if (auto callback = data.getReferenceMaybe<ScriptedUIDataElems::Callback>()) {
       (*callback)();
       return true;
@@ -449,6 +449,5 @@ bool ScriptedUI::onClick(const ScriptedUIData& data, ScriptedContext context, Mo
     Vec2 pos) const {
   return visit<bool>(
       [&] (const auto& ui) { return ::onClick(ui, data, context, id, bounds, pos); }
-//      [&] (const ScriptedUIElems::Chain& ui) { return ::onClick(ui, data, context, id, bounds, pos); }      
   );
 }

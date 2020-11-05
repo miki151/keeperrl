@@ -399,9 +399,9 @@ class MouseWheel : public GuiElem {
   public:
   MouseWheel(function<void(bool)> f) : fun(f) {}
 
-  virtual bool onMouseWheel(Vec2 mousePos, bool up) override {
-    if (mousePos.inRectangle(getBounds())) {
-      fun(up);
+  virtual bool onClick(MouseButtonId id, Vec2 mousePos) override {
+    if (isOneOf(id, MouseButtonId::WHEEL_DOWN, MouseButtonId::WHEEL_UP) && mousePos.inRectangle(getBounds())) {
+      fun(id == MouseButtonId::WHEEL_UP);
       return true;
     }
     return false;
@@ -422,10 +422,6 @@ class StopMouseMovement : public GuiElem {
   }
 
   virtual bool onClick(MouseButtonId, Vec2 pos) override {
-    return pos.inRectangle(getBounds());
-  }
-
-  virtual bool onMouseWheel(Vec2 pos, bool up) override {
     return pos.inRectangle(getBounds());
   }
 };
@@ -512,7 +508,6 @@ class DrawScripted : public GuiElem {
   //virtual void onRefreshBounds() {}
   //virtual void renderPart(Renderer& r, Rectangle) { render(r); }
   //virtual bool onKeyPressed2(SDL::SDL_Keysym) { return false;}
-  //virtual bool onMouseWheel(Vec2 mousePos, bool up) { return false;}
   //virtual bool onTextInput(const char*) { return false; }
   virtual optional<int> getPreferredWidth() override {
     return get().getSize(data, context).x;
@@ -1021,14 +1016,6 @@ class GuiLayout : public GuiElem {
     return false;
   }
 
-  virtual bool onMouseWheel(Vec2 v, bool up) override {
-    for (int i : AllReverse(elems))
-      if (isVisible(i))
-        if (elems[i]->onMouseWheel(v, up))
-          return true;
-    return false;
-  }
-
   virtual Rectangle getElemBounds(int num) = 0;
 
   virtual bool isVisible(int num) {
@@ -1115,10 +1102,6 @@ class External : public GuiElem {
 
   virtual bool onKeyPressed2(SDL_Keysym ev) override {
     return elem->onKeyPressed2(ev);
-  }
-
-  virtual bool onMouseWheel(Vec2 mousePos, bool up) override {
-    return elem->onMouseWheel(mousePos, up);
   }
 
   virtual optional<int> getPreferredWidth() override {
@@ -2589,18 +2572,6 @@ class ScrollBar : public GuiLayout {
     scrollPos->setBounds(getBounds().height() / 2, scrollLength() + getBounds().height() / 2);
   }
 
-  virtual bool onMouseWheel(Vec2 v, bool up) override {
-    if (v.inRectangle(Rectangle(Vec2(content->getBounds().left(), getBounds().top()),
-        getBounds().bottomRight()))) {
-      if (up)
-        addScrollPos(- wheelScrollUnit);
-      else
-        addScrollPos(wheelScrollUnit);
-      return true;
-    }
-    return false;
-  }
-
   virtual bool onClick(MouseButtonId b, Vec2 v) override {
     if (b == MouseButtonId::LEFT) {
       if (v.inRectangle(getElemBounds(0))) {
@@ -2616,6 +2587,13 @@ class ScrollBar : public GuiLayout {
           scrollPos->set(getBounds().height() / 2 + scrollLength() * calcPos(v.y), clock->getRealMillis());
         return true;
       }
+    } else
+    if (v.inRectangle(Rectangle(Vec2(content->getBounds().left(), getBounds().top()), getBounds().bottomRight()))) {
+      if (b == MouseButtonId::WHEEL_UP)
+        addScrollPos(- wheelScrollUnit);
+      else if (b == MouseButtonId::WHEEL_DOWN)
+        addScrollPos(wheelScrollUnit);
+      return true;
     }
     return false;
   }
@@ -2749,22 +2727,20 @@ class Slider : public GuiLayout {
     setPosition(*position + amount);
   }
 
-  virtual bool onMouseWheel(Vec2 v, bool up) override {
-    if (up)
-      addScrollPos(-1);
-    else
-      addScrollPos(1);
-    return true;
-  }
-
   void setPositionFromClick(Vec2 v) {
     setPosition((int) round((double)(v.x - getBounds().left()) * maxValue / scrollLength()));
   }
 
-  virtual bool onClick(MouseButtonId, Vec2 v) override {
+  virtual bool onClick(MouseButtonId id, Vec2 v) override {
     if (v.inRectangle(getBounds())) {
-      held = true;
-      setPositionFromClick(v);
+      if (id == MouseButtonId::WHEEL_UP)
+        addScrollPos(-1);
+      else if (id == MouseButtonId::WHEEL_UP)
+        addScrollPos(1);
+      else {
+        held = true;
+        setPositionFromClick(v);
+      }
       return true;
     }
     return false;
@@ -3340,7 +3316,7 @@ void GuiFactory::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
       break;
     case SDL::SDL_MOUSEWHEEL:
       for (auto elem : guiElems)
-        if (elem->onMouseWheel(renderer.getMousePos(), event.wheel.y > 0))
+        if (elem->onClick(event.wheel.y > 0 ? MouseButtonId::WHEEL_UP : MouseButtonId::WHEEL_DOWN, renderer.getMousePos()))
           break;
       break;
     default: break;

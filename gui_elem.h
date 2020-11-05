@@ -45,7 +45,6 @@ class GuiElem {
   virtual void onRefreshBounds() {}
   virtual void renderPart(Renderer& r, Rectangle) { render(r); }
   virtual bool onKeyPressed2(SDL::SDL_Keysym) { return false;}
-  virtual bool onMouseWheel(Vec2 mousePos, bool up) { return false;}
   virtual bool onTextInput(const char*) { return false; }
   virtual optional<int> getPreferredWidth() { return none; }
   virtual optional<int> getPreferredHeight() { return none; }
