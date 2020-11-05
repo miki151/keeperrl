@@ -12,6 +12,7 @@ class FilePath {
   bool hasSuffix(const string&) const;
   FilePath changeSuffix(const string& current, const string& newSuf) const;
   optional<string> readContents() const;
+  void erase() const;
 
   bool operator==(const FilePath&) const;
 

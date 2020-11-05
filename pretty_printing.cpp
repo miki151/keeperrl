@@ -47,6 +47,8 @@
 #include "content_factory.h"
 #include "storage_id.h"
 #include "layout_generator.h"
+#include "scripted_ui.h"
+#include "scripted_ui_id.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const vector<string>& s, vector<string> filename, KeyVerifier* keyVerifier) {
@@ -99,3 +101,4 @@ ADD_IMP(map<string, TestStruct2>)
 ADD_IMP(map<string, TestStruct3>)
 ADD_IMP(map<string, TestStruct5>)
 ADD_IMP(map<string, vector<int>>)
+ADD_IMP(map<ScriptedUIId, ScriptedUI>)

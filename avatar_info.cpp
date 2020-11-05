@@ -33,10 +33,9 @@ static ViewId getUpgradedViewId(const Creature* c) {
   return c->getViewObject().id();
 }
 
-variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View* view,
+variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
     const vector<pair<string, KeeperCreatureInfo>>& keeperCreatureInfos,
     const vector<pair<string, AdventurerCreatureInfo>>& adventurerCreatureInfos,
-    vector<WarlordInfo> warlordInfos,
     ContentFactory* contentFactory) {
   auto& creatureFactory = contentFactory->getCreatures();
   auto keeperCreatures = keeperCreatureInfos.transform([&](auto& elem) {
@@ -84,7 +83,6 @@ variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View* view,
       keeperCreatureInfos[i].second.description,
       !!keeperCreatureInfos[i].second.baseNameGen,
       !!keeperCreatureInfos[i].second.baseNameGen ? OptionId::SETTLEMENT_NAME : OptionId::PLAYER_NAME,
-      {}
     });
   vector<View::AvatarData> adventurerAvatarData;
   for (int i : All(adventurerCreatures))
@@ -98,20 +96,6 @@ variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View* view,
       adventurerCreatureInfos[i].second.description,
       false,
       OptionId::PLAYER_NAME,
-      {}
-    });
-  for (auto& info : warlordInfos)
-    adventurerAvatarData.push_back(View::AvatarData {
-      {},
-      {getUpgradedViewId(info.creatures[0].get())},
-      {},
-      none,
-      info.creatures[0]->getName().firstOrBare(),
-      View::AvatarRole::WARLORD,
-      "Take your retired keeper for an excursion and conquer some player made dungeons!",
-      false,
-      OptionId::PLAYER_NAME,
-      info.creatures.transform([&](const auto& c) { return CreatureInfo(c.get()); } )
     });
   auto result1 = view->chooseAvatar(concat(keeperAvatarData, adventurerAvatarData));
   if (auto option = result1.getValueMaybe<AvatarMenuOption>())
@@ -131,18 +115,13 @@ variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View* view,
       ret->getName().useFullTitle();
     } else
       chosenBaseName = result->name;
-  } else
-  if (result->creatureIndex - keeperCreatures.size() < adventurerCreatures.size()) {
+  } else {
     auto& elem = adventurerCreatureInfos[result->creatureIndex - keeperCreatures.size()];
     creatureInfo = elem.second;
     avatarId = elem.first;
     ret = std::move(adventurerCreatures[result->creatureIndex - keeperCreatures.size()][result->genderIndex]);
     ret->getName().setBare("Adventurer");
     ret->getName().setFirst(result->name);
-  } else {
-    int warlordIndex = result->creatureIndex - keeperCreatures.size() - adventurerCreatures.size();
-    avatarId = warlordInfos[warlordIndex].gameIdentifier;
-    return std::move(warlordInfos[warlordIndex]);
   }
   auto villains = creatureInfo.visit([](const auto& elem) { return elem.tribeAlignment;});
   return AvatarInfo{std::move(ret), std::move(creatureInfo), avatarId, villains, chosenBaseName };

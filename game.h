@@ -24,9 +24,14 @@ class AvatarInfo;
 class ContentFactory;
 class NameGenerator;
 class Encyclopedia;
-struct WarlordInfoWithReference;
-struct WarlordInfo;
 class Unlocks;
+
+struct WarlordInfoWithReference {
+  vector<shared_ptr<Creature>> SERIAL(creatures);
+  ContentFactory* SERIAL(contentFactory);
+  string SERIAL(gameIdentifier);
+  SERIALIZE_ALL_NO_VERSION(creatures, serializeAsValue(contentFactory), gameIdentifier)
+};
 
 class Game : public OwnedObject<Game> {
   public:

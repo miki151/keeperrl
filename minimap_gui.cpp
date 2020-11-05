@@ -85,7 +85,7 @@ void MinimapGui::clear() {
   info = MinimapInfo {};
 }
 
-bool MinimapGui::onClick(ClickButton, Vec2 v) {
+bool MinimapGui::onClick(MouseButtonId, Vec2 v) {
   if (v.inRectangle(getBounds())) {
     clickFun();
     return true;

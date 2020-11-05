@@ -17,6 +17,10 @@ const char* FilePath::getFileName() const {
   return filename.c_str();
 }
 
+void FilePath::erase() const {
+  remove(getPath());
+}
+
 time_t FilePath::getModificationTime() const {
   struct stat buf;
   stat(getPath(), &buf);

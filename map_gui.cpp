@@ -33,6 +33,7 @@
 #include "creature_status.h"
 #include "game.h"
 #include "tileset.h"
+#include "mouse_button_id.h"
 
 #include "fx_manager.h"
 #include "fx_view_manager.h"
@@ -1242,13 +1243,13 @@ void MapGui::render(Renderer& renderer) {
   processScrolling(currentTimeReal);
 }
 
-bool MapGui::onClick(GuiElem::ClickButton b, Vec2 v) {
+bool MapGui::onClick(MouseButtonId b, Vec2 v) {
   switch (b) {
-    case LEFT:
+    case MouseButtonId::LEFT:
       return onLeftClick(v);
-    case RIGHT:
+    case MouseButtonId::RIGHT:
       return onRightClick(v);
-    case MIDDLE:
+    case MouseButtonId::MIDDLE:
       return onMiddleClick(v);
   }
 }

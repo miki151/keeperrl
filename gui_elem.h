@@ -28,14 +28,15 @@ class Clock;
 class Options;
 class ScrollPosition;
 class KeybindingMap;
+struct ScriptedUI;
+struct ScriptedUIData;
 
 void dumpGuiLineNumbers(ostream&);
 
 class GuiElem {
   public:
   virtual void render(Renderer&) {}
-  enum ClickButton { LEFT, MIDDLE, RIGHT };
-  virtual bool onClick(ClickButton, Vec2) { return false; }
+  virtual bool onClick(MouseButtonId, Vec2) { return false; }
   virtual void onClickElsewhere() {}
   virtual bool onMouseMove(Vec2) { return false;}
   virtual void onMouseGone() {}
@@ -64,9 +65,10 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*, Options*, KeybindingMap*, const DirectoryPath& freeImages,
+  GuiFactory(Renderer&, Clock*, Options*, KeybindingMap*, const DirectoryPath& freeImages, const FilePath& scripts,
       const optional<DirectoryPath>& nonFreeImages);
   void loadImages();
+  ~GuiFactory();
 
   vector<string> breakText(const string& text, int maxWidth, int fontSize);
 
@@ -103,6 +105,8 @@ class GuiFactory {
   SGuiElem stack(SGuiElem, SGuiElem, SGuiElem, SGuiElem);
   SGuiElem external(GuiElem*);
   SGuiElem rectangle(Color color, optional<Color> borderColor = none);
+  map<ScriptedUIId, ScriptedUI> scriptedUI;
+  SGuiElem scripted(Semaphore& endSem, ScriptedUIId, const ScriptedUIData&);
   class ListBuilder {
     public:
     ListBuilder& addElem(SGuiElem, int size = 0);
@@ -330,6 +334,8 @@ class GuiFactory {
   DragContainer dragContainer;
   DirectoryPath freeImagesPath;
   optional<DirectoryPath> nonFreeImagesPath;
+  FilePath scriptsPath;
   void loadNonFreeImages(const DirectoryPath&);
   void loadFreeImages(const DirectoryPath&);
+  void loadScripts();
 };

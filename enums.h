@@ -66,6 +66,8 @@ enum class VillainType;
 enum class ZoneId;
 class ViewId;
 enum class AnimationId;
+enum class ScriptedUIId;
+enum class MouseButtonId;
 
 enum class SkillId;
 enum class VisionId;

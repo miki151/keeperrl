@@ -3659,8 +3659,6 @@ static const char* getText(AvatarMenuOption option) {
   switch (option) {
     case AvatarMenuOption::TUTORIAL:
       return "Tutorial";
-    case AvatarMenuOption::LOAD_GAME:
-      return "Load game";
     case AvatarMenuOption::CHANGE_MOD:
       return "Mods";
     case AvatarMenuOption::GO_BACK:
@@ -3876,21 +3874,6 @@ SGuiElem GuiBuilder::drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, Avatar
     const auto maxWidth = 750;
     auto description = 
         WL(labelMultiLineWidth, avatar.description, legendLineHeight, maxWidth, Renderer::textSize(), Color::LIGHT_GRAY);
-    if (!avatar.teamMembers.empty()) {
-      auto members = avatar.teamMembers;
-      sort(members.begin() + 1, members.end(),
-          [](auto& e1, auto& e2) { return e1.bestAttack.value > e2.bestAttack.value; });
-      auto memberList = WL(getListBuilder);
-      for (auto& member : members) {
-        memberList.addElem(drawMinionAndLevel(member.viewId, member.bestAttack.value, 1), 30);
-        if (memberList.getLength() >= 12)
-          break;
-      }
-      description = WL(getListBuilder)
-          .addElemAuto(std::move(description))
-          .addElemAuto(WL(centerHoriz, memberList.buildHorizontalList()))
-          .buildVerticalList();
-    }
     descriptions.push_back(WL(conditional,
         std::move(description),
         [avatarIndex, chosenAvatar] { return avatarIndex == *chosenAvatar; }));

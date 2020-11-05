@@ -31,7 +31,6 @@ class ContentFactory;
 class TilePaths;
 struct ModVersionInfo;
 struct ModDetails;
-struct WarlordInfo;
 class TribeId;
 struct RetiredModelInfo;
 class Unlocks;
@@ -73,6 +72,7 @@ class MainLoop {
   void doWithSplash(const string& text, function<void()> fun, function<void()> cancelFun = nullptr);
 
   PGame prepareCampaign(RandomGen&);
+  PGame prepareWarlord(const SaveFileInfo&);
   enum class ExitCondition;
   ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, bool splashScreen,
       function<optional<ExitCondition> (WGame)> = nullptr, milliseconds stepTimeMilli = milliseconds{3}, optional<int> maxTurns = none);
@@ -83,7 +83,7 @@ class MainLoop {
   ModelTable prepareCampaignModels(CampaignSetup& campaign, const AvatarInfo&, RandomGen&, ContentFactory*);
   ModelTable prepareCampaignModels(CampaignSetup& campaign, TribeAlignment, ModelBuilder);
   PGame loadGame(const FilePath&);
-  PGame loadPrevious();
+  PGame loadOrNewGame();
   FilePath getSavePath(const PGame&, GameSaveType);
   void eraseSaveFile(const PGame&, GameSaveType);
 
@@ -134,6 +134,5 @@ class MainLoop {
   optional<T> loadFromFile(const FilePath&);
   optional<RetiredModelInfo> loadRetiredModelFromFile(const FilePath&);
   bool useSingleThread();
-  vector<WarlordInfo> readWarlordInfos();
   Unlocks* unlocks;
 };

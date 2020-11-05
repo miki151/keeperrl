@@ -17,21 +17,7 @@ class View;
 class GameConfig;
 class Options;
 
-struct WarlordInfo {
-  vector<PCreature> SERIAL(creatures);
-  ContentFactory SERIAL(contentFactory);
-  string SERIAL(gameIdentifier);
-  SERIALIZE_ALL_NO_VERSION(creatures, contentFactory, gameIdentifier)
-};
-
-struct WarlordInfoWithReference {
-  vector<shared_ptr<Creature>> SERIAL(creatures);
-  ContentFactory* SERIAL(contentFactory);
-  string SERIAL(gameIdentifier);
-  SERIALIZE_ALL_NO_VERSION(creatures, serializeAsValue(contentFactory), gameIdentifier)
-};
-
-extern variant<AvatarInfo, WarlordInfo, AvatarMenuOption> getAvatarInfo(View*, const vector<pair<string, KeeperCreatureInfo>>&,
-    const vector<pair<string, AdventurerCreatureInfo>>&, vector<WarlordInfo>, ContentFactory*);
+extern variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View*, const vector<pair<string, KeeperCreatureInfo>>&,
+    const vector<pair<string, AdventurerCreatureInfo>>&, ContentFactory*);
 extern AvatarInfo getQuickGameAvatar(View*, const vector<pair<string, KeeperCreatureInfo>>&, CreatureFactory*);
 extern TribeId getPlayerTribeId(TribeAlignment);

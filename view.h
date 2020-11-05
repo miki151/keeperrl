@@ -42,6 +42,7 @@ class FilePath;
 class ModInfo;
 class UserInput;
 struct Color;
+struct ScriptedUIData;
 namespace fx {
   class FXRenderer;
 }
@@ -213,6 +214,8 @@ class View {
   virtual void presentText(const string& title, const string& text) = 0;
   virtual void presentTextBelow(const string& title, const string& text) = 0;
 
+  virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&) = 0;
+
   /** Draws a window with a list of items.*/
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,
       MenuType = MenuType::NORMAL) = 0;
@@ -259,7 +262,6 @@ class View {
     string description;
     bool settlementNames;
     OptionId nameOption;
-    vector<CreatureInfo> teamMembers;
   };
   virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&) = 0;
 

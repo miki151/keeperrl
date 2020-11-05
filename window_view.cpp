@@ -900,6 +900,11 @@ optional<ExperienceType> WindowView::getCreatureUpgrade(const CreatureExperience
     return none;
 }
 
+void WindowView::scriptedUI(ScriptedUIId id, const ScriptedUIData& data) {
+  Semaphore sem;
+  return getBlockingGui(sem, gui.scripted(sem, id, data));
+}
+
 optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& campaign, optional<Vec2> current) {
   SyncQueue<optional<Vec2>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawChooseSiteMenu(returnQueue, message, campaign, current));
@@ -990,20 +995,25 @@ void WindowView::logMessage(const std::string& message) {
 
 void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> origin) {
   TempClockPause pause(clock);
+  bool origOrigin = !!origin;
   if (!origin)
     origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
   origin->y = max(0, origin->y);
   if (blockingElems.empty()) {
-    blockingElems.push_back(gui.darken());
-    blockingElems.back()->setBounds(Rectangle(renderer.getSize()));
+    /*blockingElems.push_back(gui.darken());
+    blockingElems.back()->setBounds(Rectangle(renderer.getSize()));*/
+    blockingElems.push_back(gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)));
   }
-  Vec2 size(*elem->getPreferredWidth(), min(renderer.getSize().y - origin->y, *elem->getPreferredHeight()));
-  elem->setBounds(Rectangle(*origin, *origin + size));
   propagateMousePosition({elem});
-  blockingElems.push_back(std::move(elem));
+  blockingElems.push_back(elem);
   if (currentThreadId() == renderThreadId)
-    while (!sem.get())
+    while (!sem.get()) {
+      Vec2 size(*elem->getPreferredWidth(), min(renderer.getSize().y - origin->y, *elem->getPreferredHeight()));
+      if (!origOrigin)
+        origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
+      elem->setBounds(Rectangle(*origin, *origin + size));
       refreshView();
+    }
   else
     sem.p();
   blockingElems.clear();

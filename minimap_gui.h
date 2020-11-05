@@ -33,7 +33,7 @@ class MinimapGui : public GuiElem {
   void renderMap(Renderer&, Rectangle target);
 
   virtual void render(Renderer&) override;
-  virtual bool onClick(ClickButton, Vec2) override;
+  virtual bool onClick(MouseButtonId, Vec2) override;
 
   private:
 

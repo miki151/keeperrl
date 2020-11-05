@@ -499,6 +499,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   UserInfoLog.addOutput(DebugOutput::toString([&renderer](const string& s) { renderer.showError(s);}));
   atomic<bool> splashDone { false };
   GuiFactory guiFactory(renderer, &clock, &options, &keybindingMap, freeDataPath.subdirectory("images"),
+      freeDataPath.file("uiscripts.txt"),
       tilesPresent ? optional<DirectoryPath>(paidDataPath.subdirectory("images")) : none);
   TileSet tileSet(paidDataPath.subdirectory("images"), modsDir);
   renderer.setTileSet(&tileSet);

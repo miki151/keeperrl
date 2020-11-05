@@ -56,6 +56,8 @@
 #include "game_info.h"
 #include "tribe_alignment.h"
 #include "unlocks.h"
+#include "scripted_ui_data.h"
+#include "scripted_ui_id.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -234,7 +236,7 @@ void MainLoop::saveUI(PGame& game, GameSaveType type) {
 }
 
 void MainLoop::eraseSaveFile(const PGame& game, GameSaveType type) {
-  remove(getSavePath(game, type).getPath());
+  getSavePath(game, type).erase();
 }
 
 void MainLoop::getSaveOptions(const vector<pair<GameSaveType, string>>& games, vector<ListElem>& options,
@@ -466,17 +468,6 @@ TilePaths MainLoop::getTilePathsForAllMods() const {
   return *ret;
 }
 
-vector<WarlordInfo> MainLoop::readWarlordInfos() {
-  vector<ListElem> optionsUnused;
-  vector<SaveFileInfo> files;
-  getSaveOptions({{GameSaveType::WARLORD, ""}}, optionsUnused, files);
-  vector<WarlordInfo> ret;
-  for (auto& f : files)
-    if (auto res = loadFromFile<WarlordInfo>(userPath.file(f.filename)))
-      ret.push_back(std::move(*res));
-  return ret;
-};
-
 PGame MainLoop::prepareCampaign(RandomGen& random) {
   while (1) {
     ContentFactory contentFactory;
@@ -500,7 +491,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
       }
     }
     auto avatarChoice = getAvatarInfo(view, contentFactory.keeperCreatures, contentFactory.adventurerCreatures,
-        readWarlordInfos(), &contentFactory);
+        &contentFactory);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, contentFactory.villains, contentFactory.gameIntros, *avatar);
       tileSet->setTilePathsAndReload(getTilePathsForAllMods());
@@ -518,41 +509,6 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
             std::move(analytics));
       } else
         continue;
-    } else
-    if (auto warlordInfo = avatarChoice.getReferenceMaybe<WarlordInfo>()) {
-      auto retiredGames = *getRetiredGames(CampaignType::FREE_PLAY);
-      for (int i : All(retiredGames.getAllGames()))
-        if (retiredGames.getAllGames()[i].fileInfo.getGameId() == warlordInfo->gameIdentifier) {
-          retiredGames.erase(i);
-          break;
-        }
-      auto playerInfos = warlordInfo->creatures.transform(
-          [&](auto& c) { return PlayerInfo(c.get(), &warlordInfo->contentFactory); });
-      sort(++playerInfos.begin(), playerInfos.end(),
-           [](auto c1, auto c2) { return c1.bestAttack.value > c2.bestAttack.value; });
-      auto chosen = view->prepareWarlordGame(retiredGames, playerInfos, 12, 10);
-      if (!chosen.empty()) {
-        auto setup = CampaignBuilder::getWarlordCampaign(retiredGames.getActiveGames(),
-            warlordInfo->creatures[0]->getName().firstOrBare());
-        EnemyFactory enemyFactory(Random, contentFactory.getCreatures().getNameGenerator(), contentFactory.enemies,
-            contentFactory.buildingInfo, {});
-        ModelBuilder modelBuilder(nullptr, random, options, sokobanInput, &contentFactory, std::move(enemyFactory));
-        auto models = prepareCampaignModels(setup, TribeAlignment::LAWFUL, std::move(modelBuilder));
-        for (auto& f : models.factories)
-          warlordInfo->contentFactory.merge(std::move(f));
-        vector<PCreature> creatures;
-        for (int index : chosen)
-          creatures.push_back(
-              [&]{
-                for (auto& c : warlordInfo->creatures)
-                  if (c && c->getUniqueId() == playerInfos[index].creatureId)
-                    return std::move(c);
-                fail();
-              }()
-          );
-        return Game::warlordGame(std::move(models.models), setup, std::move(creatures),
-            std::move(warlordInfo->contentFactory), warlordInfo->gameIdentifier);
-      }
     } else {
       auto option = *avatarChoice.getValueMaybe<AvatarMenuOption>();
       switch (option) {
@@ -568,11 +524,6 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
           else
             continue;
         }
-        case AvatarMenuOption::LOAD_GAME:
-          if (auto ret = loadPrevious())
-            return ret;
-          else
-            continue;
       }
     }
   }
@@ -914,7 +865,7 @@ void MainLoop::start(bool tilesPresent) {
     lastIndex = *choice;
     switch (*choice) {
       case 0: {
-        if (PGame game = prepareCampaign(Random))
+        if (PGame game = loadOrNewGame())
           playGame(std::move(game), true, false, false);
         view->reset();
         break;
@@ -1297,24 +1248,120 @@ static void changeSaveType(const FilePath& file, GameSaveType newType) {
   rename(file.getPath(), newFile->getPath());
 }
 
-PGame MainLoop::loadPrevious() {
-  vector<ListElem> options;
-  vector<SaveFileInfo> files;
-  getSaveOptions({
-      {GameSaveType::AUTOSAVE, "Recovered games:"},
-      {GameSaveType::KEEPER, "Keeper games:"},
-      {GameSaveType::ADVENTURER, "Adventurer games:"}}, options, files);
-  optional<SaveFileInfo> savedGame = chooseSaveFile(options, files, "No saved games found.", view);
-  if (savedGame) {
-    PGame ret = loadGame(userPath.file(savedGame->filename));
-    if (ret) {
+PGame MainLoop::loadOrNewGame() {
+  auto games = ScriptedUIDataElems::List{};
+  optional<SaveFileInfo> savedGame;
+  optional<SaveFileInfo> warlordGame;
+  optional<SaveFileInfo> eraseGame;
+  auto addGames = [&](GameSaveType type) {
+    vector<SaveFileInfo> files = getSaveFiles(userPath, getSaveSuffix(type));
+    files = files.filter([this] (const SaveFileInfo& info) { return isCompatible(getSaveVersion(info));});
+    if (!files.empty()) {
+      append(games, files.transform(
+          [&] (const SaveFileInfo& info) {
+              auto nameAndVersion = getNameAndVersion(userPath.file(info.filename));
+              auto gameInfo = loadSavedGameInfo(userPath.file(info.filename));
+              auto record = ScriptedUIDataElems::Record{{
+                {"label", ScriptedUIData{nameAndVersion->first}},
+                {"date", ScriptedUIData{getDateString(info.date)}},
+                {"viewIds", ScriptedUIData{gameInfo->minions.transform([](auto minion){ return ScriptedUIData{minion.viewId}; })}},
+                {"erase", ScriptedUIData{[&eraseGame, info]{ eraseGame = info; }}}
+              }};
+              if (type == GameSaveType::WARLORD)
+                record.elems["warlord"] = ScriptedUIData{[&warlordGame, info]{ warlordGame = info; }};
+              else
+                record.elems["load"] = ScriptedUIData{[&savedGame, info]{ savedGame = info; }};
+              return record;
+          }));
+    }
+  };
+  addGames(GameSaveType::AUTOSAVE);
+  addGames(GameSaveType::KEEPER);
+  addGames(GameSaveType::ADVENTURER);
+  addGames(GameSaveType::WARLORD);
+  auto data = ScriptedUIDataElems::Record{};
+  if (games.empty())
+    return prepareCampaign(Random);
+  data.elems["games"] = std::move(games);
+  bool newGame = false;
+  data.elems["new"] = ScriptedUIData{[&newGame]{ newGame = true; }};
+  view->scriptedUI(ScriptedUIId::LOAD_MENU, data);
+  if (newGame) {
+    if (auto res = prepareCampaign(Random))
+      return res;
+    return loadOrNewGame();
+  } else if (savedGame) {
+    if (PGame ret = loadGame(userPath.file(savedGame->filename))) {
       if (eraseSave())
         changeSaveType(userPath.file(savedGame->filename), GameSaveType::AUTOSAVE);
+      return ret;
     } else
       view->presentText("Sorry", "Failed to load the save file :(");
-    return ret;
+    return loadOrNewGame();
+  } else if (warlordGame) {
+    if (auto game = prepareWarlord(*warlordGame))
+      return game;
+    return loadOrNewGame();
+  } else if (eraseGame && view->yesOrNoPrompt("Are you sure you want to erase " + eraseGame->filename + "?")) {
+    userPath.file(eraseGame->filename).erase();
+    return loadOrNewGame();
   } else
     return nullptr;
+}
+
+struct WarlordInfo {
+  vector<PCreature> SERIAL(creatures);
+  ContentFactory SERIAL(contentFactory);
+  string SERIAL(gameIdentifier);
+  SERIALIZE_ALL_NO_VERSION(creatures, contentFactory, gameIdentifier)
+};
+
+PGame MainLoop::prepareWarlord(const SaveFileInfo& fileInfo) {
+  if (auto warlordInfo = loadFromFile<WarlordInfo>(userPath.file(fileInfo.filename))) {
+    ContentFactory contentFactory;
+    tileSet->clear();
+    doWithSplash("Loading gameplay data", [&] {
+      contentFactory = createContentFactory(false);
+      if (tileSet)
+        tileSet->setTilePaths(contentFactory.tilePaths);
+    });
+    tileSet->loadTextures();
+    auto retiredGames = *getRetiredGames(CampaignType::FREE_PLAY);
+    for (int i : All(retiredGames.getAllGames()))
+      if (retiredGames.getAllGames()[i].fileInfo.getGameId() == warlordInfo->gameIdentifier) {
+        retiredGames.erase(i);
+        break;
+      }
+    auto playerInfos = warlordInfo->creatures.transform(
+        [&](auto& c) { return PlayerInfo(c.get(), &warlordInfo->contentFactory); });
+    sort(++playerInfos.begin(), playerInfos.end(),
+          [](auto c1, auto c2) { return c1.bestAttack.value > c2.bestAttack.value; });
+    auto chosen = view->prepareWarlordGame(retiredGames, playerInfos, 12, 10);
+    if (!chosen.empty()) {
+      auto setup = CampaignBuilder::getWarlordCampaign(retiredGames.getActiveGames(),
+          warlordInfo->creatures[0]->getName().firstOrBare());
+      EnemyFactory enemyFactory(Random, contentFactory.getCreatures().getNameGenerator(), contentFactory.enemies,
+          contentFactory.buildingInfo, {});
+      ModelBuilder modelBuilder(nullptr, Random, options, sokobanInput, &contentFactory, std::move(enemyFactory));
+      auto models = prepareCampaignModels(setup, TribeAlignment::LAWFUL, std::move(modelBuilder));
+      for (auto& f : models.factories)
+        warlordInfo->contentFactory.merge(std::move(f));
+      vector<PCreature> creatures;
+      for (int index : chosen)
+        creatures.push_back(
+            [&]{
+              for (auto& c : warlordInfo->creatures)
+                if (c && c->getUniqueId() == playerInfos[index].creatureId)
+                  return std::move(c);
+              fail();
+            }()
+        );
+      return Game::warlordGame(std::move(models.models), setup, std::move(creatures),
+          std::move(warlordInfo->contentFactory), warlordInfo->gameIdentifier);
+    }
+  } else
+    view->presentText("Sorry", "Failed to load the warlord file :(");
+  return nullptr;
 }
 
 bool MainLoop::eraseSave() {
