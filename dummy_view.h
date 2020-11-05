@@ -51,7 +51,7 @@ class DummyView : public View {
       const string& hint = "") override {
     return none;
   }
-  virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&) override {}
+  virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) override {}
   virtual optional<UniqueEntity<Item>::Id> chooseTradeItem(const string& title, pair<ViewId, int> budget,
       const vector<ItemInfo>&, ScrollPosition* scrollPos) override {
     return none;

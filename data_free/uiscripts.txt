@@ -83,10 +83,30 @@ Def SavedGameContent() Vertical {
 }
 End
 
+Def Scrolling(Content)
+  Scrollable(
+      Vertical {
+        Position(MIDDLE, {
+          Texture(SCROLL_UP)
+          ScrollButton(-1)
+        })
+        Stretch {
+          Texture(SCROLLBAR)
+          Scroller Position(MIDDLE, Texture(SCROLL_BUTTON))
+        }
+        Position(MIDDLE, {
+          ScrollButton(1)
+          Texture(SCROLL_DOWN)
+        })
+      },
+      Content)
+End
+
 LOAD_MENU {
   Width 500
   Vertical {
-    Using "games" List(VERTICAL, SavedGameContent())
+    Height 400
+      Using "games" Scrolling(List(VERTICAL, SavedGameContent()))
     Stretch {}
     Position(MIDDLE, Horizontal {
       Width 150 StandardButton(Height 20 Label("Start new game"), Using "new" Button() Exit())

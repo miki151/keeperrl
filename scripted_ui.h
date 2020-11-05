@@ -9,6 +9,7 @@
 #include "view_id.h"
 
 struct ScriptedUI;
+struct ScriptedUIState;
 
 namespace ScriptedUIElems {
 enum class PlacementPos;
@@ -129,6 +130,22 @@ struct MouseOver {
   SERIALIZE_ALL(elem)
 };
 
+struct Scrollable {
+  HeapAllocated<ScriptedUI> SERIAL(scrollbar);
+  HeapAllocated<ScriptedUI> SERIAL(elem);
+  SERIALIZE_ALL(roundBracket(), NAMED(scrollbar), NAMED(elem))
+};
+
+struct Scroller {
+  HeapAllocated<ScriptedUI> SERIAL(slider);
+  SERIALIZE_ALL(slider)
+};
+
+struct ScrollButton {
+  int SERIAL(direction);
+  SERIALIZE_ALL(roundBracket(), NAMED(direction))
+};
+
 #define VARIANT_TYPES_LIST\
   X(Texture, 0)\
   X(Fill, 1)\
@@ -148,7 +165,10 @@ struct MouseOver {
   X(Height, 15)\
   X(ViewId, 16)\
   X(MouseOver, 17)\
-  X(If, 18)
+  X(If, 18)\
+  X(Scrollable, 19)\
+  X(Scroller, 20)\
+  X(ScrollButton, 21)
 
 #define VARIANT_NAME ScriptedUIImpl
 
@@ -170,6 +190,7 @@ struct ScriptedContext {
   Renderer* renderer;
   GuiFactory* factory;
   Semaphore* endSemaphore;
+  ScriptedUIState& state;
 };
 
 struct ScriptedUI : ScriptedUIElems::ScriptedUIImpl {

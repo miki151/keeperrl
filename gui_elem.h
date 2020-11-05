@@ -30,6 +30,7 @@ class ScrollPosition;
 class KeybindingMap;
 struct ScriptedUI;
 struct ScriptedUIData;
+struct ScriptedUIState;
 
 void dumpGuiLineNumbers(ostream&);
 
@@ -106,7 +107,7 @@ class GuiFactory {
   SGuiElem external(GuiElem*);
   SGuiElem rectangle(Color color, optional<Color> borderColor = none);
   map<ScriptedUIId, ScriptedUI> scriptedUI;
-  SGuiElem scripted(Semaphore& endSem, ScriptedUIId, const ScriptedUIData&);
+  SGuiElem scripted(Semaphore& endSem, ScriptedUIId, const ScriptedUIData&, ScriptedUIState&);
   class ListBuilder {
     public:
     ListBuilder& addElem(SGuiElem, int size = 0);

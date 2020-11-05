@@ -526,8 +526,8 @@ class DrawScripted : public GuiElem {
   ScriptedContext context;
 };
 
-SGuiElem GuiFactory::scripted(Semaphore& endSem, ScriptedUIId id, const ScriptedUIData& data) {
-  return SGuiElem(new DrawScripted(ScriptedContext{&renderer, this, &endSem}, id, std::move(data)));
+SGuiElem GuiFactory::scripted(Semaphore& endSem, ScriptedUIId id, const ScriptedUIData& data, ScriptedUIState& state) {
+  return SGuiElem(new DrawScripted(ScriptedContext{&renderer, this, &endSem, state}, id, std::move(data)));
 }
 
 SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset,

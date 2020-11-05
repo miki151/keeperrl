@@ -1285,7 +1285,8 @@ PGame MainLoop::loadOrNewGame() {
   data.elems["games"] = std::move(games);
   bool newGame = false;
   data.elems["new"] = ScriptedUIData{[&newGame]{ newGame = true; }};
-  view->scriptedUI(ScriptedUIId::LOAD_MENU, data);
+  ScriptedUIState uiState{};
+  view->scriptedUI(ScriptedUIId::LOAD_MENU, data, uiState);
   if (newGame) {
     if (auto res = prepareCampaign(Random))
       return res;

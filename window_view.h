@@ -89,7 +89,7 @@ class WindowView: public View {
       const vector<ItemInfo>&, ScrollPosition* scrollPos) override;
   virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) override;
   virtual optional<ExperienceType> getCreatureUpgrade(const CreatureExperienceInfo&) override;
-  virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&) override;
+  virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) override;
   virtual void presentHighscores(const vector<HighscoreList>&) override;
   virtual UserInput getAction() override;
   virtual bool travelInterrupt() override;

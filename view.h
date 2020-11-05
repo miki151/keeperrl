@@ -43,6 +43,7 @@ class ModInfo;
 class UserInput;
 struct Color;
 struct ScriptedUIData;
+struct ScriptedUIState;
 namespace fx {
   class FXRenderer;
 }
@@ -214,7 +215,7 @@ class View {
   virtual void presentText(const string& title, const string& text) = 0;
   virtual void presentTextBelow(const string& title, const string& text) = 0;
 
-  virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&) = 0;
+  virtual void scriptedUI(ScriptedUIId, const ScriptedUIData&, ScriptedUIState&) = 0;
 
   /** Draws a window with a list of items.*/
   virtual void presentList(const string& title, const vector<ListElem>& options, bool scrollDown = false,

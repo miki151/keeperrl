@@ -35,3 +35,7 @@ using ::ViewIdList;
 struct ScriptedUIData : ScriptedUIDataElems::ScriptedUIDataImpl {
   using ScriptedUIDataImpl::ScriptedUIDataImpl;
 };
+
+struct ScriptedUIState {
+  double scroll;
+};

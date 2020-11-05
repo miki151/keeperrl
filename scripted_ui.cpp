@@ -77,8 +77,10 @@ struct SubElemInfo {
 template <typename T, REQUIRE(getElemBounds(TVALUE(const T&), TVALUE(const ScriptedUIData&), TVALUE(ScriptedContext),
   TVALUE(Rectangle)))>
 static void render(const T& elem, const ScriptedUIData& data, ScriptedContext context, Rectangle area) {
+  context.renderer->setScissor(area);
   for (auto& subElem : getElemBounds(elem, data, context, area))
     subElem.elem.render(subElem.data, context, subElem.bounds);
+  context.renderer->setScissor(none);
 }
 
 template <typename T, REQUIRE(getElemBounds(TVALUE(const T&), TVALUE(const ScriptedUIData&), TVALUE(ScriptedContext),
@@ -245,8 +247,10 @@ static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Vertical& f, con
       f.elems.transform([&](auto& elem) { return elem.getSize(data, context).y; }), f.stretchedElem);
   vector<SubElemInfo> ret;
   ret.reserve(ranges.size());
-  for (int i : All(ranges))
-    ret.push_back(SubElemInfo{f.elems[i], data, Rectangle(area.left(), ranges[i].getStart(), area.right(), ranges[i].getEnd())});
+  for (int i : All(ranges)) {
+    ret.push_back(SubElemInfo{f.elems[i], data,
+        Rectangle(area.left(), ranges[i].getStart(), area.right(), ranges[i].getEnd())});
+  }
   return ret;
 }
 
@@ -387,6 +391,50 @@ static Vec2 getSize(const ScriptedUIElems::List& f, const ScriptedUIData& data, 
     return res;
   }
   return Vec2(100, 20);
+}
+
+static Vec2 getSize(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data, ScriptedContext context) {
+  return f.elem->getSize(data, context);
+}
+
+static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data,
+    ScriptedContext context, Rectangle bounds) {
+  auto height = f.elem->getSize(data, context).y;
+  if (height <= bounds.height())
+    return {SubElemInfo{*f.elem, data, bounds}};
+  int offset = (height - bounds.height()) * context.state.scroll;
+  return {
+    SubElemInfo{*f.elem, data,
+        Rectangle(bounds.left(), bounds.top() - offset, bounds.right() - f.scrollbar->getSize(data, context).x,
+          bounds.top() - offset + height) },
+    SubElemInfo{*f.scrollbar, data,
+        Rectangle(bounds.topRight() - Vec2(f.scrollbar->getSize(data, context).x, 0), bounds.bottomRight())}
+  };
+}
+
+static bool onClick(const ScriptedUIElems::ScrollButton& f, const ScriptedUIData&, ScriptedContext context, MouseButtonId id,
+    Rectangle bounds, Vec2 pos) {
+  if (id == MouseButtonId::LEFT && pos.inRectangle(bounds)) {
+    context.state.scroll += 0.1 * f.direction;
+    context.state.scroll = max(0.0, min(1.0, context.state.scroll));
+    return true;
+  }
+  return false;
+}
+
+static bool onClick(const ScriptedUIElems::Scroller& f, const ScriptedUIData&, ScriptedContext context, MouseButtonId id,
+    Rectangle bounds, Vec2 pos) {
+  return pos.inRectangle(bounds);
+}
+
+static Vec2 getSize(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext context) {
+  return f.slider->getSize(data, context);
+}
+
+static void render(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext context, Rectangle bounds) {
+  auto height = f.slider->getSize(data, context).y;
+  auto pos = bounds.top() + context.state.scroll * (bounds.height() - height);
+  f.slider->render(data, context, Rectangle(bounds.left(), pos, bounds.right(), pos + height));
 }
 
 void ScriptedUI::render(const ScriptedUIData& data, ScriptedContext context, Rectangle area) const {
