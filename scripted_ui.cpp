@@ -397,6 +397,11 @@ static Vec2 getSize(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& 
   return f.elem->getSize(data, context);
 }
 
+static void scroll(double& scrollState, int dir) {
+  scrollState += 0.1 * dir;
+  scrollState = max(0.0, min(1.0, scrollState));
+}
+
 static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data,
     ScriptedContext context, Rectangle bounds) {
   auto height = f.elem->getSize(data, context).y;
@@ -412,11 +417,29 @@ static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Scrollable& f, c
   };
 }
 
+static bool onClick(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data, ScriptedContext context, MouseButtonId id,
+    Rectangle bounds, Vec2 pos) {
+  if (pos.inRectangle(bounds)) {
+    if (id == MouseButtonId::WHEEL_DOWN) {
+      scroll(context.state.scroll, 1);
+      return true;
+    } else
+    if (id == MouseButtonId::WHEEL_UP) {
+      scroll(context.state.scroll, -1);
+      return true;
+    }
+  }
+  auto elems = getElemBounds(f, data, context, bounds);
+  for (int i : All(elems).reverse())
+    if (elems[i].elem.onClick(elems[i].data, context, id, elems[i].bounds, pos))
+      return true;
+  return false;
+}
+
 static bool onClick(const ScriptedUIElems::ScrollButton& f, const ScriptedUIData&, ScriptedContext context, MouseButtonId id,
     Rectangle bounds, Vec2 pos) {
   if (id == MouseButtonId::LEFT && pos.inRectangle(bounds)) {
-    context.state.scroll += 0.1 * f.direction;
-    context.state.scroll = max(0.0, min(1.0, context.state.scroll));
+    scroll(context.state.scroll, f.direction);
     return true;
   }
   return false;
