@@ -41,7 +41,6 @@ class GuiElem {
   virtual void onClickElsewhere() {}
   virtual bool onMouseMove(Vec2) { return false;}
   virtual void onMouseGone() {}
-  virtual void onMouseRelease(Vec2) {}
   virtual void onRefreshBounds() {}
   virtual void renderPart(Renderer& r, Rectangle) { render(r); }
   virtual bool onKeyPressed2(SDL::SDL_Keysym) { return false;}

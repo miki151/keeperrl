@@ -2,4 +2,4 @@
 
 #include "util.h"
 
-enum class MouseButtonId { LEFT, MIDDLE, RIGHT, WHEEL_UP, WHEEL_DOWN };
+enum class MouseButtonId { LEFT, MIDDLE, RIGHT, WHEEL_UP, WHEEL_DOWN, RELEASED };

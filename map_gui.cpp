@@ -1245,12 +1245,17 @@ void MapGui::render(Renderer& renderer) {
 
 bool MapGui::onClick(MouseButtonId b, Vec2 v) {
   switch (b) {
+    case MouseButtonId::RELEASED:
+      onMouseRelease(v);
+      return false;
     case MouseButtonId::LEFT:
       return onLeftClick(v);
     case MouseButtonId::RIGHT:
       return onRightClick(v);
     case MouseButtonId::MIDDLE:
       return onMiddleClick(v);
+    default:
+      return false;
   }
 }
 

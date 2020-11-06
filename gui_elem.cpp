@@ -103,15 +103,14 @@ class ReleaseButton : public GuiElem {
   public:
   ReleaseButton(function<void()> f, int but) : fun(f), button(but) {}
 
-  virtual void onMouseRelease(Vec2 pos) override {
-    if (clicked && pos.inRectangle(getBounds())) {
-      fun();
-    }
-    clicked = false;
-  }
-
   virtual bool onClick(MouseButtonId b, Vec2 pos) override {
     switch (b) {
+      case MouseButtonId::RELEASED:
+        if (clicked && pos.inRectangle(getBounds())) {
+          fun();
+        }
+        clicked = false;
+        return false;
       case MouseButtonId::LEFT:
         if (button == 0 && pos.inRectangle(getBounds())) {
           clicked = true;
@@ -504,7 +503,6 @@ class DrawScripted : public GuiElem {
 
   //virtual bool onMouseMove(Vec2) { return false;}
   //virtual void onMouseGone() {}
-  //virtual void onMouseRelease(Vec2) {}
   //virtual void onRefreshBounds() {}
   //virtual void renderPart(Renderer& r, Rectangle) { render(r); }
   //virtual bool onKeyPressed2(SDL::SDL_Keysym) { return false;}
@@ -953,6 +951,12 @@ class GuiLayout : public GuiElem {
   }
 
   virtual bool onClick(MouseButtonId b, Vec2 pos) override {
+    if (b == MouseButtonId::RELEASED) {
+      for (int i : AllReverse(elems))
+        if (isVisible(i))
+          elems[i]->onClick(b, pos);
+      return false;
+    }
     bool gone = false;
     // Check visibility in advance, as it can potentially change in onClick
     vector<int> visible;
@@ -988,12 +992,6 @@ class GuiLayout : public GuiElem {
   virtual void onMouseGone() override {
     for (int i : AllReverse(elems))
       elems[i]->onMouseGone();
-  }
-
-  virtual void onMouseRelease(Vec2 pos) override {
-    for (int i : AllReverse(elems))
-      if (isVisible(i))
-        elems[i]->onMouseRelease(pos);
   }
 
   virtual void render(Renderer& r) override {
@@ -1090,10 +1088,6 @@ class External : public GuiElem {
 
   virtual void onMouseGone() override {
     elem->onMouseGone();
-  }
-
-  virtual void onMouseRelease(Vec2 v) override {
-    elem->onMouseRelease(v);
   }
 
   virtual void onRefreshBounds() override {
@@ -2094,9 +2088,10 @@ class OnMouseRelease : public GuiElem {
   public:
   OnMouseRelease(function<void()> f) : fun(f) {}
 
-  virtual void onMouseRelease(Vec2 v) override {
-    if (v.inRectangle(getBounds()))
+  virtual bool onClick(MouseButtonId id, Vec2 v) override {
+    if (id == MouseButtonId::RELEASED && v.inRectangle(getBounds()))
       fun();
+    return false;
   }
 
   private:
@@ -2219,13 +2214,11 @@ class MouseButtonHeld : public GuiStack {
   MouseButtonHeld(SGuiElem elem, MouseButtonId but) : GuiStack(std::move(elem)), button(but) {}
 
   virtual bool onClick(MouseButtonId b, Vec2 v) override {
+    if (b == MouseButtonId::RELEASED)
+      on = false;
     if (button == b && v.inRectangle(getBounds()))
       on = true;
     return false;
-  }
-
-  virtual void onMouseRelease(Vec2) override {
-    on = false;
   }
 
   virtual void onMouseGone() override {
@@ -2455,7 +2448,9 @@ class ScrollArea : public GuiElem {
   }
 
   virtual bool onClick(MouseButtonId b, Vec2 v) override {
-    if (v.inRectangle(getBounds()) && b == MouseButtonId::RIGHT) {
+    if (b == MouseButtonId::RELEASED)
+      clickPos = none;
+    else if (v.inRectangle(getBounds()) && b == MouseButtonId::RIGHT) {
       clickPos = *scrollPos + v;
       return true;
     } else {
@@ -2483,11 +2478,6 @@ class ScrollArea : public GuiElem {
         content->onMouseGone();
       return false;
     }
-  }
-
-  virtual void onMouseRelease(Vec2 pos) override {
-    clickPos = none;
-    content->onMouseRelease(pos);
   }
 
   virtual bool onKeyPressed2(SDL_Keysym key) override {
@@ -2573,7 +2563,9 @@ class ScrollBar : public GuiLayout {
   }
 
   virtual bool onClick(MouseButtonId b, Vec2 v) override {
-    if (b == MouseButtonId::LEFT) {
+    if (b == MouseButtonId::RELEASED)
+      *held = notHeld;
+    else if (b == MouseButtonId::LEFT) {
       if (v.inRectangle(getElemBounds(0))) {
         *held = v.y - calcButHeight();
         return true;
@@ -2602,10 +2594,6 @@ class ScrollBar : public GuiLayout {
     if (*held != notHeld)
       scrollPos->reset(getBounds().height() / 2 + scrollLength() * calcPos(v.y - *held));
     return false;
-  }
-
-  virtual void onMouseRelease(Vec2) override {
-    *held = notHeld;
   }
 
   virtual bool isVisible(int num) override {
@@ -2660,10 +2648,6 @@ class Scrollable : public GuiElem {
     else
       content->onMouseGone();
     return false;
-  }
-
-  virtual void onMouseRelease(Vec2 pos) override {
-    content->onMouseRelease(pos);
   }
 
   virtual bool onKeyPressed2(SDL_Keysym key) override {
@@ -2732,12 +2716,14 @@ class Slider : public GuiLayout {
   }
 
   virtual bool onClick(MouseButtonId id, Vec2 v) override {
-    if (v.inRectangle(getBounds())) {
+    if (id == MouseButtonId::RELEASED)
+      held = false;
+    else if (v.inRectangle(getBounds())) {
       if (id == MouseButtonId::WHEEL_UP)
         addScrollPos(-1);
       else if (id == MouseButtonId::WHEEL_UP)
         addScrollPos(1);
-      else {
+      else if (id == MouseButtonId::LEFT) {
         held = true;
         setPositionFromClick(v);
       }
@@ -2750,10 +2736,6 @@ class Slider : public GuiLayout {
     if (held)
       setPositionFromClick(v);
     return false;
-  }
-
-  virtual void onMouseRelease(Vec2) override {
-    held = false;
   }
 
   virtual bool isVisible(int) override {
@@ -3281,7 +3263,7 @@ void GuiFactory::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
   switch (event.type) {
     case SDL::SDL_MOUSEBUTTONUP:
       for (auto elem : guiElems)
-        elem->onMouseRelease(Vec2(event.button.x, event.button.y));
+        elem->onClick(MouseButtonId::RELEASED, Vec2(event.button.x, event.button.y));
       dragContainer.pop();
       break;
     case SDL::SDL_MOUSEMOTION: {
