@@ -42,6 +42,7 @@
 #include "tileset.h"
 #include "target_type.h"
 #include "keybinding_map.h"
+#include "mouse_button_id.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -1364,7 +1365,7 @@ void WindowView::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
   switch (event.type) {
     case SDL::SDL_MOUSEBUTTONUP:
       // MapGui needs this event otherwise it will sometimes lock the mouse button
-      mapGui->onMouseRelease(Vec2(event.button.x, event.button.y));
+      mapGui->onClick(MouseButtonId::RELEASED, Vec2(event.button.x, event.button.y));
       break;
     case SDL::SDL_MOUSEBUTTONDOWN:
       lockKeyboard = true;
