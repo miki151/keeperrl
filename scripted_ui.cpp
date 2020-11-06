@@ -407,7 +407,7 @@ static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Scrollable& f, c
   auto height = f.elem->getSize(data, context).y;
   if (height <= bounds.height())
     return {SubElemInfo{*f.elem, data, bounds}};
-  int offset = (height - bounds.height()) * context.state.scroll;
+  int offset = (height - bounds.height()) * context.state.scrollPos;
   return {
     SubElemInfo{*f.elem, data,
         Rectangle(bounds.left(), bounds.top() - offset, bounds.right() - f.scrollbar->getSize(data, context).x,
@@ -421,11 +421,11 @@ static bool onClick(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& 
     Rectangle bounds, Vec2 pos) {
   if (pos.inRectangle(bounds)) {
     if (id == MouseButtonId::WHEEL_DOWN) {
-      scroll(context.state.scroll, 1);
+      scroll(context.state.scrollPos, 1);
       return true;
     } else
     if (id == MouseButtonId::WHEEL_UP) {
-      scroll(context.state.scroll, -1);
+      scroll(context.state.scrollPos, -1);
       return true;
     }
   }
@@ -439,15 +439,36 @@ static bool onClick(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& 
 static bool onClick(const ScriptedUIElems::ScrollButton& f, const ScriptedUIData&, ScriptedContext context, MouseButtonId id,
     Rectangle bounds, Vec2 pos) {
   if (id == MouseButtonId::LEFT && pos.inRectangle(bounds)) {
-    scroll(context.state.scroll, f.direction);
+    scroll(context.state.scrollPos, f.direction);
     return true;
   }
   return false;
 }
 
-static bool onClick(const ScriptedUIElems::Scroller& f, const ScriptedUIData&, ScriptedContext context, MouseButtonId id,
+static Rectangle getSliderPos(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext context,
+    Rectangle bounds) {
+  auto height = f.slider->getSize(data, context).y;
+  if (auto& held = context.state.scrollButtonHeld)
+    context.state.scrollPos = max(0.0, min(1.0, 
+        double(context.renderer->getMousePos().y - *held - bounds.top()) / (bounds.height() - height)));
+  auto pos = bounds.top() + context.state.scrollPos * (bounds.height() - height);
+  return Rectangle(bounds.left(), pos, bounds.right(), pos + height);
+}
+
+static bool onClick(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext context, MouseButtonId id,
     Rectangle bounds, Vec2 pos) {
-  return pos.inRectangle(bounds);
+  if (id == MouseButtonId::LEFT && pos.inRectangle(bounds)) {
+    auto sliderHeight = f.slider->getSize(data, context).y;
+    context.state.scrollPos = max(0.0, min(1.0, 
+        double(context.renderer->getMousePos().y - bounds.top()) / (bounds.height() - sliderHeight)));
+    auto sliderPos = getSliderPos(f, data, context, bounds);
+    if (pos.inRectangle(sliderPos))
+      context.state.scrollButtonHeld = pos.y - sliderPos.top();
+    return true;
+  } else
+  if (id == MouseButtonId::RELEASED)
+    context.state.scrollButtonHeld = none;
+  return false;
 }
 
 static Vec2 getSize(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext context) {
@@ -455,9 +476,7 @@ static Vec2 getSize(const ScriptedUIElems::Scroller& f, const ScriptedUIData& da
 }
 
 static void render(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext context, Rectangle bounds) {
-  auto height = f.slider->getSize(data, context).y;
-  auto pos = bounds.top() + context.state.scroll * (bounds.height() - height);
-  f.slider->render(data, context, Rectangle(bounds.left(), pos, bounds.right(), pos + height));
+  f.slider->render(data, context, getSliderPos(f, data, context, bounds));
 }
 
 void ScriptedUI::render(const ScriptedUIData& data, ScriptedContext context, Rectangle area) const {

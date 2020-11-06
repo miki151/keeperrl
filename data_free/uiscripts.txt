@@ -65,12 +65,11 @@ Def LoadButtonSpacing() Height 10 {} End
 Def SavedGameContent() Vertical {
   MiniWindow2({
     Horizontal {
-      Width 200
       Vertical {
         Using "label" Text()
         Using "date" Text(14, ColorId GRAY)
+        MarginTop(0, Using "viewIds" List(HORIZONTAL, ViewId(1)))
       }
-      MarginTop(8, Using "viewIds" List(HORIZONTAL, ViewId(1)))
       Stretch {}
       Vertical {
         Using "load" { StandardButton(Label("Load game"), { Button() Exit()})}
@@ -103,7 +102,7 @@ Def Scrolling(Content)
 End
 
 LOAD_MENU {
-  Width 500
+  Width 600
   Vertical {
     Height 400
       Using "games" Scrolling(List(VERTICAL, SavedGameContent()))

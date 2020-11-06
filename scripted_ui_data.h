@@ -37,5 +37,6 @@ struct ScriptedUIData : ScriptedUIDataElems::ScriptedUIDataImpl {
 };
 
 struct ScriptedUIState {
-  double scroll;
+  double scrollPos;
+  optional<int> scrollButtonHeld;
 };
