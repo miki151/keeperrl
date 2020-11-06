@@ -1275,6 +1275,20 @@
       Analytics "milestone" "adoxieUnlocked"
     }
   }
+"ZombieScroll"
+  {
+    name = "rotten scroll"
+    viewId = { "scroll" }
+    itemClass = SCROLL
+    weight = 1
+    price = 1
+    uses = 1
+    effect = Description "" Name "?" {
+      Message "The scroll falls apart before you manage to read it"
+      Unlock "zombies"
+      Analytics "milestone" "zombiesUnlocked"
+    }
+  }
 "AdaHelm"
   {
     viewId = { "ada_helm" }

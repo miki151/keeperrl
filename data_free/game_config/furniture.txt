@@ -856,6 +856,15 @@
     RemoveFurniture "PAMPHLET_CHEST"
   }
 }
+"ZOMBIE_CHEST" inherit "ARMOR_CHEST"
+{
+  usageType = UsageEffect "open" {
+    CreatureMessage "open the chest" "opens the chest"
+    CreatureMessage "find a scroll inside" "finds a scroll inside"
+    DropItems {"ZombieScroll"} 1
+    RemoveFurniture "ZOMBIE_CHEST"
+  }
+}
 "KNIFE_CHEST" inherit "ARMOR_CHEST"
 {
   usageType = UsageEffect "open" {

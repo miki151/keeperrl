@@ -11,6 +11,7 @@
 "castle_wall" # gray
 "wood_door" + brown
 "iron_door" + gray
+"hidden_door" + red
 "iron_gate" ⩲ gray
 "iron_gate_blocking" ⩲ gray
 "bed" = white
@@ -31,6 +32,7 @@
 "demon_den_trigger" ^ blue
 "armor_chest" = brown
 "treasure_chest" = yellow
+"zombie_chest" = green
 "ada_chest" = blue
 "pamphlet_chest" = brown
 "knife_chest" = green
@@ -46,3 +48,4 @@
 "adoxie_right_foot" R gray
 "adoxie_feet_trigger" ^ red
 "corpse" % red
+"loot_coffin" = gray

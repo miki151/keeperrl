@@ -18,6 +18,7 @@
   "castle_wall" Place "CASTLE_WALL"
   "wood_door" Place "WOOD_DOOR"
   "wood_gate" Place "WOOD_GATE"
+  "hidden_door" Place "HIDDEN_CASTLE_DOOR"
   "stone_bridge" Place "STONE_BRIDGE"
   "wood_bridge" Place "BRIDGE"
   "treasure_chest" Place "TREASURE_CHEST"
@@ -31,12 +32,14 @@
   "clear_middle" ClearLayer MIDDLE
   "outside_furniture" OutsideFurniture
   "inside_furniture" InsideFurniture
+  "loot_coffin" Place "LOOT_COFFIN"
   "armor_chest" Place "ARMOR_CHEST"
   "pamphlet_chest" Place "PAMPHLET_CHEST"
   "knife_chest" Place "KNIFE_CHEST"
   "ada_chest" Place "ADA_CHEST"
   "swarmer_chest" Place "SWARMER_CHEST"
   "blacksmith_chest" Place "BLACKSMITH_CHEST"
+  "zombie_chest" Place "ZOMBIE_CHEST"
   "torch" Place "GROUND_TORCH"
   "throne" Place "THRONE"
   "forge" Place "FORGE"

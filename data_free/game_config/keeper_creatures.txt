@@ -83,14 +83,14 @@
       "orders" "installations"
   }
   workshopGroups = { }
-  description = "Enjoy some brains for Halloween!"
+  description = "Enjoy some brains for dinner!"
   minionTraits = { LEADER WORKER NO_LIMIT }
   maxPopulation = 1000
   populationString = "zombies"
   noLeader = true
   prisoners = false
   immigrantInterval = 40
-#  unlock = "zombies"
+  unlock = "zombies"
 }
 "6_cyclops"
 {
