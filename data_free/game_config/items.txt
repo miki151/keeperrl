@@ -1289,6 +1289,24 @@
       Analytics "milestone" "zombiesUnlocked"
     }
   }
+"CyclopsScroll"
+  {
+    name = "strange scroll"
+    viewId = { "scroll" }
+    itemClass = SCROLL
+    weight = 1
+    price = 1
+    uses = 1
+    effect = Description "" Name "?" {
+      Filter LastingEffect HALLU {
+        Message "Wow! This makes perfect sense, man!"
+        Unlock "cyclops"
+        Analytics "milestone" "cyclopsUnlocked"
+      }
+      Filter Not LastingEffect HALLU
+        Message "It makes absolutely no sense"
+    }
+  }
 "AdaHelm"
   {
     viewId = { "ada_helm" }

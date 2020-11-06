@@ -1551,7 +1551,7 @@
     }
     race = "cyclops"
     tribe = HOSTILE
-    shopItems = {{16 20} "goodMushrooms" }
+    shopItems = {{16 20} "cyclopsCave" }
   }
   config = {
     leaderAsFighter = true

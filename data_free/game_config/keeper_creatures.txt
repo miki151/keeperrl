@@ -112,5 +112,5 @@
   minionTraits = { LEADER WORKER FIGHTER }
   maxPopulation = 1
   prisoners = false
-  unlock = "cyclops_keeper"
+  unlock = "cyclops"
 }

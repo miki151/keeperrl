@@ -121,6 +121,14 @@
   }
 }
 
+"cyclopsCave" inherit "goodMushrooms"
+{
+  unique = {
+    {"CyclopsScroll"} 1
+    {Mushroom Lasting HALLU} 3
+  }
+}
+
 "wildernessItems" inherit "goodMushrooms"
 {
   items = append {
