@@ -1296,15 +1296,16 @@
     itemClass = SCROLL
     weight = 1
     price = 1
-    uses = 1
     effect = Description "" Name "?" {
-      Filter LastingEffect HALLU {
-        Message "Wow! This makes perfect sense, man!"
+      Filter Or{ LastingEffect INSANITY LastingEffect HALLU } {
+        Message "The strange symbols and arrows describe a door that has been unlocked"
         Unlock "cyclops"
         Analytics "milestone" "cyclopsUnlocked"
       }
-      Filter Not LastingEffect HALLU
-        Message "It makes absolutely no sense"
+      Filter Not Or{ LastingEffect INSANITY LastingEffect HALLU } {
+        Message "It contains strange symbols and arrows"
+        Message "They don't seem to make any sense"
+      }
     }
   }
 "AdaHelm"
