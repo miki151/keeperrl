@@ -1,4 +1,4 @@
-"Welcome to KeeperRL Alpha 31 hotfix 1! This patch was released on October 20, 2020.
+"Welcome to KeeperRL Alpha 31 hotfix 3! This patch was released on November 16, 2020.
 
 Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
 

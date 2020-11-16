@@ -108,7 +108,7 @@
       "installations" "traps"
   }
   workshopGroups = { "basic" "traps" }
-  description = ""
+  description = "Build a dungeon as a lone cyclops."
   minionTraits = { LEADER WORKER FIGHTER }
   maxPopulation = 1
   prisoners = false
