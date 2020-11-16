@@ -1285,6 +1285,7 @@
     uses = 1
     effect = Description "" Name "?" {
       Message "The scroll falls apart before you manage to read it"
+      Message "An image of an unlocking door appears in your mind"
       Unlock "zombies"
       Analytics "milestone" "zombiesUnlocked"
     }
