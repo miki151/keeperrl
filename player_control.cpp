@@ -2315,7 +2315,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CREATURE_BUTTON: {
       auto chosenId = input.get<Creature::Id>();
       if (Creature* c = getCreature(chosenId)) {
-        if (!getChosenTeam() || !getTeams().contains(*getChosenTeam(), c))
+        if (!!chosenCreature && (!getChosenTeam() || !getTeams().contains(*getChosenTeam(), c)))
           setChosenCreature(chosenId, chosenCreature->group);
         else
           setChosenTeam(*chosenTeam, chosenId);
