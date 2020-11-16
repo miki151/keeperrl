@@ -1572,7 +1572,7 @@
     }
     race = "cyclops"
     tribe = HOSTILE
-    shopItems = {{16 20} "goodMushrooms" }
+    shopItems = {{16 20} "cyclopsCave" }
   }
   config = {
     leaderAsFighter = true
@@ -1634,7 +1634,7 @@
 "CEMETERY"
 {
   settlement = {
-    type = Builtin CEMETERY "BRICK"
+    type = RandomLayout { "zombie_crypt" { 25 25 } "default"}
     inhabitants = {
       fighters = {
         count = {8 12}
@@ -1649,7 +1649,7 @@
   levelConnection = {
     topLevel = ExtraEnemy { "CEMETERY_ENTRY" }
     levels = {
-      {MainEnemy {40 40} MAZE }
+      {MainEnemy {40 40} BASIC }
     }
   }
 }

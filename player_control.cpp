@@ -2098,6 +2098,7 @@ void PlayerControl::exitAction() {
       break;
     case ABANDON:
       if (getView()->yesOrNoPrompt("Do you want to abandon your game? This is permanent and the save file will be removed!")) {
+        getGame()->addAnalytics("gameAbandoned", "");
         getGame()->setExitInfo(ExitAndQuit());
         return;
       }
@@ -2314,7 +2315,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CREATURE_BUTTON: {
       auto chosenId = input.get<Creature::Id>();
       if (Creature* c = getCreature(chosenId)) {
-        if (!getChosenTeam() || !getTeams().contains(*getChosenTeam(), c))
+        if (!!chosenCreature && (!getChosenTeam() || !getTeams().contains(*getChosenTeam(), c)))
           setChosenCreature(chosenId, chosenCreature->group);
         else
           setChosenTeam(*chosenTeam, chosenId);

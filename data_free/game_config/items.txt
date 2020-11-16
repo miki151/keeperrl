@@ -1275,6 +1275,40 @@
       Analytics "milestone" "adoxieUnlocked"
     }
   }
+"ZombieScroll"
+  {
+    name = "rotten scroll"
+    viewId = { "scroll" }
+    itemClass = SCROLL
+    weight = 1
+    price = 1
+    uses = 1
+    effect = Description "" Name "?" {
+      Message "The scroll falls apart before you manage to read it"
+      Message "An image of an unlocking door appears in your mind"
+      Unlock "zombies"
+      Analytics "milestone" "zombiesUnlocked"
+    }
+  }
+"CyclopsScroll"
+  {
+    name = "strange scroll"
+    viewId = { "scroll" }
+    itemClass = SCROLL
+    weight = 1
+    price = 1
+    effect = Description "" Name "?" {
+      Filter Or{ LastingEffect INSANITY LastingEffect HALLU } {
+        Message "The strange symbols and arrows describe a door that has been unlocked"
+        Unlock "cyclops"
+        Analytics "milestone" "cyclopsUnlocked"
+      }
+      Filter Not Or{ LastingEffect INSANITY LastingEffect HALLU } {
+        Message "It contains strange symbols and arrows"
+        Message "They don't seem to make any sense"
+      }
+    }
+  }
 "AdaHelm"
   {
     viewId = { "ada_helm" }

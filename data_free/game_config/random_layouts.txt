@@ -706,3 +706,40 @@ Def LavaCave() {
 End
 
 "lava_cave" LavaCave()
+
+Def CoffinRoom(WHAT) {
+  Border(LEFT, 2, Set("no_dig"))
+  Inside(1, Reset("floor", WHAT))
+  Choose(
+    Position(RIGHT_CENTER, {1 1}, Reset("floor"))
+  )
+}
+End
+
+Def CoffinRoomDoor() {
+  Border(RIGHT, 6, Set("no_dig"))
+  Border(LEFT, 3, Position(MIDDLE, {1 1}, Reset("floor", "loot_coffin")))
+  Position(MIDDLE, {3 1}, {
+    Margin(LEFT, 2, Reset("floor", "hidden_door"), Reset("floor", "zombie_chest"))
+  })
+  Choose(
+    Position(LEFT_CENTER, {1 1}, Reset("floor"))
+  )
+  Set("no_territory")
+}
+End
+
+Def ZombieCrypt() {
+  Reset("hard_rock")
+  Inside(2, Place(
+      ({3 3}, CoffinRoom("loot_coffin"), 9),
+      ({3 3}, CoffinRoom("up_stairs0"), 1),
+      ({7 5}, CoffinRoomDoor(), 1)
+  ))
+  Connector()
+  Filter(On("hard_rock"), Reset("castle_wall"))
+}
+End
+
+"zombie_crypt" ZombieCrypt()
+
