@@ -619,6 +619,12 @@ int Position::countSwarmers() const {
   return result;
 }
 
+Collective* Position::getCollective() const {
+  if (!isValid())
+    return nullptr;
+  return level->territory[coord];
+}
+
 void Position::addCreatureLight(bool darkness) {
   PROFILE;
   if (isValid()) {

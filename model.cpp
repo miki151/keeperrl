@@ -58,6 +58,7 @@
 #include "monster.h"
 #include "monster_ai.h"
 #include "warlord_controller.h"
+#include "territory.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {
@@ -156,6 +157,12 @@ void Model::tick(LocalTime time) { PROFILE
     l->tick();
   for (PCollective& col : collectives)
     col->tick();
+  for (auto& l : levels)
+    for (auto v : l->territory.getBounds())
+      l->territory[v] = nullptr;
+  for (auto& col : collectives)
+    for (auto& pos : col->getTerritory().getAll())
+      pos.getLevel()->territory[pos.getCoord()] = col.get();
   if (externalEnemies)
     externalEnemies->update(getTopLevel(), time);
 }

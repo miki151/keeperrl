@@ -157,6 +157,7 @@ class Position {
   void addFurnitureEffect(TribeId, const FurnitureEffectInfo&) const;
   void removeFurnitureEffect(TribeId, const FurnitureEffectInfo&) const;
   int countSwarmers() const;
+  Collective* getCollective() const;
 
   SERIALIZATION_DECL(Position)
   int getHash() const;

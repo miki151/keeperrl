@@ -7,7 +7,7 @@
 #include "body.h"
 #include "game.h"
 #include "unlocks.h"
-
+#include "collective.h"
 
 namespace Impl {
 static bool applyToCreature(const CreaturePredicates::Enemy&, const Creature* victim, const Creature* attacker) {
@@ -131,6 +131,15 @@ static bool apply(const CreaturePredicates::Unlocked& s, Position pos, const Cre
 
 static string getName(const CreaturePredicates::Unlocked& s) {
   return s.id;
+}
+
+static bool apply(const CreaturePredicates::InTerritory& s, Position pos, const Creature* attacker) {
+  auto col = pos.getCollective();
+  return attacker && col && col->getCreatures().contains(attacker);
+}
+
+static string getName(const CreaturePredicates::InTerritory&) {
+  return "in territory";
 }
 
 static bool apply(FurnitureType type, Position pos, const Creature* attacker) {

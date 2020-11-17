@@ -40,12 +40,13 @@
 #include "portals.h"
 #include "roof_support.h"
 #include "game_event.h"
+#include "collective.h"
 
 template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Level>);
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
-  ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps);
+  ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps, territory);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
   ar(furniture, tickingFurniture, covered, roofSupport, portals, name, depth);
   vector<pair<TribeId, unique_ptr<EffectsTable>>> SERIAL(tmp);
@@ -79,7 +80,7 @@ static vector<pair<int, CreatureBucketMap>> getSwarmMaps(Vec2 size) {
 }
 
 Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, Table<double> sun, LevelId id)
-    : squares(std::move(s)), furniture(std::move(f)),
+    : territory(s.getBounds(), nullptr), squares(std::move(s)), furniture(std::move(f)),
       memoryUpdates(squares->getBounds(), true), model(m),
       sunlight(sun), roofSupport(squares->getBounds()),
       bucketMap(squares->getBounds().getSize(), FieldOfView::sightRange),
