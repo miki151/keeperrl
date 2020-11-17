@@ -215,26 +215,6 @@ vector<TriggerInfo> VillageControl::getTriggers(const Collective* against) const
   return ret;
 }
 
-void VillageControl::considerWelcomeMessage() {
-  PROFILE;
-  if (behaviour)
-    if (behaviour->welcomeMessage)
-      switch (*behaviour->welcomeMessage) {
-        case VillageBehaviour::WelcomeMessage::DRAGON_WELCOME:
-          for (auto leader : collective->getLeaders())
-            for (Position pos : collective->getTerritory().getAll())
-              if (Creature* c = pos.getCreature())
-                if (c->isAffected(LastingEffect::INVISIBLE) && isEnemy(c) && c->isPlayer()
-                    && leader->canSee(c->getPosition())) {
-                  c->privateMessage(PlayerMessage("\"Well thief! I smell you and I feel your air. "
-                        "I hear your breath. Come along!\"", MessagePriority::CRITICAL));
-                  behaviour->welcomeMessage.reset();
-                  pos.getGame()->addAnalytics("milestone", "dragonGreeting");
-                }
-          break;
-      }
-}
-
 bool VillageControl::canPerformAttack(bool currentlyActive) {
   // don't attack from remote site when player is currently here
   if (currentlyActive && collective->getModel() != collective->getGame()->getMainModel().get())
@@ -268,7 +248,6 @@ bool VillageControl::isEnemy() const {
 }
 
 void VillageControl::update(bool currentlyActive) {
-  considerWelcomeMessage();
   considerCancellingAttack();
   acceptImmigration();
   healAllCreatures();

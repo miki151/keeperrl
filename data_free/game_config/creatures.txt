@@ -967,7 +967,7 @@
       stackName = "dragon"
       firstNameGen = "DRAGON"
     }
-    spells = { "healing" "deception" "haste" "cure poison" "poison breath" }
+    spells = { "healing" "deception" "haste" "cure poison" "poison breath" "dragon greeting" }
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 60 100 }
@@ -1036,7 +1036,7 @@
       firstNameGen = "DRAGON"
       stackName = "dragon"
     }
-    spells = { "healing" "deception" "haste" "cure poison" "fire breath" "fire trap" }
+    spells = { "healing" "deception" "haste" "cure poison" "fire breath" "fire trap" "dragon greeting" }
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 120 200 }
@@ -1105,7 +1105,7 @@
       firstNameGen = "DRAGON"
       stackName = "dragon"
     }
-    spells = { "healing" "haste" "cure poison" "black dragon blindness"}
+    spells = { "healing" "haste" "cure poison" "black dragon blindness" "dragon greeting"}
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 120 200 }
@@ -1170,7 +1170,7 @@
       firstNameGen = "DRAGON"
       stackName = "dragon"
     }
-    spells = { "healing" "haste" "cure poison" "ice cone"}
+    spells = { "healing" "haste" "cure poison" "ice cone" "dragon greeting"}
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 120 200 }
@@ -1234,7 +1234,7 @@
       firstNameGen = "DRAGON"
       stackName = "dragon"
     }
-    spells = { "healing" "haste" "cure poison" "acid stream"}
+    spells = { "healing" "haste" "cure poison" "acid stream" "dragon greeting"}
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 120 200 }

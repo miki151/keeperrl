@@ -425,6 +425,18 @@
   effect = Name "black dragon blindness" Area 30 Filter Enemy Lasting BLIND
   cooldown = 3
 }
+"dragon greeting"
+{
+  symbol = "🏠"
+  range = 10
+  effect = Name "invisible visitor greeting" Description "Special greeting for invisible visitors"
+    Filter And { Attacker InTerritory LastingEffect INVISIBLE } AI And{} NONE WANTED {
+      PlayerMessage "Well thief! I smell you and I feel your air. I hear your breath. Come along!" CRITICAL
+      Analytics "milestone" "dragonGreeting"
+    }
+  cooldown = 100000
+  message = "" ""
+}
 "grant wish"
 {
   symbol = "$"

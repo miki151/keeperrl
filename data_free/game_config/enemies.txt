@@ -624,7 +624,6 @@
       Proximity
     }
     attackBehaviour = KillMembers 12
-    welcomeMessage = DRAGON_WELCOME
   }
   createOnBones = 0.1 { "KNIGHTS" "DWARVES" "GREEN_DRAGON" "ELEMENTALIST" }
   levelConnection = {
@@ -674,7 +673,6 @@
       Proximity
     }
     attackBehaviour = KillMembers 7
-    welcomeMessage = DRAGON_WELCOME
   }
   createOnBones = 0.1 { "KNIGHTS" "DWARVES" "ELEMENTALIST" }
 }

@@ -50,7 +50,6 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   private:
   friend class VillageBehaviour;
   void launchAttack(vector<Creature*> attackers);
-  void considerWelcomeMessage();
   void considerCancellingAttack();
   bool isEnemy(const Creature*);
   Collective* getEnemyCollective() const;

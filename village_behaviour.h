@@ -15,13 +15,10 @@ class VillageBehaviour {
   VillageBehaviour(VillageBehaviour&&) noexcept;
   VillageBehaviour& operator = (VillageBehaviour&&) noexcept;
 
-  enum class WelcomeMessage;
-
   int SERIAL(minPopulation);
   int SERIAL(minTeamSize);
   vector<AttackTrigger> SERIAL(triggers);
   HeapAllocated<AttackBehaviour> SERIAL(attackBehaviour);
-  optional<WelcomeMessage> SERIAL(welcomeMessage);
   optional<pair<double, int>> SERIAL(ransom);
 
   PTask getAttackTask(VillageControl* self) const;
@@ -33,5 +30,3 @@ class VillageBehaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 };
-
-RICH_ENUM(VillageBehaviour::WelcomeMessage, DRAGON_WELCOME);
