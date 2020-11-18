@@ -104,26 +104,22 @@ static Vec2 getSize(const ScriptedUIElems::MarginsImpl& f, const ScriptedUIData&
   return f.inside->getSize(data, context) + Vec2(f.width, f.width) * 2;
 }
 
-static void render(const ScriptedUIElems::Text& f, const ScriptedUIData& data, ScriptedContext context, Rectangle area) {
+string getText(const ScriptedUIElems::Label& f, const ScriptedUIData& data) {
+  if (f.text)
+    return *f.text;
   if (auto label = data.getReferenceMaybe<ScriptedUIDataElems::Label>())
-    context.renderer->drawText(f.color, area.topLeft(), label->data(), Renderer::CenterType::NONE,
-        f.size.value_or(Renderer::textSize()));
+    return label->data();
   else
-    context.renderer->drawText(Color::RED, area.topLeft(), "not a label");
-}
-
-static Vec2 getSize(const ScriptedUIElems::Text& f, const ScriptedUIData& data, ScriptedContext context) {
-  if (auto label = data.getReferenceMaybe<ScriptedUIDataElems::Label>())
-    return Vec2(context.renderer->getTextLength(*label), 20);
-  return Vec2(50, 20);
+    return "not a label";
 }
 
 static void render(const ScriptedUIElems::Label& f, const ScriptedUIData& data, ScriptedContext context, Rectangle area) {
-  context.renderer->drawText(f.color, area.topLeft(), f.text);
+  context.renderer->drawText(f.color, area.topLeft(), getText(f, data), Renderer::CenterType::NONE,
+    f.size.value_or(Renderer::textSize()));
 }
 
 static Vec2 getSize(const ScriptedUIElems::Label& f, const ScriptedUIData& data, ScriptedContext context) {
-  return Vec2(context.renderer->getTextLength(f.text, f.size.value_or(19)), 20);
+  return Vec2(context.renderer->getTextLength(getText(f, data), f.size.value_or(19)), 20);
 }
 
 static void render(const ScriptedUIElems::Fill& f, const ScriptedUIData& data, ScriptedContext context, Rectangle area) {

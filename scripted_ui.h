@@ -57,14 +57,8 @@ struct Horizontal {
   void serialize(PrettyInputArchive& ar1, const unsigned int);
 };
 
-struct Text {
-  optional<int> SERIAL(size);
-  Color SERIAL(color) = Color::WHITE;
-  SERIALIZE_ALL(roundBracket(), NAMED(size), OPTION(color))
-};
-
 struct Label {
-  string SERIAL(text);
+  optional<string> SERIAL(text);
   optional<int> SERIAL(size);
   Color SERIAL(color) = Color::WHITE;
   SERIALIZE_ALL(roundBracket(), NAMED(text), NAMED(size), OPTION(color))
@@ -153,7 +147,7 @@ struct NoScissor {
   X(Texture, 0)\
   X(Fill, 1)\
   X(Frame, 2)\
-  X(Text, 3)\
+  X(If, 3)\
   X(Button, 4)\
   X(MarginsImpl, 5)\
   X(Position, 6)\
@@ -168,10 +162,9 @@ struct NoScissor {
   X(Height, 15)\
   X(ViewId, 16)\
   X(MouseOver, 17)\
-  X(If, 18)\
+  X(ScrollButton, 18)\
   X(Scrollable, 19)\
   X(Scroller, 20)\
-  X(ScrollButton, 21)
 
 #define VARIANT_NAME ScriptedUIImpl
 

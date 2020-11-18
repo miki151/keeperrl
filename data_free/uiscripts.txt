@@ -66,9 +66,9 @@ Def SavedGameContent() Vertical {
   MiniWindow2({
     Horizontal {
       Vertical {
-        Using "label" Text()
-        Using "date" Text(14, ColorId GRAY)
-        MarginTop(0, Using "viewIds" List(HORIZONTAL, ViewId(1)))
+        Using "label" Label()
+        Using "date" Label(none, 14, ColorId GRAY)
+        MarginTop(0, Using "viewIds" List(HORIZONTAL, NoScissor ViewId(1)))
       }
       Stretch {}
       Vertical {
@@ -118,7 +118,7 @@ End
   Button(EXIT, true)
   Margins(6, Using "view_id" NoScissor ViewId(2))
   Vertical {
-    Position(MIDDLE, MarginLeft(80, MarginRight(80, Using "message" Text())))
+    Position(MIDDLE, MarginLeft(80, MarginRight(80, Using "message" Label())))
     Height 15 {}
     Position(MIDDLE, StandardButton(Height 20 Label("Dismiss"), Button(EXIT)))
   }
