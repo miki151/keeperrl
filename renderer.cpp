@@ -274,7 +274,7 @@ void Renderer::addQuad(const Rectangle& r, Color color) {
   drawFilledRectangle(r.left(), r.top(), r.right(), r.bottom(), color);
 }
 
-void Renderer::setScissor(optional<Rectangle> s) {
+void Renderer::setScissor(optional<Rectangle> s, bool reset) {
   renderDeferredSprites();
   auto applyScissor = [&] (Rectangle rect) {
     int zoom = getZoom();
@@ -284,7 +284,7 @@ void Renderer::setScissor(optional<Rectangle> s) {
   };
   if (s) {
     Rectangle rect = *s;
-    if (!scissorStack.empty())
+    if (!scissorStack.empty() && !reset)
       rect = rect.intersection(scissorStack.back());
     applyScissor(rect);
     scissorStack.push_back(rect);

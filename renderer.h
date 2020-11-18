@@ -95,7 +95,7 @@ class Renderer {
   void drawAsciiBackground(ViewId, Rectangle bounds);
   void drawTile(Vec2 pos, const vector<TileCoord>&, Vec2 size, Color = Color::WHITE, SpriteOrientation orientation = {},
       optional<Color> secondColor = none, optional<double> scale = none);
-  void setScissor(optional<Rectangle>);
+  void setScissor(optional<Rectangle>, bool reset = false);
   void addQuad(const Rectangle&, Color);
   void drawAnimation(AnimationId, Vec2, double state, Vec2 squareSize, Dir orientation, Color);
   Vec2 getSize();
