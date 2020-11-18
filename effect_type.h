@@ -14,6 +14,7 @@
 #include "workshop_type.h"
 #include "creature_predicate.h"
 #include "view_id.h"
+#include "scripted_ui_data.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -314,6 +315,11 @@ struct SetViewId {
   ViewId SERIAL(value);
   SERIALIZE_ALL(value)
 };
+struct UI {
+  ScriptedUIId SERIAL(id);
+  ScriptedUIData SERIAL(data);
+  SERIALIZE_ALL(id, data)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -393,7 +399,8 @@ struct SetViewId {
   X(ReturnFalse, 74)\
   X(Polymorph, 75)\
   X(SetCreatureName, 76)\
-  X(SetViewId, 77)
+  X(SetViewId, 77)\
+  X(UI, 78)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

@@ -146,6 +146,11 @@ struct ScrollButton {
   SERIALIZE_ALL(roundBracket(), NAMED(direction))
 };
 
+struct NoScissor {
+  HeapAllocated<ScriptedUI> SERIAL(elem);
+  SERIALIZE_ALL(elem)
+};
+
 #define VARIANT_TYPES_LIST\
   X(Texture, 0)\
   X(Fill, 1)\
@@ -168,7 +173,8 @@ struct ScrollButton {
   X(If, 18)\
   X(Scrollable, 19)\
   X(Scroller, 20)\
-  X(ScrollButton, 21)
+  X(ScrollButton, 21)\
+  X(NoScissor, 22)
 
 #define VARIANT_NAME ScriptedUIImpl
 

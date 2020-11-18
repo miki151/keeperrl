@@ -60,7 +60,8 @@
 #include "automaton_part.h"
 #include "minion_trait.h"
 #include "unlocks.h"
-
+#include "view.h"
+#include "player.h"
 
 namespace {
 struct DefaultType {
@@ -1385,6 +1386,24 @@ static string getName(const Effects::SetViewId& e, const ContentFactory* f) {
 
 static string getDescription(const Effects::SetViewId& e, const ContentFactory* f) {
   return "Changes creature's sprite";
+}
+
+static bool apply(const Effects::UI& e, Position pos, Creature*) {
+  auto view = pos.getGame()->getView();
+  if (auto c = pos.getCreature())
+    if (c->isPlayer()) {
+      view->updateView(dynamic_cast<Player*>(c->getController()), true);
+  ScriptedUIState state;
+  view->scriptedUI(e.id, e.data, state);
+  return true;
+}
+
+static string getName(const Effects::UI& e, const ContentFactory* f) {
+  return "UI";
+}
+
+static string getDescription(const Effects::UI& e, const ContentFactory* f) {
+  return "Displays a UI";
 }
 
 static bool applyToCreature(const Effects::RemoveAbility& e, Creature* c, Creature*) {

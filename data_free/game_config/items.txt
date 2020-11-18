@@ -1267,14 +1267,21 @@
     price = 1
     effect = Description "Just a cheap pamphlet" Message "It predicts the coming of the Evil God Adoxie"
   }
+
+Def UnlockMessage(Text, ViewId)
+  UI "unlock_message" { "message" Label Text "view_id" ViewIdList {{ViewId}}}
+End
+
 "AdoxieScrollVault" inherit "AdoxieScroll"
   {
     effect = Description "Just a cheap pamphlet" Name "message" {
       Message "It predicts the coming of the Evil God Adoxie. You feel like this time it is real."
       Unlock "adoxie"
       Analytics "milestone" "adoxieUnlocked"
+      UnlockMessage("The Adoxie adventurer has been unlocked!", "adoxie_head")
     }
   }
+
 "ZombieScroll"
   {
     name = "rotten scroll"
@@ -1288,6 +1295,7 @@
       Message "An image of an unlocking door appears in your mind"
       Unlock "zombies"
       Analytics "milestone" "zombiesUnlocked"
+      UnlockMessage("The Zombie faction has been unlocked!", "zombie")
     }
   }
 "CyclopsScroll"
@@ -1302,6 +1310,7 @@
         Message "The strange symbols and arrows describe a door that has been unlocked"
         Unlock "cyclops"
         Analytics "milestone" "cyclopsUnlocked"
+        UnlockMessage("The Cyclops faction has been unlocked!", "cyclops")
       }
       Filter Not Or{ LastingEffect INSANITY LastingEffect HALLU } {
         Message "It contains strange symbols and arrows"

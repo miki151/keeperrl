@@ -101,7 +101,7 @@ Def Scrolling(Content)
       Content)
 End
 
-LOAD_MENU {
+"load_menu" {
   Width 600
   Vertical {
     Height 400
@@ -113,3 +113,12 @@ LOAD_MENU {
     })
   }
 }
+
+"unlock_message" MiniWindow({
+  Margins(6, Using "view_id" NoScissor ViewId(2))
+  Vertical {
+    Position(MIDDLE, MarginLeft(80, MarginRight(80, Using "message" Text())))
+    Height 15 {}
+    Position(MIDDLE, StandardButton(Height 20 Label("Dismiss"), Exit()))
+  }
+})

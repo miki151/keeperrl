@@ -10,7 +10,12 @@ struct ScriptedUIData;
 namespace ScriptedUIDataElems {
 
 using Label = string;
-using Callback = function<void()>;
+struct Callback {
+  function<void()> fun;
+  template <class Archive> void serialize(Archive& ar1, const unsigned int) {
+    FATAL << "Can't deserialize Callback";
+  }
+};
 struct Record {
   map<string, ScriptedUIData> SERIAL(elems);
   SERIALIZE_ALL(elems)
@@ -27,6 +32,11 @@ using ::ViewIdList;
 
 #define VARIANT_NAME ScriptedUIDataImpl
 #include "gen_variant.h"
+#include "gen_variant_serialize.h"
+#define DEFAULT_ELEM "Record"
+inline
+#include "gen_variant_serialize_pretty.h"
+#undef DEFAULT_ELEM
 #undef VARIANT_TYPES_LIST
 #undef VARIANT_NAME
 

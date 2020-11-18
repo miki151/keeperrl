@@ -60,7 +60,7 @@ static bool onClick(const ScriptedUIElems::Button&, const ScriptedUIData& data, 
     Rectangle bounds, Vec2 pos) {
   if (id == MouseButtonId::LEFT && pos.inRectangle(bounds)) {
     if (auto callback = data.getReferenceMaybe<ScriptedUIDataElems::Callback>()) {
-      (*callback)();
+      callback->fun();
       return true;
     } else
       USER_FATAL << "Expected callback";
@@ -477,6 +477,17 @@ static Vec2 getSize(const ScriptedUIElems::Scroller& f, const ScriptedUIData& da
 
 static void render(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext context, Rectangle bounds) {
   f.slider->render(data, context, getSliderPos(f, data, context, bounds));
+}
+
+static void render(const ScriptedUIElems::NoScissor& s, const ScriptedUIData& data, ScriptedContext context, Rectangle area) {
+  context.renderer->setScissor(Rectangle(context.renderer->getSize()), true);
+  s.elem->render(data, context, area);
+  context.renderer->setScissor(none);
+}
+
+static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::NoScissor& f, const ScriptedUIData& data, ScriptedContext context,
+    Rectangle area) {
+  return {SubElemInfo{*f.elem, data, area}};
 }
 
 void ScriptedUI::render(const ScriptedUIData& data, ScriptedContext context, Rectangle area) const {

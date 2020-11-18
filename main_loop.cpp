@@ -57,7 +57,6 @@
 #include "tribe_alignment.h"
 #include "unlocks.h"
 #include "scripted_ui_data.h"
-#include "scripted_ui_id.h"
 
 #ifdef USE_STEAMWORKS
 #include "steam_ugc.h"
@@ -1267,12 +1266,12 @@ PGame MainLoop::loadOrNewGame() {
                 {"label", ScriptedUIData{nameAndVersion->first}},
                 {"date", ScriptedUIData{getDateString(info.date)}},
                 {"viewIds", ScriptedUIData{gameInfo->minions.transform([](auto minion){ return ScriptedUIData{minion.viewId}; })}},
-                {"erase", ScriptedUIData{[&eraseGame, info]{ eraseGame = info; }}}
+                {"erase", ScriptedUIData{ScriptedUIDataElems::Callback{[&eraseGame, info]{ eraseGame = info; }}}}
               }};
               if (type == GameSaveType::WARLORD)
-                record.elems["warlord"] = ScriptedUIData{[&warlordGame, info]{ warlordGame = info; }};
+                record.elems["warlord"] = ScriptedUIData{ScriptedUIDataElems::Callback{[&warlordGame, info]{ warlordGame = info; }}};
               else
-                record.elems["load"] = ScriptedUIData{[&savedGame, info]{ savedGame = info; }};
+                record.elems["load"] = ScriptedUIData{ScriptedUIDataElems::Callback{[&savedGame, info]{ savedGame = info; }}};
               return record;
           }));
     }
@@ -1286,9 +1285,9 @@ PGame MainLoop::loadOrNewGame() {
     return prepareCampaign(Random);
   data.elems["games"] = std::move(games);
   bool newGame = false;
-  data.elems["new"] = ScriptedUIData{[&newGame]{ newGame = true; }};
+  data.elems["new"] = ScriptedUIData{ScriptedUIDataElems::Callback{[&newGame]{ newGame = true; }}};
   ScriptedUIState uiState{};
-  view->scriptedUI(ScriptedUIId::LOAD_MENU, data, uiState);
+  view->scriptedUI("load_menu", data, uiState);
   if (newGame) {
     if (auto res = prepareCampaign(Random))
       return res;

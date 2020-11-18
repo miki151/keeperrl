@@ -66,7 +66,6 @@ enum class VillainType;
 enum class ZoneId;
 class ViewId;
 enum class AnimationId;
-enum class ScriptedUIId;
 enum class MouseButtonId;
 
 enum class SkillId;
@@ -124,5 +123,7 @@ class NameGeneratorId;
 class BiomeId;
 class WorkshopType;
 class CollectiveResourceId;
+
 using SteamId = unsigned long long;
+using ScriptedUIId = string;
 using UnlockId = string;
