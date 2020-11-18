@@ -72,9 +72,9 @@ Def SavedGameContent() Vertical {
       }
       Stretch {}
       Vertical {
-        Using "load" { StandardButton(Label("Load game"), { Button() Exit()})}
-        Using "warlord" { StandardButton(Label("Play as a warlord"), { Button() Exit()})}
-        Using "erase" { StandardButton(Label("Erase file"), { Button() Exit()})}
+        Using "load" { StandardButton(Label("Load game"), { Button(CALLBACK) Button(EXIT)})}
+        Using "warlord" { StandardButton(Label("Play as a warlord"), { Button(CALLBACK) Button(EXIT)})}
+        Using "erase" { StandardButton(Label("Erase file"), { Button(CALLBACK) Button(EXIT)})}
       }
     }
   })
@@ -108,17 +108,18 @@ End
       Using "games" Scrolling(List(VERTICAL, SavedGameContent()))
     Stretch {}
     Position(MIDDLE, Horizontal {
-      Width 150 StandardButton(Height 20 Label("Start new game"), Using "new" Button() Exit())
-      Width 150 StandardButton(Height 20 Label("Go back"), Exit())
+      Width 150 StandardButton(Height 20 Label("Start new game"), Using "new" Button(CALLBACK) Button(EXIT))
+      Width 150 StandardButton(Height 20 Label("Go back"), Button(EXIT))
     })
   }
 }
 
 "unlock_message" MiniWindow({
+  Button(EXIT, true)
   Margins(6, Using "view_id" NoScissor ViewId(2))
   Vertical {
     Position(MIDDLE, MarginLeft(80, MarginRight(80, Using "message" Text())))
     Height 15 {}
-    Position(MIDDLE, StandardButton(Height 20 Label("Dismiss"), Exit()))
+    Position(MIDDLE, StandardButton(Height 20 Label("Dismiss"), Button(EXIT)))
   }
 })

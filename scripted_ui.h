@@ -15,12 +15,14 @@ namespace ScriptedUIElems {
 enum class PlacementPos;
 enum class Direction;
 enum class TextureFlip;
+enum class ButtonAction;
 }
 
 RICH_ENUM(ScriptedUIElems::TextureFlip, NONE, FLIP_X, FLIP_Y, FLIP_XY);
 RICH_ENUM(ScriptedUIElems::PlacementPos, MIDDLE, TOP_STRETCHED, BOTTOM_STRETCHED, LEFT_STRETCHED, RIGHT_STRETCHED,
     TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT);
 RICH_ENUM(ScriptedUIElems::Direction, HORIZONTAL, VERTICAL);
+RICH_ENUM(ScriptedUIElems::ButtonAction, CALLBACK, EXIT);
 
 namespace ScriptedUIElems {
 
@@ -69,13 +71,9 @@ struct Label {
 };
 
 struct Button {
-  bool SERIAL(nothing);
-  SERIALIZE_ALL(roundBracket(), OPTION(nothing))
-};
-
-struct Exit {
-  bool SERIAL(nothing);
-  SERIALIZE_ALL(roundBracket(), OPTION(nothing))
+  ButtonAction SERIAL(action);
+  bool SERIAL(reverse);
+  SERIALIZE_ALL(roundBracket(), NAMED(action), OPTION(reverse))
 };
 
 struct MarginsImpl {
@@ -161,7 +159,7 @@ struct NoScissor {
   X(Position, 6)\
   X(Chain, 7)\
   X(List, 8)\
-  X(Exit, 9)\
+  X(NoScissor, 9)\
   X(Label, 10)\
   X(Using, 11)\
   X(Vertical, 12)\
@@ -173,8 +171,7 @@ struct NoScissor {
   X(If, 18)\
   X(Scrollable, 19)\
   X(Scroller, 20)\
-  X(ScrollButton, 21)\
-  X(NoScissor, 22)
+  X(ScrollButton, 21)
 
 #define VARIANT_NAME ScriptedUIImpl
 

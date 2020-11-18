@@ -46,24 +46,25 @@ static Vec2 getSize(const ScriptedUIElems::ViewId& t, const ScriptedUIData&, Scr
   return Vec2(1, 1) * context.renderer->nominalSize * t.zoom;
 }
 
-static bool onClick(const ScriptedUIElems::Exit&, const ScriptedUIData&, ScriptedContext context, MouseButtonId id,
-    Rectangle bounds, Vec2 pos) {
-  if (id == MouseButtonId::LEFT && pos.inRectangle(bounds))
-    context.endSemaphore->v();
-  return false;
-}
-
 static void render(const ScriptedUIElems::Button&, const ScriptedUIData&, ScriptedContext context, Rectangle area) {
 //  context.renderer->drawFilledRectangle(area, Color::RED);
 }
-static bool onClick(const ScriptedUIElems::Button&, const ScriptedUIData& data, ScriptedContext context, MouseButtonId id,
+static bool onClick(const ScriptedUIElems::Button& b, const ScriptedUIData& data, ScriptedContext context, MouseButtonId id,
     Rectangle bounds, Vec2 pos) {
-  if (id == MouseButtonId::LEFT && pos.inRectangle(bounds)) {
-    if (auto callback = data.getReferenceMaybe<ScriptedUIDataElems::Callback>()) {
-      callback->fun();
-      return true;
-    } else
-      USER_FATAL << "Expected callback";
+  if (id == MouseButtonId::LEFT && (pos.inRectangle(bounds) == !b.reverse)) {
+    switch (b.action) {
+      case ScriptedUIElems::ButtonAction::CALLBACK:
+        if (auto callback = data.getReferenceMaybe<ScriptedUIDataElems::Callback>()) {
+          callback->fun();
+          return true;
+        } else {
+          USER_FATAL << "Expected callback";
+          fail();
+        }
+      case ScriptedUIElems::ButtonAction::EXIT:
+        context.endSemaphore->v();
+        return false;
+    }
   }
   return false;
 }
