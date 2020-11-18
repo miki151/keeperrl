@@ -1391,7 +1391,7 @@ static string getDescription(const Effects::SetViewId& e, const ContentFactory* 
 static bool apply(const Effects::UI& e, Position pos, Creature*) {
   auto view = pos.getGame()->getView();
   if (auto c = pos.getCreature())
-    if (c->isPlayer()) {
+    if (c->isPlayer())
       view->updateView(dynamic_cast<Player*>(c->getController()), true);
   ScriptedUIState state;
   view->scriptedUI(e.id, e.data, state);
