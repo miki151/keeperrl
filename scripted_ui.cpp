@@ -25,7 +25,7 @@ static bool onClick(const DefaultType&, const ScriptedUIData&, ScriptedContext, 
 static void render(const ScriptedUIElems::Texture& t, const ScriptedUIData&, ScriptedContext context, Rectangle area) {
   auto& texture = context.factory->get(t.id);
   using namespace ScriptedUIElems;
-  context.renderer->drawSprite(area.topLeft(), Vec2(0, 0), texture.getSize(), texture, area.getSize(), none,
+  context.renderer->drawSprite(area.topLeft(), Vec2(0, 0), area.getSize(), texture, none, none,
       Renderer::SpriteOrientation(t.flip == TextureFlip::FLIP_Y || t.flip == TextureFlip::FLIP_XY,
           t.flip == TextureFlip::FLIP_X || t.flip == TextureFlip::FLIP_XY));
 }
@@ -153,6 +153,18 @@ static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Position& f, con
       return {SubElemInfo{*f.elem, data, Rectangle(area.bottomRight() - size, area.bottomRight())}};
     case PlacementPos::BOTTOM_LEFT:
       return {SubElemInfo{*f.elem, data, Rectangle(area.bottomLeft() - Vec2(0, size.y), area.bottomLeft() + Vec2(size.x, 0))}};
+    case PlacementPos::TOP_CENTERED:
+      return {SubElemInfo{*f.elem, data, Rectangle(area.middle().x - size.x / 2, area.top(),
+          area.middle().x - size.x / 2 + size.x, area.top() + size.y)}};
+    case PlacementPos::BOTTOM_CENTERED:
+      return {SubElemInfo{*f.elem, data, Rectangle(area.middle().x - size.x / 2, area.bottom() - size.y,
+          area.middle().x - size.x / 2 + size.x, area.bottom())}};
+    case PlacementPos::LEFT_CENTERED:
+      return {SubElemInfo{*f.elem, data, Rectangle(area.left(), area.middle().y - size.y / 2,
+          area.left() + size.x, area.middle().y - size.y / 2 + size.y)}};
+    case PlacementPos::RIGHT_CENTERED:
+      return {SubElemInfo{*f.elem, data, Rectangle(area.right() - size.x, area.middle().y - size.y / 2,
+          area.right(), area.middle().y - size.y / 2 + size.y)}};
   }
 }
 
@@ -340,6 +352,10 @@ static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::MouseOver& f, co
   return {SubElemInfo{*f.elem, data, area}};
 }
 
+static Vec2 getSize(const ScriptedUIElems::MouseOver& f, const ScriptedUIData& data, ScriptedContext context) {
+  return f.elem->getSize(data, context);
+}
+
 static void render(const ScriptedUIElems::MouseOver& f, const ScriptedUIData& data, ScriptedContext context, Rectangle bounds) {
   if (context.renderer->getMousePos().inRectangle(bounds))
     f.elem->render(data, context, bounds);
@@ -480,6 +496,10 @@ static void render(const ScriptedUIElems::NoScissor& s, const ScriptedUIData& da
   context.renderer->setScissor(Rectangle(context.renderer->getSize()), true);
   s.elem->render(data, context, area);
   context.renderer->setScissor(none);
+}
+
+static Vec2 getSize(const ScriptedUIElems::NoScissor& f, const ScriptedUIData& data, ScriptedContext context) {
+  return f.elem->getSize(data, context);
 }
 
 static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::NoScissor& f, const ScriptedUIData& data, ScriptedContext context,
