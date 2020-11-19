@@ -87,7 +87,6 @@ class GuiFactory {
   SGuiElem buttonPos(function<void(Rectangle, Vec2)>);
   SGuiElem buttonRightClick(function<void()>);
   SGuiElem reverseButton(function<void()>, vector<SDL::SDL_Keysym> = {}, bool capture = false);
-  SGuiElem buttonRect(function<void(Rectangle buttonBounds)>, SDL::SDL_Keysym, bool capture = false);
   SGuiElem buttonRect(function<void(Rectangle buttonBounds)>);
   SGuiElem releaseLeftButton(function<void()>, optional<Keybinding> = none);
   SGuiElem releaseRightButton(function<void()>);

@@ -230,10 +230,6 @@ DragContainer& GuiFactory::getDragContainer() {
   return dragContainer;
 }
 
-SGuiElem GuiFactory::buttonRect(function<void(Rectangle)> fun, SDL_Keysym hotkey, bool capture) {
-  return SGuiElem(new ButtonKey(fun, hotkey, capture));
-}
-
 SGuiElem GuiFactory::button(function<void()> fun, SDL_Keysym hotkey, bool capture) {
   return SGuiElem(new ButtonKey([=](Rectangle) { fun(); }, hotkey, capture));
 }
