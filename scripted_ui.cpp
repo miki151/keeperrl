@@ -1,8 +1,11 @@
+#include "stdafx.h"
 #include "scripted_ui.h"
 #include "mouse_button_id.h"
+#include "pretty_archive.h"
 #include "scripted_ui_data.h"
 #include "renderer.h"
 #include "gui_elem.h"
+#include "sdl_keycodes.h"
 
 namespace {
 struct DefaultType {
@@ -19,6 +22,10 @@ static void render(const DefaultType&, const ScriptedUIData&, ScriptedContext, R
 }
 
 static bool onClick(const DefaultType&, const ScriptedUIData&, ScriptedContext, MouseButtonId, Rectangle, Vec2) {
+  return false;
+}
+
+static bool onKeypressed(const DefaultType&, const ScriptedUIData&, ScriptedContext, SDL::SDL_Keysym) {
   return false;
 }
 
@@ -49,23 +56,27 @@ static Vec2 getSize(const ScriptedUIElems::ViewId& t, const ScriptedUIData&, Scr
 static void render(const ScriptedUIElems::Button&, const ScriptedUIData&, ScriptedContext context, Rectangle area) {
 //  context.renderer->drawFilledRectangle(area, Color::RED);
 }
+
+static bool performAction(ScriptedUIElems::ButtonAction action, const ScriptedUIData& data, ScriptedContext context) {
+  switch (action) {
+    case ScriptedUIElems::ButtonAction::CALLBACK:
+      if (auto callback = data.getReferenceMaybe<ScriptedUIDataElems::Callback>()) {
+        callback->fun();
+        return true;
+      } else {
+        USER_FATAL << "Expected callback";
+        fail();
+      }
+    case ScriptedUIElems::ButtonAction::EXIT:
+      context.endSemaphore->v();
+      return false;
+  }
+}
+
 static bool onClick(const ScriptedUIElems::Button& b, const ScriptedUIData& data, ScriptedContext context, MouseButtonId id,
     Rectangle bounds, Vec2 pos) {
-  if (id == MouseButtonId::LEFT && (pos.inRectangle(bounds) == !b.reverse)) {
-    switch (b.action) {
-      case ScriptedUIElems::ButtonAction::CALLBACK:
-        if (auto callback = data.getReferenceMaybe<ScriptedUIDataElems::Callback>()) {
-          callback->fun();
-          return true;
-        } else {
-          USER_FATAL << "Expected callback";
-          fail();
-        }
-      case ScriptedUIElems::ButtonAction::EXIT:
-        context.endSemaphore->v();
-        return false;
-    }
-  }
+  if (id == MouseButtonId::LEFT && (pos.inRectangle(bounds) == !b.reverse))
+    return performAction(b.action, data, context);
   return false;
 }
 
@@ -74,6 +85,33 @@ struct SubElemInfo {
   const ScriptedUIData& data;
   Rectangle bounds;
 };
+
+namespace {
+struct KeyReader {
+  SDL::SDL_Keycode SERIAL(key);
+  void serialize(PrettyInputArchive& ar, const unsigned int v) {
+    string key = ar.eat();
+    if (auto k = keycodeFromString(key.data()))
+      this->key = *k;
+    else
+      ar.error("Unknown key value: \"" + key + "\"");
+  }
+};
+}
+
+void ScriptedUIElems::KeyHandler::serialize(PrettyInputArchive& ar, const unsigned int v) {
+  KeyReader key;
+  ar(roundBracket(), NAMED(key), NAMED(action));
+  ar(endInput());
+  this->key = key.key;
+}
+
+static bool onKeypressed(const ScriptedUIElems::KeyHandler& handler, const ScriptedUIData& data, ScriptedContext context,
+    SDL::SDL_Keysym sym) {
+  if (handler.key == sym.sym)
+    return performAction(handler.action, data, context) || true;
+  return false;
+}
 
 template <typename T, REQUIRE(getElemBounds(TVALUE(const T&), TVALUE(const ScriptedUIData&), TVALUE(ScriptedContext),
   TVALUE(Rectangle)))>
@@ -91,6 +129,16 @@ static bool onClick(const T& elem, const ScriptedUIData& data, ScriptedContext c
   auto elems = getElemBounds(elem, data, context, area);
   for (int i : All(elems).reverse())
     if (elems[i].elem.onClick(elems[i].data, context, id, elems[i].bounds, pos))
+      return true;
+  return false;
+}
+
+template <typename T, REQUIRE(getElemBounds(TVALUE(const T&), TVALUE(const ScriptedUIData&), TVALUE(ScriptedContext),
+  TVALUE(Rectangle)))>
+static bool onKeypressed(const T& elem, const ScriptedUIData& data, ScriptedContext context, SDL::SDL_Keysym sym) {
+  auto elems = getElemBounds(elem, data, context, Rectangle(0, 0, 10000, 10000));
+  for (int i : All(elems).reverse())
+    if (elems[i].elem.onKeypressed(elems[i].data, context, sym))
       return true;
   return false;
 }
@@ -519,5 +567,11 @@ bool ScriptedUI::onClick(const ScriptedUIData& data, ScriptedContext context, Mo
     Vec2 pos) const {
   return visit<bool>(
       [&] (const auto& ui) { return ::onClick(ui, data, context, id, bounds, pos); }
+  );
+}
+
+bool ScriptedUI::onKeypressed(const ScriptedUIData& data, ScriptedContext context, SDL::SDL_Keysym sym) const {
+  return visit<bool>(
+      [&] (const auto& ui) { return ::onKeypressed(ui, data, context, sym); }
   );
 }

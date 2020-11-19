@@ -501,7 +501,9 @@ class DrawScripted : public GuiElem {
   //virtual void onMouseGone() {}
   //virtual void onRefreshBounds() {}
   //virtual void renderPart(Renderer& r, Rectangle) { render(r); }
-  //virtual bool onKeyPressed2(SDL::SDL_Keysym) { return false;}
+  virtual bool onKeyPressed2(SDL::SDL_Keysym sym) override {
+    return get().onKeypressed(data, context, sym);
+  }
   //virtual bool onTextInput(const char*) { return false; }
   virtual optional<int> getPreferredWidth() override {
     return get().getSize(data, context).x;

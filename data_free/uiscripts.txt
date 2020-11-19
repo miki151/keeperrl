@@ -134,6 +134,7 @@ End
 
 "unlock_message" {
   Button(EXIT, true)
+  KeyHandler(SDLK_ESCAPE, EXIT)
   Window(MarginLeft(10, MarginBottom(10, {
     Position(LEFT_CENTERED, Margins(6, Using "view_id" NoScissor ViewId(2)))
     Position(MIDDLE, MarginLeft(80, MarginRight(80, Using "message" Label())))

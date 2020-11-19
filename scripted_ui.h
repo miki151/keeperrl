@@ -7,6 +7,7 @@
 #include "mouse_button_id.h"
 #include "color.h"
 #include "view_id.h"
+#include "sdl.h"
 
 struct ScriptedUI;
 struct ScriptedUIState;
@@ -68,6 +69,12 @@ struct Button {
   ButtonAction SERIAL(action);
   bool SERIAL(reverse);
   SERIALIZE_ALL(roundBracket(), NAMED(action), OPTION(reverse))
+};
+
+struct KeyHandler {
+  SDL::SDL_Keycode SERIAL(key);
+  ButtonAction SERIAL(action);
+  void serialize(PrettyInputArchive& ar1, const unsigned int);
 };
 
 struct MarginsImpl {
@@ -165,6 +172,7 @@ struct NoScissor {
   X(ScrollButton, 18)\
   X(Scrollable, 19)\
   X(Scroller, 20)\
+  X(KeyHandler, 21)
 
 #define VARIANT_NAME ScriptedUIImpl
 
@@ -194,4 +202,5 @@ struct ScriptedUI : ScriptedUIElems::ScriptedUIImpl {
   void render(const ScriptedUIData&, ScriptedContext, Rectangle) const;
   Vec2 getSize(const ScriptedUIData&, ScriptedContext) const;
   bool onClick(const ScriptedUIData&, ScriptedContext, MouseButtonId, Rectangle, Vec2) const;
+  bool onKeypressed(const ScriptedUIData&, ScriptedContext, SDL::SDL_Keysym) const;
 };
