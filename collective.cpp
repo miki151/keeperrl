@@ -745,18 +745,6 @@ void Collective::onEvent(const GameEvent& event) {
               info.type, constructions->getBuiltCount(info.type));
         }
       },
-      [&](const ConqueredEnemy& info) {
-        auto col = info.collective;
-        if (col->isDiscoverable() && info.byPlayer) {
-          if (auto& name = col->getName()) {
-            addRecordedEvent("the conquering of " + name->full);
-            control->addMessage(PlayerMessage("The tribe of " + name->full + " is destroyed.",
-                MessagePriority::CRITICAL));
-          } else
-            control->addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
-          dungeonLevel.onKilledVillain(col->getVillainType());
-        }
-      },
       [&](const auto&) {}
   );
 }

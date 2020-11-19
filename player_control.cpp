@@ -97,6 +97,7 @@
 #include "user_input.h"
 #include "automaton_part.h"
 #include "shortest_path.h"
+#include "scripted_ui_data.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -1667,6 +1668,21 @@ void PlayerControl::onEvent(const GameEvent& event) {
           getView()->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId, info.fx);
           if (info.sound)
             getView()->addSound(*info.sound);
+        }
+      },
+      [&](const ConqueredEnemy& info) {
+        auto col = info.collective;
+        if (col->isDiscoverable() && info.byPlayer) {
+          if (auto& name = col->getName()) {
+            collective->addRecordedEvent("the conquering of " + name->full);
+            ScriptedUIState state;
+            auto data = ScriptedUIDataElems::Record{};
+            data.elems["message"] = "The tribe of " + name->full + " is destroyed.";
+            data.elems["view_id"] = ViewIdList{name->viewId};
+            getView()->scriptedUI("unlock_message", data, state);
+          } else
+            addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
+          collective->getDungeonLevel().onKilledVillain(col->getVillainType());
         }
       },
       [&](const CreatureEvent& info) {
