@@ -22,7 +22,6 @@
 #include "creature_factory.h"
 #include "creature.h"
 #include "spell.h"
-#include "skill.h"
 #include "build_info.h"
 #include "dungeon_level.h"
 #include "spell_school.h"
@@ -47,46 +46,6 @@ string combine(const vector<T>& v) {
 
 string combine(const vector<TechId>& v) {
   return combine(v.transform([](TechId id) -> string { return id.data(); }));
-}
-
-void skill(View* view, const Skill* skill) {
-  view->presentText(capitalFirst(skill->getName()), skill->getHelpText());
-}
-
-void skills(View* view, int lastInd = 0) {
-  vector<ListElem> options;
-  vector<Skill*> s = Skill::getAll();
-  for (Skill* skill : s)
-    options.push_back(skill->getName());
-  auto index = view->chooseFromList("Skills", options, lastInd);
-  if (!index)
-    return;
-  skill(view, s[*index]);
-  skills(view, *index);
-}
-
-void showSpells(View* view, const pair<SpellSchoolId, SpellSchool>& school) {
-  vector<ListElem> options;
-  options.emplace_back("Spell:", "Level:", ListElem::ElemMod::TITLE);
-  auto& spells = school.second.spells;
-  /*sort(spells.begin(), spells.end(), [](const Spell& s1, const Spell& s2) {
-    return std::forward_as_tuple(s1.getExpLevel(), s1.getName()) <
-           std::forward_as_tuple(s2.getExpLevel(), s2.getName());});*/
-  for (auto& spell : spells) {
-    options.emplace_back(spell.first.data(), spell.second > 0 ? toString(spell.second) : "none"_s, ListElem::ElemMod::TEXT);
-  }
-  view->presentList("List of spells and the spellcaster levels at which they are acquired.", options);
-}
-
-void villainPoints(View* view) {
-  vector<ListElem> options;
-  options.emplace_back("Villain type:", "Points:", ListElem::ElemMod::TITLE);
-  for (auto type : ENUM_ALL(VillainType))
-    if (type != VillainType::PLAYER) {
-    auto points = int(100 * DungeonLevel::getProgress(type));
-    options.emplace_back(getName(type), toString(points), ListElem::ElemMod::TEXT);
-  }
-  view->presentList("Experience points awarded for conquering each villain type.", options);
 }
 
 static vector<PlayerInfo> getBestiary(ContentFactory* f) {
