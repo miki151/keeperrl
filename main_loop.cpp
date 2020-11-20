@@ -1304,8 +1304,9 @@ PGame MainLoop::loadOrNewGame() {
     if (auto game = prepareWarlord(*warlordGame))
       return game;
     return loadOrNewGame();
-  } else if (eraseGame && view->yesOrNoPrompt("Are you sure you want to erase " + eraseGame->filename + "?")) {
-    userPath.file(eraseGame->filename).erase();
+  } else if (eraseGame) {
+    if (view->yesOrNoPrompt("Are you sure you want to erase " + eraseGame->filename + "?"))
+      userPath.file(eraseGame->filename).erase();
     return loadOrNewGame();
   } else
     return nullptr;
