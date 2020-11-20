@@ -794,18 +794,6 @@ View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetTyp
   return returnQueue.pop();
 }
 
-bool WindowView::yesOrNoPrompt(const string& message, bool defaultNo) {
-  int index = defaultNo ? 1 : 0;
-  return chooseFromListInternal("", {ListElem(capitalFirst(message), ListElem::TITLE), "Yes", "No"}, index,
-      MenuType::YES_NO, nullptr) == 0;
-}
-
-bool WindowView::yesOrNoPromptBelow(const string &message, bool defaultNo) {
-  int index = defaultNo ? 1 : 0;
-  return chooseFromListInternal("", {ListElem(capitalFirst(message), ListElem::TITLE), "Yes", "No"}, index,
-      MenuType::YES_NO_BELOW, nullptr) == 0;
-}
-
 optional<int> WindowView::getNumber(const string& title, Range range, int initial, int increments) {
   SyncQueue<optional<int>> returnQueue;
   return getBlockingGui(returnQueue, guiBuilder.drawChooseNumberMenu(returnQueue, title, range, initial, increments));

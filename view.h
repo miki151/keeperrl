@@ -208,8 +208,7 @@ class View {
       const string& message, optional<Keybinding> cycleKey) = 0;
 
   /** Asks the player a yer-or-no question.*/
-  virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) = 0;
-  virtual bool yesOrNoPromptBelow(const string& message, bool defaultNo = false) = 0;
+  bool yesOrNoPrompt(const string& message, bool defaultNo = false, ScriptedUIId = "yes_or_no");
 
   /** Draws a window with some text. The text is formatted to fit the window.*/
   virtual void presentText(const string& title, const string& text) = 0;

@@ -34,12 +34,6 @@ class DummyView : public View {
       const string& message, optional<Keybinding> cycleKey) override {
     return none;
   }
-  virtual bool yesOrNoPrompt(const string& message, bool defaultNo = false) override {
-    return false;
-  }
-  virtual bool yesOrNoPromptBelow(const string& message, bool defaultNo = false) override {
-    return false;
-  }
   virtual void presentText(const string&, const string&) override {}
   virtual void presentTextBelow(const string&, const string&) override {}
   virtual void presentList(const string&, const vector<ListElem>&, bool = false,

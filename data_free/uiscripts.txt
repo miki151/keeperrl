@@ -41,7 +41,7 @@ End
 Def Window(Content) {
   Height 200 {}
   Margins(6, Fill Rgb 15 11 9 255)
-  Margins(35, Content)
+  Margins(45, Content)
   Position(TOP_STRETCHED, Margins(6, 2, 6, 0, Texture(HORI_BAR)))
   Position(BOTTOM_STRETCHED, Margins(6, 0, 6, 2, Texture(HORI_BAR, FLIP_Y)))
   Position(RIGHT_STRETCHED, MarginRight(6, Texture(WINDOW_VERT_BAR)))
@@ -140,3 +140,23 @@ End
     Position(MIDDLE, MarginLeft(80, MarginRight(80, Using "message" Label())))
   })))
 }
+
+Def YesOrNo() {
+  Button(EXIT, true)
+  KeyHandler(SDLK_ESCAPE, EXIT)
+  Window(
+    Vertical {
+      Using "message" Position(MIDDLE, MarginLeft(40, MarginRight(40, Label())))
+      Height 35 {}
+      Position(MIDDLE, Horizontal {
+        Using "callback" StandardButton(Label("Confirm"), {Button(CALLBACK) Button(EXIT)})
+        Width 30 {}
+        StandardButton(Label("Cancel"), Button(EXIT))
+      })
+    }
+  )
+}
+End
+
+"yes_or_no" YesOrNo()
+"yes_or_no_below" MarginTop(450, YesOrNo())

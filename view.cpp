@@ -13,6 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
+#include "scripted_ui_data.h"
 #include "stdafx.h"
 
 #include "view.h"
@@ -94,4 +95,15 @@ void View::doWithSplash(const string& text, int totalProgress,
     t.join();
     throw e;
   }
+}
+
+bool View::yesOrNoPrompt(const string& message, bool defaultNo, ScriptedUIId id) {
+  bool ret = false;
+  auto data = ScriptedUIDataElems::Record {{
+    {"callback"_s, ScriptedUIDataElems::Callback{[&ret] { ret = true; }}},
+    {"message"_s, message},
+  }};
+  ScriptedUIState state;
+  scriptedUI(id, data, state);
+  return ret;
 }
