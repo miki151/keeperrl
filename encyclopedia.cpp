@@ -32,22 +32,6 @@
 #include "item_attributes.h"
 #include "workshops.h"
 
-template<class T>
-string combine(const vector<T*>& v) {
-  return combine(
-      v.transform([](const T* e) -> string { return e->getName(); }));
-}
-
-template<class T>
-string combine(const vector<T>& v) {
-  return combine(
-      v.transform([](const T& e) -> string { return e.name; }));
-}
-
-string combine(const vector<TechId>& v) {
-  return combine(v.transform([](TechId id) -> string { return id.data(); }));
-}
-
 static vector<PlayerInfo> getBestiary(ContentFactory* f) {
   vector<PlayerInfo> ret;
   for (auto& id : f->getCreatures().getAllCreatures()) {
