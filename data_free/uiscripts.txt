@@ -10,6 +10,14 @@ Def Margins(Left, Top, Right, Bottom, Content)
   MarginLeft(Left, MarginTop(Top, MarginRight(Right, MarginBottom(Bottom, Content))))
 End
 
+Def FocusKeys() {
+  Using "HIGHLIGHT_PREVIOUS" KeyHandler(SDLK_LEFT)
+  Using "HIGHLIGHT_NEXT" KeyHandler(SDLK_RIGHT)
+  Using "HIGHLIGHT_PREVIOUS" KeyHandler(SDLK_UP)
+  Using "HIGHLIGHT_NEXT" KeyHandler(SDLK_DOWN)
+}
+End
+
 Def MiniWindow(Content) {
   Margins(6, Fill Rgb 13 9 1 255)
   Margins(15, Content)
@@ -50,7 +58,7 @@ Def Window(Content) {
   Position(TOP_RIGHT, Texture(WINDOW_CORNER_EXIT))
   Position(TOP_RIGHT, {
     MouseOver Texture(WINDOW_CORNER_EXIT_HIGHLIGHT)
-    Button(EXIT)
+    Using "EXIT" Button()
   })
   Position(BOTTOM_RIGHT, Texture(WINDOW_CORNER, FLIP_XY))
   Position(BOTTOM_LEFT, Texture(WINDOW_CORNER, FLIP_Y))
@@ -70,11 +78,11 @@ Def ButtonLayout(BOTTOM1, SIDE, CORNER) {
 }
 End
 
-Def StandardButton(Content, Button) {
+Def StandardButton(Content) {
   ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
-  MouseOver ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
+  Focusable ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
   Position(MIDDLE, Margins(10, 5, 10, 8, Content))
-  Button
+  Button()
 }
 End
 
@@ -90,9 +98,9 @@ Def SavedGameContent() Vertical {
       }
       Stretch {}
       Vertical {
-        Using "load" { StandardButton(Label("Load game"), { Button(CALLBACK) Button(EXIT)})}
-        Using "warlord" { StandardButton(Label("Play as a warlord"), { Button(CALLBACK) Button(EXIT)})}
-        Using "erase" { StandardButton(Label("Erase file"), { Button(CALLBACK) Button(EXIT)})}
+        Using "load" StandardButton(Label("Load game"))
+        Using "warlord" StandardButton(Label("Play as a warlord"))
+        Using "erase" StandardButton(Label("Erase file"))
       }
     }
   })
@@ -120,21 +128,21 @@ Def Scrolling(Content)
 End
 
 "load_menu" {
+  FocusKeys()
   Width 600
   Vertical {
     Height 400
       Using "games" Scrolling(List(VERTICAL, SavedGameContent()))
     Stretch {}
     Position(MIDDLE, Horizontal {
-      Width 150 StandardButton(Height 20 Label("Start new game"), Using "new" Button(CALLBACK) Button(EXIT))
-      Width 150 StandardButton(Height 20 Label("Go back"), Button(EXIT))
+      Width 150 Using "new" StandardButton(Height 20 Label("Start new game"))
+      Width 150 Using "EXIT" StandardButton(Height 20 Label("Go back"))
     })
   }
 }
 
 "unlock_message" {
-  Button(EXIT, true)
-  KeyHandler(SDLK_ESCAPE, EXIT)
+  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
   Window(MarginLeft(10, MarginBottom(10, {
     Position(LEFT_CENTERED, Margins(6, Using "view_id" NoScissor ViewId(2)))
     Position(MIDDLE, MarginLeft(80, MarginRight(80, Using "message" Label())))
@@ -142,16 +150,16 @@ End
 }
 
 Def YesOrNo() {
-  Button(EXIT, true)
-  KeyHandler(SDLK_ESCAPE, EXIT)
+  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  FocusKeys()
   Window(
     Vertical {
       Using "message" Position(MIDDLE, MarginLeft(40, MarginRight(40, Label())))
       Height 35 {}
       Position(MIDDLE, Horizontal {
-        Using "callback" StandardButton(Label("Confirm"), {Button(CALLBACK) Button(EXIT)})
+        Using "callback" StandardButton(Label("Confirm"))
         Width 30 {}
-        StandardButton(Label("Cancel"), Button(EXIT))
+        Using "EXIT" StandardButton(Label("Cancel"))
       })
     }
   )

@@ -16,14 +16,12 @@ namespace ScriptedUIElems {
 enum class PlacementPos;
 enum class Direction;
 enum class TextureFlip;
-enum class ButtonAction;
 }
 
 RICH_ENUM(ScriptedUIElems::TextureFlip, NONE, FLIP_X, FLIP_Y, FLIP_XY);
 RICH_ENUM(ScriptedUIElems::PlacementPos, MIDDLE, TOP_STRETCHED, BOTTOM_STRETCHED, LEFT_STRETCHED, RIGHT_STRETCHED,
     TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, LEFT_CENTERED, RIGHT_CENTERED, TOP_CENTERED, BOTTOM_CENTERED);
 RICH_ENUM(ScriptedUIElems::Direction, HORIZONTAL, VERTICAL);
-RICH_ENUM(ScriptedUIElems::ButtonAction, CALLBACK, EXIT);
 
 namespace ScriptedUIElems {
 
@@ -66,14 +64,12 @@ struct Label {
 };
 
 struct Button {
-  ButtonAction SERIAL(action);
   bool SERIAL(reverse);
-  SERIALIZE_ALL(roundBracket(), NAMED(action), OPTION(reverse))
+  SERIALIZE_ALL(roundBracket(), OPTION(reverse))
 };
 
 struct KeyHandler {
   SDL::SDL_Keycode SERIAL(key);
-  ButtonAction SERIAL(action);
   void serialize(PrettyInputArchive& ar1, const unsigned int);
 };
 
@@ -124,6 +120,11 @@ struct Height {
   SERIALIZE_ALL(value, elem)
 };
 
+struct Focusable {
+  HeapAllocated<ScriptedUI> SERIAL(elem);
+  SERIALIZE_ALL(elem)
+};
+
 struct MouseOver {
   HeapAllocated<ScriptedUI> SERIAL(elem);
   SERIALIZE_ALL(elem)
@@ -168,11 +169,12 @@ struct NoScissor {
   X(Width, 14)\
   X(Height, 15)\
   X(ViewId, 16)\
-  X(MouseOver, 17)\
-  X(ScrollButton, 18)\
-  X(Scrollable, 19)\
-  X(Scroller, 20)\
-  X(KeyHandler, 21)
+  X(Focusable, 17)\
+  X(MouseOver, 18)\
+  X(ScrollButton, 19)\
+  X(Scrollable, 20)\
+  X(Scroller, 21)\
+  X(KeyHandler, 22)
 
 #define VARIANT_NAME ScriptedUIImpl
 
@@ -195,12 +197,15 @@ struct ScriptedContext {
   GuiFactory* factory;
   Semaphore* endSemaphore;
   ScriptedUIState& state;
+  int elemCounter;
 };
+
+using EventCallback = function<bool()>;
 
 struct ScriptedUI : ScriptedUIElems::ScriptedUIImpl {
   using ScriptedUIImpl::ScriptedUIImpl;
-  void render(const ScriptedUIData&, ScriptedContext, Rectangle) const;
-  Vec2 getSize(const ScriptedUIData&, ScriptedContext) const;
-  bool onClick(const ScriptedUIData&, ScriptedContext, MouseButtonId, Rectangle, Vec2) const;
-  bool onKeypressed(const ScriptedUIData&, ScriptedContext, SDL::SDL_Keysym) const;
+  void render(const ScriptedUIData&, ScriptedContext&, Rectangle) const;
+  Vec2 getSize(const ScriptedUIData&, ScriptedContext&) const;
+  void onClick(const ScriptedUIData&, ScriptedContext&, MouseButtonId, Rectangle, Vec2, EventCallback&) const;
+  void onKeypressed(const ScriptedUIData&, ScriptedContext&, SDL::SDL_Keysym, EventCallback&) const;
 };

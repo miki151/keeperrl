@@ -488,21 +488,45 @@ class DrawScripted : public GuiElem {
   }
 
   virtual void render(Renderer& renderer) override {
+    context.elemCounter = 0;
     get().render(data, context, getBounds());
+    if (auto& elem = context.state.highlightedElem)
+      *elem = (*elem % context.elemCounter + context.elemCounter) % context.elemCounter;
+  }
+
+  bool handleCallback(const EventCallback& callback) {
+    if (callback) {
+      if (callback())
+        context.endSemaphore->v();
+      return true;
+    }
+    return false;
   }
 
   virtual bool onClick(MouseButtonId button, Vec2 pos) override {
-    return get().onClick(data, context, button, getBounds(), pos);
+    context.elemCounter = 0;
+    EventCallback callback = nullptr;
+    get().onClick(data, context, button, getBounds(), pos, callback);
+    return handleCallback(callback);
   }
 
   //virtual void onClickElsewhere() {}
 
-  //virtual bool onMouseMove(Vec2) { return false;}
+  virtual bool onMouseMove(Vec2 pos) override {
+    context.elemCounter = 0;
+    EventCallback callback = nullptr;
+    get().onClick(data, context, MouseButtonId::MOVED, getBounds(), pos, callback);
+    return handleCallback(callback);
+  }
+
   //virtual void onMouseGone() {}
   //virtual void onRefreshBounds() {}
   //virtual void renderPart(Renderer& r, Rectangle) { render(r); }
   virtual bool onKeyPressed2(SDL::SDL_Keysym sym) override {
-    return get().onKeypressed(data, context, sym);
+    context.elemCounter = 0;
+    EventCallback callback = nullptr;
+    get().onKeypressed(data, context, sym, callback);
+    return handleCallback(callback);
   }
   //virtual bool onTextInput(const char*) { return false; }
   virtual optional<int> getPreferredWidth() override {
@@ -518,7 +542,7 @@ class DrawScripted : public GuiElem {
 };
 
 SGuiElem GuiFactory::scripted(Semaphore& endSem, ScriptedUIId id, const ScriptedUIData& data, ScriptedUIState& state) {
-  return SGuiElem(new DrawScripted(ScriptedContext{&renderer, this, &endSem, state}, id, std::move(data)));
+  return SGuiElem(new DrawScripted(ScriptedContext{&renderer, this, &endSem, state, 0}, id, std::move(data)));
 }
 
 SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset,

@@ -14,22 +14,21 @@ struct DefaultType {
 };
 }
 
-static Vec2 getSize(const DefaultType&, const ScriptedUIData&, ScriptedContext) {
+static Vec2 getSize(const DefaultType&, const ScriptedUIData&, ScriptedContext&) {
   return Vec2(0, 0);
 }
 
-static void render(const DefaultType&, const ScriptedUIData&, ScriptedContext, Rectangle) {
+static void render(const DefaultType&, const ScriptedUIData&, ScriptedContext&, Rectangle) {
 }
 
-static bool onClick(const DefaultType&, const ScriptedUIData&, ScriptedContext, MouseButtonId, Rectangle, Vec2) {
-  return false;
+static void onClick(const DefaultType&, const ScriptedUIData&, ScriptedContext&, MouseButtonId, Rectangle, Vec2,
+    EventCallback&) {
 }
 
-static bool onKeypressed(const DefaultType&, const ScriptedUIData&, ScriptedContext, SDL::SDL_Keysym) {
-  return false;
+static void onKeypressed(const DefaultType&, const ScriptedUIData&, ScriptedContext&, SDL::SDL_Keysym, EventCallback&) {
 }
 
-static void render(const ScriptedUIElems::Texture& t, const ScriptedUIData&, ScriptedContext context, Rectangle area) {
+static void render(const ScriptedUIElems::Texture& t, const ScriptedUIData&, ScriptedContext& context, Rectangle area) {
   auto& texture = context.factory->get(t.id);
   using namespace ScriptedUIElems;
   context.renderer->drawSprite(area.topLeft(), Vec2(0, 0), area.getSize(), texture, none, none,
@@ -37,11 +36,11 @@ static void render(const ScriptedUIElems::Texture& t, const ScriptedUIData&, Scr
           t.flip == TextureFlip::FLIP_X || t.flip == TextureFlip::FLIP_XY));
 }
 
-static Vec2 getSize(const ScriptedUIElems::Texture& t, const ScriptedUIData&, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::Texture& t, const ScriptedUIData&, ScriptedContext& context) {
   return context.factory->get(t.id).getSize();
 }
 
-static void render(const ScriptedUIElems::ViewId& t, const ScriptedUIData& data, ScriptedContext context, Rectangle area) {
+static void render(const ScriptedUIElems::ViewId& t, const ScriptedUIData& data, ScriptedContext& context, Rectangle area) {
   if (auto ids = data.getReferenceMaybe<ScriptedUIDataElems::ViewIdList>())
     for (auto& id : *ids)
       context.renderer->drawViewObject(area.topLeft(), id, true, t.zoom, Color::WHITE);
@@ -49,35 +48,27 @@ static void render(const ScriptedUIElems::ViewId& t, const ScriptedUIData& data,
     context.renderer->drawText(Color::RED, area.topLeft(), "not a viewid");
 }
 
-static Vec2 getSize(const ScriptedUIElems::ViewId& t, const ScriptedUIData&, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::ViewId& t, const ScriptedUIData&, ScriptedContext& context) {
   return Vec2(1, 1) * context.renderer->nominalSize * t.zoom;
 }
 
-static void render(const ScriptedUIElems::Button&, const ScriptedUIData&, ScriptedContext context, Rectangle area) {
+static void render(const ScriptedUIElems::Button&, const ScriptedUIData&, ScriptedContext& context, Rectangle area) {
 //  context.renderer->drawFilledRectangle(area, Color::RED);
 }
 
-static bool performAction(ScriptedUIElems::ButtonAction action, const ScriptedUIData& data, ScriptedContext context) {
-  switch (action) {
-    case ScriptedUIElems::ButtonAction::CALLBACK:
-      if (auto callback = data.getReferenceMaybe<ScriptedUIDataElems::Callback>()) {
-        callback->fun();
-        return true;
-      } else {
-        USER_FATAL << "Expected callback";
-        fail();
-      }
-    case ScriptedUIElems::ButtonAction::EXIT:
-      context.endSemaphore->v();
-      return false;
+static void performAction(const ScriptedUIData& data, ScriptedContext& context, EventCallback& callback) {
+  if (auto c = data.getReferenceMaybe<ScriptedUIDataElems::Callback>())
+    callback = c->fun;
+  else {
+    USER_FATAL << "Expected callback";
+    fail();
   }
 }
 
-static bool onClick(const ScriptedUIElems::Button& b, const ScriptedUIData& data, ScriptedContext context, MouseButtonId id,
-    Rectangle bounds, Vec2 pos) {
+static void onClick(const ScriptedUIElems::Button& b, const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
+    Rectangle bounds, Vec2 pos, EventCallback& callback) {
   if (id == MouseButtonId::LEFT && (pos.inRectangle(bounds) == !b.reverse))
-    return performAction(b.action, data, context);
-  return false;
+    performAction(data, context, callback);
 }
 
 struct SubElemInfo {
@@ -101,54 +92,49 @@ struct KeyReader {
 
 void ScriptedUIElems::KeyHandler::serialize(PrettyInputArchive& ar, const unsigned int v) {
   KeyReader key;
-  ar(roundBracket(), NAMED(key), NAMED(action));
+  ar(roundBracket(), NAMED(key));
   ar(endInput());
   this->key = key.key;
 }
 
-static bool onKeypressed(const ScriptedUIElems::KeyHandler& handler, const ScriptedUIData& data, ScriptedContext context,
-    SDL::SDL_Keysym sym) {
+static void onKeypressed(const ScriptedUIElems::KeyHandler& handler, const ScriptedUIData& data, ScriptedContext& context,
+    SDL::SDL_Keysym sym, EventCallback& callback) {
   if (handler.key == sym.sym)
-    return performAction(handler.action, data, context) || true;
-  return false;
+    performAction(data, context, callback);
 }
 
-template <typename T, REQUIRE(getElemBounds(TVALUE(const T&), TVALUE(const ScriptedUIData&), TVALUE(ScriptedContext),
+template <typename T, REQUIRE(getElemBounds(TVALUE(const T&), TVALUE(const ScriptedUIData&), TVALUE(ScriptedContext&),
   TVALUE(Rectangle)))>
-static void render(const T& elem, const ScriptedUIData& data, ScriptedContext context, Rectangle area) {
+static void render(const T& elem, const ScriptedUIData& data, ScriptedContext& context, Rectangle area) {
   context.renderer->setScissor(area);
   for (auto& subElem : getElemBounds(elem, data, context, area))
     subElem.elem.render(subElem.data, context, subElem.bounds);
   context.renderer->setScissor(none);
 }
 
-template <typename T, REQUIRE(getElemBounds(TVALUE(const T&), TVALUE(const ScriptedUIData&), TVALUE(ScriptedContext),
+template <typename T, REQUIRE(getElemBounds(TVALUE(const T&), TVALUE(const ScriptedUIData&), TVALUE(ScriptedContext&),
   TVALUE(Rectangle)))>
-static bool onClick(const T& elem, const ScriptedUIData& data, ScriptedContext context, MouseButtonId id, Rectangle area,
-    Vec2 pos) {
-  auto elems = getElemBounds(elem, data, context, area);
-  for (int i : All(elems).reverse())
-    if (elems[i].elem.onClick(elems[i].data, context, id, elems[i].bounds, pos))
-      return true;
-  return false;
+static void onClick(const T& elem, const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id, Rectangle area,
+    Vec2 pos, EventCallback& callback) {
+  for (auto& subElem : getElemBounds(elem, data, context, area))
+    subElem.elem.onClick(subElem.data, context, id, subElem.bounds, pos, callback);
 }
 
-template <typename T, REQUIRE(getElemBounds(TVALUE(const T&), TVALUE(const ScriptedUIData&), TVALUE(ScriptedContext),
+template <typename T, REQUIRE(getElemBounds(TVALUE(const T&), TVALUE(const ScriptedUIData&), TVALUE(ScriptedContext&),
   TVALUE(Rectangle)))>
-static bool onKeypressed(const T& elem, const ScriptedUIData& data, ScriptedContext context, SDL::SDL_Keysym sym) {
+static void onKeypressed(const T& elem, const ScriptedUIData& data, ScriptedContext& context, SDL::SDL_Keysym sym,
+    EventCallback& callback) {
   auto elems = getElemBounds(elem, data, context, Rectangle(0, 0, 10000, 10000));
-  for (int i : All(elems).reverse())
-    if (elems[i].elem.onKeypressed(elems[i].data, context, sym))
-      return true;
-  return false;
+  for (auto& subElem : getElemBounds(elem, data, context, Rectangle(0, 0, 10000, 10000)))
+    subElem.elem.onKeypressed(subElem.data, context, sym, callback);
 }
 
-static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::MarginsImpl& f, const ScriptedUIData& data, ScriptedContext context,
+static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::MarginsImpl& f, const ScriptedUIData& data, ScriptedContext& context,
     Rectangle area) {
   return {SubElemInfo{*f.inside, data, area.minusMargin(f.width)}};
 }
 
-static Vec2 getSize(const ScriptedUIElems::MarginsImpl& f, const ScriptedUIData& data, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::MarginsImpl& f, const ScriptedUIData& data, ScriptedContext& context) {
   return f.inside->getSize(data, context) + Vec2(f.width, f.width) * 2;
 }
 
@@ -161,24 +147,24 @@ string getText(const ScriptedUIElems::Label& f, const ScriptedUIData& data) {
     return "not a label";
 }
 
-static void render(const ScriptedUIElems::Label& f, const ScriptedUIData& data, ScriptedContext context, Rectangle area) {
+static void render(const ScriptedUIElems::Label& f, const ScriptedUIData& data, ScriptedContext& context, Rectangle area) {
   context.renderer->drawText(f.color, area.topLeft(), getText(f, data), Renderer::CenterType::NONE,
     f.size.value_or(Renderer::textSize()));
 }
 
-static Vec2 getSize(const ScriptedUIElems::Label& f, const ScriptedUIData& data, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::Label& f, const ScriptedUIData& data, ScriptedContext& context) {
   return Vec2(context.renderer->getTextLength(getText(f, data), f.size.value_or(19)), 20);
 }
 
-static void render(const ScriptedUIElems::Fill& f, const ScriptedUIData& data, ScriptedContext context, Rectangle area) {
+static void render(const ScriptedUIElems::Fill& f, const ScriptedUIData& data, ScriptedContext& context, Rectangle area) {
   context.renderer->drawFilledRectangle(area, f);
 }
 
-static void render(const ScriptedUIElems::Frame& f, const ScriptedUIData& data, ScriptedContext context, Rectangle area) {
+static void render(const ScriptedUIElems::Frame& f, const ScriptedUIData& data, ScriptedContext& context, Rectangle area) {
   context.renderer->drawFilledRectangle(area, Color::TRANSPARENT, f.color);
 }
 
-static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Position& f, const ScriptedUIData& data, ScriptedContext context,
+static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Position& f, const ScriptedUIData& data, ScriptedContext& context,
     Rectangle area) {
   auto size = f.elem->getSize(data, context);
   using namespace ScriptedUIElems;
@@ -216,16 +202,16 @@ static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Position& f, con
   }
 }
 
-static Vec2 getSize(const ScriptedUIElems::Position& f, const ScriptedUIData& data, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::Position& f, const ScriptedUIData& data, ScriptedContext& context) {
   return f.elem->getSize(data, context);
 }
 
-static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Chain& f, const ScriptedUIData& data, ScriptedContext context,
+static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Chain& f, const ScriptedUIData& data, ScriptedContext& context,
     Rectangle area) {
   return f.elems.transform([&](auto& elem) { return SubElemInfo{elem, data, area}; });
 }
 
-static Vec2 getSize(const ScriptedUIElems::Chain& f, const ScriptedUIData& data, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::Chain& f, const ScriptedUIData& data, ScriptedContext& context) {
   Vec2 res;
   for (auto& elem : f.elems) {
     auto size = elem.getSize(data, context);
@@ -235,21 +221,21 @@ static Vec2 getSize(const ScriptedUIElems::Chain& f, const ScriptedUIData& data,
   return res;
 }
 
-static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Width& f, const ScriptedUIData& data, ScriptedContext context,
+static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Width& f, const ScriptedUIData& data, ScriptedContext& context,
     Rectangle area) {
   return {SubElemInfo{*f.elem, data, area}};
 }
 
-static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Height& f, const ScriptedUIData& data, ScriptedContext context,
+static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Height& f, const ScriptedUIData& data, ScriptedContext& context,
     Rectangle area) {
   return {SubElemInfo{*f.elem, data, area}};
 }
 
-static Vec2 getSize(const ScriptedUIElems::Height& f, const ScriptedUIData& data, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::Height& f, const ScriptedUIData& data, ScriptedContext& context) {
   return Vec2(f.elem->getSize(data, context).x, f.value);
 }
 
-static Vec2 getSize(const ScriptedUIElems::Width& f, const ScriptedUIData& data, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::Width& f, const ScriptedUIData& data, ScriptedContext& context) {
   return Vec2(f.value, f.elem->getSize(data, context).y);
 }
 
@@ -278,7 +264,7 @@ static vector<Range> getStaticListBounds(Range total, vector<int> widths, int st
 }
 
 static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Horizontal& f, const ScriptedUIData& data,
-    ScriptedContext context, Rectangle area) {
+    ScriptedContext& context, Rectangle area) {
   auto ranges = getStaticListBounds(area.getXRange(),
       f.elems.transform([&](auto& elem) { return elem.getSize(data, context).x; }), f.stretchedElem);
   vector<SubElemInfo> ret;
@@ -288,7 +274,7 @@ static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Horizontal& f, c
   return ret;
 }
 
-static Vec2 getSize(const ScriptedUIElems::Horizontal& f, const ScriptedUIData& data, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::Horizontal& f, const ScriptedUIData& data, ScriptedContext& context) {
   Vec2 res;
   for (auto& elem : f.elems) {
     auto size = elem.getSize(data, context);
@@ -299,7 +285,7 @@ static Vec2 getSize(const ScriptedUIElems::Horizontal& f, const ScriptedUIData& 
 }
 
 static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Vertical& f, const ScriptedUIData& data,
-    ScriptedContext context, Rectangle area) {
+    ScriptedContext& context, Rectangle area) {
   auto ranges = getStaticListBounds(area.getYRange(),
       f.elems.transform([&](auto& elem) { return elem.getSize(data, context).y; }), f.stretchedElem);
   vector<SubElemInfo> ret;
@@ -311,7 +297,7 @@ static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Vertical& f, con
   return ret;
 }
 
-static Vec2 getSize(const ScriptedUIElems::Vertical& f, const ScriptedUIData& data, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::Vertical& f, const ScriptedUIData& data, ScriptedContext& context) {
   Vec2 res;
   for (auto& elem : f.elems) {
     auto size = elem.getSize(data, context);
@@ -353,8 +339,17 @@ static vector<SubElemInfo> getError(const string& s) {
   return {SubElemInfo{errors.at(s), ScriptedUIData{}, Rectangle()}};
 }
 
-static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Using& f, const ScriptedUIData& data, ScriptedContext context,
+static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Using& f, const ScriptedUIData& data, ScriptedContext& context,
     Rectangle area) {
+  if (f.key == "EXIT")
+    return {SubElemInfo{*f.elem, context.state.exit, area}};
+  else
+  if (f.key == "HIGHLIGHT_NEXT")
+    return {SubElemInfo{*f.elem, context.state.highlightNext, area}};
+  else
+  if (f.key == "HIGHLIGHT_PREVIOUS")
+    return {SubElemInfo{*f.elem, context.state.highlightPrevious, area}};
+  else
   if (auto record = data.getReferenceMaybe<ScriptedUIDataElems::Record>()) {
     if (auto value = getReferenceMaybe(record->elems, f.key))
       return {SubElemInfo{*f.elem, *value, area}};
@@ -364,7 +359,11 @@ static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Using& f, const 
     return getError("not a record");
 }
 
-static Vec2 getSize(const ScriptedUIElems::Using& f, const ScriptedUIData& data, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::Using& f, const ScriptedUIData& data, ScriptedContext& context) {
+  if (isOneOf(f.key, "EXIT", "HIGHLIGHT_NEXT", "HIGHLIGHT_PREVIOUS")) {
+    static ScriptedUIData fun = ScriptedUIDataElems::Callback{[] { return true; }};
+    return f.elem->getSize(fun, context);
+  } else
   if (auto record = data.getReferenceMaybe<ScriptedUIDataElems::Record>()) {
     if (auto value = getReferenceMaybe(record->elems, f.key))
       return f.elem->getSize(*value, context);
@@ -374,7 +373,7 @@ static Vec2 getSize(const ScriptedUIElems::Using& f, const ScriptedUIData& data,
   return Vec2(100, 20);
 }
 
-static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::If& f, const ScriptedUIData& data, ScriptedContext context,
+static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::If& f, const ScriptedUIData& data, ScriptedContext& context,
     Rectangle area) {
   if (auto record = data.getReferenceMaybe<ScriptedUIDataElems::Record>()) {
     if (record->elems.count(f.key))
@@ -385,7 +384,7 @@ static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::If& f, const Scr
     return getError("not a record");
 }
 
-static Vec2 getSize(const ScriptedUIElems::If& f, const ScriptedUIData& data, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::If& f, const ScriptedUIData& data, ScriptedContext& context) {
   if (auto record = data.getReferenceMaybe<ScriptedUIDataElems::Record>()) {
     if (record->elems.count(f.key))
       return f.elem->getSize(data, context);
@@ -393,6 +392,40 @@ static Vec2 getSize(const ScriptedUIElems::If& f, const ScriptedUIData& data, Sc
       return Vec2(0, 0);
   }
   return Vec2(100, 20);
+}
+
+static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Focusable& f, const ScriptedUIData& data, ScriptedContext& context,
+    Rectangle area) {
+  return {SubElemInfo{*f.elem, data, area}};
+}
+
+static Vec2 getSize(const ScriptedUIElems::Focusable& f, const ScriptedUIData& data, ScriptedContext& context) {
+  return f.elem->getSize(data, context);
+}
+
+static void render(const ScriptedUIElems::Focusable& f, const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds) {
+  if (context.state.highlightedElem == context.elemCounter)
+    f.elem->render(data, context, bounds);
+  ++context.elemCounter;
+}
+
+static void onClick(const ScriptedUIElems::Focusable& f, const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
+  Rectangle bounds, Vec2 pos, EventCallback& callback) {
+  if (id == MouseButtonId::MOVED) {
+    if (pos.inRectangle(bounds))
+      callback = [counter = context.elemCounter, &context] { context.state.highlightedElem = counter; return false; };
+    else
+    if (context.state.highlightedElem == context.elemCounter)
+      callback = [&] { context.state.highlightedElem = none; return false;};
+  }
+  ++context.elemCounter;
+}
+
+static void onKeypressed(const ScriptedUIElems::Focusable& f, const ScriptedUIData& data, ScriptedContext& context,
+    SDL::SDL_Keysym sym, EventCallback& callback) {
+  if (sym.sym == SDL::SDLK_RETURN && context.elemCounter == context.state.highlightedElem)
+    performAction(data, context, callback);
+  ++context.elemCounter;
 }
 
 static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::MouseOver& f, const ScriptedUIData& data, ScriptedContext context,
@@ -409,7 +442,7 @@ static void render(const ScriptedUIElems::MouseOver& f, const ScriptedUIData& da
     f.elem->render(data, context, bounds);
 }
 
-static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::List& f, const ScriptedUIData& data, ScriptedContext context,
+static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::List& f, const ScriptedUIData& data, ScriptedContext& context,
     Rectangle area) {
   using namespace ScriptedUIElems;
   Vec2 startPos = area.topLeft();
@@ -436,7 +469,7 @@ static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::List& f, const S
     return getError("not a list");
 }
 
-static Vec2 getSize(const ScriptedUIElems::List& f, const ScriptedUIData& data, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::List& f, const ScriptedUIData& data, ScriptedContext& context) {
   if (auto list = data.getReferenceMaybe<ScriptedUIDataElems::List>()) {
     Vec2 res;
     for (auto& elem : *list) {
@@ -454,7 +487,7 @@ static Vec2 getSize(const ScriptedUIElems::List& f, const ScriptedUIData& data, 
   return Vec2(100, 20);
 }
 
-static Vec2 getSize(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data, ScriptedContext& context) {
   return f.elem->getSize(data, context);
 }
 
@@ -464,7 +497,7 @@ static void scroll(double& scrollState, int dir) {
 }
 
 static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data,
-    ScriptedContext context, Rectangle bounds) {
+    ScriptedContext& context, Rectangle bounds) {
   auto height = f.elem->getSize(data, context).y;
   if (height <= bounds.height())
     return {SubElemInfo{*f.elem, data, bounds}};
@@ -478,35 +511,26 @@ static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Scrollable& f, c
   };
 }
 
-static bool onClick(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data, ScriptedContext context, MouseButtonId id,
-    Rectangle bounds, Vec2 pos) {
+static void onClick(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
+    Rectangle bounds, Vec2 pos, EventCallback& callback) {
   if (pos.inRectangle(bounds)) {
-    if (id == MouseButtonId::WHEEL_DOWN) {
-      scroll(context.state.scrollPos, 1);
-      return true;
-    } else
-    if (id == MouseButtonId::WHEEL_UP) {
-      scroll(context.state.scrollPos, -1);
-      return true;
-    }
+    if (id == MouseButtonId::WHEEL_DOWN)
+      callback = [&] { scroll(context.state.scrollPos, 1); return false; };
+    else
+    if (id == MouseButtonId::WHEEL_UP)
+      callback = [&] { scroll(context.state.scrollPos, -1); return false; };
   }
-  auto elems = getElemBounds(f, data, context, bounds);
-  for (int i : All(elems).reverse())
-    if (elems[i].elem.onClick(elems[i].data, context, id, elems[i].bounds, pos))
-      return true;
-  return false;
+  for (auto& subElem : getElemBounds(f, data, context, bounds))
+    subElem.elem.onClick(subElem.data, context, id, subElem.bounds, pos, callback);
 }
 
-static bool onClick(const ScriptedUIElems::ScrollButton& f, const ScriptedUIData&, ScriptedContext context, MouseButtonId id,
-    Rectangle bounds, Vec2 pos) {
-  if (id == MouseButtonId::LEFT && pos.inRectangle(bounds)) {
-    scroll(context.state.scrollPos, f.direction);
-    return true;
-  }
-  return false;
+static void onClick(const ScriptedUIElems::ScrollButton& f, const ScriptedUIData&, ScriptedContext& context, MouseButtonId id,
+    Rectangle bounds, Vec2 pos, EventCallback& callback) {
+  if (id == MouseButtonId::LEFT && pos.inRectangle(bounds))
+    callback = [&] { scroll(context.state.scrollPos, f.direction); return false; };
 }
 
-static Rectangle getSliderPos(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext context,
+static Rectangle getSliderPos(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext& context,
     Rectangle bounds) {
   auto height = f.slider->getSize(data, context).y;
   if (auto& held = context.state.scrollButtonHeld)
@@ -516,62 +540,58 @@ static Rectangle getSliderPos(const ScriptedUIElems::Scroller& f, const Scripted
   return Rectangle(bounds.left(), pos, bounds.right(), pos + height);
 }
 
-static bool onClick(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext context, MouseButtonId id,
-    Rectangle bounds, Vec2 pos) {
-  if (id == MouseButtonId::LEFT && pos.inRectangle(bounds)) {
-    auto sliderHeight = f.slider->getSize(data, context).y;
-    context.state.scrollPos = max(0.0, min(1.0, 
-        double(context.renderer->getMousePos().y - bounds.top()) / (bounds.height() - sliderHeight)));
-    auto sliderPos = getSliderPos(f, data, context, bounds);
-    if (pos.inRectangle(sliderPos))
-      context.state.scrollButtonHeld = pos.y - sliderPos.top();
-    return true;
-  } else
-  if (id == MouseButtonId::RELEASED)
-    context.state.scrollButtonHeld = none;
-  return false;
+static void onClick(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
+    Rectangle bounds, Vec2 pos, EventCallback& callback) {
+  if (id == MouseButtonId::LEFT && pos.inRectangle(bounds))
+    callback = [&] {
+      auto sliderHeight = f.slider->getSize(data, context).y;
+      context.state.scrollPos = max(0.0, min(1.0, double(pos.y - bounds.top()) / (bounds.height() - sliderHeight)));
+      auto sliderPos = getSliderPos(f, data, context, bounds);
+      if (pos.inRectangle(sliderPos))
+        context.state.scrollButtonHeld = pos.y - sliderPos.top();
+      return false;
+    };
+  else if (id == MouseButtonId::RELEASED)
+    callback = [&] { context.state.scrollButtonHeld = none; return false; };
 }
 
-static Vec2 getSize(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext& context) {
   return f.slider->getSize(data, context);
 }
 
-static void render(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext context, Rectangle bounds) {
+static void render(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds) {
   f.slider->render(data, context, getSliderPos(f, data, context, bounds));
 }
 
-static void render(const ScriptedUIElems::NoScissor& s, const ScriptedUIData& data, ScriptedContext context, Rectangle area) {
+static void render(const ScriptedUIElems::NoScissor& s, const ScriptedUIData& data, ScriptedContext& context, Rectangle area) {
   context.renderer->setScissor(Rectangle(context.renderer->getSize()), true);
   s.elem->render(data, context, area);
   context.renderer->setScissor(none);
 }
 
-static Vec2 getSize(const ScriptedUIElems::NoScissor& f, const ScriptedUIData& data, ScriptedContext context) {
+static Vec2 getSize(const ScriptedUIElems::NoScissor& f, const ScriptedUIData& data, ScriptedContext& context) {
   return f.elem->getSize(data, context);
 }
 
-static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::NoScissor& f, const ScriptedUIData& data, ScriptedContext context,
+static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::NoScissor& f, const ScriptedUIData& data, ScriptedContext& context,
     Rectangle area) {
   return {SubElemInfo{*f.elem, data, area}};
 }
 
-void ScriptedUI::render(const ScriptedUIData& data, ScriptedContext context, Rectangle area) const {
+void ScriptedUI::render(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const {
   visit<void>([&] (const auto& ui) { ::render(ui, data, context, area); } );
 }
 
-Vec2 ScriptedUI::getSize(const ScriptedUIData& data, ScriptedContext context) const {
+Vec2 ScriptedUI::getSize(const ScriptedUIData& data, ScriptedContext& context) const {
   return visit<Vec2>([&] (const auto& ui) { return ::getSize(ui, data, context); } );
 }
 
-bool ScriptedUI::onClick(const ScriptedUIData& data, ScriptedContext context, MouseButtonId id, Rectangle bounds,
-    Vec2 pos) const {
-  return visit<bool>(
-      [&] (const auto& ui) { return ::onClick(ui, data, context, id, bounds, pos); }
-  );
+void ScriptedUI::onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id, Rectangle bounds,
+    Vec2 pos, EventCallback& callback) const {
+  visit<void>([&] (const auto& ui) { ::onClick(ui, data, context, id, bounds, pos, callback); });
 }
 
-bool ScriptedUI::onKeypressed(const ScriptedUIData& data, ScriptedContext context, SDL::SDL_Keysym sym) const {
-  return visit<bool>(
-      [&] (const auto& ui) { return ::onKeypressed(ui, data, context, sym); }
-  );
+void ScriptedUI::onKeypressed(const ScriptedUIData& data, ScriptedContext& context, SDL::SDL_Keysym sym,
+    EventCallback& callback) const {
+  visit<void>([&] (const auto& ui) { ::onKeypressed(ui, data, context, sym, callback); });
 }

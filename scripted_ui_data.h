@@ -11,7 +11,7 @@ namespace ScriptedUIDataElems {
 
 using Label = string;
 struct Callback {
-  function<void()> fun;
+  function<bool()> fun;
   template <class Archive> void serialize(Archive& ar1, const unsigned int) {
     FATAL << "Can't deserialize Callback";
   }
@@ -49,4 +49,10 @@ struct ScriptedUIData : ScriptedUIDataElems::ScriptedUIDataImpl {
 struct ScriptedUIState {
   double scrollPos;
   optional<int> scrollButtonHeld;
+  optional<int> highlightedElem;
+  ScriptedUIData highlightNext = ScriptedUIDataElems::Callback{
+      [&elem = this->highlightedElem] { elem = elem.value_or(-1) + 1; return false; }};
+  ScriptedUIData highlightPrevious = ScriptedUIDataElems::Callback{
+      [&elem = this->highlightedElem] { elem = elem.value_or(1) - 1; return false; }};
+  ScriptedUIData exit = ScriptedUIDataElems::Callback{[] { return true; }};
 };

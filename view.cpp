@@ -100,7 +100,7 @@ void View::doWithSplash(const string& text, int totalProgress,
 bool View::yesOrNoPrompt(const string& message, bool defaultNo, ScriptedUIId id) {
   bool ret = false;
   auto data = ScriptedUIDataElems::Record {{
-    {"callback"_s, ScriptedUIDataElems::Callback{[&ret] { ret = true; }}},
+    {"callback"_s, ScriptedUIDataElems::Callback{[&ret] { ret = true; return true; }}},
     {"message"_s, message},
   }};
   ScriptedUIState state;
