@@ -106,10 +106,8 @@ static void onKeypressed(const ScriptedUIElems::KeyHandler& handler, const Scrip
 template <typename T, REQUIRE(getElemBounds(TVALUE(const T&), TVALUE(const ScriptedUIData&), TVALUE(ScriptedContext&),
   TVALUE(Rectangle)))>
 static void render(const T& elem, const ScriptedUIData& data, ScriptedContext& context, Rectangle area) {
-  context.renderer->setScissor(area);
   for (auto& subElem : getElemBounds(elem, data, context, area))
     subElem.elem.render(subElem.data, context, subElem.bounds);
-  context.renderer->setScissor(none);
 }
 
 template <typename T, REQUIRE(getElemBounds(TVALUE(const T&), TVALUE(const ScriptedUIData&), TVALUE(ScriptedContext&),
@@ -496,19 +494,36 @@ static void scroll(double& scrollState, int dir) {
   scrollState = max(0.0, min(1.0, scrollState));
 }
 
-static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data,
-    ScriptedContext& context, Rectangle bounds) {
+static Rectangle getContentBounds(Rectangle bounds, int offset, int scrollBarWidth, int elemHeight) {
+  return Rectangle(bounds.left(), bounds.top() - offset,
+        bounds.right() - scrollBarWidth, bounds.top() - offset + elemHeight);
+}
+
+static Rectangle getScrollBarBounds(Rectangle bounds, int offset, int scrollBarWidth) {
+  return Rectangle(bounds.topRight() - Vec2(scrollBarWidth, 0), bounds.bottomRight());
+}
+
+template <typename ContentFun, typename ScrollbarFun>
+static void processScroller(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data, ScriptedContext& context,
+    Rectangle bounds, ContentFun contentFun, ScrollbarFun scrollbarFun) {
   auto height = f.elem->getSize(data, context).y;
   if (height <= bounds.height())
-    return {SubElemInfo{*f.elem, data, bounds}};
+    contentFun(bounds);
   int offset = (height - bounds.height()) * context.state.scrollPos;
-  return {
-    SubElemInfo{*f.elem, data,
-        Rectangle(bounds.left(), bounds.top() - offset, bounds.right() - f.scrollbar->getSize(data, context).x,
-          bounds.top() - offset + height) },
-    SubElemInfo{*f.scrollbar, data,
-        Rectangle(bounds.topRight() - Vec2(f.scrollbar->getSize(data, context).x, 0), bounds.bottomRight())}
-  };
+  int scrollBarWidth = f.scrollbar->getSize(data, context).x;
+  auto contentBounds = getContentBounds(bounds, offset, scrollBarWidth, height);
+  context.renderer->setScissor(bounds);
+  contentFun(contentBounds);
+  context.renderer->setScissor(none);
+  scrollbarFun(getScrollBarBounds(bounds, offset, scrollBarWidth));
+}
+
+static void render(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data, ScriptedContext& context,
+    Rectangle bounds) {
+  processScroller(f, data, context, bounds,
+      [&] (Rectangle bounds) { f.elem->render(data, context, bounds); },
+      [&] (Rectangle bounds) { f.scrollbar->render(data, context, bounds); }      
+  );
 }
 
 static void onClick(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
@@ -520,8 +535,10 @@ static void onClick(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& 
     if (id == MouseButtonId::WHEEL_UP)
       callback = [&] { scroll(context.state.scrollPos, -1); return false; };
   }
-  for (auto& subElem : getElemBounds(f, data, context, bounds))
-    subElem.elem.onClick(subElem.data, context, id, subElem.bounds, pos, callback);
+  processScroller(f, data, context, bounds,
+      [&] (Rectangle bounds) { f.elem->onClick(data, context, id, bounds, pos, callback); },
+      [&] (Rectangle bounds) { f.scrollbar->onClick(data, context, id, bounds, pos, callback); }
+  );
 }
 
 static void onClick(const ScriptedUIElems::ScrollButton& f, const ScriptedUIData&, ScriptedContext& context, MouseButtonId id,
@@ -563,17 +580,17 @@ static void render(const ScriptedUIElems::Scroller& f, const ScriptedUIData& dat
   f.slider->render(data, context, getSliderPos(f, data, context, bounds));
 }
 
-static void render(const ScriptedUIElems::NoScissor& s, const ScriptedUIData& data, ScriptedContext& context, Rectangle area) {
-  context.renderer->setScissor(Rectangle(context.renderer->getSize()), true);
+static void render(const ScriptedUIElems::Scissor& s, const ScriptedUIData& data, ScriptedContext& context, Rectangle area) {
+  context.renderer->setScissor(area);
   s.elem->render(data, context, area);
   context.renderer->setScissor(none);
 }
 
-static Vec2 getSize(const ScriptedUIElems::NoScissor& f, const ScriptedUIData& data, ScriptedContext& context) {
+static Vec2 getSize(const ScriptedUIElems::Scissor& f, const ScriptedUIData& data, ScriptedContext& context) {
   return f.elem->getSize(data, context);
 }
 
-static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::NoScissor& f, const ScriptedUIData& data, ScriptedContext& context,
+static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::Scissor& f, const ScriptedUIData& data, ScriptedContext& context,
     Rectangle area) {
   return {SubElemInfo{*f.elem, data, area}};
 }

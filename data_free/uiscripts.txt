@@ -94,7 +94,7 @@ Def SavedGameContent() Vertical {
       Vertical {
         Using "label" Label()
         Using "date" Label(none, 14, ColorId GRAY)
-        MarginTop(0, Using "viewIds" List(HORIZONTAL, NoScissor ViewId(1)))
+        MarginTop(0, Using "viewIds" List(HORIZONTAL, ViewId(1)))
       }
       Stretch {}
       Vertical {
@@ -144,7 +144,7 @@ End
 "unlock_message" {
   Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
   Window(MarginLeft(10, MarginBottom(10, {
-    Position(LEFT_CENTERED, Margins(6, Using "view_id" NoScissor ViewId(2)))
+    Position(LEFT_CENTERED, Margins(6, Using "view_id" ViewId(2)))
     Position(MIDDLE, MarginLeft(80, MarginRight(80, Using "message" Label())))
   })))
 }

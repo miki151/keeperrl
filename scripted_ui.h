@@ -146,7 +146,7 @@ struct ScrollButton {
   SERIALIZE_ALL(roundBracket(), NAMED(direction))
 };
 
-struct NoScissor {
+struct Scissor {
   HeapAllocated<ScriptedUI> SERIAL(elem);
   SERIALIZE_ALL(elem)
 };
@@ -161,7 +161,7 @@ struct NoScissor {
   X(Position, 6)\
   X(Chain, 7)\
   X(List, 8)\
-  X(NoScissor, 9)\
+  X(Scissor, 9)\
   X(Label, 10)\
   X(Using, 11)\
   X(Vertical, 12)\
