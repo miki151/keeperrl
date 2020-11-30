@@ -525,7 +525,7 @@ class DrawScripted : public GuiElem {
   virtual bool onKeyPressed2(SDL::SDL_Keysym sym) override {
     context.elemCounter = 0;
     EventCallback callback = nullptr;
-    get().onKeypressed(data, context, sym, callback);
+    get().onKeypressed(data, context, sym, getBounds(), callback);
     return handleCallback(callback);
   }
   //virtual bool onTextInput(const char*) { return false; }

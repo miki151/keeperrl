@@ -198,6 +198,7 @@ struct ScriptedContext {
   Semaphore* endSemaphore;
   ScriptedUIState& state;
   int elemCounter;
+  optional<int> highlightedElemHeight;
 };
 
 using EventCallback = function<bool()>;
@@ -207,5 +208,5 @@ struct ScriptedUI : ScriptedUIElems::ScriptedUIImpl {
   void render(const ScriptedUIData&, ScriptedContext&, Rectangle) const;
   Vec2 getSize(const ScriptedUIData&, ScriptedContext&) const;
   void onClick(const ScriptedUIData&, ScriptedContext&, MouseButtonId, Rectangle, Vec2, EventCallback&) const;
-  void onKeypressed(const ScriptedUIData&, ScriptedContext&, SDL::SDL_Keysym, EventCallback&) const;
+  void onKeypressed(const ScriptedUIData&, ScriptedContext&, SDL::SDL_Keysym, Rectangle, EventCallback&) const;
 };

@@ -25,7 +25,8 @@ static void onClick(const DefaultType&, const ScriptedUIData&, ScriptedContext&,
     EventCallback&) {
 }
 
-static void onKeypressed(const DefaultType&, const ScriptedUIData&, ScriptedContext&, SDL::SDL_Keysym, EventCallback&) {
+static void onKeypressed(const DefaultType&, const ScriptedUIData&, ScriptedContext&, SDL::SDL_Keysym, Rectangle,
+    EventCallback&) {
 }
 
 static void render(const ScriptedUIElems::Texture& t, const ScriptedUIData&, ScriptedContext& context, Rectangle area) {
@@ -98,7 +99,7 @@ void ScriptedUIElems::KeyHandler::serialize(PrettyInputArchive& ar, const unsign
 }
 
 static void onKeypressed(const ScriptedUIElems::KeyHandler& handler, const ScriptedUIData& data, ScriptedContext& context,
-    SDL::SDL_Keysym sym, EventCallback& callback) {
+    SDL::SDL_Keysym sym, Rectangle, EventCallback& callback) {
   if (handler.key == sym.sym)
     performAction(data, context, callback);
 }
@@ -121,10 +122,9 @@ static void onClick(const T& elem, const ScriptedUIData& data, ScriptedContext& 
 template <typename T, REQUIRE(getElemBounds(TVALUE(const T&), TVALUE(const ScriptedUIData&), TVALUE(ScriptedContext&),
   TVALUE(Rectangle)))>
 static void onKeypressed(const T& elem, const ScriptedUIData& data, ScriptedContext& context, SDL::SDL_Keysym sym,
-    EventCallback& callback) {
-  auto elems = getElemBounds(elem, data, context, Rectangle(0, 0, 10000, 10000));
-  for (auto& subElem : getElemBounds(elem, data, context, Rectangle(0, 0, 10000, 10000)))
-    subElem.elem.onKeypressed(subElem.data, context, sym, callback);
+    Rectangle bounds, EventCallback& callback) {
+  for (auto& subElem : getElemBounds(elem, data, context, bounds))
+    subElem.elem.onKeypressed(subElem.data, context, sym, subElem.bounds, callback);
 }
 
 static vector<SubElemInfo> getElemBounds(const ScriptedUIElems::MarginsImpl& f, const ScriptedUIData& data, ScriptedContext& context,
@@ -420,9 +420,15 @@ static void onClick(const ScriptedUIElems::Focusable& f, const ScriptedUIData& d
 }
 
 static void onKeypressed(const ScriptedUIElems::Focusable& f, const ScriptedUIData& data, ScriptedContext& context,
-    SDL::SDL_Keysym sym, EventCallback& callback) {
+    SDL::SDL_Keysym sym, Rectangle bounds, EventCallback& callback) {
   if (sym.sym == SDL::SDLK_RETURN && context.elemCounter == context.state.highlightedElem)
     performAction(data, context, callback);
+  callback = [&, y = bounds.middle().y, callback, myCounter = context.elemCounter] {
+    auto ret = callback ? callback() : false;
+    if (context.state.highlightedElem == myCounter)
+      context.highlightedElemHeight = y;
+    return ret;
+  };
   ++context.elemCounter;
 }
 
@@ -521,7 +527,7 @@ static void processScroller(const ScriptedUIElems::Scrollable& f, const Scripted
 static void render(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data, ScriptedContext& context,
     Rectangle bounds) {
   processScroller(f, data, context, bounds,
-      [&] (Rectangle bounds) { f.elem->render(data, context, bounds); },
+      [&] (Rectangle contentBounds) { f.elem->render(data, context, contentBounds); },
       [&] (Rectangle bounds) { f.scrollbar->render(data, context, bounds); }      
   );
 }
@@ -538,6 +544,29 @@ static void onClick(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& 
   processScroller(f, data, context, bounds,
       [&] (Rectangle bounds) { f.elem->onClick(data, context, id, bounds, pos, callback); },
       [&] (Rectangle bounds) { f.scrollbar->onClick(data, context, id, bounds, pos, callback); }
+  );
+}
+
+static void onKeypressed(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data, ScriptedContext& context,
+    SDL::SDL_Keysym sym, Rectangle bounds, EventCallback& callback) {
+  processScroller(f, data, context, bounds,
+      [&] (Rectangle contentBounds) {
+        f.elem->onKeypressed(data, context, sym, contentBounds, callback);
+        callback = [&context, callback, bounds, contentBounds] {
+          context.highlightedElemHeight = none;
+          auto ret = callback ? callback() : false;
+          if (auto height = context.highlightedElemHeight) {
+            if (!bounds.getYRange().contains(*height)) {
+              auto diff = *height - bounds.middle().y;
+              context.state.scrollPos += double(diff) / (contentBounds.height() - bounds.height());
+              context.state.scrollPos = max(0.0, min(1.0, context.state.scrollPos));
+            }
+          }
+          context.highlightedElemHeight = none;
+          return ret;
+        };
+      },
+      [&] (Rectangle bounds) { f.scrollbar->onKeypressed(data, context, sym, bounds, callback); }
   );
 }
 
@@ -609,6 +638,6 @@ void ScriptedUI::onClick(const ScriptedUIData& data, ScriptedContext& context, M
 }
 
 void ScriptedUI::onKeypressed(const ScriptedUIData& data, ScriptedContext& context, SDL::SDL_Keysym sym,
-    EventCallback& callback) const {
-  visit<void>([&] (const auto& ui) { ::onKeypressed(ui, data, context, sym, callback); });
+    Rectangle bounds, EventCallback& callback) const {
+  visit<void>([&] (const auto& ui) { ::onKeypressed(ui, data, context, sym, bounds, callback); });
 }
