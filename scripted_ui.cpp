@@ -6,6 +6,7 @@
 #include "renderer.h"
 #include "gui_elem.h"
 #include "sdl_keycodes.h"
+#include "clock.h"
 
 namespace {
 struct DefaultType {
@@ -495,9 +496,8 @@ static Vec2 getSize(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& 
   return f.elem->getSize(data, context);
 }
 
-static void scroll(double& scrollState, int dir) {
-  scrollState += 0.1 * dir;
-  scrollState = max(0.0, min(1.0, scrollState));
+static void scroll(const ScriptedContext& context, int dir) {
+  context.state.scrollPos.add(100 * dir, context.factory->clock->getRealMillis());
 }
 
 static Rectangle getContentBounds(Rectangle bounds, int offset, int scrollBarWidth, int elemHeight) {
@@ -515,7 +515,7 @@ static void processScroller(const ScriptedUIElems::Scrollable& f, const Scripted
   auto height = f.elem->getSize(data, context).y;
   if (height <= bounds.height())
     contentFun(bounds);
-  int offset = (height - bounds.height()) * context.state.scrollPos;
+  int offset = context.state.scrollPos.get(context.factory->clock->getRealMillis(), 0, height - bounds.height());
   int scrollBarWidth = f.scrollbar->getSize(data, context).x;
   auto contentBounds = getContentBounds(bounds, offset, scrollBarWidth, height);
   context.renderer->setScissor(bounds);
@@ -536,10 +536,10 @@ static void onClick(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& 
     Rectangle bounds, Vec2 pos, EventCallback& callback) {
   if (pos.inRectangle(bounds)) {
     if (id == MouseButtonId::WHEEL_DOWN)
-      callback = [&] { scroll(context.state.scrollPos, 1); return false; };
+      callback = [&] { scroll(context, 1); return false; };
     else
     if (id == MouseButtonId::WHEEL_UP)
-      callback = [&] { scroll(context.state.scrollPos, -1); return false; };
+      callback = [&] { scroll(context, -1); return false; };
   }
   processScroller(f, data, context, bounds,
       [&] (Rectangle bounds) { f.elem->onClick(data, context, id, bounds, pos, callback); },
@@ -547,21 +547,22 @@ static void onClick(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& 
   );
 }
 
+static bool needsScrolling(Range range, int position) {
+  return position < range.getStart() + range.getLength() / 3 || position > range.getEnd() - range.getLength() / 3;
+}
+
 static void onKeypressed(const ScriptedUIElems::Scrollable& f, const ScriptedUIData& data, ScriptedContext& context,
     SDL::SDL_Keysym sym, Rectangle bounds, EventCallback& callback) {
   processScroller(f, data, context, bounds,
       [&] (Rectangle contentBounds) {
         f.elem->onKeypressed(data, context, sym, contentBounds, callback);
-        callback = [&context, callback, bounds, contentBounds] {
+        callback = [&context, callback, bounds] {
           context.highlightedElemHeight = none;
           auto ret = callback ? callback() : false;
-          if (auto height = context.highlightedElemHeight) {
-            if (!bounds.getYRange().contains(*height)) {
-              auto diff = *height - bounds.middle().y;
-              context.state.scrollPos += double(diff) / (contentBounds.height() - bounds.height());
-              context.state.scrollPos = max(0.0, min(1.0, context.state.scrollPos));
-            }
-          }
+          if (auto height = context.highlightedElemHeight)
+            if (needsScrolling(bounds.getYRange(), *height) &&
+                !context.state.scrollPos.isScrolling(context.factory->clock->getRealMillis()))
+              context.state.scrollPos.add(*height - bounds.middle().y, context.factory->clock->getRealMillis());
           context.highlightedElemHeight = none;
           return ret;
         };
@@ -573,30 +574,33 @@ static void onKeypressed(const ScriptedUIElems::Scrollable& f, const ScriptedUID
 static void onClick(const ScriptedUIElems::ScrollButton& f, const ScriptedUIData&, ScriptedContext& context, MouseButtonId id,
     Rectangle bounds, Vec2 pos, EventCallback& callback) {
   if (id == MouseButtonId::LEFT && pos.inRectangle(bounds))
-    callback = [&] { scroll(context.state.scrollPos, f.direction); return false; };
+    callback = [&] { scroll(context, f.direction); return false; };
 }
 
 static Rectangle getSliderPos(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext& context,
     Rectangle bounds) {
   auto height = f.slider->getSize(data, context).y;
   if (auto& held = context.state.scrollButtonHeld)
-    context.state.scrollPos = max(0.0, min(1.0, 
-        double(context.renderer->getMousePos().y - *held - bounds.top()) / (bounds.height() - height)));
-  auto pos = bounds.top() + context.state.scrollPos * (bounds.height() - height);
+    context.state.scrollPos.setRatio(
+        double(context.renderer->getMousePos().y - *held - bounds.top()) / (bounds.height() - height),
+        context.factory->clock->getRealMillis());
+  auto pos = bounds.top() + context.state.scrollPos.getRatio(context.factory->clock->getRealMillis()) * (bounds.height() - height);
   return Rectangle(bounds.left(), pos, bounds.right(), pos + height);
 }
 
 static void onClick(const ScriptedUIElems::Scroller& f, const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
     Rectangle bounds, Vec2 pos, EventCallback& callback) {
-  if (id == MouseButtonId::LEFT && pos.inRectangle(bounds))
-    callback = [&] {
-      auto sliderHeight = f.slider->getSize(data, context).y;
-      context.state.scrollPos = max(0.0, min(1.0, double(pos.y - bounds.top()) / (bounds.height() - sliderHeight)));
-      auto sliderPos = getSliderPos(f, data, context, bounds);
+  if (id == MouseButtonId::LEFT && pos.inRectangle(bounds)) {
+    auto sliderHeight = f.slider->getSize(data, context).y;
+    auto sliderPos = getSliderPos(f, data, context, bounds);
+    callback = [pos, &context, bounds, sliderHeight, sliderPos] {
+      context.state.scrollPos.setRatio(double(pos.y - sliderHeight / 2 - bounds.top()) / (bounds.height() - sliderHeight),
+          context.factory->clock->getRealMillis());
       if (pos.inRectangle(sliderPos))
         context.state.scrollButtonHeld = pos.y - sliderPos.top();
       return false;
     };
+  }
   else if (id == MouseButtonId::RELEASED)
     callback = [&] { context.state.scrollButtonHeld = none; return false; };
 }

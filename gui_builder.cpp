@@ -4420,7 +4420,7 @@ SGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
       if (list[i].scores[j].highlight) {
         if (i < numTabs)
           tabNum = i;
-        scrollPos[i] = j;
+        scrollPos[i] = ScrollPosition(j);
       }
     pages.push_back(WL(conditional, drawHighscorePage(list[i], &scrollPos[i]),
           [&tabNum, i, &online, numTabs] { return (online && tabNum == i - numTabs) ||

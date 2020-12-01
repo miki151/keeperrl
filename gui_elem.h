@@ -312,6 +312,7 @@ class GuiFactory {
   SGuiElem renderTopLayer(SGuiElem content);
 
   KeybindingMap* keybindingMap;
+  Clock* clock;
 
   private:
 
@@ -326,7 +327,6 @@ class GuiFactory {
   EnumMap<TexId, optional<Texture>> textures;
   vector<Texture> iconTextures;
   EnumMap<AttrType, optional<Texture>> attrTextures;
-  Clock* clock;
   Renderer& renderer;
   Options* options;
   DragContainer dragContainer;

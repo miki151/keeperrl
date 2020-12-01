@@ -1,5 +1,6 @@
 #pragma once
 
+#include "scroll_position.h"
 #include "stdafx.h"
 #include "util.h"
 #include "view_index.h"
@@ -47,7 +48,7 @@ struct ScriptedUIData : ScriptedUIDataElems::ScriptedUIDataImpl {
 };
 
 struct ScriptedUIState {
-  double scrollPos;
+  ScrollPosition scrollPos;
   optional<int> scrollButtonHeld;
   optional<int> highlightedElem;
   ScriptedUIData highlightNext = ScriptedUIDataElems::Callback{

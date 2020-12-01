@@ -2575,8 +2575,8 @@ class ScrollBar : public GuiLayout {
   const int wheelScrollUnit = 100;
 
   double getScrollPos() {
-    scrollPos->setBounds(getBounds().height() / 2, scrollLength() + getBounds().height() / 2);
-    return scrollPos->get(clock->getRealMillis()) - getBounds().height() / 2;
+    int size = getBounds().height() / 2;
+    return scrollPos->get(clock->getRealMillis(), size, scrollLength() + size) - size;
   }
 
   void addScrollPos(double v) {
@@ -2638,8 +2638,8 @@ class Scrollable : public GuiElem {
   }
 
   double getScrollPos() {
-    return max<double>(getBounds().height() / 2,
-        min<double>(scrollPos->get(clock->getRealMillis()), *content->getPreferredHeight() - getBounds().height() / 2));
+    int size = getBounds().height() / 2;
+    return scrollPos->get(clock->getRealMillis(), size, *content->getPreferredHeight() - size);
   }
 
   virtual void onRefreshBounds() override {
