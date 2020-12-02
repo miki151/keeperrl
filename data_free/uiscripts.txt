@@ -19,7 +19,7 @@ Def FocusKeys() {
 End
 
 Def MiniWindow(Content) {
-  Margins(6, Fill Rgb 13 9 1 255)
+  Margins(6, Fill(Rgb 13 9 1 255))
   Margins(15, Content)
   Position(TOP_STRETCHED, Texture(HORI_BAR_MINI))
   Position(BOTTOM_STRETCHED, Texture(HORI_BAR_MINI, FLIP_Y))
@@ -33,7 +33,7 @@ Def MiniWindow(Content) {
 End
 
 Def MiniWindow2(Content) {
-  Margins(6, Fill Rgb 15 11 9 255)
+  Margins(6, Fill(Rgb 15 11 9 255))
   Margins(15, Content)
   Position(TOP_STRETCHED, Texture(HORI_BAR_MINI2, FLIP_Y))
   Position(BOTTOM_STRETCHED, Texture(HORI_BAR_MINI2))
@@ -48,7 +48,7 @@ End
 
 Def Window(Content) {
   Height 200 {}
-  Margins(6, Fill Rgb 15 11 9 255)
+  Margins(6, Fill(Rgb 15 11 9 255))
   Margins(45, Content)
   Position(TOP_STRETCHED, Margins(6, 2, 6, 0, Texture(HORI_BAR)))
   Position(BOTTOM_STRETCHED, Margins(6, 0, 6, 2, Texture(HORI_BAR, FLIP_Y)))

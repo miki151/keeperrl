@@ -8,186 +8,10 @@
 #include "color.h"
 #include "view_id.h"
 #include "sdl.h"
+#include <memory>
 
 struct ScriptedUI;
 struct ScriptedUIState;
-
-namespace ScriptedUIElems {
-enum class PlacementPos;
-enum class Direction;
-enum class TextureFlip;
-}
-
-RICH_ENUM(ScriptedUIElems::TextureFlip, NONE, FLIP_X, FLIP_Y, FLIP_XY);
-RICH_ENUM(ScriptedUIElems::PlacementPos, MIDDLE, TOP_STRETCHED, BOTTOM_STRETCHED, LEFT_STRETCHED, RIGHT_STRETCHED,
-    TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, LEFT_CENTERED, RIGHT_CENTERED, TOP_CENTERED, BOTTOM_CENTERED);
-RICH_ENUM(ScriptedUIElems::Direction, HORIZONTAL, VERTICAL);
-
-namespace ScriptedUIElems {
-
-using Fill = Color;
-
-struct Texture {
-  TextureId SERIAL(id);
-  TextureFlip SERIAL(flip) = TextureFlip::NONE;
-  SERIALIZE_ALL(roundBracket(), NAMED(id), OPTION(flip))
-};
-
-struct ViewId {
-  int SERIAL(zoom) = 1;
-  SERIALIZE_ALL(roundBracket(), OPTION(zoom))
-};
-
-struct Frame {
-  int SERIAL(width);
-  Color SERIAL(color);
-  SERIALIZE_ALL(roundBracket(), NAMED(width), NAMED(color))
-};
-
-struct Vertical {
-  vector<ScriptedUI> elems;
-  int stretchedElem;
-  void serialize(PrettyInputArchive& ar1, const unsigned int);
-};
-
-struct Horizontal {
-  vector<ScriptedUI> SERIAL(elems);
-  int stretchedElem;
-  void serialize(PrettyInputArchive& ar1, const unsigned int);
-};
-
-struct Label {
-  optional<string> SERIAL(text);
-  optional<int> SERIAL(size);
-  Color SERIAL(color) = Color::WHITE;
-  SERIALIZE_ALL(roundBracket(), NAMED(text), NAMED(size), OPTION(color))
-};
-
-struct Button {
-  bool SERIAL(reverse);
-  SERIALIZE_ALL(roundBracket(), OPTION(reverse))
-};
-
-struct KeyHandler {
-  SDL::SDL_Keycode SERIAL(key);
-  void serialize(PrettyInputArchive& ar1, const unsigned int);
-};
-
-struct MarginsImpl {
-  int SERIAL(width);
-  HeapAllocated<ScriptedUI> SERIAL(inside);
-  SERIALIZE_ALL(roundBracket(), NAMED(width), NAMED(inside))
-};
-
-struct Position {
-  HeapAllocated<ScriptedUI> SERIAL(elem);
-  PlacementPos SERIAL(position);
-  SERIALIZE_ALL(roundBracket(), NAMED(position), NAMED(elem))
-};
-
-struct Chain {
-  vector<ScriptedUI> SERIAL(elems);
-  SERIALIZE_ALL(elems)
-};
-
-struct List {
-  Direction SERIAL(direction);
-  HeapAllocated<ScriptedUI> SERIAL(elem);
-  SERIALIZE_ALL(roundBracket(), NAMED(direction), NAMED(elem))
-};
-
-struct Using {
-  string SERIAL(key);
-  HeapAllocated<ScriptedUI> SERIAL(elem);
-  SERIALIZE_ALL(key, elem)
-};
-
-struct If {
-  string SERIAL(key);
-  HeapAllocated<ScriptedUI> SERIAL(elem);
-  SERIALIZE_ALL(key, elem)
-};
-
-struct Width {
-  int SERIAL(value);
-  HeapAllocated<ScriptedUI> SERIAL(elem);
-  SERIALIZE_ALL(value, elem)
-};
-
-struct Height {
-  int SERIAL(value);
-  HeapAllocated<ScriptedUI> SERIAL(elem);
-  SERIALIZE_ALL(value, elem)
-};
-
-struct Focusable {
-  HeapAllocated<ScriptedUI> SERIAL(elem);
-  SERIALIZE_ALL(elem)
-};
-
-struct MouseOver {
-  HeapAllocated<ScriptedUI> SERIAL(elem);
-  SERIALIZE_ALL(elem)
-};
-
-struct Scrollable {
-  HeapAllocated<ScriptedUI> SERIAL(scrollbar);
-  HeapAllocated<ScriptedUI> SERIAL(elem);
-  SERIALIZE_ALL(roundBracket(), NAMED(scrollbar), NAMED(elem))
-};
-
-struct Scroller {
-  HeapAllocated<ScriptedUI> SERIAL(slider);
-  SERIALIZE_ALL(slider)
-};
-
-struct ScrollButton {
-  int SERIAL(direction);
-  SERIALIZE_ALL(roundBracket(), NAMED(direction))
-};
-
-struct Scissor {
-  HeapAllocated<ScriptedUI> SERIAL(elem);
-  SERIALIZE_ALL(elem)
-};
-
-#define VARIANT_TYPES_LIST\
-  X(Texture, 0)\
-  X(Fill, 1)\
-  X(Frame, 2)\
-  X(If, 3)\
-  X(Button, 4)\
-  X(MarginsImpl, 5)\
-  X(Position, 6)\
-  X(Chain, 7)\
-  X(List, 8)\
-  X(Scissor, 9)\
-  X(Label, 10)\
-  X(Using, 11)\
-  X(Vertical, 12)\
-  X(Horizontal, 13)\
-  X(Width, 14)\
-  X(Height, 15)\
-  X(ViewId, 16)\
-  X(Focusable, 17)\
-  X(MouseOver, 18)\
-  X(ScrollButton, 19)\
-  X(Scrollable, 20)\
-  X(Scroller, 21)\
-  X(KeyHandler, 22)
-
-#define VARIANT_NAME ScriptedUIImpl
-
-#include "gen_variant.h"
-#define DEFAULT_ELEM "Chain"
-inline
-#include "gen_variant_serialize_pretty.h"
-#undef DEFAULT_ELEM
-#undef VARIANT_TYPES_LIST
-#undef VARIANT_NAME
-
-}
-
 struct ScriptedUIData;
 class Renderer;
 class GuiFactory;
@@ -203,10 +27,41 @@ struct ScriptedContext {
 
 using EventCallback = function<bool()>;
 
-struct ScriptedUI : ScriptedUIElems::ScriptedUIImpl {
-  using ScriptedUIImpl::ScriptedUIImpl;
-  void render(const ScriptedUIData&, ScriptedContext&, Rectangle) const;
-  Vec2 getSize(const ScriptedUIData&, ScriptedContext&) const;
-  void onClick(const ScriptedUIData&, ScriptedContext&, MouseButtonId, Rectangle, Vec2, EventCallback&) const;
-  void onKeypressed(const ScriptedUIData&, ScriptedContext&, SDL::SDL_Keysym, Rectangle, EventCallback&) const;
+struct ScriptedUIInterface {
+  virtual void render(const ScriptedUIData&, ScriptedContext&, Rectangle) const;
+  virtual Vec2 getSize(const ScriptedUIData&, ScriptedContext&) const;
+  virtual void onClick(const ScriptedUIData&, ScriptedContext&, MouseButtonId, Rectangle, Vec2, EventCallback&) const;
+  virtual void onKeypressed(const ScriptedUIData&, ScriptedContext&, SDL::SDL_Keysym, Rectangle, EventCallback&) const;
+  virtual ~ScriptedUIInterface(){}
 };
+
+struct ScriptedUI {
+  ScriptedUIInterface* operator->();
+  const ScriptedUIInterface* operator->() const;
+  ScriptedUIInterface& operator*();
+  const ScriptedUIInterface& operator*() const;
+  ScriptedUI& operator = (const ScriptedUI&) { fail(); }
+  ScriptedUI& operator = (ScriptedUI&&) = default;
+  ScriptedUI(ScriptedUI&&) noexcept = default;
+  ScriptedUI(unique_ptr<ScriptedUIInterface> ui = nullptr) : ui(std::move(ui)) {}
+  struct SubclassInfo;
+  static vector<SubclassInfo>& getSubclasses();
+  void serialize(PrettyInputArchive& ar1, const unsigned int);
+  unique_ptr<ScriptedUIInterface> ui;
+};
+
+using SubclassSerialize = unique_ptr<ScriptedUIInterface>(*)(PrettyInputArchive&);
+
+struct ScriptedSubclassAdder {
+  ScriptedSubclassAdder(const char* name, SubclassSerialize);
+};
+
+#define REGISTER_SCRIPTED_UI(CLASS)\
+ScriptedSubclassAdder adder##CLASS(#CLASS,\
+  [](PrettyInputArchive& ar) -> unique_ptr<ScriptedUIInterface>{\
+    auto ret = unique<CLASS>();\
+    ar(*ret);\
+    return ret;\
+  }\
+)
+

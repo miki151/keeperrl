@@ -489,7 +489,7 @@ class DrawScripted : public GuiElem {
 
   virtual void render(Renderer& renderer) override {
     context.elemCounter = 0;
-    get().render(data, context, getBounds());
+    get()->render(data, context, getBounds());
     if (auto& elem = context.state.highlightedElem)
       *elem = (*elem % context.elemCounter + context.elemCounter) % context.elemCounter;
   }
@@ -506,7 +506,7 @@ class DrawScripted : public GuiElem {
   virtual bool onClick(MouseButtonId button, Vec2 pos) override {
     context.elemCounter = 0;
     EventCallback callback = nullptr;
-    get().onClick(data, context, button, getBounds(), pos, callback);
+    get()->onClick(data, context, button, getBounds(), pos, callback);
     return handleCallback(callback);
   }
 
@@ -515,7 +515,7 @@ class DrawScripted : public GuiElem {
   virtual bool onMouseMove(Vec2 pos) override {
     context.elemCounter = 0;
     EventCallback callback = nullptr;
-    get().onClick(data, context, MouseButtonId::MOVED, getBounds(), pos, callback);
+    get()->onClick(data, context, MouseButtonId::MOVED, getBounds(), pos, callback);
     return handleCallback(callback);
   }
 
@@ -525,15 +525,15 @@ class DrawScripted : public GuiElem {
   virtual bool onKeyPressed2(SDL::SDL_Keysym sym) override {
     context.elemCounter = 0;
     EventCallback callback = nullptr;
-    get().onKeypressed(data, context, sym, getBounds(), callback);
+    get()->onKeypressed(data, context, sym, getBounds(), callback);
     return handleCallback(callback);
   }
   //virtual bool onTextInput(const char*) { return false; }
   virtual optional<int> getPreferredWidth() override {
-    return get().getSize(data, context).x;
+    return get()->getSize(data, context).x;
   }
   virtual optional<int> getPreferredHeight() override {
-    return get().getSize(data, context).y;
+    return get()->getSize(data, context).y;
   }
 
   ScriptedUIId id;
