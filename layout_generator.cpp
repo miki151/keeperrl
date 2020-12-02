@@ -68,6 +68,7 @@ bool make(const LayoutGenerators::Margins& g, LayoutCanvas c, RandomGen& r) {
 }
 
 bool make(const LayoutGenerators::MarginImpl& g, LayoutCanvas c, RandomGen& r) {
+  using namespace LayoutGenerators;
   auto rect = [&]() -> pair<Rectangle, Rectangle> {
     switch (g.type) {
       case MarginType::TOP: return {
@@ -114,7 +115,8 @@ bool make(const LayoutGenerators::SplitV& g, LayoutCanvas c, RandomGen& r) {
       c.area.bottomRight())), r);
 }
 
-static Rectangle getPosition(PlacementPos pos, Rectangle area, Vec2 size, RandomGen& r) {
+static Rectangle getPosition(LayoutGenerators::PlacementPos pos, Rectangle area, Vec2 size, RandomGen& r) {
+  using namespace LayoutGenerators;
   switch (pos) {
     case PlacementPos::MIDDLE:
       // - size / 2 + size is required due to integer rounding

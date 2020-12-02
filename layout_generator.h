@@ -10,8 +10,13 @@ struct LayoutCanvas;
 
 using Token = string;
 
-RICH_ENUM(MarginType, TOP, BOTTOM, LEFT, RIGHT);
-RICH_ENUM(PlacementPos, MIDDLE, MIDDLE_V, MIDDLE_H, LEFT_CENTER, RIGHT_CENTER, TOP_CENTER, BOTTOM_CENTER);
+namespace LayoutGenerators {
+  enum class MarginType;
+  enum class PlacementPos;
+}
+
+RICH_ENUM(LayoutGenerators::MarginType, TOP, BOTTOM, LEFT, RIGHT);
+RICH_ENUM(LayoutGenerators::PlacementPos, MIDDLE, MIDDLE_V, MIDDLE_H, LEFT_CENTER, RIGHT_CENTER, TOP_CENTER, BOTTOM_CENTER);
 
 namespace LayoutGenerators {
 
