@@ -7,6 +7,7 @@
   "teleport" 5
   "cure poison" 6
   "advanced magic missile" 7
+  "bypass allies" 7
   "haste" 8
   "defense bonus" 9
   "advanced teleport" 10

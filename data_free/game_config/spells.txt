@@ -110,10 +110,39 @@
   cooldown = 40
   sound = SPELL_SUMMON_INSECTS
 }
+
+Def TryNoFriendlyFire(EffectHit, EffectPass) {
+  Filter Or { Attacker Not LastingEffect NO_FRIENDLY_FIRE
+      And { Enemy Attacker LastingEffect NO_FRIENDLY_FIRE }} {
+    EffectHit
+    # This makes the effect return true if there was any creature even if it wasn't injured.
+    Filter AnyCreature() NoEffect()
+  }
+  ReturnFalse Filter Attacker LastingEffect NO_FRIENDLY_FIRE Filter Not Enemy
+    EffectPass
+}
+End
+
+Def MinDistanceFromStrongEnemy(Dist)
+  AI And{Distance none Dist AIAfraidOf} WANTED UNWANTED
+End
+
+Def TryMagicMissile()
+  TryNoFriendlyFire(
+    {
+      CreatureMessage "are hit by the missile" "is hit by the missile"
+      Damage SPELL_DAMAGE SPELL
+    },
+    CreatureMessage "are spared by the missile" "is spared by the missile"
+  )
+End
+
 "magic missile"
 {
   symbol = "⥇"
-  effect = Name "magic missile" Damage SPELL_DAMAGE SPELL
+  effect = MinDistanceFromStrongEnemy(2) Name "magic missile" Description "Shoots a magic missile"
+      TryMagicMissile()
+  fx = {MAGIC_MISSILE}
   range = 4
   cooldown = 20
   sound = SPELL_BLAST
@@ -122,7 +151,9 @@
 {
   upgrade = "magic missile"
   symbol = "⥇"
-  effect = Name "advanced magic missile" Damage SPELL_DAMAGE SPELL
+  effect = MinDistanceFromStrongEnemy(4) Name "advanced magic missile" Description "Shoots a magic missile"
+      TryMagicMissile()
+  fx = {MAGIC_MISSILE}
   range = 8
   cooldown = 10
   sound = SPELL_BLAST
@@ -131,7 +162,9 @@
 {
   upgrade = "advanced magic missile"
   symbol = "⥇"
-  effect = Name "expert magic missile" Damage SPELL_DAMAGE SPELL
+  effect = MinDistanceFromStrongEnemy(4) Name "expert magic missile" Description "Shoots a magic missile"
+      TryMagicMissile()
+  fx = {MAGIC_MISSILE}
   range = 12
   cooldown = 5
   sound = SPELL_BLAST
@@ -523,22 +556,14 @@ Def NoEffect() Unlock "nothing" End
 "shoot arrow"
 {
   symbol = "↣"
-  effect = AI And{Distance none 4 AIAfraidOf} WANTED UNWANTED Name "shoot arrow" Description "Shoots an arrow" {
-    Filter Attacker Not LastingEffect NO_FRIENDLY_FIRE {
-      CreatureMessage "are hit by the arrow" "is hit by the arrow"
-      Damage RANGED_DAMAGE SHOOT
-# This makes the effect return true if there was any creature even if it wasn't injured.
-      Filter AnyCreature() NoEffect()
-    }
-    ReturnFalse Filter Attacker LastingEffect NO_FRIENDLY_FIRE Filter Not Enemy
-      CreatureMessage "are spared by the arrow" "is spared by the arrow"
-    Filter Attacker LastingEffect NO_FRIENDLY_FIRE Filter Enemy {
-      CreatureMessage "are hit by the arrow" "is hit by the arrow"
-      Damage RANGED_DAMAGE SHOOT
-# This makes the effect return true if there was any creature even if it wasn't injured.
-      Filter AnyCreature() NoEffect()
-    }
-  }
+  effect = MinDistanceFromStrongEnemy(4) Name "shoot arrow" Description "Shoots an arrow"
+      TryNoFriendlyFire(
+        {
+          CreatureMessage "are hit by the arrow" "is hit by the arrow"
+          Damage RANGED_DAMAGE SHOOT
+        },
+        CreatureMessage "are spared by the arrow" "is spared by the arrow"
+      )
   range = 7
   cooldown = 1
   maxHits = 1
