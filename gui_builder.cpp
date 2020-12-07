@@ -3207,6 +3207,7 @@ function<void(Rectangle)> GuiBuilder::getAIButtonFun(const PlayerInfo& minion) {
     retAction.creature = minion.creatureId;
     retAction.groupName = minion.groupName;
     retAction.switchTo = minion.aiType;
+    retAction.override = false;
     for (auto type : ENUM_ALL(AIType)) {
       function<void()> buttonFun = [] {};
       buttonFun = [&, type] {
