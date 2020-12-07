@@ -37,6 +37,7 @@ class ListElem;
 class UserInput;
 class MinionAction;
 struct TaskActionInfo;
+struct AIActionInfo;
 struct CreatureDropInfo;
 struct EquipmentActionInfo;
 struct TeamCreatureInfo;
@@ -180,6 +181,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   int getNumMinions() const;
   void minionTaskAction(const TaskActionInfo&);
+  void minionAIAction(const AIActionInfo&);
   void minionDragAndDrop(Vec2 pos, variant<string, UniqueEntity<Creature>::Id>);
   void fillMinions(CollectiveInfo&) const;
   vector<Creature*> getMinionGroup(const string& groupName) const;

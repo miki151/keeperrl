@@ -36,6 +36,7 @@
       MELEE 7
       SPELL 12
     }
+    aiType = RANGED
     spellSchools = { "mage" }
     spells = { "healing" }
     inventory = {
@@ -198,6 +199,7 @@
       DEFENSE 25
       SPELL_DAMAGE 25
     }
+    aiType = RANGED
     maxLevelIncrease = {
       SPELL 7
     }
@@ -228,6 +230,7 @@
       RANGED_RESISTANCE 1
       MAGIC_RESISTANCE 1
     }
+    aiType = RANGED
     skills = { 
       "SHAMANISM" 0.5
     }
@@ -460,7 +463,6 @@
       DEFENSE 25
       SPELL_DAMAGE 5 
     }
-    courage = 100
     permanentEffects = {
       FLYING 1
     }
@@ -494,7 +496,7 @@
       COPULATION_SKILL 1
     }
     gender = FEMALE
-    courage = -1
+    aiType = RANGED
     name = {
       name = "succubus"
       pluralName = "succubi"
@@ -513,8 +515,8 @@
           WING 2
         }
     }
-    courage = -1
-      spells = { "bolster" "rally" }
+    aiType = RANGED
+    spells = { "bolster" "rally" }
     name = {
       name = "galeam"
         pluralName = "galea"
@@ -535,7 +537,7 @@
       }
     }
     permanentEffects = { SPEED 1 }
-    courage = -1
+    aiType = RANGED
     name = {
       name = "cherub"
     }
@@ -614,6 +616,7 @@
       pluralName = "witches"
       firstName = "Cornelia"
     }
+    aiType = RANGED
     gender = FEMALE
     chatReactionFriendly = "curses all humans"
     chatReactionHostile = "\"Die!\""
@@ -777,7 +780,6 @@
       MAGIC_RESISTANCE 1
       SPELL_DAMAGE 1
     }
-    courage = 100
     spells = { "directed blast" }
     chatReactionFriendly = "\"Kneel before us!\""
     chatReactionHostile = "\"Face your death!\""
@@ -810,7 +812,6 @@
       MAGIC_RESISTANCE 1
       SPELL_DAMAGE 1
     }
-    courage = 100
     spells = { "directed blast" }
     chatReactionFriendly = "\"Kneel before us!\""
     chatReactionHostile = "\"Face your death!\""
@@ -866,7 +867,7 @@
       type = Humanoid LARGE
       weight = 400
     }
-    courage = -1
+    aiType = RANGED
     name = {
       name = "soft monster"
     }
@@ -1283,6 +1284,7 @@
     permanentEffects = {
       MAGIC_RESISTANCE 1
     }
+    aiType = RANGED
     spells = { "chicken" }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
@@ -1310,6 +1312,7 @@
       MELEE 4
       ARCHERY 7
     }
+    aiType = RANGED
     name = {
       name = "archer"
       firstNameGen = "FIRST_MALE"
@@ -1332,6 +1335,7 @@
     maxLevelIncrease = {
       SPELL 7
     }
+    aiType = RANGED
     name = {
       name = "priest"
       firstNameGen = "FIRST_MALE"
@@ -1371,6 +1375,7 @@
       "FORGE" 0.6
       "JEWELER" 0.6
     }
+    aiType = RANGED
     name = {
       name = "artisan"
       firstNameGen = "FIRST_MALE"
@@ -1407,6 +1412,7 @@
       CROPS_SKILL 1
       DISTILLATION_SKILL 1
     }
+    aiType = RANGED
     skills = {
       "DIGGING" 0.1
     }
@@ -1536,7 +1542,6 @@
     maxLevelIncrease = {
       MELEE 3
     }
-    courage = 1
     name = {
       name = "Duke"
       firstNameGen = "FIRST_MALE"
@@ -1572,6 +1577,7 @@
     name = {
       name = "archer"
     }
+    aiType = RANGED
     hatedByEffect = HATE_HUMANS
     inventory = {
       { "Bow"}
@@ -1602,6 +1608,7 @@
     maxLevelIncrease = {
       SPELL 2
     }
+    aiType = RANGED
     name = {
       name = "priest"
     }
@@ -1675,7 +1682,7 @@
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
-    courage = 1
+    aiType = RANGED
     skills = { 
       "SHAMANISM" 0.7
     }
@@ -1737,6 +1744,7 @@
       MAGIC_RESISTANCE 1
       FLYING 1
     }
+    aiType = RANGED
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     maxLevelIncrease = {
@@ -1998,6 +2006,7 @@
         WING 2
       }
     }
+    aiType = RANGED
     permanentEffects = {
       SPEED 1
     }
@@ -2169,6 +2178,7 @@
       MELEE 3
       ARCHERY 4
     }
+    aiType = RANGED
     name = {
       name = "skeleton"
     }
@@ -2201,11 +2211,12 @@
       NIGHT_VISION 1
       RANGED_RESISTANCE 1
       DISTILLATION_SKILL 1
-   }
+    }
     maxLevelIncrease = {
       MELEE 7
       SPELL 7
     }
+    aiType = RANGED
     spellSchools = { "illusion" }
     name = {
       name = "vampire"
@@ -2315,6 +2326,7 @@
     skills = {
       "LABORATORY" 0.7
     }
+    aiType = RANGED
     chatReactionFriendly = "curses all elves"
     chatReactionHostile = "\"Die!\""
     maxLevelIncrease = {
@@ -2386,6 +2398,7 @@
     skills = {
       "LABORATORY" 0.3
     }
+    aiType = RANGED
     gender = FEMALE
     spellSchools = { "archer" }
     maxLevelIncrease = {
@@ -2415,6 +2428,7 @@
     permanentEffects = {
       SWIMMING_SKILL 1
     }
+    aiType = RANGED
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""
     name = {
@@ -2440,6 +2454,7 @@
       "LABORATORY" 0.5
       "DIGGING" 0.2
     }
+    aiType = RANGED
     permanentEffects = {
       DISTILLATION_SKILL 1
     }
@@ -2460,6 +2475,7 @@
     body = {
       type = Humanoid MEDIUM
     }
+    aiType = RANGED
     skills = {
       "JEWELER" 1
     }
@@ -2487,6 +2503,7 @@
     permanentEffects = {
       DISARM_TRAPS_SKILL 1
     }
+    aiType = RANGED
     skills = {
       "LABORATORY" 0.3
       "WORKSHOP" 0.6
@@ -2514,7 +2531,7 @@
       type = Humanoid SMALL
       material = SPIRIT
     }
-    courage = -1
+    aiType = RANGED
     noChase = true
     cantEquip = true
     skills = {
@@ -2572,13 +2589,13 @@
       minionFood = true
       weight = 3
     }
+    aiType = RANGED
     permanentEffects = {
       SPEED 1
     }
     name = {
       name = "chicken"
     }
-    courage = -1
   }
 "DWARF"
   {
@@ -2651,6 +2668,7 @@
       type = Humanoid MEDIUM
       weight = 90
     }
+    aiType = RANGED
     name = {
       name = "dwarf"
       pluralName = "dwarves"
@@ -2678,7 +2696,6 @@
     maxLevelIncrease = {
       MELEE 10
     }
-    courage = 1
     name = {
       name = "dwarf baron"
       firstNameGen = "DWARF"
@@ -2701,6 +2718,7 @@
     name = append {
       name = "dwarf blacksmith"
     }
+    aiType = RANGED
     skills = {
       "FORGE" 1.0
     }
@@ -2752,7 +2770,6 @@
     maxLevelIncrease = {
       MELEE 10
     }
-    courage = 1
     name = {
       name = "lizardman chief"
     }
@@ -2781,6 +2798,7 @@
     skills = {
       "JEWELER" 0.9
     }
+    aiType = RANGED
     maxLevelIncrease = {
       SPELL 1
     }
@@ -2804,6 +2822,7 @@
     body = {
       type = Humanoid MEDIUM
     }
+    aiType = RANGED
     chatReactionFriendly = "curses all dwarves"
     chatReactionHostile = "\"Die!\""
     permanentEffects = {
@@ -2835,6 +2854,7 @@
     body = {
       type = Humanoid SMALL
     }
+    aiType = RANGED
     chatReactionFriendly = "curses all dwarves"
     chatReactionHostile = "\"Die!\""
     permanentEffects = {
@@ -2856,6 +2876,7 @@
       SPELL_DAMAGE 16
       RANGED_DAMAGE 30 
     }
+    aiType = RANGED
     body = {
       type = Humanoid MEDIUM
     }
@@ -2901,6 +2922,7 @@
     body = {
       type = Humanoid MEDIUM
     }
+    aiType = RANGED
     chatReactionFriendly = "curses all dwarves"
     chatReactionHostile = "\"Die!\""
     permanentEffects = {
@@ -2960,6 +2982,7 @@
     body = {
       type = Humanoid SMALL
     }
+    aiType = RANGED
     permanentEffects = {
       MAGIC_RESISTANCE 1
       NIGHT_VISION 1
@@ -3020,6 +3043,7 @@
     body = {
       type = Humanoid MEDIUM
     }
+    aiType = RANGED
     permanentEffects = {
       MAGIC_RESISTANCE 1
       ELF_VISION 1
@@ -3069,6 +3093,7 @@
       DAMAGE 10
       DEFENSE 7 
     }
+    aiType = RANGED
     body = {
       type = FourLegged LARGE
       weight = 400
@@ -3104,6 +3129,7 @@
       DAMAGE 5
       DEFENSE 2 
     }
+    aiType = RANGED
     body = {
       type = FourLegged MEDIUM
       weight = 150
@@ -3125,6 +3151,7 @@
       DAMAGE 10
       DEFENSE 7 
     }
+    aiType = RANGED
     body = {
       type = FourLegged MEDIUM
       weight = 50
@@ -3142,6 +3169,7 @@
       DAMAGE 15
       DEFENSE 10 
     }
+    aiType = RANGED
     body = {
       type = FourLegged SMALL
       weight = 10
@@ -3157,6 +3185,7 @@
       DAMAGE 10
       DEFENSE 10 
     }
+    aiType = RANGED
     body = {
       type = FourLegged LARGE
       weight = 400
@@ -3177,6 +3206,7 @@
       DAMAGE 10
       DEFENSE 10 
     }
+    aiType = RANGED
     body = {
       type = FourLegged MEDIUM
       weight = 200
@@ -3193,6 +3223,7 @@
       DAMAGE 10
       DEFENSE 5 
     }
+    aiType = RANGED
     body = {
       type = FourLegged SMALL
       weight = 10
@@ -3263,6 +3294,7 @@
       type = FourLegged SMALL
       weight = 1
     }
+    aiType = RANGED
     permanentEffects = {
       SPEED 1
       SWIMMING_SKILL 1
@@ -3325,7 +3357,7 @@
       weight = 0.1
       deathSound = none
     }
-    courage = 1
+    aiType = RANGED
     noChase = true
     name = {
       name = "fly"
@@ -3452,8 +3484,8 @@
       weight = 0.5
       deathSound = none
     }
+    aiType = RANGED
     noChase = true
-    courage = 1
     permanentEffects = {
       SPEED 1
       EXPLORE_SKILL 1
@@ -3476,7 +3508,7 @@
       deathSound = none
     }
     noChase = true
-    courage = 1
+    aiType = RANGED
     name = {
       name = "vulture"
     }
@@ -3551,6 +3583,7 @@
       }
       weight = 25
     }
+    aiType = RANGED
     name = {
       name = "dog"
       groupName = "pack"
@@ -3579,6 +3612,7 @@
     maxLevelIncrease = {
       SPELL 9
     }
+    aiType = RANGED
     spells = { "fire trap" }
     gender = FEMALE
     permanentEffects = {
@@ -3754,8 +3788,8 @@
       DAMAGE 3
       DEFENSE 16
     }
+    aiType = RANGED
     noChase = true
-    courage = 1
     permanentEffects = {
       NIGHT_VISION 1
       EXPLORE_NOCTURNAL_SKILL 1
@@ -3897,7 +3931,6 @@
       SPELL_DAMAGE 60
     }
     gender = IT
-    courage = 100
     body = {
       type = NonHumanoid HUGE
       material = SPIRIT
@@ -3996,6 +4029,7 @@
       DEFENSE 50
       SPELL_DAMAGE 50
     }
+    aiType = RANGED
     skills = {
       "LABORATORY" 1.0
     }

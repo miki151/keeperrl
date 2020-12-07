@@ -44,6 +44,7 @@ enum class UserInputId {
   TUTORIAL_GO_BACK,
   TAKE_SCREENSHOT,
   CANCEL_SCREENSHOT,
+  AI_TYPE,
 // real-time actions
   BUILD,
   TILE_CLICK,
@@ -164,6 +165,13 @@ struct TaskActionInfo {
   string groupName;
 };
 
+struct AIActionInfo {
+  UniqueEntity<Creature>::Id creature;
+  AIType switchTo;
+  bool override;
+  string groupName;
+};
+
 struct EquipmentActionInfo {
   UniqueEntity<Creature>::Id creature;
   EntitySet<Item> ids;
@@ -200,7 +208,8 @@ struct WorkshopUpgradeInfo {
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, TeamGroupInfo, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, CreatureDropInfo, CreatureGroupDropInfo, TeamDropInfo,
-    string, TechId, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo),
+    string, TechId, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo,
+    AIActionInfo),
         ASSIGN(BuildingClickInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -215,7 +224,10 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
             UserInputId::CREATURE_LOCATE,
             UserInputId::CREATURE_DRAG,
             UserInputId::GO_TO_ENEMY
-            ),
+        ),
+        ASSIGN(AIActionInfo,
+            UserInputId::AI_TYPE
+        ),
         ASSIGN(UniqueEntity<PlayerMessage>::Id,
             UserInputId::MESSAGE_INFO
             ),

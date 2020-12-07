@@ -13,6 +13,7 @@
    You should have received a copy of the GNU General Public License along with this program.
    If not, see http://www.gnu.org/licenses/ . */
 
+#include "enums.h"
 #include "stdafx.h"
 
 #include "monster_ai.h"
@@ -54,6 +55,7 @@
 #include "effect_type.h"
 #include "health_type.h"
 #include "automaton_part.h"
+#include "ai_type.h"
 
 class Behaviour {
   public:
@@ -391,11 +393,23 @@ class Fighter : public Behaviour {
       bool chaseThisEnemy = chase && creature->shouldAIChase(other);
       if (!creature->shouldAIAttack(other)) {
         double dist = creature->getPosition().dist8(other->getPosition()).value_or(100000);
+        int minSpellRange = 1000;
+        bool anyOffensiveSpell = false;
+        for (auto spell : creature->getSpellMap().getAvailable(creature))
+          if (spell->getRange() > 1 &&
+              spell->getEffect().shouldAIApply(creature, other->getPosition()) == EffectAIIntent::WANTED) {
+            anyOffensiveSpell = true;
+            if (creature->isReady(spell) && spell->getRange() < minSpellRange)
+              minSpellRange = spell->getRange();
+        }
         if (dist < 7 && chase) {
-          if (MoveInfo move = getPanicMove(other))
-            return move;
+          if (minSpellRange >= dist)
+            if (MoveInfo move = getPanicMove(other))
+              return move;
           return getAttackMove(other, chaseThisEnemy);
         }
+        if (anyOffensiveSpell && chase)
+          return getAttackMove(other, chaseThisEnemy);
         return NoMove;
       } else
         return getAttackMove(other, chaseThisEnemy);
@@ -1085,7 +1099,7 @@ class SplashHeroes : public Behaviour {
   SplashHeroes(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    creature->getAttributes().setCourage(1);
+    creature->getAttributes().setAIType(AIType::MELEE);
     if (!started && creature->getPosition().withCoord(splashLeaderPos).getCreature())
       started = true;
     if (!started)
@@ -1110,7 +1124,7 @@ class SplashHeroLeader : public Behaviour {
   SplashHeroLeader(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    creature->getAttributes().setCourage(1);
+    creature->getAttributes().setAIType(AIType::MELEE);
     Vec2 pos = creature->getPosition().getCoord();
     if (started)
       return creature->moveTowards(creature->getPosition().withCoord(splashTarget));
@@ -1140,7 +1154,7 @@ class SplashMonsters : public Behaviour {
   SplashMonsters(Creature* c) : Behaviour(c) {}
 
   virtual MoveInfo getMove() override {
-    creature->getAttributes().setCourage(1);
+    creature->getAttributes().setAIType(AIType::MELEE);
     if (!initialPos)
       initialPos = creature->getPosition().getCoord();
     vector<Creature*> heroes;

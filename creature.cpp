@@ -61,6 +61,7 @@
 #include "health_type.h"
 #include "effect_type.h"
 #include "automaton_part.h"
+#include "ai_type.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -2272,17 +2273,9 @@ const vector<Creature*>& Creature::getVisibleCreatures() const {
 bool Creature::shouldAIAttack(const Creature* other) const {
   if (isAffected(LastingEffect::PANIC) || getStatus().contains(CreatureStatus::CIVILIAN))
     return false;
-  if (LastingEffects::doesntMove(other))
-    return true;
-  double myDamage = getDefaultWeaponDamage();
-  double powerRatio = myDamage / (other->getDefaultWeaponDamage() + 1);
-  double panicWeight = 0;
-  if (powerRatio < 0.6)
-    panicWeight += 2 - powerRatio * 2;
-  panicWeight -= getAttributes().getCourage();
-  panicWeight -= getMorale().value_or(0) * 0.3;
-  panicWeight = min(1.0, max(0.0, panicWeight));
-  return panicWeight <= 0.5;
+  return LastingEffects::doesntMove(other)
+      || attributes->getAIType() == AIType::MELEE
+      || getDefaultWeaponDamage() > other->getDefaultWeaponDamage();
 }
 
 bool Creature::shouldAIChase(const Creature* enemy) const {

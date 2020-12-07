@@ -108,6 +108,7 @@ enum class MinionEquipmentType;
 enum class EffectAIIntent;
 enum class UserInputId;
 enum class VillainGroup;
+enum class AIType;
 
 struct FXInfo;
 struct FXSpawnInfo;

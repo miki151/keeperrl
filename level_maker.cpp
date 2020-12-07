@@ -3185,11 +3185,9 @@ class BattleFromFile : public LevelMaker {
       enemyList.append(enemy.generate(builder->getRandom(), &builder->getContentFactory()->getCreatures(), TribeId::getHuman(),
         MonsterAIFactory::monster()));
     for (auto& c : enemyList) {
-      c->getAttributes().setCourage(100);
       c->removePermanentEffect(LastingEffect::BLIND);
     }
     for (auto& c : allies) {
-      c->getAttributes().setCourage(100);
       c->removePermanentEffect(LastingEffect::BLIND);
     }
     int enemyIndex = 0;

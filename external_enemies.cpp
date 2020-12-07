@@ -118,7 +118,6 @@ void ExternalEnemies::update(WLevel level, LocalTime localTime) {
         TribeId::getMonster(), MonsterAIFactory::singleTask(std::move(attackTask),
             !nextWave->enemy.behaviour.contains<HalloweenKids>()));
     for (auto& c : creatures) {
-      c->getAttributes().setCourage(1);
       auto ref = c.get();
       if (level->landCreature(StairKey::transferLanding(), std::move(c), landingDir))
         attackers.push_back(ref);

@@ -176,6 +176,7 @@ class GuiBuilder {
   int minionButtonsHash = 0;
   SGuiElem drawMinionPage(const PlayerInfo&, const vector<ViewId>& allQuarters, const optional<TutorialInfo>&);
   SGuiElem drawActivityButton(const PlayerInfo&);
+  SGuiElem drawAIButton(const PlayerInfo&);
   SGuiElem drawAttributesOnPage(vector<SGuiElem>);
   SGuiElem drawEquipmentAndConsumables(const PlayerInfo&, bool infoOnly = false);
   vector<SGuiElem> drawSkillsList(const PlayerInfo&);
@@ -317,6 +318,7 @@ class GuiBuilder {
   SGuiElem drawTitleButton(const PlayerInfo& minion);
   SGuiElem drawKillsLabel(const PlayerInfo& minion);
   function<void(Rectangle)> getActivityButtonFun(const PlayerInfo&);
+  function<void(Rectangle)> getAIButtonFun(const PlayerInfo&);
   SGuiElem drawSpellSchoolLabel(const SpellSchoolInfo&);
   SGuiElem drawResources(const vector<CollectiveInfo::Resource>&, const optional<TutorialInfo>&, int width);
   SGuiElem drawBiomeMenu(SyncQueue<CampaignAction>&, const vector<View::CampaignOptions::BiomeInfo>&, int chosen);

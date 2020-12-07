@@ -33,6 +33,7 @@
 #include "spell_school_id.h"
 #include "creature_inventory.h"
 #include "creature_predicate.h"
+#include "ai_type.h"
 
 inline bool isLarger(CreatureSize s1, CreatureSize s2) {
   return int(s1) > int(s2);
@@ -70,8 +71,8 @@ class CreatureAttributes {
   int getRawAttr(AttrType) const;
   void increaseBaseAttr(AttrType, int);
   void setBaseAttr(AttrType, int);
-  double getCourage() const;
-  void setCourage(double);
+  void setAIType(AIType);
+  AIType getAIType() const;
   string getDeathDescription() const;
   void setDeathDescription(string);
   const Gender& getGender() const;
@@ -144,7 +145,7 @@ class CreatureAttributes {
   Gender SERIAL(gender) = Gender::MALE;
   vector<pair<Gender, ViewId>> SERIAL(genderAlternatives);
   bool SERIAL(cantEquip) = false;
-  double SERIAL(courage) = 1;
+  AIType SERIAL(aiType) = AIType::MELEE;
   bool SERIAL(boulder) = false;
   bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;

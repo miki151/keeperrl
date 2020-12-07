@@ -187,6 +187,7 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory) 
   skills = getSkillNames(c, contentFactory);
   kills = c->getKills().transform([&](auto& info){ return info.viewId; });
   killTitles = c->getKillTitles();
+  aiType = c->getAttributes().getAIType();
   effects.clear();
   for (auto& adj : c->getBadAdjectives())
     effects.push_back({adj.name, adj.help, true});

@@ -401,6 +401,15 @@ void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
     }
 }
 
+void PlayerControl::minionAIAction(const AIActionInfo& action) {
+  if (auto c = getCreature(action.creature)) {
+    c->getAttributes().setAIType(action.switchTo);
+    if (action.override)
+      for (auto other : getMinionGroup(action.groupName))
+        other->getAttributes().setAIType(action.switchTo);
+  }
+}
+
 void PlayerControl::minionTaskAction(const TaskActionInfo& action) {
   if (auto c = getCreature(action.creature)) {
     if (action.switchTo)
@@ -2381,6 +2390,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::CREATURE_BANISH:
       if (Creature* c = getCreature(input.get<Creature::Id>()))
         handleBanishing(c);
+      break;
+    case UserInputId::AI_TYPE:
+      minionAIAction(input.get<AIActionInfo>());
       break;
     case UserInputId::GO_TO_ENEMY:
       for (auto c : getModel()->getAllCreatures())

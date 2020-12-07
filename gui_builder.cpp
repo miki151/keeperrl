@@ -46,6 +46,7 @@
 #include "special_trait.h"
 #include "encyclopedia.h"
 #include "item_action.h"
+#include "ai_type.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -3191,6 +3192,57 @@ SGuiElem GuiBuilder::drawActivityButton(const PlayerInfo& minion) {
       WL(buttonRect, getActivityButtonFun(minion)));
 }
 
+static const char* getName(AIType t) {
+  switch (t) {
+    case AIType::MELEE: return "Melee";
+    case AIType::RANGED: return "Avoid melee";
+  }
+}
+
+function<void(Rectangle)> GuiBuilder::getAIButtonFun(const PlayerInfo& minion) {
+  return [=] (Rectangle bounds) {
+    auto tasks = WL(getListBuilder, legendLineHeight);
+    bool exit = false;
+    AIActionInfo retAction;
+    retAction.creature = minion.creatureId;
+    retAction.groupName = minion.groupName;
+    retAction.switchTo = minion.aiType;
+    for (auto type : ENUM_ALL(AIType)) {
+      function<void()> buttonFun = [] {};
+      buttonFun = [&, type] {
+        retAction.switchTo = type;
+        exit = true;
+      };
+      tasks.addElem(WL(getListBuilder)
+          .addMiddleElem(WL(stack,
+              WL(button, buttonFun),
+              WL(label, getName(type), [&, type] { return retAction.switchTo == type ? Color::LIGHT_GREEN : Color::WHITE; })))
+          .buildHorizontalList());
+    }
+    tasks.addElem(WL(stack,
+        WL(getListBuilder)
+            .addElemAuto(WL(conditional, WL(labelUnicodeHighlight, u8"✓", Color::GREEN),
+                 WL(labelUnicodeHighlight, u8"✓", Color::LIGHT_GRAY), [&retAction] {
+                      return retAction.override;}))
+            .addElemAuto(WL(label, "Copy setting to all " + makePlural(minion.groupName)))
+            .buildHorizontalList(),
+        WL(button,
+            [&]{ retAction.override = !retAction.override; }, true)));
+    drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), 362, true);
+    callbacks.input({UserInputId::AI_TYPE, retAction});
+  };
+}
+
+SGuiElem GuiBuilder::drawAIButton(const PlayerInfo& minion) {
+  return WL(stack,
+      WL(uiHighlightMouseOver),
+      WL(getListBuilder)
+          .addElemAuto(WL(label, "AI type: ", Color::YELLOW))
+          .addElemAuto(WL(label, getName(minion.aiType)))
+          .buildHorizontalList(),
+      WL(buttonRect, getAIButtonFun(minion)));
+}
+
 SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem> attrs) {
   if (attrs.empty())
     return WL(empty);
@@ -3414,7 +3466,7 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewI
     }
     leftLines.addElem(line.buildHorizontalList());
   }
-  leftLines.addSpace();
+  leftLines.addElem(drawAIButton(minion));
   leftLines.addElem(drawActivityButton(minion));
   if (minion.canAssignQuarters)
     leftLines.addElem(drawQuartersButton(minion, allQuarters));
