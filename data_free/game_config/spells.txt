@@ -161,8 +161,15 @@
 "escape"
 {
   symbol = "✈️"
-  effect = Escape
+  effect = Escape {}
   cooldown = 80
+  sound = SPELL_TELEPORT
+}
+"blink"
+{
+  symbol = "👁️"
+  effect = Name "blink" Escape { 2 }
+  cooldown = 1
   sound = SPELL_TELEPORT
 }
 "teleport"

@@ -760,7 +760,7 @@
       meleeAttackAttr = SPELL_DAMAGE
     }
     genPrefixes = {
-      1 VictimEffect 1.0 Escape
+      1 VictimEffect 1.0 Escape{}
     }
     maxUpgrades = 1
   }
@@ -773,7 +773,7 @@
     }
     price = 60
     genPrefixes = {
-      1 VictimEffect 1.0 Escape
+      1 VictimEffect 1.0 Escape{}
       1 VictimEffect 0.4 DestroyEquipment
       1 JoinPrefixes {
         ItemAttrBonus SPELL_DAMAGE 20

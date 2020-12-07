@@ -22,7 +22,10 @@
   }
 
 namespace Effects {
-SIMPLE_EFFECT(Escape);
+struct Escape {
+  int SERIAL(maxDist) = 10000;
+  SERIALIZE_ALL(OPTION(maxDist))
+};
 SIMPLE_EFFECT(Teleport);
 SIMPLE_EFFECT(Jump);
 struct Heal {

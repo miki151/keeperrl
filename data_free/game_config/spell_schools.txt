@@ -41,9 +41,10 @@
 {
   "deception" 1
   "invisibility" 2
-  "escape" 3
-  "panic" 5
-  "pacify" 7
+  "panic" 3
+  "pacify" 4
+  "advanced invisibility" 5
+  "blink" 6
 }
 "fighter" MELEE
 {
@@ -56,5 +57,5 @@
 }
 "vampire" SPELL
 {
-  "ennoblement" 1
+  "ennoblement" 7
 }

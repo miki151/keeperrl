@@ -2217,7 +2217,7 @@
       SPELL 7
     }
     aiType = RANGED
-    spellSchools = { "illusion" }
+    spellSchools = { "illusion" "vampire" }
     name = {
       name = "vampire"
       firstNameGen = "VAMPIRE"
@@ -2900,7 +2900,7 @@
       { "LeatherArmor"}
       { "ElvenBow"}
       { "GoldPiece" 80 120 }
-      { Scroll Escape }
+      { Scroll Escape{} }
       { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 10 LastingEffect INSANITY} chance = 0.3 }
       { type = Glyph ARMOR LastingEffect NIGHT_VISION chance = 0.3 }
       { type = Glyph ARMOR LastingEffect ELF_VISION chance = 0.3 }
@@ -3023,7 +3023,7 @@
       { "LeatherArmor"}
       { "ElvenBow"}
       { "GoldPiece" 80 120 }
-      { Scroll Escape }
+      { Scroll Escape{} }
       { type = Glyph WEAPON JoinPrefixes { ItemAttrBonus DAMAGE 10 LastingEffect INSANITY} chance = 0.3 }
       { type = Glyph ARMOR LastingEffect NIGHT_VISION chance = 0.3 }
       { type = Glyph ARMOR LastingEffect ELF_VISION chance = 0.3 }

@@ -156,7 +156,7 @@ static bool summon(Creature* summoner, CreatureId id, Range count, bool hostile,
     return !Effect::summon(summoner, id, Random.get(count), ttl, 1_visible).empty();
 }
 
-static bool applyToCreature(const Effects::Escape&, Creature* c, Creature*) {
+static bool applyToCreature(const Effects::Escape& e, Creature* c, Creature*) {
   PROFILE_BLOCK("Escape::applyToCreature");
   Rectangle area = Rectangle::centered(Vec2(0, 0), 12);
   PositionMap<int> weight;
@@ -186,7 +186,7 @@ static bool applyToCreature(const Effects::Escape&, Creature* c, Creature*) {
   auto movementType = c->getMovementType();
   for (Position v : c->getPosition().getRectangle(area)) {
     if (!v.canEnter(c) || v.isBurning() || v.getPoisonGasAmount() > 0 ||
-        !v.isConnectedTo(c->getPosition(), movementType))
+        !v.isConnectedTo(c->getPosition(), movementType) || *v.dist8(c->getPosition()) > e.maxDist)
       continue;
     if (auto weightV = weight.getValueMaybe(v)) {
       if (*weightV == maxW)

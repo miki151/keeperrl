@@ -1,7 +1,7 @@
 "villageShop"
 {
   items = {
-    {{Scroll Escape} 5 }
+    {{Scroll Escape{}} 5 }
     {{Scroll Enhance ARMOR 1} 5 }
     {{Scroll Enhance WEAPON 1} 5 }
     {{FireScroll} 5}
@@ -96,7 +96,7 @@
 "scrolls"
 {
   items = {
-    {{Scroll Escape} 1 }
+    {{Scroll Escape{}} 1 }
     {{Scroll Enhance ARMOR 1} 1 }
     {{Scroll Enhance WEAPON 1} 1 }
     {{FireScroll} 1 }
@@ -211,7 +211,7 @@
     {{"Torch"} 7 }
     {{"LeatherGloves"} 30 }
     {{"AdoxieScroll"} 1}
-    {{Scroll Escape} 30 }
+    {{Scroll Escape{}} 30 }
     {{Scroll Enhance ARMOR 1} 30 }
     {{Scroll Enhance WEAPON 1} 30 }
     {{FireScroll} 30 }
