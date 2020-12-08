@@ -288,7 +288,7 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Lasti
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Lasting& e, const Creature* victim, bool isEnemy) {
   if (victim->isAffected(e.lastingEffect))
-    return EffectAIIntent::NONE;
+    return 0;
   return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
 }
 
@@ -342,8 +342,8 @@ static string getDescription(const Effects::RemoveLasting& e, const ContentFacto
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::RemoveLasting& e, const Creature* victim, bool isEnemy) {
   if (!victim->isAffected(e.lastingEffect))
-    return EffectAIIntent::NONE;
-  return reverse(LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy));
+    return 0;
+  return -LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
 }
 
 static bool applyToCreature(const Effects::IncreaseAttr& e, Creature* c, Creature*) {
@@ -417,7 +417,7 @@ static bool applyToCreature(const Effects::Permanent& e, Creature* c, Creature*)
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Permanent& e, const Creature* victim, bool isEnemy) {
   if (victim->getAttributes().isAffectedPermanently(e.lastingEffect))
-    return EffectAIIntent::NONE;
+    return 0;
   return LastingEffects::shouldAIApply(victim, e.lastingEffect, isEnemy);
 }
 
@@ -477,7 +477,7 @@ static bool apply(const Effects::Acid&, Position pos, Creature*) {
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Acid&, const Creature* victim, bool isEnemy) {
-  return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+  return isEnemy ? 1 : -1;
 }
 
 static bool isConsideredHostile(const Effects::Acid&, const Creature* victim) {
@@ -489,7 +489,7 @@ static bool applyToCreature(const Effects::Summon& e, Creature* c, Creature*) {
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Summon&, const Creature* victim, bool isEnemy) {
-  return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+  return isConsideredInDanger(victim) ? 1 : 0;
 }
 
 static string getName(const Effects::Summon& e, const ContentFactory* f) {
@@ -589,7 +589,7 @@ static string getDescription(const Effects::SummonElement&, const ContentFactory
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::SummonElement&, const Creature* victim, bool isEnemy) {
-  return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+  return isConsideredInDanger(victim) ? 1 : 0;
 }
 
 static bool applyToCreature(const Effects::Deception&, Creature* c, Creature*) {
@@ -608,7 +608,7 @@ static string getDescription(const Effects::Deception&, const ContentFactory*) {
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Deception&, const Creature* victim, bool isEnemy) {
-  return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+  return isConsideredInDanger(victim) ? 1 : 0;
 }
 
 static void airBlast(Creature* attacker, Position origin, Position position, Position target) {
@@ -708,7 +708,7 @@ static bool applyToCreature(const Effects::DestroyEquipment&, Creature* c, Creat
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::DestroyEquipment&, const Creature* victim, bool isEnemy) {
-  return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+  return isEnemy ? 1 : -1;
 }
 
 static bool isConsideredHostile(const Effects::DestroyEquipment&, const Creature*) {
@@ -779,8 +779,8 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Heal&
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Heal& e, const Creature* victim, bool isEnemy) {
   if (victim->getBody().canHeal(e.healthType))
-    return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
-  return EffectAIIntent::NONE;
+    return isEnemy ? -1 : 1;
+  return 0;
 }
 
 static string getName(const Effects::Heal& e, const ContentFactory*) {
@@ -823,8 +823,8 @@ static optional<ViewId> getProjectile(const Effects::Fire&) {
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Fire&, const Creature* victim, bool isEnemy) {
   if (!victim->isAffected(LastingEffect::FIRE_RESISTANT))
-    return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
-  return EffectAIIntent::NONE;
+    return isEnemy ? 1 : -1;
+  return 0;
 }
 
 static bool isConsideredHostile(const Effects::Fire&, const Creature* victim) {
@@ -845,8 +845,8 @@ static bool apply(const Effects::Ice&, Position pos, Creature*) {
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Ice&, const Creature* victim, bool isEnemy) {
   if (!victim->isAffected(LastingEffect::COLD_RESISTANT))
-    return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
-  return EffectAIIntent::NONE;
+    return isEnemy ? 1 : -1;
+  return 0;
 }
 
 static bool isConsideredHostile(const Effects::Ice&, const Creature* victim) {
@@ -898,7 +898,7 @@ static bool apply(const Effects::EmitPoisonGas& m, Position pos, Creature*) {
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::EmitPoisonGas&, const Creature* victim, bool isEnemy) {
-  return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+  return isEnemy ? 1 : -1;
 }
 
 static string getName(const Effects::PlaceFurniture& e, const ContentFactory* c) {
@@ -922,7 +922,7 @@ static bool apply(const Effects::PlaceFurniture& summon, Position pos, Creature*
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::PlaceFurniture& f, const Creature* victim, bool isEnemy) {
   return victim->getGame()->getContentFactory()->furniture.getData(f.furniture).isHostileSpell() &&
-      isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      isConsideredInDanger(victim) ? 1 : 0;
 }
 
 static string getName(const Effects::DropItems&, const ContentFactory* c) {
@@ -948,7 +948,7 @@ static bool applyToCreature(const Effects::Damage& e, Creature* c, Creature* att
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Damage&, const Creature* victim, bool isEnemy) {
-  return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+  return isEnemy ? 1 : -1;
 }
 
 static optional<FXInfo> getProjectileFX(const Effects::Damage&) {
@@ -1064,8 +1064,8 @@ static string getDescription(const Effects::RegrowBodyPart&, const ContentFactor
 static EffectAIIntent shouldAIApplyToCreature(const Effects::RegrowBodyPart&, const Creature* victim, bool isEnemy) {
   for (auto part : ENUM_ALL(BodyPart))
     if (victim->getBody().numLost(part) + victim->getBody().numInjured(part) > 0)
-      return isEnemy ? EffectAIIntent::UNWANTED : EffectAIIntent::WANTED;
-  return EffectAIIntent::NONE;
+      return isEnemy ? -1 : 1;
+  return 0;
 }
 
 static string getDescription(const Effects::Area& e, const ContentFactory* factory) {
@@ -1081,15 +1081,16 @@ static bool apply(const Effects::Area& area, Position pos, Creature* attacker) {
 
 template <typename Range>
 EffectAIIntent considerArea(const Creature* caster, const Range& range, const Effect& effect) {
-  auto allRes = EffectAIIntent::UNWANTED;
+  auto allRes = 0;
+  auto badRes = 0;
   for (auto v : range) {
     auto res = effect.shouldAIApply(caster, v);
-    if (res == EffectAIIntent::UNWANTED)
-      return EffectAIIntent::UNWANTED;
-    if (res == EffectAIIntent::WANTED)
-      allRes = res;
+    if (res < 0)
+      badRes += res;
+    else
+      allRes += res;
   }
-  return allRes;
+  return badRes < 0 ? badRes : allRes;
 };
 
 static EffectAIIntent shouldAIApply(const Effects::Area& a, const Creature* caster, Position pos) {
@@ -1140,7 +1141,7 @@ static bool canAutoAssignMinionEquipment(const Effects::Suicide&) {
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Suicide&, const Creature* victim, bool isEnemy) {
-  return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+  return isEnemy ? 1 : -1;
 }
 
 static string getName(const Effects::Suicide&, const ContentFactory*) {
@@ -1161,9 +1162,9 @@ static bool applyToCreature(const Effects::Wish&, Creature* c, Creature* attacke
 static EffectAIIntent shouldAIApply(const Effects::Wish&, const Creature* caster, Position pos) {
   auto victim = pos.getCreature();
   if (victim && victim->isPlayer() && !caster->isEnemy(victim))
-    return EffectAIIntent::WANTED;
+    return 1;
   else
-    return EffectAIIntent::UNWANTED;
+    return -1;
 }
 
 static string getName(const Effects::Wish&, const ContentFactory*) {
@@ -1227,15 +1228,16 @@ static bool canAutoAssignMinionEquipment(const Effects::Chain& c) {
 }
 
 static EffectAIIntent shouldAIApply(const Effects::Chain& chain, const Creature* caster, Position pos) {
-  auto allRes = EffectAIIntent::NONE;
+  auto allRes = 0;
+  auto badRes = 0;
   for (auto& e : chain.effects) {
     auto res = e.shouldAIApply(caster, pos);
-    if (res == EffectAIIntent::UNWANTED)
-      return EffectAIIntent::UNWANTED;
-    if (res == EffectAIIntent::WANTED)
-      allRes = res;
+    if (res < 0)
+      badRes += res;
+    else
+      allRes += res;
   }
-  return allRes;
+  return badRes < 0 ? badRes : allRes;
 }
 
 static bool apply(const Effects::ChainUntilFail& chain, Position pos, Creature* attacker) {
@@ -1437,7 +1439,7 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Incre
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::IncreaseMorale& e, const Creature* victim, bool isEnemy) {
-  return isEnemy == (e.amount < 0) ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+  return isEnemy == (e.amount < 0) ? 1 : -1;
 }
 
 static string getName(const Effects::IncreaseMorale& e, const ContentFactory*) {
@@ -1537,7 +1539,7 @@ static string getDescription(const Effects::DoubleTrouble&, const ContentFactory
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::DoubleTrouble&, const Creature* victim, bool isEnemy) {
-  return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+  return isConsideredInDanger(victim) ? 1 : 0;
 }
 
 static string getName(const Effects::Blast&, const ContentFactory*) {
@@ -1716,10 +1718,10 @@ static EffectAIIntent shouldAIApply(const Effects::AnimateItems& m, const Creatu
     for (auto v : pos.getRectangle(Rectangle::centered(m.radius))) {
       totalWeapons += v.getItems(ItemIndex::WEAPON).size();
       if (totalWeapons >= m.maxCount / 2)
-        return EffectAIIntent::WANTED;
+        return 1;
     }
   }
-  return EffectAIIntent::NONE;
+  return 0;
 }
 
 static string getName(const Effects::Audience&, const ContentFactory*) {
@@ -1731,7 +1733,7 @@ static string getDescription(const Effects::Audience&, const ContentFactory*) {
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Audience&, const Creature* victim, bool isEnemy) {
-  return isConsideredInDanger(victim) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+  return isConsideredInDanger(victim) ? 1 : 0;
 }
 
 static bool apply(const Effects::Audience& a, Position pos, Creature* attacker) {
@@ -1951,7 +1953,7 @@ static optional<ViewId> getProjectile(const Effects::Filter& e) {
 static EffectAIIntent shouldAIApply(const Effects::Filter& e, const Creature* caster, Position pos) {
   if (e.predicate.apply(pos, caster))
     return e.effect->shouldAIApply(caster, pos);
-  return EffectAIIntent::NONE;
+  return 0;
 }
 
 static string getName(const Effects::Filter& e, const ContentFactory* f) {
@@ -1975,9 +1977,13 @@ static string getName(const Effects::Name& e, const ContentFactory*) {
   return e.text;
 }
 
+static bool sameAIIntent(EffectAIIntent a, EffectAIIntent b) {
+  return (a > 0 && b > 0) || (a < 0 && b < 0) || (a == 0 && b == 0);
+}
+
 static EffectAIIntent shouldAIApply(const Effects::AI& e, const Creature* caster, Position pos) {
   auto origRes = e.effect->shouldAIApply(caster, pos);
-  if (origRes == e.from && e.predicate.apply(pos, caster))
+  if (sameAIIntent(origRes, e.from) && e.predicate.apply(pos, caster))
     return e.to;
   return origRes;
 }
@@ -2036,7 +2042,7 @@ string Effect::getDescription(const ContentFactory* f) const {
       ReviveCorpse, Blast, Shove, SwapPosition, AddAutomatonParts, AddBodyPart, MakeHumanoid */
 
 static EffectAIIntent shouldAIApply(const DefaultType& m, const Creature* caster, Position pos) {
-  return EffectAIIntent::NONE;
+  return 0;
 }
 
 template <typename T, REQUIRE(shouldAIApplyToCreature(TVALUE(const T&), TVALUE(const Creature*), TVALUE(bool)))>
@@ -2044,13 +2050,9 @@ static EffectAIIntent shouldAIApply(const T& elem, const Creature* caster, Posit
   auto victim = pos.getCreature();
   if (victim && !caster->canSee(victim))
     victim = nullptr;
-  if (victim && !victim->isAffected(LastingEffect::STUNNED)) {
-    bool isEnemy = caster->isEnemy(victim);
-    auto res = shouldAIApplyToCreature(elem, victim, isEnemy);
-    if (res != EffectAIIntent::NONE)
-      return res;
-  }
-  return EffectAIIntent::NONE;
+  if (victim && !victim->isAffected(LastingEffect::STUNNED))
+    return shouldAIApplyToCreature(elem, victim, caster->isEnemy(victim));
+  return 0;
 }
 
 EffectAIIntent Effect::shouldAIApply(const Creature* caster, Position pos) const {

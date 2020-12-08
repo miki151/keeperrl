@@ -124,7 +124,7 @@ Def TryNoFriendlyFire(EffectHit, EffectPass) {
 End
 
 Def MinDistanceFromStrongEnemy(Dist)
-  AI And{Distance none Dist AIAfraidOf} WANTED UNWANTED
+  AI And{Distance none Dist AIAfraidOf} 1 -1
 End
 
 Def TryMagicMissile()
@@ -151,7 +151,7 @@ End
 {
   upgrade = "magic missile"
   symbol = "⥇"
-  effect = MinDistanceFromStrongEnemy(4) Name "advanced magic missile" Description "Shoots a magic missile"
+  effect = MinDistanceFromStrongEnemy(2) Name "advanced magic missile" Description "Shoots a magic missile"
       TryMagicMissile()
   fx = {MAGIC_MISSILE}
   range = 8
@@ -162,7 +162,7 @@ End
 {
   upgrade = "advanced magic missile"
   symbol = "⥇"
-  effect = MinDistanceFromStrongEnemy(4) Name "expert magic missile" Description "Shoots a magic missile"
+  effect = MinDistanceFromStrongEnemy(2) Name "expert magic missile" Description "Shoots a magic missile"
       TryMagicMissile()
   fx = {MAGIC_MISSILE}
   range = 12
@@ -408,7 +408,7 @@ End
 "fire trap"
 {
   symbol = "◌"
-  effect =  Name "fire trap" AI Enemy NONE WANTED AI Not Enemy WANTED NONE CustomArea PlaceFurniture "FIRE_WALL"
+  effect =  Name "fire trap" AI Enemy 0 1 AI Not Enemy 1 0 CustomArea PlaceFurniture "FIRE_WALL"
       { {0 -2} {1 -2} {2 -1} {2 0} {2 1} {1 2} {0 2} {-1 2} {-2 1} {-2 0} {-2 -1} {-1 -2} }
   endOnly = true
   range = 8
@@ -470,7 +470,7 @@ End
   symbol = "🏠"
   range = 10
   effect = Name "invisible visitor greeting" Description "Special greeting for invisible visitors"
-    Filter And { Attacker InTerritory LastingEffect INVISIBLE } AI And{} NONE WANTED {
+    Filter And { Attacker InTerritory LastingEffect INVISIBLE } AI And{} 0 1 {
       PlayerMessage "Well thief! I smell you and I feel your air. I hear your breath. Come along!" CRITICAL
       Analytics "milestone" "dragonGreeting"
     }
@@ -537,7 +537,7 @@ End
 Def OneTimeAbility(SpellName, SpellEffect, SpellSymbol)
 SpellName
 {
-  effect = AI And{} NONE WANTED Name SpellName Description SpellName {
+  effect = AI And{} 0 1 Name SpellName Description SpellName {
     SpellEffect
     RemoveAbility SpellName
   }
@@ -593,7 +593,7 @@ Def NoEffect() Unlock "nothing" End
 {
   symbol = "🐔"
   effect = Name "chicken" Description "Turn an enemy into a chicken!"
-      Filter Not CreatureId "CHICKEN" AI Enemy UNWANTED WANTED {
+      Filter Not CreatureId "CHICKEN" AI Enemy -1 1 {
     Polymorph "CHICKEN" 30
     Permanent INVULNERABLE
   }
@@ -606,7 +606,7 @@ Def NoEffect() Unlock "nothing" End
 "shapeshift"
 {
   symbol = "⇝"
-  effect = Name "shapeshift" Description "Change into a random monster" AI And {} NONE WANTED {
+  effect = Name "shapeshift" Description "Change into a random monster" AI And {} 0 1 {
     Polymorph none 100
     SetCreatureName "shapeshifter"
   }
@@ -616,7 +616,7 @@ Def NoEffect() Unlock "nothing" End
 "berserker"
 {
   symbol = "🐻"
-  effect = Name "berskerker" Description "Change into a bear!" AI Health 0 0.4 NONE WANTED {
+  effect = Name "berskerker" Description "Change into a bear!" AI Health 0 0.4 0 1 {
     Polymorph "CAVE_BEAR" 30
     IncreaseAttr DAMAGE 20
   }

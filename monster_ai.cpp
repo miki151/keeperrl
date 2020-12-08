@@ -153,50 +153,55 @@ class EffectsAI : public Behaviour {
     return 0;
   }
 
-  MoveInfo getThrowMove(Creature* other) {
+  void tryMove(MoveInfo& ret, int value, CreatureAction action) {
+    if (value > ret.getValue())
+      ret = MoveInfo(value, std::move(action));
+  }
+
+  void getThrowMove(Creature* other, MoveInfo& ret) {
     auto target = other->getPosition();
     auto trajectory = drawLine(creature->getPosition().getCoord(), target.getCoord())
         .transform([&](Vec2 v) { return Position(v, target.getLevel()); });
     if (isObstructed(creature, trajectory))
-      return NoMove;
+      return;
     for (auto item : creature->getEquipment().getItems())
       if (item->effectAppliedWhenThrown())
-        if (auto effect = item->getEffect())
-          if (effect->shouldAIApply(creature, target) == EffectAIIntent::WANTED)
-            if (!creature->getEquipment().isEquipped(item) &&
+        if (auto effect = item->getEffect()) {
+          auto value = effect->shouldAIApply(creature, target);
+          if (value > 0 && !creature->getEquipment().isEquipped(item) &&
                creature->getThrowDistance(item).value_or(-1) >=
                    trajectory.back().dist8(creature->getPosition()).value_or(10000))
               if (auto action = creature->throwItem(item, target, creature->isFriend(other)))
-                return action.append([=](Creature*) {
+                tryMove(ret, value, action.append([=](Creature*) {
                   if (other->isEnemy(creature))
                     addCombatIntent(other, Creature::CombatIntentInfo::Type::ATTACK);
-              });
-    return NoMove;
+                }));
+        }
   }
 
   virtual MoveInfo getMove() {
     PROFILE_BLOCK("EffectsAI::getMove");
+    MoveInfo ret = NoMove;
     for (auto spell : creature->getSpellMap().getAvailable(creature))
-      if (auto move = spell->getAIMove(creature))
-        return move;
+      spell->getAIMove(creature, ret);
     // prevent workers from using up items that they're hauling
     if (!creature->getStatus().contains(CreatureStatus::CIVILIAN))
       for (auto item : creature->getEquipment().getItems())
         if (auto effect = item->getEffect()) {
-          if (effect->shouldAIApply(creature, creature->getPosition()) == EffectAIIntent::WANTED)
+          auto value = effect->shouldAIApply(creature, creature->getPosition());
+          if (value > 0)
             if (auto move = creature->applyItem(item))
-              return move;
+              tryMove(ret, value, std::move(move));
           for (Position pos : creature->getPosition().neighbors8())
             if (Creature* c = pos.getCreature())
-              if (creature->isFriend(c) && effect->shouldAIApply(c, c->getPosition()) == EffectAIIntent::WANTED &&
+              if (creature->isFriend(c) && effect->shouldAIApply(c, c->getPosition()) > 0 &&
                   c->getEquipment().getItems().filter(Item::namePredicate(item->getName())).empty())
                 if (auto action = creature->give(c, {item}))
-                  return MoveInfo(0.5, action);
+                  tryMove(ret, 1, action);
         }
     for (auto c : creature->getVisibleCreatures())
-      if (auto move = getThrowMove(c))
-        return move;
-    return NoMove;
+      getThrowMove(c, ret);
+    return ret.withValue(1.0);
   }
 
 
@@ -397,7 +402,7 @@ class Fighter : public Behaviour {
         bool anyOffensiveSpell = false;
         for (auto spell : creature->getSpellMap().getAvailable(creature))
           if (spell->getRange() > 1 &&
-              spell->getEffect().shouldAIApply(creature, other->getPosition()) == EffectAIIntent::WANTED) {
+              spell->getEffect().shouldAIApply(creature, other->getPosition()) > 0) {
             anyOffensiveSpell = true;
             if (creature->isReady(spell) && spell->getRange() < minSpellRange)
               minSpellRange = spell->getRange();

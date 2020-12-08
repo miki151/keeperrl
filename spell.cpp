@@ -133,32 +133,39 @@ optional<SpellId> Spell::getUpgrade() const {
 
 bool Spell::isFriendlyFire(const Creature* c, Position to) const {
   PROFILE;
+  return checkTrajectory(c, to) >= 0;
+}
+
+int Spell::checkTrajectory(const Creature* c, Position to) const {
+  PROFILE;
   if (endOnly)
-    return effect->shouldAIApply(c, to) == EffectAIIntent::UNWANTED;
+    return effect->shouldAIApply(c, to);
+  int ret = 0;
   Position from = c->getPosition();
   for (auto& v : drawLine(from, to))
-    if (v != from && effect->shouldAIApply(c, v) == EffectAIIntent::UNWANTED)
-      return true;
-  return false;
+    if (v != from) {
+      if (isBlockedBy(v))
+        return -1;
+      auto value = effect->shouldAIApply(c, v);
+      if (value < 0)
+        return value;
+      ret += value;
+    }
+  return ret;
 }
 
-bool Spell::checkTrajectory(const Creature* c, Position to) const {
+void Spell::getAIMove(const Creature* c, MoveInfo& ret) const {
   PROFILE;
-  Position from = c->getPosition();
-  for (auto& v : drawLine(from, to))
-    if (v != from && (isBlockedBy(v) || (effect->shouldAIApply(c, v) == EffectAIIntent::UNWANTED && !endOnly)))
-      return false;
-  return true;
-}
-
-MoveInfo Spell::getAIMove(const Creature* c) const {
-  PROFILE;
+  auto tryMove = [&ret] (int value, CreatureAction action) {
+    if (value > ret.getValue())
+      ret = MoveInfo(value, std::move(action));
+  };
   if (c->isReady(this))
-    for (auto pos : c->getPosition().getRectangle(Rectangle::centered(range)))
-      if (effect->shouldAIApply(c, pos) == EffectAIIntent::WANTED &&
-          ((pos == c->getPosition() && canTargetSelf()) || (c->canSee(pos) && pos != c->getPosition() && checkTrajectory(c, pos))))
-        return c->castSpell(this, pos);
-  return NoMove;
+    for (auto pos : c->getPosition().getRectangle(Rectangle::centered(range))) {
+      auto value = checkTrajectory(c, pos);
+      if (value > 0 && ((pos == c->getPosition() && canTargetSelf()) || (c->canSee(pos) && pos != c->getPosition())))
+        tryMove(value, c->castSpell(this, pos));
+    }
 }
 
 bool Spell::isBlockedBy(Position pos) const {

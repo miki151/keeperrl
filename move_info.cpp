@@ -2,11 +2,11 @@
 #include "move_info.h"
 #include "creature.h"
 
-MoveInfo::MoveInfo(double val, const CreatureAction& m) : value(m ? val : 0), move(m) {
+MoveInfo::MoveInfo(double val, CreatureAction m) : value(m ? val : 0), move(std::move(m)) {
 
 }
 
-MoveInfo::MoveInfo(const CreatureAction& m) : MoveInfo(1.0, m) {
+MoveInfo::MoveInfo(CreatureAction m) : MoveInfo(1.0, std::move(m)) {
 }
 
 MoveInfo::operator bool() const {
@@ -14,6 +14,8 @@ MoveInfo::operator bool() const {
 }
 
 MoveInfo MoveInfo::withValue(double v) const {
+  if (!move)
+    return *this;
   MoveInfo ret(*this);
   ret.value = v;
   return ret;
@@ -37,4 +39,3 @@ CreatureAction MoveInfo::getMove() const {
 double MoveInfo::getValue() const {
   return value;
 }
-

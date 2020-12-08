@@ -49,7 +49,7 @@ class Spell {
   SpellId getId() const;
   string getName(const ContentFactory*) const;
   optional<SpellId> getUpgrade() const;
-  MoveInfo getAIMove(const Creature*) const;
+  void getAIMove(const Creature*, MoveInfo&) const;
   bool isBlockedBy(Position pos) const;
   optional<Keybinding> getKeybinding() const;
   SpellType getType() const;
@@ -76,6 +76,6 @@ class Spell {
   optional<int> SERIAL(maxHits);
   optional<Keybinding> SERIAL(keybinding);
   SpellType SERIAL(type) = SpellType::SPELL;
-  bool checkTrajectory(const Creature* caster, Position to) const;
+  int checkTrajectory(const Creature* caster, Position to) const;
 };
 

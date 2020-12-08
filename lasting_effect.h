@@ -1,7 +1,6 @@
 #pragma once
 
 #include "util.h"
-#include "effect_ai_intent.h"
 #include "game_time.h"
 
 RICH_ENUM(

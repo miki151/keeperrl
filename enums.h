@@ -105,7 +105,6 @@ enum class ExternalEnemiesType;
 enum class LevelType;
 enum class EnemyAggressionLevel;
 enum class MinionEquipmentType;
-enum class EffectAIIntent;
 enum class UserInputId;
 enum class VillainGroup;
 enum class AIType;
@@ -124,6 +123,7 @@ class NameGeneratorId;
 class BiomeId;
 class WorkshopType;
 class CollectiveResourceId;
+using EffectAIIntent = int;
 
 using SteamId = unsigned long long;
 using ScriptedUIId = string;

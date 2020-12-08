@@ -3,9 +3,8 @@
 #include "creature_action.h"
 
 struct MoveInfo {
-  MoveInfo(double val, const CreatureAction&);
-  MoveInfo(const CreatureAction&);
-
+  MoveInfo(double val, CreatureAction);
+  MoveInfo(CreatureAction);
   explicit operator bool() const;
 
   void setValue(double v);

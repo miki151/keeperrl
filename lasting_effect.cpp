@@ -1630,11 +1630,11 @@ static bool shouldEnemyApply(const Creature* victim, LastingEffect effect) {
 EffectAIIntent LastingEffects::shouldAIApply(const Creature* victim, LastingEffect effect, bool isEnemy) {
   PROFILE_BLOCK("LastingEffects::shouldAIApply");
   if (!affects(victim, effect))
-    return EffectAIIntent::NONE;
+    return 0;
   if (shouldEnemyApply(victim, effect))
-    return isEnemy ? EffectAIIntent::WANTED : EffectAIIntent::UNWANTED;
+    return isEnemy ? 1 : -1;
   if (isEnemy)
-    return EffectAIIntent::UNWANTED;
+    return -1;
   bool isDanger = [&] {
     if (auto intent = victim->getLastCombatIntent())
       return intent->time > *victim->getGlobalTime() - 5_visible;
@@ -1642,11 +1642,11 @@ EffectAIIntent LastingEffects::shouldAIApply(const Creature* victim, LastingEffe
   }();
   if (isDanger) {
     if (shouldAllyApplyInDanger(victim, effect))
-      return EffectAIIntent::WANTED;
+      return 1;
   } else
     if (shouldAllyApplyInNoDanger(victim, effect))
-      return EffectAIIntent::WANTED;
-  return shouldAllyApply(victim, effect) ? EffectAIIntent::WANTED : EffectAIIntent::NONE;
+      return 1;
+  return shouldAllyApply(victim, effect) ? 1 : 0;
 }
 
 AttrType LastingEffects::modifyMeleeDamageAttr(const Creature* attacker, AttrType type) {
