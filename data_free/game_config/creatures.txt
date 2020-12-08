@@ -1577,6 +1577,7 @@
     name = {
       name = "archer"
     }
+    permanentEffects = { NO_FRIENDLY_FIRE 1 }
     aiType = RANGED
     hatedByEffect = HATE_HUMANS
     inventory = {
@@ -1602,6 +1603,7 @@
     }
     permanentEffects = {
       MAGIC_RESISTANCE 1
+      NO_FRIENDLY_FIRE 1
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
@@ -1743,6 +1745,7 @@
     permanentEffects = {
       MAGIC_RESISTANCE 1
       FLYING 1
+      NO_FRIENDLY_FIRE 1
     }
     aiType = RANGED
     chatReactionFriendly = "curses all dungeons"
@@ -2828,6 +2831,7 @@
     permanentEffects = {
       MAGIC_RESISTANCE 1
       ELF_VISION 1
+      NO_FRIENDLY_FIRE 1
     }
     spells = { "healing" }
     maxLevelIncrease = {
@@ -3047,6 +3051,7 @@
     permanentEffects = {
       MAGIC_RESISTANCE 1
       ELF_VISION 1
+      NO_FRIENDLY_FIRE 1
     }
     chatReactionFriendly = "curses all humans"
     chatReactionHostile = "\"Die!\""
@@ -4028,6 +4033,9 @@
       DAMAGE 12
       DEFENSE 50
       SPELL_DAMAGE 50
+    }
+    permanentEffects = {
+      NO_FRIENDLY_FIRE 1
     }
     aiType = RANGED
     skills = {
