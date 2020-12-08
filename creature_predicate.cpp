@@ -192,7 +192,7 @@ static string getName(const CreaturePredicates::Distance& p) {
 
 static bool apply(const CreaturePredicates::Distance& e, Position pos, const Creature* attacker) {
   auto dist = attacker->getPosition().dist8(pos).value_or(10000);
-  return dist >= e.min.value_or(-1) && dist <= e.max.value_or(10000);
+  return dist >= e.min.value_or(-1) && dist < e.max.value_or(10000);
 }
 
 static string getName(const CreaturePredicates::AIAfraidOf&) {
