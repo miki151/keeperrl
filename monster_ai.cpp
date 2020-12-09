@@ -605,7 +605,7 @@ class Fighter : public Behaviour {
     for (auto spell : creature->getSpellMap().getAvailable(creature))
       if (spell->getRange() > 0 && spell->getEffect().effect->contains<Effects::Heal>())
         ret = FighterPosition::HEALER;
-    else if (!creature->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).empty()
+    if (ret != FighterPosition::HEALER && !creature->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).empty()
         && creature->getAttr(AttrType::RANGED_DAMAGE) >= creature->getAttr(AttrType::DAMAGE))
       ret = FighterPosition::RANGED;
     if (ret != FighterPosition::MELEE)
