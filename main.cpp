@@ -132,6 +132,7 @@ static po::parser getCommandLineFlags() {
   flags["battle_level"].type(po::string).description("Path to battle test level");
   flags["battle_info"].type(po::string).description("Path to battle info file");
   flags["battle_enemy"].type(po::string).description("Battle enemy id");
+  flags["battle_enemy_two"].type(po::string).description("Battle enemy 2 id");
   flags["endless_enemy"].type(po::string).description("Endless mode enemy index");
   flags["battle_view"].description("Open game window and display battle");
   flags["battle_rounds"].type(po::i32).description("Number of battle rounds");
@@ -350,10 +351,10 @@ static int keeperMain(po::parser& commandLineFlags) {
     MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, tileSet,
         &allUnlocked, 0, "");
     auto level = commandLineFlags["battle_level"].get().string;
-    auto info = commandLineFlags["battle_info"].get().string;
-    auto numRounds = commandLineFlags["battle_rounds"].get().i32;
+    auto numRounds = commandLineFlags["battle_rounds"].was_set() ? commandLineFlags["battle_rounds"].get().i32 : 1;
     try {
       if (commandLineFlags["endless_enemy"].was_set()) {
+        auto info = commandLineFlags["battle_info"].get().string;
         auto enemy = commandLineFlags["endless_enemy"].get().string;
         optional<int> chosenEnemy;
         if (enemy != "all")
@@ -361,10 +362,11 @@ static int keeperMain(po::parser& commandLineFlags) {
         loop.endlessTest(numRounds, FilePath::fromFullPath(level), FilePath::fromFullPath(info), chosenEnemy);
       } else {
         auto enemyId = commandLineFlags["battle_enemy"].get().string;
+        auto enemy2Id = commandLineFlags["battle_enemy_two"].get().string;
         if (enemyId == "campaign")
-          loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId("DARK_MAGE"), VillainGroup::EVIL_KEEPER);
+          loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId(enemy2Id.data()), VillainGroup::EVIL_KEEPER);
         else
-          loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId("DARK_MAGE"), EnemyId(enemyId.data()));
+          loop.campaignBattleText(numRounds, FilePath::fromFullPath(level), EnemyId(enemy2Id.data()), EnemyId(enemyId.data()));
       }
     } catch (GameExitException) {}
   };

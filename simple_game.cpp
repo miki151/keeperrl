@@ -54,11 +54,11 @@ void SimpleGame::addImmigrant() {
 }
 
 bool SimpleGame::fightEnemy(EnemyId id) {
-  auto& enemy = factory->enemies.at(id).settlement;
+/*  auto& enemy = factory->enemies.at(id).settlement;
   const int numTries = 10;
   int res = mainLoop->battleTest(numTries, DirectoryPath::current().file("battle2.txt"), getWeakPointers(minions),
       {enemy.inhabitants.fighters, enemy.inhabitants.leader});
-  std::cout << "Fighting " << enemy.race.value_or("unknown enemy") << ": " << res << "/" << numTries;
+  std::cout << "Fighting " << enemy.race.value_or("unknown enemy") << ": " << res << "/" << numTries;*/
   return true;
 }
 

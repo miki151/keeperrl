@@ -1,3 +1,4 @@
+#include "owner_pointer.h"
 #include "stdafx.h"
 #include "game.h"
 #include "view.h"
@@ -159,13 +160,16 @@ PGame Game::warlordGame(Table<PModel> models, CampaignSetup setup, vector<PCreat
   return ret;
 }
 
-PGame Game::splashScreen(PModel&& model, const CampaignSetup& s, ContentFactory f) {
+PGame Game::splashScreen(PModel&& model, const CampaignSetup& s, ContentFactory f, View* view) {
+  auto modelRef = model.get();
   Table<PModel> t(1, 1);
   t[0][0] = std::move(model);
   auto game = makeOwner<Game>(std::move(t), Vec2(0, 0), s, std::move(f));
   for (auto model : game->getAllModels())
     model->setGame(game.get());
-  game->spectator.reset(new Spectator(game->models[0][0]->getTopLevel()));
+  auto spectator = makeOwner<Spectator>(game->models[0][0]->getTopLevel(), view);
+  spectator->subscribeTo(modelRef);
+  game->spectator = std::move(spectator);
   game->turnEvents.clear();
   return game;
 }

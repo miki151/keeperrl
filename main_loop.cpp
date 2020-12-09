@@ -541,7 +541,7 @@ void MainLoop::splashScreen() {
       contentFactory.buildingInfo, {});
   auto model = ModelBuilder(&meter, Random, options, sokobanInput, &contentFactory, std::move(enemyFactory))
       .splashModel(dataFreePath.file("splash.txt"));
-  playGame(Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory)),
+  playGame(Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory), view),
       false, true, true);
 }
 
@@ -994,19 +994,19 @@ int MainLoop::campaignBattleText(int numTries, const FilePath& levelPath, EnemyI
   auto contentFactory = createContentFactory(false);
   auto minionsTmp = contentFactory.enemies.at(keeperId).settlement.inhabitants;
   auto enemy = contentFactory.enemies.at(enemyId);
-  for (int increase : Range(0, 100)) {
+  //for (int increase : Range(0, 100)) {
     vector<CreatureList> minions = {minionsTmp.leader, minionsTmp.fighters};
-    for (auto& elem : minions) {
+    /*for (auto& elem : minions) {
       //elem.clearExpLevel();
       elem.clearBaseLevel();
       elem.increaseBaseLevel(EnumMap<ExperienceType, int>([increase](ExperienceType t) { return increase; }));
     }
-    std::cerr << "Increase " << increase << std::endl;
+    std::cerr << "Increase " << increase << std::endl;*/
     int res = battleTest(numTries, levelPath, minions,
         {enemy.settlement.inhabitants.fighters, enemy.settlement.inhabitants.leader});
-    if (res >= numTries * 9 / 10)
-      return increase;
-  }
+    /*if (res >= numTries * 9 / 10)
+      return increase;*/
+  //}
   return -1;
 }
 
@@ -1032,14 +1032,6 @@ void MainLoop::endlessTest(int numTries, const FilePath& levelPath, const FilePa
 }
 
 int MainLoop::battleTest(int numTries, const FilePath& levelPath, vector<CreatureList> ally, vector<CreatureList> enemies) {
-  vector<PCreature> allies;
-  auto contentFactory = createContentFactory(false);
-  for (auto& elem : ally)
-    allies.append(elem.generate(Random, &contentFactory.getCreatures(), TribeId::getDarkKeeper(), MonsterAIFactory::monster()));
-  return battleTest(numTries, levelPath, getWeakPointers(allies), enemies);
-}
-
-int MainLoop::battleTest(int numTries, const FilePath& levelPath, vector<Creature*> ally, vector<CreatureList> enemies) {
   ProgressMeter meter(1);
   int numAllies = 0;
   int numEnemies = 0;
@@ -1049,10 +1041,12 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, vector<Creatur
     auto contentFactory = createContentFactory(false);
     EnemyFactory enemyFactory(Random, contentFactory.getCreatures().getNameGenerator(),
         contentFactory.enemies, contentFactory.buildingInfo, {});
-    auto allyCopy = ally.transform([&](Creature* c) { return contentFactory.getCreatures().makeCopy(c); });
+    vector<PCreature> allyCopy;
+    for (auto& elem : ally)
+      allyCopy.append(elem.generate(Random, &contentFactory.getCreatures(), TribeId::getDarkKeeper(), MonsterAIFactory::monster()));
     auto model = ModelBuilder(&meter, Random, options, sokobanInput,
         &contentFactory, std::move(enemyFactory)).battleModel(levelPath, std::move(allyCopy), enemies);
-    auto game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory));
+    auto game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory), view);
     auto exitCondition = [&](WGame game) -> optional<ExitCondition> {
       unordered_set<TribeId, CustomHash<TribeId>> tribes;
       for (auto& m : game->getAllModels())

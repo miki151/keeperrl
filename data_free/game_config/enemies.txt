@@ -2289,7 +2289,7 @@
           1 "SPECIAL_HMBN"
           1 "HARPY"
         }
-        baseLevelIncrease = {
+        expLevelIncrease = {
           MELEE 10
           SPELL 10
           ARCHERY 6

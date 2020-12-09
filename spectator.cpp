@@ -9,8 +9,11 @@
 #include "view_index.h"
 #include "game.h"
 #include "view_object.h"
+#include "game_event.h"
+#include "view.h"
+#include "sound.h"
 
-Spectator::Spectator(WLevel l) : level(l) {
+Spectator::Spectator(WLevel l, View* view) : level(l), view(view) {
 }
 
 const MapMemory& Spectator::getMemory() const {
@@ -53,3 +56,20 @@ const vector<Vec2>& Spectator::getUnknownLocations(WConstLevel) const {
   return empty;
 }
 
+void Spectator::onEvent(const GameEvent& event) {
+  using namespace EventInfo;
+  event.visit<void>(
+      [&](const Projectile& info) {
+        if (view) {
+          view->animateObject(info.begin.getCoord(), info.end.getCoord(), info.viewId, info.fx);
+          if (info.sound)
+            view->addSound(*info.sound);
+        }
+      },
+      [&](const FX& info) {
+        if (view)
+          view->animation(FXSpawnInfo(info.fx, info.position.getCoord(), info.direction.value_or(Vec2(0, 0))));
+      },
+      [&](const auto&) {}
+  );
+}

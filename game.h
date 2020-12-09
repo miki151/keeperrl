@@ -36,7 +36,7 @@ struct WarlordInfoWithReference {
 class Game : public OwnedObject<Game> {
   public:
   static PGame campaignGame(Table<PModel>&&, CampaignSetup, AvatarInfo, ContentFactory, map<string, string> analytics);
-  static PGame splashScreen(PModel&&, const CampaignSetup&, ContentFactory);
+  static PGame splashScreen(PModel&&, const CampaignSetup&, ContentFactory, View*);
   static PGame warlordGame(Table<PModel>, CampaignSetup, vector<PCreature>, ContentFactory, string avatarId);
 
   optional<ExitInfo> update(double timeDiff);
@@ -137,7 +137,7 @@ class Game : public OwnedObject<Game> {
   map<VillainType, vector<Collective*>> SERIAL(villainsByType);
   vector<Collective*> SERIAL(collectives);
   MusicType SERIAL(musicType);
-  unique_ptr<CreatureView> spectator;
+  OwnerPointer<CreatureView> spectator;
   HeapAllocated<Statistics> SERIAL(statistics);
   Options* options = nullptr;
   Highscores* highscores = nullptr;

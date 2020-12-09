@@ -1,10 +1,14 @@
 #pragma once
 
 #include "creature_view.h"
+#include "event_listener.h"
 
-class Spectator : public CreatureView {
+class View;
+
+class Spectator : public OwnedObject<Spectator>, public CreatureView, public EventListener<Spectator> {
   public:
-  Spectator(WLevel);
+  Spectator(WLevel, View*);
+  void onEvent(const GameEvent&);
   virtual const MapMemory& getMemory() const override;
   virtual void getViewIndex(Vec2 pos, ViewIndex&) const override;
   virtual void refreshGameInfo(GameInfo&) const override;
@@ -17,5 +21,6 @@ class Spectator : public CreatureView {
 
   private:
   WLevel level = nullptr;
+  View* view = nullptr;
 };
 
