@@ -24,9 +24,6 @@
 
 //#include <GL/glew.h>  /* @rlyeh: before including GL. doesnt hurt and makes life better */
 
-#ifdef VSTUDIO
-#include <windows.h>
-#endif
 
 /* @rlyeh: removed STB_TRUETYPE_IMPLENTATION. We link it externally */
 #include "stb_truetype.h"

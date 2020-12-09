@@ -49,9 +49,7 @@
 #include "ctype.h"
 #include <cstring>
 #include <time.h>
-#ifndef VSTUDIO
 #include <sys/time.h>
-#endif
 #include <cstdlib>
 #include <typeinfo>
 #include <unordered_set>

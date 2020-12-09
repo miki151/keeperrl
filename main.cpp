@@ -59,17 +59,7 @@
 #include "layout_renderer.h"
 #include "unlocks.h"
 
-#ifndef VSTUDIO
 #include "stack_printer.h"
-#endif
-
-#ifdef VSTUDIO
-#include <steam_api.h>
-#include <Windows.h>
-#include <dbghelp.h>
-#include <tchar.h>
-
-#endif
 
 #ifdef USE_STEAMWORKS
 #include "steam_base.h"
@@ -129,81 +119,10 @@ vector<pair<MusicType, FilePath>> getMusicTracks(const DirectoryPath& path, bool
 static int keeperMain(po::parser&);
 static po::parser getCommandLineFlags();
 
-#ifdef VSTUDIO
-
-void miniDumpFunction(unsigned int nExceptionCode, EXCEPTION_POINTERS *pException) {
-  HANDLE hFile = CreateFile(_T("KeeperRL.dmp"), GENERIC_READ | GENERIC_WRITE,
-    0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-  if ((hFile != NULL) && (hFile != INVALID_HANDLE_VALUE)) {
-    MINIDUMP_EXCEPTION_INFORMATION mdei;
-    mdei.ThreadId = GetCurrentThreadId();
-    mdei.ExceptionPointers = pException;
-    mdei.ClientPointers = FALSE;
-    MINIDUMP_TYPE mdt = (MINIDUMP_TYPE)(
-      MiniDumpWithDataSegs |
-      MiniDumpWithHandleData |
-      MiniDumpWithIndirectlyReferencedMemory |
-      MiniDumpWithThreadInfo |
-      MiniDumpWithUnloadedModules);
-    BOOL rv = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
-      hFile, mdt, (pException != nullptr) ? &mdei : nullptr, nullptr, nullptr);
-    CloseHandle(hFile);
-  }
-}
-
-void miniDumpFunction3(unsigned int nExceptionCode, EXCEPTION_POINTERS *pException) {
-  SteamAPI_SetMiniDumpComment("Minidump comment: SteamworksExample.exe\n");
-  SteamAPI_WriteMiniDump(nExceptionCode, pException, 123);
-}
-
-LONG WINAPI miniDumpFunction2(EXCEPTION_POINTERS *ExceptionInfo) {
-  miniDumpFunction(123, ExceptionInfo);
-  return EXCEPTION_EXECUTE_HANDLER;
-}
-
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-  std::set_terminate(fail);
-  //_set_se_translator(miniDumpFunction);
-  variables_map vars;
-  vector<string> args;
-  try {
-    args = split_winmain(lpCmdLine);
-    store(command_line_parser(args).options(getOptions()).run(), vars);
-  }
-  catch (...) {
-    std::cout << "Bad command line flags.";
-  }
-  if (!vars.count("no_minidump"))
-    SetUnhandledExceptionFilter(miniDumpFunction2);
-  if (vars.count("steam")) {
-    if (SteamAPI_RestartAppIfNecessary(329970))
-      FATAL << "Init failure";
-    if (!SteamAPI_Init()) {
-      MessageBox(NULL, TEXT("Steam is not running. If you'd like to run the game without Steam, run the standalone exe binary."), TEXT("Failure"), MB_OK);
-      FATAL << "Steam is not running";
-    }
-    std::ofstream("steam_id") << SteamUser()->GetSteamID().ConvertToUint64() << std::endl;
-  }
-  /*if (IsDebuggerPresent()) {
-    keeperMain(vars);
-  }*/
-
-  //try {
-    keeperMain(vars);
-  //}
-  /*catch (...) {
-    return -1;
-  }*/
-    return 0;
-}
-#endif
-
-
 static po::parser getCommandLineFlags() {
   po::parser flags;
   flags["help"].description("Print help");
   flags["steam"].description("Run with Steam");
-  flags["no_minidump"].description("Don't write minidumps when crashed.");
   flags["user_dir"].type(po::string).description("Directory for options and save files");
   flags["data_dir"].type(po::string).description("Directory containing the game data");
   flags["restore_settings"].description("Restore settings to default values.");
@@ -214,7 +133,6 @@ static po::parser getCommandLineFlags() {
   flags["battle_info"].type(po::string).description("Path to battle info file");
   flags["battle_enemy"].type(po::string).description("Battle enemy id");
   flags["endless_enemy"].type(po::string).description("Endless mode enemy index");
-  flags["verify_mod"].type(po::string).description("Verify mod. Requires path to zip file.");
   flags["battle_view"].description("Open game window and display battle");
   flags["battle_rounds"].type(po::i32).description("Number of battle rounds");
   flags["layout_size"].type(po::string).description("Size of the generated map layout");
@@ -227,15 +145,10 @@ static po::parser getCommandLineFlags() {
   flags["quick_game"].description("Skip main menu and load the last save file or start a single map game");
   flags["max_turns"].type(po::i32).description("Quit the game after a given max number of turns");
 #endif
-  flags["seed"].type(po::i32).description("Use given seed");
-  flags["record"].type(po::string).description("Record game to file");
-  flags["replay"].type(po::string).description("Replay game from file");
   return flags;
 }
 
 #undef main
-
-#ifndef VSTUDIO
 
 void onException() {
   if (auto ex = std::current_exception()) {
@@ -263,7 +176,6 @@ int main(int argc, char* argv[]) {
     return -1;
   return keeperMain(flags);
 }
-#endif
 
 static string getRandomInstallId(RandomGen& random) {
   string ret;
@@ -388,8 +300,7 @@ static int keeperMain(po::parser& commandLineFlags) {
   if (commandLineFlags["restore_settings"].was_set())
     remove(settingsPath.getPath());
   Options options(settingsPath);
-  int seed = commandLineFlags["seed"].was_set() ? commandLineFlags["seed"].get().i32 : int(time(nullptr));
-  Random.init(seed);
+  Random.init(int(time(nullptr)));
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
   SoundLibrary* soundLibrary = nullptr;
   AudioDevice audioDevice;
@@ -412,15 +323,6 @@ static int keeperMain(po::parser& commandLineFlags) {
         commandLineFlags["layout_size"].get().string
     );
     exit(0);
-  }
-  if (commandLineFlags["verify_mod"].was_set()) {
-    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, &allUnlocked,
-        0, "");
-    if (auto err = loop.verifyMod(commandLineFlags["verify_mod"].get().string)) {
-      std::cout << *err << std::endl;
-      return -1;
-    } else
-      return 0;
   }
   SokobanInput sokobanInput(freeDataPath.file("sokoban_input.txt"), userPath.file("sokoban_state.txt"));
 #ifdef RELEASE
