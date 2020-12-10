@@ -77,7 +77,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   WLevel getLevel() const;
   Game* getGame() const;
   const vector<Creature*>& getVisibleEnemies() const;
-  Creature* getClosestEnemy() const;
+  Creature* getClosestEnemy(bool meleeOnly = false) const;
   const vector<Creature*>& getVisibleCreatures() const;
   bool shouldAIAttack(const Creature* enemy) const;
   bool shouldAIChase(const Creature* enemy) const;

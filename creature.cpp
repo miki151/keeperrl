@@ -2398,7 +2398,7 @@ optional<Creature::CombatIntentInfo> Creature::getLastCombatIntent() const {
     return none;
 }
 
-Creature* Creature::getClosestEnemy() const {
+Creature* Creature::getClosestEnemy(bool meleeOnly) const {
   PROFILE;
   int dist = 1000000000;
   Creature* result = nullptr;
@@ -2406,7 +2406,8 @@ Creature* Creature::getClosestEnemy() const {
     int curDist = *other->getPosition().dist8(position);
     if (curDist < dist &&
         (!other->getAttributes().dontChase() || curDist == 1) &&
-        !other->isAffected(LastingEffect::STUNNED)) {
+        !other->isAffected(LastingEffect::STUNNED) &&
+        (!meleeOnly || other->shouldAIAttack(this))) {
       result = other;
       dist = *position.dist8(other->getPosition());
     }

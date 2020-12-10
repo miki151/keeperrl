@@ -518,7 +518,7 @@ class Fighter : public Behaviour {
 
   bool isChokePoint2(Position pos) {
     for (auto v : pos.neighbors4())
-      if (isChokePoint1(v))
+      if (v.canEnterEmpty(creature) && isChokePoint1(v))
         return true;
     return false;
   }
@@ -558,13 +558,22 @@ class Fighter : public Behaviour {
     return unsafeMove;
   }
 
-  MoveInfo considerFormationMove(Creature* other, FighterPosition position) {
+  int getEnemyDistance(Creature* from, Creature* to) {
+    auto dist = *from->getPosition().dist8(to->getPosition());
+    if (!from->shouldAIAttack(to))
+      dist -= 2;
+    return dist;
+  }
+
+  MoveInfo considerFormationMove(FighterPosition position) {
+    auto other = creature->getClosestEnemy(true);
+    if (!other)
+      return NoMove;
     if (!LastingEffects::obeysFormation(creature, other) || !creature->getBody().hasBrain())
       return NoMove;
     auto myPosition = creature->getPosition();
     auto otherPosition = other->getPosition();
-    Vec2 enemyDir = myPosition.getDir(otherPosition);
-    auto distance = enemyDir.length8();
+    auto distance = getEnemyDistance(creature, other);
     if (position == FighterPosition::HEALER)
       if (auto move = getHealerFormationMove())
         return move;
@@ -578,21 +587,22 @@ class Fighter : public Behaviour {
     }
     if (distance < 2)
       return NoMove;
-    if (other->shouldAIAttack(creature) && !isChokePoint2(myPosition)) {
+    if (!isChokePoint2(myPosition)) {
       auto allies = creature->getVisibleCreatures();
       bool allyBehind = false;
       bool allyInFront = false;
       for (auto ally : allies)
         if (ally->isFriend(creature) && !ally->getAttributes().getIllusionViewObject())
-          if (auto allysEnemy = ally->getClosestEnemy())
-            if (ally->shouldAIAttack(allysEnemy)) {
-              auto allyDist = *ally->getPosition().dist8(allysEnemy->getPosition());
+          if (auto allysEnemy = ally->getClosestEnemy()) {
+              auto allyDist = getEnemyDistance(ally, allysEnemy);
               if (allyDist < distance)
                 allyInFront = true;
-              if (!ally->getPosition().getModel()->getTimeQueue().willMoveThisTurn(ally))
-                ++allyDist;
-              if (allyDist >= distance + 1)
-                allyBehind = true;
+              if (ally->shouldAIAttack(allysEnemy)) {
+                if (!ally->getPosition().getModel()->getTimeQueue().willMoveThisTurn(ally))
+                  ++allyDist;
+                if (allyDist >= distance + 1)
+                  allyBehind = true;
+              }
             }
       if (allyBehind && !allyInFront)
         return creature->wait();
@@ -620,7 +630,7 @@ class Fighter : public Behaviour {
     auto fighterPosition = getFighterPosition();
     if (fighterPosition == FighterPosition::HEALER)
       chase = false;
-    if (auto move = considerFormationMove(other, fighterPosition))
+    if (auto move = considerFormationMove(fighterPosition))
       return move;
     if (other->getAttributes().isBoulder())
       return NoMove;
