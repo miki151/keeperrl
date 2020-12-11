@@ -138,7 +138,7 @@ bool Spell::isFriendlyFire(const Creature* c, Position to) const {
 
 int Spell::checkTrajectory(const Creature* c, Position to) const {
   PROFILE;
-  if (endOnly)
+  if (endOnly || to == c->getPosition())
     return effect->shouldAIApply(c, to);
   int ret = 0;
   Position from = c->getPosition();
