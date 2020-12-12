@@ -30,6 +30,8 @@ class Monster : public Controller {
   virtual bool isPlayer() const override;
   virtual const MapMemory& getMemory() const;
   virtual MessageGenerator& getMessageGenerator() const override;
+  virtual void setDragTask(PTask) override;
+  virtual Task* getDragTask() const override;
 
   static ControllerFactory getFactory(MonsterAIFactory);
 
@@ -37,5 +39,6 @@ class Monster : public Controller {
 
   private:
   PMonsterAI SERIAL(monsterAI);
+  PTask SERIAL(dragTask);
 };
 

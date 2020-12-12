@@ -48,6 +48,7 @@ class CreatureView {
   virtual vector<vector<Vec2>> getGroupPathTo(const string& group, Vec2) const { return {}; }
   virtual vector<vector<Vec2>> getTeamPathTo(TeamId, Vec2) const { return {}; }
   virtual vector<Vec2> getHighlightedPathTo(Vec2) const { return {}; }
+  virtual vector<vector<Vec2>> getPermanentPaths() const { return {}; }
   virtual ~CreatureView() {}
 };
 

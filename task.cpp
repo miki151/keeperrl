@@ -1216,6 +1216,10 @@ class GoTo : public Task {
       return c->moveTowards(target);
   }
 
+  virtual optional<Position> getPosition() const override {
+    return target;
+  }
+
   virtual string getDescription() const override {
     return "Go to " + toString(target);
   }

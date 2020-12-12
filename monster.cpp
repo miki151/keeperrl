@@ -24,6 +24,7 @@
 #include "monster_ai.h"
 #include "creature_attributes.h"
 #include "message_generator.h"
+#include "task.h"
 
 SERIALIZE_DEF(Monster, SUBCLASS(Controller), monsterAI)
 SERIALIZATION_CONSTRUCTOR_IMPL(Monster);
@@ -36,6 +37,13 @@ ControllerFactory Monster::getFactory(MonsterAIFactory f) {
 }
 
 void Monster::makeMove() {
+  if (dragTask && dragTask->isDone())
+    dragTask.clear();
+  if (dragTask)
+    if (auto move = dragTask->getMove(creature)) {
+      move.getMove().perform(creature);
+      return;
+    }
   monsterAI->makeMove();
 }
 
@@ -50,4 +58,12 @@ const MapMemory& Monster::getMemory() const {
 MessageGenerator& Monster::getMessageGenerator() const {
   static MessageGenerator messageGenerator(MessageGenerator::THIRD_PERSON);
   return messageGenerator;
+}
+
+void Monster::setDragTask(PTask task) {
+  dragTask = std::move(task);
+}
+
+Task* Monster::getDragTask() const {
+  return dragTask.get();
 }

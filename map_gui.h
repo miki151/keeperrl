@@ -135,6 +135,7 @@ class MapGui : public GuiElem {
   optional<CreatureInfo> draggedCandidate;
   optional<Vec2> lastMapLeftClick;
   vector<vector<Vec2>> shortestPath;
+  vector<vector<Vec2>> permaShortestPath;
   struct AnimationInfo {
     PAnimation animation;
     Vec2 position;

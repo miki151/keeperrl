@@ -1116,10 +1116,9 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
 }
 
 void MapGui::renderShortestPaths(Renderer& renderer, Vec2 tileSize) {
-  for (auto& path : shortestPath)
+  auto renderPath = [&] (const vector<Vec2>& path, Color color, optional<ViewId> target) {
     for (int i : All(path)) {
       auto handle = [&] (Vec2 coord) {
-        auto color = Color::WHITE.transparency(100);
         if (path[i].inRectangle(objects.getBounds()))
           if (auto index = objects[path[i]])
             color = blendNightColor(color, *index);
@@ -1128,7 +1127,14 @@ void MapGui::renderShortestPaths(Renderer& renderer, Vec2 tileSize) {
       handle(projectOnScreen(path[i]) + tileSize / 2);
       if (i > 0)
         handle((projectOnScreen(path[i]) + projectOnScreen(path[i - 1]) + tileSize) / 2);
+      if (target)
+        renderer.drawViewObject(projectOnScreen(path[0]), *target, true, tileSize);
     }
+  };
+  for (auto& path : shortestPath)
+    renderPath(path, Color::WHITE.transparency(100), none);
+  for (auto& path : permaShortestPath)
+    renderPath(path, Color::LIGHT_BLUE.transparency(100), ViewId("guard_post"));
 }
 
 void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color, const ViewIndex& index) {
@@ -1304,6 +1310,7 @@ double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
 
 void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer, Vec2 tileSize, milliseconds curTimeReal) {
   shortestPath.clear();
+  permaShortestPath = view->getPermanentPaths();
   if (auto pos = projectOnMap(renderer.getMousePos())) {
     auto highlightedInfo = getHighlightedInfo(tileSize, curTimeReal);
     if (highlightedInfo.tilePos) {

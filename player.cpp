@@ -71,6 +71,7 @@
 #include "item_types.h"
 #include "item_attributes.h"
 #include "keybinding.h"
+#include "task.h"
 
 template <class Archive>
 void Player::serialize(Archive& ar, const unsigned int) {
@@ -827,6 +828,15 @@ void Player::makeMove() {
           getGame()->transferAction(getTeam());
         break;
       }
+      case UserInputId::CREATURE_DRAG_DROP: {
+        auto info = action.get<CreatureDropInfo>();
+        Position target(info.pos, getLevel());
+        for (auto c : getTeam())
+          if (c->getUniqueId() == info.creatureId) {
+            c->getController()->setDragTask(Task::goTo(target));
+          }
+        break;
+      }
   #ifndef RELEASE
       case UserInputId::CHEAT_ATTRIBUTES:
         creature->getAttributes().increaseBaseAttr(AttrType::DAMAGE, 80);
@@ -1338,13 +1348,48 @@ const vector<Vec2>& Player::getUnknownLocations(WConstLevel level) const {
   return unknownLocations->getOnLevel(level);
 }
 
+vector<vector<Vec2>> Player::getPermanentPaths() const {
+  vector<vector<Vec2>> ret;
+  for (auto c : getTeam())
+    if (auto task = c->getController()->getDragTask())
+      if (auto target = task->getPosition()) {
+        auto res = LevelShortestPath(c, *target, 0).getPath()
+            .filter([&, level = getLevel()](auto& pos) { return pos.getLevel() == level; } )
+            .transform([&](auto& pos) { return pos.getCoord(); } );
+        if (res.size() > 1)
+          res.pop_back();
+        ret.push_back(std::move(res));
+      }
+  return ret;
+}
+
 vector<Vec2> Player::getHighlightedPathTo(Vec2 v) const {
   Position target(v, getLevel());
+  if (auto c = target.getCreature())
+    if (getTeam().contains(c)) {
+      auto res = c->getCurrentPath()
+          .filter([&, level = getLevel()](auto& pos) { return pos.getLevel() == level; } )
+          .transform([&](auto& pos) { return pos.getCoord(); } );
+      if (res.size() > 1)
+        res.pop_back();
+      return res;
+    }
   if (target.isSameLevel(creature->getPosition())) {
     LevelShortestPath path(creature, target, 0);
     return path.getPath().transform([](auto& pos) { return pos.getCoord(); });
   } else
     return {};
+}
+
+vector<vector<Vec2>> Player::getPathTo(UniqueEntity<Creature>::Id id, Vec2 to) const {
+  Position target(to, getLevel());
+  for (auto c : getTeam())
+    if (c->getUniqueId() == id)
+      if (target.isSameLevel(c->getPosition())) {
+        LevelShortestPath path(c, target, 0);
+        return {path.getPath().transform([](auto& pos) { return pos.getCoord(); })};
+      }
+  return {};
 }
 
 void Player::considerKeeperModeTravelMusic() {
