@@ -9,8 +9,6 @@ class CreatureGroup {
   static CreatureGroup splashHeroes(TribeId);
   static CreatureGroup splashLeader(TribeId);
   static CreatureGroup splashMonsters(TribeId);
-  static CreatureGroup forrest(TribeId);
-  static CreatureGroup snow(TribeId);
   static CreatureGroup lavaCreatures(TribeId tribe);
   static CreatureGroup waterCreatures(TribeId tribe);
   static CreatureGroup iceCreatures(TribeId tribe);
@@ -19,13 +17,10 @@ class CreatureGroup {
   PCreature random(CreatureFactory*);
 
   CreatureGroup& increaseBaseLevel(ExperienceType, int);
-  CreatureGroup& addInventory(vector<ItemType>);
 
   ~CreatureGroup();
   CreatureGroup& operator = (const CreatureGroup&);
   CreatureGroup(const CreatureGroup&);
-
-  SERIALIZATION_DECL(CreatureGroup)
 
   private:
   CreatureGroup(TribeId tribe, const vector<CreatureId>& creatures, const vector<double>& weights,
@@ -34,11 +29,10 @@ class CreatureGroup {
       const vector<CreatureId>& unique = {}, map<CreatureId, optional<TribeId>> overrides = {});
   static void initSplash(TribeId);
   TribeId getTribeFor(CreatureId);
-  optional<TribeId> SERIAL(tribe);
-  vector<CreatureId> SERIAL(creatures);
-  vector<double> SERIAL(weights);
-  vector<CreatureId> SERIAL(unique);
-  map<CreatureId, optional<TribeId>> SERIAL(tribeOverrides);
-  EnumMap<ExperienceType, int> SERIAL(baseLevelIncrease);
-  vector<ItemType> SERIAL(inventory);
+  optional<TribeId> tribe;
+  vector<CreatureId> creatures;
+  vector<double> weights;
+  vector<CreatureId> unique;
+  map<CreatureId, optional<TribeId>> tribeOverrides;
+  EnumMap<ExperienceType, int> baseLevelIncrease;
 };

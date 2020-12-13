@@ -6,8 +6,6 @@
 #include "item_type.h"
 #include "tribe.h"
 
-SERIALIZE_DEF(CreatureGroup, tribe, creatures, weights, unique, tribeOverrides, baseLevelIncrease, inventory)
-SERIALIZATION_CONSTRUCTOR_IMPL(CreatureGroup)
 
 CreatureGroup CreatureGroup::singleType(TribeId tribe, CreatureId id) {
   return CreatureGroup(tribe, { id}, {1}, {});
@@ -31,7 +29,7 @@ PCreature CreatureGroup::random(CreatureFactory* creatureFactory, const MonsterA
     unique.pop_back();
   } else
     id = Random.choose(creatures, weights);
-  PCreature ret = creatureFactory->fromId(id, getTribeFor(id), actorFactory, inventory);
+  PCreature ret = creatureFactory->fromId(id, getTribeFor(id), actorFactory);
   for (auto exp : ENUM_ALL(ExperienceType))
     ret->getAttributes().increaseBaseExpLevel(exp, baseLevelIncrease[exp]);
   return ret;
@@ -39,11 +37,6 @@ PCreature CreatureGroup::random(CreatureFactory* creatureFactory, const MonsterA
 
 CreatureGroup& CreatureGroup::increaseBaseLevel(ExperienceType t, int l) {
   baseLevelIncrease[t] = l;
-  return *this;
-}
-
-CreatureGroup& CreatureGroup::addInventory(vector<ItemType> items) {
-  inventory = items;
   return *this;
 }
 
@@ -103,18 +96,6 @@ CreatureGroup CreatureGroup::splashMonsters(TribeId tribe) {
       { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}).increaseBaseLevel(ExperienceType::MELEE, 25);
 }
 
-CreatureGroup CreatureGroup::forrest(TribeId tribe) {
-  return CreatureGroup(tribe,
-      { CreatureId("DEER"), CreatureId("FOX"), CreatureId("BOAR") },
-  { 4, 2, 2}, {});
-}
-
-CreatureGroup CreatureGroup::snow(TribeId tribe) {
-  return CreatureGroup(tribe,
-      { CreatureId("POLAR_FOX"), CreatureId("POLAR_BEAR") },
-  { 4, 1}, {});
-}
-
 CreatureGroup CreatureGroup::iceCreatures(TribeId tribe) {
   return CreatureGroup(tribe, { CreatureId("WATER_ELEMENTAL") }, {1});
 }
@@ -126,8 +107,3 @@ CreatureGroup CreatureGroup::waterCreatures(TribeId tribe) {
 CreatureGroup CreatureGroup::lavaCreatures(TribeId tribe) {
   return CreatureGroup(tribe, { CreatureId("FIRE_ELEMENTAL") }, {1}, { });
 }
-
-
-#include "pretty_archive.h"
-template
-void CreatureGroup::serialize(PrettyInputArchive& ar1, unsigned);

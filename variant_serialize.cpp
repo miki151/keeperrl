@@ -82,7 +82,6 @@ namespace cereal {
 #endif
 
   INST(StorageInfo, vector<Position>)
-  INST(EmptyThing, int, CreatureGroup)
   INST(TechId, int)
   INST2(AttractionType_impl)
   INST2(FurnitureEntry::EntryData_impl)
