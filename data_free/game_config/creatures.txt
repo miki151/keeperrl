@@ -231,9 +231,7 @@
       MAGIC_RESISTANCE 1
     }
     aiType = RANGED
-    skills = { 
-      "SHAMANISM" 0.5
-    }
+    personalSummons = 5 { "SPIRIT" }
     spells = { "advanced healing" "heal spirit" }
     chatReactionFriendly = "\"mhhhhhrrrr!\""
     chatReactionHostile = "\"mhhhhhrrrr!\""
@@ -1685,9 +1683,7 @@
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     aiType = RANGED
-    skills = { 
-      "SHAMANISM" 0.7
-    }
+    personalSummons = 7 { "SPIRIT" }
     spells = { "advanced healing" "defense bonus" "directed blast" "heal spirit" }
     maxLevelIncrease = {
       SPELL 5
@@ -2361,9 +2357,7 @@
     }
     spellSchools = {}
     spells = { "heal spirit" }
-    skills = {
-      "SHAMANISM" 0.4
-    }
+    personalSummons = 4 { "SPIRIT" }
     permanentEffects = append {
       DISTILLATION_SKILL 1
     }
@@ -3624,6 +3618,7 @@
       FIRE_RESISTANT 1
       MAGIC_RESISTANCE 1
     }
+    personalSummons = 5 { "FIRE_ELEMENTAL" "AIR_ELEMENTAL" "WATER_ELEMENTAL" "EARTH_ELEMENTAL" }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     name = {

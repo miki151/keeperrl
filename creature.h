@@ -300,7 +300,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   EnumSet<CreatureStatus>& getStatus();
   const EnumSet<CreatureStatus>& getStatus() const;
-  const vector<Creature*>& getShamanSummons() const;
+  const vector<Creature*>& getPersonalSummons() const;
   void toggleCaptureOrder();
   bool isCaptureOrdered() const;
   bool canBeCaptured() const;
@@ -366,8 +366,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   HitsInfo SERIAL(hitsInfo);
   void increaseHitCount();
   optional<ViewId> SERIAL(primaryViewId);
-  vector<Creature*> SERIAL(shamanSummons);
-  void tickShamanSummons();
+  vector<Creature*> SERIAL(personalSummons);
+  void tickPersonalSummons();
   bool considerSavingLife(DropType, const Creature* attacker);
   vector<AdjectiveInfo> getSpecialAttrAdjectives(bool good) const;
   vector<AutomatonPart> SERIAL(automatonParts);

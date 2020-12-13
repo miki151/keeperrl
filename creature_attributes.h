@@ -131,6 +131,14 @@ class CreatureAttributes {
   EnumMap<AttrType, vector<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
   heap_optional<Effect> SERIAL(deathEffect);
 
+  struct PersonalSummons {
+    int SERIAL(count);
+    vector<CreatureId> SERIAL(creatures);
+    SERIALIZE_ALL(count, creatures)
+  };
+
+  optional<PersonalSummons> SERIAL(personalSummons);
+
   private:
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);
   ViewId SERIAL(viewId);
@@ -168,4 +176,5 @@ class CreatureAttributes {
   void initializeLastingEffects();
   CreatureInventory SERIAL(inventory);
   pair<int, vector<string>> SERIAL(automatonSlots) = {0, {}};
+  
 };

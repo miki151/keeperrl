@@ -884,9 +884,6 @@ class CampAndSpawnTask : public Task {
       campPos(Random.permutation(target->getTerritory().getStandardExtended())), numAttacks(numAtt) {}
 
   void updateTeams() {
-    for (auto member : copyOf(defenseTeam))
-      if (member->isDead())
-        defenseTeam.removeElement(member);
     for (auto member : copyOf(attackTeam))
       if (member->isDead())
         attackTeam.removeElement(member);
@@ -905,12 +902,6 @@ class CampAndSpawnTask : public Task {
       return NoMove;
     }
     updateTeams();
-    if (defenseTeam.empty()) {
-      auto team = spawns.generate(Random, &c->getGame()->getContentFactory()->getCreatures(), c->getTribeId(),
-          MonsterAIFactory::summoned(c));
-      for (Creature* summon : Effect::summonCreatures(c->getPosition(), std::move(team)))
-        defenseTeam.push_back(summon);
-    }
     if (!campPos.contains(c->getPosition()))
       return c->moveTowards(campPos[0]);
     if (attackTeam.empty()) {
@@ -938,7 +929,7 @@ class CampAndSpawnTask : public Task {
     return "Camp and spawn";
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), target, spawns, campPos, attackCountdown, defenseTeam, attackTeam, numAttacks)
+  SERIALIZE_ALL(SUBCLASS(Task), target, spawns, campPos, attackCountdown, attackTeam, numAttacks)
   SERIALIZATION_CONSTRUCTOR(CampAndSpawnTask)
 
   private:
@@ -946,7 +937,6 @@ class CampAndSpawnTask : public Task {
   CreatureList SERIAL(spawns);
   vector<Position> SERIAL(campPos);
   optional<int> SERIAL(attackCountdown);
-  vector<Creature*> SERIAL(defenseTeam);
   vector<Creature*> SERIAL(attackTeam);
   int SERIAL(numAttacks);
 };

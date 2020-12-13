@@ -42,7 +42,6 @@ string Skill::getHelpText() const {
 
 void Skill::init() {
   Skill::set(SkillId::DIGGING, new Skill("digging", "Dig."));
-  Skill::set(SkillId::SHAMANISM, new Skill("shamanism", "Summon ghosts that follow you around."));
   Skill::set(SkillId::MULTI_WEAPON, new Skill("multi-weapon", "Allows using multiple weapons in a single attack. "
       "The skill value defines the damage multiplier for subsequent attacks."));
 }

@@ -71,7 +71,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathReason, nextPosIntent, globalTime, drops);
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
   ar(controllerStack, kills, statuses, automatonParts);
-  ar(difficultyPoints, points, capture, spellMap, killTitles, shamanSummons);
+  ar(difficultyPoints, points, capture, spellMap, killTitles, personalSummons);
   ar(vision, debt, highestAttackValueEver, lastCombatIntent, hitsInfo, primaryViewId);
 }
 
@@ -1141,7 +1141,7 @@ void Creature::tick() {
   equipment->tick(position, this);
   if (isDead())
     return;
-  tickShamanSummons();
+  tickPersonalSummons();
   for (LastingEffect effect : ENUM_ALL(LastingEffect)) {
     if (attributes->considerTimeout(effect, time))
       LastingEffects::onTimedOut(this, effect, true);
@@ -1157,8 +1157,8 @@ void Creature::tick() {
   }
 }
 
-static vector<Creature*> summonGhosts(Creature* c, Range count, int strength, optional<TimeInterval> ttl) {
-  auto spirits = Effect::summon(c, CreatureId("SPIRIT"), Random.get(count), ttl);
+static vector<Creature*> summonPersonal(Creature* c, CreatureId id, int strength, optional<TimeInterval> ttl) {
+  auto spirits = Effect::summon(c, id, 1, ttl);
   for (auto spirit : spirits) {
     spirit->getAttributes().setBaseAttr(AttrType::DAMAGE, 0);
     spirit->getAttributes().setBaseAttr(AttrType::RANGED_DAMAGE, 0);
@@ -1170,22 +1170,22 @@ static vector<Creature*> summonGhosts(Creature* c, Range count, int strength, op
   return spirits;
 }
 
-void Creature::tickShamanSummons() {
-  for (auto elem : copyOf(shamanSummons)) {
+void Creature::tickPersonalSummons() {
+  for (auto elem : copyOf(personalSummons)) {
     if (elem->isDead())
-      shamanSummons.removeElement(elem);
+      personalSummons.removeElement(elem);
     else { // update the spirit's attributes
       elem->getAttributes().setBaseAttr(AttrType::DEFENSE, getAttr(AttrType::SPELL_DAMAGE));
       elem->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, getAttr(AttrType::SPELL_DAMAGE));
     }
   }
-  const int maxSummons = int(attributes->getSkills().getValue(SkillId::SHAMANISM) * 10);
-  if (shamanSummons.size() < maxSummons && Random.roll(80))
-    append(shamanSummons, summonGhosts(this, Range::singleElem(1), getAttr(AttrType::SPELL_DAMAGE), none));
+  if (attributes->personalSummons && personalSummons.size() < attributes->personalSummons->count && Random.roll(80))
+    append(personalSummons, summonPersonal(this, Random.choose(attributes->personalSummons->creatures),
+        getAttr(AttrType::SPELL_DAMAGE), none));
 }
 
-const vector<Creature*>& Creature::getShamanSummons() const {
-  return shamanSummons;
+const vector<Creature*>& Creature::getPersonalSummons() const {
+  return personalSummons;
 }
 
 void Creature::upgradeViewId(int level) {
@@ -1730,7 +1730,7 @@ void Creature::removeGameReferences() {
   visibleCreatures.reset();
   lastCombatIntent.reset();
   gameCache = nullptr;
-  shamanSummons.clear();
+  personalSummons.clear();
 }
 
 void Creature::increaseExpLevel(ExperienceType type, double increase) {

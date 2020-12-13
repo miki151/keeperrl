@@ -23,7 +23,6 @@
 
 RICH_ENUM(SkillId,
   DIGGING,
-  SHAMANISM,
   MULTI_WEAPON
 );
 
