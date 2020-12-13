@@ -597,7 +597,7 @@ class Fighter : public Behaviour {
               auto allyDist = getEnemyDistance(ally, allysEnemy);
               if (allyDist < distance)
                 allyInFront = true;
-              if (ally->shouldAIAttack(allysEnemy)) {
+              if (ally->shouldAIAttack(allysEnemy) || ally->isPlayer()) {
                 if (!ally->getPosition().getModel()->getTimeQueue().willMoveThisTurn(ally))
                   ++allyDist;
                 if (allyDist >= distance + 1)
@@ -630,8 +630,9 @@ class Fighter : public Behaviour {
     auto fighterPosition = getFighterPosition();
     if (fighterPosition == FighterPosition::HEALER)
       chase = false;
-    if (auto move = considerFormationMove(fighterPosition))
-      return move;
+    if (chase)
+      if (auto move = considerFormationMove(fighterPosition))
+        return move;
     if (other->getAttributes().isBoulder())
       return NoMove;
     INFO << creature->getName().bare() << " enemy " << other->getName().bare();
