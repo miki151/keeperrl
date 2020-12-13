@@ -134,7 +134,8 @@ class CreatureAttributes {
   struct PersonalSummons {
     int SERIAL(count);
     vector<CreatureId> SERIAL(creatures);
-    SERIALIZE_ALL(count, creatures)
+    bool SERIAL(spawnAway) = false;
+    SERIALIZE_ALL(count, spawnAway, creatures)
   };
 
   optional<PersonalSummons> SERIAL(personalSummons);

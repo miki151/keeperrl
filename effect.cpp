@@ -103,12 +103,13 @@ void Effect::emitPoisonGas(Position pos, double amount, bool msg) {
   }
 }
 
-vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<TimeInterval> ttl, TimeInterval delay) {
+vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<TimeInterval> ttl, TimeInterval delay,
+    optional<Position> position) {
   vector<PCreature> creatures;
   for (int i : Range(num))
     creatures.push_back(c->getGame()->getContentFactory()->getCreatures().fromId(id, c->getTribeId(),
         MonsterAIFactory::summoned(c)));
-  auto ret = summonCreatures(c->getPosition(), std::move(creatures), delay);
+  auto ret = summonCreatures(position.value_or(c->getPosition()), std::move(creatures), delay);
   for (auto c : ret)
     if (ttl)
       c->addEffect(LastingEffect::SUMMONED, *ttl, false);

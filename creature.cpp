@@ -1157,17 +1157,29 @@ void Creature::tick() {
   }
 }
 
-static vector<Creature*> summonPersonal(Creature* c, CreatureId id, int strength, optional<TimeInterval> ttl) {
-  auto spirits = Effect::summon(c, id, 1, ttl);
+static vector<Creature*> summonPersonal(Creature* c, CreatureId id, int strength, optional<Position> position) {
+  auto spirits = Effect::summon(c, id, 1, none, 0_visible, position);
   for (auto spirit : spirits) {
     spirit->getAttributes().setBaseAttr(AttrType::DAMAGE, 0);
     spirit->getAttributes().setBaseAttr(AttrType::RANGED_DAMAGE, 0);
     spirit->getAttributes().setBaseAttr(AttrType::DEFENSE, strength);
     spirit->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, strength);
     spirit->getAttributes().setCanJoinCollective(false);
-    c->verb("have", "has", "summoned " + spirit->getName().a());
+    if (!position)
+      c->verb("have", "has", "summoned " + spirit->getName().a());
   }
   return spirits;
+}
+
+static optional<Position> getCompanionPosition(Creature* c) {
+  auto level = c->getLevel();
+  for (int i : Range(100)) {
+    Position pos(level->getBounds().random(Random), level);
+    if (pos.isCovered() || c->canSee(pos) || !pos.canEnter(MovementTrait::WALK))
+      continue;
+    return pos;
+  }
+  return none;
 }
 
 void Creature::tickPersonalSummons() {
@@ -1181,7 +1193,7 @@ void Creature::tickPersonalSummons() {
   }
   if (attributes->personalSummons && personalSummons.size() < attributes->personalSummons->count && Random.roll(80))
     append(personalSummons, summonPersonal(this, Random.choose(attributes->personalSummons->creatures),
-        getAttr(AttrType::SPELL_DAMAGE), none));
+        getAttr(AttrType::SPELL_DAMAGE), attributes->personalSummons->spawnAway ? getCompanionPosition(this) : none));
 }
 
 const vector<Creature*>& Creature::getPersonalSummons() const {

@@ -18,7 +18,6 @@
           1 "DONKEY"
           1 "COW"
           1 "PIG"
-          1 "DOG"
         }
       }
     }
@@ -300,7 +299,6 @@
           1 "HORSE"
           1 "COW"
           1 "PIG"
-          1 "DOG"
         }
       }
     }
@@ -387,7 +385,6 @@
           1 "HORSE"
           1 "COW"
           1 "PIG"
-          1 "DOG"
         }
       }
     }
@@ -1864,7 +1861,6 @@
           1 "DONKEY"
           1 "COW"
           1 "PIG"
-          1 "DOG"
         }
       }
     }
@@ -1902,7 +1898,6 @@
       civilians = {
         count = {5 10},
         all = {
-          3 "HUSKY"
           1 "ESKIMO_CHILD"
         }
       }
@@ -1924,7 +1919,6 @@
       civilians = {
         count = {5 10},
         all = {
-          3 "HUSKY"
           1 "ESKIMO_CHILD"
         }
       }
