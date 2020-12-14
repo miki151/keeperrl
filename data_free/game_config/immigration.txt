@@ -70,6 +70,7 @@
                 attackType = BITE
                 attackMsg = BITE
                 victimEffect = {0.1 Lasting POISON} } } } }
+         { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DAMAGE 10 CreatureStatus LEADER }}
          { 0.02 { SpecialAttr DEFENSE 8 HatedBy HATE_HUMANS }}
          { 0.01 { ExtraBodyPart HEAD 1}}
@@ -96,6 +97,7 @@
         { 0.0 MinTurnRequirement 500 }
       }
       specialTraits = {
+         { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DEFENSE 10 HatedBy HATE_DRAGONS }}
          { 0.10 { ExtraTraining SPELL 4}}
          { 0.05 { WorkshopType "LABORATORY" }}
@@ -146,6 +148,7 @@
         { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_IRON"}}
       }
       specialTraits = {
+         { 0.01 { CompanionInfo 1 true false 0.1 { "CAVE_BEAR" }}}
          { 0.03 { SpecialAttr DAMAGE 10 HatedBy HATE_DWARVES }}
          { 0.02 { ExtraBodyPart HEAD 1}}
          { 0.03 { AttrBonus DAMAGE 13 Lasting { INSANITY }}}
@@ -191,6 +194,7 @@
         { 0.0 CostInfo "CORPSE" 1}
       }
       specialTraits = {
+         { 0.03 { CompanionInfo 1 true false 0.1 { "FLY" }}}
          { 0.2 { ExtraIntrinsicAttack
             HEAD
             { Intrinsic { "bite_attack" } "fangs" 5 {
@@ -228,6 +232,7 @@
         { 0.0 CostInfo "CORPSE" 1}
       }
       specialTraits = {
+         { 0.03 { CompanionInfo 1 true false 0.1 { "BAT" }}}
          { 0.02 { SpecialAttr SPELL_DAMAGE 7 HatedBy HATE_ELVES }}
          { 0.3 { Lasting { TELEPATHY } }}
          { 0.3 { Lasting { FIRE_RESISTANT } }}
@@ -591,6 +596,7 @@
         { 0.0 AttractionInfo 0 {FurnitureType "COFFIN1"}}
       }
       specialTraits = {
+         { 0.03 { CompanionInfo 1 true false 0.1 { "FLY" }}}
          { 0.2 { ExtraIntrinsicAttack
             HEAD
             { Intrinsic { "bite_attack" } "fangs" 5 {

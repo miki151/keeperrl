@@ -53,6 +53,9 @@ void applySpecialTrait(GlobalTime globalTime, SpecialTrait trait, Creature* c, c
       [&] (WorkshopType type) {
         c->getAttributes().getSkills().setValue(type, Workshops::getLegendarySkillThreshold());
       },
+      [&] (CompanionInfo type) {
+        c->getAttributes().companions.push_back(type);
+      },
       [&] (const OneOfTraits&) {
         FATAL << "Can't apply traits alternative";
       }

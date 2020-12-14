@@ -1303,6 +1303,9 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
       [&] (const ExtraTraining& t) {
         return TraitInfo{"Extra "_s + toLower(getName(t.type)) + " training potential", false};
       },
+      [&] (const CompanionInfo& t) {
+        return TraitInfo{capitalFirst(factory->getCreatures().getName(t.creatures[0])) + " companion", false};
+      },
       [&] (const AttrBonus& t) {
         return TraitInfo{toStringWithSign(t.increase) + " " + getName(t.attr), t.increase <= 0};
       },
