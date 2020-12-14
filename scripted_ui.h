@@ -58,9 +58,9 @@ struct ScriptedSubclassAdder {
 
 #define REGISTER_SCRIPTED_UI(CLASS)\
 ScriptedSubclassAdder adder##CLASS(#CLASS,\
-  [](PrettyInputArchive& ar) -> unique_ptr<ScriptedUIInterface>{\
+  [](PrettyInputArchive& ar1) -> unique_ptr<ScriptedUIInterface>{\
     auto ret = unique<CLASS>();\
-    ar(*ret);\
+    ar1(*ret);\
     return ret;\
   }\
 )

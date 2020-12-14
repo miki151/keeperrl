@@ -84,7 +84,7 @@ struct Button : ScriptedUIInterface {
 REGISTER_SCRIPTED_UI(Button);
 
 struct KeyReader {
-  SDL::SDL_Keycode SERIAL(key);
+  SDL::SDL_Keycode key;
   void serialize(PrettyInputArchive& ar, const unsigned int v) {
     string key = ar.eat();
     if (auto k = keycodeFromString(key.data()))
@@ -382,7 +382,7 @@ struct Horizontal : Container {
     return res;
   }
 
-  vector<ScriptedUI> SERIAL(elems);
+  vector<ScriptedUI> elems;
   int stretchedElem;
   void serialize(PrettyInputArchive& ar1, const unsigned int v) {
     serializeVerticalHorizontal(*this, ar1, v);
@@ -413,7 +413,7 @@ struct Vertical : Container {
     return res;
   }
 
-  vector<ScriptedUI> SERIAL(elems);
+  vector<ScriptedUI> elems;
   int stretchedElem;
   void serialize(PrettyInputArchive& ar1, const unsigned int v) {
     serializeVerticalHorizontal(*this, ar1, v);

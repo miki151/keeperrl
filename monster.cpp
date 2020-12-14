@@ -26,7 +26,7 @@
 #include "message_generator.h"
 #include "task.h"
 
-SERIALIZE_DEF(Monster, SUBCLASS(Controller), monsterAI)
+SERIALIZE_DEF(Monster, SUBCLASS(Controller), monsterAI, dragTask)
 SERIALIZATION_CONSTRUCTOR_IMPL(Monster);
 
 Monster::Monster(Creature* c, const MonsterAIFactory& f)

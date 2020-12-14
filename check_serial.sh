@@ -11,7 +11,7 @@ sed -i "s/SKIP(\(.*\))/\1/" /tmp/def1
 sed -i "s/OPTION(\(.*\))/\1/" /tmp/def1
 sed -i "s/withRoundBrackets(\(.*\))/\1/" /tmp/def1
 sed -i "s/serializeAsValue(\(.*\))/\1/" /tmp/def1
-grep -v SUBCLASS < /tmp/def1 | grep -v __VA_ARGS__ | grep -v 'roundBracket()' | sort > /tmp/def
+grep -v SUBCLASS < /tmp/def1 | grep -v __VA_ARGS__ | grep -v 'roundBracket()' | grep -v "endInput()" | sort > /tmp/def
 
 diff /tmp/decl /tmp/def
 if [ "$?" != "0" ]; then
