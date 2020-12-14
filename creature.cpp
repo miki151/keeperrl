@@ -1202,7 +1202,7 @@ void Creature::tickCompanions() {
     companions.push_back(CompanionGroup{{}, attributes->companions[companions.size()].updateStats});
   for (int i : All(attributes->companions)) {
     auto& summonsInfo = attributes->companions[i];
-    if (companions[i].creatures.size() < summonsInfo.count && Random.roll(80))
+    if (companions[i].creatures.size() < summonsInfo.count && Random.chance(summonsInfo.summonFreq))
       append(companions[i].creatures, summonPersonal(this, Random.choose(summonsInfo.creatures), summonsInfo.updateStats,
           getAttr(AttrType::SPELL_DAMAGE), summonsInfo.spawnAway ? getCompanionPosition(this) : none));
   }

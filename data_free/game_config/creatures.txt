@@ -231,7 +231,7 @@
       MAGIC_RESISTANCE 1
     }
     aiType = RANGED
-    companions = {5 false true { "SPIRIT" }}
+    companions = {5 false true 0.05 { "SPIRIT" }}
     spells = { "advanced healing" "heal spirit" }
     chatReactionFriendly = "\"mhhhhhrrrr!\""
     chatReactionHostile = "\"mhhhhhrrrr!\""
@@ -1683,7 +1683,7 @@
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     aiType = RANGED
-    companions = {7 false true { "SPIRIT" }}
+    companions = {7 false true 0.05 { "SPIRIT" }}
     spells = { "advanced healing" "defense bonus" "directed blast" "heal spirit" }
     maxLevelIncrease = {
       SPELL 5
@@ -1770,7 +1770,7 @@
     permanentEffects = {
       CROPS_SKILL 1
     }
-    companions = {1 true false { "DOG" }}
+    companions = {1 true false 0.01 { "DOG" }}
     name = {
       name = "child"
       pluralName = "children"
@@ -1780,7 +1780,7 @@
 "ESKIMO_CHILD" inherit "CHILD"
   {
     viewId = { "eskimo_child" }
-    companions = {1 true false { "HUSKY" }}
+    companions = {1 true false 0.01 { "HUSKY" }}
     permanentEffects = {}
   }
 "NATIVE_CHILD" inherit "CHILD"
@@ -2361,7 +2361,7 @@
     }
     spellSchools = {}
     spells = { "heal spirit" }
-    companions = {4 false true { "SPIRIT" }}
+    companions = {4 false true 0.02 { "SPIRIT" }}
     permanentEffects = append {
       DISTILLATION_SKILL 1
     }
@@ -3622,7 +3622,7 @@
       FIRE_RESISTANT 1
       MAGIC_RESISTANCE 1
     }
-    companions = {5 false true { "FIRE_ELEMENTAL" "AIR_ELEMENTAL" "WATER_ELEMENTAL" "EARTH_ELEMENTAL" }}
+    companions = {5 false true 0.1 { "FIRE_ELEMENTAL" "AIR_ELEMENTAL" "WATER_ELEMENTAL" "EARTH_ELEMENTAL" }}
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     name = {

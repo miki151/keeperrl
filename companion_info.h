@@ -7,5 +7,6 @@ struct CompanionInfo {
   vector<CreatureId> SERIAL(creatures);
   bool SERIAL(spawnAway);
   bool SERIAL(updateStats);
-  SERIALIZE_ALL(count, spawnAway, updateStats, creatures)
+  double SERIAL(summonFreq);
+  SERIALIZE_ALL(count, spawnAway, updateStats, summonFreq, creatures)
 };
