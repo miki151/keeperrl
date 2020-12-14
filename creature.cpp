@@ -62,6 +62,7 @@
 #include "effect_type.h"
 #include "automaton_part.h"
 #include "ai_type.h"
+#include "companion_info.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
@@ -71,7 +72,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(deathReason, nextPosIntent, globalTime, drops);
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
   ar(controllerStack, kills, statuses, automatonParts);
-  ar(difficultyPoints, points, capture, spellMap, killTitles, personalSummons);
+  ar(difficultyPoints, points, capture, spellMap, killTitles, companions);
   ar(vision, debt, highestAttackValueEver, lastCombatIntent, hitsInfo, primaryViewId);
 }
 
@@ -1141,7 +1142,7 @@ void Creature::tick() {
   equipment->tick(position, this);
   if (isDead())
     return;
-  tickPersonalSummons();
+  tickCompanions();
   for (LastingEffect effect : ENUM_ALL(LastingEffect)) {
     if (attributes->considerTimeout(effect, time))
       LastingEffects::onTimedOut(this, effect, true);
@@ -1157,13 +1158,16 @@ void Creature::tick() {
   }
 }
 
-static vector<Creature*> summonPersonal(Creature* c, CreatureId id, int strength, optional<Position> position) {
+static vector<Creature*> summonPersonal(Creature* c, CreatureId id, bool updateStats, int strength,
+    optional<Position> position) {
   auto spirits = Effect::summon(c, id, 1, none, 0_visible, position);
   for (auto spirit : spirits) {
-    spirit->getAttributes().setBaseAttr(AttrType::DAMAGE, 0);
-    spirit->getAttributes().setBaseAttr(AttrType::RANGED_DAMAGE, 0);
-    spirit->getAttributes().setBaseAttr(AttrType::DEFENSE, strength);
-    spirit->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, strength);
+    if (updateStats) {
+      spirit->getAttributes().setBaseAttr(AttrType::DAMAGE, strength);
+      spirit->getAttributes().setBaseAttr(AttrType::RANGED_DAMAGE, strength);
+      spirit->getAttributes().setBaseAttr(AttrType::DEFENSE, strength);
+      spirit->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, strength);
+    }
     spirit->getAttributes().setCanJoinCollective(false);
     if (!position)
       c->verb("have", "has", "summoned " + spirit->getName().a());
@@ -1182,22 +1186,33 @@ static optional<Position> getCompanionPosition(Creature* c) {
   return none;
 }
 
-void Creature::tickPersonalSummons() {
-  for (auto elem : copyOf(personalSummons)) {
-    if (elem->isDead())
-      personalSummons.removeElement(elem);
-    else { // update the spirit's attributes
-      elem->getAttributes().setBaseAttr(AttrType::DEFENSE, getAttr(AttrType::SPELL_DAMAGE));
-      elem->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, getAttr(AttrType::SPELL_DAMAGE));
+void Creature::tickCompanions() {
+  for (auto& summonsType : companions)
+    for (auto elem : copyOf(summonsType.creatures)) {
+      if (elem->isDead())
+        summonsType.creatures.removeElement(elem);
+      else if (summonsType.updateAttrs) { // update the spirit's attributes
+        elem->getAttributes().setBaseAttr(AttrType::DAMAGE, getAttr(AttrType::SPELL_DAMAGE));
+        elem->getAttributes().setBaseAttr(AttrType::RANGED_DAMAGE, getAttr(AttrType::SPELL_DAMAGE));
+        elem->getAttributes().setBaseAttr(AttrType::DEFENSE, getAttr(AttrType::SPELL_DAMAGE));
+        elem->getAttributes().setBaseAttr(AttrType::SPELL_DAMAGE, getAttr(AttrType::SPELL_DAMAGE));
+      }
     }
+  while (companions.size() < attributes->companions.size())
+    companions.push_back(CompanionGroup{{}, attributes->companions[companions.size()].updateStats});
+  for (int i : All(attributes->companions)) {
+    auto& summonsInfo = attributes->companions[i];
+    if (companions[i].creatures.size() < summonsInfo.count && Random.roll(80))
+      append(companions[i].creatures, summonPersonal(this, Random.choose(summonsInfo.creatures), summonsInfo.updateStats,
+          getAttr(AttrType::SPELL_DAMAGE), summonsInfo.spawnAway ? getCompanionPosition(this) : none));
   }
-  if (attributes->personalSummons && personalSummons.size() < attributes->personalSummons->count && Random.roll(80))
-    append(personalSummons, summonPersonal(this, Random.choose(attributes->personalSummons->creatures),
-        getAttr(AttrType::SPELL_DAMAGE), attributes->personalSummons->spawnAway ? getCompanionPosition(this) : none));
 }
 
-const vector<Creature*>& Creature::getPersonalSummons() const {
-  return personalSummons;
+vector<Creature*> Creature::getCompanions() const {
+  vector<Creature*> ret;
+  for (auto& c : companions)
+    append(ret, c.creatures);
+  return ret;
 }
 
 void Creature::upgradeViewId(int level) {
@@ -1742,7 +1757,7 @@ void Creature::removeGameReferences() {
   visibleCreatures.reset();
   lastCombatIntent.reset();
   gameCache = nullptr;
-  personalSummons.clear();
+  companions.clear();
 }
 
 void Creature::increaseExpLevel(ExperienceType type, double increase) {

@@ -488,7 +488,7 @@ void Game::transferCreature(Creature* c, WModel to, const vector<Position>& dest
         to->transferCreature(from->extractCreature(c), destinations);
     };
     transfer(c);
-    for (auto& summon : c->getPersonalSummons())
+    for (auto& summon : c->getCompanions())
       transfer(summon);
   }
 }

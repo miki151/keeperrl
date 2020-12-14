@@ -15,6 +15,7 @@
 #include "creature_predicate.h"
 #include "view_id.h"
 #include "scripted_ui_data.h"
+#include "companion_info.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -323,6 +324,7 @@ struct UI {
   ScriptedUIData SERIAL(data);
   SERIALIZE_ALL(id, data)
 };
+using AddCompanion = CompanionInfo;
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -403,7 +405,8 @@ struct UI {
   X(Polymorph, 75)\
   X(SetCreatureName, 76)\
   X(SetViewId, 77)\
-  X(UI, 78)
+  X(UI, 78)\
+  X(AddCompanion, 79)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

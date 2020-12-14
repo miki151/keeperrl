@@ -231,7 +231,7 @@
       MAGIC_RESISTANCE 1
     }
     aiType = RANGED
-    personalSummons = 5 false { "SPIRIT" }
+    companions = {5 false true { "SPIRIT" }}
     spells = { "advanced healing" "heal spirit" }
     chatReactionFriendly = "\"mhhhhhrrrr!\""
     chatReactionHostile = "\"mhhhhhrrrr!\""
@@ -1683,7 +1683,7 @@
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     aiType = RANGED
-    personalSummons = 7 false { "SPIRIT" }
+    companions = {7 false true { "SPIRIT" }}
     spells = { "advanced healing" "defense bonus" "directed blast" "heal spirit" }
     maxLevelIncrease = {
       SPELL 5
@@ -1770,7 +1770,7 @@
     permanentEffects = {
       CROPS_SKILL 1
     }
-    personalSummons = 1 true { "DOG" }
+    companions = {1 true false { "DOG" }}
     name = {
       name = "child"
       pluralName = "children"
@@ -1780,20 +1780,20 @@
 "ESKIMO_CHILD" inherit "CHILD"
   {
     viewId = { "eskimo_child" }
-    personalSummons = 1 true { "HUSKY" }
+    companions = {1 true false { "HUSKY" }}
     permanentEffects = {}
   }
 "NATIVE_CHILD" inherit "CHILD"
   {
     viewId = { "native3" }
     permanentEffects = {}
-    personalSummons = none
+    companions = {}
   }
 "NOMAD_CHILD" inherit "CHILD"
   {
     viewId = { "nomad_child" }
     permanentEffects = {}
-    personalSummons = none
+    companions = {}
   }
 "SPIDER_FOOD"
   {
@@ -2361,7 +2361,7 @@
     }
     spellSchools = {}
     spells = { "heal spirit" }
-    personalSummons = 4 false { "SPIRIT" }
+    companions = {4 false true { "SPIRIT" }}
     permanentEffects = append {
       DISTILLATION_SKILL 1
     }
@@ -3622,7 +3622,7 @@
       FIRE_RESISTANT 1
       MAGIC_RESISTANCE 1
     }
-    personalSummons = 5 false { "FIRE_ELEMENTAL" "AIR_ELEMENTAL" "WATER_ELEMENTAL" "EARTH_ELEMENTAL" }
+    companions = {5 false true { "FIRE_ELEMENTAL" "AIR_ELEMENTAL" "WATER_ELEMENTAL" "EARTH_ELEMENTAL" }}
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     name = {

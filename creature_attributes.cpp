@@ -29,6 +29,7 @@
 #include "effect.h"
 #include "minion_trait.h"
 #include "view_id.h"
+#include "companion_info.h"
 
 void CreatureAttributes::initializeLastingEffects() {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
@@ -71,7 +72,7 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(skills), OPTION(spellSchools), OPTION(spells));
   ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel), OPTION(inventory));
   ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience));
-  ar(OPTION(automatonParts), OPTION(specialAttr), NAMED(deathEffect), NAMED(chatEffect), NAMED(personalSummons));
+  ar(OPTION(automatonParts), OPTION(specialAttr), NAMED(deathEffect), NAMED(chatEffect), OPTION(companions));
 }
 
 template <class Archive>

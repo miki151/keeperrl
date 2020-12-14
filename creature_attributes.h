@@ -49,6 +49,7 @@ class Body;
 class Effect;
 struct AdjectiveInfo;
 class ItemType;
+struct CompanionInfo;
 
 class CreatureAttributes {
   public:
@@ -131,14 +132,7 @@ class CreatureAttributes {
   EnumMap<AttrType, vector<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
   heap_optional<Effect> SERIAL(deathEffect);
 
-  struct PersonalSummons {
-    int SERIAL(count);
-    vector<CreatureId> SERIAL(creatures);
-    bool SERIAL(spawnAway) = false;
-    SERIALIZE_ALL(count, spawnAway, creatures)
-  };
-
-  optional<PersonalSummons> SERIAL(personalSummons);
+  vector<CompanionInfo> SERIAL(companions);
 
   private:
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);

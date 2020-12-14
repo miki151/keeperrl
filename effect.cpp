@@ -412,6 +412,19 @@ const char* Effects::IncreaseWorkshopSkill::get(const char* ifIncrease, const ch
     return ifDecrease;
 }
 
+static bool applyToCreature(const Effects::AddCompanion& e, Creature* c, Creature*) {
+  c->getAttributes().companions.push_back(e);
+  return true;
+}
+
+static string getName(const Effects::AddCompanion& e, const ContentFactory*) {
+  return "companion";
+}
+
+static string getDescription(const Effects::AddCompanion& e, const ContentFactory* f) {
+  return "Grants a permanent " + f->getCreatures().getName(e.creatures[0]) + " companion";
+}
+
 static bool applyToCreature(const Effects::Permanent& e, Creature* c, Creature*) {
   return c->addPermanentEffect(e.lastingEffect);
 }
