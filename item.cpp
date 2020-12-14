@@ -115,11 +115,22 @@ const vector<LastingEffect>& Item::getEquipedEffects() const {
 void Item::onEquip(Creature* c) {
   for (auto& e : attributes->equipedEffect)
     c->addPermanentEffect(e);
+  if (attributes->equipedCompanion)
+    c->getAttributes().companions.push_back(*attributes->equipedCompanion);
 }
 
 void Item::onUnequip(Creature* c) {
   for (auto& e : attributes->equipedEffect)
     c->removePermanentEffect(e);
+  if (attributes->equipedCompanion)
+    [&, &companions = c->getAttributes().companions] {
+      for (int i : All(companions))
+        if (companions[i] == *attributes->equipedCompanion) {
+          c->removeCompanions(i);
+          return;
+        }
+      FATAL << "Error removing companion";
+    }();
 }
 
 void Item::fireDamage(Position position) {

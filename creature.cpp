@@ -1186,6 +1186,15 @@ static optional<Position> getCompanionPosition(Creature* c) {
   return none;
 }
 
+void Creature::removeCompanions(int index) {
+  attributes->companions.removeIndexPreserveOrder(index);
+  for (auto c : companions[index].creatures) {
+    c->addFX(FXName::SPAWN);
+    c->dieNoReason(DropType::NOTHING);
+  }
+  companions.removeIndexPreserveOrder(index);
+}
+
 void Creature::tickCompanions() {
   for (auto& summonsType : companions)
     for (auto elem : copyOf(summonsType.creatures)) {

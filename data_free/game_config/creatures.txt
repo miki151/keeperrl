@@ -634,6 +634,7 @@
       { Potion Lasting INVISIBLE }
       { Potion Lasting POISON }
       { Potion Lasting SPEED }
+      { type = "SpiderRing" chance = 0.2 }
       { type = Glyph ARMOR JoinPrefixes {
           LastingEffect MAGIC_VULNERABILITY
           LastingEffect MELEE_VULNERABILITY

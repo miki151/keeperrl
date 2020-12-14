@@ -31,6 +31,7 @@
 #include "automaton_part.h"
 #include "resource_id.h"
 #include "creature_predicate.h"
+#include "companion_info.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
@@ -80,6 +81,7 @@ class ItemAttributes {
   bool SERIAL(displayUses) = false;
   bool SERIAL(effectDescription) = true;
   vector<LastingEffect> SERIAL(equipedEffect);
+  optional<CompanionInfo> SERIAL(equipedCompanion);
   optional<LastingEffect> SERIAL(ownedEffect);
   optional<string> SERIAL(applyMsgFirstPerson);
   optional<string> SERIAL(applyMsgThirdPerson);
