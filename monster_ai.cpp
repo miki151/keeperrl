@@ -597,7 +597,7 @@ class Fighter : public Behaviour {
               auto allyDist = getEnemyDistance(ally, allysEnemy);
               if (allyDist < distance)
                 allyInFront = true;
-              if (ally->shouldAIAttack(allysEnemy) || ally->isPlayer()) {
+              if (ally->shouldAIAttack(allysEnemy)) {
                 if (!ally->getPosition().getModel()->getTimeQueue().willMoveThisTurn(ally))
                   ++allyDist;
                 if (allyDist >= distance + 1)
@@ -801,8 +801,9 @@ class Summoned : public GuardTarget {
         creature->dieNoReason(Creature::DropType::NOTHING);
       })};
     }
-    if (MoveInfo move = getMoveTowards(target->getPosition()))
-      return move.withValue(0.5);
+    auto pos = target->getPosition();
+    if (MoveInfo move = getMoveTowards(pos))
+      return move.withValue(pos.dist8(creature->getPosition()).value_or(1000) < 7 ? 0.3 : 0.5);
     else
       return NoMove;
   }
