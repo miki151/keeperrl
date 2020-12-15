@@ -24,7 +24,6 @@ struct FXInfo {
 };
 
 FXInfo getFXInfo(FXVariantName);
-optional<FXInfo> getOverlayFXInfo(ViewId);
 
 struct FXSpawnInfo {
   FXSpawnInfo(FXInfo, Vec2 pos, Vec2 offset = {});

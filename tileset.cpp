@@ -181,6 +181,8 @@ void TileSet::loadModdedTiles(const vector<TileInfo>& tiles, bool useTiles) {
         t.addOption(Dir::S, byName(*tile.southSide));
       if (tile.connectionId)
         t.setConnectionId(*tile.connectionId);
+      if (tile.fx)
+        t.setFX(*tile.fx);
       t.highlightAbove = tile.highlightAbove;
       t.animated = tile.animated;
       t.canMirror = tile.canMirror;

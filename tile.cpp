@@ -52,7 +52,7 @@ Tile Tile::setWallShadow() {
   return *this;
 }
 
-Tile Tile::setFX(FXVariantName f) {
+Tile Tile::setFX(FXInfo f) {
   fx = f;
   return *this;
 }
@@ -178,7 +178,7 @@ const vector<TileCoord>& Tile::getCornerCoords(DirSet c) const {
   return corners[c];
 }
 
-const optional<FXVariantName> Tile::getFX() const {
+const optional<FXInfo>& Tile::getFX() const {
   return fx;
 }
 

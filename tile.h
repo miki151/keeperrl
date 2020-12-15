@@ -18,6 +18,7 @@
 #include "renderer.h"
 #include "util.h"
 #include "view_id.h"
+#include "fx_info.h"
 
 class ViewObject;
 class GameConfig;
@@ -55,7 +56,7 @@ class Tile {
   Tile setRoundShadow();
   Tile setMoveUp();
   Tile setWallShadow();
-  Tile setFX(FXVariantName);
+  Tile setFX(FXInfo);
   Tile setConnectionId(ViewId);
   optional<TileCoord> getHighlightCoord() const;
 
@@ -73,7 +74,7 @@ class Tile {
 
   bool hasAnyCorners() const;
   const vector<TileCoord>& getCornerCoords(DirSet) const;
-  const optional<FXVariantName> getFX() const;
+  const optional<FXInfo>& getFX() const;
 
   bool animated = false;
 
@@ -90,7 +91,7 @@ class Tile {
   bool anyExtraBorders = false;
   bool anyConnections = false;
   bool anyCorners = false;
-  optional<FXVariantName> fx;
+  optional<FXInfo> fx;
   DirSet connectionsMask = DirSet{Dir::N, Dir::E, Dir::S, Dir::W};
   unordered_set<ViewId, CustomHash<ViewId>> extraBorderIds;
   optional<ViewId> connectionId;

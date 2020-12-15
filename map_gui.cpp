@@ -640,20 +640,18 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (object.hasModifier(ViewObject::Modifier::IMMOBILE))
       move.y += 11;
     const auto& coord = tile.getSpriteCoord(dirs);
-    if (!fxesAvailable() || !tile.getFX()) {
-      if (tile.canMirror)
-        renderer.drawTile(pos + move, coord, size, color,
-            Renderer::SpriteOrientation((bool)(tilePos.getHash() & 1024), (bool)(tilePos.getHash() & 512)));
-      else {
-        optional<Color> colorVariant;
-        if (!tile.animated)
-          colorVariant = object.id().getColor();
-        renderer.drawTile(pos + move, coord, size, color, {}, colorVariant);
-        for (auto& id : object.partIds) {
-          auto& partTile = renderer.getTileSet().getTile(id, true);
-          const auto& partCoord = partTile.getSpriteCoord(dirs);
-          renderer.drawTile(pos + move, partCoord, size, color, {}, id.getColor());
-        }
+    if (tile.canMirror)
+      renderer.drawTile(pos + move, coord, size, color,
+          Renderer::SpriteOrientation((bool)(tilePos.getHash() & 1024), (bool)(tilePos.getHash() & 512)));
+    else {
+      optional<Color> colorVariant;
+      if (!tile.animated)
+        colorVariant = object.id().getColor();
+      renderer.drawTile(pos + move, coord, size, color, {}, colorVariant);
+      for (auto& id : object.partIds) {
+        auto& partTile = renderer.getTileSet().getTile(id, true);
+        const auto& partCoord = partTile.getSpriteCoord(dirs);
+        renderer.drawTile(pos + move, partCoord, size, color, {}, id.getColor());
       }
     }
     if (tile.hasAnyCorners()) {
@@ -688,16 +686,12 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
 
         fxViewManager->addEntity(*genericId, fxPosX, fxPosY);
         if (!object.hasModifier(ViewObject::Modifier::PLANNED))
-          if (auto fxInfo = getOverlayFXInfo(id))
+          if (auto& fxInfo = tile.getFX())
             fxViewManager->addFX(*genericId, *fxInfo);
         if (burning)
           fxViewManager->addFX(*genericId, FXInfo{FXName::FIRE, Color::WHITE, 1.0f});
-        auto effects = object.particleEffects;
-        if (auto fx = tile.getFX())
-          effects.insert(*fx);
-
         bool bigTile = coord.front().size.x > Renderer::nominalSize;
-        for (auto fx : effects)
+        for (auto fx : object.particleEffects)
           fxViewManager->addFX(*genericId, fx, bigTile);
         fxViewManager->drawFX(renderer, *genericId, blendNightColor(Color::WHITE, index));
     }

@@ -60,16 +60,6 @@ FXInfo getFXInfo(FXVariantName var) {
   }
 }
 
-optional<FXInfo> getOverlayFXInfo(ViewId id) {
-  if (isOneOf(id, ViewId("gold_ore"), ViewId("gold"), ViewId("throne"), ViewId("minion_statue"), ViewId("demon_shrine")))
-    return FXInfo{FXName::GLITTERING, Color(253, 247, 172)};
-  if (id == ViewId("adamantium_ore"))
-    return FXInfo{FXName::GLITTERING, Color::LIGHT_BLUE};
-  if (id == ViewId("magma"))
-    return FXInfo{FXName::MAGMA_FIRE};
-  return none;
-}
-
 FXInfo::FXInfo(FXName name, Color color, float strength, FXStackId sid)
   : name(name), color(color), strength(strength), stackId(sid) { }
 

@@ -311,7 +311,6 @@
 { "key" "*" ColorId YELLOW }
 { "black_market_key" "*" ColorId RED }
 { "key_highlight" "*" ColorId ALMOST_WHITE }
-{ "gold" "$" ColorId YELLOW }
 { "treasure_chest" "=" ColorId BROWN }
 { "coffin1" "⚰" ColorId BROWN true }
 { "coffin2" "⚰" ColorId GRAY true }
@@ -469,12 +468,15 @@
   roundShadow = true }
 { viewId = "well" symbol = "0" color = ColorId BLUE
   roundShadow = true }
+
+Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
+
 { viewId = "minion_statue" symbol = "&" color = ColorId LIGHT_GRAY
-  roundShadow = true }
+  roundShadow = true fx = GoldGlitter() }
 { viewId = "stone_minion_statue" symbol = "&" color = ColorId ALMOST_WHITE
   roundShadow = true }
 { viewId = "throne" symbol = "Ω" color = ColorId YELLOW
-  isSymbolFont = true roundShadow = true }
+  isSymbolFont = true roundShadow = true fx = GoldGlitter() }
 { viewId = "altar_des" symbol = "Ω" color = ColorId RED
   isSymbolFont = true roundShadow = true }
 { viewId = "torture_table" symbol = "=" color = ColorId GRAY
@@ -587,7 +589,7 @@
 { viewId = "tar" symbol = "~" color = ColorId DARK_GRAY
   waterSides = "water" spriteColor = Rgb 50 50 50 255 }
 { viewId = "magma" symbol = "~" color = ColorId RED
-  waterSides = "magma" animated = true }
+  waterSides = "magma" animated = true fx = { MAGMA_FIRE } }
 { viewId = "fog_of_war" symbol = " " color = ColorId WHITE sprite = "empty"
   waterSides = "fogofwar" }
 { viewId = "mountain" symbol = "#" color = ColorId GRAY
@@ -612,7 +614,8 @@
   sprite = "mountain_sand" wallShadow = true mountainSides = "dungeonwall" }
 { viewId = "gold_ore" symbol = "⁂" color = ColorId YELLOW
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
-  background = "mountain2" }
+  background = "mountain2" fx = GoldGlitter() }
+{ viewId = "gold" symbol = "$" color = ColorId YELLOW fx = GoldGlitter() }
 { viewId = "iron_ore" symbol = "⁂" color = ColorId DARK_BROWN
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
   background = "mountain2" }
@@ -621,5 +624,5 @@
   background = "mountain2" }
 { viewId = "adamantium_ore" symbol = "⁂" color = ColorId LIGHT_BLUE
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
-  background = "mountain2" }
+  background = "mountain2" fx = { GLITTERING ColorId LIGHT_BLUE } }
 

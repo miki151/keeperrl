@@ -3,6 +3,7 @@
 #include "util.h"
 #include "view_id.h"
 #include "color.h"
+#include "fx_info.h"
 
 struct TileInfo {
   PrimaryId<ViewId> SERIAL(viewId);
@@ -25,5 +26,6 @@ struct TileInfo {
   optional<string> SERIAL(southSide);
   vector<string> SERIAL(extraBorders);
   optional<ViewId> SERIAL(connectionId);
-  SERIALIZE_ALL(NAMED(viewId), NAMED(symbol), NAMED(color), OPTION(isSymbolFont), NAMED(sprite), NAMED(spriteColor), OPTION(roundShadow), OPTION(wallShadow), OPTION(wallConnections), NAMED(mountainSides), NAMED(waterSides), NAMED(background), OPTION(roadConnections), OPTION(extraBorders), OPTION(moveUp), OPTION(animated), OPTION(canMirror), NAMED(southSide), NAMED(connectionId), OPTION(highlightAbove))
+  optional<FXInfo> SERIAL(fx);
+  SERIALIZE_ALL(NAMED(viewId), NAMED(symbol), NAMED(color), OPTION(isSymbolFont), NAMED(sprite), NAMED(spriteColor), OPTION(roundShadow), OPTION(wallShadow), OPTION(wallConnections), NAMED(mountainSides), NAMED(waterSides), NAMED(background), OPTION(roadConnections), OPTION(extraBorders), OPTION(moveUp), OPTION(animated), OPTION(canMirror), NAMED(southSide), NAMED(connectionId), OPTION(highlightAbove), NAMED(fx))
 };
