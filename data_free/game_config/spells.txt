@@ -572,6 +572,25 @@ Def NoEffect() Unlock "nothing" End
   message = "shoot an arrow" "shoots an arrow"
   type = ABILITY
 }
+"shoot bolt"
+{
+  symbol = "⇾"
+  effect = MinDistanceFromStrongEnemy(4) Name "shoot bolt" Description "Shoots a bolt"
+      TryNoFriendlyFire(
+        {
+          CreatureMessage "are hit by the bolt" "is hit by the bolt"
+          Damage RANGED_DAMAGE SHOOT
+        },
+        CreatureMessage "are spared by the bolt" "is spared by the bolt"
+      )
+  range = 14
+  cooldown = 6
+  maxHits = 1
+  projectileViewId = {"arrow"}
+  keybinding = FIRE_PROJECTILE
+  message = "shoot a bolt" "shoots a bolt"
+  type = ABILITY
+}
 "audience"
 {
   symbol = "👑"

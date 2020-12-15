@@ -846,6 +846,22 @@
     }
     price = 12
   }
+"Crossbow"
+  {
+    viewId = { "crossbow" }
+    name = "crossbow"
+    itemClass = RANGED_WEAPON
+    equipmentSlot = RANGED_WEAPON
+    equipedAbility = {"shoot bolt"}
+    weaponInfo = {
+      twoHanded = true
+    }
+    weight = 1
+    modifiers = {
+      RANGED_DAMAGE 15
+    }
+    price = 90
+  }
 "Torch"
   {
     viewId = { "hand_torch" }
