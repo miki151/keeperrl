@@ -526,7 +526,7 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
 { viewId = "grave" symbol = "☗" color = ColorId GRAY
   isSymbolFont = true roundShadow = true }
 { viewId = "automaton_engine" symbol = "⚙" color = ColorId WHITE
-  isSymbolFont = true roundShadow = true }
+  isSymbolFont = true roundShadow = true fx = { ENGINE_STEAM } }
 { viewId = "guard_post" symbol = "⚐" color = ColorId YELLOW
   isSymbolFont = true roundShadow = true }
 { viewId = "eyeball" symbol = "e" color = ColorId BLUE

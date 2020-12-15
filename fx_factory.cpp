@@ -826,6 +826,45 @@ static void addFireEffect(FXManager& mgr) {
   mgr.genSnapshots(FXName::FIRE, {1.0f, 1.2f, 1.4f}, {0.0f, 0.2f, 0.4f, 0.6f, 0.8f, 1.0f}, 2);
 }
 
+static void addEngineSteamEffect(FXManager& mgr) {
+  ParticleSystemDef psdef;
+  EmitterDef edef;
+  edef.strength = 20.0f;
+  edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.2f);
+  edef.frequency = 15.0f;
+  edef.source = FRect(0, -13, 2, -11);
+  edef.rotSpeed = 0.05f;
+
+  ParticleDef pdef;
+  pdef.life = 0.5f;
+  pdef.size = 12.0f;
+  pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 0.6, 0.05}};
+
+  pdef.color = {{0.0f, 0.5f, 1.0f}, {FVec3(1.0f), FVec3(0.7f), FVec3(1.0f)}};
+  pdef.textureName = TextureName::CLOUDS_SOFT_BORDERS;
+
+  SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+  ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
+    float freq = defaultPrepareEmission(ctx, em);
+    float mod = ctx.ps.params.scalar[0];
+    return freq * (1.0f + mod * 2.0f);
+  };
+
+  ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+    defaultEmitParticle(ctx, em, pinst);
+    float mod = ctx.ps.params.scalar[0];
+    pinst.pos.x *= (1.0f + mod);
+    pinst.pos.y -= mod * 6.0f;
+    pinst.movement *= (1.0f + mod);
+  };
+  psdef.subSystems.emplace_back(ssdef);
+  psdef.isLooped = true;
+  psdef.animLength = 1.0f;
+
+  mgr.addDef(FXName::ENGINE_STEAM, psdef);
+  mgr.genSnapshots(FXName::ENGINE_STEAM, {1.0f, 1.2f, 1.4f}, {0.0f, 0.2f, 0.4f, 0.6f, 0.8f, 1.0f}, 2);
+}
+
 static void addMagmaFireEffect(FXManager& mgr) {
   EmitterDef edef;
   edef.setStrengthSpread(10.0f, 5.0f);
@@ -1739,6 +1778,7 @@ void FXManager::initializeDefs() {
 
   addRippleEffect(*this);
   addFireEffect(*this);
+  addEngineSteamEffect(*this);
   addMagmaFireEffect(*this);
   addFireSphereEffect(*this);
 
