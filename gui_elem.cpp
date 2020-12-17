@@ -2743,7 +2743,7 @@ class Slider : public GuiLayout {
     else if (v.inRectangle(getBounds())) {
       if (id == MouseButtonId::WHEEL_UP)
         addScrollPos(-1);
-      else if (id == MouseButtonId::WHEEL_UP)
+      else if (id == MouseButtonId::WHEEL_DOWN)
         addScrollPos(1);
       else if (id == MouseButtonId::LEFT) {
         held = true;
