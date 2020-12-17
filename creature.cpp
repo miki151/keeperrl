@@ -1808,6 +1808,11 @@ CreatureAction Creature::payFor(const vector<Item*>& items) const {
 }
 
 void Creature::addMovementInfo(MovementInfo info) {
+  if (info.dirX > 0)
+    modViewObject().setModifier(ViewObject::Modifier::FLIPX);
+  else if (info.dirX < 0)
+    modViewObject().setModifier(ViewObject::Modifier::FLIPX, false);
+
   // add generic id since otherwise there is an unknown crash where
   // object has movement info and no id
   modViewObject().addMovementInfo(info, getUniqueId().getGenericId());

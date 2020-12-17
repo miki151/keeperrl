@@ -647,11 +647,12 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       optional<Color> colorVariant;
       if (!tile.animated)
         colorVariant = object.id().getColor();
-      renderer.drawTile(pos + move, coord, size, color, {}, colorVariant);
+      auto orientation = Renderer::SpriteOrientation(false, object.hasModifier(ViewObject::Modifier::FLIPX));
+      renderer.drawTile(pos + move, coord, size, color, orientation, colorVariant);
       for (auto& id : object.partIds) {
         auto& partTile = renderer.getTileSet().getTile(id, true);
         const auto& partCoord = partTile.getSpriteCoord(dirs);
-        renderer.drawTile(pos + move, partCoord, size, color, {}, id.getColor());
+        renderer.drawTile(pos + move, partCoord, size, color, orientation, id.getColor());
       }
     }
     if (tile.hasAnyCorners()) {

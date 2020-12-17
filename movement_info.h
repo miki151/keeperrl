@@ -15,8 +15,8 @@ struct MovementInfo {
   MovementInfo& setVictim(UniqueEntity<Creature>::Id);
   MovementInfo& setFX(optional<FXVariantName>);
   Vec2 getDir() const;
-  std::int8_t dirX;
-  std::int8_t dirY;
+  std::int8_t dirX = 0;
+  std::int8_t dirY = 0;
   float tBegin;
   float tEnd;
   Type type = MOVE;

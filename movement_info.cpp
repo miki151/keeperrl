@@ -13,12 +13,12 @@ MovementInfo& MovementInfo::setDirection(Vec2 v) {
   return *this;
 }
 
-MovementInfo&MovementInfo::setType(MovementInfo::Type t) {
+MovementInfo& MovementInfo::setType(MovementInfo::Type t) {
   type = t;
   return *this;
 }
 
-MovementInfo&MovementInfo::setMaxLength(TimeInterval i) {
+MovementInfo& MovementInfo::setMaxLength(TimeInterval i) {
   tEnd = min<float>(tEnd, tBegin + i.getDouble());
   return *this;
 }
@@ -28,7 +28,7 @@ MovementInfo& MovementInfo::setVictim(UniqueEntity<Creature>::Id id) {
   return *this;
 }
 
-MovementInfo&MovementInfo::setFX(optional<FXVariantName> v) {
+MovementInfo& MovementInfo::setFX(optional<FXVariantName> v) {
   fx = v;
   return *this;
 }
