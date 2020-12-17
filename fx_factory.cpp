@@ -99,14 +99,7 @@ static void addWoodSplinters(FXManager &mgr) {
 }
 
 static void addRockSplinters(FXManager &mgr) {
-  // Opcja: spawnowanie splinterów na tym samym kaflu co minion:
-  // - Problem: Te particle powinny się spawnować na tym samym tile-u co imp
-  //   i spadać mu pod nogi, tak jak drewnianie drzazgi; Tylko jak to
-  //   zrobić w przypadku kafli po diagonalach ?
-  // - Problem: czy te particle wyświetlają się nad czy pod impem?
-  //
-  // Chyba prościej jest po prostu wyświetlać te particle na kaflu z rozwalanym
-  // murem; Zresztą jest to bardziej spójne z particlami dla drzew
+
   EmitterDef edef;
   edef.setStrengthSpread(40.0f, 20.0f);
   edef.rotSpeed = 0.5f;

@@ -113,7 +113,10 @@ class MapGui : public GuiElem {
   void renderMapObjects(Renderer&, Vec2 size, milliseconds currentTimeReal);
   HighlightedInfo getHighlightedInfo(Vec2 size, milliseconds currentTimeReal);
   void renderAnimations(Renderer&, milliseconds currentTimeReal);
-
+  void renderAndInitFoW(Renderer&, Vec2 size);
+  void renderFoWBorders(Renderer&, Vec2 size);
+  void renderFloorObjects(Renderer&, Vec2 size, milliseconds currentTimeReal);
+  void renderHighObjects(Renderer&, Vec2 size, milliseconds currentTimeReal);
   Vec2 getMovementOffset(const ViewObject&, Vec2 size, double time, milliseconds curTimeReal, bool verticalMovement, Vec2 pos);
   bool considerCreatureClick(Vec2 mousePos);
   struct CreatureInfo {

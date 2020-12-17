@@ -1193,6 +1193,7 @@
   blockMovement = true
   blockVision = { NORMAL ELF }
   constructMessage = FILL_UP
+  viewLayer = FLOOR_BACKGROUND
   wall = true
   xForgetAfterBuilding = true
   strength2 = {
@@ -1229,32 +1230,23 @@
   name = "wall"
   viewId = { "wall_skulls" }
 }
-"MOUNTAIN2"
+"MOUNTAIN2" inherit "MOUNTAIN"
 {
   name = "hard rock"
   viewId = { "mountain2" }
-  blockMovement = true
-  blockVision = { NORMAL ELF }
-  constructMessage = FILL_UP
-  wall = true
-  xForgetAfterBuilding = true
   strength2 = {
     500 BOULDER
     70 DIG
     500 HOSTILE_DIG
     2000 HOSTILE_DIG_NO_SKILL
   }
-  summonedElement = "EARTH_ELEMENTAL"
   destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
   tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
 }
-"ADAMANTIUM_ORE"
+"ADAMANTIUM_ORE" inherit "MOUNTAIN2"
 {
   name = "adamantium ore"
   viewId = { "adamantium_ore" }
-  blockMovement = true
-  blockVision = { NORMAL ELF }
-  wall = true
   clearFogOfWar = true
   itemDrop = {{{{"AdaOre"} 1 { 16 28 }}}}
   strength2 = {
@@ -1263,16 +1255,11 @@
     500 HOSTILE_DIG
     2000 HOSTILE_DIG_NO_SKILL
   }
-  destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
-  tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
 }
-"IRON_ORE"
+"IRON_ORE" inherit "MOUNTAIN2"
 {
   name = "iron ore"
   viewId = { "iron_ore" }
-  blockMovement = true
-  blockVision = { NORMAL ELF }
-  wall = true
   clearFogOfWar = true
   itemDrop = {{{{"IronOre"} 1 { 16 28 }}}}
   strength2 = {
@@ -1281,16 +1268,11 @@
     200 HOSTILE_DIG
     2000 HOSTILE_DIG_NO_SKILL
   }
-  destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
-  tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
 }
-"STONE"
+"STONE" inherit "MOUNTAIN2"
 {
   name = "granite"
   viewId = { "stone" }
-  blockMovement = true
-  blockVision = { NORMAL ELF }
-  wall = true
   clearFogOfWar = true
   itemDrop = {{{{"Rock"} 1 { 16 28 }}}}
   strength2 = {
@@ -1299,16 +1281,11 @@
     200 HOSTILE_DIG
     2000 HOSTILE_DIG_NO_SKILL
   }
-  destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
-  tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
 }
-"GOLD_ORE"
+"GOLD_ORE" inherit "MOUNTAIN2"
 {
   name = "gold ore"
   viewId = { "gold_ore" }
-  blockMovement = true
-  blockVision = { NORMAL ELF }
-  wall = true
   clearFogOfWar = true
   itemDrop = {{{{"GoldPiece"} 1 { 16 28 }}}}
   strength2 = {
@@ -1317,8 +1294,6 @@
     200 HOSTILE_DIG
     2000 HOSTILE_DIG_NO_SKILL
   }
-  destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
-  tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
 }
 "DUNGEON_WALL"
 {
@@ -1327,6 +1302,7 @@
   blockMovement = true
   blockVision = { NORMAL ELF }
   wall = true
+  viewLayer = FLOOR_BACKGROUND
   xForgetAfterBuilding = true
   luxury = 0.2
   constructMessage = REINFORCE
