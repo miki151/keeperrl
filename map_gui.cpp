@@ -874,8 +874,17 @@ bool MapGui::isRenderedHighlightLow(Renderer& renderer, const ViewIndex& index, 
     case HighlightType::LEISURE:
     case HighlightType::CLICKED_FURNITURE:
     case HighlightType::CUT_TREE:
+    case HighlightType::DIG:
       return true;
-    default: return false;
+    case HighlightType::RECT_DESELECTION:
+    case HighlightType::RECT_SELECTION:
+    case HighlightType::MEMORY:
+    case HighlightType::UNAVAILABLE:
+    case HighlightType::INDOORS:
+    case HighlightType::INSUFFICIENT_LIGHT:
+    case HighlightType::HOSTILE_TOTEM:
+    case HighlightType::ALLIED_TOTEM:
+      return false;
   }
 }
 
@@ -1132,9 +1141,9 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
   renderAndInitFoW(renderer, size);
   renderFloorObjects(renderer, size, currentTimeReal);
   renderExtraBorders(renderer, currentTimeReal);
-  renderHighlights(renderer, size, currentTimeReal, true);
   if (spriteMode)
     renderFoWBorders(renderer, size);
+  renderHighlights(renderer, size, currentTimeReal, true);
   if (fxViewManager)
     fxViewManager->drawUnorderedBackFX(renderer);
   renderShortestPaths(renderer, size);
