@@ -168,3 +168,48 @@ End
 
 "yes_or_no" YesOrNo()
 "yes_or_no_below" MarginTop(450, YesOrNo())
+
+Def UncheckedBox()
+{}
+End
+
+Def CheckedBox() {
+  Position(MIDDLE, Label(text = "✓", font = SYMBOL_FONT))
+}
+End
+
+Def Sliding() {
+  Position(MIDDLE_STRETCHED_X, Height 5 Fill(ColorId GRAY))
+  Slider Width 6 Position(MIDDLE_STRETCHED_X, Height 20 Fill(ColorId WHITE))
+}
+End
+
+Def GetTooltip(Content)
+  Tooltip(MiniWindow(Content))
+End
+
+"settings" {
+  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  Window(Width 500 MaxHeight 700 {
+    List(VERTICAL, MarginBottom(5, {
+        Using "callbackBool" Button()
+        Using "tooltip" GetTooltip(Label())
+        Horizontal {
+          Stretch Position(MIDDLE_STRETCHED_X, Using "name" Label())
+          {
+            Width 30 Height 30 {
+              Using "yes" CheckedBox()
+              Using "no" UncheckedBox()
+            }
+            Using "sliderData"
+              Width 120 Height 30 Sliding()
+            Height 25 Horizontal{
+              Using "decrease" StandardButton(Label("<"))
+              Using "value" Width 55 Position(MIDDLE, Label())
+              Using "increase" StandardButton(Label(">"))
+            }
+          }
+        }
+    }))
+  })
+}  

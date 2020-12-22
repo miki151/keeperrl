@@ -489,6 +489,8 @@ class DrawScripted : public GuiElem {
 
   virtual void render(Renderer& renderer) override {
     context.elemCounter = 0;
+    context.tooltipCounter = 0;
+    context.sliderCounter = 0;
     get()->render(data, context, getBounds());
     if (auto& elem = context.state.highlightedElem)
       *elem = (*elem % context.elemCounter + context.elemCounter) % context.elemCounter;
@@ -505,18 +507,28 @@ class DrawScripted : public GuiElem {
 
   virtual bool onClick(MouseButtonId button, Vec2 pos) override {
     context.elemCounter = 0;
-    EventCallback callback = nullptr;
+    context.sliderCounter = 0;
+    context.tooltipCounter = 0;
+    bool ret = true;
+    EventCallback callback = [&ret] { ret = false; return false; };
     get()->onClick(data, context, button, getBounds(), pos, callback);
-    return handleCallback(callback);
+    if (callback())
+      context.endSemaphore->v();
+    return ret;
   }
 
   //virtual void onClickElsewhere() {}
 
   virtual bool onMouseMove(Vec2 pos) override {
     context.elemCounter = 0;
-    EventCallback callback = nullptr;
+    context.sliderCounter = 0;
+    context.tooltipCounter = 0;
+    bool ret = true;
+    EventCallback callback = [&ret] { ret = false; return false; };
     get()->onClick(data, context, MouseButtonId::MOVED, getBounds(), pos, callback);
-    return handleCallback(callback);
+    if (callback())
+      context.endSemaphore->v();
+    return ret;
   }
 
   //virtual void onMouseGone() {}
@@ -524,9 +536,14 @@ class DrawScripted : public GuiElem {
   //virtual void renderPart(Renderer& r, Rectangle) { render(r); }
   virtual bool onKeyPressed2(SDL::SDL_Keysym sym) override {
     context.elemCounter = 0;
-    EventCallback callback = nullptr;
+    context.sliderCounter = 0;
+    context.tooltipCounter = 0;
+    bool ret = true;
+    EventCallback callback = [&ret] { ret = false; return false; };
     get()->onKeypressed(data, context, sym, getBounds(), callback);
-    return handleCallback(callback);
+    if (callback())
+      context.endSemaphore->v();
+    return ret;
   }
   //virtual bool onTextInput(const char*) { return false; }
   virtual optional<int> getPreferredWidth() override {
@@ -542,7 +559,7 @@ class DrawScripted : public GuiElem {
 };
 
 SGuiElem GuiFactory::scripted(Semaphore& endSem, ScriptedUIId id, const ScriptedUIData& data, ScriptedUIState& state) {
-  return SGuiElem(new DrawScripted(ScriptedContext{&renderer, this, &endSem, state, 0}, id, std::move(data)));
+  return SGuiElem(new DrawScripted(ScriptedContext{&renderer, this, &endSem, state, 0, 0}, id, std::move(data)));
 }
 
 SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset,
@@ -906,14 +923,14 @@ SGuiElem GuiFactory::variableLabel(function<string()> fun, int lineHeight, int s
   return SGuiElem(new VariableLabel(fun, lineHeight, size, color));
 }
 
-SGuiElem GuiFactory::labelUnicode(const string& s, Color color, int size, Renderer::FontId fontId) {
+SGuiElem GuiFactory::labelUnicode(const string& s, Color color, int size, FontId fontId) {
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           r.drawText(fontId, size, color, bounds.topLeft(), s);
   }, renderer.getTextSize(s, size, fontId)));
 }
 
-SGuiElem GuiFactory::labelUnicodeHighlight(const string& s, Color color, int size, Renderer::FontId fontId) {
+SGuiElem GuiFactory::labelUnicodeHighlight(const string& s, Color color, int size, FontId fontId) {
   return SGuiElem(new DrawCustom(
         [=] (Renderer& r, Rectangle bounds) {
           Color c = color;

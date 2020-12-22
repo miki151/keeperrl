@@ -61,6 +61,10 @@ enum class OptionSet {
   ADVENTURER,
 };
 
+namespace ScriptedUIDataElems {
+  struct Record;
+}
+
 class View;
 
 class Options {
@@ -81,7 +85,6 @@ class Options {
   optional<Range> getLimits(OptionId);
   vector<OptionId> getOptions(OptionSet);
   void handle(View*, OptionSet, int lastIndex = 0);
-  bool handleOrExit(View*, OptionSet, int lastIndex = -1);
   typedef function<void(int)> Trigger;
   void addTrigger(OptionId, Trigger trigger);
   void setChoices(OptionId, const vector<string>&);
@@ -91,6 +94,9 @@ class Options {
   private:
   optional<Value> readValue(OptionId, const vector<string>&);
   void changeValue(OptionId, const Options::Value&, View*);
+  void handleSliding(OptionId, ScriptedUIDataElems::Record&, bool&);
+  void handleIntInterval(OptionId, ScriptedUIDataElems::Record&, bool&);
+  void handleBoolean(OptionId, ScriptedUIDataElems::Record&, bool&);
   Value getValue(OptionId);
   void readValues();
   optional<EnumMap<OptionId, Value>> values;

@@ -333,7 +333,12 @@ void WindowView::rebuildGui() {
   optional<Rectangle> bottomBarBounds;
   tempGuiElems.clear();
   if (!options->getIntValue(OptionId::DISABLE_MOUSE_WHEEL)) {
-    tempGuiElems.push_back(gui.mouseWheel([this](bool up) { zoom(up ? -1 : 1); }));
+    tempGuiElems.push_back(gui.mouseWheel([this](bool up) {
+      if (renderer.isKeypressed(SDL::SDL_SCANCODE_LCTRL))
+        inputQueue.push(UserInput{UserInputId::SCROLL_STAIRS, up ? -1 : 1});
+      else
+        zoom(up ? -1 : 1);
+    }));
     tempGuiElems.back()->setBounds(getMapGuiBounds());
   }
   tempGuiElems.push_back(gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)));
@@ -691,7 +696,7 @@ optional<Vec2> WindowView::chooseDirection(Vec2 playerPos, const string& message
       } else {
         int numArrow = int(dir.getCardinalDir());
         static string arrows[] = { u8"⇑", u8"⇓", u8"⇒", u8"⇐", u8"⇗", u8"⇖", u8"⇘", u8"⇙"};
-        renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, Color::WHITE,
+        renderer.drawText(FontId::SYMBOL_FONT, mapLayout->getSquareSize().y, Color::WHITE,
             wpos + Vec2(mapLayout->getSquareSize().x / 2, 0), arrows[numArrow], Renderer::HOR);
       }
     }
@@ -742,7 +747,7 @@ View::TargetResult WindowView::chooseTarget(Vec2 playerPos, TargetType targetTyp
         if (currentTileLayout.sprites) {
           renderer.drawViewObject(wpos, ViewId("dig_mark"), true, mapLayout->getSquareSize(), color);
         } else {
-          renderer.drawText(Renderer::SYMBOL_FONT, mapLayout->getSquareSize().y, color,
+          renderer.drawText(FontId::SYMBOL_FONT, mapLayout->getSquareSize().y, color,
               wpos + Vec2(mapLayout->getSquareSize().x / 2, 0), "0", Renderer::HOR);
         }
       };

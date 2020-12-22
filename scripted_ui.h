@@ -21,7 +21,9 @@ struct ScriptedContext {
   GuiFactory* factory;
   Semaphore* endSemaphore;
   ScriptedUIState& state;
+  int sliderCounter;
   int elemCounter;
+  int tooltipCounter;
   optional<int> highlightedElemHeight;
 };
 

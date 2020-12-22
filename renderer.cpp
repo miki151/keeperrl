@@ -111,13 +111,13 @@ Vec2 Renderer::getTextSize(const string& s, int size, FontId id) {
   return Vec2(maxx - minx, height);
 }
 
-int Renderer::getFont(Renderer::FontId id) {
+int Renderer::getFont(FontId id) {
 //  vector<FontSet>& fontSet = currentThreadId() == *renderThreadId ? fonts : fontsOtherThread;
   FontSet& fontSet = fonts;
   switch (id) {
-    case Renderer::TILE_FONT:
-    case Renderer::TEXT_FONT: return fontSet.textFont;
-    case Renderer::SYMBOL_FONT: return fontSet.symbolFont;
+    case FontId::TILE_FONT:
+    case FontId::TEXT_FONT: return fontSet.textFont;
+    case FontId::SYMBOL_FONT: return fontSet.symbolFont;
   }
 }
 
@@ -149,11 +149,11 @@ void Renderer::drawText(FontId id, int size, Color color, Vec2 pos, const string
 }
 
 void Renderer::drawText(Color color, Vec2 pos, const char* c, CenterType center, int size) {
-  drawText(TEXT_FONT, size, color, pos, c, center);
+  drawText(FontId::TEXT_FONT, size, color, pos, c, center);
 }
 
 void Renderer::drawText(Color color, Vec2 pos, const string& c, CenterType center, int size) {
-  drawText(TEXT_FONT, size, color, pos, c, center);
+  drawText(FontId::TEXT_FONT, size, color, pos, c, center);
 }
 
 void Renderer::drawTextWithHotkey(Color color, Vec2 pos, const string& text, char key) {
@@ -502,7 +502,7 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, double scale,
       colorVariant = id.getColor();
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), Vec2(), color * tile.color, {}, colorVariant, scale);
   } else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, 20 * scale, color * tile.color,
+    drawText(tile.symFont ? FontId::SYMBOL_FONT : FontId::TEXT_FONT, 20 * scale, color * tile.color,
         pos + Vec2(scale * nominalSize / 2, 0), tile.text, HOR);
 }
 
@@ -514,7 +514,7 @@ void Renderer::drawViewObject(Vec2 pos, ViewId id, bool useSprite, Vec2 size, Co
       colorVariant = id.getColor();
     drawTile(pos, tile.getSpriteCoord(DirSet::fullSet()), size, color * tile.color, orient, colorVariant);
   } else
-    drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TEXT_FONT, size.y, color * tile.color, pos, tile.text);
+    drawText(tile.symFont ? FontId::SYMBOL_FONT : FontId::TEXT_FONT, size.y, color * tile.color, pos, tile.text);
 }
 
 void Renderer::drawViewObject(Vec2 pos, const ViewObject& object, bool useSprite, Vec2 size) {
@@ -559,15 +559,28 @@ void Renderer::resize(int w, int h) {
   initOpenGL();
 }
 
+bool Renderer::isKeypressed(SDL::SDL_Scancode key) {
+  return keypressed[key];
+}
+
+void Renderer::updateKeypressed(const Event& ev) {
+  if (ev.type == SDL::SDL_KEYDOWN)
+    keypressed[ev.key.keysym.scancode] = true;
+  else if (ev.type == SDL::SDL_KEYUP)
+    keypressed[ev.key.keysym.scancode] = false;
+}
+
 bool Renderer::pollEventOrFromQueue(Event& ev) {
   if (!eventQueue.empty()) {
     ev = eventQueue.front();
     eventQueue.pop_front();
+    updateKeypressed(ev);
     return true;
   } else if (SDL_PollEvent(&ev)) {
     zoomMousePos(ev);
     considerMouseMoveEvent(ev);
     considerMouseCursorAnim(ev);
+    updateKeypressed(ev);
     return true;
   } else
     return false;

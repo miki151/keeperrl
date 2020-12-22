@@ -17,6 +17,7 @@
 #include "options.h"
 #include "main_loop.h"
 #include "view.h"
+#include "scripted_ui_data.h"
 
 const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::HINTS, 1},
@@ -104,7 +105,7 @@ const map<OptionId, string> hints {
   {OptionId::ENEMY_AGGRESSION, "The chance of your dungeon being attacked by enemies"},
   {OptionId::KEEPER_WARNING, "Display a pop up window whenever your Keeper is in danger"},
   {OptionId::KEEPER_WARNING_PAUSE, "Pause the game whenever your Keeper is in danger"},
-  {OptionId::KEEPER_WARNING_TIMEOUT, "Timeout before a new Keeper danger warning is shown"},
+  {OptionId::KEEPER_WARNING_TIMEOUT, "Number of turns before a new \"Keeper in danger\" warning is shown"},
   {OptionId::SINGLE_THREAD, "Please try this option if you're experiencing slow saving, loading, or map generation. "
         "Note: this will make the game unresponsive during the operation."},
 };
@@ -234,6 +235,64 @@ static string getYesNo(const Options::Value& value) {
   return *value.getValueMaybe<int>() ? "yes" : "no";
 }
 
+static optional<pair<int, int>> getIntRange(OptionId id) {
+  switch (id) {
+    case OptionId::MUSIC:
+    case OptionId::SOUND:
+      return make_pair(0, 100);
+    case OptionId::AUTOSAVE2:
+      return make_pair(0, 5000);
+    case OptionId::KEEPER_WARNING_TIMEOUT:
+      return make_pair(50, 500);
+    default:
+      return none;
+  }
+}
+
+static bool continuousChange(OptionId id) {
+  switch (id) {
+    case OptionId::SOUND: return false;
+   default: return true;
+  }
+}
+
+static optional<int> getIntInterval(OptionId id) {
+  switch (id) {
+    case OptionId::AUTOSAVE2:
+      return 500;
+    case OptionId::KEEPER_WARNING_TIMEOUT:
+      return 50;
+    default:
+      return none;
+  }  
+}
+
+static bool isBoolean(OptionId id) {
+  switch (id) {
+    case OptionId::HINTS:
+    case OptionId::ASCII:
+    case OptionId::FULLSCREEN:
+    case OptionId::VSYNC:
+    case OptionId::WASD_SCROLLING:
+    case OptionId::KEEPER_WARNING:
+    case OptionId::KEEPER_WARNING_PAUSE:
+    case OptionId::KEEP_SAVEFILES:
+    case OptionId::SHOW_MAP:
+    case OptionId::SUGGEST_TUTORIAL:
+    case OptionId::STARTING_RESOURCE:
+    case OptionId::ONLINE:
+    case OptionId::GAME_EVENTS:
+    case OptionId::ZOOM_UI:
+    case OptionId::DISABLE_MOUSE_WHEEL:
+    case OptionId::DISABLE_CURSOR:
+    case OptionId::START_WITH_NIGHT:
+    case OptionId::SINGLE_THREAD:
+      return true;
+    default:
+      return false;
+  }
+}
+
 string Options::getValueString(OptionId id) {
   Value value = getValue(id);
   switch (id) {
@@ -296,41 +355,6 @@ optional<Options::Value> Options::readValue(OptionId id, const vector<string>& i
   }
 }
 
-static MenuType getMenuType(OptionSet set) {
-  switch (set) {
-    default: return MenuType::NORMAL;
-  }
-}
-
-void Options::changeValue(OptionId id, const Options::Value& value, View* view) {
-  switch (id) {
-    case OptionId::PLAYER_NAME:
-      if (auto val = view->getText("Enter " + names.at(id), *value.getValueMaybe<string>(), 23,
-            "Leave blank to use a random name."))
-        setValue(id, *val);
-      break;
-    case OptionId::KEEPER_WARNING_TIMEOUT:
-      if (auto val = view->getNumber("Change " + lowercase(getName(id)), Range(0, 500), *value.getValueMaybe<int>(), 50))
-        setValue(id, *val);
-      break;
-    case OptionId::AUTOSAVE2:
-      if (auto val = view->getNumber("Change " + lowercase(getName(id)), Range(0, 5000), *value.getValueMaybe<int>(), 500))
-        setValue(id, *val);
-      break;
-    case OptionId::MUSIC:
-    case OptionId::SOUND:
-      if (auto val = view->getNumber("Change " + getName(id), Range(0, 100), *value.getValueMaybe<int>(), 5))
-        setValue(id, *val);
-      break;
-    default:
-      if (!choices[id].empty())
-        setValue(id, *value.getValueMaybe<int>() + 1);
-      else
-        setValue(id, (int) !*value.getValueMaybe<int>());
-      break;
-  }
-}
-
 void Options::setChoices(OptionId id, const vector<string>& v) {
   choices[id] = v;
 }
@@ -343,49 +367,85 @@ optional<string> Options::getHint(OptionId id) {
   return getValueMaybe(hints, id);
 }
 
-bool Options::handleOrExit(View* view, OptionSet set, int lastIndex) {
-  if (!optionSets.count(set))
-    return true;
-  vector<ListElem> options;
-  options.emplace_back("Change settings:", ListElem::TITLE);
-  for (OptionId option : optionSets.at(set)) {
-    options.push_back(ListElem(names.at(option),
-        getValueString(option)));
-    if (hints.count(option))
-      options.back().setTip(hints.at(option));
-  }
-  options.emplace_back("Done");
-  if (lastIndex == -1)
-    lastIndex = optionSets.at(set).size();
-  auto index = view->chooseFromList("", options, lastIndex, getMenuType(set));
-  if (!index)
-    return false;
-  else if (index && (*index) == optionSets.at(set).size())
-    return true;
-  OptionId option = optionSets.at(set)[*index];
-  changeValue(option, getValue(option), view);
-  return handleOrExit(view, set, *index);
+void Options::handleBoolean(OptionId option, ScriptedUIDataElems::Record& data, bool& wasSet) {
+  auto getCallback = [this, &wasSet](OptionId option, Value value) {
+    return ScriptedUIDataElems::Callback {
+      [option, value, &wasSet, this] {
+        wasSet = true;
+        setValue(option, value); return true; }
+      };
+  };
+  auto value = getBoolValue(option);
+  data.elems.insert({value ? "yes" : "no", ScriptedUIData{}});
+  data.elems.insert({"callbackBool", getCallback(option, int(!value))});
+}
+
+void Options::handleIntInterval(OptionId option, ScriptedUIDataElems::Record& data, bool& wasSet) {
+  auto value = getIntValue(option);
+  auto interval = *getIntInterval(option);
+  auto range = *getIntRange(option);
+  data.elems.insert({"value", value > 0 ? toString(value) : "off"});
+  data.elems.insert({"increase", ScriptedUIDataElems::Callback{
+      [this, &wasSet, option, value, interval, range] {
+        auto newVal = value + interval;
+        if (newVal > range.second)
+          newVal = range.first;
+        this->setValue(option, newVal);
+        wasSet = true;
+        return true;
+      }}});
+  data.elems.insert({"decrease", ScriptedUIDataElems::Callback{
+      [this, &wasSet, option, value, interval, range] {
+        auto newVal = value - interval;
+        if (newVal < range.first)
+          newVal = range.second;
+        this->setValue(option, newVal);
+        wasSet = true;
+        return true;
+      }}});
+}
+
+void Options::handleSliding(OptionId option, ScriptedUIDataElems::Record& data, bool& wasSet) {
+  auto range = *getIntRange(option);
+  auto value = getIntValue(option);
+  auto res  = ScriptedUIDataElems::SliderData {
+    [&wasSet, option, range, this](double value) {
+      this->setValue(option, int(range.first * (1 - value) + range.second * value));
+      wasSet = true;
+      return false;
+    },
+    double(value - range.first) / (range.second - range.first),
+    continuousChange(option),
+  };
+  data.elems.insert({"sliderData", std::move(res)});
 }
 
 void Options::handle(View* view, OptionSet set, int lastIndex) {
-  vector<ListElem> options;
-  options.emplace_back("Change settings:", ListElem::TITLE);
   auto optionSet = optionSets.at(set);
   if (!view->zoomUIAvailable())
     optionSet.removeElementMaybe(OptionId::ZOOM_UI);
-  for (OptionId option : optionSet) {
-    options.push_back(ListElem(names.at(option),
-      getValueString(option)));
-    if (hints.count(option))
-      options.back().setTip(hints.at(option));
+  ScriptedUIState state;
+  while (1) {
+    ScriptedUIDataElems::List options;
+    bool wasSet = false;
+    for (OptionId option : optionSet) {
+      auto optionData = ScriptedUIDataElems::Record{{{"name", ScriptedUIDataElems::Label{names.at(option)}}}};
+      if (hints.count(option))
+        optionData.elems.insert({"tooltip", ScriptedUIDataElems::Label{hints.at(option)}});
+      if (isBoolean(option))
+        handleBoolean(option, optionData, wasSet);
+      else if (getIntRange(option)) {
+        if (getIntInterval(option))
+          handleIntInterval(option, optionData, wasSet);
+        else
+          handleSliding(option, optionData, wasSet);
+      }
+      options.push_back(std::move(optionData));
+    }
+    view->scriptedUI("settings", options, state);
+    if (!wasSet)
+      return;
   }
-  options.emplace_back("Done");
-  auto index = view->chooseFromList("", options, lastIndex, getMenuType(set));
-  if (!index || (*index) == optionSet.size())
-    return;
-  OptionId option = optionSet[*index];
-  changeValue(option, getValue(option), view);
-  handle(view, set, *index);
 }
 
 void Options::readValues() {

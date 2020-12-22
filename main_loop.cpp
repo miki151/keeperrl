@@ -377,11 +377,10 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
       jukebox->setType(game->getCurrentMusic(), true);
       lastMusicUpdate = gameTime;
     }
-    if (lastAutoSave < gameTime - TimeInterval(options->getIntValue(OptionId::AUTOSAVE2)) && !noAutoSave) {
-      if (options->getBoolValue(OptionId::AUTOSAVE2)) {
-        saveUI(game, GameSaveType::AUTOSAVE);
-        eraseAllSavesExcept(game, GameSaveType::AUTOSAVE);
-      }
+    auto autoSaveFreq = options->getIntValue(OptionId::AUTOSAVE2);
+    if (autoSaveFreq > 0 && lastAutoSave < gameTime - TimeInterval(autoSaveFreq) && !noAutoSave) {
+      saveUI(game, GameSaveType::AUTOSAVE);
+      eraseAllSavesExcept(game, GameSaveType::AUTOSAVE);
       lastAutoSave = gameTime;
     }
     view->refreshView();

@@ -16,7 +16,8 @@ enum class Direction;
 
 RICH_ENUM(EnumsDetail::TextureFlip, NONE, FLIP_X, FLIP_Y, FLIP_XY);
 RICH_ENUM(EnumsDetail::PlacementPos, MIDDLE, TOP_STRETCHED, BOTTOM_STRETCHED, LEFT_STRETCHED, RIGHT_STRETCHED,
-    TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, LEFT_CENTERED, RIGHT_CENTERED, TOP_CENTERED, BOTTOM_CENTERED);
+    TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, LEFT_CENTERED, RIGHT_CENTERED, TOP_CENTERED, BOTTOM_CENTERED,
+    MIDDLE_STRETCHED_X, MIDDLE_STRETCHED_Y);
 RICH_ENUM(EnumsDetail::Direction, HORIZONTAL, VERTICAL);
 
 namespace {
@@ -114,7 +115,7 @@ struct KeyHandler : ScriptedUIInterface {
 REGISTER_SCRIPTED_UI(KeyHandler);
 
 struct Label : ScriptedUIInterface {
-  Label(optional<string> text = none, optional<int> size = none, Color color = Color::WHITE)
+  Label(optional<string> text = none, int size = Renderer::textSize(), Color color = Color::WHITE)
       : text(std::move(text)), size(size), color(color) {}
   string getText(const ScriptedUIData& data) const {
     if (text)
@@ -126,18 +127,18 @@ struct Label : ScriptedUIInterface {
   }
 
   void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
-    context.renderer->drawText(color, area.topLeft(), getText(data), Renderer::CenterType::NONE,
-      size.value_or(Renderer::textSize()));
+    context.renderer->drawText(font, size, color, area.topLeft(), getText(data));
   }
 
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
-    return Vec2(context.renderer->getTextLength(getText(data), size.value_or(19)), 20);
+    return Vec2(context.renderer->getTextLength(getText(data), size, font), 20);
   }
 
   optional<string> SERIAL(text);
-  optional<int> SERIAL(size);
+  int SERIAL(size) = Renderer::textSize();
   Color SERIAL(color) = Color::WHITE;
-  SERIALIZE_ALL(roundBracket(), NAMED(text), NAMED(size), OPTION(color))
+  FontId SERIAL(font) = FontId::TEXT_FONT;
+  SERIALIZE_ALL(roundBracket(), NAMED(text), OPTION(size), OPTION(color), OPTION(font))
 };
 
 REGISTER_SCRIPTED_UI(Label);
@@ -222,6 +223,12 @@ struct Position : Container {
       Rectangle area) const override {
     auto size = elem->getSize(data, context);
     switch (position) {
+      case PlacementPos::MIDDLE_STRETCHED_X:
+        return {SubElemInfo{elem, data, Rectangle(area.left(), area.middle().y - size.y / 2,
+            area.right(), area.middle().y - size.y / 2 + size.y)}};
+      case PlacementPos::MIDDLE_STRETCHED_Y:
+        return {SubElemInfo{elem, data, Rectangle(area.middle().x - size.x / 2, area.top(),
+            area.middle().x - size.x / 2 + size.x, area.bottom())}};
       case PlacementPos::MIDDLE:
         return {SubElemInfo{elem, data, Rectangle(area.middle() - size / 2, area.middle() + size / 2)}};
       case PlacementPos::TOP_STRETCHED:
@@ -304,21 +311,31 @@ struct Width : Container {
 
 REGISTER_SCRIPTED_UI(Width);
 
-struct Height : Container {
-  vector<SubElemInfo> getElemBounds(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
-    return {SubElemInfo{elem, data, area}};
-  }
-
+struct Height : Width {
   Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
     return Vec2(elem->getSize(data, context).x, value);
   }
-
-  int SERIAL(value);
-  ScriptedUI SERIAL(elem);
-  SERIALIZE_ALL(value, elem)
 };
 
 REGISTER_SCRIPTED_UI(Height);
+
+struct MaxWidth : Width {
+  Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
+    auto size = elem->getSize(data, context);
+    return Vec2(min(size.x, value), size.y);
+  }
+};
+
+REGISTER_SCRIPTED_UI(MaxWidth);
+
+struct MaxHeight : Width {
+  Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
+    auto size = elem->getSize(data, context);
+    return Vec2(size.x, min(size.y, value));
+  }
+};
+
+REGISTER_SCRIPTED_UI(MaxHeight);
 
 static vector<Range> getStaticListBounds(Range total, vector<int> widths, int stretched) {
   vector<Range> ret;
@@ -576,7 +593,7 @@ struct List : Container {
 REGISTER_SCRIPTED_UI(List);
 
 static void scroll(const ScriptedContext& context, int dir) {
-  context.state.scrollPos.add(100 * dir, context.factory->clock->getRealMillis());
+  context.state.scrollPos.add(100 * dir, Clock::getRealMillis());
 }
 
 struct Scrollable : ScriptedUIInterface {
@@ -600,7 +617,7 @@ struct Scrollable : ScriptedUIInterface {
     if (height <= bounds.height())
       contentFun(bounds);
     else {
-      int offset = context.state.scrollPos.get(context.factory->clock->getRealMillis(), 0, height - bounds.height());
+      int offset = context.state.scrollPos.get(Clock::getRealMillis(), 0, height - bounds.height());
       int scrollBarWidth = scrollbar->getSize(data, context).x;
       auto contentBounds = getContentBounds(bounds, offset, scrollBarWidth, height);
       context.renderer->setScissor(bounds);
@@ -646,8 +663,8 @@ struct Scrollable : ScriptedUIInterface {
             auto ret = callback ? callback() : false;
             if (auto height = context.highlightedElemHeight)
               if (needsScrolling(bounds.getYRange(), *height) &&
-                  !context.state.scrollPos.isScrolling(context.factory->clock->getRealMillis()))
-                context.state.scrollPos.add(*height - bounds.middle().y, context.factory->clock->getRealMillis());
+                  !context.state.scrollPos.isScrolling(Clock::getRealMillis()))
+                context.state.scrollPos.add(*height - bounds.middle().y, Clock::getRealMillis());
             context.highlightedElemHeight = none;
             return ret;
           };
@@ -681,9 +698,9 @@ struct Scroller : ScriptedUIInterface {
     if (auto& held = context.state.scrollButtonHeld)
       context.state.scrollPos.setRatio(
           double(context.renderer->getMousePos().y - *held - bounds.top()) / (bounds.height() - height),
-          context.factory->clock->getRealMillis());
+          Clock::getRealMillis());
     auto pos = bounds.top() + context.state.scrollPos.getRatio(
-        context.factory->clock->getRealMillis()) * (bounds.height() - height);
+        Clock::getRealMillis()) * (bounds.height() - height);
     return Rectangle(bounds.left(), pos, bounds.right(), pos + height);
   }
 
@@ -694,7 +711,7 @@ struct Scroller : ScriptedUIInterface {
       auto sliderPos = getSliderPos(data, context, bounds);
       callback = [pos, &context, bounds, sliderHeight, sliderPos] {
         context.state.scrollPos.setRatio(double(pos.y - sliderHeight / 2 - bounds.top()) / (bounds.height() - sliderHeight),
-            context.factory->clock->getRealMillis());
+            Clock::getRealMillis());
         if (pos.inRectangle(sliderPos))
           context.state.scrollButtonHeld = pos.y - sliderPos.top();
         return false;
@@ -717,6 +734,113 @@ struct Scroller : ScriptedUIInterface {
 };
 
 REGISTER_SCRIPTED_UI(Scroller);
+
+struct Slider : ScriptedUIInterface {
+  Rectangle getSliderPos(const ScriptedUIDataElems::SliderState& state, const ScriptedUIData& data, ScriptedContext& context,
+      Rectangle bounds) const {
+    auto width = slider->getSize(data, context).x;
+    auto pos = bounds.left() + state.sliderPos * (bounds.width() - width);
+    return Rectangle(pos, bounds.top(), pos + width, bounds.bottom());
+  }
+
+  auto& getSliderState(const ScriptedUIDataElems::SliderData& data, ScriptedContext& context) const {
+    ++context.sliderCounter;
+    if (!context.state.sliderState.count(context.sliderCounter))
+      context.state.sliderState.insert({context.sliderCounter, ScriptedUIDataElems::SliderState{data.initialPos, false}});
+    return context.state.sliderState.at(context.sliderCounter);
+  }
+
+  void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
+      Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
+    auto sliderData = data.getReferenceMaybe<ScriptedUIDataElems::SliderData>();
+    if (!sliderData)
+      return;
+    auto& state = getSliderState(*sliderData, context);
+    if ((id == MouseButtonId::LEFT && pos.inRectangle(bounds)) || (id == MouseButtonId::MOVED && state.sliderHeld)) {
+      auto sliderWidth = slider->getSize(data, context).x;
+      callback = [pos, &state, bounds, sliderWidth, &posCallback = sliderData->callback,
+          continuous = sliderData->continuousCallback] {
+        auto value = max(0.0, min(1.0, double(pos.x - sliderWidth / 2 - bounds.left()) / (bounds.width() - sliderWidth)));
+        state.sliderPos = value;
+        state.sliderHeld = true;
+        if (continuous)
+          return posCallback(value);
+        return false;
+      };
+    } else
+    if (id == MouseButtonId::RELEASED && state.sliderHeld) {
+      if (!sliderData->continuousCallback)
+        callback = [&state, &posCallback = sliderData->callback] {
+          state.sliderHeld = false;
+          return posCallback(state.sliderPos);
+        };
+      else
+        callback = [&state] {
+          state.sliderHeld = false;
+          return false;
+        };
+    }
+  }
+
+  Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
+    return slider->getSize(data, context);
+  }
+
+  void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle bounds) const override {
+    auto sliderData = data.getReferenceMaybe<ScriptedUIDataElems::SliderData>();
+    if (!sliderData)
+      return;
+    auto& state = getSliderState(*sliderData, context);
+    slider->render(data, context, getSliderPos(state, data, context, bounds));
+  }
+
+  ScriptedUI SERIAL(slider);
+  SERIALIZE_ALL(slider)
+};
+
+REGISTER_SCRIPTED_UI(Slider);
+
+struct Tooltip : Container {
+  Rectangle getTooltipBounds(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const {
+    return Rectangle(area.bottomLeft(), area.bottomLeft() + elem->getSize(data, context)).translate(Vec2(15, 15));
+  }
+
+  void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
+    ++context.tooltipCounter;
+    auto time = getValueMaybe(context.state.tooltipTimeouts, context.tooltipCounter);
+    if (time && *time <= Clock::getRealMillis()) {
+      context.renderer->setTopLayer();
+      elem->render(data, context, getTooltipBounds(data, context, area));
+      context.renderer->popLayer();
+    }
+  }
+
+  void onClick(const ScriptedUIData& data, ScriptedContext& context, MouseButtonId id,
+      Rectangle bounds, Vec2 pos, EventCallback& callback) const override {
+    ++context.tooltipCounter;
+    auto time = getValueMaybe(context.state.tooltipTimeouts, context.tooltipCounter);
+    if (id == MouseButtonId::MOVED) {
+      if (pos.inRectangle(bounds) && !time)
+        callback = [&, counter = context.tooltipCounter] {
+          context.state.tooltipTimeouts.insert({counter, Clock::getRealMillis() + milliseconds{500}});
+          return false;
+        };
+      if (!pos.inRectangle(bounds) && context.state.tooltipTimeouts.count(context.tooltipCounter))
+        callback = [&, counter = context.tooltipCounter] {
+          context.state.tooltipTimeouts.erase(counter);
+          return false;
+        };
+    }
+  }
+
+  vector<SubElemInfo> getElemBounds(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
+    return {SubElemInfo{elem, data, getTooltipBounds(data, context, area)}};
+  }
+  ScriptedUI SERIAL(elem);
+  SERIALIZE_ALL(roundBracket(), NAMED(elem))
+};
+
+REGISTER_SCRIPTED_UI(Tooltip);
 
 struct Scissor : Container {
   void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {

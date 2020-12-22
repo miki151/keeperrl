@@ -190,9 +190,9 @@ class GuiFactory {
   SGuiElem mainMenuLabel(const string&, double vPadding, Color = Color::MAIN_MENU_ON);
   SGuiElem mainMenuLabelBg(const string&, double vPadding, Color = Color::MAIN_MENU_OFF);
   SGuiElem labelUnicode(const string&, Color = Color::WHITE, int size = Renderer::textSize(),
-      Renderer::FontId = Renderer::SYMBOL_FONT);
+      FontId = FontId::SYMBOL_FONT);
   SGuiElem labelUnicodeHighlight(const string&, Color color = Color::WHITE, int size = Renderer::textSize(),
-      Renderer::FontId = Renderer::SYMBOL_FONT);
+      FontId = FontId::SYMBOL_FONT);
   SGuiElem crossOutText(Color);
   SGuiElem viewObject(const ViewObject&, double scale = 1, Color = Color::WHITE);
   SGuiElem viewObject(ViewId, double scale = 1, Color = Color::WHITE);

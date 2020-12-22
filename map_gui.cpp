@@ -676,7 +676,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawText(blendNightColor(Color::WHITE, index), pos + move + size / 2, "S",
           Renderer::CenterType::HOR_VER, size.x * 2 / 3);
     if (curTimeReal.count() % 2000 < 800 && object.hasModifier(ViewObject::Modifier::TURNED_OFF))
-      renderer.drawText(Renderer::SYMBOL_FONT, size.x * 1 / 3, Color::YELLOW, pos + move + size / 2, u8"⚡",
+      renderer.drawText(FontId::SYMBOL_FONT, size.x * 1 / 3, Color::YELLOW, pos + move + size / 2, u8"⚡",
           Renderer::CenterType::HOR_VER);
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(pos + move, renderer.getTileSet().getTile(ViewId("key"), spriteMode).getSpriteCoord(), size);
@@ -704,10 +704,10 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       color = object.id().getColor();
     if (object.hasModifier(ViewObject::Modifier::BLOODY))
       color = Color(160, 0, 0);
-    renderer.drawText(tile.symFont ? Renderer::SYMBOL_FONT : Renderer::TILE_FONT, size.y,
+    renderer.drawText(tile.symFont ? FontId::SYMBOL_FONT : FontId::TILE_FONT, size.y,
         blendNightColor(color, index), tilePos, tile.text, Renderer::HOR);
     if (object.hasModifier(ViewObject::Modifier::BURNING))
-      renderer.drawText(Renderer::SYMBOL_FONT, size.y, getFireColor(),
+      renderer.drawText(FontId::SYMBOL_FONT, size.y, getFireColor(),
           pos + Vec2(size.x / 2, -3), u8"Ѡ", Renderer::HOR);
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawText(blendNightColor(Color::YELLOW, index), pos + size / 2, "*", Renderer::CenterType::HOR_VER, size.y);

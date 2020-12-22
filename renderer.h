@@ -22,6 +22,7 @@
 #include "animation_id.h"
 #include "color.h"
 #include "texture.h"
+#include "font_id.h"
 
 enum class SpriteId {
   BUILDINGS,
@@ -59,9 +60,8 @@ class Renderer {
   static vector<string> getFullscreenResolutions();
   static int textSize() { return 19; }
   static int smallTextSize() { return 14; }
-  enum FontId { TEXT_FONT, TILE_FONT, SYMBOL_FONT };
-  int getTextLength(const string& s, int size = textSize(), FontId = TEXT_FONT);
-  Vec2 getTextSize(const string& s, int size = textSize(), FontId = TEXT_FONT);
+  int getTextLength(const string& s, int size = textSize(), FontId = FontId::TEXT_FONT);
+  Vec2 getTextSize(const string& s, int size = textSize(), FontId = FontId::TEXT_FONT);
   enum CenterType { NONE, HOR, VER, HOR_VER };
   void drawText(FontId, int size, Color, Vec2 pos, const string&, CenterType center = NONE);
   void drawTextWithHotkey(Color, Vec2 pos, const string&, char key);
@@ -109,6 +109,7 @@ class Renderer {
   void flushEvents(EventType);
   void waitEvent(Event&);
   Vec2 getMousePos();
+  bool isKeypressed(SDL::SDL_Scancode);
 
   void setTopLayer();
   void popLayer();
@@ -152,7 +153,7 @@ class Renderer {
   FontSet fonts;
   sth_stash* fontStash;
   void loadFonts(const DirectoryPath& fontPath, FontSet&);
-  int getFont(Renderer::FontId);
+  int getFont(FontId);
   optional<thread::id> renderThreadId;
   bool fullscreen;
   int fullscreenMode;
@@ -184,5 +185,7 @@ class Renderer {
   optional<DirectoryPath> animationDirectory;
   Clock* clock;
   TileSet* tileSet = nullptr;
+  bool keypressed[SDL::SDL_NUM_SCANCODES] = {0};
+  void updateKeypressed(const Event&);
 };
 
