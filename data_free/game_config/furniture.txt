@@ -116,14 +116,14 @@
 "EMBALMING_TABLE"
 {
   name = "embalming table"
-  viewId = { "torture_table" }
+  viewId = { "embalming_table" }
   blockMovement = true
   usageTime = 5
   canHideHere = true
   fire = 50
   strength = 80
   requiresLight = true
-  usageFX = WORKSHOP
+  usageFX = EMBALMENT
 }
 "POETRY_TABLE" inherit "JEWELLER"
 {

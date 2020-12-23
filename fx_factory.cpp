@@ -1349,7 +1349,7 @@ static void addForgeEffect(FXManager& mgr) {
   mgr.addDef(FXName::FORGE, psdef);
 }
 
-static void addWorkshopEffect(FXManager& mgr) {
+static void addWorkshopEffect(FXManager& mgr, FXName name, FColor color, double life) {
   EmitterDef edef;
   edef.setStrengthSpread(50.0f, 20.0f);
   edef.rotSpeed = 0.5f;
@@ -1357,15 +1357,12 @@ static void addWorkshopEffect(FXManager& mgr) {
   edef.source = FRect(-2.0f, -6.0f, 2.0f, -4.0f);
 
   ParticleDef pdef;
-  pdef.life = 0.7f;
+  pdef.life = life;
   pdef.size = 5.0f;
   pdef.slowdown = {{0.0f, 0.1f}, {5.0f, 1000.0f}};
   pdef.alpha = {{0.0f, 0.6f, 1.0f}, {1.0, 1.0, 0.0}, InterpType::cosine};
 
-  FColor brown(Color(120, 87, 46));
-  // Kiedy cząsteczki opadną pod drzewo, robią się w zasięgu cienia
-  // TODO: lepiej rysować je po prostu pod cieniem
-  pdef.color = {{0.0f, 0.3f, 0.4}, {brown.rgb(), brown.rgb(), brown.rgb() * 0.8f}};
+  pdef.color = {{0.0f, 0.3f, 0.4}, {color.rgb(), color.rgb(), color.rgb() * 0.8f}};
   pdef.textureName = TextureName::FLAKES_BORDERS;
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 0.1f);
@@ -1373,7 +1370,7 @@ static void addWorkshopEffect(FXManager& mgr) {
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
-  mgr.addDef(FXName::WORKSHOP, psdef);
+  mgr.addDef(name, psdef);
 }
 
 static void addJewelerEffect(FXManager& mgr) {
@@ -1798,7 +1795,8 @@ void FXManager::initializeDefs() {
 
   addLaboratoryEffect(*this);
   addForgeEffect(*this);
-  addWorkshopEffect(*this);
+  addWorkshopEffect(*this, FXName::WORKSHOP, Color(120, 87, 46), 0.7);
+  addWorkshopEffect(*this, FXName::EMBALMENT, Color(62, 186, 149), 0.2);
   addJewelerEffect(*this);
 
   addSpiralEffects(*this);

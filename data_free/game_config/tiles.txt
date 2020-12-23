@@ -481,6 +481,8 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   isSymbolFont = true roundShadow = true }
 { viewId = "torture_table" symbol = "=" color = ColorId GRAY
   roundShadow = true }
+{ viewId = "embalming_table" symbol = "=" color = ColorId RED
+  roundShadow = true }
 { viewId = "impaled_head" symbol = "⚲" color = ColorId BROWN
   isSymbolFont = true roundShadow = true }
 { viewId = "whipping_post" symbol = "}" color = ColorId BROWN
