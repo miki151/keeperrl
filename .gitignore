@@ -7,7 +7,7 @@ html/
 .vscode/
 .kdev4/
 *.kdev4
-*.png
+/*.png
 unlocks.txt
 tmp/
 find
