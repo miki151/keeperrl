@@ -78,7 +78,7 @@
   }
   initialTech = {  }
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "coffins"
+      "structure" "doors" "floors" "storage" "zones" "library" "phylactery" "beds" "coffins"
       "training_dummies" "morgue" "laboratory" "poetry" "orders"
       "installations" "magical_installations"
   }

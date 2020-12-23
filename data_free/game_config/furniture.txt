@@ -386,6 +386,16 @@
   strength = 30
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
 }
+"PHYLACTERY"
+{
+  name = "phylactery"
+  viewId = { "phylactery" }
+  blockMovement = true
+  canHideHere = true
+  luxury = 1.0
+  strength = 200
+  destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+}
 "MINION_STATUE"
 {
   name = "gold statue"
