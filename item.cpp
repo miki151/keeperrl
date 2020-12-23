@@ -37,6 +37,7 @@
 #include "creature_attributes.h"
 #include "content_factory.h"
 #include "creature_factory.h"
+#include "effect_type.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -300,6 +301,8 @@ optional<ItemUpgradeType> Item::getAppliedUpgradeType() const {
   auto c = getClass();
   if (attributes->automatonPart && attributes->automatonPart->prefixType)
     c = *attributes->automatonPart->prefixType;
+  if (attributes->effect && attributes->effect->effect->contains<Effects::AssembledMinion>())
+    return ItemUpgradeType::BALSAM;
   switch (c) {
     case ItemClass::ARMOR:
       return ItemUpgradeType::ARMOR;

@@ -59,6 +59,11 @@ struct Glyph {
   SERIALIZE_ALL(rune)
   ITEM_TYPE_INTERFACE;
 };
+struct Balsam {
+  Effect SERIAL(effect);
+  SERIALIZE_ALL(effect)
+  ITEM_TYPE_INTERFACE;
+};
 struct TechBook {
   TechId SERIAL(techId);
   SERIALIZE_ALL(techId)
@@ -114,7 +119,8 @@ struct PrefixChance {
   X(Assembled, 13) \
   X(Corpse, 14)\
   X(AutomatonPaint, 15)\
-  X(PrefixChance, 16)
+  X(PrefixChance, 16)\
+  X(Balsam, 17)\
 
 #define VARIANT_TYPES_LIST ITEM_TYPES_LIST
 #define VARIANT_NAME ItemTypeVariant

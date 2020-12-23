@@ -49,12 +49,33 @@
   {
     viewId = { "keeper_f1" }
     gender = FEMALE
-    name = {
-      name = "wizard"
+    name = append {
       firstNameGen = "FIRST_FEMALE"
-      fullTitle = true
     }
     viewIdUpgrades = { { "keeper_f2" } { "keeper_f3" } { "keeper_f4" }}
+  }
+"NECROMANCER" inherit "KEEPER_MAGE"
+  {
+    viewId = { "keeper1" ColorId BLACK }
+    # ViewId upgrades of Keepers are applied every 5 tech level increases
+    viewIdUpgrades = { { "keeper2" ColorId BLACK} { "keeper3" ColorId BLACK} { "keeper4" ColorId BLACK} }
+    name = append {
+      name = "necromancer"
+    }
+    skills = {
+      "MORGUE" 1.0
+      "LABORATORY" 1.0
+    }
+    permanentEffects = { SUNLIGHT_VULNERABLE 1 }
+  }
+"NECROMANCER_F" inherit "NECROMANCER"
+  {
+    viewId = { "keeper_f1" ColorId BLACK }
+    gender = FEMALE
+    name = append {
+      firstNameGen = "FIRST_FEMALE"
+    }
+    viewIdUpgrades = { { "keeper_f2" ColorId BLACK } { "keeper_f3" ColorId BLACK } { "keeper_f4" ColorId BLACK }}
   }
 "KEEPER_KNIGHT"
   {
@@ -2157,12 +2178,13 @@
       SWARMER 1
     }
   }
-"ZOMBIE_PLAYER" inherit "ZOMBIE"
-{
-  skills = {
-    "DIGGING" 0.2
+"ZOMBIE_WORKER" inherit "ZOMBIE"
+  {
+    skills = {
+      "DIGGING" 0.2
+    }
+    maxBalsams = 1
   }
-}
 "SKELETON"
   {
     viewId = { "skeleton" }
@@ -2187,6 +2209,7 @@
       name = "skeleton"
     }
     hatedByEffect = HATE_UNDEAD
+    maxBalsams = 1
   }
 "VAMPIRE"
   {
@@ -2227,6 +2250,7 @@
       firstNameGen = "VAMPIRE"
     }
     hatedByEffect = HATE_UNDEAD
+    maxBalsams = 3
   }
 "VAMPIRE_LORD" inherit "VAMPIRE"
   {
@@ -2279,13 +2303,14 @@
       SLOW_TRAINING 1
     }
     maxLevelIncrease = {
-      MELEE 25
+      MELEE 55
     }
     name = {
       name = "mummy"
       pluralName = "mummies"
     }
     hatedByEffect = HATE_UNDEAD
+    maxBalsams = 2
   }
 "ORC"
   {

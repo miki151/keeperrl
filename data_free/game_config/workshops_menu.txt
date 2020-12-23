@@ -189,5 +189,23 @@
   }
 }
 
+"morgue"
+{
+  "MORGUE"
+  {
+      { item = {Assembled "ZOMBIE_WORKER" "zombie" } work = 8 cost = "CORPSE" 1 applyImmediately = true}
+      { item = {Assembled "SKELETON" "skeleton" } work = 8 cost = "CORPSE" 1 applyImmediately = true}
+      { item = {Assembled "MUMMY" "mummy" } work = 20 cost = "CORPSE" 2 applyImmediately = true}
+      { item = {Assembled "VAMPIRE" "vampire" } work = 20 cost = "CORPSE" 4 applyImmediately = true}
+  }
+  "LABORATORY"
+  {
+      {{Balsam Permanent FLYING} 4 "GOLD" 15}
+      {{Balsam AddBodyPart HEAD 1 none} 4 "GOLD" 15}
+      {{Balsam IncreaseAttr DAMAGE 5} 4 "GOLD" 15}
+      {{Balsam Permanent DARKNESS_SOURCE} 4 "GOLD" 15}
+  }
+}
+
 # Add more groups here, remember that you need to add your new group to your keeper in keeper_creatures.txt
 

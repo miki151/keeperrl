@@ -23,6 +23,12 @@
   }
 
 namespace Effects {
+  enum class EnhanceType;
+}
+
+RICH_ENUM(Effects::EnhanceType, WEAPON, ARMOR);
+
+namespace Effects {
 struct Escape {
   int SERIAL(maxDist) = 10000;
   SERIALIZE_ALL(OPTION(maxDist))
@@ -41,7 +47,7 @@ struct DestroyWalls {
   SERIALIZE_ALL(action)
 };
 struct Enhance {
-  ItemUpgradeType SERIAL(type);
+  EnhanceType SERIAL(type);
   int SERIAL(amount);
   const char* typeAsString() const;
   const char* amountAs(const char* positive, const char* negative) const;
@@ -63,7 +69,8 @@ struct Summon {
 };
 struct AssembledMinion {
   CreatureId SERIAL(creature);
-  SERIALIZE_ALL(creature)
+  vector<Effect> SERIAL(effects);
+  SERIALIZE_ALL(NAMED(creature), OPTION(effects))
 };
 struct AddAutomatonParts {
   string getPartsNames(const ContentFactory*) const;

@@ -12,6 +12,7 @@
 #include "content_factory.h"
 #include "body.h"
 #include "item.h"
+#include "effect_type.h"
 
 void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAttributes& attr) {
   if (attr.automatonPart) {
@@ -40,6 +41,12 @@ void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAt
         },
         [&](const SpecialAttr& a) {
           attr.specialAttr[a.attr] = make_pair(a.value, a.predicate);
+        },
+        [&](const AssembledCreatureEffect& a) {
+          if (auto effect = attr.effect->effect->getValueMaybe<Effects::AssembledMinion>()) {
+            effect->effects.push_back(a);
+            attr.effect = Effect(*effect);
+          }
         }
     );
   }
@@ -77,7 +84,8 @@ void applyPrefixToCreature(const ItemPrefix& prefix, Creature* c) {
       },
       [&](const SpecialAttr& a) {
         c->getAttributes().specialAttr[a.attr].push_back(make_pair(a.value, a.predicate));
-      }
+      },
+      [](auto&) {}
   );
 }
 
@@ -106,6 +114,9 @@ vector<string> getEffectDescription(const ContentFactory* factory, const ItemPre
       },
       [&](const SpecialAttr& a) -> vector<string> {
         return {toStringWithSign(a.value) + " " + ::getName(a.attr) + " " + a.predicate.getName()};
+      },
+      [&](const AssembledCreatureEffect& effect) -> vector<string> {
+        return {effect.getDescription(factory)};
       }
   );
 }
@@ -132,6 +143,9 @@ string getItemName(const ContentFactory* factory, const ItemPrefix& prefix) {
       },
       [&](const SpecialAttr& a) -> string {
         return a.predicate.getName();
+      },
+      [&](const AssembledCreatureEffect& effect) -> string {
+        return "with " + effect.getName(factory);
       }
   );
 }

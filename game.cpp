@@ -113,6 +113,8 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
   playerControl->loadImmigrationAndWorkshops(contentFactory.get(), keeperInfo);
   for (auto tech : keeperInfo.initialTech)
     playerCollective->acquireTech(tech, false);
+  for (auto resource : keeperInfo.credit)
+    playerCollective->returnResource(resource);
 }
 
 Game::~Game() {}

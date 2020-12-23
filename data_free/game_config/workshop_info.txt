@@ -1,5 +1,5 @@
-"WORKSHOP" "WORKSHOP" "workshop"
-"FORGE" "FORGE" "forge"
-"LABORATORY" "LABORATORY" "laboratory"
-"JEWELER" "JEWELLER" "jeweler"
-
+"WORKSHOP" { "WORKSHOP" "workshop" }
+"FORGE" { "FORGE" "forge" "forges" }
+"LABORATORY" { "LABORATORY" "laboratory" "concocts" }
+"JEWELER" { "JEWELLER" "jeweler" }
+"MORGUE" { "EMBALMING_TABLE" "morgue" "raises" }

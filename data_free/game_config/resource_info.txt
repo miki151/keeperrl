@@ -9,6 +9,6 @@
 "IRON"           { RESOURCE    "iron"           { "iron_rock" } }
 "ADA"            { RESOURCE    "adamantium"     { "ada_ore" } }
 "STONE"          { RESOURCE    "granite"        { "rock" } }
-"CORPSE"         { CORPSES     "corpses" }
+"CORPSE"         { CORPSES     "corpses"        { "body_part" } }
 "PRISONER_HEAD"  { none        "prisoner heads" }
 "DEMON_PIETY"    { none        "rituals" }

@@ -133,6 +133,7 @@ class CreatureAttributes {
   heap_optional<Effect> SERIAL(deathEffect);
 
   vector<CompanionInfo> SERIAL(companions);
+  int SERIAL(maxBalsams) = 0;
 
   private:
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);

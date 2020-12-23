@@ -4,6 +4,7 @@
 #include "tech_id.h"
 #include "name_generator_id.h"
 #include "minion_trait.h"
+#include "cost_info.h"
 
 class SpecialTrait;
 
@@ -28,6 +29,7 @@ struct KeeperCreatureInfo {
   bool SERIAL(prisoners) = true;
   vector<string> SERIAL(endlessEnemyGroups) = {"basic"};
   optional<string> SERIAL(unlock);
+  vector<CostInfo> SERIAL(credit);
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);
 };

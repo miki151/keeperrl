@@ -113,6 +113,18 @@
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   usageFX = JEWELLER
 }
+"EMBALMING_TABLE"
+{
+  name = "embalming table"
+  viewId = { "torture_table" }
+  blockMovement = true
+  usageTime = 5
+  canHideHere = true
+  fire = 50
+  strength = 80
+  requiresLight = true
+  usageFX = WORKSHOP
+}
 "POETRY_TABLE" inherit "JEWELLER"
 {
   name = "poetry table"

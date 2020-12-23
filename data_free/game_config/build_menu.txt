@@ -215,6 +215,11 @@
     { Furniture {{ "DISTILLERY" }   "IRON" 30 }                    "Distillery"       "Crafting"
         "Allows making moonshine." 0 { TechId "distillation" }}
   }
+  "morgue"
+  {
+    { Furniture {{ "EMBALMING_TABLE" } "WOOD" 10 }                     "Embalming table"        "Crafting"
+        "Produces living bodies." }
+  }
   "automatons"
   {
     { Furniture {{ "AUTOMATON_ENGINE_WOOD" } "WOOD" 50 }                "Wooden engine"   "Automaton engines"

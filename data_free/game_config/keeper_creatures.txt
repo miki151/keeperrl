@@ -69,9 +69,28 @@
   noLeader = true
   prisoners = false
 }
-"5_zombies"
+"5_necromancer"
 {
-  creatureId = { "ZOMBIE_PLAYER" }
+  creatureId = { "NECROMANCER" "NECROMANCER_F" }
+  tribeAlignment = EVIL
+  immigrantGroups = {"necromancer"}
+  technology = { "alchemy" "sorcery" "advanced sorcery" "master sorcery" "iron working"
+  }
+  initialTech = {  }
+  buildingGroups = {
+      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "coffins"
+      "training_dummies" "morgue" "laboratory" "poetry" "orders"
+      "installations" "magical_installations"
+  }
+  workshopGroups = { "morgue" }
+  description = "Play as a necromancer!"
+  credit = { "CORPSE" 20 }
+# Special traits example, all traits are added
+#   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
+}
+"6_zombies"
+{
+  creatureId = { "ZOMBIE_WORKER" }
   specialTraits = { Lasting {SWARMER} }
   tribeAlignment = EVIL
   immigrantGroups = {"zombies"}
@@ -92,7 +111,7 @@
   immigrantInterval = 40
   unlock = "zombies"
 }
-"6_cyclops"
+"7_cyclops"
 {
   creatureId = { "CYCLOPS_PLAYER" }
   tribeAlignment = EVIL

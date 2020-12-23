@@ -5,7 +5,8 @@
 RICH_ENUM(
     ItemUpgradeType,
     WEAPON,
-    ARMOR
+    ARMOR,
+    BALSAM
 );
 
 class ItemPrefix;

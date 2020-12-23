@@ -10,6 +10,8 @@ static const char* getName(ItemUpgradeType type) {
       return "armor";
     case ItemUpgradeType::WEAPON:
       return "weapons";
+    case ItemUpgradeType::BALSAM:
+      return "bodies";
   }
 }
 

@@ -1358,6 +1358,7 @@ void Collective::summonDemon(Creature* c) {
 }
 
 void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos) {
+  auto contentFactory = getGame()->getContentFactory();
   if (auto furniture = pos.first.getFurniture(pos.second)) {
     // Furniture have variable usage time, so just multiply by it to be independent of changes.
     double efficiency = furniture->getUsageTime().getVisibleDouble() * getEfficiency(c);
@@ -1370,12 +1371,12 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
     if (furniture->getType() == FurnitureType("TORTURE_TABLE"))
       taskMap->addTask(Task::torture(c), pos.first, MinionActivity::WORKING);
     if (furniture->getType() == FurnitureType("POETRY_TABLE") && Random.chance(0.01 * efficiency)) {
-      auto poem = ItemType(ItemTypes::Poem{}).get(1, getGame()->getContentFactory());
+      auto poem = ItemType(ItemTypes::Poem{}).get(1, contentFactory);
       bool demon = Random.roll(500);
       if (!recordedEvents.empty() && Random.roll(3)) {
         auto event = Random.choose(recordedEvents);
         recordedEvents.erase(event);
-        poem = ItemType(ItemTypes::EventPoem{event}).get(1, getGame()->getContentFactory());
+        poem = ItemType(ItemTypes::EventPoem{event}).get(1, contentFactory);
         demon = false;
       }
       addProducesMessage(c, poem, "writes");
@@ -1447,7 +1448,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
             break;
         }
     }
-    if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType()))
+    if (auto workshopType = contentFactory->getWorkshopType(furniture->getType()))
       if (auto workshop = getReferenceMaybe(workshops->types, *workshopType)) {
         auto craftingSkill = c->getAttributes().getSkills().getValue(*workshopType);
         auto result = workshop->addWork(this, efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c),
@@ -1459,7 +1460,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
             getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
           if (result.items[0]->getClass() == ItemClass::POTION)
             getGame()->getStatistics().add(StatId::POTION_PRODUCED);
-          addProducesMessage(c, result.items);
+          addProducesMessage(c, result.items, contentFactory->workshopInfo.at(*workshopType).verb.data());
           if (result.wasUpgraded) {
             control->addMessage(PlayerMessage(c->getName().the() + " is depressed after crafting his masterpiece.", MessagePriority::HIGH));
             c->addMorale(-2);

@@ -5,5 +5,6 @@
 struct WorkshopInfo {
   FurnitureType SERIAL(furniture);
   string SERIAL(name);
-  SERIALIZE_ALL(furniture, name)
+  string SERIAL(verb) = "produces";
+  SERIALIZE_ALL(NAMED(furniture), NAMED(name), OPTION(verb))
 };

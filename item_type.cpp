@@ -421,6 +421,7 @@ ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory
       i.weight = 1;
       i.price = getEffectPrice(*i.effect);
       i.uses = 1;
+      i.maxUpgrades = factory->getCreatures().getMaxBalsams(creature);
   );
 }
 
@@ -566,10 +567,32 @@ ItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory* factory) co
       i.viewId = getRuneViewId(*i.shortName);
       i.upgradeInfo = rune;
       i.name = "glyph " + *i.shortName;
-      i.plural= "glyph "  + *i.shortName;
+      i.plural= "glyphs "  + *i.shortName;
       i.blindName = "glyph"_s;
       i.itemClass = ItemClass::SCROLL;
       i.weight = 0.1;
+      i.price = 100;
+      i.uses = 1;
+  );
+}
+
+static ViewId getBalsamViewId(const string& name) {
+  int h = int(combineHash(name));
+  const static vector<Color> colors = {Color::RED, Color::YELLOW, Color::ORANGE, Color::BLUE, Color::LIGHT_BLUE,
+      Color::PURPLE, Color::PINK, Color::RED, Color::ORANGE, Color::GREEN, Color::LIGHT_GREEN};
+  return ViewId("potion2", colors[(h % colors.size() + colors.size()) % colors.size()]);
+}
+
+ItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) const {
+  return ITATTR(
+      i.shortName = effect.getName(factory);
+      i.viewId = getBalsamViewId(*i.shortName);
+      i.upgradeInfo = ItemUpgradeInfo LIST(ItemUpgradeType::BALSAM, effect);
+      i.name = "balsam of " + *i.shortName;
+      i.plural= "balsams of "  + *i.shortName;
+      i.blindName = "balsam"_s;
+      i.itemClass = ItemClass::POTION;
+      i.weight = 0.5;
       i.price = 100;
       i.uses = 1;
   );

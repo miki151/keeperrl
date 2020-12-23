@@ -584,10 +584,21 @@
       spawnLocation = NearLeader
     }
 }
+"necromancer"
+{
+    {
+      ids = { "ZOMBIE_WORKER" }
+      traits = { FIGHTER WORKER NO_LIMIT }
+      invisible = true
+      noAuto = true
+      initialRecruitment = 4
+      spawnLocation = NearLeader
+    }
+}
 "zombies"
 {
     {
-      ids = { "ZOMBIE_PLAYER" }
+      ids = { "ZOMBIE_WORKER" }
       traits = { FIGHTER WORKER LEADER }
       frequency = 0.5
 #      spawnLocation = FurnitureType "GRAVE"

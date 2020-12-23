@@ -523,13 +523,15 @@ static string getName(const Effects::AssembledMinion& e, const ContentFactory* f
 }
 
 static string getDescription(const Effects::AssembledMinion& e, const ContentFactory* f) {
-  return "Can be assembled to a " + getName(e, f);
+  return "";// "Can be assembled to a " + getName(e, f);
 }
 
 static bool apply(const Effects::AssembledMinion& m, Position pos, Creature* attacker) {
   auto group = CreatureGroup::singleType(attacker->getTribeId(), m.creature);
   auto c = Effect::summon(pos, group, 1, none).getFirstElement();
   if (c) {
+    for (auto& e : m.effects)
+      e.apply((*c)->getPosition(), attacker);
     for (auto col : pos.getGame()->getCollectives())
       if (col->getCreatures().contains(attacker)) {
         col->addCreature(*c, {MinionTrait::FIGHTER, MinionTrait::AUTOMATON});
@@ -682,9 +684,9 @@ static string getDescription(const Effects::CircularBlast&, const ContentFactory
 
 const char* Effects::Enhance::typeAsString() const {
   switch (type) {
-    case ItemUpgradeType::WEAPON:
+    case EnhanceType::WEAPON:
       return "weapon";
-    case ItemUpgradeType::ARMOR:
+    case EnhanceType::ARMOR:
       return "armor";
   }
 }
@@ -695,9 +697,9 @@ const char* Effects::Enhance::amountAs(const char* positive, const char* negativ
 
 static bool applyToCreature(const Effects::Enhance& e, Creature* c, Creature*) {
   switch (e.type) {
-    case ItemUpgradeType::WEAPON:
+    case Effects::EnhanceType::WEAPON:
       return enhanceWeapon(c, e.amount, e.amountAs("is improved", "degrades"));
-    case ItemUpgradeType::ARMOR:
+    case Effects::EnhanceType::ARMOR:
       return enhanceArmor(c, e.amount, e.amountAs("is improved", "degrades"));
   }
 }
@@ -1042,7 +1044,7 @@ static bool applyToCreature(const Effects::AddBodyPart& p, Creature* c, Creature
 }
 
 static string getName(const Effects::AddBodyPart& e, const ContentFactory*) {
-  return "add "_s + getPlural(::getName(e.part), e.count);
+  return "extra "_s + (e.count > 1 ? makePlural(::getName(e.part)) : string(::getName(e.part)));
 }
 
 static string getDescription(const Effects::AddBodyPart& e, const ContentFactory*) {
@@ -2099,10 +2101,10 @@ vector<Effect> Effect::getWishedForEffects() {
        Effect(Effects::Fire{}),
        Effect(Effects::DestroyEquipment{}),
        Effect(Effects::Area{2, Effect(Effects::DestroyWalls{DestroyAction::Type::BOULDER})}),
-       Effect(Effects::Enhance{ItemUpgradeType::WEAPON, 2}),
-       Effect(Effects::Enhance{ItemUpgradeType::ARMOR, 2}),
-       Effect(Effects::Enhance{ItemUpgradeType::WEAPON, -2}),
-       Effect(Effects::Enhance{ItemUpgradeType::ARMOR, -2}),
+       Effect(Effects::Enhance{Effects::EnhanceType::WEAPON, 2}),
+       Effect(Effects::Enhance{Effects::EnhanceType::ARMOR, 2}),
+       Effect(Effects::Enhance{Effects::EnhanceType::WEAPON, -2}),
+       Effect(Effects::Enhance{Effects::EnhanceType::ARMOR, -2}),
        Effect(Effects::CircularBlast{}),
        Effect(Effects::Deception{}),
        Effect(Effects::SummonElement{}),

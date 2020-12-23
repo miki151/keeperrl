@@ -247,6 +247,12 @@ static ViewId getSpecialViewId(bool humanoid, bool large, bool body, bool wings)
   return specialViewIds[humanoid * 8 + (!large) * 4 + (!body) * 2 + wings];
 }
 
+int CreatureFactory::getMaxBalsams(CreatureId id) const {
+  if (auto a = getReferenceMaybe(attributes, id))
+    return a->maxBalsams;
+  return 0;
+}
+
 ViewIdList CreatureFactory::getViewId(CreatureId id) const {
   if (auto a = getReferenceMaybe(attributes, id)) {
     ViewIdList ret = {a->viewId};

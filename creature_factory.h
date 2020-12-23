@@ -55,6 +55,7 @@ class CreatureFactory {
   string getName(CreatureId) const;
   string getNamePlural(CreatureId) const;
   const Gender& getGender(CreatureId);
+  int getMaxBalsams(CreatureId) const;
   vector<CreatureId> getAllCreatures() const;
 
   NameGenerator* getNameGenerator();

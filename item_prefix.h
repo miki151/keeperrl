@@ -38,6 +38,8 @@ struct SpecialAttr {
   SERIALIZE_ALL(attr, value, predicate)
 };
 
+using AssembledCreatureEffect = Effect;
+
 #define VARIANT_TYPES_LIST\
   X(LastingEffect, 0)\
   X(VictimEffect, 1)\
@@ -45,7 +47,8 @@ struct SpecialAttr {
   X(ItemAttrBonus, 3)\
   X(JoinPrefixes, 4)\
   X(SpellId, 5)\
-  X(SpecialAttr, 6)
+  X(SpecialAttr, 6)\
+  X(AssembledCreatureEffect, 7)
 
 #define VARIANT_NAME ItemPrefix
 
