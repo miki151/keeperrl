@@ -40,7 +40,7 @@ Def MiniWindow2(Content) {
   Position(RIGHT_STRETCHED, Texture(VERT_BAR_MINI2))
   Position(LEFT_STRETCHED, Texture(VERT_BAR_MINI2, FLIP_X))
   Position(TOP_LEFT, Texture(CORNER_MINI2))
-  Position(TOP_RIGHT, Texture(CORNER_MINI2, FLIP_X))
+  Position(TOP_RIGHT, Texture(CORNER_MINI2_LARGE, FLIP_X))
   Position(BOTTOM_RIGHT, Texture(CORNER_MINI2, FLIP_XY))
   Position(BOTTOM_LEFT, Texture(CORNER_MINI2, FLIP_Y))
 }
@@ -89,21 +89,27 @@ End
 Def LoadButtonSpacing() Height 10 {} End
 
 Def SavedGameContent() Vertical {
-  MiniWindow2({
-    Horizontal {
-      Vertical {
-        Using "label" Label()
-        Using "date" Label(none, 14, ColorId GRAY)
-        MarginTop(0, Using "viewIds" List(HORIZONTAL, ViewId(1)))
+  {
+    MiniWindow2({
+      Horizontal {
+        Vertical {
+          Using "label" Label()
+          Using "date" Label(none, 14, ColorId GRAY)
+          Using "viewIds" List(HORIZONTAL, ViewId(1))
+        }
+        Stretch {}
+        Vertical {
+          Using "load" StandardButton(Label("Load game"))
+          Using "warlord" StandardButton(Label("Play as a warlord"))
+        }
       }
-      Stretch {}
-      Vertical {
-        Using "load" StandardButton(Label("Load game"))
-        Using "warlord" StandardButton(Label("Play as a warlord"))
-        Using "erase" StandardButton(Label("Erase file"))
-      }
-    }
-  })
+    })
+    MarginRight(2, Using "erase" Position(TOP_RIGHT, Height 14 Width 14 {
+        Button()
+        Margins(4, -4, 0, 0, Label("x", 16, Rgb 200 100 100 255))
+        MouseOver Margins(4, -4, 0, 0, Label("x", 16, Rgb 255 200 200 255))
+    }))
+  }
   LoadButtonSpacing()
 }
 End
@@ -131,9 +137,10 @@ End
   FocusKeys()
   Width 600
   Vertical {
-    Height 400
+    MaxHeight 400
       Using "games" Scrolling(List(VERTICAL, SavedGameContent()))
     Stretch {}
+    Height 15 {}
     Position(MIDDLE, Horizontal {
       Width 150 Using "new" StandardButton(Height 20 Label("Start new game"))
       Width 150 Using "EXIT" StandardButton(Height 20 Label("Go back"))

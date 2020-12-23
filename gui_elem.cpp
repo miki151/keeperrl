@@ -2847,6 +2847,7 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   textures[TexId::HORI_BAR_MINI2] = Texture(path.file("ui/horibarmini2.png"));
   textures[TexId::VERT_BAR_MINI2] = Texture(path.file("ui/vertbarmini2.png"));
   textures[TexId::CORNER_MINI2] = Texture(path.file("ui/cornermini2.png"));
+  textures[TexId::CORNER_MINI2_LARGE] = Texture(path.file("ui/cornermini2_large.png"));
   textures[TexId::IMMIGRANT_BG] = Texture(path.file("ui/immigrantbg.png"));
   textures[TexId::IMMIGRANT2_BG] = Texture(path.file("ui/immigrant2bg.png"));
   textures[TexId::SCROLL_UP] = Texture(path.file("ui/up.png"));
