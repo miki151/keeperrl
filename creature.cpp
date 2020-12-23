@@ -340,23 +340,25 @@ EnumSet<CreatureStatus>& Creature::getStatus() {
   return statuses;
 }
 
-optional<MovementInfo> Creature::spendTime(TimeInterval t) {
+optional<MovementInfo> Creature::spendTime(TimeInterval t, bool withSpeedModifier) {
   PROFILE;
   if (WModel m = position.getModel()) {
     MovementInfo ret(Vec2(0, 0), *getLocalTime(), *getLocalTime() + t, 0, MovementInfo::MOVE);
     lastMoveCounter = ret.moveCounter = position.getModel()->getMoveCounter();
     if (!isDead()) {
-      if (isAffected(LastingEffect::SPEED) && t == 1_visible) {
+      if (withSpeedModifier && isAffected(LastingEffect::SPEED) && t == 1_visible) {
         if (m->getTimeQueue().hasExtraMove(this))
           ret.tBegin += 0.5;
         else
           ret.tEnd -= 0.5;
         m->getTimeQueue().makeExtraMove(this);
       } else {
-        if (isAffected(LastingEffect::SPEED))
-          t = t - 1_visible;
-        if (isAffected(LastingEffect::SLOWED))
-          t *= 2;
+        if (withSpeedModifier) {
+          if (isAffected(LastingEffect::SPEED))
+            t = t - 1_visible;
+          if (isAffected(LastingEffect::SLOWED))
+            t *= 2;
+        }
         m->getTimeQueue().increaseTime(this, t);
       }
     }
@@ -403,7 +405,7 @@ CreatureAction Creature::move(Position pos, optional<Position> nextPos) const {
       return CreatureAction();
   }
   return CreatureAction(this, [=](Creature* self) {
-  PROFILE;
+    PROFILE;
     INFO << getName().the() << " moving " << direction;
     if (isAffected(LastingEffect::ENTANGLED) || isAffected(LastingEffect::TIED_UP)) {
       secondPerson("You can't break free!");
@@ -423,7 +425,7 @@ CreatureAction Creature::move(Position pos, optional<Position> nextPos) const {
       you(MsgType::CRAWL, getPosition().getName());
       timeSpent = 3_visible;
     }
-    self->addMovementInfo(self->spendTime(timeSpent)->setDirection(direction));
+    self->addMovementInfo(self->spendTime(timeSpent, true)->setDirection(direction));
   });
 }
 
