@@ -367,6 +367,7 @@
   lightEmission = 8.2
   strength = 30
   canBuildOutsideOfTerritory = true
+  eyeball = true
 }
 "WHIPPING_POST"
 {

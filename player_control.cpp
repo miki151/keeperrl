@@ -237,8 +237,11 @@ void PlayerControl::onControlledKilled(const Creature* victim) {
 }
 
 void PlayerControl::onSunlightVisibilityChanged() {
-  for (auto pos : collective->getConstructions().getBuiltPositions(FurnitureType("EYEBALL")))
-    visibilityMap->updateEyeball(pos);
+  auto& f = getGame()->getContentFactory()->furniture;
+  for (auto type : f.getAllFurnitureType())
+    if (f.getData(type).isEyeball())
+      for (auto pos : collective->getConstructions().getBuiltPositions(type))
+        visibilityMap->updateEyeball(pos);
 }
 
 void PlayerControl::setTutorial(STutorial t) {
@@ -1770,7 +1773,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
         }
       },
       [&](const FurnitureDestroyed& info) {
-        if (info.type == FurnitureType("EYEBALL"))
+        if (getGame()->getContentFactory()->furniture.getData(info.type).isEyeball())
           visibilityMap->removeEyeball(info.position);
         if (info.type == FurnitureType("PIT") && collective->getKnownTiles().isKnown(info.position))
           addToMemory(info.position);
@@ -3129,7 +3132,7 @@ void PlayerControl::updateSquareMemory(Position pos) {
 
 void PlayerControl::onConstructed(Position pos, FurnitureType type) {
   addToMemory(pos);
-  if (type == FurnitureType("EYEBALL"))
+  if (getGame()->getContentFactory()->furniture.getData(type).isEyeball())
     visibilityMap->updateEyeball(pos);
 }
 
