@@ -128,7 +128,7 @@ void VillageControl::onEvent(const GameEvent& event) {
           }
         }
       },
-      [&](const FurnitureDestroyed& info) {
+      [&](const FurnitureRemoved& info) {
         if (collective->getTerritory().contains(info.position) &&
             collective->getGame()->getContentFactory()->furniture.getData(info.type).isWall())
           for (auto neighbor : info.position.neighbors8())

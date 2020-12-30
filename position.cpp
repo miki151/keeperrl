@@ -670,6 +670,7 @@ void Position::removeFurniture(const Furniture* f, PFurniture replace) const {
   level->removeLightSource(coord, f->getLightEmission());
   auto replacePtr = replace.get();
   auto layer = f->getLayer();
+  auto type = f->getType();
   CHECK(layer != FurnitureLayer::GROUND || !!replace);
   CHECK(getFurniture(layer) == f);
   if (auto& effect = f->getLastingEffectInfo())
@@ -695,6 +696,7 @@ void Position::removeFurniture(const Furniture* f, PFurniture replace) const {
       replacePtr->onEnter(c);
   }
   setNeedsRenderAndMemoryUpdate(true);
+  getGame()->addEvent(EventInfo::FurnitureRemoved{*this, type, layer});
 }
 
 bool Position::canConstruct(FurnitureType type) const {

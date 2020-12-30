@@ -1772,7 +1772,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
           }
         }
       },
-      [&](const FurnitureDestroyed& info) {
+      [&](const FurnitureRemoved& info) {
         if (getGame()->getContentFactory()->furniture.getData(info.type).isEyeball())
           visibilityMap->removeEyeball(info.position);
         if (info.type == FurnitureType("PIT") && collective->getKnownTiles().isKnown(info.position))

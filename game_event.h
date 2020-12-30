@@ -86,7 +86,7 @@ namespace EventInfo {
     Creature* creature = nullptr;
   };
 
-  struct FurnitureDestroyed {
+  struct FurnitureRemoved {
     Position position;
     FurnitureType type;
     FurnitureLayer layer;
@@ -141,7 +141,7 @@ namespace EventInfo {
   X(MovementChanged, 12)\
   X(TrapTriggered, 13)\
   X(TrapDisarmed, 14)\
-  X(FurnitureDestroyed, 15)\
+  X(FurnitureRemoved, 15)\
   X(ItemsEquipped, 16)\
   X(CreatureEvent, 17)\
   X(VisibilityChanged, 18)\

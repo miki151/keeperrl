@@ -736,7 +736,7 @@ void Collective::onEvent(const GameEvent& event) {
       [&](const MovementChanged& info) {
         positionMatching->updateMovement(info.pos);
       },
-      [&](const FurnitureDestroyed& info) {
+      [&](const FurnitureRemoved& info) {
         if (info.position.getModel() == model) {
           populationIncrease -= getGame()->getContentFactory()->furniture.getPopulationIncrease(
               info.type, constructions->getBuiltCount(info.type));

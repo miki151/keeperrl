@@ -145,7 +145,6 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
   auto effect = destroyedEffect;
   pos.removeFurniture(this, destroyedRemains
       ? pos.getGame()->getContentFactory()->furniture.getFurniture(*destroyedRemains, getTribe()) : nullptr);
-  pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
   if (effect)
     effect->apply(pos);
 }
@@ -233,7 +232,6 @@ void Furniture::tick(Position pos, FurnitureLayer supposedLayer) {
       auto myType = type;
       pos.removeFurniture(this, burntRemains ?
           pos.getGame()->getContentFactory()->furniture.getFurniture(*burntRemains, getTribe()) : nullptr);
-      pos.getGame()->addEvent(EventInfo::FurnitureDestroyed{pos, myType, myLayer});
       return;
     }
   }
