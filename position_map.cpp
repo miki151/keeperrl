@@ -97,33 +97,21 @@ T& PositionMap<T>::getOrInit(Position pos) {
 template <class T>
 T& PositionMap<T>::getOrFail(Position pos) {
   LevelId levelId = pos.getLevel()->getUniqueId();
-  try {
-    auto& table = tables.at(levelId);
-    if (pos.getCoord().inRectangle(table.getBounds()))
-      return *table[pos.getCoord()];
-    else
-      return outliers.at(levelId).at(pos.getCoord());
-  } catch (std::out_of_range) {
-    FATAL << "getOrFail failed " << pos.getCoord();
-    static T t;
-    return t;
-  }
+  auto& table = tables.at(levelId);
+  if (pos.getCoord().inRectangle(table.getBounds()))
+    return *table[pos.getCoord()];
+  else
+    return outliers.at(levelId).at(pos.getCoord());
 }
 
 template <class T>
 const T& PositionMap<T>::getOrFail(Position pos) const {
   LevelId levelId = pos.getLevel()->getUniqueId();
-  try {
-    auto& table = tables.at(levelId);
-    if (pos.getCoord().inRectangle(table.getBounds()))
-      return *table[pos.getCoord()];
-    else
-      return outliers.at(levelId).at(pos.getCoord());
-  } catch (std::out_of_range) {
-    FATAL << "getOrFail failed " << pos.getCoord();
-    static T t;
-    return t;
-  }
+  auto& table = tables.at(levelId);
+  if (pos.getCoord().inRectangle(table.getBounds()))
+    return *table[pos.getCoord()];
+  else
+    return outliers.at(levelId).at(pos.getCoord());
 }
 
 template <class T>
