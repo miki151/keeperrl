@@ -1520,18 +1520,22 @@ class heap_optional {
   heap_optional(heap_optional&& o) noexcept : elem(std::move(o.elem)) {}
 
   T* operator -> () {
+    CHECK(!!elem);
     return elem.get();
   }
 
   const T* operator -> () const {
+    CHECK(!!elem);
     return elem.get();
   }
 
   T& operator * () {
+    CHECK(!!elem);
     return *elem;
   }
 
   const T& operator * () const {
+    CHECK(!!elem);
     return *elem;
   }
 
