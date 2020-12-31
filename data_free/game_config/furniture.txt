@@ -396,6 +396,22 @@
   luxury = 1.0
   strength = 200
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
+  usageType = UsageEffect "transfer your soul to" {
+    Area 1
+    Filter And { FurnitureType "PHYLACTERY" Not Flag "tmp" } {
+      PlaceFurniture "PHYLACTERY_ACTIVE"
+      SetPhylactery
+      SetFlag "tmp" true
+    }
+    SetFlag "tmp" false
+    CreatureMessage "turn into a lich!" "turns into a lich!"
+  }
+}
+"PHYLACTERY_ACTIVE" inherit "PHYLACTERY"
+{
+  usageType = none
+  name = "active phylactery"
+  viewId = { "phylactery_active" }
 }
 "MINION_STATUE"
 {

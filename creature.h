@@ -16,6 +16,7 @@
 #pragma once
 
 #include "enums.h"
+#include "event_listener.h"
 #include "unique_entity.h"
 #include "creature_action.h"
 #include "renderable.h"
@@ -29,6 +30,7 @@
 #include "game_time.h"
 #include "creature_status.h"
 #include "view_id.h"
+#include "furniture_type.h"
 
 class Skill;
 class Level;
@@ -60,7 +62,7 @@ class SpellSchool;
 class ContentFactory;
 struct AutomatonPart;
 
-class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedObject<Creature> {
+class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedObject<Creature>, public EventListener<Creature> {
   public:
   Creature(TribeId, CreatureAttributes, SpellMap);
   Creature(const ViewObject&, TribeId, CreatureAttributes, SpellMap);
@@ -311,6 +313,15 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void addAutomatonPart(AutomatonPart);
   int getSpareAutomatonSlots() const;
   vector<PItem> SERIAL(drops);
+  struct PhylacteryInfo {
+    Position SERIAL(pos);
+    FurnitureType SERIAL(type);
+    SERIALIZE_ALL(pos, type);
+  };
+  void setPhylactery(Position, FurnitureType);
+  const optional<PhylacteryInfo>& getPhylactery() const;
+  void onEvent(const GameEvent&);
+
   private:
 
   CreatureAction moveTowards(Position, bool away, NavigationFlags);
@@ -378,6 +389,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<AdjectiveInfo> getSpecialAttrAdjectives(bool good) const;
   vector<AutomatonPart> SERIAL(automatonParts);
   vector<pair<CreatureAttributes, SpellMap>> SERIAL(attributesStack);
+  optional<PhylacteryInfo> SERIAL(phylactery);
+  bool considerPhylactery(DropType, const Creature* attacker);
 };
 
 struct AdjectiveInfo {

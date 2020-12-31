@@ -66,17 +66,18 @@
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
-  ar & SUBCLASS(OwnedObject<Creature>) & SUBCLASS(Renderable) & SUBCLASS(UniqueEntity);
+  ar(SUBCLASS(OwnedObject<Creature>), SUBCLASS(Renderable), SUBCLASS(UniqueEntity), SUBCLASS(EventListener));
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
   ar(deathTime, hidden, lastMoveCounter, captureHealth);
   ar(deathReason, nextPosIntent, globalTime, drops);
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
-  ar(controllerStack, kills, statuses, automatonParts);
+  ar(controllerStack, kills, statuses, automatonParts, phylactery);
   ar(difficultyPoints, points, capture, spellMap, killTitles, companions);
   ar(vision, debt, highestAttackValueEver, lastCombatIntent, hitsInfo, primaryViewId);
 }
 
 SERIALIZABLE(Creature)
+REGISTER_TYPE(ListenerTemplate<Creature>)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Creature)
 
@@ -1660,10 +1661,27 @@ bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
   return false;
 }
 
+bool Creature::considerPhylactery(DropType drops, const Creature* attacker) {
+  if (phylactery && phylactery->pos.getFurniture(phylactery->type)) {
+    message("But wait!");
+    secondPerson(PlayerMessage("You have escaped death!", MessagePriority::HIGH));
+    thirdPerson(PlayerMessage(getName().the() + " has escaped death!", MessagePriority::HIGH));
+    heal();
+    removeEffect(LastingEffect::BLEEDING, false);
+    getBody().healBodyParts(this, 1000);
+    forceMovement = false;
+    phylactery->pos.removeFurniture(FurnitureLayer::MIDDLE);
+    position.moveCreature(phylactery->pos, true);
+    phylactery = none;
+    return true;
+  }
+  return false;
+}
+
 void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   auto oldPos = position;
   CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
-  if (considerSavingLife(drops, attacker))
+  if (considerPhylactery(drops, attacker) || considerSavingLife(drops, attacker))
     return;
   if (isAffected(LastingEffect::FROZEN) && drops == DropType::EVERYTHING)
     drops = DropType::ONLY_INVENTORY;
@@ -2456,4 +2474,31 @@ Creature* Creature::getClosestEnemy(bool meleeOnly) const {
     }
   }
   return result;
+}
+
+void Creature::setPhylactery(Position pos, FurnitureType type) {
+  phylactery = PhylacteryInfo{pos, type};
+  subscribeTo(pos.getModel());
+}
+
+const optional<Creature::PhylacteryInfo>& Creature::getPhylactery() const {
+  return phylactery;
+}
+
+#define CASE(VAR, ELEM, TYPE, ...) \
+    case std::remove_reference<decltype(VAR)>::type::TYPE##Tag: {\
+      auto ELEM = event.getReferenceMaybe<std::remove_reference<decltype(VAR)>::type::TYPE>();\
+      __VA_ARGS__\
+      break;\
+    }
+  
+
+void Creature::onEvent(const GameEvent& event) {
+  if (phylactery)
+    switch (event.index) {
+      CASE(event, elem, FurnitureRemoved,
+        if (elem->position == phylactery->pos && elem->type == phylactery->type)
+          dieWithAttacker(nullptr);
+      )
+    }
 }

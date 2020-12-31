@@ -239,6 +239,23 @@ static bool apply(const Effects::Teleport&, Position pos, Creature* attacker) {
   return false;
 }
 
+static string getName(const Effects::SetPhylactery&, const ContentFactory*) {
+  return "phylactery";
+}
+
+static string getDescription(const Effects::SetPhylactery&, const ContentFactory*) {
+  return "";
+}
+
+static bool apply(const Effects::SetPhylactery&, Position pos, Creature* attacker) {
+  if (attacker)
+    if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE)) {
+      attacker->setPhylactery(pos, f->getType());
+      return true;
+    }
+  return false;
+}
+
 static string getName(const Effects::Jump&, const ContentFactory*) {
   return "jumping";
 }

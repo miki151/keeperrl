@@ -95,6 +95,14 @@ struct VARIANT_NAME {
     VARIANT_TYPES_LIST
 #undef X
   };
+#define X(Type, Index) \
+  static const auto Type##Tag = Index;
+  VARIANT_TYPES_LIST
+#undef X
+#define X(Type, Index) \
+  using Type = Type;
+  VARIANT_TYPES_LIST
+#undef X
 };
 #define X(Type, Index) \
   template<>\

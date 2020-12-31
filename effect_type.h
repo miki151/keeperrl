@@ -332,6 +332,7 @@ struct UI {
   SERIALIZE_ALL(id, data)
 };
 using AddCompanion = CompanionInfo;
+SIMPLE_EFFECT(SetPhylactery);
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -413,7 +414,8 @@ using AddCompanion = CompanionInfo;
   X(SetCreatureName, 76)\
   X(SetViewId, 77)\
   X(UI, 78)\
-  X(AddCompanion, 79)
+  X(AddCompanion, 79)\
+  X(SetPhylactery, 80)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
