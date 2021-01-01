@@ -737,7 +737,9 @@ void Collective::onEvent(const GameEvent& event) {
         positionMatching->updateMovement(info.pos);
       },
       [&](const FurnitureRemoved& info) {
-        if (info.position.getModel() == model) {
+        // We only update constructions if there is no replacement, i.e. the space is empty
+        if (info.position.getModel() == model && !info.position.getFurniture(info.layer) &&
+            constructions->containsFurniture(info.position, info.layer)) {
           populationIncrease -= getGame()->getContentFactory()->furniture.getPopulationIncrease(
               info.type, constructions->getBuiltCount(info.type));
           constructions->onFurnitureDestroyed(info.position, info.layer, info.type);

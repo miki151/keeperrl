@@ -29,6 +29,7 @@ bool MinionActivityMap::canChooseRandomly(const Creature* c, MinionActivity t) c
     case MinionActivity::BE_EXECUTED:
     case MinionActivity::BE_WHIPPED:
     case MinionActivity::BE_TORTURED:
+    case MinionActivity::PHYLACTERY:
       return false;
     case MinionActivity::SLEEP:
       return !c->isAffected(LastingEffect::RESTED);
@@ -95,6 +96,8 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
       return c->isAffected(LastingEffect::EXPLORE_SKILL);
     case MinionActivity::EXPLORE_NOCTURNAL:
       return c->isAffected(LastingEffect::EXPLORE_NOCTURNAL_SKILL);
+    case MinionActivity::PHYLACTERY:
+      return !c->getPhylactery();
     case MinionActivity::CONSTRUCTION:
     case MinionActivity::WORKING:
     case MinionActivity::HAULING:

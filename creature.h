@@ -316,6 +316,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   struct PhylacteryInfo {
     Position SERIAL(pos);
     FurnitureType SERIAL(type);
+    Creature* killedBy = nullptr;
     SERIALIZE_ALL(pos, type);
   };
   void setPhylactery(Position, FurnitureType);

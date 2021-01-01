@@ -1114,6 +1114,13 @@ void Creature::considerMovingFromInaccessibleSquare() {
 
 void Creature::tick() {
   PROFILE_BLOCK("Creature::tick");
+  if (phylactery && phylactery->killedBy) {
+    if (phylactery->killedBy == this)
+      dieWithReason("destroyed in a phylactery");
+    else
+      dieWithAttacker(phylactery->killedBy);
+    return;
+  }
   const auto privateEnemyTimeout = 50_visible;
   for (auto c : privateEnemies.getKeys())
     if (privateEnemies.getOrFail(c) < *globalTime - privateEnemyTimeout)
@@ -2478,7 +2485,8 @@ Creature* Creature::getClosestEnemy(bool meleeOnly) const {
 
 void Creature::setPhylactery(Position pos, FurnitureType type) {
   phylactery = PhylacteryInfo{pos, type};
-  subscribeTo(pos.getModel());
+  if (!isSubscribed())
+    subscribeTo(pos.getModel());
 }
 
 const optional<Creature::PhylacteryInfo>& Creature::getPhylactery() const {
@@ -2498,7 +2506,7 @@ void Creature::onEvent(const GameEvent& event) {
     switch (event.index) {
       CASE(event, elem, FurnitureRemoved,
         if (elem->position == phylactery->pos && elem->type == phylactery->type)
-          dieWithAttacker(nullptr);
+          phylactery->killedBy = this;
       )
     }
 }

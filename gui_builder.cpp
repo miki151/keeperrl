@@ -3062,6 +3062,7 @@ static string getTaskText(MinionActivity option) {
     case MinionActivity::BE_WHIPPED: return "Being whipped";
     case MinionActivity::BE_TORTURED: return "Being tortured";
     case MinionActivity::BE_EXECUTED: return "Being executed";
+    case MinionActivity::PHYLACTERY: return "Phylactery";
   }
 }
 

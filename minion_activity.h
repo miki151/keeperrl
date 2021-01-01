@@ -30,7 +30,8 @@ RICH_ENUM(
     POETRY,
     DISTILLATION,
     MINION_ABUSE,
-    GUARDING
+    GUARDING,
+    PHYLACTERY
 );
 
 class Position;

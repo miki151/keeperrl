@@ -125,8 +125,8 @@
 
   "phylactery"
   {
-    { Furniture { types = { "PHYLACTERY" } cost = "GOLD" 500 limit = 1} "Phylactery" ""
-        "Free your soul from your body."  0   {DungeonLevel 10} }
+    { Furniture { types = { "PHYLACTERY" } cost = "GOLD" 500} "Phylactery" ""
+        "Free your soul from your body."  0 }
   }
  
   "beds"

@@ -1908,8 +1908,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     if (!trap->isArmed())
       index.insert(furnitureFactory->getConstructionObject(trap->getType()));
   for (auto layer : ENUM_ALL(FurnitureLayer))
-    if (auto f = constructions.getFurniture(position, layer))
-      if (!f->isBuilt(position)) {
+    if (!position.getFurniture(layer))
+      if (auto f = constructions.getFurniture(position, layer)) {
         auto obj = furnitureFactory->getConstructionObject(f->getFurnitureType());
         if (!f->hasTask())
           obj.setModifier(ViewObjectModifier::UNPAID);
