@@ -414,11 +414,6 @@ void Renderer::initialize() {
   initOpenGL();
 }
 
-
-vector<string> Renderer::getFullscreenResolutions() {
-  return {};
-}
-
 void Renderer::loadFonts(const DirectoryPath& fontPath, FontSet& fonts) {
   CHECK(fontStash = sth_create(512, 512)) << "Error initializing fonts";
   auto textFont = fontPath.file("Lato-Bol.ttf");

@@ -24,15 +24,6 @@
 #include "texture.h"
 #include "font_id.h"
 
-enum class SpriteId {
-  BUILDINGS,
-  MINIONS,
-  LIBRARY,
-  WORKSHOP,
-  DIPLOMACY,
-  HELP
-};
-
 class ViewObject;
 class Clock;
 class TileSet;
@@ -57,7 +48,6 @@ class Renderer {
   void showError(const string&);
   TileSet& getTileSet();
   void setTileSet(TileSet*);
-  static vector<string> getFullscreenResolutions();
   static int textSize() { return 19; }
   static int smallTextSize() { return 14; }
   int getTextLength(const string& s, int size = textSize(), FontId = FontId::TEXT_FONT);
@@ -80,7 +70,6 @@ class Renderer {
   };
   void drawSprite(Vec2 pos, Vec2 source, Vec2 size, const Texture&, optional<Vec2> targetSize = none,
       optional<Color> color = none,SpriteOrientation = {});
-  void drawSprite(int x, int y, SpriteId, optional<Color> color = none);
   void drawSprite(Vec2 pos, Vec2 stretchSize, const Texture&);
   void drawFilledRectangle(const Rectangle&, Color, optional<Color> outline = none);
   void drawFilledRectangle(int px, int py, int kx, int ky, Color color, optional<Color> outline = none);
