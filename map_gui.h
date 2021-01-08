@@ -36,6 +36,7 @@ class UserInput;
 class FXViewManager;
 class Position;
 class Tile;
+struct PhylacteryInfo;
 
 namespace fx {
   class FXRenderer;
@@ -139,6 +140,7 @@ class MapGui : public GuiElem {
   optional<Vec2> lastMapLeftClick;
   vector<vector<Vec2>> shortestPath;
   vector<vector<Vec2>> permaShortestPath;
+  vector<PhylacteryInfo> phylacteries;
   struct AnimationInfo {
     PAnimation animation;
     Vec2 position;
@@ -211,6 +213,7 @@ class MapGui : public GuiElem {
   optional<Vec2> selectionSize;
   void fxHighlight(Renderer&, const FXInfo&, Vec2 tilePos, const ViewIndex&);
   void renderShortestPaths(Renderer&, Vec2 tileSize);
+  void renderPhylacteries(Renderer&, Vec2 tileSize, milliseconds currentTimeReal);
   void updateShortestPaths(CreatureView*, Renderer&, Vec2 tileSize, milliseconds curTimeReal);
   bool isDraggedCreature() const;
 };

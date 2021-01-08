@@ -240,6 +240,8 @@ CreatureAction Creature::castSpell(const Spell* spell, Position target) const {
 
 void Creature::updateLastingFX(ViewObject& object) {
   object.particleEffects.clear();
+  if (phylactery)
+    object.particleEffects.insert(FXVariantName::LICH);
   if (auto time = getGlobalTime())
     for (auto effect : ENUM_ALL(LastingEffect))
       if (isAffected(effect, *time))

@@ -197,7 +197,8 @@ class vector {
     return none;
   }
 
-  optional<int> findElement(const T& element) const {
+  template <typename ElemType>
+  optional<int> findElement(const ElemType& element) const {
     for (int i = 0; i < size(); ++i)
       if (impl[i] == element)
         return i;

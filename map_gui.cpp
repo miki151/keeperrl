@@ -16,6 +16,7 @@
 #include "stdafx.h"
 
 #include "map_gui.h"
+#include "util.h"
 #include "view_object.h"
 #include "map_layout.h"
 #include "view_index.h"
@@ -34,6 +35,7 @@
 #include "game.h"
 #include "tileset.h"
 #include "mouse_button_id.h"
+#include "phylactery_info.h"
 
 #include "fx_manager.h"
 #include "fx_view_manager.h"
@@ -1148,6 +1150,7 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
   if (fxViewManager)
     fxViewManager->drawUnorderedBackFX(renderer);
   renderShortestPaths(renderer, size);
+  renderPhylacteries(renderer, size, currentTimeReal);
   renderHighObjects(renderer, size, currentTimeReal);  
   renderHighlights(renderer, size, currentTimeReal, false);
   if (fxViewManager) {
@@ -1176,6 +1179,35 @@ void MapGui::renderShortestPaths(Renderer& renderer, Vec2 tileSize) {
     renderPath(path, Color::WHITE.transparency(100), none);
   for (auto& path : permaShortestPath)
     renderPath(path, Color::LIGHT_BLUE.transparency(100), ViewId("guard_post"));
+}
+
+void MapGui::renderPhylacteries(Renderer& renderer, Vec2 tileSize, milliseconds currentTimeReal) {
+  const double length = tileSize.x * 10;
+  const int period = 1000 * length / tileSize.x;
+  const double offset = double((-currentTimeReal.count()) % period + period) / period;
+  for (auto& info : phylacteries) {
+    auto p = projectOnScreen(info.phylactery);
+    auto k = projectOnScreen(info.lich);
+    if (info.lichObject)
+      k += getMovementOffset(*info.lichObject, tileSize, currentTimeGame, currentTimeReal, false, info.lich);
+    double dx = k.x - p.x;
+    double dy = k.y - p.y;
+    double len = sqrt(dx * dx + dy * dy);
+    dx = length * dx / len;
+    dy = length * dy / len;
+    double x = p.x + dx * offset;
+    double y = p.y + dy * offset;
+    while (((x >= p.x && x <= k.x) || (x <= p.x && x >= k.x))
+        && ((y >= p.y && y <= k.y) || (y <= p.y && y >= k.y))) {
+      const double fadeDist = tileSize.x;
+      auto trans = 255 * min(fadeDist,
+          min(sqrt((x - p.x) * (x - p.x) + (y - p.y) * (y - p.y)),
+              sqrt((x - k.x) * (x - k.x) + (y - k.y) * (y - k.y)))) / fadeDist;
+      renderer.drawViewObject(Vec2(x, y), ViewId("phylactery_tether"), true, tileSize, Color(255, 255, 255, trans));
+      x += dx;
+      y += dy;
+    }
+  }
 }
 
 void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Color color, const ViewIndex& index) {
@@ -1352,6 +1384,7 @@ double MapGui::getDistanceToEdgeRatio(Vec2 pos) {
 void MapGui::updateShortestPaths(CreatureView* view, Renderer& renderer, Vec2 tileSize, milliseconds curTimeReal) {
   shortestPath.clear();
   permaShortestPath = view->getPermanentPaths();
+  phylacteries = view->getCreatureViewLevel()->getPhylacteries();
   if (auto pos = projectOnMap(renderer.getMousePos())) {
     auto highlightedInfo = getHighlightedInfo(tileSize, curTimeReal);
     if (highlightedInfo.tilePos) {

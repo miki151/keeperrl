@@ -1204,6 +1204,31 @@ static void addLoopedLoveEffect(FXManager& mgr) {
   mgr.addDef(FXName::LOVE_LOOPED, psdef);
 }
 
+static void addLichEffect(FXManager& mgr) {
+  EmitterDef edef;
+  edef.strength = 10.0f;
+  edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.2f);
+  edef.frequency = 15.0f;
+  edef.source = FRect(-10, 10, 10, 15);
+
+  ParticleDef pdef;
+  pdef.life = 2.0f;
+  pdef.size = 10.0f;
+  pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 0.2, 0.0}, InterpType::linear};
+  pdef.color = rgb(Color::BLACK);
+  pdef.textureName = TextureName::CLOUDS_SOFT;
+
+  SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+
+  ParticleSystemDef psdef;
+  psdef.subSystems = {ssdef};
+  psdef.isLooped = true;
+  psdef.animLength = 1.0f;
+
+  mgr.addDef(FXName::LICH, psdef);
+  mgr.genSnapshots(FXName::LICH, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
+}
+
 static void addBlindEffect(FXManager &mgr) {
   EmitterDef edef;
   edef.strength = 0.0f;
@@ -1415,57 +1440,6 @@ static void addJewelerEffect(FXManager& mgr) {
   }
 
   mgr.addDef(FXName::JEWELLER, psdef);
-}
-
-static void addSpiralEffects(FXManager& mgr) {
-  ParticleSystemDef psdef;
-  psdef.isLooped = true;
-  psdef.animLength = 1.0f;
-
-  {
-    EmitterDef edef;
-    edef.frequency = 10.0f;
-    edef.initialSpawnCount = 1.0f;
-    edef.setDirectionSpread(fconstant::pi * 0.5f, 0.0f);
-    edef.strength = 2.5f;
-    edef.source = FVec2(0.0f, -4.0f);
-
-    ParticleDef pdef;
-    pdef.life = 4.0f;
-    pdef.size = 10.0f;
-    pdef.alpha = {{0.0f, 0.1f, 0.8f, 1.0f}, {0.0, 0.7f, 0.7f, 0.0}};
-
-    pdef.textureName = TextureName::CIRCULAR;
-
-    SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
-      defaultEmitParticle(ctx, em, pinst);
-      pinst.rot = 0.0f;
-    };
-    ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
-      Particle temp(pinst);
-      FVec2 circlePos = angleToVector(10.0f - pinst.life * 3.0f);
-      temp.pos += circlePos * FVec2(10.0f, 4.0f);
-      if (!defaultDrawParticle(ctx, temp, out))
-        return false;
-      float alphaMul = dot(circlePos, FVec2(0.0f, 1.0f));
-      float alpha = float(out.color.a) * clamp(alphaMul + 0.3f, 0.0f, 1.0f);
-      out.color.a = (unsigned char)(alpha);
-      return out.color.a > 0;
-    };
-
-    psdef.subSystems = {ssdef};
-    mgr.addDef(FXName::SPIRAL, psdef);
-
-    ssdef.particle.textureName = TextureName::CIRCULAR_STRONG;
-    ssdef.particle.size = 5.0f;
-    ssdef.emitter.frequency = 5.0f;
-    psdef.subSystems = {ssdef};
-    mgr.addDef(FXName::SPIRAL2, psdef);
-  }
-
-  mgr.genSnapshots(FXName::SPIRAL, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
-  mgr.genSnapshots(FXName::SPIRAL2, {4.0f, 4.2f, 4.4f, 4.6f, 4.8f});
 }
 
 static void addBuffEffect(FXManager& mgr) {
@@ -1788,6 +1762,7 @@ void FXManager::initializeDefs() {
   addSleepEffect(*this);
   addLoveEffect(*this);
   addLoopedLoveEffect(*this);
+  addLichEffect(*this);
   addBlindEffect(*this);
   addGlitteringEffect(*this, FXName::GLITTERING, 0.5, 1.0, 3.5);
   addGlitteringEffect(*this, FXName::MAGIC_FIELD, 1.0, 1.0, 2.5);
@@ -1799,7 +1774,6 @@ void FXManager::initializeDefs() {
   addWorkshopEffect(*this, FXName::EMBALMENT, Color(62, 186, 149), 0.2);
   addJewelerEffect(*this);
 
-  addSpiralEffects(*this);
   addFlyingEffect(*this);
   addDebuffEffect(*this);
   addBuffEffect(*this);

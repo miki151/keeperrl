@@ -44,6 +44,7 @@ class Vision;
 class FieldOfView;
 class Portals;
 class RoofSupport;
+struct PhylacteryInfo;
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
 class Level : public OwnedObject<Level> {
@@ -115,6 +116,8 @@ class Level : public OwnedObject<Level> {
   const vector<Creature*>& getAllCreatures() const;
   vector<Creature*>& getAllCreatures();
   vector<Creature*> getAllCreatures(Rectangle bounds) const;
+  vector<PhylacteryInfo> getPhylacteries();
+
 
   bool containsCreature(UniqueEntity<Creature>::Id) const;
 

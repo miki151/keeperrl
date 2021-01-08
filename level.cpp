@@ -41,6 +41,7 @@
 #include "roof_support.h"
 #include "game_event.h"
 #include "collective.h"
+#include "phylactery_info.h"
 
 template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
@@ -641,4 +642,38 @@ void Level::setFurniture(Vec2 pos, PFurniture f) {
   if (f->isTicking())
     addTickingFurniture(pos);
   furniture->getBuilt(layer).putElem(pos, std::move(f));
+}
+
+vector<PhylacteryInfo> Level::getPhylacteries() {
+  vector<PhylacteryInfo> ret;
+  auto model = getModel();
+  auto levels = model->getMainLevels();
+  for (auto c : model->getAllCreatures())
+    if (auto& f = c->getPhylactery()) {
+      if (!f->pos.isSameModel(c->getPosition()))
+        continue;
+      auto cIndex = levels.findElement(c->getPosition().getLevel());
+      auto lIndex = *levels.findElement(this);
+      auto pIndex = levels.findElement(f->pos.getLevel());
+      if (!cIndex || !pIndex || (*cIndex < lIndex && *pIndex < lIndex) || (*cIndex > lIndex && *pIndex > lIndex))
+        continue;
+      auto cPos = c->getPosition().getCoord();
+      optional<ViewObject> object;
+      if (*cIndex != lIndex) {
+        if (auto stairs = getStairsTo(c->getPosition().getLevel()))
+          cPos = stairs->getCoord();
+        else
+          continue;
+      } else
+        object = c->getViewObject();
+      auto pPos = f->pos.getCoord();
+      if (*pIndex != lIndex) {
+        if (auto stairs = getStairsTo(f->pos.getLevel()))
+          pPos = stairs->getCoord();
+        else
+          continue;
+      }
+      ret.push_back(PhylacteryInfo{cPos, pPos, object});
+    }
+  return ret;
 }

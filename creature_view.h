@@ -18,6 +18,7 @@
 #include "util.h"
 #include "unique_entity.h"
 #include "view_id.h"
+#include "view_object.h"
 
 class GameInfo;
 class MapMemory;

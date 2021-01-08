@@ -20,10 +20,6 @@ FXInfo getFXInfo(FXVariantName var) {
       return {FXName::FIRE_SPHERE};
     case Name::FIRE:
       return {FXName::FIRE};
-    case Name::SPIRAL_BLUE:
-      return {FXName::SPIRAL, Color::BLUE};
-    case Name::SPIRAL_GREEN:
-      return {FXName::SPIRAL, Color::f(0.7, 1.0, 0.6)};
     case Name::LABORATORY:
       return {FXName::LABORATORY, Color::GREEN};
     case Name::PEACEFULNESS:
@@ -36,6 +32,8 @@ FXInfo getFXInfo(FXVariantName var) {
       return {FXName::JEWELLER, Color(253, 247, 140)};
     case Name::EMBALMENT:
       return {FXName::EMBALMENT};
+    case Name::LICH:
+      return {FXName::LICH};
 
     case Name::BUFF_RED:     return {FXName::BUFF,   Color(250, 40, 40), 0.0f, FXStackId::buff};
     case Name::BUFF_WHITE:   return {FXName::BUFF,   Color(255, 255, 255), 0.0f, FXStackId::buff};
