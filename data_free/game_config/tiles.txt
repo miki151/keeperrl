@@ -28,7 +28,10 @@
 { "adoxie_hand_left" "u" ColorId PURPLE }
 { "adoxie_head" "U" ColorId PURPLE }
 { "adoxie_eye" "," ColorId PURPLE }
-{ "adoxie_priest" "@" ColorId PURPLE }
+{ "lich_keeper1" "@" ColorId PURPLE }
+{ "lich_keeper2" "@" ColorId PURPLE }
+{ "lich_keeper3" "@" ColorId PURPLE }
+{ "lich_keeper4" "@" ColorId PURPLE }
 { "abomination" "z" ColorId PURPLE }
 { viewId = "adoxie_statue" symbol = "U" color = ColorId LIGHT_GRAY
   roundShadow = true }

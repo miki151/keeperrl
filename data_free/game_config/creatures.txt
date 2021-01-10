@@ -56,9 +56,9 @@
   }
 "NECROMANCER" inherit "KEEPER_MAGE"
   {
-    viewId = { "keeper1" ColorId BLACK }
+    viewId = { "lich_keeper1" }
     # ViewId upgrades of Keepers are applied every 5 tech level increases
-    viewIdUpgrades = { { "keeper2" ColorId BLACK} { "keeper3" ColorId BLACK} { "keeper4" ColorId BLACK} }
+    viewIdUpgrades = { { "lich_keeper2" } { "lich_keeper3" } { "lich_keeper4" } }
     name = append {
       name = "necromancer"
     }
@@ -4047,7 +4047,7 @@
   }
 "ADOXIE_PRIEST"
   {
-    viewId = { "adoxie_priest" }
+    viewId = { "lich_keeper4" }
     name = {
       name = "high priest of Adoxie"
     }
