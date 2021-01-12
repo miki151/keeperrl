@@ -2299,7 +2299,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
             auto runes = getItemUpgradesFor(item.item);
             if (info.upgradeIndex < runes.size()) {
               auto& rune = runes[info.upgradeIndex];
-              workshop.addUpgrade(info.itemIndex, rune[0].second.removeItem(rune[0].first));
+              for (int i : Range(info.count))
+                workshop.addUpgrade(info.itemIndex + i, rune[i].second.removeItem(rune[i].first));
             }
           }
         }

@@ -2001,7 +2001,7 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
       optional<WorkshopUpgradeInfo> ret;
       for (int i : All(elem.added)) {
         auto buttonFun = [&exit, &ret, i, itemIndex = elem.itemIndex] {
-            ret = WorkshopUpgradeInfo{ itemIndex,  i, true};
+            ret = WorkshopUpgradeInfo{ itemIndex,  i, true, 1};
             exit = true;
         };
         auto& upgrade = elem.added[i];
@@ -2018,21 +2018,26 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
       }
       if (elem.added.size() < elem.maxUpgrades)
         for (int i : All(elem.available)) {
-          auto buttonFun = [&exit, &ret, i, itemIndex = elem.itemIndex] {
-              ret = WorkshopUpgradeInfo{ itemIndex,  i, false};
-              exit = true;
-          };
           auto& upgrade = elem.available[i];
-          auto idLine = WL(getListBuilder);
-          idLine.addElemAuto(WL(label, "Add "));
-          idLine.addElemAuto(WL(viewObject, upgrade.viewId));
-          idLine.addElemAuto(WL(label, upgrade.name + " (" + toString(upgrade.count) + " available)"));
-          lines.addElem(WL(stack,
-                WL(button, buttonFun),
-                WL(uiHighlightMouseOver),
-                idLine.buildHorizontalList(),
-                WL(tooltip, {upgrade.description})
-          ));
+          auto addButton = [&] (const char* text, int count) {
+            auto buttonFun = [&exit, &ret, i, itemIndex = elem.itemIndex, count] {
+                ret = WorkshopUpgradeInfo{ itemIndex,  i, false, count};
+                exit = true;
+            };
+            auto idLine = WL(getListBuilder);
+            idLine.addElemAuto(WL(label, text));
+            idLine.addElemAuto(WL(viewObject, upgrade.viewId));
+            idLine.addElemAuto(WL(label, upgrade.name + " (" + toString(upgrade.count) + " available)"));
+            lines.addElem(WL(stack,
+                  WL(button, buttonFun),
+                  WL(uiHighlightMouseOver),
+                  idLine.buildHorizontalList(),
+                  WL(tooltip, {upgrade.description})
+            ));
+          };
+          addButton("Add", 1);
+          if (elem.itemInfo.number > 1 && upgrade.count > 1)
+            addButton("Add to all", min(elem.itemInfo.number, upgrade.count));
         }
       lines.addElem(WL(label, "Available slots: " + toString(elem.maxUpgrades - elem.added.size())));
       lines.addElem(WL(label, "Upgraded items can only be crafted by a craftsman of legendary skills.",

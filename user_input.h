@@ -203,6 +203,7 @@ struct WorkshopUpgradeInfo {
   int itemIndex;
   int upgradeIndex;
   bool remove;
+  int count;
 };
 
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, UniqueEntity<Creature>::Id,
