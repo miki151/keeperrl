@@ -1104,19 +1104,21 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
   }
 }
 
-vector<pair<vector<Item*>, Position>> PlayerControl::getItemUpgradesFor(const WorkshopItem& workshopItem) const {
-  vector<pair<vector<Item*>, Position>> ret;
+vector<vector<pair<Item*, Position>>> PlayerControl::getItemUpgradesFor(const WorkshopItem& workshopItem) const {
+  vector<vector<pair<Item*, Position>>> ret;
+  auto addItem = [&ret] (Item* item, Position pos) {
+    for (auto& elem : ret)
+      if (elem[0].first->getName() == item->getName() && elem[0].first->getViewObject().id() == item->getViewObject().id()) {
+        elem.push_back(make_pair(item, pos));
+        return;
+      }
+    ret.push_back({make_pair(item, pos)});
+  };
   for (auto& pos : collective->getStoragePositions(StorageId::EQUIPMENT))
     for (auto& item : pos.getItems(ItemIndex::RUNE))
       if (auto& upgradeInfo = item->getUpgradeInfo())
         if (upgradeInfo->type == workshopItem.upgradeType) {
-          /*for (auto& existing : ret)
-            if (existing.first[0]->getUpgradeInfo() == upgradeInfo) {
-              existing.first.push_back(item);
-              goto found;
-            }*/
-          ret.push_back({{item}, pos});
-          //found:;
+          addItem(item, pos);
         }
   return ret;
 }
@@ -1157,8 +1159,8 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
   if (!item.paid)
     ret.itemInfo.description.push_back("Cannot afford item");
   for (auto& it : getItemUpgradesFor(item.item)) {
-    ret.available.push_back({it.first[0]->getViewObject().id(), it.first[0]->getName(), it.first.size(),
-        it.first[0]->getUpgradeInfo()->getDescription(getGame()->getContentFactory())});
+    ret.available.push_back({it[0].first->getViewObject().id(), it[0].first->getName(), it.size(),
+        it[0].first->getUpgradeInfo()->getDescription(getGame()->getContentFactory())});
   }
   for (auto& it : item.runes) {
     if (auto& upgradeInfo = it->getUpgradeInfo())
@@ -2297,7 +2299,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
             auto runes = getItemUpgradesFor(item.item);
             if (info.upgradeIndex < runes.size()) {
               auto& rune = runes[info.upgradeIndex];
-              workshop.addUpgrade(info.itemIndex, rune.second.removeItem(rune.first[0]));
+              workshop.addUpgrade(info.itemIndex, rune[0].second.removeItem(rune[0].first));
             }
           }
         }
