@@ -1104,11 +1104,15 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
   }
 }
 
+static bool runesEqual(const Item* it1, const Item* it2) {
+  return it1->getName() == it2->getName() && it1->getViewObject().id() == it2->getViewObject().id();
+}
+
 vector<vector<pair<Item*, Position>>> PlayerControl::getItemUpgradesFor(const WorkshopItem& workshopItem) const {
   vector<vector<pair<Item*, Position>>> ret;
   auto addItem = [&ret] (Item* item, Position pos) {
     for (auto& elem : ret)
-      if (elem[0].first->getName() == item->getName() && elem[0].first->getViewObject().id() == item->getViewObject().id()) {
+      if (runesEqual(elem[0].first, item)) {
         elem.push_back(make_pair(item, pos));
         return;
       }
@@ -1177,6 +1181,14 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
   ret.maxUpgrades = item.item.maxUpgrades;
   return ret;
 }
+static bool runesEqual(const vector<PItem>& v1, const vector<PItem>& v2) {
+  if (v1.size() != v2.size())
+    return false;
+  for (int i : All(v1))
+    if (!runesEqual(v1[i].get(), v2[i].get()))
+      return false;
+  return true;
+}
 
 vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() const {
   vector<CollectiveInfo::QueuedItemInfo> ret;
@@ -1189,7 +1201,7 @@ vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() c
   auto& queued = collective->getWorkshops().types.at(*chosenWorkshop).getQueued();
   for (int i : All(queued)) {
     if (i > 0 && queued[i - 1].indexInWorkshop == queued[i].indexInWorkshop && queued[i - 1].paid == queued[i].paid &&
-        queued[i].runes.empty() && queued[i - 1].runes.empty() && queued[i].state == 0 && queued[i - 1].state == 0)
+        runesEqual(queued[i].runes, queued[i - 1].runes) && queued[i].state == 0 && queued[i - 1].state == 0)
       ret.back() = getQueuedItemInfo(queued[i],
           ret.back().itemInfo.number / queued[i].item.batchSize + 1, ret.back().itemIndex, hasLegendarySkill);
     else
