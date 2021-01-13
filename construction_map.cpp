@@ -207,7 +207,7 @@ void ConstructionMap::checkDebtConsistency() {
   unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> nowDebt;
   for (auto& f : allFurniture) {
     auto& info = furniture[f.second].getOrFail(f.first);
-    if (!info.isBuilt(f.first))
+    if (!info.isBuilt(f.first, f.second))
       nowDebt[info.getCost().id] += info.getCost().value;
   }
   for (auto& elem : nowDebt)
