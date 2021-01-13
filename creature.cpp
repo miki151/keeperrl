@@ -1117,10 +1117,8 @@ void Creature::considerMovingFromInaccessibleSquare() {
 void Creature::tick() {
   PROFILE_BLOCK("Creature::tick");
   if (phylactery && phylactery->killedBy) {
-    if (phylactery->killedBy == this)
-      dieWithReason("destroyed in a phylactery");
-    else
-      dieWithAttacker(phylactery->killedBy);
+    phylactery = none;
+    dieWithAttacker(phylactery->killedBy);
     return;
   }
   const auto privateEnemyTimeout = 50_visible;
@@ -1671,7 +1669,7 @@ bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
 }
 
 bool Creature::considerPhylactery(DropType drops, const Creature* attacker) {
-  if (phylactery && phylactery->pos.getFurniture(phylactery->type)) {
+  if (phylactery) {
     message("But wait!");
     secondPerson(PlayerMessage("You have escaped death!", MessagePriority::HIGH));
     thirdPerson(PlayerMessage(getName().the() + " has escaped death!", MessagePriority::HIGH));
@@ -2501,14 +2499,18 @@ const optional<Creature::PhylacteryInfo>& Creature::getPhylactery() const {
       __VA_ARGS__\
       break;\
     }
-  
 
 void Creature::onEvent(const GameEvent& event) {
   if (phylactery)
     switch (event.index) {
       CASE(event, elem, FurnitureRemoved,
-        if (elem->position == phylactery->pos && elem->type == phylactery->type)
-          phylactery->killedBy = this;
+        if (elem->position == phylactery->pos && elem->type == phylactery->type) {
+          if (elem->destroyedBy)
+            phylactery->killedBy = elem->destroyedBy;
+          else {
+            phylactery = none;
+          }
+        }
       )
     }
 }

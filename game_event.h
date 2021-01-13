@@ -90,6 +90,7 @@ namespace EventInfo {
     Position position;
     FurnitureType type;
     FurnitureLayer layer;
+    Creature* destroyedBy;
   };
 
   struct FX {

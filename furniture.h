@@ -78,7 +78,7 @@ class Furniture {
   bool canDestroy(const MovementType&, const DestroyAction&) const;
   bool canDestroy(const DestroyAction&) const;
   optional<double> getStrength(const DestroyAction&) const;
-  void destroy(Position, const DestroyAction&);
+  void destroy(Position, const DestroyAction&, Creature* destroyedBy = nullptr);
   void tryToDestroyBy(Position, Creature*, const DestroyAction&);
   TribeId getTribe() const;
   void setTribe(TribeId);

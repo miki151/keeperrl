@@ -131,7 +131,7 @@ const heap_optional<ItemList>& Furniture::getItemDrop() const {
   return itemDrop;
 }
 
-void Furniture::destroy(Position pos, const DestroyAction& action) {
+void Furniture::destroy(Position pos, const DestroyAction& action, Creature* destroyedBy) {
   if (!destroyedEffect)
     pos.globalMessage("The " + name + " " + action.getIsDestroyed());
   auto myLayer = layer;
@@ -143,8 +143,10 @@ void Furniture::destroy(Position pos, const DestroyAction& action) {
   if (destroyFX)
     pos.getGame()->addEvent(EventInfo::FX{pos, *destroyFX});
   auto effect = destroyedEffect;
-  pos.removeFurniture(this, destroyedRemains
-      ? pos.getGame()->getContentFactory()->furniture.getFurniture(*destroyedRemains, getTribe()) : nullptr);
+  pos.removeFurniture(
+      this,
+      destroyedRemains ? pos.getGame()->getContentFactory()->furniture.getFurniture(*destroyedRemains, getTribe()) : nullptr,
+      destroyedBy);
   if (effect)
     effect->apply(pos);
 }
@@ -161,7 +163,7 @@ void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& a
     if (tryDestroyFX)
       pos.getGame()->addEvent(EventInfo::FX{pos, *tryDestroyFX});
     if (info->health <= 0)
-      destroy(pos, action);
+      destroy(pos, action, c);
   }
 }
 

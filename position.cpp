@@ -664,7 +664,7 @@ void Position::removeFurniture(const Furniture* f) const {
   removeFurniture(f, nullptr);
 }
 
-void Position::removeFurniture(const Furniture* f, PFurniture replace) const {
+void Position::removeFurniture(const Furniture* f, PFurniture replace, Creature* destroyedBy) const {
   PROFILE;
   bool visibilityChanged = (!!replace) ? (f->blocksAnyVision() != replace->blocksAnyVision()) : f->blocksAnyVision();
   level->removeLightSource(coord, f->getLightEmission());
@@ -696,7 +696,7 @@ void Position::removeFurniture(const Furniture* f, PFurniture replace) const {
       replacePtr->onEnter(c);
   }
   setNeedsRenderAndMemoryUpdate(true);
-  getGame()->addEvent(EventInfo::FurnitureRemoved{*this, type, layer});
+  getGame()->addEvent(EventInfo::FurnitureRemoved{*this, type, layer, destroyedBy});
 }
 
 bool Position::canConstruct(FurnitureType type) const {

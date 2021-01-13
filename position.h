@@ -83,7 +83,7 @@ class Position {
   bool isWall() const;
   bool isBuildingSupport() const;
   void removeFurniture(const Furniture*) const;
-  void removeFurniture(const Furniture*, PFurniture replace) const;
+  void removeFurniture(const Furniture*, PFurniture replace, Creature* destroyedBy = nullptr) const;
   void removeFurniture(FurnitureLayer) const;
   void addFurniture(PFurniture) const;
   bool isUnavailable() const;

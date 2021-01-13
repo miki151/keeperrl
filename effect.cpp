@@ -764,11 +764,11 @@ static string getDescription(const Effects::DestroyWalls&, const ContentFactory*
   return "Destroys terrain and objects.";
 }
 
-static bool apply(const Effects::DestroyWalls& m, Position pos, Creature*) {
+static bool apply(const Effects::DestroyWalls& m, Position pos, Creature* attacker) {
   bool res = false;
   for (auto furniture : pos.modFurniture())
     if (furniture->canDestroy(m.action)) {
-      furniture->destroy(pos, m.action);
+      furniture->destroy(pos, m.action, attacker);
       res = true;
     }
   return res;
