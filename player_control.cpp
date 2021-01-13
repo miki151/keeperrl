@@ -2701,7 +2701,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
     [&](const BuildInfoTypes::DestroyLayers& layers) {
       for (auto layer : layers) {
         auto f = collective->getConstructions().getFurniture(position, layer);
-        if (f && !f->isBuilt(position)) {
+        if (f && !f->isBuilt(position, layer)) {
           collective->removeUnbuiltFurniture(position, layer);
           getView()->addSound(SoundId::DIG_UNMARK);
           selection = SELECT;
@@ -2774,7 +2774,7 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
     [&](const BuildInfoTypes::Furniture& info) {
       auto layer = getGame()->getContentFactory()->furniture.getData(info.types[0]).getLayer();
       auto currentPlanned = collective->getConstructions().getFurniture(position, layer);
-      if (currentPlanned && currentPlanned->isBuilt(position))
+      if (currentPlanned && currentPlanned->isBuilt(position, layer))
         currentPlanned = none;
       int nextIndex = 0;
       if (currentPlanned) {

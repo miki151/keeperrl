@@ -20,7 +20,6 @@ class ConstructionMap {
     void reset();
     void setTask(UniqueEntity<Task>::Id);
     CostInfo getCost() const;
-    bool isBuilt(Position) const;
     bool isBuilt(Position, FurnitureLayer) const;
     UniqueEntity<Task>::Id getTask() const;
     bool hasTask() const;

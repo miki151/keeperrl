@@ -1211,7 +1211,7 @@ void Collective::updateConstructions() {
     if (!isDelayed(pos.first) &&
         !construction.hasTask() &&
         pos.first.canConstruct(construction.getFurnitureType()) &&
-        !construction.isBuilt(pos.first) &&
+        !construction.isBuilt(pos.first, pos.second) &&
         hasResource(construction.getCost())) {
       constructions->setTask(pos.first, pos.second,
           taskMap->addTaskCost(Task::construction(this, pos.first, construction.getFurnitureType()), pos.first,
