@@ -2305,8 +2305,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
           auto& item = workshop.getQueued()[info.itemIndex];
           if (info.remove) {
             if (info.upgradeIndex < item.runes.size())
-              Random.choose(collective->getStoragePositions(StorageId::EQUIPMENT))
-                  .dropItem(workshop.removeUpgrade(info.itemIndex, info.upgradeIndex));
+              for (int i : Range(info.count))
+                Random.choose(collective->getStoragePositions(StorageId::EQUIPMENT))
+                    .dropItem(workshop.removeUpgrade(info.itemIndex + i, info.upgradeIndex));
           } else {
             auto runes = getItemUpgradesFor(item.item);
             if (info.upgradeIndex < runes.size()) {
