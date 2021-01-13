@@ -200,10 +200,26 @@
   }
   "LABORATORY"
   {
-      {{Balsam Permanent FLYING} 4 "GOLD" 15}
-      {{Balsam AddBodyPart HEAD 1 none} 4 "GOLD" 15}
-      {{Balsam IncreaseAttr DAMAGE 5} 4 "GOLD" 15}
-      {{Balsam Permanent DARKNESS_SOURCE} 4 "GOLD" 15}
+      {{Balsam AddBodyPart HEAD 1 none}     4 "GOLD" 5}
+      {{Balsam AddBodyPart WING 2 none}     4 "GOLD" 5}
+      {{Balsam AddBodyPart ARM 2 none}      4 "GOLD" 5}
+      {{Balsam IncreaseAttr DEFENSE 3}      4 "GOLD" 5}
+      {{Balsam IncreaseAttr DAMAGE 3}       4 "GOLD" 5}
+      {{Balsam IncreaseAttr SPELL_DAMAGE 3} 4 "GOLD" 5}
+      {{Potion Permanent TELEPATHY}         4 "GOLD" 5}
+      {{Balsam Permanent DARKNESS_SOURCE}   4 "GOLD" 10 "advanced alchemy"}
+      {{Balsam IncreaseAttr DEFENSE 6}      4 "GOLD" 10 "advanced alchemy"}
+      {{Balsam IncreaseAttr DAMAGE 6}       4 "GOLD" 10 "advanced alchemy"}
+      {{Balsam IncreaseAttr SPELL_DAMAGE 6} 4 "GOLD" 10 "advanced alchemy"}
+      {{Balsam {IncreaseAttr DAMAGE 13 Permanent INSANITY}}       4 "GOLD" 10 "advanced alchemy"}
+      {{Potion RemovePermanent SLOWED}      4 "GOLD" 10 "advanced alchemy"}
+      {{Potion Permanent FAST_CRAFTING}     4 "GOLD" 10 "advanced alchemy"}
+      {{Potion Permanent FAST_TRAINING}     4 "GOLD" 10 "advanced alchemy"}
+      {{Potion IncreaseWorkshopSkill "MORGUE" 0.5}                4 "GOLD" 10 "advanced alchemy"}
+      {{Potion IncreaseWorkshopSkill "LABORATORY" 0.5}            4 "GOLD" 10 "advanced alchemy"}
+      {{Potion IncreaseSkill DIGGING      0.5}                    4 "GOLD" 10 "advanced alchemy"}
+      {{Potion IncreaseSkill MULTI_WEAPON 0.5}                    4 "GOLD" 10 "advanced alchemy"}
+      {{Potion Heal FLESH}                  4 "GOLD" 10 "advanced alchemy"}
   }
 }
 
