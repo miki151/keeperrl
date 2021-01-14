@@ -85,6 +85,7 @@
   workshopGroups = { "morgue" }
   description = "Play as a necromancer!"
   credit = { "CORPSE" 20 }
+  maxPopulation = 1
 # Special traits example, all traits are added
 #   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
 }

@@ -117,13 +117,13 @@
 {
   "WORKSHOP"
   {
-      { item = {Assembled "AUTOMATON_WORKER_WOOD" "drilling automaton" }
+      { item = {Assembled "AUTOMATON_WORKER_WOOD" "drilling automaton" {FIGHTER AUTOMATON} }
         work = 8 cost = "WOOD" 45 tech = "automatons" applyImmediately = true}
-      { item = {Assembled "AUTOMATON_CORPUS_WOOD" "automaton corpus" }
+      { item = {Assembled "AUTOMATON_CORPUS_WOOD" "automaton corpus" {FIGHTER AUTOMATON} }
         work = 8 cost = "WOOD" 30 tech = "automatons" applyImmediately = true}
-      { item = {Assembled "LIGHT_AUTOMATON_CORPUS_WOOD" "light automaton corpus" }
+      { item = {Assembled "LIGHT_AUTOMATON_CORPUS_WOOD" "light automaton corpus" {FIGHTER AUTOMATON} }
         work = 8 cost = "WOOD" 20 tech = "advanced automatons" applyImmediately = true}
-      { item = {Assembled "HELICOPTER" "helicopterum" }
+      { item = {Assembled "HELICOPTER" "helicopterum" {FIGHTER AUTOMATON} }
         work = 8 cost = "WOOD" 10 tech = "aerodynamics" applyImmediately = true}
       {{"AutomatonLegsWood"}       2       "WOOD" 5    "automatons"}
       {{"AutomatonArmsWood"}       2       "WOOD" 5    "automatons"}
@@ -136,13 +136,13 @@
   } 
   "FORGE"
   {
-      { item = {Assembled "AUTOMATON_WORKER_IRON" "drilling automaton" }
+      { item = {Assembled "AUTOMATON_WORKER_IRON" "drilling automaton" {FIGHTER AUTOMATON} }
         work = 8 cost = "IRON" 45 tech = "automatons" applyImmediately = true}
-      { item = {Assembled "AUTOMATON_CORPUS_IRON" "automaton corpus" }
+      { item = {Assembled "AUTOMATON_CORPUS_IRON" "automaton corpus" {FIGHTER AUTOMATON} }
         work = 8 cost = "IRON" 30 tech = "automatons" applyImmediately = true}
-      { item = {Assembled "LIGHT_AUTOMATON_CORPUS_IRON" "light automaton corpus" }
+      { item = {Assembled "LIGHT_AUTOMATON_CORPUS_IRON" "light automaton corpus" {FIGHTER AUTOMATON} }
         work = 8 cost = "IRON" 20 tech = "advanced automatons" applyImmediately = true}
-      { item = {Assembled "HEAVY_AUTOMATON_CORPUS_IRON" "heavy automaton corpus"}
+      { item = {Assembled "HEAVY_AUTOMATON_CORPUS_IRON" "heavy automaton corpus" {FIGHTER AUTOMATON} }
         work = 8 cost = "IRON" 40 tech = "advanced automatons" applyImmediately = true}
       {{"AutomatonLegsIron"}       2       "IRON" 5    "automatons"}
       {{"AutomatonArmsIron"}       2       "IRON" 5    "automatons"}
@@ -154,13 +154,13 @@
       {{"FireHeadIron"}            2       "IRON" 5    "advanced automatons"}
       {{"AcidHeadIron"}            2       "IRON" 5    "advanced automatons"}
       {{"HumanoidHeadIron"}        2       "IRON" 5    "automaton brains"}
-      { item = {Assembled "AUTOMATON_WORKER_ADA" "drilling automaton" }
+      { item = {Assembled "AUTOMATON_WORKER_ADA" "drilling automaton" {FIGHTER AUTOMATON} }
         work = 8 cost = "ADA" 30 tech = "automatons" applyImmediately = true}
-      { item = {Assembled "AUTOMATON_CORPUS_ADA" "automaton corpus" }
+      { item = {Assembled "AUTOMATON_CORPUS_ADA" "automaton corpus" {FIGHTER AUTOMATON} }
         work = 8 cost = "ADA" 45 tech = "automatons" applyImmediately = true}
-      { item = {Assembled "LIGHT_AUTOMATON_CORPUS_ADA" "light automaton corpus" }
+      { item = {Assembled "LIGHT_AUTOMATON_CORPUS_ADA" "light automaton corpus" {FIGHTER AUTOMATON} }
         work = 8 cost = "ADA" 20 tech = "advanced automatons" applyImmediately = true}
-      { item = {Assembled "HEAVY_AUTOMATON_CORPUS_ADA" "heavy automaton corpus"}
+      { item = {Assembled "HEAVY_AUTOMATON_CORPUS_ADA" "heavy automaton corpus" {FIGHTER AUTOMATON} }
         work = 8 cost = "ADA" 40 tech = "advanced automatons" applyImmediately = true}
       {{"AutomatonLegsAda"}       2       "ADA" 5    "automatons"}
       {{"AutomatonArmsAda"}       2       "ADA" 5    "automatons"}
@@ -193,20 +193,25 @@
 {
   "MORGUE"
   {
-      { item = {Assembled "ZOMBIE_WORKER" "zombie" } work = 8 cost = "CORPSE" 1 applyImmediately = true}
-      { item = {Assembled "SKELETON" "skeleton" } work = 8 cost = "CORPSE" 1 applyImmediately = true}
-      { item = {Assembled "MUMMY" "mummy" } work = 20 cost = "CORPSE" 2 applyImmediately = true}
-      { item = {Assembled "VAMPIRE" "vampire" } work = 20 cost = "CORPSE" 4 applyImmediately = true}
+      { item = {Assembled "ZOMBIE_WORKER" "zombie" {NO_LIMIT WORKER}}
+        work = 8 cost = "CORPSE" 1 applyImmediately = true}
+      { item = {Assembled "SKELETON" "skeleton" {NO_LIMIT FIGHTER}}
+        work = 8 cost = "CORPSE" 1 applyImmediately = true}
+      { item = {Assembled "MUMMY" "mummy" {NO_LIMIT FIGHTER}}
+        work = 20 cost = "CORPSE" 2 applyImmediately = true}
+      { item = {Assembled "VAMPIRE" "vampire" {NO_LIMIT FIGHTER}}
+        work = 20 cost = "CORPSE" 4 applyImmediately = true}
   }
   "LABORATORY"
   {
       {{Balsam AddBodyPart HEAD 1 none}     4 "GOLD" 5}
-      {{Balsam AddBodyPart WING 2 none}     4 "GOLD" 5}
+      {{Balsam {AddBodyPart WING 2 none Permanent FLYING}}     4 "GOLD" 5}
       {{Balsam AddBodyPart ARM 2 none}      4 "GOLD" 5}
       {{Balsam IncreaseAttr DEFENSE 3}      4 "GOLD" 5}
       {{Balsam IncreaseAttr DAMAGE 3}       4 "GOLD" 5}
       {{Balsam IncreaseAttr SPELL_DAMAGE 3} 4 "GOLD" 5}
-      {{Potion Permanent TELEPATHY}         4 "GOLD" 5}
+      {{Balsam Permanent TELEPATHY}         4 "GOLD" 5}
+      {{Balsam Permanent SWARMER}           4 "GOLD" 5}
       {{Balsam Permanent DARKNESS_SOURCE}   4 "GOLD" 10 "advanced alchemy"}
       {{Balsam IncreaseAttr DEFENSE 6}      4 "GOLD" 10 "advanced alchemy"}
       {{Balsam IncreaseAttr DAMAGE 6}       4 "GOLD" 10 "advanced alchemy"}

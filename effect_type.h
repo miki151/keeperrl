@@ -16,6 +16,7 @@
 #include "view_id.h"
 #include "scripted_ui_data.h"
 #include "companion_info.h"
+#include "minion_trait.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -69,8 +70,9 @@ struct Summon {
 };
 struct AssembledMinion {
   CreatureId SERIAL(creature);
+  EnumSet<MinionTrait> SERIAL(traits);
   vector<Effect> SERIAL(effects);
-  SERIALIZE_ALL(NAMED(creature), OPTION(effects))
+  SERIALIZE_ALL(NAMED(creature), NAMED(traits), OPTION(effects))
 };
 struct AddAutomatonParts {
   string getPartsNames(const ContentFactory*) const;

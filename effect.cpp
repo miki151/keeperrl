@@ -551,7 +551,7 @@ static bool apply(const Effects::AssembledMinion& m, Position pos, Creature* att
       e.apply((*c)->getPosition(), attacker);
     for (auto col : pos.getGame()->getCollectives())
       if (col->getCreatures().contains(attacker)) {
-        col->addCreature(*c, {MinionTrait::FIGHTER, MinionTrait::AUTOMATON});
+        col->addCreature(*c, m.traits);
         for (auto& part : (*c)->getAttributes().automatonParts)
           (*c)->addAutomatonPart(*part.get((*c)->getGame()->getContentFactory())->getAutomatonPart());
         return true;

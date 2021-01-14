@@ -9,6 +9,7 @@
 #include "custom_item_id.h"
 #include "furniture_type.h"
 #include "creature_id.h"
+#include "minion_trait.h"
 
 #define ITEM_TYPE_INTERFACE\
   ItemAttributes getAttributes(const ContentFactory*) const
@@ -86,7 +87,8 @@ struct EventPoem {
 struct Assembled {
   CreatureId SERIAL(creature);
   string SERIAL(itemName);
-  SERIALIZE_ALL(creature, itemName)
+  EnumSet<MinionTrait> SERIAL(traits);
+  SERIALIZE_ALL(creature, itemName, traits)
   ITEM_TYPE_INTERFACE;
 };
 struct AutomatonPaint {

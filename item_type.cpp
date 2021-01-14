@@ -415,7 +415,7 @@ ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory
       auto allIds = factory->getCreatures().getViewId(creature);
       i.viewId = allIds.front();
       i.partIds = allIds.getSubsequence(1);
-      i.effect = Effect(Effects::AssembledMinion{creature});
+      i.effect = Effect(Effects::AssembledMinion{creature, traits});
       i.name = itemName;
       i.itemClass = ItemClass::TOOL;
       i.weight = 1;
