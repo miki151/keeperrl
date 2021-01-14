@@ -2,4 +2,4 @@
 "FORGE" { "FORGE" "forge" "forges" }
 "LABORATORY" { "LABORATORY" "laboratory" "concocts" }
 "JEWELER" { "JEWELLER" "jeweler" }
-"MORGUE" { "EMBALMING_TABLE" "morgue" "raises" }
+"MORGUE" { "MORGUE_TABLE" "morgue" "raises" }

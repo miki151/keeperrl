@@ -204,26 +204,26 @@
   }
   "LABORATORY"
   {
-      {{Balsam AddBodyPart HEAD 1 none}     4 "GOLD" 5}
-      {{Balsam {AddBodyPart WING 2 none Permanent FLYING}}     4 "GOLD" 5}
-      {{Balsam AddBodyPart ARM 2 none}      4 "GOLD" 5}
-      {{Balsam IncreaseAttr DEFENSE 3}      4 "GOLD" 5}
-      {{Balsam IncreaseAttr DAMAGE 3}       4 "GOLD" 5}
-      {{Balsam IncreaseAttr SPELL_DAMAGE 3} 4 "GOLD" 5}
-      {{Balsam Permanent TELEPATHY}         4 "GOLD" 5}
-      {{Balsam Permanent SWARMER}           4 "GOLD" 5}
-      {{Balsam Permanent DARKNESS_SOURCE}   4 "GOLD" 10 "advanced alchemy"}
-      {{Balsam IncreaseAttr DEFENSE 6}      4 "GOLD" 10 "advanced alchemy"}
-      {{Balsam IncreaseAttr DAMAGE 6}       4 "GOLD" 10 "advanced alchemy"}
-      {{Balsam IncreaseAttr SPELL_DAMAGE 6} 4 "GOLD" 10 "advanced alchemy"}
-      {{Balsam {IncreaseAttr DAMAGE 13 Permanent INSANITY}}       4 "GOLD" 10 "advanced alchemy"}
-      {{Balsam RemovePermanent SLOWED}      4 "GOLD" 10 "advanced alchemy"}
-      {{Balsam Permanent FAST_CRAFTING}     4 "GOLD" 10 "advanced alchemy"}
-      {{Balsam Permanent FAST_TRAINING}     4 "GOLD" 10 "advanced alchemy"}
-      {{Balsam IncreaseWorkshopSkill "MORGUE" 0.5}                4 "GOLD" 10 "advanced alchemy"}
-      {{Balsam IncreaseWorkshopSkill "LABORATORY" 0.5}            4 "GOLD" 10 "advanced alchemy"}
-      {{Balsam IncreaseSkill DIGGING      0.5}                    4 "GOLD" 10 "advanced alchemy"}
-      {{Balsam IncreaseSkill MULTI_WEAPON 0.5}                    4 "GOLD" 10 "advanced alchemy"}
+      {{Balsam AddBodyPart HEAD 1 none}     4 "GOLD" 5 "embalming"}
+      {{Balsam {AddBodyPart WING 2 none Permanent FLYING}}     4 "GOLD" 5 "embalming"}
+      {{Balsam AddBodyPart ARM 2 none}      4 "GOLD" 5 "embalming"}
+      {{Balsam IncreaseAttr DEFENSE 3}      4 "GOLD" 5 "embalming"}
+      {{Balsam IncreaseAttr DAMAGE 3}       4 "GOLD" 5 "embalming"}
+      {{Balsam IncreaseAttr SPELL_DAMAGE 3} 4 "GOLD" 5 "embalming"}
+      {{Balsam Permanent TELEPATHY}         4 "GOLD" 5 "embalming"}
+      {{Balsam Permanent SWARMER}           4 "GOLD" 5 "embalming"}
+      {{Balsam Permanent DARKNESS_SOURCE}   4 "GOLD" 10 "advanced embalming"}
+      {{Balsam IncreaseAttr DEFENSE 6}      4 "GOLD" 10 "advanced embalming"}
+      {{Balsam IncreaseAttr DAMAGE 6}       4 "GOLD" 10 "advanced embalming"}
+      {{Balsam IncreaseAttr SPELL_DAMAGE 6} 4 "GOLD" 10 "advanced embalming"}
+      {{Balsam {IncreaseAttr DAMAGE 13 Permanent INSANITY}}       4 "GOLD" 10 "advanced embalming"}
+      {{Balsam RemovePermanent SLOWED}      4 "GOLD" 10 "advanced embalming"}
+      {{Balsam Permanent FAST_CRAFTING}     4 "GOLD" 10 "advanced embalming"}
+      {{Balsam Permanent FAST_TRAINING}     4 "GOLD" 10 "advanced embalming"}
+      {{Balsam IncreaseWorkshopSkill "MORGUE" 0.5}                4 "GOLD" 10 "advanced embalming"}
+      {{Balsam IncreaseWorkshopSkill "LABORATORY" 0.5}            4 "GOLD" 10 "advanced embalming"}
+      {{Balsam IncreaseSkill DIGGING      0.5}                    4 "GOLD" 10 "advanced embalming"}
+      {{Balsam IncreaseSkill MULTI_WEAPON 0.5}                    4 "GOLD" 10 "advanced embalming"}
   }
 }
 

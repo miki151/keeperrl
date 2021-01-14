@@ -113,10 +113,10 @@
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   usageFX = JEWELLER
 }
-"EMBALMING_TABLE"
+"MORGUE_TABLE"
 {
-  name = "embalming table"
-  viewId = { "embalming_table" }
+  name = "morgue table"
+  viewId = { "morgue_table" }
   blockMovement = true
   usageTime = 5
   canHideHere = true
