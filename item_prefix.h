@@ -5,7 +5,7 @@
 #include "spell_id.h"
 #include "pretty_archive.h"
 #include "lasting_effect.h"
-#include "creature_predicate.h"
+#include "special_attr.h"
 
 struct ItemAttrBonus {
   AttrType attr;
@@ -29,13 +29,6 @@ struct VictimEffect {
 struct AttackerEffect {
   Effect effect;
   COMPARE_ALL(effect)
-};
-
-struct SpecialAttr {
-  AttrType SERIAL(attr);
-  int SERIAL(value);
-  CreaturePredicate SERIAL(predicate);
-  SERIALIZE_ALL(attr, value, predicate)
 };
 
 using AssembledCreatureEffect = Effect;

@@ -17,6 +17,7 @@
 #include "scripted_ui_data.h"
 #include "companion_info.h"
 #include "minion_trait.h"
+#include "special_attr.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -335,6 +336,7 @@ struct UI {
 };
 using AddCompanion = CompanionInfo;
 SIMPLE_EFFECT(SetPhylactery);
+using ::SpecialAttr;
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -346,7 +348,7 @@ SIMPLE_EFFECT(SetPhylactery);
   X(Enhance, 6)\
   X(Suicide, 7)\
   X(IncreaseAttr, 8)\
-  X(EmitPoisonGas, 9)\
+  X(SpecialAttr, 9)\
   X(CircularBlast, 10)\
   X(Deception, 11)\
   X(Summon, 12)\
@@ -417,7 +419,8 @@ SIMPLE_EFFECT(SetPhylactery);
   X(SetViewId, 77)\
   X(UI, 78)\
   X(AddCompanion, 79)\
-  X(SetPhylactery, 80)
+  X(SetPhylactery, 80)\
+  X(EmitPoisonGas, 81)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

@@ -385,6 +385,28 @@ const char* Effects::IncreaseAttr::get(const char* ifIncrease, const char* ifDec
     return ifDecrease;
 }
 
+static const char* get(const Effects::SpecialAttr& a, const char* ifIncrease, const char* ifDecrease) {
+  if (a.value > 0)
+    return ifIncrease;
+  else
+    return ifDecrease;
+}
+
+static bool applyToCreature(const Effects::SpecialAttr& e, Creature* c, Creature*) {
+  c->you(MsgType::YOUR, ::getName(e.attr) + " " + e.predicate.getName() + get(e, " improves", " wanes"));
+  c->getAttributes().specialAttr[e.attr].push_back(make_pair(e.value, e.predicate));
+  return true;
+}
+
+static string getName(const Effects::SpecialAttr& e, const ContentFactory*) {
+  return ::getName(e.attr) + get(e, " boost", " loss") + " " + e.predicate.getName();
+}
+
+static string getDescription(const Effects::SpecialAttr& e, const ContentFactory*) {
+  return get(e, "Increases", "Decreases") + " "_s + ::getName(e.attr)
+      + " " + e.predicate.getName() + " by " + toString(abs(e.value));
+}
+
 static bool applyToCreature(const Effects::IncreaseSkill& e, Creature* c, Creature*) {
   c->you(MsgType::YOUR, ::getName(e.skillid) + e.get(" skill improves", " skill wanes"));
   c->getAttributes().getSkills().increaseValue(e.skillid, e.amount);

@@ -9,7 +9,7 @@
 #include "lasting_effect.h"
 #include "skill.h"
 #include "creature_predicate.h"
-#include "item_prefix.h"
+#include "special_attr.h"
 #include "companion_info.h"
 
 struct ExtraTraining {
