@@ -138,6 +138,10 @@ static bool apply(const CreaturePredicates::InTerritory& s, Position pos, const 
   return attacker && col && col->getCreatures().contains(attacker);
 }
 
+static string getNameTopLevel(const CreaturePredicates::InTerritory&) {
+  return "when in territory";
+}
+
 static string getName(const CreaturePredicates::InTerritory&) {
   return "in territory";
 }

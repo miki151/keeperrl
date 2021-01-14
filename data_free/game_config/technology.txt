@@ -3,6 +3,7 @@
 "advanced alchemy"         { "Produce more powerful potions."                               {"alchemy"} }
 "embalming"                { "Build a laboratory and concoct basic balsams for bodies." }
 "advanced embalming"       { "Produce more powerful balsams for bodies."                    {"embalming"} }
+"master embalming"         { "Produce the most powerful balsams for bodies."                {"advanced embalming"} }
 "alchemical conversion"    { "Convert resources to and from gold."                          {"alchemy"} }
 "humanoid mutation"        { "Breed new, very powerful humanoid species."                   {"alchemy"} }
 "beast mutation"           { "Breed new, very powerful beast species."                      {"alchemy"} }

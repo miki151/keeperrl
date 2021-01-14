@@ -226,6 +226,19 @@
       {{Balsam IncreaseWorkshopSkill "LABORATORY" 0.5}            4 "GOLD" 10 "advanced embalming"}
       {{Balsam IncreaseSkill DIGGING      0.5}                    4 "GOLD" 10 "advanced embalming"}
       {{Balsam IncreaseSkill MULTI_WEAPON 0.5}                    4 "GOLD" 10 "advanced embalming"}
+      {{Balsam SpecialAttr DEFENSE       12 InTerritory}          4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr DEFENSE       12 HatedBy HATE_DWARVES} 4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr DAMAGE        12 HatedBy HATE_DWARVES} 4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr RANGED_DAMAGE 12 HatedBy HATE_DWARVES} 4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr DEFENSE       12 HatedBy HATE_HUMANS}  4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr DAMAGE        12 HatedBy HATE_HUMANS}  4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr RANGED_DAMAGE 12 HatedBy HATE_HUMANS}  4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr DEFENSE       12 HatedBy HATE_DRAGONS} 4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr DAMAGE        12 HatedBy HATE_DRAGONS} 4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr RANGED_DAMAGE 12 HatedBy HATE_DRAGONS} 4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr DEFENSE       12 HatedBy HATE_ELVES}   4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr DAMAGE        12 HatedBy HATE_ELVES}   4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr RANGED_DAMAGE 12 HatedBy HATE_ELVES}   4 "GOLD" 10 "master embalming"}
   }
 }
 
