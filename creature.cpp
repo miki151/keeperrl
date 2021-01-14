@@ -2396,6 +2396,9 @@ vector<AdjectiveInfo> Creature::getSpecialAttrAdjectives(bool good) const {
 vector<AdjectiveInfo> Creature::getGoodAdjectives() const {
   PROFILE;
   vector<AdjectiveInfo> ret;
+  if (getPhylactery())
+    ret.push_back({"Bound to a phylactery",
+        "The creature will respawn at its phylactery when it is killed"});
   if (auto time = getGlobalTime()) {
     for (LastingEffect effect : ENUM_ALL(LastingEffect))
       if (attributes->isAffected(effect, *time))

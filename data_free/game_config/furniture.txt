@@ -404,7 +404,6 @@
       SetFlag "tmp" true
     }
     SetFlag "tmp" false
-    CreatureMessage "turn into a lich!" "turns into a lich!"
   }
 }
 "PHYLACTERY_ACTIVE" inherit "PHYLACTERY"
