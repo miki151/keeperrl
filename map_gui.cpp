@@ -1054,10 +1054,10 @@ void MapGui::renderFoWBorders(Renderer& renderer, Vec2 size) {
 void MapGui::renderFloorObjects(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
   Rectangle allTiles = layout->getAllTiles(getBounds(), levelBounds, getScreenPos());
   Vec2 topLeftCorner = projectOnScreen(allTiles.topLeft());
-  for (auto wpos : allTiles) {
-    Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
-    if (auto& index = objects[wpos]) {
-      for (auto layer : {ViewLayer::FLOOR_BACKGROUND, ViewLayer::FLOOR})
+  auto render = [&] (ViewLayer layer) {
+    for (auto wpos : allTiles) {
+      Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
+      if (auto& index = objects[wpos])
         if (spriteMode && index->hasObject(layer)) {
           auto& obj = index->getObject(layer);
           const Tile& tile = renderer.getTileSet().getTile(obj.id(), spriteMode);
@@ -1065,7 +1065,10 @@ void MapGui::renderFloorObjects(Renderer& renderer, Vec2 size, milliseconds curr
             drawObjectAbs(renderer, pos, obj, size, Vec2(), wpos, currentTimeReal, *index);
         }
     }
-  }
+  };
+  render(ViewLayer::FLOOR_BACKGROUND);
+  renderExtraBorders(renderer, currentTimeReal);
+  render(ViewLayer::FLOOR);
 }
 
 void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds currentTimeReal) {
@@ -1143,7 +1146,6 @@ void MapGui::renderMapObjects(Renderer& renderer, Vec2 size, milliseconds curren
   }
   renderAndInitFoW(renderer, size);
   renderFloorObjects(renderer, size, currentTimeReal);
-  renderExtraBorders(renderer, currentTimeReal);
   if (spriteMode)
     renderFoWBorders(renderer, size);
   renderHighlights(renderer, size, currentTimeReal, true);
