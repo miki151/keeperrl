@@ -69,7 +69,7 @@
   noLeader = true
   prisoners = false
 }
-"5_necromancer"
+"0_necromancer"
 {
   creatureId = { "NECROMANCER" "NECROMANCER_F" }
   tribeAlignment = EVIL

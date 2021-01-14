@@ -1677,9 +1677,9 @@ bool Creature::considerPhylactery(DropType drops, const Creature* attacker) {
     removeEffect(LastingEffect::BLEEDING, false);
     getBody().healBodyParts(this, 1000);
     forceMovement = false;
-    phylactery->pos.removeFurniture(FurnitureLayer::MIDDLE);
-    position.moveCreature(phylactery->pos, true);
-    phylactery = none;
+    auto pos = phylactery->pos;
+    pos.removeFurniture(FurnitureLayer::MIDDLE);
+    position.moveCreature(pos, true);
     return true;
   }
   return false;
