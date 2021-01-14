@@ -194,13 +194,13 @@
   "MORGUE"
   {
       { item = {Assembled "ZOMBIE_WORKER" "zombie" {NO_LIMIT WORKER}}
-        work = 8 cost = "CORPSE" 1 applyImmediately = true}
+        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
       { item = {Assembled "SKELETON" "skeleton" {NO_LIMIT FIGHTER}}
-        work = 8 cost = "CORPSE" 1 applyImmediately = true}
+        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
       { item = {Assembled "MUMMY" "mummy" {NO_LIMIT FIGHTER}}
-        work = 20 cost = "CORPSE" 2 applyImmediately = true}
+        work = 20 cost = "CORPSE" 2 applyImmediately = true notArtifact = true}
       { item = {Assembled "VAMPIRE" "vampire" {NO_LIMIT FIGHTER}}
-        work = 20 cost = "CORPSE" 4 applyImmediately = true}
+        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true}
   }
   "LABORATORY"
   {
