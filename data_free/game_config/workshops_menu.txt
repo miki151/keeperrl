@@ -209,12 +209,14 @@
       {{Balsam AddBodyPart ARM 2 none}      4 "GOLD" 5 "embalming"}
       {{Balsam IncreaseAttr DEFENSE 3}      4 "GOLD" 5 "embalming"}
       {{Balsam IncreaseAttr DAMAGE 3}       4 "GOLD" 5 "embalming"}
+      {{Balsam IncreaseAttr RANGED_DAMAGE 3}4 "GOLD" 5 "embalming"}
       {{Balsam IncreaseAttr SPELL_DAMAGE 3} 4 "GOLD" 5 "embalming"}
       {{Balsam Permanent TELEPATHY}         4 "GOLD" 5 "embalming"}
       {{Balsam Permanent SWARMER}           4 "GOLD" 5 "embalming"}
       {{Balsam Permanent DARKNESS_SOURCE}   4 "GOLD" 10 "advanced embalming"}
       {{Balsam IncreaseAttr DEFENSE 6}      4 "GOLD" 10 "advanced embalming"}
       {{Balsam IncreaseAttr DAMAGE 6}       4 "GOLD" 10 "advanced embalming"}
+      {{Balsam IncreaseAttr RANGED_DAMAGE 6}4 "GOLD" 10 "advanced embalming"}
       {{Balsam IncreaseAttr SPELL_DAMAGE 6} 4 "GOLD" 10 "advanced embalming"}
       {{Balsam {IncreaseAttr DAMAGE 13 Permanent INSANITY}}       4 "GOLD" 10 "advanced embalming"}
       {{Balsam RemovePermanent SLOWED}      4 "GOLD" 10 "advanced embalming"}
