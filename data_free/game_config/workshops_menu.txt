@@ -212,14 +212,13 @@
       {{Balsam IncreaseAttr DAMAGE 6}       4 "GOLD" 10 "advanced alchemy"}
       {{Balsam IncreaseAttr SPELL_DAMAGE 6} 4 "GOLD" 10 "advanced alchemy"}
       {{Balsam {IncreaseAttr DAMAGE 13 Permanent INSANITY}}       4 "GOLD" 10 "advanced alchemy"}
-      {{Potion RemovePermanent SLOWED}      4 "GOLD" 10 "advanced alchemy"}
-      {{Potion Permanent FAST_CRAFTING}     4 "GOLD" 10 "advanced alchemy"}
-      {{Potion Permanent FAST_TRAINING}     4 "GOLD" 10 "advanced alchemy"}
-      {{Potion IncreaseWorkshopSkill "MORGUE" 0.5}                4 "GOLD" 10 "advanced alchemy"}
-      {{Potion IncreaseWorkshopSkill "LABORATORY" 0.5}            4 "GOLD" 10 "advanced alchemy"}
-      {{Potion IncreaseSkill DIGGING      0.5}                    4 "GOLD" 10 "advanced alchemy"}
-      {{Potion IncreaseSkill MULTI_WEAPON 0.5}                    4 "GOLD" 10 "advanced alchemy"}
-      {{Potion Heal FLESH}                  4 "GOLD" 10 "advanced alchemy"}
+      {{Balsam RemovePermanent SLOWED}      4 "GOLD" 10 "advanced alchemy"}
+      {{Balsam Permanent FAST_CRAFTING}     4 "GOLD" 10 "advanced alchemy"}
+      {{Balsam Permanent FAST_TRAINING}     4 "GOLD" 10 "advanced alchemy"}
+      {{Balsam IncreaseWorkshopSkill "MORGUE" 0.5}                4 "GOLD" 10 "advanced alchemy"}
+      {{Balsam IncreaseWorkshopSkill "LABORATORY" 0.5}            4 "GOLD" 10 "advanced alchemy"}
+      {{Balsam IncreaseSkill DIGGING      0.5}                    4 "GOLD" 10 "advanced alchemy"}
+      {{Balsam IncreaseSkill MULTI_WEAPON 0.5}                    4 "GOLD" 10 "advanced alchemy"}
   }
 }
 
