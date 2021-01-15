@@ -193,7 +193,7 @@
 {
   "MORGUE"
   {
-      { item = {Assembled "ZOMBIE_WORKER" "zombie" {NO_LIMIT WORKER}}
+      { item = {Assembled "ZOMBIE_WORKER" "zombie" {NO_LIMIT FIGHTER WORKER}}
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
       { item = {Assembled "SKELETON" "skeleton" {NO_LIMIT FIGHTER}}
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
