@@ -601,10 +601,11 @@ ItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) c
 
 ItemAttributes ItemTypes::BodyPartUpgrade::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
-      i.name = partName + " of a " + creatureName;
-      i.plural = partName + "s of a " + creatureName;
+      i.name = getName(part) + " of a "_s + creatureName;
+      i.plural = getName(part) + "s of a "_s + creatureName;
       i.viewId = ViewId("body_part");
-      i.upgradeInfo = ItemUpgradeInfo LIST(ItemUpgradeType::BODY_PART, effect);
+      i.upgradeInfo = ItemUpgradeInfo LIST(ItemUpgradeType::BODY_PART, 
+          Effect(Effects::Chain{{Effect(Effects::AddBodyPart{part, 1}), effect}}));
       i.blindName = "body part"_s;
       i.itemClass = ItemClass::OTHER;
       i.weight = 2;

@@ -66,10 +66,10 @@ struct Balsam {
   ITEM_TYPE_INTERFACE;
 };
 struct BodyPartUpgrade {
-  string SERIAL(partName);
+  BodyPart SERIAL(part);
   string SERIAL(creatureName);
   Effect SERIAL(effect);
-  SERIALIZE_ALL(partName, creatureName, effect)
+  SERIALIZE_ALL(part, creatureName, effect)
   ITEM_TYPE_INTERFACE;
 };
 struct TechBook {
