@@ -537,10 +537,13 @@ string Body::getDescription() const {
   } else
   if (!anyLimbs)
     ret.push_back("no limbs");
-  if (numBodyParts(BodyPart::HEAD) == 0)
-    ret.push_back("no head");
+  auto numHeads = numBodyParts(BodyPart::HEAD);
+  if (numHeads == 0)
+    ret.push_back("no "_s + getName(BodyPart::HEAD));
+  else if (numHeads > 1)
+    ret.push_back(getPluralText(getName(BodyPart::HEAD), numHeads));
   string limbDescription = ret.size() > 0 ? " with " + combine(ret) : "";
-  return getMaterialAndSizeAdjectives() + limbDescription;
+  return getMaterialAndSizeAdjectives() + limbDescription + ".";
 }
 
 bool Body::isHumanoid() const {
