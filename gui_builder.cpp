@@ -2052,9 +2052,23 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
         callbacks.input({UserInputId::WORKSHOP_UPGRADE, *ret});
   });
   auto line = WL(getListBuilder);
+  vector<pair<ViewId, int>> upgrades;
+  auto addUpgrade = [&] (ViewId id, int cnt) {
+    for (auto& elem : upgrades)
+      if (elem.first == id) {
+        elem.second += cnt;
+        return;
+      }
+    upgrades.emplace_back(id, cnt);
+  };
   for (int upgradeIndex : All(elem.added)) {
     auto& upgrade = elem.added[upgradeIndex];
-    line.addElemAuto(WL(viewObject, upgrade.viewId));
+    addUpgrade(upgrade.viewId, upgrade.count);
+  }
+  for (auto& elem : upgrades) {
+    if (elem.second > 1)
+      line.addElemAuto(WL(label, toString(elem.second)));
+    line.addElemAuto(WL(viewObject, elem.first));
   }
   if (!elem.added.empty())
     return WL(standardButton, line.buildHorizontalList(), std::move(buttonHandler));

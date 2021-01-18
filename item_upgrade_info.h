@@ -6,7 +6,8 @@ RICH_ENUM(
     ItemUpgradeType,
     WEAPON,
     ARMOR,
-    BALSAM
+    BALSAM,
+    BODY_PART
 );
 
 class ItemPrefix;
@@ -19,4 +20,3 @@ struct ItemUpgradeInfo {
   template <class Archive>
   void serialize(Archive& ar1, const unsigned int);
 };
-

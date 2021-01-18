@@ -65,6 +65,13 @@ struct Balsam {
   SERIALIZE_ALL(effect)
   ITEM_TYPE_INTERFACE;
 };
+struct BodyPartUpgrade {
+  string SERIAL(partName);
+  string SERIAL(creatureName);
+  Effect SERIAL(effect);
+  SERIALIZE_ALL(partName, creatureName, effect)
+  ITEM_TYPE_INTERFACE;
+};
 struct TechBook {
   TechId SERIAL(techId);
   SERIALIZE_ALL(techId)
@@ -88,7 +95,9 @@ struct Assembled {
   CreatureId SERIAL(creature);
   string SERIAL(itemName);
   EnumSet<MinionTrait> SERIAL(traits);
-  SERIALIZE_ALL(creature, itemName, traits)
+  optional<ItemUpgradeType> SERIAL(upgradeType);
+  int SERIAL(maxUpgrades);
+  SERIALIZE_ALL(NAMED(creature), NAMED(itemName), NAMED(traits), OPTION(upgradeType), OPTION(maxUpgrades))
   ITEM_TYPE_INTERFACE;
 };
 struct AutomatonPaint {
@@ -123,6 +132,7 @@ struct PrefixChance {
   X(AutomatonPaint, 15)\
   X(PrefixChance, 16)\
   X(Balsam, 17)\
+  X(BodyPartUpgrade, 18)
 
 #define VARIANT_TYPES_LIST ITEM_TYPES_LIST
 #define VARIANT_NAME ItemTypeVariant

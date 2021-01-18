@@ -2185,7 +2185,6 @@
     skills = {
       "DIGGING" 0.2
     }
-    maxBalsams = 1
   }
 "SKELETON"
   {
@@ -2211,7 +2210,6 @@
       name = "skeleton"
     }
     hatedByEffect = HATE_UNDEAD
-    maxBalsams = 1
   }
 "VAMPIRE"
   {
@@ -2252,7 +2250,6 @@
       firstNameGen = "VAMPIRE"
     }
     hatedByEffect = HATE_UNDEAD
-    maxBalsams = 3
   }
 "VAMPIRE_LORD" inherit "VAMPIRE"
   {
@@ -2312,7 +2309,6 @@
       pluralName = "mummies"
     }
     hatedByEffect = HATE_UNDEAD
-    maxBalsams = 2
   }
 "ORC"
   {
@@ -4091,4 +4087,11 @@
       name = "abomination"
     }
     gender = IT
+  }
+"ABOMINATION_PLAYER" inherit "ABOMINATION"
+  {
+    attr = {
+      DAMAGE 40
+      DEFENSE 30 
+    }
   }

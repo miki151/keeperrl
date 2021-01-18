@@ -117,13 +117,13 @@
 {
   "WORKSHOP"
   {
-      { item = {Assembled "AUTOMATON_WORKER_WOOD" "drilling automaton" {FIGHTER AUTOMATON} }
+      { item = {Assembled{ "AUTOMATON_WORKER_WOOD" "drilling automaton" {FIGHTER AUTOMATON} }}
         work = 8 cost = "WOOD" 45 tech = "automatons" applyImmediately = true}
-      { item = {Assembled "AUTOMATON_CORPUS_WOOD" "automaton corpus" {FIGHTER AUTOMATON} }
+      { item = {Assembled{ "AUTOMATON_CORPUS_WOOD" "automaton corpus" {FIGHTER AUTOMATON} }}
         work = 8 cost = "WOOD" 30 tech = "automatons" applyImmediately = true}
-      { item = {Assembled "LIGHT_AUTOMATON_CORPUS_WOOD" "light automaton corpus" {FIGHTER AUTOMATON} }
+      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_WOOD" "light automaton corpus" {FIGHTER AUTOMATON} }}
         work = 8 cost = "WOOD" 20 tech = "advanced automatons" applyImmediately = true}
-      { item = {Assembled "HELICOPTER" "helicopterum" {FIGHTER AUTOMATON} }
+      { item = {Assembled{ "HELICOPTER" "helicopterum" {FIGHTER AUTOMATON} }}
         work = 8 cost = "WOOD" 10 tech = "aerodynamics" applyImmediately = true}
       {{"AutomatonLegsWood"}       2       "WOOD" 5    "automatons"}
       {{"AutomatonArmsWood"}       2       "WOOD" 5    "automatons"}
@@ -136,13 +136,13 @@
   } 
   "FORGE"
   {
-      { item = {Assembled "AUTOMATON_WORKER_IRON" "drilling automaton" {FIGHTER AUTOMATON} }
+      { item = {Assembled{ "AUTOMATON_WORKER_IRON" "drilling automaton" {FIGHTER AUTOMATON} }}
         work = 8 cost = "IRON" 45 tech = "automatons" applyImmediately = true}
-      { item = {Assembled "AUTOMATON_CORPUS_IRON" "automaton corpus" {FIGHTER AUTOMATON} }
+      { item = {Assembled{ "AUTOMATON_CORPUS_IRON" "automaton corpus" {FIGHTER AUTOMATON} }}
         work = 8 cost = "IRON" 30 tech = "automatons" applyImmediately = true}
-      { item = {Assembled "LIGHT_AUTOMATON_CORPUS_IRON" "light automaton corpus" {FIGHTER AUTOMATON} }
+      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_IRON" "light automaton corpus" {FIGHTER AUTOMATON} }}
         work = 8 cost = "IRON" 20 tech = "advanced automatons" applyImmediately = true}
-      { item = {Assembled "HEAVY_AUTOMATON_CORPUS_IRON" "heavy automaton corpus" {FIGHTER AUTOMATON} }
+      { item = {Assembled{ "HEAVY_AUTOMATON_CORPUS_IRON" "heavy automaton corpus" {FIGHTER AUTOMATON} }}
         work = 8 cost = "IRON" 40 tech = "advanced automatons" applyImmediately = true}
       {{"AutomatonLegsIron"}       2       "IRON" 5    "automatons"}
       {{"AutomatonArmsIron"}       2       "IRON" 5    "automatons"}
@@ -154,13 +154,13 @@
       {{"FireHeadIron"}            2       "IRON" 5    "advanced automatons"}
       {{"AcidHeadIron"}            2       "IRON" 5    "advanced automatons"}
       {{"HumanoidHeadIron"}        2       "IRON" 5    "automaton brains"}
-      { item = {Assembled "AUTOMATON_WORKER_ADA" "drilling automaton" {FIGHTER AUTOMATON} }
+      { item = {Assembled{ "AUTOMATON_WORKER_ADA" "drilling automaton" {FIGHTER AUTOMATON} }}
         work = 8 cost = "ADA" 30 tech = "automatons" applyImmediately = true}
-      { item = {Assembled "AUTOMATON_CORPUS_ADA" "automaton corpus" {FIGHTER AUTOMATON} }
+      { item = {Assembled{ "AUTOMATON_CORPUS_ADA" "automaton corpus" {FIGHTER AUTOMATON} }}
         work = 8 cost = "ADA" 45 tech = "automatons" applyImmediately = true}
-      { item = {Assembled "LIGHT_AUTOMATON_CORPUS_ADA" "light automaton corpus" {FIGHTER AUTOMATON} }
+      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_ADA" "light automaton corpus" {FIGHTER AUTOMATON} }}
         work = 8 cost = "ADA" 20 tech = "advanced automatons" applyImmediately = true}
-      { item = {Assembled "HEAVY_AUTOMATON_CORPUS_ADA" "heavy automaton corpus" {FIGHTER AUTOMATON} }
+      { item = {Assembled{ "HEAVY_AUTOMATON_CORPUS_ADA" "heavy automaton corpus" {FIGHTER AUTOMATON} }}
         work = 8 cost = "ADA" 40 tech = "advanced automatons" applyImmediately = true}
       {{"AutomatonLegsAda"}       2       "ADA" 5    "automatons"}
       {{"AutomatonArmsAda"}       2       "ADA" 5    "automatons"}
@@ -193,14 +193,16 @@
 {
   "MORGUE"
   {
-      { item = {Assembled "ZOMBIE_WORKER" "zombie" {NO_LIMIT FIGHTER WORKER}}
+      { item = {Assembled{ "ZOMBIE_WORKER" "zombie" {NO_LIMIT FIGHTER WORKER} BALSAM 1}}
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
-      { item = {Assembled "SKELETON" "skeleton" {NO_LIMIT FIGHTER}}
+      { item = {Assembled{ "SKELETON" "skeleton" {NO_LIMIT FIGHTER} BALSAM 1 }}
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
-      { item = {Assembled "MUMMY" "mummy" {NO_LIMIT FIGHTER}}
+      { item = {Assembled{ "MUMMY" "mummy" {NO_LIMIT FIGHTER} BALSAM 2}}
         work = 20 cost = "CORPSE" 2 applyImmediately = true notArtifact = true}
-      { item = {Assembled "VAMPIRE" "vampire" {NO_LIMIT FIGHTER}}
+      { item = {Assembled{ "VAMPIRE" "vampire" {NO_LIMIT FIGHTER} BALSAM 3}}
         work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "ABOMINATION_PLAYER" "abomination" {NO_LIMIT FIGHTER} BODY_PART 99}}
+        work = 40 cost = "CORPSE" 10 applyImmediately = true notArtifact = true}
   }
   "LABORATORY"
   {

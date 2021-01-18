@@ -421,7 +421,8 @@ ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory
       i.weight = 1;
       i.price = getEffectPrice(*i.effect);
       i.uses = 1;
-      i.maxUpgrades = factory->getCreatures().getMaxBalsams(creature);
+      i.maxUpgrades = maxUpgrades;
+      i.upgradeType = upgradeType;
   );
 }
 
@@ -595,6 +596,19 @@ ItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) c
       i.weight = 0.5;
       i.price = 100;
       i.uses = 1;
+  );
+}
+
+ItemAttributes ItemTypes::BodyPartUpgrade::getAttributes(const ContentFactory* factory) const {
+  return ITATTR(
+      i.name = partName + " of a " + creatureName;
+      i.plural = partName + "s of a " + creatureName;
+      i.viewId = ViewId("body_part");
+      i.upgradeInfo = ItemUpgradeInfo LIST(ItemUpgradeType::BODY_PART, effect);
+      i.blindName = "body part"_s;
+      i.itemClass = ItemClass::OTHER;
+      i.weight = 2;
+      i.price = 100;
   );
 }
 

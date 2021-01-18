@@ -301,8 +301,8 @@ optional<ItemUpgradeType> Item::getAppliedUpgradeType() const {
   auto c = getClass();
   if (attributes->automatonPart && attributes->automatonPart->prefixType)
     c = *attributes->automatonPart->prefixType;
-  if (attributes->effect && attributes->effect->effect->contains<Effects::AssembledMinion>())
-    return ItemUpgradeType::BALSAM;
+  if (attributes->upgradeType)
+    return attributes->upgradeType;
   switch (c) {
     case ItemClass::ARMOR:
       return ItemUpgradeType::ARMOR;
