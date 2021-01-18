@@ -115,6 +115,8 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
     playerCollective->acquireTech(tech, false);
   for (auto resource : keeperInfo.credit)
     playerCollective->returnResource(resource);
+  for (auto& f : keeperInfo.flags)
+    effectFlags.insert(f);
 }
 
 Game::~Game() {}

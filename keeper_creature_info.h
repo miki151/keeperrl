@@ -30,6 +30,7 @@ struct KeeperCreatureInfo {
   vector<string> SERIAL(endlessEnemyGroups) = {"basic"};
   optional<string> SERIAL(unlock);
   vector<CostInfo> SERIAL(credit);
+  vector<string> SERIAL(flags);
   template <class Archive>
   void serialize(Archive& ar, const unsigned int);
 };
