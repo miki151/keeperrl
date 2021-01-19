@@ -381,6 +381,8 @@ bool Body::healBodyParts(Creature* creature, int max) {
 }
 
 bool Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
+  if (creature->getGame()->effectFlags.count("abomination_upgrades"))
+    drop = false;
   if (bodyParts[part] == 0 || (!drop && injuredBodyParts[part] == bodyParts[part]))
     return false;
   if (drop) {
@@ -554,13 +556,6 @@ bool Body::canPickUpItems() const {
   return xCanPickUpItems || isHumanoid();
 }
 
-static string getBodyPartBone(BodyPart part) {
-  switch (part) {
-    case BodyPart::HEAD: return "skull";
-    default: return "bone";
-  }
-}
-
 static int numCorpseItems(Body::Size size) {
   switch (size) {
     case Body::Size::LARGE: return Random.get(30, 50);
@@ -574,8 +569,7 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part, const ContentFact
   switch (material) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
-      return ItemType::corpse(name + " " + getName(part), name + " " + getBodyPartBone(part),
-        weight / 8, factory, false, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE);
+      return ItemType::severedLimb(name, part, weight / 8, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE, factory);
     case Material::CLAY:
     case Material::ROCK:
       return ItemType(CustomItemId("Rock")).get(factory);

@@ -170,6 +170,24 @@ static PItem corpse(const ItemAttributes& attr, const string& rottenName, const 
         f);
 }
 
+static string getBodyPartBone(BodyPart part) {
+  switch (part) {
+    case BodyPart::HEAD: return "skull";
+    default: return "bone";
+  }
+}
+
+static string getBodyPartName(const string& creatureName, BodyPart part) {
+  return creatureName + " " + getName(part);
+}
+
+PItem ItemType::severedLimb(const string& creatureName, BodyPart part, double weight, ItemClass itemClass,
+    const ContentFactory* factory) {
+  return corpse(getBodyPartName(creatureName, part), creatureName + " " + getBodyPartBone(part),
+        weight / 8, factory, false, itemClass);
+
+}
+
 static ItemAttributes getCorpseAttr(const string& name, ItemClass itemClass, double weight) {
   return ITATTR(
     i.viewId = ViewId("body_part");
@@ -601,8 +619,7 @@ ItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) c
 
 ItemAttributes ItemTypes::BodyPartUpgrade::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
-      i.name = getName(part) + " of a "_s + creatureName;
-      i.plural = getName(part) + "s of a "_s + creatureName;
+      i.name = getBodyPartName(creatureName, part);
       i.viewId = ViewId("body_part");
       i.upgradeInfo = ItemUpgradeInfo LIST(ItemUpgradeType::BODY_PART, 
           Effect(Effects::Chain{{Effect(Effects::AddBodyPart{part, 1}), effect}}));
