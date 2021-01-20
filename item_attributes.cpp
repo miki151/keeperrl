@@ -30,7 +30,7 @@ void ItemAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(OPTION(displayUses), OPTION(modifiers), NAMED(shortName), OPTION(equipedEffect), NAMED(upgradeInfo), OPTION(effectDescription));
   ar(NAMED(applyMsgFirstPerson), NAMED(applyMsgThirdPerson), NAMED(applySound), OPTION(weaponInfo));
   ar(OPTION(prefixes), OPTION(genPrefixes), NAMED(ingredientType), OPTION(modifierVariation), OPTION(variationChance), OPTION(wishedCount));
-  ar(NAMED(automatonPart), OPTION(specialAttr), OPTION(partIds), OPTION(equipedCompanion));
+  ar(NAMED(automatonPart), OPTION(specialAttr), OPTION(partIds), OPTION(equipedCompanion), OPTION(upgradeType));
 }
 
 template <class Archive>
