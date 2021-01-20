@@ -296,7 +296,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void updateViewObject();
   void swapPosition(Vec2 direction, bool withExcuseMe = true);
   bool canSwapPositionWithEnemy(Creature* other) const;
-  vector<PItem> generateCorpse(const ContentFactory*, bool instantlyRotten = false);
+  vector<PItem> generateCorpse(const ContentFactory*, Game*, bool instantlyRotten = false);
   int getLastMoveCounter() const;
   int getHitCount() const;
 

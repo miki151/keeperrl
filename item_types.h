@@ -65,13 +65,6 @@ struct Balsam {
   SERIALIZE_ALL(effect)
   ITEM_TYPE_INTERFACE;
 };
-struct BodyPartUpgrade {
-  BodyPart SERIAL(part);
-  string SERIAL(creatureName);
-  Effect SERIAL(effect);
-  SERIALIZE_ALL(part, creatureName, effect)
-  ITEM_TYPE_INTERFACE;
-};
 struct TechBook {
   TechId SERIAL(techId);
   SERIALIZE_ALL(techId)
@@ -131,8 +124,7 @@ struct PrefixChance {
   X(Corpse, 14)\
   X(AutomatonPaint, 15)\
   X(PrefixChance, 16)\
-  X(Balsam, 17)\
-  X(BodyPartUpgrade, 18)
+  X(Balsam, 17)
 
 #define VARIANT_TYPES_LIST ITEM_TYPES_LIST
 #define VARIANT_NAME ItemTypeVariant

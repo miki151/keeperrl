@@ -297,6 +297,10 @@ const optional<ItemUpgradeInfo>& Item::getUpgradeInfo() const {
   return attributes->upgradeInfo;
 }
 
+void Item::setUpgradeInfo(ItemUpgradeInfo info) {
+  attributes->upgradeInfo = std::move(info);
+}
+
 optional<ItemUpgradeType> Item::getAppliedUpgradeType() const {
   auto c = getClass();
   if (attributes->automatonPart && attributes->automatonPart->prefixType)

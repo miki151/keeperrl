@@ -7,6 +7,7 @@
 #include "item_type.h"
 #include "body_part.h"
 #include "intrinsic_attack.h"
+#include "effect.h"
 
 #undef HUGE
 
@@ -101,7 +102,7 @@ class Body {
   bool canPerformRituals() const;
   bool canBeCaptured() const;
   vector<PItem> getCorpseItems(const string& name, UniqueEntity<Creature>::Id, bool instantlyRotten,
-      const ContentFactory* factory) const;
+      const ContentFactory* factory, Game*) const;
 
   vector<AttackLevel> getAttackLevels() const;
   int getAttrBonus(AttrType) const;
@@ -157,7 +158,7 @@ class Body {
   void decreaseHealth(double amount);
   bool isPartDamaged(BodyPart, double damage) const;
   bool isCritical(BodyPart) const;
-  PItem getBodyPartItem(const string& creatureName, BodyPart, const ContentFactory*);
+  PItem getBodyPartItem(const string& creatureName, BodyPart, const ContentFactory*) const;
   string getMaterialAndSizeAdjectives() const;
   bool SERIAL(xhumanoid) = false;
   bool SERIAL(xCanPickUpItems) = false;
@@ -178,5 +179,6 @@ class Body {
   void dropUnsupportedEquipment(const Creature*) const;
   vector<pair<optional<ItemType>, double>> SERIAL(drops);
   optional<bool> SERIAL(canCapture);
+  optional<Effect> SERIAL(droppedPartUpgrade);
 };
 

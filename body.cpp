@@ -20,6 +20,7 @@
 #include "item_types.h"
 #include "health_type.h"
 #include "game_event.h"
+#include "effect_type.h"
 
 static double getDefaultWeight(Body::Size size) {
   switch (size) {
@@ -34,7 +35,7 @@ template <class Archive>
 void Body::serializeImpl(Archive& ar, const unsigned int) {
   ar(OPTION(xhumanoid), OPTION(size), OPTION(weight), OPTION(bodyParts), OPTION(injuredBodyParts), OPTION(lostBodyParts));
   ar(OPTION(material), OPTION(health), OPTION(minionFood), NAMED(deathSound), OPTION(intrinsicAttacks), OPTION(minPushSize));
-  ar(OPTION(noHealth), OPTION(fallsApart), OPTION(drops), OPTION(canCapture), OPTION(xCanPickUpItems));
+  ar(OPTION(noHealth), OPTION(fallsApart), OPTION(drops), OPTION(canCapture), OPTION(xCanPickUpItems), OPTION(droppedPartUpgrade));
 }
 
 template <class Archive>
@@ -381,17 +382,22 @@ bool Body::healBodyParts(Creature* creature, int max) {
 }
 
 bool Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
-  if (creature->getGame()->effectFlags.count("abomination_upgrades"))
-    drop = false;
+  auto game = creature->getGame();
   if (bodyParts[part] == 0 || (!drop && injuredBodyParts[part] == bodyParts[part]))
     return false;
   if (drop) {
     if (contains({BodyPart::LEG, BodyPart::ARM, BodyPart::WING}, part))
-      creature->getGame()->getStatistics().add(StatId::CHOPPED_LIMB);
+      game->getStatistics().add(StatId::CHOPPED_LIMB);
     else if (part == BodyPart::HEAD)
-      creature->getGame()->getStatistics().add(StatId::CHOPPED_HEAD);
-    if (PItem item = getBodyPartItem(creature->getAttributes().getName().bare(), part, creature->getGame()->getContentFactory()))
+      game->getStatistics().add(StatId::CHOPPED_HEAD);
+    if (auto item = getBodyPartItem(creature->getAttributes().getName().bare(), part, game->getContentFactory())) {
+      if (droppedPartUpgrade && game->effectFlags.count("abomination_upgrades")) {
+        item->setUpgradeInfo(ItemUpgradeInfo{ItemUpgradeType::BODY_PART, 
+          Effect(Effects::Chain{{Effect(Effects::AddBodyPart{part, 1}), std::move(*droppedPartUpgrade)}})});
+        droppedPartUpgrade = none;
+      }
       creature->getPosition().dropItem(std::move(item));
+    }
     if (looseBodyPart(part))
       return true;
   } else if (injureBodyPart(part))
@@ -565,7 +571,7 @@ static int numCorpseItems(Body::Size size) {
   }
 }
 
-PItem Body::getBodyPartItem(const string& name, BodyPart part, const ContentFactory* factory) {
+PItem Body::getBodyPartItem(const string& name, BodyPart part, const ContentFactory* factory) const {
   switch (material) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
@@ -587,7 +593,21 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part, const ContentFact
   }
 }
 
-vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool instantlyRotten, const ContentFactory* factory) const {
+static bool bodyPartCanBeDropped(BodyPart part) {
+  switch (part) {
+    case BodyPart::ARM:
+    case BodyPart::LEG:
+    case BodyPart::HEAD:
+    case BodyPart::WING:
+      return true;
+    case BodyPart::TORSO:
+    case BodyPart::BACK:
+      return false;
+  }
+}
+
+vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool instantlyRotten, const ContentFactory* factory,
+    Game* game) const {
   vector<PItem> ret = [&] {
     switch (material) {
       case Material::FLESH:
@@ -615,6 +635,15 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
   if (!drops.empty())
     if (auto item = Random.choose(drops))
       ret.push_back(item->get(factory));
+  if (game && droppedPartUpgrade && game->effectFlags.count("abomination_upgrades"))
+    for (auto part : Random.permutation<BodyPart>())
+      if (numGood(part) > 0 && bodyPartCanBeDropped(part))
+        if (auto item = getBodyPartItem(name, part, game->getContentFactory())) {
+          item->setUpgradeInfo(ItemUpgradeInfo{ItemUpgradeType::BODY_PART, 
+              Effect(Effects::Chain{{Effect(Effects::AddBodyPart{part, 1}), *droppedPartUpgrade}})});
+          ret.push_back(std::move(item));
+          break;
+        }
   return ret;
 }
 
@@ -704,7 +733,8 @@ Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, do
       creature->isAffected(LastingEffect::COLLAPSED)))
     if (isPartDamaged(*part, damage)) {
       youHit(creature, *part, attack.type);
-      if (injureBodyPart(creature, *part, contains({AttackType::CUT, AttackType::BITE}, attack.type))) {
+      if (injureBodyPart(creature, *part,
+          contains({AttackType::CUT, AttackType::BITE}, attack.type) && bodyPartCanBeDropped(*part))) {
         creature->you(MsgType::DIE, "");
         creature->dieWithAttacker(attack.attacker);
         return Body::KILLED;

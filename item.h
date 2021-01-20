@@ -75,6 +75,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   optional<CollectiveResourceId> getResourceId() const;
   const optional<ItemUpgradeInfo>& getUpgradeInfo() const;
+  void setUpgradeInfo(ItemUpgradeInfo);
   optional<ItemUpgradeType> getAppliedUpgradeType() const;
   int getMaxUpgrades() const;
   const optional<string>& getIngredientType() const;

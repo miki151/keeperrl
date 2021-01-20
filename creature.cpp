@@ -1609,8 +1609,8 @@ void Creature::dieWithLastAttacker(DropType drops) {
   dieWithAttacker(lastAttacker, drops);
 }
 
-vector<PItem> Creature::generateCorpse(const ContentFactory* factory, bool instantlyRotten) {
-  auto ret = getBody().getCorpseItems(getName().bare(), getUniqueId(), instantlyRotten, factory);
+vector<PItem> Creature::generateCorpse(const ContentFactory* factory, Game* game, bool instantlyRotten) {
+  auto ret = getBody().getCorpseItems(getName().bare(), getUniqueId(), instantlyRotten, factory, game);
   append(ret, std::move(drops));
   return ret;
 }
@@ -1700,7 +1700,7 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
     for (PItem& item : equipment->removeAllItems(this))
       position.dropItem(std::move(item));
   if (drops == DropType::EVERYTHING) {
-    position.dropItems(generateCorpse(getGame()->getContentFactory()));
+    position.dropItems(generateCorpse(getGame()->getContentFactory(), getGame()));
     if (auto sound = getBody().getDeathSound())
       addSound(*sound);
     if (getBody().hasHealth(HealthType::FLESH)) {

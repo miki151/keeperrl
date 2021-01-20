@@ -617,19 +617,6 @@ ItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) c
   );
 }
 
-ItemAttributes ItemTypes::BodyPartUpgrade::getAttributes(const ContentFactory* factory) const {
-  return ITATTR(
-      i.name = getBodyPartName(creatureName, part);
-      i.viewId = ViewId("body_part");
-      i.upgradeInfo = ItemUpgradeInfo LIST(ItemUpgradeType::BODY_PART, 
-          Effect(Effects::Chain{{Effect(Effects::AddBodyPart{part, 1}), effect}}));
-      i.blindName = "body part"_s;
-      i.itemClass = ItemClass::OTHER;
-      i.weight = 2;
-      i.price = 100;
-  );
-}
-
 ItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) const {
   return ITATTR(
       i.viewId = ViewId("scroll");

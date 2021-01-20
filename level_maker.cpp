@@ -533,7 +533,7 @@ class Corpses : public LevelMaker {
       checkGen(numTries > 0);
       if (builder->getRandom().roll(10))
         builder->putItems(pos, creature->getEquipment().removeAllItems(creature.get()));
-      builder->putItems(pos, creature->generateCorpse(builder->getContentFactory(), true));
+      builder->putItems(pos, creature->generateCorpse(builder->getContentFactory(), nullptr, true));
       taken[pos] = 1;
     }
   }
@@ -1677,7 +1677,7 @@ class ShopMaker : public LevelMaker {
       builder->putCreature(shopkeeperPos, std::move(shopkeeper));
     else {
       builder->putItems(shopkeeperPos, shopkeeper->getEquipment().removeAllItems(shopkeeper.get()));
-      builder->putItems(shopkeeperPos, shopkeeper->generateCorpse(builder->getContentFactory(), true));
+      builder->putItems(shopkeeperPos, shopkeeper->generateCorpse(builder->getContentFactory(), nullptr, true));
     }
     builder->putFurniture(pos[builder->getRandom().get(pos.size())], FurnitureParams{FurnitureType("GROUND_TORCH"),
         tribe});

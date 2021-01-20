@@ -804,6 +804,16 @@ class RandomGen {
     return v;
   }
 
+  template <typename T>
+  vector<T> permutation() {
+    vector<T> ret;
+    ret.reserve(EnumInfo<T>::size);
+    for (auto e : ENUM_ALL(T))
+      ret.push_back(e);
+    shuffle(ret.begin(), ret.end());
+    return ret;
+  }
+
   template <typename Iterator>
   void shuffle(Iterator begin, Iterator end) {
     std::shuffle(begin, end, generator);
