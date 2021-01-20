@@ -8,6 +8,7 @@
 #include "game.h"
 #include "unlocks.h"
 #include "collective.h"
+#include "spell_map.h"
 
 namespace Impl {
 static bool applyToCreature(const CreaturePredicates::Enemy&, const Creature* victim, const Creature* attacker) {
@@ -160,6 +161,17 @@ static bool applyToCreature(BodyMaterial m, const Creature* victim, const Creatu
 
 static string getName(BodyMaterial m) {
   return "made of "_s + getMaterialName(m);
+}
+
+static bool applyToCreature(CreaturePredicates::Spellcaster m, const Creature* victim, const Creature* attacker) {
+  for (auto spell : victim->getSpellMap().getAvailable(victim))
+    if (spell->getType() == SpellType::SPELL)
+      return true;
+  return false;
+}
+
+static string getName(CreaturePredicates::Spellcaster) {
+  return "spellcasters";
 }
 
 static bool applyToCreature(const CreaturePredicates::Health& p, const Creature* victim, const Creature* attacker) {
