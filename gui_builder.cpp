@@ -2045,8 +2045,9 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
             addButton("Add to all", min(elem.itemInfo.number, upgrade.count));
         }
       lines.addElem(WL(label, "Available slots: " + toString(elem.maxUpgrades - elem.added.size())));
-      lines.addElem(WL(label, "Upgraded items can only be crafted by a craftsman of legendary skills.",
-          Renderer::smallTextSize(), Color::LIGHT_GRAY));
+      if (!elem.notArtifact)
+        lines.addElem(WL(label, "Upgraded items can only be crafted by a craftsman of legendary skills.",
+            Renderer::smallTextSize(), Color::LIGHT_GRAY));
       drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 450, false);
       if (ret)
         callbacks.input({UserInputId::WORKSHOP_UPGRADE, *ret});

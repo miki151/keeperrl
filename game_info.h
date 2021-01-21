@@ -288,7 +288,8 @@ class CollectiveInfo {
     vector<UpgradeInfo> HASH(added);
     int HASH(maxUpgrades);
     int HASH(itemIndex);
-    HASH_ALL(productionState, paid, itemInfo, available, added, maxUpgrades, itemIndex)
+    bool HASH(notArtifact);
+    HASH_ALL(productionState, paid, itemInfo, available, added, maxUpgrades, itemIndex, notArtifact)
   };
   struct ChosenWorkshopInfo {
     vector<ItemInfo> HASH(options);

@@ -1159,7 +1159,7 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
     int itemIndex, bool hasLegendarySkill) const {
   CollectiveInfo::QueuedItemInfo ret {item.state,
         item.paid && (item.runes.empty() || item.item.notArtifact || hasLegendarySkill),
-        getWorkshopItem(item.item, cnt), {}, {}, 0, itemIndex};
+        getWorkshopItem(item.item, cnt), {}, {}, 0, itemIndex, item.item.notArtifact};
   if (!item.paid)
     ret.itemInfo.description.push_back("Cannot afford item");
   for (auto& it : getItemUpgradesFor(item.item)) {
