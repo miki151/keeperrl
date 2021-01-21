@@ -492,12 +492,12 @@ static bool applyToCreature(const Effects::RemovePermanent& e, Creature* c, Crea
 }
 
 static string getName(const Effects::RemovePermanent& e, const ContentFactory*) {
-  return "removes/cures from permanent effect: " + LastingEffects::getName(e.lastingEffect);
+  return "remove permanent " + LastingEffects::getName(e.lastingEffect);
 }
 
 static string getDescription(const Effects::RemovePermanent& e, const ContentFactory*) {
   string desc = LastingEffects::getDescription(e.lastingEffect);
-  return "Removes " + desc.substr(0, desc.size() - 1) + " permanently.";
+  return "Removes/cures from " + desc.substr(0, desc.size() - 1) + " permanently.";
 }
 
 static bool applyToCreature(const Effects::Alarm& e, Creature* c, Creature*) {
