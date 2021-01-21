@@ -21,6 +21,7 @@
 #include "health_type.h"
 #include "game_event.h"
 #include "effect_type.h"
+#include "resource_id.h"
 
 static double getDefaultWeight(Body::Size size) {
   switch (size) {
@@ -394,6 +395,7 @@ bool Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
       if (droppedPartUpgrade && game->effectFlags.count("abomination_upgrades")) {
         item->setUpgradeInfo(ItemUpgradeInfo{ItemUpgradeType::BODY_PART, 
           Effect(Effects::Chain{{Effect(Effects::AddBodyPart{part, 1}), std::move(*droppedPartUpgrade)}})});
+        item->setResourceId(none);
         droppedPartUpgrade = none;
       }
       creature->getPosition().dropItem(std::move(item));
@@ -641,6 +643,7 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
         if (auto item = getBodyPartItem(name, part, game->getContentFactory())) {
           item->setUpgradeInfo(ItemUpgradeInfo{ItemUpgradeType::BODY_PART, 
               Effect(Effects::Chain{{Effect(Effects::AddBodyPart{part, 1}), *droppedPartUpgrade}})});
+          item->setResourceId(none);
           ret.push_back(std::move(item));
           break;
         }

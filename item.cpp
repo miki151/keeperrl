@@ -293,6 +293,10 @@ optional<CollectiveResourceId> Item::getResourceId() const {
   return attributes->resourceId;
 }
 
+void Item::setResourceId(optional<CollectiveResourceId> id) {
+  attributes->resourceId = id;
+}
+
 const optional<ItemUpgradeInfo>& Item::getUpgradeInfo() const {
   return attributes->upgradeInfo;
 }

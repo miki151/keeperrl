@@ -74,6 +74,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   bool isOrWasForSale() const;
 
   optional<CollectiveResourceId> getResourceId() const;
+  void setResourceId(optional<CollectiveResourceId>);
   const optional<ItemUpgradeInfo>& getUpgradeInfo() const;
   void setUpgradeInfo(ItemUpgradeInfo);
   optional<ItemUpgradeType> getAppliedUpgradeType() const;
