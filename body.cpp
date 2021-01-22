@@ -382,6 +382,22 @@ bool Body::healBodyParts(Creature* creature, int max) {
   return result;
 }
 
+static void setBodyPartUpgrade(Item* item, BodyPart part, Effect upgrade, const ContentFactory* f) {
+  item->modViewObject().setModifier(ViewObject::Modifier::AURA);
+  auto name = upgrade.getName(f);
+  auto desc = upgrade.getDescription(f);
+  item->setUpgradeInfo(ItemUpgradeInfo{ItemUpgradeType::BODY_PART, Effect(Effects::Description{desc, Effect(Effects::Name{name, 
+    Effect(Effects::Chain{{Effect(Effects::AddBodyPart{part, 1}), std::move(upgrade)}})})})});
+  item->setResourceId(none);
+}
+
+static Effect getDefaultBodyPartUpgrade() {
+  return Effect(Effects::ChooseRandom({
+      Effect(Effects::IncreaseAttr{AttrType::DAMAGE, 1}),
+      Effect(Effects::IncreaseAttr{AttrType::DEFENSE, 1})
+  }));
+}
+
 bool Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
   auto game = creature->getGame();
   if (bodyParts[part] == 0 || (!drop && injuredBodyParts[part] == bodyParts[part]))
@@ -392,10 +408,9 @@ bool Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
     else if (part == BodyPart::HEAD)
       game->getStatistics().add(StatId::CHOPPED_HEAD);
     if (auto item = getBodyPartItem(creature->getAttributes().getName().bare(), part, game->getContentFactory())) {
-      if (droppedPartUpgrade && game->effectFlags.count("abomination_upgrades")) {
-        item->setUpgradeInfo(ItemUpgradeInfo{ItemUpgradeType::BODY_PART, 
-          Effect(Effects::Chain{{Effect(Effects::AddBodyPart{part, 1}), std::move(*droppedPartUpgrade)}})});
-        item->setResourceId(none);
+      if (game->effectFlags.count("abomination_upgrades")) {
+        auto upgrade = droppedPartUpgrade.value_or_f(&getDefaultBodyPartUpgrade);
+        setBodyPartUpgrade(item.get(), part, std::move(upgrade), game->getContentFactory());
         droppedPartUpgrade = none;
       }
       creature->getPosition().dropItem(std::move(item));
@@ -641,9 +656,7 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
     for (auto part : Random.permutation<BodyPart>())
       if (numGood(part) > 0 && bodyPartCanBeDropped(part))
         if (auto item = getBodyPartItem(name, part, game->getContentFactory())) {
-          item->setUpgradeInfo(ItemUpgradeInfo{ItemUpgradeType::BODY_PART, 
-              Effect(Effects::Chain{{Effect(Effects::AddBodyPart{part, 1}), *droppedPartUpgrade}})});
-          item->setResourceId(none);
+          setBodyPartUpgrade(item.get(), part, std::move(*droppedPartUpgrade), factory);
           ret.push_back(std::move(item));
           break;
         }

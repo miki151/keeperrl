@@ -210,6 +210,8 @@ struct Chain {
   SERIALIZE_ALL(effects)
 };
 struct ChooseRandom : Chain {
+  ChooseRandom() {}
+  ChooseRandom(vector<Effect> e) : Chain{std::move(e)} {}
 };
 struct ChainUntilFail : Chain {
 };
@@ -275,10 +277,14 @@ struct Fx {
   SERIALIZE_ALL(info)
 };
 struct Description : GenericModifierEffect {
+  Description() {}
+  Description(string text, Effect e) : GenericModifierEffect{std::move(e)}, text(std::move(text)) {}
   string SERIAL(text);
   SERIALIZE_ALL(text, SUBCLASS(GenericModifierEffect))
 };
 struct Name : GenericModifierEffect {
+  Name() {}
+  Name(string text, Effect e) : GenericModifierEffect{std::move(e)}, text(std::move(text)) {}
   string SERIAL(text);
   SERIALIZE_ALL(text, SUBCLASS(GenericModifierEffect))
 };
