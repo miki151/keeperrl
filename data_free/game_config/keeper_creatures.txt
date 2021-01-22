@@ -75,11 +75,12 @@
   tribeAlignment = EVIL
   immigrantGroups = {"necromancer"}
   technology = { "embalming" "advanced embalming" "sorcery" "advanced sorcery" "master sorcery" "iron working"
+      "distillation"
   }
   initialTech = {  }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "phylactery" "beds" "coffins"
-      "training_dummies" "morgue" "poetry" "orders"
+      "training_dummies" "morgue" "poetry" "distillery" "orders"
       "installations" "magical_installations"
   }
   workshopGroups = { "morgue" }
