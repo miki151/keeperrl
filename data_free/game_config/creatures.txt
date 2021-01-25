@@ -265,12 +265,6 @@
       groupName = "herd"
     }
   }
-"UNICORN_LEADER" inherit "UNICORN"
-  {
-    body = append {
-      droppedPartUpgrade = SpecialAttr DAMAGE 10 Spellcaster
-    }
-  }
 "BANDIT"
   {
     viewId = { "bandit" }
@@ -299,12 +293,6 @@
       { type = Potion Heal FLESH chance = 0.7 }
       { type = "Torch" chance = 0.3 }
       { type = "Bow" chance = 0.05 }
-    }
-  }
-"BANDIT_LEADER" inherit "BANDIT"
-  {
-    body = append {
-      droppedPartUpgrade = ChooseRandom { IncreaseAttr DAMAGE 2 IncreaseAttr DEFENSE 2 }
     }
   }
 "RAT_SOLDIER"
@@ -643,7 +631,6 @@
     }
     body = {
       type = Humanoid MEDIUM
-      droppedPartUpgrade = IncreaseAttr DEFENSE 2
     }
     name = {
       name = "witch"
@@ -723,7 +710,6 @@
         { "CyclopsBrain" } 10
         { "CyclopsTesticles" } 1
       }
-      droppedPartUpgrade = IncreaseAttr DEFENSE 5
     }
     permanentEffects = {
       RANGED_RESISTANCE 1
@@ -756,7 +742,6 @@
     body = {
       type = Humanoid LARGE
       weight = 400
-      droppedPartUpgrade = IncreaseAttr DEFENSE 5
     }
     skills = {
       "DIGGING" 0.5
@@ -784,7 +769,6 @@
     body = {
       type = Humanoid LARGE
       weight = 400
-      droppedPartUpgrade = IncreaseAttr DEFENSE 3
     }
     permanentEffects = {
       COLD_RESISTANT 1
@@ -881,7 +865,6 @@
     body = {
       type = Humanoid LARGE
       weight = 400
-      droppedPartUpgrade = SpecialAttr DAMAGE 7 HatedBy HATE_HUMANS
     }
     maxLevelIncrease = {
       MELEE 5
@@ -937,7 +920,6 @@
       }
       noHealth = true
       fallsApart = false
-      droppedPartUpgrade = IncreaseAttr DAMAGE 3
     }
     permanentEffects = {
       POISON_RESISTANT 1
@@ -969,7 +951,6 @@
             attackMsg = BITE
             victimEffect = {0.3 Lasting POISON} } }}}
       }
-      droppedPartUpgrade = IncreaseAttr DAMAGE 5
     }
     permanentEffects = {
       POISON_RESISTANT 1
@@ -999,7 +980,6 @@
             victimEffect = {0.3 Lasting POISON} } }}}
       }
       drops = {{ "GreenDragonScales" } 1}
-      droppedPartUpgrade = GrantAbility "poison breath"
     }
     permanentEffects = {
       POISON_RESISTANT 1
@@ -1069,7 +1049,6 @@
             victimEffect = {0.5 Fire} } }}}
       }
       drops = { { "RedDragonScales" } 1}
-      droppedPartUpgrade = GrantAbility "fire breath"
     }
     permanentEffects = {
       FIRE_RESISTANT 1
@@ -1138,7 +1117,6 @@
             attackMsg = BITE } }}}
       }
       drops = {{ "BlackDragonScales" } 1}
-      droppedPartUpgrade = Permanent TELEPATHY
     }
     permanentEffects = {
       RANGED_VULNERABILITY 1
@@ -1465,13 +1443,6 @@
     }
     hatedByEffect = HATE_HUMANS
   }
-"PESEANT_LEADER" inherit "PESEANT"
-  {
-    body = {
-      type = Humanoid LARGE
-      droppedPartUpgrade = IncreaseAttr DAMAGE 2
-    }
-  }
 "PESEANT_PLAYER" inherit "PESEANT"
   {
     permanentEffects = {}
@@ -1557,9 +1528,6 @@
       fullTitle = true
       firstNameGen = "GERMANIC"
     }
-    body = append {
-      droppedPartUpgrade = IncreaseAttr DEFENSE 7
-    }
     inventory = append {
       { type = Glyph WEAPON SpellId "audience" }
     }
@@ -1587,7 +1555,6 @@
     }
     body = {
       type = Humanoid LARGE
-      droppedPartUpgrade = IncreaseAttr DAMAGE 7
     }
     permanentEffects = {
       MELEE_RESISTANCE 1
@@ -1733,7 +1700,6 @@
     }
     body = {
       type = Humanoid LARGE
-      droppedPartUpgrade = SpecialAttr DAMAGE 10 BodyMaterial SPIRIT
     }
     permanentEffects = {
       MAGIC_RESISTANCE 1
@@ -1779,14 +1745,11 @@
    attr = {
       DAMAGE 37
       DEFENSE 23
-   }
-   body = append {
-     droppedPartUpgrade = IncreaseAttr DAMAGE 5
-   }
-   viewId = { "thief_leader" }
-   name = {
-     name = "thief leader"
-   }
+    }
+    viewId = { "thief_leader" }
+    name = {
+      name = "thief leader"
+    }
   }
 "SORCERER"
   {
@@ -2762,9 +2725,6 @@
       name = "dwarf baron"
       firstNameGen = "DWARF"
     }
-    body = append {
-      droppedPartUpgrade = IncreaseSkill DIGGING 1.0
-    }
     inventory = {
       { type = "BattleAxe", alternative = "WarHammer" prefixChance = 1 }
       { Potion Heal FLESH 2 3 }
@@ -2828,9 +2788,6 @@
 "LIZARDLORD" inherit "LIZARDMAN"
   {
     viewId = { "lizardlord" }
-    body = append {
-      droppedPartUpgrade = GrantAbility "haste"
-    }
     attr = {
       DAMAGE 30
       DEFENSE 16 
@@ -2948,7 +2905,6 @@
     aiType = RANGED
     body = {
       type = Humanoid MEDIUM
-      droppedPartUpgrade = Permanent MAGIC_RESISTANCE
     }
     chatReactionFriendly = "curses all dwarves"
     chatReactionHostile = "\"Die!\""
@@ -3075,7 +3031,6 @@
     }
     body = {
       type = Humanoid MEDIUM
-      droppedPartUpgrade = IncreaseAttr DEFENSE 7
     }
     chatReactionFriendly = "curses all dwarves"
     chatReactionHostile = "\"Die!\""
@@ -3131,12 +3086,6 @@
     }
     inventory = {
       { "Bow"}
-    }
-  }
-"DRIAD_LEADER" inherit "DRIAD"
-  {
-    body = append {
-      droppedPartUpgrade = SpecialAttr DAMAGE 10 BodyMaterial WOOD
     }
   }
 "HORSE"
@@ -3515,7 +3464,6 @@
             attackMsg = BITE
             victimEffect = {1.0 Lasting POISON} } }}}
       }
-      droppedPartUpgrade = IncreaseAttr DAMAGE 3
     }
     gender = FEMALE
     name = {
@@ -3684,7 +3632,6 @@
     }
     body = {
       type = Humanoid LARGE
-      droppedPartUpgrade = { IncreaseAttr DEFENSE 3 Permanent FIRE_RESISTANT }
     }
     skills = {
       "LABORATORY" 1
@@ -4104,7 +4051,6 @@
     }
     body = {
       type = Humanoid LARGE
-      droppedPartUpgrade = { IncreaseAttr DEFENSE 5 AddCompanion 6 true false 0.1 { "FLY" } }
     }
     attr = {
       DAMAGE 12

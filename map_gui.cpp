@@ -481,12 +481,9 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
     if (state >= 0.5 && state < 1.0) {
       if (movementInfo.victim)
         woundedInfo.getOrInit(UniqueEntity<Creature>::Id(movementInfo.victim)) = curTimeReal;
-      if (movementInfo.fx) {
-        auto fxUsage = furnitureUsageFX.getOrElse(*gid, -1);
-        if (gid && fxUsage < movementInfo.moveCounter) {
-          furnitureUsageFX.getOrInit(*gid) = movementInfo.moveCounter;
-          addAnimation(FXSpawnInfo(getFXInfo(*movementInfo.fx), pos + dir));
-        }
+      if (movementInfo.fx && gid && furnitureUsageFX.getOrElse(*gid, -1) < movementInfo.moveCounter) {
+        furnitureUsageFX.getOrInit(*gid) = movementInfo.moveCounter;
+        addAnimation(FXSpawnInfo(getFXInfo(*movementInfo.fx), pos + dir));
       }
     }
     if (auto mult = getPartialMovement(movementInfo.type)) {
