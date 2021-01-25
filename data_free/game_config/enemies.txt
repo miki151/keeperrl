@@ -4,6 +4,7 @@
     type = RandomLayout { "village" { 20 15 } "village"}
     tribe = HUMAN
     inhabitants = {
+      leader = {{"PESEANT_LEADER"}}
       fighters = {
         count = {2 4}
         all = {
@@ -34,6 +35,7 @@
   settlement = {
     type = Builtin FOREST "WOOD"
     inhabitants = {
+      leader = {{"UNICORN_LEADER"}}
       fighters = {
         count = {5 8}
         all = {
@@ -1033,6 +1035,7 @@
   settlement = {
     type = Builtin CAVE "DUNGEON"
     inhabitants = {
+      leader = {{ "BANDIT_LEADER" }}
       fighters = {
         count = {4 9}
         all = { 1 "BANDIT" }
@@ -1516,6 +1519,7 @@
   settlement = {
     type = Builtin FOREST "WOOD"
     inhabitants = {
+      leader = {{"DRIAD_LEADER"}}
       fighters = {
         count = {7 10}
         all = { 1 "DRIAD" }
