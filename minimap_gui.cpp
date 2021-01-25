@@ -24,6 +24,7 @@
 #include "sdl.h"
 #include "view_object.h"
 #include "tileset.h"
+#include "mouse_button_id.h"
 
 void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
   if (!mapBufferTex)
@@ -85,8 +86,8 @@ void MinimapGui::clear() {
   info = MinimapInfo {};
 }
 
-bool MinimapGui::onClick(MouseButtonId, Vec2 v) {
-  if (v.inRectangle(getBounds())) {
+bool MinimapGui::onClick(MouseButtonId id, Vec2 v) {
+  if (id == MouseButtonId::LEFT && v.inRectangle(getBounds())) {
     clickFun();
     return true;
   }

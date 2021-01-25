@@ -990,12 +990,6 @@ class GuiLayout : public GuiElem {
   }
 
   virtual bool onClick(MouseButtonId b, Vec2 pos) override {
-    if (b == MouseButtonId::RELEASED) {
-      for (int i : AllReverse(elems))
-        if (isVisible(i))
-          elems[i]->onClick(b, pos);
-      return false;
-    }
     bool gone = false;
     // Check visibility in advance, as it can potentially change in onClick
     vector<int> visible;
@@ -3303,7 +3297,8 @@ void GuiFactory::propagateEvent(const Event& event, vector<SGuiElem> guiElems) {
   switch (event.type) {
     case SDL::SDL_MOUSEBUTTONUP:
       for (auto elem : guiElems)
-        elem->onClick(MouseButtonId::RELEASED, Vec2(event.button.x, event.button.y));
+        if (elem->onClick(MouseButtonId::RELEASED, Vec2(event.button.x, event.button.y)))
+          break;
       dragContainer.pop();
       break;
     case SDL::SDL_MOUSEMOTION: {
