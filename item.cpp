@@ -607,7 +607,7 @@ void Item::getAttackMsg(const Creature* c, const string& enemyName) const {
       c->thirdPerson(c->getName().the() + " " + verb + "s " + his(c->getAttributes().getGender()) + " " + getName() + " at " + enemyName);
     } else {
       c->secondPerson("You "_s + verb + " yourself at " + enemyName);
-      c->thirdPerson(c->getName().the() + " " + verb + "s itself at " + enemyName);
+      c->thirdPerson(c->getName().the() + " " + verb + "s " + himself(c->getAttributes().getGender()) + " at " + enemyName);
     }
   };
   auto biteMsg = [&] (const char* verb2, const char* verb3) {
