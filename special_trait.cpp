@@ -29,6 +29,9 @@ void applySpecialTrait(GlobalTime globalTime, SpecialTrait trait, Creature* c, c
       [&] (const AttrBonus& t) {
         c->getAttributes().increaseBaseAttr(t.attr, t.increase);
       },
+      [&] (const SkillId& t) {
+        c->getAttributes().getSkills().increaseValue(t, 0.9);
+      },
       [&] (const SpecialAttr& t) {
         c->getAttributes().specialAttr[t.attr].push_back(make_pair(t.value, t.predicate));
       },

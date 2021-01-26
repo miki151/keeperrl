@@ -1348,6 +1348,9 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
       [&] (WorkshopType type) {
         return TraitInfo{"Legendary craftsman at: " + factory->workshopInfo.at(type).name, false};
       },
+      [&] (SkillId id) {
+        return TraitInfo{"Great at " + Skill::get(id)->getName(), false};
+      },
       [&] (ExtraBodyPart part) {
         if (part.count == 1)
           return TraitInfo{"Extra "_s + getName(part.part), false};
