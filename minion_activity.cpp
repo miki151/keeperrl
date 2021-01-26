@@ -94,9 +94,10 @@ static Creature* getMinionToAbuse(Collective* collective, const Creature* abuser
 }
 
 static Creature* getCopulationTarget(const Collective* collective, const Creature* succubus) {
-  for (Creature* c : Random.permutation(collective->getCreatures(MinionTrait::FIGHTER)))
-    if (succubus->canCopulateWith(c))
-      return c;
+  for (auto trait : {MinionTrait::FIGHTER, MinionTrait::LEADER})
+    for (Creature* c : Random.permutation(collective->getCreatures(trait)))
+      if (succubus->canCopulateWith(c))
+        return c;
   return nullptr;
 }
 
