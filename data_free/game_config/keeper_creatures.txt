@@ -69,7 +69,7 @@
   noLeader = true
   prisoners = false
 }
-"0_necromancer"
+"5_necromancer"
 {
   creatureId = { "NECROMANCER" "NECROMANCER_F" }
   tribeAlignment = EVIL
@@ -91,7 +91,26 @@
 # Special traits example, all traits are added
 #   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
 }
-"6_zombies"
+"6_goblins"
+{
+  creatureId = { "GOBLIN_KEEPER" }
+  tribeAlignment = EVIL
+  immigrantGroups = {"goblins"}
+  technology = {
+      "alchemy" "advanced alchemy" "alchemical conversion" "explosives"
+      "pig breeding" "iron working" "jewellery" "two-handed weapons" "traps" "archery" "sorcery"
+      "advanced sorcery" "magical weapons" "master sorcery" "distillation" "chickenmancy"
+  }
+  initialTech = { }
+  buildingGroups = {
+      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "pigsty"
+      "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "prison" "orders"
+      "installations" "magical_installations" "traps"
+  }
+  workshopGroups = { "basic" "traps" }
+  description = "Lead a tribe of misogynist and ugly goblins to victory. This faction was incorporated from the Bonus Mod by RighteousSinner and Soft Monster."
+}
+"7_zombies"
 {
   creatureId = { "ZOMBIE_WORKER" }
   specialTraits = { Lasting {SWARMER} }
@@ -114,7 +133,7 @@
   immigrantInterval = 40
   unlock = "zombies"
 }
-"7_cyclops"
+"8_cyclops"
 {
   creatureId = { "CYCLOPS_PLAYER" }
   tribeAlignment = EVIL
@@ -136,3 +155,4 @@
   prisoners = false
   unlock = "cyclops"
 }
+

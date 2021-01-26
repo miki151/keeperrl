@@ -622,6 +622,150 @@
     }
 
 }
+"goblins"
+{
+    {
+      ids = { "GOBLIN_MATRON" }
+      traits = { WORKER }
+      initialRecruitment = 2
+      invisible = true
+      hiddenInHelp = true
+    }
+    {
+      ids = { "GOBLIN_MATRON" }
+      traits = { WORKER }
+      spawnLocation = Pregnancy
+      requirements = {
+        { 0.0 Pregnancy }
+      }
+      specialTraits = {
+         { 0.03 { Lasting {ENTERTAINER} }}
+      }
+    }
+    {
+      ids = { "GOBLIN_WARRIOR" }
+      traits = { FIGHTER }
+      spawnLocation = Pregnancy
+      requirements = {
+        { 0.0 Pregnancy }
+      }
+      specialTraits = {
+         { 0.01 { ExtraIntrinsicAttack
+            HEAD
+            { Intrinsic { "bite_attack" } "fangs" 5 {
+                attackType = BITE
+                attackMsg = BITE
+                victimEffect = {0.1 Lasting POISON} } } } }
+         { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
+         { 0.01 { SpecialAttr DAMAGE 10 CreatureStatus LEADER }}
+         { 0.02 { SpecialAttr DEFENSE 8 HatedBy HATE_HUMANS }}
+         { 0.05 { ExtraTraining ARCHERY 2}}
+         { 0.05 { ExtraTraining MELEE 2}}
+         { 0.05 { Lasting { NIGHT_VISION } }}
+         { 0.05 { Lasting { DISARM_TRAPS_SKILL } }}
+         { 0.05 { Lasting { SWIMMING_SKILL } }}
+         { 0.05 { Lasting { MAGIC_VULNERABILITY } }}
+         { 0.02 { Lasting { HATE_ELVES } }}
+         { 0.02 { Lasting { HATE_HUMANS } }}
+         { 0.03 { Lasting { BAD_BREATH } }}
+      }
+    }
+    {
+      ids = { "GOBLIN_GUARD" }
+      traits = { FIGHTER }
+      spawnLocation = Pregnancy
+      requirements = {
+        { 0.0 Pregnancy }
+      }
+      specialTraits = {
+         { 0.01 { ExtraIntrinsicAttack
+            HEAD
+            { Intrinsic { "bite_attack" } "fangs" 5 {
+                attackType = BITE
+                attackMsg = BITE
+                victimEffect = {0.1 Lasting POISON} } } } }
+         { 0.01 { SpecialAttr DEFENSE 10 CreatureStatus LEADER }}
+         { 0.02 { SpecialAttr DEFENSE 8 HatedBy HATE_HUMANS }}
+         { 0.05 { ExtraTraining ARCHERY 2}}
+         { 0.05 { ExtraTraining MELEE 2}}
+         { 0.05 { Lasting { NIGHT_VISION } }}
+         { 0.05 { Lasting { SWIMMING_SKILL } }}
+         { 0.05 { Lasting { MAGIC_VULNERABILITY } }}
+         { 0.02 { Lasting { HATE_ELVES } }}
+         { 0.02 { Lasting { HATE_HUMANS } }}
+         { 0.03 { Lasting { BAD_BREATH } }}
+      }
+    }
+    {
+      ids = { "GOBLIN_ARCHER" }
+      traits = { FIGHTER }
+      spawnLocation = Pregnancy
+      requirements = {
+        { 0.0 Pregnancy }
+      }
+      specialTraits = {
+         { 0.02 { SpecialAttr RANGED_DAMAGE 20 CreatureStatus CIVILIAN }}
+         { 0.03 { AttrBonus RANGED_DAMAGE 13 Lasting { INSANITY }}}
+         { 0.03 { AttrBonus DEFENSE 5 Lasting { SLOWED }}}
+         { 0.05 { Lasting { RANGED_VULNERABILITY } }}
+         { 0.05 { Lasting { DISARM_TRAPS_SKILL } }}
+         { 0.05 { Lasting { SWIMMING_SKILL } }}
+         { 0.02 { Lasting { HATE_ELVES } }}
+         { 0.02 { Lasting { HATE_HUMANS } }}
+         { 0.05 { ExtraTraining ARCHERY 2}}
+         { 0.05 { Lasting { BAD_BREATH } }}
+      }
+    }
+    {
+      ids = { "GOBLIN_PRIEST" }
+      traits = { FIGHTER }
+      spawnLocation = Pregnancy
+      requirements = {
+        { 0.0 Pregnancy }
+      }
+      specialTraits = {
+         { 0.05 { WorkshopType "LABORATORY" }}
+         { 0.02 { Lasting { HATE_ELVES } }}
+         { 0.02 { Lasting { HATE_HUMANS } }}
+         { 0.01 { Lasting { ENTERTAINER } }}
+      }
+    }
+    {
+      ids = { "GOBLIN_WIZARD" }
+      traits = { FIGHTER }
+      spawnLocation = Pregnancy
+      requirements = {
+        { 0.0 Pregnancy }
+      }
+      specialTraits = {
+         { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
+         { 0.01 { SpecialAttr DEFENSE 10 HatedBy HATE_DRAGONS }}
+         { 0.10 { ExtraTraining SPELL 4}}
+         { 0.05 { WorkshopType "LABORATORY" }}
+         { 0.02 { Lasting { HATE_ELVES } }}
+         { 0.02 { Lasting { HATE_HUMANS } }}
+         { 0.01 { Lasting { ENTERTAINER } }}
+      }
+    }
+    {
+      ids = { "GOBLIN_KABOOMER" }
+      traits = { FIGHTER }
+      spawnLocation = Pregnancy
+      requirements = {
+        { 0.0 Pregnancy }
+        { 0.0 TechId "explosives" }
+      }
+    }
+    {
+      ids = { "GOBLIN_CHICKENMANCER" }
+      traits = { FIGHTER }
+      spawnLocation = Pregnancy
+      requirements = {
+        { 0.0 Pregnancy }
+        { 0.0 TechId "chickenmancy" }
+      }
+    }
+}
 "tutorial"
 {
     {

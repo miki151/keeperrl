@@ -60,3 +60,11 @@
 {
   "ennoblement" 7
 }
+"chickenmancy" SPELL
+{
+  "summon chicken" 1
+  "summon more chickens" 2
+  "chickenmorph" 5
+  "advanced chickenmorph" 6
+  "chickengeddon" 7
+}

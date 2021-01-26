@@ -1,6 +1,7 @@
 "alchemy"                  { "Build a laboratory and produce basic potions." }
 "incendiary alchemy"       { "Produce incendiary potions." { "alchemy"} }
 "advanced alchemy"         { "Produce more powerful potions."                               {"alchemy"} }
+"explosives"               { "Breed the kaboomer goblin."                                   {"advanced alchemy"} }
 "embalming"                { "Build a laboratory and concoct basic balsams for bodies." }
 "advanced embalming"       { "Produce more powerful balsams for bodies."                    {"embalming"} }
 "master embalming"         { "Produce the most powerful balsams for bodies."                {"advanced embalming"} }
@@ -19,6 +20,7 @@
 "advanced sorcery"         { "Learn more advanced spells."                                  {"sorcery"}}
 "magical weapons"          { "Produce melee weapons that deal magical damage"               {"advanced sorcery"}}
 "master sorcery"           { "Learn the most powerful spells."                              {"advanced sorcery"}}
+"chickenmancy"             { "Master the chickenmancy magic."                               {"advanced sorcery"}}
 "demonology"               { "Build demon shrines and attract demons."                      {"advanced sorcery"}}
 "worship"                  { "Build angel shrines and attract angels."}
 "automatons"               { "Build mechanical creatures that work and fight for you."}

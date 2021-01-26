@@ -642,3 +642,58 @@ Def NoEffect() Unlock "nothing" End
   message = "" ""
   cooldown = 100
 }
+"summon chicken"
+{
+  symbol = "🐤"
+  effect = Summon "CHICKEN" 1 15
+  message = "cluck" "clucks"
+  cooldown = 5
+  type = ABILITY
+}
+"summon more chickens"
+{
+  upgrade = "summon chicken"
+  symbol = "🐤🐤"
+  effect = Name "summon more chickens" Summon "CHICKEN" {3 5} 15
+  message = "cluck" "clucks"
+  cooldown = 5
+  type = ABILITY
+}
+"chickenmorph"
+{
+  symbol = "🐣"
+  effect = Name "chickenmorph" Description "Turn yourself or someone into a chicken temporarily!" AI Health 0 0.4 0 1 {
+    Polymorph "CHICKEN" 10
+    Permanent INVULNERABLE
+  }
+  cooldown = 50
+  message = "cluck" "clucks"
+  type = ABILITY
+}
+"advanced chickenmorph"
+{
+  upgrade = "chickenmorph"
+  symbol = "🐣"
+  effect = Name "chickenmorph" Description "Turn yourself or someone into a chicken temporarily!"
+      AI And { Health 0.25 1 Not Enemy } 1 -1 AI And { Not CreatureId "CHICKEN" Enemy } -1 1 {
+    Polymorph "CHICKEN" 10
+    Permanent INVULNERABLE
+  }
+  targetSelf = true
+  endOnly = true
+  range = 5
+  cooldown = 50
+  message = "cluck" "clucks"
+  type = ABILITY
+}
+"chickengeddon"
+{
+  symbol = "🐓"
+  effect = Name "chickengeddon" Description "Turn everyone in the vicinity into a chicken temporarily!"Area 20 {
+    Polymorph "CHICKEN" 10
+    AI And {} 1 -1 Permanent INVULNERABLE
+  }
+  cooldown = 300
+  message = "cluck" "clucks"
+  type = ABILITY
+}

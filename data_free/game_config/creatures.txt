@@ -4149,3 +4149,201 @@
       DEFENSE 30 
     }
   }
+"GOBLIN_KEEPER"
+  {
+    viewId = { "goblin_keeper1" }
+    viewIdUpgrades = { { "goblin_keeper2" } { "goblin_keeper3" } { "goblin_keeper4" } }
+    attr = {
+      DAMAGE 12
+      DEFENSE 13 
+    }
+    body = {
+      type = Humanoid MEDIUM
+    }
+    chatReactionFriendly = "talks about lavish dinners"
+    chatReactionHostile = "\"Die!\""
+    aiType = RANGED
+    name = {
+      name = "goblin"
+      firstNameGen = "ORC"
+    }
+    hatedByEffect = HATE_GREENSKINS
+    inventory = {
+      { "Club"}
+      { type = "LeatherBoots" chance = 0.3 }
+    }
+  }
+"GOBLIN_MATRON" inherit "GOBLIN"
+  {
+    viewId = { "goblin_matron" }
+    gender = FEMALE
+    aiType = RANGED
+    skills = append {
+      "DIGGING" 0.5
+    }
+    name = {
+      name = "goblin matron"
+      firstNameGen = "ORC"
+    }
+    permanentEffects = {
+      COPULATION_SKILL 1
+    }
+  }
+"GOBLIN_WARRIOR"
+  {
+    viewId = { "goblin_warrior" }
+    attr = {
+      DAMAGE 16
+      DEFENSE 15
+    }
+    body = {
+      type = Humanoid MEDIUM
+    }
+    chatReactionFriendly = "talks about sword fighting"
+    chatReactionHostile = "\"Die!\""
+    name = {
+      name = "goblin warrior"
+      firstNameGen = "ORC"
+    }
+    maxLevelIncrease = {
+      MELEE 7
+    }
+    hatedByEffect = HATE_GREENSKINS
+  }
+"GOBLIN_PRIEST"
+  {
+    viewId = { "goblin_priest" }
+    attr = {
+      DAMAGE 10
+      DEFENSE 12
+    }
+    body = {
+      type = Humanoid MEDIUM
+    }
+    chatReactionFriendly = "talks about priestly service"
+    chatReactionHostile = "\"Die!\""
+    aiType = RANGED
+    name = {
+      name = "goblin priest"
+      firstNameGen = "ORC"
+    }
+    maxLevelIncrease = {
+      SPELL 7
+    }
+    spellSchools = { "healer" }
+    hatedByEffect = HATE_GREENSKINS
+  }
+"GOBLIN_WIZARD"
+  {
+    viewId = { "goblin_wizard" }
+    attr = {
+      DAMAGE 10
+      DEFENSE 12
+    }
+    body = {
+      type = Humanoid MEDIUM
+    }
+    chatReactionFriendly = "talks about black magic"
+    chatReactionHostile = "\"Die!\""
+    aiType = RANGED
+    name = {
+      name = "goblin wizard"
+      firstNameGen = "ORC"
+    }
+    maxLevelIncrease = {
+      SPELL 7
+    }
+    spellSchools = { "mage" }
+    hatedByEffect = HATE_GREENSKINS
+  }
+"GOBLIN_GUARD" inherit "GOBLIN_WARRIOR"
+  {
+    viewId = { "goblin_guard" }
+    specialAttr = {
+      DEFENSE { 10 InTerritory }
+      DAMAGE { 10 InTerritory }
+    }
+    name = {
+      name = "goblin guard"
+      firstNameGen = "ORC"
+    }
+  }
+"GOBLIN_ARCHER" 
+  {
+    viewId = { "goblin_archer" }
+    attr = {
+      DAMAGE 10
+      DEFENSE 12
+      RANGED_DAMAGE 14
+    }
+    body = {
+      type = Humanoid MEDIUM
+    }
+    chatReactionFriendly = "talks about bows and arrows"
+    chatReactionHostile = "\"Die!\""
+    aiType = RANGED
+    name = {
+      name = "goblin archer"
+      firstNameGen = "ORC"
+    }
+    maxLevelIncrease = {
+      ARCHERY 7
+    }
+    hatedByEffect = HATE_GREENSKINS
+  }
+"GOBLIN_KABOOMER"
+  {
+    viewId = { "goblin_kaboomer" }
+    attr = {
+      DAMAGE 10
+      DEFENSE 12
+    }
+    body = {
+      type = Humanoid MEDIUM
+      deathSound = SPELL_AIR_BLAST
+      intrinsicAttacks = {
+        TORSO {{{ Intrinsic { "touch_attack" } "self destruct" 1 {
+          attackType = HIT
+          meleeAttackAttr = SPELL_DAMAGE
+          attackMsg = THRUST
+          itselfMessage = true
+          victimEffect = {1.0 CircularBlast 1.0 Area 1 Fire 1.0 Suicide DIE}
+          attackerEffect = {Suicide DIE} } }}}
+      }
+    }
+    chatReactionFriendly = "talks about explosives"
+    chatReactionHostile = "\"Die!\""
+    name = {
+      name = "goblin kaboomer"
+      firstNameGen = "ORC"
+    }
+    hatedByEffect = HATE_GREENSKINS
+    permanentEffects = {
+      LIGHT_SOURCE 1
+      RANGED_VULNERABILITY 1
+    }   
+  }
+"GOBLIN_CHICKENMANCER"
+  {
+    viewId = { "goblin_chickenmancer" }
+    attr = {
+      DAMAGE 10
+      DEFENSE 12
+    }
+    body = {
+      type = Humanoid MEDIUM
+    }
+    chatReactionFriendly = "talks about chickens"
+    chatReactionHostile = "\"Die!\""
+    aiType = RANGED
+    name = {
+      name = "goblin chickenmancer"
+      firstNameGen = "ORC"
+    }
+    maxLevelIncrease = {
+      SPELL 7
+    }
+    spellSchools = { "chickenmancy" }
+    hatedByEffect = HATE_GREENSKINS
+  }
+
