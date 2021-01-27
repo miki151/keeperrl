@@ -295,7 +295,7 @@
     }
     hatedByEffect = HATE_HUMANS
     inventory = {
-      { "Sword"}
+      { "Club"}
       { type = Potion Heal FLESH chance = 0.7 }
       { type = "Torch" chance = 0.3 }
       { type = "Bow" chance = 0.05 }
@@ -326,7 +326,7 @@
       name = "rat soldier"
     }
     inventory = {
-      { "Sword"}
+      { "Club"}
       { type = Potion Heal FLESH chance = 0.7 }
       { type = "Torch" chance = 0.3 }
       { type = "Bow" chance = 0.05 }
