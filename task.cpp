@@ -788,10 +788,10 @@ namespace {
 
 class AbuseMinion : public Task {
   public:
-  AbuseMinion(Creature* target) : target(target) {}
+  AbuseMinion(Collective* col, Creature* target) : collective(col), target(target) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    if (!target) {
+    if (!target || !collective->getTerritory().contains(target->getPosition())) {
       setDone();
       return NoMove;
     }
@@ -811,17 +811,18 @@ class AbuseMinion : public Task {
     return "Abuse " + target->getName().bare();
   }
 
-  SERIALIZE_ALL(SUBCLASS(Task), target)
+  SERIALIZE_ALL(SUBCLASS(Task), collective, target)
   SERIALIZATION_CONSTRUCTOR(AbuseMinion)
 
   private:
+  Collective* SERIAL(collective);
   WeakPointer<Creature> SERIAL(target);
 };
 
 }
 
-PTask Task::abuseMinion(Creature* c) {
-  return makeOwner<AbuseMinion>(c);
+PTask Task::abuseMinion(Collective* col, Creature* c) {
+  return makeOwner<AbuseMinion>(col, c);
 }
 
 namespace {

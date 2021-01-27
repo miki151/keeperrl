@@ -303,7 +303,7 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
     case MinionActivityInfo::MINION_ABUSE: {
       PROFILE_BLOCK("Minion abuse");
       if (auto minion = getMinionToAbuse(collective, c))
-        return Task::abuseMinion(minion);
+        return Task::abuseMinion(collective, minion);
       break;
     }
     case MinionActivityInfo::COPULATE: {

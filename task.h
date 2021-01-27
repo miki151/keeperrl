@@ -83,7 +83,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask chain(PTask, PTask, PTask);
   static PTask chain(vector<PTask>);
   static PTask explore(Position);
-  static PTask abuseMinion(Creature*);
+  static PTask abuseMinion(Collective*, Creature*);
   static PTask attackCreatures(vector<Creature*>);
   static PTask campAndSpawn(Collective* target, const CreatureList&, int numAttacks);
   static PTask killFighters(Collective*, int numFighters);
