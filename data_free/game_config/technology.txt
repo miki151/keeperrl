@@ -20,10 +20,11 @@
 "advanced sorcery"         { "Learn more advanced spells."                                  {"sorcery"}}
 "magical weapons"          { "Produce melee weapons that deal magical damage"               {"advanced sorcery"}}
 "master sorcery"           { "Learn the most powerful spells."                              {"advanced sorcery"}}
-"chickenmancy"             { "Master the chickenmancy magic."                               {"advanced sorcery"}}
+"chickenmancy"             { "Master the ancient art of summoning and polymorphing chickens."}
 "demonology"               { "Build demon shrines and attract demons."                      {"advanced sorcery"}}
 "worship"                  { "Build angel shrines and attract angels."}
 "automatons"               { "Build mechanical creatures that work and fight for you."}
 "advanced automatons"      { "Build advanced mechanical creatures that work and fight for you." {"automatons"}}
 "automaton brains"         { "Build automatons that behave like humanoids."                 {"advanced automatons"}}
 "aerodynamics"             { "Build flying automatons."                                     {"advanced automatons"}}
+"goblin mutation"          { "Breed goblin brutes of enormous size and strength."}

@@ -626,26 +626,32 @@
 {
     {
       ids = { "GOBLIN_MATRON" }
-      traits = { WORKER }
+      traits = { WORKER NO_AUTO_EQUIPMENT }
       initialRecruitment = 2
       invisible = true
       hiddenInHelp = true
     }
     {
       ids = { "GOBLIN_MATRON" }
-      traits = { WORKER }
+      traits = { WORKER NO_AUTO_EQUIPMENT }
       spawnLocation = Pregnancy
+      frequency = 1
       requirements = {
         { 0.0 Pregnancy }
       }
       specialTraits = {
          { 0.03 { Lasting {ENTERTAINER} }}
+         { 0.1 { SkillId DIGGING }}
+         { 0.03 { WorkshopType "WORKSHOP" Lasting { INSANITY } }}
+         { 0.05 { WorkshopType "FORGE" Lasting { INSANITY } }}
+         { 0.03 { WorkshopType "LABORATORY" Lasting { INSANITY } }}
       }
     }
     {
       ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER }
       spawnLocation = Pregnancy
+      frequency = 1
       requirements = {
         { 0.0 Pregnancy }
       }
@@ -677,6 +683,7 @@
       requirements = {
         { 0.0 Pregnancy }
       }
+      frequency = 0.2
       specialTraits = {
          { 0.01 { ExtraIntrinsicAttack
             HEAD
@@ -703,6 +710,7 @@
       requirements = {
         { 0.0 Pregnancy }
       }
+      frequency = 0.4
       specialTraits = {
          { 0.02 { SpecialAttr RANGED_DAMAGE 20 CreatureStatus CIVILIAN }}
          { 0.03 { AttrBonus RANGED_DAMAGE 13 Lasting { INSANITY }}}
@@ -723,6 +731,7 @@
       requirements = {
         { 0.0 Pregnancy }
       }
+      frequency = 0.3
       specialTraits = {
          { 0.05 { WorkshopType "LABORATORY" }}
          { 0.02 { Lasting { HATE_ELVES } }}
@@ -737,6 +746,7 @@
       requirements = {
         { 0.0 Pregnancy }
       }
+      frequency = 0.3
       specialTraits = {
          { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DEFENSE 10 HatedBy HATE_DRAGONS }}
@@ -750,6 +760,7 @@
     {
       ids = { "GOBLIN_KABOOMER" }
       traits = { FIGHTER }
+      frequency = 0.1
       spawnLocation = Pregnancy
       requirements = {
         { 0.0 Pregnancy }
@@ -759,10 +770,21 @@
     {
       ids = { "GOBLIN_CHICKENMANCER" }
       traits = { FIGHTER }
+      frequency = 0.1
       spawnLocation = Pregnancy
       requirements = {
         { 0.0 Pregnancy }
         { 0.0 TechId "chickenmancy" }
+      }
+    }
+    {
+      ids = { "GOBLIN_BRUTE" }
+      traits = { FIGHTER }
+      frequency = 0.2
+      spawnLocation = Pregnancy
+      requirements = {
+        { 0.0 Pregnancy }
+        { 0.0 TechId "goblin mutation" }
       }
     }
 }

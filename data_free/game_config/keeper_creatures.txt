@@ -108,7 +108,7 @@
       "installations" "magical_installations" "traps"
   }
   workshopGroups = { "basic" "traps" }
-  description = "Lead a tribe of misogynist and ugly goblins to victory. This faction was incorporated from the Bonus Mod by RighteousSinner and Soft Monster."
+  description = "Lead a tribe of misogynist and ugly goblins to victory. This faction was originally made by RighteousSinner and Soft Monster for the Bonus Mod."
 }
 "7_zombies"
 {

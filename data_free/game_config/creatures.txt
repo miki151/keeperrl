@@ -1391,6 +1391,7 @@
   {
     viewId = { "cleric" }
     spellSchools = { "healer" }
+    spells = { "healing" }
     permanentEffects = append {
       DISTILLATION_SKILL 1
     }
@@ -2438,6 +2439,7 @@
     maxLevelIncrease = {
       SPELL 7
     }
+    spells = { "healing" }
     name = {
       name = "orc healer"
       firstNameGen = "ORC"
@@ -4182,7 +4184,7 @@
       "DIGGING" 0.5
     }
     name = {
-      name = "goblin matron"
+      name = "matron"
       firstNameGen = "ORC"
     }
     permanentEffects = {
@@ -4202,7 +4204,7 @@
     chatReactionFriendly = "talks about sword fighting"
     chatReactionHostile = "\"Die!\""
     name = {
-      name = "goblin warrior"
+      name = "warrior"
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
@@ -4224,12 +4226,13 @@
     chatReactionHostile = "\"Die!\""
     aiType = RANGED
     name = {
-      name = "goblin priest"
+      name = "priest"
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
       SPELL 7
     }
+    spells = { "healing" }
     spellSchools = { "healer" }
     hatedByEffect = HATE_GREENSKINS
   }
@@ -4237,8 +4240,9 @@
   {
     viewId = { "goblin_wizard" }
     attr = {
-      DAMAGE 10
-      DEFENSE 12
+      DAMAGE 5
+      DEFENSE 10
+      SPELL_DAMAGE 16
     }
     body = {
       type = Humanoid MEDIUM
@@ -4247,7 +4251,7 @@
     chatReactionHostile = "\"Die!\""
     aiType = RANGED
     name = {
-      name = "goblin wizard"
+      name = "wizard"
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
@@ -4263,8 +4267,12 @@
       DEFENSE { 10 InTerritory }
       DAMAGE { 10 InTerritory }
     }
+    attr = {
+      DAMAGE 13
+      DEFENSE 12
+    }
     name = {
-      name = "goblin guard"
+      name = "guard"
       firstNameGen = "ORC"
     }
   }
@@ -4283,7 +4291,7 @@
     chatReactionHostile = "\"Die!\""
     aiType = RANGED
     name = {
-      name = "goblin archer"
+      name = "archer"
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
@@ -4314,7 +4322,7 @@
     chatReactionFriendly = "talks about explosives"
     chatReactionHostile = "\"Die!\""
     name = {
-      name = "goblin kaboomer"
+      name = "kaboomer"
       firstNameGen = "ORC"
     }
     hatedByEffect = HATE_GREENSKINS
@@ -4337,7 +4345,7 @@
     chatReactionHostile = "\"Die!\""
     aiType = RANGED
     name = {
-      name = "goblin chickenmancer"
+      name = "chickenmancer"
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
@@ -4345,5 +4353,26 @@
     }
     spellSchools = { "chickenmancy" }
     hatedByEffect = HATE_GREENSKINS
+  }
+"GOBLIN_BRUTE" inherit "GOBLIN_WARRIOR"
+  {
+    viewId = { "goblin_brute" }
+    attr = {
+      DAMAGE 26
+      DEFENSE 25
+    }
+    body = {
+      type = Humanoid LARGE
+    }
+    permanentEffects = {
+      SLOWED 1
+    }
+    name = {
+      name = "brute"
+      firstNameGen = "ORC"
+    }
+    maxLevelIncrease = {
+      MELEE 12
+    }
   }
 
