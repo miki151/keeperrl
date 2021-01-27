@@ -3165,8 +3165,8 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
           };
       auto lockButton = WL(rightMargin, 20, WL(conditional,
             [&retAction, task] {
-              if (!!task.locked && !(retAction.lockGroup.contains(task.task) ^ task.lockedForGroup)) {
-                if (retAction.lock.contains(task.task) ^ *task.locked)
+              if (task.canLock && !(retAction.lockGroup.contains(task.task) ^ task.lockedForGroup)) {
+                if (retAction.lock.contains(task.task) ^ task.locked)
                   return 1;
                 else
                   return 2;

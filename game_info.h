@@ -156,9 +156,10 @@ class PlayerInfo {
     MinionActivity HASH(task);
     bool HASH(inactive);
     bool HASH(current);
-    optional<bool> HASH(locked);
+    bool HASH(locked);
+    bool HASH(canLock);
     bool HASH(lockedForGroup);
-    HASH_ALL(task, inactive, current, locked, lockedForGroup)
+    HASH_ALL(task, inactive, current, locked, canLock, lockedForGroup)
   };
   vector<MinionActivityInfo> HASH(minionTasks);
   AIType HASH(aiType);

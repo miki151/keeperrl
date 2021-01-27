@@ -48,7 +48,7 @@ bool MinionActivityMap::canChooseRandomly(const Creature* c, MinionActivity t) c
   }
 }
 
-static bool canLock(MinionActivity t) {
+bool MinionActivityMap::canLock(MinionActivity t) {
   switch (t) {
     case MinionActivity::IDLE:
       return false;
@@ -124,11 +124,8 @@ void MinionActivityMap::toggleLock(MinionActivity task) {
     locked.toggle(task);
 }
 
-optional<bool> MinionActivityMap::isLocked(const Collective* col, const Creature* c, MinionActivity task) const {
-  if (canLock(task))
-    return locked.contains(task) ^ isAutoLocked(col, c, task);
-  else
-    return none;
+bool MinionActivityMap::isLocked(const Collective* col, const Creature* c, MinionActivity task) const {
+  return locked.contains(task) ^ isAutoLocked(col, c, task);
 }
 
 SERIALIZE_DEF(MinionActivityMap, locked);

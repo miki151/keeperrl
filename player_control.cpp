@@ -954,6 +954,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
               !collective->isActivityGood(c, t, true),
               collective->getCurrentActivity(c).activity == t,
               c->getAttributes().getMinionActivities().isLocked(collective, c, t),
+              MinionActivityMap::canLock(t),
               collective->getGroupLockedActivities(minionInfo.groupName).contains(t)});
         }
       if (collective->usesEquipment(c))
