@@ -4307,8 +4307,8 @@
           meleeAttackAttr = SPELL_DAMAGE
           attackMsg = THRUST
           itselfMessage = true
-          victimEffect = {1.0 CircularBlast 1.0 Area 1 Fire 1.0 Suicide DIE}
-          attackerEffect = {Suicide DIE} } }}}
+          victimEffect = {1.0 Suicide DIE}
+          attackerEffect = {CircularBlast Area 1 Fire Suicide DIE} } }}}
       }
     }
     chatReactionFriendly = "talks about explosives"
