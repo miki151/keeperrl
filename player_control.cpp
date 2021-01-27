@@ -953,7 +953,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
           minionInfo.minionTasks.push_back({t,
               !collective->isActivityGood(c, t, true),
               collective->getCurrentActivity(c).activity == t,
-              c->getAttributes().getMinionActivities().isLocked(t),
+              c->getAttributes().getMinionActivities().isLocked(collective, c, t),
               collective->getGroupLockedActivities(minionInfo.groupName).contains(t)});
         }
       if (collective->usesEquipment(c))

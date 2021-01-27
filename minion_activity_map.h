@@ -20,7 +20,7 @@
 class MinionActivityMap {
   public:
   void toggleLock(MinionActivity);
-  optional<bool> isLocked(MinionActivity) const;
+  optional<bool> isLocked(const Collective*, const Creature*, MinionActivity) const;
   
   bool isAvailable(const Collective*, const Creature*, MinionActivity, bool ignoreTaskLock = false) const;
   bool canChooseRandomly(const Creature* c, MinionActivity) const;

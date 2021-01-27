@@ -23,13 +23,21 @@
 #include "equipment.h"
 #include "game.h"
 
+static bool isAutoLocked(const Collective* col, const Creature* c, MinionActivity t) {
+  switch (t) {
+    case MinionActivity::PHYLACTERY:
+      return !col->hasTrait(c, MinionTrait::LEADER);
+    default:
+      return false;
+  }
+}
+
 bool MinionActivityMap::canChooseRandomly(const Creature* c, MinionActivity t) const {
   PROFILE;
   switch (t) {
     case MinionActivity::BE_EXECUTED:
     case MinionActivity::BE_WHIPPED:
     case MinionActivity::BE_TORTURED:
-    case MinionActivity::PHYLACTERY:
       return false;
     case MinionActivity::SLEEP:
       return !c->isAffected(LastingEffect::RESTED);
@@ -50,7 +58,7 @@ static bool canLock(MinionActivity t) {
 }
 
 bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, MinionActivity t, bool ignoreTaskLock) const {
-  if ((locked.contains(t) || col->getGroupLockedActivities(c).contains(t)) && !ignoreTaskLock)
+  if ((isLocked(col, c, t) || col->getGroupLockedActivities(c).contains(t)) && !ignoreTaskLock)
     return false;
   switch (t) {
     case MinionActivity::IDLE:
@@ -116,9 +124,9 @@ void MinionActivityMap::toggleLock(MinionActivity task) {
     locked.toggle(task);
 }
 
-optional<bool> MinionActivityMap::isLocked(MinionActivity task) const {
+optional<bool> MinionActivityMap::isLocked(const Collective* col, const Creature* c, MinionActivity task) const {
   if (canLock(task))
-    return locked.contains(task);
+    return locked.contains(task) ^ isAutoLocked(col, c, task);
   else
     return none;
 }
