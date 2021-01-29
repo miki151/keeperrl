@@ -73,6 +73,8 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel), OPTION(inventory));
   ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience));
   ar(OPTION(automatonParts), OPTION(specialAttr), NAMED(deathEffect), NAMED(chatEffect), OPTION(companions));
+  for (auto a : ENUM_ALL(AttrType))
+    attr[a] = max(0, attr[a]);
 }
 
 template <class Archive>
@@ -103,10 +105,11 @@ const CreatureName& CreatureAttributes::getName() const {
 
 void CreatureAttributes::increaseBaseAttr(AttrType type, int v) {
   attr[type] += v;
+  attr[type] = max(0, attr[type]);
 }
 
 void CreatureAttributes::setBaseAttr(AttrType type, int v) {
-  attr[type] = v;
+  attr[type] = max(0, v);
 }
 
 void CreatureAttributes::setAIType(AIType type) {
@@ -177,8 +180,10 @@ bool CreatureAttributes::isTrainingMaxedOut(ExperienceType type) const {
 }
 
 void CreatureAttributes::increaseBaseExpLevel(ExperienceType type, double increase) {
-  for (auto attrType : getAttrIncreases()[type])
+  for (auto attrType : getAttrIncreases()[type]) {
     attr[attrType] += increase;
+    attr[attrType] = max(0, attr[attrType]);
+  }
 }
 
 vector<SpellSchoolId> CreatureAttributes::getSpellSchools() const {
