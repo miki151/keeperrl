@@ -473,12 +473,9 @@
   isSymbolFont = true roundShadow = true }
 { viewId = "inactive_portal" symbol = "𝚯" color = ColorId GRAY
   isSymbolFont = true roundShadow = true }
-{ viewId = "bed1" symbol = "=" color = ColorId WHITE
-  roundShadow = true }
-{ viewId = "bed2" symbol = "=" color = ColorId YELLOW
-  roundShadow = true }
-{ viewId = "bed3" symbol = "=" color = ColorId PURPLE
-  roundShadow = true }
+{ viewId = "bed1" symbol = "=" color = ColorId WHITE }
+{ viewId = "bed2" symbol = "=" color = ColorId YELLOW }
+{ viewId = "bed3" symbol = "=" color = ColorId PURPLE }
 { viewId = "altar" symbol = "Ω" color = ColorId WHITE
   isSymbolFont = true roundShadow = true }
 { viewId = "bush" symbol = "&" color = ColorId DARK_GREEN
