@@ -105,7 +105,7 @@
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "pigsty"
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "prison" "orders"
-      "installations" "magical_installations" "traps"
+      "installations" "traps"
   }
   workshopGroups = { "basic" "traps" }
   description = "Lead a tribe of misogynist and ugly goblins to victory. This faction was originally made by RighteousSinner and Soft Monster for the Bonus Mod."
