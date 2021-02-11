@@ -996,7 +996,7 @@ void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> or
   if (blockingElems.empty()) {
     /*blockingElems.push_back(gui.darken());
     blockingElems.back()->setBounds(Rectangle(renderer.getSize()));*/
-    blockingElems.push_back(gui.keyHandler(bindMethod(&WindowView::keyboardAction, this)));
+    blockingElems.push_back(gui.keyHandler(bindMethod(&WindowView::keyboardActionAlways, this)));
   }
   propagateMousePosition({elem});
   blockingElems.push_back(elem);
@@ -1375,7 +1375,28 @@ UserInputId getDirActionId(const SDL_Keysym& key) {
     return UserInputId::MOVE;
 }
 
+// These commands will run even in blocking gui.
+void WindowView::keyboardActionAlways(const SDL_Keysym& key) {
+  switch (key.sym) {
+#ifndef RELEASE
+    case SDL::SDLK_F8:
+      //renderer.startMonkey();
+      renderer.loadAnimations();
+      renderer.getTileSet().clear();
+      renderer.getTileSet().reload();
+      renderer.getTileSet().loadTextures();
+      fxRenderer->loadTextures();
+      gui.loadImages();
+      break;
+#endif
+    default:
+      break;
+  }
+}
+
+// These commands will run only when the map is in focus (I think)
 void WindowView::keyboardAction(const SDL_Keysym& key) {
+  keyboardActionAlways(key);
   switch (key.sym) {
 #ifndef RELEASE
     case SDL::SDLK_F10:
@@ -1399,15 +1420,6 @@ void WindowView::keyboardAction(const SDL_Keysym& key) {
       //inputQueue.push(UserInputId::CHEAT_POTIONS);
       break;
 #endif
-    case SDL::SDLK_F8:
-      //renderer.startMonkey();
-      renderer.loadAnimations();
-      renderer.getTileSet().clear();
-      renderer.getTileSet().reload();
-      renderer.getTileSet().loadTextures();
-      fxRenderer->loadTextures();
-      gui.loadImages();
-      break;
     case SDL::SDLK_F7:
       presentList("", ListElem::convert(vector<string>(messageLog.begin(), messageLog.end())), true);
       break;

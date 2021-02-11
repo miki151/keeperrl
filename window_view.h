@@ -131,6 +131,7 @@ class WindowView: public View {
   void drawMap();
   void propagateEvent(const Event& event, vector<SGuiElem>);
   void keyboardAction(const SDL::SDL_Keysym&);
+  void keyboardActionAlways(const SDL::SDL_Keysym&);
 
   void drawList(const string& title, const vector<ListElem>& options, int hightlight, int setMousePos = -1);
   void refreshScreen(bool flipBuffer = true);
