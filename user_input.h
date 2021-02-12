@@ -84,7 +84,7 @@ enum class UserInputId {
   ACTIVATE_TEAM,
   WORKSHOP,
   WORKSHOP_ADD,
-  REMOVE_WORKSHOP_ITEM,
+  WORKSHOP_CHANGE_COUNT,
   WORKSHOP_UPGRADE,
   LIBRARY_ADD,
   VILLAGE_ACTION,
@@ -206,11 +206,17 @@ struct WorkshopUpgradeInfo {
   int count;
 };
 
+struct WorkshopCountInfo {
+  int itemIndex;
+  int count;
+  int newCount;
+};
+
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, TeamGroupInfo, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, CreatureDropInfo, CreatureGroupDropInfo, TeamDropInfo,
     string, TechId, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo,
-    AIActionInfo),
+    WorkshopCountInfo, AIActionInfo),
         ASSIGN(BuildingClickInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -246,8 +252,7 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
             UserInputId::IMMIGRANT_AUTO_ACCEPT,
             UserInputId::IMMIGRANT_AUTO_REJECT,
             UserInputId::CAST_SPELL,
-            UserInputId::SCROLL_STAIRS,
-            UserInputId::REMOVE_WORKSHOP_ITEM
+            UserInputId::SCROLL_STAIRS
         ),
         ASSIGN(InventoryItemInfo,
             UserInputId::INVENTORY_ITEM,
@@ -301,6 +306,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
         ),
         ASSIGN(WorkshopUpgradeInfo,
             UserInputId::WORKSHOP_UPGRADE
+        ),
+        ASSIGN(WorkshopCountInfo,
+            UserInputId::WORKSHOP_CHANGE_COUNT
         )
         > {
   using EnumVariant::EnumVariant;

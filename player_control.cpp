@@ -2324,14 +2324,15 @@ void PlayerControl::processInput(View* view, UserInput input) {
       }
       break;
     }
-    case UserInputId::REMOVE_WORKSHOP_ITEM: {
-      int itemIndex = input.get<int>();
+    case UserInputId::WORKSHOP_CHANGE_COUNT: {
+      auto& info = input.get<WorkshopCountInfo>();
       if (chosenWorkshop) {
         auto& workshop = collective->getWorkshops().types.at(*chosenWorkshop);
-        if (itemIndex < workshop.getQueued().size()) {
-          for (auto& upgrade : workshop.unqueue(collective, itemIndex))
-            Random.choose(collective->getStoragePositions(StorageId::EQUIPMENT))
-                .dropItem(std::move(upgrade));
+        if (info.itemIndex < workshop.getQueued().size()) {
+          for (int i : Range(info.count - info.newCount))
+            for (auto& upgrade : workshop.unqueue(collective, info.itemIndex))
+              Random.choose(collective->getStoragePositions(StorageId::EQUIPMENT))
+                  .dropItem(std::move(upgrade));
         }
       }
       break;

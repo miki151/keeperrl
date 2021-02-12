@@ -2130,14 +2130,14 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
           .addElemAuto(WL(label, " from ", color))
           .addElemAuto(WL(viewObject, elem.itemInfo.ingredient->viewId))
           .buildHorizontalList();
-    line.addMiddleElem(WL(stack,
-        WL(button, getButtonCallback({UserInputId::REMOVE_WORKSHOP_ITEM, elem.itemIndex})),
-        WL(uiHighlightMouseOver),
-        WL(getListBuilder)
-            .addElem(WL(viewObject, elem.itemInfo.viewId), 35)
-            .addMiddleElem(WL(renderInBounds, std::move(label)))
-            .buildHorizontalList()
-    ));
+    line.addElem(WL(topMargin, 3, WL(leftMargin, -16, WL(stack,
+        WL(button, getButtonCallback({UserInputId::WORKSHOP_CHANGE_COUNT,
+            WorkshopCountInfo{ elem.itemIndex, elem.itemInfo.number, 0 }})),
+        WL(labelUnicodeHighlight, u8"✘", Color::RED)))), 1);
+    line.addMiddleElem(WL(getListBuilder)
+        .addElem(WL(viewObject, elem.itemInfo.viewId), 35)
+        .addMiddleElem(WL(renderInBounds, std::move(label)))
+        .buildHorizontalList());
     if ((!elem.available.empty() || !elem.added.empty()) && elem.maxUpgrades > 0) {
       line.addBackElemAuto(WL(leftMargin, 7, drawItemUpgradeButton(elem)));
     }
