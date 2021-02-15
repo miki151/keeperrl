@@ -1035,7 +1035,7 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
 
 ItemInfo PlayerControl::getWorkshopItem(const WorkshopItem& option, int queuedCount) const {
   return CONSTRUCT(ItemInfo,
-      c.number = queuedCount * option.batchSize;
+      c.number = queuedCount;
       c.name = c.number == 1 ? option.name : toString(c.number) + " " + option.pluralName;
       c.viewId = option.viewId;
       c.price = getCostObj(option.cost * queuedCount);
@@ -1202,9 +1202,9 @@ vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() c
   auto& queued = collective->getWorkshops().types.at(*chosenWorkshop).getQueued();
   for (int i : All(queued)) {
     if (i > 0 && queued[i - 1].indexInWorkshop == queued[i].indexInWorkshop && queued[i - 1].paid == queued[i].paid &&
-        runesEqual(queued[i].runes, queued[i - 1].runes) && queued[i].state == 0 && queued[i - 1].state == 0)
-      ret.back() = getQueuedItemInfo(queued[i],
-          ret.back().itemInfo.number / queued[i].item.batchSize + 1, ret.back().itemIndex, hasLegendarySkill);
+        runesEqual(queued[i].runes, queued[i - 1].runes))
+      ret.back() = getQueuedItemInfo(queued[ret.back().itemIndex],
+          ret.back().itemInfo.number + 1, ret.back().itemIndex, hasLegendarySkill);
     else
       ret.push_back(getQueuedItemInfo(queued[i], 1, i, hasLegendarySkill));
   }
@@ -2333,6 +2333,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
             for (auto& upgrade : workshop.unqueue(collective, info.itemIndex))
               Random.choose(collective->getStoragePositions(StorageId::EQUIPMENT))
                   .dropItem(std::move(upgrade));
+          for (int i : Range(info.newCount - info.count))
+            workshop.queue(collective, workshop.getQueued()[info.itemIndex].indexInWorkshop, info.itemIndex + 1);
         }
       }
       break;

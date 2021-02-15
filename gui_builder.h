@@ -185,7 +185,8 @@ class GuiBuilder {
   vector<SGuiElem> drawEffectsList(const PlayerInfo&, bool withTooltip = true);
   SGuiElem drawMinionActions(const PlayerInfo&, const optional<TutorialInfo>&);
   function<void()> getButtonCallback(UserInput);
-  void drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width, bool darkBg);
+  void drawMiniMenu(SGuiElem, function<bool()> done, Vec2 menuPos, int width, bool darkBg);
+  void drawMiniMenu(SGuiElem, bool& exit, Vec2 menuPos, int width, bool darkBg);
   void showAttackTriggers(const vector<VillageInfo::Village::TriggerInfo>&, Vec2 pos);
   SGuiElem getTextContent(const string& title, const string& value, const string& hint);
   SGuiElem getVillageActionButton(UniqueEntity<Collective>::Id, VillageInfo::Village::ActionInfo);
@@ -302,6 +303,7 @@ class GuiBuilder {
   SGuiElem drawLyingItemsList(const string& title, const ItemCounts&, int maxWidth);
   SGuiElem drawTickBox(shared_ptr<bool> value, const string& title);
   SGuiElem drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&);
+  SGuiElem drawItemCountButton(const CollectiveInfo::QueuedItemInfo&);
   SGuiElem drawGenderButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar);
   SGuiElem drawFirstNameButtons(const vector<View::AvatarData>&, shared_ptr<int> gender, shared_ptr<int> chosenAvatar,
       shared_ptr<int> chosenName);

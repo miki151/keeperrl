@@ -1190,13 +1190,13 @@ void Collective::scheduleAutoProduction(function<bool(const Item*)> itemPredicat
     for (auto& workshop : workshops->types)
       for (auto& item : workshop.second.getQueued())
         if (itemPredicate(item.item.type.get(getGame()->getContentFactory()).get()))
-          count -= item.item.batchSize;
+          --count;
   if (count > 0)
     for (auto& workshop : workshops->types) {
       auto& options = workshop.second.getOptions();
       for (int index : All(options))
         if (itemPredicate(options[index].type.get(getGame()->getContentFactory()).get())) {
-          for (int i : Range((count + options[index].batchSize - 1) / options[index].batchSize))
+          for (int i : Range(count))
             workshop.second.queue(this, index);
           return;
         }
@@ -1342,14 +1342,6 @@ bool Collective::addKnownTile(Position pos) {
     return false;
 }
 
-void Collective::addProducesMessage(const Creature* c, const vector<PItem>& items, const char* verb) {
-  if (items.size() > 1)
-    control->addMessage(c->getName().a() + " " + verb + " " + toString(items.size())
-        + " " + items[0]->getName(true));
-  else
-    control->addMessage(c->getName().a() + " " + verb + " " + items[0]->getAName());
-}
-
 void Collective::summonDemon(Creature* c) {
   auto id = Random.choose(CreatureId("SPECIAL_BLGN"), CreatureId("SPECIAL_BLGW"), CreatureId("SPECIAL_HLGN"), CreatureId("SPECIAL_HLGW"));
   Effect::summon(c, id, 1, 500_visible);
@@ -1373,16 +1365,16 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
     if (furniture->getType() == FurnitureType("TORTURE_TABLE"))
       taskMap->addTask(Task::torture(c), pos.first, MinionActivity::WORKING);
     if (furniture->getType() == FurnitureType("POETRY_TABLE") && Random.chance(0.01 * efficiency)) {
-      auto poem = ItemType(ItemTypes::Poem{}).get(1, contentFactory);
+      auto poem = ItemType(ItemTypes::Poem{}).get(contentFactory);
       bool demon = Random.roll(500);
       if (!recordedEvents.empty() && Random.roll(3)) {
         auto event = Random.choose(recordedEvents);
         recordedEvents.erase(event);
-        poem = ItemType(ItemTypes::EventPoem{event}).get(1, contentFactory);
+        poem = ItemType(ItemTypes::EventPoem{event}).get(contentFactory);
         demon = false;
       }
-      addProducesMessage(c, poem, "writes");
-      c->getPosition().dropItems(std::move(poem));
+      control->addMessage(c->getName().a() + " writes " + poem->getAName());
+      c->getPosition().dropItem(std::move(poem));
       if (demon)
         summonDemon(c);
     }
@@ -1455,24 +1447,24 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
         auto craftingSkill = c->getAttributes().getSkills().getValue(*workshopType);
         auto result = workshop->addWork(this, efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c),
             craftingSkill, c->getMorale().value_or(0));
-        if (!result.items.empty()) {
-          if (result.items[0]->getClass() == ItemClass::WEAPON)
+        if (result.item) {
+          if (result.item->getClass() == ItemClass::WEAPON)
             getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
-          if (result.items[0]->getClass() == ItemClass::ARMOR)
+          if (result.item->getClass() == ItemClass::ARMOR)
             getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
-          if (result.items[0]->getClass() == ItemClass::POTION)
+          if (result.item->getClass() == ItemClass::POTION)
             getGame()->getStatistics().add(StatId::POTION_PRODUCED);
-          addProducesMessage(c, result.items, contentFactory->workshopInfo.at(*workshopType).verb.data());
+          control->addMessage(c->getName().a() + " " + contentFactory->workshopInfo.at(*workshopType).verb + " " + 
+              result.item->getAName());
           if (result.wasUpgraded) {
             control->addMessage(PlayerMessage(c->getName().the() + " is depressed after crafting his masterpiece.", MessagePriority::HIGH));
             c->addMorale(-2);
-            addRecordedEvent("the crafting of " + result.items[0]->getTheName(result.items.size() > 1));
+            addRecordedEvent("the crafting of " + result.item->getTheName());
           }
           if (result.applyImmediately)
-            for (auto& item : result.items)
-              item->getEffect()->apply(pos.first, c);
+            result.item->getEffect()->apply(pos.first, c);
           else
-            c->getPosition().dropItems(std::move(result.items));
+            c->getPosition().dropItem(std::move(result.item));
         }
     }
   }

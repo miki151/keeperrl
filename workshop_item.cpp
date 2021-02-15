@@ -19,7 +19,6 @@ WorkshopItem WorkshopItemCfg::get(const ContentFactory* factory) const {
     elem->getViewObject().getViewIdList(),
     cost,
     std::move(description),
-    batchSize,
     work,
     tech,
     tutorialHighlight,

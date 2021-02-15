@@ -1266,30 +1266,33 @@ static string getActionText(ItemAction a) {
   }
 }
 
-void GuiBuilder::drawMiniMenu(GuiFactory::ListBuilder elems, bool& exit, Vec2 menuPos, int width, bool darkBg) {
-  if (elems.isEmpty())
-    return;
-  disableTooltip = true;
-  int contentHeight = elems.getSize();
+void GuiBuilder::drawMiniMenu(SGuiElem elem, bool& exit, Vec2 menuPos, int width, bool darkBg) {
   int margin = 15;
-  SGuiElem menu = WL(miniWindow, WL(margins, elems.buildVerticalList(), 5 + margin, margin, margin, margin),
-          [&exit] { exit = true; });
+  elem = WL(miniWindow, WL(margins, std::move(elem), 5 + margin, margin, margin, margin),
+          [&] { exit = true; });
+  drawMiniMenu(std::move(elem), [&]{ return exit; }, menuPos, width, darkBg);
+}
+
+void GuiBuilder::drawMiniMenu(SGuiElem elem, function<bool()> done, Vec2 menuPos, int width, bool darkBg) {
+  disableTooltip = true;
+  int contentHeight = *elem->getPreferredHeight();
+  int margin = 15;
   Vec2 size(width + 2 * margin, contentHeight + 2 * margin);
   menuPos.y -= max(0, menuPos.y + size.y - renderer.getSize().y);
   menuPos.x -= max(0, menuPos.x + size.x - renderer.getSize().x);
-  menu->setBounds(Rectangle(menuPos, menuPos + size));
+  elem->setBounds(Rectangle(menuPos, menuPos + size));
   SGuiElem bg = WL(darken);
   bg->setBounds(Rectangle(renderer.getSize()));
   while (1) {
     callbacks.refreshScreen();
     if (darkBg)
       bg->render(renderer);
-    menu->render(renderer);
+    elem->render(renderer);
     renderer.drawAndClearBuffer();
     Event event;
     while (renderer.pollEvent(event)) {
-      gui.propagateEvent(event, {menu});
-      if (exit)
+      gui.propagateEvent(event, {elem});
+      if (done())
         return;
     }
   }
@@ -1305,7 +1308,7 @@ optional<int> GuiBuilder::chooseAtMouse(const vector<string>& elems) {
         WL(uiHighlightMouseOver),
         WL(label, elems[i])
     ));
-  drawMiniMenu(std::move(list), exit, renderer.getMousePos(), 200, false);
+  drawMiniMenu(list.buildVerticalList(), exit, renderer.getMousePos(), 200, false);
   return ret;
 }
 
@@ -1574,7 +1577,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
                     WL(label, (command.keybinding ? getKeybindingDesc(*command.keybinding) + " " : ""_s) +
                         command.name, labelColor)));
               }
-              drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 260, false);
+              drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 260, false);
          }))));
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
@@ -1679,7 +1682,7 @@ SGuiElem GuiBuilder::drawRightPlayerInfo(const PlayerInfo& info) {
                       WL(button, buttonFun),
                       WL(label, getText(getText(action)))));
               }
-              drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 200, false);
+              drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 200, false);
               if (ret)
                 callbacks.input({UserInputId::TEAM_MEMBER_ACTION, TeamMemberActionInfo{*ret, memberId}});
         }),
@@ -2048,7 +2051,7 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
       if (!elem.notArtifact)
         lines.addElem(WL(label, "Upgraded items can only be crafted by a craftsman of legendary skills.",
             Renderer::smallTextSize(), Color::LIGHT_GRAY));
-      drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 450, false);
+      drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 450, false);
       if (ret)
         callbacks.input({UserInputId::WORKSHOP_UPGRADE, *ret});
   });
@@ -2075,6 +2078,21 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
     return WL(standardButton, line.buildHorizontalList(), std::move(buttonHandler));
   else
     return WL(buttonLabel, "upgrade", std::move(buttonHandler));
+}
+
+SGuiElem GuiBuilder::drawItemCountButton(const CollectiveInfo::QueuedItemInfo& elem) {
+  auto buttonHandler = WL(buttonRect, [=] (Rectangle bounds) {
+      auto lines = WL(getListBuilder, legendLineHeight);
+      disableTooltip = true;
+      DestructorFunction dFun([this] { disableTooltip = false; });
+      bool exit = false;
+      SyncQueue<optional<int>> res;
+      lines.addElem(drawChooseNumberMenu(res, "Change the number of items.", Range(0, 100), elem.itemInfo.number, 1), 200);
+      drawMiniMenu(lines.buildVerticalList(), [&]{return !res.isEmpty(); }, bounds.bottomLeft(), 450, false);
+      if (auto cnt = res.pop())
+        callbacks.input({UserInputId::WORKSHOP_CHANGE_COUNT, WorkshopCountInfo{elem.itemIndex, elem.itemInfo.number, *cnt}});
+  });
+  return WL(buttonLabel, "+/-", std::move(buttonHandler));
 }
 
 SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopInfo& info,
@@ -2123,6 +2141,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
     auto& elem = queued[i];
     auto line = WL(getListBuilder);
     auto color = elem.paid ? Color::WHITE : Color::RED;
+    line.addElem(WL(viewObject, elem.itemInfo.viewId), 35);
     auto label = WL(label, elem.itemInfo.name, color);
     if (elem.itemInfo.ingredient)
       label = WL(getListBuilder)
@@ -2130,19 +2149,16 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
           .addElemAuto(WL(label, " from ", color))
           .addElemAuto(WL(viewObject, elem.itemInfo.ingredient->viewId))
           .buildHorizontalList();
-    line.addElem(WL(topMargin, 3, WL(leftMargin, -16, WL(stack,
-        WL(button, getButtonCallback({UserInputId::WORKSHOP_CHANGE_COUNT,
-            WorkshopCountInfo{ elem.itemIndex, elem.itemInfo.number, 0 }})),
-        WL(labelUnicodeHighlight, u8"✘", Color::RED)))), 1);
-    line.addMiddleElem(WL(getListBuilder)
-        .addElem(WL(viewObject, elem.itemInfo.viewId), 35)
-        .addMiddleElem(WL(renderInBounds, std::move(label)))
-        .buildHorizontalList());
-    if ((!elem.available.empty() || !elem.added.empty()) && elem.maxUpgrades > 0) {
+    line.addMiddleElem(WL(renderInBounds, std::move(label)));
+    if ((!elem.available.empty() || !elem.added.empty()) && elem.maxUpgrades > 0)
       line.addBackElemAuto(WL(leftMargin, 7, drawItemUpgradeButton(elem)));
-    }
     if (elem.itemInfo.price)
       line.addBackElem(WL(alignment, GuiFactory::Alignment::RIGHT, drawCost(*elem.itemInfo.price)), 80);
+    line.addBackElemAuto(WL(leftMargin, 7, drawItemCountButton(elem)));
+    line.addBackElemAuto(WL(topMargin, 3, WL(leftMargin, 7, WL(stack,
+        WL(button, getButtonCallback({UserInputId::WORKSHOP_CHANGE_COUNT,
+            WorkshopCountInfo{ elem.itemIndex, elem.itemInfo.number, 0 }})),
+        WL(labelUnicodeHighlight, u8"✘", Color::RED)))));
     lines2.addElem(WL(stack,
         WL(bottomMargin, 5,
             WL(progressBar, Color::DARK_GREEN.transparency(128), elem.productionState)),
@@ -3139,7 +3155,7 @@ SGuiElem GuiBuilder::drawQuartersButton(const PlayerInfo& minion, const vector<V
                     .addElem(WL(label, toString(i + 1)))
                     .buildHorizontalList()));
           }
-          drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), 50, true);
+          drawMiniMenu(tasks.buildVerticalList(), exit, bounds.bottomLeft(), 50, true);
         }));
 }
 
@@ -3199,7 +3215,7 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
           .addBackSpace(99)
           .buildHorizontalList());
     }
-    drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), 362, true);
+    drawMiniMenu(tasks.buildVerticalList(), exit, bounds.bottomLeft(), 362, true);
     callbacks.input({UserInputId::CREATURE_TASK_ACTION, retAction});
   };
 }
@@ -3255,7 +3271,7 @@ function<void(Rectangle)> GuiBuilder::getAIButtonFun(const PlayerInfo& minion) {
             .buildHorizontalList(),
         WL(button,
             [&]{ retAction.override = !retAction.override; }, true)));
-    drawMiniMenu(std::move(tasks), exit, bounds.bottomLeft(), 362, true);
+    drawMiniMenu(tasks.buildVerticalList(), exit, bounds.bottomLeft(), 362, true);
     callbacks.input({UserInputId::AI_TYPE, retAction});
   };
 }
@@ -4137,7 +4153,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
                   legendLineHeight * 2 / 3);
             lines.addSpace(legendLineHeight / 3);
           }
-          drawMiniMenu(std::move(lines), exit, bounds.bottomLeft(), 350, true);
+          drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 350, true);
       }))));
   centerLines.addSpace(10);
   centerLines.addElem(WL(centerHoriz,
@@ -4544,7 +4560,7 @@ SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textCo
             maxWidth = max(maxWidth, *elem->getPreferredWidth());
             tasks.addElem(WL(centerHoriz, std::move(elem)));
           }
-          drawMiniMenu(std::move(tasks), exit, Vec2(bounds.middle().x - maxWidth / 2 - 15, bounds.bottom()),
+          drawMiniMenu(tasks.buildVerticalList(), exit, Vec2(bounds.middle().x - maxWidth / 2 - 15, bounds.bottom()),
               maxWidth, false);
         }));
 }

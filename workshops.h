@@ -24,12 +24,12 @@ class Workshops {
     const vector<Item>& getOptions() const;
     const vector<QueuedItem>& getQueued() const;
     struct WorkshopResult {
-      vector<PItem> items;
+      PItem item;
       bool wasUpgraded;
       bool applyImmediately;
     };
     WorkshopResult addWork(Collective*, double workAmount, double skillAmount, double morale);
-    void queue(Collective*, int index);
+    void queue(Collective*, int index, optional<int> queueIndex = none);
     vector<PItem> unqueue(Collective*, int index);
     void changeNumber(int index, int number);
     bool isIdle(const Collective*, double skillAmount, double morale) const;

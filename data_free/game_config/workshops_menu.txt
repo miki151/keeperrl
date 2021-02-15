@@ -3,7 +3,7 @@
 {
   "WORKSHOP"
   {
-      {item = {"Club"}    work = 3 cost = "WOOD" 10    tech = none      batchSize = 1    tutorialHighlight = SCHEDULE_CLUB}
+      {item = {"Club"}    work = 3 cost = "WOOD" 10    tech = none      tutorialHighlight = SCHEDULE_CLUB}
       {{"LeatherArmor"}          6        "WOOD" 20}
       {{"LeatherHelm"}           1        "WOOD" 6}
       {{"LeatherBoots"}          2        "WOOD" 10}
@@ -73,11 +73,11 @@
       {item = {Potion Permanent POISON_RESISTANT} work = 20 cost = "GOLD" 80 requireIngredient = "hydra_tongue" }
       {item = {Potion Name "mass insanity" Area 20 Lasting INSANITY}
           work = 50 cost = "GOLD" 666 requireIngredient = "devil_horns" }
-      {{"GoldPiece"}                           5        "IRON" 30      "alchemical conversion"       10}
-      {{"WoodPlank"}                           5        "GOLD" 10      "alchemical conversion"       10}
-      {{"IronOre"}                             5        "GOLD" 10      "alchemical conversion"       10}
-      {{"AdaOre"}                              5        "GOLD" 40      "alchemical conversion"       10}
-      {{"Rock"}                                5        "GOLD" 10      "alchemical conversion"       10}
+      {{"GoldPiece"}                           5        "IRON" 3      "alchemical conversion"}
+      {{"WoodPlank"}                           5        "GOLD" 1      "alchemical conversion"}
+      {{"IronOre"}                             5        "GOLD" 1      "alchemical conversion"}
+      {{"AdaOre"}                              5        "GOLD" 4      "alchemical conversion"}
+      {{"Rock"}                                5        "GOLD" 1      "alchemical conversion"}
   }
   
   "JEWELER"

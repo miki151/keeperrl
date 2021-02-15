@@ -42,9 +42,9 @@ void Workshops::Type::checkDebtConsistency() const {
     CHECK(getValueMaybe(nowDebt, elem.first).value_or(0) == elem.second);
 }
 
-void Workshops::Type::queue(Collective* collective, int index) {
+void Workshops::Type::queue(Collective* collective, int index, optional<int> queueIndex) {
   addDebt(options[index].cost);
-  queued.push_back(QueuedItem { options[index], index, false});
+  queued.insert(queueIndex.value_or(queued.size()), QueuedItem { options[index], index, false});
   updateState(collective);
 }
 
@@ -111,12 +111,11 @@ auto Workshops::Type::addWork(Collective* collective, double amount, double skil
       }
       product.state += amount * prodMult / product.item.workNeeded;
       if (product.state >= 1) {
-        vector<PItem> ret = product.item.type.get(product.item.batchSize, collective->getGame()->getContentFactory());
+        auto ret = product.item.type.get(collective->getGame()->getContentFactory());
         bool wasUpgraded = false;
         for (auto& rune : product.runes) {
           if (auto& upgradeInfo = rune->getUpgradeInfo())
-            for (auto& item : ret)
-              item->applyPrefix(*upgradeInfo->prefix, collective->getGame()->getContentFactory());
+            ret->applyPrefix(*upgradeInfo->prefix, collective->getGame()->getContentFactory());
           wasUpgraded = !product.item.notArtifact;
         }
         bool applyImmediately = product.item.applyImmediately;
@@ -128,7 +127,7 @@ auto Workshops::Type::addWork(Collective* collective, double amount, double skil
     }
   }
   checkDebtConsistency();
-  return {{}, false};
+  return WorkshopResult{{}, false, false};
 }
 
 const vector<Workshops::QueuedItem>& Workshops::Type::getQueued() const {
