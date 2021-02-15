@@ -74,8 +74,8 @@
   creatureId = { "NECROMANCER" "NECROMANCER_F" }
   tribeAlignment = EVIL
   immigrantGroups = {"necromancer"}
-  technology = { "embalming" "advanced embalming" "sorcery" "advanced sorcery" "master sorcery" "iron working"
-      "distillation"
+  technology = { "embalming" "advanced embalming" "master embalming" "sorcery" "advanced sorcery" "master sorcery"
+      "iron working" "distillation"
   }
   initialTech = {  }
   buildingGroups = {
