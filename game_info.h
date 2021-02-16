@@ -193,6 +193,13 @@ class PlayerInfo {
   HASH_ALL(attributes, skills, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles, bodyParts, bodyPartLimit, canExitControlMode)
 };
 
+struct ImmigrantCreatureInfo {
+  string HASH(name);
+  ViewIdList HASH(viewId);
+  vector<AttributeInfo> HASH(attributes);
+  HASH_ALL(name, viewId, attributes);
+};
+
 struct ImmigrantDataInfo {
   ImmigrantDataInfo();
   STRUCT_DECLARATIONS(ImmigrantDataInfo)
@@ -205,10 +212,8 @@ struct ImmigrantDataInfo {
   };
   vector<SpecialTraitInfo> HASH(specialTraits);
   optional<pair<ViewId, int>> HASH(cost);
-  string HASH(name);
-  ViewIdList HASH(viewId);
-  vector<AttributeInfo> HASH(attributes);
   optional<int> HASH(count);
+  ImmigrantCreatureInfo HASH(creature);
   optional<TimeInterval> HASH(timeLeft);
   int HASH(id);
   enum AutoState { AUTO_REJECT, AUTO_ACCEPT};
@@ -278,6 +283,7 @@ class CollectiveInfo {
     double HASH(productionState);
     bool HASH(paid);
     ItemInfo HASH(itemInfo);
+    optional<ImmigrantCreatureInfo> HASH(creatureInfo);
     struct UpgradeInfo {
       ViewId HASH(viewId);
       string HASH(name);
@@ -290,10 +296,15 @@ class CollectiveInfo {
     int HASH(maxUpgrades);
     int HASH(itemIndex);
     bool HASH(notArtifact);
-    HASH_ALL(productionState, paid, itemInfo, available, added, maxUpgrades, itemIndex, notArtifact)
+    HASH_ALL(productionState, paid, itemInfo, creatureInfo, available, added, maxUpgrades, itemIndex, notArtifact)
+  };
+  struct OptionInfo {
+    ItemInfo HASH(itemInfo);
+    optional<ImmigrantCreatureInfo> HASH(creatureInfo);
+    HASH_ALL(itemInfo, creatureInfo)  
   };
   struct ChosenWorkshopInfo {
-    vector<ItemInfo> HASH(options);
+    vector<OptionInfo> HASH(options);
     vector<QueuedItemInfo> HASH(queued);
     int HASH(index);
     HASH_ALL(index, options, queued)

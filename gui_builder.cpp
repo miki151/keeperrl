@@ -647,11 +647,11 @@ SGuiElem GuiBuilder::drawImmigrantInfo(const ImmigrantDataInfo& info) {
     }
   lines.addElem(
       WL(getListBuilder)
-          .addElemAuto(WL(label, capitalFirst(info.name)))
+          .addElemAuto(WL(label, capitalFirst(info.creature.name)))
           .addSpace(100)
           .addBackElemAuto(info.cost ? drawCost(*info.cost) : WL(empty))
           .buildHorizontalList());
-  lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(info.attributes)));
+  lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(info.creature.attributes)));
   if (info.timeLeft)
     lines.addElem(WL(label, "Turns left: " + toString(info.timeLeft)));
   for (auto& req : info.specialTraits)
@@ -929,7 +929,7 @@ SGuiElem GuiBuilder::drawImmigrationOverlay(const vector<ImmigrantDataInfo>& imm
             WL(setWidth, elemWidth, WL(centerVert, WL(centerHoriz, WL(bottomMargin, -3,
                 WL(viewObject, ViewId("round_shadow"), 1, Color(255, 255, 255, 160)))))),
             WL(setWidth, elemWidth, WL(centerVert, WL(centerHoriz, WL(bottomMargin, 5,
-                elem.count ? drawMinionAndLevel(elem.viewId, *elem.count, 1) : WL(viewObject, elem.viewId)))))
+                elem.count ? drawMinionAndLevel(elem.creature.viewId, *elem.count, 1) : WL(viewObject, elem.creature.viewId)))))
     )));
   }
   if (drawHelp)
@@ -961,7 +961,7 @@ SGuiElem GuiBuilder::drawImmigrationHelp(const CollectiveInfo& info) {
   auto lines = WL(getListBuilder, elemWidth);
   auto line = WL(getListBuilder, elemWidth);
   for (auto& elem : info.allImmigration) {
-    auto icon = WL(viewObject, elem.viewId, iconScale);
+    auto icon = WL(viewObject, elem.creature.viewId, iconScale);
     if (elem.autoState)
       switch (*elem.autoState) {
         case ImmigrantAutoState::AUTO_ACCEPT:
@@ -1154,11 +1154,22 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   return WL(margins, std::move(elem), leftMargin, 0, 0, 0);
 }
 
-SGuiElem GuiBuilder::getTooltip(const vector<string>& text, int id) {
+SGuiElem GuiBuilder::getTooltip(const vector<string>& text, int id, milliseconds delay) {
   return cache->get(
-      [this](const vector<string>& text) {
-        return WL(conditional, WL(tooltip, text), [this] { return !disableTooltip;}); },
+      [this, delay](const vector<string>& text) {
+        return WL(conditional, WL(tooltip, text, delay), [this] { return !disableTooltip;}); },
       id, text);
+}
+
+SGuiElem GuiBuilder::drawImmigrantCreature(const ImmigrantCreatureInfo& creature) {
+  return WL(getListBuilder, legendLineHeight)
+    .addElem(
+        WL(getListBuilder)
+            .addElem(WL(viewObject, creature.viewId), 35)
+            .addElemAuto(WL(label, creature.name))
+            .buildHorizontalList())
+    .addElemAuto(drawAttributesOnPage(drawPlayerAttributes(creature.attributes)))
+    .buildVerticalList();
 }
 
 SGuiElem GuiBuilder::getTooltip2(SGuiElem elem, GuiFactory::PositionFun fun) {
@@ -2103,8 +2114,25 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
   auto& queued = info.queued;
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(label, "Available:", Color::YELLOW));
+  auto thisTooltip = [&] (const vector<string>& desc, optional<string> warning,
+      const optional<ImmigrantCreatureInfo>& creatureInfo, int index) {
+    if (creatureInfo) {
+      return cache->get(
+          [this](const ImmigrantCreatureInfo& creature, const optional<string>& text) {
+            auto lines = WL(getListBuilder, legendLineHeight)
+                .addElemAuto(drawImmigrantCreature(creature));
+            if (text)
+              lines.addElem(WL(label, *text));
+            return WL(conditional, WL(tooltip2, WL(miniWindow, WL(margins, lines.buildVerticalList(), 15)),
+                [](const Rectangle& r) {return r.bottomLeft();}),
+                [this] { return !disableTooltip;}); },
+          index, *creatureInfo, warning);
+    }
+    else
+      return getTooltip(warning ? concat(desc, {*warning}) : desc, THIS_LINE + index, milliseconds{0});
+  };
   for (int itemIndex : All(options)) {
-    auto& elem = options[itemIndex];
+    auto& elem = options[itemIndex].itemInfo;
     if (elem.hidden)
       continue;
     auto line = WL(getListBuilder);
@@ -2124,14 +2152,15 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
       guiElem = WL(stack, WL(tutorialHighlight), std::move(guiElem));
     if (elem.unavailable) {
       CHECK(!elem.unavailableReason.empty());
-      guiElem = WL(stack, getTooltip(concat({elem.unavailableReason}, elem.description), THIS_LINE + itemIndex), std::move(guiElem));
+      guiElem = WL(stack, thisTooltip(elem.description, elem.unavailableReason, options[itemIndex].creatureInfo,
+          itemIndex + THIS_LINE), std::move(guiElem));
     }
     else
       guiElem = WL(stack,
           WL(uiHighlightMouseOver),
           std::move(guiElem),
           WL(button, getButtonCallback({UserInputId::WORKSHOP_ADD, itemIndex})),
-          getTooltip({elem.description}, THIS_LINE + itemIndex)
+          thisTooltip({elem.description}, none, options[itemIndex].creatureInfo, itemIndex + THIS_LINE)
       );
     lines.addElem(WL(rightMargin, rightElemMargin, std::move(guiElem)));
   }
@@ -2163,7 +2192,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
         WL(bottomMargin, 5,
             WL(progressBar, Color::DARK_GREEN.transparency(128), elem.productionState)),
         WL(rightMargin, rightElemMargin, line.buildHorizontalList()),
-        getTooltip(elem.itemInfo.description, THIS_LINE + i)
+        thisTooltip({}, none, queued[i].creatureInfo, i + THIS_LINE)
     ));
   }
   return WL(preferredSize, 940, 600,

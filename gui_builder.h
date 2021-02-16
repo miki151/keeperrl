@@ -161,8 +161,9 @@ class GuiBuilder {
   Options* options;
   Callbacks callbacks;
   SGuiElem getHintCallback(const vector<string>&);
-  SGuiElem getTooltip(const vector<string>&, int id);
+  SGuiElem getTooltip(const vector<string>&, int id, milliseconds delay = milliseconds{700});
   SGuiElem getTooltip2(SGuiElem, GuiFactory::PositionFun);
+  SGuiElem drawImmigrantCreature(const ImmigrantCreatureInfo&);
   vector<SGuiElem> drawPlayerAttributes(const vector<AttributeInfo>&);
   vector<SGuiElem> drawPlayerAttributes(const ViewObject::CreatureAttributes&);
   SGuiElem drawBestAttack(const BestAttack&);

@@ -263,4 +263,4 @@ vector<AttributeInfo> AttributeInfo::fromCreature(const Creature* c) {
 
 STRUCT_IMPL(ImmigrantDataInfo)
 ImmigrantDataInfo::ImmigrantDataInfo() {}
-HASH_DEF(ImmigrantDataInfo, requirements, info, name, viewId, attributes, count, timeLeft, id, autoState, cost, generatedTime, keybinding, tutorialHighlight, specialTraits)
+HASH_DEF(ImmigrantDataInfo, requirements, info, creature, count, timeLeft, id, autoState, cost, generatedTime, keybinding, tutorialHighlight, specialTraits)

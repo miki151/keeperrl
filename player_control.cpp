@@ -98,6 +98,7 @@
 #include "automaton_part.h"
 #include "shortest_path.h"
 #include "scripted_ui_data.h"
+#include "item_types.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -1132,7 +1133,31 @@ struct WorkshopOptionInfo {
   ItemInfo itemInfo;
   int optionIndex;
   optional<pair<Item*, Position>> ingredient;
+  optional<ImmigrantCreatureInfo> creatureInfo;
 };
+
+static ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature* c) {
+  return ImmigrantCreatureInfo {
+    c->getName().bare(),
+    c->getViewObject().getViewIdList(),
+    AttributeInfo::fromCreature(c)
+  };
+}
+
+static optional<ImmigrantCreatureInfo> getImmigrantCreatureInfo(ContentFactory* factory, const ItemType& type) {
+  static map<CreatureId, PCreature> creatureStats;
+  auto getStats = [&](CreatureId id) -> Creature* {
+    if (!creatureStats[id]) {
+      creatureStats[id] = factory->getCreatures().fromId(id, TribeId::getDarkKeeper());
+    }
+    return creatureStats[id].get();
+  };
+  if (auto info = type.type->getReferenceMaybe<ItemTypes::Assembled>()) {
+    auto c = getStats(info->creature);
+    return getImmigrantCreatureInfo(c);
+  }
+  return none;
+}
 
 vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions() const {
   vector<WorkshopOptionInfo> ret;
@@ -1151,16 +1176,18 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions() const {
           }
       }
     else
-      ret.push_back({itemInfo, i, none});
+      ret.push_back({itemInfo, i, none, getImmigrantCreatureInfo(getGame()->getContentFactory(), option.type)});
   }
   return ret;
 }
 
 CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQueuedItem& item, int cnt,
     int itemIndex, bool hasLegendarySkill) const {
+  auto contentFactory = getGame()->getContentFactory();
   CollectiveInfo::QueuedItemInfo ret {item.state,
         item.paid && (item.runes.empty() || item.item.notArtifact || hasLegendarySkill),
-        getWorkshopItem(item.item, cnt), {}, {}, 0, itemIndex, item.item.notArtifact};
+        getWorkshopItem(item.item, cnt), getImmigrantCreatureInfo(contentFactory, item.item.type),
+        {}, {}, 0, itemIndex, item.item.notArtifact};
   if (!item.paid)
     ret.itemInfo.description.push_back("Cannot afford item");
   for (auto& it : getItemUpgradesFor(item.item)) {
@@ -1228,7 +1255,8 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   }
   if (chosenWorkshop)
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
-        getWorkshopOptions().transform([](auto& option) { return option.itemInfo; }),
+        getWorkshopOptions().transform([](auto& option) {
+            return CollectiveInfo::OptionInfo{option.itemInfo, option.creatureInfo}; }),
         getQueuedWorkshopItems(),
         index
     };
@@ -1304,9 +1332,8 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
       requirements.push_back("Requires conquering " + stack.collective->getName()->full);
     ret.push_back(ImmigrantDataInfo());
     ret.back().requirements = requirements;
-    ret.back().name = c->getName().bare() + " (prisoner)";
-    ret.back().viewId = c->getViewObject().getViewIdList();
-    ret.back().attributes = AttributeInfo::fromCreature(c);
+    ret.back().creature = getImmigrantCreatureInfo(c);
+    ret.back().creature.name += " (prisoner)";
     ret.back().count = stack.creatures.size() == 1 ? none : optional<int>(stack.creatures.size());
     ret.back().timeLeft = c->getTimeRemaining(LastingEffect::STUNNED);
     ret.back().id = index;
@@ -1415,9 +1442,11 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     info.immigration.back().specialTraits = candidate.getSpecialTraits().transform(
         [&](const auto& trait){ return getSpecialTraitInfo(trait, this->getGame()->getContentFactory()); });
     info.immigration.back().cost = getCostObj(candidate.getCost());
-    info.immigration.back().name = name;
-    info.immigration.back().viewId = c->getViewObject().getViewIdList();
-    info.immigration.back().attributes = AttributeInfo::fromCreature(c);
+    info.immigration.back().creature = ImmigrantCreatureInfo {
+        name,
+        c->getViewObject().getViewIdList(),
+        AttributeInfo::fromCreature(c)
+    };
     info.immigration.back().count = count == 1 ? none : optional<int>(count);
     info.immigration.back().timeLeft = timeRemaining;
     info.immigration.back().id = elem.first;
@@ -1505,9 +1534,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     info.allImmigration.back().requirements = requirements;
     info.allImmigration.back().info = infoLines;
     info.allImmigration.back().cost = costObj;
-    info.allImmigration.back().name = c->getName().stack();
-    info.allImmigration.back().viewId = c->getViewObject().getViewIdList();
-    info.allImmigration.back().attributes = AttributeInfo::fromCreature(c);
+    info.allImmigration.back().creature = getImmigrantCreatureInfo(c);
     info.allImmigration.back().id = elem.index();
     info.allImmigration.back().autoState = collective->getImmigration().getAutoState(elem.index());
   }
@@ -1515,8 +1542,11 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     info.allImmigration.push_back(ImmigrantDataInfo());
     info.allImmigration.back().requirements = {"Requires 2 prison tiles", "Requires knocking out a hostile creature"};
     info.allImmigration.back().info = {"Supplies your imp force", "Can be converted to your side using torture"};
-    info.allImmigration.back().name = "prisoner";
-    info.allImmigration.back().viewId = {ViewId("prisoner")};
+    info.allImmigration.back().creature = ImmigrantCreatureInfo {
+        "prisoner",
+        {ViewId("prisoner")},
+        {}
+    };
     info.allImmigration.back().id =-1;
   }
 }
