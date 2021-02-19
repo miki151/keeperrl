@@ -4,6 +4,13 @@
 #include "item.h"
 #include "view_object.h"
 
+static string getItemName(Item* item, bool plural) {
+  auto name = item->getName(plural);
+  if (name.size() > 30)
+    return item->getShortName(nullptr, plural);
+  return name;
+}
+
 WorkshopItem WorkshopItemCfg::get(const ContentFactory* factory) const {
   // for some reason removing this line causes a linker error, probably a compiler bug
   auto t = tech;
@@ -14,8 +21,8 @@ WorkshopItem WorkshopItemCfg::get(const ContentFactory* factory) const {
   description.append(elem->getDescription(factory));
   return WorkshopItem {
     item,
-    elem->getName(),
-    elem->getName(true),
+    getItemName(elem.get(), false),
+    getItemName(elem.get(), true),
     elem->getViewObject().getViewIdList(),
     cost,
     std::move(description),
