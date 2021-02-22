@@ -4147,8 +4147,8 @@
 "ABOMINATION_PLAYER" inherit "ABOMINATION"
   {
     attr = {
-      DAMAGE 40
-      DEFENSE 30 
+      DAMAGE 15
+      DEFENSE 15 
     }
   }
 "GOBLIN_KEEPER"
