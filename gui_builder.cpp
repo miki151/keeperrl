@@ -3219,7 +3219,7 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
                 return 0;
             }, {WL(empty), WL(labelUnicodeHighlight, u8"✘", Color::RED),
                  WL(labelUnicodeHighlight, u8"✓", Color::GREEN)}));
-      auto lockButton2 = !!task.locked
+      auto lockButton2 = task.canLock
             ? WL(rightMargin, 20, WL(conditional, WL(labelUnicodeHighlight, u8"✘", Color::RED),
                  WL(labelUnicodeHighlight, u8"✘", Color::LIGHT_GRAY), [&retAction, task] {
                       return retAction.lockGroup.contains(task.task) ^ task.lockedForGroup;}))
