@@ -392,10 +392,10 @@ static void setBodyPartUpgrade(Item* item, BodyPart part, Effect upgrade, const 
 }
 
 static Effect getDefaultBodyPartUpgrade() {
-  return Effect(Effects::ChooseRandom({
+  return Effect(Effects::Description("Increase either damage or defense by 1", Effect(Effects::ChooseRandom({
       Effect(Effects::IncreaseAttr{AttrType::DAMAGE, 1}),
       Effect(Effects::IncreaseAttr{AttrType::DEFENSE, 1})
-  }));
+  }))));
 }
 
 bool Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
