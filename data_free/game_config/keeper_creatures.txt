@@ -88,6 +88,7 @@
   credit = { "CORPSE" 20 }
   maxPopulation = 1
   flags = { "abomination_upgrades" }
+  prisoners = false
 # Special traits example, all traits are added
 #   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
 }
