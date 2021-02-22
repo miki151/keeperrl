@@ -201,7 +201,7 @@
         work = 20 cost = "CORPSE" 2 applyImmediately = true notArtifact = true}
       { item = {Assembled{ "VAMPIRE" "vampire" {NO_LIMIT FIGHTER} BALSAM 3}}
         work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true}
-      { item = {Assembled{ "ABOMINATION_PLAYER" "abomination" {NO_LIMIT FIGHTER} BODY_PART 99}}
+      { item = {Assembled{ "ABOMINATION_PLAYER" "abomination" {NO_LIMIT FIGHTER} BODY_PART 199}}
         work = 40 cost = "CORPSE" 10 applyImmediately = true notArtifact = true}
   }
   "LABORATORY"
