@@ -323,10 +323,16 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const optional<PhylacteryInfo>& getPhylactery() const;
   void onEvent(const GameEvent&);
 
+  enum class SpeedModifier {
+    SLOW,
+    NORMAL,
+    FAST
+  };
+
   private:
 
   CreatureAction moveTowards(Position, bool away, NavigationFlags);
-  optional<MovementInfo> spendTime(TimeInterval = 1_visible, bool withSpeedModifier = false);
+  optional<MovementInfo> spendTime(TimeInterval = 1_visible, SpeedModifier = SpeedModifier::NORMAL);
   int canCarry(const vector<Item*>&) const;
   TribeSet getFriendlyTribes() const;
   void addMovementInfo(MovementInfo);

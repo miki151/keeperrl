@@ -343,25 +343,23 @@ EnumSet<CreatureStatus>& Creature::getStatus() {
   return statuses;
 }
 
-optional<MovementInfo> Creature::spendTime(TimeInterval t, bool withSpeedModifier) {
+optional<MovementInfo> Creature::spendTime(TimeInterval t, SpeedModifier speedModifier) {
   PROFILE;
   if (WModel m = position.getModel()) {
     MovementInfo ret(Vec2(0, 0), *getLocalTime(), *getLocalTime() + t, 0, MovementInfo::MOVE);
     lastMoveCounter = ret.moveCounter = position.getModel()->getMoveCounter();
     if (!isDead()) {
-      if (withSpeedModifier && isAffected(LastingEffect::SPEED) && t == 1_visible) {
+      if (speedModifier == SpeedModifier::FAST && t == 1_visible) {
         if (m->getTimeQueue().hasExtraMove(this))
           ret.tBegin += 0.5;
         else
           ret.tEnd -= 0.5;
         m->getTimeQueue().makeExtraMove(this);
       } else {
-        if (withSpeedModifier) {
-          if (isAffected(LastingEffect::SPEED))
-            t = t - 1_visible;
-          if (isAffected(LastingEffect::SLOWED))
-            t *= 2;
-        }
+        if (speedModifier == SpeedModifier::FAST)
+          t = t - 1_visible;
+        if (speedModifier == SpeedModifier::SLOW)
+          t *= 2;
         m->getTimeQueue().increaseTime(this, t);
       }
     }
@@ -389,6 +387,14 @@ CreatureAction Creature::forceMove(Position pos) const {
 
 CreatureAction Creature::move(Vec2 dir) const {
   return move(getPosition().plus(dir), none);
+}
+
+static Creature::SpeedModifier getSpeedModifier(const Creature* c) {
+  bool slow = c->isAffected(LastingEffect::SLOWED);
+  bool fast = c->isAffected(LastingEffect::SPEED);
+  if (slow)
+    return fast ? Creature::SpeedModifier::NORMAL : Creature::SpeedModifier::SLOW;
+  return fast ? Creature::SpeedModifier::FAST : Creature::SpeedModifier::NORMAL;
 }
 
 CreatureAction Creature::move(Position pos, optional<Position> nextPos) const {
@@ -428,7 +434,7 @@ CreatureAction Creature::move(Position pos, optional<Position> nextPos) const {
       you(MsgType::CRAWL, getPosition().getName());
       timeSpent = 3_visible;
     }
-    self->addMovementInfo(self->spendTime(timeSpent, true)->setDirection(direction));
+    self->addMovementInfo(self->spendTime(timeSpent, getSpeedModifier(self))->setDirection(direction));
   });
 }
 

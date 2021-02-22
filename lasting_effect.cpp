@@ -41,8 +41,6 @@ static optional<LastingEffect> getMutuallyExclusiveImpl(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::PANIC:
       return LastingEffect::RAGE;
-    case LastingEffect::SPEED:
-      return LastingEffect::SLOWED;
     case LastingEffect::PEACEFULNESS:
       return LastingEffect::INSANITY;
     case LastingEffect::FROZEN:
@@ -96,8 +94,6 @@ void LastingEffects::runTests() {
   CHECK(!getPreventing(LastingEffect::POISON_RESISTANT));
   CHECK(!getPreventedBy(LastingEffect::POISON));
   CHECK(getPreventedBy(LastingEffect::POISON_RESISTANT) == LastingEffect::POISON);
-  CHECK(getPreventing(LastingEffect::SLOWED) == LastingEffect::SPEED);
-  CHECK(getPreventing(LastingEffect::SPEED) == LastingEffect::SLOWED);
 }
 
 void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
