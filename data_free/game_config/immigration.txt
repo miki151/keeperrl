@@ -43,7 +43,7 @@
 "dark_keeper"
 {
     {
-      ids = { "GOBLIN" }
+      ids = { "GOBLIN_ARTIFICER" }
       traits = { FIGHTER NO_AUTO_EQUIPMENT }
       frequency = 0.7
       requirements = {
@@ -824,7 +824,7 @@
       }
     }
     {
-      ids = { "GOBLIN" }
+      ids = { "GOBLIN_ARTIFICER" }
       frequency = 0.1
       traits = { NO_AUTO_EQUIPMENT }
       consumeIds = true

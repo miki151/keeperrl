@@ -243,7 +243,7 @@
 { "bear" "N" ColorId BROWN }
 { "polar_bear" "N" ColorId LIGHT_GRAY }
 { "bat" "b" ColorId DARK_GRAY }
-{ "goblin" "o" ColorId GREEN }
+{ "goblin_artificer" "o" ColorId GREEN }
 { "goblin_keeper1" "o" ColorId PURPLE }
 { "goblin_keeper2" "o" ColorId PURPLE }
 { "goblin_keeper3" "o" ColorId PURPLE }

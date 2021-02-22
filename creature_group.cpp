@@ -89,7 +89,7 @@ CreatureGroup CreatureGroup::splashLeader(TribeId tribe) {
 }
 
 CreatureGroup CreatureGroup::splashMonsters(TribeId tribe) {
-  return CreatureGroup(tribe, { CreatureId("GNOME"), CreatureId("GOBLIN"), CreatureId("OGRE"),
+  return CreatureGroup(tribe, { CreatureId("GNOME"), CreatureId("GOBLIN_ARTIFICER"), CreatureId("OGRE"),
       CreatureId("SPECIAL_HLBN"), CreatureId("SPECIAL_BLBW"), CreatureId("WOLF"), CreatureId("CAVE_BEAR"),
       CreatureId("BAT"), CreatureId("WEREWOLF"), CreatureId("ZOMBIE"), CreatureId("VAMPIRE"), CreatureId("DOPPLEGANGER"),
       CreatureId("SUCCUBUS")},

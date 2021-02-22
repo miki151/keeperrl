@@ -2552,9 +2552,9 @@
       { "Sword"}
     }
   }
-"GOBLIN"
+"GOBLIN_ARTIFICER"
   {
-    viewId = { "goblin" }
+    viewId = { "goblin_artificer" }
     attr = {
       DAMAGE 12
       DEFENSE 13 
@@ -2575,7 +2575,7 @@
       "JEWELER" 0.6
     }
     name = {
-      name = "goblin"
+      name = "goblin artificer"
       firstNameGen = "ORC"
     }
     hatedByEffect = HATE_GREENSKINS
@@ -4175,14 +4175,32 @@
       { type = "LeatherBoots" chance = 0.3 }
     }
   }
-"GOBLIN_MATRON" inherit "GOBLIN"
+"GOBLIN_MATRON"
   {
     viewId = { "goblin_matron" }
-    gender = FEMALE
-    aiType = RANGED
-    skills = append {
+    attr = {
+      DAMAGE 12
+      DEFENSE 13 
+    }
+    body = {
+      type = Humanoid MEDIUM
+    }
+    chatReactionFriendly = "talks about crafting"
+    chatReactionHostile = "\"Die!\""
+    skills = {
+      "LABORATORY" 0.3
+      "WORKSHOP" 0.6
+      "FORGE" 0.6
+      "JEWELER" 0.6
       "DIGGING" 0.5
     }
+    hatedByEffect = HATE_GREENSKINS
+    inventory = {
+      { "Club"}
+      { type = "LeatherBoots" chance = 0.3 }
+    }
+    gender = FEMALE
+    aiType = RANGED
     name = {
       name = "matron"
       firstNameGen = "ORC"
