@@ -75,7 +75,7 @@
   }
   whiteKeeperBaseEnemies = {
     { id = "DARK_ELF_CAVE" }
-    { id = "ORC_CAVE" }
+    { id = "GOBLIN_CAVE" }
     { id = "COTTAGE_BANDITS" }
     { id = "ANTS_CLOSED_SMALL" }
     { id = "ADOXIE_VAULT" }
@@ -129,7 +129,7 @@
   }
   whiteKeeperBaseEnemies = {
     { id = "DARK_ELF_CAVE" }
-    { id = "COTTAGE_ORCS" }
+    { id = "COTTAGE_GOBLINS" }
     { id = "ANTS_CLOSED_SMALL" }
     { id = "ADOXIE_VAULT" }
     { id = "WITCH" probability = 0.2 }

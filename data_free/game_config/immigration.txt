@@ -57,7 +57,7 @@
       }
     }
     {
-      ids = { "ORC" }
+      ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER }
       frequency = 0.7
       requirements = {
@@ -89,7 +89,7 @@
       }
     }
     {
-      ids = { "ORC_MAGE" }
+      ids = { "GOBLIN_WIZARD" }
       traits = { FIGHTER }
       frequency = 0.3
       requirements = {
@@ -107,11 +107,11 @@
       }
     }
     {
-      ids = { "ORC_HEALER" }
+      ids = { "GOBLIN_PRIEST" }
       traits = { FIGHTER }
       frequency = 0.3
       requirements = {
-        { 0.1 AttractionInfo 1 {FurnitureType "BOOKCASE_WOOD" FurnitureType "LABORATORY"}}
+        { 0.1 AttractionInfo 1 {FurnitureType "BOOKCASE_WOOD"}}
         { 0.0 MinTurnRequirement 500 }
       }
       specialTraits = {
@@ -124,7 +124,7 @@
       }
     }
     {
-      ids = { "ORC_SHAMAN" }
+      ids = { "GOBLIN_SHAMAN" }
       traits = { FIGHTER }
       frequency = 0.1
       requirements = {
@@ -140,7 +140,7 @@
       }
     }
     {
-      ids = { "OGRE" }
+      ids = { "GOBLIN_BRUTE" }
       traits = { FIGHTER }
       frequency = 0.3
       requirements = {
@@ -365,10 +365,10 @@
       }
     }
     {
-      ids = { "ORC" }
+      ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER }
       requirements = {
-        { 0.0 RecruitmentInfo { "ORC_VILLAGE" } 3 FIGHTER }
+        { 0.0 RecruitmentInfo { "GOBLIN_VILLAGE" } 3 FIGHTER }
         { 1.0 CostInfo "GOLD" 5 }
       }
     }
@@ -381,10 +381,10 @@
       }
     }
     {
-      ids = { "OGRE" }
+      ids = { "GOBLIN_BRUTE" }
       traits = { FIGHTER }
       requirements = {
-        { 0.0 RecruitmentInfo { "OGRE_CAVE" "ORC_VILLAGE" } 3 FIGHTER }
+        { 0.0 RecruitmentInfo { "GOBLIN_CAVE_ALLY" "GOBLIN_VILLAGE" } 3 FIGHTER }
         { 1.0 CostInfo "GOLD" 12 }
       }
     }
@@ -802,7 +802,7 @@
       }
     }
     {
-      ids = { "ORC" }
+      ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER NO_AUTO_EQUIPMENT }
       tutorialHighlight = ACCEPT_IMMIGRANT
       hiddenInHelp = true
@@ -813,7 +813,7 @@
       }
     }
     {
-      ids = { "ORC" "ORC" "ORC" }
+      ids = { "GOBLIN_WARRIOR" "GOBLIN_WARRIOR" "GOBLIN_WARRIOR" }
       frequency = 0.5
       traits = { FIGHTER NO_AUTO_EQUIPMENT }
       consumeIds = true

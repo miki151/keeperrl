@@ -191,7 +191,7 @@ string Tutorial::getMessage() const {
           "Change the speed of the game using the keys 1-4 or by clicking in the "
           "lower left corner if it's taking too long.";
     case State::ACCEPT_IMMIGRANT:
-      return "Your dungeon has attracted an orc. "
+      return "Your dungeon has attracted an goblin warrior. "
           "Before your new minion joins you, you must fulfill a few requirements. "
           "Hover your mouse over the immigrant icon to see them. "
           "Once you are ready, accept the immigrant with a left click. Click on the '?' icon immediately to the left "
@@ -214,24 +214,24 @@ string Tutorial::getMessage() const {
           "against an enemy. Open the workshop menu by clicking on any of your workshop stands and schedule the "
           "production of a club.";
     case State::ORDER_CRAFTING:
-      return "To have your item produced, order your orc to pick up crafting. "
+      return "To have your item produced, order your goblin to pick up crafting. "
           "Click and drag him onto a workshop stand. "
           "Pausing the game will make it a bit easier. Also, make sure you have enough wood!\n \n"
           "You can check the progress of production when you click on the workshop.";
     case State::EQUIP_WEAPON:
       return "Your minions will automatically pick up weapons and other equipment from the storage, "
-          "but you can also control it manually. Click on your orc, and on his weapon slot to assign him the "
+          "but you can also control it manually. Click on your goblin, and on his weapon slot to assign him the "
           "club that he has just produced.\n \n"
           "This way you will order him to go and pick it up.\n \n";
     case State::ACCEPT_MORE_IMMIGRANTS:
-      return "You are ready to grow your military force. Three more orc immigrants should do.\n \n"
+      return "You are ready to grow your military force. Three more goblin warrior immigrants should do.\n \n"
           "You can also invite goblins, which don't fight, but are excellent craftsmen.";
     case State::EQUIP_ALL_FIGHTERS:
-      return "Craft clubs for all of your orcs, and the Keeper, and have them equipped. They will be needed soon.";
+      return "Craft clubs for all of your warriors, and the Keeper, and have them equipped. They will be needed soon.";
     case State::CREATE_TEAM:
-      return "Your tiny army is ready! Assemble a team by dragging your orcs onto the [new team] button. You can "
+      return "Your tiny army is ready! Assemble a team by dragging your warriors onto the [new team] button. You can "
           "drag them straight from the map or from the minion menu.\n \n"
-          "Create a team of 4 orcs.";
+          "Create a team of 4 goblin warriors.";
     case State::CONTROL_TEAM:
       return "Time to take control over your team. Select the team, and one of the team members as the leader, "
           "and click [Control].";

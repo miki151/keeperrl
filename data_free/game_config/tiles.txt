@@ -119,9 +119,7 @@
 { "dig_mark2" " " ColorId BLACK }
 { "phylactery_tether" " " ColorId BLACK }
 { "forbid_zone" "#" ColorId RED false "dig_mark" ColorId RED }
-{ "orc" "o" ColorId DARK_BLUE }
-{ "orc_captain" "o" ColorId PURPLE }
-{ "orc_shaman" "o" ColorId YELLOW }
+{ "goblin_shaman" "o" ColorId YELLOW }
 { "harpy" "R" ColorId YELLOW }
 { "bandit" "@" ColorId DARK_BLUE }
 { "doppleganger" "&" ColorId YELLOW }

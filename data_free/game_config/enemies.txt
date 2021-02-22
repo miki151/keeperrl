@@ -184,17 +184,18 @@
     shopItems = {{10 15} "corpse" }
   }
 }
-"ORC_VILLAGE"
+"GOBLIN_VILLAGE"
 {
   settlement = {
     type = Builtin VILLAGE "BRICK"
     tribe = GREENSKIN
     inhabitants = {
+      leader = { { "GOBLIN_KING" } }
       fighters = {
         count = {12 16}
         all = {
-          1 "ORC"
-          1 "OGRE"
+          3 "GOBLIN_WARRIOR"
+          1 "GOBLIN_BRUTE"
         }
       }
     }
@@ -210,12 +211,12 @@
   createOnBones = 0.1 { "DWARVES" "VILLAGE" }
   immigrants = {
     {
-      ids = {"ORC"}
+      ids = {"GOBLIN_WARRIOR"}
       traits = {FIGHTER}
       frequency = 3
     }
     {
-      ids = {"OGRE"}
+      ids = {"GOBLIN_BRUTE"}
       traits = {FIGHTER}
       frequency = 1
     }
@@ -1071,18 +1072,19 @@
 {
   createOnBones = 1.0 { "HUMAN_COTTAGE" }
 }
-"ORC_CAVE"
+"GOBLIN_CAVE"
 {
   settlement = {
     type = Builtin CAVE "DUNGEON"
     inhabitants = {
+      leader = {{ "GOBLIN_BRUTE" }}
       fighters = {
         count = {4 9}
-        all = { 1 "ORC" }
+        all = { 1 "GOBLIN_WARRIOR" }
       }
     }
     tribe = BANDIT
-    race = "orcs"
+    race = "goblins"
   }
   config = {
     immigrantInterval = 1000
@@ -1098,13 +1100,13 @@
   createOnBones = 0.1 { "KOBOLD_CAVE" }
   immigrants = { 
     {
-      ids = { "ORC" }
+      ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER }
       frequency = 1
     }
   }
 }
-"COTTAGE_ORCS" inherit "ORC_CAVE"
+"COTTAGE_GOBLINS" inherit "GOBLIN_CAVE"
 {
   createOnBones = 1.0 { "ELVEN_COTTAGE" }
 }
@@ -1671,7 +1673,7 @@
   }
   discoverable = false
 }
-"OGRE_CAVE"
+"GOBLIN_CAVE_ALLY"
 {
   settlement = {
     type = Builtin CAVE "DUNGEON"
@@ -1679,7 +1681,7 @@
     inhabitants = {
       fighters = {
         count = {4 8}
-        all = { 1 "OGRE" }
+        all = { 1 "GOBLIN_BRUTE" }
       }
     }
     closeToPlayer = true
@@ -1692,7 +1694,7 @@
   }
   immigrants = { 
     {
-      ids = { "OGRE" }
+      ids = { "GOBLIN_BRUTE" }
       traits = { FIGHTER }
       frequency = 1
     }
@@ -1784,7 +1786,7 @@
     race = "altar"
     inhabitants = {
       leader = {
-        id = {"ORC_MAGE"} 
+        id = {"GOBLIN_WIZARD"} 
         expLevelIncrease = { SPELL 7 }
       }
     }
@@ -2279,10 +2281,10 @@
       fighters = {
         count = {12 18}
         all = {
-          5 "ORC"
-          2 "OGRE"
-          1 "ORC_HEALER"
-          1 "ORC_MAGE"
+          5 "GOBLIN_WARRIOR"
+          2 "GOBLIN_BRUTE"
+          1 "GOBLIN_PRIEST"
+          1 "GOBLIN_WIZARD"
           1 "VAMPIRE"
           1 "SPECIAL_HMBN"
           1 "HARPY"

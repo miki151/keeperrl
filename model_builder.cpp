@@ -101,7 +101,7 @@ vector<EnemyInfo> ModelBuilder::getSingleMapEnemiesForEvilKeeper(TribeId keeperT
   enemies.push_back(enemyFactory->get(EnemyId("DWARVES")).setVillainType(VillainType::MAIN));
   enemies.push_back(enemyFactory->get(EnemyId("KNIGHTS")).setVillainType(VillainType::MAIN));
   enemies.push_back(enemyFactory->get(EnemyId("ADA_GOLEMS")));
-  enemies.push_back(enemyFactory->get(random.choose(EnemyId("OGRE_CAVE"), EnemyId("HARPY_CAVE")))
+  enemies.push_back(enemyFactory->get(random.choose(EnemyId("GOBLIN_CAVE_ALLY"), EnemyId("HARPY_CAVE")))
       .setVillainType(VillainType::ALLY));
   enemies.push_back(enemyFactory->get(EnemyId("TEMPLE")));
   for (auto& enemy : random.chooseN(2, {

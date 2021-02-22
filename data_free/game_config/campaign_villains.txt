@@ -24,12 +24,12 @@ EVIL_KEEPER {
     {{ "ant_queen" } "ANTS_OPEN" "Ants" LESSER}
     {{ "zombie" } "CEMETERY" "Zombies" LESSER}
 
-    {{ "unknown_monster" } "OGRE_CAVE" "Unknown" ALLY}
+    {{ "unknown_monster" } "GOBLIN_CAVE_ALLY" "Unknown" ALLY}
     {{ "unknown_monster" } "HARPY_CAVE" "Unknown" ALLY}
     {{ "unknown_monster" } "SOKOBAN" "Unknown" ALLY}
     {{ "dark_elf_lord" } "DARK_ELVES_ALLY" "Dark elves" ALLY}
     {{ "gnome_boss" } "GNOMES" "Gnomes" ALLY}
-    {{ "orc_captain" } "ORC_VILLAGE" "Greenskin village" ALLY}
+    {{ "goblin_keeper4" } "GOBLIN_VILLAGE" "Goblin town" ALLY}
 }
 
 LAWFUL_KEEPER {
@@ -39,7 +39,7 @@ LAWFUL_KEEPER {
     {{ "red_dragon" Rgb 240 240 240 255 } "WHITE_DRAGON" "White dragon" MAIN}
     {{ "ant_queen" } "ANTS_OPEN" "Ants" MAIN}
     {{ "dark_elf_lord" } "DARK_ELVES_ENEMY" "Dark elves" MAIN}
-    {{ "orc_captain" } "ORC_VILLAGE" "Greenskin village" MAIN}
+    {{ "goblin_keeper4" } "GOBLIN_VILLAGE" "Goblin town" MAIN}
     {{ "demon_lord" } "DEMON_DEN" "Demon den" MAIN}
     {{ "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN}
 
@@ -47,7 +47,7 @@ LAWFUL_KEEPER {
     {{ "cyclops" } "CYCLOPS" "Cyclops" LESSER}
     {{ "hydra" } "HYDRA" "Hydra" LESSER}
     {{ "zombie" } "CEMETERY" "Zombies" LESSER}
-    {{ "ogre" } "OGRE_CAVE" "Ogres" LESSER}
+    {{ "goblin_brute" } "GOBLIN_CAVE" "Goblins" LESSER}
     {{ "harpy" } "HARPY_CAVE" "Harpies" LESSER}
     {{ "ant_queen" } "ANTS_OPEN" "Ants" LESSER}
     {{ "dungeon_entrance" ColorId RED } "MAIN_DUNGEON" "Unremarkable dungeon" MAIN true}
@@ -90,7 +90,7 @@ LAWFUL_ADVENTURER {
     {{ "shelob" } "SHELOB" "Giant spider" MAIN}
     {{ "ant_queen" } "ANTS_OPEN" "Ants" MAIN}
     {{ "dark_elf_lord" } "DARK_ELVES_ENEMY" "Dark elves" MAIN}
-    {{ "orc_captain" } "ORC_VILLAGE" "Greenskin village" MAIN}
+    {{ "goblin_keeper4" } "GOBLIN_VILLAGE" "Goblin town" MAIN}
     {{ "demon_lord" } "DEMON_DEN" "Demon den" MAIN}
     {{ "lizardlord" } "LIZARDMEN" "Lizardmen" MAIN}
 
@@ -98,7 +98,7 @@ LAWFUL_ADVENTURER {
     {{ "cyclops" } "CYCLOPS" "Cyclops" LESSER}
     {{ "hydra" } "HYDRA" "Hydra" LESSER}
     {{ "zombie" } "CEMETERY" "Zombies" LESSER}
-    {{ "ogre" } "OGRE_CAVE" "Ogres" LESSER}
+    {{ "goblin_brute" } "GOBLIN_CAVE" "Goblins" LESSER}
     {{ "harpy" } "HARPY_CAVE" "Harpies" LESSER}
     {{ "ant_queen" } "ANTS_OPEN" "Ants" LESSER}
     {{ "dungeon_entrance" ColorId RED } "MAIN_DUNGEON" "Unremarkable dungeon" MAIN true}

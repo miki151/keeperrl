@@ -315,7 +315,7 @@
   }
   {
     {
-      all = { 1 "OGRE" }
+      all = { 1 "GOBLIN_BRUTE" }
       count = { 3 6 }
       baseLevelIncrease = { MELEE 25 }
     }
