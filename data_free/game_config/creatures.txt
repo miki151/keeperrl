@@ -4247,6 +4247,7 @@ End
       name = "goblin archer"
       firstNameGen = "ORC"
     }
+    spellSchools = { "archer" }
     maxLevelIncrease = {
       ARCHERY 7
     }
