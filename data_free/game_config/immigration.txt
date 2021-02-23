@@ -648,6 +648,20 @@
       }
     }
     {
+      ids = { "GOBLIN_ARTIFICER" }
+      traits = { FIGHTER NO_AUTO_EQUIPMENT }
+      frequency = 0.7
+      requirements = {
+        { 0.0 Pregnancy }
+      }
+      specialTraits = {
+         { 0.03 { WorkshopType "WORKSHOP" Lasting { INSANITY } }}
+         { 0.05 { WorkshopType "FORGE" Lasting { INSANITY } }}
+         { 0.03 { Lasting { BAD_BREATH } }}
+         { 0.01 { Lasting { ENTERTAINER } }}
+      }
+    }
+    {
       ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER }
       spawnLocation = Pregnancy
