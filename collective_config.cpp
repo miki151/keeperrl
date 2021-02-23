@@ -217,6 +217,14 @@ static CollectiveItemPredicate unMarkedItems() {
   return [](const Collective* col, const Item* it) { return !col->getItemTask(it); };
 }
 
+static CollectiveWarning getStorageWarning(StorageId id) {
+  switch (id) {
+    case StorageId::CORPSES: return CollectiveWarning::GRAVES;
+    case StorageId::EQUIPMENT: return CollectiveWarning::EQUIPMENT_STORAGE;
+    case StorageId::GOLD: return CollectiveWarning::CHESTS;
+    case StorageId::RESOURCE: return CollectiveWarning::RESOURCE_STORAGE;
+  }
+}
 
 vector<ItemFetchInfo> CollectiveConfig::getFetchInfo(const ContentFactory* factory) const {
   if (type == KEEPER) {
@@ -230,7 +238,7 @@ vector<ItemFetchInfo> CollectiveConfig::getFetchInfo(const ContentFactory* facto
     for (auto& res : factory->resourceInfo)
       if (res.second.storageId)
         ret.push_back(ItemFetchInfo {
-            res.first, unMarkedItems(), *res.second.storageId, CollectiveWarning::RESOURCE_STORAGE});
+            res.first, unMarkedItems(), *res.second.storageId, getStorageWarning(*res.second.storageId)});
     return ret;
   } else {
     static vector<ItemFetchInfo> empty;
