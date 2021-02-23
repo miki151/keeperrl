@@ -40,6 +40,42 @@
     }
 }
 
+Def DarkRecruits()
+    {
+      ids = { "DARK_ELF_WARRIOR" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 RecruitmentInfo { "DARK_ELVES_ALLY" } 3 FIGHTER }
+        { 1.0 CostInfo "GOLD" 20 }
+      }
+    }
+    {
+      ids = { "GOBLIN_WARRIOR" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 RecruitmentInfo { "GOBLIN_VILLAGE" } 3 FIGHTER }
+        { 1.0 CostInfo "GOLD" 5 }
+      }
+    }
+    {
+      ids = { "HARPY" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 RecruitmentInfo { "HARPY_CAVE" } 3 FIGHTER }
+        { 1.0 CostInfo "GOLD" 12 }
+      }
+    }
+    {
+      ids = { "GOBLIN_BRUTE" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 RecruitmentInfo { "GOBLIN_CAVE_ALLY" "GOBLIN_VILLAGE" } 3 FIGHTER }
+        { 1.0 CostInfo "GOLD" 12 }
+      }
+    }
+
+End
+
 "dark_keeper"
 {
     {
@@ -356,38 +392,7 @@
          { 0.1 { Lasting { ENTERTAINER } }}
       }
     }
-    {
-      ids = { "DARK_ELF_WARRIOR" }
-      traits = { FIGHTER }
-      requirements = {
-        { 0.0 RecruitmentInfo { "DARK_ELVES_ALLY" } 3 FIGHTER }
-        { 1.0 CostInfo "GOLD" 20 }
-      }
-    }
-    {
-      ids = { "GOBLIN_WARRIOR" }
-      traits = { FIGHTER }
-      requirements = {
-        { 0.0 RecruitmentInfo { "GOBLIN_VILLAGE" } 3 FIGHTER }
-        { 1.0 CostInfo "GOLD" 5 }
-      }
-    }
-    {
-      ids = { "HARPY" }
-      traits = { FIGHTER }
-      requirements = {
-        { 0.0 RecruitmentInfo { "HARPY_CAVE" } 3 FIGHTER }
-        { 1.0 CostInfo "GOLD" 12 }
-      }
-    }
-    {
-      ids = { "GOBLIN_BRUTE" }
-      traits = { FIGHTER }
-      requirements = {
-        { 0.0 RecruitmentInfo { "GOBLIN_CAVE_ALLY" "GOBLIN_VILLAGE" } 3 FIGHTER }
-        { 1.0 CostInfo "GOLD" 12 }
-      }
-    }
+    DarkRecruits()
     {
       ids = { "SPECIAL_HMBN" "SPECIAL_HMBW" "SPECIAL_HMGN" "SPECIAL_HMGW" }
       traits = { FIGHTER }
@@ -801,6 +806,7 @@
         { 0.0 TechId "goblin mutation" }
       }
     }
+    DarkRecruits()
 }
 "tutorial"
 {
