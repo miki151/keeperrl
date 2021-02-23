@@ -311,14 +311,16 @@
     { Furniture {{ "IMPALED_HEAD" }  "PRISONER_HEAD" 1 true}       "Prisoner head"     "Installations"
         "Impaled head of an executed prisoner. Aggravates enemies."}
   }
-
+  "minion_statues"
+  {
+    { Furniture {{ "MINION_STATUE" }        "GOLD"   50  }                  "Golden statue"     "Installations" ""}
+    { Furniture {{ "STONE_MINION_STATUE" }  "STONE"  250 }                  "Stone statue"      "Installations" ""}
+  }
   "magical_installations"
   {
     { Furniture {{ "EYEBALL" }              "WOOD"   30 }                   "Eyeball"           "Installations"
         "Makes the area around it visible."}
 
-    { Furniture {{ "MINION_STATUE" }        "GOLD"   50  }                  "Golden statue"     "Installations" ""}
-    { Furniture {{ "STONE_MINION_STATUE" }  "STONE"  250 }                  "Stone statue"      "Installations" ""}
     { Furniture {{ "PORTAL" }               "STONE"  60 }                   "Portal"            "Installations"
         "Opens a connection if another portal is present."}
     { Furniture {{ "HEALING_TOTEM" }        "GOLD"   60 }                   "Healing totem"     "Installations"
