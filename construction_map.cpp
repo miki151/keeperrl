@@ -33,13 +33,9 @@ CostInfo ConstructionMap::FurnitureInfo::getCost() const {
 
 bool ConstructionMap::FurnitureInfo::isBuilt(Position pos, FurnitureLayer layer) const {
   auto f = pos.getFurniture(layer);
-  return f
-      && (f->getType() == type
-      || [&] {
-        auto builtOver = pos.getGame()->getContentFactory()->furniture.getData(type).getBuiltOver();
-        return !builtOver || *builtOver != f->getType();
-      }());
-
+  return f &&
+      (f->getType() == type ||
+      !pos.getGame()->getContentFactory()->furniture.getData(type).getBuiltOver().contains(f->getType()));
 }
 
 bool ConstructionMap::FurnitureInfo::hasTask() const {

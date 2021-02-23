@@ -1344,7 +1344,7 @@
   xForgetAfterBuilding = true
   luxury = 0.2
   constructMessage = REINFORCE
-  builtOver = "MOUNTAIN"
+  builtOver = {"MOUNTAIN"}
   canBuildOutsideOfTerritory = true
   strength2 = {
     300 BOULDER
@@ -1358,7 +1358,7 @@
 "DUNGEON_WALL2" inherit "DUNGEON_WALL"
 {
   viewId = { "dungeon_wall2" }
-  builtOver = "MOUNTAIN2"
+  builtOver = {"MOUNTAIN2"}
   destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
   tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
 }
@@ -1806,6 +1806,7 @@
   layer = GROUND
   canBuildOutsideOfTerritory = true
   xForgetAfterBuilding = true
+  builtOver = {"WATER" "SHALLOW_WATER1" "SHALLOW_WATER2" "MAGMA" }
 }
 "FLOOR_RED" inherit "FLOOR"
 {

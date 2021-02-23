@@ -104,8 +104,12 @@ bool FurnitureFactory::canBuild(FurnitureType type, Position pos) const {
   CHECK(groundF);
   if (data.isBridge())
     return !!groundF->getDefaultBridge();
-  if (auto over = data.getBuiltOver())
-    return !!pos.getFurniture(*over);
+  if (!data.getBuiltOver().empty()) {
+    for (auto f : data.getBuiltOver())
+      if (!!pos.getFurniture(f))
+        return true;
+    return false;
+  }
   auto original = pos.getFurniture(getData(type).getLayer());
   return (groundF->getMovementSet().canEnter({MovementTrait::WALK}) || data.getLayer() == FurnitureLayer::GROUND) &&
       (!original || original->silentlyReplace()) && !pos.isWall();

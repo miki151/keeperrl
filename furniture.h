@@ -139,7 +139,7 @@ class Furniture {
     SERIALIZE_ALL(increase, limit)
   };
   const PopulationInfo& getPopulationIncrease() const;
-  optional<FurnitureType> getBuiltOver() const;
+  const vector<FurnitureType>& getBuiltOver() const;
   bool isBridge() const;
   bool silentlyReplace() const;
   void setType(FurnitureType);
@@ -216,7 +216,7 @@ class Furniture {
   vector<SupportInfo> SERIAL(requiredSupport);
   const Furniture::SupportInfo* getSupportInfo(Position) const;
   optional<FurnitureType> SERIAL(upgrade);
-  optional<FurnitureType> SERIAL(builtOver);
+  vector<FurnitureType> SERIAL(builtOver);
   bool SERIAL(bridge) = false;
   bool SERIAL(canSilentlyReplace) = false;
   bool SERIAL(canBuildOutsideOfTerritory) = false;

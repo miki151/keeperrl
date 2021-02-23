@@ -456,7 +456,7 @@ const Furniture::PopulationInfo& Furniture::getPopulationIncrease() const {
   return populationIncrease;
 }
 
-optional<FurnitureType> Furniture::getBuiltOver() const {
+const vector<FurnitureType>& Furniture::getBuiltOver() const {
   return builtOver;
 }
 
