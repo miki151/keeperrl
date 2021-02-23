@@ -4054,6 +4054,10 @@
       DEFENSE 15 
     }
   }
+Def UnlockMessage(Text, ViewId)
+  UI "unlock_message" { "message" Label Text "view_id" ViewIdList {{ViewId}}}
+End
+
 "GOBLIN_KING"
   {
     viewId = { "goblin_keeper4" }
@@ -4064,11 +4068,16 @@
     body = {
       type = Humanoid MEDIUM
     }
+    deathEffect = Filter Not Unlocked "goblins" {
+      Unlock "goblins"
+      Analytics "milestone" "goblinsUnlocked"
+      UnlockMessage("The Goblin Keeper has been unlocked!", "goblin_keeper4")
+    }
     chatReactionFriendly = "talks about lavish dinners"
     chatReactionHostile = "\"Die!\""
     aiType = RANGED
     name = {
-      name = "goblin"
+      name = "goblin king"
       firstNameGen = "ORC"
     }
     hatedByEffect = HATE_GREENSKINS
@@ -4114,10 +4123,7 @@
     chatReactionFriendly = "talks about crafting"
     chatReactionHostile = "\"Die!\""
     skills = {
-      "LABORATORY" 0.3
-      "WORKSHOP" 0.6
-      "FORGE" 0.6
-      "JEWELER" 0.6
+      "WORKSHOP" 0.3
       "DIGGING" 0.5
     }
     hatedByEffect = HATE_GREENSKINS
