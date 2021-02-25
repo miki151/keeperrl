@@ -338,6 +338,28 @@ optional<string> ContentFactory::readCampaignInfo(const GameConfig* config, KeyV
   return none;
 }
 
+optional<string> ContentFactory::readZLevels(const GameConfig* config, KeyVerifier* keyVerifier) {
+  if (auto res = config->readObject(zLevels, GameConfigId::Z_LEVELS, keyVerifier))
+    return *res;
+  for (auto& keeperInfo : keeperCreatures) {
+    vector<ZLevelInfo> levels;
+    for (auto group : keeperInfo.second.zLevelGroups) {
+      if (!zLevels.count(group))
+        return "Unknown z-level group: \"" + group + "\" in the definition of keeper \"" + keeperInfo.first + "\"";
+      append(levels, zLevels.at(group));
+    }
+    for (int depth = 0; depth < 1000; ++depth) {
+      if (!isZLevel(levels, depth))
+        return "No z-level found for keeper \"" + keeperInfo.first + "\" at depth " + toString(depth) +
+            ". Please fix z-level config.";
+      if (!areResourceCounts(resources, depth))
+        return "No resource distribution found for keeper \"" + keeperInfo.first + "\" at depth " + toString(depth) +
+            ". Please fix resources config.";
+    }
+  }
+  return none;
+}
+
 optional<string> ContentFactory::readData(const GameConfig* config, const vector<string>& modNames, const Unlocks& unlocks) {
   KeyVerifier keyVerifier;
   map<PrimaryId<TechId>, Technology::TechDefinition> techsTmp;
@@ -371,10 +393,10 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
     return *error;
   if (auto error = readCampaignInfo(config, &keyVerifier))
     return *error;
-  if (auto res = config->readObject(zLevels, GameConfigId::Z_LEVELS, &keyVerifier))
-    return *res;
   if (auto res = config->readObject(resources, GameConfigId::RESOURCE_COUNTS, &keyVerifier))
     return *res;
+  if (auto error = readZLevels(config, &keyVerifier))
+    return *error;
   for (auto& elem : resources)
     for (auto& count : elem.counts.elems)
       if (count.size.isEmpty() || count.size.getStart() < 1)
@@ -403,15 +425,6 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (auto res = config->readObject(tileDefs, GameConfigId::TILES, &keyVerifier))
     return *res;
   tilePaths = TilePaths(std::move(tileDefs), modNames);
-  for (auto alignment : {ZLevelGroup::EVIL, ZLevelGroup::LAWFUL}) {
-    vector<ZLevelInfo> levels = concat<ZLevelInfo>({zLevels[ZLevelGroup::ALL], zLevels[alignment]});
-    for (int depth = 0; depth < 1000; ++depth) {
-      if (!isZLevel(levels, depth))
-        return "No z-level found for depth " + toString(depth) + ". Please fix z-level config.";
-      if (!areResourceCounts(resources, depth))
-        return "No resource distribution found for depth " + toString(depth) + ". Please fix resources config.";
-    }
-  }
   map<PrimaryId<LayoutMappingId>, LayoutMapping> layoutTmp;
   if (auto res = config->readObject(layoutTmp, GameConfigId::LAYOUT_MAPPING, &keyVerifier))
     return *res;
@@ -428,7 +441,7 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
       auto& level = group.second[i];
       if (auto fullLevel = level.type.getReferenceMaybe<FullZLevel>())
         if (fullLevel->attackChance > 0.0 && (!fullLevel->enemy || !enemies.at(*fullLevel->enemy).behaviour))
-            return "Z-level enemy " + EnumInfo<ZLevelGroup>::getString(group.first) + " no. " + toString(i)
+            return "Z-level enemy " + group.first + " no. " + toString(i)
                 + " has positive attack chance, but no attack behaviour defined"_s;
     }
   furniture.initializeInfos();

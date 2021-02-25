@@ -45,7 +45,7 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
         auto newLevel = tryBuilding(20,
             [&]{
               auto contentFactory = pos.getGame()->getContentFactory();
-              auto maker = getLevelMaker(Random, contentFactory, pos.getGame()->getPlayerControl()->getTribeAlignment(),
+              auto maker = getLevelMaker(Random, contentFactory, pos.getGame()->zLevelGroups,
                   levelIndex + 1, pos.getGame()->getPlayerCollective()->getTribeId(), stairKey);
               auto level = pos.getModel()->buildMainLevel(LevelBuilder(Random, contentFactory, maker.levelWidth, maker.levelWidth, true),
                   std::move(maker.maker));

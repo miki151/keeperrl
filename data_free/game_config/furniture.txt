@@ -1086,6 +1086,10 @@
   requiredSupport = { { { E W } } { { N S } {"iron_door_ns"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
+"IRON_DOOR_BLOCKING" inherit "IRON_DOOR"
+{
+  blockMovement = true
+}
 "IRON_GATE"
 {
   name = "iron gate"
@@ -1704,6 +1708,13 @@
     forcibleTraits = { WALK }
   }
   walkIntoFX = { WATER_SPLASH Rgb 82 148 255 255 }
+}
+"KRAKEN_WATER" inherit "WATER"
+{
+  tickType = Effect {
+    SummonEnemy "KRAKEN" 1 none
+    PlaceFurniture "WATER"
+  }
 }
 "SHALLOW_WATER1" inherit "WATER"
 {

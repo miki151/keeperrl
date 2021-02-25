@@ -10,6 +10,7 @@
   "rock" Place "MOUNTAIN"
   "hard_rock" Place "MOUNTAIN2"
   "water" { ClearFurniture Place "WATER"}
+  "kraken_water" { ClearFurniture Place "KRAKEN_WATER"}
   "lava" { ClearFurniture Place "MAGMA"}
   "stockpile" Stockpile 0
   "bed" Place "BED1"
@@ -25,6 +26,7 @@
   "iron_door" Place "IRON_DOOR"
   "iron_gate" Place "IRON_GATE"
   "iron_gate_blocking" Place "IRON_GATE_BLOCKING"
+  "iron_door_blocking" PlaceHostile "IRON_DOOR_BLOCKING"
   "down_stairs0" Stairs DOWN "DOWN_STAIRS" 0
   "up_stairs0" Stairs UP "UP_STAIRS" 0
   "down_stairs1" Stairs DOWN "DOWN_STAIRS" 1

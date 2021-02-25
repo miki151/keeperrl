@@ -539,7 +539,7 @@ Vec2 Vec2::getBearing() const {
   return Vec2(0, 0);
 }
 
-Vec2 Vec2::getCenterOfWeight(vector<Vec2> vs) {
+Vec2 Vec2::getCenterOfWeight(const vector<Vec2>& vs) {
   Vec2 ret;
   for (Vec2 v : vs)
     ret += v;

@@ -31,8 +31,8 @@ SimpleGame::SimpleGame(ContentFactory* factory, MainLoop* mainLoop) : factory(fa
   for (auto elem : info.immigrantGroups)
     append(immigrants, factory->immigrantsData.at(elem));
   minions.push_back(getCreature(factory, info.creatureId[0]));
-  auto allZLevels = factory->zLevels.at(ZLevelGroup::EVIL);
-  allZLevels.append(factory->zLevels.at(ZLevelGroup::ALL));
+  auto allZLevels = factory->zLevels.at("evil");
+  allZLevels.append(factory->zLevels.at("basic"));
   for (int i : Range(1, 100))
     zLevels.push_back(*chooseZLevel(Random, allZLevels, i));
   addResourcesForLevel(0);

@@ -4,6 +4,7 @@
 "rock" # brown
 "hard_rock" # gray
 "water" ~ blue
+"kraken_water" ~ yellow
 "grass" = green
 "sand" = yellow
 "wall" # brown

@@ -10,5 +10,5 @@ struct LevelMakerResult {
   int levelWidth;
 };
 
-LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory, TribeAlignment alignment,
+LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory, const vector<string>& zLevelGroups,
     int depth, TribeId tribe, StairKey stairKey);

@@ -306,7 +306,8 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<Bio
           tasks.push_back([=] { measureModelGen(type + " (" + EnumInfo<TribeAlignment>::getString(alignment) + ", "
               + biome.data() + ")", numTries,
               [&] { tryCampaignBaseModel(tribe, alignment, biome, none); }); });
-    else if (type == "zlevels")
+    else if (type == "zlevels") {
+      FATAL << "Fix after adding z level groups";
       for (auto alignment : ENUM_ALL(TribeAlignment))
         for (int i : Range(1, 30))
           tasks.push_back([=] { measureModelGen(type + " " + toString(i) +
@@ -314,11 +315,12 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<Bio
               numTries,
               [&] {
                 auto model = tryCampaignBaseModel(tribe, alignment, BiomeId("GRASSLAND"), none);
-                auto maker = getLevelMaker(Random, contentFactory, alignment,
+                auto maker = getLevelMaker(Random, contentFactory, {"basic"},
                     i, TribeId::getDarkKeeper(), StairKey::getNew());
                 LevelBuilder(Random, contentFactory, maker.levelWidth, maker.levelWidth, true)
                     .build(model.get(), maker.maker.get(), 123);
               }); });
+    }
     else if (type == "tutorial")
       tasks.push_back([=] { measureModelGen(type, numTries, [&] { tryTutorialModel(); }); });
     else {

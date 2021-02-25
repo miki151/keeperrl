@@ -18,6 +18,7 @@ struct KeeperCreatureInfo {
   vector<TechId> SERIAL(initialTech);
   vector<string> SERIAL(buildingGroups);
   vector<string> SERIAL(workshopGroups);
+  vector<string> SERIAL(zLevelGroups);
   string SERIAL(description);
   vector<SpecialTrait> SERIAL(specialTraits);
   optional<NameGeneratorId> SERIAL(baseNameGen);

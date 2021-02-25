@@ -114,6 +114,7 @@ class Game : public OwnedObject<Game> {
   Game(Table<PModel>&&, Vec2 basePos, const CampaignSetup&, ContentFactory);
 
   unordered_set<string> SERIAL(effectFlags);
+  vector<string> zLevelGroups;
 
   private:
   optional<ExitInfo> update();

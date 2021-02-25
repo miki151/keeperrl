@@ -36,7 +36,7 @@ static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCount
         return LevelMakerResult{
             LevelMaker::settlementLevel(*contentFactory, Random, enemy.settlement, Vec2(levelInfo.width, levelInfo.width),
                 resources, tribe),
-            none, levelInfo.width
+            std::move(enemy), levelInfo.width
         };
       },
       [&](const FullZLevel& level) {
@@ -58,19 +58,13 @@ static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCount
       });
 }
 
-LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory, TribeAlignment alignment,
+LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory, const vector<string>& zLevelGroups,
     int depth, TribeId tribe, StairKey stairKey) {
   auto& allLevels = contentFactory->zLevels;
   auto& resources = contentFactory->resources;
-  auto zLevelGroup = [&] {
-    switch (alignment) {
-      case TribeAlignment::LAWFUL:
-        return ZLevelGroup::LAWFUL;
-      case TribeAlignment::EVIL:
-        return ZLevelGroup::EVIL;
-    }
-  }();
-  vector<ZLevelInfo> levels = concat<ZLevelInfo>({allLevels[ZLevelGroup::ALL], allLevels[zLevelGroup]});
+  vector<ZLevelInfo> levels;
+  for (auto& group : zLevelGroups) 
+    levels.append(allLevels.at(group));
   auto zLevel = *chooseZLevel(random, levels, depth);
   auto res = *chooseResourceCounts(random, resources, depth);
   return getLevelMaker(zLevel, res, tribe, stairKey, contentFactory);

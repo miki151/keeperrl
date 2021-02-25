@@ -38,6 +38,10 @@ struct Stockpile {
   int SERIAL(index);
   SERIALIZE_ALL(index)
 };
+struct PlaceHostile {
+  FurnitureType SERIAL(type);
+  SERIALIZE_ALL(type)
+};
 #define VARIANT_TYPES_LIST\
   X(Place, 0)\
   X(Flag, 1)\
@@ -50,7 +54,8 @@ struct Stockpile {
   X(OutsideFurniture, 8)\
   X(InsideFurniture, 9)\
   X(Items, 10)\
-  X(Shop, 11)
+  X(Shop, 11)\
+  X(PlaceHostile, 12)
 
 #define VARIANT_NAME LayoutAction
 

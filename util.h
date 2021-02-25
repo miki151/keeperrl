@@ -175,7 +175,7 @@ class Vec2 {
   bool isCardinal4() const;
   bool isCardinal8() const;
   Dir getCardinalDir() const;
-  static Vec2 getCenterOfWeight(vector<Vec2>);
+  static Vec2 getCenterOfWeight(const vector<Vec2>&);
 
   static const vector<Vec2>& directions8();
   vector<Vec2> neighbors8() const;

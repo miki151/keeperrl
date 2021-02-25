@@ -743,3 +743,20 @@ End
 
 "zombie_crypt" ZombieCrypt()
 
+Def KrakenPrison() {
+  CellularAutomaton(Reset("water"), 0.65)
+  Position(MIDDLE, {6 6}, {Reset("stone_floor") Border(1, Reset("floor", "castle_wall"))})
+  Place(({1 1} Reset("kraken_water") 10 On("water")))
+}
+End
+
+Def KrakenZLevel() {
+  Set("hard_rock", "resources")
+  Position(TOP_LEFT, {25 25}, KrakenPrison())
+  Position(MIDDLE, {1 1}, Reset("floor", "up_stairs0"))
+  Filter(On("stone_floor"), Set("set_territory"))
+  Filter(Not On("stone_floor"), Set("no_territory"))
+}
+End
+
+"kraken_z_level" KrakenZLevel()

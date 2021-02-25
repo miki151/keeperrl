@@ -30,18 +30,11 @@ class BuildingInfo;
 struct LayoutGenerator;
 class Unlocks;
 
-RICH_ENUM(
-  ZLevelGroup,
-  ALL,
-  EVIL,
-  LAWFUL
-);
-
 class ContentFactory {
   public:
   optional<string> readData(const GameConfig*, const vector<string>& modNames, const Unlocks&);
   FurnitureFactory SERIAL(furniture);
-  map<ZLevelGroup, vector<ZLevelInfo>> SERIAL(zLevels);
+  map<string, vector<ZLevelInfo>> SERIAL(zLevels);
   vector<ResourceDistribution> SERIAL(resources);
   TilePaths SERIAL(tilePaths);
   map<EnemyId, EnemyInfo> SERIAL(enemies);
@@ -90,6 +83,7 @@ class ContentFactory {
   optional<string> readWorkshopInfo(const GameConfig*, KeyVerifier*);
   optional<string> readCampaignInfo(const GameConfig*, KeyVerifier*);
   optional<string> readResourceInfo(const GameConfig*, KeyVerifier*);
+  optional<string> readZLevels(const GameConfig*, KeyVerifier*);
 };
 
 static_assert(std::is_nothrow_move_constructible<ContentFactory>::value, "T should be noexcept MoveConstructible");

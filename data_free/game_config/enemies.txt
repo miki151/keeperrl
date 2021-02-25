@@ -893,6 +893,19 @@
     }
   }
 }
+"Z_LEVEL_KRAKENS"
+{
+  settlement = {
+    type = RandomLayout { "kraken_z_level" { 80 80 } "default" }
+    tribe = DARK_KEEPER
+    inhabitants = {
+      fighters = {
+        count = {6}
+        all = { 1 "GOBLIN_MATRON" }
+      }
+    }
+  }
+}
 "MAIN_DUNGEON"
 {
   settlement = {

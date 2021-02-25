@@ -11,6 +11,7 @@
       "pig breeding" "iron working" "jewellery" "two-handed weapons" "traps" "archery" "sorcery"
       "advanced sorcery" "magical weapons" "master sorcery" "demonology" "distillation"
   }
+  zLevelGroups = { "basic" "evil" }
   initialTech = { "sorcery" }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
@@ -37,6 +38,7 @@
       "pig breeding" "iron working" "jewellery" "two-handed weapons" "archery" "sorcery"
       "advanced sorcery" "magical weapons" "master sorcery" "worship" "distillation"
   }
+  zLevelGroups = { "basic" "lawful" }
   initialTech = { "archery" }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage"
@@ -55,6 +57,7 @@
       "automatons" "advanced automatons" "automaton brains" "aerodynamics"
       "iron working" "alchemy" "incendiary alchemy" "distillation" "two-handed weapons"
   }
+  zLevelGroups = { "basic" "lawful" }
   initialTech = { "automatons" }
   baseNameGen = "TOWN"
   buildingGroups = {
@@ -77,6 +80,7 @@
   technology = { "embalming" "advanced embalming" "master embalming" "sorcery" "advanced sorcery" "master sorcery"
       "iron working" "distillation"
   }
+  zLevelGroups = { "basic" "evil" }
   initialTech = {  }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "phylactery" "beds" "coffins"
@@ -102,6 +106,7 @@
       "pig breeding" "iron working" "jewellery" "two-handed weapons" "traps" "archery" "sorcery"
       "advanced sorcery" "magical weapons" "master sorcery" "distillation" "chickenmancy"
   }
+  zLevelGroups = { "basic" "evil" "goblins" }
   initialTech = { }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "pigsty"
@@ -120,6 +125,7 @@
   immigrantGroups = {"zombies"}
   technology = {}
   initialTech = { }
+  zLevelGroups = { "basic" "evil" }
   baseNameGen = "TOWN"
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "training_zombies"
@@ -144,6 +150,7 @@
       "alchemy" "advanced alchemy" "alchemical conversion" "iron working" "jewellery"
       "two-handed weapons" "traps" "distillation"
   }
+  zLevelGroups = { "basic" "evil" }
   initialTech = { }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "throne" "beds"

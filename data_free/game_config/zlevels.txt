@@ -1,7 +1,7 @@
-# Here come levels for all keeper types
+# Here come levels for all keeper types. This should be entered in the 'zLevelGroups' in your keeper's definition.
 # At every depth the game chooses a random level that's available
 
-ALL
+"basic"
 {
   # This is a filled level that can appear at all depths
   {
@@ -55,8 +55,8 @@ ALL
     type = FullZLevel {
       enemy = "ADA_GOLEMS"
     }
-    minDepth = 10
-    maxDepth = 10
+    minDepth = 13
+    maxDepth = 13
     guarantee = true
   }
   {
@@ -87,7 +87,7 @@ ALL
 }
 
 # Here come levels specific to white keepers
-LAWFUL
+"lawful"
 {
   {
     type = FullZLevel {
@@ -99,7 +99,7 @@ LAWFUL
 }
 
 # Here come levels specific to dark keepers
-EVIL
+"evil"
 {
   {
     type = FullZLevel {
@@ -107,5 +107,17 @@ EVIL
       attackChance = 0.6
     }
     minDepth = 5
+  }
+}
+
+"goblins"
+{
+  {
+    type = EnemyZLevel {
+      enemy = "Z_LEVEL_KRAKENS"
+    }
+    minDepth = 10
+    maxDepth = 10
+    guarantee = true
   }
 }

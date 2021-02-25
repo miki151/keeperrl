@@ -117,6 +117,7 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
     playerCollective->returnResource(resource);
   for (auto& f : keeperInfo.flags)
     effectFlags.insert(f);
+  zLevelGroups = keeperInfo.zLevelGroups;
 }
 
 Game::~Game() {}

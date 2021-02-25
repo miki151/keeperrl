@@ -1581,10 +1581,11 @@ class PlaceCollective : public LevelMaker {
       : collective(NOTNULL(c)), predicate(pred) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
+    auto territory = builder->toGlobalCoordinates(area.getAllSquares()
+        .filter([&](Vec2 pos) { return predicate.apply(builder, pos); }));
     if (!collective->hasCentralPoint())
-      collective->setCentralPoint(builder->toGlobalCoordinates(area).middle());
-    collective->addArea(builder->toGlobalCoordinates(area.getAllSquares()
-        .filter([&](Vec2 pos) { return predicate.apply(builder, pos); })));
+      collective->setCentralPoint(Vec2::getCenterOfWeight(territory));
+    collective->addArea(territory);
     builder->addCollective(collective);
   }
 
@@ -2653,6 +2654,7 @@ namespace {
               visit(builder, inside, outside, pos, stockpile, a, shops);
           },
           [&](FurnitureType type) { builder->putFurniture(pos, type, tribe); },
+          [&](LayoutActions::PlaceHostile type) { builder->putFurniture(pos, type.type, TribeId::getHostile()); },
           [&](SquareAttrib attrib) { builder->addAttrib(pos, attrib); },
           [&](LayoutActions::RemoveFlag f) { builder->removeAttrib(pos, f.flag); },
           [&](LayoutActions::Items items) {
@@ -2972,7 +2974,8 @@ static PLevelMaker underground(RandomGen& random, Vec2 size, FurnitureType floor
 PLevelMaker LevelMaker::settlementLevel(const ContentFactory& factory, RandomGen& random, SettlementInfo settlement,
     Vec2 size, optional<ResourceCounts> resources, optional<TribeId> resourceTribe) {
   auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR")).add(FurnitureType("MOUNTAIN2")).add(SquareAttrib::NO_RESOURCES)));
+  queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR")).add(FurnitureType("MOUNTAIN2"))
+      .add(SquareAttrib::NO_RESOURCES)));
   auto locations = unique<RandomLocations>();
   auto maker = getSettlementMaker(factory, random, settlement);
   // Due to backward compatibility with mods, don't clear the mountain under a predefined layout
