@@ -139,6 +139,14 @@ static Rectangle getPosition(LayoutGenerators::PlacementPos pos, Rectangle area,
     case PlacementPos::BOTTOM_CENTER:
       return Rectangle(area.middle().x - size.x / 2, area.bottom() - size.y,
                        area.middle().x - size.x / 2 + size.x, area.bottom());
+    case PlacementPos::TOP_RIGHT:
+      return Rectangle(area.topRight() - Vec2(size.x, 0), area.topRight() + Vec2(0, size.y));
+    case PlacementPos::TOP_LEFT:
+      return Rectangle(area.topLeft(), area.topLeft() + size);
+    case PlacementPos::BOTTOM_RIGHT:
+      return Rectangle(area.bottomRight(), area.bottomRight() - size);
+    case PlacementPos::BOTTOM_LEFT:
+      return Rectangle(area.bottomLeft() - Vec2(0, size.y), area.bottomLeft() + Vec2(size.x, 0));
   }
 }
 

@@ -16,7 +16,8 @@ namespace LayoutGenerators {
 }
 
 RICH_ENUM(LayoutGenerators::MarginType, TOP, BOTTOM, LEFT, RIGHT);
-RICH_ENUM(LayoutGenerators::PlacementPos, MIDDLE, MIDDLE_V, MIDDLE_H, LEFT_CENTER, RIGHT_CENTER, TOP_CENTER, BOTTOM_CENTER);
+RICH_ENUM(LayoutGenerators::PlacementPos, MIDDLE, MIDDLE_V, MIDDLE_H, LEFT_CENTER, RIGHT_CENTER, TOP_CENTER, BOTTOM_CENTER,
+    TOP_RIGHT, TOP_LEFT, BOTTOM_RIGHT, BOTTOM_LEFT);
 
 namespace LayoutGenerators {
 
