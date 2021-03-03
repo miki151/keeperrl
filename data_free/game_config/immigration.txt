@@ -65,15 +65,6 @@ Def DarkRecruits()
         { 1.0 CostInfo "GOLD" 12 }
       }
     }
-    {
-      ids = { "GOBLIN_BRUTE" }
-      traits = { FIGHTER }
-      requirements = {
-        { 0.0 RecruitmentInfo { "GOBLIN_CAVE_ALLY" "GOBLIN_VILLAGE" } 3 FIGHTER }
-        { 1.0 CostInfo "GOLD" 12 }
-      }
-    }
-
 End
 
 "dark_keeper"
@@ -630,26 +621,18 @@ End
 "goblins"
 {
     {
-      ids = { "GOBLIN_MATRON" }
+      ids = { "GOBLIN_WORKER" }
       traits = { WORKER NO_AUTO_EQUIPMENT }
-      initialRecruitment = 2
+      initialRecruitment = 4
       invisible = true
       hiddenInHelp = true
     }
     {
-      ids = { "GOBLIN_MATRON" }
+      ids = { "GOBLIN_WORKER" }
       traits = { WORKER NO_AUTO_EQUIPMENT }
-      spawnLocation = Pregnancy
       frequency = 1
-      requirements = {
-        { 0.0 Pregnancy }
-      }
       specialTraits = {
-         { 0.03 { Lasting {ENTERTAINER} }}
-         { 0.1 { SkillId DIGGING }}
-         { 0.03 { WorkshopType "WORKSHOP" Lasting { INSANITY } }}
-         { 0.05 { WorkshopType "FORGE" Lasting { INSANITY } }}
-         { 0.03 { WorkshopType "LABORATORY" Lasting { INSANITY } }}
+         { 0.2 { SkillId DIGGING }}
       }
     }
     {
@@ -657,7 +640,7 @@ End
       traits = { FIGHTER NO_AUTO_EQUIPMENT }
       frequency = 0.7
       requirements = {
-        { 0.0 Pregnancy }
+        { 0.1 AttractionInfo 1 {FurnitureType "FORGE" FurnitureType "WORKSHOP" FurnitureType "JEWELLER"}}
       }
       specialTraits = {
          { 0.03 { WorkshopType "WORKSHOP" Lasting { INSANITY } }}
@@ -669,10 +652,9 @@ End
     {
       ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER }
-      spawnLocation = Pregnancy
       frequency = 1
       requirements = {
-        { 0.0 Pregnancy }
+        { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_WOOD"}}
       }
       specialTraits = {
          { 0.01 { ExtraIntrinsicAttack
@@ -698,9 +680,8 @@ End
     {
       ids = { "GOBLIN_GUARD" }
       traits = { FIGHTER }
-      spawnLocation = Pregnancy
       requirements = {
-        { 0.0 Pregnancy }
+        { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_IRON"}}
       }
       frequency = 0.2
       specialTraits = {
@@ -725,9 +706,8 @@ End
     {
       ids = { "GOBLIN_ARCHER" }
       traits = { FIGHTER }
-      spawnLocation = Pregnancy
       requirements = {
-        { 0.0 Pregnancy }
+        { 0.1 AttractionInfo 1 {FurnitureType "ARCHERY_RANGE"}}
       }
       frequency = 0.4
       specialTraits = {
@@ -746,9 +726,9 @@ End
     {
       ids = { "GOBLIN_PRIEST" }
       traits = { FIGHTER }
-      spawnLocation = Pregnancy
       requirements = {
-        { 0.0 Pregnancy }
+        { 0.1 AttractionInfo 1 {FurnitureType "BOOKCASE_WOOD"}}
+        { 0.0 MinTurnRequirement 500 }
       }
       frequency = 0.3
       specialTraits = {
@@ -761,9 +741,9 @@ End
     {
       ids = { "GOBLIN_WIZARD" }
       traits = { FIGHTER }
-      spawnLocation = Pregnancy
       requirements = {
-        { 0.0 Pregnancy }
+        { 0.1 AttractionInfo 1 {FurnitureType "BOOKCASE_WOOD" FurnitureType "LABORATORY"}}
+        { 0.0 MinTurnRequirement 500 }
       }
       frequency = 0.3
       specialTraits = {
@@ -779,32 +759,29 @@ End
     {
       ids = { "GOBLIN_KABOOMER" }
       traits = { FIGHTER }
-      frequency = 0.1
       spawnLocation = Pregnancy
       requirements = {
         { 0.0 Pregnancy }
-        { 0.0 TechId "explosives" }
       }
+      frequency = 0.3
     }
     {
       ids = { "GOBLIN_CHICKENMANCER" }
       traits = { FIGHTER }
-      frequency = 0.1
       spawnLocation = Pregnancy
       requirements = {
         { 0.0 Pregnancy }
-        { 0.0 TechId "chickenmancy" }
       }
+      frequency = 0.3
     }
     {
       ids = { "GOBLIN_BRUTE" }
       traits = { FIGHTER }
-      frequency = 0.2
       spawnLocation = Pregnancy
       requirements = {
         { 0.0 Pregnancy }
-        { 0.0 TechId "goblin mutation" }
       }
+      frequency = 0.3
     }
     DarkRecruits()
 }

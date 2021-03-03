@@ -713,8 +713,8 @@
   {
     viewId = { "cyclops" }
     attr = {
-      DAMAGE 34
-      DEFENSE 40 
+      DAMAGE 32
+      DEFENSE 31 
     }
     body = {
       type = Humanoid LARGE
@@ -737,7 +737,10 @@
       MELEE 5
     }
     inventory = {
-      { "HeavyClub"}
+      { "WarHammer"}
+      { "ChainArmor" }
+      { "IronHelm" }
+      { "IronBoots" }
       # You can either list the values in the order defined in SERIALIZE_ALL or 
       { "GoldPiece" 40 80 }
       # Put them in any order in the format "key = value"
@@ -4110,27 +4113,42 @@ End
       { type = "LeatherBoots" chance = 0.3 }
     }
   }
-"GOBLIN_MATRON"
+"GOBLIN_WORKER"
   {
-    viewId = { "goblin_matron" }
+    viewId = { "goblin_keeper1" }
     attr = {
-      DAMAGE 12
-      DEFENSE 13 
+      DAMAGE 10
+      DEFENSE 10 
     }
     body = {
       type = Humanoid MEDIUM
     }
-    chatReactionFriendly = "talks about crafting"
+    chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""
     skills = {
-      "WORKSHOP" 0.3
       "DIGGING" 0.5
     }
     hatedByEffect = HATE_GREENSKINS
-    inventory = {
-      { "Club"}
-      { type = "LeatherBoots" chance = 0.3 }
+    gender = MALE
+    aiType = RANGED
+    name = {
+      name = "goblin worker"
+      firstNameGen = "ORC"
     }
+  }
+"GOBLIN_MATRON"
+  {
+    viewId = { "goblin_matron" }
+    attr = {
+      DAMAGE 7
+      DEFENSE 8 
+    }
+    body = {
+      type = Humanoid MEDIUM
+    }
+    chatReactionFriendly = "talks about makeup and lovemaking"
+    chatReactionHostile = "\"Die!\""
+    hatedByEffect = HATE_GREENSKINS
     gender = FEMALE
     aiType = RANGED
     name = {

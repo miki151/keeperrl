@@ -194,8 +194,10 @@
       fighters = {
         count = {12 16}
         all = {
-          3 "GOBLIN_WARRIOR"
-          1 "GOBLIN_BRUTE"
+          4 "GOBLIN_WARRIOR"
+          1 "GOBLIN_GUARD"
+          1 "GOBLIN_ARCHER"
+          1 "GOBLIN_PRIEST"
         }
       }
     }
@@ -214,11 +216,6 @@
       ids = {"GOBLIN_WARRIOR"}
       traits = {FIGHTER}
       frequency = 3
-    }
-    {
-      ids = {"GOBLIN_BRUTE"}
-      traits = {FIGHTER}
-      frequency = 1
     }
   }
 }
@@ -1694,7 +1691,7 @@
     inhabitants = {
       fighters = {
         count = {4 8}
-        all = { 1 "GOBLIN_BRUTE" }
+        all = { 1 "GOBLIN_WARRIOR" }
       }
     }
     closeToPlayer = true
@@ -1707,7 +1704,7 @@
   }
   immigrants = { 
     {
-      ids = { "GOBLIN_BRUTE" }
+      ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER }
       frequency = 1
     }

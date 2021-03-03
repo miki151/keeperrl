@@ -102,9 +102,9 @@
   tribeAlignment = EVIL
   immigrantGroups = {"goblins"}
   technology = {
-      "alchemy" "advanced alchemy" "alchemical conversion" "explosives"
+      "alchemy" "advanced alchemy" "alchemical conversion"
       "pig breeding" "iron working" "jewellery" "two-handed weapons" "traps" "archery" "sorcery"
-      "advanced sorcery" "magical weapons" "master sorcery" "distillation" "chickenmancy"
+      "advanced sorcery" "magical weapons" "master sorcery" "distillation"
   }
   zLevelGroups = { "basic" "evil" "goblins" }
   initialTech = { }
