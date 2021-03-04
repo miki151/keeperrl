@@ -63,8 +63,8 @@
 "chickenmancy" SPELL
 {
   "summon chicken" 1
-  "summon more chickens" 2
+  "summon more chickens" 3
   "chickenmorph" 5
-  "advanced chickenmorph" 6
-  "chickengeddon" 7
+  "advanced chickenmorph" 7
+  "chickengeddon" 10
 }

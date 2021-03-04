@@ -315,12 +315,12 @@
   }
   {
     {
-      all = { 1 "GOBLIN_BRUTE" }
+      all = { 1 "TROLL" }
       count = { 3 6 }
       baseLevelIncrease = { MELEE 25 }
     }
     KillLeader
-    "a pack of ogres"
+    "a pack of trolls"
     { 15000 50000 }
     100
   }

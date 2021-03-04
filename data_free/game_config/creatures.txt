@@ -4179,6 +4179,10 @@ End
       MELEE 7
     }
     hatedByEffect = HATE_GREENSKINS
+    inventory = {
+      { "Club"}
+      { "LeatherArmor"}
+    }
   }
 "GOBLIN_PRIEST"
   {
@@ -4230,6 +4234,10 @@ End
     }
     spellSchools = { "mage" }
     hatedByEffect = HATE_GREENSKINS
+    inventory = {
+      { "WoodenStaff"}
+      { "LeatherArmor"}
+    }
   }
 "GOBLIN_GUARD" inherit "GOBLIN_WARRIOR"
   {
@@ -4270,6 +4278,10 @@ End
       ARCHERY 7
     }
     hatedByEffect = HATE_GREENSKINS
+    inventory = {
+      { "Bow"}
+      { "LeatherArmor"}
+    }
   }
 "GOBLIN_KABOOMER"
   {
@@ -4321,14 +4333,14 @@ End
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
-      SPELL 7
+      SPELL 10
     }
     spellSchools = { "chickenmancy" }
     hatedByEffect = HATE_GREENSKINS
   }
-"GOBLIN_BRUTE" inherit "GOBLIN_WARRIOR"
+"TROLL" inherit "GOBLIN_WARRIOR"
   {
-    viewId = { "goblin_brute" }
+    viewId = { "troll" }
     attr = {
       DAMAGE 26
       DEFENSE 25
@@ -4340,11 +4352,15 @@ End
       SLOWED 1
     }
     name = {
-      name = "goblin brute"
+      name = "troll"
       firstNameGen = "ORC"
     }
     maxLevelIncrease = {
       MELEE 12
+    }
+    inventory = {
+      { "HeavyClub"}
+      { "LeatherArmor"}
     }
   }
 

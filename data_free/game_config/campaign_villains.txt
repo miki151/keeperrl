@@ -47,7 +47,7 @@ LAWFUL_KEEPER {
     {{ "cyclops" } "CYCLOPS" "Cyclops" LESSER}
     {{ "hydra" } "HYDRA" "Hydra" LESSER}
     {{ "zombie" } "CEMETERY" "Zombies" LESSER}
-    {{ "goblin_brute" } "GOBLIN_CAVE" "Goblins" LESSER}
+    {{ "goblin_warrior" } "GOBLIN_CAVE" "Goblins" LESSER}
     {{ "harpy" } "HARPY_CAVE" "Harpies" LESSER}
     {{ "ant_queen" } "ANTS_OPEN" "Ants" LESSER}
     {{ "dungeon_entrance" ColorId RED } "MAIN_DUNGEON" "Unremarkable dungeon" MAIN true}
@@ -98,7 +98,7 @@ LAWFUL_ADVENTURER {
     {{ "cyclops" } "CYCLOPS" "Cyclops" LESSER}
     {{ "hydra" } "HYDRA" "Hydra" LESSER}
     {{ "zombie" } "CEMETERY" "Zombies" LESSER}
-    {{ "goblin_brute" } "GOBLIN_CAVE" "Goblins" LESSER}
+    {{ "goblin_warrior" } "GOBLIN_CAVE" "Goblins" LESSER}
     {{ "harpy" } "HARPY_CAVE" "Harpies" LESSER}
     {{ "ant_queen" } "ANTS_OPEN" "Ants" LESSER}
     {{ "dungeon_entrance" ColorId RED } "MAIN_DUNGEON" "Unremarkable dungeon" MAIN true}

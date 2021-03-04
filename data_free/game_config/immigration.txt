@@ -167,29 +167,6 @@ End
       }
     }
     {
-      ids = { "GOBLIN_BRUTE" }
-      traits = { FIGHTER }
-      frequency = 0.3
-      requirements = {
-        { 0.0 MinTurnRequirement 2000 }
-        { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_IRON"}}
-      }
-      specialTraits = {
-         { 0.01 { CompanionInfo 1 true false 0.1 { "CAVE_BEAR" }}}
-         { 0.03 { SpecialAttr DAMAGE 10 HatedBy HATE_DWARVES }}
-         { 0.02 { ExtraBodyPart HEAD 1}}
-         { 0.03 { AttrBonus DAMAGE 13 Lasting { INSANITY }}}
-         { 0.03 { AttrBonus DEFENSE 5 Lasting { SLOWED }}}
-         { 0.05 { Lasting { RANGED_VULNERABILITY } }}
-         { 0.05 { Lasting { DISARM_TRAPS_SKILL } }}
-         { 0.05 { Lasting { SWIMMING_SKILL } }}
-         { 0.02 { Lasting { HATE_ELVES } }}
-         { 0.02 { Lasting { HATE_HUMANS } }}
-         { 0.05 { ExtraTraining ARCHERY 2}}
-         { 0.05 { Lasting { BAD_BREATH } }}
-      }
-    }
-    {
       ids = { "HARPY" }
       traits = { FIGHTER }
       frequency = 0.3
@@ -775,7 +752,7 @@ End
       frequency = 0.3
     }
     {
-      ids = { "GOBLIN_BRUTE" }
+      ids = { "TROLL" }
       traits = { FIGHTER }
       spawnLocation = Pregnancy
       requirements = {

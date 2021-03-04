@@ -248,7 +248,7 @@
 { "goblin_keeper4" "o" ColorId PURPLE }
 { "goblin_guard" "o" ColorId DARK_GREEN }
 { "goblin_kaboomer" "o" ColorId ORANGE }
-{ "goblin_brute" "O" ColorId DARK_GREEN }
+{ "troll" "O" ColorId DARK_GREEN }
 { "goblin_archer" "o" ColorId LIGHT_BROWN }
 { "goblin_wizard" "o" ColorId LIGHT_BLUE }
 { "goblin_warrior" "o" ColorId GREEN }

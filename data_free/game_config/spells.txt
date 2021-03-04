@@ -674,7 +674,7 @@ Def NoEffect() Unlock "nothing" End
 {
   upgrade = "chickenmorph"
   symbol = "🐣"
-  effect = Name "chickenmorph" Description "Turn yourself or someone into a chicken temporarily!"
+  effect = Name "advanced chickenmorph" Description "Turn yourself or someone into a chicken temporarily!"
       AI And { Health 0.25 1 Not Enemy } 1 -1 AI And { Not CreatureId "CHICKEN" Enemy } -1 1 {
     Polymorph "CHICKEN" 10
     Permanent INVULNERABLE

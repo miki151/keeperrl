@@ -199,6 +199,11 @@
           1 "GOBLIN_ARCHER"
           1 "GOBLIN_PRIEST"
         }
+        expLevelIncrease = {
+          MELEE 5
+          SPELL 5
+          ARCHERY 5
+        }
       }
     }
     locationNameGen = "TOWN"
@@ -1087,10 +1092,15 @@
   settlement = {
     type = Builtin CAVE "DUNGEON"
     inhabitants = {
-      leader = {{ "GOBLIN_BRUTE" }}
+      leader = {{ "TROLL" }}
       fighters = {
         count = {4 9}
         all = { 1 "GOBLIN_WARRIOR" }
+        expLevelIncrease = {
+          MELEE 5
+          SPELL 5
+          ARCHERY 5
+        }
       }
     }
     tribe = BANDIT
@@ -2292,7 +2302,7 @@
         count = {12 18}
         all = {
           5 "GOBLIN_WARRIOR"
-          2 "GOBLIN_BRUTE"
+          2 "TROLL"
           1 "GOBLIN_PRIEST"
           1 "GOBLIN_WIZARD"
           1 "VAMPIRE"
