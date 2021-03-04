@@ -71,7 +71,7 @@ static EnumMap<TribeAlignment, vector<VaultInfo>> getFriendlyVaults() {
   return {
     {TribeAlignment::EVIL, {
         {CreatureId("GOBLIN_WARRIOR"), 3, 5},
-        {CreatureId("GOBLIN_BRUTE"), 2, 4},
+        {CreatureId("TROLL"), 2, 4},
         {CreatureId("VAMPIRE"), 2, 4},
     }},
     {TribeAlignment::LAWFUL, {
