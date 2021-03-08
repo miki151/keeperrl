@@ -20,7 +20,7 @@ RICH_ENUM(EnumsDetail::PlacementPos, MIDDLE, TOP_STRETCHED, BOTTOM_STRETCHED, LE
     MIDDLE_STRETCHED_X, MIDDLE_STRETCHED_Y);
 RICH_ENUM(EnumsDetail::Direction, HORIZONTAL, VERTICAL);
 
-namespace {
+namespace ScriptedUIElems {
 
 using namespace EnumsDetail;
 
@@ -758,7 +758,8 @@ struct Slider : ScriptedUIInterface {
     auto& state = getSliderState(*sliderData, context);
     if ((id == MouseButtonId::LEFT && pos.inRectangle(bounds)) || (id == MouseButtonId::MOVED && state.sliderHeld)) {
       auto sliderWidth = slider->getSize(data, context).x;
-      callback = [pos, &state, bounds, sliderWidth, &posCallback = sliderData->callback,
+      auto& posCallback = sliderData->callback;
+      callback = [pos, &state, bounds, sliderWidth, &posCallback,
           continuous = sliderData->continuousCallback] {
         auto value = max(0.0, min(1.0, double(pos.x - sliderWidth / 2 - bounds.left()) / (bounds.width() - sliderWidth)));
         state.sliderPos = value;
@@ -769,12 +770,13 @@ struct Slider : ScriptedUIInterface {
       };
     } else
     if (id == MouseButtonId::RELEASED && state.sliderHeld) {
-      if (!sliderData->continuousCallback)
-        callback = [&state, &posCallback = sliderData->callback] {
+      if (!sliderData->continuousCallback) {
+        auto& posCallback = sliderData->callback;
+        callback = [&state, &posCallback] {
           state.sliderHeld = false;
           return posCallback(state.sliderPos);
         };
-      else
+      } else
         callback = [&state] {
           state.sliderHeld = false;
           return false;

@@ -63,7 +63,7 @@ ScriptedSubclassAdder adder##CLASS(#CLASS,\
   [](PrettyInputArchive& ar1) -> unique_ptr<ScriptedUIInterface>{\
     auto ret = unique<CLASS>();\
     ar1(*ret);\
-    return ret;\
+    return std::move(ret);\
   }\
 )
 
