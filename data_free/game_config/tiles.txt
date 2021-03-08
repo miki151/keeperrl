@@ -56,7 +56,6 @@
 { "lizardlord" "@" ColorId BROWN }
 { "imp" "i" ColorId LIGHT_BROWN }
 { "prisoner" "@" ColorId LIGHT_BROWN }
-{ "ogre" "O" ColorId GREEN }
 { "chicken" "c" ColorId YELLOW }
 { "gnome" "g" ColorId GREEN }
 { "gnome_boss" "g" ColorId DARK_BLUE }
@@ -644,3 +643,8 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
   background = "mountain2" fx = { GLITTERING ColorId LIGHT_BLUE } }
 
+# Legacy tiles, not in vanilla anymore
+  { "orc" "o" ColorId DARK_BLUE }
+  { "orc_captain" "o" ColorId PURPLE }
+  { "orc_shaman" "o" ColorId YELLOW }
+  { "ogre" "O" ColorId GREEN }

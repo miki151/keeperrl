@@ -301,12 +301,6 @@
       { type = "Bow" chance = 0.05 }
     }
   }
-"BANDIT_LEADER" inherit "BANDIT"
-  {
-    body = append {
-      droppedPartUpgrade = ChooseRandom { IncreaseAttr DAMAGE 2 IncreaseAttr DEFENSE 2 }
-    }
-  }
 "RAT_SOLDIER"
   {
     viewId = { "rat_soldier" }
@@ -4361,6 +4355,137 @@ End
     inventory = {
       { "HeavyClub"}
       { "LeatherArmor"}
+    }
+  }
+
+# legacy creatures not in vanilla anymore
+
+
+"ORC"
+  {
+    viewId = { "orc" }
+    attr = {
+      DAMAGE 16
+      DEFENSE 14 
+    }
+    body = {
+      type = Humanoid LARGE
+    }
+    chatReactionFriendly = "curses all elves"
+    chatReactionHostile = "\"Die!\""
+    skills = {
+      "WORKSHOP" 0.3
+      "FORGE" 0.3
+    }
+    maxLevelIncrease = {
+      MELEE 7
+    }
+    name = {
+      name = "orc"
+      firstNameGen = "ORC"
+    }
+    hatedByEffect = HATE_GREENSKINS
+    inventory = {
+      { "Club"}
+      { "LeatherArmor"}
+    }
+  }
+"ORC_MAGE"
+  {
+    viewId = { "orc_shaman" Rgb 180 50 255 255 }
+    attr = {
+      DAMAGE 12
+      DEFENSE 8
+      SPELL_DAMAGE 16 
+    }
+    body = {
+      type = Humanoid LARGE
+    }
+    skills = {
+      "LABORATORY" 0.7
+    }
+    aiType = RANGED
+    chatReactionFriendly = "curses all elves"
+    chatReactionHostile = "\"Die!\""
+    maxLevelIncrease = {
+      MELEE 4
+      SPELL 7
+    }
+    spellSchools = { "mage" }
+    name = {
+      name = "orc mage"
+      firstNameGen = "ORC"
+    }
+    hatedByEffect = HATE_GREENSKINS
+    inventory = {
+      { "WoodenStaff"}
+      { "LeatherArmor"}
+    }
+  }
+"ORC_SHAMAN" inherit "ORC_MAGE"
+  {
+    viewId = { "orc_shaman" }
+    attr = {
+      DAMAGE 12
+      DEFENSE 8
+      SPELL_DAMAGE 25 
+    }
+    maxLevelIncrease = {
+      MELEE 4
+      SPELL 12
+    }
+    spellSchools = {}
+    spells = { "heal spirit" }
+    companions = {4 false true 0.02 { "SPIRIT" }}
+    permanentEffects = append {
+      DISTILLATION_SKILL 1
+    }
+    name = {
+      name = "orc shaman"
+      firstNameGen = "ORC"
+    }
+  }
+"ORC_HEALER" inherit "ORC_MAGE"
+  {
+    viewId = { "orc_shaman" ColorId GREEN }
+    spellSchools = { "healer" }
+    maxLevelIncrease = {
+      SPELL 7
+    }
+    spells = { "healing" }
+    name = {
+      name = "orc healer"
+      firstNameGen = "ORC"
+    }
+  }
+"OGRE"
+  {
+    viewId = { "ogre" }
+    attr = {
+      DAMAGE 18
+      DEFENSE 18 
+    }
+    body = {
+      type = Humanoid LARGE
+      weight = 140
+    }
+    name = {
+      name = "ogre"
+      firstNameGen = "ORC"
+    }
+    permanentEffects = {
+      MAGIC_VULNERABILITY 1
+    }
+    skills = {
+      "WORKSHOP" 0.5
+      "FORGE" 0.5
+    }
+    maxLevelIncrease = {
+      MELEE 12
+    }
+    hatedByEffect = HATE_GREENSKINS
+    inventory = {
+      { "HeavyClub"}
     }
   }
 

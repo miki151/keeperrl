@@ -1051,7 +1051,7 @@
   settlement = {
     type = Builtin CAVE "DUNGEON"
     inhabitants = {
-      leader = {{ "BANDIT_LEADER" }}
+      leader = {{ "BANDIT" }}
       fighters = {
         count = {4 9}
         all = { 1 "BANDIT" }
@@ -2353,6 +2353,111 @@
     {
       ids = {"DWARF"}
       traits = {FIGHTER}
+      frequency = 1
+    }
+  }
+}
+
+# Legacy content, not in vanilla anymore
+
+"ORC_VILLAGE"
+{
+  settlement = {
+    type = Builtin VILLAGE "BRICK"
+    tribe = GREENSKIN
+    inhabitants = {
+      fighters = {
+        count = {12 16}
+        all = {
+          1 "ORC"
+          1 "OGRE"
+        }
+      }
+    }
+    locationNameGen = "TOWN"
+    race = "greenskins"
+    furniture = "roomFurniture"
+    outsideFeatures = "villageOutside"
+  }
+  config = {
+    immigrantInterval = 300
+    maxPopulation = 16
+  }
+  createOnBones = 0.1 { "DWARVES" "VILLAGE" }
+  immigrants = {
+    {
+      ids = {"ORC"}
+      traits = {FIGHTER}
+      frequency = 3
+    }
+    {
+      ids = {"OGRE"}
+      traits = {FIGHTER}
+      frequency = 1
+    }
+  }
+}
+
+"ORC_CAVE"
+{
+  settlement = {
+    type = Builtin CAVE "DUNGEON"
+    inhabitants = {
+      fighters = {
+        count = {4 9}
+        all = { 1 "ORC" }
+      }
+    }
+    tribe = BANDIT
+    race = "orcs"
+  }
+  config = {
+    immigrantInterval = 1000
+    maxPopulation = 10
+  }
+  behaviour = {
+    minPopulation = 0
+    minTeamSize = 3
+    triggers = {Gold 500}
+    attackBehaviour = StealGold
+    ransom = 0.5 80
+  }
+  createOnBones = 0.1 { "KOBOLD_CAVE" }
+  immigrants = { 
+    {
+      ids = { "ORC" }
+      traits = { FIGHTER }
+      frequency = 1
+    }
+  }
+}
+"COTTAGE_ORCS" inherit "ORC_CAVE"
+{
+  createOnBones = 1.0 { "ELVEN_COTTAGE" }
+}
+"OGRE_CAVE"
+{
+  settlement = {
+    type = Builtin CAVE "DUNGEON"
+    tribe = GREENSKIN
+    inhabitants = {
+      fighters = {
+        count = {4 8}
+        all = { 1 "OGRE" }
+      }
+    }
+    closeToPlayer = true
+    furniture = "roomFurniture"
+    outsideFeatures = "villageOutside"
+  }
+  config = {
+    immigrantInterval = 300
+    maxPopulation = 10
+  }
+  immigrants = { 
+    {
+      ids = { "OGRE" }
+      traits = { FIGHTER }
       frequency = 1
     }
   }
