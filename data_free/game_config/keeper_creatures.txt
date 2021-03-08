@@ -114,7 +114,7 @@
       "installations" "minion_statues" "traps"
   }
   workshopGroups = { "basic" "traps" }
-  description = "Lead a tribe of misogynist and ugly goblins to victory. This faction was originally created by RighteousSinner and Soft Monster for the Bonus Mod."
+  description = "Play as a Goblin Keeper, and seek the legendary goblin matrons. This faction was originally created by RighteousSinner and Soft Monster for the Bonus Mod."
   unlock = "goblins"
 }
 "7_zombies"
