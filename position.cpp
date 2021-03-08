@@ -1015,6 +1015,7 @@ const vector<Position>& Position::getLandingAtNextLevel(StairKey stairKey) {
 }
 
 static optional<Position> navigateToLevel(Position from, Level* level, const MovementType& type) {
+  PROFILE;
   while (from.getLevel() != level) {
     if (auto stairs = from.getLevel()->getStairsTo(level)) {
       if (from.isConnectedTo(*stairs, type)) {

@@ -277,9 +277,13 @@ optional<StairKey> Model::getStairsBetween(WConstLevel from, WConstLevel to) con
 }
 
 optional<Position> Model::getStairs(WConstLevel from, WConstLevel to) {
+  PROFILE;
   CHECK(from != to);
+  {
+    PROFILE_BLOCK("check none");
   if (!getLevels().contains(from) || !getLevels().contains(to) || !stairNavigation.count(getIds(from, to)))
     return none;
+  }
   return Random.choose(from->getLandingSquares(stairNavigation.at(getIds(from, to))));
 }
 
