@@ -1621,7 +1621,7 @@ static bool apply(const Effects::Blast&, Position pos, Creature* attacker) {
   for (auto& v : drawLine(origin, pos.getCoord()))
     if (v != origin && v.dist8(origin) <= range) {
       trajectory.push_back(Position(v, pos.getLevel()));
-      if (trajectory.back().isDirEffectBlocked())
+      if (trajectory.back().isDirEffectBlocked(attacker))
         break;
     }
   for (int i : All(trajectory).reverse())

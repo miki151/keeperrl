@@ -443,7 +443,7 @@ void Player::fireAction() {
         Position pos(v, getLevel());
         if (!creature->canSee(pos) && !getMemory().getViewIndex(pos))
           passable[v] = PassableInfo::UNKNOWN;
-        if (spell->isBlockedBy(pos))
+        if (spell->isBlockedBy(creature, pos))
           passable[v] = PassableInfo::STOPS_HERE;
       }
       auto res = chooseTarget(std::move(passable), spell->isEndOnly() ? TargetType::POSITION : TargetType::TRAJECTORY,
@@ -494,7 +494,7 @@ void Player::spellAction(int id) {
         Position pos(v, getLevel());
         if (!creature->canSee(pos) && !getMemory().getViewIndex(pos))
           passable[v] = PassableInfo::UNKNOWN;
-        if (spell->isBlockedBy(pos))
+        if (spell->isBlockedBy(creature, pos))
           passable[v] = PassableInfo::STOPS_HERE;
       }
       if (auto target = chooseTarget(std::move(passable), spell->isEndOnly() ? TargetType::POSITION : TargetType::TRAJECTORY,

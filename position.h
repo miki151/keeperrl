@@ -153,7 +153,7 @@ class Position {
   void removePortal();
   optional<int> getPortalIndex() const;
   double getLightingEfficiency() const;
-  bool isDirEffectBlocked() const;
+  bool isDirEffectBlocked(const Creature*) const;
   void addFurnitureEffect(TribeId, const FurnitureEffectInfo&) const;
   void removeFurnitureEffect(TribeId, const FurnitureEffectInfo&) const;
   int countSwarmers() const;

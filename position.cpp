@@ -29,6 +29,7 @@
 #include "content_factory.h"
 #include "shortest_path.h"
 #include "bucket_map.h"
+#include "vision.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -231,9 +232,8 @@ double Position::getLightingEfficiency() const {
   return min(1.0, (lightBase + getLight() * (1 - lightBase)) / flattenVal);
 }
 
-bool Position::isDirEffectBlocked() const {
-  return !canEnterEmpty(
-        MovementType({MovementTrait::FLY, MovementTrait::WALK}).setFireResistant().setForced());
+bool Position::isDirEffectBlocked(const Creature* c) const {
+  return !canSeeThru(c->getVision().getId());
 }
 
 Creature* Position::getCreature() const {

@@ -50,7 +50,7 @@ class Spell {
   string getName(const ContentFactory*) const;
   optional<SpellId> getUpgrade() const;
   void getAIMove(const Creature*, MoveInfo&) const;
-  bool isBlockedBy(Position pos) const;
+  bool isBlockedBy(const Creature* c, Position pos) const;
   optional<Keybinding> getKeybinding() const;
   SpellType getType() const;
   bool isFriendlyFire(const Creature* caster, Position to) const;

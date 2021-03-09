@@ -91,7 +91,7 @@ void Spell::apply(Creature* c, Position target) const {
   for (auto& v : drawLine(origin, target.getCoord()))
     if (v != origin && v.dist8(origin) <= range) {
       trajectory.push_back(Position(v, target.getLevel()));
-      if (isBlockedBy(trajectory.back()))
+      if (isBlockedBy(c, trajectory.back()))
         break;
     }
   int remainingHits = maxHits.value_or(10000);
@@ -144,7 +144,7 @@ int Spell::checkTrajectory(const Creature* c, Position to) const {
   Position from = c->getPosition();
   for (auto& v : drawLine(from, to))
     if (v != from) {
-      if (isBlockedBy(v))
+      if (isBlockedBy(c, v))
         return -1;
       auto value = effect->shouldAIApply(c, v);
       if (value < 0)
@@ -168,8 +168,8 @@ void Spell::getAIMove(const Creature* c, MoveInfo& ret) const {
     }
 }
 
-bool Spell::isBlockedBy(Position pos) const {
-  return blockedByWall && pos.isDirEffectBlocked();
+bool Spell::isBlockedBy(const Creature* c, Position pos) const {
+  return blockedByWall && pos.isDirEffectBlocked(c);
 }
 
 optional<Keybinding> Spell::getKeybinding() const {
