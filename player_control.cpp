@@ -2932,14 +2932,15 @@ vector<vector<Vec2>> PlayerControl::getTeamPathTo(TeamId teamId, Vec2 v) const {
 
 vector<Vec2> PlayerControl::getHighlightedPathTo(Vec2 v) const {
   auto level = getCurrentLevel();
-  if (auto c = Position(v, level).getCreature()) {
-    auto res = c->getCurrentPath()
-        .filter([&](auto& pos) { return pos.getLevel() == level; } )
-        .transform([&](auto& pos) { return pos.getCoord(); } );
-    if (res.size() > 1)
-      res.pop_back();
-    return res;
-  }
+  if (auto c = Position(v, level).getCreature())
+    if (canSee(c) && !isEnemy(c)) {
+      auto res = c->getCurrentPath()
+          .filter([&](auto& pos) { return pos.getLevel() == level; } )
+          .transform([&](auto& pos) { return pos.getCoord(); } );
+      if (res.size() > 1)
+        res.pop_back();
+      return res;
+    }
   return {};
 }
 
