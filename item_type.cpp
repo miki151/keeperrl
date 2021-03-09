@@ -588,7 +588,7 @@ ItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory* factory) co
       i.name = "glyph " + *i.shortName;
       i.plural= "glyphs "  + *i.shortName;
       i.blindName = "glyph"_s;
-      i.itemClass = ItemClass::SCROLL;
+      i.itemClass = ItemClass::OTHER;
       i.weight = 0.1;
       i.price = 100;
       i.uses = 1;
@@ -610,7 +610,7 @@ ItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) c
       i.name = "balsam of " + *i.shortName;
       i.plural= "balsams of "  + *i.shortName;
       i.blindName = "balsam"_s;
-      i.itemClass = ItemClass::POTION;
+      i.itemClass = ItemClass::OTHER;
       i.weight = 0.5;
       i.price = 100;
       i.uses = 1;
