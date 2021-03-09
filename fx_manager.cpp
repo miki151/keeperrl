@@ -283,6 +283,12 @@ void FXManager::kill(ParticleSystemId id, bool immediate) {
     systems[id].kill(immediate);
 }
 
+void FXManager::clearUnorderedEffects() {
+  for (auto& s : systems)
+    if (!s.orderedDraw)
+      s.kill(true);
+}
+
 ParticleSystem& FXManager::get(ParticleSystemId id) {
   DASSERT(valid(id));
   return systems[id];

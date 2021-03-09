@@ -39,6 +39,8 @@ public:
   bool dead(ParticleSystemId) const; // invalid ids will be dead
   void kill(ParticleSystemId, bool immediate);
 
+  void clearUnorderedEffects();
+
   // TODO: this interface may be too fancy...
   // id cannot be invalid
   ParticleSystem &get(ParticleSystemId);

@@ -1422,10 +1422,11 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
   // hacky way to detect that we're switching between real-time and turn-based and not between
   // team members in turn-based mode.
   bool newView = (view->getCenterType() != previousView);
-  if (newView || level != previousLevel)
+  if (newView || level != previousLevel) {
+    fx::FXManager::getInstance()->clearUnorderedEffects();
     for (Vec2 pos : level->getBounds())
       level->setNeedsRenderUpdate(pos, true);
-  else
+  } else
     for (Vec2 pos : mapLayout->getAllTiles(getBounds(), Level::getMaxBounds(), getScreenPos()))
       if (level->needsRenderUpdate(pos) ||
           !lastSquareUpdate[pos] || *lastSquareUpdate[pos] < currentTimeReal - milliseconds{1000})
