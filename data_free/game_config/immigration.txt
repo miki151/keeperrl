@@ -100,6 +100,7 @@ End
          { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DAMAGE 10 CreatureStatus LEADER }}
          { 0.02 { SpecialAttr DEFENSE 8 HatedBy HATE_HUMANS }}
+         { 0.05 { SpecialAttr DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
          { 0.01 { ExtraBodyPart HEAD 1}}
          { 0.01 { ExtraBodyPart WING 2}}
          { 0.05 { ExtraTraining ARCHERY 2}}
@@ -128,6 +129,7 @@ End
          { 0.01 { SpecialAttr DEFENSE 10 HatedBy HATE_DRAGONS }}
          { 0.10 { ExtraTraining SPELL 4}}
          { 0.05 { WorkshopType "LABORATORY" }}
+         { 0.05 { SpecialAttr SPELL_DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
          { 0.02 { Lasting { HATE_ELVES } }}
          { 0.02 { Lasting { HATE_HUMANS } }}
          { 0.01 { Lasting { ENTERTAINER } }}
@@ -180,6 +182,7 @@ End
          { 0.03 { AttrBonus RANGED_DAMAGE 13 Lasting { INSANITY }}}
          { 0.03 { AttrBonus DEFENSE 5 Lasting { SLOWED }}}
          { 0.05 { Lasting { RANGED_VULNERABILITY } }}
+         { 0.05 { SpecialAttr RANGED_DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
          { 0.05 { Lasting { DISARM_TRAPS_SKILL } }}
          { 0.05 { Lasting { SWIMMING_SKILL } }}
          { 0.02 { Lasting { HATE_ELVES } }}
@@ -643,6 +646,7 @@ End
          { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DAMAGE 10 CreatureStatus LEADER }}
          { 0.02 { SpecialAttr DEFENSE 8 HatedBy HATE_HUMANS }}
+         { 0.15 { SpecialAttr DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
          { 0.05 { ExtraTraining ARCHERY 2}}
          { 0.05 { ExtraTraining MELEE 2}}
          { 0.05 { Lasting { NIGHT_VISION } }}
@@ -691,6 +695,7 @@ End
          { 0.02 { SpecialAttr RANGED_DAMAGE 20 CreatureStatus CIVILIAN }}
          { 0.03 { AttrBonus RANGED_DAMAGE 13 Lasting { INSANITY }}}
          { 0.03 { AttrBonus DEFENSE 5 Lasting { SLOWED }}}
+         { 0.15 { SpecialAttr RANGED_DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
          { 0.05 { Lasting { RANGED_VULNERABILITY } }}
          { 0.05 { Lasting { DISARM_TRAPS_SKILL } }}
          { 0.05 { Lasting { SWIMMING_SKILL } }}
@@ -727,6 +732,7 @@ End
          { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DEFENSE 10 HatedBy HATE_DRAGONS }}
          { 0.10 { ExtraTraining SPELL 4}}
+         { 0.15 { SpecialAttr SPELL_DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
          { 0.05 { WorkshopType "LABORATORY" }}
          { 0.02 { Lasting { HATE_ELVES } }}
          { 0.02 { Lasting { HATE_HUMANS } }}
