@@ -1204,7 +1204,7 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
     }
   }
   if (!item.runes.empty() && !item.item.notArtifact)
-    ret.itemInfo.description.push_back("Requires a craftsman of legendary skills.");
+    ret.itemInfo.unavailableReason = "Requires a craftsman of legendary skills.";
   ret.itemInfo.actions = {ItemAction::REMOVE};
   ret.maxUpgrades = item.item.maxUpgrades;
   return ret;

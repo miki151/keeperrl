@@ -2160,7 +2160,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
           WL(uiHighlightMouseOver),
           std::move(guiElem),
           WL(button, getButtonCallback({UserInputId::WORKSHOP_ADD, itemIndex})),
-          thisTooltip({elem.description}, none, options[itemIndex].creatureInfo, itemIndex + THIS_LINE)
+          thisTooltip(elem.description, none, options[itemIndex].creatureInfo, itemIndex + THIS_LINE)
       );
     lines.addElem(WL(rightMargin, rightElemMargin, std::move(guiElem)));
   }
@@ -2192,7 +2192,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
         WL(bottomMargin, 5,
             WL(progressBar, Color::DARK_GREEN.transparency(128), elem.productionState)),
         WL(rightMargin, rightElemMargin, line.buildHorizontalList()),
-        thisTooltip({}, none, queued[i].creatureInfo, i + THIS_LINE)
+        thisTooltip(elem.itemInfo.description, elem.paid ? optional<string>() : elem.itemInfo.unavailableReason, queued[i].creatureInfo, i + THIS_LINE)
     ));
   }
   return WL(preferredSize, 940, 600,
