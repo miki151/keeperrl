@@ -133,7 +133,7 @@ optional<SpellId> Spell::getUpgrade() const {
 
 bool Spell::isFriendlyFire(const Creature* c, Position to) const {
   PROFILE;
-  return checkTrajectory(c, to) >= 0;
+  return checkTrajectory(c, to) < 0;
 }
 
 int Spell::checkTrajectory(const Creature* c, Position to) const {

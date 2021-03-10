@@ -2038,7 +2038,7 @@ static bool sameAIIntent(EffectAIIntent a, EffectAIIntent b) {
 
 static EffectAIIntent shouldAIApply(const Effects::AI& e, const Creature* caster, Position pos) {
   auto origRes = e.effect->shouldAIApply(caster, pos);
-  if (sameAIIntent(origRes, e.from) && e.predicate.apply(pos, caster))
+  if (!caster->isPlayer() && sameAIIntent(origRes, e.from) && e.predicate.apply(pos, caster))
     return e.to;
   return origRes;
 }
