@@ -161,7 +161,7 @@ class GuiBuilder {
   Options* options;
   Callbacks callbacks;
   SGuiElem getHintCallback(const vector<string>&);
-  SGuiElem getTooltip(const vector<string>&, int id, milliseconds delay = milliseconds{700});
+  SGuiElem getTooltip(const vector<string>&, int id, milliseconds delay = milliseconds{700}, bool forceEnableTooltip = false);
   SGuiElem getTooltip2(SGuiElem, GuiFactory::PositionFun);
   SGuiElem drawImmigrantCreature(const ImmigrantCreatureInfo&);
   vector<SGuiElem> drawPlayerAttributes(const vector<AttributeInfo>&);
@@ -270,7 +270,7 @@ class GuiBuilder {
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
   SGuiElem getItemLine(const ItemInfo&, function<void(Rectangle)> onClick,
-      function<void()> onMultiClick = nullptr);
+      function<void()> onMultiClick = nullptr, bool forceEnableTooltip = false);
   vector<string> getItemHint(const ItemInfo&);
   SGuiElem drawMinionAndLevel(ViewIdList, int level, int iconMult);
   vector<SDL::SDL_Keysym> getConfirmationKeys();

@@ -1110,7 +1110,7 @@ static string getWeightString(double weight) {
 }
 
 SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)> onClick,
-    function<void()> onMultiClick) {
+    function<void()> onMultiClick, bool forceEnableTooltip) {
   auto line = WL(getListBuilder);
   int leftMargin = 0;
   auto viewId = WL(viewObject, item.viewId);
@@ -1130,7 +1130,7 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   auto mainLine = WL(stack,
       WL(buttonRect, onClick),
       WL(renderInBounds, line.buildHorizontalList()),
-      getTooltip(getItemHint(item), (int) item.ids.getHash()));
+      getTooltip(getItemHint(item), (int) item.ids.getHash(), milliseconds{700}, forceEnableTooltip));
   line.clear();
   line.addMiddleElem(std::move(mainLine));
   line.addBackSpace(5);
@@ -1154,10 +1154,12 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   return WL(margins, std::move(elem), leftMargin, 0, 0, 0);
 }
 
-SGuiElem GuiBuilder::getTooltip(const vector<string>& text, int id, milliseconds delay) {
+SGuiElem GuiBuilder::getTooltip(const vector<string>& text, int id, milliseconds delay, bool forceEnableTooltip) {
   return cache->get(
-      [this, delay](const vector<string>& text) {
-        return WL(conditional, WL(tooltip, text, delay), [this] { return !disableTooltip;}); },
+      [this, delay, forceEnableTooltip](const vector<string>& text) {
+        return forceEnableTooltip 
+            ? WL(tooltip, text, delay)
+            : WL(conditional, WL(tooltip, text, delay), [this] { return !disableTooltip;}); },
       id, text);
 }
 
@@ -2192,7 +2194,8 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
         WL(bottomMargin, 5,
             WL(progressBar, Color::DARK_GREEN.transparency(128), elem.productionState)),
         WL(rightMargin, rightElemMargin, line.buildHorizontalList()),
-        thisTooltip(elem.itemInfo.description, elem.paid ? optional<string>() : elem.itemInfo.unavailableReason, queued[i].creatureInfo, i + THIS_LINE)
+        thisTooltip(elem.itemInfo.description, elem.paid ? optional<string>() : elem.itemInfo.unavailableReason,
+            queued[i].creatureInfo, i + THIS_LINE)
     ));
   }
   return WL(preferredSize, 940, 600,
@@ -3149,7 +3152,7 @@ vector<SGuiElem> GuiBuilder::drawItemMenu(const vector<ItemInfo>& items, ItemMen
     bool doneBut) {
   vector<SGuiElem> lines;
   for (int i : All(items))
-    lines.push_back(getItemLine(items[i], [=] (Rectangle bounds) { callback(bounds, i);} ));
+    lines.push_back(getItemLine(items[i], [=] (Rectangle bounds) { callback(bounds, i);}, nullptr, true));
   if (doneBut)
     lines.push_back(WL(stack,
           WL(button, [=] { callback(Rectangle(), none); }, gui.getKey(SDL::SDLK_ESCAPE)),
