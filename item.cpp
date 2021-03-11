@@ -357,7 +357,6 @@ string Item::getApplyMsgThirdPerson(const Creature* owner) const {
   if (attributes->applyMsgThirdPerson)
     return *attributes->applyMsgThirdPerson;
   switch (getClass()) {
-    case ItemClass::TOOL: return "applies " + getAName(false, owner);
     case ItemClass::FOOD: return "eats " + getAName(false, owner);
     default: return attributes->applyVerb.second + " " + getAName(false, owner);
   }
@@ -367,7 +366,6 @@ string Item::getApplyMsgFirstPerson(const Creature* owner) const {
   if (attributes->applyMsgFirstPerson)
     return *attributes->applyMsgFirstPerson;
   switch (getClass()) {
-    case ItemClass::TOOL: return "apply " + getAName(false, owner);
     case ItemClass::FOOD: return "eat " + getAName(false, owner);
     default: return attributes->applyVerb.first + " " + getAName(false, owner);
   }

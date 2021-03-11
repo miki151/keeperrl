@@ -359,7 +359,6 @@ ItemAttributes ItemTypes::AutomatonPaint::getAttributes(const ContentFactory*) c
   return ITATTR(
       i.viewId = ViewId("potion2", color);
       i.name = "automaton paint";
-      i.itemClass = ItemClass::TOOL;
       i.weight = 0.1;
       i.automatonPart = AutomatonPart LIST(
           ""_s,
@@ -413,7 +412,6 @@ ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory
       i.partIds = allIds.getSubsequence(1);
       i.effect = Effect(Effects::AssembledMinion{creature, traits});
       i.name = itemName;
-      i.itemClass = ItemClass::TOOL;
       i.weight = 1;
       i.price = getEffectPrice(*i.effect);
       i.uses = 1;
@@ -472,7 +470,6 @@ ItemAttributes ItemTypes::TrapItem::getAttributes(const ContentFactory*) const {
       i.name = "unarmed " + trapName + " trap";
       i.shortName = trapName;
       i.weight = 0.5;
-      i.itemClass = ItemClass::TOOL;
       i.applyTime = 3_visible;
       i.applySound = SoundId::TRAP_ARMING;
       i.uses = 1;
