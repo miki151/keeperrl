@@ -6,7 +6,6 @@
     applyMsgThirdPerson = "assembles an automaton"
     applySound = TRAP_ARMING
     weight = 30
-    itemClass = TOOL
     applyTime = 3
     uses = 1
     price = 60
@@ -18,7 +17,6 @@
     name = "wooden humanoid head"
     shortName = "humanoid head"
     weight = 4
-    itemClass = TOOL
     automatonPart = {
       "automatons_upper"
       2
@@ -60,7 +58,6 @@
     name = "pair of wooden legs"
     shortName = "wooden legs"
     weight = 8
-    itemClass = TOOL
     automatonPart = {
       "automatons_lower"
       0
@@ -83,7 +80,6 @@
     name = "pair of wooden arms"
     shortName = "wooden arms"
     weight = 6
-    itemClass = TOOL
     automatonPart = {
       "automatons_upper"
       1
@@ -102,7 +98,6 @@
     viewId = { "automaton_drill" Rgb 180 140 55 255 }
     name = "wooden drill"
     weight = 6
-    itemClass = TOOL
     automatonPart = {
       "automatons_upper"
       1
@@ -121,7 +116,6 @@
     viewId = { "automaton_crafting" Rgb 180 140 55 255 }
     name = "wooden crafting arms"
     weight = 6
-    itemClass = TOOL
     automatonPart = {
       "automatons_upper"
       1
@@ -142,7 +136,6 @@
     name = "iron humanoid head"
     shortName = "humanoid head"
     weight = 4
-    itemClass = TOOL
     automatonPart = {
       "automatons_upper"
       2
@@ -224,7 +217,6 @@
     name = "pair of iron legs"
     shortName = "iron legs"
     weight = 8
-    itemClass = TOOL
     automatonPart = {
       "automatons_lower"
       0
@@ -247,7 +239,6 @@
     name = "pair of iron arms"
     shortName = "iron arms"
     weight = 6
-    itemClass = TOOL
     automatonPart = {
       "automatons_upper"
       1
@@ -267,7 +258,6 @@
     name = "iron drill"
     shortName = "iron drill"
     weight = 6
-    itemClass = TOOL
     automatonPart = {
       "automatons_upper"
       1
@@ -286,7 +276,6 @@
     viewId = { "automaton_crafting" Rgb 140 148 148 255 }
     name = "iron crafting arms"
     weight = 6
-    itemClass = TOOL
     automatonPart = {
       "automatons_upper"
       1
@@ -343,7 +332,6 @@
     name = "adamantine humanoid head"
     shortName = "humanoid head"
     weight = 4
-    itemClass = TOOL
     automatonPart = {
       "automatons_upper"
       2
@@ -425,7 +413,6 @@
     name = "pair of adamantine legs"
     shortName = "adamantine legs"
     weight = 8
-    itemClass = TOOL
     automatonPart = {
       "automatons_lower"
       0
@@ -448,7 +435,6 @@
     name = "pair of adamantine arms"
     shortName = "adamantine arms"
     weight = 6
-    itemClass = TOOL
     automatonPart = {
       "automatons_upper"
       1
@@ -468,7 +454,6 @@
     name = "adamantine drill"
     shortName = "adamantine drill"
     weight = 6
-    itemClass = TOOL
     automatonPart = {
       "automatons_upper"
       1
@@ -487,7 +472,6 @@
     viewId = { "automaton_crafting" Rgb 148 189 189 255 }
     name = "adamantine crafting arms"
     weight = 6
-    itemClass = TOOL
     automatonPart = {
       "automatons_upper"
       1
@@ -865,7 +849,6 @@
 "Torch"
   {
     viewId = { "hand_torch" }
-    itemClass = TOOL
     weight = 1
     ownedEffect = LIGHT_SOURCE
     name = "hand torch"
@@ -1495,7 +1478,6 @@ End
     name = "amulet of defense"
     plural = "amulets of defense"
     description = "Increases the toughness of your skin and flesh, making you harder to wound."
-    itemClass = AMULET
     equipmentSlot = AMULET
     price = 60
     modifiers = {
@@ -1508,7 +1490,6 @@ End
     viewId = { "first_aid" }
     name = "first aid kit"
     weight = 0.5
-    itemClass = TOOL
     description = "Heals your wounds, but requires a few turns to apply."
     applyTime = 3
     uses = 3
@@ -1524,7 +1505,6 @@ End
     applyMsgFirstPerson = "rub the lamp"
     applyMsgThirdPerson = "rubs the lamp"
     weight = 1
-    itemClass = TOOL
     description = "Just an oil lamp"
     uses = 1
     price = 1000
@@ -1540,7 +1520,6 @@ End
     equipedCompanion = 5 true false 0.01 { "SPIDER" }
     weight = 0.05
     equipmentSlot = RINGS
-    itemClass = RING
     price = 1
   }
 "DragonRing" inherit "SpiderRing"
@@ -1565,7 +1544,6 @@ End
   {
     name = "key"
     viewId = { "black_market_key" }
-    itemClass = TOOL
     applyMsgFirstPerson = "try to use the key"
     applyMsgThirdPerson = "tries to use the key"
     weight = 0.1
