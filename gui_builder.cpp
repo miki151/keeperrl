@@ -3576,9 +3576,13 @@ SGuiElem GuiBuilder::drawTradeItemMenu(SyncQueue<optional<UniqueEntity<Item>::Id
 
 SGuiElem GuiBuilder::drawPillageItemMenu(SyncQueue<optional<int>>& queue, const string& title,
     const vector<ItemInfo>& items, ScrollPosition* scrollPos) {
-  int titleExtraSpace = 10;
   auto lines = WL(getListBuilder, getStandardLineHeight());
-  lines.addElem(WL(label, title), getStandardLineHeight() + titleExtraSpace);
+  lines.addSpace(5);
+  lines.addElem(WL(getListBuilder)
+      .addElemAuto(WL(label, title))
+      .addBackElemAuto(WL(buttonLabel, "Choose all", [&queue] { queue.push(-1); }))
+      .buildHorizontalList());
+  lines.addSpace(10);
   for (SGuiElem& elem : drawItemMenu(items,
         [&queue, &items] (Rectangle, optional<int> index) {
             if (index && !items[*index].unavailable) queue.push(*index);}))

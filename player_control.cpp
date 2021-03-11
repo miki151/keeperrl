@@ -888,8 +888,14 @@ void PlayerControl::handlePillage(Collective* col) {
     auto index = getView()->choosePillageItem("Pillage " + col->getName()->full, itemInfo, &scrollPos);
     if (!index)
       break;
-    CHECK(!options[*index].storage.empty());
-    Random.choose(options[*index].storage).dropItems(retrievePillageItems(col, options[*index].items));
+    if (index == -1) {
+      for (auto& elem : options)
+        if (!elem.storage.empty())
+          Random.choose(elem.storage).dropItems(retrievePillageItems(col, elem.items));
+    } else {
+      CHECK(!options[*index].storage.empty());
+      Random.choose(options[*index].storage).dropItems(retrievePillageItems(col, options[*index].items));
+    }
     if (auto& name = col->getName())
       collective->addRecordedEvent("the pillaging of " + name->full);
     getView()->updateView(this, true);
