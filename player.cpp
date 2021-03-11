@@ -191,8 +191,7 @@ bool Player::tryToPerform(CreatureAction action) {
 
 void Player::applyItem(vector<Item*> items) {
   PROFILE;
-  if (creature->isAffected(LastingEffect::BLIND) &&
-      contains({ItemClass::SCROLL, ItemClass::BOOK}, items[0]->getClass())) {
+  if (creature->isAffected(LastingEffect::BLIND) && items[0]->getClass() == ItemClass::SCROLL) {
     privateMessage("You can't read while blind!");
     return;
   }

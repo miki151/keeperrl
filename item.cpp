@@ -355,7 +355,6 @@ string Item::getApplyMsgThirdPerson(const Creature* owner) const {
   switch (getClass()) {
     case ItemClass::SCROLL: return "reads " + getAName(false, owner);
     case ItemClass::POTION: return "drinks " + getAName(false, owner);
-    case ItemClass::BOOK: return "reads " + getAName(false, owner);
     case ItemClass::TOOL: return "applies " + getAName(false, owner);
     case ItemClass::FOOD: return "eats " + getAName(false, owner);
     default: FATAL << "Bad type for applying " << (int)getClass();
@@ -369,7 +368,6 @@ string Item::getApplyMsgFirstPerson(const Creature* owner) const {
   switch (getClass()) {
     case ItemClass::SCROLL: return "read " + getAName(false, owner);
     case ItemClass::POTION: return "drink " + getAName(false, owner);
-    case ItemClass::BOOK: return "read " + getAName(false, owner);
     case ItemClass::TOOL: return "apply " + getAName(false, owner);
     case ItemClass::FOOD: return "eat " + getAName(false, owner);
     default: FATAL << "Bad type for applying " << (int)getClass();
@@ -381,7 +379,6 @@ string Item::getNoSeeApplyMsg() const {
   switch (getClass()) {
     case ItemClass::SCROLL: return "You hear someone reading";
     case ItemClass::POTION: return "";
-    case ItemClass::BOOK: return "You hear someone reading ";
     case ItemClass::TOOL: return "";
     case ItemClass::FOOD: return "";
     default: FATAL << "Bad type for applying " << (int)getClass();
