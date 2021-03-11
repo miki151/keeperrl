@@ -335,9 +335,11 @@ void Item::apply(Creature* c, bool noSound) {
   applySpecial(c);
 }
 
+bool Item::canApply() const {
+  return !!attributes->effect;
+}
+
 void Item::applySpecial(Creature* c) {
-  if (attributes->itemClass == ItemClass::SCROLL)
-    c->getGame()->getStatistics().add(StatId::SCROLL_READ);
   if (attributes->uses > -1 && --attributes->uses == 0) {
     discarded = true;
     if (attributes->usedUpMsg)

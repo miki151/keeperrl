@@ -621,6 +621,8 @@ ItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) const
       i.price = 15;
       i.burnTime = 10;
       i.uses = 1;
+      i.effect = Effect(EffectType::Chain{});
+      i.effectDescription = false;
   );
 }
 

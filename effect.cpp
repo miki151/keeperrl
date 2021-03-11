@@ -1244,6 +1244,8 @@ static string getDescription(const Effects::Wish&, const ContentFactory*) {
 }
 
 static string combineNames(const ContentFactory* f, const vector<Effect>& effects) {
+  if (effects.empty())
+    return "";
   string ret;
   for (auto& e : effects)
     ret += e.getName(f) + ", ";
@@ -1253,6 +1255,8 @@ static string combineNames(const ContentFactory* f, const vector<Effect>& effect
 }
 
 static string combineDescriptions(const ContentFactory* f, const vector<Effect>& effects) {
+  if (effects.empty())
+    return "";
   string ret;
   for (auto& e : effects) {
     auto desc = e.getDescription(f);

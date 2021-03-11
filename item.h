@@ -45,6 +45,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   PItem getCopy(const ContentFactory* f) const;
 
   void apply(Creature*, bool noSound = false);
+  bool canApply() const;
 
   bool isDiscarded();
 
