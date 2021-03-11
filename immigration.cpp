@@ -188,6 +188,12 @@ optional<string> Immigration::getMissingRequirement(const ImmigrantRequirement& 
           return none;
         else
           return "Not available"_s;
+      },
+      [&](const ImmigrantFlag& t) -> optional<string> {
+        if (collective->getGame()->effectFlags.count(t.value))
+          return none;
+        else
+          return "Requires " + t.value;
       }
   );
   return requirement.visit<optional<string>>(visitor);
@@ -236,7 +242,8 @@ void Immigration::occupyRequirements(const Creature* c, int index) {
       [&](const RecruitmentInfo&) {},
       [&](const MinTurnRequirement&) {},
       [&](const TutorialRequirement&) {},
-      [&](const NegateRequirement&) {}
+      [&](const NegateRequirement&) {},
+      [&](const ImmigrantFlag&) {}
   );
   immigrants[index].visitRequirements(visitor);
 }

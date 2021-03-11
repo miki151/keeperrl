@@ -69,6 +69,11 @@ struct NegateRequirement {
   SERIALIZE_ALL(r)
 };
 
+struct ImmigrantFlag {
+  string SERIAL(value);
+  SERIALIZE_ALL(value)
+};
+
 #define IMMIGRANT_REQUIREMENT_LIST\
   X(AttractionInfo, 0)\
   X(TechId, 1)\
@@ -80,7 +85,8 @@ struct NegateRequirement {
   X(RecruitmentInfo, 7)\
   X(TutorialRequirement, 8)\
   X(MinTurnRequirement, 9)\
-  X(NegateRequirement, 10)
+  X(NegateRequirement, 10)\
+  X(ImmigrantFlag, 11)
 
 #define VARIANT_TYPES_LIST IMMIGRANT_REQUIREMENT_LIST
 #define VARIANT_NAME ImmigrantRequirement

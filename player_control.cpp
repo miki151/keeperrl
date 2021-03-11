@@ -1489,6 +1489,9 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
         [&](const TechId& techId) {
           requirements.push_back("Requires technology: "_s + techId.data());
         },
+        [&](const ImmigrantFlag& f) {
+          requirements.push_back("Requires " + f.value);
+        },
         [&](const SunlightState& state) {
           requirements.push_back("Will only join during the "_s + SunlightInfo::getText(state));
         },
