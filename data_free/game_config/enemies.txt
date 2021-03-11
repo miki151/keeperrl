@@ -332,7 +332,6 @@
     locationNameGen = "TOWN"
     race = "humans"
     stockpiles = {{ "gold" 160 "TREASURE_CHEST" }}
-    lootItem = {TechBook "beast mutation"}
     furniture = "roomFurniture"
     outsideFeatures = "castleOutside"
   }
@@ -760,7 +759,6 @@
     tribe = ELF
     race = "elves"
     stockpiles = {{ "gold" 100 "TREASURE_CHEST"}}
-    lootItem = {TechBook "master sorcery"}
     furniture = "roomFurniture"
   }
   config = {
@@ -1161,7 +1159,6 @@
     }
     locationNameGen = "TOWN"
     race = "lizardmen"
-    lootItem = {TechBook "humanoid mutation"}
     shopItems = {{8 16} "goodMushrooms" }
     furniture = "roomFurniture"
     outsideFeatures = "villageOutside"
@@ -1781,7 +1778,6 @@
       leader = { { "WITCH" } }
     }
     race = "witch"
-    lootItem = {TechBook "advanced alchemy"}
     furniture = "witchInside"
   }
 }

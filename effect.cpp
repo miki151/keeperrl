@@ -256,6 +256,19 @@ static bool apply(const Effects::SetPhylactery&, Position pos, Creature* attacke
   return false;
 }
 
+static string getName(const Effects::AddTechnology& t, const ContentFactory* f) {
+  return t.data();
+}
+
+static string getDescription(const Effects::AddTechnology& t, const ContentFactory*) {
+  return "Provides "_s + t.data();
+}
+
+static bool apply(const Effects::AddTechnology& t, Position pos, Creature* attacker) {
+  pos.getGame()->addEvent(EventInfo::TechbookRead{t});
+  return true;
+}
+
 static string getName(const Effects::Jump&, const ContentFactory*) {
   return "jumping";
 }

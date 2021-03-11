@@ -18,6 +18,7 @@
 #include "companion_info.h"
 #include "minion_trait.h"
 #include "special_attr.h"
+#include "tech_id.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -343,6 +344,7 @@ struct UI {
 using AddCompanion = CompanionInfo;
 SIMPLE_EFFECT(SetPhylactery);
 using ::SpecialAttr;
+using AddTechnology = TechId;
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -426,7 +428,8 @@ using ::SpecialAttr;
   X(UI, 78)\
   X(AddCompanion, 79)\
   X(SetPhylactery, 80)\
-  X(EmitPoisonGas, 81)
+  X(EmitPoisonGas, 81)\
+  X(AddTechnology, 82)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

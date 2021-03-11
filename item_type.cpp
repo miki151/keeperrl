@@ -16,14 +16,12 @@
 #include "view_id.h"
 #include "item_attributes.h"
 #include "skill.h"
-#include "technology.h"
 #include "lasting_effect.h"
 #include "name_generator.h"
 #include "furniture_type.h"
 #include "resource_id.h"
 #include "game_event.h"
 #include "content_factory.h"
-#include "tech_id.h"
 #include "effect_type.h"
 #include "item_types.h"
 #include "item_prefix.h"
@@ -232,26 +230,6 @@ class PotionItem : public Item {
   double SERIAL(heat) = 0;
 };
 
-class TechBookItem : public Item {
-  public:
-  TechBookItem(const ItemAttributes& attr, TechId t, const ContentFactory* f) : Item(attr, f), tech(t) {}
-
-  virtual void applySpecial(Creature* c) override {
-    if (!read) {
-      c->getGame()->addEvent(EventInfo::TechbookRead{tech});
-      read = true;
-    }
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Item), tech, read)
-  SERIALIZATION_CONSTRUCTOR(TechBookItem)
-
-  private:
-  TechId SERIAL(tech);
-  bool SERIAL(read) = false;
-};
-
-REGISTER_TYPE(TechBookItem)
 REGISTER_TYPE(PotionItem)
 REGISTER_TYPE(FireScrollItem)
 REGISTER_TYPE(Corpse)
@@ -274,9 +252,6 @@ PItem ItemType::get(const ContentFactory* factory) const {
   return type->visit<PItem>(
       [&](const ItemTypes::FireScroll&) {
         return makeOwner<FireScrollItem>(std::move(attributes), factory);
-      },
-      [&](const ItemTypes::TechBook& t) {
-        return makeOwner<TechBookItem>(std::move(attributes), t.techId, factory);
       },
       [&](const ItemTypes::Potion&) {
         return makeOwner<PotionItem>(std::move(attributes), factory);
@@ -646,19 +621,6 @@ ItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) const
       i.price = 15;
       i.burnTime = 10;
       i.uses = 1;
-  );
-}
-
-ItemAttributes ItemTypes::TechBook::getAttributes(const ContentFactory*) const {
-  return ITATTR(
-      i.viewId = ViewId("book");
-      i.shortName = string(techId.data());
-      i.name = "book of " + *i.shortName;
-      i.plural = "books of " + *i.shortName;
-      i.weight = 1;
-      i.itemClass = ItemClass::BOOK;
-      i.applyTime = 3_visible;
-      i.price = 1000;
   );
 }
 
