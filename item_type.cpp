@@ -460,7 +460,6 @@ ItemAttributes ItemTypes::Amulet::getAttributes(const ContentFactory*) const {
       i.equipedEffect.push_back(lastingEffect);
       i.name = "amulet of " + *i.shortName;
       i.plural = "amulets of " + *i.shortName;
-      i.itemClass = ItemClass::AMULET;
       i.equipmentSlot = EquipmentSlot::AMULET;
       i.price = 5 * LastingEffects::getPrice(lastingEffect);
       i.weight = 0.3;
