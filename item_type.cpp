@@ -627,6 +627,19 @@ ItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) const
   );
 }
 
+ItemAttributes ItemTypes::TechBook::getAttributes(const ContentFactory*) const {
+  return ITATTR(
+      i.viewId = ViewId("book");
+      i.shortName = string(techId.data());
+      i.name = "book of " + *i.shortName;
+      i.plural = "books of " + *i.shortName;
+      i.weight = 1;
+      i.applyTime = 3_visible;
+      i.effect = Effect(techId);
+      i.price = 1000;
+  );
+}
+
 SERIALIZE_DEF(ItemType, NAMED(type))
 
 

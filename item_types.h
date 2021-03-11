@@ -65,6 +65,11 @@ struct Balsam {
   SERIALIZE_ALL(effect)
   ITEM_TYPE_INTERFACE;
 };
+struct TechBook {
+  TechId SERIAL(techId);
+  SERIALIZE_ALL(techId)
+  ITEM_TYPE_INTERFACE;
+};
 struct TrapItem {
   FurnitureType SERIAL(trapType);
   string SERIAL(trapName);
@@ -107,7 +112,7 @@ struct PrefixChance {
   X(Mushroom, 2)\
   X(Amulet, 3)\
   X(Ring, 4)\
-  X(Balsam, 5)\
+  X(TechBook, 5)\
   X(TrapItem, 6)\
   X(Intrinsic, 7)\
   X(Glyph, 8)\
@@ -118,7 +123,8 @@ struct PrefixChance {
   X(Assembled, 13) \
   X(Corpse, 14)\
   X(AutomatonPaint, 15)\
-  X(PrefixChance, 16)
+  X(PrefixChance, 16)\
+  X(Balsam, 17)
 
 #define VARIANT_TYPES_LIST ITEM_TYPES_LIST
 #define VARIANT_NAME ItemTypeVariant
