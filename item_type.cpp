@@ -25,6 +25,7 @@
 #include "effect_type.h"
 #include "item_types.h"
 #include "item_prefix.h"
+#include "statistics.h"
 
 STRUCT_IMPL(ItemType)
 
@@ -377,13 +378,14 @@ ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory*) const {
       i.viewId = ViewId("scroll");
       i.name = getRandomPoem();
       i.blindName = "scroll"_s;
-      i.itemClass = ItemClass::SCROLL;
       i.weight = 0.1;
+      i.applyVerb = make_pair("read", "reads");
       i.effect = Effect(Effects::Area{10,
           Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::IncreaseMorale{-0.1})))});
       i.price = getEffectPrice(*i.effect);
       i.burnTime = 5;
       i.uses = 1;
+      i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
   );
 }
 
@@ -393,13 +395,14 @@ ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory*) const 
       i.shortName = getRandomPoemType();
       i.name = *i.shortName + " about " + eventName;
       i.blindName = "scroll"_s;
-      i.itemClass = ItemClass::SCROLL;
       i.weight = 0.1;
+      i.applyVerb = make_pair("read", "reads");
       i.effect = Effect(Effects::Area{10,
           Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::IncreaseMorale{-0.1})))});
       i.price = getEffectPrice(*i.effect);
       i.burnTime = 5;
       i.uses = 1;
+      i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
   );
 }
 
@@ -496,13 +499,15 @@ ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) c
       i.name = "potion of " + *i.shortName;
       i.plural = "potions of " + *i.shortName;
       i.blindName = "potion"_s;
-      i.itemClass = ItemClass::POTION;
+      i.applyVerb = make_pair("drink", "drinks");
       i.fragile = true;
       i.weight = 0.3;
       i.effect = effect;
       i.price = getEffectPrice(effect);
       i.burnTime = 1;
+      i.effectAppliedWhenThrown = true;
       i.uses = 1;
+      i.producedStat = StatId::POTION_PRODUCED;
   );
 }
 
@@ -585,7 +590,6 @@ ItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) c
       i.name = "balsam of " + *i.shortName;
       i.plural= "balsams of "  + *i.shortName;
       i.blindName = "balsam"_s;
-      i.itemClass = ItemClass::OTHER;
       i.weight = 0.5;
       i.price = 100;
       i.uses = 1;
@@ -599,12 +603,13 @@ ItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) c
       i.name = "scroll of " + *i.shortName;
       i.plural= "scrolls of "  + *i.shortName;
       i.blindName = "scroll"_s;
-      i.itemClass = ItemClass::SCROLL;
+      i.applyVerb = make_pair("read", "reads");
       i.weight = 0.1;
       i.effect = effect;
       i.price = getEffectPrice(effect);
       i.burnTime = 5;
       i.uses = 1;
+      i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
   );
 }
 
@@ -616,13 +621,14 @@ ItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) const
       i.shortName = "fire"_s;
       i.description = "Sets itself on fire.";
       i.blindName = "scroll"_s;
-      i.itemClass= ItemClass::SCROLL;
+      i.applyVerb = make_pair("read", "reads");
       i.weight = 0.1;
       i.price = 15;
       i.burnTime = 10;
       i.uses = 1;
       i.effect = Effect(EffectType::Chain{});
       i.effectDescription = false;
+      i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
   );
 }
 

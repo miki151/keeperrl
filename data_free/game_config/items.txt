@@ -1270,7 +1270,6 @@
     name = "Adoxie's eye"
     viewId = { "adoxie_eye" }
     upgradeInfo = ARMOR SpellId "double trouble"
-    itemClass = SCROLL
     weight = 2
     price = 500
   }
@@ -1278,9 +1277,10 @@
   {
     name = "religious pamphlet"
     viewId = { "scroll" }
-    itemClass = SCROLL
     weight = 1
     price = 1
+    applyVerb = "read" "reads"
+    applyPredicate = Not LastingEffect BLIND
     effect = Description "Just a cheap pamphlet" Message "It predicts the coming of the Evil God Adoxie"
   }
 
@@ -1302,10 +1302,11 @@ End
   {
     name = "rotten scroll"
     viewId = { "scroll" }
-    itemClass = SCROLL
     weight = 1
     price = 1
     uses = 1
+    applyVerb = "read" "reads"
+    applyPredicate = Not LastingEffect BLIND
     effect = Description "" Name "?" {
       Message "The scroll falls apart before you manage to read it"
       Message "An image of an unlocking door appears in your mind"
@@ -1318,7 +1319,8 @@ End
   {
     name = "strange scroll"
     viewId = { "scroll" }
-    itemClass = SCROLL
+    applyVerb = "read" "reads"
+    applyPredicate = Not LastingEffect BLIND
     weight = 1
     price = 1
     effect = Description "" Name "?" {

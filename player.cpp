@@ -191,10 +191,6 @@ bool Player::tryToPerform(CreatureAction action) {
 
 void Player::applyItem(vector<Item*> items) {
   PROFILE;
-  if (creature->isAffected(LastingEffect::BLIND) && items[0]->getClass() == ItemClass::SCROLL) {
-    privateMessage("You can't read while blind!");
-    return;
-  }
   if (items[0]->getApplyTime() > 1_visible) {
     for (const Creature* c : creature->getVisibleEnemies())
       if (creature->getPosition().dist8(c->getPosition()).value_or(3) < 3) {

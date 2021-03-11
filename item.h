@@ -63,6 +63,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   const optional<Effect>& getEffect() const;
   bool effectAppliedWhenThrown() const;
+  const optional<CreaturePredicate>& getApplyPredicate() const;
   optional<ItemAbility>& getAbility();
 
   ItemClass getClass() const;
@@ -94,8 +95,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   
   string getApplyMsgThirdPerson(const Creature* owner) const;
   string getApplyMsgFirstPerson(const Creature* owner) const;
-  string getNoSeeApplyMsg() const;
-
+  optional<StatId> getProducedStat() const;
   const vector<LastingEffect>& getEquipedEffects() const;
   void onEquip(Creature*);
   void onUnequip(Creature*);

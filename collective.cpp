@@ -1452,8 +1452,8 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
             getGame()->getStatistics().add(StatId::WEAPON_PRODUCED);
           if (result.item->getClass() == ItemClass::ARMOR)
             getGame()->getStatistics().add(StatId::ARMOR_PRODUCED);
-          if (result.item->getClass() == ItemClass::POTION)
-            getGame()->getStatistics().add(StatId::POTION_PRODUCED);
+          if (auto stat = result.item->getProducedStat())
+            getGame()->getStatistics().add(*stat);
           control->addMessage(c->getName().a() + " " + contentFactory->workshopInfo.at(*workshopType).verb + " " + 
               result.item->getAName());
           if (result.wasUpgraded) {

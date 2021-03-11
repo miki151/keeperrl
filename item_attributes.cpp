@@ -21,16 +21,18 @@
 #include "equipment.h"
 #include "lasting_effect.h"
 #include "sound.h"
+#include "statistics.h"
 
 template <class Archive> 
 void ItemAttributes::serializeImpl(Archive& ar, const unsigned int version) {
-  ar(NAMED(name), NAMED(viewId), OPTION(description), NAMED(weight), NAMED(itemClass), NAMED(plural), NAMED(blindName));
+  ar(NAMED(name), NAMED(viewId), OPTION(description), NAMED(weight), OPTION(itemClass), NAMED(plural), NAMED(blindName));
   ar(NAMED(artifactName), NAMED(resourceId), OPTION(burnTime), OPTION(price), OPTION(noArticle), NAMED(equipmentSlot), OPTION(equipedAbility));
   ar(OPTION(applyTime), NAMED(ownedEffect), OPTION(maxUpgrades), OPTION(fragile), NAMED(effect), OPTION(uses), OPTION(usedUpMsg));
   ar(OPTION(displayUses), OPTION(modifiers), NAMED(shortName), OPTION(equipedEffect), NAMED(upgradeInfo), OPTION(effectDescription));
-  ar(NAMED(applyMsgFirstPerson), NAMED(applyMsgThirdPerson), NAMED(applySound), OPTION(weaponInfo));
+  ar(NAMED(applyMsgFirstPerson), NAMED(applyMsgThirdPerson), NAMED(applySound), OPTION(weaponInfo), OPTION(applyVerb));
   ar(OPTION(prefixes), OPTION(genPrefixes), NAMED(ingredientType), OPTION(modifierVariation), OPTION(variationChance), OPTION(wishedCount));
-  ar(NAMED(automatonPart), OPTION(specialAttr), OPTION(partIds), OPTION(equipedCompanion), OPTION(upgradeType));
+  ar(NAMED(automatonPart), OPTION(specialAttr), OPTION(partIds), OPTION(equipedCompanion), OPTION(upgradeType), OPTION(producedStat));
+  ar(OPTION(effectAppliedWhenThrown), OPTION(applyPredicate));
 }
 
 template <class Archive>

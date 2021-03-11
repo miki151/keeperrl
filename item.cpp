@@ -200,7 +200,11 @@ void Item::onHitSquareMessage(Position pos, const Attack& attack, int numItems) 
 }
 
 bool Item::effectAppliedWhenThrown() const {
-  return getClass() == ItemClass::POTION;
+  return attributes->effectAppliedWhenThrown;
+}
+
+const optional<CreaturePredicate>& Item::getApplyPredicate() const {
+  return attributes->applyPredicate;
 }
 
 optional<ItemAbility>& Item::getAbility() {
@@ -353,37 +357,24 @@ string Item::getApplyMsgThirdPerson(const Creature* owner) const {
   if (attributes->applyMsgThirdPerson)
     return *attributes->applyMsgThirdPerson;
   switch (getClass()) {
-    case ItemClass::SCROLL: return "reads " + getAName(false, owner);
-    case ItemClass::POTION: return "drinks " + getAName(false, owner);
     case ItemClass::TOOL: return "applies " + getAName(false, owner);
     case ItemClass::FOOD: return "eats " + getAName(false, owner);
-    default: FATAL << "Bad type for applying " << (int)getClass();
+    default: return attributes->applyVerb.second + " " + getAName(false, owner);
   }
-  return "";
 }
 
 string Item::getApplyMsgFirstPerson(const Creature* owner) const {
   if (attributes->applyMsgFirstPerson)
     return *attributes->applyMsgFirstPerson;
   switch (getClass()) {
-    case ItemClass::SCROLL: return "read " + getAName(false, owner);
-    case ItemClass::POTION: return "drink " + getAName(false, owner);
     case ItemClass::TOOL: return "apply " + getAName(false, owner);
     case ItemClass::FOOD: return "eat " + getAName(false, owner);
-    default: FATAL << "Bad type for applying " << (int)getClass();
+    default: return attributes->applyVerb.first + " " + getAName(false, owner);
   }
-  return "";
 }
 
-string Item::getNoSeeApplyMsg() const {
-  switch (getClass()) {
-    case ItemClass::SCROLL: return "You hear someone reading";
-    case ItemClass::POTION: return "";
-    case ItemClass::TOOL: return "";
-    case ItemClass::FOOD: return "";
-    default: FATAL << "Bad type for applying " << (int)getClass();
-  }
-  return "";
+optional<StatId> Item::getProducedStat() const {
+  return attributes->producedStat;
 }
 
 void Item::setName(const string& n) {

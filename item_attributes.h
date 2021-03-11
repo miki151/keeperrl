@@ -52,7 +52,7 @@ class ItemAttributes {
   string SERIAL(description);
   optional<string> SERIAL(shortName);
   double SERIAL(weight);
-  ItemClass SERIAL(itemClass);
+  ItemClass SERIAL(itemClass) = ItemClass::OTHER;
   optional<string> SERIAL(plural);
   optional<string> SERIAL(blindName);
   optional<string> SERIAL(artifactName);
@@ -85,6 +85,10 @@ class ItemAttributes {
   optional<LastingEffect> SERIAL(ownedEffect);
   optional<string> SERIAL(applyMsgFirstPerson);
   optional<string> SERIAL(applyMsgThirdPerson);
+  pair<string, string> SERIAL(applyVerb) = {"apply", "applies"};
+  optional<StatId> SERIAL(producedStat);
+  bool SERIAL(effectAppliedWhenThrown) = false;
+  optional<CreaturePredicate> SERIAL(applyPredicate);
   optional<SoundId> SERIAL(applySound);
   WeaponInfo SERIAL(weaponInfo);
   vector<pair<int, ItemPrefix>> SERIAL(genPrefixes);

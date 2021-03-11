@@ -61,10 +61,9 @@ optional<MinionEquipmentType> MinionEquipment::getEquipmentType(const Item* it) 
 }
 
 bool MinionEquipment::isItemUseful(const Item* it) {
-  static EnumSet<ItemClass> usefulItems {ItemClass::GOLD, ItemClass::POTION, ItemClass::SCROLL};
-  return getEquipmentType(it) || usefulItems.contains(it->getClass()) || it->getAutomatonPart()
+  return getEquipmentType(it) || it->canApply() || it->getClass() == ItemClass::GOLD
       || (it->getClass() == ItemClass::FOOD && !it->getCorpseInfo()) || it->getIngredientType()
-      || it->getUpgradeInfo();
+      || it->getUpgradeInfo() || it->getAutomatonPart();
 }
 
 bool MinionEquipment::canUseItemType(const Creature* c, MinionEquipmentType type, const Item* it) const {

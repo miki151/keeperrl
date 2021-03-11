@@ -2034,11 +2034,13 @@ CreatureAction Creature::applyItem(Item* item) const {
     return CreatureAction("You can't apply this item");
   if (getBody().numGood(BodyPart::ARM) == 0)
     return CreatureAction("You have no healthy arms!");
+  if (auto& pred = item->getApplyPredicate())
+    if (!pred->apply(position, nullptr))
+      return CreatureAction("You can't use this item");
   return CreatureAction(this, [=] (Creature* self) {
       auto time = item->getApplyTime();
       secondPerson("You " + item->getApplyMsgFirstPerson(self));
       thirdPerson(getName().the() + " " + item->getApplyMsgThirdPerson(self));
-      position.unseenMessage(item->getNoSeeApplyMsg());
       item->apply(self);
       if (!isDead()) {
         if (item->isDiscarded())
