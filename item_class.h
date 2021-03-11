@@ -7,7 +7,6 @@ RICH_ENUM(ItemClass,
   RANGED_WEAPON,
   ARMOR,
   FOOD,
-  RING,
   CORPSE,
   OTHER,
   GOLD

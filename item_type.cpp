@@ -446,7 +446,6 @@ ItemAttributes ItemTypes::Ring::getAttributes(const ContentFactory*) const {
       i.plural = "rings of " + *i.shortName;
       i.weight = 0.05;
       i.equipmentSlot = EquipmentSlot::RINGS;
-      i.itemClass = ItemClass::RING;
       i.price = 40;
   );
 }
