@@ -256,10 +256,6 @@ class TextFieldElem : public GuiElem {
     return false;
   }
 
-  virtual void onClickElsewhere() override {
-    focused = false;
-  }
-
   virtual void render(Renderer& r) override {
     auto bounds = getBounds();
     auto rectBounds = bounds;
@@ -516,8 +512,6 @@ class DrawScripted : public GuiElem {
       context.endSemaphore->v();
     return ret;
   }
-
-  //virtual void onClickElsewhere() {}
 
   virtual bool onMouseMove(Vec2 pos) override {
     context.elemCounter = 0;
@@ -990,25 +984,15 @@ class GuiLayout : public GuiElem {
   }
 
   virtual bool onClick(MouseButtonId b, Vec2 pos) override {
-    bool gone = false;
     // Check visibility in advance, as it can potentially change in onClick
     vector<int> visible;
     for (int i : AllReverse(elems))
       if (isVisible(i))
         visible.push_back(i);
-    for (int i : visible) {
-      if (!gone && elems[i]->onClick(b, pos)) {
-        gone = true;
-        continue;
-      }
-      elems[i]->onClickElsewhere();
-    }
-    return gone;
-  }
-
-  virtual void onClickElsewhere() override {
-    for (int i : AllReverse(elems))
-      elems[i]->onClickElsewhere();
+    for (int i : visible)
+      if (elems[i]->onClick(b, pos))
+        return true;
+    return false;
   }
 
   virtual bool onMouseMove(Vec2 pos) override {
@@ -2517,10 +2501,6 @@ class ScrollArea : public GuiElem {
     return content->onKeyPressed2(key);
   }
 
-  virtual void onClickElsewhere() override {
-    content->onClickElsewhere();
-  }
-
   virtual bool onTextInput(const char* c) override {
     return content->onTextInput(c);
   }
@@ -2685,10 +2665,6 @@ class Scrollable : public GuiElem {
 
   virtual bool onKeyPressed2(SDL_Keysym key) override {
     return content->onKeyPressed2(key);
-  }
-
-  virtual void onClickElsewhere() override {
-    content->onClickElsewhere();
   }
 
   virtual bool onTextInput(const char* c) override {

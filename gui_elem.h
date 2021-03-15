@@ -38,7 +38,6 @@ class GuiElem {
   public:
   virtual void render(Renderer&) {}
   virtual bool onClick(MouseButtonId, Vec2) { return false; }
-  virtual void onClickElsewhere() {}
   virtual bool onMouseMove(Vec2) { return false;}
   virtual void onMouseGone() {}
   virtual void onRefreshBounds() {}
