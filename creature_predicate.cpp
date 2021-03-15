@@ -174,6 +174,18 @@ static string getName(CreaturePredicates::Spellcaster) {
   return "spellcasters";
 }
 
+static bool applyToCreature(CreaturePredicates::Humanoid, const Creature* victim, const Creature*) {
+  return victim->getBody().isHumanoid();
+}
+
+static string getName(CreaturePredicates::Humanoid) {
+  return "humanoids";
+}
+
+static string getNameNegated(CreaturePredicates::Humanoid) {
+  return "non-humanoids";
+}
+
 static bool applyToCreature(const CreaturePredicates::Health& p, const Creature* victim, const Creature* attacker) {
   auto health = victim->getBody().hasAnyHealth()
       ? victim->getBody().getHealth()

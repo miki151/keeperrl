@@ -21,6 +21,7 @@ SIMPLE_PREDICATE(Night);
 SIMPLE_PREDICATE(AIAfraidOf);
 SIMPLE_PREDICATE(InTerritory);
 SIMPLE_PREDICATE(Spellcaster);
+SIMPLE_PREDICATE(Humanoid);
 
 struct HatedBy {
   LastingEffect SERIAL(effect);
@@ -104,7 +105,8 @@ struct Distance {
   X(Distance, 20)\
   X(AIAfraidOf, 21)\
   X(InTerritory, 22)\
-  X(Spellcaster, 23)
+  X(Spellcaster, 23)\
+  X(Humanoid, 24)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST
