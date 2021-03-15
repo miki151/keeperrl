@@ -1347,6 +1347,8 @@ void Creature::onAttackedBy(Creature* attacker) {
     privateEnemies.set(attacker, *globalTime);
   lastAttacker = attacker;
   addCombatIntent(attacker, CombatIntentInfo::Type::ATTACK);
+  if (hasAlternativeViewId())
+    attacker->tryToDestroyLastingEffect(LastingEffect::SPYING);
 }
 
 void Creature::removePrivateEnemy(const Creature* c) {
@@ -1642,6 +1644,18 @@ static optional<Position> findInaccessiblePos(Position startingPos) {
   return none;
 }
 
+void Creature::tryToDestroyLastingEffect(LastingEffect effect) {
+  removeEffect(effect, false);
+  for (auto item : copyOf(equipment->getAllEquipped()))
+    if (item->getEquipedEffects().contains(effect)) {
+      you(MsgType::YOUR, item->getName() + " crumbles to dust");
+      equipment->removeItem(item, this);
+      return;
+    }
+  if (attributes->isAffectedPermanently(effect))
+    attributes->removePermanentEffect(effect, 1);
+}
+
 bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
   if (drops != DropType::NOTHING && isAffected(LastingEffect::LIFE_SAVED)) {
     message("But wait!");
@@ -1651,17 +1665,7 @@ bool Creature::considerSavingLife(DropType drops, const Creature* attacker) {
       if (auto target = findInaccessiblePos(position))
         position.moveCreature(*target, true);
     }
-    removeEffect(LastingEffect::LIFE_SAVED, false);
-    for (auto item : equipment->getAllEquipped())
-      for (auto e : item->getEquipedEffects())
-        if (e == LastingEffect::LIFE_SAVED) {
-          you(MsgType::YOUR, item->getName() + " crumbles to dust");
-          equipment->removeItem(item, this);
-          goto foundItem;
-        }
-    foundItem:
-    if (attributes->isAffectedPermanently(LastingEffect::LIFE_SAVED))
-      attributes->removePermanentEffect(LastingEffect::LIFE_SAVED, 1);
+    tryToDestroyLastingEffect(LastingEffect::LIFE_SAVED);
     heal();
     removeEffect(LastingEffect::BLEEDING, false);
     getBody().healBodyParts(this, 1000);

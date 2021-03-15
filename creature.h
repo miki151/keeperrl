@@ -393,6 +393,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<CompanionGroup> SERIAL(companions);
   void tickCompanions();
   bool considerSavingLife(DropType, const Creature* attacker);
+  void tryToDestroyLastingEffect(LastingEffect);
   vector<AdjectiveInfo> getSpecialAttrAdjectives(bool good) const;
   vector<AutomatonPart> SERIAL(automatonParts);
   vector<pair<CreatureAttributes, SpellMap>> SERIAL(attributesStack);
