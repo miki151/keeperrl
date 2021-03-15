@@ -200,7 +200,7 @@ double VillageBehaviour::getAttackProbability(const VillageControl* self) const 
   double ret = 0;
   for (auto& elem : triggers) {
     double val = getTriggerValue(elem, self);
-    CHECK(val >= 0 && val <= 1);
+    CHECK(val >= 0 && val <= 1) << val << " " << elem.index;
     ret = max(ret, val);
   //  if (auto& name = self->collective->getName())
       /*INFO << "trigger " << elem.getName() << " village "
