@@ -73,11 +73,11 @@
       {item = {Potion Permanent POISON_RESISTANT} work = 20 cost = "GOLD" 80 requireIngredient = "hydra_tongue" }
       {item = {Potion Name "mass insanity" Area 20 Lasting INSANITY}
           work = 50 cost = "GOLD" 666 requireIngredient = "devil_horns" }
-      {{"GoldPiece"}                           5        "IRON" 3      "alchemical conversion"}
-      {{"WoodPlank"}                           5        "GOLD" 1      "alchemical conversion"}
-      {{"IronOre"}                             5        "GOLD" 1      "alchemical conversion"}
-      {{"AdaOre"}                              5        "GOLD" 4      "alchemical conversion"}
-      {{"Rock"}                                5        "GOLD" 1      "alchemical conversion"}
+      {{"GoldPiece"}                           1        "IRON" 3      "alchemical conversion"}
+      {{"WoodPlank"}                           1        "GOLD" 1      "alchemical conversion"}
+      {{"IronOre"}                             1        "GOLD" 1      "alchemical conversion"}
+      {{"AdaOre"}                              1        "GOLD" 4      "alchemical conversion"}
+      {{"Rock"}                                1        "GOLD" 1      "alchemical conversion"}
   }
   
   "JEWELER"
