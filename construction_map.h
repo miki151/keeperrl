@@ -85,5 +85,5 @@ class ConstructionMap {
   PositionMap<TrapInfo> SERIAL(traps);
   vector<Position> SERIAL(allTraps);
   unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> SERIAL(debt);
-  void addDebt(const CostInfo&);
+  void addDebt(const CostInfo&, const char* reason);
 };

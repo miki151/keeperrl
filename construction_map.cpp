@@ -66,16 +66,16 @@ void ConstructionMap::removeFurniturePlan(Position pos, FurnitureLayer layer) {
   auto& info = furniture[layer].getOrFail(pos);
   auto type = info.getFurnitureType();
   --unbuiltCounts[type];
-  addDebt(-info.getCost());
+  addDebt(-info.getCost(), type.data());
   furniture[layer].erase(pos);
   allFurniture.removeElement({pos, layer});
   pos.setNeedsRenderAndMemoryUpdate(true);
 }
 
-void ConstructionMap::addDebt(const CostInfo& cost) {
+void ConstructionMap::addDebt(const CostInfo& cost, const char* reason) {
   debt[cost.id] += cost.value;
   //checkDebtConsistency();
-  CHECK(debt[cost.id] >= 0);
+  CHECK(debt[cost.id] >= 0) << cost.id.data() << " " << reason;
 }
 
 void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer, FurnitureType type) {
@@ -83,7 +83,7 @@ void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer, F
   // We don't care if the destroyed furniture was the same type that we track,
   // for furnitures like phylactery which are replaced upon usage.
   if (auto info = furniture[layer].getReferenceMaybe(pos)) {
-    addDebt(info->getCost());
+    addDebt(info->getCost(), type.data());
     furniturePositions[info->getFurnitureType()].erase(pos);
     info->reset();
   }
@@ -98,7 +98,7 @@ void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info, Furn
     furniturePositions[info.getFurnitureType()].insert(pos);
   else {
     ++unbuiltCounts[info.getFurnitureType()];
-    addDebt(info.getCost());
+    addDebt(info.getCost(), info.getFurnitureType().data());
   }
 }
 
@@ -134,7 +134,7 @@ void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
   --unbuiltCounts[type];
   if (furniture[layer].contains(pos)) { // why this if?
     auto& info = furniture[layer].getOrInit(pos);
-    addDebt(-info.getCost());
+    addDebt(-info.getCost(), type.data());
   }
 }
 
