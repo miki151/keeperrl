@@ -534,10 +534,10 @@ End
   blockedByWall = false
 }
 
-Def OneTimeAbility(SpellName, SpellEffect, SpellSymbol)
+Def OneTimeAbility(SpellName, SpellDesc, SpellEffect, SpellSymbol)
 SpellName
 {
-  effect = AI And{} 0 1 Name SpellName Description SpellName {
+  effect = AI And{} 0 1 Name SpellName Description SpellDesc {
     SpellEffect
     RemoveAbility SpellName
   }
@@ -546,8 +546,8 @@ SpellName
 }
 End
 
-OneTimeAbility("ennoblement", { SetViewId {"vampire_lord"} SetCreatureName "vampire lord" }, "🧛")
-OneTimeAbility("bypass allies", Permanent NO_FRIENDLY_FIRE, "🎯")
+OneTimeAbility("ennoblement", "Reaches the status of a vampire lord.", { SetViewId {"vampire_lord"} SetCreatureName "vampire lord" }, "🧛")
+OneTimeAbility("bypass allies", "All ranged attacks will bypass allies.", Permanent NO_FRIENDLY_FIRE, "🎯")
 
 
 Def AnyCreature() Health 0 1 End
