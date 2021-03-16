@@ -231,15 +231,19 @@ static vector<Position> limitToIndoors(const PositionSet& v) {
 }
 
 const PositionSet& getIdlePositions(const Collective* collective, const Creature* c) {
-  if (auto q = collective->getQuarters().getAssigned(c->getUniqueId()))
-    return collective->getZones().getPositions(Quarters::getAllQuarters()[*q].zone);
-  if (collective->hasTrait(c, MinionTrait::PRISONER))
-    return collective->getConstructions().getBuiltPositions(FurnitureType("PRISON"));
-  if (!collective->getZones().getPositions(ZoneId::LEISURE).empty() &&
-      !collective->hasTrait(c, MinionTrait::NO_LEISURE_ZONE))
-    return collective->getZones().getPositions(ZoneId::LEISURE);
-  else
-    return collective->getTerritory().getAllAsSet();
+  auto& candidate = [&] () -> const PositionSet& {
+    if (auto q = collective->getQuarters().getAssigned(c->getUniqueId()))
+      return collective->getZones().getPositions(Quarters::getAllQuarters()[*q].zone);
+    if (collective->hasTrait(c, MinionTrait::PRISONER))
+      return collective->getConstructions().getBuiltPositions(FurnitureType("PRISON"));
+    if (!collective->hasTrait(c, MinionTrait::NO_LEISURE_ZONE))
+      return collective->getZones().getPositions(ZoneId::LEISURE);
+    else
+      return collective->getTerritory().getAllAsSet();
+  }();
+  if (!candidate.empty())
+    return candidate;
+  return collective->getTerritory().getAllAsSet();
 }
 
 PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActivity activity) const {
@@ -255,10 +259,8 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
           return Task::idle();
         }
         auto indoors = limitToIndoors(myTerritory);
-        if (!indoors.empty())
-          return Task::chain(Task::transferTo(collective->getModel()), Task::stayIn(std::move(indoors)));
-        else
-          return Task::idle();
+        return Task::chain(Task::transferTo(collective->getModel()),
+            Task::stayIn(!indoors.empty() ? std::move(indoors) : myTerritory.asVector()));
       }
       auto& pigstyPos = collective->getConstructions().getBuiltPositions(FurnitureType("PIGSTY"));
       if (pigstyPos.count(c->getPosition()) && !myTerritory.empty()) {
