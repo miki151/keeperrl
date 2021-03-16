@@ -73,7 +73,7 @@ static optional<Position> getTileToExplore(Collective* collective, const Creatur
 }
 
 static Creature* getMinionToAbuse(Collective* collective, const Creature* abuser) {
-  auto& minions = collective->getCreatures(MinionTrait::FIGHTER);
+  auto& minions = collective->getCreatures();
   Creature* target = nullptr;
   auto abuserPos = abuser->getPosition();
   for (auto c : minions) {
