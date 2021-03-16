@@ -1934,6 +1934,9 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
               index.setHighlight(HighlightType::CREATURE_DROP);
       if (furnitureFactory->getData(furniture->getType()).isRequiresLight() && position.getLightingEfficiency() < 0.99)
         index.setHighlight(HighlightType::INSUFFICIENT_LIGHT);
+      if (collective->getMaxPopulation() <= collective->getPopulationSize() && 
+          furniture->getType() == FurnitureType("TORTURE_TABLE"))
+        index.setHighlight(HighlightType::TORTURE_UNAVAILABLE);        
     }
     for (auto furniture : position.getFurniture())
       if (furniture->getLuxuryInfo().luxury > 0)
@@ -1958,7 +1961,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
 #ifndef RELEASE
   if (getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
     if (collective->getKnownTiles().isKnown(position))
-      index.setHighlight(HighlightType::RECT_SELECTION);
+        index.setHighlight(HighlightType::RECT_SELECTION);
 #endif
   const ConstructionMap& constructions = collective->getConstructions();
   if (auto trap = constructions.getTrap(position))
