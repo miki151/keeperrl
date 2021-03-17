@@ -98,8 +98,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   const vector<Creature*>& getCreatures(MinionTrait) const;
   bool hasTrait(const Creature*, MinionTrait) const;
-  void setTrait(Creature* c, MinionTrait);
-  void removeTrait(Creature* c, MinionTrait);
+  bool setTrait(Creature* c, MinionTrait);
+  bool removeTrait(Creature* c, MinionTrait);
   EnumSet<MinionTrait> getAllTraits(Creature*) const;
 
   bool hasTradeItems() const;

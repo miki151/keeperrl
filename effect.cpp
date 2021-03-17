@@ -51,6 +51,7 @@
 #include "minion_equipment_type.h"
 #include "health_type.h"
 #include "collective.h"
+#include "collective_control.h"
 #include "immigration.h"
 #include "immigrant_info.h"
 #include "furniture_entry.h"
@@ -1963,23 +1964,71 @@ static bool applyToCreature(const Effects::Stairs&, Creature* c, Creature* attac
   }
 }
 
-static string getName(const Effects::AddMinionTrait& e, const ContentFactory*) {
-  return "make " + toLower(EnumInfo<MinionTrait>::getString(e.trait));
+static Collective* getCollective(Creature* c) {
+  for (auto col : NOTNULL(c->getGame())->getCollectives())
+    if (col->getCreatures().contains(c))
+      return col;
+  return nullptr;
 }
 
-static string getDescription(const Effects::AddMinionTrait& e, const ContentFactory*) {
-  return "Makes the creature a " + toLower(EnumInfo<MinionTrait>::getString(e.trait));
+static string getName(const Effects::AddMinionTrait& trait, const ContentFactory*) {
+  return "make " + toLower(EnumInfo<MinionTrait>::getString(trait));
 }
 
-static bool applyToCreature(const Effects::AddMinionTrait& e, Creature* c, Creature* attacker) {
-  CHECK(c->getGame());
-  for (auto col : c->getGame()->getCollectives())
-    if (col->getCreatures().contains(c)) {
-      col->setTrait(c, e.trait);
-      return true;
-    }
-  FATAL << "Couldn't find collective for " << c->identify();
-  fail();
+static string getDescription(const Effects::AddMinionTrait& trait, const ContentFactory*) {
+  return "Makes the creature a " + toLower(EnumInfo<MinionTrait>::getString(trait));
+}
+
+static bool applyToCreature(const Effects::AddMinionTrait& trait, Creature* c, Creature* attacker) {
+  if (auto col = getCollective(c))
+    return col->setTrait(c, trait);
+  return false;
+}
+
+static string getName(const Effects::RemoveMinionTrait& e, const ContentFactory*) {
+  return "remove " + toLower(EnumInfo<MinionTrait>::getString(e.trait)) + " trait";
+}
+
+static string getDescription(const Effects::RemoveMinionTrait& e, const ContentFactory*) {
+  return "Makes the creature not be a " + toLower(EnumInfo<MinionTrait>::getString(e.trait));
+}
+
+static bool applyToCreature(const Effects::RemoveMinionTrait& e, Creature* c, Creature* attacker) {
+  if (auto col = getCollective(c))
+    return col->removeTrait(c, e.trait);
+  return false;
+}
+
+static string getName(const Effects::SetMinionActivity& activity, const ContentFactory*) {
+  return toLower(EnumInfo<MinionActivity>::getString(activity));
+}
+
+static string getDescription(const Effects::SetMinionActivity& activity, const ContentFactory*) {
+  return "Sets minion's actitity to " + toLower(EnumInfo<MinionActivity>::getString(activity));
+}
+
+static bool applyToCreature(const Effects::SetMinionActivity& activity, Creature* c, Creature* attacker) {
+  if (auto col = getCollective(c)) {
+    col->setMinionActivity(c, activity);
+    return true;
+  }
+  return false;
+}
+
+static string getName(const Effects::CollectiveMessage& msg, const ContentFactory*) {
+  return "message";
+}
+
+static string getDescription(const Effects::CollectiveMessage& msg, const ContentFactory*) {
+  return "Adds a global message: \"" + msg.msg + "\"";
+}
+
+static bool applyToCreature(const Effects::CollectiveMessage& msg, Creature* c, Creature* attacker) {
+  if (auto col = getCollective(c)) {
+    col->getControl()->addMessage(msg.msg);
+    return true;
+  }
+  return false;
 }
 
 static string getName(const Effects::TakeItems& e, const ContentFactory*) {

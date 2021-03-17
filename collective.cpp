@@ -620,16 +620,21 @@ bool Collective::hasTrait(const Creature* c, MinionTrait t) const {
   return byTrait[t].contains(c);
 }
 
-void Collective::setTrait(Creature* c, MinionTrait t) {
+bool Collective::setTrait(Creature* c, MinionTrait t) {
   if (!hasTrait(c, t)) {
     byTrait[t].push_back(c);
     updateCreatureStatus(c);
+    return true;
   }
+  return false;
 }
 
-void Collective::removeTrait(Creature* c, MinionTrait t) {
-  if (byTrait[t].removeElementMaybePreserveOrder(c))
+bool Collective::removeTrait(Creature* c, MinionTrait t) {
+  if (byTrait[t].removeElementMaybePreserveOrder(c)) {
     updateCreatureStatus(c);
+    return true;
+  }
+  return false;
 }
 
 void Collective::addMoraleForKill(const Creature* killer, const Creature* victim) {

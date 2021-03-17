@@ -297,9 +297,15 @@ struct AI : GenericModifierEffect {
 };
 struct ReturnFalse : GenericModifierEffect {
 };
-struct AddMinionTrait {
+using SetMinionActivity = MinionActivity;
+using AddMinionTrait = MinionTrait;
+struct RemoveMinionTrait {
   MinionTrait SERIAL(trait);
   SERIALIZE_ALL(trait)
+};
+struct CollectiveMessage {
+  string SERIAL(msg);
+  SERIALIZE_ALL(msg)
 };
 struct RemoveFurniture {
   FurnitureType SERIAL(type);
@@ -415,9 +421,9 @@ using AddTechnology = TechId;
   X(IncreaseWorkshopSkill, 65)\
   X(AddAutomatonParts, 66)\
   X(AddMinionTrait, 67)\
-  X(Caster, 68)\
-  X(RemoveFurniture, 69)\
-  X(SetFlag, 70)\
+  X(RemoveMinionTrait, 68)\
+  X(SetMinionActivity, 69)\
+  X(CollectiveMessage, 70)\
   X(TakeItems, 71)\
   X(Unlock, 72)\
   X(Analytics, 73)\
@@ -429,7 +435,10 @@ using AddTechnology = TechId;
   X(AddCompanion, 79)\
   X(SetPhylactery, 80)\
   X(EmitPoisonGas, 81)\
-  X(AddTechnology, 82)
+  X(AddTechnology, 82)\
+  X(Caster, 83)\
+  X(RemoveFurniture, 84)\
+  X(SetFlag, 85)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

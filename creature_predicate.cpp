@@ -186,6 +186,28 @@ static string getNameNegated(CreaturePredicates::Humanoid) {
   return "non-humanoids";
 }
 
+static Collective* getCollective(const Creature* c) {
+  auto game = NOTNULL(c->getGame());
+  for (auto col : game->getCollectives())
+    if (col->getCreatures().contains(c))
+      return col;
+  return nullptr;
+}
+
+static bool applyToCreature(CreaturePredicates::PopLimitReached, const Creature* victim, const Creature*) {
+  if (auto col = getCollective(victim))
+    return col->getMaxPopulation() <= col->getPopulationSize();
+  return false;
+}
+
+static string getNameTopLevel(const CreaturePredicates::PopLimitReached) {
+  return "when population limit is reached";
+}
+
+static string getName(const CreaturePredicates::PopLimitReached) {
+  return "population limit is reached";
+}
+
 static bool applyToCreature(const CreaturePredicates::Health& p, const Creature* victim, const Creature* attacker) {
   auto health = victim->getBody().hasAnyHealth()
       ? victim->getBody().getHealth()
