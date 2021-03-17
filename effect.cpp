@@ -290,6 +290,14 @@ static bool apply(const Effects::Jump&, Position pos, Creature* attacker) {
   return false;
 }
 
+static bool canAutoAssignMinionEquipment(const Effects::NoAutoAssign& e) {
+  return false;
+}
+
+static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::EquipmentType& e) {
+  return e.type;
+}
+
 static bool applyToCreature(const Effects::Lasting& e, Creature* c, Creature*) {
   return c->addEffect(e.lastingEffect, LastingEffects::getDuration(c, e.lastingEffect));
 }
@@ -390,6 +398,10 @@ static string getName(const Effects::IncreaseAttr& e, const ContentFactory*) {
 
 static string getDescription(const Effects::IncreaseAttr& e, const ContentFactory*) {
   return e.get("Increases", "Decreases") + " "_s + ::getName(e.attr) + " by " + toString(abs(e.amount));
+}
+
+static EffectAIIntent shouldAIApplyToCreature(const Effects::IncreaseAttr& e, const Creature* victim, bool isEnemy) {
+  return e.amount;
 }
 
 const char* Effects::IncreaseAttr::get(const char* ifIncrease, const char* ifDecrease) const {
@@ -2245,7 +2257,7 @@ template <typename T, REQUIRE(getColor(TVALUE(const T&), TVALUE(const ContentFac
 static Color getColor(const T& t, const Effect& effect, const ContentFactory* f) {
   return getColor(t, f);
 }
-
+ 
 static Color getColor(const DefaultType& e, const Effect& effect, const ContentFactory* f) {
   int h = int(combineHash(effect.getName(f)));
   return Color(h % 256, ((h / 256) % 256), ((h / 256 / 256) % 256));

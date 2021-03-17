@@ -90,7 +90,7 @@ static bool automatonNeedsPart(const Creature* c, const Item* it, int numAssigne
 bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit) const {
   PROFILE;
   if (optional<MinionEquipmentType> type = getEquipmentType(it)) {
-    if (!canUseItemType(c, *type, it))
+    if (!canUseItemType(c, *type, it)) 
       return false;
     if (!noLimit) {
       auto itemValue = getItemValue(c, it);
@@ -254,6 +254,9 @@ Item* MinionEquipment::getWorstItem(const Creature* c, vector<Item*> items) cons
 static bool canAutoAssignItem(const Item* item) {
   if (item->getAutomatonPart())
     return false;
+  if (auto& effect = item->getEffect())
+    if (!effect->canAutoAssignMinionEquipment())
+      return false;
   for (auto effect : item->getWeaponInfo().attackerEffect)
     if (!effect.canAutoAssignMinionEquipment())
       return false;

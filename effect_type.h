@@ -351,6 +351,12 @@ using AddCompanion = CompanionInfo;
 SIMPLE_EFFECT(SetPhylactery);
 using ::SpecialAttr;
 using AddTechnology = TechId;
+struct EquipmentType : GenericModifierEffect {
+  MinionEquipmentType SERIAL(type);
+  SERIALIZE_ALL(type, SUBCLASS(GenericModifierEffect))
+};
+struct NoAutoAssign : GenericModifierEffect {
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -438,7 +444,9 @@ using AddTechnology = TechId;
   X(AddTechnology, 82)\
   X(Caster, 83)\
   X(RemoveFurniture, 84)\
-  X(SetFlag, 85)
+  X(SetFlag, 85)\
+  X(EquipmentType, 86)\
+  X(NoAutoAssign, 87)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
