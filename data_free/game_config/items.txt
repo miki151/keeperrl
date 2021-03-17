@@ -1623,4 +1623,19 @@ End
     weight = 0.01
     wishedCount = { 500 1000 }
   }
-
+"Moonshine"
+  {
+    viewId = { "potion1" Rgb 0 0 0 0 }
+    shortName = "moonshine"
+    name = "potion of moonshine"
+    plural = "potions of moonshine"
+    blindName = "potion"
+    applyVerb = "drink" "drinks"
+    fragile = true
+    weight = 0.3
+    effect = { IncreaseMorale 0.3 Lasting DRUNK}
+    price = 10
+    burnTime = 1
+    uses = 1
+    producedStat = POTION_PRODUCED
+  }

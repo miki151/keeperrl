@@ -150,7 +150,7 @@
   canHideHere = true
   strength = 100
   usageType = UsageEffect "use" {
-    Chance 0.02 DropItems {Potion Name "moonshine" { IncreaseMorale 0.3 Lasting DRUNK} } {1}
+    Chance 0.02 DropItems {"Moonshine"} {1}
     Chance 0.005 SummonEnemy "RAT" {1 4} none
   }
 }
