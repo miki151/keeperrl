@@ -1427,19 +1427,6 @@ PMonsterAI MonsterAIFactory::getMonsterAI(Creature* c) const {
 MonsterAIFactory::MonsterAIFactory(MakerFun _maker) : maker(_maker) {
 }
 
-MonsterAIFactory MonsterAIFactory::guard() {
-  return MonsterAIFactory([=](Creature* c) {
-      vector<Behaviour*> actors {
-          new AvoidFire(c),
-          new EffectsAI(c),
-          new FighterStandGround(c),
-          new Wait(c)
-      };
-      vector<int> weights { 10, 5, 4, 1 };
-      return new MonsterAI(c, actors, weights);
-  });
-}
-
 MonsterAIFactory MonsterAIFactory::monster() {
   return MonsterAIFactory([=](Creature* c) {
       vector<Behaviour*> actors {
@@ -1511,14 +1498,6 @@ MonsterAIFactory MonsterAIFactory::wildlifeNonPredator() {
           new FighterStandGround(c),
           new MoveRandomly(c)},
           {6, 5, 1});
-      });
-}
-
-MonsterAIFactory MonsterAIFactory::moveRandomly() {
-  return MonsterAIFactory([](Creature* c) {
-      return new MonsterAI(c, {
-          new MoveRandomly(c)},
-          {1});
       });
 }
 
