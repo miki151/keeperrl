@@ -144,7 +144,7 @@ static bool isObstructed(const Creature* creature, const vector<Position>& traje
 
 class EffectsAI : public Behaviour {
   public:
-  EffectsAI(Creature* c) : Behaviour(c) {}
+  EffectsAI(Creature* c, Collective* collective) : Behaviour(c), collective(collective) {}
 
   virtual double itemValue(const Item* item) {
     if (auto& effect = item->getEffect())
@@ -158,6 +158,10 @@ class EffectsAI : public Behaviour {
       ret = MoveInfo(value, std::move(action));
   }
 
+  bool canUseItem(const Item* item) {
+    return !collective || collective->getMinionEquipment().isOwner(item, creature);
+  }
+
   void getThrowMove(Creature* other, MoveInfo& ret) {
     auto target = other->getPosition();
     auto trajectory = drawLine(creature->getPosition().getCoord(), target.getCoord())
@@ -165,7 +169,7 @@ class EffectsAI : public Behaviour {
     if (isObstructed(creature, trajectory))
       return;
     for (auto item : creature->getEquipment().getItems())
-      if (item->effectAppliedWhenThrown())
+      if (canUseItem(item) && item->effectAppliedWhenThrown())
         if (auto effect = item->getEffect()) {
           auto value = effect->shouldAIApply(creature, target);
           if (value > 0 && !creature->getEquipment().isEquipped(item) &&
@@ -187,25 +191,26 @@ class EffectsAI : public Behaviour {
     // prevent workers from using up items that they're hauling
     if (!creature->getStatus().contains(CreatureStatus::CIVILIAN))
       for (auto item : creature->getEquipment().getItems())
-        if (auto effect = item->getEffect()) {
-          auto value = effect->shouldAIApply(creature, creature->getPosition());
-          if (value > 0)
-            if (auto move = creature->applyItem(item))
-              tryMove(ret, value, std::move(move));
-          for (Position pos : creature->getPosition().neighbors8())
-            if (Creature* c = pos.getCreature())
-              if (creature->isFriend(c) && effect->shouldAIApply(c, c->getPosition()) > 0 &&
-                  c->getEquipment().getItems().filter(Item::namePredicate(item->getName())).empty())
-                if (auto action = creature->give(c, {item}))
-                  tryMove(ret, 1, action);
-        }
+        if (canUseItem(item))
+          if (auto effect = item->getEffect()) {
+            auto value = effect->shouldAIApply(creature, creature->getPosition());
+            if (value > 0)
+              if (auto move = creature->applyItem(item))
+                tryMove(ret, value, std::move(move));
+            for (Position pos : creature->getPosition().neighbors8())
+              if (Creature* c = pos.getCreature())
+                if (creature->isFriend(c) && effect->shouldAIApply(c, c->getPosition()) > 0 &&
+                    c->getEquipment().getItems().filter(Item::namePredicate(item->getName())).empty())
+                  if (auto action = creature->give(c, {item}))
+                    tryMove(ret, 1, action);
+          }
     for (auto c : creature->getVisibleCreatures())
       getThrowMove(c, ret);
     return ret.withValue(1.0);
   }
+  Collective* collective;
 
-
-  SERIALIZE_ALL(SUBCLASS(Behaviour))
+  SERIALIZE_ALL(SUBCLASS(Behaviour), collective)
   SERIALIZATION_CONSTRUCTOR(EffectsAI)
 };
 
@@ -1431,7 +1436,7 @@ MonsterAIFactory MonsterAIFactory::monster() {
   return MonsterAIFactory([=](Creature* c) {
       vector<Behaviour*> actors {
           new AvoidFire(c),
-          new EffectsAI(c),
+          new EffectsAI(c, nullptr),
           new Fighter(c),
           new GoldLust(c)
       };
@@ -1447,7 +1452,7 @@ MonsterAIFactory MonsterAIFactory::collective(Collective* col) {
       return new MonsterAI(c, {
         new AvoidFire(c),
         new AdoxieSacrifice(c),
-        new EffectsAI(c),
+        new EffectsAI(c, col),
         new ByCollective(c, col, unique<Fighter>(c)),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 10, 9, 6, 2, 1}, false);
@@ -1458,7 +1463,7 @@ MonsterAIFactory MonsterAIFactory::stayInLocation(vector<Vec2> area, bool moveRa
   return MonsterAIFactory([=](Creature* c) {
       vector<Behaviour*> actors {
           new AvoidFire(c),
-          new EffectsAI(c),
+          new EffectsAI(c, nullptr),
           new Fighter(c),
           new GoldLust(c),
           new GuardArea(c, area)
@@ -1483,7 +1488,7 @@ MonsterAIFactory MonsterAIFactory::singleTask(PTask&& t, bool chaseEnemies) {
       auto task = PTask(released);
       released = nullptr;
       return new MonsterAI(c, {
-        new EffectsAI(c),
+        new EffectsAI(c, nullptr),
         chaseEnemies ? (Behaviour*)(new Fighter(c)) : (Behaviour*)(new FighterStandGround(c)),
         new SingleTask(c, std::move(task)),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
@@ -1534,7 +1539,7 @@ MonsterAIFactory MonsterAIFactory::summoned(Creature* leader) {
       return new MonsterAI(c, {
           new Summoned(c, leader, 1, 3),
           new AvoidFire(c),
-          new EffectsAI(c),
+          new EffectsAI(c, nullptr),
           new Fighter(c),
           new MoveRandomly(c),
           new GoldLust(c)},
@@ -1547,7 +1552,7 @@ MonsterAIFactory MonsterAIFactory::warlord(shared_ptr<vector<Creature*>> team, s
       return new MonsterAI(c, {
           new WarlordBehaviour(c, unique<Fighter>(c), std::move(team), std::move(orders)),
           new AvoidFire(c),
-          new EffectsAI(c),
+          new EffectsAI(c, nullptr),
           new MoveRandomly(c),
           new GoldLust(c)},
           { 6, 5, 4, 1, 1 });
@@ -1558,7 +1563,7 @@ MonsterAIFactory MonsterAIFactory::splashHeroes(bool leader) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
         leader ? (Behaviour*)new SplashHeroLeader(c) : (Behaviour*)new SplashHeroes(c),
-        new EffectsAI(c),
+        new EffectsAI(c, nullptr),
         new Fighter(c),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, false);
@@ -1569,7 +1574,7 @@ MonsterAIFactory MonsterAIFactory::splashMonsters() {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
         new SplashMonsters(c),
-        new EffectsAI(c),
+        new EffectsAI(c, nullptr),
         new Fighter(c),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, false);
@@ -1580,7 +1585,7 @@ MonsterAIFactory MonsterAIFactory::splashImps(const FilePath& splashPath) {
   return MonsterAIFactory([=](Creature* c) {
       return new MonsterAI(c, {
         new SplashImps(c, splashPath),
-        new EffectsAI(c),
+        new EffectsAI(c, nullptr),
         new Fighter(c),
         new ChooseRandom(c, makeVec(PBehaviour(new Rest(c)), PBehaviour(new MoveRandomly(c))), {3, 1})},
         { 6, 5, 2, 1}, false);
