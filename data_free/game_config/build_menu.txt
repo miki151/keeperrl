@@ -102,8 +102,14 @@
     { Zone LEISURE                                             "Leisure"           "Zones"
         "Designate leisure zone where minions will hang out when they have nothing to do."}
 
-    { Zone GUARD                                               "Guard area"        "Zones"
-        "Designate area that minions will actively guard."}
+    { Zone GUARD1                                               "Guard area 1"        "Zones"
+        "Designate an area that minions will actively guard."}
+
+    { Zone GUARD2                                               "Guard area 2"        "Zones"
+        "Designate an area that minions will actively guard."}
+
+    { Zone GUARD3                                               "Guard area 3"        "Zones"
+        "Designate an area that minions will actively guard."}
    }
 
   "library"

@@ -420,8 +420,7 @@ void PlayerControl::minionTaskAction(const TaskActionInfo& action) {
       collective->setMinionActivity(c, *action.switchTo);
     for (MinionActivity task : action.lock)
       c->getAttributes().getMinionActivities().toggleLock(task);
-    auto& groupLocked = collective->getGroupLockedActivities(action.groupName);
-    groupLocked = groupLocked.ex_or(action.lockGroup);
+    collective->flipGroupLockedActivities(action.groupName, action.lockGroup);
   }
 }
 

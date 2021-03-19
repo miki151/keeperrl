@@ -328,7 +328,9 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
         return Task::spider(territory.getAll().front(), territory.getExtended(3));
       break;
     }
-    case MinionActivityInfo::GUARD:
+    case MinionActivityInfo::GUARD1:
+    case MinionActivityInfo::GUARD2:
+    case MinionActivityInfo::GUARD3:
     case MinionActivityInfo::WORKER:
       return nullptr;
   }

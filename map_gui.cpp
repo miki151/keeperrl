@@ -168,7 +168,9 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
         return Color(0, 255, 0, 120);
     case HighlightType::CLICKABLE_FURNITURE: return Color(255, 255, 0, 120);
     case HighlightType::CLICKED_FURNITURE: return Color(255, 255, 0);
-    case HighlightType::GUARD_ZONE: return Color(255, 255, 255, 120);
+    case HighlightType::GUARD_ZONE1: return Color(255, 255, 255, 120);
+    case HighlightType::GUARD_ZONE2: return Color::PURPLE.transparency(120);
+    case HighlightType::GUARD_ZONE3: return Color::SKY_BLUE.transparency(120);
     case HighlightType::FORBIDDEN_ZONE: return Color(255, 0, 0, 120);
     case HighlightType::UNAVAILABLE: return Color(0, 0, 0, 120);
     case HighlightType::TORTURE_UNAVAILABLE: return Color(255, 0, 0);
@@ -874,7 +876,9 @@ bool MapGui::isRenderedHighlightLow(Renderer& renderer, const ViewIndex& index, 
     case HighlightType::QUARTERS1:
     case HighlightType::QUARTERS2:
     case HighlightType::QUARTERS3:
-    case HighlightType::GUARD_ZONE:
+    case HighlightType::GUARD_ZONE1:
+    case HighlightType::GUARD_ZONE2:
+    case HighlightType::GUARD_ZONE3:
     case HighlightType::LEISURE:
     case HighlightType::CLICKED_FURNITURE:
     case HighlightType::CUT_TREE:
@@ -929,6 +933,11 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
     case HighlightType::LEISURE:
     case HighlightType::UNAVAILABLE:
       renderTexturedHighlight(renderer, pos, size, color, ViewId("dig_mark2"));
+      break;
+    case HighlightType::GUARD_ZONE1:
+    case HighlightType::GUARD_ZONE2:
+    case HighlightType::GUARD_ZONE3:
+      renderTexturedHighlight(renderer, pos, size, color, ViewId("guard_zone"));
       break;
     default:
       renderTexturedHighlight(renderer, pos, size, color, ViewId("dig_mark"));

@@ -363,10 +363,6 @@ bool Collective::isActivityGoodAssumingHaveTasks(Creature* c, MinionActivity act
   }
 }
 
-Collective::GroupLockedActivities& Collective::getGroupLockedActivities(const string& group) {
-  return groupLockedAcitivities[group];
-}
-
 Collective::GroupLockedActivities Collective::getGroupLockedActivities(const Creature* c) const {
   auto ret = getGroupLockedActivities(getMinionGroupName(c));
   for (auto& group : getAutomatonGroupNames(c))
@@ -374,12 +370,16 @@ Collective::GroupLockedActivities Collective::getGroupLockedActivities(const Cre
   return ret;
 }
 
-const Collective::GroupLockedActivities& Collective::getGroupLockedActivities(const string& group) const {
-  static GroupLockedActivities empty;
-  if (groupLockedAcitivities.count(group))
-    return groupLockedAcitivities.at(group);
+Collective::GroupLockedActivities Collective::getGroupLockedActivities(const string& group) const {
+  return MinionActivityMap::getAutoGroupLocked().ex_or(
+      getValueMaybe(groupLockedAcitivities, group).value_or(GroupLockedActivities{}));
+}
+
+void Collective::flipGroupLockedActivities(const string& group, GroupLockedActivities a) {
+  if (auto v = getReferenceMaybe(groupLockedAcitivities, group))
+    *v = v->ex_or(a);
   else
-    return empty;
+    groupLockedAcitivities.insert(make_pair(group, a));
 }
 
 bool Collective::isActivityGood(Creature* c, MinionActivity activity, bool ignoreTaskLock) {
@@ -511,14 +511,17 @@ void Collective::updateBorderTiles() {
 }
 
 void Collective::updateGuardTasks() {
-  const auto activity = MinionActivity::GUARDING;
-  for (auto& pos : zones->getPositions(ZoneId::GUARD))
-    if (!taskMap->hasTask(pos, activity))
-      taskMap->addTask(Task::goToAndWait(pos, 400_visible), pos, activity);
-  for (auto& task : taskMap->getTasks(activity))
-    if (auto pos = taskMap->getPosition(task))
-      if (!zones->getPositions(ZoneId::GUARD).count(*pos))
-        taskMap->removeTask(task);
+  for (auto activity : {make_pair(MinionActivity::GUARDING1, ZoneId::GUARD1),
+      make_pair(MinionActivity::GUARDING2, ZoneId::GUARD2),
+      make_pair(MinionActivity::GUARDING3, ZoneId::GUARD3)}) {
+    for (auto& pos : zones->getPositions(activity.second))
+      if (!taskMap->hasTask(pos, activity.first))
+        taskMap->addTask(Task::goToAndWait(pos, 400_visible), pos, activity.first);
+    for (auto& task : taskMap->getTasks(activity.first))
+      if (auto pos = taskMap->getPosition(task))
+        if (!zones->getPositions(activity.second).count(*pos))
+          taskMap->removeTask(task);
+  }
 }
 
 void Collective::updateAutomatonEngines() {

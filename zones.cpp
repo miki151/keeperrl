@@ -44,7 +44,9 @@ static ZoneId destroyedOnOrder[] = {
   ZoneId::PERMANENT_FETCH_ITEMS,
   ZoneId::STORAGE_EQUIPMENT,
   ZoneId::STORAGE_RESOURCES,
-  ZoneId::GUARD
+  ZoneId::GUARD1,
+  ZoneId::GUARD2,
+  ZoneId::GUARD3
 };
 
 void Zones::onDestroyOrder(Position pos) {
@@ -74,8 +76,12 @@ static HighlightType getHighlight(ZoneId id) {
       return HighlightType::QUARTERS3;
     case ZoneId::LEISURE:
       return HighlightType::LEISURE;
-    case ZoneId::GUARD:
-      return HighlightType::GUARD_ZONE;
+    case ZoneId::GUARD1:
+      return HighlightType::GUARD_ZONE1;
+    case ZoneId::GUARD2:
+      return HighlightType::GUARD_ZONE2;
+    case ZoneId::GUARD3:
+      return HighlightType::GUARD_ZONE3;
   }
 }
 
@@ -90,7 +96,9 @@ bool Zones::canSet(Position pos, ZoneId id, const Collective* col) const {
   switch (id) {
     case ZoneId::STORAGE_EQUIPMENT:
     case ZoneId::STORAGE_RESOURCES:
-    case ZoneId::GUARD:
+    case ZoneId::GUARD1:
+    case ZoneId::GUARD2:
+    case ZoneId::GUARD3:
       return pos.canEnterEmpty(MovementTrait::WALK);
     case ZoneId::QUARTERS1:
     case ZoneId::QUARTERS2:
@@ -126,7 +134,11 @@ ViewId getViewId(ZoneId id) {
       return ViewId("storage_equipment");
     case ZoneId::STORAGE_RESOURCES:
       return ViewId("storage_resources");
-    case ZoneId::GUARD:
-      return ViewId("dig_mark", Color(254, 254, 254));
+    case ZoneId::GUARD1:
+      return ViewId("guard_zone");
+    case ZoneId::GUARD2:
+      return ViewId("guard_zone", Color::PURPLE);
+    case ZoneId::GUARD3:
+      return ViewId("guard_zone", Color::SKY_BLUE);
   }
 }

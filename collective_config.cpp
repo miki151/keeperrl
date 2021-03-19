@@ -303,7 +303,9 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
           }};
       case MinionActivity::EAT: return {FurnitureType("DINING_TABLE")};
       case MinionActivity::PHYLACTERY: return {FurnitureType("PHYLACTERY")};
-      case MinionActivity::GUARDING: return {MinionActivityInfo::GUARD};
+      case MinionActivity::GUARDING1: return {MinionActivityInfo::GUARD1};
+      case MinionActivity::GUARDING2: return {MinionActivityInfo::GUARD2};
+      case MinionActivity::GUARDING3: return {MinionActivityInfo::GUARD3};
       case MinionActivity::POETRY:
         return {[](const ContentFactory* f, const Collective*, const Creature* c, FurnitureType t) {
           return t == FurnitureType("POETRY_TABLE")

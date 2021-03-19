@@ -23,6 +23,14 @@
 #include "equipment.h"
 #include "game.h"
 
+EnumSet<MinionActivity> MinionActivityMap::getAutoGroupLocked() {
+  return EnumSet<MinionActivity> {
+    MinionActivity::GUARDING1,
+    MinionActivity::GUARDING2,
+    MinionActivity::GUARDING3,
+  };
+}
+
 static bool isAutoLocked(const Collective* col, const Creature* c, MinionActivity t) {
   switch (t) {
     case MinionActivity::PHYLACTERY:
@@ -92,7 +100,9 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
       return c->isAffected(LastingEffect::COPULATION_SKILL);
     case MinionActivity::RITUAL:
       return c->getBody().canPerformRituals() && !col->hasTrait(c, MinionTrait::WORKER);
-    case MinionActivity::GUARDING:
+    case MinionActivity::GUARDING1:
+    case MinionActivity::GUARDING2:
+    case MinionActivity::GUARDING3:
       return col->hasTrait(c, MinionTrait::FIGHTER);
     case MinionActivity::CROPS:
       return c->isAffected(LastingEffect::CROPS_SKILL);

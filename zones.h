@@ -13,7 +13,9 @@ RICH_ENUM(ZoneId,
   QUARTERS2,
   QUARTERS3,
   LEISURE,
-  GUARD
+  GUARD1,
+  GUARD2,
+  GUARD3
 );
 
 class Position;

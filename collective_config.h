@@ -48,7 +48,7 @@ struct GuardianInfo {
 };
 
 struct MinionActivityInfo {
-  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE, MINION_ABUSE, GUARD } type;
+  enum Type { FURNITURE, EXPLORE, COPULATE, EAT, SPIDER, WORKER, ARCHERY, IDLE, MINION_ABUSE, GUARD1, GUARD2, GUARD3 } type;
   MinionActivityInfo();
   MinionActivityInfo(FurnitureType);
   MinionActivityInfo(BuiltinUsageId);

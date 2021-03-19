@@ -22,6 +22,7 @@ class MinionActivityMap {
   void toggleLock(MinionActivity);
   bool isLocked(const Collective*, const Creature*, MinionActivity) const;
   static bool canLock(MinionActivity);
+  static EnumSet<MinionActivity> getAutoGroupLocked();
   bool isAvailable(const Collective*, const Creature*, MinionActivity, bool ignoreTaskLock = false) const;
   bool canChooseRandomly(const Creature* c, MinionActivity) const;
 
