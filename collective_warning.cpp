@@ -89,6 +89,7 @@ const char* CollectiveWarnings::getText(Warning w) {
     case Warning::MORE_CHESTS: return "You need more treasure chests.";
     case Warning::DUNGEON_LEVEL: return "Conquer an enemy tribe to increase your malevolence level.";
     case Warning::MORE_LIGHTS: return "Place some torches to light up your dungeon.";
+    case Warning::GUARD_POSTS: return "Guard zones have been placed, but the guarding activity is not enabled for any minion.";
   }
   return "";
 }

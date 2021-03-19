@@ -511,6 +511,7 @@ void Collective::updateBorderTiles() {
 }
 
 void Collective::updateGuardTasks() {
+  bool setWarning = false;
   for (auto activity : {make_pair(MinionActivity::GUARDING1, ZoneId::GUARD1),
       make_pair(MinionActivity::GUARDING2, ZoneId::GUARD2),
       make_pair(MinionActivity::GUARDING3, ZoneId::GUARD3)}) {
@@ -521,7 +522,15 @@ void Collective::updateGuardTasks() {
       if (auto pos = taskMap->getPosition(task))
         if (!zones->getPositions(activity.second).count(*pos))
           taskMap->removeTask(task);
+    setWarning = setWarning || (!zones->getPositions(activity.second).empty() &&
+      [&] {
+        for (auto c : getCreatures(MinionTrait::FIGHTER))
+          if (c->getAttributes().getMinionActivities().isAvailable(this, c, activity.first, false))
+            return false;
+        return true;
+      }());
   }
+  warnings->setWarning(CollectiveWarning::GUARD_POSTS, setWarning);
 }
 
 void Collective::updateAutomatonEngines() {
