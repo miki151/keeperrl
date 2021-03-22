@@ -99,7 +99,23 @@ void LastingEffects::runTests() {
 void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
   PROFILE;
   if (auto e = getCancelledOneWay(effect))
-    c->removeEffect(*e, true);
+    c->removeEffect(*e);
+  switch (effect) {
+    case LastingEffect::LIGHT_SOURCE:
+      c->getPosition().addCreatureLight(false);
+      break;
+    case LastingEffect::DARKNESS_SOURCE:
+      c->getPosition().addCreatureLight(true);
+      break;
+    case LastingEffect::ON_FIRE:
+      c->getPosition().addCreatureLight(false);
+      break;
+    case LastingEffect::SWARMER:
+      c->getPosition().addSwarmer();
+      break;
+    default:
+      break;
+  }
   if (msg)
     switch (effect) {
       case LastingEffect::FLYING:
@@ -184,12 +200,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::PEACEFULNESS:
         c->you(MsgType::BECOME, "peaceful");
         break;
-      case LastingEffect::LIGHT_SOURCE:
-        c->getPosition().addCreatureLight(false);
-        break;
-      case LastingEffect::DARKNESS_SOURCE:
-        c->getPosition().addCreatureLight(true);
-        break;
       case LastingEffect::MAGIC_RESISTANCE:
         c->you(MsgType::ARE, "now resistant to magical attacks");
         break;
@@ -269,7 +279,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::ON_FIRE:
         c->you(MsgType::ARE, "on fire!");
-        c->getPosition().addCreatureLight(false);
         break;
       case LastingEffect::FROZEN:
         c->you(MsgType::ARE, "frozen!");
@@ -319,7 +328,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::SWARMER:
         c->verb("feel", "feels", "like swarming someone");
-        c->getPosition().addSwarmer();
         break;
       case LastingEffect::PSYCHIATRY:
         c->you(MsgType::BECOME, "more understanding");
@@ -336,7 +344,7 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::NO_FRIENDLY_FIRE:
         c->you(MsgType::YOUR, "projectiles won't hit allies");
         break;
-      case LastingEffect::POLYMORPHED:
+      default:
         break;
     }
 }
@@ -377,21 +385,64 @@ void LastingEffects::onRemoved(Creature* c, LastingEffect effect, bool msg) {
         c->you(MsgType::ARE, "cured from poisoning");
       break;
     case LastingEffect::SLEEP:
-      c->you(MsgType::WAKE_UP, "");
+      if (msg)
+        c->you(MsgType::WAKE_UP, "");
       break;
     case LastingEffect::STUNNED:
-      c->you(MsgType::ARE, "no longer unconscious");
+      if (msg)
+        c->you(MsgType::ARE, "no longer unconscious");
       break;
     case LastingEffect::ON_FIRE:
-      c->you(MsgType::YOUR, "flames are extinguished");
+      if (msg)
+        c->you(MsgType::YOUR, "flames are extinguished");
       c->getPosition().removeCreatureLight(false);
       break;
     default:
-      onTimedOut(c, effect, msg); break;
+      onTimedOut(c, effect, msg);
+      break;
   }
 }
 
 void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
+  switch (effect) {
+    case LastingEffect::SLEEP:
+      c->addEffect(LastingEffect::RESTED, 1000_visible);
+      break;
+    case LastingEffect::PLAGUE:
+      c->addPermanentEffect(LastingEffect::PLAGUE_RESISTANT);
+      break;
+    case LastingEffect::SUMMONED:
+      c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
+      break;
+    case LastingEffect::STUNNED:
+      c->dieWithLastAttacker();
+      break;
+    case LastingEffect::LIGHT_SOURCE:
+      c->getPosition().removeCreatureLight(false);
+      break;
+    case LastingEffect::DARKNESS_SOURCE:
+      c->getPosition().removeCreatureLight(true);
+      break;
+    case LastingEffect::ON_FIRE:
+      c->getPosition().removeCreatureLight(false);
+      if (c->getBody().burnsIntrinsically())
+        c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
+      break;
+    case LastingEffect::SPYING:
+      c->setAlternativeViewId(none);
+      break;
+    case LastingEffect::OIL:
+      c->removeEffect(LastingEffect::ON_FIRE);
+      break;
+    case LastingEffect::SWARMER:
+      c->getPosition().removeSwarmer();
+      break;
+    case LastingEffect::POLYMORPHED:
+      c->popAttributes();
+      break;
+    default:
+      break;
+  }
   if (msg)
     switch (effect) {
       case LastingEffect::SLOWED:
@@ -399,7 +450,6 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::SLEEP:
         c->you(MsgType::WAKE_UP, "");
-        c->addEffect(LastingEffect::RESTED, 1000_visible);
         break;
       case LastingEffect::SPEED:
         c->you(MsgType::ARE, "moving more slowly again");
@@ -438,7 +488,6 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::PLAGUE:
         c->you(MsgType::YOUR, "plague infection subsides");
-        c->addPermanentEffect(LastingEffect::PLAGUE_RESISTANT);
         break;
       case LastingEffect::PLAGUE_RESISTANT:
         c->you(MsgType::ARE, "no longer plague resistant");
@@ -509,18 +558,6 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::RESTED:
         c->you(MsgType::ARE, "no longer rested");
         break;
-      case LastingEffect::SUMMONED:
-        c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
-        break;
-      case LastingEffect::STUNNED:
-        c->dieWithLastAttacker();
-        break;
-      case LastingEffect::LIGHT_SOURCE:
-        c->getPosition().removeCreatureLight(false);
-        break;
-      case LastingEffect::DARKNESS_SOURCE:
-        c->getPosition().removeCreatureLight(true);
-        break;
       case LastingEffect::HATE_HUMANS:
       case LastingEffect::HATE_GREENSKINS:
       case LastingEffect::HATE_ELVES:
@@ -542,11 +579,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         c->verb("no longer deal", "no longer deals", "magical damage");
         break;
       case LastingEffect::ON_FIRE:
-        c->getPosition().removeCreatureLight(false);
-        if (c->getBody().burnsIntrinsically()) {
+        if (c->getBody().burnsIntrinsically())
           c->verb("burn", "burns", "to death");
-          c->dieNoReason(Creature::DropType::ONLY_INVENTORY);
-        } else
+        else
           c->verb("stop", "stops", "burning");
         break;
       case LastingEffect::FROZEN:
@@ -575,7 +610,6 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::SPYING:
         c->secondPerson("You remove your sunglasses"_s);
         c->thirdPerson(c->getName().the() + " removes " + his(c->getAttributes().getGender()) + " sunglasses"_s);
-        c->setAlternativeViewId(none);
         break;
       case LastingEffect::LIFE_SAVED:
         c->you(MsgType::YOUR, "life will no longer be saved");
@@ -585,11 +619,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::OIL:
         c->you(MsgType::ARE, "no longer covered in oil");
-        c->removeEffect(LastingEffect::ON_FIRE);
         break;
       case LastingEffect::SWARMER:
         c->verb("no longer feel", "no longer feels", "like swarming someone");
-        c->getPosition().removeSwarmer();
         break;
       case LastingEffect::PSYCHIATRY:
         c->you(MsgType::BECOME, "less understanding");
@@ -607,7 +639,6 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         c->you(MsgType::YOUR, "projectiles will hit allies");
         break;
       case LastingEffect::POLYMORPHED:
-        c->popAttributes();
         c->verb("return to your", "returns to "_s + his(c->getAttributes().getGender()), "previous form");
         c->addFX({FXName::SPAWN});
         break;
