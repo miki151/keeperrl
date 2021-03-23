@@ -1146,7 +1146,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::SLOW_TRAINING: return "slow training";
     case LastingEffect::ENTERTAINER: return "entertainment";
     case LastingEffect::BAD_BREATH: return "smelly breath";
-    case LastingEffect::AMBUSH_SKILL: return "ambush skill";
+    case LastingEffect::AMBUSH_SKILL: return "ambushing";
     case LastingEffect::SWIMMING_SKILL: return "swimming";
     case LastingEffect::DISARM_TRAPS_SKILL: return "trap disarming";
     case LastingEffect::CONSUMPTION_SKILL: return "absorption";
