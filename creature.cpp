@@ -199,18 +199,37 @@ void Creature::popAttributes() {
 }
 
 void Creature::pushAttributes(CreatureAttributes attr, SpellMap spells) {
-  attributesStack.push_back(make_pair(std::move(*attributes), std::move(*spellMap)));
-  setAttributes(std::move(attr), std::move(spells));
+  attributesStack.push_back(setAttributes(std::move(attr), std::move(spells)));
 }
 
-void Creature::setAttributes(CreatureAttributes attr, SpellMap spells) {
-  auto stunnedTimeout = attributes->getTimeOut(LastingEffect::STUNNED);
+pair<CreatureAttributes, SpellMap> Creature::setAttributes(CreatureAttributes attr, SpellMap spells) {
+  for (auto item : equipment->getAllEquipped())
+    item->onUnequip(this, false);
+  for (auto item : equipment->getItems())
+    item->onDropped(this, false);
+  for (auto effect : ENUM_ALL(LastingEffect)) {
+    if (attributes->getTimeOut(effect) > GlobalTime(0))
+      attr.addLastingEffect(effect, attributes->getTimeOut(effect));
+    if (attributes->isAffectedPermanently(effect))
+      LastingEffects::onRemoved(this, effect, false);
+  }
+  auto ret = make_pair(std::move(*attributes), std::move(*spellMap));
   attributes = std::move(attr);
-  attributes->addLastingEffect(LastingEffect::STUNNED, stunnedTimeout);
+  spellMap = std::move(spells);
   modViewObject() = attributes->createViewObject();
   modViewObject().setGenericId(getUniqueId().getGenericId());
   modViewObject().setModifier(ViewObject::Modifier::CREATURE);
-  spellMap = std::move(spells);
+  for (auto effect : ENUM_ALL(LastingEffect))
+    if (attr.isAffectedPermanently(effect))
+      LastingEffects::onAffected(this, effect, false);
+  for (auto item : equipment->getAllEquipped())
+    item->onEquip(this, false);
+  for (auto item : equipment->getItems())
+    item->onOwned(this, false);
+  for (auto effect : ENUM_ALL(LastingEffect))
+    if (!LastingEffects::affects(this, effect))
+      removeEffect(effect, true);
+  return ret;
 }
 
 CreatureAction Creature::castSpell(const Spell* spell) const {

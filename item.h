@@ -97,10 +97,10 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getApplyMsgFirstPerson(const Creature* owner) const;
   optional<StatId> getProducedStat() const;
   const vector<LastingEffect>& getEquipedEffects() const;
-  void onEquip(Creature*);
-  void onUnequip(Creature*);
-  void onOwned(Creature*);
-  void onDropped(Creature*);
+  void onEquip(Creature*, bool msg = true);
+  void onUnequip(Creature*, bool msg = true);
+  void onOwned(Creature*, bool msg = true);
+  void onDropped(Creature*, bool msg = true);
   virtual void fireDamage(Position);
   virtual void iceDamage(Position);
   const Fire& getFire() const;

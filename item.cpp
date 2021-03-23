@@ -99,30 +99,30 @@ vector<vector<Item*>> Item::stackItems(vector<Item*> items, function<string(cons
   return ret;
 }
 
-void Item::onOwned(Creature* c) {
+void Item::onOwned(Creature* c, bool msg) {
   if (attributes->ownedEffect)
-    c->addPermanentEffect(*attributes->ownedEffect);
+    c->addPermanentEffect(*attributes->ownedEffect, 1, msg);
 }
 
-void Item::onDropped(Creature* c) {
+void Item::onDropped(Creature* c, bool msg) {
   if (attributes->ownedEffect)
-    c->removePermanentEffect(*attributes->ownedEffect);
+    c->removePermanentEffect(*attributes->ownedEffect, 1, msg);
 }
 
 const vector<LastingEffect>& Item::getEquipedEffects() const {
   return attributes->equipedEffect;
 }
 
-void Item::onEquip(Creature* c) {
+void Item::onEquip(Creature* c, bool msg) {
   for (auto& e : attributes->equipedEffect)
-    c->addPermanentEffect(e);
+    c->addPermanentEffect(e, 1, msg);
   if (attributes->equipedCompanion)
     c->getAttributes().companions.push_back(*attributes->equipedCompanion);
 }
 
-void Item::onUnequip(Creature* c) {
+void Item::onUnequip(Creature* c, bool msg) {
   for (auto& e : attributes->equipedEffect)
-    c->removePermanentEffect(e);
+    c->removePermanentEffect(e, 1, msg);
   if (attributes->equipedCompanion)
     [&, &companions = c->getAttributes().companions] {
       for (int i : All(companions))

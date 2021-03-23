@@ -135,7 +135,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   const CreatureAttributes& getAttributes() const;
   CreatureAttributes& getAttributes();
-  void setAttributes(CreatureAttributes, SpellMap);
+  pair<CreatureAttributes, SpellMap> setAttributes(CreatureAttributes, SpellMap);
   void pushAttributes(CreatureAttributes, SpellMap);
   void popAttributes();
   const Body& getBody() const;
