@@ -253,7 +253,7 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
     case MinionActivityInfo::IDLE: {
       PROFILE_BLOCK("Idle");
       auto& myTerritory = getIdlePositions(collective, c);
-      if (collective->getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
+      if (!myTerritory.empty() && collective->getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
         if ((c->getPosition().isCovered() && myTerritory.count(c->getPosition()))) {
           PROFILE_BLOCK("Stay in for the night");
           return Task::idle();
