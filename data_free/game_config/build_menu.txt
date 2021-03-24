@@ -367,8 +367,8 @@
   "gnome_traps"
   {
     { Trap "TRAP_TRIGGER"          "Trap trigger"     "Traps"
-        "Triggers all other traps around it." 0                   { TechId "traps" }}
+        "Triggers all other traps around it." 0                   { TechId "advanced traps" }}
     { Trap "DESTROY_WALLS_TRAP"    "Crumble trap"     "Traps"
-        "All walls up to two tiles away are destroyed." 0         { TechId "traps" }}
+        "All walls up to two tiles away are destroyed." 0         { TechId "advanced traps" }}
   }
  
