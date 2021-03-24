@@ -1560,7 +1560,8 @@ bool Creature::affectByFire(double amount) {
     if (getBody().affectByFire(this, amount)) {
       verb("burn", "burns", "to death");
       dieWithReason("burnt to death");
-    }
+    } else
+      removeEffect(LastingEffect::SLEEP);
     addEffect(LastingEffect::ON_FIRE, 100_visible);
     return true;
   }
@@ -1576,7 +1577,8 @@ bool Creature::affectByAcid() {
     if (getBody().affectByAcid(this)) {
       you(MsgType::ARE, "dissolved by acid");
       dieWithReason("dissolved by acid");
-    }
+    } else
+      removeEffect(LastingEffect::SLEEP);
     return true;
   } else {
     auto& items = equipment->getAllEquipped();
