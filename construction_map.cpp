@@ -35,7 +35,8 @@ bool ConstructionMap::FurnitureInfo::isBuilt(Position pos, FurnitureLayer layer)
   auto f = pos.getFurniture(layer);
   return f &&
       (f->getType() == type ||
-      !pos.getGame()->getContentFactory()->furniture.getData(type).getBuiltOver().contains(f->getType()));
+      (!f->silentlyReplace() &&
+        !pos.getGame()->getContentFactory()->furniture.getData(type).getBuiltOver().contains(f->getType())));
 }
 
 bool ConstructionMap::FurnitureInfo::hasTask() const {
