@@ -11,10 +11,10 @@ Def Margins(Left, Top, Right, Bottom, Content)
 End
 
 Def FocusKeys() {
-  Using "HIGHLIGHT_PREVIOUS" KeyHandler(SDLK_LEFT)
-  Using "HIGHLIGHT_NEXT" KeyHandler(SDLK_RIGHT)
-  Using "HIGHLIGHT_PREVIOUS" KeyHandler(SDLK_UP)
-  Using "HIGHLIGHT_NEXT" KeyHandler(SDLK_DOWN)
+  Using "HIGHLIGHT_PREVIOUS" { KeyHandler(SDLK_LEFT) KeyHandler(SDLK_KP_4) }
+  Using "HIGHLIGHT_NEXT" { KeyHandler(SDLK_RIGHT) KeyHandler(SDLK_KP_6) }
+  Using "HIGHLIGHT_PREVIOUS" { KeyHandler(SDLK_UP) KeyHandler(SDLK_KP_8) }
+  Using "HIGHLIGHT_NEXT" { KeyHandler(SDLK_DOWN) KeyHandler(SDLK_KP_2) }
 }
 End
 
