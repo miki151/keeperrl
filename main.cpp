@@ -297,10 +297,10 @@ static int keeperMain(po::parser& commandLineFlags) {
   Clock clock(!!maxTurns);
   userPath.createIfDoesntExist();
   auto settingsPath = userPath.file("options.txt");
-  Unlocks unlocks(userPath.file("unlocks.txt"));
   if (commandLineFlags["restore_settings"].was_set())
     remove(settingsPath.getPath());
   Options options(settingsPath);
+  Unlocks unlocks(&options, userPath.file("unlocks.txt"));
   Random.init(int(time(nullptr)));
   auto installId = getInstallId(userPath.file("installId.txt"), Random);
   SoundLibrary* soundLibrary = nullptr;

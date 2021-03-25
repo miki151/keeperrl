@@ -596,8 +596,7 @@ class Test {
   static ContentFactory getContentFactory() {
     GameConfig config({DirectoryPath("data_free/game_config/")});
     ContentFactory contentFactory;
-    Unlocks unlocks(DirectoryPath::current().file("unlocks.txt"));
-    CHECK(!contentFactory.readData(&config, {"vanilla"}, unlocks));
+    CHECK(!contentFactory.readData(&config, {"vanilla"}, Unlocks::allUnlocked()));
     return contentFactory;
   }
 

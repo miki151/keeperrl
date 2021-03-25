@@ -51,6 +51,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::KEEPER_WARNING_PAUSE, 1},
   {OptionId::KEEPER_WARNING_TIMEOUT, 200},
   {OptionId::SINGLE_THREAD, 0},
+  {OptionId::UNLOCK_ALL, 0},
 };
 
 const map<OptionId, string> names {
@@ -85,6 +86,7 @@ const map<OptionId, string> names {
   {OptionId::KEEPER_WARNING_PAUSE, "Keeper danger auto-pause"},
   {OptionId::KEEPER_WARNING_TIMEOUT, "Keeper danger timeout"},
   {OptionId::SINGLE_THREAD, "Use a single thread for loading operations"},
+  {OptionId::UNLOCK_ALL, "Unlock all hidden gameplay features"},
 };
 
 const map<OptionId, string> hints {
@@ -108,6 +110,7 @@ const map<OptionId, string> hints {
   {OptionId::KEEPER_WARNING_TIMEOUT, "Number of turns before a new \"Keeper in danger\" warning is shown"},
   {OptionId::SINGLE_THREAD, "Please try this option if you're experiencing slow saving, loading, or map generation. "
         "Note: this will make the game unresponsive during the operation."},
+  {OptionId::UNLOCK_ALL, "Unlocks all player characters and gameplay features that are normally unlocked by finding secrets in the game."},
 };
 
 const map<OptionSet, vector<OptionId>> optionSets {
@@ -131,6 +134,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
       OptionId::KEEPER_WARNING_PAUSE,
       OptionId::KEEPER_WARNING_TIMEOUT,
       OptionId::SINGLE_THREAD,
+      OptionId::UNLOCK_ALL,
 #ifndef RELEASE
       OptionId::KEEP_SAVEFILES,
       OptionId::SHOW_MAP,
@@ -287,6 +291,7 @@ static bool isBoolean(OptionId id) {
     case OptionId::DISABLE_CURSOR:
     case OptionId::START_WITH_NIGHT:
     case OptionId::SINGLE_THREAD:
+    case OptionId::UNLOCK_ALL:
       return true;
     default:
       return false;
@@ -315,6 +320,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::DISABLE_CURSOR:
     case OptionId::START_WITH_NIGHT:
     case OptionId::SINGLE_THREAD:
+    case OptionId::UNLOCK_ALL:
       return getYesNo(value);
     case OptionId::SETTLEMENT_NAME:
     case OptionId::PLAYER_NAME:

@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "unlocks.h"
 #include "parse_game.h"
+#include "options.h"
 
-Unlocks::Unlocks(FilePath p) : path(p) {}
+Unlocks::Unlocks(Options* options, FilePath p) : options(options), path(p) {}
 Unlocks Unlocks::allUnlocked() {
   return Unlocks();
 }
@@ -26,7 +27,7 @@ static void write(FilePath path, const UnlocksSet& s) {
 }
 
 bool Unlocks::isUnlocked(UnlockId id) const {
-  return !!path ? read(*path).count(id) : true;
+  return !options || options->getBoolValue(OptionId::UNLOCK_ALL) || read(*path).count(id);
 }
 
 void Unlocks::unlock(UnlockId id) {
