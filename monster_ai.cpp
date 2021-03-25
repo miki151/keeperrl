@@ -208,7 +208,7 @@ class EffectsAI : public Behaviour {
       getThrowMove(c, ret);
     return ret.withValue(1.0);
   }
-  Collective* collective;
+  Collective* SERIAL(collective);
 
   SERIALIZE_ALL(SUBCLASS(Behaviour), collective)
   SERIALIZATION_CONSTRUCTOR(EffectsAI)
