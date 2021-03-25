@@ -145,7 +145,7 @@ int Spell::checkTrajectory(const Creature* c, Position to) const {
   for (auto& v : drawLine(from, to))
     if (v != from) {
       if (isBlockedBy(c, v))
-        return -1;
+        return 0;
       auto value = effect->shouldAIApply(c, v);
       if (value < 0)
         return value;
