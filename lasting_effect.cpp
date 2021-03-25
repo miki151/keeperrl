@@ -765,7 +765,6 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::TELEPATHY: return "Telepathic"_good;
     case LastingEffect::SATIATED: return "Satiated"_good;
     case LastingEffect::RESTED: return "Rested"_good;
-    case LastingEffect::PEACEFULNESS: return "Peaceful"_good;
     case LastingEffect::FAST_CRAFTING: return "Fast craftsman"_good;
     case LastingEffect::FAST_TRAINING: return "Fast trainee"_good;
     case LastingEffect::ENTERTAINER: return "Entertainer"_good;
@@ -792,6 +791,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::NO_FRIENDLY_FIRE: return "Arrows bypass allies"_good;
     case LastingEffect::POLYMORPHED: return "Polymorphed"_good;
 
+    case LastingEffect::PEACEFULNESS: return "Peaceful"_bad;
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::PLAGUE: return "Infected with plague"_bad;
     case LastingEffect::BLEEDING: return "Bleeding"_bad;
