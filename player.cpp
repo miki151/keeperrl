@@ -510,6 +510,11 @@ void Player::sleeping() {
       "level render time");
   if (LastingEffects::losesControl(creature))
     onLostControl();
+  // Pop all queued actions and discard them
+  do {
+    if (getView()->getAction().getId() == UserInputId::IDLE)
+      break;
+  } while(true);
 }
 
 vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(Creature* c) const {
