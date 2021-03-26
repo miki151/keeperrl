@@ -1341,8 +1341,11 @@ CreatureAction Creature::attack(Creature* other) const {
       weapon.first->getAttackMsg(this, enemyName);
       getGame()->addEvent(EventInfo::CreatureAttacked{other, self, damageAttr});
       wasDamaged |= other->takeDamage(attack, true);
-      for (auto& e : weaponInfo.attackerEffect)
+      for (auto& e : weaponInfo.attackerEffect) {
         e.apply(position);
+        if (self->isDead())
+          break;
+      }
       if (self->isDead() || other->isDead() || other->isAffected(LastingEffect::STUNNED))
         break;
     }
