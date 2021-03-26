@@ -504,8 +504,10 @@ class ShopkeeperController : public Monster, public EventListener<ShopkeeperCont
                 thiefCount.erase(debtor);
                 debtors.erase(debtor);
                 thieves.insert(debtor);
-                for (Item* item : debtor->getEquipment().getItems())
+                for (Item* item : debtor->getEquipment().getItems()) {
                   item->setShopkeeper(nullptr);
+                  debtor->getDebt().add(creature, -item->getPrice());
+                }
                 break;
               }
             }

@@ -207,7 +207,7 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory) 
   carryLimit = c->getBody().getCarryLimit();
   map<ItemClass, vector<Item*> > typeGroups = groupBy<Item*, ItemClass>(
       c->getEquipment().getItems(), [](Item* const& item) { return item->getClass();});
-  debt = c->getDebt().getTotal();
+  debt = c->getDebt().getTotal(c);
   for (auto elem : ENUM_ALL(ItemClass))
     if (typeGroups[elem].size() > 0)
       append(inventory, getItemInfos(c, typeGroups[elem], contentFactory));

@@ -371,20 +371,16 @@ void Player::payForItemAction(const vector<Item*>& items) {
 }
 
 void Player::payForAllItemsAction() {
-  if (int totalDebt = creature->getDebt().getTotal()) {
+  if (int totalDebt = creature->getDebt().getTotal(creature)) {
     auto gold = creature->getGold(totalDebt);
     if (gold.size() < totalDebt)
       privateMessage("You don't have enough gold to pay for everything.");
-    else {
-      for (auto creatureId : creature->getDebt().getCreditors())
-        for (Creature* c : creature->getVisibleCreatures())
-          if (c->getUniqueId() == creatureId &&
-              getView()->yesOrNoPrompt("Give " + c->getName().the() + " " + toString(gold.size()) + " gold?")) {
-              if (tryToPerform(creature->give(c, gold)))
-                for (auto item : creature->getEquipment().getItems())
-                  item->setShopkeeper(nullptr);
+    else
+      for (Creature* c : creature->getDebt().getCreditors(creature)) {
+        auto debt = creature->getDebt().getAmountOwed(c);
+        if (getView()->yesOrNoPrompt("Give " + c->getName().title() + " " + toString(debt) + " gold?"))
+          tryToPerform(creature->give(c, creature->getGold(debt)));
       }
-    }
   }
 }
 

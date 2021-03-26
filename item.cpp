@@ -38,6 +38,7 @@
 #include "content_factory.h"
 #include "creature_factory.h"
 #include "effect_type.h"
+#include "creature_debt.h"
 
 template <class Archive> 
 void Item::serialize(Archive& ar, const unsigned int version) {
@@ -381,7 +382,7 @@ void Item::setName(const string& n) {
 
 Creature* Item::getShopkeeper(const Creature* owner) const {
   if (shopkeeper)
-    for (Creature* c : owner->getVisibleCreatures())
+    for (Creature* c : owner->getDebt().getCreditors(owner))
       if (c->getUniqueId() == *shopkeeper)
         return c;
   return nullptr;

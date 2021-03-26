@@ -1854,7 +1854,7 @@ CreatureAction Creature::give(Creature* whom, vector<Item*> items) const {
       thirdPerson(getName().the() + " gives " + whom->getController()->getMessageGenerator().getEnemyName(whom) + " "
           + getPluralAName(stack[0], (int) stack.size()));
       secondPerson("You give " + getPluralTheName(stack[0], (int) stack.size()) + " to " +
-          whom->getName().the());
+          whom->getName().title());
     }
     whom->takeItems(self->equipment->removeItems(items, self), self);
     self->spendTime();
