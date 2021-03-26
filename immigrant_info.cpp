@@ -216,7 +216,8 @@ ImmigrantInfo& ImmigrantInfo::addSpecialTrait(double chance, vector<SpecialTrait
 vector<Creature*> RecruitmentInfo::getAllRecruits(WGame game, CreatureId id) const {
   vector<Creature*> ret;
   for (auto col : findEnemy(game))
-    ret.append(col->getCreatures().filter([&](const Creature* c) { return c->getAttributes().getCreatureId() == id; }));
+    ret.append(col->getCreatures().filter([&](const Creature* c) {
+         return !c->isAffected(LastingEffect::STUNNED) && c->getAttributes().getCreatureId() == id; }));
   return ret;
 }
 
