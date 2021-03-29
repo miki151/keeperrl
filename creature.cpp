@@ -207,12 +207,10 @@ pair<CreatureAttributes, SpellMap> Creature::setAttributes(CreatureAttributes at
     item->onUnequip(this, false);
   for (auto item : equipment->getItems())
     item->onDropped(this, false);
-  for (auto effect : ENUM_ALL(LastingEffect)) {
-    if (attributes->getTimeOut(effect) > GlobalTime(0))
-      attr.addLastingEffect(effect, attributes->getTimeOut(effect));
+  attr.copyLastingEffects(*attributes);
+  for (auto effect : ENUM_ALL(LastingEffect))
     if (attributes->isAffectedPermanently(effect))
       LastingEffects::onRemoved(this, effect, false);
-  }
   auto ret = make_pair(std::move(*attributes), std::move(*spellMap));
   attributes = std::move(attr);
   spellMap = std::move(spells);

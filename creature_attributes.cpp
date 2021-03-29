@@ -263,6 +263,10 @@ GlobalTime CreatureAttributes::getTimeOut(LastingEffect effect) const {
   return lastingEffects[effect];
 }
 
+void CreatureAttributes::copyLastingEffects(const CreatureAttributes& attr) {
+  lastingEffects = attr.lastingEffects;
+}
+
 bool CreatureAttributes::considerTimeout(LastingEffect effect, GlobalTime current) {
   if (lastingEffects[effect] > GlobalTime(0) && lastingEffects[effect] <= current) {
     clearLastingEffect(effect);

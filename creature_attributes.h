@@ -103,6 +103,7 @@ class CreatureAttributes {
   bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffectedPermanently(LastingEffect) const;
   GlobalTime getTimeOut(LastingEffect) const;
+  void copyLastingEffects(const CreatureAttributes&);
   string getRemainingString(LastingEffect, GlobalTime) const;
   void clearLastingEffect(LastingEffect);
   void addPermanentEffect(LastingEffect, int count);
