@@ -49,7 +49,6 @@
 #include "biome_id.h"
 #include "item_types.h"
 #include "creature_attributes.h"
-#include "unlocks.h"
 
 class Test {
   public:
@@ -596,7 +595,7 @@ class Test {
   static ContentFactory getContentFactory() {
     GameConfig config({DirectoryPath("data_free/game_config/")});
     ContentFactory contentFactory;
-    CHECK(!contentFactory.readData(&config, {"vanilla"}, Unlocks::allUnlocked()));
+    CHECK(!contentFactory.readData(&config, {"vanilla"}));
     return contentFactory;
   }
 

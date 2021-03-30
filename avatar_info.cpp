@@ -17,6 +17,7 @@
 #include "content_factory.h"
 #include "options.h"
 #include "game_info.h"
+#include "unlocks.h"
 
 TribeId getPlayerTribeId(TribeAlignment variant) {
   switch (variant) {
@@ -36,7 +37,7 @@ static ViewId getUpgradedViewId(const Creature* c) {
 variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
     const vector<pair<string, KeeperCreatureInfo>>& keeperCreatureInfos,
     const vector<pair<string, AdventurerCreatureInfo>>& adventurerCreatureInfos,
-    ContentFactory* contentFactory) {
+    ContentFactory* contentFactory, const Unlocks& unlocks) {
   auto& creatureFactory = contentFactory->getCreatures();
   auto keeperCreatures = keeperCreatureInfos.transform([&](auto& elem) {
     return elem.second.creatureId.transform([&](auto& id) {
@@ -83,6 +84,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
       keeperCreatureInfos[i].second.description,
       !!keeperCreatureInfos[i].second.baseNameGen,
       !!keeperCreatureInfos[i].second.baseNameGen ? OptionId::SETTLEMENT_NAME : OptionId::PLAYER_NAME,
+      !!keeperCreatureInfos[i].second.unlock ? unlocks.isUnlocked(*keeperCreatureInfos[i].second.unlock) : true
     });
   vector<View::AvatarData> adventurerAvatarData;
   for (int i : All(adventurerCreatures))
@@ -96,6 +98,7 @@ variant<AvatarInfo, AvatarMenuOption> getAvatarInfo(View* view,
       adventurerCreatureInfos[i].second.description,
       false,
       OptionId::PLAYER_NAME,
+      !!adventurerCreatureInfos[i].second.unlock ? unlocks.isUnlocked(*adventurerCreatureInfos[i].second.unlock) : true
     });
   auto result1 = view->chooseAvatar(concat(keeperAvatarData, adventurerAvatarData));
   if (auto option = result1.getValueMaybe<AvatarMenuOption>())

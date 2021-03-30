@@ -3911,15 +3911,19 @@ SGuiElem GuiBuilder::drawChosenCreatureButtons(View::AvatarRole role, shared_ptr
     auto& elem = avatars[i];
     auto viewIdFun = [gender, id = elem.viewId] { return id[min(*gender, id.size() - 1)]; };
     if (elem.role == role) {
-      if (processed >= start && processed < end)
-        line.addElemAuto(WL(stack,
-            WL(button, [i, chosenAvatar]{ *chosenAvatar = i; }),
-            WL(mouseHighlight2,
-                WL(rightMargin, 10, WL(topMargin, -5, WL(viewObject, viewIdFun, 2))),
-                WL(rightMargin, 10, WL(conditional2,
-                    WL(topMargin, -5, WL(viewObject, viewIdFun, 2)),
-                    WL(viewObject, viewIdFun, 2), [=](GuiElem*){ return *chosenAvatar == i;})))
-        ));
+      if (processed >= start && processed < end) {
+        if (elem.unlocked)
+          line.addElemAuto(WL(stack,
+              WL(button, [i, chosenAvatar]{ *chosenAvatar = i; }),
+              WL(mouseHighlight2,
+                  WL(rightMargin, 10, WL(topMargin, -5, WL(viewObject, viewIdFun, 2))),
+                  WL(rightMargin, 10, WL(conditional2,
+                      WL(topMargin, -5, WL(viewObject, viewIdFun, 2)),
+                      WL(viewObject, viewIdFun, 2), [=](GuiElem*){ return *chosenAvatar == i;})))
+          ));
+        else
+          line.addElemAuto(WL(rightMargin, 10, WL(viewObject, ViewId("unknown_monster", Color::GRAY), 2)));
+      }
       ++processed;
       if (line.getLength() >= 5) {
         allLines.addElemAuto(line.buildHorizontalList());

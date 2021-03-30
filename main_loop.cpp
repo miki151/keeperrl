@@ -491,7 +491,7 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
       }
     }
     auto avatarChoice = getAvatarInfo(view, contentFactory.keeperCreatures, contentFactory.adventurerCreatures,
-        &contentFactory);
+        &contentFactory, *unlocks);
     if (auto avatar = avatarChoice.getReferenceMaybe<AvatarInfo>()) {
       CampaignBuilder builder(view, random, options, contentFactory.villains, contentFactory.gameIntros, *avatar);
       tileSet->setTilePathsAndReload(getTilePathsForAllMods());
@@ -677,7 +677,7 @@ void MainLoop::downloadMod(ModInfo& mod) {
 void MainLoop::uploadMod(ModInfo& mod) {
   auto config = getGameConfig({mod.name});
   ContentFactory f;
-  if (auto err = f.readData(&config, {mod.name}, *unlocks)) {
+  if (auto err = f.readData(&config, {mod.name})) {
     view->presentText("Mod \"" + mod.name + "\" has errors: ", *err);
     return;
   }
@@ -800,7 +800,7 @@ ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
   ContentFactory ret;
   auto tryConfig = [&](const vector<string>& modNames) {
     auto config = getGameConfig(modNames);
-    return ret.readData(&config, modNames, *unlocks);
+    return ret.readData(&config, modNames);
   };
   if (vanillaOnly) {
 #ifdef RELEASE

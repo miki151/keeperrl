@@ -28,11 +28,10 @@ class ImmigrantInfo;
 class ZLevelInfo;
 class BuildingInfo;
 struct LayoutGenerator;
-class Unlocks;
 
 class ContentFactory {
   public:
-  optional<string> readData(const GameConfig*, const vector<string>& modNames, const Unlocks&);
+  optional<string> readData(const GameConfig*, const vector<string>& modNames);
   FurnitureFactory SERIAL(furniture);
   map<string, vector<ZLevelInfo>> SERIAL(zLevels);
   vector<ResourceDistribution> SERIAL(resources);
@@ -77,7 +76,7 @@ class ContentFactory {
   optional<string> readCreatureFactory(const GameConfig*, KeyVerifier*);
   optional<string> readFurnitureFactory(const GameConfig*, KeyVerifier*);
   optional<string> readVillainsTuple(const GameConfig*, KeyVerifier*);
-  optional<string> readPlayerCreatures(const GameConfig*, KeyVerifier*, const Unlocks&);
+  optional<string> readPlayerCreatures(const GameConfig*, KeyVerifier*);
   optional<string> readItems(const GameConfig*, KeyVerifier*);
   optional<string> readBuildingInfo(const GameConfig*, KeyVerifier*);
   optional<string> readWorkshopInfo(const GameConfig*, KeyVerifier*);

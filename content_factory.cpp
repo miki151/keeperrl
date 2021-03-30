@@ -22,7 +22,6 @@
 #include "equipment.h"
 #include "sdl.h"
 #include "layout_generator.h"
-#include "unlocks.h"
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
@@ -151,20 +150,15 @@ optional<string> ContentFactory::readVillainsTuple(const GameConfig* gameConfig,
   return none;
 }
 
-optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, KeyVerifier* keyVerifier, const Unlocks& unlocks) {
+optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, KeyVerifier* keyVerifier) {
   map<string, KeeperCreatureInfo> keeperCreaturesTmp;
   map<string, AdventurerCreatureInfo> adventurerCreaturesTmp;
   if (auto error = config->readObject(adventurerCreaturesTmp, GameConfigId::ADVENTURER_CREATURES, keyVerifier))
     return "Error reading player creature definitions: "_s + *error;
   if (auto error = config->readObject(keeperCreaturesTmp, GameConfigId::KEEPER_CREATURES, keyVerifier))
     return "Error reading player creature definitions: "_s + *error;
-  auto isUnlocked = [&](auto& elem) {
-    return !elem.second.unlock || unlocks.isUnlocked(*elem.second.unlock);
-  };
-  keeperCreatures = vector<pair<string, KeeperCreatureInfo>>(keeperCreaturesTmp.begin(), keeperCreaturesTmp.end())
-      .filter(isUnlocked);
-  adventurerCreatures = vector<pair<string, AdventurerCreatureInfo>>(adventurerCreaturesTmp.begin(), adventurerCreaturesTmp.end())
-      .filter(isUnlocked);
+  keeperCreatures = vector<pair<string, KeeperCreatureInfo>>(keeperCreaturesTmp.begin(), keeperCreaturesTmp.end());
+  adventurerCreatures = vector<pair<string, AdventurerCreatureInfo>>(adventurerCreaturesTmp.begin(), adventurerCreaturesTmp.end());
   if (keeperCreatures.empty() || adventurerCreatures.empty())
     return "Keeper and adventurer lists must each contain at least 1 entry."_s;
   for (auto& keeperInfo : keeperCreatures) {
@@ -360,7 +354,7 @@ optional<string> ContentFactory::readZLevels(const GameConfig* config, KeyVerifi
   return none;
 }
 
-optional<string> ContentFactory::readData(const GameConfig* config, const vector<string>& modNames, const Unlocks& unlocks) {
+optional<string> ContentFactory::readData(const GameConfig* config, const vector<string>& modNames) {
   KeyVerifier keyVerifier;
   map<PrimaryId<TechId>, Technology::TechDefinition> techsTmp;
   if (auto error = config->readObject(techsTmp, GameConfigId::TECHNOLOGY, &keyVerifier))
@@ -383,7 +377,7 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
     return *error;
   if (auto res = config->readObject(externalEnemies, GameConfigId::EXTERNAL_ENEMIES, &keyVerifier))
     return *res;
-  if (auto error = readPlayerCreatures(config, &keyVerifier, unlocks))
+  if (auto error = readPlayerCreatures(config, &keyVerifier))
     return *error;
   if (auto error = readWorkshopInfo(config, &keyVerifier))
     return *error;

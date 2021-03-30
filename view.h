@@ -262,6 +262,7 @@ class View {
     string description;
     bool settlementNames;
     OptionId nameOption;
+    bool unlocked;
   };
   virtual variant<AvatarChoice, AvatarMenuOption> chooseAvatar(const vector<AvatarData>&) = 0;
 
