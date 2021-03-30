@@ -305,6 +305,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<Creature*> getCompanions() const;
   void removeCompanions(int index);
   void toggleCaptureOrder();
+  void setCaptureOrder(bool);
   bool isCaptureOrdered() const;
   bool canBeCaptured() const;
   void removePrivateEnemy(const Creature*); 

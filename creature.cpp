@@ -344,12 +344,16 @@ bool Creature::canBeCaptured() const {
   return getBody().canBeCaptured() && !isAffected(LastingEffect::STUNNED);
 }
 
-void Creature::toggleCaptureOrder() {
-  if (canBeCaptured()) {
-    capture = !capture;
+void Creature::setCaptureOrder(bool state) {
+  if (!state || canBeCaptured()) {
+    capture = state;
     updateViewObject();
     position.setNeedsRenderUpdate(true);
   }
+}
+
+void Creature::toggleCaptureOrder() {
+  setCaptureOrder(!capture);
 }
 
 bool Creature::isCaptureOrdered() const {
@@ -1393,7 +1397,7 @@ bool Creature::captureDamage(double damage, Creature* attacker) {
   captureHealth -= damage;
   updateViewObject();
   if (captureHealth <= 0) {
-    toggleCaptureOrder();
+    setCaptureOrder(false);
     if (attributes->isInstantPrisoner()) {
       setTribe(attacker->getTribeId());
       you(MsgType::ARE, "captured");
