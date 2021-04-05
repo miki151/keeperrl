@@ -72,31 +72,6 @@
   noLeader = true
   prisoners = false
 }
-"5_necromancer"
-{
-  creatureId = { "NECROMANCER" "NECROMANCER_F" }
-  tribeAlignment = EVIL
-  immigrantGroups = {"necromancer"}
-  technology = { "embalming" "advanced embalming" "master embalming" "sorcery" "advanced sorcery" "master sorcery"
-      "iron working" "distillation"
-  }
-  zLevelGroups = { "basic" "evil" }
-  initialTech = {  }
-  buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "phylactery" "beds" "coffins"
-      "training_dummies" "morgue" "poetry" "distillery" "orders"
-      "installations" "magical_installations"
-  }
-  workshopGroups = { "morgue" }
-  description = "Play as a necromancer!"
-  credit = { "CORPSE" 20 }
-  maxPopulation = 1
-  flags = { "abomination_upgrades" }
-  prisoners = false
-  unlock = "necromancer"
-# Special traits example, all traits are added
-#   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
-}
 "6_goblins"
 {
   creatureId = { "GOBLIN_KEEPER" }
