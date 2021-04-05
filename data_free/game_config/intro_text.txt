@@ -1,10 +1,10 @@
-"Welcome to KeeperRL Alpha 31 hotfix 3! This patch was released on November 16, 2020.
+"Welcome to KeeperRL Alpha 32! This patch was released on April 2, 2021.
 
 Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
 
-* The new Warlord mode, unlocked when you retire your first dungeon.
-* A lot of new hidden content on Z-levels and on the ground level.
-* A new system for modding randomly generated maps.
+* New Goblin Keeper faction.
+* Combat formation AI improvements, and team member go-to orders in the turn-based mode.
+* Polymorphing and other cool gameplay concepts!
 
 If this is your first time playing KeeperRL, remember to start with the tutorial!
 
