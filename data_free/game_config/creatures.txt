@@ -4170,6 +4170,10 @@ End
       name = "goblin warrior"
       firstNameGen = "ORC"
     }
+    skills = {
+      "WORKSHOP" 0.3
+      "FORGE" 0.3
+    }
     maxLevelIncrease = {
       MELEE 7
     }
