@@ -7,8 +7,4 @@ Below is a very short summary, and we encourage you to check out the full change
 * Polymorphing and other cool gameplay concepts!
 
 If this is your first time playing KeeperRL, remember to start with the tutorial!
-
-
-########
-
-This patch is dedicated to the memory of RightousSinner, who sadly left our community forever in early September."
+"
