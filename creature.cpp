@@ -1225,11 +1225,14 @@ static optional<Position> getCompanionPosition(Creature* c) {
 
 void Creature::removeCompanions(int index) {
   attributes->companions.removeIndexPreserveOrder(index);
-  for (auto c : companions[index].creatures) {
-    c->addFX(FXName::SPAWN);
-    c->dieNoReason(DropType::NOTHING);
+  if (index < companions.size()) {
+    for (auto c : companions[index].creatures)
+      if (!c->isDead()) {
+        c->addFX(FXName::SPAWN);
+        c->dieNoReason(DropType::NOTHING);
+      }
+    companions.removeIndexPreserveOrder(index);
   }
-  companions.removeIndexPreserveOrder(index);
 }
 
 void Creature::tickCompanions() {
