@@ -643,16 +643,18 @@ PCreature CreatureFactory::get(CreatureAttributes attr, TribeId tribe, const Con
   return ret;
 }
 
-static optional<ItemType> getSpecialBeastAttack(bool large, bool living, bool wings) {
-  static vector<optional<ItemType>> attacks {
-    ItemType(ItemType::fangs(7)),
-    ItemType(ItemType::fangs(7, VictimEffect{0.7, EffectType(Effects::Fire{})})),
-    ItemType(ItemType::fangs(7, VictimEffect{0.7, EffectType(Effects::Fire{})})),
-    ItemType(ItemType::fists(7)),
-    ItemType(ItemType::fangs(7, VictimEffect{0.3, EffectType(Effects::Lasting{LastingEffect::POISON})})),
-    ItemType(ItemType::fangs(7)),
-    ItemType(ItemType::fangs(7, VictimEffect{0.3, EffectType(Effects::Lasting{LastingEffect::POISON})})),
-    ItemType(ItemType::fists(7)),
+static pair<optional<LastingEffect>, ItemType> getSpecialBeastAttack(bool large, bool living, bool wings) {
+  static vector<pair<optional<LastingEffect>, ItemType>> attacks {
+    {none, ItemType(ItemType::fangs(7))},
+    {LastingEffect::FIRE_RESISTANT, ItemType(ItemType::fangs(7, VictimEffect{0.7, EffectType(Effects::Fire{})}))},
+    {LastingEffect::FIRE_RESISTANT, ItemType(ItemType::fangs(7, VictimEffect{0.7, EffectType(Effects::Fire{})}))},
+    {none, ItemType(ItemType::fists(7))},
+    {LastingEffect::POISON_RESISTANT,
+        ItemType(ItemType::fangs(7, VictimEffect{0.3, EffectType(Effects::Lasting{LastingEffect::POISON})}))},
+    {none, ItemType(ItemType::fangs(7))},
+    {LastingEffect::POISON_RESISTANT,
+        ItemType(ItemType::fangs(7, VictimEffect{0.3, EffectType(Effects::Lasting{LastingEffect::POISON})}))},
+    {none, ItemType(ItemType::fists(7))},
   };
   return attacks[(!large) * 4 + (!living) * 2 + wings];
 }
@@ -747,8 +749,10 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
           c.body->setBodyParts(getSpecialBeastBody(p.large, p.living, p.wings));
           c.attr[AttrType::DAMAGE] += 5;
           c.attr[AttrType::DEFENSE] += 5;
-          if (auto attack = getSpecialBeastAttack(p.large, p.living, p.wings))
-            c.body->addIntrinsicAttack(BodyPart::HEAD, *attack);
+          auto attack = getSpecialBeastAttack(p.large, p.living, p.wings);
+          c.body->addIntrinsicAttack(BodyPart::HEAD, attack.second);
+          if (attack.first)
+            c.addPermanentEffect(*attack.first, 1);
         }
         if (Random.roll(3))
           c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
