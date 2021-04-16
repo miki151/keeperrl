@@ -1348,14 +1348,15 @@ vector<vector<Vec2>> Player::getPermanentPaths() const {
   vector<vector<Vec2>> ret;
   for (auto c : getTeam())
     if (auto task = c->getController()->getDragTask())
-      if (auto target = task->getPosition()) {
-        auto res = LevelShortestPath(c, *target, 0).getPath()
-            .filter([&, level = getLevel()](auto& pos) { return pos.getLevel() == level; } )
-            .transform([&](auto& pos) { return pos.getCoord(); } );
-        if (res.size() > 1)
-          res.pop_back();
-        ret.push_back(std::move(res));
-      }
+      if (auto target = task->getPosition())
+        if (target->isSameLevel(creature->getPosition())) {
+          auto res = LevelShortestPath(c, *target, 0).getPath()
+              .filter([&, level = getLevel()](auto& pos) { return pos.getLevel() == level; } )
+              .transform([&](auto& pos) { return pos.getCoord(); } );
+          if (res.size() > 1)
+            res.pop_back();
+          ret.push_back(std::move(res));
+        }
   return ret;
 }
 
