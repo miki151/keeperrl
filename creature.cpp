@@ -1280,8 +1280,8 @@ void Creature::dropUnsupportedEquipment() {
   for (auto slot : ENUM_ALL(EquipmentSlot)) {
     auto& items = equipment->getSlotItems(slot);
     for (int i : Range(equipment->getMaxItems(slot, this), items.size())) {
-      verb("drop your", "drops "_s + his(attributes->getGender()), items[i]->getName());
-      position.dropItem(equipment->removeItem(items[i], this));
+      verb("drop your", "drops "_s + his(attributes->getGender()), items.back()->getName());
+      position.dropItem(equipment->removeItem(items.back(), this));
     }
   }
 }
