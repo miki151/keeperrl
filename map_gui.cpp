@@ -1434,7 +1434,8 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
   // team members in turn-based mode.
   bool newView = (view->getCenterType() != previousView);
   if (newView || level != previousLevel) {
-    fx::FXManager::getInstance()->clearUnorderedEffects();
+    if (auto *inst = fx::FXManager::getInstance())
+      inst->clearUnorderedEffects();
     for (Vec2 pos : level->getBounds())
       level->setNeedsRenderUpdate(pos, true);
   } else

@@ -177,7 +177,8 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
       for (auto& requirement : info.requirements)
         if (auto tech = requirement.getReferenceMaybe<TechId>())
           if (!keeperInfo.second.technology.contains(*tech))
-            return "Technology prerequisite \""_s + tech->data() + "\" of build item \"" + info.name + "\" is not available";
+            return "Technology prerequisite \""_s + tech->data() + "\" of build item \"" + info.name + "\" is not available "
+                + " for keeper " + keeperInfo.first;
     WorkshopArray merged;
     for (auto& group : keeperInfo.second.workshopGroups)
       if (!workshopGroups.count(group))
@@ -191,7 +192,7 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
       for (auto& item : elem.second)
         if (item.tech && !technology.techs.count(*item.tech))
           return "Technology prerequisite \""_s + item.tech->data() + "\" of workshop item \"" + item.item.get(this)->getName()
-              + "\" is not available";
+              + "\" is not available " + " for keeper " + keeperInfo.first;
     for (auto elem : keeperInfo.second.immigrantGroups)
       if (!immigrantsData.count(elem))
         return "Undefined immigrant group: \"" + elem + "\"";
