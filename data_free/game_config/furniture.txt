@@ -38,7 +38,7 @@
   strength = 80
   upgrade = "TRAINING_IRON"
   maxTraining = {
-    MELEE 30
+    MELEE 99
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
@@ -208,7 +208,7 @@
   strength = 50
   upgrade = "BOOKCASE_IRON"
   maxTraining = {
-    SPELL 12
+    SPELL 99
   }
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
