@@ -16,6 +16,9 @@ FurnitureEntry::FurnitureEntry(FurnitureEntry::EntryData d) : entryData(d) {
 
 void FurnitureEntry::handle(Furniture* f, Creature* c) {
   PROFILE;
+  // Check if this is happening during worldgen in which case we don't continue due to potential crashes
+  if (!c->getGame())
+    return;
   entryData.match(
       [&](Sokoban) {
         if (c->getAttributes().isBoulder()) {
