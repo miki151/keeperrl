@@ -259,7 +259,7 @@ void Game::prepareSiteRetirement() {
     playerCollective->getTerritory().setCentralPoint(
         Position(Rectangle::boundingBox(locationPos.transform([](Position p){ return p.getCoord();})).middle(),
             playerCollective->getModel()->getTopLevel()));
-  for (auto c : playerCollective->getCreatures())
+  for (auto c : copyOf(playerCollective->getCreatures()))
     c->retire();
   playerControl = nullptr;
   WModel mainModel = models[baseModel].get();
