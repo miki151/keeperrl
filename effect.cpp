@@ -1211,9 +1211,9 @@ static bool apply(const Effects::CustomArea& area, Position pos, Creature* attac
   return res;
 }
 
-static bool applyToCreature(const Effects::Suicide& e, Creature* c, Creature*) {
+static bool applyToCreature(const Effects::Suicide& e, Creature* c, Creature* attacker) {
   c->you(e.message, "");
-  c->dieNoReason();
+  c->dieWithAttacker(attacker);
   return true;
 }
 
