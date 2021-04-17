@@ -45,7 +45,7 @@ bool Tutorial::canContinue(WConstGame game) const {
   auto collective = game->getPlayerCollective();
   Collective* villain = nullptr;
   for (auto c : game->getCollectives())
-    if (c != collective) {
+    if (c != collective && c->getTerritory().getAll()[0].getLevel() == c->getModel()->getTopLevel()) {
       CHECK(!villain) << "Only one villain allowed in tutorial.";
       villain = c;
     }
