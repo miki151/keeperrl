@@ -182,17 +182,18 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
 }
 
 void VillageControl::considerCancellingAttack() {
-  for (auto team : collective->getTeams().getAll()) {
-    vector<Creature*> members = collective->getTeams().getMembers(team);
-    if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 &&
-          members[0]->getBody().isSeriouslyWounded())) {
-      for (Creature* c : members)
-        collective->freeFromTask(c);
-      collective->getTeams().cancel(team);
-      if (auto& name = collective->getName())
-        getEnemyCollective()->addRecordedEvent("resisting the attack of " + name->full);
+  if (auto enemyCollective = getEnemyCollective())
+    for (auto team : collective->getTeams().getAll()) {
+      vector<Creature*> members = collective->getTeams().getMembers(team);
+      if (members.size() < (attackSizes[team] + 1) / 2 || (members.size() == 1 &&
+            members[0]->getBody().isSeriouslyWounded())) {
+        for (Creature* c : members)
+          collective->freeFromTask(c);
+        collective->getTeams().cancel(team);
+        if (auto& name = collective->getName())
+          enemyCollective->addRecordedEvent("resisting the attack of " + name->full);
+      }
     }
-  }
 }
 
 void VillageControl::onRansomPaid() {
