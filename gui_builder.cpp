@@ -2978,7 +2978,7 @@ SGuiElem GuiBuilder::getMainMenuLinks(const string& personalMessage, SGuiElem el
   auto buttonsLine = makeWindow(WL(getListBuilder)
       .addElemAuto(getButton("keeper4", "News", "https://keeperrl.com/category/News/"))
       .addSpace(100)
-      .addElemAuto(getButton("elementalist", "Wiki", "http://keeperrl.com/wiki/index.php?title=Main_Page"))
+      .addElemAuto(getButton("elementalist", "Wiki", "http://keeperrl.com/wiki"))
       .addSpace(100)
       .addElemAuto(getButton("jester", "Discord", "https://discordapp.com/invite/XZfCCs5"))
       .addSpace(100)
