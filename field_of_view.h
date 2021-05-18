@@ -47,9 +47,6 @@ class FieldOfView {
     private:
     array<bitset<sightRange * 2 + 1>, sightRange * 2 + 1> visible;
     vector<SVec2> SERIAL(visibleTiles);
-    void calculate(int,int,int,int, int, int, int, int,
-        function<bool (int, int)> isBlocking,
-        function<void (int, int)> setVisible);
     void setVisible(Rectangle bounds, int, int);
 
     int px;

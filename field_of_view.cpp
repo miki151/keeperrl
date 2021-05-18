@@ -84,42 +84,8 @@ void FieldOfView::Visibility::setVisible(Rectangle bounds, int x, int y) {
   }
 }
 
-FieldOfView::Visibility::Visibility(Rectangle bounds, const Table<bool>& blocking, int x, int y) : px(x), py(y) {
-  PROFILE;
-  calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
-      [&](int px, int py) { return blocking[Vec2(x + px, y + py)]; },
-      [&](int px, int py) { setVisible(bounds, px, py); });
-  calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
-      [&](int px, int py) { return blocking[Vec2(x + py, y - px)]; },
-      [&](int px, int py) { setVisible(bounds, py, -px); });
-  calculate(2 * sightRange, 2 * sightRange,2 * sightRange,2,-1,1,1,1,
-      [&](int px, int py) { return blocking[Vec2(x - px, y - py)]; },
-      [&](int px, int py) { setVisible(bounds, -px, -py); });
-  calculate(2 * sightRange, 2 * sightRange,2 * sightRange,2,-1,1,1,1,
-      [&](int px, int py) { return blocking[Vec2(x - py, y + px)]; },
-      [&](int px, int py) { setVisible(bounds, -py, px); });
-  setVisible(bounds, 0, 0);
-  visibleTiles.shrink_to_fit();
-/*  ++numSamples;
-  totalIter += visibleTiles.size();
-  if (numSamples%100 == 0)
-    INFO << numSamples << " iterations " << totalIter / numSamples << " avg";*/
-}
-
-const vector<SVec2>& FieldOfView::Visibility::getVisibleTiles() const {
-  return visibleTiles;
-}
-
-const vector<SVec2>& FieldOfView::getVisibleTiles(Vec2 from) {
-  if (!visibility[from]) {
-    visibility[from].reset(new Visibility(level->getBounds(), blocking, from.x, from.y));
-  }
-  return visibility[from]->getVisibleTiles();
-}
-
-
-void FieldOfView::Visibility::calculate(int left, int right, int up, int h, int x1, int y1, int x2, int y2,
-    function<bool (int, int)> isBlocking, function<void (int, int)> setVisible){
+template <typename Fun1, typename Fun2>
+static void calculate(int left, int right, int up, int h, int x1, int y1, int x2, int y2, Fun1 isBlocking, Fun2 setVisible){
   if (y2*x1>=y1*x2) return;
   if (h>up) return;
   int leftx=x1, lefty=y1, rightx=x2, righty=y2;
@@ -155,6 +121,39 @@ void FieldOfView::Visibility::calculate(int left, int right, int up, int h, int 
     prevBlocking = blocking;
   }
   calculate(left, right, up, h + 2, leftx, lefty, rightx, righty, isBlocking, setVisible);
+}
+
+FieldOfView::Visibility::Visibility(Rectangle bounds, const Table<bool>& blocking, int x, int y) : px(x), py(y) {
+  PROFILE;
+  calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
+      [&](int px, int py) { return blocking[Vec2(x + px, y + py)]; },
+      [&](int px, int py) { setVisible(bounds, px, py); });
+  calculate(2 * sightRange, 2 * sightRange,2 * sightRange, 2,-1,1,1,1,
+      [&](int px, int py) { return blocking[Vec2(x + py, y - px)]; },
+      [&](int px, int py) { setVisible(bounds, py, -px); });
+  calculate(2 * sightRange, 2 * sightRange,2 * sightRange,2,-1,1,1,1,
+      [&](int px, int py) { return blocking[Vec2(x - px, y - py)]; },
+      [&](int px, int py) { setVisible(bounds, -px, -py); });
+  calculate(2 * sightRange, 2 * sightRange,2 * sightRange,2,-1,1,1,1,
+      [&](int px, int py) { return blocking[Vec2(x - py, y + px)]; },
+      [&](int px, int py) { setVisible(bounds, -py, px); });
+  setVisible(bounds, 0, 0);
+  visibleTiles.shrink_to_fit();
+/*  ++numSamples;
+  totalIter += visibleTiles.size();
+  if (numSamples%100 == 0)
+    INFO << numSamples << " iterations " << totalIter / numSamples << " avg";*/
+}
+
+const vector<SVec2>& FieldOfView::Visibility::getVisibleTiles() const {
+  return visibleTiles;
+}
+
+const vector<SVec2>& FieldOfView::getVisibleTiles(Vec2 from) {
+  if (!visibility[from]) {
+    visibility[from].reset(new Visibility(level->getBounds(), blocking, from.x, from.y));
+  }
+  return visibility[from]->getVisibleTiles();
 }
 
 bool FieldOfView::Visibility::checkVisible(int x, int y) const {
