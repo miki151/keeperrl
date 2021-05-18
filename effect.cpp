@@ -1704,8 +1704,7 @@ static bool applyToCreature(const Effects::Shove&, Creature* c, Creature* attack
   CHECK(attacker);
   auto origin = attacker->getPosition();
   auto dir = origin.getDir(c->getPosition());
-  CHECK(dir.length8() == 1);
-  if (c->getPosition().canMoveCreature(dir)) {
+  if (dir.length8() == 1 && c->getPosition().canMoveCreature(dir)) {
     c->displace(dir);
     c->you(MsgType::ARE, "thrown back");
     c->addEffect(LastingEffect::COLLAPSED, 2_visible);
