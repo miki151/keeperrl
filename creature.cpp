@@ -1363,7 +1363,8 @@ CreatureAction Creature::attack(Creature* other) const {
         if (self->isDead())
           break;
       }
-      if (self->isDead() || other->isDead() || other->isAffected(LastingEffect::STUNNED))
+      if (self->isDead() || other->isDead() || other->isAffected(LastingEffect::STUNNED) ||
+          other->position.dist8(position).value_or(2) > 1)
         break;
     }
     auto movementInfo = (*self->spendTime())

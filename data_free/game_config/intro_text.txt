@@ -1,4 +1,4 @@
-"Welcome to KeeperRL Alpha 32 hotfix 2! This patch was released on April 17, 2021.
+"Welcome to KeeperRL Alpha 32 hotfix 3! This patch was released on May 20, 2021.
 
 Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
 
