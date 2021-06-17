@@ -25,12 +25,14 @@ class MovementType {
   MovementType& setForced(bool = true);
   MovementType& setDestroyActions(EnumSet<DestroyAction::Type>);
   MovementType& setCanBuildBridge(bool = true);
+  MovementType& setPrisoner(bool = true);
   const EnumSet<DestroyAction::Type>& getDestroyActions() const;
 
   bool isSunlightVulnerable() const;
   bool isFireResistant() const;
   bool isForced() const;
   bool canBuildBridge() const;
+  bool isPrisoner() const;
 
   int getHash() const;
 
@@ -45,6 +47,7 @@ class MovementType {
   bool SERIAL(fireResistant) = false;
   bool SERIAL(forced) = false;
   bool SERIAL(buildBridge) = false;
+  bool SERIAL(prisoner) = false;
   EnumSet<MovementTrait> SERIAL(traits);
   EnumSet<DestroyAction::Type> SERIAL(destroyActions);
   optional<TribeSet> SERIAL(tribeSet);

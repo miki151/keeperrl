@@ -13,6 +13,7 @@ class MovementSet {
   bool canEnter(const MovementType&) const;
 
   bool hasTrait(MovementTrait) const;
+  bool blocksPrisoners() const;
 
   MovementSet& addTrait(MovementTrait);
   MovementSet& removeTrait(MovementTrait);
@@ -29,5 +30,6 @@ class MovementSet {
   EnumSet<MovementTrait> SERIAL(traits);
   EnumSet<MovementTrait> SERIAL(forcibleTraits);
   bool SERIAL(blockingEnemies) = false;
+  bool SERIAL(blockingPrisoners) = false;
   TribeId SERIAL(tribe);
 };

@@ -173,6 +173,7 @@ Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
     case HighlightType::GUARD_ZONE3: return Color::SKY_BLUE.transparency(120);
     case HighlightType::FORBIDDEN_ZONE: return Color(255, 0, 0, 120);
     case HighlightType::UNAVAILABLE: return Color(0, 0, 0, 120);
+    case HighlightType::PRISON_NOT_CLOSED:
     case HighlightType::TORTURE_UNAVAILABLE: return Color(255, 0, 0);
     case HighlightType::INDOORS: return Color(0, 0, 255, buildingSelected ? 40 : 0);
     default:
@@ -893,6 +894,7 @@ bool MapGui::isRenderedHighlightLow(Renderer& renderer, const ViewIndex& index, 
     case HighlightType::HOSTILE_TOTEM:
     case HighlightType::ALLIED_TOTEM:
     case HighlightType::TORTURE_UNAVAILABLE:
+    case HighlightType::PRISON_NOT_CLOSED:
       return false;
   }
 }

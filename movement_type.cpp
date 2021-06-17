@@ -20,7 +20,7 @@ bool MovementType::hasTrait(MovementTrait t) const {
 bool MovementType::operator == (const MovementType& o) const {
   return traits == o.traits && tribeSet == o.tribeSet && sunlightVulnerable == o.sunlightVulnerable &&
       fireResistant == o.fireResistant && forced == o.forced && destroyActions == o.destroyActions &&
-      buildBridge == o.buildBridge;
+      buildBridge == o.buildBridge && prisoner == o.prisoner;
 }
 
 const EnumSet<MovementTrait>& MovementType::getTraits() const {
@@ -29,7 +29,7 @@ const EnumSet<MovementTrait>& MovementType::getTraits() const {
 
 int MovementType::getHash() const {
   return destroyActions.getHash() + traits.getHash() + sunlightVulnerable + 2 * fireResistant + 4 * forced +
-      8 * buildBridge;
+      8 * buildBridge + prisoner * 16;
 }
 
 bool MovementType::isCompatible(TribeId id) const {
@@ -71,6 +71,11 @@ MovementType& MovementType::setCanBuildBridge(bool can) {
   return *this;
 }
 
+MovementType& MovementType::setPrisoner(bool p) {
+  prisoner = p;
+  return *this;
+}
+
 const EnumSet<DestroyAction::Type>& MovementType::getDestroyActions() const {
   return destroyActions;
 }
@@ -91,4 +96,7 @@ bool MovementType::canBuildBridge() const {
   return buildBridge;
 }
 
+bool MovementType::isPrisoner() const {
+  return prisoner;
+}
 

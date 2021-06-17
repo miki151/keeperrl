@@ -5,7 +5,7 @@
 
 template <class Archive> 
 void MovementSet::serialize(Archive& ar, const unsigned int version) {
-  ar(OPTION(traits), OPTION(forcibleTraits), SKIP(blockingEnemies), SKIP(tribe));
+  ar(OPTION(traits), OPTION(forcibleTraits), OPTION(blockingPrisoners), OPTION(blockingEnemies), SKIP(tribe));
 }
 
 SERIALIZABLE(MovementSet);
@@ -19,7 +19,8 @@ bool MovementSet::canEnter(const MovementType& movementType, bool covered, bool 
   if (blockingEnemies && !movementType.isCompatible(tribe))
     return false;
   if (!movementType.isForced()) {
-    if ((!covered && movementType.isSunlightVulnerable()) ||
+    if ((blockingPrisoners && movementType.isPrisoner()) ||
+        (!covered && movementType.isSunlightVulnerable()) ||
         (onFire && !movementType.isFireResistant()) ||
         (forbidden && movementType.isCompatible(*forbidden)))
       return false;
@@ -39,6 +40,10 @@ bool MovementSet::canEnter(const MovementType& t) const {
 
 bool MovementSet::hasTrait(MovementTrait trait) const {
   return traits.contains(trait);
+}
+
+bool MovementSet::blocksPrisoners() const {
+  return blockingPrisoners;
 }
 
 MovementSet& MovementSet::addTrait(MovementTrait trait) {

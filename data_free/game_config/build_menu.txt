@@ -260,6 +260,12 @@
     { Furniture {{ "PRISON" }        "IRON" 15 }                   "Prison"            "Prison"
         "Required to capture enemies." p {} true}
 
+    { Furniture {{ "PRISON_BARS" }        "IRON" 5 }               "Prison bars"            "Prison"
+        "Used to secure prison." }
+
+    { Furniture {{ "PRISON_DOOR" }        "IRON" 30 }              "Prison door"            "Prison"
+        "Used to secure prison." }
+
     { Furniture {{ "TORTURE_TABLE" } "IRON" 15 }                   "Torture table"     "Prison"
         "Can be used to torture prisoners. Free population slot required for torturing."}
   }

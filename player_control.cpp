@@ -1935,8 +1935,18 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.setHighlight(HighlightType::INSUFFICIENT_LIGHT);
       if (collective->getMaxPopulation() <= collective->getPopulationSize() && 
           furniture->getType() == FurnitureType("TORTURE_TABLE"))
-        index.setHighlight(HighlightType::TORTURE_UNAVAILABLE);        
+        index.setHighlight(HighlightType::TORTURE_UNAVAILABLE);
     }
+    if (auto furniture = position.getFurniture(FurnitureLayer::FLOOR))
+      if (furniture->getType() == FurnitureType("PRISON")) {
+        auto level = position.getLevel();
+        auto sectors = level->getSectors(MovementType(MovementTrait::WALK).setPrisoner());
+        auto levels = getModel()->getMainLevels();
+        if ((level == levels[0] && sectors.isSector(pos, sectors.getLargest())) ||
+            (level != levels[0] && sectors.same(pos, level->getStairsTo(levels[0])->getCoord())) ||
+            (level != levels.back() && sectors.same(pos, level->getStairsTo(levels.back())->getCoord())))
+          index.setHighlight(HighlightType::PRISON_NOT_CLOSED);
+      }
     for (auto furniture : position.getFurniture())
       if (furniture->getLuxuryInfo().luxury > 0)
         if (auto obj = furniture->getViewObject())

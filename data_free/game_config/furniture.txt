@@ -348,6 +348,30 @@
   bedType = PRISON
   layer = FLOOR
 }
+"PRISON_BARS"
+{
+  name = "prison_bars"
+  viewId = { "prison_bars" }
+  blockMovement = true
+  strength = 160
+  wall = true
+  destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
+"PRISON_DOOR"
+{
+  name = "prison door"
+  viewId = { "prison_door_ew" }
+  movementSet = {
+    traits = { WALK }
+    blockingEnemies = true
+    blockingPrisoners = true
+  }
+  canHideHere = true
+  blockVision = { NORMAL ELF }
+  strength = 80
+  requiredSupport = { { { E W } } { { N S } {"prison_door_ns"} } }
+  destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
 "TREASURE_CHEST"
 {
   name = "treasure chest"
