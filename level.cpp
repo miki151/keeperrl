@@ -594,10 +594,6 @@ Sectors& Level::getSectors(const MovementType& movement) const {
   }
 }
 
-bool Level::isChokePoint(Vec2 pos, const MovementType& movement) const {
-  return getSectors(movement).isChokePoint(pos);
-}
-
 void Level::updateSunlightMovement() {
   for (auto movement : getKeys(sectors))
     if (movement.isSunlightVulnerable())

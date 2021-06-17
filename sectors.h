@@ -28,7 +28,6 @@ class Sectors {
   void dump();
   bool contains(Vec2) const;
   int getNumSectors() const;
-  bool isChokePoint(Vec2) const;
   void addExtraConnection(Vec2, Vec2);
   void removeExtraConnection(Vec2, Vec2);
   const ExtraConnections getExtraConnections() const;

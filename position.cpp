@@ -1134,11 +1134,6 @@ void Position::clearItemIndex(ItemIndex index) const {
     modSquare()->clearItemIndex(index);
 }
 
-bool Position::isChokePoint(const MovementType& movement) const {
-  PROFILE;
-  return isValid() && level->isChokePoint(coord, movement);
-}
-
 bool Position::isConnectedTo(Position pos, const MovementType& movement) const {
   PROFILE;
   return isValid() && pos.isValid() && level == pos.level &&

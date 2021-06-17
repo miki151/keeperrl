@@ -139,8 +139,6 @@ class Level : public OwnedObject<Level> {
   /** Returns whether the square is in direct sunlight.*/
   bool isInSunlight(Vec2 pos) const;
 
-  bool isChokePoint(Vec2, const MovementType&) const;
-
   void updateSunlightMovement();
 
   int getNumGeneratedSquares() const;

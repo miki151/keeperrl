@@ -135,10 +135,6 @@ vector<Vec2> Sectors::getDisjoint(Vec2 pos) const {
   return ret;
 }
 
-bool Sectors::isChokePoint(Vec2 pos) const {
-  return !getDisjoint(pos).empty();
-}
-
 vector<Vec2> Sectors::getNeighbors(Vec2 pos) const {
   auto ret = pos.neighbors8();
   if (auto con = extraConnections[pos])

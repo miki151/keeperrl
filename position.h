@@ -130,7 +130,6 @@ class Position {
   bool isVisibleBy(const Creature*) const;
   bool canSee(Position, const Vision&) const;
   void clearItemIndex(ItemIndex) const;
-  bool isChokePoint(const MovementType&) const;
   bool isConnectedTo(Position, const MovementType&) const;
   void updateMovementDueToFire() const;
   vector<Creature*> getAllCreatures(int range) const;
