@@ -45,13 +45,13 @@ class Territory;
 struct CollectiveName;
 class Workshops;
 class Zones;
-struct ItemFetchInfo;
 class CollectiveWarnings;
 class Immigration;
 class Quarters;
 class PositionMatching;
 class MinionActivities;
 class ResourceInfo;
+class StoragePositions;
 
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
@@ -88,8 +88,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   CollectiveControl* getControl() const;
   LocalTime getLocalTime() const;
   GlobalTime getGlobalTime() const;
-  const PositionSet& getStoragePositions(StorageId) const;
-
+  const StoragePositions& getStoragePositions(StorageId) const;
+  const StoragePositions& getStoragePositions(const vector<StorageId>&) const;
 
   SERIALIZATION_DECL(Collective)
 
@@ -144,7 +144,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
-  vector<pair<Position, vector<Item*>>> getStoredItems(ItemIndex, StorageId) const;
+  vector<pair<Position, vector<Item*>>> getStoredItems(ItemIndex, vector<StorageId>) const;
   struct TrapItemInfo;
   vector<TrapItemInfo> getTrapItems(const vector<Position>&) const;
 
@@ -158,7 +158,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   bool canPlaceTorch(Position) const;
   void removeTorch(Position);
   void addTorch(Position);
-  Zones& getZones();
+  void setZone(Position, ZoneId);
+  void eraseZone(Position, ZoneId);
   const Zones& getZones() const;
   Quarters& getQuarters();
   const Quarters& getQuarters() const;
@@ -207,7 +208,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   TaskMap& getTaskMap();
   WConstTask getItemTask(const Item*) const;
   int getNumItems(ItemIndex, bool includeMinions = true) const;
-  const PositionSet& getStorageForPillagedItem(const Item*) const;
 
   void addKnownVillain(const Collective*);
   bool isKnownVillain(const Collective*) const;
@@ -256,7 +256,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void onMinionKilled(Creature* victim, Creature* killer);
   void onKilledSomeone(Creature* victim, Creature* killer);
 
-  void fetchItems(Position, const ItemFetchInfo&);
+  void fetchItems(Position);
 
   void addMoraleForKill(const Creature* killer, const Creature* victim);
   void decreaseMoraleForKill(const Creature* killer, const Creature* victim);

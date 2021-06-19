@@ -53,7 +53,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
   ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(dissolveTo));
   ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), NAMED(freezeTo), NAMED(fillPit), NAMED(itemsRemovedEffect));
-  ar(OPTION(eyeball));
+  ar(OPTION(eyeball), OPTION(storageIds));
 }
 
 template <class Archive>
@@ -129,6 +129,10 @@ void Furniture::onItemsRemoved(Position pos) const {
 
 const heap_optional<ItemList>& Furniture::getItemDrop() const {
   return itemDrop;
+}
+
+const vector<StorageId>& Furniture::getStorageId() const {
+  return storageIds;
 }
 
 void Furniture::destroy(Position pos, const DestroyAction& action, Creature* destroyedBy) {

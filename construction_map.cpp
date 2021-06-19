@@ -85,7 +85,11 @@ void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer, F
   // for furnitures like phylactery which are replaced upon usage.
   if (auto info = furniture[layer].getReferenceMaybe(pos)) {
     addDebt(info->getCost(), type.data());
-    furniturePositions[info->getFurnitureType()].erase(pos);
+    auto type = info->getFurnitureType();
+    furniturePositions[type].erase(pos);
+    for (auto id : pos.getGame()->getContentFactory()->furniture.getData(type).getStorageId())
+      storagePositions[id].remove(pos);
+    allStoragePositions.remove(pos);
     info->reset();
   }
 }
@@ -95,11 +99,15 @@ void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info, Furn
   allFurniture.push_back({pos, layer});
   furniture[layer].set(pos, info);
   pos.setNeedsRenderAndMemoryUpdate(true);
-  if (info.isBuilt(pos, layer))
-    furniturePositions[info.getFurnitureType()].insert(pos);
-  else {
-    ++unbuiltCounts[info.getFurnitureType()];
-    addDebt(info.getCost(), info.getFurnitureType().data());
+  auto type = info.getFurnitureType();
+  if (info.isBuilt(pos, layer)) {
+    furniturePositions[type].insert(pos);
+    for (auto id : pos.getFurniture(layer)->getStorageId())
+      storagePositions[id].add(pos);
+    allStoragePositions.add(pos);
+  } else {
+    ++unbuiltCounts[type];
+    addDebt(info.getCost(), type.data());
   }
 }
 
@@ -132,6 +140,9 @@ void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
   if (!containsFurniture(pos, layer))
     addFurniture(pos, FurnitureInfo::getBuilt(type), layer);
   furniturePositions[type].insert(pos);
+  for (auto id : pos.getGame()->getContentFactory()->furniture.getData(type).getStorageId())
+    storagePositions[id].add(pos);
+  allStoragePositions.add(pos);
   --unbuiltCounts[type];
   if (furniture[layer].contains(pos)) { // why this if?
     auto& info = furniture[layer].getOrInit(pos);
@@ -207,6 +218,25 @@ int ConstructionMap::getDebt(CollectiveResourceId id) const {
   return getValueMaybe(debt, id).value_or(0);
 }
 
+const StoragePositions& ConstructionMap::getStoragePositions(StorageId id) const {
+  static StoragePositions empty;
+  if (auto res = getReferenceMaybe(storagePositions, id))
+    return *res;
+  return empty;
+}
+
+StoragePositions& ConstructionMap::getStoragePositions(StorageId id) {
+  return storagePositions[id];
+}
+
+StoragePositions& ConstructionMap::getAllStoragePositions() {
+  return allStoragePositions;
+}
+
+const StoragePositions& ConstructionMap::getAllStoragePositions() const {
+  return allStoragePositions;
+}
+
 void ConstructionMap::checkDebtConsistency() {
   unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> nowDebt;
   for (auto& f : allFurniture) {
@@ -230,7 +260,7 @@ SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::TrapInfo, TrapInfo);
 
 template <class Archive>
 void ConstructionMap::serialize(Archive& ar, const unsigned int version) {
-  ar(debt, traps, furniture, furniturePositions, unbuiltCounts, allFurniture, allTraps);
+  ar(debt, traps, furniture, furniturePositions, storagePositions, allStoragePositions, unbuiltCounts, allFurniture, allTraps);
 }
 
 SERIALIZABLE(ConstructionMap);

@@ -1,0 +1,14 @@
+"equipment"
+"resources"
+"corpses"
+"gold"
+"potions"
+"scrolls"
+"jewellery"
+"upgrades"
+"armor"
+"bows"
+"weapons"
+"automaton_parts"
+
+

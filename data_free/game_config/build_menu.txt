@@ -84,6 +84,12 @@
     { Furniture {{ "TREASURE_CHEST" }             "WOOD" 5  }      "Treasure chest"    "Storage"
         "All your gold is stored here." }
 
+    { Furniture {{ "WEAPON_RACK" }                "WOOD" 15  }     "Weapon rack"      "Storage"
+        "All your weapons can be stored here." }
+
+    { Furniture {{ "BOW_RACK" }                "WOOD" 15  }        "Bow rack"      "Storage"
+        "All your ranged weapons can be stored here." }
+
     { Furniture {{ "GRAVE" }                      "STONE" 5 }      "Grave"             "Storage"
         "All corpses are stored here."}
   }

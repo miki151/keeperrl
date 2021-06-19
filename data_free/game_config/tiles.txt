@@ -327,6 +327,8 @@
 { "black_market_key" "*" ColorId RED }
 { "key_highlight" "*" ColorId ALMOST_WHITE }
 { "treasure_chest" "=" ColorId BROWN }
+{ viewId = "weapon_rack" symbol = "=" color = ColorId LIGHT_GRAY roundShadow = true }
+{ viewId = "bow_rack" symbol = "=" color = ColorId GRAY roundShadow = true }
 { "coffin1" "⚰" ColorId BROWN true }
 { "coffin2" "⚰" ColorId GRAY true }
 { "coffin3" "⚰" ColorId YELLOW true }

@@ -87,7 +87,6 @@ enum class TeamOrder;
 
 enum class FXName;
 enum class FXVariantName;
-enum class StorageId;
 enum class TribeAlignment;
 enum class TutorialState;
 enum class AvatarMenuOption;
@@ -120,6 +119,7 @@ class FurnitureListId;
 class SpellId;
 class CreatureId;
 class BuildingId;
+class StorageId;
 class NameGeneratorId;
 class BiomeId;
 class WorkshopType;

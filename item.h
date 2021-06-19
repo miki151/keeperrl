@@ -67,7 +67,8 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   optional<ItemAbility>& getAbility();
 
   ItemClass getClass() const;
-  
+  const vector<StorageId>& getStorageIds() const;
+
   int getPrice() const;
   void setShopkeeper(const Creature* shopkeeper);
   Creature* getShopkeeper(const Creature* owner) const;

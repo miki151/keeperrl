@@ -357,6 +357,9 @@ optional<string> ContentFactory::readZLevels(const GameConfig* config, KeyVerifi
 
 optional<string> ContentFactory::readData(const GameConfig* config, const vector<string>& modNames) {
   KeyVerifier keyVerifier;
+  vector<PrimaryId<StorageId>> storageIds;
+  if (auto error = config->readObject(storageIds, GameConfigId::STORAGE_IDS, &keyVerifier))
+    return *error;
   map<PrimaryId<TechId>, Technology::TechDefinition> techsTmp;
   if (auto error = config->readObject(techsTmp, GameConfigId::TECHNOLOGY, &keyVerifier))
     return *error;
@@ -441,8 +444,13 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
     }
   furniture.initializeInfos();
   for (auto& elem : items)
-    if (auto id = elem.second.resourceId)
-      resourceInfo.at(*id).itemId = ItemType(elem.first);
+    if (auto id = elem.second.resourceId) {
+      auto& info = resourceInfo.at(*id);
+      info.itemId = ItemType(elem.first);
+      for (auto storageId : elem.second.storageIds)
+        if (!info.storage.contains(storageId))
+          info.storage.push_back(storageId);
+    }
   for (auto& enemy : enemies)
     enemy.second.updateBuildingInfo(buildingInfo);
   return none;

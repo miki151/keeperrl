@@ -10,6 +10,7 @@
     uses = 1
     price = 60
     effect = SummonEnemy "AUTOMATON" {1} 100
+    storageIds = {"automaton_parts" "equipment"}
   }
 "HumanoidHeadWood"
   {
@@ -29,6 +30,7 @@
       "humanoid"
       ARMOR
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "ArcherHeadWood" inherit "HumanoidHeadWood"
   {
@@ -73,6 +75,7 @@
       ""
       ARMOR
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonArmsWood"
   {
@@ -92,6 +95,7 @@
       "melee"
       WEAPON
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonDrillWood"
   {
@@ -110,6 +114,7 @@
       }
       "drill"
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonCraftingWood"
   {
@@ -129,6 +134,7 @@
       }
       "crafting"
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "HumanoidHeadIron"
   {
@@ -149,6 +155,7 @@
       "humanoid"
       ARMOR
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "ArcherHeadIron" inherit "HumanoidHeadIron"
   {
@@ -172,6 +179,7 @@
       "archer"
       ARMOR
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "FireHeadIron" inherit "HumanoidHeadIron"
   {
@@ -191,6 +199,7 @@
       "fire"
       ARMOR
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "AcidHeadIron" inherit "HumanoidHeadIron"
   {
@@ -210,6 +219,7 @@
       "acid"
       ARMOR
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonLegsIron"
   {
@@ -232,6 +242,7 @@
       ""
       ARMOR
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonArmsIron"
   {
@@ -251,6 +262,7 @@
       "melee"
       WEAPON
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonDrillIron"
   {
@@ -270,6 +282,7 @@
       }
       "drill"
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonCraftingIron"
   {
@@ -289,6 +302,7 @@
       }
       "crafting"
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "SharpAutomatonArmsIron" inherit "AutomatonArmsIron"
   {
@@ -307,6 +321,7 @@
       }
       "melee"
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "RepairAutomatonArmsIron" inherit "AutomatonArmsIron"
   {
@@ -325,6 +340,7 @@
       }
       "repair"
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "HumanoidHeadAda"
   {
@@ -345,6 +361,7 @@
       "humanoid"
       ARMOR
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "ArcherHeadAda" inherit "HumanoidHeadAda"
   {
@@ -368,6 +385,7 @@
       "archer"
       ARMOR
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "FireHeadAda" inherit "HumanoidHeadAda"
   {
@@ -387,6 +405,7 @@
       "fire"
       ARMOR
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "AcidHeadAda" inherit "HumanoidHeadAda"
   {
@@ -406,6 +425,7 @@
       "acid"
       ARMOR
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonLegsAda"
   {
@@ -428,6 +448,7 @@
       ""
       ARMOR
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonArmsAda"
   {
@@ -447,6 +468,7 @@
       "melee"
       WEAPON
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonDrillAda"
   {
@@ -466,6 +488,7 @@
       }
       "drill"
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonCraftingAda"
   {
@@ -485,6 +508,7 @@
       }
       "crafting"
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "RepairAutomatonArmsAda" inherit "AutomatonArmsAda"
   {
@@ -503,6 +527,7 @@
       }
       "repair"
     }
+    storageIds = {"automaton_parts" "equipment"}
   }
 "Knife"
   {
@@ -523,6 +548,7 @@
     genPrefixes = {
       1 VictimEffect 0.1 Lasting POISON
     }
+    storageIds = {"weapons" "equipment"}
   }
 "AssassinsKnife" inherit "Knife"
   {
@@ -551,6 +577,7 @@
       attackMsg = THRUST
       victimEffect = { 0.5 Lasting POISON }
     }
+    storageIds = {"weapons" "equipment"}
   }
 "Spear"
   {
@@ -567,6 +594,7 @@
       attackType = STAB
       attackMsg = THRUST
     }
+    storageIds = {"weapons" "equipment"}
   }
 "Sword"
   {
@@ -592,6 +620,7 @@
       }
     }
     maxUpgrades = 1
+    storageIds = {"weapons" "equipment"}
   }
 "AdaSword" inherit "Sword"
   {
@@ -625,6 +654,7 @@
     genPrefixes = {
       1 SpecialAttr DAMAGE 10 HatedBy HATE_UNDEAD
     }
+    storageIds = {"weapons" "equipment"}
   }
 "BattleAxe"
   {
@@ -646,6 +676,7 @@
       1 LastingEffect RAGE
     }
     maxUpgrades = 1
+    storageIds = {"weapons" "equipment"}
   }
 "AdaBattleAxe" inherit "BattleAxe"
   {
@@ -680,6 +711,7 @@
       1 VictimEffect 0.3 Lasting COLLAPSED
     }
     maxUpgrades = 1
+    storageIds = {"weapons" "equipment"}
   }
 "AdaWarHammer" inherit "WarHammer"
   {
@@ -709,6 +741,7 @@
       attackType = CRUSH
     }
     maxUpgrades = 0
+    storageIds = {"weapons" "equipment"}
   }
 "HeavyClub"
   {
@@ -726,6 +759,7 @@
       twoHanded = true
     }
     maxUpgrades = 0
+    storageIds = {"weapons" "equipment"}
   }
 "WoodenStaff"
   {
@@ -747,6 +781,7 @@
       1 VictimEffect 1.0 Escape{}
     }
     maxUpgrades = 1
+    storageIds = {"weapons" "equipment"}
   }
 "IronStaff" inherit "WoodenStaff"
   {
@@ -797,6 +832,7 @@
       twoHanded = true
       meleeAttackAttr = SPELL_DAMAGE
     }
+    storageIds = {"weapons" "equipment"}
   }
 "ElvenBow"
   {
@@ -813,6 +849,7 @@
     }
     name = "silver elven bow"
     price = 100
+    storageIds = {"bows" "weapons" "equipment"}
   }
 "Bow"
   {
@@ -829,6 +866,7 @@
       RANGED_DAMAGE 10
     }
     price = 12
+    storageIds = {"bows" "weapons" "equipment"}
   }
 "Crossbow"
   {
@@ -845,6 +883,7 @@
       RANGED_DAMAGE 15
     }
     price = 90
+    storageIds = {"bows" "weapons" "equipment"}
   }
 "Torch"
   {
@@ -854,6 +893,7 @@
     name = "hand torch"
     plural = "hand torches"
     price = 2
+    storageIds = {"equipment"}
   }
 "Robe"
   {
@@ -869,6 +909,7 @@
     genPrefixes = {
       1 LastingEffect MAGIC_RESISTANCE
     }
+    storageIds = {"armor" "equipment"}
   }
 "HalloweenCostume"
   {
@@ -882,6 +923,7 @@
     modifiers = {
       DEFENSE 1
     }
+    storageIds = {"armor" "equipment"}
   }
 "BagOfCandies"
   {
@@ -897,6 +939,7 @@
     }
     price = 1
     uses = 1
+    storageIds = {"equipment"}
   }
 "LeatherGloves"
   {
@@ -912,6 +955,7 @@
       DEFENSE 1
     }
     maxUpgrades = 0
+    storageIds = {"armor" "equipment"}
   }
 "IronGloves"
   {
@@ -931,6 +975,7 @@
       1 ItemAttrBonus SPELL_DAMAGE 3
     }
     maxUpgrades = 1
+    storageIds = {"armor" "equipment"}
   }
 "AdaGloves"
   {
@@ -950,6 +995,7 @@
       1 ItemAttrBonus SPELL_DAMAGE 3
     }
     maxUpgrades = 2
+    storageIds = {"armor" "equipment"}
   }
 "LeatherArmor"
   {
@@ -967,6 +1013,7 @@
       1 ItemAttrBonus DEFENSE 3
     }
     maxUpgrades = 0
+    storageIds = {"armor" "equipment"}
   }
 "LeatherHelm"
   {
@@ -986,6 +1033,7 @@
       2 ItemAttrBonus DEFENSE 3
     }
     maxUpgrades = 0
+    storageIds = {"armor" "equipment"}
   }
 "WoodenShield"
   {
@@ -1000,6 +1048,7 @@
       PARRY 1
     }
     maxUpgrades = 0
+    storageIds = {"armor" "equipment"}
   }
 "IronShield"
   {
@@ -1015,6 +1064,7 @@
       DEFENSE 2
     }
     maxUpgrades = 1
+    storageIds = {"armor" "equipment"}
   }
 "AdaShield"
   {
@@ -1030,6 +1080,7 @@
       DEFENSE 4
     }
     maxUpgrades = 2
+    storageIds = {"armor" "equipment"}
   }
 "ChainArmor"
   {
@@ -1047,6 +1098,7 @@
       1 ItemAttrBonus DEFENSE 3
     }
     maxUpgrades = 2
+    storageIds = {"armor" "equipment"}
   }
 "RedDragonScales"
   {
@@ -1056,6 +1108,7 @@
     weight = 5
     price = 100
     ingredientType = "red_scales"
+    storageIds = {"upgrades" "equipment"}
   }
 "RedDragonArmor" inherit "ChainArmor"
   {
@@ -1079,6 +1132,7 @@
     weight = 5
     price = 100
     ingredientType = "black_scales"
+    storageIds = {"upgrades" "equipment"}
   }
 "BlackDragonArmor" inherit "ChainArmor"
   {
@@ -1102,6 +1156,7 @@
     weight = 5
     price = 100
     ingredientType = "white_scales"
+    storageIds = {"upgrades" "equipment"}
   }
 "WhiteDragonArmor" inherit "ChainArmor"
   {
@@ -1125,6 +1180,7 @@
     weight = 5
     price = 100
     ingredientType = "yellow_scales"
+    storageIds = {"upgrades" "equipment"}
   }
 "YellowDragonArmor" inherit "ChainArmor"
   {
@@ -1148,6 +1204,7 @@
     weight = 5
     price = 100
     ingredientType = "green_scales"
+    storageIds = {"upgrades" "equipment"}
   }
 "GreenDragonArmor" inherit "ChainArmor"
   {
@@ -1179,6 +1236,7 @@
       1 ItemAttrBonus DEFENSE 3
     }
     maxUpgrades = 4
+    storageIds = {"armor" "equipment"}
   }
 "IronHelm"
   {
@@ -1198,6 +1256,7 @@
       3 ItemAttrBonus DEFENSE 3
     }
     maxUpgrades = 1
+    storageIds = {"armor" "equipment"}
   }
 "HydraTongue"
   {
@@ -1207,6 +1266,7 @@
     weight = 15
     price = 100
     ingredientType = "hydra_tongue"
+    storageIds = {"upgrades" "equipment"}
   }
 "ZombieBrain"
   {
@@ -1216,6 +1276,7 @@
     weight = 2
     price = 20
     ingredientType = "zombie_brain"
+    storageIds = {"upgrades" "equipment"}
   }
 "CyclopsBrain"
   {
@@ -1225,6 +1286,7 @@
     weight = 5
     price = 50
     ingredientType = "cyclops_brain"
+    storageIds = {"upgrades" "equipment"}
   }
 "CyclopsTesticles"
   {
@@ -1235,6 +1297,7 @@
     weight = 5
     price = 50
     ingredientType = "cyclops_testes"
+    storageIds = {"upgrades" "equipment"}
   }
 "CyclopsHelm" inherit "IronHelm"
   {
@@ -1255,6 +1318,7 @@
     upgradeInfo = ARMOR SpellId "double trouble"
     weight = 2
     price = 500
+    storageIds = {"upgrades" "equipment"}
   }
 "AdoxieScroll"
   {
@@ -1265,6 +1329,7 @@
     applyVerb = "read" "reads"
     applyPredicate = Not LastingEffect BLIND
     effect = Description "Just a cheap pamphlet" Message "It predicts the coming of the Evil God Adoxie"
+    storageIds = {"scrolls" "equipment"}
   }
 
 Def UnlockMessage(Text, ViewId)
@@ -1297,6 +1362,7 @@ End
       Analytics "milestone" "zombiesUnlocked"
       UnlockMessage("The Zombie faction has been unlocked!", "zombie")
     }
+    storageIds = {"scrolls" "equipment"}
   }
 "CyclopsScroll"
   {
@@ -1318,6 +1384,7 @@ End
         Message "They don't seem to make any sense"
       }
     }
+    storageIds = {"scrolls" "equipment"}
   }
 "AdaHelm"
   {
@@ -1336,6 +1403,7 @@ End
       1 LastingEffect REGENERATION
     }
     maxUpgrades = 2
+    storageIds = {"armor" "equipment"}
   }
 "Cornuthaum1"
   {
@@ -1350,6 +1418,7 @@ End
       DAMAGE -2
     }
     maxUpgrades = 1
+    storageIds = {"armor" "equipment"}
   }
 "Cornuthaum2"
   {
@@ -1364,6 +1433,7 @@ End
       DAMAGE -4
     }
     maxUpgrades = 2
+    storageIds = {"armor" "equipment"}
   }
 "Cornuthaum3"
   {
@@ -1378,6 +1448,7 @@ End
       DAMAGE -6
     }
     maxUpgrades = 4
+    storageIds = {"armor" "equipment"}
   }
 "LeatherBoots"
   {
@@ -1398,6 +1469,7 @@ End
       2 ItemAttrBonus DEFENSE 3
     }
     maxUpgrades = 0
+    storageIds = {"armor" "equipment"}
   }
 "IronBoots"
   {
@@ -1418,6 +1490,7 @@ End
       3 ItemAttrBonus DEFENSE 3
     }
     maxUpgrades = 1
+    storageIds = {"armor" "equipment"}
   }
 "AdaBoots"
   {
@@ -1436,6 +1509,7 @@ End
       1 LastingEffect SPEED
     }
     maxUpgrades = 2
+    storageIds = {"armor" "equipment"}
   }
 "DevilHooves"
   {
@@ -1445,6 +1519,7 @@ End
     weight = 5
     price = 100
     ingredientType = "devil_hooves"
+    storageIds = {"upgrades" "equipment"}
   }
 "DevilBoots"
   {
@@ -1461,6 +1536,7 @@ End
     }
     equipedEffect = {FLYING SPELL_DAMAGE}
     maxUpgrades = 1
+    storageIds = {"armor" "equipment"}
   }
 "DevilHorns"
   {
@@ -1470,6 +1546,7 @@ End
     weight = 5
     price = 100
     ingredientType = "devil_horns"
+    storageIds = {"upgrades" "equipment"}
   }
 "DefenseAmulet"
   {
@@ -1484,6 +1561,7 @@ End
       DEFENSE 3
     }
     weight = 0.3
+    storageIds = {"jewellery" "equipment"}
   }
 "FirstAidKit"
   {
@@ -1497,6 +1575,7 @@ End
     displayUses = true
     price = 2
     effect = Heal FLESH
+    storageIds = {"equipment"}
   }
 "MagicLamp"
   {
@@ -1511,6 +1590,7 @@ End
     effect = SummonEnemy "DJINN" {1} none
     effectDescription = false
     ownedEffect = LIGHT_SOURCE
+    storageIds = {"equipment"}
   }
 "SpiderRing"
   {
@@ -1521,6 +1601,7 @@ End
     weight = 0.05
     equipmentSlot = RINGS
     price = 1
+    storageIds = {"jewellery" "equipment"}
   }
 "DragonRing" inherit "SpiderRing"
   {
@@ -1539,6 +1620,7 @@ End
     resourceId = "STONE"
     weight = 0.3
     wishedCount = { 5 10 }
+    storageIds = {"resources"}
   }
 "BlackMarketKey"
   {
@@ -1564,6 +1646,7 @@ End
       }
       Message "Nothing happens."
     }
+    storageIds = {"jewellery" "equipment"}
   }
 "IronOre"
   {
@@ -1573,6 +1656,7 @@ End
     price = 0
     resourceId = "IRON"
     weight = 0.5
+    storageIds = {"resources"}
   }
 "AdaOre"
   {
@@ -1582,6 +1666,7 @@ End
     price = 0
     resourceId = "ADA"
     weight = 0.5
+    storageIds = {"resources"}
   }
 "WoodPlank"
   {
@@ -1591,6 +1676,7 @@ End
     price = 0
     resourceId = "WOOD"
     weight = 5
+    storageIds = {"resources"}
   }
 "Bone"
   {
@@ -1599,6 +1685,7 @@ End
     itemClass = CORPSE
     price = 0
     weight = 5
+    storageIds = {"corpses"}
   }
 "Skeleton"
   {
@@ -1607,6 +1694,7 @@ End
     itemClass = CORPSE
     price = 0
     weight = 50
+    storageIds = {"corpses"}
   }
 "FrozenRemains" inherit "Skeleton"
   {
@@ -1622,6 +1710,7 @@ End
     resourceId = "GOLD"
     weight = 0.01
     wishedCount = { 500 1000 }
+    storageIds = {"gold" "resources"}
   }
 "Moonshine"
   {
@@ -1638,4 +1727,5 @@ End
     burnTime = 1
     uses = 1
     producedStat = POTION_PRODUCED
+    storageIds = {"potions" "equipment"}
   }

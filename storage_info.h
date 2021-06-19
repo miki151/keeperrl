@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util.h"
+#include "storage_id.h"
 
 struct StorageInfo {
   StorageId SERIAL(storage);

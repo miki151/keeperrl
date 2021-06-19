@@ -8,6 +8,8 @@
 #include "furniture_layer.h"
 #include "resource_id.h"
 #include "position_map.h"
+#include "storage_id.h"
+#include "storage_positions.h"
 
 class ConstructionMap {
   public:
@@ -73,6 +75,11 @@ class ConstructionMap {
   const vector<Position>& getAllTraps() const;
   int getDebt(CollectiveResourceId) const;
 
+  const StoragePositions& getStoragePositions(StorageId) const;
+  StoragePositions& getStoragePositions(StorageId);
+  const StoragePositions& getAllStoragePositions() const;
+  StoragePositions& getAllStoragePositions();
+
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
@@ -86,4 +93,6 @@ class ConstructionMap {
   vector<Position> SERIAL(allTraps);
   unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> SERIAL(debt);
   void addDebt(const CostInfo&, const char* reason);
+  unordered_map<StorageId, StoragePositions, CustomHash<StorageId>> SERIAL(storagePositions);
+  StoragePositions SERIAL(allStoragePositions);
 };

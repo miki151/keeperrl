@@ -60,6 +60,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "layout_mapping";
     case GameConfigId::RANDOM_LAYOUTS:
       return "random_layouts";
+    case GameConfigId::STORAGE_IDS:
+      return "storage_ids";
   }
 }
 

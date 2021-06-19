@@ -1,10 +1,9 @@
 #pragma once
 
-#include "util.h"
+#include "stdafx.h"
+#include "content_id.h"
 
-RICH_ENUM(StorageId,
-    RESOURCE,
-    EQUIPMENT,
-    GOLD,
-    CORPSES
-);
+class StorageId : public ContentId<StorageId> {
+  public:
+  using ContentId::ContentId;
+};

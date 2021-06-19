@@ -33,7 +33,6 @@ class Technology;
 class ImmigrantInfo;
 
 struct ResourceInfo;
-struct ItemFetchInfo;
 class ContentFactory;
 class FurnitureUsageType;
 
@@ -99,7 +98,6 @@ class CollectiveConfig {
   static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, ContentFactory*);
 
   bool hasImmigrantion(bool currentlyActiveModel) const;
-  vector<ItemFetchInfo> getFetchInfo(const ContentFactory*) const;
   static const MinionActivityInfo& getActivityInfo(MinionActivity);
 
   SERIALIZATION_DECL(CollectiveConfig)

@@ -40,7 +40,6 @@
 #include "content_factory.h"
 #include "bed_type.h"
 #include "item_types.h"
-#include "item_fetch_info.h"
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
@@ -211,39 +210,6 @@ CollectiveConfig& CollectiveConfig::setConquerCondition(ConquerCondition c) {
 
 bool CollectiveConfig::canCapturePrisoners() const {
   return prisoners;
-}
-
-static CollectiveItemPredicate unMarkedItems() {
-  return [](const Collective* col, const Item* it) { return !col->getItemTask(it); };
-}
-
-static CollectiveWarning getStorageWarning(StorageId id) {
-  switch (id) {
-    case StorageId::CORPSES: return CollectiveWarning::GRAVES;
-    case StorageId::EQUIPMENT: return CollectiveWarning::EQUIPMENT_STORAGE;
-    case StorageId::GOLD: return CollectiveWarning::CHESTS;
-    case StorageId::RESOURCE: return CollectiveWarning::RESOURCE_STORAGE;
-  }
-}
-
-vector<ItemFetchInfo> CollectiveConfig::getFetchInfo(const ContentFactory* factory) const {
-  if (type == KEEPER) {
-    vector<ItemFetchInfo> ret {
-        {ItemIndex::MINION_EQUIPMENT, [](const Collective* col, const Item* it)
-            { return it->getClass() != ItemClass::GOLD && !col->getItemTask(it);},
-            StorageId::EQUIPMENT, CollectiveWarning::EQUIPMENT_STORAGE},
-        {ItemIndex::ASSEMBLED_MINION, unMarkedItems(), StorageId::EQUIPMENT,
-            CollectiveWarning::EQUIPMENT_STORAGE},
-    };
-    for (auto& res : factory->resourceInfo)
-      if (res.second.storageId)
-        ret.push_back(ItemFetchInfo {
-            res.first, unMarkedItems(), *res.second.storageId, getStorageWarning(*res.second.storageId)});
-    return ret;
-  } else {
-    static vector<ItemFetchInfo> empty;
-    return empty;
-  }
 }
 
 MinionActivityInfo::MinionActivityInfo(Type t) : type(t) {

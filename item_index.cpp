@@ -30,8 +30,6 @@ bool hasIndex(ItemIndex index, const Item* item) {
       return MinionEquipment::isItemUseful(item);
     case ItemIndex::RANGED_WEAPON:
       return item->getClass() == ItemClass::RANGED_WEAPON;
-    case ItemIndex::CAN_EQUIP:
-      return item->canEquip();
     case ItemIndex::FOR_SALE:
       return item->isOrWasForSale();
     case ItemIndex::RUNE:

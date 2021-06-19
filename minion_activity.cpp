@@ -18,8 +18,8 @@
 #include "minion_equipment.h"
 #include "game.h"
 #include "content_factory.h"
-#include "item_fetch_info.h"
 #include "body.h"
+#include "item.h"
 
 SERIALIZE_DEF(MinionActivities, allFurniture, activities)
 SERIALIZATION_CONSTRUCTOR_IMPL(MinionActivities)
@@ -175,12 +175,14 @@ vector<pair<Position, FurnitureLayer>> MinionActivities::getAllPositions(const C
 
 static PTask getDropItemsTask(Collective* collective, const Creature* creature) {
   auto& config = collective->getConfig();
-  for (const ItemFetchInfo& elem : config.getFetchInfo(collective->getGame()->getContentFactory())) {
-    vector<Item*> items = creature->getEquipment().getItems().filter([&elem, &collective, &creature](const Item* item) {
-        return elem.applies(collective, item) && !collective->getMinionEquipment().isOwner(item, creature); });
-    if (!items.empty() && !collective->getStoragePositions(elem.storageId).empty())
-      return Task::dropItems(items, elem.storageId, collective);
-  }
+  auto& items = creature->getEquipment().getItems();
+  unordered_map<StorageId, vector<Item*>, CustomHash<StorageId>> itemMap;
+  for (auto it : items)
+    if (!collective->getMinionEquipment().isOwner(it, creature))
+      for (auto id : it->getStorageIds())
+        itemMap[id].push_back(it);
+  for (auto& elem : itemMap)
+    return Task::dropItems(elem.second, elem.first, collective);
   return nullptr;
 };
 

@@ -275,6 +275,10 @@ ItemClass Item::getClass() const {
   return classCache;
 }
 
+const vector<StorageId>& Item::getStorageIds() const {
+  return attributes->storageIds;
+}
+
 int Item::getPrice() const {
   return attributes->price;
 }

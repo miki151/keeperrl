@@ -62,7 +62,6 @@
 #include "health_type.h"
 #include "village_control.h"
 #include "automaton_part.h"
-#include "item_fetch_info.h"
 #include "enemy_aggression_level.h"
 
 template <class Archive>
@@ -573,21 +572,15 @@ void Collective::tick() {
   for (auto& workshop : workshops->types)
     workshop.second.updateState(this);
   if (Random.roll(5)) {
-    auto fetchInfo = getConfig().getFetchInfo(getGame()->getContentFactory());
-    if (!fetchInfo.empty()) {
-      for (Position pos : territory->getAll())
-        if (!isDelayed(pos) && pos.canEnterEmpty(MovementTrait::WALK) && !pos.getItems().empty())
-          for (const ItemFetchInfo& elem : fetchInfo)
-            fetchItems(pos, elem);
-      for (Position pos : zones->getPositions(ZoneId::FETCH_ITEMS))
-        if (!isDelayed(pos) && pos.canEnterEmpty(MovementTrait::WALK))
-          for (const ItemFetchInfo& elem : fetchInfo)
-            fetchItems(pos, elem);
-      for (Position pos : zones->getPositions(ZoneId::PERMANENT_FETCH_ITEMS))
-        if (!isDelayed(pos) && pos.canEnterEmpty(MovementTrait::WALK))
-          for (const ItemFetchInfo& elem : fetchInfo)
-            fetchItems(pos, elem);
-    }
+    for (Position pos : territory->getAll())
+      if (!isDelayed(pos) && pos.canEnterEmpty(MovementTrait::WALK) && !pos.getItems().empty())
+        fetchItems(pos);
+    for (Position pos : zones->getPositions(ZoneId::FETCH_ITEMS))
+      if (!isDelayed(pos) && pos.canEnterEmpty(MovementTrait::WALK))
+        fetchItems(pos);
+    for (Position pos : zones->getPositions(ZoneId::PERMANENT_FETCH_ITEMS))
+      if (!isDelayed(pos) && pos.canEnterEmpty(MovementTrait::WALK))
+        fetchItems(pos);
   }
 
   if (config->getManageEquipment() && Random.roll(40)) {
@@ -605,7 +598,7 @@ void Collective::tick() {
 void Collective::updateAutomatonPartsTasks() {
   for (auto c : getCreatures())
     if (c->getAttributes().getAutomatonSlots().first > 0)
-      for (auto items : getStoredItems(ItemIndex::MINION_EQUIPMENT, StorageId::EQUIPMENT))
+      for (auto items : getStoredItems(ItemIndex::MINION_EQUIPMENT, {StorageId("automaton_parts"), StorageId("equipment")}))
         for (auto item : items.second)
           if (item->getAutomatonPart() && minionEquipment->isOwner(item, c) && !getItemTask(item)) {
             auto task = taskMap->addTask(Task::chain(Task::pickUpItem(items.first, {item}),
@@ -868,10 +861,15 @@ GlobalTime Collective::getGlobalTime() const {
 }
 
 int Collective::numResource(ResourceId id) const {
+  auto& info = getResourceInfo(id);
   int ret = getValueMaybe(credit, id).value_or(0);
-  if (auto storage = getResourceInfo(id).storageId)
-    for (auto& pos : getStoragePositions(*storage))
-      ret += pos.getItems(id).size();
+  PositionSet visited;
+  for (auto storageId : info.storage)
+    for (auto& pos : getStoragePositions(storageId))
+      if (!visited.count(pos)) {
+        ret += pos.getItems(id).size();
+        visited.insert(pos);
+      }
   return ret;
 }
 
@@ -910,8 +908,9 @@ void Collective::takeResource(const CostInfo& cost) {
       credit[cost.id] = 0;
     }
   }
-  if (auto storage = getResourceInfo(cost.id).storageId)
-    for (auto& pos : getStoragePositions(*storage)) {
+  auto& info = getResourceInfo(cost.id);
+  for (auto storageId : info.storage)
+    for (auto& pos : getStoragePositions(storageId)) {
       vector<Item*> goldHere = pos.getItems(cost.id);
       for (Item* it : goldHere) {
         pos.removeItem(it);
@@ -927,11 +926,11 @@ void Collective::returnResource(const CostInfo& amount) {
     return;
   CHECK(amount.value > 0);
   auto& info = getResourceInfo(amount.id);
-  if (info.storageId && info.itemId) {
-    const auto& destination = getStoragePositions(*info.storageId);
+  if (info.itemId) {
+    auto items = info.itemId->get(amount.value, getGame()->getContentFactory());
+    const auto& destination = getStoragePositions(items[0]->getStorageIds());
     if (!destination.empty()) {
-      Random.choose(destination).dropItems(
-          info.itemId->get(amount.value, getGame()->getContentFactory()));
+      Random.choose(destination.asVector()).dropItems(std::move(items));
       return;
     }
   }
@@ -968,7 +967,7 @@ vector<Item*> Collective::getAllItems(ItemIndex index, bool includeMinions) cons
   return getAllItemsImpl(index, includeMinions);
 }
 
-vector<pair<Position, vector<Item*>>> Collective::getStoredItems(ItemIndex index, StorageId storage) const {
+vector<pair<Position, vector<Item*>>> Collective::getStoredItems(ItemIndex index, vector<StorageId> storage) const {
   vector<pair<Position, vector<Item*>>> ret;
   for (auto& v : getStoragePositions(storage))
     ret.push_back(make_pair(v, v.getItems(index)));
@@ -996,13 +995,6 @@ int Collective::getNumItems(ItemIndex index, bool includeMinions) const {
     for (Creature* c : getCreatures())
       ret += c->getEquipment().getItems(index).size();
   return ret;
-}
-
-const PositionSet& Collective::getStorageForPillagedItem(const Item* item) const {
-  for (auto& info : config->getFetchInfo(getGame()->getContentFactory()))
-    if (info.applies(this, item))
-      return getStoragePositions(info.storageId);
-  return zones->getPositions(ZoneId::STORAGE_EQUIPMENT);
 }
 
 void Collective::addKnownVillain(const Collective* col) {
@@ -1277,7 +1269,7 @@ bool Collective::isDelayed(Position pos) {
   return delayedPos.count(pos) && delayedPos.at(pos) > getLocalTime();
 }
 
-static Position chooseClosest(Position pos, const PositionSet& squares) {
+static Position chooseClosest(Position pos, const StoragePositions& squares) {
   optional<Position> ret;
   for (auto& p : squares)
     if (!ret || pos.dist8(p).value_or(10000) < pos.dist8(*ret).value_or(10000))
@@ -1285,35 +1277,47 @@ static Position chooseClosest(Position pos, const PositionSet& squares) {
   return *ret;
 }
 
-const PositionSet& Collective::getStoragePositions(StorageId storage) const {
-  switch (storage) {
-    case StorageId::RESOURCE:
-      return zones->getPositions(ZoneId::STORAGE_RESOURCES);
-    case StorageId::EQUIPMENT:
-      return zones->getPositions(ZoneId::STORAGE_EQUIPMENT);
-    case StorageId::GOLD:
-      return constructions->getBuiltPositions(FurnitureType("TREASURE_CHEST"));
-    case StorageId::CORPSES:
-      return constructions->getBuiltPositions(FurnitureType("GRAVE"));
-  }
+const StoragePositions& Collective::getStoragePositions(StorageId storage) const {
+  return constructions->getStoragePositions(storage);
 }
 
-void Collective::fetchItems(Position pos, const ItemFetchInfo& elem) {
+const StoragePositions& Collective::getStoragePositions(const vector<StorageId>& storage) const {
+  for (auto id : storage) {
+    auto& ret = getStoragePositions(id);
+    if (!ret.empty())
+      return ret;
+  }
+  static StoragePositions empty;
+  return empty;
+}
+
+void Collective::fetchItems(Position pos) {
   PROFILE;
-  const auto& destination = getStoragePositions(elem.storageId);
-  if (destination.count(pos))
+  if (!Random.roll(30) && constructions->getAllStoragePositions().contains(pos))
     return;
-  vector<Item*> equipment = elem.getItems(this, pos);
-  if (!equipment.empty()) {
-    if (!destination.empty()) {
-      warnings->setWarning(elem.warning, false);
-      auto pickUpAndDrop = Task::pickUpAndDrop(pos, equipment, elem.storageId, this);
+  auto items = pos.getItems();
+  if (!items.empty()) {
+    unordered_map<StorageId, vector<Item*>, CustomHash<StorageId>> itemMap;
+    for (auto it : items)
+      if (!getItemTask(it))
+        for (auto id : it->getStorageIds()) {
+          auto& positions = getStoragePositions(id);
+          if (!positions.empty()) {
+            if (!positions.contains(pos))
+              itemMap[id].push_back(it);
+            break;
+          }
+        }
+    for (auto& elem : itemMap) {
+      //warnings->setWarning(elem.warning, false);
+      auto pickUpAndDrop = Task::pickUpAndDrop(pos, elem.second, {elem.first}, this);
       auto task = taskMap->addTask(std::move(pickUpAndDrop.pickUp), pos, MinionActivity::HAULING);
-      taskMap->addTask(std::move(pickUpAndDrop.drop), chooseClosest(pos, destination), MinionActivity::HAULING);
-      for (Item* it : equipment)
+      taskMap->addTask(std::move(pickUpAndDrop.drop), chooseClosest(pos, getStoragePositions(elem.first)),
+          MinionActivity::HAULING);
+      for (Item* it : elem.second)
         markItem(it, task);
-    } else
-      warnings->setWarning(elem.warning, true);
+    }/* else
+      warnings->setWarning(elem.warning, true);*/
   }
 }
 
@@ -1617,12 +1621,35 @@ void Collective::freeTeamMembers(const vector<Creature*>& members) {
   }
 }
 
-Zones& Collective::getZones() {
+const Zones& Collective::getZones() const {
   return *zones;
 }
 
-const Zones& Collective::getZones() const {
-  return *zones;
+static optional<StorageId> getZoneStorage(ZoneId id) {
+  switch (id) {
+    case ZoneId::STORAGE_EQUIPMENT:
+      return StorageId{"equipment"};
+    case ZoneId::STORAGE_RESOURCES:
+      return StorageId{"resources"};
+    default:
+      return none;
+  }
+}
+
+void Collective::setZone(Position pos, ZoneId id) {
+  zones->setZone(pos, id);
+  if (auto storageId = getZoneStorage(id)) {
+    constructions->getStoragePositions(*storageId).add(pos);
+    constructions->getAllStoragePositions().add(pos);
+  }
+}
+
+void Collective::eraseZone(Position pos, ZoneId id) {
+  zones->eraseZone(pos, id);
+  if (auto storageId = getZoneStorage(id)) {
+    constructions->getStoragePositions(*storageId).remove(pos);
+    constructions->getAllStoragePositions().remove(pos);
+  }
 }
 
 Quarters& Collective::getQuarters() {

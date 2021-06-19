@@ -194,7 +194,9 @@ static ItemAttributes getCorpseAttr(const string& name, ItemClass itemClass, dou
     i.resourceId = CollectiveResourceId("CORPSE");
     i.shortName = name;
     i.itemClass = itemClass;
-    i.weight = weight;);
+    i.weight = weight;
+    i.storageIds = {StorageId("corpses")};
+  );
 }
 
 PItem ItemType::corpse(const string& name, const string& rottenName, double weight, const ContentFactory* f,
@@ -369,6 +371,7 @@ ItemAttributes ItemTypes::AutomatonPaint::getAttributes(const ContentFactory*) c
           none,
           "paint"
       );
+      i.storageIds = LIST(StorageId("automaton_parts"), StorageId("equipment"));
   );
 }
 
@@ -385,6 +388,7 @@ ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory*) const {
       i.burnTime = 5;
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
+      i.storageIds = LIST(StorageId("scrolls"), StorageId("equipment"));
   );
 }
 
@@ -402,6 +406,7 @@ ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory*) const 
       i.burnTime = 5;
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
+      i.storageIds = LIST(StorageId("scrolls"), StorageId("equipment"));
   );
 }
 
@@ -417,6 +422,7 @@ ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory
       i.uses = 1;
       i.maxUpgrades = maxUpgrades;
       i.upgradeType = upgradeType;
+      i.storageIds = LIST(StorageId("automaton_parts"), StorageId("equipment"));
   );
 }
 
@@ -434,7 +440,8 @@ ItemAttributes ItemTypes::Intrinsic::getAttributes(const ContentFactory* factory
       i.modifiers[weaponInfo.meleeAttackAttr] = damage;
       i.price = 1;
       i.weaponInfo = weaponInfo;
-  );
+      i.storageIds = {StorageId("equipment")};
+ );
 }
 
 ItemAttributes ItemTypes::Ring::getAttributes(const ContentFactory*) const {
@@ -447,6 +454,7 @@ ItemAttributes ItemTypes::Ring::getAttributes(const ContentFactory*) const {
       i.weight = 0.05;
       i.equipmentSlot = EquipmentSlot::RINGS;
       i.price = 40;
+      i.storageIds = LIST(StorageId("jewellery"), StorageId("equipment"));
   );
 }
 
@@ -460,6 +468,7 @@ ItemAttributes ItemTypes::Amulet::getAttributes(const ContentFactory*) const {
       i.equipmentSlot = EquipmentSlot::AMULET;
       i.price = 5 * LastingEffects::getPrice(lastingEffect);
       i.weight = 0.3;
+      i.storageIds = LIST(StorageId("jewellery"), StorageId("equipment"));
   );
 }
 
@@ -475,6 +484,7 @@ ItemAttributes ItemTypes::TrapItem::getAttributes(const ContentFactory*) const {
       i.usedUpMsg = true;
       i.effect = Effect(Effects::PlaceFurniture{trapType});
       i.price = 2;
+      i.storageIds = LIST(StorageId("traps"), StorageId("equipment"));
   );
 }
 
@@ -503,6 +513,7 @@ ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) c
       i.effectAppliedWhenThrown = true;
       i.uses = 1;
       i.producedStat = StatId::POTION_PRODUCED;
+      i.storageIds = LIST(StorageId("potions"), StorageId("equipment"));
   );
 }
 
@@ -545,6 +556,7 @@ ItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory* factory)
       i.effect = effect;
       i.price = getEffectPrice(effect);
       i.uses = 1;
+      i.storageIds = {StorageId("equipment")};
   );
 }
 
@@ -567,6 +579,7 @@ ItemAttributes ItemTypes::Glyph::getAttributes(const ContentFactory* factory) co
       i.weight = 0.1;
       i.price = 100;
       i.uses = 1;
+      i.storageIds = LIST(StorageId("upgrades"), StorageId("equipment"));
   );
 }
 
@@ -588,6 +601,7 @@ ItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) c
       i.weight = 0.5;
       i.price = 100;
       i.uses = 1;
+      i.storageIds = {StorageId("equipment")};
   );
 }
 
@@ -605,6 +619,7 @@ ItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) c
       i.burnTime = 5;
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
+      i.storageIds = LIST(StorageId("scrolls"), StorageId("equipment"));
   );
 }
 
@@ -624,7 +639,7 @@ ItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) const
       i.effect = Effect(EffectType::Chain{});
       i.effectDescription = false;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
-  );
+      i.storageIds = {StorageId("equipment")};  );
 }
 
 ItemAttributes ItemTypes::TechBook::getAttributes(const ContentFactory*) const {
@@ -637,6 +652,7 @@ ItemAttributes ItemTypes::TechBook::getAttributes(const ContentFactory*) const {
       i.applyTime = 3_visible;
       i.effect = Effect(techId);
       i.price = 1000;
+      i.storageIds = {StorageId("equipment")};
   );
 }
 

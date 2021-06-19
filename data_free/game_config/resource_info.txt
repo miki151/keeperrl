@@ -2,13 +2,13 @@
 # Make sure to add a new item and set resourceId = "X" in items.txt when adding a new physical resource.
 # If there is no item or storageId then this is a non-physical resource.
 
-# ResourceId       StorageId   name             viewId (if visible in UI)   tutorialHighlight
+# ResourceId        name             viewId (if visible in UI)   tutorialHighlight
 
-"GOLD"           { GOLD        "gold"           { "gold" } }
-"WOOD"           { RESOURCE    "wood"           { "wood_plank" } WOOD_RESOURCE }
-"IRON"           { RESOURCE    "iron"           { "iron_rock" } }
-"ADA"            { RESOURCE    "adamantium"     { "ada_ore" } }
-"STONE"          { RESOURCE    "granite"        { "rock" } }
-"CORPSE"         { CORPSES     "corpses"        { "body_part" } }
-"PRISONER_HEAD"  { none        "prisoner heads" }
-"DEMON_PIETY"    { none        "rituals" }
+"GOLD"           {  "gold"           { "gold" } }
+"WOOD"           {  "wood"           { "wood_plank" }            WOOD_RESOURCE }
+"IRON"           {  "iron"           { "iron_rock" } }
+"ADA"            {  "adamantium"     { "ada_ore" } }
+"STONE"          {  "granite"        { "rock" } }
+"CORPSE"         {  "corpses"        { "body_part" } }
+"PRISONER_HEAD"  {  "prisoner heads" }
+"DEMON_PIETY"    {  "rituals" }

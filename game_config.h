@@ -36,6 +36,7 @@ enum class GameConfigId {
   RESOURCE_INFO,
   LAYOUT_MAPPING,
   RANDOM_LAYOUTS,
+  STORAGE_IDS
 };
 
 class GameConfig {

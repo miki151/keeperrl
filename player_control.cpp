@@ -858,7 +858,8 @@ vector<Item*> PlayerControl::getPillagedItems(Collective* col) const {
   vector<Item*> ret;
   for (Position v : col->getTerritory().getAll()) {
     if (!collective->getTerritory().contains(v))
-      append(ret, v.getItems().filter([this, v](auto item) { return !collective->getStorageForPillagedItem(item).count(v); }));
+      append(ret, v.getItems().filter([this, v](auto item) {
+          return !collective->getStoragePositions(item->getStorageIds()).contains(v); }));
   }
   return ret;
 }
@@ -875,11 +876,11 @@ void PlayerControl::handlePillage(Collective* col) {
   while (1) {
     struct PillageOption {
       vector<Item*> items;
-      PositionSet storage;
+      StoragePositions storage;
     };
     vector<PillageOption> options;
     for (auto& elem : Item::stackItems(getPillagedItems(col)))
-      options.push_back({elem, collective->getStorageForPillagedItem(elem.front())});
+      options.push_back({elem, collective->getStoragePositions(elem.front()->getStorageIds())});
     if (options.empty())
       return;
     vector<ItemInfo> itemInfo = options.transform([&] (const PillageOption& it) {
@@ -890,10 +891,10 @@ void PlayerControl::handlePillage(Collective* col) {
     if (index == -1) {
       for (auto& elem : options)
         if (!elem.storage.empty())
-          Random.choose(elem.storage).dropItems(retrievePillageItems(col, elem.items));
+          Random.choose(elem.storage.asVector()).dropItems(retrievePillageItems(col, elem.items));
     } else {
       CHECK(!options[*index].storage.empty());
-      Random.choose(options[*index].storage).dropItems(retrievePillageItems(col, options[*index].items));
+      Random.choose(options[*index].storage.asVector()).dropItems(retrievePillageItems(col, options[*index].items));
     }
     if (auto& name = col->getName())
       collective->addRecordedEvent("the pillaging of " + name->full);
@@ -1115,6 +1116,10 @@ static bool runesEqual(const Item* it1, const Item* it2) {
   return it1->getName() == it2->getName() && it1->getViewObject().id() == it2->getViewObject().id();
 }
 
+static vector<StorageId> getGlyphStorageId() {
+  return {StorageId("upgrades"), StorageId("equipment")};
+}
+
 vector<vector<pair<Item*, Position>>> PlayerControl::getItemUpgradesFor(const WorkshopItem& workshopItem) const {
   vector<vector<pair<Item*, Position>>> ret;
   auto addItem = [&ret] (Item* item, Position pos) {
@@ -1125,7 +1130,7 @@ vector<vector<pair<Item*, Position>>> PlayerControl::getItemUpgradesFor(const Wo
       }
     ret.push_back({make_pair(item, pos)});
   };
-  for (auto& pos : collective->getStoragePositions(StorageId::EQUIPMENT))
+  for (auto& pos : collective->getStoragePositions(getGlyphStorageId()))
     for (auto& item : pos.getItems(ItemIndex::RUNE))
       if (auto& upgradeInfo = item->getUpgradeInfo())
         if (upgradeInfo->type == workshopItem.upgradeType) {
@@ -1171,7 +1176,7 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions() const {
     auto& option = options[i];
     auto itemInfo = getWorkshopItem(option, 1);
     if (option.requireIngredient) {
-      for (auto& pos : collective->getStoragePositions(StorageId::EQUIPMENT))
+      for (auto& pos : collective->getStoragePositions(getGlyphStorageId()))
         for (auto& item : pos.getItems(ItemIndex::RUNE))
           if (item->getIngredientType() == option.requireIngredient) {
             auto it = itemInfo;
@@ -2361,7 +2366,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           if (info.remove) {
             if (info.upgradeIndex < item.runes.size())
               for (int i : Range(info.count))
-                Random.choose(collective->getStoragePositions(StorageId::EQUIPMENT))
+                Random.choose(collective->getStoragePositions(getGlyphStorageId()).asVector())
                     .dropItem(workshop.removeUpgrade(info.itemIndex + i, info.upgradeIndex));
           } else {
             auto runes = getItemUpgradesFor(item.item);
@@ -2382,7 +2387,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
         if (info.itemIndex < workshop.getQueued().size()) {
           for (int i : Range(info.count - info.newCount))
             for (auto& upgrade : workshop.unqueue(collective, info.itemIndex))
-              Random.choose(collective->getStoragePositions(StorageId::EQUIPMENT))
+              Random.choose(collective->getStoragePositions(getGlyphStorageId()).asVector())
                   .dropItem(std::move(upgrade));
           for (int i : Range(info.newCount - info.count))
             workshop.queue(collective, workshop.getQueued()[info.itemIndex].indexInWorkshop, info.itemIndex + 1);
@@ -2801,12 +2806,12 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
     [&](ZoneId zone) {
       auto& zones = collective->getZones();
       if (zones.isZone(position, zone) && selection != SELECT) {
-        zones.eraseZone(position, zone);
+        collective->eraseZone(position, zone);
         selection = DESELECT;
       } else if (selection != DESELECT && !zones.isZone(position, zone) &&
           collective->getKnownTiles().isKnown(position) &&
           zones.canSet(position, zone, collective)) {
-        zones.setZone(position, zone);
+        collective->setZone(position, zone);
         selection = SELECT;
       }
     },

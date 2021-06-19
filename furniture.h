@@ -17,6 +17,7 @@
 #include "fx_variant_name.h"
 #include "furniture_usage.h"
 #include "furniture_tick.h"
+#include "storage_id.h"
 
 class TribeId;
 class Creature;
@@ -150,6 +151,7 @@ class Furniture {
   optional<BedType> getBedType() const;
   const optional<FurnitureEffectInfo>& getLastingEffectInfo() const;
   const heap_optional<ItemList>& getItemDrop() const;
+  const vector<StorageId>& getStorageId() const;
 
   Furniture& setBlocking();
   Furniture& setBlockingEnemies();
@@ -242,6 +244,7 @@ class Furniture {
   optional<Effect> SERIAL(destroyedEffect);
   optional<Effect> SERIAL(itemsRemovedEffect);
   bool SERIAL(eyeball) = false;
+  vector<StorageId> SERIAL(storageIds);
 };
 
 static_assert(std::is_nothrow_move_constructible<Furniture>::value, "T should be noexcept MoveConstructible");
