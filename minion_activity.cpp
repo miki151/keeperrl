@@ -180,9 +180,12 @@ static PTask getDropItemsTask(Collective* collective, const Creature* creature) 
   for (auto it : items)
     if (!collective->getMinionEquipment().isOwner(it, creature))
       for (auto id : it->getStorageIds())
-        itemMap[id].push_back(it);
+        if (!collective->getStoragePositions(id).empty()) {
+          itemMap[id].push_back(it);
+          break;
+        }
   for (auto& elem : itemMap)
-    return Task::dropItems(elem.second, elem.first, collective);
+      return Task::dropItems(elem.second, elem.first, collective);
   return nullptr;
 };
 
