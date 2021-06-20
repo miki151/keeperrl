@@ -585,6 +585,8 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   wallShadow = true wallConnections = true }
 { viewId = "castle_wall" symbol = "#" color = ColorId LIGHT_GRAY
   wallShadow = true wallConnections = true }
+{ viewId = "archer_wall" symbol = "#" color = ColorId ALMOST_WHITE
+  wallShadow = true wallConnections = true }
 { viewId = "mud_wall" symbol = "#" color = ColorId LIGHT_BROWN
   wallShadow = true wallConnections = true }
 { viewId = "snow_wall" symbol = "#" color = ColorId WHITE

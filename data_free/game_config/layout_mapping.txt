@@ -17,6 +17,7 @@
   "wall" Place "WOOD_WALL"
   "wood_wall" Place "WOOD_WALL"
   "castle_wall" Place "CASTLE_WALL"
+  "archer_wall" Place "ARCHER_WALL"
   "wood_door" Place "WOOD_DOOR"
   "wood_gate" Place "WOOD_GATE"
   "hidden_door" Place "HIDDEN_CASTLE_DOOR"

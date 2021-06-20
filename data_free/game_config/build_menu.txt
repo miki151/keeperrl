@@ -37,6 +37,12 @@
       "Build to reach deeper z-levels." }
   }
 
+  "arrowslits"
+  {
+    { Furniture {{ "ARCHER_WALL" }                "STONE" 20 }     "Wall with arrowslits"  "Structure"
+      "Outdoor building with arrowslits." }
+  }
+
   "doors"
   {
     { Furniture {{ "WOOD_DOOR" }                  "WOOD" 5 }       "Wooden door"       "Doors"

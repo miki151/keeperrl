@@ -252,6 +252,8 @@ End
 Def Castle(CornerSize) {
   Inside(1, {
     Building("castle_wall", "floor")
+    Inside(TOP, 5, Inside(BOTTOM, 5,
+        Filter(And(YMod(3, 0), On("castle_wall")), {Remove("castle_wall") Set("archer_wall")})))
     Choose(CastleGate3(), CastleGate2(), CastleGate1())
     CastleCorners(CornerSize)
     Choose(

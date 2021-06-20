@@ -18,7 +18,9 @@ bool Vision::canSeeAt(double light, double distance) const {
 void Vision::update(const Creature* c, GlobalTime time) {
   PROFILE;
   nightVision = c->isAffected(LastingEffect::NIGHT_VISION, time);
-  if (c->isAffected(LastingEffect::ELF_VISION, time) || c->isAffected(LastingEffect::FLYING, time))
+  if (c->isAffected(LastingEffect::ARCHER_VISION, time))
+    id = VisionId::ARCHER;
+  else if (c->isAffected(LastingEffect::ELF_VISION, time) || c->isAffected(LastingEffect::FLYING, time))
     id = VisionId::ELF;
   else
     id = VisionId::NORMAL;

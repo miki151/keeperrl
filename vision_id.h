@@ -4,5 +4,6 @@
 
 RICH_ENUM(VisionId,
   ELF,
-  NORMAL
+  NORMAL,
+  ARCHER
 );

@@ -1346,6 +1346,9 @@
     body = {
       type = Humanoid LARGE
     }
+    permanentEffects = {
+      ARCHER_VISION 1
+    }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     spellSchools = { "archer" }
@@ -1622,6 +1625,10 @@
     body = {
       type = Humanoid LARGE
     }
+    permanentEffects = {
+      ARCHER_VISION 1
+      NO_FRIENDLY_FIRE 1
+    }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
     maxLevelIncrease = {
@@ -1630,7 +1637,6 @@
     name = {
       name = "archer"
     }
-    permanentEffects = { NO_FRIENDLY_FIRE 1 }
     aiType = RANGED
     hatedByEffect = HATE_HUMANS
     inventory = {

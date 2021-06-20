@@ -630,6 +630,8 @@ void Furniture::serialize(PrettyInputArchive& ar1, unsigned int v) {
   ar1(NAMED(attachmentDir));
   PrettyFlag blockingEnemies;
   ar1(OPTION(blockingEnemies));
+  PrettyFlag blockAllVision;
+  ar1(OPTION(blockAllVision));
   optional_no_none<double> waterDepth;
   if (viewObject)
     if (auto depth = viewObject->getAttribute(ViewObjectAttribute::WATER_DEPTH))
@@ -652,6 +654,8 @@ void Furniture::serialize(PrettyInputArchive& ar1, unsigned int v) {
     viewObject->setAttribute(ViewObjectAttribute::WATER_DEPTH, *waterDepth);
   if (blockingEnemies.value)
     setBlockingEnemies();
+  if (blockAllVision.value)
+    blockVision = EnumSet<VisionId>::fullSet();
   if (pluralName.empty())
     pluralName = makePlural(name);
 }

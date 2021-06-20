@@ -10,6 +10,7 @@
 "wall" # brown
 "wood_wall" # brown
 "castle_wall" # gray
+"archer_wall" # light_gray
 "wood_door" + brown
 "iron_door" + gray
 "hidden_door" + red

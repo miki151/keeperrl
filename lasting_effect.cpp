@@ -221,6 +221,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::ELF_VISION:
         c->you("can see through trees");
         break;
+      case LastingEffect::ARCHER_VISION:
+        c->you("can see through arrowslits");
+        break;
       case LastingEffect::NIGHT_VISION:
         c->you("can see in the dark");
         break;
@@ -537,6 +540,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::ELF_VISION:
         c->you("can't see through trees anymore");
         break;
+      case LastingEffect::ARCHER_VISION:
+        c->you("can't see through arrowslits anymore");
+        break;
       case LastingEffect::NIGHT_VISION:
         c->you("can't see in the dark anymore");
         break;
@@ -759,6 +765,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::RANGED_RESISTANCE: return "Resistant to ranged attacks"_good;
     case LastingEffect::SPELL_DAMAGE: return "Deals magical damage"_good;
     case LastingEffect::ELF_VISION: return "Can see through trees"_good;
+    case LastingEffect::ARCHER_VISION: return "Can see through arrowslits"_good;
     case LastingEffect::NIGHT_VISION: return "Can see in the dark"_good;
     case LastingEffect::REGENERATION: return "Regenerating"_good;
     case LastingEffect::WARNING: return "Aware of danger"_good;
@@ -1127,6 +1134,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::DARKNESS_SOURCE: return "darkness";
     case LastingEffect::NIGHT_VISION: return "night vision";
     case LastingEffect::ELF_VISION: return "elf vision";
+    case LastingEffect::ARCHER_VISION: return "arrowslit vision";
     case LastingEffect::REGENERATION: return "regeneration";
     case LastingEffect::WARNING: return "warning";
     case LastingEffect::TELEPATHY: return "telepathy";
@@ -1220,6 +1228,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::LIGHT_SOURCE: return "Casts light on the closest surroundings.";
     case LastingEffect::NIGHT_VISION: return "Gives vision in the dark at full distance.";
     case LastingEffect::ELF_VISION: return "Allows to see and shoot through trees.";
+    case LastingEffect::ARCHER_VISION: return "Allows to see and shoot through arrowslits.";
     case LastingEffect::REGENERATION: return "Recovers a little bit of health every turn.";
     case LastingEffect::WARNING: return "Warns about dangerous enemies and traps.";
     case LastingEffect::TELEPATHY: return "Allows you to detect other creatures with brains.";
@@ -1326,6 +1335,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::COLLAPSED:
     case LastingEffect::NIGHT_VISION:
     case LastingEffect::ELF_VISION:
+    case LastingEffect::ARCHER_VISION:
     case LastingEffect::REGENERATION:
     case LastingEffect::FAST_CRAFTING:
     case LastingEffect::FAST_TRAINING:
@@ -1490,6 +1500,7 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
 
     case LastingEffect::TELEPATHY:
     case LastingEffect::ELF_VISION:
+    case LastingEffect::ARCHER_VISION:
     case LastingEffect::NIGHT_VISION:
       return FXVariantName::BUFF_PINK;
     case LastingEffect::BLIND:
@@ -1595,6 +1606,7 @@ static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect effect
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
     case LastingEffect::ELF_VISION:
+    case LastingEffect::ARCHER_VISION:
     case LastingEffect::REGENERATION:
     case LastingEffect::WARNING:
       return true;
@@ -1696,6 +1708,7 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
       return 900_visible;
     case LastingEffect::NIGHT_VISION:
     case LastingEffect::ELF_VISION:
+    case LastingEffect::ARCHER_VISION:
       return 60_visible;
     case LastingEffect::TIED_UP:
     case LastingEffect::WARNING:
