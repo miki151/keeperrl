@@ -1720,6 +1720,21 @@
       RemoveFurniture "BLAST_TRAP"
       TrapEvent
     }
+    Filter Or { Translate {1 0}  Enemy Translate {2 0}  Enemy Translate {3 0}  Enemy Translate {4 0}  Enemy } {
+      DirectedBlast {1 0} 4
+      RemoveFurniture "BLAST_TRAP"
+      TrapEvent
+    }
+    Filter Or { Translate {0 -1} Enemy Translate {0 -2} Enemy Translate {0 -3} Enemy Translate {0 -4} Enemy } {
+      DirectedBlast {0 -1} 4
+      RemoveFurniture "BLAST_TRAP"
+      TrapEvent
+    }
+    Filter Or { Translate {0 1}  Enemy Translate {0 2}  Enemy Translate {0 3}  Enemy Translate {0 4}  Enemy } {
+      DirectedBlast {0 1} 4
+      RemoveFurniture "BLAST_TRAP"
+      TrapEvent
+    }
   }
   warning = true
   constructMessage = SET_UP
