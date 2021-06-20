@@ -1659,6 +1659,30 @@ static bool apply(const Effects::Blast&, Position pos, Creature* attacker) {
   return true;
 }
 
+static string getName(const Effects::DirectedBlast&, const ContentFactory*) {
+  return "air blast";
+}
+
+static string getDescription(const Effects::DirectedBlast&, const ContentFactory*) {
+  return "Creates a directed blast of air that throws back creatures and items.";
+}
+
+static bool apply(const Effects::DirectedBlast& b, Position pos, Creature* attacker) {
+  CHECK(attacker);
+  vector<Position> trajectory;
+  auto origin = attacker->getPosition().getCoord();
+  for (auto v = pos.plus(b.dir); v != pos.plus(b.dir * (b.length + 1)); v = v.plus(b.dir)) {
+    trajectory.push_back(v);
+    if (trajectory.back().isDirEffectBlocked(attacker))
+      break;
+  }
+  for (int i : All(trajectory).reverse())
+    airBlast(attacker, pos, trajectory[i], pos.plus(b.dir * (b.length + 1)));
+  pos.getGame()->addEvent(
+      EventInfo::Projectile{{FXName::AIR_BLAST}, ViewId("air_blast"), pos, pos.plus(b.dir * b.length), SoundId::SPELL_BLAST});
+  return true;
+}
+
 static bool pullCreature(Creature* victim, const vector<Position>& trajectory) {
   auto victimPos = victim->getPosition();
   optional<Position> target;
@@ -1766,6 +1790,19 @@ static bool apply(const Effects::TriggerTrap&, Position pos, Creature* attacker)
         return true;
       }
   return false;
+}
+
+static string getName(const Effects::TrapEvent&, const ContentFactory*) {
+  return "trigger trap";
+}
+
+static string getDescription(const Effects::TrapEvent&, const ContentFactory*) {
+  return "Triggers a trap if present.";
+}
+
+static bool apply(const Effects::TrapEvent&, Position pos, Creature* attacker) {
+  pos.getGame()->addEvent(EventInfo::TrapTriggered{pos});
+  return true;
 }
 
 static string getName(const Effects::AnimateItems&, const ContentFactory*) {

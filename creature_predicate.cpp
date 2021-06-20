@@ -265,6 +265,14 @@ static string getNameNegated(CreaturePredicates::Indoors m) {
   return "when outdoors";
 }
 
+static bool apply(const CreaturePredicates::Translate& m, Position pos, const Creature* attacker) {
+  return m.pred->apply(pos.plus(m.dir), attacker);
+}
+
+static string getName(const CreaturePredicates::Translate& m) {
+  return m.pred->getNameInternal();
+}
+
 static bool apply(const CreaturePredicates::And& p, Position pos, const Creature* attacker) {
   for (auto& pred : p.pred)
     if (!pred.apply(pos, attacker))

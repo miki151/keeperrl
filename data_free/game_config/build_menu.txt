@@ -376,6 +376,9 @@
     { Trap "BOULDER_TRAP"         "Boulder trap"      "Traps"
         "Causes a huge boulder to roll towards the enemy." 0  { TechId "traps" }}
 
+    { Trap "BLAST_TRAP"           "Blast trap"        "Traps"
+        "Causes a huge boulder to roll towards the enemy." 0  { TechId "traps" }}
+
     { Trap "SURPRISE_TRAP"        "Surprise trap"     "Traps"
         "Teleports nearby minions to deal with the trespasser." 0 { TechId "traps" }}
     { Trap "FIRE_TRAP"            "Fire trap"         "Traps"

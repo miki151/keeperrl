@@ -1710,6 +1710,20 @@
   constructMessage = SET_UP
   viewLayer = CREATURE
 }
+"BLAST_TRAP"
+{
+  name = "blast trap"
+  viewId = { "trap" ColorId PINK }
+  tickType = Effect {
+    Filter Or { Translate {-1 0} Enemy Translate {-2 0} Enemy Translate {-3 0} Enemy Translate {-4 0} Enemy } {
+      DirectedBlast {-1 0} 4
+      RemoveFurniture "BLAST_TRAP"
+      TrapEvent
+    }
+  }
+  warning = true
+  constructMessage = SET_UP
+}
 "PORTAL"
 {
   name = "portal"

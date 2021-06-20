@@ -190,6 +190,11 @@ SIMPLE_EFFECT(Pull);
 SIMPLE_EFFECT(Shove);
 SIMPLE_EFFECT(SwapPosition);
 SIMPLE_EFFECT(Stairs);
+struct DirectedBlast {
+  Vec2 dir;
+  int length;
+  SERIALIZE_ALL(dir, length)
+};
 struct ReviveCorpse {
   vector<CreatureId> SERIAL(summoned);
   int SERIAL(ttl);
@@ -248,6 +253,7 @@ struct Chance : GenericModifierEffect {
   SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
 };
 SIMPLE_EFFECT(TriggerTrap);
+SIMPLE_EFFECT(TrapEvent);
 struct AnimateItems {
   int SERIAL(maxCount);
   int SERIAL(radius);
@@ -392,10 +398,10 @@ struct NoAutoAssign : GenericModifierEffect {
   X(CustomArea, 30)\
   X(ReviveCorpse, 31)\
   X(Blast, 32)\
-  X(Pull, 33)\
-  X(Shove, 34)\
-  X(SwapPosition, 35)\
-  X(Filter, 36)\
+  X(DirectedBlast, 33)\
+  X(Pull, 34)\
+  X(Shove, 35)\
+  X(SwapPosition, 36)\
   X(SummonEnemy, 37)\
   X(Audience, 38)\
   X(Wish, 39)\
@@ -407,7 +413,7 @@ struct NoAutoAssign : GenericModifierEffect {
   X(Chance, 45)\
   X(AssembledMinion, 46)\
   X(TriggerTrap, 47)\
-  X(AnimateItems, 48)\
+  X(TrapEvent, 48)\
   X(MakeHumanoid, 49)\
   X(GrantAbility, 50)\
   X(RemoveAbility, 51)\
@@ -446,7 +452,9 @@ struct NoAutoAssign : GenericModifierEffect {
   X(RemoveFurniture, 84)\
   X(SetFlag, 85)\
   X(EquipmentType, 86)\
-  X(NoAutoAssign, 87)
+  X(NoAutoAssign, 87)\
+  X(Filter, 88)\
+  X(AnimateItems, 89)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType
