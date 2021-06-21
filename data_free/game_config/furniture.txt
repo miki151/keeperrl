@@ -1703,13 +1703,12 @@
   name = "boulder trap"
   viewId = { "boulder" }
   blockMovement = true
-  canHideHere = true
 Def Boulder(Id) {
   Message CRITICAL "The boulder starts rolling."
   UnseenMessage CRITICAL "You hear a heavy boulder rolling."
   SummonEnemy Id 1 none
 } End
-  tickType = Trap {
+  tickType = Trap 4 {
     Boulder("ROLLING_BOULDER_N")
     Boulder("ROLLING_BOULDER_S")
     Boulder("ROLLING_BOULDER_W")
@@ -1724,12 +1723,31 @@ Def Boulder(Id) {
 {
   name = "blast trap"
   viewId = { "trap" ColorId PINK }
-  tickType = Trap {
+  tickType = Trap 1 {
     DirectedBlast {0 -1} 4
     DirectedBlast {0 1} 4
     DirectedBlast {1 0} 4
     DirectedBlast {-1 0} 4
   }
+  warning = true
+  constructMessage = SET_UP
+}
+"GARGOYLE_TRAP"
+{
+  name = "gargoyle trap"
+  viewId = { "gargoyle_statue" }
+  blockMovement = true
+  tickType = Trap 1 {
+    Def SummonGargoyle() {
+      Message HIGH "The gargoyle comes to life!"
+      Summon "GARGOYLE" 1 20
+    } End
+    SummonGargoyle()
+    SummonGargoyle()
+    SummonGargoyle()
+    SummonGargoyle()
+  }
+  strength = 40
   warning = true
   constructMessage = SET_UP
 }

@@ -563,8 +563,10 @@ static bool isConsideredHostile(const Effects::Acid&, const Creature* victim) {
   return !victim->isAffected(LastingEffect::ACID_RESISTANT);
 }
 
-static bool applyToCreature(const Effects::Summon& e, Creature* c, Creature*) {
-  return ::summon(c, e.creature, e.count, false, e.ttl.map([](int v) { return TimeInterval(v); }));
+static bool apply(const Effects::Summon& e, Position pos, Creature* attacker) {
+  auto tribe = attacker ? attacker->getTribeId() : TribeId::getHostile();
+  CreatureGroup f = CreatureGroup::singleType(tribe, e.creature);
+  return !Effect::summon(pos, f, Random.get(e.count), e.ttl.map([](int v) { return TimeInterval(v); }), 1_visible).empty();
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Summon&, const Creature* victim, bool isEnemy) {

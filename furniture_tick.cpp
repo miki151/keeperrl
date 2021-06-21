@@ -49,14 +49,13 @@ static void handle(FurnitureTickTypes::Pigsty, Position pos, Furniture* furnitur
 static void handle(const FurnitureTickTypes::Trap& trap, Position pos, Furniture* furniture) {
   auto dirs = Vec2::directions4();
   for (int dirInd : All(dirs)) {
-    int radius = 4;
-    for (int i = 1; i <= radius; ++i) {
+    for (int i = 1; i <= trap.maxDistance; ++i) {
       Position curPos = pos.plus(dirs[dirInd] * i);
       if (Creature* other = curPos.getCreature()) {
         if (!other->getTribe()->getFriendlyTribes().contains(furniture->getTribe())) {
           if (!other->isAffected(LastingEffect::DISARM_TRAPS_SKILL)) {
             pos.removeFurniture(furniture);
-            trap.effects[dirInd].apply(pos);
+            trap.effects[dirInd].apply(pos, furniture->getCreator());
           } else {
             other->you(MsgType::DISARM_TRAP, furniture->getName());
             pos.getGame()->addEvent(EventInfo::TrapDisarmed{pos, furniture->getType(), other});

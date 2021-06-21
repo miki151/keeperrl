@@ -373,16 +373,19 @@
     { Furniture {{ "WEB_TRAP" }            "WOOD" 20 }  "Web trap"          "Traps"
         "Immobilises the trespasser for some time." 0         { TechId "traps" }}
 
+    { Furniture {{ "SURPRISE_TRAP" }       "WOOD" 20 }  "Surprise trap"     "Traps"
+        "Teleports nearby minions to deal with the trespasser." 0 { TechId "traps" }}
+    { Furniture {{ "FIRE_TRAP" }           "WOOD" 20 }  "Fire trap"         "Traps"
+        "Causes a tower of flame to errupt under the trespasser." 0 { TechId "traps" }}
+
     { Furniture {{ "BOULDER_TRAP" }        "STONE" 120 }"Boulder trap"      "Traps"
         "Causes a huge boulder to roll towards the enemy." 0  { TechId "traps" }}
 
     { Furniture {{ "BLAST_TRAP" }          "WOOD" 20 }  "Blast trap"        "Traps"
         "Causes a huge boulder to roll towards the enemy." 0  { TechId "traps" }}
 
-    { Furniture {{ "SURPRISE_TRAP" }       "WOOD" 20 }  "Surprise trap"     "Traps"
-        "Teleports nearby minions to deal with the trespasser." 0 { TechId "traps" }}
-    { Furniture {{ "FIRE_TRAP" }           "WOOD" 20 }  "Fire trap"         "Traps"
-        "Causes a tower of flame to errupt under the trespasser." 0 { TechId "traps" }}
+    { Furniture {{ "GARGOYLE_TRAP" }       "STONE" 20 }  "Gargoyle"          "Traps"
+        "Comes to life when an enemy comes near." 0  { TechId "traps" }}
   }
 
   "gnome_traps"

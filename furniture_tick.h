@@ -17,8 +17,9 @@ struct Pit : EmptyStruct<struct PitTag> {};
 struct SetFurnitureOnFire : EmptyStruct<struct SetFurnitureOnFireTag> {};
 
 struct Trap {
+  int maxDistance;
   array<Effect, 4> SERIAL(effects); // {south, east, north, west}
-  SERIALIZE_ALL(effects)
+  SERIALIZE_ALL(maxDistance, effects)
 };
 
 #define VARIANT_TYPES_LIST\

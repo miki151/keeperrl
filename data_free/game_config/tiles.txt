@@ -28,6 +28,9 @@
 { "adoxie_hand_left" "u" ColorId PURPLE }
 { "adoxie_head" "U" ColorId PURPLE }
 { "adoxie_eye" "," ColorId PURPLE }
+{ "gargoyle" "&" ColorId ORANGE }
+{ viewId = "gargoyle_statue" symbol = "&" color = ColorId LIGHT_GRAY
+  roundShadow = true }
 { "lich_keeper1" "@" ColorId PURPLE }
 { "lich_keeper2" "@" ColorId PURPLE }
 { "lich_keeper3" "@" ColorId PURPLE }
