@@ -12,7 +12,7 @@
     {{Scroll Audience none} 2 }
     {{Scroll Summon "FLY" {3 6} 100} 5 }
     {{"AdoxieScroll"} 1}
-    {{Potion Heal FLESH} 7 }
+    {{Potion Heal { FLESH }} 7 }
     {{Potion Lasting SLEEP} 5 }
     {{Potion Lasting SLOWED} 5 }
     {{Potion Lasting SPEED}5 }
@@ -81,7 +81,7 @@
 "potions"
 {
   items = {
-    {{Potion Heal FLESH} 1 }
+    {{Potion Heal { FLESH }} 1 }
     {{Potion Lasting SLEEP} 1 }
     {{Potion Lasting SLOWED} 1 }
     {{Potion Lasting BLIND} 1 }
@@ -140,7 +140,7 @@
   multiItems = {
     {0 2} {
       {"BattleAxe"} 0.1
-      {Potion Heal FLESH} 0.3
+      {Potion Heal { FLESH }} 0.3
       {"IronHelm"} 0.5
       {"Sword"} 0.5
       {"Skeleton"} 1
@@ -163,7 +163,7 @@
   multiItems = {
     {10000} {
       {"BattleAxe"} 0.1
-      {Potion Heal FLESH} 0.3
+      {Potion Heal { FLESH }} 0.3
       {"IronHelm"} 0.5
       {"Sword"} 0.5
       {Corpse} 1
@@ -220,7 +220,7 @@
     {{Scroll Deception} 10 }
     {{Scroll Audience none} 5 }
     {{Scroll Summon "FLY" {3 6} 100} 30 }
-    {{Potion Heal FLESH} 50 }
+    {{Potion Heal { FLESH }} 50 }
     {{Potion Lasting SLEEP} 50 }
     {{Potion Lasting SLOWED} 50 }
     {{Potion Lasting BLIND} 30 }

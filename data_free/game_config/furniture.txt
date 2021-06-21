@@ -231,12 +231,15 @@
   strength = 10
   destroyFX = { DESTROY_FURNITURE ColorId WHITE }
 }
+
+Def BedHeal() Heal { FLESH 0.005 } End
+
 "BEAST_CAGE"
 {
   name = "beast cage"
   viewId = { "beast_cage" }
   usageType = UsageEffect "sleep in" Lasting SLEEP
-  tickType = Bed
+  tickType = Effect BedHeal()
   canHideHere = true
   fire = 50
   strength = 40
@@ -248,7 +251,7 @@
   name = "basic bed"
   viewId = { "bed1" }
   usageType = UsageEffect "sleep in" Lasting SLEEP
-  tickType = Bed
+  tickType = Effect BedHeal()
   canHideHere = true
   fire = 50
   strength = 40
@@ -260,7 +263,7 @@
   name = "fine bed"
   viewId = { "bed2" }
   usageType = UsageEffect "sleep in" Lasting SLEEP
-  tickType = Bed
+  tickType = Effect BedHeal()
   canHideHere = true
   fire = 50
   luxury = 0.3
@@ -274,7 +277,7 @@
   name = "luxurious bed"
   viewId = { "bed3" }
   usageType = UsageEffect "sleep in" Lasting SLEEP
-  tickType = Bed
+  tickType = Effect BedHeal()
   canHideHere = true
   luxury = 0.7
   fire = 50
@@ -288,7 +291,7 @@
   name = "grave"
   viewId = { "grave" }
   canHideHere = true
-  tickType = Bed
+  tickType = Effect BedHeal()
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   storageIds = {"corpses"}
@@ -344,7 +347,7 @@
 {
   name = "prison"
   viewId = { "prison" }
-  tickType = Bed
+  tickType = Effect BedHeal()
   usageType = UsageEffect "sleep in" Lasting SLEEP
   bedType = PRISON
   layer = FLOOR
@@ -777,7 +780,7 @@
       {
         CreatureMessage "take a sip" "takes a sip"
         ChooseRandom {
-          Heal FLESH
+          Heal { FLESH }
           Lasting SLEEP
           Lasting SLOWED
           Lasting BLIND

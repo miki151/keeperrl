@@ -40,7 +40,8 @@ SIMPLE_EFFECT(Teleport);
 SIMPLE_EFFECT(Jump);
 struct Heal {
   HealthType SERIAL(healthType);
-  SERIALIZE_ALL(healthType)
+  double amount = 1;
+  SERIALIZE_ALL(NAMED(healthType), OPTION(amount))
 };
 SIMPLE_EFFECT(Fire);
 SIMPLE_EFFECT(Ice);

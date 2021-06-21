@@ -1,7 +1,7 @@
 "healing"
 {
   symbol = "❤️"
-  effect = Heal FLESH
+  effect = Heal { FLESH }
   cooldown = 30
   sound = SPELL_HEALING
 }
@@ -9,7 +9,7 @@
 {
   upgrade = "healing"
   symbol = "❤️"
-  effect = Name "advanced healing" Heal FLESH
+  effect = Name "advanced healing" Heal { FLESH }
   range = 1
   targetSelf = true
   cooldown = 15
@@ -19,7 +19,7 @@
 {
   upgrade = "advanced healing"
   symbol = "❤️"
-  effect = Name "expert healing" Heal FLESH
+  effect = Name "expert healing" Heal { FLESH }
   targetSelf = true
   range = 4
   cooldown = 10
@@ -28,14 +28,14 @@
 "group healing"
 {
   symbol = "💕"
-  effect = Name "group healing" Area 2 Filter Not Enemy Heal FLESH
+  effect = Name "group healing" Area 2 Filter Not Enemy Heal { FLESH }
   cooldown = 50
   sound = SPELL_HEALING
 }
 "heal spirit"
 {
   symbol = "✴"
-  effect = Name "heal spirit" Heal SPIRIT
+  effect = Name "heal spirit" Heal { SPIRIT }
   range = 1
   targetSelf = true
   cooldown = 15
@@ -45,7 +45,7 @@
 {
   upgrade = "heal spirit"
   symbol = "✴"
-  effect = Name "advanced heal spirit" Heal SPIRIT
+  effect = Name "advanced heal spirit" Heal { SPIRIT }
   targetSelf = true
   range = 4
   cooldown = 10
@@ -54,7 +54,7 @@
 "heal spirit group"
 {
   symbol = "✴✴"
-  effect = Name "heal spirit group" Area 2 Filter Not Enemy Heal SPIRIT
+  effect = Name "heal spirit group" Area 2 Filter Not Enemy Heal { SPIRIT }
   cooldown = 50
   sound = SPELL_HEALING
 }

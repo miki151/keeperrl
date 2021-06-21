@@ -1574,7 +1574,7 @@ End
     usedUpMsg = true
     displayUses = true
     price = 2
-    effect = Heal FLESH
+    effect = Heal { FLESH }
     storageIds = {"equipment"}
   }
 "MagicLamp"

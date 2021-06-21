@@ -296,7 +296,7 @@
     hatedByEffect = HATE_HUMANS
     inventory = {
       { "Club"}
-      { type = Potion Heal FLESH chance = 0.7 }
+      { type = Potion Heal { FLESH } chance = 0.7 }
       { type = "Torch" chance = 0.3 }
       { type = "Bow" chance = 0.05 }
     }
@@ -321,7 +321,7 @@
     }
     inventory = {
       { "Club"}
-      { type = Potion Heal FLESH chance = 0.7 }
+      { type = Potion Heal { FLESH } chance = 0.7 }
       { type = "Torch" chance = 0.3 }
       { type = "Bow" chance = 0.05 }
     }
@@ -366,7 +366,7 @@
     }
     inventory = {
       { "Sword"}
-      { type = Potion Heal FLESH chance = 0.7 }
+      { type = Potion Heal { FLESH } chance = 0.7 }
       { type = "Torch" chance = 0.3 }
       { type = "Bow" chance = 0.05 }
     }
@@ -657,7 +657,7 @@
     hatedByEffect = HATE_HUMANS
     inventory = {
       { "Knife"}
-      { Potion Heal FLESH }
+      { Potion Heal { FLESH } }
       { Potion Lasting SLEEP }
       { Potion Lasting SLOWED }
       { Potion Lasting BLIND }
@@ -698,7 +698,7 @@
       { "Sword"}
       { "LeatherArmor"}
       { "LeatherBoots"}
-      { type = Potion Heal FLESH chance = 0.7 }
+      { type = Potion Heal { FLESH } chance = 0.7 }
       { Potion Lasting SPEED 3 5 }
       { "GoldPiece" 60 80 }
     }
@@ -1537,7 +1537,7 @@
       { "ChainArmor"}
       { "LeatherBoots"}
       { type = "Torch" chance = 0.3 }
-      { type = Potion Heal FLESH chance = 0.7 }
+      { type = Potion Heal { FLESH } chance = 0.7 }
       { "GoldPiece" 6 16 }
     }
   }
@@ -1609,7 +1609,7 @@
       { "ChainArmor"}
       { "IronHelm"}
       { "IronBoots"}
-      { Potion Heal FLESH 3 5 }
+      { Potion Heal { FLESH } 3 5 }
       { type = "Torch" chance = 0.3 }
       { "GoldPiece" 140 200 }
     }
@@ -1645,7 +1645,7 @@
       { "LeatherArmor"}
       { "LeatherBoots"}
       { type = "Torch" chance = 0.3 }
-      { type = Potion Heal FLESH chance = 0.7 }
+      { type = Potion Heal { FLESH } chance = 0.7 }
       { "GoldPiece" 4 10 }
     }
   }
@@ -2687,7 +2687,7 @@
     }
     inventory = {
       { type = "BattleAxe", alternative = "WarHammer" prefixChance = 1 }
-      { Potion Heal FLESH 2 3 }
+      { Potion Heal { FLESH } 2 3 }
       { type = "ChainArmor" prefixChance = 1 }
       { "IronBoots"}
       { "IronHelm"}
@@ -3852,7 +3852,7 @@
       { "Sword"}
       { "LeatherArmor"}
       { "LeatherBoots"}
-      { Potion Heal FLESH 2 3 }
+      { Potion Heal { FLESH } 2 3 }
     }
   }
 "ADOXIE_HEAD"

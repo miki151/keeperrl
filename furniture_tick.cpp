@@ -24,13 +24,6 @@
 #include "content_factory.h"
 #include "item_types.h"
 
-static void handle(FurnitureTickTypes::Bed, Position pos, Furniture*) {
-  PROFILE;
-  if (Creature* c = pos.getCreature())
-    if (c->isAffected(LastingEffect::SLEEP))
-      c->heal(0.005);
-}
-
 static void handle(FurnitureTickTypes::Pigsty, Position pos, Furniture* furniture) {
   PROFILE;
   if (pos.getCreature() || !Random.roll(10) || pos.getPoisonGasAmount() > 0)

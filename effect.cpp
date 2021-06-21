@@ -843,9 +843,10 @@ static bool apply(const Effects::RemoveFurniture& e, Position pos, Creature*) {
 static bool applyToCreature(const Effects::Heal& e, Creature* c, Creature*) {
   if (c->getBody().canHeal(e.healthType)) {
     bool res = false;
-    res |= c->heal(1);
+    res |= c->heal(e.amount);
     res |= c->removeEffect(LastingEffect::BLEEDING);
-    c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN));
+    if (e.amount > 0.5)
+      c->addFX(FXInfo(FXName::CIRCULAR_SPELL, Color::LIGHT_GREEN));
     return res;
   } else {
     c->message("Nothing happens.");
