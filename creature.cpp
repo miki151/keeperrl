@@ -483,9 +483,11 @@ bool Creature::canSwapPositionWithEnemy(Creature* other) const {
 }
 
 void Creature::displace(Vec2 dir) {
+  position.getModel()->increaseMoveCounter();
   position.moveCreature(dir);
   auto time = *getLocalTime();
   addMovementInfo({dir, time, time + 1_visible, position.getModel()->getMoveCounter(), MovementInfo::MOVE});
+  position.getModel()->increaseMoveCounter();
 }
 
 bool Creature::canTakeItems(const vector<Item*>& items) const {
