@@ -171,7 +171,6 @@ SERIALIZABLE_TMPL(PositionMap, EnumSet<ZoneId>)
 SERIALIZABLE_TMPL(PositionMap, ViewIndex)
 SERIALIZABLE_TMPL(PositionMap, vector<Position>)
 SERIALIZABLE_TMPL(PositionMap, ConstructionMap::FurnitureInfo);
-SERIALIZABLE_TMPL(PositionMap, ConstructionMap::TrapInfo);
 SERIALIZABLE_TMPL(PositionMap, EnumMap<FurnitureLayer, optional<FurnitureType>>)
 SERIALIZABLE_TMPL(PositionMap, Position)
 

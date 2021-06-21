@@ -145,11 +145,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
   vector<pair<Position, vector<Item*>>> getStoredItems(ItemIndex, vector<StorageId>) const;
-  struct TrapItemInfo;
-  vector<TrapItemInfo> getTrapItems(const vector<Position>&) const;
 
-  void addTrap(Position, FurnitureType);
-  void removeTrap(Position);
   bool canAddFurniture(Position, FurnitureType) const;
   void addFurniture(Position, FurnitureType, const CostInfo&, bool noCredit);
   void removeUnbuiltFurniture(Position, FurnitureLayer);
@@ -245,7 +241,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   protected:
   // From Task::Callback
-  virtual void onAppliedItem(Position, Item* item) override;
   virtual void onConstructed(Position, FurnitureType) override;
   virtual void onAppliedSquare(Creature*, pair<Position, FurnitureLayer>) override;
   virtual void onCopulated(Creature* who, Creature* with) override;
@@ -291,8 +286,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   HeapAllocated<ConstructionMap> SERIAL(constructions);
   EntityMap<Item, WeakPointer<const Task>> SERIAL(markedItems);
   void updateConstructions();
-  void handleTrapPlacementAndProduction();
-  void scheduleAutoProduction(function<bool (const Item*)> itemPredicate, int count);
   void delayDangerousTasks(const vector<Position>& enemyPos, LocalTime delayTime);
   bool isDelayed(Position);
   unordered_map<Position, LocalTime, CustomHash<Position>> SERIAL(delayedPos);

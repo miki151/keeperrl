@@ -120,7 +120,8 @@ class BoulderController : public Monster {
   double health = 1;
 };
 
-PCreature CreatureFactory::getRollingBoulder(TribeId tribe, Vec2 direction) {
+PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
+  auto tribe = TribeId::getHostile();
   ViewObject viewObject(ViewId("boulder"), ViewLayer::CREATURE);
   viewObject.setModifier(ViewObjectModifier::NO_UP_MOVEMENT);
   auto ret = makeOwner<Creature>(viewObject, tribe, CATTR(
@@ -865,6 +866,14 @@ PCreature CreatureFactory::get(CreatureId id, TribeId tribe, MonsterAIFactory ai
     return getSpecial(id, tribe, special.at(id), factory);
   else if (id == "SOKOBAN_BOULDER")
     return getSokobanBoulder(tribe);
+  else if (id == "ROLLING_BOULDER_N")
+    return getRollingBoulder(Vec2(0, -1));
+  else if (id == "ROLLING_BOULDER_S")
+    return getRollingBoulder(Vec2(0, 1));
+  else if (id == "ROLLING_BOULDER_E")
+    return getRollingBoulder(Vec2(-1, 0));
+  else if (id == "ROLLING_BOULDER_W")
+    return getRollingBoulder(Vec2(1, 0));
   else if (id == "SPIRIT")
     return getSpirit(tribe, aiFactory);
   else {

@@ -360,48 +360,6 @@ class GoToAnd : public Task {
 };
 }
 
-class ApplyItem : public Task {
-  public:
-  ApplyItem(WTaskCallback c, Item* item) : callback(c), itemId(item->getUniqueId()), itemName(item->getShortName()) {}
-
-  virtual string getDescription() const override {
-    return "Set up " + itemName + " trap";
-  }
-
-  virtual TaskPerformResult canPerformImpl(const Creature* c, const MovementType&) const override {
-    return !!c->getEquipment().getItemById(itemId) ? TaskPerformResult::YES : TaskPerformResult::NOT_NOW;
-  }
-
-  virtual MoveInfo getMove(Creature* c) override {
-    if (auto item = c->getEquipment().getItemById(itemId)) {
-      if (auto action = c->applyItem(item))
-        return action.prepend([=](Creature* c) {
-          callback->onAppliedItem(c->getPosition(), item);
-          setDone();
-        });
-      else
-        return c->drop({item}).prepend([=](Creature*) {
-           setDone();
-        });
-    }
-    return c->wait().prepend([=](Creature*) {
-       setDone();
-    });
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Task), callback, itemId, itemName)
-  SERIALIZATION_CONSTRUCTOR(ApplyItem)
-
-  private:
-  WTaskCallback SERIAL(callback) = nullptr;
-  Item::Id SERIAL(itemId);
-  string SERIAL(itemName);
-};
-
-PTask Task::applyItem(WTaskCallback c, Position target, Item* item) {
-  return makeOwner<GoToAnd>(vector<Position>{target}, makeOwner<ApplyItem>(c, item));
-}
-
 class ApplySquare : public Task {
   public:
   using PositionInfo = pair<Position, FurnitureLayer>;
@@ -1942,7 +1900,6 @@ REGISTER_TYPE(Construction)
 REGISTER_TYPE(Destruction)
 REGISTER_TYPE(PickUpItem)
 REGISTER_TYPE(EquipItem)
-REGISTER_TYPE(ApplyItem)
 REGISTER_TYPE(ApplySquare)
 REGISTER_TYPE(Kill)
 REGISTER_TYPE(Disappear)

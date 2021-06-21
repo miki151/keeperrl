@@ -36,24 +36,6 @@ class ConstructionMap {
     FurnitureType SERIAL(type);
   };
 
-  class TrapInfo {
-    public:
-    TrapInfo(FurnitureType);
-    bool isMarked() const;
-    bool isArmed() const;
-    FurnitureType getType() const;
-    void setArmed();
-    void setMarked();
-    void reset();
-
-    SERIALIZATION_DECL(TrapInfo)
-
-    private:
-    FurnitureType SERIAL(type);
-    bool SERIAL(armed) = false;
-    bool SERIAL(marked) = false;
-  };
-
   optional<const FurnitureInfo&> getFurniture(Position, FurnitureLayer) const;
   void setTask(Position, FurnitureLayer, UniqueEntity<Task>::Id);
   void removeFurniturePlan(Position, FurnitureLayer);
@@ -66,13 +48,7 @@ class ConstructionMap {
   void onConstructed(Position, FurnitureType);
   void clearUnsupportedFurniturePlans();
 
-  optional<const TrapInfo&> getTrap(Position) const;
-  optional<TrapInfo&> getTrap(Position);
-  void removeTrap(Position);
-  void addTrap(Position, const TrapInfo&);
-
   const vector<pair<Position, FurnitureLayer>>& getAllFurniture() const;
-  const vector<Position>& getAllTraps() const;
   int getDebt(CollectiveResourceId) const;
 
   const StoragePositions& getStoragePositions(StorageId) const;
@@ -89,8 +65,6 @@ class ConstructionMap {
   unordered_map<FurnitureType, PositionSet, CustomHash<FurnitureType>> SERIAL(furniturePositions);
   unordered_map<FurnitureType, int, CustomHash<FurnitureType>> SERIAL(unbuiltCounts);
   vector<pair<Position, FurnitureLayer>> SERIAL(allFurniture);
-  PositionMap<TrapInfo> SERIAL(traps);
-  vector<Position> SERIAL(allTraps);
   unordered_map<CollectiveResourceId, int, CustomHash<CollectiveResourceId>> SERIAL(debt);
   void addDebt(const CostInfo&, const char* reason);
   unordered_map<StorageId, StoragePositions, CustomHash<StorageId>> SERIAL(storagePositions);

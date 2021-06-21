@@ -160,60 +160,6 @@ void ConstructionMap::clearUnsupportedFurniturePlans() {
     removeFurniturePlan(elem.first, elem.second);
 }
 
-optional<const ConstructionMap::TrapInfo&> ConstructionMap::getTrap(Position pos) const {
-  return traps.getReferenceMaybe(pos);
-}
-
-optional<ConstructionMap::TrapInfo&> ConstructionMap::getTrap(Position pos) {
-  return traps.getReferenceMaybe(pos);
-}
-
-void ConstructionMap::removeTrap(Position pos) {
-  traps.erase(pos);
-  allTraps.removeElement(pos);
-  pos.setNeedsRenderAndMemoryUpdate(true);
-}
-
-void ConstructionMap::addTrap(Position pos, const TrapInfo& info) {
-  CHECK(!traps.contains(pos));
-  traps.set(pos, info);
-  allTraps.push_back(pos);
-  pos.setNeedsRenderAndMemoryUpdate(true);
-}
-
-const vector<Position>& ConstructionMap::getAllTraps() const {
-  return allTraps;
-}
-
-void ConstructionMap::TrapInfo::setArmed() {
-  armed = true;
-  marked = false;
-}
-
-void ConstructionMap::TrapInfo::reset() {
-  armed = false;
-  marked = false;
-}
-
-ConstructionMap::TrapInfo::TrapInfo(FurnitureType t) : type(t) {
-}
-
-bool ConstructionMap::TrapInfo::isMarked() const {
-  return marked;
-}
-
-bool ConstructionMap::TrapInfo::isArmed() const {
-  return armed;
-}
-
-FurnitureType ConstructionMap::TrapInfo::getType() const {
-  return type;
-}
-
-void ConstructionMap::TrapInfo::setMarked() {
-  marked = true;
-}
-
 int ConstructionMap::getDebt(CollectiveResourceId id) const {
   return getValueMaybe(debt, id).value_or(0);
 }
@@ -251,16 +197,8 @@ void ConstructionMap::checkDebtConsistency() {
 }
 
 template <class Archive>
-void ConstructionMap::TrapInfo::serialize(Archive& ar, const unsigned int version) {
-  ar(type, armed, marked);
-}
-
-SERIALIZABLE(ConstructionMap::TrapInfo);
-SERIALIZATION_CONSTRUCTOR_IMPL2(ConstructionMap::TrapInfo, TrapInfo);
-
-template <class Archive>
 void ConstructionMap::serialize(Archive& ar, const unsigned int version) {
-  ar(debt, traps, furniture, furniturePositions, storagePositions, allStoragePositions, unbuiltCounts, allFurniture, allTraps);
+  ar(debt, furniture, furniturePositions, storagePositions, allStoragePositions, unbuiltCounts, allFurniture);
 }
 
 SERIALIZABLE(ConstructionMap);

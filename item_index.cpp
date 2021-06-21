@@ -22,10 +22,6 @@ bool hasIndex(ItemIndex index, const Item* item) {
   switch (index) {
     case ItemIndex::WEAPON:
       return item->getClass() == ItemClass::WEAPON;
-    case ItemIndex::TRAP:
-      if (auto& effect = item->getEffect())
-        return !!effect->effect->getValueMaybe<Effects::PlaceFurniture>();
-      return false;
     case ItemIndex::MINION_EQUIPMENT:
       return MinionEquipment::isItemUseful(item);
     case ItemIndex::RANGED_WEAPON:

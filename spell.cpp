@@ -18,6 +18,7 @@
 #include "move_info.h"
 #include "fx_name.h"
 #include "keybinding.h"
+#include "vision.h"
 
 template <class Archive>
 void Spell::serializeImpl(Archive& ar, const unsigned int) {
@@ -169,7 +170,7 @@ void Spell::getAIMove(const Creature* c, MoveInfo& ret) const {
 }
 
 bool Spell::isBlockedBy(const Creature* c, Position pos) const {
-  return blockedByWall && pos.isDirEffectBlocked(c);
+  return blockedByWall && pos.isDirEffectBlocked(c->getVision().getId());
 }
 
 optional<Keybinding> Spell::getKeybinding() const {

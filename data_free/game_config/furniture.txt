@@ -236,7 +236,7 @@
   name = "beast cage"
   viewId = { "beast_cage" }
   usageType = UsageEffect "sleep in" Lasting SLEEP
-  tickType = Builtin BED
+  tickType = Bed
   canHideHere = true
   fire = 50
   strength = 40
@@ -248,7 +248,7 @@
   name = "basic bed"
   viewId = { "bed1" }
   usageType = UsageEffect "sleep in" Lasting SLEEP
-  tickType = Builtin BED
+  tickType = Bed
   canHideHere = true
   fire = 50
   strength = 40
@@ -260,7 +260,7 @@
   name = "fine bed"
   viewId = { "bed2" }
   usageType = UsageEffect "sleep in" Lasting SLEEP
-  tickType = Builtin BED
+  tickType = Bed
   canHideHere = true
   fire = 50
   luxury = 0.3
@@ -274,7 +274,7 @@
   name = "luxurious bed"
   viewId = { "bed3" }
   usageType = UsageEffect "sleep in" Lasting SLEEP
-  tickType = Builtin BED
+  tickType = Bed
   canHideHere = true
   luxury = 0.7
   fire = 50
@@ -288,7 +288,7 @@
   name = "grave"
   viewId = { "grave" }
   canHideHere = true
-  tickType = Builtin BED
+  tickType = Bed
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
   storageIds = {"corpses"}
@@ -344,7 +344,7 @@
 {
   name = "prison"
   viewId = { "prison" }
-  tickType = Builtin BED
+  tickType = Bed
   usageType = UsageEffect "sleep in" Lasting SLEEP
   bedType = PRISON
   layer = FLOOR
@@ -487,21 +487,21 @@
 # if there is a destroyedEffect then the standard "is destroyed" text is not displayed, you need to add your own
   destroyedRemains = "DOWN_STAIRS"
   destroyedEffect = {
-    Message "The statue is destroyed!"
+    Message NORMAL "The statue is destroyed!"
     Analytics "milestone" "adoxieTempleStatue"
   }
 }
 "ADOXIE_STATUE_VAULT" inherit "ADOXIE_STATUE_TEMPLE"
 {
   destroyedEffect = {
-    Message "The statue is destroyed!"
+    Message NORMAL "The statue is destroyed!"
     Analytics "milestone" "adoxieVaultStatue"
   }
 }
 "ADOXIE_STATUE" inherit "ADOXIE_STATUE_TEMPLE"
 {
   destroyedEffect = {
-    Message "The statue comes to life!"
+    Message HIGH "The statue comes to life!"
     SummonEnemy "ADOXIE_HEAD" {1} none
     Analytics "milestone" "adoxieComesToLife"
   }
@@ -670,7 +670,7 @@
 {
   name = "pigsty"
   viewId = { "mud" }
-  tickType = Builtin PIGSTY
+  tickType = Pigsty
   populationIncrease = 0.25 4
 }
 "GROUND_TORCH"
@@ -803,7 +803,7 @@
     DestroyWalls BASH
     ChooseRandom {
       {
-        Message "A streak of magical energy is released"
+        Message NORMAL "A streak of magical energy is released"
         ChooseRandom {
           Permanent RAGE
           Permanent BLIND
@@ -826,7 +826,7 @@
         }
       }
       {
-        Message "A streak of magical energy is released"
+        Message NORMAL "A streak of magical energy is released"
         ChooseRandom {
           IncreaseAttr DAMAGE -3
           IncreaseAttr DAMAGE 3
@@ -846,7 +846,7 @@
         }
       }
       {
-        Message "Wrath upon you!"
+        Message NORMAL "Wrath upon you!"
         SummonEnemy "ANGEL" {3 6} none
       }
       {
@@ -885,7 +885,7 @@
 {
   destroyedRemains = "UP_STAIRS"
   destroyedEffect = {
-    Message "The bookcase is destroyed!"
+    Message NORMAL "The bookcase is destroyed!"
     Analytics "milestone" "bookcaseStairs"
   }
 }
@@ -893,7 +893,7 @@
 {
   destroyedRemains = "DOWN_STAIRS"
   destroyedEffect = {
-    Message "The table is destroyed!"
+    Message NORMAL "The table is destroyed!"
     Analytics "milestone" "diningTableStairs"
   }
 }
@@ -901,7 +901,7 @@
 {
   destroyedRemains = "DOWN_STAIRS"
   destroyedEffect = {
-    Message "The forge is destroyed!"
+    Message NORMAL "The forge is destroyed!"
     Analytics "milestone" "forgeStairs"
   }
 }
@@ -1233,14 +1233,14 @@
 "DOWN_STAIRS_ADOXIE" inherit "UP_STAIRS"
 {
   viewId = { "down_staircase" }
-  usageType = UsageEffect "use" { Message "You lose your sense of direction" Stairs }
+  usageType = UsageEffect "use" { Message NORMAL "You lose your sense of direction" Stairs }
   onBuilt = DOWN_STAIRS
 }
 "INACTIVE_PORTAL"
 {
   name = "portal"
   viewId = { "inactive_portal" }
-  usageType = UsageEffect "use" Message "The portal is inactive."
+  usageType = UsageEffect "use" Message NORMAL "The portal is inactive."
 }
 "SOKOBAN_HOLE"
 {
@@ -1420,7 +1420,7 @@
     traits = { FLY }
   }
   xForgetAfterBuilding = true
-  tickType = Builtin PIT
+  tickType = Pit
   canBuildOutsideOfTerritory = true
 }
 "CASTLE_WALL"
@@ -1452,7 +1452,7 @@
   blockAllVision = true
   strength = 1
   entryType = Effect {
-      Message "It was just an illusion!"
+      Message NORMAL "It was just an illusion!"
       Fx { TELEPORT_OUT }
       DestroyWalls BASH
   }
@@ -1704,7 +1704,17 @@
   viewId = { "boulder" }
   blockMovement = true
   canHideHere = true
-  tickType = Builtin BOULDER_TRAP
+Def Boulder(Id) {
+  Message CRITICAL "The boulder starts rolling."
+  UnseenMessage CRITICAL "You hear a heavy boulder rolling."
+  SummonEnemy Id 1 none
+} End
+  tickType = Trap {
+    Boulder("ROLLING_BOULDER_N")
+    Boulder("ROLLING_BOULDER_S")
+    Boulder("ROLLING_BOULDER_W")
+    Boulder("ROLLING_BOULDER_E")
+  }
   strength = 40
   warning = true
   constructMessage = SET_UP
@@ -1714,27 +1724,11 @@
 {
   name = "blast trap"
   viewId = { "trap" ColorId PINK }
-  tickType = Effect {
-    Filter Or { Translate {-1 0} Enemy Translate {-2 0} Enemy Translate {-3 0} Enemy Translate {-4 0} Enemy } {
-      DirectedBlast {-1 0} 4
-      RemoveFurniture "BLAST_TRAP"
-      TrapEvent
-    }
-    Filter Or { Translate {1 0}  Enemy Translate {2 0}  Enemy Translate {3 0}  Enemy Translate {4 0}  Enemy } {
-      DirectedBlast {1 0} 4
-      RemoveFurniture "BLAST_TRAP"
-      TrapEvent
-    }
-    Filter Or { Translate {0 -1} Enemy Translate {0 -2} Enemy Translate {0 -3} Enemy Translate {0 -4} Enemy } {
-      DirectedBlast {0 -1} 4
-      RemoveFurniture "BLAST_TRAP"
-      TrapEvent
-    }
-    Filter Or { Translate {0 1}  Enemy Translate {0 2}  Enemy Translate {0 3}  Enemy Translate {0 4}  Enemy } {
-      DirectedBlast {0 1} 4
-      RemoveFurniture "BLAST_TRAP"
-      TrapEvent
-    }
+  tickType = Trap {
+    DirectedBlast {0 -1} 4
+    DirectedBlast {0 1} 4
+    DirectedBlast {1 0} 4
+    DirectedBlast {-1 0} 4
   }
   warning = true
   constructMessage = SET_UP
@@ -1745,7 +1739,7 @@
   viewId = { "portal" }
   strength = 40
   usageType = BuiltinUsageId PORTAL
-  tickType = Builtin PORTAL
+  tickType = Portal
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
 "METEOR_SHOWER"
@@ -1753,7 +1747,7 @@
   name = "meteor shower"
   layer = CEILING
   constructMessage = none
-  tickType = Builtin METEOR_SHOWER
+  tickType = MeteorShower
 }
 "FIRE_WALL"
 {
@@ -1819,7 +1813,7 @@
   freezeTo = "FLOOR"
   fillPit = "MAGMA"
   canSilentlyReplace = true
-  tickType = Builtin SET_FURNITURE_ON_FIRE
+  tickType = SetFurnitureOnFire
   movementSet = {
     traits = { FLY }
     forcibleTraits = { WALK }

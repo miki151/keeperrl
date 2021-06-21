@@ -2,32 +2,49 @@
 
 #include "util.h"
 #include "effect.h"
+#include "pretty_archive.h"
 
 class Position;
 class Furniture;
 
-RICH_ENUM(BuiltinTickType,
-  BED,
-  PIGSTY,
-  BOULDER_TRAP,
-  PORTAL,
-  METEOR_SHOWER,
-  PIT,
-  EXTINGUISH_FIRE,
-  SET_FURNITURE_ON_FIRE
-);
+namespace FurnitureTickTypes {
 
-namespace TickDetail {
+struct Bed : EmptyStruct<struct BedTag> {};
+struct Pigsty : EmptyStruct<struct PigstyTag> {};
+struct Portal : EmptyStruct<struct PortalTag> {};
+struct MeteorShower : EmptyStruct<struct MeteorShowerTag> {};
+struct Pit : EmptyStruct<struct PitTag> {};
+struct SetFurnitureOnFire : EmptyStruct<struct SetFurnitureOnFireTag> {};
 
-using Builtin = BuiltinTickType;
+struct Trap {
+  array<Effect, 4> SERIAL(effects); // {south, east, north, west}
+  SERIALIZE_ALL(effects)
+};
 
-MAKE_VARIANT2(FurnitureTickType, Effect, Builtin);
+#define VARIANT_TYPES_LIST\
+  X(Bed, 0)\
+  X(Pigsty, 1)\
+  X(Portal, 2)\
+  X(MeteorShower, 3)\
+  X(Pit, 4)\
+  X(SetFurnitureOnFire, 5)\
+  X(Trap, 6)\
+  X(Effect, 7)
+
+#define VARIANT_NAME FurnitureTickType
+
+#include "gen_variant.h"
+#include "gen_variant_serialize.h"
+inline
+#include "gen_variant_serialize_pretty.h"
+
+#undef VARIANT_TYPES_LIST
+#undef VARIANT_NAME
+
 }
 
-using TickDetail::FurnitureTickType;
-
-
-class FurnitureTick {
+class FurnitureTickType : public FurnitureTickTypes::FurnitureTickType {
   public:
-  static void handle(FurnitureTickType, Position, Furniture*);
+  using FurnitureTickTypes::FurnitureTickType::FurnitureTickType;
+  void handle(Position, Furniture*);
 };

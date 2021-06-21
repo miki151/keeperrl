@@ -24,14 +24,14 @@
 #include "content_factory.h"
 #include "item_types.h"
 
-static void handleBed(Position pos) {
+static void handle(FurnitureTickTypes::Bed, Position pos, Furniture*) {
   PROFILE;
   if (Creature* c = pos.getCreature())
     if (c->isAffected(LastingEffect::SLEEP))
       c->heal(0.005);
 }
 
-static void handlePigsty(Position pos, Furniture* furniture) {
+static void handle(FurnitureTickTypes::Pigsty, Position pos, Furniture* furniture) {
   PROFILE;
   if (pos.getCreature() || !Random.roll(10) || pos.getPoisonGasAmount() > 0)
     return;
@@ -46,24 +46,22 @@ static void handlePigsty(Position pos, Furniture* furniture) {
   }
 }
 
-static void handleBoulder(Position pos, Furniture* furniture) {
-  for (Vec2 direction : Vec2::directions4(Random)) {
+static void handle(const FurnitureTickTypes::Trap& trap, Position pos, Furniture* furniture) {
+  auto dirs = Vec2::directions4();
+  for (int dirInd : All(dirs)) {
     int radius = 4;
     for (int i = 1; i <= radius; ++i) {
-      Position curPos = pos.plus(direction * i);
+      Position curPos = pos.plus(dirs[dirInd] * i);
       if (Creature* other = curPos.getCreature()) {
         if (!other->getTribe()->getFriendlyTribes().contains(furniture->getTribe())) {
           if (!other->isAffected(LastingEffect::DISARM_TRAPS_SKILL)) {
-            pos.getGame()->addEvent(EventInfo::TrapTriggered{pos});
-            pos.globalMessage(PlayerMessage("The boulder starts rolling.", MessagePriority::CRITICAL));
-            pos.unseenMessage(PlayerMessage("You hear a heavy boulder rolling.", MessagePriority::CRITICAL));
-            CHECK(!pos.getCreature());
-            pos.addCreature(CreatureFactory::getRollingBoulder(TribeId::getHostile(), direction), 0_visible);
+            pos.removeFurniture(furniture);
+            trap.effects[dirInd].apply(pos);
           } else {
-            other->you(MsgType::DISARM_TRAP, "boulder trap");
-            pos.getGame()->addEvent(EventInfo::TrapDisarmed{pos, other});
+            other->you(MsgType::DISARM_TRAP, furniture->getName());
+            pos.getGame()->addEvent(EventInfo::TrapDisarmed{pos, furniture->getType(), other});
+            pos.removeFurniture(furniture);
           }
-          pos.removeFurniture(furniture);
           return;
         }
       }
@@ -73,7 +71,7 @@ static void handleBoulder(Position pos, Furniture* furniture) {
   }
 }
 
-static void meteorShower(Position position, Furniture* furniture) {
+static void handle(const FurnitureTickTypes::MeteorShower, Position position, Furniture* furniture) {
   auto creator = furniture->getCreator();
   const auto duration = 15_visible;
   if (!creator ||
@@ -103,7 +101,7 @@ static void meteorShower(Position position, Furniture* furniture) {
   }
 }
 
-static void pit(Position position, Furniture* self) {
+static void handle(const FurnitureTickTypes::Pit, Position position, Furniture* self) {
   if (!position.getCreature() && Random.roll(10))
     for (auto neighborPos : position.neighbors8(Random))
       if (auto water = neighborPos.getFurniture(FurnitureLayer::GROUND))
@@ -123,58 +121,37 @@ static Color getPortalColor(int index) {
   return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
 }
 
-void FurnitureTick::handle(FurnitureTickType type, Position pos, Furniture* furniture) {
-  type.visit(
-      [&](BuiltinTickType t) {
-        switch (t) {
-          case BuiltinTickType::BED:
-            handleBed(pos);
-            break;
-          case BuiltinTickType::PIGSTY:
-            handlePigsty(pos, furniture);
-            break;
-          case BuiltinTickType::BOULDER_TRAP:
-            handleBoulder(pos, furniture);
-            break;
-          case BuiltinTickType::PORTAL:
-            pos.registerPortal();
-            furniture->getViewObject()->setColorVariant(Color::WHITE);
-            if (auto otherPos = pos.getOtherPortal())
-              for (auto f : otherPos->modFurniture())
-                if (f->hasUsageType(BuiltinUsageId::PORTAL)) {
-                  auto color = getPortalColor(*pos.getPortalIndex());
-                  furniture->getViewObject()->setColorVariant(color);
-                  f->getViewObject()->setColorVariant(color);
-                  pos.setNeedsRenderAndMemoryUpdate(true);
-                  otherPos->setNeedsRenderAndMemoryUpdate(true);
-                }
-            break;
-          case BuiltinTickType::METEOR_SHOWER:
-            meteorShower(pos, furniture);
-            break;
-          case BuiltinTickType::PIT:
-            pit(pos, furniture);
-            break;
-          case BuiltinTickType::EXTINGUISH_FIRE:
-            if (auto c = pos.getCreature())
-              c->removeEffect(LastingEffect::ON_FIRE);
-            break;
-          case BuiltinTickType::SET_FURNITURE_ON_FIRE: {
-            auto handle = [] (const Position& pos) {
-              for (auto& f : pos.getFurniture())
-                if (f->getFire())
-                  pos.modFurniture(f->getLayer())->fireDamage(pos, true);
-            };
-            for (auto& v : pos.neighbors8())
-              if (Random.roll(30))
-                handle(v);
-            if (Random.roll(10))
-              handle(pos);
-          }
-        }
-      },
-      [&](const Effect& e) {
-        e.apply(pos, furniture->getCreator());
+static void handle(const FurnitureTickTypes::Portal, Position pos, Furniture* furniture) {
+  pos.registerPortal();
+  furniture->getViewObject()->setColorVariant(Color::WHITE);
+  if (auto otherPos = pos.getOtherPortal())
+    for (auto f : otherPos->modFurniture())
+      if (f->hasUsageType(BuiltinUsageId::PORTAL)) {
+        auto color = getPortalColor(*pos.getPortalIndex());
+        furniture->getViewObject()->setColorVariant(color);
+        f->getViewObject()->setColorVariant(color);
+        pos.setNeedsRenderAndMemoryUpdate(true);
+        otherPos->setNeedsRenderAndMemoryUpdate(true);
       }
-  );
+}
+
+static void handle(const FurnitureTickTypes::SetFurnitureOnFire, Position pos, Furniture* furniture) {
+  auto handle = [] (const Position& pos) {
+    for (auto& f : pos.getFurniture())
+      if (f->getFire())
+        pos.modFurniture(f->getLayer())->fireDamage(pos, true);
+  };
+  for (auto& v : pos.neighbors8())
+    if (Random.roll(30))
+      handle(v);
+  if (Random.roll(10))
+    handle(pos);
+}
+
+static void handle(const Effect& effect, Position pos, Furniture* furniture) {
+  effect.apply(pos, furniture->getCreator());
+}
+
+void FurnitureTickType::handle(Position pos, Furniture* furniture) {
+  visit<void>([&](const auto& p) { return ::handle(p, pos, furniture); });
 }

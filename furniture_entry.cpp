@@ -44,9 +44,8 @@ void FurnitureEntry::handle(Furniture* f, Creature* c) {
               if (!type.invisible)
                 c->you(MsgType::TRIGGER_TRAP, "");
               type.effect.apply(position, f->getCreator());
-              game->addEvent(EventInfo::TrapTriggered{position});
             } else {
-              game->addEvent(EventInfo::TrapDisarmed{position, c});
+              game->addEvent(EventInfo::TrapDisarmed{position, f->getType(), c});
               c->you(MsgType::DISARM_TRAP, type.effect.getName(c->getGame()->getContentFactory()) + " trap");
             }
             if (position.getFurniture(layer) == f) // f might have been removed by the TrapTrigger effect or something else

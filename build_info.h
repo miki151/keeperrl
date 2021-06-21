@@ -30,12 +30,11 @@ namespace BuildInfoTypes {
   using Zone = ZoneId;
   using PlaceMinion = EmptyStruct<struct PlaceMinionTag>;
   using PlaceItem = EmptyStruct<struct PlaceItemTag>;
-  using Trap = FurnitureType;
   struct BuildType;
   using Chain = vector<BuildType>;
   #define VARIANT_TYPES_LIST\
     X(Furniture, 0)\
-    X(Trap, 1)\
+    X(ClaimTile, 1)\
     X(Zone, 2)\
     X(DestroyLayers, 3)\
     X(Dig, 4)\
@@ -45,7 +44,6 @@ namespace BuildInfoTypes {
     X(PlaceMinion, 8)\
     X(ImmediateDig, 9)\
     X(PlaceItem, 10)\
-    X(ClaimTile, 11)\
     X(Chain, 12)
 
   #define VARIANT_NAME BuildType

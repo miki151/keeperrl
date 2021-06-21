@@ -241,10 +241,10 @@ void Furniture::tick(Position pos, FurnitureLayer supposedLayer) {
       return;
     }
   }
-  if (tickType)
-    FurnitureTick::handle(*tickType, pos, this); // this function can delete this
   if (bloodTime && *bloodTime <= pos.getModel()->getLocalTime())
     spreadBlood(pos);
+  if (tickType)
+    tickType->handle(pos, this); // this function can delete this
 }
 
 bool Furniture::blocksAnyVision() const {

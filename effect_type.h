@@ -224,7 +224,13 @@ struct ChainUntilFail : Chain {
 
 struct Message {
   string SERIAL(text);
-  SERIALIZE_ALL(text)
+  MessagePriority SERIAL(priority);
+  SERIALIZE_ALL(priority, text)
+};
+struct UnseenMessage {
+  string SERIAL(text);
+  MessagePriority SERIAL(priority);
+  SERIALIZE_ALL(priority, text)
 };
 struct CreatureMessage {
   string SERIAL(secondPerson);
@@ -234,7 +240,7 @@ struct CreatureMessage {
 struct PlayerMessage {
   string SERIAL(text);
   MessagePriority SERIAL(priority);
-  SERIALIZE_ALL(text, priority)
+  SERIALIZE_ALL(priority, text)
 };
 struct GrantAbility {
   SpellId SERIAL(id);
@@ -253,7 +259,6 @@ struct Chance : GenericModifierEffect {
   SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
 };
 SIMPLE_EFFECT(TriggerTrap);
-SIMPLE_EFFECT(TrapEvent);
 struct AnimateItems {
   int SERIAL(maxCount);
   int SERIAL(radius);
@@ -410,10 +415,10 @@ struct NoAutoAssign : GenericModifierEffect {
   X(ChooseRandom, 42)\
   X(IncreaseMorale, 43)\
   X(Message, 44)\
-  X(Chance, 45)\
+  X(UnseenMessage, 45)\
   X(AssembledMinion, 46)\
   X(TriggerTrap, 47)\
-  X(TrapEvent, 48)\
+  X(AnimateItems, 48)\
   X(MakeHumanoid, 49)\
   X(GrantAbility, 50)\
   X(RemoveAbility, 51)\
@@ -454,7 +459,7 @@ struct NoAutoAssign : GenericModifierEffect {
   X(EquipmentType, 86)\
   X(NoAutoAssign, 87)\
   X(Filter, 88)\
-  X(AnimateItems, 89)
+  X(Chance, 89)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

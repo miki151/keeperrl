@@ -254,6 +254,14 @@ inline void serialize(Archive& ar1, VectorWithRoundBrackets<T>& v) {
   ar1(v.v);
 }
 
+template <typename T, std::size_t N>
+inline void serialize(PrettyInputArchive& ar1, array<T, N>& a) {
+  ar1.openBracket(BracketType::CURLY);
+  for (int i : Range(N))
+    ar1(a[i]);
+  ar1.closeBracket(BracketType::CURLY);
+}
+
 template <typename T, typename U>
 inline void serialize(PrettyInputArchive& ar1, map<T, U>& m) {
   if (!ar1.eatMaybe("append"))

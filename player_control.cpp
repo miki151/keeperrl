@@ -642,9 +642,6 @@ ViewId PlayerControl::getViewId(const BuildInfoTypes::BuildType& info) const {
       [&](BuildInfoTypes::Dispatch) {
         return ViewId("imp");
       },
-      [&](const BuildInfoTypes::Trap& elem) {
-        return getGame()->getContentFactory()->furniture.getData(elem).getViewObject()->id();
-      },
       [&](const BuildInfoTypes::DestroyLayers&) {
          return ViewId("destroy_button");
       },
@@ -684,9 +681,6 @@ vector<Button> PlayerControl::fillButtons() const {
           },
         [&](const auto&) {
           buttons.push_back({this->getViewId(button.type), button.name, none, "", CollectiveInfo::Button::ACTIVE});
-        },
-        [&](const BuildInfoTypes::Trap& elem) {
-          buttons.push_back({getViewId(elem), button.name, none});
         }
     );
     vector<string> unmetReqText;
@@ -1978,9 +1972,6 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.setHighlight(HighlightType::RECT_SELECTION);
 #endif
   const ConstructionMap& constructions = collective->getConstructions();
-  if (auto trap = constructions.getTrap(position))
-    if (!trap->isArmed())
-      index.insert(furnitureFactory->getConstructionObject(trap->getType()));
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = constructions.getFurniture(position, layer))
       if (!f->isBuilt(position, layer)) {
@@ -2726,21 +2717,6 @@ void PlayerControl::handleSelection(Vec2 pos, const BuildInfo& building, bool re
 
 void PlayerControl::handleSelection(Position position, const BuildInfoTypes::BuildType& building) {
   building.visit<void>(
-    [&](const BuildInfoTypes::Trap& trap) {
-      if (collective->getConstructions().getTrap(position) && selection != SELECT) {
-        collective->removeTrap(position);
-        getView()->addSound(SoundId::DIG_UNMARK);
-        selection = DESELECT;
-        // Does this mean I can remove the order if the trap physically exists?
-      } else
-      if (position.canEnterEmpty({MovementTrait::WALK}) &&
-          collective->canAddFurniture(position, trap) &&
-          selection != DESELECT) {
-        collective->addTrap(position, trap);
-        getView()->addSound(SoundId::ADD_CONSTRUCTION);
-        selection = SELECT;
-      }
-    },
     [&](const BuildInfoTypes::ImmediateDig&) {
       auto furniture = position.modFurniture(FurnitureLayer::MIDDLE);
       if (furniture && furniture->isWall())

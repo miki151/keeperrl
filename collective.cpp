@@ -731,17 +731,10 @@ void Collective::onEvent(const GameEvent& event) {
           freeFromTask(victim);
         }
       },
-      [&](const TrapTriggered& info) {
-        if (auto trap = constructions->getTrap(info.pos))
-          trap->reset();
-      },
       [&](const TrapDisarmed& info) {
-        if (auto trap = constructions->getTrap(info.pos)) {
-          control->addMessage(PlayerMessage(info.creature->getName().a() +
-              " disarms a " + getGame()->getContentFactory()->furniture.getData(trap->getType()).getName() + " trap.",
-              MessagePriority::HIGH).setPosition(info.pos));
-          trap->reset();
-        }
+        control->addMessage(PlayerMessage(info.creature->getName().a() +
+            " disarms a " + getGame()->getContentFactory()->furniture.getData(info.type).getName(),
+            MessagePriority::HIGH).setPosition(info.pos));
       },
       [&](const MovementChanged& info) {
         positionMatching->updateMovement(info.pos);
@@ -937,22 +930,6 @@ void Collective::returnResource(const CostInfo& amount) {
   credit[amount.id] += amount.value;
 }
 
-struct Collective::TrapItemInfo {
-  Item* item;
-  Position pos;
-  FurnitureType type;
-};
-
-vector<Collective::TrapItemInfo> Collective::getTrapItems(const vector<Position>& squares) const {
-  PROFILE;
-  vector<TrapItemInfo> ret;
-  for (Position pos : squares)
-    for (auto it : pos.getItems(ItemIndex::TRAP))
-      if (!getItemTask(it))
-        ret.push_back(TrapItemInfo{it, pos, it->getEffect()->effect->getValueMaybe<Effects::PlaceFurniture>()->furniture});
-  return ret;
-}
-
 bool Collective::usesEquipment(const Creature* c) const {
   return config->getManageEquipment()
     && c->getBody().isHumanoid() && !hasTrait(c, MinionTrait::NO_EQUIPMENT)
@@ -1022,17 +999,12 @@ void Collective::markItem(const Item* it, WConstTask task) {
   markedItems.set(it, task);
 }
 
-void Collective::removeTrap(Position pos) {
-  constructions->removeTrap(pos);
-}
-
 bool Collective::canAddFurniture(Position position, FurnitureType type) const {
   auto layer = getGame()->getContentFactory()->furniture.getData(type).getLayer();
   return knownTiles->isKnown(position)
       && (territory->contains(position) ||
           canClaimSquare(position) ||
           getGame()->getContentFactory()->furniture.getData(type).buildOutsideOfTerritory())
-      && (!getConstructions().getTrap(position) || layer != FurnitureLayer::MIDDLE)
       && !getConstructions().containsFurniture(position, layer)
       && position.canConstruct(type);
 }
@@ -1055,11 +1027,8 @@ void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
     if (!furniture || (!furniture->canDestroy(DestroyAction::Type::DIG) && !furniture->forgetAfterBuilding()))
       removeUnbuiltFurniture(pos, layer);
   }
-  if (layer == FurnitureLayer::MIDDLE) {
+  if (layer == FurnitureLayer::MIDDLE)
     zones->onDestroyOrder(pos);
-    if (constructions->getTrap(pos))
-      removeTrap(pos);
-  }
 }
 
 void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& cost, bool noCredit) {
@@ -1108,17 +1077,6 @@ void Collective::orderDestruction(Position pos, const DestroyAction& action) {
       action.getMinionActivity());
 }
 
-void Collective::addTrap(Position pos, FurnitureType type) {
-  constructions->addTrap(pos, ConstructionMap::TrapInfo(type));
-  updateConstructions();
-}
-
-void Collective::onAppliedItem(Position pos, Item* item) {
-  CHECK(!!item->getEffect()->effect->getValueMaybe<Effects::PlaceFurniture>());
-  if (auto trap = constructions->getTrap(pos))
-    trap->setArmed();
-}
-
 bool Collective::isConstructionReachable(Position pos) {
   PROFILE;
   return knownTiles->getKnownTilesWithMargin().count(pos);
@@ -1161,60 +1119,8 @@ void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAct
   control->onDestructed(pos, type, action);
 }
 
-void Collective::handleTrapPlacementAndProduction() {
-  PROFILE;
-  unordered_map<FurnitureType, vector<TrapItemInfo>, CustomHash<FurnitureType>> trapItems;
-  for (auto& elem : getTrapItems(territory->getAll()))
-    trapItems[elem.type].push_back(elem);
-  unordered_map<FurnitureType, int, CustomHash<FurnitureType>> missingTraps;
-  for (auto trapPos : constructions->getAllTraps()) {
-    auto& trap = *constructions->getTrap(trapPos);
-    if (!trap.isArmed() && !trap.isMarked() && !isDelayed(trapPos)) {
-      vector<TrapItemInfo>& items = trapItems[trap.getType()];
-      if (!items.empty()) {
-        Position pos = items.back().pos;
-        auto item = items.back().item;
-        auto task = taskMap->addTask(Task::chain(
-                Task::pickUpItem(pos, {item}),
-                Task::applyItem(this, trapPos, item)), pos,
-            MinionActivity::CONSTRUCTION);
-        markItem(items.back().item, task);
-        items.pop_back();
-        trap.setMarked();
-      } else
-        ++missingTraps[trap.getType()];
-    }
-  }
-  for (auto& elem : missingTraps)
-    scheduleAutoProduction([&elem](const Item* it) {
-          if (auto& effect = it->getEffect())
-            if (auto furnitureEffect = effect->effect->getValueMaybe<Effects::PlaceFurniture>())
-              return furnitureEffect->furniture == elem.first;
-          return false;
-        }, elem.second);
-}
-
-void Collective::scheduleAutoProduction(function<bool(const Item*)> itemPredicate, int count) {
-  if (count > 0)
-    for (auto& workshop : workshops->types)
-      for (auto& item : workshop.second.getQueued())
-        if (itemPredicate(item.item.type.get(getGame()->getContentFactory()).get()))
-          --count;
-  if (count > 0)
-    for (auto& workshop : workshops->types) {
-      auto& options = workshop.second.getOptions();
-      for (int index : All(options))
-        if (itemPredicate(options[index].type.get(getGame()->getContentFactory()).get())) {
-          for (int i : Range(count))
-            workshop.second.queue(this, index);
-          return;
-        }
-    }
-}
-
 void Collective::updateConstructions() {
   PROFILE;
-  handleTrapPlacementAndProduction();
   for (auto& pos : constructions->getAllFurniture()) {
     auto& construction = *constructions->getFurniture(pos.first, pos.second);
     if (!isDelayed(pos.first) &&

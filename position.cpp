@@ -232,8 +232,8 @@ double Position::getLightingEfficiency() const {
   return min(1.0, (lightBase + getLight() * (1 - lightBase)) / flattenVal);
 }
 
-bool Position::isDirEffectBlocked(const Creature* c) const {
-  return !canSeeThru(c->getVision().getId());
+bool Position::isDirEffectBlocked(VisionId id) const {
+  return !canSeeThru(id);
 }
 
 Creature* Position::getCreature() const {

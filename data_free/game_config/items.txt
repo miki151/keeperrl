@@ -1328,7 +1328,7 @@
     price = 1
     applyVerb = "read" "reads"
     applyPredicate = Not LastingEffect BLIND
-    effect = Description "Just a cheap pamphlet" Message "It predicts the coming of the Evil God Adoxie"
+    effect = Description "Just a cheap pamphlet" Message NORMAL "It predicts the coming of the Evil God Adoxie"
     storageIds = {"scrolls" "equipment"}
   }
 
@@ -1339,7 +1339,7 @@ End
 "AdoxieScrollVault" inherit "AdoxieScroll"
   {
     effect = Description "Just a cheap pamphlet" Name "message" {
-      Message "It predicts the coming of the Evil God Adoxie. You feel like this time it is real."
+      Message NORMAL "It predicts the coming of the Evil God Adoxie. You feel like this time it is real."
       Unlock "adoxie"
       Analytics "milestone" "adoxieUnlocked"
       UnlockMessage("The Adoxie adventurer has been unlocked!", "adoxie_head")
@@ -1356,8 +1356,8 @@ End
     applyVerb = "read" "reads"
     applyPredicate = Not LastingEffect BLIND
     effect = Description "" Name "?" {
-      Message "The scroll falls apart before you manage to read it"
-      Message "An image of an unlocking door appears in your mind"
+      Message NORMAL "The scroll falls apart before you manage to read it"
+      Message NORMAL "An image of an unlocking door appears in your mind"
       Unlock "zombies"
       Analytics "milestone" "zombiesUnlocked"
       UnlockMessage("The Zombie faction has been unlocked!", "zombie")
@@ -1374,14 +1374,14 @@ End
     price = 1
     effect = Description "" Name "?" {
       Filter Or{ LastingEffect INSANITY LastingEffect HALLU } {
-        Message "The strange symbols and arrows describe a door that has been unlocked"
+        Message NORMAL "The strange symbols and arrows describe a door that has been unlocked"
         Unlock "cyclops"
         Analytics "milestone" "cyclopsUnlocked"
         UnlockMessage("The Cyclops faction has been unlocked!", "cyclops")
       }
       Filter Not Or{ LastingEffect INSANITY LastingEffect HALLU } {
-        Message "It contains strange symbols and arrows"
-        Message "They don't seem to make any sense"
+        Message NORMAL "It contains strange symbols and arrows"
+        Message NORMAL "They don't seem to make any sense"
       }
     }
     storageIds = {"scrolls" "equipment"}
@@ -1635,16 +1635,16 @@ End
         RemoveFurniture "INACTIVE_PORTAL"
         {
           Fx { TELEPORT_OUT }
-          Message "The portal is activated!"
+          Message NORMAL "The portal is activated!"
           PlaceFurniture "PORTAL_STAIRS"
           Analytics "milestone" "blackMarketPortal"
         }
       }
       Area 2 Filter Or { FurnitureType "ADOXIE_STATUE_VAULT" FurnitureType "ADOXIE_STATUE_TEMPLE" } {
-        Message "The statue blinks!"
+        Message NORMAL "The statue blinks!"
         Analytics "milestone" "adoxieStatueBlink"
       }
-      Message "Nothing happens."
+      Message NORMAL "Nothing happens."
     }
     storageIds = {"jewellery" "equipment"}
   }

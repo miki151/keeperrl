@@ -44,7 +44,6 @@ class CreatureFactory {
   PCreature makeCopy(Creature*, const MonsterAIFactory&);
   PCreature makeCopy(Creature*);
   static PController getShopkeeper(vector<Vec2> shopArea, Creature*);
-  static PCreature getRollingBoulder(TribeId, Vec2 direction);
   PCreature getAnimatedItem(PItem, TribeId, int attrBonus);
   static PCreature getHumanForTests();
   PCreature getGhost(Creature*);
@@ -89,6 +88,7 @@ class CreatureFactory {
   private:
   void initSplash(TribeId);
   static PCreature getSokobanBoulder(TribeId);
+  static PCreature getRollingBoulder(Vec2 direction);
   PCreature getSpecial(CreatureId, TribeId, SpecialParams, const ControllerFactory&);
   PCreature get(CreatureId, TribeId, MonsterAIFactory);
   static PCreature get(CreatureAttributes, TribeId, const ControllerFactory&, SpellMap);

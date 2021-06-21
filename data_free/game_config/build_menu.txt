@@ -361,35 +361,35 @@
 
   "traps"
   {
-    { Trap "TERROR_TRAP"          "Terror trap"       "Traps"
+    { Furniture {{ "TERROR_TRAP" }         "WOOD" 20 }  "Terror trap"       "Traps"
         "Causes the trespasser to panic." 0                   { TechId "traps" }}
 
-    { Trap "POISON_GAS_TRAP"      "Gas trap"          "Traps"
+    { Furniture {{ "POISON_GAS_TRAP" }     "WOOD" 20 }  "Gas trap"          "Traps"
         "Releases a cloud of poisonous gas." 0                { TechId "traps" }}
 
-    { Trap "ALARM_TRAP"           "Alarm trap"        "Traps"
+    { Furniture {{ "ALARM_TRAP" }          "WOOD" 20 }  "Alarm trap"        "Traps"
         "Summons all minions" 0                               { TechId "traps" }}
 
-    { Trap "WEB_TRAP"             "Web trap"          "Traps"
+    { Furniture {{ "WEB_TRAP" }            "WOOD" 20 }  "Web trap"          "Traps"
         "Immobilises the trespasser for some time." 0         { TechId "traps" }}
 
-    { Trap "BOULDER_TRAP"         "Boulder trap"      "Traps"
+    { Furniture {{ "BOULDER_TRAP" }        "STONE" 120 }"Boulder trap"      "Traps"
         "Causes a huge boulder to roll towards the enemy." 0  { TechId "traps" }}
 
-    { Trap "BLAST_TRAP"           "Blast trap"        "Traps"
+    { Furniture {{ "BLAST_TRAP" }          "WOOD" 20 }  "Blast trap"        "Traps"
         "Causes a huge boulder to roll towards the enemy." 0  { TechId "traps" }}
 
-    { Trap "SURPRISE_TRAP"        "Surprise trap"     "Traps"
+    { Furniture {{ "SURPRISE_TRAP" }       "WOOD" 20 }  "Surprise trap"     "Traps"
         "Teleports nearby minions to deal with the trespasser." 0 { TechId "traps" }}
-    { Trap "FIRE_TRAP"            "Fire trap"         "Traps"
+    { Furniture {{ "FIRE_TRAP" }           "WOOD" 20 }  "Fire trap"         "Traps"
         "Causes a tower of flame to errupt under the trespasser." 0 { TechId "traps" }}
   }
 
   "gnome_traps"
   {
-    { Trap "TRAP_TRIGGER"          "Trap trigger"     "Traps"
+    { Furniture {{ "TRAP_TRIGGER" }        "WOOD" 20 }  "Trap trigger"     "Traps"
         "Triggers all other traps around it." 0                   { TechId "advanced traps" }}
-    { Trap "DESTROY_WALLS_TRAP"    "Crumble trap"     "Traps"
+    { Furniture {{ "DESTROY_WALLS_TRAP" }  "WOOD" 20 }  "Crumble trap"     "Traps"
         "All walls up to two tiles away are destroyed." 0         { TechId "advanced traps" }}
   }
  

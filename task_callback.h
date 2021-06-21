@@ -10,7 +10,6 @@ class TaskCallback : public OwnedObject<TaskCallback> {
   virtual void onConstructed(Position, FurnitureType) {}
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) {}
   virtual bool isConstructionReachable(Position) { return true; }
-  virtual void onAppliedItem(Position, Item* item) {}
   virtual void onAppliedSquare(Creature*, pair<Position, FurnitureLayer>) {}
   virtual void onCopulated(Creature* who, Creature* with) {}
   // Remove after A30

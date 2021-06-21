@@ -83,6 +83,10 @@ optional<string> ContentFactory::readCreatureFactory(const GameConfig* config, K
   for (auto& elem : firstNames)
     nameGenerator.setNames(elem.first, elem.second);
   keyVerifier->addKey<CreatureId>("KRAKEN");
+  keyVerifier->addKey<CreatureId>("ROLLING_BOULDER_S");
+  keyVerifier->addKey<CreatureId>("ROLLING_BOULDER_N");
+  keyVerifier->addKey<CreatureId>("ROLLING_BOULDER_E");
+  keyVerifier->addKey<CreatureId>("ROLLING_BOULDER_W");
   for (auto& elem : CreatureFactory::getSpecialParams())
     keyVerifier->addKey<CreatureId>(elem.first.data());
   creatures = CreatureFactory(std::move(nameGenerator), convertKeys(std::move(attributes)),
