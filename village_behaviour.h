@@ -30,3 +30,5 @@ class VillageBehaviour {
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 };
+
+PTask getKillLeaderTask(Collective*);

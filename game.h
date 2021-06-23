@@ -163,4 +163,6 @@ class Game : public OwnedObject<Game> {
   string SERIAL(avatarId);
   map<string, string> analytics;
   Unlocks* unlocks = nullptr;
+  void considerAllianceAttack();
+  bool SERIAL(allianceAttackPossible) = true;
 };

@@ -106,7 +106,7 @@ void PlayerControl::serialize(Archive& ar, const unsigned int version) {
   ar(memory, introText, nextKeeperWarning, tribeAlignment);
   ar(newAttacks, ransomAttacks, notifiedAttacks, messages, hints);
   ar(visibilityMap, unknownLocations, dismissedVillageInfos, buildInfo);
-  ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures, usedResources);
+  ar(messageHistory, tutorial, controlModeMessages, stunnedCreatures, usedResources, allianceAttack);
 }
 
 SERIALIZABLE(PlayerControl)
@@ -3061,6 +3061,45 @@ void PlayerControl::considerTransferingLostMinions() {
         getGame()->transferCreature(c, getModel());
 }
 
+void PlayerControl::considerAllianceAttack() {
+  if (allianceAttack) {
+    auto message = [&] {
+      for (auto col : *allianceAttack)
+        for (auto leader : col->getLeaders())
+          if (!collective->getTerritory().getExtended(10).contains(leader->getPosition()))
+            return false;
+      return true;
+    }();
+    if (message) {
+      string allianceName = combine(allianceAttack->transform([](auto col) { return col->getName()->race; }));
+      collective->addRecordedEvent("the last alliance of " + allianceName);
+      ScriptedUIState state;
+      auto data = ScriptedUIDataElems::Record{};
+      data.elems["message"] = "The tribes of " + allianceName + " have formed an alliance against you.";
+      data.elems["view_id"] = ViewIdList{allianceAttack->front()->getName()->viewId};
+      getView()->scriptedUI("alliance_message", data, state);
+      allianceAttack = none;
+    }
+  }
+}
+
+void PlayerControl::considerNewAttacks() {
+  for (auto attack : copyOf(newAttacks))
+    for (const Creature* c : attack.getCreatures())
+      if (isConsideredAttacking(c, attack.getAttacker())) {
+        addMessage(PlayerMessage("You are under attack by " + attack.getAttackerName() + "!",
+            MessagePriority::CRITICAL).setPosition(c->getPosition()));
+        getGame()->setCurrentMusic(MusicType::BATTLE);
+        newAttacks.removeElement(attack);
+        if (auto attacker = attack.getAttacker())
+          collective->addKnownVillain(attacker);
+        notifiedAttacks.push_back(attack);
+        if (attack.getRansom())
+          ransomAttacks.push_back(attack);
+        break;
+      }
+}
+
 void PlayerControl::tick() {
   PROFILE_BLOCK("PlayerControl::tick");
   updateUnknownLocations();
@@ -3088,20 +3127,8 @@ void PlayerControl::tick() {
         ransomAttacks.removeElement(attack);
         break;
       }
-  for (auto attack : copyOf(newAttacks))
-    for (const Creature* c : attack.getCreatures())
-      if (isConsideredAttacking(c, attack.getAttacker())) {
-        addMessage(PlayerMessage("You are under attack by " + attack.getAttackerName() + "!",
-            MessagePriority::CRITICAL).setPosition(c->getPosition()));
-        getGame()->setCurrentMusic(MusicType::BATTLE);
-        newAttacks.removeElement(attack);
-        if (auto attacker = attack.getAttacker())
-          collective->addKnownVillain(attacker);
-        notifiedAttacks.push_back(attack);
-        if (attack.getRansom())
-          ransomAttacks.push_back(attack);
-        break;
-      }
+  considerNewAttacks();
+  considerAllianceAttack();
   if (notifiedAttacks.empty())
     getGame()->setDefaultMusic();
   auto time = collective->getLocalTime();
@@ -3178,6 +3205,10 @@ View* PlayerControl::getView() const {
 
 void PlayerControl::addAttack(const CollectiveAttack& attack) {
   newAttacks.push_back(attack);
+}
+
+void PlayerControl::addAllianceAttack(vector<Collective*> attackers) {
+  allianceAttack = attackers;
 }
 
 void PlayerControl::updateSquareMemory(Position pos) {

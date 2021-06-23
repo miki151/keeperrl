@@ -23,14 +23,18 @@ VillageBehaviour& VillageBehaviour::operator =(VillageBehaviour&&) noexcept = de
 
 VillageBehaviour::~VillageBehaviour() {}
 
+PTask getKillLeaderTask(Collective* enemy) {
+  if (!enemy->getLeaders().empty())
+    return Task::attackCreatures(enemy->getLeaders());
+  else
+    return Task::killFighters(enemy, 1000);
+}
+
 PTask VillageBehaviour::getAttackTask(VillageControl* self) const {
   Collective* enemy = self->getEnemyCollective();
   return attackBehaviour->visit<PTask>(
       [&](KillLeader) {
-        if (!enemy->getLeaders().empty())
-          return Task::attackCreatures(enemy->getLeaders());
-        else
-          return Task::killFighters(enemy, 1000);
+        return getKillLeaderTask(enemy);
       },
       [&](KillMembers t) {
         return Task::killFighters(enemy, t.count);

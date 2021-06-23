@@ -44,8 +44,12 @@ class IdleControl : public CollectiveControl {
   }
 };
 
-vector<TriggerInfo> CollectiveControl::getTriggers(const Collective* against) const {
+vector<TriggerInfo> CollectiveControl::getAllTriggers(const Collective* against) const {
   return {};
+}
+
+vector<TriggerInfo> CollectiveControl::getTriggers(const Collective* against) const {
+  return getAllTriggers(against).filter([](auto t) { return t.value > 0; });
 }
 
 PCollectiveControl CollectiveControl::idle(Collective* col) {

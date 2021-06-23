@@ -102,6 +102,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   const CollectiveTeams& getTeams() const;
   WModel getModel() const;
 
+  void addAllianceAttack(vector<Collective*> attackers);
+
   private:
   struct Private {};
 
@@ -142,6 +144,8 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   WLevel getCurrentLevel() const;
   void considerNightfallMessage();
   void considerWarning();
+  void considerAllianceAttack();
+  void considerNewAttacks();
 
   TribeId getTribeId() const;
   bool canSee(const Creature*) const;
@@ -282,5 +286,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   EntityMap<Creature, LocalTime> leaderWoundedTime;
   void handleDestructionOrder(Position position, HighlightType, DestroyAction);
   unordered_set<CollectiveResourceId, CustomHash<CollectiveResourceId>> SERIAL(usedResources);
+  optional<vector<Collective*>> SERIAL(allianceAttack);
 };
 

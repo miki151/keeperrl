@@ -1798,6 +1798,44 @@ PTask Task::withTeam(Collective* col, TeamId teamId, PTask task) {
 }
 
 namespace {
+class AllianceTask : public Task {
+  public:
+  AllianceTask(vector<Collective*> allies, Collective* enemy, PTask task)
+      : allies(std::move(allies)), targetArea(getTargetArea(enemy)), task(std::move(task)) {}
+
+  static PositionSet getTargetArea(Collective* col) {
+    auto area = col->getTerritory().getExtended(10);
+    return PositionSet(area.begin(), area.end());
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
+    if (targetArea.count(c->getPosition()))
+      for (auto ally : allies)
+        for (auto leader : ally->getLeaders())
+          if (!leader->isDead() && !targetArea.count(leader->getPosition()))
+            return c->wait();
+    return task->getMove(c);
+  }
+
+  virtual string getDescription() const override {
+    return "Team task: " + task->getDescription();
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), allies, targetArea, task)
+  SERIALIZATION_CONSTRUCTOR(AllianceTask)
+
+  private:
+  vector<Collective*> SERIAL(allies);
+  PositionSet SERIAL(targetArea);
+  PTask SERIAL(task);
+};
+}
+
+PTask Task::allianceAttack(vector<Collective*> allies, Collective* enemy, PTask task) {
+  return makeOwner<AllianceTask>(std::move(allies), enemy, std::move(task));
+}
+
+namespace {
 class InstallBodyPart : public Task {
   public:
   InstallBodyPart(WTaskCallback call, Creature* c, Item* it)
@@ -1924,6 +1962,7 @@ REGISTER_TYPE(GoToAndWait)
 REGISTER_TYPE(DropItems)
 REGISTER_TYPE(DropItemsAnywhere)
 REGISTER_TYPE(CampAndSpawnTask)
+REGISTER_TYPE(AllianceTask)
 REGISTER_TYPE(Spider)
 REGISTER_TYPE(WithTeam)
 REGISTER_TYPE(ArcheryRange)

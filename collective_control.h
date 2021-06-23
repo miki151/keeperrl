@@ -24,7 +24,10 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   virtual void onClaimedSquare(Position) {}
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) {}
   virtual void onRansomPaid() {}
-  virtual vector<TriggerInfo> getTriggers(const Collective* against) const;
+  virtual void launchAllianceAttack(vector<Collective*> allies) { fail(); }
+  virtual vector<TriggerInfo> getAllTriggers(const Collective* against) const;
+  vector<TriggerInfo> getTriggers(const Collective* against) const;
+  virtual bool canPerformAttack() const { fail(); }
 
   SERIALIZATION_DECL(CollectiveControl)
 

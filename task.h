@@ -112,6 +112,8 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PickUpAndDrop pickUpAndDrop(Position origin, vector<Item*>, StorageId, Collective*);
   static PTask spider(Position origin, const vector<Position>& posClose);
   static PTask withTeam(Collective*, TeamId, PTask);
+  static PTask allianceAttack(vector<Collective*> allies, Collective* enemy, PTask attackTask);
+
   static PTask installBodyPart(WTaskCallback, Creature* target, Item*);
 
   template <class Archive>

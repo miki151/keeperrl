@@ -48,7 +48,7 @@ template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Game>);
   ar(villainsByType, collectives, lastTick, playerControl, playerCollective, currentTime, avatarId);
-  ar(musicType, statistics, tribes, gameIdentifier, players, contentFactory, sunlightTimeOffset);
+  ar(musicType, statistics, tribes, gameIdentifier, players, contentFactory, sunlightTimeOffset, allianceAttackPossible);
   ar(gameDisplayName, models, visited, baseModel, campaign, localTime, turnEvents, effectFlags, zLevelGroups);
   if (Archive::is_loading::value)
     sunlightInfo.update(getGlobalTime() + sunlightTimeOffset);
@@ -118,6 +118,12 @@ void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
   for (auto& f : keeperInfo.flags)
     effectFlags.insert(f);
   zLevelGroups = keeperInfo.zLevelGroups;
+  allianceAttackPossible =
+#ifdef RELEASE
+    Random.roll(3);
+#else
+    true;
+#endif
 }
 
 Game::~Game() {}
@@ -432,6 +438,7 @@ void Game::tick(GlobalTime time) {
     if (isVillainActive(col))
       col->update(col->getModel() == getCurrentModel());
   }
+  considerAllianceAttack();
 }
 
 void Game::setExitInfo(ExitInfo info) {
@@ -846,6 +853,30 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
       } else
         view->presentText("", "The message was too short.");
     }
+}
+
+void Game::considerAllianceAttack() {
+  if (!allianceAttackPossible || !getPlayerControl() || !Random.roll(1000))
+    return;
+  int numTriggered = 0;
+  vector<Collective*> candidates;
+  for (auto col : getVillains(VillainType::MAIN)) {
+    if (!isVillainActive(col) || !col->getControl()->canPerformAttack())
+      return;
+    auto triggers = col->getTriggers(getPlayerCollective());
+    if (triggers.empty())
+      continue;
+    candidates.push_back(col);
+    if (!triggers.filter([](auto& t) { return t.value > 0; }).empty())
+      ++numTriggered;
+  }
+  if (numTriggered >= candidates.size() - 1 && candidates.size() >= 2) {
+    for (auto col : candidates)
+      col->getControl()->launchAllianceAttack(candidates.filter([&](auto other) { return other != col; }));
+    getPlayerControl()->addAllianceAttack(candidates);
+    allianceAttackPossible = false;
+    addAnalytics("alliance", "");
+  }
 }
 
 bool Game::gameWon() const {

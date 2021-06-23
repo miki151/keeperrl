@@ -43,7 +43,9 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   virtual void onMemberKilled(const Creature* victim, const Creature* killer) override;
   virtual void onOtherKilled(const Creature* victim, const Creature* killer) override;
   virtual void onRansomPaid() override;
-  virtual vector<TriggerInfo> getTriggers(const Collective* against) const override;
+  virtual vector<TriggerInfo> getAllTriggers(const Collective* against) const override;
+  virtual void launchAllianceAttack(vector<Collective*> allies) override;
+  virtual bool canPerformAttack() const override;
 
   SERIALIZATION_DECL(VillageControl)
 
@@ -53,7 +55,6 @@ class VillageControl : public CollectiveControl, public EventListener<VillageCon
   void considerCancellingAttack();
   bool isEnemy(const Creature*);
   Collective* getEnemyCollective() const;
-  bool canPerformAttack(bool currentlyActive);
   void acceptImmigration();
 
   heap_optional<VillageBehaviour> SERIAL(behaviour);

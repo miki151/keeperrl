@@ -181,6 +181,28 @@ void VillageControl::launchAttack(vector<Creature*> attackers) {
   }
 }
 
+void VillageControl::launchAllianceAttack(vector<Collective*> allies) {
+  if (Collective* enemy = getEnemyCollective()) {
+    auto attackers = collective->getLeaders();
+    for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
+      if (!attackers.contains(c))
+        attackers.push_back(c);
+    for (Creature* c : attackers)
+//      if (getCollective()->getGame()->canTransferCreature(c, enemy->getLevel()->getModel()))
+        collective->getGame()->transferCreature(c, enemy->getModel());
+    TeamId team = collective->getTeams().createPersistent(attackers);
+    collective->getTeams().activate(team);
+    collective->freeTeamMembers(attackers);
+    vector<WConstTask> attackTasks;
+    for (Creature* c : attackers) {
+      auto task = Task::allianceAttack(allies, enemy, getKillLeaderTask(enemy));
+      attackTasks.push_back(task.get());
+      collective->setTask(c, std::move(task));
+    }
+    attackSizes[team] = attackers.size();
+  }
+}
+
 void VillageControl::considerCancellingAttack() {
   if (auto enemyCollective = getEnemyCollective())
     for (auto team : collective->getTeams().getAll()) {
@@ -205,20 +227,15 @@ void VillageControl::onRansomPaid() {
   }
 }
 
-vector<TriggerInfo> VillageControl::getTriggers(const Collective* against) const {
-  vector<TriggerInfo> ret;
+vector<TriggerInfo> VillageControl::getAllTriggers(const Collective* against) const {
   if (isEnemy() && behaviour && against == getEnemyCollective())
-    for (auto& elem : behaviour->triggers) {
-      auto value = behaviour->getTriggerValue(elem, this);
-      if (value > 0)
-        ret.push_back({elem, value});
-    }
-  return ret;
+    return behaviour->triggers.transform([&](auto& t) { return TriggerInfo{t, behaviour->getTriggerValue(t, this)}; });
+  return {};
 }
 
-bool VillageControl::canPerformAttack(bool currentlyActive) {
-  // don't attack from remote site when player is currently here
-  if (currentlyActive && collective->getModel() != collective->getGame()->getMainModel().get())
+bool VillageControl::canPerformAttack() const {
+  // don't attack if player is not in the base site
+  if (collective->getGame()->getCurrentModel() != collective->getGame()->getMainModel().get())
     return false;
   // don't attack during the day when having undead minions
   auto& sunlightInfo = collective->getGame()->getSunlightInfo();
@@ -248,7 +265,7 @@ bool VillageControl::isEnemy() const {
   return false;
 }
 
-void VillageControl::update(bool currentlyActive) {
+void VillageControl::update(bool) {
   considerCancellingAttack();
   acceptImmigration();
   healAllCreatures();
@@ -266,7 +283,7 @@ void VillageControl::update(bool currentlyActive) {
     return;
   }
   double updateFreq = 0.1;
-  if (isEnemy() && canPerformAttack(currentlyActive) && Random.chance(updateFreq) && behaviour) {
+  if (isEnemy() && canPerformAttack() && Random.chance(updateFreq) && behaviour) {
     if (Collective* enemy = getEnemyCollective())
       maxEnemyPower = max(maxEnemyPower, enemy->getDangerLevel());
     double prob = behaviour->getAttackProbability(this) / updateFreq;
