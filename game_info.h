@@ -304,10 +304,12 @@ class CollectiveInfo {
     HASH_ALL(itemInfo, creatureInfo)  
   };
   struct ChosenWorkshopInfo {
+    vector<ViewId> HASH(resourceTabs);
+    int HASH(chosenTab);
     vector<OptionInfo> HASH(options);
     vector<QueuedItemInfo> HASH(queued);
     int HASH(index);
-    HASH_ALL(index, options, queued)
+    HASH_ALL(index, options, queued, resourceTabs, chosenTab)
   };
   optional<ChosenWorkshopInfo> HASH(chosenWorkshop);
   struct LibraryInfo {

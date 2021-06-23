@@ -2115,6 +2115,16 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
   auto& options = info.options;
   auto& queued = info.queued;
   auto lines = WL(getListBuilder, legendLineHeight);
+  if (info.resourceTabs.size() >= 2) {
+    auto line = WL(getListBuilder);
+    line.addElemAuto(WL(topMargin, 3, WL(label, "material:")));
+    for (int i : All(info.resourceTabs))
+      line.addElemAuto(WL(stack,
+          i == info.chosenTab ? WL(standardButtonHighlight) : WL(standardButton),
+          WL(margins, WL(viewObject, info.resourceTabs[i]), 5, 2, 5, 0),
+          WL(button, getButtonCallback({UserInputId::WORKSHOP_TAB, i}))));
+    lines.addElem(line.buildHorizontalList());
+  }
   lines.addElem(WL(label, "Available:", Color::YELLOW));
   auto thisTooltip = [&] (const vector<string>& desc, optional<string> warning,
       const optional<ImmigrantCreatureInfo>& creatureInfo, int index) {

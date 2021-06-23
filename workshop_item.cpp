@@ -33,6 +33,7 @@ WorkshopItem WorkshopItemCfg::get(const ContentFactory* factory) const {
     elem->getMaxUpgrades(),
     requireIngredient,
     notArtifact,
-    applyImmediately
+    applyImmediately,
+    materialTab
   };
 }

@@ -228,8 +228,12 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   };
   optional<ChosenCreatureInfo> chosenCreature;
   void setChosenCreature(optional<UniqueEntity<Creature>::Id>, string group);
-  optional<WorkshopType> chosenWorkshop;
-  void setChosenWorkshop(optional<WorkshopType>);
+  struct ChosenWorkshopInfo {
+    int resourceIndex;
+    WorkshopType type;
+  };
+  optional<ChosenWorkshopInfo> chosenWorkshop;
+  void setChosenWorkshop(optional<ChosenWorkshopInfo>);
   optional<TeamId> getChosenTeam() const;
   void setChosenTeam(optional<TeamId>, optional<UniqueEntity<Creature>::Id> = none);
   optional<TeamId> chosenTeam;
@@ -281,7 +285,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void handleBanishing(Creature*);
   optional<pair<ViewId,int>> getCostObj(CostInfo) const;
   optional<pair<ViewId,int>> getCostObj(const optional<CostInfo>&) const;
-  vector<WorkshopOptionInfo> getWorkshopOptions() const;
+  vector<WorkshopOptionInfo> getWorkshopOptions(int resourceIndex) const;
   ViewId getViewId(const BuildInfoTypes::BuildType&) const;
   EntityMap<Creature, LocalTime> leaderWoundedTime;
   void handleDestructionOrder(Position position, HighlightType, DestroyAction);
