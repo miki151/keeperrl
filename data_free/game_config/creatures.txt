@@ -4042,6 +4042,10 @@
       MELEE 2
       SPELL 4
     }
+    inventory = {
+      { "AdoxiumStaff"}
+      { "AdoxiumArmor"}
+    }
     spellSchools = { "mage" }
     spells = { "summon flies" "expert magic missile" "advanced haste" "slow" "magic cancellation" "pull"
         "advanced defense bonus" "advanced damage bonus" "advanced fire elemental" }

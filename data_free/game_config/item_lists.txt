@@ -318,3 +318,18 @@
   }
 }
 
+"blackMarketCrafting"
+{
+  items = {
+    {{"AdoxiumOre"} 1 {10 20}}
+    {{"AdaOre"} 1 {100 200}}
+    {{"BlackDragonScales"} 1}
+    {{"RedDragonScales"} 1}
+    {{"GreenDragonScales"} 1}
+    {{"YellowDragonScales"} 1}
+    {{"WhiteDragonScales"} 1}
+    {{Glyph ARMOR ItemAttrBonus DEFENSE 1} 2}
+    {{Glyph WEAPON ItemAttrBonus DAMAGE 1} 2}
+    {{Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 1} 2}
+  }
+}

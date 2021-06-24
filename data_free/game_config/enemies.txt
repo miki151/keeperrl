@@ -1363,7 +1363,12 @@
     tribe = GNOME
     race = "the Black Market"
     furniture = "dungeonOutside"
-    shopItems = { {10 15} "blackMarketAmulet" {10 15} "blackMarketScrolls" {10 15} "blackMarketPotions"  }
+    shopItems = {
+        {10 15} "blackMarketAmulet"
+        {10 15} "blackMarketScrolls"
+        {10 15} "blackMarketPotions"
+        {10 15} "blackMarketCrafting"
+    }
     inhabitants = {
       fighters = {
         count = {8 10}

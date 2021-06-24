@@ -1701,7 +1701,7 @@ End
     viewId = { "ada_ore" }
     name = "adamantine ore"
     itemClass = OTHER
-    price = 0
+    price = 2
     resourceId = "ADA"
     weight = 0.5
     storageIds = {"resources"}
@@ -1711,7 +1711,7 @@ End
     viewId = { "adoxium_rock" }
     name = "adoxium ore"
     itemClass = OTHER
-    price = 0
+    price = 4
     resourceId = "ADOXIUM"
     weight = 0.5
     storageIds = {"resources"}
