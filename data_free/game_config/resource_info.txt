@@ -6,9 +6,10 @@
 
 "GOLD"           {  "gold"           { "gold" } }
 "WOOD"           {  "wood"           { "wood_plank" }            WOOD_RESOURCE }
+"STONE"          {  "granite"        { "rock" } }
 "IRON"           {  "iron"           { "iron_rock" } }
 "ADA"            {  "adamantium"     { "ada_ore" } }
-"STONE"          {  "granite"        { "rock" } }
+"ADOXIUM"        {  "adoxium"        { "adoxium_rock" } }
 "CORPSE"         {  "corpses"        { "body_part" } }
 "PRISONER_HEAD"  {  "prisoner heads" }
 "DEMON_PIETY"    {  "rituals" }

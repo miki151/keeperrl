@@ -1013,7 +1013,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
       DropItems {PrefixChance 1 {"Sword"}} 1
       DropItems {PrefixChance 1 {"BattleAxe"}} 1
       DropItems {PrefixChance 1 {"WarHammer"}} 1
-      DropItems {PrefixChance 1 {"GoldenStaff"}} 1
+      DropItems {PrefixChance 1 {"IronStaff"}} 1
     }
     RemoveFurniture "DRAGON_CHEST"
   }
@@ -1340,6 +1340,19 @@ Def BedHeal() Heal { FLESH 0.005 } End
     500 BOULDER
     500 DIG
     500 HOSTILE_DIG
+    2000 HOSTILE_DIG_NO_SKILL
+  }
+}
+"ADOXIUM_ORE" inherit "MOUNTAIN2"
+{
+  name = "adoxium ore"
+  viewId = { "adoxium_ore" }
+  clearFogOfWar = true
+  itemDrop = {{{{"AdoxiumOre"} 1 { 16 28 }}}}
+  strength2 = {
+    200 BOULDER
+    220 DIG
+    200 HOSTILE_DIG
     2000 HOSTILE_DIG_NO_SKILL
   }
 }

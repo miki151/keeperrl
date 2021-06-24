@@ -48,7 +48,11 @@
       {item = {"AdaWarHammer"}    work = 20   cost = "ADA" 40  tech = "two-handed weapons"  materialTab = true}
       {item = {"AdaBattleAxe"}    work = 22   cost = "ADA" 50  tech = "two-handed weapons"  materialTab = true}
       {item = {"IronStaff"}       work = 20   cost = "IRON" 40 tech = "magical weapons"  materialTab = true}
-      {item = {"GoldenStaff"}     work = 20   cost = "GOLD" 200 tech = "magical weapons"  materialTab = true}
+      {item = {"AdoxiumArmor"}    work = 30   cost = "ADOXIUM" 40  materialTab = true}
+      {item = {"AdoxiumHelm"}     work = 15   cost = "ADOXIUM" 16  materialTab = true}
+      {item = {"AdoxiumBoots"}    work = 15   cost = "ADOXIUM" 24  materialTab = true}
+      {item = {"AdoxiumGloves"}   work = 6    cost = "ADOXIUM" 2   materialTab = true}
+      {item = {"AdoxiumStaff"}    work = 20   cost = "ADOXIUM" 40 tech = "magical weapons"  materialTab = true}
   }
  
 Def OneTimeBoost()

@@ -34,3 +34,13 @@
   }
   minDepth = 4
 }
+{
+  counts = {
+      "STONE" {5 10} 1 0
+      "IRON_ORE" {5 10} 1 0
+      "GOLD_ORE" {5 10} 1 0
+      "ADOXIUM_ORE" {2 4} 2 0
+  }
+  minDepth = 12
+}
+

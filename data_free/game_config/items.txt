@@ -801,20 +801,20 @@
     }
     maxUpgrades = 2
   }
-"GoldenStaff" inherit "IronStaff"
+"AdoxiumStaff" inherit "IronStaff"
   {
-    viewId = { "golden_staff" }
-    name = "golden staff"
+    viewId = { "adoxium_staff" }
+    name = "adoxium staff"
     modifiers = {
-      SPELL_DAMAGE 11
+      SPELL_DAMAGE 13
     }
-    price = 180
+    price = 1800
     genPrefixes = {
       1 VictimEffect 0.2 Lasting INSANITY
       1 VictimEffect 0.2 DestroyEquipment
       1 VictimEffect 0.5 Fire
     }
-    maxUpgrades = 4
+    maxUpgrades = 5
   }
 "Scythe"
   {
@@ -996,6 +996,16 @@
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
+  }
+"AdoxiumGloves" inherit "AdaGloves"
+  {
+    viewId = { "iron_gloves" ColorId PINK }
+    name = "pair of adoxium gloves"
+    plural = "pairs of adoxium gloves"
+    price = 250
+    modifiers = append {
+      SPELL_DAMAGE 2
+    }
   }
 "LeatherArmor"
   {
@@ -1238,6 +1248,15 @@
     maxUpgrades = 4
     storageIds = {"armor" "equipment"}
   }
+"AdoxiumArmor" inherit "AdaArmor"
+  {
+    viewId = { "chain_armor" ColorId PINK }
+    name = "adoxium armor"
+    price = 1600
+    modifiers = append {
+      SPELL_DAMAGE 5
+    }
+  }
 "IronHelm"
   {
     viewId = { "iron_helm" }
@@ -1405,6 +1424,15 @@ End
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
   }
+"AdoxiumHelm" inherit "AdaHelm"
+  {
+    viewId = { "iron_helm" ColorId PINK }
+    name = "adoxium helm"
+    price = 400
+    modifiers = append {
+      SPELL_DAMAGE 4
+    }
+  }
 "Cornuthaum1"
   {
     viewId = { "cornuthaum1" }
@@ -1510,6 +1538,16 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
+  }
+"AdoxiumBoots" inherit "AdaBoots"
+  {
+    viewId = { "iron_boots" ColorId PINK }
+    name = "pair of adoxium boots"
+    plural = "pairs of adoxium boots"
+    price = 500
+    modifiers = append {
+      SPELL_DAMAGE 3
+    }
   }
 "DevilHooves"
   {
@@ -1665,6 +1703,16 @@ End
     itemClass = OTHER
     price = 0
     resourceId = "ADA"
+    weight = 0.5
+    storageIds = {"resources"}
+  }
+"AdoxiumOre"
+  {
+    viewId = { "adoxium_rock" }
+    name = "adoxium ore"
+    itemClass = OTHER
+    price = 0
+    resourceId = "ADOXIUM"
     weight = 0.5
     storageIds = {"resources"}
   }

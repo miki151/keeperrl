@@ -293,7 +293,7 @@
 { "arrow" "/" ColorId BROWN }
 { "wooden_staff" ")" ColorId DARK_BROWN }
 { "iron_staff" ")" ColorId ORANGE }
-{ "golden_staff" ")" ColorId YELLOW }
+{ "adoxium_staff" ")" ColorId PINK }
 { "force_bolt" "*" ColorId DARK_BLUE }
 { "fireball" "*" ColorId ORANGE }
 { "air_blast" "*" ColorId WHITE }
@@ -344,6 +344,8 @@
 { "rock" "✱" ColorId LIGHT_GRAY true "stonepile" }
 { "iron_rock" "✱" ColorId ORANGE true "ironpile" }
 { "ada_ore" "✱" ColorId LIGHT_BLUE true "steelpile" }
+{ "iron_rock" "✱" ColorId ORANGE true "ironpile" }
+{ "adoxium_rock" "✱" ColorId PINK true "adoxiumpile" }
 { "wood_plank" "/" ColorId BROWN }
 { "painting_n" "*" ColorId LIGHT_BLUE }
 { "painting_e" "*" ColorId LIGHT_BLUE }
@@ -444,7 +446,7 @@
   isSymbolFont = true roundShadow = true }
 { viewId = "palm_tree" symbol = "⥾" color = ColorId LIGHT_GREEN
   isSymbolFont = true roundShadow = true }
-{ viewId = "giant_mushroom" symbol = "Ϯ" color = ColorId PINK
+{ viewId = "giant_mushroom" symbol = "Ϯ" color = ColorId GREEN
   isSymbolFont = true roundShadow = true }
 { viewId = "cactus1" symbol = "!" color = ColorId LIGHT_GREEN
   isSymbolFont = true roundShadow = true }
@@ -653,6 +655,9 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
 { viewId = "adamantium_ore" symbol = "⁂" color = ColorId LIGHT_BLUE
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
   background = "mountain2" fx = { GLITTERING ColorId LIGHT_BLUE } }
+{ viewId = "adoxium_ore" symbol = "⁂" color = ColorId PINK
+  isSymbolFont = true wallShadow = true mountainSides = "mountain"
+  background = "mountain2" fx = { GLITTERING ColorId PINK } }
 
 # Legacy tiles, not in vanilla anymore
   { "orc" "o" ColorId DARK_BLUE }
