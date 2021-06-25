@@ -142,7 +142,7 @@ const ItemCounts& Equipment::getCounts() const {
 }
 
 void Equipment::tick(Position pos, Creature* c) {
-  for (auto& item : inventory.tick(pos))
+  for (auto& item : inventory.tick(pos, true))
     onRemoved(item.get(), c);
 }
 

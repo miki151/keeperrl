@@ -369,6 +369,10 @@ struct EquipmentType : GenericModifierEffect {
 };
 struct NoAutoAssign : GenericModifierEffect {
 };
+struct Bleed {
+  double amount;
+  SERIALIZE_ALL(amount)
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -460,7 +464,8 @@ struct NoAutoAssign : GenericModifierEffect {
   X(EquipmentType, 86)\
   X(NoAutoAssign, 87)\
   X(Filter, 88)\
-  X(Chance, 89)
+  X(Chance, 89)\
+  X(Bleed, 90)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

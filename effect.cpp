@@ -854,6 +854,24 @@ static bool applyToCreature(const Effects::Heal& e, Creature* c, Creature*) {
   }
 }
 
+static bool applyToCreature(const Effects::Bleed& e, Creature* c, Creature*) {
+  c->getBody().bleed(c, e.amount);
+  if (c->getBody().getHealth() <= 0) {
+    c->you(MsgType::ARE, "critically wounded");
+    c->you(MsgType::DIE, "");
+    c->dieNoReason();
+  }
+  return true;
+}
+
+static string getName(const Effects::Bleed& e, const ContentFactory*) {
+  return "bleeding";
+}
+
+static string getDescription(const Effects::Bleed& e, const ContentFactory*) {
+  return "Causes bleeding.";
+}
+
 static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Heal& e) {
   if (e.healthType == HealthType::FLESH)
     return MinionEquipmentType::HEALING;

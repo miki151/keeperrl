@@ -53,6 +53,9 @@
       {item = {"AdoxiumBoots"}    work = 15   cost = "ADOXIUM" 24  materialTab = true}
       {item = {"AdoxiumGloves"}   work = 6    cost = "ADOXIUM" 2   materialTab = true}
       {item = {"AdoxiumStaff"}    work = 20   cost = "ADOXIUM" 40 tech = "magical weapons"  materialTab = true}
+      {item = {"InferniteSword"}        work = 20   cost = "INFERNITE" 20  materialTab = true}
+      {item = {"InferniteWarHammer"}    work = 20   cost = "INFERNITE" 40  tech = "two-handed weapons"  materialTab = true}
+      {item = {"InferniteBattleAxe"}    work = 22   cost = "INFERNITE" 50  tech = "two-handed weapons"  materialTab = true}
   }
  
 Def OneTimeBoost()

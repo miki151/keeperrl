@@ -277,6 +277,9 @@
 { "dig_icon" "⛏" ColorId LIGHT_GRAY true }
 { "sword" ")" ColorId LIGHT_GRAY }
 { "ada_sword" ")" ColorId LIGHT_BLUE }
+{ "infernite_sword" ")" ColorId RED }
+{ "infernite_battle_axe" ")" ColorId RED }
+{ "infernite_war_hammer" ")" ColorId RED }
 { "spear" "/" ColorId LIGHT_GRAY }
 { "special_sword" ")" ColorId YELLOW }
 { "elven_sword" ")" ColorId GRAY }
@@ -346,6 +349,8 @@
 { "ada_ore" "✱" ColorId LIGHT_BLUE true "steelpile" }
 { "iron_rock" "✱" ColorId ORANGE true "ironpile" }
 { "adoxium_rock" "✱" ColorId PINK true "adoxiumpile" }
+{ viewId = "infernite_rock" symbol = "✱" color = ColorId RED
+  isSymbolFont = true fx = { GLITTERING ColorId ORANGE } }
 { "wood_plank" "/" ColorId BROWN }
 { "painting_n" "*" ColorId LIGHT_BLUE }
 { "painting_e" "*" ColorId LIGHT_BLUE }
@@ -658,6 +663,9 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
 { viewId = "adoxium_ore" symbol = "⁂" color = ColorId PINK
   isSymbolFont = true wallShadow = true mountainSides = "mountain"
   background = "mountain2" fx = { GLITTERING ColorId PINK } }
+{ viewId = "infernite_ore" symbol = "⁂" color = ColorId RED
+  isSymbolFont = true wallShadow = true mountainSides = "mountain"
+  background = "mountain2" fx = { GLITTERING ColorId ORANGE } }
 
 # Legacy tiles, not in vanilla anymore
   { "orc" "o" ColorId DARK_BLUE }

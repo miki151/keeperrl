@@ -10,6 +10,7 @@
 "IRON"           {  "iron"           { "iron_rock" } }
 "ADA"            {  "adamantium"     { "ada_ore" } }
 "ADOXIUM"        {  "adoxium"        { "adoxium_rock" } }
+"INFERNITE"      {  "infernite"      { "infernite_rock" } }
 "CORPSE"         {  "corpses"        { "body_part" } }
 "PRISONER_HEAD"  {  "prisoner heads" }
 "DEMON_PIETY"    {  "rituals" }

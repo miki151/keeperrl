@@ -637,6 +637,23 @@
       1 LastingEffect RAGE
     }
   }
+Def InferniteEffect()
+  Filter Not LastingEffect FIRE_RESISTANT {
+    CreatureMessage "are burnt by the infernite" "is burnt by the infernite"
+    Bleed 0.01
+  }
+End
+"InferniteSword" inherit "AdaSword"
+  {
+    viewId = { "infernite_sword" }
+    name = "infernite sword"
+    price = 200
+    weaponInfo = append {
+      victimEffect = {0.5 Fire}
+    }
+    carriedTickEffect = InferniteEffect()
+    ownedEffect = LIGHT_SOURCE
+  }
 "ElvenSword"
   {
     viewId = { "elven_sword" }
@@ -692,6 +709,18 @@
     }
     maxUpgrades = 2
   }
+"InferniteBattleAxe" inherit "AdaBattleAxe"
+  {
+    viewId = { "infernite_battle_axe" }
+    shortName = "infernite"
+    name = "infernite battle axe"
+    price = 1500
+    weaponInfo = append {
+      victimEffect = {0.5 Fire}
+    }
+    carriedTickEffect = InferniteEffect()
+    ownedEffect = LIGHT_SOURCE
+  }
 "WarHammer"
   {
     viewId = { "war_hammer" }
@@ -725,6 +754,18 @@
       1 VictimEffect 0.5 Lasting COLLAPSED
     }
     maxUpgrades = 2
+  }
+"InferniteWarHammer" inherit "AdaWarHammer"
+  {
+    viewId = { "infernite_war_hammer" }
+    shortName = "infernite"
+    name = "infernite war hammer"
+    price = 1000
+    weaponInfo = append {
+      victimEffect = {0.5 Fire}
+    }
+    carriedTickEffect = InferniteEffect()
+    ownedEffect = LIGHT_SOURCE
   }
 "Club"
   {
@@ -1714,6 +1755,18 @@ End
     price = 4
     resourceId = "ADOXIUM"
     weight = 0.5
+    storageIds = {"resources"}
+  }
+"InferniteOre"
+  {
+    viewId = { "infernite_rock" }
+    name = "infernite ore"
+    itemClass = OTHER
+    price = 4
+    resourceId = "INFERNITE"
+    weight = 0.5
+    carriedTickEffect = InferniteEffect()
+    ownedEffect = LIGHT_SOURCE
     storageIds = {"resources"}
   }
 "WoodPlank"

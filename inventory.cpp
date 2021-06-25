@@ -155,7 +155,7 @@ double Inventory::getTotalWeight() const {
   return weight;
 }
 
-vector<PItem> Inventory::tick(Position pos) {
+vector<PItem> Inventory::tick(Position pos, bool carried) {
   PROFILE_BLOCK("Inventory::tick");
   vector<PItem> removed;
   const vector<WeakPointer<Item>> itemsCopy = getItems().transform([](const auto& it){ return it->getThis(); });
@@ -164,7 +164,7 @@ vector<PItem> Inventory::tick(Position pos) {
     if (itemRef && hasItem(itemRef)) {
       // items might be destroyed or removed from inventory in tick()
       auto oldViewId = itemRef->getViewObject().id();
-      itemRef->tick(pos);
+      itemRef->tick(pos, carried);
       if (!item)
         continue;
       auto newViewId = itemRef->getViewObject().id();

@@ -48,7 +48,7 @@ class Inventory {
   int size() const;
   double getTotalWeight() const;
   // returns removed items
-  vector<PItem> tick(Position);
+  vector<PItem> tick(Position, bool carried);
   bool containsAnyOf(const EntitySet<Item>&) const;
 
   bool isEmpty() const;

@@ -436,6 +436,7 @@
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
       }
     }
+    permanentEffects = { FIRE_RESISTANT 1 } 
     name = {
       name = "devil"
     }
@@ -459,6 +460,7 @@
     attr = {
       DEFENSE 65
       SPELL_DAMAGE 65
+      DAMAGE 65
     }
     body = append {
       drops = {
@@ -469,6 +471,9 @@
     name = {
       name = "Diabolo"
       fullTitle = true
+    }
+    inventory = {
+      { "InferniteBattleAxe" }
     }
   }
 "LOST_SOUL"

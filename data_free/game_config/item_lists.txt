@@ -321,7 +321,8 @@
 "blackMarketCrafting"
 {
   items = {
-    {{"AdoxiumOre"} 1 {10 20}}
+    {{"AdoxiumOre"} 1 {20 40}}
+    {{"InferniteOre"} 1 {20 40}}
     {{"AdaOre"} 1 {100 200}}
     {{"BlackDragonScales"} 1}
     {{"RedDragonScales"} 1}

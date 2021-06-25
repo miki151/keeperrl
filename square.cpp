@@ -85,7 +85,7 @@ void Square::tick(Position pos) {
   PROFILE_BLOCK("Square::tick");
   setDirty(pos);
   if (!inventory->isEmpty()) {
-    inventory->tick(pos);
+    inventory->tick(pos, false);
     if (!pos.canEnterEmpty(MovementType(MovementTrait::WALK).setForced()) ||
         (creature && creature->isAffected(LastingEffect::IMMOBILE)))
       for (auto neighbor : pos.neighbors8(Random))

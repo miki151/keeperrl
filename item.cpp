@@ -152,7 +152,7 @@ const Fire& Item::getFire() const {
   return *fire;
 }
 
-void Item::tick(Position position) {
+void Item::tick(Position position, bool carried) {
   PROFILE_BLOCK("Item::tick");
   if (fire->isBurning()) {
     INFO << getName() << " burning ";
@@ -171,6 +171,8 @@ void Item::tick(Position position) {
       discarded = true;
     }
   }
+  if (carried && attributes->carriedTickEffect)
+    attributes->carriedTickEffect->apply(position);
 }
 
 void Item::applyPrefix(const ItemPrefix& prefix, const ContentFactory* factory) {

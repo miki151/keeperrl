@@ -1356,6 +1356,21 @@ Def BedHeal() Heal { FLESH 0.005 } End
     2000 HOSTILE_DIG_NO_SKILL
   }
 }
+"INFERNITE_ORE" inherit "MOUNTAIN2"
+{
+  name = "infernite ore"
+  viewId = { "infernite_ore" }
+  clearFogOfWar = true
+  itemDrop = {{{{"InferniteOre"} 1 { 16 28 }}}}
+  lightEmission = 4.2
+  tickType = SetFurnitureOnFire
+  strength2 = {
+    200 BOULDER
+    220 DIG
+    200 HOSTILE_DIG
+    2000 HOSTILE_DIG_NO_SKILL
+  }
+}
 "IRON_ORE" inherit "MOUNTAIN2"
 {
   name = "iron ore"
