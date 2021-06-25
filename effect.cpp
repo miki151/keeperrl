@@ -158,6 +158,10 @@ static bool summon(Creature* summoner, CreatureId id, Range count, bool hostile,
     return !Effect::summon(summoner, id, Random.get(count), ttl, 1_visible).empty();
 }
 
+static int getPrice(const Effects::Escape&) {
+  return 12;
+}
+
 static bool applyToCreature(const Effects::Escape& e, Creature* c, Creature*) {
   PROFILE_BLOCK("Escape::applyToCreature");
   Rectangle area = Rectangle::centered(Vec2(0, 0), 12);
@@ -300,6 +304,10 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Equip
 
 static bool applyToCreature(const Effects::Lasting& e, Creature* c, Creature*) {
   return c->addEffect(e.lastingEffect, LastingEffects::getDuration(c, e.lastingEffect));
+}
+
+static int getPrice(const Effects::Lasting& e) {
+  return LastingEffects::getPrice(e.lastingEffect);
 }
 
 static bool isConsideredHostile(LastingEffect effect) {
@@ -494,6 +502,10 @@ static bool applyToCreature(const Effects::Permanent& e, Creature* c, Creature*)
   return c->addPermanentEffect(e.lastingEffect);
 }
 
+static int getPrice(const Effects::Permanent& e) {
+  return LastingEffects::getPrice(e.lastingEffect) * 30;
+}
+
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Permanent& e, const Creature* victim, bool isEnemy) {
   if (victim->getAttributes().isAffectedPermanently(e.lastingEffect))
     return 0;
@@ -541,6 +553,10 @@ static string getDescription(const Effects::Alarm&, const ContentFactory*) {
 
 static string getName(const Effects::Acid&, const ContentFactory*) {
   return "acid";
+}
+
+static int getPrice(const Effects::Acid&) {
+  return 8;
 }
 
 static string getDescription(const Effects::Acid&, const ContentFactory*) {
@@ -854,6 +870,10 @@ static bool applyToCreature(const Effects::Heal& e, Creature* c, Creature*) {
   }
 }
 
+static int getPrice(const Effects::Heal) {
+  return 8;
+}
+
 static bool applyToCreature(const Effects::Bleed& e, Creature* c, Creature*) {
   c->getBody().bleed(c, e.amount);
   if (c->getBody().getHealth() <= 0) {
@@ -908,6 +928,10 @@ static Color getColor(const Effects::Heal& e, const ContentFactory* f) {
 
 static string getName(const Effects::Fire&, const ContentFactory*) {
   return "fire";
+}
+
+static int getPrice(const Effects::Fire&) {
+  return 12;
 }
 
 static string getDescription(const Effects::Fire&, const ContentFactory*) {
@@ -1236,6 +1260,10 @@ static bool applyToCreature(const Effects::Suicide& e, Creature* c, Creature* at
   c->you(e.message, "");
   c->dieWithAttacker(attacker);
   return true;
+}
+
+static int getPrice(const Effects::Suicide&) {
+  return 8;
 }
 
 static bool canAutoAssignMinionEquipment(const Effects::Suicide&) {
@@ -1605,6 +1633,10 @@ static optional<FXInfo> getProjectileFX(const Effects::GenericModifierEffect& e)
 
 static optional<ViewId> getProjectile(const Effects::GenericModifierEffect& e) {
   return e.effect->getProjectile();
+}
+
+static int getPrice(const Effects::GenericModifierEffect& e) {
+  return e.effect->getPrice();
 }
 
 static bool canAutoAssignMinionEquipment(const Effects::GenericModifierEffect& e) {
@@ -2175,6 +2207,10 @@ static EffectAIIntent shouldAIApply(const Effects::AI& e, const Creature* caster
   return origRes;
 }
 
+static int getPrice(const Effects::Price& e) {
+  return e.value;
+}
+
 Effect::Effect(const EffectType& t) noexcept : effect(t) {
 }
 
@@ -2319,6 +2355,14 @@ static Color getColor(const DefaultType& e, const Effect& effect, const ContentF
 
 Color Effect::getColor(const ContentFactory* f) const {
   return effect->visit<Color>([f, this](const auto& elem) { return ::getColor(elem, *this, f); });
+}
+
+static int getPrice(const DefaultType& e) {
+  return 30;
+}
+
+int Effect::getPrice() const {
+    return effect->visit<int>([](const auto& elem) { return ::getPrice(elem); });  
 }
 
 SERIALIZE_DEF(Effect, effect)

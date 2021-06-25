@@ -268,55 +268,6 @@ PItem ItemType::get(const ContentFactory* factory) const {
   );
 }
 
-
-static int getEffectPrice(Effect type) {
-  return type.effect->visit<int>(
-      [&](const Effects::Lasting& e) {
-        return LastingEffects::getPrice(e.lastingEffect);
-      },
-      [&](const Effects::Permanent& e) {
-        //Permanent effects will probably be from consumable artifacts.
-        return LastingEffects::getPrice(e.lastingEffect) * 30;
-      },
-      [&](const Effects::Acid&) {
-        return 8;
-      },
-      [&](const Effects::Suicide&) {
-        return 8;
-      },
-      [&](const Effects::Heal&) {
-        return 8;
-      },
-      [&](const Effects::Escape&) {
-        return 12;
-      },
-      [&](const Effects::Fire&) {
-        return 12;
-      },
-      [&](const Effects::Alarm&) {
-        return 12;
-      },
-      [&](const Effects::DestroyEquipment&) {
-        return 12;
-      },
-      [&](const Effects::DestroyWalls&) {
-        return 30;
-      },
-      [&](const Effects::Enhance&) {
-        return 12;
-      },
-      [&](const Effects::Summon&) {
-        return 12;
-      },
-      [&](const Effects::EmitPoisonGas&) {
-        return 20;
-      },
-      [&](const auto&) {
-        return 30;
-      }
-  );
-}
-
 ViewId getRingViewId(LastingEffect e) {
   switch (e) {
     case LastingEffect::FIRE_RESISTANT: return ViewId("ring_red");
@@ -384,7 +335,7 @@ ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory*) const {
       i.applyVerb = make_pair("read", "reads");
       i.effect = Effect(Effects::Area{10,
           Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::IncreaseMorale{-0.1})))});
-      i.price = getEffectPrice(*i.effect);
+      i.price = i.effect->getPrice();
       i.burnTime = 5;
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
@@ -402,7 +353,7 @@ ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory*) const 
       i.applyVerb = make_pair("read", "reads");
       i.effect = Effect(Effects::Area{10,
           Effect(Effects::Filter(CreaturePredicates::Enemy{}, Effect(Effects::IncreaseMorale{-0.1})))});
-      i.price = getEffectPrice(*i.effect);
+      i.price = i.effect->getPrice();
       i.burnTime = 5;
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
@@ -418,7 +369,7 @@ ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory
       i.effect = Effect(Effects::AssembledMinion{creature, traits});
       i.name = itemName;
       i.weight = 1;
-      i.price = getEffectPrice(*i.effect);
+      i.price = i.effect->getPrice();
       i.uses = 1;
       i.maxUpgrades = maxUpgrades;
       i.upgradeType = upgradeType;
@@ -508,7 +459,7 @@ ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) c
       i.fragile = true;
       i.weight = 0.3;
       i.effect = effect;
-      i.price = getEffectPrice(effect);
+      i.price = i.effect->getPrice();
       i.burnTime = 1;
       i.effectAppliedWhenThrown = true;
       i.uses = 1;
@@ -554,7 +505,7 @@ ItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory* factory)
       i.weight = 0.1;
       i.modifiers[AttrType::DAMAGE] = -15;
       i.effect = effect;
-      i.price = getEffectPrice(effect);
+      i.price = i.effect->getPrice();
       i.uses = 1;
       i.storageIds = {StorageId("equipment")};
   );
@@ -615,7 +566,7 @@ ItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) c
       i.applyVerb = make_pair("read", "reads");
       i.weight = 0.1;
       i.effect = effect;
-      i.price = getEffectPrice(effect);
+      i.price = i.effect->getPrice();
       i.burnTime = 5;
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});

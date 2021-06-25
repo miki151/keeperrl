@@ -333,4 +333,9 @@
     {{Glyph WEAPON ItemAttrBonus DAMAGE 1} 2}
     {{Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 1} 2}
   }
+  unique = {
+    {Scroll Name "blacksmithing mastery" Price 800 
+      Description "Contains secrets of legendary blacksmithing knowledge"
+      IncreaseWorkshopSkill "FORGE" 1} {1}
+  }
 }

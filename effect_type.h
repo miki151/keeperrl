@@ -373,6 +373,10 @@ struct Bleed {
   double amount;
   SERIALIZE_ALL(amount)
 };
+struct Price : GenericModifierEffect {
+  int value;
+  SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
+};
 
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
@@ -465,7 +469,8 @@ struct Bleed {
   X(NoAutoAssign, 87)\
   X(Filter, 88)\
   X(Chance, 89)\
-  X(Bleed, 90)
+  X(Bleed, 90)\
+  X(Price, 91)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

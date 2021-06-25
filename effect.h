@@ -50,6 +50,7 @@ class Effect {
   optional<FXInfo> getProjectileFX() const;
   optional<ViewId> getProjectile() const;
   Color getColor(const ContentFactory*) const;
+  int getPrice() const;
 
   EffectAIIntent shouldAIApply(const Creature* caster, Position) const;
 
