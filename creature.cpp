@@ -73,7 +73,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
   ar(controllerStack, kills, statuses, automatonParts, phylactery);
   ar(difficultyPoints, points, capture, spellMap, killTitles, companions);
-  ar(vision, debt, highestAttackValueEver, lastCombatIntent, hitsInfo, primaryViewId);
+  ar(vision, debt, uniqueKills, lastCombatIntent, hitsInfo, primaryViewId);
 }
 
 SERIALIZABLE(Creature)
@@ -558,7 +558,6 @@ void Creature::makeMove() {
   //INFO << getName().bare() << " morale " << getMorale();
   unknownAttackers.clear();
   getBody().affectPosition(position);
-  highestAttackValueEver = max(highestAttackValueEver, getBestAttack().value);
   vision->update(this, time);
 }
 
@@ -1034,22 +1033,22 @@ int Creature::getPoints() const {
   return points;
 }
 
-void Creature::onKilledOrCaptured(Creature* victim) {
-  if (!victim->getBody().isMinionFood() && !victim->getAttributes().getIllusionViewObject()) {
-    double attackDiff = victim->highestAttackValueEver - highestAttackValueEver;
-    constexpr double maxLevelGain = 3.0;
-    constexpr double minLevelGain = 0.02;
-    constexpr double equalLevelGain = 0.5;
-    constexpr double maxLevelDiff = 10;
-    double expIncrease = max(minLevelGain, min(maxLevelGain,
-        (maxLevelGain - equalLevelGain) * attackDiff / maxLevelDiff + equalLevelGain));
+void Creature::updateCombatExperience(Creature* victim) {
+  if (uniqueKills.insert(victim->getName().bare()).second) {
     int curLevel = (int)getAttributes().getCombatExperience();
+    constexpr double expIncrease = 0.2;
     getAttributes().addCombatExperience(expIncrease);
     int newLevel = (int)getAttributes().getCombatExperience();
     if (curLevel != newLevel) {
       you(MsgType::ARE, "more experienced");
       addPersonalEvent(getName().a() + " reaches combat experience level " + toString(newLevel));
     }
+  }
+}
+
+void Creature::onKilledOrCaptured(Creature* victim) {
+  if (!victim->getBody().isMinionFood() && !victim->getAttributes().getIllusionViewObject()) {
+    updateCombatExperience(victim);
     int difficulty = victim->getDifficultyPoints();
     CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
     points += difficulty;

@@ -291,6 +291,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void addCombatIntent(Creature* attacker, CombatIntentInfo::Type);
   optional<CombatIntentInfo> getLastCombatIntent() const;
   void onKilledOrCaptured(Creature* victim);
+  void updateCombatExperience(Creature* victim);
 
   void addSound(const Sound&) const;
   void updateViewObject();
@@ -357,6 +358,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<PController> SERIAL(controllerStack);
   vector<string> SERIAL(killTitles);
   vector<KillInfo> SERIAL(kills);
+  unordered_set<string> SERIAL(uniqueKills);
   mutable int SERIAL(difficultyPoints) = 0;
   int SERIAL(points) = 0;
   using MoveId = pair<int, LevelId>;
@@ -367,7 +369,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool forceMovement = false;
   optional<CombatIntentInfo> SERIAL(lastCombatIntent);
   HeapAllocated<CreatureDebt> SERIAL(debt);
-  double SERIAL(highestAttackValueEver) = 0;
   int SERIAL(lastMoveCounter) = 0;
   EnumSet<CreatureStatus> SERIAL(statuses);
   bool SERIAL(capture) = 0;
