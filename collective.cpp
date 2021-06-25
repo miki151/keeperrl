@@ -809,7 +809,9 @@ void Collective::onKilledSomeone(Creature* killer, Creature* victim) {
 }
 
 double Collective::getEfficiency(const Creature* c) const {
-  return pow(2.0, c->getMorale().value_or(0));
+  return pow(2.0, c->getMorale().value_or(0)) *
+      (c->isAffected(LastingEffect::SPEED) ? 1.4 : 1.0) *
+      (c->isAffected(LastingEffect::SLOWED) ? (1 / 1.4) : 1.0);
 }
 
 const Territory& Collective::getTerritory() const {
