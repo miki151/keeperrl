@@ -56,6 +56,7 @@
 #include "health_type.h"
 #include "automaton_part.h"
 #include "ai_type.h"
+#include "construction_map.h"
 
 class Behaviour {
   public:
@@ -891,7 +892,7 @@ class ByCollective : public Behaviour {
         tasks.push_back(Task::equipItem(it));
     {
       PROFILE_BLOCK("tasks assignment");
-      for (Position v : collective->getZones().getPositions(ZoneId::STORAGE_EQUIPMENT)) {
+      for (Position v : collective->getConstructions().getAllStoragePositions()) {
         vector<Item*> consumables;
         for (auto item : v.getItems(ItemIndex::MINION_EQUIPMENT))
           if (minionEquipment.isOwner(item, creature) && !item->getAutomatonPart()) {
