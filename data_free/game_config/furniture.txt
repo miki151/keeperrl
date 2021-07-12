@@ -392,6 +392,26 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "bow_rack" }
   storageIds = {"bows"}
 }
+"SCROLL_STORAGE"
+{
+  name = "scroll shelf"
+  viewId = { "scroll_storage" }
+  canHideHere = true
+  fire = 50
+  strength = 40
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  storageIds = {"scrolls"}
+}
+"POTION_STORAGE"
+{
+  name = "potion shelf"
+  viewId = { "potion_storage" }
+  canHideHere = true
+  fire = 50
+  strength = 40
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  storageIds = {"potions"}
+}
 "TREASURE_CHEST"
 {
   name = "treasure chest"

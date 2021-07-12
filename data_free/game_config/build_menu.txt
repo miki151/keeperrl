@@ -96,6 +96,12 @@
     { Furniture {{ "BOW_RACK" }                "WOOD" 15  }        "Bow rack"      "Storage"
         "All your ranged weapons can be stored here." }
 
+    { Furniture {{ "SCROLL_STORAGE"}              "WOOD" 15  }        "Scroll shelf"      "Storage"
+        "All your scrolls can be stored here." }
+
+    { Furniture {{ "POTION_STORAGE"}              "WOOD" 15  }        "Potion shelf"      "Storage"
+        "All your potions can be stored here." }
+
     { Furniture {{ "GRAVE" }                      "STONE" 5 }      "Grave"             "Storage"
         "All corpses are stored here."}
   }

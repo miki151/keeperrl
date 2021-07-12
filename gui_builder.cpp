@@ -2116,8 +2116,8 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
   auto& queued = info.queued;
   auto lines = WL(getListBuilder, legendLineHeight);
   if (info.resourceTabs.size() >= 2) {
+    lines.addElem(WL(topMargin, 3, WL(label, "material: " + info.tabName)));
     auto line = WL(getListBuilder);
-    line.addElemAuto(WL(topMargin, 3, WL(label, "material:")));
     for (int i : All(info.resourceTabs))
       line.addElemAuto(WL(stack,
           i == info.chosenTab ? WL(standardButtonHighlight) : WL(standardButton),

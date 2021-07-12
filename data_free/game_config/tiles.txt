@@ -335,6 +335,10 @@
 { "treasure_chest" "=" ColorId BROWN }
 { viewId = "weapon_rack" symbol = "=" color = ColorId LIGHT_GRAY roundShadow = true }
 { viewId = "bow_rack" symbol = "=" color = ColorId GRAY roundShadow = true }
+{ viewId = "potion_storage" symbol = "ℍ" color = ColorId LIGHT_GRAY roundShadow = true
+    isSymbolFont = true}
+{ viewId = "scroll_storage" symbol = "ℍ" color = ColorId LIGHT_BROWN roundShadow = true
+    isSymbolFont = true}
 { "coffin1" "⚰" ColorId BROWN true }
 { "coffin2" "⚰" ColorId GRAY true }
 { "coffin3" "⚰" ColorId YELLOW true }

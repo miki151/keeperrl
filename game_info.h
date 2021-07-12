@@ -306,10 +306,11 @@ class CollectiveInfo {
   struct ChosenWorkshopInfo {
     vector<ViewId> HASH(resourceTabs);
     int HASH(chosenTab);
+    string HASH(tabName);
     vector<OptionInfo> HASH(options);
     vector<QueuedItemInfo> HASH(queued);
     int HASH(index);
-    HASH_ALL(index, options, queued, resourceTabs, chosenTab)
+    HASH_ALL(index, options, queued, resourceTabs, chosenTab, tabName)
   };
   optional<ChosenWorkshopInfo> HASH(chosenWorkshop);
   struct LibraryInfo {

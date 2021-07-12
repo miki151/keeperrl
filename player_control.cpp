@@ -1270,11 +1270,13 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
   }
   if (chosenWorkshop) {
     auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
-    auto resourceTabs = getResourceTabs(workshop)
+    auto resourceTabs = getResourceTabs(workshop);
+    auto resourceViewIds = resourceTabs
         .transform([&](auto id) { return collective->getResourceInfo(id).viewId.value_or(ViewId("grave")); });
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
-        resourceTabs,
+        resourceViewIds,
         chosenWorkshop->resourceIndex,
+        collective->getResourceInfo(resourceTabs[chosenWorkshop->resourceIndex]).name,
         getWorkshopOptions(chosenWorkshop->resourceIndex).transform([](auto& option) {
             return CollectiveInfo::OptionInfo{option.itemInfo, option.creatureInfo}; }),
         getQueuedWorkshopItems(),
