@@ -1163,7 +1163,7 @@ static optional<ImmigrantCreatureInfo> getImmigrantCreatureInfo(ContentFactory* 
   return none;
 }
 
-static vector<CollectiveResourceId>getResourceTabs(const Workshops::Type& workshop) {
+static vector<CollectiveResourceId> getResourceTabs(const Workshops::Type& workshop) {
   vector<CollectiveResourceId> ret;
   for (auto& o : workshop.getOptions())
     if (o.materialTab && !ret.contains(o.cost.id))
@@ -1174,7 +1174,10 @@ static vector<CollectiveResourceId>getResourceTabs(const Workshops::Type& worksh
 vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions(int resourceIndex) const {
   vector<WorkshopOptionInfo> ret;
   auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
-  auto chosenResource = getResourceTabs(workshop)[resourceIndex];
+  optional<CollectiveResourceId> chosenResource;
+  auto resourceTabs = getResourceTabs(workshop);
+  if (!resourceTabs.empty())
+    chosenResource = resourceTabs[resourceIndex];
   auto& options = workshop.getOptions();
   for (int i : All(options))
     if (!options[i].materialTab || options[i].cost.id == chosenResource) {
@@ -1273,10 +1276,13 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
     auto resourceTabs = getResourceTabs(workshop);
     auto resourceViewIds = resourceTabs
         .transform([&](auto id) { return collective->getResourceInfo(id).viewId.value_or(ViewId("grave")); });
+    string tabName;
+    if (!resourceTabs.empty())
+      tabName = collective->getResourceInfo(resourceTabs[chosenWorkshop->resourceIndex]).name;
     info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
         resourceViewIds,
         chosenWorkshop->resourceIndex,
-        collective->getResourceInfo(resourceTabs[chosenWorkshop->resourceIndex]).name,
+        tabName,
         getWorkshopOptions(chosenWorkshop->resourceIndex).transform([](auto& option) {
             return CollectiveInfo::OptionInfo{option.itemInfo, option.creatureInfo}; }),
         getQueuedWorkshopItems(),
