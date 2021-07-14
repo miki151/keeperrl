@@ -685,7 +685,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 "CROPS"
 {
   name = "wheat"
-  viewId = { "crops" }
+  viewId = { "swish_wheat" }
   usageType = UsageEffect "scythe " Chance 0.3 CreatureMessage "scythe the field" "scythes the field"
   usageTime = 3
 }

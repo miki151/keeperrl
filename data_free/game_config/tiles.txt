@@ -97,8 +97,7 @@
   roundShadow = true }
 { "fallen_tree" "*" ColorId GREEN false "treecut" }
 { "tree_trunk" "." ColorId BROWN false "treecut" }
-{ "crops" "𝃰" ColorId YELLOW }
-{ "crops2" "𝃰" ColorId YELLOW }
+{ viewId = "swish_wheat" symbol = "𝃰" color = ColorId YELLOW  wallConnections = true }
 { "stones" "." ColorId GRAY }
 { viewId = "termite_mound" symbol = "^" color = ColorId LIGHT_BROWN
   roundShadow = true }
