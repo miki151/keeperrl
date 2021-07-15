@@ -42,10 +42,21 @@ add_custom_command(
     COMMENT "Generating version.h"
 )
 
+# check member serialization
+# the stamp file is not actually generated, but it doesn't seem to matter
+file(GLOB CHECK_SERIAL_SH "check_serial.sh")
+set(CHECK_SERIAL_STAMP "${CMAKE_CURRENT_SOURCE_DIR}/check_serial.stamp")
+add_custom_command(
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/
+    COMMAND bash ${CHECK_SERIAL_SH}
+    DEPENDS ${CHECK_SERIAL_SH}
+    OUTPUT ${CHECK_SERIAL_STAMP}
+    COMMENT "Checking serialization"
+)
 
 # rules to create `keeper` binary
 file(GLOB SOURCES "*.cpp" "extern/*.cpp")
-add_executable(keeper ${SOURCES} ${KEEPER_VERSION_H})
+add_executable(keeper ${SOURCES} ${KEEPER_VERSION_H} ${CHECK_SERIAL_STAMP})
 target_include_directories(keeper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(keeper PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern)
 target_include_directories(keeper PRIVATE ${SDL2_INCLUDE_DIRS})
