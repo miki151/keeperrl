@@ -3543,6 +3543,36 @@
       groupName = "pack"
     }
   }
+"FERAL_CHILD"
+  {
+    viewId = { "feral_child" }
+    attr = {
+      DAMAGE 25
+      DEFENSE 14 
+    }
+    body = {
+      type = Humanoid MEDIUM
+      weight = 35
+      intrinsicAttacks = {
+        LEG  {{itemType = { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
+        HEAD {{itemType = { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
+      }
+    }
+    maxLevelIncrease = {
+      MELEE 12
+    }
+    permanentEffects = {
+      NIGHT_VISION 1
+      EXPLORE_NOCTURNAL_SKILL 1
+      REGENERATION 1
+    }
+    name = {
+      name = "feral child"
+      pluralName = "feral children"
+      firstNameGen = "DOG"
+      groupName = "pack"
+    }
+  }
 "WEREWOLF"
   {
     viewId = { "werewolf" }

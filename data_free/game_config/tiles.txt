@@ -232,6 +232,7 @@
 { "polar_fox" "d" ColorId LIGHT_GRAY }
 { "kangaroo" "K" ColorId BROWN }
 { "wolf" "d" ColorId DARK_BLUE }
+{ "feral_child" "d" ColorId YELLOW }
 { "werewolf" "d" ColorId WHITE }
 { "dog" "d" ColorId BROWN }
 { "husky" "d" ColorId LIGHT_GRAY }

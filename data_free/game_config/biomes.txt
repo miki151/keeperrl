@@ -75,10 +75,10 @@
   }
   whiteKeeperBaseEnemies = {
     { id = "DARK_ELF_CAVE" }
-    { id = "GOBLIN_CAVE" }
     { id = "COTTAGE_BANDITS" }
     { id = "ANTS_CLOSED_SMALL" }
     { id = "ADOXIE_VAULT" }
+    { id = "WOLF_DEN" }
     { id = "KRAKEN" probability = 0.3 }
   }
   keeperBiome = { "grass" } "grassland" 2
@@ -234,6 +234,7 @@
   whiteKeeperBaseEnemies = {
     { id = "DARK_ELF_CAVE" }
     { id = "BANDITS" }
+    { id = "WOLF_DEN" }
     { id = "ADOXIE_VAULT" }
     { id = "YETI" }
   }

@@ -1049,6 +1049,39 @@ End
     }
   }
 }
+"WOLF_DEN"
+{
+  settlement = {
+    type = Builtin CAVE "DUNGEON"
+    inhabitants = {
+      fighters = {
+        count = {4 9}
+        all = {
+          50 "WOLF"
+          1 "FERAL_CHILD"
+        }
+      }
+    }
+    tribe = BANDIT
+    race = "wolves"
+  }
+  config = {
+    immigrantInterval = 1000
+    maxPopulation = 10
+  }
+  immigrants = { 
+    {
+      ids = { "WOLF" }
+      traits = { FIGHTER }
+      frequency = 1
+    }
+  }
+  behaviour = {
+    minPopulation = 0
+    minTeamSize = 5
+    attackBehaviour = KillLeader
+  }
+}
 "NO_AGGRO_BANDITS"
 {
   settlement = {
