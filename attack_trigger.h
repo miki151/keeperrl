@@ -6,8 +6,8 @@
 #include "pretty_archive.h"
 
 struct RoomTrigger {
-  FurnitureType type;
-  double probPerSquare;
+  FurnitureType SERIAL(type);
+  double SERIAL(probPerSquare);
   COMPARE_ALL(type, probPerSquare)
 };
 
@@ -20,22 +20,22 @@ EMPTY_STRUCT(Proximity);
 EMPTY_STRUCT(Immediate);
 
 struct EnemyPopulation {
-  int value;
+  int SERIAL(value);
   COMPARE_ALL(value)
 };
 
 struct Gold {
-  int value;
+  int SERIAL(value);
   COMPARE_ALL(value)
 };
 
 struct Timer {
-  int value;
+  int SERIAL(value);
   COMPARE_ALL(value)
 };
 
 struct NumConquered {
-  int value;
+  int SERIAL(value);
   COMPARE_ALL(value)
 };
 

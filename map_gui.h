@@ -151,8 +151,8 @@ class MapGui : public GuiElem {
   DirtyTable<vector<ViewId>> extraBorderPos;
   bool isFoW(Vec2 pos) const;
   struct Coords {
-    double x;
-    double y;
+    double SERIAL(x);
+    double SERIAL(y);
     COMPARE_ALL(x, y)
   } mouseOffset, center;
   WConstLevel previousLevel = nullptr;

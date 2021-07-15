@@ -7,7 +7,7 @@ EMPTY_STRUCT(StealGold);
 EMPTY_STRUCT(HalloweenKids);
 
 struct KillMembers {
-  int count;
+  int SERIAL(count);
   COMPARE_ALL(count)
 };
 

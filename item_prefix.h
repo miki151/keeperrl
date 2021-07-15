@@ -8,26 +8,26 @@
 #include "special_attr.h"
 
 struct ItemAttrBonus {
-  AttrType attr;
-  int value;
+  AttrType SERIAL(attr);
+  int SERIAL(value);
   COMPARE_ALL(attr, value)
 };
 
 class ItemPrefix;
 
 struct JoinPrefixes {
-  vector<ItemPrefix> prefixes;
+  vector<ItemPrefix> SERIAL(prefixes);
   COMPARE_ALL(prefixes)
 };
 
 struct VictimEffect {
-  double chance;
-  Effect effect;
+  double SERIAL(chance);
+  Effect SERIAL(effect);
   COMPARE_ALL(chance, effect)
 };
 
 struct AttackerEffect {
-  Effect effect;
+  Effect SERIAL(effect);
   COMPARE_ALL(effect)
 };
 

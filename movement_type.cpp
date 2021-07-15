@@ -2,7 +2,7 @@
 #include "movement_type.h"
 #include "tribe.h"
 
-SERIALIZE_DEF(MovementType, traits, tribeSet, sunlightVulnerable, fireResistant, forced, destroyActions, buildBridge)
+SERIALIZE_DEF(MovementType, traits, tribeSet, sunlightVulnerable, fireResistant, forced, destroyActions, buildBridge, prisoner)
 
 MovementType::MovementType(EnumSet<MovementTrait> t) : traits(t) {
 }

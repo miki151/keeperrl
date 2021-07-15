@@ -16,7 +16,7 @@ struct Pit : EmptyStruct<struct PitTag> {};
 struct SetFurnitureOnFire : EmptyStruct<struct SetFurnitureOnFireTag> {};
 
 struct Trap {
-  int maxDistance;
+  int SERIAL(maxDistance);
   array<Effect, 4> SERIAL(effects); // {south, east, north, west}
   SERIALIZE_ALL(maxDistance, effects)
 };

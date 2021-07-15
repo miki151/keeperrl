@@ -40,7 +40,7 @@ SIMPLE_EFFECT(Teleport);
 SIMPLE_EFFECT(Jump);
 struct Heal {
   HealthType SERIAL(healthType);
-  double amount = 1;
+  double SERIAL(amount) = 1;
   SERIALIZE_ALL(NAMED(healthType), OPTION(amount))
 };
 SIMPLE_EFFECT(Fire);
@@ -192,8 +192,8 @@ SIMPLE_EFFECT(Shove);
 SIMPLE_EFFECT(SwapPosition);
 SIMPLE_EFFECT(Stairs);
 struct DirectedBlast {
-  Vec2 dir;
-  int length;
+  Vec2 SERIAL(dir);
+  int SERIAL(length);
   SERIALIZE_ALL(dir, length)
 };
 struct ReviveCorpse {
@@ -370,11 +370,11 @@ struct EquipmentType : GenericModifierEffect {
 struct NoAutoAssign : GenericModifierEffect {
 };
 struct Bleed {
-  double amount;
+  double SERIAL(amount);
   SERIALIZE_ALL(amount)
 };
 struct Price : GenericModifierEffect {
-  int value;
+  int SERIAL(value);
   SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
 };
 

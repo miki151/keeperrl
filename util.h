@@ -1832,9 +1832,14 @@ void serialize(Archive& ar1, const unsigned int) { \
   ar1(elems); \
 }
 
+
 template <typename Phantom>
 struct EmptyStruct {
-  COMPARE_ALL()
+  // Work around a check_serial.sh bug
+  #define Nothing
+  // SERIAL(Nothing)
+  COMPARE_ALL(Nothing)
+  #undef Nothing
 };
 
 #define EMPTY_STRUCT(Name) \
