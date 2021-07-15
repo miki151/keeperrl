@@ -1,3 +1,8 @@
+
+Def Crops()
+  { "crops" {7 7 9 9} "default"}  {2 4} 5
+End
+
 "TUTORIAL_VILLAGE"
 {
   settlement = {
@@ -26,7 +31,7 @@
     stockpiles = {
       { "gold" 50 "TREASURE_CHEST" }
     }
-    cropsDistance = 16
+    crops = Crops()
     furniture = "roomFurniture"
   }
 }
@@ -1874,7 +1879,7 @@
   settlement = {
     type = Builtin COTTAGE "WOOD"
     tribe = HUMAN
-    cropsDistance = 13
+    crops = Crops()
     inhabitants = {
       fighters = {
         count = {2 4}
@@ -1916,7 +1921,7 @@
 {
   settlement = append {
     type = Builtin COTTAGE "SNOW"
-    cropsDistance = none
+    crops = none
     inhabitants = {
       fighters = {
         count = {2 4}
@@ -1937,7 +1942,7 @@
 {
   settlement = append {
     type = Builtin SMALL_VILLAGE "SNOW"
-    cropsDistance = none
+    crops = none
     inhabitants = {
       fighters = {
         count = {2 4}
@@ -1958,7 +1963,7 @@
 {
   settlement = append {
     type = Builtin COTTAGE "SANDSTONE_WALL"
-    cropsDistance = none
+    crops = none
     inhabitants = {
       fighters = {
         count = {2 4}
@@ -1980,7 +1985,7 @@
 {
   settlement = append {
     type = Builtin SMALL_VILLAGE "SANDSTONE_WALL"
-    cropsDistance = none
+    crops = none
     inhabitants = {
       fighters = {
         count = {2 4}

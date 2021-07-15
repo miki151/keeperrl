@@ -688,6 +688,8 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "swish_wheat" }
   usageType = UsageEffect "scythe " Chance 0.3 CreatureMessage "scythe the field" "scythes the field"
   usageTime = 3
+  layer = FLOOR
+  viewLayer = FLOOR
 }
 "PIGSTY"
 {
@@ -1801,6 +1803,15 @@ Def Boulder(Id) {
   strength = 40
   warning = true
   constructMessage = SET_UP
+}
+"SCARECROW"
+{
+  name = "scarecrow"
+  viewId = { "scarecrow" }
+  blockMovement = true
+  strength = 40
+  fire = 10
+  viewLayer = CREATURE
 }
 "PORTAL"
 {

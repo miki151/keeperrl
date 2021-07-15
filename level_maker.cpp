@@ -2850,18 +2850,17 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
     int minMargin = 50;
     locations->setMinMargin(startingPos, minMargin - locationMargin);
   }
-  struct CottageInfo {
+  struct AddedCropsInfo {
+    CropsInfo info;
+    SettlementInfo settlement;
     LevelMaker* maker;
-    CollectiveBuilder* collective;
-    TribeId tribe;
-    int maxDistance;
   };
-  vector<CottageInfo> cottages;
+  vector<AddedCropsInfo> addedCrops;
   vector<SurroundWithResourcesInfo> surroundWithResources;
   for (SettlementInfo settlement : settlements) {
     auto queue = getSettlementMaker(contentFactory, random, settlement);
-    if (settlement.cropsDistance)
-      cottages.push_back({queue.get(), settlement.collective, settlement.tribe, *settlement.cropsDistance});
+    if (settlement.crops)
+      addedCrops.push_back({*settlement.crops, settlement, queue.get()});
     if (settlement.corpses)
       queue->addMaker(unique<Corpses>(*settlement.corpses));
     if (settlement.surroundWithResources > 0)
@@ -2877,15 +2876,25 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
         getSettlementPredicate(settlement));
   }
   Predicate lowlandPred = Predicate::attrib(SquareAttrib::LOWLAND) && !Predicate::attrib(SquareAttrib::RIVER);
-  for (auto& cottage : cottages)
-    for (int i : Range(random.get(1, 3))) {
+  for (auto& crops : addedCrops)
+    for (int i : Range(random.get(crops.info.count))) {
+      auto layout = crops.info.layout.id;
+      crops.settlement.inhabitants = {};
+      crops.settlement.downStairs = {};
+      crops.settlement.upStairs = {};
+      crops.settlement.outsideFeatures = {};
+      crops.settlement.stockpiles = {};
+      crops.settlement.shopItems = {};
       locations->add(unique<MakerQueue>(
             unique<RemoveFurniture>(FurnitureLayer::MIDDLE),
-            unique<FurnitureBlob>(SquareChange(FurnitureParams{FurnitureType("CROPS"), cottage.tribe})),
-            unique<PlaceCollective>(cottage.collective)),
-          {random.get(7, 12), random.get(7, 12)},
+            makeRandomLayout(contentFactory.randomLayouts.at(layout),
+                layout,
+                contentFactory.layoutMapping.at(crops.info.layout.mapping),
+                crops.settlement),
+            unique<PlaceCollective>(crops.settlement.collective)),
+          crops.info.layout.size.get(random),
           lowlandPred);
-      locations->setMaxDistanceLast(cottage.maker, cottage.maxDistance);
+      locations->setMaxDistanceLast(crops.maker, crops.info.distance);
     }
   if (auto& lakes = biomeInfo.lakes)
     for (int i : Range(random.get(lakes->count))) {

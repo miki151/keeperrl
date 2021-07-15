@@ -29,6 +29,7 @@
 { "adoxie_head" "U" ColorId PURPLE }
 { "adoxie_eye" "," ColorId PURPLE }
 { "gargoyle" "&" ColorId ORANGE }
+{ viewId = "scarecrow" symbol = "T" color = ColorId LIGHT_BLUE }
 { viewId = "gargoyle_statue" symbol = "&" color = ColorId LIGHT_GRAY
   roundShadow = true }
 { "lich_keeper1" "@" ColorId PURPLE }

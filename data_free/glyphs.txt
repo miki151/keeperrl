@@ -10,7 +10,7 @@
 "wall" # brown
 "wood_wall" # brown
 "castle_wall" # gray
-"archer_wall" # light_gray
+"archer_wall" # white
 "wood_door" + brown
 "iron_door" + gray
 "hidden_door" + red
@@ -52,3 +52,5 @@
 "adoxie_feet_trigger" ^ red
 "corpse" % red
 "loot_coffin" = gray
+"crops" | yellow
+"scarecrow" T blue

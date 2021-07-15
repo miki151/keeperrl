@@ -46,6 +46,8 @@
   "torch" Place "GROUND_TORCH"
   "throne" Place "THRONE"
   "forge" Place "FORGE"
+  "crops" Place "CROPS"
+  "scarecrow" Place "SCARECROW"
   "corpse" Items 1 "corpse"
   "shop0" Shop 0
 }

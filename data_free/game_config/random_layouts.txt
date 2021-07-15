@@ -762,3 +762,8 @@ Def KrakenZLevel() {
 End
 
 "kraken_z_level" KrakenZLevel()
+
+"crops" {
+  CellularAutomaton(Set("crops"), 0.9)
+  Place(({1 1} Set("scarecrow") 1 On("crops")))
+}
