@@ -542,10 +542,12 @@ void Renderer::setAnimationsDirectory(const DirectoryPath& path) {
 
 void Renderer::drawAndClearBuffer() {
   renderDeferredSprites();
+  CHECK_OPENGL_ERROR();
   SDL::SDL_GL_SwapWindow(window);
+  CHECK_OPENGL_ERROR();
   SDL::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   SDL::glClearColor(0.0, 0.0, 0.0, 0.0);
-
+  CHECK_OPENGL_ERROR();
 }
 
 void Renderer::resize(int w, int h) {
@@ -691,4 +693,10 @@ void Renderer::makeScreenshot(const FilePath& path, Rectangle bounds) {
   USER_CHECK(!error) << "encoder error " << error << ": "<< lodepng_error_text(error);
   SDL_FreeSurface(image);
   SDL_FreeSurface(inverted);
+}
+
+void playfile(const char *fname, SDL::SDL_Window* screen, Renderer&, bool withAudio);
+
+void Renderer::playIntro(bool withAudio) {
+  playfile("intro.ogv", window, *this, withAudio);
 }

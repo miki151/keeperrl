@@ -164,6 +164,8 @@ class View {
 
   virtual void clearSplash() = 0;
 
+  virtual void playIntro() = 0;
+
   void doWithSplash(const string& text, int totalProgress,
       function<void(ProgressMeter&)> fun, function<void()> cancelFun = nullptr);
 

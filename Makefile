@@ -109,7 +109,7 @@ SRCS = $(shell ls -t *.cpp | grep -v steam_.*.cpp)
 endif
 SRCS += $(shell ls -t extern/*.cpp)
 
-LIBS +=  -lvorbis -lvorbisfile  $(OPENGL_LIBS) \
+LIBS +=  -lvorbis -lvorbisfile -ltheoradec  -logg $(OPENGL_LIBS) \
 	   $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS} $(STEAM_LIBS)
 
 ifdef EASY_PROFILER

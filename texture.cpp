@@ -91,6 +91,11 @@ Texture& Texture::operator=(Texture&& tex) {
   return *this;
 }
 
+void Texture::loadPixels(unsigned char* pixels) {
+	SDL::glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, size.x, size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	CHECK_OPENGL_ERROR();
+}
+
 optional<SDL::GLenum> Texture::loadFromMaybe(SDL::SDL_Surface* imageOrig) {
   if (!texId) {
     texId = 0;

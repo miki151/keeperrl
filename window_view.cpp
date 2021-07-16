@@ -293,6 +293,10 @@ void WindowView::clearSplash() {
     }
 }
 
+void WindowView::playIntro() {
+  renderer.playIntro(options->getIntValue(OptionId::SOUND) > 0);
+}
+
 void WindowView::resize(int width, int height) {
   renderer.resize(width, height);
   refreshInput = true;

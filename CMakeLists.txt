@@ -29,7 +29,9 @@ find_package(CURL REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(OpenAL REQUIRED)
 find_package(Vorbis REQUIRED)
+find_package(Ogg REQUIRED)
 find_package(VorbisFile REQUIRED)
+find_package(THEORA REQUIRED)
 
 # generate version.h
 file(GLOB GENERATE_VERSION_SH "gen_version.sh")
@@ -69,6 +71,8 @@ target_link_libraries(keeper PRIVATE
     ${ZLIB_LIBRARIES}
     ${OPENAL_LIBRARY}
     ${VORBIS_LIBRARIES}
+    ${OGG_LIBRARIES}
+    ${THEORA_dec_LIBRARY}
     ${VorbisFile_LIBRARIES}
     )
 

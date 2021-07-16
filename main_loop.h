@@ -74,7 +74,6 @@ class MainLoop {
   enum class ExitCondition;
   ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, bool splashScreen,
       function<optional<ExitCondition> (WGame)> = nullptr, milliseconds stepTimeMilli = milliseconds{3}, optional<int> maxTurns = none);
-  void splashScreen();
   void showCredits(const FilePath& path);
   void showMods();
   void playMenuMusic();

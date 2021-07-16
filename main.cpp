@@ -85,7 +85,6 @@ vector<pair<MusicType, FilePath>> getMusicTracks(const DirectoryPath& path, bool
     return {};
   else
     return {
-      {MusicType::INTRO, path.file("intro.ogg")},
       {MusicType::MAIN, path.file("main.ogg")},
       {MusicType::PEACEFUL, path.file("peaceful1.ogg")},
       {MusicType::PEACEFUL, path.file("peaceful2.ogg")},
@@ -456,7 +455,6 @@ static int keeperMain(po::parser& commandLineFlags) {
       getMusicTracks(paidDataPath.subdirectory("music"), tilesPresent && !audioError),
       getMaxVolume());
   options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
-  jukebox.setCurrentVolume(options.getIntValue(OptionId::MUSIC));
   MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, &jukebox, &sokobanInput,
       &tileSet, &unlocks, saveVersion, modVersion);
   try {

@@ -529,21 +529,6 @@ PGame MainLoop::prepareCampaign(RandomGen& random) {
   }
 }
 
-void MainLoop::splashScreen() {
-  ProgressMeter meter(1);
-  jukebox->setType(MusicType::INTRO, true);
-  auto gameConfig = getVanillaConfig();
-  auto contentFactory = createContentFactory(true);
-  if (tileSet)
-    tileSet->setTilePathsAndReload(contentFactory.tilePaths);
-  EnemyFactory enemyFactory(Random, contentFactory.getCreatures().getNameGenerator(), contentFactory.enemies,
-      contentFactory.buildingInfo, {});
-  auto model = ModelBuilder(&meter, Random, options, sokobanInput, &contentFactory, std::move(enemyFactory))
-      .splashModel(dataFreePath.file("splash.txt"));
-  playGame(Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory), view),
-      false, true, true);
-}
-
 void MainLoop::showCredits(const FilePath& path) {
   ifstream in(path.getPath());
   CHECK(!!in);
@@ -755,6 +740,7 @@ void MainLoop::showMods() {
 }
 
 void MainLoop::playMenuMusic() {
+  jukebox->setCurrentVolume(options->getIntValue(OptionId::MUSIC));
   jukebox->setType(MusicType::MAIN, true);
 }
 
@@ -850,7 +836,7 @@ void MainLoop::launchQuickGame(optional<int> maxTurns) {
 }
 
 void MainLoop::start(bool tilesPresent) {
-  splashScreen();
+  view->playIntro();
   view->reset();
   considerFreeVersionText(tilesPresent);
   considerGameEventsPrompt();

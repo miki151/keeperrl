@@ -108,7 +108,6 @@ void Jukebox::refresh() {
     } else
       continueCurrent();
     currentPlaying = current;
-    if (getCurrentType() != MusicType::INTRO)
-      play(current);
+    play(current);
   }
 }

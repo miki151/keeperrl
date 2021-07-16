@@ -55,6 +55,7 @@ class WindowView: public View {
   virtual void reset() override;
   virtual void displaySplash(const ProgressMeter*, const string&, function<void()> cancelFun) override;
   virtual void clearSplash() override;
+  virtual void playIntro() override;
 
   virtual void close() override;
 
