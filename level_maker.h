@@ -44,8 +44,6 @@ class LevelMaker {
   static PLevelMaker topLevel(RandomGen&, vector<SettlementInfo> village, int width,
       optional<TribeId> keeperTribe, BiomeInfo biomeInfo, ResourceCounts, const ContentFactory&);
   static PLevelMaker mineTownLevel(RandomGen&, SettlementInfo, Vec2 size);
-  static PLevelMaker splashLevel(CreatureGroup heroLeader, CreatureGroup heroes,
-      CreatureGroup monsters, CreatureGroup imps, const FilePath& splashPath);
   static PLevelMaker towerLevel(RandomGen&, SettlementInfo, Vec2 size);
   static Vec2 getRandomExit(RandomGen&, Rectangle rect, int minCornerDist = 1);
   static PLevelMaker roomLevel(RandomGen&, SettlementInfo, Vec2 size);

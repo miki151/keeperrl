@@ -133,15 +133,6 @@ Rectangle Level::getMaxBounds() {
   return Rectangle(360, 360);
 }
 
-Rectangle Level::getSplashBounds() {
-  return Rectangle(80, 40);
-}
-
-Rectangle Level::getSplashVisibleBounds() {
-  Vec2 sz(40, 20);
-  return Rectangle(getSplashBounds().middle() - sz / 2, getSplashBounds().middle() + sz / 2);
-}
-
 double Level::getCreatureLightRadius() {
   return 5.5;
 }

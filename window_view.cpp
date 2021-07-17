@@ -76,12 +76,8 @@ Rectangle WindowView::getMapGuiBounds() const {
         return Rectangle(Vec2(rightBarWidthPlayer, 0), renderer.getSize() - Vec2(0, bottomBarHeightPlayer));
       case GameInfo::InfoType::BAND:
         return Rectangle(Vec2(rightBarWidthCollective, 0), renderer.getSize() - Vec2(0, bottomBarHeightCollective));
-      case GameInfo::InfoType::SPECTATOR: {
-        Vec2 levelSize = Level::getSplashVisibleBounds().getSize();
-        return Rectangle(
-            (renderer.getSize() - levelSize.mult(mapLayout->getSquareSize())) / 2,
-            (renderer.getSize() + levelSize.mult(mapLayout->getSquareSize())) / 2);
-        }
+      case GameInfo::InfoType::SPECTATOR:
+        return Rectangle(Vec2(0, 0), renderer.getSize());
     }
 }
 
@@ -293,8 +289,8 @@ void WindowView::clearSplash() {
     }
 }
 
-void WindowView::playIntro() {
-  renderer.playIntro(options->getIntValue(OptionId::SOUND) > 0);
+void WindowView::playVideo(const string& path) {
+  renderer.playVideo(path, options->getIntValue(OptionId::SOUND) > 0);
 }
 
 void WindowView::resize(int width, int height) {
@@ -1194,10 +1190,6 @@ void WindowView::switchTiles() {
     currentTileLayout = spriteLayouts;
   if (currentTileLayout.layouts.size() <= index)
     index = 0;
-  while (gameInfo.infoType == GameInfo::InfoType::SPECTATOR && useTiles &&
-      renderer.getSize().x < Level::getSplashVisibleBounds().width() *
-      currentTileLayout.layouts[index].getSquareSize().x && index < currentTileLayout.layouts.size() - 1)
-    ++index;
   mapLayout = &currentTileLayout.layouts[index];
 }
 

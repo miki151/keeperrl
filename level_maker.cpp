@@ -3067,47 +3067,6 @@ Vec2 LevelMaker::getRandomExit(RandomGen& random, Rectangle rect, int minCornerD
         rect.top() + d2 * (1 - w1) + w1 * w2 * (rect.height() - 1));
 }
 
-class SpecificArea : public LevelMaker {
-  public:
-  SpecificArea(Rectangle a, PLevelMaker m) : area(a), maker(std::move(m)) {}
-
-  virtual void make(LevelBuilder* builder, Rectangle) override {
-    maker->make(builder, area);
-  }
-
-  private:
-  Rectangle area;
-  PLevelMaker maker;
-};
-
-PLevelMaker LevelMaker::splashLevel(CreatureGroup heroLeader, CreatureGroup heroes, CreatureGroup monsters,
-    CreatureGroup imps, const FilePath& splashPath) {
-  auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<Empty>(FurnitureType("BLACK_FLOOR")));
-  Rectangle leaderSpawn(
-          Level::getSplashVisibleBounds().right() + 1, Level::getSplashVisibleBounds().middle().y,
-          Level::getSplashVisibleBounds().right() + 2, Level::getSplashVisibleBounds().middle().y + 1);
-  Rectangle heroSpawn(
-          Level::getSplashVisibleBounds().right() + 2, Level::getSplashVisibleBounds().middle().y - 1,
-          Level::getSplashBounds().right(), Level::getSplashVisibleBounds().middle().y + 2);
-  Rectangle monsterSpawn1(
-          Level::getSplashVisibleBounds().left(), 0,
-          Level::getSplashVisibleBounds().right(), Level::getSplashVisibleBounds().top() - 1);
-  Rectangle monsterSpawn2(
-          Level::getSplashVisibleBounds().left(), Level::getSplashVisibleBounds().bottom() + 2,
-          Level::getSplashVisibleBounds().right(), Level::getSplashBounds().bottom());
-  queue->addMaker(unique<SpecificArea>(leaderSpawn, unique<Creatures>(heroLeader, 1,MonsterAIFactory::splashHeroes(true))));
-  queue->addMaker(unique<SpecificArea>(heroSpawn, unique<Creatures>(heroes, 22, MonsterAIFactory::splashHeroes(false))));
-  queue->addMaker(unique<SpecificArea>(monsterSpawn1, unique<Creatures>(monsters, 17, MonsterAIFactory::splashMonsters())));
-  queue->addMaker(unique<SpecificArea>(monsterSpawn2, unique<Creatures>(monsters, 17, MonsterAIFactory::splashMonsters())));
-  queue->addMaker(unique<SpecificArea>(monsterSpawn1, unique<Creatures>(imps, 15,
-          MonsterAIFactory::splashImps(splashPath))));
-  queue->addMaker(unique<SpecificArea>(monsterSpawn2, unique<Creatures>(imps, 15,
-          MonsterAIFactory::splashImps(splashPath))));
-  queue->addMaker(unique<SetSunlight>(0.0, !Predicate::inRectangle(Level::getSplashVisibleBounds())));
-  return std::move(queue);
-}
-
 PLevelMaker LevelMaker::roomLevel(RandomGen& random, SettlementInfo info, Vec2 size) {
   auto queue = unique<MakerQueue>();
   auto& building = info.type.getReferenceMaybe<MapLayoutTypes::Builtin>()->buildingInfo;

@@ -6,9 +6,6 @@ class CreatureGroup {
   public:
   static CreatureGroup singleType(TribeId, CreatureId);
 
-  static CreatureGroup splashHeroes(TribeId);
-  static CreatureGroup splashLeader(TribeId);
-  static CreatureGroup splashMonsters(TribeId);
   static CreatureGroup lavaCreatures(TribeId tribe);
   static CreatureGroup waterCreatures(TribeId tribe);
   static CreatureGroup iceCreatures(TribeId tribe);
@@ -27,7 +24,6 @@ class CreatureGroup {
       const vector<CreatureId>& unique = {}, map<CreatureId, optional<TribeId>> overrides = {});
   CreatureGroup(TribeId tribe, const vector<pair<CreatureId, double>>& creatures,
       const vector<CreatureId>& unique = {}, map<CreatureId, optional<TribeId>> overrides = {});
-  static void initSplash(TribeId);
   TribeId getTribeFor(CreatureId);
   optional<TribeId> tribe;
   vector<CreatureId> creatures;

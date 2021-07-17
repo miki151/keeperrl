@@ -52,8 +52,6 @@ class Level : public OwnedObject<Level> {
 
   ~Level();
   static Rectangle getMaxBounds();
-  static Rectangle getSplashBounds();
-  static Rectangle getSplashVisibleBounds();
   static double getCreatureLightRadius();
 
   /** Moves the creature. Updates the creature's position.*/

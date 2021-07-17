@@ -63,11 +63,12 @@
 #include "steam_client.h"
 #endif
 
-MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& freePath,
-    const DirectoryPath& uPath, const DirectoryPath& modsDir, Options* o, Jukebox* j, SokobanInput* soko,
-    TileSet* tileSet, Unlocks* unlocks, int sv, string modVersion)
-      : view(v), dataFreePath(freePath), userPath(uPath), modsDir(modsDir), options(o), jukebox(j), highscores(h), fileSharing(fSharing),
-        sokobanInput(soko), tileSet(tileSet), saveVersion(sv), modVersion(modVersion), unlocks(unlocks) {
+MainLoop::MainLoop(View* v, Highscores* h, FileSharing* fSharing, const DirectoryPath& paidDataPath,
+    const DirectoryPath& freePath, const DirectoryPath& uPath, const DirectoryPath& modsDir, Options* o, Jukebox* j,
+    SokobanInput* soko, TileSet* tileSet, Unlocks* unlocks, int sv, string modVersion)
+      : view(v), paidDataPath(paidDataPath), dataFreePath(freePath), userPath(uPath), modsDir(modsDir), options(o),
+        jukebox(j), highscores(h), fileSharing(fSharing), sokobanInput(soko), tileSet(tileSet), saveVersion(sv),
+        modVersion(modVersion), unlocks(unlocks) {
   CHECK(!!unlocks);
 }
 
@@ -295,13 +296,11 @@ static void dumpMemUsage(const T& elem) {
 #endif
 }
 
-MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave, bool splashScreen,
+MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAutoSave,
     function<optional<ExitCondition>(WGame)> exitCondition, milliseconds stepTimeMilli, optional<int> maxTurns) {
-  if (!splashScreen)
-    registerModPlaytime(true);
+  registerModPlaytime(true);
   OnExit on_exit([&]() {
-    if (!splashScreen)
-      registerModPlaytime(false);
+    registerModPlaytime(false);
   });
   if (tileSet)
     tileSet->setTilePathsAndReload(game->getContentFactory()->tilePaths);
@@ -311,13 +310,10 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
   DestructorFunction removeCallback([&] { view->setBugReportSaveCallback(nullptr); });
   Encyclopedia encyclopedia(game->getContentFactory());
   game->initialize(options, highscores, view, fileSharing, &encyclopedia, unlocks);
-  if (splashScreen)
-    game->initializeModels();
-  else
-    doWithSplash("Initializing game...", 0,
-        [&] (ProgressMeter& meter) {
-          game->initializeModels();
-        });
+  doWithSplash("Initializing game...", 0,
+      [&] (ProgressMeter& meter) {
+        game->initializeModels();
+      });
   Intervalometer meter(stepTimeMilli);
   Intervalometer pausingMeter(stepTimeMilli);
   auto lastMusicUpdate = GlobalTime(-1000);
@@ -353,9 +349,7 @@ MainLoop::ExitCondition MainLoop::playGame(PGame game, bool withMusic, bool noAu
       exitInfo->visit(
           [&](ExitAndQuit) {
             eraseAllSavesExcept(game, none);
-            if (!splashScreen) {
-              dumpMemUsage(game);
-            }
+            dumpMemUsage(game);
           },
           [&](GameSaveType type) {
             if (type == GameSaveType::RETIRED_SITE) {
@@ -832,11 +826,11 @@ void MainLoop::launchQuickGame(optional<int> maxTurns) {
     game = Game::campaignGame(std::move(models.models), *result, std::move(avatar), std::move(contentFactory), {});
     dumpMemUsage(game);
   }
-  playGame(std::move(game), true, false, false, nullptr, milliseconds{3}, maxTurns);
+  playGame(std::move(game), true, false, nullptr, milliseconds{3}, maxTurns);
 }
 
 void MainLoop::start(bool tilesPresent) {
-  view->playIntro();
+  view->playVideo(paidDataPath.file("intro.ogv").getPath());
   view->reset();
   considerFreeVersionText(tilesPresent);
   considerGameEventsPrompt();
@@ -852,7 +846,7 @@ void MainLoop::start(bool tilesPresent) {
     switch (*choice) {
       case 0: {
         if (PGame game = loadOrNewGame())
-          playGame(std::move(game), true, false, false);
+          playGame(std::move(game), true, false);
         view->reset();
         break;
       }
@@ -1050,7 +1044,7 @@ int MainLoop::battleTest(int numTries, const FilePath& levelPath, vector<Creatur
       else
         return none;
     };
-    auto result = playGame(std::move(game), false, true, false, exitCondition, milliseconds{3});
+    auto result = playGame(std::move(game), false, true, exitCondition, milliseconds{3});
     switch (result) {
       case ExitCondition::ALLIES_WON:
         ++numAllies;

@@ -66,7 +66,6 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
 
   static PTask construction(WTaskCallback, Position, FurnitureType);
   static PTask destruction(WTaskCallback, Position, const Furniture*, DestroyAction, WPositionMatching);
-  static PTask bringItem(Position position, vector<Item*>, const PositionSet& target);
   enum SearchType { LAZY, RANDOM_CLOSE };
   enum ActionType { APPLY, NONE };
   static PTask applySquare(WTaskCallback, vector<pair<Position, FurnitureLayer>>, SearchType, ActionType);

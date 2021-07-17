@@ -59,43 +59,6 @@ CreatureGroup::CreatureGroup(const CreatureGroup&) = default;
 
 CreatureGroup& CreatureGroup::operator =(const CreatureGroup&) = default;
 
-static optional<pair<CreatureGroup, CreatureGroup>> splashFactories;
-
-void CreatureGroup::initSplash(TribeId tribe) {
-  splashFactories = Random.choose(
-      make_pair(CreatureGroup(tribe, { CreatureId("KNIGHT"), CreatureId("ARCHER")}, { 1, 1}, {}),
-        CreatureGroup::singleType(tribe, CreatureId("DUKE"))),
-      make_pair(CreatureGroup(tribe, { CreatureId("WARRIOR")}, { 1}, {}),
-        CreatureGroup::singleType(tribe, CreatureId("SHAMAN"))),
-      make_pair(CreatureGroup(tribe, { CreatureId("ELF_ARCHER")}, { 1}, {}),
-        CreatureGroup::singleType(tribe, CreatureId("ELF_LORD"))),
-      make_pair(CreatureGroup(tribe, { CreatureId("DWARF")}, { 1}, {}),
-        CreatureGroup::singleType(tribe, CreatureId("DWARF_BARON"))),
-      make_pair(CreatureGroup(tribe, { CreatureId("LIZARDMAN")}, { 1}, {}),
-        CreatureGroup::singleType(tribe, CreatureId("LIZARDLORD")))
-      );
-}
-
-CreatureGroup CreatureGroup::splashHeroes(TribeId tribe) {
-  if (!splashFactories)
-    initSplash(tribe);
-  return splashFactories->first;
-}
-
-CreatureGroup CreatureGroup::splashLeader(TribeId tribe) {
-  if (!splashFactories)
-    initSplash(tribe);
-  return splashFactories->second;
-}
-
-CreatureGroup CreatureGroup::splashMonsters(TribeId tribe) {
-  return CreatureGroup(tribe, { CreatureId("GNOME"), CreatureId("GOBLIN_WARRIOR"), CreatureId("TROLL"),
-      CreatureId("SPECIAL_HLBN"), CreatureId("SPECIAL_BLBW"), CreatureId("WOLF"), CreatureId("CAVE_BEAR"),
-      CreatureId("BAT"), CreatureId("WEREWOLF"), CreatureId("ZOMBIE"), CreatureId("VAMPIRE"), CreatureId("DOPPLEGANGER"),
-      CreatureId("SUCCUBUS")},
-      { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, {}, {}).increaseBaseLevel(ExperienceType::MELEE, 25);
-}
-
 CreatureGroup CreatureGroup::iceCreatures(TribeId tribe) {
   return CreatureGroup(tribe, { CreatureId("WATER_ELEMENTAL") }, {1});
 }

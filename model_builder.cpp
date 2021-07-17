@@ -452,19 +452,6 @@ PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<T
   return model;
 }
 
-PModel ModelBuilder::splashModel(const FilePath& splashPath) {
-  auto m = Model::create(contentFactory, none);
-  WLevel l = m->buildMainLevel(
-      LevelBuilder(meter, Random, contentFactory, Level::getSplashBounds().width(),
-          Level::getSplashBounds().height(), true, 1.0),
-      LevelMaker::splashLevel(
-          CreatureGroup::splashLeader(TribeId::getHuman()),
-          CreatureGroup::splashHeroes(TribeId::getHuman()),
-          CreatureGroup::splashMonsters(TribeId::getDarkKeeper()),
-          CreatureGroup::singleType(TribeId::getDarkKeeper(), CreatureId("IMP")), splashPath));
-  return m;
-}
-
 PModel ModelBuilder::battleModel(const FilePath& levelPath, vector<PCreature> allies, vector<CreatureList> enemies) {
   auto m = Model::create(contentFactory, none);
   ifstream stream(levelPath.getPath());

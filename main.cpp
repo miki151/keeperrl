@@ -309,14 +309,14 @@ static int keeperMain(po::parser& commandLineFlags) {
   auto modsDir = userPath.subdirectory(gameConfigSubdir);
   auto allUnlocked = Unlocks::allUnlocked();
   if (commandLineFlags["simple_game"].was_set()) {
-    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, &allUnlocked,
-        0, "");
+    MainLoop loop(nullptr, nullptr, nullptr, paidDataPath, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr,
+        &allUnlocked, 0, "");
     loop.playSimpleGame();
   }
   if (commandLineFlags["layout_name"].was_set()) {
     USER_CHECK(commandLineFlags["layout_size"].was_set()) << "Need to specify layout_size option";
-    MainLoop loop(nullptr, nullptr, nullptr, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr, &allUnlocked,
-        0, "");
+    MainLoop loop(nullptr, nullptr, nullptr, paidDataPath, freeDataPath, userPath, modsDir, &options, nullptr, nullptr, nullptr,
+        &allUnlocked, 0, "");
     generateMapLayout(loop,
         commandLineFlags["layout_name"].get().string,
         freeDataPath.file("glyphs.txt"),
@@ -338,8 +338,8 @@ static int keeperMain(po::parser& commandLineFlags) {
   if (commandLineFlags["worldgen_test"].was_set()) {
     ofstream output("worldgen_out.txt");
     UserInfoLog.addOutput(DebugOutput::toStream(output));
-    MainLoop loop(nullptr, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, nullptr,
-        &allUnlocked, 0, "");
+    MainLoop loop(nullptr, &highscores, &fileSharing, paidDataPath, freeDataPath, userPath, modsDir, &options, nullptr,
+        &sokobanInput, nullptr, &allUnlocked, 0, "");
     vector<string> types;
     if (commandLineFlags["worldgen_maps"].was_set())
       types = split(commandLineFlags["worldgen_maps"].get().string, {','});
@@ -347,8 +347,8 @@ static int keeperMain(po::parser& commandLineFlags) {
     return 0;
   }
   auto battleTest = [&] (View* view, TileSet* tileSet) {
-    MainLoop loop(view, &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, nullptr, &sokobanInput, tileSet,
-        &allUnlocked, 0, "");
+    MainLoop loop(view, &highscores, &fileSharing, paidDataPath, freeDataPath, userPath, modsDir, &options, nullptr,
+        &sokobanInput, tileSet,  &allUnlocked, 0, "");
     auto level = commandLineFlags["battle_level"].get().string;
     auto numRounds = commandLineFlags["battle_rounds"].was_set() ? commandLineFlags["battle_rounds"].get().i32 : 1;
     try {
@@ -455,8 +455,8 @@ static int keeperMain(po::parser& commandLineFlags) {
       getMusicTracks(paidDataPath.subdirectory("music"), tilesPresent && !audioError),
       getMaxVolume());
   options.addTrigger(OptionId::MUSIC, [&jukebox](int volume) { jukebox.setCurrentVolume(volume); });
-  MainLoop loop(view.get(), &highscores, &fileSharing, freeDataPath, userPath, modsDir, &options, &jukebox, &sokobanInput,
-      &tileSet, &unlocks, saveVersion, modVersion);
+  MainLoop loop(view.get(), &highscores, &fileSharing, paidDataPath, freeDataPath, userPath, modsDir, &options, &jukebox,
+      &sokobanInput, &tileSet, &unlocks, saveVersion, modVersion);
   try {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);

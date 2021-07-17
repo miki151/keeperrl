@@ -244,10 +244,6 @@ PTask Task::destruction(WTaskCallback c, Position target, const Furniture* furni
   return makeOwner<Destruction>(c, target, furniture, destroyAction, matching);
 }
 
-PTask Task::bringItem(Position position, vector<Item*> items, const PositionSet& target) {
-  return chain(Task::pickUpItem(position, items), dropItems(items, vector<Position>(target.begin(), target.end())));
-}
-
 namespace {
 
 class EquipItem : public Task {

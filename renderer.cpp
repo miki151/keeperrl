@@ -697,6 +697,6 @@ void Renderer::makeScreenshot(const FilePath& path, Rectangle bounds) {
 
 void playfile(const char *fname, SDL::SDL_Window* screen, Renderer&, bool withAudio);
 
-void Renderer::playIntro(bool withAudio) {
-  playfile("intro.ogv", window, *this, withAudio);
+void Renderer::playVideo(const string& path, bool withAudio) {
+  playfile(path.data(), window, *this, withAudio);
 }

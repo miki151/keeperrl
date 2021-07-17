@@ -106,7 +106,7 @@ class Renderer {
   void startMonkey();
   bool isMonkey();
 
-  void playIntro(bool withAudio);
+  void playVideo(const string& path, bool withAudio);
 
   static void putPixel(SDL::SDL_Surface*, Vec2, Color);
   void addTilesDirectory(const DirectoryPath&, Vec2 size);

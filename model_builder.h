@@ -36,7 +36,6 @@ class ModelBuilder {
 
   void measureSiteGen(int numTries, vector<string> types, vector<BiomeId> biomes);
 
-  PModel splashModel(const FilePath& splashPath);
   PModel battleModel(const FilePath& levelPath, vector<PCreature> allies, vector<CreatureList> enemies);
 
   ~ModelBuilder();

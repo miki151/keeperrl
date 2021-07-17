@@ -37,9 +37,9 @@ class Unlocks;
 
 class MainLoop {
   public:
-  MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& dataFreePath, const DirectoryPath& userPath,
-      const DirectoryPath& modsDir, Options*, Jukebox*, SokobanInput*, TileSet*, Unlocks*, int saveVersion,
-      string modVersion);
+  MainLoop(View*, Highscores*, FileSharing*, const DirectoryPath& paidDataPath, const DirectoryPath& dataFreePath,
+      const DirectoryPath& userPath, const DirectoryPath& modsDir, Options*, Jukebox*, SokobanInput*, TileSet*, Unlocks*,
+      int saveVersion, string modVersion);
 
   void start(bool tilesPresent);
   void modelGenTest(int numTries, const vector<std::string>& types, RandomGen&, Options*);
@@ -72,8 +72,8 @@ class MainLoop {
   PGame prepareCampaign(RandomGen&);
   PGame prepareWarlord(const SaveFileInfo&);
   enum class ExitCondition;
-  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, bool splashScreen,
-      function<optional<ExitCondition> (WGame)> = nullptr, milliseconds stepTimeMilli = milliseconds{3}, optional<int> maxTurns = none);
+  ExitCondition playGame(PGame, bool withMusic, bool noAutoSave, function<optional<ExitCondition> (WGame)> = nullptr,
+      milliseconds stepTimeMilli = milliseconds{3}, optional<int> maxTurns = none);
   void showCredits(const FilePath& path);
   void showMods();
   void playMenuMusic();
@@ -90,6 +90,7 @@ class MainLoop {
   bool isCompatible(int loadedVersion);
 
   View* view = nullptr;
+  DirectoryPath paidDataPath;
   DirectoryPath dataFreePath;
   DirectoryPath userPath;
   DirectoryPath modsDir;
