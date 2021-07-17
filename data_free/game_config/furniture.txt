@@ -380,48 +380,57 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "weapon rack"
   viewId = { "weapon_rack" }
+  emptyViewId = { "weapon_rack_empty" }
   canHideHere = true
   fire = 50
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   storageIds = {"weapons"}
+  hidesItems = true
 }
 "BOW_RACK" inherit "WEAPON_RACK"
 {
   name = "bow rack"
   viewId = { "bow_rack" }
+  emptyViewId = { "bow_rack_empty" }
   storageIds = {"bows"}
 }
 "SCROLL_STORAGE"
 {
   name = "scroll shelf"
   viewId = { "scroll_storage" }
+  emptyViewId = { "scroll_storage_empty" }
   canHideHere = true
   fire = 50
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   storageIds = {"scrolls"}
+  hidesItems = true
 }
 "POTION_STORAGE"
 {
   name = "potion shelf"
   viewId = { "potion_storage" }
+  emptyViewId = { "potion_storage_empty" }
   canHideHere = true
   fire = 50
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   storageIds = {"potions"}
+  hidesItems = true
 }
 "TREASURE_CHEST"
 {
   name = "treasure chest"
-  viewId = { "treasure_chest" }
+  viewId = { "treasurechest" }
+  emptyViewId = { "treasurechest_empty" }
   canHideHere = true
   fire = 50
   luxury = 0.4
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
   storageIds = {"gold"}
+  hidesItems = true
 }
 "EYEBALL"
 {

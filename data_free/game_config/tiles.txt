@@ -333,12 +333,19 @@
 { "key" "*" ColorId YELLOW }
 { "black_market_key" "*" ColorId RED }
 { "key_highlight" "*" ColorId ALMOST_WHITE }
-{ "treasure_chest" "=" ColorId BROWN }
-{ viewId = "weapon_rack" symbol = "=" color = ColorId LIGHT_GRAY roundShadow = true }
-{ viewId = "bow_rack" symbol = "=" color = ColorId GRAY roundShadow = true }
-{ viewId = "potion_storage" symbol = "ℍ" color = ColorId LIGHT_GRAY roundShadow = true
+{ viewId = "treasurechest" symbol = "=" color = ColorId YELLOW roundShadow = true }
+{ viewId = "treasurechest_empty" symbol = "=" color = ColorId YELLOW roundShadow = true }
+{ viewId = "weapon_rack" symbol = "=" color = ColorId LIGHT_BROWN roundShadow = true }
+{ viewId = "weapon_rack_empty" symbol = "=" color = ColorId LIGHT_GRAY roundShadow = true }
+{ viewId = "bow_rack" symbol = "=" color = ColorId BROWN roundShadow = true }
+{ viewId = "bow_rack_empty" symbol = "=" color = ColorId GRAY roundShadow = true }
+{ viewId = "potion_storage" symbol = "ℍ" color = ColorId LIGHT_BLUE roundShadow = true
     isSymbolFont = true}
-{ viewId = "scroll_storage" symbol = "ℍ" color = ColorId LIGHT_BROWN roundShadow = true
+{ viewId = "potion_storage_empty" symbol = "ℍ" color = ColorId LIGHT_GRAY roundShadow = true
+    isSymbolFont = true}
+{ viewId = "scroll_storage" symbol = "ℍ" color = ColorId LIGHT_BLUE roundShadow = true
+    isSymbolFont = true}
+{ viewId = "scroll_storage_empty" symbol = "ℍ" color = ColorId LIGHT_BROWN roundShadow = true
     isSymbolFont = true}
 { "coffin1" "⚰" ColorId BROWN true }
 { "coffin2" "⚰" ColorId GRAY true }

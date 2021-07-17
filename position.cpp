@@ -400,6 +400,9 @@ void Position::getViewIndex(ViewIndex& index, const Creature* viewer) const {
       if (furniture->isVisibleTo(viewer) && furniture->getViewObject()) {
         auto obj = *furniture->getViewObject();
         obj.setGenericId(level->getUniqueId() + coord.x * 2000 + coord.y);
+        if (auto& id = furniture->getEmptyViewId())
+          if (getInventory().isEmpty())
+            obj.setId(*id);
         index.insert(std::move(obj));
       }
     }
