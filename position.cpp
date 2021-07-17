@@ -394,12 +394,15 @@ void Position::getViewIndex(ViewIndex& index, const Creature* viewer) const {
       index.setHighlight(HighlightType::UNAVAILABLE);
     if (isCovered())
       index.setHighlight(HighlightType::INDOORS);
-    for (auto furniture : getFurniture())
+    for (auto furniture : getFurniture()) {
+      if (furniture->doesHideItems())
+        index.removeObject(ViewLayer::ITEM);
       if (furniture->isVisibleTo(viewer) && furniture->getViewObject()) {
         auto obj = *furniture->getViewObject();
         obj.setGenericId(level->getUniqueId() + coord.x * 2000 + coord.y);
         index.insert(std::move(obj));
       }
+    }
     if (index.noObjects())
       index.insert(ViewObject(ViewId("empty"), ViewLayer::FLOOR_BACKGROUND));
     if (viewer) {

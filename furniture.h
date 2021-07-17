@@ -123,6 +123,7 @@ class Furniture {
   void spreadBlood(Position);
   int getMaxTraining(ExperienceType) const;
   bool hasRequiredSupport(Position) const;
+  bool doesHideItems() const;
   optional<ViewId> getSupportViewId(Position) const;
   optional<FurnitureType> getUpgrade() const;
   optional<FXVariantName> getUsageFX() const;
@@ -245,6 +246,7 @@ class Furniture {
   optional<Effect> SERIAL(itemsRemovedEffect);
   bool SERIAL(eyeball) = false;
   vector<StorageId> SERIAL(storageIds);
+  bool SERIAL(hidesItems) = false;
 };
 
 static_assert(std::is_nothrow_move_constructible<Furniture>::value, "T should be noexcept MoveConstructible");

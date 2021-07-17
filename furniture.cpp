@@ -53,7 +53,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
   ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(dissolveTo));
   ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), NAMED(freezeTo), NAMED(fillPit), NAMED(itemsRemovedEffect));
-  ar(OPTION(eyeball), OPTION(storageIds));
+  ar(OPTION(eyeball), OPTION(storageIds), OPTION(hidesItems));
 }
 
 template <class Archive>
@@ -181,6 +181,10 @@ void Furniture::setTribe(TribeId id) {
 
 bool Furniture::hasRequiredSupport(Position pos) const {
   return requiredSupport.empty() || !!getSupportInfo(pos);
+}
+
+bool Furniture::doesHideItems() const {
+  return hidesItems;
 }
 
 optional<ViewId> Furniture::getSupportViewId(Position pos) const {

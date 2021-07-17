@@ -143,8 +143,8 @@ void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
   // viewer is null only in Spectator mode, so setting a random id to lastViewer is ok
   lastViewer = viewer ? viewer->getUniqueId() : Creature::Id();
   ret.modItemCounts() = inventory->getCounts();
-  if (Item* it = getTopItem()) {
-    auto obj = it->getViewObject();
+  if (!getInventory().isEmpty()) {
+    auto obj = getInventory().getItems().back()->getViewObject();
     for (Item* it : getInventory().getItems())
       if (it->getFire().isBurning()) {
         obj.setModifier(ViewObject::Modifier::BURNING);
@@ -181,13 +181,6 @@ bool Square::isOnFire() const {
 
 void Square::setOnFire(bool state) {
   onFire = state;
-}
-
-Item* Square::getTopItem() const {
-  if (inventory->isEmpty())
-    return nullptr;
-  else
-    return inventory->getItems().back();
 }
 
 PItem Square::removeItem(Position pos, Item* it) {

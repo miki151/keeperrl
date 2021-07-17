@@ -102,7 +102,6 @@ class Square {
   void serialize(Archive&, const unsigned int);
 
   private:
-  Item* getTopItem() const;
   HeapAllocated<Inventory> SERIAL(inventory);
   Creature* SERIAL(creature) = nullptr;
   optional<StairKey> SERIAL(landingLink);
