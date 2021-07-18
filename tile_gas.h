@@ -17,24 +17,22 @@
 
 #include "util.h"
 #include "position.h"
+#include "tile_gas_type.h"
 
 class Level;
 
-RICH_ENUM(TileGasType, POISON, FOG);
-
 class TileGas {
   public:
-  void addAmount(TileGasType, double amount);
+  void addAmount(Position, TileGasType, double amount);
   void tick(Position);
   double getAmount(TileGasType) const;
-
   static double getFogVisionCutoff();
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  EnumMap<TileGasType, double> SERIAL(amount);
+  unordered_map<TileGasType, double, CustomHash<TileGasType>> SERIAL(amount);
 };
 
 

@@ -28,6 +28,7 @@ class Inventory;
 class Position;
 class ViewIndex;
 class Attack;
+class ContentFactory;
 
 class Square {
   public:
@@ -44,10 +45,7 @@ class Square {
   /** Returns the entry point details. Returns none if square is not entry point. See setLandingLink().*/
   optional<StairKey> getLandingLink() const;
 
-  /** Adds some poison gas to the square.*/
   void addGas(Position, TileGasType, double amount);
-
-  /** Returns the amount of poison gas on this square.*/
   double getGasAmount(TileGasType) const;
 
   /** Sets the level this square is on.*/
@@ -76,7 +74,7 @@ class Square {
       For this method to be called, the square coordinates must be added with Level::addTickingSquare().*/
   void tick(Position);
 
-  void getViewIndex(ViewIndex&, const Creature* viewer) const;
+  void getViewIndex(const ContentFactory*, ViewIndex&, const Creature* viewer) const;
 
   bool itemLands(vector<Item*> item, const Attack& attack) const;
   void onItemLands(Position, vector<PItem>, const Attack&);

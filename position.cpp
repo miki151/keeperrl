@@ -31,6 +31,7 @@
 #include "bucket_map.h"
 #include "vision.h"
 #include "tile_gas.h"
+#include "tile_gas_info.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -390,7 +391,7 @@ string Position::getName() const {
 void Position::getViewIndex(ViewIndex& index, const Creature* viewer) const {
   PROFILE;
   if (isValid()) {
-    getSquare()->getViewIndex(index, viewer);
+    getSquare()->getViewIndex(getGame()->getContentFactory(), index, viewer);
     if (isUnavailable())
       index.setHighlight(HighlightType::UNAVAILABLE);
     if (isCovered())
@@ -1120,7 +1121,13 @@ bool Position::canSeeThruIgnoringGas(VisionId id) const {
 
 bool Position::canSeeThru(VisionId id) const {
   PROFILE;
-  return isValid() && canSeeThruIgnoringGas(id) && getSquare()->getGasAmount(TileGasType::FOG) < TileGas::getFogVisionCutoff();
+  if (!isValid() || !canSeeThruIgnoringGas(id))
+    return false;
+  if (auto game = getGame())
+    for (auto& type : game->getContentFactory()->tileGasTypes)
+      if (type.second.blocksVision && getSquare()->getGasAmount(type.first) >= TileGas::getFogVisionCutoff())
+        return false;
+  return true;
 }
 
 bool Position::stopsProjectiles(VisionId id) const {

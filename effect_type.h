@@ -19,6 +19,7 @@
 #include "minion_trait.h"
 #include "special_attr.h"
 #include "tech_id.h"
+#include "tile_gas_type.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \

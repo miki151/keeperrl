@@ -32,6 +32,8 @@
 #include "fire.h"
 #include "lasting_effect.h"
 #include "furniture.h"
+#include "content_factory.h"
+#include "tile_gas_info.h"
 
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
@@ -94,12 +96,9 @@ void Square::tick(Position pos) {
           break;
         }
   }
-  auto fogAmount = tileGas->getAmount(TileGasType::FOG);
   tileGas->tick(pos);
-  if (fogAmount >= TileGas::getFogVisionCutoff() && tileGas->getAmount(TileGasType::FOG) < TileGas::getFogVisionCutoff())
-    pos.updateVisibility();
-  if (creature && tileGas->getAmount(TileGasType::POISON) > 0.2) {
-    creature->poisonWithGas(min(1.0, tileGas->getAmount(TileGasType::POISON)));
+  if (creature && tileGas->getAmount(TileGasType("POISON_GAS")) > 0.2) {
+    creature->poisonWithGas(min(1.0, tileGas->getAmount(TileGasType("POISON_GAS"))));
   }
 }
 
@@ -129,11 +128,7 @@ void Square::onItemLands(Position pos, vector<PItem> item, const Attack& attack)
 void Square::addGas(Position pos, TileGasType type, double amount) {
   setDirty(pos);
   if (pos.canSeeThruIgnoringGas(VisionId::NORMAL)) {
-    auto amountBefore = tileGas->getAmount(type);
-    tileGas->addAmount(type, amount);
-    if (type == TileGasType::FOG && amountBefore < TileGas::getFogVisionCutoff() &&
-        tileGas->getAmount(type) >= TileGas::getFogVisionCutoff())
-      pos.updateVisibility();
+    tileGas->addAmount(pos, type, amount);
     pos.getLevel()->addTickingSquare(pos.getCoord());
   }
 }
@@ -142,14 +137,7 @@ double Square::getGasAmount(TileGasType type) const {
   return tileGas->getAmount(type);
 }
 
-static Color getGasColor(TileGasType type, double amount) {
-  switch (type) {
-    case TileGasType::FOG: return Color::WHITE.transparency(amount * 255);
-    case TileGasType::POISON: return Color::GREEN.transparency(amount * 255);
-  }
-}
-
-void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
+void Square::getViewIndex(const ContentFactory* factory, ViewIndex& ret, const Creature* viewer) const {
   if ((!viewer && lastViewer) || (viewer && lastViewer == viewer->getUniqueId())) {
     ret = *viewIndex;
     return;
@@ -167,10 +155,10 @@ void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
     ret.insert(std::move(obj));
   }
   CHECK(ret.getGasAmounts().empty());
-  for (auto type : ENUM_ALL(TileGasType)) {
-    auto amount = tileGas->getAmount(type);
+  for (auto& type : factory->tileGasTypes) {
+    auto amount = tileGas->getAmount(type.first);
     if (amount > 0)
-      ret.addGasAmount(getGasColor(type, amount));
+      ret.addGasAmount(type.second.color.transparency(amount * 255));
   }
   *viewIndex = ret;
 }

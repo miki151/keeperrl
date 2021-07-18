@@ -1,0 +1,15 @@
+"FOG" {
+  "fog"
+  ColorId WHITE
+  0.95
+  0.0
+  true
+}
+
+"POISON_GAS" {
+  "poison gas"
+  ColorId GREEN
+  0.98
+  0.1
+  false
+}

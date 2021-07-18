@@ -49,6 +49,8 @@
 #include "layout_generator.h"
 #include "scripted_ui.h"
 #include "storage_id.h"
+#include "tile_gas_type.h"
+#include "tile_gas_info.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const vector<string>& s, vector<string> filename, KeyVerifier* keyVerifier) {
@@ -103,3 +105,4 @@ ADD_IMP(map<string, TestStruct5>)
 ADD_IMP(map<string, vector<int>>)
 ADD_IMP(map<ScriptedUIId, ScriptedUI>)
 ADD_IMP(vector<PrimaryId<StorageId>>)
+ADD_IMP(map<PrimaryId<TileGasType>, TileGasInfo>)

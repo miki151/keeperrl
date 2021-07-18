@@ -62,6 +62,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "random_layouts";
     case GameConfigId::STORAGE_IDS:
       return "storage_ids";
+    case GameConfigId::TILE_GAS_TYPES:
+      return "tile_gas_types";
   }
 }
 

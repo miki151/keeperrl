@@ -18,6 +18,7 @@
 #include "layout_mapping.h"
 #include "keeper_creature_info.h"
 #include "adventurer_creature_info.h"
+#include "tile_gas_type.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -28,6 +29,7 @@ class ImmigrantInfo;
 class ZLevelInfo;
 class BuildingInfo;
 struct LayoutGenerator;
+struct TileGasInfo;
 
 class ContentFactory {
   public:
@@ -57,6 +59,7 @@ class ContentFactory {
   vector<CollectiveResourceId> SERIAL(resourceOrder);
   map<LayoutMappingId, LayoutMapping> SERIAL(layoutMapping);
   map<RandomLayoutId, LayoutGenerator> SERIAL(randomLayouts);
+  map<TileGasType, TileGasInfo> SERIAL(tileGasTypes);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

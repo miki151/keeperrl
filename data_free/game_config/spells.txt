@@ -96,7 +96,7 @@
 "poison breath"
 {
   symbol = "☠"
-  effect = Name "poison breath" Area 1 EmitGas POISON 0.5
+  effect = Name "poison breath" Area 1 EmitGas "POISON_GAS" 0.5
   fx = {FLAMETHROWER ColorId GREEN}
   range = 4
   cooldown = 30

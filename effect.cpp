@@ -64,6 +64,7 @@
 #include "view.h"
 #include "player.h"
 #include "tile_gas.h"
+#include "tile_gas_info.h"
 
 namespace {
 struct DefaultType {
@@ -181,7 +182,7 @@ static bool applyToCreature(const Effects::Escape& e, Creature* c, Creature*) {
   int maxW = 0;
   auto movementType = c->getMovementType();
   for (Position v : c->getPosition().getRectangle(area)) {
-    if (!v.canEnter(c) || v.isBurning() || v.getGasAmount(TileGasType::POISON) > 0 ||
+    if (!v.canEnter(c) || v.isBurning() || v.getGasAmount(TileGasType("POISON_GAS")) > 0 ||
         !v.isConnectedTo(c->getPosition(), movementType) || *v.dist8(c->getPosition()) > e.maxDist)
       continue;
     if (auto weightV = weight.getValueMaybe(v)) {
@@ -1000,17 +1001,19 @@ static bool apply(const Effects::ReviveCorpse& effect, Position pos, Creature* a
   return false;
 }
 
-static string getName(const Effects::EmitGas&, const ContentFactory*) {
-  return "poison gas";
+static string getName(const Effects::EmitGas& m, const ContentFactory* f) {
+  return f->tileGasTypes.at(m.type).name;
+
 }
 
-static string getDescription(const Effects::EmitGas&, const ContentFactory*) {
-  return "Emits poison gas";
+static string getDescription(const Effects::EmitGas& m, const ContentFactory* f) {
+  return "Emits " + f->tileGasTypes.at(m.type).name;
 }
 
 static bool apply(const Effects::EmitGas& m, Position pos, Creature*) {
   pos.addGas(m.type, m.amount);
-  pos.globalMessage("A cloud of gas is released");
+  auto& info = pos.getGame()->getContentFactory()->tileGasTypes.at(m.type);
+  pos.globalMessage("A " + info.name + " cloud is released");
   pos.unseenMessage("You hear a hissing sound");
   return true;
 }

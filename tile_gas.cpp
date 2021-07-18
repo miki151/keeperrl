@@ -14,54 +14,54 @@
    If not, see http://www.gnu.org/licenses/ . */
 
 #include "stdafx.h"
-
+#include "util.h"
 #include "tile_gas.h"
 #include "level.h"
-#include "util.h"
+#include "game.h"
+#include "content_factory.h"
+#include "tile_gas_info.h"
 
 SERIALIZE_DEF(TileGas, amount)
-
-void TileGas::addAmount(TileGasType t, double a) {
-  CHECK(a > 0);
-  amount[t] = min(1., a + amount[t]);
-}
-
-
-static double getGasSpread(TileGasType type) {
-  switch (type) {
-    case TileGasType::FOG: return 0.01;
-    case TileGasType::POISON: return 0.1;
-  }
-}
-const double decrease = 0.98;
 
 double TileGas::getFogVisionCutoff() {
   return 0.2;
 }
 
+void TileGas::addAmount(Position pos, TileGasType t, double a) {
+  CHECK(a > 0);
+  auto prevValue = amount[t];
+  amount[t] = min(1., a + amount[t]);
+  if (prevValue < getFogVisionCutoff() && amount[t] >= getFogVisionCutoff())
+    pos.updateVisibility();
+}
+
 void TileGas::tick(Position pos) {
   PROFILE;
-  for (auto type : ENUM_ALL(TileGasType)) {
-    auto& value = amount[type];
-    if (value < 0.01) {
+  for (auto& elem : amount) {
+    auto& value = elem.second;
+    auto prevValue = value;
+    if (value < 0.1) {
       value = 0;
       continue;
     }
-    const auto spread = getGasSpread(type);
-    for (Position v : pos.neighbors8(Random)) {
-      if (v.canSeeThruIgnoringGas(VisionId::NORMAL) && value > 0 && v.getGasAmount(type) < value) {
-        double transfer = pos.getDir(v).isCardinal4() ? spread : spread / 2;
-        transfer = min(value, transfer);
-        transfer = min((value - v.getGasAmount(type)) / 2, transfer);
-        value -= transfer;
-        v.addGas(type, transfer);
+    auto& info = pos.getGame()->getContentFactory()->tileGasTypes.at(elem.first);
+    if (info.spread > 0)
+      for (Position v : pos.neighbors8(Random)) {
+        if (v.canSeeThruIgnoringGas(VisionId::NORMAL) && value > 0 && v.getGasAmount(elem.first) < value) {
+          double transfer = pos.getDir(v).isCardinal4() ? info.spread : info.spread / 2;
+          transfer = min(value, transfer);
+          transfer = min((value - v.getGasAmount(elem.first)) / 2, transfer);
+          value -= transfer;
+          v.addGas(elem.first, transfer);
+        }
       }
-    }
-    value = max(0.0, value * decrease);
+    value = max(0.0, value * info.decrease);
+    if (prevValue >= getFogVisionCutoff() && value < getFogVisionCutoff())
+      pos.updateVisibility();
   }
 }
 
 double TileGas::getAmount(TileGasType type) const {
-  return amount[type];
+  return getValueMaybe(amount, type).value_or(0.0);
 }
 

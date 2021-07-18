@@ -1702,7 +1702,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "poison gas trap"
   viewId = { "trap"  Rgb 58 156 68 255 }
-  entryType = Trap { Area 1 EmitGas POISON 0.4 }
+  entryType = Trap { Area 1 EmitGas "POISON_GAS" 0.4 }
   warning = true
   constructMessage = SET_UP
 }

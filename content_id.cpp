@@ -19,6 +19,7 @@
 #include "workshop_type.h"
 #include "resource_id.h"
 #include "storage_id.h"
+#include "tile_gas_type.h"
 
 static const char* staticsInitialized = nullptr;
 
@@ -214,4 +215,5 @@ INST(BiomeId)
 INST(CollectiveResourceId)
 INST(WorkshopType)
 INST(StorageId)
+INST(TileGasType)
 #undef INST
