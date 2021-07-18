@@ -18,7 +18,7 @@
 #include "view_index.h"
 #include "view_object.h"
 
-SERIALIZE_DEF(ViewIndex, objIndex, highlights, gradients, objects, anyHighlight, itemCounts)
+SERIALIZE_DEF(ViewIndex, objIndex, highlights, tileGas, objects, anyHighlight, itemCounts, nightAmount)
 
 ViewIndex::ViewIndex() {
   for (auto& elem : objIndex)
@@ -52,7 +52,7 @@ bool ViewIndex::isEmpty() const {
 }
 
 bool ViewIndex::hasAnyHighlight() const {
-  return anyHighlight;
+  return anyHighlight || !tileGas.empty();
 }
 
 bool ViewIndex::noObjects() const {
@@ -78,16 +78,20 @@ const ViewObject* ViewIndex::getTopObject(const vector<ViewLayer>& layers) const
       return &getObject(layers[i]);
   return nullptr;
 }
-
-void ViewIndex::setGradient(GradientType h, double amount) {
-  CHECK(amount >= 0 && amount <= 1);
-  if (amount > 0)
-    anyHighlight = true;
-  gradients[h] = (std::uint8_t) trunc(amount * 255);
+void ViewIndex::setNightAmount(double amount) {
+  nightAmount = (std::uint8_t) trunc(amount * 255);
 }
 
-double ViewIndex::getGradient(GradientType h) const {
-  return double(gradients[h]) / 255.0;
+double ViewIndex::getNightAmount() const {
+  return double(nightAmount) / 255.0;
+}
+
+void ViewIndex::addGasAmount(Color color) {
+  tileGas.push_back(color);
+}
+
+const vector<Color>& ViewIndex::getGasAmounts() const {
+  return tileGas;
 }
 
 const static ItemCounts emptyCounts;

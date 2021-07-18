@@ -163,7 +163,7 @@ static void addPoisonCloud(FXManager& mgr) {
   pdef.size = {{0.0f, 0.4f, 1.0f}, {15.0f, 30.0f, 38.0f}};
   pdef.alpha = {{0.0f, 0.05f, 0.2f, 1.0f}, {0.0f, 0.3f, 0.4f, 0.0f}};
   pdef.slowdown = {{0.0f, 0.2f}, {0.0f, 10.0f}};
-  pdef.color = rgb(Color(100, 200, 50));
+  pdef.color = rgb(Color::WHITE);
   pdef.textureName = TextureName::CLOUDS_SOFT;
 
   SubSystemDef ssdef1(pdef, edef, 0.0f, 1.0f);

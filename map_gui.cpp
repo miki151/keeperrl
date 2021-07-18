@@ -99,14 +99,14 @@ void MapGui::addAnimation(PAnimation animation, Vec2 pos) {
 }
 
 static Color blendNightColor(Color color, const ViewIndex& index) {
-  color = color.blend(Color(0, 0, 40).transparency(int(index.getGradient(GradientType::NIGHT) * 150)));
+  color = color.blend(Color(0, 0, 40).transparency(int(index.getNightAmount() * 150)));
   if (index.isHighlight(HighlightType::MEMORY))
     color = color.blend(Color::BLACK.transparency(40));
   return color;
 }
 
 static Color getNightColor(const ViewIndex& index) {
-  auto color = Color::BLACK.transparency(int(index.getGradient(GradientType::NIGHT) * 150));
+  auto color = Color::BLACK.transparency(int(index.getNightAmount() * 150));
   if (index.isHighlight(HighlightType::MEMORY))
     color = color.blend(Color::BLACK.transparency(40));
   return color;
@@ -947,14 +947,10 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
   }
 }
 
-void MapGui::renderGradient(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, GradientType gradient, Vec2 tilePos) {
-  switch (gradient) {
-    case GradientType::POISON_GAS:
-      if (index.getGradient(gradient) > 0)
-        fxHighlight(renderer, FXInfo{FXName::POISON_CLOUD, Color::GREEN, float(index.getGradient(gradient))}, tilePos, index);
-      break;
-    case GradientType::NIGHT:
-      break;
+void MapGui::renderTileGas(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, Vec2 tilePos) {
+  for (auto& elem : index.getGasAmounts()) {
+    auto amount = elem.a;
+    fxHighlight(renderer, FXInfo{FXName::POISON_CLOUD, elem.transparency(255), float(amount) / 255}, tilePos, index);
   }
 }
 
@@ -971,8 +967,7 @@ void MapGui::renderHighlights(Renderer& renderer, Vec2 size, milliseconds curren
               isRenderedHighlightLow(renderer, *index, highlight) == lowHighlights)
             renderHighlight(renderer, pos, size, *index, highlight, wpos);
         if (!lowHighlights)
-          for (GradientType gradient : ENUM_ALL_REVERSE(GradientType))
-            renderGradient(renderer, pos, size, *index, gradient, wpos);
+          renderTileGas(renderer, pos, size, *index, wpos);
       }
   for (Vec2 wpos : lowHighlights ? tutorialHighlightLow : tutorialHighlightHigh) {
     Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
@@ -1360,7 +1355,7 @@ void MapGui::updateObject(Vec2 pos, CreatureView* view, Renderer& renderer, mill
   view->getViewIndex(pos, index);
   level->setNeedsRenderUpdate(pos, false);
   if (index.hasObject(ViewLayer::FLOOR) || index.hasObject(ViewLayer::FLOOR_BACKGROUND))
-    index.setGradient(GradientType::NIGHT, 1.0 - level->getLight(pos));
+    index.setNightAmount(1.0 - level->getLight(pos));
   lastSquareUpdate[pos] = currentTime;
   connectionMap[pos].clear();
   shadowed.erase(pos + Vec2(0, 1));

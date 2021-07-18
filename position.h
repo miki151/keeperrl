@@ -106,8 +106,8 @@ class Position {
   void allowMovementForTribe(TribeId);
   bool isTribeForbidden(TribeId) const;
   optional<TribeId> getForbiddenTribe() const;
-  void addPoisonGas(double amount);
-  double getPoisonGasAmount() const;
+  void addGas(TileGasType, double amount);
+  double getGasAmount(TileGasType) const;
   bool isCovered() const;
   bool sunlightBurns() const;
   double getLightEmission() const;
@@ -125,6 +125,7 @@ class Position {
   vector<Position> getVisibleTiles(const Vision&);
   void updateConnectivity() const;
   void updateVisibility() const;
+  bool canSeeThruIgnoringGas(VisionId) const;
   bool canSeeThru(VisionId) const;
   bool stopsProjectiles(VisionId) const;
   bool isVisibleBy(const Creature*) const;

@@ -25,7 +25,7 @@
 #include "vision.h"
 #include "view_index.h"
 #include "inventory.h"
-#include "poison_gas.h"
+#include "tile_gas.h"
 #include "tribe.h"
 #include "view.h"
 #include "game_event.h"
@@ -36,7 +36,7 @@
 template <class Archive> 
 void Square::serialize(Archive& ar, const unsigned int version) { 
   ar(inventory, onFire);
-  ar(creature, landingLink, poisonGas);
+  ar(creature, landingLink, tileGas);
   ar(lastViewer, viewIndex);
   ar(forbiddenTribe);
   if (progressMeter)
@@ -94,9 +94,12 @@ void Square::tick(Position pos) {
           break;
         }
   }
-  poisonGas->tick(pos);
-  if (creature && poisonGas->getAmount() > 0.2) {
-    creature->poisonWithGas(min(1.0, poisonGas->getAmount()));
+  auto fogAmount = tileGas->getAmount(TileGasType::FOG);
+  tileGas->tick(pos);
+  if (fogAmount >= TileGas::getFogVisionCutoff() && tileGas->getAmount(TileGasType::FOG) < TileGas::getFogVisionCutoff())
+    pos.updateVisibility();
+  if (creature && tileGas->getAmount(TileGasType::POISON) > 0.2) {
+    creature->poisonWithGas(min(1.0, tileGas->getAmount(TileGasType::POISON)));
   }
 }
 
@@ -123,16 +126,27 @@ void Square::onItemLands(Position pos, vector<PItem> item, const Attack& attack)
     pos.dropItems(std::move(item));
 }
 
-void Square::addPoisonGas(Position pos, double amount) {
+void Square::addGas(Position pos, TileGasType type, double amount) {
   setDirty(pos);
-  if (pos.canSeeThru(VisionId::NORMAL)) {
-    poisonGas->addAmount(amount);
+  if (pos.canSeeThruIgnoringGas(VisionId::NORMAL)) {
+    auto amountBefore = tileGas->getAmount(type);
+    tileGas->addAmount(type, amount);
+    if (type == TileGasType::FOG && amountBefore < TileGas::getFogVisionCutoff() &&
+        tileGas->getAmount(type) >= TileGas::getFogVisionCutoff())
+      pos.updateVisibility();
     pos.getLevel()->addTickingSquare(pos.getCoord());
   }
 }
 
-double Square::getPoisonGasAmount() const {
-  return poisonGas->getAmount();
+double Square::getGasAmount(TileGasType type) const {
+  return tileGas->getAmount(type);
+}
+
+static Color getGasColor(TileGasType type, double amount) {
+  switch (type) {
+    case TileGasType::FOG: return Color::WHITE.transparency(amount * 255);
+    case TileGasType::POISON: return Color::GREEN.transparency(amount * 255);
+  }
 }
 
 void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
@@ -152,8 +166,12 @@ void Square::getViewIndex(ViewIndex& ret, const Creature* viewer) const {
       }
     ret.insert(std::move(obj));
   }
-  if (poisonGas->getAmount() > 0)
-    ret.setGradient(GradientType::POISON_GAS, min(1.0, poisonGas->getAmount()));
+  CHECK(ret.getGasAmounts().empty());
+  for (auto type : ENUM_ALL(TileGasType)) {
+    auto amount = tileGas->getAmount(type);
+    if (amount > 0)
+      ret.addGasAmount(getGasColor(type, amount));
+  }
   *viewIndex = ret;
 }
 

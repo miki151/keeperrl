@@ -63,6 +63,7 @@
 #include "unlocks.h"
 #include "view.h"
 #include "player.h"
+#include "tile_gas.h"
 
 namespace {
 struct DefaultType {
@@ -91,17 +92,6 @@ vector<Creature*> Effect::summonCreatures(Position pos, vector<PCreature> creatu
       summonFX(*v);
     }
   return ret;
-}
-
-void Effect::emitPoisonGas(Position pos, double amount, bool msg) {
-  PROFILE;
-  for (Position v : pos.neighbors8())
-    v.addPoisonGas(amount / 2);
-  pos.addPoisonGas(amount);
-  if (msg) {
-    pos.globalMessage("A cloud of gas is released");
-    pos.unseenMessage("You hear a hissing sound");
-  }
 }
 
 vector<Creature*> Effect::summon(Creature* c, CreatureId id, int num, optional<TimeInterval> ttl, TimeInterval delay,
@@ -191,7 +181,7 @@ static bool applyToCreature(const Effects::Escape& e, Creature* c, Creature*) {
   int maxW = 0;
   auto movementType = c->getMovementType();
   for (Position v : c->getPosition().getRectangle(area)) {
-    if (!v.canEnter(c) || v.isBurning() || v.getPoisonGasAmount() > 0 ||
+    if (!v.canEnter(c) || v.isBurning() || v.getGasAmount(TileGasType::POISON) > 0 ||
         !v.isConnectedTo(c->getPosition(), movementType) || *v.dist8(c->getPosition()) > e.maxDist)
       continue;
     if (auto weightV = weight.getValueMaybe(v)) {
@@ -1010,20 +1000,22 @@ static bool apply(const Effects::ReviveCorpse& effect, Position pos, Creature* a
   return false;
 }
 
-static string getName(const Effects::EmitPoisonGas&, const ContentFactory*) {
+static string getName(const Effects::EmitGas&, const ContentFactory*) {
   return "poison gas";
 }
 
-static string getDescription(const Effects::EmitPoisonGas&, const ContentFactory*) {
+static string getDescription(const Effects::EmitGas&, const ContentFactory*) {
   return "Emits poison gas";
 }
 
-static bool apply(const Effects::EmitPoisonGas& m, Position pos, Creature*) {
-  Effect::emitPoisonGas(pos, m.amount, true);
+static bool apply(const Effects::EmitGas& m, Position pos, Creature*) {
+  pos.addGas(m.type, m.amount);
+  pos.globalMessage("A cloud of gas is released");
+  pos.unseenMessage("You hear a hissing sound");
   return true;
 }
 
-static EffectAIIntent shouldAIApplyToCreature(const Effects::EmitPoisonGas&, const Creature* victim, bool isEnemy) {
+static EffectAIIntent shouldAIApplyToCreature(const Effects::EmitGas&, const Creature* victim, bool isEnemy) {
   return isEnemy ? 1 : -1;
 }
 

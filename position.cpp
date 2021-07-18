@@ -30,6 +30,7 @@
 #include "shortest_path.h"
 #include "bucket_map.h"
 #include "vision.h"
+#include "tile_gas.h"
 
 template <class Archive>
 void Position::serialize(Archive& ar, const unsigned int) {
@@ -906,16 +907,16 @@ vector<Position> Position::getVisibleTiles(const Vision& vision) {
     return {};
 }
 
-void Position::addPoisonGas(double amount) {
+void Position::addGas(TileGasType type, double amount) {
   PROFILE;
   if (isValid())
-    modSquare()->addPoisonGas(*this, amount);
+    modSquare()->addGas(*this, type, amount);
 }
 
-double Position::getPoisonGasAmount() const {
+double Position::getGasAmount(TileGasType type) const {
   PROFILE;
   if (isValid())
-    return getSquare()->getPoisonGasAmount();
+    return getSquare()->getGasAmount(type);
   else
     return 0;
 }
@@ -1108,13 +1109,18 @@ bool Position::canNavigateCalc(const MovementType& type) const {
   return canEnterEmptyCalc(type, ignore);
 }
 
-bool Position::canSeeThru(VisionId id) const {
+bool Position::canSeeThruIgnoringGas(VisionId id) const {
   PROFILE;
   if (!isValid())
     return false;
   if (auto furniture = level->furniture->getBuilt(FurnitureLayer::MIDDLE).getReadonly(coord))
     return furniture->canSeeThru(id);
   return true;
+}
+
+bool Position::canSeeThru(VisionId id) const {
+  PROFILE;
+  return isValid() && canSeeThruIgnoringGas(id) && getSquare()->getGasAmount(TileGasType::FOG) < TileGas::getFogVisionCutoff();
 }
 
 bool Position::stopsProjectiles(VisionId id) const {

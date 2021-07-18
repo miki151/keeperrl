@@ -57,9 +57,10 @@ struct Enhance {
   const char* amountAs(const char* positive, const char* negative) const;
   SERIALIZE_ALL(type, amount)
 };
-struct EmitPoisonGas {
+struct EmitGas {
+  TileGasType SERIAL(type); 
   double SERIAL(amount) = 0.8;
-  SERIALIZE_ALL(amount)
+  SERIALIZE_ALL(type, amount)
 };
 SIMPLE_EFFECT(CircularBlast);
 SIMPLE_EFFECT(Deception);
@@ -460,7 +461,7 @@ struct Price : GenericModifierEffect {
   X(UI, 78)\
   X(AddCompanion, 79)\
   X(SetPhylactery, 80)\
-  X(EmitPoisonGas, 81)\
+  X(EmitGas, 81)\
   X(AddTechnology, 82)\
   X(Caster, 83)\
   X(RemoveFurniture, 84)\

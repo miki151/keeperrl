@@ -24,7 +24,7 @@ struct SDL_Color;
 struct Color {
   Color(const SDL::SDL_Color&);
   Color(unsigned char, unsigned char, unsigned char, unsigned char = 255);
-  Color transparency(int);
+  Color transparency(int) const;
   static Color f(double, double, double, double = 1.0);
   Color operator*(Color);
   Color blend(Color) const;

@@ -53,11 +53,6 @@ RICH_ENUM(HighlightType,
   PRISON_NOT_CLOSED
 );
 
-RICH_ENUM(GradientType,
-  POISON_GAS,
-  NIGHT
-);
-
 class ViewIndex {
   public:
   ViewIndex();
@@ -79,10 +74,12 @@ class ViewIndex {
   const vector<ViewObject>& getAllObjects() const;
 
   void setHighlight(HighlightType, bool = true);
-  void setGradient(GradientType, double amount = 1);
+  void addGasAmount(Color);
+  void setNightAmount(double);
 
   bool isHighlight(HighlightType) const;
-  double getGradient(GradientType) const;
+  const vector<Color>& getGasAmounts() const;
+  double getNightAmount() const;
 
   const ItemCounts& getItemCounts() const;
   const ItemCounts& getEquipmentCounts() const;
@@ -97,7 +94,8 @@ class ViewIndex {
   std::array<char, EnumInfo<ViewLayer>::size> SERIAL(objIndex);
   vector<ViewObject> SERIAL(objects);
   EnumSet<HighlightType> SERIAL(highlights);
-  EnumMap<GradientType, std::uint8_t> SERIAL(gradients);
+  vector<Color> SERIAL(tileGas);
+  std::uint8_t SERIAL(nightAmount);
   bool SERIAL(anyHighlight) = false;
   optional<ViewId> hiddenId;
 };

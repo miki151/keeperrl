@@ -182,7 +182,7 @@ class MapGui : public GuiElem {
   optional<ViewId> getHighlightedFurniture();
   Color getHighlightColor(const ViewIndex&, HighlightType);
   void renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, HighlightType highlight, Vec2 tilePos);
-  void renderGradient(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, GradientType highlight, Vec2 tilePos);
+  void renderTileGas(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, Vec2 tilePos);
   void renderTexturedHighlight(Renderer&, Vec2 pos, Vec2 size, Color, ViewId viewId);
   void processScrolling(milliseconds);
   void considerScrollingToCreature();

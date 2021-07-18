@@ -26,7 +26,7 @@
 
 static void handle(FurnitureTickTypes::Pigsty, Position pos, Furniture* furniture) {
   PROFILE;
-  if (pos.getCreature() || !Random.roll(10) || pos.getPoisonGasAmount() > 0)
+  if (pos.getCreature() || !Random.roll(10))
     return;
   for (Position v : pos.neighbors8())
     if (v.getCreature() && v.getCreature()->getBody().isMinionFood())

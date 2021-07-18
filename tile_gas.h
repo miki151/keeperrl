@@ -20,17 +20,21 @@
 
 class Level;
 
-class PoisonGas {
+RICH_ENUM(TileGasType, POISON, FOG);
+
+class TileGas {
   public:
-  void addAmount(double amount);
+  void addAmount(TileGasType, double amount);
   void tick(Position);
-  double getAmount() const;
+  double getAmount(TileGasType) const;
+
+  static double getFogVisionCutoff();
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  double SERIAL(amount) = 0;
+  EnumMap<TileGasType, double> SERIAL(amount);
 };
 
 

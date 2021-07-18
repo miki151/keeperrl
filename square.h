@@ -23,7 +23,7 @@
 class Creature;
 class Item;
 class ProgressMeter;
-class PoisonGas;
+class TileGas;
 class Inventory;
 class Position;
 class ViewIndex;
@@ -45,10 +45,10 @@ class Square {
   optional<StairKey> getLandingLink() const;
 
   /** Adds some poison gas to the square.*/
-  void addPoisonGas(Position, double amount);
+  void addGas(Position, TileGasType, double amount);
 
   /** Returns the amount of poison gas on this square.*/
-  double getPoisonGasAmount() const;
+  double getGasAmount(TileGasType) const;
 
   /** Sets the level this square is on.*/
   void onAddedToLevel(Position) const;
@@ -105,7 +105,7 @@ class Square {
   HeapAllocated<Inventory> SERIAL(inventory);
   Creature* SERIAL(creature) = nullptr;
   optional<StairKey> SERIAL(landingLink);
-  HeapAllocated<PoisonGas> SERIAL(poisonGas);
+  HeapAllocated<TileGas> SERIAL(tileGas);
   mutable optional<UniqueEntity<Creature>::Id> SERIAL(lastViewer);
   unique_ptr<ViewIndex> SERIAL(viewIndex);
   optional<TribeId> SERIAL(forbiddenTribe);
