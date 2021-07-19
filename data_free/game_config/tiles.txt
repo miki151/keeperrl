@@ -331,6 +331,8 @@
 { "brain" "⚭" ColorId PINK true }
 { "tongue" "~" ColorId RED true }
 { "key" "*" ColorId YELLOW }
+{ "key" "*" ColorId YELLOW }
+{ viewId = "tile_gas" symbol = "🌫" color = ColorId WHITE isSymbolFont = true }
 { "black_market_key" "*" ColorId RED }
 { "key_highlight" "*" ColorId ALMOST_WHITE }
 { viewId = "treasurechest" symbol = "=" color = ColorId YELLOW roundShadow = true }

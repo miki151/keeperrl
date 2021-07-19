@@ -74,12 +74,18 @@ class ViewIndex {
   const vector<ViewObject>& getAllObjects() const;
 
   void setHighlight(HighlightType, bool = true);
-  void addGasAmount(Color);
+  void addGasAmount(string name, Color);
   void setNightAmount(double);
 
   bool isHighlight(HighlightType) const;
-  const vector<Color>& getGasAmounts() const;
   double getNightAmount() const;
+
+  struct TileGasInfo {
+    Color SERIAL(color);
+    string SERIAL(name);
+    SERIALIZE_ALL(color, name)
+  };
+  const vector<TileGasInfo>& getGasAmounts() const;
 
   const ItemCounts& getItemCounts() const;
   const ItemCounts& getEquipmentCounts() const;
@@ -94,7 +100,8 @@ class ViewIndex {
   std::array<char, EnumInfo<ViewLayer>::size> SERIAL(objIndex);
   vector<ViewObject> SERIAL(objects);
   EnumSet<HighlightType> SERIAL(highlights);
-  vector<Color> SERIAL(tileGas);
+
+  vector<TileGasInfo> SERIAL(tileGas);
   std::uint8_t SERIAL(nightAmount);
   bool SERIAL(anyHighlight) = false;
   optional<ViewId> hiddenId;

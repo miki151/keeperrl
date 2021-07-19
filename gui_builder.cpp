@@ -2596,6 +2596,13 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
     };
     tryHighlight(HighlightType::ALLIED_TOTEM, "Allied magical field", Color::GREEN);
     tryHighlight(HighlightType::HOSTILE_TOTEM, "Hostile magical field", Color::RED);
+    for (auto& gas : index.getGasAmounts()) {
+      lines.addElem(WL(getListBuilder)
+            .addElem(WL(viewObject, ViewId("tile_gas", gas.color.transparency(254))), 30)
+            .addElemAuto(WL(label, capitalFirst(gas.name)))
+            .buildHorizontalList());
+      lines.addElem(WL(margins, WL(rectangle, Color::DARK_GRAY), -9, 2, -9, 8), 12);
+    }
     for (auto layer : ENUM_ALL_REVERSE(ViewLayer))
       if (index.hasObject(layer)) {
         auto& viewObject = index.getObject(layer);

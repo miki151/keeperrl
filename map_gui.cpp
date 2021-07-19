@@ -949,8 +949,8 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
 
 void MapGui::renderTileGas(Renderer& renderer, Vec2 pos, Vec2 size, const ViewIndex& index, Vec2 tilePos) {
   for (auto& elem : index.getGasAmounts()) {
-    auto amount = elem.a;
-    fxHighlight(renderer, FXInfo{FXName::POISON_CLOUD, elem.transparency(255), float(amount) / 255}, tilePos, index);
+    auto amount = elem.color.a;
+    fxHighlight(renderer, FXInfo{FXName::POISON_CLOUD, elem.color.transparency(255), float(amount) / 255}, tilePos, index);
   }
 }
 

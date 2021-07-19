@@ -86,11 +86,11 @@ double ViewIndex::getNightAmount() const {
   return double(nightAmount) / 255.0;
 }
 
-void ViewIndex::addGasAmount(Color color) {
-  tileGas.push_back(color);
+void ViewIndex::addGasAmount(string name, Color color) {
+  tileGas.push_back(TileGasInfo{std::move(color), std::move(name)});
 }
 
-const vector<Color>& ViewIndex::getGasAmounts() const {
+const vector<ViewIndex::TileGasInfo>& ViewIndex::getGasAmounts() const {
   return tileGas;
 }
 

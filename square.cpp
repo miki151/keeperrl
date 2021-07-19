@@ -162,7 +162,7 @@ void Square::getViewIndex(const ContentFactory* factory, ViewIndex& ret, const C
   for (auto& type : factory->tileGasTypes) {
     auto amount = tileGas->getAmount(type.first);
     if (amount > 0)
-      ret.addGasAmount(type.second.color.transparency(amount * 255));
+      ret.addGasAmount(type.second.name, type.second.color.transparency(amount * 255));
   }
   *viewIndex = ret;
 }
