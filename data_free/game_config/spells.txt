@@ -176,6 +176,12 @@ End
   cooldown = 60
   sound = SPELL_DECEPTION
 }
+"fog cloud"
+{
+  symbol = "🌫"
+  effect = Name "fog" Description "Creates a fog cloud." Area 4 Filter DistanceD none 3.2 EmitGas "FOG" 1
+  cooldown = 40
+}
 "invisibility"
 {
   symbol = "🕵️"

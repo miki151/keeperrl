@@ -41,11 +41,12 @@
 "illusion" SPELL
 {
   "deception" 1
-  "invisibility" 2
-  "panic" 3
-  "pacify" 4
-  "advanced invisibility" 5
-  "blink" 6
+  "panic" 2
+  "fog" 3
+  "invisibility" 4
+  "pacify" 5
+  "advanced invisibility" 6
+  "blink" 7
 }
 "fighter" MELEE
 {
