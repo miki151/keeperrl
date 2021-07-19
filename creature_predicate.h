@@ -82,6 +82,12 @@ struct Distance {
   SERIALIZE_ALL(min, max)
 };
 
+struct DistanceD {
+  optional<double> SERIAL(min);
+  optional<double> SERIAL(max);
+  SERIALIZE_ALL(min, max)
+};
+
 struct Translate {
   Vec2 SERIAL(dir);
   HeapAllocated<CreaturePredicate> SERIAL(pred);
@@ -110,12 +116,13 @@ struct Translate {
   X(Health, 18)\
   X(CreatureId, 19)\
   X(Distance, 20)\
-  X(AIAfraidOf, 21)\
-  X(InTerritory, 22)\
-  X(Spellcaster, 23)\
-  X(Humanoid, 24)\
-  X(PopLimitReached, 25)\
-  X(Translate, 26)
+  X(DistanceD, 21)\
+  X(AIAfraidOf, 22)\
+  X(InTerritory, 23)\
+  X(Spellcaster, 24)\
+  X(Humanoid, 25)\
+  X(PopLimitReached, 26)\
+  X(Translate, 27)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

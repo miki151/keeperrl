@@ -245,6 +245,22 @@ static bool apply(const CreaturePredicates::Distance& e, Position pos, const Cre
   return dist >= e.min.value_or(-1) && dist < e.max.value_or(10000);
 }
 
+static string getName(const CreaturePredicates::DistanceD& p) {
+  auto ret = "distance"_s;
+  if (p.min)
+    ret += " from " + toString(*p.min);
+  if (p.max)
+    ret += " up to " + toString(*p.max);
+  return ret;
+}
+
+static bool apply(const CreaturePredicates::DistanceD& e, Position pos, const Creature* attacker) {
+  if (!attacker->getPosition().isSameLevel(pos))
+    return false;
+  auto dist = attacker->getPosition().getCoord().distD(pos.getCoord());
+  return dist >= e.min.value_or(-1) && dist <= e.max.value_or(10000);
+}
+
 static string getName(const CreaturePredicates::AIAfraidOf&) {
   return "AI afraid of";
 }
