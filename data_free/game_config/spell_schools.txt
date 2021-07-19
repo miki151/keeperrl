@@ -42,7 +42,7 @@
 {
   "deception" 1
   "panic" 2
-  "fog" 3
+  "fog cloud" 3
   "invisibility" 4
   "pacify" 5
   "advanced invisibility" 6
