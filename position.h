@@ -20,6 +20,7 @@ class DestroyAction;
 class Inventory;
 class Vision;
 class Sectors;
+class ContentFactory;
 struct FurnitureEffectInfo;
 
 class Position {
@@ -127,6 +128,7 @@ class Position {
   void updateVisibility() const;
   bool canSeeThruIgnoringGas(VisionId) const;
   bool canSeeThru(VisionId) const;
+  bool canSeeThru(VisionId, const ContentFactory*) const;
   bool stopsProjectiles(VisionId) const;
   bool isVisibleBy(const Creature*) const;
   bool canSee(Position, const Vision&) const;

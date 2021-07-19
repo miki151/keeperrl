@@ -24,6 +24,7 @@ class Level;
 class TileGas {
   public:
   void addAmount(Position, TileGasType, double amount);
+  void addPermanentAmount(TileGasType, double amount);
   void tick(Position);
   double getAmount(TileGasType) const;
   static double getFogVisionCutoff();
@@ -32,7 +33,10 @@ class TileGas {
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  unordered_map<TileGasType, double, CustomHash<TileGasType>> SERIAL(amount);
+  struct AmountInfo {
+    double SERIAL(total);
+    double SERIAL(permanent);
+    SERIALIZE_ALL(total, permanent)
+  };
+  unordered_map<TileGasType, AmountInfo, CustomHash<TileGasType>> SERIAL(amount);
 };
-
-

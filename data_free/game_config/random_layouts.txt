@@ -767,3 +767,8 @@ End
   CellularAutomaton(Set("crops"), 0.9)
   Place(({1 1} Set("scarecrow") 1 On("crops")))
 }
+
+"hydra" {
+  Inside(5, CellularAutomaton(Reset("water", "set_territory"), 0.65))
+  CellularAutomaton(Set("fog"), 0.65)
+}

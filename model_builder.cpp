@@ -318,7 +318,7 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<Bio
                 auto maker = getLevelMaker(Random, contentFactory, {"basic"},
                     i, TribeId::getDarkKeeper(), StairKey::getNew());
                 LevelBuilder(Random, contentFactory, maker.levelWidth, maker.levelWidth, true)
-                    .build(model.get(), maker.maker.get(), 123);
+                    .build(contentFactory, model.get(), maker.maker.get(), 123);
               }); });
     }
     else if (type == "tutorial")
@@ -377,6 +377,7 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
       if (direction == -1)
         swap(settlement.upStairs, settlement.downStairs);
       auto res = model->buildLevel(
+          contentFactory,
           LevelBuilder(meter, random, contentFactory, level.levelSize.x, level.levelSize.y, true, level.isLit ? 1.0 : 0.0),
           getMaker(level.levelType)(random, settlement, level.levelSize), depth, level.name);
       res->canTranfer = level.canTransfer;
@@ -441,6 +442,7 @@ PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<T
   }
   append(enemyInfo, extraEnemies);
   model->buildMainLevel(
+      contentFactory,
       LevelBuilder(meter, random, contentFactory, width, width, false),
       LevelMaker::topLevel(random, topLevelSettlements, width, keeperTribe, biomeInfo,
           *chooseResourceCounts(random, contentFactory->resources, 0), *contentFactory));
@@ -457,6 +459,7 @@ PModel ModelBuilder::battleModel(const FilePath& levelPath, vector<PCreature> al
   ifstream stream(levelPath.getPath());
   Table<char> level = *SokobanInput::readTable(stream);
   WLevel l = m->buildMainLevel(
+      contentFactory,
       LevelBuilder(meter, Random, contentFactory, level.getBounds().width(), level.getBounds().height(), true, 1.0),
       LevelMaker::battleLevel(level, std::move(allies), enemies));
   return m;

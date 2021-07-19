@@ -44,6 +44,7 @@ class Vision;
 class FieldOfView;
 class Portals;
 class RoofSupport;
+class ContentFactory;
 struct PhylacteryInfo;
 
 /** A class representing a single level of the dungeon or the overworld. All events occuring on the level are performed by this class.*/
@@ -200,7 +201,7 @@ class Level : public OwnedObject<Level> {
   struct Private {};
 
   static PLevel create(SquareArray s, FurnitureArray f, WModel m, Table<double> sun, LevelId id,
-      Table<bool> cover, Table<bool> unavailable);
+      Table<bool> cover, Table<bool> unavailable, const ContentFactory*);
 
   public:
   Level(Private, SquareArray, FurnitureArray, WModel, Table<double> sunlight, LevelId);

@@ -463,6 +463,8 @@
   isSymbolFont = true roundShadow = true }
 { viewId = "palm_tree" symbol = "⥾" color = ColorId LIGHT_GREEN
   isSymbolFont = true roundShadow = true }
+{ viewId = "swamptree" symbol = "ͳ" color = ColorId BROWN
+  isSymbolFont = true roundShadow = true }
 { viewId = "giant_mushroom" symbol = "Ϯ" color = ColorId GREEN
   isSymbolFont = true roundShadow = true }
 { viewId = "cactus1" symbol = "!" color = ColorId LIGHT_GREEN
@@ -505,6 +507,7 @@
   isSymbolFont = true roundShadow = true }
 { viewId = "bush" symbol = "&" color = ColorId DARK_GREEN
   roundShadow = true }
+{ viewId = "swampplant" symbol = "ᴗ" color = ColorId LIGHT_BROWN isSymbolFont = true}
 { viewId = "well" symbol = "0" color = ColorId BLUE
   roundShadow = true }
 
@@ -628,6 +631,8 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
 { viewId = "grass" symbol = "𝃰" color = ColorId GREEN
   isSymbolFont = true canMirror = true
   extraBorders = { "water" "hill" "sand" "mud" } }
+{ viewId = "swampgrass" symbol = "𝃰" color = ColorId DARK_GREEN
+  isSymbolFont = true canMirror = true }
 { viewId = "hill" symbol = "𝀢" color = ColorId DARK_GREEN
   isSymbolFont = true canMirror = true
   extraBorders = { "water" "sand" "floor" "keeper_floor" } }

@@ -1158,7 +1158,7 @@ class Test {
       auto model = Model::create(&contentFactory, none);
       LevelBuilder builder(nullptr, Random, &contentFactory, 10, 10, false, none);
       PLevelMaker levelMaker = LevelMaker::emptyLevel(FurnitureType("MOUNTAIN"), true);
-      level = model->buildMainLevel(std::move(builder), std::move(levelMaker));
+      level = model->buildMainLevel(&contentFactory, std::move(builder), std::move(levelMaker));
       game = Game::splashScreen(std::move(model), CampaignBuilder::getEmptyCampaign(), std::move(contentFactory), nullptr);
     }
     auto get(int x, int y) {

@@ -91,7 +91,7 @@ Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, Table<double> s
 }
 
 PLevel Level::create(SquareArray s, FurnitureArray f, WModel m,
-    Table<double> sun, LevelId id, Table<bool> covered, Table<bool> unavailable) {
+    Table<double> sun, LevelId id, Table<bool> covered, Table<bool> unavailable, const ContentFactory* factory) {
   auto ret = makeOwner<Level>(Private{}, std::move(s), std::move(f), m, sun, id);
   for (Vec2 pos : ret->squares->getBounds()) {
     auto square = ret->squares->getReadonly(pos);
@@ -106,7 +106,7 @@ PLevel Level::create(SquareArray s, FurnitureArray f, WModel m,
     }
   }
   for (VisionId vision : ENUM_ALL(VisionId))
-    (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision);
+    (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision, factory);
   for (auto pos : ret->getAllPositions()) {
     ret->addLightSource(pos.getCoord(), pos.getLightEmission(), 1);
     if (pos.isBuildingSupport())

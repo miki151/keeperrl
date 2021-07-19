@@ -617,6 +617,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   viewId = { "tree_snow" }
 }
+"SWAMPTREE" inherit "CANIF_TREE"
+{
+  viewId = { "swamptree" }
+}
 "CACTUS1" inherit "CANIF_TREE"
 {
   viewId = { "cactus1" }
@@ -664,6 +668,11 @@ Def BedHeal() Heal { FLESH 0.005 } End
   fire = 30
   itemDrop = {{{{"WoodPlank"} 1 { 2 4 }}}}
   tryDestroyFX = { WOOD_SPLINTERS }
+}
+"SWAMPPLANT" inherit "BUSH"
+{
+  name = "plant"
+  viewId = { "swampplant" }
 }
 "STONES"
 {
@@ -1962,6 +1971,12 @@ Def Boulder(Id) {
 {
   name = "mud"
   viewId = { "mud" }
+  layer = GROUND
+}
+"SWAMPGRASS"
+{
+  name = "grass"
+  viewId = { "swampgrass" }
   layer = GROUND
 }
 "HILL"

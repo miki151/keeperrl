@@ -101,8 +101,8 @@ class Model : public OwnedObject<Model> {
 
   void addEvent(const GameEvent&);
 
-  WLevel buildLevel(LevelBuilder, PLevelMaker, int depth, optional<string> name);
-  WLevel buildMainLevel(LevelBuilder, PLevelMaker);
+  WLevel buildLevel(const ContentFactory*, LevelBuilder, PLevelMaker, int depth, optional<string> name);
+  WLevel buildMainLevel(const ContentFactory*, LevelBuilder, PLevelMaker);
   void calculateStairNavigation();
 
   private:

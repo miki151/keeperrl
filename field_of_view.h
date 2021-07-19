@@ -19,10 +19,11 @@
 
 class Square;
 class SquareArray;
+class ContentFactory;
 
 class FieldOfView {
   public:
-  FieldOfView(WLevel, VisionId);
+  FieldOfView(WLevel, VisionId, const ContentFactory*);
   bool canSee(Vec2 from, Vec2 to);
   const vector<SVec2>& getVisibleTiles(Vec2 from);
   void squareChanged(Vec2 pos);

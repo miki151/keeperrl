@@ -49,10 +49,10 @@ SERIALIZABLE(FieldOfView::Visibility)
 
 SERIALIZATION_CONSTRUCTOR_IMPL2(FieldOfView::Visibility, Visibility)
 
-FieldOfView::FieldOfView(WLevel l, VisionId v)
+FieldOfView::FieldOfView(WLevel l, VisionId v, const ContentFactory* factory)
     : level(l), visibility(l->getBounds()), vision(v), blocking(l->getBounds().minusMargin(-1), true) {
   for (auto v : blocking.getBounds())
-    blocking[v] = !Position(v, level).canSeeThru(vision);
+    blocking[v] = !Position(v, level).canSeeThru(vision, factory);
 }
 
 bool FieldOfView::canSee(Vec2 from, Vec2 to) {

@@ -6,6 +6,7 @@
 #include "furniture_array.h"
 #include "view_object.h"
 #include "square_attrib.h"
+#include "tile_gas_type.h"
 
 class ProgressMeter;
 class Model;
@@ -43,7 +44,7 @@ class LevelBuilder {
 
   /** Builds the level. The level will keep reference to the model.
       \paramname{surface} tells if this level is on the Earth surface.*/
-  PLevel build(WModel, LevelMaker*, LevelId);
+  PLevel build(const ContentFactory*, WModel, LevelMaker*, LevelId);
 
   /** Checks if the given square has an attribute.*/
   bool hasAttrib(Vec2 pos, SquareAttrib attr);
@@ -95,6 +96,8 @@ class LevelBuilder {
   void setNoDiagonalPassing();
 
   void setUnavailable(Vec2);
+
+  void addPermanentGas(TileGasType, Vec2);
  
   enum Rot { CW0, CW1, CW2, CW3};
 
@@ -123,4 +126,5 @@ class LevelBuilder {
   RandomGen& random;
   bool noDiagonalPassing = false;
   ContentFactory* contentFactory;
+  vector<pair<TileGasType, Vec2>> permanentGas;
 };

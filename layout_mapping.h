@@ -4,6 +4,7 @@
 #include "furniture_type.h"
 #include "furniture_layer.h"
 #include "item_list_id.h"
+#include "tile_gas_type.h"
 
 namespace LayoutActions {
 using Place = FurnitureType;
@@ -34,6 +35,7 @@ using ClearFurniture = EmptyStruct<struct ClearFurniturTag>;
 using ClearLayer = FurnitureLayer;
 using InsideFurniture = EmptyStruct<struct InsideFurnitureTag>;
 using OutsideFurniture = EmptyStruct<struct OutsideFurnitureTag>;
+using AddGas = TileGasType;
 struct Stockpile {
   int SERIAL(index);
   SERIALIZE_ALL(index)
@@ -55,7 +57,8 @@ struct PlaceHostile {
   X(InsideFurniture, 9)\
   X(Items, 10)\
   X(Shop, 11)\
-  X(PlaceHostile, 12)
+  X(PlaceHostile, 12)\
+  X(AddGas, 13)
 
 #define VARIANT_NAME LayoutAction
 

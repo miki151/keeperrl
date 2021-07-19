@@ -176,7 +176,7 @@ void LevelBuilder::setNoDiagonalPassing() {
   noDiagonalPassing = true;
 }
 
-PLevel LevelBuilder::build(WModel m, LevelMaker* maker, LevelId levelId) {
+PLevel LevelBuilder::build(const ContentFactory* factory, WModel m, LevelMaker* maker, LevelId levelId) {
   PROFILE;
   CHECK(!!m);
   CHECK(mapStack.empty());
@@ -184,7 +184,9 @@ PLevel LevelBuilder::build(WModel m, LevelMaker* maker, LevelId levelId) {
   for (Vec2 v : squares.getBounds())
     if (!items[v].empty())
       squares.getWritable(v)->dropItemsLevelGen(std::move(items[v]));
-  auto l = Level::create(std::move(squares), std::move(furniture), m, sunlight, levelId, covered, unavailable);
+  for (auto& elem : permanentGas)
+    squares.getWritable(elem.second)->addPermanentGas(elem.first, 1);
+  auto l = Level::create(std::move(squares), std::move(furniture), m, sunlight, levelId, covered, unavailable, factory);
   for (pair<PCreature, Vec2>& c : creatures) {
     Position pos(c.second, l.get());
     /*CHECK(pos.canEnter(c.first.get())) << c.first->getName().bare();
@@ -253,6 +255,10 @@ void LevelBuilder::setBuilding(Vec2 posT, bool state) {
 
 void LevelBuilder::setSunlight(Vec2 pos, double s) {
   sunlight[pos] = s;
+}
+
+void LevelBuilder::addPermanentGas(TileGasType type, Vec2 posT) {
+  permanentGas.push_back({type, transform(posT)});
 }
 
 void LevelBuilder::setUnavailable(Vec2 pos) {

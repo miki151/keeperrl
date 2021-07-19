@@ -101,6 +101,13 @@
     "GUM_TREE" 2
   }
 }
+"vegetationSwamp"
+{
+  {
+    "SWAMPTREE" 2
+    "SWAMPPLANT" 1
+  }
+}
 "randomOutback"
 {
   {

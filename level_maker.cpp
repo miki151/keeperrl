@@ -2691,7 +2691,8 @@ namespace {
               builder->setLandingLink(pos, *keys[s.index]);
               keys[s.index] = none;
             }
-          }
+          },
+          [&](LayoutActions::AddGas t) { builder->addPermanentGas(t, pos); }
       );
     }
 

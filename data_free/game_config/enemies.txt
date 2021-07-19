@@ -1663,8 +1663,9 @@ End
 }
 "HYDRA"
 {
+  biomes = { "SWAMP" }
   settlement = {
-    type = Builtin SWAMP "DUNGEON"
+    type = RandomLayout { "hydra" { 20 20 } "default"}
     inhabitants = {
       leader = { { "HYDRA" } }
     }

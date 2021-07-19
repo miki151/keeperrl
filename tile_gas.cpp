@@ -29,39 +29,48 @@ double TileGas::getFogVisionCutoff() {
 
 void TileGas::addAmount(Position pos, TileGasType t, double a) {
   CHECK(a > 0);
-  auto prevValue = amount[t];
-  amount[t] = min(1., a + amount[t]);
-  if (prevValue < getFogVisionCutoff() && amount[t] >= getFogVisionCutoff())
+  auto prevValue = amount[t].total;
+  amount[t].total = min(1., a + amount[t].total);
+  if (prevValue < getFogVisionCutoff() && amount[t].total >= getFogVisionCutoff())
     pos.updateVisibility();
+}
+
+void TileGas::addPermanentAmount(TileGasType t, double a) {
+  auto& values = amount[t];
+  values.total = min(1.0, values.total + a);
+  values.permanent = min(1.0, values.permanent + a);
 }
 
 void TileGas::tick(Position pos) {
   PROFILE;
   for (auto& elem : amount) {
     auto& value = elem.second;
-    auto prevValue = value;
-    if (value < 0.1) {
-      value = 0;
-      continue;
-    }
-    auto& info = pos.getGame()->getContentFactory()->tileGasTypes.at(elem.first);
-    if (info.spread > 0)
-      for (Position v : pos.neighbors8(Random)) {
-        if (v.canSeeThruIgnoringGas(VisionId::NORMAL) && value > 0 && v.getGasAmount(elem.first) < value) {
-          double transfer = pos.getDir(v).isCardinal4() ? info.spread : info.spread / 2;
-          transfer = min(value, transfer);
-          transfer = min((value - v.getGasAmount(elem.first)) / 2, transfer);
-          value -= transfer;
-          v.addGas(elem.first, transfer);
+    auto prevValue = value.total;
+    if (value.total - value.permanent < 0.1)
+      value.total = value.permanent;
+    else {
+      auto& info = pos.getGame()->getContentFactory()->tileGasTypes.at(elem.first);
+      if (info.spread > 0)
+        for (Position v : pos.neighbors8(Random)) {
+          if (v.canSeeThruIgnoringGas(VisionId::NORMAL) && value.total - value.permanent > 0 &&
+              v.getGasAmount(elem.first) < value.total) {
+            double transfer = pos.getDir(v).isCardinal4() ? info.spread : info.spread / 2;
+            transfer = min(value.total - value.permanent, transfer);
+            transfer = min((value.total - v.getGasAmount(elem.first)) / 2, transfer);
+            value.total -= transfer;
+            CHECK(value.total >= value.permanent);
+            v.addGas(elem.first, transfer);
+          }
         }
-      }
-    value = max(0.0, value * info.decrease);
-    if (prevValue >= getFogVisionCutoff() && value < getFogVisionCutoff())
+      value.total = max(value.permanent, value.permanent + (value.total - value.permanent) * info.decrease);
+    }
+    if (prevValue >= getFogVisionCutoff() && value.total < getFogVisionCutoff())
       pos.updateVisibility();
   }
 }
 
 double TileGas::getAmount(TileGasType type) const {
-  return getValueMaybe(amount, type).value_or(0.0);
+  if (auto res = getReferenceMaybe(amount, type))
+    return res->total;
+  return 0;
 }
-

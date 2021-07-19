@@ -46,6 +46,7 @@ class Square {
   optional<StairKey> getLandingLink() const;
 
   void addGas(Position, TileGasType, double amount);
+  void addPermanentGas(TileGasType, double amount);
   double getGasAmount(TileGasType) const;
 
   /** Sets the level this square is on.*/

@@ -177,17 +177,17 @@ void Model::addCreature(PCreature c, TimeInterval delay) {
   timeQueue->addCreature(std::move(c), getLocalTime() + delay);
 }
 
-WLevel Model::buildLevel(LevelBuilder b, PLevelMaker maker, int depth, optional<string> name) {
+WLevel Model::buildLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker, int depth, optional<string> name) {
   LevelBuilder builder(std::move(b));
-  levels.push_back(builder.build(this, maker.get(), Random.getLL()));
+  levels.push_back(builder.build(factory, this, maker.get(), Random.getLL()));
   levels.back()->depth = depth;
   levels.back()->name = name;
   return levels.back().get();
 }
 
-WLevel Model::buildMainLevel(LevelBuilder b, PLevelMaker maker) {
+WLevel Model::buildMainLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker) {
   int depth = mainLevels.size();
-  auto ret = buildLevel(std::move(b), std::move(maker), depth, depth == 0 ? optional<string>("Ground") : none);
+  auto ret = buildLevel(factory, std::move(b), std::move(maker), depth, depth == 0 ? optional<string>("Ground") : none);
   mainLevels.push_back(ret);
   return ret;
 }
@@ -198,7 +198,7 @@ Model::Model(Private) {
 PModel Model::create(ContentFactory* contentFactory, optional<MusicType> music) {
   auto ret = makeOwner<Model>(Private{});
   ret->cemetery = LevelBuilder(Random, contentFactory, 100, 100, false)
-      .build(ret.get(), LevelMaker::emptyLevel(FurnitureType("GRASS"), false).get(), Random.getLL());
+      .build(contentFactory, ret.get(), LevelMaker::emptyLevel(FurnitureType("GRASS"), false).get(), Random.getLL());
   ret->eventGenerator = makeOwner<EventGenerator>();
   ret->defaultMusic = music;
   return ret;

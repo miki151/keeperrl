@@ -133,6 +133,10 @@ void Square::addGas(Position pos, TileGasType type, double amount) {
   }
 }
 
+void Square::addPermanentGas(TileGasType type, double amount) {
+  tileGas->addPermanentAmount(type, amount);
+}
+
 double Square::getGasAmount(TileGasType type) const {
   return tileGas->getAmount(type);
 }

@@ -50,6 +50,7 @@
   "scarecrow" Place "SCARECROW"
   "corpse" Items 1 "corpse"
   "shop0" Shop 0
+  "fog" AddGas "FOG"
 }
 
 "adoxie_feet" inherit "default" append {

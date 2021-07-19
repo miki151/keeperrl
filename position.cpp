@@ -235,7 +235,7 @@ double Position::getLightingEfficiency() const {
 }
 
 bool Position::isDirEffectBlocked(VisionId id) const {
-  return !canSeeThru(id);
+  return !canSeeThru(id, getGame()->getContentFactory());
 }
 
 Creature* Position::getCreature() const {
@@ -1120,13 +1120,16 @@ bool Position::canSeeThruIgnoringGas(VisionId id) const {
 }
 
 bool Position::canSeeThru(VisionId id) const {
+  return canSeeThru(id, getGame()->getContentFactory());
+}
+
+bool Position::canSeeThru(VisionId id, const ContentFactory* factory) const {
   PROFILE;
   if (!isValid() || !canSeeThruIgnoringGas(id))
     return false;
-  if (auto game = getGame())
-    for (auto& type : game->getContentFactory()->tileGasTypes)
-      if (type.second.blocksVision && getSquare()->getGasAmount(type.first) >= TileGas::getFogVisionCutoff())
-        return false;
+  for (auto& type : factory->tileGasTypes)
+    if (type.second.blocksVision && getSquare()->getGasAmount(type.first) >= TileGas::getFogVisionCutoff())
+      return false;
   return true;
 }
 
