@@ -1016,7 +1016,10 @@ static bool apply(const Effects::ReviveCorpse& effect, Position pos, Creature* a
 
 static string getName(const Effects::EmitGas& m, const ContentFactory* f) {
   return f->tileGasTypes.at(m.type).name;
+}
 
+static Color getColor(const Effects::EmitGas& e, const ContentFactory* f) {
+  return f->tileGasTypes.at(e.type).color;
 }
 
 static string getDescription(const Effects::EmitGas& m, const ContentFactory* f) {
@@ -1031,8 +1034,16 @@ static bool apply(const Effects::EmitGas& m, Position pos, Creature*) {
   return true;
 }
 
-static EffectAIIntent shouldAIApplyToCreature(const Effects::EmitGas&, const Creature* victim, bool isEnemy) {
-  return isEnemy ? 1 : -1;
+static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::EmitGas& e) {
+  return MinionEquipmentType::COMBAT_ITEM;
+}
+
+static EffectAIIntent shouldAIApply(const Effects::EmitGas& e, const Creature* caster, Position pos) {
+  auto factory = pos.getGame()->getContentFactory();
+  if (pos.getGasAmount(e.type) > 0.3)
+    return 0;
+  auto& effect = factory->tileGasTypes.at(e.type).effect;
+  return effect ? effect->shouldAIApply(caster, pos) : 0;
 }
 
 static string getName(const Effects::PlaceFurniture& e, const ContentFactory* c) {
