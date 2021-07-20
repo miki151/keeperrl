@@ -1,3 +1,7 @@
+Def FogScroll() 
+Scroll Description "Creates a fog cloud" Area 1 EmitGas "FOG" 1
+End
+
 "villageShop"
 {
   items = {
@@ -10,6 +14,7 @@
     {{Scroll CircularBlast} 1 }
     {{Scroll Deception} 2 }
     {{Scroll Audience none} 2 }
+    {{FogScroll()} 2 }
     {{Scroll Summon "FLY" {3 6} 100} 5 }
     {{"AdoxieScroll"} 1}
     {{Potion Heal { FLESH }} 7 }
@@ -104,6 +109,7 @@
     {{Scroll CircularBlast} 1 }
     {{Scroll Deception} 1 }
     {{Scroll Audience none} 1 }
+    {{FogScroll()} 2 }
     {{Scroll Summon "FLY" {3 6} 100} 1 }
     {{"AdoxieScroll"} 1}
   }
@@ -219,6 +225,7 @@
     {{Scroll CircularBlast} 5 }
     {{Scroll Deception} 10 }
     {{Scroll Audience none} 5 }
+    {{FogScroll()} 2 }
     {{Scroll Summon "FLY" {3 6} 100} 30 }
     {{Potion Heal { FLESH }} 50 }
     {{Potion Lasting SLEEP} 50 }
@@ -293,6 +300,8 @@
     {{Scroll DoubleTrouble} 2 }
     {{Scroll Audience none} 2 }
     {{Scroll Deception} 1 }
+    {{Scroll Price 120 Name "greater fog" Description "Creates a big fog cloud"
+        Area 7 Filter DistanceD none 6.8 EmitGas "FOG" 1} 2 }
   }
 }
 
