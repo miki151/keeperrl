@@ -446,6 +446,7 @@ PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<T
       LevelBuilder(meter, random, contentFactory, width, width, false),
       LevelMaker::topLevel(random, topLevelSettlements, width, keeperTribe, biomeInfo,
           *chooseResourceCounts(random, contentFactory->resources, 0), *contentFactory));
+  model->getMainLevels()[0]->sightRange = biomeInfo.sightRange;
   model->calculateStairNavigation();
   for (auto& enemy : enemyInfo)
     model->addCollective(enemy.buildCollective(contentFactory));

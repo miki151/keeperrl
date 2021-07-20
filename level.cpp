@@ -412,7 +412,8 @@ bool Level::containsCreature(UniqueEntity<Creature>::Id id) const {
 
 bool Level::isWithinVision(Vec2 from, Vec2 to, const Vision& v) const {
   //PROFILE;
-  return v.canSeeAt(getLight(to), from.distD(to));
+  auto dist = from.distD(to);
+  return dist <= sightRange && v.canSeeAt(getLight(to), dist);
 }
 
 FieldOfView& Level::getFieldOfView(VisionId vision) const {

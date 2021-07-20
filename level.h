@@ -166,6 +166,7 @@ class Level : public OwnedObject<Level> {
   int SERIAL(depth) = 0;
   bool canTranfer = true;
   Table<Collective*> SERIAL(territory);
+  int sightRange = 100;
 
   private:
   friend class Position;
