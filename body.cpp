@@ -943,19 +943,6 @@ bool Body::isImmuneTo(LastingEffect effect) const {
   return false;
 }
 
-bool Body::affectByPoisonGas(Creature* c, double amount) {
-  PROFILE;
-  if (!c->isAffected(LastingEffect::POISON_RESISTANT) && material == Material::FLESH) {
-    bleed(c, amount / 20);
-    c->you(MsgType::ARE, "poisoned by the gas");
-    if (health <= 0) {
-      c->you(MsgType::DIE_OF, "poisoning");
-      return true;
-    }
-  }
-  return false;
-}
-
 bool Body::affectByAcid(Creature* c) {
   c->you(MsgType::ARE, "hurt by the acid");
   bleed(c, 0.2);

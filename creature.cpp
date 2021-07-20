@@ -1617,13 +1617,6 @@ bool Creature::affectByAcid() {
   return false;
 }
 
-void Creature::poisonWithGas(double amount) {
-  if (getBody().affectByPoisonGas(this, amount)) {
-    you(MsgType::DIE_OF, "gas poisoning");
-    dieWithReason("poisoned with gas");
-  }
-}
-
 void Creature::setHeld(Creature* c) {
   holding = c->getUniqueId();
 }

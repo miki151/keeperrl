@@ -640,7 +640,7 @@
 Def InferniteEffect()
   Filter Not LastingEffect FIRE_RESISTANT {
     CreatureMessage "are burnt by the infernite" "is burnt by the infernite"
-    Bleed 0.01
+    Bleed 0.01 "infernite"
   }
 End
 "InferniteSword" inherit "AdaSword"

@@ -153,6 +153,14 @@ static int getPrice(const Effects::Escape&) {
   return 12;
 }
 
+static bool isGasHarmful(Position pos, const Creature* c) {
+  for (auto& elem : pos.getGame()->getContentFactory()->tileGasTypes)
+    if (pos.getGasAmount(elem.first) > 0.0 && elem.second.effect &&
+        elem.second.effect->shouldAIApply(c, c->getPosition()) < 0)
+      return true;
+  return false;
+}
+
 static bool applyToCreature(const Effects::Escape& e, Creature* c, Creature*) {
   PROFILE_BLOCK("Escape::applyToCreature");
   Rectangle area = Rectangle::centered(Vec2(0, 0), 12);
@@ -169,6 +177,8 @@ static bool applyToCreature(const Effects::Escape& e, Creature* c, Creature*) {
       if (other->isEnemy(c))
         addDanger(v);
   }
+  if (isGasHarmful(c->getPosition(), c))
+    addDanger(c->getPosition());
   while (!q.empty()) {
     Position v = q.front();
     q.pop();
@@ -182,7 +192,7 @@ static bool applyToCreature(const Effects::Escape& e, Creature* c, Creature*) {
   int maxW = 0;
   auto movementType = c->getMovementType();
   for (Position v : c->getPosition().getRectangle(area)) {
-    if (!v.canEnter(c) || v.isBurning() || v.getGasAmount(TileGasType("POISON_GAS")) > 0 ||
+    if (!v.canEnter(c) || v.isBurning() || isGasHarmful(v, c) ||
         !v.isConnectedTo(c->getPosition(), movementType) || *v.dist8(c->getPosition()) > e.maxDist)
       continue;
     if (auto weightV = weight.getValueMaybe(v)) {
@@ -868,8 +878,7 @@ static int getPrice(const Effects::Heal) {
 static bool applyToCreature(const Effects::Bleed& e, Creature* c, Creature*) {
   c->getBody().bleed(c, e.amount);
   if (c->getBody().getHealth() <= 0) {
-    c->you(MsgType::ARE, "critically wounded");
-    c->you(MsgType::DIE, "");
+    c->you(MsgType::DIE, e.deathReason);
     c->dieNoReason();
   }
   return true;
@@ -881,6 +890,10 @@ static string getName(const Effects::Bleed& e, const ContentFactory*) {
 
 static string getDescription(const Effects::Bleed& e, const ContentFactory*) {
   return "Causes bleeding.";
+}
+
+static EffectAIIntent shouldAIApplyToCreature(const Effects::Bleed& e, const Creature* victim, bool isEnemy) {
+  return isEnemy ? 1 : -1;
 }
 
 static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Heal& e) {

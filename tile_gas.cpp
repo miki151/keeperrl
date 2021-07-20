@@ -46,10 +46,12 @@ void TileGas::tick(Position pos) {
   for (auto& elem : amount) {
     auto& value = elem.second;
     auto prevValue = value.total;
+    auto& info = pos.getGame()->getContentFactory()->tileGasTypes.at(elem.first);
+    if (info.effect && value.total > 0.01 && Random.chance(value.total))
+      info.effect->apply(pos);
     if (value.total - value.permanent < 0.1)
       value.total = value.permanent;
     else {
-      auto& info = pos.getGame()->getContentFactory()->tileGasTypes.at(elem.first);
       if (info.spread > 0)
         for (Position v : pos.neighbors8(Random)) {
           if (v.canSeeThruIgnoringGas(VisionId::NORMAL) && value.total - value.permanent > 0 &&

@@ -12,4 +12,8 @@
   0.98
   0.1
   false
+  Filter Not LastingEffect POISON_RESISTANT {
+    CreatureMessage "are poisoned by the gas" "is poisoned by the gas"
+    Bleed 0.01 "poison gas"
+  }
 }

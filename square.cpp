@@ -97,9 +97,6 @@ void Square::tick(Position pos) {
         }
   }
   tileGas->tick(pos);
-  if (creature && tileGas->getAmount(TileGasType("POISON_GAS")) > 0.2) {
-    creature->poisonWithGas(min(1.0, tileGas->getAmount(TileGasType("POISON_GAS"))));
-  }
 }
 
 bool Square::itemLands(vector<Item*> item, const Attack& attack) const {
