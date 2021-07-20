@@ -825,8 +825,20 @@ Territory& Collective::getTerritory() {
 bool Collective::canClaimSquare(Position pos) const {
   return getKnownTiles().isKnown(pos) &&
       pos.isCovered() &&
-      pos.canEnterEmpty({MovementTrait::WALK}) &&
+//      pos.canEnterEmpty({MovementTrait::WALK}) && (seems unnecessary?)
       !pos.isWall();
+}
+
+void Collective::unclaimSquare(Position pos) {
+  if (!territory->contains(pos))
+    return;
+  territory->remove(pos);
+  for (auto layer : {FurnitureLayer::FLOOR, FurnitureLayer::MIDDLE, FurnitureLayer::CEILING})
+    if (auto furniture = pos.modFurniture(layer))
+      if (constructions->containsFurniture(pos, layer)) {
+        constructions->onFurnitureDestroyed(pos, layer, furniture->getType());
+        constructions->removeFurniturePlan(pos, layer);
+      }
 }
 
 void Collective::claimSquare(Position pos) {

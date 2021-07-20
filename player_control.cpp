@@ -639,6 +639,9 @@ ViewId PlayerControl::getViewId(const BuildInfoTypes::BuildType& info) const {
       [&](BuildInfoTypes::ClaimTile) {
         return ViewId("keeper_floor");
       },
+      [&](BuildInfoTypes::UnclaimTile) {
+        return ViewId("floor");
+      },
       [&](BuildInfoTypes::Dispatch) {
         return ViewId("imp");
       },
@@ -2823,6 +2826,14 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
     [&](BuildInfoTypes::ClaimTile) {
       if (collective->canClaimSquare(position))
         collective->claimSquare(position);
+    },
+    [&](BuildInfoTypes::UnclaimTile) {
+      collective->unclaimSquare(position);
+      if (NOTNULL(position.getFurniture(FurnitureLayer::GROUND))->getViewObject()->id() == ViewId("keeper_floor")) {
+        position.modFurniture(FurnitureLayer::GROUND)->getViewObject()->setId(ViewId("floor"));
+        position.setNeedsRenderAndMemoryUpdate(true);
+        updateSquareMemory(position);
+      }
     },
     [&](BuildInfoTypes::Dispatch) {
       collective->setPriorityTasks(position);

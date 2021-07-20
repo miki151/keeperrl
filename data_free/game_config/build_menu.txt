@@ -294,6 +294,9 @@
     { ClaimTile                                                "Claim tile"        "Orders"
         "Claim a dungeon tile as your own. Building anything on it has the same effect." }
 
+    { UnclaimTile                                                "Unclaim tile"        "Orders"
+        "Discard a tile in your dungeon, as well a any constructions it contains." }
+
     { Zone FETCH_ITEMS                                         "Fetch items"       "Orders"
         "Order imps to fetch items from locations outside the dungeon. This is a one-time order."}
 
