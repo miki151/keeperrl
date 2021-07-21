@@ -101,7 +101,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   CollectiveTeams& getTeams();
   const CollectiveTeams& getTeams() const;
   WModel getModel() const;
-
+  void takeScreenshot();
   void addAllianceAttack(vector<Collective*> attackers);
 
   private:
@@ -280,7 +280,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void fillDungeonLevel(AvatarLevelInfo&) const;
   void fillResources(CollectiveInfo&) const;
   bool takingScreenshot = false;
-  void exitAction();
   void addBodyPart(Creature*);
   void handleBanishing(Creature*);
   optional<pair<ViewId,int>> getCostObj(CostInfo) const;

@@ -2200,37 +2200,8 @@ void PlayerControl::minionDragAndDrop(Vec2 v, variant<string, UniqueEntity<Creat
   pos.setNeedsRenderUpdate(true);
 }
 
-void PlayerControl::exitAction() {
-  enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
-#ifdef RELEASE
-  bool canRetire = !tutorial && getGame()->getPlayerCreatures().empty() && getGame()->gameWon();
-#else
-  bool canRetire = !tutorial && getGame()->getPlayerCreatures().empty();
-#endif
-  vector<ListElem> elems { "Save and exit the game",
-    {"Retire", canRetire ? ListElem::NORMAL : ListElem::INACTIVE} , "Change options", "Abandon the game" };
-  auto ind = getView()->chooseFromList("Would you like to:", elems);
-  if (!ind)
-    return;
-  switch (Action(*ind)) {
-    case RETIRE:
-      getView()->stopClock();
-      takingScreenshot = true;
-      break;
-    case SAVE:
-      getGame()->setExitInfo(GameSaveType::KEEPER);
-      break;
-    case ABANDON:
-      if (getView()->yesOrNoPrompt("Do you want to abandon your game? This is permanent and the save file will be removed!")) {
-        getGame()->addAnalytics("gameAbandoned", "");
-        getGame()->setExitInfo(ExitAndQuit());
-        return;
-      }
-      break;
-    case OPTIONS:
-      getGame()->getOptions()->handle(getView(), OptionSet::GENERAL);
-      break;
-  }
+void PlayerControl::takeScreenshot() {
+  takingScreenshot = true;
 }
 
 void PlayerControl::handleBanishing(Creature* c) {
@@ -2654,7 +2625,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       rectSelection = none;
       selection = NONE;
       break;
-    case UserInputId::EXIT: exitAction(); return;
+    case UserInputId::EXIT: getGame()->exitAction(); return;
     case UserInputId::IDLE: break;
     case UserInputId::DISMISS_NEXT_WAVE:
       if (auto& enemies = getModel()->getExternalEnemies())

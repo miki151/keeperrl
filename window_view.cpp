@@ -993,6 +993,7 @@ void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> or
   if (!origin)
     origin = (renderer.getSize() - Vec2(*elem->getPreferredWidth(), *elem->getPreferredHeight())) / 2;
   origin->y = max(0, origin->y);
+  int origElemCount = blockingElems.size();
   if (blockingElems.empty()) {
     /*blockingElems.push_back(gui.darken());
     blockingElems.back()->setBounds(Rectangle(renderer.getSize()));*/
@@ -1010,7 +1011,8 @@ void WindowView::getBlockingGui(Semaphore& sem, SGuiElem elem, optional<Vec2> or
     }
   else
     sem.p();
-  blockingElems.clear();
+  while (blockingElems.size() > origElemCount)
+    blockingElems.pop_back();
 }
 
 void WindowView::presentHighscores(const vector<HighscoreList>& list) {

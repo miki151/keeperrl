@@ -45,6 +45,9 @@ REGISTER_SCRIPTED_UI(Texture);
 
 struct ViewId : ScriptedUIInterface {
   void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
+    if (viewId)
+      context.renderer->drawViewObject(area.topLeft(), *viewId, true, zoom, Color::WHITE);
+    else
     if (auto ids = data.getReferenceMaybe<ScriptedUIDataElems::ViewIdList>())
       for (auto& id : *ids)
         context.renderer->drawViewObject(area.topLeft(), id, true, zoom, Color::WHITE);
@@ -56,8 +59,9 @@ struct ViewId : ScriptedUIInterface {
     return Vec2(1, 1) * context.renderer->nominalSize * zoom;
   }
 
+  optional<::ViewId> SERIAL(viewId);
   int SERIAL(zoom) = 1;
-  SERIALIZE_ALL(roundBracket(), OPTION(zoom))
+  SERIALIZE_ALL(roundBracket(), OPTION(zoom), NAMED(viewId))
 };
 
 REGISTER_SCRIPTED_UI(ViewId);

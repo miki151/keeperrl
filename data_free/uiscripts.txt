@@ -86,6 +86,12 @@ Def StandardButton(Content) {
 }
 End
 
+Def StandardButtonInactive(Content) {
+  ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
+  Position(MIDDLE, Margins(10, 5, 10, 8, Content))
+}
+End
+
 Def LoadButtonSpacing() Height 10 {} End
 
 Def SavedGameContent() Vertical {
@@ -233,4 +239,44 @@ End
         }
     }))
   })
-}  
+}
+
+Def IconButton(Id, Text)
+  StandardButton(
+    Vertical {
+      ViewId(5, {Id})
+      Height 10 {}
+      Position(MIDDLE, Label(Text))
+      Height 10 {}
+    }
+  )
+End
+
+Def IconButtonInactive(Id, Text)
+  StandardButtonInactive(
+    Vertical {
+      ViewId(5, {Id})
+      Height 10 {}
+      Position(MIDDLE, Label(text = Text color = ColorId LIGHT_GRAY))
+      Height 10 {}
+    }
+  )
+End
+
+"exit_menu" {
+  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  FocusKeys()
+  Window(
+    Horizontal {
+      Using "save" IconButton("portal", "Save and exit")
+      Width 20 {}
+      Using "options" IconButton("gnome", "Settings")
+      Width 20 {}
+      Using "retire" IconButton("throne", "Retire")
+      Using "retire_inactive" IconButtonInactive("throne", "Retire")
+      Width 20 {}
+      Using "abandon" IconButton("grave", "Abandon game")
+#      Using "retire_inactive" Label(text = "Retire" color = ColorId LIGHT_GRAY)
+    }
+  )
+}

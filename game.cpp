@@ -43,6 +43,8 @@
 #include "content_factory.h"
 #include "collective_name.h"
 #include "avatar_info.h"
+#include "scripted_ui.h"
+#include "scripted_ui_data.h"
 
 template <class Archive>
 void Game::serialize(Archive& ar, const unsigned int version) {
@@ -446,43 +448,41 @@ void Game::setExitInfo(ExitInfo info) {
 }
 
 void Game::exitAction() {
-  enum Action { SAVE, RETIRE, OPTIONS, ABANDON};
+  ScriptedUIState state;
+  auto data = ScriptedUIDataElems::Record{};
+  data.elems["save"] = ScriptedUIDataElems::Callback{[this]{
+    if (getView()->yesOrNoPrompt("Do you want save and exit the game?")) {
+      setExitInfo(GameSaveType::KEEPER);
+      return true;
+    }
+    return false;
+  }};
+  data.elems["abandon"] = ScriptedUIDataElems::Callback{[this] {
+    if (getView()->yesOrNoPrompt("Do you want to abandon your game? This is permanent and the save file will be removed!")) {
+      addAnalytics("gameAbandoned", "");
+      setExitInfo(ExitAndQuit());
+      return true;
+    }
+    return false;
+  }};
+  data.elems["options"] = ScriptedUIDataElems::Callback{[this]{
+    getOptions()->handle(getView(), OptionSet::GENERAL);
+    return false;
+  }};
 #ifdef RELEASE
-  bool canRetire = playerControl && !playerControl->getTutorial() && gameWon() && players.empty() &&
-      campaign->getType() != CampaignType::SINGLE_KEEPER;
+  bool canRetire = playerControl && !playerControl->getTutorial() && getPlayerCreatures().empty() && gameWon();
 #else
-  bool canRetire = playerControl && !playerControl->getTutorial() && players.empty();
+  bool canRetire = playerControl && !playerControl->getTutorial() && getPlayerCreatures().empty();
 #endif
-  vector<ListElem> elems { "Save and exit the game",
-    {"Retire", canRetire ? ListElem::NORMAL : ListElem::INACTIVE} , "Change options", "Abandon the game" };
-  auto ind = view->chooseFromList("Would you like to:", elems);
-  if (!ind)
-    return;
-  switch (Action(*ind)) {
-    case RETIRE:
-      if (view->yesOrNoPrompt("Retire your dungeon and share it online?")) {
-        addEvent(EventInfo::RetiredGame{});
-        exitInfo = ExitInfo(GameSaveType::RETIRED_SITE);
-        return;
-      }
-      break;
-    case SAVE:
-      if (!playerControl) {
-        exitInfo = ExitInfo(GameSaveType::ADVENTURER);
-        return;
-      } else {
-        exitInfo = ExitInfo(GameSaveType::KEEPER);
-        return;
-      }
-    case ABANDON:
-      if (view->yesOrNoPrompt("Do you want to abandon your game? This is permanent and the save file will be removed!")) {
-        addAnalytics("gameAbandoned", "");
-        exitInfo = ExitInfo(ExitAndQuit());
-        return;
-      }
-      break;
-    case OPTIONS: options->handle(view, OptionSet::GENERAL); break;
-  }
+  if (canRetire)
+    data.elems["retire"] = ScriptedUIDataElems::Callback{[this]{
+      getView()->stopClock();
+      playerControl->takeScreenshot();
+      return true;
+    }};
+  else
+    data.elems["retire_inactive"] = ScriptedUIDataElems::Record{};
+  getView()->scriptedUI("exit_menu", data, state);
 }
 
 Position Game::getTransferPos(WModel from, WModel to) const {
