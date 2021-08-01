@@ -292,6 +292,7 @@
 { "ada_battle_axe" ")" ColorId LIGHT_BLUE }
 { "special_battle_axe" ")" ColorId LIGHT_GREEN }
 { "bow" ")" ColorId BROWN }
+{ "archwood_bow" ")" ColorId LIGHT_BLUE }
 { "elven_bow" ")" ColorId YELLOW false "bow" }
 { "crossbow" ")" ColorId LIGHT_BROWN }
 { "arrow" "/" ColorId BROWN }
@@ -330,6 +331,7 @@
 { "nuts" "⠤" ColorId ORANGE true }
 { "brain" "⚭" ColorId PINK true }
 { "tongue" "~" ColorId RED true }
+{ "archwood" "/" ColorId LIGHT_BLUE }
 { "key" "*" ColorId YELLOW }
 { "key" "*" ColorId YELLOW }
 { viewId = "tile_gas" symbol = "🌫" color = ColorId WHITE isSymbolFont = true }

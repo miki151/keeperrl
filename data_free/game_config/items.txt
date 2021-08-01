@@ -875,23 +875,6 @@ End
     }
     storageIds = {"weapons" "equipment"}
   }
-"ElvenBow"
-  {
-    viewId = { "elven_bow" }
-    itemClass = RANGED_WEAPON
-    equipmentSlot = RANGED_WEAPON
-    equipedAbility = {"shoot arrow"}
-    weaponInfo = {
-      twoHanded = true
-    }
-    weight = 1
-    modifiers = {
-      RANGED_DAMAGE 16
-    }
-    name = "silver elven bow"
-    price = 100
-    storageIds = {"bows" "weapons" "equipment"}
-  }
 "Bow"
   {
     viewId = { "bow" }
@@ -907,7 +890,26 @@ End
       RANGED_DAMAGE 10
     }
     price = 12
+    maxUpgrades = 1
     storageIds = {"bows" "weapons" "equipment"}
+  }
+"ElvenBow" inherit "Bow"
+  {
+    viewId = { "elven_bow" }
+    modifiers = {
+      RANGED_DAMAGE 16
+    }
+    name = "silver elven bow"
+    price = 100
+  }
+"ArchwoodBow" inherit "Bow"
+  {
+    viewId = { "archwood_bow" }
+    modifiers = {
+      RANGED_DAMAGE 22
+    }
+    name = "archwood bow"
+    price = 1000
   }
 "Crossbow"
   {
@@ -924,6 +926,7 @@ End
       RANGED_DAMAGE 15
     }
     price = 90
+    maxUpgrades = 1
     storageIds = {"bows" "weapons" "equipment"}
   }
 "Torch"
@@ -1317,6 +1320,17 @@ End
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
+  }
+"Archwood"
+  {
+    viewId = { "archwood" }
+    name = "branch of archwood"
+    plural = "branches of archwood"
+    itemClass = OTHER
+    weight = 15
+    price = 200
+    ingredientType = "archwood"
+    storageIds = {"upgrades" "equipment"}
   }
 "HydraTongue"
   {

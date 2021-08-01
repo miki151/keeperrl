@@ -15,6 +15,7 @@
       {{"Cornuthaum3"}           12       "GOLD" 40      "master sorcery"}
       {item = {"DevilBoots"}       work = 30 cost = "WOOD" 0 requireIngredient = "devil_hooves" }
       {{"Bow"}                   13       "WOOD" 20      "archery"}
+      {item = {"ArchwoodBow"}  work = 30 cost = "WOOD" 20 requireIngredient = "archwood" }
       {{"WoodenStaff"}           13       "WOOD" 20      "magical weapons"}
       {{"Torch"}                 2        "WOOD" 4}
   }

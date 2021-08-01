@@ -1559,6 +1559,7 @@ End
       fighters = {
         count = {7 10}
         all = { 1 "ENT" }
+        uniques = { "ENT_WITH_DROP" "ENT_WITH_DROP" "ENT_WITH_DROP" }
       }
     }
     tribe = MONSTER

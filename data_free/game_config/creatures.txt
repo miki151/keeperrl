@@ -3784,6 +3784,10 @@
     }
     gender = IT
   }
+"ENT_WITH_DROP" inherit "ENT"
+  {
+    deathEffect = DropItems { "Archwood" } 1
+  }
 "ANGEL"
   {
     viewId = { "angel" }
