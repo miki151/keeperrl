@@ -1192,7 +1192,7 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions(int resourceIndex) 
             if (item->getIngredientType() == option.requireIngredient) {
               auto it = itemInfo;
               it.ingredient = getItemInfo(getGame()->getContentFactory(), {item}, false, false, false);
-              it.description.push_back("Crafted from " + item->getName());
+              it.description.push_back("Crafted from " + item->getAName());
               ret.push_back({it, i, make_pair(item, pos)});
             }
         }
@@ -1221,7 +1221,7 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
           upgradeInfo->getDescription(getGame()->getContentFactory())});
     else {
       ret.itemInfo.ingredient = getItemInfo(getGame()->getContentFactory(), {it.get()}, false, false, false);
-      ret.itemInfo.description.push_back("Crafted from " + it->getName());
+      ret.itemInfo.description.push_back("Crafted from " + it->getAName());
     }
   }
   if (!item.runes.empty() && !item.item.notArtifact)
