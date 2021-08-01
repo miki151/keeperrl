@@ -197,12 +197,12 @@ void playfile(const char *fname, SDL_Window* screen, Renderer& renderer, bool wi
 			SDL_Delay(100);
 	}
 
-	if (initfailed)
+/*	if (initfailed)
 		printf("Initialization failed!\n");
 	else if (THEORAPLAY_decodingError(decoder))
 		printf("There was an error decoding this file!\n");
 	else
-		printf("done with this file!\n");
+		printf("done with this file!\n");*/
 
 	if (video) THEORAPLAY_freeVideo(video);
 	if (audio) THEORAPLAY_freeAudio(audio);
