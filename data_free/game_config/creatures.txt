@@ -746,6 +746,7 @@
       { countMin = 10 countMax = 15 type = "GoldPiece" chance = 0.1}
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
   }
 "CYCLOPS_PLAYER"
@@ -895,6 +896,7 @@
       { "BattleAxe"}
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 5 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 5 chance = 0.3 }
+      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 5 chance = 0.3 }
     }
   }
 "SOFT_MONSTER"
@@ -1021,6 +1023,7 @@
       { type = Glyph ARMOR LastingEffect REGENERATION chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
   }
 "RED_NAGA"
@@ -1091,6 +1094,7 @@
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
   }
 "BLACK_NAGA"
@@ -1161,6 +1165,7 @@
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
       { type = Glyph WEAPON SpecialAttr DAMAGE 5 Name "at night" Night chance = 0.3 }
     }
   }
@@ -1226,6 +1231,7 @@
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
   }
 "YELLOW_NAGA"
@@ -1290,6 +1296,7 @@
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
   }
 "KNIGHT_PLAYER"
@@ -1769,6 +1776,7 @@
       { type = Glyph WEAPON VictimEffect 0.2 DestroyEquipment chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
   }
 "THIEF" inherit "WARRIOR"
@@ -2902,6 +2910,7 @@
       { type = Glyph ARMOR LastingEffect REGENERATION chance = 0.3 }
       { type = Glyph WEAPON LastingEffect DARKNESS_SOURCE chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 4 chance = 0.3 }
+      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 7 chance = 0.3 }
     }
   }
 "DARK_ELF"
@@ -3026,6 +3035,7 @@
       { type = Glyph ARMOR LastingEffect REGENERATION chance = 0.3 }
       { type = Glyph WEAPON LastingEffect DARKNESS_SOURCE chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 4 chance = 0.3 }
+      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
   }
 "DRIAD"
@@ -3812,6 +3822,7 @@
       { type = "Sword" prefixChance = 0.1 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
+      { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
   }
 "BAT"

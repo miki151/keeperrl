@@ -7,7 +7,8 @@ RICH_ENUM(
     WEAPON,
     ARMOR,
     BALSAM,
-    BODY_PART
+    BODY_PART,
+    RANGED_WEAPON
 );
 
 class ItemPrefix;

@@ -903,6 +903,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
           DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 2} {1}
           DropItems {Glyph ARMOR LastingEffect TELEPATHY} {1}
           DropItems {Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING} {1}
+          DropItems {Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 2} {1}
         }
       }
     }
@@ -1032,12 +1033,15 @@ Def BedHeal() Heal { FLESH 0.005 } End
     CreatureMessage "open the chest" "opens the chest"
     CreatureMessage "find an item inside" "finds an item inside"
     ChooseRandom {
-      DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 3} 1
       DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 2} 1
+      DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 3} 1
       DropItems {Glyph ARMOR ItemAttrBonus DEFENSE 4} 1
-      DropItems {Glyph WEAPON ItemAttrBonus DAMAGE 3} 1
       DropItems {Glyph WEAPON ItemAttrBonus DAMAGE 2} 1
+      DropItems {Glyph WEAPON ItemAttrBonus DAMAGE 3} 1
       DropItems {Glyph WEAPON ItemAttrBonus DAMAGE 4} 1
+      DropItems {Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 2} 1
+      DropItems {Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3} 1
+      DropItems {Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 4} 1
     }
     RemoveFurniture "BLACKSMITH_CHEST"
   }

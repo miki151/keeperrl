@@ -340,6 +340,7 @@ End
     {{"WhiteDragonScales"} 1}
     {{Glyph ARMOR ItemAttrBonus DEFENSE 1} 2}
     {{Glyph WEAPON ItemAttrBonus DAMAGE 1} 2}
+    {{Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 1} 2}
     {{Glyph WEAPON ItemAttrBonus SPELL_DAMAGE 1} 2}
   }
   unique = {

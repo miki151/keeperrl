@@ -327,6 +327,8 @@ optional<ItemUpgradeType> Item::getAppliedUpgradeType() const {
       return ItemUpgradeType::ARMOR;
     case ItemClass::WEAPON:
       return ItemUpgradeType::WEAPON;
+    case ItemClass::RANGED_WEAPON:
+      return ItemUpgradeType::RANGED_WEAPON;
     default:
       return none;
   }

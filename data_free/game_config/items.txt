@@ -909,6 +909,7 @@ End
       RANGED_DAMAGE 22
     }
     name = "archwood bow"
+    maxUpgrades = 2
     price = 1000
   }
 "Crossbow"
