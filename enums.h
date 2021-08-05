@@ -108,6 +108,7 @@ enum class UserInputId;
 enum class VillainGroup;
 enum class AIType;
 enum class StatId;
+enum class CollectiveTab;
 
 struct TileGasType;
 struct FXInfo;

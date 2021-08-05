@@ -140,7 +140,7 @@ void GuiBuilder::setActiveButton(CollectiveTab tab, int num, ViewId viewId, opti
     optional<TutorialHighlight> tutorial) {
   closeOverlayWindowsAndClearButton();
   activeButton = ActiveButton {tab, num};
-  mapGui->setButtonViewId(viewId);
+  mapGui->setActiveButton(viewId, tab, num);
   activeGroup = group;
   if (tutorial) {
     onTutorialClicked(num, *tutorial);
@@ -153,7 +153,7 @@ bool GuiBuilder::clearActiveButton() {
   if (activeButton || activeGroup) {
     activeButton = none;
     activeGroup = none;
-    mapGui->clearButtonViewId();
+    mapGui->clearActiveButton();
     callbacks.input(UserInputId::RECT_CANCEL);
     return true;
   }

@@ -75,9 +75,9 @@ class MapGui : public GuiElem {
   Vec2 projectOnScreen(Vec2 wpos);
   void highlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
-  void setButtonViewId(ViewId);
+  void setActiveButton(ViewId, CollectiveTab, int);
+  void clearActiveButton();
   static Color getHealthBarColor(double health, bool sprit);
-  void clearButtonViewId();
   struct HighlightedInfo {
     optional<Vec2> creaturePos;
     optional<Vec2> tilePos;
@@ -175,7 +175,12 @@ class MapGui : public GuiElem {
   bool lockedView = true;
   optional<milliseconds> lastRightClick;
   EntityMap<Creature, int> teamHighlight;
-  optional<ViewId> buttonViewId;
+  struct ActiveButtonInfo {
+    ViewId viewId;
+    int index;
+    CollectiveTab tab;
+  };
+  optional<ActiveButtonInfo> activeButton;
   set<Vec2> shadowed;
   bool isRenderedHighlight(const ViewIndex&, HighlightType);
   bool isRenderedHighlightLow(Renderer&, const ViewIndex&, HighlightType);
@@ -216,4 +221,5 @@ class MapGui : public GuiElem {
   void renderPhylacteries(Renderer&, Vec2 tileSize, milliseconds currentTimeReal);
   void updateShortestPaths(CreatureView*, Renderer&, Vec2 tileSize, milliseconds curTimeReal);
   bool isDraggedCreature() const;
+  bool redHighlight = false;
 };

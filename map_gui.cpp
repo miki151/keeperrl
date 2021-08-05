@@ -61,12 +61,12 @@ static Color getFireColor() {
   return Color(200 + Random.get(-fireVar, fireVar), Random.get(fireVar), Random.get(fireVar), 150);
 }
 
-void MapGui::setButtonViewId(ViewId id) {
-  buttonViewId = id;
+void MapGui::setActiveButton(ViewId id, CollectiveTab tab, int index) {
+  activeButton = ActiveButtonInfo{id, index, tab};
 }
 
-void MapGui::clearButtonViewId() {
-  buttonViewId = none;
+void MapGui::clearActiveButton() {
+  activeButton = none;
 }
 
 const MapGui::HighlightedInfo& MapGui::getLastHighlighted() {
@@ -144,8 +144,9 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer&) {
 }
 
 Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
-  bool quartersSelected = (buttonViewId && buttonViewId->data() == "quarters"_s);
-  bool buildingSelected = buttonViewId == ViewId("wood_wall") || buttonViewId == ViewId("castle_wall");
+  bool quartersSelected = (activeButton && activeButton->viewId.data() == "quarters"_s);
+  bool buildingSelected = (activeButton && (
+      activeButton->viewId.data() == "wood_wall"_s || activeButton->viewId.data() == "castle_wall"_s));
   switch (type) {
     case HighlightType::RECT_DESELECTION: return Color::RED.transparency(100);
     case HighlightType::DIG: return Color::YELLOW.transparency(100);
@@ -849,7 +850,7 @@ bool MapGui::isRenderedHighlight(const ViewIndex& index, HighlightType type) {
             index.hasObject(ViewLayer::FLOOR) &&
             getHighlightedFurniture() == index.getObject(ViewLayer::FLOOR).id() &&
             !isDraggedCreature() &&
-            !buttonViewId;
+            !activeButton;
       case HighlightType::CREATURE_DROP:
         return isDraggedCreature();
       default: return true;
@@ -1006,7 +1007,7 @@ MapGui::HighlightedInfo MapGui::getHighlightedInfo(Vec2 size, milliseconds curre
       if (ret.tilePos->inRectangle(objects.getBounds()))
         if (auto& index = objects[*ret.tilePos])
           ret.viewIndex = *index;
-      if (!buttonViewId && ret.tilePos->inRectangle(objects.getBounds()))
+      if (!activeButton && ret.tilePos->inRectangle(objects.getBounds()))
         for (Vec2 wpos : Rectangle(*ret.tilePos - Vec2(2, 2), *ret.tilePos + Vec2(2, 2))
             .intersection(objects.getBounds())) {
           Vec2 pos = topLeftCorner + (wpos - allTiles.topLeft()).mult(size);
@@ -1109,10 +1110,10 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
           }
         }
         if (lastHighlighted.tilePos && lastHighlighted.tilePos->y == ypos && (layer == ViewLayer::FLOOR || !spriteMode)) {
-          if (!buttonViewId && lastHighlighted.creaturePos)
+          if (!activeButton && lastHighlighted.creaturePos)
             drawCreatureHighlight(renderer, *lastHighlighted.creaturePos, size, Color::ALMOST_WHITE,
                 *objects[*lastHighlighted.tilePos]);
-          else if (!getHighlightedFurniture() || !!buttonViewId)
+          else if (!getHighlightedFurniture() || !!activeButton)
             drawSquareHighlight(renderer, topLeftCorner + (*lastHighlighted.tilePos - allTiles.topLeft()).mult(size),
                 size);
         }
@@ -1229,7 +1230,7 @@ void MapGui::drawCreatureHighlight(Renderer& renderer, Vec2 pos, Vec2 size, Colo
 }
 
 void MapGui::drawSquareHighlight(Renderer& renderer, Vec2 pos, Vec2 size) {
-  auto color = Color::ALMOST_WHITE;
+  auto color = redHighlight ? Color::RED : Color::ALMOST_WHITE;
   if (auto wpos = projectOnMap(pos))
     if (auto index = objects[*wpos])
       color = blendNightColor(color, *index);
@@ -1321,8 +1322,8 @@ void MapGui::render(Renderer& renderer) {
     considerRedrawingSquareHighlight(renderer, currentTimeReal, *lastHighlighted.tilePos, size);
   if (renderer.getMousePos().inRectangle(getBounds())) {
     int moveSelectionSize = 0;
-    if (spriteMode && buttonViewId) {
-      renderer.drawViewObject(renderer.getMousePos() + Vec2(15, 15), *buttonViewId, spriteMode, size);
+    if (spriteMode && activeButton) {
+      renderer.drawViewObject(renderer.getMousePos() + Vec2(15, 15), activeButton->viewId, spriteMode, size);
       moveSelectionSize = size.y;
     }
     if (selectionSize)
@@ -1421,6 +1422,12 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
     tutorialHighlightLow.clear();
     tutorialHighlightHigh.clear();
   }
+  redHighlight = false;
+  if (activeButton)
+    if (auto mousePos = getMousePos()) {
+      auto pos = layout->projectOnMap(getBounds(), getScreenPos(), *mousePos);
+      redHighlight = !view->canPlaceItem(pos, activeButton->index);
+    }
   WLevel level = view->getCreatureViewLevel();
   levelBounds = level->getBounds();
   mouseUI = ui;

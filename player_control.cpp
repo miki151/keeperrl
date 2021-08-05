@@ -2957,6 +2957,23 @@ vector<Vec2> PlayerControl::getHighlightedPathTo(Vec2 v) const {
   return {};
 }
 
+bool PlayerControl::canPlaceItem(Vec2 pos, int index) const {
+  Position position(pos, getCurrentLevel());
+  auto& building = buildInfo[index];
+  if (auto f = building.type.getReferenceMaybe<BuildInfoTypes::Furniture>()) {
+    for (auto& type : f->types)
+      if (collective->canAddFurniture(position, type))
+        return true;
+    auto& factory = getGame()->getContentFactory()->furniture;
+    auto layer = factory.getData(f->types[0]).getLayer();
+    auto currentPlanned = collective->getConstructions().getFurniture(position, layer);
+    if (currentPlanned && !currentPlanned->isBuilt(position, layer) && f->types.contains(currentPlanned->getFurnitureType()))
+      return true;
+    return false;
+  }
+  return true;
+}
+
 void PlayerControl::addToMemory(Position pos) {
   if (!pos.needsMemoryUpdate())
     return;
