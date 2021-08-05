@@ -517,16 +517,15 @@ class ArcheryRange : public Task {
   optional<ShootInfo> SERIAL(shootInfo);
 
   optional<ShootInfo> getShootInfo(const Creature* c) const {
-    const int distance = 5;
     auto getDir = [&](Position target) -> optional<ShootInfo> {
       for (Vec2 dir : Vec2::directions4(Random)) {
         bool ok = true;
-        for (int i : Range(distance))
+        for (int i : Range(Task::archeryRangeDistance))
           if (target.minus(dir * (i + 1)).stopsProjectiles(c->getVision().getId())) {
             ok = false;
             break;
           }
-        auto pos = target.minus(dir * distance);
+        auto pos = target.minus(dir * Task::archeryRangeDistance);
         if (ok && c->canNavigateTo(pos))
           return ShootInfo{pos, target, dir};
       }

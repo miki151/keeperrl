@@ -100,7 +100,7 @@ class MapGui : public GuiElem {
   void drawCreatureHighlights(Renderer&, const ViewObject&, const ViewIndex&, Vec2 pos, Vec2 sz,
       milliseconds currentTimeReal);
   void drawCreatureHighlight(Renderer&, Vec2 pos, Vec2 size, Color, const ViewIndex&);
-  void drawSquareHighlight(Renderer&, Vec2 pos, Vec2 size);
+  void drawSquareHighlight(Renderer&, Vec2 pos, Vec2 size, Color);
   void considerRedrawingSquareHighlight(Renderer&, milliseconds currentTimeReal, Vec2 pos, Vec2 size);
  // void drawFloorBorders(Renderer& r, DirSet borders, int x, int y);
   void drawFoWSprite(Renderer&, Vec2 pos, Vec2 size, DirSet dirs, DirSet diagonalDirs);
@@ -221,5 +221,7 @@ class MapGui : public GuiElem {
   void renderPhylacteries(Renderer&, Vec2 tileSize, milliseconds currentTimeReal);
   void updateShortestPaths(CreatureView*, Renderer&, Vec2 tileSize, milliseconds curTimeReal);
   bool isDraggedCreature() const;
-  bool redHighlight = false;
+  Color squareHighlightColor;
+  vector<Vec2> redMarks;
+  vector<Vec2> greenMarks;
 };

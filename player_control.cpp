@@ -2957,21 +2957,41 @@ vector<Vec2> PlayerControl::getHighlightedPathTo(Vec2 v) const {
   return {};
 }
 
-bool PlayerControl::canPlaceItem(Vec2 pos, int index) const {
+CreatureView::PlacementInfo PlayerControl::canPlaceItem(Vec2 pos, int index) const {
   Position position(pos, getCurrentLevel());
   auto& building = buildInfo[index];
   if (auto f = building.type.getReferenceMaybe<BuildInfoTypes::Furniture>()) {
+    vector<Vec2> inGreen;
+    vector<Vec2> inRed;
+    if (f->types[0].data() == "ARCHERY_RANGE"_s) {
+      for (auto dir : Vec2::directions4()) {
+        auto isGood = [&] {
+          for (int i : Range(1, Task::archeryRangeDistance + 1)) {
+            auto checkPos = position.plus(dir * i);
+            if (!collective->getKnownTiles().isKnown(checkPos) || checkPos.stopsProjectiles(VisionId::NORMAL))
+              return false;
+          }
+          return true;
+        }();
+        auto targetPos = position.getCoord() + dir * Task::archeryRangeDistance;
+        if (isGood) {
+          inGreen.push_back(targetPos);
+          inRed.clear();
+        } else if (inGreen.empty())
+          inRed.push_back(targetPos);
+      }
+    }
     for (auto& type : f->types)
       if (collective->canAddFurniture(position, type))
-        return true;
+        return PlacementInfo{true, inGreen, inRed};
     auto& factory = getGame()->getContentFactory()->furniture;
     auto layer = factory.getData(f->types[0]).getLayer();
     auto currentPlanned = collective->getConstructions().getFurniture(position, layer);
     if (currentPlanned && !currentPlanned->isBuilt(position, layer) && f->types.contains(currentPlanned->getFurnitureType()))
-      return true;
-    return false;
+      return PlacementInfo{true, inGreen, inRed};
+    return PlacementInfo{false, inGreen, inRed};
   }
-  return true;
+  return PlacementInfo{true, {}, {}};
 }
 
 void PlayerControl::addToMemory(Position pos) {

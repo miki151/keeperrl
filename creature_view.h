@@ -50,7 +50,12 @@ class CreatureView {
   virtual vector<vector<Vec2>> getTeamPathTo(TeamId, Vec2) const { return {}; }
   virtual vector<Vec2> getHighlightedPathTo(Vec2) const { return {}; }
   virtual vector<vector<Vec2>> getPermanentPaths() const { return {}; }
-  virtual bool canPlaceItem(Vec2, int) const { return true; }
+  struct PlacementInfo {
+    bool isValid;
+    vector<Vec2> inGreen;
+    vector<Vec2> inRed;
+  };
+  virtual PlacementInfo canPlaceItem(Vec2, int) const { return PlacementInfo{ true, {}, {} }; }
   virtual ~CreatureView() {}
 };
 
