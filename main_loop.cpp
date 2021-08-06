@@ -830,6 +830,7 @@ void MainLoop::launchQuickGame(optional<int> maxTurns) {
 }
 
 void MainLoop::start(bool tilesPresent) {
+  tileSet->setTilePathsAndReload(getTilePathsForAllMods());
   view->playVideo(paidDataPath.file("intro.ogv").getPath());
   view->reset();
   considerFreeVersionText(tilesPresent);
