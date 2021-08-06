@@ -41,6 +41,7 @@ struct LevelConnection {
     bool SERIAL(isLit) = false;
     optional<string> SERIAL(name);
     bool SERIAL(canTransfer) = true;
+    bool SERIAL(aiFollows) = true;
     template <class Archive>
     void serialize(Archive& ar, unsigned int v);
   };

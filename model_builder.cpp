@@ -381,6 +381,7 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
           LevelBuilder(meter, random, contentFactory, level.levelSize.x, level.levelSize.y, true, level.isLit ? 1.0 : 0.0),
           getMaker(level.levelType)(random, settlement, level.levelSize), depth, level.name);
       res->canTranfer = level.canTransfer;
+      res->aiFollows = level.aiFollows;
       upLink = downLink;
       downLink = StairKey::getNew();
     };

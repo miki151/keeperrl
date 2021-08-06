@@ -867,7 +867,8 @@ class ByCollective : public Behaviour {
       if (!teams.hasTeamOrder(*team, creature, TeamOrder::STAND_GROUND)) {
         const Creature* leader = teams.getLeader(*team);
         if (creature != leader) {
-          if (leader->getPosition().dist8(creature->getPosition()).value_or(2) > 1)
+          if (leader->getPosition().dist8(creature->getPosition()).value_or(2) > 1 && 
+              (leader->getPosition().isSameLevel(creature->getPosition()) || leader->getPosition().getLevel()->aiFollows))
             return MoveInfo{creature->moveTowards(leader->getPosition())}.orWait();
           else
             return creature->wait();

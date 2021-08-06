@@ -1809,7 +1809,7 @@ End
     direction = UP
     topLevel = ExtraEnemy { "SOKOBAN_ENTRY" }
     levels = {
-      {MainEnemy {28 16} SOKOBAN }
+      {MainEnemy {28 16} SOKOBAN "Sokoban" false true false }
     }
   }
   discoverable = false
