@@ -3135,8 +3135,13 @@ void PlayerControl::considerNewAttacks() {
   for (auto attack : copyOf(newAttacks))
     for (const Creature* c : attack.getCreatures())
       if (isConsideredAttacking(c, attack.getAttacker())) {
-        addMessage(PlayerMessage("You are under attack by " + attack.getAttackerName() + "!",
-            MessagePriority::CRITICAL).setPosition(c->getPosition()));
+        setScrollPos(c->getPosition().plus(Vec2(0, 5)));
+        getView()->refreshView();
+        ScriptedUIState state;
+        auto data = ScriptedUIDataElems::Record{};
+        data.elems["message"] = "You are under attack by " + attack.getAttackerName() + "!";
+        data.elems["view_id"] = attack.getAttackerViewId();
+        getView()->scriptedUI("unlock_message", data, state);
         getGame()->setCurrentMusic(MusicType::BATTLE);
         newAttacks.removeElement(attack);
         if (auto attacker = attack.getAttacker())
