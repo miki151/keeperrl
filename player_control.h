@@ -52,6 +52,7 @@ class UnknownLocations;
 class AttackTrigger;
 class ImmigrantInfo;
 struct WorkshopOptionInfo;
+struct FurnaceOptionInfo;
 namespace BuildInfoTypes {
   struct BuildType;
 }
@@ -171,6 +172,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   string getTriggerLabel(const AttackTrigger&) const;
   void fillWorkshopInfo(CollectiveInfo&) const;
   vector<CollectiveInfo::QueuedItemInfo> getQueuedWorkshopItems() const;
+  vector<CollectiveInfo::QueuedItemInfo> getFurnaceQueue() const;
+  vector<WorkshopOptionInfo> getWorkshopOptions(int resourceIndex) const;
+  vector<FurnaceOptionInfo> getFurnaceOptions() const;
   void fillImmigration(CollectiveInfo&) const;
   void fillImmigrationHelp(CollectiveInfo&) const;
   void fillLibraryInfo(CollectiveInfo&) const;
@@ -285,7 +289,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void handleBanishing(Creature*);
   optional<pair<ViewId,int>> getCostObj(CostInfo) const;
   optional<pair<ViewId,int>> getCostObj(const optional<CostInfo>&) const;
-  vector<WorkshopOptionInfo> getWorkshopOptions(int resourceIndex) const;
   ViewId getViewId(const BuildInfoTypes::BuildType&) const;
   EntityMap<Creature, LocalTime> leaderWoundedTime;
   void handleDestructionOrder(Position position, HighlightType, DestroyAction);

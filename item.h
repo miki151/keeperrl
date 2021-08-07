@@ -37,6 +37,7 @@ class ItemType;
 class ContentFactory;
 struct AutomatonPart;
 struct CreaturePredicate;
+class CostInfo;
 
 class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<Item> {
   public:
@@ -69,6 +70,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   ItemClass getClass() const;
   const vector<StorageId>& getStorageIds() const;
 
+  CostInfo getCraftingCost() const;
   int getPrice() const;
   void setShopkeeper(const Creature* shopkeeper);
   Creature* getShopkeeper(const Creature* owner) const;

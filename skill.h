@@ -23,7 +23,8 @@
 
 RICH_ENUM(SkillId,
   DIGGING,
-  MULTI_WEAPON
+  MULTI_WEAPON,
+  FURNACE
 );
 
 class Creature;

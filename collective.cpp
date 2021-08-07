@@ -63,6 +63,7 @@
 #include "village_control.h"
 #include "automaton_part.h"
 #include "enemy_aggression_level.h"
+#include "furnace.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -70,7 +71,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment, groupLockedAcitivities);
   ar(delayedPos, knownTiles, technology, kills, points, currentActivity, recordedEvents, allRecordedEvents);
-  ar(credit, model, immigration, teams, name, minionActivities, attackedByPlayer);
+  ar(credit, model, immigration, teams, name, minionActivities, attackedByPlayer, furnace);
   ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
   ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease, dungeonLevel);
 }
@@ -1383,6 +1384,11 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
             break;
         }
     }
+    if (furniture->getType() == FurnitureType("FURNACE")) {
+      auto craftingSkill = c->getAttributes().getSkills().getValue(SkillId::FURNACE);
+      if (auto result = furnace->addWork(efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c)))
+        returnResource(*result);
+    }
     if (auto workshopType = contentFactory->getWorkshopType(furniture->getType()))
       if (auto workshop = getReferenceMaybe(workshops->types, *workshopType)) {
         auto craftingSkill = c->getAttributes().getSkills().getValue(*workshopType);
@@ -1511,6 +1517,14 @@ Workshops& Collective::getWorkshops() {
 
 const Workshops& Collective::getWorkshops() const {
   return *workshops;
+}
+
+Furnace& Collective::getFurnace() {
+  return *furnace;
+}
+
+const Furnace& Collective::getFurnace() const {
+  return *furnace;  
 }
 
 Immigration& Collective::getImmigration() {

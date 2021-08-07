@@ -2126,7 +2126,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
     lines.addElem(line.buildHorizontalList());
   }
   lines.addElem(WL(label, "Available:", Color::YELLOW));
-  auto thisTooltip = [&] (const vector<string>& desc, optional<string> warning,
+  auto thisTooltip = [&] (const ItemInfo& itemInfo, optional<string> warning,
       const optional<ImmigrantCreatureInfo>& creatureInfo, int index) {
     if (creatureInfo) {
       return cache->get(
@@ -2140,8 +2140,13 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
                 [this] { return !disableTooltip;}); },
           index, *creatureInfo, warning);
     }
-    else
+    else {
+      vector<string> desc;
+      if (!itemInfo.fullName.empty() && itemInfo.fullName != itemInfo.name)
+        desc.push_back(itemInfo.fullName);
+      desc.append(itemInfo.description);
       return getTooltip(warning ? concat(desc, {*warning}) : desc, THIS_LINE + index, milliseconds{0});
+    }
   };
   for (int itemIndex : All(options)) {
     auto& elem = options[itemIndex].itemInfo;
@@ -2164,7 +2169,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
       guiElem = WL(stack, WL(tutorialHighlight), std::move(guiElem));
     if (elem.unavailable) {
       CHECK(!elem.unavailableReason.empty());
-      guiElem = WL(stack, thisTooltip(elem.description, elem.unavailableReason, options[itemIndex].creatureInfo,
+      guiElem = WL(stack, thisTooltip(elem, elem.unavailableReason, options[itemIndex].creatureInfo,
           itemIndex + THIS_LINE), std::move(guiElem));
     }
     else
@@ -2172,12 +2177,12 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
           WL(uiHighlightMouseOver),
           std::move(guiElem),
           WL(button, getButtonCallback({UserInputId::WORKSHOP_ADD, itemIndex})),
-          thisTooltip(elem.description, none, options[itemIndex].creatureInfo, itemIndex + THIS_LINE)
+          thisTooltip(elem, none, options[itemIndex].creatureInfo, itemIndex + THIS_LINE)
       );
     lines.addElem(WL(rightMargin, rightElemMargin, std::move(guiElem)));
   }
   auto lines2 = WL(getListBuilder, legendLineHeight);
-  lines2.addElem(WL(label, "In production:", Color::YELLOW));
+  lines2.addElem(WL(label, info.queuedTitle, Color::YELLOW));
   for (int i : All(queued)) {
     auto& elem = queued[i];
     auto line = WL(getListBuilder);
@@ -2195,7 +2200,8 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
       line.addBackElemAuto(WL(leftMargin, 7, drawItemUpgradeButton(elem)));
     if (elem.itemInfo.price)
       line.addBackElem(WL(alignment, GuiFactory::Alignment::RIGHT, drawCost(*elem.itemInfo.price)), 80);
-    line.addBackElemAuto(WL(leftMargin, 7, drawItemCountButton(elem)));
+    if (info.allowChangeNumber)
+      line.addBackElemAuto(WL(leftMargin, 7, drawItemCountButton(elem)));
     line.addBackElemAuto(WL(topMargin, 3, WL(leftMargin, 7, WL(stack,
         WL(button, getButtonCallback({UserInputId::WORKSHOP_CHANGE_COUNT,
             WorkshopCountInfo{ elem.itemIndex, elem.itemInfo.number, 0 }})),
@@ -2204,7 +2210,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
         WL(bottomMargin, 5,
             WL(progressBar, Color::DARK_GREEN.transparency(128), elem.productionState)),
         WL(rightMargin, rightElemMargin, line.buildHorizontalList()),
-        thisTooltip(elem.itemInfo.description, elem.paid ? optional<string>() : elem.itemInfo.unavailableReason,
+        thisTooltip(elem.itemInfo, elem.paid ? optional<string>() : elem.itemInfo.unavailableReason,
             queued[i].creatureInfo, i + THIS_LINE)
     ));
   }

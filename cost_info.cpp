@@ -20,5 +20,9 @@ CostInfo CostInfo::operator * (int a) const {
   return CostInfo(id, a * value);
 }
 
+CostInfo CostInfo::operator / (int a) const {
+  return CostInfo(id, value / a);
+}
+
 #include "pretty_archive.h"
 template void CostInfo::serialize(PrettyInputArchive&, unsigned);

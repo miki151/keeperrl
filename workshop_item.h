@@ -12,14 +12,14 @@ struct WorkshopItemCfg {
   WorkshopItem get(const ContentFactory*) const;
   ItemType SERIAL(item);
   double SERIAL(work) = 1;
-  CostInfo SERIAL(cost);
+  optional<CostInfo> SERIAL(cost);
   optional<TechId> SERIAL(tech);
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
   optional<string> SERIAL(requireIngredient);
   bool SERIAL(notArtifact) = false;
   bool SERIAL(applyImmediately) = false;
   bool SERIAL(materialTab) = false;
-  SERIALIZE_ALL(NAMED(item), OPTION(work), OPTION(cost), NAMED(tech), NAMED(tutorialHighlight), OPTION(requireIngredient), OPTION(notArtifact), OPTION(applyImmediately), OPTION(materialTab))
+  SERIALIZE_ALL(NAMED(item), OPTION(work), NAMED(cost), NAMED(tech), NAMED(tutorialHighlight), OPTION(requireIngredient), OPTION(notArtifact), OPTION(applyImmediately), OPTION(materialTab))
 };
 
 static_assert(std::is_nothrow_move_constructible<WorkshopItemCfg>::value, "T should be noexcept MoveConstructible");

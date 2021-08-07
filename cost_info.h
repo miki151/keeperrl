@@ -11,6 +11,7 @@ class CostInfo {
 
   CostInfo operator - () const;
   CostInfo operator * (int) const;
+  CostInfo operator / (int) const;
 
   SERIALIZATION_DECL(CostInfo)
 

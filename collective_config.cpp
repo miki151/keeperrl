@@ -40,6 +40,7 @@
 #include "content_factory.h"
 #include "bed_type.h"
 #include "item_types.h"
+#include "furnace.h"
 
 template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
@@ -300,6 +301,12 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
       case MinionActivity::BE_EXECUTED: return {FurnitureType("GALLOWS")};
       case MinionActivity::CRAFT:
         return {[](const ContentFactory* f, const Collective* col, const Creature* c, FurnitureType t) {
+            if (t == FurnitureType("FURNACE")) {
+              if (!c || !col)
+                return true;
+              auto skill = c->getAttributes().getSkills().getValue(SkillId::FURNACE);
+              return skill > 0 && !col->getFurnace().isIdle();
+            } else
             if (auto type = f->getWorkshopType(t)) {
               if (!c || !col)
                 return true;

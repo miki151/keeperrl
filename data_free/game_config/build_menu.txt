@@ -252,6 +252,11 @@
     { Furniture {{ "LABORATORY" } "STONE" 10 }                     "Laboratory"        "Morgue"
         "Produces balsams for the animated bodies."            0 { TechId "embalming" }}
   }
+  "furnace"
+  {
+    { Furniture {{ "FURNACE" }      "STONE" 50 }                   "Furnace"             "Crafting"
+        "Smelt and recycle unneeded items."    0 { TechId "iron working" }}
+  }
   "automatons"
   {
     { Furniture {{ "AUTOMATON_ENGINE_WOOD" } "WOOD" 50 }                "Wooden engine"   "Automaton engines"

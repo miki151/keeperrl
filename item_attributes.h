@@ -33,6 +33,7 @@
 #include "creature_predicate.h"
 #include "companion_info.h"
 #include "storage_id.h"
+#include "cost_info.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
@@ -104,6 +105,7 @@ class ItemAttributes {
   EnumMap<AttrType, optional<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
   vector<StorageId> SERIAL(storageIds);
   optional<Effect> SERIAL(carriedTickEffect);
+  CostInfo SERIAL(craftingCost) = CostInfo::noCost();
 };
 
 static_assert(std::is_nothrow_move_constructible<ItemAttributes>::value, "T should be noexcept MoveConstructible");

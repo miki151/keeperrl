@@ -99,6 +99,7 @@
 #include "shortest_path.h"
 #include "scripted_ui_data.h"
 #include "item_types.h"
+#include "furnace.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -1174,6 +1175,39 @@ static vector<CollectiveResourceId> getResourceTabs(const Workshops::Type& works
   return ret;
 }
 
+struct FurnaceOptionInfo {
+  ItemInfo itemInfo;
+  int optionIndex;
+  Item* item;
+  Position pos;
+};
+
+vector<FurnaceOptionInfo> PlayerControl::getFurnaceOptions() const {
+  vector<FurnaceOptionInfo> ret;
+  int i = 0;
+  for (auto pos : collective->getConstructions().getAllStoragePositions())
+    for (auto item : pos.getItems())
+      if (item->getCraftingCost().value > 0) {
+        auto itemInfo = getItemInfo(getGame()->getContentFactory(), {item}, false, false, false);
+        itemInfo.price = getCostObj(collective->getFurnace().getRecycledAmount(item));
+        ret.push_back({itemInfo, i, item, pos});
+        ++i;
+      }
+  return ret;
+}
+
+vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getFurnaceQueue() const {
+  vector<CollectiveInfo::QueuedItemInfo> ret;
+  int i = 0;
+  for (auto& item : collective->getFurnace().getQueued()) {
+        auto itemInfo = getItemInfo(getGame()->getContentFactory(), {item.item.get()}, false, false, false);
+        itemInfo.price = getCostObj(collective->getFurnace().getRecycledAmount(item.item.get()));
+    ret.push_back(CollectiveInfo::QueuedItemInfo{item.state, true, std::move(itemInfo), none, {}, {}, 0, i, true});
+    ++i;
+  }
+  return ret;
+}
+
 vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions(int resourceIndex) const {
   vector<WorkshopOptionInfo> ret;
   auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
@@ -1274,6 +1308,23 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
     }
     ++i;
   }
+  info.workshopButtons.push_back({"Furnace", ViewId("furnace"), false,
+      collective->getConstructions().getBuiltPositions(FurnitureType("FURNACE")).empty()});
+  if (!!chosenWorkshop && chosenWorkshop->type == WorkshopType("FURNACE")) {
+    index = i;
+    info.workshopButtons.back().active = true;
+    info.chosenWorkshop = CollectiveInfo::ChosenWorkshopInfo {
+        {},
+        chosenWorkshop->resourceIndex,
+        "",
+        getFurnaceOptions().transform([](auto& option) {
+            return CollectiveInfo::OptionInfo{option.itemInfo, none}; }),
+        getFurnaceQueue(),
+        index,
+        "To be smelted:",
+        false
+    };
+  } else
   if (chosenWorkshop) {
     auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
     auto resourceTabs = getResourceTabs(workshop);
@@ -1289,7 +1340,9 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
         getWorkshopOptions(chosenWorkshop->resourceIndex).transform([](auto& option) {
             return CollectiveInfo::OptionInfo{option.itemInfo, option.creatureInfo}; }),
         getQueuedWorkshopItems(),
-        index
+        index,
+        "In production:",
+        true
     };
   }
 }
@@ -1948,7 +2001,9 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         if (auto& obj = furniture->getViewObject())
           if (index.hasObject(obj->layer()))
             index.getObject(obj->layer()).setClickAction(FurnitureClick::getClickAction(*clickType, position, furniture));
-      auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType());
+      auto workshopType = furniture->getType() == FurnitureType("FURNACE")
+          ? WorkshopType("FURNACE")
+          : getGame()->getContentFactory()->getWorkshopType(furniture->getType());
       if (furniture->hasUsageType(BuiltinUsageId::STUDY) || !!workshopType)
         index.setHighlight(HighlightType::CLICKABLE_FURNITURE);
       if (chosenWorkshop && chosenWorkshop->type == workshopType)
@@ -2157,10 +2212,13 @@ void PlayerControl::clearChosenInfo() {
 
 void PlayerControl::setChosenWorkshop(optional<ChosenWorkshopInfo> info) {
   auto refreshHighlights = [&] {
-    if (chosenWorkshop)
-      for (auto pos : collective->getConstructions().getBuiltPositions(
-             getGame()->getContentFactory()->workshopInfo.at(chosenWorkshop->type).furniture))
+    if (chosenWorkshop) {
+      auto furniture = chosenWorkshop->type == WorkshopType("FURNACE")
+          ? FurnitureType("FURNACE")
+          : getGame()->getContentFactory()->workshopInfo.at(chosenWorkshop->type).furniture;
+      for (auto pos : collective->getConstructions().getBuiltPositions(furniture))
         pos.setNeedsRenderUpdate(true);
+    }
   };
   refreshHighlights();
   if (info)
@@ -2323,10 +2381,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::WORKSHOP: {
       auto types = collective->getWorkshops().getWorkshopsTypes();
       int index = input.get<int>();
-      if (index < 0 || index >= types.size())
+      if (index < 0 || index > types.size())
         setChosenWorkshop(none);
       else {
-        WorkshopType type = types[index];
+        auto type = index == types.size() ? WorkshopType("FURNACE") : types[index];
         if (chosenWorkshop && chosenWorkshop->type == type)
           setChosenWorkshop(none);
         else
@@ -2336,14 +2394,20 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::WORKSHOP_ADD:
       if (chosenWorkshop) {
-        auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
-        int index = input.get<int>();
-        auto options = getWorkshopOptions(chosenWorkshop->resourceIndex);
-        auto& item = options[index];
-        workshop.queue(collective, item.optionIndex);
-        if (item.ingredient) {
-          workshop.addUpgrade(workshop.getQueued().size() - 1,
-              item.ingredient->second.removeItem(item.ingredient->first));
+        if (chosenWorkshop->type == WorkshopType("FURNACE")) {
+          int index = input.get<int>();
+          auto& option = getFurnaceOptions()[index];
+          collective->getFurnace().queue(option.pos.removeItem(option.item));
+        } else {
+          auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
+          int index = input.get<int>();
+          auto options = getWorkshopOptions(chosenWorkshop->resourceIndex);
+          auto& item = options[index];
+          workshop.queue(collective, item.optionIndex);
+          if (item.ingredient) {
+            workshop.addUpgrade(workshop.getQueued().size() - 1,
+                item.ingredient->second.removeItem(item.ingredient->first));
+          }
         }
       }
       break;
@@ -2353,7 +2417,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::WORKSHOP_UPGRADE: {
       auto& info = input.get<WorkshopUpgradeInfo>();
-      if (chosenWorkshop) {
+      if (chosenWorkshop && chosenWorkshop->type != WorkshopType("FURNACE")) {
         auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
         if (info.itemIndex < workshop.getQueued().size()) {
           auto& item = workshop.getQueued()[info.itemIndex];
@@ -2377,14 +2441,21 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::WORKSHOP_CHANGE_COUNT: {
       auto& info = input.get<WorkshopCountInfo>();
       if (chosenWorkshop) {
-        auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
-        if (info.itemIndex < workshop.getQueued().size()) {
-          for (int i : Range(info.count - info.newCount))
-            for (auto& upgrade : workshop.unqueue(collective, info.itemIndex))
-              Random.choose(collective->getStoragePositions(getGlyphStorageId()).asVector())
-                  .dropItem(std::move(upgrade));
-          for (int i : Range(info.newCount - info.count))
-            workshop.queue(collective, workshop.getQueued()[info.itemIndex].indexInWorkshop, info.itemIndex + 1);
+        if (chosenWorkshop->type == WorkshopType("FURNACE")) {
+          if (info.newCount == 0 && info.itemIndex < collective->getFurnace().getQueued().size()) {
+            auto item = collective->getFurnace().unqueue(info.itemIndex);
+            Random.choose(collective->getStoragePositions(item->getStorageIds()).asVector()).dropItem(std::move(item));
+          }
+        } else {
+          auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
+          if (info.itemIndex < workshop.getQueued().size()) {
+            for (int i : Range(info.count - info.newCount))
+              for (auto& upgrade : workshop.unqueue(collective, info.itemIndex))
+                Random.choose(collective->getStoragePositions(getGlyphStorageId()).asVector())
+                    .dropItem(std::move(upgrade));
+            for (int i : Range(info.newCount - info.count))
+              workshop.queue(collective, workshop.getQueued()[info.itemIndex].indexInWorkshop, info.itemIndex + 1);
+          }
         }
       }
       break;
@@ -2870,6 +2941,9 @@ void PlayerControl::onSquareClick(Position pos) {
         furniture->click(pos); // this can remove the furniture
         updateSquareMemory(pos);
       } else
+      if (furniture->getType() == FurnitureType("FURNACE"))
+        setChosenWorkshop(ChosenWorkshopInfo{0, WorkshopType("FURNACE")});
+      else
       if (auto workshopType = getGame()->getContentFactory()->getWorkshopType(furniture->getType()))
         if (collective->getWorkshops().getWorkshopsTypes().contains(*workshopType))
           setChosenWorkshop(ChosenWorkshopInfo{0, *workshopType});

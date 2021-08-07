@@ -285,6 +285,10 @@ int Item::getPrice() const {
   return attributes->price;
 }
 
+CostInfo Item::getCraftingCost() const {
+  return attributes->craftingCost;
+}
+
 bool Item::isShopkeeper(const Creature* c) const {
   return shopkeeper == c->getUniqueId();
 }

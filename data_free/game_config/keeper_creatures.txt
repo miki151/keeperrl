@@ -15,8 +15,8 @@
   initialTech = { "sorcery" }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
-      "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "demon_shrine" "prison" "orders"
-      "installations" "minion_statues" "magical_installations" "traps"
+      "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "demon_shrine"
+      "prison" "orders" "installations" "minion_statues" "magical_installations" "traps"
   }
   workshopGroups = { "basic" "traps" }
   description = "Build and manage your dream dungeon, defend against raids, and attack your enemies. Be about as evil as a boogieman can be!"
@@ -42,7 +42,8 @@
   initialTech = { "archery" }
   buildingGroups = {
       "structure" "arrowslits" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage"
-      "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "angel_shrine" "prison" "orders" "installations"
+      "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace"
+      "angel_shrine" "prison" "orders" "installations"
   }
   workshopGroups = { "basic" }
   description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"
@@ -61,8 +62,8 @@
   initialTech = { "automatons" }
   baseNameGen = "TOWN"
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "beds"
-      "crafting" "laboratory" "distillery" "automatons" "orders" "installations" "traps" "gnome_traps"
+      "structure" "doors" "floors" "storage" "zones" "beds" "crafting" "laboratory" "distillery"
+      "furnace" "automatons" "orders" "installations" "traps" "gnome_traps"
   }
   workshopGroups = { "gnomes" "traps" "basic" }
   description = "Seize the means of production and engineer traps, automatons and other contraptions. Recommended for advanced players."
@@ -86,7 +87,7 @@
   initialTech = { }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "pigsty"
-      "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "prison" "orders"
+      "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "prison" "orders"
       "installations" "minion_statues" "traps"
   }
   workshopGroups = { "basic" "traps" }
@@ -130,7 +131,7 @@
   initialTech = { }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "throne" "beds"
-      "training_dummies" "crafting" "laboratory" "jeweller" "poetry" "distillery" "orders"
+      "training_dummies" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "orders"
       "installations" "traps"
   }
   workshopGroups = { "basic" "traps" }

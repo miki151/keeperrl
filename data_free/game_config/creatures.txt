@@ -98,6 +98,7 @@
     skills = {
       "FORGE" 0.2
       "MULTI_WEAPON" 0.8
+      "FURNACE" 0.3
     }
     maxLevelIncrease = {
       MELEE 12
@@ -141,6 +142,7 @@
     skills = {
       "FORGE" 0.2
       "MULTI_WEAPON" 0.8
+      "FURNACE" 0.1
     }
     maxLevelIncrease = {
       MELEE 12
@@ -767,6 +769,7 @@
       "FORGE" 0.2
       "LABORATORY" 0.2
       "JEWELER" 0.2
+      "FURNACE" 0.5
     }
     name = {
       name = "cyclops"
@@ -1317,6 +1320,7 @@
     skills = {
       "WORKSHOP" 0.3
       "FORGE" 0.3
+      "FURNACE" 0.2
     }
     name = {
       name = "knight"
@@ -1431,6 +1435,7 @@
       "WORKSHOP" 0.6
       "FORGE" 0.6
       "JEWELER" 0.6
+      "FURNACE" 0.5
     }
     aiType = RANGED
     name = {
@@ -1444,6 +1449,7 @@
       "WORKSHOP" 1.0
       "FORGE" 1.0
       "JEWELER" 1.0
+      "FURNACE" 0.5
     }
     name = {
       name = "master artisan"
@@ -2478,6 +2484,7 @@
       "FORGE" 0.5
       "LABORATORY" 0.5
       "DIGGING" 0.2
+      "FURNACE" 0.2
     }
     aiType = RANGED
     permanentEffects = {
@@ -2534,6 +2541,7 @@
       "WORKSHOP" 0.6
       "FORGE" 0.6
       "JEWELER" 0.6
+      "FURNACE" 0.5
     }
     name = {
       name = "goblin artificer"
@@ -2613,6 +2621,7 @@
     }
     skills = {
       "FORGE" 0.4
+      "FURNACE" 0.3
     }
     maxLevelIncrease = {
       MELEE 2
@@ -2719,6 +2728,7 @@
     aiType = RANGED
     skills = {
       "FORGE" 1.0
+      "FURNACE" 0.8
     }
     inventory = {}
   }
@@ -4244,6 +4254,7 @@ End
     skills = {
       "WORKSHOP" 0.3
       "FORGE" 0.3
+      "FURNACE" 0.1
     }
     maxLevelIncrease = {
       MELEE 7
@@ -4452,6 +4463,7 @@ End
     skills = {
       "WORKSHOP" 0.3
       "FORGE" 0.3
+      "FURNACE" 0.1
     }
     maxLevelIncrease = {
       MELEE 7
@@ -4555,6 +4567,7 @@ End
     skills = {
       "WORKSHOP" 0.5
       "FORGE" 0.5
+      "FURNACE" 0.8
     }
     maxLevelIncrease = {
       MELEE 12

@@ -24,7 +24,7 @@ WorkshopItem WorkshopItemCfg::get(const ContentFactory* factory) const {
     getItemName(elem.get(), false),
     getItemName(elem.get(), true),
     elem->getViewObject().getViewIdList(),
-    cost,
+    cost.value_or(elem->getCraftingCost()),
     std::move(description),
     work,
     tech,

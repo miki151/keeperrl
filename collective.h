@@ -52,6 +52,7 @@ class PositionMatching;
 class MinionActivities;
 class ResourceInfo;
 class StoragePositions;
+class Furnace;
 
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
@@ -181,6 +182,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
 
   Workshops& getWorkshops();
   const Workshops& getWorkshops() const;
+  Furnace& getFurnace();
+  const Furnace& getFurnace() const;
 
   Immigration& getImmigration();
   const Immigration& getImmigration() const;
@@ -300,6 +303,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   VillainType SERIAL(villainType);
   optional<EnemyId> SERIAL(enemyId);
   unique_ptr<Workshops> SERIAL(workshops);
+  HeapAllocated<Furnace> SERIAL(furnace);
   HeapAllocated<Zones> SERIAL(zones);
   HeapAllocated<CollectiveWarnings> SERIAL(warnings);
   PImmigration SERIAL(immigration);

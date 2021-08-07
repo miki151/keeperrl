@@ -142,6 +142,7 @@
     name = "iron humanoid head"
     shortName = "humanoid head"
     weight = 4
+    craftingCost = "IRON" 5
     automatonPart = {
       "automatons_upper"
       2
@@ -227,6 +228,7 @@
     name = "pair of iron legs"
     shortName = "iron legs"
     weight = 8
+    craftingCost = "IRON" 5
     automatonPart = {
       "automatons_lower"
       0
@@ -250,6 +252,7 @@
     name = "pair of iron arms"
     shortName = "iron arms"
     weight = 6
+    craftingCost = "IRON" 5
     automatonPart = {
       "automatons_upper"
       1
@@ -270,6 +273,7 @@
     name = "iron drill"
     shortName = "iron drill"
     weight = 6
+    craftingCost = "IRON" 5
     automatonPart = {
       "automatons_upper"
       1
@@ -289,6 +293,7 @@
     viewId = { "automaton_crafting" Rgb 140 148 148 255 }
     name = "iron crafting arms"
     weight = 6
+    craftingCost = "IRON" 5
     automatonPart = {
       "automatons_upper"
       1
@@ -348,6 +353,7 @@
     name = "adamantine humanoid head"
     shortName = "humanoid head"
     weight = 4
+    craftingCost = "ADA" 5
     automatonPart = {
       "automatons_upper"
       2
@@ -433,6 +439,7 @@
     name = "pair of adamantine legs"
     shortName = "adamantine legs"
     weight = 8
+    craftingCost = "ADA" 5
     automatonPart = {
       "automatons_lower"
       0
@@ -456,6 +463,7 @@
     name = "pair of adamantine arms"
     shortName = "adamantine arms"
     weight = 6
+    craftingCost = "ADA" 5
     automatonPart = {
       "automatons_upper"
       1
@@ -476,6 +484,7 @@
     name = "adamantine drill"
     shortName = "adamantine drill"
     weight = 6
+    craftingCost = "ADA" 5
     automatonPart = {
       "automatons_upper"
       1
@@ -495,6 +504,7 @@
     viewId = { "automaton_crafting" Rgb 148 189 189 255 }
     name = "adamantine crafting arms"
     weight = 6
+    craftingCost = "ADA" 5
     automatonPart = {
       "automatons_upper"
       1
@@ -607,6 +617,7 @@
       DAMAGE 8
     }
     price = 4
+    craftingCost = "IRON" 20
     weaponInfo = {
       attackType = CUT
     }
@@ -630,6 +641,7 @@
       DAMAGE 11
     }
     price = 20
+    craftingCost = "ADA" 20
     genPrefixes = {
       1 VictimEffect 0.2 Acid
       1 VictimEffect 0.3 Fire
@@ -648,6 +660,7 @@ End
     viewId = { "infernite_sword" }
     name = "infernite sword"
     price = 200
+    craftingCost = "INFERNITE" 20
     weaponInfo = append {
       victimEffect = {0.5 Fire}
     }
@@ -665,6 +678,7 @@ End
       DAMAGE 9
     }
     price = 8
+    craftingCost = "IRON" 20
     weaponInfo = {
       attackType = CUT
     }
@@ -684,6 +698,7 @@ End
       DAMAGE 14
     }
     price = 30
+    craftingCost = "IRON" 50
     weaponInfo = {
       attackType = CUT
       twoHanded = true
@@ -704,6 +719,7 @@ End
       DAMAGE 18
     }
     price = 150
+    craftingCost = "ADA" 50
     genPrefixes = {
       1 VictimEffect 0.5 Lasting BLEEDING
     }
@@ -715,6 +731,7 @@ End
     shortName = "infernite"
     name = "infernite battle axe"
     price = 1500
+    craftingCost = "INFERNITE" 50
     weaponInfo = append {
       victimEffect = {0.5 Fire}
     }
@@ -732,6 +749,7 @@ End
       DAMAGE 12
     }
     price = 20
+    craftingCost = "IRON" 40
     weaponInfo = {
       attackType = CRUSH
       twoHanded = true
@@ -750,6 +768,7 @@ End
       DAMAGE 15
     }
     price = 100
+    craftingCost = "ADA" 40
     genPrefixes = {
       1 VictimEffect 0.5 Lasting COLLAPSED
     }
@@ -761,6 +780,7 @@ End
     shortName = "infernite"
     name = "infernite war hammer"
     price = 1000
+    craftingCost = "INFERNITE" 40
     weaponInfo = append {
       victimEffect = {0.5 Fire}
     }
@@ -832,6 +852,7 @@ End
       SPELL_DAMAGE 8
     }
     price = 60
+    craftingCost = "IRON" 40
     genPrefixes = {
       1 VictimEffect 1.0 Escape{}
       1 VictimEffect 0.4 DestroyEquipment
@@ -850,6 +871,7 @@ End
       SPELL_DAMAGE 13
     }
     price = 1800
+    craftingCost = "ADOXIUM" 40
     genPrefixes = {
       1 VictimEffect 0.2 Lasting INSANITY
       1 VictimEffect 0.2 DestroyEquipment
@@ -1012,6 +1034,7 @@ End
     equipmentSlot = GLOVES
     weight = 1
     price = 10
+    craftingCost = "IRON" 2
     modifiers = {
       DEFENSE 2
     }
@@ -1032,6 +1055,7 @@ End
     equipmentSlot = GLOVES
     weight = 0.7
     price = 25
+    craftingCost = "ADA" 2
     modifiers = {
       DEFENSE 3
     }
@@ -1048,6 +1072,7 @@ End
     name = "pair of adoxium gloves"
     plural = "pairs of adoxium gloves"
     price = 250
+    craftingCost = "ADOXIUM" 2
     modifiers = append {
       SPELL_DAMAGE 2
     }
@@ -1114,6 +1139,7 @@ End
     equipmentSlot = SHIELD
     weight = 2
     price = 10
+    craftingCost = "IRON" 24
     modifiers = {
       PARRY 2
       DEFENSE 2
@@ -1130,6 +1156,7 @@ End
     equipmentSlot = SHIELD
     weight = 1.5
     price = 50
+    craftingCost = "ADA" 24
     modifiers = {
       PARRY 3
       DEFENSE 4
@@ -1146,6 +1173,7 @@ End
     equipmentSlot = BODY_ARMOR
     weight = 15
     price = 25
+    craftingCost = "IRON" 40
     modifiers = {
       DEFENSE 5
     }
@@ -1284,6 +1312,7 @@ End
     equipmentSlot = BODY_ARMOR
     weight = 13
     price = 160
+    craftingCost = "ADA" 40
     modifiers = {
       DEFENSE 8
     }
@@ -1298,6 +1327,7 @@ End
     viewId = { "chain_armor" ColorId PINK }
     name = "adoxium armor"
     price = 1600
+    craftingCost = "ADOXIUM" 40
     modifiers = append {
       SPELL_DAMAGE 5
     }
@@ -1311,6 +1341,7 @@ End
     equipmentSlot = HELMET
     weight = 4
     price = 8
+    craftingCost = "IRON" 16
     modifiers = {
       DEFENSE 2
     }
@@ -1470,6 +1501,7 @@ End
     equipmentSlot = HELMET
     weight = 3
     price = 40
+    craftingCost = "ADA" 16
     modifiers = {
       DEFENSE 4 
     }
@@ -1485,6 +1517,7 @@ End
     viewId = { "iron_helm" ColorId PINK }
     name = "adoxium helm"
     price = 400
+    craftingCost = "ADOXIUM" 16
     modifiers = append {
       SPELL_DAMAGE 4
     }
@@ -1512,6 +1545,7 @@ End
     equipmentSlot = HELMET
     weight = 1
     price = 50
+    craftingCost = "GOLD" 20
     modifiers = {
       SPELL_DAMAGE 4
       DAMAGE -4
@@ -1527,6 +1561,7 @@ End
     equipmentSlot = HELMET
     weight = 1
     price = 70
+    craftingCost = "GOLD" 40
     modifiers = {
       SPELL_DAMAGE 6
       DAMAGE -6
@@ -1565,6 +1600,7 @@ End
     equipmentSlot = BOOTS
     weight = 4
     price = 8
+    craftingCost = "IRON" 24
     modifiers = {
       DEFENSE 2
     }
@@ -1586,6 +1622,7 @@ End
     equipmentSlot = BOOTS
     weight = 3
     price = 50
+    craftingCost = "ADA" 24
     modifiers = {
       DEFENSE 4
     }
@@ -1601,6 +1638,7 @@ End
     name = "pair of adoxium boots"
     plural = "pairs of adoxium boots"
     price = 500
+    craftingCost = "ADOXIUM" 24
     modifiers = append {
       SPELL_DAMAGE 3
     }
