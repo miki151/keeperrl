@@ -651,10 +651,10 @@ static pair<optional<LastingEffect>, ItemType> getSpecialBeastAttack(bool large,
     {LastingEffect::FIRE_RESISTANT, ItemType(ItemType::fangs(7, VictimEffect{0.7, EffectType(Effects::Fire{})}))},
     {none, ItemType(ItemType::fists(7))},
     {LastingEffect::POISON_RESISTANT,
-        ItemType(ItemType::fangs(7, VictimEffect{0.3, EffectType(Effects::Lasting{LastingEffect::POISON})}))},
+        ItemType(ItemType::fangs(7, VictimEffect{0.3, EffectType(Effects::Lasting{none, LastingEffect::POISON})}))},
     {none, ItemType(ItemType::fangs(7))},
     {LastingEffect::POISON_RESISTANT,
-        ItemType(ItemType::fangs(7, VictimEffect{0.3, EffectType(Effects::Lasting{LastingEffect::POISON})}))},
+        ItemType(ItemType::fangs(7, VictimEffect{0.3, EffectType(Effects::Lasting{none, LastingEffect::POISON})}))},
     {none, ItemType(ItemType::fists(7))},
   };
   return attacks[(!large) * 4 + (!living) * 2 + wings];

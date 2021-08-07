@@ -100,8 +100,10 @@ struct Alarm {
 };
 
 struct Lasting {
+  optional<TimeInterval> SERIAL(duration);
   LastingEffect SERIAL(lastingEffect);
-  SERIALIZE_ALL(lastingEffect)
+  SERIALIZE_ALL(duration, lastingEffect)
+  void serialize(PrettyInputArchive& ar1, const unsigned int);
 };
 
 struct RemoveLasting {

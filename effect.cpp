@@ -304,7 +304,7 @@ static optional<MinionEquipmentType> getMinionEquipmentType(const Effects::Equip
 }
 
 static bool applyToCreature(const Effects::Lasting& e, Creature* c, Creature*) {
-  return c->addEffect(e.lastingEffect, LastingEffects::getDuration(c, e.lastingEffect));
+  return c->addEffect(e.lastingEffect, e.duration.value_or(LastingEffects::getDuration(c, e.lastingEffect)));
 }
 
 static int getPrice(const Effects::Lasting& e) {
@@ -2339,7 +2339,7 @@ vector<Effect> Effect::getWishedForEffects() {
   };
   for (auto effect : ENUM_ALL(LastingEffect))
     if (LastingEffects::canWishFor(effect)) {
-      allEffects.push_back(EffectType(Effects::Lasting{effect}));
+      allEffects.push_back(EffectType(Effects::Lasting{none, effect}));
       allEffects.push_back(EffectType(Effects::Permanent{effect}));
       allEffects.push_back(EffectType(Effects::RemoveLasting{effect}));
     }
@@ -2394,6 +2394,13 @@ namespace Effects {
 
 #include "pretty_archive.h"
 template void Effect::serialize(PrettyInputArchive&, unsigned);
+
+void Effects::Lasting::serialize(PrettyInputArchive& ar1, const unsigned int) {
+  int d;
+  if (ar1.readMaybe(d))
+    duration = TimeInterval(d);
+  ar1(lastingEffect);
+}
 
 namespace Effects {
 #define DEFAULT_ELEM "Chain"
