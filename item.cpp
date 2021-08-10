@@ -62,7 +62,7 @@ Item::Item(const ItemAttributes& attr, const ContentFactory* factory)
 
 void Item::updateAbility(const ContentFactory* factory) {
   for (auto id : attributes->equipedAbility)
-    abilityInfo = ItemAbility { *factory->getCreatures().getSpell(id), none };
+    abilityInfo = ItemAbility { *factory->getCreatures().getSpell(id), none, getUniqueId().getGenericId() };
 }
 
 Item::~Item() {
@@ -211,6 +211,10 @@ const optional<CreaturePredicate>& Item::getApplyPredicate() const {
 }
 
 optional<ItemAbility>& Item::getAbility() {
+  if (abilityInfo && abilityInfo->itemId != getUniqueId().getGenericId()) {
+    abilityInfo->itemId = getUniqueId().getGenericId();
+    abilityInfo->timeout = none;
+  }
   return abilityInfo;
 }
 
