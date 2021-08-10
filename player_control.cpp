@@ -1811,6 +1811,14 @@ void PlayerControl::updateMinionVisibility(const Creature* c) {
   }
 }
 
+void PlayerControl::addWindowMessage(ViewIdList viewId, const string& message) {
+  ScriptedUIState state;
+  auto data = ScriptedUIDataElems::Record{};
+  data.elems["message"] = message;
+  data.elems["view_id"] = viewId;
+  getView()->scriptedUI("unlock_message", data, state);
+}
+
 void PlayerControl::onEvent(const GameEvent& event) {
   using namespace EventInfo;
   event.visit<void>(
@@ -1826,11 +1834,7 @@ void PlayerControl::onEvent(const GameEvent& event) {
         if (col->isDiscoverable() && info.byPlayer) {
           if (auto& name = col->getName()) {
             collective->addRecordedEvent("the conquering of " + name->full);
-            ScriptedUIState state;
-            auto data = ScriptedUIDataElems::Record{};
-            data.elems["message"] = "The tribe of " + name->full + " is destroyed.";
-            data.elems["view_id"] = ViewIdList{name->viewId};
-            getView()->scriptedUI("unlock_message", data, state);
+            addWindowMessage(ViewIdList{name->viewId}, "The tribe of " + name->full + " is destroyed.");
           } else
             addMessage(PlayerMessage("An unnamed tribe is destroyed.", MessagePriority::CRITICAL));
           collective->getDungeonLevel().onKilledVillain(col->getVillainType());
@@ -3211,11 +3215,7 @@ void PlayerControl::considerNewAttacks() {
       if (isConsideredAttacking(c, attack.getAttacker())) {
         setScrollPos(c->getPosition().plus(Vec2(0, 5)));
         getView()->refreshView();
-        ScriptedUIState state;
-        auto data = ScriptedUIDataElems::Record{};
-        data.elems["message"] = "You are under attack by " + attack.getAttackerName() + "!";
-        data.elems["view_id"] = attack.getAttackerViewId();
-        getView()->scriptedUI("unlock_message", data, state);
+        addWindowMessage(attack.getAttackerViewId(), "You are under attack by " + attack.getAttackerName() + "!");
         getGame()->setCurrentMusic(MusicType::BATTLE);
         newAttacks.removeElement(attack);
         if (auto attacker = attack.getAttacker())

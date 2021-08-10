@@ -199,6 +199,16 @@ optional<string> Immigration::getMissingRequirement(const ImmigrantRequirement& 
   return requirement.visit<optional<string>>(visitor);
 }
 
+bool Immigration::suppliesRecruits(const Collective* col) const {
+  if (auto enemyId = col->getEnemyId())
+    for (auto& info : immigrants)
+      for (auto& req : info.requirements)
+        if (auto recruitmentInfo = req.type.getReferenceMaybe<RecruitmentInfo>())
+          if (recruitmentInfo->enemyId.contains(*enemyId))
+            return true;
+  return false;
+}
+
 vector<string> Immigration::getMissingRequirements(const Group& group) const {
   PROFILE;
   vector<string> ret;

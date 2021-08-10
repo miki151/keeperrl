@@ -2,6 +2,7 @@
 
 #include "player_message.h"
 #include "furniture_type.h"
+#include "view_id.h"
 
 class Creature;
 class Collective;
@@ -19,6 +20,7 @@ class CollectiveControl : public OwnedObject<CollectiveControl> {
   virtual void onMemberAdded(Creature*) {}
   virtual void onConquered(Creature* victim, Creature* killer) {}
   virtual void addMessage(const PlayerMessage&) {}
+  virtual void addWindowMessage(ViewIdList, const string&) {}
   virtual void addAttack(const CollectiveAttack&) {}
   virtual void onConstructed(Position, FurnitureType) {}
   virtual void onClaimedSquare(Position) {}

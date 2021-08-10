@@ -70,6 +70,7 @@ class Immigration : public OwnedObject<Immigration> {
 
   int getAttractionOccupation(const AttractionType& attraction) const;
   int getAttractionValue(const AttractionType& attraction) const;
+  bool suppliesRecruits(const Collective*) const;
 
   private:
   EntityMap<Creature, unordered_map<AttractionType, int, CustomHash<AttractionType>>> SERIAL(minionAttraction);

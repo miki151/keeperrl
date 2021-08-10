@@ -999,6 +999,9 @@ bool Collective::isKnownVillain(const Collective* col) const {
 
 void Collective::addKnownVillainLocation(const Collective* col) {
   knownVillainLocations.insert(col);
+  if (immigration->suppliesRecruits(col))
+    control->addWindowMessage(ViewIdList{col->getName()->viewId},
+        "You have discovered the location of " + col->getName()->full + "! Recruits will be available in the immigration UI.");
 }
 
 bool Collective::isKnownVillainLocation(const Collective* col) const {
