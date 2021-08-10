@@ -54,3 +54,4 @@
 "loot_coffin" = gray
 "crops" | yellow
 "scarecrow" T blue
+"spider_web" # white

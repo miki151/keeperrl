@@ -1606,7 +1606,7 @@ End
 "SHELOB"
 {
   settlement = {
-    type = Builtin CAVE "DUNGEON"
+    type = RandomLayout { "shelob" { 12 12 } "default" CAVE}
     tribe = SHELOB
     inhabitants = {
       leader = { { "SHELOB" } }

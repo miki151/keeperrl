@@ -2276,6 +2276,9 @@ RandomLocations::LocationPredicate getSettlementPredicate(const SettlementInfo& 
             return Predicate::attrib(SquareAttrib::MOUNTAIN);
           case MapLayoutPredicate::OUTDOOR:
             return Predicate::canEnter({MovementTrait::WALK});
+          case MapLayoutPredicate::CAVE:
+            return RandomLocations::LocationPredicate(
+                Predicate::attrib(SquareAttrib::MOUNTAIN), Predicate::attrib(SquareAttrib::HILL), 5, 15);
         }
       },
       [&](const MapLayoutTypes::Predefined& info) -> RandomLocations::LocationPredicate {
@@ -2284,6 +2287,9 @@ RandomLocations::LocationPredicate getSettlementPredicate(const SettlementInfo& 
             return Predicate::attrib(SquareAttrib::MOUNTAIN);
           case MapLayoutPredicate::OUTDOOR:
             return Predicate::canEnter({MovementTrait::WALK});
+          case MapLayoutPredicate::CAVE:
+            return RandomLocations::LocationPredicate(
+                Predicate::attrib(SquareAttrib::MOUNTAIN), Predicate::attrib(SquareAttrib::HILL), 5, 15);
         }
       }
   );

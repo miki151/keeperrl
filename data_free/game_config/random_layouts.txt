@@ -772,3 +772,8 @@ End
   Inside(5, CellularAutomaton(Reset("water", "set_territory"), 0.65))
   CellularAutomaton(Set("fog"), 0.65)
 }
+
+"shelob" {
+  CellularAutomaton(Reset("floor", "spider_web"), 0.65)
+  Set("connect")
+}

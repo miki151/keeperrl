@@ -50,7 +50,8 @@ RICH_ENUM(
 RICH_ENUM(
   MapLayoutPredicate,
   OUTDOOR,
-  MOUNTAIN
+  MOUNTAIN,
+  CAVE
 );
 
 namespace MapLayoutTypes {
