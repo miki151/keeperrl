@@ -1002,6 +1002,9 @@ void Collective::addKnownVillainLocation(const Collective* col) {
   if (immigration->suppliesRecruits(col))
     control->addWindowMessage(ViewIdList{col->getName()->viewId},
         "You have discovered the location of " + col->getName()->full + "! Recruits will be available in the immigration UI.");
+  if (col->hasTradeItems())
+    control->addWindowMessage(ViewIdList{col->getName()->viewId},
+        "You have discovered the location of " + col->getName()->full + "! Trading is now available in the villain UI.");
 }
 
 bool Collective::isKnownVillainLocation(const Collective* col) const {
