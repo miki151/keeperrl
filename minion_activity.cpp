@@ -78,7 +78,7 @@ static Creature* getMinionToAbuse(Collective* collective, const Creature* abuser
   auto abuserPos = abuser->getPosition();
   for (auto c : minions) {
     if (c == abuser || c->isAffected(LastingEffect::SPEED) || !collective->getTerritory().contains(c->getPosition()) ||
-        !c->getBody().isHumanoid() || !c->getBody().hasBrain() ||
+        !c->getBody().isHumanoid() || !c->getBody().hasBrain() || collective->hasTrait(c, MinionTrait::LEADER) ||
         collective->getCurrentActivity(c).activity == MinionActivity::IDLE)
       continue;
     if (!target) {
