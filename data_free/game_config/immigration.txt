@@ -107,6 +107,7 @@ End
          { 0.05 { ExtraTraining ARCHERY 2}}
          { 0.05 { ExtraTraining MELEE 2}}
          { 0.03 { AttrBonus DAMAGE 13 Lasting { INSANITY }}}
+         { 0.03 { AttrBonus DAMAGE 10 AttrBonus DEFENSE 10 Lasting { AGGRAVATES }}}
          { 0.05 { Lasting { NIGHT_VISION } }}
          { 0.05 { Lasting { DISARM_TRAPS_SKILL } }}
          { 0.05 { Lasting { SWIMMING_SKILL } }}
@@ -132,6 +133,7 @@ End
          { 0.10 { ExtraTraining SPELL 4}}
          { 0.05 { WorkshopType "LABORATORY" }}
          { 0.05 { SpecialAttr SPELL_DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
+         { 0.03 { AttrBonus SPELL_DAMAGE 10 AttrBonus DEFENSE 10 Lasting { AGGRAVATES }}}
          { 0.02 { Lasting { HATE_ELVES } }}
          { 0.02 { Lasting { HATE_HUMANS } }}
          { 0.01 { Lasting { ENTERTAINER } }}
@@ -248,6 +250,7 @@ End
          { 0.05 { Lasting { HATE_GREENSKINS } }}
          { 0.3 { Lasting { FLYING } }}
          { 0.1 { Lasting { ENTERTAINER } }}
+         { 0.03 { AttrBonus SPELL_DAMAGE 10 AttrBonus DEFENSE 10 Lasting { AGGRAVATES }}}
       }
     }
     {
@@ -363,6 +366,7 @@ End
          { 0.1 { Lasting { HATE_UNDEAD }}}
          { 0.3 { Lasting { AMBUSH_SKILL } }}
          { 0.1 { Lasting { ENTERTAINER } }}
+         { 0.03 { AttrBonus DAMAGE 10 AttrBonus DEFENSE 10 Lasting { AGGRAVATES }}}
       }
     }
     DarkRecruits()
@@ -659,6 +663,7 @@ End
          { 0.02 { Lasting { HATE_ELVES } }}
          { 0.02 { Lasting { HATE_HUMANS } }}
          { 0.03 { Lasting { BAD_BREATH } }}
+         { 0.03 { AttrBonus DAMAGE 10 AttrBonus DEFENSE 10 Lasting { AGGRAVATES }}}
       }
     }
     {
@@ -706,6 +711,7 @@ End
          { 0.02 { Lasting { HATE_HUMANS } }}
          { 0.05 { ExtraTraining ARCHERY 2}}
          { 0.05 { Lasting { BAD_BREATH } }}
+         { 0.03 { AttrBonus RANGED_DAMAGE 10 AttrBonus DEFENSE 10 Lasting { AGGRAVATES }}}
       }
     }
     {
@@ -741,6 +747,7 @@ End
          { 0.02 { Lasting { HATE_ELVES } }}
          { 0.02 { Lasting { HATE_HUMANS } }}
          { 0.01 { Lasting { ENTERTAINER } }}
+         { 0.03 { AttrBonus SPELL_DAMAGE 10 AttrBonus DEFENSE 10 Lasting { AGGRAVATES }}}
       }
     }
     {

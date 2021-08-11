@@ -18,6 +18,7 @@ EMPTY_STRUCT(MiningInProximity);
 EMPTY_STRUCT(FinishOff);
 EMPTY_STRUCT(Proximity);
 EMPTY_STRUCT(Immediate);
+EMPTY_STRUCT(AggravatingMinions);
 
 struct EnemyPopulation {
   int SERIAL(value);
@@ -51,7 +52,8 @@ struct NumConquered {
   X(Gold, 8)\
   X(Timer, 9)\
   X(NumConquered, 10)\
-  X(Immediate, 11)
+  X(Immediate, 11)\
+  X(AggravatingMinions, 12)
 
 #define VARIANT_TYPES_LIST ATTACK_TRIGGERS_LIST
 #define VARIANT_NAME AttackTrigger

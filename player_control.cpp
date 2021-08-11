@@ -743,6 +743,9 @@ string PlayerControl::getTriggerLabel(const AttackTrigger& trigger) const {
       },
       [&](Immediate) {
         return "just doesn't like you";
+      },
+      [&](AggravatingMinions) {
+        return "aggravated by minions";
       }
   );
 }

@@ -357,6 +357,7 @@ End
       StolenItems
       FinishOff
       Proximity
+      AggravatingMinions
     }
     attackBehaviour = KillLeader
     ransom = 0.8 140
@@ -422,6 +423,7 @@ End
       StolenItems
       FinishOff
       Proximity
+      AggravatingMinions
     }
     attackBehaviour = KillLeader
     ransom = 0.9 400
@@ -489,6 +491,7 @@ End
       StolenItems
       FinishOff
       Proximity
+      AggravatingMinions
     }
     attackBehaviour = KillLeader
     ransom = 0.9 1000
@@ -729,6 +732,7 @@ End
       StolenItems
       FinishOff
       Proximity
+      AggravatingMinions
     }
     attackBehaviour = KillMembers 3
     ransom = 0.8 320
@@ -1218,6 +1222,7 @@ End
       FinishOff
       Proximity
       StolenItems
+      AggravatingMinions
     }
     attackBehaviour = KillLeader
   }
@@ -1644,7 +1649,7 @@ End
   behaviour = {
     minPopulation = 0
     minTeamSize = 1
-    triggers = {EnemyPopulation 13}
+    triggers = {EnemyPopulation 13 AggravatingMinions}
     attackBehaviour = KillMembers 4
   }
 }
@@ -2098,6 +2103,7 @@ End
       StolenItems
       FinishOff
       Proximity
+      AggravatingMinions
     }
     attackBehaviour = KillLeader
     ransom = 0.8 140
@@ -2216,7 +2222,7 @@ End
   behaviour = {
     minPopulation = 0
     minTeamSize = 1
-    triggers = { SelfVictims StolenItems }
+    triggers = { SelfVictims StolenItems AggravatingMinions }
     attackBehaviour = KillLeader
     ransom = 0.5 80
   }
@@ -2293,7 +2299,7 @@ End
   behaviour = {
     minPopulation = 0
     minTeamSize = 1
-    triggers = {SelfVictims StolenItems }
+    triggers = {SelfVictims StolenItems AggravatingMinions }
     attackBehaviour = KillLeader
     ransom = 0.5 80
   }
@@ -2386,6 +2392,7 @@ End
       StolenItems
       FinishOff
       Proximity
+      AggravatingMinions
     }
     attackBehaviour = KillMembers 3
     ransom = 0.8 320

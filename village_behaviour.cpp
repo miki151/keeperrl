@@ -150,6 +150,7 @@ double VillageBehaviour::getTriggerValue(const AttackTrigger& trigger, const Vil
   double proximityMaxProb = 1.0 / 5000;
   double timerProb = 1.0 / 3000;
   double numConqueredMaxProb = 1.0 / 3000;
+  double aggravatingMinionProb = 1.0 / 5000;
   if (auto enemy = self->getEnemyCollective())
     return trigger.visit<double>(
         [&](const Timer& t) {
@@ -195,6 +196,13 @@ double VillageBehaviour::getTriggerValue(const AttackTrigger& trigger, const Vil
         },
         [&](Immediate) {
           return 1;
+        },
+        [&](AggravatingMinions) {
+          double res = 0;
+          for (auto c : enemy->getCreatures())
+             if (c->isAffected(LastingEffect::AGGRAVATES))
+              res += aggravatingMinionProb;
+          return res;
         }
     );
   return 0;

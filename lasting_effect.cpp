@@ -347,6 +347,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::NO_FRIENDLY_FIRE:
         c->you(MsgType::YOUR, "projectiles won't hit allies");
         break;
+      case LastingEffect::AGGRAVATES:
+        c->verb("aggravate", "aggravates", "enemies");
+        break;
       default:
         break;
     }
@@ -648,6 +651,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
         c->verb("return to your", "returns to "_s + his(c->getAttributes().getGender()), "previous form");
         c->addFX({FXName::SPAWN});
         break;
+      case LastingEffect::AGGRAVATES:
+        c->verb("no longer aggravate", "no longer aggravates", "enemies");
+        break;
       default:
         break;
     }
@@ -833,6 +839,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::UNSTABLE: return "Mentally unstable"_bad;
     case LastingEffect::OIL: return "Covered in oil"_bad;
     case LastingEffect::TURNED_OFF: return "Turned off"_bad;
+    case LastingEffect::AGGRAVATES: return "Aggravates enemies"_bad;
   }
 }
 
@@ -1184,6 +1191,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::DRUNK: return "booze";
     case LastingEffect::NO_FRIENDLY_FIRE: return "no friendly fire";
     case LastingEffect::POLYMORPHED: return "polymorphed";
+    case LastingEffect::AGGRAVATES: return "aggravation";
   }
 }
 
@@ -1279,6 +1287,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::DRUNK: return "Compromises fighting abilities.";
     case LastingEffect::NO_FRIENDLY_FIRE: return "Arrows and other projectiles bypass allies and only hit enemies.";
     case LastingEffect::POLYMORPHED: return "Creature will revert to original form.";
+    case LastingEffect::AGGRAVATES: return "Makes enemies more aggressive and more likely to attack the base.";
   }
 }
 
@@ -1519,6 +1528,8 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
       return FXVariantName::FIRE;
     case LastingEffect::DRUNK:
       return FXVariantName::DEBUFF_YELLOW;
+    case LastingEffect::AGGRAVATES:
+      return FXVariantName::DEBUFF_BLACK;
     default:
       return none;
   }
@@ -1537,6 +1548,8 @@ Color LastingEffects::getColor(LastingEffect effect) {
     case LastingEffect::DEF_BONUS:
     case LastingEffect::DRUNK:
       return Color::YELLOW;
+    case LastingEffect::AGGRAVATES:
+      return Color::BLACK;
     case LastingEffect::INVISIBLE:
       return Color::WHITE;
     case LastingEffect::PLAGUE:
