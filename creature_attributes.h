@@ -88,6 +88,7 @@ class CreatureAttributes {
   void increaseBaseExpLevel(ExperienceType type, double increase);
   string bodyDescription() const;
   vector<SpellSchoolId> getSpellSchools() const;
+  void addSpellSchool(SpellSchoolId);
   optional<SoundId> getAttackSound(AttackType, bool damage) const;
   bool isBoulder() const;
   Skillset& getSkills();

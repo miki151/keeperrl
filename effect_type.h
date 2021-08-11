@@ -20,6 +20,7 @@
 #include "special_attr.h"
 #include "tech_id.h"
 #include "tile_gas_type.h"
+#include "spell_school_id.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -255,6 +256,7 @@ struct RemoveAbility {
   SpellId SERIAL(id);
   SERIALIZE_ALL(id)
 };
+using AddSpellSchool = SpellSchoolId;
 struct IncreaseMorale {
   double SERIAL(amount);
   SERIALIZE_ALL(amount)
@@ -486,7 +488,8 @@ struct IncreaseMaxLevel {
   X(Bleed, 90)\
   X(Price, 91)\
   X(IncreaseMaxLevel, 92)\
-  X(EquipmentType, 93)
+  X(EquipmentType, 93)\
+  X(AddSpellSchool, 94)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

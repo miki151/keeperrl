@@ -1518,6 +1518,26 @@ static string getDescription(const Effects::GrantAbility& e, const ContentFactor
   return "Grants ability: "_s + f->getCreatures().getSpell(e.id)->getName(f);
 }
 
+static bool applyToCreature(const Effects::AddSpellSchool& id, Creature* c, Creature*) {
+  if (!c->getAttributes().getSpellSchools().contains(id)) {
+    auto& creatures = c->getGame()->getContentFactory()->getCreatures();
+    auto& school = creatures.getSpellSchools().at(id);
+    for (auto& spell : school.spells)
+      c->getSpellMap().add(*creatures.getSpell(spell.first), school.expType, spell.second);
+    c->getAttributes().addSpellSchool(id);
+    return true;
+  }
+  return false;
+}
+
+static string getName(const Effects::AddSpellSchool& id, const ContentFactory* f) {
+  return "grant "_s + id.data() + " spell school";
+}
+
+static string getDescription(const Effects::AddSpellSchool& id, const ContentFactory* f) {
+  return "Grants spell school: "_s + id.data();
+}
+
 static bool applyToCreature(const Effects::Polymorph& e, Creature* c, Creature*) {
   auto& factory = c->getGame()->getContentFactory()->getCreatures();
   auto attributes = [&] {

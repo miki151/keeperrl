@@ -155,6 +155,7 @@ const EnumMap<ExperienceType, int>& CreatureAttributes::getMaxExpLevel() const {
 
 void CreatureAttributes::increaseMaxExpLevel(ExperienceType type, int increase) {
   maxLevelIncrease[type] += increase;
+  expLevel[type] = min<double>(expLevel[type], maxLevelIncrease[type]);
 }
 
 void CreatureAttributes::increaseExpLevel(ExperienceType type, double increase) {
@@ -188,6 +189,10 @@ void CreatureAttributes::increaseBaseExpLevel(ExperienceType type, double increa
 
 vector<SpellSchoolId> CreatureAttributes::getSpellSchools() const {
   return spellSchools;
+}
+
+void CreatureAttributes::addSpellSchool(SpellSchoolId id) {
+  spellSchools.push_back(id);
 }
 
 Body& CreatureAttributes::getBody() {
