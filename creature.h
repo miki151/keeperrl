@@ -330,6 +330,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
     FAST
   };
 
+  unordered_set<string> SERIAL(effectFlags);
+
   private:
 
   CreatureAction moveTowards(Position, bool away, NavigationFlags);

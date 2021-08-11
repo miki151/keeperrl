@@ -68,7 +68,7 @@ template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(OwnedObject<Creature>), SUBCLASS(Renderable), SUBCLASS(UniqueEntity), SUBCLASS(EventListener));
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
-  ar(deathTime, hidden, lastMoveCounter, captureHealth);
+  ar(deathTime, hidden, lastMoveCounter, captureHealth, effectFlags);
   ar(deathReason, nextPosIntent, globalTime, drops);
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
   ar(controllerStack, kills, statuses, automatonParts, phylactery);
