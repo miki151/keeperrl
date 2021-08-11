@@ -332,6 +332,11 @@ struct SetFlag {
   bool SERIAL(value) = true;
   SERIALIZE_ALL(name, value)
 };
+struct SetCreatureFlag {
+  string SERIAL(name);
+  bool SERIAL(value) = true;
+  SERIALIZE_ALL(name, value)
+};
 struct TakeItems {
   string SERIAL(ingredient);
   SERIALIZE_ALL(ingredient)
@@ -382,7 +387,11 @@ struct Price : GenericModifierEffect {
   int SERIAL(value);
   SERIALIZE_ALL(value, SUBCLASS(GenericModifierEffect))
 };
-
+struct IncreaseMaxLevel {
+  ExperienceType SERIAL(type);
+  int SERIAL(value);
+  SERIALIZE_ALL(type, value)
+};
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
   X(Teleport, 1)\
@@ -470,12 +479,14 @@ struct Price : GenericModifierEffect {
   X(Caster, 83)\
   X(RemoveFurniture, 84)\
   X(SetFlag, 85)\
-  X(EquipmentType, 86)\
+  X(SetCreatureFlag, 86)\
   X(NoAutoAssign, 87)\
   X(Filter, 88)\
   X(Chance, 89)\
   X(Bleed, 90)\
-  X(Price, 91)
+  X(Price, 91)\
+  X(IncreaseMaxLevel, 92)\
+  X(EquipmentType, 93)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

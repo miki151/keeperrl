@@ -50,6 +50,11 @@ struct Flag {
   SERIALIZE_ALL(name)
 };
 
+struct CreatureFlag {
+  string SERIAL(name);
+  SERIALIZE_ALL(name)
+};
+
 struct Unlocked {
   UnlockId SERIAL(id);
   SERIALIZE_ALL(id)
@@ -104,7 +109,7 @@ struct Translate {
   X(Ingredient, 6)\
   X(Hidden, 7)\
   X(Flag, 8)\
-  X(Unlocked, 9)\
+  X(CreatureFlag, 9)\
   X(Name, 10)\
   X(Night, 11)\
   X(Indoors, 12)\
@@ -122,7 +127,8 @@ struct Translate {
   X(Spellcaster, 24)\
   X(Humanoid, 25)\
   X(PopLimitReached, 26)\
-  X(Translate, 27)
+  X(Translate, 27)\
+  X(Unlocked, 28)\
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

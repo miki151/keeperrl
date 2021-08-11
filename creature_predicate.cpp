@@ -126,6 +126,14 @@ static string getName(const CreaturePredicates::Flag& s) {
   return s.name;
 }
 
+static bool applyToCreature(const CreaturePredicates::CreatureFlag& s, const Creature* victim, const Creature*) {
+  return victim->effectFlags.count(s.name);
+}
+
+static string getName(const CreaturePredicates::CreatureFlag& s) {
+  return s.name;
+}
+
 static bool apply(const CreaturePredicates::Unlocked& s, Position pos, const Creature* attacker) {
   return pos.getGame()->getUnlocks()->isUnlocked(s.id);
 }

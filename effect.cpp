@@ -442,6 +442,27 @@ static string getDescription(const Effects::SpecialAttr& e, const ContentFactory
       + " " + e.predicate.getName() + " by " + toString(abs(e.value));
 }
 
+static string get(const Effects::IncreaseMaxLevel& e, string inc, string dec) {
+  if (e.value > 0)
+    return inc;
+  return dec;
+}
+
+static bool applyToCreature(const Effects::IncreaseMaxLevel& e, Creature* c, Creature*) {
+  c->you(MsgType::YOUR, ::getNameLowerCase(e.type) + get(e, " training limit increases", " training limit decreases"));
+  c->getAttributes().increaseMaxExpLevel(e.type, e.value);
+  return true;
+}
+
+static string getName(const Effects::IncreaseMaxLevel& e, const ContentFactory*) {
+  return ::getNameLowerCase(e.type) + " training limit"_s;
+}
+
+static string getDescription(const Effects::IncreaseMaxLevel& e, const ContentFactory*) {
+  return get(e, "Increases", "Decreases") + " "_s + ::getNameLowerCase(e.type) + " training limit by " +
+      toString(std::fabs(e.value));
+}
+
 static bool applyToCreature(const Effects::IncreaseSkill& e, Creature* c, Creature*) {
   c->you(MsgType::YOUR, ::getName(e.skillid) + e.get(" skill improves", " skill wanes"));
   c->getAttributes().getSkills().increaseValue(e.skillid, e.amount);
@@ -2031,6 +2052,28 @@ static bool apply(const Effects::SetFlag& e, Position pos, Creature*) {
       game->effectFlags.erase(e.name);
       return true;
     }
+  }
+  return false;
+}
+
+static string getName(const Effects::SetCreatureFlag& e, const ContentFactory*) {
+  return e.name;
+}
+
+static string getDescription(const Effects::SetCreatureFlag& e, const ContentFactory*) {
+  return "Sets " + e.name + " to " + (e.value ? "true" : "false");
+}
+
+static bool applyToCreature(const Effects::SetCreatureFlag& e, Creature* c, Creature*) {
+  if (e.value) {
+    if (!c->effectFlags.count(e.name)) {
+      c->effectFlags.insert(e.name);
+      return true;
+    }
+  } else
+  if (c->effectFlags.count(e.name)) {
+    c->effectFlags.erase(e.name);
+    return true;
   }
   return false;
 }
