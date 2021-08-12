@@ -37,7 +37,6 @@ LAWFUL_KEEPER {
     {{ "green_dragon" } "GREEN_DRAGON" "Green dragon" MAIN}
     {{ "red_dragon" Rgb 80 80 80 255 } "BLACK_DRAGON" "Black dragon" MAIN}
     {{ "red_dragon" Rgb 240 240 240 255 } "WHITE_DRAGON" "White dragon" MAIN}
-    {{ "ant_queen" } "ANTS_OPEN" "Ants" MAIN}
     {{ "dark_elf_lord" } "DARK_ELVES_ENEMY" "Dark elves" MAIN}
     {{ "goblin_keeper4" } "GOBLIN_VILLAGE" "Goblin town" MAIN}
     {{ "demon_lord" } "DEMON_DEN" "Demon den" MAIN}
