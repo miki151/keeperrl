@@ -100,6 +100,7 @@
 #include "scripted_ui_data.h"
 #include "item_types.h"
 #include "furnace.h"
+#include "promotion_info.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -502,6 +503,26 @@ void PlayerControl::fillAutomatonParts(Creature* creature, PlayerInfo& info) con
       info.bodyParts.back().pending = true;
     }
   info.bodyPartLimit = creature->getAttributes().getAutomatonSlots().first;
+}
+
+static CollectiveInfo::PromotionOption getPromotionOption(const ContentFactory* factory, const PromotionInfo& info) {
+  return {info.viewId, info.name, info.applied.getDescription(factory)};
+}
+
+void PlayerControl::fillPromotions(Creature* creature, CollectiveInfo& info) const {
+  CollectiveInfo::MinionPromotionInfo promotionInfo;
+  promotionInfo.viewId = creature->getViewObject().getViewIdList();
+  promotionInfo.name = creature->getName().firstOrBare();
+  promotionInfo.id = creature->getUniqueId();
+  promotionInfo.canAdvance = creature->getPromotions().size() < 5 && collective->getDungeonLevel().numPromotionsAvailable() > 0;
+  for (auto& promotion : creature->getPromotions())
+    promotionInfo.promotions.push_back(getPromotionOption(getGame()->getContentFactory(), promotion));
+  auto contentFactory = getGame()->getContentFactory();
+  for (auto& promotion : contentFactory->promotions.at(*creature->getAttributes().promotionGroup))
+    promotionInfo.options.push_back(getPromotionOption(contentFactory, promotion));
+  info.minionPromotions.push_back(std::move(promotionInfo));
+  info.availablePromotions = int(0.001
+      + double(collective->getDungeonLevel().numPromotionsAvailable()) / creature->getAttributes().promotionCost);
 }
 
 void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
@@ -1687,9 +1708,9 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   if (getGame()->getOptions()->getBoolValue(OptionId::KEEPER_WARNING))
     if (auto info = checkKeeperDanger())
       gameInfo.keeperInDanger = info->warning;
+  auto contentFactory = getGame()->getContentFactory();
   gameInfo.isSingleMap = getGame()->isSingleModel();
-  getGame()->getEncyclopedia()->setKeeperThings(getGame()->getContentFactory(),
-      &collective->getTechnology(), &collective->getWorkshops());
+  getGame()->getEncyclopedia()->setKeeperThings(contentFactory, &collective->getTechnology(), &collective->getWorkshops());
   gameInfo.encyclopedia = getGame()->getEncyclopedia();
   gameInfo.takingScreenshot = takingScreenshot;
   fillCurrentLevelInfo(gameInfo);
@@ -1729,6 +1750,10 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     }
   fillWorkshopInfo(info);
   fillLibraryInfo(info);
+  info.minionPromotions.clear();
+  for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
+    if (c->getAttributes().promotionGroup)
+      fillPromotions(c, info);
   info.monsterHeader = info.populationString + ": " + toString(info.minionCount) + " / " + toString(info.minionLimit);
   fillDungeonLevel(info.avatarLevelInfo);
   fillResources(info);
@@ -2516,6 +2541,15 @@ void PlayerControl::processInput(View* view, UserInput input) {
       if (Creature* c = getCreature(input.get<Creature::Id>()))
         addConsumableItem(c, true);
       break;
+    case UserInputId::CREATURE_PROMOTE: {
+      auto info = input.get<PromotionActionInfo>();
+      if (Creature* c = getCreature(info.minionId)) {
+        auto factory = getGame()->getContentFactory();
+        c->addPromotion(factory->promotions.at(*c->getAttributes().promotionGroup)[info.promotionIndex]);
+        collective->getDungeonLevel().consumedPromotions += c->getAttributes().promotionCost;
+      }
+      break;
+    }
     case UserInputId::CREATURE_CONTROL:
       if (Creature* c = getCreature(input.get<Creature::Id>())) {
         if (getChosenTeam() && getTeams().exists(*getChosenTeam())) {

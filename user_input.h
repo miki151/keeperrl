@@ -62,6 +62,7 @@ enum class UserInputId {
   CREATURE_TASK_ACTION,
   CREATURE_EQUIPMENT_ACTION,
   CREATURE_ADD_BODY_PART,
+  CREATURE_PROMOTE,
   CREATURE_CONTROL,
   CREATURE_RENAME,
   CREATURE_BANISH,
@@ -213,11 +214,16 @@ struct WorkshopCountInfo {
   int newCount;
 };
 
+struct PromotionActionInfo {
+  UniqueEntity<Creature>::Id minionId;
+  int promotionIndex;
+};
+
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, TeamGroupInfo, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, CreatureDropInfo, CreatureGroupDropInfo, TeamDropInfo,
     string, TechId, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo,
-    WorkshopCountInfo, AIActionInfo),
+    WorkshopCountInfo, AIActionInfo, PromotionActionInfo),
         ASSIGN(BuildingClickInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -232,6 +238,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
             UserInputId::CREATURE_LOCATE,
             UserInputId::CREATURE_DRAG,
             UserInputId::GO_TO_ENEMY
+        ),
+        ASSIGN(PromotionActionInfo,
+            UserInputId::CREATURE_PROMOTE
         ),
         ASSIGN(AIActionInfo,
             UserInputId::AI_TYPE

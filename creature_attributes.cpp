@@ -66,9 +66,9 @@ CreatureAttributes& CreatureAttributes::operator =(CreatureAttributes&&) = defau
 template <class Archive> 
 void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(NAMED(viewId), NAMED(illusionViewObject), NAMED(name), NAMED(attr), NAMED(chatReactionFriendly));
-  ar(NAMED(chatReactionHostile), NAMED(passiveAttack), OPTION(gender), OPTION(viewIdUpgrades));
+  ar(NAMED(chatReactionHostile), NAMED(passiveAttack), OPTION(gender), OPTION(viewIdUpgrades), OPTION(promotionCost));
   ar(NAMED(body), OPTION(deathDescription), NAMED(hatedByEffect), OPTION(instantPrisoner), OPTION(automatonSlots));
-  ar(OPTION(cantEquip), OPTION(aiType), OPTION(canJoinCollective), OPTION(genderAlternatives));
+  ar(OPTION(cantEquip), OPTION(aiType), OPTION(canJoinCollective), OPTION(genderAlternatives), NAMED(promotionGroup));
   ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(skills), OPTION(spellSchools), OPTION(spells));
   ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel), OPTION(inventory));
   ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience));

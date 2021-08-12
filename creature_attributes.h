@@ -135,6 +135,8 @@ class CreatureAttributes {
   heap_optional<Effect> SERIAL(deathEffect);
 
   vector<CompanionInfo> SERIAL(companions);
+  optional<string> SERIAL(promotionGroup);
+  double SERIAL(promotionCost) = 1.0;
 
   private:
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);
@@ -173,5 +175,4 @@ class CreatureAttributes {
   void initializeLastingEffects();
   CreatureInventory SERIAL(inventory);
   pair<int, vector<string>> SERIAL(automatonSlots) = {0, {}};
-  
 };

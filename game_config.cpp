@@ -64,6 +64,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "storage_ids";
     case GameConfigId::TILE_GAS_TYPES:
       return "tile_gas_types";
+    case GameConfigId::PROMOTIONS:
+      return "promotions";
   }
 }
 

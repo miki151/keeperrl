@@ -30,6 +30,7 @@ class ZLevelInfo;
 class BuildingInfo;
 struct LayoutGenerator;
 struct TileGasInfo;
+struct PromotionInfo;
 
 class ContentFactory {
   public:
@@ -60,6 +61,7 @@ class ContentFactory {
   map<LayoutMappingId, LayoutMapping> SERIAL(layoutMapping);
   map<RandomLayoutId, LayoutGenerator> SERIAL(randomLayouts);
   map<TileGasType, TileGasInfo> SERIAL(tileGasTypes);
+  map<string, vector<PromotionInfo>> SERIAL(promotions);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

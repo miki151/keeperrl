@@ -63,13 +63,14 @@
 #include "automaton_part.h"
 #include "ai_type.h"
 #include "companion_info.h"
+#include "promotion_info.h"
 
 template <class Archive>
 void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(OwnedObject<Creature>), SUBCLASS(Renderable), SUBCLASS(UniqueEntity), SUBCLASS(EventListener));
   ar(attributes, position, equipment, shortestPath, knownHiding, tribe, morale);
   ar(deathTime, hidden, lastMoveCounter, captureHealth, effectFlags);
-  ar(deathReason, nextPosIntent, globalTime, drops);
+  ar(deathReason, nextPosIntent, globalTime, drops, promotions);
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
   ar(controllerStack, kills, statuses, automatonParts, phylactery);
   ar(difficultyPoints, points, capture, spellMap, killTitles, companions);
@@ -2543,6 +2544,15 @@ void Creature::setPhylactery(Position pos, FurnitureType type) {
 
 const optional<Creature::PhylacteryInfo>& Creature::getPhylactery() const {
   return phylactery;
+}
+
+void Creature::addPromotion(PromotionInfo info) {
+  info.applied.apply(position);
+  promotions.push_back(info);
+}
+
+const vector<PromotionInfo>& Creature::getPromotions() const {
+  return promotions;
 }
 
 #define CASE(VAR, ELEM, TYPE, ...) \

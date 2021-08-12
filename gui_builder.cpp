@@ -511,7 +511,7 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
             buttons[1]);
     }
     if ((!info.tutorial || !info.tutorial->highlights.contains(TutorialHighlight::RESEARCH)) &&
-        collectiveInfo.avatarLevelInfo.numAvailable > 0)
+        (collectiveInfo.avatarLevelInfo.numAvailable > 0 || collectiveInfo.availablePromotions > 0))
       buttons[2] = WL(stack, WL(conditional,
           getIconHighlight(Color::YELLOW),
           [this] { return collectiveTab != CollectiveTab::TECHNOLOGY;}),
@@ -1289,7 +1289,7 @@ void GuiBuilder::drawMiniMenu(SGuiElem elem, bool& exit, Vec2 menuPos, int width
 void GuiBuilder::drawMiniMenu(SGuiElem elem, function<bool()> done, Vec2 menuPos, int width, bool darkBg) {
   disableTooltip = true;
   int contentHeight = *elem->getPreferredHeight();
-  int margin = 15;
+  int margin = 0;
   Vec2 size(width + 2 * margin, contentHeight + 2 * margin);
   menuPos.y -= max(0, menuPos.y + size.y - renderer.getSize().y);
   menuPos.x -= max(0, menuPos.x + size.x - renderer.getSize().x);
@@ -1866,7 +1866,7 @@ SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialIn
     for (auto& group : info.minionGroups)
       addGroup(group);
     if (!info.automatonGroups.empty()) {
-      list.addElem(WL(label, "Automatons by ability: ", Color::WHITE));
+      list.addElem(WL(label, "Minions by ability: ", Color::WHITE));
       for (auto& group : info.automatonGroups)
         addGroup(group);
     }
@@ -2287,6 +2287,58 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
     return WL(tooltip2, drawTechUnlocks(elem),
         [=](const Rectangle&) { return emptyElem->getBounds().topRight() + Vec2(35, 0); });
   };
+  if (!collectiveInfo.minionPromotions.empty()) {
+    lines.addElem(WL(label, "Promotions:", Color::YELLOW));
+    lines.addElem(WL(label, "(" + getPlural("item", collectiveInfo.availablePromotions) + " available)", Color::YELLOW));
+    vector<SGuiElem> minionLabels;
+    int maxWidth = 0;
+    for (auto& elem : collectiveInfo.minionPromotions) {
+      minionLabels.push_back(WL(getListBuilder)
+          .addElemAuto(WL(viewObject, elem.viewId))
+          .addElemAuto(WL(label, elem.name, elem.canAdvance ? Color::WHITE : Color::GRAY))
+          .buildHorizontalList());
+      maxWidth = max(maxWidth, *minionLabels.back()->getPreferredWidth());
+    }
+    for (int i : All(collectiveInfo.minionPromotions)) {
+      auto& elem = collectiveInfo.minionPromotions[i];
+      auto line = WL(getListBuilder)
+          .addElem(WL(renderInBounds, std::move(minionLabels[i])), min(105, maxWidth))
+          .addSpace(10);
+      for (int i : All(elem.promotions)) {
+        auto& info = elem.promotions[i];
+        line.addElemAuto(WL(topMargin, -2, WL(viewObject, info.viewId)));
+      }
+      line.addSpace(14);
+      if (elem.canAdvance) {
+        lines.addElem(WL(stack,
+            WL(uiHighlightMouseOver, Color::GREEN),
+            line.buildHorizontalList(),
+                WL(buttonRect, [id = elem.id, options = elem.options, this] (Rectangle bounds) {
+                    auto lines = WL(getListBuilder, legendLineHeight)
+                        .addElem(WL(label, "Promotion type:"));
+                    bool exit = false;
+                    optional<int> ret;
+                    for (int i : All(options)) {
+                      lines.addElem(WL(stack,
+                            WL(uiHighlightMouseOver),
+                            WL(button, [&, i] { ret =  i; exit = true;}),
+                            WL(getListBuilder)
+                                .addElemAuto(WL(viewObject, options[i].viewId))
+                                .addSpace(10)
+                                .addElemAuto(WL(label, options[i].name))
+                                .buildHorizontalList(),
+                            WL(tooltip, {makeSentence(options[i].description)})
+                            ));
+                    }
+                    drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 200, false);
+                    if (ret)
+                      callbacks.input({UserInputId::CREATURE_PROMOTE, PromotionActionInfo{id, *ret}});
+              })
+            ));
+      } else 
+        lines.addElem(line.buildHorizontalList());
+    }
+  }
   if (!info.available.empty()) {
     lines.addElem(WL(label, "Research:", Color::YELLOW));
     lines.addElem(WL(label, "(" + getPlural("item", collectiveInfo.avatarLevelInfo.numAvailable) + " available)", Color::YELLOW));
@@ -4630,7 +4682,7 @@ SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textCo
             tasks.addElem(WL(centerHoriz, std::move(elem)));
           }
           drawMiniMenu(tasks.buildVerticalList(), exit, Vec2(bounds.middle().x - maxWidth / 2 - 15, bounds.bottom()),
-              maxWidth, false);
+              maxWidth + 30, false);
         }));
 }
 

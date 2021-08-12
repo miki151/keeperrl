@@ -61,6 +61,7 @@ class SpellMap;
 class SpellSchool;
 class ContentFactory;
 struct AutomatonPart;
+struct PromotionInfo;
 
 class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedObject<Creature>, public EventListener<Creature> {
   public:
@@ -322,6 +323,9 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   };
   void setPhylactery(Position, FurnitureType);
   const optional<PhylacteryInfo>& getPhylactery() const;
+  void addPromotion(PromotionInfo);
+  const vector<PromotionInfo>& getPromotions() const;
+
   void onEvent(const GameEvent&);
 
   enum class SpeedModifier {
@@ -402,6 +406,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<pair<CreatureAttributes, SpellMap>> SERIAL(attributesStack);
   optional<PhylacteryInfo> SERIAL(phylactery);
   bool considerPhylactery(DropType, const Creature* attacker);
+  vector<PromotionInfo> SERIAL(promotions);
 };
 
 struct AdjectiveInfo {

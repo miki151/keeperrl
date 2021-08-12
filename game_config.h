@@ -38,6 +38,7 @@ enum class GameConfigId {
   RANDOM_LAYOUTS,
   STORAGE_IDS,
   TILE_GAS_TYPES,
+  PROMOTIONS
 };
 
 class GameConfig {

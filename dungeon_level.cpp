@@ -29,12 +29,12 @@ void DungeonLevel::onKilledWave() {
   increaseLevel();
 }
 
-void DungeonLevel::onLibraryWork(double amount) {
-  addAbsoluteProgress(0.0003 * amount);
-}
-
 int DungeonLevel::numResearchAvailable() const {
   return level - consumedLevels;
+}
+
+double DungeonLevel::numPromotionsAvailable() const {
+  return level + 1 - consumedPromotions;
 }
 
 void DungeonLevel::addAbsoluteProgress(double amount) {

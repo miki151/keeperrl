@@ -64,6 +64,7 @@
 #include "automaton_part.h"
 #include "enemy_aggression_level.h"
 #include "furnace.h"
+#include "promotion_info.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
@@ -338,6 +339,9 @@ vector<string> Collective::getAutomatonGroupNames(const Creature* c) const {
   for (auto& part : c->getAutomatonParts())
     if (!part.minionGroup.empty() && !ret.contains(part.minionGroup))
       ret.push_back(part.minionGroup);
+  for (auto& part : c->getPromotions())
+    if (!ret.contains(part.name))
+      ret.push_back(part.name);
   return ret;
 }
 

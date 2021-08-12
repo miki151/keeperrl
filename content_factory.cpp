@@ -23,10 +23,11 @@
 #include "sdl.h"
 #include "layout_generator.h"
 #include "tile_gas_info.h"
+#include "promotion_info.h"
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
-  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping, randomLayouts, tileGasTypes);
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping, randomLayouts, tileGasTypes, promotions);
   creatures.setContentFactory(this);
 }
 
@@ -440,6 +441,8 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (auto error = config->readObject(tileGasTmp, GameConfigId::TILE_GAS_TYPES, &keyVerifier))
     return *error;
   tileGasTypes = convertKeys(tileGasTmp);
+  if (auto error = config->readObject(promotions, GameConfigId::PROMOTIONS, &keyVerifier))
+    return *error;
   auto errors = keyVerifier.verify();
   if (!errors.empty())
     return errors.front();

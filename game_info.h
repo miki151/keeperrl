@@ -338,6 +338,23 @@ class CollectiveInfo {
     HASH_ALL(currentProgress, totalProgress, warning, available, researched)
   };
   LibraryInfo HASH(libraryInfo);
+  struct PromotionOption {
+    ViewId HASH(viewId);
+    string HASH(name);
+    string HASH(description);
+    HASH_ALL(viewId, name, description);
+  };
+  struct MinionPromotionInfo {
+    ViewIdList HASH(viewId);
+    string HASH(name);
+    UniqueEntity<Creature>::Id HASH(id);
+    vector<PromotionOption> HASH(promotions);
+    vector<PromotionOption> HASH(options);
+    bool HASH(canAdvance);
+    HASH_ALL(viewId, name, id, promotions, options, canAdvance)
+  };
+  vector<MinionPromotionInfo> HASH(minionPromotions);
+  int HASH(availablePromotions);
   struct Resource {
     ViewId HASH(viewId);
     int HASH(count);
@@ -396,7 +413,7 @@ class CollectiveInfo {
   };
   optional<RebellionChance> HASH(rebellionChance);
   vector<ViewId> HASH(allQuarters);
-  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, ransom, onGoingAttacks, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, allQuarters, rebellionChance, avatarLevelInfo, populationString)
+  HASH_ALL(warning, buildings, minionCount, minionLimit, monsterHeader, minions, minionGroups, automatonGroups, chosenCreature, numResource, teams, nextPayout, payoutTimeRemaining, taskMap, ransom, onGoingAttacks, nextWave, chosenWorkshop, workshopButtons, immigration, allImmigration, libraryInfo, minionPromotions, availablePromotions, allQuarters, rebellionChance, avatarLevelInfo, populationString)
 };
 
 class VillageInfo {
