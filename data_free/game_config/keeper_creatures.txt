@@ -73,6 +73,31 @@
   noLeader = true
   prisoners = false
 }
+"5_dwarves"
+{
+  creatureId = { "DWARF_PLAYER" }
+  tribeAlignment = LAWFUL
+  immigrantGroups = {"dwarves"}
+  technology = {
+      "alchemy" "advanced alchemy" "alchemical conversion"
+      "iron working" "jewellery" "two-handed weapons" "archery" "sorcery"
+      "advanced sorcery" "magical weapons" "master sorcery" "distillation"
+  }
+  zLevelGroups = { "basic" "lawful" }
+  initialTech = { "iron working" }
+  baseNameGen = "TOWN"
+  buildingGroups = {
+      "structure" "doors" "floors" "storage" "zones" "library" "beds"
+      "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "orders" "installations"
+  }
+  workshopGroups = { "basic" }
+  description = "12 angry dwarves."
+  minionTraits = { LEADER WORKER FIGHTER }
+  maxPopulation = 12
+  populationString = "dwarves"
+  noLeader = true
+  prisoners = false
+}
 "6_goblins"
 {
   creatureId = { "GOBLIN_KEEPER" }

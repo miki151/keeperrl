@@ -2642,6 +2642,18 @@
       { type = "Torch" chance = 0.3 }
     }
   }
+"DWARF_PLAYER" inherit "DWARF"
+  {
+    skills = {
+      "DIGGING" 0.6
+    }
+    maxLevelIncrease = {}
+    permanentEffects = {}
+    inventory = {}
+    specialAttr = {}
+    promotionGroup = "dwarf"
+    promotionCost = 0.25
+  }
 "DWARF_FIGHTER" inherit "DWARF"
   {
     viewId = { "dwarf_fighter" }

@@ -69,3 +69,18 @@
   "advanced chickenmorph" 7
   "chickengeddon" 10
 }
+"dwarf" SPELL
+{
+  "defense bonus" 1
+  "healing" 2
+  "damage bonus" 3
+  "advanced healing" 4
+  "advanced defense bonus" 5
+  "dig" 6
+  "advanced damage bonus" 7
+  "earth elemental" 8
+  "mass defense bonus" 9
+  "advanced earth elemental" 10
+  "mass damage bonus" 11
+  "group healing" 12
+}

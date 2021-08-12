@@ -1,0 +1,30 @@
+"dwarf" {
+    "melee fighter" {"sword"}
+        IncreaseMaxLevel MELEE 3
+    
+    "archer" {"bow"}
+        Description "Increases max archery training level by 3, adds 14 ranged damage when applied for the first time."
+        {
+          Filter Not CreatureFlag "is_archer" IncreaseAttr RANGED_DAMAGE 14
+          SetCreatureFlag "is_archer" true
+          IncreaseMaxLevel ARCHERY 3
+        }
+    
+    "spellcaster" {"iron_staff"}
+        Description "Increases max spell training level by 3, adds 14 spell damage when applied for the first time."
+        {
+          Filter Not CreatureFlag "is_spellcaster" IncreaseAttr SPELL_DAMAGE 14
+          SetCreatureFlag "is_spellcaster" true
+          IncreaseMaxLevel SPELL 3
+          AddSpellSchool "dwarf"
+        }
+    
+    "artisan" {"forge"}
+        Description "Increases crafting skill for all workshops by 20%"
+        {
+          IncreaseWorkshopSkill "WORKSHOP" 0.2
+          IncreaseWorkshopSkill "FORGE" 0.2
+          IncreaseWorkshopSkill "LABORATORY" 0.2
+          IncreaseWorkshopSkill "JEWELER" 0.2
+        }
+}

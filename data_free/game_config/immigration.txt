@@ -566,6 +566,17 @@ End
       spawnLocation = NearLeader
     }
 }
+"dwarves"
+{
+    {
+      ids = { "DWARF_PLAYER" }
+      traits = { LEADER WORKER FIGHTER }
+      invisible = true
+      noAuto = true
+      initialRecruitment = 11
+      spawnLocation = NearLeader
+    }
+}
 "necromancer"
 {
     {

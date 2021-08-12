@@ -332,6 +332,14 @@ End
   cooldown = 80
   sound = SPELL_DEX_BONUS
 }
+"mass defense bonus"
+{
+  upgrade = "advanced defense bonus"
+  symbol = "🛡"
+  effect = Name "mass defense bonus" Area 10 Filter Not Enemy Lasting DEF_BONUS
+  cooldown = 80
+  sound = SPELL_DEX_BONUS
+}
 "damage bonus"
 {
   symbol = "💪"
@@ -346,6 +354,14 @@ End
   effect = Name "advanced damage bonus" Lasting DAM_BONUS
   targetSelf = true
   range = 1
+  cooldown = 80
+  sound = SPELL_STR_BONUS
+}
+"mass damage bonus"
+{
+  upgrade = "advanced damage bonus"
+  symbol = "💪"
+  effect = Name "mass damage bonus" Area 10 Filter Not Enemy Lasting DAM_BONUS
   cooldown = 80
   sound = SPELL_STR_BONUS
 }
@@ -428,6 +444,21 @@ End
   fx = {FIREBALL}
   range = 4
   cooldown = 30
+  sound = SPELL_FIRE_SPHERE_PET
+}
+"earth elemental"
+{
+  symbol = "👾"
+  effect = Name "earth elemental" Summon "EARTH_ELEMENTAL" 1 100
+  cooldown = 100
+  sound = SPELL_FIRE_SPHERE_PET
+}
+"advanced earth elemental"
+{
+  upgrade = "earth elemental"
+  symbol = "👾"
+  effect = Name "advanced earth elemental" Summon "EARTH_ELEMENTAL" { 2 4 } 100
+  cooldown = 100
   sound = SPELL_FIRE_SPHERE_PET
 }
 "ice cone"
