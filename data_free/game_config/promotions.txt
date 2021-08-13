@@ -1,9 +1,11 @@
 "dwarf" {
-    "melee fighter" {"sword"} {
-        IncreaseMaxLevel MELEE 3
-        SetViewId {"dwarf_fighter"}
-    }
-    
+    "melee fighter" {"sword"}
+        Description "Increases max melee training level by 3."
+        {
+          IncreaseMaxLevel MELEE 3
+          SetViewId {"dwarf_fighter"}
+        }
+
     "archer" {"bow"}
         Description "Increases max archery training level by 3, adds 14 ranged damage when applied for the first time."
         {
