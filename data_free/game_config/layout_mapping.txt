@@ -40,6 +40,7 @@
   "pamphlet_chest" Place "PAMPHLET_CHEST"
   "knife_chest" Place "KNIFE_CHEST"
   "ada_chest" Place "ADA_CHEST"
+  "weapon_rack" Place "WEAPON_RACK"
   "swarmer_chest" Place "SWARMER_CHEST"
   "blacksmith_chest" Place "BLACKSMITH_CHEST"
   "zombie_chest" Place "ZOMBIE_CHEST"
@@ -85,4 +86,10 @@
 
 "dragon" inherit "default" append {
   "chest" Place "DRAGON_CHEST"
+}
+
+"z_level_castle" inherit "default" append {
+  "castle_wall" Place "DUNGEON_WALL2"
+  "archer_wall" Place "DUNGEON_WALL2"
+  "black_dragon_weapon" Items {2 4} "blackDragonWeapons"
 }

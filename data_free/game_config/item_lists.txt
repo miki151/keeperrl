@@ -349,3 +349,14 @@ End
       IncreaseWorkshopSkill "FORGE" 1} {1}
   }
 }
+
+"blackDragonWeapons"
+{
+  items = {
+    {{"AdaBattleAxe"} 1}
+    {{"AdaSword"} 1}
+    {{"InferniteSword"} 1}
+    {{"AdoxiumStaff"} 1}
+    {{"InferniteBattleAxe"} 1}
+  }
+}

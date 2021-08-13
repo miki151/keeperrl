@@ -60,6 +60,14 @@
     guarantee = true
   }
   {
+    type = EnemyZLevel {
+      enemy = "Z_LEVEL_BLACK_DRAGON"
+    }
+    minDepth = 18
+    maxDepth = 18
+    guarantee = true
+  }
+  {
     # A level full of water with some islands
     type = WaterZLevel {
       waterType = "WATER"

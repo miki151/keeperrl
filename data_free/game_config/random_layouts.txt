@@ -294,6 +294,26 @@ End
 
 "castle_empty" Choose(CastleEmpty(2), CastleEmpty(3))
 
+Def ZLevelCastle2(Type) {
+  ZLevelBase(Type)
+  Place({1 1} Inside(-10, CellularAutomaton({Remove("hard_rock") Set("floor")}, 0.65)) 1 On("up_stairs0"))
+  Inside(6, SplitH(0.6, {}, Place({25 15} {
+    Choose(Castle(2), Castle(3))
+    Remove("up_stairs0")
+  } 1 And())))
+  Filter(On("iron_gate"), Inside(-5, Filter(And(Not On("castle_wall"), On("hard_rock")), Reset("floor"))))
+  Filter(Or(On("castle_wall"), On("archer_wall")), Set("no_dig")) 
+  Connector()
+  Place({5 5}, Border(TOP, 1, Set("weapon_rack", "black_dragon_weapon")), 1,
+      And(Not AnyDoor(), On("castle_inside")))
+  Place({1 1}, Set("blacksmith_chest"), 3, On("castle_outside"))
+  Filter(Not On("castle_inside"), Set("no_territory"))
+  Remove("shop0")
+}
+End
+
+"z_level_castle2" ZLevelCastle2("lava")
+
 Def AdoxieFeetEntry() {
   Building("castle_wall", "stone_floor")
   Border(BOTTOM, 2,

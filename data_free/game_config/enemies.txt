@@ -902,6 +902,23 @@ End
     }
   }
 }
+"Z_LEVEL_BLACK_DRAGON_DWARVES" inherit "DWARVES"
+{
+  settlement = append {
+    type = RandomLayout { "z_level_castle2" { 80 80 } "z_level_castle" }
+  }
+}
+"Z_LEVEL_BLACK_DRAGON"
+{
+  settlement = {
+    type = RandomLayout { "z_level_castle2" { 80 80 } "z_level_castle" }
+    tribe = MONSTER
+    inhabitants = {
+      leader = { { "BLACK_DRAGON" } }
+    }
+  }
+  createOnBones = 1.0 { "Z_LEVEL_BLACK_DRAGON_DWARVES" }
+}
 "Z_LEVEL_KRAKENS"
 {
   settlement = {
@@ -1466,9 +1483,6 @@ End
         all = append {
           150 "RED_DRAGON"
           150 "YELLOW_DRAGON"
-        }
-        uniques = {
-          "BLACK_DRAGON"
         }
       }
     }
