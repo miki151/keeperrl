@@ -1,6 +1,8 @@
 "dwarf" {
-    "melee fighter" {"sword"}
+    "melee fighter" {"sword"} {
         IncreaseMaxLevel MELEE 3
+        SetViewId {"dwarf_fighter"}
+    }
     
     "archer" {"bow"}
         Description "Increases max archery training level by 3, adds 14 ranged damage when applied for the first time."
@@ -8,6 +10,7 @@
           Filter Not CreatureFlag "is_archer" IncreaseAttr RANGED_DAMAGE 14
           SetCreatureFlag "is_archer" true
           IncreaseMaxLevel ARCHERY 3
+          SetViewId {"dwarf_crossbowman"}
         }
     
     "spellcaster" {"iron_staff"}
@@ -17,6 +20,7 @@
           SetCreatureFlag "is_spellcaster" true
           IncreaseMaxLevel SPELL 3
           AddSpellSchool "dwarf"
+          SetViewId {"dwarf_mage"}
         }
     
     "artisan" {"forge"}
@@ -26,5 +30,6 @@
           IncreaseWorkshopSkill "FORGE" 0.2
           IncreaseWorkshopSkill "LABORATORY" 0.2
           IncreaseWorkshopSkill "JEWELER" 0.2
+          SetViewId {"dwarf_blacksmith"}
         }
 }

@@ -2644,6 +2644,7 @@
   }
 "DWARF_PLAYER" inherit "DWARF"
   {
+    viewId = { "dwarf_player" }
     skills = {
       "DIGGING" 0.6
     }
