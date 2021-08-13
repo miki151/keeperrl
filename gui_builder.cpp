@@ -2304,9 +2304,11 @@ SGuiElem GuiBuilder::drawLibraryContent(const CollectiveInfo& collectiveInfo, co
       auto line = WL(getListBuilder)
           .addElem(WL(renderInBounds, std::move(minionLabels[i])), min(105, maxWidth))
           .addSpace(10);
-      for (int i : All(elem.promotions)) {
-        auto& info = elem.promotions[i];
-        line.addElemAuto(WL(topMargin, -2, WL(viewObject, info.viewId)));
+      for (int index : All(elem.promotions)) {
+        auto& info = elem.promotions[index];
+        line.addElemAuto(WL(stack,
+            WL(topMargin, -2, WL(viewObject, info.viewId)),
+            getTooltip({makeSentence(info.description)}, i * 100 + index + THIS_LINE)));
       }
       line.addSpace(14);
       if (elem.canAdvance) {
