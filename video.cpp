@@ -29,21 +29,21 @@ static volatile AudioQueue *audio_queue_tail = NULL;
 static void SDLCALL audio_callback(void *userdata, Uint8 *stream, int len) {
 	Sint16 *dst = (Sint16 *)stream;
 	bool withAudio = *((bool*)userdata);
-	while (audio_queue && (len > 0)) {
-		volatile AudioQueue *item = audio_queue;
-		AudioQueue *next = item->next;
-		const int channels = item->audio->channels;
+	if (withAudio)
+		while (audio_queue && (len > 0)) {
+			volatile AudioQueue *item = audio_queue;
+			AudioQueue *next = item->next;
+			const int channels = item->audio->channels;
 
-		const float *src = item->audio->samples + (item->offset * channels);
-		int cpy = (item->audio->frames - item->offset) * channels;
-		int i;
+			const float *src = item->audio->samples + (item->offset * channels);
+			int cpy = (item->audio->frames - item->offset) * channels;
+			int i;
 
-		if (cpy > (len / sizeof(Sint16)))
-			cpy = len / sizeof(Sint16);
+			if (cpy > (len / sizeof(Sint16)))
+				cpy = len / sizeof(Sint16);
 
-		for (i = 0; i < cpy; i++) {
-			const float val = *(src++);
-			if (withAudio) {
+			for (i = 0; i < cpy; i++) {
+				const float val = *(src++);
 				if (val < -1.0f)
 					*(dst++) = -32768;
 				else if (val > 1.0f)
@@ -51,17 +51,16 @@ static void SDLCALL audio_callback(void *userdata, Uint8 *stream, int len) {
 				else
 					*(dst++) = (Sint16)(val * 32767.0f);
 			}
-		}
 
-		item->offset += (cpy / channels);
-		len -= cpy * sizeof(Sint16);
+			item->offset += (cpy / channels);
+			len -= cpy * sizeof(Sint16);
 
-		if (item->offset >= item->audio->frames) {
-			THEORAPLAY_freeAudio(item->audio);
-			SDL_free((void *)item);
-			audio_queue = next;
+			if (item->offset >= item->audio->frames) {
+				THEORAPLAY_freeAudio(item->audio);
+				SDL_free((void *)item);
+				audio_queue = next;
+			}
 		}
-	}
 
 	if (!audio_queue)
 		audio_queue_tail = NULL;
@@ -169,9 +168,8 @@ void playfile(const char *fname, SDL_Window* screen, Renderer& renderer, bool wi
 				renderer.resize(event.window.data1, event.window.data2);
 			switch (event.type) {
 				case SDL_QUIT:
-					quit = 1;
-					break;
 				case SDL_KEYDOWN:
+				case SDL_MOUSEBUTTONDOWN:
 					quit = 1;
 					break;
 				}
