@@ -609,7 +609,7 @@ End
     type = RandomLayout { "lava_cave" { 30 30 } "dragon" }
     inhabitants = {
       leader = { { "RED_DRAGON" } }
-      fighters = {
+      civilians = {
         count = {4 5}
         all = { 1 "FIRE_ELEMENTAL" }
       }
