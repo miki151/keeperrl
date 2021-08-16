@@ -14,7 +14,6 @@
       {{"Cornuthaum2"}           8        "GOLD" 20      "advanced sorcery"}
       {{"Cornuthaum3"}           12       "GOLD" 40      "master sorcery"}
       {item = {"DevilBoots"}       work = 30 cost = "WOOD" 0 requireIngredient = "devil_hooves" }
-      {{"Bow"}                   13       "WOOD" 20      "archery"}
       {item = {"ArchwoodBow"}  work = 30 cost = "WOOD" 20 requireIngredient = "archwood" }
       {{"WoodenStaff"}           13       "WOOD" 20      "magical weapons"}
       {{"Torch"}                 2        "WOOD" 4}
@@ -117,6 +116,22 @@ End
       {{Amulet WARNING}                      10       "GOLD" 30}
       {{"DefenseAmulet"}                     10       "GOLD" 40}
       {{Amulet REGENERATION}                 10       "GOLD" 60}
+  }
+}
+
+"bows"
+{
+  "WORKSHOP"
+  {
+      {{"Bow"}                   13       "WOOD" 20      "archery"}
+  }
+}
+
+"crossbows"
+{
+  "WORKSHOP"
+  {
+      {{"Crossbow"}                   13       "WOOD" 20      "archery"}
   }
 }
 

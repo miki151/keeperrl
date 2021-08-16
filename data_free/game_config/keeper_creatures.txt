@@ -18,7 +18,7 @@
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "demon_shrine"
       "prison" "orders" "installations" "minion_statues" "magical_installations" "traps"
   }
-  workshopGroups = { "basic" "traps" }
+  workshopGroups = { "basic" "bows" "traps" }
   description = "Build and manage your dream dungeon, defend against raids, and attack your enemies. Be about as evil as a boogieman can be!"
 # Special traits example, all traits are added
 #   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
@@ -45,7 +45,7 @@
       "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace"
       "angel_shrine" "prison" "orders" "installations"
   }
-  workshopGroups = { "basic" }
+  workshopGroups = { "basic" "bows" }
   description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"
 }
 "4_gnomes"
@@ -65,7 +65,7 @@
       "structure" "doors" "floors" "storage" "zones" "beds" "crafting" "laboratory" "distillery"
       "furnace" "automatons" "orders" "installations" "traps" "gnome_traps"
   }
-  workshopGroups = { "gnomes" "traps" "basic" }
+  workshopGroups = { "gnomes" "traps" "basic" "crossbows" }
   description = "Seize the means of production and engineer traps, automatons and other contraptions. Recommended for advanced players."
   minionTraits = { LEADER WORKER NO_LIMIT }
   maxPopulation = 0
@@ -90,7 +90,7 @@
       "structure" "doors" "floors" "storage" "zones" "library" "beds"
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "orders" "installations"
   }
-  workshopGroups = { "basic" }
+  workshopGroups = { "basic" "crossbows" }
   description = "12 angry dwarves."
   minionTraits = { LEADER WORKER FIGHTER }
   maxPopulation = 12
@@ -115,7 +115,7 @@
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "prison" "orders"
       "installations" "minion_statues" "traps"
   }
-  workshopGroups = { "basic" "traps" }
+  workshopGroups = { "basic" "bows" "traps" }
   description = "Play as a Goblin Keeper, and seek the legendary goblin matrons. This faction was originally created by RighteousSinner and Soft Monster for the Bonus Mod."
   unlock = "goblins"
 }
@@ -159,7 +159,7 @@
       "training_dummies" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "orders"
       "installations" "traps"
   }
-  workshopGroups = { "basic" "traps" }
+  workshopGroups = { "basic" "crossbows" "traps" }
   description = "Build a dungeon as a lone cyclops."
   minionTraits = { LEADER WORKER FIGHTER }
   maxPopulation = 1
