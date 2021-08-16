@@ -26,12 +26,13 @@
         }
     
     "artisan" {"forge"}
-        Description "Increases crafting skill for all workshops by 20%"
+        Description "Increases crafting skill for all workshops by 16%"
         {
-          IncreaseWorkshopSkill "WORKSHOP" 0.2
-          IncreaseWorkshopSkill "FORGE" 0.2
-          IncreaseWorkshopSkill "LABORATORY" 0.2
-          IncreaseWorkshopSkill "JEWELER" 0.2
+          IncreaseWorkshopSkill "WORKSHOP" 0.16
+          IncreaseWorkshopSkill "FORGE" 0.16
+          IncreaseWorkshopSkill "LABORATORY" 0.16
+          IncreaseWorkshopSkill "JEWELER" 0.16
+          IncreaseSkill FURNACE 0.16
           SetViewId {"dwarf_blacksmith"}
         }
 }

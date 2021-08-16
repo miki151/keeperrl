@@ -2647,8 +2647,12 @@
     viewId = { "dwarf_player" }
     skills = {
       "DIGGING" 0.6
+      "WORKSHOP" 0.2
+      "FORGE" 0.2
+      "LABORATORY" 0.2
+      "JEWELER" 0.2
+      "FURNACE" 0.2
     }
-    maxLevelIncrease = {}
     permanentEffects = {}
     inventory = {}
     specialAttr = {}
