@@ -397,10 +397,14 @@ void Item::setName(const string& n) {
 }
 
 Creature* Item::getShopkeeper(const Creature* owner) const {
-  if (shopkeeper)
+  if (shopkeeper) {
     for (Creature* c : owner->getDebt().getCreditors(owner))
       if (c->getUniqueId() == *shopkeeper)
         return c;
+    for (Creature* c : owner->getVisibleCreatures())
+      if (c->getUniqueId() == *shopkeeper)
+        return c;
+  }
   return nullptr;
 }
 
