@@ -3119,6 +3119,9 @@ void PlayerControl::addToMemory(Position pos) {
 optional<PlayerControl::KeeperDangerInfo> PlayerControl::checkKeeperDanger() const {
   PROFILE;
   auto controlled = getControlled();
+  for (auto c : controlled)
+    if (collective->hasTrait(c, MinionTrait::LEADER))
+      return none;
   for (auto keeper : collective->getLeaders()) {
     auto prompt = [&] (const string& reason) {
       return KeeperDangerInfo{keeper,
