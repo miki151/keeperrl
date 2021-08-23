@@ -69,6 +69,10 @@
 { "dwarf_crossbowman" "h" ColorId YELLOW }
 { "dwarf_fighter" "h" ColorId DARK_BLUE }
 { "dwarf_blacksmith" "h" ColorId WHITE }
+{ "dwarf_mage_f" "h" ColorId PINK }
+{ "dwarf_crossbowman_f" "h" ColorId YELLOW }
+{ "dwarf_fighter_f" "h" ColorId DARK_BLUE }
+{ "dwarf_blacksmith_f" "h" ColorId WHITE }
 { "dwarf_baron" "h" ColorId PURPLE }
 { "dwarf_female" "h" ColorId LIGHT_BLUE }
 { "shopkeeper" "@" ColorId LIGHT_BLUE }

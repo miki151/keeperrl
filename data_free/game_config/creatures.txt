@@ -2645,6 +2645,9 @@
 "DWARF_PLAYER" inherit "DWARF"
   {
     viewId = { "dwarf_player" }
+    genderAlternatives = {
+      FEMALE { "dwarf_female" }
+    }
     skills = {
       "DIGGING" 0.6
       "WORKSHOP" 0.2

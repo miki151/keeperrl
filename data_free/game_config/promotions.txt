@@ -3,7 +3,8 @@
         Description "Increases max melee training level by 3."
         {
           IncreaseMaxLevel MELEE 3
-          SetViewId {"dwarf_fighter"}
+          Filter Gender MALE SetViewId {"dwarf_fighter"}
+          Filter Gender FEMALE SetViewId {"dwarf_fighter_f"}
         }
 
     "archer" {"bow"}
@@ -13,6 +14,8 @@
           SetCreatureFlag "is_archer" true
           IncreaseMaxLevel ARCHERY 3
           SetViewId {"dwarf_crossbowman"}
+          Filter Gender MALE SetViewId {"dwarf_crossbowman"}
+          Filter Gender FEMALE SetViewId {"dwarf_crossbowman_f"}
         }
     
     "spellcaster" {"iron_staff"}
@@ -22,7 +25,8 @@
           SetCreatureFlag "is_spellcaster" true
           IncreaseMaxLevel SPELL 3
           AddSpellSchool "dwarf"
-          SetViewId {"dwarf_mage"}
+          Filter Gender MALE SetViewId {"dwarf_mage"}
+          Filter Gender FEMALE SetViewId {"dwarf_mage_f"}
         }
     
     "artisan" {"forge"}
@@ -33,6 +37,7 @@
           IncreaseWorkshopSkill "LABORATORY" 0.16
           IncreaseWorkshopSkill "JEWELER" 0.16
           IncreaseSkill FURNACE 0.16
-          SetViewId {"dwarf_blacksmith"}
+          Filter Gender MALE SetViewId {"dwarf_blacksmith"}
+          Filter Gender FEMALE SetViewId {"dwarf_blacksmith_f"}
         }
 }
