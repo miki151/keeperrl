@@ -376,6 +376,30 @@ Def BedHeal() Heal { FLESH 0.005 } End
   requiredSupport = { { { E W } } { { N S } {"prison_door_ns"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
+"AUTOMATON_STORAGE"
+{
+  name = "automaton chest"
+  viewId = { "automaton_storage" }
+  emptyViewId = { "automaton_storage_empty" }
+  canHideHere = true
+  fire = 50
+  strength = 40
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  storageIds = {"automaton_parts"}
+  hidesItems = true
+}
+"JEWELLERY_STORAGE"
+{
+  name = "jewellery chest"
+  viewId = { "jewelry_storage" }
+  emptyViewId = { "jewelry_storage_empty" }
+  canHideHere = true
+  fire = 50
+  strength = 40
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  storageIds = {"jewellery"}
+  hidesItems = true
+}
 "ARMOR_RACK"
 {
   name = "armor rack"

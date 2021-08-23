@@ -346,6 +346,10 @@
 { "key_highlight" "*" ColorId ALMOST_WHITE }
 { viewId = "treasurechest" symbol = "=" color = ColorId YELLOW roundShadow = true }
 { viewId = "treasurechest_empty" symbol = "=" color = ColorId YELLOW roundShadow = true }
+{ viewId = "automaton_storage" symbol = "=" color = ColorId PURPLE roundShadow = true }
+{ viewId = "automaton_storage_empty" symbol = "=" color = ColorId DARK_GRAY roundShadow = true }
+{ viewId = "jewelry_storage" symbol = "=" color = ColorId ORANGE roundShadow = true }
+{ viewId = "jewelry_storage_empty" symbol = "=" color = ColorId DARK_GRAY roundShadow = true }
 { viewId = "armor_rack" symbol = "=" color = ColorId DARK_BROWN roundShadow = true }
 { viewId = "armor_rack_empty" symbol = "=" color = ColorId DARK_GRAY roundShadow = true }
 { viewId = "weapon_rack" symbol = "=" color = ColorId LIGHT_BROWN roundShadow = true }

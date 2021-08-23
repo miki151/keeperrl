@@ -63,8 +63,8 @@
   initialTech = { "automatons" }
   baseNameGen = "TOWN"
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "beds" "crafting" "laboratory" "distillery"
-      "furnace" "automatons" "orders" "installations" "traps" "gnome_traps"
+      "structure" "doors" "floors" "storage" "automaton_storage" "zones" "beds" "crafting"
+      "laboratory" "distillery" "furnace" "automatons" "orders" "installations" "traps" "gnome_traps"
   }
   workshopGroups = { "gnomes" "traps" "basic" "crossbows" }
   description = "Seize the means of production and engineer traps, automatons and other contraptions. Recommended for advanced players."
