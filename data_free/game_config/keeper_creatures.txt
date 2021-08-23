@@ -14,7 +14,8 @@
   zLevelGroups = { "basic" "evil" }
   initialTech = { "sorcery" }
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage" "pigsty" "coffins"
+      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage"
+      "pigsty" "dining table" "coffins"
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "demon_shrine"
       "prison" "orders" "installations" "minion_statues" "magical_installations" "traps"
   }
@@ -42,8 +43,8 @@
   initialTech = { "archery" }
   buildingGroups = {
       "structure" "arrowslits" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage"
-      "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace"
-      "angel_shrine" "prison" "orders" "installations"
+      "pigsty" "dining table" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery"
+      "furnace" "angel_shrine" "prison" "orders" "installations"
   }
   workshopGroups = { "basic" "bows" }
   description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"
@@ -87,7 +88,7 @@
   initialTech = { "iron working" }
   baseNameGen = "TOWN"
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "beds"
+      "structure" "doors" "floors" "storage" "zones" "library" "beds" "dining table"
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "orders" 
       "installations"
   }
@@ -112,7 +113,7 @@
   zLevelGroups = { "basic" "evil" "goblins" }
   initialTech = { }
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "pigsty"
+      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "pigsty" "dining table"
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "prison" "orders"
       "installations" "minion_statues" "traps"
   }
