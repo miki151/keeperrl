@@ -4,6 +4,7 @@
 #include "lasting_effect.h"
 #include "furniture_type.h"
 #include "creature_id.h"
+#include "gender.h"
 
 #define SIMPLE_PREDICATE(Name) \
   struct Name { \
@@ -129,6 +130,7 @@ struct Translate {
   X(PopLimitReached, 26)\
   X(Translate, 27)\
   X(Unlocked, 28)\
+  X(Gender, 29)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

@@ -134,6 +134,14 @@ static string getName(const CreaturePredicates::CreatureFlag& s) {
   return s.name;
 }
 
+static bool applyToCreature(const Gender& s, const Creature* victim, const Creature*) {
+  return victim->getAttributes().getGender() == s;
+}
+
+static string getName(const Gender& s) {
+  return get(s, "males", "females", "genderless");
+}
+
 static bool apply(const CreaturePredicates::Unlocked& s, Position pos, const Creature* attacker) {
   return pos.getGame()->getUnlocks()->isUnlocked(s.id);
 }
