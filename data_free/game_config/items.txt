@@ -1819,6 +1819,7 @@ End
     resourceId = "INFERNITE"
     weight = 0.5
     carriedTickEffect = InferniteEffect()
+# With light source on minions will try to use it as a torch.
 #    ownedEffect = LIGHT_SOURCE
     storageIds = {"resources"}
   }
