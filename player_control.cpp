@@ -1749,6 +1749,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   fillWorkshopInfo(info);
   fillLibraryInfo(info);
   info.minionPromotions.clear();
+  info.availablePromotions = 0;
   for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
     if (c->getAttributes().promotionGroup)
       fillPromotions(c, info);
