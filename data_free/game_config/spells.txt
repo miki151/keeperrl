@@ -621,7 +621,7 @@ Def NoEffect() Unlock "nothing" End
         CreatureMessage "are spared by the bolt" "is spared by the bolt"
       )
   range = 14
-  cooldown = 6
+  cooldown = 3
   maxHits = 1
   projectileViewId = {"arrow"}
   keybinding = FIRE_PROJECTILE
