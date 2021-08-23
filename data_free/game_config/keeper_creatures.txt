@@ -88,7 +88,8 @@
   baseNameGen = "TOWN"
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "beds"
-      "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "orders" "installations"
+      "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "orders" 
+      "installations"
   }
   workshopGroups = { "basic" "crossbows" }
   description = "12 angry dwarves."
