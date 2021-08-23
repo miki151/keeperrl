@@ -301,38 +301,6 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
   return WL(scrollable, WL(stack, std::move(keypressOnly)), &buildingsScroll, &scrollbarsHeld);
 }
 
-SGuiElem GuiBuilder::drawTechnology(CollectiveInfo& info) {
-  int hash = combineHash(info.workshopButtons);
-  if (hash != technologyHash) {
-    technologyHash = hash;
-    auto lines = WL(getListBuilder, legendLineHeight);
-    lines.addSpace(legendLineHeight / 2);
-    lines.addSpace(legendLineHeight / 2);
-    lines.addSpace(legendLineHeight / 2);
-    for (int i : All(info.workshopButtons)) {
-      auto& button = info.workshopButtons[i];
-      auto line = WL(getListBuilder);
-      line.addElem(WL(viewObject, button.viewId), 35);
-      line.addElemAuto(WL(label, button.name, button.unavailable ? Color::GRAY : Color::WHITE));
-      SGuiElem elem = line.buildHorizontalList();
-      if (button.active)
-        elem = WL(stack,
-            WL(uiHighlightLine, Color::GREEN),
-            std::move(elem));
-      if (!button.unavailable)
-        elem = WL(stack,
-          WL(button, [this, i] {
-            workshopsScroll2.reset();
-            workshopsScroll.reset();
-            getButtonCallback(UserInput(UserInputId::WORKSHOP, i))(); }),
-          std::move(elem));
-      lines.addElem(std::move(elem));
-    }
-    technologyCache = lines.buildVerticalList();
-  }
-  return WL(external, technologyCache.get());
-}
-
 SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo&) {
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(standardButton,
