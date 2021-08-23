@@ -376,6 +376,18 @@ Def BedHeal() Heal { FLESH 0.005 } End
   requiredSupport = { { { E W } } { { N S } {"prison_door_ns"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
+"ARMOR_RACK"
+{
+  name = "armor rack"
+  viewId = { "armor_rack" }
+  emptyViewId = { "armor_rack_empty" }
+  canHideHere = true
+  fire = 50
+  strength = 40
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  storageIds = {"armor"}
+  hidesItems = true
+}
 "WEAPON_RACK"
 {
   name = "weapon rack"
