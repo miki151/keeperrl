@@ -22,7 +22,7 @@ endif
 ifdef OSX
 LDFLAGS += -Wl -L/home/michal/Downloads/osxcross/libs/lib -Wl,-rpath .
 CFLAGS += -stdlib=libc++ -DOSX -mmacosx-version-min=10.7
-CFLAGS += -I/home/michal/Downloads/osxcross/libs/include
+CFLAGS += -I/home/michal/Downloads/osxcross/libs/include -I/home/michal/Downloads/osxcross/target/macports/pkgs/opt/local/include/
 else
 ifndef NO_RPATH
 LDFLAGS += -Wl,-rpath=$(or $(RPATH),.)
