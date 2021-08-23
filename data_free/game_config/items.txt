@@ -1839,6 +1839,7 @@ End
     itemClass = CORPSE
     price = 0
     weight = 5
+    resourceId = "CORPSE"
     storageIds = {"corpses"}
   }
 "Skeleton"
@@ -1848,6 +1849,7 @@ End
     itemClass = CORPSE
     price = 0
     weight = 50
+    resourceId = "CORPSE"
     storageIds = {"corpses"}
   }
 "FrozenRemains" inherit "Skeleton"
