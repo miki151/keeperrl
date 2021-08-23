@@ -1819,7 +1819,7 @@ End
     resourceId = "INFERNITE"
     weight = 0.5
     carriedTickEffect = InferniteEffect()
-    ownedEffect = LIGHT_SOURCE
+#    ownedEffect = LIGHT_SOURCE
     storageIds = {"resources"}
   }
 "WoodPlank"
