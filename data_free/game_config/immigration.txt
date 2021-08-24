@@ -569,7 +569,7 @@ End
 "dwarves"
 {
     {
-      ids = { "DWARF_PLAYER" }
+      ids = { "DWARF_PLAYER" "DWARF_PLAYER_F" }
       traits = { LEADER WORKER FIGHTER }
       invisible = true
       noAuto = true

@@ -2645,9 +2645,6 @@
 "DWARF_PLAYER" inherit "DWARF"
   {
     viewId = { "dwarf_player" }
-    genderAlternatives = {
-      FEMALE { "dwarf_female" }
-    }
     skills = {
       "DIGGING" 0.6
       "WORKSHOP" 0.2
@@ -2663,6 +2660,11 @@
     specialAttr = {}
     promotionGroup = "dwarf"
     promotionCost = 0.25
+  }
+"DWARF_PLAYER_F" inherit "DWARF_PLAYER"
+  {
+    viewId = { "dwarf_female" }
+    gender = FEMALE
   }
 "DWARF_FIGHTER" inherit "DWARF"
   {
