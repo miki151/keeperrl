@@ -896,7 +896,7 @@ optional<ExperienceType> WindowView::getCreatureUpgrade(const CreatureExperience
 
 void WindowView::scriptedUI(ScriptedUIId id, const ScriptedUIData& data, ScriptedUIState& state) {
   Semaphore sem;
-  return getBlockingGui(sem, gui.scripted(sem, id, data, state));
+  return getBlockingGui(sem, gui.stack(gui.stopMouseMovement(), gui.scripted(sem, id, data, state)));
 }
 
 optional<Vec2> WindowView::chooseSite(const string& message, const Campaign& campaign, optional<Vec2> current) {
