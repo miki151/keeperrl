@@ -833,6 +833,9 @@ void Player::makeMove() {
           }
         break;
       }
+      case UserInputId::SCROLL_STAIRS:
+        scrollStairs(action.get<int>());
+        break;
   #ifndef RELEASE
       case UserInputId::CHEAT_ATTRIBUTES:
         creature->getAttributes().increaseBaseAttr(AttrType::DAMAGE, 80);
@@ -1255,10 +1258,10 @@ void Player::fillDungeonLevel(PlayerInfo& info) const {
 
 void Player::fillCurrentLevelInfo(GameInfo& gameInfo) const {
   auto level = getLevel();
-    gameInfo.currentLevel = CurrentLevelInfo {
+  gameInfo.currentLevel = CurrentLevelInfo {
     level->name,
     level->depth,
-    {}
+    getModel()->getMainLevels().transform([](auto level) { return level->name; }),
   };
 }
 
@@ -1411,6 +1414,19 @@ void Player::considerAdventurerMusic() {
       return;
     }
   getGame()->setCurrentMusic(MusicType::ADV_PEACEFUL);
+}
+
+void Player::scrollStairs(int diff) {
+  auto model = creature->getPosition().getModel();
+  auto curLevel = creature->getPosition().getLevel();
+  auto levels = model->getMainLevels();
+  if (auto curIndex = levels.findElement(curLevel)) {
+    auto dest = *curIndex + diff;
+    auto targetLevel = levels[dest];
+    auto oldPos = creature->getPosition().getCoord();
+    if (auto stairs = targetLevel->getStairsTo(levels[dest + (dest > *curIndex ? -1 : 1)]))
+      target = *stairs;
+  }
 }
 
 REGISTER_TYPE(ListenerTemplate<Player>)

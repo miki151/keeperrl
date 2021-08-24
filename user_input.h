@@ -45,6 +45,7 @@ enum class UserInputId {
   TAKE_SCREENSHOT,
   CANCEL_SCREENSHOT,
   AI_TYPE,
+  SCROLL_STAIRS,
 // real-time actions
   BUILD,
   TILE_CLICK,
@@ -98,7 +99,6 @@ enum class UserInputId {
   SHOW_HISTORY,
   DISMISS_NEXT_WAVE,
   DISMISS_WARNING_WINDOW,
-  SCROLL_STAIRS,
 // turn-based actions
   MOVE,
   TRAVEL,

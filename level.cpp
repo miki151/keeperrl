@@ -359,10 +359,6 @@ void Level::killCreature(Creature* creature) {
   getModel()->killCreature(creature);
 }
 
-void Level::removeCreature(Creature* creature) {
-  eraseCreature(creature, creature->getPosition().getCoord());
-}
-
 void Level::changeLevel(StairKey key, Creature* c) {
   Vec2 oldPos = c->getPosition().getCoord();
   WLevel otherLevel = model->getLinkedLevel(this, key);

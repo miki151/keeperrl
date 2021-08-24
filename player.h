@@ -140,6 +140,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void giveAction(vector<Item*>);
   void spellAction(int);
   void fireAction();
+  void scrollStairs(int);
   void tryToCast(const Spell*, Position target);
   void getItemNames(vector<Item*> it, vector<ListElem>& names, vector<vector<Item*> >& groups,
       ItemPredicate = alwaysTrue<const Item*>());

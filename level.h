@@ -92,7 +92,7 @@ class Level : public OwnedObject<Level> {
 
   void killCreature(Creature* victim);
 
-  void removeCreature(Creature*);
+  void eraseCreature(Creature*, Vec2 coord);
 
   void updateVisibility(Vec2 changedSquare);
 
@@ -181,7 +181,6 @@ class Level : public OwnedObject<Level> {
   unordered_map<StairKey, vector<Position>> SERIAL(landingSquares);
   set<Vec2> SERIAL(tickingSquares);
   set<Vec2> SERIAL(tickingFurniture);
-  void eraseCreature(Creature*, Vec2 coord);
   void placeCreature(Creature*, Vec2 pos);
   void unplaceCreature(Creature*, Vec2 pos);
   vector<Creature*> SERIAL(creatures);

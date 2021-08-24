@@ -316,7 +316,7 @@ void Model::killCreature(Creature* c) {
 
 PCreature Model::extractCreature(Creature* c) {
   PCreature ret = timeQueue->removeCreature(c);
-  c->getLevel()->removeCreature(c);
+  c->getLevel()->eraseCreature(c, c->getPosition().getCoord());
   return ret;
 }
 
