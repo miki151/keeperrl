@@ -53,7 +53,7 @@ Def DarkRecruits()
       ids = { "GOBLIN_WARRIOR" }
       traits = { FIGHTER }
       requirements = {
-        { 0.0 RecruitmentInfo { "GOBLIN_VILLAGE" "GOBLIN_CAVE_ALLY" } 3 FIGHTER }
+        { 0.0 RecruitmentInfo { "GOBLIN_CAVE_ALLY" } 3 FIGHTER }
         { 1.0 CostInfo "GOLD" 5 }
       }
     }

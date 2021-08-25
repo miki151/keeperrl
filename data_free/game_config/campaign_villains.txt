@@ -28,7 +28,6 @@ EVIL_KEEPER {
     {{ "unknown_monster" } "SOKOBAN" "Unknown" ALLY}
     {{ "dark_elf_lord" } "DARK_ELVES_ALLY" "Dark elves" ALLY}
     {{ "gnome_boss" } "GNOMES" "Gnomes" ALLY}
-    {{ "goblin_keeper4" } "GOBLIN_VILLAGE" "Goblin town" ALLY}
 }
 
 LAWFUL_KEEPER {

@@ -199,15 +199,18 @@ End
       fighters = {
         count = {12 16}
         all = {
-          4 "GOBLIN_WARRIOR"
-          1 "GOBLIN_GUARD"
-          1 "GOBLIN_ARCHER"
+          4 "GOBLIN_WARRIOR_VILLAIN"
+          1 "GOBLIN_GUARD_VILLAIN"
+          1 "GOBLIN_WIZARD_VILLAIN"
+          1 "GOBLIN_ARCHER_VILLAIN"
           1 "GOBLIN_PRIEST"
+          1 "GOBLIN_KABOOMER"
+          1 "TROLL_VILLAIN"
         }
         expLevelIncrease = {
-          MELEE 5
-          SPELL 5
-          ARCHERY 5
+          MELEE 10
+          SPELL 10
+          ARCHERY 10
         }
       }
     }

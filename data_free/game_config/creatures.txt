@@ -4289,6 +4289,18 @@ End
       { "LeatherArmor"}
     }
   }
+"GOBLIN_WARRIOR_VILLAIN" inherit "GOBLIN_WARRIOR"
+  {
+    attr = {
+      DAMAGE 36
+      DEFENSE 36
+    }
+    inventory = {
+      { "Sword" }
+      { "ChainArmor" }
+      { "IronHelm" }
+    }
+  }
 "GOBLIN_PRIEST"
   {
     viewId = { "goblin_priest" }
@@ -4344,6 +4356,17 @@ End
       { "LeatherArmor"}
     }
   }
+"GOBLIN_WIZARD_VILLAIN" inherit "GOBLIN_WIZARD"
+  {
+    attr = {
+      SPELL_DAMAGE 36
+      DEFENSE 26
+    }
+    inventory = {
+      { "IronStaff" }
+      { "LeatherArmor"}
+    }
+  }
 "GOBLIN_GUARD" inherit "GOBLIN_WARRIOR"
   {
     viewId = { "goblin_guard" }
@@ -4358,6 +4381,18 @@ End
     name = {
       name = "goblin guard"
       firstNameGen = "ORC"
+    }
+  }
+"GOBLIN_GUARD_VILLAIN" inherit "GOBLIN_GUARD"
+  {
+    attr = {
+      DAMAGE 36
+      DEFENSE 36
+    }
+    inventory = {
+      { "Sword" }
+      { "ChainArmor" }
+      { "IronHelm" }
     }
   }
 "GOBLIN_ARCHER" 
@@ -4386,6 +4421,13 @@ End
     inventory = {
       { "Bow"}
       { "LeatherArmor"}
+    }
+  }
+"GOBLIN_ARCHER_VILLAIN" inherit "GOBLIN_ARCHER"
+  {
+    attr = {
+      RANGED_DAMAGE 36
+      DEFENSE 30
     }
   }
 "GOBLIN_KABOOMER"
@@ -4466,6 +4508,13 @@ End
     inventory = {
       { "HeavyClub"}
       { "LeatherArmor"}
+    }
+  }
+"TROLL_VILLAIN" inherit "TROLL"
+  {
+    attr = {
+      DAMAGE 46
+      DEFENSE 45
     }
   }
 
