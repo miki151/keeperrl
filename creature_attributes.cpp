@@ -73,6 +73,7 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel), OPTION(inventory));
   ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience));
   ar(OPTION(automatonParts), OPTION(specialAttr), NAMED(deathEffect), NAMED(chatEffect), OPTION(companions));
+  ar(OPTION(maxPromotions));
   for (auto a : ENUM_ALL(AttrType))
     attr[a] = max(0, attr[a]);
 }
@@ -154,7 +155,7 @@ const EnumMap<ExperienceType, int>& CreatureAttributes::getMaxExpLevel() const {
 }
 
 void CreatureAttributes::increaseMaxExpLevel(ExperienceType type, int increase) {
-  maxLevelIncrease[type] += increase;
+  maxLevelIncrease[type] = max(0, maxLevelIncrease[type] + increase);
   expLevel[type] = min<double>(expLevel[type], maxLevelIncrease[type]);
 }
 

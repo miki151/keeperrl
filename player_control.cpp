@@ -514,13 +514,14 @@ void PlayerControl::fillPromotions(Creature* creature, CollectiveInfo& info) con
   promotionInfo.viewId = creature->getViewObject().getViewIdList();
   promotionInfo.name = creature->getName().firstOrBare();
   promotionInfo.id = creature->getUniqueId();
-  promotionInfo.canAdvance = creature->getPromotions().size() < 5 && collective->getDungeonLevel().numPromotionsAvailable() > 0;
+  promotionInfo.canAdvance = creature->getPromotions().size() < creature->getAttributes().maxPromotions &&
+      collective->getDungeonLevel().numPromotionsAvailable() > 0;
   for (auto& promotion : creature->getPromotions())
     promotionInfo.promotions.push_back(getPromotionOption(getGame()->getContentFactory(), promotion));
   auto contentFactory = getGame()->getContentFactory();
-  for (auto& promotion : contentFactory->promotions.at(*creature->getAttributes().promotionGroup))
-    promotionInfo.options.push_back(getPromotionOption(contentFactory, promotion));
-  info.minionPromotions.push_back(std::move(promotionInfo));
+    for (auto& promotion : contentFactory->promotions.at(*creature->getAttributes().promotionGroup))
+        promotionInfo.options.push_back(getPromotionOption(contentFactory, promotion));
+    info.minionPromotions.push_back(std::move(promotionInfo));
   info.availablePromotions = int(0.001
       + double(collective->getDungeonLevel().numPromotionsAvailable()) / creature->getAttributes().promotionCost);
 }
@@ -1750,7 +1751,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
   fillLibraryInfo(info);
   info.minionPromotions.clear();
   info.availablePromotions = 0;
-  for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
+  for (auto c : collective->getCreatures())
     if (c->getAttributes().promotionGroup)
       fillPromotions(c, info);
   info.monsterHeader = info.populationString + ": " + toString(info.minionCount) + " / " + toString(info.minionLimit);

@@ -137,6 +137,7 @@ class CreatureAttributes {
   vector<CompanionInfo> SERIAL(companions);
   optional<string> SERIAL(promotionGroup);
   double SERIAL(promotionCost) = 1.0;
+  int SERIAL(maxPromotions) = 5;
 
   private:
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);
