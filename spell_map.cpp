@@ -62,19 +62,18 @@ SpellMap::SpellInfo* SpellMap::getInfo(SpellId id) {
   return nullptr;
 }
 
-static optional<ItemAbility>& getItemAbility(const Creature* c, const Spell* spell) {
+static ItemAbility* getItemAbility(const Creature* c, const Spell* spell) {
   for (auto it : c->getEquipment().getAllEquipped())
-    if (auto& a = it->getAbility())
-      if (&a->spell == spell)
-        return a;
-  static optional<ItemAbility> empty;
-  return empty;
+    for (auto& a : it->getAbility())
+      if (&a.spell == spell)
+        return &a;
+  return nullptr;
 }
 
 GlobalTime SpellMap::getReadyTime(const Creature* c, const Spell* spell) const {
   if (auto info = getInfo(spell->getId()))
     return info->timeout.value_or(-1000_global);
-  if (auto& a = getItemAbility(c, spell))
+  if (auto a = getItemAbility(c, spell))
     return a->timeout.value_or(-1000_global);
   FATAL << "spell not found";
   fail();
@@ -83,7 +82,7 @@ GlobalTime SpellMap::getReadyTime(const Creature* c, const Spell* spell) const {
 void SpellMap::setReadyTime(const Creature* c, const Spell* spell, GlobalTime time) {
   if (auto info = getInfo(spell->getId()))
     info->timeout = time;
-  else if (auto& a = getItemAbility(c, spell))
+  else if (auto a = getItemAbility(c, spell))
     a->timeout = time;
   /*else  this causes a crash if it's a suicide spell granted by equipment
     FATAL << "spell not found";*/
@@ -103,8 +102,8 @@ vector<const Spell*> SpellMap::getAvailable(const Creature* c) const {
         ret.push_back(&elem.spell);
     }
   for (auto it : c->getEquipment().getAllEquipped())
-    if (auto& a = it->getAbility())
-      ret.push_back(&a->spell);
+    for (auto& a : it->getAbility())
+      ret.push_back(&a.spell);
   return ret;
 }
 

@@ -65,7 +65,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   const optional<Effect>& getEffect() const;
   bool effectAppliedWhenThrown() const;
   const optional<CreaturePredicate>& getApplyPredicate() const;
-  optional<ItemAbility>& getAbility();
+  vector<ItemAbility>& getAbility();
 
   ItemClass getClass() const;
   const vector<StorageId>& getStorageIds() const;
@@ -149,6 +149,6 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   ItemClass SERIAL(classCache);
   string getSuffix() const;
   optional<GlobalTime> SERIAL(timeout);
-  optional<ItemAbility> SERIAL(abilityInfo);
+  vector<ItemAbility> SERIAL(abilityInfo);
   void updateAbility(const ContentFactory*);
 };

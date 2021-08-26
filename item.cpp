@@ -62,7 +62,7 @@ Item::Item(const ItemAttributes& attr, const ContentFactory* factory)
 
 void Item::updateAbility(const ContentFactory* factory) {
   for (auto id : attributes->equipedAbility)
-    abilityInfo = ItemAbility { *factory->getCreatures().getSpell(id), none, getUniqueId().getGenericId() };
+    abilityInfo.push_back(ItemAbility { *factory->getCreatures().getSpell(id), none, getUniqueId().getGenericId() });
 }
 
 Item::~Item() {
@@ -70,7 +70,7 @@ Item::~Item() {
 
 PItem Item::getCopy(const ContentFactory* f) const {
   auto ret = makeOwner<Item>(*attributes, f);
-  ret->getAbility().reset();
+  ret->getAbility().clear();
   return ret;
 }
 
@@ -210,11 +210,12 @@ const optional<CreaturePredicate>& Item::getApplyPredicate() const {
   return attributes->applyPredicate;
 }
 
-optional<ItemAbility>& Item::getAbility() {
-  if (abilityInfo && abilityInfo->itemId != getUniqueId().getGenericId()) {
-    abilityInfo->itemId = getUniqueId().getGenericId();
-    abilityInfo->timeout = none;
-  }
+vector<ItemAbility>& Item::getAbility() {
+  for (auto& info : abilityInfo)
+    if (info.itemId != getUniqueId().getGenericId()) {
+      info.itemId = getUniqueId().getGenericId();
+      info.timeout = none;
+    }
   return abilityInfo;
 }
 
@@ -258,8 +259,8 @@ vector<string> Item::getDescription(const ContentFactory* factory) const {
   }
   if (auto& info = attributes->upgradeInfo)
     ret.append(info->getDescription(factory));
-  if (abilityInfo)
-    ret.push_back("Grants ability: "_s + abilityInfo->spell.getName(factory));
+  for (auto& info : abilityInfo)
+    ret.push_back("Grants ability: "_s + info.spell.getName(factory));
   if (auto& part = attributes->automatonPart) {
     ret.push_back(part->effect.getDescription(factory));
   }
