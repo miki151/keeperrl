@@ -64,13 +64,13 @@ void ConstructionMap::setTask(Position pos, FurnitureLayer layer, UniqueEntity<T
 }
 
 void ConstructionMap::removeFurniturePlan(Position pos, FurnitureLayer layer) {
-  auto& info = furniture[layer].getOrFail(pos);
+  auto info = furniture[layer].getOrFail(pos);
   auto type = info.getFurnitureType();
   --unbuiltCounts[type];
-  addDebt(-info.getCost(), type.data());
   furniture[layer].erase(pos);
   allFurniture.removeElement({pos, layer});
   pos.setNeedsRenderAndMemoryUpdate(true);
+  addDebt(-info.getCost(), type.data());
 }
 
 void ConstructionMap::addDebt(const CostInfo& cost, const char* reason) {
@@ -83,15 +83,16 @@ void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer, F
   PROFILE;
   // We don't care if the destroyed furniture was the same type that we track,
   // for furnitures like phylactery which are replaced upon usage.
-  if (auto info = furniture[layer].getReferenceMaybe(pos)) {
-    addDebt(info->getCost(), type.data());
-    auto type = info->getFurnitureType();
-    furniturePositions[type].erase(pos);
-    for (auto id : pos.getGame()->getContentFactory()->furniture.getData(type).getStorageId())
-      storagePositions[id].remove(pos);
-    allStoragePositions.remove(pos);
-    info->reset();
-  }
+  if (auto info = furniture[layer].getReferenceMaybe(pos))
+    if (info->getFurnitureType() == type) {
+      addDebt(info->getCost(), type.data());
+      auto type = info->getFurnitureType();
+      furniturePositions[type].erase(pos);
+      for (auto id : pos.getGame()->getContentFactory()->furniture.getData(type).getStorageId())
+        storagePositions[id].remove(pos);
+      allStoragePositions.remove(pos);
+      info->reset();
+    }
 }
 
 void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info, FurnitureLayer layer) {
@@ -191,7 +192,7 @@ void ConstructionMap::checkDebtConsistency() {
       nowDebt[info.getCost().id] += info.getCost().value;
   }
   for (auto& elem : nowDebt)
-    CHECK(getValueMaybe(debt, elem.first).value_or(0) == elem.second);
+    CHECK(getValueMaybe(debt, elem.first).value_or(0) == elem.second) << getValueMaybe(debt, elem.first).value_or(0) << " " << elem.second;
   for (auto& elem : debt)
     CHECK(getValueMaybe(nowDebt, elem.first).value_or(0) == elem.second);
 }
