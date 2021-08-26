@@ -223,6 +223,13 @@ End
     immigrantInterval = 300
     maxPopulation = 16
   }
+  behaviour = {
+    minPopulation = 0
+    minTeamSize = 8
+    triggers = {Gold 500}
+    attackBehaviour = StealGold
+    ransom = 0.5 80
+  }
   createOnBones = 0.1 { "DWARVES" "VILLAGE" }
   immigrants = {
     {
@@ -1186,6 +1193,111 @@ End
     }
   }
 }
+Def STRONGER(NAME, ORIGINAL, INCREASE)
+NAME inherit ORIGINAL
+{
+  settlement = append {
+    inhabitants = append {
+      fighters = append {
+        baseLevelIncrease = { INCREASE }
+      }
+    }
+  }
+}
+End
+
+STRONGER("GOBLINS_Z_LEVEL1", "GOBLIN_CAVE", MELEE 0)
+STRONGER("GOBLINS_Z_LEVEL2", "GOBLIN_CAVE", MELEE 7)
+STRONGER("GOBLINS_Z_LEVEL3", "GOBLIN_CAVE", MELEE 15)
+STRONGER("GOBLINS_Z_LEVEL4", "GOBLIN_CAVE", MELEE 22)
+STRONGER("GOBLINS_Z_LEVEL5", "GOBLIN_CAVE", MELEE 30)
+
+"GOBLINS_Z_LEVEL6" inherit "GOBLIN_VILLAGE"
+{
+  settlement = append {
+    type = Builtin MINETOWN "DUNGEON"
+    inhabitants = append {
+      leader = none
+      fighters = append {
+        baseLevelIncrease = { MELEE 10 SPELL 10 ARCHERY 10 }
+      }
+    }
+  }
+}
+
+"DARK_ELF_CAVE"
+{
+  settlement = {
+    type = Builtin SMALL_MINETOWN "DUNGEON"
+    tribe = DARK_ELF
+    inhabitants = {
+      fighters = {
+        count = {2 5}
+        all = { 1 "DARK_ELF_WARRIOR" }
+        baseLevelIncrease = { MELEE 7 }
+      }
+      civilians = {
+        count = {2 5}
+        all = { 1 "DARK_ELF" }
+      }
+    }
+    race = "dark elves"
+    stockpiles = {{ "minerals" 60 }}
+    outsideFeatures = "dungeonOutside"
+    furniture = "roomFurniture"
+    surroundWithResources = 6    
+  }
+  behaviour = {
+    minPopulation = 0
+    minTeamSize = 1
+    triggers = {SelfVictims StolenItems AggravatingMinions }
+    attackBehaviour = KillLeader
+    ransom = 0.5 80
+  }
+}
+
+STRONGER("DARK_ELVES_Z_LEVEL1", "DARK_ELF_CAVE", MELEE 0)
+STRONGER("DARK_ELVES_Z_LEVEL2", "DARK_ELF_CAVE", MELEE 7)
+STRONGER("DARK_ELVES_Z_LEVEL3", "DARK_ELF_CAVE", MELEE 15)
+STRONGER("DARK_ELVES_Z_LEVEL4", "DARK_ELF_CAVE", MELEE 22)
+STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELF_CAVE", MELEE 30)
+
+"DWARF_CAVE"
+{
+  settlement = {
+    type = Builtin SMALL_MINETOWN "DUNGEON"
+    tribe = DWARF
+    inhabitants = {
+      fighters = {
+        count = {2 5}
+        all = { 1 "DWARF" }
+      }
+      civilians = {
+        count = {2 5}
+        all = { 1 "DWARF_FEMALE" }
+      }
+    }
+    race = "dwarves"
+    stockpiles = {{ "minerals" 60}}
+    outsideFeatures = "dungeonOutside"
+    furniture = "roomFurniture"
+    surroundWithResources = 6     
+  }
+  behaviour = {
+    minPopulation = 0
+    minTeamSize = 1
+    triggers = { SelfVictims StolenItems AggravatingMinions }
+    attackBehaviour = KillLeader
+    ransom = 0.5 80
+  }
+}
+
+STRONGER("DWARVES_Z_LEVEL1", "DWARF_CAVE", MELEE 0)
+STRONGER("DWARVES_Z_LEVEL2", "DWARF_CAVE", MELEE 7)
+STRONGER("DWARVES_Z_LEVEL3", "DWARF_CAVE", MELEE 15)
+STRONGER("DWARVES_Z_LEVEL4", "DWARF_CAVE", MELEE 22)
+STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
+
 "COTTAGE_GOBLINS" inherit "GOBLIN_CAVE"
 {
   createOnBones = 1.0 { "ELVEN_COTTAGE" }
@@ -2215,35 +2327,6 @@ End
     stockpiles = {{ "minerals" 60 }}
   }
 }
-"DWARF_CAVE"
-{
-  settlement = {
-    type = Builtin SMALL_MINETOWN "DUNGEON"
-    tribe = DWARF
-    inhabitants = {
-      fighters = {
-        count = {2 5}
-        all = { 1 "DWARF" }
-      }
-      civilians = {
-        count = {2 5}
-        all = { 1 "DWARF_FEMALE" }
-      }
-    }
-    race = "dwarves"
-    stockpiles = {{ "minerals" 60}}
-    outsideFeatures = "dungeonOutside"
-    furniture = "roomFurniture"
-    surroundWithResources = 6     
-  }
-  behaviour = {
-    minPopulation = 0
-    minTeamSize = 1
-    triggers = { SelfVictims StolenItems AggravatingMinions }
-    attackBehaviour = KillLeader
-    ransom = 0.5 80
-  }
-}
 "RAT_CAVE"
 {
   settlement = {
@@ -2289,36 +2372,6 @@ End
     minPopulation = 0
     minTeamSize = 1
     attackBehaviour = KillLeader
-  }
-}
-"DARK_ELF_CAVE"
-{
-  settlement = {
-    type = Builtin SMALL_MINETOWN "DUNGEON"
-    tribe = DARK_ELF
-    inhabitants = {
-      fighters = {
-        count = {2 5}
-        all = { 1 "DARK_ELF_WARRIOR" }
-        baseLevelIncrease = { MELEE 7 }
-      }
-      civilians = {
-        count = {2 5}
-        all = { 1 "DARK_ELF" }
-      }
-    }
-    race = "dark elves"
-    stockpiles = {{ "minerals" 60 }}
-    outsideFeatures = "dungeonOutside"
-    furniture = "roomFurniture"
-    surroundWithResources = 6    
-  }
-  behaviour = {
-    minPopulation = 0
-    minTeamSize = 1
-    triggers = {SelfVictims StolenItems AggravatingMinions }
-    attackBehaviour = KillLeader
-    ransom = 0.5 80
   }
 }
 "WIZARD_TOWER_ENTRY" inherit "ELEMENTALIST_ENTRY"

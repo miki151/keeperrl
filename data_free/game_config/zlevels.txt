@@ -94,28 +94,41 @@
   }
 }
 
+Def LEVEL(NAME, D1, D2)
+  {
+    type = FullZLevel {
+      enemy = NAME
+      attackChance = 0.6
+    }
+    minDepth = D1
+    maxDepth = D2
+  }
+End
+
 # Here come levels specific to white keepers
 "lawful"
 {
-  {
-    type = FullZLevel {
-      enemy = "DARK_ELF_CAVE"
-      attackChance = 0.6
-    }
-    minDepth = 5
-  }
+  LEVEL("GOBLINS_Z_LEVEL1", 2, 6)
+  LEVEL("DARK_ELVES_Z_LEVEL1", 2, 6)
+  LEVEL("GOBLINS_Z_LEVEL2", 7, 11)
+  LEVEL("DARK_ELVES_Z_LEVEL2", 7, 11)
+  LEVEL("GOBLINS_Z_LEVEL3", 12, 16)
+  LEVEL("DARK_ELVES_Z_LEVEL3", 12, 16)
+  LEVEL("GOBLINS_Z_LEVEL4", 17, 21)
+  LEVEL("DARK_ELVES_Z_LEVEL4", 17, 21)
+  LEVEL("GOBLINS_Z_LEVEL5", 22, 26)
+  LEVEL("DARK_ELVES_Z_LEVEL5", 22, 26)
+  LEVEL("GOBLINS_Z_LEVEL6", 27, 1000)
 }
 
 # Here come levels specific to dark keepers
 "evil"
 {
-  {
-    type = FullZLevel {
-      enemy = "DWARF_CAVE"
-      attackChance = 0.6
-    }
-    minDepth = 5
-  }
+  LEVEL("DWARVES_Z_LEVEL1", 2, 6)
+  LEVEL("DWARVES_Z_LEVEL2", 7, 11)
+  LEVEL("DWARVES_Z_LEVEL3", 12, 16)
+  LEVEL("DWARVES_Z_LEVEL4", 17, 21)
+  LEVEL("DWARVES_Z_LEVEL5", 22, 26)
 }
 
 "goblins"
