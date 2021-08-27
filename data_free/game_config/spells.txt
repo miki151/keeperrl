@@ -726,11 +726,22 @@ Def NoEffect() Unlock "nothing" End
 "chickengeddon"
 {
   symbol = "🐓"
-  effect = Name "chickengeddon" Description "Turn everyone in the vicinity into a chicken temporarily!"Area 20 {
-    Polymorph "CHICKEN" 10
-    AI And {} 1 -1 Permanent INVULNERABLE
-  }
+  effect = Name "chickengeddon" Description "Turn everyone in the vicinity into a chicken temporarily!"
+    Area 20 {
+      Polymorph "CHICKEN" 10
+      AI And {} 1 -1 Permanent INVULNERABLE
+    }
   cooldown = 300
   message = "cluck" "clucks"
   type = ABILITY
+}
+"balrogs whip"
+{
+  symbol = "ℒ"
+  effect = Name "fiery whip" Description "Causes magical and fire damage" { Fire Damage SPELL_DAMAGE SPELL }
+  fx = {BALROGS_WHIP ColorId LIGHT_RED}
+  range = 4
+  cooldown = 2
+  endOnly = true
+  message = "lash your whip!" "lashes his whip!"
 }

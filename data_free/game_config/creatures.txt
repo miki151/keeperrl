@@ -1306,14 +1306,16 @@
   {
     viewId = { "balrog" }
     attr = {
-      DEFENSE 80
-      SPELL_DAMAGE 80
+      DEFENSE 75
+      DAMAGE 75
+      SPELL_DAMAGE 75
     }
     body = {
       type = Humanoid HUGE
       addBodyPart = {
         WING 2
       }
+      material = FIRE
       intrinsicAttacks = {
         ARM {{{ Intrinsic { "fist_attack" } "spell" 1 {
             attackType = HIT
@@ -1326,10 +1328,14 @@
       FIRE_RESISTANT 1
       RANGED_VULNERABILITY 1
     }
-    name = { 
-      name = "borg la"
+    inventory = {
+      { "InferniteSword" }
+      { "BalrogsWhip"}
     }
-    spells = { "healing" "deception" "haste" "cure poison" "fire breath" "fire trap" }
+    name = { 
+      name = "fire demon"
+    }
+    spells = { "heal spirit" "deception" "haste" "fire trap" }
   }
 "KNIGHT_PLAYER"
   {

@@ -145,6 +145,7 @@
 { "green_dragon" "D" ColorId GREEN }
 { "red_dragon" "D" ColorId RED }
 { "balrog" "&" ColorId RED }
+{ "balrogs_whip" "(" ColorId RED }
 { "cyclops" "C" ColorId GREEN }
 { "yeti" "Y" ColorId WHITE }
 { "minotaur" "M" ColorId PURPLE }

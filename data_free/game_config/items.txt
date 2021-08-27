@@ -1426,6 +1426,19 @@ End
     price = 500
     storageIds = {"upgrades" "equipment"}
   }
+"BalrogsWhip"
+  {
+    viewId = { "balrogs_whip" }
+    name = "fiery whip"
+    equipmentSlot = RANGED_WEAPON
+    equipedAbility = {"balrogs whip"}
+    weight = 1
+    modifiers = {
+      SPELL_DAMAGE 16
+    }
+    price = 12000
+    storageIds = {"bows" "weapons" "equipment"}
+  }
 "AdoxieScroll"
   {
     name = "religious pamphlet"

@@ -70,6 +70,7 @@
   {
     type = EnemyZLevel {
       enemy = "Z_LEVEL_BALROG"
+      attackChance = 1.0
     }
     minDepth = 23
     maxDepth = 23

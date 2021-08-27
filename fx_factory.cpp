@@ -1050,6 +1050,60 @@ static void addFireballEffect(FXManager& mgr) {
   mgr.addDef(FXName::FIREBALL, psdef);
 }
 
+static void addBalrogsWhipffect(FXManager& mgr) {
+  ParticleSystemDef psdef;
+
+  // TODO: this should depend on vector length ?
+  static constexpr float flightTime = 0.5f;
+  Curve<float> movementCurve = {{0.0f, 1.0f, 0.0f}, InterpType::quadratic};
+
+  // This function is only responsible for proper positioning
+  auto drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+    auto temp = pinst;
+    float flightPos = min(ctx.ps.animTime / flightTime, 1.0f);
+    auto& movementCurve = ctx.psdef.subSystems[0].particle.scalarCurves[0];
+    auto sample = movementCurve.sample(flightPos);
+    temp.pos += sample * ctx.ps.targetOffset;
+    temp.size = FVec2(0.3, 5) * (flightPos < 0.5 ? 0.4 + sample * 0.6 : sample);
+    return defaultDrawParticle(ctx, temp, out);
+  };
+
+  { // Flying ball of fire
+    EmitterDef edef;
+    edef.strength = 15.0f;
+    edef.frequency = 80.0f;
+    edef.source = FVec2(0.0f);
+   // edef.rotSpeed = {{0.3f, 0.1f}};
+    edef.initialSpawnCount = 5;
+
+    ParticleDef pdef;
+    pdef.life = 0.5f;
+    pdef.size = 12.0f;
+    pdef.color = {{rgb(Color(155, 85, 30)), rgb(Color(45, 35, 30))}};
+    pdef.alpha = {{0.0f, 0.2f, 0.8f, 1.0f}, {0.0f, 1.0f, 1.0f, 0.0f}};
+    pdef.textureName = TextureName::FLAMES_BLURRED;
+    pdef.scalarCurves.emplace_back(movementCurve);
+
+    SubSystemDef ssdef(pdef, edef, 0.0f, flightTime);
+    ssdef.prepareFunc = [](AnimationContext& ctx, EmissionState& em) {
+      float freq = defaultPrepareEmission(ctx, em);
+      float mod = ctx.ps.params.scalar[0];
+      return freq * (1.0f + mod * 2.0f);
+    };
+
+    ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+      defaultEmitParticle(ctx, em, pinst);
+      float mod = ctx.ps.params.scalar[0];
+      pinst.pos.x *= (1.0f + mod);
+      pinst.movement *= (1.0f + mod);
+      pinst.size *= (1.0f + mod * 0.25f);
+    };
+    ssdef.drawFunc = drawFunc;
+    psdef.subSystems.emplace_back(ssdef);
+  }
+
+  mgr.addDef(FXName::BALROGS_WHIP, psdef);
+}
 static void addFlamethrowerEffect(FXManager& mgr, FXName fxName, Color flameColor1, Color flameColor2, Color glowColor) {
   ParticleSystemDef psdef;
 
@@ -1758,6 +1812,7 @@ void FXManager::initializeDefs() {
   addFireballEffect(*this);
   addFireballSplashEffect(*this);
   addFlamethrowerEffect(*this, FXName::FLAMETHROWER, Color(85, 85, 85), Color(35, 35, 35), Color(155, 155, 155));
+  addBalrogsWhipffect(*this);
 
   addSleepEffect(*this);
   addLoveEffect(*this);
