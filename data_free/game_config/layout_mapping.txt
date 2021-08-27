@@ -50,6 +50,7 @@
   "crops" Place "CROPS"
   "scarecrow" Place "SCARECROW"
   "corpse" Items 1 "corpse"
+  "wizard_corpse" Items 1 "wizard_corpse"
   "shop0" Shop 0
   "fog" AddGas "FOG"
   "spider_web" Place "SPIDER_WEB"

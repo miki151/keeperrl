@@ -178,6 +178,17 @@ End
   }
 }
 
+"wizard_corpse"
+{
+  multiItems = {
+    {10000} {
+      {"WizardCorpse"} 1.0
+      {"WoodenStaff"} 1.0
+      {"Robe"} 1.0
+    }
+  }
+}
+
 "desertItems"
 {
   items = {

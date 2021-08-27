@@ -1853,6 +1853,16 @@ End
     resourceId = "CORPSE"
     storageIds = {"corpses"}
   }
+"WizardCorpse"
+  {
+    viewId = { "bone" }
+    name = "wizard corpse"
+    itemClass = CORPSE
+    price = 0
+    weight = 50
+    resourceId = "CORPSE"
+    storageIds = {"corpses"}
+  }
 "FrozenRemains" inherit "Skeleton"
   {
     viewId = { "frozen_remains" }

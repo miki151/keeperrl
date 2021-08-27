@@ -55,3 +55,4 @@
 "crops" | yellow
 "scarecrow" T blue
 "spider_web" # white
+"wizard_corpse" % white

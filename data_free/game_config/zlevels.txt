@@ -68,6 +68,14 @@
     guarantee = true
   }
   {
+    type = EnemyZLevel {
+      enemy = "Z_LEVEL_BALROG"
+    }
+    minDepth = 23
+    maxDepth = 23
+    guarantee = true
+  }
+  {
     # A level full of water with some islands
     type = WaterZLevel {
       waterType = "WATER"

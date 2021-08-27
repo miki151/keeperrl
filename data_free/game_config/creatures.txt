@@ -410,7 +410,7 @@
       material = SPIRIT
       canCapture = true
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" } "spell" 1 {
+        ARM {{{ Intrinsic { "fist_attack" } "spell" 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
       }
     }
@@ -434,7 +434,7 @@
       type = Humanoid LARGE
       material = SPIRIT
       intrinsicAttacks = {
-        TORSO {{{ Intrinsic { "fist_attack" } "spell" 1 {
+        ARM {{{ Intrinsic { "fist_attack" } "spell" 1 {
             attackType = HIT meleeAttackAttr = SPELL_DAMAGE attackMsg = SPELL } }}}
       }
     }
@@ -1301,6 +1301,35 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
+  }
+"BALROG"
+  {
+    viewId = { "balrog" }
+    attr = {
+      DEFENSE 80
+      SPELL_DAMAGE 80
+    }
+    body = {
+      type = Humanoid HUGE
+      addBodyPart = {
+        WING 2
+      }
+      intrinsicAttacks = {
+        ARM {{{ Intrinsic { "fist_attack" } "spell" 1 {
+            attackType = HIT
+            meleeAttackAttr = SPELL_DAMAGE
+            attackMsg = SPELL
+            victimEffect = {0.5 Fire}} }}}
+      }
+    }
+    permanentEffects = {
+      FIRE_RESISTANT 1
+      RANGED_VULNERABILITY 1
+    }
+    name = { 
+      name = "borg la"
+    }
+    spells = { "healing" "deception" "haste" "cure poison" "fire breath" "fire trap" }
   }
 "KNIGHT_PLAYER"
   {

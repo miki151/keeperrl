@@ -929,6 +929,37 @@ End
   }
   createOnBones = 1.0 { "Z_LEVEL_BLACK_DRAGON_DWARVES" }
 }
+"Z_LEVEL_BALROG"
+{
+  settlement = {
+    type = RandomLayout { "balrog_z_level" { 80 80 } "z_level_castle" }
+    tribe = MONSTER
+    inhabitants = {
+      leader = { { "BALROG" } }
+      fighters = {
+        count = {30}
+        all = {
+          1 "TROLL_VILLAIN"
+          3 "GOBLIN_WARRIOR_VILLAIN"
+          1 "GOBLIN_ARCHER_VILLAIN"
+        }
+        expLevelIncrease = {
+          MELEE 10
+          SPELL 10
+          ARCHERY 10
+        }
+      }
+    }
+  }
+  config = {
+   leaderAsFighter = true
+  }
+  behaviour = {
+    minPopulation = 0
+    minTeamSize = 31
+    attackBehaviour = KillLeader
+  }
+}
 "Z_LEVEL_KRAKENS"
 {
   settlement = {
