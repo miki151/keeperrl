@@ -589,7 +589,7 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
 { viewId = "distillery" symbol = "&" color = ColorId LIGHT_GRAY
   roundShadow = true }
 { viewId = "furnace" symbol = "&" color = ColorId PINK
-  roundShadow = true }
+  roundShadow = true fx = {SMOKE} }
 { viewId = "grave" symbol = "☗" color = ColorId GRAY
   isSymbolFont = true roundShadow = true }
 { viewId = "automaton_engine" symbol = "⚙" color = ColorId WHITE
