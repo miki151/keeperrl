@@ -72,7 +72,7 @@ vector<PItem> Workshops::Type::unqueue(Collective* collective, int index) {
   return {};
 }
 
-static const double prodMult = 0.1;
+static const double prodMult = 0.15;
 
 double Workshops::getLegendarySkillThreshold() {
   return 0.90;
