@@ -2476,8 +2476,8 @@ void PlayerControl::processInput(View* view, UserInput input) {
         if (chosenWorkshop->type == WorkshopType("FURNACE")) {
           if (info.newCount == 0 && info.itemIndex < collective->getFurnace().getQueued().size()) {
             auto item = collective->getFurnace().unqueue(info.itemIndex);
-            CHECK(!!item);
-            Random.choose(collective->getStoragePositions(item->getStorageIds()).asVector()).dropItem(std::move(item));
+            auto positions = collective->getStoragePositions(item->getStorageIds()).asVector();
+            Random.choose(positions).dropItem(std::move(item));
           }
         } else {
           auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
