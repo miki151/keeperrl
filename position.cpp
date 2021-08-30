@@ -527,12 +527,12 @@ void Position::onEnter(Creature* c) const {
     }
 }
 
-void Position::dropItem(PItem item) {
+void Position::dropItem(PItem item) const {
   PROFILE;
   dropItems(makeVec(std::move(item)));
 }
 
-void Position::dropItems(vector<PItem> v) {
+void Position::dropItems(vector<PItem> v) const {
   PROFILE;
   if (isValid()) {
     for (auto layer : ENUM_ALL_REVERSE(FurnitureLayer))
@@ -729,13 +729,13 @@ bool Position::isBuildingSupport() const {
     return false;
 }
 
-void Position::construct(FurnitureType type, Creature* c) {
+void Position::construct(FurnitureType type, Creature* c) const {
   PROFILE;
   if (construct(type, c->getTribeId()))
     modFurniture(getGame()->getContentFactory()->furniture.getData(type).getLayer())->onConstructedBy(*this, c);
 }
 
-bool Position::construct(FurnitureType type, TribeId tribe) {
+bool Position::construct(FurnitureType type, TribeId tribe) const {
   PROFILE;
   CHECK(!isUnavailable());
   CHECK(canConstruct(type));

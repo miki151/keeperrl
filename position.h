@@ -88,10 +88,10 @@ class Position {
   void removeFurniture(FurnitureLayer) const;
   void addFurniture(PFurniture) const;
   bool isUnavailable() const;
-  void dropItem(PItem);
-  void dropItems(vector<PItem>);
-  void construct(FurnitureType, Creature*);
-  bool construct(FurnitureType, TribeId);
+  void dropItem(PItem) const;
+  void dropItems(vector<PItem>) const;
+  void construct(FurnitureType, Creature*) const;
+  bool construct(FurnitureType, TribeId) const;
   bool isActiveConstruction(FurnitureLayer) const;
   bool isBurning() const;
   bool fireDamage(double amount) const;
