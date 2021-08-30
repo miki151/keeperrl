@@ -807,7 +807,7 @@ End
     Reset("floor", "inside")
     Inside(BOTTOM, 2, Inside(TOP, 2, Border(LEFT, 3, Border(RIGHT, 1, Filter(YMod(2, 0), Set("hard_rock"))))))
     Inside(BOTTOM, 2, Inside(TOP, 2, Border(RIGHT, 3, Border(LEFT, 1, Filter(YMod(2, 0), Set("hard_rock"))))))
-    Inside(TOP, 13, Place({1 1} Set("wizard_corpse") 1 AnyFloor()))
+    Inside(TOP, 13, Place({1 1} Set("wizard_corpse") 1 Not On("hard_rock")))
   } 1 And())))
   Connector()
   Filter(Not On("inside"), Set("no_territory"))
