@@ -40,6 +40,13 @@ struct LeaderInfo {
 template <>
 void InhabitantsInfo::serialize(PrettyInputArchive& ar1, unsigned) {
   optional<LeaderInfo> leader;
+  if (this->leader.count.contains(1))
+    leader = LeaderInfo {
+      this->leader.all.transform([](auto& elem) { return elem.second;}),
+      this->leader.baseLevelIncrease,
+      this->leader.expLevelIncrease,
+      this->leader.inventory
+    };
   ar1(OPTION(leader), OPTION(fighters), OPTION(civilians));
   ar1(endInput());
   if (leader)

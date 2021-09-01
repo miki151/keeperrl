@@ -34,7 +34,7 @@ struct CreatureList {
   template<typename Archive>
   void serialize(Archive&, const unsigned int);
 
-  private:
+  //private:
   Range SERIAL(count) = Range(0, 1);
   vector<CreatureId> SERIAL(uniques);
   using Freq = pair<int, CreatureId>;
