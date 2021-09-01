@@ -53,6 +53,7 @@ class MinionActivities;
 class ResourceInfo;
 class StoragePositions;
 class Furnace;
+class Dancing;
 
 class Collective : public TaskCallback, public UniqueEntity<Collective>, public EventListener<Collective> {
   public:
@@ -184,6 +185,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   const Workshops& getWorkshops() const;
   Furnace& getFurnace();
   const Furnace& getFurnace() const;
+  Dancing& getDancing();
 
   Immigration& getImmigration();
   const Immigration& getImmigration() const;
@@ -331,4 +333,5 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void updateAutomatonEngines();
   bool creatureConsideredPlayer(Creature*) const;
   void summonDemon(Creature* summoner);
+  unique_ptr<Dancing> SERIAL(dancing);
 };

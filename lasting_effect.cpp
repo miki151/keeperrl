@@ -350,6 +350,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::AGGRAVATES:
         c->verb("aggravate", "aggravates", "enemies");
         break;
+      case LastingEffect::CAN_DANCE:
+        c->you(MsgType::FEEL, "like a dancing fool");
+        break;
       default:
         break;
     }
@@ -654,6 +657,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::AGGRAVATES:
         c->verb("no longer aggravate", "no longer aggravates", "enemies");
         break;
+      case LastingEffect::CAN_DANCE:
+        c->you(MsgType::YOUR, "legs have the same length again");
+        break;
       default:
         break;
     }
@@ -803,6 +809,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::DRUNK: return "Drunk"_good;
     case LastingEffect::NO_FRIENDLY_FIRE: return "Arrows bypass allies"_good;
     case LastingEffect::POLYMORPHED: return "Polymorphed"_good;
+    case LastingEffect::CAN_DANCE: return "Has rhythm"_good;
 
     case LastingEffect::PEACEFULNESS: return "Peaceful"_bad;
     case LastingEffect::POISON: return "Poisoned"_bad;
@@ -1192,6 +1199,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::NO_FRIENDLY_FIRE: return "no friendly fire";
     case LastingEffect::POLYMORPHED: return "polymorphed";
     case LastingEffect::AGGRAVATES: return "aggravation";
+    case LastingEffect::CAN_DANCE: return "dancing";
   }
 }
 
@@ -1288,6 +1296,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::NO_FRIENDLY_FIRE: return "Arrows and other projectiles bypass allies and only hit enemies.";
     case LastingEffect::POLYMORPHED: return "Creature will revert to original form.";
     case LastingEffect::AGGRAVATES: return "Makes enemies more aggressive and more likely to attack the base.";
+    case LastingEffect::CAN_DANCE: return "Can dance all night long.";
   }
 }
 

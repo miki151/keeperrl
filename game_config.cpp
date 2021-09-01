@@ -66,6 +66,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "tile_gas_types";
     case GameConfigId::PROMOTIONS:
       return "promotions";
+    case GameConfigId::DANCE_POSITIONS:
+      return "dance_positions";
   }
 }
 

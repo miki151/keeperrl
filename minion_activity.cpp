@@ -20,6 +20,7 @@
 #include "content_factory.h"
 #include "body.h"
 #include "item.h"
+#include "dancing.h"
 
 SERIALIZE_DEF(MinionActivities, allFurniture, activities)
 SERIALIZATION_CONSTRUCTOR_IMPL(MinionActivities)
@@ -257,6 +258,8 @@ PTask MinionActivities::generate(Collective* collective, Creature* c, MinionActi
   switch (info.type) {
     case MinionActivityInfo::IDLE: {
       PROFILE_BLOCK("Idle");
+      if (collective->getDancing().getTarget(c))
+        return Task::dance(collective);
       auto& myTerritory = getIdlePositions(collective, c);
       if (!myTerritory.empty() && collective->getGame()->getSunlightInfo().getState() == SunlightState::NIGHT) {
         if ((c->getPosition().isCovered() && myTerritory.count(c->getPosition()))) {

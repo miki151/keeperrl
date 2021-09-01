@@ -65,11 +65,12 @@
 #include "enemy_aggression_level.h"
 #include "furnace.h"
 #include "promotion_info.h"
+#include "dancing.h"
 
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
-  ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader);
+  ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader, dancing);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment, groupLockedAcitivities);
   ar(delayedPos, knownTiles, technology, kills, points, currentActivity, recordedEvents, allRecordedEvents);
   ar(credit, model, immigration, teams, name, minionActivities, attackedByPlayer, furnace);
@@ -94,6 +95,7 @@ PCollective Collective::create(WModel model, TribeId tribe, const optional<Colle
   ret->discoverable = discoverable;
   ret->workshops = unique<Workshops>(WorkshopArray(), contentFactory);
   ret->immigration = makeOwner<Immigration>(ret.get(), vector<ImmigrantInfo>());
+  ret->dancing = unique<Dancing>(contentFactory);
   return ret;
 }
 
@@ -563,6 +565,7 @@ void Collective::tick() {
   zones->tick();
   taskMap->tick();
   constructions->clearUnsupportedFurniturePlans();
+  dancing->setArea(zones->getPositions(ZoneId::LEISURE), getModel()->getLocalTime());
   if (config->getWarnings() && Random.roll(5))
     warnings->considerWarnings(this);
   if (config->getEnemyPositions() && Random.roll(5)) {
@@ -1535,6 +1538,10 @@ Furnace& Collective::getFurnace() {
 
 const Furnace& Collective::getFurnace() const {
   return *furnace;  
+}
+
+Dancing& Collective::getDancing() {
+  return *dancing;
 }
 
 Immigration& Collective::getImmigration() {

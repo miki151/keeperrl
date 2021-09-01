@@ -1,0 +1,24 @@
+# Each dance starts with coordinate mode and the minimum number of participants
+FULL 2
+{
+# In the FULL mode every column represents a minion's positions, which it follows repeatedly in sync with others
+  {{0 0} {0 1} {2 0} {2 1} {4 0} {4 1} {6 0} {6 1} {8 0} {8 1} {10 0} {10 1} }
+  {{0 0} {0 1} {2 0} {2 1} {4 0} {4 1} {6 0} {6 1} {8 0} {8 1} {10 0} {10 1} }
+  {{0 1} {0 0} {2 1} {2 0} {4 1} {4 0} {6 1} {6 0} {8 1} {8 0} {10 1} {10 0} }
+  {{0 1} {0 0} {2 1} {2 0} {4 1} {4 0} {6 1} {6 0} {8 1} {8 0} {10 1} {10 0} }
+  {{0 0} {0 1} {2 0} {2 1} {4 0} {4 1} {6 0} {6 1} {8 0} {8 1} {10 0} {10 1} }
+  {{0 0} {0 1} {2 0} {2 1} {4 0} {4 1} {6 0} {6 1} {8 0} {8 1} {10 0} {10 1} }
+  {{0 1} {0 0} {2 1} {2 0} {4 1} {4 0} {6 1} {6 0} {8 1} {8 0} {10 1} {10 0} }
+  {{0 1} {0 0} {2 1} {2 0} {4 1} {4 0} {6 1} {6 0} {8 1} {8 0} {10 1} {10 0} }
+  {{0 0} {0 1} {2 0} {2 1} {4 0} {4 1} {6 0} {6 1} {8 0} {8 1} {10 0} {10 1} }
+  {{0 -1} {0 2} {2 -1} {2 2} {4 -1} {4 2} {6 -1} {6 2} {8 -1} {8 2} {10 -1} {10 2} }
+}
+
+CYCLE 6
+{
+# In the CYCLE mode each minion after completing its column will continue to the next column
+# in a cycle. It's a shorter way to define the dance if the minions follow each other.
+  {{0 2} {1 0} {3 0} {4 2} {3 4} {1 4}}
+  {{0 1} {2 0} {4 1} {4 3} {2 4} {0 3}}
+}
+

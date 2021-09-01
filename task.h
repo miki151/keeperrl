@@ -93,6 +93,7 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask consume(Creature* target);
   static PTask eat(vector<Position> hatcherySquares);
   static PTask goTo(Position);
+  static PTask dance(Collective*);
   static PTask stayIn(vector<Position>);
   static PTask idle();
   static PTask alwaysDone(PTask);

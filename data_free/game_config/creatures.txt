@@ -2690,6 +2690,7 @@
     }
     permanentEffects = {
       DISTILLATION_SKILL 1
+      CAN_DANCE 1
     }
     inventory = {}
     specialAttr = {}

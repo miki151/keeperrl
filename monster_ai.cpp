@@ -940,7 +940,7 @@ class ByCollective : public Behaviour {
     auto current = collective->getCurrentActivity(creature);
     optional<pair<MinionActivity, PTask>> generatedCache;
     auto generate = [&] (MinionActivity activity) -> PTask {
-      if (generatedCache && generatedCache->first == activity)
+      if (generatedCache && generatedCache->first == activity && !!generatedCache->second)
         return std::move(generatedCache->second);
       /*if ((!collective->hasTrait(creature, MinionTrait::WORKER) || activity == MinionActivity::IDLE)
           && !Random.roll(30)

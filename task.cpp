@@ -1186,6 +1186,38 @@ PTask Task::goToTryForever(Position pos) {
 }
 
 namespace {
+class Dance : public Task {
+  public:
+  Dance(Collective* col) : collective(col) {}
+
+  virtual TaskPerformResult canPerformImpl(const Creature* c, const MovementType&) const override {
+    return LastingEffects::restrictedMovement(c) ? TaskPerformResult::NEVER : TaskPerformResult::YES;
+  }
+
+  virtual MoveInfo getMove(Creature* c) override {
+    setDone();
+    if (auto target = collective->getDancing().getTarget(c))
+      return c->moveTowards(*target);
+    return NoMove;
+  }
+
+  virtual string getDescription() const override {
+    return "Dance";
+  }
+
+  SERIALIZE_ALL(SUBCLASS(Task), collective)
+  SERIALIZATION_CONSTRUCTOR(Dance)
+
+  protected:
+  Collective* SERIAL(collective);
+};
+}
+
+PTask Task::dance(Collective* col) {
+  return makeOwner<Dance>(col);
+}
+
+namespace {
 class StayIn : public Task {
   public:
   StayIn(vector<Position> pos) : target(std::move(pos)) {}
@@ -1945,6 +1977,7 @@ REGISTER_TYPE(Consume)
 REGISTER_TYPE(Eat)
 REGISTER_TYPE(GoTo)
 REGISTER_TYPE(GoToAnd)
+REGISTER_TYPE(Dance)
 REGISTER_TYPE(StayIn)
 REGISTER_TYPE(Idle)
 REGISTER_TYPE(AlwaysDone)

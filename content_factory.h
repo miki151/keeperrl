@@ -19,6 +19,7 @@
 #include "keeper_creature_info.h"
 #include "adventurer_creature_info.h"
 #include "tile_gas_type.h"
+#include "dancing.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -62,6 +63,7 @@ class ContentFactory {
   map<RandomLayoutId, LayoutGenerator> SERIAL(randomLayouts);
   map<TileGasType, TileGasInfo> SERIAL(tileGasTypes);
   map<string, vector<PromotionInfo>> SERIAL(promotions);
+  vector<Dancing::Positions> SERIAL(dancePositions);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();
