@@ -83,7 +83,7 @@ using DrawParticlesFunc = void (*)(DrawContext&, const Particle&, vector<DrawPar
 // Returns number of particles to emit
 // Fractionals will be accumulated over time
 using PrepareEmissionFunc = float (*)(AnimationContext&, EmissionState&);
-using EmitParticleFunc = void (*)(AnimationContext&, EmissionState&, Particle&);
+using EmitParticleFunc = function<void(AnimationContext&, EmissionState&, Particle&)>;
 
 void defaultAnimateParticle(AnimationContext&, Particle&);
 float defaultPrepareEmission(AnimationContext&, EmissionState&);

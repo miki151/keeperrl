@@ -1239,7 +1239,7 @@ static void addSleepEffect(FXManager& mgr) {
   mgr.genSnapshots(FXName::SLEEP, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
-static void addLoveEffect(FXManager& mgr) {
+static void addIconEffect(FXManager& mgr, FXName fxName, SVec2 coord) {
   EmitterDef edef;
   edef.strength = 10.0f;
   edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.2f);
@@ -1255,10 +1255,10 @@ static void addLoveEffect(FXManager& mgr) {
   pdef.textureName = TextureName::SPECIAL;
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-  ssdef.emitFunc = [](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
+  ssdef.emitFunc = [coord](AnimationContext &ctx, EmissionState &em, Particle &pinst) {
     defaultEmitParticle(ctx, em, pinst);
     pinst.pos += ctx.ps.targetDir * Renderer::nominalSize / 2;
-    pinst.texTile = {2, 1};
+    pinst.texTile = coord;
     pinst.rot = Random.getDouble(-0.2f, 0.2f);
   };
 
@@ -1267,7 +1267,7 @@ static void addLoveEffect(FXManager& mgr) {
   psdef.isLooped = false;
   psdef.animLength = 3.0f;
 
-  mgr.addDef(FXName::LOVE, psdef);
+  mgr.addDef(fxName, psdef);
 }
 
 static void addLoopedLoveEffect(FXManager& mgr) {
@@ -1858,7 +1858,8 @@ void FXManager::initializeDefs() {
   addBalrogsWhipffect(*this);
 
   addSleepEffect(*this);
-  addLoveEffect(*this);
+  addIconEffect(*this, FXName::LOVE, {2, 1});
+  addIconEffect(*this, FXName::MUSIC, {3, 1});
   addLoopedLoveEffect(*this);
   addLichEffect(*this);
   addBlindEffect(*this);

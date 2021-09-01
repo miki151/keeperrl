@@ -1196,8 +1196,9 @@ class Dance : public Task {
 
   virtual MoveInfo getMove(Creature* c) override {
     setDone();
-    if (auto target = collective->getDancing().getTarget(c))
-      return c->moveTowards(*target);
+    if (auto target = collective->getDancing().getTarget(c)) {
+      return c->moveTowards(*target).append([=] (Creature* c) { if (Random.roll(10)) c->addFX({FXName::MUSIC});});
+    }
     return NoMove;
   }
 
