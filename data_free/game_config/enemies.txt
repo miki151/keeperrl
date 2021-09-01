@@ -1232,6 +1232,9 @@ NAME inherit ORIGINAL
       fighters = append {
         baseLevelIncrease = { INCREASE }
       }
+      leader = append {
+        baseLevelIncrease = { INCREASE }
+      }
     }
   }
 }
@@ -1262,6 +1265,10 @@ STRONGER("GOBLINS_Z_LEVEL5", "GOBLIN_CAVE", MELEE 30)
     type = Builtin SMALL_MINETOWN "DUNGEON"
     tribe = DARK_ELF
     inhabitants = {
+      leader = {
+        id = { "DARK_ELF_WARRIOR" }
+        baseLevelIncrease = { MELEE 7 }
+      }
       fighters = {
         count = {2 5}
         all = { 1 "DARK_ELF_WARRIOR" }
@@ -1299,6 +1306,7 @@ STRONGER("DARK_ELVES_Z_LEVEL5", "DARK_ELF_CAVE", MELEE 30)
     type = Builtin SMALL_MINETOWN "DUNGEON"
     tribe = DWARF
     inhabitants = {
+      leader = {{ "DWARF" }}
       fighters = {
         count = {2 5}
         all = { 1 "DWARF" }
@@ -1452,15 +1460,15 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
       leader = {
         id = { "DARK_ELF_LORD" }
         baseLevelIncrease = {
-          MELEE 10
-          SPELL 10
+          MELEE 30
+          SPELL 30
         }
       }
       fighters = {
         count = {6 9}
         all = { 1 "DARK_ELF_WARRIOR" }
         baseLevelIncrease = {
-          MELEE 10
+          MELEE 30
         }
       }
       civilians = {
