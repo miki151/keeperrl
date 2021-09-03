@@ -277,7 +277,15 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
     case ItemAction::UNEQUIP: tryToPerform(creature->unequip(items[0])); break;
     case ItemAction::GIVE: giveAction(items); break;
     case ItemAction::PAY: payForItemAction(items); break;
-    case ItemAction::EQUIP: tryToPerform(creature->equip(items[0])); break;
+    case ItemAction::EQUIP: {
+      vector<Item*> conflictingItems;
+      for (auto it : creature->getEquipment().getAllEquipped())
+        if (it->isConflictingEquipment(items[0]))
+          conflictingItems.push_back(it);
+      if (getView()->confirmConflictingItems(conflictingItems))
+        tryToPerform(creature->equip(items[0]));
+      break;
+    }
     case ItemAction::NAME:
       if (auto name = getView()->getText("Enter a name for " + items[0]->getTheName(),
           items[0]->getArtifactName().value_or(""), 14))

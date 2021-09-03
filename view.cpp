@@ -18,6 +18,8 @@
 
 #include "view.h"
 #include "progress_meter.h"
+#include "item.h"
+#include "view_object.h"
 
 ListElem::ListElem(const string& t, ElemMod m, optional<UserInputId> a) : text(t), mod(m), action(a) {
 }
@@ -106,4 +108,24 @@ bool View::yesOrNoPrompt(const string& message, bool defaultNo, ScriptedUIId id)
   ScriptedUIState state;
   scriptedUI(id, data, state);
   return ret;
+}
+
+bool View::confirmConflictingItems(const vector<Item*>& items) {
+  auto itemsList = ScriptedUIDataElems::List{};
+  for (auto it : items) {
+    auto data = ScriptedUIDataElems::Record{};
+    data.elems["item"] = it->getNameAndModifiers();
+    data.elems["view_id"] = it->getViewObject().getViewIdList();
+    itemsList.push_back(std::move(data));
+  }
+  if (!items.empty()) {
+    bool confirmed = false;
+    ScriptedUIState state;
+    auto data = ScriptedUIDataElems::Record{};
+    data.elems["items"] = std::move(itemsList);
+    data.elems["callback"] = ScriptedUIDataElems::Callback{[&confirmed] { confirmed = true; return true; }};
+    scriptedUI("conflicting_items", data, state);
+    return confirmed;
+  }
+  return true;
 }

@@ -246,6 +246,9 @@ class View {
 
   virtual void presentHighscores(const vector<HighscoreList>&) = 0;
   using BugReportSaveCallback = function<void(FilePath)>;
+
+  bool confirmConflictingItems(const vector<Item*>&);
+
   virtual void setBugReportSaveCallback(BugReportSaveCallback) = 0;
 
   struct AvatarChoice {

@@ -13,6 +13,8 @@ class NODISCARD CreatureAction {
   CreatureAction(const string& failedReason = "");
   CreatureAction prepend(ActionFun);
   CreatureAction append(ActionFun);
+  CreatureAction prepend(CreatureAction);
+  CreatureAction append(CreatureAction);
   void perform(Creature*);
   string getFailedReason() const;
   explicit operator bool() const;

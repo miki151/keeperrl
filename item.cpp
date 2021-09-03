@@ -591,6 +591,13 @@ EquipmentSlot Item::getEquipmentSlot() const {
   return *attributes->equipmentSlot;
 }
 
+bool Item::isConflictingEquipment(const Item* other) const {
+  auto impl = [](const Item* it1, const Item* it2) {
+    return it1->getWeaponInfo().twoHanded && it2->canEquip() && it2->getEquipmentSlot() == EquipmentSlot::SHIELD;
+  };
+  return other != this && (impl(this, other) || impl(other, this));
+}
+
 void Item::addModifier(AttrType type, int value) {
   attributes->modifiers[type] += value;
 }

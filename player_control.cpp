@@ -378,7 +378,12 @@ void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
       if (Creature* c = getCreature(*creatureId))
         c->removeEffect(LastingEffect::SLEEP);
     creature->removeEffect(LastingEffect::SLEEP);
-    CHECK(collective->getMinionEquipment().tryToOwn(creature, chosenItem));
+    vector<Item*> conflictingItems;
+    for (auto it : collective->getMinionEquipment().getItemsOwnedBy(creature))
+      if (it->isConflictingEquipment(chosenItem))
+        conflictingItems.push_back(it);
+    if (getView()->confirmConflictingItems(conflictingItems))
+      CHECK(collective->getMinionEquipment().tryToOwn(creature, chosenItem));
   }
 }
 

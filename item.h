@@ -88,6 +88,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   bool canEquip() const;
   EquipmentSlot getEquipmentSlot() const;
+  bool isConflictingEquipment(const Item*) const;
   void addModifier(AttrType, int value);
   int getModifier(AttrType) const;
   const optional<pair<int, CreaturePredicate>>& getSpecialModifier(AttrType) const;

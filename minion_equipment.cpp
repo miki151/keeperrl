@@ -66,6 +66,8 @@ bool MinionEquipment::isItemUseful(const Item* it) {
       || it->getUpgradeInfo() || it->getAutomatonPart();
 }
 
+const static vector<WeakPointer<Item>> emptyItems;
+
 bool MinionEquipment::canUseItemType(const Creature* c, MinionEquipmentType type, const Item* it) const {
   switch (type) {
     case MinionEquipmentType::TORCH:
@@ -76,8 +78,14 @@ bool MinionEquipment::canUseItemType(const Creature* c, MinionEquipmentType type
       return c->getBody().hasHealth(HealthType::SPIRIT);
     case MinionEquipmentType::COMBAT_ITEM:
       return true;
-    case MinionEquipmentType::ARMOR:
-      return c->canEquipIfEmptySlot(it);
+    case MinionEquipmentType::ARMOR: {
+      if (!c->canEquipIfEmptySlot(it))
+        return false;
+      for (auto& item : copyOf(myItems.getOrElse(c, emptyItems)))
+        if (item && it->isConflictingEquipment(item.get()))
+          return false;
+      return true;
+    }
   }
 }
 
@@ -135,8 +143,6 @@ optional<Creature::Id> MinionEquipment::getOwner(const Item* it) const {
 bool MinionEquipment::isOwner(const Item* it, const Creature* c) const {
   return getOwner(it) == c->getUniqueId();
 }
-
-const static vector<WeakPointer<Item>> emptyItems;
 
 void MinionEquipment::updateOwners(const vector<Creature*>& creatures) {
   auto oldItemMap = myItems;
@@ -234,6 +240,9 @@ bool MinionEquipment::tryToOwn(const Creature* c, Item* it) {
           discard(contesting[i]);
       }
     }
+    for (auto& item : copyOf(myItems.getOrElse(c, emptyItems)))
+      if (item && it->isConflictingEquipment(item.get()))
+        discard(item.get());
   }
   discard(it);
   owners.set(it, c->getUniqueId());

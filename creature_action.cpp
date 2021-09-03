@@ -17,6 +17,14 @@ void CreatureAction::perform(Creature* c) {
   action(c);
 }
 
+CreatureAction CreatureAction::prepend(CreatureAction f) {
+  return prepend(f.action);
+}
+
+CreatureAction CreatureAction::append(CreatureAction f) {
+  return append(f.action);
+}
+
 CreatureAction CreatureAction::prepend(ActionFun f) {
   if (!!action) {
     ActionFun tmp = action;

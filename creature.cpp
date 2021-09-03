@@ -731,21 +731,11 @@ bool Creature::canEquipIfEmptySlot(const Item* item, string* reason) const {
     setReason("This item can't be equipped");
     return false;
   }
-  if (!equipment->getSlotItems(EquipmentSlot::SHIELD).empty() && item->getWeaponInfo().twoHanded) {
-    setReason(item->getAName() + " can't be used together with a shield");
-    return false;
-  }
   if (item->getModifier(AttrType::RANGED_DAMAGE) > 0 && item->getEquipmentSlot() == EquipmentSlot::RANGED_WEAPON &&
       getAttr(AttrType::RANGED_DAMAGE, false) == 0 && attributes->getMaxExpLevel()[ExperienceType::ARCHERY] == 0) {
     setReason("You are not skilled in archery");
     return false;
   }
-  if (item->getEquipmentSlot() == EquipmentSlot::SHIELD)
-    for (auto other : equipment->getAllEquipped())
-      if (other->getWeaponInfo().twoHanded) {
-        setReason(item->getAName() + " can't be used together with a two-handed weapon");
-        return false;
-      }
   if (equipment->getMaxItems(item->getEquipmentSlot(), this) == 0) {
     setReason("You lack a required body part to equip this type of item");
     return false;
@@ -763,13 +753,9 @@ CreatureAction Creature::equip(Item* item) const {
     return CreatureAction(reason);
   if (equipment->getSlotItems(item->getEquipmentSlot()).contains(item))
     return CreatureAction();
-  return CreatureAction(this, [=](Creature* self) {
+  EquipmentSlot slot = item->getEquipmentSlot();
+  auto ret = CreatureAction(this, [=](Creature* self) {
     INFO << getName().the() << " equip " << item->getName();
-    EquipmentSlot slot = item->getEquipmentSlot();
-    if (self->equipment->getSlotItems(slot).size() >= self->equipment->getMaxItems(slot, this)) {
-      Item* previousItem = self->equipment->getSlotItems(slot)[0];
-      self->equipment->unequip(previousItem, self);
-    }
     secondPerson("You equip " + item->getTheName(false, self));
     thirdPerson(getName().the() + " equips " + item->getAName());
     self->equipment->equip(item, slot, self);
@@ -777,6 +763,19 @@ CreatureAction Creature::equip(Item* item) const {
       game->addEvent(EventInfo::ItemsEquipped{self, {item}});
     //self->spendTime();
   });
+  vector<Item*> toUnequip;
+  if (equipment->getSlotItems(slot).size() >= equipment->getMaxItems(slot, this))
+    toUnequip.push_back(equipment->getSlotItems(slot)[0]);
+  for (auto other : equipment->getAllEquipped())
+    if (item->isConflictingEquipment(other))
+      toUnequip.push_back(other);
+  for (auto item : toUnequip) {
+    if (auto action = unequip(item))
+      ret = ret.prepend(std::move(action));
+    else
+      return action;
+  }
+  return ret;
 }
 
 CreatureAction Creature::unequip(Item* item) const {

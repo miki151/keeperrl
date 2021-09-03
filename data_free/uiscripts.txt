@@ -276,7 +276,26 @@ End
       Using "retire_inactive" IconButtonInactive("throne", "Retire")
       Width 20 {}
       Using "abandon" IconButton("grave", "Abandon game")
-#      Using "retire_inactive" Label(text = "Retire" color = ColorId LIGHT_GRAY)
+    }
+  )
+}
+
+"conflicting_items" {
+  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  FocusKeys()
+  Window(
+    Vertical {
+      Position(MIDDLE, MarginLeft(40, MarginRight(40,
+          Label("The following assigned items conflict with the chosen item. Remove them from equipment?" ))))
+      Height 10 {}
+      Using "items" List(VERTICAL, 
+        MarginLeft(40, Horizontal{ Using "view_id" ViewId(1) Using "item" Label() }))
+      Height 35 {}
+      Position(MIDDLE, Horizontal {
+        Using "callback" StandardButton(Label("Confirm"))
+        Width 30 {}
+        Using "EXIT" StandardButton(Label("Cancel"))
+      })
     }
   )
 }
