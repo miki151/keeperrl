@@ -1430,6 +1430,9 @@ void Player::scrollStairs(int diff) {
   auto levels = model->getMainLevels();
   if (auto curIndex = levels.findElement(curLevel)) {
     auto dest = *curIndex + diff;
+    dest = max(min(dest, levels.size() - 1), 0);
+    if (dest == *curIndex)
+      return;
     auto targetLevel = levels[dest];
     auto oldPos = creature->getPosition().getCoord();
     if (auto stairs = targetLevel->getStairsTo(levels[dest + (dest > *curIndex ? -1 : 1)]))
