@@ -1428,6 +1428,8 @@ bool Creature::captureDamage(double damage, Creature* attacker) {
 }
 
 double Creature::getFlankedMod() const {
+  if (!getGame())
+    return 1.0;
   int cnt = 1 + getAttr(AttrType::PARRY);
   for (auto pos : position.neighbors8())
     if (auto c = pos.getCreature()) {
