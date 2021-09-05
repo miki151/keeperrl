@@ -1107,7 +1107,7 @@ static bool apply(const Effects::DropItems& effect, Position pos, Creature*) {
 static bool applyToCreature(const Effects::Damage& e, Creature* c, Creature* attacker) {
   CHECK(attacker) << "Unknown attacker";
   int value = attacker->getAttr(e.attr) + attacker->getSpecialAttr(e.attr, c);
-  bool result = c->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), e.attackType, value, e.attr), true);
+  bool result = c->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), e.attackType, value, e.attr));
   if (e.attr == AttrType::SPELL_DAMAGE)
     c->addFX({FXName::MAGIC_MISSILE_SPLASH});
   return result;
@@ -1138,7 +1138,7 @@ static string getDescription(const Effects::Damage& e, const ContentFactory*) {
 }
 
 static bool applyToCreature(const Effects::FixedDamage& e, Creature* c, Creature*) {
-  bool result = c->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), e.attackType, e.value, e.attr), true);
+  bool result = c->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), e.attackType, e.value, e.attr));
   if (e.attr == AttrType::SPELL_DAMAGE)
     c->addFX({FXName::MAGIC_MISSILE_SPLASH});
   return result;

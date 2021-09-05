@@ -408,13 +408,6 @@ void MapGui::onMouseRelease(Vec2 v) {
   }
 }*/
 
-/*static Color getMoraleColor(double morale) {
-  if (morale < 0)
-    return Color(255, 0, 0, -morale * 150);
-  else
-    return Color(0, 255, 0, morale * 150);
-}*/
-
 static Vec2 getAttachmentOffset(Dir dir, Vec2 size) {
   switch (dir) {
     case Dir::N: return Vec2(0, -size.y * 3 / 4);
@@ -505,6 +498,11 @@ Vec2 MapGui::getMovementOffset(const ViewObject& object, Vec2 size, double time,
 void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object, const ViewIndex& index,
     Vec2 pos, Vec2 sz,
     milliseconds curTime) {
+  if (spriteMode)
+    if (auto mod = object.getAttribute(ViewObject::Attribute::FLANKED_MOD)) {
+      auto tmpColor = blendNightColor(Color::RED, index);
+      renderer.drawViewObject(pos + Vec2(0, sz.y / 5), ViewId("flanked_highlight"), true, sz, tmpColor);
+    }
   for (auto status : object.getCreatureStatus()) {
     drawCreatureHighlight(renderer, pos, sz, getColor(status).transparency(200), index);
     break;
@@ -523,6 +521,11 @@ void MapGui::drawCreatureHighlights(Renderer& renderer, const ViewObject& object
   if (object.hasModifier(ViewObject::Modifier::CREATURE))
     if (isCreatureHighlighted(*object.getGenericId()))
       drawCreatureHighlight(renderer, pos, sz, Color::YELLOW.transparency(200), index);
+  if (!spriteMode)
+    if (auto mod = object.getAttribute(ViewObject::Attribute::FLANKED_MOD)) {
+      auto tmpColor = blendNightColor(Color::RED, index);
+      renderer.drawText(FontId::SYMBOL_FONT, sz.y - 3, tmpColor, pos + Vec2(sz.x / 2, -2), u8"⛚", Renderer::HOR);
+    }
 }
 
 bool MapGui::isCreatureHighlighted(UniqueEntity<Creature>::Id creature) {

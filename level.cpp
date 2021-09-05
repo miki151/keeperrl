@@ -459,6 +459,9 @@ void Level::unplaceCreature(Creature* creature, Vec2 pos) {
   model->increaseMoveCounter();
   forEachEffect(pos, creature->getTribeId(),
       [&] (LastingEffect effect) {creature->removePermanentEffect(effect, 1, false);});
+  for (auto v : Position(pos, this).neighbors8())
+    if (auto c = v.getCreature())
+      c->updateViewObjectFlanking();
 }
 
 void Level::placeCreature(Creature* creature, Vec2 pos) {
@@ -480,6 +483,10 @@ void Level::placeCreature(Creature* creature, Vec2 pos) {
     forEachEffect(prevPos.getCoord(), creature->getTribeId(), [&] (LastingEffect) {++numEffectsPrev;});
   if (numEffects > numEffectsPrev)
     creature->verb("feel", "feels", "the presence of a magical field");
+  creature->updateViewObjectFlanking();
+  for (auto v : position.neighbors8())
+    if (auto c = v.getCreature())
+      c->updateViewObjectFlanking();
 }
 
 void Level::swapCreatures(Creature* c1, Creature* c2) {

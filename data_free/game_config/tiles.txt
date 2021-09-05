@@ -432,6 +432,7 @@
 { "pit" "^" ColorId WHITE }
 { "creature_highlight" " " ColorId WHITE }
 { "square_highlight" "⛶" ColorId WHITE true }
+{ "flanked_highlight" "⬡" ColorId WHITE true }
 { "round_shadow" " " ColorId WHITE }
 { "campaign_defeated" "X" ColorId RED }
 { "special_blbn" "B" ColorId PURPLE }

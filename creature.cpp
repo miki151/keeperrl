@@ -74,7 +74,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
   ar(controllerStack, kills, statuses, automatonParts, phylactery);
   ar(difficultyPoints, points, capture, spellMap, killTitles, companions);
-  ar(vision, debt, uniqueKills, lastCombatIntent, hitsInfo, primaryViewId);
+  ar(vision, debt, uniqueKills, lastCombatIntent, primaryViewId);
 }
 
 SERIALIZABLE(Creature)
@@ -1358,7 +1358,7 @@ CreatureAction Creature::attack(Creature* other) const {
         enemyName = "something";
       weapon.first->getAttackMsg(this, enemyName);
       getGame()->addEvent(EventInfo::CreatureAttacked{other, self, damageAttr});
-      wasDamaged |= other->takeDamage(attack, true);
+      wasDamaged |= other->takeDamage(attack);
       for (auto& e : weaponInfo.attackerEffect) {
         e.apply(position);
         if (self->isDead())
@@ -1371,10 +1371,8 @@ CreatureAction Creature::attack(Creature* other) const {
     auto movementInfo = (*self->spendTime())
         .setDirection(dir)
         .setType(MovementInfo::ATTACK);
-    if (wasDamaged) {
+    if (wasDamaged)
       movementInfo.setVictim(other->getUniqueId());
-      other->increaseHitCount();
-    }
     self->addMovementInfo(movementInfo);
   });
 }
@@ -1429,25 +1427,21 @@ bool Creature::captureDamage(double damage, Creature* attacker) {
     return false;
 }
 
-void Creature::increaseHitCount() {
-  if (hitsInfo.hitTurn != position.getModel()->getLocalTime()) {
-    hitsInfo.numHits = 0;
-    hitsInfo.hitTurn = position.getModel()->getLocalTime();
-  }
-  ++hitsInfo.numHits;
+double Creature::getFlankedMod() const {
+  int cnt = 1 + getAttr(AttrType::PARRY);
+  for (auto pos : position.neighbors8())
+    if (auto c = pos.getCreature()) {
+      if (isEnemy(c))
+        --cnt;
+      else
+        ++cnt;
+    }
+  return pow(1.07, min(0, cnt));
 }
 
-int Creature::getHitCount() const {
-  if (hitsInfo.hitTurn != position.getModel()->getLocalTime())
-    return 0;
-  else
-    return max(0, hitsInfo.numHits - getAttr(AttrType::PARRY));
-}
-
-bool Creature::takeDamage(const Attack& attack, bool noIncreaseHitCount) {
+bool Creature::takeDamage(const Attack& attack) {
   PROFILE;
   const double hitPenalty = 0.95;
-  int hitCount = getHitCount();
   double defense = getAttr(AttrType::DEFENSE);
   if (Creature* attacker = attack.attacker) {
     onAttackedBy(attacker);
@@ -1456,11 +1450,7 @@ bool Creature::takeDamage(const Attack& attack, bool noIncreaseHitCount) {
         c->removeEffect(LastingEffect::SLEEP);
     defense += getSpecialAttr(AttrType::DEFENSE, attacker);
   }
-  defense *= pow(hitPenalty, hitCount);
-  if (!noIncreaseHitCount)
-    increaseHitCount();
-  if (hitCount > 0)
-    you(MsgType::YOUR, "defense is weakened");
+  defense *= getFlankedMod();
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
       defense = LastingEffects::modifyCreatureDefense(effect, defense, attack.damageType);
@@ -1498,12 +1488,22 @@ static vector<string> extractNames(const vector<AdjectiveInfo>& adjectives) {
   return adjectives.transform([] (const AdjectiveInfo& e) -> string { return e.name; });
 }
 
+void Creature::updateViewObjectFlanking() {
+  auto& object = modViewObject();
+  auto flankedMod = getFlankedMod();
+  if (flankedMod < 1.0)
+    object.setAttribute(ViewObject::Attribute::FLANKED_MOD, flankedMod);
+  else
+    object.resetAttribute(ViewObject::Attribute::FLANKED_MOD);
+}
+
 void Creature::updateViewObject() {
   PROFILE;
   auto& object = modViewObject();
   object.setCreatureAttributes(ViewObject::CreatureAttributes([this](AttrType t) { return getAttr(t);}));
   if (auto morale = getMorale())
     object.setAttribute(ViewObject::Attribute::MORALE, *morale);
+  updateViewObjectFlanking();
   object.setModifier(ViewObject::Modifier::DRAW_MORALE);
   object.setModifier(ViewObject::Modifier::STUNNED, isAffected(LastingEffect::STUNNED));
   object.setModifier(ViewObject::Modifier::FLYING, isAffected(LastingEffect::FLYING));

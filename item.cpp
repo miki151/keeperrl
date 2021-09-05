@@ -227,7 +227,7 @@ void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {
     c->you(numItems > 1 ? MsgType::HIT_THROWN_ITEM_PLURAL : MsgType::HIT_THROWN_ITEM, getPluralTheName(numItems));
   if (attributes->effect && effectAppliedWhenThrown())
     attributes->effect->apply(c->getPosition(), attack.attacker);
-  c->takeDamage(attack, true);
+  c->takeDamage(attack);
   if (!c->isDead() && attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
     c->affectByFire(1);
 }

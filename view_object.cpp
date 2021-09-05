@@ -170,6 +170,11 @@ const EnumSet<CreatureStatus>& ViewObject::getCreatureStatus() const {
   return status;
 }
 
+ViewObject& ViewObject::resetAttribute(Attribute attr) {
+  attributes[attr] = noAttributeValue;
+  return *this;
+}
+
 ViewObject& ViewObject::setAttribute(Attribute attr, double d) {
   attributes[attr] = d;
   return *this;

@@ -89,7 +89,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void setPosition(Position);
   Position getPosition() const;
   bool dodgeAttack(const Attack&);
-  bool takeDamage(const Attack&, bool noIncreaseHitCount = false);
+  bool takeDamage(const Attack&);
   void onAttackedBy(Creature*);
   bool heal(double amount = 1000);
   /** Morale is in the range [-1:1] **/
@@ -119,6 +119,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   int getSpecialAttr(AttrType, const Creature* against) const;
   int getAttrBonus(AttrType, bool includeWeapon) const;
 
+  double getFlankedMod() const;
   int getPoints() const;
   const Vision& getVision() const;
   const CreatureDebt& getDebt() const;
@@ -295,11 +296,11 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   void addSound(const Sound&) const;
   void updateViewObject();
+  void updateViewObjectFlanking();
   void swapPosition(Vec2 direction, bool withExcuseMe = true);
   bool canSwapPositionWithEnemy(Creature* other) const;
   vector<PItem> generateCorpse(const ContentFactory*, Game*, bool instantlyRotten = false);
   int getLastMoveCounter() const;
-  int getHitCount() const;
 
   EnumSet<CreatureStatus>& getStatus();
   const EnumSet<CreatureStatus>& getStatus() const;
@@ -384,13 +385,6 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void considerMovingFromInaccessibleSquare();
   void updateLastingFX(ViewObject&);
   HeapAllocated<SpellMap> SERIAL(spellMap);
-  struct HitsInfo {
-    int SERIAL(numHits);
-    LocalTime SERIAL(hitTurn);
-    SERIALIZE_ALL(numHits, hitTurn)
-  };
-  HitsInfo SERIAL(hitsInfo);
-  void increaseHitCount();
   optional<ViewId> SERIAL(primaryViewId);
   struct CompanionGroup {
     vector<Creature*> SERIAL(creatures);

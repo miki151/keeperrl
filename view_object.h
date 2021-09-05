@@ -30,7 +30,7 @@
 #include "view_id.h"
 #include "color.h"
 
-RICH_ENUM(ViewObjectAttribute, HEALTH, WATER_DEPTH, LUXURY, MORALE);
+RICH_ENUM(ViewObjectAttribute, HEALTH, WATER_DEPTH, LUXURY, MORALE, FLANKED_MOD);
 
 class ViewObject {
   public:
@@ -50,6 +50,7 @@ class ViewObject {
   optional<Dir> getAttachmentDir() const;
 
   ViewObject& setAttribute(Attribute, double);
+  ViewObject& resetAttribute(Attribute);
   optional<float> getAttribute(Attribute) const;
 
   using CreatureAttributes = EnumMap<AttrType, std::uint16_t>;

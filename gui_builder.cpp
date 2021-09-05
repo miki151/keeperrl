@@ -2667,9 +2667,14 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
         }
         if (viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE))
           lines.addElem(WL(label, "Can only be healed using rituals."));
+        if (auto value = viewObject.getAttribute(ViewObjectAttribute::FLANKED_MOD)) {
+          lines.addElem(WL(label, "Flanked: defense reduced by " + toString<int>(100 * (1 - *value)) + "%.", Color::RED));
+          if (viewObject.hasModifier(ViewObject::Modifier::PLAYER))
+            lines.addElem(WL(label, "Use a shield!", Color::RED));
+        }
         if (auto& attributes = viewObject.getCreatureAttributes())
           lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(*attributes)));
-        if (auto health = viewObject.getAttribute(ViewObjectAttribute::HEALTH))
+        if (auto health = viewObject.getAttribute(ViewObjectAttribute::HEALTH))  
           lines.addElem(WL(stack,
                 WL(margins, WL(progressBar, MapGui::getHealthBarColor(*health,
                     viewObject.hasModifier(ViewObjectModifier::SPIRIT_DAMAGE)).transparency(70), *health), -2, 0, 0, 3),
