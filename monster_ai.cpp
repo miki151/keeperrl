@@ -164,6 +164,9 @@ class EffectsAI : public Behaviour {
   }
 
   void getThrowMove(Creature* other, MoveInfo& ret) {
+    bool isEnemy = creature->isEnemy(other);
+    if (isEnemy && !creature->shouldAIChase(other))
+      return;
     auto target = other->getPosition();
     auto trajectory = drawLine(creature->getPosition().getCoord(), target.getCoord())
         .transform([&](Vec2 v) { return Position(v, target.getLevel()); });
@@ -176,9 +179,9 @@ class EffectsAI : public Behaviour {
           if (value > 0 && !creature->getEquipment().isEquipped(item) &&
                creature->getThrowDistance(item).value_or(-1) >=
                    trajectory.back().dist8(creature->getPosition()).value_or(10000))
-              if (auto action = creature->throwItem(item, target, creature->isFriend(other)))
+              if (auto action = creature->throwItem(item, target, !isEnemy))
                 tryMove(ret, value, action.append([=](Creature*) {
-                  if (other->isEnemy(creature))
+                  if (isEnemy)
                     addCombatIntent(other, Creature::CombatIntentInfo::Type::ATTACK);
                 }));
         }
