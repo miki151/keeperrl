@@ -21,7 +21,6 @@ class EnemyFactory {
   EnemyInfo get(EnemyId) const;
   vector<ExternalEnemy> getExternalEnemies() const;
   vector<ExternalEnemy> getHalloweenKids();
-  vector<EnemyInfo> getVaults(TribeAlignment, TribeId allied) const;
   vector<EnemyId> getAllIds() const;
 
   private:

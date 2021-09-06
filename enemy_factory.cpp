@@ -67,46 +67,6 @@ struct VaultInfo {
 };
 }
 
-static EnumMap<TribeAlignment, vector<VaultInfo>> getFriendlyVaults() {
-  return {
-    {TribeAlignment::EVIL, {
-        {CreatureId("GOBLIN_WARRIOR"), 3, 5},
-        {CreatureId("TROLL"), 2, 4},
-        {CreatureId("VAMPIRE"), 2, 4},
-    }},
-    {TribeAlignment::LAWFUL, {
-        {CreatureId("IRON_GOLEM"), 3, 5},
-        {CreatureId("EARTH_ELEMENTAL"), 2, 4},
-    }},
-  };
-}
-
-static vector<VaultInfo> getHostileVaults() {
-  return {
-    {CreatureId("SPIDER"), 3, 8},
-    {CreatureId("SNAKE"), 3, 8},
-    {CreatureId("BAT"), 3, 8},
-  };
-}
-
-vector<EnemyInfo> EnemyFactory::getVaults(TribeAlignment alignment, TribeId allied) const {
-  vector<EnemyInfo> ret {
- /*   getVault(BuiltinLayoutId::VAULT, CreatureGroup::insects(TribeId::getMonster()),
-        TribeId::getMonster(), random.get(6, 12)),*/
-    getVault(BuiltinLayoutId::VAULT, CreatureId("RAT"), TribeId::getPest(), random.get(3, 8),
-        ItemListId("armory")),
-  };
-  for (int i : Range(1)) {
-    VaultInfo v = random.choose(getFriendlyVaults()[alignment]);
-    ret.push_back(getVault(BuiltinLayoutId::VAULT, v.id, allied, random.get(v.min, v.max)));
-  }
-  for (int i : Range(1)) {
-    VaultInfo v = random.choose(getHostileVaults());
-    ret.push_back(getVault(BuiltinLayoutId::VAULT, v.id, TribeId::getMonster(), random.get(v.min, v.max)));
-  }
-  return ret;
-}
-
 vector<EnemyId> EnemyFactory::getAllIds() const {
   return getKeys(enemies);
 }

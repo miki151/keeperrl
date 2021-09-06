@@ -96,7 +96,6 @@ vector<EnemyInfo> ModelBuilder::getSingleMapEnemiesForEvilKeeper(TribeId keeperT
   for (int i : Range(random.get(2, 4)))
     enemies.push_back(enemyFactory->get(random.choose({EnemyId("BANDITS"), EnemyId("COTTAGE_BANDITS")}, {3, 1})));
   enemies.push_back(enemyFactory->get(random.choose(EnemyId("GNOMES"), EnemyId("DARK_ELVES_ALLY"))).setVillainType(VillainType::ALLY));
-  append(enemies, enemyFactory->getVaults(TribeAlignment::EVIL, keeperTribe));
   enemies.push_back(enemyFactory->get(EnemyId("ANTS_CLOSED")).setVillainType(VillainType::LESSER));
   enemies.push_back(enemyFactory->get(EnemyId("DWARVES")).setVillainType(VillainType::MAIN));
   enemies.push_back(enemyFactory->get(EnemyId("KNIGHTS")).setVillainType(VillainType::MAIN));
@@ -136,7 +135,6 @@ vector<EnemyInfo> ModelBuilder::getSingleMapEnemiesForLawfulKeeper(TribeId keepe
   for (int i : Range(random.get(2, 4)))
     enemies.push_back(enemyFactory->get(random.choose({EnemyId("BANDITS"), EnemyId("COTTAGE_BANDITS")}, {3, 1})));
   enemies.push_back(enemyFactory->get(EnemyId("GNOMES")).setVillainType(VillainType::ALLY));
-  append(enemies, enemyFactory->getVaults(TribeAlignment::LAWFUL, keeperTribe));
   enemies.push_back(enemyFactory->get(EnemyId("ANTS_CLOSED")).setVillainType(VillainType::LESSER));
   enemies.push_back(enemyFactory->get(EnemyId("DARK_ELVES_ENEMY")).setVillainType(VillainType::MAIN));
   enemies.push_back(enemyFactory->get(EnemyId("DEMON_DEN")).setVillainType(VillainType::MAIN));
@@ -192,8 +190,9 @@ PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment al
     optional<ExternalEnemiesType> externalEnemiesType) {
   vector<EnemyInfo> enemyInfo;
   auto& biomeInfo = contentFactory->biomeInfo.at(biome);
-  addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL ? biomeInfo.darkKeeperBaseEnemies : biomeInfo.whiteKeeperBaseEnemies);
-  append(enemyInfo, enemyFactory->getVaults(alignment, keeperTribe));
+  addMapVillains(enemyInfo, alignment == TribeAlignment::EVIL 
+      ? biomeInfo.darkKeeperBaseEnemies
+      : biomeInfo.whiteKeeperBaseEnemies);
   optional<ExternalEnemies> externalEnemies;
   if (externalEnemiesType)
     externalEnemies = ExternalEnemies(random, &contentFactory->getCreatures(), enemyFactory->getExternalEnemies(), *externalEnemiesType);
