@@ -1103,8 +1103,10 @@ bool Creature::isEnemy(const Creature* c) const {
     return false;
   auto result = getTribe()->isEnemy(c) || c->getTribe()->isEnemy(this) ||
     privateEnemies.hasKey(c) || c->privateEnemies.hasKey(this);
-  auto time = getGlobalTime();
-  return (!time && result) || LastingEffects::modifyIsEnemyResult(this, c, *time, result);
+  if (auto time = getGlobalTime())
+    return LastingEffects::modifyIsEnemyResult(this, c, *time, result);
+  else
+    return result;
 }
 
 vector<Item*> Creature::getGold(int num) const {
