@@ -1008,10 +1008,10 @@ void Collective::addKnownVillainLocation(const Collective* col) {
   knownVillainLocations.insert(col);
   if (immigration->suppliesRecruits(col))
     control->addWindowMessage(ViewIdList{col->getName()->viewId},
-        "You have discovered the " + col->getName()->full + "! Recruits are now available in the immigration UI.");
+        "You have discovered " + col->getName()->full + "! Recruits are now available in the immigration UI.");
   if (col->hasTradeItems() && !getTribe()->isEnemy(col->getTribe()))
     control->addWindowMessage(ViewIdList{col->getName()->viewId},
-        "You have discovered the " + col->getName()->full + "! Trading is now available in the villain UI.");
+        "You have discovered " + col->getName()->full + "! Trading is now available in the villain UI.");
 }
 
 bool Collective::isKnownVillainLocation(const Collective* col) const {
