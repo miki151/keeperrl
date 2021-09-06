@@ -2168,7 +2168,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
       line.addBackElemAuto(WL(leftMargin, 7, drawItemUpgradeButton(elem)));
     if (elem.itemInfo.price)
       line.addBackElem(WL(alignment, GuiFactory::Alignment::RIGHT, drawCost(*elem.itemInfo.price)), 80);
-    if (info.allowChangeNumber)
+    if (info.allowChangeNumber && !elem.itemInfo.ingredient)
       line.addBackElemAuto(WL(leftMargin, 7, drawItemCountButton(elem)));
     line.addBackElemAuto(WL(topMargin, 3, WL(leftMargin, 7, WL(stack,
         WL(button, getButtonCallback({UserInputId::WORKSHOP_CHANGE_COUNT,
