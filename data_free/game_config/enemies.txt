@@ -1240,7 +1240,18 @@ NAME inherit ORIGINAL
 }
 End
 
-STRONGER("GOBLINS_Z_LEVEL1", "GOBLIN_CAVE", MELEE 0)
+"GOBLINS_Z_LEVEL1" inherit "GOBLIN_CAVE"
+{
+  settlement = append {
+    inhabitants = append {
+      leader = none
+      fighters = append {
+        baseLevelIncrease = { MELEE -5 }
+      }
+    }
+  }
+}
+
 STRONGER("GOBLINS_Z_LEVEL2", "GOBLIN_CAVE", MELEE 7)
 STRONGER("GOBLINS_Z_LEVEL3", "GOBLIN_CAVE", MELEE 15)
 STRONGER("GOBLINS_Z_LEVEL4", "GOBLIN_CAVE", MELEE 22)
