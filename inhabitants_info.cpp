@@ -54,4 +54,6 @@ void InhabitantsInfo::serialize(PrettyInputArchive& ar1, unsigned) {
       .increaseExpLevel(leader->expLevelIncrease)
       .increaseBaseLevel(leader->baseLevelIncrease)
       .addInventory(leader->inventory);
+  else
+   this->leader = CreatureList();
 }
