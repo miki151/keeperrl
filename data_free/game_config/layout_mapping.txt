@@ -57,6 +57,16 @@
   "connect" { RemoveFlag NO_DIG Flag CONNECT_CORRIDOR }
 }
 
+"z_level_vampire_vault" inherit "default" append {
+  "bed" Place "COFFIN1"
+  "workshop" Place "BOOKCASE_WOOD"
+}
+
+"z_level_dwarf_vault" inherit "default" append {
+  "bed" Place "BED1"
+  "workshop" Place "FORGE"
+}
+
 "adoxie_feet" inherit "default" append {
   "adoxie_left_foot" Place "ADOXIE_LEFT_FOOT"
   "adoxie_right_foot" Place "ADOXIE_RIGHT_FOOT"

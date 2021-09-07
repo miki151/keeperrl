@@ -1962,6 +1962,32 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
     }
   }
 }
+"Z_LEVEL_VAMPIRE_VAULT"
+{
+  settlement = {
+    type = RandomLayout { "z_level_vault" { 80 80 } "z_level_vampire_vault" }
+    tribe = GREENSKIN
+    inhabitants = {
+      fighters = {
+        count = 4
+        all = { 1 "VAMPIRE" }
+      }
+    }
+  }
+}
+"Z_LEVEL_DWARF_VAULT"
+{
+  settlement = {
+    type = RandomLayout { "z_level_vault" { 80 80 } "z_level_dwarf_vault" }
+    tribe = DWARF
+    inhabitants = {
+      fighters = {
+        count = 4
+        all = { 1 "DWARF" }
+      }
+    }
+  }
+}
 "SOKOBAN_ENTRY"
 {
   settlement = {

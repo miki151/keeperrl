@@ -128,6 +128,14 @@ End
   LEVEL("GOBLINS_Z_LEVEL5", 22, 26)
   LEVEL("DARK_ELVES_Z_LEVEL5", 22, 26)
   LEVEL("GOBLINS_Z_LEVEL6", 27, 1000)
+  {
+    type = EnemyZLevel {
+      enemy = "Z_LEVEL_DWARF_VAULT"
+    }
+    minDepth = 3
+    maxDepth = 3
+    guarantee = true
+  }
 }
 
 # Here come levels specific to dark keepers
@@ -138,6 +146,14 @@ End
   LEVEL("DWARVES_Z_LEVEL3", 12, 16)
   LEVEL("DWARVES_Z_LEVEL4", 17, 21)
   LEVEL("DWARVES_Z_LEVEL5", 22, 26)
+  {
+    type = EnemyZLevel {
+      enemy = "Z_LEVEL_VAMPIRE_VAULT"
+    }
+    minDepth = 3
+    maxDepth = 3
+    guarantee = true
+  }
 }
 
 "goblins"

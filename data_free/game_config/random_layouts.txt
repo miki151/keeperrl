@@ -682,6 +682,19 @@ End
 
 "z_level_full" Choose(ZLevelFull("water"), ZLevelFull("lava"))
 
+"z_level_vault" {
+  Choose(ZLevelFull("water"), ZLevelFull("lava"))
+  Set("no_territory")
+  Inside(5, Place({4 7}, {
+    Reset("floor", "set_territory")
+    Margin(TOP, 1, Set("workshop"),
+      Place(
+        ({1 1}, Set("bed"), {1 4}, And()),
+        ({1 1}, Set("torch"), 1, And())
+    ))
+  }, 1, On("hard_rock")))
+}
+
 Def MoveDown(Cnt, Generator)
   Inside(BOTTOM, -Cnt, Inside(TOP, Cnt, Generator))
 End

@@ -56,3 +56,5 @@
 "scarecrow" T blue
 "spider_web" # white
 "wizard_corpse" % white
+"bookcase_wood" B brown
+"coffin1" C brown

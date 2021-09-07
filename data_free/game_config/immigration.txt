@@ -65,6 +65,23 @@ Def DarkRecruits()
         { 1.0 CostInfo "GOLD" 12 }
       }
     }
+    {
+      ids = { "VAMPIRE" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 RecruitmentInfo { "Z_LEVEL_VAMPIRE_VAULT" } 0 FIGHTER }
+      }
+    }
+End
+
+Def WhiteRecruits()
+    {
+      ids = { "DWARF" }
+      traits = { FIGHTER }
+      requirements = {
+        { 0.0 RecruitmentInfo { "Z_LEVEL_DWARF_VAULT" } 0 FIGHTER }
+      }
+    }
 End
 
 "dark_keeper"
@@ -553,7 +570,7 @@ End
         { 1.0 CostInfo "GOLD" 50 }
       }
     }
-
+    WhiteRecruits()
 }
 "gnomes"
 {
