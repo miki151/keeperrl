@@ -1286,7 +1286,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::NO_CARRY_LIMIT: return "The creature can carry items without any weight limit.";
     case LastingEffect::SPYING: return "The creature can infiltrate enemy lines.";
     case LastingEffect::LIFE_SAVED: return "Prevents the death of the creature.";
-    case LastingEffect::UNSTABLE: return "Creature may become insane when having witnessed the death of an ally.";
+    case LastingEffect::UNSTABLE: return "Creature may become insane after witnessing the death of an ally.";
     case LastingEffect::OIL: return "Creature may be set on fire.";
     case LastingEffect::SWARMER: return "Grants damage and defense bonus for every other swarmer in vicinity.";
     case LastingEffect::PSYCHIATRY: return "Creature won't be attacked by insane creatures.";
