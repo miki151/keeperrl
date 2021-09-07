@@ -2520,7 +2520,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           else
             setChosenTeam(*chosenTeam, c->getUniqueId());
         } else
-        if (collective->getConfig().canCapturePrisoners())
+        if (collective->getConfig().canCapturePrisoners() && collective->getTribe()->isEnemy(c))
           c->toggleCaptureOrder();
       }
       break;
