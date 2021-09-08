@@ -4166,20 +4166,28 @@ GuiFactory::ListBuilder GuiBuilder::drawRetiredGames(RetiredGames& retired, func
       auto header = WL(getListBuilder);
       bool maxedOut = !displayActive && retired.getNumActive() >= *maxActive;
       header.addElem(WL(label, allGames[i].gameInfo.name,
-          maxedOut ? Color::LIGHT_GRAY : Color::WHITE), 170);
+          maxedOut ? Color::LIGHT_GRAY : Color::WHITE), 180);
       for (auto& minion : allGames[i].gameInfo.minions)
         header.addElem(drawMinionAndLevel(minion.viewId, minion.level, 1), 25);
       header.addSpace(20);
       if (retired.isActive(i))
-        header.addElemAuto(WL(buttonLabel, "Remove", [i, reloadCampaign, &retired] { retired.setActive(i, false); reloadCampaign();}));
+        header.addBackElemAuto(WL(buttonLabel, "Remove", [i, reloadCampaign, &retired] { retired.setActive(i, false); reloadCampaign();}));
       else if (!maxedOut)
-        header.addElemAuto(WL(buttonLabel, "Add", [i, reloadCampaign, &retired] { retired.setActive(i, true); reloadCampaign();}));
+        header.addBackElemAuto(WL(buttonLabel, "Add", [i, reloadCampaign, &retired] { retired.setActive(i, true); reloadCampaign();}));
+      header.addBackSpace(10);
       lines.addElem(header.buildHorizontalList());
+      auto detailsList = WL(getListBuilder);
       if (allGames[i].numTotal > 0)
-        lines.addElem(WL(stack,
+        detailsList.addElemAuto(WL(stack,
           WL(tooltip, {"Number of times this dungeon has been conquered over how many times it has been loaded."}),
           WL(label, "Conquer rate: " + toString(allGames[i].numWon) + "/" + toString(allGames[i].numTotal),
-              Renderer::smallTextSize(), gui.inactiveText)), legendLineHeight * 2 / 3);
+              Renderer::smallTextSize(), gui.inactiveText)));
+      if (allGames[i].isFriend) {
+        detailsList.addBackElemAuto(WL(label, "By your friend " + allGames[i].author, Renderer::smallTextSize(), Color::PINK));
+        detailsList.addBackSpace(10);
+      }
+      if (!detailsList.isEmpty())
+        lines.addElem(detailsList.buildHorizontalList(), legendLineHeight * 2 / 3);
       if (!allGames[i].gameInfo.spriteMods.empty()) {
         auto modsList = combine(allGames[i].gameInfo.spriteMods, true);
         lines.addElem(WL(stack,

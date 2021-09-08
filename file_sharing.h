@@ -22,6 +22,8 @@ class FileSharing {
     int wonGames;
     int version;
     bool subscribed;
+    string author;
+    bool isFriend;
   };
   expected<vector<SiteInfo>, string> listSites();
 

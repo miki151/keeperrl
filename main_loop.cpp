@@ -414,7 +414,8 @@ optional<RetiredGames> MainLoop::getRetiredGames(CampaignType type) {
         view->presentText("", *error);
       for (auto& elem : onlineSites)
         if (isCompatible(elem.version))
-          ret.addOnline(fromOldInfo(elem.gameInfo), elem.fileInfo, elem.totalGames, elem.wonGames, elem.subscribed);
+          ret.addOnline(fromOldInfo(elem.gameInfo), elem.fileInfo, elem.totalGames, elem.wonGames, elem.subscribed,
+              elem.author, elem.isFriend);
       ret.sort();
       return ret;
     }

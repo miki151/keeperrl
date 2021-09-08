@@ -442,6 +442,7 @@ struct SteamItemInfo {
   optional<string> owner;
   bool subscribed;
   bool isOwner;
+  bool isFriend;
 };
 
 template <typename T>
@@ -538,13 +539,15 @@ static optional<vector<SteamItemInfo>> getSteamItems(const atomic<bool>& cancel,
   };
   steam::sleepUntil(retrieveUserNames, milliseconds(1500), cancel);
   vector<SteamItemInfo> ret;
+  auto friendIds = friends.ids();
   for (int i : All(infos))
     if ([&] { for (auto& tag : tags) if (!infos[i].tags.contains(tag)) return false; return true; }())
       ret.push_back(SteamItemInfo{
           infos[i],
           ownerNames[i],
           subscribedItems.contains(infos[i].id),
-          infos[i].ownerId == user.id()
+          infos[i].ownerId == user.id(),
+          friendIds.contains(infos[i].ownerId)
       });
   return ret;
 #else
@@ -591,6 +594,8 @@ optional<vector<FileSharing::SiteInfo>> FileSharing::getSteamSites() {
     site.fileInfo.date = info.updateTime;
     site.fileInfo.steamId = info.id.value;
     site.fileInfo.download = true;
+    site.author = infos[n].owner.value_or("unknown");
+    site.isFriend = infos[n].isFriend;
     site.subscribed = infos[n].subscribed;
     TextInput input(info.metadata);
     input.getArchive() >> site.fileInfo.filename >> site.gameInfo;

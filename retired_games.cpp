@@ -35,19 +35,21 @@ void RetiredGames::addLocal(const SavedGameInfo& game, const SaveFileInfo& file,
   ++numLocal;
 }
 
-void RetiredGames::addOnline(const SavedGameInfo& game, const SaveFileInfo& file, int total, int won, bool subscribed) {
+void RetiredGames::addOnline(const SavedGameInfo& game, const SaveFileInfo& file, int total, int won, bool subscribed,
+    string author, bool isFriend) {
   for (int i : All(games))
     if (games[i].fileInfo.filename == file.filename) {
       games[i].numTotal = total;
       games[i].numWon = won;
       return;
     }
-  games.push_back({game, file, total, won, false, subscribed});
+  games.push_back({game, file, total, won, false, subscribed, author, isFriend});
 }
 
 void RetiredGames::sort() {
   auto compare = [] (const RetiredGame& g1, const RetiredGame& g2) {
-    return std::forward_as_tuple(g1.subscribed, g1.numTotal) > std::forward_as_tuple(g2.subscribed, g2.numTotal); };
+    return std::forward_as_tuple(g1.subscribed, g1.isFriend, g1.numTotal) >
+        std::forward_as_tuple(g2.subscribed, g2.isFriend, g2.numTotal); };
   std::sort(games.begin(), games.begin() + numLocal, compare);
   std::sort(games.begin() + numLocal, games.end(), compare);
 }

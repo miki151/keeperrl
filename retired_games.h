@@ -7,7 +7,8 @@
 class RetiredGames {
   public:
   void addLocal(const SavedGameInfo&, const SaveFileInfo&, bool active);
-  void addOnline(const SavedGameInfo&, const SaveFileInfo&, int numTotal, int numWon, bool subscribed);
+  void addOnline(const SavedGameInfo&, const SaveFileInfo&, int numTotal, int numWon, bool subscribed,
+      string author, bool isFriend);
 
   void sort();
 
@@ -18,6 +19,8 @@ class RetiredGames {
     int numWon;
     bool active;
     bool subscribed;
+    string author;
+    bool isFriend;
   };
 
   const vector<RetiredGame>& getAllGames() const;
