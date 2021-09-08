@@ -1257,8 +1257,7 @@ void GuiBuilder::drawMiniMenu(SGuiElem elem, bool& exit, Vec2 menuPos, int width
 void GuiBuilder::drawMiniMenu(SGuiElem elem, function<bool()> done, Vec2 menuPos, int width, bool darkBg) {
   disableTooltip = true;
   int contentHeight = *elem->getPreferredHeight();
-  int margin = 0;
-  Vec2 size(width + 2 * margin, contentHeight + 2 * margin);
+  Vec2 size(width, contentHeight);
   menuPos.y -= max(0, menuPos.y + size.y - renderer.getSize().y);
   menuPos.x -= max(0, menuPos.x + size.x - renderer.getSize().x);
   elem->setBounds(Rectangle(menuPos, menuPos + size));
@@ -3303,7 +3302,7 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
           .addBackSpace(99)
           .buildHorizontalList());
     }
-    drawMiniMenu(tasks.buildVerticalList(), exit, bounds.bottomLeft(), 362, true);
+    drawMiniMenu(tasks.buildVerticalList(), exit, bounds.bottomLeft(), 410, true);
     callbacks.input({UserInputId::CREATURE_TASK_ACTION, retAction});
   };
 }
