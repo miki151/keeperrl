@@ -93,7 +93,7 @@
       "installations"
   }
   workshopGroups = { "basic" "crossbows" }
-  description = "12 angry dwarves."
+  description = "Play as a group of twelve dwarves that you can specialize to your liking. This faction has no immigration so dig around carefully!"
   minionTraits = { LEADER WORKER FIGHTER }
   maxPopulation = 12
   populationString = "dwarves"
