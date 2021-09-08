@@ -23,12 +23,15 @@
 #include "equipment.h"
 #include "game.h"
 
-EnumSet<MinionActivity> MinionActivityMap::getAutoGroupLocked() {
-  return EnumSet<MinionActivity> {
-    MinionActivity::GUARDING1,
-    MinionActivity::GUARDING2,
-    MinionActivity::GUARDING3,
-  };
+bool MinionActivityMap::isActivityAutoGroupLocked(MinionActivity activity) {
+  switch (activity) {
+    case MinionActivity::GUARDING1:
+    case MinionActivity::GUARDING2:
+    case MinionActivity::GUARDING3:
+      return true;
+    default:
+      return false;
+  }
 }
 
 static bool isAutoLocked(const Collective* col, const Creature* c, MinionActivity t) {
@@ -66,7 +69,7 @@ bool MinionActivityMap::canLock(MinionActivity t) {
 }
 
 bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, MinionActivity t, bool ignoreTaskLock) const {
-  if ((isLocked(col, c, t) || col->getGroupLockedActivities(c).contains(t)) && !ignoreTaskLock)
+  if ((isLocked(col, c, t) || col->isActivityGroupLocked(c, t)) && !ignoreTaskLock)
     return false;
   switch (t) {
     case MinionActivity::IDLE:

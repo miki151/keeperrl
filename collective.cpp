@@ -369,16 +369,22 @@ bool Collective::isActivityGoodAssumingHaveTasks(Creature* c, MinionActivity act
   }
 }
 
-Collective::GroupLockedActivities Collective::getGroupLockedActivities(const Creature* c) const {
-  auto ret = getGroupLockedActivities(getMinionGroupName(c));
-  for (auto& group : getAutomatonGroupNames(c))
-    ret.sumWith(getGroupLockedActivities(group));
+bool Collective::isActivityGroupLocked(const Creature* c, MinionActivity activity) const {
+  auto ret = isActivityGroupLocked(getMinionGroupName(c), activity);
+  if (MinionActivityMap::isActivityAutoGroupLocked(activity))
+    for (auto& group : getAutomatonGroupNames(c))
+      ret = ret && isActivityGroupLocked(group, activity);
+  else
+    for (auto& group : getAutomatonGroupNames(c))
+      ret = ret || isActivityGroupLocked(group, activity);
   return ret;
 }
 
-Collective::GroupLockedActivities Collective::getGroupLockedActivities(const string& group) const {
-  return MinionActivityMap::getAutoGroupLocked().ex_or(
-      getValueMaybe(groupLockedAcitivities, group).value_or(GroupLockedActivities{}));
+bool Collective::isActivityGroupLocked(const string& group, MinionActivity activity) const {
+  auto ret = MinionActivityMap::isActivityAutoGroupLocked(activity);
+  if (auto res = getValueMaybe(groupLockedAcitivities, group))
+    ret ^= res->contains(activity);
+  return ret;
 }
 
 void Collective::flipGroupLockedActivities(const string& group, GroupLockedActivities a) {
