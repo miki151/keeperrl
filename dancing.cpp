@@ -70,15 +70,15 @@ int Dancing::getNumActive(LocalTime time) {
 }
 
 optional<Position> Dancing::getTarget(Creature* creature) {
-  if (creature->isAffected(LastingEffect::SLOWED) || creature->isAffected(LastingEffect::SPEED))
+  if (!currentDanceInfo || creature->isAffected(LastingEffect::SLOWED) || creature->isAffected(LastingEffect::SPEED))
     return none;
-  auto time = creature->getPosition().getModel()->getLocalTime();
-  if (currentDanceInfo && currentDanceInfo->startTime < time - 100_visible) {
+  auto time = currentDanceInfo->origin.getModel()->getLocalTime();
+  if (currentDanceInfo->startTime < time - 100_visible) {
     currentDanceInfo = none;
     initializeCurrentDance(time);
+    if (!currentDanceInfo)
+      return none;
   }
-  if (!currentDanceInfo)
-    return none;
   auto danceIndex = currentDanceInfo->index;
   auto& curPos = positions[danceIndex];
   lastSeen[creature] = time;
