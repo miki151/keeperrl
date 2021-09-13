@@ -162,6 +162,7 @@
   usageTime = 5
   canHideHere = true
   strength = 100
+  lightEmission = 4.2
 }
 "BOOKCASE_WOOD"
 {
