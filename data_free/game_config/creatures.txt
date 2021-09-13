@@ -2680,6 +2680,9 @@
 "DWARF_PLAYER" inherit "DWARF"
   {
     viewId = { "dwarf_player" }
+    name = append {
+      fullTitle = true
+    }
     skills = {
       "DIGGING" 0.6
       "WORKSHOP" 0.2
