@@ -88,9 +88,11 @@ void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer, F
       addDebt(info->getCost(), type.data());
       auto type = info->getFurnitureType();
       furniturePositions[type].erase(pos);
-      for (auto id : pos.getGame()->getContentFactory()->furniture.getData(type).getStorageId())
+      auto& storageIds = pos.getGame()->getContentFactory()->furniture.getData(type).getStorageId();
+      for (auto id : storageIds)
         storagePositions[id].remove(pos);
-      allStoragePositions.remove(pos);
+      if (!storageIds.empty())
+        allStoragePositions.remove(pos);
       info->reset();
     }
 }
@@ -103,9 +105,11 @@ void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info, Furn
   auto type = info.getFurnitureType();
   if (info.isBuilt(pos, layer)) {
     furniturePositions[type].insert(pos);
-    for (auto id : pos.getFurniture(layer)->getStorageId())
+    auto& storageIds = pos.getGame()->getContentFactory()->furniture.getData(type).getStorageId();
+    for (auto id : storageIds)
       storagePositions[id].add(pos);
-    allStoragePositions.add(pos);
+    if (!storageIds.empty())
+      allStoragePositions.add(pos);
   } else {
     ++unbuiltCounts[type];
     addDebt(info.getCost(), type.data());
@@ -141,9 +145,11 @@ void ConstructionMap::onConstructed(Position pos, FurnitureType type) {
   if (!containsFurniture(pos, layer))
     addFurniture(pos, FurnitureInfo::getBuilt(type), layer);
   furniturePositions[type].insert(pos);
-  for (auto id : pos.getGame()->getContentFactory()->furniture.getData(type).getStorageId())
+  auto& storageIds = pos.getGame()->getContentFactory()->furniture.getData(type).getStorageId();
+  for (auto id : storageIds)
     storagePositions[id].add(pos);
-  allStoragePositions.add(pos);
+  if (!storageIds.empty())
+    allStoragePositions.add(pos);
   --unbuiltCounts[type];
   if (furniture[layer].contains(pos)) { // why this if?
     auto& info = furniture[layer].getOrInit(pos);
