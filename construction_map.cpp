@@ -105,7 +105,7 @@ void ConstructionMap::addFurniture(Position pos, const FurnitureInfo& info, Furn
   auto type = info.getFurnitureType();
   if (info.isBuilt(pos, layer)) {
     furniturePositions[type].insert(pos);
-    auto& storageIds = pos.getGame()->getContentFactory()->furniture.getData(type).getStorageId();
+    auto& storageIds = pos.getFurniture(layer)->getStorageId();
     for (auto id : storageIds)
       storagePositions[id].add(pos);
     if (!storageIds.empty())
