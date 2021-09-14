@@ -1,10 +1,10 @@
-"Welcome to KeeperRL Alpha 32 hotfix 3! This patch was released on May 20, 2021.
+"Welcome to KeeperRL Alpha 33! This patch was released on Sep 14, 2021.
 
 Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
 
-* New Goblin Keeper faction.
-* Combat formation AI improvements, and team member go-to orders in the turn-based mode.
-* Polymorphing and other cool gameplay concepts!
+* Playable Dwarf faction.
+* New Z-level enemies with progressing difficulty.
+* Other new features including more crafting materials, storage system overhaul, and more!
 
 If this is your first time playing KeeperRL, remember to start with the tutorial!
 "
