@@ -34,7 +34,7 @@ class Texture {
 
   static optional<Texture> loadMaybe(const FilePath&);
   optional<SDL::GLenum> loadFromMaybe(SDL::SDL_Surface*);
-  void loadPixels(unsigned char* pixels);
+  bool loadPixels(unsigned char* pixels);
 
   Vec2 getSize() const {
     return size;

@@ -151,7 +151,8 @@ void playfile(const char *fname, SDL_Window* screen, Renderer& renderer, bool wi
 				if (!video)
 					video = last;
 			}
-			texture.loadPixels(video->pixels);
+			if (!texture.loadPixels(video->pixels))
+				goto exitVideo;
 			THEORAPLAY_freeVideo(video);
 			video = NULL;
 		}
@@ -200,7 +201,7 @@ void playfile(const char *fname, SDL_Window* screen, Renderer& renderer, bool wi
 		printf("There was an error decoding this file!\n");
 	else
 		printf("done with this file!\n");*/
-
+exitVideo:
 	if (video) THEORAPLAY_freeVideo(video);
 	if (audio) THEORAPLAY_freeAudio(audio);
 	if (decoder) THEORAPLAY_stopDecode(decoder);
