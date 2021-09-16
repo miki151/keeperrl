@@ -544,7 +544,7 @@ void MainLoop::showCredits(const FilePath& path) {
 
 const auto modVersionFilename = "version_info";
 
-optional<ModVersionInfo> MainLoop::getLocalModVersionInfo(const string& mod) {
+optional<ModVersionInfo> MainLoop::getLocalModVersionInfo(const string& mod) const {
   ifstream in(modsDir.subdirectory(mod).file(modVersionFilename).getPath());
   ModVersionInfo info {};
   in >> info.steamId >> info.version >> info.compatibilityTag;
@@ -774,7 +774,9 @@ void MainLoop::playSimpleGame() {
 }
 
 GameConfig MainLoop::getGameConfig(const vector<string>& modNames) const {
-  return GameConfig(concat({getVanillaDir()}, modNames.transform([&](const string& name) { return modsDir.subdirectory(name); })));
+  return GameConfig(concat({getVanillaDir()}, modNames
+      .filter([&](const string& name) { return !!getLocalModVersionInfo(name); })
+      .transform([&](const string& name) { return modsDir.subdirectory(name); })));
 }
 
 ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {

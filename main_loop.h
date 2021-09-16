@@ -112,7 +112,7 @@ class MainLoop {
   void saveMainModel(PGame&, const FilePath& modelPath, const FilePath& warlordPath);
   TilePaths getTilePathsForAllMods() const;
 
-  optional<ModVersionInfo> getLocalModVersionInfo(const string& mod);
+  optional<ModVersionInfo> getLocalModVersionInfo(const string& mod) const;
   void updateLocalModVersion(const string& mod, const ModVersionInfo&);
   optional<ModDetails> getLocalModDetails(const string& mod);
   void updateLocalModDetails(const string& mod, const ModDetails&);
