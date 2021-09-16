@@ -11,7 +11,7 @@ void Dancing::serialize(Archive& ar, const unsigned int version) {
     map<Creature*, LocalTime> SERIAL(lastSeen);
     ar(assignments, lastSeen);
     for (auto c : assignments)
-      this->assignments.push_back(c->getUniqueId());
+      this->assignments.push_back(c ? c->getUniqueId() : 0);
     for (auto& elem : lastSeen)
       this->lastSeen.set(elem.first, elem.second);
   } else
