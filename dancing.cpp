@@ -2,7 +2,24 @@
 #include "content_factory.h"
 #include "creature.h"
 
-SERIALIZE_DEF(Dancing, positions, currentDanceInfo, assignments, lastSeen, area)
+
+template <class Archive>
+void Dancing::serialize(Archive& ar, const unsigned int version) {
+  ar(positions, currentDanceInfo);
+  if (version < 1) {
+    vector<Creature*> SERIAL(assignments);
+    map<Creature*, LocalTime> SERIAL(lastSeen);
+    ar(assignments, lastSeen);
+    for (auto c : assignments)
+      this->assignments.push_back(c->getUniqueId());
+    for (auto& elem : lastSeen)
+      this->lastSeen.set(elem.first, elem.second);
+  } else
+    ar(assignments, lastSeen);
+  ar(area);
+}
+
+SERIALIZABLE(Dancing)
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Dancing)
 
@@ -31,7 +48,7 @@ void Dancing::initializeCurrentDance(LocalTime startTime) {
           origin,
           startTime
         };
-        assignments = vector<Creature*>(candidatePositions.coord[0].size(), nullptr);
+        assignments = vector<UniqueEntity<Creature>::Id>(candidatePositions.coord[0].size(), 0);
         return;
       }
     }
@@ -51,11 +68,11 @@ void Dancing::setArea(PositionSet p, LocalTime time) {
 
 optional<int> Dancing::assignCreatureIndex(Creature* creature, LocalTime time) {
   for (int i : All(assignments))
-    if (assignments[i] == creature)
+    if (assignments[i] == creature->getUniqueId())
       return i;
   for (int i : All(assignments))
-    if (!assignments[i] || time - lastSeen.at(assignments[i]) > 20_visible) {
-      assignments[i] = creature;
+    if (!assignments[i].getGenericId() || time - lastSeen.getOrFail(assignments[i]) > 20_visible) {
+      assignments[i] = creature->getUniqueId();
       return i;
     }
   return none;
@@ -64,7 +81,7 @@ optional<int> Dancing::assignCreatureIndex(Creature* creature, LocalTime time) {
 int Dancing::getNumActive(LocalTime time) {
   int res = 0;
   for (auto& elem : assignments)
-    if (elem && time - lastSeen.at(elem) < 20_visible)
+    if (!!elem.getGenericId() && time - lastSeen.getOrFail(elem) < 20_visible)
       ++res;
   return res;
 }
@@ -81,7 +98,7 @@ optional<Position> Dancing::getTarget(Creature* creature) {
   }
   auto danceIndex = currentDanceInfo->index;
   auto& curPos = positions[danceIndex];
-  lastSeen[creature] = time;
+  lastSeen.set(creature->getUniqueId(), time);
   int numIterations = curPos.type == Positions::Type::FULL ? curPos.coord.size() : curPos.coord[0].size() * curPos.coord.size();
   int iteration = (time - currentDanceInfo->startTime).getVisibleInt() % numIterations;
   auto creatureIndex = assignCreatureIndex(creature, time);

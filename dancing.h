@@ -4,6 +4,8 @@
 #include "util.h"
 #include "game_time.h"
 #include "position.h"
+#include "unique_entity.h"
+#include "entity_map.h"
 
 RICH_ENUM(DancingPositionsType, CYCLE, FULL);
 
@@ -36,7 +38,9 @@ class Dancing {
   void initializeCurrentDance(LocalTime);
   optional<int> assignCreatureIndex(Creature*, LocalTime);
   int getNumActive(LocalTime);
-  vector<Creature*> SERIAL(assignments);
-  map<Creature*, LocalTime> SERIAL(lastSeen);
+  vector<UniqueEntity<Creature>::Id> SERIAL(assignments);
+  EntityMap<Creature, LocalTime> SERIAL(lastSeen);
   PositionSet SERIAL(area);
 };
+
+CEREAL_CLASS_VERSION(Dancing, 1);
