@@ -274,12 +274,16 @@ constexpr int textureWidth = 720;
 
 static int getNumFrames(const vector<FilePath>& files, int tileWidth) {
   int ret = 0;
-  for (int i : All(files)) {
-    SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath());
-    CHECK(im) << SDL::IMG_GetError();
-    auto dest = OnExit([&] { SDL::SDL_FreeSurface(im); });
-    ret += im->w / tileWidth;
-  }
+  bool firstError = true;
+  for (int i : All(files))
+    if (SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath())) {
+      auto dest = OnExit([&] { SDL::SDL_FreeSurface(im); });
+      ret += im->w / tileWidth;
+    } else 
+    if (firstError) {
+      USER_INFO << "Error loading image " << files[i].getPath() << ": " << SDL::IMG_GetError();
+      firstError = true;
+    }
   return ret;
 }
 
@@ -297,37 +301,37 @@ bool TileSet::loadTilesFromDir(const DirectoryPath& path, Vec2 size, bool overwr
   CHECK(image) << SDL::SDL_GetError();
   int frameCount = 0;
   vector<pair<string, Vec2>> addedPositions;
-  for (int i : All(files)) {
-    SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath());
-    auto dest = OnExit([&] { SDL::SDL_FreeSurface(im); });
-    SDL::SDL_SetSurfaceBlendMode(im, SDL::SDL_BLENDMODE_NONE);
-    USER_CHECK(im) << files[i] << ": "<< SDL::IMG_GetError();
-    USER_CHECK((im->w % size.x == 0) && im->h == size.y) << files[i] << " has wrong size " << im->w << " " << im->h;
-    string fileName = files[i].getFileName();
-    string spriteName = fileName.substr(0, fileName.size() - imageSuf.size());
-    if (tileCoords.count(spriteName)) {
-      if (overwrite)
-        tileCoords.erase(spriteName);
-      else
-        continue;
+  for (int i : All(files))
+    if (SDL::SDL_Surface* im = SDL::IMG_Load(files[i].getPath())) {
+      auto dest = OnExit([&] { SDL::SDL_FreeSurface(im); });
+      SDL::SDL_SetSurfaceBlendMode(im, SDL::SDL_BLENDMODE_NONE);
+      USER_CHECK(im) << files[i] << ": "<< SDL::IMG_GetError();
+      USER_CHECK((im->w % size.x == 0) && im->h == size.y) << files[i] << " has wrong size " << im->w << " " << im->h;
+      string fileName = files[i].getFileName();
+      string spriteName = fileName.substr(0, fileName.size() - imageSuf.size());
+      if (tileCoords.count(spriteName)) {
+        if (overwrite)
+          tileCoords.erase(spriteName);
+        else
+          continue;
+      }
+      for (int frame : Range(im->w / size.x)) {
+        SDL::SDL_Rect dest;
+        int posX = frameCount % rowLength;
+        int posY = frameCount / rowLength;
+        dest.x = size.x * posX;
+        dest.y = size.y * posY;
+        SDL::SDL_Rect src;
+        src.x = frame * size.x;
+        src.y = 0;
+        src.w = size.x;
+        src.h = size.y;
+        SDL_BlitSurface(im, &src, image, &dest);
+        addedPositions.emplace_back(spriteName, Vec2(posX, posY));
+        INFO << "Loading tile sprite " << fileName << " at " << posX << "," << posY;
+        ++frameCount;
+      }
     }
-    for (int frame : Range(im->w / size.x)) {
-      SDL::SDL_Rect dest;
-      int posX = frameCount % rowLength;
-      int posY = frameCount / rowLength;
-      dest.x = size.x * posX;
-      dest.y = size.y * posY;
-      SDL::SDL_Rect src;
-      src.x = frame * size.x;
-      src.y = 0;
-      src.w = size.x;
-      src.h = size.y;
-      SDL_BlitSurface(im, &src, image, &dest);
-      addedPositions.emplace_back(spriteName, Vec2(posX, posY));
-      INFO << "Loading tile sprite " << fileName << " at " << posX << "," << posY;
-      ++frameCount;
-    }
-  }
   texturesTmp.push_back({image, addedPositions});
   for (auto& pos : addedPositions)
     tileCoords[pos.first].push_back({size, pos.second, nullptr});
