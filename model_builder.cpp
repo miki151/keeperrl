@@ -306,7 +306,7 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<Bio
               + biome.data() + ")", numTries,
               [&] { tryCampaignBaseModel(tribe, alignment, biome, none); }); });
     else if (type == "zlevels") {
-      FATAL << "Fix after adding z level groups";
+//      FATAL << "Fix after adding z level groups";
       for (auto alignment : ENUM_ALL(TribeAlignment))
         for (int i : Range(1, 30))
           tasks.push_back([=] { measureModelGen(type + " " + toString(i) +

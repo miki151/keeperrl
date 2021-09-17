@@ -45,28 +45,6 @@ PCollective EnemyInfo::buildCollective(ContentFactory* contentFactory) const {
   return collective;
 }
 
-static EnemyInfo getVault(BuiltinLayoutId id, CreatureId creature, TribeId tribe, int num,
-    optional<ItemListId> itemFactory = none) {
-  return EnemyInfo(CONSTRUCT(SettlementInfo,
-      c.type = MapLayoutTypes::Builtin LIST(id, BuildingId("DUNGEON"), {});
-      c.inhabitants.fighters = CreatureList(num, creature);
-      c.tribe = tribe;
-      c.closeToPlayer = true;
-      c.dontConnectCave = true;
-      if (itemFactory)
-        c.shopItems = {SettlementInfo::ShopInfo LIST(Range(16, 20), *itemFactory)};
-    ), CollectiveConfig::noImmigrants())
-    .setNonDiscoverable();
-}
-
-namespace {
-struct VaultInfo {
-  CreatureId id;
-  int min;
-  int max;
-};
-}
-
 vector<EnemyId> EnemyFactory::getAllIds() const {
   return getKeys(enemies);
 }
