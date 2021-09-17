@@ -335,7 +335,7 @@ void Renderer::putPixel(SDL::SDL_Surface* surface, Vec2 pos, Color color) {
 void Renderer::setFullscreen(bool v) {
   fullscreen = v;
   CHECK(SDL::SDL_SetWindowFullscreen(window, v ? SDL::SDL_WINDOW_FULLSCREEN_DESKTOP : 0) == 0) << SDL::SDL_GetError();
-  SDL_GetWindowSize(window, &width, &height);
+  SDL_GL_GetDrawableSize(window, &width, &height);
   initOpenGL();
 }
 
@@ -452,7 +452,7 @@ Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontP
   SDL_SetWindowMinimumSize(window, minResolution.x, minResolution.y);
   SDL::SDL_Event ev;
   while(SDL_PollEvent(&ev)){}
-  SDL_GetWindowSize(window, &width, &height);
+  SDL::SDL_GL_GetDrawableSize(window, &width, &height);
   setVsync(true);
   originalCursor = SDL::SDL_GetCursor();
   initOpenGL();
@@ -551,8 +551,7 @@ void Renderer::drawAndClearBuffer() {
 }
 
 void Renderer::resize(int w, int h) {
-  width = w;
-  height = h;
+  SDL_GL_GetDrawableSize(window, &width, &height);
   initOpenGL();
 }
 

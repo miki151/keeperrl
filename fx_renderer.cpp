@@ -256,6 +256,8 @@ void FXRenderer::setView(float zoom, float offsetX, float offsetY, int w, int h)
 
 void FXRenderer::drawParticles(FVec2 viewOffset, Framebuffer& blendFBO, Framebuffer& addFBO) {
   PROFILE;
+  int viewPortSize[4];
+  SDL::glGetIntegerv(GL_VIEWPORT, viewPortSize);
   IVec2 viewSize(blendFBO.width, blendFBO.height);
   pushOpenglView();
 
@@ -284,6 +286,7 @@ void FXRenderer::drawParticles(FVec2 viewOffset, Framebuffer& blendFBO, Framebuf
   SDL::glPopAttrib();
   SDL::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   popOpenglView();
+  SDL::glViewport(viewPortSize[0], viewPortSize[1], viewPortSize[2], viewPortSize[3]);
 }
 
 static void drawTexturedQuad(const FRect& rect, const FRect& trect) {
