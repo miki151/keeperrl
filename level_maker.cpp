@@ -50,6 +50,7 @@
 #include "layout_canvas.h"
 #include "layout_generator.h"
 #include "perlin_noise.h"
+#include "collective_name.h"
 
 namespace {
 
@@ -1583,8 +1584,15 @@ class PlaceCollective : public LevelMaker {
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     auto territory = builder->toGlobalCoordinates(area.getAllSquares()
         .filter([&](Vec2 pos) { return predicate.apply(builder, pos); }));
-    if (!collective->hasCentralPoint())
+    auto getName = [&] {
+      if (auto name = collective->generateName())
+        return name->full;
+      return "noname"_s;
+    };
+    if (!collective->hasCentralPoint()) {
+      CHECK(!territory.empty()) << "Tried to place " << getName() << " on an empty territory";
       collective->setCentralPoint(Vec2::getCenterOfWeight(territory));
+    }
     collective->addArea(territory);
     builder->addCollective(collective);
   }

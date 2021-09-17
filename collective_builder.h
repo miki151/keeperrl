@@ -30,6 +30,7 @@ class CollectiveBuilder {
 
   PCollective build(const ContentFactory*) const;
   bool hasCreatures() const;
+  optional<CollectiveName> generateName() const;
 
   private:
   optional<CollectiveName> getCollectiveName();
@@ -47,5 +48,4 @@ class CollectiveBuilder {
   optional<string> locationName;
   optional<string> raceName;
   bool discoverable = false;
-  optional<CollectiveName> generateName() const;
 };
