@@ -81,10 +81,9 @@ void ConstructionMap::addDebt(const CostInfo& cost, const char* reason) {
 
 void ConstructionMap::onFurnitureDestroyed(Position pos, FurnitureLayer layer, FurnitureType type) {
   PROFILE;
-  // We don't care if the destroyed furniture was the same type that we track,
-  // for furnitures like phylactery which are replaced upon usage.
   if (auto info = furniture[layer].getReferenceMaybe(pos))
-    if (info->getFurnitureType() == type) {
+    if (info->getFurnitureType() == type ||
+        (!strcmp(type.data(), "PHYLACTERY_ACTIVE") && !strcmp(info->getFurnitureType().data(), "PHYLACTERY"))) {
       addDebt(info->getCost(), type.data());
       auto type = info->getFurnitureType();
       furniturePositions[type].erase(pos);
