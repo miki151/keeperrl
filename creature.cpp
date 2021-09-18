@@ -1678,7 +1678,7 @@ static optional<Position> findInaccessiblePos(Position startingPos) {
       }
   }
   auto notVisited = startingPos.getLevel()->getAllPositions().filter(
-      [&](auto& pos) { return pos.canEnterEmpty({MovementTrait::WALK}) && !visited.count(pos); });
+      [&](auto& pos) { return pos.canEnter({MovementTrait::WALK}) && !visited.count(pos); });
   if (!notVisited.empty())
     return Random.choose(notVisited);
   return none;
