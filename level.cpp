@@ -644,13 +644,13 @@ vector<PhylacteryInfo> Level::getPhylacteries() {
       if (!f->pos.isSameModel(c->getPosition()))
         continue;
       auto cIndex = levels.findElement(c->getPosition().getLevel());
-      auto lIndex = *levels.findElement(this);
+      auto lIndex = levels.findElement(this);
       auto pIndex = levels.findElement(f->pos.getLevel());
-      if (!cIndex || !pIndex || (*cIndex < lIndex && *pIndex < lIndex) || (*cIndex > lIndex && *pIndex > lIndex))
+      if (!lIndex || !cIndex || !pIndex || (*cIndex < *lIndex && *pIndex < *lIndex) || (*cIndex > *lIndex && *pIndex > *lIndex))
         continue;
       auto cPos = c->getPosition().getCoord();
       optional<ViewObject> object;
-      if (*cIndex != lIndex) {
+      if (*cIndex != *lIndex) {
         if (auto stairs = getStairsTo(c->getPosition().getLevel()))
           cPos = stairs->getCoord();
         else
@@ -658,7 +658,7 @@ vector<PhylacteryInfo> Level::getPhylacteries() {
       } else
         object = c->getViewObject();
       auto pPos = f->pos.getCoord();
-      if (*pIndex != lIndex) {
+      if (*pIndex != *lIndex) {
         if (auto stairs = getStairsTo(f->pos.getLevel()))
           pPos = stairs->getCoord();
         else
