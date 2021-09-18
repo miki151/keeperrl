@@ -2431,10 +2431,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
     }
     case UserInputId::WORKSHOP_ADD:
       if (chosenWorkshop) {
+        int index = input.get<int>();
         if (chosenWorkshop->type == WorkshopType("FURNACE")) {
-          int index = input.get<int>();
-          auto& option = getFurnaceOptions()[index];
-          collective->getFurnace().queue(option.pos.removeItem(option.item));
+          auto options = getFurnaceOptions();
+          if (index >= 0 && index < options.size())
+           collective->getFurnace().queue(options[index].pos.removeItem(options[index].item));
         } else {
           auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
           int index = input.get<int>();
