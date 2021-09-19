@@ -26,10 +26,11 @@ On Linux and Mac:
   * libsdl2-dev, libsdl2-image-dev
   * libopenal-dev
   * libvorbis-dev
+  * libtheora-dev
 
 Under Ubuntu 14.4 , you could use these to create development enviroment 
 ```
-sudo apt-get install libsdl2-dev libsdl2-image-dev libopenal-dev libvorbis-dev llvm-3.4 build-essential
+sudo apt-get install libsdl2-dev libsdl2-image-dev libopenal-dev libvorbis-dev libtheora-dev llvm-3.4 build-essential
 
 ```
 
