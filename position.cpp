@@ -680,7 +680,8 @@ void Position::removeFurniture(const Furniture* f, PFurniture replace, Creature*
   auto layer = f->getLayer();
   auto type = f->getType();
   CHECK(layer != FurnitureLayer::GROUND || !!replace);
-  CHECK(getFurniture(layer) == f);
+  CHECK(!!getFurniture(layer)) << "null furniture " << type.data() << " " << EnumInfo<FurnitureLayer>::getString(layer);
+  CHECK(getFurniture(layer) == f) << getFurniture(layer)->getType().data() << " " << type.data() << " " << EnumInfo<FurnitureLayer>::getString(layer);
   if (auto& effect = f->getLastingEffectInfo())
     removeFurnitureEffect(f->getTribe(), *effect);
   if (replace) {
