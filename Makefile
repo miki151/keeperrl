@@ -110,7 +110,7 @@ endif
 SRCS += $(shell ls -t extern/*.cpp)
 
 LIBS +=  -lvorbis -lvorbisfile -ltheoradec  -logg $(OPENGL_LIBS) \
-	   $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS} $(STEAM_LIBS)
+	   $(BOOST_LIBS) -lz -lpthread -lcurl -lssl ${LDFLAGS} $(STEAM_LIBS)
 
 ifdef EASY_PROFILER
 LIBS += libeasy_profiler.so
