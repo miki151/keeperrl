@@ -802,7 +802,10 @@ End
 }
 
 "hydra" {
-  Inside(5, CellularAutomaton(Reset("water", "set_territory"), 0.65))
+  Inside(5, {
+      CellularAutomaton(Reset("water"), 0.65)
+      Set("set_territory")
+  })
   CellularAutomaton(Set("fog"), 0.65)
 }
 
