@@ -98,7 +98,7 @@ ifdef OSX
 OPENGL_LIBS = -framework OpenGL -framework SDL2 -framework OpenAL -framework SDL2_image -F/home/michal/Downloads/osxcross/libs
 else
 OPENGL_LIBS = -lGL -lSDL2 -lopenal -lSDL2_image
-LDFLAGS += -L/usr/local/lib -L/usr/lib/x86_64-linux-gnu -lopenal
+LDFLAGS += -L/usr/local/lib -L/usr/lib/x86_64-linux-gnu -lopenal -lssl
 endif
 
 
@@ -110,7 +110,7 @@ endif
 SRCS += $(shell ls -t extern/*.cpp)
 
 LIBS +=  -lvorbis -lvorbisfile -ltheoradec  -logg $(OPENGL_LIBS) \
-	   $(BOOST_LIBS) -lz -lpthread -lcurl -lssl ${LDFLAGS} $(STEAM_LIBS)
+	   $(BOOST_LIBS) -lz -lpthread -lcurl ${LDFLAGS} $(STEAM_LIBS)
 
 ifdef EASY_PROFILER
 LIBS += libeasy_profiler.so
