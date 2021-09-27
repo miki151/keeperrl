@@ -1008,9 +1008,10 @@ void Position::updateVisibility() const {
 void Position::updateSupport() const {
   PROFILE;
   for (auto pos : neighbors8())
-    for (auto f : pos.modFurniture())
-      if (!getGame()->getContentFactory()->furniture.getData(f->getType()).hasRequiredSupport(pos))
-        f->destroy(pos, DestroyAction::Type::BASH);
+    for (auto layer : ENUM_ALL(FurnitureLayer))
+      if (auto f = pos.modFurniture(layer))
+        if (!getGame()->getContentFactory()->furniture.getData(f->getType()).hasRequiredSupport(pos))
+          f->destroy(pos, DestroyAction::Type::BASH);
 }
 
 void Position::updateSupportViewId(Furniture* furniture) const {
