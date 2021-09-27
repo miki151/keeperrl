@@ -76,9 +76,11 @@ int UniqueEntity<T>::Id::getHash() const {
 template<typename T>
 template <class Archive> 
 void UniqueEntity<T>::Id::serialize(Archive& ar, const unsigned int version) {
-  key += offset;
+  if (key != 0)
+    key += offset;
   ar(key, hash);
-  key -= offset;
+  if (key != 0)
+    key -= offset;
 }
 
 template<typename T>
@@ -93,6 +95,8 @@ void UniqueEntity<T>::setUniqueId(UniqueEntity::Id i) {
 
 template<typename T>
 GenericId UniqueEntity<T>::Id::getGenericId() const {
+  if (hash == 0) // this workaround can be removed in alpha 34
+    return 0;
   return key;
 }
 
