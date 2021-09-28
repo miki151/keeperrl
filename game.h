@@ -57,6 +57,7 @@ class Game : public OwnedObject<Game> {
   bool canTransferCreature(Creature*, WModel to);
   Position getTransferPos(WModel from, WModel to) const;
   string getGameIdentifier() const;
+  string getGameOrRetiredIdentifier(Position) const;
   string getGameDisplayName() const;
   MusicType getCurrentMusic() const;
   void setCurrentMusic(MusicType);

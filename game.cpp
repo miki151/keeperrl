@@ -601,6 +601,13 @@ string Game::getGameIdentifier() const {
   return gameIdentifier;
 }
 
+string Game::getGameOrRetiredIdentifier(Position pos) const {
+  Vec2 coords = getModelCoords(pos.getModel());
+  if (auto retired = campaign->getSites()[coords].getRetired())
+    return retired->fileInfo.getGameId();
+  return gameIdentifier;
+}
+
 View* Game::getView() const {
   return view;
 }
@@ -616,6 +623,7 @@ WarlordInfoWithReference Game::getWarlordInfo() {
       creatures.push_back(c);
   return WarlordInfoWithReference {
     creatures.transform([&](auto c) {
+      CHECK(c->getPosition().getModel() == this->getMainModel().get());
       c->removeGameReferences();
       return c->getThis().giveMeSharedPointer();
     }),
@@ -815,7 +823,8 @@ void Game::addAnalytics(const string& name, const string& value) {
 }
 
 void Game::handleMessageBoard(Position pos, Creature* c) {
-  auto boardId = int(combineHash(pos, getGameIdentifier()));
+  auto gameId = getGameOrRetiredIdentifier(pos);
+  auto boardId = int(combineHash(pos, gameId));
   vector<ListElem> options;
   atomic<bool> cancelled(false);
   view->displaySplash(nullptr, "Fetching board contents...", [&] {
@@ -848,7 +857,7 @@ void Game::handleMessageBoard(Position pos, Creature* c) {
   if (auto index = view->chooseFromList("", options))
     if (auto text = view->getText("Enter message", "", 80)) {
       if (text->size() >= 2) {
-        if (!fileSharing->uploadBoardMessage(getGameIdentifier(), boardId, c->getName().title(), *text))
+        if (!fileSharing->uploadBoardMessage(gameId, boardId, c->getName().title(), *text))
           view->presentText("", "Please enable online features in the settings.");
       } else
         view->presentText("", "The message was too short.");
