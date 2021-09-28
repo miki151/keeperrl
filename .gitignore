@@ -3,6 +3,7 @@ mods/
 build/
 build_kde/
 html/
+obj-*/
 .cache/
 .vscode/
 .kdev4/

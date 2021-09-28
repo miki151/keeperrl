@@ -44,7 +44,9 @@ ifndef OPTFLAGS
 	OPTFLAGS = -Winvalid-pch -DWINDOWS $(GFLAG)
 endif
 
+ifndef OBJDIR
 OBJDIR = obj
+endif
 NAME = keeper
 
 ROOT = ./

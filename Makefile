@@ -79,10 +79,12 @@ ifdef STEAMWORKS
 include Makefile-steam
 endif
 
+ifndef OBJDIR
 ifdef OPT
 OBJDIR = obj-opt
 else
 OBJDIR = obj
+endif
 endif
 
 NAME = keeper
