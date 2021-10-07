@@ -552,7 +552,7 @@ ItemAttributes ItemTypes::Balsam::getAttributes(const ContentFactory* factory) c
       i.weight = 0.5;
       i.price = 100;
       i.uses = 1;
-      i.storageIds = {StorageId("equipment")};
+      i.storageIds = LIST(StorageId("potions"), StorageId("equipment"));
   );
 }
 
