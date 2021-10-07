@@ -263,10 +263,10 @@
   }
   "morgue"
   {
-    { Furniture {{ "MORGUE_TABLE" } "WOOD" 10 }                     "Morgue table"        "Morgue"
-        "Produces animated bodies." }
-    { Furniture {{ "LABORATORY" } "STONE" 10 }                     "Laboratory"        "Morgue"
+    { Furniture {{ "LABORATORY" } "STONE" 10 }                     "Laboratory"        "Crafting"
         "Produces balsams for the animated bodies."            0 { TechId "embalming" }}
+    { Furniture {{ "MORGUE_TABLE" } "WOOD" 10 }                     "Morgue table"     ""
+        "Produces animated bodies." }
   }
   "furnace"
   {

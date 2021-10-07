@@ -2320,11 +2320,10 @@
   }
 "VAMPIRE"
   {
-    viewId = { "vampire" }
+    viewId = { "vampire_warrior" }
     attr = {
       DAMAGE 17
       DEFENSE 17
-      SPELL_DAMAGE 17 
     }
     body = {
       type = Humanoid LARGE
@@ -2348,13 +2347,52 @@
     }
     maxLevelIncrease = {
       MELEE 7
-      SPELL 7
     }
-    aiType = RANGED
-    spellSchools = { "illusion" "vampire" }
+#    spellSchools = { "illusion" "vampire" }
     name = {
-      name = "vampire"
+      name = "vampire warrior"
       firstNameGen = "VAMPIRE"
+    }
+    hatedByEffect = HATE_UNDEAD
+    inventory = {
+      { "ChainArmor"}
+      { "Sword"}
+    }
+  }
+"VAMPIRE_BRUTE"
+  {
+    viewId = { "vampire_brute" }
+    attr = {
+      DAMAGE 27
+      DEFENSE 10
+    }
+    body = {
+      type = HumanoidLike LARGE
+      material = UNDEAD_FLESH
+      addBodyPart = {
+        WING 2
+      }
+      intrinsicAttacks = {
+        HEAD {{
+          isExtraAttack = true
+          itemType = { Intrinsic { "bite_attack" } "fangs" 5 {
+            attackType = BITE
+            attackMsg = BITE
+            attackerEffect = { RegrowBodyPart 1 }
+            victimEffect = { 0.1 Lasting BLEEDING  } } }}}
+      }
+    }
+    chatReactionFriendly = "\"All men be cursed!\""
+    chatReactionHostile = "\"Die!\""
+    permanentEffects = {
+      NIGHT_VISION 1
+      RANGED_RESISTANCE 1
+    }
+    maxLevelIncrease = {
+      MELEE 7
+    }
+    name = {
+      name = "vampire brute"
     }
     hatedByEffect = HATE_UNDEAD
   }
@@ -2367,7 +2405,7 @@
       SPELL_DAMAGE 27 
     }
     name = {
-      name = "vampire lord"
+      name = "vampire noble"
       firstNameGen = "VAMPIRE"
     }
     maxLevelIncrease = {
@@ -2381,7 +2419,7 @@
       FIRE_RESISTANT 1
       DARKNESS_SOURCE 1
     }
-    spellSchools = { "mage" }
+    spellSchools = { "mage" "illusion" }
     spells = { "defense bonus" "damage bonus" "deception" }
     chatReactionFriendly = "\"There are times when you simply cannot refuse a drink!\""
     chatReactionHostile = "\"There are times when you simply cannot refuse a drink!\""
@@ -4556,9 +4594,137 @@ End
       DEFENSE 45
     }
   }
+"ZOMBIE_ARTISAN" inherit "ZOMBIE"
+  {
+    viewId = { "zombie_artisan" }
+    attr = {
+      DAMAGE 10
+      DEFENSE 10
+    }
+    maxLevelIncrease = {}
+    name = {
+      name = "zombie artisan"
+    }
+  }
+"ZOMBIE_MAGE" inherit "ZOMBIE"
+  {
+    viewId = { "zombie_mage" }
+    attr = {
+      SPELL_DAMAGE 17
+      DEFENSE 13
+    }
+    body = {
+      type = Humanoid LARGE
+    }
+    maxLevelIncrease = {
+      SPELL 7
+    }
+    name = {
+      name = "zombie mage"
+    }
+    hatedByEffect = HATE_UNDEAD
+  }
+"SKELETON_WARRIOR"
+  {
+    viewId = { "skeleton_warrior" }
+    attr = {
+      DAMAGE 17
+      DEFENSE 13
+    }
+    body = {
+      type = Humanoid LARGE
+      material = BONE
+    }
+    maxLevelIncrease = {
+      MELEE 7
+    }
+    name = {
+      name = "skeleton warrior"
+    }
+    hatedByEffect = HATE_UNDEAD
+  }
+"SKELETON_ARCHER"
+  {
+    viewId = { "skeleton_archer" }
+    attr = {
+      RANGED_DAMAGE 17
+      DEFENSE 13
+    }
+    body = {
+      type = Humanoid LARGE
+      material = BONE
+    }
+    maxLevelIncrease = {
+      ARCHERY 7
+    }
+    name = {
+      name = "skeleton archer"
+    }
+    hatedByEffect = HATE_UNDEAD
+  }
+"SKELETAL_ABOMINATION_PLAYER" inherit "ABOMINATION_PLAYER"
+  {
+    viewId = { "skeletal_abomination" }
+    body = {
+      type = FourLegged HUGE
+      weight = 200
+      material = BONE
+    }
+    name = {
+      name = "skeletal abomination"
+    }
+    hatedByEffect = HATE_UNDEAD
+  }
+"SLASHER"
+  {
+    viewId = { "slasher" }
+    attr = {
+      DAMAGE 40
+      DEFENSE 11 
+    }
+    body = {
+      type = FourLegged LARGE
+      weight = 35
+      intrinsicAttacks = {
+        LEG  {{itemType = { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
+        HEAD {{itemType = { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
+      }
+    }
+    permanentEffects = {
+      NIGHT_VISION 1
+      EXPLORE_NOCTURNAL_SKILL 1
+    }
+    name = {
+      name = "slasher"
+    }
+  }
+"JUGGERNAUT"
+  {
+    viewId = { "juggernaut" }
+    attr = {
+      DAMAGE 24
+      DEFENSE 20
+    }
+    body = {
+      type = Humanoid LARGE
+      weight = 400
+    }
+    name = {
+      name = "juggernaut"
+    }
+    maxLevelIncrease = {
+      MELEE 12
+    }
+  }
+"VAMPIRE_LORD_NECRO" inherit "VAMPIRE_LORD"
+  {
+    skills = append {
+      "MORGUE" 1.0
+      "LABORATORY" 1.0
+    }
+  }
 
 # legacy creatures not in vanilla anymore
-
 
 "ORC"
   {

@@ -229,13 +229,28 @@ End
 {
   "MORGUE"
   {
-      { item = {Assembled{ "ZOMBIE_WORKER" "zombie" {NO_LIMIT FIGHTER WORKER} BALSAM 1}}
+      { item = {Assembled{ "ZOMBIE_WORKER" "zombie worker" {NO_LIMIT FIGHTER WORKER} BALSAM 1}}
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
-      { item = {Assembled{ "SKELETON" "skeleton" {NO_LIMIT FIGHTER} BALSAM 1 }}
+      { item = {Assembled{ "ZOMBIE_ARTISAN" "zombie artisan" {NO_LIMIT FIGHTER} BALSAM 1 }}
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
-      { item = {Assembled{ "MUMMY" "mummy" {NO_LIMIT FIGHTER} BALSAM 2}}
-        work = 20 cost = "CORPSE" 2 applyImmediately = true notArtifact = true}
-      { item = {Assembled{ "VAMPIRE" "vampire" {NO_LIMIT FIGHTER} BALSAM 3}}
+      { item = {Assembled{ "ZOMBIE_MAGE" "zombie mage" {NO_LIMIT FIGHTER} BALSAM 1 }}
+        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "SKELETON_WARRIOR" "skeleton warrior" {NO_LIMIT FIGHTER} BALSAM 1 }}
+        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "SKELETON_ARCHER" "skeleton archer" {NO_LIMIT FIGHTER} BALSAM 1 }}
+        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "SKELETAL_ABOMINATION_PLAYER" "skeletal abomination" {NO_LIMIT FIGHTER}
+          BODY_PART 199}}
+        work = 40 cost = "CORPSE" 10 applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "SLASHER" "slasher" {NO_LIMIT FIGHTER} BALSAM 1 }}
+        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "JUGGERNAUT" "juggernaut" {NO_LIMIT FIGHTER} BALSAM 1 }}
+        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "VAMPIRE" "vampire warrior" {NO_LIMIT FIGHTER} BALSAM 3}}
+        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "VAMPIRE_BRUTE" "vampire brute" {NO_LIMIT FIGHTER} BALSAM 3}}
+        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "VAMPIRE_LORD_NECRO" "vampire noble" {NO_LIMIT FIGHTER} BALSAM 3}}
         work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true}
       { item = {Assembled{ "ABOMINATION_PLAYER" "abomination" {NO_LIMIT FIGHTER} BODY_PART 199}}
         work = 40 cost = "CORPSE" 10 applyImmediately = true notArtifact = true}
@@ -245,18 +260,17 @@ End
       {{Balsam AddBodyPart HEAD 1 none}     4 "GOLD" 5 "embalming"}
       {{Balsam {AddBodyPart WING 2 none Permanent FLYING}}     4 "GOLD" 5 "embalming"}
       {{Balsam AddBodyPart ARM 2 none}      4 "GOLD" 5 "embalming"}
-      {{Balsam IncreaseAttr DEFENSE 3}      4 "GOLD" 5 "embalming"}
-      {{Balsam IncreaseAttr DAMAGE 3}       4 "GOLD" 5 "embalming"}
-      {{Balsam IncreaseAttr RANGED_DAMAGE 3}4 "GOLD" 5 "embalming"}
-      {{Balsam IncreaseAttr SPELL_DAMAGE 3} 4 "GOLD" 5 "embalming"}
       {{Balsam Permanent TELEPATHY}         4 "GOLD" 5 "embalming"}
       {{Balsam Permanent SWARMER}           4 "GOLD" 5 "embalming"}
       {{Balsam Permanent DARKNESS_SOURCE}   4 "GOLD" 10 "advanced embalming"}
-      {{Balsam IncreaseAttr DEFENSE 6}      4 "GOLD" 10 "advanced embalming"}
-      {{Balsam IncreaseAttr DAMAGE 6}       4 "GOLD" 10 "advanced embalming"}
-      {{Balsam IncreaseAttr RANGED_DAMAGE 6}4 "GOLD" 10 "advanced embalming"}
-      {{Balsam IncreaseAttr SPELL_DAMAGE 6} 4 "GOLD" 10 "advanced embalming"}
-      {{Balsam {IncreaseAttr DAMAGE 13 Permanent INSANITY}}       4 "GOLD" 10 "advanced embalming"}
+      {{Balsam Name "Limited life, damage boost" Description "Life limited to 2000 turns, +10 damage."
+          { Lasting 2000 SUMMONED  IncreaseAttr DAMAGE 10 }}       4 "GOLD" 10 "advanced embalming"}
+      {{Balsam Name "Limited life, defense boost" Description "Life limited to 2000 turns, +10 defense."
+          { Lasting 2000 SUMMONED  IncreaseAttr DEFENSE 10 }}       4 "GOLD" 10 "advanced embalming"}
+      {{Balsam Name "Limited life, ranged damage boost" Description "Life limited to 2000 turns, +10 ranged damage."
+          { Lasting 2000 SUMMONED  IncreaseAttr RANGED_DAMAGE 10 }}       4 "GOLD" 10 "advanced embalming"}
+      {{Balsam Name "Limited life, spell damage boost" Description "Life limited to 2000 turns, +10 spell damage."
+          { Lasting 2000 SUMMONED  IncreaseAttr SPELL_DAMAGE 10 }}       4 "GOLD" 10 "advanced embalming"}
       {{Balsam RemovePermanent SLOWED}      4 "GOLD" 10 "advanced embalming"}
       {{Balsam Permanent FAST_CRAFTING}     4 "GOLD" 10 "advanced embalming"}
       {{Balsam Permanent FAST_TRAINING}     4 "GOLD" 10 "advanced embalming"}
@@ -265,6 +279,9 @@ End
       {{Balsam IncreaseSkill DIGGING      0.5}                    4 "GOLD" 10 "advanced embalming"}
       {{Balsam IncreaseSkill MULTI_WEAPON 0.5}                    4 "GOLD" 10 "advanced embalming"}
       {{Balsam SpecialAttr DEFENSE       12 InTerritory}          4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr DAMAGE        12 CreatureStatus LEADER}4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr DAMAGE        12 Spellcaster }         4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr DEFENSE       12 Not Humanoid }        4 "GOLD" 10 "master embalming"}
       {{Balsam SpecialAttr DEFENSE       12 HatedBy HATE_DWARVES} 4 "GOLD" 10 "master embalming"}
       {{Balsam SpecialAttr DAMAGE        12 HatedBy HATE_DWARVES} 4 "GOLD" 10 "master embalming"}
       {{Balsam SpecialAttr RANGED_DAMAGE 12 HatedBy HATE_DWARVES} 4 "GOLD" 10 "master embalming"}

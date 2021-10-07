@@ -18,8 +18,9 @@
 { "player_f" "@" ColorId YELLOW }
 { "demon_dweller" "U" ColorId PURPLE }
 { "demon_lord" "U" ColorId YELLOW }
-{ "vampire" "V" ColorId DARK_GRAY }
+{ "vampire_warrior" "V" ColorId DARK_GRAY }
 { "vampire_lord" "V" ColorId PURPLE }
+{ "vampire_brute" "V" ColorId LIGHT_BROWN }
 { "devil" "&" ColorId ORANGE }
 { "satan" "&" ColorId RED }
 { "adoxie_foot_left" "u" ColorId PURPLE }
@@ -226,7 +227,14 @@
 { "ent" "E" ColorId LIGHT_BROWN }
 { "angel" "A" ColorId LIGHT_BLUE }
 { "zombie" "Z" ColorId GREEN }
-{ "skeleton" "Z" ColorId WHITE }
+{ "zombie_artisan" "Z" ColorId LIGHT_BLUE }
+{ "zombie_mage" "Z" ColorId PINK }
+{ "skeleton" "S" ColorId WHITE }
+{ "skeleton_warrior" "S" ColorId LIGHT_GRAY }
+{ "skeleton_archer" "S" ColorId LIGHT_BLUE }
+{ "skeletal_abomination" "S" ColorId PURPLE }
+{ "slasher" "S" ColorId LIGHT_BROWN }
+{ "juggernaut" "J" ColorId BROWN }
 { "mummy" "Z" ColorId YELLOW }
 { "jackal" "d" ColorId LIGHT_BROWN }
 { "deer" "R" ColorId DARK_BROWN }

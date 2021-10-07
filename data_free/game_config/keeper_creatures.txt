@@ -49,7 +49,32 @@
   workshopGroups = { "basic" "bows" }
   description = "Play as a not-so-evil human race. Recruit knights, priests and angelic beings!"
 }
-"4_gnomes"
+"4_necromancer"
+{
+  creatureId = { "NECROMANCER" "NECROMANCER_F" }
+  tribeAlignment = EVIL
+  immigrantGroups = {"necromancer"}
+  technology = { "embalming" "advanced embalming" "master embalming" "sorcery" "advanced sorcery" "master sorcery"
+      "iron working" "distillation"
+  }
+  zLevelGroups = { "basic" "evil" }
+  initialTech = {  }
+  buildingGroups = {
+      "structure" "doors" "floors" "storage" "zones" "library" "phylactery" "beds" "coffins"
+      "training_dummies" "poetry" "distillery" "morgue" "orders"
+      "installations" "magical_installations"
+  }
+  workshopGroups = { "morgue" }
+  description = "Play as a necromancer!"
+  credit = { "CORPSE" 20 }
+  maxPopulation = 1
+  flags = { "abomination_upgrades" }
+  prisoners = false
+  unlock = "necromancer"
+# Special traits example, all traits are added
+#   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
+}
+"5_gnomes"
 {
   creatureId = { "GNOME" }
   tribeAlignment = LAWFUL
@@ -74,7 +99,7 @@
   noLeader = true
   prisoners = false
 }
-"5_dwarves"
+"6_dwarves"
 {
   creatureId = { "DWARF_PLAYER" }
   tribeAlignment = LAWFUL
@@ -100,7 +125,7 @@
   noLeader = true
   prisoners = false
 }
-"6_goblins"
+"7_goblins"
 {
   creatureId = { "GOBLIN_KEEPER" }
   tribeAlignment = EVIL
@@ -121,7 +146,7 @@
   description = "Play as a Goblin Keeper, and seek the legendary goblin matrons. This faction was originally created by RighteousSinner and Soft Monster for the Bonus Mod."
   unlock = "goblins"
 }
-"7_zombies"
+"8_zombies"
 {
   creatureId = { "ZOMBIE_WORKER" }
   specialTraits = { Lasting {SWARMER} }
@@ -145,7 +170,7 @@
   immigrantInterval = 40
   unlock = "zombies"
 }
-"8_cyclops"
+"9_cyclops"
 {
   creatureId = { "CYCLOPS_PLAYER" }
   tribeAlignment = EVIL
