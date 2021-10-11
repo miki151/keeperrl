@@ -2389,7 +2389,7 @@
       RANGED_RESISTANCE 1
     }
     maxLevelIncrease = {
-      MELEE 7
+      MELEE 3
     }
     name = {
       name = "vampire brute"
@@ -4221,6 +4221,7 @@
     body = {
       type = FourLegged HUGE
       weight = 500
+      material = UNDEAD_FLESH
     }
     name = {
       name = "abomination"
