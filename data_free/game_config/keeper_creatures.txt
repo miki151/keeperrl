@@ -54,14 +54,15 @@
   creatureId = { "NECROMANCER" "NECROMANCER_F" }
   tribeAlignment = EVIL
   immigrantGroups = {"necromancer"}
-  technology = { "embalming" "advanced embalming" "master embalming" "necromancy" "advanced necromancy"
-      "master necromancy" "archery" "sorcery" "advanced sorcery" "master sorcery" "iron working" "distillation"
+  technology = { "embalming" "advanced embalming" "master embalming" "necromancy"
+      "advanced necromancy" "master necromancy" "archery" "sorcery" "advanced sorcery"
+      "master sorcery" "iron working" "distillation"
   }
   zLevelGroups = { "basic" "evil" }
   initialTech = { "necromancy" }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "phylactery" "beds" "coffins"
-      "training" "poetry" "distillery" "morgue" "orders"
+      "training" "crafting" "embalming" "poetry" "distillery" "morgue" "orders"
       "installations" "magical_installations"
   }
   workshopGroups = { "morgue" }

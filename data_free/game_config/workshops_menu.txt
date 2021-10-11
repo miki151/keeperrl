@@ -1,5 +1,5 @@
  
-"basic"
+"basic_without_lab"
 {
   "WORKSHOP"
   {
@@ -66,6 +66,28 @@ Def GasPotion(GasType, Desc)
   Potion Description Desc Area 1 EmitGas GasType 1
 End
 
+  "JEWELER"
+  {
+      {{Ring POISON_RESISTANT}               10       "GOLD" 20}
+      {{Ring COLD_RESISTANT}                 10       "GOLD" 20}
+      {{Ring FIRE_RESISTANT}                 10       "GOLD" 30}
+      {{Ring MAGIC_RESISTANCE}               10       "GOLD" 30}
+      {{Ring RESTED}                         10       "GOLD" 30}
+      {{Ring SATIATED}                       10       "GOLD" 30}
+      {{Ring FAST_CRAFTING}                  10       "GOLD" 40}
+      {{Ring FAST_TRAINING}                  10       "GOLD" 40}
+      {{Ring SPELL_DAMAGE}                   10       "GOLD" 40}
+      {{Ring SPYING}                         10       "GOLD" 40}
+      {{Amulet NIGHT_VISION}                 10       "GOLD" 20}
+      {{Amulet ELF_VISION}                   10       "GOLD" 20}
+      {{Amulet WARNING}                      10       "GOLD" 30}
+      {{"DefenseAmulet"}                     10       "GOLD" 40}
+      {{Amulet REGENERATION}                 10       "GOLD" 60}
+  }
+}
+
+"basic" inherit "basic_without_lab"
+append {
   "LABORATORY"
   {
       {{Potion Lasting SLOWED}               2        "GOLD" 2}
@@ -98,25 +120,7 @@ End
       {{"AdaOre"}                              1        "GOLD" 4      "alchemical conversion"}
       {{"Rock"}                                1        "GOLD" 1      "alchemical conversion"}
   }
-  
-  "JEWELER"
-  {
-      {{Ring POISON_RESISTANT}               10       "GOLD" 20}
-      {{Ring COLD_RESISTANT}                 10       "GOLD" 20}
-      {{Ring FIRE_RESISTANT}                 10       "GOLD" 30}
-      {{Ring MAGIC_RESISTANCE}               10       "GOLD" 30}
-      {{Ring RESTED}                         10       "GOLD" 30}
-      {{Ring SATIATED}                       10       "GOLD" 30}
-      {{Ring FAST_CRAFTING}                  10       "GOLD" 40}
-      {{Ring FAST_TRAINING}                  10       "GOLD" 40}
-      {{Ring SPELL_DAMAGE}                   10       "GOLD" 40}
-      {{Ring SPYING}                         10       "GOLD" 40}
-      {{Amulet NIGHT_VISION}                 10       "GOLD" 20}
-      {{Amulet ELF_VISION}                   10       "GOLD" 20}
-      {{Amulet WARNING}                      10       "GOLD" 30}
-      {{"DefenseAmulet"}                     10       "GOLD" 40}
-      {{Amulet REGENERATION}                 10       "GOLD" 60}
-  }
+
 }
 
 "bows"
@@ -239,6 +243,12 @@ End
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
       { item = {Assembled{ "SKELETON_ARCHER" "skeleton archer" {NO_LIMIT FIGHTER} BALSAM 1 }}
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "VAMPIRE" "vampire warrior" {NO_LIMIT FIGHTER} BALSAM 3}}
+        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
+      { item = {Assembled{ "VAMPIRE_BRUTE" "vampire brute" {NO_LIMIT FIGHTER} BALSAM 3}}
+        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
+      { item = {Assembled{ "VAMPIRE_LORD_NECRO" "vampire noble" {NO_LIMIT FIGHTER} BALSAM 3}}
+        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
       { item = {Assembled{ "SKELETAL_ABOMINATION_PLAYER" "skeletal abomination" {NO_LIMIT FIGHTER}
           BODY_PART 199}}
         work = 40 cost = "CORPSE" 10 applyImmediately = true notArtifact = true tech = "master necromancy"}
@@ -246,12 +256,6 @@ End
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true tech = "master necromancy"}
       { item = {Assembled{ "JUGGERNAUT" "juggernaut" {NO_LIMIT FIGHTER} BALSAM 1 }}
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true tech = "master necromancy"}
-      { item = {Assembled{ "VAMPIRE" "vampire warrior" {NO_LIMIT FIGHTER} BALSAM 3}}
-        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
-      { item = {Assembled{ "VAMPIRE_BRUTE" "vampire brute" {NO_LIMIT FIGHTER} BALSAM 3}}
-        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
-      { item = {Assembled{ "VAMPIRE_LORD_NECRO" "vampire noble" {NO_LIMIT FIGHTER} BALSAM 3}}
-        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
       { item = {Assembled{ "ABOMINATION_PLAYER" "abomination" {NO_LIMIT FIGHTER} BODY_PART 199}}
         work = 40 cost = "CORPSE" 10 applyImmediately = true notArtifact = true tech = "master necromancy"}
   }
