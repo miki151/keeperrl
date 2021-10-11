@@ -1144,10 +1144,6 @@ static bool runesEqual(const Item* it1, const Item* it2) {
   return it1->getName() == it2->getName() && it1->getViewObject().id() == it2->getViewObject().id();
 }
 
-static vector<StorageId> getGlyphStorageId() {
-  return {StorageId("upgrades"), StorageId("equipment"), StorageId("potions")};
-}
-
 vector<vector<pair<Item*, Position>>> PlayerControl::getItemUpgradesFor(const WorkshopItem& workshopItem) const {
   vector<vector<pair<Item*, Position>>> ret;
   auto addItem = [&ret] (Item* item, Position pos) {
@@ -1158,7 +1154,7 @@ vector<vector<pair<Item*, Position>>> PlayerControl::getItemUpgradesFor(const Wo
       }
     ret.push_back({make_pair(item, pos)});
   };
-  for (auto& pos : collective->getStoragePositions(getGlyphStorageId()))
+  for (auto& pos : collective->getConstructions().getAllStoragePositions())
     for (auto& item : pos.getItems(ItemIndex::RUNE))
       if (auto& upgradeInfo = item->getUpgradeInfo())
         if (upgradeInfo->type == workshopItem.upgradeType) {
@@ -1251,7 +1247,7 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions(int resourceIndex) 
       auto& option = options[i];
       auto itemInfo = getWorkshopItem(option, 1);
       if (option.requireIngredient) {
-        for (auto& pos : collective->getStoragePositions(getGlyphStorageId()))
+        for (auto& pos : collective->getConstructions().getAllStoragePositions())
           for (auto& item : pos.getItems(ItemIndex::RUNE))
             if (item->getIngredientType() == option.requireIngredient) {
               auto it = itemInfo;
@@ -2464,7 +2460,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           if (info.remove) {
             if (info.upgradeIndex < item.runes.size())
               for (int i : Range(info.count))
-                Random.choose(collective->getStoragePositions(getGlyphStorageId()).asVector())
+                Random.choose(collective->getConstructions().getAllStoragePositions().asVector())
                     .dropItem(workshop.removeUpgrade(info.itemIndex + i, info.upgradeIndex));
           } else {
             auto runes = getItemUpgradesFor(item.item);
@@ -2492,7 +2488,7 @@ void PlayerControl::processInput(View* view, UserInput input) {
           if (info.itemIndex < workshop.getQueued().size()) {
             for (int i : Range(info.count - info.newCount))
               for (auto& upgrade : workshop.unqueue(collective, info.itemIndex))
-                Random.choose(collective->getStoragePositions(getGlyphStorageId()).asVector())
+                Random.choose(collective->getConstructions().getAllStoragePositions().asVector())
                     .dropItem(std::move(upgrade));
             for (int i : Range(info.newCount - info.count))
               workshop.queue(collective, workshop.getQueued()[info.itemIndex].indexInWorkshop, info.itemIndex + 1);
