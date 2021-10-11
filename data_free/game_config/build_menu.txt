@@ -246,6 +246,12 @@
         "Produces magical potions."            0 { TechId "alchemy" }}
   }
 
+  "embalming"
+  {
+    { Furniture {{ "LABORATORY" } "STONE" 10 }                     "Laboratory"        "Crafting"
+        "Produces magical body balsams."            0 { TechId "embalming" }}
+  }
+
   "jeweller"
   {
     { Furniture {{ "JEWELLER" }   "WOOD" 12 }                      "Jeweller"          "Crafting"
@@ -263,8 +269,6 @@
   }
   "morgue"
   {
-    { Furniture {{ "LABORATORY" } "STONE" 10 }                     "Laboratory"        "Crafting"
-        "Produces balsams for the animated bodies."            0 { TechId "embalming" }}
     { Furniture {{ "MORGUE_TABLE" } "WOOD" 10 }                     "Morgue table"     ""
         "Produces animated bodies."                            0 { TechId "necromancy" } }
   }
