@@ -241,19 +241,19 @@ End
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
       { item = {Assembled{ "SKELETAL_ABOMINATION_PLAYER" "skeletal abomination" {NO_LIMIT FIGHTER}
           BODY_PART 199}}
-        work = 40 cost = "CORPSE" 10 applyImmediately = true notArtifact = true}
+        work = 40 cost = "CORPSE" 10 applyImmediately = true notArtifact = true tech = "master necromancy"}
       { item = {Assembled{ "SLASHER" "slasher" {NO_LIMIT FIGHTER} BALSAM 1 }}
-        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
+        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true tech = "master necromancy"}
       { item = {Assembled{ "JUGGERNAUT" "juggernaut" {NO_LIMIT FIGHTER} BALSAM 1 }}
-        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
+        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true tech = "master necromancy"}
       { item = {Assembled{ "VAMPIRE" "vampire warrior" {NO_LIMIT FIGHTER} BALSAM 3}}
-        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true}
+        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
       { item = {Assembled{ "VAMPIRE_BRUTE" "vampire brute" {NO_LIMIT FIGHTER} BALSAM 3}}
-        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true}
+        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
       { item = {Assembled{ "VAMPIRE_LORD_NECRO" "vampire noble" {NO_LIMIT FIGHTER} BALSAM 3}}
-        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true}
+        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
       { item = {Assembled{ "ABOMINATION_PLAYER" "abomination" {NO_LIMIT FIGHTER} BODY_PART 199}}
-        work = 40 cost = "CORPSE" 10 applyImmediately = true notArtifact = true}
+        work = 40 cost = "CORPSE" 10 applyImmediately = true notArtifact = true tech = "master necromancy"}
   }
   "LABORATORY"
   {
@@ -261,7 +261,9 @@ End
       {{Balsam {AddBodyPart WING 2 none Permanent FLYING}}     4 "GOLD" 5 "embalming"}
       {{Balsam AddBodyPart ARM 2 none}      4 "GOLD" 5 "embalming"}
       {{Balsam Permanent TELEPATHY}         4 "GOLD" 5 "embalming"}
+      {{Balsam RemovePermanent SLOWED}      4 "GOLD" 5 "embalming"}
       {{Balsam Permanent SWARMER}           4 "GOLD" 5 "embalming"}
+      {{Balsam IncreaseSkill DIGGING      0.5}                    4 "GOLD" 5 "embalming"}
       {{Balsam Permanent DARKNESS_SOURCE}   4 "GOLD" 10 "advanced embalming"}
       {{Balsam Name "Limited life, damage boost" Description "Life limited to 2000 turns, +10 damage."
           { Lasting 2000 SUMMONED  IncreaseAttr DAMAGE 10 }}       4 "GOLD" 10 "advanced embalming"}
@@ -271,29 +273,27 @@ End
           { Lasting 2000 SUMMONED  IncreaseAttr RANGED_DAMAGE 10 }}       4 "GOLD" 10 "advanced embalming"}
       {{Balsam Name "Limited life, spell damage boost" Description "Life limited to 2000 turns, +10 spell damage."
           { Lasting 2000 SUMMONED  IncreaseAttr SPELL_DAMAGE 10 }}       4 "GOLD" 10 "advanced embalming"}
-      {{Balsam RemovePermanent SLOWED}      4 "GOLD" 10 "advanced embalming"}
       {{Balsam Permanent FAST_CRAFTING}     4 "GOLD" 10 "advanced embalming"}
       {{Balsam Permanent FAST_TRAINING}     4 "GOLD" 10 "advanced embalming"}
       {{Balsam IncreaseWorkshopSkill "MORGUE" 0.5}                4 "GOLD" 10 "advanced embalming"}
       {{Balsam IncreaseWorkshopSkill "LABORATORY" 0.5}            4 "GOLD" 10 "advanced embalming"}
-      {{Balsam IncreaseSkill DIGGING      0.5}                    4 "GOLD" 10 "advanced embalming"}
       {{Balsam IncreaseSkill MULTI_WEAPON 0.5}                    4 "GOLD" 10 "advanced embalming"}
-      {{Balsam SpecialAttr DEFENSE       12 InTerritory}          4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr DAMAGE        12 CreatureStatus LEADER}4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr DAMAGE        12 Spellcaster }         4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr DEFENSE       12 Not Humanoid }        4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr DEFENSE       12 HatedBy HATE_DWARVES} 4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr DAMAGE        12 HatedBy HATE_DWARVES} 4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr RANGED_DAMAGE 12 HatedBy HATE_DWARVES} 4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr DEFENSE       12 HatedBy HATE_HUMANS}  4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr DAMAGE        12 HatedBy HATE_HUMANS}  4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr RANGED_DAMAGE 12 HatedBy HATE_HUMANS}  4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr DEFENSE       12 HatedBy HATE_DRAGONS} 4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr DAMAGE        12 HatedBy HATE_DRAGONS} 4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr RANGED_DAMAGE 12 HatedBy HATE_DRAGONS} 4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr DEFENSE       12 HatedBy HATE_ELVES}   4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr DAMAGE        12 HatedBy HATE_ELVES}   4 "GOLD" 10 "master embalming"}
-      {{Balsam SpecialAttr RANGED_DAMAGE 12 HatedBy HATE_ELVES}   4 "GOLD" 10 "master embalming"}
+      {{Balsam SpecialAttr DEFENSE       12 InTerritory}          4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr DAMAGE        12 CreatureStatus LEADER}4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr DAMAGE        12 Spellcaster }         4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr DEFENSE       12 Not Humanoid }        4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr DEFENSE       12 HatedBy HATE_DWARVES} 4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr DAMAGE        12 HatedBy HATE_DWARVES} 4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr RANGED_DAMAGE 12 HatedBy HATE_DWARVES} 4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr DEFENSE       12 HatedBy HATE_HUMANS}  4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr DAMAGE        12 HatedBy HATE_HUMANS}  4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr RANGED_DAMAGE 12 HatedBy HATE_HUMANS}  4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr DEFENSE       12 HatedBy HATE_DRAGONS} 4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr DAMAGE        12 HatedBy HATE_DRAGONS} 4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr RANGED_DAMAGE 12 HatedBy HATE_DRAGONS} 4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr DEFENSE       12 HatedBy HATE_ELVES}   4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr DAMAGE        12 HatedBy HATE_ELVES}   4 "GOLD" 15 "master embalming"}
+      {{Balsam SpecialAttr RANGED_DAMAGE 12 HatedBy HATE_ELVES}   4 "GOLD" 15 "master embalming"}
   }
 }
 
