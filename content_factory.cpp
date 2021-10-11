@@ -178,7 +178,7 @@ optional<string> ContentFactory::readPlayerCreatures(const GameConfig* config, K
     }
     for (auto& tech : keeperInfo.second.initialTech)
       if (!keeperInfo.second.technology.contains(tech))
-        return "Technology not found: "_s + tech.data();
+        return "Technology "_s + tech.data() + " not assigned to " + keeperInfo.first;
     for (auto& info : buildInfoTmp)
       for (auto& requirement : info.requirements)
         if (auto tech = requirement.getReferenceMaybe<TechId>())
