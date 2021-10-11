@@ -1145,7 +1145,7 @@ static bool runesEqual(const Item* it1, const Item* it2) {
 }
 
 static vector<StorageId> getGlyphStorageId() {
-  return {StorageId("upgrades"), StorageId("equipment")};
+  return {StorageId("upgrades"), StorageId("equipment"), StorageId("potions")};
 }
 
 vector<vector<pair<Item*, Position>>> PlayerControl::getItemUpgradesFor(const WorkshopItem& workshopItem) const {
