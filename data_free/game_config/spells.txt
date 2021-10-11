@@ -84,6 +84,13 @@
   range = 1
   sound = SPELL_CURE_POISON
 }
+"blindness"
+{
+  symbol = "🕶️"
+  effect = Name "blindness" Lasting 5 BLIND
+  cooldown = 10
+  range = 5
+}
 "poison resistance"
 {
   symbol = "🐍"

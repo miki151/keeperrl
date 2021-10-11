@@ -84,3 +84,15 @@
   "mass damage bonus" 11
   "group healing" 12
 }
+
+"zombie mage" SPELL
+{
+  "summon flies" 1
+  "advanced defense bonus" 2
+  "advanced damage bonus" 3
+  "magic missile" 4
+  "blindness" 5
+  "mass defense bonus" 6
+  "mass damage bonus" 6
+  "advanced magic missile" 7
+}

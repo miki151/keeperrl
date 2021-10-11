@@ -4619,6 +4619,7 @@ End
     maxLevelIncrease = {
       SPELL 7
     }
+    spellSchools = { "zombie mage" }
     name = {
       name = "zombie mage"
     }
