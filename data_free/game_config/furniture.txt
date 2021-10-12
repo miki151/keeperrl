@@ -1154,16 +1154,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
   strength = 40
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
 }
-"VAMPIRE_COFFIN"
-{
-  name = "coffin"
-  viewId = { "coffin1" }
-  canHideHere = true
-  usageType = BuiltinUsageId VAMPIRE_COFFIN
-  fire = 50
-  strength = 40
-  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
-}
 "OPENED_COFFIN"
 {
   name = "opened coffin"

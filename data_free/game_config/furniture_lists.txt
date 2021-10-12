@@ -120,15 +120,6 @@
     "STONES" 1
   }
 }
-"cryptCoffins"
-{
-  {
-    "LOOT_COFFIN" 1
-  }
-  {
-    "VAMPIRE_COFFIN"
-  }
-}  
 "towerInside"
 {
   {
