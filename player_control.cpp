@@ -1170,14 +1170,6 @@ struct WorkshopOptionInfo {
   optional<ImmigrantCreatureInfo> creatureInfo;
 };
 
-static ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature* c) {
-  return ImmigrantCreatureInfo {
-    c->getName().bare(),
-    c->getViewObject().getViewIdList(),
-    AttributeInfo::fromCreature(c)
-  };
-}
-
 static optional<ImmigrantCreatureInfo> getImmigrantCreatureInfo(ContentFactory* factory, const ItemType& type) {
   static map<CreatureId, PCreature> creatureStats;
   auto getStats = [&](CreatureId id) -> Creature* {
@@ -1188,7 +1180,7 @@ static optional<ImmigrantCreatureInfo> getImmigrantCreatureInfo(ContentFactory* 
   };
   if (auto info = type.type->getReferenceMaybe<ItemTypes::Assembled>()) {
     auto c = getStats(info->creature);
-    return getImmigrantCreatureInfo(c);
+    return getImmigrantCreatureInfo(c, factory);
   }
   return none;
 }
@@ -1441,7 +1433,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
       requirements.push_back("Requires conquering " + stack.collective->getName()->full);
     ret.push_back(ImmigrantDataInfo());
     ret.back().requirements = requirements;
-    ret.back().creature = getImmigrantCreatureInfo(c);
+    ret.back().creature = getImmigrantCreatureInfo(c, getGame()->getContentFactory());
     ret.back().creature.name += " (prisoner)";
     ret.back().count = stack.creatures.size() == 1 ? none : optional<int>(stack.creatures.size());
     ret.back().timeLeft = c->getTimeRemaining(LastingEffect::STUNNED);
@@ -1572,10 +1564,11 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
 
 void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
   info.allImmigration.clear();
+  auto contentFactory = getGame()->getContentFactory();
   static map<CreatureId, PCreature> creatureStats;
   auto getStats = [&](CreatureId id) -> Creature* {
     if (!creatureStats[id]) {
-      creatureStats[id] = getGame()->getContentFactory()->getCreatures().fromId(id, TribeId::getDarkKeeper());
+      creatureStats[id] = contentFactory->getCreatures().fromId(id, TribeId::getDarkKeeper());
     }
     return creatureStats[id].get();
   };
@@ -1593,7 +1586,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
           if (required > 0)
             requirements.push_back("Requires " + toString(required) + " " +
                 combineWithOr(attraction.types.transform([&](const AttractionType& type) {
-                  return AttractionInfo::getAttractionName(collective->getGame()->getContentFactory(), type, required); })));
+                  return AttractionInfo::getAttractionName(contentFactory, type, required); })));
         },
         [&](const TechId& techId) {
           requirements.push_back("Requires technology: "_s + techId.data());
@@ -1605,7 +1598,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
           requirements.push_back("Will only join during the "_s + SunlightInfo::getText(state));
         },
         [&](const FurnitureType& type) {
-          requirements.push_back("Requires at least one " + getGame()->getContentFactory()->furniture.getData(type).getName());
+          requirements.push_back("Requires at least one " + contentFactory->furniture.getData(type).getName());
         },
         [&](const CostInfo& cost) {
           costObj = getCostObj(cost);
@@ -1646,7 +1639,7 @@ void PlayerControl::fillImmigrationHelp(CollectiveInfo& info) const {
     info.allImmigration.back().requirements = requirements;
     info.allImmigration.back().info = infoLines;
     info.allImmigration.back().cost = costObj;
-    info.allImmigration.back().creature = getImmigrantCreatureInfo(c);
+    info.allImmigration.back().creature = getImmigrantCreatureInfo(c, contentFactory);
     info.allImmigration.back().id = elem.index();
     info.allImmigration.back().autoState = collective->getImmigration().getAutoState(elem.index());
   }

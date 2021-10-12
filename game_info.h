@@ -107,6 +107,12 @@ struct SpellSchoolInfo {
   HASH_ALL(name, experienceType, spells)
 };
 
+struct SkillInfo {
+  string HASH(name);
+  string HASH(help);
+  HASH_ALL(name, help)
+};
+
 class PlayerInfo {
   public:
   PlayerInfo(const Creature*, const ContentFactory*);
@@ -114,11 +120,6 @@ class PlayerInfo {
   vector<AttributeInfo> HASH(attributes);
   optional<AvatarLevelInfo> HASH(avatarLevelInfo);
   BestAttack HASH(bestAttack);
-  struct SkillInfo {
-    string HASH(name);
-    string HASH(help);
-    HASH_ALL(name, help)
-  };
   vector<SkillInfo> HASH(skills);
   string HASH(firstName);
   string HASH(name);
@@ -197,8 +198,13 @@ struct ImmigrantCreatureInfo {
   string HASH(name);
   ViewIdList HASH(viewId);
   vector<AttributeInfo> HASH(attributes);
-  HASH_ALL(name, viewId, attributes);
+  vector<string> HASH(spellSchools);
+  EnumMap<ExperienceType, int> HASH(trainingLimits);
+  vector<SkillInfo> HASH(skills);
+  HASH_ALL(name, viewId, attributes, spellSchools, trainingLimits, skills);
 };
+
+ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature*, const ContentFactory*);
 
 struct ImmigrantDataInfo {
   ImmigrantDataInfo();

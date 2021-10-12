@@ -86,7 +86,6 @@ class CreatureAttributes {
   double getCombatExperience() const;
   bool isTrainingMaxedOut(ExperienceType) const;
   void increaseBaseExpLevel(ExperienceType type, double increase);
-  string bodyDescription() const;
   vector<SpellSchoolId> getSpellSchools() const;
   void addSpellSchool(SpellSchoolId);
   optional<SoundId> getAttackSound(AttackType, bool damage) const;

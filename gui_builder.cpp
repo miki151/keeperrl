@@ -1132,14 +1132,35 @@ SGuiElem GuiBuilder::getTooltip(const vector<string>& text, int id, milliseconds
 }
 
 SGuiElem GuiBuilder::drawImmigrantCreature(const ImmigrantCreatureInfo& creature) {
-  return WL(getListBuilder, legendLineHeight)
-    .addElem(
-        WL(getListBuilder)
-            .addElem(WL(viewObject, creature.viewId), 35)
-            .addElemAuto(WL(label, creature.name))
-            .buildHorizontalList())
-    .addElemAuto(drawAttributesOnPage(drawPlayerAttributes(creature.attributes)))
-    .buildVerticalList();
+  auto lines = WL(getListBuilder, legendLineHeight);
+  lines.addElem(WL(getListBuilder)
+      .addElem(WL(viewObject, creature.viewId), 35)
+      .addElemAuto(WL(label, capitalFirst(creature.name)))
+      .buildHorizontalList());
+  lines.addSpace(legendLineHeight / 2);
+  lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(creature.attributes)));
+  bool trainingHeader = false;
+  for (auto expType : ENUM_ALL(ExperienceType))
+    if (creature.trainingLimits[expType] > 0) {
+      if (!trainingHeader)
+        lines.addElem(WL(label, "Training potential", Color::YELLOW));
+      trainingHeader = true;
+      auto line = WL(getListBuilder);
+      for (auto attr : getAttrIncreases()[expType]) {
+        line.addElem(WL(topMargin, -3, WL(icon, attr)), 22);
+      }
+      line.addSpace(15);
+      line.addElemAuto(WL(label, "+" + toString(creature.trainingLimits[expType])));
+      lines.addElem(line.buildHorizontalList());
+    }
+  if (!creature.spellSchools.empty())
+    lines.addElem(WL(getListBuilder)
+        .addElemAuto(WL(label, "Spell schools: ", Color::YELLOW))
+        .addElemAuto(WL(label, combine(creature.spellSchools, true)))
+        .buildHorizontalList());
+  for (auto& line : drawSkillsList(creature.skills))
+    lines.addElem(std::move(line));
+  return lines.buildVerticalList();
 }
 
 SGuiElem GuiBuilder::getTooltip2(SGuiElem elem, GuiFactory::PositionFun fun) {
@@ -1369,11 +1390,11 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
   }
 }
 
-vector<SGuiElem> GuiBuilder::drawSkillsList(const PlayerInfo& info) {
+vector<SGuiElem> GuiBuilder::drawSkillsList(const vector<SkillInfo>& skills) {
   vector<SGuiElem> lines;
-  if (!info.skills.empty()) {
+  if (!skills.empty()) {
     lines.push_back(WL(label, "Skills", Color::YELLOW));
-    for (auto& elem : info.skills)
+    for (auto& elem : skills)
       lines.push_back(WL(stack, getTooltip({elem.help}, THIS_LINE),
             WL(label, capitalFirst(elem.name), Color::WHITE)));
     lines.push_back(WL(empty));
@@ -1562,7 +1583,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addSpace();
-  for (auto& elem : drawSkillsList(info))
+  for (auto& elem : drawSkillsList(info.skills))
     list.addElem(std::move(elem));
   if (auto spells = drawSpellsList(info.spells, info.creatureId.getGenericId(), true)) {
     list.addElemAuto(std::move(spells));
@@ -2404,7 +2425,7 @@ SGuiElem GuiBuilder::drawBestiaryPage(const PlayerInfo& minion) {
     leftLines.addElem(line.buildHorizontalList());
   }
   leftLines.addSpace();
-  for (auto& elem : drawSkillsList(minion))
+  for (auto& elem : drawSkillsList(minion.skills))
     leftLines.addElem(std::move(elem));
   if (auto spells = drawSpellsList(minion.spells, minion.creatureId.getGenericId(), false))
     leftLines.addElemAuto(std::move(spells));
@@ -3601,7 +3622,7 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewI
   if (minion.canAssignQuarters)
     leftLines.addElem(drawQuartersButton(minion, allQuarters));
   leftLines.addSpace();
-  for (auto& elem : drawSkillsList(minion))
+  for (auto& elem : drawSkillsList(minion.skills))
     leftLines.addElem(std::move(elem));
   if (auto spells = drawSpellsList(minion.spells, minion.creatureId.getGenericId(), false))
     leftLines.addElemAuto(std::move(spells));
