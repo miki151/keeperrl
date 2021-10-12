@@ -19,7 +19,7 @@
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "demon_shrine"
       "prison" "orders" "installations" "minion_statues" "magical_installations" "traps"
   }
-  workshopGroups = { "basic" "bows" "traps" }
+  workshopGroups = { "basic" "bows" }
   description = "Build and manage your dream dungeon, defend against raids, and attack your enemies. Be about as evil as a boogieman can be!"
 # Special traits example, all traits are added
 #   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
@@ -92,7 +92,7 @@
       "structure" "doors" "floors" "storage" "automaton_storage" "zones" "beds" "crafting"
       "laboratory" "distillery" "furnace" "automatons" "orders" "installations" "traps" "gnome_traps"
   }
-  workshopGroups = { "gnomes" "traps" "basic" "crossbows" }
+  workshopGroups = { "gnomes" "basic" "crossbows" }
   description = "Seize the means of production and engineer traps, automatons and other contraptions. Recommended for advanced players."
   minionTraits = { LEADER WORKER NO_LIMIT }
   maxPopulation = 0
@@ -143,7 +143,7 @@
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "prison" "orders"
       "installations" "minion_statues" "traps"
   }
-  workshopGroups = { "basic" "bows" "traps" }
+  workshopGroups = { "basic" "bows" }
   description = "Play as a Goblin Keeper, and seek the legendary goblin matrons. This faction was originally created by RighteousSinner and Soft Monster for the Bonus Mod."
   unlock = "goblins"
 }
@@ -187,7 +187,7 @@
       "training_dummies" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "orders"
       "installations" "traps"
   }
-  workshopGroups = { "basic" "crossbows" "traps" }
+  workshopGroups = { "basic" "crossbows" }
   description = "Build a dungeon as a lone cyclops."
   minionTraits = { LEADER WORKER FIGHTER }
   maxPopulation = 1

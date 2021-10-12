@@ -139,20 +139,6 @@ append {
   }
 }
 
-"traps"
-{
-  "WORKSHOP"
-  {
-      {{TrapItem "BOULDER_TRAP" "boulder"}      20       "STONE" 120    "traps"}
-      {{TrapItem "BLAST_TRAP" "blast"}          10       "WOOD" 20      "traps"}
-      {{TrapItem "POISON_GAS_TRAP" "poison"}    10       "WOOD" 20      "traps"}
-      {{TrapItem "ALARM_TRAP" "alarm"}          8        "WOOD" 20      "traps"}
-      {{TrapItem "WEB_TRAP" "web"}              8        "WOOD" 20      "traps"}
-      {{TrapItem "SURPRISE_TRAP" "surprise"}    8        "WOOD" 20      "traps"}
-      {{TrapItem "TERROR_TRAP" "terror"}        8        "WOOD" 20      "traps"}
-      {{TrapItem "FIRE_TRAP" "fire"}            8        "WOOD" 20      "traps"}
-  }
-}
 "gnomes"
 {
   "WORKSHOP"
