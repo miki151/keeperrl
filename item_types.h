@@ -70,12 +70,6 @@ struct TechBook {
   SERIALIZE_ALL(techId)
   ITEM_TYPE_INTERFACE;
 };
-struct TrapItem {
-  FurnitureType SERIAL(trapType);
-  string SERIAL(trapName);
-  SERIALIZE_ALL(trapType, trapName)
-  ITEM_TYPE_INTERFACE;
-};
 SIMPLE_ITEM(FireScroll);
 SIMPLE_ITEM(Poem);
 SIMPLE_ITEM(Corpse);
@@ -113,18 +107,17 @@ struct PrefixChance {
   X(Amulet, 3)\
   X(Ring, 4)\
   X(TechBook, 5)\
-  X(TrapItem, 6)\
-  X(Intrinsic, 7)\
-  X(Glyph, 8)\
-  X(Simple, 9)\
-  X(FireScroll, 10)\
-  X(Poem, 11)\
-  X(EventPoem, 12)\
-  X(Assembled, 13) \
-  X(Corpse, 14)\
-  X(AutomatonPaint, 15)\
-  X(PrefixChance, 16)\
-  X(Balsam, 17)
+  X(Intrinsic, 6)\
+  X(Glyph, 7)\
+  X(Simple, 8)\
+  X(FireScroll, 9)\
+  X(Poem, 10)\
+  X(EventPoem, 11)\
+  X(Assembled, 12) \
+  X(Corpse, 13)\
+  X(AutomatonPaint, 14)\
+  X(PrefixChance, 15)\
+  X(Balsam, 16)
 
 #define VARIANT_TYPES_LIST ITEM_TYPES_LIST
 #define VARIANT_NAME ItemTypeVariant

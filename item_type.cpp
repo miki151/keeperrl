@@ -423,22 +423,6 @@ ItemAttributes ItemTypes::Amulet::getAttributes(const ContentFactory*) const {
   );
 }
 
-ItemAttributes ItemTypes::TrapItem::getAttributes(const ContentFactory*) const {
-  return ITATTR(
-      i.viewId = ViewId("trap_item");
-      i.name = "unarmed " + trapName + " trap";
-      i.shortName = trapName;
-      i.weight = 0.5;
-      i.applyTime = 3_visible;
-      i.applySound = SoundId::TRAP_ARMING;
-      i.uses = 1;
-      i.usedUpMsg = true;
-      i.effect = Effect(Effects::PlaceFurniture{trapType});
-      i.price = 2;
-      i.storageIds = LIST(StorageId("traps"), StorageId("equipment"));
-  );
-}
-
 ItemAttributes CustomItemId::getAttributes(const ContentFactory* factory) const {
   if (auto ret = getReferenceMaybe(factory->items, *this))
     return *ret;
