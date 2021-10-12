@@ -2409,8 +2409,7 @@
       firstNameGen = "VAMPIRE"
     }
     maxLevelIncrease = {
-      MELEE 12
-      SPELL 12
+      SPELL 7
     }
     permanentEffects = {
       NIGHT_VISION 1
@@ -2419,8 +2418,8 @@
       FIRE_RESISTANT 1
       DARKNESS_SOURCE 1
     }
-    spellSchools = { "mage" "illusion" }
-    spells = { "defense bonus" "damage bonus" "deception" }
+    aiType = RANGED
+    spellSchools = { "zombie mage" "illusion" }
     chatReactionFriendly = "\"There are times when you simply cannot refuse a drink!\""
     chatReactionHostile = "\"There are times when you simply cannot refuse a drink!\""
     inventory = {
