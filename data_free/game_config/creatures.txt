@@ -4601,6 +4601,12 @@ End
       DAMAGE 10
       DEFENSE 10
     }
+    skills = {
+      "WORKSHOP" 0.6
+      "FORGE" 0.6
+      "JEWELER" 0.6
+      "FURNACE" 0.5
+    }
     maxLevelIncrease = {}
     name = {
       name = "zombie artisan"
@@ -4720,8 +4726,8 @@ End
 "VAMPIRE_LORD_NECRO" inherit "VAMPIRE_LORD"
   {
     skills = append {
-      "MORGUE" 1.0
-      "LABORATORY" 1.0
+      "MORGUE" 0.5
+      "LABORATORY" 0.5
     }
   }
 
