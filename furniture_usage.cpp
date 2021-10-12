@@ -119,17 +119,6 @@ void FurnitureUsage::handle(FurnitureUsageType type, Position pos, const Furnitu
                 }
             });
         break;
-      case BuiltinUsageId::VAMPIRE_COFFIN:
-        useChest(pos, furniture, c,
-            ChestInfo {
-                FurnitureType("OPENED_COFFIN"),
-                ChestInfo::CreatureInfo {
-                    CreatureGroup::singleType(TribeId::getMonster(), CreatureId("VAMPIRE_LORD")), 1, 1,
-                    "There is a rotting corpse inside. The corpse is alive!"
-                },
-                none
-            });
-        break;
       case BuiltinUsageId::KEEPER_BOARD:
         c->getGame()->handleMessageBoard(pos, c);
         break;
@@ -157,7 +146,6 @@ bool FurnitureUsage::canHandle(FurnitureUsageType type, const Creature* c) {
   if (auto id = type.getReferenceMaybe<BuiltinUsageId>())
     switch (*id) {
       case BuiltinUsageId::KEEPER_BOARD:
-      case BuiltinUsageId::VAMPIRE_COFFIN:
       case BuiltinUsageId::COFFIN:
       case BuiltinUsageId::CHEST:
         return c->getBody().isHumanoid();
@@ -172,7 +160,6 @@ string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitur
       [&] (BuiltinUsageId id) {
         switch (id) {
           case BuiltinUsageId::COFFIN:
-          case BuiltinUsageId::VAMPIRE_COFFIN:
           case BuiltinUsageId::CHEST: return "open " + furnitureName;
           case BuiltinUsageId::KEEPER_BOARD: return "view " + furnitureName;
           case BuiltinUsageId::PORTAL: return "enter " + furnitureName;

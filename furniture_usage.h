@@ -11,7 +11,6 @@ RICH_ENUM(
   BuiltinUsageId,
   CHEST,
   COFFIN,
-  VAMPIRE_COFFIN,
   KEEPER_BOARD,
   TIE_UP,
   TRAIN,
