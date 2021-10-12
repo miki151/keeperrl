@@ -65,7 +65,7 @@
       "training" "crafting" "embalming" "poetry" "distillery" "morgue" "orders"
       "installations" "magical_installations"
   }
-  workshopGroups = { "morgue" }
+  workshopGroups = { "morgue" "basic_without_lab" }
   description = "Play as a necromancer!"
   credit = { "CORPSE" 20 }
   maxPopulation = 1
