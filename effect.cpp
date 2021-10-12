@@ -635,6 +635,7 @@ static bool apply(const Effects::AssembledMinion& m, Position pos, Creature* att
   auto group = CreatureGroup::singleType(attacker->getTribeId(), m.creature);
   auto c = Effect::summon(pos, group, 1, none).getFirstElement();
   if (c) {
+    (*c)->getEquipment().removeAllItems(*c);
     for (auto& e : m.effects)
       e.apply((*c)->getPosition(), attacker);
     for (auto col : pos.getGame()->getCollectives())
