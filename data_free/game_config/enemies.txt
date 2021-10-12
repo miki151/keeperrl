@@ -1891,7 +1891,6 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
     locationName = "cemetery"
     tribe = MONSTER
     race = "undead"
-    furniture = "cryptCoffins"
   }
   levelConnection = {
     topLevel = ExtraEnemy { "CEMETERY_ENTRY" }
