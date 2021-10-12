@@ -157,8 +157,6 @@ append {
       {{"AutomatonCraftingWood"}   2       "WOOD" 5    "advanced automatons"}
       {{"ArcherHeadWood"}          2       "WOOD" 5    "advanced automatons"}
       {{"HumanoidHeadWood"}        2       "WOOD" 5    "automaton brains"}
-      {{TrapItem "TRAP_TRIGGER" "trigger"}   8       "WOOD" 20   "advanced traps"}
-      {{TrapItem "DESTROY_WALLS_TRAP" "crumble"}8    "WOOD" 20   "advanced traps"}
   } 
   "FORGE"
   {
