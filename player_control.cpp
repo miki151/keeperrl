@@ -1168,6 +1168,7 @@ struct WorkshopOptionInfo {
   int optionIndex;
   optional<pair<Item*, Position>> ingredient;
   optional<ImmigrantCreatureInfo> creatureInfo;
+  pair<string, int> maxUpgrades;
 };
 
 static optional<ImmigrantCreatureInfo> getImmigrantCreatureInfo(ContentFactory* factory, const ItemType& type) {
@@ -1220,7 +1221,7 @@ vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getFurnaceQueue() const {
   for (auto& item : collective->getFurnace().getQueued()) {
         auto itemInfo = getItemInfo(getGame()->getContentFactory(), {item.item.get()}, false, false, false);
         itemInfo.price = getCostObj(collective->getFurnace().getRecycledAmount(item.item.get()));
-    ret.push_back(CollectiveInfo::QueuedItemInfo{item.state, true, std::move(itemInfo), none, {}, {}, 0, i, true});
+    ret.push_back(CollectiveInfo::QueuedItemInfo{item.state, true, std::move(itemInfo), none, {}, {}, {"", 0}, i, true});
     ++i;
   }
   return ret;
@@ -1245,11 +1246,13 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions(int resourceIndex) 
               auto it = itemInfo;
               it.ingredient = getItemInfo(getGame()->getContentFactory(), {item}, false, false, false);
               it.description.push_back("Crafted from " + item->getAName());
-              ret.push_back({it, i, make_pair(item, pos)});
+              ret.push_back({it, i, make_pair(item, pos), none,
+                  make_pair(option.upgradeType ? getItemTypeName(*option.upgradeType) : "", option.maxUpgrades)});
             }
         }
       else
-        ret.push_back({itemInfo, i, none, getImmigrantCreatureInfo(getGame()->getContentFactory(), option.type)});
+        ret.push_back({itemInfo, i, none, getImmigrantCreatureInfo(getGame()->getContentFactory(), option.type),
+            make_pair(option.upgradeType ? getItemTypeName(*option.upgradeType) : "", option.maxUpgrades)});
     }
   return ret;
 }
@@ -1260,7 +1263,7 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
   CollectiveInfo::QueuedItemInfo ret {item.state,
         item.paid && (item.runes.empty() || item.item.notArtifact || hasLegendarySkill),
         getWorkshopItem(item.item, cnt), getImmigrantCreatureInfo(contentFactory, item.item.type),
-        {}, {}, 0, itemIndex, item.item.notArtifact};
+        {}, {}, {"", 0}, itemIndex, item.item.notArtifact};
   if (!item.paid)
     ret.itemInfo.description.push_back("Cannot afford item");
   for (auto& it : getItemUpgradesFor(item.item)) {
@@ -1279,7 +1282,7 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
   if (!item.runes.empty() && !item.item.notArtifact)
     ret.itemInfo.unavailableReason = "Requires a craftsman of legendary skills.";
   ret.itemInfo.actions = {ItemAction::REMOVE};
-  ret.maxUpgrades = item.item.maxUpgrades;
+  ret.maxUpgrades = {item.item.upgradeType ? getItemTypeName(*item.item.upgradeType) : "", item.item.maxUpgrades};
   return ret;
 }
 static bool runesEqual(const vector<PItem>& v1, const vector<PItem>& v2) {
@@ -1336,7 +1339,7 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
         chosenWorkshop->resourceIndex,
         "",
         getFurnaceOptions().transform([](auto& option) {
-            return CollectiveInfo::OptionInfo{option.itemInfo, none}; }),
+            return CollectiveInfo::OptionInfo{option.itemInfo, none, {"", 0}}; }),
         getFurnaceQueue(),
         index,
         "To be smelted:",
@@ -1356,7 +1359,7 @@ void PlayerControl::fillWorkshopInfo(CollectiveInfo& info) const {
         chosenWorkshop->resourceIndex,
         tabName,
         getWorkshopOptions(chosenWorkshop->resourceIndex).transform([](auto& option) {
-            return CollectiveInfo::OptionInfo{option.itemInfo, option.creatureInfo}; }),
+            return CollectiveInfo::OptionInfo{option.itemInfo, option.creatureInfo, option.maxUpgrades}; }),
         getQueuedWorkshopItems(),
         index,
         "In production:",

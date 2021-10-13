@@ -2025,7 +2025,7 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
         if (elem.itemInfo.number > 1)
           removeButton("Remove from all ", elem.itemInfo.number);
       }
-      if (elem.added.size() < elem.maxUpgrades)
+      if (elem.added.size() < elem.maxUpgrades.second)
         for (int i : All(elem.available)) {
           auto& upgrade = elem.available[i];
           auto addButton = [&] (const char* text, int count) {
@@ -2048,7 +2048,7 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
           if (elem.itemInfo.number > 1 && upgrade.count > 1)
             addButton("Add to all", min(elem.itemInfo.number, upgrade.count));
         }
-      lines.addElem(WL(label, "Available slots: " + toString(elem.maxUpgrades - elem.added.size())));
+      lines.addElem(WL(label, "Available slots: " + toString(elem.maxUpgrades.second - elem.added.size())));
       if (!elem.notArtifact)
         lines.addElem(WL(label, "Upgraded items can only be crafted by a craftsman of legendary skills.",
             Renderer::smallTextSize(), Color::LIGHT_GRAY));
@@ -2115,24 +2115,31 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
   }
   lines.addElem(WL(label, "Available:", Color::YELLOW));
   auto thisTooltip = [&] (const ItemInfo& itemInfo, optional<string> warning,
-      const optional<ImmigrantCreatureInfo>& creatureInfo, int index) {
+      const optional<ImmigrantCreatureInfo>& creatureInfo, int index, pair<string, int> maxUpgrades) {
+    optional<string> upgradesTip;
+    if (maxUpgrades.second > 0)
+      upgradesTip = "Upgradable with up to " + getPlural(maxUpgrades.first, maxUpgrades.second);
     if (creatureInfo) {
       return cache->get(
-          [this](const ImmigrantCreatureInfo& creature, const optional<string>& text) {
+          [this](const ImmigrantCreatureInfo& creature, const optional<string>& warning, optional<string> upgradesTip) {
             auto lines = WL(getListBuilder, legendLineHeight)
                 .addElemAuto(drawImmigrantCreature(creature));
-            if (text)
-              lines.addElem(WL(label, *text));
+            if (upgradesTip)
+              lines.addElem(WL(label, *upgradesTip));
+            if (warning)
+              lines.addElem(WL(label, *warning));
             return WL(conditional, WL(tooltip2, WL(miniWindow, WL(margins, lines.buildVerticalList(), 15)),
                 [](const Rectangle& r) {return r.bottomLeft();}),
                 [this] { return !disableTooltip;}); },
-          index, *creatureInfo, warning);
+          index, *creatureInfo, warning, upgradesTip);
     }
     else {
       vector<string> desc;
       if (!itemInfo.fullName.empty() && itemInfo.fullName != itemInfo.name)
         desc.push_back(itemInfo.fullName);
       desc.append(itemInfo.description);
+      if (upgradesTip)
+        desc.push_back(*upgradesTip);
       return getTooltip(warning ? concat(desc, {*warning}) : desc, THIS_LINE + index, milliseconds{0});
     }
   };
@@ -2158,14 +2165,14 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
     if (elem.unavailable) {
       CHECK(!elem.unavailableReason.empty());
       guiElem = WL(stack, thisTooltip(elem, elem.unavailableReason, options[itemIndex].creatureInfo,
-          itemIndex + THIS_LINE), std::move(guiElem));
+          itemIndex + THIS_LINE, options[itemIndex].maxUpgrades), std::move(guiElem));
     }
     else
       guiElem = WL(stack,
           WL(uiHighlightMouseOver),
           std::move(guiElem),
           WL(button, getButtonCallback({UserInputId::WORKSHOP_ADD, itemIndex})),
-          thisTooltip(elem, none, options[itemIndex].creatureInfo, itemIndex + THIS_LINE)
+          thisTooltip(elem, none, options[itemIndex].creatureInfo, itemIndex + THIS_LINE, options[itemIndex].maxUpgrades)
       );
     lines.addElem(WL(rightMargin, rightElemMargin, std::move(guiElem)));
   }
@@ -2184,7 +2191,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
           .addElemAuto(WL(viewObject, elem.itemInfo.ingredient->viewId))
           .buildHorizontalList();
     line.addMiddleElem(WL(renderInBounds, std::move(label)));
-    if ((!elem.available.empty() || !elem.added.empty()) && elem.maxUpgrades > 0)
+    if ((!elem.available.empty() || !elem.added.empty()) && elem.maxUpgrades.second > 0)
       line.addBackElemAuto(WL(leftMargin, 7, drawItemUpgradeButton(elem)));
     if (elem.itemInfo.price)
       line.addBackElem(WL(alignment, GuiFactory::Alignment::RIGHT, drawCost(*elem.itemInfo.price)), 80);
@@ -2199,7 +2206,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
             WL(progressBar, Color::DARK_GREEN.transparency(128), elem.productionState)),
         WL(rightMargin, rightElemMargin, line.buildHorizontalList()),
         thisTooltip(elem.itemInfo, elem.paid ? optional<string>() : elem.itemInfo.unavailableReason,
-            queued[i].creatureInfo, i + THIS_LINE)
+            queued[i].creatureInfo, i + THIS_LINE, queued[i].maxUpgrades)
     ));
   }
   return WL(preferredSize, 940, 600,

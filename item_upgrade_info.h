@@ -11,6 +11,8 @@ RICH_ENUM(
     RANGED_WEAPON
 );
 
+const char* getItemTypeName(ItemUpgradeType);
+
 class ItemPrefix;
 class ContentFactory;
 
