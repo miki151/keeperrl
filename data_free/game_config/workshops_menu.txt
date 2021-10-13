@@ -252,6 +252,9 @@ append {
       {{Balsam RemovePermanent SLOWED}      4 "GOLD" 5 "embalming"}
       {{Balsam Permanent SWARMER}           4 "GOLD" 5 "embalming"}
       {{Balsam IncreaseSkill DIGGING      0.5}                    4 "GOLD" 5 "embalming"}
+      {{Balsam IncreaseMaxLevel MELEE       3}                    4 "GOLD" 5 "embalming"}
+      {{Balsam IncreaseMaxLevel SPELL       3}                    4 "GOLD" 5 "embalming"}
+      {{Balsam IncreaseMaxLevel ARCHERY     3}                    4 "GOLD" 5 "embalming"}
       {{Balsam Permanent DARKNESS_SOURCE}   4 "GOLD" 10 "advanced embalming"}
       {{Balsam Name "Limited life, damage boost" Description "Life limited to 2000 turns, +10 damage."
           { Lasting 2000 SUMMONED  IncreaseAttr DAMAGE 10 }}       4 "GOLD" 10 "advanced embalming"}
