@@ -1933,10 +1933,10 @@ static string getDescription(const Effects::AnimateItems& e, const ContentFactor
   return "Animates up to " + getPlural(getAnimatedItemsName(e), e.maxCount) + " from the surroundings";
 }
 
-static const vector<Item*>& getItemsToAnimate(const Effects::AnimateItems& m, Position pos) {
+static vector<Item*> getItemsToAnimate(const Effects::AnimateItems& m, Position pos) {
   switch (m.type) {
     case Effects::AnimatedItemType::CORPSE:
-      return pos.getItems(CollectiveResourceId("CORPSE"));
+      return pos.getItems().filter([](auto it) { return it->getClass() == ItemClass::CORPSE; });
     case Effects::AnimatedItemType::WEAPON:
       return pos.getItems(ItemIndex::WEAPON);
   }
