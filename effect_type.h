@@ -29,9 +29,11 @@
 
 namespace Effects {
   enum class EnhanceType;
+  enum class AnimatedItemType;
 }
 
 RICH_ENUM(Effects::EnhanceType, WEAPON, ARMOR);
+RICH_ENUM(Effects::AnimatedItemType, WEAPON, CORPSE);
 
 namespace Effects {
 struct Escape {
@@ -270,7 +272,15 @@ struct AnimateItems {
   int SERIAL(maxCount);
   int SERIAL(radius);
   Range SERIAL(time);
-  SERIALIZE_ALL(maxCount, radius, time)
+  AnimatedItemType SERIAL(type);
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    ar(maxCount, radius, time);
+    if (version == 0)
+      type = AnimatedItemType::WEAPON;
+    else
+      ar(type);
+  }
 };
 struct DropItems {
   ItemType SERIAL(type);
@@ -503,6 +513,8 @@ template <class Archive>
 void serialize(Archive& ar1, EffectType& v);
 
 }
+
+CEREAL_CLASS_VERSION(Effects::AnimateItems, 1)
 
 class EffectType : public Effects::EffectType {
   public:

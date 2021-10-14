@@ -1924,10 +1924,19 @@ static string getDescription(const Effects::AnimateItems& e, const ContentFactor
   return "Animates up to " + toString(e.maxCount) + " weapons from the surroundings";
 }
 
+static const vector<Item*>& getItemsToAnimate(const Effects::AnimateItems& m, Position pos) {
+  switch (m.type) {
+    case Effects::AnimatedItemType::CORPSE:
+      return pos.getItems(CollectiveResourceId("CORPSE"));
+    case Effects::AnimatedItemType::WEAPON:
+      return pos.getItems(ItemIndex::WEAPON);
+  }
+}
+
 static bool apply(const Effects::AnimateItems& m, Position pos, Creature* attacker) {
   vector<pair<Position, Item*>> candidates;
   for (auto v : pos.getRectangle(Rectangle::centered(m.radius)))
-    for (auto item : v.getItems(ItemIndex::WEAPON))
+    for (auto item : getItemsToAnimate(m, v))
       candidates.push_back(make_pair(v, item));
   candidates = Random.permutation(candidates);
   bool res = false;
@@ -1948,7 +1957,7 @@ static EffectAIIntent shouldAIApply(const Effects::AnimateItems& m, const Creatu
   if (caster && isConsideredInDanger(caster)) {
     int totalWeapons = 0;
     for (auto v : pos.getRectangle(Rectangle::centered(m.radius))) {
-      totalWeapons += v.getItems(ItemIndex::WEAPON).size();
+      totalWeapons += getItemsToAnimate(m, v).size();
       if (totalWeapons >= m.maxCount / 2)
         return 1;
     }
