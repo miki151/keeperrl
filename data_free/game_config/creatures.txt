@@ -4652,6 +4652,7 @@ End
     body = {
       type = Humanoid LARGE
     }
+    aiType = RANGED
     maxLevelIncrease = {
       SPELL 7
     }
@@ -4691,6 +4692,7 @@ End
       type = Humanoid LARGE
       material = BONE
     }
+    aiType = RANGED
     maxLevelIncrease = {
       ARCHERY 7
     }
