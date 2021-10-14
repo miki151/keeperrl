@@ -756,7 +756,6 @@ static const vector<LastingEffect>& getHateEffects() {
 static Adjective getAdjective(LastingEffect effect) {
   switch (effect) {
     case LastingEffect::INVISIBLE: return "Invisible"_good;
-    case LastingEffect::PANIC: return "Panic"_good;
     case LastingEffect::RAGE: return "Enraged"_good;
     case LastingEffect::HALLU: return "Hallucinating"_good;
     case LastingEffect::DAM_BONUS: return "Damage bonus"_good;
@@ -811,6 +810,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::POLYMORPHED: return "Polymorphed"_good;
     case LastingEffect::CAN_DANCE: return "Has rhythm"_good;
 
+    case LastingEffect::PANIC: return "Panic"_bad;
     case LastingEffect::PEACEFULNESS: return "Peaceful"_bad;
     case LastingEffect::POISON: return "Poisoned"_bad;
     case LastingEffect::PLAGUE: return "Infected with plague"_bad;
