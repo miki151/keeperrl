@@ -71,7 +71,6 @@
   maxPopulation = 1
   flags = { "abomination_upgrades" }
   prisoners = false
-  unlock = "necromancer"
 # Special traits example, all traits are added
 #   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
 }
