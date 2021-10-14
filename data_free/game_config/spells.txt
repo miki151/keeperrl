@@ -486,6 +486,15 @@ End
   cooldown = 5
   message = "spit acid!" "spits acid!"
 }
+"black smoke breath"
+{
+  symbol = "🚬"
+  effect = Name "black smoke" Area 1 EmitGas "BLACK_SMOKE" 1
+  fx = {FLAMETHROWER ColorId BLACK}
+  range = 4
+  cooldown = 5
+  message = "breathe black smoke!" "breathes black smoke!"
+}
 "shove"
 {
   symbol = "👉"
@@ -538,7 +547,13 @@ End
 "animate weapons"
 {
   symbol = "⚔️"
-  effect = Name "animate weapons" AnimateItems 5 5 {30 50}
+  effect = Name "animate weapons" AnimateItems 5 5 {30 50} WEAPON
+  cooldown = 200
+}
+"animate corpses"
+{
+  symbol = "👤"
+  effect = Name "animate corpses" AnimateItems 5 5 {30 50} CORPSE
   cooldown = 200
 }
 "adoxie right hand"

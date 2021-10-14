@@ -150,6 +150,7 @@
 { "naga" "N" ColorId RED }
 { "green_dragon" "D" ColorId GREEN }
 { "red_dragon" "D" ColorId RED }
+{ "bone_dragon" "D" ColorId LIGHT_GRAY }
 { viewId = "balrog" symbol = "&" color = ColorId RED fx = { SMOKE}}
 { "balrogs_whip" "(" ColorId RED }
 { "cyclops" "C" ColorId GREEN }

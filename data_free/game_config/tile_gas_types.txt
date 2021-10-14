@@ -17,3 +17,16 @@
     Bleed 0.02 "poison gas"
   }
 }
+
+"BLACK_SMOKE" {
+  "black smoke"
+  ColorId BLACK
+  0.95
+  0.0
+  false
+  Filter BodyMaterial FLESH {
+    Chance 0.2 Lasting PANIC
+    IncreaseMorale -0.1
+  }
+}
+
