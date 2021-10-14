@@ -553,8 +553,15 @@ End
 "animate corpses"
 {
   symbol = "👤"
-  effect = Name "animate corpses" AnimateItems 5 5 {30 50} CORPSE
+  effect = Name "animate corpses" AnimateItems 3 5 {10 20} CORPSE
   cooldown = 200
+}
+"advanced animate corpses"
+{
+  upgrade = "animate corpses"
+  symbol = "👤"
+  effect = Name "advanced animate corpses" AnimateItems 6 5 {30 50} CORPSE
+  cooldown = 100
 }
 "adoxie right hand"
 {
