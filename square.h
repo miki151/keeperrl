@@ -48,6 +48,7 @@ class Square {
   void addGas(Position, TileGasType, double amount);
   void addPermanentGas(TileGasType, double amount);
   double getGasAmount(TileGasType) const;
+  bool hasSunlightBlockingGasAmount() const;
 
   /** Sets the level this square is on.*/
   void onAddedToLevel(Position) const;

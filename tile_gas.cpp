@@ -31,14 +31,23 @@ void TileGas::addAmount(Position pos, TileGasType t, double a) {
   CHECK(a > 0);
   auto prevValue = amount[t].total;
   amount[t].total = min(1., a + amount[t].total);
-  if (prevValue < getFogVisionCutoff() && amount[t].total >= getFogVisionCutoff())
+  if (prevValue < getFogVisionCutoff() && amount[t].total >= getFogVisionCutoff()) {
     pos.updateVisibility();
+    pos.updateConnectivity();
+  }
 }
 
 void TileGas::addPermanentAmount(TileGasType t, double a) {
   auto& values = amount[t];
   values.total = min(1.0, values.total + a);
   values.permanent = min(1.0, values.permanent + a);
+}
+
+bool TileGas::hasSunlightBlockingAmount() const {
+  for (auto& elem : amount)
+    if (elem.second.total > getFogVisionCutoff())
+      return true;
+  return false;
 }
 
 void TileGas::tick(Position pos) {
@@ -66,8 +75,10 @@ void TileGas::tick(Position pos) {
         }
       value.total = max(value.permanent, value.permanent + (value.total - value.permanent) * info.decrease);
     }
-    if (prevValue >= getFogVisionCutoff() && value.total < getFogVisionCutoff())
+    if (prevValue >= getFogVisionCutoff() && value.total < getFogVisionCutoff()) {
       pos.updateVisibility();
+      pos.updateConnectivity();
+    }
   }
 }
 

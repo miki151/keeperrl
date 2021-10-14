@@ -138,6 +138,10 @@ double Square::getGasAmount(TileGasType type) const {
   return tileGas->getAmount(type);
 }
 
+bool Square::hasSunlightBlockingGasAmount() const {
+  return tileGas->hasSunlightBlockingAmount();
+}
+
 void Square::getViewIndex(const ContentFactory* factory, ViewIndex& ret, const Creature* viewer) const {
   if ((!viewer && lastViewer) || (viewer && lastViewer == viewer->getUniqueId())) {
     ret = *viewIndex;
