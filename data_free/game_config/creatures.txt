@@ -56,9 +56,9 @@
   }
 "NECROMANCER" inherit "KEEPER_MAGE"
   {
-    viewId = { "lich_keeper1" }
+    viewId = { "necromancer1" }
     # ViewId upgrades of Keepers are applied every 5 tech level increases
-    viewIdUpgrades = { { "lich_keeper2" } { "lich_keeper3" } { "lich_keeper4" } }
+    viewIdUpgrades = { { "necromancer2" } { "necromancer3" } { "necromancer4" } }
     name = append {
       name = "necromancer"
     }
@@ -72,12 +72,12 @@
   }
 "NECROMANCER_F" inherit "NECROMANCER"
   {
-    viewId = { "keeper_f1" ColorId BLACK }
+    viewId = { "necromancer_f1" }
     gender = FEMALE
     name = append {
       firstNameGen = "FIRST_FEMALE"
     }
-    viewIdUpgrades = { { "keeper_f2" ColorId BLACK } { "keeper_f3" ColorId BLACK } { "keeper_f4" ColorId BLACK }}
+    viewIdUpgrades = { { "necromancer_f2" } { "necromancer_f3" } { "necromancer_f4" }}
   }
 "KEEPER_KNIGHT"
   {
@@ -4178,7 +4178,7 @@
   }
 "ADOXIE_PRIEST"
   {
-    viewId = { "lich_keeper4" }
+    viewId = { "adoxie_priest" }
     name = {
       name = "high priest of Adoxie"
     }
