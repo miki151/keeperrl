@@ -1916,12 +1916,21 @@ static bool apply(const Effects::TriggerTrap&, Position pos, Creature* attacker)
   return false;
 }
 
-static string getName(const Effects::AnimateItems&, const ContentFactory*) {
-  return "animate weapons";
+static const char* getAnimatedItemsName(const Effects::AnimateItems& m) {
+  switch (m.type) {
+    case Effects::AnimatedItemType::CORPSE:
+      return "corpse";
+    case Effects::AnimatedItemType::WEAPON:
+      return "weapon";
+  }
+}
+
+static string getName(const Effects::AnimateItems& m, const ContentFactory*) {
+  return "animate "_s + getAnimatedItemsName(m) + "s";
 }
 
 static string getDescription(const Effects::AnimateItems& e, const ContentFactory*) {
-  return "Animates up to " + toString(e.maxCount) + " weapons from the surroundings";
+  return "Animates up to " + getPlural(getAnimatedItemsName(e), e.maxCount) + " from the surroundings";
 }
 
 static const vector<Item*>& getItemsToAnimate(const Effects::AnimateItems& m, Position pos) {
