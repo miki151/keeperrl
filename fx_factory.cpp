@@ -1300,21 +1300,51 @@ static void addLoopedLoveEffect(FXManager& mgr) {
   mgr.addDef(FXName::LOVE_LOOPED, psdef);
 }
 
+static constexpr int numBuffParticles = 2;
+
+static void buffAnimateFunc(AnimationContext& ctx, Particle& pinst) {
+  defaultAnimateParticle(ctx, pinst);
+
+  int idx = &pinst - ctx.ss.particles.data();
+  float pos = ctx.globalTime * 2.0f + double(idx) * fconstant::pi * 2.0f / numBuffParticles;
+
+  float width = 10.0f + 3.0f * ctx.ps.params.scalar[0];
+  float hoffset = 2 * fconstant::pi * ctx.ps.params.scalar[1] / numBuffParticles;
+  float voffset = 0.25;
+  auto vec = angleToVector(pos + hoffset);
+  pinst.temp = vec.y;
+  pinst.pos = vec * FVec2(width, 6.0f) - FVec2(0.0f, voffset * 16.0f) + FVec2(0.0f, 2.0f);
+  if (!ctx.ps.isDying)
+    pinst.life = min(pinst.life, 0.5f);
+}
+
+static bool buffDrawFunc(DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
+  if (!defaultDrawParticle(ctx, pinst, out))
+    return false;
+  float alpha = float(out.color.a) * clamp(pinst.temp + 0.5f, 0.0f, 1.0f);
+  out.color.a = (unsigned char)(alpha);
+  return out.color.a > 0;
+}
+
 static void addLichEffect(FXManager& mgr) {
   EmitterDef edef;
-  edef.strength = 10.0f;
-  edef.setDirectionSpread(-fconstant::pi * 0.5f, 0.2f);
-  edef.frequency = 15.0f;
-  edef.source = FRect(-10, 10, 10, 15);
+  edef.initialSpawnCount = numBuffParticles;
 
   ParticleDef pdef;
-  pdef.life = 2.0f;
-  pdef.size = 10.0f;
-  pdef.alpha = {{0.0f, 0.5f, 1.0f}, {0.0, 0.2, 0.0}, InterpType::linear};
-  pdef.color = rgb(Color::BLACK);
-  pdef.textureName = TextureName::CLOUDS_SOFT;
+  pdef.life = 1.0f;
+  pdef.size = 7.0f;
+  pdef.alpha = {{0.0f, 0.1f, 0.9f, 1.0f}, {0.0, 1.0f, 1.0f, 0.0}};
+
+  pdef.color = FVec3(1.0f);
+  pdef.textureName = TextureName::PHYLACTERY_SKULL;
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
+  ssdef.emitFunc = [](AnimationContext& ctx, EmissionState& em, Particle& pinst) {
+    defaultEmitParticle(ctx, em, pinst);
+    pinst.rot = 0.0f;
+  };
+  ssdef.animateFunc = &buffAnimateFunc;
+  ssdef.drawFunc = &buffDrawFunc;
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};
@@ -1322,7 +1352,6 @@ static void addLichEffect(FXManager& mgr) {
   psdef.animLength = 1.0f;
 
   mgr.addDef(FXName::LICH, psdef);
-  mgr.genSnapshots(FXName::LICH, {2.0f, 2.2f, 2.4f, 2.6f, 2.8f});
 }
 
 static void addBlindEffect(FXManager &mgr) {
@@ -1552,36 +1581,8 @@ static void addBuffEffect(FXManager& mgr) {
   pdef.textureName = TextureName::CIRCULAR;
 
   SubSystemDef ssdef(pdef, edef, 0.0f, 1.0f);
-  ssdef.animateFunc = [](AnimationContext& ctx, Particle& pinst) {
-    defaultAnimateParticle(ctx, pinst);
-
-    int idx = &pinst - ctx.ss.particles.data();
-    float pos = ctx.globalTime * 2.0f + double(idx) * fconstant::pi * 2.0f / numParticles;
-
-    float width = 10.0f + 3.0f * ctx.ps.params.scalar[0];
-    float hoffset = 2 * fconstant::pi * ctx.ps.params.scalar[1] / numParticles;
-    float voffset = 0.25;
-    /*float hoffset = 0.0f;
-    if (voffset >= 0.5f) {
-      voffset -= 0.5f;
-      hoffset = 0.5f;
-    }
-    hoffset += voffset * 0.5f;*/
-
-    auto vec = angleToVector(pos + hoffset);
-    pinst.temp = vec.y;
-    pinst.pos = vec * FVec2(width, 6.0f) - FVec2(0.0f, voffset * 16.0f) + FVec2(0.0f, 2.0f);
-    if (!ctx.ps.isDying)
-      pinst.life = min(pinst.life, 0.5f);
-  };
-
-  ssdef.drawFunc = [](DrawContext& ctx, const Particle& pinst, DrawParticle& out) {
-    if (!defaultDrawParticle(ctx, pinst, out))
-      return false;
-    float alpha = float(out.color.a) * clamp(pinst.temp + 0.5f, 0.0f, 1.0f);
-    out.color.a = (unsigned char)(alpha);
-    return out.color.a > 0;
-  };
+  ssdef.animateFunc = &buffAnimateFunc;
+  ssdef.drawFunc = &buffDrawFunc;
 
   ParticleSystemDef psdef;
   psdef.subSystems = {ssdef};

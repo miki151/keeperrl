@@ -34,6 +34,7 @@ static const char* texFileName(TextureName name) {
     CASE(FLASH1_GLOW, "flashes_glowing_4x2.png")
     CASE(FLASH2, "flashes_2x2.png")
     CASE(SPECIAL, "special_4x2.png")
+    CASE(PHYLACTERY_SKULL, "phylactery_skull.png")
 #undef CASE
   }
   return nullptr;
