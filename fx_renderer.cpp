@@ -24,8 +24,8 @@ struct FXRenderer::SystemDrawInfo {
 };
 
 FXRenderer::FXRenderer(DirectoryPath dataPath, FXManager& mgr) : mgr(mgr), texturesPath(dataPath) {
-  useFramebuffer = isOpenglFeatureAvailable(OpenglFeature::FRAMEBUFFER) &&
-                   isOpenglFeatureAvailable(OpenglFeature::SEPARATE_BLEND_FUNC);
+  useFramebuffer = false;/*isOpenglFeatureAvailable(OpenglFeature::FRAMEBUFFER) &&
+                   isOpenglFeatureAvailable(OpenglFeature::SEPARATE_BLEND_FUNC);*/
   drawBuffers = unique<DrawBuffers>();
 }
 
