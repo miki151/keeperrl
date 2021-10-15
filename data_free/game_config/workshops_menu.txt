@@ -242,6 +242,8 @@ append {
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true tech = "master necromancy"}
       { item = {Assembled{ "ABOMINATION_PLAYER" "abomination" {NO_LIMIT FIGHTER} BODY_PART 199}}
         work = 40 cost = "CORPSE" 10 applyImmediately = true notArtifact = true tech = "master necromancy"}
+      { item = {Assembled{ "BONE_DRAGON" "bone dragon" {NO_LIMIT FIGHTER} BALSAM 5}}
+        work = 40 requireIngredient = "dragon_corpse" applyImmediately = true tech = "master necromancy"}
   }
   "LABORATORY"
   {

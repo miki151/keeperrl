@@ -187,7 +187,8 @@ PItem ItemType::severedLimb(const string& creatureName, BodyPart part, double we
 
 }
 
-static ItemAttributes getCorpseAttr(const string& name, ItemClass itemClass, double weight, bool isResource) {
+static ItemAttributes getCorpseAttr(const string& name, ItemClass itemClass, double weight, bool isResource,
+    optional<string> ingredient) {
   return ITATTR(
     i.viewId = ViewId("body_part");
     i.name = name;
@@ -197,12 +198,14 @@ static ItemAttributes getCorpseAttr(const string& name, ItemClass itemClass, dou
     i.itemClass = itemClass;
     i.weight = weight;
     i.storageIds = {StorageId("corpses")};
+    i.ingredientType = ingredient;
   );
 }
 
 PItem ItemType::corpse(const string& name, const string& rottenName, double weight, const ContentFactory* f,
-    bool instantlyRotten, ItemClass itemClass, CorpseInfo corpseInfo) {
-  return ::corpse(getCorpseAttr(name, itemClass, weight, corpseInfo.canBeRevived), rottenName, f, instantlyRotten, corpseInfo);
+    bool instantlyRotten, ItemClass itemClass, CorpseInfo corpseInfo, optional<string> ingredient) {
+  return ::corpse(getCorpseAttr(name, itemClass, weight, corpseInfo.canBeRevived, ingredient),
+      rottenName, f, instantlyRotten, corpseInfo);
 }
 
 class PotionItem : public Item {
@@ -306,7 +309,7 @@ static string getRandomPoem() {
 }
 
 ItemAttributes ItemTypes::Corpse::getAttributes(const ContentFactory*) const {
-  return getCorpseAttr("corpse", ItemClass::CORPSE, 100, true);
+  return getCorpseAttr("corpse", ItemClass::CORPSE, 100, true, none);
 }
 
 ItemAttributes ItemTypes::AutomatonPaint::getAttributes(const ContentFactory*) const {

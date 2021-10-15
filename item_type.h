@@ -18,9 +18,9 @@ class ItemType {
   static ItemType fangs(int damage);
   static ItemType fangs(int damage, VictimEffect);
   static ItemType spellHit(int damage);
-  static PItem corpse(const string& name, const string& rottenName, double weight, const ContentFactory* f, bool instantlyRotten = false,
-      ItemClass = ItemClass::CORPSE,
-      CorpseInfo corpseInfo = {UniqueEntity<Creature>::Id(), false, false, false});
+  static PItem corpse(const string& name, const string& rottenName, double weight, const ContentFactory* f,
+      bool instantlyRotten = false, ItemClass = ItemClass::CORPSE,
+      CorpseInfo corpseInfo = {UniqueEntity<Creature>::Id(), false, false, false}, optional<string> ingredient = none);
   static PItem severedLimb(const string& creatureName, BodyPart, double weight, ItemClass, const ContentFactory*);
 
   ItemType(const ItemTypeVariant&);

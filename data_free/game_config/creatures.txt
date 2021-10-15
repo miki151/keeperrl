@@ -996,6 +996,7 @@
     }
     body = {
       type = FourLegged HUGE
+      corpseIngredientType = "dragon_corpse"
       addBodyPart = {
         WING 2
       }
@@ -1067,6 +1068,7 @@
     }
     body = {
       type = FourLegged HUGE
+      corpseIngredientType = "dragon_corpse"
       addBodyPart = {
         WING 2
       }
@@ -1138,6 +1140,7 @@
     }
     body = {
       type = FourLegged HUGE
+      corpseIngredientType = "dragon_corpse"
       addBodyPart = {
         WING 2
       }
@@ -1206,6 +1209,7 @@
     viewId = { "red_dragon" Rgb 240 240 240 255 }
     body = {
       type = FourLegged HUGE
+      corpseIngredientType = "dragon_corpse"
       addBodyPart = {
         WING 2
       }
@@ -1271,6 +1275,7 @@
     viewId = { "red_dragon" Rgb 240 240 10 255 }
     body = {
       type = FourLegged HUGE
+      corpseIngredientType = "dragon_corpse"
       addBodyPart = {
         WING 2
       }
