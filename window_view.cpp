@@ -108,12 +108,16 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
   renderer.enableCustomCursor(!options->getBoolValue(OptionId::DISABLE_CURSOR));
   renderer.initialize();
   renderer.setZoom(options->getBoolValue(OptionId::ZOOM_UI) ? 2 : 1);
+  renderer.setFpsLimit(options->getIntValue(OptionId::FPS_LIMIT));
   options->addTrigger(OptionId::FULLSCREEN, [this] (int on) {
     renderer.setFullscreen(on);
     renderer.initialize();
   });
   options->addTrigger(OptionId::VSYNC, [this] (int on) {
     renderer.setVsync(on);
+  });
+  options->addTrigger(OptionId::FPS_LIMIT, [this] (int fps) {
+    renderer.setFpsLimit(fps);
   });
   options->addTrigger(OptionId::DISABLE_CURSOR, [this] (int on) { renderer.enableCustomCursor(!on); });
   options->addTrigger(OptionId::ZOOM_UI, [this] (int on) { zoomUI = on; });
