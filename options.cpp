@@ -28,6 +28,7 @@ const EnumMap<OptionId, Options::Value> defaults {
   {OptionId::SHOW_MAP, 0},
   {OptionId::FULLSCREEN, 0},
   {OptionId::VSYNC, 1},
+  {OptionId::FPS_LIMIT, 0},
   {OptionId::ZOOM_UI, 0},
   {OptionId::DISABLE_MOUSE_WHEEL, 0},
   {OptionId::DISABLE_CURSOR, 0},
@@ -63,6 +64,7 @@ const map<OptionId, string> names {
   {OptionId::SHOW_MAP, "Show map"},
   {OptionId::FULLSCREEN, "Fullscreen"},
   {OptionId::VSYNC, "Vertical Sync"},
+  {OptionId::FPS_LIMIT, "Framerate limit"},
   {OptionId::ZOOM_UI, "Zoom in UI"},
   {OptionId::DISABLE_MOUSE_WHEEL, "Disable mouse wheel scrolling"},
   {OptionId::DISABLE_CURSOR, "Disable pretty mouse cursor"},
@@ -95,6 +97,7 @@ const map<OptionId, string> hints {
   {OptionId::KEEP_SAVEFILES, "Don't remove the save file when a game is loaded."},
   {OptionId::FULLSCREEN, "Switch between fullscreen and windowed mode."},
   {OptionId::VSYNC, "Limits frame rate to your monitor's refresh rate. Turning off may fix frame rate issues."},
+  {OptionId::FPS_LIMIT, "Limits frame rate. Lower framerate keeps GPU cooler."},
   {OptionId::ZOOM_UI, "All UI and graphics are zoomed in 2x. "
       "Use you have a large resolution screen and things appear too small."},
   {OptionId::ONLINE, "Enable online features, like dungeon sharing and highscores."},
@@ -123,6 +126,7 @@ const map<OptionSet, vector<OptionId>> optionSets {
 #endif
       OptionId::FULLSCREEN,
       OptionId::VSYNC,
+      OptionId::FPS_LIMIT,
       OptionId::ZOOM_UI,
       OptionId::DISABLE_MOUSE_WHEEL,
       OptionId::DISABLE_CURSOR,
@@ -246,6 +250,8 @@ static optional<pair<int, int>> getIntRange(OptionId id) {
       return make_pair(0, 100);
     case OptionId::AUTOSAVE2:
       return make_pair(0, 5000);
+    case OptionId::FPS_LIMIT:
+      return make_pair(0, 30);
     case OptionId::KEEPER_WARNING_TIMEOUT:
       return make_pair(50, 500);
     default:
@@ -264,6 +270,8 @@ static optional<int> getIntInterval(OptionId id) {
   switch (id) {
     case OptionId::AUTOSAVE2:
       return 500;
+    case OptionId::FPS_LIMIT:
+      return 5;
     case OptionId::KEEPER_WARNING_TIMEOUT:
       return 50;
     default:
@@ -330,6 +338,7 @@ string Options::getValueString(OptionId id) {
     case OptionId::ENDLESS_ENEMIES:
     case OptionId::ENEMY_AGGRESSION:
       return choices[id][(*value.getValueMaybe<int>() + choices[id].size()) % choices[id].size()];
+    case OptionId::FPS_LIMIT:
     case OptionId::MAIN_VILLAINS:
     case OptionId::LESSER_VILLAINS:
     case OptionId::RETIRED_VILLAINS:

@@ -40,6 +40,7 @@ class Renderer {
   void setFullscreen(bool);
   void setFullscreenMode(int);
   void setVsync(bool);
+  void setFpsLimit(int);
   void setZoom(int);
   int getZoom();
   void enableCustomCursor(bool);
@@ -148,6 +149,8 @@ class Renderer {
   optional<thread::id> renderThreadId;
   bool fullscreen;
   int fullscreenMode;
+  int fpsLimit = 0;
+  uint64_t frameStart = 0;
   int zoom = 1;
   bool cursorEnabled = true;
   void reloadCursors();

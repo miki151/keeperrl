@@ -440,6 +440,10 @@ void Renderer::setVsync(bool on) {
   SDL::SDL_GL_SetSwapInterval(on ? 1 : 0);
 }
 
+void Renderer::setFpsLimit(int fps) {
+  fpsLimit = fps;
+}
+
 Renderer::Renderer(Clock* clock, const string& title, const DirectoryPath& fontPath,
     const FilePath& cursorP, const FilePath& clickedCursorP, const FilePath& logoPath)
     : cursorPath(cursorP), clickedCursorPath(clickedCursorP), clock(clock) {
@@ -543,8 +547,16 @@ void Renderer::setAnimationsDirectory(const DirectoryPath& path) {
 void Renderer::drawAndClearBuffer() {
   renderDeferredSprites();
   CHECK_OPENGL_ERROR();
+  if (fpsLimit) {
+    uint64_t end = SDL::SDL_GetPerformanceCounter();
+    float elapsedMs = (end - frameStart) / (float)SDL::SDL_GetPerformanceFrequency() * 1000.0f;
+    float sleepMs = 1000.0f / fpsLimit - elapsedMs;
+    if (sleepMs > 0.0)
+      SDL::SDL_Delay(sleepMs);
+  }
   SDL::SDL_GL_SwapWindow(window);
   CHECK_OPENGL_ERROR();
+  frameStart = SDL::SDL_GetPerformanceCounter();
   SDL::glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   SDL::glClearColor(0.0, 0.0, 0.0, 0.0);
   CHECK_OPENGL_ERROR();
