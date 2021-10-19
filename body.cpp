@@ -412,7 +412,7 @@ bool Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
     else if (part == BodyPart::HEAD)
       game->getStatistics().add(StatId::CHOPPED_HEAD);
     if (auto item = getBodyPartItem(creature->getAttributes().getName().bare(), part, game->getContentFactory())) {
-      if (game->effectFlags.count("abomination_upgrades")) {
+      if (material == BodyMaterial::FLESH && game->effectFlags.count("abomination_upgrades")) {
         auto upgrade = droppedPartUpgrade.value_or_f(&getDefaultBodyPartUpgrade);
         setBodyPartUpgrade(item.get(), part, std::move(upgrade), game->getContentFactory());
         droppedPartUpgrade = none;
