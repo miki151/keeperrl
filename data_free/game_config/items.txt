@@ -1853,7 +1853,6 @@ End
     itemClass = CORPSE
     price = 0
     weight = 5
-    resourceId = "CORPSE"
     storageIds = {"corpses"}
   }
 "Skeleton"
