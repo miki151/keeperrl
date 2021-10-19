@@ -4718,6 +4718,10 @@ End
     name = {
       name = "skeletal abomination"
     }
+    attr = {
+      DAMAGE 10
+      DEFENSE 10
+    }
     hatedByEffect = HATE_UNDEAD
   }
 "SLASHER"
