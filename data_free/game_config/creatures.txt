@@ -3514,6 +3514,7 @@
       }
       weight = 0.1
       deathSound = none
+      canBeRevived = false
     }
     aiType = RANGED
     noChase = true

@@ -180,6 +180,7 @@ class Body {
   optional<bool> SERIAL(canCapture);
   optional<Effect> SERIAL(droppedPartUpgrade);
   optional<string> SERIAL(corpseIngredientType);
+  bool SERIAL(canBeRevived) = true;
 };
 
-CEREAL_CLASS_VERSION(Body, 1)
+CEREAL_CLASS_VERSION(Body, 2)

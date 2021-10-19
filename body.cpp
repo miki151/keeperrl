@@ -39,6 +39,8 @@ void Body::serializeImpl(Archive& ar, const unsigned int version) {
   ar(OPTION(noHealth), OPTION(fallsApart), OPTION(drops), OPTION(canCapture), OPTION(xCanPickUpItems), OPTION(droppedPartUpgrade));
   if (version >= 1)
     ar(OPTION(corpseIngredientType));
+  if (version >= 2)
+    ar(OPTION(canBeRevived));  
 }
 
 template <class Archive>
@@ -634,7 +636,8 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
         return makeVec(
             ItemType::corpse(name + " corpse", name + " skeleton", weight, factory, instantlyRotten,
               minionFood ? ItemClass::FOOD : ItemClass::CORPSE,
-              {id, material != Material::UNDEAD_FLESH, numBodyParts(BodyPart::HEAD) > 0, false}, corpseIngredientType));
+              CorpseInfo {id, canBeRevived && material != Material::UNDEAD_FLESH, numBodyParts(BodyPart::HEAD) > 0, false},
+              corpseIngredientType));
       case Material::CLAY:
       case Material::ROCK:
         return ItemType(CustomItemId("Rock")).get(numCorpseItems(size), factory);
