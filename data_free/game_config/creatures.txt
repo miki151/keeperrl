@@ -62,8 +62,10 @@
     name = append {
       name = "necromancer"
     }
-    spellSchools = {}
-    maxLevelIncrease = {}
+    spellSchools = { "zombie mage" }
+    maxLevelIncrease = {
+      SPELL 12
+    }
     skills = {
       "MORGUE" 1.0
       "LABORATORY" 1.0
