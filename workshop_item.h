@@ -36,7 +36,7 @@ struct WorkshopItem {
   optional<TechId> SERIAL(techId);
   optional<TutorialHighlight> SERIAL(tutorialHighlight);
   optional<ItemUpgradeType> SERIAL(upgradeType);
-  int SERIAL(maxUpgrades);
+  int SERIAL(maxUpgrades) = 0;
   optional<string> SERIAL(requireIngredient);
   bool SERIAL(notArtifact) = false;
   bool SERIAL(applyImmediately) = false;

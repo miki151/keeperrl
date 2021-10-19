@@ -2117,7 +2117,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
   auto thisTooltip = [&] (const ItemInfo& itemInfo, optional<string> warning,
       const optional<ImmigrantCreatureInfo>& creatureInfo, int index, pair<string, int> maxUpgrades) {
     optional<string> upgradesTip;
-    if (maxUpgrades.second > 0)
+    if (maxUpgrades.second > 0 && !maxUpgrades.first.empty())
       upgradesTip = "Upgradable with up to " + getPlural(maxUpgrades.first, maxUpgrades.second);
     if (creatureInfo) {
       return cache->get(
