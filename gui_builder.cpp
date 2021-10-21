@@ -17,6 +17,7 @@
 #include "gui_builder.h"
 #include "clock.h"
 #include "renderer.h"
+#include "user_input.h"
 #include "view_id.h"
 #include "player_message.h"
 #include "view.h"
@@ -1270,6 +1271,7 @@ static string getActionText(ItemAction a) {
 
 void GuiBuilder::drawMiniMenu(SGuiElem elem, bool& exit, Vec2 menuPos, int width, bool darkBg) {
   int margin = 15;
+  elem = WL(scrollable, std::move(elem));
   elem = WL(miniWindow, WL(margins, std::move(elem), 5 + margin, margin, margin, margin),
           [&] { exit = true; });
   drawMiniMenu(std::move(elem), [&]{ return exit; }, menuPos, width, darkBg);
@@ -1278,7 +1280,7 @@ void GuiBuilder::drawMiniMenu(SGuiElem elem, bool& exit, Vec2 menuPos, int width
 void GuiBuilder::drawMiniMenu(SGuiElem elem, function<bool()> done, Vec2 menuPos, int width, bool darkBg) {
   disableTooltip = true;
   int contentHeight = *elem->getPreferredHeight();
-  Vec2 size(width, contentHeight);
+  Vec2 size(width, min(renderer.getSize().y, contentHeight));
   menuPos.y -= max(0, menuPos.y + size.y - renderer.getSize().y);
   menuPos.x -= max(0, menuPos.x + size.x - renderer.getSize().x);
   elem->setBounds(Rectangle(menuPos, menuPos + size));
@@ -1999,62 +2001,44 @@ SGuiElem GuiBuilder::drawNextWaveOverlay(const CollectiveInfo::NextWave& wave) {
 SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo& elem) {
   auto buttonHandler = WL(buttonRect, [=] (Rectangle bounds) {
       auto lines = WL(getListBuilder, legendLineHeight);
+      lines.addElem(WL(label, "Use left/right mouse buttons to add/remove upgrades.",
+          Color::YELLOW));
+      vector<int> increases(elem.upgrades.size(), 0);
+      int totalUsed = 0;
       disableTooltip = true;
       DestructorFunction dFun([this] { disableTooltip = false; });
       bool exit = false;
-      optional<WorkshopUpgradeInfo> ret;
-      for (int i : All(elem.added)) {
-        auto& upgrade = elem.added[i];
-        auto removeButton = [&] (const char* text, int count) {
-          auto buttonFun = [&exit, &ret, i, itemIndex = elem.itemIndex, count] {
-              ret = WorkshopUpgradeInfo{ itemIndex,  i, true, count};
-              exit = true;
-          };
-          auto idLine = WL(getListBuilder);
-          idLine.addElemAuto(WL(label, text));
-          idLine.addElemAuto(WL(viewObject, upgrade.viewId));
-          idLine.addElemAuto(WL(label, upgrade.name));
-          lines.addElem(WL(stack,
-                WL(button, buttonFun),
-                WL(uiHighlightMouseOver),
-                idLine.buildHorizontalList(),
-                WL(tooltip, {upgrade.description})
-          ));
+      auto cnt = elem.itemInfo.number;
+      for (auto& upgrade : elem.upgrades)
+        totalUsed += upgrade.used;
+      for (int i : All(elem.upgrades)) {
+        auto& upgrade = elem.upgrades[i];
+        auto idLine = WL(getListBuilder);
+        auto colorFun = [&increases, i, upgrade, &totalUsed, cnt, max = elem.maxUpgrades.second] {
+          return increases[i] + cnt > upgrade.count || totalUsed >= max ? Color::LIGHT_GRAY : Color::WHITE;
         };
-        removeButton("Remove ", 1);
-        if (elem.itemInfo.number > 1)
-          removeButton("Remove from all ", elem.itemInfo.number);
+        idLine.addElemAuto(WL(viewObject, upgrade.viewId));
+        idLine.addElemAuto(WL(label, upgrade.name, colorFun));
+        idLine.addBackElem(WL(labelFun, [&increases, i, upgrade, cnt] {
+            return "(" + toString(upgrade.used * cnt + increases[i]) + "/" + toString(upgrade.used * cnt + upgrade.count) + ")  "; },
+            colorFun), 70);
+        lines.addElem(WL(stack, makeVec(
+              WL(button, [&increases, &totalUsed, i, upgrade, cnt, max = elem.maxUpgrades.second] {
+                if (increases[i] <= upgrade.count - cnt && totalUsed < max) { increases[i] += cnt; ++totalUsed; } }),
+              WL(buttonRightClick, [&increases, &totalUsed, i, upgrade, cnt] {
+                if (increases[i] + upgrade.used * cnt >= cnt) { increases[i] -= cnt; --totalUsed; } }),
+              WL(uiHighlightMouseOver),
+              idLine.buildHorizontalList(),
+              WL(tooltip, {upgrade.description})
+        )));
       }
-      if (elem.added.size() < elem.maxUpgrades.second)
-        for (int i : All(elem.available)) {
-          auto& upgrade = elem.available[i];
-          auto addButton = [&] (const char* text, int count) {
-            auto buttonFun = [&exit, &ret, i, itemIndex = elem.itemIndex, count] {
-                ret = WorkshopUpgradeInfo{ itemIndex,  i, false, count};
-                exit = true;
-            };
-            auto idLine = WL(getListBuilder);
-            idLine.addElemAuto(WL(label, text));
-            idLine.addElemAuto(WL(viewObject, upgrade.viewId));
-            idLine.addElemAuto(WL(label, upgrade.name + " (" + toString(upgrade.count) + " available)"));
-            lines.addElem(WL(stack,
-                  WL(button, buttonFun),
-                  WL(uiHighlightMouseOver),
-                  idLine.buildHorizontalList(),
-                  WL(tooltip, {upgrade.description})
-            ));
-          };
-          addButton("Add", 1);
-          if (elem.itemInfo.number > 1 && upgrade.count > 1)
-            addButton("Add to all", min(elem.itemInfo.number, upgrade.count));
-        }
-      lines.addElem(WL(label, "Available slots: " + toString(elem.maxUpgrades.second - elem.added.size())));
+      lines.addElem(WL(labelFun, [&totalUsed, &elem] {
+          return "Used slots: " + toString(totalUsed) + "/" + toString(elem.maxUpgrades.second); }));
       if (!elem.notArtifact)
         lines.addElem(WL(label, "Upgraded items can only be crafted by a craftsman of legendary skills.",
             Renderer::smallTextSize(), Color::LIGHT_GRAY));
-      drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 450, false);
-      if (ret)
-        callbacks.input({UserInputId::WORKSHOP_UPGRADE, *ret});
+      drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 500, false);
+      callbacks.input({UserInputId::WORKSHOP_UPGRADE, WorkshopUpgradeInfo{elem.itemIndex, increases, cnt}});
   });
   auto line = WL(getListBuilder);
   vector<pair<ViewId, int>> upgrades;
@@ -2066,16 +2050,17 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
       }
     upgrades.emplace_back(id, cnt);
   };
-  for (int upgradeIndex : All(elem.added)) {
-    auto& upgrade = elem.added[upgradeIndex];
-    addUpgrade(upgrade.viewId, upgrade.count);
+  for (int upgradeIndex : All(elem.upgrades)) {
+    auto& upgrade = elem.upgrades[upgradeIndex];
+    if (upgrade.used > 0)
+      addUpgrade(upgrade.viewId, upgrade.used);
   }
   for (auto& elem : upgrades) {
     if (elem.second > 1)
       line.addElemAuto(WL(label, toString(elem.second)));
     line.addElemAuto(WL(viewObject, elem.first));
   }
-  if (!elem.added.empty())
+  if (!upgrades.empty())
     return WL(standardButton, line.buildHorizontalList(), std::move(buttonHandler));
   else
     return WL(buttonLabel, "upgrade", std::move(buttonHandler));
@@ -2191,7 +2176,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
           .addElemAuto(WL(viewObject, elem.itemInfo.ingredient->viewId))
           .buildHorizontalList();
     line.addMiddleElem(WL(renderInBounds, std::move(label)));
-    if ((!elem.available.empty() || !elem.added.empty()) && elem.maxUpgrades.second > 0)
+    if (!elem.upgrades.empty() && elem.maxUpgrades.second > 0)
       line.addBackElemAuto(WL(leftMargin, 7, drawItemUpgradeButton(elem)));
     if (elem.itemInfo.price)
       line.addBackElem(WL(alignment, GuiFactory::Alignment::RIGHT, drawCost(*elem.itemInfo.price)), 80);

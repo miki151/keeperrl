@@ -293,16 +293,16 @@ class CollectiveInfo {
     struct UpgradeInfo {
       ViewId HASH(viewId);
       string HASH(name);
+      int HASH(used);
       int HASH(count);
       vector<string> HASH(description);
-      HASH_ALL(viewId, name, count, description)
+      HASH_ALL(viewId, name, used, count, description)
     };
-    vector<UpgradeInfo> HASH(available);
-    vector<UpgradeInfo> HASH(added);
+    vector<UpgradeInfo> HASH(upgrades);
     pair<string, int> HASH(maxUpgrades);
     int HASH(itemIndex);
     bool HASH(notArtifact);
-    HASH_ALL(productionState, paid, itemInfo, creatureInfo, available, added, maxUpgrades, itemIndex, notArtifact)
+    HASH_ALL(productionState, paid, itemInfo, creatureInfo, upgrades, maxUpgrades, itemIndex, notArtifact)
   };
   struct OptionInfo {
     ItemInfo HASH(itemInfo);

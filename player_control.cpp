@@ -1140,26 +1140,14 @@ void PlayerControl::fillLibraryInfo(CollectiveInfo& collectiveInfo) const {
   }
 }
 
-static bool runesEqual(const Item* it1, const Item* it2) {
-  return it1->getName() == it2->getName() && it1->getViewObject().id() == it2->getViewObject().id();
-}
-
-vector<vector<pair<Item*, Position>>> PlayerControl::getItemUpgradesFor(const WorkshopItem& workshopItem) const {
-  vector<vector<pair<Item*, Position>>> ret;
-  auto addItem = [&ret] (Item* item, Position pos) {
-    for (auto& elem : ret)
-      if (runesEqual(elem[0].first, item)) {
-        elem.push_back(make_pair(item, pos));
-        return;
-      }
-    ret.push_back({make_pair(item, pos)});
-  };
+vector<pair<Item*, Position>> PlayerControl::getItemUpgradesFor(const WorkshopItem& workshopItem) const {
+  vector<pair<Item*, Position>> ret;
   for (auto& pos : collective->getConstructions().getAllStoragePositions())
     for (auto& item : pos.getItems(ItemIndex::RUNE))
       if (auto& upgradeInfo = item->getUpgradeInfo())
-        if (upgradeInfo->type == workshopItem.upgradeType) {
-          addItem(item, pos);
-        }
+        if (upgradeInfo->type == workshopItem.upgradeType)
+          ret.push_back({make_pair(item, pos)});
+
   return ret;
 }
 
@@ -1221,7 +1209,7 @@ vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getFurnaceQueue() const {
   for (auto& item : collective->getFurnace().getQueued()) {
         auto itemInfo = getItemInfo(getGame()->getContentFactory(), {item.item.get()}, false, false, false);
         itemInfo.price = getCostObj(collective->getFurnace().getRecycledAmount(item.item.get()));
-    ret.push_back(CollectiveInfo::QueuedItemInfo{item.state, true, std::move(itemInfo), none, {}, {}, {"", 0}, i, true});
+    ret.push_back(CollectiveInfo::QueuedItemInfo{item.state, true, std::move(itemInfo), none, {}, {"", 0}, i, true});
     ++i;
   }
   return ret;
@@ -1263,17 +1251,25 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
   CollectiveInfo::QueuedItemInfo ret {item.state,
         item.paid && (item.runes.empty() || item.item.notArtifact || hasLegendarySkill),
         getWorkshopItem(item.item, cnt), getImmigrantCreatureInfo(contentFactory, item.item.type),
-        {}, {}, {"", 0}, itemIndex, item.item.notArtifact};
+        {}, {"", 0}, itemIndex, item.item.notArtifact};
   if (!item.paid)
     ret.itemInfo.description.push_back("Cannot afford item");
+  auto addItem = [&ret] (CollectiveInfo::QueuedItemInfo::UpgradeInfo info, bool used) {
+    for (auto& elem : ret.upgrades)
+      if (elem.name == info.name && elem.viewId == info.viewId) {
+        ++(used ? elem.used : elem.count);
+        return;
+      }
+    ret.upgrades.push_back(std::move(info));
+  };
   for (auto& it : getItemUpgradesFor(item.item)) {
-    ret.available.push_back({it[0].first->getViewObject().id(), it[0].first->getName(), it.size(),
-        it[0].first->getUpgradeInfo()->getDescription(getGame()->getContentFactory())});
+    addItem({it.first->getViewObject().id(), it.first->getName(), 0, 1,
+        it.first->getUpgradeInfo()->getDescription(getGame()->getContentFactory())}, false);
   }
   for (auto& it : item.runes) {
     if (auto& upgradeInfo = it->getUpgradeInfo())
-      ret.added.push_back({it->getViewObject().id(), it->getName(), 1,
-          upgradeInfo->getDescription(getGame()->getContentFactory())});
+      addItem({it->getViewObject().id(), it->getName(), 1, 0,
+          upgradeInfo->getDescription(getGame()->getContentFactory())}, true);
     else {
       ret.itemInfo.ingredient = getItemInfo(getGame()->getContentFactory(), {it.get()}, false, false, false);
       ret.itemInfo.description.push_back("Crafted from " + it->getAName());
@@ -1285,13 +1281,16 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
   ret.maxUpgrades = {item.item.upgradeType ? getItemTypeName(*item.item.upgradeType) : "", item.item.maxUpgrades};
   return ret;
 }
+
 static bool runesEqual(const vector<PItem>& v1, const vector<PItem>& v2) {
   if (v1.size() != v2.size())
     return false;
-  for (int i : All(v1))
-    if (!runesEqual(v1[i].get(), v2[i].get()))
-      return false;
-  return true;
+  unordered_set<pair<string, ViewId>, CustomHash<pair<string, ViewId>>> elems;
+  for (auto& elem : v1)
+    elems.insert(make_pair(elem->getName(), elem->getViewObject().id()));
+  for (auto& elem : v2)
+    elems.erase(make_pair(elem->getName(), elem->getViewObject().id()));
+  return elems.empty();
 }
 
 vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() const {
@@ -2449,23 +2448,40 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::WORKSHOP_UPGRADE: {
       auto& info = input.get<WorkshopUpgradeInfo>();
+      auto increases = info.increases;
       if (chosenWorkshop && chosenWorkshop->type != WorkshopType("FURNACE")) {
         auto& workshop = collective->getWorkshops().types.at(chosenWorkshop->type);
         if (info.itemIndex < workshop.getQueued().size()) {
           auto& item = workshop.getQueued()[info.itemIndex];
-          if (info.remove) {
-            if (info.upgradeIndex < item.runes.size())
-              for (int i : Range(info.count))
-                Random.choose(collective->getConstructions().getAllStoragePositions().asVector())
-                    .dropItem(workshop.removeUpgrade(info.itemIndex + i, info.upgradeIndex));
-          } else {
-            auto runes = getItemUpgradesFor(item.item);
-            if (info.upgradeIndex < runes.size()) {
-              auto& rune = runes[info.upgradeIndex];
-              for (int i : Range(info.count))
-                workshop.addUpgrade(info.itemIndex + i, rune[i].second.removeItem(rune[i].first));
+          vector<pair<string, ViewId>> allItems;
+          auto getIndex = [&] (string name, ViewId viewId) {
+            for (int index : All(allItems))
+              if (allItems[index] == make_pair(name, viewId))
+                return index;
+            allItems.push_back(make_pair(name, viewId));
+            return allItems.size() - 1;
+          };
+          for (auto& it : getItemUpgradesFor(item.item)) {
+            auto index = getIndex(it.first->getName(), it.first->getViewObject().id());
+            if (increases[index] > 0) {
+              workshop.addUpgrade(info.itemIndex + increases[index] % info.numItems, it.second.removeItem(it.first));
+              --increases[index];
             }
           }
+          vector<pair<int, int>> indexesToRemove;
+          for (auto upgradeIndex : All(item.runes)) {
+            auto rune = item.runes[upgradeIndex].get();
+            if (rune->getUpgradeInfo()) {
+              auto index = getIndex(rune->getName(), rune->getViewObject().id());
+              while (increases[index] < 0) {
+                indexesToRemove.push_back({upgradeIndex, info.itemIndex - increases[index] % info.numItems});
+                ++increases[index];
+              }
+            }
+          }
+          for (auto index : indexesToRemove.reverse())
+            Random.choose(collective->getConstructions().getAllStoragePositions().asVector())
+                .dropItem(workshop.removeUpgrade(index.second, index.first));
         }
       }
       break;
