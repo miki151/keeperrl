@@ -179,5 +179,8 @@ class Body {
   vector<pair<optional<ItemType>, double>> SERIAL(drops);
   optional<bool> SERIAL(canCapture);
   optional<Effect> SERIAL(droppedPartUpgrade);
+  optional<string> SERIAL(corpseIngredientType);
+  bool SERIAL(canBeRevived) = true;
 };
 
+CEREAL_CLASS_VERSION(Body, 2)

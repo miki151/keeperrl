@@ -4,7 +4,7 @@
 #include "lasting_effect.h"
 #include "attr_type.h"
 
-static const char* getName(ItemUpgradeType type) {
+static const char* getTargetName(ItemUpgradeType type) {
   switch (type) {
     case ItemUpgradeType::ARMOR:
       return "armor";
@@ -20,9 +20,22 @@ static const char* getName(ItemUpgradeType type) {
 }
 
 vector<string> ItemUpgradeInfo::getDescription(const ContentFactory* factory) const {
-  vector<string> ret { "Crafting upgrade for "_s + getName(type) + ":" };
+  vector<string> ret { "Crafting upgrade for "_s + getTargetName(type) + ":" };
   ret.append(getEffectDescription(factory, *prefix));
   return ret;
+}
+
+const char* getItemTypeName(ItemUpgradeType type) {
+  switch (type) {
+    case ItemUpgradeType::ARMOR:
+    case ItemUpgradeType::WEAPON:
+    case ItemUpgradeType::RANGED_WEAPON:
+      return "glyph";
+    case ItemUpgradeType::BALSAM:
+      return "balsam";
+    case ItemUpgradeType::BODY_PART:
+      return "body part";
+  }
 }
 
 SERIALIZE_DEF(ItemUpgradeInfo, type, prefix)

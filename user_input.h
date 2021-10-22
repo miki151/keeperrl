@@ -203,9 +203,8 @@ struct DismissVillageInfo {
 
 struct WorkshopUpgradeInfo {
   int itemIndex;
-  int upgradeIndex;
-  bool remove;
-  int count;
+  vector<int> increases;
+  int numItems;
 };
 
 struct WorkshopCountInfo {

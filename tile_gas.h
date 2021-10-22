@@ -28,6 +28,7 @@ class TileGas {
   void tick(Position);
   double getAmount(TileGasType) const;
   static double getFogVisionCutoff();
+  bool hasSunlightBlockingAmount() const;
 
   template <class Archive> 
   void serialize(Archive& ar, const unsigned int version);

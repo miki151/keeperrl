@@ -910,6 +910,8 @@ string makePlural(const string& s) {
     return "";
   if (s.back() == 'y')
     return s.substr(0, s.size() - 1) + "ies";
+  if (endsWith(s, "ph"))
+    return s + "s";
   if (s.back() == 'h')
     return s + "es";
   if (s.back() == 's')

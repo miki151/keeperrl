@@ -56,14 +56,16 @@
   }
 "NECROMANCER" inherit "KEEPER_MAGE"
   {
-    viewId = { "lich_keeper1" }
+    viewId = { "necromancer1" }
     # ViewId upgrades of Keepers are applied every 5 tech level increases
-    viewIdUpgrades = { { "lich_keeper2" } { "lich_keeper3" } { "lich_keeper4" } }
+    viewIdUpgrades = { { "necromancer2" } { "necromancer3" } { "necromancer4" } }
     name = append {
       name = "necromancer"
     }
-    spellSchools = {}
-    maxLevelIncrease = {}
+    spellSchools = { "zombie mage" }
+    maxLevelIncrease = {
+      SPELL 12
+    }
     skills = {
       "MORGUE" 1.0
       "LABORATORY" 1.0
@@ -72,12 +74,12 @@
   }
 "NECROMANCER_F" inherit "NECROMANCER"
   {
-    viewId = { "keeper_f1" ColorId BLACK }
+    viewId = { "necromancer_f1" }
     gender = FEMALE
     name = append {
       firstNameGen = "FIRST_FEMALE"
     }
-    viewIdUpgrades = { { "keeper_f2" ColorId BLACK } { "keeper_f3" ColorId BLACK } { "keeper_f4" ColorId BLACK }}
+    viewIdUpgrades = { { "necromancer_f2" } { "necromancer_f3" } { "necromancer_f4" }}
   }
 "KEEPER_KNIGHT"
   {
@@ -996,6 +998,7 @@
     }
     body = {
       type = FourLegged HUGE
+      corpseIngredientType = "dragon_corpse"
       addBodyPart = {
         WING 2
       }
@@ -1067,6 +1070,7 @@
     }
     body = {
       type = FourLegged HUGE
+      corpseIngredientType = "dragon_corpse"
       addBodyPart = {
         WING 2
       }
@@ -1138,6 +1142,7 @@
     }
     body = {
       type = FourLegged HUGE
+      corpseIngredientType = "dragon_corpse"
       addBodyPart = {
         WING 2
       }
@@ -1206,6 +1211,7 @@
     viewId = { "red_dragon" Rgb 240 240 240 255 }
     body = {
       type = FourLegged HUGE
+      corpseIngredientType = "dragon_corpse"
       addBodyPart = {
         WING 2
       }
@@ -1271,6 +1277,7 @@
     viewId = { "red_dragon" Rgb 240 240 10 255 }
     body = {
       type = FourLegged HUGE
+      corpseIngredientType = "dragon_corpse"
       addBodyPart = {
         WING 2
       }
@@ -1301,6 +1308,36 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
+  }
+"BONE_DRAGON"
+  {
+    viewId = { "bone_dragon" }
+    attr = {
+      DAMAGE 45
+      DEFENSE 47
+      SPELL_DAMAGE 38
+    }
+    body = {
+      type = FourLegged HUGE
+      material = BONE
+      addBodyPart = {
+        WING 2
+      }
+      intrinsicAttacks = {
+        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 15 {
+            attackType = BITE
+            attackMsg = BITE } }}}
+      }
+    }
+    permanentEffects = {
+      RANGED_VULNERABILITY 1
+    }
+    name = {
+      name = "bone dragon"
+      stackName = "dragon"
+    }
+    spells = { "black smoke breath" "animate corpses"}
+    hatedByEffect = HATE_DRAGONS
   }
 "BALROG"
   {
@@ -3479,6 +3516,7 @@
       }
       weight = 0.1
       deathSound = none
+      canBeRevived = false
     }
     aiType = RANGED
     noChase = true
@@ -4178,7 +4216,7 @@
   }
 "ADOXIE_PRIEST"
   {
-    viewId = { "lich_keeper4" }
+    viewId = { "adoxie_priest" }
     name = {
       name = "high priest of Adoxie"
     }
@@ -4601,6 +4639,12 @@ End
       DAMAGE 10
       DEFENSE 10
     }
+    skills = {
+      "WORKSHOP" 0.6
+      "FORGE" 0.6
+      "JEWELER" 0.6
+      "FURNACE" 0.5
+    }
     maxLevelIncrease = {}
     name = {
       name = "zombie artisan"
@@ -4616,6 +4660,7 @@ End
     body = {
       type = Humanoid LARGE
     }
+    aiType = RANGED
     maxLevelIncrease = {
       SPELL 7
     }
@@ -4655,6 +4700,7 @@ End
       type = Humanoid LARGE
       material = BONE
     }
+    aiType = RANGED
     maxLevelIncrease = {
       ARCHERY 7
     }
@@ -4673,6 +4719,10 @@ End
     }
     name = {
       name = "skeletal abomination"
+    }
+    attr = {
+      DAMAGE 10
+      DEFENSE 10
     }
     hatedByEffect = HATE_UNDEAD
   }
@@ -4720,8 +4770,8 @@ End
 "VAMPIRE_LORD_NECRO" inherit "VAMPIRE_LORD"
   {
     skills = append {
-      "MORGUE" 1.0
-      "LABORATORY" 1.0
+      "MORGUE" 0.5
+      "LABORATORY" 0.5
     }
   }
 

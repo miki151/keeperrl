@@ -107,6 +107,12 @@ struct SpellSchoolInfo {
   HASH_ALL(name, experienceType, spells)
 };
 
+struct SkillInfo {
+  string HASH(name);
+  string HASH(help);
+  HASH_ALL(name, help)
+};
+
 class PlayerInfo {
   public:
   PlayerInfo(const Creature*, const ContentFactory*);
@@ -114,11 +120,6 @@ class PlayerInfo {
   vector<AttributeInfo> HASH(attributes);
   optional<AvatarLevelInfo> HASH(avatarLevelInfo);
   BestAttack HASH(bestAttack);
-  struct SkillInfo {
-    string HASH(name);
-    string HASH(help);
-    HASH_ALL(name, help)
-  };
   vector<SkillInfo> HASH(skills);
   string HASH(firstName);
   string HASH(name);
@@ -197,8 +198,13 @@ struct ImmigrantCreatureInfo {
   string HASH(name);
   ViewIdList HASH(viewId);
   vector<AttributeInfo> HASH(attributes);
-  HASH_ALL(name, viewId, attributes);
+  vector<string> HASH(spellSchools);
+  EnumMap<ExperienceType, int> HASH(trainingLimits);
+  vector<SkillInfo> HASH(skills);
+  HASH_ALL(name, viewId, attributes, spellSchools, trainingLimits, skills);
 };
+
+ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature*, const ContentFactory*);
 
 struct ImmigrantDataInfo {
   ImmigrantDataInfo();
@@ -287,21 +293,22 @@ class CollectiveInfo {
     struct UpgradeInfo {
       ViewId HASH(viewId);
       string HASH(name);
+      int HASH(used);
       int HASH(count);
       vector<string> HASH(description);
-      HASH_ALL(viewId, name, count, description)
+      HASH_ALL(viewId, name, used, count, description)
     };
-    vector<UpgradeInfo> HASH(available);
-    vector<UpgradeInfo> HASH(added);
-    int HASH(maxUpgrades);
+    vector<UpgradeInfo> HASH(upgrades);
+    pair<string, int> HASH(maxUpgrades);
     int HASH(itemIndex);
     bool HASH(notArtifact);
-    HASH_ALL(productionState, paid, itemInfo, creatureInfo, available, added, maxUpgrades, itemIndex, notArtifact)
+    HASH_ALL(productionState, paid, itemInfo, creatureInfo, upgrades, maxUpgrades, itemIndex, notArtifact)
   };
   struct OptionInfo {
     ItemInfo HASH(itemInfo);
     optional<ImmigrantCreatureInfo> HASH(creatureInfo);
-    HASH_ALL(itemInfo, creatureInfo)  
+    pair<string, int> HASH(maxUpgrades);
+    HASH_ALL(itemInfo, creatureInfo, maxUpgrades)  
   };
   struct ChosenWorkshopInfo {
     vector<ViewId> HASH(resourceTabs);

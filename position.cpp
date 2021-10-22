@@ -501,7 +501,7 @@ bool Position::canEnterEmptyCalc(const MovementType& t, optional<FurnitureLayer>
     return false;
   const auto square = getSquare();
   bool result = true;
-  const bool covered = isCovered();
+  const bool covered = isCovered() || getSquare()->hasSunlightBlockingGasAmount();
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (layer != ignore)
       if (auto furniture = level->furniture->getBuilt(layer).getReadonly(coord)) {
@@ -933,7 +933,7 @@ bool Position::isCovered() const {
 
 bool Position::sunlightBurns() const {
   PROFILE;
-  return isValid() && level->isInSunlight(coord);
+  return isValid() && level->isInSunlight(coord) && !getSquare()->hasSunlightBlockingGasAmount();
 }
 
 double Position::getLightEmission() const {

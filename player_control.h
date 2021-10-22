@@ -283,7 +283,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   WLevel currentLevel = nullptr;
   void scrollStairs(int dir);
   CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&, int cnt, int itemIndex, bool hasLegendarySkill) const;
-  vector<vector<pair<Item*, Position>>> getItemUpgradesFor(const WorkshopItem&) const;
+  vector<pair<Item*, Position>> getItemUpgradesFor(const WorkshopItem&) const;
   void fillDungeonLevel(AvatarLevelInfo&) const;
   void fillResources(CollectiveInfo&) const;
   bool takingScreenshot = false;

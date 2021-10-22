@@ -5,6 +5,7 @@
 #include "item.h"
 #include "workshop_item.h"
 #include "game.h"
+#include "view_object.h"
 
 Workshops::Workshops(WorkshopArray options, const ContentFactory* factory) {
   for (auto& elem : options)
@@ -92,6 +93,9 @@ bool Workshops::Type::isIdle(const Collective* collective, double skillAmount, d
 
 void Workshops::Type::addUpgrade(int index, PItem rune) {
   queued[index].runes.push_back(std::move(rune));
+  sort(queued[index].runes.begin(), queued[index].runes.end(), [](const auto& rune1, const auto& rune2) {
+    return make_pair(rune1->getName(), rune1->getViewObject().id()) < make_pair(rune2->getName(), rune2->getViewObject().id());
+  });
   checkDebtConsistency();
 }
 

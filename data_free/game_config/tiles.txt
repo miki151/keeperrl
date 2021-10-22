@@ -29,14 +29,19 @@
 { "adoxie_hand_left" "u" ColorId PURPLE }
 { "adoxie_head" "U" ColorId PURPLE }
 { "adoxie_eye" "," ColorId PURPLE }
+{ "adoxie_priest" "@" ColorId PURPLE }
 { "gargoyle" "&" ColorId ORANGE }
 { viewId = "scarecrow" symbol = "T" color = ColorId LIGHT_BLUE }
 { viewId = "gargoyle_statue" symbol = "&" color = ColorId LIGHT_GRAY
   roundShadow = true }
-{ "lich_keeper1" "@" ColorId PURPLE }
-{ "lich_keeper2" "@" ColorId PURPLE }
-{ "lich_keeper3" "@" ColorId PURPLE }
-{ "lich_keeper4" "@" ColorId PURPLE }
+{ "necromancer1" "@" ColorId PURPLE }
+{ "necromancer2" "@" ColorId PURPLE }
+{ "necromancer3" "@" ColorId PURPLE }
+{ "necromancer4" "@" ColorId PURPLE }
+{ "necromancer_f1" "@" ColorId PURPLE }
+{ "necromancer_f2" "@" ColorId PURPLE }
+{ "necromancer_f3" "@" ColorId PURPLE }
+{ "necromancer_f4" "@" ColorId PURPLE }
 { "abomination" "z" ColorId PURPLE }
 { viewId = "adoxie_statue" symbol = "U" color = ColorId LIGHT_GRAY
   roundShadow = true }
@@ -145,6 +150,7 @@
 { "naga" "N" ColorId RED }
 { "green_dragon" "D" ColorId GREEN }
 { "red_dragon" "D" ColorId RED }
+{ "bone_dragon" "D" ColorId LIGHT_GRAY }
 { viewId = "balrog" symbol = "&" color = ColorId RED fx = { SMOKE}}
 { "balrogs_whip" "(" ColorId RED }
 { "cyclops" "C" ColorId GREEN }
@@ -554,9 +560,9 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
 { viewId = "morgue_table" symbol = "=" color = ColorId RED
   roundShadow = true }
 { viewId = "phylactery" symbol = "⚱️" color = ColorId YELLOW
-  isSymbolFont = true roundShadow = true fx = GoldGlitter() }
-{ viewId = "phylactery_active" sprite = "phylactery" symbol = "⚱️" color = ColorId PURPLE
-  isSymbolFont = true roundShadow = true fx = { LICH } }
+  isSymbolFont = true roundShadow = true }
+{ viewId = "phylactery_active" symbol = "⚱️" color = ColorId PURPLE
+  isSymbolFont = true roundShadow = true }
 { viewId = "impaled_head" symbol = "⚲" color = ColorId BROWN
   isSymbolFont = true roundShadow = true }
 { viewId = "whipping_post" symbol = "}" color = ColorId BROWN

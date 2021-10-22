@@ -33,10 +33,14 @@ static double getDefaultWeight(Body::Size size) {
 }
 
 template <class Archive>
-void Body::serializeImpl(Archive& ar, const unsigned int) {
+void Body::serializeImpl(Archive& ar, const unsigned int version) {
   ar(OPTION(xhumanoid), OPTION(size), OPTION(weight), OPTION(bodyParts), OPTION(injuredBodyParts), OPTION(lostBodyParts));
   ar(OPTION(material), OPTION(health), OPTION(minionFood), NAMED(deathSound), OPTION(intrinsicAttacks), OPTION(minPushSize));
   ar(OPTION(noHealth), OPTION(fallsApart), OPTION(drops), OPTION(canCapture), OPTION(xCanPickUpItems), OPTION(droppedPartUpgrade));
+  if (version >= 1)
+    ar(OPTION(corpseIngredientType));
+  if (version >= 2)
+    ar(OPTION(canBeRevived));  
 }
 
 template <class Archive>
@@ -408,7 +412,7 @@ bool Body::injureBodyPart(Creature* creature, BodyPart part, bool drop) {
     else if (part == BodyPart::HEAD)
       game->getStatistics().add(StatId::CHOPPED_HEAD);
     if (auto item = getBodyPartItem(creature->getAttributes().getName().bare(), part, game->getContentFactory())) {
-      if (game->effectFlags.count("abomination_upgrades")) {
+      if (material == BodyMaterial::FLESH && game->effectFlags.count("abomination_upgrades")) {
         auto upgrade = droppedPartUpgrade.value_or_f(&getDefaultBodyPartUpgrade);
         setBodyPartUpgrade(item.get(), part, std::move(upgrade), game->getContentFactory());
         droppedPartUpgrade = none;
@@ -632,7 +636,8 @@ vector<PItem> Body::getCorpseItems(const string& name, Creature::Id id, bool ins
         return makeVec(
             ItemType::corpse(name + " corpse", name + " skeleton", weight, factory, instantlyRotten,
               minionFood ? ItemClass::FOOD : ItemClass::CORPSE,
-              {id, material != Material::UNDEAD_FLESH, numBodyParts(BodyPart::HEAD) > 0, false}));
+              CorpseInfo {id, canBeRevived && material != Material::UNDEAD_FLESH, numBodyParts(BodyPart::HEAD) > 0, false},
+              corpseIngredientType));
       case Material::CLAY:
       case Material::ROCK:
         return ItemType(CustomItemId("Rock")).get(numCorpseItems(size), factory);

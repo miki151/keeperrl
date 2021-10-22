@@ -39,17 +39,28 @@ string PlayerInfo::getFirstName() const {
     return capitalFirst(name);
 }
 
-static vector<PlayerInfo::SkillInfo> getSkillNames(const Creature* c, const ContentFactory* factory) {
-  vector<PlayerInfo::SkillInfo> ret;
+static vector<SkillInfo> getSkillNames(const Creature* c, const ContentFactory* factory) {
+  vector<SkillInfo> ret;
   auto& skills = c->getAttributes().getSkills();
   for (SkillId id : ENUM_ALL(SkillId))
     if (skills.getValue(id) > 0)
-      ret.push_back(PlayerInfo::SkillInfo{Skill::get(id)->getNameForCreature(c), Skill::get(id)->getHelpText()});
+      ret.push_back(SkillInfo{Skill::get(id)->getNameForCreature(c), Skill::get(id)->getHelpText()});
   for (auto& elem : skills.getWorkshopValues())
     if (elem.second > 0)
-      ret.push_back(PlayerInfo::SkillInfo{skills.getNameForCreature(factory, elem.first),
+      ret.push_back(SkillInfo{skills.getNameForCreature(factory, elem.first),
           skills.getHelpText(factory, elem.first)});
   return ret;
+}
+
+ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature* c, const ContentFactory* factory) {
+  return ImmigrantCreatureInfo {
+    c->getName().bare(),
+    c->getViewObject().getViewIdList(),
+    AttributeInfo::fromCreature(c),
+    c->getAttributes().getSpellSchools().transform([](auto id) -> string { return id.data(); }),
+    c->getAttributes().getMaxExpLevel(),
+    getSkillNames(c, factory)
+  };
 }
 
 vector<ItemAction> getItemActions(const Creature* c, const vector<Item*>& item) {

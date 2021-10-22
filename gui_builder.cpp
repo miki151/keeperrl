@@ -17,6 +17,7 @@
 #include "gui_builder.h"
 #include "clock.h"
 #include "renderer.h"
+#include "user_input.h"
 #include "view_id.h"
 #include "player_message.h"
 #include "view.h"
@@ -1132,14 +1133,35 @@ SGuiElem GuiBuilder::getTooltip(const vector<string>& text, int id, milliseconds
 }
 
 SGuiElem GuiBuilder::drawImmigrantCreature(const ImmigrantCreatureInfo& creature) {
-  return WL(getListBuilder, legendLineHeight)
-    .addElem(
-        WL(getListBuilder)
-            .addElem(WL(viewObject, creature.viewId), 35)
-            .addElemAuto(WL(label, creature.name))
-            .buildHorizontalList())
-    .addElemAuto(drawAttributesOnPage(drawPlayerAttributes(creature.attributes)))
-    .buildVerticalList();
+  auto lines = WL(getListBuilder, legendLineHeight);
+  lines.addElem(WL(getListBuilder)
+      .addElem(WL(viewObject, creature.viewId), 35)
+      .addElemAuto(WL(label, capitalFirst(creature.name)))
+      .buildHorizontalList());
+  lines.addSpace(legendLineHeight / 2);
+  lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(creature.attributes)));
+  bool trainingHeader = false;
+  for (auto expType : ENUM_ALL(ExperienceType))
+    if (creature.trainingLimits[expType] > 0) {
+      if (!trainingHeader)
+        lines.addElem(WL(label, "Training potential", Color::YELLOW));
+      trainingHeader = true;
+      auto line = WL(getListBuilder);
+      for (auto attr : getAttrIncreases()[expType]) {
+        line.addElem(WL(topMargin, -3, WL(icon, attr)), 22);
+      }
+      line.addSpace(15);
+      line.addElemAuto(WL(label, "+" + toString(creature.trainingLimits[expType])));
+      lines.addElem(line.buildHorizontalList());
+    }
+  if (!creature.spellSchools.empty())
+    lines.addElem(WL(getListBuilder)
+        .addElemAuto(WL(label, "Spell schools: ", Color::YELLOW))
+        .addElemAuto(WL(label, combine(creature.spellSchools, true)))
+        .buildHorizontalList());
+  for (auto& line : drawSkillsList(creature.skills))
+    lines.addElem(std::move(line));
+  return lines.buildVerticalList();
 }
 
 SGuiElem GuiBuilder::getTooltip2(SGuiElem elem, GuiFactory::PositionFun fun) {
@@ -1249,6 +1271,7 @@ static string getActionText(ItemAction a) {
 
 void GuiBuilder::drawMiniMenu(SGuiElem elem, bool& exit, Vec2 menuPos, int width, bool darkBg) {
   int margin = 15;
+  elem = WL(scrollable, std::move(elem));
   elem = WL(miniWindow, WL(margins, std::move(elem), 5 + margin, margin, margin, margin),
           [&] { exit = true; });
   drawMiniMenu(std::move(elem), [&]{ return exit; }, menuPos, width, darkBg);
@@ -1257,7 +1280,7 @@ void GuiBuilder::drawMiniMenu(SGuiElem elem, bool& exit, Vec2 menuPos, int width
 void GuiBuilder::drawMiniMenu(SGuiElem elem, function<bool()> done, Vec2 menuPos, int width, bool darkBg) {
   disableTooltip = true;
   int contentHeight = *elem->getPreferredHeight();
-  Vec2 size(width, contentHeight);
+  Vec2 size(width, min(renderer.getSize().y, contentHeight));
   menuPos.y -= max(0, menuPos.y + size.y - renderer.getSize().y);
   menuPos.x -= max(0, menuPos.x + size.x - renderer.getSize().x);
   elem->setBounds(Rectangle(menuPos, menuPos + size));
@@ -1369,11 +1392,11 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
   }
 }
 
-vector<SGuiElem> GuiBuilder::drawSkillsList(const PlayerInfo& info) {
+vector<SGuiElem> GuiBuilder::drawSkillsList(const vector<SkillInfo>& skills) {
   vector<SGuiElem> lines;
-  if (!info.skills.empty()) {
+  if (!skills.empty()) {
     lines.push_back(WL(label, "Skills", Color::YELLOW));
-    for (auto& elem : info.skills)
+    for (auto& elem : skills)
       lines.push_back(WL(stack, getTooltip({elem.help}, THIS_LINE),
             WL(label, capitalFirst(elem.name), Color::WHITE)));
     lines.push_back(WL(empty));
@@ -1562,7 +1585,7 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addSpace();
-  for (auto& elem : drawSkillsList(info))
+  for (auto& elem : drawSkillsList(info.skills))
     list.addElem(std::move(elem));
   if (auto spells = drawSpellsList(info.spells, info.creatureId.getGenericId(), true)) {
     list.addElemAuto(std::move(spells));
@@ -1978,62 +2001,44 @@ SGuiElem GuiBuilder::drawNextWaveOverlay(const CollectiveInfo::NextWave& wave) {
 SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo& elem) {
   auto buttonHandler = WL(buttonRect, [=] (Rectangle bounds) {
       auto lines = WL(getListBuilder, legendLineHeight);
+      lines.addElem(WL(label, "Use left/right mouse buttons to add/remove upgrades.",
+          Color::YELLOW));
+      vector<int> increases(elem.upgrades.size(), 0);
+      int totalUsed = 0;
       disableTooltip = true;
       DestructorFunction dFun([this] { disableTooltip = false; });
       bool exit = false;
-      optional<WorkshopUpgradeInfo> ret;
-      for (int i : All(elem.added)) {
-        auto& upgrade = elem.added[i];
-        auto removeButton = [&] (const char* text, int count) {
-          auto buttonFun = [&exit, &ret, i, itemIndex = elem.itemIndex, count] {
-              ret = WorkshopUpgradeInfo{ itemIndex,  i, true, count};
-              exit = true;
-          };
-          auto idLine = WL(getListBuilder);
-          idLine.addElemAuto(WL(label, text));
-          idLine.addElemAuto(WL(viewObject, upgrade.viewId));
-          idLine.addElemAuto(WL(label, upgrade.name));
-          lines.addElem(WL(stack,
-                WL(button, buttonFun),
-                WL(uiHighlightMouseOver),
-                idLine.buildHorizontalList(),
-                WL(tooltip, {upgrade.description})
-          ));
+      auto cnt = elem.itemInfo.number;
+      for (auto& upgrade : elem.upgrades)
+        totalUsed += upgrade.used;
+      for (int i : All(elem.upgrades)) {
+        auto& upgrade = elem.upgrades[i];
+        auto idLine = WL(getListBuilder);
+        auto colorFun = [&increases, i, upgrade, &totalUsed, cnt, max = elem.maxUpgrades.second] {
+          return increases[i] + cnt > upgrade.count || totalUsed >= max ? Color::LIGHT_GRAY : Color::WHITE;
         };
-        removeButton("Remove ", 1);
-        if (elem.itemInfo.number > 1)
-          removeButton("Remove from all ", elem.itemInfo.number);
+        idLine.addElemAuto(WL(viewObject, upgrade.viewId));
+        idLine.addElemAuto(WL(label, upgrade.name, colorFun));
+        idLine.addBackElem(WL(labelFun, [&increases, i, upgrade, cnt] {
+            return "(" + toString(upgrade.used * cnt + increases[i]) + "/" + toString(upgrade.used * cnt + upgrade.count) + ")  "; },
+            colorFun), 70);
+        lines.addElem(WL(stack, makeVec(
+              WL(button, [&increases, &totalUsed, i, upgrade, cnt, max = elem.maxUpgrades.second] {
+                if (increases[i] <= upgrade.count - cnt && totalUsed < max) { increases[i] += cnt; ++totalUsed; } }),
+              WL(buttonRightClick, [&increases, &totalUsed, i, upgrade, cnt] {
+                if (increases[i] + upgrade.used * cnt >= cnt) { increases[i] -= cnt; --totalUsed; } }),
+              WL(uiHighlightMouseOver),
+              idLine.buildHorizontalList(),
+              WL(tooltip, {upgrade.description})
+        )));
       }
-      if (elem.added.size() < elem.maxUpgrades)
-        for (int i : All(elem.available)) {
-          auto& upgrade = elem.available[i];
-          auto addButton = [&] (const char* text, int count) {
-            auto buttonFun = [&exit, &ret, i, itemIndex = elem.itemIndex, count] {
-                ret = WorkshopUpgradeInfo{ itemIndex,  i, false, count};
-                exit = true;
-            };
-            auto idLine = WL(getListBuilder);
-            idLine.addElemAuto(WL(label, text));
-            idLine.addElemAuto(WL(viewObject, upgrade.viewId));
-            idLine.addElemAuto(WL(label, upgrade.name + " (" + toString(upgrade.count) + " available)"));
-            lines.addElem(WL(stack,
-                  WL(button, buttonFun),
-                  WL(uiHighlightMouseOver),
-                  idLine.buildHorizontalList(),
-                  WL(tooltip, {upgrade.description})
-            ));
-          };
-          addButton("Add", 1);
-          if (elem.itemInfo.number > 1 && upgrade.count > 1)
-            addButton("Add to all", min(elem.itemInfo.number, upgrade.count));
-        }
-      lines.addElem(WL(label, "Available slots: " + toString(elem.maxUpgrades - elem.added.size())));
+      lines.addElem(WL(labelFun, [&totalUsed, &elem] {
+          return "Used slots: " + toString(totalUsed) + "/" + toString(elem.maxUpgrades.second); }));
       if (!elem.notArtifact)
         lines.addElem(WL(label, "Upgraded items can only be crafted by a craftsman of legendary skills.",
             Renderer::smallTextSize(), Color::LIGHT_GRAY));
-      drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 450, false);
-      if (ret)
-        callbacks.input({UserInputId::WORKSHOP_UPGRADE, *ret});
+      drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 500, false);
+      callbacks.input({UserInputId::WORKSHOP_UPGRADE, WorkshopUpgradeInfo{elem.itemIndex, increases, cnt}});
   });
   auto line = WL(getListBuilder);
   vector<pair<ViewId, int>> upgrades;
@@ -2045,16 +2050,17 @@ SGuiElem GuiBuilder::drawItemUpgradeButton(const CollectiveInfo::QueuedItemInfo&
       }
     upgrades.emplace_back(id, cnt);
   };
-  for (int upgradeIndex : All(elem.added)) {
-    auto& upgrade = elem.added[upgradeIndex];
-    addUpgrade(upgrade.viewId, upgrade.count);
+  for (int upgradeIndex : All(elem.upgrades)) {
+    auto& upgrade = elem.upgrades[upgradeIndex];
+    if (upgrade.used > 0)
+      addUpgrade(upgrade.viewId, upgrade.used);
   }
   for (auto& elem : upgrades) {
     if (elem.second > 1)
       line.addElemAuto(WL(label, toString(elem.second)));
     line.addElemAuto(WL(viewObject, elem.first));
   }
-  if (!elem.added.empty())
+  if (!upgrades.empty())
     return WL(standardButton, line.buildHorizontalList(), std::move(buttonHandler));
   else
     return WL(buttonLabel, "upgrade", std::move(buttonHandler));
@@ -2094,24 +2100,31 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
   }
   lines.addElem(WL(label, "Available:", Color::YELLOW));
   auto thisTooltip = [&] (const ItemInfo& itemInfo, optional<string> warning,
-      const optional<ImmigrantCreatureInfo>& creatureInfo, int index) {
+      const optional<ImmigrantCreatureInfo>& creatureInfo, int index, pair<string, int> maxUpgrades) {
+    optional<string> upgradesTip;
+    if (maxUpgrades.second > 0 && !maxUpgrades.first.empty())
+      upgradesTip = "Upgradable with up to " + getPlural(maxUpgrades.first, maxUpgrades.second);
     if (creatureInfo) {
       return cache->get(
-          [this](const ImmigrantCreatureInfo& creature, const optional<string>& text) {
+          [this](const ImmigrantCreatureInfo& creature, const optional<string>& warning, optional<string> upgradesTip) {
             auto lines = WL(getListBuilder, legendLineHeight)
                 .addElemAuto(drawImmigrantCreature(creature));
-            if (text)
-              lines.addElem(WL(label, *text));
+            if (upgradesTip)
+              lines.addElem(WL(label, *upgradesTip));
+            if (warning)
+              lines.addElem(WL(label, *warning));
             return WL(conditional, WL(tooltip2, WL(miniWindow, WL(margins, lines.buildVerticalList(), 15)),
                 [](const Rectangle& r) {return r.bottomLeft();}),
                 [this] { return !disableTooltip;}); },
-          index, *creatureInfo, warning);
+          index, *creatureInfo, warning, upgradesTip);
     }
     else {
       vector<string> desc;
       if (!itemInfo.fullName.empty() && itemInfo.fullName != itemInfo.name)
         desc.push_back(itemInfo.fullName);
       desc.append(itemInfo.description);
+      if (upgradesTip)
+        desc.push_back(*upgradesTip);
       return getTooltip(warning ? concat(desc, {*warning}) : desc, THIS_LINE + index, milliseconds{0});
     }
   };
@@ -2137,14 +2150,14 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
     if (elem.unavailable) {
       CHECK(!elem.unavailableReason.empty());
       guiElem = WL(stack, thisTooltip(elem, elem.unavailableReason, options[itemIndex].creatureInfo,
-          itemIndex + THIS_LINE), std::move(guiElem));
+          itemIndex + THIS_LINE, options[itemIndex].maxUpgrades), std::move(guiElem));
     }
     else
       guiElem = WL(stack,
           WL(uiHighlightMouseOver),
           std::move(guiElem),
           WL(button, getButtonCallback({UserInputId::WORKSHOP_ADD, itemIndex})),
-          thisTooltip(elem, none, options[itemIndex].creatureInfo, itemIndex + THIS_LINE)
+          thisTooltip(elem, none, options[itemIndex].creatureInfo, itemIndex + THIS_LINE, options[itemIndex].maxUpgrades)
       );
     lines.addElem(WL(rightMargin, rightElemMargin, std::move(guiElem)));
   }
@@ -2163,7 +2176,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
           .addElemAuto(WL(viewObject, elem.itemInfo.ingredient->viewId))
           .buildHorizontalList();
     line.addMiddleElem(WL(renderInBounds, std::move(label)));
-    if ((!elem.available.empty() || !elem.added.empty()) && elem.maxUpgrades > 0)
+    if (!elem.upgrades.empty() && elem.maxUpgrades.second > 0)
       line.addBackElemAuto(WL(leftMargin, 7, drawItemUpgradeButton(elem)));
     if (elem.itemInfo.price)
       line.addBackElem(WL(alignment, GuiFactory::Alignment::RIGHT, drawCost(*elem.itemInfo.price)), 80);
@@ -2178,7 +2191,7 @@ SGuiElem GuiBuilder::drawWorkshopsOverlay(const CollectiveInfo::ChosenWorkshopIn
             WL(progressBar, Color::DARK_GREEN.transparency(128), elem.productionState)),
         WL(rightMargin, rightElemMargin, line.buildHorizontalList()),
         thisTooltip(elem.itemInfo, elem.paid ? optional<string>() : elem.itemInfo.unavailableReason,
-            queued[i].creatureInfo, i + THIS_LINE)
+            queued[i].creatureInfo, i + THIS_LINE, queued[i].maxUpgrades)
     ));
   }
   return WL(preferredSize, 940, 600,
@@ -2404,7 +2417,7 @@ SGuiElem GuiBuilder::drawBestiaryPage(const PlayerInfo& minion) {
     leftLines.addElem(line.buildHorizontalList());
   }
   leftLines.addSpace();
-  for (auto& elem : drawSkillsList(minion))
+  for (auto& elem : drawSkillsList(minion.skills))
     leftLines.addElem(std::move(elem));
   if (auto spells = drawSpellsList(minion.spells, minion.creatureId.getGenericId(), false))
     leftLines.addElemAuto(std::move(spells));
@@ -3601,7 +3614,7 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewI
   if (minion.canAssignQuarters)
     leftLines.addElem(drawQuartersButton(minion, allQuarters));
   leftLines.addSpace();
-  for (auto& elem : drawSkillsList(minion))
+  for (auto& elem : drawSkillsList(minion.skills))
     leftLines.addElem(std::move(elem));
   if (auto spells = drawSpellsList(minion.spells, minion.creatureId.getGenericId(), false))
     leftLines.addElemAuto(std::move(spells));

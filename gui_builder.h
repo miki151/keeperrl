@@ -179,7 +179,7 @@ class GuiBuilder {
   SGuiElem drawAIButton(const PlayerInfo&);
   SGuiElem drawAttributesOnPage(vector<SGuiElem>);
   SGuiElem drawEquipmentAndConsumables(const PlayerInfo&, bool infoOnly = false);
-  vector<SGuiElem> drawSkillsList(const PlayerInfo&);
+  vector<SGuiElem> drawSkillsList(const vector<SkillInfo>&);
   SGuiElem drawSpellsList(const vector<SpellInfo>&, GenericId creatureId, bool active);
   SGuiElem getSpellIcon(const SpellInfo&, int index, bool active, GenericId creatureId);
   vector<SGuiElem> drawEffectsList(const PlayerInfo&, bool withTooltip = true);

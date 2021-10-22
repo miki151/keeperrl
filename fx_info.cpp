@@ -33,7 +33,7 @@ FXInfo getFXInfo(FXVariantName var) {
     case Name::EMBALMENT:
       return {FXName::EMBALMENT};
     case Name::LICH:
-      return {FXName::LICH};
+      return {FXName::LICH, Color::WHITE, 0.0f, FXStackId::buff};
 
     case Name::BUFF_RED:     return {FXName::BUFF,   Color(250, 40, 40), 0.0f, FXStackId::buff};
     case Name::BUFF_WHITE:   return {FXName::BUFF,   Color(255, 255, 255), 0.0f, FXStackId::buff};
