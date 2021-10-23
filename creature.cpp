@@ -1833,6 +1833,7 @@ void Creature::retire() {
 }
 
 void Creature::removeGameReferences() {
+  unsubscribe();
   position = Position();
   shortestPath.clear();
   lastAttacker = nullptr;
@@ -1844,6 +1845,7 @@ void Creature::removeGameReferences() {
   lastCombatIntent.reset();
   gameCache = nullptr;
   companions.clear();
+  phylactery = none;
 }
 
 void Creature::increaseExpLevel(ExperienceType type, double increase) {
