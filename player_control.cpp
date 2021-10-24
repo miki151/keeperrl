@@ -866,35 +866,42 @@ static ItemInfo getPillageItemInfo(const ContentFactory* factory, const vector<I
   );
 }
 
+auto getPillagePositions(const Collective* col) {
+  return iterateVectors(col->getTerritory().getAll(), col->getTerritory().getStandardExtended());
+}
+
 vector<PItem> PlayerControl::retrievePillageItems(Collective* col, vector<Item*> items) {
   vector<PItem> ret;
   EntitySet<Item> index(items);
-  for (auto pos : col->getTerritory().getAll()) {
-    bool update = false;
-    for (auto item : copyOf(pos.getInventory().getItems()))
-      if (index.contains(item)) {
-        ret.push_back(pos.removeItem(item));
-        update = true;
-      }
-    if (update)
-      addToMemory(pos);
-  }
+  for (auto pos : getPillagePositions(col))
+    if (pos.getCollective() == col || !pos.getCollective()) {
+      bool update = false;
+      for (auto item : copyOf(pos.getInventory().getItems()))
+        if (index.contains(item)) {
+          ret.push_back(pos.removeItem(item));
+          update = true;
+        }
+      if (update)
+        addToMemory(pos);
+    }
   return ret;
 }
 
 vector<Item*> PlayerControl::getPillagedItems(Collective* col) const {
   vector<Item*> ret;
-  for (Position v : col->getTerritory().getAll()) {
-    if (!collective->getTerritory().contains(v))
-      append(ret, v.getItems().filter([this, v](auto item) {
-          return !collective->getStoragePositions(item->getStorageIds()).contains(v); }));
-  }
+  for (Position v : getPillagePositions(col))
+    if (v.getCollective() == col || !v.getCollective()) {
+      if (!collective->getTerritory().contains(v))
+        append(ret, v.getItems().filter([this, v](auto item) {
+            return !collective->getStoragePositions(item->getStorageIds()).contains(v); }));
+    }
   return ret;
 }
 
 bool PlayerControl::canPillage(const Collective* col) const {
-  for (Position v : col->getTerritory().getAll())
-    if (!collective->getTerritory().contains(v) && !v.getItems().empty())
+  for (Position v : getPillagePositions(col))
+    if ((v.getCollective() == col || !v.getCollective()) &&
+        !collective->getTerritory().contains(v) && !v.getItems().empty())
       return true;
   return false;
 }
