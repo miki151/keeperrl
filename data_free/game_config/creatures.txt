@@ -4657,9 +4657,6 @@ End
       SPELL_DAMAGE 17
       DEFENSE 13
     }
-    body = {
-      type = Humanoid LARGE
-    }
     aiType = RANGED
     maxLevelIncrease = {
       SPELL 7
@@ -4735,6 +4732,7 @@ End
     }
     body = {
       type = FourLegged LARGE
+      material = UNDEAD_FLESH
       weight = 35
       intrinsicAttacks = {
         LEG  {{itemType = { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
@@ -4757,6 +4755,7 @@ End
       DEFENSE 20
     }
     body = {
+      material = UNDEAD_FLESH
       type = Humanoid LARGE
       weight = 400
     }

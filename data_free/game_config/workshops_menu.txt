@@ -220,28 +220,28 @@ append {
       { item = {Assembled{ "ZOMBIE_WORKER" "zombie worker" {NO_LIMIT FIGHTER WORKER} BALSAM 3}}
         work = 6 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
       { item = {Assembled{ "ZOMBIE_ARTISAN" "zombie artisan" {NO_LIMIT FIGHTER} BALSAM 3 }}
-        work = 12 cost = "CORPSE" 3 applyImmediately = true notArtifact = true}
+        work = 12 cost = "CORPSE" 2 applyImmediately = true notArtifact = true}
       { item = {Assembled{ "ZOMBIE_MAGE" "zombie mage" {NO_LIMIT FIGHTER} BALSAM 3 }}
-        work = 16 cost = "CORPSE" 5 applyImmediately = true notArtifact = true}
+        work = 16 cost = "CORPSE" 3 applyImmediately = true notArtifact = true}
       { item = {Assembled{ "SKELETON_WARRIOR" "skeleton warrior" {NO_LIMIT FIGHTER} BALSAM 3 }}
-        work = 8 cost = "CORPSE" 2 applyImmediately = true notArtifact = true}
+        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
       { item = {Assembled{ "SKELETON_ARCHER" "skeleton archer" {NO_LIMIT FIGHTER} BALSAM 3 }}
-        work = 8 cost = "CORPSE" 2 applyImmediately = true notArtifact = true}
+        work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
       { item = {Assembled{ "VAMPIRE" "vampire warrior" {NO_LIMIT FIGHTER} BALSAM 5}}
-        work = 20 cost = "CORPSE" 6 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
+        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
       { item = {Assembled{ "VAMPIRE_BRUTE" "vampire brute" {NO_LIMIT FIGHTER} BALSAM 3}}
-        work = 20 cost = "CORPSE" 6 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
+        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
       { item = {Assembled{ "VAMPIRE_LORD_NECRO" "vampire noble" {NO_LIMIT FIGHTER} BALSAM 5}}
-        work = 20 cost = "CORPSE" 6 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
+        work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
       { item = {Assembled{ "SKELETAL_ABOMINATION_PLAYER" "skeletal abomination" {NO_LIMIT FIGHTER}
           BODY_PART 199}}
-        work = 50 cost = "CORPSE" 10 applyImmediately = true notArtifact = true tech = "master necromancy"}
+        work = 50 cost = "CORPSE" 8 applyImmediately = true notArtifact = true tech = "master necromancy"}
       { item = {Assembled{ "SLASHER" "slasher" {NO_LIMIT FIGHTER} BALSAM 3 }}
-        work = 20 cost = "CORPSE" 8 applyImmediately = true notArtifact = true tech = "master necromancy"}
+        work = 20 cost = "CORPSE" 6 applyImmediately = true notArtifact = true tech = "master necromancy"}
       { item = {Assembled{ "JUGGERNAUT" "juggernaut" {NO_LIMIT FIGHTER} BALSAM 3 }}
-        work = 20 cost = "CORPSE" 10 applyImmediately = true notArtifact = true tech = "master necromancy"}
+        work = 20 cost = "CORPSE" 8 applyImmediately = true notArtifact = true tech = "master necromancy"}
       { item = {Assembled{ "ABOMINATION_PLAYER" "abomination" {NO_LIMIT FIGHTER} BODY_PART 199}}
-        work = 50 cost = "CORPSE" 10 applyImmediately = true notArtifact = true tech = "master necromancy"}
+        work = 50 cost = "CORPSE" 8 applyImmediately = true notArtifact = true tech = "master necromancy"}
       { item = {Assembled{ "BONE_DRAGON" "bone dragon" {NO_LIMIT FIGHTER} BALSAM 7}}
         work = 100 requireIngredient = "dragon_corpse" applyImmediately = true tech = "master necromancy"}
   }
