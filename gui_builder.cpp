@@ -3255,7 +3255,7 @@ SGuiElem GuiBuilder::drawQuartersButton(const PlayerInfo& minion, const vector<V
                     .addElem(WL(label, toString(i + 1)))
                     .buildHorizontalList()));
           }
-          drawMiniMenu(tasks.buildVerticalList(), exit, bounds.bottomLeft(), 50, true);
+          drawMiniMenu(tasks.buildVerticalList(), exit, bounds.bottomLeft(), 100, true);
         }));
 }
 
