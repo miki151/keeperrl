@@ -17,7 +17,8 @@
       "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage"
       "pigsty" "dining table" "coffins"
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "demon_shrine"
-      "prison" "orders" "installations" "minion_statues" "magical_installations" "traps"
+      "prison" "orders" "installations" "minion_statues" "magical_installations" "healing_totem"
+      "traps"
   }
   workshopGroups = { "basic" "bows" }
   description = "Build and manage your dream dungeon, defend against raids, and attack your enemies. Be about as evil as a boogieman can be!"

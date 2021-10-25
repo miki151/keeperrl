@@ -381,6 +381,9 @@
 
     { Furniture {{ "PORTAL" }               "STONE"  60 }                   "Portal"            "Installations"
         "Opens a connection if another portal is present."}
+  }
+  "healing_totem"
+  {
     { Furniture {{ "HEALING_TOTEM" }        "GOLD"   60 }                   "Healing totem"     "Installations"
         "Heals minions close by."}
 #    { Furniture {{ "BLEEDING_TOTEM" }       "GOLD"   60 }                   "Bleeding totem"     "Installations"
