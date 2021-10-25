@@ -57,7 +57,7 @@
   immigrantGroups = {"necromancer"}
   technology = { "embalming" "advanced embalming" "master embalming" "necromancy"
       "advanced necromancy" "master necromancy" "archery" "sorcery" "advanced sorcery"
-      "master sorcery" "iron working" "distillation"
+      "magical weapons" "master sorcery" "iron working" "distillation"
   }
   zLevelGroups = { "basic" "evil" }
   initialTech = { "necromancy" }
