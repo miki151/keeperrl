@@ -4261,7 +4261,7 @@
       material = UNDEAD_FLESH
     }
     name = {
-      name = "abomination"
+      name = "zombie king"
     }
     gender = IT
   }
@@ -4715,7 +4715,7 @@ End
       material = BONE
     }
     name = {
-      name = "skeletal abomination"
+      name = "skeleton king"
     }
     attr = {
       DAMAGE 10
