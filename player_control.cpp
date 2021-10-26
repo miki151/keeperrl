@@ -2504,9 +2504,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::CREATURE_GROUP_BUTTON: {
       auto group = input.get<string>();
-      if (!chosenCreature || getChosenTeam() || !getCreature(chosenCreature->id) || chosenCreature->group != group) {
+      auto creatures = getMinionGroup(group);
+      if (!creatures.empty() &&
+          (!chosenCreature || getChosenTeam() || !getCreature(chosenCreature->id) || chosenCreature->group != group)) {
         setChosenTeam(none);
-        setChosenCreature(getMinionGroup(group)[0]->getUniqueId(), group);
+        setChosenCreature(creatures[0]->getUniqueId(), group);
       } else {
         setChosenTeam(none);
         chosenCreature = none;
