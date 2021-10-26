@@ -1360,7 +1360,7 @@ vector<vector<Vec2>> Player::getPermanentPaths() const {
   for (auto c : getTeam())
     if (auto task = c->getController()->getDragTask())
       if (auto target = task->getPosition())
-        if (target->isSameLevel(creature->getPosition())) {
+        if (target->isSameLevel(creature->getPosition()) && target->isSameLevel(c->getPosition())) {
           auto res = LevelShortestPath(c, *target, 0).getPath()
               .filter([&, level = getLevel()](auto& pos) { return pos.getLevel() == level; } )
               .transform([&](auto& pos) { return pos.getCoord(); } );
