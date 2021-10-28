@@ -269,7 +269,7 @@
   }
   "morgue"
   {
-    { Furniture {{ "MORGUE_TABLE" } "WOOD" 10 }                     "Morgue table"     ""
+    { Furniture {{ "MORGUE_TABLE" } "WOOD" 10 }                     "Morgue table"     "Crafting"
         "Produces animated bodies."                            0 { TechId "necromancy" } }
   }
   "furnace"

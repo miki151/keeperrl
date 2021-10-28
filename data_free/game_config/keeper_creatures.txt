@@ -63,7 +63,7 @@
   initialTech = { "necromancy" }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "phylactery" "beds" "coffins"
-      "training" "crafting" "embalming" "poetry" "distillery" "morgue" "orders"
+      "training" "morgue" "crafting" "embalming" "poetry" "distillery" "orders"
       "installations" "magical_installations"
   }
   workshopGroups = { "morgue" "basic_without_lab" "bows" }
