@@ -1452,6 +1452,22 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
   return ret;
 }
 
+vector<ImmigrantDataInfo> PlayerControl::getNecromancerImmigrationHelp() const {
+  vector<ImmigrantDataInfo> ret;
+  ret.push_back(ImmigrantDataInfo());
+  ret.back().creature = ImmigrantCreatureInfo {
+    "Build a morgue table to craft undead.",
+    {ViewId("morgue_table")},
+    {},
+    {},
+    {},
+    {}
+  };
+  ret.back().id = -1000;
+  ret.back().info = {"You can upgrade your minions while crafting them by using balsams made in the laboratory."};
+  return ret;
+}
+
 static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrait& trait, const ContentFactory* factory) {
   using TraitInfo = ImmigrantDataInfo::SpecialTraitInfo;
   return trait.visit<ImmigrantDataInfo::SpecialTraitInfo>(
@@ -1510,6 +1526,8 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   info.immigration.clear();
   auto& immigration = collective->getImmigration();
   info.immigration.append(getPrisonerImmigrantData());
+  if (collective->getWorkshops().getWorkshopsTypes().contains(WorkshopType("MORGUE")))
+    info.immigration.append(getNecromancerImmigrationHelp());
   for (auto& elem : immigration.getAvailable()) {
     const auto& candidate = elem.second.get();
     if (candidate.getInfo().isInvisible())
