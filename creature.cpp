@@ -1159,8 +1159,9 @@ void Creature::considerMovingFromInaccessibleSquare() {
 void Creature::tick() {
   PROFILE_BLOCK("Creature::tick");
   if (phylactery && phylactery->killedBy) {
+    auto attacker = phylactery->killedBy;
     phylactery = none;
-    dieWithAttacker(phylactery->killedBy);
+    dieWithAttacker(attacker);
     return;
   }
   const auto privateEnemyTimeout = 50_visible;
