@@ -257,10 +257,10 @@ append {
       {{Balsam IncreaseMaxLevel MELEE       3}                    4 "GOLD" 3 "embalming"}
       {{Balsam IncreaseMaxLevel SPELL       3}                    4 "GOLD" 3 "embalming"}
       {{Balsam IncreaseMaxLevel ARCHERY     3}                    4 "GOLD" 3 "embalming"}
-      {{Balsam IncreaseAttr     DAMAGE        3}                  4 "GOLD" 3 "embalming"}
-      {{Balsam IncreaseAttr     DEFENSE       3}                  4 "GOLD" 3 "embalming"}
-      {{Balsam IncreaseAttr     RANGED_DAMAGE 3}                  4 "GOLD" 3 "embalming"}
-      {{Balsam IncreaseAttr     SPELL_DAMAGE  3}                  4 "GOLD" 3 "embalming"}
+      {{Balsam Name "lesser damage bonus"        IncreaseAttr DAMAGE        3}   4 "GOLD" 3 "embalming"}
+      {{Balsam Name "lesser defense bonus"       IncreaseAttr DEFENSE       3}   4 "GOLD" 3 "embalming"}
+      {{Balsam Name "lesser ranged damage bonus" IncreaseAttr RANGED_DAMAGE 3}   4 "GOLD" 3 "embalming"}
+      {{Balsam Name "lesser spell damage bonus"  IncreaseAttr  SPELL_DAMAGE 3}   4 "GOLD" 3 "embalming"}
       {{Balsam SpecialAttr DEFENSE    5  InTerritory}             4 "GOLD" 3 "embalming"}
       {{Balsam Permanent DARKNESS_SOURCE}   4 "GOLD" 10 "advanced embalming"}
       {{Balsam Name "Limited life, damage boost" Description "Life limited to 2000 turns, +10 damage."
@@ -273,12 +273,14 @@ append {
           { Lasting 2000 SUMMONED  IncreaseAttr SPELL_DAMAGE 10 }}  8 "GOLD" 5 "advanced embalming"}
       {{Balsam Permanent FAST_CRAFTING}                           8 "GOLD" 5 "advanced embalming"}
       {{Balsam Permanent FAST_TRAINING}                           8 "GOLD" 5 "advanced embalming"}
-      {{Balsam IncreaseAttr     DAMAGE        5}                  8 "GOLD" 5 "advanced embalming"}
-      {{Balsam IncreaseAttr     DEFENSE       5}                  8 "GOLD" 5 "advanced embalming"}
-      {{Balsam IncreaseAttr     RANGED_DAMAGE 5}                  8 "GOLD" 5 "advanced embalming"}
-      {{Balsam IncreaseAttr     SPELL_DAMAGE  5}                  8 "GOLD" 5 "advanced embalming"}
+      {{Balsam Name "greater damage bonus"        IncreaseAttr DAMAGE        5} 8 "GOLD" 5 "advanced embalming"}
+      {{Balsam Name "greater defense bonus"       IncreaseAttr DEFENSE       5} 8 "GOLD" 5 "advanced embalming"}
+      {{Balsam Name "greater ranged damage bonus" IncreaseAttr RANGED_DAMAGE 5} 8 "GOLD" 5 "advanced embalming"}
+      {{Balsam Name "greater spell damage bonus"  IncreaseAttr  SPELL_DAMAGE 5} 8 "GOLD" 5 "advanced embalming"}
       {{Balsam IncreaseWorkshopSkill "MORGUE" 0.5}                8 "GOLD" 5 "advanced embalming"}
       {{Balsam IncreaseWorkshopSkill "LABORATORY" 0.5}            8 "GOLD" 5 "advanced embalming"}
+      {{Balsam IncreaseWorkshopSkill "FORGE" 0.5}                 8 "GOLD" 5 "advanced embalming"}
+      {{Balsam IncreaseWorkshopSkill "WORKSHOP" 0.5  }            8 "GOLD" 5 "advanced embalming"}
       {{Balsam IncreaseSkill MULTI_WEAPON 0.5}                    8 "GOLD" 5 "advanced embalming"}
       {{Balsam SpecialAttr DEFENSE       15 InTerritory}           12 "GOLD" 10 "master embalming"}
       {{Balsam SpecialAttr DAMAGE        15 CreatureStatus LEADER} 12 "GOLD" 10 "master embalming"}
