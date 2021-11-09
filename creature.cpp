@@ -1827,6 +1827,7 @@ CreatureAction Creature::torture(Creature* other) const {
 }
 
 void Creature::retire() {
+  unsubscribe();
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (attributes->considerTimeout(effect, GlobalTime(1000000)))
       LastingEffects::onTimedOut(this, effect, false);
