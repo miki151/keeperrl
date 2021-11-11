@@ -312,6 +312,7 @@ GlobalTime Creature::getDeathTime() const {
 }
 
 void Creature::clearInfoForRetiring() {
+  unsubscribe();
   lastAttacker = nullptr;
   lastCombatIntent = none;
 }
