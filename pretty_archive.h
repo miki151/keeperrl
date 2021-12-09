@@ -31,7 +31,7 @@ class PrettyInputArchive {
     PrettyInputArchive(const vector<string>& inputs, const vector<string>& filenames, KeyVerifier* v);
 
     string eat(const char* expected = nullptr);
-
+    
     struct LoaderInfo {
       string name;
       function<void(bool)> load;
@@ -117,6 +117,7 @@ class PrettyInputArchive {
     bool inheritingKey = false;
 
     using is_loading = std::true_type;
+    using is_saving = std::false_type;
 
     //private:
     vector<NodeData> nodeData;

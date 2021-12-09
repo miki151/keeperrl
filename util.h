@@ -1185,6 +1185,54 @@ function<bool(const T&)> andFun(function<bool(const T&)> x, const function<bool(
   return [x, y](T t) { return x(t) && y(t); };
 }
 
+template <typename T>
+struct IterateVectors {
+  IterateVectors(const vector<T>& v1, const vector<T>& v2) : v1(v1), v2(v2) {}
+  IterateVectors(vector<T>&& v1, const vector<T>& v2) = delete;
+  IterateVectors(const vector<T>& v1, vector<T>&& v2) = delete;
+  IterateVectors(vector<T>&& v1, vector<T>&& v2) = delete;
+
+  struct Iter {
+    using SubIt = typename vector<T>::const_iterator;
+    Iter(SubIt cur1, SubIt v1End1, SubIt v2Begin1, bool first1)
+        : cur(cur1), v1End(v1End1), v2Begin(v2Begin1), firstRange(first1) {
+      if (firstRange && cur == v1End) {
+        cur = v2Begin;
+        firstRange = false;
+      }
+    }
+    SubIt cur, v1End, v2Begin;
+    bool firstRange = true;
+    const T& operator* () const {
+      return *cur;
+    }
+    bool operator != (const Iter& other) const {
+      return cur != other.cur;
+    }
+    const Iter& operator++ () {
+      ++cur;
+      if (firstRange && cur == v1End) {
+        cur = v2Begin;
+        firstRange = false;
+      }
+      return *this;
+    }
+  };
+  Iter begin() {
+    return Iter(v1.begin(), v1.end(), v2.begin(), true);
+  }
+  Iter end() {
+    return Iter(v2.end(), v1.end(), v2.begin(), false);
+  }
+  const vector<T>& v1;
+  const vector<T>& v2;
+};
+
+template <typename T, typename U>
+auto iterateVectors(T&& v1, U&& v2) {
+  return IterateVectors<typename std::remove_reference<T>::type::value_type>(std::forward<T>(v1), std::forward<U>(v2));
+}
+
 class OnExit {
   public:
   OnExit(function<void()> f) : fun(f) {}

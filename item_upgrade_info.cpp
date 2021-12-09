@@ -15,7 +15,7 @@ static const char* getTargetName(ItemUpgradeType type) {
     case ItemUpgradeType::BALSAM:
       return "bodies";
     case ItemUpgradeType::BODY_PART:
-      return "abominations";
+      return "undead kings";
   }
 }
 

@@ -1319,6 +1319,58 @@ class Test {
     for (auto v : sz)
       CHECKEQ(was[v.x][v.y], s.isRoof(v));
   }
+
+  void testVectorConcat() {
+    int ret = 0;
+    vector<int> v1 {1, 2, 3};
+    vector<int> v2 {4, 5, 6};
+    for (auto& x : iterateVectors(v1, v2))
+      ret += x;
+    CHECK(ret == 21);
+  }
+
+  void testVectorConcat2() {
+    int ret = 0;
+    vector<int> v1 {1, 2, 3};
+    for (auto& x : iterateVectors(v1, v1))
+      ret += x;
+    CHECK(ret == 12) << ret;
+  }
+
+  void testVectorConcat3() {
+    int ret = 0;
+    vector<int> v1 {1, 2, 3};
+    vector<int> v2 {};
+    for (auto& x : iterateVectors(v1, v2))
+      ret += x;
+    CHECK(ret == 6);
+  }
+
+  void testVectorConcat4() {
+    int ret = 0;
+    vector<int> v1 {};
+    vector<int> v2 {1, 2, 3};
+    for (auto& x : iterateVectors(v1, v2))
+      ret += x;
+    CHECK(ret == 6);
+  }
+
+  void testVectorConcat5() {
+    int ret = 0;
+    vector<int> v1 {};
+    vector<int> v2 {};
+    for (auto& x : iterateVectors(v1, v2))
+      ret += x;
+    CHECK(ret == 0);
+  }
+
+  void testVectorConcat6() {
+    int ret = 0;
+    vector<int> v1 {};
+    for (auto& x : iterateVectors(v1, v1))
+      ret += x;
+    CHECK(ret == 0);
+  }
 };
 
 void testAll() {
@@ -1398,6 +1450,12 @@ void testAll() {
   Test().testPrettyVector();
   Test().testPrettyVector2();
   Test().testPrettyVector3();
+  Test().testVectorConcat();
+  Test().testVectorConcat2();
+  Test().testVectorConcat3();
+  Test().testVectorConcat4();
+  Test().testVectorConcat5();
+  Test().testVectorConcat6();
   LastingEffects::runTests();
   INFO << "-----===== OK =====-----";
 }

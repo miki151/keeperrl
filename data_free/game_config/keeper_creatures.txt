@@ -17,7 +17,8 @@
       "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage"
       "pigsty" "dining table" "coffins"
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "demon_shrine"
-      "prison" "orders" "installations" "minion_statues" "magical_installations" "traps"
+      "prison" "orders" "installations" "minion_statues" "magical_installations" "healing_totem"
+      "traps"
   }
   workshopGroups = { "basic" "bows" }
   description = "Build and manage your dream dungeon, defend against raids, and attack your enemies. Be about as evil as a boogieman can be!"
@@ -56,23 +57,21 @@
   immigrantGroups = {"necromancer"}
   technology = { "embalming" "advanced embalming" "master embalming" "necromancy"
       "advanced necromancy" "master necromancy" "archery" "sorcery" "advanced sorcery"
-      "master sorcery" "iron working" "distillation"
+      "magical weapons" "master sorcery" "iron working" "two-handed weapons" "distillation"
   }
   zLevelGroups = { "basic" "evil" }
   initialTech = { "necromancy" }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "phylactery" "beds" "coffins"
-      "training" "crafting" "embalming" "poetry" "distillery" "morgue" "orders"
+      "training" "morgue" "crafting" "embalming" "poetry" "distillery" "orders"
       "installations" "magical_installations"
   }
   workshopGroups = { "morgue" "basic_without_lab" "bows" }
-  description = "Play as a necromancer!"
+  description = "Craft hordes of undead from the corpses of fallen enemies. "
   credit = { "CORPSE" 20 }
   maxPopulation = 1
   flags = { "abomination_upgrades" }
   prisoners = false
-# Special traits example, all traits are added
-#   specialTraits = { LastingEffect SPEED ExtraTraining MELEE 5 }
 }
 "5_gnomes"
 {

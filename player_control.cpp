@@ -866,35 +866,42 @@ static ItemInfo getPillageItemInfo(const ContentFactory* factory, const vector<I
   );
 }
 
+auto getPillagePositions(const Collective* col) {
+  return iterateVectors(col->getTerritory().getAll(), col->getTerritory().getStandardExtended());
+}
+
 vector<PItem> PlayerControl::retrievePillageItems(Collective* col, vector<Item*> items) {
   vector<PItem> ret;
   EntitySet<Item> index(items);
-  for (auto pos : col->getTerritory().getAll()) {
-    bool update = false;
-    for (auto item : copyOf(pos.getInventory().getItems()))
-      if (index.contains(item)) {
-        ret.push_back(pos.removeItem(item));
-        update = true;
-      }
-    if (update)
-      addToMemory(pos);
-  }
+  for (auto pos : getPillagePositions(col))
+    if (pos.getCollective() == col || !pos.getCollective()) {
+      bool update = false;
+      for (auto item : copyOf(pos.getInventory().getItems()))
+        if (index.contains(item)) {
+          ret.push_back(pos.removeItem(item));
+          update = true;
+        }
+      if (update)
+        addToMemory(pos);
+    }
   return ret;
 }
 
 vector<Item*> PlayerControl::getPillagedItems(Collective* col) const {
   vector<Item*> ret;
-  for (Position v : col->getTerritory().getAll()) {
-    if (!collective->getTerritory().contains(v))
-      append(ret, v.getItems().filter([this, v](auto item) {
-          return !collective->getStoragePositions(item->getStorageIds()).contains(v); }));
-  }
+  for (Position v : getPillagePositions(col))
+    if (v.getCollective() == col || !v.getCollective()) {
+      if (!collective->getTerritory().contains(v))
+        append(ret, v.getItems().filter([this, v](auto item) {
+            return !collective->getStoragePositions(item->getStorageIds()).contains(v); }));
+    }
   return ret;
 }
 
 bool PlayerControl::canPillage(const Collective* col) const {
-  for (Position v : col->getTerritory().getAll())
-    if (!collective->getTerritory().contains(v) && !v.getItems().empty())
+  for (Position v : getPillagePositions(col))
+    if ((v.getCollective() == col || !v.getCollective()) &&
+        !collective->getTerritory().contains(v) && !v.getItems().empty())
       return true;
   return false;
 }
@@ -1445,6 +1452,22 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
   return ret;
 }
 
+vector<ImmigrantDataInfo> PlayerControl::getNecromancerImmigrationHelp() const {
+  vector<ImmigrantDataInfo> ret;
+  ret.push_back(ImmigrantDataInfo());
+  ret.back().creature = ImmigrantCreatureInfo {
+    "Build a morgue table to craft undead.",
+    {ViewId("morgue_table")},
+    {},
+    {},
+    {},
+    {}
+  };
+  ret.back().id = -1000;
+  ret.back().info = {"You can upgrade your minions while crafting them by using balsams made in the laboratory."};
+  return ret;
+}
+
 static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrait& trait, const ContentFactory* factory) {
   using TraitInfo = ImmigrantDataInfo::SpecialTraitInfo;
   return trait.visit<ImmigrantDataInfo::SpecialTraitInfo>(
@@ -1503,6 +1526,8 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   info.immigration.clear();
   auto& immigration = collective->getImmigration();
   info.immigration.append(getPrisonerImmigrantData());
+  if (collective->getWorkshops().getWorkshopsTypes().contains(WorkshopType("MORGUE")))
+    info.immigration.append(getNecromancerImmigrationHelp());
   for (auto& elem : immigration.getAvailable()) {
     const auto& candidate = elem.second.get();
     if (candidate.getInfo().isInvisible())
@@ -2514,9 +2539,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::CREATURE_GROUP_BUTTON: {
       auto group = input.get<string>();
-      if (!chosenCreature || getChosenTeam() || !getCreature(chosenCreature->id) || chosenCreature->group != group) {
+      auto creatures = getMinionGroup(group);
+      if (!creatures.empty() &&
+          (!chosenCreature || getChosenTeam() || !getCreature(chosenCreature->id) || chosenCreature->group != group)) {
         setChosenTeam(none);
-        setChosenCreature(getMinionGroup(group)[0]->getUniqueId(), group);
+        setChosenCreature(creatures[0]->getUniqueId(), group);
       } else {
         setChosenTeam(none);
         chosenCreature = none;

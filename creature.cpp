@@ -312,6 +312,7 @@ GlobalTime Creature::getDeathTime() const {
 }
 
 void Creature::clearInfoForRetiring() {
+  unsubscribe();
   lastAttacker = nullptr;
   lastCombatIntent = none;
 }
@@ -1159,8 +1160,9 @@ void Creature::considerMovingFromInaccessibleSquare() {
 void Creature::tick() {
   PROFILE_BLOCK("Creature::tick");
   if (phylactery && phylactery->killedBy) {
+    auto attacker = phylactery->killedBy;
     phylactery = none;
-    dieWithAttacker(phylactery->killedBy);
+    dieWithAttacker(attacker);
     return;
   }
   const auto privateEnemyTimeout = 50_visible;
@@ -1826,6 +1828,7 @@ CreatureAction Creature::torture(Creature* other) const {
 }
 
 void Creature::retire() {
+  unsubscribe();
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (attributes->considerTimeout(effect, GlobalTime(1000000)))
       LastingEffects::onTimedOut(this, effect, false);
@@ -1833,6 +1836,7 @@ void Creature::retire() {
 }
 
 void Creature::removeGameReferences() {
+  unsubscribe();
   position = Position();
   shortestPath.clear();
   lastAttacker = nullptr;
@@ -1844,6 +1848,7 @@ void Creature::removeGameReferences() {
   lastCombatIntent.reset();
   gameCache = nullptr;
   companions.clear();
+  phylactery = none;
 }
 
 void Creature::increaseExpLevel(ExperienceType type, double increase) {

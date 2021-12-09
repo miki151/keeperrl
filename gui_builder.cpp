@@ -3040,7 +3040,7 @@ SGuiElem GuiBuilder::getMainMenuLinks(const string& personalMessage, SGuiElem el
     return WL(centerHoriz, WL(translucentBackgroundWithBorder, WL(margins, std::move(elem), 15, 4, 15, 5)));
   };
   auto buttonsLine = makeWindow(WL(getListBuilder)
-      .addElemAuto(getButton("keeper4", "News", "https://keeperrl.com/category/News/"))
+      .addElemAuto(getButton("keeper4", "News", "https://keeperrl.com/category/News"))
       .addSpace(100)
       .addElemAuto(getButton("elementalist", "Wiki", "http://keeperrl.com/wiki"))
       .addSpace(100)
@@ -3255,7 +3255,7 @@ SGuiElem GuiBuilder::drawQuartersButton(const PlayerInfo& minion, const vector<V
                     .addElem(WL(label, toString(i + 1)))
                     .buildHorizontalList()));
           }
-          drawMiniMenu(tasks.buildVerticalList(), exit, bounds.bottomLeft(), 50, true);
+          drawMiniMenu(tasks.buildVerticalList(), exit, bounds.bottomLeft(), 100, true);
         }));
 }
 

@@ -1045,7 +1045,15 @@ static Color getColor(const Effects::EmitGas& e, const ContentFactory* f) {
 }
 
 static string getDescription(const Effects::EmitGas& m, const ContentFactory* f) {
-  return "Emits " + f->tileGasTypes.at(m.type).name;
+  if (auto info = getReferenceMaybe(f->tileGasTypes, m.type))
+    return "Emits " + info->name;
+  else {
+    string out;
+    for (auto& elem : f->tileGasTypes)
+      out.append(" "_s + elem.first.data());
+    FATAL << m.type.data() << " not found (" << out << ")";
+    fail();
+  }
 }
 
 static bool apply(const Effects::EmitGas& m, Position pos, Creature*) {
