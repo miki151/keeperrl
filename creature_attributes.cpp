@@ -67,7 +67,7 @@ template <class Archive>
 void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(NAMED(viewId), NAMED(illusionViewObject), NAMED(name), NAMED(attr), NAMED(chatReactionFriendly));
   ar(NAMED(chatReactionHostile), NAMED(passiveAttack), OPTION(gender), OPTION(viewIdUpgrades), OPTION(promotionCost));
-  ar(NAMED(body), OPTION(deathDescription), NAMED(hatedByEffect), OPTION(instantPrisoner), OPTION(automatonSlots));
+  ar(NAMED(body), OPTION(deathDescription), NAMED(hatedByEffect), OPTION(instantPrisoner));
   ar(OPTION(cantEquip), OPTION(aiType), OPTION(canJoinCollective), OPTION(genderAlternatives), NAMED(promotionGroup));
   ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(skills), OPTION(spellSchools), OPTION(spells));
   ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel), OPTION(inventory));
@@ -451,10 +451,6 @@ void CreatureAttributes::setCanJoinCollective(bool b) {
 
 optional<LastingEffect> CreatureAttributes::getHatedByEffect() const {
   return hatedByEffect;
-}
-
-const pair<int, vector<string>>& CreatureAttributes::getAutomatonSlots() const {
-  return automatonSlots;
 }
 
 #include "pretty_archive.h"

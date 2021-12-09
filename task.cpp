@@ -1862,57 +1862,6 @@ PTask Task::allianceAttack(vector<Collective*> allies, Collective* enemy, PTask 
 }
 
 namespace {
-class InstallBodyPart : public Task {
-  public:
-  InstallBodyPart(WTaskCallback call, Creature* c, Item* it)
-      : Task(false), creature(c), callback(call), itemId(it->getUniqueId()) {}
-
-  virtual string getDescription() const override {
-    return "Install automaton part";
-  }
-
-  virtual TaskPerformResult canPerformImpl(const Creature* c, const MovementType&) const override {
-    if (creature == c)
-      return TaskPerformResult::NEVER;
-    return TaskPerformResult::YES;
-  }
-
-  virtual MoveInfo getMove(Creature* c) override {
-    auto item = c->getEquipment().getItemById(itemId);
-    if (!item) {
-      setDone();
-      return NoMove;
-    }
-    CHECK(creature != c);
-    if (!creature || creature->isDead() || !callback->containsCreature(creature.get())) {
-      setDone();
-      return NoMove;
-    }
-    if (creature->getPosition().dist8(c->getPosition()).value_or(2) == 1)
-      return c->wait().append([=](Creature* c) {
-        c->verb("install", "installs", item->getAName() + " on " + creature->getName().the());
-        creature->addAutomatonPart(*item->getAutomatonPart());
-        creature->drops.push_back(c->getEquipment().removeItem(item, c));
-      });
-    else
-      return c->moveTowards(creature->getPosition());
-  }
-
-  SERIALIZE_ALL(SUBCLASS(Task), creature, callback, itemId)
-  SERIALIZATION_CONSTRUCTOR(InstallBodyPart)
-
-  private:
-  WeakPointer<Creature> SERIAL(creature);
-  WTaskCallback SERIAL(callback) = nullptr;
-  Item::Id SERIAL(itemId);
-};
-}
-
-PTask Task::installBodyPart(WTaskCallback call, Creature* target, Item* item) {
-  return makeOwner<InstallBodyPart>(call, target, item);
-}
-
-namespace {
 class OutsidePredicate : public TaskPredicate {
   public:
   OutsidePredicate(Creature* c, PositionSet pos) : creature(c), positions(pos) {}
@@ -1993,6 +1942,5 @@ REGISTER_TYPE(AllianceTask)
 REGISTER_TYPE(Spider)
 REGISTER_TYPE(WithTeam)
 REGISTER_TYPE(ArcheryRange)
-REGISTER_TYPE(InstallBodyPart)
 REGISTER_TYPE(OutsidePredicate)
 REGISTER_TYPE(AlwaysPredicate)

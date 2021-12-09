@@ -6,6 +6,7 @@
 #include "pretty_archive.h"
 #include "lasting_effect.h"
 #include "special_attr.h"
+#include "attr_type.h"
 
 struct ItemAttrBonus {
   AttrType SERIAL(attr);

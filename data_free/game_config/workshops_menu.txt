@@ -143,14 +143,20 @@ append {
 {
   "WORKSHOP"
   {
-      { item = {Assembled{ "AUTOMATON_WORKER_WOOD" "drilling automaton" {FIGHTER AUTOMATON} }}
-        work = 8 cost = "WOOD" 45 tech = "automatons" applyImmediately = true}
-      { item = {Assembled{ "AUTOMATON_CORPUS_WOOD" "automaton corpus" {FIGHTER AUTOMATON} }}
-        work = 8 cost = "WOOD" 30 tech = "automatons" applyImmediately = true}
-      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_WOOD" "light automaton corpus" {FIGHTER AUTOMATON} }}
-        work = 8 cost = "WOOD" 20 tech = "advanced automatons" applyImmediately = true}
-      { item = {Assembled{ "HELICOPTER" "helicopterum" {FIGHTER AUTOMATON} }}
-        work = 8 cost = "WOOD" 10 tech = "aerodynamics" applyImmediately = true}
+      { item = {Assembled{ "AUTOMATON_WORKER_WOOD" "drilling automaton" {FIGHTER AUTOMATON}
+            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 1 { { "installed_legs" Rgb 180 140 55 255 }
+                { "installed_drill" Rgb 180 140 55 255 }}}}
+        work = 8 cost = "WOOD" 40 tech = "automatons" applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "AUTOMATON_CORPUS_WOOD" "automaton corpus" {FIGHTER AUTOMATON}
+            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
+        work = 8 cost = "WOOD" 30 tech = "automatons" applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_WOOD" "light automaton corpus" {FIGHTER AUTOMATON} 
+            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 2}}
+        work = 8 cost = "WOOD" 20 tech = "advanced automatons" applyImmediately = true
+        notArtifact = true}
+      { item = {Assembled{ "HELICOPTER" "helicopterum" {FIGHTER AUTOMATON} 
+            {AUTOMATONS_UPPER} 1}}
+        work = 8 cost = "WOOD" 10 tech = "aerodynamics" applyImmediately = true notArtifact = true}
       {{"AutomatonLegsWood"}       2       "WOOD" 5    "automatons"}
       {{"AutomatonArmsWood"}       2       "WOOD" 5    "automatons"}
       {{"AutomatonDrillWood"}      2       "WOOD" 5    "automatons"}
@@ -160,17 +166,23 @@ append {
   } 
   "FORGE"
   {
-      { item = {Assembled{ "AUTOMATON_WORKER_IRON" "drilling automaton" {FIGHTER AUTOMATON} }}
-        work = 8 cost = "IRON" 45 tech = "automatons" applyImmediately = true}
-      { item = {Assembled{ "AUTOMATON_CORPUS_IRON" "automaton corpus" {FIGHTER AUTOMATON} }}
-        work = 8 cost = "IRON" 30 tech = "automatons" applyImmediately = true}
-      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_IRON" "light automaton corpus" {FIGHTER AUTOMATON} }}
-        work = 8 cost = "IRON" 20 tech = "advanced automatons" applyImmediately = true}
-      { item = {Assembled{ "HEAVY_AUTOMATON_CORPUS_IRON" "heavy automaton corpus" {FIGHTER AUTOMATON} }}
-        work = 8 cost = "IRON" 40 tech = "advanced automatons" applyImmediately = true}
+      { item = {Assembled{ "AUTOMATON_WORKER_IRON" "drilling automaton" {FIGHTER AUTOMATON}
+            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 1 { { "installed_legs" Rgb 140 148 148 255 }
+                { "installed_drill" Rgb 140 148 148 255 }}}}
+        work = 8 cost = "IRON" 40 tech = "automatons" applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "AUTOMATON_CORPUS_IRON" "automaton corpus" {FIGHTER AUTOMATON}
+            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
+        work = 8 cost = "IRON" 30 tech = "automatons" applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_IRON" "light automaton corpus" {FIGHTER AUTOMATON}
+            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 2}}
+        work = 8 cost = "IRON" 20 tech = "advanced automatons" applyImmediately = true
+        notArtifact = true}
+      { item = {Assembled{ "HEAVY_AUTOMATON_CORPUS_IRON" "heavy automaton corpus" {FIGHTER AUTOMATON}
+            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
+        work = 8 cost = "IRON" 40 tech = "advanced automatons" applyImmediately = true
+        notArtifact = true}
       {{"AutomatonLegsIron"}       2       none    "automatons"}
       {{"AutomatonArmsIron"}       2       none    "automatons"}
-#      {{"SharpAutomatonArmsIron"} 2       none    "advanced automatons"}
       {{"RepairAutomatonArmsIron"} 2       none    "advanced automatons"}
       {{"AutomatonDrillIron"}      2       none    "automatons"}
       {{"AutomatonCraftingIron"}   2       none    "advanced automatons"}
@@ -178,17 +190,23 @@ append {
       {{"FireHeadIron"}            2       none    "advanced automatons"}
       {{"AcidHeadIron"}            2       none    "advanced automatons"}
       {{"HumanoidHeadIron"}        2       none    "automaton brains"}
-      { item = {Assembled{ "AUTOMATON_WORKER_ADA" "drilling automaton" {FIGHTER AUTOMATON} }}
-        work = 8 cost = "ADA" 30 tech = "automatons" applyImmediately = true}
-      { item = {Assembled{ "AUTOMATON_CORPUS_ADA" "automaton corpus" {FIGHTER AUTOMATON} }}
-        work = 8 cost = "ADA" 45 tech = "automatons" applyImmediately = true}
-      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_ADA" "light automaton corpus" {FIGHTER AUTOMATON} }}
-        work = 8 cost = "ADA" 20 tech = "advanced automatons" applyImmediately = true}
-      { item = {Assembled{ "HEAVY_AUTOMATON_CORPUS_ADA" "heavy automaton corpus" {FIGHTER AUTOMATON} }}
-        work = 8 cost = "ADA" 40 tech = "advanced automatons" applyImmediately = true}
+      { item = {Assembled{ "AUTOMATON_WORKER_ADA" "drilling automaton" {FIGHTER AUTOMATON}
+            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3 { { "installed_legs" Rgb 148 189 189 255 }
+                { "installed_drill" Rgb 148 189 189 255 }}}}
+        work = 8 cost = "ADA" 30 tech = "automatons" applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "AUTOMATON_CORPUS_ADA" "automaton corpus" {FIGHTER AUTOMATON}
+            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
+        work = 8 cost = "ADA" 45 tech = "automatons" applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "LIGHT_AUTOMATON_CORPUS_ADA" "light automaton corpus" {FIGHTER AUTOMATON}
+            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 2}}
+        work = 8 cost = "ADA" 20 tech = "advanced automatons" applyImmediately = true
+        notArtifact = true}
+      { item = {Assembled{ "HEAVY_AUTOMATON_CORPUS_ADA" "heavy automaton corpus" {FIGHTER AUTOMATON}
+            {AUTOMATONS_UPPER AUTOMATONS_LOWER} 3}}
+        work = 8 cost = "ADA" 40 tech = "advanced automatons" applyImmediately = true
+        notArtifact = true }
       {{"AutomatonLegsAda"}       2       none    "automatons"}
       {{"AutomatonArmsAda"}       2       none    "automatons"}
-#      {{"SharpAutomatonArmsAda"} 2       none    "advanced automatons"}
       {{"RepairAutomatonArmsAda"} 2       none    "advanced automatons"}
       {{"AutomatonDrillAda"}      2       none    "automatons"}
       {{"AutomatonCraftingAda"}   2       none    "advanced automatons"}
@@ -202,14 +220,6 @@ append {
       {{Potion Fire} 4 "GOLD" 5}
       {{Potion Name "more fire" Area 1 Fire} 8 "GOLD" 10}
       {{Potion Lasting OIL} 4 "GOLD" 15}
-      {{AutomatonPaint Rgb 210 90 90 255} 2 }
-      {{AutomatonPaint Rgb 90 210 90 255} 2 }
-      {{AutomatonPaint Rgb 90 90 210 255} 2 }
-      {{AutomatonPaint Rgb 210 210 90 255} 2 }
-      {{AutomatonPaint Rgb 90 210 210 255} 2 }
-      {{AutomatonPaint Rgb 210 90 210 255} 2 }
-      {{AutomatonPaint Rgb 90 90 90 255} 2 }
-      {{AutomatonPaint Rgb 210 210 210 255} 2 }
   }
 }
 
@@ -217,32 +227,32 @@ append {
 {
   "MORGUE"
   {
-      { item = {Assembled{ "ZOMBIE_WORKER" "zombie worker" {NO_LIMIT FIGHTER WORKER} BALSAM 3}}
+      { item = {Assembled{ "ZOMBIE_WORKER" "zombie worker" {NO_LIMIT FIGHTER WORKER} {BALSAM} 3}}
         work = 6 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
-      { item = {Assembled{ "ZOMBIE_ARTISAN" "zombie artisan" {NO_LIMIT FIGHTER} BALSAM 3 }}
+      { item = {Assembled{ "ZOMBIE_ARTISAN" "zombie artisan" {NO_LIMIT FIGHTER} {BALSAM} 3 }}
         work = 12 cost = "CORPSE" 2 applyImmediately = true notArtifact = true}
-      { item = {Assembled{ "ZOMBIE_MAGE" "zombie mage" {NO_LIMIT FIGHTER} BALSAM 3 }}
+      { item = {Assembled{ "ZOMBIE_MAGE" "zombie mage" {NO_LIMIT FIGHTER} {BALSAM} 3 }}
         work = 16 cost = "CORPSE" 3 applyImmediately = true notArtifact = true}
-      { item = {Assembled{ "SKELETON_WARRIOR" "skeleton warrior" {NO_LIMIT FIGHTER} BALSAM 3 }}
+      { item = {Assembled{ "SKELETON_WARRIOR" "skeleton warrior" {NO_LIMIT FIGHTER} {BALSAM} 3 }}
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
-      { item = {Assembled{ "SKELETON_ARCHER" "skeleton archer" {NO_LIMIT FIGHTER} BALSAM 3 }}
+      { item = {Assembled{ "SKELETON_ARCHER" "skeleton archer" {NO_LIMIT FIGHTER} {BALSAM} 3 }}
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
-      { item = {Assembled{ "VAMPIRE" "vampire warrior" {NO_LIMIT FIGHTER} BALSAM 5}}
+      { item = {Assembled{ "VAMPIRE" "vampire warrior" {NO_LIMIT FIGHTER} {BALSAM} 5}}
         work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
-      { item = {Assembled{ "VAMPIRE_BRUTE" "vampire brute" {NO_LIMIT FIGHTER} BALSAM 3}}
+      { item = {Assembled{ "VAMPIRE_BRUTE" "vampire brute" {NO_LIMIT FIGHTER} {BALSAM} 3}}
         work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
-      { item = {Assembled{ "VAMPIRE_LORD_NECRO" "vampire noble" {NO_LIMIT FIGHTER} BALSAM 5}}
+      { item = {Assembled{ "VAMPIRE_LORD_NECRO" "vampire noble" {NO_LIMIT FIGHTER} {BALSAM} 5}}
         work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
       { item = {Assembled{ "SKELETAL_ABOMINATION_PLAYER" "skeleton king" {NO_LIMIT FIGHTER}
-          BODY_PART 199}}
+            {BODY_PART} 199}}
         work = 50 cost = "CORPSE" 8 applyImmediately = true notArtifact = true tech = "master necromancy"}
-      { item = {Assembled{ "SLASHER" "slasher" {NO_LIMIT FIGHTER} BALSAM 3 }}
+      { item = {Assembled{ "SLASHER" "slasher" {NO_LIMIT FIGHTER} {BALSAM} 3 }}
         work = 20 cost = "CORPSE" 6 applyImmediately = true notArtifact = true tech = "master necromancy"}
-      { item = {Assembled{ "JUGGERNAUT" "juggernaut" {NO_LIMIT FIGHTER} BALSAM 3 }}
+      { item = {Assembled{ "JUGGERNAUT" "juggernaut" {NO_LIMIT FIGHTER} {BALSAM} 3 }}
         work = 20 cost = "CORPSE" 8 applyImmediately = true notArtifact = true tech = "master necromancy"}
-      { item = {Assembled{ "ABOMINATION_PLAYER" "zombie king" {NO_LIMIT FIGHTER} BODY_PART 199}}
+      { item = {Assembled{ "ABOMINATION_PLAYER" "zombie king" {NO_LIMIT FIGHTER} {BODY_PART} 199}}
         work = 50 cost = "CORPSE" 8 applyImmediately = true notArtifact = true tech = "master necromancy"}
-      { item = {Assembled{ "BONE_DRAGON" "bone dragon" {NO_LIMIT FIGHTER} BALSAM 7}}
+      { item = {Assembled{ "BONE_DRAGON" "bone dragon" {NO_LIMIT FIGHTER} {BALSAM} 7}}
         work = 100 requireIngredient = "dragon_corpse" applyImmediately = true tech = "master necromancy"}
   }
   "LABORATORY"

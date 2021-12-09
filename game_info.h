@@ -140,8 +140,6 @@ class PlayerInfo {
   vector<ItemInfo> HASH(lyingItems);
   vector<ItemInfo> HASH(inventory);
   vector<ItemInfo> HASH(intrinsicAttacks);
-  vector<ItemInfo> HASH(bodyParts);
-  int HASH(bodyPartLimit) = 0;
   int HASH(debt);
   vector<PlayerInfo> HASH(teamInfos);
   struct CommandInfo {
@@ -191,7 +189,7 @@ class PlayerInfo {
   vector<ViewIdList> HASH(kills);
   vector<string> HASH(killTitles);
   bool HASH(canExitControlMode);
-  HASH_ALL(attributes, skills, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles, bodyParts, bodyPartLimit, canExitControlMode)
+  HASH_ALL(attributes, skills, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles, canExitControlMode)
 };
 
 struct ImmigrantCreatureInfo {
@@ -511,7 +509,5 @@ class GameInfo {
 };
 
 struct AutomatonPart;
-ItemInfo getInstalledPartInfo(const ContentFactory*, const AutomatonPart&, int index);
-void fillInstalledPartDescription(const ContentFactory*, ItemInfo&, const AutomatonPart&);
 class SpellSchoolId;
 SpellSchoolInfo fillSpellSchool(const Creature*, SpellSchoolId, const ContentFactory*);

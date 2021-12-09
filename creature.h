@@ -313,8 +313,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void removePrivateEnemy(const Creature*); 
   void cheatAllSpells();
   const vector<AutomatonPart>& getAutomatonParts() const;
+  bool isAutomaton() const;
   void addAutomatonPart(AutomatonPart);
-  int getSpareAutomatonSlots() const;
   vector<PItem> SERIAL(drops);
   struct PhylacteryInfo {
     Position SERIAL(pos);

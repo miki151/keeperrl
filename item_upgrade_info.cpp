@@ -16,6 +16,9 @@ static const char* getTargetName(ItemUpgradeType type) {
       return "bodies";
     case ItemUpgradeType::BODY_PART:
       return "undead kings";
+    case ItemUpgradeType::AUTOMATONS_LOWER:
+    case ItemUpgradeType::AUTOMATONS_UPPER:
+      return "automatons";
   }
 }
 
@@ -35,6 +38,9 @@ const char* getItemTypeName(ItemUpgradeType type) {
       return "balsam";
     case ItemUpgradeType::BODY_PART:
       return "body part";
+    case ItemUpgradeType::AUTOMATONS_LOWER:
+    case ItemUpgradeType::AUTOMATONS_UPPER:
+      return "automaton part";
   }
 }
 

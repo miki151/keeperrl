@@ -21,6 +21,7 @@
 #include "tech_id.h"
 #include "tile_gas_type.h"
 #include "spell_school_id.h"
+#include "automaton_part.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -82,11 +83,8 @@ struct AssembledMinion {
   vector<Effect> SERIAL(effects);
   SERIALIZE_ALL(NAMED(creature), NAMED(traits), OPTION(effects))
 };
-struct AddAutomatonParts {
-  string getPartsNames(const ContentFactory*) const;
-  vector<ItemType> SERIAL(partTypes);
-  SERIALIZE_ALL(partTypes)
-};
+using AddAutomatonPart = AutomatonPart;
+using ItemPrefix = ::ItemPrefix;
 struct SummonEnemy {
   SummonEnemy(CreatureId id, Range c) : creature(id), count(c) {}
   SummonEnemy() {}
@@ -471,7 +469,7 @@ struct IncreaseMaxLevel {
   X(AI, 63)\
   X(IncreaseSkill, 64)\
   X(IncreaseWorkshopSkill, 65)\
-  X(AddAutomatonParts, 66)\
+  X(AddAutomatonPart, 66)\
   X(AddMinionTrait, 67)\
   X(RemoveMinionTrait, 68)\
   X(SetMinionActivity, 69)\
@@ -499,7 +497,8 @@ struct IncreaseMaxLevel {
   X(Price, 91)\
   X(IncreaseMaxLevel, 92)\
   X(EquipmentType, 93)\
-  X(AddSpellSchool, 94)
+  X(AddSpellSchool, 94)\
+  X(ItemPrefix, 95)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

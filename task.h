@@ -115,8 +115,6 @@ class Task : public UniqueEntity<Task>, public OwnedObject<Task> {
   static PTask withTeam(Collective*, TeamId, PTask);
   static PTask allianceAttack(vector<Collective*> allies, Collective* enemy, PTask attackTask);
 
-  static PTask installBodyPart(WTaskCallback, Creature* target, Item*);
-
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
   

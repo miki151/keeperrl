@@ -900,7 +900,7 @@ class ByCollective : public Behaviour {
       for (Position v : collective->getConstructions().getAllStoragePositions()) {
         vector<Item*> consumables;
         for (auto item : v.getItems(ItemIndex::MINION_EQUIPMENT))
-          if (minionEquipment.isOwner(item, creature) && !item->getAutomatonPart()) {
+          if (minionEquipment.isOwner(item, creature)) {
             if (item->canEquip())
               tasks.push_back(Task::pickAndEquipItem(v, item));
             else

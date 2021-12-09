@@ -201,10 +201,9 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   vector<CollectiveInfo::CreatureGroup> getAutomatonGroups(vector<Creature*>) const;
   void minionEquipmentAction(const EquipmentActionInfo&);
   void addEquipment(Creature*, EquipmentSlot);
-  void addConsumableItem(Creature*, bool automatonPart);
+  void addConsumableItem(Creature*);
   void handleEquipment(View* view, Creature* creature);
   void fillEquipment(Creature*, PlayerInfo&) const;
-  void fillAutomatonParts(Creature*, PlayerInfo&) const;
   void fillPromotions(Creature*, CollectiveInfo&) const;
   void handleTrading(Collective* ally);
   vector<Item*> getPillagedItems(Collective*) const;

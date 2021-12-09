@@ -8,7 +8,9 @@ RICH_ENUM(
     ARMOR,
     BALSAM,
     BODY_PART,
-    RANGED_WEAPON
+    RANGED_WEAPON,
+    AUTOMATONS_UPPER,
+    AUTOMATONS_LOWER
 );
 
 const char* getItemTypeName(ItemUpgradeType);

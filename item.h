@@ -82,7 +82,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   void setResourceId(optional<CollectiveResourceId>);
   const optional<ItemUpgradeInfo>& getUpgradeInfo() const;
   void setUpgradeInfo(ItemUpgradeInfo);
-  optional<ItemUpgradeType> getAppliedUpgradeType() const;
+  vector<ItemUpgradeType> getAppliedUpgradeType() const;
   int getMaxUpgrades() const;
   const optional<string>& getIngredientType() const;
 
@@ -95,7 +95,6 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   void tick(Position, bool carried);
   void applyPrefix(const ItemPrefix&, const ContentFactory*);
   void setTimeout(GlobalTime);
-  const optional<AutomatonPart>& getAutomatonPart() const;
   
   string getApplyMsgThirdPerson(const Creature* owner) const;
   string getApplyMsgFirstPerson(const Creature* owner) const;

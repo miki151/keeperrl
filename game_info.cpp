@@ -165,22 +165,6 @@ SpellSchoolInfo fillSpellSchool(const Creature* c, SpellSchoolId id, const Conte
   return ret;
 }
 
-void fillInstalledPartDescription(const ContentFactory* factory, ItemInfo& info, const AutomatonPart& part) {
-  info.description.push_back(part.effect.getDescription(factory));
-}
-
-ItemInfo getInstalledPartInfo(const ContentFactory* factory, const AutomatonPart& part, int index) {
-  ItemInfo ret {};
-  ret.ids.insert(Item::Id(index));
-  ret.name = part.name;
-  if (!part.prefixes.empty())
-    ret.name += " " + part.prefixes.back().name;
-  ret.fullName = ret.name;
-  ret.viewId = {part.viewId};
-  fillInstalledPartDescription(factory, ret, part);
-  return ret;
-}
-
 PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory) : bestAttack(c) {
   firstName = c->getName().firstOrBare();
   name = c->getName().bare();
@@ -225,8 +209,6 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory) 
   if (c->getPosition().isValid())
     moveCounter = c->getPosition().getModel()->getMoveCounter();
   isPlayerControlled = c->isPlayer();
-  for (int i : All(c->getAutomatonParts()))
-    bodyParts.push_back(getInstalledPartInfo(contentFactory, c->getAutomatonParts()[i], i));
 }
 
 const CreatureInfo* CollectiveInfo::getMinion(UniqueEntity<Creature>::Id id) const {

@@ -185,10 +185,6 @@ void Item::setTimeout(GlobalTime t) {
   timeout = t;
 }
 
-const optional<AutomatonPart>& Item::getAutomatonPart() const {
-  return attributes->automatonPart;
-}
-
 void Item::onHitSquareMessage(Position pos, const Attack& attack, int numItems) {
   if (attributes->fragile) {
     pos.globalMessage(getPluralTheNameAndVerb(numItems, "crashes", "crash") + " on the " + pos.getName());
@@ -261,9 +257,6 @@ vector<string> Item::getDescription(const ContentFactory* factory) const {
     ret.append(info->getDescription(factory));
   for (auto& info : abilityInfo)
     ret.push_back("Grants ability: "_s + info.spell.getName(factory));
-  if (auto& part = attributes->automatonPart) {
-    ret.push_back(part->effect.getDescription(factory));
-  }
   for (auto attr : ENUM_ALL(AttrType))
     if (auto& elem = attributes->specialAttr[attr])
       ret.push_back(toStringWithSign(elem->first) + " " + ::getName(attr) + " " + elem->second.getName());
@@ -325,21 +318,19 @@ void Item::setUpgradeInfo(ItemUpgradeInfo info) {
   attributes->upgradeInfo = std::move(info);
 }
 
-optional<ItemUpgradeType> Item::getAppliedUpgradeType() const {
+vector<ItemUpgradeType> Item::getAppliedUpgradeType() const {
   auto c = getClass();
-  if (attributes->automatonPart && attributes->automatonPart->prefixType)
-    c = *attributes->automatonPart->prefixType;
-  if (attributes->upgradeType)
+  if (!attributes->upgradeType.empty())
     return attributes->upgradeType;
   switch (c) {
     case ItemClass::ARMOR:
-      return ItemUpgradeType::ARMOR;
+      return {ItemUpgradeType::ARMOR};
     case ItemClass::WEAPON:
-      return ItemUpgradeType::WEAPON;
+      return {ItemUpgradeType::WEAPON};
     case ItemClass::RANGED_WEAPON:
-      return ItemUpgradeType::RANGED_WEAPON;
+      return {ItemUpgradeType::RANGED_WEAPON};
     default:
-      return none;
+      return {};
   }
 }
 
@@ -499,9 +490,6 @@ string Item::getSuffix() const {
   string artStr;
   if (!attributes->prefixes.empty())
     artStr += attributes->prefixes.back();
-  if (auto& part = attributes->automatonPart)
-    if (!part->prefixes.empty())
-      artStr += part->prefixes.back().name;
   if (attributes->artifactName)
     appendWithSpace(artStr, "named " + *attributes->artifactName);
   if (fire->isBurning())

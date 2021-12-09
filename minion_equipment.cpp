@@ -63,7 +63,7 @@ optional<MinionEquipmentType> MinionEquipment::getEquipmentType(const Item* it) 
 bool MinionEquipment::isItemUseful(const Item* it) {
   return getEquipmentType(it) || it->canApply() || it->getClass() == ItemClass::GOLD
       || (it->getClass() == ItemClass::FOOD && !it->getCorpseInfo()) || it->getIngredientType()
-      || it->getUpgradeInfo() || it->getAutomatonPart();
+      || it->getUpgradeInfo();
 }
 
 const static vector<WeakPointer<Item>> emptyItems;
@@ -87,12 +87,6 @@ bool MinionEquipment::canUseItemType(const Creature* c, MinionEquipmentType type
       return true;
     }
   }
-}
-
-static bool automatonNeedsPart(const Creature* c, const Item* it, int numAssigned) {
-  if (auto& part = it->getAutomatonPart())
-    return part->isAvailable(c, numAssigned);
-  return false;
 }
 
 bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit) const {
@@ -128,12 +122,7 @@ bool MinionEquipment::needsItem(const Creature* c, const Item* it, bool noLimit)
     }
     return true;
   } else
-    return automatonNeedsPart(c, it, getItemsOwnedBy(c, [&](auto item) {
-      for (auto& d : c->drops)
-        if (d.get() == item)
-          return false;
-      return !!item->getAutomatonPart() && item != it;
-    }).size());
+    return false;
 }
 
 optional<Creature::Id> MinionEquipment::getOwner(const Item* it) const {
@@ -261,8 +250,6 @@ Item* MinionEquipment::getWorstItem(const Creature* c, vector<Item*> items) cons
 }
 
 static bool canAutoAssignItem(const Item* item) {
-  if (item->getAutomatonPart())
-    return false;
   if (auto& effect = item->getEffect())
     if (!effect->canAutoAssignMinionEquipment())
       return false;

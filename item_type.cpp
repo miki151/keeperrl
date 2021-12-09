@@ -312,24 +312,6 @@ ItemAttributes ItemTypes::Corpse::getAttributes(const ContentFactory*) const {
   return getCorpseAttr("corpse", ItemClass::CORPSE, 100, true, none);
 }
 
-ItemAttributes ItemTypes::AutomatonPaint::getAttributes(const ContentFactory*) const {
-  return ITATTR(
-      i.viewId = ViewId("potion2", color);
-      i.name = "automaton paint";
-      i.weight = 0.1;
-      i.automatonPart = AutomatonPart LIST(
-          ""_s,
-          Effect(Effects::ColorVariant{color}),
-          none,
-          i.viewId,
-          "automaton paint",
-          none,
-          "paint"
-      );
-      i.storageIds = LIST(StorageId("automaton_parts"), StorageId("equipment"));
-  );
-}
-
 ItemAttributes ItemTypes::Poem::getAttributes(const ContentFactory*) const {
   return ITATTR(
       i.viewId = ViewId("scroll");
@@ -370,6 +352,7 @@ ItemAttributes ItemTypes::Assembled::getAttributes(const ContentFactory* factory
       auto allIds = factory->getCreatures().getViewId(creature);
       i.viewId = allIds.front();
       i.partIds = allIds.getSubsequence(1);
+      i.partIds.append(partIds);
       i.effect = Effect(Effects::AssembledMinion{creature, traits});
       i.name = itemName;
       i.weight = 1;

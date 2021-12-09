@@ -329,7 +329,6 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   map<string, GroupLockedActivities> SERIAL(groupLockedAcitivities);
   bool SERIAL(attackedByPlayer) = false;
   void updateGuardTasks();
-  void updateAutomatonPartsTasks();
   void updateAutomatonEngines();
   bool creatureConsideredPlayer(Creature*) const;
   void summonDemon(Creature* summoner);

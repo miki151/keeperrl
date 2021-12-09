@@ -164,8 +164,8 @@ void Creature::cheatAllSpells() {
   spellMap->setAllReady();
 }
 
-int Creature::getSpareAutomatonSlots() const {
-  return getAttributes().getAutomatonSlots().first - automatonParts.size();
+bool Creature::isAutomaton() const {
+  return !automatonParts.empty();
 }
 
 const vector<AutomatonPart>& Creature::getAutomatonParts() const {
@@ -173,15 +173,9 @@ const vector<AutomatonPart>& Creature::getAutomatonParts() const {
 }
 
 void Creature::addAutomatonPart(AutomatonPart p) {
-  p.effect.apply(position);
-  for (auto& prefix : p.prefixes)
-    applyPrefixToCreature(prefix.prefix, this);
-  addSound(SoundId::TRAP_ARMING);
-  if (p.layer) {
-    automatonParts.push_back(std::move(p));
-    sort(automatonParts.begin(), automatonParts.end(),
-         [](const auto& p1, const auto& p2) { return *p1.layer < *p2.layer; });
-  }
+  automatonParts.push_back(std::move(p));
+  sort(automatonParts.begin(), automatonParts.end(),
+      [](const auto& p1, const auto& p2) { return p1.layer < p2.layer; });
 }
 
 const CreatureAttributes& Creature::getAttributes() const {
@@ -1528,15 +1522,14 @@ void Creature::updateViewObject() {
   getPosition().setNeedsRenderUpdate(true);
   updateLastingFX(object);
   object.partIds.clear();
-  for (int i : All(automatonParts))
-    if (auto& id = automatonParts[i].installedId) {
-      if (i == 0 || automatonParts[i].layer != automatonParts[i - 1].layer)
-        object.partIds.push_back(*id);
-      else
-        object.partIds.back() = *id;
+  for (int i : All(automatonParts)) {
+    if (i == 0 || automatonParts[i].layer != automatonParts[i - 1].layer)
+      object.partIds.push_back(automatonParts[i].installedId);
+    else
+      object.partIds.back() = automatonParts[i].installedId;
     }
   object.setModifier(ViewObject::Modifier::IMMOBILE,
-      (attributes->getAutomatonSlots().first > 0 && isAffected(LastingEffect::IMMOBILE))
+      (isAutomaton() && isAffected(LastingEffect::IMMOBILE))
       || (isAffected(LastingEffect::TURNED_OFF) && isAffected(LastingEffect::FLYING)));
 }
 

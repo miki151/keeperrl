@@ -15,8 +15,10 @@
 #include "effect_type.h"
 
 void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAttributes& attr) {
-  if (attr.automatonPart) {
-    attr.automatonPart->prefixes.push_back({prefix, getItemName(factory, prefix)});
+  if (attr.upgradeInfo && attr.upgradeInfo->prefix->contains<AssembledCreatureEffect>()) {
+    auto& effect = *attr.upgradeInfo->prefix->getReferenceMaybe<AssembledCreatureEffect>();
+    attr.upgradeInfo->prefix = Effect(EffectType::Chain{{effect, Effect(prefix)}});
+    attr.prefixes.push_back(getItemName(factory, prefix));
   } else {
     attr.prefixes.push_back(getItemName(factory, prefix));
     prefix.visit<void>(

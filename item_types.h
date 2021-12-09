@@ -82,14 +82,10 @@ struct Assembled {
   CreatureId SERIAL(creature);
   string SERIAL(itemName);
   EnumSet<MinionTrait> SERIAL(traits);
-  optional<ItemUpgradeType> SERIAL(upgradeType);
+  vector<ItemUpgradeType> SERIAL(upgradeType);
   int SERIAL(maxUpgrades);
-  SERIALIZE_ALL(NAMED(creature), NAMED(itemName), NAMED(traits), OPTION(upgradeType), OPTION(maxUpgrades))
-  ITEM_TYPE_INTERFACE;
-};
-struct AutomatonPaint {
-  Color SERIAL(color);
-  SERIALIZE_ALL(color)
+  vector<ViewId> SERIAL(partIds);
+  SERIALIZE_ALL(NAMED(creature), NAMED(itemName), NAMED(traits), OPTION(upgradeType), OPTION(maxUpgrades), OPTION(partIds))
   ITEM_TYPE_INTERFACE;
 };
 using Simple = CustomItemId;
@@ -115,9 +111,8 @@ struct PrefixChance {
   X(EventPoem, 11)\
   X(Assembled, 12) \
   X(Corpse, 13)\
-  X(AutomatonPaint, 14)\
-  X(PrefixChance, 15)\
-  X(Balsam, 16)
+  X(PrefixChance, 14)\
+  X(Balsam, 15)
 
 #define VARIANT_TYPES_LIST ITEM_TYPES_LIST
 #define VARIANT_NAME ItemTypeVariant

@@ -18,29 +18,24 @@
     name = "wooden humanoid head"
     shortName = "humanoid head"
     weight = 4
-    automatonPart = {
-      "automatons_upper"
-      2
-      { "installed_head" Rgb 180 140 55 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "a humanoid head"
       Description "Allows using equipment."
       {
         MakeHumanoid
         AddBodyPart HEAD 1 none
+        AddAutomatonPart 2 "humanoid" { "installed_head" Rgb 180 140 55 255 }
       }
-      "humanoid"
-      ARMOR
-    }
     storageIds = {"automaton_parts" "equipment"}
+    upgradeType = {ARMOR}
   }
 "ArcherHeadWood" inherit "HumanoidHeadWood"
   {
     viewId = { "automaton_arrow" Rgb 180 140 55 255 }
     name = "wooden arrow shooting head"
     shortName = "arrow shooting"
-    automatonPart = {
-      "automatons_upper"
-      2
-      { "installed_arrow" Rgb 180 140 55 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "an archer head"
       Description "Allows shooting arrows. Second head adds additional +10 ranged damage."
       {
         IncreaseAttr RANGED_DAMAGE 25
@@ -49,10 +44,9 @@
           GrantAbility "shoot arrow"
           IncreaseAttr RANGED_DAMAGE -15
         }
+        AddAutomatonPart 2 "archer" { "installed_arrow" Rgb 180 140 55 255 }
       }
-      "archer"
-      ARMOR
-    }
+    upgradeType = {ARMOR}
   }
 "AutomatonLegsWood"
   {
@@ -60,10 +54,8 @@
     name = "pair of wooden legs"
     shortName = "wooden legs"
     weight = 8
-    automatonPart = {
-      "automatons_lower"
-      0
-      { "installed_legs" Rgb 180 140 55 255 }
+    upgradeInfo = AUTOMATONS_LOWER AssembledCreatureEffect
+      Name "legs"
       Description "Adds mobility. Second pair grants the \"jump\" ability."
       {
         AddBodyPart LEG 2 none
@@ -71,10 +63,9 @@
           RemovePermanent IMMOBILE
           GrantAbility "jump"
         }
+        AddAutomatonPart 0 "" { "installed_legs" Rgb 180 140 55 255 }
       }
-      ""
-      ARMOR
-    }
+    upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonArmsWood"
@@ -83,18 +74,15 @@
     name = "pair of wooden arms"
     shortName = "wooden arms"
     weight = 6
-    automatonPart = {
-      "automatons_upper"
-      1
-      { "installed_arms" Rgb 180 140 55 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "arms"
       Description "Grants a melee attack and +8 damage bonus."
       {
         IncreaseAttr DAMAGE 8
         AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
+        AddAutomatonPart 1 "melee" { "installed_arms" Rgb 180 140 55 255 }
       }
-      "melee"
-      WEAPON
-    }
+    upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonDrillWood"
@@ -102,18 +90,16 @@
     viewId = { "automaton_drill" Rgb 180 140 55 255 }
     name = "wooden drill"
     weight = 6
-    automatonPart = {
-      "automatons_upper"
-      1
-      { "installed_drill" Rgb 180 140 55 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "a drill"
       Description "Increases the digging skill by 20."
       {
         IncreaseSkill DIGGING 0.2
         AddMinionTrait WORKER
         AddBodyPart ARM 2 none
+        AddAutomatonPart 1 "drill" { "installed_drill" Rgb 180 140 55 255 }
       }
-      "drill"
-    }
+    upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonCraftingWood"
@@ -121,19 +107,17 @@
     viewId = { "automaton_crafting" Rgb 180 140 55 255 }
     name = "wooden crafting arms"
     weight = 6
-    automatonPart = {
-      "automatons_upper"
-      1
-      { "installed_crafting" Rgb 180 140 55 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "crafting arms"
       Description "Increases all crafting skills by 20."
       {
         IncreaseWorkshopSkill "WORKSHOP" 0.2
         IncreaseWorkshopSkill "FORGE" 0.2
         IncreaseWorkshopSkill "LABORATORY" 0.2
         IncreaseWorkshopSkill "JEWELER" 0.2
+        AddAutomatonPart 1 "crafting" { "installed_crafting" Rgb 180 140 55 255 }
       }
-      "crafting"
-    }
+    upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 "HumanoidHeadIron"
@@ -143,19 +127,16 @@
     shortName = "humanoid head"
     weight = 4
     craftingCost = "IRON" 5
-    automatonPart = {
-      "automatons_upper"
-      2
-      { "installed_head" Rgb 140 148 148 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "an iron head"
       Description "Allows using equipment. Adds +2 defense bonus."
       {
         IncreaseAttr DEFENSE 2
         MakeHumanoid
         AddBodyPart HEAD 1 none
+        AddAutomatonPart 2 "humanoid" { "installed_head" Rgb 140 148 148 255 }
       }
-      "humanoid"
-      ARMOR
-    }
+    upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 "ArcherHeadIron" inherit "HumanoidHeadIron"
@@ -163,10 +144,8 @@
     viewId = { "automaton_arrow" Rgb 140 148 148 255 }
     name = "iron arrow shooting head"
     shortName = "arrow shooting"
-    automatonPart = {
-      "automatons_upper"
-      2
-      { "installed_arrow" Rgb 140 148 148 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "an iron archer head"
       Description "Allows shooting arrows. Adds +2 defense. Second head adds additional +15 ranged damage."
       {
         IncreaseAttr RANGED_DAMAGE 30
@@ -176,10 +155,9 @@
           GrantAbility "shoot arrow"
           IncreaseAttr RANGED_DAMAGE -15
         }
+        AddAutomatonPart 2 "archer" { "installed_arrow" Rgb 140 148 148 255 }
       }
-      "archer"
-      ARMOR
-    }
+    upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 "FireHeadIron" inherit "HumanoidHeadIron"
@@ -187,19 +165,16 @@
     viewId = { "automaton_fire" Rgb 140 148 148 255 }
     name = "iron fire breathing head"
     shortName = "fire breathing"
-    automatonPart = {
-      "automatons_upper"
-      2
-      { "installed_fire" Rgb 140 148 148 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "an iron fire breathing head"
       Description "Grants the \"fire breath\" ability. Adds +2 defense."
       {
         GrantAbility "fire breath"
         IncreaseAttr DEFENSE 2
         AddBodyPart HEAD 1 none
+        AddAutomatonPart 2 "fire" { "installed_fire" Rgb 140 148 148 255 }
       }
-      "fire"
-      ARMOR
-    }
+    upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 "AcidHeadIron" inherit "HumanoidHeadIron"
@@ -207,19 +182,16 @@
     viewId = { "automaton_acid" Rgb 140 148 148 255 }
     name = "iron acid spitting head"
     shortName = "acid spitting"
-    automatonPart = {
-      "automatons_upper"
-      2
-      { "installed_acid" Rgb 140 148 148 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "an iron acid spitting head"
       Description "Grants the \"acid stream\" ability. Adds +2 defense."
       {
         GrantAbility "acid stream"
         IncreaseAttr DEFENSE 2
         AddBodyPart HEAD 1 none
+        AddAutomatonPart 2 "acid" { "installed_acid" Rgb 140 148 148 255 }
       }
-      "acid"
-      ARMOR
-    }
+    upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonLegsIron"
@@ -229,21 +201,18 @@
     shortName = "iron legs"
     weight = 8
     craftingCost = "IRON" 5
-    automatonPart = {
-      "automatons_lower"
-      0
-      { "installed_legs" Rgb 140 148 148 255 }
+    upgradeInfo = AUTOMATONS_LOWER AssembledCreatureEffect
       Description "Adds mobility. Second pair grants the \"jump\" ability."
+      Name "iron legs"
       {
         AddBodyPart LEG 2 none
         FirstSuccessful {
             RemovePermanent IMMOBILE
             GrantAbility "jump"
         }
+        AddAutomatonPart 0 "" { "installed_legs" Rgb 140 148 148 255 }
       }
-      ""
-      ARMOR
-    }
+    upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonArmsIron"
@@ -253,18 +222,15 @@
     shortName = "iron arms"
     weight = 6
     craftingCost = "IRON" 5
-    automatonPart = {
-      "automatons_upper"
-      1
-      { "installed_arms" Rgb 140 148 148 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "iron arms"
       Description "Grants a melee attack and +12 damage bonus."
       {
         IncreaseAttr DAMAGE 12
         AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
+        AddAutomatonPart 1 "melee" { "installed_arms" Rgb 140 148 148 255 }
       }
-      "melee"
-      WEAPON
-    }
+    upgradeType = {WEAPON}
     storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonDrillIron"
@@ -274,18 +240,15 @@
     shortName = "iron drill"
     weight = 6
     craftingCost = "IRON" 5
-    automatonPart = {
-      "automatons_upper"
-      1
-      { "installed_drill" Rgb 140 148 148 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "an iron drill"
       Description "Increases the digging skill by 30."
       {
         IncreaseSkill DIGGING 0.3
         AddMinionTrait WORKER
         AddBodyPart ARM 2 none
+        AddAutomatonPart 1 "drill" { "installed_drill" Rgb 140 148 148 255 }
       }
-      "drill"
-    }
     storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonCraftingIron"
@@ -294,38 +257,16 @@
     name = "iron crafting arms"
     weight = 6
     craftingCost = "IRON" 5
-    automatonPart = {
-      "automatons_upper"
-      1
-      { "installed_crafting" Rgb 140 148 148 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "iron crafting arms"
       Description "Increases all crafting skills by 30."
       {
         IncreaseWorkshopSkill "WORKSHOP" 0.3
         IncreaseWorkshopSkill "FORGE" 0.3
         IncreaseWorkshopSkill "LABORATORY" 0.3
         IncreaseWorkshopSkill "JEWELER" 0.3
+        AddAutomatonPart 1 "crafting" { "installed_crafting" Rgb 140 148 148 255 }
       }
-      "crafting"
-    }
-    storageIds = {"automaton_parts" "equipment"}
-  }
-"SharpAutomatonArmsIron" inherit "AutomatonArmsIron"
-  {
-    name = "pair of sharp arms"
-    shortName = "sharp arms"
-    automatonPart = {
-      "automatons_upper"
-      1
-      { "installed_arms" Rgb 140 148 148 255 }
-      Description "Grants a melee attack with a chance to cause bleeding. Adds +10 damage and +2 defense bonus."
-      {
-        IncreaseAttr DAMAGE 10
-        IncreaseAttr DEFENSE 2
-        AddBodyPart ARM 2
-        { Intrinsic { "fist_attack" } "fists" 8 { attackMsg = SWING victimEffect = { 0.5 Lasting BLEEDING } } }
-      }
-      "melee"
-    }
     storageIds = {"automaton_parts" "equipment"}
   }
 "RepairAutomatonArmsIron" inherit "AutomatonArmsIron"
@@ -333,18 +274,15 @@
     viewId = { "automaton_repair" Rgb 140 148 148 255 }
     name = "pair of iron repair arms"
     shortName = "repair arms"
-    automatonPart = {
-      "automatons_upper"
-      1
-      { "installed_repair" Rgb 140 148 148 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "iron repair arms"
       Description "Grants the ability to repair other automatons. Adds +2 defense."
       {
         GrantAbility "repair automaton"
         IncreaseAttr DEFENSE 2
         AddBodyPart ARM 2 none
+        AddAutomatonPart 1 "repair" { "installed_repair" Rgb 140 148 148 255 }
       }
-      "repair"
-    }
     storageIds = {"automaton_parts" "equipment"}
   }
 "HumanoidHeadAda"
@@ -354,19 +292,16 @@
     shortName = "humanoid head"
     weight = 4
     craftingCost = "ADA" 5
-    automatonPart = {
-      "automatons_upper"
-      2
-      { "installed_head" Rgb 140 148 148 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "an adamantine humanoid head"
       Description "Allows using equipment. Adds +2 defense bonus."
       {
         IncreaseAttr DEFENSE 4
         MakeHumanoid
         AddBodyPart HEAD 1 none
+        AddAutomatonPart 2 "humanoid" { "installed_head" Rgb 140 148 148 255 }
       }
-      "humanoid"
-      ARMOR
-    }
+    upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 "ArcherHeadAda" inherit "HumanoidHeadAda"
@@ -374,10 +309,8 @@
     viewId = { "automaton_arrow" Rgb 148 189 189 255 }
     name = "adamantine arrow shooting head"
     shortName = "arrow shooting"
-    automatonPart = {
-      "automatons_upper"
-      2
-      { "installed_arrow" Rgb 148 189 189 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "an adamantine arrow shooting head"
       Description "Allows shooting arrows. Adds +4 defense. Second head adds additional +20 ranged damage."
       {
         IncreaseAttr RANGED_DAMAGE 40
@@ -387,10 +320,9 @@
           GrantAbility "shoot arrow"
           IncreaseAttr RANGED_DAMAGE -20
         }
+        AddAutomatonPart 2 "archer" { "installed_arrow" Rgb 148 189 189 255 }
       }
-      "archer"
-      ARMOR
-    }
+    upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 "FireHeadAda" inherit "HumanoidHeadAda"
@@ -398,19 +330,16 @@
     viewId = { "automaton_fire" Rgb 148 189 189 255 }
     name = "adamantine fire breathing head"
     shortName = "fire breathing"
-    automatonPart = {
-      "automatons_upper"
-      2
-      { "installed_fire" Rgb 148 189 189 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "an adamantine fire breathing head"
       Description "Grants the \"fire breath\" ability. Adds +4 defense."
       {
         GrantAbility "fire breath"
         IncreaseAttr DEFENSE 4
         AddBodyPart HEAD 1 none
+        AddAutomatonPart 2 "fire" { "installed_fire" Rgb 148 189 189 255 }
       }
-      "fire"
-      ARMOR
-    }
+    upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 "AcidHeadAda" inherit "HumanoidHeadAda"
@@ -418,19 +347,16 @@
     viewId = { "automaton_acid" Rgb 148 189 189 255 }
     name = "adamantine acid spitting head"
     shortName = "acid spitting"
-    automatonPart = {
-      "automatons_upper"
-      2
-      { "installed_acid" Rgb 148 189 189 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "an adamantine acid spitting head"
       Description "Grants the \"acid stream\" ability. Adds +4 defense."
       {
         GrantAbility "acid stream"
         IncreaseAttr DEFENSE 4
         AddBodyPart HEAD 1 none
+        AddAutomatonPart 2 "acid" { "installed_acid" Rgb 148 189 189 255 }
       }
-      "acid"
-      ARMOR
-    }
+    upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonLegsAda"
@@ -440,10 +366,8 @@
     shortName = "adamantine legs"
     weight = 8
     craftingCost = "ADA" 5
-    automatonPart = {
-      "automatons_lower"
-      0
-      { "installed_legs" Rgb 148 189 189 255 }
+    upgradeInfo = AUTOMATONS_LOWER AssembledCreatureEffect
+      Name "adamantine legs"
       Description "Adds mobility. Second pair grants the \"jump\" ability."
       {
         AddBodyPart LEG 2 none
@@ -451,10 +375,9 @@
             RemovePermanent IMMOBILE
             GrantAbility "jump"
         }
+        AddAutomatonPart 0 "" { "installed_legs" Rgb 148 189 189 255 }
       }
-      ""
-      ARMOR
-    }
+    upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonArmsAda"
@@ -464,18 +387,15 @@
     shortName = "adamantine arms"
     weight = 6
     craftingCost = "ADA" 5
-    automatonPart = {
-      "automatons_upper"
-      1
-      { "installed_arms" Rgb 148 189 189 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "adamantine arms"
       Description "Grants a melee attack and +18 damage bonus."
       {
         IncreaseAttr DAMAGE 18
         AddBodyPart ARM 2 { Intrinsic { "fist_attack" } "fists" 4 { attackMsg = SWING } }
+        AddAutomatonPart 1 "melee" { "installed_arms" Rgb 148 189 189 255 }
       }
-      "melee"
-      WEAPON
-    }
+    upgradeType = {WEAPON}
     storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonDrillAda"
@@ -485,18 +405,15 @@
     shortName = "adamantine drill"
     weight = 6
     craftingCost = "ADA" 5
-    automatonPart = {
-      "automatons_upper"
-      1
-      { "installed_drill" Rgb 148 189 189 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "an adamantine drill"
       Description "Increases the digging skill by 50."
       {
         IncreaseSkill DIGGING 0.5
         AddMinionTrait WORKER
         AddBodyPart ARM 2 none
+        AddAutomatonPart 1 "drill" { "installed_drill" Rgb 148 189 189 255 }
       }
-      "drill"
-    }
     storageIds = {"automaton_parts" "equipment"}
   }
 "AutomatonCraftingAda"
@@ -505,19 +422,16 @@
     name = "adamantine crafting arms"
     weight = 6
     craftingCost = "ADA" 5
-    automatonPart = {
-      "automatons_upper"
-      1
-      { "installed_crafting" Rgb 148 189 189 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "adamantine crafting arms"
       Description "Increases all crafting skills by 50."
       {
         IncreaseWorkshopSkill "WORKSHOP" 0.5
         IncreaseWorkshopSkill "FORGE" 0.5
         IncreaseWorkshopSkill "LABORATORY" 0.5
         IncreaseWorkshopSkill "JEWELER" 0.5
+        AddAutomatonPart 1 "crafting" { "installed_crafting" Rgb 148 189 189 255 }
       }
-      "crafting"
-    }
     storageIds = {"automaton_parts" "equipment"}
   }
 "RepairAutomatonArmsAda" inherit "AutomatonArmsAda"
@@ -525,18 +439,15 @@
     viewId = { "automaton_repair" Rgb 148 189 189 255 }
     name = "pair of adamantine repair arms"
     shortName = "repair arms"
-    automatonPart = {
-      "automatons_upper"
-      1
-      { "installed_repair" Rgb 148 189 189 255 }
+    upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
+      Name "adamantine repair arms"
       Description "Grants the ability to repair other automatons. Adds +4 defense."
       {
         GrantAbility "repair automaton"
         IncreaseAttr DEFENSE 4
         AddBodyPart ARM 2 none
+        AddAutomatonPart 1 "repair" { "installed_repair" Rgb 148 189 189 255 }
       }
-      "repair"
-    }
     storageIds = {"automaton_parts" "equipment"}
   }
 "Knife"

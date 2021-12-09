@@ -352,12 +352,11 @@ void PlayerControl::render(View* view) {
   }
 }
 
-void PlayerControl::addConsumableItem(Creature* creature, bool automatonPart) {
+void PlayerControl::addConsumableItem(Creature* creature) {
   ScrollPosition scrollPos;
   while (1) {
     Item* chosenItem = chooseEquipmentItem(creature, {}, [&](const Item* it) {
         return !collective->getMinionEquipment().isOwner(it, creature)
-            && (!!it->getAutomatonPart() == automatonPart)
             && !it->canEquip()
             && collective->getMinionEquipment().needsItem(creature, it, true); }, &scrollPos);
     if (chosenItem) {
@@ -398,7 +397,7 @@ void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
         if (action.slot)
           addEquipment(creature, *action.slot);
         else
-          addConsumableItem(creature, false);
+          addConsumableItem(creature);
         break;
       case ItemAction::LOCK:
         /*if (action.ids.empty() && action.slot)
@@ -449,8 +448,6 @@ static ItemInfo getItemInfo(const ContentFactory* factory, const vector<Item*>& 
     if (type)
       c.type = *type;
     c.pending = pending;
-    if (auto& part = stack[0]->getAutomatonPart())
-      fillInstalledPartDescription(factory, c, *part);
   );
 }
 
@@ -494,22 +491,6 @@ static ItemInfo getTradeItemInfo(const ContentFactory* factory, const vector<Ite
     c.unavailable = c.price->second > budget;);
 }
 
-void PlayerControl::fillAutomatonParts(Creature* creature, PlayerInfo& info) const {
-  int index = 0;
-  for (auto item : collective->getMinionEquipment().getItemsOwnedBy(creature))
-    if (auto& part = item->getAutomatonPart()) {
-      if ([&] {
-        for (auto& d : creature->drops)
-          if (d.get() == item)
-            return true;
-        return false; }())
-        continue;
-      info.bodyParts.push_back(getInstalledPartInfo(getGame()->getContentFactory(), *part, ++index));
-      info.bodyParts.back().pending = true;
-    }
-  info.bodyPartLimit = creature->getAttributes().getAutomatonSlots().first;
-}
-
 static CollectiveInfo::PromotionOption getPromotionOption(const ContentFactory* factory, const PromotionInfo& info) {
   return {info.viewId, info.name, info.applied.getDescription(factory)};
 }
@@ -538,8 +519,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   vector<EquipmentSlot> slots;
   for (auto slot : Equipment::slotTitles)
     slots.push_back(slot.first);
-  vector<Item*> ownedItems = collective->getMinionEquipment().getItemsOwnedBy(creature)
-      .filter([](auto item) { return !item->getAutomatonPart(); });
+  vector<Item*> ownedItems = collective->getMinionEquipment().getItemsOwnedBy(creature);
   for (auto slot : slots) {
     vector<Item*> items;
     for (Item* it : ownedItems)
@@ -1001,8 +981,6 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
         }
       if (collective->usesEquipment(c))
         fillEquipment(c, minionInfo);
-      if (c->getAttributes().getAutomatonSlots().first > 0)
-        fillAutomatonParts(c, minionInfo);
       if (canControlSingle(c))
         minionInfo.actions.push_back(PlayerInfo::CONTROL);
       if (!collective->hasTrait(c, MinionTrait::PRISONER)) {
@@ -1010,7 +988,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
       } else
         minionInfo.experienceInfo.limit.clear();
       auto& leaders = collective->getLeaders();
-      if (c->getAttributes().getAutomatonSlots().first > 0)
+      if (c->isAutomaton())
         minionInfo.actions.push_back(PlayerInfo::DISASSEMBLE);
       else if (leaders.size() > 1 || !collective->hasTrait(c, MinionTrait::LEADER))
         minionInfo.actions.push_back(PlayerInfo::BANISH);
@@ -1152,7 +1130,7 @@ vector<pair<Item*, Position>> PlayerControl::getItemUpgradesFor(const WorkshopIt
   for (auto& pos : collective->getConstructions().getAllStoragePositions())
     for (auto& item : pos.getItems(ItemIndex::RUNE))
       if (auto& upgradeInfo = item->getUpgradeInfo())
-        if (upgradeInfo->type == workshopItem.upgradeType)
+        if (workshopItem.upgradeType.contains(upgradeInfo->type))
           ret.push_back({make_pair(item, pos)});
 
   return ret;
@@ -1242,12 +1220,12 @@ vector<WorkshopOptionInfo> PlayerControl::getWorkshopOptions(int resourceIndex) 
               it.ingredient = getItemInfo(getGame()->getContentFactory(), {item}, false, false, false);
               it.description.push_back("Crafted from " + item->getAName());
               ret.push_back({it, i, make_pair(item, pos), none,
-                  make_pair(option.upgradeType ? getItemTypeName(*option.upgradeType) : "", option.maxUpgrades)});
+                  make_pair(!option.upgradeType.empty() ? getItemTypeName(option.upgradeType[0]) : "", option.maxUpgrades)});
             }
         }
       else
         ret.push_back({itemInfo, i, none, getImmigrantCreatureInfo(getGame()->getContentFactory(), option.type),
-            make_pair(option.upgradeType ? getItemTypeName(*option.upgradeType) : "", option.maxUpgrades)});
+            make_pair(!option.upgradeType.empty() ? getItemTypeName(option.upgradeType[0]) : "", option.maxUpgrades)});
     }
   return ret;
 }
@@ -1285,7 +1263,7 @@ CollectiveInfo::QueuedItemInfo PlayerControl::getQueuedItemInfo(const WorkshopQu
   if (!item.runes.empty() && !item.item.notArtifact)
     ret.itemInfo.unavailableReason = "Requires a craftsman of legendary skills.";
   ret.itemInfo.actions = {ItemAction::REMOVE};
-  ret.maxUpgrades = {item.item.upgradeType ? getItemTypeName(*item.item.upgradeType) : "", item.item.maxUpgrades};
+  ret.maxUpgrades = {!item.item.upgradeType.empty() ? getItemTypeName(item.item.upgradeType[0]) : "", item.item.maxUpgrades};
   return ret;
 }
 
@@ -2316,7 +2294,7 @@ void PlayerControl::takeScreenshot() {
 }
 
 void PlayerControl::handleBanishing(Creature* c) {
-  auto message = c->getAttributes().getAutomatonSlots().first > 0
+  auto message = c->isAutomaton()
       ? "Do you want to disassemble " + c->getName().the() + "?"
       : "Do you want to banish " + c->getName().the() + " forever? "
           "Banishing has a negative impact on morale of other minions.";
@@ -2580,10 +2558,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
       break;
     case UserInputId::CREATURE_EQUIPMENT_ACTION:
       minionEquipmentAction(input.get<EquipmentActionInfo>());
-      break;
-    case UserInputId::CREATURE_ADD_BODY_PART:
-      if (Creature* c = getCreature(input.get<Creature::Id>()))
-        addConsumableItem(c, true);
       break;
     case UserInputId::CREATURE_PROMOTE: {
       auto info = input.get<PromotionActionInfo>();
