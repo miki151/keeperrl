@@ -31,6 +31,10 @@
     skills = {
       "LABORATORY" 0.2
     }
+    # lasting_effect.h
+    permanentEffects = {
+      RIDER 1
+    }
     # experience_type.h
     maxLevelIncrease = {
       MELEE 7
@@ -102,6 +106,9 @@
       "MULTI_WEAPON" 0.8
       "FURNACE" 0.3
     }
+    permanentEffects = {
+      RIDER 1
+    }
     maxLevelIncrease = {
       MELEE 12
       SPELL 3
@@ -146,6 +153,9 @@
       "MULTI_WEAPON" 0.8
       "FURNACE" 0.1
     }
+    permanentEffects = {
+      RIDER 1
+    }
     maxLevelIncrease = {
       MELEE 12
       SPELL 1
@@ -187,6 +197,7 @@
      }
     permanentEffects = {
       AMBUSH_SKILL 1
+      RIDER 1
     }
     maxLevelIncrease = {
       MELEE 16
@@ -256,6 +267,7 @@
     permanentEffects = {
       RANGED_RESISTANCE 1
       MAGIC_RESISTANCE 1
+      STEED 1
     }
     aiType = RANGED
     companions = {5 false true 0.05 { "SPIRIT" }}
@@ -699,6 +711,7 @@
     }
     permanentEffects = {
       MAGIC_RESISTANCE 1
+      RIDER 1
     }
     chatReactionFriendly = "curses all monsters"
     chatReactionHostile = "\"Die!\""
@@ -796,6 +809,7 @@
     }
     permanentEffects = {
       COLD_RESISTANT 1
+      STEED 1
     }
     name = {
       name = "yeti"
@@ -885,6 +899,7 @@
     }
     permanentEffects = {
       RANGED_RESISTANCE 1
+      STEED 1
     }
     body = {
       type = Humanoid LARGE
@@ -1014,6 +1029,7 @@
     permanentEffects = {
       POISON_RESISTANT 1
       RANGED_VULNERABILITY 1
+      STEED 1
     }
     name = {
       name = "green dragon"
@@ -1086,6 +1102,7 @@
     permanentEffects = {
       FIRE_RESISTANT 1
       RANGED_VULNERABILITY 1
+      STEED 1
     }
     name = {
       name = "red dragon"
@@ -1158,6 +1175,7 @@
       RANGED_VULNERABILITY 1
       BLIND 1
       TELEPATHY 1
+      STEED 1
     }
     name = {
       name = "black dragon"
@@ -1225,6 +1243,7 @@
     permanentEffects = {
       RANGED_VULNERABILITY 1
       COLD_RESISTANT 1
+      STEED 1
     }
     name = {
       name = "white dragon"
@@ -1331,6 +1350,7 @@
     }
     permanentEffects = {
       RANGED_VULNERABILITY 1
+      STEED 1
     }
     name = {
       name = "bone dragon"
@@ -1394,6 +1414,9 @@
       "FORGE" 0.3
       "FURNACE" 0.2
     }
+    permanentEffects = {
+      RIDER 1
+    }
     name = {
       name = "knight"
       firstNameGen = "FIRST_MALE"
@@ -1436,6 +1459,7 @@
     }
     permanentEffects = {
       ARCHER_VISION 1
+      RIDER 1
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
@@ -1546,6 +1570,7 @@
     permanentEffects = {
       CROPS_SKILL 1
       DISTILLATION_SKILL 1
+      RIDER 1
     }
     aiType = RANGED
     skills = {
@@ -1615,6 +1640,7 @@
     }
     permanentEffects = {
       MELEE_RESISTANCE 1
+      RIDER 1
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
@@ -1682,6 +1708,7 @@
     }
     permanentEffects = {
       MELEE_RESISTANCE 1
+      RIDER 1
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
@@ -1718,6 +1745,7 @@
     permanentEffects = {
       ARCHER_VISION 1
       NO_FRIENDLY_FIRE 1
+      RIDER 1
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
@@ -1926,6 +1954,7 @@
     chatReactionHostile = "\"Heeelp!\""
     permanentEffects = {
       CROPS_SKILL 1
+      RIDER 1
     }
     companions = {1 true false 0.01 { "DOG" }}
     name = {
@@ -3030,6 +3059,7 @@
     permanentEffects = {
       MAGIC_RESISTANCE 1
       ELF_VISION 1
+      RIDER 1
     }
     spells = { "advanced healing" "haste" "defense bonus" "damage bonus" "directed blast" }
     maxLevelIncrease = {
@@ -3227,6 +3257,9 @@
       type = FourLegged LARGE
       weight = 500
     }
+    permanentEffects = {
+      STEED 1
+    }
     noChase = true
     petReaction = "neighs"
     name = {
@@ -3272,6 +3305,9 @@
       weight = 200
       deathSound = DYING_DONKEY
     }
+    permanentEffects = {
+      STEED 1
+    }
     noChase = true
     name = {
       name = "donkey"
@@ -3293,6 +3329,7 @@
     }
     permanentEffects = {
       SLOWED 1
+      STEED 1
     }
     noChase = true
     name = {
@@ -3310,6 +3347,9 @@
     body = {
       type = FourLegged MEDIUM
       weight = 50
+    }
+    permanentEffects = {
+      STEED 1
     }
     petReaction = "\"Meh-eh-eh!\""
     noChase = true
@@ -3425,6 +3465,7 @@
     }
     permanentEffects = {
       EXPLORE_CAVES_SKILL 1
+      STEED 1
     }
     name = {
       name = "cave bear"
@@ -3688,6 +3729,7 @@
     permanentEffects = {
       NIGHT_VISION 1
       EXPLORE_NOCTURNAL_SKILL 1
+      STEED 1
     }
     name = {
       name = "wolf"
@@ -4389,6 +4431,9 @@ End
       "WORKSHOP" 0.3
       "FORGE" 0.3
       "FURNACE" 0.1
+    }
+    permanentEffects = {
+      RIDER 1
     }
     maxLevelIncrease = {
       MELEE 7

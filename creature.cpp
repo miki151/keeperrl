@@ -2034,7 +2034,7 @@ CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) co
 
 CreatureAction Creature::mount(Creature* whom) const {
   if (whom->getPosition().dist8(position) != 1 || !!steed || !!whom->steed || whom->getRider() || whom->isPlayer() ||
-      isEnemy(whom))
+      isEnemy(whom) || !whom->isAffected(LastingEffect::STEED) || !isAffected(LastingEffect::RIDER))
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
     auto dir = position.getDir(whom->position);

@@ -608,6 +608,12 @@ vector<Player::CommandInfo> Player::getCommands() const {
   for (Position pos : creature->getPosition().neighbors8())
     if (Creature* c = pos.getCreature())
       canChat = true;
+  bool canMount = false;
+  if (creature->isAffected(LastingEffect::RIDER))
+    for (Position pos : creature->getPosition().neighbors8())
+      if (Creature* c = pos.getCreature())
+        if (!!creature->mount(c))
+          canMount = true;
   return {
     {PlayerInfo::CommandInfo{"Fire ranged weapon", 'f', "", true},
       [] (Player* player) { player->fireAction(); }, false},
@@ -623,7 +629,7 @@ vector<Player::CommandInfo> Player::getCommands() const {
     creature->getSteed()
       ? Player::CommandInfo{PlayerInfo::CommandInfo{"Dismount", 'm', "Dismount your steed.", true},
             [] (Player* player) { player->tryToPerform(player->creature->dismount()); }, false}
-      : Player::CommandInfo{PlayerInfo::CommandInfo{"Mount", 'm', "Mount a steed.", canChat},
+      : Player::CommandInfo{PlayerInfo::CommandInfo{"Mount", 'm', "Mount a steed.", canMount},
             [] (Player* player) { player->mountAction(); }, false},
     Player::CommandInfo{PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},
       [] (Player* player) { player->chatAction(); }, false},

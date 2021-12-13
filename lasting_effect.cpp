@@ -39,6 +39,8 @@ static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
 
 static optional<LastingEffect> getMutuallyExclusiveImpl(LastingEffect effect) {
   switch (effect) {
+    case LastingEffect::STEED:
+      return LastingEffect::RIDER;
     case LastingEffect::PANIC:
       return LastingEffect::RAGE;
     case LastingEffect::PEACEFULNESS:
@@ -353,6 +355,12 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::CAN_DANCE:
         c->you(MsgType::FEEL, "like a dancing fool");
         break;
+      case LastingEffect::STEED:
+        c->you(MsgType::FEEL, "tacked up");
+        break;
+      case LastingEffect::RIDER:
+        c->verb("spin", "spins", his(c->getAttributes().getGender()) + " spurs"_s);
+        break;
       default:
         break;
     }
@@ -660,6 +668,12 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::CAN_DANCE:
         c->you(MsgType::YOUR, "legs have the same length again");
         break;
+      case LastingEffect::STEED:
+        c->verb("no longer feel", "no longer feels", "tacked up");
+        break;
+      case LastingEffect::RIDER:
+        c->you(MsgType::YOUR, "spurs stop spinning");
+        break;
       default:
         break;
     }
@@ -809,6 +823,8 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::NO_FRIENDLY_FIRE: return "Arrows bypass allies"_good;
     case LastingEffect::POLYMORPHED: return "Polymorphed"_good;
     case LastingEffect::CAN_DANCE: return "Has rhythm"_good;
+    case LastingEffect::STEED: return "Steed"_good;
+    case LastingEffect::RIDER: return "Rider"_good;
 
     case LastingEffect::PANIC: return "Panic"_bad;
     case LastingEffect::PEACEFULNESS: return "Peaceful"_bad;
@@ -1212,6 +1228,8 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::POLYMORPHED: return "polymorphed";
     case LastingEffect::AGGRAVATES: return "aggravation";
     case LastingEffect::CAN_DANCE: return "dancing";
+    case LastingEffect::STEED: return "mounting";
+    case LastingEffect::RIDER: return "riding";
   }
 }
 
@@ -1309,6 +1327,8 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::POLYMORPHED: return "Creature will revert to original form.";
     case LastingEffect::AGGRAVATES: return "Makes enemies more aggressive and more likely to attack the base.";
     case LastingEffect::CAN_DANCE: return "Can dance all night long.";
+    case LastingEffect::STEED: return "Can carry a rider.";
+    case LastingEffect::RIDER: return "Can ride a steed.";
   }
 }
 
