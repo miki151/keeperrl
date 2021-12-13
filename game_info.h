@@ -186,10 +186,13 @@ class PlayerInfo {
   optional<double> HASH(carryLimit);
   optional<ViewId> HASH(quarters);
   bool HASH(canAssignQuarters);
+  optional<ViewId> HASH(steed);
+  bool HASH(canAssignSteed);
+  optional<ViewId> HASH(rider);
   vector<ViewIdList> HASH(kills);
   vector<string> HASH(killTitles);
   bool HASH(canExitControlMode);
-  HASH_ALL(attributes, skills, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles, canExitControlMode)
+  HASH_ALL(attributes, skills, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, steed, canAssignSteed, rider, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles, canExitControlMode)
 };
 
 struct ImmigrantCreatureInfo {

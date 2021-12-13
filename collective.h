@@ -168,6 +168,9 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   double getDangerLevel() const;
   void setPriorityTasks(Position);
   bool hasPriorityTasks(Position) const;
+  void setSteed(Creature* minion, Creature* steed);
+  Creature* getSteed(Creature* minion);
+  optional<UniqueEntity<Creature>::Id> getRider(Creature* steed) const;
 
   void acquireTech(TechId, bool throughLevelling);
   const Technology& getTechnology() const;
@@ -327,6 +330,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   unordered_set<string> SERIAL(recordedEvents);
   unordered_set<string> SERIAL(allRecordedEvents);
   map<string, GroupLockedActivities> SERIAL(groupLockedAcitivities);
+  EntityMap<Creature, Creature*> SERIAL(steedAssignments);
   bool SERIAL(attackedByPlayer) = false;
   void updateGuardTasks();
   void updateAutomatonEngines();

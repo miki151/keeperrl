@@ -74,7 +74,7 @@ void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment, groupLockedAcitivities);
   ar(delayedPos, knownTiles, technology, kills, points, currentActivity, recordedEvents, allRecordedEvents);
   ar(credit, model, immigration, teams, name, minionActivities, attackedByPlayer, furnace);
-  ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching);
+  ar(config, warnings, knownVillains, knownVillainLocations, banished, positionMatching, steedAssignments);
   ar(villainType, enemyId, workshops, zones, discoverable, quarters, populationIncrease, dungeonLevel);
 }
 
@@ -205,6 +205,9 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
 
 void Collective::removeCreature(Creature* c) {
   creatures.removeElement(c);
+  steedAssignments.erase(c);
+  if (auto rider = getRider(c))
+    steedAssignments.erase(*rider);
   for (auto& group : populationGroups)
     group.removeElementMaybe(c);
   for (auto& group : copyOf(populationGroups))
@@ -1073,6 +1076,24 @@ void Collective::setPriorityTasks(Position pos) {
 
 bool Collective::hasPriorityTasks(Position pos) const {
   return taskMap->hasPriorityTasks(pos);
+}
+
+optional<Creature::Id> Collective::getRider(Creature* steed) const {
+  for (auto elem : steedAssignments)
+    if (elem.second == steed)
+      return elem.first;
+  return none;
+}
+
+void Collective::setSteed(Creature* minion, Creature* steed) {
+  CHECK(minion != steed);
+  if (auto rider = getRider(steed))
+    steedAssignments.erase(*rider);
+  steedAssignments.set(minion, steed);
+}
+
+Creature* Collective::getSteed(Creature* minion) {
+  return steedAssignments.getMaybe(minion).value_or(nullptr);
 }
 
 static HighlightType getHighlight(const DestroyAction& action) {

@@ -294,6 +294,7 @@ class GuiBuilder {
       function<void()> increaseCallback = nullptr, bool infoOnly = false);
   optional<int> highlightedTeamMember;
   SGuiElem drawQuartersButton(const PlayerInfo&, const vector<ViewId>& allQuarters);
+  SGuiElem drawSteedButton(const PlayerInfo&);
   SGuiElem drawWarningWindow(const CollectiveInfo::RebellionChance&);
   SGuiElem drawRebellionChanceText(CollectiveInfo::RebellionChance);
   SGuiElem drawVillainsOverlay(const VillageInfo&);

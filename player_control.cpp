@@ -999,6 +999,11 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
           minionInfo.quarters = quarters.getAllQuarters()[*index].viewId;
         else
           minionInfo.quarters = none;
+        if (c->isAffected(LastingEffect::RIDER)) {
+          minionInfo.canAssignSteed = true;
+          if (auto steed = collective->getSteed(c))
+            minionInfo.steed = steed->getViewObject().id();
+        }
       } else
         minionInfo.canAssignQuarters = false;
       if (c->isAffected(LastingEffect::CONSUMPTION_SKILL))
@@ -2300,6 +2305,21 @@ void PlayerControl::takeScreenshot() {
   takingScreenshot = true;
 }
 
+void PlayerControl::handleSteedAssignment(Creature* c) {
+  vector<PlayerInfo> steed;
+  for (auto other : getCreatures())
+    if (other->isAffected(LastingEffect::STEED)) {
+      steed.push_back(PlayerInfo(other, getGame()->getContentFactory()));
+      if (auto riderId = collective->getRider(other))
+        if (auto rider = getCreature(*riderId))
+          steed.back().rider = rider->getViewObject().id();
+    }
+  if (steed.empty())
+    return;
+  if (auto chosenSteed = getView()->chooseCreature("Choose steed:", steed, "Cancel"))
+    collective->setSteed(c, getCreature(*chosenSteed));
+}
+
 void PlayerControl::handleBanishing(Creature* c) {
   auto message = c->isAutomaton()
       ? "Do you want to disassemble " + c->getName().the() + "?"
@@ -2645,6 +2665,11 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::ASSIGN_QUARTERS: {
       auto& info = input.get<AssignQuartersInfo>();
       collective->getQuarters().assign(info.index, info.minionId);
+      break;
+    }
+    case UserInputId::ASSIGN_STEED: {
+      if (Creature* c = getCreature(input.get<Creature::Id>()))
+        handleSteedAssignment(c);
       break;
     }
     case UserInputId::IMMIGRANT_ACCEPT: {

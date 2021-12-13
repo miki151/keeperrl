@@ -289,6 +289,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool takingScreenshot = false;
   void addBodyPart(Creature*);
   void handleBanishing(Creature*);
+  void handleSteedAssignment(Creature*);
   optional<pair<ViewId,int>> getCostObj(CostInfo) const;
   optional<pair<ViewId,int>> getCostObj(const optional<CostInfo>&) const;
   ViewId getViewId(const BuildInfoTypes::BuildType&) const;
