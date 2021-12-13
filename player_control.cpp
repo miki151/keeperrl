@@ -1001,7 +1001,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
           minionInfo.quarters = none;
         if (c->isAffected(LastingEffect::RIDER)) {
           minionInfo.canAssignSteed = true;
-          if (auto steed = collective->getSteed(c))
+          if (auto steed = collective->getSteedOrRider(c))
             minionInfo.steed = steed->getViewObject().id();
         }
       } else
@@ -2310,9 +2310,8 @@ void PlayerControl::handleSteedAssignment(Creature* c) {
   for (auto other : getCreatures())
     if (other->isAffected(LastingEffect::STEED)) {
       steed.push_back(PlayerInfo(other, getGame()->getContentFactory()));
-      if (auto riderId = collective->getRider(other))
-        if (auto rider = getCreature(*riderId))
-          steed.back().rider = rider->getViewObject().id();
+      if (auto rider = collective->getSteedOrRider(other))
+        steed.back().rider = rider->getViewObject().id();
     }
   if (steed.empty())
     return;

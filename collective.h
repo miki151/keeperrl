@@ -169,8 +169,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void setPriorityTasks(Position);
   bool hasPriorityTasks(Position) const;
   void setSteed(Creature* minion, Creature* steed);
-  Creature* getSteed(Creature* minion);
-  optional<UniqueEntity<Creature>::Id> getRider(Creature* steed) const;
+  Creature* getSteedOrRider(Creature* minion);
 
   void acquireTech(TechId, bool throughLevelling);
   const Technology& getTechnology() const;

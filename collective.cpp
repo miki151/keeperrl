@@ -206,8 +206,8 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
 void Collective::removeCreature(Creature* c) {
   creatures.removeElement(c);
   steedAssignments.erase(c);
-  if (auto rider = getRider(c))
-    steedAssignments.erase(*rider);
+  if (auto rider = getSteedOrRider(c))
+    steedAssignments.erase(rider);
   for (auto& group : populationGroups)
     group.removeElementMaybe(c);
   for (auto& group : copyOf(populationGroups))
@@ -1078,21 +1078,17 @@ bool Collective::hasPriorityTasks(Position pos) const {
   return taskMap->hasPriorityTasks(pos);
 }
 
-optional<Creature::Id> Collective::getRider(Creature* steed) const {
-  for (auto elem : steedAssignments)
-    if (elem.second == steed)
-      return elem.first;
-  return none;
+void Collective::setSteed(Creature* rider, Creature* steed) {
+  CHECK(rider != steed);
+  if (auto rider2 = getSteedOrRider(steed))
+    steedAssignments.erase(rider2);
+  if (auto steed2 = getSteedOrRider(rider))
+    steedAssignments.erase(steed2);
+  steedAssignments.set(rider, steed);
+  steedAssignments.set(steed, rider);
 }
 
-void Collective::setSteed(Creature* minion, Creature* steed) {
-  CHECK(minion != steed);
-  if (auto rider = getRider(steed))
-    steedAssignments.erase(*rider);
-  steedAssignments.set(minion, steed);
-}
-
-Creature* Collective::getSteed(Creature* minion) {
+Creature* Collective::getSteedOrRider(Creature* minion) {
   return steedAssignments.getMaybe(minion).value_or(nullptr);
 }
 

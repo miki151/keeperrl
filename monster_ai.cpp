@@ -864,6 +864,25 @@ class ByCollective : public Behaviour {
     return fighter->getMove(true);
   }
 
+  bool riderNeedsSteed(Creature* c) {
+    return !collective->getTerritory().contains(c->getPosition());
+  }
+
+  MoveInfo steedOrRider() {
+    if (creature->getSteed() && !riderNeedsSteed(creature))
+      return creature->dismount();
+    if (auto other = collective->getSteedOrRider(creature)) {
+      if (creature->isAffected(LastingEffect::RIDER) && riderNeedsSteed(creature)) {
+        for (auto pos : creature->getPosition().neighbors8())
+          if (pos.getCreature() == other)
+            return creature->mount(other);
+      } else
+      if (creature->isAffected(LastingEffect::STEED) && riderNeedsSteed(other))
+        return creature->moveTowards(other->getPosition());
+    }
+    return NoMove;
+  }
+
   MoveInfo followTeamLeader() {
     auto& teams = collective->getTeams();
     if (auto team = getActiveTeam()) {
@@ -1047,6 +1066,7 @@ class ByCollective : public Behaviour {
     return getFirstGoodMove(
         bindMethod(&ByCollective::getFighterMove, this),
         bindMethod(&ByCollective::priorityTask, this),
+        bindMethod(&ByCollective::steedOrRider, this),
         bindMethod(&ByCollective::followTeamLeader, this),
         bindMethod(&ByCollective::goToAlarm, this),
         bindMethod(&ByCollective::normalTask, this),
