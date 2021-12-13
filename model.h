@@ -87,6 +87,7 @@ class Model : public OwnedObject<Model> {
   int getSaveProgressCount() const;
 
   void killCreature(Creature* victim);
+  void killCreature(PCreature victim);
   void updateSunlightMovement();
 
   PCreature extractCreature(Creature*);

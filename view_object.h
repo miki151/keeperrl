@@ -60,6 +60,7 @@ class ViewObject {
   const char* getDescription() const;
 
   ViewLayer layer() const;
+  void setLayer(ViewLayer);
   ViewId id() const;
   void setId(ViewId);
   void setId(ViewIdList);

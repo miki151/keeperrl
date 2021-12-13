@@ -137,6 +137,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   void payForAllItemsAction();
   void payForItemAction(const vector<Item*>&);
   void chatAction(optional<Vec2> dir = none);
+  void mountAction();
   void giveAction(vector<Item*>);
   void spellAction(int);
   void fireAction();

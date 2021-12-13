@@ -5,6 +5,10 @@ const char* getText(ViewObjectAction action) {
   switch (action) {
     case ViewObjectAction::PET:
       return "pet";
+    case ViewObjectAction::MOUNT:
+      return "mount";
+    case ViewObjectAction::DISMOUNT:
+      return "dismount";
     case ViewObjectAction::CHAT:
       return "chat";
     case ViewObjectAction::PUSH:

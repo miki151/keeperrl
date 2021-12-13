@@ -877,6 +877,7 @@ bool LastingEffects::doesntMove(const Creature* c) {
 
 bool LastingEffects::restrictedMovement(const Creature* c) {
   return doesntMove(c)
+      || (c->getSteed() && restrictedMovement(c->getSteed()))
       || c->isAffected(LastingEffect::ENTANGLED)
       || c->isAffected(LastingEffect::TIED_UP)
       || c->isAffected(LastingEffect::IMMOBILE);
@@ -887,6 +888,17 @@ bool LastingEffects::canSwapPosition(const Creature* c) {
       && !c->isAffected(LastingEffect::FROZEN)
       && !c->isAffected(LastingEffect::ENTANGLED)
       && !c->isAffected(LastingEffect::TIED_UP);
+}
+
+bool LastingEffects::inheritsFromSteed(LastingEffect e) {
+  switch (e) {
+    case LastingEffect::SPEED:
+    case LastingEffect::SLOWED:
+    case LastingEffect::FLYING:
+      return true;
+    default:
+      return false;
+  }
 }
 
 double LastingEffects::modifyCreatureDefense(LastingEffect e, double defense, AttrType damageAttr) {

@@ -112,7 +112,11 @@ bool Square::itemLands(vector<Item*> item, const Attack& attack) const {
 void Square::onItemLands(Position pos, vector<PItem> item, const Attack& attack) {
   setDirty(pos);
   if (creature) {
-    item[0]->onHitCreature(creature, attack, item.size());
+    auto targetCreature = creature;
+    if (auto steed = creature->getSteed())
+      if (Random.roll(2))
+        targetCreature = steed;
+    item[0]->onHitCreature(targetCreature, attack, item.size());
     if (!item[0]->isDiscarded())
       dropItems(pos, std::move(item));
     return;

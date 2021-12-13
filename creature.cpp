@@ -74,7 +74,7 @@ void Creature::serialize(Archive& ar, const unsigned int version) {
   ar(unknownAttackers, privateEnemies, holding, attributesStack);
   ar(controllerStack, kills, statuses, automatonParts, phylactery);
   ar(difficultyPoints, points, capture, spellMap, killTitles, companions);
-  ar(vision, debt, uniqueKills, lastCombatIntent, primaryViewId);
+  ar(vision, debt, uniqueKills, lastCombatIntent, primaryViewId, steed);
 }
 
 SERIALIZABLE(Creature)
@@ -269,7 +269,7 @@ void Creature::pushController(PController ctrl) {
   if (ctrl->isPlayer())
     getGame()->addPlayer(this);
   controllerStack.push_back(std::move(ctrl));
-  if (!isDead())
+  if (!isDead() && !getRider())
     if (auto m = position.getModel())
       // This actually moves the creature to the appropriate player/monster time queue,
       // which is the same logic as postponing.
@@ -856,7 +856,7 @@ CreatureAction Creature::hide() const {
 
 CreatureAction Creature::chatTo(Creature* other) const {
   CHECK(other);
-  if (other->getPosition().dist8(getPosition()) == 1 && getBody().isHumanoid())
+  if (other->getPosition().dist8(getPosition()).value_or(2) <= 1 && getBody().isHumanoid())
     return CreatureAction(this, [=](Creature* self) {
         secondPerson("You chat with " + other->getName().the());
         thirdPerson(getName().the() + " chats with " + other->getName().the());
@@ -869,7 +869,7 @@ CreatureAction Creature::chatTo(Creature* other) const {
 
 CreatureAction Creature::pet(Creature* other) const {
   CHECK(other);
-  if (other->getPosition().dist8(getPosition()) == 1 && other->getAttributes().getPetReaction(other) &&
+  if (other->getPosition().dist8(getPosition()).value_or(2) <= 1 && other->getAttributes().getPetReaction(other) &&
       isFriend(other) && getBody().isHumanoid())
     return CreatureAction(this, [=](Creature* self) {
         secondPerson("You pet " + other->getName().the());
@@ -962,6 +962,8 @@ bool Creature::removePermanentEffect(LastingEffect effect, int count, bool msg) 
 
 bool Creature::isAffected(LastingEffect effect) const {
   PROFILE;
+  if (LastingEffects::inheritsFromSteed(effect) && steed)
+    return steed->isAffected(effect);
   if (auto time = getGlobalTime())
     return attributes->isAffected(effect, *time);
   else
@@ -970,6 +972,8 @@ bool Creature::isAffected(LastingEffect effect) const {
 
 bool Creature::isAffected(LastingEffect effect, optional<GlobalTime> time) const {
   PROFILE;
+  if (LastingEffects::inheritsFromSteed(effect) && steed)
+    return steed->isAffected(effect, time);
   if (time)
     return attributes->isAffected(effect, *time);
   else
@@ -978,6 +982,8 @@ bool Creature::isAffected(LastingEffect effect, optional<GlobalTime> time) const
 
 bool Creature::isAffected(LastingEffect effect, GlobalTime time) const {
   //PROFILE;
+  if (LastingEffects::inheritsFromSteed(effect) && steed)
+    return steed->attributes->isAffected(effect, time);
   return attributes->isAffected(effect, time);
 }
 
@@ -1123,6 +1129,8 @@ void Creature::setPosition(Position pos) {
   position = pos;
   if (nextPosIntent && !position.isSameLevel(*nextPosIntent))
     nextPosIntent = none;
+  if (steed)
+    steed->setPosition(pos);
 }
 
 optional<LocalTime> Creature::getLocalTime() const {
@@ -1204,6 +1212,8 @@ void Creature::tick() {
     dieWithAttacker(lastAttacker);
     return;
   }
+  if (steed)
+    steed->tick();
 }
 
 static vector<Creature*> summonPersonal(Creature* c, CreatureId id, bool updateStats, int strength,
@@ -1325,7 +1335,7 @@ int Creature::getDefaultWeaponDamage() const {
     return 0;
 }
 
-CreatureAction Creature::attack(Creature* other) const {
+CreatureAction Creature::attack(Creature* other, bool noSpendTime) const {
   CHECK(!other->isDead());
   if (!position.isSameLevel(other->getPosition()))
     return CreatureAction();
@@ -1335,7 +1345,7 @@ CreatureAction Creature::attack(Creature* other) const {
   auto weapons = getRandomWeapons();
   if (weapons.empty())
     return CreatureAction("No available weapon or intrinsic attack");
-  return CreatureAction(this, [=] (Creature* self) {
+  auto ret = CreatureAction(this, [=] (Creature* self) {
     other->addCombatIntent(self, CombatIntentInfo::Type::ATTACK);
     INFO << getName().the() << " attacking " << other->getName().the();
     bool wasDamaged = false;
@@ -1366,13 +1376,22 @@ CreatureAction Creature::attack(Creature* other) const {
           other->position.dist8(position).value_or(2) > 1)
         break;
     }
-    auto movementInfo = (*self->spendTime())
-        .setDirection(dir)
-        .setType(MovementInfo::ATTACK);
-    if (wasDamaged)
-      movementInfo.setVictim(other->getUniqueId());
-    self->addMovementInfo(movementInfo);
+    if (!noSpendTime) {
+      auto movementInfo = (*self->spendTime())
+          .setDirection(dir)
+          .setType(MovementInfo::ATTACK);
+      if (wasDamaged)
+        movementInfo.setVictim(other->getUniqueId());
+      self->addMovementInfo(movementInfo);
+    }
   });
+  if (steed && !other->isDead())
+    ret = ret.append(CreatureAction(this, [=](Creature* self) {
+      if (steed && !other->isDead())
+        if (auto action = steed->attack(other, true))
+          action.perform(self->steed.get());
+    }));
+  return ret;
 }
 
 void Creature::onAttackedBy(Creature* attacker) {
@@ -1440,6 +1459,8 @@ double Creature::getFlankedMod() const {
 }
 
 bool Creature::takeDamage(const Attack& attack) {
+  if (steed && Random.roll(2))
+    return steed->takeDamage(attack);
   PROFILE;
   const double hitPenalty = 0.95;
   double defense = getAttr(AttrType::DEFENSE);
@@ -1531,6 +1552,8 @@ void Creature::updateViewObject() {
   object.setModifier(ViewObject::Modifier::IMMOBILE,
       (isAutomaton() && isAffected(LastingEffect::IMMOBILE))
       || (isAffected(LastingEffect::TURNED_OFF) && isAffected(LastingEffect::FLYING)));
+  if (steed)
+    steed->updateViewObject();
 }
 
 optional<double> Creature::getMorale() const {
@@ -1576,6 +1599,8 @@ bool Creature::heal(double amount) {
 }
 
 bool Creature::affectByFire(double amount) {
+  if (steed && Random.roll(2))
+    steed->affectByFire(amount);
   PROFILE;
   if (!isAffected(LastingEffect::FIRE_RESISTANT)) {
     if (getBody().affectByFire(this, amount)) {
@@ -1590,10 +1615,14 @@ bool Creature::affectByFire(double amount) {
 }
 
 bool Creature::affectByIce(double amount) {
+  if (steed && Random.roll(2))
+    steed->affectByIce(amount);
   return addEffect(LastingEffect::FROZEN, 5_visible);
 }
 
 bool Creature::affectByAcid() {
+  if (steed && Random.roll(2))
+    steed->affectByAcid();
   if (!isAffected(LastingEffect::ACID_RESISTANT)) {
     if (getBody().affectByAcid(this)) {
       you(MsgType::ARE, "dissolved by acid");
@@ -1730,6 +1759,12 @@ bool Creature::considerPhylactery(DropType drops, const Creature* attacker) {
   return false;
 }
 
+Creature* Creature::getRider() const {
+  if (position.getCreature() != this)
+    return position.getCreature();
+  return nullptr;
+}
+
 void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   auto oldPos = position;
   CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
@@ -1770,7 +1805,13 @@ void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
     attacker->onKilledOrCaptured(this);
   getGame()->addEvent(EventInfo::CreatureKilled{this, attacker});
   getTribe()->onMemberKilled(this, attacker);
-  getLevel()->killCreature(this);
+  if (auto rider = getRider()) {
+    oldPos.getModel()->killCreature(std::move(rider->steed));
+  } else
+    getLevel()->killCreature(this);
+  if (steed) {
+    oldPos.landCreature(std::move(steed));
+  }
   setController(makeOwner<DoNothingController>(this));
   if (attributes->deathEffect)
     attributes->deathEffect->apply(oldPos, this);
@@ -1883,14 +1924,19 @@ CreatureAction Creature::payFor(const vector<Item*>& items) const {
 }
 
 void Creature::addMovementInfo(MovementInfo info) {
-  if (info.dirX > 0)
-    modViewObject().setModifier(ViewObject::Modifier::FLIPX);
-  else if (info.dirX < 0)
-    modViewObject().setModifier(ViewObject::Modifier::FLIPX, false);
+  auto updateObject = [&info](ViewObject& object, GenericId id) {
+    if (info.dirX > 0)
+      object.setModifier(ViewObject::Modifier::FLIPX);
+    else if (info.dirX < 0)
+      object.setModifier(ViewObject::Modifier::FLIPX, false);
 
-  // add generic id since otherwise there is an unknown crash where
-  // object has movement info and no id
-  modViewObject().addMovementInfo(info, getUniqueId().getGenericId());
+    // add generic id since otherwise there is an unknown crash where
+    // object has movement info and no id
+    object.addMovementInfo(info, id);
+  };
+  updateObject(modViewObject(), getUniqueId().getGenericId());
+  if (steed)
+    updateObject(steed->modViewObject(), steed->getUniqueId().getGenericId());
   getPosition().setNeedsRenderUpdate(true);
 
   if (isAffected(LastingEffect::FLYING))
@@ -1983,6 +2029,41 @@ CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) co
               .setMaxLength(1_visible)
               .setType(MovementInfo::WORK));
       });
+  return CreatureAction();
+}
+
+CreatureAction Creature::mount(Creature* whom) const {
+  if (whom->getPosition().dist8(position) != 1 || !!steed || !!whom->steed || whom->getRider() || whom->isPlayer() ||
+      isEnemy(whom))
+    return CreatureAction();
+  return CreatureAction(this, [=](Creature* self) {
+    auto dir = position.getDir(whom->position);
+    self->steed = whom->position.getModel()->extractCreature(whom);
+    self->position.moveCreature(dir);
+    auto timeSpent = 1_visible;
+    self->addMovementInfo(self->spendTime(timeSpent, getSpeedModifier(self))->setDirection(dir));
+    self->verb("mount", "mounts", whom->getName().the());
+  });
+}
+
+Creature* Creature::getSteed() const {
+  return steed.get();
+}
+
+CreatureAction Creature::dismount() const {
+  if (!steed)
+    return CreatureAction();
+  for (auto v : position.neighbors8(Random))
+    if (v.canEnter(getMovementTypeNotSteed(getGame())))
+      return CreatureAction(this, [=](Creature* self) {
+        auto dir = position.getDir(v);
+        auto oldPos = self->position;
+        self->position.moveCreature(dir);
+        auto timeSpent = 1_visible;
+        self->verb("dismount", "dismounts", steed->getName().the());
+        oldPos.landCreature(std::move(self->steed));
+        self->addMovementInfo(self->spendTime(timeSpent, getSpeedModifier(self))->setDirection(dir));
+      });  
   return CreatureAction();
 }
 
@@ -2189,8 +2270,7 @@ MovementType Creature::getMovementType() const {
   return getMovementType(getGame());
 }
 
-MovementType Creature::getMovementType(Game* game) const {
-  PROFILE;
+MovementType Creature::getMovementTypeNotSteed(Game* game) const {
   auto time = getGlobalTime();
   return MovementType(hasAlternativeViewId() ? TribeSet::getFull() : getFriendlyTribes(), {
       true,
@@ -2204,6 +2284,14 @@ MovementType Creature::getMovementType(Game* game) const {
         && !isAffected(LastingEffect::DARKNESS_SOURCE, time)
         && (!game || game->getSunlightInfo().getState() == SunlightState::DAY))
     .setCanBuildBridge(isAffected(LastingEffect::BRIDGE_BUILDING_SKILL, time));
+}
+
+MovementType Creature::getMovementType(Game* game) const {
+  PROFILE;
+  if (steed)
+    return steed->getMovementType(game);
+  else
+    return getMovementTypeNotSteed(game);
 }
 
 int Creature::getDifficultyPoints() const {
@@ -2410,6 +2498,8 @@ vector<Position> Creature::getVisibleTiles() const {
 }
 
 void Creature::setGlobalTime(GlobalTime t) {
+  if (steed)
+    steed->setGlobalTime(t);
   globalTime = t;
 }
 

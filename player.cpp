@@ -431,6 +431,24 @@ void Player::chatAction(optional<Vec2> dir) {
   }
 }
 
+void Player::mountAction() {
+  PROFILE;
+  vector<Creature*> creatures;
+  for (Position pos : creature->getPosition().neighbors8())
+    if (Creature* c = pos.getCreature())
+      creatures.push_back(c);
+  if (creatures.size() == 1) {
+    tryToPerform(creature->mount(creatures[0]));
+  } else
+  if (creatures.size() > 1) {
+    auto dir = chooseDirection("Which direction?");
+    if (!dir)
+      return;
+    if (Creature* c = creature->getPosition().plus(*dir).getCreature())
+      tryToPerform(creature->mount(c));
+  }
+}
+
 void Player::fireAction() {
   for (auto spell : creature->getSpellMap().getAvailable(creature))
     if (creature->isReady(spell) && spell->getKeybinding() == Keybinding::FIRE_PROJECTILE) {
@@ -537,11 +555,17 @@ vector<Player::OtherCreatureCommand> Player::getOtherCreatureCommands(Creature* 
     if (!creature->isAffected(LastingEffect::PEACEFULNESS))
       genAction(1, ViewObjectAction::ATTACK, false, creature->attack(c));
     genAction(1, ViewObjectAction::PET, false, creature->pet(c));
+    genAction(1, ViewObjectAction::MOUNT, false, creature->mount(c));    
   }
-  if (creature == c)
+  if (creature == c) {
     genAction(0, ViewObjectAction::SKIP_TURN, true, creature->wait());
-  if (c->getPosition().dist8(creature->getPosition()) == 1)
-    genAction(10, ViewObjectAction::CHAT, false, creature->chatTo(c));
+    genAction(1, ViewObjectAction::DISMOUNT, false, creature->dismount());
+    if (auto steed = creature->getSteed()) {
+      genAction(10, ViewObjectAction::CHAT, false, creature->chatTo(steed));
+      genAction(10, ViewObjectAction::PET, false, creature->pet(steed));
+    }
+  }
+  genAction(10, ViewObjectAction::CHAT, false, creature->chatTo(c));
   std::stable_sort(ret.begin(), ret.end(), [](const auto& c1, const auto& c2) {
     if (c1.allowAuto && !c2.allowAuto)
       return true;
@@ -596,7 +620,12 @@ vector<Player::CommandInfo> Player::getCommands() const {
           player->creature->getPosition().setNeedsRenderUpdate(true); }, false},
     /*{PlayerInfo::CommandInfo{"Travel", 't', "Travel to another site.", !getGame()->isSingleModel()},
       [] (Player* player) { player->getGame()->transferAction(player->getTeam()); }, false},*/
-    {PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},
+    creature->getSteed()
+      ? Player::CommandInfo{PlayerInfo::CommandInfo{"Dismount", 'm', "Dismount your steed.", true},
+            [] (Player* player) { player->tryToPerform(player->creature->dismount()); }, false}
+      : Player::CommandInfo{PlayerInfo::CommandInfo{"Mount", 'm', "Mount a steed.", canChat},
+            [] (Player* player) { player->mountAction(); }, false},
+    Player::CommandInfo{PlayerInfo::CommandInfo{"Chat", 'c', "Chat with someone.", canChat},
       [] (Player* player) { player->chatAction(); }, false},
     {PlayerInfo::CommandInfo{"Test path-finding", 'C', "Displays calculated path and processed tiles.", true},
       [] (Player* player) {
@@ -622,7 +651,7 @@ vector<Player::CommandInfo> Player::getCommands() const {
       [] (Player* player) { player->payForAllItemsAction();}, false},*/
     {PlayerInfo::CommandInfo{"Drop everything", none, "Drop all items in possession.", !creature->getEquipment().isEmpty()},
       [] (Player* player) { auto c = player->creature; player->tryToPerform(c->drop(c->getEquipment().getItems())); }, false},
-    {PlayerInfo::CommandInfo{"Message history", 'm', "Show message history.", true},
+    {PlayerInfo::CommandInfo{"Message history", 'M', "Show message history.", true},
       [] (Player* player) { player->showHistory(); }, false},
 #ifndef RELEASE
     {PlayerInfo::CommandInfo{"Wait multiple turns", none, "", true},
@@ -1165,6 +1194,13 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
         creature->canSeeOutsidePosition(c, globalTime)) {
       index.insert(c->getViewObjectFor(creature->getTribe()));
       index.modEquipmentCounts() = c->getEquipment().getCounts();
+      if (auto steed = c->getSteed()) {
+        index.getObject(ViewLayer::CREATURE).setModifier(ViewObjectModifier::RIDER);
+        auto obj = steed->getViewObjectFor(creature->getTribe());
+        obj.getCreatureStatus().intersectWith(getDisplayedOnMinions());
+        obj.setLayer(ViewLayer::TORCH2);
+        index.insert(std::move(obj));
+      }
       auto& object = index.getObject(ViewLayer::CREATURE);
       if (c == creature)
         object.setModifier(getGame()->getPlayerCreatures().size() == 1

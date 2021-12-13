@@ -216,6 +216,10 @@ ViewLayer ViewObject::layer() const {
   return viewLayer;
 }
 
+void ViewObject::setLayer(ViewLayer l) {
+  viewLayer = l;
+}
+
 void ViewObject::setId(ViewId id) {
   resource_id = id;
 }

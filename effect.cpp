@@ -2352,8 +2352,12 @@ static bool isConsideredHostile(const T&, const Creature*) {
 
 template <typename T, REQUIRE(applyToCreature(TVALUE(const T&), TVALUE(Creature*), TVALUE(Creature*)))>
 static bool apply(const T& t, Position pos, Creature* attacker) {
-  if (auto c = pos.getCreature())
+  if (auto c = pos.getCreature()) {
+    if (auto steed = c->getSteed())
+      if (Random.roll(2))
+        return applyToCreature(t, steed, attacker);
     return applyToCreature(t, c, attacker);
+  }
   return false;
 }
 

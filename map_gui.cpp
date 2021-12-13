@@ -631,6 +631,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       color = color * Color(val, val, val);
     }
   color = blendNightColor(color, index);
+  const auto zoom = size.y / Renderer::nominalSize;
   if (spriteMode && tile.hasSpriteCoord()) {
     DirSet dirs;
     if (tile.hasAnyConnections() || tile.hasAnyCorners())
@@ -642,7 +643,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       renderer.drawTile(pos + movement, coord, size, blendNightColor(Color(255, 255, 255, 160), index));
     }
     if (object.layer() == ViewLayer::CREATURE || tile.moveUp)
-      move.y = -4 * size.y / Renderer::nominalSize;
+      move.y = -4 * zoom;
     renderer.drawTile(pos, tile.getBackgroundCoord(), size, color);
     move += movement;
     if (object.hasModifier(ViewObject::Modifier::FLYING) && !object.hasModifier(ViewObject::Modifier::TURNED_OFF))
@@ -650,6 +651,12 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (object.hasModifier(ViewObject::Modifier::IMMOBILE))
       move.y += 11;
     const auto& coord = tile.getSpriteCoord(dirs);
+    if (object.hasModifier(ViewObject::Modifier::RIDER)) {
+      const Tile& steedTile = renderer.getTileSet().getTile(index.getObject(ViewLayer::TORCH2).id(), spriteMode);
+      const auto& steedCoord = steedTile.getSpriteCoord(dirs);
+      move.y -= (7 + steedCoord[0].size.y - coord[0].size.y) * zoom;
+      move.x -= object.hasModifier(ViewObject::Modifier::FLIPX) ? 2 * zoom : -2 * zoom;
+    }
     if (tile.canMirror)
       renderer.drawTile(pos + move, coord, size, color,
           Renderer::SpriteOrientation((bool)(tilePos.getHash() & 1024), (bool)(tilePos.getHash() & 512)));
@@ -678,7 +685,7 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (burning && !fxViewManager) {
       auto& fire1 = renderer.getTileSet().getTileCoord("fire1");
       auto& fire2 = renderer.getTileSet().getTileCoord("fire2");
-      renderer.drawTile(pos - Vec2(0, 4 * size.y / Renderer::nominalSize),
+      renderer.drawTile(pos - Vec2(0, 4 * zoom),
           (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
     }
     drawHealthBar(renderer, tilePos, pos + move, size, object, index);

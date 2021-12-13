@@ -314,6 +314,12 @@ void Model::killCreature(Creature* c) {
   cemetery->landCreature(cemetery->getAllPositions(), c);
 }
 
+void Model::killCreature(PCreature c) {
+  auto ref = c.get();
+  deadCreatures.push_back(std::move(c));
+  cemetery->landCreature(cemetery->getAllPositions(), ref);
+}
+
 PCreature Model::extractCreature(Creature* c) {
   PCreature ret = timeQueue->removeCreature(c);
   c->getLevel()->eraseCreature(c, c->getPosition().getCoord());

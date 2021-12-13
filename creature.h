@@ -156,6 +156,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
 
   MovementType getMovementType() const;
   MovementType getMovementType(Game*) const;
+  MovementType getMovementTypeNotSteed(Game*) const;
 
   int getDifficultyPoints() const;
 
@@ -171,7 +172,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canCarryMoreWeight(double) const;
   CreatureAction drop(const vector<Item*>& item) const;
   void drop(vector<PItem> item);
-  CreatureAction attack(Creature*) const;
+  CreatureAction attack(Creature*, bool noSpendTime = false) const;
   int getDefaultWeaponDamage() const;
   CreatureAction execute(Creature*, const char* verbSecond, const char* verbThird) const;
   CreatureAction applyItem(Item* item) const;
@@ -197,6 +198,10 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction whip(const Position&, double animChance) const;
   CreatureAction eat(Item*) const;
   CreatureAction destroy(Vec2 direction, const DestroyAction&) const;
+  CreatureAction mount(Creature* whom) const;
+  Creature* getSteed() const;
+  Creature* getRider() const;
+  CreatureAction dismount() const;
   void destroyImpl(Vec2 direction, const DestroyAction& action);
   CreatureAction copulate(Vec2 direction) const;
   bool canCopulateWith(const Creature*) const;
@@ -401,6 +406,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<PhylacteryInfo> SERIAL(phylactery);
   bool considerPhylactery(DropType, const Creature* attacker);
   vector<PromotionInfo> SERIAL(promotions);
+  PCreature SERIAL(steed);
 };
 
 struct AdjectiveInfo {

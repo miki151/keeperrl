@@ -256,11 +256,11 @@ STutorial PlayerControl::getTutorial() const {
 }
 
 bool PlayerControl::canControlSingle(const Creature* c) const {
-  return !collective->hasTrait(c, MinionTrait::PRISONER) && !c->isAffected(LastingEffect::TURNED_OFF);
+  return !collective->hasTrait(c, MinionTrait::PRISONER) && !c->isAffected(LastingEffect::TURNED_OFF) && !c->getRider();
 }
 
 bool PlayerControl::canControlInTeam(const Creature* c) const {
-  return collective->hasTrait(c, MinionTrait::FIGHTER) || collective->hasTrait(c, MinionTrait::LEADER);
+  return (collective->hasTrait(c, MinionTrait::FIGHTER) || collective->hasTrait(c, MinionTrait::LEADER)) && !c->getRider();
 }
 
 void PlayerControl::addToCurrentTeam(Creature* c) {
@@ -2004,6 +2004,13 @@ void PlayerControl::getSquareViewIndex(Position pos, bool canSee, ViewIndex& ind
     if (canSee) {
       index.modEquipmentCounts() = c->getEquipment().getCounts();
       index.insert(c->getViewObject());
+      if (auto steed = c->getSteed()) {
+        index.getObject(ViewLayer::CREATURE).setModifier(ViewObjectModifier::RIDER);
+        auto obj = steed->getViewObject();
+        obj.setLayer(ViewLayer::TORCH2);
+        obj.getCreatureStatus().intersectWith(getDisplayedOnMinions());
+        index.insert(std::move(obj));
+      }
       auto& object = index.getObject(ViewLayer::CREATURE);
       if (isEnemy(c)) {
         object.setModifier(ViewObject::Modifier::HOSTILE);
