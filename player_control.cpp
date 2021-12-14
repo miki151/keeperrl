@@ -389,9 +389,17 @@ void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
 void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
   if (auto creature = getCreature(action.creature))
     switch (action.action) {
+      case ItemAction::DROP_STEED:
+        collective->setSteed(creature, nullptr);
+        break;
       case ItemAction::DROP:
         for (auto id : action.ids)
           collective->getMinionEquipment().discard(id);
+        break;
+      case ItemAction::REPLACE_STEED:
+        if (auto steed = chooseSteed(creature, getCreatures().filter(
+            [](Creature* c) { return c->isAffected(LastingEffect::STEED); })))
+          collective->setSteed(creature, steed);
         break;
       case ItemAction::REPLACE:
         if (action.slot)
@@ -512,8 +520,36 @@ void PlayerControl::fillPromotions(Creature* creature, CollectiveInfo& info) con
       + double(collective->getDungeonLevel().numPromotionsAvailable()) / creature->getAttributes().promotionCost);
 }
 
+static ItemInfo getEmptySteedItemInfo(const ContentFactory* factory) {
+  return CONSTRUCT(ItemInfo,
+    c.name = "";
+    c.fullName = "";
+    c.viewId = {ViewId("horse")};
+    c.actions = {ItemAction::REPLACE_STEED};
+  );
+}
+
+static ItemInfo getSteedItemInfo(const ContentFactory* factory, const Creature* steed, bool currentlyRiding) {
+  return CONSTRUCT(ItemInfo,
+    c.name = steed->getName().bare();
+    c.fullName = steed->getName().aOrTitle();
+    c.viewId = steed->getViewObject().getViewIdList();
+    c.equiped = currentlyRiding;
+    c.pending = !currentlyRiding;
+    c.actions = {ItemAction::DROP_STEED};
+    c.ids.insert(Item::Id(123));
+  );
+}
+
 void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   info.inventory.clear();
+  auto factory = getGame()->getContentFactory();
+  if (creature->isAffected(LastingEffect::RIDER)) {
+    if (auto steed = collective->getSteedOrRider(creature))
+      info.inventory.push_back(getSteedItemInfo(factory, steed, creature->getSteed() == steed));
+    else
+      info.inventory.push_back(getEmptySteedItemInfo(factory));
+  }
   if (!creature->getBody().isHumanoid())
     return;
   vector<EquipmentSlot> slots;
@@ -534,7 +570,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
       ownedItems.removeElement(item);
       bool equiped = creature->getEquipment().isEquipped(item);
       bool locked = collective->getMinionEquipment().isLocked(creature, item->getUniqueId());
-      info.inventory.push_back(getItemInfo(getGame()->getContentFactory(), {item}, equiped, !equiped, locked, ItemInfo::EQUIPMENT));
+      info.inventory.push_back(getItemInfo(factory, {item}, equiped, !equiped, locked, ItemInfo::EQUIPMENT));
     }
     for (int i : Range(creature->getEquipment().getMaxItems(slot, creature) - items.size()))
       info.inventory.push_back(getEmptySlotItem(slot, collective->getMinionEquipment().isLocked(creature, slot)));
@@ -545,14 +581,14 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   vector<vector<Item*>> consumables = Item::stackItems(ownedItems,
       [&](const Item* it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
   for (auto& stack : consumables)
-    info.inventory.push_back(getItemInfo(getGame()->getContentFactory(), stack, false,
+    info.inventory.push_back(getItemInfo(factory, stack, false,
           !creature->getEquipment().hasItem(stack[0]), false, ItemInfo::CONSUMABLE));
   vector<Item*> otherItems;
   for (auto item : creature->getEquipment().getItems())
     if (!collective->getMinionEquipment().isItemUseful(item))
       otherItems.push_back(item);
   for (auto item : Item::stackItems(otherItems))
-    info.inventory.push_back(getItemInfo(getGame()->getContentFactory(), {item}, false, false, false, ItemInfo::OTHER));
+    info.inventory.push_back(getItemInfo(factory, {item}, false, false, false, ItemInfo::OTHER));
 }
 
 Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
@@ -596,6 +632,34 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
   return concat(currentItems, allStacked)[*index];
 }
 
+Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSteeds, ScrollPosition* scrollPos) {
+  vector<Creature*> availableItems;
+  vector<Creature*> usedItems;
+  for (auto item : allSteeds) {
+    if (auto owner = collective->getSteedOrRider(item))
+      usedItems.push_back(item);
+    else
+      availableItems.push_back(item);
+  }
+  if (availableItems.empty() && usedItems.empty())
+    return nullptr;
+  vector<vector<Creature*>> usedStacks = Creature::stack(usedItems,
+      [&](Creature* it) {
+        const Creature* c = collective->getSteedOrRider(it);
+        return c->getName().bare() + toString<int>(c->getBestAttack().value);});
+  vector<Creature*> allStacked;
+  vector<ItemInfo> options;
+  for (auto& stack : concat(Creature::stack(availableItems), usedStacks)) {
+    options.emplace_back(getSteedItemInfo(getGame()->getContentFactory(), stack[0], false));
+    if (auto c = collective->getSteedOrRider(stack[0]))
+      options.back().owner = CreatureInfo(c);
+    allStacked.push_back(stack.front());
+  }
+  auto index = getView()->chooseItem(options, scrollPos);
+  if (!index)
+    return nullptr;
+  return allStacked[*index];
+}
 int PlayerControl::getNumMinions() const {
   return (int) collective->getCreatures(MinionTrait::FIGHTER).size();
 }
@@ -999,11 +1063,6 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
           minionInfo.quarters = quarters.getAllQuarters()[*index].viewId;
         else
           minionInfo.quarters = none;
-        if (c->isAffected(LastingEffect::RIDER)) {
-          minionInfo.canAssignSteed = true;
-          if (auto steed = collective->getSteedOrRider(c))
-            minionInfo.steed = steed->getViewObject().id();
-        }
       } else
         minionInfo.canAssignQuarters = false;
       if (c->isAffected(LastingEffect::CONSUMPTION_SKILL))
@@ -2305,20 +2364,6 @@ void PlayerControl::takeScreenshot() {
   takingScreenshot = true;
 }
 
-void PlayerControl::handleSteedAssignment(Creature* c) {
-  vector<PlayerInfo> steed;
-  for (auto other : getCreatures())
-    if (other->isAffected(LastingEffect::STEED)) {
-      steed.push_back(PlayerInfo(other, getGame()->getContentFactory()));
-      if (auto rider = collective->getSteedOrRider(other))
-        steed.back().rider = rider->getViewObject().id();
-    }
-  if (steed.empty())
-    return;
-  if (auto chosenSteed = getView()->chooseCreature("Choose steed:", steed, "Cancel"))
-    collective->setSteed(c, getCreature(*chosenSteed));
-}
-
 void PlayerControl::handleBanishing(Creature* c) {
   auto message = c->isAutomaton()
       ? "Do you want to disassemble " + c->getName().the() + "?"
@@ -2664,11 +2709,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
     case UserInputId::ASSIGN_QUARTERS: {
       auto& info = input.get<AssignQuartersInfo>();
       collective->getQuarters().assign(info.index, info.minionId);
-      break;
-    }
-    case UserInputId::ASSIGN_STEED: {
-      if (Creature* c = getCreature(input.get<Creature::Id>()))
-        handleSteedAssignment(c);
       break;
     }
     case UserInputId::IMMIGRANT_ACCEPT: {

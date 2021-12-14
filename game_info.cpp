@@ -91,6 +91,10 @@ vector<ItemAction> getItemActions(const Creature* c, const vector<Item*>& item) 
   return actions;
 }
 
+bool ItemInfo::representsSteed() const {
+  return actions.contains(ItemAction::DROP_STEED) || actions.contains(ItemAction::REPLACE_STEED);
+}
+
 ItemInfo ItemInfo::get(const Creature* creature, const vector<Item*>& stack, const ContentFactory* factory) {
   PROFILE;
   return CONSTRUCT(ItemInfo,

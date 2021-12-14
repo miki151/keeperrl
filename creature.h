@@ -69,7 +69,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   Creature(const ViewObject&, TribeId, CreatureAttributes, SpellMap);
   virtual ~Creature();
 
-  static vector<vector<Creature*>> stack(const vector<Creature*>&);
+  static vector<vector<Creature*>> stack(const vector<Creature*>&,
+      function<string(Creature*)> addSuffix = [](Creature*) { return ""; });
 
   const ViewObject& getViewObjectFor(const Tribe* observer) const;
   void setAlternativeViewId(optional<ViewId>);

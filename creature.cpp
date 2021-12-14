@@ -101,10 +101,10 @@ Creature::Creature(TribeId t, CreatureAttributes attr, SpellMap spellMap)
 Creature::~Creature() {
 }
 
-vector<vector<Creature*>> Creature::stack(const vector<Creature*>& creatures) {
+vector<vector<Creature*>> Creature::stack(const vector<Creature*>& creatures, function<string(Creature*)> addSuffix) {
   map<string, vector<Creature*>> stacks;
   for (Creature* c : creatures)
-    stacks[c->getName().stack()].push_back(c);
+    stacks[c->getName().stack() + addSuffix(c)].push_back(c);
   return getValues(stacks);
 }
 

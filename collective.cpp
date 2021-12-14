@@ -1080,12 +1080,18 @@ bool Collective::hasPriorityTasks(Position pos) const {
 
 void Collective::setSteed(Creature* rider, Creature* steed) {
   CHECK(rider != steed);
-  if (auto rider2 = getSteedOrRider(steed))
-    steedAssignments.erase(rider2);
-  if (auto steed2 = getSteedOrRider(rider))
-    steedAssignments.erase(steed2);
-  steedAssignments.set(rider, steed);
-  steedAssignments.set(steed, rider);
+  auto setImpl = [this] (Creature* c1, Creature* c2) {
+    if (auto current = getSteedOrRider(c1))
+      steedAssignments.erase(current);
+    if (c2)
+      steedAssignments.set(c1, c2);
+    else
+      steedAssignments.erase(c1);
+  };
+  if (rider)
+    setImpl(rider, steed);
+  if (steed)
+    setImpl(steed, rider);
 }
 
 Creature* Collective::getSteedOrRider(Creature* minion) {

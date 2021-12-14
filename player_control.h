@@ -188,6 +188,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
       ScrollPosition* scrollPos = nullptr);
   Item* chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, vector<Item*> allItems,
       ScrollPosition* scrollPos = nullptr);
+  Creature* chooseSteed(Creature* creature, vector<Creature*> allSteeds, ScrollPosition* scrollPos = nullptr);
 
   int getNumMinions() const;
   void minionTaskAction(const TaskActionInfo&);
@@ -289,7 +290,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   bool takingScreenshot = false;
   void addBodyPart(Creature*);
   void handleBanishing(Creature*);
-  void handleSteedAssignment(Creature*);
   optional<pair<ViewId,int>> getCostObj(CostInfo) const;
   optional<pair<ViewId,int>> getCostObj(const optional<CostInfo>&) const;
   ViewId getViewId(const BuildInfoTypes::BuildType&) const;

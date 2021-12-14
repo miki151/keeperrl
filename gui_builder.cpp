@@ -1057,9 +1057,9 @@ vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
   vector<string> out { capitalFirst(item.fullName)};
   out.append(item.description);
   if (item.equiped)
-    out.push_back("Equipped.");
+    out.push_back(item.representsSteed() ? "Currently riding." : "Equipped.");
   if (item.pending)
-    out.push_back("Not equipped yet.");
+    out.push_back(item.representsSteed() ? "Currently not riding." : "Not equipped yet.");
   if (auto text = getIntrinsicStateText(item))
     out.push_back(text);
   if (!item.unavailableReason.empty())
@@ -1253,6 +1253,7 @@ static string getActionText(ItemAction a) {
   switch (a) {
     case ItemAction::DROP: return "drop";
     case ItemAction::DROP_MULTI: return "drop some";
+    case ItemAction::DROP_STEED: return "unassign steed";
     case ItemAction::GIVE: return "give";
     case ItemAction::PAY: return "pay for";
     case ItemAction::EQUIP: return "equip";
@@ -1260,6 +1261,7 @@ static string getActionText(ItemAction a) {
     case ItemAction::UNEQUIP: return "remove";
     case ItemAction::APPLY: return "apply";
     case ItemAction::REPLACE: return "replace";
+    case ItemAction::REPLACE_STEED: return "assign steed";
     case ItemAction::LOCK: return "lock";
     case ItemAction::REMOVE: return "remove item";
     case ItemAction::CHANGE_NUMBER: return "change number";
@@ -3228,18 +3230,6 @@ vector<SGuiElem> GuiBuilder::drawItemMenu(const vector<ItemInfo>& items, ItemMen
   return lines;
 }
 
-SGuiElem GuiBuilder::drawSteedButton(const PlayerInfo& minion) {
-  auto current = minion.steed ? WL(viewObject, *minion.steed) : WL(label, "none");
-  return WL(stack,
-      WL(uiHighlightMouseOver),
-      WL(button, getButtonCallback({UserInputId::ASSIGN_STEED, minion.creatureId})),
-      WL(getListBuilder)
-            .addElemAuto(WL(label, "Assigned Steed: ", Color::YELLOW))
-            .addElemAuto(std::move(current))
-            .buildHorizontalList()
-  );
-}
-
 SGuiElem GuiBuilder::drawQuartersButton(const PlayerInfo& minion, const vector<ViewId>& allQuarters) {
   auto current = minion.quarters ? WL(viewObject, *minion.quarters) : WL(label, "none");
   return WL(stack,
@@ -3616,8 +3606,6 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewI
   leftLines.addElem(drawActivityButton(minion));
   if (minion.canAssignQuarters)
     leftLines.addElem(drawQuartersButton(minion, allQuarters));
-  if (minion.canAssignSteed)
-    leftLines.addElem(drawSteedButton(minion));
   leftLines.addSpace();
   for (auto& elem : drawSkillsList(minion.skills))
     leftLines.addElem(std::move(elem));
@@ -4455,11 +4443,6 @@ SGuiElem GuiBuilder::drawRetiredDungeonMenu(SyncQueue<variant<string, bool, none
 SGuiElem GuiBuilder::drawCreatureTooltip(const PlayerInfo& info) {
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(label, info.title));
-  if (info.rider)
-    lines.addElem(WL(getListBuilder)
-        .addElemAuto(WL(label, "Assigned rider: "))
-        .addElemAuto(WL(viewObject, *info.rider))
-        .buildHorizontalList());
   lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(info.attributes)));
   for (auto& elem : drawEffectsList(info, false))
     lines.addElem(std::move(elem));

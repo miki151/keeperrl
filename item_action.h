@@ -10,6 +10,8 @@ enum class ItemAction {
   THROW,
   LOCK,
   REPLACE,
+  REPLACE_STEED,
+  DROP_STEED,
   GIVE,
   REMOVE,
   CHANGE_NUMBER,
