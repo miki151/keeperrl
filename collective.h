@@ -316,6 +316,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   EntitySet<Collective> SERIAL(knownVillainLocations);
   bool SERIAL(discoverable) = false;
   void considerRebellion();
+  void autoAssignSteeds();
   void updateCreatureStatus(Creature*);
   HeapAllocated<Quarters> SERIAL(quarters);
   int SERIAL(populationIncrease) = 0;
