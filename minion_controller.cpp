@@ -160,6 +160,13 @@ class MinionController : public Player {
     return control->getTeam(creature);
   }
 
+  virtual void forceSteeds() const override {
+    for (auto c : getTeam())
+      if (c->isAffected(LastingEffect::RIDER))
+        if (auto steed = control->collective->getSteedOrRider(c))
+          c->forceMount(steed);
+  }
+
   virtual MessageGenerator& getMessageGenerator() const override {
     static MessageGenerator messageGeneratorSecond(MessageGenerator::SECOND_PERSON);
     static MessageGenerator messageGeneratorThird(MessageGenerator::THIRD_PERSON);

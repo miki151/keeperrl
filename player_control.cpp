@@ -321,8 +321,12 @@ void PlayerControl::leaveControl() {
   for (auto team : allTeams) {
     // a creature may die when landing and be removed from the team so copy the members vector
     for (Creature* c : copyOf(getTeams().getMembers(team)))
-//      if (getGame()->canTransferCreature(c, collective->getLevel()->getModel()))
+      if (c->getPosition().getModel() != getModel()) {
         getGame()->transferCreature(c, getModel());
+        if (c->isAffected(LastingEffect::RIDER))
+          if (auto steed = collective->getSteedOrRider(c))
+            c->forceMount(steed);
+      }
     if (!getTeams().isPersistent(team)) {
       if (getTeams().getMembers(team).size() == 1)
         getTeams().cancel(team);

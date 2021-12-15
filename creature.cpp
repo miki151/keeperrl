@@ -2032,13 +2032,22 @@ CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) co
   return CreatureAction();
 }
 
+void Creature::forceMount(Creature* whom) {
+  CHECK(isAffected(LastingEffect::RIDER));
+  CHECK(whom->isAffected(LastingEffect::STEED));
+  if (!steed) {
+    steed = whom->position.getModel()->extractCreature(whom);  
+    steed->position = position;
+  }
+}
+
 CreatureAction Creature::mount(Creature* whom) const {
   if (whom->getPosition().dist8(position) != 1 || !!steed || !!whom->steed || whom->getRider() || whom->isPlayer() ||
       isEnemy(whom) || !whom->isAffected(LastingEffect::STEED) || !isAffected(LastingEffect::RIDER))
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
     auto dir = position.getDir(whom->position);
-    self->steed = whom->position.getModel()->extractCreature(whom);
+    self->forceMount(whom);
     self->position.moveCreature(dir);
     auto timeSpent = 1_visible;
     self->addMovementInfo(self->spendTime(timeSpent, getSpeedModifier(self))->setDirection(dir));

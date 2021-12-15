@@ -525,7 +525,7 @@ void Game::presentWorldmap() {
   view->presentWorldmap(*campaign);
 }
 
-void Game::transferAction(vector<Creature*> creatures) {
+bool Game::transferAction(vector<Creature*> creatures) {
   if (auto dest = view->chooseSite("Choose destination site:", *campaign,
         getModelCoords(creatures[0]->getLevel()->getModel()))) {
     WModel to = NOTNULL(models[*dest].get());
@@ -537,13 +537,15 @@ void Game::transferAction(vector<Creature*> creatures) {
         creatures.removeElement(c);
       }
     if (!cant.empty() && !view->creatureInfo("These minions will be left behind due to sunlight. Continue?", true, cant))
-      return;
+      return false;
     if (!creatures.empty()) {
       for (Creature* c : creatures)
         transferCreature(c, models[*dest].get());
       wasTransfered = true;
+      return true;
     }
   }
+  return false;
 }
 
 void Game::considerRetiredLoadedEvent(Vec2 coord) {

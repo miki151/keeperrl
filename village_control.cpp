@@ -159,9 +159,12 @@ void VillageControl::updateAggression(EnemyAggressionLevel level) {
 
 void VillageControl::launchAttack(vector<Creature*> attackers) {
   if (Collective* enemy = getEnemyCollective()) {
-    for (Creature* c : attackers)
+    for (Creature* c : attackers) {
 //      if (getCollective()->getGame()->canTransferCreature(c, enemy->getLevel()->getModel()))
+        if (auto steed = collective->getSteedOrRider(c))
+          c->forceMount(steed);
         collective->getGame()->transferCreature(c, enemy->getModel());
+    }
     optional<int> ransom;
     int hisGold = enemy->numResource(CollectiveResourceId("GOLD"));
     if (behaviour->ransom && hisGold >= behaviour->ransom->second)
@@ -187,9 +190,12 @@ void VillageControl::launchAllianceAttack(vector<Collective*> allies) {
     for (auto c : collective->getCreatures(MinionTrait::FIGHTER))
       if (!attackers.contains(c))
         attackers.push_back(c);
-    for (Creature* c : attackers)
+    for (Creature* c : attackers) {
 //      if (getCollective()->getGame()->canTransferCreature(c, enemy->getLevel()->getModel()))
+        if (auto steed = collective->getSteedOrRider(c))
+          c->forceMount(steed);
         collective->getGame()->transferCreature(c, enemy->getModel());
+    }
     TeamId team = collective->getTeams().createPersistent(attackers);
     collective->getTeams().activate(team);
     collective->freeTeamMembers(attackers);

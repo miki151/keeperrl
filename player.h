@@ -48,6 +48,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
       STutorial = nullptr);
 
   void onEvent(const GameEvent&);
+  virtual void forceSteeds() const;
   virtual vector<Creature*> getTeam() const;
 
   SERIALIZATION_DECL(Player)

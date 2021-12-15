@@ -863,8 +863,10 @@ void Player::makeMove() {
         getView()->setScrollPos(creature->getPosition());
         break;
       case UserInputId::DRAW_WORLD_MAP: {
-        if (canTravel())
-          getGame()->transferAction(getTeam());
+        if (canTravel()) {
+          if (getGame()->transferAction(getTeam()))
+            forceSteeds();
+        }
         break;
       }
       case UserInputId::CREATURE_DRAG_DROP: {
@@ -979,8 +981,10 @@ void Player::moveAction(Vec2 dir) {
   if (!dirPos.canEnterEmpty(creature))
     tryToPerform(creature->destroy(dir, DestroyAction::Type::BASH));
   if (dirPos.isUnavailable() && canTravel() && !getGame()->isSingleModel() &&
-      creature->getPosition().getLevel() == getModel()->getMainLevels()[0])
-    getGame()->transferAction(getTeam());
+      creature->getPosition().getLevel() == getModel()->getMainLevels()[0]) {
+    if (getGame()->transferAction(getTeam()))
+      forceSteeds();
+  }
 }
 
 bool Player::isPlayer() const {
@@ -1274,6 +1278,9 @@ void Player::onLostControl() {
 
 vector<Creature*> Player::getTeam() const {
   return {creature};
+}
+
+void Player::forceSteeds() const {
 }
 
 bool Player::isTravelEnabled() const {

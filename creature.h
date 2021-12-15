@@ -199,6 +199,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction whip(const Position&, double animChance) const;
   CreatureAction eat(Item*) const;
   CreatureAction destroy(Vec2 direction, const DestroyAction&) const;
+  void forceMount(Creature* whom);
   CreatureAction mount(Creature* whom) const;
   Creature* getSteed() const;
   Creature* getRider() const;
