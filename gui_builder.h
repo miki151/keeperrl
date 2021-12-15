@@ -26,6 +26,7 @@
 #include "fps_counter.h"
 #include "view_object.h"
 #include "item_counts.h"
+#include "scripted_ui_data.h"
 
 class Clock;
 class MinionAction;
@@ -241,7 +242,8 @@ class GuiBuilder {
     TASKS,
     BESTIARY,
     SPELL_SCHOOLS,
-    ITEMS_HELP
+    ITEMS_HELP,
+    CAPTURING_PRISONERS
   };
   optional<BottomWindowId> bottomWindow;
   void toggleBottomWindow(BottomWindowId);
@@ -338,6 +340,7 @@ class GuiBuilder {
   SGuiElem drawKeeperDangerOverlay(const string&);
   SGuiElem drawBoolOptionElem(OptionId, string name);
   SGuiElem drawCreatureTooltip(const PlayerInfo&);
+  ScriptedUIState scriptedUIState;
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,

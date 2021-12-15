@@ -306,6 +306,17 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo&) {
   auto lines = WL(getListBuilder, legendLineHeight);
   lines.addElem(WL(standardButton,
       WL(getListBuilder)
+          .addElemAuto(WL(topMargin, -2, WL(viewObject, ViewId("prisoner"))))
+          .addElemAuto(WL(label, "Capturing prisoners"))
+          .buildHorizontalList(),
+      WL(button, [this]() {
+        scriptedUIState.scrollPos.reset();
+        toggleBottomWindow(CAPTURING_PRISONERS);
+      })
+  ));
+  lines.addSpace(5);
+  lines.addElem(WL(standardButton,
+      WL(getListBuilder)
           .addElemAuto(WL(topMargin, -2, WL(viewObject, ViewId("special_bmbw"))))
           .addElemAuto(WL(label, "Bestiary"))
           .buildHorizontalList(),
@@ -327,25 +338,6 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo&) {
           .buildHorizontalList(),
       WL(button, [this]() { toggleBottomWindow(ITEMS_HELP); })
   ));
-  vector<string> helpText {
-    "use mouse to dig and build",
-      "shift selects rectangles",
-      "control deselects",
-      "",
-      "scroll with arrows",
-      "or right mouse button",
-      "shift with arrows scrolls faster",
-      "",
-      "right click on minion",
-      "to control or show information",
-      "",
-      "[space] pause",
-      "[a] and [z] or mouse wheel: zoom",
-      "press mouse wheel: level map",
-      "",
-      "follow the orange hints :-)"};
-  for (string line : helpText)
-    lines.addElem(WL(label, line, Color::LIGHT_BLUE));
   return lines.buildVerticalList();
 }
 
@@ -2810,6 +2802,9 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
     }
     default:
       break;
+  }
+  if (bottomWindow == CAPTURING_PRISONERS) {
+    ret.push_back({gui.scripted([this]{ bottomWindow = none; }, "prisoners", ScriptedUIData{}, scriptedUIState), OverlayInfo::TOP_LEFT});
   }
   if (bottomWindow == BESTIARY) {
     if (bestiaryIndex >= info.encyclopedia->bestiary.size())

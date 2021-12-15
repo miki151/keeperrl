@@ -1,0 +1,44 @@
+
+Def LoadButtonSpacing() Height 10 {} End
+
+Def SavedGameContent() Vertical {
+  {
+    MiniWindow2({
+      Horizontal {
+        Vertical {
+          Using "label" Label()
+          Using "date" Label(none, 14, ColorId GRAY)
+          Using "viewIds" List(HORIZONTAL, ViewId(1))
+        }
+        Stretch {}
+        Vertical {
+          Using "load" StandardButton(Label("Load game"))
+          Using "warlord" StandardButton(Label("Play as a warlord"))
+        }
+      }
+    })
+    MarginRight(2, Using "erase" Position(TOP_RIGHT, Height 14 Width 14 {
+        Button()
+        Margins(4, -4, 0, 0, Label("x", 16, Rgb 200 100 100 255))
+        MouseOver Margins(4, -4, 0, 0, Label("x", 16, Rgb 255 200 200 255))
+    }))
+  }
+  LoadButtonSpacing()
+}
+End
+
+
+{
+  FocusKeys()
+  Width 600
+  Vertical {
+    MaxHeight 400
+      Using "games" Scrolling(List(VERTICAL, SavedGameContent()))
+    Stretch {}
+    Height 15 {}
+    Position(MIDDLE, Horizontal {
+      Width 150 Using "new" StandardButton(Height 20 Label("Start new game"))
+      Width 150 Using "EXIT" StandardButton(Height 20 Label("Go back"))
+    })
+  }
+}

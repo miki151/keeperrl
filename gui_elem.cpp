@@ -219,7 +219,7 @@ static optional<SDL_Keycode> getKey(char c) {
 }
 
 GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, KeybindingMap* k,
-    const DirectoryPath& freeImages, const FilePath& scriptsPath, const optional<DirectoryPath>& nonFreeImages)
+    const DirectoryPath& freeImages, const DirectoryPath& scriptsPath, const optional<DirectoryPath>& nonFreeImages)
     : keybindingMap(k), clock(c), renderer(r), options(o), freeImagesPath(freeImages),
       nonFreeImagesPath(nonFreeImages), scriptsPath(scriptsPath) {
 }
@@ -495,7 +495,7 @@ class DrawScripted : public GuiElem {
   bool handleCallback(const EventCallback& callback) {
     if (callback) {
       if (callback())
-        context.endSemaphore->v();
+        context.endCallback();
       return true;
     }
     return false;
@@ -509,7 +509,7 @@ class DrawScripted : public GuiElem {
     EventCallback callback = [&ret] { ret = false; return false; };
     get()->onClick(data, context, button, getBounds(), pos, callback);
     if (callback())
-      context.endSemaphore->v();
+      context.endCallback();
     return ret;
   }
 
@@ -521,7 +521,7 @@ class DrawScripted : public GuiElem {
     EventCallback callback = [&ret] { ret = false; return false; };
     get()->onClick(data, context, MouseButtonId::MOVED, getBounds(), pos, callback);
     if (callback())
-      context.endSemaphore->v();
+      context.endCallback();
     return ret;
   }
 
@@ -536,7 +536,7 @@ class DrawScripted : public GuiElem {
     EventCallback callback = [&ret] { ret = false; return false; };
     get()->onKeypressed(data, context, sym, getBounds(), callback);
     if (callback())
-      context.endSemaphore->v();
+      context.endCallback();
     return ret;
   }
   //virtual bool onTextInput(const char*) { return false; }
@@ -552,8 +552,8 @@ class DrawScripted : public GuiElem {
   ScriptedContext context;
 };
 
-SGuiElem GuiFactory::scripted(Semaphore& endSem, ScriptedUIId id, const ScriptedUIData& data, ScriptedUIState& state) {
-  return SGuiElem(new DrawScripted(ScriptedContext{&renderer, this, &endSem, state, 0, 0}, id, std::move(data)));
+SGuiElem GuiFactory::scripted(function<void()> endCallback, ScriptedUIId id, const ScriptedUIData& data, ScriptedUIState& state) {
+  return SGuiElem(new DrawScripted(ScriptedContext{&renderer, this, endCallback, state, 0, 0}, id, std::move(data)));
 }
 
 SGuiElem GuiFactory::sprite(Texture& tex, Alignment align, bool vFlip, bool hFlip, Vec2 offset,
@@ -2777,11 +2777,28 @@ void GuiFactory::loadImages() {
 
 void GuiFactory::loadScripts() {
   scriptedUI.clear();
-  while (1) {
-    if (auto err = PrettyPrinting::parseObject(scriptedUI, {scriptsPath}, nullptr))
-      USER_INFO << *err;
+  scriptedUITextures.clear();
+  auto stripExtensions = [] (const FilePath& path) {
+    string ret = path.getFileName();
+    ret = ret.substr(0, ret.size() - 4);
+    return ret;
+  };
+  for (auto file : scriptsPath.getFiles()) {
+    if (file.getFileName() == "common.txt"_s)
+      continue;
+    if (file.hasSuffix(".png"))
+      scriptedUITextures.insert(make_pair(stripExtensions(file), Texture(file)));
     else
-      break;
+    if (file.hasSuffix(".txt")) {
+      ScriptedUI elem;
+      while (1) {
+        if (auto err = PrettyPrinting::parseObject(elem, {scriptsPath.file("common.txt"), file}, nullptr))
+          USER_INFO << file.getFileName() << ": " << *err;
+        else
+          break;
+      }
+      scriptedUI.insert(make_pair(stripExtensions(file), std::move(elem)));
+    }
   }
 }
 

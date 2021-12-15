@@ -1,0 +1,27 @@
+
+{
+  MiniWindow(Scrolling(MarginRight(50, MarginLeft(15,  
+    Vertical {
+      Horizontal{ViewId(1, {"prisoner"}) Width 10 {} Label("Capturing prisoners")}
+      Height 30 {}
+      Label("1. Right click on an enemy and toggle the capture order.")
+      Label("You'll notice that the color of its health bar changes to white.")
+      Height 15 {}
+      Position(MIDDLE, Texture("capture1"))
+      Height 15 {}
+      Label("2. Fight the enemy until it is stunned.")
+      Height 15 {}
+      Label("3. Back in real-time mode, you'll find the stunned creature")
+      Label("in your immigration list. Click on it to enslave it.")
+      Height 15 {}
+      Position(MIDDLE, Texture("capture2"))
+      Height 15 {}
+      Label("4. Your prisoner now supplies your worker force. To completely")
+      Label("convert it to your side, order its torture by dragging its icon")
+      Label("to a torture table. The prisoner has a 50% chance to convert,")
+      Label("otherwise it dies.")
+      Height 15{}
+      Position(MIDDLE, Texture("capture3"))
+    }
+  ))))
+}

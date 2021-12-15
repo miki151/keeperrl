@@ -1,0 +1,134 @@
+Def Margins(Width, Content) MarginsImpl(Width, Content) End
+
+Def MarginTop(X, Content) Vertical { Height X {} Stretch Content } End
+Def MarginBottom(X, Content) Vertical { Stretch Content Height X {} } End
+Def MarginLeft(X, Content) Horizontal { Width X {} Stretch Content } End
+Def MarginRight(X, Content) Horizontal { Stretch Content Width X{}  } End
+
+Def Margins(Left, Top, Right, Bottom, Content)
+  MarginLeft(Left, MarginTop(Top, MarginRight(Right, MarginBottom(Bottom, Content))))
+End
+
+Def FocusKeys() {
+  Using "HIGHLIGHT_PREVIOUS" { KeyHandler(SDLK_LEFT) KeyHandler(SDLK_KP_4) }
+  Using "HIGHLIGHT_NEXT" { KeyHandler(SDLK_RIGHT) KeyHandler(SDLK_KP_6) }
+  Using "HIGHLIGHT_PREVIOUS" { KeyHandler(SDLK_UP) KeyHandler(SDLK_KP_8) }
+  Using "HIGHLIGHT_NEXT" { KeyHandler(SDLK_DOWN) KeyHandler(SDLK_KP_2) }
+}
+End
+
+Def MiniWindow(Content) {
+  Margins(6, Fill(Rgb 13 9 1 255))
+  Margins(15, Content)
+  Position(TOP_STRETCHED, Texture(HORI_BAR_MINI))
+  Position(BOTTOM_STRETCHED, Texture(HORI_BAR_MINI, FLIP_Y))
+  Position(RIGHT_STRETCHED, Texture(VERT_BAR_MINI, FLIP_X))
+  Position(LEFT_STRETCHED, Texture(VERT_BAR_MINI))
+  Position(TOP_LEFT, Texture(CORNER_MINI))
+  Position(TOP_RIGHT, Texture(CORNER_MINI))
+  Position(BOTTOM_RIGHT, Texture(CORNER_MINI))
+  Position(BOTTOM_LEFT, Texture(CORNER_MINI))
+}
+End
+
+Def MiniWindow2(Content) {
+  Margins(6, Fill(Rgb 15 11 9 255))
+  Margins(15, Content)
+  Position(TOP_STRETCHED, Texture(HORI_BAR_MINI2, FLIP_Y))
+  Position(BOTTOM_STRETCHED, Texture(HORI_BAR_MINI2))
+  Position(RIGHT_STRETCHED, Texture(VERT_BAR_MINI2))
+  Position(LEFT_STRETCHED, Texture(VERT_BAR_MINI2, FLIP_X))
+  Position(TOP_LEFT, Texture(CORNER_MINI2))
+  Position(TOP_RIGHT, Texture(CORNER_MINI2_LARGE, FLIP_X))
+  Position(BOTTOM_RIGHT, Texture(CORNER_MINI2, FLIP_XY))
+  Position(BOTTOM_LEFT, Texture(CORNER_MINI2, FLIP_Y))
+}
+End
+
+Def Window(Content) {
+  Height 200 {}
+  Margins(6, Fill(Rgb 15 11 9 255))
+  Margins(45, Content)
+  Position(TOP_STRETCHED, Margins(6, 2, 6, 0, Texture(HORI_BAR)))
+  Position(BOTTOM_STRETCHED, Margins(6, 0, 6, 2, Texture(HORI_BAR, FLIP_Y)))
+  Position(RIGHT_STRETCHED, MarginRight(6, Texture(WINDOW_VERT_BAR)))
+  Position(LEFT_STRETCHED, MarginLeft(6, Texture(WINDOW_VERT_BAR, FLIP_X)))
+  Position(TOP_LEFT, Texture(WINDOW_CORNER))
+  Position(TOP_RIGHT, Texture(WINDOW_CORNER_EXIT))
+  Position(TOP_RIGHT, {
+    MouseOver Texture(WINDOW_CORNER_EXIT_HIGHLIGHT)
+    Using "EXIT" Button()
+  })
+  Position(BOTTOM_RIGHT, Texture(WINDOW_CORNER, FLIP_XY))
+  Position(BOTTOM_LEFT, Texture(WINDOW_CORNER, FLIP_Y))
+}
+End
+
+Def ButtonLayout(BOTTOM1, SIDE, CORNER) {
+  Texture(BUTTON_BG)
+  Position(BOTTOM_STRETCHED, Texture(BOTTOM1))
+  Position(TOP_STRETCHED, Texture(BOTTOM1, FLIP_Y))
+  Position(RIGHT_STRETCHED, Texture(SIDE, FLIP_X))
+  Position(LEFT_STRETCHED, Texture(SIDE))
+  Position(BOTTOM_RIGHT, Texture(CORNER, FLIP_X))
+  Position(BOTTOM_LEFT, Texture(CORNER))
+  Position(TOP_RIGHT, Texture(CORNER, FLIP_XY))
+  Position(TOP_LEFT, Texture(CORNER, FLIP_Y))
+}
+End
+
+Def StandardButton(Content) {
+  ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
+  Focusable ButtonLayout(BUTTON_BOTTOM_HIGHLIGHT, BUTTON_SIDE_HIGHLIGHT, BUTTON_CORNER_HIGHLIGHT)
+  Position(MIDDLE, Margins(10, 5, 10, 8, Content))
+  Button()
+}
+End
+
+Def StandardButtonInactive(Content) {
+  ButtonLayout(BUTTON_BOTTOM, BUTTON_SIDE, BUTTON_CORNER)
+  Position(MIDDLE, Margins(10, 5, 10, 8, Content))
+}
+End
+
+Def Scrolling(Content)
+  Scrollable(Width 20
+      Vertical {
+        Position(MIDDLE, {
+          Texture(SCROLL_UP)
+          ScrollButton(-1)
+        })
+        Stretch {
+          MarginLeft(-9, MarginRight(-9, Texture(SCROLLBAR)))
+          Scroller Position(MIDDLE, Texture(SCROLL_BUTTON))
+        }
+        Position(MIDDLE, {
+          ScrollButton(1)
+          Texture(SCROLL_DOWN)
+        })
+      },
+      Content)
+End
+
+Def GetTooltip(Content)
+  Tooltip(MiniWindow(Content))
+End
+
+Def YesOrNo() {
+  Using "EXIT" { Button(true) KeyHandler(SDLK_ESCAPE) }
+  FocusKeys()
+  Window(
+    Vertical {
+      Using "message" Position(MIDDLE, MarginLeft(40, MarginRight(40, Label())))
+      Height 35 {}
+      Position(MIDDLE, Horizontal {
+        Using "callback" StandardButton(Label("Confirm"))
+        Width 30 {}
+        Using "EXIT" StandardButton(Label("Cancel"))
+      })
+    }
+  )
+}
+End
+
+

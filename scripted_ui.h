@@ -19,7 +19,7 @@ class GuiFactory;
 struct ScriptedContext {
   Renderer* renderer;
   GuiFactory* factory;
-  Semaphore* endSemaphore;
+  function<void()> endCallback;
   ScriptedUIState& state;
   int sliderCounter;
   int elemCounter;

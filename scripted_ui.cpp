@@ -25,20 +25,40 @@ namespace ScriptedUIElems {
 using namespace EnumsDetail;
 
 struct Texture : ScriptedUIInterface {
+
+  const ::Texture* getTexture(ScriptedContext& context) const {
+    if (id)
+      return &context.factory->get(*id);
+    if (context.factory->scriptedUITextures.count(scriptedId))
+      return &context.factory->scriptedUITextures.at(scriptedId);
+    return nullptr;
+  }
   void render(const ScriptedUIData&, ScriptedContext& context, Rectangle area) const override {
-    auto& texture = context.factory->get(id);
-    context.renderer->drawSprite(area.topLeft(), Vec2(0, 0), area.getSize(), texture, none, none,
-        Renderer::SpriteOrientation(flip == TextureFlip::FLIP_Y || flip == TextureFlip::FLIP_XY,
-            flip == TextureFlip::FLIP_X || flip == TextureFlip::FLIP_XY));
+    if (auto texture = getTexture(context))
+      context.renderer->drawSprite(area.topLeft(), Vec2(0, 0), area.getSize(), *texture, none, none,
+          Renderer::SpriteOrientation(flip == TextureFlip::FLIP_Y || flip == TextureFlip::FLIP_XY,
+              flip == TextureFlip::FLIP_X || flip == TextureFlip::FLIP_XY));
+    else
+      context.renderer->drawText(Color::RED, area.topLeft(), "Texture not found \"" + scriptedId + "\"");
   }
 
   Vec2 getSize(const ScriptedUIData&, ScriptedContext& context) const override {
-    return context.factory->get(id).getSize();
+    if (auto texture = getTexture(context))
+      return texture->getSize();
+    else
+      return Vec2(80, 20);
   }
 
-  TextureId SERIAL(id);
+  optional<TextureId> SERIAL(id);
+  string SERIAL(scriptedId);
   TextureFlip SERIAL(flip) = TextureFlip::NONE;
-  SERIALIZE_ALL(roundBracket(), NAMED(id), OPTION(flip))
+  template <class Archive> void serialize(Archive& ar, const unsigned int) {
+    if (ar.peek(2)[0] == '\"')
+      ar(roundBracket(), NAMED(scriptedId));
+    else
+      ar(roundBracket(), NAMED(id));
+    ar(OPTION(flip));
+  }
 };
 
 REGISTER_SCRIPTED_UI(Texture);
