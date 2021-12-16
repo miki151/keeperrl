@@ -243,7 +243,8 @@ class GuiBuilder {
     BESTIARY,
     SPELL_SCHOOLS,
     ITEMS_HELP,
-    CAPTURING_PRISONERS
+    CAPTURING_PRISONERS,
+    USING_STEED
   };
   optional<BottomWindowId> bottomWindow;
   void toggleBottomWindow(BottomWindowId);

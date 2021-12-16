@@ -304,17 +304,21 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
 
 SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo&) {
   auto lines = WL(getListBuilder, legendLineHeight);
-  lines.addElem(WL(standardButton,
-      WL(getListBuilder)
-          .addElemAuto(WL(topMargin, -2, WL(viewObject, ViewId("prisoner"))))
-          .addElemAuto(WL(label, "Capturing prisoners"))
-          .buildHorizontalList(),
-      WL(button, [this]() {
-        scriptedUIState.scrollPos.reset();
-        toggleBottomWindow(CAPTURING_PRISONERS);
-      })
-  ));
-  lines.addSpace(5);
+  auto addScriptedButton = [this, &lines] (ViewId id, const string& label, BottomWindowId windowId) {
+    lines.addElem(WL(standardButton,
+        WL(getListBuilder)
+            .addElemAuto(WL(topMargin, -2, WL(viewObject, id)))
+            .addElemAuto(WL(label, label))
+            .buildHorizontalList(),
+        WL(button, [this, windowId]() {
+          scriptedUIState.scrollPos.reset();
+          toggleBottomWindow(windowId);
+        })
+    ));
+    lines.addSpace(5);
+  };
+  addScriptedButton(ViewId("prisoner"), "Capturing prisoners", BottomWindowId::CAPTURING_PRISONERS);
+  addScriptedButton(ViewId("horse"), "Using steed", BottomWindowId::USING_STEED);
   lines.addElem(WL(standardButton,
       WL(getListBuilder)
           .addElemAuto(WL(topMargin, -2, WL(viewObject, ViewId("special_bmbw"))))
@@ -2803,9 +2807,12 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
     default:
       break;
   }
-  if (bottomWindow == CAPTURING_PRISONERS) {
-    ret.push_back({gui.scripted([this]{ bottomWindow = none; }, "prisoners", ScriptedUIData{}, scriptedUIState), OverlayInfo::TOP_LEFT});
-  }
+  if (bottomWindow == CAPTURING_PRISONERS)
+    ret.push_back({gui.scripted([this]{ bottomWindow = none; }, "prisoners", ScriptedUIData{}, scriptedUIState),
+        OverlayInfo::TOP_LEFT});
+  if (bottomWindow == USING_STEED)
+    ret.push_back({gui.scripted([this]{ bottomWindow = none; }, "steed", ScriptedUIData{}, scriptedUIState),
+        OverlayInfo::TOP_LEFT});
   if (bottomWindow == BESTIARY) {
     if (bestiaryIndex >= info.encyclopedia->bestiary.size())
       bestiaryIndex = 0;

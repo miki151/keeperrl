@@ -1,0 +1,24 @@
+
+MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,  
+  Vertical {
+    Horizontal{ViewId(1, {"horse"}) Width 10 {} Label("Using steed")}
+    Height 30 {}
+    Label("1. Get hold of some ridable creatures, such as horses, wolves")
+    Label("or a dragon. You can tell steeds by their \"steed\" status.")
+    Height 15 {}
+    Position(MIDDLE, Texture("steeds1"))
+    Height 15 {}
+    Label("2. You'll need a minion that can ride steeds. There is a high")
+    Label("chance that your Keeper can depending on their class.")
+    Height 15 {}
+    Position(MIDDLE, Texture("steeds2"))
+    Height 15 {}
+    Label("3. Assign the steed to your rider. You can do that in the equipment")
+    Label("list in the minion's menu. Chances are a steed has already been")
+    Label("assigned automatically")
+    Position(MIDDLE, Texture("steeds3"))
+    Height 15 {}
+    Label("4. The rider will now always mount its steed when leaving your base.")
+  }
+))))
+
