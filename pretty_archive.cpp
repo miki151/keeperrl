@@ -83,6 +83,10 @@ string getString(const vector<StreamChar>& s) {
 void eatArgument(const vector<StreamChar>& s, int& index) {
   while (1) {
     eatWhitespace(s, index);
+    if (s[index].c == '\"' && s[index - 1].c != '\\')
+      do {
+        ++index;
+      } while (index < s.size() - 1 && (s[index].c != '\"' || s[index - 1].c == '\\'));
     if (s[index].c == ')')
       return;
     if (s[index].c == '(')
