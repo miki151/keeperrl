@@ -7,6 +7,7 @@
 #include "gui_elem.h"
 #include "sdl_keycodes.h"
 #include "clock.h"
+#include "container_range.h"
 
 namespace EnumsDetail {
 enum class TextureFlip;
@@ -166,6 +167,28 @@ struct Label : ScriptedUIInterface {
 };
 
 REGISTER_SCRIPTED_UI(Label);
+
+struct Paragraph : ScriptedUIInterface {
+  Paragraph() {}
+
+  void render(const ScriptedUIData& data, ScriptedContext& context, Rectangle area) const override {
+    for (auto line : Iter(context.factory->breakText(text, width, size)))
+      context.renderer->drawText(font, size, color, area.topLeft() + Vec2(0, line.index() * size), *line);
+  }
+
+  Vec2 getSize(const ScriptedUIData& data, ScriptedContext& context) const override {
+    return Vec2(width, size * context.factory->breakText(text, width, size).size());
+  }
+
+  string SERIAL(text);
+  int SERIAL(width);
+  int SERIAL(size) = Renderer::textSize();
+  Color SERIAL(color) = Color::WHITE;
+  FontId SERIAL(font) = FontId::TEXT_FONT;
+  SERIALIZE_ALL(roundBracket(), NAMED(width), NAMED(text), OPTION(size), OPTION(color), OPTION(font))
+};
+
+REGISTER_SCRIPTED_UI(Paragraph);
 
 struct Container : ScriptedUIInterface {
   struct SubElemInfo {
