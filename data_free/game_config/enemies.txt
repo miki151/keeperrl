@@ -425,7 +425,7 @@ End
     spawnGhosts = 6
   }
   behaviour = {
-    minPopulation = 12
+    minPopulation = 7
     minTeamSize = 10
     triggers = {
       RoomTrigger "THRONE" 0.0003
