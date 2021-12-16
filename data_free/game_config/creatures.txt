@@ -1891,6 +1891,9 @@
     name = {
       name = "thief"
     }
+    permanentEffects = append {
+      RIDER 1
+    }
     spells = {}
     inventory = {
       { "LeatherArmor"}
@@ -3392,6 +3395,16 @@
     name = {
       name = "deer"
       pluralName = "deer"
+    }
+  }
+"ELF_LORD_DEER" inherit "DEER"
+  {
+    attr = {
+      DAMAGE 30
+      DEFENSE 30
+    }
+    permanentEffects = {
+      STEED 1
     }
   }
 "BOAR"

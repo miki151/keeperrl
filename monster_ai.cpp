@@ -865,7 +865,7 @@ class ByCollective : public Behaviour {
   }
 
   bool riderNeedsSteed(Creature* c) {
-    return !collective->getTerritory().contains(c->getPosition());
+    return !collective->getTerritory().contains(c->getPosition()) || collective->getConfig().alwaysMountSteeds();
   }
 
   MoveInfo steedOrRider() {

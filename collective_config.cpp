@@ -46,7 +46,7 @@ template <class Archive>
 void CollectiveConfig::serialize(Archive& ar, const unsigned int version) {
   ar(OPTION(immigrantInterval), OPTION(maxPopulation), OPTION(conquerCondition), OPTION(canEnemyRetire));
   ar(SKIP(type), OPTION(leaderAsFighter), OPTION(spawnGhosts), OPTION(ghostProb), OPTION(guardianInfo));
-  ar(SKIP(populationString), SKIP(prisoners));
+  ar(SKIP(populationString), SKIP(prisoners), OPTION(alwaysMount));
 }
 
 SERIALIZABLE(CollectiveConfig);
@@ -211,6 +211,10 @@ CollectiveConfig& CollectiveConfig::setConquerCondition(ConquerCondition c) {
 
 bool CollectiveConfig::canCapturePrisoners() const {
   return prisoners;
+}
+
+bool CollectiveConfig::alwaysMountSteeds() const {
+  return alwaysMount;
 }
 
 MinionActivityInfo::MinionActivityInfo(Type t) : type(t) {

@@ -14,13 +14,14 @@ auto InhabitantsInfo::generateCreatures(RandomGen& random, CreatureFactory* fact
   int numRiders = 0;
   auto addCreatures = [&](const CreatureList& info, EnumSet<MinionTrait> traits) {
     for (auto& creature : info.generate(random, factory, tribe, aiFactory, false)) {
-      if (traits.contains(MinionTrait::FIGHTER) && creature->isAffected(LastingEffect::RIDER))
-        ++numRiders;
       auto myTraits = traits;
       if (!wasLeader) {
         wasLeader = true;
         myTraits.insert(MinionTrait::LEADER);
       }
+      if ((myTraits.contains(MinionTrait::FIGHTER) || myTraits.contains(MinionTrait::LEADER)) &&
+          creature->isAffected(LastingEffect::RIDER))
+        ++numRiders;
       ret.push_back(make_pair(std::move(creature), myTraits));
     }
   };

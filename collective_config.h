@@ -94,6 +94,7 @@ class CollectiveConfig {
   bool xCanEnemyRetire() const;
   CollectiveConfig& setConquerCondition(ConquerCondition);
   bool canCapturePrisoners() const;
+  bool alwaysMountSteeds() const;
 
   static void addBedRequirementToImmigrants(vector<ImmigrantInfo>&, ContentFactory*);
 
@@ -122,4 +123,5 @@ class CollectiveConfig {
   ConquerCondition SERIAL(conquerCondition) = ConquerCondition::KILL_FIGHTERS_AND_LEADER;
   string SERIAL(populationString);
   bool SERIAL(prisoners) = true;
+  bool SERIAL(alwaysMount) = false;
 };

@@ -423,6 +423,7 @@ End
     maxPopulation = 26
     ghostProb = 0.1
     spawnGhosts = 6
+    alwaysMount = true
   }
   behaviour = {
     minPopulation = 7
@@ -772,8 +773,10 @@ End
         all = {
           1 "ELF"
           1 "ELF_CHILD"
-          1 "HORSE"
         }
+      }
+      steeds = {
+        all = { 1 "ELF_LORD_DEER" }
       }
     }
     locationNameGen = "TOWN"
@@ -787,6 +790,7 @@ End
     maxPopulation = 18
     ghostProb = 0.1
     spawnGhosts = 4
+    alwaysMount = true
   }
   behaviour = {
     minPopulation = 4
@@ -2285,6 +2289,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
         all = { 1 "THIEF" }
         uniques = { "SORCERER" }
       }
+      steeds = { all = { 1 "CAMEL" } }
     }
     locationNameGen = "TOWN"
     race = "thieves"
@@ -2297,6 +2302,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
     maxPopulation = 10
     ghostProb = 0.1
     spawnGhosts = 6
+    alwaysMount = true
   }
   behaviour = {
     minPopulation = 3
