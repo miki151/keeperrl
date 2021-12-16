@@ -3,15 +3,19 @@
 #include "monster_ai.h"
 #include "minion_trait.h"
 #include "item_type.h"
+#include "creature.h"
 
-SERIALIZE_DEF(InhabitantsInfo, OPTION(leader), OPTION(fighters), OPTION(civilians))
+SERIALIZE_DEF(InhabitantsInfo, OPTION(leader), OPTION(fighters), OPTION(civilians), OPTION(steeds))
 
 auto InhabitantsInfo::generateCreatures(RandomGen& random, CreatureFactory* factory, TribeId tribe,
     MonsterAIFactory aiFactory) -> Generated {
   Generated ret;
   bool wasLeader = false;
+  int numRiders = 0;
   auto addCreatures = [&](const CreatureList& info, EnumSet<MinionTrait> traits) {
     for (auto& creature : info.generate(random, factory, tribe, aiFactory, false)) {
+      if (traits.contains(MinionTrait::FIGHTER) && creature->isAffected(LastingEffect::RIDER))
+        ++numRiders;
       auto myTraits = traits;
       if (!wasLeader) {
         wasLeader = true;
@@ -23,6 +27,10 @@ auto InhabitantsInfo::generateCreatures(RandomGen& random, CreatureFactory* fact
   addCreatures(leader, {});
   addCreatures(fighters, EnumSet<MinionTrait>{MinionTrait::FIGHTER});
   addCreatures(civilians, EnumSet<MinionTrait>{});
+  if (steeds) {
+    steeds->count = Range::singleElem(numRiders);
+    addCreatures(*steeds, EnumSet<MinionTrait>{});
+  }
   return ret;
 }
 
@@ -47,7 +55,7 @@ void InhabitantsInfo::serialize(PrettyInputArchive& ar1, unsigned) {
       this->leader.expLevelIncrease,
       this->leader.inventory
     };
-  ar1(OPTION(leader), OPTION(fighters), OPTION(civilians));
+  ar1(OPTION(leader), OPTION(fighters), OPTION(civilians), OPTION(steeds));
   ar1(endInput());
   if (leader)
     this->leader = CreatureList(1, leader->id)

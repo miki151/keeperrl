@@ -402,10 +402,12 @@ End
           1 "PESEANT"
           1 "CHILD"
           1 "DONKEY"
-          1 "HORSE"
           1 "COW"
           1 "PIG"
         }
+      }
+      steeds = {
+        all = { 1 "HORSE" }
       }
     }
     locationNameGen = "TOWN"

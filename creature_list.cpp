@@ -8,7 +8,7 @@
 #include "item_type.h"
 #include "view_id.h"
 
-SERIALIZE_DEF(CreatureList, NAMED(count), OPTION(uniques), NAMED(all), OPTION(baseLevelIncrease), OPTION(expLevelIncrease), OPTION(inventory))
+SERIALIZE_DEF(CreatureList, OPTION(count), OPTION(uniques), NAMED(all), OPTION(baseLevelIncrease), OPTION(expLevelIncrease), OPTION(inventory))
 
 
 CreatureList::CreatureList() {}
