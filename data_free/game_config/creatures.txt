@@ -3332,7 +3332,6 @@
     }
     permanentEffects = {
       SLOWED 1
-      STEED 1
     }
     noChase = true
     name = {
@@ -3478,7 +3477,7 @@
     }
     permanentEffects = {
       EXPLORE_CAVES_SKILL 1
-      STEED 1
+#      STEED 1  (needs a different sprite first)
     }
     name = {
       name = "cave bear"
