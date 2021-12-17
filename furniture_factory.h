@@ -33,7 +33,6 @@ class FurnitureFactory {
   const Furniture& getData(FurnitureType) const;
   const ViewObject& getConstructionObject(FurnitureType) const;
   int getPopulationIncrease(FurnitureType, int numBuilt) const;
-  optional<string> getPopulationIncreaseDescription(FurnitureType, const string& populationString) const;
   FurnitureList getFurnitureList(FurnitureListId) const;
   FurnitureType getWaterType(double depth) const;
   const vector<FurnitureType>& getTrainingFurniture(ExperienceType) const;

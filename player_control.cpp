@@ -149,6 +149,14 @@ PPlayerControl PlayerControl::create(Collective* col, vector<string> introText, 
 PlayerControl::~PlayerControl() {
 }
 
+static string getPopulationIncreaseDescription(const Furniture::PopulationInfo& info, const string& populationString) {
+  auto ret = "Increases " + populationString + " limit by " + toString(info.increase);
+  if (auto limit = info.limit)
+    ret += ", up to " + toString(*limit);
+  ret += ".";
+  return ret;
+}
+
 void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const KeeperCreatureInfo& keeperCreatureInfo) {
   for (auto& group : keeperCreatureInfo.buildingGroups)
     buildInfo.append(contentFactory->buildInfo.at(group));
@@ -162,9 +170,12 @@ void PlayerControl::loadBuildingMenu(const ContentFactory* contentFactory, const
           break;
         }
       }
-      if (auto increase = getGame()->getContentFactory()->furniture
-          .getPopulationIncreaseDescription(furniture->types[0], keeperCreatureInfo.populationString))
-        info.help += " " + *increase;
+      auto increase = getGame()->getContentFactory()->furniture.getData(furniture->types[0]).getPopulationIncrease();
+      if (increase.increase > 0) {
+        info.help += " " + getPopulationIncreaseDescription(increase, keeperCreatureInfo.populationString);
+        if (increase.limit)
+          const_cast<optional<int>&>(furniture->limit) = int(*increase.limit / increase.increase);
+      }
       for (auto expType : ENUM_ALL(ExperienceType))
         if (auto increase = getGame()->getContentFactory()->furniture.getData(furniture->types[0]).getMaxTraining(expType))
           info.help += " Adds up to " + toString(increase) + " " + toLower(getName(expType)) + " levels.";

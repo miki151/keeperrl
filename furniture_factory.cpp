@@ -27,19 +27,6 @@ bool FurnitureParams::operator == (const FurnitureParams& p) const {
   return type == p.type && tribe == p.tribe;
 }
 
-optional<string> FurnitureFactory::getPopulationIncreaseDescription(FurnitureType type,
-    const string& populationString) const {
-  auto info = getData(type).getPopulationIncrease();
-  if (info.increase > 0) {
-    auto ret = "Increases " + populationString + " limit by " + toString(info.increase);
-    if (auto limit = info.limit)
-      ret += ", up to " + toString(*limit);
-    ret += ".";
-    return ret;
-  }
-  return none;
-}
-
 FurnitureList FurnitureFactory::getFurnitureList(FurnitureListId id) const {
   CHECK(furnitureLists.count(id)) << "Furniture list not found \"" << id.data() << "\"";
   return furnitureLists.at(id);
