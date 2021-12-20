@@ -16,6 +16,7 @@ struct CreaturePredicate;
 namespace CreaturePredicates {
 SIMPLE_PREDICATE(Enemy);
 SIMPLE_PREDICATE(Automaton);
+SIMPLE_PREDICATE(Rider);
 SIMPLE_PREDICATE(Hidden);
 SIMPLE_PREDICATE(Indoors);
 SIMPLE_PREDICATE(Night);
@@ -65,6 +66,11 @@ struct Health {
   double SERIAL(from);
   double SERIAL(to);
   SERIALIZE_ALL(from, to)
+};
+
+struct Kills {
+  int SERIAL(cnt);
+  SERIALIZE_ALL(cnt)
 };
 
 struct Not {
@@ -130,7 +136,9 @@ struct Translate {
   X(PopLimitReached, 26)\
   X(Translate, 27)\
   X(Unlocked, 28)\
-  X(Gender, 29)
+  X(Gender, 29)\
+  X(Rider, 30)\
+  X(Kills, 31)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

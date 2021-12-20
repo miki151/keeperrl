@@ -515,6 +515,9 @@
       attackType = STAB
       attackMsg = THRUST
     }
+    specialAttr = {
+      DAMAGE 15 Rider
+    }
     storageIds = {"weapons" "equipment"}
   }
 "Sword"

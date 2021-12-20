@@ -142,6 +142,22 @@ static string getName(const Gender& s) {
   return get(s, "males", "females", "genderless");
 }
 
+static bool applyToCreature(const CreaturePredicates::Rider& s, const Creature* victim, const Creature*) {
+  return victim->getSteed();
+}
+
+static string getName(const CreaturePredicates::Rider& s) {
+  return "riders";
+}
+
+static bool applyToCreature(const CreaturePredicates::Kills& s, const Creature* victim, const Creature*) {
+  return victim->getKills().size() >= s.cnt;
+}
+
+static string getName(const CreaturePredicates::Kills& s) {
+  return "those with a minimum of " + toString(s.cnt) + " kills";
+}
+
 static bool apply(const CreaturePredicates::Unlocked& s, Position pos, const Creature* attacker) {
   return pos.getGame()->getUnlocks()->isUnlocked(s.id);
 }
