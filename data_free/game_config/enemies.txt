@@ -407,7 +407,7 @@ End
         }
       }
       steeds = {
-        all = { 1 "HORSE" }
+        all = { 1 "WARHORSE" }
       }
     }
     locationNameGen = "TOWN"
