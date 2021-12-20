@@ -1688,6 +1688,14 @@ static bool apply(const Effects::Caster& e, Position, Creature* attacker) {
   return false;
 }
 
+static bool applyToCreature(const Effects::ApplyToSteed& e, Creature* c, Creature* attacker) {
+  if (c->getRider())
+    return e.effect->applyToCreature(c);
+  if (auto steed = c->getSteed())
+    return e.effect->applyToCreature(steed);
+  return false;
+}
+
 static string getName(const Effects::GenericModifierEffect& e, const ContentFactory* f) {
   return e.effect->getName(f);
 }
@@ -2351,7 +2359,7 @@ static bool isConsideredHostile(const T&, const Creature*) {
 }
 
 template <typename T, REQUIRE(applyToCreature(TVALUE(const T&), TVALUE(Creature*), TVALUE(Creature*)))>
-static bool apply(const T& t, Position pos, Creature* attacker) {
+static bool apply1(const T& t, Position pos, Creature* attacker, int) {
   if (auto c = pos.getCreature()) {
     if (auto steed = c->getSteed())
       if (Random.roll(2))
@@ -2359,6 +2367,21 @@ static bool apply(const T& t, Position pos, Creature* attacker) {
     return applyToCreature(t, c, attacker);
   }
   return false;
+}
+
+template <typename T, REQUIRE(apply(TVALUE(const T&), TVALUE(Position), TVALUE(Creature*)))>
+static bool apply1(const T& t, Position pos, Creature* attacker, double) {
+  return apply(t, pos, attacker);
+}
+
+template <typename T, REQUIRE(applyToCreature(TVALUE(const T&), TVALUE(Creature*), TVALUE(Creature*)))>
+static bool applyToCreature1(const T& t, Creature* c, Creature* attacker, int) {
+  return applyToCreature(t, c, attacker);
+}
+
+template <typename T, REQUIRE(apply(TVALUE(const T&), TVALUE(Position), TVALUE(Creature*)))>
+static bool applyToCreature1(const T& t, Creature* c, Creature* attacker, double) {
+  return apply(t, c->getPosition(), attacker);
 }
 
 bool Effect::apply(Position pos, Creature* attacker) const {
@@ -2369,7 +2392,11 @@ bool Effect::apply(Position pos, Creature* attacker) const {
           c->onAttackedBy(attacker);
       });
   }
-  return effect->visit<bool>([&](const auto& e) { return ::apply(e, pos, attacker); });
+  return effect->visit<bool>([&](const auto& e) { return ::apply1(e, pos, attacker, 1); });
+}
+
+bool Effect::applyToCreature(Creature* c, Creature* attacker) const {
+  return effect->visit<bool>([&](const auto& e) { return ::applyToCreature1(e, c, attacker, 1); });
 }
 
 string Effect::getName(const ContentFactory* f) const {

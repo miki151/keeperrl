@@ -3269,6 +3269,27 @@
       name = "horse"
     }
   }
+"HORSE_CAN_TRAIN" inherit "HORSE"
+  {
+    afterKilledSomeone = {
+      ApplyToSteed CreatureMessage "are more experienced" "is more experienced"
+      ApplyToSteed Polymorph "WARHORSE" none
+    }
+  }
+"WARHORSE" inherit "HORSE"
+  {
+    viewId = { "warhorse" }
+    attr = {
+      DAMAGE 40
+      DEFENSE 40
+    }
+    name = {
+      name = "warhorse"
+    }
+    permanentEffects = append {
+      SPEED 1
+    }
+  }
 "CAMEL" inherit "HORSE"
   {
     viewId = { "camel" }

@@ -131,6 +131,7 @@ class CreatureAttributes {
   vector<ItemType> SERIAL(automatonParts);
   EnumMap<AttrType, vector<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
   heap_optional<Effect> SERIAL(deathEffect);
+  heap_optional<Effect> SERIAL(afterKilledSomeone);
 
   vector<CompanionInfo> SERIAL(companions);
   optional<string> SERIAL(promotionGroup);

@@ -1075,6 +1075,8 @@ void Creature::onKilledOrCaptured(Creature* victim) {
       };
       registerSlaying(getSlayer(), victim);
     }
+    if (attributes->afterKilledSomeone)
+      attributes->afterKilledSomeone->apply(position);
   }
 }
 
@@ -1350,7 +1352,7 @@ CreatureAction Creature::attack(Creature* other, bool noSpendTime) const {
     INFO << getName().the() << " attacking " << other->getName().the();
     bool wasDamaged = false;
     for (auto weapon : weapons) {
-      auto& weaponInfo = weapon.first->getWeaponInfo();
+      auto weaponInfo = weapon.first->getWeaponInfo();
       auto damageAttr = weaponInfo.meleeAttackAttr;
       const int damage = max(1, int(weapon.second * (getAttr(damageAttr, false) +
           getSpecialAttr(damageAttr, other) + weapon.first->getModifier(damageAttr))));

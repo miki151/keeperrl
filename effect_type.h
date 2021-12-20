@@ -402,6 +402,8 @@ struct IncreaseMaxLevel {
   int SERIAL(value);
   SERIALIZE_ALL(type, value)
 };
+struct ApplyToSteed : GenericModifierEffect {
+};
 #define EFFECT_TYPES_LIST\
   X(Escape, 0)\
   X(Teleport, 1)\
@@ -498,7 +500,8 @@ struct IncreaseMaxLevel {
   X(IncreaseMaxLevel, 92)\
   X(EquipmentType, 93)\
   X(AddSpellSchool, 94)\
-  X(ItemPrefix, 95)
+  X(ItemPrefix, 95)\
+  X(ApplyToSteed, 96)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

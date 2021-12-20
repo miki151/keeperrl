@@ -245,6 +245,7 @@
 { "jackal" "d" ColorId LIGHT_BROWN }
 { "deer" "R" ColorId DARK_BROWN }
 { "horse" "H" ColorId LIGHT_BROWN }
+{ "warhorse" "H" ColorId BROWN }
 { "camel" "C" ColorId LIGHT_BROWN }
 { "cow" "C" ColorId WHITE }
 { "pig" "p" ColorId YELLOW }
