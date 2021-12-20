@@ -116,6 +116,7 @@ End
                 victimEffect = {0.1 Lasting POISON} } } } }
          { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DAMAGE 10 CreatureStatus LEADER }}
+         { 0.03 { SpecialAttr DAMAGE 6 Name "when riding steed" Attacker Rider }}
          { 0.02 { SpecialAttr DEFENSE 8 HatedBy HATE_HUMANS }}
          { 0.02 { SpecialAttr DEFENSE 8 Not Humanoid }}
          { 0.05 { SpecialAttr DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
@@ -147,6 +148,7 @@ End
          { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DEFENSE 10 HatedBy HATE_DRAGONS }}
          { 0.02 { SpecialAttr SPELL_DAMAGE 8 Not Humanoid }}
+         { 0.03 { Lasting { RIDER } SpecialAttr SPELL_DAMAGE 6 Name "when riding steed" Attacker Rider }}
          { 0.10 { ExtraTraining SPELL 4}}
          { 0.05 { WorkshopType "LABORATORY" }}
          { 0.05 { SpecialAttr SPELL_DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
@@ -441,6 +443,7 @@ End
         { 0.05 { SpecialAttr DAMAGE 8 HatedBy HATE_DRAGONS }}
         { 0.05 { ExtraTraining ARCHERY 2}}
         { 0.05 { ExtraTraining MELEE 2}}
+        { 0.05 { SpecialAttr DAMAGE 6 Name "when riding steed" Attacker Rider }}
         { 0.05 { OneOfTraits { Lasting { FAST_TRAINING } Lasting { SLOW_TRAINING } } }}
         { 0.05 { Lasting { HATE_ELVES } }}
         { 0.05 { Lasting { HATE_DWARVES } }}
@@ -489,6 +492,7 @@ End
         { 0.15 { SpecialAttr RANGED_DAMAGE 8 HatedBy HATE_GREENSKINS }}
         { 0.03 { AttrBonus RANGED_DAMAGE 13 Lasting { INSANITY }}}
         { 0.03 { AttrBonus DEFENSE 5 Lasting { SLOWED }}}
+        { 0.05 { SpecialAttr RANGED_DAMAGE 6 Name "when riding steed" Attacker Rider }}
         { 0.05 { Lasting { RANGED_VULNERABILITY } }}
         { 0.05 { Lasting { DISARM_TRAPS_SKILL } }}
         { 0.05 { Lasting { SWIMMING_SKILL } }}
