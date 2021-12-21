@@ -73,6 +73,11 @@ struct DefaultType {
 };
 }
 
+template <typename T>
+static double getSteedChance() {
+  return 0;
+}
+
 static bool isConsideredInDanger(const Creature* c) {
   if (auto intent = c->getLastCombatIntent())
     return (intent->time > *c->getGlobalTime() - 5_visible);
@@ -593,6 +598,11 @@ static bool apply(const Effects::Acid&, Position pos, Creature*) {
   return pos.acidDamage();
 }
 
+template <>
+double getSteedChance<Effects::Acid>() {
+  return 0.5;
+}
+
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Acid&, const Creature* victim, bool isEnemy) {
   return isEnemy ? 1 : -1;
 }
@@ -981,6 +991,11 @@ static optional<ViewId> getProjectile(const Effects::Fire&) {
   return ViewId("fireball");
 }
 
+template <>
+double getSteedChance<Effects::Fire>() {
+  return 0.5;
+}
+
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Fire&, const Creature* victim, bool isEnemy) {
   if (!victim->isAffected(LastingEffect::FIRE_RESISTANT))
     return isEnemy ? 1 : -1;
@@ -1001,6 +1016,11 @@ static string getDescription(const Effects::Ice&, const ContentFactory*) {
 
 static bool apply(const Effects::Ice&, Position pos, Creature*) {
   return pos.iceDamage();
+}
+
+template <>
+double getSteedChance<Effects::Ice>() {
+  return 1.0;
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Ice&, const Creature* victim, bool isEnemy) {
@@ -1121,6 +1141,11 @@ static bool apply(const Effects::DropItems& effect, Position pos, Creature*) {
   return true;
 }
 
+template <>
+double getSteedChance<Effects::Damage>() {
+  return 0.5;
+}
+
 static bool applyToCreature(const Effects::Damage& e, Creature* c, Creature* attacker) {
   CHECK(attacker) << "Unknown attacker";
   int value = attacker->getAttr(e.attr) + attacker->getSpecialAttr(e.attr, c);
@@ -1152,6 +1177,11 @@ static string getName(const Effects::Damage& e, const ContentFactory*) {
 
 static string getDescription(const Effects::Damage& e, const ContentFactory*) {
   return "Causes " + ::getName(e.attr);
+}
+
+template <>
+double getSteedChance<Effects::FixedDamage>() {
+  return 0.5;
 }
 
 static bool applyToCreature(const Effects::FixedDamage& e, Creature* c, Creature*) {
@@ -1688,12 +1718,9 @@ static bool apply(const Effects::Caster& e, Position, Creature* attacker) {
   return false;
 }
 
-static bool applyToCreature(const Effects::ApplyToSteed& e, Creature* c, Creature* attacker) {
-  if (c->getRider())
-    return e.effect->applyToCreature(c);
-  if (auto steed = c->getSteed())
-    return e.effect->applyToCreature(steed);
-  return false;
+template <>
+double getSteedChance<Effects::ApplyToSteed>() {
+  return 1.0;
 }
 
 static string getName(const Effects::GenericModifierEffect& e, const ContentFactory* f) {
@@ -2362,7 +2389,7 @@ template <typename T, REQUIRE(applyToCreature(TVALUE(const T&), TVALUE(Creature*
 static bool apply1(const T& t, Position pos, Creature* attacker, int) {
   if (auto c = pos.getCreature()) {
     if (auto steed = c->getSteed())
-      if (Random.roll(2))
+      if (Random.chance(getSteedChance<T>()))
         return applyToCreature(t, steed, attacker);
     return applyToCreature(t, c, attacker);
   }
