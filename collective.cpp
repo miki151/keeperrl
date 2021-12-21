@@ -205,9 +205,7 @@ void Collective::addCreature(Creature* c, EnumSet<MinionTrait> traits) {
 
 void Collective::removeCreature(Creature* c) {
   creatures.removeElement(c);
-  steedAssignments.erase(c);
-  if (auto rider = getSteedOrRider(c))
-    steedAssignments.erase(rider);
+  setSteed(c, nullptr);
   for (auto& group : populationGroups)
     group.removeElementMaybe(c);
   for (auto& group : copyOf(populationGroups))
