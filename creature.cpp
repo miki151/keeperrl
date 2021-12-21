@@ -2037,6 +2037,7 @@ CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) co
 void Creature::forceMount(Creature* whom) {
   CHECK(isAffected(LastingEffect::RIDER));
   CHECK(whom->isAffected(LastingEffect::STEED));
+  whom->removeEffect(LastingEffect::SLEEP);
   if (!steed) {
     steed = whom->position.getModel()->extractCreature(whom);  
     steed->position = position;
