@@ -717,6 +717,7 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
         c.attr[AttrType::DAMAGE] = Random.get(28, 34);
         c.attr[AttrType::DEFENSE] = Random.get(28, 34);
         c.attr[AttrType::SPELL_DAMAGE] = Random.get(28, 34);
+        c.permanentEffects[p.humanoid ? LastingEffect::RIDER : LastingEffect::STEED] = true;
         for (auto effect : getResistanceAndVulnerability(Random))
           c.permanentEffects[effect] = 1;
         if (p.large) {
