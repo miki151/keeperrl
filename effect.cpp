@@ -1723,6 +1723,10 @@ double getSteedChance<Effects::ApplyToSteed>() {
   return 1.0;
 }
 
+static bool applyToCreature(const Effects::ApplyToSteed& e, Creature* c, Creature* attacker) {
+  return e.effect->applyToCreature(c, attacker);
+}
+
 static string getName(const Effects::GenericModifierEffect& e, const ContentFactory* f) {
   return e.effect->getName(f);
 }
