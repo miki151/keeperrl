@@ -1124,6 +1124,9 @@ void PlayerControl::fillMinions(CollectiveInfo& info) const {
     for (Creature* c : collective->getCreatures(trait))
       if (!minions.contains(c))
         minions.push_back(c);
+  for (Creature* c : collective->getCreatures())
+    if (c->isAffected(LastingEffect::STEED) && !minions.contains(c))
+      minions.push_back(c);
   info.minionGroups = getCreatureGroups(minions);
   info.automatonGroups = getAutomatonGroups(minions);
   info.minions = minions.transform([](const Creature* c) { return CreatureInfo(c) ;});
