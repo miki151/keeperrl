@@ -682,19 +682,15 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (object.layer() == ViewLayer::FLOOR_BACKGROUND && shadowed.count(tilePos))
       renderer.drawTile(pos, shortShadow, size, Color(255, 255, 255, 170));
     bool burning = object.hasModifier(ViewObject::Modifier::BURNING);
-    if (burning && !fxViewManager) {
-      auto& fire1 = renderer.getTileSet().getTileCoord("fire1");
-      auto& fire2 = renderer.getTileSet().getTileCoord("fire2");
-      renderer.drawTile(pos - Vec2(0, 4 * zoom),
-          (curTimeReal.count() + pos.getHash()) % 500 < 250 ? fire1 : fire2, size);
-    }
+
     drawHealthBar(renderer, tilePos, pos + move, size, object, index);
     if (object.hasModifier(ViewObject::Modifier::STUNNED))
       renderer.drawText(blendNightColor(Color::WHITE, index), pos + move + size / 2, "S",
           Renderer::CenterType::HOR_VER, size.x * 2 / 3);
-    if (curTimeReal.count() % 2000 < 800 && object.hasModifier(ViewObject::Modifier::TURNED_OFF))
-      renderer.drawText(FontId::SYMBOL_FONT, size.x * 1 / 3, Color::YELLOW, pos + move + size / 2, u8"⚡",
-          Renderer::CenterType::HOR_VER);
+    if (curTimeReal.count() % 2000 < 800 && object.hasModifier(ViewObject::Modifier::TURNED_OFF)) {
+      auto& icon = renderer.getTileSet().getTileCoord("power_off");
+      renderer.drawTile(pos + move, icon, size);
+    }
     if (object.hasModifier(ViewObject::Modifier::LOCKED))
       renderer.drawTile(pos + move, renderer.getTileSet().getTile(ViewId("key"), spriteMode).getSpriteCoord(), size);
     if (fxViewManager)
