@@ -244,7 +244,8 @@ class GuiBuilder {
     SPELL_SCHOOLS,
     ITEMS_HELP,
     CAPTURING_PRISONERS,
-    USING_STEED
+    USING_STEED,
+    BUILDING_ROOFS
   };
   optional<BottomWindowId> bottomWindow;
   void toggleBottomWindow(BottomWindowId);

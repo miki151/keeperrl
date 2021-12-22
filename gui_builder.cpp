@@ -308,6 +308,7 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo&) {
     lines.addElem(WL(standardButton,
         WL(getListBuilder)
             .addElemAuto(WL(topMargin, -2, WL(viewObject, id)))
+            .addSpace(5)
             .addElemAuto(WL(label, label))
             .buildHorizontalList(),
         WL(button, [this, windowId]() {
@@ -319,6 +320,7 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo&) {
   };
   addScriptedButton(ViewId("prisoner"), "Capturing prisoners", BottomWindowId::CAPTURING_PRISONERS);
   addScriptedButton(ViewId("horse"), "Using steed", BottomWindowId::USING_STEED);
+  addScriptedButton(ViewId("castle_wall"), "Buildings and roof support", BottomWindowId::BUILDING_ROOFS);
   lines.addElem(WL(standardButton,
       WL(getListBuilder)
           .addElemAuto(WL(topMargin, -2, WL(viewObject, ViewId("special_bmbw"))))
@@ -2812,6 +2814,9 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
         OverlayInfo::TOP_LEFT});
   if (bottomWindow == USING_STEED)
     ret.push_back({gui.scripted([this]{ bottomWindow = none; }, "steed", ScriptedUIData{}, scriptedUIState),
+        OverlayInfo::TOP_LEFT});
+  if (bottomWindow == BUILDING_ROOFS)
+    ret.push_back({gui.scripted([this]{ bottomWindow = none; }, "roofs", ScriptedUIData{}, scriptedUIState),
         OverlayInfo::TOP_LEFT});
   if (bottomWindow == BESTIARY) {
     if (bestiaryIndex >= info.encyclopedia->bestiary.size())
