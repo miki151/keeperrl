@@ -21,9 +21,10 @@ End
         all = {
           1 "CHILD"
           1 "HORSE"
-          1 "DONKEY"
+          1 "DONKEY_STEED"
           1 "COW"
           1 "PIG"
+          1 "GOAT_STEED"
         }
       }
     }
@@ -33,6 +34,9 @@ End
     }
     crops = Crops()
     furniture = "roomFurniture"
+  }
+  config = {
+    alwaysMount = true
   }
 }
 "UNICORN_HERD"
@@ -321,6 +325,9 @@ End
           1 "PIG"
         }
       }
+      steeds = {
+        all = { 1 "HORSE" }
+      }
     }
     locationNameGen = "TOWN"
     race = "humans"
@@ -330,6 +337,7 @@ End
   config = {
     spawnGhosts = 4
     ghostProb = 0.1
+    alwaysMount = true
   }
 }
 "WARRIORS"
@@ -2140,9 +2148,10 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
         all = {
           1 "CHILD"
           1 "HORSE"
-          1 "DONKEY"
+          1 "DONKEY_STEED"
           1 "COW"
           1 "PIG"
+          1 "GOAT_STEED"
         }
       }
     }
@@ -2151,6 +2160,7 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
   }
   config = {
     guardianInfo = "WITCHMAN" 0.003 1 2
+    alwaysMount = true
   }
 }
 "KNIFE_COTTAGE" inherit "HUMAN_COTTAGE"
