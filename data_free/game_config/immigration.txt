@@ -485,7 +485,6 @@ End
       frequency = 0.3
       requirements = {
         { 0.0 MinTurnRequirement 2000 }
-        { 0.1 AttractionInfo 1 {FurnitureType "TRAINING_WOOD"}}
         { 0.1 AttractionInfo 1 {FurnitureType "ARCHERY_RANGE"}}
       }
       specialTraits = {
@@ -568,7 +567,14 @@ End
       frequency = 0.1
     }
     {
-      ids = { "DONKEY" "COW" "HORSE" "GOAT" }
+      ids = { "HORSE_CAN_TRAIN" }
+      traits = { NO_LIMIT }
+      requirements = {
+        { 1.0 CostInfo "GOLD" 30 }
+      }
+    }
+    {
+      ids = { "DONKEY" "COW" "GOAT" }
       traits = { NO_LIMIT INCREASE_POPULATION }
       requirements = {
         { 1.0 CostInfo "GOLD" 50 }

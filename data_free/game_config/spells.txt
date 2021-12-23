@@ -280,6 +280,14 @@ End
   cooldown = 120
   sound = SPELL_SPEED_SELF
 }
+"warhorse_haste"
+{
+  symbol = "🐎"
+  effect = Name "gallop" ApplyToSteed Lasting SPEED
+  cooldown = 50
+  sound = SPELL_SPEED_SELF
+  message = "gallop" "gallops"
+}
 "slow"
 {
   symbol = "🐢"

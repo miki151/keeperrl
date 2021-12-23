@@ -3271,6 +3271,10 @@
   }
 "HORSE_CAN_TRAIN" inherit "HORSE"
   {
+    attr = {
+      DAMAGE 24
+      DEFENSE 24
+    }
     afterKilledSomeone = {
       ApplyToSteed CreatureMessage "are more experienced" "is more experienced"
       ApplyToSteed Polymorph "WARHORSE" none
@@ -3280,15 +3284,13 @@
   {
     viewId = { "warhorse" }
     attr = {
-      DAMAGE 40
-      DEFENSE 40
+      DAMAGE 36
+      DEFENSE 36
     }
     name = {
       name = "warhorse"
     }
-    permanentEffects = append {
-      SPEED 1
-    }
+    spells = { "warhorse_haste" }
   }
 "CAMEL" inherit "HORSE"
   {
@@ -3329,12 +3331,15 @@
       weight = 200
       deathSound = DYING_DONKEY
     }
-    permanentEffects = {
-      STEED 1
-    }
     noChase = true
     name = {
       name = "donkey"
+    }
+  }
+"DONKEY_STEED" inherit "DONKEY"
+  {
+    permanentEffects = {
+      STEED 1
     }
   }
 "PIG"
@@ -3371,13 +3376,16 @@
       type = FourLegged MEDIUM
       weight = 50
     }
-    permanentEffects = {
-      STEED 1
-    }
     petReaction = "\"Meh-eh-eh!\""
     noChase = true
     name = {
       name = "goat"
+    }
+  }
+"GOAT_STEED" inherit "GOAT"
+  {
+    permanentEffects = {
+      STEED 1
     }
   }
 "JACKAL"
