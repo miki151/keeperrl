@@ -2241,7 +2241,7 @@ Creature* PlayerControl::getCreature(UniqueEntity<Creature>::Id id) const {
 vector<Creature*> PlayerControl::getTeam(const Creature* c) {
   vector<Creature*> ret;
   for (auto team : getTeams().getActive(c))
-    append(ret, getTeams().getMembers(team));
+    append(ret, getTeams().getMembers(team).filter([](auto c) { return !c->getRider(); }));
   return ret;
 }
 
