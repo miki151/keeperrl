@@ -1062,6 +1062,8 @@ class ByCollective : public Behaviour {
 
   virtual MoveInfo getMove() override {
     PROFILE_BLOCK("ByCollective::getMove");
+    if (creature->getRider())
+      return getFighterMove();
     considerHealingActivity();
     return getFirstGoodMove(
         bindMethod(&ByCollective::getFighterMove, this),

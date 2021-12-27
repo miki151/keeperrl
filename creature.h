@@ -173,7 +173,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool canCarryMoreWeight(double) const;
   CreatureAction drop(const vector<Item*>& item) const;
   void drop(vector<PItem> item);
-  CreatureAction attack(Creature*, bool noSpendTime = false) const;
+  CreatureAction attack(Creature*) const;
   int getDefaultWeaponDamage() const;
   CreatureAction execute(Creature*, const char* verbSecond, const char* verbThird) const;
   CreatureAction applyItem(Item* item) const;

@@ -362,10 +362,14 @@ EnumSet<CreatureStatus>& Creature::getStatus() {
 
 optional<MovementInfo> Creature::spendTime(TimeInterval t, SpeedModifier speedModifier) {
   PROFILE;
+  if (!!getRider())
+    return none;
   if (WModel m = position.getModel()) {
     MovementInfo ret(Vec2(0, 0), *getLocalTime(), *getLocalTime() + t, 0, MovementInfo::MOVE);
     lastMoveCounter = ret.moveCounter = position.getModel()->getMoveCounter();
     if (!isDead()) {
+      if (steed && !m->getTimeQueue().hasExtraMove(this))
+        steed->makeMove();
       if (speedModifier == SpeedModifier::FAST && t == 1_visible) {
         if (m->getTimeQueue().hasExtraMove(this))
           ret.tBegin += 0.5;
@@ -416,7 +420,7 @@ static Creature::SpeedModifier getSpeedModifier(const Creature* c) {
 
 CreatureAction Creature::move(Position pos, optional<Position> nextPos) const {
   PROFILE;
-  if (isAffected(LastingEffect::IMMOBILE))
+  if (isAffected(LastingEffect::IMMOBILE) || !!getRider())
     return CreatureAction("");
   Vec2 direction = getPosition().getDir(pos);
   if (getHoldingCreature())
@@ -1337,7 +1341,7 @@ int Creature::getDefaultWeaponDamage() const {
     return 0;
 }
 
-CreatureAction Creature::attack(Creature* other, bool noSpendTime) const {
+CreatureAction Creature::attack(Creature* other) const {
   CHECK(!other->isDead());
   if (!position.isSameLevel(other->getPosition()))
     return CreatureAction();
@@ -1378,21 +1382,13 @@ CreatureAction Creature::attack(Creature* other, bool noSpendTime) const {
           other->position.dist8(position).value_or(2) > 1)
         break;
     }
-    if (!noSpendTime) {
-      auto movementInfo = (*self->spendTime())
-          .setDirection(dir)
-          .setType(MovementInfo::ATTACK);
+    if (auto movementInfo = self->spendTime()) {
+      movementInfo->setDirection(dir).setType(MovementInfo::ATTACK);
       if (wasDamaged)
-        movementInfo.setVictim(other->getUniqueId());
-      self->addMovementInfo(movementInfo);
+        movementInfo->setVictim(other->getUniqueId());
+      self->addMovementInfo(*movementInfo);
     }
   });
-  if (steed && !other->isDead())
-    ret = ret.append(CreatureAction(this, [=](Creature* self) {
-      if (steed && !other->isDead())
-        if (auto action = steed->attack(other, true))
-          action.perform(self->steed.get());
-    }));
   return ret;
 }
 
@@ -2070,8 +2066,10 @@ CreatureAction Creature::dismount() const {
       return CreatureAction(this, [=](Creature* self) {
         auto dir = position.getDir(v);
         auto oldPos = self->position;
+        CHECK(!!steed);
         self->position.moveCreature(dir);
         auto timeSpent = 1_visible;
+        CHECK(!!steed);
         self->verb("dismount", "dismounts", steed->getName().the());
         oldPos.landCreature(std::move(self->steed));
         self->addMovementInfo(self->spendTime(timeSpent, getSpeedModifier(self))->setDirection(dir));
