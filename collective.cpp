@@ -622,9 +622,15 @@ void Collective::autoAssignSteeds() {
     if (freeSteeds.empty())
       break;
     auto steed = getSteedOrRider(c);
-    if (!steed || steed->getBestAttack().value < freeSteeds.back()->getBestAttack().value) {
-      setSteed(c, freeSteeds.back());
-      freeSteeds.pop_back();
+    auto bestAvailable = [&]() -> Creature*{
+      for (int i : All(freeSteeds).reverse())
+        if (c->canMount(freeSteeds[i]))
+          return freeSteeds[i];
+      return nullptr;
+    }();
+    if (bestAvailable && (!steed || steed->getBestAttack().value < bestAvailable->getBestAttack().value)) {
+      setSteed(c, bestAvailable);
+      freeSteeds.removeElementMaybePreserveOrder(bestAvailable);
     }
   }
 }

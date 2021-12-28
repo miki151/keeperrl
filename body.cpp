@@ -825,6 +825,10 @@ int Body::getAttrBonus(AttrType type) const {
   return ret;
 }
 
+bool Body::canMount(const Body& mount) const {
+  return size == mount.size || (size == BodySize::LARGE && mount.size == BodySize::HUGE);
+}
+
 bool Body::tick(const Creature* c) {
   if (fallsApartDueToLostBodyParts()) {
     c->you(MsgType::FALL, "apart");

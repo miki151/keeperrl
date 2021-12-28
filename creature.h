@@ -200,6 +200,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   CreatureAction eat(Item*) const;
   CreatureAction destroy(Vec2 direction, const DestroyAction&) const;
   void forceMount(Creature* whom);
+  bool canMount(Creature* whom) const;
   CreatureAction mount(Creature* whom) const;
   Creature* getSteed() const;
   Creature* getRider() const;

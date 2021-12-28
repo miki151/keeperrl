@@ -2041,8 +2041,8 @@ void Creature::forceMount(Creature* whom) {
 }
 
 CreatureAction Creature::mount(Creature* whom) const {
-  if (whom->getPosition().dist8(position) != 1 || !!steed || !!whom->steed || whom->getRider() || whom->isPlayer() ||
-      isEnemy(whom) || !whom->isAffected(LastingEffect::STEED) || !isAffected(LastingEffect::RIDER))
+  if (!canMount(whom) || whom->getPosition().dist8(position) != 1 || !!steed || !!whom->steed || whom->getRider() ||
+      whom->isPlayer() || isEnemy(whom) || !whom->isAffected(LastingEffect::STEED) || !isAffected(LastingEffect::RIDER))
     return CreatureAction();
   return CreatureAction(this, [=](Creature* self) {
     auto dir = position.getDir(whom->position);
@@ -2052,6 +2052,10 @@ CreatureAction Creature::mount(Creature* whom) const {
     self->addMovementInfo(self->spendTime(timeSpent, getSpeedModifier(self))->setDirection(dir));
     self->verb("mount", "mounts", whom->getName().the());
   });
+}
+
+bool Creature::canMount(Creature* whom) const {
+  return getBody().canMount(whom->getBody());
 }
 
 Creature* Creature::getSteed() const {

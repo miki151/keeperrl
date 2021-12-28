@@ -102,11 +102,9 @@ class Body {
   bool canBeCaptured() const;
   vector<PItem> getCorpseItems(const string& name, UniqueEntity<Creature>::Id, bool instantlyRotten,
       const ContentFactory* factory, Game*) const;
-
   vector<AttackLevel> getAttackLevels() const;
   int getAttrBonus(AttrType) const;
-
-  bool isCollapsed(const Creature*) const;
+  bool canMount(const Body& mount) const;
   int numGood(BodyPart) const;
   int numLost(BodyPart) const;
   int numInjured(BodyPart) const;

@@ -2709,7 +2709,7 @@
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""
     permanentEffects = {
-      SPEED 1
+      RIDER 1
       NO_CARRY_LIMIT 1
     }
     name = {
@@ -3534,7 +3534,7 @@
     aiType = RANGED
     permanentEffects = {
       SPEED 1
-      SWIMMING_SKILL 1
+      STEED 1
     }
     noChase = true
     name = {
@@ -3728,6 +3728,7 @@
     permanentEffects = {
       SPEED 1
       EXPLORE_SKILL 1
+      STEED 1
     }
     name = {
       name = "raven"
@@ -4071,6 +4072,7 @@
       NIGHT_VISION 1
       EXPLORE_NOCTURNAL_SKILL 1
       EXPLORE_CAVES_SKILL 1
+      STEED 1
     }
     name = {
       name = "bat"
