@@ -42,11 +42,12 @@
     }
   }
   wildlife = {
-    count = { 3 6 }
+    count = { 3 }
     all = {
       4 "DEER"
       2 "FOX"
       2 "BOAR"
+      2 "RAVEN"
     }
   }
   darkKeeperEnemies = {
@@ -106,7 +107,7 @@
     }
   }
   wildlife = append {
-    count = { 6 12 }
+    count = { 6 }
   }
   darkKeeperEnemies = {
     { id = "ELVEN_COTTAGE" count = { 3 5 } }
@@ -211,7 +212,7 @@
     }
   }
   wildlife = {
-    count = { 6 12 }
+    count = { 6 }
     all = {
       4 "POLAR_FOX"
       1 "POLAR_BEAR"
@@ -269,9 +270,10 @@
     }
   }
   wildlife = {
-    count = { 6 12 }
+    count = { 6 }
     all = {
-      1 "SNAKE"
+      2 "SNAKE"
+      1 "RAVEN"
     }
   }
   darkKeeperEnemies = {
@@ -324,7 +326,7 @@
     }
   }
   wildlife = {
-    count = { 20 30 }
+    count = { 20 }
     all = {
       1 "KANGAROO"
     }
@@ -365,11 +367,12 @@
     }
   }
   wildlife = {
-    count = { 4 6 }
+    count = { 4 }
     all = {
       6 "SPIDER"
       5 "RAT"
       5 "BAT"
+      2 "RAVEN"
     }
   }
   darkKeeperEnemies = {

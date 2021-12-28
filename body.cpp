@@ -1064,9 +1064,7 @@ bool Body::canPerformRituals() const {
 }
 
 bool Body::canBeCaptured() const {
-  if (canCapture)
-    return *canCapture;
-  return xhumanoid && !isImmuneTo(LastingEffect::TIED_UP);
+  return !!canCapture ? *canCapture : !isImmuneTo(LastingEffect::TIED_UP);
 }
 
 bool Body::isUndead() const {

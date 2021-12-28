@@ -7,6 +7,7 @@
 #include "view_object.h"
 #include "square_attrib.h"
 #include "tile_gas_type.h"
+#include "creature_list.h"
 
 class ProgressMeter;
 class Model;
@@ -106,6 +107,8 @@ class LevelBuilder {
 
   RandomGen& getRandom();
   ContentFactory* getContentFactory() const;
+
+  CreatureList wildlife;
   
   private:
   Vec2 transform(Vec2);

@@ -2438,6 +2438,31 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
   }
   discoverable = false
 }
+"CAVE_BEAR_ZLEVEL"
+{
+  settlement = {
+    type = Builtin VAULT "DUNGEON"
+    tribe = MONSTER
+    inhabitants = {
+      leader = { { "CAVE_BEAR" } }
+    }
+  }
+}
+"BAT_ZLEVEL"
+{
+  settlement = {
+    type = Builtin VAULT "DUNGEON"
+    tribe = MONSTER
+    inhabitants = {
+      fighters = {
+        count = {5 8} 
+        all = {
+          1 "BAT"
+        }
+      }
+    }
+  }
+}
 "RAT_PEOPLE_CAVE"
 {
   settlement = {

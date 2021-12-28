@@ -1440,8 +1440,9 @@ void PlayerControl::acceptPrisoner(int index) {
   if (index < immigrants.size() && !immigrants[index].collective) {
     auto victim = immigrants[index].creatures[0];
     victim->removeEffect(LastingEffect::STUNNED);
-    victim->getAttributes().getSkills().setValue(SkillId::DIGGING,
-        victim->isAffected(LastingEffect::NAVIGATION_DIGGING_SKILL) ? 1 : 0.2);
+    if (victim->getBody().isHumanoid())
+      victim->getAttributes().getSkills().setValue(SkillId::DIGGING,
+          victim->isAffected(LastingEffect::NAVIGATION_DIGGING_SKILL) ? 1 : 0.2);
     collective->addCreature(victim, {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
     addMessage(PlayerMessage("You enslave " + victim->getName().a()).setPosition(victim->getPosition()));
     for (auto& elem : copyOf(stunnedCreatures))
@@ -1481,28 +1482,32 @@ vector<PlayerControl::StunnedInfo> PlayerControl::getPrisonerImmigrantStack() co
   return ret;
 }
 
+static FurnitureType getPrisonType(Creature* c) {
+  return FurnitureType(c->getBody().isHumanoid() ? "PRISON" : "BEAST_CAGE");
+}
+
 vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
   vector<ImmigrantDataInfo> ret;
   int index = -1;
+  auto contentFactory = getGame()->getContentFactory();
   for (auto stack : getPrisonerImmigrantStack()) {
     auto c = stack.creatures[0];
-    const int numFreePrisoners = 4;
-    const int requiredPrisonSize = 2;
-    const int numPrisoners = collective->getCreatures(MinionTrait::PRISONER).size() - numFreePrisoners;
-    const int prisonSize = collective->getConstructions().getBuiltCount(FurnitureType("PRISON"));
+    const int numPrisoners = collective->getCreatures(MinionTrait::PRISONER).size();
+    const auto prisonType = contentFactory->furniture.getData(getPrisonType(c));
+    const int prisonSize = collective->getConstructions().getBuiltCount(prisonType.getType());
     vector<string> requirements;
-    const int missingSize = (numPrisoners + 1) * requiredPrisonSize - prisonSize;
+    const int missingSize = numPrisoners + 1 - prisonSize;
     if (missingSize > 0) {
       if (prisonSize == 0)
-        requirements.push_back("Requires a prison.");
+        requirements.push_back("Requires a " + prisonType.getName());
       else
-        requirements.push_back("Requires " + toString(missingSize) + " more prison tiles.");
+        requirements.push_back("Requires " + toString(missingSize) + " more " + prisonType.getName(missingSize));
     }
     if (stack.collective)
       requirements.push_back("Requires conquering " + stack.collective->getName()->full);
     ret.push_back(ImmigrantDataInfo());
     ret.back().requirements = requirements;
-    ret.back().creature = getImmigrantCreatureInfo(c, getGame()->getContentFactory());
+    ret.back().creature = getImmigrantCreatureInfo(c, contentFactory);
     ret.back().creature.name += " (prisoner)";
     ret.back().count = stack.creatures.size() == 1 ? none : optional<int>(stack.creatures.size());
     ret.back().timeLeft = c->getTimeRemaining(LastingEffect::STUNNED);

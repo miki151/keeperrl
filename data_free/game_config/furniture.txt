@@ -346,7 +346,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
 }
 "PRISON"
 {
-  name = "prison"
+  name = "prison tile"
   viewId = { "prison" }
   tickType = Effect BedHeal()
   usageType = UsageEffect "sleep in" Lasting SLEEP

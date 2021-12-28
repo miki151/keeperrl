@@ -198,6 +198,7 @@ PLevel LevelBuilder::build(const ContentFactory* factory, WModel m, LevelMaker* 
   for (CollectiveBuilder* c : collectives)
     c->setLevel(l.get());
   l->noDiagonalPassing = noDiagonalPassing;
+  l->wildlife = wildlife;
   return l;
 }
 

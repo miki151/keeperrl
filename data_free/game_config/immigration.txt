@@ -332,43 +332,6 @@ End
       }
     }
     {
-      ids = { "RAVEN" }
-      traits = { FIGHTER DOESNT_TRIGGER }
-      frequency = 0.5
-      requirements = {
-        { 0.0 SunlightState DAY }
-        { 0.0 FurnitureType "BEAST_CAGE" }
-      }
-    }
-    {
-      ids = { "BAT" }
-      traits = { FIGHTER DOESNT_TRIGGER }
-      frequency = 0.5
-      requirements = {
-        { 0.0 SunlightState NIGHT }
-        { 0.0 FurnitureType "BEAST_CAGE" }
-      }
-    }
-    {
-      ids = { "WOLF" }
-      traits = { FIGHTER DOESNT_TRIGGER }
-      frequency = 0.15
-      groupSize = {3 9}
-      autoTeam = true
-      requirements = {
-        { 0.0 SunlightState NIGHT }
-        { 0.0 FurnitureType "BEAST_CAGE" }
-      }
-    }
-    {
-      ids = { "CAVE_BEAR" }
-      traits = { FIGHTER DOESNT_TRIGGER }
-      frequency = 0.1
-      requirements = {
-        { 0.0 FurnitureType "BEAST_CAGE" }
-      }
-    }
-    {
       ids = { "WEREWOLF" }
       traits = { FIGHTER DOESNT_TRIGGER }
       frequency = 0.1

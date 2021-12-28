@@ -64,8 +64,10 @@ void Tribe::onMemberKilled(Creature* member, Creature* attacker) {
   CHECK(member->getTribe() == this);
   if (attacker == nullptr)
     return;
-  initStanding(attacker);
-  standing.getOrFail(attacker) -= killPenalty * getMultiplier(member);
+  if (diplomatic) {
+    initStanding(attacker);
+    standing.getOrFail(attacker) -= killPenalty * getMultiplier(member);
+  }
 }
 
 bool Tribe::isEnemy(const Creature* c) const {
@@ -124,7 +126,7 @@ Tribe::Map Tribe::generateTribes() {
   addEnemies(ret, TribeId::getDarkKeeper(), {
       TribeId::getAdventurer(), TribeId::getElf(), TribeId::getDwarf(), TribeId::getHuman(), TribeId::getLizard(),
       TribeId::getPest(), TribeId::getMonster(), TribeId::getBandit(), TribeId::getAnt(),
-      TribeId::getRetiredKeeper()});
+      TribeId::getRetiredKeeper(), TribeId::getWildlife()});
   addEnemies(ret, TribeId::getElf(), {
       TribeId::getDwarf(), TribeId::getBandit() });
   addEnemies(ret, TribeId::getDarkElf(), {
@@ -134,7 +136,7 @@ Tribe::Map Tribe::generateTribes() {
       TribeId::getGreenskin()});
   addEnemies(ret, TribeId::getAdventurer(), {
       TribeId::getMonster(), TribeId::getPest(), TribeId::getBandit(), TribeId::getDarkElf(),
-      TribeId::getGreenskin(), TribeId::getAnt(), TribeId::getRetiredKeeper(), TribeId::getLizard() });
+      TribeId::getGreenskin(), TribeId::getAnt(), TribeId::getRetiredKeeper(), TribeId::getLizard(), TribeId::getWildlife() });
   addEnemies(ret, TribeId::getMonster(), {
       TribeId::getWildlife(), TribeId::getHuman(), TribeId::getBandit(),  TribeId::getLizard()});
   addEnemies(ret, TribeId::getShelob(), {

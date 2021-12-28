@@ -24,6 +24,7 @@
 #include "entity_set.h"
 #include "vision_id.h"
 #include "furniture_layer.h"
+#include "creature_list.h"
 
 class Model;
 class Square;
@@ -168,6 +169,8 @@ class Level : public OwnedObject<Level> {
   bool aiFollows = true;
   Table<Collective*> SERIAL(territory);
   int sightRange = 100;
+  CreatureList SERIAL(wildlife);
+  vector<Creature*> SERIAL(addedWildlife);
 
   private:
   friend class Position;

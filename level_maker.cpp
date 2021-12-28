@@ -2466,8 +2466,19 @@ static PMakerQueue getForrest(const BiomeInfo& info) {
   return ret;
 }
 
-static PLevelMaker getForrestCreatures(const BiomeInfo& info) {
-  return unique<Creatures>(info.wildlife, TribeId::getWildlife(), MonsterAIFactory::wildlifeNonPredator());
+namespace {
+class AddWildlife : public LevelMaker {
+  public:
+  AddWildlife(CreatureList l) : list(std::move(l)) {}
+
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
+    builder->wildlife = list;
+  }
+
+  private:
+  CreatureList list;
+};
+
 }
 
 struct SurroundWithResourcesInfo {
@@ -2942,7 +2953,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
       SquareAttrib::CONNECTOR)));
   queue->addMaker(unique<Items>(biomeInfo.items, biomeInfo.itemCount));
   queue->addMaker(unique<AddMapBorder>(mapBorder));
-  queue->addMaker(unique<Margin>(mapBorder, getForrestCreatures(biomeInfo)));
+  queue->addMaker(unique<AddWildlife>(biomeInfo.wildlife));
   return std::move(queue);
 }
 

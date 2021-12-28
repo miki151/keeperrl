@@ -42,6 +42,9 @@
 #include "game_event.h"
 #include "collective.h"
 #include "phylactery_info.h"
+#include "content_factory.h"
+#include "monster_ai.h"
+
 
 template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
@@ -49,7 +52,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps, territory);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
-  ar(furniture, tickingFurniture, covered, roofSupport, portals, name, depth);
+  ar(furniture, tickingFurniture, covered, roofSupport, portals, name, depth, wildlife, addedWildlife);
   vector<pair<TribeId, unique_ptr<EffectsTable>>> SERIAL(tmp);
   for (auto t : ENUM_ALL(TribeId::KeyType))
     if (!!furnitureEffects[t])
@@ -552,6 +555,19 @@ void Level::tick() {
     for (auto layer : ENUM_ALL(FurnitureLayer))
       if (auto f = furniture->getBuilt(layer).getWritable(pos))
         f->tick(Position(pos, this), layer);
+  addedWildlife = addedWildlife.filter([this](Creature* c) {
+    return c->getPosition().getLevel() == this && !getGame()->getPlayerCollective()->getCreatures().contains(c); });
+  if (Random.roll(50) && addedWildlife.size() < wildlife.count.getStart()) {
+    auto gen = wildlife.generate(Random, &getGame()->getContentFactory()->getCreatures(), TribeId::getWildlife(),
+        MonsterAIFactory::wildlifeNonPredator());
+    if (!gen.empty()) {
+      auto c = std::move(gen[0]);
+      c->getStatus().insert(CreatureStatus::CIVILIAN);
+      auto ref = c.get();
+      if (landCreature(getAllPositions().filter([](auto pos) { return !pos.isCovered(); }), std::move(c)))
+        addedWildlife.push_back(ref);
+    }
+  }
 }
 
 bool Level::inBounds(Vec2 pos) const {

@@ -23,14 +23,21 @@
     type = FullZLevel {
       # You can optionally add an EnemyId. The player will dig down right into their base.
       # Warning: some enemies might not work
-      enemy = "RAT_PEOPLE_CAVE"
+      enemy = "CAVE_BEAR_ZLEVEL"
       # The probability that the enemy will immediately attack when uncovered. 
       # Make sure the enemy has behaviour defined in enemies.txt.
-      attackChance = 0.3
+      # attackChance = 0.3
     }
     # Possible depths for this level, inclusive. The first level when you dig down is 1.
     minDepth = 3
-    maxDepth = 7
+    maxDepth = 100
+  }
+  {
+    type = FullZLevel {
+      enemy = "BAT_ZLEVEL"
+    }
+    minDepth = 1
+    maxDepth = 100
   }
   {
     type = FullZLevel {
@@ -117,8 +124,9 @@ End
 # Here come levels specific to white keepers
 "lawful"
 {
-  LEVEL("GOBLINS_Z_LEVEL1", 2, 6)
-  LEVEL("DARK_ELVES_Z_LEVEL1", 2, 6)
+  LEVEL("RAT_PEOPLE_CAVE", 2, 3)
+  LEVEL("GOBLINS_Z_LEVEL1", 4, 6)
+  LEVEL("DARK_ELVES_Z_LEVEL1", 4, 6)
   LEVEL("GOBLINS_Z_LEVEL2", 7, 11)
   LEVEL("DARK_ELVES_Z_LEVEL2", 7, 11)
   LEVEL("GOBLINS_Z_LEVEL3", 12, 16)
@@ -141,7 +149,8 @@ End
 # Here come levels specific to dark keepers
 "evil"
 {
-  LEVEL("DWARVES_Z_LEVEL1", 2, 6)
+  LEVEL("RAT_PEOPLE_CAVE", 2, 3)
+  LEVEL("DWARVES_Z_LEVEL1", 4, 6)
   LEVEL("DWARVES_Z_LEVEL2", 7, 11)
   LEVEL("DWARVES_Z_LEVEL3", 12, 16)
   LEVEL("DWARVES_Z_LEVEL4", 17, 21)
