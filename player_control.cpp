@@ -413,7 +413,7 @@ void PlayerControl::minionEquipmentAction(const EquipmentActionInfo& action) {
         break;
       case ItemAction::REPLACE_STEED:
         if (auto steed = chooseSteed(creature, getCreatures().filter(
-            [](Creature* c) { return c->isAffected(LastingEffect::STEED); })))
+            [creature](Creature* c) { return c->isAffected(LastingEffect::STEED) && creature->canMount(c); })))
           collective->setSteed(creature, steed);
         break;
       case ItemAction::REPLACE:
@@ -556,17 +556,20 @@ static ItemInfo getSteedItemInfo(const ContentFactory* factory, const Creature* 
   );
 }
 
-void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
-  info.inventory.clear();
-  auto factory = getGame()->getContentFactory();
+void PlayerControl::fillSteedInfo(Creature* creature, PlayerInfo& info) const {
   if (creature->isAffected(LastingEffect::RIDER)) {
+    auto factory = getGame()->getContentFactory();
     if (auto steed = collective->getSteedOrRider(creature))
       info.inventory.push_back(getSteedItemInfo(factory, steed, creature->getSteed() == steed));
     else
       info.inventory.push_back(getEmptySteedItemInfo(factory));
   }
-  if (!creature->getBody().isHumanoid())
+}
+
+void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
+  if (!collective->usesEquipment(creature))
     return;
+  auto factory = getGame()->getContentFactory();
   vector<EquipmentSlot> slots;
   for (auto slot : Equipment::slotTitles)
     slots.push_back(slot.first);
@@ -1058,8 +1061,9 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
               MinionActivityMap::canLock(t),
               collective->isActivityGroupLocked(minionInfo.groupName, t)});
         }
-      if (collective->usesEquipment(c))
-        fillEquipment(c, minionInfo);
+      minionInfo.inventory.clear();
+      fillSteedInfo(c, minionInfo);
+      fillEquipment(c, minionInfo);
       if (canControlSingle(c))
         minionInfo.actions.push_back(PlayerInfo::CONTROL);
       if (!collective->hasTrait(c, MinionTrait::PRISONER)) {

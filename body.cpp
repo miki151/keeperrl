@@ -825,8 +825,8 @@ int Body::getAttrBonus(AttrType type) const {
   return ret;
 }
 
-bool Body::canMount(const Body& mount) const {
-  return size == mount.size || (size == BodySize::LARGE && mount.size == BodySize::HUGE);
+BodySize Body::getSize() const {
+  return size;
 }
 
 bool Body::tick(const Creature* c) {

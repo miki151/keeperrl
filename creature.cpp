@@ -2055,7 +2055,9 @@ CreatureAction Creature::mount(Creature* whom) const {
 }
 
 bool Creature::canMount(Creature* whom) const {
-  return getBody().canMount(whom->getBody());
+  auto mySize = getBody().getSize();
+  auto hisSize = whom->getBody().getSize();
+  return mySize == hisSize || (mySize == BodySize::LARGE && hisSize == BodySize::HUGE);
 }
 
 Creature* Creature::getSteed() const {

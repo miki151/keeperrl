@@ -104,7 +104,7 @@ class Body {
       const ContentFactory* factory, Game*) const;
   vector<AttackLevel> getAttackLevels() const;
   int getAttrBonus(AttrType) const;
-  bool canMount(const Body& mount) const;
+  BodySize getSize() const;
   int numGood(BodyPart) const;
   int numLost(BodyPart) const;
   int numInjured(BodyPart) const;

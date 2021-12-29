@@ -204,6 +204,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   void addEquipment(Creature*, EquipmentSlot);
   void addConsumableItem(Creature*);
   void handleEquipment(View* view, Creature* creature);
+  void fillSteedInfo(Creature*, PlayerInfo&) const;
   void fillEquipment(Creature*, PlayerInfo&) const;
   void fillPromotions(Creature*, CollectiveInfo&) const;
   void handleTrading(Collective* ally);
