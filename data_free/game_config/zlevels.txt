@@ -36,7 +36,7 @@
     type = FullZLevel {
       enemy = "BAT_ZLEVEL"
     }
-    minDepth = 1
+    minDepth = 2
     maxDepth = 100
   }
   {

@@ -3413,7 +3413,7 @@
     }
     aiType = RANGED
     body = {
-      type = FourLegged LARGE
+      type = FourLegged MEDIUM
       weight = 400
     }
     permanentEffects = {
