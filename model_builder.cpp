@@ -218,11 +218,9 @@ static optional<BiomeId> getBiome(const EnemyInfo& enemy, RandomGen& random) {
   return enemy.settlement.type.visit(
       [&](const MapLayoutTypes::Builtin& type) -> optional<BiomeId> {
         switch (type.id) {
-          case BuiltinLayoutId::CASTLE:
           case BuiltinLayoutId::CASTLE2:
           case BuiltinLayoutId::TOWER:
           case BuiltinLayoutId::VILLAGE:
-          case BuiltinLayoutId::SWAMP:
             return BiomeId("GRASSLAND");
           case BuiltinLayoutId::CAVE:
           case BuiltinLayoutId::MINETOWN:

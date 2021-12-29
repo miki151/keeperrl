@@ -2060,53 +2060,6 @@ static PMakerQueue forrestCottage(SettlementInfo info, const BuildingInfo& build
   return queue;
 }
 
-static PMakerQueue castle(RandomGen& random, SettlementInfo info, const BuildingInfo& building) {
-  auto castleRoom = [&] { return unique<BorderGuard>(unique<Empty>(SquareChange::resetOrRemove(building.floorInside, FurnitureLayer::MIDDLE, SquareAttrib::EMPTY_ROOM)),
-      SquareChange(building.wall, SquareAttrib::ROOM_WALL)); };
-  auto leftSide = unique<MakerQueue>();
-  leftSide->addMaker(unique<Division>(true, random.getDouble(0.5, 0.5),
-      unique<Margin>(1, -1, -1, 1, castleRoom()), unique<Margin>(1, 1, -1, -1, castleRoom())));
-  leftSide->addMaker(getElderRoom(info));
-  auto inside = unique<MakerQueue>();
-  vector<PLevelMaker> insideMakers;
-  for (auto& items : info.shopItems)
-    insideMakers.push_back(unique<ShopMaker>(items, info));
-  inside->addMaker(unique<Division>(random.getDouble(0.25, 0.4), std::move(leftSide),
-        unique<Buildings>(1, 3, 3, 6, building, info.tribe, false, std::move(insideMakers), false),
-            SquareChange(building.wall, SquareAttrib::ROOM_WALL)));
-  auto insidePlusWall = unique<MakerQueue>();
-  if (info.outsideFeatures)
-    inside->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::FLOOR_OUTSIDE), 0.18, *info.outsideFeatures, info.tribe));
-  if (info.furniture)
-    inside->addMaker(unique<Furnitures>(Predicate::attrib(SquareAttrib::EMPTY_ROOM), 0.35, *info.furniture, info.tribe));
-  insidePlusWall->addMaker(unique<Empty>(SquareChange::resetOrRemove(building.floorOutside, FurnitureLayer::MIDDLE, SquareAttrib::FLOOR_OUTSIDE)));
-  insidePlusWall->addMaker(unique<BorderGuard>(std::move(inside), building.wall));
-  auto queue = unique<MakerQueue>();
-  int insideMargin = 2;
-  queue->addMaker(unique<Margin>(insideMargin, unique<PlaceCollective>(info.collective)));
-  queue->addMaker(unique<Margin>(insideMargin, std::move(insidePlusWall)));
-  vector<PLevelMaker> cornerMakers;
-  for (auto& elem : info.stockpiles)
-    cornerMakers.push_back(unique<Margin>(1, stockpileMaker(elem)));
-  queue->addMaker(unique<AreaCorners>(
-      unique<MakerQueue>(makeVec<PLevelMaker>(
-          unique<BorderGuard>(unique<Empty>(
-              SquareChange::resetOrRemove(building.floorInside, FurnitureLayer::MIDDLE, SquareAttrib::CASTLE_CORNER)),
-              SquareChange(building.wall, SquareAttrib::ROOM_WALL)),
-          unique<Empty>(SquareChange::addTerritory(info.collective))
-      )),
-      Vec2(5, 5),
-      std::move(cornerMakers)));
-  queue->addMaker(unique<Margin>(insideMargin, unique<Connector>(building.door, info.tribe, 18)));
-  queue->addMaker(unique<Margin>(insideMargin, unique<CastleExit>(info, building)));
-  queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
-  addStairs(*queue, info, building, Predicate::attrib(SquareAttrib::CASTLE_CORNER));
-  queue->addMaker(unique<StartingPos>(Predicate::attrib(SquareAttrib::FLOOR_OUTSIDE)
-      && !Predicate::attrib(SquareAttrib::CASTLE_CORNER), StairKey::heroSpawn()));
-  queue->addMaker(unique<AddAttrib>(SquareAttrib::NO_DIG, Predicate::type(building.wall)));
-  return queue;
-}
-
 static PMakerQueue castle2(RandomGen& random, SettlementInfo info, const BuildingInfo& building) {
   auto inside = unique<MakerQueue>();
   auto insideMaker = unique<MakerQueue>();
@@ -2217,7 +2170,6 @@ static Vec2 getSize(const MapLayouts& layouts, RandomGen& random, LayoutType typ
           case BuiltinLayoutId::CEMETERY:
           case BuiltinLayoutId::MOUNTAIN_LAKE:
           case BuiltinLayoutId::SMALL_VILLAGE: return {15, 15};
-          case BuiltinLayoutId::SWAMP: return {random.get(12, 16), random.get(12, 16)};
           case BuiltinLayoutId::TEMPLE:
           case BuiltinLayoutId::COTTAGE: return {random.get(8, 10), random.get(8, 10)};
           case BuiltinLayoutId::FORREST_COTTAGE: return {15, 15};
@@ -2226,7 +2178,6 @@ static Vec2 getSize(const MapLayouts& layouts, RandomGen& random, LayoutType typ
           case BuiltinLayoutId::FORREST_VILLAGE: return {20, 20};
           case BuiltinLayoutId::VILLAGE:
           case BuiltinLayoutId::ANT_NEST:  return {20, 20};
-          case BuiltinLayoutId::CASTLE: return {30, 20};
           case BuiltinLayoutId::CASTLE2: return {15, 14};
           case BuiltinLayoutId::MINETOWN: return {30, 20};
           case BuiltinLayoutId::SMALL_MINETOWN: return {15, 15};
@@ -2435,15 +2386,6 @@ static PMakerQueue emptyCollective(SettlementInfo info) {
   for (auto& shopInfo : info.shopItems)
     ret->addMaker(unique<Items>(shopInfo.items, shopInfo.count));
   return ret;
-}
-
-static PMakerQueue swamp(SettlementInfo info) {
-  auto queue = unique<MakerQueue>(
-      unique<Lake>(none, none),
-      unique<PlaceCollective>(info.collective)
-  );
-  queue->addMaker(unique<Inhabitants>(info.inhabitants, info.collective));
-  return queue;
 }
 
 static PMakerQueue mountainLake(SettlementInfo info) {
@@ -2820,8 +2762,6 @@ static PMakerQueue getSettlementMaker(const ContentFactory& contentFactory, Rand
             return village(random, settlement, 4, 8, type.buildingInfo);
           case BuiltinLayoutId::FORREST_VILLAGE:
             return village2(random, settlement, type.buildingInfo);
-          case BuiltinLayoutId::CASTLE:
-            return castle(random, settlement, type.buildingInfo);
           case BuiltinLayoutId::CASTLE2:
             return castle2(random, settlement, type.buildingInfo);
           case BuiltinLayoutId::COTTAGE:
@@ -2854,8 +2794,6 @@ static PMakerQueue getSettlementMaker(const ContentFactory& contentFactory, Rand
             return cemetery(settlement, type.buildingInfo);
           case BuiltinLayoutId::MOUNTAIN_LAKE:
             return mountainLake(settlement);
-          case BuiltinLayoutId::SWAMP:
-            return swamp(settlement);
         }
       });
 }
