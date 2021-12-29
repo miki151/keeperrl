@@ -1142,7 +1142,14 @@ void MapGui::renderHighObjects(Renderer& renderer, Vec2 size, milliseconds curre
           } else
             object = index.getTopObject(layout->getLayers());
           if (object) {
-            Vec2 movement = getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true, wpos);
+            Vec2 movement = [&] {
+              if (layer == ViewLayer::TORCH2 && index.hasObject(ViewLayer::CREATURE)) {
+                auto& riderObj = index.getObject(ViewLayer::CREATURE);
+                if (riderObj.hasModifier(ViewObject::Modifier::RIDER))
+                  return getMovementOffset(riderObj, size, currentTimeGame, currentTimeReal, true, wpos);
+              }
+              return getMovementOffset(*object, size, currentTimeGame, currentTimeReal, true, wpos);
+            }();
             drawObjectAbs(renderer, pos, *object, size, movement, wpos, currentTimeReal, index);
             if (lastHighlighted.tilePos == wpos && !lastHighlighted.creaturePos && object->layer() != ViewLayer::CREATURE)
               lastHighlighted.object = *object;
