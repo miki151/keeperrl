@@ -68,6 +68,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "promotions";
     case GameConfigId::DANCE_POSITIONS:
       return "dance_positions";
+    case GameConfigId::EQUIPMENT_GROUPS:
+      return "equipment_groups";
   }
 }
 

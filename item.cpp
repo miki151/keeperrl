@@ -279,6 +279,10 @@ const vector<StorageId>& Item::getStorageIds() const {
   return attributes->storageIds;
 }
 
+const optional<string>& Item::getEquipmentGroup() const {
+  return attributes->equipmentGroup;
+}
+
 int Item::getPrice() const {
   return attributes->price;
 }

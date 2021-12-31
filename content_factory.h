@@ -52,6 +52,7 @@ class ContentFactory {
   vector<pair<string, KeeperCreatureInfo>> SERIAL(keeperCreatures);
   vector<pair<string, AdventurerCreatureInfo>> SERIAL(adventurerCreatures);
   map<CustomItemId, ItemAttributes> SERIAL(items);
+  vector<pair<string, ViewId>> SERIAL(equipmentGroups);
   map<BuildingId, BuildingInfo> SERIAL(buildingInfo);
   MapLayouts SERIAL(mapLayouts);
   map<BiomeId, BiomeInfo> SERIAL(biomeInfo);

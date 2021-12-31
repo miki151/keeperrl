@@ -23,6 +23,7 @@
 #include "minion_trait.h"
 #include "dungeon_level.h"
 #include "enemy_id.h"
+#include "minion_activity.h"
 
 class CollectiveAttack;
 class Creature;
@@ -148,6 +149,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   vector<Item*> getAllItems(bool includeMinions = true) const;
   vector<Item*> getAllItems(ItemIndex, bool includeMinions = true) const;
   vector<pair<Position, vector<Item*>>> getStoredItems(ItemIndex, vector<StorageId>) const;
+  bool canUseEquipmentGroup(const Creature*, const string& group);
 
   bool canAddFurniture(Position, FurnitureType) const;
   void addFurniture(Position, FurnitureType, const CostInfo&, bool noCredit);
@@ -241,6 +243,8 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   // From Task::Callback
   virtual void onDestructed(Position, FurnitureType, const DestroyAction&) override;
 
+  unordered_map<string, unordered_set<string>> SERIAL(lockedEquipmentGroups);
+
   private:
   struct Private {};
 
@@ -329,7 +333,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   HeapAllocated<MinionActivities> SERIAL(minionActivities);
   unordered_set<string> SERIAL(recordedEvents);
   unordered_set<string> SERIAL(allRecordedEvents);
-  map<string, GroupLockedActivities> SERIAL(groupLockedAcitivities);
+  unordered_map<string, GroupLockedActivities> SERIAL(groupLockedAcitivities);
   EntityMap<Creature, Creature*> SERIAL(steedAssignments);
   bool SERIAL(attackedByPlayer) = false;
   void updateGuardTasks();

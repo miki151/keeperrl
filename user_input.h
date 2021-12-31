@@ -62,6 +62,7 @@ enum class UserInputId {
   CREATURE_GROUP_BUTTON,
   CREATURE_TASK_ACTION,
   CREATURE_EQUIPMENT_ACTION,
+  EQUIPMENT_GROUP_ACTION,
   CREATURE_PROMOTE,
   CREATURE_CONTROL,
   CREATURE_RENAME,
@@ -217,11 +218,16 @@ struct PromotionActionInfo {
   int promotionIndex;
 };
 
+struct EquipmentGroupAction {
+  string group;
+  unordered_set<string> flip;
+};
+
 class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, UniqueEntity<Creature>::Id,
     UniqueEntity<PlayerMessage>::Id, InventoryItemInfo, Vec2, TeamCreatureInfo, TeamGroupInfo, VillageActionInfo,
     TaskActionInfo, EquipmentActionInfo, RenameActionInfo, CreatureDropInfo, CreatureGroupDropInfo, TeamDropInfo,
     string, TechId, TeamMemberActionInfo, AssignQuartersInfo, TeamOrder, DismissVillageInfo, WorkshopUpgradeInfo,
-    WorkshopCountInfo, AIActionInfo, PromotionActionInfo),
+    WorkshopCountInfo, AIActionInfo, PromotionActionInfo, EquipmentGroupAction),
         ASSIGN(BuildingClickInfo,
             UserInputId::BUILD,
             UserInputId::RECT_SELECTION,
@@ -317,6 +323,9 @@ class UserInput : public EnumVariant<UserInputId, TYPES(BuildingClickInfo, int, 
         ),
         ASSIGN(WorkshopCountInfo,
             UserInputId::WORKSHOP_CHANGE_COUNT
+        ),
+        ASSIGN(EquipmentGroupAction,
+            UserInputId::EQUIPMENT_GROUP_ACTION
         )
         > {
   using EnumVariant::EnumVariant;

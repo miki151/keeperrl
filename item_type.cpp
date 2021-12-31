@@ -344,6 +344,7 @@ ItemAttributes ItemTypes::EventPoem::getAttributes(const ContentFactory*) const 
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
       i.storageIds = LIST(StorageId("scrolls"), StorageId("equipment"));
+      i.equipmentGroup = "consumables"_s;
   );
 }
 
@@ -393,6 +394,7 @@ ItemAttributes ItemTypes::Ring::getAttributes(const ContentFactory*) const {
       i.equipmentSlot = EquipmentSlot::RINGS;
       i.price = 40;
       i.storageIds = LIST(StorageId("jewellery"), StorageId("equipment"));
+      i.equipmentGroup = "jewellery"_s;
   );
 }
 
@@ -407,6 +409,7 @@ ItemAttributes ItemTypes::Amulet::getAttributes(const ContentFactory*) const {
       i.price = 5 * LastingEffects::getPrice(lastingEffect);
       i.weight = 0.3;
       i.storageIds = LIST(StorageId("jewellery"), StorageId("equipment"));
+      i.equipmentGroup = "jewellery"_s;
   );
 }
 
@@ -436,6 +439,7 @@ ItemAttributes ItemTypes::Potion::getAttributes(const ContentFactory* factory) c
       i.uses = 1;
       i.producedStat = StatId::POTION_PRODUCED;
       i.storageIds = LIST(StorageId("potions"), StorageId("equipment"));
+      i.equipmentGroup = "consumables"_s;
   );
 }
 
@@ -479,6 +483,7 @@ ItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory* factory)
       i.price = i.effect->getPrice();
       i.uses = 1;
       i.storageIds = {StorageId("equipment")};
+      i.equipmentGroup = "consumables"_s;
   );
 }
 
@@ -542,6 +547,7 @@ ItemAttributes ItemTypes::Scroll::getAttributes(const ContentFactory* factory) c
       i.uses = 1;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
       i.storageIds = LIST(StorageId("scrolls"), StorageId("equipment"));
+      i.equipmentGroup = "consumables"_s;
   );
 }
 
@@ -561,7 +567,9 @@ ItemAttributes ItemTypes::FireScroll::getAttributes(const ContentFactory*) const
       i.effect = Effect(EffectType::Chain{});
       i.effectDescription = false;
       i.applyPredicate = CreaturePredicate(CreaturePredicates::Not{CreaturePredicate(LastingEffect::BLIND)});
-      i.storageIds = {StorageId("equipment")};  );
+      i.storageIds = {StorageId("equipment")};
+      i.equipmentGroup = "consumables"_s;
+  );
 }
 
 ItemAttributes ItemTypes::TechBook::getAttributes(const ContentFactory*) const {

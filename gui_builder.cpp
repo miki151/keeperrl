@@ -3407,11 +3407,71 @@ SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem> attrs) {
       WL(horizontalList, std::move(lines[1]), elemWidth)), legendLineHeight);
 }
 
+SGuiElem GuiBuilder::drawEquipmentGroups(const PlayerInfo& minion) {
+  return WL(buttonLabel, "Restrict", WL(buttonRect, [=] (Rectangle bounds) {
+    EquipmentGroupAction ret { minion.groupName, {}};
+    bool exit = false;
+    auto lines = WL(getListBuilder, legendLineHeight);
+    lines.addElem(WL(label, "Setting will apply to all " + makePlural(minion.groupName),
+        Renderer::smallTextSize(), Color::LIGHT_GRAY));
+    for (auto& group : minion.equipmentGroups)
+      lines.addElem(WL(stack,
+          WL(button, [&ret, name = group.name] { if (ret.flip.count(name)) ret.flip.erase(name); else ret.flip.insert(name); }),
+          WL(getListBuilder)
+          .addElemAuto(WL(viewObject, group.viewId))
+          .addElemAuto(WL(label, group.name))
+          .addBackElem(WL(conditional, WL(labelUnicodeHighlight, u8"✘", Color::RED), 
+              WL(labelUnicodeHighlight, u8"✓", Color::GREEN), 
+              [&ret, group] { return group.locked ^ ret.flip.count(group.name); }), 30)
+          .buildHorizontalList()
+      ));
+      auto restrictButton = WL(stack,
+          WL(button, [&] {
+            ret.flip.clear();
+            for (auto& group : minion.equipmentGroups)
+              if (!group.locked)
+                ret.flip.insert(group.name);
+          }),
+          WL(getListBuilder)
+          .addElemAuto(WL(labelUnicodeHighlight, u8"✘", Color::RED))
+          .addElemAuto(WL(label, "Restrict all"))
+          .buildHorizontalList()
+      );
+      auto unrestrictButton = WL(stack,
+          WL(button, [&] {
+            ret.flip.clear();
+            for (auto& group : minion.equipmentGroups)
+              if (group.locked)
+                ret.flip.insert(group.name);
+          }),
+          WL(getListBuilder)
+          .addElemAuto(WL(labelUnicodeHighlight, u8"✓", Color::GREEN))
+          .addElemAuto(WL(label, "Unrestrict all"))
+          .buildHorizontalList()
+      );
+    lines.addElem(WL(conditional, restrictButton, unrestrictButton, [&]{
+      for (auto& group : minion.equipmentGroups)
+        if (!(group.locked ^ ret.flip.count(group.name)))
+          return true;
+      return false;
+    }));
+    drawMiniMenu(lines.buildVerticalList(), exit, bounds.bottomLeft(), 350, true);
+    callbacks.input({UserInputId::EQUIPMENT_GROUP_ACTION, ret});
+  }));        
+}
+
 SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool infoOnly) {
   const vector<ItemInfo>& items = minion.inventory;
   auto lines = WL(getListBuilder, legendLineHeight);
+  lines.addSpace(5);
   if (!items.empty()) {
-    lines.addElem(WL(label, "Equipment", Color::YELLOW));
+    auto titleLine = WL(getListBuilder)
+        .addElemAuto(WL(label, "Equipment", Color::YELLOW));
+    if (!infoOnly && !minion.equipmentGroups.empty()) {
+      titleLine.addBackElemAuto(drawEquipmentGroups(minion));
+      titleLine.addBackSpace(20);
+    }
+    lines.addElem(titleLine.buildHorizontalList());
     vector<SGuiElem> itemElems;
     if (!infoOnly)
       for (int i : All(items)) {

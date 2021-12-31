@@ -908,8 +908,13 @@ class ByCollective : public Behaviour {
     if (!collective->usesEquipment(creature))
       return nullptr;
     auto& minionEquipment = collective->getMinionEquipment();
-    if (!collective->hasTrait(creature, MinionTrait::NO_AUTO_EQUIPMENT) && Random.roll(40))
-      minionEquipment.autoAssign(creature, collective->getAllItems(ItemIndex::MINION_EQUIPMENT, false));
+    if (!collective->hasTrait(creature, MinionTrait::NO_AUTO_EQUIPMENT) && Random.roll(40)) {
+      auto items = collective->getAllItems(ItemIndex::MINION_EQUIPMENT, false).filter([&](auto item) {
+        auto g = item->getEquipmentGroup();
+        return !g || collective->canUseEquipmentGroup(creature, *g);
+      });
+      minionEquipment.autoAssign(creature, items);
+    }
     vector<PTask> tasks;
     for (Item* it : creature->getEquipment().getItems())
       if (!creature->getEquipment().isEquipped(it) && minionEquipment.isOwner(it, creature) &&

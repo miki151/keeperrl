@@ -470,6 +470,7 @@
       1 VictimEffect 0.1 Lasting POISON
     }
     storageIds = {"weapons" "equipment"}
+    equipmentGroup = "basic equipment"
   }
 "AssassinsKnife" inherit "Knife"
   {
@@ -480,6 +481,7 @@
     specialAttr = {
       DAMAGE 30 Name "against tribe leaders when hidden" And { CreatureStatus LEADER Attacker Hidden }
     }
+    equipmentGroup = "artifact equipment"
   }
 "UnicornHorn"
   {
@@ -519,6 +521,7 @@
       DAMAGE 15 Rider
     }
     storageIds = {"weapons" "equipment"}
+    equipmentGroup = "basic equipment"
   }
 "Sword"
   {
@@ -546,6 +549,7 @@
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
+    equipmentGroup = "iron equipment"
   }
 "AdaSword" inherit "Sword"
   {
@@ -562,6 +566,7 @@
       1 VictimEffect 0.2 Lasting POISON
       1 LastingEffect RAGE
     }
+    equipmentGroup = "adamantine equipment"
   }
 Def InferniteEffect()
   Filter Not LastingEffect FIRE_RESISTANT {
@@ -580,6 +585,7 @@ End
     }
     carriedTickEffect = InferniteEffect()
     ownedEffect = LIGHT_SOURCE
+    equipmentGroup = "infernite equipment"
   }
 "ElvenSword"
   {
@@ -600,6 +606,7 @@ End
       1 SpecialAttr DAMAGE 10 HatedBy HATE_UNDEAD
     }
     storageIds = {"weapons" "equipment"}
+    equipmentGroup = "iron equipment"
   }
 "BattleAxe"
   {
@@ -623,6 +630,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
+    equipmentGroup = "iron equipment"
   }
 "AdaBattleAxe" inherit "BattleAxe"
   {
@@ -638,6 +646,7 @@ End
       1 VictimEffect 0.5 Lasting BLEEDING
     }
     maxUpgrades = 2
+    equipmentGroup = "adamantine equipment"
   }
 "InferniteBattleAxe" inherit "AdaBattleAxe"
   {
@@ -651,6 +660,7 @@ End
     }
     carriedTickEffect = InferniteEffect()
     ownedEffect = LIGHT_SOURCE
+    equipmentGroup = "infernite equipment"
   }
 "WarHammer"
   {
@@ -673,6 +683,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
+    equipmentGroup = "iron equipment"
   }
 "AdaWarHammer" inherit "WarHammer"
   {
@@ -687,6 +698,7 @@ End
       1 VictimEffect 0.5 Lasting COLLAPSED
     }
     maxUpgrades = 2
+    equipmentGroup = "adamantine equipment"
   }
 "InferniteWarHammer" inherit "AdaWarHammer"
   {
@@ -700,6 +712,7 @@ End
     }
     carriedTickEffect = InferniteEffect()
     ownedEffect = LIGHT_SOURCE
+    equipmentGroup = "infernite equipment"
   }
 "Club"
   {
@@ -717,6 +730,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"weapons" "equipment"}
+    equipmentGroup = "basic equipment"
   }
 "HeavyClub"
   {
@@ -735,6 +749,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"weapons" "equipment"}
+    equipmentGroup = "basic equipment"
   }
 "WoodenStaff"
   {
@@ -757,6 +772,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"weapons" "equipment"}
+    equipmentGroup = "basic equipment"
   }
 "IronStaff" inherit "WoodenStaff"
   {
@@ -776,6 +792,7 @@ End
       }
     }
     maxUpgrades = 2
+    equipmentGroup = "iron equipment"
   }
 "AdoxiumStaff" inherit "IronStaff"
   {
@@ -792,6 +809,7 @@ End
       1 VictimEffect 0.5 Fire
     }
     maxUpgrades = 5
+    equipmentGroup = "adoxium equipment"
   }
 "Scythe"
   {
@@ -810,6 +828,7 @@ End
       meleeAttackAttr = SPELL_DAMAGE
     }
     storageIds = {"weapons" "equipment"}
+    equipmentGroup = "iron equipment"
   }
 "Bow"
   {
@@ -828,6 +847,7 @@ End
     price = 12
     maxUpgrades = 1
     storageIds = {"bows" "weapons" "equipment"}
+    equipmentGroup = "ranged weapons"
   }
 "ElvenBow" inherit "Bow"
   {
@@ -865,6 +885,7 @@ End
     price = 90
     maxUpgrades = 1
     storageIds = {"bows" "weapons" "equipment"}
+    equipmentGroup = "ranged weapons"
   }
 "Torch"
   {
@@ -875,6 +896,7 @@ End
     plural = "hand torches"
     price = 2
     storageIds = {"equipment"}
+    equipmentGroup = "light emitting equipment"
   }
 "Robe"
   {
@@ -891,6 +913,7 @@ End
       1 LastingEffect MAGIC_RESISTANCE
     }
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "basic equipment"
   }
 "HalloweenCostume"
   {
@@ -937,6 +960,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "basic equipment"
   }
 "IronGloves"
   {
@@ -958,6 +982,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "iron equipment"
   }
 "AdaGloves"
   {
@@ -979,6 +1004,7 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "adamantine equipment"
   }
 "AdoxiumGloves" inherit "AdaGloves"
   {
@@ -995,7 +1021,7 @@ End
   {
     viewId = { "leather_armor" }
     shortName = "armor"
-    name = "leather armor"
+    name = "basic equipment"
     itemClass = ARMOR
     equipmentSlot = BODY_ARMOR
     weight = 7
@@ -1008,6 +1034,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "basic equipment"
   }
 "LeatherHelm"
   {
@@ -1028,6 +1055,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "basic equipment"
   }
 "WoodenShield"
   {
@@ -1043,6 +1071,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "basic equipment"
   }
 "IronShield"
   {
@@ -1060,6 +1089,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "iron equipment"
   }
 "AdaShield"
   {
@@ -1077,6 +1107,7 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "adamantine equipment"
   }
 "ChainArmor"
   {
@@ -1096,6 +1127,7 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "iron equipment"
   }
 "RedDragonScales"
   {
@@ -1120,6 +1152,7 @@ End
     }
     equipedEffect = {FIRE_RESISTANT}
     maxUpgrades = 2
+    equipmentGroup = "artifact equipment"
   }
 "BlackDragonScales"
   {
@@ -1144,6 +1177,7 @@ End
     }
     equipedEffect = {DARKNESS_SOURCE TELEPATHY}
     maxUpgrades = 2
+    equipmentGroup = "artifact equipment"
   }
 "WhiteDragonScales"
   {
@@ -1168,6 +1202,7 @@ End
     }
     equipedEffect = {COLD_RESISTANT}
     maxUpgrades = 2
+    equipmentGroup = "artifact equipment"
   }
 "YellowDragonScales"
   {
@@ -1192,6 +1227,7 @@ End
     }
     equipedAbility = {"acid stream"}
     maxUpgrades = 2
+    equipmentGroup = "artifact equipment"
   }
 "GreenDragonScales"
   {
@@ -1216,6 +1252,7 @@ End
     }
     equipedEffect = {POISON_RESISTANT}
     maxUpgrades = 2
+    equipmentGroup = "artifact equipment"
   }
 "AdaArmor"
   {
@@ -1235,6 +1272,7 @@ End
     }
     maxUpgrades = 4
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "adamantine equipment"
   }
 "AdoxiumArmor" inherit "AdaArmor"
   {
@@ -1245,6 +1283,7 @@ End
     modifiers = append {
       SPELL_DAMAGE 5
     }
+    equipmentGroup = "adoxium equipment"
   }
 "IronHelm"
   {
@@ -1266,6 +1305,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "iron equipment"
   }
 "Archwood"
   {
@@ -1330,6 +1370,7 @@ End
     }
     equipedEffect = {ENTERTAINER}
     maxUpgrades = 3
+    equipmentGroup = "artifact equipment"
   }
 "AdoxieEye"
   {
@@ -1352,6 +1393,7 @@ End
     }
     price = 12000
     storageIds = {"bows" "weapons" "equipment"}
+    equipmentGroup = "artifact equipment"
   }
 "AdoxieScroll"
   {
@@ -1438,6 +1480,7 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "adamantine equipment"
   }
 "AdoxiumHelm" inherit "AdaHelm"
   {
@@ -1448,6 +1491,7 @@ End
     modifiers = append {
       SPELL_DAMAGE 4
     }
+    equipmentGroup = "adoxium equipment"
   }
 "Cornuthaum1"
   {
@@ -1516,6 +1560,7 @@ End
     }
     maxUpgrades = 0
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "basic equipment"
   }
 "IronBoots"
   {
@@ -1538,6 +1583,7 @@ End
     }
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "iron equipment"
   }
 "AdaBoots"
   {
@@ -1558,6 +1604,7 @@ End
     }
     maxUpgrades = 2
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "adamantine equipment"
   }
 "AdoxiumBoots" inherit "AdaBoots"
   {
@@ -1569,6 +1616,7 @@ End
     modifiers = append {
       SPELL_DAMAGE 3
     }
+    equipmentGroup = "adoxium equipment"
   }
 "DevilHooves"
   {
@@ -1596,6 +1644,7 @@ End
     equipedEffect = {FLYING SPELL_DAMAGE}
     maxUpgrades = 1
     storageIds = {"armor" "equipment"}
+    equipmentGroup = "artifact equipment"
   }
 "DevilHorns"
   {
@@ -1621,6 +1670,7 @@ End
     }
     weight = 0.3
     storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
   }
 "FirstAidKit"
   {
@@ -1635,6 +1685,7 @@ End
     price = 2
     effect = Heal { FLESH }
     storageIds = {"equipment"}
+    equipmentGroup = "consumables"
   }
 "MagicLamp"
   {
@@ -1650,6 +1701,7 @@ End
     effectDescription = false
     ownedEffect = LIGHT_SOURCE
     storageIds = {"equipment"}
+    equipmentGroup = "light emitting equipment"
   }
 "SpiderRing"
   {
@@ -1661,6 +1713,7 @@ End
     equipmentSlot = RINGS
     price = 1
     storageIds = {"jewellery" "equipment"}
+    equipmentGroup = "jewellery"
   }
 "DragonRing" inherit "SpiderRing"
   {

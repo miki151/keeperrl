@@ -1,0 +1,10 @@
+"basic equipment" {"club"}
+"iron equipment" {"sword"}
+"adamantine equipment" {"ada_sword"}
+"infernite equipment" {"infernite_sword"}
+"adoxium equipment" {"adoxium_staff"}
+"artifact equipment" {"cyclops_helm"}
+"ranged weapons" {"bow"}
+"jewellery" {"amulet1"}
+"consumables" {"first_aid"}
+"light emitting equipment" {"hand_torch"}

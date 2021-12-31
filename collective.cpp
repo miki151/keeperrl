@@ -70,7 +70,7 @@
 template <class Archive>
 void Collective::serialize(Archive& ar, const unsigned int version) {
   ar(SUBCLASS(TaskCallback), SUBCLASS(UniqueEntity<Collective>), SUBCLASS(EventListener));
-  ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader, dancing);
+  ar(creatures, taskMap, tribe, control, byTrait, populationGroups, hadALeader, dancing, lockedEquipmentGroups);
   ar(territory, alarmInfo, markedItems, constructions, minionEquipment, groupLockedAcitivities);
   ar(delayedPos, knownTiles, technology, kills, points, currentActivity, recordedEvents, allRecordedEvents);
   ar(credit, model, immigration, teams, name, minionActivities, attackedByPlayer, furnace);
@@ -601,6 +601,11 @@ void Collective::tick() {
   if (config->getManageEquipment() && Random.roll(40)) {
     minionEquipment->updateOwners(getCreatures());
     minionEquipment->updateItems(getAllItems(ItemIndex::MINION_EQUIPMENT, true));
+    for (auto c : getCreatures())
+      for (auto it : minionEquipment->getItemsOwnedBy(c))
+        if (auto& group = it->getEquipmentGroup())
+          if (!canUseEquipmentGroup(c, *group))
+            minionEquipment->discard(it);
   }
   updateAutomatonEngines();
   autoAssignSteeds();
@@ -975,6 +980,13 @@ bool Collective::usesEquipment(const Creature* c) const {
   return config->getManageEquipment()
     && c->getBody().isHumanoid() && !hasTrait(c, MinionTrait::NO_EQUIPMENT)
     && !hasTrait(c, MinionTrait::PRISONER);
+}
+
+bool Collective::canUseEquipmentGroup(const Creature* c, const string& group) {
+  for (auto& g : concat({getMinionGroupName(c)}, getAutomatonGroupNames(c)))
+    if (!lockedEquipmentGroups.count(g) || !lockedEquipmentGroups.at(g).count(group))
+      return true;
+  return false;
 }
 
 vector<Item*> Collective::getAllItems(bool includeMinions) const {

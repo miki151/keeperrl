@@ -453,6 +453,15 @@ void PlayerControl::minionTaskAction(const TaskActionInfo& action) {
   }
 }
 
+void PlayerControl::equipmentGroupAction(const EquipmentGroupAction& action) {
+  auto& groupSet = collective->lockedEquipmentGroups[action.group];
+  for (auto& elem : action.flip)
+    if (groupSet.count(elem))
+      groupSet.erase(elem);
+    else
+      groupSet.insert(elem);
+}
+
 static ItemInfo getItemInfo(const ContentFactory* factory, const vector<Item*>& stack, bool equiped, bool pending, bool locked,
     optional<ItemInfo::Type> type = none) {
   return CONSTRUCT(ItemInfo,
@@ -607,6 +616,14 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
       otherItems.push_back(item);
   for (auto item : Item::stackItems(otherItems))
     info.inventory.push_back(getItemInfo(factory, {item}, false, false, false, ItemInfo::OTHER));
+  auto lockedSet = getReferenceMaybe(collective->lockedEquipmentGroups, info.groupName);
+  for (auto& group : factory->equipmentGroups) {
+    info.equipmentGroups.push_back(PlayerInfo::EquipmentGroupInfo {
+      group.second,
+      group.first,
+      lockedSet && lockedSet->count(group.first)
+    });
+  }
 }
 
 Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> currentItems, ItemPredicate predicate,
@@ -2651,6 +2668,9 @@ void PlayerControl::processInput(View* view, UserInput input) {
         setChosenTeam(none);
       break;
     }
+    case UserInputId::EQUIPMENT_GROUP_ACTION:
+      equipmentGroupAction(input.get<EquipmentGroupAction>());
+      break;
     case UserInputId::CREATURE_TASK_ACTION:
       minionTaskAction(input.get<TaskActionInfo>());
       break;

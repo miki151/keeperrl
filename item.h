@@ -69,6 +69,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
 
   ItemClass getClass() const;
   const vector<StorageId>& getStorageIds() const;
+  const optional<string>& getEquipmentGroup() const;
 
   CostInfo getCraftingCost() const;
   int getPrice() const;
