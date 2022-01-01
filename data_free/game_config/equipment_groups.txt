@@ -8,3 +8,4 @@
 "jewellery" {"amulet1"}
 "consumables" {"first_aid"}
 "light emitting equipment" {"hand_torch"}
+"steeds" {"horse"}
