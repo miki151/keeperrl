@@ -3498,7 +3498,7 @@
       DEFENSE 18 
     }
     body = {
-      type = FourLegged MEDIUM
+      type = FourLegged LARGE
       weight = 250
       intrinsicAttacks = {
         LEG {{{ Intrinsic { "claws_attack" } "claws" 10 { attackType = HIT attackMsg = CLAW } }}}
@@ -3506,7 +3506,7 @@
     }
     permanentEffects = {
       EXPLORE_CAVES_SKILL 1
-#      STEED 1  (needs a different sprite first)
+      STEED 1
     }
     name = {
       name = "cave bear"
