@@ -18,7 +18,7 @@
 #include "zlevel.h"
 
 struct ZLevelResult {
-  WLevel level;
+  Level* level;
   PCollective collective;
 };
 

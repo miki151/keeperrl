@@ -1009,7 +1009,7 @@ void Player::privateMessage(const PlayerMessage& message) {
   }
 }
 
-WLevel Player::getLevel() const {
+Level* Player::getLevel() const {
   return creature->getLevel();
 }
 
@@ -1400,7 +1400,7 @@ Player::CenterType Player::getCenterType() const {
   return CenterType::FOLLOW;
 }
 
-const vector<Vec2>& Player::getUnknownLocations(WConstLevel level) const {
+const vector<Vec2>& Player::getUnknownLocations(const Level* level) const {
   return unknownLocations->getOnLevel(level);
 }
 

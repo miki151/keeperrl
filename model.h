@@ -48,9 +48,9 @@ class Model : public OwnedObject<Model> {
   bool update(double totalTime);
 
   /** Returns the level that the stairs lead to. */
-  WLevel getLinkedLevel(WLevel from, StairKey) const;
+  Level* getLinkedLevel(Level* from, StairKey) const;
 
-  optional<Position> getStairs(WConstLevel from, WConstLevel to);
+  optional<Position> getStairs(const Level* from, const Level* to);
 
   void addCreature(PCreature);
   void addCreature(PCreature, TimeInterval delay);
@@ -74,9 +74,9 @@ class Model : public OwnedObject<Model> {
   vector<Collective*> getCollectives() const;
   vector<Creature*> getAllCreatures() const;
   const vector<PCreature>& getDeadCreatures() const;
-  vector<WLevel> getLevels() const;
-  const vector<WLevel>& getMainLevels() const;
-  WLevel getTopLevel() const;
+  vector<Level*> getLevels() const;
+  const vector<Level*>& getMainLevels() const;
+  Level* getTopLevel() const;
   LevelId getUniqueId() const;
 
   void addCollective(PCollective);
@@ -102,8 +102,8 @@ class Model : public OwnedObject<Model> {
 
   void addEvent(const GameEvent&);
 
-  WLevel buildLevel(const ContentFactory*, LevelBuilder, PLevelMaker, int depth, optional<string> name);
-  WLevel buildMainLevel(const ContentFactory*, LevelBuilder, PLevelMaker);
+  Level* buildLevel(const ContentFactory*, LevelBuilder, PLevelMaker, int depth, optional<string> name);
+  Level* buildMainLevel(const ContentFactory*, LevelBuilder, PLevelMaker);
   void calculateStairNavigation();
 
   private:
@@ -120,7 +120,7 @@ class Model : public OwnedObject<Model> {
   PCreature makePlayer(int handicap);
 
   vector<PLevel> SERIAL(levels);
-  vector<WLevel> SERIAL(mainLevels);
+  vector<Level*> SERIAL(mainLevels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
   WGame SERIAL(game) = nullptr;
@@ -129,7 +129,7 @@ class Model : public OwnedObject<Model> {
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(currentTime) = 0;
   int SERIAL(woodCount) = 0;
-  optional<StairKey> getStairsBetween(WConstLevel from, WConstLevel to) const;
+  optional<StairKey> getStairsBetween(const Level* from, const Level* to) const;
   map<pair<LevelId, LevelId>, StairKey> SERIAL(stairNavigation);
   bool serializationLocked = false;
   template <typename>

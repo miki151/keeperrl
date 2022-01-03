@@ -79,7 +79,7 @@ class LevelShortestPath {
   optional<Position> getNextNextMove(Position);
   Position getTarget() const;
   bool isReversed() const;
-  WLevel getLevel() const;
+  Level* getLevel() const;
   vector<Position> getPath() const;
 
   static const double infinity;
@@ -89,7 +89,7 @@ class LevelShortestPath {
   private:
   static ShortestPath makeShortestPath(Position, MovementType, Position to, double mult, vector<Vec2>* visited);
   ShortestPath SERIAL(path);
-  WLevel SERIAL(level) = nullptr;
+  Level* SERIAL(level) = nullptr;
 };
 
 class Dijkstra {

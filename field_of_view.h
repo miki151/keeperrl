@@ -23,7 +23,7 @@ class ContentFactory;
 
 class FieldOfView {
   public:
-  FieldOfView(WLevel, VisionId, const ContentFactory*);
+  FieldOfView(Level*, VisionId, const ContentFactory*);
   bool canSee(Vec2 from, Vec2 to);
   const vector<SVec2>& getVisibleTiles(Vec2 from);
   void squareChanged(Vec2 pos);
@@ -54,7 +54,7 @@ class FieldOfView {
     int py;
   };
 
-  WLevel SERIAL(level) = nullptr;
+  Level* SERIAL(level) = nullptr;
   Table<unique_ptr<Visibility>> visibility;
   VisionId SERIAL(vision);
   Table<bool> SERIAL(blocking);

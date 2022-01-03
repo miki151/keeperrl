@@ -255,7 +255,7 @@ bool Level::hasStairKey(StairKey key) const {
   return landingSquares.count(key);
 }
 
-optional<Position> Level::getStairsTo(WConstLevel level) {
+optional<Position> Level::getStairsTo(const Level* level) {
   return model->getStairs(this, level);
 }
 
@@ -364,7 +364,7 @@ void Level::killCreature(Creature* creature) {
 
 void Level::changeLevel(StairKey key, Creature* c) {
   Vec2 oldPos = c->getPosition().getCoord();
-  WLevel otherLevel = model->getLinkedLevel(this, key);
+  Level* otherLevel = model->getLinkedLevel(this, key);
   if (otherLevel->landCreature(key, c))
     eraseCreature(c, oldPos);
   else {

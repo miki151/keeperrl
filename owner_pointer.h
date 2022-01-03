@@ -315,7 +315,7 @@ DEF_UNIQUE_PTR(Behaviour);
 DEF_OWNER_PTR(Task);
 DEF_OWNER_PTR(TaskPredicate);
 DEF_OWNER_PTR(Controller);
-DEF_OWNER_PTR(Level);
+using PLevel = OwnerPointer<class Level>;
 DEF_OWNER_PTR(VillageControl);
 DEF_SHARED_PTR(GuiElem);
 DEF_UNIQUE_PTR(Animation);

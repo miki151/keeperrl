@@ -15,7 +15,7 @@ class Portals {
   SERIALIZATION_DECL(Portals)
 
   private:
-  void recalculateDistances(WLevel);
+  void recalculateDistances(Level*);
   vector<optional<Vec2>> SERIAL(matchings);
   Table<optional<short>> SERIAL(distanceToNearest);
 };

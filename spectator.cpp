@@ -13,7 +13,7 @@
 #include "view.h"
 #include "sound.h"
 
-Spectator::Spectator(WLevel l, View* view) : level(l), view(view) {
+Spectator::Spectator(Level* l, View* view) : level(l), view(view) {
 }
 
 const MapMemory& Spectator::getMemory() const {
@@ -51,7 +51,7 @@ Spectator::CenterType Spectator::getCenterType() const {
   return CenterType::NONE;
 }
 
-const vector<Vec2>& Spectator::getUnknownLocations(WConstLevel) const {
+const vector<Vec2>& Spectator::getUnknownLocations(const Level*) const {
   static vector<Vec2> empty;
   return empty;
 }

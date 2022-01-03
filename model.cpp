@@ -177,7 +177,7 @@ void Model::addCreature(PCreature c, TimeInterval delay) {
   timeQueue->addCreature(std::move(c), getLocalTime() + delay);
 }
 
-WLevel Model::buildLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker, int depth, optional<string> name) {
+Level* Model::buildLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker, int depth, optional<string> name) {
   LevelBuilder builder(std::move(b));
   levels.push_back(builder.build(factory, this, maker.get(), Random.getLL()));
   levels.back()->depth = depth;
@@ -185,7 +185,7 @@ WLevel Model::buildLevel(const ContentFactory* factory, LevelBuilder b, PLevelMa
   return levels.back().get();
 }
 
-WLevel Model::buildMainLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker) {
+Level* Model::buildMainLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker) {
   int depth = mainLevels.size();
   auto ret = buildLevel(factory, std::move(b), std::move(maker), depth, depth == 0 ? optional<string>("Ground") : none);
   mainLevels.push_back(ret);
@@ -235,15 +235,15 @@ WGame Model::getGame() const {
   return game;
 }
 
-WLevel Model::getLinkedLevel(WLevel from, StairKey key) const {
-  for (WLevel target : getLevels())
+Level* Model::getLinkedLevel(Level* from, StairKey key) const {
+  for (Level* target : getLevels())
     if (target != from && target->hasStairKey(key))
       return target;
   //FATAL << "Failed to find next level for " << key.getInternalKey() << " " << from->getName();
   return nullptr;
 }
 
-static pair<LevelId, LevelId> getIds(WConstLevel l1, WConstLevel l2) {
+static pair<LevelId, LevelId> getIds(const Level* l1, const Level* l2) {
   return {l1->getUniqueId(), l2->getUniqueId()};
 }
 
@@ -269,14 +269,14 @@ void Model::calculateStairNavigation() {
             "No stair path between levels ";// << l1->getName() << " " << l2->getName();
 }
 
-optional<StairKey> Model::getStairsBetween(WConstLevel from, WConstLevel to) const {
+optional<StairKey> Model::getStairsBetween(const Level* from, const Level* to) const {
   for (StairKey key : from->getAllStairKeys())
     if (to->hasStairKey(key))
       return key;
   return none;
 }
 
-optional<Position> Model::getStairs(WConstLevel from, WConstLevel to) {
+optional<Position> Model::getStairs(const Level* from, const Level* to) {
   PROFILE;
   CHECK(from != to);
   {
@@ -287,11 +287,11 @@ optional<Position> Model::getStairs(WConstLevel from, WConstLevel to) {
   return Random.choose(from->getLandingSquares(stairNavigation.at(getIds(from, to))));
 }
 
-vector<WLevel> Model::getLevels() const {
+vector<Level*> Model::getLevels() const {
   return getWeakPointers(levels);
 }
 
-const vector<WLevel>& Model::getMainLevels() const {
+const vector<Level*>& Model::getMainLevels() const {
   return mainLevels;
 }
 
@@ -301,7 +301,7 @@ void Model::addCollective(PCollective col) {
     game->addCollective(collectives.back().get());
 }
 
-WLevel Model::getTopLevel() const {
+Level* Model::getTopLevel() const {
   return mainLevels[0];
 }
 
@@ -368,7 +368,7 @@ void Model::landWarlord(vector<PCreature> player) {
 
 void Model::landHeroPlayer(PCreature player) {
   Creature* ref = player.get();
-  WLevel target = getTopLevel();
+  Level* target = getTopLevel();
   vector<Position> landing = target->getLandingSquares(StairKey::heroSpawn());
   if (!target->landCreature(landing, ref))
     CHECK(target->landCreature(target->getAllLandingPositions(), ref)) << "No place to spawn player";

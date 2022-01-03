@@ -8,7 +8,7 @@ class UnknownLocations {
 
   void update(const vector<Position>&);
   bool contains(Position) const;
-  const vector<Vec2>& getOnLevel(WConstLevel) const;
+  const vector<Vec2>& getOnLevel(const Level*) const;
 
   template <typename Archive>
   void serialize(Archive&, const unsigned);

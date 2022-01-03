@@ -3142,7 +3142,7 @@ PlayerControl::CenterType PlayerControl::getCenterType() const {
   return CenterType::NONE;
 }
 
-const vector<Vec2>& PlayerControl::getUnknownLocations(WConstLevel) const {
+const vector<Vec2>& PlayerControl::getUnknownLocations(const Level*) const {
   PROFILE;
   return unknownLocations->getOnLevel(getCurrentLevel());
 }
@@ -3301,11 +3301,11 @@ void PlayerControl::considerNightfallMessage() {
 
 void PlayerControl::update(bool currentlyActive) {
   vector<Creature*> addedCreatures;
-  vector<WLevel> currentLevels {getCurrentLevel()};
+  vector<Level*> currentLevels {getCurrentLevel()};
   for (auto c : getControlled())
     if (!currentLevels.contains(c->getLevel()))
       currentLevels.push_back(c->getLevel());
-  for (WLevel l : currentLevels)
+  for (Level* l : currentLevels)
     for (Creature* c : l->getAllCreatures())
       if (!getCreatures().contains(c) && c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
         if (!collective->wasBanished(c) && !c->getBody().isMinionFood() && c->getAttributes().getCanJoinCollective()) {
@@ -3330,7 +3330,7 @@ void PlayerControl::update(bool currentlyActive) {
   }
 }
 
-WLevel PlayerControl::getCurrentLevel() const {
+Level* PlayerControl::getCurrentLevel() const {
   if (!currentLevel)
     return getModel()->getTopLevel();
   else

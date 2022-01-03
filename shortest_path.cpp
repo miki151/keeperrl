@@ -256,7 +256,7 @@ Vec2 ShortestPath::getTarget() const {
 ShortestPath LevelShortestPath::makeShortestPath(Position from, MovementType movementType, Position to, double mult,
     vector<Vec2>* visited) {
   PROFILE;
-  WLevel level = from.getLevel();
+  Level* level = from.getLevel();
   Rectangle bounds = level->getBounds();
   CHECK(to.isSameLevel(from));
   auto& sectors = level->getSectors(movementType);
@@ -314,7 +314,7 @@ LevelShortestPath::LevelShortestPath(Position from, MovementType type, Position 
     : path(makeShortestPath(from, type, to, mult, visited)), level(to.getLevel()) {
 }
 
-WLevel LevelShortestPath::getLevel() const {
+Level* LevelShortestPath::getLevel() const {
   return level;
 }
 

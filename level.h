@@ -89,7 +89,7 @@ class Level : public OwnedObject<Level> {
   vector<StairKey> getAllStairKeys() const;
   bool hasStairKey(StairKey) const;
 
-  optional<Position> getStairsTo(WConstLevel);
+  optional<Position> getStairsTo(const Level*);
 
   void killCreature(Creature* victim);
 

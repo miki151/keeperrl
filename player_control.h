@@ -122,7 +122,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getAnimationTime() const override;
   virtual CenterType getCenterType() const override;
-  virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const override;
+  virtual const vector<Vec2>& getUnknownLocations(const Level*) const override;
   virtual optional<Vec2> getSelectionSize() const override;
   virtual vector<vector<Vec2>> getPathTo(UniqueEntity<Creature>::Id, Vec2) const override;
   virtual vector<vector<Vec2>> getGroupPathTo(const string&, Vec2) const override;
@@ -145,7 +145,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
 
   private:
 
-  WLevel getCurrentLevel() const;
+  Level* getCurrentLevel() const;
   void considerNightfallMessage();
   void considerWarning();
   void considerAllianceAttack();
@@ -284,7 +284,7 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   TribeAlignment SERIAL(tribeAlignment);
   vector<BuildInfo> SERIAL(buildInfo);
   void loadBuildingMenu(const ContentFactory*, const KeeperCreatureInfo&);
-  WLevel currentLevel = nullptr;
+  Level* currentLevel = nullptr;
   void scrollStairs(int dir);
   CollectiveInfo::QueuedItemInfo getQueuedItemInfo(const WorkshopQueuedItem&, int cnt, int itemIndex, bool hasLegendarySkill) const;
   vector<pair<Item*, Position>> getItemUpgradesFor(const WorkshopItem&) const;

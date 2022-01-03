@@ -66,7 +66,7 @@ class MapGui : public GuiElem {
   void addAnimation(PAnimation animation, Vec2 position);
   void addAnimation(const FXSpawnInfo&);
   void setCenter(double x, double y);
-  void setCenter(Vec2, WLevel level);
+  void setCenter(Vec2, Level* level);
   void clearCenter();
   void resetScrolling();
   bool isCentered() const;
@@ -155,7 +155,7 @@ class MapGui : public GuiElem {
     double SERIAL(y);
     COMPARE_ALL(x, y)
   } mouseOffset, center;
-  WConstLevel previousLevel = nullptr;
+  const Level* previousLevel = nullptr;
   optional<CreatureViewCenterType> previousView;
   Table<optional<milliseconds>> lastSquareUpdate;
   optional<Coords> softCenter;

@@ -69,10 +69,10 @@ WGame Position::getGame() const {
     return nullptr;
 }
 
-Position::Position(Vec2 v, WLevel l) : coord(v), level(l), valid(level && level->inBounds(coord)) {
+Position::Position(Vec2 v, Level* l) : coord(v), level(l), valid(level && level->inBounds(coord)) {
 }
 
-Position::Position(Vec2 v, WLevel l, IsValid) : coord(v), level(l), valid(true) {
+Position::Position(Vec2 v, Level* l, IsValid) : coord(v), level(l), valid(true) {
 }
 
 optional<int> Position::dist8(const Position& pos) const {
@@ -92,7 +92,7 @@ bool Position::isSameModel(const Position& p) const {
   return isValid() && p.isValid() && getModel() == p.getModel();
 }
 
-bool Position::isSameLevel(WConstLevel l) const {  PROFILE
+bool Position::isSameLevel(const Level* l) const {  PROFILE
   return isValid() && l == level;
 }
 

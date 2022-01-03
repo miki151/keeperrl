@@ -28,8 +28,8 @@ class MapMemory {
   MapMemory();
   void addObject(Position, const ViewObject&);
   void update(Position, const ViewIndex&);
-  const unordered_set<Position, CustomHash<Position>>& getUpdated(WConstLevel) const;
-  void clearUpdated(WConstLevel) const;
+  const unordered_set<Position, CustomHash<Position>>& getUpdated(const Level*) const;
+  void clearUpdated(const Level*) const;
   void clearSquare(Position pos);
   static const MapMemory& empty();
   optional<const ViewIndex&> getViewIndex(Position) const;

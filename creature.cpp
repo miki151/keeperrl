@@ -583,7 +583,7 @@ vector<PItem> Creature::steal(const vector<Item*> items) {
   return equipment->removeItems(items, this);
 }
 
-WLevel Creature::getLevel() const {
+Level* Creature::getLevel() const {
   return getPosition().getLevel();
 }
 

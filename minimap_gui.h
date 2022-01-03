@@ -51,6 +51,6 @@ class MinimapGui : public GuiElem {
 
   SDL::SDL_Surface* mapBuffer;
   optional<Texture> mapBufferTex;
-  WConstLevel currentLevel = nullptr;
+  const Level* currentLevel = nullptr;
 };
 

@@ -43,7 +43,7 @@ class CreatureView {
   virtual Level* getCreatureViewLevel() const = 0;
   virtual double getAnimationTime() const = 0;
   virtual vector<Vec2> getVisibleEnemies() const = 0;
-  virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const = 0;
+  virtual const vector<Vec2>& getUnknownLocations(const Level*) const = 0;
   virtual optional<Vec2> getSelectionSize() const { return none; }
   virtual vector<vector<Vec2>> getPathTo(UniqueEntity<Creature>::Id, Vec2) const { return {}; }
   virtual vector<vector<Vec2>> getGroupPathTo(const string& group, Vec2) const { return {}; }

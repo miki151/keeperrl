@@ -25,15 +25,15 @@ struct FurnitureEffectInfo;
 
 class Position {
   public:
-  Position(Vec2, WLevel);
+  Position(Vec2, Level*);
   struct IsValid{};
-  Position(Vec2, WLevel, IsValid);
-  static vector<Position> getAll(WLevel, Rectangle);
+  Position(Vec2, Level*, IsValid);
+  static vector<Position> getAll(Level*, Rectangle);
   WModel getModel() const;
   WGame getGame() const;
   optional<int> dist8(const Position&) const;
   bool isSameLevel(const Position&) const;
-  bool isSameLevel(WConstLevel) const;
+  bool isSameLevel(const Level*) const;
   bool isSameModel(const Position&) const;
   Vec2 getDir(const Position&) const;
   Creature* getCreature() const;

@@ -21,7 +21,7 @@ optional<short> Portals::getDistanceToNearest(Vec2 pos) const {
   return distanceToNearest[pos];
 }
 
-void Portals::recalculateDistances(WLevel level) {
+void Portals::recalculateDistances(Level* level) {
   vector<Vec2> portals;
   for (auto& portal : matchings)
     if (portal)

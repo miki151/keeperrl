@@ -78,7 +78,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void makeMove();
   optional<LocalTime> getLocalTime() const;
   optional<GlobalTime> getGlobalTime() const;
-  WLevel getLevel() const;
+  Level* getLevel() const;
   Game* getGame() const;
   const vector<Creature*>& getVisibleEnemies() const;
   Creature* getClosestEnemy(bool meleeOnly = false) const;

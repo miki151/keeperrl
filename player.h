@@ -66,7 +66,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   virtual vector<Vec2> getVisibleEnemies() const override;
   virtual double getAnimationTime() const override;
   virtual CenterType getCenterType() const override;
-  virtual const vector<Vec2>& getUnknownLocations(WConstLevel) const override;
+  virtual const vector<Vec2>& getUnknownLocations(const Level*) const override;
   virtual vector<Vec2> getHighlightedPathTo(Vec2) const override;
   virtual vector<vector<Vec2>> getPathTo(UniqueEntity<Creature>::Id, Vec2) const override;
   virtual vector<vector<Vec2>> getPermanentPaths() const override;
@@ -119,7 +119,7 @@ class Player : public Controller, public CreatureView, public EventListener<Play
   bool canTravel() const;
 
   private:
-  WLevel getLevel() const;
+  Level* getLevel() const;
   void considerAdventurerMusic();
   void considerKeeperModeTravelMusic();
   void creatureClickAction(Position, bool extended);

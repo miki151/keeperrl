@@ -1221,7 +1221,7 @@ void Collective::updateConstructions() {
 
 void Collective::delayDangerousTasks(const vector<Position>& enemyPos1, LocalTime delayTime) {
   PROFILE;
-  unordered_set<WLevel, CustomHash<WLevel>> levels;
+  unordered_set<Level*, CustomHash<Level*>> levels;
   for (auto& pos : enemyPos1)
     levels.insert(pos.getLevel());
   for (auto& level : levels) {

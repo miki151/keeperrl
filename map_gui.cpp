@@ -750,7 +750,7 @@ void MapGui::setCenter(double x, double y) {
   softCenter = none;
 }
 
-void MapGui::setCenter(Vec2 pos, WLevel level) {
+void MapGui::setCenter(Vec2 pos, Level* level) {
   previousLevel = level;
   levelBounds = previousLevel->getBounds();
   setCenter(pos.x, pos.y);
@@ -1450,7 +1450,7 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
       greenMarks = std::move(res.inGreen);
       redMarks = std::move(res.inRed);
     }
-  WLevel level = view->getCreatureViewLevel();
+  Level* level = view->getCreatureViewLevel();
   levelBounds = level->getBounds();
   mouseUI = ui;
   layout = mapLayout;

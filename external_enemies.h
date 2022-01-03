@@ -29,7 +29,7 @@ struct EnemyEvent {
 class ExternalEnemies {
   public:
   ExternalEnemies(RandomGen&, CreatureFactory*, vector<ExternalEnemy>, ExternalEnemiesType);
-  void update(WLevel, LocalTime);
+  void update(Level*, LocalTime);
   struct CurrentWave {
     string SERIAL(name);
     vector<Creature*> SERIAL(attackers);

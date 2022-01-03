@@ -782,7 +782,7 @@ class GuardArea : public Behaviour {
   SERIALIZE_ALL(SUBCLASS(Behaviour), myLevel, area)
 
   private:
-  WLevel SERIAL(myLevel) = nullptr;
+  Level* SERIAL(myLevel) = nullptr;
   unordered_set<Vec2, CustomHash<Vec2>> SERIAL(area);
 };
 

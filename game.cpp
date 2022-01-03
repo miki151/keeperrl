@@ -91,7 +91,7 @@ void Game::addCollective(Collective* col) {
 
 void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
   auto model = getMainModel().get();
-  WLevel level = model->getTopLevel();
+  Level* level = model->getTopLevel();
   Creature* keeperRef = avatarInfo.playerCreature.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   model->addCreature(std::move(avatarInfo.playerCreature));

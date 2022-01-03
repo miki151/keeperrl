@@ -99,7 +99,7 @@ void ExternalEnemies::updateCurrentWaves(Collective* target) {
     }
 }
 
-void ExternalEnemies::update(WLevel level, LocalTime localTime) {
+void ExternalEnemies::update(Level* level, LocalTime localTime) {
   if (!startTime && level->getGame()->gameWon())
     startTime = localTime;
   if (!startTime)

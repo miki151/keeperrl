@@ -457,7 +457,7 @@ PModel ModelBuilder::battleModel(const FilePath& levelPath, vector<PCreature> al
   auto m = Model::create(contentFactory, none);
   ifstream stream(levelPath.getPath());
   Table<char> level = *SokobanInput::readTable(stream);
-  WLevel l = m->buildMainLevel(
+  Level* l = m->buildMainLevel(
       contentFactory,
       LevelBuilder(meter, Random, contentFactory, level.getBounds().width(), level.getBounds().height(), true, 1.0),
       LevelMaker::battleLevel(level, std::move(allies), enemies));
