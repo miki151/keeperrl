@@ -981,7 +981,7 @@ void Player::moveAction(Vec2 dir) {
   if (!dirPos.canEnterEmpty(creature))
     tryToPerform(creature->destroy(dir, DestroyAction::Type::BASH));
   if (dirPos.isUnavailable() && canTravel() && !getGame()->isSingleModel() &&
-      creature->getPosition().getLevel() == getModel()->getMainLevels()[0]) {
+      creature->getPosition().getLevel() == getModel()->getGroundLevel()) {
     if (getGame()->transferAction(getTeam()))
       forceSteeds();
   }
@@ -1318,7 +1318,7 @@ void Player::fillCurrentLevelInfo(GameInfo& gameInfo) const {
   gameInfo.currentLevel = CurrentLevelInfo {
     level->name,
     level->depth,
-    getModel()->getMainLevels().transform([](auto level) { return level->name; }),
+    getModel()->getAllMainLevels().transform([](auto level) { return level->name; }),
   };
 }
 
@@ -1476,15 +1476,13 @@ void Player::considerAdventurerMusic() {
 void Player::scrollStairs(int diff) {
   auto model = creature->getPosition().getModel();
   auto curLevel = creature->getPosition().getLevel();
-  auto levels = model->getMainLevels();
-  if (auto curIndex = levels.findElement(curLevel)) {
-    auto dest = *curIndex + diff;
-    dest = max(min(dest, levels.size() - 1), 0);
+  if (auto curIndex = model->getMainLevelDepth(curLevel)) {
+    auto dest = model->getMainLevelsDepth().clamp(*curIndex + diff);
     if (dest == *curIndex)
       return;
-    auto targetLevel = levels[dest];
+    auto targetLevel = model->getMainLevel(dest);
     auto oldPos = creature->getPosition().getCoord();
-    if (auto stairs = targetLevel->getStairsTo(levels[dest + (dest > *curIndex ? -1 : 1)]))
+    if (auto stairs = targetLevel->getStairsTo(model->getMainLevel(dest + (dest > *curIndex ? -1 : 1))))
       target = *stairs;
   }
 }

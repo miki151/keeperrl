@@ -654,14 +654,13 @@ void Level::setFurniture(Vec2 pos, PFurniture f) {
 vector<PhylacteryInfo> Level::getPhylacteries() {
   vector<PhylacteryInfo> ret;
   auto model = getModel();
-  auto levels = model->getMainLevels();
   for (auto c : model->getAllCreatures())
     if (auto& f = c->getPhylactery()) {
       if (!f->pos.isSameModel(c->getPosition()))
         continue;
-      auto cIndex = levels.findElement(c->getPosition().getLevel());
-      auto lIndex = levels.findElement(this);
-      auto pIndex = levels.findElement(f->pos.getLevel());
+      auto cIndex = model->getMainLevelDepth(c->getPosition().getLevel());
+      auto lIndex = model->getMainLevelDepth(this);
+      auto pIndex = model->getMainLevelDepth(f->pos.getLevel());
       if (!lIndex || !cIndex || !pIndex || (*cIndex < *lIndex && *pIndex < *lIndex) || (*cIndex > *lIndex && *pIndex > *lIndex))
         continue;
       auto cPos = c->getPosition().getCoord();

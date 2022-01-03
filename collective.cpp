@@ -500,7 +500,7 @@ double Collective::getRebellionProbability() const {
 
 void Collective::considerRebellion() {
   if (Random.chance(getRebellionProbability() / 1000)) {
-    Position escapeTarget = model->getTopLevel()->getLandingSquare(StairKey::transferLanding(),
+    Position escapeTarget = model->getGroundLevel()->getLandingSquare(StairKey::transferLanding(),
         Random.choose(Vec2::directions8()));
     for (auto c : copyOf(getCreatures(MinionTrait::PRISONER))) {
       removeCreature(c);

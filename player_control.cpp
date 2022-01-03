@@ -133,7 +133,7 @@ PlayerControl::PlayerControl(Private, Collective* col, TribeAlignment alignment)
   visibilityMap = make_shared<VisibilityMap>();
   unknownLocations = make_shared<UnknownLocations>();
   memory.reset(new MapMemory());
-  for (auto pos : col->getModel()->getTopLevel()->getAllPositions())
+  for (auto pos : col->getModel()->getGroundLevel()->getAllPositions())
     if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
       if (f->isClearFogOfWar())
         addToMemory(pos);
@@ -323,7 +323,7 @@ void PlayerControl::leaveControl() {
     if (collective->hasTrait(controlled, MinionTrait::LEADER))
       nextKeeperWarning = collective->getGlobalTime();
     auto controlledLevel = controlled->getPosition().getLevel();
-    if (getModel()->getMainLevels().contains(controlledLevel))
+    if (!!getModel()->getMainLevelDepth(controlledLevel))
       setScrollPos(controlled->getPosition());
     controlled->popController();
     for (TeamId team : getTeams().getActive(controlled))
@@ -1784,7 +1784,7 @@ void PlayerControl::fillCurrentLevelInfo(GameInfo& gameInfo) const {
     gameInfo.currentLevel = CurrentLevelInfo {
     level->name,
     level->depth,
-    getModel()->getMainLevels().transform([](auto level) { return level->name; }),
+    getModel()->getAllMainLevels().transform([](auto level) { return level->name; }),
   };
 }
 
@@ -2169,10 +2169,11 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       if (furniture->getType() == FurnitureType("PRISON")) {
         auto level = position.getLevel();
         auto sectors = level->getSectors(MovementType(MovementTrait::WALK).setPrisoner());
-        auto levels = getModel()->getMainLevels();
-        if ((level == levels[0] && sectors.isSector(pos, sectors.getLargest())) ||
-            (level != levels[0] && sectors.same(pos, level->getStairsTo(levels[0])->getCoord())) ||
-            (level != levels.back() && sectors.same(pos, level->getStairsTo(levels.back())->getCoord())))
+        auto topLevel = getModel()->getGroundLevel();
+        auto bottomLevel = getModel()->getMainLevel(getModel()->getMainLevelsDepth().getEnd() - 1);
+        if ((level == topLevel && sectors.isSector(pos, sectors.getLargest())) ||
+            (level != topLevel && sectors.same(pos, level->getStairsTo(topLevel)->getCoord())) ||
+            (level != bottomLevel && sectors.same(pos, level->getStairsTo(bottomLevel)->getCoord())))
           index.setHighlight(HighlightType::PRISON_NOT_CLOSED);
       }
     for (auto furniture : position.getFurniture())
@@ -2313,7 +2314,7 @@ const CollectiveTeams& PlayerControl::getTeams() const {
 }
 
 void PlayerControl::setScrollPos(Position pos) {
-  if (getModel()->getMainLevels().contains(pos.getLevel())) {
+  if (!!getModel()->getMainLevelDepth(pos.getLevel())) {
     currentLevel = pos.getLevel();
     getView()->setScrollPos(pos);
   }
@@ -2911,12 +2912,10 @@ void PlayerControl::processInput(View* view, UserInput input) {
 
 void PlayerControl::scrollStairs(int dir) {
   if (!currentLevel)
-    currentLevel = getModel()->getTopLevel();
-  auto& levels = getModel()->getMainLevels();
-  int index = *levels.findElement(currentLevel);
-  index += dir;
-  index = max(min(index, levels.size() - 1), 0);
-  currentLevel = levels[index];
+    currentLevel = getModel()->getGroundLevel();
+  int index = *getModel()->getMainLevelDepth(currentLevel);
+  index = getModel()->getMainLevelsDepth().clamp(index + dir);
+  currentLevel = getModel()->getMainLevel(index);
   getView()->updateView(this, false);
   CHECK(currentLevel);
 }
@@ -3108,7 +3107,7 @@ void PlayerControl::onSquareClick(Position pos) {
   if (auto furniture = pos.getFurniture(FurnitureLayer::MIDDLE)) {
     if (auto link = pos.getLandingLink()) {
       auto otherLevel = getModel()->getLinkedLevel(pos.getLevel(), *link);
-      if (getModel()->getMainLevels().contains(otherLevel)) {
+      if (!!getModel()->getMainLevelDepth(otherLevel)) {
         currentLevel = otherLevel;
         getView()->updateView(this, false);
       }
@@ -3332,7 +3331,7 @@ void PlayerControl::update(bool currentlyActive) {
 
 Level* PlayerControl::getCurrentLevel() const {
   if (!currentLevel)
-    return getModel()->getTopLevel();
+    return getModel()->getGroundLevel();
   else
     return currentLevel;
 }

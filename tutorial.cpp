@@ -45,7 +45,7 @@ bool Tutorial::canContinue(WConstGame game) const {
   auto collective = game->getPlayerCollective();
   Collective* villain = nullptr;
   for (auto c : game->getCollectives())
-    if (c != collective && c->getTerritory().getAll()[0].getLevel() == c->getModel()->getTopLevel()) {
+    if (c != collective && c->getTerritory().getAll()[0].getLevel() == c->getModel()->getGroundLevel()) {
       CHECK(!villain) << "Only one villain allowed in tutorial.";
       villain = c;
     }
@@ -329,7 +329,7 @@ bool Tutorial::blockAutoEquipment() const {
 
 static void clearDugOutSquares(WConstGame game, vector<Vec2>& highlights) {
   for (auto elem : Iter(highlights)) {
-    if (auto furniture = Position(*elem, game->getPlayerCollective()->getModel()->getTopLevel())
+    if (auto furniture = Position(*elem, game->getPlayerCollective()->getModel()->getGroundLevel())
         .getFurniture(FurnitureLayer::MIDDLE))
       if (furniture->canDestroy(DestroyAction::Type::DIG))
         continue;
@@ -375,7 +375,7 @@ vector<Vec2> Tutorial::getHighlightedSquaresLow(WConstGame game) const {
       vector<Vec2> ret;
       for (Vec2 v : roomCenter.neighbors8())
         if (v.y != roomCenter.y && !collective->getConstructions().containsFurniture(
-              Position(v, collective->getModel()->getTopLevel()), FurnitureLayer::MIDDLE))
+              Position(v, collective->getModel()->getGroundLevel()), FurnitureLayer::MIDDLE))
           ret.push_back(v);
       return ret;
     }
@@ -461,7 +461,7 @@ void Tutorial::createTutorial(Game& game, const ContentFactory* factory) {
   game.getPlayerControl()->setTutorial(tutorial);
   auto collective = game.getPlayerCollective();
   bool foundEntrance = false;
-  for (auto pos : collective->getModel()->getTopLevel()->getAllPositions())
+  for (auto pos : collective->getModel()->getGroundLevel()->getAllPositions())
     if (auto f = pos.getFurniture(FurnitureLayer::CEILING))
       if (f->getType() == FurnitureType("TUTORIAL_ENTRANCE")) {
         tutorial->entrance = pos.getCoord() - Vec2(0, 1);

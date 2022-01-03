@@ -91,7 +91,7 @@ void Game::addCollective(Collective* col) {
 
 void Game::spawnKeeper(AvatarInfo avatarInfo, vector<string> introText) {
   auto model = getMainModel().get();
-  Level* level = model->getTopLevel();
+  Level* level = model->getGroundLevel();
   Creature* keeperRef = avatarInfo.playerCreature.get();
   CHECK(level->landCreature(StairKey::keeperSpawn(), keeperRef)) << "Couldn't place keeper on level.";
   model->addCreature(std::move(avatarInfo.playerCreature));
@@ -180,7 +180,7 @@ PGame Game::splashScreen(PModel&& model, const CampaignSetup& s, ContentFactory 
   auto game = makeOwner<Game>(std::move(t), Vec2(0, 0), s, std::move(f));
   for (auto model : game->getAllModels())
     model->setGame(game.get());
-  auto spectator = makeOwner<Spectator>(game->models[0][0]->getTopLevel(), view);
+  auto spectator = makeOwner<Spectator>(game->models[0][0]->getGroundLevel(), view);
   spectator->subscribeTo(modelRef);
   game->spectator = std::move(spectator);
   game->turnEvents.clear();
@@ -266,7 +266,7 @@ void Game::prepareSiteRetirement() {
   if (!locationPos.empty())
     playerCollective->getTerritory().setCentralPoint(
         Position(Rectangle::boundingBox(locationPos.transform([](Position p){ return p.getCoord();})).middle(),
-            playerCollective->getModel()->getTopLevel()));
+            playerCollective->getModel()->getGroundLevel()));
   for (auto c : copyOf(playerCollective->getCreatures()))
     c->retire();
   playerControl = nullptr;
@@ -333,7 +333,7 @@ void Game::initializeModels() {
         level->getSectors(MovementType(MovementTrait::FLY));
       }
       // Use top level's id as unique id of the model.
-      auto id = model->getTopLevel()->getUniqueId();
+      auto id = model->getGroundLevel()->getUniqueId();
       if (!localTime.count(id))
         localTime[id] = (model->getLocalTime() + initialModelUpdate).getDouble();
       if (getCurrentModel() != model)
@@ -357,7 +357,7 @@ optional<ExitInfo> Game::update(double timeDiff) {
     return exitInfo;
   considerRealTimeRender();
   WModel currentModel = getCurrentModel();
-  auto currentId = currentModel->getTopLevel()->getUniqueId();
+  auto currentId = currentModel->getGroundLevel()->getUniqueId();
   while (!lastTick || currentTime >= *lastTick + 1) {
     if (!lastTick)
       lastTick = (int)currentTime;
@@ -486,7 +486,7 @@ void Game::exitAction() {
 }
 
 Position Game::getTransferPos(WModel from, WModel to) const {
-  return to->getTopLevel()->getLandingSquare(StairKey::transferLanding(),
+  return to->getGroundLevel()->getLandingSquare(StairKey::transferLanding(),
       getModelCoords(from) - getModelCoords(to));
 }
 

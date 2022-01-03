@@ -38,9 +38,8 @@ static ZLevelResult tryBuilding(int numTries, BuildFun buildFun, const string& n
 void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
   switch (type) {
     case FurnitureOnBuilt::DOWN_STAIRS: {
-      auto levels = pos.getModel()->getMainLevels();
-      int levelIndex = *levels.findElement(pos.getLevel());
-      if (levelIndex == levels.size() - 1) {
+      int levelIndex = *pos.getModel()->getMainLevelDepth(pos.getLevel());
+      if (levelIndex == pos.getModel()->getMainLevelsDepth().getEnd() - 1) {
         auto stairKey = StairKey::getNew();
         auto newLevel = tryBuilding(20,
             [&]{
@@ -71,7 +70,7 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
             if (f->isClearFogOfWar())
               pos.getGame()->getPlayerControl()->addToMemory(pos);
       } else {
-        auto nextLevel = levels[levelIndex + 1];
+        auto nextLevel = pos.getModel()->getMainLevel(levelIndex + 1);
         auto oldStairsPos = pos.getModel()->getStairs(pos.getLevel(), nextLevel);
         pos.setLandingLink(*oldStairsPos->getLandingLink());
         oldStairsPos->removeLandingLink();

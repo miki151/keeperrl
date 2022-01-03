@@ -60,8 +60,6 @@ class Model : public OwnedObject<Model> {
   const heap_optional<ExternalEnemies>& getExternalEnemies() const;
   optional<MusicType> getDefaultMusic() const;
 
-  bool isTurnBased();
-
   LocalTime getLocalTime() const;
   double getLocalTimeDouble() const;
   TimeQueue& getTimeQueue();
@@ -75,8 +73,11 @@ class Model : public OwnedObject<Model> {
   vector<Creature*> getAllCreatures() const;
   const vector<PCreature>& getDeadCreatures() const;
   vector<Level*> getLevels() const;
-  const vector<Level*>& getMainLevels() const;
-  Level* getTopLevel() const;
+  Level* getMainLevel(int depth) const;
+  optional<int> getMainLevelDepth(const Level*) const;
+  Range getMainLevelsDepth() const;
+  const vector<Level*>& getAllMainLevels() const;
+  Level* getGroundLevel() const;
   LevelId getUniqueId() const;
 
   void addCollective(PCollective);

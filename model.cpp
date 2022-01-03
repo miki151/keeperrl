@@ -164,7 +164,7 @@ void Model::tick(LocalTime time) { PROFILE
     for (auto& pos : col->getTerritory().getAll())
       pos.getLevel()->territory[pos.getCoord()] = col.get();
   if (externalEnemies)
-    externalEnemies->update(getTopLevel(), time);
+    externalEnemies->update(getGroundLevel(), time);
 }
 
 void Model::addCreature(PCreature c) {
@@ -291,8 +291,20 @@ vector<Level*> Model::getLevels() const {
   return getWeakPointers(levels);
 }
 
-const vector<Level*>& Model::getMainLevels() const {
+const vector<Level*>& Model::getAllMainLevels() const {
   return mainLevels;
+}
+
+optional<int> Model::getMainLevelDepth(const Level* l) const {
+  return mainLevels.findElement(l);
+}
+
+Range Model::getMainLevelsDepth() const {
+  return Range(0, mainLevels.size());
+}
+
+Level* Model::getMainLevel(int depth) const {
+  return mainLevels[depth];
 }
 
 void Model::addCollective(PCollective col) {
@@ -301,7 +313,7 @@ void Model::addCollective(PCollective col) {
     game->addCollective(collectives.back().get());
 }
 
-Level* Model::getTopLevel() const {
+Level* Model::getGroundLevel() const {
   return mainLevels[0];
 }
 
@@ -329,17 +341,17 @@ PCreature Model::extractCreature(Creature* c) {
 void Model::transferCreature(PCreature c, Vec2 travelDir) {
   Creature* ref = c.get();
   addCreature(std::move(c));
-  CHECK(getTopLevel()->landCreature(StairKey::transferLanding(), ref, travelDir));
+  CHECK(getGroundLevel()->landCreature(StairKey::transferLanding(), ref, travelDir));
 }
 
 void Model::transferCreature(PCreature c, const vector<Position>& destinations) {
   Creature* ref = c.get();
   addCreature(std::move(c));
-  CHECK(getTopLevel()->landCreature(destinations, ref));
+  CHECK(getGroundLevel()->landCreature(destinations, ref));
 }
 
 bool Model::canTransferCreature(Creature* c, Vec2 travelDir) {
-  for (Position pos : getTopLevel()->getLandingSquares(StairKey::transferLanding()))
+  for (Position pos : getGroundLevel()->getLandingSquares(StairKey::transferLanding()))
     if (pos.canEnter(c))
       return true;
   return false;
@@ -368,7 +380,7 @@ void Model::landWarlord(vector<PCreature> player) {
 
 void Model::landHeroPlayer(PCreature player) {
   Creature* ref = player.get();
-  Level* target = getTopLevel();
+  Level* target = getGroundLevel();
   vector<Position> landing = target->getLandingSquares(StairKey::heroSpawn());
   if (!target->landCreature(landing, ref))
     CHECK(target->landCreature(target->getAllLandingPositions(), ref)) << "No place to spawn player";

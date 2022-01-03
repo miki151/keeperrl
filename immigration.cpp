@@ -344,7 +344,7 @@ vector<Position> Immigration::Available::getSpawnPositions() const {
     [&] (OutsideTerritory) {
       auto ret = immigration->collective->getTerritory().getExtended(10, 20);
       auto tryLimitingToTopLevel = [&] {
-        auto tmp = ret.filter([](Position pos) { return pos.getLevel() == pos.getModel()->getTopLevel(); });
+        auto tmp = ret.filter([](Position pos) { return pos.getLevel() == pos.getModel()->getGroundLevel(); });
         if (!tmp.empty())
           ret = tmp;
       };

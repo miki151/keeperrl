@@ -222,6 +222,7 @@ class Range {
   int getStart() const;
   int getEnd() const;
   int getLength() const;
+  int clamp(int) const;
   bool contains(int) const;
   bool intersects(Range) const;
   Range intersection(Range) const;

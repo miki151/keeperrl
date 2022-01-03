@@ -747,6 +747,11 @@ bool Range::contains(int p) const {
   return (increment > 0 && p >= start && p < finish) || (increment < 0 && p <= start && p > finish);
 }
 
+int Range::clamp(int a) const {
+  CHECK(increment == 1);
+  return max(start, min(a, finish - 1));
+}
+
 bool Range::intersects(Range r) const {
   return contains(r.start) || contains(r.finish - r.increment) || r.contains(start);
 }
