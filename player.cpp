@@ -1340,6 +1340,7 @@ void Player::refreshGameInfo(GameInfo& gameInfo) const {
   gameInfo.sunlightInfo.timeRemaining = sunlightInfo.getTimeRemaining();
   gameInfo.time = creature->getGame()->getGlobalTime();
   auto contentFactory = getGame()->getContentFactory();
+  gameInfo.scriptedHelp = contentFactory->scriptedHelp;
   gameInfo.playerInfo = PlayerInfo(creature, contentFactory);
   auto& info = *gameInfo.playerInfo.getReferenceMaybe<PlayerInfo>();
   fillDungeonLevel(info);

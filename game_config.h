@@ -40,7 +40,8 @@ enum class GameConfigId {
   TILE_GAS_TYPES,
   PROMOTIONS,
   DANCE_POSITIONS,
-  EQUIPMENT_GROUPS
+  EQUIPMENT_GROUPS,
+  HELP
 };
 
 class GameConfig {

@@ -27,7 +27,7 @@
 #include "scripted_ui.h"
 #include "scripted_ui_data.h"
 #include "mouse_button_id.h"
-#include "pretty_printing.h"
+#include "tileset.h"
 
 #include "sdl.h"
 
@@ -219,9 +219,9 @@ static optional<SDL_Keycode> getKey(char c) {
 }
 
 GuiFactory::GuiFactory(Renderer& r, Clock* c, Options* o, KeybindingMap* k,
-    const DirectoryPath& freeImages, const DirectoryPath& scriptsPath, const optional<DirectoryPath>& nonFreeImages)
+    const DirectoryPath& freeImages, const optional<DirectoryPath>& nonFreeImages)
     : keybindingMap(k), clock(c), renderer(r), options(o), freeImagesPath(freeImages),
-      nonFreeImagesPath(nonFreeImages), scriptsPath(scriptsPath) {
+      nonFreeImagesPath(nonFreeImages) {
 }
 
 GuiFactory::~GuiFactory() {}
@@ -480,7 +480,7 @@ class DrawScripted : public GuiElem {
       : id(id), data(data), context(context) {}
 
   const ScriptedUI& get() {
-    return context.factory->scriptedUI.at(id);
+    return context.renderer->getTileSet().scriptedUI.at(id);
   }
 
   virtual void render(Renderer& renderer) override {
@@ -2772,34 +2772,6 @@ void GuiFactory::loadImages() {
   loadFreeImages(freeImagesPath);
   if (nonFreeImagesPath)
     loadNonFreeImages(*nonFreeImagesPath);
-  loadScripts();
-}
-
-void GuiFactory::loadScripts() {
-  scriptedUI.clear();
-  scriptedUITextures.clear();
-  auto stripExtensions = [] (const FilePath& path) {
-    string ret = path.getFileName();
-    ret = ret.substr(0, ret.size() - 4);
-    return ret;
-  };
-  for (auto file : scriptsPath.getFiles()) {
-    if (file.getFileName() == "common.txt"_s)
-      continue;
-    if (file.hasSuffix(".png"))
-      scriptedUITextures.insert(make_pair(stripExtensions(file), Texture(file)));
-    else
-    if (file.hasSuffix(".txt")) {
-      ScriptedUI elem;
-      while (1) {
-        if (auto err = PrettyPrinting::parseObject(elem, {scriptsPath.file("common.txt"), file}, nullptr))
-          USER_INFO << file.getFileName() << ": " << *err;
-        else
-          break;
-      }
-      scriptedUI.insert(make_pair(stripExtensions(file), std::move(elem)));
-    }
-  }
 }
 
 void GuiFactory::loadFreeImages(const DirectoryPath& path) {

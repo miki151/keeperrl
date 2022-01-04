@@ -63,7 +63,7 @@ class GuiElem {
 
 class GuiFactory {
   public:
-  GuiFactory(Renderer&, Clock*, Options*, KeybindingMap*, const DirectoryPath& freeImages, const DirectoryPath& scripts,
+  GuiFactory(Renderer&, Clock*, Options*, KeybindingMap*, const DirectoryPath& freeImages,
       const optional<DirectoryPath>& nonFreeImages);
   void loadImages();
   ~GuiFactory();
@@ -102,8 +102,6 @@ class GuiFactory {
   SGuiElem stack(SGuiElem, SGuiElem, SGuiElem, SGuiElem);
   SGuiElem external(GuiElem*);
   SGuiElem rectangle(Color color, optional<Color> borderColor = none);
-  map<ScriptedUIId, ScriptedUI> scriptedUI;
-  map<string, Texture> scriptedUITextures;
   SGuiElem scripted(function<void()> endCallback, ScriptedUIId, const ScriptedUIData&, ScriptedUIState&);
   class ListBuilder {
     public:
@@ -332,8 +330,6 @@ class GuiFactory {
   DragContainer dragContainer;
   DirectoryPath freeImagesPath;
   optional<DirectoryPath> nonFreeImagesPath;
-  DirectoryPath scriptsPath;
   void loadNonFreeImages(const DirectoryPath&);
   void loadFreeImages(const DirectoryPath&);
-  void loadScripts();
 };

@@ -65,6 +65,7 @@ class ContentFactory {
   map<TileGasType, TileGasInfo> SERIAL(tileGasTypes);
   map<string, vector<PromotionInfo>> SERIAL(promotions);
   vector<Dancing::Positions> SERIAL(dancePositions);
+  vector<std::tuple<ViewId, string, string>> SERIAL(scriptedHelp);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

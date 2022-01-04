@@ -244,11 +244,10 @@ class GuiBuilder {
     BESTIARY,
     SPELL_SCHOOLS,
     ITEMS_HELP,
-    CAPTURING_PRISONERS,
-    USING_STEED,
-    BUILDING_ROOFS
+    SCRIPTED_HELP
   };
   optional<BottomWindowId> bottomWindow;
+  string scriptedHelpId;
   void toggleBottomWindow(BottomWindowId);
   atomic<GameSpeed> gameSpeed;
   const char* getGameSpeedName(GameSpeed) const;

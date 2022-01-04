@@ -1816,6 +1816,7 @@ void PlayerControl::refreshGameInfo(GameInfo& gameInfo) const {
     if (auto info = checkKeeperDanger())
       gameInfo.keeperInDanger = info->warning;
   auto contentFactory = getGame()->getContentFactory();
+  gameInfo.scriptedHelp = contentFactory->scriptedHelp;
   gameInfo.isSingleMap = getGame()->isSingleModel();
   getGame()->getEncyclopedia()->setKeeperThings(contentFactory, &collective->getTechnology(), &collective->getWorkshops());
   gameInfo.encyclopedia = getGame()->getEncyclopedia();

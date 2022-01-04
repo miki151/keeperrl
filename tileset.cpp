@@ -1,9 +1,11 @@
 #include "tileset.h"
+#include "directory_path.h"
 #include "view_id.h"
 #include "tile.h"
 #include "view_object.h"
 #include "game_config.h"
 #include "tile_info.h"
+#include "scripted_ui.h"
 
 void TileSet::addTile(string id, Tile tile) {
   tiles.insert(make_pair(ViewId(id.data()).getInternalId(), std::move(tile)));
@@ -218,7 +220,8 @@ Tile TileSet::symbol(const string& s, Color id, bool symbol) {
   return Tile::fromString(s, id, symbol);
 }
 
-TileSet::TileSet(const DirectoryPath& defaultDir, const DirectoryPath& modsDir) : defaultDir(defaultDir), modsDir(modsDir) {
+TileSet::TileSet(const DirectoryPath& defaultDir, const DirectoryPath& modsDir, const DirectoryPath& scriptedHelpDir)
+    : defaultDir(defaultDir), modsDir(modsDir), scriptedHelpDir(scriptedHelpDir) {
 }
 
 void TileSet::clear() {
@@ -236,11 +239,38 @@ void TileSet::setTilePathsAndReload(const TilePaths& p) {
   loadTextures();
 }
 
+void TileSet::loadScriptedTextures(const DirectoryPath& dir, const FilePath& commonPath) {
+  auto stripExtensions = [] (const FilePath& path) {
+    string ret = path.getFileName();
+    ret = ret.substr(0, ret.size() - 4);
+    return ret;
+  };
+  for (auto file : dir.getFiles()) {
+    if (file.getFileName() == "common.txt"_s)
+      continue;
+    if (file.hasSuffix(".png"))
+      scriptedUITextures.insert(make_pair(stripExtensions(file), Texture(file)));
+    else
+    if (file.hasSuffix(".txt")) {
+      ScriptedUI elem;
+      while (1) {
+        if (auto err = PrettyPrinting::parseObject(elem, {commonPath, file}, nullptr))
+          USER_INFO << file.getFileName() << ": " << *err;
+        else
+          break;
+      }
+      scriptedUI.insert(make_pair(stripExtensions(file), std::move(elem)));
+    }
+  }
+}
+
 void TileSet::reload() {
   tiles.clear();
   symbols.clear();
   tileCoords.clear();
   spriteMods.clear();
+  scriptedUITextures.clear();
+  scriptedUI.clear();
   auto reloadDir = [&] (const DirectoryPath& path, bool overwrite) {
     bool hadTiles = false;
     hadTiles |= loadTilesFromDir(path.subdirectory("orig16"), Vec2(16, 16), overwrite);
@@ -249,9 +279,13 @@ void TileSet::reload() {
     return hadTiles;
   };
   reloadDir(defaultDir, true);
-  for (auto& mod : tilePaths->mainMods)
+  auto scriptCommonFile = scriptedHelpDir.file("common.txt");
+  loadScriptedTextures(scriptedHelpDir, scriptCommonFile);
+  for (auto& mod : tilePaths->mainMods) {
+    loadScriptedTextures(modsDir.subdirectory(mod).subdirectory("help"), scriptCommonFile);
     if (reloadDir(modsDir.subdirectory(mod), true))
       spriteMods.push_back(mod);
+  }
   for (auto& subdir : tilePaths->mergedMods)
     if (reloadDir(modsDir.subdirectory(subdir), false) && !spriteMods.contains(subdir))
       spriteMods.push_back(subdir);

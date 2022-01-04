@@ -8,6 +8,7 @@
 #include "sdl_keycodes.h"
 #include "clock.h"
 #include "container_range.h"
+#include "tileset.h"
 
 namespace EnumsDetail {
 enum class TextureFlip;
@@ -30,8 +31,8 @@ struct Texture : ScriptedUIInterface {
   const ::Texture* getTexture(ScriptedContext& context) const {
     if (id)
       return &context.factory->get(*id);
-    if (context.factory->scriptedUITextures.count(scriptedId))
-      return &context.factory->scriptedUITextures.at(scriptedId);
+    if (auto ret = getReferenceMaybe(context.renderer->getTileSet().scriptedUITextures, scriptedId))
+      return &*ret;
     return nullptr;
   }
   void render(const ScriptedUIData&, ScriptedContext& context, Rectangle area) const override {

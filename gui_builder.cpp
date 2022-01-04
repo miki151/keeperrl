@@ -302,25 +302,29 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
   return WL(scrollable, WL(stack, std::move(keypressOnly)), &buildingsScroll, &scrollbarsHeld);
 }
 
-SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo&) {
+SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
   auto lines = WL(getListBuilder, legendLineHeight);
-  auto addScriptedButton = [this, &lines] (ViewId id, const string& label, BottomWindowId windowId) {
+  auto addScriptedButton = [this, &lines] (ViewId id, const string& label, string scriptedId) {
     lines.addElem(WL(standardButton,
         WL(getListBuilder)
             .addElemAuto(WL(topMargin, -2, WL(viewObject, id)))
             .addSpace(5)
             .addElemAuto(WL(label, label))
             .buildHorizontalList(),
-        WL(button, [this, windowId]() {
+        WL(button, [this, scriptedId]() {
           scriptedUIState.scrollPos.reset();
-          toggleBottomWindow(windowId);
+          if (bottomWindow == SCRIPTED_HELP && scriptedHelpId == scriptedId)
+            bottomWindow = none;
+          else {
+            bottomWindow = SCRIPTED_HELP;
+            scriptedHelpId = scriptedId;
+          }
         })
     ));
     lines.addSpace(5);
   };
-  addScriptedButton(ViewId("prisoner"), "Capturing prisoners", BottomWindowId::CAPTURING_PRISONERS);
-  addScriptedButton(ViewId("horse"), "Using steed", BottomWindowId::USING_STEED);
-  addScriptedButton(ViewId("castle_wall"), "Buildings and roof support", BottomWindowId::BUILDING_ROOFS);
+  for (auto& elem : info.scriptedHelp)
+    addScriptedButton(std::get<0>(elem), std::get<1>(elem), std::get<2>(elem));
   lines.addElem(WL(standardButton,
       WL(getListBuilder)
           .addElemAuto(WL(topMargin, -2, WL(viewObject, ViewId("special_bmbw"))))
@@ -2809,14 +2813,8 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
     default:
       break;
   }
-  if (bottomWindow == CAPTURING_PRISONERS)
-    ret.push_back({gui.scripted([this]{ bottomWindow = none; }, "prisoners", ScriptedUIData{}, scriptedUIState),
-        OverlayInfo::TOP_LEFT});
-  if (bottomWindow == USING_STEED)
-    ret.push_back({gui.scripted([this]{ bottomWindow = none; }, "steed", ScriptedUIData{}, scriptedUIState),
-        OverlayInfo::TOP_LEFT});
-  if (bottomWindow == BUILDING_ROOFS)
-    ret.push_back({gui.scripted([this]{ bottomWindow = none; }, "roofs", ScriptedUIData{}, scriptedUIState),
+  if (bottomWindow == SCRIPTED_HELP)
+    ret.push_back({gui.scripted([this]{ bottomWindow = none; }, scriptedHelpId, ScriptedUIData{}, scriptedUIState),
         OverlayInfo::TOP_LEFT});
   if (bottomWindow == BESTIARY) {
     if (bestiaryIndex >= info.encyclopedia->bestiary.size())
