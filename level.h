@@ -143,7 +143,6 @@ class Level : public OwnedObject<Level> {
 
   int getNumGeneratedSquares() const;
   int getNumTotalSquares() const;
-  bool isUnavailable(Vec2) const;
 
   void setNeedsMemoryUpdate(Vec2, bool);
   bool needsMemoryUpdate(Vec2) const;

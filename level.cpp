@@ -654,10 +654,6 @@ bool Level::needsMemoryUpdate(Vec2 pos) const {
   return memoryUpdates[pos];
 }
 
-bool Level::isUnavailable(Vec2 pos) const {
-  return unavailable[pos];
-}
-
 void Level::setFurniture(Vec2 pos, PFurniture f) {
   auto layer = f->getLayer();
   furniture->eraseConstruction(pos, layer);
