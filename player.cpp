@@ -1176,6 +1176,13 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   bool canSee = visibilityMap->isVisible(Position(pos, getLevel())) ||
       getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP);
   Position position = creature->getPosition().withCoord(pos);
+  if (auto belowPos = position.getGroundBelow()) {
+    if (auto memIndex = getMemory().getViewIndex(*belowPos)) {
+      index.mergeFromMemory(*memIndex);
+      index.setHighlight(HighlightType::UNAVAILABLE);
+    }
+    return;
+  }
   if (canSee)
     position.getViewIndex(index, creature);
   else
@@ -1315,10 +1322,11 @@ void Player::fillDungeonLevel(PlayerInfo& info) const {
 
 void Player::fillCurrentLevelInfo(GameInfo& gameInfo) const {
   auto level = getLevel();
+  auto levels = getModel()->getAllMainLevels();
   gameInfo.currentLevel = CurrentLevelInfo {
     level->name,
-    level->depth,
-    getModel()->getAllMainLevels().transform([](auto level) { return level->name; }),
+    *levels.findElement(level),
+    levels.transform([](auto level) { return level->name; }),
   };
 }
 

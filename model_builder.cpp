@@ -376,7 +376,7 @@ void ModelBuilder::makeExtraLevel(WModel model, LevelConnection& connection, Set
       auto res = model->buildLevel(
           contentFactory,
           LevelBuilder(meter, random, contentFactory, level.levelSize.x, level.levelSize.y, true, level.isLit ? 1.0 : 0.0),
-          getMaker(level.levelType)(random, settlement, level.levelSize), depth, level.name);
+          getMaker(level.levelType)(random, settlement, level.levelSize), depth, level.name.value_or("Z-level" + toString(depth)));
       res->canTranfer = level.canTransfer;
       res->aiFollows = level.aiFollows;
       upLink = downLink;

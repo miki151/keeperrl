@@ -65,7 +65,7 @@ void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   ar & SUBCLASS(OwnedObject<Model>);
   ar(levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
-  ar(stairNavigation, cemetery, mainLevels, eventGenerator, externalEnemies, defaultMusic);
+  ar(stairNavigation, cemetery, mainLevels, upLevels, eventGenerator, externalEnemies, defaultMusic);
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Model)
@@ -177,7 +177,7 @@ void Model::addCreature(PCreature c, TimeInterval delay) {
   timeQueue->addCreature(std::move(c), getLocalTime() + delay);
 }
 
-Level* Model::buildLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker, int depth, optional<string> name) {
+Level* Model::buildLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker, int depth, string name) {
   LevelBuilder builder(std::move(b));
   levels.push_back(builder.build(factory, this, maker.get(), Random.getLL()));
   levels.back()->depth = depth;
@@ -185,9 +185,18 @@ Level* Model::buildLevel(const ContentFactory* factory, LevelBuilder b, PLevelMa
   return levels.back().get();
 }
 
+Level* Model::buildUpLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker) {
+  int depth = -upLevels.size() - 1;
+  auto ret = buildLevel(factory, std::move(b), std::move(maker), depth, "Z-level " + toString(depth));
+  ret->below = upLevels.empty() ? mainLevels[0] : upLevels.back();
+  ret->below->above = ret;
+  upLevels.push_back(ret);
+  return ret;
+}
+
 Level* Model::buildMainLevel(const ContentFactory* factory, LevelBuilder b, PLevelMaker maker) {
   int depth = mainLevels.size();
-  auto ret = buildLevel(factory, std::move(b), std::move(maker), depth, depth == 0 ? optional<string>("Ground") : none);
+  auto ret = buildLevel(factory, std::move(b), std::move(maker), depth, depth == 0 ? "Ground"_s : "Z-level " + toString(depth));
   mainLevels.push_back(ret);
   return ret;
 }
@@ -291,19 +300,23 @@ vector<Level*> Model::getLevels() const {
   return getWeakPointers(levels);
 }
 
-const vector<Level*>& Model::getAllMainLevels() const {
-  return mainLevels;
+vector<Level*> Model::getAllMainLevels() const {
+  return concat(upLevels.reverse(), mainLevels);
 }
 
 optional<int> Model::getMainLevelDepth(const Level* l) const {
+  if (auto index = upLevels.findElement(l))
+    return -*index - 1;
   return mainLevels.findElement(l);
 }
 
 Range Model::getMainLevelsDepth() const {
-  return Range(0, mainLevels.size());
+  return Range(-upLevels.size(), mainLevels.size());
 }
 
 Level* Model::getMainLevel(int depth) const {
+  if (depth < 0)
+    return upLevels[-depth - 1];
   return mainLevels[depth];
 }
 

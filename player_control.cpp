@@ -1781,10 +1781,11 @@ static optional<CollectiveInfo::RebellionChance> getRebellionChance(double prob)
 
 void PlayerControl::fillCurrentLevelInfo(GameInfo& gameInfo) const {
   auto level = getCurrentLevel();
-    gameInfo.currentLevel = CurrentLevelInfo {
+  auto levels = getModel()->getAllMainLevels();
+  gameInfo.currentLevel = CurrentLevelInfo {
     level->name,
-    level->depth,
-    getModel()->getAllMainLevels().transform([](auto level) { return level->name; }),
+    *levels.findElement(level),
+    levels.transform([](auto level) { return level->name; }),
   };
 }
 
@@ -2136,6 +2137,13 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
   Position position(pos, getCurrentLevel());
   if (!position.isValid())
     return;
+  if (auto belowPos = position.getGroundBelow()) {
+    if (auto memIndex = getMemory().getViewIndex(*belowPos)) {
+      index.mergeFromMemory(*memIndex);
+      index.setHighlight(HighlightType::UNAVAILABLE);
+    }
+    return;
+  }
   bool canSeePos = canSee(position);
   getSquareViewIndex(position, canSeePos, index);
   if (!canSeePos)

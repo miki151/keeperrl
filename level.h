@@ -163,7 +163,7 @@ class Level : public OwnedObject<Level> {
 
   SERIALIZATION_DECL(Level)
 
-  optional<string> SERIAL(name);
+  string SERIAL(name);
   int SERIAL(depth) = 0;
   bool canTranfer = true;
   bool aiFollows = true;
@@ -171,6 +171,8 @@ class Level : public OwnedObject<Level> {
   int sightRange = 100;
   CreatureList SERIAL(wildlife);
   vector<Creature*> SERIAL(addedWildlife);
+  Level* SERIAL(below) = nullptr;
+  Level* SERIAL(above) = nullptr;
 
   private:
   friend class Position;

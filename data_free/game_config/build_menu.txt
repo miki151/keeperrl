@@ -33,6 +33,9 @@
     { Furniture {{ "STONE_BRIDGE" }               "STONE" 5 }      "Stone bridge"      "Structure"
       "Build to pass over water or lava." }
 
+    { Furniture {{ "UP_STAIRS_PLAYER" }                }              "Up stairs"       "Structure"
+      "Build to reach deeper z-levels." }
+
     { Furniture {{ "DOWN_STAIRS" }                }              "Down stairs"       "Structure"
       "Build to reach deeper z-levels." }
   }

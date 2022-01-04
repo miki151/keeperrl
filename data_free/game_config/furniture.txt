@@ -54,6 +54,7 @@
   strength = 80
   requiresLight = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+  canBuildOutsideOfTerritory = true
 }
 "WORKSHOP"
 {
@@ -1288,6 +1289,10 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   viewId = { "down_staircase" }
   onBuilt = DOWN_STAIRS
+}
+"UP_STAIRS_PLAYER" inherit "UP_STAIRS"
+{
+  onBuilt = UP_STAIRS
 }
 "UP_STAIRS_ROCK" inherit "UP_STAIRS"
 {

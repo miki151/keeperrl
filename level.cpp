@@ -44,14 +44,16 @@
 #include "phylactery_info.h"
 #include "content_factory.h"
 #include "monster_ai.h"
-
+#include "furniture_layer.h"
+#include "known_tiles.h"
+#include "player_control.h"
 
 template <class Archive>
 void Level::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Level>);
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps, territory);
-  ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates);
+  ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates, above, below);
   ar(furniture, tickingFurniture, covered, roofSupport, portals, name, depth, wildlife, addedWildlife);
   vector<pair<TribeId, unique_ptr<EffectsTable>>> SERIAL(tmp);
   for (auto t : ENUM_ALL(TribeId::KeyType))
@@ -568,6 +570,19 @@ void Level::tick() {
         addedWildlife.push_back(ref);
     }
   }
+  if (above)
+    for (auto pos : getAllPositions())
+      if (pos.isCovered()) {
+        Position abovePos(pos.getCoord(), above);
+        above->unavailable[pos.getCoord()] = false;
+        auto col = getGame()->getPlayerCollective();
+        if (col->getKnownTiles().isKnown(pos)) {
+          col->addKnownTile(abovePos);
+          getGame()->getPlayerControl()->addToMemory(abovePos);
+        }
+        if (!abovePos.getFurniture(FurnitureLayer::GROUND))
+          abovePos.addFurniture(getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("FLOOR"), TribeId::getMonster()));
+      }
 }
 
 bool Level::inBounds(Vec2 pos) const {

@@ -76,7 +76,7 @@ class Model : public OwnedObject<Model> {
   Level* getMainLevel(int depth) const;
   optional<int> getMainLevelDepth(const Level*) const;
   Range getMainLevelsDepth() const;
-  const vector<Level*>& getAllMainLevels() const;
+  vector<Level*> getAllMainLevels() const;
   Level* getGroundLevel() const;
   LevelId getUniqueId() const;
 
@@ -103,8 +103,9 @@ class Model : public OwnedObject<Model> {
 
   void addEvent(const GameEvent&);
 
-  Level* buildLevel(const ContentFactory*, LevelBuilder, PLevelMaker, int depth, optional<string> name);
+  Level* buildLevel(const ContentFactory*, LevelBuilder, PLevelMaker, int depth, string name);
   Level* buildMainLevel(const ContentFactory*, LevelBuilder, PLevelMaker);
+  Level* buildUpLevel(const ContentFactory*, LevelBuilder, PLevelMaker);
   void calculateStairNavigation();
 
   private:
@@ -122,6 +123,7 @@ class Model : public OwnedObject<Model> {
 
   vector<PLevel> SERIAL(levels);
   vector<Level*> SERIAL(mainLevels);
+  vector<Level*> SERIAL(upLevels);
   PLevel SERIAL(cemetery);
   vector<PCollective> SERIAL(collectives);
   WGame SERIAL(game) = nullptr;

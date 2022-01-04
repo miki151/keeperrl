@@ -482,9 +482,9 @@ class TutorialInfo {
 };
 
 struct CurrentLevelInfo {
-  optional<string> HASH(name);
+  string HASH(name);
   int HASH(levelDepth);
-  vector<optional<string>> HASH(zLevels);
+  vector<string> HASH(zLevels);
   HASH_ALL(name, levelDepth, zLevels)
 };
 

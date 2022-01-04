@@ -8,6 +8,7 @@ class Position;
 RICH_ENUM(
   FurnitureOnBuilt,
   DOWN_STAIRS,
+  UP_STAIRS,
   SET_ON_FIRE
 );
 

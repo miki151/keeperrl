@@ -4718,9 +4718,8 @@ SGuiElem GuiBuilder::drawHighscores(const vector<HighscoreList>& list, Semaphore
 }
 
 SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textColor) {
-  auto name = info.name.value_or("Z-Level " + toString(info.levelDepth));
   return WL(stack,
-      WL(centerHoriz, WL(labelHighlight, name, textColor)),
+      WL(centerHoriz, WL(labelHighlight, info.name, textColor)),
       info.zLevels.empty() ? WL(empty) : WL(buttonRect, [this, info] (Rectangle bounds) {
           auto tasks = WL(getListBuilder, legendLineHeight);
           bool exit = false;
@@ -4732,7 +4731,7 @@ SGuiElem GuiBuilder::drawZLevelButton(const CurrentLevelInfo& info, Color textCo
           for (int i : All(info.zLevels)) {
             auto elem = WL(stack,
                 WL(button, [i, &retAction, &exit] { retAction(i); exit = true; }),
-                WL(labelHighlight, info.zLevels[i].value_or("Z-Level " + toString(i))));
+                WL(labelHighlight, info.zLevels[i]));
             maxWidth = max(maxWidth, *elem->getPreferredWidth());
             tasks.addElem(WL(centerHoriz, std::move(elem)));
           }

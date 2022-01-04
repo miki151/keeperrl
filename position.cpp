@@ -471,7 +471,7 @@ vector<PItem> Position::removeItems(vector<Item*> it) {
 
 bool Position::isUnavailable() const {
   PROFILE;
-  return !isValid() || level->isUnavailable(coord);
+  return !isValid() || level->unavailable[coord];
 }
 
 bool Position::canEnter(const Creature* c) const {
@@ -631,6 +631,16 @@ Collective* Position::getCollective() const {
   if (!isValid())
     return nullptr;
   return level->territory[coord];
+}
+
+optional<Position> Position::getGroundBelow() const {
+  if (isUnavailable() && level->below) {
+    Position ret(coord, level->below);
+    while (ret.isUnavailable() && ret.level->below)
+      ret = Position(coord, ret.level->below);
+    return ret;
+  }
+  return none;
 }
 
 void Position::addCreatureLight(bool darkness) {

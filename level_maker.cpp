@@ -51,6 +51,7 @@
 #include "layout_generator.h"
 #include "perlin_noise.h"
 #include "collective_name.h"
+#include "position.h"
 
 namespace {
 
@@ -3000,7 +3001,8 @@ PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo
   return std::move(queue);
 }
 
-PLevelMaker LevelMaker::getWaterZLevel(RandomGen& random, FurnitureType waterType, int mapWidth, CreatureList enemies, StairKey landingLink) {
+PLevelMaker LevelMaker::getWaterZLevel(RandomGen& random, FurnitureType waterType, int mapWidth, CreatureList enemies,
+    StairKey landingLink) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<Empty>(SquareChange(waterType)));
   auto locations = unique<RandomLocations>();
@@ -3172,4 +3174,28 @@ PLevelMaker LevelMaker::emptyLevel(FurnitureType t, bool withFloor) {
     change = SquareChange(FurnitureType("FLOOR"), t);
   queue->addMaker(unique<Empty>(change));
   return std::move(queue);
+}
+
+namespace {
+class UpLevelMaker : public LevelMaker {
+  public:
+  UpLevelMaker(Position p, StairKey stairKey) : origin(p), stairKey(stairKey) {}
+
+  virtual void make(LevelBuilder* builder, Rectangle area) override {
+    auto level =  origin.getLevel();
+    for (auto v : area) {
+      builder->setSunlight(v, 1.0);
+      builder->setUnavailable(v);
+      builder->setCovered(v, false);
+    }
+    builder->setLandingLink(origin.getCoord(), stairKey);
+  }
+
+  Position origin;
+  StairKey stairKey;
+};
+}
+
+PLevelMaker LevelMaker::upLevel(Position pos, StairKey stairKey) {
+  return unique<UpLevelMaker>(pos, stairKey);
 }
