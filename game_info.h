@@ -21,6 +21,7 @@
 #include "view_object_modifier.h"
 #include "creature_experience_info.h"
 #include "tech_id.h"
+#include "scripted_help_info.h"
 
 class PlayerMessage;
 class SpecialTrait;
@@ -510,10 +511,10 @@ class GameInfo {
   const Encyclopedia* encyclopedia;
   bool HASH(isSingleMap) = false;
   optional<string> HASH(keeperInDanger);
-  vector<tuple<ViewId, string, string>> HASH(scriptedHelp);
+  vector<ScriptedHelpInfo> scriptedHelp; // this won't change during the game so don't hash
   vector<PlayerMessage> HASH(messageBuffer);
   bool HASH(takingScreenshot) = false;
-  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, modifiedSquares, totalSquares, tutorial, currentLevel, takingScreenshot, isSingleMap, keeperInDanger, scriptedHelp)
+  HASH_ALL(infoType, time, playerInfo, villageInfo, sunlightInfo, messageBuffer, modifiedSquares, totalSquares, tutorial, currentLevel, takingScreenshot, isSingleMap, keeperInDanger)
 };
 
 struct AutomatonPart;

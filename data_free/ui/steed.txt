@@ -3,7 +3,7 @@ Def P(Text) Paragraph(500, Text) End
 
 MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,  
   Vertical {
-    Horizontal{ViewId(1, {"horse"}) Width 10 {} Label("Using steed")}
+    Horizontal{ViewId(1, {"horse"}) Width 10 {} Label("Using steeds")}
     Height 30 {}
     P("1. Get hold of some ridable creatures, such as horses, wolves or a dragon. You can tell steeds by their \"steed\" status.")
     Height 15 {}

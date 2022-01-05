@@ -48,6 +48,7 @@
 #include "encyclopedia.h"
 #include "item_action.h"
 #include "ai_type.h"
+#include "container_range.h"
 
 using SDL::SDL_Keysym;
 using SDL::SDL_Keycode;
@@ -304,50 +305,44 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
 
 SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
   auto lines = WL(getListBuilder, legendLineHeight);
-  auto addScriptedButton = [this, &lines] (ViewId id, const string& label, string scriptedId) {
+  auto addScriptedButton = [this, &lines] (const ScriptedHelpInfo& info) {
     lines.addElem(WL(standardButton,
         WL(getListBuilder)
-            .addElemAuto(WL(topMargin, -2, WL(viewObject, id)))
+            .addElemAuto(WL(topMargin, -2, WL(viewObject, *info.viewId)))
             .addSpace(5)
-            .addElemAuto(WL(label, label))
+            .addElemAuto(WL(label, *info.title))
             .buildHorizontalList(),
-        WL(button, [this, scriptedId]() {
+        WL(button, [this, scriptedId = info.scriptedId]() {
           scriptedUIState.scrollPos.reset();
           if (bottomWindow == SCRIPTED_HELP && scriptedHelpId == scriptedId)
             bottomWindow = none;
-          else {
-            bottomWindow = SCRIPTED_HELP;
-            scriptedHelpId = scriptedId;
-          }
+          else
+            openScriptedHelp(scriptedId);
         })
     ));
     lines.addSpace(5);
   };
-  for (auto& elem : info.scriptedHelp)
-    addScriptedButton(std::get<0>(elem), std::get<1>(elem), std::get<2>(elem));
-  lines.addElem(WL(standardButton,
-      WL(getListBuilder)
-          .addElemAuto(WL(topMargin, -2, WL(viewObject, ViewId("special_bmbw"))))
-          .addElemAuto(WL(label, "Bestiary"))
-          .buildHorizontalList(),
-      WL(button, [this]() { toggleBottomWindow(BESTIARY); })
-  ));
-  lines.addSpace(5);
-  lines.addElem(WL(standardButton,
-      WL(getListBuilder)
-          .addElemAuto(WL(topMargin, -2, WL(viewObject, ViewId("book"))))
-          .addElemAuto(WL(label, "Spell schools"))
-          .buildHorizontalList(),
-      WL(button, [this]() { toggleBottomWindow(SPELL_SCHOOLS); })
-  ));
-  lines.addSpace(5);
-  lines.addElem(WL(standardButton,
-      WL(getListBuilder)
-          .addElemAuto(WL(topMargin, -2, WL(viewObject, ViewId("scroll"))))
-          .addElemAuto(WL(label, "Items"))
-          .buildHorizontalList(),
-      WL(button, [this]() { toggleBottomWindow(ITEMS_HELP); })
-  ));
+  for (auto elem : Iter(info.scriptedHelp))
+    if (elem.index() < 3 && !!elem->viewId && !!elem->title)
+      addScriptedButton(*elem);
+  lines.addSpace(15);
+  auto addBuiltinButton = [this, &lines] (ViewId viewId, string name, BottomWindowId windowId) {
+    lines.addElem(WL(standardButton,
+        WL(getListBuilder)
+            .addElemAuto(WL(topMargin, -2, WL(viewObject, viewId)))
+            .addElemAuto(WL(label, name))
+            .buildHorizontalList(),
+        WL(button, [this, windowId]() { toggleBottomWindow(windowId); })
+    ));
+    lines.addSpace(5);
+  };
+  addBuiltinButton(ViewId("special_bmbw"), "Bestiary", BESTIARY);
+  addBuiltinButton(ViewId("scroll"), "Items", ITEMS_HELP);
+  addBuiltinButton(ViewId("special_bmbw"), "Bestiary", BESTIARY);
+  lines.addSpace(10);
+  for (auto elem : Iter(info.scriptedHelp))
+    if (elem.index() >= 3 && !!elem->viewId && !!elem->title)
+      addScriptedButton(*elem);
   return lines.buildVerticalList();
 }
 
@@ -596,6 +591,12 @@ SGuiElem GuiBuilder::drawGameSpeedDialog() {
 
 SGuiElem GuiBuilder::drawSpecialTrait(const ImmigrantDataInfo::SpecialTraitInfo& trait) {
   return WL(label, trait.label, trait.bad ? Color::RED : Color::GREEN);
+}
+
+void GuiBuilder::openScriptedHelp(string id) {
+  bottomWindow = SCRIPTED_HELP;
+  scriptedUIState = ScriptedUIState{};
+  scriptedHelpId = id;
 }
 
 void GuiBuilder::toggleBottomWindow(GuiBuilder::BottomWindowId id) {
@@ -2813,9 +2814,19 @@ void GuiBuilder::drawOverlays(vector<OverlayInfo>& ret, GameInfo& info) {
     default:
       break;
   }
-  if (bottomWindow == SCRIPTED_HELP)
-    ret.push_back({gui.scripted([this]{ bottomWindow = none; }, scriptedHelpId, ScriptedUIData{}, scriptedUIState),
+  if (bottomWindow == SCRIPTED_HELP) {
+    ScriptedUIDataElems::Record data;
+    for (auto& elem : info.scriptedHelp) {
+      auto pageName = elem.scriptedId;
+      data.elems.insert(make_pair(pageName,
+        ScriptedUIDataElems::Callback{
+          [pageName, this] { openScriptedHelp(pageName); return false;}
+        }));
+    }
+    scriptedUIData = std::move(data);
+    ret.push_back({gui.scripted([this]{ bottomWindow = none; }, scriptedHelpId, scriptedUIData, scriptedUIState),
         OverlayInfo::TOP_LEFT});
+  }
   if (bottomWindow == BESTIARY) {
     if (bestiaryIndex >= info.encyclopedia->bestiary.size())
       bestiaryIndex = 0;

@@ -1,3 +1,3 @@
-{"prisoner"} "Capturing prisoners" "prisoners"
-{"horse"} "Using steeds" "steed"
-{"castle_wall"} "Buildings and roof support" "roofs"
+{"prisoners" {"prisoner"} "Capturing prisoners"}
+{"steed" {"horse"} "Using steeds"}
+{"roofs" {"castle_wall"} "Buildings and roof support"}

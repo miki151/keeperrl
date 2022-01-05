@@ -20,6 +20,7 @@
 #include "adventurer_creature_info.h"
 #include "tile_gas_type.h"
 #include "dancing.h"
+#include "scripted_help_info.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -65,7 +66,7 @@ class ContentFactory {
   map<TileGasType, TileGasInfo> SERIAL(tileGasTypes);
   map<string, vector<PromotionInfo>> SERIAL(promotions);
   vector<Dancing::Positions> SERIAL(dancePositions);
-  vector<std::tuple<ViewId, string, string>> SERIAL(scriptedHelp);
+  vector<ScriptedHelpInfo> SERIAL(scriptedHelp);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

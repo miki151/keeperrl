@@ -249,6 +249,7 @@ class GuiBuilder {
   optional<BottomWindowId> bottomWindow;
   string scriptedHelpId;
   void toggleBottomWindow(BottomWindowId);
+  void openScriptedHelp(string);
   atomic<GameSpeed> gameSpeed;
   const char* getGameSpeedName(GameSpeed) const;
   const char* getCurrentGameSpeedName() const;
@@ -343,6 +344,7 @@ class GuiBuilder {
   SGuiElem drawBoolOptionElem(OptionId, string name);
   SGuiElem drawCreatureTooltip(const PlayerInfo&);
   ScriptedUIState scriptedUIState;
+  ScriptedUIData scriptedUIData;
 };
 
 RICH_ENUM(GuiBuilder::GameSpeed,
