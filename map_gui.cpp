@@ -1470,12 +1470,16 @@ void MapGui::updateObjects(CreatureView* view, Renderer& renderer, MapLayout* ma
           !lastSquareUpdate[pos] || *lastSquareUpdate[pos] < currentTimeReal - milliseconds{1000})
         updateObject(pos, view, renderer, currentTimeReal);
   previousView = view->getCenterType();
-  if (previousLevel != level) {
+  auto isGroundOrUpperZlevel = [](auto l) { return l->above || l->below; };
+  // When scrolling between ground and upper z-levels we don't reset the center position.
+  if (previousLevel != level &&
+      (!previousLevel || !isGroundOrUpperZlevel(previousLevel) || !isGroundOrUpperZlevel(level))) {
     screenMovement = none;
     clearCenter();
     setCenter(view->getScrollCoord(), level);
     mouseOffset = {0, 0};
   }
+  previousLevel = level;
   keyScrolling = view->getCenterType() == CreatureView::CenterType::NONE;
   currentTimeGame = view->getAnimationTime();
   if (newView) {
