@@ -20,7 +20,8 @@ LevelBuilder::LevelBuilder(ProgressMeter* meter, RandomGen& r, ContentFactory* c
     heightMap(width, height, 0), covered(width, height, allCovered), building(width, height, false),
     sunlight(width, height, defaultLight ? *defaultLight : (allCovered ? 0.0 : 1.0)),
     attrib(width, height), items(width, height), furniture(Rectangle(width, height)),
-    progressMeter(meter), random(r), contentFactory(contentFactory) {
+    progressMeter(meter), random(r), contentFactory(contentFactory),
+    mountainLevel(0, 0, 0) {
 }
 
 LevelBuilder::LevelBuilder(RandomGen& r, ContentFactory* contentFactory, int width, int height, bool covered)
@@ -199,6 +200,7 @@ PLevel LevelBuilder::build(const ContentFactory* factory, WModel m, LevelMaker* 
     c->setLevel(l.get());
   l->noDiagonalPassing = noDiagonalPassing;
   l->wildlife = wildlife;
+  l->mountainLevel = mountainLevel;
   return l;
 }
 
@@ -260,6 +262,12 @@ void LevelBuilder::setSunlight(Vec2 pos, double s) {
 
 void LevelBuilder::addPermanentGas(TileGasType type, Vec2 posT) {
   permanentGas.push_back({type, transform(posT)});
+}
+
+void LevelBuilder::setMountainLevel(Vec2 posT, int level) {
+  if (mountainLevel.getHeight() == 0)
+    mountainLevel = Table<int>(covered.getBounds(), 0);
+  mountainLevel[transform(posT)] = level;
 }
 
 void LevelBuilder::setUnavailable(Vec2 pos) {

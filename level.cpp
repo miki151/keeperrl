@@ -53,7 +53,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   ar & SUBCLASS(OwnedObject<Level>);
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps, territory);
-  ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates, above, below);
+  ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates, above, below, mountainLevel);
   ar(furniture, tickingFurniture, covered, roofSupport, portals, name, depth, wildlife, addedWildlife);
   vector<pair<TribeId, unique_ptr<EffectsTable>>> SERIAL(tmp);
   for (auto t : ENUM_ALL(TribeId::KeyType))
@@ -238,6 +238,10 @@ bool Level::isInSunlight(Vec2 pos) const {
 double Level::getLight(Vec2 pos) const {
   return min(1.0, max(0.0, min(isCovered(pos) ? 1.0 : lightCapAmount[pos], lightAmount[pos] +
       sunlight[pos] * getGame()->getSunlightInfo().getLightAmount())));
+}
+
+double Level::getLevelGenSunlight(Vec2 pos) const {
+  return sunlight[pos];
 }
 
 const vector<Position>& Level::getLandingSquares(StairKey key) const {
@@ -572,16 +576,16 @@ void Level::tick() {
   }
   if (above)
     for (auto pos : getAllPositions())
-      if (pos.isCovered()) {
+      if (pos.isCovered() && above->unavailable[pos.getCoord()]) {
         Position abovePos(pos.getCoord(), above);
         above->unavailable[pos.getCoord()] = false;
         auto col = getGame()->getPlayerCollective();
+        if (!abovePos.getFurniture(FurnitureLayer::GROUND))
+          abovePos.addFurniture(getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("FLOOR"), TribeId::getMonster()));
         if (col->getKnownTiles().isKnown(pos)) {
           col->addKnownTile(abovePos);
           getGame()->getPlayerControl()->addToMemory(abovePos);
         }
-        if (!abovePos.getFurniture(FurnitureLayer::GROUND))
-          abovePos.addFurniture(getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("FLOOR"), TribeId::getMonster()));
       }
 }
 

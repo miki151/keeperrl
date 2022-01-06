@@ -99,6 +99,8 @@ class LevelBuilder {
   void setUnavailable(Vec2);
 
   void addPermanentGas(TileGasType, Vec2);
+
+  void setMountainLevel(Vec2, int);
  
   enum Rot { CW0, CW1, CW2, CW3};
 
@@ -130,4 +132,5 @@ class LevelBuilder {
   bool noDiagonalPassing = false;
   ContentFactory* contentFactory;
   vector<pair<TileGasType, Vec2>> permanentGas;
+  Table<int> mountainLevel;
 };

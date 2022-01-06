@@ -135,6 +135,7 @@ class Level : public OwnedObject<Level> {
 
   /** Returns the amount of light in the square, capped within (0, 1).*/
   double getLight(Vec2) const;
+  double getLevelGenSunlight(Vec2) const;
 
   /** Returns whether the square is in direct sunlight.*/
   bool isInSunlight(Vec2 pos) const;
@@ -172,6 +173,7 @@ class Level : public OwnedObject<Level> {
   vector<Creature*> SERIAL(addedWildlife);
   Level* SERIAL(below) = nullptr;
   Level* SERIAL(above) = nullptr;
+  Table<int> SERIAL(mountainLevel);
 
   private:
   friend class Position;

@@ -1425,8 +1425,14 @@ class Mountains : public LevelMaker {
     raiseLocalMinima(wys);
     vector<double> values = sortedValues(wys);
     double cutOffLowland = values[min(values.size() - 1, (int)(info.lowlandRatio * double(values.size() - 1)))];
-    double cutOffHill = values[min(values.size() - 1, (int)((info.hillRatio + info.lowlandRatio) * double(values.size() - 1)))];
+    int cutOffHillIndex = min(values.size() - 1, (int)((info.hillRatio + info.lowlandRatio) * double(values.size() - 1)));
+    double cutOffHill = values[cutOffHillIndex];
     double cutOffDarkness = values[min(values.size() - 1, (int)((info.hillRatio + info.lowlandRatio + 1.0) * 0.5 * double(values.size() - 1)))];
+    int numMountainLevels = 10;
+    vector<double> mountainLevelCutoffs;
+    for (int i : Range(1, numMountainLevels + 1))
+      mountainLevelCutoffs.push_back(values[cutOffHillIndex * (numMountainLevels - i) / numMountainLevels 
+          + (values.size() - 1) * i / numMountainLevels]);
     int dCnt = 0, mCnt = 0, hCnt = 0, lCnt = 0;
     Table<bool> isMountain(area, false);
     for (Vec2 v : area) {
@@ -1437,6 +1443,11 @@ class Mountains : public LevelMaker {
         builder->putFurniture(v, {info.mountain, tribe}, SquareAttrib::MOUNTAIN);
         builder->setSunlight(v, max(0.0, 1. - (wys[v] - cutOffHill) / (cutOffDarkness - cutOffHill)));
         builder->setCovered(v, true);
+        for (int i : All(mountainLevelCutoffs))
+          if (wys[v] < mountainLevelCutoffs[i]) {
+            builder->setMountainLevel(v, i + 1);
+            break;
+          }
         ++mCnt;
       }
       else if (wys[v] >= cutOffLowland) {
@@ -3182,12 +3193,27 @@ class UpLevelMaker : public LevelMaker {
   UpLevelMaker(Position p, StairKey stairKey) : origin(p), stairKey(stairKey) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
+    int thisHeight = 1;
     auto level =  origin.getLevel();
-    for (auto v : area) {
-      builder->setSunlight(v, 1.0);
-      builder->setUnavailable(v);
-      builder->setCovered(v, false);
-    }
+    auto ground = level;
+    for (ground = level; !!ground->below; ground = ground->below)
+      ++thisHeight;
+    for (auto v : area) 
+      if (ground->mountainLevel[v] < thisHeight) {
+        builder->setSunlight(v, 1.0);
+        builder->setUnavailable(v);
+        builder->setCovered(v, false);
+      } else
+      if (ground->mountainLevel[v] == thisHeight) {
+        builder->setSunlight(v, 1.0);
+        builder->setCovered(v, false);
+        builder->putFurniture(v, FurnitureType("HILL"), TribeId::getMonster());
+      } else {
+        builder->putFurniture(v, FurnitureType("FLOOR"), TribeId::getMonster());
+        builder->putFurniture(v, FurnitureType("MOUNTAIN"), TribeId::getMonster());
+        builder->setCovered(v, true);
+        builder->setSunlight(v, ground->getLevelGenSunlight(v));
+      }
     builder->setLandingLink(origin.getCoord(), stairKey);
   }
 
