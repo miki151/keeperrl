@@ -684,6 +684,8 @@ void Player::updateSquareMemory(Position pos) {
   ViewIndex index;
   pos.getViewIndex(index, creature);
   levelMemory->update(pos, index);
+  if (auto belowPos = pos.getGroundBelow())
+    updateSquareMemory(*belowPos);
 }
 
 bool Player::canTravel() const {

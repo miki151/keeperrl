@@ -3254,6 +3254,8 @@ CreatureView::PlacementInfo PlayerControl::canPlaceItem(Vec2 pos, int index) con
 }
 
 void PlayerControl::addToMemory(Position pos) {
+  if (auto ground = pos.getGroundBelow())
+    addToMemory(*ground);
   if (!pos.needsMemoryUpdate())
     return;
   pos.setNeedsMemoryUpdate(false);
