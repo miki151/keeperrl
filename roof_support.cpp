@@ -25,7 +25,7 @@ void RoofSupport::remove(Vec2 pos) {
 }
 
 bool RoofSupport::isRoof(Vec2 pos) const {
-  return numRectangles[pos] > 0;// || wall[pos];
+  return numRectangles[pos] > 0 || wall[pos];
 }
 
 bool RoofSupport::isWall(Vec2 pos) const {
