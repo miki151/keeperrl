@@ -644,6 +644,8 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
 { viewId = "ada_door_ns" symbol = "|" color = ColorId LIGHT_BLUE }
 { viewId = "wood_wall" symbol = "#" color = ColorId DARK_BROWN
   wallShadow = true wallConnections = true }
+{ viewId = "wood_pillar" symbol = "⌑" isSymbolFont = true color = ColorId DARK_BROWN }
+{ viewId = "castle_pillar" symbol = "⌑" isSymbolFont = true color = ColorId LIGHT_GRAY }
 { viewId = "castle_wall" symbol = "#" color = ColorId LIGHT_GRAY
   wallShadow = true wallConnections = true }
 { viewId = "archer_wall" symbol = "#" color = ColorId ALMOST_WHITE

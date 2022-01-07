@@ -1530,14 +1530,11 @@ Def BedHeal() Heal { FLESH 0.005 } End
   tickType = Pit
   canBuildOutsideOfTerritory = true
 }
-"CASTLE_WALL"
+"CASTLE_PILLAR"
 {
-  name = "wall"
-  viewId = { "castle_wall" }
-  blockMovement = true
-  blockAllVision = true
+  name = "stone pillar"
+  viewId = { "castle_pillar" }
   buildingSupport = true
-  wall = true
   strength2 = {
     300 BOULDER
     100 DIG
@@ -1545,6 +1542,14 @@ Def BedHeal() Heal { FLESH 0.005 } End
     2000 HOSTILE_DIG_NO_SKILL
   }
   canBuildOutsideOfTerritory = true
+}
+"CASTLE_WALL" inherit "CASTLE_PILLAR"
+{
+  name = "wall"
+  viewId = { "castle_wall" }
+  blockMovement = true
+  blockAllVision = true
+  wall = true
 }
 "ARCHER_WALL" inherit "CASTLE_WALL"
 {
@@ -1569,13 +1574,11 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "snow_wall" }
   meltInfo = { none }
 }
-"WOOD_WALL"
+"WOOD_PILLAR"
 {
-  name = "wall"
-  viewId = { "wood_wall" }
-  blockMovement = true
-  blockAllVision = true
-  wall = true
+  name = "wooden pillar"
+  viewId = { "wood_pillar" }
+#wall = true
   buildingSupport = true
   strength2 = {
     100 BOULDER
@@ -1587,6 +1590,15 @@ Def BedHeal() Heal { FLESH 0.005 } End
   fire = 100
   canBuildOutsideOfTerritory = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
+}
+"WOOD_WALL" inherit "WOOD_PILLAR"
+{
+  name = "wall"
+  viewId = { "wood_wall" }
+  blockMovement = true
+  blockAllVision = true
+  wall = true
+  buildingSupport = true
 }
 "MUD_WALL"
 {
