@@ -1179,7 +1179,7 @@ void Player::getViewIndex(Vec2 pos, ViewIndex& index) const {
   if (auto belowPos = position.getGroundBelow()) {
     if (auto memIndex = getMemory().getViewIndex(*belowPos)) {
       index.mergeFromMemory(*memIndex);
-      index.setHighlight(HighlightType::UNAVAILABLE);
+      index.setHighlight(HighlightType::TILE_BELOW);
     }
     return;
   }

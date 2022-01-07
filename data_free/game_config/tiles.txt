@@ -132,6 +132,7 @@
 { "black" " " ColorId BLACK }
 { "dig_mark" " " ColorId BLACK }
 { "dig_mark2" " " ColorId BLACK }
+{ "tile_below" " " ColorId BLACK }
 { "guard_zone" "0" ColorId WHITE }
 { "phylactery_tether" " " ColorId BLACK }
 { "forbid_zone" "#" ColorId RED false "dig_mark" ColorId RED }
