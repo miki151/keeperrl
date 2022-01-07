@@ -1243,7 +1243,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::INVISIBLE: return "Makes you invisible to enemies.";
     case LastingEffect::PLAGUE: return "Decreases health every turn when it's above 50%. "
                                        "A small percent of creatures can die, others don't suffer from health loss.";
-    case LastingEffect::PLAGUE_RESISTANT: return "Protects from plague infection";
+    case LastingEffect::PLAGUE_RESISTANT: return "Protects from plague infection.";
     case LastingEffect::POISON: return "Decreases health every turn by a little bit.";
     case LastingEffect::POISON_RESISTANT: return "Gives poison resistance.";
     case LastingEffect::FLYING: return "Causes levitation.";
@@ -1288,7 +1288,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::HATE_GREENSKINS:
     case LastingEffect::HATE_ELVES:
     case LastingEffect::HATE_DRAGONS:
-      return "Makes the target hostile to all "_s + LastingEffects::getHatedGroupName(type);
+      return "Makes the target hostile to all "_s + LastingEffects::getHatedGroupName(type) + ".";
     case LastingEffect::FAST_CRAFTING: return "Increases crafting speed.";
     case LastingEffect::FAST_TRAINING: return "Increases training and studying speed.";
     case LastingEffect::SLOW_CRAFTING: return "Decreases crafting speed.";
