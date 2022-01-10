@@ -45,7 +45,7 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
         auto newLevel = tryBuilding(20,
             [&]{
               auto contentFactory = pos.getGame()->getContentFactory();
-              auto maker = LevelMaker::upLevel(pos, stairKey);
+              auto maker = LevelMaker::upLevel(pos, stairKey, contentFactory->biomeInfo.at(pos.getModel()->getBiomeId()));
               auto size = pos.getModel()->getGroundLevel()->getBounds().getSize();
               auto level = pos.getModel()->buildUpLevel(contentFactory,
                   LevelBuilder(Random, contentFactory, size.x, size.y, true), std::move(maker));

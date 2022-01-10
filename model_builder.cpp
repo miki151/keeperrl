@@ -431,7 +431,7 @@ SettlementInfo& ModelBuilder::processLevelConnection(Model* model, EnemyInfo& en
 PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<TribeId> keeperTribe, BiomeId biomeId,
     optional<ExternalEnemies> externalEnemies) {
   auto& biomeInfo = contentFactory->biomeInfo.at(biomeId);
-  auto model = Model::create(contentFactory, biomeInfo.overrideMusic);
+  auto model = Model::create(contentFactory, biomeInfo.overrideMusic, biomeId);
   vector<SettlementInfo> topLevelSettlements;
   vector<EnemyInfo> extraEnemies;
   for (auto& elem : enemyInfo) {
@@ -454,7 +454,7 @@ PModel ModelBuilder::tryModel(int width, vector<EnemyInfo> enemyInfo, optional<T
 }
 
 PModel ModelBuilder::battleModel(const FilePath& levelPath, vector<PCreature> allies, vector<CreatureList> enemies) {
-  auto m = Model::create(contentFactory, none);
+  auto m = Model::create(contentFactory, none, BiomeId("GRASSLAND"));
   ifstream stream(levelPath.getPath());
   Table<char> level = *SokobanInput::readTable(stream);
   Level* l = m->buildMainLevel(

@@ -64,7 +64,7 @@ template <class Archive>
 void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   ar & SUBCLASS(OwnedObject<Model>);
-  ar(levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick);
+  ar(levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick, biomeId);
   ar(stairNavigation, cemetery, mainLevels, upLevels, eventGenerator, externalEnemies, defaultMusic);
 }
 
@@ -204,12 +204,13 @@ Level* Model::buildMainLevel(const ContentFactory* factory, LevelBuilder b, PLev
 Model::Model(Private) {
 }
 
-PModel Model::create(ContentFactory* contentFactory, optional<MusicType> music) {
+PModel Model::create(ContentFactory* contentFactory, optional<MusicType> music, BiomeId biomeId) {
   auto ret = makeOwner<Model>(Private{});
   ret->cemetery = LevelBuilder(Random, contentFactory, 100, 100, false)
       .build(contentFactory, ret.get(), LevelMaker::emptyLevel(FurnitureType("GRASS"), false).get(), Random.getLL());
   ret->eventGenerator = makeOwner<EventGenerator>();
   ret->defaultMusic = music;
+  ret->biomeId = biomeId;
   return ret;
 }
 
@@ -254,6 +255,10 @@ Level* Model::getLinkedLevel(Level* from, StairKey key) const {
 
 static pair<LevelId, LevelId> getIds(const Level* l1, const Level* l2) {
   return {l1->getUniqueId(), l2->getUniqueId()};
+}
+
+BiomeId Model::getBiomeId() const {
+  return biomeId;
 }
 
 void Model::calculateStairNavigation() {

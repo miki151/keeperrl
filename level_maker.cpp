@@ -3190,7 +3190,7 @@ PLevelMaker LevelMaker::emptyLevel(FurnitureType t, bool withFloor) {
 namespace {
 class UpLevelMaker : public LevelMaker {
   public:
-  UpLevelMaker(Position p, StairKey stairKey) : origin(p), stairKey(stairKey) {}
+  UpLevelMaker(Position p, StairKey stairKey, const BiomeInfo& biome) : origin(p), stairKey(stairKey), biome(biome) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     int thisHeight = 1;
@@ -3207,10 +3207,10 @@ class UpLevelMaker : public LevelMaker {
       if (ground->mountainLevel[v] == thisHeight) {
         builder->setSunlight(v, 1.0);
         builder->setCovered(v, false);
-        builder->putFurniture(v, FurnitureType("HILL"), TribeId::getMonster());
+        builder->putFurniture(v, biome.mountains.hill, TribeId::getMonster());
       } else {
-        builder->putFurniture(v, FurnitureType("FLOOR"), TribeId::getMonster());
-        builder->putFurniture(v, FurnitureType("MOUNTAIN"), TribeId::getMonster());
+        builder->putFurniture(v, biome.mountains.mountainFloor, TribeId::getMonster());
+        builder->putFurniture(v, biome.mountains.mountain, TribeId::getMonster());
         builder->setCovered(v, true);
         builder->setSunlight(v, ground->getLevelGenSunlight(v));
       }
@@ -3219,9 +3219,13 @@ class UpLevelMaker : public LevelMaker {
 
   Position origin;
   StairKey stairKey;
+  BiomeInfo biome;
 };
 }
 
-PLevelMaker LevelMaker::upLevel(Position pos, StairKey stairKey) {
-  return unique<UpLevelMaker>(pos, stairKey);
+PLevelMaker LevelMaker::upLevel(Position pos, StairKey stairKey, const BiomeInfo& biomeInfo) {
+  auto queue = unique<MakerQueue>();
+  queue->addMaker(unique<UpLevelMaker>(pos, stairKey, biomeInfo));
+  queue->addMaker(getForrest(biomeInfo));
+  return std::move(queue);
 }

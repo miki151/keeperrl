@@ -22,6 +22,7 @@
 #include "enum_variant.h"
 #include "event_generator.h"
 #include "game_time.h"
+#include "biome_id.h"
 
 class Level;
 class ProgressMeter;
@@ -41,7 +42,7 @@ class ContentFactory;
   */
 class Model : public OwnedObject<Model> {
   public:
-  static PModel create(ContentFactory*, optional<MusicType>);
+  static PModel create(ContentFactory*, optional<MusicType>, BiomeId);
   
   /** Makes an update to the game. This method is repeatedly called to make the game run.
     Returns the total logical time elapsed.*/
@@ -107,6 +108,8 @@ class Model : public OwnedObject<Model> {
   Level* buildMainLevel(const ContentFactory*, LevelBuilder, PLevelMaker);
   Level* buildUpLevel(const ContentFactory*, LevelBuilder, PLevelMaker);
   void calculateStairNavigation();
+  
+  BiomeId getBiomeId() const;
 
   private:
   struct Private {};
@@ -142,5 +145,6 @@ class Model : public OwnedObject<Model> {
   heap_optional<ExternalEnemies> SERIAL(externalEnemies);
   int moveCounter = 0;
   optional<MusicType> SERIAL(defaultMusic);
+  BiomeId SERIAL(biomeId);
 };
 
