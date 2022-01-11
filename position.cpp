@@ -126,7 +126,6 @@ void Position::setLandingLink(StairKey key) const {
     removeLandingLink();
     level->landingSquares[key].push_back(*this);
     modSquare()->setLandingLink(key);
-    getModel()->calculateStairNavigation();
   }
 }
 

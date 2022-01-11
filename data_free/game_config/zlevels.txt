@@ -99,14 +99,12 @@
     }
     minDepth = 7
     maxDepth = 10
-    width = 60
   }
   {
     type = EnemyZLevel {
       enemy = "Z_LEVEL_LAVA"
     }
     minDepth = 10
-    width = 60
   }
 }
 

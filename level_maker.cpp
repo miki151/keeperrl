@@ -2979,55 +2979,36 @@ PLevelMaker LevelMaker::settlementLevel(const ContentFactory& factory, RandomGen
 }
 
 PLevelMaker LevelMaker::getFullZLevel(RandomGen& random, optional<SettlementInfo> settlement, ResourceCounts resourceCounts,
-    int mapWidth, TribeId keeperTribe, StairKey landingLink, const ContentFactory& factory) {
+    int mapWidth, TribeId keeperTribe, const ContentFactory& factory) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<Empty>(SquareChange(FurnitureType("FLOOR"))
       .add(FurnitureParams{FurnitureType("MOUNTAIN2"), keeperTribe})));
   queue->addMaker(underground(random, Vec2(mapWidth, mapWidth)));
   auto locations = unique<RandomLocations>();
-  auto startingPosMaker = unique<MakerQueue>(
-      unique<Empty>(SquareChange(FurnitureType("FLOOR"))),
-      unique<StartingPos>(Predicate::alwaysTrue(), landingLink));
-  LevelMaker* startingPos = startingPosMaker.get();
   vector<SurroundWithResourcesInfo> surroundWithResources;
   if (settlement) {
     auto maker = getSettlementMaker(factory, random, *settlement);
-    maker->addMaker(unique<RandomLocations>(makeVec<PLevelMaker>(std::move(startingPosMaker)), makeVec(Vec2(1, 1)),
-        Predicate::canEnter(MovementTrait::WALK)));
+    maker->addMaker(unique<RandomLocations>());
     if (settlement->corpses)
       maker->addMaker(unique<Corpses>(*settlement->corpses));
     if (settlement->surroundWithResources > 0)
       surroundWithResources.push_back({maker.get(), *settlement});
     // assign the whole settlement maker to startingPos, otherwise resource distance constraint doesn't work
-    startingPos = maker.get();
     locations->add(std::move(maker), getSize(factory.mapLayouts, random, settlement->type),
         RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
-  } else {
-    locations->add(std::move(startingPosMaker), Vec2(1, 1),
-        RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
   }
-  locations->setMinMargin(startingPos, mapWidth / 3);
-  generateResources(random, resourceCounts, startingPos, locations.get(), surroundWithResources, mapWidth, keeperTribe);
+  generateResources(random, resourceCounts, nullptr, locations.get(), surroundWithResources, mapWidth, keeperTribe);
   queue->addMaker(std::move(locations));
   return std::move(queue);
 }
 
-PLevelMaker LevelMaker::getWaterZLevel(RandomGen& random, FurnitureType waterType, int mapWidth, CreatureList enemies,
-    StairKey landingLink) {
+PLevelMaker LevelMaker::getWaterZLevel(RandomGen& random, FurnitureType waterType, int mapWidth, CreatureList enemies) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<Empty>(SquareChange(waterType)));
   auto locations = unique<RandomLocations>();
-  LevelMaker* startingPos = nullptr;
-  auto startingPosMaker = unique<MakerQueue>(
-      unique<Empty>(SquareChange(FurnitureType("FLOOR"))),
-      unique<StartingPos>(Predicate::alwaysTrue(), landingLink));
-  startingPos = startingPosMaker.get();
-  locations->add(std::move(startingPosMaker), Vec2(1, 1),
-      RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
   for (int i : Range(5))
     locations->add(unique<UniformBlob>(SquareChange(FurnitureType("FLOOR"))), Vec2(Random.get(5, 10), Random.get(5, 10)),
         RandomLocations::LocationPredicate(Predicate::alwaysTrue()));
-  locations->setMinMargin(startingPos, mapWidth / 3);
   queue->addMaker(std::move(locations));
   queue->addMaker(unique<Creatures>(std::move(enemies), TribeId::getMonster(), MonsterAIFactory::monster()));
   return std::move(queue);
@@ -3190,7 +3171,7 @@ PLevelMaker LevelMaker::emptyLevel(FurnitureType t, bool withFloor) {
 namespace {
 class UpLevelMaker : public LevelMaker {
   public:
-  UpLevelMaker(Position p, StairKey stairKey, const BiomeInfo& biome) : origin(p), stairKey(stairKey), biome(biome) {}
+  UpLevelMaker(Position p, const BiomeInfo& biome) : origin(p), biome(biome) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
     int thisHeight = 1;
@@ -3214,19 +3195,16 @@ class UpLevelMaker : public LevelMaker {
         builder->setCovered(v, true);
         builder->setSunlight(v, ground->getLevelGenSunlight(v));
       }
-    builder->setLandingLink(origin.getCoord(), stairKey);
   }
 
   Position origin;
-  StairKey stairKey;
   BiomeInfo biome;
 };
 }
 
-PLevelMaker LevelMaker::upLevel(Position pos, StairKey stairKey, const BiomeInfo& biomeInfo,
-    SettlementInfo* settlement) {
+PLevelMaker LevelMaker::upLevel(Position pos, const BiomeInfo& biomeInfo, SettlementInfo* settlement) {
   auto queue = unique<MakerQueue>();
-  queue->addMaker(unique<UpLevelMaker>(pos, stairKey, biomeInfo));
+  queue->addMaker(unique<UpLevelMaker>(pos, biomeInfo));
   queue->addMaker(getForrest(biomeInfo));
   auto& factory = *pos.getGame()->getContentFactory();
   if (settlement) {

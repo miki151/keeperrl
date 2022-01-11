@@ -42,20 +42,22 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
       int levelIndex = *pos.getModel()->getMainLevelDepth(pos.getLevel());
       if (levelIndex == pos.getModel()->getMainLevelsDepth().getStart()) {
         auto stairKey = StairKey::getNew();
+        auto levelSize = pos.getLevel()->getBounds().getSize();
         auto newLevel = tryBuilding(20,
             [&]{
               auto contentFactory = pos.getGame()->getContentFactory();
-              auto maker = getUpLevel(Random, contentFactory, -levelIndex + 1, stairKey, pos);
+              auto maker = getUpLevel(Random, contentFactory, -levelIndex + 1, pos);
               auto level = pos.getModel()->buildUpLevel(contentFactory,
-                  LevelBuilder(Random, contentFactory, maker.levelWidth, maker.levelWidth, true), std::move(maker.maker));
+                  LevelBuilder(Random, contentFactory, levelSize.x, levelSize.y, true), std::move(maker.maker));
               return ZLevelResult{ level, maker.enemy ? maker.enemy->buildCollective(contentFactory) : nullptr};
             },
             "z-level " + toString(levelIndex));
         if (newLevel.collective)
           pos.getModel()->addCollective(std::move(newLevel.collective));
-        Position landing = newLevel.level->getLandingSquares(stairKey).getOnlyElement();
+        Position landing(pos.getCoord(), newLevel.level);
         landing.addFurniture(pos.getGame()->getContentFactory()->furniture.getFurniture(
             FurnitureType("DOWN_STAIRS"), TribeId::getMonster()));
+        landing.setLandingLink(stairKey);
         pos.setLandingLink(stairKey);
         pos.getModel()->calculateStairNavigation();
         auto collective = pos.getGame()->getPlayerCollective();
@@ -83,22 +85,24 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
       int levelIndex = *pos.getModel()->getMainLevelDepth(pos.getLevel());
       if (levelIndex == pos.getModel()->getMainLevelsDepth().getEnd() - 1) {
         auto stairKey = StairKey::getNew();
+        auto levelSize = pos.getLevel()->getBounds().getSize();
         auto newLevel = tryBuilding(20,
             [&]{
               auto contentFactory = pos.getGame()->getContentFactory();
               auto maker = getLevelMaker(Random, contentFactory, pos.getGame()->zLevelGroups,
-                  levelIndex + 1, pos.getGame()->getPlayerCollective()->getTribeId(), stairKey);
+                  levelIndex + 1, pos.getGame()->getPlayerCollective()->getTribeId(), levelSize);
               auto level = pos.getModel()->buildMainLevel(contentFactory,
-                  LevelBuilder(Random, contentFactory, maker.levelWidth, maker.levelWidth, true),
+                  LevelBuilder(Random, contentFactory, levelSize.x, levelSize.y, true),
                       std::move(maker.maker));
               return ZLevelResult{ level, maker.enemy ? maker.enemy->buildCollective(contentFactory) : nullptr};
             },
             "z-level " + toString(levelIndex));
         if (newLevel.collective)
           pos.getModel()->addCollective(std::move(newLevel.collective));
-        Position landing = newLevel.level->getLandingSquares(stairKey).getOnlyElement();
+        Position landing(pos.getCoord(), newLevel.level);
         landing.addFurniture(pos.getGame()->getContentFactory()->furniture.getFurniture(
             FurnitureType("UP_STAIRS"), TribeId::getMonster()));
+        landing.setLandingLink(stairKey);
         pos.setLandingLink(stairKey);
         pos.getModel()->calculateStairNavigation();
         // Add known tiles around the stairs so it's possible to build bridge on water/lava levels.

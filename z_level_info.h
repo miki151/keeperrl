@@ -31,11 +31,10 @@ struct ZLevelInfo {
   ZLevelType SERIAL(type);
   optional<int> SERIAL(minDepth);
   optional<int> SERIAL(maxDepth);
-  int SERIAL(width) = 140;
   bool SERIAL(guarantee) = false;
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version) {
-    ar(NAMED(type), NAMED(minDepth), NAMED(maxDepth), OPTION(width));
+    ar(NAMED(type), NAMED(minDepth), NAMED(maxDepth));
     if (version >= 1)
       ar(OPTION(guarantee));
   }

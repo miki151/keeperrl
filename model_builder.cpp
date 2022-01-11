@@ -312,9 +312,9 @@ void ModelBuilder::measureSiteGen(int numTries, vector<string> types, vector<Bio
               numTries,
               [&] {
                 auto model = tryCampaignBaseModel(tribe, alignment, BiomeId("GRASSLAND"), none);
-                auto maker = getLevelMaker(Random, contentFactory, {"basic"},
-                    i, TribeId::getDarkKeeper(), StairKey::getNew());
-                LevelBuilder(Random, contentFactory, maker.levelWidth, maker.levelWidth, true)
+                auto size = model->getGroundLevel()->getBounds().getSize();
+                auto maker = getLevelMaker(Random, contentFactory, {"basic"}, i, TribeId::getDarkKeeper(), size);
+                LevelBuilder(Random, contentFactory, size.x, size.y, true)
                     .build(contentFactory, model.get(), maker.maker.get(), 123);
               }); });
     }
