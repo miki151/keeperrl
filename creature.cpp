@@ -1472,7 +1472,7 @@ bool Creature::takeDamage(const Attack& attack) {
   defense *= getFlankedMod();
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (isAffected(effect))
-      defense = LastingEffects::modifyCreatureDefense(effect, defense, attack.damageType);
+      defense = LastingEffects::modifyCreatureDefense(this, effect, defense, attack.damageType);
   double damage = getDamage((double) attack.strength / defense);
   if (auto sound = attributes->getAttackSound(attack.type, damage > 0))
     addSound(*sound);

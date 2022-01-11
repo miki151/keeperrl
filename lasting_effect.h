@@ -38,6 +38,7 @@ RICH_ENUM(
   MAGIC_RESISTANCE,
   MELEE_RESISTANCE,
   RANGED_RESISTANCE,
+  CAPTURE_RESISTANCE,
   MAGIC_VULNERABILITY,
   MELEE_VULNERABILITY,
   RANGED_VULNERABILITY,
@@ -113,7 +114,7 @@ class LastingEffects {
   static bool tick(Creature*, LastingEffect);
   static optional<string> getGoodAdjective(LastingEffect);
   static optional<string> getBadAdjective(LastingEffect);
-  static double modifyCreatureDefense(LastingEffect, double damage, AttrType damageAttr);
+  static double modifyCreatureDefense(const Creature*, LastingEffect, double damage, AttrType damageAttr);
   static void onAllyKilled(Creature*);
   static string getName(LastingEffect);
   static string getDescription(LastingEffect);

@@ -211,6 +211,9 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::RANGED_RESISTANCE:
         c->you(MsgType::ARE, "now resistant to ranged attacks");
         break;
+      case LastingEffect::CAPTURE_RESISTANCE:
+        c->you(MsgType::ARE, "now resistant to capturing");
+        break;
       case LastingEffect::MAGIC_VULNERABILITY:
         c->you(MsgType::ARE, "now vulnerable to magical attacks");
         break;
@@ -542,6 +545,9 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::RANGED_RESISTANCE:
         c->you(MsgType::FEEL, "less resistant to ranged attacks");
         break;
+      case LastingEffect::CAPTURE_RESISTANCE:
+        c->you(MsgType::FEEL, "less resistant to capturing");
+        break;
       case LastingEffect::MAGIC_VULNERABILITY:
         c->you(MsgType::FEEL, "less vulnerable to magical attacks");
         break;
@@ -788,6 +794,7 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::MAGIC_RESISTANCE: return "Resistant to magical attacks"_good;
     case LastingEffect::MELEE_RESISTANCE: return "Resistant to melee attacks"_good;
     case LastingEffect::RANGED_RESISTANCE: return "Resistant to ranged attacks"_good;
+    case LastingEffect::CAPTURE_RESISTANCE: return "Resistant to capturing"_good;
     case LastingEffect::SPELL_DAMAGE: return "Deals magical damage"_good;
     case LastingEffect::ELF_VISION: return "Can see through trees"_good;
     case LastingEffect::ARCHER_VISION: return "Can see through arrowslits"_good;
@@ -917,7 +924,7 @@ bool LastingEffects::inheritsFromSteed(LastingEffect e) {
   }
 }
 
-double LastingEffects::modifyCreatureDefense(LastingEffect e, double defense, AttrType damageAttr) {
+double LastingEffects::modifyCreatureDefense(const Creature* c, LastingEffect e, double defense, AttrType damageAttr) {
   auto multiplyFor = [&](AttrType attr, double m) {
     if (damageAttr == attr)
       return defense * m;
@@ -932,6 +939,10 @@ double LastingEffects::modifyCreatureDefense(LastingEffect e, double defense, At
       return multiplyFor(AttrType::DAMAGE, baseMultiplier);
     case LastingEffect::RANGED_RESISTANCE:
       return multiplyFor(AttrType::RANGED_DAMAGE, baseMultiplier);
+    case LastingEffect::CAPTURE_RESISTANCE:
+      if (c->isCaptureOrdered())
+        return defense * baseMultiplier;
+      break;
     case LastingEffect::MAGIC_VULNERABILITY:
       return multiplyFor(AttrType::SPELL_DAMAGE, 1.0 / baseMultiplier);
     case LastingEffect::MELEE_VULNERABILITY:
@@ -941,8 +952,9 @@ double LastingEffects::modifyCreatureDefense(LastingEffect e, double defense, At
     case LastingEffect::INVULNERABLE:
       return 1000000;
     default:
-      return defense;
+      break;
   }
+  return defense;
 }
 
 void LastingEffects::onAllyKilled(Creature* c) {
@@ -1169,6 +1181,7 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::MAGIC_RESISTANCE: return "magic resistance";
     case LastingEffect::MELEE_RESISTANCE: return "melee resistance";
     case LastingEffect::RANGED_RESISTANCE: return "ranged resistance";
+    case LastingEffect::CAPTURE_RESISTANCE: return "capture resistance";
     case LastingEffect::MAGIC_VULNERABILITY: return "magic vulnerability";
     case LastingEffect::MELEE_VULNERABILITY: return "melee vulnerability";
     case LastingEffect::RANGED_VULNERABILITY: return "ranged vulnerability";
@@ -1267,6 +1280,7 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::MAGIC_RESISTANCE: return "Increases defense against magical attacks by 30%.";
     case LastingEffect::MELEE_RESISTANCE: return "Increases defense against melee attacks by 30%.";
     case LastingEffect::RANGED_RESISTANCE: return "Increases defense against ranged attacks by 30%.";
+    case LastingEffect::CAPTURE_RESISTANCE: return "Increases defense by 30% when capture order is placed.";
     case LastingEffect::MAGIC_VULNERABILITY: return "Decreases defense against magical attacks by 23%.";
     case LastingEffect::MELEE_VULNERABILITY: return "Decreases defense against melee attacks by 23%.";
     case LastingEffect::RANGED_VULNERABILITY: return "Decreases defense against ranged attacks by 23%.";
@@ -1410,6 +1424,7 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
+    case LastingEffect::CAPTURE_RESISTANCE:
     case LastingEffect::MAGIC_VULNERABILITY:
     case LastingEffect::MELEE_VULNERABILITY:
     case LastingEffect::RANGED_VULNERABILITY:
@@ -1526,6 +1541,7 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::FIRE_RESISTANT:
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
+    case LastingEffect::CAPTURE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
       return FXVariantName::BUFF_SKY_BLUE;
     case LastingEffect::FAST_CRAFTING:
@@ -1605,6 +1621,7 @@ Color LastingEffects::getColor(LastingEffect effect) {
     case LastingEffect::FIRE_RESISTANT:
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
+    case LastingEffect::CAPTURE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
       return Color::SKY_BLUE;
     case LastingEffect::COLD_RESISTANT:
@@ -1659,6 +1676,7 @@ static bool shouldAllyApplyInDanger(const Creature* victim, LastingEffect effect
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
+    case LastingEffect::CAPTURE_RESISTANCE:
     case LastingEffect::ELF_VISION:
     case LastingEffect::ARCHER_VISION:
     case LastingEffect::REGENERATION:
@@ -1820,6 +1838,7 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
+    case LastingEffect::CAPTURE_RESISTANCE:
     case LastingEffect::SUNLIGHT_VULNERABLE:
     case LastingEffect::OIL:
       return  25_visible;
