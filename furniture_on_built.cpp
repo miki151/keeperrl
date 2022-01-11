@@ -45,11 +45,10 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
         auto newLevel = tryBuilding(20,
             [&]{
               auto contentFactory = pos.getGame()->getContentFactory();
-              auto maker = LevelMaker::upLevel(pos, stairKey, contentFactory->biomeInfo.at(pos.getModel()->getBiomeId()));
-              auto size = pos.getModel()->getGroundLevel()->getBounds().getSize();
+              auto maker = getUpLevel(Random, contentFactory, -levelIndex + 1, stairKey, pos);
               auto level = pos.getModel()->buildUpLevel(contentFactory,
-                  LevelBuilder(Random, contentFactory, size.x, size.y, true), std::move(maker));
-              return ZLevelResult{ level, nullptr};
+                  LevelBuilder(Random, contentFactory, maker.levelWidth, maker.levelWidth, true), std::move(maker.maker));
+              return ZLevelResult{ level, maker.enemy ? maker.enemy->buildCollective(contentFactory) : nullptr};
             },
             "z-level " + toString(levelIndex));
         if (newLevel.collective)

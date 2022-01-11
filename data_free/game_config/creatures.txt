@@ -799,8 +799,8 @@
   {
     viewId = { "yeti" }
     attr = {
-      DAMAGE 27
-      DEFENSE 20 
+      DAMAGE 30
+      DEFENSE 30 
     }
     body = {
       type = Humanoid LARGE
@@ -815,7 +815,7 @@
       name = "yeti"
     }
     maxLevelIncrease = {
-      MELEE 5
+      MELEE 10
     }
     inventory = {
       { "HeavyClub"}
@@ -1006,7 +1006,7 @@
   }
 "GREEN_DRAGON"
   {
-    viewId = { "green_dragon" }
+    viewId = { "red_dragon" Rgb 10 240 10 255 }
     attr = {
       DAMAGE 45
       DEFENSE 47
@@ -1047,6 +1047,38 @@
       { type = Glyph WEAPON ItemAttrBonus DAMAGE 3 chance = 0.3 }
       { type = Glyph RANGED_WEAPON ItemAttrBonus RANGED_DAMAGE 3 chance = 0.3 }
     }
+  }
+"KIRIN"
+  {
+    viewId = { "kirin" }
+    attr = {
+      SPELL_DAMAGE 30
+      DEFENSE 30
+    }
+    body = {
+      type = FourLegged HUGE
+      corpseIngredientType = "dragon_corpse"
+      addBodyPart = {
+        WING 2
+      }
+      intrinsicAttacks = {
+        HEAD {{{ Intrinsic { "bite_attack" } "fangs" 12 {
+            attackType = BITE
+            attackMsg = BITE
+            meleeAttackAttr = SPELL_DAMAGE
+            victimEffect = {0.3 Lasting POISON} } }}}
+      }
+      droppedPartUpgrade = Permanent MAGIC_RESISTANCE
+    }
+    permanentEffects = {
+      POISON_RESISTANT 1
+      RANGED_VULNERABILITY 1
+      STEED 1
+    }
+    name = {
+      name = "ki-rin"
+    }
+    spells = { "group healing" "magic missile" "mass defense bonus" "mass damage bonus" }
   }
 "RED_NAGA"
   {
@@ -4076,6 +4108,27 @@
     }
     name = {
       name = "bat"
+    }
+  }
+"FLYING_CARPET"
+  {
+    viewId = { "flying_carpet" }
+    body = {
+      type = NonHumanoid LARGE
+      weight = 1
+    }
+    attr = {
+      DEFENSE 30
+    }
+    aiType = RANGED
+    noChase = true
+    permanentEffects = {
+      STEED 1
+      FLYING 1
+      SPEED 1
+    }
+    name = {
+      name = "flying carpet"
     }
   }
 "DEATH"

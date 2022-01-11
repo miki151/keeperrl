@@ -51,7 +51,7 @@ class LevelMaker {
   static PLevelMaker mazeLevel(RandomGen&, SettlementInfo, Vec2 size);
   static PLevelMaker blackMarket(RandomGen&, SettlementInfo, Vec2 size);
   static PLevelMaker emptyLevel(FurnitureType, bool withFloor);
-  static PLevelMaker upLevel(Position, StairKey, const BiomeInfo&);
+  static PLevelMaker upLevel(Position, StairKey, const BiomeInfo&, SettlementInfo* settlement);
   static PLevelMaker sokobanFromFile(RandomGen&, SettlementInfo, Table<char>);
   static PLevelMaker battleLevel(Table<char>, vector<PCreature> allies, vector<CreatureList> enemies);
   static PLevelMaker getFullZLevel(RandomGen&, optional<SettlementInfo>, ResourceCounts, int mapWidth, TribeId keeperTribe,

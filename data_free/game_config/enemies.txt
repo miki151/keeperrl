@@ -67,6 +67,17 @@ End
     }
   }
 }
+"KIRIN"
+{
+  settlement = {
+    type = Builtin EMPTY "WOOD"
+    inhabitants = {
+      leader = {{"KIRIN"}}
+    }
+    tribe = MONSTER
+    race = "ki-rin"
+  }
+}
 "ANTS_CLOSED"
 {
   settlement = {
@@ -1849,15 +1860,12 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
 "YETI"
 {
   settlement = {
-    type = Builtin CAVE "DUNGEON"
+    type = Builtin EMPTY "DUNGEON"
     inhabitants = {
       leader = { { "YETI" } }
     }
     race = "yeti"
     tribe = HOSTILE
-  }
-  config = {
-    leaderAsFighter = true
   }
 }
 "HYDRA"

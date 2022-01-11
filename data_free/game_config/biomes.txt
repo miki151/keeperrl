@@ -41,6 +41,7 @@
       trees = "flowers"
     }
   }
+  mountainTopEnemy = "KIRIN"
   wildlife = {
     count = { 3 }
     all = {
@@ -211,6 +212,7 @@
       trees = "vegetationSnow"
     }
   }
+  mountainTopEnemy = "YETI"
   wildlife = {
     count = { 6 }
     all = {
@@ -230,14 +232,12 @@
     { id = "ESKIMO_VILLAGE" }
     { id = "BANDITS" }
     { id = "ADOXIE_VAULT" }
-    { id = "YETI" }
   }
   whiteKeeperBaseEnemies = {
     { id = "DARK_ELF_CAVE" }
     { id = "BANDITS" }
     { id = "WOLF_DEN" }
     { id = "ADOXIE_VAULT" }
-    { id = "YETI" }
   }
   keeperBiome = { "snowman" } "winter" 3
 }

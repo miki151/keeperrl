@@ -12,3 +12,5 @@ struct LevelMakerResult {
 
 LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory, const vector<string>& zLevelGroups,
     int depth, TribeId tribe, StairKey stairKey);
+
+LevelMakerResult getUpLevel(RandomGen& random, ContentFactory* contentFactory, int depth, StairKey stairKey, Position);

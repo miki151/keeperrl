@@ -10,6 +10,7 @@
 #include "view_id.h"
 
 struct MountainInfo {
+  int SERIAL(numMountainLevels) = 10;
   double SERIAL(lowlandRatio);
   double SERIAL(hillRatio);
   FurnitureType SERIAL(hill);
@@ -17,7 +18,7 @@ struct MountainInfo {
   FurnitureType SERIAL(mountain);
   FurnitureType SERIAL(mountainDeep);
   FurnitureType SERIAL(mountainFloor);
-  SERIALIZE_ALL(NAMED(lowlandRatio), NAMED(hillRatio), NAMED(hill), NAMED(grass), NAMED(mountain), NAMED(mountainDeep), NAMED(mountainFloor))
+  SERIALIZE_ALL(NAMED(lowlandRatio), NAMED(hillRatio), NAMED(hill), NAMED(grass), NAMED(mountain), NAMED(mountainDeep), NAMED(mountainFloor), OPTION(numMountainLevels))
 };
 
 struct ForestInfo {
@@ -62,10 +63,11 @@ struct BiomeInfo {
   vector<BiomeEnemyInfo> SERIAL(whiteKeeperEnemies);
   vector<BiomeEnemyInfo> SERIAL(darkKeeperBaseEnemies);
   vector<BiomeEnemyInfo> SERIAL(whiteKeeperBaseEnemies);
+  optional<EnemyId> SERIAL(mountainTopEnemy);
   optional<MusicType> SERIAL(overrideMusic);
   optional<KeeperBiomeInfo> SERIAL(keeperBiome);
   int SERIAL(sightRange) = 100;
-  SERIALIZE_ALL(NAMED(overrideWaterType), OPTION(sandType), NAMED(lakes), OPTION(items), OPTION(itemCount), NAMED(mountains), OPTION(forests), OPTION(wildlife), OPTION(darkKeeperEnemies), OPTION(whiteKeeperEnemies), OPTION(darkKeeperBaseEnemies), OPTION(whiteKeeperBaseEnemies), NAMED(overrideMusic), NAMED(keeperBiome), OPTION(sightRange))
+  SERIALIZE_ALL(NAMED(overrideWaterType), OPTION(sandType), NAMED(lakes), OPTION(items), OPTION(itemCount), NAMED(mountains), OPTION(forests), OPTION(wildlife), OPTION(darkKeeperEnemies), OPTION(whiteKeeperEnemies), OPTION(darkKeeperBaseEnemies), OPTION(whiteKeeperBaseEnemies), NAMED(overrideMusic), NAMED(keeperBiome), OPTION(sightRange), OPTION(mountainTopEnemy))
 };
 
 static_assert(std::is_nothrow_move_constructible<BiomeInfo>::value, "T should be noexcept MoveConstructible");

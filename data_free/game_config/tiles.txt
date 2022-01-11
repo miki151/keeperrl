@@ -149,7 +149,7 @@
 { "cherub" "c" ColorId YELLOW }
 { "djinn" "&" ColorId LIGHT_BLUE }
 { "naga" "N" ColorId RED }
-{ "green_dragon" "D" ColorId GREEN }
+{ "kirin" "K" ColorId ORANGE }
 { "red_dragon" "D" ColorId RED }
 { "bone_dragon" "D" ColorId LIGHT_GRAY }
 { viewId = "balrog" symbol = "&" color = ColorId RED fx = { SMOKE}}
@@ -176,6 +176,7 @@
 { "thief" "@" ColorId LIGHT_BROWN }
 { "thief_leader" "@" ColorId BROWN }
 { "sorcerer" "@" ColorId PURPLE }
+{ "flying_carpet" "_" ColorId PINK }
 { "duke1" "@" ColorId BLUE false "knightboss1" }
 { "duke2" "@" ColorId BLUE false "knightboss2" }
 { "duke3" "@" ColorId BLUE false "knightboss3" }

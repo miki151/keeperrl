@@ -1428,7 +1428,7 @@ class Mountains : public LevelMaker {
     int cutOffHillIndex = min(values.size() - 1, (int)((info.hillRatio + info.lowlandRatio) * double(values.size() - 1)));
     double cutOffHill = values[cutOffHillIndex];
     double cutOffDarkness = values[min(values.size() - 1, (int)((info.hillRatio + info.lowlandRatio + 1.0) * 0.5 * double(values.size() - 1)))];
-    int numMountainLevels = 10;
+    const int numMountainLevels = info.numMountainLevels;
     vector<double> mountainLevelCutoffs;
     for (int i : Range(1, numMountainLevels + 1))
       mountainLevelCutoffs.push_back(values[cutOffHillIndex * (numMountainLevels - i) / numMountainLevels 
@@ -3223,9 +3223,17 @@ class UpLevelMaker : public LevelMaker {
 };
 }
 
-PLevelMaker LevelMaker::upLevel(Position pos, StairKey stairKey, const BiomeInfo& biomeInfo) {
+PLevelMaker LevelMaker::upLevel(Position pos, StairKey stairKey, const BiomeInfo& biomeInfo,
+    SettlementInfo* settlement) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<UpLevelMaker>(pos, stairKey, biomeInfo));
   queue->addMaker(getForrest(biomeInfo));
+  auto& factory = *pos.getGame()->getContentFactory();
+  if (settlement) {
+    auto locations = unique<RandomLocations>();
+    locations->add(getSettlementMaker(factory, Random, *settlement), getSize(factory.mapLayouts, Random, settlement->type),
+        getSettlementPredicate(*settlement));
+    queue->addMaker(std::move(locations));
+  }
   return std::move(queue);
 }

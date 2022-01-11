@@ -8,6 +8,8 @@
 #include "attack_trigger.h"
 #include "tribe_alignment.h"
 #include "external_enemies.h"
+#include "model.h"
+#include "level.h"
 
 static EnemyInfo getEnemy(EnemyId id, ContentFactory* contentFactory) {
   auto enemy = EnemyFactory(Random, contentFactory->getCreatures().getNameGenerator(), contentFactory->enemies,
@@ -68,4 +70,18 @@ LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory
   auto zLevel = *chooseZLevel(random, levels, depth);
   auto res = *chooseResourceCounts(random, resources, depth);
   return getLevelMaker(zLevel, res, tribe, stairKey, contentFactory);
+}
+
+
+LevelMakerResult getUpLevel(RandomGen& random, ContentFactory* contentFactory,
+    int depth, StairKey stairKey, Position pos) {
+  auto& biomeInfo = contentFactory->biomeInfo.at(pos.getModel()->getBiomeId());
+  optional<EnemyInfo> enemy;
+  if (depth == biomeInfo.mountains.numMountainLevels && biomeInfo.mountainTopEnemy) {
+    enemy = getEnemy(*biomeInfo.mountainTopEnemy, contentFactory);
+    enemy->settlement.collective = new CollectiveBuilder(enemy->config, enemy->settlement.tribe);
+  }
+  auto maker = LevelMaker::upLevel(pos, stairKey, biomeInfo, enemy ? &enemy->settlement : nullptr);
+  auto size = pos.getModel()->getGroundLevel()->getBounds().getSize();
+  return LevelMakerResult { std::move(maker), std::move(enemy), size.x};
 }
