@@ -2823,7 +2823,7 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
     locations->add(std::move(startingPosMaker), Vec2(4, 4), RandomLocations::LocationPredicate(
         Predicate::attrib(SquareAttrib::HILL) && Predicate::canEnter({MovementTrait::WALK}),
         Predicate::attrib(SquareAttrib::MOUNTAIN), 1, 8));
-    int minMargin = 50;
+    int minMargin = 20;
     locations->setMinMargin(startingPos, minMargin - locationMargin);
   }
   struct AddedCropsInfo {
@@ -2843,10 +2843,10 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
       surroundWithResources.push_back({queue.get(), settlement});
     if (keeperTribe && !settlement.anyPlayerDistance) {
       if (settlement.closeToPlayer) {
-        locations->setMinDistance(startingPos, queue.get(), 40);
-        locations->setMaxDistance(startingPos, queue.get(), 55);
+        locations->setMinDistance(startingPos, queue.get(), 20);
+        locations->setMaxDistance(startingPos, queue.get(), 40);
       } else
-        locations->setMinDistance(startingPos, queue.get(), 70);
+        locations->setMinDistance(startingPos, queue.get(), 40);
     }
     locations->add(std::move(queue), getSize(contentFactory.mapLayouts, random, settlement.type),
         getSettlementPredicate(settlement));

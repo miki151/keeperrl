@@ -196,7 +196,7 @@ PModel ModelBuilder::tryCampaignBaseModel(TribeId keeperTribe, TribeAlignment al
   optional<ExternalEnemies> externalEnemies;
   if (externalEnemiesType)
     externalEnemies = ExternalEnemies(random, &contentFactory->getCreatures(), enemyFactory->getExternalEnemies(), *externalEnemiesType);
-  return tryModel(174, enemyInfo, keeperTribe, biome, std::move(externalEnemies));
+  return tryModel(114, enemyInfo, keeperTribe, biome, std::move(externalEnemies));
 }
 
 PModel ModelBuilder::tryTutorialModel() {
@@ -209,7 +209,7 @@ PModel ModelBuilder::tryTutorialModel() {
   //enemyInfo.push_back(enemyFactory->get(EnemyId("ADA_GOLEMS")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("TEMPLE")));
   //enemyInfo.push_back(enemyFactory->get(EnemyId("LIZARDMEN")));
-  return tryModel(174, enemyInfo, TribeId::getDarkKeeper(), biome, {});
+  return tryModel(114, enemyInfo, TribeId::getDarkKeeper(), biome, {});
 }
 
 static optional<BiomeId> getBiome(const EnemyInfo& enemy, RandomGen& random) {

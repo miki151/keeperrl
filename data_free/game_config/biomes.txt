@@ -1,11 +1,11 @@
 "GRASSLAND"
 {
   lakes = {
-    size = {20 30}
+    size = {15 20}
     count = {0 3}
   }
   items = "wildernessItems"
-  itemCount = {20 40}
+  itemCount = {10 20}
   mountains = {
     lowlandRatio = 0.60
     hillRatio = 0.06
@@ -69,18 +69,14 @@
   }
   darkKeeperBaseEnemies = {
     { id = "TUTORIAL_VILLAGE" }
-    { id = "DWARF_CAVE" }
     { id = "BANDITS" }
-    { id = "ANTS_CLOSED_SMALL" }
     { id = "ADOXIE_VAULT" }
     { id = "KRAKEN" probability = 0.3 }
   }
   whiteKeeperBaseEnemies = {
     { id = "DARK_ELF_CAVE" }
     { id = "COTTAGE_BANDITS" }
-    { id = "ANTS_CLOSED_SMALL" }
     { id = "ADOXIE_VAULT" }
-    { id = "WOLF_DEN" }
     { id = "KRAKEN" probability = 0.3 }
   }
   keeperBiome = { "grass" } "grassland" 2
@@ -124,7 +120,6 @@
   }
   darkKeeperBaseEnemies = {
     { id = "TUTORIAL_VILLAGE" }
-    { id = "ELVEN_COTTAGE" count = {2 3} }
     { id = "COTTAGE_BANDITS" }
     { id = "ADOXIE_VAULT" }
     { id = "WITCH" probability = 0.2 }

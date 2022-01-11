@@ -6,9 +6,8 @@
       # Then the range of length of the side of the rectangle in which a resource patch is placed
       # The numbers represent patches close to and far from the starting position, respectively.
       # If you add too many patches, level generation might fail.
-      "STONE" {5 10} 2 4
-      "IRON_ORE" {5 10} 3 4
-      "GOLD_ORE" {5 10} 1 3
+      "STONE" {5 10} 1 2
+      "IRON_ORE" {5 10} 1 2
   }
   minDepth = 0
   maxDepth = 0
