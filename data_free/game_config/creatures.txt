@@ -2002,6 +2002,12 @@
     }
     hatedByEffect = HATE_HUMANS
   }
+"CHILD_ENTS" inherit "CHILD"
+  {
+    body = {
+      type = Humanoid LARGE
+    }
+  }
 "ESKIMO_CHILD" inherit "CHILD"
   {
     viewId = { "eskimo_child" }
@@ -4048,7 +4054,9 @@
     permanentEffects = {
       ELF_VISION 1
       RANGED_RESISTANCE 1
+      CAPTURE_RESISTANCE 1
       SLOWED 1
+      STEED 1
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
