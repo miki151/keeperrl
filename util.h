@@ -1076,7 +1076,7 @@ vector<V> getValues(const map<T, V>& m) {
 template <typename T, typename V, typename Hash>
 vector<T> getKeys(const unordered_map<T, V, Hash>& m) {
   vector<T> ret;
-  for (auto elem : m)
+  for (auto& elem : m)
     ret.push_back(elem.first);
   return ret;
 }
