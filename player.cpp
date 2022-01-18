@@ -1327,7 +1327,7 @@ void Player::fillCurrentLevelInfo(GameInfo& gameInfo) const {
   auto levels = getModel()->getAllMainLevels();
   gameInfo.currentLevel = CurrentLevelInfo {
     level->name,
-    *levels.findElement(level),
+    levels.findElement(level).value_or(0),
     levels.transform([](auto level) { return level->name; }),
   };
 }
@@ -1492,9 +1492,20 @@ void Player::scrollStairs(int diff) {
     if (dest == *curIndex)
       return;
     auto targetLevel = model->getMainLevel(dest);
-    auto oldPos = creature->getPosition().getCoord();
-    if (auto stairs = targetLevel->getStairsTo(model->getMainLevel(dest + (dest > *curIndex ? -1 : 1))))
-      target = *stairs;
+    auto curPos = creature->getPosition();
+    auto movement = creature->getMovementType();
+    optional<Position> bestStairs;
+    int bestDist = 10000000;
+    for (auto key : targetLevel->getAllStairKeys()) {
+      auto stairPos = targetLevel->getLandingSquares(key)[0];
+      if (auto res = stairPos.getStairsTo(curPos, movement))
+        if (res->second < bestDist) {
+          bestStairs = stairPos;
+          bestDist = res->second;
+        }
+    }
+    if (bestStairs)
+      target = *bestStairs;
   }
 }
 

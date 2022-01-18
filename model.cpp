@@ -165,6 +165,7 @@ void Model::tick(LocalTime time) { PROFILE
       pos.getLevel()->territory[pos.getCoord()] = col.get();
   if (externalEnemies)
     externalEnemies->update(getGroundLevel(), time);
+  stairNavigation.clear();
 }
 
 void Model::addCreature(PCreature c) {
@@ -253,52 +254,50 @@ Level* Model::getLinkedLevel(Level* from, StairKey key) const {
   return nullptr;
 }
 
-static pair<LevelId, LevelId> getIds(const Level* l1, const Level* l2) {
-  return {l1->getUniqueId(), l2->getUniqueId()};
-}
-
 BiomeId Model::getBiomeId() const {
   return biomeId;
 }
 
+Model::StairConnections Model::createStairConnections(const MovementType& movement) const {
+  PROFILE;
+  StairConnections connections;
+  auto join = [&] (StairKey k1, StairKey k2) {
+    int oldKey = connections.at(k2);
+    int newKey = connections.at(k1);
+    if (oldKey != newKey)
+      for (auto& elem : connections)
+        if (elem.second == oldKey)
+          elem.second = newKey;
+  };
+  int cnt = 0;
+  for (auto level : getLevels())
+    for (auto key : level->getAllStairKeys())
+      if (!connections.count(key))
+        connections[key] = ++cnt;
+  for (auto level : getLevels())
+    for (auto key1 : level->getAllStairKeys())  
+      for (auto key2 : level->getAllStairKeys())
+        if (key1 != key2) {
+          auto pos1 = level->getLandingSquares(key1)[0];
+          auto pos2 = level->getLandingSquares(key2)[0];
+          if (pos1.isConnectedTo(pos2, movement))
+            join(key1, key2);
+        }
+  return connections;
+}
+
 void Model::calculateStairNavigation() {
   stairNavigation.clear();
-  // Floyd-Warshall algorithm
-  for (auto l1 : getLevels())
-    for (auto l2 : getLevels())
-      if (l1 != l2)
-        if (auto stairKey = getStairsBetween(l1, l2))
-          stairNavigation[getIds(l1, l2)] = *stairKey;
-  for (auto li : getLevels())
-    for (auto l1 : getLevels())
-      if (li != l1)
-        for (auto l2 : getLevels())
-          if (l2 != l1 && l2 != li && !stairNavigation.count(getIds(l1, l2)) &&
-              stairNavigation.count(getIds(li, l2)) && stairNavigation.count(getIds(l1, li)))
-            stairNavigation[getIds(l1, l2)] = stairNavigation.at(getIds(l1, li));
-  for (auto l1 : getLevels())
-    for (auto l2 : getLevels())
-      if (l1 != l2)
-        CHECK(stairNavigation.count(getIds(l1, l2))) <<
-            "No stair path between levels ";// << l1->getName() << " " << l2->getName();
 }
 
-optional<StairKey> Model::getStairsBetween(const Level* from, const Level* to) const {
-  for (StairKey key : from->getAllStairKeys())
-    if (to->hasStairKey(key))
-      return key;
-  return none;
-}
-
-optional<Position> Model::getStairs(const Level* from, const Level* to) {
-  PROFILE;
-  CHECK(from != to);
-  {
-    PROFILE_BLOCK("check none");
-  if (!getLevels().contains(from) || !getLevels().contains(to) || !stairNavigation.count(getIds(from, to)))
-    return none;
-  }
-  return Random.choose(from->getLandingSquares(stairNavigation.at(getIds(from, to))));
+bool Model::areConnected(StairKey key1, StairKey key2, const MovementType& movement) {
+  auto& connections = [&]() -> StairConnections& {
+    if (auto ret = getReferenceMaybe(stairNavigation, movement))
+      return *ret;
+    auto ret = stairNavigation.insert(make_pair(movement, createStairConnections(movement)));
+    return ret.first->second;
+  }();
+  return connections.at(key1) == connections.at(key2);
 }
 
 vector<Level*> Model::getLevels() const {

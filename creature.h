@@ -358,6 +358,12 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   Position SERIAL(position);
   HeapAllocated<Equipment> SERIAL(equipment);
   heap_optional<LevelShortestPath> SERIAL(shortestPath);
+  struct LastStairsNavigation {
+    Level* from;
+    Position target;
+    Position stairs;
+  };
+  optional<LastStairsNavigation> lastStairsNavigation;
   EntitySet<Creature> SERIAL(knownHiding);
   TribeId SERIAL(tribe);
   double SERIAL(morale) = 0;

@@ -98,10 +98,11 @@ class Dijkstra {
       vector<Vec2> directions = Vec2::directions8());
   bool isReachable(Vec2) const;
   double getDist(Vec2) const;
-  const map<Vec2, double>& getAllReachable() const;
+  using DistanceMap = unordered_map<Vec2, double, CustomHash<Vec2>>;
+  const DistanceMap& getAllReachable() const;
 
   private:
-  map<Vec2, double> reachable;
+  DistanceMap reachable;
 };
 
 class BfSearch {

@@ -10,10 +10,12 @@ class StairKey {
   static StairKey transferLanding();
 
   bool operator == (const StairKey&) const;
+  bool operator != (const StairKey&) const;
 
   SERIALIZATION_DECL(StairKey)
 
   long long getInternalKey() const;
+  int getHash() const;
 
   private:
   StairKey(long long key);

@@ -2333,9 +2333,29 @@ vector<Position> Creature::getCurrentPath() const {
 CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
   if (!pos.isValid())
     return CreatureAction();
-  if (pos.isSameLevel(position))
-    return moveTowards(pos, false, flags);
-  else if (auto stairs = position.getStairsTo(pos)) {
+  auto movement = getMovementType();
+  if (pos.isSameLevel(position)) {
+    bool connected = pos.isConnectedTo(position, movement);
+    if (!connected && !flags.stepOnTile)
+      for (auto v : pos.neighbors8())
+        if (v.isConnectedTo(position, movement)) {
+          connected = true;
+          break;
+        }
+    if (connected)
+      return moveTowards(pos, false, flags);
+  }
+  auto getStairs = [&pos, this, &flags, &movement] () -> optional<Position> {
+    if (lastStairsNavigation && lastStairsNavigation->from == position.getLevel() &&
+        lastStairsNavigation->target == pos)
+      return lastStairsNavigation->stairs;
+    if (auto res = position.getStairsTo(pos, movement, !flags.stepOnTile)) {
+      lastStairsNavigation = LastStairsNavigation { position.getLevel(), pos, res->first };
+      return res->first;
+    }
+    return none;
+  };
+  if (auto stairs = getStairs()) {
     if (stairs == position)
       return applySquare(position, FurnitureLayer::MIDDLE);
     else

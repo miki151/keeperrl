@@ -23,6 +23,7 @@
 #include "event_generator.h"
 #include "game_time.h"
 #include "biome_id.h"
+#include "movement_type.h"
 
 class Level;
 class ProgressMeter;
@@ -50,8 +51,7 @@ class Model : public OwnedObject<Model> {
 
   /** Returns the level that the stairs lead to. */
   Level* getLinkedLevel(Level* from, StairKey) const;
-
-  optional<Position> getStairs(const Level* from, const Level* to);
+  bool areConnected(StairKey, StairKey, const MovementType&);
 
   void addCreature(PCreature);
   void addCreature(PCreature, TimeInterval delay);
@@ -135,8 +135,9 @@ class Model : public OwnedObject<Model> {
   vector<PCreature> SERIAL(deadCreatures);
   double SERIAL(currentTime) = 0;
   int SERIAL(woodCount) = 0;
-  optional<StairKey> getStairsBetween(const Level* from, const Level* to) const;
-  map<pair<LevelId, LevelId>, StairKey> SERIAL(stairNavigation);
+  using StairConnections = unordered_map<StairKey, int, CustomHash<StairKey>>;
+  StairConnections createStairConnections(const MovementType&) const;
+  unordered_map<MovementType, StairConnections, CustomHash<MovementType>> SERIAL(stairNavigation);
   bool serializationLocked = false;
   template <typename>
   friend class EventListener;

@@ -89,8 +89,6 @@ class Level : public OwnedObject<Level> {
   vector<StairKey> getAllStairKeys() const;
   bool hasStairKey(StairKey) const;
 
-  optional<Position> getStairsTo(const Level*);
-
   void killCreature(Creature* victim);
 
   void eraseCreature(Creature*, Vec2 coord);

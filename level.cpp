@@ -261,10 +261,6 @@ bool Level::hasStairKey(StairKey key) const {
   return landingSquares.count(key);
 }
 
-optional<Position> Level::getStairsTo(const Level* level) {
-  return model->getStairs(this, level);
-}
-
 bool Level::landCreature(StairKey key, Creature* creature) {
   vector<Position> landing = landingSquares.at(key);
   return landCreature(landing, creature);
@@ -574,19 +570,22 @@ void Level::tick() {
         addedWildlife.push_back(ref);
     }
   }
-  if (above)
+  if (above) {
+    PROFILE_BLOCK("Z level tick");
     for (auto pos : getAllPositions())
       if (pos.isCovered() && above->unavailable[pos.getCoord()]) {
         Position abovePos(pos.getCoord(), above);
         above->unavailable[pos.getCoord()] = false;
         auto col = getGame()->getPlayerCollective();
-        if (!abovePos.getFurniture(FurnitureLayer::GROUND))
+        if (!abovePos.getFurniture(FurnitureLayer::GROUND)) {
           abovePos.addFurniture(getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("FLOOR"), TribeId::getMonster()));
-        if (col->getKnownTiles().isKnown(pos)) {
-          col->addKnownTile(abovePos);
-          getGame()->getPlayerControl()->addToMemory(abovePos);
+          if (col->getKnownTiles().isKnown(pos)) {
+            col->addKnownTile(abovePos);
+            getGame()->getPlayerControl()->addToMemory(abovePos);
+          }
         }
       }
+  }
 }
 
 bool Level::inBounds(Vec2 pos) const {
@@ -668,14 +667,15 @@ void Level::setFurniture(Vec2 pos, PFurniture f) {
 
 vector<PhylacteryInfo> Level::getPhylacteries() {
   vector<PhylacteryInfo> ret;
-  auto model = getModel();
+  /*auto model = getModel();
+  // Figure out if it's worth doing the phylactery traces and what they achieve
   for (auto c : model->getAllCreatures())
     if (auto& f = c->getPhylactery()) {
       if (!f->pos.isSameModel(c->getPosition()))
         continue;
       auto cIndex = model->getMainLevelDepth(c->getPosition().getLevel());
-      auto lIndex = model->getMainLevelDepth(this);
       auto pIndex = model->getMainLevelDepth(f->pos.getLevel());
+      auto lIndex = model->getMainLevelDepth(this);
       if (!lIndex || !cIndex || !pIndex || (*cIndex < *lIndex && *pIndex < *lIndex) || (*cIndex > *lIndex && *pIndex > *lIndex))
         continue;
       auto cPos = c->getPosition().getCoord();
@@ -695,6 +695,6 @@ vector<PhylacteryInfo> Level::getPhylacteries() {
           continue;
       }
       ret.push_back(PhylacteryInfo{cPos, pPos, object});
-    }
+    }*/
   return ret;
 }

@@ -36,12 +36,34 @@ static ZLevelResult tryBuilding(int numTries, BuildFun buildFun, const string& n
   fail();
 }
 
+static void addStairs(Position pos, Level* targetLevel, FurnitureType stairsType) {
+  Position landing(pos.getCoord(), targetLevel);
+  if (!landing.canEnterEmpty({MovementTrait::WALK}))
+    landing.addFurniture(pos.getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("FLOOR"),
+        TribeId::getMonster()));
+  landing.addFurniture(pos.getGame()->getContentFactory()->furniture.getFurniture(stairsType, TribeId::getMonster()));
+  auto stairKey = StairKey::getNew();
+  landing.setLandingLink(stairKey);
+  pos.setLandingLink(stairKey);
+  pos.getModel()->calculateStairNavigation();
+  auto collective = pos.getGame()->getPlayerCollective();
+  for (auto v : targetLevel->getAllPositions())
+    if (collective->getKnownTiles().isKnown(Position(v.getCoord(), pos.getLevel()))) {
+      collective->addKnownTile(v);
+      pos.getGame()->getPlayerControl()->addToMemory(v);
+    }
+  for (auto pos : targetLevel->getAllPositions())
+    if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
+      if (f->isClearFogOfWar())
+        pos.getGame()->getPlayerControl()->addToMemory(pos);
+}
+
 void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
   switch (type) {
     case FurnitureOnBuilt::UP_STAIRS: {
       int levelIndex = *pos.getModel()->getMainLevelDepth(pos.getLevel());
+      Level* targetLevel = nullptr;
       if (levelIndex == pos.getModel()->getMainLevelsDepth().getStart()) {
-        auto stairKey = StairKey::getNew();
         auto levelSize = pos.getLevel()->getBounds().getSize();
         auto newLevel = tryBuilding(20,
             [&]{
@@ -54,37 +76,16 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
             "z-level " + toString(levelIndex));
         if (newLevel.collective)
           pos.getModel()->addCollective(std::move(newLevel.collective));
-        Position landing(pos.getCoord(), newLevel.level);
-        landing.addFurniture(pos.getGame()->getContentFactory()->furniture.getFurniture(
-            FurnitureType("DOWN_STAIRS"), TribeId::getMonster()));
-        landing.setLandingLink(stairKey);
-        pos.setLandingLink(stairKey);
-        pos.getModel()->calculateStairNavigation();
-        auto collective = pos.getGame()->getPlayerCollective();
-        // Add known tiles around the stairs so it's possible to build bridge on water/lava levels.
-        for (auto v : newLevel.level->getAllPositions())
-          if (collective->getKnownTiles().isKnown(Position(v.getCoord(), pos.getLevel()))) {
-            collective->addKnownTile(v);
-            pos.getGame()->getPlayerControl()->addToMemory(v);
-          }
-        for (auto pos : newLevel.level->getAllPositions())
-          if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
-            if (f->isClearFogOfWar())
-              pos.getGame()->getPlayerControl()->addToMemory(pos);
-      } else {
-        auto nextLevel = pos.getModel()->getMainLevel(levelIndex - 1);
-        auto oldStairsPos = pos.getModel()->getStairs(pos.getLevel(), nextLevel);
-        pos.setLandingLink(*oldStairsPos->getLandingLink());
-        oldStairsPos->removeLandingLink();
-        oldStairsPos->removeFurniture(FurnitureLayer::MIDDLE);
-        pos.getGame()->getPlayerControl()->addToMemory(*oldStairsPos);
-      }
+        targetLevel = newLevel.level;
+      } else
+        targetLevel = pos.getModel()->getMainLevel(levelIndex - 1);
+      addStairs(pos, targetLevel, FurnitureType("DOWN_STAIRS"));
       break;
     }
     case FurnitureOnBuilt::DOWN_STAIRS: {
       int levelIndex = *pos.getModel()->getMainLevelDepth(pos.getLevel());
+      Level* targetLevel = nullptr;
       if (levelIndex == pos.getModel()->getMainLevelsDepth().getEnd() - 1) {
-        auto stairKey = StairKey::getNew();
         auto levelSize = pos.getLevel()->getBounds().getSize();
         auto newLevel = tryBuilding(20,
             [&]{
@@ -99,30 +100,10 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
             "z-level " + toString(levelIndex));
         if (newLevel.collective)
           pos.getModel()->addCollective(std::move(newLevel.collective));
-        Position landing(pos.getCoord(), newLevel.level);
-        landing.addFurniture(pos.getGame()->getContentFactory()->furniture.getFurniture(
-            FurnitureType("UP_STAIRS"), TribeId::getMonster()));
-        landing.setLandingLink(stairKey);
-        pos.setLandingLink(stairKey);
-        pos.getModel()->calculateStairNavigation();
-        // Add known tiles around the stairs so it's possible to build bridge on water/lava levels.
-        for (auto v : landing.getRectangle(Rectangle::centered(1)))
-          pos.getGame()->getPlayerCollective()->addKnownTile(v);
-        pos.getGame()->getPlayerControl()->addToMemory(landing);
-        for (auto v : landing.neighbors8())
-          pos.getGame()->getPlayerControl()->addToMemory(v);
-        for (auto pos : newLevel.level->getAllPositions())
-          if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
-            if (f->isClearFogOfWar())
-              pos.getGame()->getPlayerControl()->addToMemory(pos);
-      } else {
-        auto nextLevel = pos.getModel()->getMainLevel(levelIndex + 1);
-        auto oldStairsPos = pos.getModel()->getStairs(pos.getLevel(), nextLevel);
-        pos.setLandingLink(*oldStairsPos->getLandingLink());
-        oldStairsPos->removeLandingLink();
-        oldStairsPos->removeFurniture(FurnitureLayer::MIDDLE);
-        pos.getGame()->getPlayerControl()->addToMemory(*oldStairsPos);
-      }
+        targetLevel = newLevel.level;
+      } else
+        targetLevel = pos.getModel()->getMainLevel(levelIndex + 1);
+      addStairs(pos, targetLevel, FurnitureType("UP_STAIRS"));
       break;
     }
     case FurnitureOnBuilt::SET_ON_FIRE:

@@ -21,7 +21,15 @@ bool StairKey::operator == (const StairKey& o) const {
   return key == o.key;
 }
 
+bool StairKey::operator != (const StairKey& o) const {
+  return key != o.key;
+}
+
 long long StairKey::getInternalKey() const {
+  return key;
+}
+
+int StairKey::getHash() const {
   return key;
 }
 

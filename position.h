@@ -142,7 +142,7 @@ class Position {
   bool canMoveCreature(Position) const;
   void swapCreatures(Creature*);
   double getLight() const;
-  optional<Position> getStairsTo(Position) const;
+  optional<pair<Position, int>> getStairsTo(Position, const MovementType&, bool includeNeighbors = false) const;
   const Furniture* getFurniture(FurnitureLayer) const;
   const Furniture* getFurniture(FurnitureType) const;
   vector<const Furniture*> getFurniture() const;

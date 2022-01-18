@@ -2179,11 +2179,13 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         auto level = position.getLevel();
         auto sectors = level->getSectors(MovementType(MovementTrait::WALK).setPrisoner());
         auto topLevel = getModel()->getGroundLevel();
-        auto bottomLevel = getModel()->getMainLevel(getModel()->getMainLevelsDepth().getEnd() - 1);
-        if ((level == topLevel && sectors.isSector(pos, sectors.getLargest())) ||
-            (level != topLevel && sectors.same(pos, level->getStairsTo(topLevel)->getCoord())) ||
-            (level != bottomLevel && sectors.same(pos, level->getStairsTo(bottomLevel)->getCoord())))
+        if (level == topLevel && sectors.isSector(pos, sectors.getLargest()))
           index.setHighlight(HighlightType::PRISON_NOT_CLOSED);
+        for (auto key : level->getAllStairKeys())
+          if (sectors.same(pos, level->getLandingSquares(key)[0].getCoord())) {
+            index.setHighlight(HighlightType::PRISON_NOT_CLOSED);
+            break;
+          }
       }
     for (auto furniture : position.getFurniture())
       if (furniture->getLuxuryInfo().luxury > 0)
@@ -3166,8 +3168,8 @@ static optional<vector<Vec2>> getCreaturePath(Creature* c, Vec2 target, Level* l
   if (!to.isValid())
     return none;
   if (from.getLevel() != level) {
-    if (auto stairs = to.getStairsTo(from))
-      from = *stairs;
+    if (auto stairs = to.getStairsTo(from, c->getMovementType()))
+      from = stairs->first;
     else
       return none;
   }

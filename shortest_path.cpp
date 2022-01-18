@@ -399,7 +399,7 @@ double Dijkstra::getDist(Vec2 v) const {
   return reachable.at(v);
 }
 
-const map<Vec2, double>& Dijkstra::getAllReachable() const {
+const Dijkstra::DistanceMap& Dijkstra::getAllReachable() const {
   return reachable;
 }
 

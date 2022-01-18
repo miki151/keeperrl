@@ -1033,38 +1033,30 @@ const vector<Position>& Position::getLandingAtNextLevel(StairKey stairKey) {
   return NOTNULL(getModel()->getLinkedLevel(level, stairKey))->getLandingSquares(stairKey);
 }
 
-static optional<Position> navigateToLevel(Position from, Level* level, const MovementType& type) {
-  PROFILE;
-  while (from.getLevel() != level) {
-    if (auto stairs = from.getLevel()->getStairsTo(level)) {
-      if (from.isConnectedTo(*stairs, type)) {
-        from = from.getLandingAtNextLevel(*stairs->getLandingLink())[0];
-        continue;
-      }
-    }
-    return none;
-  }
-  return from;
-}
-
 bool Position::canNavigateToOrNeighbor(Position from, const MovementType& type) const {
-  if (auto toLevel = navigateToLevel(from, level, type))
-    from = *toLevel;
-  else
-    return false;
-  if (isConnectedTo(from, type))
+  if (canNavigateTo(from, type))
     return true;
   for (Position v : neighbors8())
-    if (v.isConnectedTo(from, type))
+    if (v.canNavigateTo(from, type))
       return true;
   return false;
 }
 
 bool Position::canNavigateTo(Position from, const MovementType& type) const {
-  if (auto toLevel = navigateToLevel(from, level, type))
-    return isConnectedTo(*toLevel, type);
-  else
+  if (!isSameModel(from))
     return false;
+  if (isConnectedTo(from, type))
+    return true;
+  for (auto key1 : level->getAllStairKeys()) {
+    auto pos1 = level->getLandingSquares(key1)[0];
+    if (isConnectedTo(pos1, type))
+      for (auto key2 : from.level->getAllStairKeys()) {
+        auto pos2 = from.level->getLandingSquares(key2)[0];
+        if (from.isConnectedTo(pos2, type) && level->getModel()->areConnected(key1, key2, type))
+          return true;
+      }
+  }
+  return false;
 }
 
 optional<DestroyAction> Position::getBestDestroyAction(const MovementType& movement) const {
@@ -1234,11 +1226,56 @@ double Position::getLight() const {
     return 0;
 }
 
-optional<Position> Position::getStairsTo(Position pos) const {
+optional<pair<Position, int>> Position::getStairsTo(Position targetPos, const MovementType& movement,
+    bool includeNeighbors) const {
   PROFILE;
-  CHECK(isValid() && pos.isValid());
-  CHECK(!isSameLevel(pos));
-  return level->getStairsTo(pos.level);
+  unordered_map<StairKey, int, CustomHash<StairKey>> distance;
+  using QueueElem = tuple<StairKey, Level*, Level*, int>;
+  auto queueCmp = [](auto& elem1, auto& elem2) { return std::get<3>(elem1) > std::get<3>(elem2); };
+  priority_queue<QueueElem, vector<QueueElem>, decltype(queueCmp)> q(queueCmp);
+  auto model = targetPos.getModel();
+  auto relaxKey = [model, &movement, &distance, &q](int thisValue, Position thisPos) {
+    auto level = thisPos.level;
+    for (auto key : level->getAllStairKeys())
+      if (auto linked = model->getLinkedLevel(level, key)) {
+        auto stairpos = level->getLandingSquares(key)[0];
+        if (thisPos.isConnectedTo(stairpos, movement)) {
+          auto value = thisValue + *thisPos.dist8(stairpos) + 1;
+          auto cur = getValueMaybe(distance, key);
+          if (!cur || *cur > value) {
+            distance[key] = value;
+            q.push(make_tuple(key, level, linked, value));
+          }
+        }
+      }
+  };
+  relaxKey(0, targetPos);
+  if (includeNeighbors)
+    for (auto neighbor : targetPos.neighbors8())
+      relaxKey(0, neighbor);
+  while (!q.empty()) {
+    auto cur = q.top();
+    q.pop();
+    auto thisKey = std::get<0>(cur);
+    auto l1 = std::get<1>(cur);
+    auto l2 = std::get<2>(cur);
+    auto thisValue = std::get<3>(cur);
+    if (thisValue == distance.at(thisKey)) {
+      relaxKey(thisValue, l1->getLandingSquares(thisKey)[0]);
+      relaxKey(thisValue, l2->getLandingSquares(thisKey)[0]);
+    }
+  }
+  optional<pair<Position, int>> ret;
+  for (auto key : level->getAllStairKeys())
+    if (auto keyRes = getValueMaybe(distance, key)) {
+      auto stairPos = level->getLandingSquares(key)[0];
+      if (isConnectedTo(stairPos, movement)) {
+        auto res = *keyRes + *dist8(stairPos);
+        if (!ret || res < ret->second)
+          ret = make_pair(stairPos, res);
+      }
+    }
+  return ret;
 }
 
 void Position::swapCreatures(Creature* c) {
