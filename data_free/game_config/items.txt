@@ -1021,7 +1021,7 @@ End
   {
     viewId = { "leather_armor" }
     shortName = "armor"
-    name = "basic equipment"
+    name = "leather armor"
     itemClass = ARMOR
     equipmentSlot = BODY_ARMOR
     weight = 7
