@@ -437,9 +437,9 @@ CreatureAction Creature::move(Position pos, optional<Position> nextPos) const {
   return CreatureAction(this, [=](Creature* self) {
     PROFILE;
     INFO << getName().the() << " moving " << direction;
-    if (isAffected(LastingEffect::ENTANGLED) || isAffected(LastingEffect::TIED_UP)) {
-      secondPerson("You can't break free!");
-      thirdPerson(getName().the() + " can't break free!");
+    if (LastingEffects::restrictedMovement(this)) {
+      secondPerson("You can't move!");
+      thirdPerson(getName().the() + " can't move!");
       self->spendTime();
       return;
     }

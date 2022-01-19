@@ -899,7 +899,8 @@ bool LastingEffects::doesntMove(const Creature* c) {
 }
 
 bool LastingEffects::restrictedMovement(const Creature* c) {
-  return doesntMove(c)
+  auto steed = c->getSteed();
+  return doesntMove(c) || (steed && restrictedMovement(steed))
       || (c->getSteed() && restrictedMovement(c->getSteed()))
       || c->isAffected(LastingEffect::ENTANGLED)
       || c->isAffected(LastingEffect::TIED_UP)
