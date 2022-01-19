@@ -919,6 +919,7 @@ bool LastingEffects::inheritsFromSteed(LastingEffect e) {
     case LastingEffect::SPEED:
     case LastingEffect::SLOWED:
     case LastingEffect::FLYING:
+    case LastingEffect::SWIMMING_SKILL:
       return true;
     default:
       return false;
