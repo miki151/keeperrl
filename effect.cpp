@@ -598,11 +598,6 @@ static bool apply(const Effects::Acid&, Position pos, Creature*) {
   return pos.acidDamage();
 }
 
-template <>
-double getSteedChance<Effects::Acid>() {
-  return 0.5;
-}
-
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Acid&, const Creature* victim, bool isEnemy) {
   return isEnemy ? 1 : -1;
 }
@@ -991,11 +986,6 @@ static optional<ViewId> getProjectile(const Effects::Fire&) {
   return ViewId("fireball");
 }
 
-template <>
-double getSteedChance<Effects::Fire>() {
-  return 0.5;
-}
-
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Fire&, const Creature* victim, bool isEnemy) {
   if (!victim->isAffected(LastingEffect::FIRE_RESISTANT))
     return isEnemy ? 1 : -1;
@@ -1016,11 +1006,6 @@ static string getDescription(const Effects::Ice&, const ContentFactory*) {
 
 static bool apply(const Effects::Ice&, Position pos, Creature*) {
   return pos.iceDamage();
-}
-
-template <>
-double getSteedChance<Effects::Ice>() {
-  return 1.0;
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Ice&, const Creature* victim, bool isEnemy) {

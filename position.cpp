@@ -808,8 +808,12 @@ bool Position::fireDamage(double amount) const {
   for (auto furniture : modFurniture())
     if (Random.chance(amount))
       res |= furniture->fireDamage(*this);
-  if (Creature* creature = getCreature())
-    res |= creature->affectByFire(amount);
+  if (Creature* creature = getCreature()) {
+    if (auto steed = creature->getSteed())
+      res |= steed->affectByFire(amount);
+    else
+      res |= creature->affectByFire(amount);
+  }
   for (Item* it : getItems())
     if (Random.chance(amount))
       it->fireDamage(*this);
@@ -823,8 +827,12 @@ bool Position::iceDamage() const {
   for (auto furniture : modFurniture())
     if (Random.chance(amount))
       res |= furniture->iceDamage(*this);
-  if (Creature* creature = getCreature())
-    res |= creature->affectByIce(amount);
+  if (Creature* creature = getCreature()) {
+    if (auto steed = creature->getSteed())
+      res |= steed->affectByIce(amount);
+    else
+      res |= creature->affectByIce(amount);
+  }
   for (Item* it : getItems())
     if (Random.chance(amount))
       it->iceDamage(*this);
@@ -838,8 +846,12 @@ bool Position::acidDamage() const {
   for (auto furniture : modFurniture())
     if (Random.chance(amount))
       res |= furniture->acidDamage(*this);
-  if (Creature* creature = getCreature())
-    res |= creature->affectByAcid();
+  if (Creature* creature = getCreature()) {
+    if (auto steed = creature->getSteed())
+      res |= steed->affectByAcid();
+    else
+      res |= creature->affectByAcid();
+  }
   /*for (Item* it : getItems())
     if (Random.chance(amount))
       it->acidDamage(*this);*/
