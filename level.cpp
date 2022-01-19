@@ -46,6 +46,7 @@
 #include "monster_ai.h"
 #include "furniture_layer.h"
 #include "known_tiles.h"
+#include "territory.h"
 #include "player_control.h"
 
 template <class Archive>
@@ -573,11 +574,14 @@ void Level::tick() {
         above->unavailable[pos.getCoord()] = false;
         auto col = getGame()->getPlayerCollective();
         if (!abovePos.getFurniture(FurnitureLayer::GROUND)) {
-          abovePos.addFurniture(getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("FLOOR"), TribeId::getMonster()));
+          abovePos.addFurniture(getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("FLOOR"),
+              TribeId::getMonster()));
           if (col->getKnownTiles().isKnown(pos)) {
             col->addKnownTile(abovePos);
             getGame()->getPlayerControl()->addToMemory(abovePos);
           }
+          if (col->getTerritory().contains(pos))
+            col->claimSquare(abovePos);
         }
       }
   }

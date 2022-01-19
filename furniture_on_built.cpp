@@ -47,11 +47,11 @@ static void addStairs(Position pos, Level* targetLevel, FurnitureType stairsType
   pos.setLandingLink(stairKey);
   pos.getModel()->calculateStairNavigation();
   auto collective = pos.getGame()->getPlayerCollective();
-  for (auto v : targetLevel->getAllPositions())
-    if (collective->getKnownTiles().isKnown(Position(v.getCoord(), pos.getLevel()))) {
-      collective->addKnownTile(v);
-      pos.getGame()->getPlayerControl()->addToMemory(v);
-    }
+  for (auto v : concat({landing}, landing.neighbors8())) {
+    collective->addKnownTile(v);
+    pos.getGame()->getPlayerControl()->addToMemory(v);
+  }
+  collective->claimSquare(landing);
   for (auto pos : targetLevel->getAllPositions())
     if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
       if (f->isClearFogOfWar())
