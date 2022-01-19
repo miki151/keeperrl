@@ -1546,6 +1546,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "stone pillar"
   viewId = { "castle_pillar" }
   buildingSupport = true
+  viewLayer = FLOOR_BACKGROUND
   strength2 = {
     300 BOULDER
     100 DIG
@@ -1598,6 +1599,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
     300 HOSTILE_DIG_NO_SKILL
   }
   summonedElement = "ENT"
+  viewLayer = FLOOR_BACKGROUND
   fire = 100
   canBuildOutsideOfTerritory = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
