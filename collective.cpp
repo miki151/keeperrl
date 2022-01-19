@@ -1065,8 +1065,7 @@ void Collective::markItem(const Item* it, WConstTask task) {
 bool Collective::canAddFurniture(Position position, FurnitureType type) const {
   auto layer = getGame()->getContentFactory()->furniture.getData(type).getLayer();
   return knownTiles->isKnown(position)
-      && (territory->contains(position) ||
-          canClaimSquare(position) ||
+      && ((position.isCovered() && (territory->contains(position) || canClaimSquare(position))) ||
           getGame()->getContentFactory()->furniture.getData(type).buildOutsideOfTerritory())
       && !getConstructions().containsFurniture(position, layer)
       && position.canConstruct(type);

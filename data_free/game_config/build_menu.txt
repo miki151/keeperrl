@@ -9,8 +9,10 @@
 # If you want you can use "just dig" or "just cut tree" in your mod
 #    { Dig                                                          "Dig"   "Structure" }
 #    { CutTree                                                      "Cut tree"   "Structure" }
-    { Furniture {{ "MOUNTAIN" }                   "STONE" 5 }      "Soft rock"         "Structure" }
-    { Furniture {{ "MOUNTAIN2" }                  "STONE" 10 }     "Hard rock"         "Structure" }
+    { Furniture {{ "FLOOR" }              }               "Building interior" "Structure"
+      "" }
+    { Furniture {{ "MOUNTAIN_BUILT" }             "STONE" 5 }      "Soft rock"         "Structure" }
+    { Furniture {{ "MOUNTAIN2_BUILT" }            "STONE" 10 }     "Hard rock"         "Structure" }
 
     { Furniture {{ "DUNGEON_WALL" "DUNGEON_WALL2" } "STONE" 3}       "Reinforce wall"    "Structure"
       "Reinforced walls are better at stopping enemies from digging into your dungeon."}
@@ -18,7 +20,7 @@
     { Furniture {{ "PIT" }                        "STONE" 0 }      "Dig a pit"         "Structure"
       "Dig a pit in the ground. Building next to water or lava will cause it to fill up." }
 
-    { Furniture {{ "FLOOR" }                      "STONE" 20 }     "Fill lava or water""Structure"
+    { Furniture {{ "FILL_UP_WATER_FLOOR" }        "STONE" 20 }     "Fill lava or water""Structure"
       "" }
 
     { Furniture {{ "WOOD_WALL" }                  "WOOD" 5 }       "Wooden building"   "Structure"

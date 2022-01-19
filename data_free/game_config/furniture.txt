@@ -1369,6 +1369,11 @@ Def BedHeal() Heal { FLESH 0.005 } End
   destroyFX = { ROCK_CLOUD Rgb 220 210 180 255 }
   tryDestroyFX = { ROCK_SPLINTERS Rgb 220 210 180 255 }
 }
+"MOUNTAIN_BUILT" inherit "MOUNTAIN"
+{
+  buildingSupport = true
+  canBuildOutsideOfTerritory = true
+}
 "SANDSTONE" inherit "MOUNTAIN"
 {
   name = "sandstone"
@@ -1405,6 +1410,11 @@ Def BedHeal() Heal { FLESH 0.005 } End
   }
   destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
   tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
+}
+"MOUNTAIN2_BUILT" inherit "MOUNTAIN2"
+{
+  buildingSupport = true
+  canBuildOutsideOfTerritory = true
 }
 "ADAMANTIUM_ORE" inherit "MOUNTAIN2"
 {
@@ -1499,6 +1509,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   constructMessage = REINFORCE
   builtOver = {"MOUNTAIN"}
   canBuildOutsideOfTerritory = true
+  buildingSupport = true
   strength2 = {
     300 BOULDER
     100 DIG
@@ -2033,14 +2044,22 @@ Def Boulder(Id) {
   viewId = { "hill" }
   layer = GROUND
 }
-"FLOOR"
+"FILL_UP_WATER_FLOOR"
 {
   name = "floor"
   viewId = { "floor" }
   layer = GROUND
   canBuildOutsideOfTerritory = true
   xForgetAfterBuilding = true
-  builtOver = {"WATER" "SHALLOW_WATER1" "SHALLOW_WATER2" "MAGMA" }
+  builtOver = {"WATER" "SHALLOW_WATER1" "SHALLOW_WATER2"}
+}
+"FLOOR"
+{
+  name = "floor"
+  viewId = { "floor" }
+  layer = GROUND
+  canBuildOutsideOfTerritory = true
+  builtOver = {"HILL" "GRASS" "SAND" "SNOW" "FILL_UP_WATER_FLOOR"}
 }
 "FLOOR_RED" inherit "FLOOR"
 {

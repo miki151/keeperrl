@@ -135,9 +135,6 @@ class Level : public OwnedObject<Level> {
   double getLight(Vec2) const;
   double getLevelGenSunlight(Vec2) const;
 
-  /** Returns whether the square is in direct sunlight.*/
-  bool isInSunlight(Vec2 pos) const;
-
   void updateSunlightMovement();
 
   int getNumGeneratedSquares() const;

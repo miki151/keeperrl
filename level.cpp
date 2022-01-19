@@ -230,11 +230,6 @@ bool Level::isCovered(Vec2 pos) const {
   return covered[pos] || roofSupport->isRoof(pos);
 }
 
-bool Level::isInSunlight(Vec2 pos) const {
-  return !isCovered(pos) && lightCapAmount[pos] >= 1 &&
-      getGame()->getSunlightInfo().getState() == SunlightState::DAY;
-}
-
 double Level::getLight(Vec2 pos) const {
   return min(1.0, max(0.0, min(isCovered(pos) ? 1.0 : lightCapAmount[pos], lightAmount[pos] +
       sunlight[pos] * getGame()->getSunlightInfo().getLightAmount())));

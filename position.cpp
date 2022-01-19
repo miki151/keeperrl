@@ -934,15 +934,20 @@ double Position::getGasAmount(TileGasType type) const {
 
 bool Position::isCovered() const {
   PROFILE;
-  if (isValid())
-    return level->covered[coord] || level->roofSupport->isRoof(coord);
-  else
+  if (isValid()) {
+    if (level->covered[coord])
+      return true;
+    auto f = getFurniture(FurnitureLayer::GROUND);
+    return level->roofSupport->isRoof(coord) && f &&
+        (f->getType() == FurnitureType("FLOOR") || level->roofSupport->isWall(coord));
+  } else
     return false;
 }
 
 bool Position::sunlightBurns() const {
   PROFILE;
-  return isValid() && level->isInSunlight(coord) && !getSquare()->hasSunlightBlockingGasAmount();
+  return isValid() && !isCovered() && level->lightCapAmount[coord] >= 1 &&
+      getGame()->getSunlightInfo().getState() == SunlightState::DAY && !getSquare()->hasSunlightBlockingGasAmount();
 }
 
 double Position::getLightEmission() const {

@@ -660,16 +660,16 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
 { viewId = "road" symbol = "." color = ColorId LIGHT_GRAY
   roadConnections = true }
 { viewId = "sand" symbol = "." color = ColorId YELLOW canMirror = true
-  extraBorders = { "water" } }
+  extraBorders = { "water" "floor" "keeper_floor" } }
 { viewId = "red_sand" symbol = "." color = ColorId ORANGE canMirror = true
-  extraBorders = { "water" } }
+  extraBorders = { "water" "floor" "keeper_floor" } }
 { viewId = "mud" symbol = "." color = ColorId BROWN
-  extraBorders = { "water" "hill" "sand" } }
+  extraBorders = { "water" "hill" "sand" "floor" "keeper_floor" } }
 { viewId = "snow" symbol = "." color = ColorId WHITE }
 { viewId = "ice" symbol = "." color = ColorId LIGHT_BLUE waterSides = "water" }
 { viewId = "grass" symbol = "𝃰" color = ColorId GREEN
   isSymbolFont = true canMirror = true
-  extraBorders = { "water" "hill" "sand" "mud" } }
+  extraBorders = { "water" "hill" "sand" "mud" "floor" "keeper_floor" } }
 { viewId = "swampgrass" symbol = "𝃰" color = ColorId DARK_GREEN
   isSymbolFont = true canMirror = true }
 { viewId = "hill" symbol = "𝀢" color = ColorId DARK_GREEN
