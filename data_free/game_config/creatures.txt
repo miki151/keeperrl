@@ -3304,7 +3304,7 @@
     }
     permanentEffects = {
       STEED 1
-      SWIMMER_SKILL 1
+      SWIMMING_SKILL 1
     }
     noChase = true
     petReaction = "neighs"
