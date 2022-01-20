@@ -269,8 +269,6 @@ void TileSet::reload() {
   symbols.clear();
   tileCoords.clear();
   spriteMods.clear();
-  scriptedUITextures.clear();
-  scriptedUI.clear();
   auto reloadDir = [&] (const DirectoryPath& path, bool overwrite) {
     bool hadTiles = false;
     hadTiles |= loadTilesFromDir(path.subdirectory("orig16"), Vec2(16, 16), overwrite);
@@ -279,13 +277,9 @@ void TileSet::reload() {
     return hadTiles;
   };
   reloadDir(defaultDir, true);
-  auto scriptCommonFile = scriptedHelpDir.file("common.txt");
-  loadScriptedTextures(scriptedHelpDir, scriptCommonFile);
-  for (auto& mod : tilePaths->mainMods) {
-    loadScriptedTextures(modsDir.subdirectory(mod).subdirectory("help"), scriptCommonFile);
+  for (auto& mod : tilePaths->mainMods)
     if (reloadDir(modsDir.subdirectory(mod), true))
       spriteMods.push_back(mod);
-  }
   for (auto& subdir : tilePaths->mergedMods)
     if (reloadDir(modsDir.subdirectory(subdir), false) && !spriteMods.contains(subdir))
       spriteMods.push_back(subdir);
@@ -388,4 +382,11 @@ void TileSet::loadTextures() {
   if (useTiles)
     loadTiles();
   loadModdedTiles(tilePaths->definitions, useTiles);
+  scriptedUITextures.clear();
+  scriptedUI.clear();
+  auto scriptCommonFile = scriptedHelpDir.file("common.txt");
+  loadScriptedTextures(scriptedHelpDir, scriptCommonFile);
+  for (auto& mod : tilePaths->mainMods) {
+    loadScriptedTextures(modsDir.subdirectory(mod).subdirectory("help"), scriptCommonFile);
+  }
 }
