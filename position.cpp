@@ -23,7 +23,6 @@
 #include "profiler.h"
 #include "portals.h"
 #include "fx_name.h"
-#include "roof_support.h"
 #include "draw_line.h"
 #include "game_event.h"
 #include "content_factory.h"
@@ -546,17 +545,6 @@ void Position::dropItems(vector<PItem> v) const {
   }
 }
 
-constexpr int buildingSupportRadius = 5;
-
-void Position::updateBuildingSupport() const {
-  if (isValid()) {
-    if (isBuildingSupport())
-      level->roofSupport->add(coord);
-    else
-      level->roofSupport->remove(coord);
-  }
-}
-
 void Position::addFurniture(PFurniture f) const {
   if (auto prev = getFurniture(f->getLayer()))
     removeFurniture(prev, std::move(f));
@@ -573,7 +561,6 @@ void Position::addFurnitureImpl(PFurniture f) const {
     updateConnectivity();
     if (furniture->blocksAnyVision())
       updateVisibility();
-    updateBuildingSupport();
     level->addLightSource(coord, furniture->getLightEmission());
     updateSupportViewId(furniture);
     setNeedsRenderAndMemoryUpdate(true);
@@ -707,7 +694,6 @@ void Position::removeFurniture(const Furniture* f, PFurniture replace, Creature*
   if (visibilityChanged)
     updateVisibility();
   updateSupport();
-  updateBuildingSupport();
   if (replacePtr) {
     level->addLightSource(coord, replacePtr->getLightEmission());
     if (auto c = getCreature())
@@ -727,14 +713,6 @@ bool Position::isWall() const {
   PROFILE;
   if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
     return furniture->isWall();
-  else
-    return false;
-}
-
-bool Position::isBuildingSupport() const {
-  PROFILE;
-  if (auto furniture = getFurniture(FurnitureLayer::MIDDLE))
-    return furniture->isBuildingSupport();
   else
     return false;
 }
@@ -949,9 +927,9 @@ bool Position::isCovered() const {
   if (isValid()) {
     if (level->covered[coord])
       return true;
-    auto f = getFurniture(FurnitureLayer::GROUND);
-    return level->roofSupport->isRoof(coord) && f &&
-        (f->getType() == FurnitureType("FLOOR") || level->roofSupport->isWall(coord));
+    auto ground = getFurniture(FurnitureLayer::GROUND);
+    auto middle = getFurniture(FurnitureLayer::MIDDLE);
+    return (ground && ground->getType() == FurnitureType("FLOOR")) || (middle && middle->isWall());
   } else
     return false;
 }

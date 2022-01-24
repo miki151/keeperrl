@@ -44,7 +44,6 @@ class FurnitureArray;
 class Vision;
 class FieldOfView;
 class Portals;
-class RoofSupport;
 class ContentFactory;
 struct PhylacteryInfo;
 
@@ -190,7 +189,6 @@ class Level : public OwnedObject<Level> {
   mutable HeapAllocated<EnumMap<VisionId, FieldOfView>> SERIAL(fieldOfView);
   Table<double> SERIAL(sunlight);
   Table<bool> SERIAL(covered);
-  HeapAllocated<RoofSupport> SERIAL(roofSupport);
   HeapAllocated<CreatureBucketMap> SERIAL(bucketMap);
   vector<pair<int, CreatureBucketMap>> SERIAL(swarmMaps);
   Table<double> SERIAL(lightAmount);
@@ -218,7 +216,6 @@ class Level : public OwnedObject<Level> {
   bool SERIAL(noDiagonalPassing) = false;
   void updateCreatureLight(Vec2, int diff);
   HeapAllocated<Portals> SERIAL(portals);
-  bool isCovered(Vec2) const;
   template<typename Fun>
   void forEachEffect(Vec2, TribeId, Fun);
   void placeSwarmer(Vec2, Creature*);

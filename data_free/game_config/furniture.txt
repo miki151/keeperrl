@@ -1366,13 +1366,9 @@ Def BedHeal() Heal { FLESH 0.005 } End
     2000 HOSTILE_DIG_NO_SKILL
   }
   summonedElement = "EARTH_ELEMENTAL"
+  canBuildOutsideOfTerritory = true
   destroyFX = { ROCK_CLOUD Rgb 220 210 180 255 }
   tryDestroyFX = { ROCK_SPLINTERS Rgb 220 210 180 255 }
-}
-"MOUNTAIN_BUILT" inherit "MOUNTAIN"
-{
-  buildingSupport = true
-  canBuildOutsideOfTerritory = true
 }
 "SANDSTONE" inherit "MOUNTAIN"
 {
@@ -1408,13 +1404,9 @@ Def BedHeal() Heal { FLESH 0.005 } End
     500 HOSTILE_DIG
     2000 HOSTILE_DIG_NO_SKILL
   }
+  canBuildOutsideOfTerritory = true
   destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
   tryDestroyFX = { ROCK_SPLINTERS Rgb 200 200 200 255 }
-}
-"MOUNTAIN2_BUILT" inherit "MOUNTAIN2"
-{
-  buildingSupport = true
-  canBuildOutsideOfTerritory = true
 }
 "ADAMANTIUM_ORE" inherit "MOUNTAIN2"
 {
@@ -1509,7 +1501,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
   constructMessage = REINFORCE
   builtOver = {"MOUNTAIN"}
   canBuildOutsideOfTerritory = true
-  buildingSupport = true
   strength2 = {
     300 BOULDER
     100 DIG
@@ -1545,8 +1536,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "stone pillar"
   viewId = { "castle_pillar" }
-  buildingSupport = true
-  viewLayer = FLOOR_BACKGROUND
   strength2 = {
     300 BOULDER
     100 DIG
@@ -1562,6 +1551,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockMovement = true
   blockAllVision = true
   wall = true
+  viewLayer = FLOOR_BACKGROUND
 }
 "ARCHER_WALL" inherit "CASTLE_WALL"
 {
@@ -1591,7 +1581,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "wooden pillar"
   viewId = { "wood_pillar" }
 #wall = true
-  buildingSupport = true
   strength2 = {
     100 BOULDER
     100 DIG
@@ -1599,7 +1588,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     300 HOSTILE_DIG_NO_SKILL
   }
   summonedElement = "ENT"
-  viewLayer = FLOOR_BACKGROUND
   fire = 100
   canBuildOutsideOfTerritory = true
   destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
@@ -1611,7 +1599,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockMovement = true
   blockAllVision = true
   wall = true
-  buildingSupport = true
+  viewLayer = FLOOR_BACKGROUND
 }
 "MUD_WALL"
 {
@@ -1620,7 +1608,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockMovement = true
   blockAllVision = true
   wall = true
-  buildingSupport = true
   strength2 = {
     100 BOULDER
   }
@@ -1647,7 +1634,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
   blockMovement = true
   blockAllVision = true
   wall = true
-  buildingSupport = true
 }
 "BLACK_FLOOR"
 {

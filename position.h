@@ -82,7 +82,6 @@ class Position {
   vector<PItem> removeItems(vector<Item*>);
   bool canConstruct(FurnitureType) const;
   bool isWall() const;
-  bool isBuildingSupport() const;
   void removeFurniture(const Furniture*) const;
   void removeFurniture(const Furniture*, PFurniture replace, Creature* destroyedBy = nullptr) const;
   void removeFurniture(FurnitureLayer) const;
@@ -172,7 +171,6 @@ class Position {
   Level* SERIAL(level) = nullptr;
   bool SERIAL(valid) = false;
   void updateSupport() const;
-  void updateBuildingSupport() const;
   void addFurnitureImpl(PFurniture) const;
   void updateSupportViewId(Furniture*) const;
 };

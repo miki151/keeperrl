@@ -49,7 +49,7 @@ void Furniture::serializeImpl(Archive& ar, const unsigned) {
   ar(NAMED(constructMessage), OPTION(layer), OPTION(entryType), OPTION(lightEmission), OPTION(canHideHere), OPTION(warning));
   ar(NAMED(summonedElement), OPTION(droppedItems), OPTION(xForgetAfterBuilding), OPTION(requiredSupport), OPTION(builtOver));
   ar(OPTION(defaultBridge), OPTION(noProjectiles), OPTION(clearFogOfWar), OPTION(removeWithCreaturePresent), OPTION(upgrade));
-  ar(OPTION(luxury), OPTION(buildingSupport), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
+  ar(OPTION(luxury), NAMED(onBuilt), OPTION(burnsDownMessage), OPTION(maxTraining), OPTION(bridge));
   ar(OPTION(bedType), OPTION(requiresLight), OPTION(populationIncrease), OPTION(destroyFX), OPTION(tryDestroyFX), OPTION(walkOverFX));
   ar(OPTION(walkIntoFX), OPTION(usageFX), OPTION(hostileSpell), OPTION(lastingEffect), NAMED(meltInfo), NAMED(dissolveTo));
   ar(OPTION(bloodCountdown), SKIP(bloodTime), NAMED(destroyedEffect), NAMED(freezeTo), NAMED(fillPit), NAMED(itemsRemovedEffect));
@@ -320,10 +320,6 @@ bool Furniture::isTicking() const {
 
 bool Furniture::isWall() const {
   return wall;
-}
-
-bool Furniture::isBuildingSupport() const {
-  return buildingSupport;
 }
 
 void Furniture::onConstructedBy(Position pos, Creature* c) {

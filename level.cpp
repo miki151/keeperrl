@@ -38,7 +38,6 @@
 #include "furniture.h"
 #include "furniture_array.h"
 #include "portals.h"
-#include "roof_support.h"
 #include "game_event.h"
 #include "collective.h"
 #include "phylactery_info.h"
@@ -55,7 +54,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps, territory);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates, above, below, mountainLevel);
-  ar(furniture, tickingFurniture, covered, roofSupport, portals, name, depth, wildlife, addedWildlife);
+  ar(furniture, tickingFurniture, covered, portals, name, depth, wildlife, addedWildlife);
   vector<pair<TribeId, unique_ptr<EffectsTable>>> SERIAL(tmp);
   for (auto t : ENUM_ALL(TribeId::KeyType))
     if (!!furnitureEffects[t])
@@ -89,7 +88,7 @@ static vector<pair<int, CreatureBucketMap>> getSwarmMaps(Vec2 size) {
 Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, Table<double> sun, LevelId id)
     : territory(s.getBounds(), nullptr), squares(std::move(s)), furniture(std::move(f)),
       memoryUpdates(squares->getBounds(), true), model(m),
-      sunlight(sun), roofSupport(squares->getBounds()),
+      sunlight(sun),
       bucketMap(squares->getBounds().getSize(), FieldOfView::sightRange),
       swarmMaps(getSwarmMaps(squares->getBounds().getSize())),
       lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
@@ -115,8 +114,6 @@ PLevel Level::create(SquareArray s, FurnitureArray f, WModel m,
     (*ret->fieldOfView)[vision] = FieldOfView(ret.get(), vision, factory);
   for (auto pos : ret->getAllPositions()) {
     ret->addLightSource(pos.getCoord(), pos.getLightEmission(), 1);
-    if (pos.isBuildingSupport())
-      ret->roofSupport->add(pos.getCoord());
     for (auto layer : ENUM_ALL(FurnitureLayer))
       if (auto f = pos.getFurniture(layer)) {
         if (auto& effect = f->getLastingEffectInfo())
@@ -227,12 +224,8 @@ WGame Level::getGame() const {
   return model->getGame();
 }
 
-bool Level::isCovered(Vec2 pos) const {
-  return covered[pos] || roofSupport->isRoof(pos);
-}
-
 double Level::getLight(Vec2 pos) const {
-  return min(1.0, max(0.0, min(isCovered(pos) ? 1.0 : lightCapAmount[pos], lightAmount[pos] +
+  return min(1.0, max(0.0, min(covered[pos] ? 1.0 : lightCapAmount[pos], lightAmount[pos] +
       sunlight[pos] * getGame()->getSunlightInfo().getLightAmount())));
 }
 

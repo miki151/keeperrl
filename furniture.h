@@ -193,7 +193,6 @@ class Furniture {
   bool SERIAL(removeWithCreaturePresent) = true;
   bool SERIAL(removeNonFriendly) = false;
   bool SERIAL(wall) = false;
-  bool SERIAL(buildingSupport) = false;
   optional<ConstructMessage> SERIAL(constructMessage) = ConstructMessage::BUILD;
   double SERIAL(lightEmission) = 0;
   bool SERIAL(canHideHere) = false;

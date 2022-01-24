@@ -40,7 +40,6 @@
 #include "position_matching.h"
 #include "dungeon_level.h"
 #include "villain_type.h"
-#include "roof_support.h"
 #include "content_factory.h"
 #include "game_config.h"
 #include "name_generator.h"
@@ -1243,83 +1242,6 @@ class Test {
     CHECKEQ(level.progress, 4.5 / 13);
   }
 
-  void testRoofSupport1() {
-    RoofSupport s(Rectangle(10, 10));
-    std::cout << "Testing roof support " << std::endl;
-    s.add(Vec2(2, 2));
-    s.add(Vec2(8, 8));
-    s.add(Vec2(2, 8));
-    s.add(Vec2(8, 2));
-    for (Vec2 v : Rectangle(10, 10))
-      CHECK(s.isRoof(v) == (v.inRectangle(Rectangle(2, 2, 9, 9)))) << v << " " << s.isRoof(v);
-  }
-
-  void testRoofSupport2() {
-    RoofSupport s(Rectangle(10, 10));
-    std::cout << "Testing roof support " << std::endl;
-    s.add(Vec2(2, 2));
-    s.add(Vec2(8, 8));
-    s.add(Vec2(2, 8));
-    //s.add(Vec2(8, 2));
-    for (Vec2 v : Rectangle(10, 10))
-      CHECK(!s.isRoof(v)) << v;
-  }
-
-  void testRoofSupport3() {
-    RoofSupport s(Rectangle(10, 10));
-    std::cout << "Testing roof support " << std::endl;
-    s.add(Vec2(2, 2));
-    s.add(Vec2(8, 8));
-    s.add(Vec2(2, 8));
-    s.add(Vec2(8, 2));
-    s.remove(Vec2(8, 2));
-    for (Vec2 v : Rectangle(10, 10))
-      CHECK(!s.isRoof(v)) << v;
-  }
-
-  void testRoofSupport4() {
-    RoofSupport s(Rectangle(10, 10));
-    std::cout << "Testing roof support " << std::endl;
-    for (int i = 3; i <= 6; ++i) {
-      s.add(Vec2(3, i));
-      s.add(Vec2(i, 3));
-      s.add(Vec2(6, i));
-      s.add(Vec2(i, 6));
-    }
-    for (Vec2 v : Rectangle(10, 10))
-      CHECK(s.isRoof(v) == (v.inRectangle(Rectangle(3, 3, 7, 7)))) << v << " " << s.isRoof(v);
-    s.remove(Vec2(3, 4));
-    s.remove(Vec2(3, 5));
-    for (Vec2 v : Rectangle(10, 10))
-      CHECK(s.isRoof(v) == (v.inRectangle(Rectangle(3, 3, 7, 7)))) << v << " " << s.isRoof(v);
-  }
-
-  void testRoofSupport5() {
-    Rectangle sz(40, 40);
-    RoofSupport s(sz);
-    vector<Vec2> all;
-    for (auto v : sz)
-      if (Random.roll(5))
-        all.push_back(v);
-    all = Random.permutation(all);
-    for (int i = 0; i < all.size() / 2; ++i)
-      s.add(all[i]);
-    bool was[100][100] = {{0}};
-    int cnt = 0;
-    for (auto v : sz) {
-      was[v.x][v.y] = s.isRoof(v);
-      if (s.isRoof(v))
-        ++cnt;
-    }
-    std::cout << cnt << " under roof\n";
-    for (int i = all.size() / 2; i < all.size(); ++i)
-      s.add(all[i]);
-    for (int i = all.size() / 2; i < all.size(); ++i)
-      s.remove(all[i]);
-    for (auto v : sz)
-      CHECKEQ(was[v.x][v.y], s.isRoof(v));
-  }
-
   void testVectorConcat() {
     int ret = 0;
     vector<int> v1 {1, 2, 3};
@@ -1431,11 +1353,6 @@ void testAll() {
   Test().testPositionMatching3();
   Test().testPositionMatching4();
   Test().testDungeonLevel();
-  Test().testRoofSupport1();
-  Test().testRoofSupport2();
-  Test().testRoofSupport3();
-  Test().testRoofSupport4();
-  Test().testRoofSupport5();
   Test().testPrettyInput();
   Test().testPrettyInput2();
   Test().testPrettyInput3();

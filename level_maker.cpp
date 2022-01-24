@@ -983,7 +983,6 @@ class Buildings : public LevelMaker {
         filled[Vec2(px, py) + v] = true;
         if (v.x == w || v.x == 0 || v.y == h || v.y == 0)
           builder->putFurniture(Vec2(px, py) + v, building.wall);
-        builder->setBuilding(Vec2(px, py) + v, true);
       }
       for (Vec2 v : Rectangle(w - 1, h - 1)) {
         auto pos = Vec2(px + 1, py + 1) + v;

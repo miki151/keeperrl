@@ -11,8 +11,8 @@
 #    { CutTree                                                      "Cut tree"   "Structure" }
     { Furniture {{ "FLOOR" }              }               "Building interior" "Structure"
       "" }
-    { Furniture {{ "MOUNTAIN_BUILT" }             "STONE" 5 }      "Soft rock"         "Structure" }
-    { Furniture {{ "MOUNTAIN2_BUILT" }            "STONE" 10 }     "Hard rock"         "Structure" }
+    { Furniture {{ "MOUNTAIN" }             "STONE" 5 }      "Soft rock"         "Structure" }
+    { Furniture {{ "MOUNTAIN2" }            "STONE" 10 }     "Hard rock"         "Structure" }
 
     { Furniture {{ "DUNGEON_WALL" "DUNGEON_WALL2" } "STONE" 3}       "Reinforce wall"    "Structure"
       "Reinforced walls are better at stopping enemies from digging into your dungeon."}
@@ -23,13 +23,13 @@
     { Furniture {{ "FILL_UP_WATER_FLOOR" }        "STONE" 20 }     "Fill lava or water""Structure"
       "" }
 
-    { Furniture {{ "WOOD_WALL" }                  "WOOD" 5 }       "Wooden building"   "Structure"
+    { Furniture {{ "WOOD_WALL" }                  "WOOD" 5 }       "Wooden wall"   "Structure"
       "Outdoor building. Tiles covered by the roof are considered territory and can be built on." }
 
     { Furniture {{ "WOOD_PILLAR" }                "WOOD" 2 }       "Wooden pillar"     "Structure"
       "Acts as roof support, but doesn't block movement." }
 
-    { Furniture {{ "CASTLE_WALL" }                "STONE" 5 }      "Stone building"    "Structure"
+    { Furniture {{ "CASTLE_WALL" }                "STONE" 5 }      "Stone wall"    "Structure"
       "Outdoor building. Tiles covered by the roof are considered territory and can be built on." }
 
     { Furniture {{ "CASTLE_PILLAR" }              "STONE" 2 }      "Stone pillar"      "Structure"
