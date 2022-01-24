@@ -1516,7 +1516,17 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
     auto c = stack.creatures[0];
     const int numPrisoners = collective->getCreatures(MinionTrait::PRISONER).size();
     const auto prisonType = contentFactory->furniture.getData(getPrisonType(c));
-    const int prisonSize = collective->getConstructions().getBuiltCount(prisonType.getType());
+    const int prisonSize = [&] {
+      auto& constructions = collective->getConstructions();
+      if (prisonType.getType() == FurnitureType("PRISON")) {
+        int cnt = 0;
+        for (auto& pos : constructions.getBuiltPositions(prisonType.getType()))
+          if (isClosedOffPrison(pos))
+            ++cnt;
+        return cnt;
+      }
+      return constructions.getBuiltCount(prisonType.getType());
+    }();
     vector<string> requirements;
     const int missingSize = numPrisoners + 1 - prisonSize;
     if (missingSize > 0) {
@@ -2176,18 +2186,8 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.setHighlight(HighlightType::TORTURE_UNAVAILABLE);
     }
     if (auto furniture = position.getFurniture(FurnitureLayer::FLOOR))
-      if (furniture->getType() == FurnitureType("PRISON")) {
-        auto level = position.getLevel();
-        auto sectors = level->getSectors(MovementType(MovementTrait::WALK).setPrisoner());
-        auto topLevel = getModel()->getGroundLevel();
-        if (level == topLevel && sectors.isSector(pos, sectors.getLargest()))
-          index.setHighlight(HighlightType::PRISON_NOT_CLOSED);
-        for (auto key : level->getAllStairKeys())
-          if (sectors.same(pos, level->getLandingSquares(key)[0].getCoord())) {
-            index.setHighlight(HighlightType::PRISON_NOT_CLOSED);
-            break;
-          }
-      }
+      if (furniture->getType() == FurnitureType("PRISON") && !isClosedOffPrison(position))
+        index.setHighlight(HighlightType::PRISON_NOT_CLOSED);
     for (auto furniture : position.getFurniture())
       if (furniture->getLuxuryInfo().luxury > 0)
         if (auto obj = furniture->getViewObject())
@@ -2226,6 +2226,19 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       }
   if (unknownLocations->contains(position))
     index.insert(ViewObject(ViewId("unknown_monster"), ViewLayer::TORCH2, "Surprise"));
+}
+
+bool PlayerControl::isClosedOffPrison(Position position) const {
+  auto level = position.getLevel();
+  auto sectors = level->getSectors(MovementType(MovementTrait::WALK).setPrisoner());
+  auto topLevel = getModel()->getGroundLevel();
+  auto coord = position.getCoord();
+  if (level == topLevel && sectors.isSector(coord, sectors.getLargest()))
+    return false;
+  for (auto key : level->getAllStairKeys())
+    if (sectors.same(coord, level->getLandingSquares(key)[0].getCoord()))
+      return false;
+  return true;
 }
 
 Vec2 PlayerControl::getScrollCoord() const {
