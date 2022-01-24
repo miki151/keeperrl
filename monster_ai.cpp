@@ -864,13 +864,24 @@ class ByCollective : public Behaviour {
     return fighter->getMove(true);
   }
 
+  bool riderShouldDismount(Creature* c) {
+    auto& territory = collective->getTerritory();
+    if (!riderNeedsSteed(c)) {
+      for (auto v : c->getPosition().neighbors8())
+        if (!territory.contains(v) && v.canEnterEmpty(c))
+          return false;
+      return true;
+    }
+    return false;
+  }
+
   bool riderNeedsSteed(Creature* c) {
     return c->getBody().getSize() == BodySize::SMALL || !collective->getTerritory().contains(c->getPosition()) ||
         collective->getConfig().alwaysMountSteeds();
   }
 
   MoveInfo steedOrRider() {
-    if (creature->getSteed() && !riderNeedsSteed(creature))
+    if (creature->getSteed() && riderShouldDismount(creature))
       return creature->dismount();
     if (auto other = collective->getSteedOrRider(creature)) {
       if (creature->isAffected(LastingEffect::RIDER) && riderNeedsSteed(creature)) {
