@@ -2020,13 +2020,13 @@ CreatureAction Creature::destroy(Vec2 direction, const DestroyAction& action) co
     if (direction.length8() <= 1 && furniture->canDestroy(getMovementType(), action))
       return CreatureAction(this, [=](Creature* self) {
         self->destroyImpl(direction, action);
-        auto movementInfo = *self->spendTime();
-        if (direction.length8() == 1)
-          self->addMovementInfo(movementInfo
-              .setDirection(getPosition().getDir(pos))
-              .setMaxLength(1_visible)
-              .setType(MovementInfo::WORK));
-      });
+        if (auto movementInfo = self->spendTime())
+          if (direction.length8() == 1)
+            self->addMovementInfo(movementInfo
+                ->setDirection(getPosition().getDir(pos))
+                .setMaxLength(1_visible)
+                .setType(MovementInfo::WORK));
+            });
   return CreatureAction();
 }
 
