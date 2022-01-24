@@ -75,7 +75,7 @@ class MapGui : public GuiElem {
   Vec2 projectOnScreen(Vec2 wpos);
   void highlightTeam(const vector<UniqueEntity<Creature>::Id>&);
   void unhighlightTeam(const vector<UniqueEntity<Creature>::Id>&);
-  void setActiveButton(ViewId, CollectiveTab, int);
+  void setActiveButton(ViewId, CollectiveTab, int, bool);
   void clearActiveButton();
   static Color getHealthBarColor(double health, bool sprit);
   struct HighlightedInfo {
@@ -179,6 +179,7 @@ class MapGui : public GuiElem {
     ViewId viewId;
     int index;
     CollectiveTab tab;
+    bool isBuilding;
   };
   optional<ActiveButtonInfo> activeButton;
   set<Vec2> shadowed;

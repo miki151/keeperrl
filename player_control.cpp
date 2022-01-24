@@ -783,7 +783,7 @@ vector<Button> PlayerControl::fillButtons() const {
           int availableNow = !elem.cost.value ? 1 : collective->numResource(elem.cost.id) / elem.cost.value;
           if (!collective->getResourceInfo(elem.cost.id).viewId && availableNow)
             description += " (" + toString(availableNow) + " available)";
-          buttons.push_back({getViewId(button.type), button.name,
+          buttons.push_back(Button{getViewId(button.type), button.name,
               getCostObj(elem.cost),
               description,
               (elem.noCredit && !availableNow) ?
@@ -807,6 +807,7 @@ vector<Button> PlayerControl::fillButtons() const {
     buttons.back().groupName = button.groupName;
     buttons.back().hotkeyOpensGroup = button.hotkeyOpensGroup;
     buttons.back().tutorialHighlight = button.tutorialHighlight;
+    buttons.back().isBuilding = button.isBuilding;
   }
   return buttons;
 }

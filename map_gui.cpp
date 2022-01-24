@@ -61,8 +61,8 @@ static Color getFireColor() {
   return Color(200 + Random.get(-fireVar, fireVar), Random.get(fireVar), Random.get(fireVar), 150);
 }
 
-void MapGui::setActiveButton(ViewId id, CollectiveTab tab, int index) {
-  activeButton = ActiveButtonInfo{id, index, tab};
+void MapGui::setActiveButton(ViewId id, CollectiveTab tab, int index, bool isBuilding) {
+  activeButton = ActiveButtonInfo{id, index, tab, isBuilding};
 }
 
 void MapGui::clearActiveButton() {
@@ -144,9 +144,8 @@ optional<Vec2> MapGui::getHighlightedTile(Renderer&) {
 }
 
 Color MapGui::getHighlightColor(const ViewIndex& index, HighlightType type) {
-  bool quartersSelected = (activeButton && activeButton->viewId.data() == "quarters"_s);
-  bool buildingSelected = (activeButton && (
-      activeButton->viewId.data() == "wood_wall"_s || activeButton->viewId.data() == "castle_wall"_s));
+  bool quartersSelected = activeButton && activeButton->viewId.data() == "quarters"_s;
+  bool buildingSelected = activeButton && activeButton->isBuilding;
   switch (type) {
     case HighlightType::RECT_DESELECTION: return Color::RED.transparency(100);
     case HighlightType::DIG: return Color::YELLOW.transparency(100);
@@ -930,7 +929,7 @@ void MapGui::renderHighlight(Renderer& renderer, Vec2 pos, Vec2 size, const View
     case HighlightType::MEMORY:
       break;
     case HighlightType::INDOORS:
-      renderer.addQuad(Rectangle(pos, pos + size), color);
+      renderTexturedHighlight(renderer, pos, size, color, ViewId("dig_mark2"));
       break;
     case HighlightType::HOSTILE_TOTEM:
       fxHighlight(renderer, FXInfo{FXName::MAGIC_FIELD, Color(255, 100, 100)}, tilePos, index);

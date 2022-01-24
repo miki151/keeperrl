@@ -130,7 +130,8 @@ class GuiBuilder {
   void closeOverlayWindows();
   void closeOverlayWindowsAndClearButton();
   bool clearActiveButton();
-  void setActiveButton(CollectiveTab, int num, ViewId, optional<string> activeGroup, optional<TutorialHighlight>);
+  void setActiveButton(CollectiveTab, int num, ViewId, optional<string> activeGroup, optional<TutorialHighlight>,
+      bool buildingSelected);
   void setActiveGroup(const string&, optional<TutorialHighlight>);
   optional<int> getActiveButton(CollectiveTab) const;
   GameSpeed getGameSpeed() const;

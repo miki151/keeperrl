@@ -139,10 +139,10 @@ void GuiBuilder::setActiveGroup(const string& group, optional<TutorialHighlight>
 }
 
 void GuiBuilder::setActiveButton(CollectiveTab tab, int num, ViewId viewId, optional<string> group,
-    optional<TutorialHighlight> tutorial) {
+    optional<TutorialHighlight> tutorial, bool buildingSelected) {
   closeOverlayWindowsAndClearButton();
   activeButton = ActiveButton {tab, num};
-  mapGui->setActiveButton(viewId, tab, num);
+  mapGui->setActiveButton(viewId, tab, num, buildingSelected);
   activeGroup = group;
   if (tutorial) {
     onTutorialClicked(num, *tutorial);
@@ -195,12 +195,12 @@ SGuiElem GuiBuilder::getButtonLine(CollectiveInfo::Button button, int num, Colle
     function<void()> buttonFun;
     ViewId viewId = button.viewId;
     if (button.state != CollectiveInfo::Button::INACTIVE)
-      buttonFun = [=] {
+      buttonFun = [=, building = button.isBuilding] {
         if (getActiveButton(tab) == num)
           clearActiveButton();
         else {
           setCollectiveTab(tab);
-          setActiveButton(tab, num, viewId, none, tutorialHighlight);
+          setActiveButton(tab, num, viewId, none, tutorialHighlight, building);
         }
       };
     else {
@@ -262,12 +262,14 @@ SGuiElem GuiBuilder::drawBuildings(const vector<CollectiveInfo::Button>& buttons
         if (activeGroup != lastGroup) {
           setCollectiveTab(tab);
           if (auto firstBut = getNextActive(buttons, i, none))
-            setActiveButton(tab, *firstBut, buttons[*firstBut].viewId, lastGroup, tutorialHighlight);
+            setActiveButton(tab, *firstBut, buttons[*firstBut].viewId, lastGroup, tutorialHighlight,
+                buttons[*firstBut].isBuilding);
           else
             setActiveGroup(lastGroup, tutorialHighlight);
         } else
         if (auto newBut = getNextActive(buttons, i, getActiveButton(tab)))
-          setActiveButton(tab, *newBut, buttons[*newBut].viewId, lastGroup, tutorialHighlight);
+          setActiveButton(tab, *newBut, buttons[*newBut].viewId, lastGroup, tutorialHighlight,
+              buttons[*newBut].isBuilding);
         else
           clearActiveButton();
       };

@@ -257,7 +257,8 @@ class CollectiveInfo {
     string HASH(groupName);
     bool HASH(hotkeyOpensGroup);
     optional<TutorialHighlight> HASH(tutorialHighlight);
-    HASH_ALL(viewId, name, cost, count, state, help, hotkey, groupName, hotkeyOpensGroup, tutorialHighlight)
+    bool HASH(isBuilding);
+    HASH_ALL(viewId, name, cost, count, state, help, hotkey, groupName, hotkeyOpensGroup, tutorialHighlight, isBuilding)
   };
   vector<Button> HASH(buildings);
   string HASH(populationString);
