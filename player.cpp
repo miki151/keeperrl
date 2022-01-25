@@ -982,7 +982,7 @@ void Player::moveAction(Vec2 dir) {
   }
   if (!dirPos.canEnterEmpty(creature))
     tryToPerform(creature->destroy(dir, DestroyAction::Type::BASH));
-  if (dirPos.isUnavailable() && canTravel() && !getGame()->isSingleModel() &&
+  if (!dirPos.isCovered() && dirPos.isUnavailable() && canTravel() && !getGame()->isSingleModel() &&
       creature->getPosition().getLevel() == getModel()->getGroundLevel()) {
     if (getGame()->transferAction(getTeam()))
       forceSteeds();
