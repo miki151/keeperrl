@@ -420,6 +420,7 @@ End
       frequency = 0.3
       requirements = {
         { 0.1 AttractionInfo 1 {FurnitureType "BOOKCASE_WOOD"}}
+        { 0.1 TechId "worship"}
         { 0.0 MinTurnRequirement 500 }
       }
       specialTraits = {
