@@ -602,6 +602,8 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
   roundShadow = true }
 { viewId = "dining_table" symbol = "&" color = ColorId LIGHT_BLUE
   roundShadow = true }
+{ viewId = "haypile" symbol = "&" color = ColorId YELLOW
+  roundShadow = true }
 { viewId = "poetry_table" symbol = "&" color = ColorId DARK_BROWN
   roundShadow = true }
 { viewId = "distillery" symbol = "&" color = ColorId LIGHT_GRAY

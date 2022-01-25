@@ -8,6 +8,7 @@
 #include "body_part.h"
 #include "intrinsic_attack.h"
 #include "effect.h"
+#include "furniture_type.h"
 
 #undef HUGE
 
@@ -120,6 +121,7 @@ class Body {
   bool isImmuneTo(LastingEffect effect) const;
   bool hasHealth(HealthType) const;
   bool hasAnyHealth() const;
+  FurnitureType getDiningFurniture() const;
 
   const char* getDeathDescription() const;
 
@@ -179,6 +181,5 @@ class Body {
   optional<Effect> SERIAL(droppedPartUpgrade);
   optional<string> SERIAL(corpseIngredientType);
   bool SERIAL(canBeRevived) = true;
+  optional<FurnitureType> SERIAL(overrideDiningFurniture);
 };
-
-CEREAL_CLASS_VERSION(Body, 2)

@@ -204,7 +204,9 @@
   "dining table"
   {
     { Furniture {{ "DINING_TABLE" }"WOOD" 5 }                      "Dining table"      "Living"
-        "" 0 {}}
+        "A place to eat for humanoids" 0 {}}
+    { Furniture {{ "HAYPILE" }     "WOOD" 5 }                      "Hay pile"          "Living"
+        "A place to eat for non-humanoids" 0 {}}
   }
 
   "coffins"

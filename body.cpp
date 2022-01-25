@@ -37,10 +37,7 @@ void Body::serializeImpl(Archive& ar, const unsigned int version) {
   ar(OPTION(xhumanoid), OPTION(size), OPTION(weight), OPTION(bodyParts), OPTION(injuredBodyParts), OPTION(lostBodyParts));
   ar(OPTION(material), OPTION(health), OPTION(minionFood), NAMED(deathSound), OPTION(intrinsicAttacks), OPTION(minPushSize));
   ar(OPTION(noHealth), OPTION(fallsApart), OPTION(drops), OPTION(canCapture), OPTION(xCanPickUpItems), OPTION(droppedPartUpgrade));
-  if (version >= 1)
-    ar(OPTION(corpseIngredientType));
-  if (version >= 2)
-    ar(OPTION(canBeRevived));  
+  ar(OPTION(corpseIngredientType), OPTION(canBeRevived), OPTION(overrideDiningFurniture));
 }
 
 template <class Archive>
@@ -203,6 +200,15 @@ bool Body::hasAnyHealth() const {
     if (hasHealth(type))
       return true;
   return false;
+}
+
+FurnitureType Body::getDiningFurniture() const {
+  if (overrideDiningFurniture)
+    return *overrideDiningFurniture;
+  if (isHumanoid())
+    return FurnitureType("DINING_TABLE");
+  else
+    return FurnitureType("HAYPILE");
 }
 
 const char* Body::getDeathDescription() const {

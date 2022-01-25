@@ -137,8 +137,25 @@
   viewId = { "dining_table" }
   name = "dining table"
   usageFX = none
-  usageType = UsageEffect "eat from" {
+  diningFurniture = true
+  usageType = UsageEffect "eat from" Filter Humanoid {
     CreatureMessage "eat a steaming pig" "eats a steaming pig"
+    Lasting SATIATED
+  }
+}
+"HAYPILE"
+{
+  viewId = { "haypile" }
+  name = "hay pile"
+  blockMovement = true
+  usageTime = 5
+  canHideHere = true
+  fire = 100
+  strength = 10
+  destroyFX = { DESTROY_FURNITURE Rgb 200 200 0 255 }
+  diningFurniture = true
+  usageType = UsageEffect "eat from" Filter Not Humanoid {
+    CreatureMessage "eat some hay" "eats some hay"
     Lasting SATIATED
   }
 }
