@@ -272,12 +272,13 @@ void LevelBuilder::setUnavailable(Vec2 pos) {
 
 bool LevelBuilder::canNavigate(Vec2 posT, const MovementType& movement) {
   Vec2 pos = transform(posT);
+  bool isCovered = covered[pos] || isFurnitureType(posT, FurnitureType("FLOOR"));
   if (unavailable[pos])
     return false;
   bool result = true;
   for (auto layer : ENUM_ALL(FurnitureLayer))
     if (auto f = furniture.getBuilt(layer).getReadonly(pos)) {
-      bool canEnter = f->getMovementSet().canEnter(movement, covered[pos], false, none);
+      bool canEnter = f->getMovementSet().canEnter(movement, isCovered, false, none);
       if (f->overridesMovement())
         return canEnter;
       else
