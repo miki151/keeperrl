@@ -2809,6 +2809,8 @@ static PMakerQueue getSettlementMaker(const ContentFactory& contentFactory, Rand
       });
 }
 
+constexpr int mapBorderUnavailableWidth = 2;
+
 PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settlements, int mapWidth,
     optional<TribeId> keeperTribe, BiomeInfo biomeInfo, ResourceCounts resourceCounts,
     const ContentFactory& contentFactory) {
@@ -2881,7 +2883,6 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
   if (keeperTribe) {
     generateResources(random, resourceCounts, startingPos, locations.get(), surroundWithResources, mapWidth, *keeperTribe);
   }
-  int mapBorder = 2;
   queue->addMaker(unique<Empty>(FurnitureType("WATER")));
   queue->addMaker(getMountains(biomeInfo.mountains, keeperTribe.value_or(TribeId::getHostile())));
   queue->addMaker(unique<MountainRiver>(1, Predicate::attrib(SquareAttrib::MOUNTAIN), biomeInfo.overrideWaterType,
@@ -2890,18 +2891,18 @@ PLevelMaker LevelMaker::topLevel(RandomGen& random, vector<SettlementInfo> settl
   queue->addMaker(unique<AddAttrib>(SquareAttrib::CONNECT_CORRIDOR, Predicate::attrib(SquareAttrib::HILL)));
   queue->addMaker(getForrest(biomeInfo));
   queue->addMaker(unique<Furnitures>(Predicate::canEnter(MovementTrait::WALK), 0.003, FurnitureListId("randomTerrain"), TribeId::getHostile()));
-  queue->addMaker(unique<Margin>(mapBorder + locationMargin, std::move(locations)));
-  queue->addMaker(unique<Margin>(mapBorder, unique<Roads>()));
-  queue->addMaker(unique<Margin>(mapBorder,
+  queue->addMaker(unique<Margin>(mapBorderUnavailableWidth + locationMargin, std::move(locations)));
+  queue->addMaker(unique<Margin>(mapBorderUnavailableWidth, unique<Roads>()));
+  queue->addMaker(unique<Margin>(mapBorderUnavailableWidth,
         unique<TransferPos>(Predicate::canEnter(MovementTrait::WALK), StairKey::transferLanding(), 2)));
-  queue->addMaker(unique<Margin>(mapBorder, unique<DestroyRandomly>(FurnitureType("RUIN_WALL"), 0.3)));
-  queue->addMaker(unique<Margin>(mapBorder, unique<Connector>(none, TribeId::getMonster(), 5,
+  queue->addMaker(unique<Margin>(mapBorderUnavailableWidth, unique<DestroyRandomly>(FurnitureType("RUIN_WALL"), 0.3)));
+  queue->addMaker(unique<Margin>(mapBorderUnavailableWidth, unique<Connector>(none, TribeId::getMonster(), 5,
           Predicate::canEnter({MovementTrait::WALK}) &&
           Predicate::attrib(SquareAttrib::CONNECT_CORRIDOR) &&
           !Predicate::attrib(SquareAttrib::NO_DIG),
       SquareAttrib::CONNECTOR)));
   queue->addMaker(unique<Items>(biomeInfo.items, biomeInfo.itemCount));
-  queue->addMaker(unique<AddMapBorder>(mapBorder));
+  queue->addMaker(unique<AddMapBorder>(mapBorderUnavailableWidth));
   queue->addMaker(unique<AddWildlife>(biomeInfo.wildlife));
   return std::move(queue);
 }
@@ -3212,5 +3213,6 @@ PLevelMaker LevelMaker::upLevel(Position pos, const BiomeInfo& biomeInfo, Settle
         getSettlementPredicate(*settlement));
     queue->addMaker(std::move(locations));
   }
+  queue->addMaker(unique<AddMapBorder>(mapBorderUnavailableWidth));
   return std::move(queue);
 }
