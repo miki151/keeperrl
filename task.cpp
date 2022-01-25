@@ -1742,8 +1742,9 @@ class Spider : public Task {
       : origin(orig), webPositions(pos) {}
 
   virtual MoveInfo getMove(Creature* c) override {
-    c->getPosition().addFurniture(origin.getGame()->getContentFactory()->furniture.getFurniture(
-        FurnitureType("SPIDER_WEB"), c->getTribeId()));
+    if (!c->getPosition().getFurniture(FurnitureLayer::MIDDLE))
+      c->getPosition().addFurniture(origin.getGame()->getContentFactory()->furniture.getFurniture(
+          FurnitureType("SPIDER_WEB"), c->getTribeId()));
     for (auto& pos : Random.permutation(webPositions))
       if (auto victim = pos.getCreature())
         if (victim->isAffected(LastingEffect::ENTANGLED) && victim->isEnemy(c)) {
