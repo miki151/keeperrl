@@ -262,6 +262,7 @@ append {
       {{Balsam Permanent TELEPATHY}         4 "GOLD" 3 "embalming"}
       {{Balsam RemovePermanent SLOWED}      4 "GOLD" 3 "embalming"}
       {{Balsam Permanent SWARMER}           4 "GOLD" 3 "embalming"}
+      {{Balsam Permanent NO_CARRY_LIMIT}    4 "GOLD" 3 "embalming"}
       {{Balsam IncreaseSkill DIGGING      0.5}                    4 "GOLD" 3 "embalming"}
       {{Balsam IncreaseMaxLevel MELEE       3}                    4 "GOLD" 3 "embalming"}
       {{Balsam IncreaseMaxLevel SPELL       3}                    4 "GOLD" 3 "embalming"}
