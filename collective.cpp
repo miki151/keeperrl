@@ -1171,9 +1171,11 @@ void Collective::recalculateFurniturePopIncrease() {
   for (auto type : factory.getFurnitureThatIncreasePopulation()) {
     auto& info = factory.getData(type);
     if (info.getPopulationIncrease().requiresAnimalFence) {
+      int count = 0;
       for (auto pos : constructions->getBuiltPositions(type))
         if (pos.isClosedOff(MovementType(MovementTrait::WALK).setFarmAnimal()))
-          ++populationIncrease;
+          ++count;
+      populationIncrease += factory.getPopulationIncrease(type, count);      
     } else
       populationIncrease += factory.getPopulationIncrease(type, constructions->getBuiltCount(type));
   }

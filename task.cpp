@@ -1102,14 +1102,14 @@ class Eat : public Task {
         if (auto move = c->move(pos))
           return move;
       if (Creature* ch = pos.getCreature())
-        if (ch->getBody().isMinionFood())
+        if (ch->getBody().isFarmAnimal())
           if (auto move = c->attack(ch)) {
             return move.append([this, ch, pos] (Creature*) { if (ch->isDead()) position = pos; });
       }
     }
     if (positions.contains(c->getPosition()))
       for (auto chicken : c->getVisibleCreatures())
-        if (chicken->getBody().isMinionFood())
+        if (chicken->getBody().isFarmAnimal())
           if (auto move = c->moveTowards(chicken->getPosition()))
             return move;
     if (c->getPosition() != *position)

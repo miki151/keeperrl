@@ -86,7 +86,7 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
           !c->getEquipment().getItems(ItemIndex::RANGED_WEAPON).empty();
     case MinionActivity::BE_WHIPPED:
       return !c->getBody().isImmuneTo(LastingEffect::ENTANGLED) &&
-          !c->getBody().isMinionFood() &&
+          !c->getBody().isFarmAnimal() &&
           c->getBody().isHumanoid();
     case MinionActivity::POETRY:
       return col->hasTrait(c, MinionTrait::LEADER);
