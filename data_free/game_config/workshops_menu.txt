@@ -259,7 +259,6 @@ append {
   {
       {{Balsam AddBodyPart HEAD 1 none}     2 "GOLD" 3 "embalming"}
       {{Balsam {AddBodyPart WING 2 none Permanent FLYING}}     4 "GOLD" 3 "embalming"}
-      {{Balsam AddBodyPart ARM 2 none}      4 "GOLD" 3 "embalming"}
       {{Balsam Permanent TELEPATHY}         4 "GOLD" 3 "embalming"}
       {{Balsam RemovePermanent SLOWED}      4 "GOLD" 3 "embalming"}
       {{Balsam Permanent SWARMER}           4 "GOLD" 3 "embalming"}
@@ -272,7 +271,7 @@ append {
       {{Balsam Name "lesser ranged damage bonus" IncreaseAttr RANGED_DAMAGE 3}   4 "GOLD" 3 "embalming"}
       {{Balsam Name "lesser spell damage bonus"  IncreaseAttr  SPELL_DAMAGE 3}   4 "GOLD" 3 "embalming"}
       {{Balsam SpecialAttr DEFENSE    5  InTerritory}             4 "GOLD" 3 "embalming"}
-      {{Balsam Permanent DARKNESS_SOURCE}   4 "GOLD" 10 "advanced embalming"}
+      {{Balsam Permanent DARKNESS_SOURCE}   4 "GOLD" 5 "advanced embalming"}
       {{Balsam Name "Limited life, damage boost" Description "Life limited to 2000 turns, +10 damage."
           { Lasting 2000 SUMMONED  IncreaseAttr DAMAGE 10 }}        8 "GOLD" 5 "advanced embalming"}
       {{Balsam Name "Limited life, defense boost" Description "Life limited to 2000 turns, +10 defense."
@@ -291,7 +290,8 @@ append {
       {{Balsam IncreaseWorkshopSkill "LABORATORY" 0.5}            8 "GOLD" 5 "advanced embalming"}
       {{Balsam IncreaseWorkshopSkill "FORGE" 0.5}                 8 "GOLD" 5 "advanced embalming"}
       {{Balsam IncreaseWorkshopSkill "WORKSHOP" 0.5  }            8 "GOLD" 5 "advanced embalming"}
-      {{Balsam IncreaseSkill MULTI_WEAPON 0.5}                    8 "GOLD" 5 "advanced embalming"}
+      {{Balsam { AddBodyPart ARM 2 none IncreaseSkill MULTI_WEAPON 0.5 }}
+          8 "GOLD" 5 "advanced embalming"}
       {{Balsam SpecialAttr DEFENSE       15 InTerritory}           12 "GOLD" 10 "master embalming"}
       {{Balsam SpecialAttr DAMAGE        15 CreatureStatus LEADER} 12 "GOLD" 10 "master embalming"}
       {{Balsam SpecialAttr DAMAGE        15 Spellcaster }          12 "GOLD" 10 "master embalming"}
