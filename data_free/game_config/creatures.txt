@@ -3354,6 +3354,7 @@
     body = {
       type = FourLegged LARGE
       weight = 400
+      minionFood = true
     }
     noChase = true
     chatReactionFriendly = "\"my name is Cow\""

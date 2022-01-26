@@ -10,7 +10,9 @@
 "alchemical conversion"    { "Convert resources to and from gold."                          {"alchemy"} }
 "humanoid mutation"        { "Breed new, very powerful humanoid species."                   {"alchemy"} }
 "beast mutation"           { "Breed new, very powerful beast species."                      {"alchemy"} }
+"chicken breeding"         { "Build a chicken coop to feed your minions." }
 "pig breeding"             { "Build a pigsty to feed your minions." }
+"cow breeding"             { "Build a cow pen to feed your minions." }
 "iron working"             { "Build a forge and produce metal weapons and armor." }
 "jewellery"                { "Build a jeweler room and produce magical rings and amulets."  {"iron working" }}
 "distillation"             { "Beer is for dwarves. Build a distillery and make rat moonshine for your minions."}

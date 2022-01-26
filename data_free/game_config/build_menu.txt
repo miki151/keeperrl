@@ -195,14 +195,6 @@
         "Beasts sleep here."}
   }
    
-  "pigsty"
-  {
-    { Furniture {{ "PIGSTY" }     "WOOD" 5 }                       "Pigsty"            "Living"
-        "" 0 {TechId "pig breeding"}}
-    { Furniture {{ "ANIMAL_FENCE" } "WOOD" 1 }                     "Animal fence"      "Living"
-        "Used to secure animals." }
-  }
-
   "dining table"
   {
     { Furniture {{ "DINING_TABLE" }"WOOD" 5 }                      "Dining table"      "Living"
@@ -222,6 +214,19 @@
     { Furniture {{ "COFFIN3" }    "GOLD" 15 }                      "Luxurious coffin"  "Living"
         "Undead creatures sleep here."}
   }
+
+  "pigsty"
+  {
+    { Furniture {{ "CHICKEN_COOP" }     "WOOD" 5 }                 "Chicken coop"      "Farming"
+        "" 0 {TechId "chicken breeding"}}
+    { Furniture {{ "PIGSTY" }     "WOOD" 5 }                       "Pigsty"            "Farming"
+        "" 0 {TechId "pig breeding"}}
+    { Furniture {{ "COW_PEN" }     "WOOD" 5 }                      "Cow pen"           "Farming"
+        "" 0 {TechId "cow breeding"}}
+    { Furniture {{ "ANIMAL_FENCE" } "WOOD" 1 }                     "Animal fence"      "Farming"
+        "Require to keep farm animals from escaping." }
+  }
+
 
   "training_zombies"
   {

@@ -777,6 +777,19 @@ Def BedHeal() Heal { FLESH 0.005 } End
   layer = FLOOR
   viewLayer = FLOOR
 }
+"CHICKEN_COOP"
+{
+  name = "chicken coop"
+  viewId = { "mud" }
+  tickType = Effect Chance 0.05 Filter
+    And {
+      IsClosedOffPigsty
+      CanCreatureEnter
+      Area 1 Not CreatureId "CHICKEN"
+    }
+    Summon "CHICKEN" 1 none
+  populationIncrease = { 0.25 4 true }
+}
 "PIGSTY"
 {
   name = "pigsty"
@@ -788,7 +801,20 @@ Def BedHeal() Heal { FLESH 0.005 } End
       Area 1 Not CreatureId "PIG"
     }
     Summon "PIG" 1 none
-  populationIncrease = { 0.25 4 true }
+  populationIncrease = { 0.5 8 true }
+}
+"COW_PEN"
+{
+  name = "cow pen"
+  viewId = { "mud" }
+  tickType = Effect Chance 0.05 Filter
+    And {
+      IsClosedOffPigsty
+      CanCreatureEnter
+      Area 1 Not CreatureId "COW"
+    }
+    Summon "COW" 1 none
+  populationIncrease = { 1 16 true }
 }
 "GROUND_TORCH"
 {

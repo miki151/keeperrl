@@ -8,14 +8,15 @@
   immigrantGroups = {"imps" "dark_keeper"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion" "humanoid mutation" "beast mutation"
-      "pig breeding" "iron working" "jewellery" "two-handed weapons" "traps" "archery" "sorcery"
-      "advanced sorcery" "magical weapons" "master sorcery" "demonology" "distillation"
+      "chicken breeding" "pig breeding" "cow breeding" "iron working" "jewellery" "two-handed weapons"
+      "traps" "archery" "sorcery" "advanced sorcery" "magical weapons" "master sorcery" "demonology"
+      "distillation"
   }
   zLevelGroups = { "basic" "evil" }
   initialTech = { "sorcery" }
   buildingGroups = {
       "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage"
-      "pigsty" "dining table" "coffins"
+      "dining table" "coffins" "pigsty"
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "demon_shrine"
       "prison" "orders" "installations" "minion_statues" "magical_installations" "healing_totem"
       "traps"
@@ -37,14 +38,15 @@
   immigrantGroups = {"peseants" "white_keeper"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion"
-      "pig breeding" "iron working" "jewellery" "two-handed weapons" "archery" "sorcery"
-      "advanced sorcery" "magical weapons" "master sorcery" "worship" "distillation"
+      "chicken breeding" "pig breeding" "cow breeding" "iron working" "jewellery"
+      "two-handed weapons" "archery" "sorcery" "advanced sorcery" "magical weapons" "master sorcery"
+      "worship" "distillation"
   }
   zLevelGroups = { "basic" "lawful" }
   initialTech = { "archery" }
   buildingGroups = {
       "structure" "arrowslits" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage"
-      "pigsty" "dining table" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery"
+      "dining table" "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery"
       "furnace" "angel_shrine" "prison" "orders" "installations"
   }
   workshopGroups = { "basic" "bows" }
@@ -131,13 +133,13 @@
   immigrantGroups = {"goblins"}
   technology = {
       "alchemy" "advanced alchemy" "alchemical conversion"
-      "pig breeding" "iron working" "jewellery" "two-handed weapons" "traps" "archery" "sorcery"
-      "advanced sorcery" "magical weapons" "master sorcery" "distillation"
+      "chicken breeding" "pig breeding" "cow breeding" "iron working" "jewellery" "two-handed weapons"
+      "traps" "archery" "sorcery" "advanced sorcery" "magical weapons" "master sorcery" "distillation"
   }
   zLevelGroups = { "basic" "evil" "goblins" }
   initialTech = { }
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "pigsty" "dining table"
+      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "dining table" "pigsty"
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "prison" "orders"
       "installations" "minion_statues" "traps"
   }
