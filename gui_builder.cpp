@@ -2719,6 +2719,8 @@ SGuiElem GuiBuilder::drawMapHintOverlay() {
       lines.addElem(WL(label, "Torture unavailable due to population limit", Color::RED));
     if (highlighted.viewIndex.isHighlight(HighlightType::PRISON_NOT_CLOSED))
       lines.addElem(WL(label, "Prison must be secured using prison bars or prison door", Color::RED));
+    if (highlighted.viewIndex.isHighlight(HighlightType::PIGSTY_NOT_CLOSED))
+      lines.addElem(WL(label, "Animal pen must be secured using an animal fence", Color::RED));
     if (highlighted.viewIndex.isHighlight(HighlightType::INDOORS))
       lines.addElem(WL(label, "Indoors"));
     else

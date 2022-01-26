@@ -1521,7 +1521,7 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
       if (prisonType.getType() == FurnitureType("PRISON")) {
         int cnt = 0;
         for (auto& pos : constructions.getBuiltPositions(prisonType.getType()))
-          if (isClosedOffPrison(pos))
+          if (pos.isClosedOff(MovementType(MovementTrait::WALK).setPrisoner()))
             ++cnt;
         return cnt;
       }
@@ -2186,8 +2186,13 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
         index.setHighlight(HighlightType::TORTURE_UNAVAILABLE);
     }
     if (auto furniture = position.getFurniture(FurnitureLayer::FLOOR))
-      if (furniture->getType() == FurnitureType("PRISON") && !isClosedOffPrison(position))
+      if (furniture->getType() == FurnitureType("PRISON") &&
+          !position.isClosedOff(MovementType(MovementTrait::WALK).setPrisoner()))
         index.setHighlight(HighlightType::PRISON_NOT_CLOSED);
+    if (auto furniture = position.getFurniture(FurnitureLayer::MIDDLE))
+      if (furniture->getPopulationIncrease().requiresAnimalFence &&
+          !position.isClosedOff(MovementType(MovementTrait::WALK).setFarmAnimal()))
+        index.setHighlight(HighlightType::PIGSTY_NOT_CLOSED);
     for (auto furniture : position.getFurniture())
       if (furniture->getLuxuryInfo().luxury > 0)
         if (auto obj = furniture->getViewObject())
@@ -2226,19 +2231,6 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
       }
   if (unknownLocations->contains(position))
     index.insert(ViewObject(ViewId("unknown_monster"), ViewLayer::TORCH2, "Surprise"));
-}
-
-bool PlayerControl::isClosedOffPrison(Position position) const {
-  auto level = position.getLevel();
-  auto sectors = level->getSectors(MovementType(MovementTrait::WALK).setPrisoner());
-  auto topLevel = getModel()->getGroundLevel();
-  auto coord = position.getCoord();
-  if (level == topLevel && sectors.isSector(coord, sectors.getLargest()))
-    return false;
-  for (auto key : level->getAllStairKeys())
-    if (sectors.same(coord, level->getLandingSquares(key)[0].getCoord()))
-      return false;
-  return true;
 }
 
 Vec2 PlayerControl::getScrollCoord() const {
@@ -3334,7 +3326,7 @@ void PlayerControl::update(bool currentlyActive) {
   for (Level* l : currentLevels)
     for (Creature* c : l->getAllCreatures())
       if (!getCreatures().contains(c) && c->getTribeId() == getTribeId() && canSee(c) && !isEnemy(c)) {
-        if (!collective->wasBanished(c) && !c->getBody().isMinionFood() && c->getAttributes().getCanJoinCollective()) {
+        if (!collective->wasBanished(c) && !c->getBody().isFarmAnimal() && c->getAttributes().getCanJoinCollective()) {
           addedCreatures.push_back(c);
           collective->addCreature(c, {MinionTrait::FIGHTER, MinionTrait::NO_LIMIT});
           for (auto controlled : getControlled())
@@ -3348,7 +3340,7 @@ void PlayerControl::update(bool currentlyActive) {
               break;
             }
         } else
-          if (c->getBody().isMinionFood())
+          if (c->getBody().isFarmAnimal())
             collective->addCreature(c, {MinionTrait::FARM_ANIMAL, MinionTrait::NO_LIMIT});
       }
   if (!addedCreatures.empty()) {

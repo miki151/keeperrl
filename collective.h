@@ -323,6 +323,7 @@ class Collective : public TaskCallback, public UniqueEntity<Collective>, public 
   void autoAssignSteeds();
   void updateCreatureStatus(Creature*);
   HeapAllocated<Quarters> SERIAL(quarters);
+  void recalculateFurniturePopIncrease();
   int SERIAL(populationIncrease) = 0;
   DungeonLevel SERIAL(dungeonLevel);
   bool SERIAL(hadALeader) = false;

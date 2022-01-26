@@ -9,6 +9,9 @@
 #include "unlocks.h"
 #include "collective.h"
 #include "spell_map.h"
+#include "level.h"
+#include "sectors.h"
+#include "movement_type.h"
 
 namespace Impl {
 static bool applyToCreature(const CreaturePredicates::Enemy&, const Creature* victim, const Creature* attacker) {
@@ -226,6 +229,22 @@ static Collective* getCollective(const Creature* c) {
   return nullptr;
 }
 
+static bool apply(CreaturePredicates::IsClosedOffPigsty, Position position, const Creature*) {
+  return position.isClosedOff(MovementType(MovementTrait::WALK).setFarmAnimal());
+}
+
+static string getName(const CreaturePredicates::IsClosedOffPigsty) {
+  return "inside an animal pen";
+}
+
+static bool apply(CreaturePredicates::CanCreatureEnter, Position position, const Creature*) {
+  return position.canEnter({MovementTrait::WALK});
+}
+
+static string getName(const CreaturePredicates::CanCreatureEnter) {
+  return "can enter position";
+}
+
 static bool applyToCreature(CreaturePredicates::PopLimitReached, const Creature* victim, const Creature*) {
   if (auto col = getCollective(victim))
     return col->getMaxPopulation() <= col->getPopulationSize();
@@ -318,6 +337,17 @@ static bool apply(const CreaturePredicates::Translate& m, Position pos, const Cr
 }
 
 static string getName(const CreaturePredicates::Translate& m) {
+  return m.pred->getNameInternal();
+}
+
+static bool apply(const CreaturePredicates::Area& m, Position pos, const Creature* attacker) {
+  for (auto v : pos.getRectangle(Rectangle::centered(m.radius)))
+    if (!m.pred->apply(v, attacker))
+      return false;
+  return true;
+}
+
+static string getName(const CreaturePredicates::Area& m) {
   return m.pred->getNameInternal();
 }
 

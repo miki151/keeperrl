@@ -24,20 +24,6 @@
 #include "content_factory.h"
 #include "item_types.h"
 
-static void handle(FurnitureTickTypes::Pigsty, Position pos, Furniture* furniture) {
-  PROFILE;
-  if (pos.getCreature() || !Random.roll(10))
-    return;
-  for (Position v : pos.neighbors8())
-    if (v.getCreature() && v.getCreature()->getBody().isMinionFood())
-      return;
-  if (Random.roll(5)) {
-    PCreature pig = pos.getGame()->getContentFactory()->getCreatures().fromId(CreatureId("PIG"), furniture->getTribe(),
-        MonsterAIFactory::stayOnFurniture(furniture->getType()));
-    if (pos.canEnter(pig.get()))
-      pos.addCreature(std::move(pig));
-  }
-}
 
 static void handle(const FurnitureTickTypes::Trap& trap, Position pos, Furniture* furniture) {
   auto dirs = Vec2::directions4();

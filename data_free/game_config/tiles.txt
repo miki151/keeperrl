@@ -413,6 +413,7 @@
 { viewId = "prison_door_ew" symbol = "-" color = ColorId LIGHT_GRAY wallShadow = true }
 { viewId = "prison_door_ns" symbol = "|" color = ColorId LIGHT_GRAY }
 { "magic_field" "*" ColorId BLUE }
+{ viewId = "fence" symbol = "|" color = ColorId BROWN wallConnections = true connectionId = {"fence"}} 
 { viewId = "torch" symbol = "*" color = ColorId YELLOW animated = true }
 { viewId = "candelabrum_ns" symbol = "*" color = ColorId ORANGE animated = true }
 { viewId = "candelabrum_w" symbol = "*" color = ColorId ORANGE animated = true }

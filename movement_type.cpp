@@ -2,7 +2,7 @@
 #include "movement_type.h"
 #include "tribe.h"
 
-SERIALIZE_DEF(MovementType, traits, tribeSet, sunlightVulnerable, fireResistant, forced, destroyActions, buildBridge, prisoner)
+SERIALIZE_DEF(MovementType, traits, tribeSet, sunlightVulnerable, fireResistant, forced, destroyActions, buildBridge, prisoner, farmAnimal)
 
 MovementType::MovementType(EnumSet<MovementTrait> t) : traits(t) {
 }
@@ -20,7 +20,7 @@ bool MovementType::hasTrait(MovementTrait t) const {
 bool MovementType::operator == (const MovementType& o) const {
   return traits == o.traits && tribeSet == o.tribeSet && sunlightVulnerable == o.sunlightVulnerable &&
       fireResistant == o.fireResistant && forced == o.forced && destroyActions == o.destroyActions &&
-      buildBridge == o.buildBridge && prisoner == o.prisoner;
+      buildBridge == o.buildBridge && prisoner == o.prisoner && farmAnimal == o.farmAnimal;
 }
 
 const EnumSet<MovementTrait>& MovementType::getTraits() const {
@@ -29,7 +29,7 @@ const EnumSet<MovementTrait>& MovementType::getTraits() const {
 
 int MovementType::getHash() const {
   return destroyActions.getHash() + traits.getHash() + sunlightVulnerable + 2 * fireResistant + 4 * forced +
-      8 * buildBridge + prisoner * 16;
+      8 * buildBridge + prisoner * 16 + farmAnimal * 32;
 }
 
 bool MovementType::isCompatible(TribeId id) const {
@@ -76,6 +76,11 @@ MovementType& MovementType::setPrisoner(bool p) {
   return *this;
 }
 
+MovementType& MovementType::setFarmAnimal(bool p) {
+  farmAnimal = p;
+  return *this;
+}
+
 const EnumSet<DestroyAction::Type>& MovementType::getDestroyActions() const {
   return destroyActions;
 }
@@ -100,3 +105,6 @@ bool MovementType::isPrisoner() const {
   return prisoner;
 }
 
+bool MovementType::isFarmAnimal() const {
+  return farmAnimal;
+}

@@ -64,7 +64,6 @@ class Body {
   void setHumanoidBodyParts(int intrinsicDamage);
   void setHorseBodyParts(int intrinsicDamage);
   void setBirdBodyParts(int intrinsicDamage);
-  void setMinionFood();
   void setDeathSound(optional<SoundId>);
   void addIntrinsicAttack(BodyPart, IntrinsicAttack);
   void initializeIntrinsicAttack(const ContentFactory*);
@@ -87,7 +86,7 @@ class Body {
   bool affectByAcid(Creature*);
   bool isKilledByBoulder() const;
   bool canWade() const;
-  bool isMinionFood() const;
+  bool isFarmAnimal() const;
   bool canCopulateWith() const;
   bool canConsume() const;
   bool isWounded() const;

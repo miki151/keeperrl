@@ -240,7 +240,7 @@
   usageType = UsageEffect "sit on" { CreatureMessage "sit on the throne" "sits on the throne" Audience none }
   luxury = 1.0
   strength = 80
-  populationIncrease = 10 none
+  populationIncrease = { 10 none }
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
 }
 "IMPALED_HEAD"
@@ -322,8 +322,8 @@ Def BedHeal() Heal { FLESH 0.005 } End
   canHideHere = true
   strength = 50
   blockMovement = true
-  populationIncrease = 1 4
-  destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+  populationIncrease = { 1 4 }
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
 }
 "AUTOMATON_ENGINE_IRON"
 {
@@ -332,7 +332,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   canHideHere = true
   strength = 50
   blockMovement = true
-  populationIncrease = 1 16
+  populationIncrease = { 1 16 }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
 "AUTOMATON_ENGINE_ADA"
@@ -342,7 +342,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   canHideHere = true
   strength = 50
   blockMovement = true
-  populationIncrease = 1 none
+  populationIncrease = { 1 none }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
 "DEMON_SHRINE"
@@ -394,6 +394,19 @@ Def BedHeal() Heal { FLESH 0.005 } End
   strength = 80
   requiredSupport = { { { E W } } { { N S } {"prison_door_ns"} } }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
+}
+"ANIMAL_FENCE"
+{
+  name = "animal fence"
+  viewId = { "fence" }
+  movementSet = {
+    traits = { WALK }
+    blockingFarmAnimals = true
+  }
+  strength = 10
+  wall = true
+  canBuildOutsideOfTerritory = true
+  destroyFX = { DESTROY_FURNITURE Rgb 120 87 46 255 }
 }
 "AUTOMATON_STORAGE"
 {
@@ -549,7 +562,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   canHideHere = true
   luxury = 0.7
   strength = 50
-  populationIncrease = 1 none
+  populationIncrease = { 1 none }
   destroyFX = { DESTROY_FURNITURE Rgb 190 190 40 255 }
 }
 "STONE_MINION_STATUE"
@@ -560,7 +573,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   canHideHere = true
   luxury = 0.3
   strength = 50
-  populationIncrease = 1 4
+  populationIncrease = { 1 4 }
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
 "ADOXIE_STATUE_TEMPLE"
@@ -768,8 +781,14 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   name = "pigsty"
   viewId = { "mud" }
-  tickType = Pigsty
-  populationIncrease = 0.25 4
+  tickType = Effect Chance 0.05 Filter
+    And {
+      IsClosedOffPigsty
+      CanCreatureEnter
+      Area 1 Not CreatureId "PIG"
+    }
+    Summon "PIG" 1 none
+  populationIncrease = { 0.25 4 true }
 }
 "GROUND_TORCH"
 {

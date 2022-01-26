@@ -20,7 +20,7 @@
 #include "furniture_on_built.h"
 #include "game_config.h"
 
-SERIALIZE_DEF(FurnitureFactory, furniture, furnitureLists, trainingFurniture, upgrades, bedFurniture, needingLight, constructionObjects)
+SERIALIZE_DEF(FurnitureFactory, furniture, furnitureLists, trainingFurniture, upgrades, bedFurniture, needingLight, increasingPopulation, constructionObjects)
 SERIALIZATION_CONSTRUCTOR_IMPL(FurnitureFactory)
 
 bool FurnitureParams::operator == (const FurnitureParams& p) const {
@@ -75,6 +75,8 @@ void FurnitureFactory::initializeInfos() {
   for (auto& f : furniture) {
     if (f.second->isRequiresLight())
       needingLight.push_back(f.first);
+    if (f.second->getPopulationIncrease().increase > 0)
+      increasingPopulation.push_back(f.first);
     if (auto type = f.second->getBedType())
       bedFurniture[*type].push_back(f.first);
     if (auto obj1 = f.second->getViewObject()) {
@@ -143,6 +145,10 @@ const vector<FurnitureType>& FurnitureFactory::getTrainingFurniture(ExperienceTy
 
 const vector<FurnitureType>& FurnitureFactory::getFurnitureNeedingLight() const {
   return needingLight;
+}
+
+const vector<FurnitureType>& FurnitureFactory::getFurnitureThatIncreasePopulation() const {
+  return increasingPopulation;
 }
 
 const vector<FurnitureType>& FurnitureFactory::getBedFurniture(BedType type) const {

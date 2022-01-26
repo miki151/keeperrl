@@ -37,6 +37,7 @@ class FurnitureFactory {
   FurnitureType getWaterType(double depth) const;
   const vector<FurnitureType>& getTrainingFurniture(ExperienceType) const;
   const vector<FurnitureType>& getFurnitureNeedingLight() const;
+  const vector<FurnitureType>& getFurnitureThatIncreasePopulation() const;
   const vector<FurnitureType>& getBedFurniture(BedType) const;
   vector<FurnitureType> getAllFurnitureType() const;
 
@@ -53,6 +54,7 @@ class FurnitureFactory {
   EnumMap<ExperienceType, vector<FurnitureType>> SERIAL(trainingFurniture);
   unordered_map<FurnitureType, vector<FurnitureType>, CustomHash<FurnitureType>> SERIAL(upgrades);
   vector<FurnitureType> SERIAL(needingLight);
+  vector<FurnitureType> SERIAL(increasingPopulation);
   EnumMap<BedType, vector<FurnitureType>> SERIAL(bedFurniture);
   unordered_map<FurnitureType, ViewObject, CustomHash<FurnitureType>> SERIAL(constructionObjects);
 };

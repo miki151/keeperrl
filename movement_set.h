@@ -31,5 +31,6 @@ class MovementSet {
   EnumSet<MovementTrait> SERIAL(forcibleTraits);
   bool SERIAL(blockingEnemies) = false;
   bool SERIAL(blockingPrisoners) = false;
+  bool SERIAL(blockingFarmAnimals) = false;
   TribeId SERIAL(tribe);
 };

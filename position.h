@@ -160,6 +160,7 @@ class Position {
   int countSwarmers() const;
   Collective* getCollective() const;
   optional<Position> getGroundBelow() const;
+  bool isClosedOff(MovementType) const;
 
   SERIALIZATION_DECL(Position)
   int getHash() const;

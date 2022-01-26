@@ -183,10 +183,6 @@ void Body::setBirdBodyParts(int intrinsicDamage) {
   addIntrinsicAttack(BodyPart::HEAD, IntrinsicAttack(ItemType::beak(intrinsicDamage)));
 }
 
-void Body::setMinionFood() {
-  minionFood = true;
-}
-
 void Body::setDeathSound(optional<SoundId> s) {
   deathSound = s;
 }
@@ -602,7 +598,7 @@ PItem Body::getBodyPartItem(const string& name, BodyPart part, const ContentFact
   switch (material) {
     case Material::FLESH:
     case Material::UNDEAD_FLESH:
-      return ItemType::severedLimb(name, part, weight / 8, isMinionFood() ? ItemClass::FOOD : ItemClass::CORPSE, factory);
+      return ItemType::severedLimb(name, part, weight / 8, isFarmAnimal() ? ItemClass::FOOD : ItemClass::CORPSE, factory);
     case Material::CLAY:
     case Material::ROCK:
       return ItemType(CustomItemId("Rock")).get(factory);
@@ -997,7 +993,7 @@ bool Body::isKilledByBoulder() const {
   }
 }
 
-bool Body::isMinionFood() const {
+bool Body::isFarmAnimal() const {
   return minionFood;
 }
 

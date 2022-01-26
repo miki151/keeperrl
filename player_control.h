@@ -267,7 +267,6 @@ class PlayerControl : public CreatureView, public CollectiveControl, public Even
   unordered_set<int> dismissedNextWaves;
   vector<ImmigrantDataInfo> getPrisonerImmigrantData() const;
   vector<ImmigrantDataInfo> getNecromancerImmigrationHelp() const;
-  bool isClosedOffPrison(Position) const;
   void acceptPrisoner(int index);
   void rejectPrisoner(int index);
   struct StunnedInfo {

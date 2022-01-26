@@ -138,7 +138,8 @@ class Furniture {
   struct PopulationInfo {
     double SERIAL(increase);
     optional<int> SERIAL(limit);
-    SERIALIZE_ALL(increase, limit)
+    bool SERIAL(requiresAnimalFence) = false;
+    SERIALIZE_ALL(NAMED(increase), NAMED(limit), OPTION(requiresAnimalFence))
   };
   const PopulationInfo& getPopulationIncrease() const;
   const vector<FurnitureType>& getBuiltOver() const;

@@ -25,6 +25,8 @@ SIMPLE_PREDICATE(InTerritory);
 SIMPLE_PREDICATE(Spellcaster);
 SIMPLE_PREDICATE(Humanoid);
 SIMPLE_PREDICATE(PopLimitReached);
+SIMPLE_PREDICATE(IsClosedOffPigsty);
+SIMPLE_PREDICATE(CanCreatureEnter);
 
 struct HatedBy {
   LastingEffect SERIAL(effect);
@@ -106,6 +108,12 @@ struct Translate {
   SERIALIZE_ALL(dir, pred)
 };
 
+struct Area {
+  int SERIAL(radius);
+  HeapAllocated<CreaturePredicate> SERIAL(pred);
+  SERIALIZE_ALL(radius, pred)
+};
+
 #define CREATURE_PREDICATE_LIST\
   X(Enemy, 0)\
   X(Automaton, 1)\
@@ -138,7 +146,10 @@ struct Translate {
   X(Unlocked, 28)\
   X(Gender, 29)\
   X(Rider, 30)\
-  X(Kills, 31)
+  X(Kills, 31)\
+  X(IsClosedOffPigsty, 32)\
+  X(CanCreatureEnter, 33)\
+  X(Area, 34)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

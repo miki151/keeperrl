@@ -779,11 +779,8 @@ void Collective::onEvent(const GameEvent& event) {
         auto curFur = info.position.getFurniture(info.layer);
         if (info.position.getModel() == model && (!curFur || !!strcmp(curFur->getType().data(), "PHYLACTERY_ACTIVE")) &&
             constructions->containsFurniture(info.position, info.layer)) {
-          populationIncrease -= getGame()->getContentFactory()->furniture.getPopulationIncrease(
-              info.type, constructions->getBuiltCount(info.type));
           constructions->onFurnitureDestroyed(info.position, info.layer, info.type);
-          populationIncrease += getGame()->getContentFactory()->furniture.getPopulationIncrease(
-              info.type, constructions->getBuiltCount(info.type));
+          recalculateFurniturePopIncrease();
         }
       },
       [&](const auto&) {}
@@ -1168,6 +1165,20 @@ bool Collective::containsCreature(Creature* c) {
   return creatures.contains(c);
 }
 
+void Collective::recalculateFurniturePopIncrease() {
+  populationIncrease = 0;
+  auto& factory = getGame()->getContentFactory()->furniture;
+  for (auto type : factory.getFurnitureThatIncreasePopulation()) {
+    auto& info = factory.getData(type);
+    if (info.getPopulationIncrease().requiresAnimalFence) {
+      for (auto pos : constructions->getBuiltPositions(type))
+        if (pos.isClosedOff(MovementType(MovementTrait::WALK).setFarmAnimal()))
+          ++populationIncrease;
+    } else
+      populationIncrease += factory.getPopulationIncrease(type, constructions->getBuiltCount(type));
+  }
+}
+
 void Collective::onConstructed(Position pos, FurnitureType type) {
   if (pos.getFurniture(type)->forgetAfterBuilding()) {
     constructions->removeFurniturePlan(pos, getGame()->getContentFactory()->furniture.getData(type).getLayer());
@@ -1176,14 +1187,13 @@ void Collective::onConstructed(Position pos, FurnitureType type) {
     control->onConstructed(pos, type);
     return;
   }
-  populationIncrease -= getGame()->getContentFactory()->furniture.getPopulationIncrease(type, constructions->getBuiltCount(type));
   constructions->onConstructed(pos, type);
-  populationIncrease += getGame()->getContentFactory()->furniture.getPopulationIncrease(type, constructions->getBuiltCount(type));
   control->onConstructed(pos, type);
   if (WTask task = taskMap->getMarked(pos))
     taskMap->removeTask(task);
   //if (canClaimSquare(pos))
   claimSquare(pos);
+  recalculateFurniturePopIncrease();
 }
 
 void Collective::onDestructed(Position pos, FurnitureType type, const DestroyAction& action) {

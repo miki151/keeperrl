@@ -283,37 +283,6 @@ class MoveRandomly : public Behaviour {
   const int memSize = 3;
 };
 
-class StayOnFurniture : public Behaviour {
-  public:
-  StayOnFurniture(Creature* c, FurnitureType t) : Behaviour(c), type(t) {}
-
-  MoveInfo getMove() override {
-    if (!creature->getPosition().getFurniture(type)) {
-      if (!nextPigsty)
-        for (auto pos : creature->getPosition().getRectangle(Rectangle::centered(Vec2(0, 0), 20)))
-          if (pos.getFurniture(type)) {
-            nextPigsty = pos;
-            break;
-          }
-      if (nextPigsty)
-        if (auto move = creature->moveTowards(*nextPigsty, NavigationFlags().requireStepOnTile()))
-          return move;
-    }
-    if (Random.roll(10))
-      for (Position next: creature->getPosition().neighbors8(Random))
-        if (next.canEnter(creature) && next.getFurniture(type))
-          return creature->move(next);
-    return creature->wait();
-  }
-
-  SERIALIZATION_CONSTRUCTOR(StayOnFurniture)
-  SERIALIZE_ALL(SUBCLASS(Behaviour), type)
-
-  private:
-  FurnitureType SERIAL(type);
-  optional<Position> nextPigsty;
-};
-
 class BirdFlyAway : public Behaviour {
   public:
   BirdFlyAway(Creature* c, int maxDist) : Behaviour(c), maxDist(maxDist) {}
@@ -1205,7 +1174,6 @@ REGISTER_TYPE(ByCollective);
 REGISTER_TYPE(ChooseRandom);
 REGISTER_TYPE(SingleTask);
 REGISTER_TYPE(AvoidFire);
-REGISTER_TYPE(StayOnFurniture);
 REGISTER_TYPE(AdoxieSacrifice);
 REGISTER_TYPE(WarlordBehaviour);
 
@@ -1338,16 +1306,6 @@ MonsterAIFactory MonsterAIFactory::wildlifeNonPredator() {
           new FighterStandGround(c),
           new MoveRandomly(c)},
           {6, 5, 1});
-      });
-}
-
-MonsterAIFactory MonsterAIFactory::stayOnFurniture(FurnitureType type) {
-  return MonsterAIFactory([type](Creature* c) {
-      return new MonsterAI(c, {
-          new AvoidFire(c),
-          new Fighter(c),
-          new StayOnFurniture(c, type)},
-          {5, 2, 1});
       });
 }
 

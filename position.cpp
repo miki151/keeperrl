@@ -629,6 +629,17 @@ optional<Position> Position::getGroundBelow() const {
   return none;
 }
 
+bool Position::isClosedOff(MovementType movement) const {
+  auto sectors = level->getSectors(movement);
+  auto topLevel = getModel()->getGroundLevel();
+  if (level == topLevel && sectors.isSector(coord, sectors.getLargest()))
+    return false;
+  for (auto key : level->getAllStairKeys())
+    if (sectors.same(coord, level->getLandingSquares(key)[0].getCoord()))
+      return false;
+  return true;
+}
+
 void Position::addCreatureLight(bool darkness) {
   PROFILE;
   if (isValid()) {

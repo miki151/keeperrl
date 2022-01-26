@@ -60,7 +60,6 @@ class MonsterAIFactory {
   static MonsterAIFactory wildlifeNonPredator();
   static MonsterAIFactory scavengerBird();
   static MonsterAIFactory summoned(Creature*);
-  static MonsterAIFactory stayOnFurniture(FurnitureType);
   static MonsterAIFactory idle();
   static MonsterAIFactory splashHeroes(bool leader);
   static MonsterAIFactory splashMonsters();

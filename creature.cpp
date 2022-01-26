@@ -1052,7 +1052,7 @@ void Creature::updateCombatExperience(Creature* victim) {
 }
 
 void Creature::onKilledOrCaptured(Creature* victim) {
-  if (!victim->getBody().isMinionFood() && !victim->getAttributes().getIllusionViewObject()) {
+  if (!victim->getBody().isFarmAnimal() && !victim->getAttributes().getIllusionViewObject()) {
     updateCombatExperience(victim);
     int difficulty = victim->getDifficultyPoints();
     CHECK(difficulty >=0 && difficulty < 100000) << difficulty << " " << victim->getName().bare();
@@ -2299,7 +2299,8 @@ MovementType Creature::getMovementTypeNotSteed(Game* game) const {
     .setSunlightVulnerable(isAffected(LastingEffect::SUNLIGHT_VULNERABLE, time)
         && !isAffected(LastingEffect::DARKNESS_SOURCE, time)
         && (!game || game->getSunlightInfo().getState() == SunlightState::DAY))
-    .setCanBuildBridge(isAffected(LastingEffect::BRIDGE_BUILDING_SKILL, time));
+    .setCanBuildBridge(isAffected(LastingEffect::BRIDGE_BUILDING_SKILL, time))
+    .setFarmAnimal(getBody().isFarmAnimal());
 }
 
 MovementType Creature::getMovementType(Game* game) const {
