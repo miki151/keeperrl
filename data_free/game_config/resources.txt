@@ -9,7 +9,7 @@
       "STONE" {5 10} 1 2
       "IRON_ORE" {5 10} 1 2
   }
-  minDepth = 0
+  minDepth = -2
   maxDepth = 0
 }
 {

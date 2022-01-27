@@ -1458,7 +1458,7 @@ class Mountains : public LevelMaker {
         ++lCnt;
       }
     }
-    // Remove the MOUNTAIN2 tiles that are to close to the edge of the mountain
+    // Remove the MOUNTAIN2 tiles that are too close to the edge of the mountain
     removeEdge(isMountain, 20);
     for (auto v : area)
       if (isMountain[v])
@@ -3174,6 +3174,7 @@ class UpLevelMaker : public LevelMaker {
   UpLevelMaker(Position p, const BiomeInfo& biome) : origin(p), biome(biome) {}
 
   virtual void make(LevelBuilder* builder, Rectangle area) override {
+    Table<bool> isMountain2(area, false);
     int thisHeight = 1;
     auto level =  origin.getLevel();
     auto ground = level;
@@ -3194,6 +3195,13 @@ class UpLevelMaker : public LevelMaker {
         builder->putFurniture(v, biome.mountains.mountain, TribeId::getMonster());
         builder->setCovered(v, true);
         builder->setSunlight(v, ground->getLevelGenSunlight(v));
+        isMountain2[v] = true;
+      }
+    removeEdge(isMountain2, 20);
+    for (auto v : area)
+      if (isMountain2[v]) {
+        builder->putFurniture(v, biome.mountains.mountainDeep, TribeId::getMonster());
+        builder->setSunlight(v, ground->getLevelGenSunlight(v));
       }
   }
 
@@ -3202,7 +3210,8 @@ class UpLevelMaker : public LevelMaker {
 };
 }
 
-PLevelMaker LevelMaker::upLevel(Position pos, const BiomeInfo& biomeInfo, SettlementInfo* settlement) {
+PLevelMaker LevelMaker::upLevel(Position pos, const BiomeInfo& biomeInfo, SettlementInfo* settlement,
+    optional<ResourceCounts> resources) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<UpLevelMaker>(pos, biomeInfo));
   queue->addMaker(getForrest(biomeInfo));
@@ -3212,6 +3221,11 @@ PLevelMaker LevelMaker::upLevel(Position pos, const BiomeInfo& biomeInfo, Settle
     locations->add(getSettlementMaker(factory, Random, *settlement), getSize(factory.mapLayouts, Random, settlement->type),
         getSettlementPredicate(*settlement));
     queue->addMaker(std::move(locations));
+  }
+  if (resources) {
+    auto resLocations = unique<RandomLocations>();
+    generateResources(Random, *resources, nullptr, resLocations.get(), {}, 0, TribeId::getMonster());
+    queue->addMaker(std::move(resLocations));
   }
   queue->addMaker(unique<AddMapBorder>(mapBorderUnavailableWidth));
   return std::move(queue);
