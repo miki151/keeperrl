@@ -245,6 +245,14 @@ static string getName(const CreaturePredicates::CanCreatureEnter) {
   return "can enter position";
 }
 
+static bool apply(CreaturePredicates::Frequency f, Position position, const Creature*) {
+  return position.getGame()->getGlobalTime().getVisibleInt() % f.value == 0;
+}
+
+static string getName(const CreaturePredicates::Frequency f) {
+  return "with frequency " + toString(f.value);
+}
+
 static bool applyToCreature(CreaturePredicates::PopLimitReached, const Creature* victim, const Creature*) {
   if (auto col = getCollective(victim))
     return col->getMaxPopulation() <= col->getPopulationSize();

@@ -114,6 +114,11 @@ struct Area {
   SERIALIZE_ALL(radius, pred)
 };
 
+struct Frequency {
+  int SERIAL(value);
+  SERIALIZE_ALL(value)
+};
+
 #define CREATURE_PREDICATE_LIST\
   X(Enemy, 0)\
   X(Automaton, 1)\
@@ -149,7 +154,8 @@ struct Area {
   X(Kills, 31)\
   X(IsClosedOffPigsty, 32)\
   X(CanCreatureEnter, 33)\
-  X(Area, 34)
+  X(Area, 34)\
+  X(Frequency, 35)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST
