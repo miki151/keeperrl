@@ -32,7 +32,6 @@ enum class UserInputId {
 // common
   IDLE,
   REFRESH,
-  DRAW_LEVEL_MAP,
   DRAW_WORLD_MAP,
   SCROLL_TO_HOME,
   EXIT,

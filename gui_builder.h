@@ -98,7 +98,6 @@ class GuiBuilder {
       optional<Vec2>& sitePos);
   SGuiElem drawAvatarMenu(SyncQueue<variant<View::AvatarChoice, AvatarMenuOption>>&, const vector<View::AvatarData>&);
   SGuiElem drawWorldmap(Semaphore&, const Campaign&);
-  SGuiElem drawLevelMap(Semaphore&, const CreatureView*);
   SGuiElem drawChooseCreatureMenu(SyncQueue<optional<UniqueEntity<Creature>::Id>>&, const string& title,
       const vector<PlayerInfo>&, const string& cancelText);
   SGuiElem drawCreatureInfo(SyncQueue<bool>&, const string& title, bool prompt, const vector<PlayerInfo>& creatures);
@@ -128,6 +127,8 @@ class GuiBuilder {
   void addFpsCounterTick();
   void addUpsCounterTick();
   void closeOverlayWindows();
+  bool isEnlargedMinimap() const;
+  void toggleEnlargedMinimap();
   void closeOverlayWindowsAndClearButton();
   bool clearActiveButton();
   void setActiveButton(CollectiveTab, int num, ViewId, optional<string> activeGroup, optional<TutorialHighlight>,
@@ -245,7 +246,8 @@ class GuiBuilder {
     BESTIARY,
     SPELL_SCHOOLS,
     ITEMS_HELP,
-    SCRIPTED_HELP
+    SCRIPTED_HELP,
+    ENLARGED_MINIMAP
   };
   optional<BottomWindowId> bottomWindow;
   string scriptedHelpId;

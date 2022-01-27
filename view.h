@@ -182,9 +182,6 @@ class View {
       won't trigger screen to refresh.*/
   virtual void updateView(CreatureView*, bool noRefresh) = 0;
 
-  /** Draw a blocking view of the whole level.*/
-  virtual void drawLevelMap(const CreatureView*) = 0;
-
   virtual void setScrollPos(Position) = 0;
 
   /** Scrolls back to the center of the view on next refresh.*/

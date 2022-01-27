@@ -26,11 +26,10 @@ class Renderer;
 class MinimapGui : public GuiElem {
   public:
 
-  MinimapGui(function<void()> clickFun);
+  MinimapGui(function<void(Vec2)> clickFun);
 
   void update(Rectangle bounds, const CreatureView*, Renderer&);
   void clear();
-  void renderMap(Renderer&, Rectangle target);
 
   virtual void render(Renderer&) override;
   virtual bool onClick(MouseButtonId, Vec2) override;
@@ -47,7 +46,7 @@ class MinimapGui : public GuiElem {
     vector<Vec2> locations;
   } info;
 
-  function<void()> clickFun;
+  function<void(Vec2)> clickFun;
 
   SDL::SDL_Surface* mapBuffer;
   optional<Texture> mapBufferTex;

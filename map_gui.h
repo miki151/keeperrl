@@ -48,6 +48,7 @@ class MapGui : public GuiElem {
     function<void(Vec2)> continuousLeftClickFun;
     function<void(Vec2)> leftClickFun;
     function<void(Vec2)> rightClickFun;
+    function<void(Vec2)> middleClickFun;
     function<void()> refreshFun;
   };
   MapGui(Callbacks, SyncQueue<UserInput>&, Clock*, Options*, GuiFactory*, unique_ptr<fx::FXRenderer>,
@@ -66,6 +67,7 @@ class MapGui : public GuiElem {
   void addAnimation(PAnimation animation, Vec2 position);
   void addAnimation(const FXSpawnInfo&);
   void setCenter(double x, double y);
+  void setCenterRatio(double x, double y);
   void setCenter(Vec2, Level* level);
   void clearCenter();
   void resetScrolling();

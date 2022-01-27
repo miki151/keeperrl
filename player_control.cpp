@@ -2540,7 +2540,6 @@ void PlayerControl::processInput(View* view, UserInput input) {
         onSquareClick(Position(pos, getCurrentLevel()));
       break;
     }
-    case UserInputId::DRAW_LEVEL_MAP: view->drawLevelMap(this); break;
     case UserInputId::DRAW_WORLD_MAP: getGame()->presentWorldmap(); break;
     case UserInputId::WORKSHOP: {
       auto types = collective->getWorkshops().getWorkshopsTypes();

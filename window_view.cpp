@@ -82,7 +82,10 @@ Rectangle WindowView::getMapGuiBounds() const {
 }
 
 int WindowView::getMinimapWidth() const {
-  return max(149, renderer.getSize().x / 11);
+  auto ret = max(149, renderer.getSize().x / 11);
+  if (guiBuilder.isEnlargedMinimap())
+    ret *= 3;
+  return ret;
 }
 
 Vec2 WindowView::getMinimapOrigin() const {
@@ -134,12 +137,13 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
   mapGui.reset(new MapGui({
       bindMethod(&WindowView::mapContinuousLeftClickFun, this),
       [this] (Vec2 pos) {
-          if (!guiBuilder.getActiveButton(CollectiveTab::BUILDINGS)) {
-            guiBuilder.closeOverlayWindowsAndClearButton();
-            inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));
-          }
+        if (!guiBuilder.getActiveButton(CollectiveTab::BUILDINGS)) {
+          guiBuilder.closeOverlayWindowsAndClearButton();
+          inputQueue.push(UserInput(UserInputId::TILE_CLICK, pos));
+        }
       },
       bindMethod(&WindowView::mapRightClickFun, this),
+      [this] (Vec2) { guiBuilder.toggleEnlargedMinimap(); },
       [this] { refreshInput = true;},
       },
       inputQueue,
@@ -148,7 +152,15 @@ void WindowView::initialize(unique_ptr<fx::FXRenderer> fxRenderer, unique_ptr<FX
       &gui,
       std::move(fxRenderer),
       std::move(fxViewManager)));
-  minimapGui.reset(new MinimapGui([this]() { inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP)); }));
+  minimapGui.reset(new MinimapGui([this](Vec2 pos) {
+    if (guiBuilder.isEnlargedMinimap()) {
+      auto bounds = minimapGui->getBounds();
+      double x = double(pos.x - bounds.left()) / bounds.width();
+      double y = double(pos.y - bounds.top()) / bounds.height();
+      mapGui->setCenterRatio(x, y);
+    }
+    guiBuilder.toggleEnlargedMinimap();
+  }));
   rebuildMinimapGui();
   guiBuilder.setMapGui(mapGui);
 }
@@ -500,19 +512,12 @@ void WindowView::resetCenter() {
   mapGui->resetScrolling();
 }
 
-void WindowView::drawLevelMap(const CreatureView* creature) {
-  Semaphore sem;
-  auto gui = guiBuilder.drawLevelMap(sem, creature);
-  auto minimapOrigin = getMinimapOrigin();
-  Vec2 origin(minimapOrigin.x + getMinimapWidth() - *gui->getPreferredWidth(), minimapOrigin.y);
-  return getBlockingGui(sem, std::move(gui), origin);
-}
-
 void WindowView::updateMinimap(const CreatureView* creature) {
   Vec2 rad(40, 40);
   Vec2 playerPos = mapGui->getScreenPos().div(mapLayout->getSquareSize());
   Rectangle bounds(playerPos - rad, playerPos + rad);
-  minimapGui->update(bounds, creature, renderer);
+  auto levelBounds = creature->getCreatureViewLevel()->getBounds();
+  minimapGui->update(guiBuilder.isEnlargedMinimap() ? levelBounds : bounds, creature, renderer);
 }
 
 void WindowView::updateView(CreatureView* view, bool noRefresh) {

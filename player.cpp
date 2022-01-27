@@ -792,7 +792,6 @@ void Player::makeMove() {
       case UserInputId::PICK_UP_ITEM: pickUpItemAction(action.get<int>()); break;
       case UserInputId::PICK_UP_ITEM_MULTI: pickUpItemAction(action.get<int>(), true); break;
       case UserInputId::CAST_SPELL: spellAction(action.get<int>()); break;
-      case UserInputId::DRAW_LEVEL_MAP: getView()->drawLevelMap(this); break;
       case UserInputId::CREATURE_MAP_CLICK:
         creatureClickAction(Position(action.get<Vec2>(), getLevel()), false);
         break;

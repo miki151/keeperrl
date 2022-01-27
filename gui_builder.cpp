@@ -119,6 +119,17 @@ void GuiBuilder::closeOverlayWindows() {
   bottomWindow = none;
 }
 
+bool GuiBuilder::isEnlargedMinimap() const {
+  return bottomWindow == BottomWindowId::ENLARGED_MINIMAP;
+}
+
+void GuiBuilder::toggleEnlargedMinimap() {
+  if (isEnlargedMinimap())
+    bottomWindow = none;
+  else
+    bottomWindow = BottomWindowId::ENLARGED_MINIMAP;
+}
+
 void GuiBuilder::closeOverlayWindowsAndClearButton() {
   closeOverlayWindows();
   clearActiveButton();
@@ -4878,22 +4889,4 @@ optional<string> GuiBuilder::getTextInput(const string& title, const string& val
         }
     }
   }
-}
-
-
-
-SGuiElem GuiBuilder::drawLevelMap(Semaphore& sem, const CreatureView* view) {
-  auto miniMap = make_shared<MinimapGui>([]{});
-  auto levelBounds = view->getCreatureViewLevel()->getBounds();
-  miniMap->update(levelBounds, view, renderer);
-  return WL(preferredSize, 630, 630,
-      WL(miniWindow, WL(stack,
-          WL(buttonPos, [=, &sem](Rectangle bounds, Vec2 pos) {
-              mapGui->setCenter(levelBounds.width() * pos.x / bounds.width(),
-                  levelBounds.height() * pos.y / bounds.height());
-              sem.v(); }),
-          WL(drawCustom, [=](Renderer& r, Rectangle bounds) {
-              miniMap->renderMap(r, bounds);
-          })
-      ), [&sem] { sem.v(); }));
 }

@@ -303,7 +303,7 @@ bool MapGui::onRightClick(Vec2 pos) {
 
 bool MapGui::onMiddleClick(Vec2 pos) {
   if (pos.inRectangle(getBounds())) {
-    inputQueue.push(UserInput(UserInputId::DRAW_LEVEL_MAP));
+    callbacks.middleClickFun(pos);
     return true;
   } else
     return false;
@@ -749,6 +749,10 @@ void MapGui::setCenter(double x, double y) {
   center.x = max(0.0, min<double>(center.x, levelBounds.right()));
   center.y = max(0.0, min<double>(center.y, levelBounds.bottom()));
   softCenter = none;
+}
+
+void MapGui::setCenterRatio(double x, double y) {
+  setCenter(x * levelBounds.width(), y * levelBounds.height());
 }
 
 void MapGui::setCenter(Vec2 pos, Level* level) {

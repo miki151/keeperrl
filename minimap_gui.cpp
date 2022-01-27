@@ -26,7 +26,8 @@
 #include "tileset.h"
 #include "mouse_button_id.h"
 
-void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
+void MinimapGui::render(Renderer& renderer) {
+  auto target = getBounds();
   if (!mapBufferTex)
     mapBufferTex.emplace(mapBuffer);
   else if (auto error = mapBufferTex->loadFromMaybe(mapBuffer))
@@ -62,10 +63,6 @@ void MinimapGui::renderMap(Renderer& renderer, Rectangle target) {
   }
 }
 
-void MinimapGui::render(Renderer& r) {
-  renderMap(r, getBounds());
-}
-
 static Vec2 getMapBufferSize() {
   int w = 1;
   int h = 1;
@@ -76,7 +73,7 @@ static Vec2 getMapBufferSize() {
   return Vec2(w, h);
 }
 
-MinimapGui::MinimapGui(function<void()> f) : clickFun(f) {
+MinimapGui::MinimapGui(function<void(Vec2)> f) : clickFun(f) {
   auto size = getMapBufferSize();
   mapBuffer = Texture::createSurface(size.x, size.y);
 }
@@ -88,7 +85,7 @@ void MinimapGui::clear() {
 
 bool MinimapGui::onClick(MouseButtonId id, Vec2 v) {
   if (id == MouseButtonId::LEFT && v.inRectangle(getBounds())) {
-    clickFun();
+    clickFun(v);
     return true;
   }
   return false;

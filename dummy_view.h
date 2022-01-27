@@ -19,7 +19,6 @@ class DummyView : public View {
   virtual void refreshView() override {}
   virtual double getGameSpeed() override { return 20; }
   virtual void updateView(CreatureView*, bool noRefresh) override {}
-  virtual void drawLevelMap(const CreatureView*) override {}
   virtual void setScrollPos(Position) override {}
   virtual void resetCenter() override {}
   virtual UserInput getAction() override { return UserInputId::IDLE; }
