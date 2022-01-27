@@ -561,21 +561,22 @@ void Level::tick() {
   }
   if (above) {
     PROFILE_BLOCK("Z level tick");
-    for (auto pos : getAllPositions()) {
-      Position abovePos(pos.getCoord(), above);
-      if (pos.isCovered() && above->unavailable[pos.getCoord()] && !abovePos.getFurniture(FurnitureLayer::GROUND)) {
-        auto col = getGame()->getPlayerCollective();
-        above->unavailable[pos.getCoord()] = false;
-        abovePos.addFurniture(getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("FLOOR"),
-            TribeId::getMonster()));
-        if (col->getKnownTiles().isKnown(pos)) {
-          col->addKnownTile(abovePos);
-          getGame()->getPlayerControl()->addToMemory(abovePos);
+    for (auto pos : getAllPositions())
+      if (!pos.isUnavailable()) {
+        Position abovePos(pos.getCoord(), above);
+        if (pos.isCovered() && above->unavailable[pos.getCoord()]) {
+          auto col = getGame()->getPlayerCollective();
+          above->unavailable[pos.getCoord()] = false;
+          abovePos.addFurniture(getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("FLOOR"),
+              TribeId::getMonster()));
+          if (col->getKnownTiles().isKnown(pos)) {
+            col->addKnownTile(abovePos);
+            getGame()->getPlayerControl()->addToMemory(abovePos);
+          }
+          if (col->getTerritory().contains(pos))
+            col->claimSquare(abovePos);
         }
-        if (col->getTerritory().contains(pos))
-          col->claimSquare(abovePos);
       }
-    }
   }
 }
 
