@@ -1083,8 +1083,12 @@ void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
         (furniture->getTribe() == getTribeId() || furniture->canRemoveNonFriendly())) {
       furniture->destroy(pos, DestroyAction::Type::BASH);
     }
-    if (!furniture || (!furniture->canDestroy(DestroyAction::Type::DIG) && !furniture->forgetAfterBuilding()))
+    if (!furniture || (!furniture->canDestroy(DestroyAction::Type::DIG) && !furniture->forgetAfterBuilding())) {
       removeUnbuiltFurniture(pos, layer);
+      if (furniture)
+        if (auto otherPos = furniture->getSecondPart(pos))
+          removeUnbuiltFurniture(*otherPos, layer);
+    }
   }
   if (layer == FurnitureLayer::MIDDLE)
     zones->onDestroyOrder(pos);

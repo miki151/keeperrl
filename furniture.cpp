@@ -354,6 +354,12 @@ void Furniture::onConstructedBy(Position pos, Creature* c) {
     handleOnBuilt(pos, this, *onBuilt);
 }
 
+optional<Position> Furniture::getSecondPart(Position pos) const {
+  if (onBuilt)
+    return ::getSecondPart(pos, this, *onBuilt);
+  return none;
+}
+
 FurnitureLayer Furniture::getLayer() const {
   return layer;
 }

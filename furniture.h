@@ -94,6 +94,7 @@ class Furniture {
   void click(Position) const;
   bool overridesMovement() const;
   void use(Position, Creature*) const;
+  optional<Position> getSecondPart(Position) const;
   bool canUse(const Creature*) const;
   optional<FurnitureUsageType> getUsageType() const;
   bool hasUsageType(BuiltinUsageId) const;

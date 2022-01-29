@@ -115,7 +115,10 @@ optional<StairKey> Position::getLandingLink() const {
 
 void Position::removeLandingLink() const {
   if (auto link = getSquare()->getLandingLink()) {
-    level->landingSquares.at(*link).removeElement(*this);
+    auto& positions = level->landingSquares.at(*link);
+    positions.removeElement(*this);
+    if (positions.empty())
+      level->landingSquares.erase(*link);
     modSquare()->setLandingLink(none);
   }
 }
@@ -679,8 +682,11 @@ void Position::removeFurniture(const Furniture* f) const {
   removeFurniture(f, nullptr);
 }
 
-void Position::removeFurniture(const Furniture* f, PFurniture replace, Creature* destroyedBy) const {
+void Position::removeFurniture(const Furniture* f, PFurniture replace, Creature* destroyedBy, bool secondPart) const {
   PROFILE;
+  if (!secondPart)
+    if (auto pos = f->getSecondPart(*this))
+      pos->removeFurniture(pos->getFurniture(f->getLayer()), nullptr, destroyedBy, true);
   bool visibilityChanged = (!!replace) ? (f->blocksAnyVision() != replace->blocksAnyVision()) : f->blocksAnyVision();
   level->removeLightSource(coord, f->getLightEmission());
   auto replacePtr = replace.get();

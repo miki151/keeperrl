@@ -1344,17 +1344,14 @@ Def BedHeal() Heal { FLESH 0.005 } End
   name = "stairs"
   viewId = { "up_staircase" }
   canHideHere = true
-  xForgetAfterBuilding = true
+# xForgetAfterBuilding = true
   usageType = UsageEffect "use" Stairs
+  onBuilt = UP_STAIRS
 }
 "DOWN_STAIRS" inherit "UP_STAIRS"
 {
   viewId = { "down_staircase" }
   onBuilt = DOWN_STAIRS
-}
-"UP_STAIRS_PLAYER" inherit "UP_STAIRS"
-{
-  onBuilt = UP_STAIRS
 }
 "UP_STAIRS_ROCK" inherit "UP_STAIRS"
 {

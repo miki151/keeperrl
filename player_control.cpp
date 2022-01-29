@@ -3013,12 +3013,17 @@ void PlayerControl::handleSelection(Position position, const BuildInfoTypes::Bui
         } else
         if (collective->getKnownTiles().isKnown(position) && !position.isBurning()) {
           selection = SELECT;
+          optional<Position> otherPos;
+          if (auto f = position.getFurniture(layer))
+            otherPos = f->getSecondPart(position);
           collective->destroyOrder(position, layer);
           if (auto f = position.getFurniture(layer))
             if (f->getType() == FurnitureType("TREE_TRUNK") || f->getType() == FurnitureType("STONES"))
               position.removeFurniture(f);
           getView()->addSound(SoundId::REMOVE_CONSTRUCTION);
           updateSquareMemory(position);
+          if (otherPos)
+            updateSquareMemory(*otherPos);
         } else
           if (auto f = position.getFurniture(layer))
             if (f->getType() == FurnitureType("TREE_TRUNK") || f->getType() == FurnitureType("STONES"))
