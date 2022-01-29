@@ -1768,7 +1768,11 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
       fighters = {
         count = {7 10}
         all = { 1 "ENT" }
-        uniques = { "ENT_WITH_DROP" "ENT_WITH_DROP" "ENT_WITH_DROP" "CHILD_ENTS" "CHILD_ENTS" }
+        uniques = { "ENT_WITH_DROP" "ENT_WITH_DROP" "ENT_WITH_DROP" }
+      }
+      civilians = {
+        count = 2
+        all = { 1 "CHILD_ENTS" }
       }
     }
     tribe = MONSTER
