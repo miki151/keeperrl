@@ -5,17 +5,16 @@
 
 class Portals {
   public:
-  Portals(Rectangle bounds);
-  optional<Vec2> getOtherPortal(Vec2) const;
-  optional<int> getPortalIndex(Vec2) const;
+  optional<Position> getOtherPortal(Position) const;
+  optional<int> getPortalIndex(Position) const;
   bool registerPortal(Position);
   void removePortal(Position);
-  optional<short> getDistanceToNearest(Vec2) const;
+  optional<short> getDistanceToNearest(Position) const;
 
   SERIALIZATION_DECL(Portals)
 
   private:
   void recalculateDistances(Level*);
-  vector<optional<Vec2>> SERIAL(matchings);
-  Table<optional<short>> SERIAL(distanceToNearest);
+  vector<optional<Position>> SERIAL(matchings);
+  unordered_map<LevelId, Table<optional<short>>> SERIAL(distanceToNearest);
 };

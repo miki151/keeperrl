@@ -37,6 +37,7 @@ class Options;
 class AvatarInfo;
 class GameConfig;
 class ContentFactory;
+class Portals;
 
 /**
   * Main class that holds all game logic.
@@ -110,6 +111,8 @@ class Model : public OwnedObject<Model> {
   void calculateStairNavigation();
   
   BiomeId getBiomeId() const;
+
+  HeapAllocated<Portals> SERIAL(portals);
 
   private:
   struct Private {};

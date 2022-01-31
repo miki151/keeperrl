@@ -9,7 +9,8 @@ RICH_ENUM(
   FurnitureOnBuilt,
   DOWN_STAIRS,
   UP_STAIRS,
-  SET_ON_FIRE
+  SET_ON_FIRE,
+  PORTAL
 );
 
 void handleOnBuilt(Position, Furniture*, FurnitureOnBuilt);

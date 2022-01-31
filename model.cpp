@@ -59,13 +59,14 @@
 #include "monster_ai.h"
 #include "warlord_controller.h"
 #include "territory.h"
+#include "portals.h"
 
 template <class Archive> 
 void Model::serialize(Archive& ar, const unsigned int version) {
   CHECK(!serializationLocked);
   ar & SUBCLASS(OwnedObject<Model>);
   ar(levels, collectives, timeQueue, deadCreatures, currentTime, woodCount, game, lastTick, biomeId);
-  ar(stairNavigation, cemetery, mainLevels, upLevels, eventGenerator, externalEnemies, defaultMusic);
+  ar(stairNavigation, cemetery, mainLevels, upLevels, eventGenerator, externalEnemies, defaultMusic, portals);
 }
 
 SERIALIZATION_CONSTRUCTOR_IMPL(Model)

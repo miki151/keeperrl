@@ -9,7 +9,6 @@ class Furniture;
 
 namespace FurnitureTickTypes {
 
-struct Portal : EmptyStruct<struct PortalTag> {};
 struct MeteorShower : EmptyStruct<struct MeteorShowerTag> {};
 struct Pit : EmptyStruct<struct PitTag> {};
 struct SetFurnitureOnFire : EmptyStruct<struct SetFurnitureOnFireTag> {};
@@ -22,11 +21,10 @@ struct Trap {
 
 #define VARIANT_TYPES_LIST\
   X(Effect, 0)\
-  X(Portal, 1)\
-  X(MeteorShower, 2)\
-  X(Pit, 3)\
-  X(SetFurnitureOnFire, 4)\
-  X(Trap, 5)
+  X(MeteorShower, 1)\
+  X(Pit, 2)\
+  X(SetFurnitureOnFire, 3)\
+  X(Trap, 4)
 
 #define VARIANT_NAME FurnitureTickType
 

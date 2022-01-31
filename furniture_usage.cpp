@@ -72,19 +72,28 @@ static void useChest(Position pos, const Furniture* furniture, Creature* c, cons
 
 static void usePortal(Position pos, Creature* c) {
   c->you(MsgType::ENTER_PORTAL, "");
-  if (auto otherPos = pos.getOtherPortal())
-    for (auto f : otherPos->getFurniture())
-      if (f->hasUsageType(BuiltinUsageId::PORTAL)) {
-        if (pos.canMoveCreature(*otherPos)) {
-          pos.moveCreature(*otherPos, true);
-          return;
-        }
-        for (Position v : otherPos->neighbors8(Random))
-          if (pos.canMoveCreature(v)) {
-            pos.moveCreature(v, true);
+  if (auto otherPos = pos.getOtherPortal()) {
+    if (otherPos->isSameLevel(pos)) {
+      for (auto f : otherPos->getFurniture())
+        if (f->hasUsageType(BuiltinUsageId::PORTAL)) {
+          if (pos.canMoveCreature(*otherPos)) {
+            pos.moveCreature(*otherPos, true);
             return;
           }
+          for (Position v : otherPos->neighbors8(Random))
+            if (pos.canMoveCreature(v)) {
+              pos.moveCreature(v, true);
+              return;
+            }
+        }
+    } else {
+      if (auto link = pos.getLandingLink()) {
+        c->getLevel()->changeLevel(*link, c);
+        pos.getGame()->addEvent(EventInfo::FX{*otherPos, FXName::TELEPORT_OUT});
+        pos.getGame()->addEvent(EventInfo::FX{pos, FXName::TELEPORT_IN});
       }
+    }
+  }
   c->privateMessage("The portal is inactive. Create another one to open a connection.");
 }
 
@@ -177,6 +186,12 @@ void FurnitureUsage::beforeRemoved(FurnitureUsageType type, Position pos) {
   if (auto id = type.getReferenceMaybe<BuiltinUsageId>())
     switch (*id) {
       case BuiltinUsageId::PORTAL:
+        if (auto otherPos = pos.getOtherPortal())
+          for (auto otherPortal : otherPos->modFurniture())
+            if (otherPortal->hasUsageType(BuiltinUsageId::PORTAL)) {
+              otherPortal->getViewObject()->setColorVariant(Color::WHITE);
+              otherPos->setNeedsRenderAndMemoryUpdate(true);
+            }
         pos.removePortal();
         break;
       default:

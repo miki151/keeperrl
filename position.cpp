@@ -194,37 +194,48 @@ vector<Furniture*> Position::modFurniture() const {
 }
 
 optional<short> Position::getDistanceToNearestPortal() const {
-  return level->portals->getDistanceToNearest(coord);
+  return getModel()->portals->getDistanceToNearest(*this);
 }
 
 optional<Position> Position::getOtherPortal() const {
-  if (level)
-    if (auto v = level->portals->getOtherPortal(coord))
-      return Position(*v, level);
+  if (isValid())
+    return getModel()->portals->getOtherPortal(*this);
   return none;
 }
 
 void Position::registerPortal() {
   if (isValid()) {
-    level->portals->registerPortal(*this);
-    if (auto other = level->portals->getOtherPortal(coord))
-      for (auto& sectors : level->sectors)
-        sectors.second.addExtraConnection(coord, *other);
+    auto& portals = getModel()->portals;
+    portals->registerPortal(*this);
+    if (auto other = portals->getOtherPortal(*this)) {
+      if (isSameLevel(*other)) {
+        for (auto& sectors : level->sectors)
+          sectors.second.addExtraConnection(coord, other->coord);
+      } else {
+        auto key = StairKey::getNew();
+        setLandingLink(key);
+        other->setLandingLink(key);
+      }
+    }
   }
 }
 
 void Position::removePortal() {
   if (isValid()) {
-    if (auto other = level->portals->getOtherPortal(coord))
-      for (auto& sectors : level->sectors)
-        sectors.second.removeExtraConnection(coord, *other);
-    level->portals->removePortal(*this);
+    auto& portals = getModel()->portals;
+    if (auto other = portals->getOtherPortal(*this)) {
+      if (isSameLevel(*other)) {
+        for (auto& sectors : level->sectors)
+          sectors.second.removeExtraConnection(coord, other->coord);
+      }
+    }
+    portals->removePortal(*this);
   }
 }
 
 optional<int> Position::getPortalIndex() const {
   if (isValid())
-    return level->portals->getPortalIndex(coord);
+    return getModel()->portals->getPortalIndex(*this);
   else
     return none;
 }

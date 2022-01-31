@@ -79,6 +79,12 @@ optional<Position> getSecondPart(Position pos, const Furniture* f, FurnitureOnBu
   return none;
 }
 
+static Color getPortalColor(int index) {
+  CHECK(index >= 0);
+  index += 1 + 2 * (index / 6);
+  return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
+}
+
 void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
   switch (type) {
     case FurnitureOnBuilt::UP_STAIRS: {
@@ -127,6 +133,19 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
       addStairs(pos, targetLevel, FurnitureType("UP_STAIRS"));
       break;
     }
+    case FurnitureOnBuilt::PORTAL:
+      pos.registerPortal();
+      f->getViewObject()->setColorVariant(Color::WHITE);
+      if (auto otherPos = pos.getOtherPortal())
+        for (auto otherPortal : otherPos->modFurniture())
+          if (otherPortal->hasUsageType(BuiltinUsageId::PORTAL)) {
+            auto color = getPortalColor(*pos.getPortalIndex());
+            otherPortal->getViewObject()->setColorVariant(color);
+            f->getViewObject()->setColorVariant(color);
+            pos.setNeedsRenderAndMemoryUpdate(true);
+            otherPos->setNeedsRenderAndMemoryUpdate(true);
+          }
+      break;
     case FurnitureOnBuilt::SET_ON_FIRE:
       pos.globalMessage(PlayerMessage("A tower of flame errupts from the floor!", MessagePriority::HIGH));
       f->fireDamage(pos, false);

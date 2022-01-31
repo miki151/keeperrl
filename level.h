@@ -43,7 +43,6 @@ class SquareArray;
 class FurnitureArray;
 class Vision;
 class FieldOfView;
-class Portals;
 class ContentFactory;
 struct PhylacteryInfo;
 
@@ -215,7 +214,6 @@ class Level : public OwnedObject<Level> {
   LevelId SERIAL(levelId) = 0;
   bool SERIAL(noDiagonalPassing) = false;
   void updateCreatureLight(Vec2, int diff);
-  HeapAllocated<Portals> SERIAL(portals);
   template<typename Fun>
   void forEachEffect(Vec2, TribeId, Fun);
   void placeSwarmer(Vec2, Creature*);

@@ -277,9 +277,10 @@ ShortestPath LevelShortestPath::makeShortestPath(Position from, MovementType mov
     if (auto f = pos.getFurniture(FurnitureLayer::MIDDLE))
       if (f->hasUsageType(BuiltinUsageId::PORTAL))
         if (auto otherPos = pos.getOtherPortal())
-          if (auto f2 = otherPos->getFurniture(FurnitureLayer::MIDDLE))
-            if (f2->hasUsageType(BuiltinUsageId::PORTAL))
-              ret.push_back(otherPos->getCoord() - v);
+          if (otherPos->isSameLevel(pos))
+            if (auto f2 = otherPos->getFurniture(FurnitureLayer::MIDDLE))
+              if (f2->hasUsageType(BuiltinUsageId::PORTAL))
+                ret.push_back(otherPos->getCoord() - v);
     return ret;
   };
   CHECK(to.getCoord().inRectangle(level->getBounds()));

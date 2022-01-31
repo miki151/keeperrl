@@ -37,7 +37,6 @@
 #include "field_of_view.h"
 #include "furniture.h"
 #include "furniture_array.h"
-#include "portals.h"
 #include "game_event.h"
 #include "collective.h"
 #include "phylactery_info.h"
@@ -54,7 +53,7 @@ void Level::serialize(Archive& ar, const unsigned int version) {
   ar(squares, landingSquares, tickingSquares, creatures, model, fieldOfView);
   ar(sunlight, bucketMap, lightAmount, unavailable, swarmMaps, territory);
   ar(levelId, noDiagonalPassing, lightCapAmount, creatureIds, memoryUpdates, above, below, mountainLevel);
-  ar(furniture, tickingFurniture, covered, portals, name, depth, wildlife, addedWildlife);
+  ar(furniture, tickingFurniture, covered, name, depth, wildlife, addedWildlife);
   vector<pair<TribeId, unique_ptr<EffectsTable>>> SERIAL(tmp);
   for (auto t : ENUM_ALL(TribeId::KeyType))
     if (!!furnitureEffects[t])
@@ -92,7 +91,7 @@ Level::Level(Private, SquareArray s, FurnitureArray f, WModel m, Table<double> s
       bucketMap(squares->getBounds().getSize(), FieldOfView::sightRange),
       swarmMaps(getSwarmMaps(squares->getBounds().getSize())),
       lightAmount(squares->getBounds(), 0), lightCapAmount(squares->getBounds(), 1),
-      levelId(id), portals(squares->getBounds()) {
+      levelId(id) {
 }
 
 PLevel Level::create(SquareArray s, FurnitureArray f, WModel m,

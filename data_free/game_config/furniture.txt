@@ -1943,7 +1943,7 @@ Def Boulder(Id) {
   viewId = { "portal" }
   strength = 40
   usageType = BuiltinUsageId PORTAL
-  tickType = Portal
+  onBuilt = PORTAL
   destroyFX = { DESTROY_FURNITURE Rgb 120 120 120 255 }
 }
 "METEOR_SHOWER"

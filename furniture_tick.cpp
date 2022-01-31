@@ -93,26 +93,6 @@ static void handle(const FurnitureTickTypes::Pit, Position position, Furniture* 
         }
 }
 
-static Color getPortalColor(int index) {
-  CHECK(index >= 0);
-  index += 1 + 2 * (index / 6);
-  return Color(255 * (index % 2), 255 * ((index / 2) % 2), 255 * ((index / 4) % 2));
-}
-
-static void handle(const FurnitureTickTypes::Portal, Position pos, Furniture* furniture) {
-  pos.registerPortal();
-  furniture->getViewObject()->setColorVariant(Color::WHITE);
-  if (auto otherPos = pos.getOtherPortal())
-    for (auto f : otherPos->modFurniture())
-      if (f->hasUsageType(BuiltinUsageId::PORTAL)) {
-        auto color = getPortalColor(*pos.getPortalIndex());
-        furniture->getViewObject()->setColorVariant(color);
-        f->getViewObject()->setColorVariant(color);
-        pos.setNeedsRenderAndMemoryUpdate(true);
-        otherPos->setNeedsRenderAndMemoryUpdate(true);
-      }
-}
-
 static void handle(const FurnitureTickTypes::SetFurnitureOnFire, Position pos, Furniture* furniture) {
   auto handle = [] (const Position& pos) {
     for (auto& f : pos.getFurniture())
