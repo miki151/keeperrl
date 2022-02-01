@@ -93,6 +93,10 @@ bool FurnitureFactory::canBuild(FurnitureType type, Position pos) const {
   CHECK(groundF);
   if (data.isBridge())
     return !!groundF->getDefaultBridge();
+  if (auto otherPos = data.getSecondPart(pos))
+    if (auto f = otherPos->getFurniture(FurnitureLayer::MIDDLE))
+      if (!f->isWall())
+        return false;
   if (!data.getBuiltOver().empty()) {
     for (auto f : data.getBuiltOver())
       if (!!pos.getFurniture(f))

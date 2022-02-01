@@ -14,4 +14,4 @@ RICH_ENUM(
 );
 
 void handleOnBuilt(Position, Furniture*, FurnitureOnBuilt);
-optional<Position> getSecondPart(Position, const Furniture*, FurnitureOnBuilt);
+optional<int> getStairDirection(FurnitureOnBuilt);

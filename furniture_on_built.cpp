@@ -58,25 +58,15 @@ static void addStairs(Position pos, Level* targetLevel, FurnitureType stairsType
         pos.getGame()->getPlayerControl()->addToMemory(pos);
 }
 
-optional<Position> getSecondPart(Position pos, const Furniture* f, FurnitureOnBuilt type) {
-  auto getOtherStairs = [] (Position pos, int dir) {
-    int index = *pos.getModel()->getMainLevelDepth(pos.getLevel());
-    index = pos.getModel()->getMainLevelsDepth().clamp(index + dir);
-    return Position(pos.getCoord(), pos.getModel()->getMainLevel(index));
-  };
+optional<int> getStairDirection(FurnitureOnBuilt type) {
   switch (type) {
     case FurnitureOnBuilt::UP_STAIRS:
-      if (pos.getLandingLink())
-        return getOtherStairs(pos, -1);
-      break;
+      return -1;
     case FurnitureOnBuilt::DOWN_STAIRS:
-      if (pos.getLandingLink())
-        return getOtherStairs(pos, 1);
-      break;
+      return 1;
     default:
-      break;
+      return none;
   }
-  return none;
 }
 
 static Color getPortalColor(int index) {

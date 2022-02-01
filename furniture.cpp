@@ -355,8 +355,12 @@ void Furniture::onConstructedBy(Position pos, Creature* c) {
 }
 
 optional<Position> Furniture::getSecondPart(Position pos) const {
-  if (onBuilt)
-    return ::getSecondPart(pos, this, *onBuilt);
+  if (onBuilt) 
+    if (auto dir = getStairDirection(*onBuilt)) {
+      int index = *pos.getModel()->getMainLevelDepth(pos.getLevel());
+      index = pos.getModel()->getMainLevelsDepth().clamp(index + *dir);
+      return Position(pos.getCoord(), pos.getModel()->getMainLevel(index));
+    }
   return none;
 }
 
