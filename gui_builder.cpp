@@ -4371,7 +4371,7 @@ SGuiElem GuiBuilder::drawCampaignMenu(SyncQueue<CampaignAction>& queue, View::Ca
   if (retiredGames) {
     retiredMenuLines.addElem(WL(getListBuilder)
         .addElemAuto(WL(label, "Search: "))
-        .addElem(WL(textField, 10, [ret = campaignOptions.searchString] { return ret; },
+        .addElem(WL(textFieldFocused, 10, [ret = campaignOptions.searchString] { return ret; },
             [&queue](string s){ queue.push(CampaignAction(CampaignActionId::SEARCH_RETIRED, std::move(s)));}), 200)
         .addSpace(10)
         .addElemAuto(WL(buttonLabel, "X",
@@ -4502,7 +4502,7 @@ SGuiElem GuiBuilder::drawRetiredDungeonMenu(SyncQueue<variant<string, bool, none
   lines.addSpace(legendLineHeight / 2);
   lines.addElem(WL(getListBuilder)
       .addElemAuto(WL(label, "Search: "))
-      .addElem(WL(textField, 10, [ret = searchString] { return ret; },
+      .addElem(WL(textFieldFocused, 10, [ret = searchString] { return ret; },
           [&queue](string s){ queue.push(std::move(s));}), 200)
       .addSpace(10)
       .addElemAuto(WL(buttonLabel, "X",

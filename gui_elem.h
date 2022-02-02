@@ -83,6 +83,7 @@ class GuiFactory {
   SGuiElem buttonChar(function<void()>, char, bool capture = false, bool useAltIfWasdScrolling = false);
   SGuiElem button(function<void()>, bool capture = false);
   SGuiElem textField(int maxLength, function<string()> text, function<void(string)> callback);
+  SGuiElem textFieldFocused(int maxLength, function<string()> text, function<void(string)> callback);
   SGuiElem buttonPos(function<void(Rectangle, Vec2)>);
   SGuiElem buttonRightClick(function<void()>);
   SGuiElem reverseButton(function<void()>, vector<SDL::SDL_Keysym> = {}, bool capture = false);

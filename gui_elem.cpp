@@ -245,8 +245,9 @@ SGuiElem GuiFactory::button(function<void()> fun, bool capture) {
 namespace  {
 class TextFieldElem : public GuiElem {
   public:
-  TextFieldElem(function<string()> text, function<void(string)> callback, int maxLength, Clock* clock)
-      : callback(std::move(callback)), getText(std::move(text)), clock(clock), maxLength(maxLength) {}
+  TextFieldElem(function<string()> text, function<void(string)> callback, int maxLength, Clock* clock, bool alwaysFocused)
+      : callback(std::move(callback)), getText(std::move(text)), clock(clock), maxLength(maxLength),
+        alwaysFocused(alwaysFocused) {}
 
   virtual bool onClick(MouseButtonId b, Vec2 pos) override {
     if (b == MouseButtonId::LEFT) {
@@ -256,53 +257,58 @@ class TextFieldElem : public GuiElem {
     return false;
   }
 
+  bool isFocused() const {
+    return alwaysFocused || focused;
+  }
+
   virtual void render(Renderer& r) override {
     auto bounds = getBounds();
     auto rectBounds = bounds;
     auto toDraw = getText();
-    if (focused)
+    if (isFocused())
       rectBounds = Rectangle(rectBounds.topLeft(),
           Vec2(max(rectBounds.right(), rectBounds.left() + r.getTextLength(toDraw) + 10), rectBounds.bottom()));
-    if (focused && (clock->getRealMillis().count() / 400) % 2 == 0)
+    if (isFocused() && (clock->getRealMillis().count() / 400) % 2 == 0)
       toDraw += "|";
-    if (focused)
+    if (isFocused())
       r.setTopLayer();
-    r.drawFilledRectangle(rectBounds, Color::BLACK, focused ? Color::WHITE : Color::GRAY);
-    if (!focused)
+    r.drawFilledRectangle(rectBounds, Color::BLACK, isFocused() ? Color::WHITE : Color::GRAY);
+    if (!isFocused())
       r.setScissor(bounds.minusMargin(1));
     r.drawText(Color::BLACK.transparency(100), bounds.topLeft() + Vec2(6, 6), toDraw);
     r.drawText(Color::WHITE, bounds.topLeft() + Vec2(5, 4), toDraw);
-    if (!focused)
+    if (!isFocused())
       r.setScissor(none);
     else
       r.popLayer();
   }
 
   virtual bool onKeyPressed2(SDL::SDL_Keysym sym) override {
-    if (focused) {
+    if (isFocused()) {
       auto current = getText();
       switch (sym.sym) {
         case SDL::SDLK_BACKSPACE: {
           if (!current.empty())
             current.pop_back();
+          callback(current);
           break;
         }
         case SDL::SDLK_ESCAPE:
         case SDL::SDLK_KP_ENTER:
         case SDL::SDLK_RETURN:
+          callback(current);
           focused = false;
-          break;
+          return true;
         default:
           break;
       }
-      callback(current);
       return true;
     }
     return false;
   }
 
   virtual bool onTextInput(const char* s) override {
-    if (focused) {
+    if (isFocused()) {
       auto current = getText();
       current += s;
       current = current.substr(0, maxLength);
@@ -318,11 +324,18 @@ class TextFieldElem : public GuiElem {
   Clock* clock;
   int maxLength;
   bool focused = false;
+  bool alwaysFocused = false;
 };
 }
 
 SGuiElem GuiFactory::textField(int maxLength, function<string()> text, function<void(string)> callback) {
-  return topMargin(-4, bottomMargin(4, make_shared<TextFieldElem>(std::move(text), std::move(callback), maxLength, clock)));
+  return topMargin(-4, bottomMargin(4,
+      make_shared<TextFieldElem>(std::move(text), std::move(callback), maxLength, clock, false)));
+}
+
+SGuiElem GuiFactory::textFieldFocused(int maxLength, function<string()> text, function<void(string)> callback) {
+  return topMargin(-4, bottomMargin(4,
+      make_shared<TextFieldElem>(std::move(text), std::move(callback), maxLength, clock, true)));
 }
 
 SGuiElem GuiFactory::buttonPos(function<void (Rectangle, Vec2)> fun) {
