@@ -1361,16 +1361,19 @@ Def BedHeal() Heal { FLESH 0.005 } End
 {
   viewId = { "down_staircase_rock" }
 }
-"PORTAL_STAIRS" inherit "UP_STAIRS"
+"PORTAL_STAIRS"
 {
   viewId = { "portal" ColorId PURPLE }
   name = "portal"
+  canHideHere = true
   constructMessage = none
   usageType = UsageEffect "use" {Stairs Fx { TELEPORT_OUT }}
 }
-"DOWN_STAIRS_ADOXIE" inherit "UP_STAIRS"
+"DOWN_STAIRS_ADOXIE"
 {
+  name = "stairs"
   viewId = { "down_staircase" }
+  canHideHere = true
   usageType = UsageEffect "use" { Message NORMAL "You lose your sense of direction" Stairs }
   onBuilt = DOWN_STAIRS
 }
