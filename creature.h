@@ -414,6 +414,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   vector<pair<CreatureAttributes, SpellMap>> SERIAL(attributesStack);
   optional<PhylacteryInfo> SERIAL(phylactery);
   bool considerPhylactery(DropType, const Creature* attacker);
+  bool considerPhylacteryOrSavingLife(DropType, const Creature* attacker);
   vector<PromotionInfo> SERIAL(promotions);
   PCreature SERIAL(steed);
 };

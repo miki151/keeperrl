@@ -1757,6 +1757,13 @@ bool Creature::considerPhylactery(DropType drops, const Creature* attacker) {
   return false;
 }
 
+bool Creature::considerPhylacteryOrSavingLife(DropType drops, const Creature* attacker) {
+  if (attacker && attacker->getName().bare() == "Death")
+    return considerSavingLife(drops, attacker) || considerPhylactery(drops, attacker);
+  else
+    return considerPhylactery(drops, attacker) || considerSavingLife(drops, attacker);
+}
+
 Creature* Creature::getRider() const {
   if (position.getCreature() != this)
     return position.getCreature();
@@ -1766,7 +1773,7 @@ Creature* Creature::getRider() const {
 void Creature::dieWithAttacker(Creature* attacker, DropType drops) {
   auto oldPos = position;
   CHECK(!isDead()) << getName().bare() << " is already dead. " << getDeathReason().value_or("");
-  if (considerPhylactery(drops, attacker) || considerSavingLife(drops, attacker))
+  if (considerPhylacteryOrSavingLife(drops, attacker))
     return;
   if (isAffected(LastingEffect::FROZEN) && drops == DropType::EVERYTHING)
     drops = DropType::ONLY_INVENTORY;
