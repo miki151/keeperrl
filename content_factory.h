@@ -33,6 +33,7 @@ class BuildingInfo;
 struct LayoutGenerator;
 struct TileGasInfo;
 struct PromotionInfo;
+struct EquipmentGroup;
 
 class ContentFactory {
   public:
@@ -53,7 +54,8 @@ class ContentFactory {
   vector<pair<string, KeeperCreatureInfo>> SERIAL(keeperCreatures);
   vector<pair<string, AdventurerCreatureInfo>> SERIAL(adventurerCreatures);
   map<CustomItemId, ItemAttributes> SERIAL(items);
-  vector<pair<string, ViewId>> SERIAL(equipmentGroups);
+  vector<EquipmentGroup> SERIAL(equipmentGroups);
+  unordered_set<string> SERIAL(equipmentGroupsAutoLocked);
   map<BuildingId, BuildingInfo> SERIAL(buildingInfo);
   MapLayouts SERIAL(mapLayouts);
   map<BiomeId, BiomeInfo> SERIAL(biomeInfo);

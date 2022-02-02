@@ -53,6 +53,7 @@
 #include "tile_gas_info.h"
 #include "promotion_info.h"
 #include "dancing.h"
+#include "equipment_group.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const vector<string>& s, vector<string> filename, KeyVerifier* keyVerifier) {
@@ -110,5 +111,5 @@ ADD_IMP(vector<PrimaryId<StorageId>>)
 ADD_IMP(map<PrimaryId<TileGasType>, TileGasInfo>)
 ADD_IMP(map<string, vector<PromotionInfo>>)
 ADD_IMP(vector<Dancing::Positions>)
-ADD_IMP(vector<pair<string, ViewId>>)
+ADD_IMP(vector<EquipmentGroup>)
 ADD_IMP(vector<ScriptedHelpInfo>)

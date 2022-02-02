@@ -984,8 +984,9 @@ bool Collective::usesEquipment(const Creature* c) const {
 }
 
 bool Collective::canUseEquipmentGroup(const Creature* c, const string& group) {
+  auto& locked = getGame()->getContentFactory()->equipmentGroupsAutoLocked;
   for (auto& g : concat({getMinionGroupName(c)}, getAutomatonGroupNames(c)))
-    if (!lockedEquipmentGroups.count(g) || !lockedEquipmentGroups.at(g).count(group))
+    if (!lockedEquipmentGroups.count(g) || !(lockedEquipmentGroups.at(g).count(group) ^ locked.count(group)))
       return true;
   return false;
 }

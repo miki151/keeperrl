@@ -101,6 +101,7 @@
 #include "item_types.h"
 #include "furnace.h"
 #include "promotion_info.h"
+#include "equipment_group.h"
 
 template <class Archive>
 void PlayerControl::serialize(Archive& ar, const unsigned int version) {
@@ -619,9 +620,9 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   auto lockedSet = getReferenceMaybe(collective->lockedEquipmentGroups, info.groupName);
   for (auto& group : factory->equipmentGroups) {
     info.equipmentGroups.push_back(PlayerInfo::EquipmentGroupInfo {
-      group.second,
-      group.first,
-      lockedSet && lockedSet->count(group.first)
+      group.viewId,
+      group.name,
+      static_cast<bool>((lockedSet && lockedSet->count(group.name)) ^ group.autoLocked)
     });
   }
 }
