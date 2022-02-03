@@ -354,6 +354,11 @@ void Furniture::onConstructedBy(Position pos, Creature* c) {
     handleOnBuilt(pos, this, *onBuilt);
 }
 
+void Furniture::beforeRemoved(Position pos) const {
+  if (onBuilt)
+    handleBeforeRemoved(pos, this, *onBuilt);  
+}
+
 optional<Position> Furniture::getSecondPart(Position pos) const {
   if (onBuilt) 
     if (auto dir = getStairDirection(*onBuilt)) {

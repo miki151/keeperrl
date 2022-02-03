@@ -142,3 +142,16 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
       break;
   }
 }
+
+void handleBeforeRemoved(Position pos, const Furniture* f, FurnitureOnBuilt type) {
+  switch (type) {
+    case FurnitureOnBuilt::UP_STAIRS:
+    case FurnitureOnBuilt::DOWN_STAIRS:
+      pos.removeLandingLink();
+      if (auto otherPos = f->getSecondPart(pos))
+        otherPos->removeLandingLink();
+      break;
+    default:
+      break;
+  }
+}

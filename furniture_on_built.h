@@ -14,4 +14,5 @@ RICH_ENUM(
 );
 
 void handleOnBuilt(Position, Furniture*, FurnitureOnBuilt);
+void handleBeforeRemoved(Position, const Furniture*, FurnitureOnBuilt);
 optional<int> getStairDirection(FurnitureOnBuilt);

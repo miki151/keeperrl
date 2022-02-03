@@ -695,6 +695,7 @@ void Position::removeFurniture(const Furniture* f) const {
 
 void Position::removeFurniture(const Furniture* f, PFurniture replace, Creature* destroyedBy, bool secondPart) const {
   PROFILE;
+  f->beforeRemoved(*this);
   if (!secondPart)
     if (auto pos = f->getSecondPart(*this))
       pos->removeFurniture(pos->getFurniture(f->getLayer()), nullptr, destroyedBy, true);

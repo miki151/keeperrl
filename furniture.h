@@ -107,6 +107,7 @@ class Furniture {
   bool isWall() const;
   bool isBuildingSupport() const;
   void onConstructedBy(Position, Creature*);
+  void beforeRemoved(Position) const;
   FurnitureLayer getLayer() const;
   double getLightEmission() const;
   bool canHide() const;
