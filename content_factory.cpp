@@ -24,11 +24,10 @@
 #include "layout_generator.h"
 #include "tile_gas_info.h"
 #include "promotion_info.h"
-#include "equipment_group.h"
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
-  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping, randomLayouts, tileGasTypes, promotions, dancePositions, equipmentGroups, scriptedHelp, equipmentGroupsAutoLocked);
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping, randomLayouts, tileGasTypes, promotions, dancePositions, equipmentGroups, scriptedHelp);
   creatures.setContentFactory(this);
 }
 
@@ -395,10 +394,7 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (auto res = readItems(config, &keyVerifier))
     return *res;
   if (auto res = config->readObject(equipmentGroups, GameConfigId::EQUIPMENT_GROUPS, &keyVerifier))
-    return *res;
-  for (auto& elem : equipmentGroups)
-    if (elem.autoLocked)
-      equipmentGroupsAutoLocked.insert(elem.name);
+    return *res;  
   if (auto error = readResourceInfo(config, &keyVerifier))
     return *error;
   if (auto error = readCampaignInfo(config, &keyVerifier))
