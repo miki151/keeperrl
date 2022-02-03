@@ -181,20 +181,3 @@ string FurnitureUsage::getUsageQuestion(FurnitureUsageType type, string furnitur
       }
   );
 }
-
-void FurnitureUsage::beforeRemoved(FurnitureUsageType type, Position pos) {
-  if (auto id = type.getReferenceMaybe<BuiltinUsageId>())
-    switch (*id) {
-      case BuiltinUsageId::PORTAL:
-        if (auto otherPos = pos.getOtherPortal())
-          for (auto otherPortal : otherPos->modFurniture())
-            if (otherPortal->hasUsageType(BuiltinUsageId::PORTAL)) {
-              otherPortal->getViewObject()->setColorVariant(Color::WHITE);
-              otherPos->setNeedsRenderAndMemoryUpdate(true);
-            }
-        pos.removePortal();
-        break;
-      default:
-        break;
-    }
-}

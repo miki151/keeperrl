@@ -33,5 +33,4 @@ class FurnitureUsage {
   static void handle(FurnitureUsageType, Position, const Furniture*, Creature*);
   static bool canHandle(FurnitureUsageType, const Creature*);
   static string getUsageQuestion(FurnitureUsageType, string furnitureName);
-  static void beforeRemoved(FurnitureUsageType, Position);
 };

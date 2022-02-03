@@ -151,6 +151,15 @@ void handleBeforeRemoved(Position pos, const Furniture* f, FurnitureOnBuilt type
       if (auto otherPos = f->getSecondPart(pos))
         otherPos->removeLandingLink();
       break;
+    case FurnitureOnBuilt::PORTAL:
+      if (auto otherPos = pos.getOtherPortal())
+        for (auto otherPortal : otherPos->modFurniture())
+          if (otherPortal->hasUsageType(BuiltinUsageId::PORTAL)) {
+            otherPortal->getViewObject()->setColorVariant(Color::WHITE);
+            otherPos->setNeedsRenderAndMemoryUpdate(true);
+          }
+      pos.removePortal();
+      break;
     default:
       break;
   }

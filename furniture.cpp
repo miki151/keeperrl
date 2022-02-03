@@ -142,8 +142,6 @@ void Furniture::destroy(Position pos, const DestroyAction& action, Creature* des
   auto myType = type;
   if (itemDrop)
     pos.dropItems(itemDrop->random(pos.getGame()->getContentFactory()));
-  if (usageType)
-    FurnitureUsage::beforeRemoved(*usageType, pos);
   if (destroyFX)
     pos.getGame()->addEvent(EventInfo::FX{pos, *destroyFX});
   auto effect = destroyedEffect;
