@@ -388,16 +388,20 @@ void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
       return !collective->getMinionEquipment().isOwner(it, creature)
       && creature->canEquipIfEmptySlot(it, nullptr) && it->getEquipmentSlot() == slot; });
   if (chosenItem) {
-    if (auto creatureId = collective->getMinionEquipment().getOwner(chosenItem))
-      if (Creature* c = getCreature(*creatureId))
-        c->removeEffect(LastingEffect::SLEEP);
-    creature->removeEffect(LastingEffect::SLEEP);
+    if (!chosenItem->getAutoEquipPredicate().apply(creature, nullptr) &&
+        !getView()->yesOrNoPrompt("This item may potentially hurt " + creature->getName().title() + ". Continue?"))
+      return;
     vector<Item*> conflictingItems;
     for (auto it : collective->getMinionEquipment().getItemsOwnedBy(creature))
       if (it->isConflictingEquipment(chosenItem))
         conflictingItems.push_back(it);
-    if (getView()->confirmConflictingItems(conflictingItems))
+    if (getView()->confirmConflictingItems(conflictingItems)) {
+      if (auto creatureId = collective->getMinionEquipment().getOwner(chosenItem))
+        if (Creature* c = getCreature(*creatureId))
+          c->removeEffect(LastingEffect::SLEEP);
+      creature->removeEffect(LastingEffect::SLEEP);
       CHECK(collective->getMinionEquipment().tryToOwn(creature, chosenItem));
+    }
   }
 }
 

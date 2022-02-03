@@ -891,7 +891,7 @@ class ByCollective : public Behaviour {
     if (!collective->hasTrait(creature, MinionTrait::NO_AUTO_EQUIPMENT) && Random.roll(40)) {
       auto items = collective->getAllItems(ItemIndex::MINION_EQUIPMENT, false).filter([&](auto item) {
         auto g = item->getEquipmentGroup();
-        return !g || collective->canUseEquipmentGroup(creature, *g);
+        return item->getAutoEquipPredicate().apply(creature, nullptr) && (!g || collective->canUseEquipmentGroup(creature, *g));
       });
       minionEquipment.autoAssign(creature, items);
     }

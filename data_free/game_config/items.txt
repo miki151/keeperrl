@@ -584,6 +584,7 @@ End
       victimEffect = {0.5 Fire}
     }
     carriedTickEffect = InferniteEffect()
+    autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = LIGHT_SOURCE
     equipmentGroup = "infernite equipment"
   }
@@ -659,6 +660,7 @@ End
       victimEffect = {0.5 Fire}
     }
     carriedTickEffect = InferniteEffect()
+    autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = LIGHT_SOURCE
     equipmentGroup = "infernite equipment"
   }
@@ -711,6 +713,7 @@ End
       victimEffect = {0.5 Fire}
     }
     carriedTickEffect = InferniteEffect()
+    autoEquipPredicate = LastingEffect FIRE_RESISTANT
     ownedEffect = LIGHT_SOURCE
     equipmentGroup = "infernite equipment"
   }

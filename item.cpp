@@ -267,6 +267,10 @@ optional<LastingEffect> Item::getOwnedEffect() const {
   return attributes->ownedEffect;
 }
 
+CreaturePredicate Item::getAutoEquipPredicate() const {
+  return attributes->autoEquipPredicate;
+}
+
 const WeaponInfo& Item::getWeaponInfo() const {
   return attributes->weaponInfo;
 }

@@ -106,6 +106,7 @@ class ItemAttributes {
   optional<Effect> SERIAL(carriedTickEffect);
   CostInfo SERIAL(craftingCost) = CostInfo::noCost();
   optional<string> SERIAL(equipmentGroup);
+  CreaturePredicate SERIAL(autoEquipPredicate) = CreaturePredicates::And{};
 };
 
 static_assert(std::is_nothrow_move_constructible<ItemAttributes>::value, "T should be noexcept MoveConstructible");

@@ -33,7 +33,7 @@ void ItemAttributes::serializeImpl(Archive& ar, const unsigned int version) {
   ar(OPTION(prefixes), OPTION(genPrefixes), NAMED(ingredientType), OPTION(modifierVariation), OPTION(variationChance), OPTION(wishedCount));
   ar(OPTION(specialAttr), OPTION(partIds), OPTION(equipedCompanion), OPTION(upgradeType), OPTION(producedStat));
   ar(OPTION(effectAppliedWhenThrown), OPTION(applyPredicate), NAMED(storageIds), NAMED(carriedTickEffect), OPTION(craftingCost));
-  ar(OPTION(equipmentGroup));
+  ar(OPTION(equipmentGroup), OPTION(autoEquipPredicate));
 }
 
 template <class Archive>

@@ -405,6 +405,10 @@ bool CreaturePredicate::apply(Position pos, const Creature* attacker) const {
   return visit<bool>([&](const auto& p) { return Impl::apply(p, pos, attacker); });
 }
 
+bool CreaturePredicate::apply(Creature* c, const Creature* attacker) const {
+  return apply(c->getPosition(), attacker);
+}
+
 string CreaturePredicate::getName() const {
   return visit<string>([&](const auto& p) { return Impl::getNameTopLevel(p); });
 }
