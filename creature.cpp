@@ -2098,8 +2098,8 @@ CreatureAction Creature::dismount() const {
     if (v.canEnter(getMovementTypeNotSteed(getGame())))
       return CreatureAction(this, [=](Creature* self) {
         auto dir = position.getDir(v);
-        self->forceDismount(dir);
         self->verb("dismount", "dismounts", steed->getName().the());
+        self->forceDismount(dir);
         auto timeSpent = 1_visible;
         self->addMovementInfo(self->spendTime(timeSpent, getSpeedModifier(self))->setDirection(dir));
       });  
