@@ -27,6 +27,7 @@ SIMPLE_PREDICATE(Humanoid);
 SIMPLE_PREDICATE(PopLimitReached);
 SIMPLE_PREDICATE(IsClosedOffPigsty);
 SIMPLE_PREDICATE(CanCreatureEnter);
+SIMPLE_PREDICATE(SameTribe);
 
 struct HatedBy {
   LastingEffect SERIAL(effect);
@@ -155,7 +156,8 @@ struct Frequency {
   X(IsClosedOffPigsty, 32)\
   X(CanCreatureEnter, 33)\
   X(Area, 34)\
-  X(Frequency, 35)
+  X(Frequency, 35)\
+  X(SameTribe, 36)
 
 #define VARIANT_NAME CreaturePredicate
 #define VARIANT_TYPES_LIST CREATURE_PREDICATE_LIST

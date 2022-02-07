@@ -26,6 +26,14 @@ static string getNameNegated(const CreaturePredicates::Enemy&) {
   return "allies";
 }
 
+static bool applyToCreature(const CreaturePredicates::SameTribe&, const Creature* victim, const Creature* attacker) {
+  return !!attacker && victim->getTribeId() == attacker->getTribeId();
+}
+
+static string getName(const CreaturePredicates::SameTribe&) {
+  return "own tribe";
+}
+
 static bool applyToCreature(const CreaturePredicates::Automaton&, const Creature* victim, const Creature* attacker) {
   return victim->isAutomaton();
 }
