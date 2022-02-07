@@ -543,7 +543,7 @@ End
     tribe = HUMAN
     inhabitants = {
       leader = { { "ARTISAN_LEGEN" } }
-      civilians = {
+      fighters = {
         count = {2 5}
         all = {
           1 "KNIGHT"
