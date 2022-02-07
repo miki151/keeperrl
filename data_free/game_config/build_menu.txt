@@ -188,12 +188,6 @@
     { Furniture {{ "BED3" }       "GOLD" 12 }                      "Luxurious bed"     "Living"
         "Humanoid minions sleep here."}
   }
-
-  "beast_cage"
-  {
-    { Furniture {{ "BEAST_CAGE" } "WOOD" 8 }                       "Beast cage"        "Living"
-        "Beasts sleep here."}
-  }
    
   "dining table"
   {
@@ -332,6 +326,9 @@
 
     { Furniture {{ "TORTURE_TABLE" } "IRON" 15 }                   "Torture table"     "Prison"
         "Can be used to torture prisoners. Free population slot required for torturing."}
+
+    { Furniture {{ "BEAST_CAGE" } "WOOD" 8 }                       "Beast cage"        "Prison"
+        "Beasts sleep here."}
   }
 
 

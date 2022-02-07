@@ -15,7 +15,7 @@
   zLevelGroups = { "basic" "evil" }
   initialTech = { "sorcery" }
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage"
+      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds"
       "dining table" "coffins" "pigsty"
       "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "demon_shrine"
       "prison" "orders" "installations" "minion_statues" "magical_installations" "healing_totem"
@@ -45,7 +45,7 @@
   zLevelGroups = { "basic" "lawful" }
   initialTech = { "archery" }
   buildingGroups = {
-      "structure" "arrowslits" "doors" "floors" "storage" "zones" "library" "throne" "beds" "beast_cage"
+      "structure" "arrowslits" "doors" "floors" "storage" "zones" "library" "throne" "beds"
       "dining table" "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery"
       "furnace" "angel_shrine" "prison" "orders" "installations"
   }
