@@ -566,7 +566,7 @@ void Level::tick() {
         if (pos.isCovered() && above->unavailable[pos.getCoord()]) {
           auto col = getGame()->getPlayerCollective();
           above->unavailable[pos.getCoord()] = false;
-          abovePos.addFurniture(getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("FLOOR"),
+          abovePos.addFurniture(getGame()->getContentFactory()->furniture.getFurniture(FurnitureType("ROOF"),
               TribeId::getMonster()));
           if (col->getKnownTiles().isKnown(pos)) {
             col->addKnownTile(abovePos);

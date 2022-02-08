@@ -83,6 +83,7 @@
 { "dwarf_female" "h" ColorId LIGHT_BLUE }
 { "shopkeeper" "@" ColorId LIGHT_BLUE }
 { "floor" "." ColorId LIGHT_GRAY }
+{ "roof" "=" ColorId LIGHT_RED }
 { "floor_red" "." ColorId LIGHT_RED }
 { viewId = "bridge" symbol = "_" color = ColorId BROWN
   southSide = "bridge2" }
@@ -663,21 +664,21 @@ Def GoldGlitter() { GLITTERING Rgb 253 247 172 255} End
 { viewId = "road" symbol = "." color = ColorId LIGHT_GRAY
   roadConnections = true }
 { viewId = "sand" symbol = "." color = ColorId YELLOW canMirror = true
-  extraBorders = { "water" "floor" "keeper_floor" } }
+  extraBorders = { "water" "floor" "keeper_floor" "roof" } }
 { viewId = "red_sand" symbol = "." color = ColorId ORANGE canMirror = true
-  extraBorders = { "water" "floor" "keeper_floor" } }
+  extraBorders = { "water" "floor" "keeper_floor" "roof" } }
 { viewId = "mud" symbol = "." color = ColorId BROWN
-  extraBorders = { "water" "hill" "sand" "floor" "keeper_floor" } }
+  extraBorders = { "water" "hill" "sand" "floor" "keeper_floor" "roof" } }
 { viewId = "snow" symbol = "." color = ColorId WHITE }
 { viewId = "ice" symbol = "." color = ColorId LIGHT_BLUE waterSides = "water" }
 { viewId = "grass" symbol = "𝃰" color = ColorId GREEN
   isSymbolFont = true canMirror = true
-  extraBorders = { "water" "hill" "sand" "mud" "floor" "keeper_floor" } }
+  extraBorders = { "water" "hill" "sand" "mud" "floor" "keeper_floor" "roof" } }
 { viewId = "swampgrass" symbol = "𝃰" color = ColorId DARK_GREEN
   isSymbolFont = true canMirror = true }
 { viewId = "hill" symbol = "𝀢" color = ColorId DARK_GREEN
   isSymbolFont = true canMirror = true
-  extraBorders = { "water" "sand" "floor" "keeper_floor" } }
+  extraBorders = { "water" "sand" "floor" "keeper_floor" "roof" } }
 { viewId = "water" symbol = "~" color = ColorId LIGHT_BLUE
   waterSides = "water" animated = true spriteColor = Rgb 100 130 220 255 }
 { viewId = "tar" symbol = "~" color = ColorId DARK_GRAY

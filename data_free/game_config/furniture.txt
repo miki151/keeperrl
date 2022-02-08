@@ -2109,7 +2109,13 @@ Def Boulder(Id) {
   viewId = { "floor" }
   layer = GROUND
   canBuildOutsideOfTerritory = true
-  builtOver = {"HILL" "GRASS" "SAND" "SNOW" "FILL_UP_WATER_FLOOR"}
+  builtOver = {"HILL" "GRASS" "SAND" "SNOW" "FILL_UP_WATER_FLOOR" "ROOF"}
+}
+"ROOF"
+{
+  name = "roof"
+  viewId = { "roof" }
+  layer = GROUND
 }
 "FLOOR_RED" inherit "FLOOR"
 {
