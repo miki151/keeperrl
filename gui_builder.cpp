@@ -351,7 +351,7 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
   };
   addBuiltinButton(ViewId("special_bmbw"), "Bestiary", BESTIARY);
   addBuiltinButton(ViewId("scroll"), "Items", ITEMS_HELP);
-  addBuiltinButton(ViewId("special_bmbw"), "Bestiary", BESTIARY);
+  addBuiltinButton(ViewId("book"), "Spell schools", SPELL_SCHOOLS);
   lines.addSpace(10);
   for (auto elem : Iter(info.scriptedHelp))
     if (elem.index() >= 3 && !!elem->viewId && !!elem->title)
