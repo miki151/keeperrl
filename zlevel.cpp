@@ -24,7 +24,7 @@ static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCount
       [&](const WaterZLevel& level) {
         return LevelMakerResult{
             LevelMaker::getWaterZLevel(Random, level.waterType, size.x, level.creatures),
-            none
+            vector<EnemyInfo>()
         };
       },
       [&](const EnemyZLevel& level) {
@@ -37,7 +37,7 @@ static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCount
         return LevelMakerResult{
             LevelMaker::settlementLevel(*contentFactory, Random, enemy.settlement, size,
                 resources, tribe),
-            std::move(enemy)
+            vector<EnemyInfo>{std::move(enemy)}
         };
       },
       [&](const FullZLevel& level) {
@@ -54,7 +54,7 @@ static LevelMakerResult getLevelMaker(const ZLevelInfo& levelInfo, ResourceCount
         }
         return LevelMakerResult{
             LevelMaker::getFullZLevel(Random, settlement, resources, size.x, tribe, *contentFactory),
-            std::move(enemy)
+            vector<EnemyInfo>()
         };
       });
 }
@@ -73,13 +73,15 @@ LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory
 LevelMakerResult getUpLevel(RandomGen& random, ContentFactory* contentFactory,
     int depth, Position pos) {
   auto& biomeInfo = contentFactory->biomeInfo.at(pos.getModel()->getBiomeId());
-  optional<EnemyInfo> enemy;
-  if (depth == biomeInfo.mountains.numMountainLevels && biomeInfo.mountainTopEnemy) {
-    enemy = getEnemy(*biomeInfo.mountainTopEnemy, contentFactory);
-    enemy->settlement.collective = new CollectiveBuilder(enemy->config, enemy->settlement.tribe);
-  }
+  vector<EnemyInfo> enemies;
+  for (auto& enemyInfo : biomeInfo.mountainEnemies)
+    if (enemyInfo.first.contains(depth) && random.chance(enemyInfo.second.probability))
+      for (int it : Range(Random.get(enemyInfo.second.count))) {
+        enemies.push_back(getEnemy(enemyInfo.second.id, contentFactory));
+        enemies.back().settlement.collective = new CollectiveBuilder(enemies.back().config, enemies.back().settlement.tribe);
+      }
   auto res = chooseResourceCounts(random, contentFactory->resources, -depth);
-  auto maker = LevelMaker::upLevel(pos, biomeInfo, enemy ? &enemy->settlement : nullptr, res);
+  auto maker = LevelMaker::upLevel(pos, biomeInfo, enemies.transform([](auto e) {return e.settlement; }), res);
   auto size = pos.getModel()->getGroundLevel()->getBounds().getSize();
-  return LevelMakerResult { std::move(maker), std::move(enemy)};
+  return LevelMakerResult { std::move(maker), std::move(enemies)};
 }

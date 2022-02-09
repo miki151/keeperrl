@@ -41,7 +41,12 @@
       trees = "flowers"
     }
   }
-  mountainTopEnemy = "KIRIN"
+  mountainEnemies = {
+    {1 8} {id = "WOLF_DEN" probability = 0.2}
+    {1 8} {id = "BAT_DEN" probability = 0.2}
+    {1 8} {id = "CAVE_BEAR_DEN" probability = 0.2}
+    10 {id = "KIRIN"}
+  }
   wildlife = {
     count = { 3 }
     all = {
@@ -207,7 +212,12 @@
       trees = "vegetationSnow"
     }
   }
-  mountainTopEnemy = "YETI"
+  mountainEnemies = {
+    {1 8} {id = "WOLF_DEN" probability = 0.2}
+    {1 8} {id = "BAT_DEN" probability = 0.2}
+    {1 8} {id = "CAVE_BEAR_DEN" probability = 0.2}
+    10 {id = "YETI"}
+  }
   wildlife = {
     count = { 6 }
     all = {
@@ -263,6 +273,11 @@
       onType = "SAND"
       trees = "vegetationDesert"
     }
+  }
+  mountainEnemies = {
+    {1 8} {id = "WOLF_DEN" probability = 0.2}
+    {1 8} {id = "BAT_DEN" probability = 0.2}
+    {1 8} {id = "CAVE_BEAR_DEN" probability = 0.2}
   }
   wildlife = {
     count = { 6 }

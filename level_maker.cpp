@@ -3189,10 +3189,10 @@ class UpLevelMaker : public LevelMaker {
       if (ground->mountainLevel[v] == thisHeight) {
         builder->setSunlight(v, 1.0);
         builder->setCovered(v, false);
-        builder->putFurniture(v, biome.mountains.hill, TribeId::getMonster());
+        builder->putFurniture(v, biome.mountains.hill, TribeId::getMonster(), SquareAttrib::HILL);
       } else {
         builder->putFurniture(v, biome.mountains.mountainFloor, TribeId::getMonster());
-        builder->putFurniture(v, biome.mountains.mountain, TribeId::getMonster());
+        builder->putFurniture(v, biome.mountains.mountain, TribeId::getMonster(), SquareAttrib::MOUNTAIN);
         builder->setCovered(v, true);
         builder->setSunlight(v, ground->getLevelGenSunlight(v));
         isMountain2[v] = true;
@@ -3210,16 +3210,22 @@ class UpLevelMaker : public LevelMaker {
 };
 }
 
-PLevelMaker LevelMaker::upLevel(Position pos, const BiomeInfo& biomeInfo, SettlementInfo* settlement,
+PLevelMaker LevelMaker::upLevel(Position pos, const BiomeInfo& biomeInfo, vector<SettlementInfo> settlements,
     optional<ResourceCounts> resources) {
   auto queue = unique<MakerQueue>();
   queue->addMaker(unique<UpLevelMaker>(pos, biomeInfo));
   queue->addMaker(getForrest(biomeInfo));
   auto& factory = *pos.getGame()->getContentFactory();
-  if (settlement) {
+  for (auto& settlement : settlements) {
     auto locations = unique<RandomLocations>();
-    locations->add(getSettlementMaker(factory, Random, *settlement), getSize(factory.mapLayouts, Random, settlement->type),
-        getSettlementPredicate(*settlement));
+    locations->add(unique<MakerQueue>(
+            getSettlementMaker(factory, Random, settlement),
+            unique<Connector>(none, TribeId::getMonster(), 5,
+                Predicate::canEnter({MovementTrait::WALK}),
+                SquareAttrib::CONNECTOR)
+        ),
+        getSize(factory.mapLayouts, Random, settlement.type),
+        getSettlementPredicate(settlement));
     queue->addMaker(std::move(locations));
   }
   if (resources) {
@@ -3227,6 +3233,8 @@ PLevelMaker LevelMaker::upLevel(Position pos, const BiomeInfo& biomeInfo, Settle
     generateResources(Random, *resources, nullptr, resLocations.get(), {}, 0, TribeId::getMonster());
     queue->addMaker(std::move(resLocations));
   }
-  queue->addMaker(unique<AddMapBorder>(mapBorderUnavailableWidth));
-  return std::move(queue);
+  auto all = unique<MakerQueue>();
+  all->addMaker(unique<Margin>(mapBorderUnavailableWidth, std::move(queue)));
+  all->addMaker(unique<AddMapBorder>(mapBorderUnavailableWidth));
+  return std::move(all);
 }

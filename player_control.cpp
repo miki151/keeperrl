@@ -2219,7 +2219,7 @@ void PlayerControl::getViewIndex(Vec2 pos, ViewIndex& index) const {
     index.setHighlight(rectSelection->deselect ? HighlightType::RECT_DESELECTION : HighlightType::RECT_SELECTION);
 #ifndef RELEASE
   if (getGame()->getOptions()->getBoolValue(OptionId::SHOW_MAP))
-    if (collective->getKnownTiles().isKnown(position))
+    if (position.getCollective())
         index.setHighlight(HighlightType::RECT_SELECTION);
 #endif
   const ConstructionMap& constructions = collective->getConstructions();

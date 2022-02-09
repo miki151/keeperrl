@@ -6,7 +6,7 @@
 
 struct LevelMakerResult {
   PLevelMaker maker;
-  optional<EnemyInfo> enemy;
+  vector<EnemyInfo> enemies;
 };
 
 LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory, const vector<string>& zLevelGroups,

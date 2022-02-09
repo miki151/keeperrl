@@ -20,7 +20,7 @@
 
 struct ZLevelResult {
   Level* level;
-  PCollective collective;
+  vector<PCollective> collective;
 };
 
 template <typename BuildFun>
@@ -88,11 +88,11 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
               auto maker = getUpLevel(Random, contentFactory, -levelIndex + 1, pos);
               auto level = pos.getModel()->buildUpLevel(contentFactory,
                   LevelBuilder(Random, contentFactory, levelSize.x, levelSize.y, true), std::move(maker.maker));
-              return ZLevelResult{ level, maker.enemy ? maker.enemy->buildCollective(contentFactory) : nullptr};
+              return ZLevelResult{ level, maker.enemies.transform([&](auto& e) { return e.buildCollective(contentFactory); })};
             },
             "z-level " + toString(levelIndex));
-        if (newLevel.collective)
-          pos.getModel()->addCollective(std::move(newLevel.collective));
+        for (auto& c : newLevel.collective)
+          pos.getModel()->addCollective(std::move(c));
         targetLevel = newLevel.level;
       } else
         targetLevel = pos.getModel()->getMainLevel(levelIndex - 1);
@@ -112,11 +112,11 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
               auto level = pos.getModel()->buildMainLevel(contentFactory,
                   LevelBuilder(Random, contentFactory, levelSize.x, levelSize.y, true),
                       std::move(maker.maker));
-              return ZLevelResult{ level, maker.enemy ? maker.enemy->buildCollective(contentFactory) : nullptr};
+              return ZLevelResult{ level, maker.enemies.transform([&](auto& e) { return e.buildCollective(contentFactory); })};
             },
             "z-level " + toString(levelIndex));
-        if (newLevel.collective)
-          pos.getModel()->addCollective(std::move(newLevel.collective));
+        for (auto& c : newLevel.collective)
+          pos.getModel()->addCollective(std::move(c));
         targetLevel = newLevel.level;
       } else
         targetLevel = pos.getModel()->getMainLevel(levelIndex + 1);

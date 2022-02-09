@@ -1169,6 +1169,52 @@ End
     attackBehaviour = KillLeader
   }
 }
+"BAT_DEN"
+{
+  settlement = {
+    type = Builtin CAVE "DUNGEON"
+    inhabitants = {
+      fighters = {
+        count = {4 9}
+        all = {
+          50 "BAT"
+        }
+      }
+    }
+    tribe = MONSTER
+    race = "bats"
+  }
+  config = {
+    immigrantInterval = 1000
+    maxPopulation = 10
+  }
+  immigrants = { 
+    {
+      ids = { "BAT" }
+      traits = { FIGHTER }
+      frequency = 1
+    }
+  }
+}
+"CAVE_BEAR_DEN"
+{
+  settlement = {
+    type = Builtin CAVE "DUNGEON"
+    inhabitants = {
+      leader = { { "CAVE_BEAR" } }
+    }
+    tribe = MONSTER
+    race = "cave bear"
+  }
+  config = {
+    leaderAsFighter = true
+  }
+  behaviour = {
+    minPopulation = 0
+    minTeamSize = 1
+    attackBehaviour = KillLeader
+  }
+}
 "NO_AGGRO_BANDITS"
 {
   settlement = {
