@@ -1518,8 +1518,10 @@ vector<ImmigrantDataInfo> PlayerControl::getPrisonerImmigrantData() const {
   auto contentFactory = getGame()->getContentFactory();
   for (auto stack : getPrisonerImmigrantStack()) {
     auto c = stack.creatures[0];
-    const int numPrisoners = collective->getCreatures(MinionTrait::PRISONER).size();
     const auto prisonType = contentFactory->furniture.getData(getPrisonType(c));
+    const int numPrisoners = collective->getCreatures(MinionTrait::PRISONER)
+        .filter([prisonType = getPrisonType(c)](auto other) {  return getPrisonType(other) == prisonType; })
+        .size();
     const int prisonSize = [&] {
       auto& constructions = collective->getConstructions();
       if (prisonType.getType() == FurnitureType("PRISON")) {
