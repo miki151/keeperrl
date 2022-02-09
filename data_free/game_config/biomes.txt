@@ -278,6 +278,7 @@
     {1 8} {id = "WOLF_DEN" probability = 0.2}
     {1 8} {id = "BAT_DEN" probability = 0.2}
     {1 8} {id = "CAVE_BEAR_DEN" probability = 0.2}
+    9 { id = "DJINN" }
   }
   wildlife = {
     count = { 6 }

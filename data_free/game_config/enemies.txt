@@ -2396,30 +2396,14 @@ STRONGER("DWARVES_Z_LEVEL5", "DWARF_CAVE", MELEE 30)
       frequency = 1
     }
   }
-  otherEnemy = "DJINN_ENTRANCE"
 }
-"DJINN_EMPTY"
+"DJINN"
 {
   settlement = {
     type = Builtin CAVE "SANDSTONE"
     tribe = MONSTER
     locationName = "maze"
     race = "monsters"
-  }
-}
-"DJINN_ENTRANCE" inherit "DJINN_EMPTY"
-{
-  levelConnection = {
-    topLevel = MainEnemy
-    levels = {
-      { ExtraEnemy { "DJINN_EMPTY" { 2 } } {20 20} MAZE }
-      { ExtraEnemy { "DJINN" { 1 } } {20 20} MAZE }
-    }
-  }
-}
-"DJINN" inherit "DJINN_EMPTY"
-{
-  settlement = append {
     shopItems = { 1 "magicLamp" }
   }
 }
