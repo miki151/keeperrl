@@ -660,9 +660,16 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
     options.push_back(getItemInfo(getGame()->getContentFactory(), {it}, true, false, false));
   for (auto& stack : concat(Item::stackItems(availableItems), usedStacks)) {
     options.emplace_back(getItemInfo(getGame()->getContentFactory(), stack, false, false, false));
-    if (auto creatureId = collective->getMinionEquipment().getOwner(stack[0]))
-      if (const Creature* c = getCreature(*creatureId))
-        options.back().owner = CreatureInfo(c);
+    EntitySet<Creature> allOwners;
+    optional<CreatureInfo> firstOwner;
+    for (auto item : stack)
+      if (auto creatureId = collective->getMinionEquipment().getOwner(item))
+        if (const Creature* c = getCreature(*creatureId)) {
+          allOwners.insert(c);
+          firstOwner = CreatureInfo(c);
+        }
+    if (firstOwner)
+      options.back().owner = make_pair(std::move(*firstOwner), allOwners.getSize());
     allStacked.push_back(stack.front());
   }
   auto index = getView()->chooseItem(options, scrollPos);
@@ -683,7 +690,7 @@ Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSt
   if (availableItems.empty() && usedItems.empty())
     return nullptr;
   vector<vector<Creature*>> usedStacks = Creature::stack(usedItems,
-      [&](Creature* it) {
+  [&](Creature* it) {
         const Creature* c = collective->getSteedOrRider(it);
         return c->getName().bare() + toString<int>(c->getBestAttack().value);});
   vector<Creature*> allStacked;
@@ -691,7 +698,7 @@ Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSt
   for (auto& stack : concat(Creature::stack(availableItems), usedStacks)) {
     options.emplace_back(getSteedItemInfo(getGame()->getContentFactory(), stack[0], false));
     if (auto c = collective->getSteedOrRider(stack[0]))
-      options.back().owner = CreatureInfo(c);
+      options.back().owner = make_pair(CreatureInfo(c), stack.size());
     allStacked.push_back(stack.front());
   }
   auto index = getView()->chooseItem(options, scrollPos);

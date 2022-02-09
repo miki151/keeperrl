@@ -60,7 +60,7 @@ struct ItemInfo {
   bool HASH(intrinsicExtraAttack);
   string HASH(unavailableReason);
   optional<EquipmentSlot> HASH(slot);
-  optional<CreatureInfo> HASH(owner);
+  optional<pair<CreatureInfo, int>> HASH(owner);
   enum Type {EQUIPMENT, CONSUMABLE, OTHER} HASH(type);
   optional<pair<ViewId, int>> HASH(price);
   optional<double> HASH(weight);

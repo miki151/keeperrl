@@ -1120,8 +1120,10 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   line.addMiddleElem(std::move(mainLine));
   line.addBackSpace(5);
   if (item.owner) {
-    line.addBackElem(WL(viewObject, item.owner->viewId), viewObjectWidth);
-    line.addBackElem(drawBestAttack(item.owner->bestAttack), getItemLineOwnerMargin() - viewObjectWidth);
+    if (item.owner->second > 1)
+      line.addBackElemAuto(WL(label, toString(item.owner->second)));
+    line.addBackElem(WL(viewObject, item.owner->first.viewId), viewObjectWidth);
+    line.addBackElem(drawBestAttack(item.owner->first.bestAttack), getItemLineOwnerMargin() - viewObjectWidth);
   }
   if (item.price)
     line.addBackElemAuto(drawCost(*item.price));
