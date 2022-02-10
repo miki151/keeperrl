@@ -638,25 +638,29 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     if (tile.hasAnyConnections() || tile.hasAnyCorners())
       dirs = getConnectionSet(tilePos, id, tile);
     Vec2 move;
-    drawCreatureHighlights(renderer, object, index, pos + movement, size, curTimeReal);
+    if (object.layer() == ViewLayer::CREATURE)
+      drawCreatureHighlights(renderer, object, index, pos + movement, size, curTimeReal);
     if (object.layer() == ViewLayer::CREATURE || tile.roundShadow) {
       auto& coord = renderer.getTileSet().getTileCoord("round_shadow");
       renderer.drawTile(pos + movement, coord, size, blendNightColor(Color(255, 255, 255, 160), index));
     }
-    if (object.layer() == ViewLayer::CREATURE || tile.moveUp)
+    if ((!object.hasModifier(ViewObject::Modifier::STUNNED) && object.layer() == ViewLayer::CREATURE) || tile.moveUp)
       move.y = -4 * zoom;
     renderer.drawTile(pos, tile.getBackgroundCoord(), size, color);
     move += movement;
-    if (object.hasModifier(ViewObject::Modifier::FLYING) && !object.hasModifier(ViewObject::Modifier::TURNED_OFF))
+    if (object.hasModifier(ViewObject::Modifier::FLYING) && !object.hasModifier(ViewObject::Modifier::TURNED_OFF)
+        && !object.hasModifier(ViewObject::Modifier::STUNNED))
       move.y += getFlyingMovement(size, curTimeReal);
     if (object.hasModifier(ViewObject::Modifier::IMMOBILE))
       move.y += 11;
     const auto& coord = tile.getSpriteCoord(dirs);
     if (object.hasModifier(ViewObject::Modifier::RIDER)) {
-      const Tile& steedTile = renderer.getTileSet().getTile(index.getObject(ViewLayer::TORCH2).id(), spriteMode);
+      auto& steedObject = index.getObject(ViewLayer::TORCH2);
+      const Tile& steedTile = renderer.getTileSet().getTile(steedObject.id(), spriteMode);
       const auto& steedCoord = steedTile.getSpriteCoord(dirs);
       move.y -= (7 + steedCoord[0].size.y - coord[0].size.y) * zoom;
       move.x -= object.hasModifier(ViewObject::Modifier::FLIPX) ? 2 * zoom : -2 * zoom;
+      drawCreatureHighlights(renderer, steedObject, index, pos + movement, size, curTimeReal);
     }
     if (tile.canMirror)
       renderer.drawTile(pos + move, coord, size, color,
@@ -665,7 +669,9 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
       optional<Color> colorVariant;
       if (!tile.animated)
         colorVariant = object.id().getColor();
-      auto orientation = Renderer::SpriteOrientation(false, object.hasModifier(ViewObject::Modifier::FLIPX));
+      auto orientation = object.hasModifier(ViewObject::Modifier::STUNNED) ? 
+          Renderer::SpriteOrientation(Vec2(0, -1), false) :
+          Renderer::SpriteOrientation(false, object.hasModifier(ViewObject::Modifier::FLIPX));
       renderer.drawTile(pos + move, coord, size, color, orientation, colorVariant);
       for (auto& id : object.partIds) {
         auto& partTile = renderer.getTileSet().getTile(id, true);
@@ -685,9 +691,6 @@ void MapGui::drawObjectAbs(Renderer& renderer, Vec2 pos, const ViewObject& objec
     bool burning = object.hasModifier(ViewObject::Modifier::BURNING);
 
     drawHealthBar(renderer, tilePos, pos + move, size, object, index);
-    if (object.hasModifier(ViewObject::Modifier::STUNNED))
-      renderer.drawText(blendNightColor(Color::WHITE, index), pos + move + size / 2, "S",
-          Renderer::CenterType::HOR_VER, size.x * 2 / 3);
     if (curTimeReal.count() % 2000 < 800 && object.hasModifier(ViewObject::Modifier::TURNED_OFF)) {
       auto& icon = renderer.getTileSet().getTileCoord("power_off");
       renderer.drawTile(pos + move, icon, size);
