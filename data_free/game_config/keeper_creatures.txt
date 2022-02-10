@@ -139,9 +139,9 @@
   zLevelGroups = { "basic" "evil" "goblins" }
   initialTech = { }
   buildingGroups = {
-      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "dining table" "pigsty"
-      "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "prison" "orders"
-      "installations" "minion_statues" "traps"
+      "structure" "doors" "floors" "storage" "zones" "library" "throne" "beds" "dining table" "coffins" 
+      "pigsty" "training" "crafting" "laboratory" "jeweller" "poetry" "distillery" "furnace" "prison"
+      "orders" "installations" "minion_statues" "traps"
   }
   workshopGroups = { "basic" "bows" }
   description = "Play as a Goblin Keeper, and seek the legendary goblin matrons. This faction was originally created by RighteousSinner and Soft Monster for the Bonus Mod."
