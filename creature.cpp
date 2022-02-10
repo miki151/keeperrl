@@ -2664,7 +2664,8 @@ void Creature::addCombatIntent(Creature* attacker, CombatIntentInfo::Type type) 
 }
 
 optional<Creature::CombatIntentInfo> Creature::getLastCombatIntent() const {
-  if (lastCombatIntent && lastCombatIntent->attacker && !lastCombatIntent->attacker->isDead())
+  if (lastCombatIntent && lastCombatIntent->attacker && !lastCombatIntent->attacker->isDead() &&
+      !LastingEffects::restrictedMovement(lastCombatIntent->attacker))
     return lastCombatIntent;
   else
     return none;
