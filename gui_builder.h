@@ -277,7 +277,7 @@ class GuiBuilder {
   void renderMessages(const vector<PlayerMessage>&);
   int getNumMessageLines() const;
   SGuiElem getItemLine(const ItemInfo&, function<void(Rectangle)> onClick,
-      function<void()> onMultiClick = nullptr, bool forceEnableTooltip = false);
+      function<void()> onMultiClick = nullptr, bool forceEnableTooltip = false, bool renderInBounds = true);
   vector<string> getItemHint(const ItemInfo&);
   SGuiElem drawMinionAndLevel(ViewIdList, int level, int iconMult);
   vector<SDL::SDL_Keysym> getConfirmationKeys();

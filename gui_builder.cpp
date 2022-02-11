@@ -1095,7 +1095,7 @@ static string getWeightString(double weight) {
 }
 
 SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)> onClick,
-    function<void()> onMultiClick, bool forceEnableTooltip) {
+    function<void()> onMultiClick, bool forceEnableTooltip, bool renderInBounds) {
   auto line = WL(getListBuilder);
   int leftMargin = 0;
   auto viewId = WL(viewObject, item.viewId);
@@ -1112,9 +1112,12 @@ SGuiElem GuiBuilder::getItemLine(const ItemInfo& item, function<void(Rectangle)>
   else
     name = capitalFirst(name);
   line.addMiddleElem(WL(label, name, color));
+  auto lineElem = line.buildHorizontalList();
+  if (renderInBounds)
+    lineElem = WL(renderInBounds, std::move(lineElem));
   auto mainLine = WL(stack,
       WL(buttonRect, onClick),
-      WL(renderInBounds, line.buildHorizontalList()),
+      std::move(lineElem),
       getTooltip(getItemHint(item), (int) item.ids.getHash(), milliseconds{700}, forceEnableTooltip));
   line.clear();
   line.addMiddleElem(std::move(mainLine));
@@ -3513,7 +3516,7 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
             if (auto choice = getItemChoice(item, bounds.bottomLeft() + Vec2(50, 0), true))
               callbacks.input({UserInputId::CREATURE_EQUIPMENT_ACTION,
                   EquipmentActionInfo{creatureId, item.ids, item.slot, *choice}});
-        });
+        }, nullptr, false, false);
         if (!items[i].ids.empty()) {
           int offset = *labelElem->getPreferredWidth();
           auto highlight = WL(leftMargin, offset, WL(labelUnicode, u8"✘", Color::RED));
@@ -3537,7 +3540,7 @@ SGuiElem GuiBuilder::drawEquipmentAndConsumables(const PlayerInfo& minion, bool 
       }
     else
       for (int i : All(items))
-        itemElems.push_back(getItemLine(items[i], [](Rectangle) {} ));
+        itemElems.push_back(getItemLine(items[i], [](Rectangle) {}, nullptr, false, false));
     for (int i : All(itemElems))
       if (items[i].type == items[i].EQUIPMENT)
         lines.addElem(WL(leftMargin, 3, std::move(itemElems[i])));
