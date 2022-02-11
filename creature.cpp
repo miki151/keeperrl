@@ -2073,6 +2073,15 @@ CreatureAction Creature::mount(Creature* whom) const {
   });
 }
 
+vector<string> Creature::getSteedSizes() const {
+  vector<string> ret;
+  auto mySize = getBody().getSize();
+  ret.push_back(::getName(mySize));
+  if (mySize == BodySize::LARGE)
+    ret.push_back(::getName(BodySize::HUGE));
+  return ret;
+}
+
 bool Creature::canMount(Creature* whom) const {
   auto mySize = getBody().getSize();
   auto hisSize = whom->getBody().getSize();

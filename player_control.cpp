@@ -22,6 +22,7 @@
 #include "statistics.h"
 #include "options.h"
 #include "technology.h"
+#include "util.h"
 #include "village_control.h"
 #include "item.h"
 #include "item_factory.h"
@@ -672,7 +673,7 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
       options.back().owner = make_pair(std::move(*firstOwner), allOwners.getSize());
     allStacked.push_back(stack.front());
   }
-  auto index = getView()->chooseItem(options, scrollPos);
+  auto index = getView()->chooseItem("Available items:", options, scrollPos);
   if (!index)
     return nullptr;
   return concat(currentItems, allStacked)[*index];
@@ -701,7 +702,7 @@ Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSt
       options.back().owner = make_pair(CreatureInfo(c), stack.size());
     allStacked.push_back(stack.front());
   }
-  auto index = getView()->chooseItem(options, scrollPos);
+  auto index = getView()->chooseItem("Available steeds (" + combine(creature->getSteedSizes()) + "):", options, scrollPos);
   if (!index)
     return nullptr;
   return allStacked[*index];

@@ -830,7 +830,7 @@ Rectangle WindowView::getEquipmentMenuPosition(int height) {
   return Rectangle(origin, origin + Vec2(width, height)).intersection(Rectangle(Vec2(0, 0), renderer.getSize()));
 }
 
-optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollPos1) {
+optional<int> WindowView::chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollPos1) {
   uiLock = true;
   TempClockPause pause(clock);
   SyncQueue<optional<int>> returnQueue;
@@ -842,7 +842,7 @@ optional<int> WindowView::chooseItem(const vector<ItemInfo>& items, ScrollPositi
     optional<optional<int>> retVal;
     vector<SGuiElem> lines;
     lines.push_back(gui.getListBuilder()
-        .addElemAuto(gui.label("Available items:"))
+        .addElemAuto(gui.label(title))
         .addBackElem(gui.label("Owners:"), guiBuilder.getItemLineOwnerMargin()).buildHorizontalList());
     lines.append(guiBuilder.drawItemMenu(items,
       [&retVal] (Rectangle butBounds, optional<int> a) { retVal = a;}, true));

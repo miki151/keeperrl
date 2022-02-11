@@ -231,7 +231,7 @@ class View {
 
   virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) = 0;
 
-  virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) = 0;
+  virtual optional<int> chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollpos) = 0;
 
   virtual optional<ExperienceType> getCreatureUpgrade(const CreatureExperienceInfo&) = 0;
 

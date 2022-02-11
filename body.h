@@ -42,6 +42,7 @@ RICH_ENUM(BodySize,
   HUGE
 );
 
+const char* getName(BodySize);
 
 class Body {
   public:

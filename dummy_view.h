@@ -53,7 +53,7 @@ class DummyView : public View {
   virtual optional<int> choosePillageItem(const string& title, const vector<ItemInfo>&, ScrollPosition* scrollPos) override {
     return none;
   }
-  virtual optional<int> chooseItem(const vector<ItemInfo>& items, ScrollPosition* scrollpos) override {
+  virtual optional<int> chooseItem(const string& title, const vector<ItemInfo>& items, ScrollPosition* scrollpos) override {
     return none;
   }
   virtual void presentHighscores(const vector<HighscoreList>&) override {}

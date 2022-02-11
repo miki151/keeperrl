@@ -507,7 +507,7 @@ bool Body::injureBodyPart(BodyPart part) {
   return isCritical(part);
 }
 
-string sizeStr(Body::Size s) {
+const char* getName(Body::Size s) {
   switch (s) {
     case Body::Size::SMALL: return "small";
     case Body::Size::MEDIUM: return "medium";
@@ -536,7 +536,7 @@ const char* getMaterialName(Body::Material material) {
 }
 
 string Body::getMaterialAndSizeAdjectives() const {
-  vector<string> ret {sizeStr(size)};
+  vector<string> ret {string(getName(size))};
   switch (material) {
     case Material::FLESH: break;
     case Material::UNDEAD_FLESH: ret.push_back("undead"); break;
