@@ -2101,7 +2101,7 @@ Def Boulder(Id) {
   layer = GROUND
   canBuildOutsideOfTerritory = true
   xForgetAfterBuilding = true
-  builtOver = {"WATER" "SHALLOW_WATER1" "SHALLOW_WATER2"}
+  builtOver = {"WATER" "SHALLOW_WATER1" "SHALLOW_WATER2" "MAGMA"}
 }
 "FLOOR"
 {
