@@ -327,6 +327,9 @@
     { Furniture {{ "TORTURE_TABLE" } "IRON" 15 }                   "Torture table"     "Prison"
         "Can be used to torture prisoners. Free population slot required for torturing."}
 
+    { Furniture {{ "GALLOWS" }       "WOOD"  20 }                  "Gallows"           "Prison"
+        "For hanging prisoners."}
+
     { Furniture {{ "BEAST_CAGE" } "WOOD" 8 }                       "Beast cage"        "Prison"
         "Beasts sleep here."}
   }
@@ -380,9 +383,6 @@
 
     { Furniture {{ "WHIPPING_POST" } "WOOD"  20 }                  "Whipping post"     "Installations"
         "A place to whip your minions if they need a morale boost." }
-
-    { Furniture {{ "GALLOWS" }       "WOOD"  20 }                  "Gallows"           "Installations"
-        "For hanging prisoners."}
 
     { Furniture {{ "IMPALED_HEAD" }  "PRISONER_HEAD" 1 true}       "Prisoner head"     "Installations"
         "Impaled head of an executed prisoner. Aggravates enemies."}
