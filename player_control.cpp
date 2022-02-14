@@ -268,11 +268,13 @@ STutorial PlayerControl::getTutorial() const {
 }
 
 bool PlayerControl::canControlSingle(const Creature* c) const {
-  return !collective->hasTrait(c, MinionTrait::PRISONER) && !c->isAffected(LastingEffect::TURNED_OFF) && !c->getRider();
+  return !collective->hasTrait(c, MinionTrait::PRISONER) && !c->isAffected(LastingEffect::TURNED_OFF) &&
+      !c->isAffected(LastingEffect::STEED);
 }
 
 bool PlayerControl::canControlInTeam(const Creature* c) const {
-  return (collective->hasTrait(c, MinionTrait::FIGHTER) || collective->hasTrait(c, MinionTrait::LEADER)) && !c->getRider();
+  return (collective->hasTrait(c, MinionTrait::FIGHTER) || collective->hasTrait(c, MinionTrait::LEADER)) &&
+      !c->isAffected(LastingEffect::STEED);
 }
 
 void PlayerControl::addToCurrentTeam(Creature* c) {
@@ -3350,7 +3352,6 @@ void PlayerControl::update(bool currentlyActive) {
           for (auto controlled : getControlled())
             if (canControlInTeam(c)
                 && c->getPosition().isSameLevel(controlled->getPosition())
-                && canControlInTeam(c)
                 && !collective->hasTrait(c, MinionTrait::SUMMONED)) {
               addToCurrentTeam(c);
               controlled->privateMessage(PlayerMessage(c->getName().a() + " joins your team.",
