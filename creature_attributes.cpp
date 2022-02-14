@@ -271,6 +271,7 @@ GlobalTime CreatureAttributes::getTimeOut(LastingEffect effect) const {
 
 void CreatureAttributes::copyLastingEffects(const CreatureAttributes& attr) {
   lastingEffects = attr.lastingEffects;
+  permanentEffects[LastingEffect::STEED] = attr.permanentEffects[LastingEffect::STEED];
 }
 
 bool CreatureAttributes::considerTimeout(LastingEffect effect, GlobalTime current) {
@@ -314,7 +315,7 @@ static int getAbsorbtionLevelCap(AttrType attr) {
 template <typename T>
 void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj, const int& cap) {
   int hisCapped = (his > cap) ? cap : his;
-  if (consumeProb() && mine < hisCapped) {
+  if (consumeProb() && mine < hisCapped) {                    
     mine = hisCapped;
     if (!adj.empty())
       adjectives.push_back(adj);
