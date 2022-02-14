@@ -1346,6 +1346,7 @@
       ACID_RESISTANT 1
       RANGED_VULNERABILITY 1
       CAPTURE_RESISTANCE 1
+      STEED 1
     }
     name = {
       name = "yellow dragon"
