@@ -291,13 +291,15 @@ void Model::calculateStairNavigation() {
   stairNavigation.clear();
 }
 
-bool Model::areConnected(StairKey key1, StairKey key2, const MovementType& movement) {
+bool Model::areConnected(StairKey key1, StairKey key2, const MovementType& movement, const Level* l1, const Level* l2) {
   auto& connections = [&]() -> StairConnections& {
     if (auto ret = getReferenceMaybe(stairNavigation, movement))
       return *ret;
     auto ret = stairNavigation.insert(make_pair(movement, createStairConnections(movement)));
     return ret.first->second;
   }();
+  CHECK(getLevels().contains(l1)) << l1->depth << " " << l1->name;
+  CHECK(getLevels().contains(l2)) << l2->depth << " " << l2->name;
   return connections.at(key1) == connections.at(key2);
 }
 

@@ -52,7 +52,7 @@ class Model : public OwnedObject<Model> {
 
   /** Returns the level that the stairs lead to. */
   Level* getLinkedLevel(Level* from, StairKey) const;
-  bool areConnected(StairKey, StairKey, const MovementType&);
+  bool areConnected(StairKey, StairKey, const MovementType&, const Level* l1, const Level* l2);
 
   void addCreature(PCreature);
   void addCreature(PCreature, TimeInterval delay);
