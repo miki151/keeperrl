@@ -3558,9 +3558,12 @@ void PlayerControl::addAllianceAttack(vector<Collective*> attackers) {
 }
 
 void PlayerControl::updateSquareMemory(Position pos) {
-  ViewIndex index;
-  pos.getViewIndex(index, collective->getLeaders()[0]); // use the leader as a generic viewer
-  memory->update(pos, index);
+  // without this check there was a crash when leaders were empty, possibly on game over?
+  if (!collective->getLeaders().empty()) {
+    ViewIndex index;
+    pos.getViewIndex(index, collective->getLeaders()[0]); // use the leader as a generic viewer
+    memory->update(pos, index);
+  }
 }
 
 void PlayerControl::onConstructed(Position pos, FurnitureType type) {
