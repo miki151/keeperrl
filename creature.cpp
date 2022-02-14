@@ -1538,7 +1538,9 @@ void Creature::updateViewObject() {
   object.setModifier(ViewObject::Modifier::DRAW_MORALE);
   object.setModifier(ViewObject::Modifier::STUNNED, isAffected(LastingEffect::STUNNED));
   object.setModifier(ViewObject::Modifier::FLYING, isAffected(LastingEffect::FLYING));
-  object.setModifier(ViewObject::Modifier::INVISIBLE, isAffected(LastingEffect::INVISIBLE));
+  auto rider = getRider();
+  object.setModifier(ViewObject::Modifier::INVISIBLE, isAffected(LastingEffect::INVISIBLE) ||
+      (rider && rider->isAffected(LastingEffect::INVISIBLE)));
   object.setModifier(ViewObject::Modifier::FROZEN, isAffected(LastingEffect::FROZEN));
   object.setModifier(ViewObject::Modifier::TURNED_OFF, isAffected(LastingEffect::TURNED_OFF));
   object.setModifier(ViewObject::Modifier::HIDDEN, hidden);
