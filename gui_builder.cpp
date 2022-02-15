@@ -3321,9 +3321,12 @@ function<void(Rectangle)> GuiBuilder::getActivityButtonFun(const PlayerInfo& min
       function<void()> buttonFun = [] {};
       if (!task.inactive)
         buttonFun = [&exit, &retAction, task] {
+          if (retAction.lock.contains(task.task) == task.locked &&
+              retAction.lockGroup.contains(task.task) == task.lockedForGroup) {
             retAction.switchTo = task.task;
             exit = true;
-          };
+          }
+        };
       auto lockButton = WL(rightMargin, 20, WL(conditional,
             [&retAction, task] {
               if (task.canLock && !(retAction.lockGroup.contains(task.task) ^ task.lockedForGroup)) {
