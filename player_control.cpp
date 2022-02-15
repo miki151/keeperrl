@@ -451,13 +451,22 @@ void PlayerControl::minionAIAction(const AIActionInfo& action) {
 }
 
 void PlayerControl::minionTaskAction(const TaskActionInfo& action) {
+  auto considerResettingActivity = [this] (Creature* c) {
+    if (!collective->isActivityGoodAssumingHaveTasks(c, collective->getCurrentActivity(c).activity))
+      collective->setMinionActivity(c, MinionActivity::IDLE);
+  };
   if (auto c = getCreature(action.creature)) {
     if (action.switchTo)
       collective->setMinionActivity(c, *action.switchTo);
     for (MinionActivity task : action.lock)
       c->getAttributes().getMinionActivities().toggleLock(task);
     collective->flipGroupLockedActivities(action.groupName, action.lockGroup);
+    if (!action.lock.isEmpty())
+      considerResettingActivity(c);
   }
+  if (!action.lockGroup.isEmpty())
+    for (auto c : collective->getCreatures())
+      considerResettingActivity(c);
 }
 
 void PlayerControl::equipmentGroupAction(const EquipmentGroupAction& action) {
