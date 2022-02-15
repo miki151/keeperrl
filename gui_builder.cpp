@@ -3253,10 +3253,10 @@ static string getTaskText(MinionActivity option) {
 }
 
 static Color getTaskColor(PlayerInfo::MinionActivityInfo info) {
+  if (info.current)
+    return Color::GREEN;
   if (info.inactive)
     return Color::GRAY;
-  else if (info.current)
-    return Color::GREEN;
   else
     return Color::WHITE;
 }
