@@ -1,0 +1,10 @@
+
+Def P(Text) Paragraph(500, Text) End
+
+MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,  
+  Vertical {
+    Horizontal{ViewId(1, {"guard_post"}) Width 10 {} Label("Using guard zones")}
+    P("TBF")
+  }
+))))
+

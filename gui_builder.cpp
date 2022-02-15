@@ -335,8 +335,9 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
     ));
     lines.addSpace(5);
   };
+  constexpr int numBuiltinPages = 6;
   for (auto elem : Iter(info.scriptedHelp))
-    if (elem.index() < 3 && !!elem->viewId && !!elem->title)
+    if (elem.index() < numBuiltinPages && !!elem->viewId && !!elem->title)
       addScriptedButton(*elem);
   lines.addSpace(15);
   auto addBuiltinButton = [this, &lines] (ViewId viewId, string name, BottomWindowId windowId) {
@@ -354,7 +355,7 @@ SGuiElem GuiBuilder::drawKeeperHelp(const GameInfo& info) {
   addBuiltinButton(ViewId("book"), "Spell schools", SPELL_SCHOOLS);
   lines.addSpace(10);
   for (auto elem : Iter(info.scriptedHelp))
-    if (elem.index() >= 3 && !!elem->viewId && !!elem->title)
+    if (elem.index() >= numBuiltinPages && !!elem->viewId && !!elem->title)
       addScriptedButton(*elem);
   return lines.buildVerticalList();
 }

@@ -3,8 +3,11 @@ Def P(Text) Paragraph(500, Text) End
 
 MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,  
   Vertical {
+    Height 5 {}
     Horizontal{ViewId(1, {"horse"}) Width 10 {} Label("Using steeds")}
     Height 30 {}
+    P("Riding steeds can enhance your minions' fighting abilities, let them gain speed or navigate over inaccessible terrain.")
+    Height 15 {}
     P("1. Get hold of some ridable creatures, such as horses, wolves or a dragon. You can tell steeds by their \"steed\" status.")
     Height 15 {}
     Position(MIDDLE, Texture("steeds1"))
@@ -15,6 +18,7 @@ MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,
     Height 15 {}
     P("3. Assign the steed to your rider. You can do that in the equipment list in the minion's menu. Chances are a steed has already been assigned automatically.")
     Position(MIDDLE, Texture("steeds3"))
+    P("Keep in mind that a rider can only ride steeds of compatible size. Large creatures can ride large and huge steeds, while medium and small creatures can only ride steeds of exactly their size. For example most humans will ride horses and dragons, goblins will ride wolves, and imps will ride bats and rabbits.")
     Height 15 {}
     P("4. The rider will now always mount its steed when leaving your base. In the turn-based mode you can mount your steed manually by pressing 'm' or by right clicking on your steed and choosing \"mount\".")
     Height 15 {}

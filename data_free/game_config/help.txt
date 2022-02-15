@@ -1,2 +1,6 @@
 {"prisoners" {"prisoner"} "Capturing prisoners"}
 {"steed" {"horse"} "Using steeds"}
+{"buildings" {"castle_wall"} "Buildings and roof support"}
+{"damage" {"sword"} "Damage calculation"}
+{"travelling" {"leather_boots"} "Travelling"}
+{"guard_zones" {"guard_post"} "Guard zones"}
