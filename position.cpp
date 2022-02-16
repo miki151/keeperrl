@@ -215,6 +215,7 @@ void Position::registerPortal() {
         auto key = StairKey::getNew();
         setLandingLink(key);
         other->setLandingLink(key);
+        getModel()->calculateStairNavigation();
       }
     }
   }
@@ -1076,7 +1077,7 @@ bool Position::canNavigateTo(Position from, const MovementType& type) const {
     if (isConnectedTo(pos1, type))
       for (auto key2 : from.level->getAllStairKeys()) {
         auto pos2 = from.level->getLandingSquares(key2)[0];
-        if (from.isConnectedTo(pos2, type) && level->getModel()->areConnected(key1, key2, type, level, from.level))
+        if (from.isConnectedTo(pos2, type) && level->getModel()->areConnected(key1, key2, type))
           return true;
       }
   }
