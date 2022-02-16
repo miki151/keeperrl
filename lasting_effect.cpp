@@ -690,6 +690,14 @@ static const int attrBonus = 3;
 int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
   int value = 0;
   auto time = c->getGlobalTime();
+  auto modifyWithSpying = [c, time](int& value) {
+    if (c->hasAlternativeViewId() && c->isAffected(LastingEffect::SPYING, time))
+      value -= 99;
+    else 
+      if (auto rider = c->getRider())
+        if (rider->hasAlternativeViewId() && rider->isAffected(LastingEffect::SPYING, time))
+          value -= 99;
+  };
   switch (type) {
     case AttrType::DAMAGE:
       if (c->isAffected(LastingEffect::DRUNK, time))
@@ -702,15 +710,13 @@ int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
         value += attrBonus;
       if (c->isAffected(LastingEffect::SWARMER, time))
         value += c->getPosition().countSwarmers() - 1;
-      if (c->hasAlternativeViewId() && c->isAffected(LastingEffect::SPYING, time))
-        value -= 99;
+      modifyWithSpying(value);
       break;
     case AttrType::RANGED_DAMAGE:
     case AttrType::SPELL_DAMAGE:
       if (c->isAffected(LastingEffect::DRUNK, time))
         value -= attrBonus;
-      if (c->hasAlternativeViewId() && c->isAffected(LastingEffect::SPYING, time))
-        value -= 99;
+      modifyWithSpying(value);
       break;
     case AttrType::DEFENSE:
       if (c->isAffected(LastingEffect::DRUNK, time))

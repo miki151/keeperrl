@@ -368,7 +368,7 @@ optional<MovementInfo> Creature::spendTime(TimeInterval t, SpeedModifier speedMo
     MovementInfo ret(Vec2(0, 0), *getLocalTime(), *getLocalTime() + t, 0, MovementInfo::MOVE);
     lastMoveCounter = ret.moveCounter = position.getModel()->getMoveCounter();
     if (!isDead()) {
-      if (steed && !m->getTimeQueue().hasExtraMove(this))
+      if (!isAffected(LastingEffect::SPYING) && steed && !m->getTimeQueue().hasExtraMove(this))
         steed->makeMove();
       if (speedModifier == SpeedModifier::FAST && t == 1_visible) {
         if (m->getTimeQueue().hasExtraMove(this))
