@@ -546,7 +546,7 @@ void Level::tick() {
       if (auto f = furniture->getBuilt(layer).getWritable(pos))
         f->tick(Position(pos, this), layer);
   addedWildlife = addedWildlife.filter([this, col = getGame()->getPlayerCollective()](Creature* c) {
-    return c->getPosition().getLevel() == this && (!col || col->getCreatures().contains(c)); });
+    return c->getPosition().getLevel() == this && (!col || !col->getCreatures().contains(c)); });
   if (Random.roll(50) && addedWildlife.size() < wildlife.count.getStart()) {
     auto gen = wildlife.generate(Random, &getGame()->getContentFactory()->getCreatures(), TribeId::getWildlife(),
         MonsterAIFactory::wildlifeNonPredator());
