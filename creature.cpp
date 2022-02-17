@@ -824,6 +824,7 @@ CreatureAction Creature::applySquare(Position pos, FurnitureLayer layer) const {
         auto originalPos = getPosition();
         auto usageTime = furniture->getUsageTime();
         furniture->use(pos, self);
+        CHECK(!getRider()) << "Steed " << identify() << " applying " << furniture->getName();
         auto movementInfo = *self->spendTime(usageTime);
         if (pos != getPosition() && getPosition() == originalPos)
           self->addMovementInfo(movementInfo
