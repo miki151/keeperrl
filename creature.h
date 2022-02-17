@@ -334,6 +334,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   };
   void setPhylactery(Position, FurnitureType);
   const optional<PhylacteryInfo>& getPhylactery() const;
+  void unbindPhylactery();
   void addPromotion(PromotionInfo);
   const vector<PromotionInfo>& getPromotions() const;
 

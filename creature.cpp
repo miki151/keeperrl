@@ -2710,6 +2710,10 @@ const optional<Creature::PhylacteryInfo>& Creature::getPhylactery() const {
   return phylactery;
 }
 
+void Creature::unbindPhylactery() {
+  phylactery = none;
+}
+
 void Creature::addPromotion(PromotionInfo info) {
   info.applied.apply(position);
   promotions.push_back(info);
