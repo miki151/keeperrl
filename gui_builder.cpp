@@ -1862,7 +1862,7 @@ SGuiElem GuiBuilder::drawTeams(const CollectiveInfo& info, const optional<Tutori
   return lines.buildVerticalList();
 }
 
-SGuiElem GuiBuilder::drawMinions(CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
+SGuiElem GuiBuilder::drawMinions(const CollectiveInfo& info, const optional<TutorialInfo>& tutorial) {
   int newHash = info.getHash();
   if (newHash != minionsHash) {
     minionsHash = newHash;

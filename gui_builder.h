@@ -68,7 +68,7 @@ class GuiBuilder {
   SGuiElem drawRightPlayerInfo(const PlayerInfo&);
   SGuiElem drawPlayerInventory(const PlayerInfo&);
   SGuiElem drawRightBandInfo(GameInfo&);
-  SGuiElem drawMinions(CollectiveInfo&, const optional<TutorialInfo>&);
+  SGuiElem drawMinions(const CollectiveInfo&, const optional<TutorialInfo>&);
   SGuiElem drawBottomBandInfo(GameInfo&, int width);
   SGuiElem drawKeeperHelp(const GameInfo&);
   optional<string> getTextInput(const string& title, const string& value, int maxLength, const string& hint);
