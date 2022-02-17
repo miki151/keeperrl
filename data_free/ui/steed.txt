@@ -8,7 +8,7 @@ MiniWindow(Scrolling(MarginRight(30, MarginLeft(30,
     Height 30 {}
     P("Riding steeds can enhance your minions' fighting abilities, let them gain speed or navigate over inaccessible terrain.")
     Height 15 {}
-    P("1. Get hold of some ridable creatures, such as horses, wolves or a dragon. You can tell steeds by their \"steed\" status.")
+    P("1. Get hold of some ridable creatures, such as horses, wolves or a dragon. You can identify steeds by their \"steed\" status.")
     Height 15 {}
     Position(MIDDLE, Texture("steeds1"))
     Height 15 {}
