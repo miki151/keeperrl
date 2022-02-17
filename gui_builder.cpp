@@ -496,6 +496,12 @@ SGuiElem GuiBuilder::drawRightBandInfo(GameInfo& info) {
           getIconHighlight(Color::YELLOW),
           [this] { return collectiveTab != CollectiveTab::TECHNOLOGY;}),
           buttons[2]);
+    if (!!info.tutorial && info.tutorial->highlights.contains(TutorialHighlight::HELP_TAB))
+      buttons[3] = WL(stack,
+            WL(conditional,
+                WL(blink, getIconHighlight(Color::YELLOW)),
+                [this] { return collectiveTab != CollectiveTab::KEY_MAPPING;}),
+            buttons[3]);
     vector<pair<CollectiveTab, SGuiElem>> elems = makeVec(
         make_pair(CollectiveTab::MINIONS, drawMinions(collectiveInfo, info.tutorial)),
         make_pair(CollectiveTab::BUILDINGS, cache->get(bindMethod(

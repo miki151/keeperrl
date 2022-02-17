@@ -126,14 +126,13 @@ bool Tutorial::canContinue(WConstGame game) const {
       return true;
     case State::LEAVE_CONTROL:
       return game->getPlayerControl()->getControlled().empty();
+    case State::HELP_TAB:
     case State::MINIMAP_BUTTONS:
-      return true;
     case State::SUMMARY1:
+    case State::SUMMARY2:
       return true;
     case State::RESEARCH:
       return collective->getDungeonLevel().numResearchAvailable() == 0;
-    case State::SUMMARY2:
-      return true;
     case State::FINISHED:
       return false;
   }
@@ -225,7 +224,7 @@ string Tutorial::getMessage() const {
           "This way you will order him to go and pick it up.\n \n";
     case State::ACCEPT_MORE_IMMIGRANTS:
       return "You are ready to grow your military force. Three more goblin warrior immigrants should do.\n \n"
-          "You can also invite goblins, which don't fight, but are excellent craftsmen.";
+          "You can also invite goblin artificers, which don't fight, but are excellent craftsmen.";
     case State::EQUIP_ALL_FIGHTERS:
       return "Craft clubs for all of your warriors, and the Keeper, and have them equipped. They will be needed soon.";
     case State::CREATE_TEAM:
@@ -263,6 +262,9 @@ string Tutorial::getMessage() const {
       return "You have increased your malevolence level. This is the main meter of your progress in the game and allows "
           "you to research new technologies.\n \n"
           "Click on the technology tab and research something.";
+    case State::HELP_TAB:
+      return "KeeperRL features how-to pages for some more advanced features. Click on the help tab icon to see them. "
+          "They're likely to be useful in your future playthroughs.";
     case State::MINIMAP_BUTTONS:
       return "As the last objective, familiarize yourself with the two buttons under the minimap in the top-right corner. "
           "The first one opens the world map window, which you can use to travel to other sites when in control mode.\n \n"
@@ -318,6 +320,8 @@ EnumSet<TutorialHighlight> Tutorial::getHighlights(WConstGame game) const {
       return {TutorialHighlight::MINIMAP_BUTTONS};
     case State::RESEARCH:
       return {TutorialHighlight::RESEARCH};
+    case State::HELP_TAB:
+      return {TutorialHighlight::HELP_TAB};
     default:
       return {};
   }
