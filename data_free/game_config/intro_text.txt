@@ -1,10 +1,11 @@
-"Welcome to KeeperRL Alpha 33! This patch was released on Sep 14, 2021.
+"Welcome to KeeperRL Alpha 34! This patch was released on Feb 18, 2022.
 
 Below is a very short summary, and we encourage you to check out the full change log at keeperrl.com.
 
-* Playable Dwarf faction.
-* New Z-level enemies with progressing difficulty.
-* Other new features including more crafting materials, storage system overhaul, and more!
+* Steed riding.
+* Z-level overhaul allowing building up, multiple stairs and inter-level portals.
+* New equipment restriction menu for chosen minion groups.
+* New, moddable help system.
 
 If this is your first time playing KeeperRL, remember to start with the tutorial!
 "
