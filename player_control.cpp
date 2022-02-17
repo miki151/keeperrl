@@ -268,8 +268,7 @@ STutorial PlayerControl::getTutorial() const {
 }
 
 bool PlayerControl::canControlSingle(const Creature* c) const {
-  return !collective->hasTrait(c, MinionTrait::PRISONER) && !c->isAffected(LastingEffect::TURNED_OFF) &&
-      !c->isAffected(LastingEffect::STEED);
+  return !collective->hasTrait(c, MinionTrait::PRISONER) && !c->isAffected(LastingEffect::TURNED_OFF);
 }
 
 bool PlayerControl::canControlInTeam(const Creature* c) const {
