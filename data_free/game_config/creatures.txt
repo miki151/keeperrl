@@ -2747,7 +2747,7 @@
     noChase = true
     cantEquip = true
     skills = {
-      "DIGGING" 0.2
+      "DIGGING" 0.3
     }
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""
