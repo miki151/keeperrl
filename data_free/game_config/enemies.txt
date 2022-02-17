@@ -20,7 +20,7 @@ End
         count = {3 7}
         all = {
           1 "CHILD"
-          1 "HORSE"
+#          1 "HORSE"  Horses are too strong for the tutorial
           1 "DONKEY_STEED"
           1 "COW"
           1 "PIG"
