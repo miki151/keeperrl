@@ -4,11 +4,11 @@
   "WORKSHOP"
   {
       {item = {"Club"}    work = 3 cost = "WOOD" 10    tech = none      tutorialHighlight = SCHEDULE_CLUB}
-      {{"LeatherArmor"}          6        "WOOD" 20}
-      {{"LeatherHelm"}           1        "WOOD" 6}
-      {{"LeatherBoots"}          2        "WOOD" 10}
+      {{"LeatherArmor"}          6}
+      {{"LeatherHelm"}           1}
+      {{"LeatherBoots"}          2}
       {{"WoodenShield"}          2        "WOOD" 10}
-      {{"LeatherGloves"}         1        "WOOD" 2}
+      {{"LeatherGloves"}         1}
       {{"HeavyClub"}             5        "WOOD" 20      "two-handed weapons"}
       {{"Cornuthaum1"}           5        "GOLD" 0       "sorcery"}
       {{"Cornuthaum2"}           8        "GOLD" 20      "advanced sorcery"}
