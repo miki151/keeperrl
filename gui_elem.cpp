@@ -270,7 +270,7 @@ class TextFieldElem : public GuiElem {
           Vec2(max(rectBounds.right(), rectBounds.left() + r.getTextLength(toDraw) + 10), rectBounds.bottom()));
     if (isFocused() && (clock->getRealMillis().count() / 400) % 2 == 0)
       toDraw += "|";
-    if (isFocused())
+    if (isFocused() && !alwaysFocused)
       r.setTopLayer();
     r.drawFilledRectangle(rectBounds, Color::BLACK, isFocused() ? Color::WHITE : Color::GRAY);
     if (!isFocused())
@@ -279,7 +279,7 @@ class TextFieldElem : public GuiElem {
     r.drawText(Color::WHITE, bounds.topLeft() + Vec2(5, 4), toDraw);
     if (!isFocused())
       r.setScissor(none);
-    else
+    if (isFocused() && !alwaysFocused)
       r.popLayer();
   }
 
