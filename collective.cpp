@@ -1076,6 +1076,16 @@ void Collective::removeUnbuiltFurniture(Position pos, FurnitureLayer layer) {
   }
 }
 
+static ZoneId destroyedOnOrder[] = {
+  ZoneId::FETCH_ITEMS,
+  ZoneId::PERMANENT_FETCH_ITEMS,
+  ZoneId::STORAGE_EQUIPMENT,
+  ZoneId::STORAGE_RESOURCES,
+  ZoneId::GUARD1,
+  ZoneId::GUARD2,
+  ZoneId::GUARD3
+};
+
 void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
   auto furniture = pos.modFurniture(layer);
   if (!furniture || furniture->canRemoveWithCreaturePresent() || !pos.getCreature()) {
@@ -1091,7 +1101,9 @@ void Collective::destroyOrder(Position pos, FurnitureLayer layer) {
     }
   }
   if (layer == FurnitureLayer::MIDDLE)
-    zones->onDestroyOrder(pos);
+    for (auto id : destroyedOnOrder)
+      if (zones->isZone(pos, id))
+        eraseZone(pos, id);
 }
 
 void Collective::addFurniture(Position pos, FurnitureType type, const CostInfo& cost, bool noCredit) {

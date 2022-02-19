@@ -39,21 +39,6 @@ void Zones::eraseZone(Position pos, ZoneId id) {
   pos.setNeedsRenderAndMemoryUpdate(true);
 }
 
-static ZoneId destroyedOnOrder[] = {
-  ZoneId::FETCH_ITEMS,
-  ZoneId::PERMANENT_FETCH_ITEMS,
-  ZoneId::STORAGE_EQUIPMENT,
-  ZoneId::STORAGE_RESOURCES,
-  ZoneId::GUARD1,
-  ZoneId::GUARD2,
-  ZoneId::GUARD3
-};
-
-void Zones::onDestroyOrder(Position pos) {
-  for (auto id : destroyedOnOrder)
-    eraseZone(pos, id);
-}
-
 const PositionSet& Zones::getPositions(ZoneId id) const {
   return positions[id];
 }

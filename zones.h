@@ -29,7 +29,6 @@ class Zones {
   bool isAnyZone(Position, EnumSet<ZoneId>) const;
   void setZone(Position, ZoneId);
   void eraseZone(Position, ZoneId);
-  void onDestroyOrder(Position);
   const PositionSet& getPositions(ZoneId) const;
   void setHighlights(Position, ViewIndex&) const;
   bool canSet(Position, ZoneId, const Collective*) const;
