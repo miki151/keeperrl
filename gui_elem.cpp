@@ -16,6 +16,7 @@
 #include "stdafx.h"
 
 #include "gui_elem.h"
+#include "util.h"
 #include "view_object.h"
 #include "tile.h"
 #include "clock.h"
@@ -493,7 +494,10 @@ class DrawScripted : public GuiElem {
       : id(id), data(data), context(context) {}
 
   const ScriptedUI& get() {
-    return context.renderer->getTileSet().scriptedUI.at(id);
+    if (auto ret = getReferenceMaybe(context.renderer->getTileSet().scriptedUI, id))
+      return *ret;
+    else
+      FATAL << "Scripted id not found: " << id;
   }
 
   virtual void render(Renderer& renderer) override {
