@@ -3463,6 +3463,7 @@
     }
     permanentEffects = {
       SPEED 1
+      STEED 1
     }
     noChase = true
     name = {
@@ -3475,9 +3476,6 @@
     attr = {
       DAMAGE 30
       DEFENSE 30
-    }
-    permanentEffects = {
-      STEED 1
     }
   }
 "BOAR"
