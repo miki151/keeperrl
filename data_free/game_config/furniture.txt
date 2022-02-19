@@ -1627,6 +1627,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
   viewId = { "castle_wall" }
   blockAllVision = true
   strength = 1
+  viewLayer = FLOOR_BACKGROUND
   entryType = Effect {
       Message NORMAL "It was just an illusion!"
       Fx { TELEPORT_OUT }
