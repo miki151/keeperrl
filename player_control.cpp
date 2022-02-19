@@ -1104,7 +1104,7 @@ vector<PlayerInfo> PlayerControl::getPlayerInfos(vector<Creature*> creatures) co
       minionInfo.inventory.clear();
       fillSteedInfo(c, minionInfo);
       fillEquipment(c, minionInfo);
-      if (canControlSingle(c))
+      if (canControlSingle(c) && !c->getRider())
         minionInfo.actions.push_back(PlayerInfo::CONTROL);
       if (!collective->hasTrait(c, MinionTrait::PRISONER)) {
         minionInfo.actions.push_back(PlayerInfo::RENAME);
