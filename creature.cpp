@@ -1766,7 +1766,8 @@ bool Creature::considerPhylactery(DropType drops, const Creature* attacker) {
     forceMovement = false;
     auto pos = phylactery->pos;
     pos.removeFurniture(FurnitureLayer::MIDDLE);
-    position.moveCreature(pos, true);
+    if (pos.canEnter(this))
+      position.moveCreature(pos, true);
     return true;
   }
   return false;
