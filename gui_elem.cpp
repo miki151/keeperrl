@@ -498,6 +498,7 @@ class DrawScripted : public GuiElem {
       return *ret;
     else
       FATAL << "Scripted id not found: " << id;
+    fail();
   }
 
   virtual void render(Renderer& renderer) override {
