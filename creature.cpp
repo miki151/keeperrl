@@ -2367,7 +2367,7 @@ vector<Position> Creature::getCurrentPath() const {
 }
 
 CreatureAction Creature::moveTowards(Position pos, NavigationFlags flags) {
-  if (!pos.isValid())
+  if (!pos.isValid() || !!getRider())
     return CreatureAction();
   auto movement = getMovementType();
   if (pos.isSameLevel(position)) {
