@@ -238,6 +238,8 @@ append {
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
       { item = {Assembled{ "SKELETON_ARCHER" "skeleton archer" {NO_LIMIT FIGHTER} {BALSAM} 3 }}
         work = 8 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
+      { item = {Assembled{ "SKELETON_WOLF" "skeleton wolf" {NO_LIMIT FIGHTER} {BALSAM} 1 }}
+        work = 4 cost = "CORPSE" 1 applyImmediately = true notArtifact = true}
       { item = {Assembled{ "VAMPIRE" "vampire warrior" {NO_LIMIT FIGHTER} {BALSAM} 5}}
         work = 20 cost = "CORPSE" 4 applyImmediately = true notArtifact = true tech = "advanced necromancy"}
       { item = {Assembled{ "VAMPIRE_BRUTE" "vampire brute" {NO_LIMIT FIGHTER} {BALSAM} 3}}

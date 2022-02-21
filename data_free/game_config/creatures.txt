@@ -74,7 +74,9 @@
       "MORGUE" 1.0
       "LABORATORY" 1.0
     }
-    permanentEffects = { SUNLIGHT_VULNERABLE 1 }
+    permanentEffects = append {
+      SUNLIGHT_VULNERABLE 1
+    }
   }
 "NECROMANCER_F" inherit "NECROMANCER"
   {
@@ -2451,6 +2453,7 @@
       NIGHT_VISION 1
       RANGED_RESISTANCE 1
       DISTILLATION_SKILL 1
+      RIDER 1
     }
     maxLevelIncrease = {
       MELEE 7
@@ -3823,6 +3826,34 @@
       groupName = "pack"
     }
   }
+"SKELETON_WOLF"
+  {
+    viewId = { "skeleton_wolf" }
+    attr = {
+      DAMAGE 18
+      DEFENSE 11 
+    }
+    body = {
+      type = FourLegged LARGE
+      weight = 35
+      intrinsicAttacks = {
+        LEG  {{itemType = { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
+        HEAD {{itemType = { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
+      }
+    }
+    permanentEffects = {
+      NIGHT_VISION 1
+      EXPLORE_NOCTURNAL_SKILL 1
+      STEED 1
+      SPEED 1
+    }
+    name = {
+      name = "skeleton wolf"
+      pluralName = "skeleton wolves"
+      firstNameGen = "DOG"
+      groupName = "pack"
+    }
+  }
 "FERAL_CHILD"
   {
     viewId = { "feral_child" }
@@ -4833,6 +4864,9 @@ End
     name = {
       name = "skeleton warrior"
     }
+    permanentEffects = {
+      RIDER 1
+    }
     hatedByEffect = HATE_UNDEAD
   }
 "SKELETON_ARCHER"
@@ -4891,6 +4925,7 @@ End
     permanentEffects = {
       NIGHT_VISION 1
       EXPLORE_NOCTURNAL_SKILL 1
+      STEED 1
     }
     name = {
       name = "slasher"
