@@ -497,8 +497,7 @@ class DrawScripted : public GuiElem {
     if (auto ret = getReferenceMaybe(context.renderer->getTileSet().scriptedUI, id))
       return *ret;
     else
-      FATAL << "Scripted id not found: " << id;
-    fail();
+      return context.renderer->getTileSet().scriptedUI.at("notfound");
   }
 
   virtual void render(Renderer& renderer) override {
