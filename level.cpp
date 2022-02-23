@@ -304,15 +304,6 @@ bool Level::landCreature(StairKey key, Creature* creature, Vec2 travelDir) {
       landCreature(getAllLandingPositions(), creature);
 }
 
-bool Level::landCreature(vector<Position> landing, PCreature creature) {
-  creature->setGlobalTime(model->getGame()->getGlobalTime());
-  if (landCreature(landing, creature.get())) {
-    model->addCreature(std::move(creature));
-    return true;
-  } else
-    return false;
-}
-
 optional<Position> Level::getClosestLanding(vector<Position> landing, Creature* creature) const {
   PROFILE;
   CHECK(creature);
@@ -554,7 +545,7 @@ void Level::tick() {
       auto c = std::move(gen[0]);
       c->getStatus().insert(CreatureStatus::CIVILIAN);
       auto ref = c.get();
-      if (landCreature(getAllPositions().filter([](auto pos) { return !pos.isCovered(); }), std::move(c)))
+      if (getModel()->landCreature(getAllPositions().filter([](auto pos) { return !pos.isCovered(); }), std::move(c)))
         addedWildlife.push_back(ref);
     }
   }

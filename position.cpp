@@ -356,7 +356,7 @@ void Position::addCreature(PCreature c) const {
 }
 
 bool Position::landCreature(PCreature c) const {
-  return isValid() && level->landCreature({*this}, std::move(c));
+  return isValid() && getModel()->landCreature({*this}, std::move(c));
 }
 
 void Position::addCreature(PCreature c, TimeInterval delay) const {
@@ -1207,7 +1207,7 @@ void Position::moveCreature(Position pos, bool teleportEffect) {
     level->moveCreature(getCreature(), getDir(pos));
   else if (isSameModel(pos))
     level->changeLevel(pos, getCreature());
-  else pos.getLevel()->landCreature({pos}, getModel()->extractCreature(getCreature()));
+  else pos.landCreature(getModel()->extractCreature(getCreature()));
   if (teleportEffect)
     getGame()->addEvent(EventInfo::FX{pos, FXName::TELEPORT_IN});
 }

@@ -356,6 +356,18 @@ PCreature Model::extractCreature(Creature* c) {
   return ret;
 }
 
+bool Model::landCreature(vector<Position> landing, PCreature creature) {
+  creature->setGlobalTime(getGame()->getGlobalTime());
+  auto ref = creature.get();
+  addCreature(std::move(creature));
+  if (landing[0].getLevel()->landCreature(landing, ref)) {
+    return true;
+  } else {
+    timeQueue->removeCreature(ref);
+    return false;
+  }
+}
+
 void Model::transferCreature(PCreature c, Vec2 travelDir) {
   Creature* ref = c.get();
   addCreature(std::move(c));

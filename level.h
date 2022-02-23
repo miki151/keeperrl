@@ -75,7 +75,6 @@ class Level : public OwnedObject<Level> {
 
   /** Lands the creature on the level randomly choosing one of the given squares.
       Returns the position of the stairs that were used.*/
-  bool landCreature(vector<Position> landing, PCreature);
   bool landCreature(vector<Position> landing, Creature*);
 
   optional<Position> getClosestLanding(vector<Position> landing, Creature*) const;
