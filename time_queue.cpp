@@ -184,7 +184,7 @@ PCreature TimeQueue::removeCreature(Creature* cRef) {
       creatures.removeIndexPreserveOrder(i);
       return ret;
     }
-  FATAL << "Creature not found";
+  FATAL << "Creature not found " << cRef->identify();
   return nullptr;
 }
 
