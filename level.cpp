@@ -545,7 +545,8 @@ void Level::tick() {
       auto c = std::move(gen[0]);
       c->getStatus().insert(CreatureStatus::CIVILIAN);
       auto ref = c.get();
-      if (getModel()->landCreature(getAllPositions().filter([](auto pos) { return !pos.isCovered(); }), std::move(c)))
+      auto positions = getAllPositions().filter([](auto pos) { return !pos.isCovered(); });
+      if (!positions.empty() && getModel()->landCreature(positions, std::move(c)))
         addedWildlife.push_back(ref);
     }
   }
