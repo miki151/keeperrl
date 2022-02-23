@@ -1167,6 +1167,8 @@ void Creature::considerMovingFromInaccessibleSquare() {
 }
 
 void Creature::tick() {
+  if (!!phylactery && !isSubscribed())
+    subscribeTo(position.getModel());
   PROFILE_BLOCK("Creature::tick");
   if (phylactery && phylactery->killedBy) {
     auto attacker = phylactery->killedBy;
@@ -1768,6 +1770,7 @@ bool Creature::considerPhylactery(DropType drops, const Creature* attacker) {
     pos.removeFurniture(FurnitureLayer::MIDDLE);
     if (pos.canEnter(this))
       position.moveCreature(pos, true);
+    phylactery = none;
     return true;
   }
   return false;
