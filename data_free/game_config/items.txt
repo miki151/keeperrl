@@ -299,7 +299,7 @@
         IncreaseAttr DEFENSE 4
         MakeHumanoid
         AddBodyPart HEAD 1 none
-        AddAutomatonPart 2 "humanoid" { "installed_head" Rgb 140 148 148 255 }
+        AddAutomatonPart 2 "humanoid" { "installed_head" Rgb 148 189 189 255 }
       }
     upgradeType = {ARMOR}
     storageIds = {"automaton_parts" "equipment"}
