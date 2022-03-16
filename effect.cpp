@@ -1329,9 +1329,12 @@ static bool apply(const Effects::CustomArea& area, Position pos, Creature* attac
 }
 
 static bool applyToCreature(const Effects::Suicide& e, Creature* c, Creature* attacker) {
-  c->you(e.message, "");
-  c->dieWithAttacker(attacker);
-  return true;
+  if (!c->isAffected(LastingEffect::INVULNERABLE)) {
+    c->you(e.message, "");
+    c->dieWithAttacker(attacker);
+    return true;
+  }
+  return false;
 }
 
 static int getPrice(const Effects::Suicide&) {
