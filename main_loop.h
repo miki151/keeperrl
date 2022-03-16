@@ -48,7 +48,7 @@ class MainLoop {
   void endlessTest(int numTries, const FilePath& levelPath, const FilePath& battleInfoPath, optional<int> numEnemy);
   void campaignBattleText(int numTries, const FilePath& levelPath, EnemyId keeperId, VillainGroup);
   int campaignBattleText(int numTries, const FilePath& levelPath, EnemyId keeperId, EnemyId);
-  void launchQuickGame(optional<int> maxTurns);
+  void launchQuickGame(optional<int> maxTurns, bool tryToLoad);
   void playSimpleGame();
   ContentFactory createContentFactory(bool vanillaOnly) const;
 

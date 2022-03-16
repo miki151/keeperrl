@@ -143,6 +143,7 @@ static po::parser getCommandLineFlags() {
   flags["simple_game"].description("Start \"simple game\"");
 #ifndef RELEASE
   flags["quick_game"].description("Skip main menu and load the last save file or start a single map game");
+  flags["new_game"].description("Skip main menu and start a single map game");
   flags["max_turns"].type(po::i32).description("Quit the game after a given max number of turns");
 #endif
   return flags;
@@ -460,7 +461,9 @@ static int keeperMain(po::parser& commandLineFlags) {
     if (audioError)
       view->presentText("Failed to initialize audio. The game will be started without sound.", *audioError);
     if (commandLineFlags["quick_game"].was_set())
-      loop.launchQuickGame(maxTurns);
+      loop.launchQuickGame(maxTurns, true);
+    if (commandLineFlags["new_game"].was_set())
+      loop.launchQuickGame(maxTurns, false);
     loop.start(tilesPresent);
   } catch (GameExitException ex) {
   }

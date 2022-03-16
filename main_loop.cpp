@@ -808,17 +808,19 @@ ContentFactory MainLoop::createContentFactory(bool vanillaOnly) const {
   return ret;
 }
 
-void MainLoop::launchQuickGame(optional<int> maxTurns) {
-  vector<ListElem> optionsUnused;
-  vector<SaveFileInfo> files;
-  getSaveOptions({
-      {GameSaveType::AUTOSAVE, "Recovered games:"},
-      {GameSaveType::KEEPER, "Keeper games:"}, {GameSaveType::ADVENTURER, "Adventurer games:"}}, optionsUnused, files);
-  auto toLoad = std::min_element(files.begin(), files.end(),
-      [](const auto& f1, const auto& f2) { return f1.date > f2.date; });
+void MainLoop::launchQuickGame(optional<int> maxTurns, bool tryToLoad) {
   PGame game;
-  if (toLoad != files.end())
-    game = loadGame(userPath.file((*toLoad).filename));
+  if (tryToLoad) {
+    vector<ListElem> optionsUnused;
+    vector<SaveFileInfo> files;
+    getSaveOptions({
+        {GameSaveType::AUTOSAVE, "Recovered games:"},
+        {GameSaveType::KEEPER, "Keeper games:"}, {GameSaveType::ADVENTURER, "Adventurer games:"}}, optionsUnused, files);
+    auto toLoad = std::min_element(files.begin(), files.end(),
+        [](const auto& f1, const auto& f2) { return f1.date > f2.date; });
+    if (toLoad != files.end())
+      game = loadGame(userPath.file((*toLoad).filename));
+  }
   auto contentFactory = createContentFactory(true);
   if (!game) {
     AvatarInfo avatar = getQuickGameAvatar(view, contentFactory.keeperCreatures, &contentFactory.getCreatures());
