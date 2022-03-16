@@ -1620,7 +1620,7 @@ static string getDescription(const Effects::SetCreatureName& e, const ContentFac
 }
 
 static bool applyToCreature(const Effects::SetViewId& e, Creature* c, Creature*) {
-  c->modViewObject().setId(e.value);
+  c->setViewId(e.value);
   return true;
 }
 

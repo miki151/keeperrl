@@ -127,6 +127,7 @@ class CreatureAttributes {
   friend class ContentFactory;
   friend class CreatureFactory;
 
+  ViewId SERIAL(viewId);
   vector<ViewId> SERIAL(viewIdUpgrades);
   vector<ItemType> SERIAL(automatonParts);
   EnumMap<AttrType, vector<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
@@ -140,7 +141,6 @@ class CreatureAttributes {
 
   private:
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);
-  ViewId SERIAL(viewId);
   heap_optional<ViewObject> SERIAL(illusionViewObject);
   CreatureName SERIAL(name);
   EnumMap<AttrType, int> SERIAL(attr);

@@ -75,6 +75,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   const ViewObject& getViewObjectFor(const Tribe* observer) const;
   void setAlternativeViewId(optional<ViewId>);
   bool hasAlternativeViewId() const;
+  void setViewId(ViewId);
   void makeMove();
   optional<LocalTime> getLocalTime() const;
   optional<GlobalTime> getGlobalTime() const;

@@ -225,6 +225,11 @@ pair<CreatureAttributes, SpellMap> Creature::setAttributes(CreatureAttributes at
   return ret;
 }
 
+void Creature::setViewId(ViewId id) {
+  modViewObject().setId(id);
+  attributes->viewId = id;
+}
+
 CreatureAction Creature::castSpell(const Spell* spell) const {
   return castSpell(spell, position);
 }
