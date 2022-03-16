@@ -492,7 +492,7 @@ Position Game::getTransferPos(WModel from, WModel to) const {
 
 void Game::transferCreature(Creature* c, WModel to, const vector<Position>& destinations) {
   WModel from = c->getLevel()->getModel();
-  if (from != to) {
+  if (from != to && !c->getRider()) {
     auto transfer = [&] (Creature* c) {
       if (destinations.empty())
         to->transferCreature(from->extractCreature(c), getModelCoords(from) - getModelCoords(to));
