@@ -1008,7 +1008,7 @@
   }
 "GREEN_DRAGON"
   {
-    viewId = { "red_dragon" Rgb 10 240 10 255 }
+    viewId = { "red_dragon" Rgb 33 120 27 255 }
     attr = {
       DAMAGE 45
       DEFENSE 47
@@ -1330,7 +1330,7 @@
   }
 "YELLOW_DRAGON" inherit "BLACK_DRAGON"
   {
-    viewId = { "red_dragon" Rgb 240 240 10 255 }
+    viewId = { "red_dragon" Rgb 240 200 0 255 }
     body = {
       type = FourLegged HUGE
       corpseIngredientType = "dragon_corpse"
@@ -3836,7 +3836,7 @@
     body = {
       type = FourLegged LARGE
       weight = 35
-      material = UNDEAD_FLESH
+      material = BONE
       intrinsicAttacks = {
         LEG  {{itemType = { Intrinsic { "claws_attack" } "claws" 8 { attackType = HIT attackMsg = CLAW } } isExtraAttack = true }}
         HEAD {{itemType = { Intrinsic { "bite_attack" }  "fangs" 7 { attackType = BITE attackMsg = BITE} } isExtraAttack = true }}
