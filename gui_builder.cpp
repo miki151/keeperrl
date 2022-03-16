@@ -1543,7 +1543,7 @@ SGuiElem GuiBuilder::drawTrainingInfo(const CreatureExperienceInfo& info,
   if (increaseCallback) {
     lines.addElem(WL(label, getPlural("point", info.numAvailableUpgrades) + " available"));
   }
-  bool empty = true;
+  bool empty = !info.combatExperience;
   for (auto expType : ENUM_ALL(ExperienceType)) {
     if (auto elem = getExpIncreaseLine(info, expType,
         [increaseCallback, expType] { increaseCallback(expType); }, infoOnly)) {

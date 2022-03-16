@@ -198,6 +198,8 @@ void Creature::pushAttributes(CreatureAttributes attr, SpellMap spells) {
 }
 
 pair<CreatureAttributes, SpellMap> Creature::setAttributes(CreatureAttributes attr, SpellMap spells) {
+  auto combatExp = getAttributes().combatExperience;
+  auto firstName = getName().first();
   for (auto item : equipment->getAllEquipped())
     item->onUnequip(this, false);
   for (auto item : equipment->getItems())
@@ -222,6 +224,8 @@ pair<CreatureAttributes, SpellMap> Creature::setAttributes(CreatureAttributes at
   for (auto effect : ENUM_ALL(LastingEffect))
     if (!LastingEffects::affects(this, effect))
       removeEffect(effect, true);
+  getName().setFirst(firstName);
+  getAttributes().combatExperience = combatExp;
   return ret;
 }
 

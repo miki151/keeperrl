@@ -138,6 +138,7 @@ class CreatureAttributes {
   optional<string> SERIAL(promotionGroup);
   double SERIAL(promotionCost) = 1.0;
   int SERIAL(maxPromotions) = 5;
+  double SERIAL(combatExperience) = 0;
 
   private:
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);
@@ -164,7 +165,6 @@ class CreatureAttributes {
   MinionActivityMap SERIAL(minionActivities);
   EnumMap<ExperienceType, double> SERIAL(expLevel);
   EnumMap<ExperienceType, int> SERIAL(maxLevelIncrease);
-  double SERIAL(combatExperience) = 0;
   bool SERIAL(noAttackSound) = false;
   optional<CreatureId> SERIAL(creatureId);
   optional<string> SERIAL(deathDescription);
