@@ -1185,6 +1185,8 @@ void Creature::tick() {
     dieWithAttacker(attacker);
     return;
   }
+  if (!!steed && isEnemy(steed.get()))
+    tryToDismount();
   const auto privateEnemyTimeout = 50_visible;
   for (auto c : privateEnemies.getKeys())
     if (privateEnemies.getOrFail(c) < *globalTime - privateEnemyTimeout)
@@ -1445,18 +1447,10 @@ bool Creature::captureDamage(double damage, Creature* attacker) {
       you(MsgType::ARE, "captured");
     } else {
       addEffect(LastingEffect::STUNNED, 300_visible);
-      auto dismountImpl = [](Creature* c) {
-        for (auto v : c->position.neighbors8(Random))
-          if (v.canEnter(c->getMovementTypeNotSteed(c->getGame()))) {
-            c->verb("fall off", "falls off", c->getSteed()->getName().the());
-            c->forceDismount(c->position.getDir(v));
-            return;
-          }
-      };
       if (steed)
-        dismountImpl(this);
+        tryToDismount();
       if (auto rider = getRider())
-        dismountImpl(rider);
+        rider->tryToDismount();
       captureHealth = 1;
       updateViewObject();
       getGame()->addEvent(EventInfo::CreatureStunned{this, attacker});
@@ -2114,6 +2108,16 @@ void Creature::forceDismount(Vec2 v) {
   position.moveCreature(v);
   CHECK(!!steed);
   oldPos.landCreature(std::move(steed));
+}
+
+void Creature::tryToDismount() {
+  CHECK(!!steed);
+  for (auto v : position.neighbors8(Random))
+    if (v.canEnter(getMovementTypeNotSteed(getGame()))) {
+      verb("fall off", "falls off", steed->getName().the());
+      forceDismount(position.getDir(v));
+      return;
+    }
 }
 
 CreatureAction Creature::dismount() const {
