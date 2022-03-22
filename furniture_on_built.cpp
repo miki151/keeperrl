@@ -82,7 +82,7 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
       Level* targetLevel = nullptr;
       if (levelIndex == pos.getModel()->getMainLevelsDepth().getStart()) {
         auto levelSize = pos.getLevel()->getBounds().getSize();
-        auto newLevel = tryBuilding(20,
+        auto newLevel = tryBuilding(100,
             [&]{
               auto contentFactory = pos.getGame()->getContentFactory();
               auto maker = getUpLevel(Random, contentFactory, -levelIndex + 1, pos);
@@ -104,7 +104,7 @@ void handleOnBuilt(Position pos, Furniture* f, FurnitureOnBuilt type) {
       Level* targetLevel = nullptr;
       if (levelIndex == pos.getModel()->getMainLevelsDepth().getEnd() - 1) {
         auto levelSize = pos.getLevel()->getBounds().getSize();
-        auto newLevel = tryBuilding(20,
+        auto newLevel = tryBuilding(100,
             [&]{
               auto contentFactory = pos.getGame()->getContentFactory();
               auto maker = getLevelMaker(Random, contentFactory, pos.getGame()->zLevelGroups,
