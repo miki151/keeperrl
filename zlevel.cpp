@@ -71,15 +71,17 @@ LevelMakerResult getLevelMaker(RandomGen& random, ContentFactory* contentFactory
 
 
 LevelMakerResult getUpLevel(RandomGen& random, ContentFactory* contentFactory,
-    int depth, Position pos) {
+    int depth, Position pos, bool withEnemy) {
   auto& biomeInfo = contentFactory->biomeInfo.at(pos.getModel()->getBiomeId());
   vector<EnemyInfo> enemies;
-  for (auto& enemyInfo : biomeInfo.mountainEnemies)
-    if (enemyInfo.first.contains(depth) && random.chance(enemyInfo.second.probability))
-      for (int it : Range(Random.get(enemyInfo.second.count))) {
-        enemies.push_back(getEnemy(enemyInfo.second.id, contentFactory));
-        enemies.back().settlement.collective = new CollectiveBuilder(enemies.back().config, enemies.back().settlement.tribe);
-      }
+  if (withEnemy)
+    for (auto& enemyInfo : biomeInfo.mountainEnemies)
+      if (enemyInfo.first.contains(depth) && random.chance(enemyInfo.second.probability))
+        for (int it : Range(Random.get(enemyInfo.second.count))) {
+          enemies.push_back(getEnemy(enemyInfo.second.id, contentFactory));
+          enemies.back().settlement.collective = new CollectiveBuilder(enemies.back().config,
+              enemies.back().settlement.tribe);
+        }
   auto res = chooseResourceCounts(random, contentFactory->resources, -depth);
   auto maker = LevelMaker::upLevel(pos, biomeInfo, enemies.transform([](auto e) {return e.settlement; }), res);
   auto size = pos.getModel()->getGroundLevel()->getBounds().getSize();
