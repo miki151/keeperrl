@@ -90,9 +90,10 @@ ItemPredicate Item::namePredicate(const string& name) {
   return [name](const Item* item) { return item->getName() == name; };
 }
 
-vector<vector<Item*>> Item::stackItems(vector<Item*> items, function<string(const Item*)> suffix) {
-  map<string, vector<Item*>> stacks = groupBy<Item*, string>(items, [suffix](const Item* item) {
-        return item->getNameAndModifiers() + suffix(item) + toString(item->getViewObject().id().getColor());
+vector<vector<Item*>> Item::stackItems(const ContentFactory* f, vector<Item*> items,
+    function<string(const Item*)> suffix) {
+  map<string, vector<Item*>> stacks = groupBy<Item*, string>(items, [suffix, f](const Item* item) {
+        return item->getNameAndModifiers(f) + suffix(item) + toString(item->getViewObject().id().getColor());
       });
   vector<vector<Item*>> ret;
   for (auto& elem : stacks)
@@ -257,9 +258,9 @@ vector<string> Item::getDescription(const ContentFactory* factory) const {
     ret.append(info->getDescription(factory));
   for (auto& info : abilityInfo)
     ret.push_back("Grants ability: "_s + info.spell.getName(factory));
-  for (auto attr : ENUM_ALL(AttrType))
-    if (auto& elem = attributes->specialAttr[attr])
-      ret.push_back(toStringWithSign(elem->first) + " " + ::getName(attr) + " " + elem->second.getName());
+  for (auto& elem : attributes->specialAttr)
+    ret.push_back(toStringWithSign(elem.second.first) + " " + factory->attrInfo.at(elem.first).name + " " + 
+        elem.second.second.getName());
   return ret;
 }
 
@@ -505,32 +506,32 @@ string Item::getSuffix() const {
   return artStr;
 }
 
-string Item::getModifiers(bool shorten) const {
-  EnumSet<AttrType> printAttr;
+string Item::getModifiers(const ContentFactory* factory, bool shorten) const {
+  unordered_set<AttrType, CustomHash<AttrType>> printAttr;
   if (!shorten) {
-    for (auto attr : ENUM_ALL(AttrType))
-      if (attributes->modifiers[attr] != 0)
-        printAttr.insert(attr);
+    for (auto attr : attributes->modifiers)
+      printAttr.insert(attr.first);
   } else
     switch (getClass()) {
       case ItemClass::RANGED_WEAPON:
-        for (auto attr : {AttrType::RANGED_DAMAGE, AttrType::SPELL_DAMAGE})
-          if (attributes->modifiers[attr] > 0)
-            printAttr.insert(attr);
+        for (auto& attr : attributes->modifiers)
+          if (factory->attrInfo.at(attr.first).isAttackAttr)
+            printAttr.insert(attr.first);
         break;
       case ItemClass::WEAPON:
         printAttr.insert(getWeaponInfo().meleeAttackAttr);
         break;
       case ItemClass::ARMOR:
-        printAttr.insert(AttrType::DEFENSE);
-        if (attributes->modifiers[AttrType::PARRY])
-          printAttr.insert(AttrType::PARRY);
+        printAttr.insert(AttrType("DEFENSE"));
+        if (attributes->modifiers.count(AttrType("PARRY")))
+          printAttr.insert(AttrType("PARRY"));
         break;
       default: break;
     }
   vector<string> attrStrings;
   for (auto attr : printAttr)
-    attrStrings.push_back(withSign(attributes->modifiers[attr]) + (shorten ? "" : " " + ::getName(attr)));
+    attrStrings.push_back(withSign(getValueMaybe(attributes->modifiers, attr).value_or(0)) + 
+        (shorten ? "" : " " + factory->attrInfo.at(attr).name));
   string attrString = combine(attrStrings, true);
   if (!attrString.empty())
     attrString = "(" + attrString + ")";
@@ -539,12 +540,12 @@ string Item::getModifiers(bool shorten) const {
   return attrString;
 }
 
-string Item::getShortName(const Creature* owner, bool plural) const {
+string Item::getShortName(const ContentFactory* factory, const Creature* owner, bool plural) const {
   PROFILE;
   if (owner && owner->isAffected(LastingEffect::BLIND) && attributes->blindName)
     return getBlindName(plural);
   if (attributes->artifactName)
-    return *attributes->artifactName + " " + getModifiers(true);
+    return *attributes->artifactName + " " + getModifiers(factory, true);
   string name;
   if (!attributes->prefixes.empty())
     name = attributes->prefixes.back();
@@ -553,13 +554,13 @@ string Item::getShortName(const Creature* owner, bool plural) const {
     appendWithSpace(name, getSuffix());
   } else
     name = getVisibleName(plural);
-  appendWithSpace(name, getModifiers(true));
+  appendWithSpace(name, getModifiers(factory, true));
   return name;
 }
 
-string Item::getNameAndModifiers(bool getPlural, const Creature* owner) const {
+string Item::getNameAndModifiers(const ContentFactory* factory, bool getPlural, const Creature* owner) const {
   auto ret = getName(getPlural, owner);
-  appendWithSpace(ret, getModifiers());
+  appendWithSpace(ret, getModifiers(factory));
   return ret;
 }
 
@@ -598,14 +599,18 @@ void Item::addModifier(AttrType type, int value) {
   attributes->modifiers[type] += value;
 }
 
-int Item::getModifier(AttrType type) const {
-  CHECK(abs(attributes->modifiers[type]) < 10000) << EnumInfo<AttrType>::getString(type) << " "
-      << attributes->modifiers[type] << " " << getName();
-  return attributes->modifiers[type];
+const map<AttrType, int>& Item::getModifierValues() const {
+  return attributes->modifiers;
 }
 
-const optional<pair<int, CreaturePredicate>>& Item::getSpecialModifier(AttrType attr) const {
-  return attributes->specialAttr[attr];
+int Item::getModifier(AttrType type) const {
+  int ret = getValueMaybe(attributes->modifiers, type).value_or(0);
+  CHECK(abs(ret) < 10000) << type.data() << " " << ret << " " << getName();
+  return ret;
+}
+
+const map<AttrType, pair<int, CreaturePredicate>>& Item::getSpecialModifiers() const {
+  return attributes->specialAttr;
 }
 
 optional<CorpseInfo> Item::getCorpseInfo() const {

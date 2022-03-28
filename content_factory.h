@@ -21,6 +21,7 @@
 #include "tile_gas_type.h"
 #include "dancing.h"
 #include "scripted_help_info.h"
+#include "attr_info.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -67,6 +68,8 @@ class ContentFactory {
   map<string, vector<PromotionInfo>> SERIAL(promotions);
   vector<Dancing::Positions> SERIAL(dancePositions);
   vector<ScriptedHelpInfo> SERIAL(scriptedHelp);
+  map<AttrType, AttrInfo> SERIAL(attrInfo);
+  vector<AttrType> SERIAL(attrOrder);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

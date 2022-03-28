@@ -71,7 +71,7 @@ static void handle(const FurnitureTickTypes::MeteorShower, Position position, Fu
         continue;
     targetPoint.plus(direction * range).throwItem(
         makeVec(ItemType(CustomItemId("Rock")).get(position.getGame()->getContentFactory())),
-        Attack(furniture->getCreator(), AttackLevel::MIDDLE, AttackType::HIT, 25, AttrType::DAMAGE),
+        Attack(furniture->getCreator(), AttackLevel::MIDDLE, AttackType::HIT, 25, AttrType("DAMAGE")),
         10,
         position.minus(direction),
         VisionId::NORMAL);

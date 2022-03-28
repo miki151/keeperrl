@@ -53,7 +53,7 @@ class ViewObject {
   ViewObject& resetAttribute(Attribute);
   optional<float> getAttribute(Attribute) const;
 
-  using CreatureAttributes = EnumMap<AttrType, std::uint16_t>;
+  using CreatureAttributes = vector<pair<ViewId, std::uint16_t>>;
   void setCreatureAttributes(CreatureAttributes);
   const optional<CreatureAttributes>& getCreatureAttributes() const;
 

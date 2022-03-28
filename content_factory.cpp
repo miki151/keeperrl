@@ -27,7 +27,10 @@
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
-  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups, immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping, randomLayouts, tileGasTypes, promotions, dancePositions, equipmentGroups, scriptedHelp);
+  ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups);
+  ar(immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items);
+  ar(buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping);
+  ar(randomLayouts, tileGasTypes, promotions, dancePositions, equipmentGroups, scriptedHelp, attrInfo, attrOrder);
   creatures.setContentFactory(this);
 }
 
@@ -445,6 +448,13 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
   if (auto error = config->readObject(tileGasTmp, GameConfigId::TILE_GAS_TYPES, &keyVerifier))
     return *error;
   tileGasTypes = convertKeys(tileGasTmp);
+  vector<pair<PrimaryId<AttrType>, AttrInfo>> attrTmp;
+  if (auto error = config->readObject(attrTmp, GameConfigId::ATTR_INFO, &keyVerifier))
+    return *error;
+  for (auto& elem : attrTmp) {
+    attrOrder.push_back(elem.first);
+    attrInfo.insert(std::move(elem));
+  }
   if (auto error = config->readObject(promotions, GameConfigId::PROMOTIONS, &keyVerifier))
     return *error;
   if (auto error = config->readObject(dancePositions, GameConfigId::DANCE_POSITIONS, &keyVerifier))
@@ -483,6 +493,10 @@ void ContentFactory::merge(ContentFactory f) {
   mergeMap(std::move(f.items), items);
   mergeMap(std::move(f.workshopInfo), workshopInfo);
   mergeMap(std::move(f.resourceInfo), resourceInfo);
+  mergeMap(std::move(f.attrInfo), attrInfo);
+  for (auto t : f.attrOrder)
+    if (!attrOrder.contains(t))
+      attrOrder.push_back(t);
 }
 
 CreatureFactory& ContentFactory::getCreatures() {

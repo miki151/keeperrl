@@ -73,13 +73,13 @@ struct ItemInfo {
 static_assert(std::is_nothrow_move_constructible<ItemInfo>::value, "T should be noexcept MoveConstructible");
 
 struct AttributeInfo {
-  static vector<AttributeInfo> fromCreature(const Creature*);
+  static vector<AttributeInfo> fromCreature(const ContentFactory*, const Creature*);
   string HASH(name);
-  AttrType HASH(attr);
+  ViewId HASH(viewId);
   int HASH(value);
   int HASH(bonus);
-  const char* HASH(help);
-  HASH_ALL(name, attr, value, bonus, help)
+  string HASH(help);
+  HASH_ALL(name, viewId, value, bonus, help)
 };
 
 struct AvatarLevelInfo {
@@ -206,7 +206,13 @@ struct ImmigrantCreatureInfo {
   ViewIdList HASH(viewId);
   vector<AttributeInfo> HASH(attributes);
   vector<string> HASH(spellSchools);
-  EnumMap<ExperienceType, int> HASH(trainingLimits);
+  struct TrainingInfo {
+    ExperienceType HASH(expType);
+    int HASH(limit);
+    vector<ViewId> HASH(attributes);
+    HASH_ALL(expType, limit, attributes)
+  };
+  vector<TrainingInfo> HASH(trainingLimits);
   vector<SkillInfo> HASH(skills);
   HASH_ALL(name, viewId, attributes, spellSchools, trainingLimits, skills);
 };

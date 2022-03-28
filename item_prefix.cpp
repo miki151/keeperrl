@@ -103,7 +103,7 @@ vector<string> getEffectDescription(const ContentFactory* factory, const ItemPre
         return {"victim affected by: " + e.effect.getName(factory) + " (" + toPercentage(e.chance) + " chance)"};
       },
       [&](ItemAttrBonus bonus) -> vector<string> {
-        return {"+"_s + toString(bonus.value) + " " + getName(bonus.attr)};
+        return {"+"_s + toString(bonus.value) + " " + factory->attrInfo.at(bonus.attr).name};
       },
       [&](const JoinPrefixes& join) -> vector<string> {
         vector<string> ret;
@@ -115,7 +115,7 @@ vector<string> getEffectDescription(const ContentFactory* factory, const ItemPre
         return {"grants "_s + id.data() + " ability"};
       },
       [&](const SpecialAttr& a) -> vector<string> {
-        return {toStringWithSign(a.value) + " " + ::getName(a.attr) + " " + a.predicate.getName()};
+        return {toStringWithSign(a.value) + " " + factory->attrInfo.at(a.attr).name + " " + a.predicate.getName()};
       },
       [&](const AssembledCreatureEffect& effect) -> vector<string> {
         return {effect.getDescription(factory)};
@@ -135,7 +135,7 @@ string getItemName(const ContentFactory* factory, const ItemPrefix& prefix) {
         return "of " + e.effect.getName(factory);
       },
       [&](ItemAttrBonus bonus) {
-        return "of " + getName(bonus.attr);
+        return "of " + factory->attrInfo.at(bonus.attr).name;
       },
       [&](const JoinPrefixes& join) {
         return getItemName(factory, join.prefixes.back());
@@ -158,7 +158,7 @@ string getGlyphName(const ContentFactory* factory, const ItemPrefix& prefix) {
         return ::getItemName(factory, prefix);
       },
       [&](ItemAttrBonus bonus) {
-        return "of +"_s + toString(bonus.value) + " " + getName(bonus.attr);
+        return "of +"_s + toString(bonus.value) + " " + factory->attrInfo.at(bonus.attr).name;
       },
       [&](const JoinPrefixes& join) {
         return getGlyphName(factory, join.prefixes.back());

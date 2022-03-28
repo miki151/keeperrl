@@ -114,7 +114,7 @@ End
                 attackType = BITE
                 attackMsg = BITE
                 victimEffect = {0.1 Lasting POISON} } } } }
-         { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
+         { 0.01 { CompanionInfo 1 true none 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DAMAGE 10 CreatureStatus LEADER }}
          { 0.03 { SpecialAttr DAMAGE 6 Name "when riding steed" Attacker Rider }}
          { 0.02 { SpecialAttr DEFENSE 8 HatedBy HATE_HUMANS }}
@@ -145,7 +145,7 @@ End
         { 0.0 MinTurnRequirement 500 }
       }
       specialTraits = {
-         { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
+         { 0.01 { CompanionInfo 1 true none 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DEFENSE 10 HatedBy HATE_DRAGONS }}
          { 0.02 { SpecialAttr SPELL_DAMAGE 8 Not Humanoid }}
          { 0.03 { Lasting { RIDER } SpecialAttr SPELL_DAMAGE 6 Name "when riding steed" Attacker Rider }}
@@ -224,7 +224,7 @@ End
         { 0.0 CostInfo "CORPSE" 1}
       }
       specialTraits = {
-         { 0.03 { CompanionInfo 1 true false 0.1 { "FLY" }}}
+         { 0.03 { CompanionInfo 1 true none 0.1 { "FLY" }}}
          { 0.2 { ExtraIntrinsicAttack
             HEAD
             { Intrinsic { "bite_attack" } "fangs" 5 {
@@ -262,7 +262,7 @@ End
         { 0.0 CostInfo "CORPSE" 1}
       }
       specialTraits = {
-         { 0.03 { CompanionInfo 1 true false 0.1 { "BAT" }}}
+         { 0.03 { CompanionInfo 1 true none 0.1 { "BAT" }}}
          { 0.02 { SpecialAttr SPELL_DAMAGE 7 HatedBy HATE_ELVES }}
          { 0.3 { Lasting { TELEPATHY } }}
          { 0.3 { Lasting { FIRE_RESISTANT } }}
@@ -591,7 +591,7 @@ End
         { 0.0 AttractionInfo 0 {FurnitureType "COFFIN1"}}
       }
       specialTraits = {
-         { 0.03 { CompanionInfo 1 true false 0.1 { "FLY" }}}
+         { 0.03 { CompanionInfo 1 true none 0.1 { "FLY" }}}
          { 0.2 { ExtraIntrinsicAttack
             HEAD
             { Intrinsic { "bite_attack" } "fangs" 5 {
@@ -651,7 +651,7 @@ End
                 attackType = BITE
                 attackMsg = BITE
                 victimEffect = {0.1 Lasting POISON} } } } }
-         { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
+         { 0.01 { CompanionInfo 1 true none 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DAMAGE 10 CreatureStatus LEADER }}
          { 0.02 { SpecialAttr DEFENSE 8 HatedBy HATE_HUMANS }}
          { 0.15 { SpecialAttr DAMAGE 5 Name "when drunk" Attacker LastingEffect DRUNK }}
@@ -740,7 +740,7 @@ End
       }
       frequency = 0.3
       specialTraits = {
-         { 0.01 { CompanionInfo 1 true false 0.1 { "WOLF" }}}
+         { 0.01 { CompanionInfo 1 true none 0.1 { "WOLF" }}}
          { 0.01 { SpecialAttr DEFENSE 10 HatedBy HATE_DRAGONS }}
          { 0.02 { SpecialAttr SPELL_DAMAGE 8 Not Humanoid }}
          { 0.10 { ExtraTraining SPELL 4}}

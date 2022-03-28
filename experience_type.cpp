@@ -19,30 +19,29 @@ const char* getNameLowerCase(ExperienceType type) {
   return lowerCaseName[type].c_str();
 }
 
-static const EnumMap<ExperienceType, EnumSet<AttrType>> attrIncreases {
-  {ExperienceType::MELEE, {
-      AttrType::DAMAGE,
-      AttrType::DEFENSE
-  }},
-  {ExperienceType::SPELL, {
-      AttrType::SPELL_DAMAGE,
-  }},
-  {ExperienceType::ARCHERY, {
-      AttrType::RANGED_DAMAGE
-  }},
-};
-
-const EnumMap<ExperienceType, EnumSet<AttrType>>& getAttrIncreases() {
+const EnumMap<ExperienceType, unordered_set<AttrType, CustomHash<AttrType>>>& getAttrIncreases() {
+  static const EnumMap<ExperienceType, unordered_set<AttrType, CustomHash<AttrType>>> attrIncreases {
+    {ExperienceType::MELEE, {
+        AttrType("DAMAGE"),
+        AttrType("DEFENSE")
+    }},
+    {ExperienceType::SPELL, {
+        AttrType("SPELL_DAMAGE"),
+    }},
+    {ExperienceType::ARCHERY, {
+        AttrType("RANGED_DAMAGE")
+    }},
+  };
   return attrIncreases;
 }
 
 optional<ExperienceType> getExperienceType(AttrType attr) {
-  static EnumMap<AttrType, optional<ExperienceType>> ret(
-      [](AttrType attr) -> optional<ExperienceType> {
-        for (auto expType : ENUM_ALL(ExperienceType))
-          if (attrIncreases[expType].contains(attr))
-            return expType;
-        return none;
-      });
+  static unordered_map<AttrType, optional<ExperienceType>, CustomHash<AttrType>> ret = [] {
+    unordered_map<AttrType, optional<ExperienceType>, CustomHash<AttrType>> ret;
+    for (auto expType : ENUM_ALL(ExperienceType))
+      for (auto attr : getAttrIncreases()[expType])
+        ret[attr] = expType;
+    return ret;
+  }();
   return ret[attr];
 }

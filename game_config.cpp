@@ -72,6 +72,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "equipment_groups";
     case GameConfigId::HELP:
       return "help";
+    case GameConfigId::ATTR_INFO:
+      return "attributes";
   }
 }
 

@@ -78,7 +78,7 @@ class BoulderController : public Monster {
           nextPos.globalMessage(creature->getName().the() + " crashes on " + c->getName().the());
           nextPos.unseenMessage("You hear a crash");
           creature->dieNoReason();
-          //c->takeDamage(Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 1000, AttrType::DAMAGE));
+          //c->takeDamage(Attack(creature, AttackLevel::MIDDLE, AttackType::HIT, 1000, AttrType("DAMAGE")));
           return;
         } else {
           c->you(MsgType::KILLED_BY, creature->getName().the());
@@ -89,9 +89,9 @@ class BoulderController : public Monster {
     if (auto furniture = nextPos.getFurniture(FurnitureLayer::MIDDLE))
       if (furniture->canDestroy(creature->getMovementType(), DestroyAction::Type::BOULDER) &&
           *furniture->getStrength(DestroyAction::Type::BOULDER) <
-          health * creature->getAttr(AttrType::DAMAGE)) {
+          health * creature->getAttr(AttrType("DAMAGE"))) {
         health -= *furniture->getStrength(DestroyAction::Type::BOULDER) /
-            (double) creature->getAttr(AttrType::DAMAGE);
+            (double) creature->getAttr(AttrType("DAMAGE"));
         creature->destroyImpl(direction, DestroyAction::Type::BOULDER);
       }
     if (auto action = creature->move(direction))
@@ -126,8 +126,8 @@ PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
   viewObject.setModifier(ViewObjectModifier::NO_UP_MOVEMENT);
   auto ret = makeOwner<Creature>(viewObject, tribe, CATTR(
             c.viewId = ViewId("boulder");
-            c.attr[AttrType::DAMAGE] = 250;
-            c.attr[AttrType::DEFENSE] = 250;
+            c.attr[AttrType("DAMAGE")] = 250;
+            c.attr[AttrType("DEFENSE")] = 250;
             c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE);
             c.body->setDeathSound(none);
             c.permanentEffects[LastingEffect::BLIND] = 1;
@@ -138,11 +138,13 @@ PCreature CreatureFactory::getRollingBoulder(Vec2 direction) {
   return ret;
 }
 
-PCreature CreatureFactory::getAnimatedItem(PItem item, TribeId tribe, int attrBonus) {
+PCreature CreatureFactory::getAnimatedItem(const ContentFactory* factory, PItem item, TribeId tribe, int attrBonus) {
   auto ret = makeOwner<Creature>(tribe, CATTR(
             c.viewId = item->getViewObject().id();
-            c.attr[AttrType::DAMAGE] = item->getModifier(AttrType::DAMAGE) + attrBonus;
-            c.attr[AttrType::DEFENSE] = item->getModifier(AttrType::DEFENSE) + attrBonus;
+            c.attr[AttrType("DEFENSE")] = item->getModifier(AttrType("DEFENSE")) + attrBonus;
+            for (auto& attr : factory->attrInfo)
+              if (attr.second.isAttackAttr && item->getModifier(attr.first) > 0)
+                c.attr[attr.first] = item->getModifier(attr.first) + attrBonus;
             c.body = Body::nonHumanoid(Body::Material::SPIRIT, Body::Size::SMALL);
             c.body->setDeathSound(none);
             c.name = "animated " + item->getName();
@@ -179,8 +181,8 @@ PCreature CreatureFactory::getSokobanBoulder(TribeId tribe) {
   viewObject.setModifier(ViewObjectModifier::NO_UP_MOVEMENT).setModifier(ViewObjectModifier::REMEMBER);
   auto ret = makeOwner<Creature>(viewObject, tribe, CATTR(
             c.viewId = ViewId("boulder");
-            c.attr[AttrType::DAMAGE] = 250;
-            c.attr[AttrType::DEFENSE] = 250;
+            c.attr[AttrType("DAMAGE")] = 250;
+            c.attr[AttrType("DEFENSE")] = 250;
             c.body = Body::nonHumanoid(Body::Material::ROCK, Body::Size::HUGE);
             c.body->setDeathSound(none);
             c.body->setMinPushSize(Body::Size::LARGE);
@@ -196,8 +198,8 @@ CreatureAttributes CreatureFactory::getKrakenAttributes(ViewId id, const char* n
       c.viewId = id;
       c.body = Body::nonHumanoid(Body::Size::LARGE);
       c.body->setDeathSound(none);
-      c.attr[AttrType::DAMAGE] = 28;
-      c.attr[AttrType::DEFENSE] = 28;
+      c.attr[AttrType("DAMAGE")] = 28;
+      c.attr[AttrType("DEFENSE")] = 28;
       c.permanentEffects[LastingEffect::POISON_RESISTANT] = 1;
       c.permanentEffects[LastingEffect::NIGHT_VISION] = 1;
       c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;
@@ -615,8 +617,8 @@ PCreature CreatureFactory::getIllusion(Creature* creature) {
           c.illusionViewObject->setModifier(ViewObject::Modifier::INVISIBLE, false);
           c.body = Body::nonHumanoidSpirit(Body::Size::LARGE);
           c.body->setDeathSound(SoundId::MISSED_ATTACK);
-          c.attr[AttrType::DAMAGE] = 20; // just so it's not ignored by creatures
-          c.attr[AttrType::DEFENSE] = 1;
+          c.attr[AttrType("DAMAGE")] = 20; // just so it's not ignored by creatures
+          c.attr[AttrType("DEFENSE")] = 1;
           c.permanentEffects[LastingEffect::FLYING] = 1;
           c.noAttackSound = true;
           c.canJoinCollective = false;
@@ -714,16 +716,16 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
         c.viewId = getSpecialViewId(p.humanoid, p.large, p.living, p.wings);
         c.isSpecial = true;
         c.body = std::move(body);
-        c.attr[AttrType::DAMAGE] = Random.get(28, 34);
-        c.attr[AttrType::DEFENSE] = Random.get(28, 34);
-        c.attr[AttrType::SPELL_DAMAGE] = Random.get(28, 34);
+        c.attr[AttrType("DAMAGE")] = Random.get(28, 34);
+        c.attr[AttrType("DEFENSE")] = Random.get(28, 34);
+        c.attr[AttrType("SPELL_DAMAGE")] = Random.get(28, 34);
         c.permanentEffects[p.humanoid ? LastingEffect::RIDER : LastingEffect::STEED] = true;
         for (auto effect : getResistanceAndVulnerability(Random))
           c.permanentEffects[effect] = 1;
         if (p.large) {
-          c.attr[AttrType::DAMAGE] += 6;
-          c.attr[AttrType::DEFENSE] += 2;
-          c.attr[AttrType::SPELL_DAMAGE] -= 6;
+          c.attr[AttrType("DAMAGE")] += 6;
+          c.attr[AttrType("DEFENSE")] += 2;
+          c.attr[AttrType("SPELL_DAMAGE")] -= 6;
         }
         if (p.humanoid) {
           for (auto& elem : contentFactory->workshopInfo)
@@ -744,8 +746,8 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
         c.name.setFirst(nameGenerator->getNext(NameGeneratorId("DEMON")));
         if (!p.humanoid) {
           c.body->setBodyParts(getSpecialBeastBody(p.large, p.living, p.wings));
-          c.attr[AttrType::DAMAGE] += 5;
-          c.attr[AttrType::DEFENSE] += 5;
+          c.attr[AttrType("DAMAGE")] += 5;
+          c.attr[AttrType("DEFENSE")] += 5;
           auto attack = getSpecialBeastAttack(p.large, p.living, p.wings);
           c.body->addIntrinsicAttack(BodyPart::HEAD, attack.second);
           if (attack.first)
@@ -943,9 +945,9 @@ PCreature CreatureFactory::fromId(CreatureId id, TribeId t, const MonsterAIFacto
 PCreature CreatureFactory::getHumanForTests() {
   auto attributes = CATTR(
       c.viewId = ViewId("keeper1");
-      c.attr[AttrType::DAMAGE] = 12;
-      c.attr[AttrType::DEFENSE] = 12;
-      c.attr[AttrType::RANGED_DAMAGE] = 12;
+      c.attr[AttrType("DAMAGE")] = 12;
+      c.attr[AttrType("DEFENSE")] = 12;
+      c.attr[AttrType("RANGED_DAMAGE")] = 12;
       c.body = Body::humanoid(Body::Size::LARGE);
       c.name = "wizard";
       c.viewIdUpgrades = LIST(ViewId("keeper2"), ViewId("keeper3"), ViewId("keeper4"));

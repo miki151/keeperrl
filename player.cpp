@@ -118,10 +118,10 @@ void Player::onEvent(const GameEvent& event) {
           auto dir = info.attacker->getPosition().getDir(pos);
           if (dir.length8() == 1) {
             auto orientation = dir.getCardinalDir();
-            if (info.damageAttr == AttrType::DAMAGE)
+            if (info.damageAttr == AttrType("DAMAGE"))
               getView()->animation(pos.getCoord(), AnimationId::ATTACK, orientation);
-            else
-              getView()->animation(FXSpawnInfo({FXName::MAGIC_MISSILE_SPLASH}, pos.getCoord(), Vec2(0, 0)));
+            else if (auto& fx = getGame()->getContentFactory()->attrInfo.at(info.damageAttr).meleeFX)
+              getView()->animation(FXSpawnInfo(*fx, pos.getCoord(), Vec2(0, 0)));
           }
         }
       },
@@ -282,7 +282,7 @@ void Player::handleItems(const EntitySet<Item>& itemIds, ItemAction action) {
       for (auto it : creature->getEquipment().getAllEquipped())
         if (it->isConflictingEquipment(items[0]))
           conflictingItems.push_back(it);
-      if (getView()->confirmConflictingItems(conflictingItems))
+      if (getView()->confirmConflictingItems(getGame()->getContentFactory(), conflictingItems))
         tryToPerform(creature->equip(items[0]));
       break;
     }
@@ -850,7 +850,7 @@ void Player::makeMove() {
         break;
       case UserInputId::LEVEL_UP: {
         while (1) {
-          auto info = getCreatureExperienceInfo(creature);
+          auto info = getCreatureExperienceInfo(getGame()->getContentFactory(), creature);
           info.numAvailableUpgrades = avatarLevel->numResearchAvailable();
           if (auto exp = getView()->getCreatureUpgrade(info)) {
             creature->increaseExpLevel(*exp, 1);
@@ -884,9 +884,9 @@ void Player::makeMove() {
         break;
   #ifndef RELEASE
       case UserInputId::CHEAT_ATTRIBUTES:
-        creature->getAttributes().increaseBaseAttr(AttrType::DAMAGE, 80);
-        creature->getAttributes().increaseBaseAttr(AttrType::DEFENSE, 80);
-        creature->getAttributes().increaseBaseAttr(AttrType::SPELL_DAMAGE, 80);
+        creature->getAttributes().increaseBaseAttr(AttrType("DAMAGE"), 80);
+        creature->getAttributes().increaseBaseAttr(AttrType("DEFENSE"), 80);
+        creature->getAttributes().increaseBaseAttr(AttrType("SPELL_DAMAGE"), 80);
         creature->addPermanentEffect(LastingEffect::SPEED);
         creature->addPermanentEffect(LastingEffect::FLYING);
         avatarLevel->increaseLevel();
@@ -1118,7 +1118,7 @@ static vector<WishedItemInfo> getWishedItems(ContentFactory* factory) {
         Range(1, 2)
       });
     }
-  vector<Effect> allEffects = Effect::getWishedForEffects();
+  vector<Effect> allEffects = Effect::getWishedForEffects(factory);
   for (auto& effect : allEffects) {
     ret.push_back(WishedItemInfo {
       ItemType(ItemTypes::Scroll{effect}),

@@ -106,8 +106,8 @@ Item* Behaviour::getBestWeapon() {
   Item* best = nullptr;
   int damage = -1;
   for (Item* item : creature->getEquipment().getItems().filter(Item::classPredicate(ItemClass::WEAPON)))
-    if (item->getModifier(AttrType::DAMAGE) > damage) {
-      damage = item->getModifier(AttrType::DAMAGE);
+    if (item->getModifier(AttrType("DAMAGE")) > damage) {
+      damage = item->getModifier(AttrType("DAMAGE"));
       best = item;
     }
   return best;
@@ -594,11 +594,11 @@ class Fighter : public Behaviour {
       if (spell->getRange() > 0 && spell->getEffect().effect->contains<Effects::Heal>())
         ret = FighterPosition::HEALER;
     if (ret != FighterPosition::HEALER && !creature->getEquipment().getSlotItems(EquipmentSlot::RANGED_WEAPON).empty()
-        && creature->getAttr(AttrType::RANGED_DAMAGE) >= creature->getAttr(AttrType::DAMAGE))
+        && creature->getAttr(AttrType("RANGED_DAMAGE")) >= creature->getAttr(AttrType("DAMAGE")))
       ret = FighterPosition::RANGED;
     if (ret != FighterPosition::MELEE)
       for (auto ally : creature->getVisibleCreatures())
-        if (ally->isFriend(creature) && ally->getAttr(AttrType::DAMAGE) > creature->getAttr(AttrType::DAMAGE))
+        if (ally->isFriend(creature) && ally->getAttr(AttrType("DAMAGE")) > creature->getAttr(AttrType("DAMAGE")))
           return ret;
     return FighterPosition::MELEE;
   }
@@ -1198,7 +1198,7 @@ void MonsterAI::makeMove() {
         skipNextMoves = true;
     }
     if (pickItems)
-      for (auto& stack : Item::stackItems(creature->getPickUpOptions())) {
+      for (auto& stack : Item::stackItems(creature->getGame()->getContentFactory(), creature->getPickUpOptions())) {
         Item* item = stack[0];
         if (!item->isOrWasForSale() && creature->pickUp(stack))
           moves.push_back(MoveInfo({ behaviours[i]->itemValue(item) * weights[i], creature->pickUp(stack)}));

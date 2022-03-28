@@ -698,45 +698,41 @@ int LastingEffects::getAttrBonus(const Creature* c, AttrType type) {
         if (rider->hasAlternativeViewId() && rider->isAffected(LastingEffect::SPYING, time))
           value -= 99;
   };
-  switch (type) {
-    case AttrType::DAMAGE:
-      if (c->isAffected(LastingEffect::DRUNK, time))
-        value -= attrBonus;
-      if (c->isAffected(LastingEffect::PANIC, time))
-        value -= attrBonus;
-      if (c->isAffected(LastingEffect::RAGE, time))
-        value += attrBonus;
-      if (c->isAffected(LastingEffect::DAM_BONUS, time))
-        value += attrBonus;
-      if (c->isAffected(LastingEffect::SWARMER, time))
-        value += c->getPosition().countSwarmers() - 1;
-      modifyWithSpying(value);
-      break;
-    case AttrType::RANGED_DAMAGE:
-    case AttrType::SPELL_DAMAGE:
-      if (c->isAffected(LastingEffect::DRUNK, time))
-        value -= attrBonus;
-      modifyWithSpying(value);
-      break;
-    case AttrType::DEFENSE:
-      if (c->isAffected(LastingEffect::DRUNK, time))
-        value -= attrBonus;
-      if (c->isAffected(LastingEffect::PANIC, time))
-        value += attrBonus;
-      if (c->isAffected(LastingEffect::RAGE, time))
-        value -= attrBonus;
-      if (c->isAffected(LastingEffect::SLEEP, time))
-        value -= attrBonus;
-      if (c->isAffected(LastingEffect::DEF_BONUS, time))
-        value += attrBonus;
-      if (c->isAffected(LastingEffect::SATIATED, time))
-        value += 1;
-      if (c->isAffected(LastingEffect::RESTED, time))
-        value += 1;
-      if (c->isAffected(LastingEffect::SWARMER, time))
-        value += c->getPosition().countSwarmers() - 1;
-      break;
-    default: break;
+  if (type == AttrType("DAMAGE")) {
+    if (c->isAffected(LastingEffect::DRUNK, time))
+      value -= attrBonus;
+    if (c->isAffected(LastingEffect::PANIC, time))
+      value -= attrBonus;
+    if (c->isAffected(LastingEffect::RAGE, time))
+      value += attrBonus;
+    if (c->isAffected(LastingEffect::DAM_BONUS, time))
+      value += attrBonus;
+    if (c->isAffected(LastingEffect::SWARMER, time))
+      value += c->getPosition().countSwarmers() - 1;
+    modifyWithSpying(value);
+  } else
+  if (type == AttrType("RANGED_DAMAGE") || type == AttrType("SPELL_DAMAGE")) {
+    if (c->isAffected(LastingEffect::DRUNK, time))
+      value -= attrBonus;
+    modifyWithSpying(value);
+  } else
+  if (type == AttrType("DEFENSE")) {
+    if (c->isAffected(LastingEffect::DRUNK, time))
+      value -= attrBonus;
+    if (c->isAffected(LastingEffect::PANIC, time))
+      value += attrBonus;
+    if (c->isAffected(LastingEffect::RAGE, time))
+      value -= attrBonus;
+    if (c->isAffected(LastingEffect::SLEEP, time))
+      value -= attrBonus;
+    if (c->isAffected(LastingEffect::DEF_BONUS, time))
+      value += attrBonus;
+    if (c->isAffected(LastingEffect::SATIATED, time))
+      value += 1;
+    if (c->isAffected(LastingEffect::RESTED, time))
+      value += 1;
+    if (c->isAffected(LastingEffect::SWARMER, time))
+      value += c->getPosition().countSwarmers() - 1;
   }
   return value;
 }
@@ -942,21 +938,21 @@ double LastingEffects::modifyCreatureDefense(const Creature* c, LastingEffect e,
   double baseMultiplier = 1.3;
   switch (e) {
     case LastingEffect::MAGIC_RESISTANCE:
-      return multiplyFor(AttrType::SPELL_DAMAGE, baseMultiplier);
+      return multiplyFor(AttrType("SPELL_DAMAGE"), baseMultiplier);
     case LastingEffect::MELEE_RESISTANCE:
-      return multiplyFor(AttrType::DAMAGE, baseMultiplier);
+      return multiplyFor(AttrType("DAMAGE"), baseMultiplier);
     case LastingEffect::RANGED_RESISTANCE:
-      return multiplyFor(AttrType::RANGED_DAMAGE, baseMultiplier);
+      return multiplyFor(AttrType("RANGED_DAMAGE"), baseMultiplier);
     case LastingEffect::CAPTURE_RESISTANCE:
       if (c->isCaptureOrdered())
         return defense * baseMultiplier;
       break;
     case LastingEffect::MAGIC_VULNERABILITY:
-      return multiplyFor(AttrType::SPELL_DAMAGE, 1.0 / baseMultiplier);
+      return multiplyFor(AttrType("SPELL_DAMAGE"), 1.0 / baseMultiplier);
     case LastingEffect::MELEE_VULNERABILITY:
-      return multiplyFor(AttrType::DAMAGE, 1.0 / baseMultiplier);
+      return multiplyFor(AttrType("DAMAGE"), 1.0 / baseMultiplier);
     case LastingEffect::RANGED_VULNERABILITY:
-      return multiplyFor(AttrType::RANGED_DAMAGE, 1.0 / baseMultiplier);
+      return multiplyFor(AttrType("RANGED_DAMAGE"), 1.0 / baseMultiplier);
     case LastingEffect::INVULNERABLE:
       return 1000000;
     default:
@@ -1086,7 +1082,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
           }
         if (Creature* enemy = v.getCreature()) {
           if (!c->canSee(enemy) && c->isEnemy(enemy)) {
-            int diff = enemy->getAttr(AttrType::DAMAGE) - c->getAttr(AttrType::DEFENSE);
+            int diff = enemy->getAttr(AttrType("DAMAGE")) - c->getAttr(AttrType("DEFENSE"));
             if (diff > 5)
               isBigDanger = true;
             else
@@ -1769,8 +1765,8 @@ EffectAIIntent LastingEffects::shouldAIApply(const Creature* victim, LastingEffe
 }
 
 AttrType LastingEffects::modifyMeleeDamageAttr(const Creature* attacker, AttrType type) {
-  if (attacker->isAffected(LastingEffect::SPELL_DAMAGE) && type == AttrType::DAMAGE)
-    return AttrType::SPELL_DAMAGE;
+  if (attacker->isAffected(LastingEffect::SPELL_DAMAGE) && type == AttrType("DAMAGE"))
+    return AttrType("SPELL_DAMAGE");
   return type;
 }
 
@@ -1797,7 +1793,7 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
     case LastingEffect::BLEEDING:
       return 50_visible;
     case LastingEffect::ENTANGLED:
-      return entangledTime(c->getAttr(AttrType::DAMAGE));
+      return entangledTime(c->getAttr(AttrType("DAMAGE")));
     case LastingEffect::HALLU:
     case LastingEffect::SLOWED:
     case LastingEffect::SPEED:

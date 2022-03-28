@@ -130,8 +130,8 @@ static bool enhanceArmor(Creature* c, int mod, const string& msg) {
     for (Item* item : c->getEquipment().getSlotItems(slot))
       if (item->getClass() == ItemClass::ARMOR) {
         c->you(MsgType::YOUR, item->getName() + " " + msg);
-        if (item->getModifier(AttrType::DEFENSE) > 0 || mod > 0)
-          item->addModifier(AttrType::DEFENSE, mod);
+        if (item->getModifier(AttrType("DEFENSE")) > 0 || mod > 0)
+          item->addModifier(AttrType("DEFENSE"), mod);
         return true;
       }
   return false;
@@ -401,17 +401,17 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::RemoveLasting& e, c
 }
 
 static bool applyToCreature(const Effects::IncreaseAttr& e, Creature* c, Creature*) {
-  c->you(MsgType::YOUR, ::getName(e.attr) + e.get(" improves", " wanes"));
+  c->you(MsgType::YOUR, c->getGame()->getContentFactory()->attrInfo.at(e.attr).name + e.get(" improves", " wanes"));
   c->getAttributes().increaseBaseAttr(e.attr, e.amount);
   return true;
 }
 
-static string getName(const Effects::IncreaseAttr& e, const ContentFactory*) {
-  return ::getName(e.attr) + e.get(" boost", " loss");
+static string getName(const Effects::IncreaseAttr& e, const ContentFactory* f) {
+  return f->attrInfo.at(e.attr).name + e.get(" boost", " loss");
 }
 
-static string getDescription(const Effects::IncreaseAttr& e, const ContentFactory*) {
-  return e.get("Increases", "Decreases") + " "_s + ::getName(e.attr) + " by " + toString(abs(e.amount));
+static string getDescription(const Effects::IncreaseAttr& e, const ContentFactory* f) {
+  return e.get("Increases", "Decreases") + " "_s + f->attrInfo.at(e.attr).name + " by " + toString(abs(e.amount));
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::IncreaseAttr& e, const Creature* victim, bool isEnemy) {
@@ -433,17 +433,18 @@ static const char* get(const Effects::SpecialAttr& a, const char* ifIncrease, co
 }
 
 static bool applyToCreature(const Effects::SpecialAttr& e, Creature* c, Creature*) {
-  c->you(MsgType::YOUR, ::getName(e.attr) + " " + e.predicate.getName() + get(e, " improves", " wanes"));
+  c->you(MsgType::YOUR, c->getGame()->getContentFactory()->attrInfo.at(e.attr).name + " "
+      + e.predicate.getName() + get(e, " improves", " wanes"));
   c->getAttributes().specialAttr[e.attr].push_back(make_pair(e.value, e.predicate));
   return true;
 }
 
-static string getName(const Effects::SpecialAttr& e, const ContentFactory*) {
-  return ::getName(e.attr) + get(e, " boost", " loss") + " " + e.predicate.getName();
+static string getName(const Effects::SpecialAttr& e, const ContentFactory* f) {
+  return f->attrInfo.at(e.attr).name + get(e, " boost", " loss") + " " + e.predicate.getName();
 }
 
-static string getDescription(const Effects::SpecialAttr& e, const ContentFactory*) {
-  return get(e, "Increases", "Decreases") + " "_s + ::getName(e.attr)
+static string getDescription(const Effects::SpecialAttr& e, const ContentFactory* f) {
+  return get(e, "Increases", "Decreases") + " "_s + f->attrInfo.at(e.attr).name
       + " " + e.predicate.getName() + " by " + toString(abs(e.value));
 }
 
@@ -774,11 +775,11 @@ static void airBlast(Creature* attacker, Position origin, Position position, Pos
     }
     c->addEffect(LastingEffect::COLLAPSED, 2_visible);
   }
-  for (auto& stack : Item::stackItems(position.getItems())) {
+  for (auto& stack : Item::stackItems(origin.getGame()->getContentFactory(), position.getItems())) {
     position.throwItem(
         position.removeItems(stack),
         Attack(attacker, Random.choose<AttackLevel>(),
-          stack[0]->getWeaponInfo().attackType, 15, AttrType::DAMAGE), maxDistance,
+          stack[0]->getWeaponInfo().attackType, 15, AttrType("DAMAGE")), maxDistance,
           position.plus(trajectory.back()), VisionId::NORMAL);
   }
   for (auto furniture : position.modFurniture())
@@ -1135,8 +1136,8 @@ static bool applyToCreature(const Effects::Damage& e, Creature* c, Creature* att
   CHECK(attacker) << "Unknown attacker";
   int value = attacker->getAttr(e.attr) + attacker->getSpecialAttr(e.attr, c);
   bool result = c->takeDamage(Attack(attacker, Random.choose<AttackLevel>(), e.attackType, value, e.attr));
-  if (e.attr == AttrType::SPELL_DAMAGE)
-    c->addFX({FXName::MAGIC_MISSILE_SPLASH});
+  if (auto& fx = c->getGame()->getContentFactory()->attrInfo.at(e.attr).meleeFX)
+    c->addFX(*fx);
   return result;
 }
 
@@ -1156,12 +1157,12 @@ static bool isConsideredHostile(const Effects::Damage&, const Creature*) {
   return true;
 }
 
-static string getName(const Effects::Damage& e, const ContentFactory*) {
-  return ::getName(e.attr);
+static string getName(const Effects::Damage& e, const ContentFactory* f) {
+  return f->attrInfo.at(e.attr).name;
 }
 
-static string getDescription(const Effects::Damage& e, const ContentFactory*) {
-  return "Causes " + ::getName(e.attr);
+static string getDescription(const Effects::Damage& e, const ContentFactory* f) {
+  return "Causes " + f->attrInfo.at(e.attr).name;
 }
 
 template <>
@@ -1171,17 +1172,17 @@ double getSteedChance<Effects::FixedDamage>() {
 
 static bool applyToCreature(const Effects::FixedDamage& e, Creature* c, Creature*) {
   bool result = c->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), e.attackType, e.value, e.attr));
-  if (e.attr == AttrType::SPELL_DAMAGE)
-    c->addFX({FXName::MAGIC_MISSILE_SPLASH});
+  if (auto& fx = c->getGame()->getContentFactory()->attrInfo.at(e.attr).meleeFX)
+    c->addFX(*fx);
   return result;
 }
 
-static string getName(const Effects::FixedDamage& e, const ContentFactory*) {
-  return toString(e.value) + " " + ::getName(e.attr);
+static string getName(const Effects::FixedDamage& e, const ContentFactory* f) {
+  return toString(e.value) + " " + f->attrInfo.at(e.attr).name;
 }
 
-static string getDescription(const Effects::FixedDamage& e, const ContentFactory*) {
-  return "Causes " + toString(e.value) + " " + ::getName(e.attr);
+static string getDescription(const Effects::FixedDamage& e, const ContentFactory* f) {
+  return "Causes " + toString(e.value) + " " + f->attrInfo.at(e.attr).name;
 }
 
 static bool applyToCreature(const Effects::InjureBodyPart& e, Creature* c, Creature* attacker) {
@@ -1995,8 +1996,8 @@ static bool apply(const Effects::AnimateItems& m, Position pos, Creature* attack
   for (int i : Range(min(m.maxCount, candidates.size()))) {
     auto v = candidates[i].first;
     auto creature = pos.getGame()->getContentFactory()->getCreatures().
-        getAnimatedItem(v.removeItem(candidates[i].second), attacker->getTribeId(),
-            attacker->getAttr(AttrType::SPELL_DAMAGE));
+        getAnimatedItem(pos.getGame()->getContentFactory(), v.removeItem(candidates[i].second), attacker->getTribeId(),
+            attacker->getAttr(AttrType("SPELL_DAMAGE")));
     for (auto c : Effect::summonCreatures(v, makeVec(std::move(creature)))) {
       c->addEffect(LastingEffect::SUMMONED, TimeInterval{Random.get(m.time)}, false);
       res = true;
@@ -2466,7 +2467,7 @@ optional<ViewId> Effect::getProjectile() const {
   return effect->visit<optional<ViewId>>([&](const auto& elem) { return ::getProjectile(elem); } );
 }
 
-vector<Effect> Effect::getWishedForEffects() {
+vector<Effect> Effect::getWishedForEffects(const ContentFactory* factory) {
   vector<Effect> allEffects {
        Effect(Effects::Escape{}),
        Effect(Effects::Heal{HealthType::FLESH}),
@@ -2491,8 +2492,8 @@ vector<Effect> Effect::getWishedForEffects() {
       allEffects.push_back(EffectType(Effects::Permanent{effect}));
       allEffects.push_back(EffectType(Effects::RemoveLasting{effect}));
     }
-  for (auto attr : ENUM_ALL(AttrType))
-    allEffects.push_back(EffectType(Effects::IncreaseAttr{attr, (attr == AttrType::PARRY ? 2 : 5)}));
+  for (auto& attr : factory->attrInfo)
+    allEffects.push_back(EffectType(Effects::IncreaseAttr{attr.first, attr.second.wishedItemIncrease}));
   return allEffects;
 }
 

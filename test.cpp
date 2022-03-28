@@ -614,7 +614,7 @@ class Test {
     CHECK(!equipment.isOwner(bow1.get(), human.get()));
     CHECK(!equipment.getItemsOwnedBy(human.get()).contains(bow1.get()));
     CHECK(equipment.tryToOwn(human.get(), bow1.get()));
-    bow2->addModifier(AttrType::DAMAGE, -10);
+    bow2->addModifier(AttrType("DAMAGE"), -10);
     CHECK(!equipment.needsItem(human.get(), bow2.get(), false));
     CHECK(equipment.needsItem(human.get(), bow2.get(), true));
     CHECK(equipment.tryToOwn(human.get(), bow2.get()));
@@ -634,7 +634,7 @@ class Test {
     auto contentFactory = getContentFactory();
     PItem sword = ItemType(CustomItemId("Sword")).get(&contentFactory);
     PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
-    sword2->addModifier(AttrType::DAMAGE, -5);
+    sword2->addModifier(AttrType("DAMAGE"), -5);
     PCreature human = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     CHECK(equipment.tryToOwn(human.get(), sword.get()));
@@ -649,7 +649,7 @@ class Test {
     auto contentFactory = getContentFactory();
     PItem sword = ItemType(CustomItemId("Sword")).get(&contentFactory);
     PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
-    sword2->addModifier(AttrType::DAMAGE, -5);
+    sword2->addModifier(AttrType("DAMAGE"), -5);
     PCreature human = CreatureFactory::getHumanForTests();
     PCreature human2 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
@@ -691,7 +691,7 @@ class Test {
     PItem sword1 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     PItem sword3 = ItemType(CustomItemId("Sword")).get(&contentFactory);
-    sword1->addModifier(AttrType::DAMAGE, 12);
+    sword1->addModifier(AttrType("DAMAGE"), 12);
     PCreature human1 = CreatureFactory::getHumanForTests();
     PCreature human2 = CreatureFactory::getHumanForTests();
     PCreature human3 = CreatureFactory::getHumanForTests();
@@ -711,7 +711,7 @@ class Test {
     CHECK(!equipment.getOwner(sword2.get()));
     PItem bow = ItemType(CustomItemId("Bow")).get(&contentFactory);
     PItem bow2 = ItemType(CustomItemId("Bow")).get(&contentFactory);
-    bow2->addModifier(AttrType::DAMAGE, 30);
+    bow2->addModifier(AttrType("DAMAGE"), 30);
     CHECK(equipment.getItemsOwnedBy(human1.get()).size() == 0);
     equipment.autoAssign(human1.get(), {bow.get()});
     CHECKEQ(equipment.getItemsOwnedBy(human1.get()), makeVec(bow.get()));
@@ -733,7 +733,7 @@ class Test {
     auto contentFactory = getContentFactory();
     PItem sword1 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
-    sword1->addModifier(AttrType::DAMAGE, 12);
+    sword1->addModifier(AttrType("DAMAGE"), 12);
     PCreature human1 = CreatureFactory::getHumanForTests();
     MinionEquipment equipment;
     equipment.autoAssign(human1.get(), {sword2.get(), sword1.get()});
@@ -759,7 +759,7 @@ class Test {
     auto contentFactory = getContentFactory();
     PItem sword1 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
-    sword1->addModifier(AttrType::DAMAGE, 12);
+    sword1->addModifier(AttrType("DAMAGE"), 12);
     PCreature human1 = CreatureFactory::getHumanForTests();
     human1->getAttributes().getSkills().increaseValue(SkillId::MULTI_WEAPON, 1);
     MinionEquipment equipment;

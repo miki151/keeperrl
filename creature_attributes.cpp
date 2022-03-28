@@ -30,6 +30,8 @@
 #include "minion_trait.h"
 #include "view_id.h"
 #include "companion_info.h"
+#include "game.h"
+#include "content_factory.h"
 
 void CreatureAttributes::initializeLastingEffects() {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
@@ -74,8 +76,8 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience));
   ar(OPTION(automatonParts), OPTION(specialAttr), NAMED(deathEffect), NAMED(chatEffect), OPTION(companions));
   ar(OPTION(maxPromotions), OPTION(afterKilledSomeone));
-  for (auto a : ENUM_ALL(AttrType))
-    attr[a] = max(0, attr[a]);
+  for (auto& a : attr)
+    a.second = max(0, a.second);
 }
 
 template <class Archive>
@@ -134,7 +136,7 @@ const Gender& CreatureAttributes::getGender() const {
 }
 
 int CreatureAttributes::getRawAttr(AttrType type) const {
-  int ret = attr[type];
+  int ret = getValueMaybe(attr, type).value_or(0);
   if (auto expType = getExperienceType(type)) {
     ret += (int) expLevel[*expType];
     ret += (int) min(combatExperience, expLevel[*expType]);
@@ -292,26 +294,6 @@ static bool consumeProb() {
   return true;
 }
 
-static string getAttrNameMore(AttrType attr) {
-  switch (attr) {
-    case AttrType::DAMAGE: return "more dangerous";
-    case AttrType::DEFENSE: return "more protected";
-    case AttrType::SPELL_DAMAGE: return "more powerful";
-    case AttrType::RANGED_DAMAGE: return "more accurate";
-    case AttrType::PARRY: return "more evasive";
-  }
-}
-
-static int getAbsorbtionLevelCap(AttrType attr) {
-  switch (attr) {
-    case AttrType::DAMAGE: return 25;
-    case AttrType::DEFENSE: return 25;
-    case AttrType::SPELL_DAMAGE: return 20;
-    case AttrType::RANGED_DAMAGE: return 15;
-    case AttrType::PARRY: return 3;
-  }
-}
-
 template <typename T>
 void consumeAttr(T& mine, const T& his, vector<string>& adjectives, const string& adj, const int& cap) {
   int hisCapped = (his > cap) ? cap : his;
@@ -369,9 +351,10 @@ void CreatureAttributes::consume(Creature* self, CreatureAttributes& other) {
   self->addPersonalEvent(self->getName().a() + " absorbs " + other.name.a());
   vector<string> adjectives;
   body->consumeBodyParts(self, other.getBody(), adjectives);
-  for (auto t : ENUM_ALL(AttrType))
-    consumeAttr(attr[t], other.attr[t], adjectives,
-      getAttrNameMore(t), getAbsorbtionLevelCap(t));
+  auto factory = self->getGame()->getContentFactory();
+  for (auto& t: factory->attrInfo)
+    consumeAttr(attr[t.first], other.attr[t.first], adjectives,
+      "more " + t.second.adjective, t.second.absorptionCap);
   consumeAttr(passiveAttack, other.passiveAttack, adjectives, "");
   consumeAttr(gender, other.gender, adjectives);
   consumeAttr(skills, other.skills, adjectives);

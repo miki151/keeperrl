@@ -156,7 +156,7 @@ void Furniture::destroy(Position pos, const DestroyAction& action, Creature* des
 void Furniture::tryToDestroyBy(Position pos, Creature* c, const DestroyAction& action) {
   if (auto& info = destroyedInfo[action.getType()]) {
     c->addSound(action.getSound());
-    double damage = max(c->getAttr(AttrType::DAMAGE), 15);
+    double damage = max(c->getAttr(AttrType("DAMAGE")), 15);
     if (auto skill = action.getDestroyingSkillMultiplier())
       damage *= c->getAttributes().getSkills().getValue(*skill);
     info->health -= damage / info->strength;

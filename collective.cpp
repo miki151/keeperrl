@@ -617,16 +617,17 @@ void Collective::autoAssignSteeds() {
       setSteed(c, nullptr);
   vector<Creature*> freeSteeds = getCreatures().filter(
       [this] (auto c) { return c->isAffected(LastingEffect::STEED) && !getSteedOrRider(c);});
-  sort(freeSteeds.begin(), freeSteeds.end(), [](auto c1, auto c2) {
-      return c1->getBestAttack().value < c2->getBestAttack().value; });
+  auto factory = getGame()->getContentFactory();
+  sort(freeSteeds.begin(), freeSteeds.end(), [&](auto c1, auto c2) {
+      return c1->getBestAttack(factory).value < c2->getBestAttack(factory).value; });
   auto minions = getCreatures().filter([this] (auto c) {
     return c->isAffected(LastingEffect::RIDER) && !getSteedOrRider(c) && canUseEquipmentGroup(c, "steeds");
   });
-  sort(minions.begin(), minions.end(), [this](auto c1, auto c2) {
+  sort(minions.begin(), minions.end(), [&](auto c1, auto c2) {
       auto leader1 = hasTrait(c1, MinionTrait::LEADER);
       auto leader2 = hasTrait(c2, MinionTrait::LEADER);
       return (leader1 && !leader2) || (leader1 == leader2 &&
-          c1->getBestAttack().value > c2->getBestAttack().value); });
+          c1->getBestAttack(factory).value > c2->getBestAttack(factory).value); });
   for (auto c : minions) {
     if (freeSteeds.empty())
       break;
@@ -637,7 +638,8 @@ void Collective::autoAssignSteeds() {
           return freeSteeds[i];
       return nullptr;
     }();
-    if (bestAvailable && (!steed || steed->getBestAttack().value < bestAvailable->getBestAttack().value)) {
+    if (bestAvailable &&
+        (!steed || steed->getBestAttack(factory).value < bestAvailable->getBestAttack(factory).value)) {
       setSteed(c, bestAvailable);
       freeSteeds.removeElementMaybePreserveOrder(bestAvailable);
     }

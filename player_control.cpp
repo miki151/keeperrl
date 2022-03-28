@@ -397,7 +397,7 @@ void PlayerControl::addEquipment(Creature* creature, EquipmentSlot slot) {
     for (auto it : collective->getMinionEquipment().getItemsOwnedBy(creature))
       if (it->isConflictingEquipment(chosenItem))
         conflictingItems.push_back(it);
-    if (getView()->confirmConflictingItems(conflictingItems)) {
+    if (getView()->confirmConflictingItems(getGame()->getContentFactory(), conflictingItems)) {
       if (auto creatureId = collective->getMinionEquipment().getOwner(chosenItem))
         if (Creature* c = getCreature(*creatureId))
           c->removeEffect(LastingEffect::SLEEP);
@@ -480,8 +480,8 @@ void PlayerControl::equipmentGroupAction(const EquipmentGroupAction& action) {
 static ItemInfo getItemInfo(const ContentFactory* factory, const vector<Item*>& stack, bool equiped, bool pending, bool locked,
     optional<ItemInfo::Type> type = none) {
   return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(nullptr, stack.size() > 1);
-    c.fullName = stack[0]->getNameAndModifiers(false);
+    c.name = stack[0]->getShortName(factory, nullptr, stack.size() > 1);
+    c.fullName = stack[0]->getNameAndModifiers(factory, false);
     c.description = stack[0]->getDescription(factory);
     c.number = stack.size();
     if (stack[0]->canEquip())
@@ -527,9 +527,9 @@ static ItemInfo getEmptySlotItem(EquipmentSlot slot, bool locked) {
 
 static ItemInfo getTradeItemInfo(const ContentFactory* factory, const vector<Item*>& stack, int budget) {
   return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(nullptr, stack.size() > 1);
+    c.name = stack[0]->getShortName(factory, nullptr, stack.size() > 1);
     c.price = make_pair(ViewId("gold"), stack[0]->getPrice());
-    c.fullName = stack[0]->getNameAndModifiers(false);
+    c.fullName = stack[0]->getNameAndModifiers(factory, false);
     c.description = stack[0]->getDescription(factory);
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().getViewIdList();
@@ -620,7 +620,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
         tutorial->getHighlights(getGame()).contains(TutorialHighlight::EQUIPMENT_SLOT_WEAPON))
       info.inventory.back().tutorialHighlight = true;
   }
-  vector<vector<Item*>> consumables = Item::stackItems(ownedItems,
+  vector<vector<Item*>> consumables = Item::stackItems(factory, ownedItems,
       [&](const Item* it) { if (!creature->getEquipment().hasItem(it)) return " (pending)"; else return ""; } );
   for (auto& stack : consumables)
     info.inventory.push_back(getItemInfo(factory, stack, false,
@@ -629,7 +629,7 @@ void PlayerControl::fillEquipment(Creature* creature, PlayerInfo& info) const {
   for (auto item : creature->getEquipment().getItems())
     if (!collective->getMinionEquipment().isItemUseful(item))
       otherItems.push_back(item);
-  for (auto item : Item::stackItems(otherItems))
+  for (auto item : Item::stackItems(factory, otherItems))
     info.inventory.push_back(getItemInfo(factory, {item}, false, false, false, ItemInfo::OTHER));
   auto lockedSet = getReferenceMaybe(collective->lockedEquipmentGroups, info.groupName);
   for (auto& group : factory->equipmentGroups) {
@@ -661,16 +661,17 @@ Item* PlayerControl::chooseEquipmentItem(Creature* creature, vector<Item*> curre
     }
   if (currentItems.empty() && availableItems.empty() && usedItems.empty())
     return nullptr;
-  vector<vector<Item*>> usedStacks = Item::stackItems(usedItems,
+  auto factory = getGame()->getContentFactory();
+  vector<vector<Item*>> usedStacks = Item::stackItems(factory, usedItems,
       [&](const Item* it) {
         const Creature* c = getCreature(*collective->getMinionEquipment().getOwner(it));
-        return c->getName().bare() + toString<int>(c->getBestAttack().value);});
+        return c->getName().bare() + toString<int>(c->getBestAttack(factory).value);});
   vector<Item*> allStacked;
   vector<ItemInfo> options;
   for (Item* it : currentItems)
-    options.push_back(getItemInfo(getGame()->getContentFactory(), {it}, true, false, false));
-  for (auto& stack : concat(Item::stackItems(availableItems), usedStacks)) {
-    options.emplace_back(getItemInfo(getGame()->getContentFactory(), stack, false, false, false));
+    options.push_back(getItemInfo(factory, {it}, true, false, false));
+  for (auto& stack : concat(Item::stackItems(factory, availableItems), usedStacks)) {
+    options.emplace_back(getItemInfo(factory, stack, false, false, false));
     EntitySet<Creature> allOwners;
     optional<CreatureInfo> firstOwner;
     for (auto item : stack)
@@ -700,10 +701,12 @@ Creature* PlayerControl::chooseSteed(Creature* creature, vector<Creature*> allSt
   }
   if (availableItems.empty() && usedItems.empty())
     return nullptr;
+  auto factory = getGame()->getContentFactory();
   vector<vector<Creature*>> usedStacks = Creature::stack(usedItems,
-  [&](Creature* it) {
+      [&](Creature* it) {
         const Creature* c = collective->getSteedOrRider(it);
-        return c->getName().bare() + toString<int>(c->getBestAttack().value);});
+        return c->getName().bare() + toString<int>(c->getBestAttack(factory).value);
+      });
   vector<Creature*> allStacked;
   vector<ItemInfo> options;
   for (auto& stack : concat(Creature::stack(availableItems), usedStacks)) {
@@ -933,14 +936,15 @@ void PlayerControl::handleTrading(Collective* ally) {
     getView()->presentText("Information", "You need a storage room for equipment in order to trade.");
     return;
   }
+  auto factory = getGame()->getContentFactory();
   while (1) {
     vector<Item*> available = ally->getTradeItems();
-    vector<vector<Item*>> items = Item::stackItems(available);
+    vector<vector<Item*>> items = Item::stackItems(factory, available);
     if (items.empty())
       break;
     int budget = collective->numResource(ResourceId("GOLD"));
     vector<ItemInfo> itemInfo = items.transform(
-        [&] (const vector<Item*>& it) { return getTradeItemInfo(getGame()->getContentFactory(), it, budget); });
+        [&] (const vector<Item*>& it) { return getTradeItemInfo(factory, it, budget); });
     auto index = getView()->chooseTradeItem("Trade with " + ally->getName()->full,
         {ViewId("gold"), collective->numResource(ResourceId("GOLD"))}, itemInfo, &scrollPos);
     if (!index)
@@ -956,8 +960,8 @@ void PlayerControl::handleTrading(Collective* ally) {
 
 static ItemInfo getPillageItemInfo(const ContentFactory* factory, const vector<Item*>& stack, bool noStorage) {
   return CONSTRUCT(ItemInfo,
-    c.name = stack[0]->getShortName(nullptr, stack.size() > 1);
-    c.fullName = stack[0]->getNameAndModifiers(false);
+    c.name = stack[0]->getShortName(factory, nullptr, stack.size() > 1);
+    c.fullName = stack[0]->getNameAndModifiers(factory, false);
     c.description = stack[0]->getDescription(factory);
     c.number = stack.size();
     c.viewId = stack[0]->getViewObject().getViewIdList();
@@ -1010,18 +1014,19 @@ bool PlayerControl::canPillage(const Collective* col) const {
 
 void PlayerControl::handlePillage(Collective* col) {
   ScrollPosition scrollPos;
+  auto factory = getGame()->getContentFactory();
   while (1) {
     struct PillageOption {
       vector<Item*> items;
       StoragePositions storage;
     };
     vector<PillageOption> options;
-    for (auto& elem : Item::stackItems(getPillagedItems(col)))
+    for (auto& elem : Item::stackItems(factory, getPillagedItems(col)))
       options.push_back({elem, collective->getStoragePositions(elem.front()->getStorageIds())});
     if (options.empty())
       return;
     vector<ItemInfo> itemInfo = options.transform([&] (const PillageOption& it) {
-            return getPillageItemInfo(getGame()->getContentFactory(), it.items, it.storage.empty());});
+            return getPillageItemInfo(factory, it.items, it.storage.empty());});
     auto index = getView()->choosePillageItem("Pillage " + col->getName()->full, itemInfo, &scrollPos);
     if (!index)
       break;
@@ -1071,10 +1076,15 @@ vector<Creature*> PlayerControl::getMinionGroup(const string& groupName) const {
 }
 
 void PlayerControl::sortMinionsForUI(vector<Creature*>& minions) const {
-  std::sort(minions.begin(), minions.end(), [] (const Creature* c1, const Creature* c2) {
-      auto l1 = (int) max(c1->getAttr(AttrType::DAMAGE), c1->getAttr(AttrType::SPELL_DAMAGE));
-      auto l2 = (int) max(c2->getAttr(AttrType::DAMAGE), c2->getAttr(AttrType::SPELL_DAMAGE));
-      return l1 > l2 || (l1 == l2 && c1->getUniqueId() > c2->getUniqueId());
+  std::sort(minions.begin(), minions.end(),
+      [f = getGame()->getContentFactory()] (const Creature* c1, const Creature* c2) {
+        int l1 = 0, l2 = 0;
+        for (auto& attr : f->attrInfo)
+          if (attr.second.isAttackAttr) {
+            l1 = max(l1, c1->getAttr(attr.first));
+            l2 = max(l2, c2->getAttr(attr.first));
+          }
+        return l1 > l2 || (l1 == l2 && c1->getUniqueId() > c2->getUniqueId());
       });
 }
 
@@ -1600,10 +1610,11 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
         return TraitInfo{capitalFirst(factory->getCreatures().getName(t.creatures[0])) + " companion", false};
       },
       [&] (const AttrBonus& t) {
-        return TraitInfo{toStringWithSign(t.increase) + " " + getName(t.attr), t.increase <= 0};
+        return TraitInfo{toStringWithSign(t.increase) + " " + factory->attrInfo.at(t.attr).name, t.increase <= 0};
       },
       [&] (const SpecialAttr& t) {
-        return TraitInfo{toStringWithSign(t.value) + " " + ::getName(t.attr) + " " + t.predicate.getName(),
+        return TraitInfo{toStringWithSign(t.value) + " " + factory->attrInfo.at(t.attr).name + " " + 
+            t.predicate.getName(),
             t.value < 0};
       },
       [&] (const Lasting& effect) {
@@ -1648,6 +1659,7 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
   info.immigration.clear();
   auto& immigration = collective->getImmigration();
   info.immigration.append(getPrisonerImmigrantData());
+  auto factory = getGame()->getContentFactory();
   if (collective->getWorkshops().getWorkshopsTypes().contains(WorkshopType("MORGUE")))
     info.immigration.append(getNecromancerImmigrationHelp());
   for (auto& elem : immigration.getAvailable()) {
@@ -1690,12 +1702,12 @@ void PlayerControl::fillImmigration(CollectiveInfo& info) const {
     info.immigration.back().requirements = immigration.getMissingRequirements(candidate);
     info.immigration.back().info = infoLines;
     info.immigration.back().specialTraits = candidate.getSpecialTraits().transform(
-        [&](const auto& trait){ return getSpecialTraitInfo(trait, this->getGame()->getContentFactory()); });
+        [&](const auto& trait){ return getSpecialTraitInfo(trait, factory); });
     info.immigration.back().cost = getCostObj(candidate.getCost());
     info.immigration.back().creature = ImmigrantCreatureInfo {
         name,
         c->getViewObject().getViewIdList(),
-        AttributeInfo::fromCreature(c)
+        AttributeInfo::fromCreature(factory, c)
     };
     info.immigration.back().count = count == 1 ? none : optional<int>(count);
     info.immigration.back().timeLeft = timeRemaining;
@@ -2078,10 +2090,10 @@ void PlayerControl::onEvent(const GameEvent& event) {
           auto dir = info.attacker->getPosition().getDir(pos);
           if (dir.length8() == 1) {
             auto orientation = dir.getCardinalDir();
-            if (info.damageAttr == AttrType::DAMAGE)
+            if (info.damageAttr == AttrType("DAMAGE"))
               getView()->animation(pos.getCoord(), AnimationId::ATTACK, orientation);
-            else
-              getView()->animation(FXSpawnInfo({FXName::MAGIC_MISSILE_SPLASH}, pos.getCoord(), Vec2(0, 0)));
+            else if (auto& fx = getGame()->getContentFactory()->attrInfo.at(info.damageAttr).meleeFX)
+              getView()->animation(FXSpawnInfo(*fx, pos.getCoord(), Vec2(0, 0)));
           }
         }
       },

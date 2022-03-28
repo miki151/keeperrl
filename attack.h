@@ -18,6 +18,7 @@
 #include "enums.h"
 #include "util.h"
 #include "effect.h"
+#include "attr_type.h"
 
 class Creature;
 

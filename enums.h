@@ -30,7 +30,6 @@ enum class BodyPart;
 enum class BodyMaterial;
 enum class AttackType;
 enum class AttackLevel;
-enum class AttrType;
 enum class ExperienceType;
 enum class ItemClass;
 enum class EquipmentSlot;
@@ -126,6 +125,7 @@ class NameGeneratorId;
 class BiomeId;
 class WorkshopType;
 class CollectiveResourceId;
+class AttrType;
 using EffectAIIntent = int;
 
 using SteamId = unsigned long long;

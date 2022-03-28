@@ -62,18 +62,8 @@ class ItemAttributes {
   int SERIAL(burnTime) = 0;
   int SERIAL(price) = 0;
   bool SERIAL(noArticle) = false;
-  EnumMap<AttrType, int> SERIAL(modifiers);
+  map<AttrType, int> SERIAL(modifiers);
   double SERIAL(variationChance) = 0.2;
-  EnumMap<AttrType, int> SERIAL(modifierVariation) = EnumMap<AttrType, int>(
-      [](AttrType type) {
-        switch (type) {
-          case AttrType::PARRY:
-            return 0;
-          default:
-            return 1;
-        }
-        return 0;
-      });
   optional<EquipmentSlot> SERIAL(equipmentSlot);
   TimeInterval SERIAL(applyTime) = 1_visible;
   bool SERIAL(fragile) = false;
@@ -101,7 +91,7 @@ class ItemAttributes {
   optional<string> SERIAL(ingredientType);
   Range SERIAL(wishedCount) = Range(1, 2);
   vector<SpellId> SERIAL(equipedAbility);
-  EnumMap<AttrType, optional<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
+  map<AttrType, pair<int, CreaturePredicate>> SERIAL(specialAttr);
   vector<StorageId> SERIAL(storageIds);
   optional<Effect> SERIAL(carriedTickEffect);
   CostInfo SERIAL(craftingCost) = CostInfo::noCost();

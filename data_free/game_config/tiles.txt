@@ -1,3 +1,8 @@
+{ "damage_icon" "1" ColorId WHITE }
+{ "spell_damage_icon" "1" ColorId WHITE }
+{ "ranged_damage_icon" "1" ColorId WHITE }
+{ "defense_icon" "1" ColorId WHITE }
+{ "parry_icon" "1" ColorId WHITE }
 { "keeper1" "@" ColorId PURPLE }
 { "keeper2" "@" ColorId PURPLE }
 { "keeper3" "@" ColorId PURPLE }

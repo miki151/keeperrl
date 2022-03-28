@@ -31,27 +31,27 @@ STRUCT_IMPL(ItemType)
 
 ItemType ItemType::legs(int damage) {
   return ItemType(ItemTypes::Intrinsic{ViewId("leg_attack"), "legs", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::KICK}});
+        WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::KICK}});
 }
 
 ItemType ItemType::claws(int damage) {
   return ItemType(ItemTypes::Intrinsic{ViewId("claws_attack"), "claws", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::CLAW}});
+        WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::CLAW}});
 }
 
 ItemType ItemType::beak(int damage) {
   return ItemType(ItemTypes::Intrinsic{ViewId("beak_attack"), "beak", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::BITE}});
+        WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::BITE}});
 }
 
 ItemType ItemType::fists(int damage) {
   return ItemType(ItemTypes::Intrinsic{ViewId("fist_attack"), "fists", damage,
-        WeaponInfo{false, AttackType::HIT, AttrType::DAMAGE, {}, {}, AttackMsg::SWING}});
+        WeaponInfo{false, AttackType::HIT, AttrType("DAMAGE"), {}, {}, AttackMsg::SWING}});
 }
 
 static ItemType fangsBase(int damage, vector<VictimEffect> effect) {
   return ItemType(ItemTypes::Intrinsic{ViewId("bite_attack"), "fangs", damage,
-      WeaponInfo{false, AttackType::BITE, AttrType::DAMAGE, std::move(effect), {}, AttackMsg::BITE}});
+      WeaponInfo{false, AttackType::BITE, AttrType("DAMAGE"), std::move(effect), {}, AttackMsg::BITE}});
 }
 
 ItemType ItemType::fangs(int damage) {
@@ -64,7 +64,7 @@ ItemType ItemType::fangs(int damage, VictimEffect effect) {
 
 ItemType ItemType::spellHit(int damage) {
   return ItemType(ItemTypes::Intrinsic{ViewId("fist_attack"), "spell", damage,
-                                       WeaponInfo{false, AttackType::HIT, AttrType::SPELL_DAMAGE, {}, {}, AttackMsg::SPELL}});
+      WeaponInfo{false, AttackType::HIT, AttrType("SPELL_DAMAGE"), {}, {}, AttackMsg::SPELL}});
 }
 
 ItemType::ItemType(const ItemTypeVariant& v) : type(v) {
@@ -248,10 +248,10 @@ ItemAttributes ItemType::getAttributes(const ContentFactory* factory) const {
 
 PItem ItemType::get(const ContentFactory* factory) const {
   auto attributes = getAttributes(factory);
-  for (auto attr : ENUM_ALL(AttrType)) {
-    auto& mod = attributes.modifiers[attr];
-    auto& var = attributes.modifierVariation[attr];
-    if (Random.chance(attributes.variationChance) && mod > 0)
+  for (auto& elem : attributes.modifiers) {
+    auto var = factory->attrInfo.at(elem.first).modifierVariation;
+    auto& mod = elem.second;
+    if (Random.chance(attributes.variationChance) && var > 0)
       mod = max(1, mod + Random.get(-var, var + 1));
   }
   if (attributes.ingredientType)
@@ -478,7 +478,7 @@ ItemAttributes ItemTypes::Mushroom::getAttributes(const ContentFactory* factory)
       i.blindName = "mushroom"_s;
       i.itemClass= ItemClass::FOOD;
       i.weight = 0.1;
-      i.modifiers[AttrType::DAMAGE] = -15;
+      i.modifiers[AttrType("DAMAGE")] = -15;
       i.effect = effect;
       i.price = i.effect->getPrice();
       i.uses = 1;

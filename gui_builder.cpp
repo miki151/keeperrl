@@ -1010,7 +1010,7 @@ vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<AttributeInfo>& a
         attrText += toStringWithSign(elem.bonus);
       return WL(stack, getTooltip({elem.name, elem.help}, THIS_LINE),
           WL(horizontalList, makeVec(
-              WL(icon, elem.attr),
+              WL(viewObject, elem.viewId),
               WL(margins, WL(label, attrText), 0, 2, 0, 0)), 30));
     };
     ret.push_back(cache->get(getValue, THIS_LINE, elem));
@@ -1020,11 +1020,11 @@ vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<AttributeInfo>& a
 
 vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const ViewObject::CreatureAttributes& attributes) {
   vector<SGuiElem> ret;
-  for (auto attr : ENUM_ALL(AttrType))
+  for (auto& attr : attributes)
     ret.push_back(
         WL(horizontalList, makeVec(
-          WL(icon, attr),
-          WL(margins, WL(label, toString((int) attributes[attr])), 0, 2, 0, 0)), 30));
+          WL(viewObject, attr.first),
+          WL(margins, WL(label, toString((int) attr.second)), 0, 2, 0, 0)), 30));
   return ret;
 }
 
@@ -1092,7 +1092,7 @@ vector<string> GuiBuilder::getItemHint(const ItemInfo& item) {
 
 SGuiElem GuiBuilder::drawBestAttack(const BestAttack& info) {
   return WL(getListBuilder, 30)
-      .addElem(WL(icon, info.attr))
+      .addElem(WL(viewObject, info.viewId))
       .addElem(WL(topMargin, 2, WL(label, toString((int) info.value))))
       .buildHorizontalList();
 }
@@ -1169,19 +1169,18 @@ SGuiElem GuiBuilder::drawImmigrantCreature(const ImmigrantCreatureInfo& creature
   lines.addSpace(legendLineHeight / 2);
   lines.addElemAuto(drawAttributesOnPage(drawPlayerAttributes(creature.attributes)));
   bool trainingHeader = false;
-  for (auto expType : ENUM_ALL(ExperienceType))
-    if (creature.trainingLimits[expType] > 0) {
-      if (!trainingHeader)
-        lines.addElem(WL(label, "Training potential", Color::YELLOW));
-      trainingHeader = true;
-      auto line = WL(getListBuilder);
-      for (auto attr : getAttrIncreases()[expType]) {
-        line.addElem(WL(topMargin, -3, WL(icon, attr)), 22);
-      }
-      line.addSpace(15);
-      line.addElemAuto(WL(label, "+" + toString(creature.trainingLimits[expType])));
-      lines.addElem(line.buildHorizontalList());
+  for (auto& info : creature.trainingLimits) {
+    if (!trainingHeader)
+      lines.addElem(WL(label, "Training potential", Color::YELLOW));
+    trainingHeader = true;
+    auto line = WL(getListBuilder);
+    for (auto& viewId : info.attributes) {
+      line.addElem(WL(topMargin, -3, WL(viewObject, viewId)), 22);
     }
+    line.addSpace(15);
+    line.addElemAuto(WL(label, "+" + toString(info.limit)));
+    lines.addElem(line.buildHorizontalList());
+  }
   if (!creature.spellSchools.empty())
     lines.addElem(WL(getListBuilder)
         .addElemAuto(WL(label, "Spell schools: ", Color::YELLOW))
@@ -1509,9 +1508,9 @@ SGuiElem GuiBuilder::getExpIncreaseLine(const CreatureExperienceInfo& info, Expe
   int i = 0;
   vector<string> attrNames;
   auto attrIcons = WL(getListBuilder);
-  for (auto attr : getAttrIncreases()[type]) {
-    attrIcons.addElem(WL(topMargin, -3, WL(icon, attr)), 22);
-    attrNames.push_back(getName(attr));
+  for (auto& elem : info.attributes[type]) {
+    attrIcons.addElem(WL(topMargin, -3, WL(viewObject, elem.second)), 22);
+    attrNames.push_back(elem.first);
   }
   line.addElem(attrIcons.buildHorizontalList(), 80);
   if (!infoOnly)

@@ -298,7 +298,6 @@ class GuiFactory {
 
   SGuiElem minimapBar(SGuiElem icon1, SGuiElem icon2);
   SGuiElem icon(IconId, Alignment = Alignment::CENTER, Color = Color::WHITE);
-  SGuiElem icon(AttrType);
   Texture& get(TexId);
   SGuiElem uiHighlightMouseOver(Color = Color::GREEN);
   SGuiElem uiHighlightConditional(function<bool()>, Color = Color::GREEN);
@@ -325,7 +324,6 @@ class GuiFactory {
 
   EnumMap<TexId, optional<Texture>> textures;
   vector<Texture> iconTextures;
-  EnumMap<AttrType, optional<Texture>> attrTextures;
   Renderer& renderer;
   Options* options;
   DragContainer dragContainer;

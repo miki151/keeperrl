@@ -4,10 +4,10 @@
 #include "item.h"
 #include "view_object.h"
 
-static string getItemName(Item* item, bool plural) {
+static string getItemName(const ContentFactory* factory, Item* item, bool plural) {
   auto name = item->getName(plural);
   if (name.size() > 30)
-    return item->getShortName(nullptr, plural);
+    return item->getShortName(factory, nullptr, plural);
   return name;
 }
 
@@ -16,13 +16,13 @@ WorkshopItem WorkshopItemCfg::get(const ContentFactory* factory) const {
   auto t = tech;
   PItem elem = item.get(factory);
   vector<string> description;
-  if (elem->getNameAndModifiers() != elem->getName())
-    description.push_back(elem->getNameAndModifiers());
+  if (elem->getNameAndModifiers(factory) != elem->getName())
+    description.push_back(elem->getNameAndModifiers(factory));
   description.append(elem->getDescription(factory));
   return WorkshopItem {
     item,
-    getItemName(elem.get(), false),
-    getItemName(elem.get(), true),
+    getItemName(factory, elem.get(), false),
+    getItemName(factory, elem.get(), true),
     elem->getViewObject().getViewIdList(),
     cost.value_or(elem->getCraftingCost()),
     std::move(description),

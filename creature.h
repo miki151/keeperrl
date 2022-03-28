@@ -31,6 +31,7 @@
 #include "creature_status.h"
 #include "view_id.h"
 #include "furniture_type.h"
+#include "attr_type.h"
 
 class Skill;
 class Level;
@@ -222,7 +223,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   
   void increaseExpLevel(ExperienceType, double increase);
 
-  BestAttack getBestAttack() const;
+  BestAttack getBestAttack(const ContentFactory*) const;
 
   vector<pair<Item*, double>> getRandomWeapons() const;
   int getMaxSimultaneousWeapons() const;
@@ -289,8 +290,8 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<TimeInterval> getTimeRemaining(LastingEffect) const;
 
   bool isUnknownAttacker(const Creature*) const;
-  vector<AdjectiveInfo> getGoodAdjectives() const;
-  vector<AdjectiveInfo> getBadAdjectives() const;
+  vector<AdjectiveInfo> getGoodAdjectives(const ContentFactory*) const;
+  vector<AdjectiveInfo> getBadAdjectives(const ContentFactory*) const;
 
   vector<string> popPersonalEvents();
   void addPersonalEvent(const string&);
@@ -307,7 +308,7 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   void updateCombatExperience(Creature* victim);
 
   void addSound(const Sound&) const;
-  void updateViewObject();
+  void updateViewObject(const ContentFactory*);
   void updateViewObjectFlanking();
   void swapPosition(Vec2 direction, bool withExcuseMe = true);
   bool canSwapPositionWithEnemy(Creature* other) const;
@@ -407,14 +408,14 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   optional<ViewId> SERIAL(primaryViewId);
   struct CompanionGroup {
     vector<Creature*> SERIAL(creatures);
-    bool SERIAL(updateAttrs);
-    SERIALIZE_ALL(creatures, updateAttrs)
+    optional<AttrType> SERIAL(statsBase);
+    SERIALIZE_ALL(creatures, statsBase)
   };
   vector<CompanionGroup> SERIAL(companions);
   void tickCompanions();
   bool considerSavingLife(DropType, const Creature* attacker);
   void tryToDestroyLastingEffect(LastingEffect);
-  vector<AdjectiveInfo> getSpecialAttrAdjectives(bool good) const;
+  vector<AdjectiveInfo> getSpecialAttrAdjectives(const ContentFactory*, bool good) const;
   vector<AutomatonPart> SERIAL(automatonParts);
   vector<pair<CreatureAttributes, SpellMap>> SERIAL(attributesStack);
   optional<PhylacteryInfo> SERIAL(phylactery);

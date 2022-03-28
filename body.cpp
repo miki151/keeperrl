@@ -399,8 +399,8 @@ static void setBodyPartUpgrade(Item* item, BodyPart part, Effect upgrade, const 
 
 static Effect getDefaultBodyPartUpgrade() {
   return Effect(Effects::Description("Increase either damage or defense by 1", Effect(Effects::ChooseRandom({
-      Effect(Effects::IncreaseAttr{AttrType::DAMAGE, 1}),
-      Effect(Effects::IncreaseAttr{AttrType::DEFENSE, 1})
+      Effect(Effects::IncreaseAttr{AttrType("DAMAGE"), 1}),
+      Effect(Effects::IncreaseAttr{AttrType("DEFENSE"), 1})
   }))));
 }
 
@@ -461,6 +461,7 @@ void Body::addBodyPart(BodyPart parts, int count) {
 }
 
 void Body::consumeBodyParts(Creature* c, Body& other, vector<string>& adjectives) {
+  auto factory = c->getGame()->getContentFactory();
   for (BodyPart part : ENUM_ALL(BodyPart)) {
     int cnt = other.bodyParts[part] - bodyParts[part];
     if (cnt > 0) {
@@ -472,8 +473,9 @@ void Body::consumeBodyParts(Creature* c, Body& other, vector<string>& adjectives
     if (!other.intrinsicAttacks[part].empty())
       intrinsicAttacks[part].clear();
     for (auto& attack : other.intrinsicAttacks[part]) {
-      c->verb("develop", "develops",  "a " + attack.item->getNameAndModifiers() + " attack");
-      c->addPersonalEvent(c->getName().the() + " develops a " + attack.item->getNameAndModifiers() + " attack");
+      c->verb("develop", "develops",  "a " + attack.item->getNameAndModifiers(factory) +
+          " attack");
+      c->addPersonalEvent(c->getName().the() + " develops a " + attack.item->getNameAndModifiers(factory) + " attack");
       intrinsicAttacks[part].push_back(std::move(attack));
     }
     other.intrinsicAttacks[part].clear();
@@ -765,7 +767,7 @@ Body::DamageResult Body::takeDamage(const Attack& attack, Creature* creature, do
       creature->addEffect(LastingEffect::BLEEDING, 50_visible);
       if (health <= 0)
         health = 0.1;
-      creature->updateViewObject();
+      creature->updateViewObject(creature->getGame()->getContentFactory());
       return Body::HURT;
     }
   if (health <= 0) {
@@ -799,6 +801,8 @@ void Body::getBadAdjectives(vector<AdjectiveInfo>& ret) const {
       ret.push_back({getPlural(string("Lost ") + getName(part), num), ""});
 }
 
+/* From gameplay perspective these penalties are not that useful so leaving out for now.
+
 const static map<BodyPart, int> defensePenalty {
   {BodyPart::ARM, 2},
   {BodyPart::LEG, 10},
@@ -809,21 +813,21 @@ const static map<BodyPart, int> damagePenalty {
   {BodyPart::ARM, 2},
   {BodyPart::LEG, 5},
   {BodyPart::WING, 2},
-  {BodyPart::HEAD, 3}};
+  {BodyPart::HEAD, 3}};*/
 
 int Body::getAttrBonus(AttrType type) const {
   int ret = 0;
-  switch (type) {
-    case AttrType::DAMAGE:
+  /*switch (type) {
+    case AttrType("DAMAGE"):
       for (auto elem : damagePenalty)
         ret -= elem.second * (numInjured(elem.first) + numLost(elem.first));
       break;
-    case AttrType::DEFENSE:
+    case AttrType("DEFENSE"):
       for (auto elem : defensePenalty)
         ret -= elem.second * (numInjured(elem.first) + numLost(elem.first));
       break;
     default: break;
-  }
+  }*/
   return ret;
 }
 
@@ -962,14 +966,14 @@ bool Body::affectByAcid(Creature* c) {
 
 bool Body::affectByFire(Creature* c, double amount) {
   c->you(MsgType::ARE, "burnt by the fire");
-  bleed(c, 6. * amount / double(1 + c->getAttr(AttrType::DEFENSE)));
+  bleed(c, 6. * amount / double(1 + c->getAttr(AttrType("DEFENSE"))));
   return health <= 0;
 }
 
 void Body::bleed(Creature* c, double amount) {
   if (hasAnyHealth()) {
     health -= amount;
-    c->updateViewObject();
+    c->updateViewObject(c->getGame()->getContentFactory());
     if (c->getStatus().contains(CreatureStatus::LEADER))
       if (auto game = c->getGame())
         game->addEvent(EventInfo::LeaderWounded{c});

@@ -130,7 +130,7 @@ class CreatureAttributes {
   ViewId SERIAL(viewId);
   vector<ViewId> SERIAL(viewIdUpgrades);
   vector<ItemType> SERIAL(automatonParts);
-  EnumMap<AttrType, vector<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
+  map<AttrType, vector<pair<int, CreaturePredicate>>> SERIAL(specialAttr);
   heap_optional<Effect> SERIAL(deathEffect);
   heap_optional<Effect> SERIAL(afterKilledSomeone);
 
@@ -144,7 +144,7 @@ class CreatureAttributes {
   void consumeEffects(Creature* self, const EnumMap<LastingEffect, int>&);
   heap_optional<ViewObject> SERIAL(illusionViewObject);
   CreatureName SERIAL(name);
-  EnumMap<AttrType, int> SERIAL(attr);
+  map<AttrType, int> SERIAL(attr);
   HeapAllocated<Body> SERIAL(body);
   optional<string> SERIAL(chatReactionFriendly);
   optional<string> SERIAL(chatReactionHostile);

@@ -763,17 +763,19 @@ const vector<Creature*>& Game::getPlayerCreatures() const {
   return players;
 }
 
-static SavedGameInfo::MinionInfo getMinionInfo(const Creature* c) {
+static SavedGameInfo::MinionInfo getMinionInfo(const ContentFactory* factory, const Creature* c) {
   SavedGameInfo::MinionInfo ret;
-  ret.level = (int)c->getBestAttack().value;
+  ret.level = (int)c->getBestAttack(factory).value;
   ret.viewId = c->getViewObject().getViewIdList();
   return ret;
 }
 
 SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
+  auto factory = contentFactory.get();
   auto sortMinions = [&](vector<Creature*>& minions, Creature* leader) {
-    sort(minions.begin(), minions.end(), [leader] (const Creature* c1, const Creature* c2) {
-        return c1 == leader || (c2 != leader && c1->getBestAttack().value > c2->getBestAttack().value);});
+    sort(minions.begin(), minions.end(), [&] (const Creature* c1, const Creature* c2) {
+        return c1 == leader ||
+            (c2 != leader && c1->getBestAttack(factory).value > c2->getBestAttack(factory).value);});
     CHECK(minions[0] == leader);
   };
   if (Collective* col = getPlayerCollective()) {
@@ -785,7 +787,7 @@ SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
     creatures.resize(min<int>(creatures.size(), 4));
     vector<SavedGameInfo::MinionInfo> minions;
     for (Creature* c : creatures)
-      minions.push_back(getMinionInfo(c));
+      minions.push_back(getMinionInfo(factory, c));
     optional<SavedGameInfo::RetiredEnemyInfo> retiredInfo;
     if (auto id = col->getEnemyId()) {
       retiredInfo = SavedGameInfo::RetiredEnemyInfo{*id, col->getVillainType()};
@@ -802,7 +804,7 @@ SavedGameInfo Game::getSavedGameInfo(vector<string> spriteMods) const {
           allCreatures.push_back(c);
     sortMinions(allCreatures, players[0]);
     return SavedGameInfo{
-        allCreatures.transform([](auto c) { return getMinionInfo(c); }),
+        allCreatures.transform([&](auto c) { return getMinionInfo(factory, c); }),
         none,
         players[0]->getName().bare(),
         getSaveProgressCount(),

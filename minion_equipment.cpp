@@ -294,17 +294,11 @@ void MinionEquipment::autoAssign(const Creature* creature, vector<Item*> possibl
 int MinionEquipment::getItemValue(const Creature* c, const Item* it) const {
   PROFILE;
   int sum = 0;
-  for (auto attr : ENUM_ALL(AttrType))
-    switch (attr) {
-      case AttrType::DAMAGE:
-      case AttrType::SPELL_DAMAGE:
-        if (it->getClass() != ItemClass::WEAPON || attr == it->getWeaponInfo().meleeAttackAttr)
-          sum += c->getAttributes().getRawAttr(attr) + it->getModifier(attr);
-        break;
-      default:
-        sum += it->getModifier(attr);
-        break;
-    }
+  for (auto& mod : it->getModifierValues()) {
+    sum += mod.second;
+    if (mod.first == it->getWeaponInfo().meleeAttackAttr)
+      sum += c->getAttributes().getRawAttr(mod.first);
+  }
   return sum;
 }
 

@@ -2845,27 +2845,6 @@ void GuiFactory::loadFreeImages(const DirectoryPath& path) {
   const int tabIconWidth = 42;
   for (int i = 0; i < 8; ++i)
     iconTextures.push_back(Texture(path.file("icons.png"), 0, i * tabIconWidth, tabIconWidth, tabIconWidth));
-  auto addAttr = [&](AttrType attr, Vec2 pos) {
-    const int width = 18;
-    attrTextures[attr] =
-        Texture(path.file("stat_icons.png"), pos.x * width, pos.y * width, width, width);
-  };
-  auto getAttrCoord = [&] (AttrType attr) {
-    switch (attr) {
-      case AttrType::DAMAGE:
-        return Vec2(0, 0);
-      case AttrType::DEFENSE:
-        return Vec2(1, 0);
-      case AttrType::SPELL_DAMAGE:
-        return Vec2(0, 1);
-      case AttrType::RANGED_DAMAGE:
-        return Vec2(1, 1);
-      case AttrType::PARRY:
-        return Vec2(5, 0);
-    }
-  };
-  for (auto attr : ENUM_ALL(AttrType))
-    addAttr(attr, getAttrCoord(attr));
   auto loadIcons = [&] (int width, int count, const char* file) {
     for (int i = 0; i < count; ++i)
       iconTextures.push_back(Texture(path.file(file), 0, i * width, width, width));
@@ -3211,10 +3190,6 @@ SGuiElem GuiFactory::background(SGuiElem content, Color color) {
 
 SGuiElem GuiFactory::icon(IconId id, Alignment alignment, Color color) {
   return sprite(iconTextures[(int) id], alignment, color);
-}
-
-SGuiElem GuiFactory::icon(AttrType attr) {
-  return sprite(*attrTextures[attr], Alignment::CENTER, Color::WHITE);
 }
 
 static int trans1 = 1094;
