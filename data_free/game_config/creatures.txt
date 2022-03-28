@@ -93,6 +93,7 @@
     attr = {
       DAMAGE 20
       DEFENSE 16
+      MULTI_WEAPON 40
     }
     body = {
       type = Humanoid LARGE
@@ -105,7 +106,6 @@
     viewIdUpgrades = { { "keeper_knight2" } { "keeper_knight3" } { "keeper_knight4" }}
     skills = {
       "FORGE" 0.2
-      "MULTI_WEAPON" 0.8
       "FURNACE" 0.3
     }
     permanentEffects = {
@@ -140,6 +140,7 @@
     attr = {
       DAMAGE 20
       DEFENSE 16
+      MULTI_WEAPON 40
     }
     body = {
       type = Humanoid LARGE
@@ -152,7 +153,6 @@
     viewIdUpgrades = { { "duke2" } { "duke3" } { "duke4" }}
     skills = {
       "FORGE" 0.2
-      "MULTI_WEAPON" 0.8
       "FURNACE" 0.1
     }
     permanentEffects = {

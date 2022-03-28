@@ -294,7 +294,7 @@ append {
       {{Balsam IncreaseWorkshopSkill "LABORATORY" 0.5}            8 "GOLD" 5 "advanced embalming"}
       {{Balsam IncreaseWorkshopSkill "FORGE" 0.5}                 8 "GOLD" 5 "advanced embalming"}
       {{Balsam IncreaseWorkshopSkill "WORKSHOP" 0.5  }            8 "GOLD" 5 "advanced embalming"}
-      {{Balsam { AddBodyPart ARM 2 none IncreaseSkill MULTI_WEAPON 0.5 }}
+      {{Balsam { AddBodyPart ARM 2 none IncreaseAttr MULTI_WEAPON 25 }}
           8 "GOLD" 5 "advanced embalming"}
       {{Balsam SpecialAttr DEFENSE       15 InTerritory}           12 "GOLD" 10 "master embalming"}
       {{Balsam SpecialAttr DAMAGE        15 CreatureStatus LEADER} 12 "GOLD" 10 "master embalming"}

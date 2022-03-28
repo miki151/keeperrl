@@ -41,8 +41,6 @@ string Skill::getHelpText() const {
 }
 
 void Skill::init() {
-  Skill::set(SkillId::MULTI_WEAPON, new Skill("multi-weapon", "Allows using multiple weapons in a single attack. "
-      "The skill value defines the damage multiplier for subsequent attacks."));
   Skill::set(SkillId::FURNACE, new Skill("furnace", "Smelt and recycle unneeded items."));
 }
 

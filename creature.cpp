@@ -2204,7 +2204,7 @@ CreatureAction Creature::consume(Creature* other) const {
 template <typename Visitor>
 static void visitMaxSimultaneousWeapons(const Creature* c, Visitor visitor) {
   constexpr double minMultiplier = 0.5;
-  const double skillValue = c->getAttributes().getSkills().getValue(SkillId::MULTI_WEAPON);
+  const double skillValue = min(1.0, double(c->getAttr(AttrType("MULTI_WEAPON"))) * 0.02);
   visitor(1);
   if (skillValue < 0.01)
     return;

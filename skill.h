@@ -22,7 +22,6 @@
 #include "workshop_type.h"
 
 RICH_ENUM(SkillId,
-  MULTI_WEAPON,
   FURNACE
 );
 

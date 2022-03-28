@@ -761,7 +761,7 @@ class Test {
     PItem sword2 = ItemType(CustomItemId("Sword")).get(&contentFactory);
     sword1->addModifier(AttrType("DAMAGE"), 12);
     PCreature human1 = CreatureFactory::getHumanForTests();
-    human1->getAttributes().getSkills().increaseValue(SkillId::MULTI_WEAPON, 1);
+    human1->getAttributes().increaseBaseAttr(AttrType("MULTI_WEAPON"), 50);
     MinionEquipment equipment;
     equipment.autoAssign(human1.get(), {sword2.get(), sword1.get()});
     equipment.autoAssign(human1.get(), {sword2.get(), sword1.get()});
