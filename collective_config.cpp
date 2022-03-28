@@ -313,7 +313,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
             if (t == FurnitureType("FURNACE")) {
               if (!c || !col)
                 return true;
-              auto skill = c->getAttributes().getSkills().getValue(SkillId::FURNACE);
+              auto skill = c->getAttr(AttrType("FURNACE"));
               return skill > 0 && !col->getFurnace().isIdle();
             } else
             if (auto type = f->getWorkshopType(t)) {

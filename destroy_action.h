@@ -3,7 +3,6 @@
 #include "util.h"
 
 class Sound;
-class Skill;
 
 class DestroyAction {
   public:

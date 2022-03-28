@@ -323,11 +323,6 @@ void consumeAttr(heap_optional<T>& mine, const heap_optional<T>& his, vector<str
 
 void consumeAttr(Skillset& mine, const Skillset& his, vector<string>& adjectives) {
   bool was = false;
-  for (SkillId id : ENUM_ALL(SkillId))
-    if (mine.getValue(id) < his.getValue(id)) {
-      mine.setValue(id, his.getValue(id));
-      was = true;
-    }
   for (auto& elem : his.getWorkshopValues())
     if (mine.getValue(elem.first) < elem.second) {
       mine.setValue(elem.first, elem.second);

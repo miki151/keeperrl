@@ -17,52 +17,25 @@
 
 #include <string>
 
-#include "singleton.h"
 #include "enums.h"
 #include "workshop_type.h"
-
-RICH_ENUM(SkillId,
-  FURNACE
-);
 
 class Creature;
 class ContentFactory;
 
-extern string getName(SkillId);
-
-class Skill : public Singleton<Skill, SkillId> {
-  public:
-  string getName() const;
-  string getNameForCreature(const Creature*) const;
-  string getHelpText() const;
-
-  int getModifier(const Creature*, AttrType) const;
-
-  static void init();
-
-  private:
-  string name;
-  string helpText;
-  Skill(string name, string helpText);
-};
-
 class Skillset {
   public:
-  double getValue(SkillId) const;
   double getValue(WorkshopType) const;
   const map<WorkshopType, double>& getWorkshopValues() const;
   string getNameForCreature(const ContentFactory*, WorkshopType) const;
   string getHelpText(const ContentFactory*, WorkshopType) const;
-  void setValue(SkillId, double);
   void setValue(WorkshopType, double);
-  void increaseValue(SkillId, double);
   void increaseValue(WorkshopType, double);
 
   template <class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   private:
-  EnumMap<SkillId, double> SERIAL(values);
   map<WorkshopType, double> SERIAL(workshopValues);
 };
 

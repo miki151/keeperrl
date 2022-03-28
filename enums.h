@@ -67,7 +67,6 @@ class ViewId;
 enum class AnimationId;
 enum class MouseButtonId;
 
-enum class SkillId;
 enum class VisionId;
 
 enum class LastingEffect;

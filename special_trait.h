@@ -58,8 +58,7 @@ struct Lasting {
   X(OneOfTraits, 5)\
   X(ExtraBodyPart, 6)\
   X(ExtraIntrinsicAttack, 7)\
-  X(CompanionInfo, 8)\
-  X(SkillId, 9)
+  X(CompanionInfo, 8)
 
 #define VARIANT_NAME SpecialTrait
 

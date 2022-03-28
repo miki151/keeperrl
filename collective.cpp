@@ -1482,7 +1482,7 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
         }
     }
     if (furniture->getType() == FurnitureType("FURNACE")) {
-      auto craftingSkill = c->getAttributes().getSkills().getValue(SkillId::FURNACE);
+      auto craftingSkill = double(c->getAttr(AttrType("FURNACE"))) * 0.02;
       if (auto result = furnace->addWork(efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c)))
         returnResource(*result);
     }

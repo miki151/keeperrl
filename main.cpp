@@ -256,7 +256,6 @@ static int keeperMain(po::parser& commandLineFlags) {
       [](const string& s) { ofstream("stacktrace.out") << s << "\n" << std::flush; } ));
   if (commandLineFlags["stderr"].was_set() || commandLineFlags["run_tests"].was_set())
     InfoLog.addOutput(DebugOutput::toStream(std::cerr));
-  Skill::init();
   if (commandLineFlags["run_tests"].was_set()) {
     testAll();
     return 0;

@@ -33,7 +33,6 @@
 #include "furniture_type.h"
 #include "attr_type.h"
 
-class Skill;
 class Level;
 class Tribe;
 class ViewObject;

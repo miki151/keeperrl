@@ -37,7 +37,7 @@
           IncreaseWorkshopSkill "FORGE" 0.16
           IncreaseWorkshopSkill "LABORATORY" 0.16
           IncreaseWorkshopSkill "JEWELER" 0.16
-          IncreaseSkill FURNACE 0.16
+          IncreaseAttr FURNACE 8
           Filter Gender MALE SetViewId {"dwarf_blacksmith"}
           Filter Gender FEMALE SetViewId {"dwarf_blacksmith_f"}
         }
