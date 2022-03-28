@@ -774,6 +774,7 @@
     attr = {
       DAMAGE 28
       DEFENSE 28
+      DIGGING 20
     }
     body = {
       type = Humanoid LARGE
@@ -781,7 +782,6 @@
       droppedPartUpgrade = IncreaseAttr DEFENSE 5
     }
     skills = {
-      "DIGGING" 0.5
       "WORKSHOP" 0.2
       "FORGE" 0.2
       "LABORATORY" 0.2
@@ -1600,6 +1600,7 @@
     attr = {
       DAMAGE 14
       DEFENSE 12
+      DIGGING 5
     }
     body = {
       type = Humanoid LARGE
@@ -1612,9 +1613,6 @@
       RIDER 1
     }
     aiType = RANGED
-    skills = {
-      "DIGGING" 0.1
-    }
     name = {
       name = "peasant"
     }
@@ -2052,12 +2050,6 @@
     }
     hatedByEffect = HATE_HUMANS
   }
-"PESEANT_PRISONER" inherit "PESEANT_PLAYER"
-  {
-    skills = {
-      "DIGGING" 0.3
-    }
-  }
 "HALLOWEEN_KID"
   {
     viewId = { "halloween_kid1" }
@@ -2179,7 +2171,8 @@
     viewId = { "ada_golem" }
     attr = {
       DAMAGE 36
-      DEFENSE 36 
+      DEFENSE 36
+      DIGGING 30
     }
     body = {
       type = HumanoidLike LARGE
@@ -2188,7 +2181,6 @@
     permanentEffects = {
       MELEE_RESISTANCE 1
       SLOWED 1
-      NAVIGATION_DIGGING_SKILL 1
       MAGIC_VULNERABILITY 1
       FIRE_RESISTANT 1
     }
@@ -2398,8 +2390,8 @@
   }
 "ZOMBIE_WORKER" inherit "ZOMBIE"
   {
-    skills = {
-      "DIGGING" 0.2
+    attr = append {
+      DIGGING 8
     }
   }
 "SKELETON"
@@ -2656,7 +2648,8 @@
     viewId = { "gnome" }
     attr = {
       DAMAGE 12
-      DEFENSE 13 
+      DEFENSE 13
+      DIGGING 10 
     }
     body = {
       type = Humanoid MEDIUM
@@ -2665,7 +2658,6 @@
       "WORKSHOP" 0.5
       "FORGE" 0.5
       "LABORATORY" 0.5
-      "DIGGING" 0.2
       "FURNACE" 0.2
     }
     aiType = RANGED
@@ -2741,6 +2733,7 @@
     attr = {
       DAMAGE 5
       DEFENSE 15 
+      DIGGING 15
     }
     body = {
       type = Humanoid SMALL
@@ -2749,9 +2742,6 @@
     aiType = RANGED
     noChase = true
     cantEquip = true
-    skills = {
-      "DIGGING" 0.3
-    }
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""
     permanentEffects = {
@@ -2788,6 +2778,7 @@
     attr = {
       DAMAGE 21
       DEFENSE 25 
+      DIGGING 30
     }
     specialAttr = {
       DEFENSE { -7 Name "when outdoors" Not Indoors }
@@ -2810,7 +2801,6 @@
     }
     permanentEffects = {
       MAGIC_VULNERABILITY 1
-      NAVIGATION_DIGGING_SKILL 1
       UNSTABLE 1
     }
     chatReactionFriendly = "curses all orcs"
@@ -2831,7 +2821,6 @@
       fullTitle = true
     }
     skills = {
-      "DIGGING" 0.6
       "WORKSHOP" 0.2
       "FORGE" 0.2
       "LABORATORY" 0.2
@@ -2874,6 +2863,7 @@
     attr = {
       DAMAGE 21
       DEFENSE 25 
+      DIGGING 25
     }
     specialAttr = {
       DEFENSE { -7 Name "when outdoors" Not Indoors }
@@ -2892,7 +2882,6 @@
       "WORKSHOP" 0.5
     }
     permanentEffects = {
-      NAVIGATION_DIGGING_SKILL 1
       MAGIC_VULNERABILITY 1
     }
     chatReactionFriendly = "curses all orcs"
@@ -2906,6 +2895,7 @@
     attr = {
       DAMAGE 35
       DEFENSE 35
+      DIGGING 35
     }
     maxLevelIncrease = {
       MELEE 10
@@ -2915,7 +2905,7 @@
       firstNameGen = "DWARF"
     }
     body = append {
-      droppedPartUpgrade = IncreaseSkill DIGGING 1.0
+      droppedPartUpgrade = IncreaseAttr DIGGING 20
     }
     inventory = {
       { type = "BattleAxe", alternative = "WarHammer" prefixChance = 1 }
@@ -3653,7 +3643,8 @@
     viewId = { "ant_worker" }
     attr = {
       DAMAGE 16
-      DEFENSE 16 
+      DEFENSE 16
+      DIGGING 20 
     }
     body = {
       type = NonHumanoid MEDIUM
@@ -3674,10 +3665,8 @@
     viewId = { "ant_soldier" }
     attr = {
       DAMAGE 30
-      DEFENSE 20 
-    }
-    permanentEffects = {
-      NAVIGATION_DIGGING_SKILL 1
+      DEFENSE 20
+      DIGGING 20
     }
     body = {
       type = NonHumanoid MEDIUM
@@ -3704,7 +3693,8 @@
     viewId = { "ant_queen" }
     attr = {
       DAMAGE 30
-      DEFENSE 26 
+      DEFENSE 26
+      DIGGING 20
     }
     body = {
       type = NonHumanoid MEDIUM
@@ -4512,15 +4502,13 @@ End
     attr = {
       DAMAGE 10
       DEFENSE 10 
+      DIGGING 10
     }
     body = {
       type = Humanoid MEDIUM
     }
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""
-    skills = {
-      "DIGGING" 0.5
-    }
     hatedByEffect = HATE_GREENSKINS
     gender = MALE
     aiType = RANGED

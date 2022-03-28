@@ -1425,7 +1425,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 BOULDER
     30 DIG
     200 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
   summonedElement = "EARTH_ELEMENTAL"
   canBuildOutsideOfTerritory = true
@@ -1464,7 +1463,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     500 BOULDER
     70 DIG
     500 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
   canBuildOutsideOfTerritory = true
   destroyFX = { ROCK_CLOUD Rgb 200 200 200 255 }
@@ -1480,7 +1478,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     500 BOULDER
     500 DIG
     500 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
 }
 "ADOXIUM_ORE" inherit "MOUNTAIN2"
@@ -1493,7 +1490,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 BOULDER
     220 DIG
     200 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
 }
 "INFERNITE_ORE" inherit "MOUNTAIN2"
@@ -1508,7 +1504,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 BOULDER
     220 DIG
     200 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
 }
 "IRON_ORE" inherit "MOUNTAIN2"
@@ -1521,7 +1516,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 BOULDER
     220 DIG
     200 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
 }
 "STONE" inherit "MOUNTAIN2"
@@ -1534,7 +1528,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 BOULDER
     250 DIG
     200 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
 }
 "GOLD_ORE" inherit "MOUNTAIN2"
@@ -1547,7 +1540,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     200 BOULDER
     220 DIG
     200 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
 }
 "DUNGEON_WALL"
@@ -1567,7 +1559,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     300 BOULDER
     100 DIG
     1900 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
   destroyFX = { ROCK_CLOUD Rgb 220 210 180 255 }
   tryDestroyFX = { ROCK_SPLINTERS Rgb 220 210 180 255 }
@@ -1602,7 +1593,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     300 BOULDER
     100 DIG
     1900 HOSTILE_DIG
-    2000 HOSTILE_DIG_NO_SKILL
   }
   canBuildOutsideOfTerritory = true
 }
@@ -1648,7 +1638,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     100 BOULDER
     100 DIG
     300 HOSTILE_DIG
-    300 HOSTILE_DIG_NO_SKILL
   }
   summonedElement = "ENT"
   fire = 100
@@ -1687,7 +1676,6 @@ Def BedHeal() Heal { FLESH 0.005 } End
     100 BOULDER
     100 DIG
     300 HOSTILE_DIG
-    300 HOSTILE_DIG_NO_SKILL
   }
 }
 "BLACK_WALL"

@@ -14,18 +14,6 @@
     }
 }
 
-"peseant_prisoners"
-{
-    {
-      ids = { "PESEANT_PRISONER" }
-      traits = { WORKER NO_LIMIT NO_EQUIPMENT NO_LEISURE_ZONE }
-      spawnLocation = NearLeader
-      noAuto = true
-      invisible = true
-      initialRecruitment = 4
-    }
-}
-
 "peseants"
 {
     {
@@ -620,7 +608,7 @@ End
       traits = { WORKER NO_AUTO_EQUIPMENT }
       frequency = 1
       specialTraits = {
-         { 0.2 { SkillId DIGGING }}
+         { 0.2 { AttrBonus DIGGING 15 }}
       }
     }
     {

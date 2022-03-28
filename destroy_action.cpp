@@ -15,7 +15,6 @@ const char* DestroyAction::getVerbSecondPerson() const {
     case Type::BOULDER: return "destroy";
     case Type::BASH: return "bash";
     case Type::CUT: return "cut";
-    case Type::HOSTILE_DIG_NO_SKILL:
     case Type::HOSTILE_DIG:
     case Type::DIG: return "dig into";
   }
@@ -27,7 +26,6 @@ const char* DestroyAction::getVerbThirdPerson() const {
     case Type::BOULDER: return "destroys";
     case Type::CUT: return "cuts";
     case Type::HOSTILE_DIG:
-    case Type::HOSTILE_DIG_NO_SKILL:
     case Type::DIG: return "digs into";
   }
 }
@@ -37,7 +35,6 @@ const char*DestroyAction::getIsDestroyed() const {
     case Type::BASH:
     case Type::BOULDER: return "is destroyed";
     case Type::CUT: return "falls";
-    case Type::HOSTILE_DIG_NO_SKILL:
     case Type::HOSTILE_DIG:
     case Type::DIG: return "is dug out";
   }
@@ -48,7 +45,6 @@ const char* DestroyAction::getSoundText() const {
     case Type::BASH: return "BANG!";
     case Type::BOULDER:
     case Type::CUT: return "CRASH!";
-    case Type::HOSTILE_DIG_NO_SKILL:
     case Type::HOSTILE_DIG:
     case Type::DIG: return "";
   }
@@ -59,7 +55,6 @@ Sound DestroyAction::getSound() const {
     case Type::BASH:
     case Type::BOULDER: return SoundId::BANG_DOOR;
     case Type::CUT: return SoundId::TREE_CUTTING;
-    case Type::HOSTILE_DIG_NO_SKILL:
     case Type::HOSTILE_DIG:
     case Type::DIG: return SoundId::DIGGING;
    }
@@ -71,7 +66,6 @@ DestroyAction::Type DestroyAction::getType() const {
 
 bool DestroyAction::canDestroyFriendly() const {
   switch (type) {
-    case Type::HOSTILE_DIG_NO_SKILL:
     case Type::BASH:
       return false;
     default:
@@ -82,9 +76,6 @@ bool DestroyAction::canDestroyFriendly() const {
 bool DestroyAction::canNavigate(const Creature* c) const {
   switch (type) {
     case Type::HOSTILE_DIG:
-      return c->isAffected(LastingEffect::NAVIGATION_DIGGING_SKILL)
-          && !isOneOf(c->getTribeId(), TribeId::getDarkKeeper(), TribeId::getAdventurer());
-    case Type::HOSTILE_DIG_NO_SKILL:
       return !isOneOf(c->getTribeId(), TribeId::getDarkKeeper(), TribeId::getAdventurer());
     case Type::BASH:
       return true;
@@ -102,11 +93,15 @@ MinionActivity DestroyAction::getMinionActivity() const {
   }
 }
 
-optional<SkillId> DestroyAction::getDestroyingSkillMultiplier() const {
+double DestroyAction::getDamage(Creature* c) const {
   switch (type) {
+    case Type::BASH:
+    case Type::BOULDER:
+    case Type::CUT:
+      return max(c->getAttr(AttrType("DAMAGE")), 15);
+    case Type::HOSTILE_DIG:
+      return max(c->getAttr(AttrType("DIGGING")), 15) / 5;
     case Type::DIG:
-      return SkillId::DIGGING;
-    default:
-      return none;
-  }
+      return c->getAttr(AttrType("DIGGING")) / 5;
+   }
 }

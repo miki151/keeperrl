@@ -1,3 +1,4 @@
+{ "digging_icon" "1" ColorId WHITE }
 { "damage_icon" "1" ColorId WHITE }
 { "spell_damage_icon" "1" ColorId WHITE }
 { "ranged_damage_icon" "1" ColorId WHITE }

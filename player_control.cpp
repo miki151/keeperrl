@@ -1496,8 +1496,8 @@ void PlayerControl::acceptPrisoner(int index) {
     victim->removeEffect(LastingEffect::STUNNED);
     victim->unbindPhylactery();
     if (victim->getBody().isHumanoid())
-      victim->getAttributes().getSkills().setValue(SkillId::DIGGING,
-          victim->isAffected(LastingEffect::NAVIGATION_DIGGING_SKILL) ? 1 : 0.2);
+      victim->getAttributes().setBaseAttr(AttrType("DIGGING"),
+          max(15, victim->getAttributes().getRawAttr(AttrType("DIGGING"))));
     collective->addCreature(victim, {MinionTrait::WORKER, MinionTrait::PRISONER, MinionTrait::NO_LIMIT});
     addMessage(PlayerMessage("You enslave " + victim->getName().a()).setPosition(victim->getPosition()));
     for (auto& elem : copyOf(stunnedCreatures))
@@ -3464,8 +3464,6 @@ void PlayerControl::considerNewAttacks() {
 void PlayerControl::tick() {
   PROFILE_BLOCK("PlayerControl::tick");
   for (auto c : collective->getCreatures()) {
-    if (c->getAttributes().isAffectedPermanently(LastingEffect::NAVIGATION_DIGGING_SKILL))
-      c->removePermanentEffect(LastingEffect::NAVIGATION_DIGGING_SKILL, 1, false);
     if (c->getAttributes().isAffectedPermanently(LastingEffect::BRIDGE_BUILDING_SKILL))
       c->removePermanentEffect(LastingEffect::BRIDGE_BUILDING_SKILL, 1, false);
   }

@@ -92,9 +92,9 @@
     weight = 6
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
       Name "a drill"
-      Description "Increases the digging skill by 20."
+      Description "Increases the digging attribute by 10."
       {
-        IncreaseSkill DIGGING 0.2
+        IncreaseAttr DIGGING 10
         AddMinionTrait WORKER
         AddBodyPart ARM 2 none
         AddAutomatonPart 1 "drill" { "installed_drill" Rgb 180 140 55 255 }
@@ -242,9 +242,9 @@
     craftingCost = "IRON" 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
       Name "an iron drill"
-      Description "Increases the digging skill by 30."
+      Description "Increases the digging attribute by 15."
       {
-        IncreaseSkill DIGGING 0.3
+        IncreaseAttr DIGGING 15
         AddMinionTrait WORKER
         AddBodyPart ARM 2 none
         AddAutomatonPart 1 "drill" { "installed_drill" Rgb 140 148 148 255 }
@@ -407,9 +407,9 @@
     craftingCost = "ADA" 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
       Name "an adamantine drill"
-      Description "Increases the digging skill by 50."
+      Description "Increases the digging attribute by 20."
       {
-        IncreaseSkill DIGGING 0.5
+        IncreaseAttr DIGGING 20
         AddMinionTrait WORKER
         AddBodyPart ARM 2 none
         AddAutomatonPart 1 "drill" { "installed_drill" Rgb 148 189 189 255 }

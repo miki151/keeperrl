@@ -309,7 +309,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::EXPLORE_NOCTURNAL_SKILL:
       case LastingEffect::BRIDGE_BUILDING_SKILL:
       case LastingEffect::DISTILLATION_SKILL:
-      case LastingEffect::NAVIGATION_DIGGING_SKILL:
         c->verb("acquire", "acquires", "the skill of "_s + getName(effect));
         break;
       case LastingEffect::DISAPPEAR_DURING_DAY:
@@ -625,7 +624,6 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::EXPLORE_CAVES_SKILL:
       case LastingEffect::EXPLORE_NOCTURNAL_SKILL:
       case LastingEffect::BRIDGE_BUILDING_SKILL:
-      case LastingEffect::NAVIGATION_DIGGING_SKILL:
         c->verb("lose", "loses", "the skill of "_s + getName(effect));
         break;
       case LastingEffect::DISAPPEAR_DURING_DAY:
@@ -820,7 +818,6 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::EXPLORE_NOCTURNAL_SKILL: return "Explores at night"_good;
     case LastingEffect::EXPLORE_CAVES_SKILL: return "Explores caves"_good;
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "Builds bridges"_good;
-    case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Digs"_good;
     case LastingEffect::DISTILLATION_SKILL: return "Distiller"_good;
     case LastingEffect::NO_CARRY_LIMIT: return "Infinite carrying capacity"_good;
     case LastingEffect::SPYING: return "Spy"_good;
@@ -1225,7 +1222,6 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::EXPLORE_CAVES_SKILL: return "exploring caves";
     case LastingEffect::EXPLORE_NOCTURNAL_SKILL: return "exploring at night";
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "bridge building";
-    case LastingEffect::NAVIGATION_DIGGING_SKILL: return "digging";
     case LastingEffect::ON_FIRE: return "combustion";
     case LastingEffect::FROZEN: return "freezing";
     case LastingEffect::MAGIC_CANCELLATION: return "magic cancellation";
@@ -1325,7 +1321,6 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::EXPLORE_CAVES_SKILL: return "Can explore caves.";
     case LastingEffect::EXPLORE_NOCTURNAL_SKILL: return "Can explore surroundings at night.";
     case LastingEffect::BRIDGE_BUILDING_SKILL: return "Creature will try to build bridges when travelling somewhere.";
-    case LastingEffect::NAVIGATION_DIGGING_SKILL: return "Creature will try to dig when travelling somewhere.";
     case LastingEffect::ON_FIRE: return "The creature is burning alive.";
     case LastingEffect::FROZEN: return "The creature is frozen and cannot move.";
     case LastingEffect::MAGIC_CANCELLATION: return "Prevents from casting any spells.";
@@ -1727,7 +1722,6 @@ static bool shouldAllyApply(const Creature* victim, LastingEffect effect) {
     case LastingEffect::EXPLORE_NOCTURNAL_SKILL:
     case LastingEffect::EXPLORE_CAVES_SKILL:
     case LastingEffect::BRIDGE_BUILDING_SKILL:
-    case LastingEffect::NAVIGATION_DIGGING_SKILL:
     case LastingEffect::NO_CARRY_LIMIT:
       return true;
     default:
