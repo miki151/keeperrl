@@ -1,0 +1,112 @@
+
+"DAMAGE" {
+  name = "damage"
+  viewId = { "damage_icon" }
+  adjective = "dangerous"
+  absorptionCap = 25
+  isAttackAttr = true
+  help = "Base damage value of melee attacks."
+}
+
+"SPELL_DAMAGE" {
+  name = "spell damage"
+  viewId = { "spell_damage_icon" }
+  adjective = "powerful"
+  absorptionCap = 20
+  isAttackAttr = true
+  meleeFX = {MAGIC_MISSILE_SPLASH}
+  help = "Base damage value of magic attacks."
+}
+
+"RANGED_DAMAGE" {
+  name = "ranged damage"
+  viewId = { "ranged_damage_icon" }
+  adjective = "accurate"
+  absorptionCap = 15
+  isAttackAttr = true
+  help = "Base damage value of ranged attacks."
+}
+
+"DEFENSE" {
+  name = "defense"
+  viewId = { "defense_icon" }
+  adjective = "protected"
+  absorptionCap = 25
+  help = "Affects if and how much damage is taken in combat."
+}
+
+"PARRY" {
+  name = "parry"
+  viewId = { "parry_icon" }
+  adjective = "evasive"
+  absorptionCap = 3
+  modifierVariation = 0
+  wishedItemIncrease = 2
+  help = "Prevents defense penalty from multiple attacks in the same turn."
+}
+
+"DIGGING" {
+  name = "digging"
+  viewId = { "digging_icon" }
+  adjective = "burrowing"
+  absorptionCap = 25
+  modifierVariation = 5
+  wishedItemIncrease = 5
+  help = "Allows digging into the ground."
+}
+
+"MULTI_WEAPON" {
+  name = "multi-weapon skill"
+  viewId = { "multi_weapon_icon" }
+  adjective = "ambidextrous"
+  absorptionCap = 25
+  help = "Allows using multiple weapons in a single attack. The attribute value defines the damage multiplier for subsequent attacks."
+}
+
+"FURNACE" {
+  name = "furnace"
+  viewId = { "furnace_icon" }
+  adjective = "charred"
+  absorptionCap = 25
+  help = "Defines the creature's skill at working at the furnace."
+}
+
+"WORKSHOP" {
+  name = "workshop"
+  viewId = { "workshop" }
+  adjective = "inventive"
+  absorptionCap = 25
+  help = "Defines the creature's skill at working at the workshop."
+}
+
+"FORGE" {
+  name = "forge"
+  viewId = { "forge" }
+  adjective = "metallic"
+  absorptionCap = 25
+  help = "Defines the creature's skill at working at the forge."
+}
+
+"LABORATORY" {
+  name = "laboratory"
+  viewId = { "cauldron" }
+  adjective = "chemically active"
+  absorptionCap = 25
+  help = "Defines the creature's skill at working at the laboratory."
+}
+
+"JEWELER" {
+  name = "jeweler"
+  viewId = { "jeweller" }
+  adjective = "golden"
+  absorptionCap = 25
+  help = "Defines the creature's skill at working at the jeweler."
+}
+
+"MORGUE" {
+  name = "morgue"
+  viewId = { "morgue_table" }
+  adjective = "rotten"
+  absorptionCap = 25
+  help = "Defines the creature's skill at working at the morgue table."
+}
