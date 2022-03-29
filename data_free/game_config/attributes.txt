@@ -47,7 +47,7 @@
 
 "DIGGING" {
   name = "digging"
-  viewId = { "digging_icon" }
+  viewId = { "dig_icon" }
   adjective = "burrowing"
   absorptionCap = 25
   modifierVariation = 5
@@ -65,7 +65,7 @@
 
 "FURNACE" {
   name = "furnace"
-  viewId = { "furnace_icon" }
+  viewId = { "furnace" }
   adjective = "charred"
   absorptionCap = 25
   help = "Defines the creature's skill at working at the furnace."

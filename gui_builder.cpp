@@ -1012,7 +1012,8 @@ vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<AttributeInfo>& a
               WL(viewObject, elem.viewId),
               WL(margins, WL(label, attrText), 0, 2, 0, 0)), 30));
     };
-    ret.push_back(cache->get(getValue, THIS_LINE, elem));
+    if (elem.value != 0 || elem.bonus != 0)
+      ret.push_back(cache->get(getValue, THIS_LINE, elem));
   }
   return ret;
 }
@@ -1020,10 +1021,11 @@ vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const vector<AttributeInfo>& a
 vector<SGuiElem> GuiBuilder::drawPlayerAttributes(const ViewObject::CreatureAttributes& attributes) {
   vector<SGuiElem> ret;
   for (auto& attr : attributes)
-    ret.push_back(
-        WL(horizontalList, makeVec(
-          WL(viewObject, attr.first),
-          WL(margins, WL(label, toString((int) attr.second)), 0, 2, 0, 0)), 30));
+    if (attr.second > 0)
+      ret.push_back(
+          WL(horizontalList, makeVec(
+            WL(viewObject, attr.first),
+            WL(margins, WL(label, toString((int) attr.second)), 0, 2, 0, 0)), 30));
   return ret;
 }
 
