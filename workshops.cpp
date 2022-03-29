@@ -75,16 +75,16 @@ vector<PItem> Workshops::Type::unqueue(Collective* collective, int index) {
 
 static const double prodMult = 0.15;
 
-double Workshops::getLegendarySkillThreshold() {
-  return 0.90;
+int Workshops::getLegendarySkillThreshold() {
+  return 45;
 }
 
-static bool allowUpgrades(const WorkshopQueuedItem& item, double skillAmount, double morale) {
+static bool allowUpgrades(const WorkshopQueuedItem& item, int skillAmount, double morale) {
   return item.runes.empty() || item.item.notArtifact ||
-      (skillAmount >= Workshops::getLegendarySkillThreshold() - 0.01 && morale >= 0);
+      (skillAmount >= Workshops::getLegendarySkillThreshold() && morale >= 0);
 }
 
-bool Workshops::Type::isIdle(const Collective* collective, double skillAmount, double morale) const {
+bool Workshops::Type::isIdle(const Collective* collective, int skillAmount, double morale) const {
   for (auto& product : queued)
     if ((product.paid || collective->hasResource(product.item.cost)) && allowUpgrades(product, skillAmount, morale))
       return false;
@@ -104,7 +104,7 @@ PItem Workshops::Type::removeUpgrade(int itemIndex, int runeIndex) {
   return ret;
 }
 
-auto Workshops::Type::addWork(Collective* collective, double amount, double skillAmount, double morale) -> WorkshopResult {
+auto Workshops::Type::addWork(Collective* collective, double amount, int skillAmount, double morale) -> WorkshopResult {
   for (int productIndex : All(queued)) {
     auto& product = queued[productIndex];
     if ((product.paid || collective->hasResource(product.item.cost)) && allowUpgrades(product, skillAmount, morale)) {

@@ -71,7 +71,7 @@ void CreatureAttributes::serializeImpl(Archive& ar, const unsigned int version) 
   ar(NAMED(chatReactionHostile), NAMED(passiveAttack), OPTION(gender), OPTION(viewIdUpgrades), OPTION(promotionCost));
   ar(NAMED(body), OPTION(deathDescription), NAMED(hatedByEffect), OPTION(instantPrisoner));
   ar(OPTION(cantEquip), OPTION(aiType), OPTION(canJoinCollective), OPTION(genderAlternatives), NAMED(promotionGroup));
-  ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(skills), OPTION(spellSchools), OPTION(spells));
+  ar(OPTION(boulder), OPTION(noChase), OPTION(isSpecial), OPTION(spellSchools), OPTION(spells));
   ar(OPTION(permanentEffects), OPTION(lastingEffects), OPTION(minionActivities), OPTION(expLevel), OPTION(inventory));
   ar(OPTION(noAttackSound), OPTION(maxLevelIncrease), NAMED(creatureId), NAMED(petReaction), OPTION(combatExperience));
   ar(OPTION(automatonParts), OPTION(specialAttr), NAMED(deathEffect), NAMED(chatEffect), OPTION(companions));
@@ -321,17 +321,6 @@ void consumeAttr(heap_optional<T>& mine, const heap_optional<T>& his, vector<str
   }
 }
 
-void consumeAttr(Skillset& mine, const Skillset& his, vector<string>& adjectives) {
-  bool was = false;
-  for (auto& elem : his.getWorkshopValues())
-    if (mine.getValue(elem.first) < elem.second) {
-      mine.setValue(elem.first, elem.second);
-      was = true;
-    }
-  if (was)
-    adjectives.push_back("more skillfull");
-}
-
 void CreatureAttributes::consumeEffects(Creature* self, const EnumMap<LastingEffect, int>& permanentEffects) {
   for (LastingEffect effect : ENUM_ALL(LastingEffect))
     if (permanentEffects[effect] > 0 && !isAffectedPermanently(effect) && consumeProb() &&
@@ -352,7 +341,6 @@ void CreatureAttributes::consume(Creature* self, CreatureAttributes& other) {
       "more " + t.second.adjective, t.second.absorptionCap);
   consumeAttr(passiveAttack, other.passiveAttack, adjectives, "");
   consumeAttr(gender, other.gender, adjectives);
-  consumeAttr(skills, other.skills, adjectives);
   if (!adjectives.empty()) {
     self->you(MsgType::BECOME, combine(adjectives));
     self->addPersonalEvent(getName().the() + " becomes " + combine(adjectives));
@@ -366,14 +354,6 @@ string CreatureAttributes::getRemainingString(LastingEffect effect, GlobalTime t
 
 bool CreatureAttributes::isBoulder() const {
   return boulder;
-}
-
-Skillset& CreatureAttributes::getSkills() {
-  return skills;
-}
-
-const Skillset& CreatureAttributes::getSkills() const {
-  return skills;
 }
 
 ViewObject CreatureAttributes::createViewObject() const {

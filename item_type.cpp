@@ -15,7 +15,6 @@
 #include "monster_ai.h"
 #include "view_id.h"
 #include "item_attributes.h"
-#include "skill.h"
 #include "lasting_effect.h"
 #include "name_generator.h"
 #include "furniture_type.h"

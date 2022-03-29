@@ -26,10 +26,7 @@
       DAMAGE 12
       DEFENSE 12
       SPELL_DAMAGE 20
-    }
-    # skill.h
-    skills = {
-      "LABORATORY" 0.2
+      LABORATORY 10
     }
     # lasting_effect.h
     permanentEffects = {
@@ -70,9 +67,9 @@
     maxLevelIncrease = {
       SPELL 12
     }
-    skills = {
-      "MORGUE" 1.0
-      "LABORATORY" 1.0
+    attr = append {
+      MORGUE 50
+      LABORATORY 50
     }
     permanentEffects = append {
       SUNLIGHT_VULNERABLE 1
@@ -95,6 +92,7 @@
       DEFENSE 16
       MULTI_WEAPON 40
       FURNACE 15
+      FORGE 10
     }
     body = {
       type = Humanoid LARGE
@@ -105,9 +103,6 @@
       fullTitle = true
     }
     viewIdUpgrades = { { "keeper_knight2" } { "keeper_knight3" } { "keeper_knight4" }}
-    skills = {
-      "FORGE" 0.2
-    }
     permanentEffects = {
       RIDER 1
     }
@@ -142,6 +137,7 @@
       DEFENSE 16
       MULTI_WEAPON 40
       FURNACE 5
+      FORGE 10
     }
     body = {
       type = Humanoid LARGE
@@ -152,9 +148,6 @@
       fullTitle = true
     }
     viewIdUpgrades = { { "duke2" } { "duke3" } { "duke4" }}
-    skills = {
-      "FORGE" 0.2
-    }
     permanentEffects = {
       RIDER 1
     }
@@ -656,7 +649,8 @@
     attr = {
       DAMAGE 14
       DEFENSE 14
-      SPELL_DAMAGE 20 
+      SPELL_DAMAGE 20
+      LABORATORY 35
     }
     body = {
       type = Humanoid MEDIUM
@@ -671,9 +665,6 @@
     gender = FEMALE
     chatReactionFriendly = "curses all humans"
     chatReactionHostile = "\"Die!\""
-    skills = {
-      "LABORATORY" 0.7
-    }
     maxLevelIncrease = {
       SPELL 4
     }
@@ -776,17 +767,15 @@
       DEFENSE 28
       DIGGING 20
       FURNACE 25
+      WORKSHOP 15
+      FORGE 15
+      LABORATORY 15
+      JEWELER 15
     }
     body = {
       type = Humanoid LARGE
       weight = 400
       droppedPartUpgrade = IncreaseAttr DEFENSE 5
-    }
-    skills = {
-      "WORKSHOP" 0.2
-      "FORGE" 0.2
-      "LABORATORY" 0.2
-      "JEWELER" 0.2
     }
     name = {
       name = "cyclops"
@@ -1440,6 +1429,8 @@
       DAMAGE 16
       DEFENSE 14 
       FURNACE 10
+      WORKSHOP 5
+      FORGE 5
     }
     body = {
       type = Humanoid LARGE
@@ -1449,10 +1440,6 @@
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
-    skills = {
-      "WORKSHOP" 0.3
-      "FORGE" 0.3
-    }
     permanentEffects = {
       RIDER 1
     }
@@ -1546,8 +1533,8 @@
     permanentEffects = append {
       DISTILLATION_SKILL 1
     }
-    skills = {
-      "LABORATORY" 0.4
+    attr = append {
+      LABORATORY 20
     }
     name = {
       name = "cleric"
@@ -1561,17 +1548,15 @@
       DAMAGE 10
       DEFENSE 10 
       FURNACE 25
+      WORKSHOP 30
+      FORGE 30
+      JEWELER 30
     }
     body = {
       type = Humanoid MEDIUM
     }
     chatReactionFriendly = "talks about crafting"
     chatReactionHostile = "\"Die!\""
-    skills = {
-      "WORKSHOP" 0.6
-      "FORGE" 0.6
-      "JEWELER" 0.6
-    }
     aiType = RANGED
     name = {
       name = "artisan"
@@ -1580,10 +1565,10 @@
   }
 "ARTISAN_LEGEN" inherit "ARTISAN"
   {
-    skills = {
-      "WORKSHOP" 1.0
-      "FORGE" 1.0
-      "JEWELER" 1.0
+    attr = append {
+      WORKSHOP 50
+      FORGE 50
+      JEWELER 50
     }
     name = {
       name = "master artisan"
@@ -1858,15 +1843,13 @@
     attr = {
       DAMAGE 27
       DEFENSE 19 
+      WORKSHOP 15
     }
     body = {
       type = Humanoid LARGE
     }
     maxLevelIncrease = {
       MELEE 5
-    }
-    skills = {
-      "WORKSHOP" 0.3
     }
     chatReactionFriendly = "curses all dungeons"
     chatReactionHostile = "\"Die!\""
@@ -2592,15 +2575,13 @@
       DAMAGE 13
       DEFENSE 16
       RANGED_DAMAGE 15 
+      LABORATORY 15
     }
     body = {
       type = Humanoid LARGE
       addBodyPart = {
         WING 2
       }
-    }
-    skills = {
-      "LABORATORY" 0.3
     }
     aiType = RANGED
     gender = FEMALE
@@ -2650,14 +2631,12 @@
       DEFENSE 13
       DIGGING 10 
       FURNACE 10
+      WORKSHOP 25
+      FORGE 25
+      LABORATORY 25
     }
     body = {
       type = Humanoid MEDIUM
-    }
-    skills = {
-      "WORKSHOP" 0.5
-      "FORGE" 0.5
-      "LABORATORY" 0.5
     }
     aiType = RANGED
     permanentEffects = {
@@ -2676,14 +2655,12 @@
     attr = {
       DAMAGE 15
       DEFENSE 16 
+      JEWELER 50
     }
     body = {
       type = Humanoid MEDIUM
     }
     aiType = RANGED
-    skills = {
-      "JEWELER" 1
-    }
     chatReactionFriendly = "talks about digging"
     chatReactionHostile = "\"Die!\""
     name = {
@@ -2700,6 +2677,10 @@
       DAMAGE 12
       DEFENSE 13 
       FURNACE 25
+      LABORATORY 15
+      WORKSHOP 30
+      FORGE 30
+      JEWELER 30
     }
     body = {
       type = Humanoid MEDIUM
@@ -2710,12 +2691,6 @@
       DISARM_TRAPS_SKILL 1
     }
     aiType = RANGED
-    skills = {
-      "LABORATORY" 0.3
-      "WORKSHOP" 0.6
-      "FORGE" 0.6
-      "JEWELER" 0.6
-    }
     name = {
       name = "goblin artificer"
       firstNameGen = "ORC"
@@ -2778,6 +2753,7 @@
       DAMAGE 21
       DEFENSE 25 
       DIGGING 30
+      FORGE 20
       FURNACE 15
     }
     specialAttr = {
@@ -2791,9 +2767,6 @@
       name = "dwarf"
       pluralName = "dwarves"
       firstNameGen = "DWARF"
-    }
-    skills = {
-      "FORGE" 0.4
     }
     maxLevelIncrease = {
       MELEE 2
@@ -2819,11 +2792,11 @@
     name = append {
       fullTitle = true
     }
-    skills = {
-      "WORKSHOP" 0.2
-      "FORGE" 0.2
-      "LABORATORY" 0.2
-      "JEWELER" 0.2
+    attr = append {
+      WORKSHOP 10
+      FORGE 10
+      LABORATORY 10
+      JEWELER 10
     }
     permanentEffects = {
       DISTILLATION_SKILL 1
@@ -2862,6 +2835,7 @@
       DAMAGE 21
       DEFENSE 25 
       DIGGING 25
+      WORKSHOP 25
     }
     specialAttr = {
       DEFENSE { -7 Name "when outdoors" Not Indoors }
@@ -2875,9 +2849,6 @@
       name = "dwarf"
       pluralName = "dwarves"
       firstNameGen = "DWARF"
-    }
-    skills = {
-      "WORKSHOP" 0.5
     }
     permanentEffects = {
       MAGIC_VULNERABILITY 1
@@ -2923,12 +2894,10 @@
     name = append {
       name = "dwarf blacksmith"
     }
-    attr = append {
-      FURNACE 40    
-    }
     aiType = RANGED
-    skills = {
-      "FORGE" 1.0
+    attr = append {
+      FORGE 50
+      FURNACE 40    
     }
     inventory = {}
   }
@@ -2999,6 +2968,7 @@
     attr = {
       DAMAGE 14
       DEFENSE 6 
+      JEWELER 48
     }
     body = {
       type = Humanoid MEDIUM
@@ -3006,9 +2976,6 @@
     chatReactionFriendly = "curses all dwarves"
     chatReactionHostile = "\"Die!\""
     spells = { "healing" }
-    skills = {
-      "JEWELER" 0.9
-    }
     aiType = RANGED
     maxLevelIncrease = {
       SPELL 1
@@ -3938,13 +3905,11 @@
       DAMAGE 15
       DEFENSE 20
       SPELL_DAMAGE 25 
+      LABORATORY 50
     }
     body = {
       type = Humanoid LARGE
       droppedPartUpgrade = { IncreaseAttr DEFENSE 3 Permanent FIRE_RESISTANT }
-    }
-    skills = {
-      "LABORATORY" 1
     }
     maxLevelIncrease = {
       SPELL 9
@@ -4396,14 +4361,12 @@
       DAMAGE 12
       DEFENSE 50
       SPELL_DAMAGE 50
+      LABORATORY 50
     }
     permanentEffects = {
       NO_FRIENDLY_FIRE 1
     }
     aiType = RANGED
-    skills = {
-      "LABORATORY" 1.0
-    }
     maxLevelIncrease = {
       MELEE 2
       SPELL 4
@@ -4547,6 +4510,8 @@ End
       DAMAGE 16
       DEFENSE 15
       FURNACE 5
+      WORKSHOP 15
+      FORGE 15
     }
     body = {
       type = Humanoid MEDIUM
@@ -4556,10 +4521,6 @@ End
     name = {
       name = "goblin warrior"
       firstNameGen = "ORC"
-    }
-    skills = {
-      "WORKSHOP" 0.3
-      "FORGE" 0.3
     }
     permanentEffects = {
       RIDER 1
@@ -4616,12 +4577,10 @@ End
       DAMAGE 5
       DEFENSE 10
       SPELL_DAMAGE 16
+      LABORATORY 35
     }
     body = {
       type = Humanoid MEDIUM
-    }
-    skills = {
-      "LABORATORY" 0.7
     }
     chatReactionFriendly = "talks about black magic"
     chatReactionHostile = "\"Die!\""
@@ -4808,11 +4767,9 @@ End
       DAMAGE 10
       DEFENSE 10
       FURNACE 25
-    }
-    skills = {
-      "WORKSHOP" 0.6
-      "FORGE" 0.6
-      "JEWELER" 0.6
+      WORKSHOP 30
+      FORGE 30
+      JEWELER 30
     }
     maxLevelIncrease = {}
     name = {
@@ -4941,9 +4898,9 @@ End
   }
 "VAMPIRE_LORD_NECRO" inherit "VAMPIRE_LORD"
   {
-    skills = append {
-      "MORGUE" 0.5
-      "LABORATORY" 0.5
+    attr = append {
+      MORGUE 25
+      LABORATORY 25
     }
   }
 
@@ -4956,16 +4913,14 @@ End
       DAMAGE 16
       DEFENSE 14 
       FURNACE 5
+      WORKSHOP 15
+      FORGE 15
     }
     body = {
       type = Humanoid LARGE
     }
     chatReactionFriendly = "curses all elves"
     chatReactionHostile = "\"Die!\""
-    skills = {
-      "WORKSHOP" 0.3
-      "FORGE" 0.3
-    }
     maxLevelIncrease = {
       MELEE 7
     }
@@ -4986,12 +4941,10 @@ End
       DAMAGE 12
       DEFENSE 8
       SPELL_DAMAGE 16 
+      LABORATORY 25
     }
     body = {
       type = Humanoid LARGE
-    }
-    skills = {
-      "LABORATORY" 0.7
     }
     aiType = RANGED
     chatReactionFriendly = "curses all elves"
@@ -5054,6 +5007,8 @@ End
       DAMAGE 18
       DEFENSE 18 
       FURNACE 25
+      WORKSHOP 25
+      FORGE 25
     }
     body = {
       type = Humanoid LARGE
@@ -5065,10 +5020,6 @@ End
     }
     permanentEffects = {
       MAGIC_VULNERABILITY 1
-    }
-    skills = {
-      "WORKSHOP" 0.5
-      "FORGE" 0.5
     }
     maxLevelIncrease = {
       MELEE 12

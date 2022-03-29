@@ -730,7 +730,7 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
         }
         if (p.humanoid) {
           for (auto& elem : contentFactory->workshopInfo)
-            c.skills.setValue(elem.first, Random.getDouble(0, 1));
+            c.attr[elem.second.attr] = Random.get(0, 50);
           c.maxLevelIncrease[ExperienceType::MELEE] = 10;
           c.maxLevelIncrease[ExperienceType::SPELL] = 10;
           c.spellSchools = LIST(SpellSchoolId("mage"));
@@ -953,7 +953,7 @@ PCreature CreatureFactory::getHumanForTests() {
       c.viewIdUpgrades = LIST(ViewId("keeper2"), ViewId("keeper3"), ViewId("keeper4"));
       c.name.setFirst("keeper"_s);
       c.name.useFullTitle();
-      c.skills.setValue(WorkshopType("LABORATORY"), 0.2);
+      //c.skills.setValue(WorkshopType("LABORATORY"), 0.2);
       c.maxLevelIncrease[ExperienceType::MELEE] = 7;
       c.maxLevelIncrease[ExperienceType::SPELL] = 12;
       //c.spells->add(SpellId::HEAL_SELF);

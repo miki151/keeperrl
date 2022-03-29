@@ -22,6 +22,7 @@
 #include "collective.h"
 #include "equipment.h"
 #include "game.h"
+#include "content_factory.h"
 
 bool MinionActivityMap::isActivityAutoGroupLocked(MinionActivity activity) {
   switch (activity) {
@@ -94,7 +95,10 @@ bool MinionActivityMap::isAvailable(const Collective* col, const Creature* c, Mi
     case MinionActivity::BE_TORTURED:
       return col->hasTrait(c, MinionTrait::PRISONER);
     case MinionActivity::CRAFT:
-      return !c->getAttributes().getSkills().getWorkshopValues().empty();
+      for (auto& workshop : col->getGame()->getContentFactory()->workshopInfo)
+        if (c->getAttr(workshop.second.attr) > 0)
+          return true;
+      return false;
     case MinionActivity::SLEEP:
       return c->getBody().needsToSleep() && !c->isAffected(LastingEffect::POISON);
     case MinionActivity::EAT:

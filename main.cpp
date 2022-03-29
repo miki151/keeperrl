@@ -35,7 +35,6 @@
 #include "highscores.h"
 #include "main_loop.h"
 #include "clock.h"
-#include "skill.h"
 #include "parse_game.h"
 #include "vision.h"
 #include "model_builder.h"

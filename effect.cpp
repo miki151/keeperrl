@@ -469,29 +469,6 @@ static string getDescription(const Effects::IncreaseMaxLevel& e, const ContentFa
       toString(std::fabs(e.value));
 }
 
-static bool applyToCreature(const Effects::IncreaseWorkshopSkill& e, Creature* c, Creature*) {
-  c->you(MsgType::YOUR, c->getGame()->getContentFactory()->workshopInfo.at(e.workshoptype).name +
-      e.get(" proficiency improves", " proficiency wanes"));
-  c->getAttributes().getSkills().increaseValue(e.workshoptype, e.amount);
-  return true;
-}
-
-static string getName(const Effects::IncreaseWorkshopSkill& e, const ContentFactory* content_factory) {
-  return content_factory->workshopInfo.at(e.workshoptype).name + e.get(" proficency boost", " proficency loss");
-}
-
-static string getDescription(const Effects::IncreaseWorkshopSkill& e, const ContentFactory* content_factory) {
-  return e.get("Increases", "Decreases") + " "_s + content_factory->workshopInfo.at(e.workshoptype).name +
-      " proficiency by " + toString(fabs(e.amount));
-}
-
-const char* Effects::IncreaseWorkshopSkill::get(const char* ifIncrease, const char* ifDecrease) const {
-  if (amount > 0)
-    return ifIncrease;
-  else
-    return ifDecrease;
-}
-
 static bool applyToCreature(const Effects::AddCompanion& e, Creature* c, Creature*) {
   c->getAttributes().companions.push_back(e);
   return true;

@@ -7,10 +7,10 @@
 #include "item_type.h"
 #include "pretty_archive.h"
 #include "lasting_effect.h"
-#include "skill.h"
 #include "creature_predicate.h"
 #include "special_attr.h"
 #include "companion_info.h"
+#include "workshop_type.h"
 
 struct ExtraTraining {
   ExperienceType SERIAL(type);

@@ -38,7 +38,6 @@
 #include "quarters.h"
 #include "team_order.h"
 #include "lasting_effect.h"
-#include "skill.h"
 #include "player_role.h"
 #include "tribe_alignment.h"
 #include "avatar_menu_option.h"
@@ -1186,8 +1185,6 @@ SGuiElem GuiBuilder::drawImmigrantCreature(const ImmigrantCreatureInfo& creature
         .addElemAuto(WL(label, "Spell schools: ", Color::YELLOW))
         .addElemAuto(WL(label, combine(creature.spellSchools, true)))
         .buildHorizontalList());
-  for (auto& line : drawSkillsList(creature.skills))
-    lines.addElem(std::move(line));
   return lines.buildVerticalList();
 }
 
@@ -1421,18 +1418,6 @@ optional<ItemAction> GuiBuilder::getItemChoice(const ItemInfo& itemInfo, Vec2 me
   }
 }
 
-vector<SGuiElem> GuiBuilder::drawSkillsList(const vector<SkillInfo>& skills) {
-  vector<SGuiElem> lines;
-  if (!skills.empty()) {
-    lines.push_back(WL(label, "Skills", Color::YELLOW));
-    for (auto& elem : skills)
-      lines.push_back(WL(stack, getTooltip({elem.help}, THIS_LINE),
-            WL(label, capitalFirst(elem.name), Color::WHITE)));
-    lines.push_back(WL(empty));
-  }
-  return lines;
-}
-
 const Vec2 spellIconSize = Vec2(47, 47);
 
 SGuiElem GuiBuilder::getSpellIcon(const SpellInfo& spell, int index, bool active, GenericId creatureId) {
@@ -1621,8 +1606,6 @@ SGuiElem GuiBuilder::drawPlayerInventory(const PlayerInfo& info) {
   for (auto& elem : drawEffectsList(info))
     list.addElem(std::move(elem));
   list.addSpace();
-  for (auto& elem : drawSkillsList(info.skills))
-    list.addElem(std::move(elem));
   if (auto spells = drawSpellsList(info.spells, info.creatureId.getGenericId(), true)) {
     list.addElemAuto(std::move(spells));
     list.addSpace();
@@ -2453,8 +2436,6 @@ SGuiElem GuiBuilder::drawBestiaryPage(const PlayerInfo& minion) {
     leftLines.addElem(line.buildHorizontalList());
   }
   leftLines.addSpace();
-  for (auto& elem : drawSkillsList(minion.skills))
-    leftLines.addElem(std::move(elem));
   if (auto spells = drawSpellsList(minion.spells, minion.creatureId.getGenericId(), false))
     leftLines.addElemAuto(std::move(spells));
   int topMargin = list.getSize() + 20;
@@ -3443,13 +3424,16 @@ SGuiElem GuiBuilder::drawAIButton(const PlayerInfo& minion) {
 SGuiElem GuiBuilder::drawAttributesOnPage(vector<SGuiElem> attrs) {
   if (attrs.empty())
     return WL(empty);
-  vector<SGuiElem> lines[2];
-  for (int i : All(attrs))
-    lines[i % 2].push_back(std::move(attrs[i]));
-  int elemWidth = 100;
-  return WL(verticalList, makeVec(
-      WL(horizontalList, std::move(lines[0]), elemWidth),
-      WL(horizontalList, std::move(lines[1]), elemWidth)), legendLineHeight);
+  vector<vector<SGuiElem>> lines = {{}};
+  for (int i : All(attrs)) {
+    lines.back().push_back(std::move(attrs[i]));
+    if (lines.back().size() >= 3)
+      lines.emplace_back();
+  }
+  auto list = WL(getListBuilder, legendLineHeight);
+  for (auto& elem : lines)
+    list.addElem(WL(horizontalList, std::move(elem), 100));
+  return list.buildVerticalList();
 }
 
 SGuiElem GuiBuilder::drawEquipmentGroups(const PlayerInfo& minion) {
@@ -3719,8 +3703,6 @@ SGuiElem GuiBuilder::drawMinionPage(const PlayerInfo& minion, const vector<ViewI
   if (minion.canAssignQuarters)
     leftLines.addElem(drawQuartersButton(minion, allQuarters));
   leftLines.addSpace();
-  for (auto& elem : drawSkillsList(minion.skills))
-    leftLines.addElem(std::move(elem));
   if (auto spells = drawSpellsList(minion.spells, minion.creatureId.getGenericId(), false))
     leftLines.addElemAuto(std::move(spells));
   int topMargin = list.getSize() + 20;

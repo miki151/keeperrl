@@ -1418,7 +1418,8 @@ vector<CollectiveInfo::QueuedItemInfo> PlayerControl::getQueuedWorkshopItems() c
   vector<CollectiveInfo::QueuedItemInfo> ret;
   bool hasLegendarySkill = [&] {
     for (auto c : getCreatures())
-      if (c->getAttributes().getSkills().getValue(chosenWorkshop->type) >= Workshops::getLegendarySkillThreshold())
+      if (c->getAttr(getGame()->getContentFactory()->workshopInfo.at(chosenWorkshop->type).attr) >=
+           Workshops::getLegendarySkillThreshold())
         return true;
     return false;
   }();
@@ -1590,7 +1591,6 @@ vector<ImmigrantDataInfo> PlayerControl::getNecromancerImmigrationHelp() const {
   ret.back().creature = ImmigrantCreatureInfo {
     "Build a morgue table to craft undead.",
     {ViewId("morgue_table")},
-    {},
     {},
     {},
     {}

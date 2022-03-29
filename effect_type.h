@@ -140,12 +140,6 @@ struct IncreaseAttr {
   const char* get(const char* ifIncrease, const char* ifDecrease) const;
   SERIALIZE_ALL(attr, amount)
 };
-struct IncreaseWorkshopSkill {
-  WorkshopType SERIAL(workshoptype);
-  double SERIAL(amount);
-  const char* get(const char* ifIncrease, const char* ifDecrease) const;
-  SERIALIZE_ALL(workshoptype, amount)
-};
 struct InjureBodyPart {
   BodyPart SERIAL(part);
   SERIALIZE_ALL(part)
@@ -464,7 +458,7 @@ struct ApplyToSteed : GenericModifierEffect {
   X(Name, 62)\
   X(AI, 63)\
   X(ApplyToSteed, 64)\
-  X(IncreaseWorkshopSkill, 65)\
+  X(ItemPrefix, 65)\
   X(AddAutomatonPart, 66)\
   X(AddMinionTrait, 67)\
   X(RemoveMinionTrait, 68)\
@@ -493,8 +487,7 @@ struct ApplyToSteed : GenericModifierEffect {
   X(Price, 91)\
   X(IncreaseMaxLevel, 92)\
   X(EquipmentType, 93)\
-  X(AddSpellSchool, 94)\
-  X(ItemPrefix, 95)
+  X(AddSpellSchool, 94)
 
 #define VARIANT_TYPES_LIST EFFECT_TYPES_LIST
 #define VARIANT_NAME EffectType

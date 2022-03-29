@@ -3,7 +3,6 @@
 #include "creature.h"
 #include "spell.h"
 #include "creature_name.h"
-#include "skill.h"
 #include "view_id.h"
 #include "level.h"
 #include "position.h"
@@ -40,16 +39,6 @@ string PlayerInfo::getFirstName() const {
     return capitalFirst(name);
 }
 
-static vector<SkillInfo> getSkillNames(const Creature* c, const ContentFactory* factory) {
-  vector<SkillInfo> ret;
-  auto& skills = c->getAttributes().getSkills();
-  for (auto& elem : skills.getWorkshopValues())
-    if (elem.second > 0)
-      ret.push_back(SkillInfo{skills.getNameForCreature(factory, elem.first),
-          skills.getHelpText(factory, elem.first)});
-  return ret;
-}
-
 ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature* c, const ContentFactory* factory) {
   vector<ImmigrantCreatureInfo::TrainingInfo> limits;
   auto maxExp = c->getAttributes().getMaxExpLevel();
@@ -64,8 +53,7 @@ ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature* c, const ContentF
     c->getViewObject().getViewIdList(),
     AttributeInfo::fromCreature(factory, c),
     c->getAttributes().getSpellSchools().transform([](auto id) -> string { return id.data(); }),
-    std::move(limits),
-    getSkillNames(c, factory)
+    std::move(limits)
   };
 }
 
@@ -190,7 +178,6 @@ PlayerInfo::PlayerInfo(const Creature* c, const ContentFactory* contentFactory)
   for (auto& id : c->getAttributes().getSpellSchools())
     spellSchools.push_back(fillSpellSchool(c, id, contentFactory));
   intrinsicAttacks = fillIntrinsicAttacks(c, contentFactory);
-  skills = getSkillNames(c, contentFactory);
   kills = c->getKills().transform([&](auto& info){ return info.viewId; });
   killTitles = c->getKillTitles();
   aiType = c->getAttributes().getAIType();

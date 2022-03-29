@@ -109,12 +109,6 @@ struct SpellSchoolInfo {
   HASH_ALL(name, experienceType, spells)
 };
 
-struct SkillInfo {
-  string HASH(name);
-  string HASH(help);
-  HASH_ALL(name, help)
-};
-
 class PlayerInfo {
   public:
   PlayerInfo(const Creature*, const ContentFactory*);
@@ -122,7 +116,6 @@ class PlayerInfo {
   vector<AttributeInfo> HASH(attributes);
   optional<AvatarLevelInfo> HASH(avatarLevelInfo);
   BestAttack HASH(bestAttack);
-  vector<SkillInfo> HASH(skills);
   string HASH(firstName);
   string HASH(name);
   string HASH(groupName);
@@ -198,7 +191,7 @@ class PlayerInfo {
     HASH_ALL(viewId, name, locked);
   };
   vector<EquipmentGroupInfo> HASH(equipmentGroups);
-  HASH_ALL(attributes, skills, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles, canExitControlMode, equipmentGroups)
+  HASH_ALL(attributes, firstName, name, groupName, title, experienceInfo, positionHash, effects, spells, lyingItems, inventory, minionTasks, aiType, creatureId, morale, viewId, actions, commands, debt, bestAttack, carryLimit, intrinsicAttacks, teamInfos, moveCounter, isPlayerControlled, controlMode, teamMemberActions, quarters, canAssignQuarters, teamOrders, avatarLevelInfo, spellSchools, kills, killTitles, canExitControlMode, equipmentGroups)
 };
 
 struct ImmigrantCreatureInfo {
@@ -213,8 +206,7 @@ struct ImmigrantCreatureInfo {
     HASH_ALL(expType, limit, attributes)
   };
   vector<TrainingInfo> HASH(trainingLimits);
-  vector<SkillInfo> HASH(skills);
-  HASH_ALL(name, viewId, attributes, spellSchools, trainingLimits, skills);
+  HASH_ALL(name, viewId, attributes, spellSchools, trainingLimits);
 };
 
 ImmigrantCreatureInfo getImmigrantCreatureInfo(const Creature*, const ContentFactory*);

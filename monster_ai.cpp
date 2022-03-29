@@ -26,7 +26,6 @@
 #include "equipment.h"
 #include "spell.h"
 #include "creature_name.h"
-#include "skill.h"
 #include "task.h"
 #include "game.h"
 #include "creature_attributes.h"

@@ -357,7 +357,7 @@ End
   unique = {
     {Scroll Name "blacksmithing mastery" Price 800 
       Description "Contains secrets of legendary blacksmithing knowledge"
-      IncreaseWorkshopSkill "FORGE" 1} {1}
+      IncreaseAttr "FORGE" 50} {1}
   }
 }
 

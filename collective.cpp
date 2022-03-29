@@ -1488,8 +1488,9 @@ void Collective::onAppliedSquare(Creature* c, pair<Position, FurnitureLayer> pos
     }
     if (auto workshopType = contentFactory->getWorkshopType(furniture->getType()))
       if (auto workshop = getReferenceMaybe(workshops->types, *workshopType)) {
-        auto craftingSkill = c->getAttributes().getSkills().getValue(*workshopType);
-        auto result = workshop->addWork(this, efficiency * craftingSkill * LastingEffects::getCraftingSpeed(c),
+        auto craftingSkill = c->getAttr(contentFactory->workshopInfo.at(*workshopType).attr);
+        auto result = workshop->addWork(this, efficiency * double(craftingSkill) * 0.02 
+            * LastingEffects::getCraftingSpeed(c),
             craftingSkill, c->getMorale().value_or(0));
         if (result.item) {
           if (result.item->getClass() == ItemClass::WEAPON)

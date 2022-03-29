@@ -319,7 +319,7 @@ const MinionActivityInfo& CollectiveConfig::getActivityInfo(MinionActivity task)
             if (auto type = f->getWorkshopType(t)) {
               if (!c || !col)
                 return true;
-              auto skill = c->getAttributes().getSkills().getValue(*type);
+              auto skill = c->getAttr(f->workshopInfo.at(*type).attr);
               auto workshop = getReferenceMaybe(col->getWorkshops().types, *type);
               return skill > 0 && !!workshop && !workshop->isIdle(col, skill, c->getMorale().value_or(0));
             } else

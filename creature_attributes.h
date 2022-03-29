@@ -19,7 +19,6 @@
 #include <functional>
 
 #include "util.h"
-#include "skill.h"
 #include "gender.h"
 #include "creature_name.h"
 #include "minion_activity_map.h"
@@ -90,8 +89,6 @@ class CreatureAttributes {
   void addSpellSchool(SpellSchoolId);
   optional<SoundId> getAttackSound(AttackType, bool damage) const;
   bool isBoulder() const;
-  Skillset& getSkills();
-  const Skillset& getSkills() const;
   ViewObject createViewObject() const;
   const heap_optional<ViewObject>& getIllusionViewObject() const;
   heap_optional<ViewObject>& getIllusionViewObject();
@@ -157,7 +154,6 @@ class CreatureAttributes {
   bool SERIAL(boulder) = false;
   bool SERIAL(noChase) = false;
   bool SERIAL(isSpecial) = false;
-  Skillset SERIAL(skills);
   vector<SpellSchoolId> SERIAL(spellSchools);
   vector<SpellId> SERIAL(spells);
   EnumMap<LastingEffect, int> SERIAL(permanentEffects);

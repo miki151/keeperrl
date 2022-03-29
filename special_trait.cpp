@@ -2,10 +2,10 @@
 #include "special_trait.h"
 #include "creature.h"
 #include "creature_attributes.h"
-#include "skill.h"
 #include "body.h"
 #include "workshops.h"
 #include "intrinsic_attack.h"
+#include "content_factory.h"
 
 optional<string> getExtraBodyPartPrefix(const ExtraBodyPart& part) {
   switch (part.part) {
@@ -51,7 +51,7 @@ void applySpecialTrait(GlobalTime globalTime, SpecialTrait trait, Creature* c, c
         c->getBody().addIntrinsicAttack(a.part, std::move(attack));
       },
       [&] (WorkshopType type) {
-        c->getAttributes().getSkills().setValue(type, Workshops::getLegendarySkillThreshold());
+        c->getAttributes().setBaseAttr(factory->workshopInfo.at(type).attr, Workshops::getLegendarySkillThreshold());
       },
       [&] (CompanionInfo type) {
         c->getAttributes().companions.push_back(type);

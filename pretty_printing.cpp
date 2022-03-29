@@ -22,7 +22,6 @@
 #include "immigrant_info.h"
 #include "technology.h"
 #include "tribe_alignment.h"
-#include "skill.h"
 #include "creature_attributes.h"
 #include "spell_map.h"
 #include "view_object.h"

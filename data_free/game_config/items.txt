@@ -109,12 +109,12 @@
     weight = 6
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
       Name "crafting arms"
-      Description "Increases all crafting skills by 20."
+      Description "Increases all crafting attributes by 10."
       {
-        IncreaseWorkshopSkill "WORKSHOP" 0.2
-        IncreaseWorkshopSkill "FORGE" 0.2
-        IncreaseWorkshopSkill "LABORATORY" 0.2
-        IncreaseWorkshopSkill "JEWELER" 0.2
+        IncreaseAttr "WORKSHOP" 10
+        IncreaseAttr "FORGE" 10
+        IncreaseAttr "LABORATORY" 10
+        IncreaseAttr "JEWELER" 10
         AddAutomatonPart 1 "crafting" { "installed_crafting" Rgb 180 140 55 255 }
       }
     upgradeType = {ARMOR}
@@ -259,12 +259,12 @@
     craftingCost = "IRON" 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
       Name "iron crafting arms"
-      Description "Increases all crafting skills by 30."
+      Description "Increases all crafting attributes by 15."
       {
-        IncreaseWorkshopSkill "WORKSHOP" 0.3
-        IncreaseWorkshopSkill "FORGE" 0.3
-        IncreaseWorkshopSkill "LABORATORY" 0.3
-        IncreaseWorkshopSkill "JEWELER" 0.3
+        IncreaseAttr "WORKSHOP" 15
+        IncreaseAttr "FORGE" 15
+        IncreaseAttr "LABORATORY" 15
+        IncreaseAttr "JEWELER" 15
         AddAutomatonPart 1 "crafting" { "installed_crafting" Rgb 140 148 148 255 }
       }
     storageIds = {"automaton_parts" "equipment"}
@@ -424,12 +424,12 @@
     craftingCost = "ADA" 5
     upgradeInfo = AUTOMATONS_UPPER AssembledCreatureEffect
       Name "adamantine crafting arms"
-      Description "Increases all crafting skills by 50."
+      Description "Increases all crafting attributes by 25."
       {
-        IncreaseWorkshopSkill "WORKSHOP" 0.5
-        IncreaseWorkshopSkill "FORGE" 0.5
-        IncreaseWorkshopSkill "LABORATORY" 0.5
-        IncreaseWorkshopSkill "JEWELER" 0.5
+        IncreaseAttr "WORKSHOP" 25
+        IncreaseAttr "FORGE" 25
+        IncreaseAttr "LABORATORY" 25
+        IncreaseAttr "JEWELER" 25
         AddAutomatonPart 1 "crafting" { "installed_crafting" Rgb 148 189 189 255 }
       }
     storageIds = {"automaton_parts" "equipment"}
