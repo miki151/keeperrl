@@ -8,13 +8,15 @@
 #include "special_attr.h"
 #include "attr_type.h"
 
+class ItemPrefix;
+
+namespace ItemPrefixes {
+
 struct ItemAttrBonus {
   AttrType SERIAL(attr);
   int SERIAL(value);
   COMPARE_ALL(attr, value)
 };
-
-class ItemPrefix;
 
 struct JoinPrefixes {
   vector<ItemPrefix> SERIAL(prefixes);
@@ -33,6 +35,7 @@ struct AttackerEffect {
 };
 
 using AssembledCreatureEffect = Effect;
+using LastingEffect = LastingOrBuff;
 
 #define VARIANT_TYPES_LIST\
   X(LastingEffect, 0)\
@@ -53,6 +56,13 @@ inline
 
 #undef VARIANT_TYPES_LIST
 #undef VARIANT_NAME
+
+}
+
+class ItemPrefix : public ItemPrefixes::ItemPrefix {
+  public:
+  using ItemPrefixes::ItemPrefix::ItemPrefix;
+};
 
 class ItemAttributes;
 extern void applyPrefix(const ContentFactory*, const ItemPrefix&, ItemAttributes&);

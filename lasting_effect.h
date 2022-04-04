@@ -113,6 +113,8 @@ class LastingEffects {
   static bool tick(Creature*, LastingEffect);
   static optional<string> getGoodAdjective(LastingEffect);
   static optional<string> getBadAdjective(LastingEffect);
+  static bool isConsideredBad(LastingEffect);
+  static string getAdjective(LastingEffect);
   static double modifyCreatureDefense(const Creature*, LastingEffect, double damage, AttrType damageAttr);
   static void onAllyKilled(Creature*);
   static string getName(LastingEffect);

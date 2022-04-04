@@ -24,11 +24,12 @@
 #include "layout_generator.h"
 #include "tile_gas_info.h"
 #include "promotion_info.h"
+#include "buff_info.h"
 
 template <class Archive>
 void ContentFactory::serialize(Archive& ar, const unsigned int) {
   ar(creatures, furniture, resources, zLevels, tilePaths, enemies, externalEnemies, itemFactory, workshopGroups);
-  ar(immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items);
+  ar(immigrantsData, buildInfo, villains, gameIntros, adventurerCreatures, keeperCreatures, technology, items, buffs);
   ar(buildingInfo, mapLayouts, biomeInfo, campaignInfo, workshopInfo, resourceInfo, resourceOrder, layoutMapping);
   ar(randomLayouts, tileGasTypes, promotions, dancePositions, equipmentGroups, scriptedHelp, attrInfo, attrOrder);
   creatures.setContentFactory(this);
@@ -455,6 +456,10 @@ optional<string> ContentFactory::readData(const GameConfig* config, const vector
     attrOrder.push_back(elem.first);
     attrInfo.insert(std::move(elem));
   }
+  map<PrimaryId<BuffId>, BuffInfo> buffsTmp;
+  if (auto error = config->readObject(buffsTmp, GameConfigId::BUFFS, &keyVerifier))
+    return *error;
+  buffs = convertKeysHash(buffsTmp);
   if (auto error = config->readObject(promotions, GameConfigId::PROMOTIONS, &keyVerifier))
     return *error;
   if (auto error = config->readObject(dancePositions, GameConfigId::DANCE_POSITIONS, &keyVerifier))

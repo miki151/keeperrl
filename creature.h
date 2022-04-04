@@ -32,6 +32,7 @@
 #include "view_id.h"
 #include "furniture_type.h"
 #include "attr_type.h"
+#include "buff_id.h"
 
 class Level;
 class Tribe;
@@ -287,6 +288,14 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool isAffected(LastingEffect, GlobalTime) const;
   bool isAffected(LastingEffect) const;
   optional<TimeInterval> getTimeRemaining(LastingEffect) const;
+  
+  bool addEffect(BuffId, TimeInterval time, bool msg = true);
+  bool addEffect(BuffId, TimeInterval time, GlobalTime, const ContentFactory*, bool msg = true);
+  bool removeEffect(BuffId, bool msg = true);
+  bool addPermanentEffect(BuffId, int count = 1, bool msg = true);
+  bool removePermanentEffect(BuffId, int count = 1, bool msg = true);
+  bool isAffected(BuffId) const;
+  bool isAffectedPermanently(BuffId) const;
 
   bool isUnknownAttacker(const Creature*) const;
   vector<AdjectiveInfo> getGoodAdjectives(const ContentFactory*) const;
@@ -422,6 +431,12 @@ class Creature : public Renderable, public UniqueEntity<Creature>, public OwnedO
   bool considerPhylacteryOrSavingLife(DropType, const Creature* attacker);
   vector<PromotionInfo> SERIAL(promotions);
   PCreature SERIAL(steed);
+  vector<pair<BuffId, GlobalTime>> SERIAL(buffs);
+  unordered_map<BuffId, int, CustomHash<BuffId>> SERIAL(buffCount);
+  unordered_map<BuffId, int, CustomHash<BuffId>> SERIAL(buffPermanentCount);
+  vector<AdjectiveInfo> getLastingEffectAdjectives(const ContentFactory*, bool bad) const;
+  bool removeBuff(int index, bool msg);
+  bool processBuffs();
 };
 
 struct AdjectiveInfo {

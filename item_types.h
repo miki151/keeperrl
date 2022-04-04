@@ -10,6 +10,7 @@
 #include "furniture_type.h"
 #include "creature_id.h"
 #include "minion_trait.h"
+#include "lasting_or_buff.h"
 
 #define ITEM_TYPE_INTERFACE\
   ItemAttributes getAttributes(const ContentFactory*) const
@@ -46,12 +47,12 @@ struct Mushroom {
   ITEM_TYPE_INTERFACE;
 };
 struct Amulet {
-  LastingEffect SERIAL(lastingEffect);
+  LastingOrBuff SERIAL(lastingEffect);
   SERIALIZE_ALL(lastingEffect)
   ITEM_TYPE_INTERFACE;
 };
 struct Ring {
-  LastingEffect SERIAL(lastingEffect);
+  LastingOrBuff SERIAL(lastingEffect);
   SERIALIZE_ALL(lastingEffect)
   ITEM_TYPE_INTERFACE;
 };

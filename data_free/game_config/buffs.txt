@@ -1,0 +1,21 @@
+"SUPER_BONUS" {
+  name = "super bonus"
+  adjective = "amazing"
+  description = "Super"
+  addedMessage = ARE "super"
+  removedMessage = ARE "no longer super"
+  startEffect = IncreaseAttr DAMAGE 30
+  endEffect = IncreaseAttr DAMAGE -30
+  tickEffect = Heal {FLESH 0.01}
+  color = ColorId RED
+}
+
+"HATE_KEEPERS" {
+  name = "hates keepers"
+  adjective = "hateful"
+  description = "Hates all keepers"
+  addedMessage = ARE "hateful"
+  removedMessage = ARE "no longer hateful"
+  color = ColorId RED
+  hatedGroupName = "keepers"
+}

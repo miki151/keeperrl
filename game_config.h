@@ -42,7 +42,8 @@ enum class GameConfigId {
   DANCE_POSITIONS,
   EQUIPMENT_GROUPS,
   HELP,
-  ATTR_INFO
+  ATTR_INFO,
+  BUFFS
 };
 
 class GameConfig {

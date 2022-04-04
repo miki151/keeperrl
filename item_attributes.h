@@ -34,6 +34,7 @@
 #include "companion_info.h"
 #include "storage_id.h"
 #include "cost_info.h"
+#include "lasting_or_buff.h"
 
 #define ITATTR(X) ItemAttributes([&](ItemAttributes& i) { X })
 
@@ -72,9 +73,9 @@ class ItemAttributes {
   bool SERIAL(usedUpMsg) = false;
   bool SERIAL(displayUses) = false;
   bool SERIAL(effectDescription) = true;
-  vector<LastingEffect> SERIAL(equipedEffect);
+  vector<LastingOrBuff> SERIAL(equipedEffect);
   optional<CompanionInfo> SERIAL(equipedCompanion);
-  optional<LastingEffect> SERIAL(ownedEffect);
+  optional<LastingOrBuff> SERIAL(ownedEffect);
   optional<string> SERIAL(applyMsgFirstPerson);
   optional<string> SERIAL(applyMsgThirdPerson);
   pair<string, string> SERIAL(applyVerb) = {"apply", "applies"};

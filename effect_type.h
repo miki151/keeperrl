@@ -22,6 +22,7 @@
 #include "tile_gas_type.h"
 #include "spell_school_id.h"
 #include "automaton_part.h"
+#include "lasting_or_buff.h"
 
 #define SIMPLE_EFFECT(Name) \
   struct Name { \
@@ -102,21 +103,21 @@ struct Alarm {
 
 struct Lasting {
   optional<TimeInterval> SERIAL(duration);
-  LastingEffect SERIAL(lastingEffect);
+  LastingOrBuff SERIAL(lastingEffect);
   SERIALIZE_ALL(duration, lastingEffect)
   void serialize(PrettyInputArchive& ar1, const unsigned int);
 };
 
 struct RemoveLasting {
-  LastingEffect SERIAL(lastingEffect);
+  LastingOrBuff SERIAL(lastingEffect);
   SERIALIZE_ALL(lastingEffect)
 };
 struct Permanent {
-  LastingEffect SERIAL(lastingEffect);
+  LastingOrBuff SERIAL(lastingEffect);
   SERIALIZE_ALL(lastingEffect)
 };
 struct RemovePermanent {
-  LastingEffect SERIAL(lastingEffect);
+  LastingOrBuff SERIAL(lastingEffect);
   SERIALIZE_ALL(lastingEffect)
 };
 struct PlaceFurniture {

@@ -53,6 +53,7 @@
 #include "promotion_info.h"
 #include "dancing.h"
 #include "attr_info.h"
+#include "buff_info.h"
 
 template <typename T>
 optional<string> PrettyPrinting::parseObject(T& object, const vector<string>& s, vector<string> filename, KeyVerifier* keyVerifier) {
@@ -113,3 +114,4 @@ ADD_IMP(map<string, vector<PromotionInfo>>)
 ADD_IMP(vector<Dancing::Positions>)
 ADD_IMP(vector<pair<string, ViewId>>)
 ADD_IMP(vector<ScriptedHelpInfo>)
+ADD_IMP(map<PrimaryId<BuffId>, BuffInfo>)

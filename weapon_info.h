@@ -23,7 +23,7 @@ struct WeaponInfo {
   bool SERIAL(twoHanded) = false;
   AttackType SERIAL(attackType) = AttackType::HIT;
   AttrType SERIAL(meleeAttackAttr) = AttrType("DAMAGE");
-  vector<VictimEffect> SERIAL(victimEffect);
+  vector<ItemPrefixes::VictimEffect> SERIAL(victimEffect);
   vector<Effect> SERIAL(attackerEffect);
   AttackMsg SERIAL(attackMsg) = AttackMsg::SWING;
   bool SERIAL(itselfMessage) = false;

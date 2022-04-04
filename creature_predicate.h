@@ -5,6 +5,7 @@
 #include "furniture_type.h"
 #include "creature_id.h"
 #include "gender.h"
+#include "lasting_or_buff.h"
 
 #define SIMPLE_PREDICATE(Name) \
   struct Name { \
@@ -30,7 +31,7 @@ SIMPLE_PREDICATE(CanCreatureEnter);
 SIMPLE_PREDICATE(SameTribe);
 
 struct HatedBy {
-  LastingEffect SERIAL(effect);
+  LastingOrBuff SERIAL(effect);
   SERIALIZE_ALL(effect)
 };
 
@@ -120,6 +121,8 @@ struct Frequency {
   SERIALIZE_ALL(value)
 };
 
+using LastingEffect = LastingOrBuff;
+
 #define CREATURE_PREDICATE_LIST\
   X(Enemy, 0)\
   X(Automaton, 1)\
@@ -176,6 +179,6 @@ struct CreaturePredicate : CreaturePredicates::CreaturePredicate {
   using CreaturePredicates::CreaturePredicate::CreaturePredicate;
   bool apply(Position, const Creature* attacker) const;
   bool apply(Creature*, const Creature* attacker) const;
-  string getName() const;
-  string getNameInternal(bool negated = false) const;
+  string getName(const ContentFactory*) const;
+  string getNameInternal(const ContentFactory*, bool negated = false) const;
 };

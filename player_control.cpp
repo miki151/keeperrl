@@ -1614,23 +1614,16 @@ static ImmigrantDataInfo::SpecialTraitInfo getSpecialTraitInfo(const SpecialTrai
       },
       [&] (const SpecialAttr& t) {
         return TraitInfo{toStringWithSign(t.value) + " " + factory->attrInfo.at(t.attr).name + " " + 
-            t.predicate.getName(),
+            t.predicate.getName(factory),
             t.value < 0};
       },
       [&] (const Lasting& effect) {
-        if (effect.time) {
-          if (auto adj = LastingEffects::getGoodAdjective(effect.effect))
-            return TraitInfo{"Temporary trait: "_s + *adj + " (" + toString(*effect.time) + " turns)", false};
-          if (auto adj = LastingEffects::getBadAdjective(effect.effect))
-            return TraitInfo{"Temporary trait: "_s + *adj + " (" + toString(*effect.time) + " turns)", true};
-        } else {
-          if (auto adj = LastingEffects::getGoodAdjective(effect.effect))
-            return TraitInfo{"Permanent trait: "_s + *adj, false};
-          if (auto adj = LastingEffects::getBadAdjective(effect.effect))
-            return TraitInfo{"Permanent trait: "_s + *adj, true};
-        }
-        FATAL << "No adjective found: "_s + LastingEffects::getName(effect.effect);
-        fail();
+        auto adj = getAdjective(effect.effect, factory);
+        if (effect.time)
+          return TraitInfo{"Temporary trait: "_s + adj + " (" + toString(*effect.time) + " turns)", 
+              !isConsideredBad(effect.effect, factory)};
+        else
+          return TraitInfo{"Permanent trait: "_s + adj, !isConsideredBad(effect.effect, factory)};
       },
       [&] (WorkshopType type) {
         return TraitInfo{"Legendary craftsman at: " + factory->workshopInfo.at(type).name, false};

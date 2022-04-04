@@ -15,26 +15,26 @@
 #include "effect_type.h"
 
 void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAttributes& attr) {
-  if (attr.upgradeInfo && attr.upgradeInfo->prefix->contains<AssembledCreatureEffect>()) {
-    auto& effect = *attr.upgradeInfo->prefix->getReferenceMaybe<AssembledCreatureEffect>();
+  if (attr.upgradeInfo && attr.upgradeInfo->prefix->contains<ItemPrefixes::AssembledCreatureEffect>()) {
+    auto& effect = *attr.upgradeInfo->prefix->getReferenceMaybe<ItemPrefixes::AssembledCreatureEffect>();
     attr.upgradeInfo->prefix = Effect(EffectType::Chain{{effect, Effect(prefix)}});
     attr.prefixes.push_back(getItemName(factory, prefix));
   } else {
     attr.prefixes.push_back(getItemName(factory, prefix));
     prefix.visit<void>(
-        [&](LastingEffect effect) {
+        [&](LastingOrBuff effect) {
           attr.equipedEffect.push_back(effect);
         },
-        [&](const AttackerEffect& e) {
+        [&](const ItemPrefixes::AttackerEffect& e) {
           attr.weaponInfo.attackerEffect.push_back(e.effect);
         },
-        [&](const VictimEffect& e) {
+        [&](const ItemPrefixes::VictimEffect& e) {
           attr.weaponInfo.victimEffect.push_back(e);
         },
-        [&](ItemAttrBonus bonus) {
+        [&](ItemPrefixes::ItemAttrBonus bonus) {
           attr.modifiers[bonus.attr] += bonus.value;
         },
-        [&](const JoinPrefixes& join) {
+        [&](const ItemPrefixes::JoinPrefixes& join) {
           for (auto& elem : join.prefixes)
             applyPrefix(factory, elem, attr);
         },
@@ -44,7 +44,7 @@ void applyPrefix(const ContentFactory* factory, const ItemPrefix& prefix, ItemAt
         [&](const SpecialAttr& a) {
           attr.specialAttr[a.attr] = make_pair(a.value, a.predicate);
         },
-        [&](const AssembledCreatureEffect& a) {
+        [&](const ItemPrefixes::AssembledCreatureEffect& a) {
           if (auto effect = attr.effect->effect->getValueMaybe<Effects::AssembledMinion>()) {
             effect->effects.push_back(a);
             attr.effect = Effect(*effect);
@@ -64,19 +64,19 @@ void applyPrefixToCreature(const ItemPrefix& prefix, Creature* c) {
       }
   };
   prefix.visit<void>(
-      [&](LastingEffect effect) {
-        c->addPermanentEffect(effect);
+      [&](LastingOrBuff effect) {
+        addPermanentEffect(effect, c);
       },
-      [&](const AttackerEffect& e) {
+      [&](const ItemPrefixes::AttackerEffect& e) {
         applyToIntrinsicAttack();
       },
-      [&](const VictimEffect& e) {
+      [&](const ItemPrefixes::VictimEffect& e) {
         applyToIntrinsicAttack();
       },
-      [&](ItemAttrBonus e) {
+      [&](ItemPrefixes::ItemAttrBonus e) {
         c->getAttributes().increaseBaseAttr(e.attr, e.value);
       },
-      [&](const JoinPrefixes& join) {
+      [&](const ItemPrefixes::JoinPrefixes& join) {
         for (auto& elem : join.prefixes)
           applyPrefixToCreature(elem, c);
       },
@@ -93,19 +93,19 @@ void applyPrefixToCreature(const ItemPrefix& prefix, Creature* c) {
 
 vector<string> getEffectDescription(const ContentFactory* factory, const ItemPrefix& prefix) {
   return prefix.visit<vector<string>>(
-      [&](LastingEffect effect) -> vector<string> {
-        return {"grants " + LastingEffects::getName(effect)};
+      [&](LastingOrBuff effect) -> vector<string> {
+        return {"grants " + getName(effect, factory)};
       },
-      [&](const AttackerEffect& e) -> vector<string> {
+      [&](const ItemPrefixes::AttackerEffect& e) -> vector<string> {
         return {"attacker affected by: " + e.effect.getName(factory)};
       },
-      [&](const VictimEffect& e) -> vector<string> {
+      [&](const ItemPrefixes::VictimEffect& e) -> vector<string> {
         return {"victim affected by: " + e.effect.getName(factory) + " (" + toPercentage(e.chance) + " chance)"};
       },
-      [&](ItemAttrBonus bonus) -> vector<string> {
+      [&](ItemPrefixes::ItemAttrBonus bonus) -> vector<string> {
         return {"+"_s + toString(bonus.value) + " " + factory->attrInfo.at(bonus.attr).name};
       },
-      [&](const JoinPrefixes& join) -> vector<string> {
+      [&](const ItemPrefixes::JoinPrefixes& join) -> vector<string> {
         vector<string> ret;
         for (auto& e : join.prefixes)
           ret.append(getEffectDescription(factory, e));
@@ -115,9 +115,10 @@ vector<string> getEffectDescription(const ContentFactory* factory, const ItemPre
         return {"grants "_s + id.data() + " ability"};
       },
       [&](const SpecialAttr& a) -> vector<string> {
-        return {toStringWithSign(a.value) + " " + factory->attrInfo.at(a.attr).name + " " + a.predicate.getName()};
+        return {toStringWithSign(a.value) + " " + factory->attrInfo.at(a.attr).name + " " +
+            a.predicate.getName(factory)};
       },
-      [&](const AssembledCreatureEffect& effect) -> vector<string> {
+      [&](const ItemPrefixes::AssembledCreatureEffect& effect) -> vector<string> {
         return {effect.getDescription(factory)};
       }
   );
@@ -125,28 +126,28 @@ vector<string> getEffectDescription(const ContentFactory* factory, const ItemPre
 
 string getItemName(const ContentFactory* factory, const ItemPrefix& prefix) {
   return prefix.visit<string>(
-      [&](LastingEffect effect) {
-        return "of " + LastingEffects::getName(effect);
+      [&](LastingOrBuff effect) {
+        return "of " + getName(effect, factory);
       },
-      [&](const AttackerEffect& e) {
+      [&](const ItemPrefixes::AttackerEffect& e) {
         return "of " + e.effect.getName(factory);
       },
-      [&](const VictimEffect& e) {
+      [&](const ItemPrefixes::VictimEffect& e) {
         return "of " + e.effect.getName(factory);
       },
-      [&](ItemAttrBonus bonus) {
+      [&](ItemPrefixes::ItemAttrBonus bonus) {
         return "of " + factory->attrInfo.at(bonus.attr).name;
       },
-      [&](const JoinPrefixes& join) {
+      [&](const ItemPrefixes::JoinPrefixes& join) {
         return getItemName(factory, join.prefixes.back());
       },
       [&](const SpellId& id) -> string {
         return "of "_s + factory->getCreatures().getSpell(id)->getName(factory);
       },
       [&](const SpecialAttr& a) -> string {
-        return a.predicate.getName();
+        return a.predicate.getName(factory);
       },
-      [&](const AssembledCreatureEffect& effect) -> string {
+      [&](const ItemPrefixes::AssembledCreatureEffect& effect) -> string {
         return "with " + effect.getName(factory);
       }
   );
@@ -157,10 +158,10 @@ string getGlyphName(const ContentFactory* factory, const ItemPrefix& prefix) {
       [&](const auto&) {
         return ::getItemName(factory, prefix);
       },
-      [&](ItemAttrBonus bonus) {
+      [&](ItemPrefixes::ItemAttrBonus bonus) {
         return "of +"_s + toString(bonus.value) + " " + factory->attrInfo.at(bonus.attr).name;
       },
-      [&](const JoinPrefixes& join) {
+      [&](const ItemPrefixes::JoinPrefixes& join) {
         return getGlyphName(factory, join.prefixes.back());
       }
   );

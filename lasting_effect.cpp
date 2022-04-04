@@ -872,15 +872,23 @@ static Adjective getAdjective(LastingEffect effect) {
   }
 }
 
+bool LastingEffects::isConsideredBad(LastingEffect effect) {
+  return ::getAdjective(effect).bad;
+}
+
+string LastingEffects::getAdjective(LastingEffect effect) {
+  return ::getAdjective(effect).name;
+}
+
 optional<string> LastingEffects::getGoodAdjective(LastingEffect effect) {
-  auto adjective = getAdjective(effect);
+  auto adjective = ::getAdjective(effect);
   if (!adjective.bad)
     return adjective.name;
   return none;
 }
 
 optional<std::string> LastingEffects::getBadAdjective(LastingEffect effect) {
-  auto adjective = getAdjective(effect);
+  auto adjective = ::getAdjective(effect);
   if (adjective.bad)
     return adjective.name;
   return none;
@@ -1114,7 +1122,8 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         string jokeText = "a joke";
         optional<LastingEffect> hatedGroup;
         for (auto effect : getHateEffects())
-          if (c->isAffected(effect) || (c->getAttributes().getHatedByEffect() != effect && Random.roll(10 * getHateEffects().size()))) {
+          if (c->isAffected(effect) || (c->getAttributes().getHatedByEffect() != LastingOrBuff(effect) && 
+              Random.roll(10 * getHateEffects().size()))) {
             hatedGroup = effect;
             break;
           }
@@ -1123,7 +1132,7 @@ bool LastingEffects::tick(Creature* c, LastingEffect effect) {
         c->verb("crack", "cracks", jokeText);
         for (auto other : others)
           if (other != c && !other->isAffected(LastingEffect::SLEEP)) {
-            if (hatedGroup && hatedGroup == other->getAttributes().getHatedByEffect()) {
+            if (hatedGroup && LastingOrBuff(*hatedGroup) == other->getAttributes().getHatedByEffect()) {
               other->addMorale(-0.05);
               other->you(MsgType::ARE, "offended");
             } else if (other->getBody().hasBrain()) {
@@ -1362,7 +1371,7 @@ bool LastingEffects::modifyIsEnemyResult(const Creature* c, const Creature* othe
       && !other->isAffected(LastingEffect::PSYCHIATRY))
     return true;
   if (auto effect = other->getAttributes().getHatedByEffect())
-    if (c->isAffected(*effect, time))
+    if (isAffected(c, *effect, time))
       return true;
   return result;
 }
@@ -1655,7 +1664,7 @@ bool LastingEffects::obeysFormation(const Creature* c, const Creature* against) 
   if (c->isAffected(LastingEffect::RAGE) || c->isAffected(LastingEffect::INSANITY))
     return false;
   else if (auto e = against->getAttributes().getHatedByEffect())
-    if (c->isAffected(*e))
+    if (isAffected(c, *e))
       return false;
   return true;
 }

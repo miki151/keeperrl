@@ -34,9 +34,9 @@ void applySpecialTrait(GlobalTime globalTime, SpecialTrait trait, Creature* c, c
       },
       [&] (const Lasting& effect) {
         if (effect.time)
-          c->addEffect(effect.effect, *effect.time, globalTime, false);
+          addEffect(effect.effect, c, *effect.time, globalTime, factory);
         else
-          c->addPermanentEffect(effect.effect);
+          addPermanentEffect(effect.effect, c);
       },
       [&] (ExtraBodyPart part) {
         c->getAttributes().add(part.part, part.count);

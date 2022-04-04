@@ -22,6 +22,8 @@
 #include "dancing.h"
 #include "scripted_help_info.h"
 #include "attr_info.h"
+#include "buff_id.h"
+#include "buff_info.h"
 
 class KeyVerifier;
 class BuildInfo;
@@ -34,6 +36,7 @@ class BuildingInfo;
 struct LayoutGenerator;
 struct TileGasInfo;
 struct PromotionInfo;
+struct BuffInfo;
 
 class ContentFactory {
   public:
@@ -70,6 +73,7 @@ class ContentFactory {
   vector<ScriptedHelpInfo> SERIAL(scriptedHelp);
   map<AttrType, AttrInfo> SERIAL(attrInfo);
   vector<AttrType> SERIAL(attrOrder);
+  unordered_map<BuffId, BuffInfo, CustomHash<BuffId>> SERIAL(buffs);
   void merge(ContentFactory);
 
   CreatureFactory& getCreatures();

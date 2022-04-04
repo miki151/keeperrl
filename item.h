@@ -101,7 +101,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   string getApplyMsgThirdPerson(const Creature* owner) const;
   string getApplyMsgFirstPerson(const Creature* owner) const;
   optional<StatId> getProducedStat() const;
-  const vector<LastingEffect>& getEquipedEffects() const;
+  bool hasEquipedEffect(LastingEffect) const;
   void onEquip(Creature*, bool msg = true);
   void onUnequip(Creature*, bool msg = true);
   void onOwned(Creature*, bool msg = true);
@@ -118,7 +118,7 @@ class Item : public Renderable, public UniqueEntity<Item>, public OwnedObject<It
   vector<string> getDescription(const ContentFactory*) const;
 
   CreaturePredicate getAutoEquipPredicate() const;
-  optional<LastingEffect> getOwnedEffect() const;
+  bool hasOwnedEffect(LastingEffect) const;
 
   const WeaponInfo& getWeaponInfo() const;
   void getAttackMsg(const Creature*, const string& enemyName) const;

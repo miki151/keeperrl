@@ -125,6 +125,7 @@ class BiomeId;
 class WorkshopType;
 class CollectiveResourceId;
 class AttrType;
+class BuffId;
 using EffectAIIntent = int;
 
 using SteamId = unsigned long long;

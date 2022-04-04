@@ -55,7 +55,7 @@ optional<MinionEquipmentType> MinionEquipment::getEquipmentType(const Item* it) 
     return MinionEquipmentType::ARMOR;
   if (auto& effect = it->getEffect())
     return effect->getMinionEquipmentType();
-  if (it->getOwnedEffect() == LastingEffect::LIGHT_SOURCE)
+  if (it->hasOwnedEffect(LastingEffect::LIGHT_SOURCE))
     return MinionEquipmentType::TORCH;
   return none;
 }

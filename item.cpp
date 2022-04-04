@@ -103,28 +103,31 @@ vector<vector<Item*>> Item::stackItems(const ContentFactory* f, vector<Item*> it
 
 void Item::onOwned(Creature* c, bool msg) {
   if (attributes->ownedEffect)
-    c->addPermanentEffect(*attributes->ownedEffect, 1, msg);
+    addPermanentEffect(*attributes->ownedEffect, c, msg);
 }
 
 void Item::onDropped(Creature* c, bool msg) {
   if (attributes->ownedEffect)
-    c->removePermanentEffect(*attributes->ownedEffect, 1, msg);
+    removePermanentEffect(*attributes->ownedEffect, c, msg);
 }
 
-const vector<LastingEffect>& Item::getEquipedEffects() const {
-  return attributes->equipedEffect;
+bool Item::hasEquipedEffect(LastingEffect l) const {
+  for (auto& e : attributes->equipedEffect)
+    if (e == l)
+      return true;
+  return false;
 }
 
 void Item::onEquip(Creature* c, bool msg) {
   for (auto& e : attributes->equipedEffect)
-    c->addPermanentEffect(e, 1, msg);
+    addPermanentEffect(e, c, msg);
   if (attributes->equipedCompanion)
     c->getAttributes().companions.push_back(*attributes->equipedCompanion);
 }
 
 void Item::onUnequip(Creature* c, bool msg) {
   for (auto& e : attributes->equipedEffect)
-    c->removePermanentEffect(e, 1, msg);
+    removePermanentEffect(e, c, msg);
   if (attributes->equipedCompanion)
     [&, &companions = c->getAttributes().companions] {
       for (int i : All(companions))
@@ -193,7 +196,7 @@ void Item::onHitSquareMessage(Position pos, const Attack& attack, int numItems) 
     discarded = true;
   } else
     pos.globalMessage(getPluralTheNameAndVerb(numItems, "hits", "hit") + " the " + pos.getName());
-  if (attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
+  if (attributes->ownedEffect && *attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
     pos.fireDamage(1);
   if (attributes->effect && effectAppliedWhenThrown())
     attributes->effect->apply(pos, attack.attacker);
@@ -225,7 +228,7 @@ void Item::onHitCreature(Creature* c, const Attack& attack, int numItems) {
   if (attributes->effect && effectAppliedWhenThrown())
     attributes->effect->apply(c->getPosition(), attack.attacker);
   c->takeDamage(attack);
-  if (!c->isDead() && attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
+  if (!c->isDead() && attributes->ownedEffect && *attributes->ownedEffect == LastingEffect::LIGHT_SOURCE)
     c->affectByFire(1);
 }
 
@@ -251,8 +254,8 @@ vector<string> Item::getDescription(const ContentFactory* factory) const {
   for (auto& effect : getWeaponInfo().attackerEffect)
     ret.push_back("Attacker affected by: " + effect.getName(factory));
   for (auto& effect : attributes->equipedEffect) {
-    ret.push_back("Effect when equipped: " + LastingEffects::getName(effect));
-    ret.push_back(LastingEffects::getDescription(effect));
+    ret.push_back("Effect when equipped: " + ::getName(effect, factory));
+    ret.push_back(::getDescription(effect, factory));
   }
   if (auto& info = attributes->upgradeInfo)
     ret.append(info->getDescription(factory));
@@ -260,12 +263,12 @@ vector<string> Item::getDescription(const ContentFactory* factory) const {
     ret.push_back("Grants ability: "_s + info.spell.getName(factory));
   for (auto& elem : attributes->specialAttr)
     ret.push_back(toStringWithSign(elem.second.first) + " " + factory->attrInfo.at(elem.first).name + " " + 
-        elem.second.second.getName());
+        elem.second.second.getName(factory));
   return ret;
 }
 
-optional<LastingEffect> Item::getOwnedEffect() const {
-  return attributes->ownedEffect;
+bool Item::hasOwnedEffect(LastingEffect e) const {
+  return attributes->ownedEffect && *attributes->ownedEffect == e;
 }
 
 CreaturePredicate Item::getAutoEquipPredicate() const {

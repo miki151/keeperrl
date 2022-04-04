@@ -74,6 +74,8 @@ const char* GameConfig::getConfigName(GameConfigId id) {
       return "help";
     case GameConfigId::ATTR_INFO:
       return "attributes";
+    case GameConfigId::BUFFS:
+      return "buffs";
   }
 }
 

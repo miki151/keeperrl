@@ -90,6 +90,7 @@ namespace cereal {
   INST2(MapLayoutTypes::LayoutType_impl)
   INST2(LevelConnection::EnemyLevelInfo_impl)
   INST2(FurnitureUsageType_impl)
+  INST(LastingEffect, BuffId)
 } // namespace cereal
 #undef INST
 #undef INST2

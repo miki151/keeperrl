@@ -11,6 +11,7 @@
 #include "special_attr.h"
 #include "companion_info.h"
 #include "workshop_type.h"
+#include "lasting_or_buff.h"
 
 struct ExtraTraining {
   ExperienceType SERIAL(type);
@@ -44,7 +45,7 @@ struct OneOfTraits {
 };
 
 struct Lasting {
-  LastingEffect SERIAL(effect);
+  LastingOrBuff SERIAL(effect);
   optional<TimeInterval> SERIAL(time);
   SERIALIZE_ALL(NAMED(effect), NAMED(time))
 };
