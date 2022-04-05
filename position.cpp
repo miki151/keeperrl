@@ -827,31 +827,26 @@ bool Position::fireDamage(int amount) const {
   return res;
 }
 
-bool Position::iceDamage() const {
+bool Position::iceDamage(int amount) const {
   PROFILE;
   bool res = false;
-  double amount = 1.0;
   for (auto furniture : modFurniture())
-    if (Random.chance(amount))
+    if (Random.chance(0.05 * amount))
       res |= furniture->iceDamage(*this);
-  if (Creature* creature = getCreature()) {
-    if (auto steed = creature->getSteed())
-      res |= steed->affectByIce(amount);
-    else
-      res |= creature->affectByIce(amount);
-  }
+  if (Creature* creature = getCreature())
+    creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,
+        AttrType("COLD_DAMAGE"), {}, "The cold is harmless"));
   for (Item* it : getItems())
-    if (Random.chance(amount))
+    if (Random.chance(0.05 * amount))
       it->iceDamage(*this);
   return res;
 }
 
-bool Position::acidDamage(int value) const {
+bool Position::acidDamage(int amount) const {
   PROFILE;
   bool res = false;
-  double amount = 1.0;
   for (auto furniture : modFurniture())
-    if (Random.chance(amount))
+    if (Random.chance(0.05 * amount))
       res |= furniture->acidDamage(*this);
   if (Creature* creature = getCreature())
     creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,

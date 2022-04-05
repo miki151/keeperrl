@@ -49,6 +49,17 @@
   help = "Base damage value of acid attacks."
 }
 
+"COLD_DAMAGE" {
+  name = "cold damage"
+  viewId = { "cold_damage_icon" }
+  adjective = "chilly"
+  absorptionCap = 25
+  bodyPartInjury = "is frozen and breaks off"
+  isAttackAttr = true
+  meleeFX = {WATER_SPLASH ColorId LIGHT_BLUE}
+  help = "Base damage value of cold attacks."
+}
+
 "DEFENSE" {
   name = "defense"
   viewId = { "defense_icon" }

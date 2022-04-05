@@ -479,7 +479,7 @@ End
 "ice cone"
 {
   symbol = "❄"
-  effect = Name "ice cone" Ice
+  effect = Name "ice cone" Ice{}
   fx = {FLAMETHROWER ColorId LIGHT_BLUE}
   range = 4
   cooldown = 15

@@ -593,7 +593,7 @@
     viewId = { "ice_demon" }
     attr = {
       DEFENSE 30
-      DAMAGE 30
+      COLD_DAMAGE 30
     }
     body = {
       type = HumanoidLike LARGE
@@ -602,7 +602,8 @@
         ARM {{{ Intrinsic { "fist_attack" } "fists" 10 {
             attackType = HIT
             attackMsg = SWING
-            victimEffect = {0.3 Lasting FROZEN} } }}}
+            meleeAttackAttr = COLD_DAMAGE
+        } }}}
       }
     }
     name = {
@@ -1224,7 +1225,7 @@
   {
     viewId = { "naga" Rgb 220 220 220 255 }
     attr = {
-      DAMAGE 25
+      COLD_DAMAGE 25
       DEFENSE 27
     }
     body = {
@@ -1237,7 +1238,8 @@
         HEAD {{{ Intrinsic { "bite_attack" } "fangs" 7 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.5 Ice} } }}}
+            meleeAttackAttr = COLD_DAMAGE
+        } }}}
       }
     }
     permanentEffects = {
@@ -1252,6 +1254,9 @@
 "WHITE_DRAGON" inherit "BLACK_DRAGON"
   {
     viewId = { "red_dragon" Rgb 240 240 240 255 }
+    attr = append {
+      COLD_DAMAGE 40
+    }
     body = {
       type = FourLegged HUGE
       corpseIngredientType = "dragon_corpse"

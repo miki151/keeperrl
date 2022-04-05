@@ -50,7 +50,10 @@ struct Heal {
   SERIALIZE_ALL(NAMED(healthType), OPTION(amount))
 };
 SIMPLE_EFFECT(Fire);
-SIMPLE_EFFECT(Ice);
+struct Ice {
+  optional<int> SERIAL(amount);
+  SERIALIZE_ALL(NAMED(amount))
+};
 SIMPLE_EFFECT(DestroyEquipment);
 struct DestroyWalls {
   DestroyAction::Type SERIAL(action);

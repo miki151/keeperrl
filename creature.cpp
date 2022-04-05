@@ -1763,12 +1763,6 @@ bool Creature::heal(double amount) {
   return false;
 }
 
-bool Creature::affectByIce(double amount) {
-  if (steed && Random.roll(2))
-    steed->affectByIce(amount);
-  return addEffect(LastingEffect::FROZEN, 5_visible);
-}
-
 void Creature::setHeld(Creature* c) {
   holding = c->getUniqueId();
 }

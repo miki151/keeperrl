@@ -923,8 +923,8 @@ static string getDescription(const Effects::Ice&, const ContentFactory*) {
   return "Freezes water and causes cold damage";
 }
 
-static bool apply(const Effects::Ice&, Position pos, Creature*) {
-  return pos.iceDamage();
+static bool apply(const Effects::Ice& a, Position pos, Creature* attacker) {
+  return pos.iceDamage(a.amount.value_or(attacker ? attacker->getAttr(AttrType("COLD_DAMAGE")) : 10));
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Ice&, const Creature* victim, bool isEnemy) {
