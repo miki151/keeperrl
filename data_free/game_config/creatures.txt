@@ -1292,7 +1292,7 @@
   {
     viewId = { "naga" Rgb 220 220 20 255 }
     attr = {
-      DAMAGE 25
+      ACID_DAMAGE 25
       DEFENSE 27
     }
     body = {
@@ -1305,7 +1305,7 @@
         HEAD {{{ Intrinsic { "bite_attack" } "fangs" 7 {
             attackType = BITE
             attackMsg = BITE
-            victimEffect = {0.5 Acid} } }}}
+            meleeAttackAttr = ACID_DAMAGE } }}}
       }
     }
     permanentEffects = {
@@ -1320,6 +1320,9 @@
 "YELLOW_DRAGON" inherit "BLACK_DRAGON"
   {
     viewId = { "red_dragon" Rgb 240 200 0 255 }
+    attr = append {
+      ACID_DAMAGE 40
+    }
     body = {
       type = FourLegged HUGE
       corpseIngredientType = "dragon_corpse"
@@ -1348,7 +1351,7 @@
     hatedByEffect = HATE_DRAGONS
     inventory = {
       { "GoldPiece" 120 200 }
-      { type = Glyph WEAPON VictimEffect 0.3 Acid chance = 0.1 }
+      { type = Glyph WEAPON VictimEffect 0.3 Acid{30} chance = 0.1 }
       { type = Glyph WEAPON VictimEffect 0.3 Lasting BLEEDING chance = 0.3 }
       { type = Glyph WEAPON LastingEffect ENTERTAINER chance = 0.3 }
       { type = Glyph ARMOR ItemAttrBonus DEFENSE 3 chance = 0.3 }

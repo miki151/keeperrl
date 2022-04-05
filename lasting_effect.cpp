@@ -942,6 +942,10 @@ double LastingEffects::modifyCreatureDefense(const Creature* c, LastingEffect e,
   };
   double baseMultiplier = 1.3;
   switch (e) {
+    case LastingEffect::ACID_RESISTANT:
+      return multiplyFor(AttrType("ACID_DAMAGE"), baseMultiplier);
+    case LastingEffect::FIRE_RESISTANT:
+      return multiplyFor(AttrType("FIRE_DAMAGE"), baseMultiplier);
     case LastingEffect::MAGIC_RESISTANCE:
       return multiplyFor(AttrType("SPELL_DAMAGE"), baseMultiplier);
     case LastingEffect::MELEE_RESISTANCE:

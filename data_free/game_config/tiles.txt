@@ -4,6 +4,7 @@
 { "damage_icon" "1" ColorId WHITE }
 { "spell_damage_icon" "1" ColorId WHITE }
 { "fire_damage_icon" "1" ColorId WHITE }
+{ "acid_damage_icon" "1" ColorId WHITE }
 { "ranged_damage_icon" "1" ColorId WHITE }
 { "defense_icon" "1" ColorId WHITE }
 { "parry_icon" "1" ColorId WHITE }

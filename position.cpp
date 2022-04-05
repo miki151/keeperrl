@@ -846,19 +846,16 @@ bool Position::iceDamage() const {
   return res;
 }
 
-bool Position::acidDamage() const {
+bool Position::acidDamage(int value) const {
   PROFILE;
   bool res = false;
   double amount = 1.0;
   for (auto furniture : modFurniture())
     if (Random.chance(amount))
       res |= furniture->acidDamage(*this);
-  if (Creature* creature = getCreature()) {
-    if (auto steed = creature->getSteed())
-      res |= steed->affectByAcid();
-    else
-      res |= creature->affectByAcid();
-  }
+  if (Creature* creature = getCreature())
+    creature->takeDamage(Attack(nullptr, Random.choose<AttackLevel>(), AttackType::HIT, amount,
+        AttrType("ACID_DAMAGE"), {}, "The acid is harmless"));    
   /*for (Item* it : getItems())
     if (Random.chance(amount))
       it->acidDamage(*this);*/

@@ -513,8 +513,8 @@ static Color getColor(const Effects::Acid&, const ContentFactory* f) {
   return Color::YELLOW;
 }
 
-static bool apply(const Effects::Acid&, Position pos, Creature*) {
-  return pos.acidDamage();
+static bool apply(const Effects::Acid& a, Position pos, Creature* attacker) {
+  return pos.acidDamage(a.amount.value_or(attacker ? attacker->getAttr(AttrType("ACID_DAMAGE")) : 10));
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Acid&, const Creature* victim, bool isEnemy) {

@@ -1769,31 +1769,6 @@ bool Creature::affectByIce(double amount) {
   return addEffect(LastingEffect::FROZEN, 5_visible);
 }
 
-bool Creature::affectByAcid() {
-  if (steed && Random.roll(2))
-    steed->affectByAcid();
-  if (!isAffected(LastingEffect::ACID_RESISTANT)) {
-    if (getBody().affectByAcid(this)) {
-      you(MsgType::ARE, "dissolved by acid");
-      dieWithReason("dissolved by acid");
-    } else
-      removeEffect(LastingEffect::SLEEP);
-    return true;
-  } else {
-    auto& items = equipment->getAllEquipped();
-    if (!items.empty()) {
-      auto item = Random.choose(items);
-      for (auto mod : item->getModifierValues())
-        if (mod.second > 0) {
-          you(MsgType::YOUR, item->getName() + " corrodes");
-          item->addModifier(mod.first, -1);
-          return true;
-        }
-    }
-  }
-  return false;
-}
-
 void Creature::setHeld(Creature* c) {
   holding = c->getUniqueId();
 }

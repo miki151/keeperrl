@@ -38,6 +38,17 @@
   help = "Base damage value of fire attacks."
 }
 
+"ACID_DAMAGE" {
+  name = "acid damage"
+  viewId = { "acid_damage_icon" }
+  adjective = "acidic"
+  absorptionCap = 25
+  bodyPartInjury = "is dissolved"
+  isAttackAttr = true
+  meleeFX = {WATER_SPLASH ColorId YELLOW}
+  help = "Base damage value of acid attacks."
+}
+
 "DEFENSE" {
   name = "defense"
   viewId = { "defense_icon" }

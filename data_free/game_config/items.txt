@@ -561,7 +561,7 @@
     price = 20
     craftingCost = "ADA" 20
     genPrefixes = {
-      1 VictimEffect 0.2 Acid
+      1 VictimEffect 0.2 Acid{30}
       1 VictimEffect 0.3 Fire
       1 VictimEffect 0.2 Lasting POISON
       1 LastingEffect RAGE

@@ -963,12 +963,6 @@ bool Body::isImmuneTo(LastingEffect effect) const {
   return false;
 }
 
-bool Body::affectByAcid(Creature* c) {
-  c->you(MsgType::ARE, "hurt by the acid");
-  bleed(c, 0.2);
-  return health <= 0;
-}
-
 void Body::bleed(Creature* c, double amount) {
   if (hasAnyHealth()) {
     health -= amount;

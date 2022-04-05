@@ -95,7 +95,10 @@ struct SummonEnemy {
   SERIALIZE_ALL(creature, count, ttl)
 };
 SIMPLE_EFFECT(SummonElement);
-SIMPLE_EFFECT(Acid);
+struct Acid {
+  optional<int> SERIAL(amount);
+  SERIALIZE_ALL(NAMED(amount))
+};
 struct Alarm {
   bool SERIAL(silent) = false;
   SERIALIZE_ALL(silent)

@@ -488,7 +488,7 @@ End
 "acid stream"
 {
   symbol = "🜅"
-  effect = Name "acid stream" Acid
+  effect = Name "acid stream" Acid{}
   fx = {FLAMETHROWER ColorId YELLOW}
   range = 4
   cooldown = 5

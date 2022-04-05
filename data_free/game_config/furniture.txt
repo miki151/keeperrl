@@ -979,7 +979,7 @@ Def BedHeal() Heal { FLESH 0.005 } End
           IncreaseAttr SPELL_DAMAGE 3
           IncreaseAttr DEFENSE -3
           IncreaseAttr DEFENSE 3
-          Acid
+          Acid{30}
           Fire
           Lasting DAM_BONUS
           Lasting BLIND
