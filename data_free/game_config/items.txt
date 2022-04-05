@@ -1708,7 +1708,7 @@ End
   }
 "SpiderRing"
   {
-    viewId = { "ring_red" }
+    viewId = { "ring" ColorId WHITE }
     name = "ring of spider summoning"
     shortName = "spider"
     equipedCompanion = 5 true none 0.01 { "SPIDER" }
@@ -1720,7 +1720,7 @@ End
   }
 "DragonRing" inherit "SpiderRing"
   {
-    viewId = { "ring_red" }
+    viewId = { "ring" ColorId PURPLE }
     name = "ring of dragon summoning"
     shortName = "dragon"
     equipedCompanion = 1 true none 0.001 { "RED_DRAGON" "WHITE_DRAGON" "YELLOW_DRAGON" "GREEN_DRAGON" }

@@ -348,8 +348,7 @@
 { "amulet3" "\"" ColorId YELLOW }
 { "amulet4" "\"" ColorId YELLOW }
 { "amulet5" "\"" ColorId YELLOW }
-{ "ring_red" "=" ColorId RED }
-{ "ring_green" "=" ColorId GREEN }
+{ "ring" "=" ColorId RED }
 { "book" "+" ColorId YELLOW }
 { "hand_torch" "/" ColorId YELLOW }
 { "first_aid" "+" ColorId RED }

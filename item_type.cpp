@@ -272,21 +272,6 @@ PItem ItemType::get(const ContentFactory* factory) const {
   );
 }
 
-ViewId getRingViewId(LastingOrBuff e) {
-  return e.visit(
-    [](LastingEffect e) {
-      switch (e) {
-        case LastingEffect::FIRE_RESISTANT: return ViewId("ring_red");
-        case LastingEffect::POISON_RESISTANT: return ViewId("ring_green");
-        default: return ViewId("ring_red");
-      }
-    },
-    [](BuffId) { 
-      return ViewId("ring_red");
-    }
-  );
-}
-
 ViewId getAmuletViewId(LastingOrBuff e) {
   return e.visit(
     [](LastingEffect e) {
@@ -399,7 +384,7 @@ ItemAttributes ItemTypes::Intrinsic::getAttributes(const ContentFactory* factory
 
 ItemAttributes ItemTypes::Ring::getAttributes(const ContentFactory* f) const {
   return ITATTR(
-      i.viewId = getRingViewId(lastingEffect);
+      i.viewId = ViewId("ring", getColor(lastingEffect, f));
       i.shortName = getName(lastingEffect, f);
       i.equipedEffect.push_back(lastingEffect);
       i.name = "ring of " + *i.shortName;
