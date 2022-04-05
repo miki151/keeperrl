@@ -30,3 +30,36 @@
   defenseMultiplier = 0.77
   defenseMultiplierAttr = FIRE_DAMAGE
 }
+
+"FIRE_RESISTANT" {
+  name = "fire resistance"
+  adjective = "resistant to fire"
+  description = "Creature's defense against fire attacks is increased by 30%."
+  addedMessage = ARE "resistant to fire"
+  removedMessage = ARE "no longer resistant to fire"
+  color = ColorId RED
+  defenseMultiplier = 1.3
+  defenseMultiplierAttr = FIRE_DAMAGE
+}
+
+"COLD_RESISTANT" {
+  name = "cold resistance"
+  adjective = "resistant to cold"
+  description = "Creature's defense against cold attacks is increased by 30%."
+  addedMessage = ARE "resistant to cold"
+  removedMessage = ARE "no longer resistant to cold"
+  color = ColorId LIGHT_BLUE
+  defenseMultiplier = 1.3
+  defenseMultiplierAttr = COLD_DAMAGE
+}
+
+"ACID_RESISTANT" {
+  name = "acid resistance"
+  adjective = "resistant to acid"
+  description = "Creature's defense against acid attacks is increased by 30%."
+  addedMessage = ARE "resistant to acid"
+  removedMessage = ARE "no longer resistant to acid"
+  color = ColorId ORANGE
+  defenseMultiplier = 1.3
+  defenseMultiplierAttr = ACID_DAMAGE
+}

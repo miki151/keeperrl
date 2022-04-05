@@ -882,34 +882,33 @@ bool Body::heal(Creature* c, double amount) {
   return false;
 }
 
+bool Body::isIntrinsicallyAffected(BuffId effect) const {
+  if (effect == BuffId("COLD_RESISTANT"))
+    return material == Material::ICE;
+  if (effect == BuffId("ACID_RESISTANT"))
+    switch (material) {
+      case Material::FIRE:
+      case Material::SPIRIT:
+        return true;
+      default:
+        return false;
+    }
+  if (effect == BuffId("FIRE_RESISTANT"))
+    switch (material) {
+      case Material::FLESH:
+      case Material::SPIRIT:
+      case Material::UNDEAD_FLESH:
+      case Material::ICE:
+      case Material::WOOD:
+        return false;
+      default:
+        return true;
+    }
+  return false;
+}
+
 bool Body::isIntrinsicallyAffected(LastingEffect effect) const {
   switch (effect) {
-    case LastingEffect::COLD_RESISTANT:
-      switch (material) {
-        case Material::ICE:
-          return true;
-        default:
-          return false;
-      }
-    case LastingEffect::ACID_RESISTANT:
-      switch (material) {
-        case Material::FIRE:
-        case Material::SPIRIT:
-          return true;
-        default:
-          return false;
-      }
-    case LastingEffect::FIRE_RESISTANT:
-      switch (material) {
-        case Material::FLESH:
-        case Material::SPIRIT:
-        case Material::UNDEAD_FLESH:
-        case Material::ICE:
-        case Material::WOOD:
-          return false;
-        default:
-          return true;
-      }
     case LastingEffect::SUNLIGHT_VULNERABLE:
       return material == Material::UNDEAD_FLESH;
     case LastingEffect::FLYING:

@@ -522,7 +522,7 @@ static EffectAIIntent shouldAIApplyToCreature(const Effects::Acid&, const Creatu
 }
 
 static bool isConsideredHostile(const Effects::Acid&, const Creature* victim) {
-  return !victim->isAffected(LastingEffect::ACID_RESISTANT);
+  return !victim->isAffected(BuffId("ACID_RESISTANT"));
 }
 
 static bool apply(const Effects::Summon& e, Position pos, Creature* attacker) {
@@ -906,13 +906,13 @@ static optional<ViewId> getProjectile(const Effects::Fire&) {
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Fire&, const Creature* victim, bool isEnemy) {
-  if (!victim->isAffected(LastingEffect::FIRE_RESISTANT))
+  if (!victim->isAffected(BuffId("FIRE_RESISTANT")))
     return isEnemy ? 1 : -1;
   return 0;
 }
 
 static bool isConsideredHostile(const Effects::Fire&, const Creature* victim) {
-  return !victim->isAffected(LastingEffect::FIRE_RESISTANT);
+  return !victim->isAffected(BuffId("FIRE_RESISTANT"));
 }
 
 static string getName(const Effects::Ice&, const ContentFactory*) {
@@ -928,13 +928,13 @@ static bool apply(const Effects::Ice& a, Position pos, Creature* attacker) {
 }
 
 static EffectAIIntent shouldAIApplyToCreature(const Effects::Ice&, const Creature* victim, bool isEnemy) {
-  if (!victim->isAffected(LastingEffect::COLD_RESISTANT))
+  if (!victim->isAffected(BuffId("COLD_RESISTANT")))
     return isEnemy ? 1 : -1;
   return 0;
 }
 
 static bool isConsideredHostile(const Effects::Ice&, const Creature* victim) {
-  return !victim->isAffected(LastingEffect::COLD_RESISTANT);
+  return !victim->isAffected(BuffId("COLD_RESISTANT"));
 }
 
 static string getName(const Effects::ReviveCorpse&, const ContentFactory*) {

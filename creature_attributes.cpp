@@ -39,6 +39,9 @@ void CreatureAttributes::initializeLastingEffects() {
   for (auto effect : ENUM_ALL(LastingEffect))
     if (body->isIntrinsicallyAffected(effect))
       permanentEffects[effect] = 1;
+  for (auto effect : {BuffId("COLD_RESISTANT"), BuffId("FIRE_RESISTANT"), BuffId("ACID_RESISTANT")})
+    if (body->isIntrinsicallyAffected(effect))
+      permanentBuffs.push_back(effect);
 }
 
 void CreatureAttributes::randomize() {

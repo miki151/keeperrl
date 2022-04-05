@@ -24,10 +24,6 @@ static optional<LastingEffect> getCancelledOneWay(LastingEffect effect) {
       return LastingEffect::PLAGUE;
     case LastingEffect::POISON_RESISTANT:
       return LastingEffect::POISON;
-    case LastingEffect::FIRE_RESISTANT:
-      return LastingEffect::ON_FIRE;
-    case LastingEffect::COLD_RESISTANT:
-      return LastingEffect::FROZEN;
     case LastingEffect::SLEEP_RESISTANT:
       return LastingEffect::SLEEP;
     case LastingEffect::REGENERATION:
@@ -186,15 +182,6 @@ void LastingEffects::onAffected(Creature* c, LastingEffect effect, bool msg) {
         break;
       case LastingEffect::POISON_RESISTANT:
         c->you(MsgType::ARE, "now poison resistant");
-        break;
-      case LastingEffect::FIRE_RESISTANT:
-        c->you(MsgType::ARE, "now fire resistant");
-        break;
-      case LastingEffect::ACID_RESISTANT:
-        c->you(MsgType::ARE, "now acid resistant");
-        break;
-      case LastingEffect::COLD_RESISTANT:
-        c->you(MsgType::ARE, "now cold resistant");
         break;
       case LastingEffect::INSANITY:
         c->you(MsgType::BECOME, "insane");
@@ -514,15 +501,6 @@ void LastingEffects::onTimedOut(Creature* c, LastingEffect effect, bool msg) {
       case LastingEffect::POISON_RESISTANT:
         c->you(MsgType::ARE, "no longer poison resistant");
         break;
-      case LastingEffect::FIRE_RESISTANT:
-        c->you(MsgType::ARE, "no longer fire resistant");
-        break;
-      case LastingEffect::ACID_RESISTANT:
-        c->you(MsgType::ARE, "no longer acid resistant");
-        break;
-      case LastingEffect::COLD_RESISTANT:
-        c->you(MsgType::ARE, "no longer cold resistant");
-        break;
       case LastingEffect::FLYING:
         c->you(MsgType::FALL, "on the " + c->getPosition().getName());
         break;
@@ -784,9 +762,6 @@ static Adjective getAdjective(LastingEffect effect) {
     case LastingEffect::SPEED: return "Speed bonus"_good;
     case LastingEffect::POISON_RESISTANT: return "Poison resistant"_good;
     case LastingEffect::PLAGUE_RESISTANT: return "Plague resistant"_good;
-    case LastingEffect::FIRE_RESISTANT: return "Fire resistant"_good;
-    case LastingEffect::ACID_RESISTANT: return "Acid resistant"_good;
-    case LastingEffect::COLD_RESISTANT: return "Cold resistant"_good;
     case LastingEffect::FLYING: return "Flying"_good;
     case LastingEffect::LIGHT_SOURCE: return "Source of light"_good;
     case LastingEffect::DARKNESS_SOURCE: return "Source of darkness"_good;
@@ -942,10 +917,6 @@ double LastingEffects::modifyCreatureDefense(const Creature* c, LastingEffect e,
   };
   double baseMultiplier = 1.3;
   switch (e) {
-    case LastingEffect::ACID_RESISTANT:
-      return multiplyFor(AttrType("ACID_DAMAGE"), baseMultiplier);
-    case LastingEffect::FIRE_RESISTANT:
-      return multiplyFor(AttrType("FIRE_DAMAGE"), baseMultiplier);
     case LastingEffect::MAGIC_RESISTANCE:
       return multiplyFor(AttrType("SPELL_DAMAGE"), baseMultiplier);
     case LastingEffect::MELEE_RESISTANCE:
@@ -1187,9 +1158,6 @@ string LastingEffects::getName(LastingEffect type) {
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED: return "web";
     case LastingEffect::STUNNED: return "stunning";
-    case LastingEffect::FIRE_RESISTANT: return "fire resistance";
-    case LastingEffect::COLD_RESISTANT: return "cold resistance";
-    case LastingEffect::ACID_RESISTANT: return "acid resistance";
     case LastingEffect::INSANITY: return "insanity";
     case LastingEffect::PEACEFULNESS: return "love";
     case LastingEffect::MAGIC_RESISTANCE: return "magic resistance";
@@ -1285,9 +1253,6 @@ string LastingEffects::getDescription(LastingEffect type) {
     case LastingEffect::TIED_UP:
     case LastingEffect::ENTANGLED: return "web";
     case LastingEffect::STUNNED: return "Allows enslaving as a prisoner, otherwise creature will die.";
-    case LastingEffect::FIRE_RESISTANT: return "Protects from fire damage.";
-    case LastingEffect::COLD_RESISTANT: return "Protects from ice damage.";
-    case LastingEffect::ACID_RESISTANT: return "Protects from acid damage.";
     case LastingEffect::INSANITY: return "Makes the target hostile to every creature.";
     case LastingEffect::PEACEFULNESS: return "Makes the target friendly to every creature.";
     case LastingEffect::MAGIC_RESISTANCE: return "Increases defense against magical attacks by 30%.";
@@ -1424,9 +1389,6 @@ int LastingEffects::getPrice(LastingEffect e) {
     case LastingEffect::SLOWED:
     case LastingEffect::POISON_RESISTANT:
     case LastingEffect::SLEEP_RESISTANT:
-    case LastingEffect::FIRE_RESISTANT:
-    case LastingEffect::COLD_RESISTANT:
-    case LastingEffect::ACID_RESISTANT:
     case LastingEffect::POISON:
     case LastingEffect::TELEPATHY:
       return 20;
@@ -1537,7 +1499,6 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
     case LastingEffect::SLOWED:
       return FXVariantName::DEBUFF_BLUE;
 
-    case LastingEffect::COLD_RESISTANT:
     case LastingEffect::REGENERATION:
       return FXVariantName::BUFF_RED;
     case LastingEffect::BLEEDING:
@@ -1548,9 +1509,6 @@ optional<FXVariantName> LastingEffects::getFX(LastingEffect effect) {
       return FXVariantName::BUFF_YELLOW;
     case LastingEffect::SPELL_DAMAGE:
       return FXVariantName::BUFF_PURPLE;
-    case LastingEffect::ACID_RESISTANT:
-      return FXVariantName::BUFF_ORANGE;
-    case LastingEffect::FIRE_RESISTANT:
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::CAPTURE_RESISTANCE:
@@ -1626,17 +1584,13 @@ Color LastingEffects::getColor(LastingEffect effect) {
       return Color::GREEN;
     case LastingEffect::POISON_RESISTANT:
       return Color::YELLOW;
-    case LastingEffect::ACID_RESISTANT:
-      return Color::ORANGE;
     case LastingEffect::INSANITY:
       return Color::PINK;
-    case LastingEffect::FIRE_RESISTANT:
     case LastingEffect::MAGIC_RESISTANCE:
     case LastingEffect::MELEE_RESISTANCE:
     case LastingEffect::CAPTURE_RESISTANCE:
     case LastingEffect::RANGED_RESISTANCE:
       return Color::SKY_BLUE;
-    case LastingEffect::COLD_RESISTANT:
     case LastingEffect::REGENERATION:
       return Color::RED;
     case LastingEffect::MAGIC_CANCELLATION:
@@ -1825,8 +1779,6 @@ TimeInterval LastingEffects::getDuration(const Creature* c, LastingEffect e) {
     case LastingEffect::IMMOBILE:
       return 7_visible;
     case LastingEffect::SLEEP_RESISTANT:
-    case LastingEffect::ACID_RESISTANT:
-    case LastingEffect::FIRE_RESISTANT:
     case LastingEffect::SWARMER:
     case LastingEffect::POISON_RESISTANT:
     case LastingEffect::FLYING:

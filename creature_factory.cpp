@@ -641,19 +641,19 @@ PCreature CreatureFactory::get(CreatureAttributes attr, TribeId tribe, const Con
   return ret;
 }
 
-static pair<optional<LastingEffect>, ItemType> getSpecialBeastAttack(bool large, bool living, bool wings) {
-  static vector<pair<optional<LastingEffect>, ItemType>> attacks {
+static pair<optional<LastingOrBuff>, ItemType> getSpecialBeastAttack(bool large, bool living, bool wings) {
+  static vector<pair<optional<LastingOrBuff>, ItemType>> attacks {
     {none, ItemType(ItemType::fangs(7))},
-    {LastingEffect::FIRE_RESISTANT, ItemType(ItemType::fangs(7,
+    {LastingOrBuff(BuffId("FIRE_RESISTANT")), ItemType(ItemType::fangs(7,
         ItemPrefixes::VictimEffect{0.7, EffectType(Effects::Fire{})}))},
-    {LastingEffect::FIRE_RESISTANT, ItemType(ItemType::fangs(7,
+    {LastingOrBuff(BuffId("FIRE_RESISTANT")), ItemType(ItemType::fangs(7,
         ItemPrefixes::VictimEffect{0.7, EffectType(Effects::Fire{})}))},
     {none, ItemType(ItemType::fists(7))},
-    {LastingEffect::POISON_RESISTANT,
+    {LastingOrBuff(LastingEffect::POISON_RESISTANT),
         ItemType(ItemType::fangs(7,
             ItemPrefixes::VictimEffect{0.3, EffectType(Effects::Lasting{none, LastingEffect::POISON})}))},
     {none, ItemType(ItemType::fangs(7))},
-    {LastingEffect::POISON_RESISTANT,
+    {LastingOrBuff(LastingEffect::POISON_RESISTANT),
         ItemType(ItemType::fangs(7, 
             ItemPrefixes::VictimEffect{0.3, EffectType(Effects::Lasting{none, LastingEffect::POISON})}))},
     {none, ItemType(ItemType::fists(7))},
@@ -755,7 +755,10 @@ PCreature CreatureFactory::getSpecial(CreatureId id, TribeId tribe, SpecialParam
           auto attack = getSpecialBeastAttack(p.large, p.living, p.wings);
           c.body->addIntrinsicAttack(BodyPart::HEAD, attack.second);
           if (attack.first)
-            c.addPermanentEffect(*attack.first, 1);
+            attack.first->visit(
+                [&](LastingEffect e) { c.permanentEffects[e] = 1; },
+                [&](BuffId e) { c.permanentBuffs.push_back(e); }
+            );
         }
         if (Random.roll(3))
           c.permanentEffects[LastingEffect::SWIMMING_SKILL] = 1;

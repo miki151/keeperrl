@@ -83,6 +83,7 @@ class Body {
   bool tick(const Creature*);
   bool heal(Creature*, double amount);
   bool isIntrinsicallyAffected(LastingEffect) const;
+  bool isIntrinsicallyAffected(BuffId) const;
   bool isKilledByBoulder() const;
   bool canWade() const;
   bool isFarmAnimal() const;
